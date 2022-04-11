@@ -210,7 +210,6 @@ int main(int argc,char **argv)
   Vec             u,u_sum;
   PetscReal       errNorm;
   const PetscReal errTol = PETSC_SMALL;
-  PetscErrorCode  ierr;
 
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
@@ -250,8 +249,7 @@ int main(int argc,char **argv)
   /* Check if standard solution and sum space solution match to machine precision */
   PetscCall(VecAXPY(u_sum,-1,u));
   PetscCall(VecNorm(u_sum,NORM_2,&errNorm));
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Sum space provides the same solution as a regular space: %s",(errNorm < errTol) ? "true" : "false");PetscCall(
-    ierr);
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Sum space provides the same solution as a regular space: %s",(errNorm < errTol) ? "true" : "false"));
 
   /* Cleanup */
   PetscCall(VecDestroy(&u_sum));

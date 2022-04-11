@@ -390,13 +390,12 @@ $      (for instance, mis)
 @*/
 PetscErrorCode MatCoarsenSetFromOptions(MatCoarsen coarser)
 {
-  PetscErrorCode ierr;
   PetscBool      flag;
   char           type[256];
   const char     *def;
 
   PetscFunctionBegin;
-  ierr = PetscObjectOptionsBegin((PetscObject)coarser);PetscCall(ierr);
+  PetscObjectOptionsBegin((PetscObject)coarser);
   if (!((PetscObject)coarser)->type_name) {
     def = MATCOARSENMIS;
   } else {
@@ -417,7 +416,7 @@ PetscErrorCode MatCoarsenSetFromOptions(MatCoarsen coarser)
   if (coarser->ops->setfromoptions) {
     PetscCall((*coarser->ops->setfromoptions)(PetscOptionsObject,coarser));
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscCall(MatCoarsenViewFromOptions(coarser,NULL,"-mat_coarsen_view"));
   PetscFunctionReturn(0);
 }

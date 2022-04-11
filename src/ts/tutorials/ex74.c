@@ -49,10 +49,8 @@ int main(int argc, char **argv)
   Vec            u,uex;
   UserContext    ctxt;
   PetscReal      err,ftime;
-  PetscErrorCode ierr;
 
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
-
   /* default value */
   ctxt.a       = 0.1;
   ctxt.xmin    = 0.0;
@@ -60,13 +58,13 @@ int main(int argc, char **argv)
   ctxt.imax    = 40;
   ctxt.physics_type = PHYSICS_DIFFUSION;
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"IRK options","");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"IRK options","");
   PetscCall(PetscOptionsReal("-a","diffusion coefficient","<1.0>",ctxt.a,&ctxt.a,NULL));
   PetscCall(PetscOptionsInt ("-imax","grid size","<20>",ctxt.imax,&ctxt.imax,NULL));
   PetscCall(PetscOptionsReal("-xmin","xmin","<0.0>",ctxt.xmin,&ctxt.xmin,NULL));
   PetscCall(PetscOptionsReal("-xmax","xmax","<1.0>",ctxt.xmax,&ctxt.xmax,NULL));
   PetscCall(PetscOptionsEnum("-physics_type","Type of process to discretize","",PhysicsTypes,(PetscEnum)ctxt.physics_type,(PetscEnum*)&ctxt.physics_type,NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   /* allocate and initialize solution vector and exact solution */
   PetscCall(VecCreate(PETSC_COMM_WORLD,&u));

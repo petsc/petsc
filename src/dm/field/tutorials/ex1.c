@@ -231,11 +231,10 @@ int main(int argc, char **argv)
   PetscInt        pointsPerEdge = 2;
   PetscInt        numPoint = 0, numFE = 0, numFV = 0;
   PetscBool       testShell = PETSC_FALSE;
-  PetscErrorCode  ierr;
 
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   comm = PETSC_COMM_WORLD;
-  ierr = PetscOptionsBegin(comm, "", "DMField Tutorial Options", "DM");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "DMField Tutorial Options", "DM");
   PetscCall(PetscOptionsFList("-dm_type","DM implementation on which to define field","ex1.c",DMList,type,type,256,NULL));
   PetscCall(PetscOptionsRangeInt("-dim","DM intrinsic dimension", "ex1.c", dim, &dim, NULL,1,3));
   PetscCall(PetscOptionsBoundedInt("-num_components","Number of components in field", "ex1.c", nc, &nc, NULL,1));
@@ -244,7 +243,7 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsBoundedInt("-num_fe_tests", "Number of test cells for DMFieldEvaluateFE()", "ex1.c", numFE, &numFE, NULL,0));
   PetscCall(PetscOptionsBoundedInt("-num_fv_tests", "Number of test cells for DMFieldEvaluateFV()", "ex1.c", numFV, &numFV, NULL,0));
   PetscCall(PetscOptionsBool("-test_shell", "Test the DMFIELDSHELL implementation of DMField", "ex1.c", testShell, &testShell, NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   PetscCheck(dim <= 3,comm,PETSC_ERR_ARG_OUTOFRANGE,"This examples works for dim <= 3, not %D",dim);
   PetscCall(PetscStrncmp(type,DMPLEX,256,&isplex));
@@ -259,9 +258,9 @@ int main(int argc, char **argv)
     PetscBool simplex;
     PetscFE   fe;
 
-    ierr = PetscOptionsBegin(comm, "", "DMField DMPlex Options", "DM");PetscCall(ierr);
+    PetscOptionsBegin(comm, "", "DMField DMPlex Options", "DM");
     PetscCall(PetscOptionsBoundedInt("-overlap","DMPlex parallel overlap","ex1.c",overlap,&overlap,NULL,0));
-    ierr = PetscOptionsEnd();PetscCall(ierr);
+    PetscOptionsEnd();
     if (0) {
       PetscCall(DMPlexCreateBoxMesh(comm,2,PETSC_TRUE,cells,NULL,NULL,NULL,PETSC_TRUE,&dm));
     } else {

@@ -952,7 +952,6 @@ PetscErrorCode AlgFunction (SNES snes, Vec X, Vec F, void *ctx)
 
 int main(int argc,char ** argv)
 {
-  PetscErrorCode ierr;
   PetscInt       i,j,*edgelist= NULL,eStart,eEnd,vStart,vEnd;
   PetscInt       genj,excj,loadj,componentkey[5];
   PetscInt       nc = 1;    /* No. of copies (default = 1) */
@@ -1051,7 +1050,7 @@ int main(int argc,char ** argv)
   PetscCall(SetInitialGuess(networkdm,X));
 
   /* Options for fault simulation */
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Transient stability fault options","");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Transient stability fault options","");
   user.tfaulton  = 0.02;
   user.tfaultoff = 0.05;
   user.Rfault    = 0.0001;
@@ -1069,7 +1068,7 @@ int main(int argc,char ** argv)
     user.ybusfault[i] = 0;
   }
   user.ybusfault[user.faultbus*2+1] = 1/user.Rfault;
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   /* Setup TS solver                                           */
   /*--------------------------------------------------------*/

@@ -197,7 +197,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *appctx)
 
     /* Get its supporting edges */
     PetscCall(DMNetworkGetSupportingEdges(networkdm,vtx[v],&nconnedges,&connedges));
-    /* printf("\n[%d] coupling vertex: nconnedges %D\n",rank,nconnedges);PetscCall(ierr); */
+    /* printf("\n[%d] coupling vertex: nconnedges %D\n",rank,nconnedges); */
     for (k=0; k<nconnedges; k++) {
       e = connedges[k];
       PetscCall(DMNetworkGetNumComponents(networkdm,e,&ncomp));

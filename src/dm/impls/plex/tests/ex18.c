@@ -246,7 +246,6 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   const char    *interpTypes[4]  = {"none", "create", "after_create", "after_distribute"};
   PetscInt       interp=NONE, dim;
   PetscBool      flg1, flg2;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   options->debug        = 0;
@@ -268,7 +267,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->filename[0]  = '\0';
   options->coordsTol    = PETSC_DEFAULT;
 
-  ierr = PetscOptionsBegin(comm, "", "Meshing Interpolation Test Options", "DMPLEX");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "Meshing Interpolation Test Options", "DMPLEX");
   PetscCall(PetscOptionsBoundedInt("-debug", "The debugging level", "ex18.c", options->debug, &options->debug, NULL,0));
   PetscCall(PetscOptionsBoundedInt("-testnum", "The mesh to create", "ex18.c", options->testNum, &options->testNum, NULL,0));
   PetscCall(PetscOptionsBool("-cell_simplex", "Generate simplices if true, otherwise hexes", "ex18.c", options->cellSimplex, &options->cellSimplex, NULL));
@@ -310,7 +309,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
     options->interpolate  = CREATE;
     options->distribute   = PETSC_FALSE;
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

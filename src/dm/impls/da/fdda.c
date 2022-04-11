@@ -876,7 +876,6 @@ PetscErrorCode DMCreateMatrix_DA_IS(DM dm,Mat J)
 
 PetscErrorCode DMCreateMatrix_DA_2d_MPISELL(DM da,Mat J)
 {
-  PetscErrorCode         ierr;
   PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny,m,n,dim,s,*cols = NULL,k,nc,*rows = NULL,col,cnt,l,p;
   PetscInt               lstart,lend,pstart,pend,*dnz,*onz;
   MPI_Comm               comm;
@@ -902,7 +901,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPISELL(DM da,Mat J)
 
   PetscCall(MatSetBlockSize(J,nc));
   /* determine the matrix preallocation information */
-  ierr = MatPreallocateInitialize(comm,nc*nx*ny,nc*nx*ny,dnz,onz);PetscCall(ierr);
+  MatPreallocateBegin(comm,nc*nx*ny,nc*nx*ny,dnz,onz);
   for (i=xs; i<xs+nx; i++) {
 
     pstart = (bx == DM_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-i));
@@ -931,7 +930,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPISELL(DM da,Mat J)
   PetscCall(MatSetBlockSize(J,nc));
   PetscCall(MatSeqSELLSetPreallocation(J,0,dnz));
   PetscCall(MatMPISELLSetPreallocation(J,0,dnz,0,onz));
-  ierr = MatPreallocateFinalize(dnz,onz);PetscCall(ierr);
+  MatPreallocateEnd(dnz,onz);
 
   PetscCall(MatSetLocalToGlobalMapping(J,ltog,ltog));
 
@@ -981,7 +980,6 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPISELL(DM da,Mat J)
 
 PetscErrorCode DMCreateMatrix_DA_3d_MPISELL(DM da,Mat J)
 {
-  PetscErrorCode         ierr;
   PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;
   PetscInt               m,n,dim,s,*cols = NULL,k,nc,*rows = NULL,col,cnt,l,p,*dnz = NULL,*onz = NULL;
   PetscInt               istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk,M,N,P;
@@ -1008,7 +1006,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPISELL(DM da,Mat J)
 
   PetscCall(MatSetBlockSize(J,nc));
   /* determine the matrix preallocation information */
-  ierr = MatPreallocateInitialize(comm,nc*nx*ny*nz,nc*nx*ny*nz,dnz,onz);PetscCall(ierr);
+  MatPreallocateBegin(comm,nc*nx*ny*nz,nc*nx*ny*nz,dnz,onz);
   for (i=xs; i<xs+nx; i++) {
     istart = (bx == DM_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-i));
     iend   = (bx == DM_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,m-i-1));
@@ -1041,7 +1039,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPISELL(DM da,Mat J)
   PetscCall(MatSetBlockSize(J,nc));
   PetscCall(MatSeqSELLSetPreallocation(J,0,dnz));
   PetscCall(MatMPISELLSetPreallocation(J,0,dnz,0,onz));
-  ierr = MatPreallocateFinalize(dnz,onz);PetscCall(ierr);
+  MatPreallocateEnd(dnz,onz);
   PetscCall(MatSetLocalToGlobalMapping(J,ltog,ltog));
 
   /*
@@ -1094,7 +1092,6 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPISELL(DM da,Mat J)
 
 PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM da,Mat J)
 {
-  PetscErrorCode         ierr;
   PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny,m,n,dim,s,*cols = NULL,k,nc,*rows = NULL,col,cnt,l,p,M,N;
   PetscInt               lstart,lend,pstart,pend,*dnz,*onz;
   MPI_Comm               comm;
@@ -1129,7 +1126,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM da,Mat J)
 
   PetscCall(MatSetBlockSize(J,nc));
   /* determine the matrix preallocation information */
-  ierr = MatPreallocateInitialize(comm,nc*nx*ny,nc*nx*ny,dnz,onz);PetscCall(ierr);
+  MatPreallocateBegin(comm,nc*nx*ny,nc*nx*ny,dnz,onz);
   for (i=xs; i<xs+nx; i++) {
     pstart = (bx == DM_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-i));
     pend   = (bx == DM_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,m-i-1));
@@ -1161,7 +1158,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM da,Mat J)
   PetscCall(MatSetBlockSize(J,nc));
   PetscCall(MatSeqAIJSetPreallocation(J,0,dnz));
   PetscCall(MatMPIAIJSetPreallocation(J,0,dnz,0,onz));
-  ierr = MatPreallocateFinalize(dnz,onz);PetscCall(ierr);
+  MatPreallocateEnd(dnz,onz);
   PetscCall(MatGetLocalToGlobalMapping(J,&mltog,NULL));
   if (!mltog) {
     PetscCall(MatSetLocalToGlobalMapping(J,ltog,ltog));
@@ -1216,7 +1213,6 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM da,Mat J)
 
 PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ_Fill(DM da,Mat J)
 {
-  PetscErrorCode         ierr;
   PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;
   PetscInt               m,n,dim,s,*cols,k,nc,row,col,cnt,maxcnt = 0,l,p,M,N;
   PetscInt               lstart,lend,pstart,pend,*dnz,*onz;
@@ -1251,7 +1247,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ_Fill(DM da,Mat J)
 
   PetscCall(MatSetBlockSize(J,nc));
   /* determine the matrix preallocation information */
-  ierr = MatPreallocateInitialize(comm,nc*nx*ny,nc*nx*ny,dnz,onz);PetscCall(ierr);
+  MatPreallocateBegin(comm,nc*nx*ny,nc*nx*ny,dnz,onz);
   for (i=xs; i<xs+nx; i++) {
 
     pstart = (bx == DM_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-i));
@@ -1292,7 +1288,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ_Fill(DM da,Mat J)
   }
   PetscCall(MatSeqAIJSetPreallocation(J,0,dnz));
   PetscCall(MatMPIAIJSetPreallocation(J,0,dnz,0,onz));
-  ierr = MatPreallocateFinalize(dnz,onz);PetscCall(ierr);
+  MatPreallocateEnd(dnz,onz);
   PetscCall(MatSetLocalToGlobalMapping(J,ltog,ltog));
 
   /*
@@ -1349,7 +1345,6 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ_Fill(DM da,Mat J)
 
 PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ(DM da,Mat J)
 {
-  PetscErrorCode         ierr;
   PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;
   PetscInt               m,n,dim,s,*cols = NULL,k,nc,*rows = NULL,col,cnt,l,p,*dnz = NULL,*onz = NULL;
   PetscInt               istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk,M,N,P;
@@ -1388,7 +1383,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ(DM da,Mat J)
 
   PetscCall(MatSetBlockSize(J,nc));
   /* determine the matrix preallocation information */
-  ierr = MatPreallocateInitialize(comm,nc*nx*ny*nz,nc*nx*ny*nz,dnz,onz);PetscCall(ierr);
+  MatPreallocateBegin(comm,nc*nx*ny*nz,nc*nx*ny*nz,dnz,onz);
   for (i=xs; i<xs+nx; i++) {
     istart = (bx == DM_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-i));
     iend   = (bx == DM_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,m-i-1));
@@ -1425,7 +1420,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ(DM da,Mat J)
   PetscCall(MatSetBlockSize(J,nc));
   PetscCall(MatSeqAIJSetPreallocation(J,0,dnz));
   PetscCall(MatMPIAIJSetPreallocation(J,0,dnz,0,onz));
-  ierr = MatPreallocateFinalize(dnz,onz);PetscCall(ierr);
+  MatPreallocateEnd(dnz,onz);
   PetscCall(MatGetLocalToGlobalMapping(J,&mltog,NULL));
   if (!mltog) {
     PetscCall(MatSetLocalToGlobalMapping(J,ltog,ltog));
@@ -1796,7 +1791,6 @@ PetscErrorCode DMCreateMatrix_DA_1d_SeqAIJ_NoPreallocation(DM da,Mat J)
 
 PetscErrorCode DMCreateMatrix_DA_2d_MPIBAIJ(DM da,Mat J)
 {
-  PetscErrorCode         ierr;
   PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;
   PetscInt               m,n,dim,s,*cols,nc,col,cnt,*dnz,*onz;
   PetscInt               istart,iend,jstart,jend,ii,jj;
@@ -1823,7 +1817,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIBAIJ(DM da,Mat J)
   PetscCall(DMGetLocalToGlobalMapping(da,&ltog));
 
   /* determine the matrix preallocation information */
-  ierr = MatPreallocateInitialize(comm,nx*ny,nx*ny,dnz,onz);PetscCall(ierr);
+  MatPreallocateBegin(comm,nx*ny,nx*ny,dnz,onz);
   for (i=xs; i<xs+nx; i++) {
     istart = (bx == DM_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-i));
     iend   = (bx == DM_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,m-i-1));
@@ -1846,7 +1840,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIBAIJ(DM da,Mat J)
   }
   PetscCall(MatSeqBAIJSetPreallocation(J,nc,0,dnz));
   PetscCall(MatMPIBAIJSetPreallocation(J,nc,0,dnz,0,onz));
-  ierr = MatPreallocateFinalize(dnz,onz);PetscCall(ierr);
+  MatPreallocateEnd(dnz,onz);
 
   PetscCall(MatSetLocalToGlobalMapping(J,ltog,ltog));
 
@@ -1889,7 +1883,6 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIBAIJ(DM da,Mat J)
 
 PetscErrorCode DMCreateMatrix_DA_3d_MPIBAIJ(DM da,Mat J)
 {
-  PetscErrorCode         ierr;
   PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;
   PetscInt               m,n,dim,s,*cols,k,nc,col,cnt,p,*dnz,*onz;
   PetscInt               istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk;
@@ -1917,7 +1910,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIBAIJ(DM da,Mat J)
   PetscCall(DMGetLocalToGlobalMapping(da,&ltog));
 
   /* determine the matrix preallocation information */
-  ierr = MatPreallocateInitialize(comm,nx*ny*nz,nx*ny*nz,dnz,onz);PetscCall(ierr);
+  MatPreallocateBegin(comm,nx*ny*nz,nx*ny*nz,dnz,onz);
   for (i=xs; i<xs+nx; i++) {
     istart = (bx == DM_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-i));
     iend   = (bx == DM_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,m-i-1));
@@ -1947,7 +1940,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIBAIJ(DM da,Mat J)
   }
   PetscCall(MatSeqBAIJSetPreallocation(J,nc,0,dnz));
   PetscCall(MatMPIBAIJSetPreallocation(J,nc,0,dnz,0,onz));
-  ierr = MatPreallocateFinalize(dnz,onz);PetscCall(ierr);
+  MatPreallocateEnd(dnz,onz);
 
   PetscCall(MatSetLocalToGlobalMapping(J,ltog,ltog));
 
@@ -2016,7 +2009,6 @@ static PetscErrorCode L2GFilterUpperTriangular(ISLocalToGlobalMapping ltog,Petsc
 
 PetscErrorCode DMCreateMatrix_DA_2d_MPISBAIJ(DM da,Mat J)
 {
-  PetscErrorCode         ierr;
   PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;
   PetscInt               m,n,dim,s,*cols,nc,col,cnt,*dnz,*onz;
   PetscInt               istart,iend,jstart,jend,ii,jj;
@@ -2043,7 +2035,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPISBAIJ(DM da,Mat J)
   PetscCall(DMGetLocalToGlobalMapping(da,&ltog));
 
   /* determine the matrix preallocation information */
-  ierr = MatPreallocateInitialize(comm,nx*ny,nx*ny,dnz,onz);PetscCall(ierr);
+  MatPreallocateBegin(comm,nx*ny,nx*ny,dnz,onz);
   for (i=xs; i<xs+nx; i++) {
     istart = (bx == DM_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-i));
     iend   = (bx == DM_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,m-i-1));
@@ -2067,7 +2059,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPISBAIJ(DM da,Mat J)
   }
   PetscCall(MatSeqSBAIJSetPreallocation(J,nc,0,dnz));
   PetscCall(MatMPISBAIJSetPreallocation(J,nc,0,dnz,0,onz));
-  ierr = MatPreallocateFinalize(dnz,onz);PetscCall(ierr);
+  MatPreallocateEnd(dnz,onz);
 
   PetscCall(MatSetLocalToGlobalMapping(J,ltog,ltog));
 
@@ -2113,7 +2105,6 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPISBAIJ(DM da,Mat J)
 
 PetscErrorCode DMCreateMatrix_DA_3d_MPISBAIJ(DM da,Mat J)
 {
-  PetscErrorCode         ierr;
   PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;
   PetscInt               m,n,dim,s,*cols,k,nc,col,cnt,p,*dnz,*onz;
   PetscInt               istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk;
@@ -2141,7 +2132,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPISBAIJ(DM da,Mat J)
   PetscCall(DMGetLocalToGlobalMapping(da,&ltog));
 
   /* determine the matrix preallocation information */
-  ierr = MatPreallocateInitialize(comm,nx*ny*nz,nx*ny*nz,dnz,onz);PetscCall(ierr);
+  MatPreallocateBegin(comm,nx*ny*nz,nx*ny*nz,dnz,onz);
   for (i=xs; i<xs+nx; i++) {
     istart = (bx == DM_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-i));
     iend   = (bx == DM_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,m-i-1));
@@ -2172,7 +2163,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPISBAIJ(DM da,Mat J)
   }
   PetscCall(MatSeqSBAIJSetPreallocation(J,nc,0,dnz));
   PetscCall(MatMPISBAIJSetPreallocation(J,nc,0,dnz,0,onz));
-  ierr = MatPreallocateFinalize(dnz,onz);PetscCall(ierr);
+  MatPreallocateEnd(dnz,onz);
 
   PetscCall(MatSetLocalToGlobalMapping(J,ltog,ltog));
 
@@ -2226,7 +2217,6 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPISBAIJ(DM da,Mat J)
 
 PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ_Fill(DM da,Mat J)
 {
-  PetscErrorCode         ierr;
   PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;
   PetscInt               m,n,dim,s,*cols,k,nc,row,col,cnt, maxcnt = 0,l,p,*dnz,*onz;
   PetscInt               istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk,M,N,P;
@@ -2270,7 +2260,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ_Fill(DM da,Mat J)
   PetscCall(DMGetLocalToGlobalMapping(da,&ltog));
 
   /* determine the matrix preallocation information */
-  ierr = MatPreallocateInitialize(comm,nc*nx*ny*nz,nc*nx*ny*nz,dnz,onz);PetscCall(ierr);
+  MatPreallocateBegin(comm,nc*nx*ny*nz,nc*nx*ny*nz,dnz,onz);
 
   PetscCall(MatSetBlockSize(J,nc));
   for (i=xs; i<xs+nx; i++) {
@@ -2317,7 +2307,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ_Fill(DM da,Mat J)
   }
   PetscCall(MatSeqAIJSetPreallocation(J,0,dnz));
   PetscCall(MatMPIAIJSetPreallocation(J,0,dnz,0,onz));
-  ierr = MatPreallocateFinalize(dnz,onz);PetscCall(ierr);
+  MatPreallocateEnd(dnz,onz);
   PetscCall(MatSetLocalToGlobalMapping(J,ltog,ltog));
 
   /*

@@ -35,7 +35,6 @@ int main(int argc, char **argv) {
   DMLabel         bdLabel = NULL, rgLabel = NULL;
   MPI_Comm        comm;
   PetscBool       uniform = PETSC_FALSE, isotropic = PETSC_FALSE, noTagging = PETSC_FALSE;
-  PetscErrorCode  ierr;
   PetscInt        dim;
   PetscReal       scaling = 1.0;
   Vec             metric;
@@ -43,9 +42,9 @@ int main(int argc, char **argv) {
   /* Set up */
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   comm = PETSC_COMM_WORLD;
-  ierr = PetscOptionsBegin(comm, "", "Mesh adaptation options", "DMPLEX");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "Mesh adaptation options", "DMPLEX");
   PetscCall(PetscOptionsBool("-noTagging", "Should tag preservation testing be turned off?", "ex60.c", noTagging, &noTagging, NULL));
-  ierr = PetscOptionsEnd();
+  PetscOptionsEnd();
 
   /* Create box mesh */
   PetscCall(DMCreate(comm, &dm));

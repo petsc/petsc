@@ -377,7 +377,6 @@ PetscErrorCode  PetscDrawSetOptionsPrefix(PetscDraw draw,const char prefix[])
 @*/
 PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
 {
-  PetscErrorCode    ierr;
   PetscBool         flg,nox;
   char              vtype[256];
   const char        *def;
@@ -403,7 +402,7 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
     if (!nox && !warn) (*PetscErrorPrintf)("PETSc installed without X Windows or Microsoft Graphics on this machine\nproceeding without graphics\n");
 #endif
   }
-  ierr = PetscObjectOptionsBegin((PetscObject)draw);PetscCall(ierr);
+  PetscObjectOptionsBegin((PetscObject)draw);
   PetscCall(PetscOptionsFList("-draw_type","Type of graphical output","PetscDrawSetType",PetscDrawList,def,vtype,256,&flg));
   if (flg) {
     PetscCall(PetscDrawSetType(draw,vtype));
@@ -435,6 +434,6 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
   PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)draw));
 
   PetscCall(PetscDrawViewFromOptions(draw,NULL,"-draw_view"));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }

@@ -132,16 +132,14 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   const char    *formTypes[2] = {"primitive", "int_by_parts"};
   PetscInt       form;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   options->formType = PRIMITIVE;
-
-  ierr = PetscOptionsBegin(comm, "", "Advection Equation Options", "DMPLEX");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "Advection Equation Options", "DMPLEX");
   form = options->formType;
   PetscCall(PetscOptionsEList("-form_type", "The weak form type", "ex47.c", formTypes, 2, formTypes[options->formType], &form, NULL));
   options->formType = (WeakFormType) form;
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

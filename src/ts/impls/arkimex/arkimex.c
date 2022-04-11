@@ -1158,7 +1158,7 @@ static PetscErrorCode TSSetFromOptions_ARKIMEX(PetscOptionItems *PetscOptionsObj
   TS_ARKIMEX     *ark = (TS_ARKIMEX*)ts->data;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"ARKIMEX ODE solver options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"ARKIMEX ODE solver options");
   {
     ARKTableauLink link;
     PetscInt       count,choice;
@@ -1176,7 +1176,7 @@ static PetscErrorCode TSSetFromOptions_ARKIMEX(PetscOptionItems *PetscOptionsObj
     ark->imex = (PetscBool) !flg;
     PetscCall(PetscOptionsBool("-ts_arkimex_initial_guess_extrapolate","Extrapolate the initial guess for the stage solution from stage values of the previous time step","",ark->extrapolate,&ark->extrapolate,NULL));
   }
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

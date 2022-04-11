@@ -334,7 +334,7 @@ static PetscErrorCode SNESSetFromOptions_QN(PetscOptionItems *PetscOptionsObject
   SNESQNType        qtype = qn->type;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"SNES QN options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"SNES QN options");
   PetscCall(PetscOptionsInt("-snes_qn_m","Number of past states saved for L-BFGS methods","SNESQN",qn->m,&qn->m,NULL));
   PetscCall(PetscOptionsReal("-snes_qn_powell_gamma","Powell angle tolerance",          "SNESQN", qn->powell_gamma, &qn->powell_gamma, NULL));
   PetscCall(PetscOptionsBool("-snes_qn_monitor",         "Monitor for the QN methods",      "SNESQN", qn->monflg, &qn->monflg, NULL));
@@ -347,7 +347,7 @@ static PetscErrorCode SNESSetFromOptions_QN(PetscOptionItems *PetscOptionsObject
   PetscCall(PetscOptionsEnum("-snes_qn_type","Quasi-Newton update type","",SNESQNTypes,(PetscEnum)qtype,(PetscEnum*)&qtype,&flg));
   if (flg) PetscCall(SNESQNSetType(snes,qtype));
   PetscCall(MatSetFromOptions(qn->B));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   if (!snes->linesearch) {
     PetscCall(SNESGetLineSearch(snes, &linesearch));
     if (!((PetscObject)linesearch)->type_name) {

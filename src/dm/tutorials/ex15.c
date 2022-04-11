@@ -182,13 +182,12 @@ PetscErrorCode TestDMDAVec(PetscBool usempiio)
   DM             dm;
   Vec            x_ref,x_test;
   PetscBool      skipheader = PETSC_TRUE;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   if (!usempiio) PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%s\n",PETSC_FUNCTION_NAME));
   else PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%s [using mpi-io]\n",PETSC_FUNCTION_NAME));
-  ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,DMDA_I,DMDA_J,DMDA_K,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,
-                        3,2,NULL,NULL,NULL,&dm);PetscCall(ierr);
+  PetscCall(DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,DMDA_I,DMDA_J,DMDA_K,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,
+                         3,2,NULL,NULL,NULL,&dm));
   PetscCall(DMSetFromOptions(dm));
   PetscCall(DMSetUp(dm));
 

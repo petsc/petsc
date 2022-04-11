@@ -170,7 +170,6 @@ static PetscErrorCode CESolution(PetscReal t,Vec X,void *ctx)
 
 static PetscErrorCode CECreate(Problem p)
 {
-  PetscErrorCode ierr;
   CECtx          *ce;
 
   PetscFunctionBeginUser;
@@ -186,11 +185,11 @@ static PetscErrorCode CECreate(Problem p)
   p->hasexact   = PETSC_TRUE;
 
   ce->lambda = 10;
-  ierr       = PetscOptionsBegin(p->comm,NULL,"CE options","");PetscCall(ierr);
+  PetscOptionsBegin(p->comm,NULL,"CE options","");
   {
     PetscCall(PetscOptionsReal("-problem_ce_lambda","Parameter controlling stiffness: xdot + lambda*(x - cos(t))","",ce->lambda,&ce->lambda,NULL));
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 
@@ -314,7 +313,6 @@ int main(int argc,char **argv)
   PetscInt          steps,nonlinits,linits,snesfails,rejects;
   PetscReal         ftime;
   MonitorCtx        mon;
-  PetscErrorCode    ierr;
   PetscMPIInt       size;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -333,14 +331,14 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Set runtime options
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Timestepping benchmark options","");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Timestepping benchmark options","");
   {
     PetscCall(PetscOptionsFList("-problem_type","Name of problem to run","",plist,pname,pname,sizeof(pname),NULL));
     use_monitor = PETSC_FALSE;
     PetscCall(PetscOptionsBool("-monitor_error","Display errors relative to exact solutions","",use_monitor,&use_monitor,NULL));
     PetscCall(PetscOptionsBool("-monitor_result","Display result","",use_result,&use_result,NULL));
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   /* Create the new problem */
   PetscCall(PetscNew(&problem));

@@ -7,7 +7,6 @@ static const char help[] = "Test DMCreateInjection() for mapping coordinates in 
 
 PetscErrorCode test1_DAInjection3d(PetscInt mx, PetscInt my, PetscInt mz)
 {
-  PetscErrorCode   ierr;
   DM               dac,daf;
   PetscViewer      vv;
   Vec              ac,af;
@@ -30,8 +29,8 @@ PetscErrorCode test1_DAInjection3d(PetscInt mx, PetscInt my, PetscInt mz)
     bz = DM_BOUNDARY_PERIODIC;
   }
 
-  ierr = DMDACreate3d(PETSC_COMM_WORLD, bx,by,bz, DMDA_STENCIL_BOX,mx+1, my+1,mz+1,PETSC_DECIDE, PETSC_DECIDE,PETSC_DECIDE,1, /* 1 dof */
-                      1, /* stencil = 1 */NULL,NULL,NULL,&daf);PetscCall(ierr);
+  PetscCall(DMDACreate3d(PETSC_COMM_WORLD, bx,by,bz, DMDA_STENCIL_BOX,mx+1, my+1,mz+1,PETSC_DECIDE, PETSC_DECIDE,PETSC_DECIDE,1, /* 1 dof */
+                         1, /* stencil = 1 */NULL,NULL,NULL,&daf));
   PetscCall(DMSetFromOptions(daf));
   PetscCall(DMSetUp(daf));
 

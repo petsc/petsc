@@ -581,10 +581,10 @@ static PetscErrorCode KSPCGSetFromOptions_STCG(PetscOptionItems *PetscOptionsObj
   KSPCG_STCG     *cg = (KSPCG_STCG*)ksp->data;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"KSPCG STCG options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"KSPCG STCG options");
   PetscCall(PetscOptionsReal("-ksp_cg_radius", "Trust Region Radius", "KSPCGSetRadius", cg->radius, &cg->radius, NULL));
   PetscCall(PetscOptionsEList("-ksp_cg_dtype", "Norm used for direction", "", DType_Table, STCG_DIRECTION_TYPES, DType_Table[cg->dtype], &cg->dtype, NULL));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

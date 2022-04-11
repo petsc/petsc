@@ -63,7 +63,6 @@ int main(int argc, char **argv)
   DM             dm;
   PetscBool      trace = PETSC_FALSE, checkMemory = PETSC_TRUE, auxMemory = PETSC_FALSE;
   PetscLogDouble before, after, est = 0, clean, max;
-  PetscErrorCode ierr;
 
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-trace", &trace, NULL));
@@ -84,8 +83,8 @@ int main(int argc, char **argv)
   PetscCall(PetscMallocGetCurrentUsage(&clean));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Measured Memory\n"));
   if (auxMemory) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "  Initial memory         %D\n  Extra memory for build %D\n  Memory after destroy   %D\n",
-                       (PetscInt) before, (PetscInt) (max-after), (PetscInt) clean);PetscCall(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "  Initial memory         %D\n  Extra memory for build %D\n  Memory after destroy   %D\n",
+                          (PetscInt) before, (PetscInt) (max-after), (PetscInt) clean));
   }
   if (checkMemory) {
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "  Memory for mesh  %D\n", (PetscInt) (after-before)));

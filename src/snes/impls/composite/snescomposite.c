@@ -430,7 +430,7 @@ static PetscErrorCode SNESSetFromOptions_Composite(PetscOptionItems *PetscOption
   PetscBool          flg;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"Composite preconditioner options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"Composite preconditioner options");
   PetscCall(PetscOptionsEnum("-snes_composite_type","Type of composition","SNESCompositeSetType",SNESCompositeTypes,(PetscEnum)jac->type,(PetscEnum*)&jac->type,&flg));
   if (flg) {
     PetscCall(SNESCompositeSetType(snes,jac->type));
@@ -450,7 +450,7 @@ static PetscErrorCode SNESSetFromOptions_Composite(PetscOptionItems *PetscOption
   }
   PetscCall(PetscOptionsReal("-snes_composite_stol","Step tolerance for restart on the additive composite solvers","",jac->stol,&jac->stol,NULL));
   PetscCall(PetscOptionsReal("-snes_composite_rtol","Residual tolerance for the additive composite solvers","",jac->rtol,&jac->rtol,NULL));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
 
   next = jac->head;
   while (next) {

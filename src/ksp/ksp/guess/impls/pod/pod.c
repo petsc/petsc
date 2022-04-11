@@ -75,7 +75,6 @@ static PetscErrorCode KSPGuessReset_POD(KSPGuess guess)
 static PetscErrorCode KSPGuessSetUp_POD(KSPGuess guess)
 {
   KSPGuessPOD    *pod = (KSPGuessPOD*)guess->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!pod->corr) {
@@ -83,8 +82,7 @@ static PetscErrorCode KSPGuessSetUp_POD(KSPGuess guess)
     PetscReal    rdummy = 0;
     PetscBLASInt bN,lierr,idummy;
 
-    ierr = PetscCalloc6(pod->maxn*pod->maxn,&pod->corr,pod->maxn,&pod->eigs,pod->maxn*pod->maxn,&pod->eigv,
-                        6*pod->maxn,&pod->iwork,pod->maxn*pod->maxn,&pod->yhay,pod->maxn*pod->maxn,&pod->low);PetscCall(ierr);
+    PetscCall(PetscCalloc6(pod->maxn*pod->maxn,&pod->corr,pod->maxn,&pod->eigs,pod->maxn*pod->maxn,&pod->eigv,6*pod->maxn,&pod->iwork,pod->maxn*pod->maxn,&pod->yhay,pod->maxn*pod->maxn,&pod->low));
 #if defined(PETSC_USE_COMPLEX)
     PetscCall(PetscMalloc1(7*pod->maxn,&pod->rwork));
 #endif
@@ -134,11 +132,9 @@ static PetscErrorCode KSPGuessSetUp_POD(KSPGuess guess)
 static PetscErrorCode KSPGuessDestroy_POD(KSPGuess guess)
 {
   KSPGuessPOD *pod = (KSPGuessPOD*)guess->data;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFree6(pod->corr,pod->eigs,pod->eigv,pod->iwork,
-                    pod->yhay,pod->low);PetscCall(ierr);
+  PetscCall(PetscFree6(pod->corr,pod->eigs,pod->eigv,pod->iwork,pod->yhay,pod->low));
 #if defined(PETSC_USE_COMPLEX)
   PetscCall(PetscFree(pod->rwork));
 #endif
@@ -416,15 +412,14 @@ complete_request:
 static PetscErrorCode KSPGuessSetFromOptions_POD(KSPGuess guess)
 {
   KSPGuessPOD    *pod = (KSPGuessPOD *)guess->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)guess),((PetscObject)guess)->prefix,"POD initial guess options","KSPGuess");PetscCall(ierr);
+  PetscOptionsBegin(PetscObjectComm((PetscObject)guess),((PetscObject)guess)->prefix,"POD initial guess options","KSPGuess");
   PetscCall(PetscOptionsInt("-ksp_guess_pod_size","Number of snapshots",NULL,pod->maxn,&pod->maxn,NULL));
   PetscCall(PetscOptionsBool("-ksp_guess_pod_monitor","Monitor initial guess generator",NULL,pod->monitor,&pod->monitor,NULL));
   PetscCall(PetscOptionsReal("-ksp_guess_pod_tol","Tolerance to retain eigenvectors","KSPGuessSetTolerance",pod->tol,&pod->tol,NULL));
   PetscCall(PetscOptionsBool("-ksp_guess_pod_Ainner","Use the operator as inner product (must be SPD)",NULL,pod->Aspd,&pod->Aspd,NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

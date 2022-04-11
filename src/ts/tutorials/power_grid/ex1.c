@@ -86,7 +86,6 @@ int main(int argc,char **argv)
   TS             ts;            /* ODE integrator */
   Vec            U;             /* solution will be stored here */
   Mat            A;             /* Jacobian matrix */
-  PetscErrorCode ierr;
   PetscMPIInt    size;
   PetscInt       n = 2;
   AppCtx         ctx;
@@ -112,7 +111,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Set runtime options
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Reaction options","");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Reaction options","");
   {
     ctx.omega_s = 1.0;
     PetscCall(PetscOptionsScalar("-omega_s","","",ctx.omega_s,&ctx.omega_s,NULL));
@@ -131,7 +130,7 @@ int main(int argc,char **argv)
     PetscCall(VecRestoreArray(U,&u));
     PetscCall(PetscOptionsGetVec(NULL,NULL,"-initial",U,NULL));
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   PetscCall(PetscRandomCreate(PETSC_COMM_WORLD,&ctx.rand));
   PetscCall(PetscRandomSetFromOptions(ctx.rand));

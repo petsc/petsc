@@ -14,7 +14,7 @@ PetscErrorCode  DMSetFromOptions_DA(PetscOptionItems *PetscOptionsObject,DM da)
   PetscCheck(dd->N >= 0,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"Dimension must be non-negative, call DMSetFromOptions() if you want to change the value at runtime");
   PetscCheck(dd->P >= 0,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"Dimension must be non-negative, call DMSetFromOptions() if you want to change the value at runtime");
 
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"DMDA Options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"DMDA Options");
   PetscCall(PetscOptionsBoundedInt("-da_grid_x","Number of grid points in x direction","DMDASetSizes",dd->M,&dd->M,NULL,1));
   if (dim > 1) PetscCall(PetscOptionsBoundedInt("-da_grid_y","Number of grid points in y direction","DMDASetSizes",dd->N,&dd->N,NULL,1));
   if (dim > 2) PetscCall(PetscOptionsBoundedInt("-da_grid_z","Number of grid points in z direction","DMDASetSizes",dd->P,&dd->P,NULL,1));
@@ -75,7 +75,7 @@ PetscErrorCode  DMSetFromOptions_DA(PetscOptionItems *PetscOptionsObject,DM da)
   }
 
   PetscCall(PetscOptionsBoundedInt("-da_refine","Uniformly refine DA one or more times","None",refine,&refine,NULL,0));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
 
   while (refine--) {
     if (dd->bx == DM_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0) {

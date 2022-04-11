@@ -406,7 +406,7 @@ static PetscErrorCode SNESSetFromOptions_Multiblock(PetscOptionItems *PetscOptio
   PetscBool       flg;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"SNES Multiblock options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"SNES Multiblock options");
   PetscCall(PetscOptionsInt("-snes_multiblock_block_size", "Blocksize that defines number of fields", "PCFieldSplitSetBlockSize", mb->bs, &bs, &flg));
   if (flg) PetscCall(SNESMultiblockSetBlockSize(snes, bs));
   PetscCall(PetscOptionsEnum("-snes_multiblock_type", "Type of composition", "PCFieldSplitSetType", PCCompositeTypes, (PetscEnum) mb->type, (PetscEnum*) &ctype, &flg));
@@ -419,7 +419,7 @@ static PetscErrorCode SNESSetFromOptions_Multiblock(PetscOptionItems *PetscOptio
     PetscCall(SNESMultiblockSetFieldsRuntime_Private(snes));
     if (mb->defined) PetscCall(PetscInfo(snes, "Blocks defined using the options database\n"));
   }
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

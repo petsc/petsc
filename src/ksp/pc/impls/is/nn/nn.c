@@ -43,7 +43,6 @@ static PetscErrorCode PCSetUp_NN(PC pc)
 static PetscErrorCode PCApply_NN(PC pc,Vec r,Vec z)
 {
   PC_IS          *pcis = (PC_IS*)(pc->data);
-  PetscErrorCode ierr;
   PetscScalar    m_one = -1.0;
   Vec            w     = pcis->vec1_global;
 
@@ -70,8 +69,7 @@ static PetscErrorCode PCApply_NN(PC pc,Vec r,Vec z)
   /*
     Apply the interface preconditioner
   */
-  ierr = PCNNApplyInterfacePreconditioner(pc,w,z,pcis->work_N,pcis->vec1_B,pcis->vec2_B,pcis->vec3_B,pcis->vec1_D,
-                                          pcis->vec3_D,pcis->vec1_N,pcis->vec2_N);PetscCall(ierr);
+  PetscCall(PCNNApplyInterfacePreconditioner(pc,w,z,pcis->work_N,pcis->vec1_B,pcis->vec2_B,pcis->vec3_B,pcis->vec1_D,pcis->vec3_D,pcis->vec1_N,pcis->vec2_N));
 
   /*
     Computing $ t_I^{(i)} = A_{IB}^{(i)} \tilde R_i z_B $

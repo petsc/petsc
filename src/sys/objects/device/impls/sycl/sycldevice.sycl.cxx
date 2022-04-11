@@ -127,18 +127,17 @@ PetscErrorCode Device::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, Pets
   PetscInt       initType = *defaultInitType,id = *defaultDeviceId;
   PetscBool      view = PETSC_FALSE,flg;
   PetscInt       ngpus;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (initialized_) PetscFunctionReturn(0);
   initialized_ = true;
   PetscCall(PetscRegisterFinalize(finalize_));
 
-  ierr = PetscOptionsBegin(comm,nullptr,"PetscDevice SYCL Options","Sys");PetscCall(ierr);
+  PetscOptionsBegin(comm,nullptr,"PetscDevice SYCL Options","Sys");
   PetscCall(PetscOptionsEList("-device_enable_sycl","How (or whether) to initialize a device","SyclDevice::initialize()",PetscDeviceInitTypes,3,PetscDeviceInitTypes[initType],&initType,nullptr));
   PetscCall(PetscOptionsRangeInt("-device_select_sycl","Which sycl device to use? Pass -2 for host, PETSC_DECIDE (-1) to let PETSc decide, 0 and up for GPUs","PetscDeviceCreate",id,&id,nullptr,-2,std::numeric_limits<decltype(ngpus)>::max()));
   PetscCall(PetscOptionsBool("-device_view_sycl","Display device information and assignments (forces eager initialization)",nullptr,view,&view,&flg));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   // post-process the options and lay the groundwork for initialization if needs be
   std::vector<sycl::device> gpu_devices = sycl::device::get_devices(sycl::info::device_type::gpu);

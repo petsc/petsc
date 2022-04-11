@@ -116,7 +116,6 @@ static PetscErrorCode PhysicsSample_Advect(void *vctx,PetscInt initial,FVBCType 
 
 static PetscErrorCode PhysicsCreate_Advect(FVCtx *ctx)
 {
-  PetscErrorCode ierr;
   AdvectCtx      *user;
 
   PetscFunctionBeginUser;
@@ -128,11 +127,11 @@ static PetscErrorCode PhysicsCreate_Advect(FVCtx *ctx)
   ctx->physics.dof            = 1;
   PetscCall(PetscStrallocpy("u",&ctx->physics.fieldname[0]));
   user->a = 1;
-  ierr = PetscOptionsBegin(ctx->comm,ctx->prefix,"Options for advection","");PetscCall(ierr);
+  PetscOptionsBegin(ctx->comm,ctx->prefix,"Options for advection","");
   {
     PetscCall(PetscOptionsReal("-physics_advect_a","Speed","",user->a,&user->a,NULL));
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 
@@ -642,7 +641,6 @@ int main(int argc,char *argv[])
   PetscInt          i,k,dof,xs,xm,Mx,draw = 0,count_slow,count_fast,islow = 0,ifast = 0,*index_slow,*index_fast;
   PetscBool         view_final = PETSC_FALSE;
   PetscReal         ptime;
-  PetscErrorCode    ierr;
 
   PetscCall(PetscInitialize(&argc,&argv,0,help));
   comm = PETSC_COMM_WORLD;
@@ -656,7 +654,7 @@ int main(int argc,char *argv[])
   ctx.bctype = FVBC_PERIODIC;
   ctx.xmin = -1.0;
   ctx.xmax = 1.0;
-  ierr = PetscOptionsBegin(comm,NULL,"Finite Volume solver options","");PetscCall(ierr);
+  PetscOptionsBegin(comm,NULL,"Finite Volume solver options","");
   PetscCall(PetscOptionsReal("-xmin","X min","",ctx.xmin,&ctx.xmin,NULL));
   PetscCall(PetscOptionsReal("-xmax","X max","",ctx.xmax,&ctx.xmax,NULL));
   PetscCall(PetscOptionsInt("-draw","Draw solution vector, bitwise OR of (1=initial,2=final,4=final error)","",draw,&draw,NULL));
@@ -667,7 +665,7 @@ int main(int argc,char *argv[])
   PetscCall(PetscOptionsReal("-cfl","CFL number to time step at","",ctx.cfl,&ctx.cfl,NULL));
   PetscCall(PetscOptionsEnum("-bc_type","Boundary condition","",FVBCTypes,(PetscEnum)ctx.bctype,(PetscEnum*)&ctx.bctype,NULL));
   PetscCall(PetscOptionsInt("-hratio","Spacing ratio","",ctx.hratio,&ctx.hratio,NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   /* Choose the physics from the list of registered models */
   {

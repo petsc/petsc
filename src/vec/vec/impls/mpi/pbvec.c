@@ -381,13 +381,13 @@ static PetscErrorCode VecSetFromOptions_MPI(PetscOptionItems *PetscOptionsObject
   PetscBool      flg = PETSC_FALSE,set;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"VecMPI Options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"VecMPI Options");
   PetscCall(PetscOptionsBool("-vec_assembly_legacy","Use MPI 1 version of assembly","",flg,&flg,&set));
   if (set) {
     X->ops->assemblybegin = flg ? VecAssemblyBegin_MPI : VecAssemblyBegin_MPI_BTS;
     X->ops->assemblyend   = flg ? VecAssemblyEnd_MPI   : VecAssemblyEnd_MPI_BTS;
   }
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
 #else
   PetscFunctionBegin;
   X->ops->assemblybegin = VecAssemblyBegin_MPI;

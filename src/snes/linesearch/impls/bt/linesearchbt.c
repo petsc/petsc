@@ -52,7 +52,6 @@ PetscErrorCode SNESLineSearchBTGetAlpha(SNESLineSearch linesearch, PetscReal *al
 static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
 {
   PetscBool         changed_y,changed_w;
-  PetscErrorCode    ierr;
   Vec               X,F,Y,W,G;
   SNES              snes;
   PetscReal         fnorm, xnorm, ynorm, gnorm;
@@ -250,11 +249,11 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
             PetscCall(PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel));
             PetscCall(PetscViewerASCIIPrintf(monitor,"    Line search: unable to find good step length! After %D tries \n",count));
             if (!objective) {
-              ierr = PetscViewerASCIIPrintf(monitor,"    Line search: fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, minlambda=%18.16e, lambda=%18.16e, initial slope=%18.16e\n",
-                                                         (double)fnorm, (double)gnorm, (double)ynorm, (double)minlambda, (double)lambda, (double)initslope);PetscCall(ierr);
+              PetscCall(PetscViewerASCIIPrintf(monitor,"    Line search: fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, minlambda=%18.16e, lambda=%18.16e, initial slope=%18.16e\n",
+                                               (double)fnorm, (double)gnorm, (double)ynorm, (double)minlambda, (double)lambda, (double)initslope));
             } else {
-              ierr = PetscViewerASCIIPrintf(monitor,"    Line search: obj(0)=%18.16e, obj=%18.16e, ynorm=%18.16e, minlambda=%18.16e, lambda=%18.16e, initial slope=%18.16e\n",
-                                                         (double)f, (double)g, (double)ynorm, (double)minlambda, (double)lambda, (double)initslope);PetscCall(ierr);
+              PetscCall(PetscViewerASCIIPrintf(monitor,"    Line search: obj(0)=%18.16e, obj=%18.16e, ynorm=%18.16e, minlambda=%18.16e, lambda=%18.16e, initial slope=%18.16e\n",
+                                               (double)f, (double)g, (double)ynorm, (double)minlambda, (double)lambda, (double)initslope));
             }
             PetscCall(PetscViewerASCIISubtractTab(monitor,((PetscObject)linesearch)->tablevel));
           }
@@ -286,8 +285,7 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
         if (snes->nfuncs >= snes->max_funcs && snes->max_funcs >= 0) {
           PetscCall(PetscInfo(snes,"Exceeded maximum function evaluations, while looking for good step length! %D \n",count));
           if (!objective) {
-            ierr = PetscInfo(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lambda=%18.16e, initial slope=%18.16e\n",
-                              (double)fnorm,(double)gnorm,(double)ynorm,(double)lambda,(double)initslope);PetscCall(ierr);
+            PetscCall(PetscInfo(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lambda=%18.16e, initial slope=%18.16e\n",(double)fnorm,(double)gnorm,(double)ynorm,(double)lambda,(double)initslope));
           }
           PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_FUNCTION));
           snes->reason = SNES_DIVERGED_FUNCTION_COUNT;
@@ -417,9 +415,9 @@ static PetscErrorCode SNESLineSearchSetFromOptions_BT(PetscOptionItems *PetscOpt
   SNESLineSearch_BT *bt = (SNESLineSearch_BT*)linesearch->data;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"SNESLineSearch BT options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"SNESLineSearch BT options");
   PetscCall(PetscOptionsReal("-snes_linesearch_alpha",   "Descent tolerance",        "SNESLineSearchBT", bt->alpha, &bt->alpha, NULL));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

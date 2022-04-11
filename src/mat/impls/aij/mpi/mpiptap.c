@@ -215,7 +215,6 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,Mat C)
 
 PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,PetscReal fill,Mat Cmpi)
 {
-  PetscErrorCode      ierr;
   Mat_APMPI           *ptap;
   Mat_MPIAIJ          *a=(Mat_MPIAIJ*)A->data,*p=(Mat_MPIAIJ*)P->data;
   MPI_Comm            comm;
@@ -520,7 +519,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,PetscReal fill
     nextci[k]   = buf_ri_k[k] + (nrows + 1); /* points to the next i-structure of k-th recved i-structure  */
   }
 
-  ierr = MatPreallocateInitialize(comm,pn,pn,dnz,onz);PetscCall(ierr);
+  MatPreallocateBegin(comm,pn,pn,dnz,onz);
   PetscCall(PetscLLCondensedCreate_Scalable(Crmax,&lnk));
   for (i=0; i<pn; i++) {
     /* add C_loc into Cmpi */
@@ -554,7 +553,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,PetscReal fill
     PetscCall(PetscLayoutSetBlockSize(Cmpi->cmap,P->cmap->bs));
   }
   PetscCall(MatMPIAIJSetPreallocation(Cmpi,0,dnz,0,onz));
-  ierr = MatPreallocateFinalize(dnz,onz);PetscCall(ierr);
+  MatPreallocateEnd(dnz,onz);
 
   /* members in merge */
   PetscCall(PetscFree(id_r));
@@ -1040,7 +1039,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce(Mat A,Mat P,PetscInt dof
   PetscBool           flg;
   const char          *algTypes[2] = {"overlapping","merged"};
   IS                  map;
-  PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   MatCheckProduct(Cmpi,5);
@@ -1268,10 +1266,10 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce(Mat A,Mat P,PetscInt dof
   /* Cmpi is not ready for use - assembly will be done by MatPtAPNumeric() */
   Cmpi->assembled = PETSC_FALSE;
   /* pick an algorithm */
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"MatPtAP","Mat");PetscCall(ierr);
+  PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"MatPtAP","Mat");
   alg = 0;
   PetscCall(PetscOptionsEList("-matptap_allatonce_via","PtAP allatonce numeric approach","MatPtAP",algTypes,nalg,algTypes[alg],&alg,&flg));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   switch (alg) {
     case 0:
       Cmpi->ops->ptapnumeric = MatPtAPNumeric_MPIAIJ_MPIAIJ_allatonce;
@@ -1312,7 +1310,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce_merged(Mat A,Mat P,Petsc
   const char          *algTypes[2] = {"merged","overlapping"};
   const PetscInt      *mappingindices;
   IS                  map;
-  PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   MatCheckProduct(Cmpi,5);
@@ -1528,10 +1525,10 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce_merged(Mat A,Mat P,Petsc
   /* Cmpi is not ready for use - assembly will be done by MatPtAPNumeric() */
   Cmpi->assembled = PETSC_FALSE;
   /* pick an algorithm */
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"MatPtAP","Mat");PetscCall(ierr);
+  PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"MatPtAP","Mat");
   alg = 0;
   PetscCall(PetscOptionsEList("-matptap_allatonce_via","PtAP allatonce numeric approach","MatPtAP",algTypes,nalg,algTypes[alg],&alg,&flg));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   switch (alg) {
     case 0:
       Cmpi->ops->ptapnumeric = MatPtAPNumeric_MPIAIJ_MPIAIJ_allatonce_merged;
@@ -1554,7 +1551,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_allatonce_merged(Mat A,Mat P,PetscR
 
 PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat Cmpi)
 {
-  PetscErrorCode      ierr;
   Mat_APMPI           *ptap;
   Mat_MPIAIJ          *a=(Mat_MPIAIJ*)A->data,*p=(Mat_MPIAIJ*)P->data;
   MPI_Comm            comm;
@@ -1860,7 +1856,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat Cmpi
     nextci[k]   = buf_ri_k[k] + (nrows + 1); /* points to the next i-structure of k-th recved i-structure  */
   }
 
-  ierr = MatPreallocateInitialize(comm,pn,pn,dnz,onz);PetscCall(ierr);
+  MatPreallocateBegin(comm,pn,pn,dnz,onz);
   PetscCall(PetscLLCondensedCreate(Crmax,pN,&lnk,&lnkbt));
   for (i=0; i<pn; i++) {
     /* add C_loc into Cmpi */
@@ -1894,7 +1890,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat Cmpi
     PetscCall(PetscLayoutSetBlockSize(Cmpi->cmap,P->cmap->bs));
   }
   PetscCall(MatMPIAIJSetPreallocation(Cmpi,0,dnz,0,onz));
-  ierr = MatPreallocateFinalize(dnz,onz);PetscCall(ierr);
+  MatPreallocateEnd(dnz,onz);
 
   /* members in merge */
   PetscCall(PetscFree(id_r));

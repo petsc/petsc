@@ -417,8 +417,8 @@ PetscErrorCode KSPSetFromOptions_PGMRES(PetscOptionItems *PetscOptionsObject,KSP
 {
   PetscFunctionBegin;
   PetscCall(KSPSetFromOptions_GMRES(PetscOptionsObject,ksp));
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"KSP pipelined GMRES Options"));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadBegin(PetscOptionsObject,"KSP pipelined GMRES Options");
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

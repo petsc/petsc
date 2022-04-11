@@ -108,12 +108,11 @@ int main(int argc, char *argv[])
   Vec            U;
   VarMode        var = VAR_CONSERVATIVE;
   PetscScalar    sum;
-  PetscErrorCode ierr;
 
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"TS conservation example","");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"TS conservation example","");
   PetscCall(PetscOptionsEnum("-var","Variable formulation",NULL,VarModes,(PetscEnum)var,(PetscEnum*)&var,NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   PetscCall(TSCreate(PETSC_COMM_WORLD,&ts));
   PetscCall(TSSetType(ts,TSBDF));

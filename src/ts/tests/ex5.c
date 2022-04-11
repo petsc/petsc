@@ -528,14 +528,13 @@ PetscErrorCode readinput(struct in *put)
 /* ------------------------------------------------------------------- */
 PetscErrorCode FormInitialSolution(DM da,Vec Xglobal,void *ctx)
 {
-  PetscErrorCode ierr;
   AppCtx         *user = (AppCtx*)ctx;       /* user-defined application context */
   PetscInt       i,j,xs,ys,xm,ym,Mx,My;
   Field          **X;
 
   PetscFunctionBeginUser;
-  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);PetscCall(ierr);
+  PetscCall(DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
+                        PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
 
   /* Get pointers to vector data */
   PetscCall(DMDAVecGetArray(da,Xglobal,&X));

@@ -594,7 +594,7 @@ static PetscErrorCode SNESSetFromOptions_NEWTONTRDC(PetscOptionItems *PetscOptio
   SNES_NEWTONTRDC  *ctx = (SNES_NEWTONTRDC*)snes->data;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"SNES trust region options for nonlinear equations"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"SNES trust region options for nonlinear equations");
   PetscCall(PetscOptionsReal("-snes_trdc_tol","Trust region tolerance","SNESSetTrustRegionTolerance",snes->deltatol,&snes->deltatol,NULL));
   PetscCall(PetscOptionsReal("-snes_trdc_eta1","eta1","None",ctx->eta1,&ctx->eta1,NULL));
   PetscCall(PetscOptionsReal("-snes_trdc_eta2","eta2","None",ctx->eta2,&ctx->eta2,NULL));
@@ -606,7 +606,7 @@ static PetscErrorCode SNESSetFromOptions_NEWTONTRDC(PetscOptionItems *PetscOptio
   PetscCall(PetscOptionsReal("-snes_trdc_auto_scale_max","auto_scale_max","None",ctx->auto_scale_max,&ctx->auto_scale_max,NULL));
   PetscCall(PetscOptionsBool("-snes_trdc_use_cauchy","use_cauchy","use Cauchy step and direction",ctx->use_cauchy,&ctx->use_cauchy,NULL));
   PetscCall(PetscOptionsBool("-snes_trdc_auto_scale_multiphase","auto_scale_multiphase","Auto scaling for proper cauchy direction",ctx->auto_scale_multiphase,&ctx->auto_scale_multiphase,NULL));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

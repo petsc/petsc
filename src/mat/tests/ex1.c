@@ -88,7 +88,6 @@ int main(int argc,char **argv)
 {
   Mat            mat,F,RHS,SOLU;
   MatInfo        info;
-  PetscErrorCode ierr;
   PetscInt       m = 15, n = 10,i,j,nrhs=2;
   Vec            x,y,b,ytmp;
   IS             perm;
@@ -119,8 +118,7 @@ int main(int argc,char **argv)
   PetscCall(ISCreateStride(PETSC_COMM_WORLD,i,j,1,&perm));
 
   PetscCall(MatGetInfo(mat,MAT_LOCAL,&info));
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix nonzeros = %" PetscInt_FMT ", allocated nonzeros = %" PetscInt_FMT "\n",
-                     (PetscInt)info.nz_used,(PetscInt)info.nz_allocated);PetscCall(ierr);
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"matrix nonzeros = %" PetscInt_FMT ", allocated nonzeros = %" PetscInt_FMT "\n",(PetscInt)info.nz_used,(PetscInt)info.nz_allocated));
   PetscCall(MatMult(mat,x,b));
 
   /* Cholesky factorization - perm and factinfo are ignored by LAPACK */

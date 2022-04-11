@@ -221,11 +221,11 @@ static PetscErrorCode PetscSpaceSetFromOptions_Sum(PetscOptionItems *PetscOption
   PetscCall(PetscSpaceGetDegree(sp,&deg,NULL));
   Ns   = (Ns == PETSC_DEFAULT) ? 1 : Ns;
 
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"PetscSpace sum options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"PetscSpace sum options");
   PetscCall(PetscOptionsBoundedInt("-petscspace_sum_spaces","The number of subspaces","PetscSpaceSumSetNumSubspaces",Ns,&Ns,NULL,0));
   PetscCall(PetscOptionsBool("-petscspace_sum_concatenate","Subspaces are concatenated components of the final space","PetscSpaceSumSetFromOptions",
                            concatenate,&concatenate,NULL));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
 
   PetscCheckFalse(Ns < 0 || (Nv > 0 && Ns == 0),PetscObjectComm((PetscObject)sp),PETSC_ERR_ARG_OUTOFRANGE,"Cannot have a sum space of %D spaces",Ns);
   if (Ns != sum->numSumSpaces) {

@@ -168,12 +168,12 @@ PetscErrorCode  TSGLLEAdaptSetFromOptions(PetscOptionItems *PetscOptionsObject,T
   PetscFunctionBegin;
   /* This should use PetscOptionsBegin() if/when this becomes an object used outside of TSGLLE, but currently this
   * function can only be called from inside TSSetFromOptions_GLLE()  */
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"TSGLLE Adaptivity options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"TSGLLE Adaptivity options");
   PetscCall(PetscOptionsFList("-ts_adapt_type","Algorithm to use for adaptivity","TSGLLEAdaptSetType",TSGLLEAdaptList,
                             ((PetscObject)adapt)->type_name ? ((PetscObject)adapt)->type_name : type,type,sizeof(type),&flg));
   if (flg || !((PetscObject)adapt)->type_name) PetscCall(TSGLLEAdaptSetType(adapt,type));
   if (adapt->ops->setfromoptions) PetscCall((*adapt->ops->setfromoptions)(PetscOptionsObject,adapt));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

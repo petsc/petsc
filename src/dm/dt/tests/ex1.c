@@ -139,14 +139,13 @@ static PetscErrorCode CheckJacobiQuadrature(PetscInt npoints, PetscReal alpha, P
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       degrees[1000],ndegrees,npoints,two;
   PetscReal      points[1000],weights[1000],interval[2];
   PetscInt       minpoints, maxpoints;
   PetscBool      flg;
 
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Discretization tools test options",NULL);PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Discretization tools test options",NULL);
   {
     ndegrees   = 1000;
     degrees[0] = 0;
@@ -177,7 +176,7 @@ int main(int argc,char **argv)
 #endif
     PetscCall(PetscOptionsInt("-maxpoints","maximum points for thorough Gauss-Jacobi quadrature tests","",maxpoints,&maxpoints,NULL));
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscCall(CheckPoints("User-provided points",npoints,points,ndegrees,degrees));
 
   PetscCall(PetscDTGaussQuadrature(npoints,interval[0],interval[1],points,weights));

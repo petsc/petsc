@@ -403,15 +403,6 @@ gcov:
 mergegcov:
 	@$(PYTHON) ${PETSC_DIR}/lib/petsc/bin/maint/gcov.py --merge_gcov  --petsc_arch ${PETSC_ARCH} --merge_branch `lib/petsc/bin/maint/check-merge-branch.sh`
 
-
-########################
-#
-# Create the include dependency graph (requires graphviz to be available)
-#
-includegraph:
-	-@${PETSC_DIR}/src/contrib/style/include-graph.sh includegraph.pdf
-	-@echo Include dependency graph written to includegraph.pdf
-
 #
 # -------------------------------------------------------------------------------
 #

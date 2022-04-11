@@ -133,9 +133,11 @@ PetscErrorCode PetscOptionsEnd(void);
   Level: intermediate
 
   Notes:
+    This is a macro that handles its own error checking, it does not return an error code.
+
     The set of queries needs to be ended by a call to PetscOptionsEnd().
 
-    One can add subheadings with PetscOptionsHead().
+    One can add subheadings with PetscOptionsHeadBegin().
 
   Developer Notes:
       PetscOptionsPublish is set in PetscOptionsCheckInitial_Private() with -saws_options. When PetscOptionsPublish is set the
@@ -154,16 +156,16 @@ PetscErrorCode PetscOptionsEnd(void);
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
           PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
           PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsName(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList(), PetscObjectOptionsBegin()
 
 M*/
-#define    PetscOptionsBegin(comm,prefix,mess,sec) 0; do {\
+#define    PetscOptionsBegin(comm,prefix,mess,sec) do {\
              PetscOptionItems PetscOptionsObjectBase;\
              PetscOptionItems *PetscOptionsObject = &PetscOptionsObjectBase; \
-             PetscMemzero(PetscOptionsObject,sizeof(*PetscOptionsObject)); \
+             PetscCall(PetscMemzero(PetscOptionsObject,sizeof(*PetscOptionsObject))); \
              for (PetscOptionsObject->count=(PetscOptionsPublish?-1:1); PetscOptionsObject->count<2; PetscOptionsObject->count++) {\
              PetscCall(PetscOptionsBegin_Private(PetscOptionsObject,comm,prefix,mess,sec))
 
@@ -183,19 +185,22 @@ M*/
   Level: intermediate
 
   Notes:
+    This is a macro that handles its own error checking, it does not return an error code.
+
     Needs to be ended by a call the PetscOptionsEnd()
-         Can add subheadings with PetscOptionsHead()
+
+    Can add subheadings with PetscOptionsHeadBegin()
 
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
           PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
           PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
 
 M*/
-#define PetscObjectOptionsBegin(obj) 0; do {                            \
+#define PetscObjectOptionsBegin(obj)  do {                            \
              PetscOptionItems PetscOptionsObjectBase;\
              PetscOptionItems *PetscOptionsObject = &PetscOptionsObjectBase; \
              PetscOptionsObject->options = ((PetscObject)obj)->options; \
@@ -217,25 +222,28 @@ M*/
   Notes:
     Needs to be preceded by a call to PetscOptionsBegin() or PetscObjectOptionsBegin()
 
+    This is a macro that handles its own error checking, it does not return an error code.
+
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
           PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
           PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsHeadBegin(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList(), PetscObjectOptionsBegin()
 
 M*/
-#define    PetscOptionsEnd() 0;PetscCall(PetscOptionsEnd_Private(PetscOptionsObject));}} while (0)
+#define    PetscOptionsEnd() PetscCall(PetscOptionsEnd_Private(PetscOptionsObject));}} while (0)
 #endif /* PETSC_CLANG_STATIC_ANALYZER */
 
 PETSC_EXTERN PetscErrorCode PetscOptionsBegin_Private(PetscOptionItems *,MPI_Comm,const char[],const char[],const char[]);
 PETSC_EXTERN PetscErrorCode PetscObjectOptionsBegin_Private(PetscOptionItems *,PetscObject);
 PETSC_EXTERN PetscErrorCode PetscOptionsEnd_Private(PetscOptionItems *);
-PETSC_EXTERN PetscErrorCode PetscOptionsHead(PetscOptionItems *,const char[]);
+PETSC_EXTERN PetscErrorCode PetscOptionsHeadBegin(PetscOptionItems *,const char[]);
 
 #if defined(PETSC_CLANG_STATIC_ANALYZER)
-PetscErrorCode PetscOptionsTail(void);
+template <typename... T> void PetscOptionsHeadBegin(T...);
+void PetscOptionsHeadEnd(void);
 template <typename... T> PetscErrorCode PetscOptionsEnum(T...);
 template <typename... T> PetscErrorCode PetscOptionsInt(T...);
 template <typename... T> PetscErrorCode PetscOptionsBoundedInt(T...);
@@ -260,23 +268,56 @@ template <typename... T> PetscErrorCode PetscOptionsDeprecated(T...);
 template <typename... T> PetscErrorCode PetscOptionsDeprecatedNoObject(T...);
 #else
 /*MC
-     PetscOptionsTail - Ends a section of options begun with PetscOptionsHead()
+     PetscOptionsHeadBegin - Puts a heading before listing any more published options. Used, for example,
+            in KSPSetFromOptions_GMRES().
+
+   Logically Collective on the communicator passed in PetscOptionsBegin()
+
+   Input Parameter:
+.   head - the heading text
+
+   Level: intermediate
+
+   Notes:
+    Handles errors directly, hence does not return an error code
+
+    Must be between a PetscOptionsBegin() and a PetscOptionsEnd(), and PetscOptionsObject created in PetscOptionsBegin() should be the first argument
+
+    Can be followed by a call to PetscOptionsHeadEnd() in the same function.
+
+.seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
+           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
+          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
+          PetscOptionsFList(), PetscOptionsEList()
+@*/
+#define PetscOptionsHeadBegin(PetscOptionsObject,head) do {\
+  if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1 && !PetscOptionsObject->alreadyprinted) {\
+    PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm,"  %s\n",head));\
+  }\
+} while (0)
+
+#define PetscOptionsHead(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use PetscOptionsHeadBegin() (since version 3.18)\"") PetscOptionsHeadBegin(__VA_ARGS__)
+
+/*MC
+     PetscOptionsHeadEnd - Ends a section of options begun with PetscOptionsHeadBegin()
             See, for example, KSPSetFromOptions_GMRES().
 
     Collective on the comm used in PetscOptionsBegin() or obj used in PetscObjectOptionsBegin()
 
    Synopsis:
      #include <petscoptions.h>
-     PetscErrorCode PetscOptionsTail(void)
+     PetscErrorCode PetscOptionsHeadEnd(void)
 
   Level: intermediate
 
    Notes:
     Must be between a PetscOptionsBegin()/PetscObjectOptionsBegin() and a PetscOptionsEnd()
 
-          Must be preceded by a call to PetscOptionsHead() in the same function.
+          Must be preceded by a call to PetscOptionsHeadBegin() in the same function.
 
-          This needs to be used only if the code below PetscOptionsTail() can be run ONLY once.
+          This needs to be used only if the code below PetscOptionsHeadEnd() can be run ONLY once.
       See, for example, PCSetFromOptions_Composite(). This is a return(0) in it for early exit
       from the function.
 
@@ -284,12 +325,14 @@ template <typename... T> PetscErrorCode PetscOptionsDeprecatedNoObject(T...);
 
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
            PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList(), PetscOptionsEnum()
 M*/
-#define    PetscOptionsTail() 0; do {if (PetscOptionsObject->count != 1) PetscFunctionReturn(0);} while (0)
+#define PetscOptionsHeadEnd() do {if (PetscOptionsObject->count != 1) PetscFunctionReturn(0);} while (0)
+
+#define PetscOptionsTail(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use PetscOptionsHeadEnd() (since version 3.18)\"") PetscOptionsHeadEnd(__VA_ARGS__)
 
 #define PetscOptionsEnum(a,b,c,d,e,f,g) PetscOptionsEnum_Private(PetscOptionsObject,a,b,c,d,e,f,g)
 #define PetscOptionsInt(a,b,c,d,e,f) PetscOptionsInt_Private(PetscOptionsObject,a,b,c,d,e,f,PETSC_MIN_INT,PETSC_MAX_INT)

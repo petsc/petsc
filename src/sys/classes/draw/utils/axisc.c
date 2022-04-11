@@ -252,7 +252,6 @@ PetscErrorCode  PetscDrawAxisDraw(PetscDrawAxis axis)
   char           *p;
   PetscDraw      draw;
   PetscBool      isnull;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(axis,PETSC_DRAWAXIS_CLASSID,1);
@@ -266,7 +265,7 @@ PetscErrorCode  PetscDrawAxisDraw(PetscDrawAxis axis)
   if (axis->xlow == axis->xhigh) {axis->xlow -= .5; axis->xhigh += .5;}
   if (axis->ylow == axis->yhigh) {axis->ylow -= .5; axis->yhigh += .5;}
 
-  ierr = PetscDrawCollectiveBegin(draw);PetscCall(ierr);
+  PetscDrawCollectiveBegin(draw);
   if (rank) goto finally;
 
   /* get cannonical string size */
@@ -361,7 +360,7 @@ PetscErrorCode  PetscDrawAxisDraw(PetscDrawAxis axis)
 
   PetscCall(PetscDrawGetCoordinates(draw,&coors[0],&coors[1],&coors[2],&coors[3]));
 finally:
-  ierr = PetscDrawCollectiveEnd(draw);PetscCall(ierr);
+  PetscDrawCollectiveEnd(draw);
   PetscCallMPI(MPI_Bcast(coors,4,MPIU_REAL,0,PetscObjectComm((PetscObject)draw)));
   PetscCall(PetscDrawSetCoordinates(draw,coors[0],coors[1],coors[2],coors[3]));
   PetscFunctionReturn(0);

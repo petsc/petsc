@@ -217,9 +217,9 @@ static PetscErrorCode TaoSetFromOptions_BMRM(PetscOptionItems *PetscOptionsObjec
   TAO_BMRM*      bmrm = (TAO_BMRM*)tao->data;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"BMRM for regularized risk minimization"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"BMRM for regularized risk minimization");
   PetscCall(PetscOptionsReal("-tao_bmrm_lambda", "regulariser weight","", 100,&bmrm->lambda,NULL));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

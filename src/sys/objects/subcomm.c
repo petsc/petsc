@@ -23,14 +23,13 @@ static PetscErrorCode PetscSubcommCreate_interlaced(PetscSubcomm);
 @*/
 PetscErrorCode PetscSubcommSetFromOptions(PetscSubcomm psubcomm)
 {
-  PetscErrorCode   ierr;
   PetscSubcommType type;
   PetscBool        flg;
 
   PetscFunctionBegin;
   PetscCheck(psubcomm,PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Must call PetscSubcommCreate firt");
 
-  ierr = PetscOptionsBegin(psubcomm->parent,psubcomm->subcommprefix,"Options for PetscSubcomm",NULL);PetscCall(ierr);
+  PetscOptionsBegin(psubcomm->parent,psubcomm->subcommprefix,"Options for PetscSubcomm",NULL);
   PetscCall(PetscOptionsEnum("-psubcomm_type",NULL,NULL,PetscSubcommTypes,(PetscEnum)psubcomm->type,(PetscEnum*)&type,&flg));
   if (flg && psubcomm->type != type) {
     /* free old structures */
@@ -55,7 +54,7 @@ PetscErrorCode PetscSubcommSetFromOptions(PetscSubcomm psubcomm)
   if (flg) {
     PetscCall(PetscSubcommView(psubcomm,PETSC_VIEWER_STDOUT_(psubcomm->parent)));
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

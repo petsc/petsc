@@ -1362,11 +1362,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)
   PetscCall(PetscCommDuplicate(cxxcomm.comm,&icomm,NULL));
   PetscCallMPI(MPI_Comm_get_attr(icomm,Petsc_Elemental_keyval,(void**)&commgrid,(int*)&flg));
   if (!flg) {
-    PetscErrorCode ierr;
-
     PetscCall(PetscNewLog(A,&commgrid));
 
-    ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"Elemental Options","Mat");PetscCall(ierr);
+    PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"Elemental Options","Mat");
     /* displayed default grid sizes (CommSize,1) are set by us arbitrarily until El::Grid() is called */
     PetscCall(PetscOptionsInt("-mat_elemental_grid_height","Grid Height","None",El::mpi::Size(cxxcomm),&optv1,&flg1));
     if (flg1) {
@@ -1382,7 +1380,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)
     a->pivoting    = 1;
     PetscCall(PetscOptionsInt("-mat_elemental_pivoting","Pivoting","None",a->pivoting,&a->pivoting,NULL));
 
-    ierr = PetscOptionsEnd();PetscCall(ierr);
+    PetscOptionsEnd();
   } else {
     commgrid->grid_refct++;
   }

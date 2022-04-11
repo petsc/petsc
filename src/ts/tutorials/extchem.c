@@ -68,7 +68,6 @@ int main(int argc,char **argv)
   Vec               X,lambda;          /* solution vector */
   Mat               J;          /* Jacobian matrix */
   PetscInt          steps;
-  PetscErrorCode    ierr;
   PetscReal         ftime,dt;
   char              chemfile[PETSC_MAX_PATH_LEN],thermofile[PETSC_MAX_PATH_LEN],lchemfile[PETSC_MAX_PATH_LEN],lthermofile[PETSC_MAX_PATH_LEN],lperiodic[PETSC_MAX_PATH_LEN];
   const char        *periodic = "file://${PETSC_DIR}/${PETSC_ARCH}/share/periodictable.dat";
@@ -80,7 +79,7 @@ int main(int argc,char **argv)
   PetscBool         flg = PETSC_FALSE,tflg = PETSC_FALSE,found;
 
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Chemistry solver options","");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Chemistry solver options","");
   PetscCall(PetscOptionsString("-chem","CHEMKIN input file","",chemfile,chemfile,sizeof(chemfile),NULL));
   PetscCall(PetscFileRetrieve(PETSC_COMM_WORLD,chemfile,lchemfile,PETSC_MAX_PATH_LEN,&found));
   PetscCheck(found,PETSC_COMM_WORLD,PETSC_ERR_FILE_OPEN,"Cannot download %s and no local version %s",chemfile,lchemfile);
@@ -93,7 +92,7 @@ int main(int argc,char **argv)
   PetscCall(PetscOptionsReal("-Tini","Initial temperature [K]","",user.Tini,&user.Tini,NULL));
   PetscCall(PetscOptionsBool("-monitor_mass","Monitor the total mass at each timestep","",flg,&flg,NULL));
   PetscCall(PetscOptionsBool("-monitor_temp","Monitor the temperature each timestep","",tflg,&tflg,NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   /* tchem requires periodic table in current directory */
   PetscCall(PetscFileRetrieve(PETSC_COMM_WORLD,periodic,lperiodic,PETSC_MAX_PATH_LEN,&found));

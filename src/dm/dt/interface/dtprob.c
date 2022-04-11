@@ -514,12 +514,11 @@ PetscErrorCode PetscPDFSampleConstant3D(const PetscReal p[], const PetscReal dum
 PetscErrorCode PetscProbCreateFromOptions(PetscInt dim, const char prefix[], const char name[], PetscProbFunc *pdf, PetscProbFunc *cdf, PetscProbFunc *sampler)
 {
   DTProbDensityType den = DTPROB_DENSITY_GAUSSIAN;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsBegin(PETSC_COMM_SELF, prefix, "PetscProb Options", "DT");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_SELF, prefix, "PetscProb Options", "DT");
   PetscCall(PetscOptionsEnum(name, "Method to compute PDF <constant, gaussian>", "", DTProbDensityTypes, (PetscEnum) den, (PetscEnum *) &den, NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   if (pdf) {PetscValidPointer(pdf, 4); *pdf = NULL;}
   if (cdf) {PetscValidPointer(cdf, 5); *cdf = NULL;}

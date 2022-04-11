@@ -24,17 +24,9 @@ PetscErrorCode FormInitGuess(DM da, Vec X, Params *p)
   PetscInt       i,j,k,Mx,My,Mz,xs,ys,zs,xm,ym,zm;
   PetscReal      lambda,temp1,hx,hy,hz,tempk,tempj;
   PetscScalar    ***x;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
-  ierr = DMDAGetInfo(da,PETSC_IGNORE,
-                     &Mx,&My,&Mz,
-                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                     PETSC_IGNORE,PETSC_IGNORE,
-                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                     PETSC_IGNORE);
-
+  PetscCall(DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,&Mz,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
   lambda = p->lambda_;
   hx     = 1.0/(PetscReal)(Mx-1);
   hy     = 1.0/(PetscReal)(My-1);
@@ -94,17 +86,9 @@ PetscErrorCode FormFunction(DM da, Vec X, Vec F, Params *p)
   PetscReal      two = 2.0,lambda,hx,hy,hz,hxhzdhy,hyhzdhx,hxhydhz,sc;
   PetscScalar    u_north,u_south,u_east,u_west,u_up,u_down,u,u_xx,u_yy,u_zz,***x,***f;
   Vec            localX;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
-  ierr = DMDAGetInfo(da,PETSC_IGNORE,
-                     &Mx,&My,&Mz,
-                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                     PETSC_IGNORE,PETSC_IGNORE,
-                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                     PETSC_IGNORE);
-
+  PetscCall(DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,&Mz,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
   lambda = p->lambda_;
   hx     = 1.0/(PetscReal)(Mx-1);
   hy     = 1.0/(PetscReal)(My-1);
@@ -181,17 +165,9 @@ PetscErrorCode FormJacobian(DM da, Vec X, Mat J, Params *p)
   PetscScalar    v[7],***x;
   MatStencil     col[7],row;
   Vec            localX;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
-  ierr = DMDAGetInfo(da,PETSC_IGNORE,
-                     &Mx,&My,&Mz,
-                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                     PETSC_IGNORE,PETSC_IGNORE,
-                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                     PETSC_IGNORE);
-
+  PetscCall(DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,&Mz,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
   lambda = p->lambda_;
   hx     = 1.0/(PetscReal)(Mx-1);
   hy     = 1.0/(PetscReal)(My-1);

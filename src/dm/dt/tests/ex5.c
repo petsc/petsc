@@ -13,15 +13,14 @@ int main(int argc, char **argv)
   PetscInt       dim = 2, Nc = 3, cStart, cEnd;
   PetscBool      simplex = PETSC_TRUE;
   MPI_Comm       comm;
-  PetscErrorCode ierr;
 
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   comm = PETSC_COMM_WORLD;
-  ierr = PetscOptionsBegin(comm,"","Options for subspace test","none");PetscCall(ierr);
+  PetscOptionsBegin(comm,"","Options for subspace test","none");
   PetscCall(PetscOptionsRangeInt("-dim", "The spatial dimension","ex5.c",dim,&dim,NULL,1,3));
   PetscCall(PetscOptionsBool("-simplex", "Test simplex element","ex5.c",simplex,&simplex,NULL));
   PetscCall(PetscOptionsBoundedInt("-num_comp", "Number of components in space","ex5.c",Nc,&Nc,NULL,1));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscCall(DMShellCreate(comm,&dm));
   PetscCall(PetscFECreateDefault(comm,dim,Nc,simplex,NULL,PETSC_DEFAULT,&fe));
   PetscCall(DMDestroy(&dm));

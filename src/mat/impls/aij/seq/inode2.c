@@ -55,7 +55,6 @@ PetscErrorCode MatDestroy_SeqAIJ_Inode(Mat A)
 PetscErrorCode MatCreate_SeqAIJ_Inode(Mat B)
 {
   Mat_SeqAIJ     *b=(Mat_SeqAIJ*)B->data;
-  PetscErrorCode ierr;
   PetscBool      no_inode,no_unroll;
 
   PetscFunctionBegin;
@@ -70,7 +69,7 @@ PetscErrorCode MatCreate_SeqAIJ_Inode(Mat B)
   b->inode.ibdiag      = NULL;
   b->inode.bdiag       = NULL;
 
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)B),((PetscObject)B)->prefix,"Options for SEQAIJ matrix","Mat");PetscCall(ierr);
+  PetscOptionsBegin(PetscObjectComm((PetscObject)B),((PetscObject)B)->prefix,"Options for SEQAIJ matrix","Mat");
   PetscCall(PetscOptionsBool("-mat_no_unroll","Do not optimize for inodes (slower)",NULL,no_unroll,&no_unroll,NULL));
   if (no_unroll) {
     PetscCall(PetscInfo(B,"Not using Inode routines due to -mat_no_unroll\n"));
@@ -80,7 +79,7 @@ PetscErrorCode MatCreate_SeqAIJ_Inode(Mat B)
     PetscCall(PetscInfo(B,"Not using Inode routines due to -mat_no_inode\n"));
   }
   PetscCall(PetscOptionsInt("-mat_inode_limit","Do not use inodes larger then this value",NULL,b->inode.limit,&b->inode.limit,NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   b->inode.use = (PetscBool)(!(no_unroll || no_inode));
   if (b->inode.limit > b->inode.max_limit) b->inode.limit = b->inode.max_limit;

@@ -29,13 +29,12 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   const char    *runTypes[4] = {"reference", "hex_curved", "file", "display"};
   PetscInt       run;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   options->runType   = RUN_REFERENCE;
   options->transform = PETSC_FALSE;
 
-  ierr = PetscOptionsBegin(comm, "", "Geometry Test Options", "DMPLEX");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "Geometry Test Options", "DMPLEX");
   run  = options->runType;
   PetscCall(PetscOptionsEList("-run_type", "The run type", "ex8.c", runTypes, 3, runTypes[options->runType], &run, NULL));
   options->runType = (RunType) run;
@@ -93,7 +92,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   } else if (options->runType == RUN_DISPLAY) {
     PetscCall(ReadMesh(PETSC_COMM_WORLD, options, &options->dm));
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   if (options->transform) PetscCall(PetscPrintf(comm, "Using random transforms\n"));
   PetscFunctionReturn(0);

@@ -954,7 +954,7 @@ static PetscErrorCode PetscDualSpaceSetFromOptions_Lagrange(PetscOptionItems *Pe
   if (nodeType == PETSCDTNODES_DEFAULT) nodeType = PETSCDTNODES_GAUSSJACOBI;
   PetscCall(PetscDualSpaceLagrangeGetUseMoments(sp, &useMoments));
   PetscCall(PetscDualSpaceLagrangeGetMomentOrder(sp, &momentOrder));
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"PetscDualSpace Lagrange Options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"PetscDualSpace Lagrange Options");
   PetscCall(PetscOptionsBool("-petscdualspace_lagrange_continuity", "Flag for continuous element", "PetscDualSpaceLagrangeSetContinuity", continuous, &continuous, &flg));
   if (flg) PetscCall(PetscDualSpaceLagrangeSetContinuity(sp, continuous));
   PetscCall(PetscOptionsBool("-petscdualspace_lagrange_tensor", "Flag for tensor dual space", "PetscDualSpaceLagrangeSetTensor", tensor, &tensor, &flg));
@@ -972,7 +972,7 @@ static PetscErrorCode PetscDualSpaceSetFromOptions_Lagrange(PetscOptionItems *Pe
   if (flg) PetscCall(PetscDualSpaceLagrangeSetUseMoments(sp, useMoments));
   PetscCall(PetscOptionsInt("-petscdualspace_lagrange_moment_order", "Quadrature order for moment functionals", "PetscDualSpaceLagrangeSetMomentOrder", momentOrder, &momentOrder, &flg));
   if (flg) PetscCall(PetscDualSpaceLagrangeSetMomentOrder(sp, momentOrder));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

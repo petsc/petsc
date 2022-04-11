@@ -46,18 +46,16 @@ int main(int argc, char **argv)
   size_t         n, i;
   PetscReal      lambda, p;
   PetscRandom    random;
-  PetscErrorCode ierr;
 
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
-
   t     = 8;
   log2d = 7;
   log2n = 20;
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Birthday spacing test parameters", "PetscRandom");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Birthday spacing test parameters", "PetscRandom");
   PetscCall(PetscOptionsInt("-t",     "t, the dimension of the sample space", "ex3.c", t, &t, NULL));
   PetscCall(PetscOptionsInt("-log2d", "The log of d, the number of bins per direction", "ex3.c", log2d, &log2d, NULL));
   PetscCall(PetscOptionsInt("-log2n", "The log of n, the number of samples per process", "ex3.c", log2n, &log2n, NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   PetscCheckFalse((size_t)log2d * t > sizeof(PetscInt64) * 8 - 2,PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE, "The number of bins (2^%" PetscInt_FMT ") is too big for PetscInt64.", log2d * t);
   d = ((PetscInt64) 1) << log2d;

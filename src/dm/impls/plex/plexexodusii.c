@@ -57,8 +57,8 @@ static PetscErrorCode PetscViewerView_ExodusII(PetscViewer v, PetscViewer viewer
 static PetscErrorCode PetscViewerSetFromOptions_ExodusII(PetscOptionItems *PetscOptionsObject, PetscViewer v)
 {
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject, "ExodusII PetscViewer Options"));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadBegin(PetscOptionsObject, "ExodusII PetscViewer Options");
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 
@@ -333,8 +333,6 @@ PetscErrorCode DMView_PlexExodusII(DM dm, PetscViewer viewer)
   PetscInt        nodesTetP2[4]  = {4,6,0,0};
   PetscInt        nodesHexP1[4]  = {8,0,0,0};
   PetscInt        nodesHexP2[4]  = {8,12,6,1};
-  PetscErrorCode  ierr;
-
   int             CPU_word_size, IO_word_size, EXO_mode;
   float           EXO_version;
 
@@ -669,9 +667,7 @@ PetscErrorCode DMView_PlexExodusII(DM dm, PetscViewer viewer)
         elem_list_size += fsSize;
         PetscCall(ISDestroy(&stratumIS));
       }
-      ierr = PetscMalloc3(num_fs, &elem_ind,
-                          elem_list_size, &elem_list,
-                          elem_list_size, &side_list);PetscCall(ierr);
+      PetscCall(PetscMalloc3(num_fs, &elem_ind,elem_list_size, &elem_list,elem_list_size, &side_list));
       elem_ind[0] = 0;
       for (fs=0; fs<num_fs; ++fs) {
         PetscCall(DMLabelGetStratumIS(fsLabel, fsIdx[fs], &stratumIS));

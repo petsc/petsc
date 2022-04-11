@@ -82,7 +82,6 @@ static PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
     const PetscInt *idx;
     char           node[10];
     PetscBool      isnull;
-    PetscErrorCode ierr;
 
     PetscCall(PetscViewerDrawGetDraw(viewer,0,&draw));
     PetscCall(PetscDrawIsNull(draw,&isnull));
@@ -92,7 +91,7 @@ static PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
     PetscCall(PetscDrawClear(draw));
     PetscCall(PetscDrawSetCoordinates(draw,xmin,ymin,xmax,ymax));
 
-    ierr = PetscDrawCollectiveBegin(draw);PetscCall(ierr);
+    PetscDrawCollectiveBegin(draw);
     /* first processor draw all node lines */
     if (rank == 0) {
       for (k=0; k<dd->P; k++) {
@@ -106,11 +105,11 @@ static PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
         }
       }
     }
-    ierr = PetscDrawCollectiveEnd(draw);PetscCall(ierr);
+    PetscDrawCollectiveEnd(draw);
     PetscCall(PetscDrawFlush(draw));
     PetscCall(PetscDrawPause(draw));
 
-    ierr = PetscDrawCollectiveBegin(draw);PetscCall(ierr);
+    PetscDrawCollectiveBegin(draw);
     /*Go through and draw for each plane*/
     for (k=0; k<dd->P; k++) {
       if ((k >= dd->zs) && (k < dd->ze)) {
@@ -142,11 +141,11 @@ static PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
 
       }
     }
-    ierr = PetscDrawCollectiveEnd(draw);PetscCall(ierr);
+    PetscDrawCollectiveEnd(draw);
     PetscCall(PetscDrawFlush(draw));
     PetscCall(PetscDrawPause(draw));
 
-    ierr = PetscDrawCollectiveBegin(draw);PetscCall(ierr);
+    PetscDrawCollectiveBegin(draw);
     for (k=0-dd->s; k<dd->P+dd->s; k++) {
       /* Go through and draw for each plane */
       if ((k >= dd->Zs) && (k < dd->Ze)) {
@@ -177,7 +176,7 @@ static PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
         PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(da->ltogmap,&idx));
       }
     }
-    ierr = PetscDrawCollectiveEnd(draw);PetscCall(ierr);
+    PetscDrawCollectiveEnd(draw);
     PetscCall(PetscDrawFlush(draw));
     PetscCall(PetscDrawPause(draw));
     PetscCall(PetscDrawSave(draw));

@@ -10,15 +10,14 @@ int main(int argc, char **argv)
   char           typeString[256] = {'\0'};
   PetscViewer    viewer          = NULL;
   PetscBool      conv = PETSC_FALSE;
-  PetscErrorCode ierr;
 
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   PetscCall(DMCreate(PETSC_COMM_WORLD, &dm));
   PetscCall(PetscStrncpy(typeString,DMFOREST,256));
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"DM Forest example options",NULL);PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"DM Forest example options",NULL);
   PetscCall(PetscOptionsString("-dm_type","The type of the dm",NULL,DMFOREST,typeString,sizeof(typeString),NULL));
   PetscCall(PetscOptionsBool("-test_convert","Test conversion to DMPLEX",NULL,conv,&conv,NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscCall(DMSetType(dm,(DMType) typeString));
   PetscCall(DMSetFromOptions(dm));
   PetscCall(DMSetUp(dm));

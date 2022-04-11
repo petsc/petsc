@@ -330,18 +330,17 @@ PetscErrorCode DMPlexTransformSetFromOptions(DMPlexTransform tr)
   char           typeName[1024];
   const char    *defName = DMPLEXREFINEREGULAR;
   PetscBool      flg;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr,DMPLEXTRANSFORM_CLASSID,1);
-  ierr = PetscObjectOptionsBegin((PetscObject)tr);PetscCall(ierr);
+  PetscObjectOptionsBegin((PetscObject)tr);
   PetscCall(PetscOptionsFList("-dm_plex_transform_type", "DMPlexTransform", "DMPlexTransformSetType", DMPlexTransformList, defName, typeName, 1024, &flg));
   if (flg) PetscCall(DMPlexTransformSetType(tr, typeName));
   else if (!((PetscObject) tr)->type_name) PetscCall(DMPlexTransformSetType(tr, defName));
   if (tr->ops->setfromoptions) PetscCall((*tr->ops->setfromoptions)(PetscOptionsObject,tr));
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) tr));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

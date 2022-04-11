@@ -70,7 +70,6 @@ PetscErrorCode  PetscLogView_VecScatter(PetscViewer viewer)
   const int          stage = 2;
   int                event,events[] = {VEC_ScatterBegin,VEC_ScatterEnd};
   PetscMPIInt        rank,size;
-  PetscErrorCode     ierr;
   PetscInt           i;
   char               arch[128],hostname[128],username[128],pname[PETSC_MAX_PATH_LEN],date[128],version[256];
 
@@ -120,8 +119,8 @@ PetscErrorCode  PetscLogView_VecScatter(PetscViewer viewer)
     PetscCallMPI(MPI_Allreduce(stats,sumstats,6,MPIU_PETSCLOGDOUBLE,MPI_SUM,PETSC_COMM_WORLD));
 
     avetime  = sumstats[1]/size;
-    ierr = PetscViewerASCIIPrintf(viewer,"%s %4.2e   -%5.1f %% %5.1f %%   %4.2e %%\n",stageLog->eventLog->eventInfo[event].name,
-                                  avetime,100.*(avetime-minstats[1])/avetime,100.*(maxstats[1]-avetime)/avetime,100.*avetime/ksptime);PetscCall(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer,"%s %4.2e   -%5.1f %% %5.1f %%   %4.2e %%\n",stageLog->eventLog->eventInfo[event].name,
+                                     avetime,100.*(avetime-minstats[1])/avetime,100.*(maxstats[1]-avetime)/avetime,100.*avetime/ksptime));
   }
   PetscCall(PetscViewerFlush(viewer));
   PetscFunctionReturn(0);

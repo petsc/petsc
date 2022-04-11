@@ -35,17 +35,16 @@ int main(int argc, char **argv)
   VecTaggerBox   *defaultBox;
   VecTaggerBox   *boxes;
   IS             is, isBlockGlobal, isComp;
-  PetscErrorCode ierr;
   PetscBool      listed;
 
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   n    = 10.;
   bs   = 1;
   comm = PETSC_COMM_WORLD;
-  ierr = PetscOptionsBegin(comm, "" , "VecTagger Test Options", "Vec");PetscCall(ierr);
+  PetscOptionsBegin(comm, "" , "VecTagger Test Options", "Vec");
   PetscCall(PetscOptionsInt("-bs","The block size of the vector","ex1.c",bs,&bs,NULL));
   PetscCall(PetscOptionsInt("-n","The size of the vector (in blocks)","ex1.c",n,&n,NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   PetscCall(PetscRandomCreate(comm,&rand));
   PetscCall(PetscRandomSetFromOptions(rand));

@@ -729,7 +729,7 @@ checkbadSource:
 	-@echo "Using PetscFunctionReturn(ierr) ----------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P 'PetscFunctionReturn(ierr)' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "Defining a returning macro without PetscMacroReturns()" >> checkbadSource.out
-	-@git --no-pager grep -n -P 'define .*\w+;\s+do' -- ${GITSRC} | egrep -v '(PetscMacroReturns|PetscDrawCollectiveBegin|MatPreallocateInitialize|PetscOptionsBegin|PetscObjectOptionsBegin|PetscOptionsTail)' >> checkbadSource.out;true
+	-@git --no-pager grep -n -P 'define .*\w+;\s+do' -- ${GITSRC} | egrep -v '(PetscMacroReturns|PetscDrawCollectiveBegin|MatPreallocateBegin|PetscOptionsBegin|PetscObjectOptionsBegin|PetscOptionsHeadEnd)' >> checkbadSource.out;true
 	-@echo "Defining a error checking macro using CHKERR style ---" >> checkbadSource.out
 	-@git --no-pager grep -n -P 'define\s+CHKERR\w*\(.*\)\s*do\s+{' -- ${GITSRC} >> checkbadSource.out;true
 #	-@echo "Missing CHKERRQ --------------------------" >> checkbadSource.out

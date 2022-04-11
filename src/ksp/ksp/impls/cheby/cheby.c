@@ -363,7 +363,7 @@ static PetscErrorCode KSPSetFromOptions_Chebyshev(PetscOptionItems *PetscOptions
   PetscBool      flgeig, flgest;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"KSP Chebyshev Options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"KSP Chebyshev Options");
   PetscCall(PetscOptionsInt("-ksp_chebyshev_esteig_steps","Number of est steps in Chebyshev","",cheb->eststeps,&cheb->eststeps,NULL));
   PetscCall(PetscOptionsRealArray("-ksp_chebyshev_eigenvalues","extreme eigenvalues","KSPChebyshevSetEigenvalues",eminmax,&neigarg,&flgeig));
   if (flgeig) {
@@ -395,7 +395,7 @@ static PetscErrorCode KSPSetFromOptions_Chebyshev(PetscOptionItems *PetscOptions
     PetscCall(PetscOptionsBool("-ksp_chebyshev_esteig_noisy","Use noisy right hand side for estimate","KSPChebyshevEstEigSetUseNoisy",cheb->usenoisy,&cheb->usenoisy,NULL));
     PetscCall(KSPSetFromOptions(cheb->kspest));
   }
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

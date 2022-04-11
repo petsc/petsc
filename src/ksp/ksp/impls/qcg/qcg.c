@@ -320,10 +320,10 @@ PetscErrorCode KSPSetFromOptions_QCG(PetscOptionItems *PetscOptionsObject,KSP ks
   PetscBool      flg;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"KSP QCG Options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"KSP QCG Options");
   PetscCall(PetscOptionsReal("-ksp_qcg_trustregionradius","Trust Region Radius","KSPQCGSetTrustRegionRadius",cgP->delta,&delta,&flg));
   if (flg) PetscCall(KSPQCGSetTrustRegionRadius(ksp,delta));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

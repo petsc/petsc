@@ -1669,7 +1669,6 @@ M*/
 PETSC_EXTERN PetscErrorCode MatCreate_ScaLAPACK(Mat A)
 {
   Mat_ScaLAPACK      *a;
-  PetscErrorCode     ierr;
   PetscBool          flg,flg1;
   Mat_ScaLAPACK_Grid *grid;
   MPI_Comm           icomm;
@@ -1704,13 +1703,13 @@ PETSC_EXTERN PetscErrorCode MatCreate_ScaLAPACK(Mat A)
     PetscCallMPI(MPI_Comm_size(icomm,&size));
     grid->nprow = (PetscInt) (PetscSqrtReal((PetscReal)size) + 0.001);
 
-    ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"ScaLAPACK Grid Options","Mat");PetscCall(ierr);
+    PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"ScaLAPACK Grid Options","Mat");
     PetscCall(PetscOptionsInt("-mat_scalapack_grid_height","Grid Height","None",grid->nprow,&optv1,&flg1));
     if (flg1) {
       PetscCheck(size % optv1 == 0,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"Grid Height %" PetscInt_FMT " must evenly divide CommSize %d",optv1,size);
       grid->nprow = optv1;
     }
-    ierr = PetscOptionsEnd();PetscCall(ierr);
+    PetscOptionsEnd();
 
     if (size % grid->nprow) grid->nprow = 1;  /* cannot use a squarish grid, use a 1d grid */
     grid->npcol = size/grid->nprow;
@@ -1737,13 +1736,13 @@ PETSC_EXTERN PetscErrorCode MatCreate_ScaLAPACK(Mat A)
   a->mb   = DEFAULT_BLOCKSIZE;
   a->nb   = DEFAULT_BLOCKSIZE;
 
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),NULL,"ScaLAPACK Options","Mat");PetscCall(ierr);
+  PetscOptionsBegin(PetscObjectComm((PetscObject)A),NULL,"ScaLAPACK Options","Mat");
   PetscCall(PetscOptionsIntArray("-mat_scalapack_block_sizes","Size of the blocks to use (one or two comma-separated integers)","MatCreateScaLAPACK",array,&k,&flg));
   if (flg) {
     a->mb = array[0];
     a->nb = (k>1)? array[1]: a->mb;
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatGetOwnershipIS_C",MatGetOwnershipIS_ScaLAPACK));
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatScaLAPACKSetBlockSizes_C",MatScaLAPACKSetBlockSizes_ScaLAPACK));

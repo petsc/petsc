@@ -27,16 +27,14 @@ typedef struct {
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
   options->error = PETSC_FALSE;
   options->ostep = 100;
 
-  ierr = PetscOptionsBegin(comm, "", "Central Orbit Options", "DMSWARM");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "Central Orbit Options", "DMSWARM");
   PetscCall(PetscOptionsBool("-error", "Flag to print the error", "ex5.c", options->error, &options->error, NULL));
   PetscCall(PetscOptionsInt("-output_step", "Number of time steps between output", "ex5.c", options->ostep, &options->ostep, PETSC_NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

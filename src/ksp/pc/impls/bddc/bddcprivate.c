@@ -175,7 +175,6 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
   PetscInt               *ecount,**eneighs,*vcount,**vneighs;
   PetscInt               *emarks;
   PetscBool              print,eerr,done,lrc[2],conforming,global,singular,setprimal;
-  PetscErrorCode         ierr;
 
   PetscFunctionBegin;
   /* If the discrete gradient is defined for a subset of dofs and global is true,
@@ -190,13 +189,13 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
   singular   = PETSC_FALSE;
 
   /* Command line customization */
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)pc),((PetscObject)pc)->prefix,"BDDC Nedelec options","PC");PetscCall(ierr);
+  PetscOptionsBegin(PetscObjectComm((PetscObject)pc),((PetscObject)pc)->prefix,"BDDC Nedelec options","PC");
   PetscCall(PetscOptionsBool("-pc_bddc_nedelec_field_primal","All edge dofs set as primals: Toselli's algorithm C",NULL,setprimal,&setprimal,NULL));
   PetscCall(PetscOptionsBool("-pc_bddc_nedelec_singular","Infer nullspace from discrete gradient",NULL,singular,&singular,NULL));
   PetscCall(PetscOptionsInt("-pc_bddc_nedelec_order","Test variable order code (to be removed)",NULL,order,&order,NULL));
   /* print debug info TODO: to be removed */
   PetscCall(PetscOptionsBool("-pc_bddc_nedelec_print","Print debug info",NULL,print,&print,NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   /* Return if there are no edges in the decomposition and the problem is not singular */
   PetscCall(MatISGetLocalToGlobalMapping(pc->pmat,&al2g,NULL));
@@ -1207,8 +1206,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
 
   /* Create change of basis matrix (preallocation can be improved) */
   PetscCall(MatCreate(comm,&T));
-  ierr = MatSetSizes(T,pc->pmat->rmap->n,pc->pmat->rmap->n,
-                       pc->pmat->rmap->N,pc->pmat->rmap->N);PetscCall(ierr);
+  PetscCall(MatSetSizes(T,pc->pmat->rmap->n,pc->pmat->rmap->n,pc->pmat->rmap->N,pc->pmat->rmap->N));
   PetscCall(MatSetType(T,MATAIJ));
   PetscCall(MatSeqAIJSetPreallocation(T,10,NULL));
   PetscCall(MatMPIAIJSetPreallocation(T,10,NULL,10,NULL));
@@ -1590,16 +1588,15 @@ static PetscErrorCode func_coords_private(PetscInt dim, PetscReal t, const Petsc
 
 PetscErrorCode PCBDDCComputeLocalTopologyInfo(PC pc)
 {
-  PetscErrorCode ierr;
   Vec            local,global;
   PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
   Mat_IS         *matis = (Mat_IS*)pc->pmat->data;
   PetscBool      monolithic = PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)pc),((PetscObject)pc)->prefix,"BDDC topology options","PC");PetscCall(ierr);
+  PetscOptionsBegin(PetscObjectComm((PetscObject)pc),((PetscObject)pc)->prefix,"BDDC topology options","PC");
   PetscCall(PetscOptionsBool("-pc_bddc_monolithic","Discard any information on dofs splitting",NULL,monolithic,&monolithic,NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   /* need to convert from global to local topology information and remove references to information in global ordering */
   PetscCall(MatCreateVecs(pc->pmat,&global,NULL));
   PetscCall(MatCreateVecs(matis->A,&local,NULL));
@@ -2532,7 +2529,6 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, PetscBool reuse, IS *zerodia
   PetscInt       nz,n,benign_n,bsp = 1;
   PetscInt       *interior_dofs,n_interior_dofs,nneu;
   PetscBool      sorted,have_null,has_null_pressures,recompute_zerodiag,checkb;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (reuse) goto project_b0;
@@ -2557,9 +2553,9 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, PetscBool reuse, IS *zerodia
 
     PetscCall(PetscMalloc1(pcbddc->n_ISForDofsLocal,&pp));
     n    = pcbddc->n_ISForDofsLocal;
-    ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)pc),((PetscObject)pc)->prefix,"BDDC benign options","PC");PetscCall(ierr);
+    PetscOptionsBegin(PetscObjectComm((PetscObject)pc),((PetscObject)pc)->prefix,"BDDC benign options","PC");
     PetscCall(PetscOptionsIntArray("-pc_bddc_pressure_field","Field id for pressures",NULL,pp,&n,&flg));
-    ierr = PetscOptionsEnd();PetscCall(ierr);
+    PetscOptionsEnd();
     if (!flg) {
       n = 1;
       pp[0] = pcbddc->n_ISForDofsLocal-1;
@@ -3132,7 +3128,6 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
 #if defined(PETSC_USE_COMPLEX)
   PetscReal       *rwork;
 #endif
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscCheck(sub_schurs,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Adaptive selection of constraints requires SubSchurs data");
@@ -3225,11 +3220,11 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
 #if defined(PETSC_USE_COMPLEX)
   PetscCall(PetscMalloc1(7*mss,&rwork));
 #endif
-  ierr = PetscMalloc5(nv+sub_schurs->n_subs,&pcbddc->adaptive_constraints_n,
-                      nv+sub_schurs->n_subs+1,&pcbddc->adaptive_constraints_idxs_ptr,
-                      nv+sub_schurs->n_subs+1,&pcbddc->adaptive_constraints_data_ptr,
-                      nv+cum,&pcbddc->adaptive_constraints_idxs,
-                      nv+cum2,&pcbddc->adaptive_constraints_data);PetscCall(ierr);
+  PetscCall(PetscMalloc5(nv+sub_schurs->n_subs,&pcbddc->adaptive_constraints_n,
+                         nv+sub_schurs->n_subs+1,&pcbddc->adaptive_constraints_idxs_ptr,
+                         nv+sub_schurs->n_subs+1,&pcbddc->adaptive_constraints_data_ptr,
+                         nv+cum,&pcbddc->adaptive_constraints_idxs,
+                         nv+cum2,&pcbddc->adaptive_constraints_data));
   PetscCall(PetscArrayzero(pcbddc->adaptive_constraints_n,nv+sub_schurs->n_subs));
 
   maxneigs = 0;
@@ -6023,7 +6018,6 @@ PetscErrorCode PCBDDCScatterCoarseDataEnd(PC pc, InsertMode imode, ScatterMode s
 
 PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
 {
-  PetscErrorCode    ierr;
   PC_IS*            pcis = (PC_IS*)(pc->data);
   PC_BDDC*          pcbddc = (PC_BDDC*)pc->data;
   Mat_IS*           matis = (Mat_IS*)pc->pmat->data;
@@ -7132,11 +7126,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     PetscCall(PetscFree3(constraints_idxs_ptr,constraints_data_ptr,constraints_n));
     PetscCall(PetscFree3(constraints_data,constraints_idxs,constraints_idxs_B));
   } else {
-    ierr = PetscFree5(pcbddc->adaptive_constraints_n,
-                      pcbddc->adaptive_constraints_idxs_ptr,
-                      pcbddc->adaptive_constraints_data_ptr,
-                      pcbddc->adaptive_constraints_idxs,
-                      pcbddc->adaptive_constraints_data);PetscCall(ierr);
+    PetscCall(PetscFree5(pcbddc->adaptive_constraints_n,pcbddc->adaptive_constraints_idxs_ptr,pcbddc->adaptive_constraints_data_ptr,pcbddc->adaptive_constraints_idxs,pcbddc->adaptive_constraints_data));
     PetscCall(PetscFree(constraints_n));
     PetscCall(PetscFree(constraints_idxs_B));
   }
@@ -8126,7 +8116,6 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   MatReuse               coarse_mat_reuse;
   PetscBool              restr, full_restr, have_void;
   PetscMPIInt            size;
-  PetscErrorCode         ierr;
 
   PetscFunctionBegin;
   PetscCall(PetscLogEventBegin(PC_BDDC_CoarseSetUp[pcbddc->current_level],pc,0,0,0));
@@ -8508,10 +8497,10 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
         PetscCall(PCBDDCSetCoarseningRatio(pc_temp,pcbddc->coarsening_ratio));
         PetscCall(PCBDDCSetLevels(pc_temp,pcbddc->max_levels));
         if (pc_temp->ops->setfromoptions) { /* need to setfromoptions again, skipping the pc_type */
-          ierr = PetscObjectOptionsBegin((PetscObject)pc_temp);PetscCall(ierr);
+          PetscObjectOptionsBegin((PetscObject)pc_temp);
           PetscCall((*pc_temp->ops->setfromoptions)(PetscOptionsObject,pc_temp));
           PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)pc_temp));
-          ierr = PetscOptionsEnd();PetscCall(ierr);
+          PetscOptionsEnd();
           pc_temp->setfromoptionscalled++;
         }
       }
@@ -9040,7 +9029,6 @@ PetscErrorCode PCBDDCSetUpSubSchurs(PC pc)
   Mat                 S_j;
   PetscInt            *used_xadj,*used_adjncy;
   PetscBool           free_used_adj;
-  PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   PetscCall(PetscLogEventBegin(PC_BDDC_Schurs[pcbddc->current_level],pc,0,0,0));
@@ -9160,9 +9148,9 @@ PetscErrorCode PCBDDCSetUpSubSchurs(PC pc)
 
     PetscCall(PetscObjectQuery((PetscObject)pc,"__KSPFETIDP_iP",(PetscObject*)&iP));
     if (iP) {
-      ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)iP),sub_schurs->prefix,"BDDC sub_schurs options","PC");PetscCall(ierr);
+      PetscOptionsBegin(PetscObjectComm((PetscObject)iP),sub_schurs->prefix,"BDDC sub_schurs options","PC");
       PetscCall(PetscOptionsBool("-sub_schurs_discrete_harmonic",NULL,NULL,discrete_harmonic,&discrete_harmonic,NULL));
-      ierr = PetscOptionsEnd();PetscCall(ierr);
+      PetscOptionsEnd();
     }
     if (discrete_harmonic) {
       Mat A;

@@ -21,9 +21,9 @@ static PetscErrorCode MatColoringSetFromOptions_JP(PetscOptionItems *PetscOption
   MC_JP          *jp = (MC_JP*)mc->data;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"JP options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"JP options");
   PetscCall(PetscOptionsBool("-mat_coloring_jp_local","Do an initial coloring of local columns","",jp->local,&jp->local,NULL));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

@@ -37,7 +37,6 @@ typedef struct {
 */
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   AppCtx         user;
   PetscMPIInt    size,rank;
   PetscInt       m,n,M,N,i,nrows;
@@ -79,8 +78,8 @@ int main(int argc,char **argv)
   if (!Test_3D) {
     PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.fine.mx,user.fine.my,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&user.fine.da));
   } else {
-    ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.fine.mx,user.fine.my,user.fine.mz,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,
-                        1,1,NULL,NULL,NULL,&user.fine.da);PetscCall(ierr);
+    PetscCall(DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.fine.mx,user.fine.my,user.fine.mz,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,
+                           1,1,NULL,NULL,NULL,&user.fine.da));
   }
   PetscCall(DMSetFromOptions(user.fine.da));
   PetscCall(DMSetUp(user.fine.da));

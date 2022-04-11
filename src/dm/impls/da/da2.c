@@ -66,7 +66,6 @@ static PetscErrorCode DMView_DA_2d(DM da,PetscViewer viewer)
     const PetscInt *idx;
     char           node[10];
     PetscBool      isnull;
-    PetscErrorCode ierr;
 
     PetscCall(PetscViewerDrawGetDraw(viewer,0,&draw));
     PetscCall(PetscDrawIsNull(draw,&isnull));
@@ -76,7 +75,7 @@ static PetscErrorCode DMView_DA_2d(DM da,PetscViewer viewer)
     PetscCall(PetscDrawClear(draw));
     PetscCall(PetscDrawSetCoordinates(draw,xmin,ymin,xmax,ymax));
 
-    ierr = PetscDrawCollectiveBegin(draw);PetscCall(ierr);
+    PetscDrawCollectiveBegin(draw);
     /* first processor draw all node lines */
     if (rank == 0) {
       ymin = 0.0; ymax = dd->N - 1;
@@ -88,11 +87,11 @@ static PetscErrorCode DMView_DA_2d(DM da,PetscViewer viewer)
         PetscCall(PetscDrawLine(draw,xmin,ymin,xmax,ymin,PETSC_DRAW_BLACK));
       }
     }
-    ierr = PetscDrawCollectiveEnd(draw);PetscCall(ierr);
+    PetscDrawCollectiveEnd(draw);
     PetscCall(PetscDrawFlush(draw));
     PetscCall(PetscDrawPause(draw));
 
-    ierr = PetscDrawCollectiveBegin(draw);PetscCall(ierr);
+    PetscDrawCollectiveBegin(draw);
     /* draw my box */
     xmin = dd->xs/dd->w; xmax =(dd->xe-1)/dd->w; ymin = dd->ys; ymax = dd->ye - 1;
     PetscCall(PetscDrawLine(draw,xmin,ymin,xmax,ymin,PETSC_DRAW_RED));
@@ -107,11 +106,11 @@ static PetscErrorCode DMView_DA_2d(DM da,PetscViewer viewer)
         PetscCall(PetscDrawString(draw,x,y,PETSC_DRAW_BLACK,node));
       }
     }
-    ierr = PetscDrawCollectiveEnd(draw);PetscCall(ierr);
+    PetscDrawCollectiveEnd(draw);
     PetscCall(PetscDrawFlush(draw));
     PetscCall(PetscDrawPause(draw));
 
-    ierr = PetscDrawCollectiveBegin(draw);PetscCall(ierr);
+    PetscDrawCollectiveBegin(draw);
     /* overlay ghost numbers, useful for error checking */
     PetscCall(ISLocalToGlobalMappingGetBlockIndices(da->ltogmap,&idx));
     base = 0; xmin = dd->Xs; xmax = dd->Xe; ymin = dd->Ys; ymax = dd->Ye;
@@ -125,7 +124,7 @@ static PetscErrorCode DMView_DA_2d(DM da,PetscViewer viewer)
       }
     }
     PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(da->ltogmap,&idx));
-    ierr = PetscDrawCollectiveEnd(draw);PetscCall(ierr);
+    PetscDrawCollectiveEnd(draw);
     PetscCall(PetscDrawFlush(draw));
     PetscCall(PetscDrawPause(draw));
     PetscCall(PetscDrawSave(draw));

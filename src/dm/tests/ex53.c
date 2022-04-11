@@ -30,7 +30,6 @@ int main(int argc,char **argv)
   MatStencil     lower, upper;                  /* Stencils to select slice */
   IS             selectis;                      /* IS to select slice and extract subvector */
   PetscBool      patchis_offproc = PETSC_FALSE; /* flag to DMDACreatePatchIS indicating that off-proc values are to be ignored */
-  PetscErrorCode ierr;                          /* error checking */
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program and set problem parameters
@@ -50,25 +49,13 @@ int main(int argc,char **argv)
      Create DMDA object.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
   if (dim==3) {
-    ierr = DMDACreate3d(PETSC_COMM_WORLD,
-                        DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,
-                        DMDA_STENCIL_STAR,
-                        mx, my, mz,
-                        PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE,
-                        1, 1,
-                        NULL, NULL, NULL,
-                        &da);PetscCall(ierr);
+    PetscCall(DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,mx, my, mz,
+                           PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE,1, 1,NULL, NULL, NULL,&da));
     PetscCall(DMSetFromOptions(da));
     PetscCall(DMSetUp(da));
   } else {
-    ierr = DMDACreate2d(PETSC_COMM_WORLD,
-                        DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,
-                        DMDA_STENCIL_STAR,
-                        mx, my,
-                        PETSC_DECIDE, PETSC_DECIDE,
-                        1, 1,
-                        NULL, NULL,
-                        &da);PetscCall(ierr);
+    PetscCall(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,mx, my,PETSC_DECIDE, PETSC_DECIDE,
+                           1, 1,NULL, NULL,&da));
     PetscCall(DMSetFromOptions(da));
     PetscCall(DMSetUp(da));
   }

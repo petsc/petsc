@@ -20,7 +20,6 @@ int main(int argc,char **args)
   PetscLogEvent      event;
 #endif
   PetscEventPerfInfo info1,info2;
-  PetscErrorCode     ierr;
 
   PetscCall(PetscInitialize(&argc,&args,NULL,help));
   PetscCall(PetscLogDefaultBegin());
@@ -65,9 +64,9 @@ int main(int argc,char **args)
   PetscCall(MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE));
   PetscCall(MatSetOption(aux,MAT_SYMMETRIC,PETSC_TRUE));
   /* ready for testing */
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","","");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,"","","");
   PetscCall(PetscOptionsFList("-mat_type","Matrix type","MatSetType",MatList,deft,type,256,&flg));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   if (flg) {
     PetscCall(MatConvert(A,type,MAT_INPLACE_MATRIX,&A));
     PetscCall(MatConvert(aux,type,MAT_INPLACE_MATRIX,&aux));

@@ -259,20 +259,18 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   const char    *runTypes[2] = {"full", "test"};
   PetscInt       run;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   options->runType      = RUN_FULL;
   options->mu           = 1.0;
   options->p_wall       = 0.4;
-
-  ierr = PetscOptionsBegin(comm, "", "Nonlinear elasticity problem options", "DMPLEX");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "Nonlinear elasticity problem options", "DMPLEX");
   run  = options->runType;
   PetscCall(PetscOptionsEList("-run_type", "The run type", "ex77.c", runTypes, 2, runTypes[options->runType], &run, NULL));
   options->runType = (RunType) run;
   PetscCall(PetscOptionsReal("-shear_modulus", "The shear modulus", "ex77.c", options->mu, &options->mu, NULL));
   PetscCall(PetscOptionsReal("-wall_pressure", "The wall pressure", "ex77.c", options->p_wall, &options->p_wall, NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

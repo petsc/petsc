@@ -45,9 +45,9 @@ static PetscErrorCode PFSetFromOptions_Constant(PetscOptionItems *PetscOptionsOb
   PetscScalar    *value = (PetscScalar*)pf->data;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"Constant function options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"Constant function options");
   PetscCall(PetscOptionsScalar("-pf_constant","The constant value","None",*value,value,NULL));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

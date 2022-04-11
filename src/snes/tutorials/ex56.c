@@ -210,7 +210,6 @@ int main(int argc,char **args)
 #if defined(PETSC_USE_LOG)
   PetscLogStage      stage[17];
 #endif
-  PetscErrorCode     ierr;
   PetscBool          test_nonzero_cols = PETSC_FALSE,use_nearnullspace = PETSC_TRUE,attach_nearnullspace = PETSC_FALSE;
   Vec                xx,bb;
   PetscInt           iter,i,N,dim = 3,cells[3] = {1,1,1},max_conv_its,local_sizes[7],run_type = 1;
@@ -233,7 +232,7 @@ int main(int argc,char **args)
   comm = PETSC_COMM_WORLD;
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   /* options */
-  ierr = PetscOptionsBegin(comm,NULL,"3D bilinear Q1 elasticity options","");PetscCall(ierr);
+  PetscOptionsBegin(comm,NULL,"3D bilinear Q1 elasticity options","");
   {
     i = 3;
     PetscCall(PetscOptionsIntArray("-cells", "Number of (flux tube) processor in each dimension", "ex56.c", cells, &i, NULL));
@@ -249,7 +248,7 @@ int main(int argc,char **args)
     PetscCall(PetscOptionsBool("-attach_mat_nearnullspace","MatNearNullSpace API test (via MatSetNearNullSpace)","",attach_nearnullspace,&attach_nearnullspace,NULL));
     PetscCall(PetscOptionsInt("-run_type","0: twisting load on cantalever, 1: 3rd order accurate convergence test","",run_type,&run_type,NULL));
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscCall(PetscLogStageRegister("Mesh Setup", &stage[16]));
   for (iter=0 ; iter<max_conv_its ; iter++) {
     char str[] = "Solve 0";
@@ -334,9 +333,9 @@ int main(int argc,char **args)
   }
 
   /* convert to p4est, and distribute */
-  ierr = PetscOptionsBegin(comm, "", "Mesh conversion options", "DMPLEX");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "Mesh conversion options", "DMPLEX");
   PetscCall(PetscOptionsFList("-dm_type","Convert DMPlex to another format (should not be Plex!)","ex56.c",DMList,DMPLEX,convType,256,&flg));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   if (flg) {
     DM newdm;
     PetscCall(DMConvert(dm,convType,&newdm));

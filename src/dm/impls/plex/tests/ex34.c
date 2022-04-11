@@ -10,18 +10,16 @@ typedef struct {
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
   options->filename[0] = '\0';
   options->interpolate = PETSC_FALSE;
   options->meshNum     = 0;
 
-  ierr = PetscOptionsBegin(comm, "", "Hybrid Output Test Options", "DMPLEX");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "Hybrid Output Test Options", "DMPLEX");
   PetscCall(PetscOptionsString("-filename", "The mesh file", "ex8.c", options->filename, options->filename, sizeof(options->filename), NULL));
   PetscCall(PetscOptionsBool("-interpolate", "Interpolate the mesh", "ex8.c", options->interpolate, &options->interpolate, NULL));
   PetscCall(PetscOptionsBoundedInt("-mesh_num", "The mesh we should construct", "ex8.c", options->meshNum, &options->meshNum, NULL,0));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   PetscFunctionReturn(0);
 }

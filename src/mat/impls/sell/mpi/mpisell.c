@@ -509,7 +509,6 @@ PetscErrorCode MatDestroy_MPISELL(Mat mat)
 PetscErrorCode MatView_MPISELL_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
 {
   Mat_MPISELL       *sell=(Mat_MPISELL*)mat->data;
-  PetscErrorCode    ierr;
   PetscMPIInt       rank=sell->rank,size=sell->size;
   PetscBool         isdraw,iascii,isbinary;
   PetscViewer       sviewer;
@@ -530,11 +529,11 @@ PetscErrorCode MatView_MPISELL_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
       PetscCall(MatInodeGetInodeSizes(sell->A,NULL,&inodes,NULL));
       PetscCall(PetscViewerASCIIPushSynchronized(viewer));
       if (!inodes) {
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Local rows %" PetscInt_FMT " nz %" PetscInt_FMT " nz alloced %" PetscInt_FMT " mem %" PetscInt_FMT ", not using I-node routines\n",
-                                                  rank,mat->rmap->n,(PetscInt)info.nz_used,(PetscInt)info.nz_allocated,(PetscInt)info.memory);PetscCall(ierr);
+        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Local rows %" PetscInt_FMT " nz %" PetscInt_FMT " nz alloced %" PetscInt_FMT " mem %" PetscInt_FMT ", not using I-node routines\n",
+                                                     rank,mat->rmap->n,(PetscInt)info.nz_used,(PetscInt)info.nz_allocated,(PetscInt)info.memory));
       } else {
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Local rows %" PetscInt_FMT " nz %" PetscInt_FMT " nz alloced %" PetscInt_FMT " mem %" PetscInt_FMT ", using I-node routines\n",
-                                                  rank,mat->rmap->n,(PetscInt)info.nz_used,(PetscInt)info.nz_allocated,(PetscInt)info.memory);PetscCall(ierr);
+        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Local rows %" PetscInt_FMT " nz %" PetscInt_FMT " nz alloced %" PetscInt_FMT " mem %" PetscInt_FMT ", using I-node routines\n",
+                                                     rank,mat->rmap->n,(PetscInt)info.nz_used,(PetscInt)info.nz_allocated,(PetscInt)info.memory));
       }
       PetscCall(MatGetInfo(sell->A,MAT_LOCAL,&info));
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"[%d] on-diagonal part: nz %" PetscInt_FMT " \n",rank,(PetscInt)info.nz_used));
@@ -919,8 +918,8 @@ static PetscErrorCode MatSetRandom_MPISELL(Mat x,PetscRandom rctx)
 PetscErrorCode MatSetFromOptions_MPISELL(PetscOptionItems *PetscOptionsObject,Mat A)
 {
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"MPISELL options"));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadBegin(PetscOptionsObject,"MPISELL options");
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

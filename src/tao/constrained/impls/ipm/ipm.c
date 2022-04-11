@@ -531,11 +531,11 @@ static PetscErrorCode TaoSetFromOptions_IPM(PetscOptionItems *PetscOptionsObject
   TAO_IPM        *ipmP = (TAO_IPM*)tao->data;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"IPM method for constrained optimization"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"IPM method for constrained optimization");
   PetscCall(PetscOptionsBool("-tao_ipm_monitorkkt","monitor kkt status",NULL,ipmP->monitorkkt,&ipmP->monitorkkt,NULL));
   PetscCall(PetscOptionsReal("-tao_ipm_pushs","parameter to push initial slack variables away from bounds",NULL,ipmP->pushs,&ipmP->pushs,NULL));
   PetscCall(PetscOptionsReal("-tao_ipm_pushnu","parameter to push initial (inequality) dual variables away from bounds",NULL,ipmP->pushnu,&ipmP->pushnu,NULL));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscCall(KSPSetFromOptions(tao->ksp));
   PetscFunctionReturn(0);
 }

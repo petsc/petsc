@@ -123,7 +123,6 @@ int main(int argc,char **argv)
   TS             ts;            /* ODE integrator */
   Vec            U;             /* solution will be stored here */
   Mat            A;             /* Jacobian matrix */
-  PetscErrorCode ierr;
   PetscMPIInt    size;
   PetscInt       n = 2;
   PetscScalar    *u;
@@ -140,12 +139,12 @@ int main(int argc,char **argv)
   app.mode = 1;
   app.lambda1 = 2.75;
   app.lambda2 = 0.36;
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex1 options","");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex1 options","");
   {
     PetscCall(PetscOptionsReal("-lambda1","","",app.lambda1,&app.lambda1,NULL));
     PetscCall(PetscOptionsReal("-lambda2","","",app.lambda2,&app.lambda2,NULL));
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Create necessary matrix and vectors
@@ -202,7 +201,7 @@ int main(int argc,char **argv)
   PetscCall(TSDestroy(&ts));
 
   PetscCall(PetscFinalize());
-  return(ierr);
+  return(0);
 }
 
 /*TEST

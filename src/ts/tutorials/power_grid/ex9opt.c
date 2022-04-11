@@ -167,7 +167,6 @@ int main(int argc,char **argv)
 {
   Vec            p;
   PetscScalar    *x_ptr;
-  PetscErrorCode ierr;
   PetscMPIInt    size;
   AppCtx         ctx;
   Vec            lowerb,upperb;
@@ -192,7 +191,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Set runtime options
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Swing equation options","");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Swing equation options","");
   {
     ctx.beta    = 2;
     ctx.c       = PetscRealConstant(10000.0);
@@ -216,7 +215,7 @@ int main(int argc,char **argv)
     PetscCall(PetscOptionsReal("-tcl","Time to end fault","",ctx.tcl,&ctx.tcl,NULL));
 
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Create necessary matrix and vectors

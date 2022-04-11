@@ -837,12 +837,12 @@ M*/
 static inline PetscErrorCode MatSetValueLocal(Mat v,PetscInt i,PetscInt j,PetscScalar va,InsertMode mode) {return MatSetValuesLocal(v,1,&i,1,&j,&va,mode);}
 
 /*MC
-   MatPreallocateInitialize - Begins the block of code that will count the number of nonzeros per
+   MatPreallocateBegin - Begins the block of code that will count the number of nonzeros per
        row in a matrix providing the data that one can use to correctly preallocate the matrix.
 
    Synopsis:
    #include <petscmat.h>
-   PetscErrorCode MatPreallocateInitialize(MPI_Comm comm, PetscInt nrows, PetscInt ncols, PetscInt *dnz, PetscInt *onz)
+   PetscErrorCode MatPreallocateBegin(MPI_Comm comm, PetscInt nrows, PetscInt ncols, PetscInt *dnz, PetscInt *onz)
 
    Collective
 
@@ -858,22 +858,27 @@ static inline PetscErrorCode MatSetValueLocal(Mat v,PetscInt i,PetscInt j,PetscS
    Level: intermediate
 
    Notes:
+    This is a macro that handles its own error checking, it does not return an error code.
+
     See Users-Manual: ch_performance for more details.
 
-   Do not malloc or free dnz and onz, that is handled internally by these routines
+    Do not malloc or free dnz and onz, that is handled internally by these routines
 
-   This is a MACRO not a function because it has a leading { that is closed by PetscPreallocateFinalize().
+   Developer Notes:
+    This is a MACRO not a function because it has a leading { that is closed by PetscPreallocateFinalize().
 
-.seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock(), MatPreallocateSetLocal(),
+.seealso: MatPreallocateEnd(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock(), MatPreallocateSetLocal(),
           MatPreallocateSymmetricSetLocalBlock()
 M*/
-#define MatPreallocateInitialize(comm,nrows,ncols,dnz,onz) 0; do {                             \
+#define MatPreallocateBegin(comm,nrows,ncols,dnz,onz)  do {                             \
   PetscInt __nrows = (nrows),__ncols = (ncols),__rstart,__start,__end = 0;                     \
   PetscCall(PetscCalloc2(__nrows,&(dnz),__nrows,&(onz)));                                        \
   PetscCallMPI(MPI_Scan(&__ncols,&__end,1,MPIU_INT,MPI_SUM,comm));                                \
   __start = __end - __ncols; (void)__start;                                                    \
   PetscCallMPI(MPI_Scan(&__nrows,&__rstart,1,MPIU_INT,MPI_SUM,comm));                             \
   __rstart -= __nrows
+
+#define MatPreallocateInitialize(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use MatPreallocateBegin() (since version 3.18)\"") MatPreallocateBegin(__VA_ARGS__)
 
 /*MC
    MatPreallocateSetLocal - Indicates the locations (rows and columns) in the matrix where nonzeros will be
@@ -902,8 +907,8 @@ M*/
 
    Do not malloc or free dnz and onz, that is handled internally by these routines
 
-.seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock()
-          MatPreallocateInitialize(), MatPreallocateSymmetricSetLocalBlock(), MatPreallocateSetLocalRemoveDups()
+.seealso: MatPreallocateEnd(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock()
+          MatPreallocateBegin(), MatPreallocateSymmetricSetLocalBlock(), MatPreallocateSetLocalRemoveDups()
 M*/
 #define MatPreallocateSetLocal(rmap,nrows,rows,cmap,ncols,cols,dnz,onz)                        \
   PetscMacroReturnStandard(                                                                    \
@@ -939,8 +944,8 @@ M*/
 
    Do not malloc or free dnz and onz, that is handled internally by these routines
 
-.seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock()
-          MatPreallocateInitialize(), MatPreallocateSymmetricSetLocalBlock(), MatPreallocateSetLocal()
+.seealso: MatPreallocateEnd(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock()
+          MatPreallocateBegin(), MatPreallocateSymmetricSetLocalBlock(), MatPreallocateSetLocal()
 M*/
 #define MatPreallocateSetLocalRemoveDups(rmap,nrows,rows,cmap,ncols,cols,dnz,onz)              \
   PetscMacroReturnStandard(                                                                    \
@@ -977,8 +982,8 @@ M*/
 
    Do not malloc or free dnz and onz, that is handled internally by these routines
 
-.seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock()
-          MatPreallocateInitialize(), MatPreallocateSymmetricSetLocalBlock()
+.seealso: MatPreallocateEnd(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock()
+          MatPreallocateBegin(), MatPreallocateSymmetricSetLocalBlock()
 M*/
 #define MatPreallocateSetLocalBlock(rmap,nrows,rows,cmap,ncols,cols,dnz,onz)                   \
   PetscMacroReturnStandard(                                                                    \
@@ -1013,8 +1018,8 @@ M*/
 
    Do not malloc or free dnz and onz that is handled internally by these routines
 
-.seealso: MatPreallocateFinalize(), MatPreallocateSet()
-          MatPreallocateInitialize(),  MatPreallocateSetLocal()
+.seealso: MatPreallocateEnd(), MatPreallocateSet()
+          MatPreallocateBegin(),  MatPreallocateSetLocal()
 M*/
 #define MatPreallocateSymmetricSetLocalBlock(map,nrows,rows,ncols,cols,dnz,onz)                \
   PetscMacroReturnStandard(                                                                    \
@@ -1049,10 +1054,10 @@ M*/
 
    Do not malloc or free dnz and onz that is handled internally by these routines
 
-   This is a MACRO not a function because it uses variables declared in MatPreallocateInitialize().
+   This is a MACRO not a function because it uses variables declared in MatPreallocateBegin().
 
-.seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock()
-          MatPreallocateInitialize(), MatPreallocateSetLocal()
+.seealso: MatPreallocateEnd(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock()
+          MatPreallocateBegin(), MatPreallocateSetLocal()
 M*/
 #define MatPreallocateSet(row,nc,cols,dnz,onz) PetscMacroReturnStandard(                       \
     PetscCheck(row >= __rstart,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to set preallocation for row %" PetscInt_FMT " less than first local row %" PetscInt_FMT,row,__rstart); \
@@ -1088,9 +1093,9 @@ M*/
 
    Do not malloc or free dnz and onz that is handled internally by these routines
 
-   This is a MACRO not a function because it uses variables declared in MatPreallocateInitialize().
+   This is a MACRO not a function because it uses variables declared in MatPreallocateBegin().
 
-.seealso: MatPreallocateFinalize(), MatPreallocateSet(),  MatPreallocateInitialize(),
+.seealso: MatPreallocateEnd(), MatPreallocateSet(),  MatPreallocateBegin(),
           MatPreallocateSymmetricSetLocalBlock(), MatPreallocateSetLocal()
 M*/
 #define MatPreallocateSymmetricSetBlock(row,nc,cols,dnz,onz)                                   \
@@ -1127,21 +1132,18 @@ M*/
 
    This is a MACRO not a function because it uses a bunch of variables private to the MatPreallocation.... routines.
 
-.seealso: MatPreallocateInitialize(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock(), MatPreallocateSetLocal(),
+.seealso: MatPreallocateBegin(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock(), MatPreallocateSetLocal(),
           MatPreallocateSymmetricSetLocalBlock()
 M*/
-#define MatPreallocateLocation(A,row,ncols,cols,dnz,onz) PetscMacroReturnStandard(      \
-    if (A) PetscCall(MatSetValues(A,1,&row,ncols,cols,NULL,INSERT_VALUES));               \
-    else   PetscCall(MatPreallocateSet(row,ncols,cols,dnz,onz));                          \
-  )
+#define MatPreallocateLocation(A,row,ncols,cols,dnz,onz)  (A ? MatSetValues(A,1,&row,ncols,cols,NULL,INSERT_VALUES) : MatPreallocateSet(row,ncols,cols,dnz,onz))
 
 /*MC
-   MatPreallocateFinalize - Ends the block of code that will count the number of nonzeros per
+   MatPreallocateEnd - Ends the block of code that will count the number of nonzeros per
        row in a matrix providing the data that one can use to correctly preallocate the matrix.
 
    Synopsis:
    #include <petscmat.h>
-   PetscErrorCode MatPreallocateFinalize(PetscInt *dnz, PetscInt *onz)
+   PetscErrorCode MatPreallocateEnd(PetscInt *dnz, PetscInt *onz)
 
    Collective
 
@@ -1152,16 +1154,21 @@ M*/
    Level: intermediate
 
    Notes:
+    This is a macro that handles its own error checking, it does not return an error code.
+
     See Users-Manual: ch_performance for more details.
 
-   Do not malloc or free dnz and onz that is handled internally by these routines
+    Do not malloc or free dnz and onz, that is handled internally by these routines
 
-   This is a MACRO not a function because it closes the { started in MatPreallocateInitialize().
+   Developer Notes:
+    This is a MACRO not a function because it closes the { started in MatPreallocateBegin().
 
-.seealso: MatPreallocateInitialize(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock(), MatPreallocateSetLocal(),
+.seealso: MatPreallocateBegin(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock(), MatPreallocateSetLocal(),
           MatPreallocateSymmetricSetLocalBlock()
 M*/
-#define MatPreallocateFinalize(dnz,onz) PetscFree2(dnz,onz);} while (0)
+#define MatPreallocateEnd(dnz,onz) PetscCall(PetscFree2(dnz,onz));} while (0)
+
+#define MatPreallocateFinalize(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use MatPreallocateEnd() (since version 3.18)\"") MatPreallocateEnd(__VA_ARGS__)
 
 /* Routines unique to particular data structures */
 PETSC_EXTERN PetscErrorCode MatShellGetContext(Mat,void *);

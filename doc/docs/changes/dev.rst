@@ -2,6 +2,18 @@
 Changes: Development
 ====================
 
+Changes you should make for main and version 3.18 so that it is portable to previous versions of PETSc
+
+- Remove the error handling from uses of  ``PetscOptionsBegin()``, ``PetscOptionsEnd()``, ``PetscObjectOptionsBegin()``, ``PetscOptionsHead()``,  and ``PetscOptionsTail()``
+- Remove the error handling from uses of ``PetscDrawCollectiveBegin()`` and ``PetscDrawCollectiveEnd()``
+- Remove the error handling from uses of ``MatPreallocateInitialize()`` and ``MatPreallocateFinalize()``
+
+Changes you should make for main and version 3.18 so that is not portable to previous versions of PETSc. This will remove all deprecation warnings when you build.
+In addition to the changes above
+
+- Change  ``PetscOptionsHead()`` and ``PetscOptionsTail()`` to  ``PetscOptionsHeadBegin()`` and ``PetscOptionsHeadEnd()``
+- Change ``MatPreallocateInitialize()`` and ``MatPreallocateFinalize()`` to ``MatPreallocateBegin()`` and ``MatPreallocateEnd()``
+
 ..
    STYLE GUIDELINES:
    * Capitalize sentences
@@ -10,6 +22,9 @@ Changes: Development
    * If multiple sentences are needed, use a period or semicolon to divide sentences, but not at the end of the final sentence
 
 .. rubric:: General:
+
+- Change ``PetscOptionsBegin()``, ``PetscOptionsEnd()``, and ``PetscObjectOptionsBegin()`` to not return an error code
+- Change ``PetscOptionsHead()``, ``PetscOptionsTail()``, to ``PetscOptionsHeadBegin()`` and ``PetscOptionsHeadEnd()`` and to not return an error code
 
 .. rubric:: Configure/Build:
 
@@ -20,6 +35,8 @@ Changes: Development
 .. rubric:: PetscDraw:
 
 - Add ``PetscDrawSPGetDimension()``
+-  Change ``PetscDrawCollectiveBegin()`` and ``PetscDrawCollectiveEnd()`` to not return an error code. Users can remove the error code checking for
+   these functions and it will work correctly for all versions of PETSc
 
 .. rubric:: AO:
 
@@ -38,6 +55,8 @@ Changes: Development
 .. rubric:: PetscPartitioner:
 
 .. rubric:: Mat:
+
+- Change ``MatPreallocateInitialize()`` and ``MatPreallocateFinalize()`` to ``MatPreallocateBegin()`` and ``MatPreallocateEnd()`` and to not return an error code
 
 .. rubric:: PC:
 

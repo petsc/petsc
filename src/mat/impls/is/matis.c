@@ -409,12 +409,11 @@ static PetscErrorCode MatMPIXAIJComputeLocalToGlobalMapping_Private(Mat A, ISLoc
   MatISDisassemblel2gType mode = MAT_IS_DISASSEMBLE_L2G_NATURAL;
   MatPartitioning         part;
   PetscSF                 sf;
-  PetscErrorCode          ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"MatIS l2g disassembling options","Mat");PetscCall(ierr);
+  PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"MatIS l2g disassembling options","Mat");
   PetscCall(PetscOptionsEnum("-mat_is_disassemble_l2g_type","Type of local-to-global mapping to be used for disassembling","MatISDisassemblel2gType",MatISDisassemblel2gTypes,(PetscEnum)mode,(PetscEnum*)&mode,NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   if (mode == MAT_IS_DISASSEMBLE_L2G_MAT) {
     PetscCall(MatGetLocalToGlobalMapping(A,l2g,NULL));
     PetscFunctionReturn(0);
@@ -462,7 +461,7 @@ static PetscErrorCode MatMPIXAIJComputeLocalToGlobalMapping_Private(Mat A, ISLoc
       const PetscInt         *ii,*jj;
 
       /* communicate global id of separators */
-      ierr = MatPreallocateInitialize(comm,A->rmap->n,A->cmap->n,dnz,onz);PetscCall(ierr);
+      MatPreallocateBegin(comm,A->rmap->n,A->cmap->n,dnz,onz);
       for (i = 0, cnt = 0; i < A->rmap->n; i++)
         dnz[i] = ndmapi[i] < 0 ? i + A->rmap->rstart : -1;
 
@@ -567,7 +566,7 @@ static PetscErrorCode MatMPIXAIJComputeLocalToGlobalMapping_Private(Mat A, ISLoc
 
       PetscCall(MatDestroy(&A3));
       PetscCall(PetscFree(lndmapi));
-      ierr = MatPreallocateFinalize(dnz,onz);PetscCall(ierr);
+      MatPreallocateEnd(dnz,onz);
       for (i = 0; i < gcnt; i++) {
         PetscCall(ISDestroy(&workis[i]));
       }
@@ -1707,7 +1706,6 @@ PETSC_EXTERN PetscErrorCode MatISSetMPIXAIJPreallocation_Private(Mat A, Mat B, P
   PetscInt        local_rows,local_cols;
   PetscMPIInt     size;
   PetscBool       isdense,issbaij;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)A),&size));
@@ -1727,7 +1725,7 @@ PETSC_EXTERN PetscErrorCode MatISSetMPIXAIJPreallocation_Private(Mat A, Mat B, P
      Note that generally preallocation is not exact, since it overestimates nonzeros
   */
   PetscCall(MatGetLocalSize(A,&lrows,&lcols));
-  ierr = MatPreallocateInitialize(PetscObjectComm((PetscObject)A),lrows,lcols,dnz,onz);PetscCall(ierr);
+  MatPreallocateBegin(PetscObjectComm((PetscObject)A),lrows,lcols,dnz,onz);
   /* All processes need to compute entire row ownership */
   PetscCall(PetscMalloc1(rows,&row_ownership));
   PetscCall(MatGetOwnershipRanges(A,(const PetscInt**)&mat_ranges));
@@ -1852,7 +1850,7 @@ PETSC_EXTERN PetscErrorCode MatISSetMPIXAIJPreallocation_Private(Mat A, Mat B, P
   PetscCall(MatSeqBAIJSetPreallocation(B,bs,0,dnz));
   PetscCall(MatMPIBAIJSetPreallocation(B,bs,0,dnz,0,onz));
   PetscCall(MatMPISBAIJSetPreallocation(B,bs,0,dnz,0,onz));
-  ierr = MatPreallocateFinalize(dnz,onz);PetscCall(ierr);
+  MatPreallocateEnd(dnz,onz);
   if (issbaij) PetscCall(MatRestoreRowUpperTriangular(matis->A));
   PetscCall(MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE));
   PetscFunctionReturn(0);
@@ -3118,7 +3116,7 @@ static PetscErrorCode MatSetFromOptions_IS(PetscOptionItems *PetscOptionsObject,
   PetscBool      flg;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"MATIS options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"MATIS options");
   PetscCall(PetscOptionsBool("-matis_fixempty","Fix local matrices in case of empty local rows/columns","MatISFixLocalEmpty",a->locempty,&a->locempty,NULL));
   PetscCall(PetscOptionsBool("-matis_storel2l","Store local-to-local matrices generated from PtAP operations","MatISStoreL2L",a->storel2l,&a->storel2l,NULL));
   PetscCall(PetscOptionsFList("-matis_localmat_type","Matrix type","MatISSetLocalMatType",MatList,a->lmattype,type,256,&flg));
@@ -3128,7 +3126,7 @@ static PetscErrorCode MatSetFromOptions_IS(PetscOptionItems *PetscOptionsObject,
   if (a->A) {
     PetscCall(MatSetFromOptions(a->A));
   }
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

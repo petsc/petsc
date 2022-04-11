@@ -27,7 +27,6 @@ static const char *CG_AS_TYPE[64] = {"none", "bertsekas"};
 
 PetscErrorCode TaoBNCGEstimateActiveSet(Tao tao, PetscInt asType)
 {
-  PetscErrorCode               ierr;
   TAO_BNCG                     *cg = (TAO_BNCG *)tao->data;
 
   PetscFunctionBegin;
@@ -48,10 +47,9 @@ PetscErrorCode TaoBNCGEstimateActiveSet(Tao tao, PetscInt asType)
     /* Use gradient descent to estimate the active set */
     PetscCall(VecCopy(cg->unprojected_gradient, cg->W));
     PetscCall(VecScale(cg->W, -1.0));
-    ierr = TaoEstimateActiveBounds(tao->solution, tao->XL, tao->XU, cg->unprojected_gradient, cg->W, cg->work, cg->as_step, &cg->as_tol,
-                                   &cg->active_lower, &cg->active_upper, &cg->active_fixed, &cg->active_idx, &cg->inactive_idx);PetscCall(ierr);
+    PetscCall(TaoEstimateActiveBounds(tao->solution, tao->XL, tao->XU, cg->unprojected_gradient, cg->W, cg->work, cg->as_step, &cg->as_tol,
+                                      &cg->active_lower, &cg->active_upper, &cg->active_fixed, &cg->active_idx, &cg->inactive_idx));
     break;
-
   default:
     break;
   }
@@ -225,7 +223,7 @@ static PetscErrorCode TaoSetFromOptions_BNCG(PetscOptionItems *PetscOptionsObjec
   TAO_BNCG       *cg = (TAO_BNCG*)tao->data;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"Nonlinear Conjugate Gradient method for unconstrained optimization"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"Nonlinear Conjugate Gradient method for unconstrained optimization");
   PetscCall(PetscOptionsEList("-tao_bncg_type","cg formula", "", CG_Table, CGTypes, CG_Table[cg->cg_type], &cg->cg_type,NULL));
   if (cg->cg_type != CG_SSML_BFGS) cg->alpha = -1.0; /* Setting defaults for non-BFGS methods. User can change it below. */
   if (CG_GradientDescent == cg->cg_type) {
@@ -265,7 +263,7 @@ static PetscErrorCode TaoSetFromOptions_BNCG(PetscOptionItems *PetscOptionsObjec
   PetscCall(PetscOptionsReal("-tao_bncg_delta_min", "(developer) minimum scaling factor used for scaled gradient restarts","",cg->delta_min,&cg->delta_min,NULL));
   PetscCall(PetscOptionsReal("-tao_bncg_delta_max", "(developer) maximum scaling factor used for scaled gradient restarts","",cg->delta_max,&cg->delta_max,NULL));
 
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscCall(MatSetOptionsPrefix(cg->B, ((PetscObject)tao)->prefix));
   PetscCall(MatAppendOptionsPrefix(cg->B, "tao_bncg_"));
   PetscCall(MatSetFromOptions(cg->B));

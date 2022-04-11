@@ -587,9 +587,9 @@ static PetscErrorCode MatColoringSetFromOptions_Greedy(PetscOptionItems *PetscOp
   MC_Greedy     *gr = (MC_Greedy *) mc->data;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject, "Greedy options"));
+  PetscOptionsHeadBegin(PetscOptionsObject, "Greedy options");
   PetscCall(PetscOptionsBool("-mat_coloring_greedy_symmetric", "Flag for assuming a symmetric matrix", "", gr->symmetric, &gr->symmetric, NULL));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

@@ -196,7 +196,6 @@ PetscErrorCode  MatSetSizes(Mat A, PetscInt m, PetscInt n, PetscInt M, PetscInt 
 @*/
 PetscErrorCode  MatSetFromOptions(Mat B)
 {
-  PetscErrorCode ierr;
   const char     *deft = MATAIJ;
   char           type[256];
   PetscBool      flg,set;
@@ -205,7 +204,7 @@ PetscErrorCode  MatSetFromOptions(Mat B)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B,MAT_CLASSID,1);
 
-  ierr = PetscObjectOptionsBegin((PetscObject)B);PetscCall(ierr);
+  PetscObjectOptionsBegin((PetscObject)B);
 
   if (B->rmap->bs < 0) {
     PetscInt newbs = -1;
@@ -256,7 +255,7 @@ PetscErrorCode  MatSetFromOptions(Mat B)
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)B));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

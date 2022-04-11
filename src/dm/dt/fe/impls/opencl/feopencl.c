@@ -455,7 +455,6 @@ static PetscErrorCode PetscFEOpenCLGetIntegrationKernel(PetscFE fem, PetscBool u
   size_t          len;
   char            errMsg[8192];
   cl_int          err;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscCall(PetscFEGetSpatialDimension(fem, &dim));
@@ -472,7 +471,7 @@ static PetscErrorCode PetscFEOpenCLGetIntegrationKernel(PetscFE fem, PetscBool u
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Build failed! Log:\n %s", errMsg);
   }
   PetscCall(PetscFree(buffer));
-  *ocl_kernel = clCreateKernel(*ocl_prog, "integrateElementQuadrature", &ierr);
+  *ocl_kernel = clCreateKernel(*ocl_prog, "integrateElementQuadrature", &err);
   PetscFunctionReturn(0);
 }
 
@@ -551,7 +550,7 @@ static PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscDS prob, PetscFormKey
   size_t            local_work_size[3], global_work_size[3];
   size_t            realSize, x, y, z;
   const PetscReal   *points, *weights;
-  PetscErrorCode    ierr;
+  int               err;
 
   PetscFunctionBegin;
   PetscCall(PetscDSGetDiscretization(prob, field, (PetscObject *) &fem));
@@ -680,15 +679,15 @@ static PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscDS prob, PetscFormKey
     oclInvJ     = (void *) r_invJ;
     oclDetJ     = (void *) r_detJ;
   }
-  o_coefficients         = clCreateBuffer(ocl->ctx_id, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Ne*N_bt    * realSize, oclCoeff,    &ierr);
+  o_coefficients         = clCreateBuffer(ocl->ctx_id, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Ne*N_bt    * realSize, oclCoeff,    &err);
   if (coefficientsAux) {
-    o_coefficientsAux    = clCreateBuffer(ocl->ctx_id, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Ne         * realSize, oclCoeffAux, &ierr);
+    o_coefficientsAux    = clCreateBuffer(ocl->ctx_id, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Ne         * realSize, oclCoeffAux, &err);
   } else {
-    o_coefficientsAux    = clCreateBuffer(ocl->ctx_id, CL_MEM_READ_ONLY,                        Ne         * realSize, oclCoeffAux, &ierr);
+    o_coefficientsAux    = clCreateBuffer(ocl->ctx_id, CL_MEM_READ_ONLY,                        Ne         * realSize, oclCoeffAux, &err);
   }
-  o_jacobianInverses     = clCreateBuffer(ocl->ctx_id, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Ne*dim*dim * realSize, oclInvJ,     &ierr);
-  o_jacobianDeterminants = clCreateBuffer(ocl->ctx_id, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Ne         * realSize, oclDetJ,     &ierr);
-  o_elemVec              = clCreateBuffer(ocl->ctx_id, CL_MEM_WRITE_ONLY,                       Ne*N_bt    * realSize, NULL,        &ierr);
+  o_jacobianInverses     = clCreateBuffer(ocl->ctx_id, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Ne*dim*dim * realSize, oclInvJ,     &err);
+  o_jacobianDeterminants = clCreateBuffer(ocl->ctx_id, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Ne         * realSize, oclDetJ,     &err);
+  o_elemVec              = clCreateBuffer(ocl->ctx_id, CL_MEM_WRITE_ONLY,                       Ne*N_bt    * realSize, NULL,        &err);
   /* Kernel launch */
   PetscCall(clSetKernelArg(ocl_kernel, 0, sizeof(cl_int), (void*) &N_cb));
   PetscCall(clSetKernelArg(ocl_kernel, 1, sizeof(cl_mem), (void*) &o_coefficients));

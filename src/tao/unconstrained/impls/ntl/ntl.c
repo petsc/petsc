@@ -645,7 +645,7 @@ static PetscErrorCode TaoSetFromOptions_NTL(PetscOptionItems *PetscOptionsObject
   TAO_NTL        *tl = (TAO_NTL *)tao->data;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"Newton trust region with line search method for unconstrained optimization"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"Newton trust region with line search method for unconstrained optimization");
   PetscCall(PetscOptionsEList("-tao_ntl_init_type", "radius initialization type", "", NTL_INIT, NTL_INIT_TYPES, NTL_INIT[tl->init_type], &tl->init_type,NULL));
   PetscCall(PetscOptionsEList("-tao_ntl_update_type", "radius update type", "", NTL_UPDATE, NTL_UPDATE_TYPES, NTL_UPDATE[tl->update_type], &tl->update_type,NULL));
   PetscCall(PetscOptionsReal("-tao_ntl_eta1", "poor steplength; reduce radius", "", tl->eta1, &tl->eta1,NULL));
@@ -683,7 +683,7 @@ static PetscErrorCode TaoSetFromOptions_NTL(PetscOptionItems *PetscOptionsObject
   PetscCall(PetscOptionsReal("-tao_ntl_min_radius", "lower bound on initial radius", "", tl->min_radius, &tl->min_radius,NULL));
   PetscCall(PetscOptionsReal("-tao_ntl_max_radius", "upper bound on radius", "", tl->max_radius, &tl->max_radius,NULL));
   PetscCall(PetscOptionsReal("-tao_ntl_epsilon", "tolerance used when computing actual and predicted reduction", "", tl->epsilon, &tl->epsilon,NULL));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscCall(TaoLineSearchSetFromOptions(tao->linesearch));
   PetscCall(KSPSetFromOptions(tao->ksp));
   PetscFunctionReturn(0);

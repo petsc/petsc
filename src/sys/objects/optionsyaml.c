@@ -159,7 +159,7 @@ static PetscErrorCode PetscParseLayerYAML(PetscOptions options, yaml_document_t 
 
 .seealso: PetscOptionsSetValue(), PetscOptionsView(), PetscOptionsHasName(), PetscOptionsGetInt(),
           PetscOptionsGetReal(), PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList(), PetscOptionsInsertFile(), PetscOptionsInsertFileYAML()
@@ -170,14 +170,14 @@ PetscErrorCode PetscOptionsInsertStringYAML(PetscOptions options,const char in_s
   yaml_parser_t   parser;
   yaml_document_t doc;
   yaml_node_t     *root;
-  PetscErrorCode  ierr;
+  int             err;
 
   PetscFunctionBegin;
   if (!in_str) in_str = "";
-  ierr = !yaml_parser_initialize(&parser); PetscCheck(!ierr,comm, PETSC_ERR_LIB, "YAML parser initialization error");
+  err = !yaml_parser_initialize(&parser); PetscCheck(!err,comm, PETSC_ERR_LIB, "YAML parser initialization error");
   yaml_parser_set_input_string(&parser, (const unsigned char *)in_str, strlen(in_str));
   do {
-    ierr = !yaml_parser_load(&parser, &doc); PetscCheck(!ierr,comm, PETSC_ERR_LIB, "YAML parser loading error");
+    err = !yaml_parser_load(&parser, &doc); PetscCheck(!err,comm, PETSC_ERR_LIB, "YAML parser loading error");
     root = yaml_document_get_root_node(&doc);
     if (root) {
       PetscCall(PetscParseLayerYAML(options, &doc, root));
@@ -209,7 +209,7 @@ PetscErrorCode PetscOptionsInsertStringYAML(PetscOptions options,const char in_s
 
 .seealso: PetscOptionsSetValue(), PetscOptionsView(), PetscOptionsHasName(), PetscOptionsGetInt(),
           PetscOptionsGetReal(), PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList(), PetscOptionsInsertFile(), PetscOptionsInsertStringYAML()

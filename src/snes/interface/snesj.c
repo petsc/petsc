@@ -42,7 +42,6 @@
 PetscErrorCode  SNESComputeJacobianDefault(SNES snes,Vec x1,Mat J,Mat B,void *ctx)
 {
   Vec               j1a,j2a,x2;
-  PetscErrorCode    ierr;
   PetscInt          i,N,start,end,j,value,root,max_funcs = snes->max_funcs;
   PetscScalar       dx,*y,wscale;
   const PetscScalar *xx;
@@ -91,9 +90,9 @@ PetscErrorCode  SNESComputeJacobianDefault(SNES snes,Vec x1,Mat J,Mat B,void *ct
     PetscCall(SNESComputeFunction(snes,x1,j1a));
   }
 
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)snes),((PetscObject)snes)->prefix,"Differencing options","SNES");PetscCall(ierr);
+  PetscOptionsBegin(PetscObjectComm((PetscObject)snes),((PetscObject)snes)->prefix,"Differencing options","SNES");
   PetscCall(PetscOptionsEList("-mat_fd_type","Algorithm to compute difference parameter","SNESComputeJacobianDefault",list,2,"wp",&value,&flg));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   if (flg && !value) use_wp = PETSC_FALSE;
 
   if (use_wp) {

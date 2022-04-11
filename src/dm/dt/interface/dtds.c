@@ -307,7 +307,6 @@ PetscErrorCode PetscDSSetFromOptions(PetscDS prob)
   const char    *defaultType;
   char           name[256];
   PetscBool      flg;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
@@ -318,7 +317,7 @@ PetscErrorCode PetscDSSetFromOptions(PetscDS prob)
   }
   PetscCall(PetscDSRegisterAll());
 
-  ierr = PetscObjectOptionsBegin((PetscObject) prob);PetscCall(ierr);
+  PetscObjectOptionsBegin((PetscObject) prob);
   for (b = prob->boundary; b; b = b->next) {
     char       optname[1024];
     PetscInt   ids[1024], len = 1024;
@@ -355,7 +354,7 @@ PetscErrorCode PetscDSSetFromOptions(PetscDS prob)
   if (prob->ops->setfromoptions) PetscCall((*prob->ops->setfromoptions)(prob));
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) prob));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   if (prob->Nf) PetscCall(PetscDSViewFromOptions(prob, NULL, "-petscds_view"));
   PetscFunctionReturn(0);
 }
@@ -377,7 +376,6 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
   const PetscInt Nf   = prob->Nf;
   PetscBool      hasH = PETSC_FALSE;
   PetscInt       dim, dimEmbed, NbMax = 0, NcMax = 0, NqMax = 0, NsMax = 1, f;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
@@ -447,9 +445,9 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
   NsMax = 2; /* A non-cohesive discretizations can be used on a cohesive cell, so we need this extra workspace for all DS */
   PetscCall(PetscMalloc3(NsMax*prob->totComp,&prob->u,NsMax*prob->totComp,&prob->u_t,NsMax*prob->totComp*dimEmbed + (hasH ? NsMax*prob->totComp*dimEmbed*dimEmbed : 0),&prob->u_x));
   PetscCall(PetscMalloc5(dimEmbed,&prob->x,NbMax*NcMax,&prob->basisReal,NbMax*NcMax*dimEmbed,&prob->basisDerReal,NbMax*NcMax,&prob->testReal,NbMax*NcMax*dimEmbed,&prob->testDerReal));
-  ierr = PetscMalloc6(NsMax*NqMax*NcMax,&prob->f0,NsMax*NqMax*NcMax*dimEmbed,&prob->f1,
-                      NsMax*NsMax*NqMax*NcMax*NcMax,&prob->g0,NsMax*NsMax*NqMax*NcMax*NcMax*dimEmbed,&prob->g1,
-                      NsMax*NsMax*NqMax*NcMax*NcMax*dimEmbed,&prob->g2,NsMax*NsMax*NqMax*NcMax*NcMax*dimEmbed*dimEmbed,&prob->g3);PetscCall(ierr);
+  PetscCall(PetscMalloc6(NsMax*NqMax*NcMax,&prob->f0,NsMax*NqMax*NcMax*dimEmbed,&prob->f1,
+                         NsMax*NsMax*NqMax*NcMax*NcMax,&prob->g0,NsMax*NsMax*NqMax*NcMax*NcMax*dimEmbed,&prob->g1,
+                         NsMax*NsMax*NqMax*NcMax*NcMax*dimEmbed,&prob->g2,NsMax*NsMax*NqMax*NcMax*NcMax*dimEmbed*dimEmbed,&prob->g3));
   if (prob->ops->setup) PetscCall((*prob->ops->setup)(prob));
   prob->setup = PETSC_TRUE;
   PetscFunctionReturn(0);

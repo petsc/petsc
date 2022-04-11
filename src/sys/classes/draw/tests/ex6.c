@@ -26,14 +26,13 @@ static PetscErrorCode DrawFunction(PetscDraw draw,void *ctx)
   MPI_Comm       comm = PetscObjectComm((PetscObject)draw);
   PetscMPIInt    size,rank;
   PetscDraw      popup;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscCall(PetscDrawGetWindowSize(draw,&w,&h));
   PetscCallMPI(MPI_Comm_size(comm,&size));
   PetscCallMPI(MPI_Comm_rank(comm,&rank));
 
-  ierr = PetscDrawCollectiveBegin(draw);PetscCall(ierr);
+  PetscDrawCollectiveBegin(draw);
   for (j=rank; j<h; j+=size) {
     for (i=0; i<w; i++) {
       PetscReal x,y,f; int color;
@@ -43,7 +42,7 @@ static PetscErrorCode DrawFunction(PetscDraw draw,void *ctx)
       min = PetscMin(f,min); max = PetscMax(f,max);
     }
   }
-  ierr = PetscDrawCollectiveEnd(draw);PetscCall(ierr);
+  PetscDrawCollectiveEnd(draw);
 
   PetscCall(PetscDrawGetPopup(draw,&popup));
   PetscCall(PetscDrawScalePopup(popup,-8,+8));

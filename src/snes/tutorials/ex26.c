@@ -104,16 +104,15 @@ static PetscErrorCode ProcessOptions(DM dm, AppCtx *options)
 {
   MPI_Comm       comm;
   PetscInt       dim;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   PetscCall(PetscObjectGetComm((PetscObject) dm, &comm));
   PetscCall(DMGetDimension(dm, &dim));
   options->trig = PETSC_FALSE;
 
-  ierr = PetscOptionsBegin(comm, "", "Helmholtz Problem Options", "DMPLEX");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "Helmholtz Problem Options", "DMPLEX");
   PetscCall(PetscOptionsBool("-exact_trig", "Use trigonometric exact solution (better for more complex finite elements)", "ex26.c", options->trig, &options->trig, NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   PetscFunctionReturn(0);
 }

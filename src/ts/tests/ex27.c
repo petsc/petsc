@@ -31,8 +31,6 @@ typedef struct {
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
   options->N         = 1;
   options->momentTol = 100.0*PETSC_MACHINE_EPSILON;
@@ -40,12 +38,12 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->h         = -1.0;
   options->epsilon   = -1.0;
 
-  ierr = PetscOptionsBegin(comm, "", "Collision Options", "DMPLEX");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "Collision Options", "DMPLEX");
   PetscCall(PetscOptionsInt("-N", "Number of particles per spatial cell", "ex27.c", options->N, &options->N, NULL));
   PetscCall(PetscOptionsReal("-L", "Velocity-space extent", "ex27.c", options->L, &options->L, NULL));
   PetscCall(PetscOptionsReal("-h", "Velocity-space resolution", "ex27.c", options->h, &options->h, NULL));
   PetscCall(PetscOptionsReal("-epsilon", "Mollifier regularization parameter", "ex27.c", options->epsilon, &options->epsilon, NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

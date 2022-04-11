@@ -837,7 +837,7 @@ static PetscErrorCode SNESMonitorPauseFinal_Internal(SNES snes)
 .seealso: PetscOptionsGetViewer(), PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(),
           PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
           PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
@@ -935,14 +935,13 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   const char     *convtests[] = {"default","skip","correct_pressure"};
   SNESKSPEW      *kctx        = NULL;
   char           type[256], monfilename[PETSC_MAX_PATH_LEN];
-  PetscErrorCode ierr;
   PCSide         pcside;
   const char     *optionsprefix;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscCall(SNESRegisterAll());
-  ierr = PetscObjectOptionsBegin((PetscObject)snes);PetscCall(ierr);
+  PetscObjectOptionsBegin((PetscObject)snes);
   if (((PetscObject)snes)->type_name) deft = ((PetscObject)snes)->type_name;
   PetscCall(PetscOptionsFList("-snes_type","Nonlinear solver method","SNESSetType",SNESList,deft,type,256,&flg));
   if (flg) {
@@ -1128,7 +1127,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)snes));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   if (snes->linesearch) {
     PetscCall(SNESGetLineSearch(snes, &snes->linesearch));
@@ -2573,7 +2572,6 @@ PetscErrorCode SNESTestJacobian(SNES snes)
 {
   Mat               A,B,C,D,jacobian;
   Vec               x = snes->vec_sol,f = snes->vec_func;
-  PetscErrorCode    ierr;
   PetscReal         nrm,gnorm;
   PetscReal         threshold = 1.e-5;
   MatType           mattype;
@@ -2587,7 +2585,7 @@ PetscErrorCode SNESTestJacobian(SNES snes)
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  ierr = PetscObjectOptionsBegin((PetscObject)snes);PetscCall(ierr);
+  PetscObjectOptionsBegin((PetscObject)snes);
   PetscCall(PetscOptionsName("-snes_test_jacobian","Compare hand-coded and finite difference Jacobians","None",&test));
   PetscCall(PetscOptionsReal("-snes_test_jacobian", "Threshold for element difference between hand-coded and finite difference being meaningful", "None", threshold, &threshold,NULL));
   PetscCall(PetscOptionsViewer("-snes_test_jacobian_view","View difference between hand-coded and finite difference Jacobians element entries","None",&mviewer,&format,&complete_print));
@@ -2598,7 +2596,7 @@ PetscErrorCode SNESTestJacobian(SNES snes)
   /* for compatibility with PETSc 3.9 and older. */
   PetscCall(PetscOptionsDeprecated("-snes_test_jacobian_display_threshold","-snes_test_jacobian","3.13","-snes_test_jacobian accepts an optional threshold (since v3.10)"));
   PetscCall(PetscOptionsReal("-snes_test_jacobian_display_threshold", "Display difference between hand-coded and finite difference Jacobians which exceed input threshold", "None", threshold, &threshold, &threshold_print));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   if (!test) PetscFunctionReturn(0);
 
   PetscCall(PetscObjectGetComm((PetscObject)snes,&comm));

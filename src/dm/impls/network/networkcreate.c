@@ -6,8 +6,8 @@ PetscErrorCode  DMSetFromOptions_Network(PetscOptionItems *PetscOptionsObject,DM
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"DMNetwork Options"));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadBegin(PetscOptionsObject,"DMNetwork Options");
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

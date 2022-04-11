@@ -65,6 +65,7 @@ PetscErrorCode  PetscDLOpen(const char name[],PetscDLMode mode,PetscDLHandle *ha
 #if defined(PETSC_HAVE_WINDOWS_H) && defined(PETSC_HAVE_LOADLIBRARY)
   dlhandle = LoadLibrary(name);
   if (!dlhandle) {
+    /* TODO: Seem to need fixing, why not just return with an error with SETERRQ() */
 #if defined(PETSC_HAVE_GETLASTERROR)
     PetscErrorCode ierr;
     DWORD          erc;

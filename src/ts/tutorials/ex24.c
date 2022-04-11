@@ -98,7 +98,6 @@ int main(int argc,char **argv)
 static PetscErrorCode MonitorObjective(TS ts,PetscInt step,PetscReal t,Vec X,void *ictx)
 {
   Ctx               *ctx = (Ctx*)ictx;
-  PetscErrorCode    ierr;
   const PetscScalar *x;
   PetscScalar       f;
   PetscReal         dt,gnorm;
@@ -126,11 +125,9 @@ static PetscErrorCode MonitorObjective(TS ts,PetscInt step,PetscReal t,Vec X,voi
   PetscCall(TSGetSNES(ts,&snes));
   PetscCall(SNESGetIterationNumber(snes,&snesit));
   PetscCall(SNESGetLinearSolveIterations(snes,&linit));
-  ierr = PetscPrintf(PETSC_COMM_WORLD,
-                     (ctx->monitor_short
-                      ? "%3D t=%10.1e  dt=%10.1e  f=%10.1e  df=%10.1e  it=(%2D,%3D)\n"
-                      : "%3D t=%10.4e  dt=%10.4e  f=%10.4e  df=%10.4e  it=(%2D,%3D)\n"),
-                     step,(double)t,(double)dt,(double)PetscRealPart(f),(double)gnorm,snesit,linit);PetscCall(ierr);
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,(ctx->monitor_short ? "%3D t=%10.1e  dt=%10.1e  f=%10.1e  df=%10.1e  it=(%2D,%3D)\n"
+                                                             : "%3D t=%10.4e  dt=%10.4e  f=%10.4e  df=%10.4e  it=(%2D,%3D)\n"),
+                        step,(double)t,(double)dt,(double)PetscRealPart(f),(double)gnorm,snesit,linit));
   PetscFunctionReturn(0);
 }
 

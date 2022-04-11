@@ -330,12 +330,11 @@ PetscErrorCode PetscSFSetFromOptions(PetscSF sf)
 {
   PetscSFType    deft;
   char           type[256];
-  PetscErrorCode ierr;
   PetscBool      flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
-  ierr = PetscObjectOptionsBegin((PetscObject)sf);PetscCall(ierr);
+  PetscObjectOptionsBegin((PetscObject)sf);
   deft = ((PetscObject)sf)->type_name ? ((PetscObject)sf)->type_name : PETSCSFBASIC;
   PetscCall(PetscOptionsFList("-sf_type","PetscSF implementation type","PetscSFSetType",PetscSFList,deft,type,sizeof(type),&flg));
   PetscCall(PetscSFSetType(sf,flg ? type : deft));
@@ -362,7 +361,7 @@ PetscErrorCode PetscSFSetFromOptions(PetscSF sf)
   }
  #endif
   if (sf->ops->SetFromOptions) PetscCall((*sf->ops->SetFromOptions)(PetscOptionsObject,sf));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

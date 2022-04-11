@@ -661,7 +661,7 @@ PetscErrorCode PCSetFromOptions_MG(PetscOptionItems *PetscOptionsObject,PC pc)
 
   PetscFunctionBegin;
   levels = PetscMax(mg->nlevels,1);
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"Multigrid options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"Multigrid options");
   PetscCall(PetscOptionsInt("-pc_mg_levels","Number of Levels","PCMGSetLevels",levels,&levels,&flg));
   if (!flg && !mg->levels && pc->dm) {
     PetscCall(DMGetRefineLevel(pc->dm,&levels));
@@ -745,7 +745,7 @@ PetscErrorCode PCSetFromOptions_MG(PetscOptionItems *PetscOptionsObject,PC pc)
     }
 #endif
   }
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   /* Check option consistency */
   PetscCall(PCMGGetGalerkin(pc, &gtype));
   PetscCall(PCMGGetAdaptInterpolation(pc, &flg));

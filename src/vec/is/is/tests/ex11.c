@@ -5,7 +5,6 @@ static char help[] = "Tests ISSortGlobal().\n\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   IS             is;
   PetscInt       n, i, first, last, nmax=100;
   PetscMPIInt    rank;
@@ -19,9 +18,9 @@ int main(int argc,char **argv)
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   comm = MPI_COMM_WORLD;
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
-  ierr = PetscOptionsBegin(comm, "", "Parallel Sort Test Options", "IS");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "Parallel Sort Test Options", "IS");
   PetscCall(PetscOptionsBoundedInt("-nmax", "Maximum number of keys per process", "ex11.c", nmax, &nmax, NULL,0));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   PetscCall(PetscRandomCreate(comm, &randsizes));
   PetscCall(PetscRandomSetInterval(randsizes, 0., PetscMax(nmax, 1)));

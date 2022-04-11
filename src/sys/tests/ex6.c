@@ -8,10 +8,9 @@ int main(int argc,char **argv)
 {
   const char     *val;
   PetscBool      has;
-  PetscErrorCode ierr;
 
-  ierr = PetscOptionsSetValue(NULL,"-skip_petscrc", NULL);if (ierr) return ierr;
-  ierr = PetscOptionsSetValue(NULL,"-use_gpu_aware_mpi", "0");if (ierr) return ierr;
+  PetscCall(PetscOptionsSetValue(NULL,"-skip_petscrc", NULL));
+  PetscCall(PetscOptionsSetValue(NULL,"-use_gpu_aware_mpi", "0"));
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
 
   PetscCall(PetscOptionsHasName(NULL,NULL,"-use_gpu_aware_mpi",&has));

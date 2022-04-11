@@ -174,9 +174,9 @@ static PetscErrorCode TaoSetFromOptions_BLMVM(PetscOptionItems* PetscOptionsObje
   PetscBool      is_spd;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"Limited-memory variable-metric method for bound constrained optimization"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"Limited-memory variable-metric method for bound constrained optimization");
   PetscCall(PetscOptionsBool("-tao_blmvm_recycle","enable recycling of the BFGS matrix between subsequent TaoSolve() calls","",blmP->recycle,&blmP->recycle,NULL));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscCall(MatSetOptionsPrefix(blmP->M, ((PetscObject)tao)->prefix));
   PetscCall(MatAppendOptionsPrefix(blmP->M, "tao_blmvm_"));
   PetscCall(MatSetFromOptions(blmP->M));

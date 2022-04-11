@@ -113,11 +113,11 @@ static PetscErrorCode PCSetFromOptions_LSC(PetscOptionItems *PetscOptionsObject,
   PC_LSC         *lsc = (PC_LSC*)pc->data;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"LSC options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"LSC options");
   {
     PetscCall(PetscOptionsBool("-pc_lsc_scale_diag","Use diagonal of velocity block (A) for scaling","None",lsc->scalediag,&lsc->scalediag,NULL));
   }
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

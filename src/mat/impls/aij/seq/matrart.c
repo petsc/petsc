@@ -334,15 +334,14 @@ PetscErrorCode MatRARtNumeric_SeqAIJ_SeqAIJ(Mat A,Mat R,Mat C)
 
 PetscErrorCode MatRARt_SeqAIJ_SeqAIJ(Mat A,Mat R,MatReuse scall,PetscReal fill,Mat *C)
 {
-  PetscErrorCode ierr;
   const char     *algTypes[3] = {"matmatmatmult","matmattransposemult","coloring_rart"};
   PetscInt       alg=0; /* set default algorithm */
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
-    ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"MatRARt","Mat");PetscCall(ierr);
+    PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"MatRARt","Mat");
     PetscCall(PetscOptionsEList("-matrart_via","Algorithmic approach","MatRARt",algTypes,3,algTypes[0],&alg,NULL));
-    ierr = PetscOptionsEnd();PetscCall(ierr);
+    PetscOptionsEnd();
 
     PetscCall(PetscLogEventBegin(MAT_RARtSymbolic,A,R,0,0));
     PetscCall(MatCreate(PETSC_COMM_SELF,C));

@@ -127,18 +127,17 @@ int main(int argc,char **argv)
   PetscInt        N  = 17;
   PetscInt        n  = PETSC_DECIDE;
   AppCtx          app;
-  PetscErrorCode  ierr;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex21 options","");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex21 options","");
   {
     app.lambda = 6.8; app.lambda = 6.0;
     PetscCall(PetscOptionsReal("-lambda","","",app.lambda,&app.lambda,NULL));
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create DM context

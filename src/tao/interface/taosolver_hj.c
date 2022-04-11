@@ -95,7 +95,6 @@ PetscErrorCode TaoTestHessian(Tao tao)
 {
   Mat               A,B,C,D,hessian;
   Vec               x = tao->solution;
-  PetscErrorCode    ierr;
   PetscReal         nrm,gnorm;
   PetscReal         threshold = 1.e-5;
   PetscInt          m,n,M,N;
@@ -107,11 +106,11 @@ PetscErrorCode TaoTestHessian(Tao tao)
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  ierr = PetscObjectOptionsBegin((PetscObject)tao);PetscCall(ierr);
+  PetscObjectOptionsBegin((PetscObject)tao);
   PetscCall(PetscOptionsName("-tao_test_hessian","Compare hand-coded and finite difference Hessians","None",&test));
   PetscCall(PetscOptionsReal("-tao_test_hessian", "Threshold for element difference between hand-coded and finite difference being meaningful","None",threshold,&threshold,NULL));
   PetscCall(PetscOptionsViewer("-tao_test_hessian_view","View difference between hand-coded and finite difference Hessians element entries","None",&mviewer,&format,&complete_print));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   if (!test) PetscFunctionReturn(0);
 
   PetscCall(PetscObjectGetComm((PetscObject)tao,&comm));

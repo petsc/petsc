@@ -5,7 +5,6 @@ static char help[] = "Tests DMSLICED operations\n\n";
 int main(int argc,char *argv[])
 {
   char           mat_type[256] = MATAIJ; /* default matrix type */
-  PetscErrorCode ierr;
   MPI_Comm       comm;
   PetscMPIInt    rank,size;
   DM             slice;
@@ -21,7 +20,7 @@ int main(int argc,char *argv[])
   PetscCallMPI(MPI_Comm_size(comm,&size));
   PetscCallMPI(MPI_Comm_rank(comm,&rank));
 
-  ierr = PetscOptionsBegin(comm,0,"Options for DMSliced test",0);PetscCall(ierr);
+  PetscOptionsBegin(comm,0,"Options for DMSliced test",0);
   {
     PetscCall(PetscOptionsInt("-n","Global number of nodes","",N,&N,NULL));
     PetscCall(PetscOptionsInt("-bs","Block size (1 or 2)","",bs,&bs,NULL));
@@ -36,7 +35,7 @@ int main(int argc,char *argv[])
     }
     PetscCall(PetscOptionsString("-sliced_mat_type","Matrix type to use (aij or baij)","",mat_type,mat_type,sizeof(mat_type),NULL));
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   /* Split ownership, set up periodic grid in 1D */
   n         = PETSC_DECIDE;

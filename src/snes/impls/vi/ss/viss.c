@@ -419,8 +419,8 @@ static PetscErrorCode SNESSetFromOptions_VINEWTONSSLS(PetscOptionItems *PetscOpt
 {
   PetscFunctionBegin;
   PetscCall(SNESSetFromOptions_VI(PetscOptionsObject,snes));
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"SNES semismooth method options"));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadBegin(PetscOptionsObject,"SNES semismooth method options");
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

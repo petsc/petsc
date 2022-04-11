@@ -349,7 +349,7 @@ static PetscErrorCode TSSetFromOptions_Alpha(PetscOptionItems *PetscOptionsObjec
   TS_Alpha       *th = (TS_Alpha*)ts->data;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"Generalized-Alpha ODE solver options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"Generalized-Alpha ODE solver options");
   {
     PetscBool flg;
     PetscReal radius = 1;
@@ -360,7 +360,7 @@ static PetscErrorCode TSSetFromOptions_Alpha(PetscOptionItems *PetscOptionsObjec
     PetscCall(PetscOptionsReal("-ts_alpha_gamma","Algorithmic parameter gamma","TSAlphaSetParams",th->Gamma,&th->Gamma,NULL));
     PetscCall(TSAlphaSetParams(ts,th->Alpha_m,th->Alpha_f,th->Gamma));
   }
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

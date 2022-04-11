@@ -19,7 +19,6 @@
 */
 PETSC_INTERN PetscErrorCode MatGetOrdering_AMD(Mat mat,MatOrderingType type,IS *row,IS *col)
 {
-  PetscErrorCode ierr;
   PetscInt       nrow,*perm;
   const PetscInt *ia,*ja;
   int            status;
@@ -36,7 +35,7 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_AMD(Mat mat,MatOrderingType type,IS *
   PetscCheck(done,PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot get rows for matrix type %s",((PetscObject)mat)->type_name);
 
   amd_AMD_defaults(Control);
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"AMD Options","Mat");PetscCall(ierr);
+  PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"AMD Options","Mat");
   /*
     We have to use temporary values here because AMD always uses double, even though PetscReal may be single
   */
@@ -48,7 +47,7 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_AMD(Mat mat,MatOrderingType type,IS *
   PetscCall(PetscOptionsBool("-mat_ordering_amd_aggressive","use aggressive absorption","None",tval,&tval,NULL));
   Control[AMD_AGGRESSIVE] = (double)tval;
 
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   PetscCall(PetscMalloc1(nrow,&perm));
   status = amd_AMD_order(nrow,ia,ja,perm,Control,Info);

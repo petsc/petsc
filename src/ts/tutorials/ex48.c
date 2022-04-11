@@ -164,8 +164,6 @@ static void f1_jz(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
   options->debug    = 1;
   options->plotRef  = PETSC_FALSE;
@@ -179,7 +177,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->m        = 1;
   options->eps      = 1.e-6;
 
-  ierr = PetscOptionsBegin(comm, "", "Poisson Problem Options", "DMPLEX");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "Poisson Problem Options", "DMPLEX");
   PetscCall(PetscOptionsInt("-debug", "The debugging level", "ex48.c", options->debug, &options->debug, NULL));
   PetscCall(PetscOptionsBool("-plot_ref", "Plot the reference fields", "ex48.c", options->plotRef, &options->plotRef, NULL));
   PetscCall(PetscOptionsReal("-mu", "mu", "ex48.c", options->mu, &options->mu, NULL));
@@ -189,7 +187,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsReal("-m", "m", "ex48.c", options->m, &options->m, NULL));
   PetscCall(PetscOptionsReal("-eps", "eps", "ex48.c", options->eps, &options->eps, NULL));
   PetscCall(PetscOptionsBool("-implicit", "Use implicit time integrator", "ex48.c", options->implicit, &options->implicit, NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   options->ke = PetscSqrtScalar(options->Jop);
   if (options->Jop==0.0) {
     options->Jo = 1.0/PetscPowScalar(options->a,2);

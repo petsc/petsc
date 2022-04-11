@@ -30,28 +30,27 @@ int main(int argc,char **args)
   FuncType       function = TANH;
   DM             da, da1, coordsda;
   PetscBool      view_x = PETSC_FALSE, view_y = PETSC_FALSE, view_z = PETSC_FALSE;
-  PetscErrorCode ierr;
 
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_SUP, "This is a uniprocessor example only!");
-  ierr     = PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "USFFT Options", "ex27");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "USFFT Options", "ex27");
   PetscCall(PetscOptionsEList("-function", "Function type", "ex27", funcNames, NUM_FUNCS, funcNames[function], &func, NULL));
   function = (FuncType) func;
-  ierr     = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-view_x",&view_x,NULL));
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-view_y",&view_y,NULL));
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-view_z",&view_z,NULL));
   PetscCall(PetscOptionsGetIntArray(NULL,NULL,"-dim",dim,&ndim,NULL));
 
   /* DMDA with the correct fiber dimension */
-  ierr = DMDACreate3d(PETSC_COMM_SELF,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,dim[0],dim[1],dim[2],PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,
-                      dof,stencil,NULL,NULL,NULL,&da);PetscCall(ierr);
+  PetscCall(DMDACreate3d(PETSC_COMM_SELF,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,dim[0],dim[1],dim[2],PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,
+                         dof,stencil,NULL,NULL,NULL,&da));
   PetscCall(DMSetFromOptions(da));
   PetscCall(DMSetUp(da));
   /* DMDA with fiber dimension 1 for split fields */
-  ierr = DMDACreate3d(PETSC_COMM_SELF,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,dim[0],dim[1],dim[2],PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,
-                      1,stencil,NULL,NULL,NULL,&da1);PetscCall(ierr);
+  PetscCall(DMDACreate3d(PETSC_COMM_SELF,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,dim[0],dim[1],dim[2],PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,
+                         1,stencil,NULL,NULL,NULL,&da1));
   PetscCall(DMSetFromOptions(da1));
   PetscCall(DMSetUp(da1));
 

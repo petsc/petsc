@@ -587,10 +587,10 @@ PetscErrorCode KSPSetFromOptions_PIPEFGMRES(PetscOptionItems *PetscOptionsObject
 
   PetscFunctionBegin;
   PetscCall(KSPSetFromOptions_GMRES(PetscOptionsObject,ksp));
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"KSP pipelined FGMRES Options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"KSP pipelined FGMRES Options");
   PetscCall(PetscOptionsScalar("-ksp_pipefgmres_shift","shift parameter","KSPPIPEFGMRESSetShift",pipefgmres->shift,&shift,&flg));
   if (flg) PetscCall(KSPPIPEFGMRESSetShift(ksp,shift));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

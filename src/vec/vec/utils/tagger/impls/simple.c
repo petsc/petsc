@@ -28,9 +28,9 @@ PetscErrorCode VecTaggerSetFromOptions_Simple(PetscOptionItems *PetscOptionsObje
   PetscCall(PetscMalloc1(nvals,&inBoxVals));
   PetscCall(PetscSNPrintf(headstring,BUFSIZ,"VecTagger %s options",name));
   PetscCall(PetscSNPrintf(funcstring,BUFSIZ,"VecTagger%sSetBox()",name));
-  PetscCall(PetscOptionsHead(PetscOptionsObject,headstring));
+  PetscOptionsHeadBegin(PetscOptionsObject,headstring);
   PetscCall(PetscOptionsScalarArray("-vec_tagger_box","lower and upper bounds of the box",funcstring,inBoxVals,&nvals,&set));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   if (set) {
     PetscCheckFalse(nvals != 2 *bs,PetscObjectComm((PetscObject)tagger),PETSC_ERR_ARG_INCOMP,"Expect array of %" PetscInt_FMT " values for -vec_tagger_box, got %" PetscInt_FMT,2 * bs,nvals);
     PetscCall(VecTaggerSetBox_Simple(tagger,(VecTaggerBox *)inBoxVals));

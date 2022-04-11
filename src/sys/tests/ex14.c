@@ -5,7 +5,7 @@ static char help[] = "Tests PetscOptionsGetScalar(), PetscOptionsScalarArray() f
 
 int main(int argc,char **argv)
 {
-  PetscInt    ierr,n,i;
+  PetscInt    n,i;
   PetscScalar a,array[10];
   PetscReal   rarray[10];
 
@@ -13,7 +13,7 @@ int main(int argc,char **argv)
   PetscCall(PetscOptionsGetScalar(NULL,NULL,"-a",&a,NULL));
   PetscCall(PetscPrintf(PETSC_COMM_SELF,"Scalar a = %g + %gi\n",(double)PetscRealPart(a),(double)PetscImaginaryPart(a)));
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"test options",NULL);PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"test options",NULL);
   n = 10; /* max num of input values */
   PetscCall(PetscOptionsRealArray("-rarray", "Input a real array", "ex14.c", rarray, &n, NULL));
   if (n) {
@@ -35,7 +35,7 @@ int main(int argc,char **argv)
       }
     }
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscCall(PetscFinalize());
   return 0;
 }

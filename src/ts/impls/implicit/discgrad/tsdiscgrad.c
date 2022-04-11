@@ -122,11 +122,11 @@ static PetscErrorCode TSSetFromOptions_DiscGrad(PetscOptionItems *PetscOptionsOb
   TS_DiscGrad   *dg = (TS_DiscGrad *) ts->data;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject, "Discrete Gradients ODE solver options"));
+  PetscOptionsHeadBegin(PetscOptionsObject, "Discrete Gradients ODE solver options");
   {
     PetscCall(PetscOptionsBool("-ts_discgrad_gonzalez","Use Gonzalez term in discrete gradients formulation","TSDiscGradUseGonzalez",dg->gonzalez,&dg->gonzalez,NULL));
   }
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

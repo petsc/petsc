@@ -54,11 +54,11 @@ static PetscErrorCode PetscPartitionerSetFromOptions_Shell(PetscOptionItems *Pet
   PetscBool      random = PETSC_FALSE, set;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject, "PetscPartitioner Shell Options"));
+  PetscOptionsHeadBegin(PetscOptionsObject, "PetscPartitioner Shell Options");
   PetscCall(PetscPartitionerShellGetRandom(part, &random));
   PetscCall(PetscOptionsBool("-petscpartitioner_shell_random", "Use a random partition", "PetscPartitionerView", PETSC_FALSE, &random, &set));
   if (set) PetscCall(PetscPartitionerShellSetRandom(part, random));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

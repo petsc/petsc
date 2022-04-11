@@ -306,7 +306,6 @@ static PetscErrorCode PhysicsSample_Advect(void *vctx,PetscInt initial,FVBCType 
 
 static PetscErrorCode PhysicsCreate_Advect(FVCtx *ctx)
 {
-  PetscErrorCode ierr;
   AdvectCtx      *user;
 
   PetscFunctionBeginUser;
@@ -319,11 +318,11 @@ static PetscErrorCode PhysicsCreate_Advect(FVCtx *ctx)
   ctx->physics.dof            = 1;
   PetscCall(PetscStrallocpy("u",&ctx->physics.fieldname[0]));
   user->a = 1;
-  ierr = PetscOptionsBegin(ctx->comm,ctx->prefix,"Options for advection","");PetscCall(ierr);
+  PetscOptionsBegin(ctx->comm,ctx->prefix,"Options for advection","");
   {
     PetscCall(PetscOptionsReal("-physics_advect_a","Speed","",user->a,&user->a,NULL));
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 
@@ -425,7 +424,6 @@ static PetscErrorCode PhysicsRiemann_Burgers_Rusanov(void *vctx,PetscInt m,const
 static PetscErrorCode PhysicsCreate_Burgers(FVCtx *ctx)
 {
   BurgersCtx        *user;
-  PetscErrorCode    ierr;
   RiemannFunction   r;
   PetscFunctionList rlist      = 0;
   char              rname[256] = "exact";
@@ -444,11 +442,11 @@ static PetscErrorCode PhysicsCreate_Burgers(FVCtx *ctx)
   PetscCall(RiemannListAdd(&rlist,"roe",    PhysicsRiemann_Burgers_Roe));
   PetscCall(RiemannListAdd(&rlist,"lxf",    PhysicsRiemann_Burgers_LxF));
   PetscCall(RiemannListAdd(&rlist,"rusanov",PhysicsRiemann_Burgers_Rusanov));
-  ierr = PetscOptionsBegin(ctx->comm,ctx->prefix,"Options for advection","");PetscCall(ierr);
+  PetscOptionsBegin(ctx->comm,ctx->prefix,"Options for advection","");
   {
     PetscCall(PetscOptionsFList("-physics_burgers_riemann","Riemann solver","",rlist,rname,rname,sizeof(rname),NULL));
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscCall(RiemannListFind(rlist,rname,&r));
   PetscCall(PetscFunctionListDestroy(&rlist));
   ctx->physics.riemann = r;
@@ -546,7 +544,6 @@ static PetscErrorCode PhysicsRiemann_Traffic_Rusanov(void *vctx,PetscInt m,const
 
 static PetscErrorCode PhysicsCreate_Traffic(FVCtx *ctx)
 {
-  PetscErrorCode    ierr;
   TrafficCtx        *user;
   RiemannFunction   r;
   PetscFunctionList rlist      = 0;
@@ -566,10 +563,10 @@ static PetscErrorCode PhysicsCreate_Traffic(FVCtx *ctx)
   PetscCall(RiemannListAdd(&rlist,"roe",    PhysicsRiemann_Traffic_Roe));
   PetscCall(RiemannListAdd(&rlist,"lxf",    PhysicsRiemann_Traffic_LxF));
   PetscCall(RiemannListAdd(&rlist,"rusanov",PhysicsRiemann_Traffic_Rusanov));
-  ierr = PetscOptionsBegin(ctx->comm,ctx->prefix,"Options for Traffic","");PetscCall(ierr);
+  PetscOptionsBegin(ctx->comm,ctx->prefix,"Options for Traffic","");
     PetscCall(PetscOptionsReal("-physics_traffic_a","Flux = a*u*(1-u)","",user->a,&user->a,NULL));
     PetscCall(PetscOptionsFList("-physics_traffic_riemann","Riemann solver","",rlist,rname,rname,sizeof(rname),NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   PetscCall(RiemannListFind(rlist,rname,&r));
   PetscCall(PetscFunctionListDestroy(&rlist));
@@ -692,7 +689,6 @@ static PetscErrorCode PhysicsRiemann_Acoustics_Exact(void *vctx,PetscInt m,const
 
 static PetscErrorCode PhysicsCreate_Acoustics(FVCtx *ctx)
 {
-  PetscErrorCode    ierr;
   AcousticsCtx      *user;
   PetscFunctionList rlist      = 0,rclist = 0;
   char              rname[256] = "exact",rcname[256] = "characteristic";
@@ -713,14 +709,14 @@ static PetscErrorCode PhysicsCreate_Acoustics(FVCtx *ctx)
   PetscCall(RiemannListAdd(&rlist,"exact",  PhysicsRiemann_Acoustics_Exact));
   PetscCall(ReconstructListAdd(&rclist,"characteristic",PhysicsCharacteristic_Acoustics));
   PetscCall(ReconstructListAdd(&rclist,"conservative",PhysicsCharacteristic_Conservative));
-  ierr = PetscOptionsBegin(ctx->comm,ctx->prefix,"Options for linear Acoustics","");PetscCall(ierr);
+  PetscOptionsBegin(ctx->comm,ctx->prefix,"Options for linear Acoustics","");
   {
     PetscCall(PetscOptionsReal("-physics_acoustics_c","c = sqrt(bulk/rho)","",user->c,&user->c,NULL));
     PetscCall(PetscOptionsReal("-physics_acoustics_z","z = sqrt(bulk*rho)","",user->z,&user->z,NULL));
     PetscCall(PetscOptionsFList("-physics_acoustics_riemann","Riemann solver","",rlist,rname,rname,sizeof(rname),NULL));
     PetscCall(PetscOptionsFList("-physics_acoustics_reconstruct","Reconstruction","",rclist,rcname,rcname,sizeof(rcname),NULL));
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscCall(RiemannListFind(rlist,rname,&ctx->physics.riemann));
   PetscCall(ReconstructListFind(rclist,rcname,&ctx->physics.characteristic));
   PetscCall(PetscFunctionListDestroy(&rlist));
@@ -901,7 +897,6 @@ static PetscErrorCode PhysicsCharacteristic_IsoGas(void *vctx,PetscInt m,const P
 
 static PetscErrorCode PhysicsCreate_IsoGas(FVCtx *ctx)
 {
-  PetscErrorCode    ierr;
   IsoGasCtx         *user;
   PetscFunctionList rlist = 0,rclist = 0;
   char              rname[256] = "exact",rcname[256] = "characteristic";
@@ -923,11 +918,11 @@ static PetscErrorCode PhysicsCreate_IsoGas(FVCtx *ctx)
   PetscCall(RiemannListAdd(&rlist,"rusanov",PhysicsRiemann_IsoGas_Rusanov));
   PetscCall(ReconstructListAdd(&rclist,"characteristic",PhysicsCharacteristic_IsoGas));
   PetscCall(ReconstructListAdd(&rclist,"conservative",PhysicsCharacteristic_Conservative));
-  ierr = PetscOptionsBegin(ctx->comm,ctx->prefix,"Options for IsoGas","");PetscCall(ierr);
+  PetscOptionsBegin(ctx->comm,ctx->prefix,"Options for IsoGas","");
     PetscCall(PetscOptionsReal("-physics_isogas_acoustic_speed","Acoustic speed","",user->acoustic_speed,&user->acoustic_speed,NULL));
     PetscCall(PetscOptionsFList("-physics_isogas_riemann","Riemann solver","",rlist,rname,rname,sizeof(rname),NULL));
     PetscCall(PetscOptionsFList("-physics_isogas_reconstruct","Reconstruction","",rclist,rcname,rcname,sizeof(rcname),NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscCall(RiemannListFind(rlist,rname,&ctx->physics.riemann));
   PetscCall(ReconstructListFind(rclist,rcname,&ctx->physics.characteristic));
   PetscCall(PetscFunctionListDestroy(&rlist));
@@ -1057,7 +1052,6 @@ static PetscErrorCode PhysicsCharacteristic_Shallow(void *vctx,PetscInt m,const 
 
 static PetscErrorCode PhysicsCreate_Shallow(FVCtx *ctx)
 {
-  PetscErrorCode    ierr;
   ShallowCtx        *user;
   PetscFunctionList rlist = 0,rclist = 0;
   char              rname[256] = "exact",rcname[256] = "characteristic";
@@ -1079,11 +1073,11 @@ static PetscErrorCode PhysicsCreate_Shallow(FVCtx *ctx)
   PetscCall(RiemannListAdd(&rlist,"rusanov",PhysicsRiemann_Shallow_Rusanov));
   PetscCall(ReconstructListAdd(&rclist,"characteristic",PhysicsCharacteristic_Shallow));
   PetscCall(ReconstructListAdd(&rclist,"conservative",PhysicsCharacteristic_Conservative));
-  ierr = PetscOptionsBegin(ctx->comm,ctx->prefix,"Options for Shallow","");PetscCall(ierr);
+  PetscOptionsBegin(ctx->comm,ctx->prefix,"Options for Shallow","");
     PetscCall(PetscOptionsReal("-physics_shallow_gravity","Gravity","",user->gravity,&user->gravity,NULL));
     PetscCall(PetscOptionsFList("-physics_shallow_riemann","Riemann solver","",rlist,rname,rname,sizeof(rname),NULL));
     PetscCall(PetscOptionsFList("-physics_shallow_reconstruct","Reconstruction","",rclist,rcname,rcname,sizeof(rcname),NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscCall(RiemannListFind(rlist,rname,&ctx->physics.riemann));
   PetscCall(ReconstructListFind(rclist,rcname,&ctx->physics.characteristic));
   PetscCall(PetscFunctionListDestroy(&rlist));
@@ -1336,7 +1330,6 @@ int main(int argc,char *argv[])
   PetscInt          i,dof,xs,xm,Mx,draw = 0;
   PetscBool         view_final = PETSC_FALSE;
   PetscReal         ptime;
-  PetscErrorCode    ierr;
 
   PetscCall(PetscInitialize(&argc,&argv,0,help));
   comm = PETSC_COMM_WORLD;
@@ -1373,7 +1366,7 @@ int main(int argc,char *argv[])
   ctx.comm = comm;
   ctx.cfl  = 0.9; ctx.bctype = FVBC_PERIODIC;
   ctx.xmin = -1; ctx.xmax = 1;
-  ierr     = PetscOptionsBegin(comm,NULL,"Finite Volume solver options","");PetscCall(ierr);
+  PetscOptionsBegin(comm,NULL,"Finite Volume solver options","");
     PetscCall(PetscOptionsReal("-xmin","X min","",ctx.xmin,&ctx.xmin,NULL));
     PetscCall(PetscOptionsReal("-xmax","X max","",ctx.xmax,&ctx.xmax,NULL));
     PetscCall(PetscOptionsFList("-limit","Name of flux limiter to use","",limiters,lname,lname,sizeof(lname),NULL));
@@ -1384,7 +1377,7 @@ int main(int argc,char *argv[])
     PetscCall(PetscOptionsBool("-exact","Compare errors with exact solution","",ctx.exact,&ctx.exact,NULL));
     PetscCall(PetscOptionsReal("-cfl","CFL number to time step at","",ctx.cfl,&ctx.cfl,NULL));
     PetscCall(PetscOptionsEnum("-bc_type","Boundary condition","",FVBCTypes,(PetscEnum)ctx.bctype,(PetscEnum*)&ctx.bctype,NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   /* Choose the limiter from the list of registered limiters */
   PetscCall(PetscFunctionListFind(limiters,lname,&ctx.limit));

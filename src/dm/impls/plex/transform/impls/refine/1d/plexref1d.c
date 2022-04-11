@@ -79,7 +79,7 @@ static PetscErrorCode DMPlexTransformSetFromOptions_1D(PetscOptionItems *PetscOp
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 2);
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"DMPlex Options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"DMPlex Options");
   PetscCall(PetscOptionsIntArray("-dm_plex_transform_1d_ref_cell", "Mark cells for refinement", "", cells, &n, &flg));
   if (flg) {
     DMLabel active;
@@ -89,7 +89,7 @@ static PetscErrorCode DMPlexTransformSetFromOptions_1D(PetscOptionItems *PetscOp
     PetscCall(DMPlexTransformSetActive(tr, active));
     PetscCall(DMLabelDestroy(&active));
   }
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

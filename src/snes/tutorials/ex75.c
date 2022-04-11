@@ -11,14 +11,11 @@ typedef struct {
 
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
   options->fem = PETSC_FALSE;
-
-  ierr = PetscOptionsBegin(comm, "", "Stokes Problem Options", "DMPLEX");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "Stokes Problem Options", "DMPLEX");
   PetscCall(PetscOptionsBool("-fem", "Run FEM tests", "ex75.c", options->fem, &options->fem, NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 
@@ -523,7 +520,6 @@ PetscErrorCode MapleTest(MPI_Comm comm, AppCtx *ctx)
   PetscReal      x[41], z[41];
   PetscReal      kn, km, B;
   PetscInt       i, j;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscCall(SolKxData5(x, z, &kn, &km, &B, vxMaple, vzMaple, pMaple, sxxMaple, sxzMaple, szzMaple));
@@ -533,12 +529,10 @@ PetscErrorCode MapleTest(MPI_Comm comm, AppCtx *ctx)
       PetscReal   norm;
 
       PetscCall(SolKxSolution(x[i], z[j], kn, km, B, &vx, &vz, &p, &sxx, &sxz, &szz));
-      norm = sqrt(PetscSqr(PetscAbsScalar(vx - vxMaple[i][j])) + PetscSqr(PetscAbsScalar(vz - vzMaple[i][j])));
-      if (norm > 1.0e-10) {
-        ierr = PetscPrintf(PETSC_COMM_SELF, "%0.17e %0.17e %0.17e %0.17e %0.17e %0.17e %0.17e %0.17e %0.17e\n",
-                           (double)x[i], (double)z[j], (double)PetscAbsScalar(vx - vxMaple[i][j]), (double)PetscAbsScalar(vz - vzMaple[i][j]), (double)PetscAbsScalar(p - pMaple[i][j]),
-                           (double)PetscAbsScalar(sxx - sxxMaple[i][j]), (double)PetscAbsScalar(sxz - sxzMaple[i][j]), (double)PetscAbsScalar(szz - szzMaple[i][j]), (double)norm);
-        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid solution, error %g", (double)norm);
+      norm = PetscSqrt(PetscSqr(PetscAbsScalar(vx - vxMaple[i][j])) + PetscSqr(PetscAbsScalar(vz - vzMaple[i][j])));
+      PetscCheck(norm >- 1.0e-10,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid solution, %0.17e %0.17e %0.17e %0.17e %0.17e %0.17e %0.17e %0.17e %0.17e\n",
+                 (double)x[i], (double)z[j], (double)PetscAbsScalar(vx - vxMaple[i][j]), (double)PetscAbsScalar(vz - vzMaple[i][j]), (double)PetscAbsScalar(p - pMaple[i][j]),
+                 (double)PetscAbsScalar(sxx - sxxMaple[i][j]), (double)PetscAbsScalar(sxz - sxzMaple[i][j]), (double)PetscAbsScalar(szz - szzMaple[i][j]), (double)norm);
       }
     }
   }

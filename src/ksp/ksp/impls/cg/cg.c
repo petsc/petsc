@@ -469,14 +469,14 @@ PetscErrorCode KSPSetFromOptions_CG(PetscOptionItems *PetscOptionsObject,KSP ksp
   PetscBool  flg;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"KSP CG and CGNE options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"KSP CG and CGNE options");
 #if defined(PETSC_USE_COMPLEX)
   PetscCall(PetscOptionsEnum("-ksp_cg_type","Matrix is Hermitian or complex symmetric","KSPCGSetType",KSPCGTypes,(PetscEnum)cg->type,
                            (PetscEnum*)&cg->type,NULL));
 #endif
   PetscCall(PetscOptionsBool("-ksp_cg_single_reduction","Merge inner products into single MPI_Allreduce()","KSPCGUseSingleReduction",cg->singlereduction,&cg->singlereduction,&flg));
   if (flg) PetscCall(KSPCGUseSingleReduction(ksp,cg->singlereduction));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

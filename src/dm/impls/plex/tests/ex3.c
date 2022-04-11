@@ -111,7 +111,6 @@ PetscErrorCode trigDer(PetscInt dim, PetscReal time, const PetscReal coords[], c
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   PetscInt       n = 3;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   options->useDA           = PETSC_FALSE;
@@ -132,7 +131,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->constants[1]    = 2.0;
   options->constants[2]    = 3.0;
 
-  ierr = PetscOptionsBegin(comm, "", "Projection Test Options", "DMPlex");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "Projection Test Options", "DMPlex");
   PetscCall(PetscOptionsBool("-use_da", "Flag for DMDA mesh", "ex3.c", options->useDA, &options->useDA, NULL));
   PetscCall(PetscOptionsBool("-shear_coords", "Transform coordinates with a shear", "ex3.c", options->shearCoords, &options->shearCoords, NULL));
   PetscCall(PetscOptionsBool("-non_affine_coords", "Transform coordinates with a non-affine transform", "ex3.c", options->nonaffineCoords, &options->nonaffineCoords, NULL));
@@ -148,7 +147,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsBool("-test_fv_grad", "Test finite volume gradient reconstruction", "ex3.c", options->testFVgrad, &options->testFVgrad, NULL));
   PetscCall(PetscOptionsBool("-test_injector","Test finite element injection", "ex3.c", options->testInjector, &options->testInjector,NULL));
   PetscCall(PetscOptionsRealArray("-constants","Set the constant values", "ex3.c", options->constants, &n,NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   PetscFunctionReturn(0);
 }

@@ -26,10 +26,10 @@ static PetscErrorCode KSPSetFromOptions_PIPEPRCG(PetscOptionItems *PetscOptionsO
   PetscBool      flag=PETSC_FALSE;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"KSP PIPEPRCG options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"KSP PIPEPRCG options");
   PetscCall(PetscOptionsBool("-recompute_w","-recompute w_k with Ar_k? (default = True)","",prcg->rc_w_q,&prcg->rc_w_q,&flag));
   if (!flag) prcg->rc_w_q = PETSC_TRUE;
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

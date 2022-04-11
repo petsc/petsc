@@ -45,12 +45,11 @@ PetscErrorCode UserContextCreate(MPI_Comm comm,UserContext **ctx)
   UserContext    *user;
   const char     *bcTypes[2] = {"dirichlet","neumann"};
   PetscInt       bc;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   PetscCall(PetscCalloc1(1,&user));
   user->comm = comm;
-  ierr = PetscOptionsBegin(comm, "", "Options for the inhomogeneous Poisson equation", "DMqq");PetscCall(ierr);
+  PetscOptionsBegin(comm, "", "Options for the inhomogeneous Poisson equation", "DMqq");
   user->rho = 1.0;
   PetscCall(PetscOptionsReal("-rho", "The conductivity", "ex29.c", user->rho, &user->rho, NULL));
   user->nu = 0.1;
@@ -58,7 +57,7 @@ PetscErrorCode UserContextCreate(MPI_Comm comm,UserContext **ctx)
   bc = (PetscInt)DIRICHLET;
   PetscCall(PetscOptionsEList("-bc_type","Type of boundary condition","ex29.c",bcTypes,2,bcTypes[0],&bc,NULL));
   user->bcType = (BCType)bc;
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   *ctx = user;
   PetscFunctionReturn(0);
 }
@@ -175,7 +174,6 @@ static PetscErrorCode _DMDADetermineGlobalS0_2d(PetscMPIInt rank_re,PetscInt Mp_
 /* adapted from src/ksp/pc/impls/telescope/telescope_dmda.c */
 static PetscErrorCode DMDACreatePermutation_2d(DM dmrepart,DM dmf,Mat *mat)
 {
-  PetscErrorCode ierr;
   PetscInt       k,sum,Mp_re = 0,Np_re = 0;
   PetscInt       nx,ny,sr,er,Mr,ndof;
   PetscInt       i,j,location,startI[2],endI[2],lenI[2];
@@ -254,10 +252,10 @@ static PetscErrorCode DMDACreatePermutation_2d(DM dmrepart,DM dmf,Mat *mat)
       PetscInt    lenI_re[] = {0,0};
 
       location = (i - startI[0]) + (j - startI[1])*lenI[0];
-      ierr = _DMDADetermineRankFromGlobalIJ_2d(i,j,Mp_re,Np_re,
-                                             start_i_re,start_j_re,
-                                             range_i_re,range_j_re,
-                                             &rank_reI[0],&rank_reI[1],&rank_ijk_re);PetscCall(ierr);
+      PetscCall(_DMDADetermineRankFromGlobalIJ_2d(i,j,Mp_re,Np_re,
+                                                  start_i_re,start_j_re,
+                                                  range_i_re,range_j_re,
+                                                  &rank_reI[0],&rank_reI[1],&rank_ijk_re));
 
       PetscCall(_DMDADetermineGlobalS0_2d(rank_ijk_re,Mp_re,Np_re,range_i_re,range_j_re,&s0_re));
 

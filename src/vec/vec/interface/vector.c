@@ -1251,14 +1251,13 @@ static PetscErrorCode VecSetTypeFromOptions_Private(PetscOptionItems *PetscOptio
 @*/
 PetscErrorCode  VecSetFromOptions(Vec vec)
 {
-  PetscErrorCode ierr;
   PetscBool      flg;
   PetscInt       bind_below = 0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_CLASSID,1);
 
-  ierr = PetscObjectOptionsBegin((PetscObject)vec);PetscCall(ierr);
+  PetscObjectOptionsBegin((PetscObject)vec);
   /* Handle vector type options */
   PetscCall(VecSetTypeFromOptions_Private(PetscOptionsObject,vec));
 
@@ -1273,7 +1272,7 @@ PetscErrorCode  VecSetFromOptions(Vec vec)
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)vec));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

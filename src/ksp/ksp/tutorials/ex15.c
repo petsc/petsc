@@ -44,7 +44,6 @@ int main(int argc,char **args)
   SampleShellPC  *shell;    /* user-defined preconditioner context */
   PetscScalar    v,one = 1.0,none = -1.0;
   PetscInt       i,j,Ii,J,Istart,Iend,m = 8,n = 7,its;
-  PetscErrorCode ierr;
   PetscBool      user_defined_pc = PETSC_FALSE;
 
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
@@ -139,8 +138,7 @@ int main(int argc,char **args)
        to set various options.
   */
   PetscCall(KSPGetPC(ksp,&pc));
-  ierr = KSPSetTolerances(ksp,1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,
-                          PETSC_DEFAULT);PetscCall(ierr);
+  PetscCall(KSPSetTolerances(ksp,1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT));
 
   /*
      Set a user-defined "shell" preconditioner if desired

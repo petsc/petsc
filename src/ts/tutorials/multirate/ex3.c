@@ -75,7 +75,6 @@ int main(int argc,char **argv)
   TS             ts;            /* ODE integrator */
   Vec            U;             /* solution will be stored here */
   Vec            Utrue;
-  PetscErrorCode ierr;
   PetscMPIInt    size;
   AppCtx         ctx;
   PetscScalar    *u;
@@ -140,14 +139,14 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solver options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ODE options","");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ODE options","");
   {
     ctx.Tf = 0.3;
     ctx.dt = 0.01;
     PetscCall(PetscOptionsScalar("-Tf","","",ctx.Tf,&ctx.Tf,NULL));
     PetscCall(PetscOptionsScalar("-dt","","",ctx.dt,&ctx.dt,NULL));
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscCall(TSSetMaxTime(ts,ctx.Tf));
   PetscCall(TSSetTimeStep(ts,ctx.dt));
   PetscCall(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP));

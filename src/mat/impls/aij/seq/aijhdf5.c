@@ -23,7 +23,6 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
   PetscLayout     jmap = NULL;
   MPI_Comm        comm;
   PetscMPIInt     rank, size;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscCall(PetscViewerGetFormat(viewer, &format));
@@ -55,9 +54,9 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
     PetscCall(PetscStrallocpy("MATLAB_sparse",&c_name));
   }
 
-  ierr = PetscOptionsBegin(comm,NULL,"Options for loading matrix from HDF5","Mat");PetscCall(ierr);
+  PetscOptionsBegin(comm,NULL,"Options for loading matrix from HDF5","Mat");
   PetscCall(PetscOptionsInt("-matload_block_size","Set the blocksize used to store the matrix","MatLoad",bs,&bs,&flg));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   if (flg) {
     PetscCall(MatSetBlockSize(mat, bs));
   }

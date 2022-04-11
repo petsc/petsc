@@ -19,15 +19,14 @@ int main(int argc, char **argv)
   PetscSection   section;
   PetscReal      norm;
   PetscInt       dim;
-  PetscErrorCode ierr;
 
   PetscCall(PetscInitialize(&argc, &argv, (char *) 0, help));
   comm = PETSC_COMM_WORLD;
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","Test Options","none");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,"","Test Options","none");
   PetscCall(PetscOptionsBool("-test_read","Test reading from the HDF5 file","",PETSC_FALSE,&test_read,NULL));
   PetscCall(PetscOptionsBool("-verbose","print the Vecs","",PETSC_FALSE,&verbose,NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   PetscCall(DMCreate(comm, &dm));
   PetscCall(DMSetType(dm, DMPLEX));

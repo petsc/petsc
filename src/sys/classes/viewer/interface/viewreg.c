@@ -204,7 +204,7 @@ $       saws[:communicatorname]                    publishes object to the Scien
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(),
           PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
           PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList(), PetscOptionsPushGetViewerOff(), PetscOptionsPopGetViewerOff(),
@@ -491,7 +491,6 @@ PetscErrorCode  PetscViewerRegister(const char *sname,PetscErrorCode (*function)
 @*/
 PetscErrorCode  PetscViewerSetFromOptions(PetscViewer viewer)
 {
-  PetscErrorCode    ierr;
   char              vtype[256];
   PetscBool         flg;
 
@@ -501,7 +500,7 @@ PetscErrorCode  PetscViewerSetFromOptions(PetscViewer viewer)
   if (!PetscViewerList) {
     PetscCall(PetscViewerRegisterAll());
   }
-  ierr = PetscObjectOptionsBegin((PetscObject)viewer);PetscCall(ierr);
+  PetscObjectOptionsBegin((PetscObject)viewer);
   PetscCall(PetscOptionsFList("-viewer_type","Type of PetscViewer","None",PetscViewerList,(char*)(((PetscObject)viewer)->type_name ? ((PetscObject)viewer)->type_name : PETSCVIEWERASCII),vtype,256,&flg));
   if (flg) {
     PetscCall(PetscViewerSetType(viewer,vtype));
@@ -517,7 +516,7 @@ PetscErrorCode  PetscViewerSetFromOptions(PetscViewer viewer)
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)viewer));
   PetscCall(PetscViewerViewFromOptions(viewer,NULL,"-viewer_view"));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

@@ -194,7 +194,7 @@ static PetscErrorCode PCSetFromOptions_HPDDM(PetscOptionItems *PetscOptionsObjec
     PetscCall(PetscCalloc1(PETSC_PCHPDDM_MAXLEVELS, &levels));
     data->levels = levels;
   }
-  PetscCall(PetscOptionsHead(PetscOptionsObject, "PCHPDDM options"));
+  PetscOptionsHeadBegin(PetscOptionsObject, "PCHPDDM options");
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)pc), &size));
   previous = size;
   while (i < PETSC_PCHPDDM_MAXLEVELS) {
@@ -264,7 +264,7 @@ static PetscErrorCode PCSetFromOptions_HPDDM(PetscOptionItems *PetscOptionsObjec
       PetscCall(PetscOptionsBool(prefix, "Log events level by level instead of inside PCSetUp()/KSPSolve()", NULL, data->log_separate, &data->log_separate, NULL));
     }
   }
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   while (i < PETSC_PCHPDDM_MAXLEVELS && data->levels[i]) PetscCall(PetscFree(data->levels[i++]));
   PetscFunctionReturn(0);
 }
@@ -1482,7 +1482,7 @@ PetscErrorCode PCHPDDMGetSTShareSubKSP(PC pc, PetscBool *share)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   if (share) {
-    PetscValidPointer(share, 2);
+    PetscValidBoolPointer(share, 2);
     PetscUseMethod(pc, "PCHPDDMGetSTShareSubKSP_C", (PC, PetscBool*), (pc, share));
   }
   PetscFunctionReturn(0);

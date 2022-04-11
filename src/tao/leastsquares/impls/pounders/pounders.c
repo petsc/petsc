@@ -1198,12 +1198,12 @@ static PetscErrorCode TaoSetFromOptions_POUNDERS(PetscOptionItems *PetscOptionsO
   TAO_POUNDERS   *mfqP = (TAO_POUNDERS*)tao->data;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"POUNDERS method for least-squares optimization"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"POUNDERS method for least-squares optimization");
   PetscCall(PetscOptionsReal("-tao_pounders_delta","initial delta","",mfqP->delta,&mfqP->delta0,NULL));
   mfqP->delta = mfqP->delta0;
   PetscCall(PetscOptionsInt("-tao_pounders_npmax","max number of points in model","",mfqP->npmax,&mfqP->npmax,NULL));
   PetscCall(PetscOptionsBool("-tao_pounders_gqt","use gqt algorithm for subproblem","",mfqP->usegqt,&mfqP->usegqt,NULL));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

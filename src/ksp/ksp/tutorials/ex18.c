@@ -24,7 +24,6 @@ int main(int argc,char **args)
   PetscRandom    rctx;     /* random number generator context */
   PetscReal      norm;     /* norm of solution error */
   PetscInt       i,j,Ii,J,Istart,Iend,m,n,its;
-  PetscErrorCode ierr;
   PetscBool      random_exact_sol,view_exact_sol,permute;
   char           ordering[256] = MATORDERINGRCM;
   IS             rowperm       = NULL,colperm = NULL;
@@ -34,7 +33,7 @@ int main(int argc,char **args)
 #endif
 
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Poisson example options","");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Poisson example options","");
   {
     m                = 8;
     PetscCall(PetscOptionsInt("-m","Number of grid points in x direction","",m,&m,NULL));
@@ -47,7 +46,7 @@ int main(int argc,char **args)
     permute          = PETSC_FALSE;
     PetscCall(PetscOptionsFList("-permute","Permute matrix and vector to solving in new ordering","",MatOrderingList,ordering,ordering,sizeof(ordering),&permute));
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          Compute the matrix and right-hand-side vector that define
          the linear system, Ax = b.
@@ -190,8 +189,7 @@ int main(int argc,char **args)
        KSPSetFromOptions().  All of these defaults can be
        overridden at runtime, as indicated below.
   */
-  ierr = KSPSetTolerances(ksp,1.e-2/((m+1)*(n+1)),PETSC_DEFAULT,PETSC_DEFAULT,
-                          PETSC_DEFAULT);PetscCall(ierr);
+  PetscCall(KSPSetTolerances(ksp,1.e-2/((m+1)*(n+1)),PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT));
 
   /*
     Set runtime options, e.g.,

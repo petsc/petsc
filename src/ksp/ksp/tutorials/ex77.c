@@ -19,7 +19,6 @@ int main(int argc,char **args)
   char               name[PETSC_MAX_PATH_LEN],type[256];
   PetscBool          breakdown = PETSC_FALSE,flg;
   KSPConvergedReason reason;
-  PetscErrorCode     ierr;
 
   PetscCall(PetscInitialize(&argc,&args,NULL,help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
@@ -35,9 +34,9 @@ int main(int argc,char **args)
   PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,&viewer));
   PetscCall(MatLoad(A,viewer));
   PetscCall(PetscViewerDestroy(&viewer));
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","","");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,"","","");
   PetscCall(PetscOptionsFList("-mat_type","Matrix type","MatSetType",MatList,deft,type,256,&flg));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   if (flg) {
     PetscCall(PetscStrcmp(type,MATKAIJ,&flg));
     if (!flg) {

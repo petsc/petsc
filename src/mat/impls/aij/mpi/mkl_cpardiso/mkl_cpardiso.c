@@ -498,12 +498,11 @@ PetscErrorCode MatFactorNumeric_MKL_CPARDISO(Mat F,Mat A,const MatFactorInfo *in
 PetscErrorCode PetscSetMKL_CPARDISOFromOptions(Mat F, Mat A)
 {
   Mat_MKL_CPARDISO    *mat_mkl_cpardiso = (Mat_MKL_CPARDISO*)F->data;
-  PetscErrorCode      ierr;
   PetscInt            icntl,threads;
   PetscBool           flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"MKL_CPARDISO Options","Mat");PetscCall(ierr);
+  PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"MKL_CPARDISO Options","Mat");
   PetscCall(PetscOptionsInt("-mat_mkl_cpardiso_65","Suggested number of threads to use within MKL_CPARDISO","None",threads,&threads,&flg));
   if (flg) mkl_set_num_threads((int)threads);
 
@@ -545,12 +544,10 @@ PetscErrorCode PetscSetMKL_CPARDISOFromOptions(Mat F, Mat A)
     PetscCall(PetscOptionsInt("-mat_mkl_cpardiso_12","Solve with transposed or conjugate transposed matrix A","None",mat_mkl_cpardiso->iparm[11],&icntl,&flg));
     if (flg) mat_mkl_cpardiso->iparm[11] = icntl;
 
-    ierr = PetscOptionsInt("-mat_mkl_cpardiso_13","Improved accuracy using (non-) symmetric weighted matching","None",mat_mkl_cpardiso->iparm[12],&icntl,
-      &flg);PetscCall(ierr);
+    PetscCall(PetscOptionsInt("-mat_mkl_cpardiso_13","Improved accuracy using (non-) symmetric weighted matching","None",mat_mkl_cpardiso->iparm[12],&icntl,&flg));
     if (flg) mat_mkl_cpardiso->iparm[12] = icntl;
 
-    ierr = PetscOptionsInt("-mat_mkl_cpardiso_18","Numbers of non-zero elements","None",mat_mkl_cpardiso->iparm[17],&icntl,
-      &flg);PetscCall(ierr);
+    PetscCall(PetscOptionsInt("-mat_mkl_cpardiso_18","Numbers of non-zero elements","None",mat_mkl_cpardiso->iparm[17],&icntl,&flg));
     if (flg) mat_mkl_cpardiso->iparm[17] = icntl;
 
     PetscCall(PetscOptionsInt("-mat_mkl_cpardiso_19","Report number of floating point operations","None",mat_mkl_cpardiso->iparm[18],&icntl,&flg));
@@ -578,7 +575,7 @@ PetscErrorCode PetscSetMKL_CPARDISOFromOptions(Mat F, Mat A)
     if (flg) mat_mkl_cpardiso->iparm[59] = icntl;
   }
 
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

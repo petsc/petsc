@@ -149,8 +149,8 @@ static PetscErrorCode PCDestroy_ROWSCALINGVIENNACL(PC pc)
 static PetscErrorCode PCSetFromOptions_ROWSCALINGVIENNACL(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"ROWSCALINGVIENNACL options"));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadBegin(PetscOptionsObject,"ROWSCALINGVIENNACL options");
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

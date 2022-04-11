@@ -413,7 +413,6 @@ PetscErrorCode  AOApplicationToPetscPermuteReal(AO ao, PetscInt block, PetscReal
 @*/
 PetscErrorCode AOSetFromOptions(AO ao)
 {
-  PetscErrorCode ierr;
   char           type[256];
   const char     *def=AOBASIC;
   PetscBool      flg;
@@ -421,14 +420,14 @@ PetscErrorCode AOSetFromOptions(AO ao)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao,AO_CLASSID,1);
 
-  ierr = PetscObjectOptionsBegin((PetscObject)ao);PetscCall(ierr);
+  PetscObjectOptionsBegin((PetscObject)ao);
   PetscCall(PetscOptionsFList("-ao_type","AO type","AOSetType",AOList,def,type,256,&flg));
   if (flg) {
     PetscCall(AOSetType(ao,type));
   } else if (!((PetscObject)ao)->type_name) {
     PetscCall(AOSetType(ao,def));
   }
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

@@ -37,7 +37,6 @@ static PetscScalar getEta(Ctx ctx,PetscScalar x) { return PetscRealPart(x) < (ct
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   Ctx            ctx;
   Mat            A;
   Vec            x,b;
@@ -63,16 +62,15 @@ int main(int argc,char **argv)
      the domain ("section"); the first the solution to the Stokes equations
      (x- and y-velocities and scalar pressure), and the second holds coefficients
      (viscosities on corners/elements and densities on corners) */
-  ierr = DMStagCreate2d(
-      ctx->comm,
-      DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,
-      20,30,                                   /* Global element counts */
-      PETSC_DECIDE,PETSC_DECIDE,               /* Determine parallel decomposition automatically */
-      0,1,1,                                   /* dof: 0 per vertex, 1 per edge, 1 per face/element */
-      DMSTAG_STENCIL_BOX,
-      1,                                       /* elementwise stencil width */
-      NULL,NULL,
-      &ctx->dmStokes);PetscCall(ierr);
+  PetscCall(DMStagCreate2d(ctx->comm,
+                           DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,
+                           20,30,                                   /* Global element counts */
+                           PETSC_DECIDE,PETSC_DECIDE,               /* Determine parallel decomposition automatically */
+                           0,1,1,                                   /* dof: 0 per vertex, 1 per edge, 1 per face/element */
+                           DMSTAG_STENCIL_BOX,
+                           1,                                       /* elementwise stencil width */
+                           NULL,NULL,
+                           &ctx->dmStokes));
   PetscCall(DMSetFromOptions(ctx->dmStokes));
   PetscCall(DMSetUp(ctx->dmStokes));
   PetscCall(DMStagSetUniformCoordinatesExplicit(ctx->dmStokes,0.0,ctx->xmax,0.0,ctx->ymax,0.0,0.0));

@@ -284,7 +284,6 @@ noinsert1:;
 
 static PetscErrorCode MatLoad_BlockMat(Mat newmat, PetscViewer viewer)
 {
-  PetscErrorCode    ierr;
   Mat               tmpA;
   PetscInt          i,j,m,n,bs = 1,ncols,*lens,currentcol,mbs,**ii,*ilens,nextcol,*llens,cnt = 0;
   const PetscInt    *cols;
@@ -301,10 +300,10 @@ static PetscErrorCode MatLoad_BlockMat(Mat newmat, PetscViewer viewer)
   PetscCall(MatLoad_SeqAIJ(tmpA,viewer));
 
   PetscCall(MatGetLocalSize(tmpA,&m,&n));
-  ierr = PetscOptionsBegin(PETSC_COMM_SELF,NULL,"Options for loading BlockMat matrix 1","Mat");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_SELF,NULL,"Options for loading BlockMat matrix 1","Mat");
   PetscCall(PetscOptionsInt("-matload_block_size","Set the blocksize used to store the matrix","MatLoad",bs,&bs,NULL));
   PetscCall(PetscOptionsBool("-matload_symmetric","Store the matrix as symmetric","MatLoad",flg,&flg,NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   /* Determine number of nonzero blocks for each block row */
   a    = (Mat_SeqAIJ*) tmpA->data;

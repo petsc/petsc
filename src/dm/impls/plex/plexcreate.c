@@ -179,14 +179,13 @@ PetscErrorCode DMPlexCreateCoordinateSpace(DM dm, PetscInt degree, PetscPointFun
   if (id != PETSCFE_CLASSID) {
     PetscBool      simplex;
     PetscInt       dim, dE, qorder;
-    PetscErrorCode ierr;
 
     PetscCall(DMGetDimension(dm, &dim));
     PetscCall(DMGetCoordinateDim(dm, &dE));
     qorder = degree;
-    ierr = PetscObjectOptionsBegin((PetscObject) cdm);PetscCall(ierr);
+    PetscObjectOptionsBegin((PetscObject) cdm);
     PetscCall(PetscOptionsBoundedInt("-coord_dm_default_quadrature_order", "Quadrature order is one less than quadrature points per edge", "DMPlexCreateCoordinateSpace", qorder, &qorder, NULL, 0));
-    ierr = PetscOptionsEnd();PetscCall(ierr);
+    PetscOptionsEnd();
     if (degree == PETSC_DECIDE) fe = NULL;
     else {
       PetscCall(DMPlexIsSimplex(dm, &simplex));
@@ -3427,7 +3426,7 @@ static PetscErrorCode DMSetFromOptions_Plex(PetscOptionItems *PetscOptionsObject
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"DMPlex Options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"DMPlex Options");
   /* Handle automatic creation */
   PetscCall(DMGetDimension(dm, &dim));
   if (dim < 0) {PetscCall(DMPlexCreateFromOptions_Internal(PetscOptionsObject, &coordSpace, dm));created = PETSC_TRUE;}
@@ -3667,7 +3666,7 @@ static PetscErrorCode DMSetFromOptions_Plex(PetscOptionItems *PetscOptionsObject
   }
   /* Handle */
   PetscCall(DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject, dm));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

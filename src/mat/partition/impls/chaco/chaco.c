@@ -55,7 +55,7 @@ typedef struct {
 
 static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part,IS *partitioning)
 {
-  PetscErrorCode        ierr;
+  int                   cerr;
   PetscInt              *parttab,*locals,i,nb_locals,M,N;
   PetscMPIInt           size,rank;
   Mat                   mat = part->adj,matAdj,matSeq,*A;
@@ -140,9 +140,9 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part,IS *partit
 #endif
 
   /* library call */
-  ierr = interface(nvtxs,start,adjacency,vwgts,NULL,NULL,NULL,NULL,
-                   NULL,NULL,assignment,architecture,ndims_tot,mesh_dims,
-                   NULL,global_method,local_method,rqi_flag,vmax,ndims,eigtol,seed);
+  cerr = interface(nvtxs,start,adjacency,vwgts,NULL,NULL,NULL,NULL,
+                  NULL,NULL,assignment,architecture,ndims_tot,mesh_dims,
+                  NULL,global_method,local_method,rqi_flag,vmax,ndims,eigtol,seed);
 
 #if defined(PETSC_HAVE_UNISTD_H)
   err = fflush(stdout);
@@ -160,7 +160,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part,IS *partit
   }
   PetscCall(PetscFree(mesg_log));
 #endif
-  PetscCheck(!ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Chaco failed");
+  PetscCheck(!cerr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Chaco failed");
 
   PetscCall(PetscMalloc1(mat->rmap->N,&parttab));
   for (i=0; i<nvtxs; i++) parttab[i] = assignment[i];
@@ -628,7 +628,7 @@ PetscErrorCode MatPartitioningSetFromOptions_Chaco(PetscOptionItems *PetscOption
   MPChacoEigenType      eigen;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"Chaco partitioning options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"Chaco partitioning options");
   PetscCall(PetscOptionsEnum("-mat_partitioning_chaco_global","Global method","MatPartitioningChacoSetGlobal",MPChacoGlobalTypes,(PetscEnum)chaco->global_method,(PetscEnum*)&global,&flag));
   if (flag) PetscCall(MatPartitioningChacoSetGlobal(part,global));
   PetscCall(PetscOptionsEnum("-mat_partitioning_chaco_local","Local method","MatPartitioningChacoSetLocal",MPChacoLocalTypes,(PetscEnum)chaco->local_method,(PetscEnum*)&local,&flag));
@@ -642,7 +642,7 @@ PetscErrorCode MatPartitioningSetFromOptions_Chaco(PetscOptionItems *PetscOption
   PetscCall(PetscOptionsInt("-mat_partitioning_chaco_eigen_number","Number of eigenvectors: 1, 2, or 3 (bi-, quadri-, or octosection)","MatPartitioningChacoSetEigenNumber",chaco->eignum,&i,&flag));
   if (flag) PetscCall(MatPartitioningChacoSetEigenNumber(part,i));
   PetscCall(PetscOptionsBool("-mat_partitioning_chaco_verbose","Show library output","",chaco->verbose,&chaco->verbose,NULL));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

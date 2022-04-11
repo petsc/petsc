@@ -220,7 +220,7 @@ static PetscErrorCode MatQRFactorNumeric_SPQR(Mat F,Mat A,const MatFactorInfo *i
   Mat_CHOLMOD    *chol = (Mat_CHOLMOD*)F->data;
   cholmod_sparse cholA;
   PetscBool      aijalloc,valloc;
-  PetscErrorCode ierr;
+  int            err;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)A, MATNORMALHERMITIAN, &chol->normal));
@@ -228,8 +228,8 @@ static PetscErrorCode MatQRFactorNumeric_SPQR(Mat F,Mat A,const MatFactorInfo *i
     PetscCall(PetscObjectTypeCompare((PetscObject)A, MATNORMAL, &chol->normal));
   }
   PetscCall((*chol->Wrap)(A,PETSC_TRUE,&cholA,&aijalloc,&valloc));
-  ierr = !SuiteSparseQR_C_numeric(PETSC_SMALL, &cholA, chol->spqrfact, chol->common);
-  PetscCheck(!ierr,PetscObjectComm((PetscObject)F),PETSC_ERR_LIB,"SPQR factorization failed with status %d",chol->common->status);
+  err = !SuiteSparseQR_C_numeric(PETSC_SMALL, &cholA, chol->spqrfact, chol->common);
+  PetscCheck(!err,PetscObjectComm((PetscObject)F),PETSC_ERR_LIB,"SPQR factorization failed with status %d",chol->common->status);
 
   if (aijalloc) PetscCall(PetscFree2(cholA.p,cholA.i));
   if (valloc) PetscCall(PetscFree(cholA.x));

@@ -112,7 +112,6 @@ int main(int argc, char *argv[])
 {
   double         wt;
   PetscInt       n,start,step,stop,samples;
-  PetscErrorCode ierr;
 
   PetscCall(PetscInitialize(&argc,&argv,NULL,NULL));
 
@@ -124,11 +123,8 @@ int main(int argc, char *argv[])
   for (n=start; n<=stop; n+=step) {
     int nx=n+1, ny=n+1, nz=n+1;
     PetscCall(RunTest(nx,ny,nz,samples,&wt));
-    ierr = PetscPrintf(PETSC_COMM_SELF,
-                       "Grid  %3d x %3d x %3d -> %f seconds (%2d samples)\n",
-                       nx,ny,nz,wt,samples);PetscCall(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"Grid  %3d x %3d x %3d -> %f seconds (%2d samples)\n",nx,ny,nz,wt,samples));
   }
-
   PetscCall(PetscFinalize());
   return 0;
 }

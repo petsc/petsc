@@ -1094,7 +1094,7 @@ static PetscErrorCode TSSetFromOptions_GLLE(PetscOptionItems *PetscOptionsObject
   char           tname[256] = TSGLLE_IRKS,completef[256] = "rescale-and-modify";
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"General Linear ODE solver options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"General Linear ODE solver options");
   {
     PetscBool flg;
     PetscCall(PetscOptionsFList("-ts_gl_type","Type of GL method","TSGLLESetType",TSGLLEList,gl->type_name[0] ? gl->type_name : tname,tname,sizeof(tname),&flg));
@@ -1131,7 +1131,7 @@ static PetscErrorCode TSSetFromOptions_GLLE(PetscOptionItems *PetscOptionsObject
       PetscCall(TSGLLEAdaptSetFromOptions(PetscOptionsObject,adapt));
     }
   }
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

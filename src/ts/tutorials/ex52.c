@@ -40,18 +40,15 @@ typedef struct {
 /* Options for the scenario */
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-    PetscErrorCode ierr;
-
     PetscFunctionBeginUser;
     options->u = 2.5;
     options->v = 0.0;
     options->diffusion = 0.0;
-
-    ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");PetscCall(ierr);
+    PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");
     PetscCall(PetscOptionsReal("-u", "The x component of the convective coefficient", "advection_DMPLEX.c", options->u, &options->u, NULL));
     PetscCall(PetscOptionsReal("-v", "The y component of the convective coefficient", "advection_DMPLEX.c", options->v, &options->v, NULL));
     PetscCall(PetscOptionsScalar("-diffus", "The diffusive coefficient", "advection_DMPLEX.c", options->diffusion, &options->diffusion, NULL));
-    ierr = PetscOptionsEnd();PetscCall(ierr);
+    PetscOptionsEnd();
     PetscFunctionReturn(0);
 }
 

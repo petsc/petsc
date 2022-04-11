@@ -151,7 +151,7 @@ static PetscErrorCode PCSetFromOptions_BJacobi(PetscOptionItems *PetscOptionsObj
   PetscBool      flg;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"Block Jacobi options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"Block Jacobi options");
   PetscCall(PetscOptionsInt("-pc_bjacobi_blocks","Total number of blocks","PCBJacobiSetTotalBlocks",jac->n,&blocks,&flg));
   if (flg) PetscCall(PCBJacobiSetTotalBlocks(pc,blocks,NULL));
   PetscCall(PetscOptionsInt("-pc_bjacobi_local_blocks","Local number of blocks","PCBJacobiSetLocalBlocks",jac->n_local,&blocks,&flg));
@@ -163,7 +163,7 @@ static PetscErrorCode PCSetFromOptions_BJacobi(PetscOptionItems *PetscOptionsObj
       PetscCall(KSPSetFromOptions(jac->ksp[i]));
     }
   }
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 
@@ -172,7 +172,6 @@ static PetscErrorCode PCView_BJacobi(PC pc,PetscViewer viewer)
 {
   PC_BJacobi           *jac   = (PC_BJacobi*)pc->data;
   PC_BJacobi_Multiproc *mpjac = (PC_BJacobi_Multiproc*)jac->data;
-  PetscErrorCode       ierr;
   PetscMPIInt          rank;
   PetscInt             i;
   PetscBool            iascii,isstring,isdraw;
@@ -227,8 +226,7 @@ static PetscErrorCode PCView_BJacobi(PC pc,PetscViewer viewer)
       PetscCall(MPIU_Allreduce(&jac->n_local,&n_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)pc)));
       PetscCall(PetscViewerASCIIPushSynchronized(viewer));
       PetscCall(PetscViewerASCIIPrintf(viewer,"  Local solver information for each block is in the following KSP and PC objects:\n"));
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] number of local blocks = %D, first local block number = %D\n",
-                                                rank,jac->n_local,jac->first_local);PetscCall(ierr);
+      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"[%d] number of local blocks = %D, first local block number = %D\n",rank,jac->n_local,jac->first_local));
       PetscCall(PetscViewerASCIIPushTab(viewer));
       PetscCall(PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer));
       for (i=0; i<jac->n_local; i++) {

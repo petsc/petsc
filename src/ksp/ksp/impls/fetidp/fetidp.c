@@ -508,8 +508,8 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
   Mat              A,Ap;
   PetscInt         fid = -1;
   PetscMPIInt      size;
-  PetscBool        ismatis,pisz,allp,schp;
-  PetscBool        flip; /* Usually, Stokes is written (B = -\int_\Omega \nabla \cdot u q)
+  PetscBool        ismatis,pisz = PETSC_FALSE,allp = PETSC_FALSE,schp = PETSC_FALSE;
+  PetscBool        flip = PETSC_FALSE; /* Usually, Stokes is written (B = -\int_\Omega \nabla \cdot u q)
                            | A B'| | v | = | f |
                            | B 0 | | p | = | g |
                             If -ksp_fetidp_saddlepoint_flip is true, the code assumes it is written as
@@ -517,19 +517,14 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
                            |-B 0 | | p | = |-g |
                          */
   PetscObjectState matstate, matnnzstate;
-  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  pisz = PETSC_FALSE;
-  flip = PETSC_FALSE;
-  allp = PETSC_FALSE;
-  schp = PETSC_FALSE;
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)ksp),((PetscObject)ksp)->prefix,"FETI-DP options","PC");PetscCall(ierr);
+  PetscOptionsBegin(PetscObjectComm((PetscObject)ksp),((PetscObject)ksp)->prefix,"FETI-DP options","PC");
   PetscCall(PetscOptionsInt("-ksp_fetidp_pressure_field","Field id for pressures for saddle-point problems",NULL,fid,&fid,NULL));
   PetscCall(PetscOptionsBool("-ksp_fetidp_pressure_all","Use the whole pressure set instead of just that at the interface",NULL,allp,&allp,NULL));
   PetscCall(PetscOptionsBool("-ksp_fetidp_saddlepoint_flip","Flip the sign of the pressure-velocity (lower-left) block",NULL,flip,&flip,NULL));
   PetscCall(PetscOptionsBool("-ksp_fetidp_pressure_schur","Use a BDDC solver for pressure",NULL,schp,&schp,NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)ksp),&size));
   fetidp->saddlepoint = (fid >= 0 ? PETSC_TRUE : fetidp->saddlepoint);
@@ -1274,11 +1269,11 @@ static PetscErrorCode KSPSetFromOptions_FETIDP(PetscOptionItems *PetscOptionsObj
     PetscCall(PetscObjectSetOptionsPrefix((PetscObject)fetidp->innerbddc,((PetscObject)ksp)->prefix));
     PetscCall(PetscObjectAppendOptionsPrefix((PetscObject)fetidp->innerbddc,"fetidp_bddc_"));
   }
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"KSP FETIDP options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"KSP FETIDP options");
   PetscCall(PetscOptionsBool("-ksp_fetidp_fullyredundant","Use fully redundant multipliers","none",fetidp->fully_redundant,&fetidp->fully_redundant,NULL));
   PetscCall(PetscOptionsBool("-ksp_fetidp_saddlepoint","Activates support for saddle-point problems",NULL,fetidp->saddlepoint,&fetidp->saddlepoint,NULL));
   PetscCall(PetscOptionsBool("-ksp_fetidp_check","Activates verbose debugging output FETI-DP operators",NULL,fetidp->check,&fetidp->check,NULL));
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscCall(PCSetFromOptions(fetidp->innerbddc));
   PetscFunctionReturn(0);
 }

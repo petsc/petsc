@@ -63,7 +63,6 @@ static PetscErrorCode CheckIntegral(DM dm, PetscReal integral, PetscReal tol)
   Vec            u;
   PetscReal      rval;
   PetscScalar    result;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   PetscCall(DMGetGlobalVector(dm, &u));
@@ -71,8 +70,8 @@ static PetscErrorCode CheckIntegral(DM dm, PetscReal integral, PetscReal tol)
   PetscCall(DMRestoreGlobalVector(dm, &u));
   rval = PetscRealPart(result);
   if (integral > 0 && PetscAbsReal(integral - rval) > tol) {
-    ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Calculated value %g != %g actual value (error %g > %g tol)\n",
-                       (double) rval, (double) integral, (double) PetscAbsReal(integral - rval), (double) tol);PetscCall(ierr);
+    PetscCall(PetscPrintf(PetscObjectComm((PetscObject) dm), "Calculated value %g != %g actual value (error %g > %g tol)\n",
+                          (double) rval, (double) integral, (double) PetscAbsReal(integral - rval), (double) tol));
   }
   PetscFunctionReturn(0);
 }

@@ -493,12 +493,12 @@ PetscErrorCode PetscViewerSetFromOptions_Draw(PetscOptionItems *PetscOptionsObje
   PetscBool      flg;
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionsHead(PetscOptionsObject,"Draw PetscViewer Options"));
+  PetscOptionsHeadBegin(PetscOptionsObject,"Draw PetscViewer Options");
   PetscCall(PetscOptionsRealArray("-draw_bounds","Bounds to put on plots axis","PetscViewerDrawSetBounds",bounds,&nbounds,&flg));
   if (flg) {
     PetscCall(PetscViewerDrawSetBounds(v,nbounds/2,bounds));
   }
-  PetscCall(PetscOptionsTail());
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 

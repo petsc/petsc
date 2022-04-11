@@ -156,7 +156,6 @@ int main(int argc,char **argv)
 {
   TS             ts;            /* ODE integrator */
   Vec            U;             /* solution will be stored here */
-  PetscErrorCode ierr;
   PetscMPIInt    size;
   PetscInt       n = 2;
   PetscScalar    *u;
@@ -175,10 +174,10 @@ int main(int argc,char **argv)
 
   app.nbounces = 0;
   app.maxbounces = 10;
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex40 options","");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex40 options","");
   PetscCall(PetscOptionsInt("-maxbounces","","",app.maxbounces,&app.maxbounces,NULL));
   PetscCall(PetscOptionsBool("-test_adapthistory","","",hist,&hist,NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context

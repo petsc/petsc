@@ -93,7 +93,6 @@ static  char help[]="";
 
 int main(int argc, char **argv)
 {
-  PetscErrorCode     ierr;
   Vec                x,x0;
   Tao                tao;
   AppCtx             user;
@@ -107,7 +106,7 @@ int main(int argc, char **argv)
 
   PetscCall(PetscInitialize(&argc, &argv, (char*)0,help));
   user.mx = 32;
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"hyperbolic example",NULL);PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"hyperbolic example",NULL);
   PetscCall(PetscOptionsInt("-mx","Number of grid points in each direction","",user.mx,&user.mx,NULL));
   user.nt = 16;
   PetscCall(PetscOptionsInt("-nt","Number of time steps","",user.nt,&user.nt,NULL));
@@ -118,7 +117,7 @@ int main(int argc, char **argv)
   user.T = 1.0/32.0;
   PetscCall(PetscOptionsReal("-Tfinal","Final time","",user.T,&user.T,NULL));
   PetscCall(PetscOptionsInt("-ntests","Number of times to repeat TaoSolve","",ntests,&ntests,NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   user.m = user.mx*user.mx*user.nt; /*  number of constraints */
   user.n = user.mx*user.mx*3*user.nt; /*  number of variables */

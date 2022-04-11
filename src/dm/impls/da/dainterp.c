@@ -267,7 +267,6 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q0(DM dac,DM daf,Mat *A)
 
 PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
 {
-  PetscErrorCode         ierr;
   PetscInt               i,j,i_start,j_start,m_f,n_f,Mx,My,dof;
   const PetscInt         *idx_c,*idx_f;
   ISLocalToGlobalMapping ltog_f,ltog_c;
@@ -328,7 +327,7 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
   col_scale = size_f/size_c;
   col_shift = Mx*My*(rank_f/size_c);
 
-  ierr = MatPreallocateInitialize(PetscObjectComm((PetscObject)daf),m_f*n_f,col_scale*m_c*n_c,dnz,onz);PetscCall(ierr);
+  MatPreallocateBegin(PetscObjectComm((PetscObject)daf),m_f*n_f,col_scale*m_c*n_c,dnz,onz);
   for (j=j_start; j<j_start+n_f; j++) {
     for (i=i_start; i<i_start+m_f; i++) {
       /* convert to local "natural" numbering and then to PETSc global numbering */
@@ -375,7 +374,7 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
   PetscCall(MatSetType(mat,mattype));
   PetscCall(MatSeqAIJSetPreallocation(mat,0,dnz));
   PetscCall(MatMPIAIJSetPreallocation(mat,0,dnz,0,onz));
-  ierr = MatPreallocateFinalize(dnz,onz);PetscCall(ierr);
+  MatPreallocateEnd(dnz,onz);
 
   /* loop over local fine grid nodes setting interpolation for those*/
   if (!NEWVERSION) {
@@ -505,7 +504,6 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
 */
 PetscErrorCode DMCreateInterpolation_DA_2D_Q0(DM dac,DM daf,Mat *A)
 {
-  PetscErrorCode         ierr;
   PetscInt               i,j,i_start,j_start,m_f,n_f,Mx,My,dof;
   const PetscInt         *idx_c,*idx_f;
   ISLocalToGlobalMapping ltog_f,ltog_c;
@@ -556,7 +554,7 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q0(DM dac,DM daf,Mat *A)
   col_scale = size_f/size_c;
   col_shift = Mx*My*(rank_f/size_c);
 
-  ierr = MatPreallocateInitialize(PetscObjectComm((PetscObject)daf),m_f*n_f,col_scale*m_c*n_c,dnz,onz);PetscCall(ierr);
+  MatPreallocateBegin(PetscObjectComm((PetscObject)daf),m_f*n_f,col_scale*m_c*n_c,dnz,onz);
   for (j=j_start; j<j_start+n_f; j++) {
     for (i=i_start; i<i_start+m_f; i++) {
       /* convert to local "natural" numbering and then to PETSc global numbering */
@@ -597,7 +595,7 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q0(DM dac,DM daf,Mat *A)
   PetscCall(MatSetType(mat,mattype));
   PetscCall(MatSeqAIJSetPreallocation(mat,0,dnz));
   PetscCall(MatMPIAIJSetPreallocation(mat,0,dnz,0,onz));
-  ierr = MatPreallocateFinalize(dnz,onz);PetscCall(ierr);
+  MatPreallocateEnd(dnz,onz);
 
   /* loop over local fine grid nodes setting interpolation for those*/
   for (j=j_start; j<j_start+n_f; j++) {
@@ -631,7 +629,6 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q0(DM dac,DM daf,Mat *A)
 */
 PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
 {
-  PetscErrorCode         ierr;
   PetscInt               i,j,l,i_start,j_start,l_start,m_f,n_f,p_f,Mx,My,Mz,dof;
   const PetscInt         *idx_c,*idx_f;
   ISLocalToGlobalMapping ltog_f,ltog_c;
@@ -686,7 +683,7 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
   col_scale = size_f/size_c;
   col_shift = Mx*My*Mz*(rank_f/size_c);
 
-  ierr = MatPreallocateInitialize(PetscObjectComm((PetscObject)daf),m_f*n_f*p_f,col_scale*m_c*n_c*p_c,dnz,onz);PetscCall(ierr);
+  MatPreallocateBegin(PetscObjectComm((PetscObject)daf),m_f*n_f*p_f,col_scale*m_c*n_c*p_c,dnz,onz);
   for (l=l_start; l<l_start+p_f; l++) {
     for (j=j_start; j<j_start+n_f; j++) {
       for (i=i_start; i<i_start+m_f; i++) {
@@ -732,7 +729,7 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
   PetscCall(MatSetType(mat,mattype));
   PetscCall(MatSeqAIJSetPreallocation(mat,0,dnz));
   PetscCall(MatMPIAIJSetPreallocation(mat,0,dnz,0,onz));
-  ierr = MatPreallocateFinalize(dnz,onz);PetscCall(ierr);
+  MatPreallocateEnd(dnz,onz);
 
   /* loop over local fine grid nodes setting interpolation for those*/
   for (l=l_start; l<l_start+p_f; l++) {
@@ -766,7 +763,6 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
 
 PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
 {
-  PetscErrorCode         ierr;
   PetscInt               i,j,i_start,j_start,m_f,n_f,Mx,My,dof,l;
   const PetscInt         *idx_c,*idx_f;
   ISLocalToGlobalMapping ltog_f,ltog_c;
@@ -828,7 +824,7 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
   PetscCall(ISLocalToGlobalMappingGetBlockIndices(ltog_c,&idx_c));
 
   /* create interpolation matrix, determining exact preallocation */
-  ierr = MatPreallocateInitialize(PetscObjectComm((PetscObject)dac),m_f*n_f*p_f,m_c*n_c*p_c,dnz,onz);PetscCall(ierr);
+  MatPreallocateBegin(PetscObjectComm((PetscObject)dac),m_f*n_f*p_f,m_c*n_c*p_c,dnz,onz);
   /* loop over local fine grid nodes counting interpolating points */
   for (l=l_start; l<l_start+p_f; l++) {
     for (j=j_start; j<j_start+n_f; j++) {
@@ -893,7 +889,7 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
   PetscCall(MatSetType(mat,mattype));
   PetscCall(MatSeqAIJSetPreallocation(mat,0,dnz));
   PetscCall(MatMPIAIJSetPreallocation(mat,0,dnz,0,onz));
-  ierr = MatPreallocateFinalize(dnz,onz);PetscCall(ierr);
+  MatPreallocateEnd(dnz,onz);
 
   /* loop over local fine grid nodes setting interpolation for those*/
   if (!NEWVERSION) {
@@ -1382,7 +1378,6 @@ PetscErrorCode DMCreateAggregates(DM dac,DM daf,Mat *mat)
 @*/
 PetscErrorCode DMDACreateAggregates(DM dac,DM daf,Mat *rest)
 {
-  PetscErrorCode         ierr;
   PetscInt               dimc,Mc,Nc,Pc,mc,nc,pc,dofc,sc;
   PetscInt               dimf,Mf,Nf,Pf,mf,nf,pf,doff,sf;
   DMBoundaryType         bxc,byc,bzc,bxf,byf,bzf;
@@ -1448,8 +1443,8 @@ PetscErrorCode DMDACreateAggregates(DM dac,DM daf,Mat *rest)
   max_agg_size = (Mf/Mc+1)*(Nf/Nc+1)*(Pf/Pc+1);
 
   /* create the matrix that will contain the restriction operator */
-  ierr = MatCreateAIJ(PetscObjectComm((PetscObject)daf), m_c*n_c*p_c*dofc, m_f*n_f*p_f*doff, Mc*Nc*Pc*dofc, Mf*Nf*Pf*doff,
-                      max_agg_size, NULL, max_agg_size, NULL, rest);PetscCall(ierr);
+  PetscCall(MatCreateAIJ(PetscObjectComm((PetscObject)daf), m_c*n_c*p_c*dofc, m_f*n_f*p_f*doff, Mc*Nc*Pc*dofc, Mf*Nf*Pf*doff,
+                         max_agg_size, NULL, max_agg_size, NULL, rest));
 
   /* store nodes in the fine grid here */
   PetscCall(PetscMalloc2(max_agg_size, &one_vec,max_agg_size, &fine_nodes));

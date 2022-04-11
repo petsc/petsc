@@ -143,16 +143,15 @@ PetscErrorCode SNESComputeObjective(SNES snes,Vec X,PetscReal *ob)
 PetscErrorCode SNESObjectiveComputeFunctionDefaultFD(SNES snes,Vec X,Vec F,void *ctx)
 {
   Vec            Xh;
-  PetscErrorCode ierr;
   PetscInt       i,N,start,end;
   PetscReal      ob,ob1,ob2,ob3,fob,dx,eps=1e-6;
   PetscScalar    fv,xv;
 
   PetscFunctionBegin;
   PetscCall(VecDuplicate(X,&Xh));
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)snes),((PetscObject)snes)->prefix,"Differencing parameters","SNES");PetscCall(ierr);
+  PetscOptionsBegin(PetscObjectComm((PetscObject)snes),((PetscObject)snes)->prefix,"Differencing parameters","SNES");
   PetscCall(PetscOptionsReal("-snes_fd_function_eps","Tolerance for nonzero entries in fd function","None",eps,&eps,NULL));
-  ierr = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
   PetscCall(VecSet(F,0.));
 
   PetscCall(VecNorm(X,NORM_2,&fob));

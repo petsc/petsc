@@ -26,7 +26,6 @@ int main(int argc,char **argv)
   SNES           snes;                         /* nonlinear solver */
   AppCtx         user;                         /* user-defined work context */
   PetscInt       its;                          /* iterations for convergence */
-  PetscErrorCode ierr;
   DM             da;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -38,14 +37,14 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize problem parameters
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr   = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Surface Process Problem Options", "SNES");PetscCall(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD, "", "Surface Process Problem Options", "SNES");
   user.D = 1.0;
   PetscCall(PetscOptionsReal("-D", "The diffusion coefficient D", __FILE__, user.D, &user.D, NULL));
   user.K = 1.0;
   PetscCall(PetscOptionsReal("-K", "The advection coefficient K", __FILE__, user.K, &user.K, NULL));
   user.m = 1;
   PetscCall(PetscOptionsInt("-m", "The exponent for A", __FILE__, user.m, &user.m, NULL));
-  ierr   = PetscOptionsEnd();PetscCall(ierr);
+  PetscOptionsEnd();
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
