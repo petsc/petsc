@@ -1294,6 +1294,10 @@ class Configure(config.base.Configure):
       self.executeShellCommand(self.CC+' --version', log = self.log)
     except:
       pass
+    (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -v | head -n 20', log = self.log)
+    output = output + error
+    if '(gcc version 4.8.5 compatibility)' in output:
+       self.logPrintBox('Warning: Intel compiler being used with gcc 4.8.5 compatibility, failures may occur.\nRecommend having a newer gcc version in your path.')
     if os.path.basename(self.CC).startswith('mpi'):
        self.logPrint('Since MPI c compiler starts with mpi, force searches for other compilers to only look for MPI compilers\n')
        self.argDB['with-mpi-compilers'] = 1
