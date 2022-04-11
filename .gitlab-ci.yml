@@ -173,6 +173,21 @@ petsc4py-install:
     - (cd "${PWD}/${T_DESTDIR}" && find * -exec install -v -D "{}" "/{}" \; )
     - mv arch-* hide/ && PETSC_DIR="${PWD}/${T_PREFIX}" ${T_VALIDATE_CMD} && mv hide/arch-* ./
 
+petsc4py-pip:
+  extends: .stage-2
+  tags:
+    - gce-stage2
+  variables:
+    PETSC_CONFIGURE_OPTIONS: --with-mpi=0 --with-fc=0
+    CFLAGS: -O0
+  script:
+    - python3 -m venv pip-builds
+    - source pip-builds/bin/activate
+    - python3 -m pip install --upgrade pip
+    - python3 -m pip install .
+    - python3 -m pip install src/binding/petsc4py
+    - python3 -m petsc4py
+
 checksource:
   extends: .test-basic
   stage: .pre
