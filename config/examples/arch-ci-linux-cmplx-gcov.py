@@ -12,6 +12,7 @@ configure_options = [
   '--download-metis',
   '--download-parmetis',
   '--download-ptscotch',
+  '--download-bison',
   '--download-scalapack',
   '--download-strumpack',
   '--download-cmake',

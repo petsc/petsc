@@ -17,6 +17,7 @@ configure_options = [
   '--download-parmetis=1',
   '--download-elemental=1',
   '--download-ptscotch',
+  '--download-bison',
   '--download-scalapack',
   '--download-strumpack',
   #'--download-fblaslapack', #vecLib has incomplete lapack - so unuseable by strumpack
