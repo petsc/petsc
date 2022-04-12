@@ -30,7 +30,7 @@ class Configure(config.package.GNUPackage):
   # Due to -DCMAKE_USE_OPENSSL=OFF usage below, currently -download-cmake-configure-arguments will only work with bootstrap cmake-options and not regular options
   def formGNUConfigureArgs(self):
     '''Does not use the standard arguments at all since this does not use the MPI compilers etc
-       Cmake will chose its own compilers if they are not provided explicitly here'''
+       CMake will chose its own compilers if they are not provided explicitly here'''
     args = ['--prefix='+self.installDir]
     args.append('--parallel='+str(self.make.make_np))
     if 'download-cmake-cc' in self.argDB and self.argDB['download-cmake-cc']:
@@ -44,7 +44,7 @@ class Configure(config.package.GNUPackage):
   def Install(self):
     save_path = os.environ['PATH']
     make_loc = os.path.dirname(self.make.make)
-    self.log.write('CMAKE build - adding MAKE location to PATH: '+make_loc+'\n')
+    self.log.write('CMake build - adding make location to PATH: '+make_loc+'\n')
     os.environ['PATH'] += ':'+make_loc
     retdir = config.package.GNUPackage.Install(self)
     os.environ['PATH'] = save_path
@@ -69,11 +69,11 @@ class Configure(config.package.GNUPackage):
     self.checkDownload()
 
   def configure(self):
-    '''Locate cmake and download it if requested'''
+    '''Locate CMake and download it if requested'''
     if self.argDB['download-cmake']:
       self.log.write('Building CMake\n')
       config.package.GNUPackage.configure(self)
-      self.log.write('Looking for Cmake in '+os.path.join(self.installDir,'bin')+'\n')
+      self.log.write('Looking for CMake in '+os.path.join(self.installDir,'bin')+'\n')
       self.getExecutable('cmake',    path=os.path.join(self.installDir,'bin'), getFullPath = 1)
       self.getExecutable('ctest',    path=os.path.join(self.installDir,'bin'), getFullPath = 1)
     elif (not self.argDB['with-cmake']  == 0 and not self.argDB['with-cmake']  == 'no') or 'with-cmake-exec' in self.argDB:
@@ -101,7 +101,7 @@ class Configure(config.package.GNUPackage):
            self.foundversion = ".".join(gver.groups())
         except: pass
         else:
-          self.log.write('cmake version found '+self.foundversion+'\n')
+          self.log.write('CMake version found '+self.foundversion+'\n')
           if self.versionToTuple(self.foundversion) < self.maxminCmakeVersion:
             raise RuntimeError('A package requires CMake version '+'.'.join(map(str, self.maxminCmakeVersion))+' (detected version is '+'.'.join(map(str, self.versionToTuple(self.foundversion)))+'): use --download-cmake')
           return
@@ -116,11 +116,11 @@ class Configure(config.package.GNUPackage):
            self.foundversion = ".".join(v)
         except: pass
         else:
-          self.log.write('cmake version found '+self.foundversion+'\n')
+          self.log.write('CMake version found '+self.foundversion+'\n')
           if self.versionToTuple(self.foundversion) < self.maxminCmakeVersion:
             raise RuntimeError('A package requires CMake version '+'.'.join(map(str, self.maxminCmakeVersion))+' (detected version is '+'.'.join(map(str, self.versionToTuple(self.foundversion)))+'): use --download-cmake')
           return
-        self.log.write('cmake version check failed\n')
+        self.log.write('CMake version check failed\n')
     else:
-      self.log.write('cmake not found\n')
+      self.log.write('CMake not found\n')
     return

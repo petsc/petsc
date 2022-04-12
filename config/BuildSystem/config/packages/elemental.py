@@ -10,7 +10,6 @@ class Configure(config.package.CMakePackage):
     self.precisions       = ['single','double']
     self.buildLanguages   = ['Cxx']
     self.maxCxxVersion    = 'c++14'
-    self.downloadonWindows= 0
     self.hastests         = 1
     self.hastestsdatafiles= 1
     self.downloaddirnames = ['Elemental']

@@ -7,7 +7,6 @@ class Configure(config.package.Package):
     self.functions = ['glFlush','gluBeginCurve']
     self.includes = ['GL/gl.h','GL/glu.h']
     self.liblist = [['libGL.a','libGLU.a']]
-    self.lookforbydefault  = 0
     return
 
   def getSearchDirectories(self):

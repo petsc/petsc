@@ -20,7 +20,6 @@ class Configure(config.package.Package):
     self.liblist                = [['libopenblas.a']]
     self.precisions             = ['single','double']
     self.buildLanguages         = ['C','FC']
-    self.installwithbatch       = 1
     self.usespthreads           = 0
 
   def __str__(self):

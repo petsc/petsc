@@ -42,7 +42,6 @@ class Configure(config.package.Package):
     self.liblist          = liblist_mpich + liblist_lam + liblist_msmpi + liblist_other + liblist_single
     # defaults to --with-mpi=yes
     self.required         = 1
-    self.complex          = 1
     self.isPOE            = 0
     self.usingMPIUni      = 0
     self.shared           = 0

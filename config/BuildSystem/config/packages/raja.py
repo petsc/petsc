@@ -16,7 +16,6 @@ class Configure(config.package.CMakePackage):
     self.liblist            = [['libRAJA.a']]
     self.buildLanguages     = ['Cxx']
     self.minCxxVersion      = 'c++14'
-    self.downloadonWindows  = 0
     self.hastests           = 1
     self.requiresrpath      = 1
     self.precisions         = ['single','double']

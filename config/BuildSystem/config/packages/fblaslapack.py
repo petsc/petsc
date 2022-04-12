@@ -9,7 +9,6 @@ class Configure(config.package.Package):
     self.precisions             = ['single','double']
     self.downloadonWindows      = 1
     self.skippackagewithoptions = 1
-    self.installwithbatch       = 1
     self.buildLanguages         = ['FC']
 
   def setupDependencies(self, framework):

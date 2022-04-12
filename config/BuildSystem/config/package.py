@@ -87,7 +87,7 @@ class Package(config.base.Configure):
     self.requires32bitintblas   = 1  # 1 means that the package will not work with 64 bit integer BLAS/LAPACK
     self.skippackagewithoptions = 0  # packages like fblaslapack and MPICH do not support --with-package* options so do not print them in help
     self.alternativedownload    = [] # Used by, for example mpi.py to print useful error messages, which does not support --download-mpi but one can use --download-mpich
-    self.usesopenmp             = 'no'  # yes, no, unknowm package is built to use OpenMP
+    self.usesopenmp             = 'no'  # yes, no, unknown package is built to use OpenMP
     self.usespthreads           = 'no'  # yes, no, unknown package is built to use Pthreads
     self.cmakelistsdir          = '' # Location of CMakeLists.txt - if not located at the top level of the package dir
 
@@ -289,9 +289,9 @@ class Package(config.base.Configure):
               # The worst behaved, we have a pure "set". we shouldn't rely on
               # CMAKE_CXX_STANDARD, since the package overrides it unconditionally. Thus
               # we leave the std flag in the compiler flags.
-              self.logPrint('removeStdCxxFlag: Cmake Package {pkg} had an overriding \'set\' command in their CmakeLists.txt:\n\t{cmd}\nLeaving std flags in'.format(pkg=self.name,cmd=line.strip()),indent=1)
+              self.logPrint('removeStdCxxFlag: CMake Package {pkg} had an overriding \'set\' command in their CMakeLists.txt:\n\t{cmd}\nLeaving std flags in'.format(pkg=self.name,cmd=line.strip()),indent=1)
               return flags
-            self.logPrint('removeStdCxxFlag: Cmake Package {pkg} did NOT have an overriding \'set\' command in their CmakeLists.txt:\n\t{cmd}\nRemoving std flags'.format(pkg=self.name,cmd=line.strip()),indent=1)
+            self.logPrint('removeStdCxxFlag: CMake Package {pkg} did NOT have an overriding \'set\' command in their CMakeLists.txt:\n\t{cmd}\nRemoving std flags'.format(pkg=self.name,cmd=line.strip()),indent=1)
             # CACHE was found in the set command, meaning we can override it from the
             # command line. So we continue on to remove the std flags.
             break
@@ -1898,11 +1898,11 @@ class CMakePackage(Package):
       os.mkdir(folder)
 
       try:
-        self.logPrintBox('Configuring '+self.PACKAGE+' with cmake; this may take several minutes')
+        self.logPrintBox('Configuring '+self.PACKAGE+' with CMake; this may take several minutes')
         output1,err1,ret1  = config.package.Package.executeShellCommand(self.cmake.cmake+' .. '+args, cwd=folder, timeout=900, log = self.log)
       except RuntimeError as e:
-        self.logPrint('Error configuring '+self.PACKAGE+' with cmake '+str(e))
-        raise RuntimeError('Error configuring '+self.PACKAGE+' with cmake')
+        self.logPrint('Error configuring '+self.PACKAGE+' with CMake '+str(e))
+        raise RuntimeError('Error configuring '+self.PACKAGE+' with CMake')
       try:
         self.logPrintBox('Compiling and installing '+self.PACKAGE+'; this may take several minutes')
         output2,err2,ret2  = config.package.Package.executeShellCommand(self.make.make_jnp+' '+self.makerulename, cwd=folder, timeout=3000, log = self.log)

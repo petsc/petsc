@@ -10,7 +10,6 @@ class Configure(config.package.GNUPackage):
     self.includes         = ['jpeglib.h']
     self.liblist          = [['libjpeg.a']]
     self.functions        = ['jpeg_destroy_compress']
-    self.lookforbydefault = 0
 
   def configureLibrary(self):
     config.package.Package.configureLibrary(self)

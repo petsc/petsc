@@ -16,9 +16,6 @@ class Configure(config.package.Package):
                              ['sycl.lib'],]
     self.precisions       = ['single','double']
     self.buildLanguages   = ['SYCL']
-    self.complex          = 1
-    self.hastests         = 0
-    self.hastestsdatafiles= 0
     self.minCxxVersion    = 'c++17'
 
     return
