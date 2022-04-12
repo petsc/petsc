@@ -414,7 +414,7 @@ PetscErrorCode  PCSORSetIterations(PC pc,PetscInt its,PetscInt lits)
 
           If omega != 1, you will need to set the MAT_USE_INODES option to PETSC_FALSE on the matrix.
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
+.seealso:  PCCreate(), PCSetType(), PCType, PC,
            PCSORSetIterations(), PCSORSetSymmetric(), PCSORSetOmega(), PCEISENSTAT, MatSetOption()
 M*/
 

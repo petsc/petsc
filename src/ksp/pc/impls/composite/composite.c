@@ -584,7 +584,7 @@ PetscErrorCode PCCompositeGetPC(PC pc,PetscInt n,PC *subpc)
           To use a different operator to construct one of the inner preconditioners first call PCCompositeGetPC(), then
           call PCSetOperators() on that PC.
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
+.seealso:  PCCreate(), PCSetType(), PCType, PC,
            PCSHELL, PCKSP, PCCompositeSetType(), PCCompositeSpecialSetAlpha(), PCCompositeAddPCType(),
            PCCompositeGetPC(), PCSetUseAmat()
 

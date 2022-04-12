@@ -213,7 +213,7 @@ PetscErrorCode KSPSetFromOptions_LCD(PetscOptionItems *PetscOptionsObject,KSP ks
 
   Contributed by: Lucia Catabriga <luciac@ices.utexas.edu>
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,
+.seealso:  KSPCreate(), KSPSetType(), KSPType, KSP,
            KSPCGSetType(), KSPLCDSetRestart(), KSPLCDSetHapTol()
 
 M*/

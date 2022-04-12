@@ -38,7 +38,7 @@ static PetscErrorCode PCDestroy_Mat(PC pc)
 
    Level: intermediate
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
+.seealso:  PCCreate(), PCSetType(), PCType, PC,
            PCSHELL
 
 M*/

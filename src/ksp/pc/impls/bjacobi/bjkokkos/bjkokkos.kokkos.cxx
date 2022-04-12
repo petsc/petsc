@@ -849,7 +849,7 @@ PetscErrorCode  PCBJKOKKOSGetKSP(PC pc,KSP *ksp)
 
    Developer Notes:
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
+.seealso:  PCCreate(), PCSetType(), PCType, PC,
            PCSHELL, PCCOMPOSITE, PCSetUseAmat(), PCBJKOKKOSGetKSP()
 
 M*/

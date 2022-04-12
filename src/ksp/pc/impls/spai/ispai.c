@@ -540,7 +540,7 @@ static PetscErrorCode PCSetFromOptions_SPAI(PetscOptionItems *PetscOptionsObject
 
    Level: beginner
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
+.seealso:  PCCreate(), PCSetType(), PCType, PC,
     PCSPAISetEpsilon(), PCSPAISetMax(), PCSPAISetMaxNew(), PCSPAISetBlockSize(),
     PCSPAISetVerbose(), PCSPAISetSp()
 M*/

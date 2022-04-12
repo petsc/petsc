@@ -331,7 +331,7 @@ static PetscErrorCode PCView_PBJacobi(PC pc,PetscViewer viewer)
 
    Level: beginner
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCJACOBI, PCVPBJACOBI, PCBJACOBI
+.seealso:  PCCreate(), PCSetType(), PCType, PC, PCJACOBI, PCVPBJACOBI, PCBJACOBI
 
 M*/
 

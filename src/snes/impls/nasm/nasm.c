@@ -839,7 +839,7 @@ static PetscErrorCode SNESSolve_NASM(SNES snes)
 .  * - Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers",
    SIAM Review, 57(4), 2015
 
-.seealso: SNESCreate(), SNES, SNESSetType(), SNESType (for list of available types), SNESNASMSetType(), SNESNASMGetType(), SNESNASMSetSubdomains(), SNESNASMGetSubdomains(), SNESNASMGetSubdomainVecs(), SNESNASMSetComputeFinalJacobian(), SNESNASMSetDamping(), SNESNASMGetDamping()
+.seealso: SNESCreate(), SNES, SNESSetType(), SNESType, SNESNASMSetType(), SNESNASMGetType(), SNESNASMSetSubdomains(), SNESNASMGetSubdomains(), SNESNASMGetSubdomainVecs(), SNESNASMSetComputeFinalJacobian(), SNESNASMSetDamping(), SNESNASMGetDamping()
 M*/
 
 PETSC_EXTERN PetscErrorCode SNESCreate_NASM(SNES snes)

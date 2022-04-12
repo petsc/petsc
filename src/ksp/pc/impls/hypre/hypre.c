@@ -2121,7 +2121,7 @@ PetscErrorCode PCSetFromOptions_HYPRE(PetscOptionItems *PetscOptionsObject,PC pc
 
    Level: intermediate
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
+.seealso:  PCCreate(), PCSetType(), PCType, PC,
            PCHYPRE
 
 @*/
@@ -2145,7 +2145,7 @@ PetscErrorCode  PCHYPRESetType(PC pc,const char name[])
 
    Level: intermediate
 
-.seealso:  PCCreate(), PCHYPRESetType(), PCType (for list of available types), PC,
+.seealso:  PCCreate(), PCHYPRESetType(), PCType, PC,
            PCHYPRE
 
 @*/
@@ -2253,7 +2253,7 @@ PetscErrorCode PCMGGalerkinGetMatProductAlgorithm(PC pc,const char *name[])
      To configure hypre BoomerAMG so that it can utilize AMD GPUs run ./configure --download-hypre --with-hip
      Then pass VECHIP vectors to the solvers and PETSc will automatically utilize hypre's GPU solvers.
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
+.seealso:  PCCreate(), PCSetType(), PCType, PC,
            PCHYPRESetType(), PCPFMG
 
 M*/

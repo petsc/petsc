@@ -1898,7 +1898,7 @@ PetscErrorCode PCMGGetCoarseSpaceConstructor(const char name[], PetscErrorCode (
 
    Level: intermediate
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCMGType, PCEXOTIC, PCGAMG, PCML, PCHYPRE
+.seealso:  PCCreate(), PCSetType(), PCType, PC, PCMGType, PCEXOTIC, PCGAMG, PCML, PCHYPRE
            PCMGSetLevels(), PCMGGetLevels(), PCMGSetType(), PCMGSetCycleType(),
            PCMGSetDistinctSmoothUp(), PCMGGetCoarseSolve(), PCMGSetResidual(), PCMGSetInterpolation(),
            PCMGSetRestriction(), PCMGGetSmoother(), PCMGGetSmootherUp(), PCMGGetSmootherDown(),

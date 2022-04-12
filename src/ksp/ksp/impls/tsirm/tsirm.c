@@ -187,7 +187,7 @@ PetscErrorCode KSPDestroy_TSIRM(KSP ksp)
 
    Contributed by: Lilia Ziane Khodja
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPFGMRES, KSPLGMRES,
+.seealso:  KSPCreate(), KSPSetType(), KSPType, KSP, KSPFGMRES, KSPLGMRES,
            KSPGMRESSetRestart(), KSPGMRESSetHapTol(), KSPGMRESSetPreAllocateVectors(), KSPGMRESSetOrthogonalization(), KSPGMRESGetOrthogonalization(),
            KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESModifiedGramSchmidtOrthogonalization(),
            KSPGMRESCGSRefinementType, KSPGMRESSetCGSRefinementType(), KSPGMRESGetCGSRefinementType(), KSPGMRESMonitorKrylov(), KSPSetPCSide()

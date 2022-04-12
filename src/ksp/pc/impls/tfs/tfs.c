@@ -154,7 +154,7 @@ static PetscErrorCode PCView_TFS(PC pc,PetscViewer viewer)
 
     Only works for real numbers (is not built if PetscScalar is complex)
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC
+.seealso:  PCCreate(), PCSetType(), PCType, PC
 M*/
 PETSC_EXTERN PetscErrorCode PCCreate_TFS(PC pc)
 {

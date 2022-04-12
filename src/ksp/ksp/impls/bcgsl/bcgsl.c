@@ -575,7 +575,7 @@ PetscErrorCode KSPDestroy_BCGSL(KSP ksp)
 
    Level: beginner
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPFGMRES, KSPBCGS, KSPSetPCSide(), KSPBCGSLSetEll(), KSPBCGSLSetXRes()
+.seealso:  KSPCreate(), KSPSetType(), KSPType, KSP, KSPFGMRES, KSPBCGS, KSPSetPCSide(), KSPBCGSLSetEll(), KSPBCGSLSetXRes()
 
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_BCGSL(KSP ksp)

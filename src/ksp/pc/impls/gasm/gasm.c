@@ -1297,7 +1297,7 @@ PetscErrorCode  PCGASMGetSubKSP(PC pc,PetscInt *n_local,PetscInt *first_local,KS
 -   * - Barry Smith, Petter Bjorstad, and William Gropp, Domain Decompositions: Parallel Multilevel Methods for Elliptic Partial Differential Equations,
     Cambridge University Press.
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
+.seealso:  PCCreate(), PCSetType(), PCType, PC,
            PCBJACOBI,  PCGASMGetSubKSP(), PCGASMSetSubdomains(),
            PCSetModifySubMatrices(), PCGASMSetOverlap(), PCGASMSetType()
 

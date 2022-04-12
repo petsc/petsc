@@ -634,7 +634,7 @@ PetscErrorCode PCPARMSSetFill(PC pc,PetscInt lfil0,PetscInt lfil1,PetscInt lfil2
 
    Level: intermediate
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC
+.seealso:  PCCreate(), PCSetType(), PCType, PC
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_PARMS(PC pc)

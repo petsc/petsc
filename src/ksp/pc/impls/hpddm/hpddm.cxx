@@ -113,7 +113,7 @@ static PetscErrorCode PCHPDDMSetAuxiliaryMat_HPDDM(PC pc, IS is, Mat A, PetscErr
 
    Level: intermediate
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCHPDDMSetRHSMat(), MATIS
+.seealso:  PCCreate(), PCSetType(), PCType, PC, PCHPDDMSetRHSMat(), MATIS
 @*/
 PetscErrorCode PCHPDDMSetAuxiliaryMat(PC pc, IS is, Mat A, PetscErrorCode (*setup)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void*), void* setup_ctx)
 {
@@ -1608,7 +1608,7 @@ PetscErrorCode HPDDMLoadDL_Private(PetscBool *found)
 
    Level: intermediate
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCHPDDMSetAuxiliaryMat(), MATIS, PCBDDC, PCDEFLATION, PCTELESCOPE
+.seealso:  PCCreate(), PCSetType(), PCType, PC, PCHPDDMSetAuxiliaryMat(), MATIS, PCBDDC, PCDEFLATION, PCTELESCOPE
 M*/
 PETSC_EXTERN PetscErrorCode PCCreate_HPDDM(PC pc)
 {

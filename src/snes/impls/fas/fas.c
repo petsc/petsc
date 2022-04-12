@@ -969,7 +969,7 @@ Level: beginner
 .  * - Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers",
    SIAM Review, 57(4), 2015
 
-.seealso: PCMG, SNESCreate(), SNES, SNESSetType(), SNESType (for list of available types)
+.seealso: PCMG, SNESCreate(), SNES, SNESSetType(), SNESType
 M*/
 
 PETSC_EXTERN PetscErrorCode SNESCreate_FAS(SNES snes)

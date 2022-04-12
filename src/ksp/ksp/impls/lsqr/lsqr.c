@@ -636,7 +636,7 @@ PetscErrorCode  KSPLSQRConvergedDefault(KSP ksp,PetscInt n,PetscReal rnorm,KSPCo
     How is this related to the KSPCGNE implementation? One difference is that KSPCGNE applies
             the preconditioner transpose times the preconditioner,  so one does not need to pass A'*A as the third argument to KSPSetOperators().
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPSolve(), KSPLSQRConvergedDefault(), KSPLSQRSetComputeStandardErrorVec(), KSPLSQRGetStandardErrorVec(), KSPLSQRSetExactMatNorm()
+.seealso:  KSPCreate(), KSPSetType(), KSPType, KSP, KSPSolve(), KSPLSQRConvergedDefault(), KSPLSQRSetComputeStandardErrorVec(), KSPLSQRGetStandardErrorVec(), KSPLSQRSetExactMatNorm()
 
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_LSQR(KSP ksp)

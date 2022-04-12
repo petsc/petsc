@@ -1086,7 +1086,7 @@ PetscErrorCode PCSetFromOptions_ML(PetscOptionItems *PetscOptionsObject,PC pc)
 
    Level: intermediate
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCMGType,
+.seealso:  PCCreate(), PCSetType(), PCType, PC, PCMGType,
            PCMGSetLevels(), PCMGGetLevels(), PCMGSetType(), MPSetCycles(), PCMGSetDistinctSmoothUp(),
            PCMGGetCoarseSolve(), PCMGSetResidual(), PCMGSetInterpolation(),
            PCMGSetRestriction(), PCMGGetSmoother(), PCMGGetSmootherUp(), PCMGGetSmootherDown(),

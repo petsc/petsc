@@ -2930,7 +2930,7 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, PetscBool fully_redundant, con
 
    Contributed by Stefano Zampini
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,  MATIS
+.seealso:  PCCreate(), PCSetType(), PCType, PC,  MATIS
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)

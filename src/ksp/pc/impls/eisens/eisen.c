@@ -369,7 +369,7 @@ static PetscErrorCode PCPreSolveChangeRHS_Eisenstat(PC pc, PetscBool* change)
           Not a true parallel SOR, in parallel this implementation corresponds to block
           Jacobi with SOR on each block.
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
+.seealso:  PCCreate(), PCSetType(), PCType, PC,
            PCEisenstatSetNoDiagonalScaling(), PCEisenstatSetOmega(), PCSOR
 M*/
 

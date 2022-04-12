@@ -158,7 +158,7 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
 .  * - Magnus R. Hestenes and Eduard Stiefel, Methods of Conjugate Gradients for Solving Linear Systems,
    Journal of Research of the National Bureau of Standards Vol. 49, No. 6, December 1952 Research Paper 2379
 
-.seealso: KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPCG
+.seealso: KSPCreate(), KSPSetType(), KSPType, KSP, KSPCG
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_CR(KSP ksp)
 {

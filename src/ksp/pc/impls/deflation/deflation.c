@@ -854,7 +854,7 @@ static PetscErrorCode PCSetFromOptions_Deflation(PetscOptionItems *PetscOptionsO
 
    Level: intermediate
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
+.seealso:  PCCreate(), PCSetType(), PCType, PC,
            PCDeflationSetInitOnly(), PCDeflationSetLevels(), PCDeflationSetReductionFactor(),
            PCDeflationSetCorrectionFactor(), PCDeflationSetSpaceToCompute(),
            PCDeflationSetSpace(), PCDeflationSpaceType, PCDeflationSetProjectionNullSpaceMat(),

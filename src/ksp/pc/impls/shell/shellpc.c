@@ -901,7 +901,7 @@ $             PCShellSetApplyTranspose(pc,applytranspose); (optional)
 $             PCShellSetSetUp(pc,setup);                   (optional)
 $             PCShellSetDestroy(pc,destroy);               (optional)
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
+.seealso:  PCCreate(), PCSetType(), PCType, PC,
            MATSHELL, PCShellSetSetUp(), PCShellSetApply(), PCShellSetView(),
            PCShellSetApplyTranspose(), PCShellSetName(), PCShellSetApplyRichardson(),
            PCShellGetName(), PCShellSetContext(), PCShellGetContext(), PCShellSetApplyBA()

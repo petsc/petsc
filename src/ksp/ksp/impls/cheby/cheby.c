@@ -634,7 +634,7 @@ static PetscErrorCode KSPDestroy_Chebyshev(KSP ksp)
           Chebyshev is configured as a smoother by default, targetting the "upper" part of the spectrum.
           The user should call KSPChebyshevSetEigenvalues() if they have eigenvalue estimates.
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,
+.seealso:  KSPCreate(), KSPSetType(), KSPType, KSP,
            KSPChebyshevSetEigenvalues(), KSPChebyshevEstEigSet(), KSPChebyshevEstEigSetUseNoisy()
            KSPRICHARDSON, KSPCG, PCMG
 

@@ -142,7 +142,7 @@ PetscErrorCode TaoView_Shell(Tao tao, PetscViewer viewer)
 
    Level: advanced
 
-.seealso: TaoCreate(), Tao, TaoSetType(), TaoType (for list of available types)
+.seealso: TaoCreate(), Tao, TaoSetType(), TaoType
 M*/
 PETSC_EXTERN PetscErrorCode TaoCreate_Shell(Tao tao)
 {

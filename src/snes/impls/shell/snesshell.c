@@ -152,7 +152,7 @@ PetscErrorCode  SNESShellSetSolve_Shell(SNES snes,PetscErrorCode (*solve)(SNES,V
 
    Level: advanced
 
-.seealso: SNESCreate(), SNES, SNESSetType(), SNESType (for list of available types)
+.seealso: SNESCreate(), SNES, SNESSetType(), SNESType
 M*/
 
 PETSC_EXTERN PetscErrorCode SNESCreate_Shell(SNES snes)

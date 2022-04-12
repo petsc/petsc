@@ -782,7 +782,7 @@ PetscErrorCode  KSPPIPEGCRSetModifyPC(KSP ksp,PetscErrorCode (*function)(KSP,Pet
 
    Level: intermediate
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,
+.seealso:  KSPCreate(), KSPSetType(), KSPType, KSP,
            KSPPIPEFGMRES, KSPPIPECG, KSPPIPECR, KSPPIPEFCG,KSPPIPEGCRSetTruncationType(),KSPPIPEGCRSetNprealloc(),KSPPIPEGCRSetUnrollW(),KSPPIPEGCRSetMmax()
 
 M*/

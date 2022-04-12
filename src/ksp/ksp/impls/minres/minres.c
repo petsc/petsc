@@ -198,7 +198,7 @@ static PetscErrorCode  KSPSolve_MINRES(KSP ksp)
 
    Contributed by: Robert Scheichl: maprs@maths.bath.ac.uk
 
-.seealso: KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPCG, KSPCR
+.seealso: KSPCreate(), KSPSetType(), KSPType, KSP, KSPCG, KSPCR
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_MINRES(KSP ksp)
 {

@@ -498,7 +498,7 @@ PetscErrorCode PCRedundantGetOperators(PC pc,Mat *mat,Mat *pmat)
    Developer Notes:
     Note that PCSetInitialGuessNonzero()  is not used by this class but likely should be.
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PCRedundantSetScatter(),
+.seealso:  PCCreate(), PCSetType(), PCType, PCRedundantSetScatter(),
            PCRedundantGetKSP(), PCRedundantGetOperators(), PCRedundantSetNumber()
 M*/
 

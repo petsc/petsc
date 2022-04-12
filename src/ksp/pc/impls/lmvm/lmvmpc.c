@@ -223,7 +223,7 @@ static PetscErrorCode PCDestroy_LMVM(PC pc)
 
    Level: intermediate
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types),
+.seealso:  PCCreate(), PCSetType(), PCType,
            PC, MATLMVM, PCLMVMUpdate(), PCLMVMSetMatLMVM(), PCLMVMGetMatLMVM()
 M*/
 PETSC_EXTERN PetscErrorCode PCCreate_LMVM(PC pc)

@@ -429,7 +429,7 @@ static PetscErrorCode PCView_Jacobi(PC pc, PetscViewer viewer)
 
     See PCPBJACOBI for fixed-size point block, PCVPBJACOBI for variable-sized point block, and PCBJACOBI for large size blocks
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
+.seealso:  PCCreate(), PCSetType(), PCType, PC,
            PCJacobiSetType(), PCJacobiSetUseAbs(), PCJacobiGetUseAbs(),
            PCJacobiSetFixDiagonal(), PCJacobiGetFixDiagonal()
            PCJacobiSetType(), PCJacobiSetUseAbs(), PCJacobiGetUseAbs(), PCPBJACOBI, PCBJACOBI, PCVPBJACOBI

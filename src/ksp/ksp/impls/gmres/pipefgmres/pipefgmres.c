@@ -675,7 +675,7 @@ PetscErrorCode KSPReset_PIPEFGMRES(KSP ksp)
     SIAM Journal on Scientific Computing 2016 38:5, C441-C470,
     DOI: 10.1137/15M1049130
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPLGMRES, KSPPIPECG, KSPPIPECR, KSPPGMRES, KSPFGMRES
+.seealso:  KSPCreate(), KSPSetType(), KSPType, KSP, KSPLGMRES, KSPPIPECG, KSPPIPECR, KSPPGMRES, KSPFGMRES
            KSPGMRESSetRestart(), KSPGMRESSetHapTol(), KSPGMRESSetPreAllocateVectors(), KSPGMRESMonitorKrylov(), KSPPIPEFGMRESSetShift()
 M*/
 

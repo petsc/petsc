@@ -166,7 +166,7 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
    Notes:
     Only allow right preconditioning
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBICG, KSPFBCGSL, KSPSetPCSide()
+.seealso:  KSPCreate(), KSPSetType(), KSPType, KSP, KSPBICG, KSPFBCGSL, KSPSetPCSide()
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_FBCGS(KSP ksp)
 {

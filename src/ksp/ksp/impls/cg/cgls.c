@@ -114,7 +114,7 @@ static PetscErrorCode KSPDestroy_CGLS(KSP ksp)
    Notes:
     This does not use the preconditioner, so one should probably use KSPLSQR instead.
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,
+.seealso:  KSPCreate(), KSPSetType(), KSPType, KSP,
            KSPCGSetType(), KSPCGUseSingleReduction(), KSPPIPECG, KSPGROPPCG
 
 M*/

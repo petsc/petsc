@@ -629,7 +629,7 @@ $  other KSP converged/diverged reasons
 
    Level: developer
 
-.seealso:  KSPCreate(), KSPCGSetType(), KSPType (for list of available types), KSP, KSPCGSetRadius(), KSPCGGetNormD(), KSPCGGetObjFcn()
+.seealso:  KSPCreate(), KSPCGSetType(), KSPType, KSP, KSPCGSetRadius(), KSPCGGetNormD(), KSPCGGetObjFcn()
 M*/
 
 PETSC_EXTERN PetscErrorCode KSPCreate_STCG(KSP ksp)

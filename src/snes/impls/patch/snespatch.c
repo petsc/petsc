@@ -335,7 +335,7 @@ static PetscErrorCode SNESSolve_Patch(SNES snes)
 
   Level: intermediate
 
-.seealso:  SNESCreate(), SNESSetType(), SNESType (for list of available types), SNES,
+.seealso:  SNESCreate(), SNESSetType(), SNESType, SNES,
            PCPATCH
 
    References:

@@ -6,7 +6,7 @@
 
    Level: beginner
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types)
+.seealso:  PCCreate(), PCSetType(), PCType
 S*/
 typedef struct _p_PC* PC;
 
