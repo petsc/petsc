@@ -111,6 +111,47 @@ should become four triangles separated by two zero-volume cells with 4 vertices
                13---8
                  27
 
+Test 2:
+Six triangles sharing one face
+
+11-----12------13
+ |     /|\     |
+ | 1  / | \ 4  |
+ |   /  |  \   |
+ |  /   |   \  |
+ | /    |    \ |
+ |/     |     \|
+ 9  2   |   5  10
+ |\     |     /|
+ | \    |    / |
+ |  \   |   /  |
+ |   \  |  /   |
+ | 0  \ | / 3  |
+ |     \|/     |
+ 6------7------8
+
+Test 3:
+This is Test 2 on two processes. After the fault, we have
+
+ 6--12--7    7--20-10--16-8
+ |     /|    |     |\     |
+ | 1  / |    |     | \  1 |
+13  11  |    |     |  17  15
+ |  /   |    |     |   \  |
+ | /    |    |     |    \ |
+ |/     |    |     |     \|
+ 5   2  14  11  3 18  2   6
+ |\     |    |     |     /|
+ | \    |    |     |    / |
+ |  \   |    |     |   /  |
+10   9  |    |     |  14  13
+ | 0  \ |    |     | /  0 |
+ |     \|    |     |/     |
+ 3---8--4    4--19-9--12--5
+
+Test 4:
+This is Test 2 on six processes. After the fault, we have
+
 Tetrahedron
 -----------
 Test 0:
@@ -183,22 +224,22 @@ Test 1:
 
 Original mesh with 9 cells,
 
-  9 ----10 ----11 ----12
+  9-----10-----11-----12
+  |      |     ||      |
+  |      |     ||      |
+  |   0  |  1  ||  2   |
+  |      |     ||      |
+ 13-----14-----15-----16
+  |      |     ||      |
+  |      |     ||      |
+  |  3   |  4  ||  5   |
+  |      |     ||      |
+ 17-----18-----19=====20
   |      |      |      |
   |      |      |      |
+  |  6   |  7   |  8   |
   |      |      |      |
-  |      |      |      |
- 13 ----14 ----15 ----16
-  |      |      |      |
-  |      |      |      |
-  |      |      |      |
-  |      |      |      |
- 17 ----18 ----19 ----20
-  |      |      |      |
-  |      |      |      |
-  |      |      |      |
-  |      |      |      |
- 21 ----22 ----23 ----24
+ 21-----22-----23-----24
 
 After first fault,
 
@@ -234,11 +275,37 @@ After second fault,
  33 ----34-----24-32 ----25
   |  12  | 13 / |  \-11-- |
  22 ----23---/  |         |
-  |      |   7  |     8   |
-  |  6   |      |         |
+  |      |      |         |
+  |  6   |   7  |     8   |
   |      |      |         |
   |      |      |         |
  26 ----27 ----28--------29
+
+ Test 2:
+ Two quads sharing a face in parallel
+
+    4---7---3  2---8---4
+    |       |  |       |
+    8   0   6  5   0   7
+    |       |  |       |
+    1---5---2  1---6---3
+
+ should become two quads separated by a zero-volume cell with 4 vertices
+
+     4---7---3  3-14--7--11---5
+     |       |  |     |       |
+     8   0   6  8  1  12  0   10
+     |       |  |     |       |
+     1---5---2  2-13--6---9---4
+
+ Test 3:
+ Like Test 2, but with different partition
+
+     5--10---4-14--7   2---8---4
+     |       |     |   |       |
+    11   0   9  1  12  5   0   7
+     |       |     |   |       |
+     2---8---3-13--6   1---6---3
 
 Hexahedron
 ----------
@@ -374,6 +441,32 @@ static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
       PetscCall(DMSetLabelValue(*dm, "material", 1, 2));PetscCall(DMSetLabelValue(*dm, "material", 2, 2));
     }
     break;
+    case 2:
+    case 3:
+    case 4:
+    {
+      PetscInt    numPoints[2]         = {8, 6};
+      PetscInt    coneSize[14]         = {3, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0};
+      PetscInt    cones[18]            = {6, 7,  9,   9, 12, 11,  7, 12,  9,
+                                          7, 8, 10,  10, 13, 12,  7, 10, 12};
+      PetscInt    coneOrientations[18] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+      PetscScalar vertexCoords[16]     = {-1., -1.,  0., -1.,  1., -1.,  -1., 0.,  1., 0.,
+                                          -1.,  1.,  0.,  1.,  1.,  1.,};
+      PetscInt    markerPoints[16]     = {6, 1, 7, 1, 8, 1, 9, 1, 10, 1, 11, 1, 12, 1, 13, 1};
+      PetscInt    faultPoints[2]       = {7, 12};
+
+      PetscCall(DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords));
+      PetscCall(DMSetLabelValue(*dm, "material", 0, 1));
+      PetscCall(DMSetLabelValue(*dm, "material", 1, 1));
+      PetscCall(DMSetLabelValue(*dm, "material", 2, 1));
+      PetscCall(DMSetLabelValue(*dm, "material", 3, 2));
+      PetscCall(DMSetLabelValue(*dm, "material", 4, 2));
+      PetscCall(DMSetLabelValue(*dm, "material", 5, 2));
+      for (p = 0; p < 8; ++p) PetscCall(DMSetLabelValue(*dm, "marker", markerPoints[p*2], markerPoints[p*2+1]));
+      if (testNum == 2) for (p = 0; p < 2; ++p) PetscCall(DMSetLabelValue(*dm, "fault", faultPoints[p], 1));
+      if (testNum == 3 || testNum == 4) for (p = 0; p < 2; ++p) PetscCall(DMSetLabelValue(*dm, "pfault", faultPoints[p], 1));
+    }
+    break;
     default:
       SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
     }
@@ -381,7 +474,8 @@ static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
     PetscInt numPoints[3] = {0, 0, 0};
 
     PetscCall(DMPlexCreateFromDAG(*dm, 1, numPoints, NULL, NULL, NULL, NULL));
-    PetscCall(DMCreateLabel(*dm, "fault"));
+    if (testNum == 3 || testNum == 4) PetscCall(DMCreateLabel(*dm, "pfault"));
+    else                              PetscCall(DMCreateLabel(*dm, "fault"));
   }
   PetscCall(DMPlexInterpolate(*dm, &idm));
   PetscCall(DMViewFromOptions(idm, NULL, "-in_dm_view"));
@@ -465,6 +559,7 @@ static PetscErrorCode CreateQuad_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
     switch (testNum) {
     case 0:
     case 2:
+    case 3:
     {
       PetscInt    numPoints[2]        = {6, 2};
       PetscInt    coneSize[8]         = {4, 4, 0, 0, 0, 0, 0, 0};
@@ -477,7 +572,7 @@ static PetscErrorCode CreateQuad_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
       PetscCall(DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords));
       for (p = 0; p < 6; ++p) PetscCall(DMSetLabelValue(*dm, "marker", markerPoints[p*2], markerPoints[p*2+1]));
       if (testNum == 0) for (p = 0; p < 2; ++p) PetscCall(DMSetLabelValue(*dm, "fault", faultPoints[p], 1));
-      if (testNum == 2) for (p = 0; p < 2; ++p) PetscCall(DMSetLabelValue(*dm, "pfault", faultPoints[p], 1));
+      if (testNum == 2 || testNum == 3) for (p = 0; p < 2; ++p) PetscCall(DMSetLabelValue(*dm, "pfault", faultPoints[p], 1));
       PetscCall(DMSetLabelValue(*dm, "material", 0, 1));
       PetscCall(DMSetLabelValue(*dm, "material", 1, 2));
     }
@@ -498,11 +593,12 @@ static PetscErrorCode CreateQuad_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
       PetscInt    coneOrientations[36] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
       PetscScalar vertexCoords[32]     = {-3.0,  3.0,  -1.0,  3.0,  1.0,  3.0,  3.0,  3.0,  -3.0,  1.0,  -1.0,  1.0,  1.0,  1.0,  3.0,  1.0,
                                           -3.0, -1.0,  -1.0, -1.0,  1.0, -1.0,  3.0, -1.0,  -3.0, -3.0,  -1.0, -3.0,  1.0, -3.0,  3.0, -3.0};
-      PetscInt    faultPoints[3]       = {11, 15, 19};
+      PetscInt    faultPoints[4]       = {11, 15, 19, 20};
       PetscInt    fault2Points[2]      = {17, 18};
 
       PetscCall(DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords));
-      for (p = 0; p < 3; ++p) PetscCall(DMSetLabelValue(*dm, "fault",  faultPoints[p], 1));
+      for (p = 0; p < 4; ++p) PetscCall(DMSetLabelValue(*dm, "fault",  faultPoints[p], 1));
+      for (p = 3; p < 4; ++p) PetscCall(DMSetLabelValue(*dm, "faultBd", faultPoints[p], 1));
       for (p = 0; p < 2; ++p) PetscCall(DMSetLabelValue(*dm, "fault2", fault2Points[p], 1));
       PetscCall(DMSetLabelValue(*dm, "material", 0, 1));
       PetscCall(DMSetLabelValue(*dm, "material", 1, 1));
@@ -522,8 +618,8 @@ static PetscErrorCode CreateQuad_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
     PetscInt numPoints[3] = {0, 0, 0};
 
     PetscCall(DMPlexCreateFromDAG(*dm, 1, numPoints, NULL, NULL, NULL, NULL));
-    if (testNum == 2) PetscCall(DMCreateLabel(*dm, "pfault"));
-    else              PetscCall(DMCreateLabel(*dm, "fault"));
+    if (testNum == 2 || testNum == 3) PetscCall(DMCreateLabel(*dm, "pfault"));
+    else                              PetscCall(DMCreateLabel(*dm, "fault"));
   }
   PetscCall(DMPlexInterpolate(*dm, &idm));
   PetscCall(DMViewFromOptions(idm, NULL, "-in_dm_view"));
@@ -784,8 +880,27 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
           PetscCall(PetscMalloc2(2, &sizes, 3, &points));
           PetscCall(PetscArraycpy(sizes,  triSizes_p2, 2));
           PetscCall(PetscArraycpy(points, triPoints_p2, 3));break;}
+        case 3: {
+          PetscInt triSizes_p2[2]  = {3, 3};
+          PetscInt triPoints_p2[6] = {0, 1, 2,  3, 4, 5};
+
+          PetscCall(PetscMalloc2(2, &sizes, 6, &points));
+          PetscCall(PetscArraycpy(sizes,  triSizes_p2, 2));
+          PetscCall(PetscArraycpy(points, triPoints_p2, 6));break;}
         default:
-          SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for triangular mesh on 2 procs", user->testNum);
+          SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %" PetscInt_FMT " for triangular mesh on 2 procs", user->testNum);
+        }
+      } else if (dim == 2 && cellSimplex && size == 6) {
+        switch (user->testNum) {
+        case 4: {
+          PetscInt triSizes_p6[6]  = {1, 1, 1, 1, 1, 1};
+          PetscInt triPoints_p6[6] = {0, 1, 2, 3, 4, 5};
+
+          PetscCall(PetscMalloc2(6, &sizes, 6, &points));
+          PetscCall(PetscArraycpy(sizes,  triSizes_p6, 6));
+          PetscCall(PetscArraycpy(points, triPoints_p6, 6));break;}
+        default:
+          SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %" PetscInt_FMT " for triangular mesh on 6 procs", user->testNum);
         }
       } else if (dim == 2 && !cellSimplex && size == 2) {
         switch (user->testNum) {
@@ -803,8 +918,15 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
           PetscCall(PetscMalloc2(2, &sizes, 2, &points));
           PetscCall(PetscArraycpy(sizes,  quadSizes_p2, 2));
           PetscCall(PetscArraycpy(points, quadPoints_p2, 2));break;}
+        case 3: {
+          PetscInt quadSizes_p2[2]  = {1, 1};
+          PetscInt quadPoints_p2[2] = {1, 0};
+
+          PetscCall(PetscMalloc2(2, &sizes, 2, &points));
+          PetscCall(PetscArraycpy(sizes,  quadSizes_p2, 2));
+          PetscCall(PetscArraycpy(points, quadPoints_p2, 2));break;}
         default:
-          SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for quadrilateral mesh on 2 procs", user->testNum);
+          SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %" PetscInt_FMT " for quadrilateral mesh on 2 procs", user->testNum);
         }
       } else if (dim == 3 && cellSimplex && size == 2) {
         switch (user->testNum) {
@@ -816,7 +938,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
           PetscCall(PetscArraycpy(sizes,  tetSizes_p2, 2));
           PetscCall(PetscArraycpy(points, tetPoints_p2, 3));break;}
         default:
-          SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for triangular mesh on 2 procs", user->testNum);
+          SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %" PetscInt_FMT " for teterehedral mesh on 2 procs", user->testNum);
         }
       } else if (dim == 3 && !cellSimplex && size == 2) {
         switch (user->testNum) {
@@ -828,7 +950,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
           PetscCall(PetscArraycpy(sizes,  hexSizes_p2, 2));
           PetscCall(PetscArraycpy(points, hexPoints_p2, 3));break;}
         default:
-          SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for triangular mesh on 2 procs", user->testNum);
+          SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %" PetscInt_FMT " for hexahedral mesh on 2 procs", user->testNum);
         }
       } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test partition");
     }
@@ -850,14 +972,26 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   }
   PetscCall(DMHasLabel(*dm, "pfault", &hasParallelFault));
   if (hasParallelFault) {
-    DM      dmHybrid = NULL;
+    DM      dmHybrid = NULL, dmInterface;
     DMLabel faultLabel, faultBdLabel, hybridLabel;
 
     PetscCall(DMGetLabel(*dm, "pfault", &faultLabel));
     PetscCall(DMGetLabel(*dm, "pfaultBd", &faultBdLabel));
-    PetscCall(DMPlexCreateHybridMesh(*dm, faultLabel, faultBdLabel, &hybridLabel, NULL, NULL, &dmHybrid));
-    PetscCall(DMLabelView(hybridLabel, PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(DMPlexCreateHybridMesh(*dm, faultLabel, faultBdLabel, &hybridLabel, NULL, &dmInterface, &dmHybrid));
+    PetscCall(DMViewFromOptions(dmInterface, NULL, "-dm_fault_view"));
+    {
+      PetscViewer viewer;
+      PetscMPIInt rank;
+
+      PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject) *dm), &rank));
+      PetscCall(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD, PETSC_COMM_SELF, &viewer));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "Rank %d\n", rank));
+      PetscCall(DMLabelView(hybridLabel, viewer));
+      PetscCall(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD, PETSC_COMM_SELF, &viewer));
+      PetscCall(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD));
+    }
     PetscCall(DMLabelDestroy(&hybridLabel));
+    PetscCall(DMDestroy(&dmInterface));
     PetscCall(DMDestroy(dm));
     *dm  = dmHybrid;
   }
@@ -1081,6 +1215,10 @@ int main(int argc, char **argv)
       args: -dim 2 -test_num 1
       filter: sed -e "s/_start//g" -e "s/f0_bd_u//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul//g" -e "s/g0_bd_lu//g"
     test:
+      suffix: tri_t2_0
+      args: -dim 2 -test_num 2
+      filter: sed -e "s/_start//g" -e "s/f0_bd_u//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul//g" -e "s/g0_bd_lu//g"
+    test:
       suffix: tet_0
       args: -dim 3
       filter: sed -e "s/_start//g" -e "s/f0_bd_u//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul//g" -e "s/g0_bd_lu//g"
@@ -1102,6 +1240,16 @@ int main(int argc, char **argv)
       nsize: 2
       args: -dim 2
       filter: sed -e "s/_start//g" -e "s/f0_bd_u//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul//g" -e "s/g0_bd_lu//g"
+    test:
+      suffix: tri_t3_0
+      nsize: 2
+      args: -dim 2 -test_num 3
+      filter: sed -e "s/_start//g" -e "s/f0_bd_u//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul//g" -e "s/g0_bd_lu//g"
+    test:
+      suffix: tri_t4_0
+      nsize: 6
+      args: -dim 2 -test_num 4
+      filter: sed -e "s/_start//g" -e "s/f0_bd_u//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul//g" -e "s/g0_bd_lu//g"
 
   testset:
     args: -orig_dm_plex_check_all -dm_plex_check_all \
@@ -1119,6 +1267,17 @@ int main(int argc, char **argv)
     test:
       suffix: quad_t1_0
       args: -dim 2 -cell_simplex 0 -test_num 1 -faulted_dm_plex_check_all
+      filter: sed -e "s/_start//g" -e "s/f0_bd_u//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul//g" -e "s/g0_bd_lu//g"
+    test:
+      suffix: quad_t2_0
+      nsize: 2
+      args: -dim 2 -cell_simplex 0 -test_num 2
+      filter: sed -e "s/_start//g" -e "s/f0_bd_u//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul//g" -e "s/g0_bd_lu//g"
+    test:
+      # TODO: The PetscSF is wrong here (connects to wrong side of split)
+      suffix: quad_t3_0
+      nsize: 2
+      args: -dim 2 -cell_simplex 0 -test_num 3
       filter: sed -e "s/_start//g" -e "s/f0_bd_u//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul//g" -e "s/g0_bd_lu//g"
     # 3D Hex
     test:
