@@ -305,6 +305,16 @@ cdef extern from * nogil:
     int PCHPDDMGetCoarseCorrectionType(PetscPC,PetscPCHPDDMCoarseCorrectionType*)
     int PCHPDDMGetSTShareSubKSP(PetscPC,PetscBool*)
 
+    # --- SPAI ---
+    int PCSPAISetEpsilon(PetscPC,PetscReal)
+    int PCSPAISetNBSteps(PetscPC,PetscInt)
+    int PCSPAISetMax(PetscPC,PetscInt)
+    int PCSPAISetMaxNew(PetscPC,PetscInt)
+    int PCSPAISetBlockSize(PetscPC,PetscInt)
+    int PCSPAISetCacheSize(PetscPC,PetscInt)
+    int PCSPAISetVerbose(PetscPC,PetscInt)
+    int PCSPAISetSp(PetscPC,PetscInt)
+
 # --------------------------------------------------------------------
 
 cdef extern from "libpetsc4py.h":
