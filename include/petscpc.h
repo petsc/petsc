@@ -229,7 +229,7 @@ PETSC_EXTERN PetscErrorCode PCRedundantSetNumber(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCRedundantSetScatter(PC,VecScatter,VecScatter);
 PETSC_EXTERN PetscErrorCode PCRedundantGetOperators(PC,Mat*,Mat*);
 
-PETSC_EXTERN PetscErrorCode PCSPAISetEpsilon(PC,double);
+PETSC_EXTERN PetscErrorCode PCSPAISetEpsilon(PC,PetscReal);
 PETSC_EXTERN PetscErrorCode PCSPAISetNBSteps(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCSPAISetMax(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCSPAISetMaxNew(PC,PetscInt);

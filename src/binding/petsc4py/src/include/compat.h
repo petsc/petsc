@@ -12,5 +12,6 @@
 #include "compat/hip.h"
 #include "compat/tao.h"
 #include "compat/h2opus.h"
+#include "compat/spai.h"
 
 #endif/*PETSC4PY_COMPAT_H*/

@@ -33,7 +33,7 @@ EXTERN_C_END
 
 extern PetscErrorCode ConvertMatToMatrix(MPI_Comm,Mat,Mat,matrix**);
 extern PetscErrorCode ConvertMatrixToMat(MPI_Comm,matrix*,Mat*);
-extern PetscErrorCode ConvertVectorToVec(MPI_Comm,vector *v,Vec *Pv);
+extern PetscErrorCode ConvertVectorToVec(MPI_Comm,vector*,Vec*);
 extern PetscErrorCode MM_to_PETSC(char*,char*,char*);
 
 typedef struct {
@@ -154,7 +154,7 @@ static PetscErrorCode PCView_SPAI(PC pc,PetscViewer viewer)
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    PetscCall(PetscViewerASCIIPrintf(viewer,"    epsilon %g\n",   (double)ispai->epsilon));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    epsilon %g\n",   ispai->epsilon));
     PetscCall(PetscViewerASCIIPrintf(viewer,"    nbsteps %d\n",   ispai->nbsteps));
     PetscCall(PetscViewerASCIIPrintf(viewer,"    max %d\n",       ispai->max));
     PetscCall(PetscViewerASCIIPrintf(viewer,"    maxnew %d\n",    ispai->maxnew));
@@ -166,90 +166,90 @@ static PetscErrorCode PCView_SPAI(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode  PCSPAISetEpsilon_SPAI(PC pc,double epsilon1)
+static PetscErrorCode  PCSPAISetEpsilon_SPAI(PC pc, PetscReal epsilon1)
 {
   PC_SPAI *ispai = (PC_SPAI*)pc->data;
 
   PetscFunctionBegin;
-  ispai->epsilon = epsilon1;
+  ispai->epsilon = (double)epsilon1;
   PetscFunctionReturn(0);
 }
 
 /**********************************************************************/
 
-static PetscErrorCode  PCSPAISetNBSteps_SPAI(PC pc,int nbsteps1)
+static PetscErrorCode  PCSPAISetNBSteps_SPAI(PC pc,PetscInt nbsteps1)
 {
   PC_SPAI *ispai = (PC_SPAI*)pc->data;
 
   PetscFunctionBegin;
-  ispai->nbsteps = nbsteps1;
+  ispai->nbsteps = (int)nbsteps1;
   PetscFunctionReturn(0);
 }
 
 /**********************************************************************/
 
 /* added 1/7/99 g.h. */
-static PetscErrorCode  PCSPAISetMax_SPAI(PC pc,int max1)
+static PetscErrorCode  PCSPAISetMax_SPAI(PC pc,PetscInt max1)
 {
   PC_SPAI *ispai = (PC_SPAI*)pc->data;
 
   PetscFunctionBegin;
-  ispai->max = max1;
+  ispai->max = (int)max1;
   PetscFunctionReturn(0);
 }
 
 /**********************************************************************/
 
-static PetscErrorCode  PCSPAISetMaxNew_SPAI(PC pc,int maxnew1)
+static PetscErrorCode  PCSPAISetMaxNew_SPAI(PC pc,PetscInt maxnew1)
 {
   PC_SPAI *ispai = (PC_SPAI*)pc->data;
 
   PetscFunctionBegin;
-  ispai->maxnew = maxnew1;
+  ispai->maxnew = (int)maxnew1;
   PetscFunctionReturn(0);
 }
 
 /**********************************************************************/
 
-static PetscErrorCode  PCSPAISetBlockSize_SPAI(PC pc,int block_size1)
+static PetscErrorCode  PCSPAISetBlockSize_SPAI(PC pc,PetscInt block_size1)
 {
   PC_SPAI *ispai = (PC_SPAI*)pc->data;
 
   PetscFunctionBegin;
-  ispai->block_size = block_size1;
+  ispai->block_size = (int)block_size1;
   PetscFunctionReturn(0);
 }
 
 /**********************************************************************/
 
-static PetscErrorCode  PCSPAISetCacheSize_SPAI(PC pc,int cache_size)
+static PetscErrorCode  PCSPAISetCacheSize_SPAI(PC pc,PetscInt cache_size)
 {
   PC_SPAI *ispai = (PC_SPAI*)pc->data;
 
   PetscFunctionBegin;
-  ispai->cache_size = cache_size;
+  ispai->cache_size = (int)cache_size;
   PetscFunctionReturn(0);
 }
 
 /**********************************************************************/
 
-static PetscErrorCode  PCSPAISetVerbose_SPAI(PC pc,int verbose)
+static PetscErrorCode  PCSPAISetVerbose_SPAI(PC pc,PetscInt verbose)
 {
   PC_SPAI *ispai = (PC_SPAI*)pc->data;
 
   PetscFunctionBegin;
-  ispai->verbose = verbose;
+  ispai->verbose = (int)verbose;
   PetscFunctionReturn(0);
 }
 
 /**********************************************************************/
 
-static PetscErrorCode  PCSPAISetSp_SPAI(PC pc,int sp)
+static PetscErrorCode  PCSPAISetSp_SPAI(PC pc,PetscInt sp)
 {
   PC_SPAI *ispai = (PC_SPAI*)pc->data;
 
   PetscFunctionBegin;
-  ispai->sp = sp;
+  ispai->sp = (int)sp;
   PetscFunctionReturn(0);
 }
 
@@ -275,10 +275,10 @@ static PetscErrorCode  PCSPAISetSp_SPAI(PC pc,int sp)
 
 .seealso: PCSPAI, PCSetType()
   @*/
-PetscErrorCode  PCSPAISetEpsilon(PC pc,double epsilon1)
+PetscErrorCode  PCSPAISetEpsilon(PC pc,PetscReal epsilon1)
 {
   PetscFunctionBegin;
-  PetscTryMethod(pc,"PCSPAISetEpsilon_C",(PC,double),(pc,epsilon1));
+  PetscTryMethod(pc,"PCSPAISetEpsilon_C",(PC,PetscReal),(pc,epsilon1));
   PetscFunctionReturn(0);
 }
 
@@ -304,10 +304,10 @@ PetscErrorCode  PCSPAISetEpsilon(PC pc,double epsilon1)
 
 .seealso: PCSPAI, PCSetType(), PCSPAISetMaxNew()
 @*/
-PetscErrorCode  PCSPAISetNBSteps(PC pc,int nbsteps1)
+PetscErrorCode  PCSPAISetNBSteps(PC pc,PetscInt nbsteps1)
 {
   PetscFunctionBegin;
-  PetscTryMethod(pc,"PCSPAISetNBSteps_C",(PC,int),(pc,nbsteps1));
+  PetscTryMethod(pc,"PCSPAISetNBSteps_C",(PC,PetscInt),(pc,nbsteps1));
   PetscFunctionReturn(0);
 }
 
@@ -326,10 +326,10 @@ PetscErrorCode  PCSPAISetNBSteps(PC pc,int nbsteps1)
 
 .seealso: PCSPAI, PCSetType()
 @*/
-PetscErrorCode  PCSPAISetMax(PC pc,int max1)
+PetscErrorCode  PCSPAISetMax(PC pc,PetscInt max1)
 {
   PetscFunctionBegin;
-  PetscTryMethod(pc,"PCSPAISetMax_C",(PC,int),(pc,max1));
+  PetscTryMethod(pc,"PCSPAISetMax_C",(PC,PetscInt),(pc,max1));
   PetscFunctionReturn(0);
 }
 
@@ -347,10 +347,10 @@ PetscErrorCode  PCSPAISetMax(PC pc,int max1)
 
 .seealso: PCSPAI, PCSetType(), PCSPAISetNBSteps()
 @*/
-PetscErrorCode  PCSPAISetMaxNew(PC pc,int maxnew1)
+PetscErrorCode  PCSPAISetMaxNew(PC pc,PetscInt maxnew1)
 {
   PetscFunctionBegin;
-  PetscTryMethod(pc,"PCSPAISetMaxNew_C",(PC,int),(pc,maxnew1));
+  PetscTryMethod(pc,"PCSPAISetMaxNew_C",(PC,PetscInt),(pc,maxnew1));
   PetscFunctionReturn(0);
 }
 
@@ -385,10 +385,10 @@ PetscErrorCode  PCSPAISetMaxNew(PC pc,int maxnew1)
 
 .seealso: PCSPAI, PCSetType()
 @*/
-PetscErrorCode  PCSPAISetBlockSize(PC pc,int block_size1)
+PetscErrorCode  PCSPAISetBlockSize(PC pc,PetscInt block_size1)
 {
   PetscFunctionBegin;
-  PetscTryMethod(pc,"PCSPAISetBlockSize_C",(PC,int),(pc,block_size1));
+  PetscTryMethod(pc,"PCSPAISetBlockSize_C",(PC,PetscInt),(pc,block_size1));
   PetscFunctionReturn(0);
 }
 
@@ -411,10 +411,10 @@ PetscErrorCode  PCSPAISetBlockSize(PC pc,int block_size1)
 
 .seealso: PCSPAI, PCSetType()
 @*/
-PetscErrorCode  PCSPAISetCacheSize(PC pc,int cache_size)
+PetscErrorCode  PCSPAISetCacheSize(PC pc,PetscInt cache_size)
 {
   PetscFunctionBegin;
-  PetscTryMethod(pc,"PCSPAISetCacheSize_C",(PC,int),(pc,cache_size));
+  PetscTryMethod(pc,"PCSPAISetCacheSize_C",(PC,PetscInt),(pc,cache_size));
   PetscFunctionReturn(0);
 }
 
@@ -434,10 +434,10 @@ PetscErrorCode  PCSPAISetCacheSize(PC pc,int cache_size)
 
 .seealso: PCSPAI, PCSetType()
 @*/
-PetscErrorCode  PCSPAISetVerbose(PC pc,int verbose)
+PetscErrorCode  PCSPAISetVerbose(PC pc,PetscInt verbose)
 {
   PetscFunctionBegin;
-  PetscTryMethod(pc,"PCSPAISetVerbose_C",(PC,int),(pc,verbose));
+  PetscTryMethod(pc,"PCSPAISetVerbose_C",(PC,PetscInt),(pc,verbose));
   PetscFunctionReturn(0);
 }
 
@@ -462,10 +462,10 @@ PetscErrorCode  PCSPAISetVerbose(PC pc,int verbose)
 
 .seealso: PCSPAI, PCSetType()
 @*/
-PetscErrorCode  PCSPAISetSp(PC pc,int sp)
+PetscErrorCode  PCSPAISetSp(PC pc,PetscInt sp)
 {
   PetscFunctionBegin;
-  PetscTryMethod(pc,"PCSPAISetSp_C",(PC,int),(pc,sp));
+  PetscTryMethod(pc,"PCSPAISetSp_C",(PC,PetscInt),(pc,sp));
   PetscFunctionReturn(0);
 }
 
