@@ -2,6 +2,7 @@ from __future__ import absolute_import
 import args
 import sys
 import os
+import textwrap
 
 # Ugly stuff to have curses called ONLY once, instead of for each
 # new Configure object created (and flashing the screen)
@@ -25,6 +26,7 @@ class Logger(args.ArgumentProcessor):
     self.debugLevel    = debugLevel
     self.debugSections = debugSections
     self.debugIndent   = debugIndent
+    self.dividerLength = 93
     self.getRoot()
     return
 
@@ -217,16 +219,29 @@ class Logger(args.ArgumentProcessor):
     return
 
   def logPrintDivider(self, debugLevel = -1, debugSection = None, single = 0):
-    if single:
-      self.logPrint('---------------------------------------------------------------------------------------------', debugLevel = debugLevel, debugSection = debugSection)
-    else:
-      self.logPrint('=============================================================================================', debugLevel = debugLevel, debugSection = debugSection)
+    self.logPrint(('-' if single else '=')*self.dividerLength, debugLevel = debugLevel, debugSection = debugSection)
     return
 
-  def logPrintBox(self,msg, debugLevel = -1, debugSection = 'screen', indent = 1, comm = None, rmDir = 1):
+  def logPrintBox(self,msg, debugLevel = -1, debugSection = 'screen', indent = 1, comm = None, rmDir = 1, prefix = None):
+    msg = msg.strip()
+    if prefix is None:
+      prefix = ' '*2
+      lo     = msg.lower()
+
+      # check if the message already has prefixes, in which case we should insert that
+      # prefix on every line (and remove any existing copies of it since  we will insert
+      # them ourselves)
+      if lo.startswith('warning:'):
+        msg    = msg.replace('Warning:','').lstrip()
+        prefix += 'Warning: '
+      elif lo.startswith('error:'):
+        msg    = msg.replace('Error:','').lstrip()
+        prefix += 'Error: '
+
+    msg = '\n'.join(textwrap.wrap(msg,width=self.dividerLength-2,initial_indent=prefix,subsequent_indent=prefix))
     self.logClear()
     self.logPrintDivider(debugLevel = debugLevel, debugSection = debugSection)
-    [self.logPrint('      '+line, debugLevel = debugLevel, debugSection = debugSection, rmDir = rmDir) for line in msg.split('\n')]
+    self.logPrint(msg, debugLevel = debugLevel, debugSection = debugSection, rmDir = rmDir)
     self.logPrintDivider(debugLevel = debugLevel, debugSection = debugSection)
     self.logPrint('', debugLevel = debugLevel, debugSection = debugSection)
     return
