@@ -7436,7 +7436,7 @@ PetscErrorCode DMCreateLabel(DM dm, const char name[])
 }
 
 /*@C
-  DMCreateLabelAtIndex - Create a label of the given name at the iven index. If it already exists, move it to this index.
+  DMCreateLabelAtIndex - Create a label of the given name at the given index. If it already exists, move it to this index.
 
   Not Collective
 
@@ -7488,7 +7488,7 @@ PetscErrorCode DMCreateLabelAtIndex(DM dm, PetscInt l, const char name[])
 }
 
 /*@C
-  DMGetLabelValue - Get the value in a Sieve Label for the given point, with 0 as the default
+  DMGetLabelValue - Get the value in a DMLabel for the given point, with -1 as the default
 
   Not Collective
 
@@ -7518,7 +7518,7 @@ PetscErrorCode DMGetLabelValue(DM dm, const char name[], PetscInt point, PetscIn
 }
 
 /*@C
-  DMSetLabelValue - Add a point to a Sieve Label with given value
+  DMSetLabelValue - Add a point to a DMLabel with given value
 
   Not Collective
 
@@ -7551,7 +7551,7 @@ PetscErrorCode DMSetLabelValue(DM dm, const char name[], PetscInt point, PetscIn
 }
 
 /*@C
-  DMClearLabelValue - Remove a point from a Sieve Label with given value
+  DMClearLabelValue - Remove a point from a DMLabel with given value
 
   Not Collective
 
@@ -7637,7 +7637,7 @@ PetscErrorCode DMGetLabelIdIS(DM dm, const char name[], IS *ids)
   PetscValidPointer(ids, 3);
   PetscCall(DMGetLabel(dm, name, &label));
   *ids = NULL;
- if (label) {
+  if (label) {
     PetscCall(DMLabelGetValueIS(label, ids));
   } else {
     /* returning an empty IS */
@@ -7740,7 +7740,7 @@ PetscErrorCode DMSetStratumIS(DM dm, const char name[], PetscInt value, IS point
 }
 
 /*@C
-  DMClearLabelStratum - Remove all points from a stratum from a Sieve Label
+  DMClearLabelStratum - Remove all points from a stratum from a DMLabel
 
   Not Collective
 
