@@ -17,6 +17,7 @@ sys.path.append(os.path.abspath('./ext'))
 
 import add_man_page_redirects
 import build_classic_docs
+import fix_man_page_edit_links
 import make_links_relative
 import update_htmlmap_links
 
@@ -174,6 +175,7 @@ def build_finished_handler(app, exception):
         _build_classic_docs(app, 'post')
         _copy_classic_docs(app, exception, app.outdir, 'post')
         _fix_links(app, exception)
+        _fix_man_page_edit_links(app, exception)
         if app.builder.name == 'dirhtml':
             _add_man_page_redirects(app, exception)
         if app.builder.name == 'html':
@@ -206,6 +208,14 @@ def _fix_links(app, exception):
         print("    Fixing relative links")
         print("============================================")
         make_links_relative.make_links_relative(app.outdir)
+
+
+def _fix_man_page_edit_links(app, exception):
+    if exception is None:
+        print("============================================")
+        print("    Fixing man page edit links")
+        print("============================================")
+        fix_man_page_edit_links.fix_man_page_edit_links(app.outdir)
 
 
 def _update_htmlmap_links(app):

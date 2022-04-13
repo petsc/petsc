@@ -90,7 +90,7 @@ def modifylevel(filename,secname):
           loc = re.match(pattern, loc_html)
           if loc:
               source_path = loc.group(1)
-              buf += "\n\n## Fix or edit this man page\n\n[Edit on GitLab](https://gitlab.com/petsc/petsc/-/edit/%s/%s)\n\n" % (edit_branch, source_path)
+              buf += "\n\n---\n[Edit on GitLab](https://gitlab.com/petsc/petsc/-/edit/%s/%s)\n\n" % (edit_branch, source_path)
           else:
               print("Warning. Could not find source path in %s" % filename)
       else:
