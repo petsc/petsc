@@ -28,6 +28,8 @@ struct _p_DMLabel {
   /* Index for fast search */
   PetscInt    pStart, pEnd;   /* Bounds for index lookup */
   PetscBT     bt;             /* A bit-wise index */
+  /* Propagation */
+  PetscInt   *propArray;      /* Array of values for propagation */
 };
 
 PETSC_INTERN PetscErrorCode PetscSectionSymCreate_Label(PetscSectionSym);

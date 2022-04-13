@@ -36,4 +36,13 @@ E*/
 typedef enum {DM_PLEX_CSR_MAT, DM_PLEX_CSR_GRAPH, DM_PLEX_CSR_OVERLAP} DMPlexCSRAlgorithm;
 PETSC_EXTERN const char * const DMPlexCSRAlgorithms[];
 
+typedef struct _p_DMPlexPointQueue *DMPlexPointQueue;
+struct _p_DMPlexPointQueue {
+  PetscInt  size;   /* Size of the storage array */
+  PetscInt *points; /* Array of mesh points */
+  PetscInt  front;  /* Index of the front of the queue */
+  PetscInt  back;   /* Index of the back of the queue */
+  PetscInt  num;    /* Number of enqueued points */
+};
+
 #endif
