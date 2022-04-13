@@ -734,24 +734,37 @@ If the problem persists, please send your configure.log to petsc-maint@mcs.anl.g
 
       prefetch = 0
       if self.gitcommit.startswith('origin/'):
-        prefetch = 1
+        prefetch = self.gitcommit.replace('origin/','')
       else:
         try:
           config.base.Configure.executeShellCommand([self.sourceControl.git, 'cat-file', '-e', self.gitcommit+'^{commit}'], cwd=self.packageDir, log = self.log)
+          gitcommit_hash,err,ret = config.base.Configure.executeShellCommand([self.sourceControl.git, 'rev-parse', self.gitcommit], cwd=self.packageDir, log = self.log)
+          # check if origin/branch exists - if so warn user that we are using the remote branch
+          try:
+            rbranch = 'origin/'+self.gitcommit
+            config.base.Configure.executeShellCommand([self.sourceControl.git, 'cat-file', '-e', rbranch+'^{commit}'], cwd=self.packageDir, log = self.log)
+            gitcommit_hash,err,ret = config.base.Configure.executeShellCommand([self.sourceControl.git, 'rev-parse', self.gitcommit], cwd=self.packageDir, log = self.log)
+            self.logPrintBox('***** WARNING: branch "%s" is specified, however remote branch "%s" also exits! Proceeding with using the remote branch.\n\
+To use the local branch (manually checkout local branch and) - rerun configure with option --download-%s-commit=HEAD)' % (self.gitcommit, rbranch, self.name))
+            prefetch = self.gitcommit
+          except:
+            pass
         except:
-          prefetch = 1
+          prefetch = self.gitcommit
       if prefetch:
-        try:
-          config.base.Configure.executeShellCommand([self.sourceControl.git, 'fetch'], cwd=self.packageDir, log = self.log)
-        except:
-          raise RuntimeError('Unable to fetch '+self.gitcommit+' in repository '+self.packageDir+
-                             '.\nTo use previous git snapshot - use: --download-'+self.package+'-commit=HEAD')
-      try:
-        gitcommit_hash,err,ret = config.base.Configure.executeShellCommand([self.sourceControl.git, 'rev-parse', self.gitcommit], cwd=self.packageDir, log = self.log)
-      except:
-        raise RuntimeError('Unable to locate commit: '+self.gitcommit+' in repository: '+self.packageDir+'.\n\
-If its a commit/tag that is not found - perhaps the repo URL changed. If so, delete '+self.packageDir+' and rerun configure.\n\
-If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
+        fetched = 0
+        self.logPrintBox('Attempting a "git fetch" commit/branch/tag: %s from git repos: %s' % (str(self.gitcommit) , str(self.retriever.git_urls)))
+        for git_url in self.retriever.git_urls:
+          try:
+            config.base.Configure.executeShellCommand([self.sourceControl.git, 'fetch', '--tags', git_url, prefetch], cwd=self.packageDir, log = self.log)
+            gitcommit_hash,err,ret = config.base.Configure.executeShellCommand([self.sourceControl.git, 'rev-parse', 'FETCH_HEAD'], cwd=self.packageDir, log = self.log)
+            fetched = 1
+            break
+          except:
+            continue
+        if not fetched:
+          raise RuntimeError('The above "git fetch" failed! Check if the specified "commit/branch/tag" is present in the remote git repo.\n\
+To use currently downloaded (local) git snapshot - use: --download-'+self.package+'-commit=HEAD')
       if self.gitcommit != 'HEAD':
         try:
           config.base.Configure.executeShellCommand([self.sourceControl.git, '-c', 'user.name=petsc-configure', '-c', 'user.email=petsc@configure', 'stash'], cwd=self.packageDir, log = self.log)
