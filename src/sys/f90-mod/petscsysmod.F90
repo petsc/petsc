@@ -374,7 +374,7 @@
         subroutine PetscInitializeNoArguments(ierr)
           PetscErrorCode             :: ierr
 
-          call PetscInitializeF(PETSC_NULL_CHARACTER,PETSC_NULL_CHARACTER,PETSC_FALSE,ierr)
+          call PetscInitializeF(PETSC_NULL_CHARACTER,PETSC_NULL_CHARACTER,PETSC_TRUE,ierr)
         end subroutine PetscInitializeNoArguments
         end module
 
