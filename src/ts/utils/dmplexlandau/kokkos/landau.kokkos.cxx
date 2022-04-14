@@ -733,7 +733,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
     PetscCall(PetscLogEventBegin(events[4],0,0,0,0));
     PetscCall(PetscLogGpuTimeBegin());
     const int scr_bytes = 2*(g2_scr_t::shmem_size(dim,Nf_max,Nq) + g3_scr_t::shmem_size(dim,dim,Nf_max,Nq));
-    Kokkos::parallel_for("Jacobian", Kokkos::TeamPolicy<>(num_cells_batch*batch_sz, /*team_size*/1, 1).set_scratch_size(KOKKOS_SHARED_LEVEL, Kokkos::PerTeam(scr_bytes)), jac_lambda);
+    Kokkos::parallel_for("Jacobian", Kokkos::TeamPolicy<>(num_cells_batch*batch_sz, team_size, /* Kokkos::AUTO */ 16).set_scratch_size(KOKKOS_SHARED_LEVEL, Kokkos::PerTeam(scr_bytes)), jac_lambda);
     PetscCall(PetscLogGpuTimeEnd());
     PetscCall(PetscLogEventEnd(events[4],0,0,0,0));
     if (d_vertex_f_k) delete d_vertex_f_k;
