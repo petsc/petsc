@@ -84,11 +84,11 @@ uses a different memory bus:
 
      $ mpiexec.hydra -n 4 --binding cpu:sockets
 
-- `Open MPI binding <http://www.open-mpi.org/doc/v1.5/man1/mpiexec.1.php#sect8>`__
+- `Open MPI binding <https://www.open-mpi.org/faq/?category=tuning#using-paffinity>`__
 
   .. code-block:: console
 
-     $ mpiexec -n 4 --bysocket --bind-to-socket --report-bindings
+     $ mpiexec -n 4 --map-by socket --bind-to socket --report-bindings
 
 - ``taskset``, part of the `util-linux <https://github.com/karelzak/util-linux>`__ package
 
