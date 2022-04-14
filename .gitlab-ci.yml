@@ -718,15 +718,30 @@ linux-pgi:
     TEST_ARCH: arch-ci-linux-pgi
     LOAD_MODULES: hpc_sdk/20.9
 
+# If the Nag license server fails then ${PETSC_DIR}/naglicenseproblem is created and the job is marked as failed but allow_failure
 linux-nagfor:
   extends:
     - .stage-3
     - .linux_test_nofflags
   tags:
     - gce-nfs, linux-mcpu
+  script:
+    - rm -f naglicenseproblem
+    - printf "PATH:$PATH\n"
+    - printf "PETSC_OPTIONS:$PETSC_OPTIONS\n"
+    - if [ ! -z ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME+x} ]; then printf "CI_MERGE_REQUEST_SOURCE_BRANCH_NAME:$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME\n" ;fi
+    - printf "./config/examples/${TEST_ARCH}.py\n"
+    - cat ./config/examples/${TEST_ARCH}.py
+    - ./config/examples/${TEST_ARCH}.py || if [ -f naglicenseproblem ]; then exit 126; else exit 1; fi
+    - make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}" || if [ -f naglicenseproblem ]; then exit 126; else exit 1; fi
+    - make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}" check || if [ -f naglicenseproblem ]; then exit 126; else exit 1; fi
+    - make updatedatafiles
+    - make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}" cleantest allgtests-tap TIMEOUT=${TIMEOUT}  ${TEST_OPTS} || if [ -f naglicenseproblem ]; then exit 126; else exit 1; fi
   variables:
     LOAD_MODULES: nag/6.1
     TEST_ARCH: arch-ci-linux-nagfor
+  allow_failure:
+    exit_codes: 126
 
 linux-intel-cmplx:
   extends:
