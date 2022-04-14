@@ -589,6 +589,7 @@ static PetscErrorCode SNESSetUpMatrixFree_Private(SNES snes, PetscBool hasOperat
     PetscCall(MatCreateSNESMF(snes,&J));
     PetscCall(MatMFFDSetOptionsPrefix(J,((PetscObject)snes)->prefix));
     PetscCall(MatSetFromOptions(J));
+    /* TODO: the version 2 code should be merged into the MatCreateSNESMF() and MatCreateMFFD() infrastructure and then removed */
   } else if (version == 2) {
     PetscCheck(snes->vec_func,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"SNESSetFunction() must be called first");
 #if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_REAL_SINGLE) && !defined(PETSC_USE_REAL___FLOAT128) && !defined(PETSC_USE_REAL___FP16)

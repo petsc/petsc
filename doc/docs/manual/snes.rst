@@ -829,21 +829,20 @@ the routine
 
 This routine creates the data structures needed for the matrix-vector
 products that arise within Krylov space iterative
-methods :cite:`brownsaad:90` by employing the matrix type
-``MATSHELL``, discussed in :any:`sec_matrixfree`.
+methods :cite:`brownsaad:90`.
 The default ``SNES``
 matrix-free approximations can also be invoked with the command
 ``-snes_mf``. Or, one can retain the user-provided Jacobian
 preconditioner, but replace the user-provided Jacobian matrix with the
 default matrix free variant with the option ``-snes_mf_operator``.
 
-See also
+``MatCreateSNESMF()`` uses
 
 .. code-block::
 
    MatCreateMFFD(Vec x, Mat *mat);
 
-for users who need a matrix-free matrix but are not using ``SNES``.
+which can also be used directly for users who need a matrix-free matrix but are not using ``SNES``.
 
 The user can set one parameter to control the Jacobian-vector product
 approximation with the command
@@ -857,12 +856,12 @@ relative error in the function evaluations, :math:`e_{rel}`; the default
 is the square root of machine epsilon (about :math:`10^{-8}` in double
 precision), which assumes that the functions are evaluated to full
 floating-point precision accuracy. This parameter can also be set from
-the options database with ``-snes_mf_err <err>``
+the options database with ``-mat_mffd_err <err>``
 
-In addition, ``SNES`` provides a way to register new routines to compute
+In addition, PETSc provides ways to register new routines to compute
 the differencing parameter (:math:`h`); see the manual page for
 ``MatMFFDSetType()`` and ``MatMFFDRegister()``. We currently provide two
-default routines accessible via ``-snes_mf_type <default or wp>``. For
+default routines accessible via ``-mat_mffd_type <ds or wp>``. For
 the default approach there is one “tuning” parameter, set with
 
 .. code-block::
@@ -870,7 +869,9 @@ the default approach there is one “tuning” parameter, set with
    MatMFFDDSSetUmin(Mat mat,PetscReal umin);
 
 This parameter, ``umin`` (or :math:`u_{min}`), is a bit involved; its
-default is :math:`10^{-6}` . The Jacobian-vector product is approximated
+default is :math:`10^{-6}` . Its command line form is ``-mat_mffd_umin <umin>``.
+
+The Jacobian-vector product is approximated
 via the formula
 
 .. math:: F'(u) a \approx \frac{F(u + h*a) - F(u)}{h}
@@ -885,10 +886,7 @@ where :math:`h` is computed via
    \end{cases}
 
 This approach is taken from Brown and Saad
-:cite:`brownsaad:90`. The parameter can also be set from the
-options database with ``-snes_mf_umin <umin>``
-
-The second approach, taken from Walker and Pernice,
+:cite:`brownsaad:90`. The second approach, taken from Walker and Pernice,
 :cite:`pw98`, computes :math:`h` via
 
 .. math::
@@ -908,7 +906,7 @@ information may be set with the options
 or ``-mat_mffd_compute_normu <true or false>``. This information is used
 to eliminate the redundant computation of these parameters, therefore
 reducing the number of collective operations and improving the
-efficiency of the application code.
+efficiency of the application code. This takes place automatically for the PETSc GMRES solver with left preconditioning.
 
 It is also possible to monitor the differencing parameters h that are
 computed via the routines
@@ -956,6 +954,11 @@ provided matrix free Jacobian.
 
 | :math:`^*` Use either the generic ``MatCreate()`` or a format-specific variant such as ``MatCreateAIJ()``.
 | :math:`^\dagger` Set user-defined matrix formation routine with ``SNESSetJacobian()`` or with a ``DM`` variant such as ``DMDASNESSetJacobianLocal()``
+
+SNES also provides some less well-integrated code to apply matrix-free finite differencing using an automatically computed measurement of the
+noise of the functions. This can be selected with ``-snes_mf_version 2``; it does not use ``MatCreateMFFD()`` but has similar options that start with
+``-snes_mf_`` instead of ``-mat_mffd_``. Note that this alternative prefix **only** works for version 2 differencing.
+
 
 .. _sec_fdmatrix:
 
