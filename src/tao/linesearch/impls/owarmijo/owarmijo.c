@@ -223,8 +223,7 @@ static PetscErrorCode TaoLineSearchApply_OWArmijo(TaoLineSearch ls, Vec x, Petsc
   while (ls->step >= owlqn_minstep && ls->nfeval < ls->max_funcs) {
     /* Calculate iterate */
     ++its;
-    PetscCall(VecCopy(x,armP->work));
-    PetscCall(VecAXPY(armP->work,ls->step,s));
+    PetscCall(VecWAXPY(armP->work,ls->step,s,x));
 
     partgdx=0.0;
     PetscCall(ProjWork_OWLQN(armP->work,x,g_old,&partgdx));

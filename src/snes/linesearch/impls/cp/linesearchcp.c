@@ -40,8 +40,7 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
 
   for (i = 0; i < max_its; i++) {
     /* compute the norm at lambda */
-    PetscCall(VecCopy(X, W));
-    PetscCall(VecAXPY(W, -lambda, Y));
+    PetscCall(VecWAXPY(W, -lambda, Y, X));
     if (linesearch->ops->viproject) {
       PetscCall((*linesearch->ops->viproject)(snes, W));
     }
@@ -64,8 +63,7 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
     if (linesearch->order == SNES_LINESEARCH_ORDER_LINEAR) {
       s = (fty - fty_old) / delLambda;
     } else if (linesearch->order == SNES_LINESEARCH_ORDER_QUADRATIC) {
-      PetscCall(VecCopy(X, W));
-      PetscCall(VecAXPY(W, -0.5*(lambda + lambda_old), Y));
+      PetscCall(VecWAXPY(W, -0.5*(lambda + lambda_old), Y, X));
       if (linesearch->ops->viproject) {
         PetscCall((*linesearch->ops->viproject)(snes, W));
       }
@@ -73,15 +71,13 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
       PetscCall(VecDot(F, Y, &fty_mid1));
       s    = (3.*fty - 4.*fty_mid1 + fty_old) / delLambda;
     } else {
-      PetscCall(VecCopy(X, W));
-      PetscCall(VecAXPY(W, -0.5*(lambda + lambda_old), Y));
+      PetscCall(VecWAXPY(W, -0.5*(lambda + lambda_old), Y, X));
       if (linesearch->ops->viproject) {
         PetscCall((*linesearch->ops->viproject)(snes, W));
       }
       PetscCall((*linesearch->ops->snesfunc)(snes,W,F));
       PetscCall(VecDot(F, Y, &fty_mid1));
-      PetscCall(VecCopy(X, W));
-      PetscCall(VecAXPY(W, -(lambda + 0.5*(lambda - lambda_old)), Y));
+      PetscCall(VecWAXPY(W, -(lambda + 0.5*(lambda - lambda_old)), Y, X));
       if (linesearch->ops->viproject) {
         PetscCall((*linesearch->ops->viproject)(snes, W));
       }
@@ -106,8 +102,7 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
     fty_old    = fty;
   }
   /* construct the solution */
-  PetscCall(VecCopy(X, W));
-  PetscCall(VecAXPY(W, -lambda, Y));
+  PetscCall(VecWAXPY(W, -lambda, Y, X));
   if (linesearch->ops->viproject) {
     PetscCall((*linesearch->ops->viproject)(snes, W));
   }

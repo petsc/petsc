@@ -44,8 +44,7 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
   for (i = 0; i < max_its; i++) {
 
     while (PETSC_TRUE) {
-      PetscCall(VecCopy(X, W));
-      PetscCall(VecAXPY(W, -lambda_mid, Y));
+      PetscCall(VecWAXPY(W, -lambda_mid, Y, X));
       if (linesearch->ops->viproject) {
         PetscCall((*linesearch->ops->viproject)(snes, W));
       }
@@ -60,8 +59,7 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
         }
 
         /* compute the norm at the new endpoit */
-        PetscCall(VecCopy(X, W));
-        PetscCall(VecAXPY(W, -lambda, Y));
+        PetscCall(VecWAXPY(W, -lambda, Y, X));
         if (linesearch->ops->viproject) {
           PetscCall((*linesearch->ops->viproject)(snes, W));
         }
@@ -76,13 +74,11 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
         fnrm = fnrm*fnrm;
       } else {
         /* compute the objective at the midpoint */
-        PetscCall(VecCopy(X, W));
-        PetscCall(VecAXPY(W, -lambda_mid, Y));
+        PetscCall(VecWAXPY(W, -lambda_mid, Y, X));
         PetscCall(SNESComputeObjective(snes,W,&fnrm_mid));
 
         /* compute the objective at the new endpoint */
-        PetscCall(VecCopy(X, W));
-        PetscCall(VecAXPY(W, -lambda, Y));
+        PetscCall(VecWAXPY(W, -lambda, Y, X));
         PetscCall(SNESComputeObjective(snes,W,&fnrm));
       }
       if (!PetscIsInfOrNanReal(fnrm)) break;
@@ -135,8 +131,7 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
     lambda_mid = 0.5*(lambda + lambda_old);
   }
   /* construct the solution */
-  PetscCall(VecCopy(X, W));
-  PetscCall(VecAXPY(W, -lambda, Y));
+  PetscCall(VecWAXPY(W, -lambda, Y, X));
   if (linesearch->ops->viproject) {
     PetscCall((*linesearch->ops->viproject)(snes, W));
   }

@@ -98,8 +98,7 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x, PetscReal
     ls->step = PetscMax(ls->step,ls->stepmin);
     ls->step = PetscMin(ls->step,ls->stepmax);
 
-    PetscCall(VecCopy(x,neP->W2));
-    PetscCall(VecAXPY(neP->W2,ls->step,s));
+    PetscCall(VecWAXPY(neP->W2,ls->step,s,x));
     if (ls->bounded) {
       /* Make sure new vector is numerically within bounds */
       PetscCall(VecMedian(neP->W2,ls->lower,ls->upper,neP->W2));
@@ -126,8 +125,7 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x, PetscReal
     }
 
     actred = *f - finit;
-    PetscCall(VecCopy(neP->W2,neP->W1));
-    PetscCall(VecAXPY(neP->W1,-1.0,x));    /* W1 = W2 - X */
+    PetscCall(VecWAXPY(neP->W1,-1.0,x,neP->W2));    /* W1 = W2 - X */
     PetscCall(VecDot(neP->W1,neP->Gold,&prered));
 
     if (PetscAbsReal(prered)<1.0e-100) prered=1.0e-12;
