@@ -461,8 +461,126 @@ PetscErrorCode  MatConvertFrom_MPIAdj(Mat A,MatType type,MatReuse reuse,Mat *new
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MatSetValues_MPIAdj(Mat A,PetscInt m,const PetscInt *rows,PetscInt n,const PetscInt *cols,const PetscScalar *values,InsertMode im)
+{
+  Mat_MPIAdj *adj = (Mat_MPIAdj*)A->data;
+  PetscInt   rStart, rEnd, cStart, cEnd;
+
+  PetscFunctionBegin;
+  PetscCheck(!adj->i,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is already assembled, cannot change its values");
+  PetscCall(MatGetOwnershipRange(A, &rStart, &rEnd));
+  PetscCall(MatGetOwnershipRangeColumn(A, &cStart, &cEnd));
+  if (!adj->ht) {
+    PetscCall(PetscHSetIJCreate(&adj->ht));
+    PetscCall(MatStashCreate_Private(PetscObjectComm((PetscObject) A), 1, &A->stash));
+    PetscCall(PetscLayoutSetUp(A->rmap));
+    PetscCall(PetscLayoutSetUp(A->cmap));
+  }
+  for (PetscInt r = 0; r < m; ++r) {
+    PetscHashIJKey key;
+
+    key.i = rows[r];
+    if (key.i < 0) continue;
+    if ((key.i < rStart) || (key.i >= rEnd)) {
+      PetscCall(MatStashValuesRow_Private(&A->stash, key.i, n, cols, values, PETSC_FALSE));
+    } else {
+      for (PetscInt c = 0; c < n; ++c) {
+        key.j = cols[c];
+        if (key.j < 0 || key.i == key.j) continue;
+        PetscCall(PetscHSetIJAdd(adj->ht, key));
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatAssemblyBegin_MPIAdj(Mat A, MatAssemblyType type)
+{
+  PetscInt   nstash, reallocs;
+  Mat_MPIAdj *adj = (Mat_MPIAdj*)A->data;
+
+  PetscFunctionBegin;
+  if (!adj->ht) {
+    PetscCall(PetscHSetIJCreate(&adj->ht));
+    PetscCall(PetscLayoutSetUp(A->rmap));
+    PetscCall(PetscLayoutSetUp(A->cmap));
+  }
+  PetscCall(MatStashScatterBegin_Private(A, &A->stash, A->rmap->range));
+  PetscCall(MatStashGetInfo_Private(&A->stash, &nstash, &reallocs));
+  PetscCall(PetscInfo(A, "Stash has %" PetscInt_FMT " entries, uses %" PetscInt_FMT " mallocs.\n", nstash, reallocs));
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatAssemblyEnd_MPIAdj(Mat A, MatAssemblyType type)
+{
+  PetscScalar    *val;
+  PetscInt       *row, *col,m,rstart,*rowstarts;
+  PetscInt       i, j, ncols, flg, nz;
+  PetscMPIInt    n;
+  Mat_MPIAdj     *adj = (Mat_MPIAdj*)A->data;
+  PetscHashIter  hi;
+  PetscHashIJKey key;
+  PetscHSetIJ    ht = adj->ht;
+
+  PetscFunctionBegin;
+  while (1) {
+    PetscCall(MatStashScatterGetMesg_Private(&A->stash, &n, &row, &col, &val, &flg));
+     if (!flg) break;
+
+    for (i = 0; i < n;) {
+      /* Identify the consecutive vals belonging to the same row */
+      for (j = i, rstart = row[j]; j < n; j++) {
+        if (row[j] != rstart) break;
+      }
+      if (j < n) ncols = j-i;
+      else       ncols = n-i;
+      /* Set all these values with a single function call */
+      PetscCall(MatSetValues_MPIAdj(A, 1, row+i, ncols, col+i, val+i, INSERT_VALUES));
+      i = j;
+    }
+  }
+  PetscCall(MatStashScatterEnd_Private(&A->stash));
+  PetscCall(MatStashDestroy_Private(&A->stash));
+
+  PetscCall(MatGetLocalSize(A,&m,NULL));
+  PetscCall(MatGetOwnershipRange(A,&rstart,NULL));
+  PetscCall(PetscCalloc1(m+1,&rowstarts));
+  PetscHashIterBegin(ht,hi);
+  for (; !PetscHashIterAtEnd(ht,hi);) {
+    PetscHashIterGetKey(ht,hi,key);
+    rowstarts[key.i - rstart + 1]++;
+    PetscHashIterNext(ht,hi);
+  }
+  for (i=1; i<m+1; i++) {
+    rowstarts[i] = rowstarts[i-1] + rowstarts[i];
+  }
+
+  PetscCall(PetscHSetIJGetSize(ht,&nz));
+  PetscCall(PetscMalloc1(nz,&col));
+  PetscHashIterBegin(ht,hi);
+  for (; !PetscHashIterAtEnd(ht,hi);) {
+    PetscHashIterGetKey(ht,hi,key);
+    col[rowstarts[key.i - rstart]++] = key.j;
+    PetscHashIterNext(ht,hi);
+  }
+  PetscCall(PetscHSetIJDestroy(&ht));
+  for (i=m; i>0; i--) {
+    rowstarts[i] = rowstarts[i-1];
+  }
+  rowstarts[0] = 0;
+
+  for (PetscInt i=0; i<m; i++) {
+    PetscCall(PetscSortInt(rowstarts[i+1]-rowstarts[i],&col[rowstarts[i]]));
+  }
+
+  adj->i       = rowstarts;
+  adj->j       = col;
+  adj->freeaij = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------*/
-static struct _MatOps MatOps_Values = {NULL,
+static struct _MatOps MatOps_Values = {MatSetValues_MPIAdj,
                                        MatGetRow_MPIAdj,
                                        MatRestoreRow_MPIAdj,
                                        NULL,
@@ -482,8 +600,8 @@ static struct _MatOps MatOps_Values = {NULL,
                                        NULL,
                                        NULL,
                                        NULL,
-                                /*20*/ NULL,
-                                       NULL,
+                                /*20*/ MatAssemblyBegin_MPIAdj,
+                                       MatAssemblyEnd_MPIAdj,
                                        MatSetOption_MPIAdj,
                                        NULL,
                                 /*24*/ NULL,
@@ -637,8 +755,6 @@ static PetscErrorCode  MatMPIAdjSetPreallocation_MPIAdj(Mat B,PetscInt *i,PetscI
       PetscCheck(j[ii] >= 0 && j[ii] < B->cmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column index %" PetscInt_FMT " out of range %" PetscInt_FMT,ii,j[ii]);
     }
   }
-  B->preallocated = PETSC_TRUE;
-
   b->j      = j;
   b->i      = i;
   b->values = values;
@@ -648,8 +764,11 @@ static PetscErrorCode  MatMPIAdjSetPreallocation_MPIAdj(Mat B,PetscInt *i,PetscI
   b->symmetric = PETSC_FALSE;
   b->freeaij   = PETSC_TRUE;
 
+  B->ops->assemblybegin = NULL;
+  B->ops->assemblyend   = NULL;
   PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatStashDestroy_Private(&B->stash));
   PetscFunctionReturn(0);
 }
 
@@ -777,7 +896,11 @@ PetscErrorCode MatMPIAdjCreateNonemptySubcommMat(Mat A,Mat *B)
 
   Level: beginner
 
-.seealso: `MatCreateMPIAdj()`
+  Notes:
+    You can provide values to the matrix using MatMPIAdjSetPreallocation(), MatCreateMPIAdj(), or
+    by calling MatSetValues() and MatAssemblyBegin() followed by MatAssemblyEnd()
+
+.seealso: `MatCreateMPIAdj()`, `MatMPIAdjSetPreallocation()`, `MatSetValues()`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAdj(Mat B)
@@ -789,6 +912,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAdj(Mat B)
   B->data      = (void*)b;
   PetscCall(PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps)));
   B->assembled = PETSC_FALSE;
+  B->preallocated = PETSC_TRUE; /* so that MatSetValues() may be used */
 
   PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatMPIAdjSetPreallocation_C",MatMPIAdjSetPreallocation_MPIAdj));
   PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatMPIAdjCreateNonemptySubcommMat_C",MatMPIAdjCreateNonemptySubcommMat_MPIAdj));
@@ -833,7 +957,7 @@ PetscErrorCode  MatMPIAdjToSeq(Mat A,Mat *B)
 
    Level: intermediate
 
-.seealso: `MatCreate()`, `MatCreateMPIAdj()`, `MatSetValues()`
+.seealso: `MatCreate()`, `MatCreateMPIAdj()`, `MatSetValues()`, `MATMPIADJ`, `MatCreateMPIAdj()`
 @*/
 PetscErrorCode  MatMPIAdjSetPreallocation(Mat B,PetscInt *i,PetscInt *j,PetscInt *values)
 {
@@ -864,19 +988,18 @@ PetscErrorCode  MatMPIAdjSetPreallocation(Mat B,PetscInt *i,PetscInt *j,PetscInt
    Level: intermediate
 
    Notes:
-    This matrix object does not support most matrix operations, include
-   MatSetValues().
    You must NOT free the ii, values and jj arrays yourself. PETSc will free them
    when the matrix is destroyed; you must allocate them with PetscMalloc(). If you
-    call from Fortran you need not create the arrays with PetscMalloc().
-   Should not include the matrix diagonals.
+   call from Fortran you need not create the arrays with PetscMalloc().
+
+   You should not include the matrix diagonals.
 
    If you already have a matrix, you can create its adjacency matrix by a call
-   to MatConvert, specifying a type of MATMPIADJ.
+   to MatConvert(), specifying a type of MATMPIADJ.
 
    Possible values for MatSetOption() - MAT_STRUCTURALLY_SYMMETRIC
 
-.seealso: `MatCreate()`, `MatConvert()`, `MatGetOrdering()`
+.seealso: `MatCreate()`, `MatConvert()`, `MatGetOrdering()`, `MATMPIADJ`, `MatMPIAdjSetPreallocation()`
 @*/
 PetscErrorCode  MatCreateMPIAdj(MPI_Comm comm,PetscInt m,PetscInt N,PetscInt *i,PetscInt *j,PetscInt *values,Mat *A)
 {

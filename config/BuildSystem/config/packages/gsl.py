@@ -12,6 +12,17 @@ class Configure(config.package.GNUPackage):
     self.downloadonWindows = 1
     return
 
+  def Install(self):
+    macos_deployment = ''
+    if 'MACOSX_DEPLOYMENT_TARGET' in os.environ:
+      macos_deployment = os.environ['MACOSX_DEPLOYMENT_TARGET']
+      msg = 'WARNING! Found environment variable: %s=%s\n' % ('MACOSX_DEPLOYMENT_TARGET', os.environ['MACOSX_DEPLOYMENT_TARGET'])
+      self.logPrintBox(msg+'Removing it for GSL build, since it breaks the GSL build')
+      del os.environ['MACOSX_DEPLOYMENT_TARGET']
+    installDir = config.package.GNUPackage.Install(self)
+    if macos_deployment:
+      os.environ['MACOSX_DEPLOYMENT_TARGET'] = macos_deployment
+    return installDir
 
 
 
