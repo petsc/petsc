@@ -106,10 +106,7 @@ Warning: Using from command-line or name of script: %s, ignoring environment: %s
     import sys
     import hashlib
     import platform
-    if sys.version_info < (3,):
-      hash = 'Uname: '+platform.uname()[0]+' '+platform.uname()[4]+'\n'
-    else:
-      hash = 'Uname: '+platform.uname().system+' '+platform.uname().processor+'\n'
+    hash = 'Uname: '+platform.uname().system+' '+platform.uname().processor+'\n'
     hash += 'PATH=' + os.environ.get('PATH', '') + '\n'
     args = sorted(set(filter(lambda x: not (x.startswith('PETSC_ARCH') or x == '--force'),sys.argv[1:])))
     hash += 'args:\n' + '\n'.join('    '+a for a in args) + '\n'

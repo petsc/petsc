@@ -125,8 +125,8 @@ class Script(logger.Logger):
     return
 
   def checkPython(self):
-    if not hasattr(sys, 'version_info') or sys.version_info < (2,7):
-      raise RuntimeError('BuildSystem requires Python version 2.7 or higher. Get Python at https://www.python.org/')
+    if not hasattr(sys, 'version_info') or sys.version_info < (3,4):
+      raise RuntimeError('BuildSystem requires Python version 3.4 or higher. Get Python at https://www.python.org/')
     return
 
   @staticmethod
@@ -168,9 +168,8 @@ class Script(logger.Logger):
         pipe = Popen(command, cwd=cwd, env=env, stdin=None, stdout=PIPE, stderr=PIPE,
                      shell=useShell)
         (out, err) = pipe.communicate()
-        if sys.version_info >= (3,0):
-          out = out.decode(encoding='UTF-8',errors='replace')
-          err = err.decode(encoding='UTF-8',errors='replace')
+        out = out.decode(encoding='UTF-8',errors='replace')
+        err = err.decode(encoding='UTF-8',errors='replace')
         ret = pipe.returncode
       except Exception as e:
         if hasattr(e,'message') and hasattr(e,'errno'):

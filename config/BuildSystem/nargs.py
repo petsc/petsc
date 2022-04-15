@@ -492,10 +492,7 @@ class ArgDownload(Arg):
     except:
       raise TypeError('Invalid download value: '+str(value)+' for key '+str(self.key))
     if isinstance(value, str):
-      try:
-        import urlparse as urlparse_local # novermin
-      except ImportError:
-        from urllib import parse as urlparse_local # novermin
+      from urllib import parse as urlparse_local
       if not urlparse_local.urlparse(value)[0] and not os.path.exists(value):
         raise ValueError('Invalid download location: '+str(value)+' for key '+str(self.key))
     self.value = value

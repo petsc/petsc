@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 # Example configure script for Cray XC-series systems with Intel "Knights 
 # Landing" (KNL) processors.

@@ -33,12 +33,7 @@ import re
 import time
 
 import pickle
-
-try:
-  from hashlib import md5 as new_md5
-except ImportError:
-  from md5 import new as new_md5 # novermin
-
+from hashlib import md5 as new_md5
 
 class SourceDB (dict, logger.Logger):
   '''A SourceDB is a dictionary of file data used during the build process.'''

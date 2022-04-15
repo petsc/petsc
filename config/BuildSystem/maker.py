@@ -223,11 +223,7 @@ class Make(script.Script):
       raise
     return 1
 
-try:
-  import sets # novermin
-except ImportError:
-  import config.setsBackport as sets
-
+import config.setsBackport as sets
 class struct:
   '''Container class'''
 

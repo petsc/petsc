@@ -3,11 +3,7 @@ import config.base
 
 import os
 import re
-
-try:
-  from hashlib import md5 as new_md5
-except ImportError:
-  from md5 import new as new_md5 # novermin
+from hashlib import md5 as new_md5
 
 class FakePETScDir:
   def __init__(self):

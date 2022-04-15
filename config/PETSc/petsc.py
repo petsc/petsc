@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 '''
   This is the first try for a hierarchically configured module. The idea is to
 add the configure objects from a previously executed framework into the current

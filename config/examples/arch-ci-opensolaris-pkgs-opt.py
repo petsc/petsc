@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/export/home/glci/soft/python-3.7.13/bin/python3
 
 import os
 petsc_hash_pkgs=os.path.join(os.getenv('HOME'),'petsc-hash-pkgs')

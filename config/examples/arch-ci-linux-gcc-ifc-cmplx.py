@@ -1,13 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import os
 petsc_hash_pkgs=os.path.join(os.getenv('HOME'),'petsc-hash-pkgs')
 
 # find the ifort libs location
-try:
-  from shutil import which # novermin
-except ImportError:
-  from distutils.spawn import find_executable as which
+from shutil import which
 ifort_lib_dir=os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(which('ifort')))),'compiler','lib','intel64')
 mpich_install_dir='/nfs/gce/projects/petsc/soft/gcc-7.4.0-ifort-19.0.3/mpich-3.3.2'
 mpich_lib_dir=os.path.join(mpich_install_dir,'lib')
