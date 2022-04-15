@@ -709,7 +709,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A)
 
    Options Database Keys:
 +  -mat_mffd_err <error_rel> - Sets error_rel
-.  -mat_mffd_unim <umin> - Sets umin (for default PETSc routine that computes h only)
+.  -mat_mffd_umin <umin> - Sets umin (for default PETSc routine that computes h only)
 -  -mat_mffd_check_positivity - check positivity
 
 .seealso: MatDestroy(), MatMFFDSetFunctionError(), MatMFFDDSSetUmin(), MatMFFDSetFunction()

@@ -233,10 +233,6 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
       }
     }
     PetscCall(PCGetOptionsPrefix(pc,&prefix));
-    flg  = PETSC_FALSE;
-    PetscCall(PetscOptionsHasName(NULL,prefix,"-pc_asm_print_subdomains",&flg));
-    if (flg) PetscCall(PCASMPrintSubdomains(pc));
-
     if (osm->overlap > 0) {
       /* Extend the "overlapping" regions by a number of steps */
       PetscCall(MatIncreaseOverlap(pc->pmat,osm->n_local_true,osm->is,osm->overlap));
@@ -249,7 +245,9 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
         }
       }
     }
-
+    flg = PETSC_FALSE;
+    PetscCall(PetscOptionsHasName(NULL,prefix,"-pc_asm_print_subdomains",&flg));
+    if (flg) PetscCall(PCASMPrintSubdomains(pc));
     if (!osm->ksp) {
       /* Create the local solvers */
       PetscCall(PetscMalloc1(osm->n_local_true,&osm->ksp));

@@ -194,7 +194,7 @@ $          -snes_mf_jorge
 
    Options Database Keys:
 $  -snes_mf_err <error_rel>
-$  -snes_mf_unim <umin>
+$  -snes_mf_umin <umin>
 $  -snes_mf_compute_err
 $  -snes_mf_freq_err <freq>
 $  -snes_mf_jorge
