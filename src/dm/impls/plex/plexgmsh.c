@@ -1094,7 +1094,7 @@ $EndPhysicalNames
 */
 static PetscErrorCode GmshReadPhysicalNames(GmshFile *gmsh, GmshMesh *mesh)
 {
-  char           line[PETSC_MAX_PATH_LEN], name[128+2], *p, *q;
+  char           line[PETSC_MAX_PATH_LEN], name[128+2], *p, *q, *r;
   int            snum, region, dim, tag;
 
   PetscFunctionBegin;
@@ -1109,9 +1109,11 @@ static PetscErrorCode GmshReadPhysicalNames(GmshFile *gmsh, GmshMesh *mesh)
     PetscCheck(snum == 2,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file");
     PetscCall(GmshReadString(gmsh, line, -(PetscInt)sizeof(line)));
     PetscCall(PetscStrchr(line, '"', &p));
-    PetscCheck(p,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file");
+    PetscCheck(p, PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file");
     PetscCall(PetscStrrchr(line, '"', &q));
-    PetscCheck(q != p,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file");
+    PetscCheck(q != p, PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file");
+    PetscCall(PetscStrrchr(line, ':', &r));
+    if (p != r) q = r;
     PetscCall(PetscStrncpy(name, p+1, (size_t)(q-p-1)));
     mesh->regionTags[region] = tag;
     PetscCall(PetscStrallocpy(name, &mesh->regionNames[region]));
