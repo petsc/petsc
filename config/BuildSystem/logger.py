@@ -223,22 +223,43 @@ class Logger(args.ArgumentProcessor):
     return
 
   def logPrintBox(self,msg, debugLevel = -1, debugSection = 'screen', indent = 1, comm = None, rmDir = 1, prefix = None):
+    def center_wrap(banner,text,**kwargs):
+      def center_line(line):
+        return line.center(self.dividerLength).rstrip()
+
+      wrapped = textwrap.wrap(textwrap.dedent(text),**kwargs)
+      if len(wrapped) == 1:
+        # center-justify single lines
+        wrapped[0] = center_line(wrapped[0])
+      if banner:
+        # add the banner
+        wrapped.insert(0,center_line(banner))
+      return '\n'.join(wrapped)
+
+    def prepend_banner(msg,*args):
+      lo_msg = msg.lower()
+      banner = None
+
+      for title in args:
+        lo_title = title.lower()+':'
+        if lo_msg.startswith(lo_title):
+          banner = '***** {} *****'.format(title.upper())
+          msg    = msg.replace(lo_title,'').replace(lo_title.title(),'').lstrip()
+          break
+      return banner,msg
+
+
     msg = msg.strip()
     if prefix is None:
       prefix = ' '*2
-      lo     = msg.lower()
-
+      msg = 'warning: '+msg
       # check if the message already has prefixes, in which case we should insert that
-      # prefix on every line (and remove any existing copies of it since  we will insert
-      # them ourselves)
-      if lo.startswith('warning:'):
-        msg    = msg.replace('Warning:','').lstrip()
-        prefix += 'Warning: '
-      elif lo.startswith('error:'):
-        msg    = msg.replace('Error:','').lstrip()
-        prefix += 'Error: '
+      # prefix as a banner (and remove any existing copies of it)
+      banner,msg = prepend_banner(msg,'warning','error')
+    else:
+      banner = None
 
-    msg = '\n'.join(textwrap.wrap(msg,width=self.dividerLength-2,initial_indent=prefix,subsequent_indent=prefix))
+    msg = center_wrap(banner,msg,width=self.dividerLength-2,initial_indent=prefix,subsequent_indent=prefix)
     self.logClear()
     self.logPrintDivider(debugLevel = debugLevel, debugSection = debugSection)
     self.logPrint(msg, debugLevel = debugLevel, debugSection = debugSection, rmDir = rmDir)
