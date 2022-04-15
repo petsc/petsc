@@ -1724,7 +1724,7 @@ PetscErrorCode PetscSetMUMPSFromOptions(Mat F, Mat A)
 {
   Mat_MUMPS      *mumps = (Mat_MUMPS*)F->data;
   PetscMUMPSInt  icntl=0;
-  PetscInt       info[80],i,ninfo=80;
+  PetscInt       info[80],i,ninfo=80,rbs,cbs;
   PetscBool      flg=PETSC_FALSE;
 
   PetscFunctionBegin;
@@ -1756,6 +1756,13 @@ PetscErrorCode PetscSetMUMPSFromOptions(Mat F, Mat A)
   PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_12","ICNTL(12): an ordering strategy for symmetric matrices (0 to 3)","None",mumps->id.ICNTL(12),&mumps->id.ICNTL(12),NULL));
   PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_13","ICNTL(13): parallelism of the root node (enable ScaLAPACK) and its splitting","None",mumps->id.ICNTL(13),&mumps->id.ICNTL(13),NULL));
   PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_14","ICNTL(14): percentage increase in the estimated working space","None",mumps->id.ICNTL(14),&mumps->id.ICNTL(14),NULL));
+  PetscCall(MatGetBlockSizes(A,&rbs,&cbs));
+  if (rbs == cbs && rbs > 1) mumps->id.ICNTL(15) = -rbs;
+  PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_15","ICNTL(15): compression of the input matrix resulting from a block format","None",mumps->id.ICNTL(15),&mumps->id.ICNTL(15),&flg));
+  if (flg) {
+    PetscCheck(mumps->id.ICNTL(15) <= 0,PETSC_COMM_SELF,PETSC_ERR_SUP,"Positive -mat_mumps_icntl_15 not handled");
+    PetscCheck((-mumps->id.ICNTL(15) % cbs == 0) && (-mumps->id.ICNTL(15) % rbs == 0),PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"The opposite of -mat_mumps_icntl_15 must be a multiple of the column and row blocksizes");
+  }
   PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_19","ICNTL(19): computes the Schur complement","None",mumps->id.ICNTL(19),&mumps->id.ICNTL(19),NULL));
   if (mumps->id.ICNTL(19) <= 0 || mumps->id.ICNTL(19) > 3) { /* reset any schur data (if any) */
     PetscCall(MatDestroy(&F->schur));
@@ -2151,6 +2158,7 @@ PetscErrorCode MatView_MUMPS(Mat A,PetscViewer viewer)
       PetscCall(PetscViewerASCIIPrintf(viewer,"  ICNTL(12) (efficiency control):                         %d\n",mumps->id.ICNTL(12)));
       PetscCall(PetscViewerASCIIPrintf(viewer,"  ICNTL(13) (sequential factorization of the root node):  %d\n",mumps->id.ICNTL(13)));
       PetscCall(PetscViewerASCIIPrintf(viewer,"  ICNTL(14) (percentage of estimated workspace increase): %d\n",mumps->id.ICNTL(14)));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  ICNTL(15) (compression of the input matrix):            %d\n",mumps->id.ICNTL(15)));
       /* ICNTL(15-17) not used */
       PetscCall(PetscViewerASCIIPrintf(viewer,"  ICNTL(18) (input mat struct):                           %d\n",mumps->id.ICNTL(18)));
       PetscCall(PetscViewerASCIIPrintf(viewer,"  ICNTL(19) (Schur complement info):                      %d\n",mumps->id.ICNTL(19)));
@@ -2866,6 +2874,7 @@ PetscErrorCode MatMumpsGetRinfog(Mat F,PetscInt icntl,PetscReal *val)
 .  -mat_mumps_icntl_12  - ICNTL(12): an ordering strategy for symmetric matrices (0 to 3)
 .  -mat_mumps_icntl_13  - ICNTL(13): parallelism of the root node (enable ScaLAPACK) and its splitting
 .  -mat_mumps_icntl_14  - ICNTL(14): percentage increase in the estimated working space
+.  -mat_mumps_icntl_15  - ICNTL(15): compression of the input matrix resulting from a block format
 .  -mat_mumps_icntl_19  - ICNTL(19): computes the Schur complement
 .  -mat_mumps_icntl_20  - ICNTL(20): give MUMPS centralized (0) or distributed (10) dense RHS
 .  -mat_mumps_icntl_22  - ICNTL(22): in-core/out-of-core factorization and solve (0 or 1)

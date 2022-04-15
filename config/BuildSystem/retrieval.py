@@ -55,9 +55,11 @@ class Retriever(logger.Logger):
         self.link_urls.append(self.removePrefix(url,'link://'))
       else:
         # check for ftp.mcs.anl.gov - and use https://,www.mcs.anl.gov,ftp://
-        if url.find('ftp.mcs.anl.gov'):
+        if url.find('ftp.mcs.anl.gov') != -1:
           https_url = url.replace('http://','https://').replace('ftp://','http://')
           self.tarball_urls.extend([https_url,https_url.replace('ftp.mcs.anl.gov/pub/petsc/','www.mcs.anl.gov/petsc/mirror/'),https_url.replace('https://','ftp')])
+        else:
+          self.tarball_urls.extend([url])
 
   def isDirectoryGitRepo(self, directory):
     if not hasattr(self.sourceControl, 'git'):
@@ -113,7 +115,7 @@ Unable to download package %s from: %s
     for url in self.dir_urls:
       yield('dir',url)
     for url in self.link_urls:
-      yield'link',(url)
+      yield('link',url)
     for url in self.tarball_urls:
       yield('tarball',url)
 

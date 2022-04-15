@@ -54,6 +54,7 @@ PC Object: (stokes_) 1 MPI processes
                 ICNTL(12) (efficiency control):                         1 
                 ICNTL(13) (sequential factorization of the root node):  0 
                 ICNTL(14) (percentage of estimated workspace increase): 20 
+                ICNTL(15) (compression of the input matrix):            -2 
                 ICNTL(18) (input mat struct):                           0 
                 ICNTL(19) (Schur complement info):                      0 
                 ICNTL(20) (RHS sparse pattern):                         0 
@@ -71,7 +72,7 @@ PC Object: (stokes_) 1 MPI processes
                 ICNTL(33) (compute determinant):                        0 
                 ICNTL(35) (activate BLR based factorization):           0 
                 ICNTL(36) (choice of BLR factorization variant):        0 
-                ICNTL(38) (estimated compression rate of LU factors):   333 
+                ICNTL(38) (estimated compression rate of LU factors):   600 
                 CNTL(1) (relative pivoting threshold):      0.01 
                 CNTL(2) (stopping criterion of refinement): 1.49012e-08 
                 CNTL(3) (absolute pivoting threshold):      0. 
