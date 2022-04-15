@@ -1135,7 +1135,8 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char* prog,const char* 
 .  -log_trace [filename] - Print traces of all PETSc calls to the screen (useful to determine where a program
         hangs without running in the debugger).  See PetscLogTraceBegin().
 .  -log_view [:filename:format] - Prints summary of flop and timing information to screen or file, see PetscLogView().
-.  -log_view_memory - Includes in the summary from -log_view the memory used in each method, see PetscLogView().
+.  -log_view_memory - Includes in the summary from -log_view the memory used in each event, see PetscLogView().
+.  -log_view_gpu_time - Includes in the summary from -log_view the time used in each GPU kernel, see PetscLogView().
 .  -log_summary [filename] - (Deprecated, use -log_view) Prints summary of flop and timing information to screen. If the filename is specified the
         summary is written to the file.  See PetscLogView().
 .  -log_exclude: <vec,mat,pc,ksp,snes> - excludes subset of object classes from logging
@@ -1187,7 +1188,7 @@ $       call PetscInitialize(file,ierr)
    If your main program is C but you call Fortran code that also uses PETSc you need to call PetscInitializeFortran() soon after
    calling PetscInitialize().
 
-.seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscInitializeNoArguments()
+.seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscInitializeNoArguments(), PetscLogGpuTime()
 
 @*/
 PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const char help[])
