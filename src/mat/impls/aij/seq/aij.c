@@ -5184,7 +5184,7 @@ PetscErrorCode  MatCreateSeqAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pe
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
      MatCreateSeqAIJFromTriple - Creates an sequential AIJ matrix using matrix elements (in COO format)
               provided by the user.
 
@@ -5198,16 +5198,15 @@ PetscErrorCode  MatCreateSeqAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pe
 .   j   - column indices
 .   a   - matrix values
 .   nz  - number of nonzeros
--   idx - 0 or 1 based
+-   idx - if the i and j indices start with 1 use PETSC_TRUE otherwise use PETSC_FALSE
 
    Output Parameter:
 .   mat - the matrix
 
    Level: intermediate
 
-   Notes:
-       The i and j indices are 0 based. The format which is used for the sparse matrix input, is equivalent to a row-major ordering. i.e for the following matrix,
-       the input data expected is as shown
+   Example:
+       For the following matrix, the input data expected is as shown (using 0 based indexing)
 .vb
         1 0 0
         2 0 3
@@ -5218,7 +5217,7 @@ PetscErrorCode  MatCreateSeqAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pe
         v =  {1,2,3,4,5,6}
 .ve
 
-.seealso: MatCreate(), MatCreateAIJ(), MatCreateSeqAIJ(), MatCreateSeqAIJWithArrays(), MatMPIAIJSetPreallocationCSR()
+.seealso: MatCreate(), MatCreateAIJ(), MatCreateSeqAIJ(), MatCreateSeqAIJWithArrays(), MatMPIAIJSetPreallocationCSR(), MatSetValuesCOO()
 
 @*/
 PetscErrorCode  MatCreateSeqAIJFromTriple(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt i[],PetscInt j[],PetscScalar a[],Mat *mat,PetscInt nz,PetscBool idx)

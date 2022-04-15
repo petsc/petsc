@@ -1,0 +1,60 @@
+  0 KSP Residual norm 2.061552812809e+00 
+  1 KSP Residual norm 0.000000000000e+00 
+KSP Object: 1 MPI processes
+  type: gmres
+    restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+    happy breakdown tolerance 1e-30
+  maximum iterations=10000, initial guess is zero
+  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  left preconditioning
+  using PRECONDITIONED norm type for convergence test
+PC Object: 1 MPI processes
+  type: lu
+    out-of-place factorization
+    tolerance for zero pivot 2.22045e-14
+    matrix ordering: nd
+    factor fill ratio given 5., needed 1.
+      Factored matrix follows:
+        Mat Object: 1 MPI processes
+          type: seqaij
+          rows=3, cols=3
+          package used to perform factorization: petsc
+          total: nonzeros=5, allocated nonzeros=5
+            not using I-node routines
+  linear system matrix = precond matrix:
+  Mat Object: 1 MPI processes
+    type: seqaij
+    rows=3, cols=3
+    total: nonzeros=5, allocated nonzeros=0
+    total number of mallocs used during MatSetValues calls=0
+      not using I-node routines
+  0 KSP Residual norm 1.600781059358e+00 
+  1 KSP Residual norm 0.000000000000e+00 
+KSP Object: 1 MPI processes
+  type: gmres
+    restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+    happy breakdown tolerance 1e-30
+  maximum iterations=10000, initial guess is zero
+  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  left preconditioning
+  using PRECONDITIONED norm type for convergence test
+PC Object: 1 MPI processes
+  type: lu
+    out-of-place factorization
+    tolerance for zero pivot 2.22045e-14
+    matrix ordering: nd
+    factor fill ratio given 5., needed 1.
+      Factored matrix follows:
+        Mat Object: 1 MPI processes
+          type: seqaij
+          rows=3, cols=3
+          package used to perform factorization: petsc
+          total: nonzeros=5, allocated nonzeros=5
+            not using I-node routines
+  linear system matrix = precond matrix:
+  Mat Object: 1 MPI processes
+    type: seqaij
+    rows=3, cols=3
+    total: nonzeros=5, allocated nonzeros=0
+    total number of mallocs used during MatSetValues calls=0
+      not using I-node routines
