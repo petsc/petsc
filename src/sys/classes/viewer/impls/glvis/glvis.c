@@ -756,13 +756,12 @@ static PetscErrorCode (*PetscViewerDestroy_ASCII)(PetscViewer);
 static PetscErrorCode PetscViewerDestroy_ASCII_Socket(PetscViewer viewer)
 {
   FILE *stream;
-  int  err = 0;
 
   PetscFunctionBegin;
   PetscCall(PetscViewerASCIIGetPointer(viewer,&stream));
   if (stream) {
-    err = fclose(stream);
-    PetscCheck(err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on stream");
+    int retv = fclose(stream);
+    PetscCheck(!retv,PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on stream");
   }
   PetscCall(PetscViewerDestroy_ASCII(viewer));
   PetscFunctionReturn(0);
