@@ -2356,14 +2356,7 @@ PetscErrorCode  MatCreateSeqSBAIJWithArrays(MPI_Comm comm,PetscInt bs,PetscInt m
 
 PetscErrorCode MatCreateMPIMatConcatenateSeqMat_SeqSBAIJ(MPI_Comm comm,Mat inmat,PetscInt n,MatReuse scall,Mat *outmat)
 {
-  PetscMPIInt    size;
-
   PetscFunctionBegin;
-  PetscCallMPI(MPI_Comm_size(comm,&size));
-  if (size == 1 && scall == MAT_REUSE_MATRIX) {
-    PetscCall(MatCopy(inmat,*outmat,SAME_NONZERO_PATTERN));
-  } else {
-    PetscCall(MatCreateMPIMatConcatenateSeqMat_MPISBAIJ(comm,inmat,n,scall,outmat));
-  }
+  PetscCall(MatCreateMPIMatConcatenateSeqMat_MPISBAIJ(comm,inmat,n,scall,outmat));
   PetscFunctionReturn(0);
 }

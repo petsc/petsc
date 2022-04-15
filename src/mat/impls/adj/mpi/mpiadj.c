@@ -152,7 +152,7 @@ static PetscErrorCode MatCreateSubMatrices_MPIAdj_Private(Mat mat,PetscInt n,con
   }
   PetscCall(PetscMalloc1(nindx,&indices));
   /* construct a submat */
-  if (scall == MAT_INITIAL_MATRIX) PetscCall(PetscMalloc1(n,submat));
+  //  if (scall == MAT_INITIAL_MATRIX) PetscCall(PetscMalloc1(n,submat));
 
   for (i=0; i<n; i++) {
     if (subcomm) {
@@ -199,7 +199,7 @@ static PetscErrorCode MatCreateSubMatrices_MPIAdj_Private(Mat mat,PetscInt n,con
        if (svalues) PetscCall(PetscArraycpy(sa->values,svalues,sxadj[irow_n]));
        PetscCall(PetscFree(sxadj));
        PetscCall(PetscFree(sadjncy));
-       if (svalues) PetscCall(PetscFree(svalues));
+       PetscCall(PetscFree(svalues));
     }
   }
   PetscCall(PetscFree(indices));
@@ -291,6 +291,7 @@ static PetscErrorCode MatDestroy_MPIAdj(Mat mat)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatMPIAdjSetPreallocation_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatMPIAdjCreateNonemptySubcommMat_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatMPIAdjToSeq_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatMPIAdjToSeqRankZero_C",NULL));
   PetscFunctionReturn(0);
 }
 
@@ -577,6 +578,7 @@ PetscErrorCode MatAssemblyEnd_MPIAdj(Mat A, MatAssemblyType type)
 
   adj->i       = rowstarts;
   adj->j       = col;
+  adj->nz      = rowstarts[m];
   adj->freeaij = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -864,6 +866,61 @@ PetscErrorCode  MatMPIAdjToSeq_MPIAdj(Mat A,Mat *B)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode  MatMPIAdjToSeqRankZero_MPIAdj(Mat A,Mat *B)
+{
+  PetscInt       M,N,*II,*J,NZ,nz,m,nzstart,i;
+  PetscInt       *Values = NULL;
+  Mat_MPIAdj     *adj = (Mat_MPIAdj*)A->data;
+  PetscMPIInt    mnz,mm,*allnz = NULL,*allm,size,*dispnz,*dispm,rank;
+
+  PetscFunctionBegin;
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)A),&size));
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)A),&rank));
+  PetscCall(MatGetSize(A,&M,&N));
+  PetscCall(MatGetLocalSize(A,&m,NULL));
+  nz   = adj->nz;
+  PetscCheck(adj->i[m] == nz,PETSC_COMM_SELF,PETSC_ERR_PLIB,"nz %" PetscInt_FMT " not correct i[m] %" PetscInt_FMT,nz,adj->i[m]);
+  PetscCallMPI(MPI_Allreduce(&nz,&NZ,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)A)));
+
+  PetscCall(PetscMPIIntCast(nz,&mnz));
+  if (!rank) PetscCall(PetscMalloc2(size,&allnz,size,&dispnz));
+  PetscCallMPI(MPI_Gather(&mnz,1,MPI_INT,allnz,1,MPI_INT,0,PetscObjectComm((PetscObject)A)));
+  if (!rank) {
+    dispnz[0] = 0; for (i=1; i<size; i++) dispnz[i] = dispnz[i-1]+ allnz[i-1];
+    if (adj->values) {
+      PetscCall(PetscMalloc1(NZ,&Values));
+      PetscCallMPI(MPI_Gatherv(adj->values,mnz,MPIU_INT,Values,allnz,dispnz,MPIU_INT,0,PetscObjectComm((PetscObject)A)));
+    }
+    PetscCall(PetscMalloc1(NZ,&J));
+    PetscCallMPI(MPI_Gatherv(adj->j,mnz,MPIU_INT,J,allnz,dispnz,MPIU_INT,0,PetscObjectComm((PetscObject)A)));
+    PetscCall(PetscFree2(allnz,dispnz));
+  } else {
+    if (adj->values) PetscCallMPI(MPI_Gatherv(adj->values,mnz,MPIU_INT,NULL,NULL,NULL,MPIU_INT,0,PetscObjectComm((PetscObject)A)));
+    PetscCallMPI(MPI_Gatherv(adj->j,mnz,MPIU_INT,NULL,NULL,NULL,MPIU_INT,0,PetscObjectComm((PetscObject)A)));
+  }
+  PetscCallMPI(MPI_Scan(&nz,&nzstart,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)A)));
+  nzstart -= nz;
+  /* shift the i[] values so they will be correct after being received */
+  for (i=0; i<m; i++) adj->i[i] += nzstart;
+  PetscCall(PetscMPIIntCast(m,&mm));
+  if (!rank) {
+    PetscCall(PetscMalloc1(M+1,&II));
+    PetscCall(PetscMalloc2(size,&allm,size,&dispm));
+    PetscCallMPI(MPI_Gather(&mm,1,MPI_INT,allm,1,MPI_INT,0,PetscObjectComm((PetscObject)A)));
+    dispm[0] = 0; for (i=1; i<size; i++) dispm[i] = dispm[i-1]+ allm[i-1];
+    PetscCallMPI(MPI_Gatherv(adj->i,mm,MPIU_INT,II,allm,dispm,MPIU_INT,0,PetscObjectComm((PetscObject)A)));
+    PetscCall(PetscFree2(allm,dispm));
+    II[M] = NZ;
+  } else {
+    PetscCallMPI(MPI_Gather(&mm,1,MPI_INT,NULL,1,MPI_INT,0,PetscObjectComm((PetscObject)A)));
+    PetscCallMPI(MPI_Gatherv(adj->i,mm,MPIU_INT,NULL,NULL,NULL,MPIU_INT,0,PetscObjectComm((PetscObject)A)));
+  }
+   /* shift the i[] values back */
+  for (i=0; i<m; i++) adj->i[i] -= nzstart;
+  if (!rank) PetscCall(MatCreateMPIAdj(PETSC_COMM_SELF,M,N,II,J,Values,B));
+  PetscFunctionReturn(0);
+}
+
 /*@
    MatMPIAdjCreateNonemptySubcommMat - create the same MPIAdj matrix on a subcommunicator containing only processes owning a positive number of rows
 
@@ -919,12 +976,13 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAdj(Mat B)
   PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatMPIAdjSetPreallocation_C",MatMPIAdjSetPreallocation_MPIAdj));
   PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatMPIAdjCreateNonemptySubcommMat_C",MatMPIAdjCreateNonemptySubcommMat_MPIAdj));
   PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatMPIAdjToSeq_C",MatMPIAdjToSeq_MPIAdj));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatMPIAdjToSeqRankZero_C",MatMPIAdjToSeqRankZero_MPIAdj));
   PetscCall(PetscObjectChangeTypeName((PetscObject)B,MATMPIADJ));
   PetscFunctionReturn(0);
 }
 
 /*@C
-   MatMPIAdjToSeq - Converts an parallel MPIAdj matrix to complete MPIAdj on each process (needed by sequential preconditioners)
+   MatMPIAdjToSeq - Converts an parallel MPIAdj matrix to complete MPIAdj on each process (needed by sequential partitioner)
 
    Logically Collective
 
@@ -936,12 +994,39 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAdj(Mat B)
 
    Level: intermediate
 
-.seealso: `MatCreate()`, `MatCreateMPIAdj()`, `MatSetValues()`
+.seealso: `MatCreate()`, `MatCreateMPIAdj()`, `MatSetValues()`, `MatMPIAdjToSeqRankZero()`
 @*/
 PetscErrorCode  MatMPIAdjToSeq(Mat A,Mat *B)
 {
   PetscFunctionBegin;
   PetscUseMethod(A,"MatMPIAdjToSeq_C",(Mat,Mat*),(A,B));
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   MatMPIAdjToSeqRankZero - Converts an parallel MPIAdj matrix to complete MPIAdj on rank zero (needed by sequential partitioner)
+
+   Logically Collective
+
+   Input Parameter:
+.  A - the matrix
+
+   Output Parameter:
+.  B - the same matrix on rank zero, not set on other ranks
+
+   Level: intermediate
+
+   Notes:
+     This routine has the advantage on systems with multiple ranks per node since only one copy of the matrix
+     is stored on the first node, instead of the number of ranks copies. This can allow partitioning much larger
+     paralllel graph sequentially.
+
+.seealso: MatCreate(), MatCreateMPIAdj(), MatSetValues(), MatMPIAdjToSeq()
+@*/
+PetscErrorCode  MatMPIAdjToSeqRankZero(Mat A,Mat *B)
+{
+  PetscFunctionBegin;
+  PetscUseMethod(A,"MatMPIAdjToSeqRankZero_C",(Mat,Mat*),(A,B));
   PetscFunctionReturn(0);
 }
 

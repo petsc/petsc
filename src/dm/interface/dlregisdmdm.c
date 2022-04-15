@@ -130,6 +130,12 @@ PetscErrorCode DMInitializePackage(void)
   PetscCall(PetscLogEventRegister("DMPlexMetricAverage",    DM_CLASSID,&DMPLEX_MetricAverage));
   PetscCall(PetscLogEventRegister("DMPlexMetricIntersect",  DM_CLASSID,&DMPLEX_MetricIntersection));
 
+  PetscCall(PetscLogEventRegister("RebalBuildGraph",        DM_CLASSID,&DMPLEX_RebalBuildGraph));
+  PetscCall(PetscLogEventRegister("RebalGatherGraph",       DM_CLASSID,&DMPLEX_RebalGatherGraph));
+  PetscCall(PetscLogEventRegister("RebalPartition",         DM_CLASSID,&DMPLEX_RebalPartition));
+  PetscCall(PetscLogEventRegister("RebalScatterPart",       DM_CLASSID,&DMPLEX_RebalScatterPart));
+  PetscCall(PetscLogEventRegister("RebalRewriteSF",         DM_CLASSID,&DMPLEX_RebalRewriteSF));
+
   PetscCall(PetscLogEventRegister("DMSwarmMigrate",         DM_CLASSID,&DMSWARM_Migrate));
   PetscCall(PetscLogEventRegister("DMSwarmDETSetup",        DM_CLASSID,&DMSWARM_DataExchangerTopologySetup));
   PetscCall(PetscLogEventRegister("DMSwarmDExBegin",        DM_CLASSID,&DMSWARM_DataExchangerBegin));

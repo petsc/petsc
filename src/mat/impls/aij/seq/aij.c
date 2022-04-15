@@ -5276,19 +5276,8 @@ PetscErrorCode MatSeqAIJInvalidateDiagonal(Mat A)
 
 PetscErrorCode MatCreateMPIMatConcatenateSeqMat_SeqAIJ(MPI_Comm comm,Mat inmat,PetscInt n,MatReuse scall,Mat *outmat)
 {
-  PetscMPIInt    size;
-
   PetscFunctionBegin;
-  PetscCallMPI(MPI_Comm_size(comm,&size));
-  if (size == 1) {
-    if (scall == MAT_INITIAL_MATRIX) {
-      PetscCall(MatDuplicate(inmat,MAT_COPY_VALUES,outmat));
-    } else {
-      PetscCall(MatCopy(inmat,*outmat,SAME_NONZERO_PATTERN));
-    }
-  } else {
-    PetscCall(MatCreateMPIMatConcatenateSeqMat_MPIAIJ(comm,inmat,n,scall,outmat));
-  }
+  PetscCall(MatCreateMPIMatConcatenateSeqMat_MPIAIJ(comm,inmat,n,scall,outmat));
   PetscFunctionReturn(0);
 }
 

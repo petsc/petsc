@@ -7781,7 +7781,7 @@ PetscErrorCode MatResidual(Mat mat,Vec b,Vec x,Vec r)
 }
 
 /*@C
-    MatGetRowIJ - Returns the compressed row storage i and j indices for sequential matrices.
+    MatGetRowIJ - Returns the compressed row storage i and j indices for the local rows of a sparse matrix
 
    Collective on Mat
 
@@ -7794,7 +7794,7 @@ PetscErrorCode MatResidual(Mat mat,Vec b,Vec x,Vec r)
                  always used.
 
     Output Parameters:
-+   n - number of rows in the (possibly compressed) matrix
++   n - number of local rows in the (possibly compressed) matrix
 .   ia - the row pointers; that is ia[0] = 0, ia[row] = ia[row-1] + number of elements in that row of the matrix
 .   ja - the column indices
 -   done - indicates if the routine actually worked and returned appropriate ia[] and ja[] arrays; callers
@@ -10613,8 +10613,11 @@ PetscErrorCode MatCreateMPIMatConcatenateSeqMat(MPI_Comm comm,Mat seqmat,PetscIn
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_size(comm,&size));
   if (size == 1) {
-    *mpimat = seqmat;
-    //    PetscCall(PetscObjectReference((PetscObject)seqmat));
+    if (reuse == MAT_INITIAL_MATRIX) {
+      PetscCall(MatDuplicate(seqmat,MAT_COPY_VALUES,mpimat));
+    } else {
+      PetscCall(MatCopy(seqmat,*mpimat,SAME_NONZERO_PATTERN));
+    }
     PetscFunctionReturn(0);
   }
 
