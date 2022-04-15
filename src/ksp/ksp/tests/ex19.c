@@ -69,8 +69,8 @@ int main(int argc,char **argv)
 
   user.fine.mx = user.ratio*(user.coarse.mx-1)+1; user.fine.my = user.ratio*(user.coarse.my-1)+1;
 
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Coarse grid size %D by %D\n",user.coarse.mx,user.coarse.my));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Fine grid size %D by %D\n",user.fine.mx,user.fine.my));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Coarse grid size %" PetscInt_FMT " by %" PetscInt_FMT "\n",user.coarse.mx,user.coarse.my));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Fine grid size %" PetscInt_FMT " by %" PetscInt_FMT "\n",user.fine.mx,user.fine.my));
 
   n = user.fine.mx*user.fine.my; N = user.coarse.mx*user.coarse.my;
 
@@ -142,7 +142,7 @@ int main(int argc,char **argv)
 
   PetscCall(KSPSolve(ksp,user.fine.b,user.fine.x));
   PetscCall(KSPGetIterationNumber(ksp,&its));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %D\n",its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %" PetscInt_FMT "\n",its));
 
   /* Free data structures */
   PetscCall(MatDestroy(&user.fine.J));

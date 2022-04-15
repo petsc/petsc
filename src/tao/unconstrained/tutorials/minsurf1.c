@@ -57,7 +57,7 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-my",&user.my,&flg));
 
   PetscCall(PetscPrintf(PETSC_COMM_SELF,"\n---- Minimum Surface Area Problem -----\n"));
-  PetscCall(PetscPrintf(PETSC_COMM_SELF,"mx: %D     my: %D   \n\n",user.mx,user.my));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF,"mx: %" PetscInt_FMT "     my: %" PetscInt_FMT "   \n\n",user.mx,user.my));
 
   /* Calculate any derived values from parameters */
   N    = user.mx*user.my;

@@ -37,7 +37,7 @@ KSP Object: (stokes_) 4 MPI processes
     max previous directions = 15
     preallocated 5 directions
     Using Notay's truncation strategy
-    w unrolling = 1 
+    w unrolling = TRUE 
     restarts performed = 0 
   maximum iterations=10000, initial guess is zero
   tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.

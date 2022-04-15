@@ -109,9 +109,9 @@ static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)
     PetscCall(VecDuplicate(X,&interpolatedX));
     PetscCall(TSInterpolate(ts,user->next_output,interpolatedX));
     PetscCall(VecGetArrayRead(interpolatedX,&x));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"[%.1f] %D TS %.6f (dt = %.6f) X % 12.6e % 12.6e\n",
-                        user->next_output,step,(double)t,(double)dt,(double)PetscRealPart(x[0]),
-                        (double)PetscRealPart(x[1])));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"[%.1f] %" PetscInt_FMT " TS %.6f (dt = %.6f) X % 12.6e % 12.6e\n",
+                          (double)user->next_output,step,(double)t,(double)dt,
+                          (double)PetscRealPart(x[0]),(double)PetscRealPart(x[1])));
     PetscCall(VecRestoreArrayRead(interpolatedX,&x));
     PetscCall(VecDestroy(&interpolatedX));
     user->next_output += 0.1;
@@ -203,7 +203,7 @@ int main(int argc,char **argv)
   PetscCall(TSSolve(ts,user.x));
   PetscCall(TSGetSolveTime(ts,&user.ftime));
   PetscCall(TSGetStepNumber(ts,&user.steps));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"mu %g, steps %D, ftime %g\n",(double)user.mu,user.steps,(double)user.ftime));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"mu %g, steps %" PetscInt_FMT ", ftime %g\n",(double)user.mu,user.steps,(double)user.ftime));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\n ode solution \n"));
   PetscCall(VecView(user.x,PETSC_VIEWER_STDOUT_WORLD));
 

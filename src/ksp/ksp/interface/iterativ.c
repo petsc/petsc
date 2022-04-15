@@ -122,7 +122,7 @@ PetscErrorCode KSPMonitorResidual(KSP ksp, PetscInt n, PetscReal rnorm, PetscVie
   PetscCall(PetscViewerPushFormat(viewer, format));
   PetscCall(PetscViewerASCIIAddTab(viewer, tablevel));
   if (n == 0 && prefix) PetscCall(PetscViewerASCIIPrintf(viewer, "  Residual norms for %s solve.\n", prefix));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "%3D KSP Residual norm %14.12e \n", n, (double) rnorm));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "%3" PetscInt_FMT " KSP Residual norm %14.12e \n", n, (double) rnorm));
   PetscCall(PetscViewerASCIISubtractTab(viewer, tablevel));
   PetscCall(PetscViewerPopFormat(viewer));
   PetscFunctionReturn(0);
@@ -256,9 +256,9 @@ PetscErrorCode KSPMonitorResidualShort(KSP ksp, PetscInt its, PetscReal fnorm, P
   PetscCall(PetscViewerPushFormat(viewer, format));
   PetscCall(PetscViewerASCIIAddTab(viewer, tablevel));
   if (its == 0 && prefix)  PetscCall(PetscViewerASCIIPrintf(viewer, "  Residual norms for %s solve.\n", prefix));
-  if (fnorm > 1.e-9)       PetscCall(PetscViewerASCIIPrintf(viewer, "%3D KSP Residual norm %g \n", its, (double) fnorm));
-  else if (fnorm > 1.e-11) PetscCall(PetscViewerASCIIPrintf(viewer, "%3D KSP Residual norm %5.3e \n", its, (double) fnorm));
-  else                     PetscCall(PetscViewerASCIIPrintf(viewer, "%3D KSP Residual norm < 1.e-11\n", its));
+  if (fnorm > 1.e-9)       PetscCall(PetscViewerASCIIPrintf(viewer, "%3" PetscInt_FMT " KSP Residual norm %g \n", its, (double) fnorm));
+  else if (fnorm > 1.e-11) PetscCall(PetscViewerASCIIPrintf(viewer, "%3" PetscInt_FMT " KSP Residual norm %5.3e \n", its, (double) fnorm));
+  else                     PetscCall(PetscViewerASCIIPrintf(viewer, "%3" PetscInt_FMT " KSP Residual norm < 1.e-11\n", its));
   PetscCall(PetscViewerASCIISubtractTab(viewer, tablevel));
   PetscCall(PetscViewerPopFormat(viewer));
   PetscFunctionReturn(0);
@@ -324,7 +324,7 @@ PetscErrorCode KSPMonitorResidualRange(KSP ksp, PetscInt it, PetscReal rnorm, Pe
   PetscCall(KSPMonitorRange_Private(ksp, it, &perc));
   rel  = (prev - rnorm)/prev;
   prev = rnorm;
-  PetscCall(PetscViewerASCIIPrintf(viewer, "%3D KSP preconditioned resid norm %14.12e Percent values above 20 percent of maximum %5.2f relative decrease %5.2e ratio %5.2e \n", it, (double) rnorm, (double) (100.0*perc), (double) rel, (double) (rel/perc)));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "%3" PetscInt_FMT " KSP preconditioned resid norm %14.12e Percent values above 20 percent of maximum %5.2f relative decrease %5.2e ratio %5.2e \n", it, (double) rnorm, (double) (100.0*perc), (double) rel, (double) (rel/perc)));
   PetscCall(PetscViewerASCIISubtractTab(viewer, tablevel));
   PetscCall(PetscViewerPopFormat(viewer));
   PetscFunctionReturn(0);
@@ -375,7 +375,7 @@ PetscErrorCode KSPMonitorTrueResidual(KSP ksp, PetscInt n, PetscReal rnorm, Pets
   PetscCall(PetscViewerPushFormat(viewer, format));
   PetscCall(PetscViewerASCIIAddTab(viewer, tablevel));
   if (n == 0 && prefix) PetscCall(PetscViewerASCIIPrintf(viewer, "  Residual norms for %s solve.\n", prefix));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "%3D KSP %s resid norm %14.12e true resid norm %14.12e ||r(i)||/||b|| %14.12e\n", n, normtype, (double) rnorm, (double) truenorm, (double) (truenorm/bnorm)));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "%3" PetscInt_FMT " KSP %s resid norm %14.12e true resid norm %14.12e ||r(i)||/||b|| %14.12e\n", n, normtype, (double) rnorm, (double) truenorm, (double) (truenorm/bnorm)));
   PetscCall(PetscViewerASCIISubtractTab(viewer, tablevel));
   PetscCall(PetscViewerPopFormat(viewer));
   PetscFunctionReturn(0);
@@ -542,7 +542,7 @@ PetscErrorCode KSPMonitorTrueResidualMax(KSP ksp, PetscInt n, PetscReal rnorm, P
   PetscCall(PetscViewerPushFormat(viewer, format));
   PetscCall(PetscViewerASCIIAddTab(viewer, tablevel));
   if (n == 0 && prefix) PetscCall(PetscViewerASCIIPrintf(viewer, "  Residual norms for %s solve.\n", prefix));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "%3D KSP %s true resid max norm %14.12e ||r(i)||/||b|| %14.12e\n", n, normtype, (double) truenorm, (double) (truenorm/bnorm)));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "%3" PetscInt_FMT " KSP %s true resid max norm %14.12e ||r(i)||/||b|| %14.12e\n", n, normtype, (double) truenorm, (double) (truenorm/bnorm)));
   PetscCall(PetscViewerASCIISubtractTab(viewer, tablevel));
   PetscCall(PetscViewerPopFormat(viewer));
   PetscFunctionReturn(0);
@@ -593,7 +593,7 @@ PetscErrorCode KSPMonitorError(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewer
   PetscCall(PetscViewerPushFormat(viewer, format));
   PetscCall(PetscViewerASCIIAddTab(viewer, tablevel));
   if (n == 0 && prefix) PetscCall(PetscViewerASCIIPrintf(viewer, "  Error norms for %s solve.\n", prefix));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "%3D KSP Error norm %s", n, Nf > 1 ? "[" : ""));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "%3" PetscInt_FMT " KSP Error norm %s", n, Nf > 1 ? "[" : ""));
   PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_FALSE));
   for (f = 0; f < Nf; ++f) {
     if (f > 0) PetscCall(PetscViewerASCIIPrintf(viewer, ", "));
@@ -792,7 +792,7 @@ PetscErrorCode KSPMonitorSolution(KSP ksp, PetscInt n, PetscReal rnorm, PetscVie
   PetscCall(PetscViewerPushFormat(viewer, format));
   PetscCall(PetscViewerASCIIAddTab(viewer, tablevel));
   if (n == 0 && prefix) PetscCall(PetscViewerASCIIPrintf(viewer, "  Solution norms for %s solve.\n", prefix));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "%3D KSP Solution norm %14.12e \n", n, (double) snorm));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "%3" PetscInt_FMT " KSP Solution norm %14.12e \n", n, (double) snorm));
   PetscCall(PetscViewerASCIISubtractTab(viewer, tablevel));
   PetscCall(PetscViewerPopFormat(viewer));
   PetscFunctionReturn(0);
@@ -947,10 +947,10 @@ PetscErrorCode KSPMonitorSingularValue(KSP ksp, PetscInt n, PetscReal rnorm, Pet
   PetscCall(PetscViewerASCIIAddTab(viewer, tablevel));
   if (n == 0 && prefix) PetscCall(PetscViewerASCIIPrintf(viewer, "  Residual norms for %s solve.\n", prefix));
   if (!ksp->calc_sings) {
-    PetscCall(PetscViewerASCIIPrintf(viewer, "%3D KSP Residual norm %14.12e \n", n, (double) rnorm));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "%3" PetscInt_FMT " KSP Residual norm %14.12e \n", n, (double) rnorm));
   } else {
     PetscCall(KSPComputeExtremeSingularValues(ksp, &emax, &emin));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "%3D KSP Residual norm %14.12e %% max %14.12e min %14.12e max/min %14.12e\n", n, (double) rnorm, (double) emax, (double) emin, (double) (emax/emin)));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "%3" PetscInt_FMT " KSP Residual norm %14.12e %% max %14.12e min %14.12e max/min %14.12e\n", n, (double) rnorm, (double) emax, (double) emin, (double) (emax/emin)));
   }
   PetscCall(PetscViewerASCIISubtractTab(viewer, tablevel));
   PetscCall(PetscViewerPopFormat(viewer));
@@ -1298,7 +1298,7 @@ PetscErrorCode  KSPConvergedDefault(KSP ksp,PetscInt n,PetscReal rnorm,KSPConver
 
   if (cctx->convmaxits && n >= ksp->max_it) {
     *reason = KSP_CONVERGED_ITS;
-    PetscCall(PetscInfo(ksp,"Linear solver has converged. Maximum number of iterations reached %D\n",n));
+    PetscCall(PetscInfo(ksp,"Linear solver has converged. Maximum number of iterations reached %" PetscInt_FMT "\n",n));
     PetscFunctionReturn(0);
   }
   PetscCall(KSPGetNormType(ksp,&normtype));
@@ -1358,18 +1358,18 @@ PetscErrorCode  KSPConvergedDefault(KSP ksp,PetscInt n,PetscReal rnorm,KSPConver
     }
   } else if (rnorm <= ksp->ttol) {
     if (rnorm < ksp->abstol) {
-      PetscCall(PetscInfo(ksp,"Linear solver has converged. Residual norm %14.12e is less than absolute tolerance %14.12e at iteration %D\n",(double)rnorm,(double)ksp->abstol,n));
+      PetscCall(PetscInfo(ksp,"Linear solver has converged. Residual norm %14.12e is less than absolute tolerance %14.12e at iteration %" PetscInt_FMT "\n",(double)rnorm,(double)ksp->abstol,n));
       *reason = KSP_CONVERGED_ATOL;
     } else {
       if (cctx->initialrtol) {
-        PetscCall(PetscInfo(ksp,"Linear solver has converged. Residual norm %14.12e is less than relative tolerance %14.12e times initial residual norm %14.12e at iteration %D\n",(double)rnorm,(double)ksp->rtol,(double)ksp->rnorm0,n));
+        PetscCall(PetscInfo(ksp,"Linear solver has converged. Residual norm %14.12e is less than relative tolerance %14.12e times initial residual norm %14.12e at iteration %" PetscInt_FMT "\n",(double)rnorm,(double)ksp->rtol,(double)ksp->rnorm0,n));
       } else {
-        PetscCall(PetscInfo(ksp,"Linear solver has converged. Residual norm %14.12e is less than relative tolerance %14.12e times initial right hand side norm %14.12e at iteration %D\n",(double)rnorm,(double)ksp->rtol,(double)ksp->rnorm0,n));
+        PetscCall(PetscInfo(ksp,"Linear solver has converged. Residual norm %14.12e is less than relative tolerance %14.12e times initial right hand side norm %14.12e at iteration %" PetscInt_FMT "\n",(double)rnorm,(double)ksp->rtol,(double)ksp->rnorm0,n));
       }
       *reason = KSP_CONVERGED_RTOL;
     }
   } else if (rnorm >= ksp->divtol*ksp->rnorm0) {
-    PetscCall(PetscInfo(ksp,"Linear solver is diverging. Initial right hand size norm %14.12e, current residual norm %14.12e at iteration %D\n",(double)ksp->rnorm0,(double)rnorm,n));
+    PetscCall(PetscInfo(ksp,"Linear solver is diverging. Initial right hand size norm %14.12e, current residual norm %14.12e at iteration %" PetscInt_FMT "\n",(double)ksp->rnorm0,(double)rnorm,n));
     *reason = KSP_DIVERGED_DTOL;
   }
   PetscFunctionReturn(0);

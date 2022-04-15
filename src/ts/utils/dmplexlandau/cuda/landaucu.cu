@@ -73,7 +73,7 @@ PetscErrorCode LandauCUDAStaticDataSet(DM plex, const PetscInt Nq, const PetscIn
   PetscFunctionBegin;
   PetscCall(DMGetDimension(plex, &dim));
   PetscCall(DMGetDS(plex, &prob));
-  PetscCheck(LANDAU_DIM == dim,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dim %D != LANDAU_DIM %d",dim,LANDAU_DIM);
+  PetscCheck(LANDAU_DIM == dim,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dim %" PetscInt_FMT " != LANDAU_DIM %d",dim,LANDAU_DIM);
   PetscCall(PetscDSGetTabulation(prob, &Tf));
   BB   = Tf[0]->T[0]; DD = Tf[0]->T[1];
   Nf = h_ip_offset[0] = h_ipf_offset[0] = h_elem_offset[0] = 0;
@@ -737,7 +737,7 @@ PetscErrorCode LandauCUDAJacobian(DM plex[], const PetscInt Nq, const PetscInt b
   PetscCall(DMGetApplicationContext(plex[0], &ctx));
   PetscCheck(ctx,PETSC_COMM_SELF, PETSC_ERR_PLIB, "no context");
   PetscCall(DMGetDimension(plex[0], &dim));
-  PetscCheck(dim==LANDAU_DIM,PETSC_COMM_SELF, PETSC_ERR_PLIB, "LANDAU_DIM %D != dim %d",LANDAU_DIM,dim);
+  PetscCheck(dim==LANDAU_DIM,PETSC_COMM_SELF, PETSC_ERR_PLIB, "LANDAU_DIM %" PetscInt_FMT " != dim %d",LANDAU_DIM,dim);
   if (ctx->gpu_assembly) {
     PetscCall(PetscObjectQuery((PetscObject) JacP, "assembly_maps", (PetscObject *) &container));
     if (container) { // not here first call
@@ -829,7 +829,7 @@ PetscErrorCode LandauCUDAJacobian(DM plex[], const PetscInt Nq, const PetscInt b
     dim3 dimBlockFDF(nnn>Nftot ? Nftot : nnn, Nq), dimBlock((nip_global>nnn) ? nnn : nip_global, Nq);
     PetscCall(PetscLogEventBegin(events[8],0,0,0,0));
     PetscCall(PetscLogGpuTimeBegin());
-    PetscCall(PetscInfo(plex[0], "Form F and dF/dx vectors: nip_global=%D num_grids=%D\n",nip_global,num_grids));
+    PetscCall(PetscInfo(plex[0], "Form F and dF/dx vectors: nip_global=%" PetscInt_FMT " num_grids=%" PetscInt_FMT "\n",nip_global,num_grids));
     landau_form_fdf<<<dimGrid,dimBlockFDF>>>(dim, Nb, num_grids, d_invJj, d_BB, d_DD, d_vertex_f, d_maps, d_f, d_dfdx, d_dfdy,
 #if LANDAU_DIM==3
                                              d_dfdz,
@@ -853,7 +853,7 @@ PetscErrorCode LandauCUDAJacobian(DM plex[], const PetscInt Nq, const PetscInt b
                                   cudaFuncAttributeMaxDynamicSharedMemorySize,
                                   98304);PetscCallCUDA(cerr);
     }
-    PetscCall(PetscInfo(plex[0], "Jacobian shared memory size: %D bytes, d_elem_mats=%p d_maps=%p\n",ii,d_elem_mats,d_maps));
+    PetscCall(PetscInfo(plex[0], "Jacobian shared memory size: %" PetscInt_FMT " bytes, d_elem_mats=%p d_maps=%p\n",ii,d_elem_mats,d_maps));
     landau_jacobian<<<dimGrid,dimBlock,ii*szf>>>(nip_global, dim, Nb, num_grids, d_invJj, Nftot, d_nu_alpha, d_nu_beta, d_invMass, d_Eq_m,
                                                  d_BB, d_DD, d_x, d_y, d_w,
                                                  d_elem_mats, d_maps, d_mat, d_f, d_dfdx, d_dfdy,
@@ -915,7 +915,7 @@ PetscErrorCode LandauCUDAJacobian(DM plex[], const PetscInt Nq, const PetscInt b
         PetscCall(MatGetSize(B, &nloc, NULL));
         for (int i=0 ; i<nloc ; i++) {
           PetscCall(MatGetRow(B,i,&nzl,&cols,&vals));
-          PetscCheck(nzl<=1024,PetscObjectComm((PetscObject) B), PETSC_ERR_PLIB, "Row too big: %D",nzl);
+          PetscCheck(nzl<=1024,PetscObjectComm((PetscObject) B), PETSC_ERR_PLIB, "Row too big: %" PetscInt_FMT,nzl);
           for (int j=0; j<nzl; j++) colbuf[j] = cols[j] + moffset;
           row = i + moffset;
           PetscCall(MatSetValues(JacP,1,&row,nzl,colbuf,vals,ADD_VALUES));
@@ -926,7 +926,7 @@ PetscErrorCode LandauCUDAJacobian(DM plex[], const PetscInt Nq, const PetscInt b
         elem_mats_idx += totDim*totDim*a_numCells[grid]; // this can be a stored offset?
       } // grids
     }
-    PetscCheck(elem_mats_idx == batch_sz*elem_mat_size_tot,PetscObjectComm((PetscObject) JacP), PETSC_ERR_PLIB, "elem_mats_idx != batch_sz*elem_mat_size_tot: %D %D",elem_mats_idx,batch_sz*elem_mat_size_tot);
+    PetscCheck(elem_mats_idx == batch_sz*elem_mat_size_tot,PetscObjectComm((PetscObject) JacP), PETSC_ERR_PLIB, "elem_mats_idx != batch_sz*elem_mat_size_tot: %" PetscInt_FMT " %" PetscInt_FMT,elem_mats_idx,batch_sz*elem_mat_size_tot);
     PetscCallCUDA(cudaFree(d_elem_mats));
   }
 

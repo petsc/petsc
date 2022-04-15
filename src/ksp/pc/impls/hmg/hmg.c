@@ -24,9 +24,9 @@ static PetscErrorCode PCHMGExtractSubMatrix_Private(Mat pmat,Mat *submat,MatReus
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)pmat,&comm));
-  PetscCheck(component<blocksize,comm,PETSC_ERR_ARG_INCOMP,"Component %D should be less than block size %D ",component,blocksize);
+  PetscCheck(component<blocksize,comm,PETSC_ERR_ARG_INCOMP,"Component %" PetscInt_FMT " should be less than block size %" PetscInt_FMT " ",component,blocksize);
   PetscCall(MatGetOwnershipRange(pmat,&rstart,&rend));
-  PetscCheck((rend-rstart)%blocksize == 0,comm,PETSC_ERR_ARG_INCOMP,"Block size %D is inconsistent for [%D, %D) ",blocksize,rstart,rend);
+  PetscCheck((rend-rstart)%blocksize == 0,comm,PETSC_ERR_ARG_INCOMP,"Block size %" PetscInt_FMT " is inconsistent for [%" PetscInt_FMT ", %" PetscInt_FMT ") ",blocksize,rstart,rend);
   PetscCall(ISCreateStride(comm,(rend-rstart)/blocksize,rstart+component,blocksize,&isrow));
   PetscCall(MatCreateSubMatrix(pmat,isrow,isrow,reuse,submat));
   PetscCall(ISDestroy(&isrow));
@@ -247,7 +247,7 @@ PetscErrorCode PCView_HMG(PC pc,PetscViewer viewer)
   if (iascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer," Reuse interpolation: %s\n",hmg->reuseinterp? "true":"false"));
     PetscCall(PetscViewerASCIIPrintf(viewer," Use subspace coarsening: %s\n",hmg->subcoarsening? "true":"false"));
-    PetscCall(PetscViewerASCIIPrintf(viewer," Coarsening component: %D \n",hmg->component));
+    PetscCall(PetscViewerASCIIPrintf(viewer," Coarsening component: %" PetscInt_FMT " \n",hmg->component));
     PetscCall(PetscViewerASCIIPrintf(viewer," Use MatMAIJ: %s \n",hmg->usematmaij? "true":"false"));
     PetscCall(PetscViewerASCIIPrintf(viewer," Inner PC type: %s \n",hmg->innerpctype));
   }

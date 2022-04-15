@@ -122,7 +122,7 @@ int main(int argc,char **argv)
 
   PetscCall(SNESSolve(snes,NULL,x));
   PetscCall(SNESGetIterationNumber(snes,&its));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D\n",its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %" PetscInt_FMT "\n",its));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they

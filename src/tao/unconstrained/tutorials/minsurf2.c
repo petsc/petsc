@@ -63,7 +63,7 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-my",&user.my,&flg));
 
   PetscCall(PetscPrintf(MPI_COMM_WORLD,"\n---- Minimum Surface Area Problem -----\n"));
-  PetscCall(PetscPrintf(MPI_COMM_WORLD,"mx: %D     my: %D   \n\n",user.mx,user.my));
+  PetscCall(PetscPrintf(MPI_COMM_WORLD,"mx: %" PetscInt_FMT "     my: %" PetscInt_FMT "   \n\n",user.mx,user.my));
 
   /* Let PETSc determine the vector distribution */
   Nx = PETSC_DECIDE; Ny = PETSC_DECIDE;

@@ -96,7 +96,7 @@ int main(int argc,char *argv[])
         dof0 = 0; dof1 = 0; dof2 = 1; dof3 = 0; /* 1 dof per cell boundary */
         PetscCall(DMStagCreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,30,30,30,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof0,dof1,dof2,dof3,DMSTAG_STENCIL_BOX,stencilWidth,NULL,NULL,NULL,&ctx.dm_velocity));
         break;
-      default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not Implemented for dimension %D",ctx.dim);
+      default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not Implemented for dimension %" PetscInt_FMT,ctx.dim);
     }
   }
   PetscCall(DMSetFromOptions(ctx.dm_velocity)); /* Options control velocity DM */
@@ -113,7 +113,7 @@ int main(int argc,char *argv[])
       /* One shear stress component on element edges, three shear stress components on elements */
       PetscCall(DMStagCreateCompatibleDMStag(ctx.dm_velocity,0,1,0,3,&ctx.dm_stress));
       break;
-    default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not Implemented for dimension %D",ctx.dim);
+    default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not Implemented for dimension %" PetscInt_FMT,ctx.dim);
   }
   PetscCall(DMSetUp(ctx.dm_stress));
   PetscCall(DMStagSetUniformCoordinatesProduct(ctx.dm_stress,ctx.xmin,ctx.xmax,ctx.ymin,ctx.ymax,ctx.zmin,ctx.zmax));
@@ -128,7 +128,7 @@ int main(int argc,char *argv[])
       /* buoyancy on element boundaries (faces) */
       PetscCall(DMStagCreateCompatibleDMStag(ctx.dm_velocity,0,0,1,0,&ctx.dm_buoyancy));
       break;
-    default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not Implemented for dimension %D",ctx.dim);
+    default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not Implemented for dimension %" PetscInt_FMT,ctx.dim);
   }
   PetscCall(DMSetUp(ctx.dm_buoyancy));
 
@@ -141,7 +141,7 @@ int main(int argc,char *argv[])
       /* mu and lambda + 2*mu on element centers, mu on edges */
       PetscCall(DMStagCreateCompatibleDMStag(ctx.dm_velocity,0,1,0,2,&ctx.dm_lame));
       break;
-    default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not Implemented for dimension %D",ctx.dim);
+    default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not Implemented for dimension %" PetscInt_FMT,ctx.dim);
   }
   PetscCall(DMSetUp(ctx.dm_lame));
 
@@ -154,14 +154,14 @@ int main(int argc,char *argv[])
     dx = (ctx.xmax - ctx.xmin)/N[0];
     Vp = PetscSqrtScalar((ctx.lambda + 2 * ctx.mu) / ctx.rho);
     if (ctx.dim == 2) {
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Using a %D x %D mesh\n",N[0],N[1]));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Using a %" PetscInt_FMT " x %" PetscInt_FMT " mesh\n",N[0],N[1]));
     } else if (ctx.dim == 3) {
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Using a %D x %D x %D mesh\n",N[0],N[1],N[2]));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Using a %" PetscInt_FMT " x %" PetscInt_FMT " x %" PetscInt_FMT " mesh\n",N[0],N[1],N[2]));
     }
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"dx: %g\n",dx));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"dt: %g\n",ctx.dt));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"P-wave velocity: %g\n",PetscSqrtScalar((ctx.lambda + 2 * ctx.mu) / ctx.rho)));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"V_p dt / dx: %g\n",Vp * ctx.dt / dx));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"dx: %g\n",(double)PetscRealPart(dx)));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"dt: %g\n",(double)ctx.dt));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"P-wave velocity: %g\n",(double)PetscRealPart(PetscSqrtScalar((ctx.lambda + 2 * ctx.mu) / ctx.rho))));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"V_p dt / dx: %g\n",(double)PetscRealPart(Vp * ctx.dt / dx)));
   }
 
   /* Populate the coefficient arrays */
@@ -189,7 +189,7 @@ int main(int argc,char *argv[])
     PetscCall(UpdateVelocity(&ctx,velocity,stress,ctx.buoyancy));
     PetscCall(UpdateStress(&ctx,velocity,stress,ctx.lame));
     PetscCall(ForceStress(&ctx,stress,t));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Timestep %d, t = %g\n",timestep,(double)t));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Timestep %" PetscInt_FMT ", t = %g\n",timestep,(double)t));
     if (ctx.dump_output) {
       PetscCall(DumpVelocity(&ctx,velocity,timestep));
       PetscCall(DumpStress(&ctx,stress,timestep));
@@ -273,7 +273,7 @@ static PetscErrorCode CreateLame(Ctx *ctx)
         }
       }
     }
-  } else SETERRQ(PetscObjectComm((PetscObject)ctx->dm_velocity),PETSC_ERR_SUP,"Unsupported dim %d",ctx->dim);
+  } else SETERRQ(PetscObjectComm((PetscObject)ctx->dm_velocity),PETSC_ERR_SUP,"Unsupported dim %" PetscInt_FMT,ctx->dim);
   PetscCall(VecAssemblyBegin(ctx->lame));
   PetscCall(VecAssemblyEnd(ctx->lame));
   PetscFunctionReturn(0);
@@ -517,7 +517,7 @@ static PetscErrorCode UpdateVelocity(const Ctx *ctx,Vec velocity,Vec stress, Vec
     PetscCall(UpdateVelocity_2d(ctx,velocity,stress,buoyancy));
   } else if (ctx->dim == 3) {
     PetscCall(UpdateVelocity_3d(ctx,velocity,stress,buoyancy));
-  } else SETERRQ(PetscObjectComm((PetscObject)ctx->dm_velocity),PETSC_ERR_SUP,"Unsupported dim %d",ctx->dim);
+  } else SETERRQ(PetscObjectComm((PetscObject)ctx->dm_velocity),PETSC_ERR_SUP,"Unsupported dim %" PetscInt_FMT,ctx->dim);
   PetscFunctionReturn(0);
 }
 
@@ -770,7 +770,7 @@ static PetscErrorCode DumpStress(const Ctx *ctx,Vec stress,PetscInt timestep)
       PetscViewer viewer;
       char        filename[PETSC_MAX_PATH_LEN];
 
-      PetscCall(PetscSNPrintf(filename,sizeof(filename),"ex6_stress_normal_%.4D.vtr",timestep));
+      PetscCall(PetscSNPrintf(filename,sizeof(filename),"ex6_stress_normal_%.4" PetscInt_FMT ".vtr",timestep));
       PetscCall(PetscViewerVTKOpen(PetscObjectComm((PetscObject)da_normal),filename,FILE_MODE_WRITE,&viewer));
       PetscCall(VecView(vec_normal,viewer));
       PetscCall(PetscViewerDestroy(&viewer));
@@ -786,7 +786,7 @@ static PetscErrorCode DumpStress(const Ctx *ctx,Vec stress,PetscInt timestep)
       PetscViewer viewer;
       char        filename[PETSC_MAX_PATH_LEN];
 
-      PetscCall(PetscSNPrintf(filename,sizeof(filename),"ex6_stress_shear_%.4D.vtr",timestep));
+      PetscCall(PetscSNPrintf(filename,sizeof(filename),"ex6_stress_shear_%.4" PetscInt_FMT ".vtr",timestep));
       PetscCall(PetscViewerVTKOpen(PetscObjectComm((PetscObject)da_normal),filename,FILE_MODE_WRITE,&viewer));
       PetscCall(VecView(vec_shear,viewer));
       PetscCall(PetscViewerDestroy(&viewer));
@@ -817,7 +817,7 @@ static PetscErrorCode DumpVelocity(const Ctx *ctx,Vec velocity,PetscInt timestep
     PetscCall(DMStagCreateCompatibleDMStag(ctx->dm_velocity,0,0,2,0,&dmVelAvg)); /* 2 dof per element */
   } else if (ctx->dim == 3) {
     PetscCall(DMStagCreateCompatibleDMStag(ctx->dm_velocity,0,0,0,3,&dmVelAvg)); /* 3 dof per element */
-  } else SETERRQ(PetscObjectComm((PetscObject)ctx->dm_velocity),PETSC_ERR_SUP,"Unsupported dim %d",ctx->dim);
+  } else SETERRQ(PetscObjectComm((PetscObject)ctx->dm_velocity),PETSC_ERR_SUP,"Unsupported dim %" PetscInt_FMT,ctx->dim);
   PetscCall(DMSetUp(dmVelAvg));
   PetscCall(DMStagSetUniformCoordinatesProduct(dmVelAvg,ctx->xmin,ctx->xmax,ctx->ymin,ctx->ymax,ctx->zmin,ctx->zmax));
   PetscCall(DMCreateGlobalVector(dmVelAvg,&velAvg));
@@ -861,7 +861,7 @@ static PetscErrorCode DumpVelocity(const Ctx *ctx,Vec velocity,PetscInt timestep
         }
       }
     }
-  } else SETERRQ(PetscObjectComm((PetscObject)ctx->dm_velocity),PETSC_ERR_SUP,"Unsupported dim %d",ctx->dim);
+  } else SETERRQ(PetscObjectComm((PetscObject)ctx->dm_velocity),PETSC_ERR_SUP,"Unsupported dim %" PetscInt_FMT,ctx->dim);
   PetscCall(VecAssemblyBegin(velAvg));
   PetscCall(VecAssemblyEnd(velAvg));
   PetscCall(DMRestoreLocalVector(ctx->dm_velocity,&velocity_local));
@@ -874,7 +874,7 @@ static PetscErrorCode DumpVelocity(const Ctx *ctx,Vec velocity,PetscInt timestep
     PetscViewer viewer;
     char        filename[PETSC_MAX_PATH_LEN];
 
-    PetscCall(PetscSNPrintf(filename,sizeof(filename),"ex6_velavg_%.4D.vtr",timestep));
+    PetscCall(PetscSNPrintf(filename,sizeof(filename),"ex6_velavg_%.4" PetscInt_FMT ".vtr",timestep));
     PetscCall(PetscViewerVTKOpen(PetscObjectComm((PetscObject)daVelAvg),filename,FILE_MODE_WRITE,&viewer));
     PetscCall(VecView(vecVelAvg,viewer));
     PetscCall(PetscViewerDestroy(&viewer));

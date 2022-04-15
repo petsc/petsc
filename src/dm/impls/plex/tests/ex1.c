@@ -205,7 +205,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       PetscCall(PetscSFSetUp(sf));
       PetscCall(DMGetNeighbors(distributedMesh, &nranks, NULL));
       PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &nranks, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)*dm)));
-      PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)*dm)), "Minimum number of neighbors: %D\n", nranks));
+      PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)*dm)), "Minimum number of neighbors: %" PetscInt_FMT "\n", nranks));
       PetscCall(DMDestroy(dm));
       *dm  = distributedMesh;
     }
@@ -222,7 +222,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     if (overlapMesh) {
       PetscInt overlap;
       PetscCall(DMPlexGetOverlap(overlapMesh, &overlap));
-      PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "Overlap: %D\n", overlap));
+      PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "Overlap: %" PetscInt_FMT "\n", overlap));
       PetscCall(DMDestroy(dm));
       *dm = overlapMesh;
     }

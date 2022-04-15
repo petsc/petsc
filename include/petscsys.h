@@ -18,13 +18,6 @@
 #include <petscfix.h>
 #include <petscmacros.h>
 
-/* placeholder defines */
-#if PetscHasAttribute(format)
-#  define PETSC_ATTRIBUTE_FORMAT(strIdx,vaArgIdx)
-#else
-#  define PETSC_ATTRIBUTE_FORMAT(strIdx,vaArgIdx)
-#endif
-
 #if defined(PETSC_DESIRE_FEATURE_TEST_MACROS)
 /*
    Feature test macros must be included before headers defined by IEEE Std 1003.1-2001

@@ -1624,11 +1624,11 @@ PetscErrorCode PCHPDDMInitializePackage(void)
   PetscCall(PetscLogEventRegister("PCHPDDMNext", PC_CLASSID, &PC_HPDDM_Next));
   static_assert(PETSC_PCHPDDM_MAXLEVELS <= 9, "PETSC_PCHPDDM_MAXLEVELS value is too high");
   for (i = 1; i < PETSC_PCHPDDM_MAXLEVELS; ++i) {
-    PetscCall(PetscSNPrintf(ename, sizeof(ename), "PCHPDDMSetUp L%1d", i));
+    PetscCall(PetscSNPrintf(ename, sizeof(ename), "PCHPDDMSetUp L%1" PetscInt_FMT, i));
     /* events during a PCSetUp() at level #i _except_ the assembly */
     /* of the Galerkin operator of the coarser level #(i + 1)      */
     PetscCall(PetscLogEventRegister(ename, PC_CLASSID, &PC_HPDDM_SetUp[i - 1]));
-    PetscCall(PetscSNPrintf(ename, sizeof(ename), "PCHPDDMSolve L%1d", i));
+    PetscCall(PetscSNPrintf(ename, sizeof(ename), "PCHPDDMSolve L%1" PetscInt_FMT, i));
     /* events during a PCApply() at level #i _except_              */
     /* the KSPSolve() of the coarser level #(i + 1)                */
     PetscCall(PetscLogEventRegister(ename, PC_CLASSID, &PC_HPDDM_Solve[i - 1]));

@@ -174,7 +174,7 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscCall(FormFunction(snes,x,r,(void*)&user));
   PetscCall(VecNorm(r,NORM_2,&fnorm));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D fnorm %g\n",its,(double)fnorm));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %" PetscInt_FMT " fnorm %g\n",its,(double)fnorm));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they

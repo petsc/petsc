@@ -45,7 +45,7 @@ PetscErrorCode PCSetCoordinates_GEO(PC pc, PetscInt ndm, PetscInt a_nloc, PetscR
   aloc = (Iend-my0);
   nloc = (Iend-my0)/bs;
 
-  PetscCheckFalse(nloc!=a_nloc && aloc!=a_nloc,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Number of local blocks %D must be %D or %D.",a_nloc,nloc,aloc);
+  PetscCheckFalse(nloc!=a_nloc && aloc!=a_nloc,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Number of local blocks %" PetscInt_FMT " must be %" PetscInt_FMT " or %" PetscInt_FMT ".",a_nloc,nloc,aloc);
 
   pc_gamg->data_cell_rows = 1;
   PetscCheck(coords || (nloc <= 0),PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Need coordinates for pc_gamg_type 'geo'.");
@@ -74,7 +74,7 @@ PetscErrorCode PCSetCoordinates_GEO(PC pc, PetscInt ndm, PetscInt a_nloc, PetscR
       }
     }
   }
-  PetscCheck(pc_gamg->data[arrsz] == -99.,PETSC_COMM_SELF,PETSC_ERR_PLIB,"pc_gamg->data[arrsz %D] %g != -99.",arrsz,pc_gamg->data[arrsz]);
+  PetscCheck(pc_gamg->data[arrsz] == -99.,PETSC_COMM_SELF,PETSC_ERR_PLIB,"pc_gamg->data[arrsz %" PetscInt_FMT "] %g != -99.",arrsz,(double)pc_gamg->data[arrsz]);
   pc_gamg->data_sz = arrsz;
   PetscFunctionReturn(0);
 }
@@ -176,7 +176,7 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2,PetscInt data_stride,
     in.pointlist[sid+1] = coords[data_stride + lid];
     if (lid>=nFineLoc) nPlotPts++;
   }
-  PetscCheck(sid == 2*nselected_2,PETSC_COMM_SELF,PETSC_ERR_PLIB,"sid %D != 2*nselected_2 %D",sid,nselected_2);
+  PetscCheck(sid == 2*nselected_2,PETSC_COMM_SELF,PETSC_ERR_PLIB,"sid %" PetscInt_FMT " != 2*nselected_2 %" PetscInt_FMT,sid,nselected_2);
 
   in.numberofsegments      = 0;
   in.numberofedges         = 0;
@@ -271,7 +271,7 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2,PetscInt data_stride,
         if (sel) fprintf(file, "%d %e %e\n",sid++,coords[jj],coords[data_stride + jj]);
       }
       fclose(file);
-      PetscCheck(sid == nPlotPts,PETSC_COMM_SELF,PETSC_ERR_PLIB,"sid %D != nPlotPts %D",sid,nPlotPts);
+      PetscCheck(sid == nPlotPts,PETSC_COMM_SELF,PETSC_ERR_PLIB,"sid %" PetscInt_FMT " != nPlotPts %" PetscInt_FMT,sid,nPlotPts);
       level++;
     }
   }
@@ -493,7 +493,7 @@ static PetscErrorCode getGIDsOnSquareGraph(PC pc, PetscInt nselected_1,const Pet
           crsGID[idx++]     = cgid;
         }
       }
-      PetscCheck(idx == (nselected_1+num_crs_ghost),PETSC_COMM_SELF,PETSC_ERR_PLIB,"idx %D != (nselected_1 %D + num_crs_ghost %D)",idx,nselected_1,num_crs_ghost);
+      PetscCheck(idx == (nselected_1+num_crs_ghost),PETSC_COMM_SELF,PETSC_ERR_PLIB,"idx %" PetscInt_FMT " != (nselected_1 %" PetscInt_FMT " + num_crs_ghost %" PetscInt_FMT ")",idx,nselected_1,num_crs_ghost);
       PetscCall(VecRestoreArray(mpimat2->lvec, &cpcol_state));
       /* do locals in 'crsGID' */
       PetscCall(VecGetArray(locState, &cpcol_state));
@@ -504,7 +504,7 @@ static PetscErrorCode getGIDsOnSquareGraph(PC pc, PetscInt nselected_1,const Pet
           crsGID[idx++]     = cgid;
         }
       }
-      PetscCheck(idx == nselected_1,PETSC_COMM_SELF,PETSC_ERR_PLIB,"idx %D != nselected_1 %D",idx,nselected_1);
+      PetscCheck(idx == nselected_1,PETSC_COMM_SELF,PETSC_ERR_PLIB,"idx %" PetscInt_FMT " != nselected_1 %" PetscInt_FMT,idx,nselected_1);
       PetscCall(VecRestoreArray(locState, &cpcol_state));
 
       if (a_selected_2 != NULL) { /* output */
@@ -670,7 +670,7 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc,Mat Amat,Mat Gmat,PetscCoarsenData *a
   PetscCall(MatGetOwnershipRange(Amat, &Istart, &Iend));
   PetscCall(MatGetBlockSize(Amat, &bs));
   nloc = (Iend-Istart)/bs; my0 = Istart/bs;
-  PetscCheck((Iend-Istart) % bs == 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"(Iend %D - Istart %D) % bs %D",Iend,Istart,bs);
+  PetscCheck((Iend-Istart) % bs == 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"(Iend %" PetscInt_FMT " - Istart %" PetscInt_FMT ") %% bs %" PetscInt_FMT,Iend,Istart,bs);
 
   /* get 'nLocalSelected' */
   PetscCall(PetscCDGetMIS(agg_lists, &selected_1));
@@ -713,7 +713,7 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc,Mat Amat,Mat Gmat,PetscCoarsenData *a
     PetscInt  *crsGID = NULL;
     Mat       Gmat2;
 
-    PetscCheck(dim == data_cols,PETSC_COMM_SELF,PETSC_ERR_PLIB,"dim %D != data_cols %D",dim,data_cols);
+    PetscCheck(dim == data_cols,PETSC_COMM_SELF,PETSC_ERR_PLIB,"dim %" PetscInt_FMT " != data_cols %" PetscInt_FMT,dim,data_cols);
     /* grow ghost data for better coarse grid cover of fine grid */
     /* messy method, squares graph and gets some data */
     PetscCall(getGIDsOnSquareGraph(pc, nLocalSelected, clid_flid, Gmat, &selected_2, &Gmat2, &crsGID));

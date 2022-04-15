@@ -234,7 +234,7 @@ PetscErrorCode DMPlexCheckInterfaceCones(DM dm)
     PetscCall(PetscViewerASCIIPushSynchronized(v));
     PetscCall(PetscViewerASCIISynchronizedPrintf(v, "[%d] --------\n", myrank));
     for (r=0; r<nranks; r++) {
-      PetscCall(PetscViewerASCIISynchronizedPrintf(v, "  r=%D ranks[r]=%d sntCoordinatesPerRank[r]:\n", r, ranks[r]));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(v, "  r=%" PetscInt_FMT " ranks[r]=%d sntCoordinatesPerRank[r]:\n", r, ranks[r]));
       PetscCall(PetscViewerASCIIPushTab(v));
       PetscCall(PetscViewerGetSubViewer(v,PETSC_COMM_SELF,&sv));
       PetscCall(VecView(sntCoordinatesPerRank[r], sv));
@@ -243,7 +243,7 @@ PetscErrorCode DMPlexCheckInterfaceCones(DM dm)
     }
     PetscCall(PetscViewerASCIISynchronizedPrintf(v, "  ----------\n"));
     for (r=0; r<niranks; r++) {
-      PetscCall(PetscViewerASCIISynchronizedPrintf(v, "  r=%D iranks[r]=%d refCoordinatesPerRank[r]:\n", r, iranks[r]));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(v, "  r=%" PetscInt_FMT " iranks[r]=%d refCoordinatesPerRank[r]:\n", r, iranks[r]));
       PetscCall(PetscViewerASCIIPushTab(v));
       PetscCall(PetscViewerGetSubViewer(v,PETSC_COMM_SELF,&sv));
       PetscCall(VecView(refCoordinatesPerRank[r], sv));
@@ -252,7 +252,7 @@ PetscErrorCode DMPlexCheckInterfaceCones(DM dm)
     }
     PetscCall(PetscViewerASCIISynchronizedPrintf(v, "  ----------\n"));
     for (r=0; r<niranks; r++) {
-      PetscCall(PetscViewerASCIISynchronizedPrintf(v, "  r=%D iranks[r]=%d recCoordinatesPerRank[r]:\n", r, iranks[r]));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(v, "  r=%" PetscInt_FMT " iranks[r]=%d recCoordinatesPerRank[r]:\n", r, iranks[r]));
       PetscCall(PetscViewerASCIIPushTab(v));
       PetscCall(PetscViewerGetSubViewer(v,PETSC_COMM_SELF,&sv));
       PetscCall(VecView(recCoordinatesPerRank[r], sv));

@@ -125,10 +125,10 @@ int main(int argc,char **argv)
         PetscCall(VecSum(Xglobal, &sum));
         if (PetscAbsScalar(sum) > 0.1) {
           if (step == check_step_dead) {
-            PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Simulation alive at step %D\n",step));
+            PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Simulation alive at step %" PetscInt_FMT "\n",step));
           }
         } else if (step == check_step_alive) {
-          PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Simulation dead at step %D\n",step));
+          PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Simulation dead at step %" PetscInt_FMT "\n",step));
         }
       }
       if (step % viz_interval == 0) {

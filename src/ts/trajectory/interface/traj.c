@@ -60,7 +60,7 @@ PetscErrorCode TSTrajectorySet(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal 
   PetscCheck(tj->ops->set,PetscObjectComm((PetscObject)tj),PETSC_ERR_SUP,"TSTrajectory type %s",((PetscObject)tj)->type_name);
   PetscCheck(tj->setupcalled,PetscObjectComm((PetscObject)tj),PETSC_ERR_ORDER,"TSTrajectorySetUp should be called first");
   if (tj->monitor) {
-    PetscCall(PetscViewerASCIIPrintf(tj->monitor,"TSTrajectorySet: stepnum %D, time %g (stages %D)\n",stepnum,(double)time,(PetscInt)!tj->solution_only));
+    PetscCall(PetscViewerASCIIPrintf(tj->monitor,"TSTrajectorySet: stepnum %" PetscInt_FMT ", time %g (stages %" PetscInt_FMT ")\n",stepnum,(double)time,(PetscInt)!tj->solution_only));
   }
   PetscCall(PetscLogEventBegin(TSTrajectory_Set,tj,ts,0,0));
   PetscCall((*tj->ops->set)(tj,ts,stepnum,time,X));
@@ -127,7 +127,7 @@ PetscErrorCode TSTrajectoryGet(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal 
   PetscCheck(tj->setupcalled,PetscObjectComm((PetscObject)tj),PETSC_ERR_ORDER,"TSTrajectorySetUp should be called first");
   PetscCheck(stepnum >= 0,PetscObjectComm((PetscObject)tj),PETSC_ERR_PLIB,"Requesting negative step number");
   if (tj->monitor) {
-    PetscCall(PetscViewerASCIIPrintf(tj->monitor,"TSTrajectoryGet: stepnum %D, stages %D\n",stepnum,(PetscInt)!tj->solution_only));
+    PetscCall(PetscViewerASCIIPrintf(tj->monitor,"TSTrajectoryGet: stepnum %" PetscInt_FMT ", stages %" PetscInt_FMT "\n",stepnum,(PetscInt)!tj->solution_only));
     PetscCall(PetscViewerFlush(tj->monitor));
   }
   PetscCall(PetscLogEventBegin(TSTrajectory_Get,tj,ts,0,0));
@@ -177,7 +177,7 @@ PetscErrorCode TSTrajectoryGetVecs(TSTrajectory tj,TS ts,PetscInt stepnum,PetscR
     PetscInt pU,pUdot;
     pU    = U ? 1 : 0;
     pUdot = Udot ? 1 : 0;
-    PetscCall(PetscViewerASCIIPrintf(tj->monitor,"Requested by GetVecs %D %D: stepnum %D, time %g\n",pU,pUdot,stepnum,(double)*time));
+    PetscCall(PetscViewerASCIIPrintf(tj->monitor,"Requested by GetVecs %" PetscInt_FMT " %" PetscInt_FMT ": stepnum %" PetscInt_FMT ", time %g\n",pU,pUdot,stepnum,(double)*time));
     PetscCall(PetscViewerFlush(tj->monitor));
   }
   if (U && tj->lag.caching) {
@@ -322,9 +322,9 @@ PetscErrorCode  TSTrajectoryView(TSTrajectory tj,PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
     PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)tj,viewer));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"  total number of recomputations for adjoint calculation = %D\n",tj->recomps));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"  disk checkpoint reads = %D\n",tj->diskreads));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"  disk checkpoint writes = %D\n",tj->diskwrites));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  total number of recomputations for adjoint calculation = %" PetscInt_FMT "\n",tj->recomps));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  disk checkpoint reads = %" PetscInt_FMT "\n",tj->diskreads));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  disk checkpoint writes = %" PetscInt_FMT "\n",tj->diskwrites));
     if (tj->ops->view) {
       PetscCall(PetscViewerASCIIPushTab(viewer));
       PetscCall((*tj->ops->view)(tj,viewer));
@@ -436,7 +436,7 @@ PetscErrorCode  TSTrajectoryCreate(MPI_Comm comm,TSTrajectory *tj)
   t->keepfiles            = PETSC_FALSE;
   t->usehistory           = PETSC_TRUE;
   *tj  = t;
-  PetscCall(TSTrajectorySetFiletemplate(t,"TS-%06D.bin"));
+  PetscCall(TSTrajectorySetFiletemplate(t,"TS-%06" PetscInt_FMT ".bin"));
   PetscFunctionReturn(0);
 }
 
@@ -768,9 +768,9 @@ PetscErrorCode TSTrajectorySetDirname(TSTrajectory tj,const char dirname[])
 .  -ts_trajectory_file_template - set the file name template
 
    Notes:
-    The name template should be of the form, for example filename-%06D.bin It should not begin with a leading /
+    The name template should be of the form, for example filename-%06" PetscInt_FMT ".bin It should not begin with a leading /
 
-   The final location of the files is determined by dirname/filetemplate where dirname was provided by TSTrajectorySetDirname(). The %06D is replaced by the
+   The final location of the files is determined by dirname/filetemplate where dirname was provided by TSTrajectorySetDirname(). The %06" PetscInt_FMT " is replaced by the
    timestep counter
 
    Level: developer
@@ -783,15 +783,16 @@ PetscErrorCode TSTrajectorySetFiletemplate(TSTrajectory tj,const char filetempla
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tj,TSTRAJECTORY_CLASSID,1);
+  PetscValidCharPointer(filetemplate,2);
   PetscCheck(!tj->dirfiletemplate,PetscObjectComm((PetscObject)tj),PETSC_ERR_ARG_WRONGSTATE,"Cannot set filetemplate after TSTrajectory has been setup");
 
-  PetscCheck(filetemplate[0],PetscObjectComm((PetscObject)tj),PETSC_ERR_USER,"-ts_trajectory_file_template requires a file name template, e.g. filename-%%06D.bin");
+  PetscCheck(filetemplate[0],PetscObjectComm((PetscObject)tj),PETSC_ERR_USER,"-ts_trajectory_file_template requires a file name template, e.g. filename-%%06" PetscInt_FMT ".bin");
   /* Do some cursory validation of the input. */
   PetscCall(PetscStrstr(filetemplate,"%",(char**)&ptr));
-  PetscCheck(ptr,PetscObjectComm((PetscObject)tj),PETSC_ERR_USER,"-ts_trajectory_file_template requires a file name template, e.g. filename-%%06D.bin");
+  PetscCheck(ptr,PetscObjectComm((PetscObject)tj),PETSC_ERR_USER,"-ts_trajectory_file_template requires a file name template, e.g. filename-%%06" PetscInt_FMT ".bin");
   for (ptr++; ptr && *ptr; ptr++) {
-    PetscCall(PetscStrchr("DdiouxX",*ptr,(char**)&ptr2));
-    PetscCheck(ptr2 || (*ptr >= '0' && *ptr <= '9'),PetscObjectComm((PetscObject)tj),PETSC_ERR_USER,"Invalid file template argument to -ts_trajectory_file_template, should look like filename-%%06D.bin");
+    PetscCall(PetscStrchr(PetscInt_FMT "DiouxX",*ptr,(char**)&ptr2));
+    PetscCheck(ptr2 || (*ptr >= '0' && *ptr <= '9'),PetscObjectComm((PetscObject)tj),PETSC_ERR_USER,"Invalid file template argument to -ts_trajectory_file_template, should look like filename-%%06" PetscInt_FMT ".bin");
     if (ptr2) break;
   }
   PetscCall(PetscFree(tj->filetemplate));
@@ -845,7 +846,7 @@ PetscErrorCode  TSTrajectorySetFromOptions(TSTrajectory tj,TS ts)
     PetscCall(TSTrajectorySetDirname(tj,dirname));
   }
 
-  PetscCall(PetscOptionsString("-ts_trajectory_file_template","Template for TSTrajectory file name, use filename-%06D.bin","TSTrajectorySetFiletemplate",NULL,filetemplate,sizeof(filetemplate),&set));
+  PetscCall(PetscOptionsString("-ts_trajectory_file_template","Template for TSTrajectory file name, use filename-%06" PetscInt_FMT ".bin","TSTrajectorySetFiletemplate",NULL,filetemplate,sizeof(filetemplate),&set));
   if (set) {
     PetscCall(TSTrajectorySetFiletemplate(tj,filetemplate));
   }

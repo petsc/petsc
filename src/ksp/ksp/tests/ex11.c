@@ -95,11 +95,11 @@ PetscErrorCode LoadTestMatrices(Mat *_A,Vec *_x,Vec *_b,IS *_isu,IS *_isp)
   PetscCall(VecGetOwnershipRange(h,&start_p,&end_p));
 
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] lnu = %D | lnp = %D \n", rank, lnu, lnp));
-  PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] s_u = %D | e_u = %D \n", rank, start_u, end_u));
-  PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] s_p = %D | e_p = %D \n", rank, start_p, end_p));
-  PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] is_u (offset) = %D \n", rank, start_u+start_p));
-  PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] is_p (offset) = %D \n", rank, start_u+start_p+lnu));
+  PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] lnu = %" PetscInt_FMT " | lnp = %" PetscInt_FMT " \n", rank, lnu, lnp));
+  PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] s_u = %" PetscInt_FMT " | e_u = %" PetscInt_FMT " \n", rank, start_u, end_u));
+  PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] s_p = %" PetscInt_FMT " | e_p = %" PetscInt_FMT " \n", rank, start_p, end_p));
+  PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] is_u (offset) = %" PetscInt_FMT " \n", rank, start_u+start_p));
+  PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] is_p (offset) = %" PetscInt_FMT " \n", rank, start_u+start_p+lnu));
   PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
 
   PetscCall(ISCreateStride(PETSC_COMM_WORLD,lnu,start_u+start_p,1,&is_u));
@@ -203,9 +203,9 @@ PetscErrorCode port_lsd_bfbt(void)
 
       PetscCall(PetscPrintf(PETSC_COMM_WORLD,"-- vector vector values --\n"));
       PetscCall(VecMin(uvec,&loc,&max));
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  Min(u)  = %1.6f [loc=%D]\n",(double)max,loc));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  Min(u)  = %1.6f [loc=%" PetscInt_FMT "]\n",(double)max,loc));
       PetscCall(VecMax(uvec,&loc,&max));
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  Max(u)  = %1.6f [loc=%D]\n",(double)max,loc));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  Max(u)  = %1.6f [loc=%" PetscInt_FMT "]\n",(double)max,loc));
       PetscCall(VecNorm(uvec,NORM_2,&norm));
       PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  Norm(u) = %1.6f \n",(double)norm));
       PetscCall(VecSum(uvec,&sum));
@@ -213,9 +213,9 @@ PetscErrorCode port_lsd_bfbt(void)
 
       PetscCall(PetscPrintf(PETSC_COMM_WORLD,"-- pressure vector values --\n"));
       PetscCall(VecMin(pvec,&loc,&max));
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  Min(p)  = %1.6f [loc=%D]\n",(double)max,loc));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  Min(p)  = %1.6f [loc=%" PetscInt_FMT "]\n",(double)max,loc));
       PetscCall(VecMax(pvec,&loc,&max));
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  Max(p)  = %1.6f [loc=%D]\n",(double)max,loc));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  Max(p)  = %1.6f [loc=%" PetscInt_FMT "]\n",(double)max,loc));
       PetscCall(VecNorm(pvec,NORM_2,&norm));
       PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  Norm(p) = %1.6f \n",(double)norm));
       PetscCall(VecSum(pvec,&sum));
@@ -223,9 +223,9 @@ PetscErrorCode port_lsd_bfbt(void)
 
       PetscCall(PetscPrintf(PETSC_COMM_WORLD,"-- Full vector values --\n"));
       PetscCall(VecMin(x,&loc,&max));
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  Min(u,p)  = %1.6f [loc=%D]\n",(double)max,loc));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  Min(u,p)  = %1.6f [loc=%" PetscInt_FMT "]\n",(double)max,loc));
       PetscCall(VecMax(x,&loc,&max));
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  Max(u,p)  = %1.6f [loc=%D]\n",(double)max,loc));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  Max(u,p)  = %1.6f [loc=%" PetscInt_FMT "]\n",(double)max,loc));
       PetscCall(VecNorm(x,NORM_2,&norm));
       PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  Norm(u,p) = %1.6f \n",(double)norm));
       PetscCall(VecSum(x,&sum));

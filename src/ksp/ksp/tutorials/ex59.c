@@ -1059,9 +1059,9 @@ int main(int argc,char **args)
   PetscCall(VecAXPY(bddc_solution,-1.0,exact_solution));
   PetscCall(VecNorm(bddc_solution,NORM_INFINITY,&norm));
   PetscCall(PetscPrintf(dd.gcomm,"---------------------BDDC stats-------------------------------\n"));
-  PetscCall(PetscPrintf(dd.gcomm,"Number of degrees of freedom               : %8D\n",ndofs));
+  PetscCall(PetscPrintf(dd.gcomm,"Number of degrees of freedom               : %8" PetscInt_FMT "\n",ndofs));
   if (reason < 0) {
-    PetscCall(PetscPrintf(dd.gcomm,"Number of iterations                       : %8D\n",its));
+    PetscCall(PetscPrintf(dd.gcomm,"Number of iterations                       : %8" PetscInt_FMT "\n",its));
     PetscCall(PetscPrintf(dd.gcomm,"Converged reason                           : %s\n",KSPConvergedReasons[reason]));
   }
   if (0.95 <= mineig && mineig <= 1.05) mineig = 1.0;
@@ -1103,10 +1103,10 @@ int main(int argc,char **args)
     PetscCall(VecAXPY(fetidp_solution_all,-1.0,exact_solution));
     PetscCall(VecNorm(fetidp_solution_all,NORM_INFINITY,&norm));
     PetscCall(PetscPrintf(dd.gcomm,"------------------FETI-DP stats-------------------------------\n"));
-    PetscCall(PetscPrintf(dd.gcomm,"Number of degrees of freedom               : %8D\n",ndofs));
+    PetscCall(PetscPrintf(dd.gcomm,"Number of degrees of freedom               : %8" PetscInt_FMT "\n",ndofs));
     if (reason < 0) {
-      PetscCall(PetscPrintf(dd.gcomm,"Number of iterations                       : %8D\n",its));
-      PetscCall(PetscPrintf(dd.gcomm,"Converged reason                           : %D\n",reason));
+      PetscCall(PetscPrintf(dd.gcomm,"Number of iterations                       : %8" PetscInt_FMT "\n",its));
+      PetscCall(PetscPrintf(dd.gcomm,"Converged reason                           : %s\n",KSPConvergedReasons[reason]));
     }
     if (0.95 <= mineig && mineig <= 1.05) mineig = 1.0;
     PetscCall(PetscPrintf(dd.gcomm,"Eigenvalues preconditioned operator        : %1.1e %1.1e\n",(double)PetscFloorReal(100.*mineig)/100.,(double)PetscCeilReal(100.*maxeig)/100.));

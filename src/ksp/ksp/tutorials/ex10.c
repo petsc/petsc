@@ -27,7 +27,7 @@ PetscErrorCode CheckResult(KSP *ksp, Mat *A, Vec *b, Vec *x, IS *rowperm)
   PetscInt          its;
   PetscFunctionBegin;
   PetscCall(KSPGetTotalIterations(*ksp,&its));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %d\n",its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %" PetscInt_FMT "\n",its));
 
   PetscCall(KSPGetResidualNorm(*ksp,&norm));
   if (norm < 1.e-12) {

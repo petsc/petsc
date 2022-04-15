@@ -42,7 +42,7 @@ PetscErrorCode  SNESNGSSetTolerances(SNES snes,PetscReal abstol,PetscReal rtol,P
     gs->stol = stol;
   }
   if (maxit != PETSC_DEFAULT) {
-    PetscCheck(maxit >= 0,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_OUTOFRANGE,"Maximum number of iterations %D must be non-negative",maxit);
+    PetscCheck(maxit >= 0,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_OUTOFRANGE,"Maximum number of iterations %" PetscInt_FMT " must be non-negative",maxit);
     gs->max_its = maxit;
   }
   PetscFunctionReturn(0);
@@ -284,7 +284,7 @@ PetscErrorCode SNESSolve_NGS(SNES snes)
   }
   if (normschedule == SNES_NORM_ALWAYS) {
     if (i == snes->max_its) {
-      PetscCall(PetscInfo(snes,"Maximum number of iterations has been reached: %D\n",snes->max_its));
+      PetscCall(PetscInfo(snes,"Maximum number of iterations has been reached: %" PetscInt_FMT "\n",snes->max_its));
       if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
     }
   } else if (!snes->reason) snes->reason = SNES_CONVERGED_ITS; /* GS is meant to be used as a preconditioner */

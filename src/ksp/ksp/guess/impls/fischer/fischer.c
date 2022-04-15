@@ -423,7 +423,7 @@ static PetscErrorCode KSPGuessView_Fischer(KSPGuess guess,PetscViewer viewer)
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii));
   if (isascii) {
-    PetscCall(PetscViewerASCIIPrintf(viewer,"Model %D, size %D\n",itg->method,itg->maxl));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"Model %" PetscInt_FMT ", size %" PetscInt_FMT "\n",itg->method,itg->maxl));
   }
   PetscFunctionReturn(0);
 }

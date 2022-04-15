@@ -14,7 +14,7 @@ static PetscErrorCode DMPlexTransformView_Extrude(DMPlexTransform tr, PetscViewe
 
     PetscCall(PetscObjectGetName((PetscObject) tr, &name));
     PetscCall(PetscViewerASCIIPrintf(viewer, "Extrusion transformation %s\n", name ? name : ""));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "  number of layers: %D\n", ex->layers));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  number of layers: %" PetscInt_FMT "\n", ex->layers));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  create tensor cells: %s\n", ex->useTensor ? "YES" : "NO"));
   } else {
     SETERRQ(PetscObjectComm((PetscObject) tr), PETSC_ERR_SUP, "Viewer type %s not yet supported for DMPlexTransform writing", ((PetscObject) viewer)->type_name);
@@ -44,7 +44,7 @@ static PetscErrorCode DMPlexTransformSetFromOptions_Extrude(PetscOptionItems *Pe
   Nc = 3;
   PetscCall(PetscOptionsRealArray("-dm_plex_transform_extrude_normal", "Input normal vector for extrusion", "DMPlexTransformExtrudeSetNormal", normal, &Nc, &flg));
   if (flg) {
-    PetscCheck(Nc == ex->cdimEx,PetscObjectComm((PetscObject) tr), PETSC_ERR_ARG_SIZ, "Input normal has size %D != %D extruded coordinate dimension", Nc, ex->cdimEx);
+    PetscCheck(Nc == ex->cdimEx,PetscObjectComm((PetscObject) tr), PETSC_ERR_ARG_SIZ, "Input normal has size %" PetscInt_FMT " != %" PetscInt_FMT " extruded coordinate dimension", Nc, ex->cdimEx);
     PetscCall(DMPlexTransformExtrudeSetNormal(tr, normal));
   }
   PetscCall(PetscOptionsString("-dm_plex_transform_extrude_normal_function", "Function to determine normal vector", "DMPlexTransformExtrudeSetNormalFunction", funcname, funcname, sizeof(funcname), &flg));
@@ -504,8 +504,8 @@ static PetscErrorCode DMPlexTransformMapCoordinates_Extrude(DMPlexTransform tr, 
   PetscFunctionBeginHot;
   PetscCheck(pct == DM_POLYTOPE_POINT,PETSC_COMM_SELF,PETSC_ERR_SUP,"Not for parent point type %s",DMPolytopeTypes[pct]);
   PetscCheck(ct  == DM_POLYTOPE_POINT,PETSC_COMM_SELF,PETSC_ERR_SUP,"Not for refined point type %s",DMPolytopeTypes[ct]);
-  PetscCheck(Nv == 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Vertices should be produced from a single vertex, not %D",Nv);
-  PetscCheck(dE == ex->cdim,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Coordinate dim %D != %D original dimension", dE, ex->cdim);
+  PetscCheck(Nv == 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Vertices should be produced from a single vertex, not %" PetscInt_FMT,Nv);
+  PetscCheck(dE == ex->cdim,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Coordinate dim %" PetscInt_FMT " != %" PetscInt_FMT " original dimension", dE, ex->cdim);
 
   PetscCall(DMPlexTransformGetDM(tr, &dm));
   PetscCall(DMGetDimension(dm, &dim));
@@ -896,12 +896,12 @@ PetscErrorCode DMPlexTransformExtrudeSetThicknesses(DMPlexTransform tr, PetscInt
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
-  PetscCheck(Nth > 0,PetscObjectComm((PetscObject) tr), PETSC_ERR_ARG_OUTOFRANGE, "Number of thicknesses %D must be positive", Nth);
+  PetscCheck(Nth > 0,PetscObjectComm((PetscObject) tr), PETSC_ERR_ARG_OUTOFRANGE, "Number of thicknesses %" PetscInt_FMT " must be positive", Nth);
   ex->Nth = PetscMin(Nth, ex->layers);
   PetscCall(PetscFree(ex->thicknesses));
   PetscCall(PetscMalloc1(ex->Nth, &ex->thicknesses));
   for (t = 0; t < ex->Nth; ++t) {
-    PetscCheck(thicknesses[t] > 0.,PetscObjectComm((PetscObject) tr), PETSC_ERR_ARG_OUTOFRANGE, "Thickness %g of layer %D must be positive", (double) thicknesses[t], t);
+    PetscCheck(thicknesses[t] > 0.,PetscObjectComm((PetscObject) tr), PETSC_ERR_ARG_OUTOFRANGE, "Thickness %g of layer %" PetscInt_FMT " must be positive", (double) thicknesses[t], t);
     ex->thicknesses[t] = thicknesses[t];
   }
   PetscFunctionReturn(0);

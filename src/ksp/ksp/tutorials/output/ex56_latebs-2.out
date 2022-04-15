@@ -34,7 +34,7 @@ PC Object: 8 MPI processes
           Number of levels to square graph 1
           Number smoothing steps 1
         Complexity:    grid = 1.054    operator = 1.07125
-  Coarse grid solver -- level -------------------------------
+  Coarse grid solver -- level 0 -------------------------------
     KSP Object: (mg_coarse_) 8 MPI processes
       type: cg
       maximum iterations=10000, initial guess is zero
@@ -153,7 +153,7 @@ PC Object: 8 MPI processes
           Number of levels to square graph 1
           Number smoothing steps 1
         Complexity:    grid = 1.054    operator = 1.07125
-  Coarse grid solver -- level -------------------------------
+  Coarse grid solver -- level 0 -------------------------------
     KSP Object: (mg_coarse_) 8 MPI processes
       type: cg
       maximum iterations=10000, initial guess is zero
@@ -273,7 +273,7 @@ PC Object: 8 MPI processes
           Number of levels to square graph 1
           Number smoothing steps 1
         Complexity:    grid = 1.054    operator = 1.07125
-  Coarse grid solver -- level -------------------------------
+  Coarse grid solver -- level 0 -------------------------------
     KSP Object: (mg_coarse_) 8 MPI processes
       type: cg
       maximum iterations=10000, initial guess is zero

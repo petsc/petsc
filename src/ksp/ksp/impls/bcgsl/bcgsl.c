@@ -464,8 +464,8 @@ PetscErrorCode KSPView_BCGSL(KSP ksp, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
 
   if (isascii) {
-    PetscCall(PetscViewerASCIIPrintf(viewer, "  Ell = %D\n", bcgsl->ell));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "  Delta = %lg\n", bcgsl->delta));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  Ell = %" PetscInt_FMT "\n", bcgsl->ell));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  Delta = %g\n", (double)bcgsl->delta));
   }
   PetscFunctionReturn(0);
 }

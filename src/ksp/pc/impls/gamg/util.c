@@ -88,7 +88,7 @@ PetscErrorCode PCGAMGCreateGraph(Mat Amat, Mat *a_Gmat)
     Mat       a, b, c;
     MatScalar *aa,val,AA[4096];
     PetscInt  *aj,*ai,AJ[4096],nc;
-    PetscCall(PetscInfo(Amat,"New bs>1 PCGAMGCreateGraph. nloc=%D\n",nloc));
+    PetscCall(PetscInfo(Amat,"New bs>1 PCGAMGCreateGraph. nloc=%" PetscInt_FMT "\n",nloc));
     if (isseqaij) {
       a = Amat; b = NULL;
     }
@@ -120,7 +120,7 @@ PetscErrorCode PCGAMGCreateGraph(Mat Amat, Mat *a_Gmat)
           goto old_bs;
         }
       }
-      PetscCheck(nmax<4096,PETSC_COMM_SELF,PETSC_ERR_USER,"Buffer %D too small %D.",nmax,4096);
+      PetscCheck(nmax<4096,PETSC_COMM_SELF,PETSC_ERR_USER,"Buffer %" PetscInt_FMT " too small 4096.",nmax);
     }
     PetscCall(MatCreate(comm, &Gmat));
     PetscCall(MatSetSizes(Gmat,nloc,nloc,PETSC_DETERMINE,PETSC_DETERMINE));
@@ -397,7 +397,7 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm)
 #if defined(PETSC_USE_INFO)
   {
     double t1 = (!nnz0) ? 1. : 100.*(double)nnz1/(double)nnz0, t2 = (!nloc) ? 1. : (double)nnz0/(double)nloc;
-    PetscCall(PetscInfo(*a_Gmat,"\t %g%% nnz after filtering, with threshold %g, %g nnz ave. (N=%D)\n",t1,vfilter,t2,MM));
+    PetscCall(PetscInfo(*a_Gmat,"\t %g%% nnz after filtering, with threshold %g, %g nnz ave. (N=%" PetscInt_FMT ")\n",t1,(double)vfilter,t2,MM));
   }
 #endif
   PetscCall(MatDestroy(&Gmat));
@@ -482,7 +482,7 @@ PetscErrorCode PCGAMGHashTableAdd(PCGAMGHashTable *a_tab, PetscInt a_key, PetscI
   PetscInt kk,idx;
 
   PetscFunctionBegin;
-  PetscCheck(a_key>=0,PETSC_COMM_SELF,PETSC_ERR_USER,"Negative key %D.",a_key);
+  PetscCheck(a_key>=0,PETSC_COMM_SELF,PETSC_ERR_USER,"Negative key %" PetscInt_FMT ".",a_key);
   for (kk = 0, idx = GAMG_HASH(a_key); kk < a_tab->size; kk++, idx = (idx==(a_tab->size-1)) ? 0 : idx + 1) {
     if (a_tab->table[idx] == a_key) {
       /* exists */

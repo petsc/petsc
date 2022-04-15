@@ -125,10 +125,10 @@ PetscErrorCode SNESView_NGMRES(SNES snes,PetscViewer viewer)
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject) viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    PetscCall(PetscViewerASCIIPrintf(viewer,"  Number of stored past updates: %d\n", ngmres->msize));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"  Residual selection: gammaA=%1.0e, gammaC=%1.0e\n",ngmres->gammaA,ngmres->gammaC));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"  Difference restart: epsilonB=%1.0e, deltaB=%1.0e\n",ngmres->epsilonB,ngmres->deltaB));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"  Restart on F_M residual increase: %s\n",ngmres->restart_fm_rise?"TRUE":"FALSE"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Number of stored past updates: %" PetscInt_FMT "\n", ngmres->msize));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Residual selection: gammaA=%1.0e, gammaC=%1.0e\n",(double)ngmres->gammaA,(double)ngmres->gammaC));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Difference restart: epsilonB=%1.0e, deltaB=%1.0e\n",(double)ngmres->epsilonB,(double)ngmres->deltaB));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Restart on F_M residual increase: %s\n",PetscBools[ngmres->restart_fm_rise]));
   }
   PetscFunctionReturn(0);
 }
@@ -274,7 +274,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
       else restart_count = 0;
     } else if (ngmres->restart_type == SNES_NGMRES_RESTART_PERIODIC) {
       if (k_restart > ngmres->restart_periodic) {
-        if (ngmres->monitor) PetscCall(PetscViewerASCIIPrintf(ngmres->monitor,"periodic restart after %D iterations\n",k_restart));
+        if (ngmres->monitor) PetscCall(PetscViewerASCIIPrintf(ngmres->monitor,"periodic restart after %" PetscInt_FMT " iterations\n",k_restart));
         restart_count = ngmres->restart_it;
       }
     }
@@ -284,7 +284,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
     /* restart after restart conditions have persisted for a fixed number of iterations */
     if (restart_count >= ngmres->restart_it) {
       if (ngmres->monitor) {
-        PetscCall(PetscViewerASCIIPrintf(ngmres->monitor,"Restarted at iteration %d\n",k_restart));
+        PetscCall(PetscViewerASCIIPrintf(ngmres->monitor,"Restarted at iteration %" PetscInt_FMT "\n",k_restart));
       }
       restart_count = 0;
       k_restart     = 1;

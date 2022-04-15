@@ -104,25 +104,25 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
     PetscCallMPI(MPI_Comm_rank(loccomm, &locrank));
     s_nnodes = !locrank;
     PetscCallMPI(MPI_Allreduce(&s_nnodes,&r_nnodes,1,MPIU_INT,MPI_SUM,comm));
-    PetscCheck((size%r_nnodes) == 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"odd number of nodes np=%D nnodes%D",size,r_nnodes);
+    PetscCheck((size%r_nnodes) == 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"odd number of nodes np=%d nnodes%" PetscInt_FMT,size,r_nnodes);
     devCount = 0;
     cerr = cudaGetDeviceCount(&devCount);
     cudaGetLastError(); /* Reset the last error */
     if (cerr == cudaSuccess && devCount >= 1) { /* There are devices, else go to heuristic */
       new_new_size = r_nnodes * devCount;
       new_size = new_new_size;
-      PetscCall(PetscInfo(pc,"%s: Fine grid with Cuda. %D nodes. Change new active set size %d --> %d (devCount=%d #nodes=%D)\n",((PetscObject)pc)->prefix,r_nnodes,nactive,new_size,devCount,r_nnodes));
+      PetscCall(PetscInfo(pc,"%s: Fine grid with Cuda. %" PetscInt_FMT " nodes. Change new active set size %d --> %d (devCount=%d #nodes=%" PetscInt_FMT ")\n",((PetscObject)pc)->prefix,r_nnodes,nactive,new_size,devCount,r_nnodes));
     } else {
-      PetscCall(PetscInfo(pc,"%s: With Cuda but no device. Use heuristics."));
+      PetscCall(PetscInfo(pc,"%s: With Cuda but no device. Use heuristics.",((PetscObject)pc)->prefix));
       goto HEURISTIC;
     }
 #else
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"should not be here");
 #endif
   } else if (pc_gamg->level_reduction_factors[pc_gamg->current_level] > 0) {
-    PetscCheck(nactive%pc_gamg->level_reduction_factors[pc_gamg->current_level] == 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"odd number of active process %D wrt reduction factor %D",nactive,pc_gamg->level_reduction_factors[pc_gamg->current_level]);
+    PetscCheck(nactive%pc_gamg->level_reduction_factors[pc_gamg->current_level] == 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"odd number of active process %d wrt reduction factor %" PetscInt_FMT,nactive,pc_gamg->level_reduction_factors[pc_gamg->current_level]);
     new_size = nactive/pc_gamg->level_reduction_factors[pc_gamg->current_level];
-    PetscCall(PetscInfo(pc,"%s: Manually setting reduction to %d active processes (%d/%D)\n",((PetscObject)pc)->prefix,new_size,nactive,pc_gamg->level_reduction_factors[pc_gamg->current_level]));
+    PetscCall(PetscInfo(pc,"%s: Manually setting reduction to %d active processes (%d/%" PetscInt_FMT ")\n",((PetscObject)pc)->prefix,new_size,nactive,pc_gamg->level_reduction_factors[pc_gamg->current_level]));
   } else if (is_last && !pc_gamg->use_parallel_coarse_grid_solver) {
     new_size = 1;
     PetscCall(PetscInfo(pc,"%s: Force coarsest grid reduction to %d active processes\n",((PetscObject)pc)->prefix,new_size));
@@ -153,7 +153,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
     IS             is_eq_newproc,is_eq_num,is_eq_num_prim,new_eq_indices;
     PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[GAMG_REDUCE],0,0,0,0));
     nloc_old = ncrs_eq/cr_bs;
-    PetscCheck(ncrs_eq % cr_bs == 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ncrs_eq %D not divisible by cr_bs %D",ncrs_eq,cr_bs);
+    PetscCheck(ncrs_eq % cr_bs == 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ncrs_eq %" PetscInt_FMT " not divisible by cr_bs %" PetscInt_FMT,ncrs_eq,cr_bs);
     /* get new_size and rfactor */
     if (pc_gamg->layout_type==PCGAMG_LAYOUT_SPREAD || !pc_gamg->repart) {
       /* find factor */
@@ -178,7 +178,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
       new_size = size/rfactor; /* make new size one that is factor */
       if (new_size==nactive) { /* no repartitioning or reduction, bail out because nested here (rare) */
         *a_Amat_crs = Cmat;
-        PetscCall(PetscInfo(pc,"%s: Finding factorable processor set stopped reduction: new_size=%d, neq(loc)=%D\n",((PetscObject)pc)->prefix,new_size,ncrs_eq));
+        PetscCall(PetscInfo(pc,"%s: Finding factorable processor set stopped reduction: new_size=%d, neq(loc)=%" PetscInt_FMT "\n",((PetscObject)pc)->prefix,new_size,ncrs_eq));
         PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_REDUCE],0,0,0,0));
         PetscFunctionReturn(0);
       }
@@ -188,7 +188,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
     if (pc_gamg->repart) { /* Repartition Cmat_{k} and move columns of P^{k}_{k-1} and coordinates of primal part accordingly */
       Mat      adj;
       PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[GAMG_REPART],0,0,0,0));
-      PetscCall(PetscInfo(pc,"%s: Repartition: size (active): %d --> %d, %D local equations, using %s process layout\n",((PetscObject)pc)->prefix,*a_nactive_proc, new_size, ncrs_eq, (pc_gamg->layout_type==PCGAMG_LAYOUT_COMPACT) ? "compact" : "spread"));
+      PetscCall(PetscInfo(pc,"%s: Repartition: size (active): %d --> %d, %" PetscInt_FMT " local equations, using %s process layout\n",((PetscObject)pc)->prefix,*a_nactive_proc, new_size, ncrs_eq, (pc_gamg->layout_type==PCGAMG_LAYOUT_COMPACT) ? "compact" : "spread"));
       /* get 'adj' */
       if (cr_bs == 1) {
         PetscCall(MatConvert(Cmat, MATMPIADJ, MAT_INITIAL_MATRIX, &adj));
@@ -237,7 +237,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
 
         if (llev++ == -1) {
           PetscViewer viewer; char fname[32];
-          PetscCall(PetscSNPrintf(fname,sizeof(fname),"part_mat_%D.mat",llev));
+          PetscCall(PetscSNPrintf(fname,sizeof(fname),"part_mat_%" PetscInt_FMT ".mat",llev));
           PetscViewerBinaryOpen(comm,fname,FILE_MODE_WRITE,&viewer);
           PetscCall(MatView(tMat, viewer));
           PetscCall(PetscViewerDestroy(&viewer));
@@ -282,7 +282,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
     } else { /* simple aggregation of parts -- 'is_eq_newproc' */
       PetscInt targetPE;
       PetscCheck(new_size!=nactive,PETSC_COMM_SELF,PETSC_ERR_PLIB,"new_size==nactive. Should not happen");
-      PetscCall(PetscInfo(pc,"%s: Number of equations (loc) %D with simple aggregation\n",((PetscObject)pc)->prefix,ncrs_eq));
+      PetscCall(PetscInfo(pc,"%s: Number of equations (loc) %" PetscInt_FMT " with simple aggregation\n",((PetscObject)pc)->prefix,ncrs_eq));
       targetPE = (rank/rfactor)*expand_factor;
       PetscCall(ISCreateStride(comm, ncrs_eq, targetPE, 0, &is_eq_newproc));
     } /* end simple 'is_eq_newproc' */
@@ -446,7 +446,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
     if (pc_gamg->cpu_pin_coarse_grids) {
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
       static PetscInt llev = 2;
-      PetscCall(PetscInfo(pc,"%s: Pinning level %D to the CPU\n",((PetscObject)pc)->prefix,llev++));
+      PetscCall(PetscInfo(pc,"%s: Pinning level %" PetscInt_FMT " to the CPU\n",((PetscObject)pc)->prefix,llev++));
 #endif
       PetscCall(MatBindToCPU(*a_Amat_crs,PETSC_TRUE));
       PetscCall(MatBindToCPU(*a_P_inout,PETSC_TRUE));
@@ -475,10 +475,10 @@ PetscErrorCode PCGAMGSquareGraph_GAMG(PC a_pc, Mat Gmat1, Mat* Gmat2)
 
   PetscFunctionBegin;
   PetscCall(PCGetOptionsPrefix(a_pc,&prefix));
-  PetscCall(PetscInfo(a_pc,"%s: Square Graph on level %D\n",((PetscObject)a_pc)->prefix,pc_gamg->current_level+1));
+  PetscCall(PetscInfo(a_pc,"%s: Square Graph on level %" PetscInt_FMT "\n",((PetscObject)a_pc)->prefix,pc_gamg->current_level+1));
   PetscCall(MatProductCreate(Gmat1,Gmat1,NULL,Gmat2));
   PetscCall(MatSetOptionsPrefix(*Gmat2,prefix));
-  PetscCall(PetscSNPrintf(addp,sizeof(addp),"pc_gamg_square_%d_",pc_gamg->current_level));
+  PetscCall(PetscSNPrintf(addp,sizeof(addp),"pc_gamg_square_%" PetscInt_FMT "_",pc_gamg->current_level));
   PetscCall(MatAppendOptionsPrefix(*Gmat2,addp));
   if ((*Gmat2)->structurally_symmetric) {
     PetscCall(MatProductSetType(*Gmat2,MATPRODUCT_AB));
@@ -554,9 +554,9 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
           }
           if (reuse == MAT_INITIAL_MATRIX) PetscCall(MatDestroy(&mglevels[level]->A));
           if (reuse == MAT_REUSE_MATRIX) {
-            PetscCall(PetscInfo(pc,"%s: RAP after first solve, reuse matrix level %D\n",((PetscObject)pc)->prefix,level));
+            PetscCall(PetscInfo(pc,"%s: RAP after first solve, reuse matrix level %" PetscInt_FMT "\n",((PetscObject)pc)->prefix,level));
           } else {
-            PetscCall(PetscInfo(pc,"%s: RAP after first solve, new matrix level %D\n",((PetscObject)pc)->prefix,level));
+            PetscCall(PetscInfo(pc,"%s: RAP after first solve, new matrix level %" PetscInt_FMT "\n",((PetscObject)pc)->prefix,level));
           }
           PetscCall(PetscLogEventBegin(petsc_gamg_setup_matmat_events[gl][1],0,0,0,0));
           PetscCall(MatPtAP(dB,mglevels[level+1]->interpolate,reuse,PETSC_DEFAULT,&B));
@@ -608,12 +608,12 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
   PetscCall(MatGetInfo(Pmat,MAT_GLOBAL_SUM,&info)); /* global reduction */
   nnz0   = info.nz_used;
   nnztot = info.nz_used;
-  PetscCall(PetscInfo(pc,"%s: level %D) N=%D, n data rows=%D, n data cols=%D, nnz/row (ave)=%d, np=%D\n",((PetscObject)pc)->prefix,0,M,pc_gamg->data_cell_rows,pc_gamg->data_cell_cols,(int)(nnz0/(PetscReal)M+0.5),size));
+  PetscCall(PetscInfo(pc,"%s: level %" PetscInt_FMT ") N=0, n data rows=%" PetscInt_FMT ", n data cols=%" PetscInt_FMT ", nnz/row (ave)=%" PetscInt_FMT ", np=%d\n",((PetscObject)pc)->prefix,M,pc_gamg->data_cell_rows,pc_gamg->data_cell_cols,(PetscInt)(nnz0/(PetscReal)M+0.5),size));
 
   /* Get A_i and R_i */
   for (level=0, Aarr[0]=Pmat, nactivepe = size; level < (pc_gamg->Nlevels-1) && (!level || M>pc_gamg->coarse_eq_limit); level++) {
     pc_gamg->current_level = level;
-    PetscCheck(level < PETSC_MG_MAXLEVELS,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Too many levels %D",level);
+    PetscCheck(level < PETSC_MG_MAXLEVELS,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Too many levels %" PetscInt_FMT,level);
     level1 = level + 1;
 #if defined(GAMG_STAGES)
     if (!gamg_stages[level]) {
@@ -667,7 +667,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
     } /* construct prolongator scope */
     if (!level) Aarr[0] = Pmat; /* use Pmat for finest level setup */
     if (!Parr[level1]) { /* failed to coarsen */
-      PetscCall(PetscInfo(pc,"%s: Stop gridding, level %D\n",((PetscObject)pc)->prefix,level));
+      PetscCall(PetscInfo(pc,"%s: Stop gridding, level %" PetscInt_FMT "\n",((PetscObject)pc)->prefix,level));
 #if defined(GAMG_STAGES)
       PetscCall(PetscLogStagePop());
 #endif
@@ -684,21 +684,21 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
     PetscCall(MatGetSize(Aarr[level1], &M, &N)); /* M is loop test variables */
     PetscCall(MatGetInfo(Aarr[level1], MAT_GLOBAL_SUM, &info));
     nnztot += info.nz_used;
-    PetscCall(PetscInfo(pc,"%s: %D) N=%D, n data cols=%D, nnz/row (ave)=%d, %D active pes\n",((PetscObject)pc)->prefix,level1,M,pc_gamg->data_cell_cols,(int)(info.nz_used/(PetscReal)M),nactivepe));
+    PetscCall(PetscInfo(pc,"%s: %" PetscInt_FMT ") N=%" PetscInt_FMT ", n data cols=%" PetscInt_FMT ", nnz/row (ave)=%" PetscInt_FMT ", %d active pes\n",((PetscObject)pc)->prefix,level1,M,pc_gamg->data_cell_cols,(PetscInt)(info.nz_used/(PetscReal)M),nactivepe));
 
 #if defined(GAMG_STAGES)
     PetscCall(PetscLogStagePop());
 #endif
     /* stop if one node or one proc -- could pull back for singular problems */
     if ((pc_gamg->data_cell_cols && M/pc_gamg->data_cell_cols < 2) || (!pc_gamg->data_cell_cols && M/bs < 2)) {
-      PetscCall(PetscInfo(pc,"%s: HARD stop of coarsening on level %D.  Grid too small: %D block nodes\n",((PetscObject)pc)->prefix,level,M/bs));
+      PetscCall(PetscInfo(pc,"%s: HARD stop of coarsening on level %" PetscInt_FMT ".  Grid too small: %" PetscInt_FMT " block nodes\n",((PetscObject)pc)->prefix,level,M/bs));
       level++;
       break;
     }
   } /* levels */
   PetscCall(PetscFree(pc_gamg->data));
 
-  PetscCall(PetscInfo(pc,"%s: %D levels, grid complexity = %g\n",((PetscObject)pc)->prefix,level+1,nnztot/nnz0));
+  PetscCall(PetscInfo(pc,"%s: %" PetscInt_FMT " levels, grid complexity = %g\n",((PetscObject)pc)->prefix,level+1,nnztot/nnz0));
   pc_gamg->Nlevels = level + 1;
   fine_level       = level;
   PetscCall(PCMGSetLevels(pc,pc_gamg->Nlevels,NULL));
@@ -763,7 +763,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
         PetscCall(PCSetType(subpc, PCBJACOBI));
         PetscCall(PCSetUp(subpc));
         PetscCall(PCBJacobiGetSubKSP(subpc,&ii,&first,&k2));
-        PetscCheck(ii == 1,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ii %D is not one",ii);
+        PetscCheck(ii == 1,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ii %" PetscInt_FMT " is not one",ii);
         PetscCall(KSPGetPC(k2[0],&pc2));
         PetscCall(PCSetType(pc2, PCLU));
         PetscCall(PCFactorSetShiftType(pc2,MAT_SHIFT_INBLOCKS));
@@ -797,7 +797,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
 
             emin = mg->min_eigen_DinvA[level];
             emax = mg->max_eigen_DinvA[level];
-            PetscCall(PetscInfo(pc,"%s: PCSetUp_GAMG: call KSPChebyshevSetEigenvalues on level %D (N=%D) with emax = %g emin = %g\n",((PetscObject)pc)->prefix,level,Aarr[level]->rmap->N,(double)emax,(double)emin));
+            PetscCall(PetscInfo(pc,"%s: PCSetUp_GAMG: call KSPChebyshevSetEigenvalues on level %" PetscInt_FMT " (N=%" PetscInt_FMT ") with emax = %g emin = %g\n",((PetscObject)pc)->prefix,level,Aarr[level]->rmap->N,(double)emax,(double)emin));
             cheb->emin_provided = emin;
             cheb->emax_provided = emax;
           }
@@ -815,7 +815,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
   } else {
     KSP smoother;
 
-    PetscCall(PetscInfo(pc,"%s: One level solver used (system is seen as DD). Using default solver.\n"));
+    PetscCall(PetscInfo(pc,"%s: One level solver used (system is seen as DD). Using default solver.\n",((PetscObject)pc)->prefix));
     PetscCall(PCMGGetSmoother(pc, 0, &smoother));
     PetscCall(KSPSetOperators(smoother, Aarr[0], Aarr[0]));
     PetscCall(KSPSetType(smoother, KSPPREONLY));
@@ -1483,7 +1483,7 @@ static PetscErrorCode PCView_GAMG(PC pc,PetscViewer viewer)
     PetscCall((*pc_gamg->ops->view)(pc,viewer));
   }
   PetscCall(PCMGGetGridComplexity(pc,&gc,&oc));
-  PetscCall(PetscViewerASCIIPrintf(viewer,"      Complexity:    grid = %g    operator = %g\n",gc,oc));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"      Complexity:    grid = %g    operator = %g\n",(double)gc,(double)oc));
   PetscFunctionReturn(0);
 }
 
@@ -1698,11 +1698,11 @@ PetscErrorCode PCGAMGInitializePackage(void)
   for (l=0;l<PETSC_MG_MAXLEVELS;l++) {
     char ename[32];
 
-    PetscCall(PetscSNPrintf(ename,sizeof(ename),"PCGAMG Squ l%02d",l));
+    PetscCall(PetscSNPrintf(ename,sizeof(ename),"PCGAMG Squ l%02" PetscInt_FMT,l));
     PetscCall(PetscLogEventRegister(ename, PC_CLASSID, &petsc_gamg_setup_matmat_events[l][0]));
-    PetscCall(PetscSNPrintf(ename,sizeof(ename),"PCGAMG Gal l%02d",l));
+    PetscCall(PetscSNPrintf(ename,sizeof(ename),"PCGAMG Gal l%02" PetscInt_FMT,l));
     PetscCall(PetscLogEventRegister(ename, PC_CLASSID, &petsc_gamg_setup_matmat_events[l][1]));
-    PetscCall(PetscSNPrintf(ename,sizeof(ename),"PCGAMG Opt l%02d",l));
+    PetscCall(PetscSNPrintf(ename,sizeof(ename),"PCGAMG Opt l%02" PetscInt_FMT,l));
     PetscCall(PetscLogEventRegister(ename, PC_CLASSID, &petsc_gamg_setup_matmat_events[l][2]));
   }
 #if defined(GAMG_STAGES)

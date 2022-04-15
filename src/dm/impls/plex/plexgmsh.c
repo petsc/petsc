@@ -1160,7 +1160,7 @@ static PetscErrorCode GmshReadNodes(GmshFile *gmsh, GmshMesh *mesh)
     gmsh->nodeMap = gmsh->nbuf - gmsh->nodeStart;
     for (n = 0; n < mesh->numNodes; ++n) {
       const PetscInt tag = nodes->id[n];
-      PetscCheck(gmsh->nodeMap[tag] < 0,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Repeated node tag %D", tag);
+      PetscCheck(gmsh->nodeMap[tag] < 0,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Repeated node tag %" PetscInt_FMT, tag);
       gmsh->nodeMap[tag] = n;
     }
   }
@@ -1355,7 +1355,7 @@ static PetscErrorCode GmshCreateFE(MPI_Comm comm, const char prefix[], PetscBool
   PetscCall(PetscQuadratureDestroy(&q));
   PetscCall(PetscQuadratureDestroy(&fq));
   /* Set finite element name */
-  PetscCall(PetscSNPrintf(name, sizeof(name), "%s%D", isSimplex? "P" : "Q", k));
+  PetscCall(PetscSNPrintf(name, sizeof(name), "%s%" PetscInt_FMT, isSimplex? "P" : "Q", k));
   PetscCall(PetscFESetName(*fem, name));
   PetscFunctionReturn(0);
 }
@@ -1695,7 +1695,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
           cone[v] = vStart + vv;
         }
         PetscCall(DMPlexGetFullJoin(*dm, elem->numVerts, cone, &joinSize, &join));
-        PetscCheck(joinSize == 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Could not determine Plex facet for Gmsh element %D (Plex cell %D)", elem->id, e);
+        PetscCheck(joinSize == 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Could not determine Plex facet for Gmsh element %" PetscInt_FMT " (Plex cell %" PetscInt_FMT ")", elem->id, e);
         if (!Nr) PetscCall(DMSetLabelValue_Fast(*dm, &faceSets, "Face Sets", join[0], tag));
         for (r = 0; r < Nr; ++r) {
           if (mesh->regionTags[r] == tag) PetscCall(DMSetLabelValue_Fast(*dm, &regionSets[r], mesh->regionNames[r], join[0], tag));

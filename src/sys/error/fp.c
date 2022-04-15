@@ -375,9 +375,8 @@ static struct { int code_no; char *name; } error_codes[] = {
 
 void PetscDefaultFPTrap(int sig,int code,struct sigcontext *scp)
 {
-  PetscErrorCode ierr;
-  int            err_ind,j;
-  fp_ctx_t       flt_context;
+  int      err_ind,j;
+  fp_ctx_t flt_context;
 
   PetscFunctionBegin;
   fp_sh_trap_info(scp,&flt_context);
@@ -390,7 +389,7 @@ void PetscDefaultFPTrap(int sig,int code,struct sigcontext *scp)
   if (err_ind >= 0) (*PetscErrorPrintf)("*** %s occurred ***\n",error_codes[err_ind].name);
   else              (*PetscErrorPrintf)("*** floating point error 0x%x occurred ***\n",flt_context.trap);
 
-  ierr = PetscError(PETSC_COMM_SELF,0,"User provided function","Unknown file",PETSC_ERR_FP,PETSC_ERROR_REPEAT,"floating point error");
+  (void)PetscError(PETSC_COMM_SELF,0,"User provided function","Unknown file",PETSC_ERR_FP,PETSC_ERROR_REPEAT,"floating point error");
   PETSCABORT(MPI_COMM_WORLD,PETSC_ERR_FP);
 }
 

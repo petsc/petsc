@@ -467,7 +467,7 @@ static PetscErrorCode TSEIMEXSetMaxRows_EIMEX(TS ts,PetscInt nrows)
   PetscInt       i;
 
   PetscFunctionBegin;
-  PetscCheck(nrows >= 0 && nrows <= 100,((PetscObject)ts)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Max number of rows (current value %D) should be an integer number between 1 and 100",nrows);
+  PetscCheck(nrows >= 0 && nrows <= 100,((PetscObject)ts)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Max number of rows (current value %" PetscInt_FMT ") should be an integer number between 1 and 100",nrows);
   PetscCall(PetscFree(ext->N));
   ext->max_rows = nrows;
   PetscCall(PetscMalloc1(nrows,&ext->N));
@@ -480,9 +480,9 @@ static PetscErrorCode TSEIMEXSetRowCol_EIMEX(TS ts,PetscInt row,PetscInt col)
   TS_EIMEX *ext = (TS_EIMEX*)ts->data;
 
   PetscFunctionBegin;
-  PetscCheck(row >= 1 && col >= 1,((PetscObject)ts)->comm,PETSC_ERR_ARG_OUTOFRANGE,"The row or column index (current value %d,%d) should not be less than 1 ",row,col);
-  PetscCheck(row <= ext->max_rows && col <= ext->max_rows,((PetscObject)ts)->comm,PETSC_ERR_ARG_OUTOFRANGE,"The row or column index (current value %d,%d) exceeds the maximum number of rows %d",row,col,ext->max_rows);
-  PetscCheck(col <= row,((PetscObject)ts)->comm,PETSC_ERR_ARG_OUTOFRANGE,"The column index (%d) exceeds the row index (%d)",col,row);
+  PetscCheck(row >= 1 && col >= 1,((PetscObject)ts)->comm,PETSC_ERR_ARG_OUTOFRANGE,"The row or column index (current value %" PetscInt_FMT ",%" PetscInt_FMT ") should not be less than 1 ",row,col);
+  PetscCheck(row <= ext->max_rows && col <= ext->max_rows,((PetscObject)ts)->comm,PETSC_ERR_ARG_OUTOFRANGE,"The row or column index (current value %" PetscInt_FMT ",%" PetscInt_FMT ") exceeds the maximum number of rows %" PetscInt_FMT,row,col,ext->max_rows);
+  PetscCheck(col <= row,((PetscObject)ts)->comm,PETSC_ERR_ARG_OUTOFRANGE,"The column index (%" PetscInt_FMT ") exceeds the row index (%" PetscInt_FMT ")",col,row);
 
   ext->row_ind = row - 1;
   ext->col_ind = col - 1; /* Array index in C starts from 0 */

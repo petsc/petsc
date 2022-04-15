@@ -38,11 +38,11 @@ PETSC_EXTERN PetscErrorCode MatCheckCompressedRow(Mat A,PetscInt nrows,Mat_Compr
   if (nrows < ratio*mbs) {
     compressedrow->use = PETSC_FALSE;
 
-    PetscCall(PetscInfo(A,"Found the ratio (num_zerorows %d)/(num_localrows %d) < %g. Do not use CompressedRow routines.\n",nrows,mbs,(double)ratio));
+    PetscCall(PetscInfo(A,"Found the ratio (num_zerorows %" PetscInt_FMT ")/(num_localrows %" PetscInt_FMT ") < %g. Do not use CompressedRow routines.\n",nrows,mbs,(double)ratio));
   } else {
     compressedrow->use = PETSC_TRUE;
 
-    PetscCall(PetscInfo(A,"Found the ratio (num_zerorows %d)/(num_localrows %d) > %g. Use CompressedRow routines.\n",nrows,mbs,(double)ratio));
+    PetscCall(PetscInfo(A,"Found the ratio (num_zerorows %" PetscInt_FMT ")/(num_localrows %" PetscInt_FMT ") > %g. Use CompressedRow routines.\n",nrows,mbs,(double)ratio));
 
     /* set compressed row format */
     nrows  = mbs - nrows; /* num of non-zero rows */

@@ -86,7 +86,7 @@ int main(int argc,char **argv)
   PetscCall(FormInitialGuess(snes,x));
   PetscCall(SNESSolve(snes,NULL,x));
   PetscCall(SNESGetIterationNumber(snes,&its));
-  PetscCall(PetscPrintf(PETSC_COMM_SELF,"number of SNES iterations = %D\n\n",its));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF,"number of SNES iterations = %" PetscInt_FMT "\n\n",its));
 
   /* Free data structures */
   PetscCall(VecDestroy(&x));  PetscCall(VecDestroy(&r));
@@ -223,7 +223,7 @@ PetscErrorCode  Monitor(SNES snes,PetscInt its,PetscReal fnorm,void *dummy)
   MPI_Comm       comm;
 
   PetscCall(PetscObjectGetComm((PetscObject)snes,&comm));
-  PetscCall(PetscFPrintf(comm,stdout,"iter = %D, SNES Function norm %g \n",its,(double)fnorm));
+  PetscCall(PetscFPrintf(comm,stdout,"iter = %" PetscInt_FMT ", SNES Function norm %g \n",its,(double)fnorm));
   PetscCall(SNESGetSolution(snes,&x));
   PetscCall(VecView(x,monP->viewer));
   return 0;

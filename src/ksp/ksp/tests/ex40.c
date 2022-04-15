@@ -172,7 +172,7 @@ int main(int argc,char **args)
      print statement from all processes that share a communicator.
      An alternative is PetscFPrintf(), which prints to a file.
   */
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g iterations %D\n",(double)norm,its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g iterations %" PetscInt_FMT "\n",(double)norm,its));
 
   /*
      Free work space.  All PETSc objects should be destroyed when they

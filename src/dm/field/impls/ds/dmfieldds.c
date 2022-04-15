@@ -40,7 +40,7 @@ static PetscErrorCode DMFieldView_DS(DMField field,PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   disc = dsfield->disc[0];
   if (iascii) {
-    PetscCall(PetscViewerASCIIPrintf(viewer, "PetscDS field %D\n",dsfield->fieldNum));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "PetscDS field %" PetscInt_FMT "\n",dsfield->fieldNum));
     PetscCall(PetscViewerASCIIPushTab(viewer));
     PetscCall(PetscObjectView(disc,viewer));
     PetscCall(PetscViewerASCIIPopTab(viewer));
@@ -210,7 +210,7 @@ static PetscErrorCode DMFieldEvaluate_DS(DMField field, Vec points, PetscDataTyp
   PetscCall(DMLocatePoints(field->dm, points, DM_POINTLOCATION_NONE, &cellSF));
   PetscCall(PetscSFGetGraph(cellSF, &numCells, &nFound, NULL, &cells));
   for (c = 0; c < nFound; c++) {
-    PetscCheck(cells[c].index >= 0,PetscObjectComm((PetscObject)points),PETSC_ERR_ARG_WRONG, "Point %D could not be located", c);
+    PetscCheck(cells[c].index >= 0,PetscObjectComm((PetscObject)points),PETSC_ERR_ARG_WRONG, "Point %" PetscInt_FMT " could not be located", c);
   }
   PetscCall(PetscSFComputeDegreeBegin(cellSF,&cellDegrees));
   PetscCall(PetscSFComputeDegreeEnd(cellSF,&cellDegrees));
@@ -763,14 +763,14 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
     PetscCall(DMPlexGetTreeChildren(dm, point, &numChildren, NULL));
     PetscCheck(!numChildren,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Face data not valid for facets with children");
     PetscCall(DMPlexGetSupportSize(dm, point, &suppSize));
-    PetscCheck(suppSize <= 2,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D has %D support, expected at most 2", point, suppSize);
+    PetscCheck(suppSize <= 2,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %" PetscInt_FMT " has %" PetscInt_FMT " support, expected at most 2", point, suppSize);
     if (!suppSize) continue;
     PetscCall(DMPlexGetSupport(dm, point, &supp));
     for (s = 0; s < suppSize; ++s) {
       PetscCall(DMPlexGetConeSize(dm, supp[s], &coneSize));
       PetscCall(DMPlexGetCone(dm, supp[s], &cone));
       for (c = 0; c < coneSize; ++c) if (cone[c] == point) break;
-      PetscCheck(c != coneSize,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid connectivity: point %D not found in cone of support point %D", point, supp[s]);
+      PetscCheck(c != coneSize,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid connectivity: point %" PetscInt_FMT " not found in cone of support point %" PetscInt_FMT, point, supp[s]);
       geom->face[p][s] = c;
     }
     PetscCall(DMPlexGetConeOrientation(dm, supp[0], &ornt));
@@ -792,7 +792,7 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
       PetscCall(DMPlexGetTreeChildren(dm, point, &numChildren, NULL));
       PetscCheck(!numChildren,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Face data not valid for facets with children");
       PetscCall(DMPlexGetSupportSize(dm, point,&numSupp));
-      PetscCheck(numSupp <= 2,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D has %D support, expected at most 2", point, numSupp);
+      PetscCheck(numSupp <= 2,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %" PetscInt_FMT " has %" PetscInt_FMT " support, expected at most 2", point, numSupp);
       numCells += numSupp;
     }
     PetscCall(PetscMalloc1(numCells, &cells));
@@ -871,7 +871,7 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
       PetscCall(DMPlexGetTreeChildren(dm, point, &numChildren, NULL));
       PetscCheck(!numChildren,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Face data not valid for facets with children");
       PetscCall(DMPlexGetSupportSize(dm, point,&numSupp));
-      PetscCheck(numSupp <= 2,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D has %D support, expected at most 2", point, numSupp);
+      PetscCheck(numSupp <= 2,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %" PetscInt_FMT " has %" PetscInt_FMT " support, expected at most 2", point, numSupp);
       PetscCall(DMPlexGetSupport(dm, point, &supp));
       for (s = 0; s < numSupp; s++) {
         PetscInt        cell = supp[s];

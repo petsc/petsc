@@ -280,11 +280,11 @@ static PetscErrorCode TaoView_BNCG(Tao tao, PetscViewer viewer)
   if (isascii) {
     PetscCall(PetscViewerASCIIPushTab(viewer));
     PetscCall(PetscViewerASCIIPrintf(viewer, "CG Type: %s\n", CG_Table[cg->cg_type]));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "Skipped Stepdirection Updates: %i\n", cg->skipped_updates));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "Scaled gradient steps: %i\n", cg->resets));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "Pure gradient steps: %i\n", cg->pure_gd_steps));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "Not a descent direction: %i\n", cg->descent_error));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "Line search fails: %i\n", cg->ls_fails));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "Skipped Stepdirection Updates: %" PetscInt_FMT "\n", cg->skipped_updates));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "Scaled gradient steps: %" PetscInt_FMT "\n", cg->resets));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "Pure gradient steps: %" PetscInt_FMT "\n", cg->pure_gd_steps));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "Not a descent direction: %" PetscInt_FMT "\n", cg->descent_error));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "Line search fails: %" PetscInt_FMT "\n", cg->ls_fails));
     if (cg->diag_scaling) {
       PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii));
       if (isascii) {

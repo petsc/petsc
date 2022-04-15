@@ -330,7 +330,7 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
               if (missing) {
                 if ((key.j >= colStart) && (key.j < colEnd)) ++dnz[key.i - rStart];
                 else                                         ++onz[key.i - rStart];
-              } else SETERRQ(PetscObjectComm((PetscObject) dmf), PETSC_ERR_SUP, "Set new value at %D,%D", key.i, key.j);
+              } else SETERRQ(PetscObjectComm((PetscObject) dmf), PETSC_ERR_SUP, "Set new value at %" PetscInt_FMT ",%" PetscInt_FMT, key.i, key.j);
             }
           }
         }
@@ -352,7 +352,7 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
 
     PetscCall(PetscDSGetDiscretization(prob, field, &obj));
     PetscCall(PetscFEGetNumComponents((PetscFE) obj, &Nc));
-    PetscCheck(Nc == 1,PetscObjectComm((PetscObject) dmf), PETSC_ERR_SUP, "Can only interpolate a scalar field from particles, Nc = %D", Nc);
+    PetscCheck(Nc == 1,PetscObjectComm((PetscObject) dmf), PETSC_ERR_SUP, "Can only interpolate a scalar field from particles, Nc = %" PetscInt_FMT, Nc);
     PetscCall(DMSwarmGetField(dmc, DMSwarmPICField_coor, NULL, NULL, (void **) &coords));
     for (cell = cStart; cell < cEnd; ++cell) {
       PetscInt *findices  , *cindices;
@@ -556,7 +556,7 @@ static PetscErrorCode DMSwarmComputeMassMatrixSquare_Private(DM dmc, DM dmf, Mat
 
     PetscCall(PetscDSGetDiscretization(prob, field, &obj));
     PetscCall(PetscFEGetNumComponents((PetscFE) obj, &Nc));
-    PetscCheck(Nc == 1,PetscObjectComm((PetscObject) dmf), PETSC_ERR_SUP, "Can only interpolate a scalar field from particles, Nc = %D", Nc);
+    PetscCheck(Nc == 1,PetscObjectComm((PetscObject) dmf), PETSC_ERR_SUP, "Can only interpolate a scalar field from particles, Nc = %" PetscInt_FMT, Nc);
     PetscCall(DMSwarmGetField(dmc, DMSwarmPICField_coor, NULL, NULL, (void **) &coords));
     for (cell = cStart; cell < cEnd; ++cell) {
       PetscInt *findices  , *cindices;
@@ -1375,8 +1375,8 @@ PetscErrorCode DMSwarmSetUpPIC(DM dm)
   PetscFunctionBegin;
   PetscCall(DMSwarmSetNumSpecies(dm, 1));
   PetscCall(DMGetDimension(dm,&dim));
-  PetscCheck(dim >= 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Dimension must be 1,2,3 - found %D",dim);
-  PetscCheck(dim <= 3,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Dimension must be 1,2,3 - found %D",dim);
+  PetscCheck(dim >= 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Dimension must be 1,2,3 - found %" PetscInt_FMT,dim);
+  PetscCheck(dim <= 3,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Dimension must be 1,2,3 - found %" PetscInt_FMT,dim);
   PetscCall(DMSwarmRegisterPetscDatatypeField(dm,DMSwarmPICField_coor,dim,PETSC_DOUBLE));
   PetscCall(DMSwarmRegisterPetscDatatypeField(dm,DMSwarmPICField_cellid,1,PETSC_INT));
   PetscFunctionReturn(0);
@@ -1587,8 +1587,8 @@ static PetscErrorCode DMView_Swarm_Ascii(DM dm, PetscViewer viewer)
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCall(PetscObjectGetName((PetscObject) dm, &name));
-  if (name) PetscCall(PetscViewerASCIIPrintf(viewer, "%s in %D dimension%s:\n", name, dim, dim == 1 ? "" : "s"));
-  else      PetscCall(PetscViewerASCIIPrintf(viewer, "Swarm in %D dimension%s:\n", dim, dim == 1 ? "" : "s"));
+  if (name) PetscCall(PetscViewerASCIIPrintf(viewer, "%s in %" PetscInt_FMT " dimension%s:\n", name, dim, dim == 1 ? "" : "s"));
+  else      PetscCall(PetscViewerASCIIPrintf(viewer, "Swarm in %" PetscInt_FMT " dimension%s:\n", dim, dim == 1 ? "" : "s"));
   if (size < maxSize) PetscCall(PetscCalloc1(size, &sizes));
   else                PetscCall(PetscCalloc1(3,    &sizes));
   if (size < maxSize) {
@@ -1611,7 +1611,7 @@ static PetscErrorCode DMView_Swarm_Ascii(DM dm, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Cells containing each particle:\n"));
     PetscCall(PetscViewerASCIIPushSynchronized(viewer));
     PetscCall(DMSwarmGetField(dm, DMSwarmPICField_cellid, NULL, NULL, (void**) &cell));
-    for (p = 0; p < Np; ++p) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  p%" PetscInt_FMT ": %" PetscInt_FMT "\n", p, cell[p]));
+    for (p = 0; p < Np; ++p) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  p%d: %" PetscInt_FMT "\n", p, cell[p]));
     PetscCall(PetscViewerFlush(viewer));
     PetscCall(PetscViewerASCIIPopSynchronized(viewer));
     PetscCall(DMSwarmRestoreField(dm, DMSwarmPICField_cellid, NULL, NULL, (void**) &cell));

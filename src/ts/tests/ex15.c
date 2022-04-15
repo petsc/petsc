@@ -147,7 +147,7 @@ int main(int argc, char *argv[])
   }
   PetscCall(VecView(U,PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(VecSum(U,&sum));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Conservation error %g\n", PetscRealPart(sum - 3.)));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Conservation error %g\n", (double)PetscRealPart(sum - 3.)));
 
   PetscCall(VecDestroy(&U));
   PetscCall(TSDestroy(&ts));

@@ -460,7 +460,7 @@ PetscErrorCode WashNetworkCreate(MPI_Comm comm,PetscInt pipesCase,Wash *wash_ptr
   edgelist    = NULL;
 
   /* proc[0] creates a sequential wash and edgelist */
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Setup pipesCase %D\n",pipesCase));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Setup pipesCase %" PetscInt_FMT "\n",pipesCase));
 
   /* Set global number of pipes, edges, and junctions */
   /*-------------------------------------------------*/
@@ -801,7 +801,7 @@ int main(int argc,char ** argv)
   PetscCall(TSGetSolveTime(ts,&ftime));
   PetscCall(TSGetStepNumber(ts,&steps));
   PetscCall(TSGetConvergedReason(ts,&reason));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%s at time %g after %D steps\n",TSConvergedReasons[reason],(double)ftime,steps));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%s at time %g after %" PetscInt_FMT " steps\n",TSConvergedReasons[reason],(double)ftime,steps));
   if (viewX) {
     PetscCall(VecView(X,PETSC_VIEWER_STDOUT_WORLD));
   }

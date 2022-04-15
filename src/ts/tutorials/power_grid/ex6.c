@@ -115,7 +115,7 @@ PetscErrorCode PostStep(TS ts)
   PetscCall(TSGetTime(ts,&t));
   PetscCall(TSGetSolution(ts,&X));
   PetscCall(VecSum(X,&sum));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"sum(p)*dw*dtheta at t = %3.2f = %3.6f\n",(double)t,(double)sum*user->dx*user->dy));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"sum(p)*dw*dtheta at t = %3.2f = %3.6f\n",(double)t,(double)(sum*user->dx*user->dy)));
   PetscFunctionReturn(0);
 }
 

@@ -63,7 +63,7 @@ PETSC_INTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit_2d(DM dm,PetscRe
   PetscCall(DMGetCoordinateDM(dm, &dmCoord));
   stagCoord = (DM_Stag*) dmCoord->data;
   for (s=0; s<3; ++s) {
-    PetscCheckFalse(stagCoord->dof[s] !=0 && stagCoord->dof[s] != 2,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Coordinate DM in 2 dimensions must have 0 or 2 dof on each stratum, but stratum %d has %d dof",s,stagCoord->dof[s]);
+    PetscCheckFalse(stagCoord->dof[s] !=0 && stagCoord->dof[s] != 2,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Coordinate DM in 2 dimensions must have 0 or 2 dof on each stratum, but stratum %" PetscInt_FMT " has %" PetscInt_FMT " dof",s,stagCoord->dof[s]);
   }
   PetscCall(DMCreateLocalVector(dmCoord,&coordLocal));
 
@@ -175,7 +175,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM dm)
       PetscInt Ncheck,j;
       Ncheck = 0;
       for (j=0; j<stag->nRanks[i]; ++j) Ncheck += stag->l[i][j];
-      PetscCheck(Ncheck == stag->N[i],PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local sizes in dimension %d don't add up. %d != %d",i,Ncheck,stag->N[i]);
+      PetscCheck(Ncheck == stag->N[i],PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local sizes in dimension %" PetscInt_FMT " don't add up. %" PetscInt_FMT " != %" PetscInt_FMT,i,Ncheck,stag->N[i]);
     }
   }
 
@@ -222,7 +222,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM dm)
 
   /* Define ghosted/local sizes */
   if (stag->stencilType != DMSTAG_STENCIL_NONE && (stag->n[0] < stag->stencilWidth || stag->n[1] < stag->stencilWidth)) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"DMStag 2d setup does not support local sizes (%D x %D) smaller than the elementwise stencil width (%D)",stag->n[0],stag->n[1],stag->stencilWidth);
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"DMStag 2d setup does not support local sizes (%" PetscInt_FMT " x %" PetscInt_FMT ") smaller than the elementwise stencil width (%" PetscInt_FMT ")",stag->n[0],stag->n[1],stag->stencilWidth);
   }
   for (d=0; d<dim; ++d) {
     switch (stag->boundaryType[d]) {
@@ -282,7 +282,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM dm)
             SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unrecognized ghost stencil type %d",stag->stencilType);
         }
         break;
-      default: SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported boundary type in dimension %D",d);
+      default: SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported boundary type in dimension %" PetscInt_FMT,d);
     }
   }
   stag->entriesGhost = stag->nGhost[0]*stag->nGhost[1]*stag->entriesPerElement;
@@ -624,7 +624,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM dm)
       }
     }
 
-    PetscCheck(count == entriesToTransferTotal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of entries computed in gtol (%d) is not as expected (%d)",count,entriesToTransferTotal);
+    PetscCheck(count == entriesToTransferTotal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of entries computed in gtol (%" PetscInt_FMT ") is not as expected (%" PetscInt_FMT ")",count,entriesToTransferTotal);
 
     /* Create Local and Global ISs (transferring pointer ownership) */
     PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)dm),entriesToTransferTotal,idxLocal,PETSC_OWN_POINTER,&isLocal));
@@ -1028,12 +1028,12 @@ static PetscErrorCode DMStagSetUpBuildRankGrid_2d(DM dm)
   m = stag->nRanks[0];
   n = stag->nRanks[1];
   if (m != PETSC_DECIDE) {
-    PetscCheck(m >= 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of ranks in X direction: %D",m);
-    else PetscCheck(m <= size,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Too many ranks in X direction: %D %d",m,size);
+    PetscCheck(m >= 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of ranks in X direction: %" PetscInt_FMT,m);
+    else PetscCheck(m <= size,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Too many ranks in X direction: %" PetscInt_FMT " %d",m,size);
   }
   if (n != PETSC_DECIDE) {
-    PetscCheck(n >= 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of ranks in Y direction: %D",n);
-    else PetscCheck(n <= size,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Too many ranks in Y direction: %D %d",n,size);
+    PetscCheck(n >= 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of ranks in Y direction: %" PetscInt_FMT,n);
+    else PetscCheck(n <= size,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Too many ranks in Y direction: %" PetscInt_FMT " %d",n,size);
   }
   if (m == PETSC_DECIDE || n == PETSC_DECIDE) {
     if (n != PETSC_DECIDE) {
@@ -1052,9 +1052,9 @@ static PetscErrorCode DMStagSetUpBuildRankGrid_2d(DM dm)
       if (M > N && m < n) {PetscInt _m = m; m = n; n = _m;}
     }
     PetscCheck(m*n == size,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Unable to create partition, check the size of the communicator and input m and n ");
-  } else PetscCheck(m*n == size,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Given Bad partition. Product of sizes (%D) does not equal communicator size (%d)",m*n,size);
-  PetscCheck(M >= m,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Partition in x direction is too fine! %D %D",M,m);
-  PetscCheck(N >= n,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Partition in y direction is too fine! %D %D",N,n);
+  } else PetscCheck(m*n == size,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Given Bad partition. Product of sizes (%" PetscInt_FMT ") does not equal communicator size (%d)",m*n,size);
+  PetscCheck(M >= m,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Partition in x direction is too fine! %" PetscInt_FMT " %" PetscInt_FMT,M,m);
+  PetscCheck(N >= n,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Partition in y direction is too fine! %" PetscInt_FMT " %" PetscInt_FMT,N,n);
   stag->nRanks[0] = m;
   stag->nRanks[1] = n;
   PetscFunctionReturn(0);

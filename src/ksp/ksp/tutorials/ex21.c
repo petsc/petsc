@@ -122,7 +122,7 @@ int main(int argc,char **args)
   PetscCall(VecAXPY(x,-1.0,u));
   PetscCall(VecNorm(x,NORM_2,&norm));
   PetscCall(KSPGetIterationNumber(ksp,&its));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %D\n",(double)norm,its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %" PetscInt_FMT "\n",(double)norm,its));
 
   /* change lambda and reassemble */
   PetscCall(VecSet(x,(scale-1.)*fctx.lambda));
@@ -150,7 +150,7 @@ int main(int argc,char **args)
   PetscCall(VecAXPY(u,-1.0,b));
   PetscCall(VecNorm(u,NORM_2,&norm));
   PetscCall(KSPGetIterationNumber(ksp,&its));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Residual norm error %g, Iterations %D\n",(double)norm,its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Residual norm error %g, Iterations %" PetscInt_FMT "\n",(double)norm,its));
 
   PetscCall(PetscFree(coords));
   PetscCall(PetscFree(fctx.l));

@@ -250,7 +250,7 @@ PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],Pe
           fvalue = (VR - KA[i]*RF + KA[i]*KF[i]*Efd/TF[i] - KA[i]*(Vref[i] - Vm))/TA[i];
           if (fvalue < 0) {
             VRatmax[i] = 0;
-            PetscCall(PetscPrintf(PETSC_COMM_SELF,"VR[%d]: dVR_dt went negative on fault clearing at time %g\n",i,t));
+            PetscCall(PetscPrintf(PETSC_COMM_SELF,"VR[%" PetscInt_FMT "]: dVR_dt went negative on fault clearing at time %g\n",i,(double)t));
           }
         }
         if (VRatmin[i]) {
@@ -258,7 +258,7 @@ PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],Pe
 
           if (fvalue > 0) {
             VRatmin[i] = 0;
-            PetscCall(PetscPrintf(PETSC_COMM_SELF,"VR[%d]: dVR_dt went positive on fault clearing at time %g\n",i,t));
+            PetscCall(PetscPrintf(PETSC_COMM_SELF,"VR[%" PetscInt_FMT "]: dVR_dt went positive on fault clearing at time %g\n",i,(double)t));
           }
         }
         idx = idx+9;
@@ -269,20 +269,20 @@ PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],Pe
       if (event_num == 0) { /* Max VR */
         if (!VRatmax[idx]) {
           VRatmax[idx] = 1;
-          PetscCall(PetscPrintf(PETSC_COMM_SELF,"VR[%d]: hit upper limit at time %g\n",idx,t));
+          PetscCall(PetscPrintf(PETSC_COMM_SELF,"VR[%" PetscInt_FMT "]: hit upper limit at time %g\n",idx,(double)t));
         }
         else {
           VRatmax[idx] = 0;
-          PetscCall(PetscPrintf(PETSC_COMM_SELF,"VR[%d]: freeing variable as dVR_dt is negative at time %g\n",idx,t));
+          PetscCall(PetscPrintf(PETSC_COMM_SELF,"VR[%" PetscInt_FMT "]: freeing variable as dVR_dt is negative at time %g\n",idx,(double)t));
         }
       } else {
         if (!VRatmin[idx]) {
           VRatmin[idx] = 1;
-          PetscCall(PetscPrintf(PETSC_COMM_SELF,"VR[%d]: hit lower limit at time %g\n",idx,t));
+          PetscCall(PetscPrintf(PETSC_COMM_SELF,"VR[%" PetscInt_FMT "]: hit lower limit at time %g\n",idx,(double)t));
         }
         else {
           VRatmin[idx] = 0;
-          PetscCall(PetscPrintf(PETSC_COMM_SELF,"VR[%d]: freeing variable as dVR_dt is positive at time %g\n",idx,t));
+          PetscCall(PetscPrintf(PETSC_COMM_SELF,"VR[%" PetscInt_FMT "]: freeing variable as dVR_dt is positive at time %g\n",idx,(double)t));
         }
       }
     }

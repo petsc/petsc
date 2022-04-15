@@ -239,7 +239,7 @@ static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount,KSP ksp)
          we do not update the iteration count, so computation done in this iteration
          should be disregarded.
          */
-      PetscCall(PetscInfo(ksp,"Restart due to square root breakdown at it = %D, tt=%g\n",ksp->its,(double)tt));
+      PetscCall(PetscInfo(ksp,"Restart due to square root breakdown at it = %" PetscInt_FMT ", tt=%g\n",ksp->its,(double)tt));
       break;
     } else {
       tt = PetscSqrtReal(tt);
@@ -489,7 +489,7 @@ static PetscErrorCode KSPPIPEFGMRESUpdateHessenberg(KSP ksp,PetscInt it,PetscBoo
   /* check for the happy breakdown */
   hapbnd = PetscMin(PetscAbsScalar(hh[it+1] / rs[it]),pipefgmres->haptol);
   if (PetscAbsScalar(hh[it+1]) < hapbnd) {
-    PetscCall(PetscInfo(ksp,"Detected happy breakdown, current hapbnd = %14.12e H(%D,%D) = %14.12e\n",(double)hapbnd,it+1,it,(double)PetscAbsScalar(*HH(it+1,it))));
+    PetscCall(PetscInfo(ksp,"Detected happy breakdown, current hapbnd = %14.12e H(%" PetscInt_FMT ",%" PetscInt_FMT ") = %14.12e\n",(double)hapbnd,it+1,it,(double)PetscAbsScalar(*HH(it+1,it))));
     *hapend = PETSC_TRUE;
   }
 
@@ -604,19 +604,19 @@ PetscErrorCode KSPView_PIPEFGMRES(KSP ksp,PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring));
 
   if (iascii) {
-    PetscCall(PetscViewerASCIIPrintf(viewer,"  restart=%D\n",pipefgmres->max_k));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  restart=%" PetscInt_FMT "\n",pipefgmres->max_k));
     PetscCall(PetscViewerASCIIPrintf(viewer,"  happy breakdown tolerance %g\n",(double)pipefgmres->haptol));
 #if defined(PETSC_USE_COMPLEX)
-    PetscCall(PetscViewerASCIIPrintf(viewer,"  shift=%g+%gi\n",PetscRealPart(pipefgmres->shift),PetscImaginaryPart(pipefgmres->shift)));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  shift=%g+%gi\n",(double)PetscRealPart(pipefgmres->shift),(double)PetscImaginaryPart(pipefgmres->shift)));
 #else
-    PetscCall(PetscViewerASCIIPrintf(viewer,"  shift=%g\n",pipefgmres->shift));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  shift=%g\n",(double)pipefgmres->shift));
 #endif
   } else if (isstring) {
-    PetscCall(PetscViewerStringSPrintf(viewer,"restart %D",pipefgmres->max_k));
+    PetscCall(PetscViewerStringSPrintf(viewer,"restart %" PetscInt_FMT,pipefgmres->max_k));
 #if defined(PETSC_USE_COMPLEX)
-    PetscCall(PetscViewerStringSPrintf(viewer,"   shift=%g+%gi\n",PetscRealPart(pipefgmres->shift),PetscImaginaryPart(pipefgmres->shift)));
+    PetscCall(PetscViewerStringSPrintf(viewer,"   shift=%g+%gi\n",(double)PetscRealPart(pipefgmres->shift),(double)PetscImaginaryPart(pipefgmres->shift)));
 #else
-    PetscCall(PetscViewerStringSPrintf(viewer,"   shift=%g\n",pipefgmres->shift));
+    PetscCall(PetscViewerStringSPrintf(viewer,"   shift=%g\n",(double)pipefgmres->shift));
 #endif
   }
   PetscFunctionReturn(0);

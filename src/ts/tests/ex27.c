@@ -178,7 +178,7 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
   if (user->epsilon < 0.) user->epsilon = 0.64*pow(user->h, 1.98);
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-param_view", &view, NULL));
   if (view) {
-    PetscCall(PetscPrintf(PETSC_COMM_SELF, "N: %D L: %g h: %g eps: %g\n", user->N, user->L, user->h, user->epsilon));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF, "N: %" PetscInt_FMT " L: %g h: %g eps: %g\n", user->N, (double)user->L, (double)user->h, (double)user->epsilon));
   }
   PetscCall(DMSwarmSetType(*sw, DMSWARM_PIC));
   PetscCall(DMSwarmSetCellDM(*sw, dm));
@@ -296,7 +296,7 @@ static PetscErrorCode ComputeGradS(PetscInt dim, PetscInt Np, const PetscReal vp
       for (i = 0, vc_l[0] = init; i < nx; ++i, vc_l[0] += h) {
         PetscReal sum = 0.0;
 
-        if (dbg) PetscCall(PetscPrintf(PETSC_COMM_SELF, "(%D %D) vc_l: %g %g\n", i, j, vc_l[0], vc_l[1]));
+        if (dbg) PetscCall(PetscPrintf(PETSC_COMM_SELF, "(%" PetscInt_FMT " %" PetscInt_FMT ") vc_l: %g %g\n", i, j, (double)vc_l[0], (double)vc_l[1]));
         /* \log \sum_k \psi(v - v_k)  */
         for (q = 0; q < Np; ++q) sum += Gaussian(dim, &velocity[q*dim], epsilon, vc_l);
         sum = PetscLogReal(sum);
@@ -363,10 +363,10 @@ static PetscErrorCode RHSFunctionParticles(TS ts, PetscReal t, Vec U, Vec R, voi
       switch (dim) {
         case 2: DMPlex_MultAdd2DReal_Internal(Q, 1, GammaS, &r[p*dim]);break;
         case 3: DMPlex_MultAdd3DReal_Internal(Q, 1, GammaS, &r[p*dim]);break;
-        default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Do not support dimension %D", dim);
+        default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Do not support dimension %" PetscInt_FMT, dim);
       }
     }
-    if (dbg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Final %4D %10.8lf %10.8lf\n", p, r[p*dim+0], r[p*dim+1]));
+    if (dbg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Final %4" PetscInt_FMT " %10.8lf %10.8lf\n", p, r[p*dim+0], r[p*dim+1]));
   }
   PetscCall(VecRestoreArrayRead(U, &u));
   PetscCall(VecRestoreArray(R, &r));

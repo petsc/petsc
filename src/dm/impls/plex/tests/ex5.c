@@ -468,7 +468,7 @@ static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
     }
     break;
     default:
-      SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
+      SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %" PetscInt_FMT, testNum);
     }
   } else {
     PetscInt numPoints[3] = {0, 0, 0};
@@ -536,7 +536,7 @@ static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, AppCtx *user, DM dm)
     }
     break;
     default:
-      SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
+      SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %" PetscInt_FMT, testNum);
     }
   } else {
     PetscInt numPoints[4] = {0, 0, 0, 0};
@@ -612,7 +612,7 @@ static PetscErrorCode CreateQuad_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
     }
     break;
     default:
-      SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
+      SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %" PetscInt_FMT, testNum);
     }
   } else {
     PetscInt numPoints[3] = {0, 0, 0};
@@ -722,7 +722,7 @@ static PetscErrorCode CreateHex_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
       PetscCall(DMSetLabelValue(*dm, "material", 3, 2));
     }
     break;
-    default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
+    default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %" PetscInt_FMT, testNum);
     }
   } else {
     PetscInt numPoints[4] = {0, 0, 0, 0};
@@ -779,8 +779,8 @@ static PetscErrorCode CreateDiscretization(DM dm, AppCtx *user)
   for (f = 1; f < Ncf; ++f) {
     char name[256], opt[256];
 
-    PetscCall(PetscSNPrintf(name, 256, "fault field %D", f));
-    PetscCall(PetscSNPrintf(opt,  256, "faultfield_%D_", f));
+    PetscCall(PetscSNPrintf(name, 256, "fault field %" PetscInt_FMT, f));
+    PetscCall(PetscSNPrintf(opt,  256, "faultfield_%" PetscInt_FMT "_", f));
     PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim-1, dim, user->cellSimplex, opt, PETSC_DETERMINE, &fe));
     PetscCall(PetscFESetName(fe, name));
     PetscCall(DMAddField(dm, fault, (PetscObject) fe));
@@ -820,7 +820,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     }
     break;
   default:
-    SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make hybrid meshes for dimension %d", dim);
+    SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make hybrid meshes for dimension %" PetscInt_FMT, dim);
   }
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject) *dm, "orig_"));
   PetscCall(DMPlexDistributeSetDefault(*dm, PETSC_FALSE));

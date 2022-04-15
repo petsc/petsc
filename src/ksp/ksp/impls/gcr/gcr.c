@@ -128,8 +128,8 @@ static PetscErrorCode KSPView_GCR(KSP ksp, PetscViewer viewer)
   PetscFunctionBegin;
   PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);
   if (iascii) {
-    PetscCall(PetscViewerASCIIPrintf(viewer,"  restart = %D \n", ctx->restart));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"  restarts performed = %D \n", ctx->n_restarts));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  restart = %" PetscInt_FMT " \n", ctx->restart));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  restarts performed = %" PetscInt_FMT " \n", ctx->n_restarts));
   }
   PetscFunctionReturn(0);
 }

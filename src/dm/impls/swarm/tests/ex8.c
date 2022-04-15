@@ -85,7 +85,7 @@ static PetscErrorCode TestDistribution(DM sw, PetscReal confidenceLevel, AppCtx 
     case 1: cdf = PetscCDFMaxwellBoltzmann1D;break;
     case 2: cdf = PetscCDFMaxwellBoltzmann2D;break;
     case 3: cdf = PetscCDFMaxwellBoltzmann3D;break;
-    default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Dimension %D not supported", dim);
+    default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Dimension %" PetscInt_FMT " not supported", dim);
   }
   PetscCall(DMSwarmCreateLocalVectorFromField(sw, "velocity", &locv));
   PetscCall(PetscProbComputeKSStatistic(locv, cdf, &alpha));

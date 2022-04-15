@@ -121,7 +121,7 @@ int main(int argc,char **argv)
      the option -snes_view
   */
   PetscCall(SNESGetTolerances(snes,&abstol,&rtol,&stol,&maxit,&maxf));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"atol=%g, rtol=%g, stol=%g, maxit=%D, maxf=%D\n",(double)abstol,(double)rtol,(double)stol,maxit,maxf));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"atol=%g, rtol=%g, stol=%g, maxit=%" PetscInt_FMT ", maxf=%" PetscInt_FMT "\n",(double)abstol,(double)rtol,(double)stol,maxit,maxf));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize application:
@@ -149,7 +149,7 @@ int main(int argc,char **argv)
   PetscCall(FormInitialGuess(x));
   PetscCall(SNESSolve(snes,NULL,x));
   PetscCall(SNESGetIterationNumber(snes,&its));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"number of SNES iterations = %D\n\n",its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"number of SNES iterations = %" PetscInt_FMT "\n\n",its));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Check solution and clean up
@@ -160,7 +160,7 @@ int main(int argc,char **argv)
   */
   PetscCall(VecAXPY(x,none,U));
   PetscCall(VecNorm(x,NORM_2,&norm));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %D\n",(double)norm,its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %" PetscInt_FMT "\n",(double)norm,its));
 
   /*
      Free work space.  All PETSc objects should be destroyed when they
@@ -331,7 +331,7 @@ PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal fnorm,void *ctx)
   MonitorCtx     *monP = (MonitorCtx*) ctx;
   Vec            x;
 
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"iter = %D, SNES Function norm %g\n",its,(double)fnorm));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"iter = %" PetscInt_FMT ", SNES Function norm %g\n",its,(double)fnorm));
   PetscCall(SNESGetSolution(snes,&x));
   PetscCall(VecView(x,monP->viewer));
   return 0;

@@ -55,14 +55,14 @@ PetscErrorCode DMSetBasisFunction_Internal(PetscInt Nf, PetscBool usePoly, Petsc
       case 0: funcs[f] = xfunc;break;
       case 1: funcs[f] = yfunc;break;
       case 2: funcs[f] = zfunc;break;
-      default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No function for direction %D", dir);
+      default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No function for direction %" PetscInt_FMT, dir);
       }
     } else {
       switch (dir) {
       case 0: funcs[f] = xsin;break;
       case 1: funcs[f] = ysin;break;
       case 2: funcs[f] = zsin;break;
-      default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No function for direction %D", dir);
+      default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No function for direction %" PetscInt_FMT, dir);
       }
     }
   }
@@ -79,7 +79,7 @@ static PetscErrorCode PCMGCreateCoarseSpaceDefault_Private(PC pc, PetscInt level
   PetscFunctionBegin;
   PetscCall(DMGetCoordinateDim(dm, &dim));
   PetscCall(DMGetNumFields(dm, &Nf));
-  PetscCheck(Nc % dim == 0,PetscObjectComm((PetscObject) pc), PETSC_ERR_ARG_WRONG, "The number of coarse vectors %D must be divisible by the dimension %D", Nc, dim);
+  PetscCheck(Nc % dim == 0,PetscObjectComm((PetscObject) pc), PETSC_ERR_ARG_WRONG, "The number of coarse vectors %" PetscInt_FMT " must be divisible by the dimension %" PetscInt_FMT, Nc, dim);
   PetscCall(PetscMalloc2(Nf, &funcs, Nf, &ctxs));
   if (!*coarseSpace) PetscCall(PetscCalloc1(Nc, coarseSpace));
   for (k = 0; k < Nc/dim; ++k) {
@@ -144,7 +144,7 @@ PetscErrorCode PCMGComputeCoarseSpace_Internal(PC pc, PetscInt l, PCMGCoarseSpac
     if (l > 0) PetscCall(PCMGGetCoarseSpaceConstructor("BAMG_MGEV", &coarseConstructor));
     else       PetscCall(PCMGGetCoarseSpaceConstructor("BAMG_GEV", &coarseConstructor));
     break;
-  default: SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle coarse space type %D", cstype);
+  default: SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle coarse space type %d", cstype);
   }
   PetscCall(PCMGGetSmoother(pc, l, &smooth));
   PetscCall(KSPGetDM(smooth, &dm));

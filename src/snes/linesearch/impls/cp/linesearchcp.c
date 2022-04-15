@@ -29,7 +29,7 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
   if (PetscAbsScalar(fty_old) < atol * ynorm) {
     if (monitor) {
       PetscCall(PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel));
-      PetscCall(PetscViewerASCIIPrintf(monitor,"    Line search terminated at initial point because dot(F,Y) = %g < atol*||y|| = %g\n",(double)PetscAbsScalar(fty_old), (double)atol*ynorm));
+      PetscCall(PetscViewerASCIIPrintf(monitor,"    Line search terminated at initial point because dot(F,Y) = %g < atol*||y|| = %g\n",(double)PetscAbsScalar(fty_old), (double)(atol*ynorm)));
       PetscCall(PetscViewerASCIISubtractTab(monitor,((PetscObject)linesearch)->tablevel));
     }
     PetscCall(SNESSetConvergedReason(linesearch->snes,SNES_CONVERGED_FNORM_ABS));

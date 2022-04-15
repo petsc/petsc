@@ -26,7 +26,7 @@ int main(int argc,char **argv)
       PetscCall(DMStagCreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,3,2,4,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,1,1,DMSTAG_STENCIL_BOX,1,NULL,NULL,NULL,&dm));
       break;
     default:
-      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"No support for dimension %D",dim);
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"No support for dimension %" PetscInt_FMT,dim);
   }
 
   PetscCall(DMSetFromOptions(dm));

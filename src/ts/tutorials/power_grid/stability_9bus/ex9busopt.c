@@ -948,7 +948,7 @@ PetscErrorCode ComputeSensiP(Vec lambda,Vec mu,Vec *DICDP,Userctx *user)
   for (i=0;i<3;i++) {
     PetscCall(VecDot(lambda,DICDP[i],&sensip));
     sensip = sensip+y[i];
-    /* PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\n sensitivity wrt %D th parameter: %g \n",i,(double)sensip)); */
+    /* PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\n sensitivity wrt %" PetscInt_FMT " th parameter: %g \n",i,(double)sensip)); */
      y[i] = sensip;
   }
   PetscCall(VecRestoreArray(mu,&y));

@@ -623,11 +623,11 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
     THIViscosity(thi,0.5*gradu*gradu,&eta,&deta);
     thi->rhog = rho * grav;
     if (thi->verbose) {
-      PetscCall(PetscPrintf(PetscObjectComm((PetscObject)thi),"Units: meter %8.2g  second %8.2g  kg %8.2g  Pa %8.2g\n",units->meter,units->second,units->kilogram,units->Pascal));
-      PetscCall(PetscPrintf(PetscObjectComm((PetscObject)thi),"Domain (%6.2g,%6.2g,%6.2g), pressure %8.2g, driving stress %8.2g\n",thi->Lx,thi->Ly,thi->Lz,rho*grav*1e3*units->meter,driving));
-      PetscCall(PetscPrintf(PetscObjectComm((PetscObject)thi),"Large velocity 1km/a %8.2g, velocity gradient %8.2g, eta %8.2g, stress %8.2g, ratio %8.2g\n",u,gradu,eta,2*eta*gradu,2*eta*gradu/driving));
+      PetscCall(PetscPrintf(PetscObjectComm((PetscObject)thi),"Units: meter %8.2g  second %8.2g  kg %8.2g  Pa %8.2g\n",(double)units->meter,(double)units->second,(double)units->kilogram,(double)units->Pascal));
+      PetscCall(PetscPrintf(PetscObjectComm((PetscObject)thi),"Domain (%6.2g,%6.2g,%6.2g), pressure %8.2g, driving stress %8.2g\n",(double)thi->Lx,(double)thi->Ly,(double)thi->Lz,(double)(rho*grav*1e3*units->meter),(double)driving));
+      PetscCall(PetscPrintf(PetscObjectComm((PetscObject)thi),"Large velocity 1km/a %8.2g, velocity gradient %8.2g, eta %8.2g, stress %8.2g, ratio %8.2g\n",(double)u,(double)gradu,(double)eta,(double)(2*eta*gradu,2*eta*gradu/driving)));
       THIViscosity(thi,0.5*PetscSqr(1e-3*gradu),&eta,&deta);
-      PetscCall(PetscPrintf(PetscObjectComm((PetscObject)thi),"Small velocity 1m/a  %8.2g, velocity gradient %8.2g, eta %8.2g, stress %8.2g, ratio %8.2g\n",1e-3*u,1e-3*gradu,eta,2*eta*1e-3*gradu,2*eta*1e-3*gradu/driving));
+      PetscCall(PetscPrintf(PetscObjectComm((PetscObject)thi),"Small velocity 1m/a  %8.2g, velocity gradient %8.2g, eta %8.2g, stress %8.2g, ratio %8.2g\n",(double)(1e-3*u),(double)(1e-3*gradu),(double)eta,(double)(2*eta*1e-3*gradu,2*eta*1e-3*gradu/driving)));
     }
   }
 
@@ -983,7 +983,7 @@ static PetscErrorCode THIMatrixStatistics(THI thi,Mat B,PetscViewer viewer)
     PetscScalar val0,val2;
     PetscCall(MatGetValue(B,0,0,&val0));
     PetscCall(MatGetValue(B,2,2,&val2));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"Matrix dim %8d  norm %8.2e, (0,0) %8.2e  (2,2) %8.2e, eta [%8.2e,%8.2e] beta2 [%8.2e,%8.2e]\n",m,nrm,PetscRealPart(val0),PetscRealPart(val2),thi->eta.cmin,thi->eta.cmax,thi->beta2.cmin,thi->beta2.cmax));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"Matrix dim %8" PetscInt_FMT "  norm %8.2e, (0,0) %8.2e  (2,2) %8.2e, eta [%8.2e,%8.2e] beta2 [%8.2e,%8.2e]\n",m,(double)nrm,(double)PetscRealPart(val0),(double)PetscRealPart(val2),(double)thi->eta.cmin,(double)thi->eta.cmax,(double)thi->beta2.cmin,(double)thi->beta2.cmax));
   }
   PetscFunctionReturn(0);
 }
@@ -1042,7 +1042,7 @@ static PetscErrorCode THISolveStatistics(THI thi,TS ts,PetscInt coarsened,const 
     PetscCall(SNESGetIterationNumber(snes,&its));
     PetscCall(SNESGetConvergedReason(snes,&reason));
     PetscCall(SNESGetLinearSolveIterations(snes,&lits));
-    PetscCall(PetscPrintf(comm,"%s: Number of SNES iterations = %d, total linear iterations = %d\n",SNESConvergedReasons[reason],its,lits));
+    PetscCall(PetscPrintf(comm,"%s: Number of SNES iterations = %" PetscInt_FMT ", total linear iterations = %" PetscInt_FMT "\n",SNESConvergedReasons[reason],its,lits));
   }
   {
     PetscReal   nrm2,tmin[3]={1e100,1e100,1e100},tmax[3]={-1e100,-1e100,-1e100},min[3],max[3];
@@ -1069,18 +1069,18 @@ static PetscErrorCode THISolveStatistics(THI thi,TS ts,PetscInt coarsened,const 
       min[j] *= thi->units->year / thi->units->meter;
       max[j] *= thi->units->year / thi->units->meter;
     }
-    PetscCall(PetscPrintf(comm,"|X|_2 %g   u in [%g, %g]   v in [%g, %g]   c in [%g, %g] \n",nrm2,min[0],max[0],min[1],max[1],min[2],max[2]));
+    PetscCall(PetscPrintf(comm,"|X|_2 %g   u in [%g, %g]   v in [%g, %g]   c in [%g, %g] \n",(double)nrm2,(double)min[0],(double)max[0],(double)min[1],(double)max[1],(double)min[2],(double)max[2]));
     {
       PetscReal umin,umax,umean;
       PetscCall(THISurfaceStatistics(pack,X,&umin,&umax,&umean));
       umin  *= thi->units->year / thi->units->meter;
       umax  *= thi->units->year / thi->units->meter;
       umean *= thi->units->year / thi->units->meter;
-      PetscCall(PetscPrintf(comm,"Surface statistics: u in [%12.6e, %12.6e] mean %12.6e\n",umin,umax,umean));
+      PetscCall(PetscPrintf(comm,"Surface statistics: u in [%12.6e, %12.6e] mean %12.6e\n",(double)umin,(double)umax,(double)umean));
     }
     /* These values stay nondimensional */
-    PetscCall(PetscPrintf(comm,"Global eta range   [%g, %g], converged range [%g, %g]\n",thi->eta.min,thi->eta.max,thi->eta.cmin,thi->eta.cmax));
-    PetscCall(PetscPrintf(comm,"Global beta2 range [%g, %g], converged range [%g, %g]\n",thi->beta2.min,thi->beta2.max,thi->beta2.cmin,thi->beta2.cmax));
+    PetscCall(PetscPrintf(comm,"Global eta range   [%g, %g], converged range [%g, %g]\n",(double)thi->eta.min,(double)thi->eta.max,(double)thi->eta.cmin,(double)thi->eta.cmax));
+    PetscCall(PetscPrintf(comm,"Global beta2 range [%g, %g], converged range [%g, %g]\n",(double)thi->beta2.min,(double)thi->beta2.max,(double)thi->beta2.cmin,(double)thi->beta2.cmax));
   }
   PetscCall(PetscPrintf(comm,"\n"));
   PetscCall(DMCompositeRestoreAccess(pack,X,&X3,&X2));
@@ -1392,8 +1392,8 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM pack,Vec X,const char file
   PetscCall(PetscViewerASCIIOpen(comm,filename2,&viewer2));
   PetscCall(PetscViewerASCIIPrintf(viewer3,"<VTKFile type=\"StructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n"));
   PetscCall(PetscViewerASCIIPrintf(viewer2,"<VTKFile type=\"StructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n"));
-  PetscCall(PetscViewerASCIIPrintf(viewer3,"  <StructuredGrid WholeExtent=\"%d %d %d %d %d %d\">\n",0,mz-1,0,my-1,0,mx-1));
-  PetscCall(PetscViewerASCIIPrintf(viewer2,"  <StructuredGrid WholeExtent=\"%d %d %d %d %d %d\">\n",0,0,0,my-1,0,mx-1));
+  PetscCall(PetscViewerASCIIPrintf(viewer3,"  <StructuredGrid WholeExtent=\"%d %" PetscInt_FMT " %d %" PetscInt_FMT " %d %" PetscInt_FMT "\">\n",0,mz-1,0,my-1,0,mx-1));
+  PetscCall(PetscViewerASCIIPrintf(viewer2,"  <StructuredGrid WholeExtent=\"%d %d %d %" PetscInt_FMT " %d %" PetscInt_FMT "\">\n",0,0,0,my-1,0,mx-1));
 
   PetscCall(DMDAGetCorners(da3,range,range+1,range+2,range+3,range+4,range+5));
   PetscCall(PetscMPIIntCast(range[3]*range[4]*range[5]*dof,&nn));
@@ -1430,8 +1430,8 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM pack,Vec X,const char file
         y3 = (Node*)x;
         y2 = (PetscScalar(*)[PRMNODE_SIZE])x2;
       }
-      PetscCall(PetscViewerASCIIPrintf(viewer3,"    <Piece Extent=\"%D %D %D %D %D %D\">\n",zs,zs+zm-1,ys,ys+ym-1,xs,xs+xm-1));
-      PetscCall(PetscViewerASCIIPrintf(viewer2,"    <Piece Extent=\"%d %d %D %D %D %D\">\n",0,0,ys,ys+ym-1,xs,xs+xm-1));
+      PetscCall(PetscViewerASCIIPrintf(viewer3,"    <Piece Extent=\"%" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\">\n",zs,zs+zm-1,ys,ys+ym-1,xs,xs+xm-1));
+      PetscCall(PetscViewerASCIIPrintf(viewer2,"    <Piece Extent=\"%d %d %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\">\n",0,0,ys,ys+ym-1,xs,xs+xm-1));
 
       PetscCall(PetscViewerASCIIPrintf(viewer3,"      <Points>\n"));
       PetscCall(PetscViewerASCIIPrintf(viewer2,"      <Points>\n"));
@@ -1446,9 +1446,9 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM pack,Vec X,const char file
             h  = PetscRealPart(y2[i*ym+j][FieldOffset(PrmNode,h)]);
           for (k=zs; k<zs+zm; k++) {
             PetscReal zz = b + h*k/(mz-1.);
-            PetscCall(PetscViewerASCIIPrintf(viewer3,"%f %f %f\n",xx,yy,zz));
+            PetscCall(PetscViewerASCIIPrintf(viewer3,"%f %f %f\n",(double)xx,(double)yy,(double)zz));
           }
-          PetscCall(PetscViewerASCIIPrintf(viewer2,"%f %f %f\n",xx,yy,(double)0.0));
+          PetscCall(PetscViewerASCIIPrintf(viewer2,"%f %f %f\n",(double)xx,(double)yy,(double)0.0));
         }
       }
       PetscCall(PetscViewerASCIIPrintf(viewer3,"        </DataArray>\n"));
@@ -1460,13 +1460,13 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM pack,Vec X,const char file
         PetscCall(PetscViewerASCIIPrintf(viewer3,"      <PointData>\n"));
         PetscCall(PetscViewerASCIIPrintf(viewer3,"        <DataArray type=\"Float32\" Name=\"velocity\" NumberOfComponents=\"3\" format=\"ascii\">\n"));
         for (i=0; i<nn/dof; i++) {
-          PetscCall(PetscViewerASCIIPrintf(viewer3,"%f %f %f\n",PetscRealPart(y3[i].u)*units->year/units->meter,PetscRealPart(y3[i].v)*units->year/units->meter,0.0));
+          PetscCall(PetscViewerASCIIPrintf(viewer3,"%f %f %f\n",(double)(PetscRealPart(y3[i].u)*units->year/units->meter),(double)(PetscRealPart(y3[i].v)*units->year/units->meter),0.0));
         }
         PetscCall(PetscViewerASCIIPrintf(viewer3,"        </DataArray>\n"));
 
         PetscCall(PetscViewerASCIIPrintf(viewer3,"        <DataArray type=\"Int32\" Name=\"rank\" NumberOfComponents=\"1\" format=\"ascii\">\n"));
         for (i=0; i<nn; i+=dof) {
-          PetscCall(PetscViewerASCIIPrintf(viewer3,"%D\n",r));
+          PetscCall(PetscViewerASCIIPrintf(viewer3,"%" PetscInt_FMT "\n",r));
         }
         PetscCall(PetscViewerASCIIPrintf(viewer3,"        </DataArray>\n"));
         PetscCall(PetscViewerASCIIPrintf(viewer3,"      </PointData>\n"));
@@ -1479,7 +1479,7 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM pack,Vec X,const char file
           PetscCall(DMDAGetFieldName(da2,f,&fieldname));
           PetscCall(PetscViewerASCIIPrintf(viewer2,"        <DataArray type=\"Float32\" Name=\"%s\" format=\"ascii\">\n",fieldname));
           for (i=0; i<nn2/PRMNODE_SIZE; i++) {
-            PetscCall(PetscViewerASCIIPrintf(viewer2,"%g\n",y2[i][f]));
+            PetscCall(PetscViewerASCIIPrintf(viewer2,"%g\n",(double)y2[i][f]));
           }
           PetscCall(PetscViewerASCIIPrintf(viewer2,"        </DataArray>\n"));
         }
@@ -1516,11 +1516,11 @@ static PetscErrorCode THITSMonitor(TS ts,PetscInt step,PetscReal t,Vec X,void *c
 
   PetscFunctionBeginUser;
   if (step < 0) PetscFunctionReturn(0); /* negative one is used to indicate an interpolated solution */
-  PetscCall(PetscPrintf(PetscObjectComm((PetscObject)ts),"%3D: t=%g\n",step,(double)t));
+  PetscCall(PetscPrintf(PetscObjectComm((PetscObject)ts),"%3" PetscInt_FMT ": t=%g\n",step,(double)t));
   if (thi->monitor_interval && step % thi->monitor_interval) PetscFunctionReturn(0);
   PetscCall(TSGetDM(ts,&pack));
-  PetscCall(PetscSNPrintf(filename3,sizeof(filename3),"%s-3d-%03d.vts",thi->monitor_basename,step));
-  PetscCall(PetscSNPrintf(filename2,sizeof(filename2),"%s-2d-%03d.vts",thi->monitor_basename,step));
+  PetscCall(PetscSNPrintf(filename3,sizeof(filename3),"%s-3d-%03" PetscInt_FMT ".vts",thi->monitor_basename,step));
+  PetscCall(PetscSNPrintf(filename2,sizeof(filename2),"%s-2d-%03" PetscInt_FMT ".vts",thi->monitor_basename,step));
   PetscCall(THIDAVecView_VTK_XML(thi,pack,X,filename3,filename2));
   PetscFunctionReturn(0);
 }
@@ -1598,7 +1598,7 @@ int main(int argc,char *argv[])
     PetscInt  Mx,My,Mz;
     PetscCall(DMCompositeGetEntries(pack,&da3,&da2));
     PetscCall(DMDAGetInfo(da3,0, &Mz,&My,&Mx, 0,0,0, 0,0,0,0,0,0));
-    PetscCall(PetscPrintf(PetscObjectComm((PetscObject)thi),"Level %D domain size (m) %8.2g x %8.2g x %8.2g, num elements %3d x %3d x %3d (%8d), size (m) %g x %g x %g\n",i,Lx,Ly,Lz,Mx,My,Mz,Mx*My*Mz,Lx/Mx,Ly/My,1000./(Mz-1)));
+    PetscCall(PetscPrintf(PetscObjectComm((PetscObject)thi),"Level %" PetscInt_FMT " domain size (m) %8.2g x %8.2g x %8.2g, num elements %3d x %3d x %3d (%8d), size (m) %g x %g x %g\n",i,Lx,Ly,Lz,Mx,My,Mz,Mx*My*Mz,Lx/Mx,Ly/My,1000./(Mz-1)));
   }
 
   PetscCall(DMCreateGlobalVector(pack,&X));
@@ -1620,7 +1620,7 @@ int main(int argc,char *argv[])
   PetscCall(TSSolve(ts,X));
   PetscCall(TSGetSolveTime(ts,&ftime));
   PetscCall(TSGetStepNumber(ts,&steps));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Steps %D  final time %g\n",steps,(double)ftime));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Steps %" PetscInt_FMT "  final time %g\n",steps,(double)ftime));
 
   if (0) PetscCall(THISolveStatistics(thi,ts,0,"Full"));
 

@@ -124,7 +124,7 @@ int main(int argc,char **args)
      An alternative is PetscFPrintf(), which prints to a file.
   */
   if (norm > 100*PETSC_SMALL) {
-    PetscCall(PetscPrintf(PETSC_COMM_SELF,"Norm of residual %g iterations %D bs %D\n",(double)norm,its,bs));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"Norm of residual %g iterations %" PetscInt_FMT " bs %" PetscInt_FMT "\n",(double)norm,its,bs));
   }
 
   /*

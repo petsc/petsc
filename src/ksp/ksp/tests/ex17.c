@@ -77,9 +77,9 @@ int main(int argc,char **args)
   PetscCall(VecNorm(x,NORM_2,&norm));
   PetscCall(KSPGetIterationNumber(ksp,&its));
   if (norm >= 1.e-12) {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %D\n",(double)norm,its));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %" PetscInt_FMT "\n",(double)norm,its));
   } else {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error < 1.e-12, Iterations %D\n",its));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error < 1.e-12, Iterations %" PetscInt_FMT "\n",its));
   }
 
   /* Free work space */

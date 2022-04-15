@@ -134,7 +134,7 @@ static inline PetscErrorCode PetscDTFactorial(PetscInt n, PetscReal *factorial)
 
   PetscFunctionBegin;
   *factorial = -1.0;
-  PetscCheck(n >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Factorial called with negative number %D", n);
+  PetscCheck(n >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Factorial called with negative number %" PetscInt_FMT, n);
   for (PetscInt i = 1; i < n+1; ++i) f *= (PetscReal)i;
   *factorial = f;
   PetscFunctionReturn(0);
@@ -159,7 +159,7 @@ static inline PetscErrorCode PetscDTFactorialInt(PetscInt n, PetscInt *factorial
 
   PetscFunctionBegin;
   *factorial = -1;
-  PetscCheck(n >= 0 && n <= PETSC_FACTORIAL_MAX,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of elements %D is not in supported range [0,%D]",n,PETSC_FACTORIAL_MAX);
+  PetscCheck(n >= 0 && n <= PETSC_FACTORIAL_MAX,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of elements %" PetscInt_FMT " is not in supported range [0,%d]",n,PETSC_FACTORIAL_MAX);
   if (n <= 12) {
     *factorial = facLookup[n];
   } else {
@@ -188,7 +188,7 @@ static inline PetscErrorCode PetscDTBinomial(PetscInt n, PetscInt k, PetscReal *
 {
   PetscFunctionBeginHot;
   *binomial = -1.0;
-  PetscCheck(n >= 0 && k >= 0 && k <= n,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Binomial arguments (%D %D) must be non-negative, k <= n", n, k);
+  PetscCheck(n >= 0 && k >= 0 && k <= n,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Binomial arguments (%" PetscInt_FMT " %" PetscInt_FMT ") must be non-negative, k <= n", n, k);
   if (n <= 3) {
     PetscInt binomLookup[4][4] = {{1, 0, 0, 0}, {1, 1, 0, 0}, {1, 2, 1, 0}, {1, 3, 3, 1}};
 
@@ -223,8 +223,8 @@ static inline PetscErrorCode PetscDTBinomialInt(PetscInt n, PetscInt k, PetscInt
 
   PetscFunctionBegin;
   *binomial = -1;
-  PetscCheck(n >= 0 && k >= 0 && k <= n,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Binomial arguments (%D %D) must be non-negative, k <= n", n, k);
-  PetscCheck(n <= PETSC_BINOMIAL_MAX,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Binomial elements %D is larger than max for PetscInt, %D", n, PETSC_BINOMIAL_MAX);
+  PetscCheck(n >= 0 && k >= 0 && k <= n,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Binomial arguments (%" PetscInt_FMT " %" PetscInt_FMT ") must be non-negative, k <= n", n, k);
+  PetscCheck(n <= PETSC_BINOMIAL_MAX,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Binomial elements %" PetscInt_FMT " is larger than max for PetscInt, %d", n, PETSC_BINOMIAL_MAX);
   if (n <= 3) {
     PetscInt binomLookup[4][4] = {{1, 0, 0, 0}, {1, 1, 0, 0}, {1, 2, 1, 0}, {1, 3, 3, 1}};
 
@@ -270,7 +270,7 @@ static inline PetscErrorCode PetscDTEnumPerm(PetscInt n, PetscInt k, PetscInt *p
 
   PetscFunctionBegin;
   if (isOdd) *isOdd = PETSC_FALSE;
-  PetscCheck(n >= 0 && n <= PETSC_FACTORIAL_MAX,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of elements %D is not in supported range [0,%D]",n,PETSC_FACTORIAL_MAX);
+  PetscCheck(n >= 0 && n <= PETSC_FACTORIAL_MAX,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of elements %" PetscInt_FMT " is not in supported range [0,%d]",n,PETSC_FACTORIAL_MAX);
   w = &work[n - 2];
   for (i = 2; i <= n; i++) {
     *(w--) = k % i;
@@ -314,7 +314,7 @@ static inline PetscErrorCode PetscDTPermIndex(PetscInt n, const PetscInt *perm, 
   PetscFunctionBeginHot;
   *k = -1;
   if (isOdd) *isOdd = PETSC_FALSE;
-  PetscCheck(n >= 0 && n <= PETSC_FACTORIAL_MAX,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of elements %D is not in supported range [0,%D]",n,PETSC_FACTORIAL_MAX);
+  PetscCheck(n >= 0 && n <= PETSC_FACTORIAL_MAX,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of elements %" PetscInt_FMT " is not in supported range [0,%d]",n,PETSC_FACTORIAL_MAX);
   for (i = 0; i < n; i++) work[i] = i;  /* partial permutation */
   for (i = 0; i < n; i++) iwork[i] = i; /* partial permutation inverse */
   for (idx = 0, i = 0; i < n - 1; i++) {

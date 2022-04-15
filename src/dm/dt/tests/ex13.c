@@ -98,7 +98,7 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
 
     PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("N","N",&n,&n,Mcopy,&n,S,NULL,&n,NULL,&n,work,&lwork,&lierr));
     PetscReal cond = S[0] / S[Nbpt - 1];
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "dimension %D, degree %D, form %D: condition number %g\n", dim, deg, form, (double) cond));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "dimension %" PetscInt_FMT ", degree %" PetscInt_FMT ", form %" PetscInt_FMT ": condition number %g\n", dim, deg, form, (double) cond));
     PetscCall(PetscFree(work));
     PetscCall(PetscFree(S));
   }
@@ -139,7 +139,7 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
   frob_err = PetscSqrtReal(frob_err);
 
   if (frob_err > PETSC_SMALL) {
-    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dimension %D, degree %D, form %D: trimmed projection error %g", dim, deg, form, (double) frob_err);
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dimension %" PetscInt_FMT ", degree %" PetscInt_FMT ", form %" PetscInt_FMT ": trimmed projection error %g", dim, deg, form, (double) frob_err);
   }
 
   // P trimmed is also supposed to contain the polynomials of one degree less: construction M_moment[0:sub,:] * M_trimmed^{-1} * M_moments[0:sub,:]^T should be the identity matrix
@@ -153,7 +153,7 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
   PetscCall(MatShift(Mm1, -1.));
   PetscCall(MatNorm(Mm1, NORM_FROBENIUS, &frob_err));
   if (frob_err > PETSC_SMALL) {
-    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dimension %D, degree %D, form %D: trimmed reverse projection error %g", dim, deg, form, (double) frob_err);
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dimension %" PetscInt_FMT ", degree %" PetscInt_FMT ", form %" PetscInt_FMT ": trimmed reverse projection error %g", dim, deg, form, (double) frob_err);
   }
   PetscCall(MatDestroy(&Mm1));
   PetscCall(MatDestroy(&AinvB));
@@ -255,7 +255,7 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
     PetscCall(MatAXPY(prod, -1., mat_koszul, SAME_NONZERO_PATTERN));
     PetscCall(MatNorm(prod, NORM_FROBENIUS, &frob_err));
     if (frob_err > PETSC_SMALL) {
-      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dimension %D, degree %D, forms (%D, %D): koszul projection error %g", dim, deg, form, form < 0 ? (form-1):(form+1), (double) frob_err);
+      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dimension %" PetscInt_FMT ", degree %" PetscInt_FMT ", forms (%" PetscInt_FMT ", %" PetscInt_FMT "): koszul projection error %g", dim, deg, form, form < 0 ? (form-1):(form+1), (double) frob_err);
     }
 
     PetscCall(MatDestroy(&prod));
@@ -298,7 +298,7 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
   frob_err = PetscSqrtReal(frob_err);
 
   if (frob_err > PETSC_SMALL) {
-    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dimension %D, degree %D, form %D: jet error %g", dim, deg, form, (double) frob_err);
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dimension %" PetscInt_FMT ", degree %" PetscInt_FMT ", form %" PetscInt_FMT ": jet error %g", dim, deg, form, (double) frob_err);
   }
 
   PetscCall(PetscFree(M_moment_real));

@@ -41,15 +41,15 @@ static PetscErrorCode DMView_DA_2d(DM da,PetscViewer viewer)
       }
       PetscCall(PetscFree(nz));
       navg = navg/size;
-      PetscCall(PetscViewerASCIIPrintf(viewer,"  Load Balance - Grid Points: Min %D  avg %D  max %D\n",nmin,navg,nmax));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  Load Balance - Grid Points: Min %" PetscInt_FMT "  avg %" PetscInt_FMT "  max %" PetscInt_FMT "\n",nmin,navg,nmax));
       PetscFunctionReturn(0);
     }
     if (format != PETSC_VIEWER_ASCII_VTK_DEPRECATED && format != PETSC_VIEWER_ASCII_VTK_CELL_DEPRECATED && format != PETSC_VIEWER_ASCII_GLVIS) {
       DMDALocalInfo info;
       PetscCall(DMDAGetLocalInfo(da,&info));
       PetscCall(PetscViewerASCIIPushSynchronized(viewer));
-      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"Processor [%d] M %D N %D m %D n %D w %D s %D\n",rank,dd->M,dd->N,dd->m,dd->n,dd->w,dd->s));
-      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"X range of indices: %D %D, Y range of indices: %D %D\n",info.xs,info.xs+info.xm,info.ys,info.ys+info.ym));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"Processor [%d] M %" PetscInt_FMT " N %" PetscInt_FMT " m %" PetscInt_FMT " n %" PetscInt_FMT " w %" PetscInt_FMT " s %" PetscInt_FMT "\n",rank,dd->M,dd->N,dd->m,dd->n,dd->w,dd->s));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"X range of indices: %" PetscInt_FMT " %" PetscInt_FMT ", Y range of indices: %" PetscInt_FMT " %" PetscInt_FMT "\n",info.xs,info.xs+info.xm,info.ys,info.ys+info.ym));
       PetscCall(PetscViewerFlush(viewer));
       PetscCall(PetscViewerASCIIPopSynchronized(viewer));
     } else if (format == PETSC_VIEWER_ASCII_GLVIS) {
@@ -213,7 +213,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   PetscCheck(stencil_type != DMDA_STENCIL_BOX || (bx != DM_BOUNDARY_MIRROR && by != DM_BOUNDARY_MIRROR),PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Mirror boundary and box stencil");
   PetscCall(PetscObjectGetComm((PetscObject)da,&comm));
 #if !defined(PETSC_USE_64BIT_INDICES)
-  PetscCheck(((PetscInt64) M)*((PetscInt64) N)*((PetscInt64) dof) <= (PetscInt64) PETSC_MPI_INT_MAX,comm,PETSC_ERR_INT_OVERFLOW,"Mesh of %D by %D by %D (dof) is too large for 32 bit indices",M,N,dof);
+  PetscCheck(((PetscInt64) M)*((PetscInt64) N)*((PetscInt64) dof) <= (PetscInt64) PETSC_MPI_INT_MAX,comm,PETSC_ERR_INT_OVERFLOW,"Mesh of %" PetscInt_FMT " by %" PetscInt_FMT " by %" PetscInt_FMT " (dof) is too large for 32 bit indices",M,N,dof);
 #endif
 
   PetscCallMPI(MPI_Comm_size(comm,&size));
@@ -221,12 +221,12 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
 
   dd->p = 1;
   if (m != PETSC_DECIDE) {
-    PetscCheck(m >= 1,comm,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in X direction: %D",m);
-    else PetscCheck(m <= size,comm,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in X direction: %D %d",m,size);
+    PetscCheck(m >= 1,comm,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in X direction: %" PetscInt_FMT,m);
+    else PetscCheck(m <= size,comm,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in X direction: %" PetscInt_FMT " %d",m,size);
   }
   if (n != PETSC_DECIDE) {
-    PetscCheck(n >= 1,comm,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in Y direction: %D",n);
-    else PetscCheck(n <= size,comm,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in Y direction: %D %d",n,size);
+    PetscCheck(n >= 1,comm,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in Y direction: %" PetscInt_FMT,n);
+    else PetscCheck(n <= size,comm,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in Y direction: %" PetscInt_FMT " %d",n,size);
   }
 
   if (m == PETSC_DECIDE || n == PETSC_DECIDE) {
@@ -248,8 +248,8 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
     PetscCheck(m*n == size,comm,PETSC_ERR_PLIB,"Unable to create partition, check the size of the communicator and input m and n ");
   } else PetscCheck(m*n == size,comm,PETSC_ERR_ARG_OUTOFRANGE,"Given Bad partition");
 
-  PetscCheck(M >= m,comm,PETSC_ERR_ARG_OUTOFRANGE,"Partition in x direction is too fine! %D %D",M,m);
-  PetscCheck(N >= n,comm,PETSC_ERR_ARG_OUTOFRANGE,"Partition in y direction is too fine! %D %D",N,n);
+  PetscCheck(M >= m,comm,PETSC_ERR_ARG_OUTOFRANGE,"Partition in x direction is too fine! %" PetscInt_FMT " %" PetscInt_FMT,M,m);
+  PetscCheck(N >= n,comm,PETSC_ERR_ARG_OUTOFRANGE,"Partition in y direction is too fine! %" PetscInt_FMT " %" PetscInt_FMT,N,n);
 
   /*
      Determine locally owned region
@@ -272,7 +272,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
     for (i=(rank % m); i<m; i++) {
       left += lx[i];
     }
-    PetscCheck(left == M,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Sum of lx across processors not equal to M: %D %D",left,M);
+    PetscCheck(left == M,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Sum of lx across processors not equal to M: %" PetscInt_FMT " %" PetscInt_FMT,left,M);
   }
 
   /*
@@ -296,15 +296,15 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
     for (i=(rank/m); i<n; i++) {
       left += ly[i];
     }
-    PetscCheck(left == N,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Sum of ly across processors not equal to N: %D %D",left,N);
+    PetscCheck(left == N,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Sum of ly across processors not equal to N: %" PetscInt_FMT " %" PetscInt_FMT,left,N);
   }
 
   /*
    check if the scatter requires more than one process neighbor or wraps around
    the domain more than once
   */
-  PetscCheck((x >= s) || ((m <= 1) && (bx != DM_BOUNDARY_PERIODIC)),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local x-width of domain x %D is smaller than stencil width s %D",x,s);
-  PetscCheck((y >= s) || ((n <= 1) && (by != DM_BOUNDARY_PERIODIC)),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local y-width of domain y %D is smaller than stencil width s %D",y,s);
+  PetscCheck((x >= s) || ((m <= 1) && (bx != DM_BOUNDARY_PERIODIC)),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local x-width of domain x %" PetscInt_FMT " is smaller than stencil width s %" PetscInt_FMT,x,s);
+  PetscCheck((y >= s) || ((n <= 1) && (by != DM_BOUNDARY_PERIODIC)),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local y-width of domain y %" PetscInt_FMT " is smaller than stencil width s %" PetscInt_FMT,y,s);
   xe = xs + x;
   ye = ys + y;
 

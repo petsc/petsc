@@ -29,12 +29,12 @@ static PetscErrorCode test(PetscInt dim, PetscInt formDegree, PetscInt degree, P
   PetscCall(PetscDTPTrimmedSize(dim, formDegree == 0 ? degree : degree + 1, PetscAbsInt(formDegree), &Nbexp));
   Nbexp *= nCopies;
   PetscCall(PetscSpaceGetDimension(sp, &Nb));
-  PetscCheck(Nb == Nbexp,comm, PETSC_ERR_PLIB, "Space dimension mismatch, %D != %D", Nbexp, Nb);
+  PetscCheck(Nb == Nbexp,comm, PETSC_ERR_PLIB, "Space dimension mismatch, %" PetscInt_FMT " != %" PetscInt_FMT, Nbexp, Nb);
 
   maxDexp = (PetscAbsInt(formDegree) == dim || formDegree == 0) ? degree : degree + 1;
   PetscCall(PetscSpaceGetDegree(sp, &d, &maxD));
-  PetscCheck(degree == d,comm, PETSC_ERR_PLIB, "Space degree mismatch, %D != %D", degree, d);
-  PetscCheck(maxDexp == maxD,comm, PETSC_ERR_PLIB, "Space max degree mismatch, %D != %D", maxDexp, maxD);
+  PetscCheck(degree == d,comm, PETSC_ERR_PLIB, "Space degree mismatch, %" PetscInt_FMT " != %" PetscInt_FMT, degree, d);
+  PetscCheck(maxDexp == maxD,comm, PETSC_ERR_PLIB, "Space max degree mismatch, %" PetscInt_FMT " != %" PetscInt_FMT, maxDexp, maxD);
 
   PetscCall(PetscDTStroudConicalQuadrature(dim, 1, maxD + 1, -1., 1., &quad));
   PetscCall(PetscQuadratureGetData(quad, NULL, NULL, &npoints, &points, NULL));
@@ -45,13 +45,13 @@ static PetscErrorCode test(PetscInt dim, PetscInt formDegree, PetscInt degree, P
   PetscCall(PetscMalloc3(Bsize, &B, Dsize, &D, Hsize, &H));
   PetscCall(PetscSpaceEvaluate(sp, npoints, points, B, D, H));
   for (PetscInt i = 0; i < Bsize; i++) {
-    PetscCheckFalse(PetscIsInfOrNanReal(B[i]),comm, PETSC_ERR_PLIB, "Bad value B[%D]", i);
+    PetscCheckFalse(PetscIsInfOrNanReal(B[i]),comm, PETSC_ERR_PLIB, "Bad value B[%" PetscInt_FMT "]", i);
   }
   for (PetscInt i = 0; i < Dsize; i++) {
-    PetscCheckFalse(PetscIsInfOrNanReal(D[i]),comm, PETSC_ERR_PLIB, "Bad value D[%D]", i);
+    PetscCheckFalse(PetscIsInfOrNanReal(D[i]),comm, PETSC_ERR_PLIB, "Bad value D[%" PetscInt_FMT "]", i);
   }
   for (PetscInt i = 0; i < Hsize; i++) {
-    PetscCheckFalse(PetscIsInfOrNanReal(H[i]),comm, PETSC_ERR_PLIB, "Bad value H[%H]", i);
+    PetscCheckFalse(PetscIsInfOrNanReal(H[i]),comm, PETSC_ERR_PLIB, "Bad value H[%" PetscInt_FMT "]", i);
   }
   PetscCall(PetscFree3(B, D, H));
   PetscCall(PetscQuadratureDestroy(&quad));

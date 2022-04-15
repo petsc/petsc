@@ -69,7 +69,7 @@ int main(int argc,char *argv[])
 
   PetscCall(VecGhostGetLocalForm(x,&lf));
   PetscCall(VecGetSize(lf,&m));
-  PetscCheck(m == (n+2)*bs,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"size of local form %D, expected %D",m,(n+2)*bs);
+  PetscCheck(m == (n+2)*bs,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"size of local form %" PetscInt_FMT ", expected %" PetscInt_FMT,m,(n+2)*bs);
   PetscCall(VecGetArray(lf,&xx));
   for (i=0; i<n; i++) {
     PetscInt        row[2],col[9],im,ip;
@@ -104,7 +104,7 @@ int main(int argc,char *argv[])
       xx[2*i]   = 0.2*PetscExpReal(-PetscSqr(xref)/(2*PetscSqr(sigma)));
       xx[2*i+1] = 0;
       break;
-    default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"not implemented for block size %D",bs);
+    default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"not implemented for block size %" PetscInt_FMT,bs);
     }
   }
   PetscCall(VecRestoreArray(lf,&xx));

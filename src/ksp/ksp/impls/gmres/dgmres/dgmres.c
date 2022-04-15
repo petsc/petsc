@@ -342,7 +342,7 @@ static PetscErrorCode KSPDGMRESBuildSoln(PetscScalar *nrs,Vec vs,Vec vdest,KSP k
     PetscCall(VecCopy(vs,vdest));     /* VecCopy() is smart, exists immediately if vguess == vdest */
     PetscFunctionReturn(0);
   }
-  PetscCheck(*HH(it,it) != 0.0,PetscObjectComm((PetscObject)ksp), PETSC_ERR_CONV_FAILED,"Likely your matrix is the zero operator. HH(it,it) is identically zero; it = %D GRS(it) = %g",it,(double)PetscAbsScalar(*GRS(it)));
+  PetscCheck(*HH(it,it) != 0.0,PetscObjectComm((PetscObject)ksp), PETSC_ERR_CONV_FAILED,"Likely your matrix is the zero operator. HH(it,it) is identically zero; it = %" PetscInt_FMT " GRS(it) = %g",it,(double)PetscAbsScalar(*GRS(it)));
   if (*HH(it,it) != 0.0) nrs[it] = *GRS(it) / *HH(it,it);
   else nrs[it] = 0.0;
 
@@ -350,7 +350,7 @@ static PetscErrorCode KSPDGMRESBuildSoln(PetscScalar *nrs,Vec vs,Vec vdest,KSP k
     k  = it - ii;
     tt = *GRS(k);
     for (j=k+1; j<=it; j++) tt = tt - *HH(k,j) * nrs[j];
-    PetscCheck(*HH(k,k) != 0.0,PetscObjectComm((PetscObject)ksp), PETSC_ERR_CONV_FAILED,"Likely your matrix is singular. HH(k,k) is identically zero; it = %D k = %D",it,k);
+    PetscCheck(*HH(k,k) != 0.0,PetscObjectComm((PetscObject)ksp), PETSC_ERR_CONV_FAILED,"Likely your matrix is singular. HH(k,k) is identically zero; it = %" PetscInt_FMT " k = %" PetscInt_FMT,it,k);
     nrs[k] = tt / *HH(k,k);
   }
 
@@ -488,18 +488,17 @@ PetscErrorCode KSPView_DGMRES(KSP ksp,PetscViewer viewer)
   PetscCall(KSPView_GMRES(ksp,viewer));
   PetscCall(PetscObjectTypeCompare((PetscObject) viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    if (dgmres->force) PetscViewerASCIIPrintf(viewer, "    Adaptive strategy is used: FALSE\n");
-    else PetscViewerASCIIPrintf(viewer, "    Adaptive strategy is used: TRUE\n");
+    PetscViewerASCIIPrintf(viewer, "    Adaptive strategy is used: %s\n", PetscBools[dgmres->force]);
     PetscCall(PetscOptionsHasName(((PetscObject)ksp)->options,((PetscObject)ksp)->prefix, "-ksp_dgmres_harmonic_ritz", &isharmonic));
     if (isharmonic) {
-      PetscCall(PetscViewerASCIIPrintf(viewer, "   Frequency of extracted eigenvalues = %D using Harmonic Ritz values \n", dgmres->neig));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "   Frequency of extracted eigenvalues = %" PetscInt_FMT " using Harmonic Ritz values \n", dgmres->neig));
     } else {
-      PetscCall(PetscViewerASCIIPrintf(viewer, "   Frequency of extracted eigenvalues = %D using Ritz values \n", dgmres->neig));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "   Frequency of extracted eigenvalues = %" PetscInt_FMT " using Ritz values \n", dgmres->neig));
     }
-    PetscCall(PetscViewerASCIIPrintf(viewer, "   Total number of extracted eigenvalues = %D\n", dgmres->r));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "   Maximum number of eigenvalues set to be extracted = %D\n", dgmres->max_neig));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "   relaxation parameter for the adaptive strategy(smv)  = %g\n", dgmres->smv));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "   Number of matvecs : %D\n", dgmres->matvecs));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "   Total number of extracted eigenvalues = %" PetscInt_FMT "\n", dgmres->r));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "   Maximum number of eigenvalues set to be extracted = %" PetscInt_FMT "\n", dgmres->max_neig));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "   relaxation parameter for the adaptive strategy(smv)  = %g\n", (double)dgmres->smv));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "   Number of matvecs : %" PetscInt_FMT "\n", dgmres->matvecs));
   }
   PetscFunctionReturn(0);
 }

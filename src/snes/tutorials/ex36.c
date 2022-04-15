@@ -184,7 +184,7 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
       ex   = oscillatory_u;
       PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) ex, NULL, ctx, NULL));
       break;
-    default: SETERRQ(PetscObjectComm((PetscObject) ds), PETSC_ERR_ARG_WRONG, "Unsupported model type: %s (%D)", modTypes[PetscMin(user->modType, NUM_MOD_TYPES)], user->modType);
+    default: SETERRQ(PetscObjectComm((PetscObject) ds), PETSC_ERR_ARG_WRONG, "Unsupported model type: %s (%d)", modTypes[PetscMin(user->modType, NUM_MOD_TYPES)], user->modType);
   }
   PetscCall(PetscDSSetExactSolution(ds, 0, ex, ctx));
   /* Setup constants */

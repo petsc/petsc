@@ -67,16 +67,15 @@ PetscErrorCode  PetscDLOpen(const char name[],PetscDLMode mode,PetscDLHandle *ha
   if (!dlhandle) {
     /* TODO: Seem to need fixing, why not just return with an error with SETERRQ() */
 #if defined(PETSC_HAVE_GETLASTERROR)
-    PetscErrorCode ierr;
-    DWORD          erc;
-    char           *buff = NULL;
+    DWORD  erc;
+    char  *buff = NULL;
     erc = GetLastError();
     FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
                   NULL,erc,MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),(LPSTR)&buff,0,NULL);
-    ierr = PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,PETSC_ERR_FILE_OPEN,PETSC_ERROR_REPEAT,
-                      "Unable to open dynamic library:\n  %s\n  Error message from LoadLibrary() %s\n",name,buff);
+    PetscCall(PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,PETSC_ERR_FILE_OPEN,PETSC_ERROR_REPEAT,
+                         "Unable to open dynamic library:\n  %s\n  Error message from LoadLibrary() %s\n",name,buff));
     LocalFree(buff);
-    PetscFunctionReturn(ierr);
+    PetscFunctionReturn(0);
 #else
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open dynamic library:\n  %s\n  Error message from LoadLibrary() %s",name,"unavailable");
 #endif

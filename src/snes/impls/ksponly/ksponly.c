@@ -53,7 +53,7 @@ static PetscErrorCode SNESSolve_KSPONLY(SNES snes)
   SNESCheckKSPSolve(snes);
 
   PetscCall(KSPGetIterationNumber(snes->ksp,&lits));
-  PetscCall(PetscInfo(snes,"iter=%D, linear solve iterations=%D\n",snes->iter,lits));
+  PetscCall(PetscInfo(snes,"iter=%" PetscInt_FMT ", linear solve iterations=%" PetscInt_FMT "\n",snes->iter,lits));
   snes->iter++;
 
   /* Take the computed step. */

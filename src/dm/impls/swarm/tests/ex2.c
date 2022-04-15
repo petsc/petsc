@@ -107,7 +107,7 @@ static PetscErrorCode PerturbVertices(DM dm, AppCtx *user)
   for (d = 0; d < cdim; ++d) hh[d] = (user->L[d])/PetscPowReal(cEnd, 1./cdim);
   PetscCall(VecGetLocalSize(coordinates, &N));
   PetscCall(VecGetBlockSize(coordinates, &bs));
-  PetscCheck(bs == cdim,PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_SIZ, "Coordinate vector has wrong block size %D != %D", bs, cdim);
+  PetscCheck(bs == cdim,PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_SIZ, "Coordinate vector has wrong block size %" PetscInt_FMT " != %" PetscInt_FMT, bs, cdim);
   PetscCall(VecGetArray(coordinates, &coords));
   for (p = 0; p < N; p += cdim) {
     PetscScalar *coord = &coords[p], value;
@@ -377,7 +377,7 @@ static PetscErrorCode TestL2ProjectionParticlesToField(DM dm, DM sw, AppCtx *use
   PetscCall(computeFEMMoments(dm, fhat, fmoments, user));
   PetscCall(PetscPrintf(comm, "L2 projection mass: %20.10e, x-momentum: %20.10e, energy: %20.10e.\n", fmoments[0], fmoments[1], fmoments[2]));
   for (m = 0; m < 3; ++m) {
-    PetscCheckFalse(PetscAbsReal((fmoments[m] - pmoments[m])/fmoments[m]) > user->momentTol,comm, PETSC_ERR_ARG_WRONG, "Moment %D error too large %g > %g", m, PetscAbsReal((fmoments[m] - pmoments[m])/fmoments[m]), user->momentTol);
+    PetscCheckFalse(PetscAbsReal((fmoments[m] - pmoments[m])/fmoments[m]) > user->momentTol,comm, PETSC_ERR_ARG_WRONG, "Moment %" PetscInt_FMT " error too large %g > %g", m, PetscAbsReal((fmoments[m] - pmoments[m])/fmoments[m]), user->momentTol);
   }
 
   PetscCall(KSPDestroy(&ksp));
@@ -439,7 +439,7 @@ static PetscErrorCode TestL2ProjectionFieldToParticles(DM dm, DM sw, AppCtx *use
   PetscCall(computeFEMMoments(dm, fhat, fmoments, user));
   PetscCall(PetscPrintf(comm, "L2 projection mass: %20.10e, x-momentum: %20.10e, energy: %20.10e.\n", fmoments[0], fmoments[1], fmoments[2]));
   for (m = 0; m < 3; ++m) {
-    PetscCheckFalse(PetscAbsReal((fmoments[m] - pmoments[m])/fmoments[m]) > user->momentTol,comm, PETSC_ERR_ARG_WRONG, "Moment %D error too large %g > %g", m, PetscAbsReal((fmoments[m] - pmoments[m])/fmoments[m]), user->momentTol);
+    PetscCheckFalse(PetscAbsReal((fmoments[m] - pmoments[m])/fmoments[m]) > user->momentTol,comm, PETSC_ERR_ARG_WRONG, "Moment %" PetscInt_FMT " error too large %g > %g", m, PetscAbsReal((fmoments[m] - pmoments[m])/fmoments[m]), user->momentTol);
   }
   PetscCall(KSPDestroy(&ksp));
   PetscCall(MatDestroy(&M));
@@ -489,11 +489,11 @@ static PetscErrorCode InterpolateGradient(DM dm, Vec locX, Vec locC)
 
       PetscCall(PetscFVGetQuadrature(fv, &quad));
       PetscCall(PetscFVGetNumComponents(fv, &Nc));
-    } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", field);
+    } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %" PetscInt_FMT, field);
     numComponents += Nc;
   }
   PetscCall(PetscQuadratureGetData(quad, NULL, &qNc, &Nq, &quadPoints, &quadWeights));
-  PetscCheck(!(qNc != 1) || !(qNc != numComponents),PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_SIZ, "Quadrature components %D != %D field components", qNc, numComponents);
+  PetscCheck(!(qNc != 1) || !(qNc != numComponents),PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_SIZ, "Quadrature components %" PetscInt_FMT " != %" PetscInt_FMT " field components", qNc, numComponents);
   PetscCall(PetscMalloc6(coordDim*numComponents*2,&gradsum,coordDim*numComponents,&interpolant,coordDim*Nq,&coords,Nq,&fegeom.detJ,coordDim*coordDim*Nq,&fegeom.J,coordDim*coordDim*Nq,&fegeom.invJ));
   PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
   PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd));
@@ -521,11 +521,11 @@ static PetscErrorCode InterpolateGradient(DM dm, Vec locX, Vec locC)
         PetscCall(PetscObjectGetClassId(obj, &id));
         if (id == PETSCFE_CLASSID)      {PetscCall(PetscFEGetNumComponents((PetscFE) obj, &Nc));PetscCall(PetscFEGetDimension((PetscFE) obj, &Nb));}
         else if (id == PETSCFV_CLASSID) {PetscCall(PetscFVGetNumComponents((PetscFV) obj, &Nc));Nb = 1;}
-        else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", field);
+        else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %" PetscInt_FMT, field);
         for (q = 0; q < Nq; ++q) {
-          PetscCheck(fegeom.detJ[q] > 0.0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %D, quadrature points %D", (double)fegeom.detJ[q], cell, q);
-          if (id == PETSCFE_CLASSID)      PetscCall(PetscFEInterpolateGradient_Static((PetscFE) obj, 1, &x[fieldOffset], &fegeom, q, interpolant));
-          else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", field);
+          PetscCheck(fegeom.detJ[q] > 0.0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %" PetscInt_FMT ", quadrature points %" PetscInt_FMT, (double)fegeom.detJ[q], cell, q);
+          if (id == PETSCFE_CLASSID) PetscCall(PetscFEInterpolateGradient_Static((PetscFE) obj, 1, &x[fieldOffset], &fegeom, q, interpolant));
+          else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %" PetscInt_FMT, field);
           for (fc = 0; fc < Nc; ++fc) {
             const PetscReal wt = quadWeights[q*qNc+qc+fc];
 
@@ -541,7 +541,7 @@ static PetscErrorCode InterpolateGradient(DM dm, Vec locX, Vec locC)
         }
       }
       if (debug) {
-        PetscCall(PetscPrintf(PETSC_COMM_SELF, "Cell %D gradient: [", cell));
+        PetscCall(PetscPrintf(PETSC_COMM_SELF, "Cell %" PetscInt_FMT " gradient: [", cell));
         for (fc = 0; fc < numComponents; ++fc) {
           for (d = 0; d < coordDim; ++d) {
             if (fc || d > 0) PetscCall(PetscPrintf(PETSC_COMM_SELF, ", "));
@@ -607,7 +607,7 @@ static PetscErrorCode TestFieldGradientProjection(DM dm, DM sw, AppCtx *user)
   PetscCall(computeFEMMoments(dm, grad, fmoments, user));
   PetscCall(PetscPrintf(comm, "L2 projection mass: %20.10e, x-momentum: %20.10e, energy: %20.10e.\n", fmoments[0], fmoments[1], fmoments[2]));
   for (m = 0; m < 3; ++m) {
-    PetscCheckFalse(PetscAbsReal((fmoments[m] - pmoments[m])/fmoments[m]) > user->momentTol,comm, PETSC_ERR_ARG_WRONG, "Moment %D error too large %g > %g", m, PetscAbsReal((fmoments[m] - pmoments[m])/fmoments[m]), user->momentTol);
+    PetscCheckFalse(PetscAbsReal((fmoments[m] - pmoments[m])/fmoments[m]) > user->momentTol,comm, PETSC_ERR_ARG_WRONG, "Moment %" PetscInt_FMT " error too large %g > %g", m, PetscAbsReal((fmoments[m] - pmoments[m])/fmoments[m]), user->momentTol);
   }
 
   PetscCall(KSPDestroy(&ksp));

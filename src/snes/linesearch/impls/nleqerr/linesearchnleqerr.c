@@ -121,7 +121,7 @@ static PetscErrorCode  SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
   while (PETSC_TRUE) {
     if (monitor) {
       PetscCall(PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel));
-      PetscCall(PetscViewerASCIIPrintf(monitor,"    Line search: entering iteration with lambda: %14.12e\n", lambda));
+      PetscCall(PetscViewerASCIIPrintf(monitor,"    Line search: entering iteration with lambda: %14.12e\n", (double)lambda));
       PetscCall(PetscViewerASCIISubtractTab(monitor,((PetscObject)linesearch)->tablevel));
     }
 

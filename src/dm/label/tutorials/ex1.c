@@ -12,12 +12,12 @@ PetscErrorCode ViewLabels(DM dm, PetscViewer viewer)
   PetscFunctionBegin;
   /* query the number and name of labels*/
   PetscCall(DMGetNumLabels(dm, &numLabels));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "Number of labels: %d\n", numLabels));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "Number of labels: %" PetscInt_FMT "\n", numLabels));
   for (l = 0; l < numLabels; ++l) {
     IS labelIS, tmpIS;
 
     PetscCall(DMGetLabelName(dm, l, &labelName));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "Label %d: name: %s\n", l, labelName));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "Label %" PetscInt_FMT ": name: %s\n", l, labelName));
     PetscCall(PetscViewerASCIIPrintf(viewer, "IS of values\n"));
     PetscCall(DMGetLabel(dm, labelName, &label));
     PetscCall(DMLabelGetValueIS(label, &labelIS));

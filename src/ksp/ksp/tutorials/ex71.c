@@ -142,7 +142,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
     case 3:
       options->elemMat = elast_3D_emat;
       break;
-    default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unsupported dimension %D",options->dim);
+    default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unsupported dimension %" PetscInt_FMT,options->dim);
     }
     break;
   case PDE_POISSON:
@@ -157,10 +157,10 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
     case 3:
       options->elemMat = poiss_3D_emat;
       break;
-    default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unsupported dimension %D",options->dim);
+    default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unsupported dimension %" PetscInt_FMT,options->dim);
     }
     break;
-  default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unsupported PDE %D",options->pde);
+  default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unsupported PDE %d",options->pde);
   }
   PetscFunctionReturn(0);
 }
@@ -209,7 +209,7 @@ int main(int argc,char **args)
     PetscCall(DMDACreate1d(PETSC_COMM_WORLD,user.per[0] ? DM_BOUNDARY_PERIODIC : DM_BOUNDARY_NONE,
                            nodes[0],user.dof,1,PETSC_NULL,&da));
     break;
-  default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unsupported dimension %D",user.dim);
+  default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unsupported dimension %" PetscInt_FMT,user.dim);
   }
 
   PetscCall(PetscLogStageRegister("KSPSetUp",&stages[0]));
@@ -230,7 +230,7 @@ int main(int argc,char **args)
     case 1:
       user.cells[0] = M - !user.per[0];
       break;
-    default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unsupported dimension %D",user.dim);
+    default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unsupported dimension %" PetscInt_FMT,user.dim);
     }
   }
   PetscCall(DMDASetUniformCoordinates(da,0.0,1.0*user.cells[0],0.0,1.0*user.cells[1],0.0,1.0*user.cells[2]));

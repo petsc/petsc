@@ -408,7 +408,7 @@ static PetscErrorCode PCApply_BJKOKKOS(PC pc,Vec bin,Vec xout)
     // get x
     PetscCall(VecGetArrayAndMemType(xout,&glb_xdata,&mtype));
 #if defined(PETSC_HAVE_CUDA)
-    PetscCheck(PetscMemTypeDevice(mtype),PetscObjectComm((PetscObject) pc),PETSC_ERR_ARG_WRONG,"No GPU data for x %" PetscInt_FMT " != %" PetscInt_FMT "",mtype,PETSC_MEMTYPE_DEVICE);
+    PetscCheck(PetscMemTypeDevice(mtype),PetscObjectComm((PetscObject) pc),PETSC_ERR_ARG_WRONG,"No GPU data for x %" PetscInt_FMT " != %" PetscInt_FMT,mtype,PETSC_MEMTYPE_DEVICE);
 #endif
     PetscCall(VecGetArrayReadAndMemType(bvec,&glb_bdata,&mtype));
 #if defined(PETSC_HAVE_CUDA)
@@ -434,8 +434,7 @@ static PetscErrorCode PCApply_BJKOKKOS(PC pc,Vec bin,Vec xout)
       global_buff_size = jac->n*nwork;
     }
     Kokkos::View<PetscScalar*, Kokkos::DefaultExecutionSpace> d_work_vecs_k("workvectors", global_buff_size); // global work vectors
-    PetscInfo(pc,"\tn = %" PetscInt_FMT ". %d shared mem words/team. %" PetscInt_FMT " global mem words, rtol=%e, num blocks %" PetscInt_FMT ", team_size=%" PetscInt_FMT ", %" PetscInt_FMT " vector threads\n",jac->n,scr_bytes_team/sizeof(PetscScalar),global_buff_size,rtol,nBlk,
-               team_size, PCBJKOKKOS_VEC_SIZE);
+    PetscCall(PetscInfo(pc,"\tn = %" PetscInt_FMT ". %d shared mem words/team. %" PetscInt_FMT " global mem words, rtol=%e, num blocks %" PetscInt_FMT ", team_size=%" PetscInt_FMT ", %d vector threads\n",jac->n,(PetscInt)(scr_bytes_team/sizeof(PetscScalar)),global_buff_size,(double)rtol,nBlk,team_size, PCBJKOKKOS_VEC_SIZE));
     PetscScalar  *d_work_vecs = scr_bytes_team ? NULL : d_work_vecs_k.data();
     const PetscInt *d_isicol = jac->d_isicol_k->data(), *d_isrow = jac->d_isrow_k->data();
     Kokkos::parallel_for("Solve", Kokkos::TeamPolicy<>(nBlk, team_size, PCBJKOKKOS_VEC_SIZE).set_scratch_size(PCBJKOKKOS_SHARED_LEVEL, Kokkos::PerTeam(scr_bytes_team)),
@@ -480,9 +479,9 @@ static PetscErrorCode PCApply_BJKOKKOS(PC pc,Vec bin,Vec xout)
     for (PetscInt dmIdx=0, s=0, head=0 ; dmIdx < jac->num_dms; dmIdx += batch_sz) {
       for (PetscInt f=0, idx=head ; f < jac->dm_Nf[dmIdx] ; f++,s++,idx++) {
 #if PCBJKOKKOS_VERBOSE_LEVEL >= 4
-        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%2D:", s));
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%2" PetscInt_FMT ":", s));
         for (int bid=0 ; bid<batch_sz ; bid++) {
-         PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%3D ", h_metadata[idx + bid*jac->dm_Nf[dmIdx]].its));
+         PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%3" PetscInt_FMT " ", h_metadata[idx + bid*jac->dm_Nf[dmIdx]].its));
         }
         PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\n"));
 #else
@@ -490,7 +489,7 @@ static PetscErrorCode PCApply_BJKOKKOS(PC pc,Vec bin,Vec xout)
         for (int bid=0 ; bid<batch_sz ; bid++) {
           if (h_metadata[idx + bid*jac->dm_Nf[dmIdx]].its > count) count = h_metadata[idx + bid*jac->dm_Nf[dmIdx]].its;
         }
-        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%3D ", count));
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%3" PetscInt_FMT " ", count));
 #endif
       }
       head += batch_sz*jac->dm_Nf[dmIdx];
@@ -627,7 +626,7 @@ static PetscErrorCode PCSetUp_BJKOKKOS(PC pc)
       PetscCall(PetscMalloc(sizeof(*subX)*nDMs, &subX));
       PetscCall(PetscMalloc(sizeof(*subDM)*nDMs, &subDM));
       PetscCall(PetscMalloc(sizeof(*jac->dm_Nf)*nDMs, &jac->dm_Nf));
-      PetscCall(PetscInfo(pc, "Have %" PetscInt_FMT " DMs, n=%" PetscInt_FMT " rtol=%g type = %s\n", nDMs, n, jac->ksp->rtol, ((PetscObject)jac->ksp)->type_name));
+      PetscCall(PetscInfo(pc, "Have %" PetscInt_FMT " DMs, n=%" PetscInt_FMT " rtol=%g type = %s\n", nDMs, n, (double)jac->ksp->rtol, ((PetscObject)jac->ksp)->type_name));
       PetscCall(DMCompositeGetEntriesArray(pack,subDM));
       jac->nBlocks = 0;
       for (PetscInt ii=0;ii<nDMs;ii++) {
@@ -653,7 +652,7 @@ static PetscErrorCode PCSetUp_BJKOKKOS(PC pc)
           PetscInt nloc,nblk;
           PetscCall(VecGetSize(subX[ii],&nloc));
           nblk = nloc/jac->dm_Nf[ii];
-          PetscCheck(nloc%jac->dm_Nf[ii] == 0,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"nloc%jac->dm_Nf[ii] DMs",nloc,jac->dm_Nf[ii]);
+          PetscCheck(nloc%jac->dm_Nf[ii] == 0,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"nloc%%jac->dm_Nf[ii] (%" PetscInt_FMT ") != 0 DMs",nloc%jac->dm_Nf[ii]);
           for (PetscInt jj=0;jj<jac->dm_Nf[ii];jj++, idx++) {
             h_block_offsets[idx+1] = h_block_offsets[idx] + nblk;
 #if PCBJKOKKOS_VERBOSE_LEVEL <= 2

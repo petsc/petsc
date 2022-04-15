@@ -24,7 +24,7 @@ static PetscErrorCode PetscFEView_Basic_Ascii(PetscFE fe, PetscViewer v)
   PetscCall(PetscFEGetDualSpace(fe, &dual));
   PetscCall(PetscFEGetQuadrature(fe, &quad));
   PetscCall(PetscViewerASCIIPushTab(v));
-  PetscCall(PetscViewerASCIIPrintf(v, "Basic Finite Element in %D dimensions with %D components\n",dim,Nc));
+  PetscCall(PetscViewerASCIIPrintf(v, "Basic Finite Element in %" PetscInt_FMT " dimensions with %" PetscInt_FMT " components\n",dim,Nc));
   if (basis) PetscCall(PetscSpaceView(basis, v));
   if (dual)  PetscCall(PetscDualSpaceView(dual, v));
   if (quad)  PetscCall(PetscQuadratureView(quad, v));
@@ -77,9 +77,9 @@ PETSC_INTERN PetscErrorCode PetscFESetUp_Basic(PetscFE fem)
   PetscCall(PetscMalloc2(pdim,&pivots,pdim,&work));
   n = pdim;
   PetscStackCallBLAS("LAPACKgetrf", LAPACKREALgetrf_(&n, &n, fem->invV, &n, pivots, &info));
-  PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from LAPACKgetrf %D",(PetscInt)info);
+  PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from LAPACKgetrf %" PetscInt_FMT,(PetscInt)info);
   PetscStackCallBLAS("LAPACKgetri", LAPACKREALgetri_(&n, fem->invV, &n, pivots, work, &n, &info));
-  PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from LAPACKgetri %D",(PetscInt)info);
+  PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from LAPACKgetri %" PetscInt_FMT,(PetscInt)info);
   PetscCall(PetscFree2(pivots,work));
   PetscFunctionReturn(0);
 }
@@ -196,10 +196,10 @@ static PetscErrorCode PetscFEIntegrate_Basic(PetscDS ds, PetscInt field, PetscIn
     PetscCall(PetscDSGetComponentDerivativeOffsets(dsAux, &aOff_x));
     PetscCall(PetscDSGetTabulation(dsAux, &TAux));
     PetscCall(PetscDSGetEvaluationArrays(dsAux, &a, NULL, &a_x));
-    PetscCheck(T[0]->Np == TAux[0]->Np,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of tabulation points %D != %D number of auxiliary tabulation points", T[0]->Np, TAux[0]->Np);
+    PetscCheck(T[0]->Np == TAux[0]->Np,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of tabulation points %" PetscInt_FMT " != %" PetscInt_FMT " number of auxiliary tabulation points", T[0]->Np, TAux[0]->Np);
   }
   PetscCall(PetscQuadratureGetData(quad, NULL, &qNc, &Nq, &quadPoints, &quadWeights));
-  PetscCheck(qNc == 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %D components", qNc);
+  PetscCheck(qNc == 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %" PetscInt_FMT " components", qNc);
   Np = cgeom->numPoints;
   dE = cgeom->dimEmbed;
   isAffine = cgeom->isAffine;
@@ -229,12 +229,12 @@ static PetscErrorCode PetscFEIntegrate_Basic(PetscDS ds, PetscInt field, PetscIn
       }
       w = fegeom.detJ[0]*quadWeights[q];
       if (debug > 1 && q < Np) {
-        PetscCall(PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", fegeom.detJ[0]));
+        PetscCall(PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", (double)fegeom.detJ[0]));
 #if !defined(PETSC_USE_COMPLEX)
         PetscCall(DMPrintCellMatrix(e, "invJ", dim, dim, fegeom.invJ));
 #endif
       }
-      if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q));
+      if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  quad point %" PetscInt_FMT "\n", q));
       PetscCall(PetscFEEvaluateFieldJets_Internal(ds, Nf, 0, q, T, &fegeom, &coefficients[cOffset], NULL, u, u_x, NULL));
       if (dsAux) PetscCall(PetscFEEvaluateFieldJets_Internal(dsAux, NfAux, 0, q, TAux, &fegeom, &coefficientsAux[cOffsetAux], NULL, a, a_x, NULL));
       obj_func(dim, Nf, NfAux, uOff, uOff_x, u, NULL, u_x, aOff, aOff_x, a, NULL, a_x, 0.0, fegeom.v, numConstants, constants, &integrand);
@@ -288,10 +288,10 @@ static PetscErrorCode PetscFEIntegrateBd_Basic(PetscDS ds, PetscInt field,
     auxOnBd = dimAux < dim ? PETSC_TRUE : PETSC_FALSE;
     if (auxOnBd) PetscCall(PetscDSGetTabulation(dsAux, &TfAux));
     else         PetscCall(PetscDSGetFaceTabulation(dsAux, &TfAux));
-    PetscCheck(Tf[0]->Np == TfAux[0]->Np,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of tabulation points %D != %D number of auxiliary tabulation points", Tf[0]->Np, TfAux[0]->Np);
+    PetscCheck(Tf[0]->Np == TfAux[0]->Np,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of tabulation points %" PetscInt_FMT " != %" PetscInt_FMT " number of auxiliary tabulation points", Tf[0]->Np, TfAux[0]->Np);
   }
   PetscCall(PetscQuadratureGetData(quad, NULL, &qNc, &Nq, &quadPoints, &quadWeights));
-  PetscCheck(qNc == 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %D components", qNc);
+  PetscCheck(qNc == 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %" PetscInt_FMT " components", qNc);
   Np = fgeom->numPoints;
   dE = fgeom->dimEmbed;
   isAffine = fgeom->isAffine;
@@ -337,12 +337,12 @@ static PetscErrorCode PetscFEIntegrateBd_Basic(PetscDS ds, PetscInt field,
       }
       w = fegeom.detJ[0]*quadWeights[q];
       if (debug > 1 && q < Np) {
-        PetscCall(PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", fegeom.detJ[0]));
+        PetscCall(PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", (double)fegeom.detJ[0]));
 #ifndef PETSC_USE_COMPLEX
         PetscCall(DMPrintCellMatrix(e, "invJ", dim, dim, fegeom.invJ));
 #endif
       }
-      if (debug > 1) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q));
+      if (debug > 1) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  quad point %" PetscInt_FMT "\n", q));
       PetscCall(PetscFEEvaluateFieldJets_Internal(ds, Nf, face, q, Tf, &cgeom, &coefficients[cOffset], NULL, u, u_x, NULL));
       if (dsAux) PetscCall(PetscFEEvaluateFieldJets_Internal(dsAux, NfAux, face, q, TfAux, &cgeom, &coefficientsAux[cOffsetAux], NULL, a, a_x, NULL));
       obj_func(dim, Nf, NfAux, uOff, uOff_x, u, NULL, u_x, aOff, aOff_x, a, NULL, a_x, 0.0, fegeom.v, fegeom.n, numConstants, constants, &integrand);
@@ -399,12 +399,12 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscDS ds, PetscFormKey key, Pets
     PetscCall(PetscDSGetComponentDerivativeOffsets(dsAux, &aOff_x));
     PetscCall(PetscDSGetEvaluationArrays(dsAux, &a, NULL, &a_x));
     PetscCall(PetscDSGetTabulation(dsAux, &TAux));
-    PetscCheck(T[0]->Np == TAux[0]->Np,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of tabulation points %D != %D number of auxiliary tabulation points", T[0]->Np, TAux[0]->Np);
+    PetscCheck(T[0]->Np == TAux[0]->Np,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of tabulation points %" PetscInt_FMT " != %" PetscInt_FMT " number of auxiliary tabulation points", T[0]->Np, TAux[0]->Np);
   }
   PetscCall(PetscQuadratureGetData(quad, &qdim, &qNc, &Nq, &quadPoints, &quadWeights));
-  PetscCheck(qNc == 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %D components", qNc);
+  PetscCheck(qNc == 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %" PetscInt_FMT " components", qNc);
   dE = cgeom->dimEmbed;
-  PetscCheck(cgeom->dim == qdim,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "FEGeom dim %D != %D quadrature dim", cgeom->dim, qdim);
+  PetscCheck(cgeom->dim == qdim,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "FEGeom dim %" PetscInt_FMT " != %" PetscInt_FMT " quadrature dim", cgeom->dim, qdim);
   for (e = 0; e < Ne; ++e) {
     PetscFEGeom fegeom;
 
@@ -418,7 +418,7 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscDS ds, PetscFormKey key, Pets
       PetscCall(PetscFEGeomGetPoint(cgeom, e, q, &quadPoints[q*cgeom->dim], &fegeom));
       w = fegeom.detJ[0]*quadWeights[q];
       if (debug > 1 && q < cgeom->numPoints) {
-        PetscCall(PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", fegeom.detJ[0]));
+        PetscCall(PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", (double)fegeom.detJ[0]));
 #if !defined(PETSC_USE_COMPLEX)
         PetscCall(DMPrintCellMatrix(e, "invJ", dim, dim, fegeom.invJ));
 #endif
@@ -430,13 +430,13 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscDS ds, PetscFormKey key, Pets
       for (i = 0; i < n1; ++i) f1_func[i](dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, fegeom.v, numConstants, constants, &f1[q*T[field]->Nc*dim]);
       for (c = 0; c < T[field]->Nc; ++c) for (d = 0; d < dim; ++d) f1[(q*T[field]->Nc+c)*dim+d] *= w;
       if (debug) {
-        PetscCall(PetscPrintf(PETSC_COMM_SELF, "  quad point %d wt %g\n", q, quadWeights[q]));
+        PetscCall(PetscPrintf(PETSC_COMM_SELF, "  quad point %" PetscInt_FMT " wt %g\n", q, (double)quadWeights[q]));
         if (debug > 2) {
-          PetscCall(PetscPrintf(PETSC_COMM_SELF, "  field %d:", field));
-          for (c = 0; c < T[field]->Nc; ++c) PetscCall(PetscPrintf(PETSC_COMM_SELF, " %g", u[uOff[field]+c]));
+          PetscCall(PetscPrintf(PETSC_COMM_SELF, "  field %" PetscInt_FMT ":", field));
+          for (c = 0; c < T[field]->Nc; ++c) PetscCall(PetscPrintf(PETSC_COMM_SELF, " %g", (double)PetscRealPart(u[uOff[field]+c])));
           PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n"));
-          PetscCall(PetscPrintf(PETSC_COMM_SELF, "  resid %d:", field));
-          for (c = 0; c < T[field]->Nc; ++c) PetscCall(PetscPrintf(PETSC_COMM_SELF, " %g", f0[q*T[field]->Nc+c]));
+          PetscCall(PetscPrintf(PETSC_COMM_SELF, "  resid %" PetscInt_FMT ":", field));
+          for (c = 0; c < T[field]->Nc; ++c) PetscCall(PetscPrintf(PETSC_COMM_SELF, " %g", (double)PetscRealPart(f0[q*T[field]->Nc+c])));
           PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n"));
         }
       }
@@ -493,15 +493,15 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscDS ds, PetscWeakForm wf, Pe
     auxOnBd = dimAux < dim ? PETSC_TRUE : PETSC_FALSE;
     if (auxOnBd) PetscCall(PetscDSGetTabulation(dsAux, &TfAux));
     else         PetscCall(PetscDSGetFaceTabulation(dsAux, &TfAux));
-    PetscCheck(Tf[0]->Np == TfAux[0]->Np,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of tabulation points %D != %D number of auxiliary tabulation points", Tf[0]->Np, TfAux[0]->Np);
+    PetscCheck(Tf[0]->Np == TfAux[0]->Np,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of tabulation points %" PetscInt_FMT " != %" PetscInt_FMT " number of auxiliary tabulation points", Tf[0]->Np, TfAux[0]->Np);
   }
   NcI = Tf[field]->Nc;
   PetscCall(PetscQuadratureGetData(quad, &qdim, &qNc, &Nq, &quadPoints, &quadWeights));
-  PetscCheck(qNc == 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %D components", qNc);
+  PetscCheck(qNc == 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %" PetscInt_FMT " components", qNc);
   dE = fgeom->dimEmbed;
   /* TODO FIX THIS */
   fgeom->dim = dim-1;
-  PetscCheck(fgeom->dim == qdim,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "FEGeom dim %D != %D quadrature dim", fgeom->dim, qdim);
+  PetscCheck(fgeom->dim == qdim,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "FEGeom dim %" PetscInt_FMT " != %" PetscInt_FMT " quadrature dim", fgeom->dim, qdim);
   for (e = 0; e < Ne; ++e) {
     PetscFEGeom    fegeom, cgeom;
     const PetscInt face = fgeom->face[e][0];
@@ -518,7 +518,7 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscDS ds, PetscWeakForm wf, Pe
       w = fegeom.detJ[0]*quadWeights[q];
       if (debug > 1) {
         if ((fgeom->isAffine && q == 0) || (!fgeom->isAffine)) {
-          PetscCall(PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", fegeom.detJ[0]));
+          PetscCall(PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", (double)fegeom.detJ[0]));
 #if !defined(PETSC_USE_COMPLEX)
           PetscCall(DMPrintCellMatrix(e, "invJ", dim, dim, fegeom.invJ));
           PetscCall(DMPrintCellVector(e, "n", dim, fegeom.n));
@@ -532,11 +532,11 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscDS ds, PetscWeakForm wf, Pe
       for (i = 0; i < n1; ++i) f1_func[i](dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, fegeom.v, fegeom.n, numConstants, constants, &f1[q*NcI*dim]);
       for (c = 0; c < NcI; ++c) for (d = 0; d < dim; ++d) f1[(q*NcI+c)*dim+d] *= w;
       if (debug) {
-        PetscCall(PetscPrintf(PETSC_COMM_SELF, "  elem %D quad point %d\n", e, q));
+        PetscCall(PetscPrintf(PETSC_COMM_SELF, "  elem %" PetscInt_FMT " quad point %" PetscInt_FMT "\n", e, q));
         for (c = 0; c < NcI; ++c) {
-          if (n0) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  f0[%D] %g\n", c, f0[q*NcI+c]));
+          if (n0) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  f0[%" PetscInt_FMT "] %g\n", c, (double)PetscRealPart(f0[q*NcI+c])));
           if (n1) {
-            for (d = 0; d < dim; ++d) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  f1[%D,%D] %g", c, d, f1[(q*NcI + c)*dim + d]));
+            for (d = 0; d < dim; ++d) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  f1[%" PetscInt_FMT ",%" PetscInt_FMT "] %g", c, d, (double)PetscRealPart(f1[(q*NcI + c)*dim + d])));
             PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n"));
           }
         }
@@ -607,15 +607,15 @@ static PetscErrorCode PetscFEIntegrateHybridResidual_Basic(PetscDS ds, PetscForm
     auxOnBd = dimAux == dim ? PETSC_TRUE : PETSC_FALSE;
     if (auxOnBd) PetscCall(PetscDSGetTabulation(dsAux, &TfAux));
     else         PetscCall(PetscDSGetFaceTabulation(dsAux, &TfAux));
-    PetscCheck(Tf[0]->Np == TfAux[0]->Np,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of tabulation points %D != %D number of auxiliary tabulation points", Tf[0]->Np, TfAux[0]->Np);
+    PetscCheck(Tf[0]->Np == TfAux[0]->Np,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of tabulation points %" PetscInt_FMT " != %" PetscInt_FMT " number of auxiliary tabulation points", Tf[0]->Np, TfAux[0]->Np);
   }
   PetscCall(PetscDSGetCohesive(ds, field, &isCohesiveField));
   NcI = Tf[field]->Nc;
   NcS = NcI;
   PetscCall(PetscQuadratureGetData(quad, &qdim, &qNc, &Nq, &quadPoints, &quadWeights));
-  PetscCheck(qNc == 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %D components", qNc);
+  PetscCheck(qNc == 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %" PetscInt_FMT " components", qNc);
   dE = fgeom->dimEmbed;
-  PetscCheck(fgeom->dim == qdim,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "FEGeom dim %D != %D quadrature dim", fgeom->dim, qdim);
+  PetscCheck(fgeom->dim == qdim,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "FEGeom dim %" PetscInt_FMT " != %" PetscInt_FMT " quadrature dim", fgeom->dim, qdim);
   for (e = 0; e < Ne; ++e) {
     PetscFEGeom    fegeom;
     const PetscInt face = fgeom->face[e][0];
@@ -630,12 +630,12 @@ static PetscErrorCode PetscFEIntegrateHybridResidual_Basic(PetscDS ds, PetscForm
       PetscCall(PetscFEGeomGetPoint(fgeom, e, q, &quadPoints[q*fgeom->dim], &fegeom));
       w = fegeom.detJ[0]*quadWeights[q];
       if (debug > 1 && q < fgeom->numPoints) {
-        PetscCall(PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", fegeom.detJ[0]));
+        PetscCall(PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", (double)fegeom.detJ[0]));
 #if !defined(PETSC_USE_COMPLEX)
         PetscCall(DMPrintCellMatrix(e, "invJ", dim, dE, fegeom.invJ));
 #endif
       }
-      if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q));
+      if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  quad point %" PetscInt_FMT "\n", q));
       /* TODO Is this cell or face quadrature, meaning should we use 'q' or 'face*Nq+q' */
       PetscCall(PetscFEEvaluateFieldJets_Hybrid_Internal(ds, Nf, 0, q, Tf, &fegeom, &coefficients[cOffset], &coefficients_t[cOffset], u, u_x, u_t));
       if (dsAux) PetscCall(PetscFEEvaluateFieldJets_Internal(dsAux, NfAux, 0, auxOnBd ? q : face*Nq+q, TfAux, &fegeom, &coefficientsAux[cOffsetAux], NULL, a, a_x, NULL));
@@ -710,7 +710,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscDS ds, PetscFEJacobianType jt
     PetscCall(PetscDSGetComponentDerivativeOffsets(dsAux, &aOff_x));
     PetscCall(PetscDSGetEvaluationArrays(dsAux, &a, NULL, &a_x));
     PetscCall(PetscDSGetTabulation(dsAux, &TAux));
-    PetscCheck(T[0]->Np == TAux[0]->Np,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of tabulation points %D != %D number of auxiliary tabulation points", T[0]->Np, TAux[0]->Np);
+    PetscCheck(T[0]->Np == TAux[0]->Np,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of tabulation points %" PetscInt_FMT " != %" PetscInt_FMT " number of auxiliary tabulation points", T[0]->Np, TAux[0]->Np);
   }
   NcI = T[fieldI]->Nc;
   NcJ = T[fieldJ]->Nc;
@@ -723,7 +723,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscDS ds, PetscFEJacobianType jt
   PetscCall(PetscArrayzero(g2, NcI*NcJ*dE));
   PetscCall(PetscArrayzero(g3, NcI*NcJ*dE*dE));
   PetscCall(PetscQuadratureGetData(quad, NULL, &qNc, &Nq, &quadPoints, &quadWeights));
-  PetscCheck(qNc == 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %D components", qNc);
+  PetscCheck(qNc == 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %" PetscInt_FMT " components", qNc);
   for (e = 0; e < Ne; ++e) {
     PetscFEGeom fegeom;
 
@@ -778,14 +778,14 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscDS ds, PetscFEJacobianType jt
     if (debug > 1) {
       PetscInt fc, f, gc, g;
 
-      PetscCall(PetscPrintf(PETSC_COMM_SELF, "Element matrix for fields %d and %d\n", fieldI, fieldJ));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, "Element matrix for fields %" PetscInt_FMT " and %" PetscInt_FMT "\n", fieldI, fieldJ));
       for (fc = 0; fc < T[fieldI]->Nc; ++fc) {
         for (f = 0; f < T[fieldI]->Nb; ++f) {
           const PetscInt i = offsetI + f*T[fieldI]->Nc+fc;
           for (gc = 0; gc < T[fieldJ]->Nc; ++gc) {
             for (g = 0; g < T[fieldJ]->Nb; ++g) {
               const PetscInt j = offsetJ + g*T[fieldJ]->Nc+gc;
-              PetscCall(PetscPrintf(PETSC_COMM_SELF, "    elemMat[%d,%d,%d,%d]: %g\n", f, fc, g, gc, PetscRealPart(elemMat[eOffset+i*totDim+j])));
+              PetscCall(PetscPrintf(PETSC_COMM_SELF, "    elemMat[%" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT "]: %g\n", f, fc, g, gc, (double)PetscRealPart(elemMat[eOffset+i*totDim+j])));
             }
           }
           PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n"));
@@ -861,7 +861,7 @@ static PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscDS ds, PetscWeakForm
   PetscCall(PetscArrayzero(g2, NcI*NcJ*dE));
   PetscCall(PetscArrayzero(g3, NcI*NcJ*dE*dE));
   PetscCall(PetscQuadratureGetData(quad, NULL, &qNc, &Nq, &quadPoints, &quadWeights));
-  PetscCheck(qNc == 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %D components", qNc);
+  PetscCheck(qNc == 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %" PetscInt_FMT " components", qNc);
   for (e = 0; e < Ne; ++e) {
     PetscFEGeom    fegeom, cgeom;
     const PetscInt face = fgeom->face[e][0];
@@ -889,7 +889,7 @@ static PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscDS ds, PetscWeakForm
       PetscReal w;
       PetscInt  c;
 
-      if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q));
+      if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  quad point %" PetscInt_FMT "\n", q));
       if (isAffine) {
         CoordinatesRefToReal(dE, dim-1, fegeom.xi, &fgeom->v[e*Np*dE], fegeom.J, &quadPoints[q*(dim-1)], x);
       } else {
@@ -932,14 +932,14 @@ static PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscDS ds, PetscWeakForm
     if (debug > 1) {
       PetscInt fc, f, gc, g;
 
-      PetscCall(PetscPrintf(PETSC_COMM_SELF, "Element matrix for fields %d and %d\n", fieldI, fieldJ));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, "Element matrix for fields %" PetscInt_FMT " and %" PetscInt_FMT "\n", fieldI, fieldJ));
       for (fc = 0; fc < T[fieldI]->Nc; ++fc) {
         for (f = 0; f < T[fieldI]->Nb; ++f) {
           const PetscInt i = offsetI + f*T[fieldI]->Nc+fc;
           for (gc = 0; gc < T[fieldJ]->Nc; ++gc) {
             for (g = 0; g < T[fieldJ]->Nb; ++g) {
               const PetscInt j = offsetJ + g*T[fieldJ]->Nc+gc;
-              PetscCall(PetscPrintf(PETSC_COMM_SELF, "    elemMat[%d,%d,%d,%d]: %g\n", f, fc, g, gc, PetscRealPart(elemMat[eOffset+i*totDim+j])));
+              PetscCall(PetscPrintf(PETSC_COMM_SELF, "    elemMat[%" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT "]: %g\n", f, fc, g, gc, (double)PetscRealPart(elemMat[eOffset+i*totDim+j])));
             }
           }
           PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n"));
@@ -1014,7 +1014,7 @@ PetscErrorCode PetscFEIntegrateHybridJacobian_Basic(PetscDS ds, PetscFEJacobianT
     auxOnBd = dimAux == dim ? PETSC_TRUE : PETSC_FALSE;
     if (auxOnBd) PetscCall(PetscDSGetTabulation(dsAux, &TAux));
     else         PetscCall(PetscDSGetFaceTabulation(dsAux, &TAux));
-    PetscCheck(T[0]->Np == TAux[0]->Np,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of tabulation points %D != %D number of auxiliary tabulation points", T[0]->Np, TAux[0]->Np);
+    PetscCheck(T[0]->Np == TAux[0]->Np,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of tabulation points %" PetscInt_FMT " != %" PetscInt_FMT " number of auxiliary tabulation points", T[0]->Np, TAux[0]->Np);
   }
   PetscCall(PetscDSGetCohesive(ds, fieldI, &isCohesiveFieldI));
   PetscCall(PetscDSGetCohesive(ds, fieldJ, &isCohesiveFieldJ));
@@ -1030,7 +1030,7 @@ PetscErrorCode PetscFEIntegrateHybridJacobian_Basic(PetscDS ds, PetscFEJacobianT
   PetscCall(PetscArrayzero(g2, NcS*NcT*dE));
   PetscCall(PetscArrayzero(g3, NcS*NcT*dE*dE));
   PetscCall(PetscQuadratureGetData(quad, NULL, &qNc, &Nq, &quadPoints, &quadWeights));
-  PetscCheck(qNc == 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %D components", qNc);
+  PetscCheck(qNc == 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %" PetscInt_FMT " components", qNc);
   for (e = 0; e < Ne; ++e) {
     PetscFEGeom    fegeom;
     const PetscInt face = fgeom->face[e][0];
@@ -1061,12 +1061,12 @@ PetscErrorCode PetscFEIntegrateHybridJacobian_Basic(PetscDS ds, PetscFEJacobianT
       }
       w = fegeom.detJ[0]*quadWeights[q];
       if (debug > 1 && q < Np) {
-        PetscCall(PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", fegeom.detJ[0]));
+        PetscCall(PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", (double)fegeom.detJ[0]));
 #if !defined(PETSC_USE_COMPLEX)
         PetscCall(DMPrintCellMatrix(e, "invJ", dim, dim, fegeom.invJ));
 #endif
       }
-      if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q));
+      if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  quad point %" PetscInt_FMT "\n", q));
       if (coefficients) PetscCall(PetscFEEvaluateFieldJets_Hybrid_Internal(ds, Nf, 0, q, T, &fegeom, &coefficients[cOffset], &coefficients_t[cOffset], u, u_x, u_t));
       if (dsAux) PetscCall(PetscFEEvaluateFieldJets_Internal(dsAux, NfAux, 0, auxOnBd ? q : face*Nq+q, TAux, &fegeom, &coefficientsAux[cOffsetAux], NULL, a, a_x, NULL));
       if (n0) {
@@ -1104,14 +1104,14 @@ PetscErrorCode PetscFEIntegrateHybridJacobian_Basic(PetscDS ds, PetscFEJacobianT
     if (debug > 1) {
       PetscInt fc, f, gc, g;
 
-      PetscCall(PetscPrintf(PETSC_COMM_SELF, "Element matrix for fields %d and %d\n", fieldI, fieldJ));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, "Element matrix for fields %" PetscInt_FMT " and %" PetscInt_FMT "\n", fieldI, fieldJ));
       for (fc = 0; fc < NcI; ++fc) {
         for (f = 0; f < T[fieldI]->Nb; ++f) {
           const PetscInt i = offsetI + f*NcI+fc;
           for (gc = 0; gc < NcJ; ++gc) {
             for (g = 0; g < T[fieldJ]->Nb; ++g) {
               const PetscInt j = offsetJ + g*NcJ+gc;
-              PetscCall(PetscPrintf(PETSC_COMM_SELF, "    elemMat[%d,%d,%d,%d]: %g\n", f, fc, g, gc, PetscRealPart(elemMat[eOffset+i*totDim+j])));
+              PetscCall(PetscPrintf(PETSC_COMM_SELF, "    elemMat[%" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT "]: %g\n", f, fc, g, gc, (double)PetscRealPart(elemMat[eOffset+i*totDim+j])));
             }
           }
           PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n"));

@@ -720,7 +720,7 @@ static PetscErrorCode PhysicsBoundary_Euler_Wall(PetscReal time, const PetscReal
   }
   if (eu->type == EULER_LINEAR_WAVE) { /* debug */
 #if 0
-    PetscPrintf(PETSC_COMM_WORLD,"%s coord=%g,%g\n",PETSC_FUNCTION_NAME,c[0],c[1]);
+    PetscPrintf(PETSC_COMM_WORLD,"%s coord=%g,%g\n",PETSC_FUNCTION_NAME,(double)c[0],(double)c[1]);
 #endif
   }
   PetscFunctionReturn(0);
@@ -822,7 +822,7 @@ static PetscErrorCode PhysicsCreate_Euler(Model mod,Physics phys,PetscOptionItem
     PetscCall(PetscOptionsReal("-eu_rho2","Density right of discontinuity","",eu->pars[EULER_PAR_RHOR],&eu->pars[EULER_PAR_RHOR],NULL));
     alpha = 60.;
     PetscCall(PetscOptionsReal("-eu_alpha","Angle of discontinuity","",alpha,&alpha,NULL));
-    PetscCheck(alpha>0. && alpha<=90.,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Alpha bust be > 0 and <= 90 (%g)",alpha);
+    PetscCheck(alpha>0. && alpha<=90.,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Alpha bust be > 0 and <= 90 (%g)",(double)alpha);
     eu->pars[EULER_PAR_ITANA] = 1./PetscTanReal( alpha * PETSC_PI / 180.0);
     PetscCall(PetscOptionsString("-eu_type","Type of Euler test","",type,type,sizeof(type),NULL));
     PetscCall(PetscStrcmp(type,"linear_wave", &is));
@@ -1219,7 +1219,7 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
     }
     PetscCall(PetscFree4(fmin,fmax,fintegral,ftmp));
 
-    PetscCall(PetscPrintf(PetscObjectComm((PetscObject)ts),"% 3D  time %8.4g  |x| %8.4g  %s\n",stepnum,(double)time,(double)xnorm,ftable ? ftable : ""));
+    PetscCall(PetscPrintf(PetscObjectComm((PetscObject)ts),"% 3" PetscInt_FMT "  time %8.4g  |x| %8.4g  %s\n",stepnum,(double)time,(double)xnorm,ftable ? ftable : ""));
     PetscCall(PetscFree(ftable));
   }
   if (user->vtkInterval < 1) PetscFunctionReturn(0);
@@ -1227,7 +1227,7 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
     if (stepnum == -1) {        /* Final time is not multiple of normal time interval, write it anyway */
       PetscCall(TSGetStepNumber(ts,&stepnum));
     }
-    PetscCall(PetscSNPrintf(filename,sizeof filename,"%s-%03D.vtu",user->outputBasename,stepnum));
+    PetscCall(PetscSNPrintf(filename,sizeof filename,"%s-%03" PetscInt_FMT ".vtu",user->outputBasename,stepnum));
     PetscCall(OutputVTK(dm,filename,&viewer));
     PetscCall(VecView(X,viewer));
     PetscCall(PetscViewerDestroy(&viewer));
@@ -1332,13 +1332,13 @@ static PetscErrorCode adaptToleranceFVM(PetscFV fvm, TS ts, Vec sol, VecTagger r
   PetscCallMPI(MPI_Allreduce(minMaxInd,minMaxIndGlobal,2,MPIU_REAL,MPI_MIN,PetscObjectComm((PetscObject)dm)));
   minInd = minMaxIndGlobal[0];
   maxInd = -minMaxIndGlobal[1];
-  PetscCall(PetscInfo(ts, "error indicator range (%E, %E)\n", minInd, maxInd));
+  PetscCall(PetscInfo(ts, "error indicator range (%E, %E)\n", (double)minInd, (double)maxInd));
   if (nRefine || nCoarsen) { /* at least one cell is over the refinement threshold */
     PetscCall(DMAdaptLabel(dm,adaptLabel,&adaptedDM));
   }
   PetscCall(DMLabelDestroy(&adaptLabel));
   if (adaptedDM) {
-    PetscCall(PetscInfo(ts, "Adapted mesh, marking %D cells for refinement, and %D cells for coarsening\n", nRefine, nCoarsen));
+    PetscCall(PetscInfo(ts, "Adapted mesh, marking %" PetscInt_FMT " cells for refinement, and %" PetscInt_FMT " cells for coarsening\n", nRefine, nCoarsen));
     if (tsNew) PetscCall(initializeTS(adaptedDM, user, tsNew));
     if (solNew) {
       PetscCall(DMCreateGlobalVector(adaptedDM, solNew));
@@ -1533,7 +1533,7 @@ int main(int argc, char **argv)
         for (j = 0; j < newDof; j++) {
           char     compName[256]  = "Unknown";
 
-          PetscCall(PetscSNPrintf(compName,sizeof(compName),"%s_%d",phys->field_desc[f].name,j));
+          PetscCall(PetscSNPrintf(compName,sizeof(compName),"%s_%" PetscInt_FMT,phys->field_desc[f].name,j));
           PetscCall(PetscFVSetComponentName(fvm,dof+j,compName));
         }
       }
@@ -1588,7 +1588,7 @@ int main(int argc, char **argv)
       TS             tsNew = NULL;
 
       PetscCall(PetscMemoryGetCurrentUsage(&bytes));
-      PetscCall(PetscInfo(ts, "refinement loop %D: memory used %g\n", adaptIter, bytes));
+      PetscCall(PetscInfo(ts, "refinement loop %" PetscInt_FMT ": memory used %g\n", adaptIter, (double)bytes));
       PetscCall(DMViewFromOptions(dm, NULL, "-initial_dm_view"));
       PetscCall(VecViewFromOptions(X, NULL, "-initial_vec_view"));
 #if 0
@@ -1604,9 +1604,9 @@ int main(int argc, char **argv)
         PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&isHDF5));
         PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERVTK,&isVTK));
         if (isHDF5) {
-          PetscCall(PetscSNPrintf(buf, 256, "ex11-initial-%d.h5", adaptIter));
+          PetscCall(PetscSNPrintf(buf, 256, "ex11-initial-%" PetscInt_FMT ".h5", adaptIter));
         } else if (isVTK) {
-          PetscCall(PetscSNPrintf(buf, 256, "ex11-initial-%d.vtu", adaptIter));
+          PetscCall(PetscSNPrintf(buf, 256, "ex11-initial-%" PetscInt_FMT ".vtu", adaptIter));
           PetscCall(PetscViewerPushFormat(viewer,PETSC_VIEWER_VTK_VTU));
         }
         PetscCall(PetscViewerFileSetMode(viewer,FILE_MODE_WRITE));
@@ -1682,7 +1682,7 @@ int main(int argc, char **argv)
       PetscLogDouble bytes;
 
       PetscCall(PetscMemoryGetCurrentUsage(&bytes));
-      PetscCall(PetscInfo(ts, "AMR time step loop %D: memory used %g\n", adaptIter, bytes));
+      PetscCall(PetscInfo(ts, "AMR time step loop %" PetscInt_FMT ": memory used %g\n", adaptIter, bytes));
       PetscCall(PetscFVSetLimiter(fvm,noneLimiter));
       PetscCall(adaptToleranceFVM(fvm,ts,X,refineTag,coarsenTag,user,&tsNew,&solNew));
       PetscCall(PetscFVSetLimiter(fvm,limiter));
@@ -1716,7 +1716,7 @@ int main(int argc, char **argv)
     }
   }
   PetscCall(TSGetConvergedReason(ts,&reason));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%s at time %g after %D steps\n",TSConvergedReasons[reason],(double)ftime,nsteps));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%s at time %g after %" PetscInt_FMT " steps\n",TSConvergedReasons[reason],(double)ftime,nsteps));
   PetscCall(TSDestroy(&ts));
 
   PetscCall(VecTaggerDestroy(&refineTag));

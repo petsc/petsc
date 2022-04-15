@@ -108,7 +108,7 @@ int main(int argc,char **args)
 
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   if (rank == 0) {
-    PetscCall(PetscPrintf(PETSC_COMM_SELF," MatInertia: nneg: %D, nzero: %D, npos: %D\n",nneg,nzero,npos));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF," MatInertia: nneg: %" PetscInt_FMT ", nzero: %" PetscInt_FMT ", npos: %" PetscInt_FMT "\n",nneg,nzero,npos));
   }
 
   /* Destroy */

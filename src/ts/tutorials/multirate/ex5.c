@@ -715,7 +715,7 @@ int main(int argc,char *argv[])
     PetscCall(TSSolve(ts,X));
     PetscCall(TSGetSolveTime(ts,&ptime));
     PetscCall(TSGetStepNumber(ts,&steps));
-    PetscCall(PetscPrintf(comm,"Final time %g, steps %D\n",(double)ptime,steps));
+    PetscCall(PetscPrintf(comm,"Final time %g, steps %" PetscInt_FMT "\n",(double)ptime,steps));
     /* calculate the total mass at initial time and final time */
     mass_initial = 0.0;
     mass_final   = 0.0;

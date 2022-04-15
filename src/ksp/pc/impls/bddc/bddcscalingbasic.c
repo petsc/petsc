@@ -316,11 +316,11 @@ PetscErrorCode PCBDDCScalingSetUp(PC pc)
         PetscCall(VecNorm(B0_Bv,NORM_INFINITY,&errorl));
       }
       PetscCallMPI(MPI_Allreduce(&errorl,&error,1,MPIU_REAL,MPI_SUM,PetscObjectComm((PetscObject)pc)));
-      PetscCall(PetscViewerASCIIPrintf(viewer,"Error benign extension %1.14e\n",error));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"Error benign extension %1.14e\n",(double)error));
     }
     PetscCall(VecAXPY(pcis->vec1_global,-1.0,vec2_global));
     PetscCall(VecNorm(pcis->vec1_global,NORM_INFINITY,&error));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"Error scaling extension %1.14e\n",error));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"Error scaling extension %1.14e\n",(double)error));
     PetscCall(VecDestroy(&vec2_global));
 
     /* restriction -> from parallel to local */
@@ -333,7 +333,7 @@ PetscErrorCode PCBDDCScalingSetUp(PC pc)
     PetscCall(VecScatterBegin(pcis->global_to_B,pcis->vec1_B,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE));
     PetscCall(VecScatterEnd(pcis->global_to_B,pcis->vec1_B,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE));
     PetscCall(VecNorm(pcis->vec1_global,NORM_INFINITY,&error));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"Error scaling restriction %1.14e\n",error));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"Error scaling restriction %1.14e\n",(double)error));
     PetscCall(MatDestroy(&B0_B));
     PetscCall(VecDestroy(&B0_Bv));
     PetscCall(VecDestroy(&B0_Bv2));
@@ -432,7 +432,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc)
 
         PetscCall(ISGetIndices(sub_schurs->is_vertices,&idxs));
         PetscCall(ISGlobalToLocalMappingApply(pcis->BtoNmap,IS_GTOLM_DROP,n_com,idxs,&nmap,deluxe_ctx->idx_simple_B));
-        PetscCheck(nmap == n_com,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error when mapping simply scaled dofs (is_vertices)! %D != %D",nmap,n_com);
+        PetscCheck(nmap == n_com,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error when mapping simply scaled dofs (is_vertices)! %" PetscInt_FMT " != %" PetscInt_FMT,nmap,n_com);
         PetscCall(ISRestoreIndices(sub_schurs->is_vertices,&idxs));
       }
       if (sub_schurs->is_dir) {
@@ -441,12 +441,12 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc)
 
         PetscCall(ISGetIndices(sub_schurs->is_dir,&idxs));
         PetscCall(ISGlobalToLocalMappingApply(pcis->BtoNmap,IS_GTOLM_DROP,n_dir,idxs,&nmap,deluxe_ctx->idx_simple_B+n_com));
-        PetscCheck(nmap == n_dir,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error when mapping simply scaled dofs (sub_schurs->is_dir)! %D != %D",nmap,n_dir);
+        PetscCheck(nmap == n_dir,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error when mapping simply scaled dofs (sub_schurs->is_dir)! %" PetscInt_FMT " != %" PetscInt_FMT,nmap,n_dir);
         PetscCall(ISRestoreIndices(sub_schurs->is_dir,&idxs));
       }
       PetscCall(PetscSortInt(deluxe_ctx->n_simple,deluxe_ctx->idx_simple_B));
     } else {
-      PetscCheckFalse(deluxe_ctx->n_simple != n_dir + n_com,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of simply scaled dofs %D is different from the previous one computed %D",n_dir + n_com,deluxe_ctx->n_simple);
+      PetscCheckFalse(deluxe_ctx->n_simple != n_dir + n_com,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of simply scaled dofs %" PetscInt_FMT " is different from the previous one computed %" PetscInt_FMT,n_dir + n_com,deluxe_ctx->n_simple);
     }
   } else {
     deluxe_ctx->n_simple = 0;
@@ -474,7 +474,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Private(PC pc)
     deluxe_ctx->seq_n = sub_schurs->n_subs;
     PetscCall(PetscCalloc5(deluxe_ctx->seq_n,&deluxe_ctx->seq_scctx,deluxe_ctx->seq_n,&deluxe_ctx->seq_work1,deluxe_ctx->seq_n,&deluxe_ctx->seq_work2,deluxe_ctx->seq_n,&deluxe_ctx->seq_mat,deluxe_ctx->seq_n,&deluxe_ctx->seq_mat_inv_sum));
     newsetup = PETSC_TRUE;
-  } else PetscCheck(deluxe_ctx->seq_n == sub_schurs->n_subs,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of deluxe subproblems %D is different from the sub_schurs %D",deluxe_ctx->seq_n,sub_schurs->n_subs);
+  } else PetscCheck(deluxe_ctx->seq_n == sub_schurs->n_subs,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of deluxe subproblems %" PetscInt_FMT " is different from the sub_schurs %" PetscInt_FMT,deluxe_ctx->seq_n,sub_schurs->n_subs);
 
   /* the change of basis is just a reference to sub_schurs->change (if any) */
   deluxe_ctx->change         = sub_schurs->change;

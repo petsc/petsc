@@ -860,16 +860,16 @@ PetscErrorCode SNESLineSearchView(SNESLineSearch linesearch, PetscViewer viewer)
     }
     PetscCall(PetscViewerASCIIPrintf(viewer,"  maxstep=%e, minlambda=%e\n", (double)linesearch->maxstep,(double)linesearch->steptol));
     PetscCall(PetscViewerASCIIPrintf(viewer,"  tolerances: relative=%e, absolute=%e, lambda=%e\n", (double)linesearch->rtol,(double)linesearch->atol,(double)linesearch->ltol));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"  maximum iterations=%D\n", linesearch->max_its));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  maximum iterations=%" PetscInt_FMT "\n", linesearch->max_its));
     if (linesearch->ops->precheck) {
       if (linesearch->ops->precheck == SNESLineSearchPreCheckPicard) {
-        PetscCall(PetscViewerASCIIPrintf(viewer,"  using precheck step to speed up Picard convergence\n", linesearch->max_its));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"  using precheck step to speed up Picard convergence\n"));
       } else {
-        PetscCall(PetscViewerASCIIPrintf(viewer,"  using user-defined precheck step\n", linesearch->max_its));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"  using user-defined precheck step\n"));
       }
     }
     if (linesearch->ops->postcheck) {
-      PetscCall(PetscViewerASCIIPrintf(viewer,"  using user-defined postcheck step\n", linesearch->max_its));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  using user-defined postcheck step\n"));
     }
   }
   PetscFunctionReturn(0);
@@ -1174,7 +1174,7 @@ PetscErrorCode  SNESLineSearchSetTolerances(SNESLineSearch linesearch,PetscReal 
   }
 
   if (max_its != PETSC_DEFAULT) {
-    PetscCheck(max_its >= 0,PetscObjectComm((PetscObject)linesearch),PETSC_ERR_ARG_OUTOFRANGE,"Maximum number of iterations %D must be non-negative",max_its);
+    PetscCheck(max_its >= 0,PetscObjectComm((PetscObject)linesearch),PETSC_ERR_ARG_OUTOFRANGE,"Maximum number of iterations %" PetscInt_FMT " must be non-negative",max_its);
     linesearch->max_its = max_its;
   }
   PetscFunctionReturn(0);

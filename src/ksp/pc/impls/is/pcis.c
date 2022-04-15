@@ -53,7 +53,7 @@ static PetscErrorCode PCISSetSubdomainDiagonalScaling_IS(PC pc, Vec scaling_fact
       PetscCall(VecDestroy(&pcis->D));
       PetscCall(VecDuplicate(pcis->vec1_B,&pcis->D));
       PetscCall(VecCopy(pcis->vec1_B,pcis->D));
-    } else PetscCheck(sn == pcis->n_B,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Invalid size for scaling vector. Expected %D (or full %D), found %D",pcis->n_B,pcis->n,sn);
+    } else PetscCheck(sn == pcis->n_B,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Invalid size for scaling vector. Expected %" PetscInt_FMT " (or full %" PetscInt_FMT "), found %" PetscInt_FMT,pcis->n_B,pcis->n,sn);
   }
   PetscFunctionReturn(0);
 }
@@ -233,7 +233,7 @@ PetscErrorCode  PCISSetUp(PC pc, PetscBool computematrices, PetscBool computesol
       PetscCall(VecDestroy(&pcis->D));
       PetscCall(VecDuplicate(pcis->vec1_B,&pcis->D));
       PetscCall(VecCopy(pcis->vec1_B,pcis->D));
-    } else PetscCheck(sn == pcis->n_B,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Invalid size for scaling vector. Expected %D (or full %D), found %D",pcis->n_B,pcis->n,sn);
+    } else PetscCheck(sn == pcis->n_B,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Invalid size for scaling vector. Expected %" PetscInt_FMT " (or full %" PetscInt_FMT "), found %" PetscInt_FMT,pcis->n_B,pcis->n,sn);
   }
 
   /*
@@ -593,9 +593,9 @@ PetscErrorCode  PCISApplyInvSchur(PC pc, Vec b, Vec x, Vec vec1_N, Vec vec2_N)
       average = average / ((PetscReal)pcis->n);
       PetscCall(PetscViewerASCIIPushSynchronized(viewer));
       if (pcis->pure_neumann) {
-        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"Subdomain %04d is floating. Average = % 1.14e\n",PetscGlobalRank,PetscAbsScalar(average)));
+        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"Subdomain %04d is floating. Average = % 1.14e\n",PetscGlobalRank,(double)PetscAbsScalar(average)));
       } else {
-        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"Subdomain %04d is fixed.    Average = % 1.14e\n",PetscGlobalRank,PetscAbsScalar(average)));
+        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"Subdomain %04d is fixed.    Average = % 1.14e\n",PetscGlobalRank,(double)PetscAbsScalar(average)));
       }
       PetscCall(PetscViewerFlush(viewer));
       PetscCall(PetscViewerASCIIPopSynchronized(viewer));

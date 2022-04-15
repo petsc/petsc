@@ -77,7 +77,7 @@ int main (int argc, char **argv)
     PetscCall(DMConvert(forest, DMPLEX, &plex));
     PetscCall(DMViewFromOptions(plex, NULL, "-dm_view"));
     PetscCall(DMPlexGetDepthStratum(plex, 0, &vStart, &vEnd));
-    PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "Vertices [%D, %D)\n", vStart, vEnd));
+    PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "Vertices [%" PetscInt_FMT ", %" PetscInt_FMT ")\n", vStart, vEnd));
     PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD, NULL));
     PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject) forest), &s));
     PetscCall(PetscSectionSetNumFields(s, 1));

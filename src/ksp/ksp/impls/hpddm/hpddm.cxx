@@ -113,8 +113,8 @@ static PetscErrorCode KSPView_HPDDM(KSP ksp, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer, "HPDDM type: %s\n", KSPHPDDMTypes[std::min(static_cast<PetscInt>(data->cntl[0]), static_cast<PetscInt>(PETSC_STATIC_ARRAY_LENGTH(KSPHPDDMTypes) - 1))]));
     PetscCall(PetscViewerASCIIPrintf(viewer, "precision: %s\n", KSPHPDDMPrecisionTypes[data->precision]));
     if (data->cntl[0] == HPDDM_KRYLOV_METHOD_BGMRES || data->cntl[0] == HPDDM_KRYLOV_METHOD_BGCRODR || data->cntl[0] == HPDDM_KRYLOV_METHOD_BFBCG) {
-      if (std::abs(data->rcntl[0] - static_cast<PetscReal>(PETSC_DECIDE)) < PETSC_SMALL) PetscCall(PetscViewerASCIIPrintf(viewer, "no deflation at restarts\n", PetscBools[array ? PETSC_TRUE : PETSC_FALSE]));
-      else PetscCall(PetscViewerASCIIPrintf(viewer, "deflation tolerance: %g\n", data->rcntl[0]));
+      if (std::abs(data->rcntl[0] - static_cast<PetscReal>(PETSC_DECIDE)) < PETSC_SMALL) PetscCall(PetscViewerASCIIPrintf(viewer, "no deflation at restarts\n"));
+      else PetscCall(PetscViewerASCIIPrintf(viewer, "deflation tolerance: %g\n", static_cast<double>(data->rcntl[0])));
     }
     if (data->cntl[0] == HPDDM_KRYLOV_METHOD_GCRODR || data->cntl[0] == HPDDM_KRYLOV_METHOD_BGCRODR) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "deflation subspace attached? %s\n", PetscBools[array ? PETSC_TRUE : PETSC_FALSE]));
@@ -515,7 +515,7 @@ static PetscErrorCode KSPHPDDMSetType_HPDDM(KSP ksp, KSPHPDDMType type)
     PetscCall(PetscStrcmp(KSPHPDDMTypes[type], KSPHPDDMTypes[i], &flg));
     if (flg) break;
   }
-  PetscCheck(i != PETSC_STATIC_ARRAY_LENGTH(KSPHPDDMTypes), PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown KSPHPDDMType %s", type);
+  PetscCheck(i != PETSC_STATIC_ARRAY_LENGTH(KSPHPDDMTypes), PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown KSPHPDDMType %d", type);
   if (data->cntl[0] != static_cast<char>(PETSC_DECIDE) && data->cntl[0] != i) PetscCall(KSPHPDDMReset_Private(ksp));
   data->cntl[0] = i;
   PetscFunctionReturn(0);

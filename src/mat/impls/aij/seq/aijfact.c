@@ -3378,7 +3378,7 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
 
     im[i] = nzi;   /* used by PetscLLAddSortedLU() */
   } /* for (i=0; i<n; i++) */
-  PetscCheck(bi[n] < bdiag[n],PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"end of L array %d cannot >= the beginning of U array %d",bi[n],bdiag[n]);
+  PetscCheck(bi[n] < bdiag[n],PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"end of L array %" PetscInt_FMT " cannot >= the beginning of U array %" PetscInt_FMT,bi[n],bdiag[n]);
 
   PetscCall(ISRestoreIndices(isrow,&r));
   PetscCall(ISRestoreIndices(isicol,&ic));

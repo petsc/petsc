@@ -49,7 +49,7 @@ static PetscErrorCode TaoView_GPCG(Tao tao, PetscViewer viewer)
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii));
   if (isascii) {
-    PetscCall(PetscViewerASCIIPrintf(viewer,"Total PG its: %D,",gpcg->total_gp_its));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"Total PG its: %" PetscInt_FMT ",",gpcg->total_gp_its));
     PetscCall(PetscViewerASCIIPrintf(viewer,"PG tolerance: %g \n",(double)gpcg->pg_ftol));
   }
   PetscCall(TaoLineSearchView(tao->linesearch,viewer));

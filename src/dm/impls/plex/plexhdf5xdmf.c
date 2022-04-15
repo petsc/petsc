@@ -114,7 +114,7 @@ PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM dm, PetscViewer viewer)
   numVertices /= spatialDim;
   NVertices /= spatialDim;
 
-  PetscCall(PetscInfo(NULL, "Loaded mesh dimensions: numCells %D numCorners %D numVertices %D spatialDim %D\n", numCells, numCorners, numVertices, spatialDim));
+  PetscCall(PetscInfo(NULL, "Loaded mesh dimensions: numCells %" PetscInt_FMT " numCorners %" PetscInt_FMT " numVertices %" PetscInt_FMT " spatialDim %" PetscInt_FMT "\n", numCells, numCorners, numVertices, spatialDim));
   {
     const PetscScalar *coordinates_arr;
     PetscReal         *coordinates_arr_real;

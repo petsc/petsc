@@ -65,7 +65,7 @@ static PetscErrorCode TSAdaptSetDefaultType(TSAdapt adapt,TSAdaptType default_ty
 .  -ts_monitor_draw_solution_phase  <xleft,yleft,xright,yright> - Monitor solution graphically with phase diagram, requires problem with exactly 2 degrees of freedom
 .  -ts_monitor_draw_error - Monitor error graphically, requires use to have provided TSSetSolutionFunction()
 .  -ts_monitor_solution [ascii binary draw][:filename][:viewerformat] - monitors the solution at each timestep
-.  -ts_monitor_solution_vtk <filename.vts,filename.vtu> - Save each time step to a binary file, use filename-%%03D.vts (filename-%%03D.vtu)
+.  -ts_monitor_solution_vtk <filename.vts,filename.vtu> - Save each time step to a binary file, use filename-%%03" PetscInt_FMT ".vts (filename-%%03" PetscInt_FMT ".vtu)
 -  -ts_monitor_envelope - determine maximum and minimum value of each component of the solution over the solution time
 
    Notes:
@@ -295,17 +295,17 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   }
 
   opt  = PETSC_FALSE;
-  PetscCall(PetscOptionsString("-ts_monitor_solution_vtk","Save each time step to a binary file, use filename-%%03D.vts","TSMonitorSolutionVTK",NULL,monfilename,sizeof(monfilename),&flg));
+  PetscCall(PetscOptionsString("-ts_monitor_solution_vtk","Save each time step to a binary file, use filename-%%03" PetscInt_FMT ".vts","TSMonitorSolutionVTK",NULL,monfilename,sizeof(monfilename),&flg));
   if (flg) {
     const char *ptr,*ptr2;
     char       *filetemplate;
-    PetscCheck(monfilename[0],PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"-ts_monitor_solution_vtk requires a file template, e.g. filename-%%03D.vts");
+    PetscCheck(monfilename[0],PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"-ts_monitor_solution_vtk requires a file template, e.g. filename-%%03" PetscInt_FMT ".vts");
     /* Do some cursory validation of the input. */
     PetscCall(PetscStrstr(monfilename,"%",(char**)&ptr));
-    PetscCheck(ptr,PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"-ts_monitor_solution_vtk requires a file template, e.g. filename-%%03D.vts");
+    PetscCheck(ptr,PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"-ts_monitor_solution_vtk requires a file template, e.g. filename-%%03" PetscInt_FMT ".vts");
     for (ptr++; ptr && *ptr; ptr++) {
       PetscCall(PetscStrchr("DdiouxX",*ptr,(char**)&ptr2));
-      PetscCheck(ptr2 || (*ptr >= '0' && *ptr <= '9'),PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Invalid file template argument to -ts_monitor_solution_vtk, should look like filename-%%03D.vts");
+      PetscCheck(ptr2 || (*ptr >= '0' && *ptr <= '9'),PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Invalid file template argument to -ts_monitor_solution_vtk, should look like filename-%%03" PetscInt_FMT ".vts");
       if (ptr2) break;
     }
     PetscCall(PetscStrallocpy(monfilename,&filetemplate));
@@ -472,9 +472,7 @@ PetscErrorCode  TSSetSaveTrajectory(TS ts)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if (!ts->trajectory) {
-    PetscCall(TSTrajectoryCreate(PetscObjectComm((PetscObject)ts),&ts->trajectory));
-  }
+  if (!ts->trajectory) PetscCall(TSTrajectoryCreate(PetscObjectComm((PetscObject)ts),&ts->trajectory));
   PetscFunctionReturn(0);
 }
 
@@ -571,7 +569,7 @@ PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat B)
 
   if (ts->rhsjacobian.time == t && (ts->problem_type == TS_LINEAR || (ts->rhsjacobian.Xid == Uid && ts->rhsjacobian.Xstate == Ustate)) && (rhsfunction != TSComputeRHSFunctionLinear)) PetscFunctionReturn(0);
 
-  PetscCheck(ts->rhsjacobian.shift == 0.0 || !ts->rhsjacobian.reuse,PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Should not call TSComputeRHSJacobian() on a shifted matrix (shift=%lf) when RHSJacobian is reusable.",ts->rhsjacobian.shift);
+  PetscCheck(ts->rhsjacobian.shift == 0.0 || !ts->rhsjacobian.reuse,PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Should not call TSComputeRHSJacobian() on a shifted matrix (shift=%lf) when RHSJacobian is reusable.",(double)ts->rhsjacobian.shift);
   if (rhsjacobianfunc) {
     PetscCall(PetscLogEventBegin(TS_JacobianEval,ts,U,A,B));
     PetscStackPush("TS user Jacobian function");
@@ -2049,33 +2047,33 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
       PetscCall(PetscViewerASCIIPopTab(viewer));
     }
     if (ts->max_steps < PETSC_MAX_INT) {
-      PetscCall(PetscViewerASCIIPrintf(viewer,"  maximum steps=%D\n",ts->max_steps));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  maximum steps=%" PetscInt_FMT "\n",ts->max_steps));
     }
     if (ts->max_time < PETSC_MAX_REAL) {
       PetscCall(PetscViewerASCIIPrintf(viewer,"  maximum time=%g\n",(double)ts->max_time));
     }
     if (ts->ifuncs) {
-      PetscCall(PetscViewerASCIIPrintf(viewer,"  total number of I function evaluations=%D\n",ts->ifuncs));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  total number of I function evaluations=%" PetscInt_FMT "\n",ts->ifuncs));
     }
     if (ts->ijacs) {
-      PetscCall(PetscViewerASCIIPrintf(viewer,"  total number of I Jacobian evaluations=%D\n",ts->ijacs));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  total number of I Jacobian evaluations=%" PetscInt_FMT "\n",ts->ijacs));
     }
     if (ts->rhsfuncs) {
-      PetscCall(PetscViewerASCIIPrintf(viewer,"  total number of RHS function evaluations=%D\n",ts->rhsfuncs));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  total number of RHS function evaluations=%" PetscInt_FMT "\n",ts->rhsfuncs));
     }
     if (ts->rhsjacs) {
-      PetscCall(PetscViewerASCIIPrintf(viewer,"  total number of RHS Jacobian evaluations=%D\n",ts->rhsjacs));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  total number of RHS Jacobian evaluations=%" PetscInt_FMT "\n",ts->rhsjacs));
     }
     if (ts->usessnes) {
       PetscBool lin;
       if (ts->problem_type == TS_NONLINEAR) {
-        PetscCall(PetscViewerASCIIPrintf(viewer,"  total number of nonlinear solver iterations=%D\n",ts->snes_its));
+        PetscCall(PetscViewerASCIIPrintf(viewer,"  total number of nonlinear solver iterations=%" PetscInt_FMT "\n",ts->snes_its));
       }
-      PetscCall(PetscViewerASCIIPrintf(viewer,"  total number of linear solver iterations=%D\n",ts->ksp_its));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  total number of linear solver iterations=%" PetscInt_FMT "\n",ts->ksp_its));
       PetscCall(PetscObjectTypeCompareAny((PetscObject)ts->snes,&lin,SNESKSPONLY,SNESKSPTRANSPOSEONLY,""));
-      PetscCall(PetscViewerASCIIPrintf(viewer,"  total number of %slinear solve failures=%D\n",lin ? "" : "non",ts->num_snes_failures));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  total number of %slinear solve failures=%" PetscInt_FMT "\n",lin ? "" : "non",ts->num_snes_failures));
     }
-    PetscCall(PetscViewerASCIIPrintf(viewer,"  total number of rejected steps=%D\n",ts->reject));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  total number of rejected steps=%" PetscInt_FMT "\n",ts->reject));
     if (ts->vrtol) {
       PetscCall(PetscViewerASCIIPrintf(viewer,"  using vector of relative error tolerances, "));
     } else {
@@ -3503,7 +3501,7 @@ PetscErrorCode TSInterpolate(TS ts,PetscReal t,Vec U)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(U,VEC_CLASSID,3);
-  PetscCheck(t >= ts->ptime_prev && t <= ts->ptime,PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Requested time %g not in last time steps [%g,%g]",t,(double)ts->ptime_prev,(double)ts->ptime);
+  PetscCheck(t >= ts->ptime_prev && t <= ts->ptime,PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Requested time %g not in last time steps [%g,%g]",(double)t,(double)ts->ptime_prev,(double)ts->ptime);
   PetscCheck(ts->ops->interpolate,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"%s does not provide interpolation",((PetscObject)ts)->type_name);
   PetscCall((*ts->ops->interpolate)(ts,t,U));
   PetscFunctionReturn(0);
@@ -6292,7 +6290,7 @@ PetscErrorCode TSSetTimeSpan(TS ts,PetscInt n,PetscReal *span_times)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscCheck(n >= 2,PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONG,"Minimum time span size is 2 but %D is provided",n);
+  PetscCheck(n >= 2,PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONG,"Minimum time span size is 2 but %" PetscInt_FMT " is provided",n);
   if (ts->tspan && n != ts->tspan->num_span_times) {
     PetscCall(PetscFree(ts->tspan->span_times));
     PetscCall(VecDestroyVecs(ts->tspan->num_span_times,&ts->tspan->vecs_sol));

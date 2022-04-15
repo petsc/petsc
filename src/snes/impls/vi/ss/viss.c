@@ -293,14 +293,14 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
 
     if (kspreason < 0) {
       if (++snes->numLinearSolveFailures >= snes->maxLinearSolveFailures) {
-        PetscCall(PetscInfo(snes,"iter=%D, number linear solve failures %D greater than current SNES allowed, stopping solve\n",snes->iter,snes->numLinearSolveFailures));
+        PetscCall(PetscInfo(snes,"iter=%" PetscInt_FMT ", number linear solve failures %" PetscInt_FMT " greater than current SNES allowed, stopping solve\n",snes->iter,snes->numLinearSolveFailures));
         snes->reason = SNES_DIVERGED_LINEAR_SOLVE;
         break;
       }
     }
     PetscCall(KSPGetIterationNumber(snes->ksp,&lits));
     snes->linear_its += lits;
-    PetscCall(PetscInfo(snes,"iter=%D, linear solve iterations=%D\n",snes->iter,lits));
+    PetscCall(PetscInfo(snes,"iter=%" PetscInt_FMT ", linear solve iterations=%" PetscInt_FMT "\n",snes->iter,lits));
     /*
     if (snes->ops->precheck) {
       PetscBool changed_y = PETSC_FALSE;
@@ -354,7 +354,7 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
     if (snes->reason) break;
   }
   if (i == maxits) {
-    PetscCall(PetscInfo(snes,"Maximum number of iterations has been reached: %D\n",maxits));
+    PetscCall(PetscInfo(snes,"Maximum number of iterations has been reached: %" PetscInt_FMT "\n",maxits));
     if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
   }
   sdm->ops->computefunction = vi->computeuserfunction;

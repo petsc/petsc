@@ -65,7 +65,7 @@ int main(int argc,char **args)
   PetscCall(VecNorm(u,NORM_2,&norm));
   PetscCall(KSPGetIterationNumber(ksp,&its));
   if (norm > tol) {
-    PetscCall(PetscPrintf(PETSC_COMM_SELF,"2 norm of error %g Number of iterations %D\n",(double)norm,its));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"2 norm of error %g Number of iterations %" PetscInt_FMT "\n",(double)norm,its));
   }
 
   /* Free data structures */

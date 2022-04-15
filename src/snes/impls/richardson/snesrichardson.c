@@ -209,7 +209,7 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
     }
   }
   if (i == maxits+1) {
-    PetscCall(PetscInfo(snes, "Maximum number of iterations has been reached: %D\n", maxits));
+    PetscCall(PetscInfo(snes, "Maximum number of iterations has been reached: %" PetscInt_FMT "\n", maxits));
     if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
   }
   PetscFunctionReturn(0);

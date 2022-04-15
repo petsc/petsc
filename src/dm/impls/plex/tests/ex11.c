@@ -20,7 +20,7 @@ static PetscErrorCode TestInsertion()
     PetscInt val;
 
     PetscCall(DMLabelGetValue(label, i, &val));
-    PetscCheck(val == values[i%5],PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Value %d for point %d should be %d", val, i, values[i%5]);
+    PetscCheck(val == values[i%5],PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Value %" PetscInt_FMT " for point %" PetscInt_FMT " should be %" PetscInt_FMT, val, i, values[i%5]);
   }
   /* Test stratum */
   for (v = 0; v < 5; ++v) {
@@ -29,11 +29,11 @@ static PetscErrorCode TestInsertion()
     PetscInt        n;
 
     PetscCall(DMLabelGetStratumIS(label, values[v], &stratum));
-    PetscCheck(stratum,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Stratum %d is empty!", v);
+    PetscCheck(stratum,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Stratum %" PetscInt_FMT " is empty!", v);
     PetscCall(ISGetIndices(stratum, &points));
     PetscCall(ISGetLocalSize(stratum, &n));
     for (i = 0; i < n; ++i) {
-      PetscCheck(points[i] == i*5+v,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %d should be %d", points[i], i*5+v);
+      PetscCheck(points[i] == i*5+v,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %" PetscInt_FMT " should be %" PetscInt_FMT, points[i], i*5+v);
     }
     PetscCall(ISRestoreIndices(stratum, &points));
     PetscCall(ISDestroy(&stratum));
@@ -43,7 +43,7 @@ static PetscErrorCode TestInsertion()
     PetscInt val;
 
     PetscCall(DMLabelGetValue(label, i, &val));
-    PetscCheck(val == values[i%5],PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Value %d should be %d", val, values[i%5]);
+    PetscCheck(val == values[i%5],PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Value %" PetscInt_FMT " should be %" PetscInt_FMT, val, values[i%5]);
   }
   /* Test Duplicate */
   PetscCall(DMLabelDuplicate(label, &label2));
@@ -51,7 +51,7 @@ static PetscErrorCode TestInsertion()
     PetscInt val;
 
     PetscCall(DMLabelGetValue(label2, i, &val));
-    PetscCheck(val == values[i%5],PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Value %d should be %d", val, values[i%5]);
+    PetscCheck(val == values[i%5],PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Value %" PetscInt_FMT " should be %" PetscInt_FMT, val, values[i%5]);
   }
   PetscCall(DMLabelDestroy(&label2));
   PetscCall(DMLabelDestroy(&label));
@@ -173,7 +173,7 @@ static PetscErrorCode TestEmptyStrata(MPI_Comm comm)
     PetscCall(VecGetSize(v, &N));
     if (N != 2) {
       PetscCall(DMView(dm, PETSC_VIEWER_STDOUT_(comm)));
-      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "FAIL: Vector size %d != 2", N);
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "FAIL: Vector size %" PetscInt_FMT " != 2", N);
     }
     PetscCall(VecDestroy(&v));
   }

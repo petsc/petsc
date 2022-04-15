@@ -323,7 +323,7 @@ static PetscErrorCode KSPPGMRESUpdateHessenberg(KSP ksp,PetscInt it,PetscBool *h
   /* check for the happy breakdown */
   hapbnd = PetscMin(PetscAbsScalar(hh[it+1] / rs[it]),pgmres->haptol);
   if (PetscAbsScalar(hh[it+1]) < hapbnd) {
-    PetscCall(PetscInfo(ksp,"Detected happy breakdown, current hapbnd = %14.12e H(%D,%D) = %14.12e\n",(double)hapbnd,it+1,it,(double)PetscAbsScalar(*HH(it+1,it))));
+    PetscCall(PetscInfo(ksp,"Detected happy breakdown, current hapbnd = %14.12e H(%" PetscInt_FMT ",%" PetscInt_FMT ") = %14.12e\n",(double)hapbnd,it+1,it,(double)PetscAbsScalar(*HH(it+1,it))));
     *hapend = PETSC_TRUE;
   }
 

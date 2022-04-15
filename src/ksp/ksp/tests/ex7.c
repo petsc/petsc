@@ -92,12 +92,12 @@ int main(int argc,char **args)
   PetscCall(MatMultTranspose(As,u,x));
   PetscCall(VecAXPY(x,-1.0,b));
   PetscCall(VecNorm(x,NORM_INFINITY,&norm));
-  PetscCheck(norm <= PETSC_SMALL,PetscObjectComm((PetscObject)As),PETSC_ERR_PLIB,"Error ||A x-A^T x||_\\infty: %1.6e",norm);
+  PetscCheck(norm <= PETSC_SMALL,PetscObjectComm((PetscObject)As),PETSC_ERR_PLIB,"Error ||A x-A^T x||_\\infty: %1.6e",(double)norm);
   PetscCall(MatSetOption(As,MAT_HERMITIAN,PETSC_TRUE));
   PetscCall(MatMultHermitianTranspose(As,u,x));
   PetscCall(VecAXPY(x,-1.0,b));
   PetscCall(VecNorm(x,NORM_INFINITY,&norm));
-  PetscCheck(norm <= PETSC_SMALL,PetscObjectComm((PetscObject)As),PETSC_ERR_PLIB,"Error ||A x-A^H x||_\\infty: %1.6e",norm);
+  PetscCheck(norm <= PETSC_SMALL,PetscObjectComm((PetscObject)As),PETSC_ERR_PLIB,"Error ||A x-A^H x||_\\infty: %1.6e",(double)norm);
 
   /* Create the linear solver and set various options */
   PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
@@ -118,7 +118,7 @@ int main(int argc,char **args)
   PetscCall(VecAXPY(x,-1.0,u));
   PetscCall(VecNorm(x,NORM_2,&norm));
   PetscCall(KSPGetIterationNumber(ksp,&its));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %D\n",(double)norm,its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %" PetscInt_FMT "\n",(double)norm,its));
 
   /* Free work space. */
   PetscCall(VecDestroy(&x)); PetscCall(VecDestroy(&u));

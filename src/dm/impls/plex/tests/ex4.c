@@ -171,7 +171,7 @@ PetscErrorCode CreateSimplexHybrid_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
       for (p = 0; p < 3; ++p) PetscCall(DMSetLabelValue(*dm, "fault", faultPoints[p], 1));
     }
     break;
-    default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
+    default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %" PetscInt_FMT, testNum);
     }
     PetscCall(DMPlexInterpolate(*dm, &idm));
     PetscCall(PetscObjectSetOptionsPrefix((PetscObject) idm, "in_"));
@@ -345,7 +345,7 @@ PetscErrorCode CreateSimplex_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
       *dm  = idm;
     }
     break;
-    default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
+    default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %" PetscInt_FMT, testNum);
     }
   } else {
     PetscInt numPoints[4] = {0, 0, 0, 0};
@@ -418,7 +418,7 @@ PetscErrorCode CreateSimplexHybrid_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
       for (p = 0; p < 3; ++p) PetscCall(DMSetLabelValue(*dm, "fault", faultPoints[p], 1));
     }
     break;
-    default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
+    default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %" PetscInt_FMT, testNum);
     }
     PetscCall(DMPlexInterpolate(*dm, &idm));
     PetscCall(PetscObjectSetOptionsPrefix((PetscObject) idm, "in_"));
@@ -482,7 +482,7 @@ PetscErrorCode CreateTensorProduct_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
       PetscCall(DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords));
     }
     break;
-    default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
+    default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %" PetscInt_FMT, testNum);
     }
   } else {
     PetscInt numPoints[4] = {0, 0, 0, 0};
@@ -545,7 +545,7 @@ PetscErrorCode CreateTensorProductHybrid_3D(MPI_Comm comm, PetscInt testNum, DM 
       for (p = 0; p < 6; ++p) PetscCall(DMSetLabelValue(*dm, "fault", faultPoints[p], 1));
     }
     break;
-    default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
+    default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %" PetscInt_FMT, testNum);
     }
     PetscCall(DMPlexInterpolate(*dm, &idm));
     PetscCall(PetscObjectSetOptionsPrefix((PetscObject) idm, "in_"));
@@ -589,7 +589,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscCall(DMSetDimension(*dm, dim));
   switch (dim) {
   case 1:
-    PetscCheck(!cellHybrid,comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make hybrid meshes for dimension %d", dim);
+    PetscCheck(!cellHybrid,comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make hybrid meshes for dimension %" PetscInt_FMT, dim);
     PetscCall(CreateSimplex_1D(comm, dm));
     break;
   case 2:
@@ -623,7 +623,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     }
     break;
   default:
-    SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make meshes for dimension %d", dim);
+    SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make meshes for dimension %" PetscInt_FMT, dim);
   }
   if (user->testPartition && size > 1) {
     PetscPartitioner part;
@@ -641,7 +641,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
           PetscCall(PetscArraycpy(sizes,  triSizes_p2, 2));
           PetscCall(PetscArraycpy(points, triPoints_p2, 2));break;}
         default:
-          SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for triangular mesh on 2 procs", user->testNum);
+          SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %" PetscInt_FMT " for triangular mesh on 2 procs", user->testNum);
         }
       } else if (dim == 2 && cellSimplex && cellHybrid && size == 2) {
         switch (user->testNum) {
@@ -653,7 +653,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
           PetscCall(PetscArraycpy(sizes,  triSizes_p2, 2));
           PetscCall(PetscArraycpy(points, triPoints_p2, 3));break;}
         default:
-          SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for triangular hybrid mesh on 2 procs", user->testNum);
+          SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %" PetscInt_FMT " for triangular hybrid mesh on 2 procs", user->testNum);
         }
       } else if (dim == 2 && !cellSimplex && !cellHybrid && size == 2) {
         switch (user->testNum) {
@@ -665,7 +665,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
           PetscCall(PetscArraycpy(sizes,  quadSizes_p2, 2));
           PetscCall(PetscArraycpy(points, quadPoints_p2, 2));break;}
         default:
-          SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for quadrilateral mesh on 2 procs", user->testNum);
+          SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %" PetscInt_FMT " for quadrilateral mesh on 2 procs", user->testNum);
         }
       } else if (dim == 2 && !cellSimplex && cellHybrid && size == 2) {
         switch (user->testNum) {
@@ -677,7 +677,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
           PetscCall(PetscArraycpy(sizes,  quadSizes_p2, 2));
           PetscCall(PetscArraycpy(points, quadPoints_p2, 3));break;}
         default:
-          SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for quadrilateral hybrid mesh on 2 procs", user->testNum);
+          SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %" PetscInt_FMT " for quadrilateral hybrid mesh on 2 procs", user->testNum);
         }
       } else if (dim == 3 && cellSimplex && !cellHybrid && size == 2) {
         switch (user->testNum) {
@@ -696,7 +696,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
           PetscCall(PetscArraycpy(sizes,  tetSizes_p2, 2));
           PetscCall(PetscArraycpy(points, tetPoints_p2, 2));break;}
         default:
-          SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for tetrahedral mesh on 2 procs", user->testNum);
+          SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %" PetscInt_FMT " for tetrahedral mesh on 2 procs", user->testNum);
         }
       } else if (dim == 3 && cellSimplex && cellHybrid && size == 2) {
         switch (user->testNum) {
@@ -715,7 +715,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
           PetscCall(PetscArraycpy(sizes,  tetSizes_p2, 2));
           PetscCall(PetscArraycpy(points, tetPoints_p2, 7));break;}
         default:
-          SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for tetrahedral hybrid mesh on 2 procs", user->testNum);
+          SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %" PetscInt_FMT " for tetrahedral hybrid mesh on 2 procs", user->testNum);
         }
       } else if (dim == 3 && !cellSimplex && !cellHybrid && size == 2) {
         switch (user->testNum) {
@@ -727,7 +727,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
           PetscCall(PetscArraycpy(sizes,  hexSizes_p2, 2));
           PetscCall(PetscArraycpy(points, hexPoints_p2, 2));break;}
         default:
-          SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for hexahedral mesh on 2 procs", user->testNum);
+          SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %" PetscInt_FMT " for hexahedral mesh on 2 procs", user->testNum);
         }
       } else if (dim == 3 && !cellSimplex && cellHybrid && size == 2) {
         switch (user->testNum) {
@@ -746,7 +746,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
           PetscCall(PetscArraycpy(sizes,  hexSizes_p2, 2));
           PetscCall(PetscArraycpy(points, hexPoints_p2, 9));break;}
         default:
-          SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for hexahedral hybrid mesh on 2 procs", user->testNum);
+          SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %" PetscInt_FMT " for hexahedral hybrid mesh on 2 procs", user->testNum);
         }
       } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test partition");
     }

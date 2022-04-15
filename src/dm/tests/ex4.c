@@ -148,7 +148,7 @@ int main(int argc,char **argv)
         iloc = w*((j-Ys)*Xm + i-Xs);
         for (l=0; l<w; l++) {
           if (iglobal[kk] != ltog[iloc+l]) {
-            PetscCall(PetscFPrintf(PETSC_COMM_SELF,stdout,"[%d] Problem with mapping: j=%D, i=%D, l=%D, petsc1=%D, petsc2=%D\n",rank,j,i,l,ltog[iloc+l],iglobal[kk]));
+            PetscCall(PetscFPrintf(PETSC_COMM_SELF,stdout,"[%d] Problem with mapping: j=%" PetscInt_FMT ", i=%" PetscInt_FMT ", l=%" PetscInt_FMT ", petsc1=%" PetscInt_FMT ", petsc2=%" PetscInt_FMT "\n",rank,j,i,l,ltog[iloc+l],iglobal[kk]));
           }
           kk++;
         }

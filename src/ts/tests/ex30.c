@@ -110,7 +110,7 @@ PetscErrorCode gridToParticles(const DM dm, DM sw, Vec rhs, Vec work, Mat M_p, M
         PetscScalar dot = 0;
         PetscCall(MatGetRow(matshellctx->MpTrans,i,&nzl,&cols,&vals));
         for (int ii=0 ; ii<nzl ; ii++) dot += PetscSqr(vals[ii]);
-        PetscCheck(dot!=0.0,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Row %" PetscInt_FMT " is empty", i);
+        PetscCheck(dot!=0.0,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Row %d is empty", i);
         PetscCall(MatSetValue(D,i,i,dot,INSERT_VALUES));
       }
       PetscCall(MatAssemblyBegin(D, MAT_FINAL_ASSEMBLY));
@@ -226,8 +226,8 @@ PetscErrorCode go(TS ts, Vec X, const PetscInt NUserV, const PetscInt a_Np, cons
   PetscReal       moments_0[3], moments_1[3], dt_init;
 
   PetscFunctionBeginUser;
-  PetscCheck(numthreads<=MAX_NUM_THRDS,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Too many threads %" PetscInt_FMT " > %" PetscInt_FMT "", numthreads, MAX_NUM_THRDS);
-  PetscCheck(numthreads>0,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Number threads %" PetscInt_FMT " > %" PetscInt_FMT " ", numthreads,  MAX_NUM_THRDS);
+  PetscCheck(numthreads<=MAX_NUM_THRDS,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Too many threads %" PetscInt_FMT " > %d", numthreads, MAX_NUM_THRDS);
+  PetscCheck(numthreads>0,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Number threads %" PetscInt_FMT " > %d", numthreads,  MAX_NUM_THRDS);
   PetscCall(TSGetDM(ts,&pack));
   PetscCall(DMGetApplicationContext(pack, &ctx));
   PetscCheck(ctx->batch_sz%numthreads==0,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "batch size (-dm_landau_batch_size) %" PetscInt_FMT "  mod #threads %" PetscInt_FMT " must equal zero", ctx->batch_sz, numthreads);
@@ -296,7 +296,7 @@ PetscErrorCode go(TS ts, Vec X, const PetscInt NUserV, const PetscInt a_Np, cons
             hp[1] = (hi[1] - lo[1])/Npj;
             hp[2] = (hi[2] - lo[2])/Npk;
             if (dim==2) hp[2] = 1;
-            PetscCall(PetscInfo(pack," lo = %14.7e, hi = %14.7e; hp = %14.7e, %14.7e; kT_m = %g; \n",lo[1], hi[1], hp[0], hp[1], kT_m)); // temp
+            PetscCall(PetscInfo(pack," lo = %14.7e, hi = %14.7e; hp = %14.7e, %14.7e; kT_m = %g; \n",(double)lo[1], (double)hi[1], (double)hp[0], (double)hp[1], (double)kT_m)); // temp
             vole = hp[0]*hp[1]*hp[2]*ctx->n[grid]; // fix for multi-species
             PetscCall(PetscInfo(pack,"Vertex %" PetscInt_FMT ", grid %" PetscInt_FMT " with %" PetscInt_FMT " particles (diagnostic target = %" PetscInt_FMT ")\n",glb_b_id,grid,NN,b_target));
             for (int pj=0, pp=0 ; pj < Npj ; pj++) {
@@ -452,7 +452,7 @@ PetscErrorCode go(TS ts, Vec X, const PetscInt NUserV, const PetscInt a_Np, cons
     }
   }
   PetscCall(PetscInfo(X,"Total number density: %20.12e (%20.12e); x-momentum = %20.12e (%20.12e); energy = %20.12e (%20.12e) error = %e (log10 of error = %" PetscInt_FMT "), %" PetscInt_FMT " particles. Use %" PetscInt_FMT " threads\n",
-                      moments_1[0], moments_0[0], moments_1[1], moments_0[1], moments_1[2],  moments_0[2], (moments_1[2]-moments_0[2])/moments_0[2], (PetscInt)PetscLog10Real(PetscAbsReal((moments_1[2]-moments_0[2])/moments_0[2])), nTargetP, numthreads));
+                      (double)moments_1[0], (double)moments_0[0], (double)moments_1[1], (double)moments_0[1], (double)moments_1[2],  (double)moments_0[2], (double)((moments_1[2]-moments_0[2])/moments_0[2]), (PetscInt)PetscLog10Real(PetscAbsReal((moments_1[2]-moments_0[2])/moments_0[2])), nTargetP, numthreads));
   PetscFunctionReturn(0);
 }
 

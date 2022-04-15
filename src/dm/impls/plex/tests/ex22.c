@@ -41,7 +41,7 @@ static PetscErrorCode testIdentity(DM dm, PetscBool dmIsSimplicial, PetscInt cel
       max = PetscMax(max,PetscAbsReal(preimage[i * dimR + j] - inverted[i * dimR + j]));
     }
     if (max > tol) {
-      PetscCall(PetscPrintf(PETSC_COMM_SELF,"Bad inversion for cell %D with error %g (tol %g): (",cell,(double)max,(double)tol));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF,"Bad inversion for cell %" PetscInt_FMT " with error %g (tol %g): (",cell,(double)max,(double)tol));
       for (j = 0; j < dimR; j++) {
         PetscCall(PetscPrintf(PETSC_COMM_SELF,"%+f",(double) preimage[i * dimR + j]));
         if (j < dimR - 1) {
@@ -67,7 +67,7 @@ static PetscErrorCode testIdentity(DM dm, PetscBool dmIsSimplicial, PetscInt cel
       char   strBuf[BUFSIZ] = {'\0'};
       size_t offset = 0, count;
 
-      PetscCall(PetscSNPrintfCount(strBuf + offset,BUFSIZ-offset,"Good inversion for cell %D: (",&count,cell));
+      PetscCall(PetscSNPrintfCount(strBuf + offset,BUFSIZ-offset,"Good inversion for cell %" PetscInt_FMT ": (",&count,cell));
       offset += count;
       for (j = 0; j < dimR; j++) {
         PetscCall(PetscSNPrintfCount(strBuf + offset,BUFSIZ-offset,"%+f",&count,(double) preimage[i * dimR + j]));
@@ -166,7 +166,7 @@ int main(int argc, char **argv)
             PetscCall(DMSetCoordinatesLocal(dm,localCoords));
             PetscCall(VecDestroy(&localCoords));
           }
-          PetscCall(PetscInfo(dm,"Testing %s%D %DD mesh embedded in %DD\n",isSimplex ? "P" : "Q" , order, dim, dimC));
+          PetscCall(PetscInfo(dm,"Testing %s%" PetscInt_FMT " %" PetscInt_FMT "D mesh embedded in %" PetscInt_FMT "D\n",isSimplex ? "P" : "Q" , order, dim, dimC));
           PetscCall(DMGetCoordinatesLocal(dm,&coords));
           PetscCall(VecGetLocalSize(coords,&n));
           if (dimC > dim) { /* reembed in higher dimension */
@@ -185,7 +185,7 @@ int main(int argc, char **argv)
               PetscInt nDof;
 
               PetscCall(PetscSectionGetDof(sec,p,&nDof));
-              PetscCheck(nDof % dim == 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Coordinate section point %D has %D dofs != 0 mod %D",p,nDof,dim);
+              PetscCheck(nDof % dim == 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Coordinate section point %" PetscInt_FMT " has %" PetscInt_FMT " dofs != 0 mod %" PetscInt_FMT,p,nDof,dim);
               PetscCall(PetscSectionSetDof(newSec,p,(nDof/dim)*dimC));
               PetscCall(PetscSectionSetFieldDof(newSec,p,0,(nDof/dim)*dimC));
             }

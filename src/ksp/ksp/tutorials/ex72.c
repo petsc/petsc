@@ -235,15 +235,15 @@ int main(int argc,char **args)
     }
     PetscCall(VecView(max, PETSC_VIEWER_DRAW_WORLD));
     PetscCall(VecMax(max, &idx, &val));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Largest max row element %g at row %D\n", (double)val, idx));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Largest max row element %g at row %" PetscInt_FMT "\n", (double)val, idx));
     PetscCall(VecView(min, PETSC_VIEWER_DRAW_WORLD));
     PetscCall(VecMin(min, &idx, &val));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Smallest min row element %g at row %D\n", (double)val, idx));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Smallest min row element %g at row %" PetscInt_FMT "\n", (double)val, idx));
     PetscCall(VecMin(max, &idx, &val));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Smallest max row element %g at row %D\n", (double)val, idx));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Smallest max row element %g at row %" PetscInt_FMT "\n", (double)val, idx));
     PetscCall(VecPointwiseDivide(max, max, min));
     PetscCall(VecMax(max, &idx, &val));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Largest row ratio %g at row %D\n", (double)val, idx));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Largest row ratio %g at row %" PetscInt_FMT "\n", (double)val, idx));
     PetscCall(VecView(max, PETSC_VIEWER_DRAW_WORLD));
     PetscCall(VecDestroy(&max));
     PetscCall(VecDestroy(&min));
@@ -333,7 +333,7 @@ int main(int argc,char **args)
         }
         PetscCall(VecAXPY(u,-1.0,b));
         PetscCall(VecNorm(u,NORM_2,&norm));
-        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  Number of iterations = %3D\n",its));
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  Number of iterations = %3" PetscInt_FMT "\n",its));
         if (!PetscIsNanScalar(norm)) {
           if (norm < 1.e-12) {
             PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  Residual norm < 1.e-12\n"));
@@ -373,14 +373,14 @@ int main(int argc,char **args)
       PetscCall(PetscViewerStringOpen(PETSC_COMM_WORLD,kspinfo,sizeof(kspinfo),&viewer));
       PetscCall(KSPView(ksp,viewer));
       PetscCall(PetscStrrchr(file[PetscPreLoadIt],'/',&matrixname));
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%-8.8s %3D %2.0e %s \n",matrixname,its,norm,kspinfo));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%-8.8s %3" PetscInt_FMT " %2.0e %s \n",matrixname,its,(double)norm,kspinfo));
 
       /*
         Destroy the viewer
       */
       PetscCall(PetscViewerDestroy(&viewer));
     } else {
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3" PetscInt_FMT "\n",its));
       if (!PetscIsNanScalar(norm)) {
         if (norm < 1.e-12 && !PetscIsNanScalar((PetscScalar)norm)) {
           PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  Residual norm < 1.e-12\n"));
@@ -414,7 +414,7 @@ int main(int argc,char **args)
     if (flg) {
       KSPConvergedReason reason;
       PetscCall(KSPGetConvergedReason(ksp,&reason));
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"KSPConvergedReason: %D\n", reason));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"KSPConvergedReason: %s\n", KSPConvergedReasons[reason]));
     }
 
   }   /* while (num_numfac--) */

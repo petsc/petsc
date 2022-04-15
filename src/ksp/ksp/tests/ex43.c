@@ -57,8 +57,8 @@ int main(int argc,char **argv)
   /* print out norm and the number of iterations */
   PetscCall(KSPGetIterationNumber(ksp,&its));
   PetscCall(KSPGetResidualNorm(ksp,&norm));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Residual norm %1.5g\n",norm));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3" PetscInt_FMT "\n",its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Residual norm %1.5g\n",(double)norm));
 
   /* Cleanup */
   PetscCall(VecDestroy(&X));

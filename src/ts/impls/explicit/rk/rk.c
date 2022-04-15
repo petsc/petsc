@@ -583,7 +583,7 @@ static PetscErrorCode TSEvaluateStep_RK(TS ts,PetscInt order,Vec X,PetscBool *do
   }
 unavailable:
   if (done) *done = PETSC_FALSE;
-  else SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"RK '%s' of order %D cannot evaluate step at order %D. Consider using -ts_adapt_type none or a different method that has an embedded estimate.",tab->name,tab->order,order);
+  else SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"RK '%s' of order %" PetscInt_FMT " cannot evaluate step at order %" PetscInt_FMT ". Consider using -ts_adapt_type none or a different method that has an embedded estimate.",tab->name,tab->order,order);
   PetscFunctionReturn(0);
 }
 
@@ -835,7 +835,7 @@ static PetscErrorCode TSStep_RK(TS ts)
     ts->reject++; accept = PETSC_FALSE;
     if (!ts->reason && ++rejections > ts->max_reject && ts->max_reject >= 0) {
       ts->reason = TS_DIVERGED_STEP_REJECTED;
-      PetscCall(PetscInfo(ts,"Step=%D, step rejections %D greater than current TS allowed, stopping solve\n",ts->steps,rejections));
+      PetscCall(PetscInfo(ts,"Step=%" PetscInt_FMT ", step rejections %" PetscInt_FMT " greater than current TS allowed, stopping solve\n",ts->steps,rejections));
     }
   }
   PetscFunctionReturn(0);
@@ -1226,7 +1226,7 @@ static PetscErrorCode TSView_RK(TS ts,PetscViewer viewer)
     PetscCall(TSRKGetType(ts,&rktype));
     PetscCall(TSRKGetTableau(ts,&s,NULL,NULL,&c,NULL,NULL,NULL,&FSAL));
     PetscCall(PetscViewerASCIIPrintf(viewer,"  RK type %s\n",rktype));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"  Order: %D\n",tab->order));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Order: %" PetscInt_FMT "\n",tab->order));
     PetscCall(PetscViewerASCIIPrintf(viewer,"  FSAL property: %s\n",FSAL ? "yes" : "no"));
     PetscCall(PetscFormatRealArray(buf,sizeof(buf),"% 8.6f",s,c));
     PetscCall(PetscViewerASCIIPrintf(viewer,"  Abscissa c = %s\n",buf));

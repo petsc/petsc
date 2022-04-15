@@ -504,7 +504,7 @@ PetscErrorCode MatView_LMVMSymBrdn(Mat B, PetscViewer pv)
   PetscCall(PetscObjectTypeCompare((PetscObject)pv,PETSCVIEWERASCII,&isascii));
   if (isascii) {
     PetscCall(PetscViewerASCIIPrintf(pv,"Scale type: %s\n",MatLMVMSymBroydenScaleTypes[lsb->scale_type]));
-    PetscCall(PetscViewerASCIIPrintf(pv,"Scale history: %d\n",lsb->sigma_hist));
+    PetscCall(PetscViewerASCIIPrintf(pv,"Scale history: %" PetscInt_FMT "\n",lsb->sigma_hist));
     PetscCall(PetscViewerASCIIPrintf(pv,"Scale params: alpha=%g, beta=%g, rho=%g\n",(double)lsb->alpha, (double)lsb->beta, (double)lsb->rho));
     PetscCall(PetscViewerASCIIPrintf(pv,"Convex factors: phi=%g, theta=%g\n",(double)lsb->phi, (double)lsb->theta));
   }

@@ -194,7 +194,7 @@ PetscErrorCode RHSJacobianP_global(TS ts,PetscReal t,Vec U,Mat A,void *ctx)
 PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec U,void *ctx)
 {
   PetscFunctionBeginUser;
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\n Solution at time %e is \n", t));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\n Solution at time %e is \n", (double)t));
   PetscCall(VecView(U,PETSC_VIEWER_STDOUT_WORLD));
   PetscFunctionReturn(0);
 }

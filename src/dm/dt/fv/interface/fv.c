@@ -1782,10 +1782,10 @@ static PetscErrorCode PetscFVView_Upwind_Ascii(PetscFV fv, PetscViewer viewer)
   PetscCall(PetscFVGetNumComponents(fv, &Nc));
   PetscCall(PetscViewerGetFormat(viewer, &format));
   PetscCall(PetscViewerASCIIPrintf(viewer, "Upwind Finite Volume:\n"));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "  num components: %d\n", Nc));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "  num components: %" PetscInt_FMT "\n", Nc));
   for (c = 0; c < Nc; c++) {
     if (fv->componentNames[c]) {
-      PetscCall(PetscViewerASCIIPrintf(viewer, "    component %d: %s\n", c, fv->componentNames[c]));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "    component %" PetscInt_FMT ": %s\n", c, fv->componentNames[c]));
     }
   }
   PetscFunctionReturn(0);
@@ -1895,10 +1895,10 @@ static PetscErrorCode PetscFVView_LeastSquares_Ascii(PetscFV fv, PetscViewer vie
   PetscCall(PetscFVGetNumComponents(fv, &Nc));
   PetscCall(PetscViewerGetFormat(viewer, &format));
   PetscCall(PetscViewerASCIIPrintf(viewer, "Finite Volume with Least Squares Reconstruction:\n"));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "  num components: %d\n", Nc));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "  num components: %" PetscInt_FMT "\n", Nc));
   for (c = 0; c < Nc; c++) {
     if (fv->componentNames[c]) {
-      PetscCall(PetscViewerASCIIPrintf(viewer, "    component %d: %s\n", c, fv->componentNames[c]));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "    component %" PetscInt_FMT ": %s\n", c, fv->componentNames[c]));
     }
   }
   PetscFunctionReturn(0);
@@ -2078,7 +2078,7 @@ static PetscErrorCode PetscFVComputeGradient_LeastSquares(PetscFV fvm, PetscInt 
   PetscFunctionBegin;
   if (numFaces > maxFaces) {
     PetscCheck(maxFaces >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Reconstruction has not been initialized, call PetscFVLeastSquaresSetMaxFaces()");
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of input faces %D > %D maxfaces", numFaces, maxFaces);
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of input faces %" PetscInt_FMT " > %" PetscInt_FMT " maxfaces", numFaces, maxFaces);
   }
   PetscCall(PetscFVGetSpatialDimension(fvm, &dim));
   for (f = 0; f < numFaces; ++f) {

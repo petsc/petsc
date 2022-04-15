@@ -74,7 +74,7 @@ int main(int argc,char **argv)
     PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,11,11,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da));
   } else if (user.nstencilpts == 9) {
     PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,11,11,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da));
-  } else SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"nstencilpts %d is not supported",user.nstencilpts);
+  } else SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"nstencilpts %" PetscInt_FMT " is not supported",user.nstencilpts);
   PetscCall(DMSetFromOptions(da));
   PetscCall(DMSetUp(da));
   user.da = da;
@@ -112,7 +112,7 @@ int main(int argc,char **argv)
   Jtype = 0;
   PetscCall(PetscOptionsGetInt(NULL,NULL, "-Jtype",&Jtype,NULL));
   if (Jtype == 0) { /* use user provided Jacobian evaluation routine */
-    PetscCheck(user.nstencilpts == 5,PETSC_COMM_WORLD,PETSC_ERR_SUP,"user Jacobian routine FormIJacobian() does not support nstencilpts=%D",user.nstencilpts);
+    PetscCheck(user.nstencilpts == 5,PETSC_COMM_WORLD,PETSC_ERR_SUP,"user Jacobian routine FormIJacobian() does not support nstencilpts=%" PetscInt_FMT,user.nstencilpts);
     PetscCall(TSSetIJacobian(ts,J,J,FormIJacobian,&user));
   } else { /* use finite difference Jacobian J as preconditioner and '-snes_mf_operator' for Mat*vec */
     PetscCall(TSGetSNES(ts,&snes));

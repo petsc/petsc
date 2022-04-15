@@ -44,8 +44,8 @@ static PetscErrorCode PetscPartitionerView_ParMetis_ASCII(PetscPartitioner part,
   PetscCall(PetscViewerASCIIPushTab(viewer));
   PetscCall(PetscViewerASCIIPrintf(viewer, "ParMetis type: %s\n", ptypes[p->ptype]));
   PetscCall(PetscViewerASCIIPrintf(viewer, "load imbalance ratio %g\n", (double) p->imbalanceRatio));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "debug flag %D\n", p->debugFlag));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "random seed %D\n", p->randomSeed));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "debug flag %" PetscInt_FMT "\n", p->debugFlag));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "random seed %" PetscInt_FMT "\n", p->randomSeed));
   PetscCall(PetscViewerASCIIPopTab(viewer));
   PetscFunctionReturn(0);
 }
@@ -216,7 +216,7 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
       if (assignment[v] == p) points[i++] = v;
     }
   }
-  PetscCheck(i == nvtxs,comm, PETSC_ERR_PLIB, "Number of points %D should be %D", i, nvtxs);
+  PetscCheck(i == nvtxs,comm, PETSC_ERR_PLIB, "Number of points %" PetscInt_FMT " should be %" PetscInt_FMT, i, nvtxs);
   PetscCall(ISCreateGeneral(comm, nvtxs, points, PETSC_OWN_POINTER, partition));
   PetscCall(PetscFree4(vtxdist,tpwgts,ubvec,assignment));
   PetscCall(PetscFree(vwgt));

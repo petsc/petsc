@@ -80,7 +80,7 @@ static PetscErrorCode KSPSetUp_PIPEFCG(KSP ksp)
 
   /* If the requested number of preallocated vectors is greater than mmax reduce nprealloc */
   if (pipefcg->nprealloc > pipefcg->mmax+1) {
-    PetscCall(PetscInfo(NULL,"Requested nprealloc=%d is greater than m_max+1=%d. Resetting nprealloc = m_max+1.\n",pipefcg->nprealloc, pipefcg->mmax+1));
+    PetscCall(PetscInfo(NULL,"Requested nprealloc=%" PetscInt_FMT " is greater than m_max+1=%" PetscInt_FMT ". Resetting nprealloc = m_max+1.\n",pipefcg->nprealloc, pipefcg->mmax+1));
   }
 
   /* Preallocate additional work vectors */
@@ -249,7 +249,7 @@ static PetscErrorCode KSPSolve_PIPEFCG_cycle(KSP ksp)
     *eta += delta;                                          /* etai    = delta -betaik^2 * etak */
     if (*eta < 0.) {
       pipefcg->norm_breakdown = PETSC_TRUE;
-      PetscCall(PetscInfo(ksp,"Restart due to square root breakdown at it = \n",ksp->its));
+      PetscCall(PetscInfo(ksp,"Restart due to square root breakdown at it = %" PetscInt_FMT "\n",ksp->its));
       break;
     } else {
       alpha= gamma/(*eta);                                  /* alpha = gamma/etai */
@@ -389,12 +389,12 @@ static PetscErrorCode KSPView_PIPEFCG(KSP ksp,PetscViewer viewer)
   }
 
   if (iascii) {
-    PetscCall(PetscViewerASCIIPrintf(viewer,"  max previous directions = %D\n",pipefcg->mmax));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"  preallocated %D directions\n",PetscMin(pipefcg->nprealloc,pipefcg->mmax+1)));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  max previous directions = %" PetscInt_FMT "\n",pipefcg->mmax));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  preallocated %" PetscInt_FMT " directions\n",PetscMin(pipefcg->nprealloc,pipefcg->mmax+1)));
     PetscCall(PetscViewerASCIIPrintf(viewer,"  %s\n",truncstr));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"  restarts performed = %D \n", pipefcg->n_restarts));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  restarts performed = %" PetscInt_FMT " \n", pipefcg->n_restarts));
   } else if (isstring) {
-    PetscCall(PetscViewerStringSPrintf(viewer,"max previous directions = %D, preallocated %D directions, %s truncation strategy",pipefcg->mmax,pipefcg->nprealloc,truncstr));
+    PetscCall(PetscViewerStringSPrintf(viewer,"max previous directions = %" PetscInt_FMT ", preallocated %" PetscInt_FMT " directions, %s truncation strategy",pipefcg->mmax,pipefcg->nprealloc,truncstr));
   }
   PetscFunctionReturn(0);
 }

@@ -1939,7 +1939,7 @@ PetscErrorCode  ISSetBlockSize(IS is,PetscInt bs)
     PetscCall(ISGetIndices(is,&indices));
     if (indices) {
       PetscCall(ISGetLocalSize(is,&length));
-      PetscCheck(length%bs == 0,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local size %D not compatible with block size %D",length,bs);
+      PetscCheck(length%bs == 0,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local size %" PetscInt_FMT " not compatible with block size %" PetscInt_FMT,length,bs);
       for (i=0;i<length/bs;i+=bs) {
         for (j=0;j<bs-1;j++) {
           PetscCheck(indices[i*bs+j] == indices[i*bs+j+1]-1,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Block size %" PetscInt_FMT " is incompatible with the indices: non consecutive indices %" PetscInt_FMT " %" PetscInt_FMT,bs,indices[i*bs+j],indices[i*bs+j+1]);

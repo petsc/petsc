@@ -108,7 +108,7 @@ static PetscErrorCode KSPSetUp_Chebyshev(KSP ksp)
         }
         PetscCall(PCGetFailedReason(ksp->pc,&pcreason));
         ksp->reason = KSP_DIVERGED_PC_FAILED;
-        PetscCall(PetscInfo(ksp,"Eigen estimator failed: %s %s at iteration %D",KSPConvergedReasons[reason],PCFailedReasons[pcreason],its));
+        PetscCall(PetscInfo(ksp,"Eigen estimator failed: %s %s at iteration %" PetscInt_FMT,KSPConvergedReasons[reason],PCFailedReasons[pcreason],its));
         PetscFunctionReturn(0);
       } else if (reason == KSP_CONVERGED_RTOL || reason == KSP_CONVERGED_ATOL) {
         PetscCall(PetscInfo(ksp,"Eigen estimator converged prematurely. Should not happen except for small or low rank problem\n"));

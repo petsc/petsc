@@ -833,7 +833,7 @@ static PetscErrorCode PhysicsRiemann_IsoGas_Exact(void *vctx,PetscInt m,const Pe
       else rho = tmp;
       PetscCheck(((rho > 0) && PetscIsNormalScalar(rho)),PETSC_COMM_SELF,PETSC_ERR_FP,"non-normal iterate rho=%g",(double)PetscRealPart(rho));
     }
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"Newton iteration for star.rho diverged after %D iterations",i);
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"Newton iteration for star.rho diverged after %" PetscInt_FMT " iterations",i);
   }
 converged:
   if (L.u-c < 0 && 0 < star.u-c) { /* 1-wave is sonic rarefaction */
@@ -986,7 +986,7 @@ static PetscErrorCode PhysicsRiemann_Shallow_Exact(void *vctx,PetscInt m,const P
       else h = tmp;
       PetscCheck(((h > 0) && PetscIsNormalScalar(h)),PETSC_COMM_SELF,PETSC_ERR_FP,"non-normal iterate h=%g",(double)h);
     }
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"Newton iteration for star.h diverged after %D iterations",i);
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"Newton iteration for star.h diverged after %" PetscInt_FMT " iterations",i);
   }
 converged:
   cstar = PetscSqrtScalar(g*star.h);
@@ -1295,7 +1295,7 @@ static PetscErrorCode SolutionStatsView(DM da,Vec X,PetscViewer viewer)
     PetscCall(VecMin(X,&imin,&xmin));
     PetscCall(VecMax(X,&imax,&xmax));
     PetscCall(VecSum(X,&sum));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"Solution range [%8.5f,%8.5f] with extrema at %D and %D, mean %8.5f, ||x||_TV %8.5f\n",(double)xmin,(double)xmax,imin,imax,(double)(sum/Mx),(double)(tvgsum/Mx)));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"Solution range [%8.5f,%8.5f] with extrema at %" PetscInt_FMT " and %" PetscInt_FMT ", mean %8.5f, ||x||_TV %8.5f\n",(double)xmin,(double)xmax,imin,imax,(double)(sum/Mx),(double)(tvgsum/Mx)));
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type not supported");
   PetscFunctionReturn(0);
 }
@@ -1442,7 +1442,7 @@ int main(int argc,char *argv[])
     PetscCall(TSGetSolveTime(ts,&ptime));
     PetscCall(TSGetStepNumber(ts,&steps));
 
-    PetscCall(PetscPrintf(comm,"Final time %8.5f, steps %D\n",(double)ptime,steps));
+    PetscCall(PetscPrintf(comm,"Final time %8.5f, steps %" PetscInt_FMT "\n",(double)ptime,steps));
     if (ctx.exact) {
       PetscCall(SolutionErrorNorms(&ctx,da,ptime,X,&nrm1,&nrmsup));
       PetscCall(PetscPrintf(comm,"Error ||x-x_e||_1 %8.4e  ||x-x_e||_sup %8.4e\n",(double)nrm1,(double)nrmsup));

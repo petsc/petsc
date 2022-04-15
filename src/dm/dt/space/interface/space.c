@@ -160,7 +160,7 @@ PetscErrorCode PetscSpaceView(PetscSpace sp, PetscViewer v)
   PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)sp,v));
   PetscCall(PetscObjectTypeCompare((PetscObject) v, PETSCVIEWERASCII, &iascii));
   PetscCall(PetscViewerASCIIPushTab(v));
-  if (iascii) PetscCall(PetscViewerASCIIPrintf(v, "Space in %D variables with %D components, size %D\n", sp->Nv, sp->Nc, pdim));
+  if (iascii) PetscCall(PetscViewerASCIIPrintf(v, "Space in %" PetscInt_FMT " variables with %" PetscInt_FMT " components, size %" PetscInt_FMT "\n", sp->Nv, sp->Nc, pdim));
   if (sp->ops->view) PetscCall((*sp->ops->view)(sp, v));
   PetscCall(PetscViewerASCIIPopTab(v));
   PetscFunctionReturn(0);

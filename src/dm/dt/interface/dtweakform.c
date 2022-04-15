@@ -168,7 +168,7 @@ PetscErrorCode PetscWeakFormGetIndexFunction_Private(PetscWeakForm wf, PetscHMap
   PetscCall(PetscHMapFormGet(ht, key, &chunk));
   if (chunk.size < 0) {*func = NULL;}
   else {
-    PetscCheck(ind < chunk.size,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Index %D not in [0, %D)", ind, chunk.size);
+    PetscCheck(ind < chunk.size,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Index %" PetscInt_FMT " not in [0, %" PetscInt_FMT ")", ind, chunk.size);
     *func = ((void (**)()) &wf->funcs->array[chunk.start])[ind];
   }
   PetscFunctionReturn(0);
@@ -1435,13 +1435,13 @@ static PetscErrorCode PetscWeakFormViewTable_Ascii(PetscWeakForm wf, PetscViewer
       PetscInt       n, f;
 
       if (keys[i].label) {
-        if (showPointer) PetscCall(PetscViewerASCIIPrintf(viewer, "(%s:%p, %D) ", names[i], keys[i].label, keys[i].value));
-        else             PetscCall(PetscViewerASCIIPrintf(viewer, "(%s, %D) ", names[i], keys[i].value));
-      } else PetscCall(PetscViewerASCIIPrintf(viewer, ""));
+        if (showPointer) PetscCall(PetscViewerASCIIPrintf(viewer, "(%s:%p, %" PetscInt_FMT ") ", names[i], keys[i].label, keys[i].value));
+        else             PetscCall(PetscViewerASCIIPrintf(viewer, "(%s, %" PetscInt_FMT ") ", names[i], keys[i].value));
+      }
       PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_FALSE));
-      if (splitField) PetscCall(PetscViewerASCIIPrintf(viewer, "(%D, %D) ", keys[i].field/Nf, keys[i].field%Nf));
-      else            PetscCall(PetscViewerASCIIPrintf(viewer, "(%D) ", keys[i].field));
-      if (showPart)   PetscCall(PetscViewerASCIIPrintf(viewer, "(%D) ", keys[i].part));
+      if (splitField) PetscCall(PetscViewerASCIIPrintf(viewer, "(%" PetscInt_FMT ", %" PetscInt_FMT ") ", keys[i].field/Nf, keys[i].field%Nf));
+      else            PetscCall(PetscViewerASCIIPrintf(viewer, "(%" PetscInt_FMT ") ", keys[i].field));
+      if (showPart)   PetscCall(PetscViewerASCIIPrintf(viewer, "(%" PetscInt_FMT ") ", keys[i].part));
       PetscCall(PetscWeakFormGetFunction_Private(wf, map, keys[i].label, keys[i].value, keys[i].field, keys[i].part, &n, &funcs));
       for (f = 0; f < n; ++f) {
         char  *fname;
@@ -1475,7 +1475,7 @@ static PetscErrorCode PetscWeakFormView_Ascii(PetscWeakForm wf, PetscViewer view
 
   PetscFunctionBegin;
   PetscCall(PetscViewerGetFormat(viewer, &format));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "Weak Form System with %d fields\n", wf->Nf));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "Weak Form System with %" PetscInt_FMT " fields\n", wf->Nf));
   PetscCall(PetscViewerASCIIPushTab(viewer));
   for (f = 0; f < PETSC_NUM_WF; ++f) {
     PetscCall(PetscWeakFormViewTable_Ascii(wf, viewer, PETSC_TRUE, PetscWeakFormKinds[f], wf->form[f]));

@@ -136,9 +136,9 @@ PetscErrorCode private_DMSwarmView_XDMF(DM dm,PetscViewer viewer)
 
   /* write topology header */
   PetscCall(PetscViewerASCIIPushTab(viewer));
-  PetscCall(PetscViewerASCIIPrintf(viewer,"<Topology Dimensions=\"%D\" TopologyType=\"Mixed\">\n",ng));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"<Topology Dimensions=\"%" PetscInt_FMT "\" TopologyType=\"Mixed\">\n",ng));
   PetscCall(PetscViewerASCIIPushTab(viewer));
-  PetscCall(PetscViewerASCIIPrintf(viewer,"<DataItem Format=\"Binary\" Endian=\"Big\" DataType=\"Int\" Dimensions=\"%D\" Seek=\"%D\">\n",ng*3,bytes[0]));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"<DataItem Format=\"Binary\" Endian=\"Big\" DataType=\"Int\" Dimensions=\"%" PetscInt_FMT "\" Seek=\"%ld\">\n",ng*3,bytes[0]));
   PetscCall(PetscViewerASCIIPushTab(viewer));
   PetscCall(PetscViewerASCIIPrintf(viewer,"%s\n",datafilename));
   PetscCall(PetscViewerASCIIPopTab(viewer));
@@ -172,7 +172,7 @@ PetscErrorCode private_DMSwarmView_XDMF(DM dm,PetscViewer viewer)
       break;
   }
   PetscCall(PetscViewerASCIIPushTab(viewer));
-  PetscCall(PetscViewerASCIIPrintf(viewer,"<DataItem Format=\"Binary\" Endian=\"Big\" DataType=\"Float\" Precision=\"8\" Dimensions=\"%D %D\" Seek=\"%D\">\n",ng,dim,bytes[0]));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"<DataItem Format=\"Binary\" Endian=\"Big\" DataType=\"Float\" Precision=\"8\" Dimensions=\"%" PetscInt_FMT " %" PetscInt_FMT "\" Seek=\"%ld\">\n",ng,dim,bytes[0]));
   PetscCall(PetscViewerASCIIPushTab(viewer));
   PetscCall(PetscViewerASCIIPrintf(viewer,"%s\n",datafilename));
   PetscCall(PetscViewerASCIIPopTab(viewer));
@@ -225,7 +225,7 @@ PetscErrorCode private_VecView_Swarm_XDMF(Vec x,PetscViewer viewer)
   N = N/bs;
   PetscCall(PetscObjectGetName((PetscObject)x,&vecname));
   if (!vecname) {
-    PetscCall(PetscSNPrintf(fieldname,PETSC_MAX_PATH_LEN-1,"swarmfield_%D",((PetscObject)x)->tag));
+    PetscCall(PetscSNPrintf(fieldname,PETSC_MAX_PATH_LEN-1,"swarmfield_%d",((PetscObject)x)->tag));
   } else {
     PetscCall(PetscSNPrintf(fieldname,PETSC_MAX_PATH_LEN-1,"%s",vecname));
   }
@@ -235,9 +235,9 @@ PetscErrorCode private_VecView_Swarm_XDMF(Vec x,PetscViewer viewer)
   PetscCall(PetscViewerASCIIPrintf(viewer,"<Attribute Center=\"Node\" Name=\"%s\" Type=\"None\">\n",fieldname));
   PetscCall(PetscViewerASCIIPushTab(viewer));
   if (bs == 1) {
-    PetscCall(PetscViewerASCIIPrintf(viewer,"<DataItem Format=\"Binary\" Endian=\"Big\" DataType=\"Float\" Precision=\"8\" Dimensions=\"%D\" Seek=\"%D\">\n",N,bytes[0]));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"<DataItem Format=\"Binary\" Endian=\"Big\" DataType=\"Float\" Precision=\"8\" Dimensions=\"%" PetscInt_FMT "\" Seek=\"%ld\">\n",N,bytes[0]));
   } else {
-    PetscCall(PetscViewerASCIIPrintf(viewer,"<DataItem Format=\"Binary\" Endian=\"Big\" DataType=\"Float\" Precision=\"8\" Dimensions=\"%D %D\" Seek=\"%D\">\n",N,bs,bytes[0]));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"<DataItem Format=\"Binary\" Endian=\"Big\" DataType=\"Float\" Precision=\"8\" Dimensions=\"%" PetscInt_FMT " %" PetscInt_FMT "\" Seek=\"%ld\">\n",N,bs,bytes[0]));
   }
   PetscCall(PetscViewerASCIIPushTab(viewer));
   PetscCall(PetscViewerASCIIPrintf(viewer,"%s\n",datafilename));
@@ -289,7 +289,7 @@ PetscErrorCode private_ISView_Swarm_XDMF(IS is,PetscViewer viewer)
   N = N/bs;
   PetscCall(PetscObjectGetName((PetscObject)is,&vecname));
   if (!vecname) {
-    PetscCall(PetscSNPrintf(fieldname,PETSC_MAX_PATH_LEN-1,"swarmfield_%D",((PetscObject)is)->tag));
+    PetscCall(PetscSNPrintf(fieldname,PETSC_MAX_PATH_LEN-1,"swarmfield_%d",((PetscObject)is)->tag));
   } else {
     PetscCall(PetscSNPrintf(fieldname,PETSC_MAX_PATH_LEN-1,"%s",vecname));
   }
@@ -299,9 +299,9 @@ PetscErrorCode private_ISView_Swarm_XDMF(IS is,PetscViewer viewer)
   PetscCall(PetscViewerASCIIPrintf(viewer,"<Attribute Center=\"Node\" Name=\"%s\" Type=\"None\">\n",fieldname));
   PetscCall(PetscViewerASCIIPushTab(viewer));
   if (bs == 1) {
-    PetscCall(PetscViewerASCIIPrintf(viewer,"<DataItem Format=\"Binary\" Endian=\"Big\" DataType=\"Int\" Precision=\"4\" Dimensions=\"%D\" Seek=\"%D\">\n",N,bytes[0]));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"<DataItem Format=\"Binary\" Endian=\"Big\" DataType=\"Int\" Precision=\"4\" Dimensions=\"%" PetscInt_FMT "\" Seek=\"%ld\">\n",N,bytes[0]));
   } else {
-    PetscCall(PetscViewerASCIIPrintf(viewer,"<DataItem Format=\"Binary\" Endian=\"Big\" DataType=\"Int\" Precision=\"4\" Dimensions=\"%D %D\" Seek=\"%D\">\n",N,bs,bytes[0]));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"<DataItem Format=\"Binary\" Endian=\"Big\" DataType=\"Int\" Precision=\"4\" Dimensions=\"%" PetscInt_FMT " %" PetscInt_FMT "\" Seek=\"%ld\">\n",N,bs,bytes[0]));
   }
   PetscCall(PetscViewerASCIIPushTab(viewer));
   PetscCall(PetscViewerASCIIPrintf(viewer,"%s\n",datafilename));

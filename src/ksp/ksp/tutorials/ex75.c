@@ -25,14 +25,14 @@ int main(int argc,char **args)
   PetscCall(KSPSetOperators(ksp,A,A));
   for (i=0; i<nmat; i++) {
     j = i+400;
-    PetscCall(PetscSNPrintf(name,sizeof(name),"%s/A_%d.dat",dir,j));
+    PetscCall(PetscSNPrintf(name,sizeof(name),"%s/A_%" PetscInt_FMT ".dat",dir,j));
     PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,&viewer));
     PetscCall(MatLoad(A,viewer));
     PetscCall(PetscViewerDestroy(&viewer));
     if (i == 0) {
       PetscCall(MatCreateVecs(A,&x,&b));
     }
-    PetscCall(PetscSNPrintf(name,sizeof(name),"%s/rhs_%d.dat",dir,j));
+    PetscCall(PetscSNPrintf(name,sizeof(name),"%s/rhs_%" PetscInt_FMT ".dat",dir,j));
     PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,&viewer));
     PetscCall(VecLoad(b,viewer));
     PetscCall(PetscViewerDestroy(&viewer));

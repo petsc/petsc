@@ -111,7 +111,7 @@ PetscErrorCode SNESDiffParameterCompute_More(SNES snes,void *nePv,Vec x,Vec p,do
 
   /* We have 5 tries to attempt to compute a good hopt value */
   PetscCall(SNESGetIterationNumber(snes,&i));
-  PetscCall(PetscFPrintf(comm,fp,"\n ------- SNES iteration %D ---------\n",i));
+  PetscCall(PetscFPrintf(comm,fp,"\n ------- SNES iteration %" PetscInt_FMT " ---------\n",i));
   for (iter=0; iter<5; iter++) {
     neP->h_first_try = h;
 
@@ -136,7 +136,7 @@ PetscErrorCode SNESDiffParameterCompute_More(SNES snes,void *nePv,Vec x,Vec p,do
     }
 
     /* Print the difference table */
-    PetscCall(PetscFPrintf(comm,fp,"Difference Table: iter = %D\n",iter));
+    PetscCall(PetscFPrintf(comm,fp,"Difference Table: iter = %" PetscInt_FMT "\n",iter));
     for (i=0; i<nf; i++) {
       for (j=0; j<nf-i; j++) {
         PetscCall(PetscFPrintf(comm,fp," %10.2e ",tab[i][j]));
@@ -205,7 +205,7 @@ theend:
   }
   */
   fcount = neP->function_count - fcount;
-  PetscCall(PetscInfo(snes,"fct_now = %D, fct_cum = %D, rerrf=%g, sqrt(noise)=%g, h_more=%g\n",fcount,neP->function_count,(double)rerrf,(double)PetscSqrtReal(*fnoise),(double)*hopt));
+  PetscCall(PetscInfo(snes,"fct_now = %" PetscInt_FMT ", fct_cum = %" PetscInt_FMT ", rerrf=%g, sqrt(noise)=%g, h_more=%g\n",fcount,neP->function_count,(double)rerrf,(double)PetscSqrtReal(*fnoise),(double)*hopt));
 
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-noise_test",&noise_test,NULL));
   if (noise_test) {
@@ -295,7 +295,7 @@ PetscErrorCode SNESNoiseMonitor(SNES snes,PetscInt its,double fnorm,void *dummy)
   PetscFunctionBegin;
   PetscCall(SNESGetLinearSolveIterations(snes,&lin_its));
   lin_its_total += lin_its;
-  PetscCall(PetscPrintf(PetscObjectComm((PetscObject)snes), "iter = %D, SNES Function norm = %g, lin_its = %D, total_lin_its = %D\n",its,(double)fnorm,lin_its,lin_its_total));
+  PetscCall(PetscPrintf(PetscObjectComm((PetscObject)snes), "iter = %" PetscInt_FMT ", SNES Function norm = %g, lin_its = %" PetscInt_FMT ", total_lin_its = %" PetscInt_FMT "\n",its,(double)fnorm,lin_its,lin_its_total));
 
   PetscCall(SNESUnSetMatrixFreeParameter(snes));
   PetscFunctionReturn(0);

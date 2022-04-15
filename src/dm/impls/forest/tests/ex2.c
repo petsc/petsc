@@ -107,26 +107,26 @@ static PetscErrorCode IdentifyBadPoints (DM dm, Vec vec, PetscReal tol)
       if (absDiff > tol) {bad = PETSC_TRUE; break;}
     }
     if (!bad) continue;
-    PetscCall(PetscPrintf(PETSC_COMM_SELF, "Bad point %D\n", p));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF, "Bad point %" PetscInt_FMT "\n", p));
     PetscCall(DMLabelGetValue(depthLabel, p, &s));
-    PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Depth %D\n", s));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Depth %" PetscInt_FMT "\n", s));
     PetscCall(DMPlexGetTransitiveClosure(dmplex, p, PETSC_TRUE, &closureSize, &closure));
     for (cl = 0; cl < closureSize; cl++) {
       PetscInt cp = closure[2 * cl];
       PetscCall(DMPlexGetTreeParent(dmplex, cp, &parent, &childID));
       if (parent != cp) {
-        PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Closure point %D (%D) child of %D (ID %D)\n", cl, cp, parent, childID));
+        PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Closure point %" PetscInt_FMT " (%" PetscInt_FMT ") child of %" PetscInt_FMT " (ID %" PetscInt_FMT ")\n", cl, cp, parent, childID));
       }
       PetscCall(DMPlexGetTreeChildren(dmplex, cp, &numChildren, NULL));
       if (numChildren) {
-        PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Closure point %D (%D) is parent\n", cl, cp));
+        PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Closure point %" PetscInt_FMT " (%" PetscInt_FMT ") is parent\n", cl, cp));
       }
     }
     PetscCall(DMPlexRestoreTransitiveClosure(dmplex, p, PETSC_TRUE, &closureSize, &closure));
     for (c = 0; c < cSize; c++) {
       PetscReal absDiff = PetscAbsScalar(values[c]);
       if (absDiff > tol) {
-        PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Bad dof %D\n", c));
+        PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Bad dof %" PetscInt_FMT "\n", c));
       }
     }
   }
@@ -317,7 +317,7 @@ int main(int argc, char **argv)
     if (!transfer_from_base[1]) {
       PetscCall(DMForestSetAdaptivityForest(postForest,NULL));
       PetscCall(PetscObjectGetReference((PetscObject)preForest,&postCount));
-      PetscCheck(postCount == preCount,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Adaptation not memory neutral: reference count increase from %d to %d",preCount,postCount);
+      PetscCheck(postCount == preCount,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Adaptation not memory neutral: reference count increase from %" PetscInt_FMT " to %" PetscInt_FMT,preCount,postCount);
     }
 
     if (conv) {

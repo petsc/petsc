@@ -174,7 +174,7 @@ static PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **s
 "  __local %s        detJ[%d]; //[N_t];           // $|J(x_q)|$, Jacobian determinant at $x_q$\n"
 "  __local %s        invJ[%d];//[N_t*dim*dim];   // $J^{-1}(x_q)$, Jacobian inverse at $x_q$\n",
                                &count, numeric_str, numeric_str, N_b*N_c*N_q, numeric_str, dim, N_b*N_c*N_q, numeric_str, N_t,
-                               numeric_str, N_t*dim*dim, numeric_str, N_t*N_b*N_c));
+                               numeric_str, N_t*dim*dim));
   PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "  /* FEM data */\n"
 "  __local %s        u_i[%d]; //[N_t*N_bt];       // Coefficients $u_i$ of the field $u|_{\\mathcal{T}} = \\sum_i u_i \\phi_i$\n",
@@ -487,7 +487,7 @@ static PetscErrorCode PetscFEOpenCLCalculateGrid(PetscFE fem, PetscInt N, PetscI
     *y = Nblocks / *x;
     if (*x * *y == (size_t)Nblocks) break;
   }
-  PetscCheck(*x * *y == (size_t)Nblocks,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Could not find partition for %D with block size %D", N, blockSize);
+  PetscCheck(*x * *y == (size_t)Nblocks,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Could not find partition for %" PetscInt_FMT " with block size %" PetscInt_FMT, N, blockSize);
   PetscFunctionReturn(0);
 }
 
@@ -559,7 +559,7 @@ static PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscDS prob, PetscFormKey
   PetscCall(PetscFEGetSpatialDimension(fem, &dim));
   PetscCall(PetscFEGetQuadrature(fem, &q));
   PetscCall(PetscQuadratureGetData(q, NULL, &qNc, &N_q, &points, &weights));
-  PetscCheck(qNc == 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %D components", qNc);
+  PetscCheck(qNc == 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %" PetscInt_FMT " components", qNc);
   PetscCall(PetscFEGetDimension(fem, &N_b));
   PetscCall(PetscFEGetNumComponents(fem, &N_comp));
   PetscCall(PetscDSGetResidual(prob, field, &f0_func, &f1_func));
@@ -580,7 +580,7 @@ static PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscDS prob, PetscFormKey
   global_work_size[0] = x * local_work_size[0];
   global_work_size[1] = y * local_work_size[1];
   global_work_size[2] = z * local_work_size[2];
-  PetscCall(PetscInfo(fem, "GPU layout grid(%d,%d,%d) block(%d,%d,%d) with %d batches\n", x, y, z, local_work_size[0], local_work_size[1], local_work_size[2], N_cb));
+  PetscCall(PetscInfo(fem, "GPU layout grid(%zu,%zu,%zu) block(%zu,%zu,%zu) with %d batches\n", x, y, z, local_work_size[0], local_work_size[1], local_work_size[2], N_cb));
   PetscCall(PetscInfo(fem, " N_t: %d, N_cb: %d\n", N_t, N_cb));
   /* Generate code */
   if (probAux) {

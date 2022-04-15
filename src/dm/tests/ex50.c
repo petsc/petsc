@@ -127,7 +127,7 @@ static PetscErrorCode test_3d(PetscInt cells[], PetscBool plex, PetscBool ho)
       PetscCall(DMDAVecRestoreArray(cdm,cv,&_coords));
     }
     PetscCall(VecRestoreArray(v,&c));
-    PetscCall(PetscSNPrintf(name,sizeof(name),"FiniteElementCollection: L2_T1_3D_P%D",dof-1));
+    PetscCall(PetscSNPrintf(name,sizeof(name),"FiniteElementCollection: L2_T1_3D_P%" PetscInt_FMT,dof-1));
     PetscCall(PetscObjectSetName((PetscObject)v,name));
     PetscCall(PetscObjectCompose((PetscObject)dm,"_glvis_mesh_coords",(PetscObject)v));
     PetscCall(VecDestroy(&v));

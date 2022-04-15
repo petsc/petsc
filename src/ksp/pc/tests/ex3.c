@@ -72,7 +72,7 @@ int main(int argc,char **args)
   PetscCall(PetscPrintf(PETSC_COMM_SELF,"Running %s with %s preconditioning\n",kspname,pcname));
   PetscCall(KSPSolve(ksp,b,u));
   PetscCall(KSPGetIterationNumber(ksp,&its));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of iterations %D\n",its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of iterations %" PetscInt_FMT "\n",its));
 
   /* Free data structures */
   PetscCall(KSPDestroy(&ksp));

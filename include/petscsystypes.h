@@ -77,6 +77,7 @@ typedef size_t PetscSizeT;
 
 M*/
 typedef ptrdiff_t PetscCount;
+#define PetscCount_FMT "td"
 
 /*MC
     PetscEnum - datatype used to pass enum types within PETSc functions.
@@ -143,12 +144,6 @@ M*/
 #  define PetscInt64_FMT "ld"
 #else
 #  error "cannot determine PetscInt64 type"
-#endif
-
-#if PETSC_SIZEOF_SIZE_T == 8
-#  define PetscCount_FMT PetscInt64_FMT
-#else
-#  define PetscCount_FMT "d"
 #endif
 
 /*MC

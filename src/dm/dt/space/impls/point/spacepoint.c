@@ -9,12 +9,12 @@ static PetscErrorCode PetscSpacePointView_Ascii(PetscSpace sp, PetscViewer viewe
   PetscFunctionBegin;
   PetscCall(PetscViewerGetFormat(viewer, &format));
   if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
-    PetscCall(PetscViewerASCIIPrintf(viewer, "Point space in dimension %d:\n", sp->Nv));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "Point space in dimension %" PetscInt_FMT ":\n", sp->Nv));
     PetscCall(PetscViewerASCIIPushTab(viewer));
     PetscCall(PetscQuadratureView(pt->quad, viewer));
     PetscCall(PetscViewerASCIIPopTab(viewer));
   } else {
-    PetscCall(PetscViewerASCIIPrintf(viewer, "Point space in dimension %d on %d points\n", sp->Nv, pt->quad->numPoints));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "Point space in dimension %" PetscInt_FMT " on %" PetscInt_FMT " points\n", sp->Nv, pt->quad->numPoints));
   }
   PetscFunctionReturn(0);
 }
@@ -68,7 +68,7 @@ static PetscErrorCode PetscSpaceEvaluate_Point(PetscSpace sp, PetscInt npoints, 
   PetscInt          dim = sp->Nv, pdim = pt->quad->numPoints, d, p, i, c;
 
   PetscFunctionBegin;
-  PetscCheck(npoints == pt->quad->numPoints,PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot evaluate Point space on %d points != %d size", npoints, pt->quad->numPoints);
+  PetscCheck(npoints == pt->quad->numPoints,PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot evaluate Point space on %" PetscInt_FMT " points != %" PetscInt_FMT " size", npoints, pt->quad->numPoints);
   PetscCall(PetscArrayzero(B, npoints*pdim));
   for (p = 0; p < npoints; ++p) {
     for (i = 0; i < pdim; ++i) {

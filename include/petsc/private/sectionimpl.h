@@ -106,8 +106,8 @@ static inline PetscErrorCode PetscSectionInvalidateMaxDof_Internal(PetscSection 
 }
 
 #if defined(PETSC_CLANG_STATIC_ANALYZER)
-#  define PetscSectionCheckValidField(x,y)
-#  define PetscSectionCheckValidFieldComponent(x,y)
+void PetscSectionCheckValidField(PetscInt,PetscInt);
+void PetscSectionCheckValidFieldComponent(PetscInt,PetscInt);
 #else
 #  define PetscSectionCheckValid_(description,item,nitems) do {         \
     PetscCheck(((item) >= 0) && ((item) < (nitems)),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE,"Invalid " description " %" PetscInt_FMT "; not in [0, %" PetscInt_FMT ")", (item), (nitems)); \
@@ -116,7 +116,6 @@ static inline PetscErrorCode PetscSectionInvalidateMaxDof_Internal(PetscSection 
 #  define PetscSectionCheckValidFieldComponent(comp,nfieldcomp) PetscSectionCheckValid_("section field component",comp,nfieldcomp)
 
 #  define PetscSectionCheckValidField(field,nfields)            PetscSectionCheckValid_("field number",field,nfields)
-
 #endif /* PETSC_CLANG_STATIC_ANALYZER */
 
 #endif /* PETSCSECTIONIMPL_H */

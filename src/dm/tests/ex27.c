@@ -81,7 +81,7 @@ int main(int argc,char **args)
   PetscCall(DMGetGlobalVector(da, &zz));
   PetscCall(PetscObjectSetName((PetscObject) zz, "FFTW reconstructed vector"));
 
-  PetscCall(PetscPrintf(PETSC_COMM_SELF, "%3-D: USFFT on vector of "));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF, "%3-" PetscInt_FMT ": USFFT on vector of "));
   for (i = 0, N = 1; i < 3; i++) {
     PetscCall(PetscPrintf(PETSC_COMM_SELF, "dim[%d] = %d ",i,dim[i]));
     N   *= dim[i];

@@ -74,7 +74,7 @@ static PetscErrorCode DMPlexReferenceTreeGetChildSymmetry_Default(DM dm, PetscIn
       break;
     }
   }
-  PetscCheck(dim <= 2,PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot perform child symmetry for %d-cells",dim);
+  PetscCheck(dim <= 2,PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot perform child symmetry for %" PetscInt_FMT "-cells",dim);
   PetscCheck(dim,PETSC_COMM_SELF,PETSC_ERR_PLIB,"A vertex has no children");
   if (childA < dStart || childA >= dEnd) {
     /* this is a lower-dimensional child: bootstrap */
@@ -1004,7 +1004,7 @@ static PetscErrorCode DMPlexSetTree_Internal(DM dm, PetscSection parentSection, 
 
         PetscCall(DMPlexGetTreeChildren(dm,p,&numChildren,&children));
         if (numChildren) {
-          PetscCheck(numChildren == cNumChildren,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"All parent points in a stratum should have the same number of children: %d != %d", numChildren, cNumChildren);
+          PetscCheck(numChildren == cNumChildren,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"All parent points in a stratum should have the same number of children: %" PetscInt_FMT " != %" PetscInt_FMT, numChildren, cNumChildren);
           PetscCall(DMSetLabelValue(dm,"canonical",p,canon));
           for (i = 0; i < numChildren; i++) {
             PetscCall(DMSetLabelValue(dm,"canonical",children[i],cChildren[i]));
@@ -1277,7 +1277,7 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM dm, PetscSection 
 
       PetscCall(PetscDualSpaceGetFunctional(dspace,i,&quad));
       PetscCall(PetscQuadratureGetData(quad,NULL,&thisNc,&qPoints,NULL,NULL));
-      PetscCheck(thisNc == Nc,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Functional dim %D does not much basis dim %D",thisNc,Nc);
+      PetscCheck(thisNc == Nc,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Functional dim %" PetscInt_FMT " does not much basis dim %" PetscInt_FMT,thisNc,Nc);
       nPoints += qPoints;
     }
     PetscCall(PetscMalloc7(fSize,&sizes,nPoints*Nc,&weights,spdim*nPoints,&pointsRef,spdim*nPoints,&pointsReal,nPoints*fSize*Nc,&work,maxDof,&workIndRow,maxDof,&workIndCol));
@@ -1742,7 +1742,7 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_FromReference(DM dm, PetscS
         if (PetscDefined(USE_DEBUG)) {
           for (r = 0; r < cDof; r++) {
             if (cDof > 1 && r) {
-              PetscCheck((ia[cOff+r+1]-ia[cOff+r]) == (ia[cOff+r]-ia[cOff+r-1]),PETSC_COMM_SELF,PETSC_ERR_PLIB,"Two point rows have different nnz: %D vs. %D", (ia[cOff+r+1]-ia[cOff+r]), (ia[cOff+r]-ia[cOff+r-1]));
+              PetscCheck((ia[cOff+r+1]-ia[cOff+r]) == (ia[cOff+r]-ia[cOff+r-1]),PETSC_COMM_SELF,PETSC_ERR_PLIB,"Two point rows have different nnz: %" PetscInt_FMT " vs. %" PetscInt_FMT, (ia[cOff+r+1]-ia[cOff+r]), (ia[cOff+r]-ia[cOff+r-1]));
             }
           }
         }
@@ -1804,7 +1804,7 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_FromReference(DM dm, PetscS
                   break;
                 }
               }
-              PetscCheck(k != numFillCols,PETSC_COMM_SELF,PETSC_ERR_PLIB,"No nonzero space for (%d, %d)", cOff, col);
+              PetscCheck(k != numFillCols,PETSC_COMM_SELF,PETSC_ERR_PLIB,"No nonzero space for (%" PetscInt_FMT ", %" PetscInt_FMT ")", cOff, col);
               for (r = 0; r < cDof; r++) {
                 vals[matOffset + numFillCols * r + k] = pointWork[r * aNumFillCols + j];
               }
@@ -1817,7 +1817,7 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_FromReference(DM dm, PetscS
                 break;
               }
             }
-            PetscCheck(k != numFillCols,PETSC_COMM_SELF,PETSC_ERR_PLIB,"No nonzero space for (%d, %d)", cOff, aOff);
+            PetscCheck(k != numFillCols,PETSC_COMM_SELF,PETSC_ERR_PLIB,"No nonzero space for (%" PetscInt_FMT ", %" PetscInt_FMT ")", cOff, aOff);
             for (r = 0; r < cDof; r++) {
               for (j = 0; j < aDof; j++) {
                 PetscInt col = perm ? perm[j] : j;
@@ -1906,7 +1906,7 @@ PetscErrorCode DMPlexTreeRefineCell (DM dm, PetscInt cell, DM *ncdm)
       offset = pNewEnd[d];
 
     }
-    PetscCheckFalse(cell < pOldStart[0] || cell >= pOldEnd[0],PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"%d not in cell range [%d, %d)", cell, pOldStart[0], pOldEnd[0]);
+    PetscCheckFalse(cell < pOldStart[0] || cell >= pOldEnd[0],PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"%" PetscInt_FMT " not in cell range [%" PetscInt_FMT ", %" PetscInt_FMT ")", cell, pOldStart[0], pOldEnd[0]);
     /* get the current closure of the cell that we are removing */
     PetscCall(DMPlexGetTransitiveClosure(dm,cell,PETSC_TRUE,&nc,&cellClosure));
 
@@ -2075,7 +2075,7 @@ PetscErrorCode DMPlexTreeRefineCell (DM dm, PetscInt cell, DM *ncdm)
         PetscCall(DMPlexGetHeightStratum(K,0,&kStart,&kEnd));
         for (k = kStart; k < kEnd; k++) {
           PetscCall(DMPlexComputeCellGeometryFEM(K, k, NULL, v0, J, NULL, &detJ));
-          PetscCheck(detJ > 0.,PETSC_COMM_SELF,PETSC_ERR_PLIB,"reference tree cell %d has bad determinant",k);
+          PetscCheck(detJ > 0.,PETSC_COMM_SELF,PETSC_ERR_PLIB,"reference tree cell %" PetscInt_FMT " has bad determinant",k);
         }
       }
       PetscCall(DMPlexComputeCellGeometryFEM(dm, cell, NULL, v0, J, NULL, &detJ));
@@ -3213,7 +3213,7 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
 
           PetscCall(PetscDualSpaceGetFunctional(dsp,parentCellShapeDof,&q));
           PetscCall(PetscQuadratureGetData(q,&dim,&thisNc,&numPoints,&points,&weights));
-          PetscCheck(thisNc == Nc,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Functional dim %D does not much basis dim %D",thisNc,Nc);
+          PetscCheck(thisNc == Nc,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Functional dim %" PetscInt_FMT " does not much basis dim %" PetscInt_FMT,thisNc,Nc);
           PetscCall(PetscFECreateTabulation(fe,1,numPoints,points,0,&Tparent)); /* I'm expecting a nodal basis: weights[:]' * Bparent[:,cellShapeDof] = 1. */
           for (j = 0; j < numPoints; j++) {
             PetscInt          childCell = -1;
@@ -4237,7 +4237,7 @@ static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarse
           PetscInt i, j;
 
 #if 0
-          PetscCall(PetscInfo(coarse,"childId %D, numRows %D, numCols %D, refPointFieldN %D maxDof %D\n",childId,numRows,numCols,refPointFieldN[childId - pRefStart][f], maxDof));
+          PetscCall(PetscInfo(coarse,"childId %" PetscInt_FMT ", numRows %" PetscInt_FMT ", numCols %" PetscInt_FMT ", refPointFieldN %" PetscInt_FMT " maxDof %" PetscInt_FMT "\n",childId,numRows,numCols,refPointFieldN[childId - pRefStart][f], maxDof));
 #endif
           for (i = 0; i < numRows; i++) {
             PetscScalar val = 0.;

@@ -147,13 +147,13 @@ int main(int argc,char **argv)
   PetscCall(VecGetArray(user.x,&x_ptr));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\n ode solution %g\n",(double)PetscRealPart(x_ptr[0])));
   PetscCall(VecRestoreArray(user.x,&x_ptr));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\n analytical solution %g\n",(double)user.a*PetscExpReal(user.b/user.c*user.ftime)));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\n analytical solution %g\n",(double)(user.a*PetscExpReal(user.b/user.c*user.ftime))));
 
   if (user.der == 1) {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\n analytical derivative w.r.t. c %g\n",(double)-user.a*user.ftime*user.b/(user.c*user.c)*PetscExpReal(user.b/user.c*user.ftime)));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\n analytical derivative w.r.t. c %g\n",(double)(-user.a*user.ftime*user.b/(user.c*user.c)*PetscExpReal(user.b/user.c*user.ftime))));
   }
   if (user.der == 2) {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\n analytical derivative w.r.t. b %g\n",user.a*user.ftime/user.c*PetscExpReal(user.b/user.c*user.ftime)));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\n analytical derivative w.r.t. b %g\n",(double)(user.a*user.ftime/user.c*PetscExpReal(user.b/user.c*user.ftime))));
   }
   PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\n forward sensitivity:\n"));
   PetscCall(MatView(user.sp,PETSC_VIEWER_STDOUT_WORLD));

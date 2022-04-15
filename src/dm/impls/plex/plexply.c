@@ -189,7 +189,7 @@ PetscErrorCode DMPlexCreatePLYFromFile(MPI_Comm comm, const char filename[], Pet
       if (c > 0) {
         PetscCall(PetscViewerRead(viewer, &ibuf, 1, NULL, PETSC_CHAR));
       }
-      PetscCheck(ibuf[0] == corners,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "All cells must have the same number of vertices in PLY file: %D != %D", ibuf[0], corners);
+      PetscCheck(ibuf[0] == corners,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "All cells must have the same number of vertices in PLY file: %" PetscInt_FMT " != %" PetscInt_FMT, (PetscInt)ibuf[0], corners);
       PetscCall(PetscViewerRead(viewer, &vbuf, ibuf[0], NULL, PETSC_INT));
       if (byteSwap) PetscCall(PetscByteSwap(&vbuf, PETSC_INT, ibuf[0]));
       for (v = 0; v < ibuf[0]; ++v) vbuf[v] += Nc;

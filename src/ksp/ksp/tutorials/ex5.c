@@ -195,7 +195,7 @@ int main(int argc,char **args)
   PetscCall(VecNorm(x,NORM_2,&norm));
   PetscCall(KSPGetIterationNumber(ksp,&its));
   if (!testscaledMat || norm > 1.e-7) {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %D\n",(double)norm,its));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %" PetscInt_FMT "\n",(double)norm,its));
   }
 
   /* -------------- Stage 1: Solve Second System ---------------------- */
@@ -303,7 +303,7 @@ int main(int argc,char **args)
   PetscCall(VecNorm(x,NORM_2,&norm));
   PetscCall(KSPGetIterationNumber(ksp,&its));
   if (!testscaledMat || norm > 1.e-7) {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %D\n",(double)norm,its));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %" PetscInt_FMT "\n",(double)norm,its));
   }
 
   /*

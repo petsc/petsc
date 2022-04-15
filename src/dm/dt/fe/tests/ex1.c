@@ -121,7 +121,7 @@ PetscErrorCode CellRangeGetFEGeom(IS cellIS, DMField coordField, PetscQuadrature
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetId((PetscObject) quad, &id));
-  PetscCall(PetscSNPrintf(composeStr, 32, "CellRangeGetFEGeom_%x\n", id));
+  PetscCall(PetscSNPrintf(composeStr, 32, "CellRangeGetFEGeom_%" PetscInt64_FMT "\n", id));
   PetscCall(PetscObjectQuery((PetscObject) cellIS, composeStr, (PetscObject *) &container));
   if (container) {
     PetscCall(PetscContainerGetPointer(container, (void **) geom));
@@ -261,7 +261,7 @@ static PetscErrorCode TestIntegration(DM dm, PetscInt cbs, PetscInt its)
     PetscCall(PetscLogEventGetPerfInfo(stage, event, &eventInfo));
     flopRate = eventInfo.time != 0.0 ? eventInfo.flops/eventInfo.time : 0.0;
     cellRate = eventInfo.time != 0.0 ? N/eventInfo.time : 0.0;
-    PetscCall(PetscPrintf(PetscObjectComm((PetscObject) dm), "%s: %D integrals %D chunks %D reps\n  Cell rate: %.2f/s flop rate: %.2f MF/s\n", title, N, Nch, its, (double)cellRate, (double)(flopRate/1.e6)));
+    PetscCall(PetscPrintf(PetscObjectComm((PetscObject) dm), "%s: %" PetscInt_FMT " integrals %" PetscInt_FMT " chunks %" PetscInt_FMT " reps\n  Cell rate: %.2f/s flop rate: %.2f MF/s\n", title, N, Nch, its, (double)cellRate, (double)(flopRate/1.e6)));
   }
 #endif
   PetscFunctionReturn(0);
@@ -301,7 +301,7 @@ static PetscErrorCode TestIntegration2(DM dm, PetscInt cbs, PetscInt its)
     N        = (cEnd - cStart)*Nf*eventInfo.count;
     flopRate = eventInfo.time != 0.0 ? eventInfo.flops/eventInfo.time : 0.0;
     cellRate = eventInfo.time != 0.0 ? N/eventInfo.time : 0.0;
-    PetscCall(PetscPrintf(PetscObjectComm((PetscObject) dm), "%s: %D integrals %D reps\n  Cell rate: %.2f/s flop rate: %.2f MF/s\n", title, N, eventInfo.count, (double)cellRate, (double)(flopRate/1.e6)));
+    PetscCall(PetscPrintf(PetscObjectComm((PetscObject) dm), "%s: %" PetscInt_FMT " integrals %d reps\n  Cell rate: %.2f/s flop rate: %.2f MF/s\n", title, N, eventInfo.count, (double)cellRate, (double)(flopRate/1.e6)));
   }
 #endif
   PetscFunctionReturn(0);

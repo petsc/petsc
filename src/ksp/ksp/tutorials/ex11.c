@@ -180,7 +180,7 @@ int main(int argc,char **args)
     PetscCall(VecGetArray(x,&xa));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD,"The first three entries of x are:\n"));
     for (i=0; i<3; i++) {
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"x[%D] = %g + %g i\n",i,(double)PetscRealPart(xa[i]),(double)PetscImaginaryPart(xa[i])));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"x[%" PetscInt_FMT "] = %g + %g i\n",i,(double)PetscRealPart(xa[i]),(double)PetscImaginaryPart(xa[i])));
     }
     PetscCall(VecRestoreArray(x,&xa));
   }
@@ -192,9 +192,9 @@ int main(int argc,char **args)
   PetscCall(VecNorm(x,NORM_2,&norm));
   PetscCall(KSPGetIterationNumber(ksp,&its));
   if (norm < 1.e-12) {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error < 1.e-12 iterations %D\n",its));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error < 1.e-12 iterations %" PetscInt_FMT "\n",its));
   } else {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g iterations %D\n",(double)norm,its));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g iterations %" PetscInt_FMT "\n",(double)norm,its));
   }
 
   /*

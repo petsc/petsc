@@ -159,13 +159,13 @@ int main(int argc, char **argv)
   PetscCall(PetscLogStagePush(user.stages[1]));
   for (i=0; i<ntests; i++) {
     PetscCall(TaoSolve(tao));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"KSP Iterations = %D\n",user.ksp_its));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"KSP Iterations = %" PetscInt_FMT "\n",user.ksp_its));
     PetscCall(VecCopy(x0,user.x));
   }
   PetscCall(PetscLogStagePop());
   PetscCall(PetscBarrier((PetscObject)user.x));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD,"KSP iterations within initialization: "));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%D\n",user.ksp_its_initial));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%" PetscInt_FMT "\n",user.ksp_its_initial));
 
   PetscCall(TaoDestroy(&tao));
   PetscCall(VecDestroy(&x0));

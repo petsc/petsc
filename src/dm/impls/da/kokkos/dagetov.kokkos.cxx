@@ -13,7 +13,7 @@ do { \
   if (N == xm*ym*zm*dof) { \
     gxm = xm; gym = ym; gzm = zm; \
     gxs = xs; gys = ys; gzs = zs; \
-  } else PetscCheck(N == gxm*gym*gzm*dof,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DMDA local sizes %D %D",N,xm*ym*zm*dof,gxm*gym*gzm*dof); \
+  } else PetscCheck(N == gxm*gym*gzm*dof,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %" PetscInt_FMT " is not compatible with DMDA local sizes %" PetscInt_FMT " %" PetscInt_FMT,N,xm*ym*zm*dof,gxm*gym*gzm*dof); \
 } while (0)
 
 /* -------------------- 1D ---------------- */

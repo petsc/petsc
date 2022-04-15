@@ -33,7 +33,7 @@ static PetscErrorCode TSTrajectorySet_Visualization(TSTrajectory tj,TS ts,PetscI
       PetscCall(PetscViewerBinaryWriteStringArray(bnames,(const char *const *)tj->names));
       PetscCall(PetscViewerDestroy(&bnames));
     }
-    PetscCall(PetscSNPrintf(filename,sizeof(filename),"Visualization-data/SA-%06d.bin",stepnum));
+    PetscCall(PetscSNPrintf(filename,sizeof(filename),"Visualization-data/SA-%06" PetscInt_FMT ".bin",stepnum));
     PetscCall(OutputBIN(comm,filename,&viewer));
     if (!tj->transform) {
       PetscCall(VecView(X,viewer));
@@ -47,7 +47,7 @@ static PetscErrorCode TSTrajectorySet_Visualization(TSTrajectory tj,TS ts,PetscI
     PetscCall(PetscViewerDestroy(&viewer));
     PetscFunctionReturn(0);
   }
-  PetscCall(PetscSNPrintf(filename,sizeof(filename),"Visualization-data/SA-%06d.bin",stepnum));
+  PetscCall(PetscSNPrintf(filename,sizeof(filename),"Visualization-data/SA-%06" PetscInt_FMT ".bin",stepnum));
   PetscCall(OutputBIN(comm,filename,&viewer));
   if (!tj->transform) {
     PetscCall(VecView(X,viewer));

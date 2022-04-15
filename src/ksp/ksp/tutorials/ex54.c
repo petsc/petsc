@@ -189,7 +189,7 @@ int main(int argc,char **args)
     PetscCall(VecAXPY(bb, -1.0, res));
     PetscCall(VecDestroy(&res));
     PetscCall(VecNorm(bb,NORM_2,&norm));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"[%d]%s |b-Ax|/|b|=%e, |b|=%e\n",0,PETSC_FUNCTION_NAME,norm/norm2,norm2));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"[%d]%s |b-Ax|/|b|=%e, |b|=%e\n",0,PETSC_FUNCTION_NAME,(double)(norm/norm2),(double)norm2));
 
     PetscCall(PetscViewerASCIIOpen(comm, "residual.m", &viewer));
     PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_MATLAB));

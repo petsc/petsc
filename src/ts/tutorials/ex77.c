@@ -407,7 +407,7 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
     exactFuncs_t[1] = NULL;
     exactFuncs_t[2] = trig_trig_T_t;
     break;
-   default: SETERRQ(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Unsupported solution type: %s (%D)", solTypes[PetscMin(user->solType, NUM_SOL_TYPES)], user->solType);
+   default: SETERRQ(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Unsupported solution type: %s (%d)", solTypes[PetscMin(user->solType, NUM_SOL_TYPES)], user->solType);
   }
 
   PetscCall(PetscDSSetResidual(prob, 1, f0_q, NULL));
@@ -567,7 +567,7 @@ static PetscErrorCode SetInitialParticleConditions(TS ts, Vec u)
             }
           }
           break;
-        default: SETERRQ(PetscObjectComm((PetscObject) ts), PETSC_ERR_SUP, "Do not support particle layout in dimension %D", dim);
+        default: SETERRQ(PetscObjectComm((PetscObject) ts), PETSC_ERR_SUP, "Do not support particle layout in dimension %" PetscInt_FMT, dim);
       }
       PetscCall(VecRestoreArray(u, &coords));
       break;
@@ -685,7 +685,7 @@ static PetscErrorCode SetupDiscretization(DM dm, DM sdm, AppCtx *user)
             }
           }
           break;
-        default: SETERRQ(comm, PETSC_ERR_SUP, "Do not support particle layout in dimension %D", dim);
+        default: SETERRQ(comm, PETSC_ERR_SUP, "Do not support particle layout in dimension %" PetscInt_FMT, dim);
       }
       PetscCall(DMSwarmRestoreField(sdm, DMSwarmPICField_coor, NULL, NULL, (void **) &coords));
       PetscCall(DMSwarmGetField(sdm, DMSwarmPICField_cellid, NULL, NULL, (void **) &cellid));
@@ -706,7 +706,7 @@ static PetscErrorCode CreatePressureNullSpace(DM dm, PetscInt ofield, PetscInt n
   PetscErrorCode (*funcs[3])(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *) = {zero, zero, zero};
 
   PetscFunctionBeginUser;
-  PetscCheck(ofield == 1,PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Nullspace must be for pressure field at index 1, not %D", ofield);
+  PetscCheck(ofield == 1,PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Nullspace must be for pressure field at index 1, not %" PetscInt_FMT, ofield);
   funcs[nfield] = constant;
   PetscCall(DMCreateGlobalVector(dm, &vec));
   PetscCall(DMProjectFunction(dm, 0.0, funcs, NULL, INSERT_ALL_VALUES, vec));
@@ -975,7 +975,7 @@ int main(int argc, char **argv)
   PetscCall(DMSwarmDestroyGlobalVectorFromField(sdm, DMSwarmPICField_coor, &xtmp));
   switch(user.solType) {
     case SOL_TRIG_TRIG: adv.exact = trig_trig_x;break;
-    default: SETERRQ(PetscObjectComm((PetscObject) sdm), PETSC_ERR_ARG_WRONG, "Unsupported solution type: %s (%D)", solTypes[PetscMin(user.solType, NUM_SOL_TYPES)], user.solType);
+    default: SETERRQ(PetscObjectComm((PetscObject) sdm), PETSC_ERR_ARG_WRONG, "Unsupported solution type: %s (%d)", solTypes[PetscMin(user.solType, NUM_SOL_TYPES)], user.solType);
   }
   adv.ctx = &user;
 

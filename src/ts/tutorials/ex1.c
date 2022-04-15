@@ -158,7 +158,7 @@ int main(int argc,char **argv)
   */
   PetscCall(TSGetStepNumber(ts,&its));
 
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of pseudo timesteps = %D final time %4.2e\n",its,(double)ftime));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of pseudo timesteps = %" PetscInt_FMT " final time %4.2e\n",its,(double)ftime));
 
   /*
      Free the data structures constructed above

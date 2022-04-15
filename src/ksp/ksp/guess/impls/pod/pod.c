@@ -310,7 +310,7 @@ complete_request:
       for (i=0;i<pod->n;i++) pod->swork[3*pod->n + i] = pod->dots_iallreduce[i];
       break;
     default:
-      SETERRQ(PetscObjectComm((PetscObject)guess),PETSC_ERR_PLIB,"Invalid number of outstanding dots operations: %D",pod->ndots_iallreduce);
+      SETERRQ(PetscObjectComm((PetscObject)guess),PETSC_ERR_PLIB,"Invalid number of outstanding dots operations: %" PetscInt_FMT,pod->ndots_iallreduce);
     }
   }
   pod->ndots_iallreduce = 0;
@@ -379,9 +379,9 @@ complete_request:
   }
 
   if (pod->monitor) {
-    PetscCall(PetscPrintf(PetscObjectComm((PetscObject)guess),"  KSPGuessPOD: basis %D, energy fractions = ",pod->nen));
+    PetscCall(PetscPrintf(PetscObjectComm((PetscObject)guess),"  KSPGuessPOD: basis %" PetscBLASInt_FMT ", energy fractions = ",pod->nen));
     for (i=pod->n-1;i>=0;i--) {
-      PetscCall(PetscPrintf(PetscObjectComm((PetscObject)guess),"%1.6e (%d) ",pod->eigs[i]/toten,i >= pod->st ? 1 : 0));
+      PetscCall(PetscPrintf(PetscObjectComm((PetscObject)guess),"%1.6e (%d) ",(double)(pod->eigs[i]/toten),i >= pod->st ? 1 : 0));
     }
     PetscCall(PetscPrintf(PetscObjectComm((PetscObject)guess),"\n"));
     if (PetscDefined(USE_DEBUG)) {
@@ -399,7 +399,7 @@ complete_request:
         PetscCall(VecMAXPY(v,pod->n,pod->swork,pod->xsnap));
         PetscCall(VecDot(v,v,pod->swork));
         PetscCall(MPIU_Allreduce(pod->swork,pod->swork + 1,1,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)guess)));
-        PetscCall(PetscPrintf(PetscObjectComm((PetscObject)guess),"  Error projection %D: %g (expected lower than %g)\n",i,(double)PetscRealPart(pod->swork[1]),(double)(toten-parten)));
+        PetscCall(PetscPrintf(PetscObjectComm((PetscObject)guess),"  Error projection %" PetscInt_FMT ": %g (expected lower than %g)\n",i,(double)PetscRealPart(pod->swork[1]),(double)(toten-parten)));
         PetscCall(VecDestroy(&v));
       }
     }
@@ -440,7 +440,7 @@ static PetscErrorCode KSPGuessView_POD(KSPGuess guess,PetscViewer viewer)
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii));
   if (isascii) {
-    PetscCall(PetscViewerASCIIPrintf(viewer,"Max size %D, tolerance %g, Ainner %d\n",pod->maxn,pod->tol,pod->Aspd));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"Max size %" PetscInt_FMT ", tolerance %g, Ainner %d\n",pod->maxn,(double)pod->tol,pod->Aspd));
   }
   PetscFunctionReturn(0);
 }

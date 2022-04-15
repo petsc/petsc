@@ -596,7 +596,7 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
         PetscCall(MatGetColumnNorms(def->WtAW,NORM_INFINITY,norms));
         for (i=0; i<m; i++) {
           if (norms[i] < 100*PETSC_MACHINE_EPSILON) {
-            SETERRQ(comm,PETSC_ERR_SUP,"Column %D of W is in kernel of A.",i);
+            SETERRQ(comm,PETSC_ERR_SUP,"Column %" PetscInt_FMT " of W is in kernel of A.",i);
           }
         }
         PetscCall(PetscFree(norms));
@@ -648,7 +648,7 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
         red  = PetscCeilInt(commsize,PetscCeilInt(m,commsize));
         PetscCall(PetscObjectTypeCompareAny((PetscObject)(def->WtAW),&match,MATSEQDENSE,MATMPIDENSE,MATDENSE,""));
         if (match) red = commsize;
-        PetscCall(PetscInfo(pc,"Auto choosing reduction factor %D\n",red));
+        PetscCall(PetscInfo(pc,"Auto choosing reduction factor %" PetscInt_FMT "\n",red));
       }
       PetscCall(PCTelescopeSetReductionFactor(pcinner,red));
       PetscCall(PCSetUp(pcinner));
@@ -755,7 +755,7 @@ static PetscErrorCode PCView_Deflation(PC pc,PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer,"--- Coarse problem solver:\n"));
     PetscCall(PetscViewerASCIIPushTab(viewer));
     PetscCall(KSPGetTotalIterations(def->WtAWinv,&its));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"total number of iterations: %D\n",its));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"total number of iterations: %" PetscInt_FMT "\n",its));
     PetscCall(KSPView(def->WtAWinv,viewer));
     PetscCall(PetscViewerASCIIPopTab(viewer));
   }

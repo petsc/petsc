@@ -450,7 +450,7 @@ static PetscErrorCode KSPCGSolve_NASH(KSP ksp)
 
     if (ksp->its >= max_cg_its) {
       ksp->reason = KSP_DIVERGED_ITS;
-      PetscCall(PetscInfo(ksp, "KSPCGSolve_NASH: iterlim: its=%D\n", ksp->its));
+      PetscCall(PetscInfo(ksp, "KSPCGSolve_NASH: iterlim: its=%" PetscInt_FMT "\n", ksp->its));
       break;
     }
 

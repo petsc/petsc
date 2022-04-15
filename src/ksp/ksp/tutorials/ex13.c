@@ -108,7 +108,7 @@ int main(int argc,char **args)
     enorm = 0.0;
     for (i=0; i<N; i++) enorm += PetscRealPart(PetscConj(solution[i]-userx[i])*(solution[i]-userx[i]));
     enorm *= PetscRealPart(hx*hy);
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"m %D n %D error norm %g\n",m,n,(double)enorm));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"m %" PetscInt_FMT " n %" PetscInt_FMT " error norm %g\n",m,n,(double)enorm));
   }
 
   /*

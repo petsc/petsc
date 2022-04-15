@@ -212,7 +212,7 @@ int main(int argc, char **argv)
     case 6: PetscCall(test6(dm, &options)); break;
     case 7: PetscCall(test7(dm, &options)); break;
     case 8: PetscCall(test8(dm, &options)); break;
-    default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No such test: %D", options.test);
+    default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No such test: %" PetscInt_FMT, options.test);
   }
 
   PetscCall(DMDestroy(&dm));

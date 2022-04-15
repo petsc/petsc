@@ -362,7 +362,7 @@ static PetscErrorCode TSStep_IRK(TS ts)
     ts->reject++; accept = PETSC_FALSE;
     if (!ts->reason && ++rejections > ts->max_reject && ts->max_reject >= 0) {
       ts->reason = TS_DIVERGED_STEP_REJECTED;
-      PetscCall(PetscInfo(ts,"Step=%D, step rejections %D greater than current TS allowed, stopping solve\n",ts->steps,rejections));
+      PetscCall(PetscInfo(ts,"Step=%" PetscInt_FMT ", step rejections %" PetscInt_FMT " greater than current TS allowed, stopping solve\n",ts->steps,rejections));
     }
   }
   PetscFunctionReturn(0);
@@ -820,7 +820,7 @@ static PetscErrorCode TSIRKSetNumStages_IRK(TS ts,PetscInt nstages)
   TS_IRK *irk = (TS_IRK*)ts->data;
 
   PetscFunctionBegin;
-  PetscCheck(nstages>0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"input argument, %d, out of range",nstages);
+  PetscCheck(nstages>0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"input argument, %" PetscInt_FMT ", out of range",nstages);
   irk->nstages = nstages;
   PetscFunctionReturn(0);
 }

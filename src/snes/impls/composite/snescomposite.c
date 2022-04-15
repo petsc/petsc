@@ -280,7 +280,7 @@ static PetscErrorCode SNESCompositeApply_AdditiveOptimal(SNES snes,Vec X,Vec B,V
   total = 0.;
   for (i=0; i<jac->n; i++) {
     PetscCheck(!snes->errorifnotconverged || !PetscIsInfOrNanScalar(jac->beta[i]),PetscObjectComm((PetscObject)snes),PETSC_ERR_LIB,"SVD generated inconsistent output");
-    PetscCall(PetscInfo(snes,"%D: %g\n",i,(double)PetscRealPart(jac->beta[i])));
+    PetscCall(PetscInfo(snes,"%" PetscInt_FMT ": %g\n",i,(double)PetscRealPart(jac->beta[i])));
     tot += jac->beta[i];
     total += PetscAbsScalar(jac->beta[i]);
   }
@@ -810,7 +810,7 @@ static PetscErrorCode SNESSolve_Composite(SNES snes)
   }
   if (normtype == SNES_NORM_ALWAYS) {
     if (i == snes->max_its) {
-      PetscCall(PetscInfo(snes,"Maximum number of iterations has been reached: %D\n",snes->max_its));
+      PetscCall(PetscInfo(snes,"Maximum number of iterations has been reached: %" PetscInt_FMT "\n",snes->max_its));
       if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
     }
   } else if (!snes->reason) snes->reason = SNES_CONVERGED_ITS;

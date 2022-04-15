@@ -174,7 +174,7 @@ PetscErrorCode  DMMoabVecGetArray(DM dm, Vec vec, void* array)
 
     /* Get the array data for local entities */
     merr = dmmoab->mbiface->tag_iterate(vtag, dmmoab->vlocal->begin(), dmmoab->vlocal->end(), count, reinterpret_cast<void*&>(marray), false); MBERRNM(merr);
-    PetscCheckFalse(count != dmmoab->nloc + dmmoab->nghost,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mismatch between local vertices and tag partition for Vec. %D != %D.", count, dmmoab->nloc + dmmoab->nghost);
+    PetscCheckFalse(count != dmmoab->nloc + dmmoab->nghost,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mismatch between local vertices and tag partition for Vec. %" PetscInt_FMT " != %" PetscInt_FMT ".", count, dmmoab->nloc + dmmoab->nghost);
 
     i = 0;
     for (moab::Range::iterator iter = dmmoab->vlocal->begin(); iter != dmmoab->vlocal->end(); iter++) {
@@ -248,7 +248,7 @@ PetscErrorCode  DMMoabVecRestoreArray(DM dm, Vec vec, void* array)
 
     /* Get the array data for local entities */
     merr = dmmoab->mbiface->tag_iterate(vtag, dmmoab->vlocal->begin(), dmmoab->vlocal->end(), count, reinterpret_cast<void*&>(marray), false); MBERRNM(merr);
-    PetscCheckFalse(count != dmmoab->nloc + dmmoab->nghost,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mismatch between local vertices and tag partition for Vec. %D != %D.", count, dmmoab->nloc + dmmoab->nghost);
+    PetscCheckFalse(count != dmmoab->nloc + dmmoab->nghost,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mismatch between local vertices and tag partition for Vec. %" PetscInt_FMT " != %" PetscInt_FMT ".", count, dmmoab->nloc + dmmoab->nghost);
 
     i = 0;
     for (moab::Range::iterator iter = dmmoab->vlocal->begin(); iter != dmmoab->vlocal->end(); iter++) {
@@ -335,7 +335,7 @@ PetscErrorCode  DMMoabVecGetArrayRead(DM dm, Vec vec, void* array)
 
     /* Get the array data for local entities */
     merr = dmmoab->mbiface->tag_iterate(vtag, dmmoab->vlocal->begin(), dmmoab->vlocal->end(), count, reinterpret_cast<void*&>(marray), false); MBERRNM(merr);
-    PetscCheckFalse(count != dmmoab->nloc + dmmoab->nghost,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mismatch between local vertices and tag partition for Vec. %D != %D.", count, dmmoab->nloc + dmmoab->nghost);
+    PetscCheckFalse(count != dmmoab->nloc + dmmoab->nghost,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mismatch between local vertices and tag partition for Vec. %" PetscInt_FMT " != %" PetscInt_FMT ".", count, dmmoab->nloc + dmmoab->nghost);
 
     i = 0;
     for (moab::Range::iterator iter = dmmoab->vlocal->begin(); iter != dmmoab->vlocal->end(); iter++) {
@@ -580,7 +580,7 @@ PetscErrorCode DMVecCreateTagName_Moab_Private(moab::Interface *mbiface, char** 
 #endif
 
   /* Set the new name accordingly and return */
-  PetscCall(PetscSNPrintf(*tag_name, PETSC_MAX_PATH_LEN - 1, "%s_%D", PVEC_PREFIX, global_n));
+  PetscCall(PetscSNPrintf(*tag_name, PETSC_MAX_PATH_LEN - 1, "%s_%" PetscInt_FMT, PVEC_PREFIX, global_n));
   mberr = mbiface->tag_set_data(indexTag, &rootset, 1, (const void*)&global_n); MBERRNM(mberr);
   PetscFunctionReturn(0);
 }

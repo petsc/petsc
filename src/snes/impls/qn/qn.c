@@ -207,9 +207,9 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
       if (qn->monflg) {
         PetscCall(PetscViewerASCIIAddTab(qn->monitor,((PetscObject)snes)->tablevel+2));
         if (powell) {
-          PetscCall(PetscViewerASCIIPrintf(qn->monitor, "Powell restart! |%14.12e| > %6.4f*|%14.12e| i_r = %D\n", (double)PetscRealPart(DolddotD), (double)qn->powell_gamma, (double)PetscRealPart(DolddotDold),i_r));
+          PetscCall(PetscViewerASCIIPrintf(qn->monitor, "Powell restart! |%14.12e| > %6.4f*|%14.12e| i_r = %" PetscInt_FMT "\n", (double)PetscRealPart(DolddotD), (double)qn->powell_gamma, (double)PetscRealPart(DolddotDold),i_r));
         } else {
-          PetscCall(PetscViewerASCIIPrintf(qn->monitor, "Periodic restart! i_r = %D\n", i_r));
+          PetscCall(PetscViewerASCIIPrintf(qn->monitor, "Periodic restart! i_r = %" PetscInt_FMT "\n", i_r));
         }
         PetscCall(PetscViewerASCIISubtractTab(qn->monitor,((PetscObject)snes)->tablevel+2));
       }
@@ -222,7 +222,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
     }
   }
   if (i == snes->max_its) {
-    PetscCall(PetscInfo(snes, "Maximum number of iterations has been reached: %D\n", snes->max_its));
+    PetscCall(PetscInfo(snes, "Maximum number of iterations has been reached: %" PetscInt_FMT "\n", snes->max_its));
     if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
   }
   PetscFunctionReturn(0);
@@ -375,7 +375,7 @@ static PetscErrorCode SNESView_QN(SNES snes, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer,"  type is %s, restart type is %s, scale type is %s\n",SNESQNTypes[qn->type],SNESQNRestartTypes[qn->restart_type],SNESQNScaleTypes[qn->scale_type]));
-    PetscCall(PetscViewerASCIIPrintf(viewer,"  Stored subspace size: %D\n", qn->m));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Stored subspace size: %" PetscInt_FMT "\n", qn->m));
   }
   PetscFunctionReturn(0);
 }

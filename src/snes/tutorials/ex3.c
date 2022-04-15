@@ -223,7 +223,7 @@ int main(int argc,char **argv)
      the option -snes_view
   */
   PetscCall(SNESGetTolerances(snes,&abstol,&rtol,&stol,&maxit,&maxf));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"atol=%g, rtol=%g, stol=%g, maxit=%D, maxf=%D\n",(double)abstol,(double)rtol,(double)stol,maxit,maxf));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"atol=%g, rtol=%g, stol=%g, maxit=%" PetscInt_FMT ", maxf=%" PetscInt_FMT "\n",(double)abstol,(double)rtol,(double)stol,maxit,maxf));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize application:
@@ -275,7 +275,7 @@ int main(int argc,char **argv)
   PetscCall(FormInitialGuess(x));
   PetscCall(SNESSolve(snes,NULL,x));
   PetscCall(SNESGetIterationNumber(snes,&its));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D\n",its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %" PetscInt_FMT "\n",its));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Check solution and clean up
@@ -286,7 +286,7 @@ int main(int argc,char **argv)
   */
   PetscCall(VecAXPY(x,none,U));
   PetscCall(VecNorm(x,NORM_2,&norm));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g Iterations %D\n",(double)norm,its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g Iterations %" PetscInt_FMT "\n",(double)norm,its));
   if (ctx.sjerr) {
     SNESType       snestype;
     PetscCall(SNESGetType(snes,&snestype));
@@ -513,7 +513,7 @@ PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal fnorm,void *ctx)
   Vec            x;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"iter = %D,SNES Function norm %g\n",its,(double)fnorm));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"iter = %" PetscInt_FMT ",SNES Function norm %g\n",its,(double)fnorm));
   PetscCall(SNESGetSolution(snes,&x));
   PetscCall(VecView(x,monP->viewer));
   PetscFunctionReturn(0);
@@ -580,7 +580,7 @@ PetscErrorCode PostCheck(SNESLineSearch linesearch,Vec xcurrent,Vec y,Vec x,Pets
   /* iteration 1 indicates we are working on the second iteration */
   if (iter > 0) {
     da   = user->da;
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Checking candidate step at iteration %D with tolerance %g\n",iter,(double)check->tolerance));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Checking candidate step at iteration %" PetscInt_FMT " with tolerance %g\n",iter,(double)check->tolerance));
 
     /* Access local array data */
     PetscCall(DMDAVecGetArray(da,check->last_step,&xa_last));
@@ -600,7 +600,7 @@ PetscErrorCode PostCheck(SNESLineSearch linesearch,Vec xcurrent,Vec y,Vec x,Pets
         tmp        = xa[i];
         xa[i]      = .5*(xa[i] + xa_last[i]);
         *changed_x = PETSC_TRUE;
-        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  Altering entry %D: x=%g, x_last=%g, diff=%g, x_new=%g\n",i,(double)PetscAbsScalar(tmp),(double)PetscAbsScalar(xa_last[i]),(double)rdiff,(double)PetscAbsScalar(xa[i])));
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  Altering entry %" PetscInt_FMT ": x=%g, x_last=%g, diff=%g, x_new=%g\n",i,(double)PetscAbsScalar(tmp),(double)PetscAbsScalar(xa_last[i]),(double)rdiff,(double)PetscAbsScalar(xa[i])));
       }
     }
     PetscCall(DMDAVecRestoreArray(da,check->last_step,&xa_last));
@@ -649,12 +649,12 @@ PetscErrorCode PostSetSubKSP(SNESLineSearch linesearch,Vec xcurrent,Vec y,Vec x,
   PetscCall(KSPGetIterationNumber(sub_ksp,&sub_its)); /* inner KSP iteration number */
 
   if (iter) {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"    ...PostCheck snes iteration %D, ksp_it %D %D, subksp_it %D\n",iter,check->its0,its,sub_its));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"    ...PostCheck snes iteration %" PetscInt_FMT ", ksp_it %" PetscInt_FMT " %" PetscInt_FMT ", subksp_it %" PetscInt_FMT "\n",iter,check->its0,its,sub_its));
     ksp_ratio = ((PetscReal)(its))/check->its0;
     maxit     = (PetscInt)(ksp_ratio*sub_its + 0.5);
     if (maxit < 2) maxit = 2;
     PetscCall(KSPSetTolerances(sub_ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,maxit));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"    ...ksp_ratio %g, new maxit %D\n\n",(double)ksp_ratio,maxit));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"    ...ksp_ratio %g, new maxit %" PetscInt_FMT "\n\n",(double)ksp_ratio,maxit));
   }
   check->its0 = its; /* save current outer KSP iteration number */
   PetscFunctionReturn(0);

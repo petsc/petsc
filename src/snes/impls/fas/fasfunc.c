@@ -174,8 +174,8 @@ PetscErrorCode SNESFASGetCycleSNES(SNES snes,PetscInt level,SNES *lsnes)
   PetscValidHeaderSpecificType(snes,SNES_CLASSID,1,SNESFAS);
   PetscValidPointer(lsnes,3);
   fas = (SNES_FAS*)snes->data;
-  PetscCheck(level <= fas->levels-1,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_OUTOFRANGE,"Requested level %D from SNESFAS containing %D levels",level,fas->levels);
-  PetscCheckFalse(fas->level !=  fas->levels - 1,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_OUTOFRANGE,"SNESFASGetCycleSNES may only be called on the finest-level SNES.",level,fas->level);
+  PetscCheck(level <= fas->levels-1,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_OUTOFRANGE,"Requested level %" PetscInt_FMT " from SNESFAS containing %" PetscInt_FMT " levels",level,fas->levels);
+  PetscCheckFalse(fas->level !=  fas->levels - 1,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_OUTOFRANGE,"SNESFASGetCycleSNES may only be called on the finest-level SNES");
 
   *lsnes = snes;
   for (i = fas->level; i > level; i--) {

@@ -425,7 +425,7 @@ int main(int argc, char **argv)
     }
     PetscCall(SNESSolve(snes, NULL, u));
     PetscCall(SNESGetIterationNumber(snes, &its));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Number of SNES iterations = %D\n", its));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Number of SNES iterations = %" PetscInt_FMT "\n", its));
     PetscCall(DMComputeL2Diff(dm, 0.0, user.exactFuncs, NULL, u, &error));
     PetscCall(DMComputeL2FieldDiff(dm, 0.0, user.exactFuncs, NULL, u, ferrors));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %.3g [%.3g, %.3g]\n", (double)error, (double)ferrors[0], (double)ferrors[1]));
@@ -507,7 +507,7 @@ int main(int argc, char **argv)
       PetscCall(DMSwarmVectorDefineField(sdm, DMSwarmPICField_coor));
       PetscCall(DMCreateGlobalVector(sdm, &pvel));
       PetscCall(DMSwarmGetLocalSize(sdm, &Np));
-      PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "Timestep: %D Np: %D\n", tn, Np));
+      PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "Timestep: %" PetscInt_FMT " Np: %" PetscInt_FMT "\n", tn, Np));
       PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD, NULL));
       /* Interpolate velocity */
       PetscCall(DMInterpolationCreate(PETSC_COMM_SELF, &ictx));

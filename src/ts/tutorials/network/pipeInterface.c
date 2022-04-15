@@ -191,14 +191,14 @@ PetscErrorCode JunctionCreateJacobian(DM dm,PetscInt v,Mat *Jin,Mat *J[])
   PetscFunctionBegin;
   /* Get array size of Jv */
   PetscCall(DMNetworkGetSupportingEdges(dm,v,&nedges,&edges));
-  PetscCheck(nedges > 0,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"%d vertex, nedges %d",v,nedges);
+  PetscCheck(nedges > 0,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"%" PetscInt_FMT " vertex, nedges %" PetscInt_FMT,v,nedges);
 
   /* two Jacobians for each connected edge: J(v,e) and J(v,vc); adding J(v,v), total 2*nedges+1 Jacobians */
   PetscCall(PetscCalloc1(2*nedges+1,&Jv));
 
   /* Create dense zero block for this vertex: J[0] = Jacobian(v,v) */
   PetscCall(DMNetworkGetComponent(dm,v,-1,NULL,NULL,&M));
-  PetscCheck(M ==2,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"M != 2",M);
+  PetscCheck(M ==2,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"%" PetscInt_FMT " != 2",M);
   PetscCall(PetscMalloc3(M,&rows,M,&cols,M*M,&zeros));
   PetscCall(PetscArrayzero(zeros,M*M));
   for (i=0; i<M; i++) rows[i] = i;

@@ -155,7 +155,7 @@ int main(int argc,char **argv)
   PetscCall(TSGetSolveTime(ts,&ftime));
   PetscCall(TSGetStepNumber(ts,&steps));
   PetscCall(TSGetConvergedReason(ts,&reason));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%s at time %g after %D steps\n",TSConvergedReasons[reason],ftime,steps));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%s at time %g after %" PetscInt_FMT " steps\n",TSConvergedReasons[reason],(double)ftime,steps));
 
   if (user->io) {
     /* Print the numerical solution to screen and then dump to file */

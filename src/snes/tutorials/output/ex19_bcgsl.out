@@ -29,7 +29,7 @@ SNES Object: 2 MPI processes
   KSP Object: 2 MPI processes
     type: bcgsl
       Ell = 3
-      Delta = 0
+      Delta = 0.
     maximum iterations=10000, initial guess is zero
     tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
     left preconditioning

@@ -97,7 +97,7 @@ PetscErrorCode DMDAGlobalToNatural_Create(DM da)
   PetscCall(VecGetOwnershipRange(dd->natural,&start,NULL));
 
   PetscCall(DMDAGetNatural_Private(da,&Nlocal,&to));
-  PetscCheck(Nlocal == m,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Internal error: Nlocal %D local vector size %D",Nlocal,m);
+  PetscCheck(Nlocal == m,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Internal error: Nlocal %" PetscInt_FMT " local vector size %" PetscInt_FMT,Nlocal,m);
   PetscCall(ISCreateStride(PetscObjectComm((PetscObject)da),m,start,1,&from));
   PetscCall(VecCreateMPIWithArray(PetscObjectComm((PetscObject)da),dd->w,dd->Nlocal,PETSC_DETERMINE,NULL,&global));
   PetscCall(VecScatterCreate(global,from,dd->natural,to,&dd->gton));

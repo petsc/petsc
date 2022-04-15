@@ -32,7 +32,7 @@ static PetscErrorCode SBRGetEdgeLen_Private(DMPlexTransform tr, PetscInt edge, P
     PetscCall(DMGetCoordinateDM(dm, &cdm));
     PetscCall(DMPlexGetCone(dm, edge, &cone));
     PetscCall(DMPlexGetConeSize(dm, edge, &coneSize));
-    PetscCheck(coneSize == 2,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Edge %D cone size must be 2, not %D", edge, coneSize);
+    PetscCheck(coneSize == 2,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Edge %" PetscInt_FMT " cone size must be 2, not %" PetscInt_FMT, edge, coneSize);
     PetscCall(DMGetCoordinateDim(dm, &cdim));
     PetscCall(DMGetCoordinatesLocal(dm, &coordsLocal));
     PetscCall(VecGetArrayRead(coordsLocal, &coords));
@@ -239,7 +239,7 @@ static PetscErrorCode DMPlexTransformSetUp_SBR(DMPlexTransform tr)
           else if (vals[0])                  PetscCall(DMLabelSetValue(trType, p, RT_TRIANGLE_SPLIT_0));
           else if (vals[1])                  PetscCall(DMLabelSetValue(trType, p, RT_TRIANGLE_SPLIT_1));
           else if (vals[2])                  PetscCall(DMLabelSetValue(trType, p, RT_TRIANGLE_SPLIT_2));
-          else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cell %D does not fit any refinement type (%D, %D, %D)", p, vals[0], vals[1], vals[2]);
+          else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cell %" PetscInt_FMT " does not fit any refinement type (%" PetscInt_FMT ", %" PetscInt_FMT ", %" PetscInt_FMT ")", p, vals[0], vals[1], vals[2]);
         } else PetscCall(DMLabelSetValue(trType, p, RT_TRIANGLE));
         break;
       default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot handle points of type %s", DMPolytopeTypes[ct]);

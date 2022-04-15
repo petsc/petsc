@@ -50,7 +50,7 @@ static PetscErrorCode TaoSolve_SSFLS(Tao tao)
 
   tao->reason = TAO_CONTINUE_ITERATING;
   while (PETSC_TRUE) {
-    PetscCall(PetscInfo(tao, "iter: %D, merit: %g, ndpsi: %g\n",tao->niter, (double)ssls->merit, (double)ndpsi));
+    PetscCall(PetscInfo(tao, "iter: %" PetscInt_FMT ", merit: %g, ndpsi: %g\n",tao->niter, (double)ssls->merit, (double)ndpsi));
     /* Check the termination criteria */
     PetscCall(TaoLogConvergenceHistory(tao,ssls->merit,ndpsi,0.0,tao->ksp_its));
     PetscCall(TaoMonitor(tao,tao->niter,ssls->merit,ndpsi,0.0,t));

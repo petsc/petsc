@@ -61,7 +61,7 @@ int main(int argc,char **argv)
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-Nx",&Nx,NULL));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-Ny",&Ny,NULL));
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-rand",&Brand,NULL));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Fine grid size %D by %D\n",fine_ctx.mx,fine_ctx.my));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Fine grid size %" PetscInt_FMT " by %" PetscInt_FMT "\n",fine_ctx.mx,fine_ctx.my));
 
   /* Set up distributed array for fine grid */
   PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,fine_ctx.mx,fine_ctx.my,Nx,Ny,1,1,NULL,NULL,&fine_ctx.da));
@@ -90,7 +90,7 @@ int main(int argc,char **argv)
   PetscCall(VecViewFromOptions(fine_ctx.x,NULL,"-debug"));
   PetscCall(KSPGetIterationNumber(ksp,&its));
   PetscCall(KSPGetIterationNumber(ksp,&its));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %D\n",its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %" PetscInt_FMT "\n",its));
 
   /* test multiple right-hand side */
   PetscCall(MatCreateDense(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,fine_ctx.mx*fine_ctx.my,nrhs,NULL,&B));
@@ -121,7 +121,7 @@ int main(int argc,char **argv)
     for (n=0;n<nrhs;n++) {
       for (i=0;i<nlocal;i++) {
         if (PetscAbsScalar(xx[i] - XX[nlocal*n + i]) > PETSC_SMALL) {
-          PetscCall(PetscPrintf(PETSC_COMM_SELF,"[%d] Error local solve %D, entry %D -> %g + i %g != %g + i %g\n",PetscGlobalRank,n,i,(double)PetscRealPart(xx[i]),(double)PetscImaginaryPart(xx[i]),(double)PetscRealPart(XX[i]),(double)PetscImaginaryPart(XX[i])));
+          PetscCall(PetscPrintf(PETSC_COMM_SELF,"[%d] Error local solve %" PetscInt_FMT ", entry %" PetscInt_FMT " -> %g + i %g != %g + i %g\n",PetscGlobalRank,n,i,(double)PetscRealPart(xx[i]),(double)PetscImaginaryPart(xx[i]),(double)PetscRealPart(XX[i]),(double)PetscImaginaryPart(XX[i])));
         }
       }
     }

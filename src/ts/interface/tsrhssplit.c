@@ -44,7 +44,7 @@ PetscErrorCode TSRHSSplitSetIS(TS ts,const char splitname[],IS is)
     PetscCall(PetscStrallocpy(splitname,&newsplit->splitname));
   } else {
     PetscCall(PetscMalloc1(8,&newsplit->splitname));
-    PetscCall(PetscSNPrintf(newsplit->splitname,7,"%D",ts->num_rhs_splits));
+    PetscCall(PetscSNPrintf(newsplit->splitname,7,"%" PetscInt_FMT,ts->num_rhs_splits));
   }
   PetscCall(PetscObjectReference((PetscObject)is));
   newsplit->is = is;

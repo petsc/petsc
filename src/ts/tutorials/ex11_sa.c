@@ -1310,7 +1310,7 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
     }
     PetscCall(PetscFree4(fmin,fmax,fintegral,ftmp));
 
-    PetscCall(PetscPrintf(PetscObjectComm((PetscObject)ts),"% 3D  time %8.4g  |x| %8.4g  %s\n",stepnum,(double)time,(double)xnorm,ftable ? ftable : ""));
+    PetscCall(PetscPrintf(PetscObjectComm((PetscObject)ts),"% 3" PetscInt_FMT "  time %8.4g  |x| %8.4g  %s\n",stepnum,(double)time,(double)xnorm,ftable ? ftable : ""));
     PetscCall(PetscFree(ftable));
   }
   if (user->vtkInterval < 1) PetscFunctionReturn(0);
@@ -1318,7 +1318,7 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
     if (stepnum == -1) {        /* Final time is not multiple of normal time interval, write it anyway */
       PetscCall(TSGetStepNumber(ts,&stepnum));
     }
-    PetscCall(PetscSNPrintf(filename,sizeof filename,"ex11-%03D.vtu",stepnum));
+    PetscCall(PetscSNPrintf(filename,sizeof filename,"ex11-%03" PetscInt_FMT ".vtu",stepnum));
     PetscCall(OutputVTK(dm,filename,&viewer));
     PetscCall(VecView(X,viewer));
     PetscCall(PetscViewerDestroy(&viewer));
@@ -1531,7 +1531,7 @@ int main(int argc, char **argv)
   PetscCall(TSGetSolveTime(ts,&ftime));
   PetscCall(TSGetStepNumber(ts,&nsteps));
   PetscCall(TSGetConvergedReason(ts,&reason));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%s at time %g after %D steps\n",TSConvergedReasons[reason],(double)ftime,nsteps));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%s at time %g after %" PetscInt_FMT " steps\n",TSConvergedReasons[reason],(double)ftime,nsteps));
   PetscCall(TSDestroy(&ts));
 
   PetscCall(PetscFunctionListDestroy(&PhysicsList));

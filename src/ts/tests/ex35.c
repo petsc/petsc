@@ -139,7 +139,7 @@ int main(int argc, char **argv)
     PetscCall(VecDestroy(&subvecvx));
     PetscCall(VecDestroy(&subvecvy));
     PetscCall(VecDestroy(&randVec));
-  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Do not support dimension %D", dim);
+  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Do not support dimension %" PetscInt_FMT, dim);
 
   PetscCall(PetscDrawCreate(comm, NULL, "monitor_particle_positions", 0,0,400,300, &positionDraw));
   PetscCall(PetscDrawSetFromOptions(positionDraw));

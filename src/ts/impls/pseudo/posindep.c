@@ -150,7 +150,7 @@ static PetscErrorCode TSStep_Pseudo(TS ts)
   }
   if (reject >= ts->max_reject) {
     ts->reason = TS_DIVERGED_STEP_REJECTED;
-    PetscCall(PetscInfo(ts,"Step=%D, step rejections %D greater than current TS allowed, stopping solve\n",ts->steps,reject));
+    PetscCall(PetscInfo(ts,"Step=%" PetscInt_FMT ", step rejections %" PetscInt_FMT " greater than current TS allowed, stopping solve\n",ts->steps,reject));
     PetscFunctionReturn(0);
   }
 
@@ -165,12 +165,12 @@ static PetscErrorCode TSStep_Pseudo(TS ts)
   }
   if (pseudo->fnorm < pseudo->fatol) {
     ts->reason = TS_CONVERGED_PSEUDO_FATOL;
-    PetscCall(PetscInfo(ts,"Step=%D, converged since fnorm %g < fatol %g\n",ts->steps,pseudo->fnorm,pseudo->frtol));
+    PetscCall(PetscInfo(ts,"Step=%" PetscInt_FMT ", converged since fnorm %g < fatol %g\n",ts->steps,(double)pseudo->fnorm,(double)pseudo->frtol));
     PetscFunctionReturn(0);
   }
   if (pseudo->fnorm/pseudo->fnorm_initial < pseudo->frtol) {
     ts->reason = TS_CONVERGED_PSEUDO_FRTOL;
-    PetscCall(PetscInfo(ts,"Step=%D, converged since fnorm %g / fnorm_initial %g < frtol %g\n",ts->steps,pseudo->fnorm,pseudo->fnorm_initial,pseudo->fatol));
+    PetscCall(PetscInfo(ts,"Step=%" PetscInt_FMT ", converged since fnorm %g / fnorm_initial %g < frtol %g\n",ts->steps,(double)pseudo->fnorm,(double)pseudo->fnorm_initial,(double)pseudo->fatol));
     PetscFunctionReturn(0);
   }
   PetscFunctionReturn(0);
@@ -297,7 +297,7 @@ static PetscErrorCode TSPseudoMonitorDefault(TS ts,PetscInt step,PetscReal ptime
     PetscCall(VecNorm(pseudo->func,NORM_2,&pseudo->fnorm));
   }
   PetscCall(PetscViewerASCIIAddTab(viewer,((PetscObject)ts)->tablevel));
-  PetscCall(PetscViewerASCIIPrintf(viewer,"TS %D dt %g time %g fnorm %g\n",step,(double)ts->time_step,(double)ptime,(double)pseudo->fnorm));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"TS %" PetscInt_FMT " dt %g time %g fnorm %g\n",step,(double)ts->time_step,(double)ptime,(double)pseudo->fnorm));
   PetscCall(PetscViewerASCIISubtractTab(viewer,((PetscObject)ts)->tablevel));
   PetscFunctionReturn(0);
 }

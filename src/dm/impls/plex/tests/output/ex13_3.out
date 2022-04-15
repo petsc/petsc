@@ -285,10 +285,10 @@ PetscSF Object: 3 MPI processes
 [0]: component 0, Found representative leaf 6 (face 9) connecting to face 8 on (1, 0) with orientation 1
 [1]: component 0, Found representative leaf 2 (face 12) connecting to face 11 on (2, 1) with orientation 1
 Proc 0 Comp 0:
-  edge (2, 0) (1):
-  edge (1, 0) (1):
+  edge (2, 0) (TRUE):
+  edge (1, 0) (TRUE):
 Proc 1 Comp 0:
-  edge (2, 1) (0):
+  edge (2, 1) (FALSE):
 Proc 2 Comp 0:
 Proc 2 Comp 1:
 Flipping Proc+Comp 3:

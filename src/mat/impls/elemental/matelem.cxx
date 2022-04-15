@@ -29,7 +29,7 @@ static PetscErrorCode MatView_Elemental(Mat A,PetscViewer viewer)
     if (format == PETSC_VIEWER_ASCII_INFO) {
       /* call elemental viewing function */
       PetscCall(PetscViewerASCIIPrintf(viewer,"Elemental run parameters:\n"));
-      PetscCall(PetscViewerASCIIPrintf(viewer,"  allocated entries=%d\n",(*a->emat).AllocatedMemory()));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  allocated entries=%zu\n",(*a->emat).AllocatedMemory()));
       PetscCall(PetscViewerASCIIPrintf(viewer,"  grid height=%d, grid width=%d\n",(*a->emat).Grid().Height(),(*a->emat).Grid().Width()));
       if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
         /* call elemental viewing function */

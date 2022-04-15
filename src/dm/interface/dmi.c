@@ -359,7 +359,7 @@ PetscErrorCode DMCreateSectionSuperDM(DM dms[], PetscInt len, IS **is, DM *super
           else if (bs != gtdof) {bs = 1;}
           PetscCall(DMGetGlobalFieldOffset_Private(*superdm, p, startf, &start, &dummy));
           PetscCall(DMGetGlobalFieldOffset_Private(*superdm, p, startf+Nfs[i]-1, &dummy, &end));
-          PetscCheck(end-start == gtdof,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid number of global dofs %D != %D for dm %D on point %D", end-start, gtdof, i, p);
+          PetscCheck(end-start == gtdof,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid number of global dofs %" PetscInt_FMT " != %" PetscInt_FMT " for dm %" PetscInt_FMT " on point %" PetscInt_FMT, end-start, gtdof, i, p);
           for (d = start; d < end; ++d, ++subOff) subIndices[subOff] = d;
         }
       }

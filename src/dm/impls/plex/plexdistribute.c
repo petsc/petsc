@@ -118,7 +118,7 @@ static PetscErrorCode DMPlexGetAdjacency_Cone_Internal(DM dm, PetscInt p, PetscI
       for (q = 0; q < numAdj || ((void)(adj[numAdj++] = support[s]),0); ++q) {
         if (support[s] == adj[q]) break;
       }
-      PetscCheck(numAdj <= maxAdjSize,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid mesh exceeded adjacency allocation (%D)", maxAdjSize);
+      PetscCheck(numAdj <= maxAdjSize,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid mesh exceeded adjacency allocation (%" PetscInt_FMT ")", maxAdjSize);
     }
   }
   *adjSize = numAdj;
@@ -144,7 +144,7 @@ static PetscErrorCode DMPlexGetAdjacency_Support_Internal(DM dm, PetscInt p, Pet
       for (q = 0; q < numAdj || ((void)(adj[numAdj++] = cone[c]),0); ++q) {
         if (cone[c] == adj[q]) break;
       }
-      PetscCheck(numAdj <= maxAdjSize,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid mesh exceeded adjacency allocation (%D)", maxAdjSize);
+      PetscCheck(numAdj <= maxAdjSize,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid mesh exceeded adjacency allocation (%" PetscInt_FMT ")", maxAdjSize);
     }
   }
   *adjSize = numAdj;
@@ -167,7 +167,7 @@ static PetscErrorCode DMPlexGetAdjacency_Transitive_Internal(DM dm, PetscInt p, 
       for (q = 0; q < numAdj || ((void)(adj[numAdj++] = closure[c]),0); ++q) {
         if (closure[c] == adj[q]) break;
       }
-      PetscCheck(numAdj <= maxAdjSize,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid mesh exceeded adjacency allocation (%D)", maxAdjSize);
+      PetscCheck(numAdj <= maxAdjSize,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid mesh exceeded adjacency allocation (%" PetscInt_FMT ")", maxAdjSize);
     }
     PetscCall(DMPlexRestoreTransitiveClosure(dm, star[s], (PetscBool)!useClosure, &closureSize, (PetscInt**) &closure));
   }
@@ -249,7 +249,7 @@ PetscErrorCode DMPlexGetAdjacency_Internal(DM dm, PetscInt p, PetscBool useCone,
           for (q = 0; q < numAdj || ((void)(orig[numAdj++] = anchors[aOff+s]),0); ++q) {
             if (anchors[aOff+s] == orig[q]) break;
           }
-          PetscCheck(numAdj <= maxAdjSize,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid mesh exceeded adjacency allocation (%D)", maxAdjSize);
+          PetscCheck(numAdj <= maxAdjSize,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid mesh exceeded adjacency allocation (%" PetscInt_FMT ")", maxAdjSize);
         }
       }
       else {
@@ -710,7 +710,7 @@ PetscErrorCode DMPlexStratifyMigrationSF(DM dm, PetscSF sf, PetscSF *migrationSF
   PetscCall(DMPlexGetDepth(dm, &ldepth));
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(MPIU_Allreduce(&ldepth, &depth, 1, MPIU_INT, MPI_MAX, comm));
-  PetscCheck(!(ldepth >= 0) || !(depth != ldepth),PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Inconsistent Plex depth %d != %d", ldepth, depth);
+  PetscCheck(!(ldepth >= 0) || !(depth != ldepth),PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Inconsistent Plex depth %" PetscInt_FMT " != %" PetscInt_FMT, ldepth, depth);
   PetscCall(PetscLogEventBegin(DMPLEX_PartStratSF,dm,0,0,0));
 
   /* Before building the migration SF we need to know the new stratum offsets */
@@ -967,7 +967,7 @@ static PetscErrorCode DMPlexDistributeCones(DM dm, PetscSF migrationSF, ISLocalT
     PetscInt  p;
     PetscBool valid = PETSC_TRUE;
     for (p = 0; p < newConesSize; ++p) {
-      if (newCones[p] < 0) {valid = PETSC_FALSE; PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] Point %D not in overlap SF\n", PetscGlobalRank,p));}
+      if (newCones[p] < 0) {valid = PETSC_FALSE; PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] Point %" PetscInt_FMT " not in overlap SF\n", PetscGlobalRank,p));}
     }
     PetscCheck(valid,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid global to local map");
   }
@@ -1096,7 +1096,7 @@ static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmPa
       PetscInt gdepth;
 
       PetscCall(MPIU_Allreduce(&depth, &gdepth, 1, MPIU_INT, MPI_MAX, comm));
-      PetscCheck(!(depth >= 0) || !(gdepth != depth),PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Inconsistent Plex depth %d != %d", depth, gdepth);
+      PetscCheck(!(depth >= 0) || !(gdepth != depth),PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Inconsistent Plex depth %" PetscInt_FMT " != %" PetscInt_FMT, depth, gdepth);
       for (d = 0; d <= gdepth; ++d) {
         PetscBool has;
 
@@ -1171,7 +1171,7 @@ static PetscErrorCode DMPlexDistributeSetupTree(DM dm, PetscSF migrationSF, ISLo
       PetscInt  p;
       PetscBool valid = PETSC_TRUE;
       for (p = 0; p < newParentSize; ++p) {
-        if (newParents[p] < 0) {valid = PETSC_FALSE; PetscCall(PetscPrintf(PETSC_COMM_SELF, "Point %d not in overlap SF\n", p));}
+        if (newParents[p] < 0) {valid = PETSC_FALSE; PetscCall(PetscPrintf(PETSC_COMM_SELF, "Point %" PetscInt_FMT " not in overlap SF\n", p));}
       }
       PetscCheck(valid,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid global to local map");
     }
@@ -1400,7 +1400,7 @@ PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownersh
     /* Point ownership vote: Process with highest rank owns shared points */
     for (p = 0; p < nleaves; ++p) {
       if (shiftDebug) {
-        PetscCall(PetscSynchronizedPrintf(PetscObjectComm((PetscObject) dm), "[%d] Point %D RemotePoint %D Shift %D MyRank %D\n", rank, leaves ? leaves[p] : p, roots[p].index, (PetscInt) PetscRealPart(shift[roots[p].index%numShifts]), (rank + (shift ? (PetscInt) PetscRealPart(shift[roots[p].index%numShifts]) : 0))%size));
+        PetscCall(PetscSynchronizedPrintf(PetscObjectComm((PetscObject) dm), "[%d] Point %" PetscInt_FMT " RemotePoint %" PetscInt_FMT " Shift %" PetscInt_FMT " MyRank %" PetscInt_FMT "\n", rank, leaves ? leaves[p] : p, roots[p].index, (PetscInt) PetscRealPart(shift[roots[p].index%numShifts]), (rank + (shift ? (PetscInt) PetscRealPart(shift[roots[p].index%numShifts]) : 0))%size));
       }
       /* Either put in a bid or we know we own it */
       leafVote[p].vote  = (rank + (shift ? (PetscInt) PetscRealPart(shift[roots[p].index%numShifts]) : 0))%size;

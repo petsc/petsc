@@ -68,7 +68,7 @@ int main(int argc,char **args)
 
   PetscCall(MatGetOwnershipRange(A,&Istart,&Iend));
   nloc = Iend-Istart;
-  PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] A Istart,Iend: %D %D; nloc %D\n",rank,Istart,Iend,nloc));
+  PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] A Istart,Iend: %" PetscInt_FMT " %" PetscInt_FMT "; nloc %" PetscInt_FMT "\n",rank,Istart,Iend,nloc));
   PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
 
   PetscCall(PetscLogStageRegister("Assembly", &stage));
@@ -131,7 +131,7 @@ int main(int argc,char **args)
   PetscCall(VecAXPY(x,-1.0,u));
   PetscCall(VecNorm(x,NORM_2,&norm));
   PetscCall(KSPGetIterationNumber(ksp,&its));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g iterations %D\n",(double)norm,its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g iterations %" PetscInt_FMT "\n",(double)norm,its));
 
   /* Free work space. */
   PetscCall(KSPDestroy(&ksp));

@@ -240,7 +240,7 @@ int main(int argc,char **args)
     Lx = 1.; /* or ne for rod */
     max_conv_its = 3;
     PetscCall(PetscOptionsInt("-max_conv_its","Number of iterations in convergence study","",max_conv_its,&max_conv_its,NULL));
-    PetscCheck(max_conv_its > 0 && max_conv_its < 7,PETSC_COMM_WORLD, PETSC_ERR_USER, "Bad number of iterations for convergence test (%D)",max_conv_its);
+    PetscCheck(max_conv_its > 0 && max_conv_its < 7,PETSC_COMM_WORLD, PETSC_ERR_USER, "Bad number of iterations for convergence test (%" PetscInt_FMT ")",max_conv_its);
     PetscCall(PetscOptionsReal("-lx","Length of domain","",Lx,&Lx,NULL));
     PetscCall(PetscOptionsReal("-alpha","material coefficient inside circle","",s_soft_alpha,&s_soft_alpha,NULL));
     PetscCall(PetscOptionsBool("-test_nonzero_cols","nonzero test","",test_nonzero_cols,&test_nonzero_cols,NULL));
@@ -317,7 +317,7 @@ int main(int argc,char **args)
     }
     PetscCall(DMGetCoordinatesLocal(dm,&coordinates));
     PetscCall(DMGetCoordinateDim(dm,&dimEmbed));
-    PetscCheck(dimEmbed == dim,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"dimEmbed != dim %D",dimEmbed);
+    PetscCheck(dimEmbed == dim,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"dimEmbed != dim %" PetscInt_FMT,dimEmbed);
     PetscCall(VecGetLocalSize(coordinates,&nCoords));
     PetscCheck((nCoords % dimEmbed) == 0,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Coordinate vector the wrong size");
     PetscCall(VecGetArray(coordinates,&coords));
@@ -441,7 +441,7 @@ int main(int argc,char **args)
     PetscCall(MatSetOption(Amat,MAT_SPD,PETSC_TRUE));
     PetscCall(VecGetSize(bb,&N));
     local_sizes[iter] = N;
-    PetscCall(PetscInfo(snes,"%D global equations, %D vertices\n",N,N/dim));
+    PetscCall(PetscInfo(snes,"%" PetscInt_FMT " global equations, %" PetscInt_FMT " vertices\n",N,N/dim));
     if ((use_nearnullspace || attach_nearnullspace) && N/dim > 1) {
       /* Set up the near null space (a.k.a. rigid body modes) that will be used by the multigrid preconditioner */
       DM           subdm;
@@ -479,7 +479,7 @@ int main(int argc,char **args)
     PetscCall(VecZeroEntries(bb));
     PetscCall(VecGetSize(bb,&i));
     local_sizes[iter] = i;
-    PetscCall(PetscInfo(snes,"%D equations in vector, %D vertices\n",i,i/dim));
+    PetscCall(PetscInfo(snes,"%" PetscInt_FMT " equations in vector, %" PetscInt_FMT " vertices\n",i,i/dim));
     PetscCall(PetscLogStagePop());
     /* solve */
     PetscCall(PetscLogStagePush(stage[iter]));
@@ -512,7 +512,7 @@ int main(int argc,char **args)
   for (iter=1 ; iter<max_conv_its ; iter++) {
     if (run_type==1) err[iter] = 59.975208 - mdisp[iter];
     else             err[iter] = 171.038 - mdisp[iter];
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"[%d] %D) N=%12D, max displ=%9.7e, disp diff=%9.2e, error=%4.3e, rate=%3.2g\n",rank,iter,local_sizes[iter],(double)mdisp[iter],
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"[%d] %" PetscInt_FMT ") N=%12" PetscInt_FMT ", max displ=%9.7e, disp diff=%9.2e, error=%4.3e, rate=%3.2g\n",rank,iter,local_sizes[iter],(double)mdisp[iter],
                           (double)(mdisp[iter]-mdisp[iter-1]),(double)err[iter],(double)(PetscLogReal(err[iter-1]/err[iter])/PetscLogReal(2.))));
   }
 

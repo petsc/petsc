@@ -448,7 +448,7 @@ static PetscErrorCode KSPCGSolve_STCG(KSP ksp)
 
     if (ksp->its >= max_cg_its) {
       ksp->reason = KSP_DIVERGED_ITS;
-      PetscCall(PetscInfo(ksp, "KSPCGSolve_STCG: iterlim: its=%D\n", ksp->its));
+      PetscCall(PetscInfo(ksp, "KSPCGSolve_STCG: iterlim: its=%" PetscInt_FMT "\n", ksp->its));
       break;
     }
 
