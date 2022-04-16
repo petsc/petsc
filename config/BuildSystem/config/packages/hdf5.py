@@ -14,7 +14,6 @@ class Configure(config.package.GNUPackage):
     self.functions        = ['H5T_init']
     self.includes         = ['hdf5.h']
     self.liblist          = [['libhdf5_hl.a', 'libhdf5.a']]
-    self.complex          = 1
     self.hastests         = 1
     self.precisions       = ['single','double']
     self.installwithbatch = 0

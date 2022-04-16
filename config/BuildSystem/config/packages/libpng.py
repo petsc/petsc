@@ -10,7 +10,6 @@ class Configure(config.package.GNUPackage):
     self.includes         = ['png.h']
     self.liblist          = [['libpng.a']]
     self.functions        = ['png_create_write_struct']
-    self.lookforbydefault = 0
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)

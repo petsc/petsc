@@ -10,7 +10,6 @@ class Configure(config.package.CMakePackage):
     self.includes          = []
     self.functions         = []
     self.buildLanguages    = ['Cxx']
-    self.downloadonWindows = 0
     self.hastests          = 1
     self.linkedbypetsc     = 0
     self.useddirectly      = 0

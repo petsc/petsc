@@ -12,7 +12,6 @@ class Configure(config.package.GNUPackage):
     self.gitcommit         = 'v'+self.minversion+'-p4'
     self.download          = ['git://https://bitbucket.org/petsc/pkg-sowing.git','https://bitbucket.org/petsc/pkg-sowing/get/'+self.gitcommit+'.tar.gz']
     self.downloaddirnames  = ['petsc-pkg-sowing']
-    self.complex           = 1
     self.downloadonWindows = 1
     self.publicInstall     = 0  # always install in PETSC_DIR/PETSC_ARCH (not --prefix) since this is not used by users
     self.parallelMake      = 0  # sowing does not support make -j np

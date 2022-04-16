@@ -113,7 +113,7 @@ class Configure(config.package.GNUPackage):
       if not self.haveGNUMake4:
         self.logPrintBox('***** WARNING: You have a version of GNU make older than 4.0. It will work,\n\
 but may not support all the parallel testing options. You can install the \n\
-latest GNU make with your package manager, such as brew or macports, or use\n\
+latest GNU make with your package manager, such as Brew or MacPorts, or use\n\
 the --download-make option to get the latest GNU make *****')
       return
 

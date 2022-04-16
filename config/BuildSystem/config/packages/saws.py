@@ -10,8 +10,6 @@ class Configure(config.package.GNUPackage):
     self.functions   = ['SAWs_Register']
     self.includes    = ['SAWs.h']
     self.liblist     = [['libSAWs.a']]
-    self.libdir      = 'lib' # location of libraries in the package directory tree
-    self.includedir  = 'include' # location of includes in the package directory tree    return
     self.testoptions = '-saws_port_auto_select -saws_port_auto_select_silent'
 
   def setupDependencies(self, framework):

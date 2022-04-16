@@ -5,7 +5,6 @@ class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
     self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/c2html.tar.gz']
-    self.complex           = 1
     self.downloadonWindows = 1
     self.publicInstall     = 0  # always install in PETSC_DIR/PETSC_ARCH (not --prefix) since this is not used by users
     self.parallelMake      = 0
@@ -22,7 +21,7 @@ class Configure(config.package.GNUPackage):
   def formGNUConfigureArgs(self):
     '''Does not use the standard arguments at all since this does not use the MPI compilers etc
        Sowing will chose its own compilers if they are not provided explicitly here'''
-    args = ['--prefix='+self.confDir]
+    args = ['--prefix='+self.installDir]
     if 'download-c2html-cc' in self.argDB and self.argDB['download-c2html-cc']:
       args.append('CC="'+self.argDB['download-c2html-cc']+'"')
     return args

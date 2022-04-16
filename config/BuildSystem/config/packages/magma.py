@@ -20,8 +20,6 @@ class Configure(config.package.Package):
                              ['libmagma_sparse.a','libmagma.a','libpthread.a'],
                              ['libmagma.a'],
                              ['libmagma.a','libpthread.a']]
-    self.hastests         = 0
-    self.hastestsdatafiles= 0
     self.requirec99flag   = 1 #From CMakeLists.txt -> some code may not compile
     self.precisions       = ['single','double']
     self.buildLanguages   = ['Cxx']

@@ -26,6 +26,7 @@ configure_options = [
   '--download-cmake=1',
   '--download-metis=1',
   '--download-parmetis=1',
+  '--download-bison=1',
   '--download-ptscotch=1',
   '--download-triangle=1',
   '--download-superlu=1',

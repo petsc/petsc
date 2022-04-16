@@ -16,7 +16,6 @@ class Configure(config.package.CMakePackage):
     self.functionsCxx     = [1,'namespace Kokkos {void initialize(int&,char*[]);}','int one = 1;char* args[1];Kokkos::initialize(one,args);']
     self.minCxxVersion    = 'c++14'
     self.buildLanguages   = ['Cxx'] # Depending on if cuda, hip or sycl is avaiable, it will be modified.
-    self.downloadonWindows= 0
     self.hastests         = 1
     self.requiresrpath    = 1
     self.precisions       = ['single','double']

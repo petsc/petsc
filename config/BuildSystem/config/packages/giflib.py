@@ -7,4 +7,3 @@ class Configure(config.package.GNUPackage):
     self.includes         = ['gif_lib.h']
     self.liblist          = [['libgif.a'], ['libungif.a']]
     self.functions        = ['EGifOpenFileName']
-    self.lookforbydefault = 0
