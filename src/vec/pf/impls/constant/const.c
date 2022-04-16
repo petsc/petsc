@@ -28,7 +28,7 @@ PetscErrorCode PFView_Constant(void *value,PetscViewer viewer)
 #if !defined(PETSC_USE_COMPLEX)
     PetscCall(PetscViewerASCIIPrintf(viewer,"Constant = %g\n",*(double*)value));
 #else
-    PetscCall(PetscViewerASCIIPrintf(viewer,"Constant = %g + %gi\n",PetscRealPart(*(PetscScalar*)value),PetscImaginaryPart(*(PetscScalar*)value)));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"Constant = %g + %gi\n",(double)PetscRealPart(*(PetscScalar*)value),(double)PetscImaginaryPart(*(PetscScalar*)value)));
 #endif
   }
   PetscFunctionReturn(0);
