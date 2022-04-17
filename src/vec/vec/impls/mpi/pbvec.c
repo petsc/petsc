@@ -307,7 +307,7 @@ static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
         } else count = x->recvhdr[i].count;
         for (j=0,recvint=frame[i].ints,recvscalar=frame[i].scalars; j<count; j++,recvint++) {
           PetscInt loc = *recvint - X->map->rstart;
-          PetscCheckFalse(*recvint < X->map->rstart || X->map->rend <= *recvint,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Received vector entry %" PetscInt_FMT " out of local range [%" PetscInt_FMT ",%" PetscInt_FMT ")]",*recvint,X->map->rstart,X->map->rend);
+          PetscCheck(*recvint >= X->map->rstart && X->map->rend > *recvint,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Received vector entry %" PetscInt_FMT " out of local range [%" PetscInt_FMT ",%" PetscInt_FMT ")]",*recvint,X->map->rstart,X->map->rend);
           switch (imode) {
           case ADD_VALUES:
             xarray[loc] += *recvscalar++;
@@ -801,7 +801,7 @@ PetscErrorCode  VecMPISetGhost(Vec vv,PetscInt nghost,const PetscInt ghosts[])
     PetscCall(VecSetLocalToGlobalMapping(vv,ltog));
     PetscCall(ISLocalToGlobalMappingDestroy(&ltog));
   } else PetscCheck(vv->ops->create != VecCreate_MPI,PetscObjectComm((PetscObject)vv),PETSC_ERR_ARG_WRONGSTATE,"Must set local or global size before setting ghosting");
-  else PetscCheckFalse(!((PetscObject)vv)->type_name,PetscObjectComm((PetscObject)vv),PETSC_ERR_ARG_WRONGSTATE,"Must set type to VECMPI before ghosting");
+  else PetscCheck(((PetscObject)vv)->type_name,PetscObjectComm((PetscObject)vv),PETSC_ERR_ARG_WRONGSTATE,"Must set type to VECMPI before ghosting");
   PetscFunctionReturn(0);
 }
 

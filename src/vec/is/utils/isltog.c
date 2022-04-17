@@ -1703,7 +1703,7 @@ PetscErrorCode  ISLocalToGlobalMappingRestoreIndices(ISLocalToGlobalMapping ltog
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ltog,IS_LTOGM_CLASSID,1);
   PetscValidPointer(array,2);
-  PetscCheckFalse(ltog->bs == 1 && *array != ltog->indices,PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Trying to return mismatched pointer");
+  PetscCheck(ltog->bs != 1 || *array == ltog->indices,PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Trying to return mismatched pointer");
 
   if (ltog->bs > 1) {
     PetscCall(PetscFree(*(void**)array));

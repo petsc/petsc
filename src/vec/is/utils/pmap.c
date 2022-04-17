@@ -360,7 +360,7 @@ PetscErrorCode PetscLayoutSetISLocalToGlobalMapping(PetscLayout in,ISLocalToGlob
     PetscInt bs;
 
     PetscCall(ISLocalToGlobalMappingGetBlockSize(ltog,&bs));
-    PetscCheckFalse(in->bs > 0 && (bs != 1) && in->bs != bs,in->comm,PETSC_ERR_PLIB,"Blocksize of layout %" PetscInt_FMT " must match that of mapping %" PetscInt_FMT " (or the latter must be 1)",in->bs,bs);
+    PetscCheck(in->bs <= 0 || bs == 1 || in->bs == bs,in->comm,PETSC_ERR_PLIB,"Blocksize of layout %" PetscInt_FMT " must match that of mapping %" PetscInt_FMT " (or the latter must be 1)",in->bs,bs);
     PetscCall(PetscObjectReference((PetscObject)ltog));
   }
   PetscCall(ISLocalToGlobalMappingDestroy(&in->mapping));
@@ -388,7 +388,7 @@ PetscErrorCode PetscLayoutSetISLocalToGlobalMapping(PetscLayout in,ISLocalToGlob
 PetscErrorCode PetscLayoutSetLocalSize(PetscLayout map,PetscInt n)
 {
   PetscFunctionBegin;
-  PetscCheckFalse(map->bs > 1 && n % map->bs,map->comm,PETSC_ERR_ARG_INCOMP,"Local size %" PetscInt_FMT " not compatible with block size %" PetscInt_FMT,n,map->bs);
+  PetscCheck(map->bs <= 1 || (n % map->bs) == 0,map->comm,PETSC_ERR_ARG_INCOMP,"Local size %" PetscInt_FMT " not compatible with block size %" PetscInt_FMT,n,map->bs);
   map->n = n;
   PetscFunctionReturn(0);
 }
@@ -494,7 +494,7 @@ PetscErrorCode PetscLayoutSetBlockSize(PetscLayout map,PetscInt bs)
 {
   PetscFunctionBegin;
   if (bs < 0) PetscFunctionReturn(0);
-  PetscCheckFalse(map->n > 0 && map->n % bs,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local size %" PetscInt_FMT " not compatible with block size %" PetscInt_FMT,map->n,bs);
+  PetscCheck(map->n <= 0 || (map->n % bs) == 0,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local size %" PetscInt_FMT " not compatible with block size %" PetscInt_FMT,map->n,bs);
   if (map->mapping) {
     PetscInt       obs;
 

@@ -44,7 +44,7 @@ int main(int argc,char **argv)
       Determine information on stride
   */
   PetscCall(ISStrideGetInfo(set,&first,&step));
-  PetscCheckFalse(first != 3 || step != 2,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Stride info not correct!");
+  PetscCheck(first == 3 && step == 2,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Stride info not correct!");
   PetscCall(ISDestroy(&set));
   PetscCall(PetscFinalize());
   return 0;

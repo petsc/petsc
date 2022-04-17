@@ -72,7 +72,7 @@ PetscErrorCode  ISCompressIndicesGeneral(PetscInt n,PetscInt nkeys,PetscInt bs,P
     j    = 0;
     while (tpos) {
       PetscCall(PetscTableGetNext(gid1_lid1,&tpos,&gid1,&tt));
-      PetscCheckFalse(tt-- > isz,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"index greater than array-dim");
+      PetscCheck(tt-- <= isz,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"index greater than array-dim");
       nidx[tt] = gid1 - 1;
       j++;
     }

@@ -135,7 +135,7 @@ PetscErrorCode PetscCommSplitReductionBegin(MPI_Comm comm)
         else if (reducetype[i] == PETSC_SR_REDUCE_MIN) min_flg = 1;
         else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in PetscSplitReduction() data structure, probably memory corruption");
       }
-      PetscCheckFalse(sum_flg + max_flg + min_flg > 1 && sr->mix,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in PetscSplitReduction() data structure, probably memory corruption");
+      PetscCheck(sum_flg + max_flg + min_flg <= 1 || !sr->mix,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in PetscSplitReduction() data structure, probably memory corruption");
       if (sum_flg + max_flg + min_flg > 1) {
         sr->mix = PETSC_TRUE;
         for (i=0; i<numops; i++) { sr->lvalues_mix[i].v = lvalues[i]; sr->lvalues_mix[i].i = reducetype[i]; }
@@ -375,7 +375,7 @@ PetscErrorCode  VecDotEnd(Vec x,Vec y,PetscScalar *result)
   PetscCall(PetscSplitReductionEnd(sr));
 
   PetscCheck(sr->numopsend < sr->numopsbegin,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Called VecxxxEnd() more times then VecxxxBegin()");
-  PetscCheckFalse(x && (void*)x != sr->invecs[sr->numopsend],PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Called VecxxxEnd() in a different order or with a different vector than VecxxxBegin()");
+  PetscCheck(!x || (void*)x == sr->invecs[sr->numopsend],PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Called VecxxxEnd() in a different order or with a different vector than VecxxxBegin()");
   PetscCheck(sr->reducetype[sr->numopsend] == PETSC_SR_REDUCE_SUM,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Called VecDotEnd() on a reduction started with VecNormBegin()");
   *result = sr->gvalues[sr->numopsend++];
 
@@ -535,8 +535,8 @@ PetscErrorCode  VecNormEnd(Vec x,NormType ntype,PetscReal *result)
   PetscCall(PetscSplitReductionEnd(sr));
 
   PetscCheck(sr->numopsend < sr->numopsbegin,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Called VecxxxEnd() more times then VecxxxBegin()");
-  PetscCheckFalse((void*)x != sr->invecs[sr->numopsend],PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Called VecxxxEnd() in a different order or with a different vector than VecxxxBegin()");
-  PetscCheckFalse(sr->reducetype[sr->numopsend] != PETSC_SR_REDUCE_MAX && ntype == NORM_MAX,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Called VecNormEnd(,NORM_MAX,) on a reduction started with VecDotBegin() or NORM_1 or NORM_2");
+  PetscCheck((void*)x == sr->invecs[sr->numopsend],PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Called VecxxxEnd() in a different order or with a different vector than VecxxxBegin()");
+  PetscCheck(sr->reducetype[sr->numopsend] == PETSC_SR_REDUCE_MAX || ntype != NORM_MAX,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Called VecNormEnd(,NORM_MAX,) on a reduction started with VecDotBegin() or NORM_1 or NORM_2");
   result[0] = PetscRealPart(sr->gvalues[sr->numopsend++]);
 
   if (ntype == NORM_2) result[0] = PetscSqrtReal(result[0]);
@@ -639,7 +639,7 @@ PetscErrorCode  VecMDotEnd(Vec x,PetscInt nv,const Vec y[],PetscScalar result[])
   PetscCall(PetscSplitReductionEnd(sr));
 
   PetscCheck(sr->numopsend < sr->numopsbegin,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Called VecxxxEnd() more times then VecxxxBegin()");
-  PetscCheckFalse(x && (void*)x != sr->invecs[sr->numopsend],PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Called VecxxxEnd() in a different order or with a different vector than VecxxxBegin()");
+  PetscCheck(!x || (void*)x == sr->invecs[sr->numopsend],PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Called VecxxxEnd() in a different order or with a different vector than VecxxxBegin()");
   PetscCheck(sr->reducetype[sr->numopsend] == PETSC_SR_REDUCE_SUM,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Called VecDotEnd() on a reduction started with VecNormBegin()");
   for (i=0;i<nv;i++) result[i] = sr->gvalues[sr->numopsend++];
 

@@ -31,9 +31,9 @@ PETSC_EXTERN PetscErrorCode VecValidValues(Vec vec,PetscInt argnum,PetscBool beg
     PetscCall(VecGetArrayRead(vec,&x));
     for (i=0; i<n; i++) {
       if (begin) {
-        PetscCheckFalse(PetscIsInfOrNanScalar(x[i]),PETSC_COMM_SELF,PETSC_ERR_FP,"Vec entry at local location %" PetscInt_FMT " is not-a-number or infinite at beginning of function: Parameter number %" PetscInt_FMT,i,argnum);
+        PetscCheck(!PetscIsInfOrNanScalar(x[i]),PETSC_COMM_SELF,PETSC_ERR_FP,"Vec entry at local location %" PetscInt_FMT " is not-a-number or infinite at beginning of function: Parameter number %" PetscInt_FMT,i,argnum);
       } else {
-        PetscCheckFalse(PetscIsInfOrNanScalar(x[i]),PETSC_COMM_SELF,PETSC_ERR_FP,"Vec entry at local location %" PetscInt_FMT " is not-a-number or infinite at end of function: Parameter number %" PetscInt_FMT,i,argnum);
+        PetscCheck(!PetscIsInfOrNanScalar(x[i]),PETSC_COMM_SELF,PETSC_ERR_FP,"Vec entry at local location %" PetscInt_FMT " is not-a-number or infinite at end of function: Parameter number %" PetscInt_FMT,i,argnum);
       }
     }
     PetscCall(VecRestoreArrayRead(vec,&x));
@@ -654,7 +654,7 @@ PetscErrorCode  VecAXPBYPCZ(Vec z,PetscScalar alpha,PetscScalar beta,PetscScalar
   PetscCheckSameTypeAndComm(x,5,z,1);
   VecCheckSameSize(x,1,y,5);
   VecCheckSameSize(x,1,z,6);
-  PetscCheckFalse(x == y || x == z,PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_IDN,"x, y, and z must be different vectors");
+  PetscCheck(x != y && x != z,PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_IDN,"x, y, and z must be different vectors");
   PetscCheck(y != z,PetscObjectComm((PetscObject)y),PETSC_ERR_ARG_IDN,"x, y, and z must be different vectors");
   PetscValidLogicalCollectiveScalar(z,alpha,2);
   PetscValidLogicalCollectiveScalar(z,beta,3);
@@ -1383,7 +1383,7 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
 
         PetscCall(VecCUDAGetArrays_Private(X,&x,&x_d,&flg));
         PetscCheck(flg != PETSC_OFFLOAD_UNALLOCATED,PETSC_COMM_SELF,PETSC_ERR_SUP,"Not for PETSC_OFFLOAD_UNALLOCATED");
-        PetscCheckFalse(n && !x && !x_d,PETSC_COMM_SELF,PETSC_ERR_SUP,"Missing vector data");
+        PetscCheck(!n || x || x_d,PETSC_COMM_SELF,PETSC_ERR_SUP,"Missing vector data");
         if (x) x += start;
         if (x_d) x_d += start;
         PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)X),&size));
@@ -1402,7 +1402,7 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
 
         PetscCall(VecHIPGetArrays_Private(X,&x,&x_d,&flg));
         PetscCheck(flg != PETSC_OFFLOAD_UNALLOCATED,PETSC_COMM_SELF,PETSC_ERR_SUP,"Not for PETSC_OFFLOAD_UNALLOCATED");
-        PetscCheckFalse(n && !x && !x_d,PETSC_COMM_SELF,PETSC_ERR_SUP,"Missing vector data");
+        PetscCheck(!n || x || x_d,PETSC_COMM_SELF,PETSC_ERR_SUP,"Missing vector data");
         if (x) x += start;
         if (x_d) x_d += start;
         PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)X),&size));
@@ -2527,7 +2527,7 @@ PetscErrorCode VecCUDAPlaceArray(Vec vin,const PetscScalar a[])
   PetscCheckTypeNames(vin,VECSEQCUDA,VECMPICUDA);
 #if defined(PETSC_HAVE_CUDA)
   PetscCall(VecCUDACopyToGPU(vin));
-  PetscCheckFalse(((Vec_Seq*)vin->data)->unplacedarray,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"VecCUDAPlaceArray()/VecPlaceArray() was already called on this vector, without a call to VecCUDAResetArray()/VecResetArray()");
+  PetscCheck(!((Vec_Seq*)vin->data)->unplacedarray,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"VecCUDAPlaceArray()/VecPlaceArray() was already called on this vector, without a call to VecCUDAResetArray()/VecResetArray()");
   ((Vec_Seq*)vin->data)->unplacedarray  = (PetscScalar *) ((Vec_CUDA*)vin->spptr)->GPUarray; /* save previous GPU array so reset can bring it back */
   ((Vec_CUDA*)vin->spptr)->GPUarray = (PetscScalar*)a;
   vin->offloadmask = PETSC_OFFLOAD_GPU;
@@ -2850,7 +2850,7 @@ PetscErrorCode VecHIPPlaceArray(Vec vin,const PetscScalar a[])
   PetscCheckTypeNames(vin,VECSEQHIP,VECMPIHIP);
 #if defined(PETSC_HAVE_HIP)
   PetscCall(VecHIPCopyToGPU(vin));
-  PetscCheckFalse(((Vec_Seq*)vin->data)->unplacedarray,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"VecHIPPlaceArray()/VecPlaceArray() was already called on this vector, without a call to VecHIPResetArray()/VecResetArray()");
+  PetscCheck(!((Vec_Seq*)vin->data)->unplacedarray,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"VecHIPPlaceArray()/VecPlaceArray() was already called on this vector, without a call to VecHIPResetArray()/VecResetArray()");
   ((Vec_Seq*)vin->data)->unplacedarray  = (PetscScalar *) ((Vec_HIP*)vin->spptr)->GPUarray; /* save previous GPU array so reset can bring it back */
   ((Vec_HIP*)vin->spptr)->GPUarray = (PetscScalar*)a;
   vin->offloadmask = PETSC_OFFLOAD_GPU;

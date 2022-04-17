@@ -39,7 +39,7 @@ int main(int argc,char **argv)
   PetscCall(ISGetLocalSize(is,&n));
   PetscCall(ISGetIndices(is,&ii));
   for (i=0; i<10000; i++) {
-    PetscCheckFalse(ii[i] != -8 + 3*i,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetIndices");
+    PetscCheck(ii[i] == -8 + 3*i,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetIndices");
   }
   PetscCall(ISRestoreIndices(is,&ii));
   PetscCall(ISDestroy(&is));
