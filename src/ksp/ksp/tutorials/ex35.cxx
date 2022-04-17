@@ -323,7 +323,7 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ptr)
 
     /* Get connectivity information: */
     PetscCall(DMMoabGetElementConnectivity(dm, ehandle, &nconn, &connect));
-    PetscCheck(nconn === 3 || nconn == 4,PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Only TRI3/QUAD4 element bases are supported in the current example. n(Connectivity)=%" PetscInt_FMT ".", nconn);
+    PetscCheck(nconn == 3 || nconn == 4,PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Only TRI3/QUAD4 element bases are supported in the current example. n(Connectivity)=%" PetscInt_FMT ".", nconn);
 
     PetscCall(PetscArrayzero(localv, nconn));
 
