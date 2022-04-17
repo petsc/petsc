@@ -22,7 +22,7 @@ class Configure(config.base.Configure):
   def cleanExternalpackagesDir(self):
     import shutil
     if self.framework.argDB['with-clean'] and os.path.isdir(self.dir):
-      self.logPrintBox('Warning: "with-clean" is specified. Removing all externalpackage files from '+ self.dir)
+      self.logPrintWarning('"with-clean" is specified. Removing all externalpackage files from '+ self.dir)
       shutil.rmtree(self.dir)
     return
 

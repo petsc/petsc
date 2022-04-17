@@ -1234,7 +1234,7 @@ class Configure(config.base.Configure):
       if self.useMPICompilers() and 'with-mpi-dir' in self.argDB:
       # if it gets here these means that self.argDB['with-mpi-dir']/bin does not exist so we should not search for MPI compilers
       # that is we are turning off the self.useMPICompilers()
-        self.logPrintBox('***** WARNING: '+os.path.join(self.argDB['with-mpi-dir'], 'bin')+ ' dir does not exist!\n Skipping check for MPI compilers due to potentially incorrect --with-mpi-dir option.\n Suggest using --with-cc=/path/to/mpicc option instead ******')
+        self.logPrintWarning(os.path.join(self.argDB['with-mpi-dir'], 'bin')+ ' dir does not exist! Skipping check for MPI compilers due to potentially incorrect --with-mpi-dir option. Suggest using --with-cc=/path/to/mpicc option instead')
 
         self.argDB['with-mpi-compilers'] = 0
       if self.useMPICompilers():
@@ -2406,7 +2406,7 @@ class Configure(config.base.Configure):
       return
     self.LIBS = oldLibs
     self.compilerDefines = tmpCompilerDefines
-    self.logPrint('*** WARNING *** Shared linking may not function on this architecture')
+    self.logPrint('Warning: Shared linking may not function on this architecture')
     self.staticLibrary=1
     self.sharedLibrary=0
 
@@ -2585,7 +2585,7 @@ if (dlclose(handle)) {
     ignoreEnv = ['CFLAGS','CXXFLAGS','FCFLAGS','FFLAGS','F90FLAGS','CPP','CPPFLAGS','CXXPP','CXXPPFLAGS','LDFLAGS','LIBS','MPI_DIR','RM','MAKEFLAGS','AR','RANLIB']
     for envVal in ignoreEnvCompilers + ignoreEnv:
       if envVal in os.environ:
-        msg = 'WARNING! Found environment variable: %s=%s\n' % (envVal, os.environ[envVal])
+        msg = 'Warning: Found environment variable: %s=%s. ' % (envVal, os.environ[envVal])
         if envVal in self.framework.clArgDB or (envVal in ignoreEnvCompilers and 'with-'+envVal.lower() in self.framework.clArgDB):
           self.logPrintBox(msg+'Ignoring it, since its also set on command line')
           del os.environ[envVal]

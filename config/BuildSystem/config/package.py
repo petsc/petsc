@@ -740,7 +740,7 @@ If the problem persists, please send your configure.log to petsc-maint@mcs.anl.g
             rbranch = 'origin/'+self.gitcommit
             config.base.Configure.executeShellCommand([self.sourceControl.git, 'cat-file', '-e', rbranch+'^{commit}'], cwd=self.packageDir, log = self.log)
             gitcommit_hash,err,ret = config.base.Configure.executeShellCommand([self.sourceControl.git, 'rev-parse', self.gitcommit], cwd=self.packageDir, log = self.log)
-            self.logPrintBox('***** WARNING: branch "%s" is specified, however remote branch "%s" also exits! Proceeding with using the remote branch.\n\
+            self.logPrintWarning('Branch "%s" is specified, however remote branch "%s" also exists! Proceeding with using the remote branch. \
 To use the local branch (manually checkout local branch and) - rerun configure with option --download-%s-commit=HEAD)' % (self.gitcommit, rbranch, self.name))
             prefetch = self.gitcommit
           except:
@@ -767,7 +767,7 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
           config.base.Configure.executeShellCommand([self.sourceControl.git, 'clean', '-f', '-d', '-x'], cwd=self.packageDir, log = self.log)
         except RuntimeError as e:
           if str(e).find("Unknown option: -c") >= 0:
-            self.logPrintBox('***** WARNING: Unable to "git stash". Likely due to antique git version (<1.8). Proceeding without stashing!')
+            self.logPrintWaring('Unable to "git stash". Likely due to antique git version (<1.8). Proceeding without stashing!')
           else:
             raise RuntimeError('Unable to run git stash/clean in repository: '+self.packageDir+'.\nPerhaps its a git error!')
         try:
@@ -1169,19 +1169,19 @@ char     *ver = "petscpkgver(" PetscXstr_({y}) ")";
       return
 
     suggest = ''
-    if self.download: suggest = '\nSuggest using --download-'+self.package+' for a compatible '+self.name
+    if self.download: suggest = '. Suggest using --download-'+self.package+' for a compatible '+self.name
     if self.minversion:
       if self.versionToTuple(self.minversion) > self.version_tuple:
         raise RuntimeError(self.package+' version is '+self.foundversion+' this version of PETSc needs at least '+self.minversion+suggest+'\n')
     elif self.version:
       if self.versionToTuple(zeroPatch(self.version)) > self.version_tuple:
-        self.logPrintBox('Warning: Using version '+self.foundversion+' of package '+self.package+' PETSc is tested with '+dropPatch(self.version)+suggest)
+        self.logPrintWarning('Using version '+self.foundversion+' of package '+self.package+' PETSc is tested with '+dropPatch(self.version)+suggest)
     if self.maxversion:
       if self.versionToTuple(self.maxversion) < self.version_tuple:
         raise RuntimeError(self.package+' version is '+self.foundversion+' this version of PETSc needs at most '+self.maxversion+suggest+'\n')
     elif self.version:
       if self.versionToTuple(infinitePatch(self.version)) < self.version_tuple:
-        self.logPrintBox('Warning: Using version '+self.foundversion+' of package '+self.package+' PETSc is tested with '+dropPatch(self.version)+suggest)
+        self.logPrintWarning('Using version '+self.foundversion+' of package '+self.package+' PETSc is tested with '+dropPatch(self.version)+suggest)
     return
 
   def configure(self):

@@ -203,66 +203,55 @@ class Logger(args.ArgumentProcessor):
 
   def logBack(self):
     '''Backup the current line if we are not scrolling output'''
-    if not self.out is None and self.linewidth > 0:
+    if self.out is not None and self.linewidth > 0:
       self.out.write('\r')
     return
 
   def logClear(self):
     '''Clear the current line if we are not scrolling output'''
-    if not self.out is None and self.linewidth > 0:
-      self.out.write('\r')
-      self.out.write(''.join([' '] * self.linewidth))
-      self.out.write('\r')
+    if self.out is not None and self.linewidth > 0:
+      self.out.write((' '*self.linewidth).join(('\r','\r')))
     return
 
-  def logPrintDivider(self, debugLevel = -1, debugSection = None, single = 0):
-    self.logPrint(('-' if single else '=')*self.dividerLength, debugLevel = debugLevel, debugSection = debugSection)
-    return
+  def logPrintDivider(self, single = False, **kwargs):
+    divider = ('-' if single else '=')*self.dividerLength
+    return self.logPrint(divider, **kwargs)
 
-  def logPrintBox(self,msg, debugLevel = -1, debugSection = 'screen', indent = 1, comm = None, rmDir = 1, prefix = None):
+  def logPrintWarning(self, msg, title = None, **kwargs):
+    if title is None:
+      title = 'WARNING'
+    return self.logPrintBox(msg,title='***** {} *****'.format(title),**kwargs)
+
+  def logPrintBox(self, msg, debugLevel = -1, debugSection = 'screen', indent = 1, comm = None, rmDir = 1, prefix = None, title = None):
     def center_wrap(banner,text,**kwargs):
       def center_line(line):
         return line.center(self.dividerLength).rstrip()
 
       wrapped = textwrap.wrap(textwrap.dedent(text),**kwargs)
       if len(wrapped) == 1:
-        # center-justify single lines
-        wrapped[0] = center_line(wrapped[0])
+        # center-justify single lines, and remove the bogus prefix
+        wrapped[0] = center_line(wrapped[0].lstrip())
       if banner:
         # add the banner
         wrapped.insert(0,center_line(banner))
       return '\n'.join(wrapped)
 
-    def prepend_banner(msg,*args):
-      lo_msg = msg.lower()
-      banner = None
 
-      for title in args:
-        lo_title = title.lower()+':'
-        if lo_msg.startswith(lo_title):
-          banner = '***** {} *****'.format(title.upper())
-          msg    = msg.replace(lo_title,'').replace(lo_title.title(),'').lstrip()
-          break
-      return banner,msg
-
-
-    msg = msg.strip()
     if prefix is None:
       prefix = ' '*2
-      msg = 'warning: '+msg
-      # check if the message already has prefixes, in which case we should insert that
-      # prefix as a banner (and remove any existing copies of it)
-      banner,msg = prepend_banner(msg,'warning','error')
-    else:
-      banner = None
 
-    msg = center_wrap(banner,msg,width=self.dividerLength-2,initial_indent=prefix,subsequent_indent=prefix)
+    if rmDir:
+      rmDir = center_wrap(title,self.logStripDirectory(msg),width=self.dividerLength-2,initial_indent=prefix,subsequent_indent=prefix)
+    msg = center_wrap(title,msg,width=self.dividerLength-2,initial_indent=prefix,subsequent_indent=prefix)
     self.logClear()
-    self.logPrintDivider(debugLevel = debugLevel, debugSection = debugSection)
-    self.logPrint(msg, debugLevel = debugLevel, debugSection = debugSection, rmDir = rmDir)
-    self.logPrintDivider(debugLevel = debugLevel, debugSection = debugSection)
+    self.logPrintDivider(debugLevel = debugLevel, debugSection = debugSection, forceNewLine = True)
+    self.logPrint(msg, debugLevel = debugLevel, debugSection = debugSection, rmDir = rmDir, indent = indent, comm = comm, forceNewLine = True)
+    self.logPrintDivider(debugLevel = debugLevel, debugSection = debugSection, forceNewLine = True)
     self.logPrint('', debugLevel = debugLevel, debugSection = debugSection)
     return
+
+  def logStripDirectory(self,msg):
+    return msg.replace(RemoveDirectory,'')
 
   def logClearRemoveDirectory(self):
     global RemoveDirectory
@@ -283,12 +272,14 @@ class Logger(args.ArgumentProcessor):
     for writeAll, f in enumerate([self.out, self.log]):
       if self.checkWrite(f, debugLevel, debugSection, writeAll):
         if not forceScroll and not writeAll and self.linewidth > 0:
-          global RemoveDirectory
-          self.logBack()
-          if rmDir: msg = msg.replace(RemoveDirectory,'')
-          for ms in msg.split('\n'):
-            f.write(ms[0:self.linewidth])
-            f.write(''.join([' '] * (self.linewidth - len(ms))))
+          self.logClear()
+          if rmDir:
+            if isinstance(rmDir,str):
+              msg = rmDir
+            else:
+              msg = self.logStripDirectory(msg)
+          for ms in msg.splitlines():
+            f.write(ms[:self.linewidth])
         else:
           if not debugSection is None and not debugSection == 'screen' and len(msg):
             f.write(str(debugSection))
@@ -298,7 +289,7 @@ class Logger(args.ArgumentProcessor):
           f.flush()
     return
 
-  def logPrint(self, msg, debugLevel = -1, debugSection = None, indent = 1, comm = None, forceScroll = 0, rmDir = 1):
+  def logPrint(self, msg, debugLevel = -1, debugSection = None, indent = 1, comm = None, forceScroll = 0, rmDir = 1, forceNewLine = False):
     '''Write the message to the log streams with proper indentation and a newline'''
     '''Generally goes to the file and the screen'''
     if indent:
@@ -306,7 +297,7 @@ class Logger(args.ArgumentProcessor):
     self.logWrite(msg, debugLevel, debugSection, forceScroll = forceScroll, rmDir = rmDir)
     for writeAll, f in enumerate([self.out, self.log]):
       if self.checkWrite(f, debugLevel, debugSection, writeAll):
-        if writeAll or self.linewidth < 0:
+        if forceNewLine or writeAll or self.linewidth < 0:
           f.write('\n')
     return
 
