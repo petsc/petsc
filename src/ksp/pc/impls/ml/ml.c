@@ -989,8 +989,8 @@ PetscErrorCode PCSetFromOptions_ML(PetscOptionItems *PetscOptionsObject,PC pc)
     We also try to set some sane defaults when energy minimization is activated, otherwise it's hard to find a working
     combination of options and ML's exit(1) explanations don't help matters.
   */
-  PetscCheckFalse(pc_ml->EnergyMinimization < -1 || pc_ml->EnergyMinimization > 4,comm,PETSC_ERR_ARG_OUTOFRANGE,"EnergyMinimization must be in range -1..4");
-  PetscCheckFalse(pc_ml->EnergyMinimization == 4 && size > 1,comm,PETSC_ERR_SUP,"Energy minimization type 4 does not work in parallel");
+  PetscCheck(pc_ml->EnergyMinimization >= -1 && pc_ml->EnergyMinimization <= 4,comm,PETSC_ERR_ARG_OUTOFRANGE,"EnergyMinimization must be in range -1..4");
+  PetscCheck(pc_ml->EnergyMinimization != 4 || size == 1,comm,PETSC_ERR_SUP,"Energy minimization type 4 does not work in parallel");
   if (pc_ml->EnergyMinimization == 4) PetscCall(PetscInfo(pc,"Mandel's energy minimization scheme is experimental and broken in ML-6.2\n"));
   if (pc_ml->EnergyMinimization) {
     PetscCall(PetscOptionsReal("-pc_ml_EnergyMinimizationDropTol","Energy minimization drop tolerance","None",pc_ml->EnergyMinimizationDropTol,&pc_ml->EnergyMinimizationDropTol,NULL));

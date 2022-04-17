@@ -59,7 +59,7 @@ static PetscErrorCode  PCGASMSubdomainView_Private(PC pc, PetscInt i, PetscViewe
   char           *cidx;
 
   PetscFunctionBegin;
-  PetscCheckFalse(i < 0 || i > osm->n,PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_WRONG, "Invalid subdomain %" PetscInt_FMT ": must nonnegative and less than %" PetscInt_FMT, i, osm->n);
+  PetscCheck(i >= 0 && i < osm->n,PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_WRONG, "Invalid subdomain %" PetscInt_FMT ": must nonnegative and less than %" PetscInt_FMT, i, osm->n);
   /* Inner subdomains. */
   PetscCall(ISGetLocalSize(osm->iis[i], &nidx));
   /*
@@ -1010,8 +1010,8 @@ static PetscErrorCode  PCGASMSetSubdomains_GASM(PC pc,PetscInt n,IS iis[],IS ois
       PetscCall(ISGetIndices(osm->iis[i],&indices));
       PetscCall(ISGetLocalSize(osm->iis[i],&lsize));
       for (j=0; j<lsize; j++) {
-        PetscCheckFalse(indices[j]<rstart || indices[j]>=rend,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"inner subdomains can not own an index %" PetscInt_FMT " from other processors", indices[j]);
-        PetscCheckFalse(covered[indices[j]-rstart]==1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"inner subdomains can not have an overlapping index %" PetscInt_FMT " ",indices[j]);
+        PetscCheck(indices[j] >= rstart && indices[j] < rend,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"inner subdomains can not own an index %" PetscInt_FMT " from other processors", indices[j]);
+        PetscCheck(covered[indices[j]-rstart] != 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"inner subdomains can not have an overlapping index %" PetscInt_FMT " ",indices[j]);
         covered[indices[j]-rstart] = 1;
       }
     PetscCall(ISRestoreIndices(osm->iis[i],&indices));
@@ -1032,7 +1032,7 @@ static PetscErrorCode  PCGASMSetOverlap_GASM(PC pc,PetscInt ovl)
 
   PetscFunctionBegin;
   PetscCheck(ovl >= 0,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Negative overlap value requested");
-  PetscCheckFalse(pc->setupcalled && ovl != osm->overlap,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"PCGASMSetOverlap() should be called before PCSetUp().");
+  PetscCheck(!pc->setupcalled || ovl == osm->overlap,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"PCGASMSetOverlap() should be called before PCSetUp().");
   if (!pc->setupcalled) osm->overlap = ovl;
   PetscFunctionReturn(0);
 }
@@ -1372,7 +1372,7 @@ PetscErrorCode  PCGASMCreateLocalSubdomains(Mat A, PetscInt nloc, IS *iis[])
   PetscCall(MatGetOptionsPrefix(A,&prefix));
   PetscCall(MatGetOwnershipRange(A,&rstart,&rend));
   PetscCall(MatGetBlockSize(A,&bs));
-  PetscCheckFalse(rstart/bs*bs != rstart || rend/bs*bs != rend,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"bad row distribution [%" PetscInt_FMT ",%" PetscInt_FMT ") for matrix block size %" PetscInt_FMT,rstart,rend,bs);
+  PetscCheck(rstart/bs*bs == rstart && rend/bs*bs == rend,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"bad row distribution [%" PetscInt_FMT ",%" PetscInt_FMT ") for matrix block size %" PetscInt_FMT,rstart,rend,bs);
 
   /* Get diagonal block from matrix if possible */
   PetscCall(MatHasOperation(A,MATOP_GET_DIAGONAL_BLOCK,&hasop));
@@ -1675,7 +1675,7 @@ PetscErrorCode  PCGASMCreateSubdomains2D(PC pc,PetscInt M,PetscInt N,PetscInt Md
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCall(MatGetOwnershipRange(pc->pmat, &first, &last));
-  PetscCheckFalse(first%dof || last%dof,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Matrix row partitioning unsuitable for domain decomposition: local row range (%" PetscInt_FMT ",%" PetscInt_FMT ") "
+  PetscCheck((first%dof) == 0 && (last%dof) == 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Matrix row partitioning unsuitable for domain decomposition: local row range (%" PetscInt_FMT ",%" PetscInt_FMT ") "
                                       "does not respect the number of degrees of freedom per grid point %" PetscInt_FMT, first, last, dof);
 
   /* Determine the number of domains with nonzero intersections with the local ownership range. */

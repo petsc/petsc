@@ -289,7 +289,7 @@ PetscErrorCode  PCMGGetInterpolation(PC pc,PetscInt l,Mat *mat)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (mat) PetscValidPointer(mat,3);
   PetscCheck(mglevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
-  PetscCheckFalse(l <= 0 || mg->nlevels <= l,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Level %" PetscInt_FMT " must be in range {1,...,%" PetscInt_FMT "}",l,mg->nlevels-1);
+  PetscCheck(l > 0 && l < mg->nlevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Level %" PetscInt_FMT " must be in range {1,...,%" PetscInt_FMT "}",l,mg->nlevels-1);
   if (!mglevels[l]->interpolate) {
     PetscCheck(mglevels[l]->restrct,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must call PCMGSetInterpolation() or PCMGSetRestriction()");
     PetscCall(PCMGSetInterpolation(pc,l,mglevels[l]->restrct));
@@ -366,7 +366,7 @@ PetscErrorCode  PCMGGetRestriction(PC pc,PetscInt l,Mat *mat)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (mat) PetscValidPointer(mat,3);
   PetscCheck(mglevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
-  PetscCheckFalse(l <= 0 || mg->nlevels <= l,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Level %" PetscInt_FMT " must be in range {1,...,%" PetscInt_FMT "}",l,mg->nlevels-1);
+  PetscCheck(l > 0 && l < mg->nlevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Level %" PetscInt_FMT " must be in range {1,...,%" PetscInt_FMT "}",l,mg->nlevels-1);
   if (!mglevels[l]->restrct) {
     PetscCheck(mglevels[l]->interpolate,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must call PCMGSetRestriction() or PCMGSetInterpolation()");
     PetscCall(PCMGSetRestriction(pc,l,mglevels[l]->interpolate));
@@ -400,7 +400,7 @@ PetscErrorCode  PCMGSetRScale(PC pc,PetscInt l,Vec rscale)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscCheck(mglevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
-  PetscCheckFalse(l <= 0 || mg->nlevels <= l,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Level %" PetscInt_FMT " must be in range {1,...,%" PetscInt_FMT "}",l,mg->nlevels-1);
+  PetscCheck(l > 0 && l < mg->nlevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Level %" PetscInt_FMT " must be in range {1,...,%" PetscInt_FMT "}",l,mg->nlevels-1);
   PetscCall(PetscObjectReference((PetscObject)rscale));
   PetscCall(VecDestroy(&mglevels[l]->rscale));
 
@@ -433,7 +433,7 @@ PetscErrorCode PCMGGetRScale(PC pc,PetscInt l,Vec *rscale)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscCheck(mglevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
-  PetscCheckFalse(l <= 0 || mg->nlevels <= l,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Level %" PetscInt_FMT " must be in range {1,...,%" PetscInt_FMT "}",l,mg->nlevels-1);
+  PetscCheck(l > 0 && l < mg->nlevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Level %" PetscInt_FMT " must be in range {1,...,%" PetscInt_FMT "}",l,mg->nlevels-1);
   if (!mglevels[l]->rscale) {
     Mat      R;
     Vec      X,Y,coarse,fine;
@@ -515,7 +515,7 @@ PetscErrorCode  PCMGGetInjection(PC pc,PetscInt l,Mat *mat)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (mat) PetscValidPointer(mat,3);
   PetscCheck(mglevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
-  PetscCheckFalse(l <= 0 || mg->nlevels <= l,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Level %" PetscInt_FMT " must be in range {1,...,%" PetscInt_FMT "}",l,mg->nlevels-1);
+  PetscCheck(l > 0 && l < mg->nlevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Level %" PetscInt_FMT " must be in range {1,...,%" PetscInt_FMT "}",l,mg->nlevels-1);
   if (mat) *mat = mglevels[l]->inject;
   PetscFunctionReturn(0);
 }

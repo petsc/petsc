@@ -391,7 +391,7 @@ PetscErrorCode PCPatchSetLocalComposition(PC pc, PCCompositeType type)
 {
   PC_PATCH *patch = (PC_PATCH *) pc->data;
   PetscFunctionBegin;
-  PetscCheckFalse(type != PC_COMPOSITE_ADDITIVE && type != PC_COMPOSITE_MULTIPLICATIVE,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Only supports additive or multiplicative as the local type");
+  PetscCheck(type == PC_COMPOSITE_ADDITIVE || type == PC_COMPOSITE_MULTIPLICATIVE,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Only supports additive or multiplicative as the local type");
   patch->local_composition_type = type;
   PetscFunctionReturn(0);
 }
@@ -2412,8 +2412,8 @@ PetscErrorCode PCPatch_ScatterLocal_Private(PC pc, PetscInt p, Vec x, Vec y, Ins
     PetscCall(PetscSectionGetOffset(patch->gtolCounts, p, &offset));
     PetscCall(ISGetIndices(patch->gtol, &gtolArray));
   }
-  PetscCheckFalse(mode == INSERT_VALUES && scat != SCATTER_FORWARD,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Can't insert if not scattering forward");
-  PetscCheckFalse(mode == ADD_VALUES    && scat != SCATTER_REVERSE,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Can't add if not scattering reverse");
+  PetscCheck(mode != INSERT_VALUES || scat == SCATTER_FORWARD,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Can't insert if not scattering forward");
+  PetscCheck(mode != ADD_VALUES || scat == SCATTER_REVERSE,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Can't add if not scattering reverse");
   for (lidx = 0; lidx < dof; ++lidx) {
     const PetscInt gidx = gtolArray[offset+lidx];
 

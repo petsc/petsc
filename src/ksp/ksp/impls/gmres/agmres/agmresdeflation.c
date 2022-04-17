@@ -39,7 +39,7 @@ static PetscErrorCode KSPAGMRESQuickSort(PetscScalar *val_r, PetscScalar *val_i,
       pivot_i   = val_i[L];
       abs_pivot = PetscSqrtReal(pivot_r * pivot_r + pivot_i * pivot_i);
       ipivot    = perm[L];
-      PetscCheckFalse(i == DEPTH - 1,PETSC_COMM_SELF, PETSC_ERR_MEM, "Could cause stack overflow: Try to increase the value of DEPTH ");
+      PetscCheck(i != DEPTH - 1,PETSC_COMM_SELF, PETSC_ERR_MEM, "Could cause stack overflow: Try to increase the value of DEPTH ");
       while (L < R) {
         abs_val = PetscSqrtReal(val_r[R] * val_r[R] + val_i[R] * val_i[R]);
         while (abs_val >= abs_pivot && L < R) {
@@ -71,7 +71,7 @@ static PetscErrorCode KSPAGMRESQuickSort(PetscScalar *val_r, PetscScalar *val_i,
       fin[i+1] = fin[i];
       fin[i]   = L;
       i       += 1;
-      PetscCheckFalse(i == DEPTH - 1,PETSC_COMM_SELF, PETSC_ERR_MEM, "Could cause stack overflow: Try to increase the value of DEPTH ");
+      PetscCheck(i != DEPTH - 1,PETSC_COMM_SELF, PETSC_ERR_MEM, "Could cause stack overflow: Try to increase the value of DEPTH ");
     } else i--;
   }
   PetscFunctionReturn(0);
