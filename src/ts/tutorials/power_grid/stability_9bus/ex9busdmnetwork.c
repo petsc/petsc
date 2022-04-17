@@ -172,7 +172,7 @@ PetscErrorCode read_data(PetscInt nc, Gen **pgen,Exc **pexc, Load **pload,Bus **
 
    PetscCall(MatGetLocalSize(Ybus,&m,&n));
    neqs_net = 2*NBUS; /* # eqs. for network subsystem   */
-   PetscCheckFalse(m != neqs_net || n != neqs_net,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"matrix Ybus is in wrong sizes");
+   PetscCheck(m == neqs_net && n == neqs_net,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"matrix Ybus is in wrong sizes");
 
    M[0] = 2*H[0]/W_S;
    M[1] = 2*H[1]/W_S;

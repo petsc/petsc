@@ -80,7 +80,7 @@ static PetscErrorCode TSAdaptChoose_DSP(TSAdapt adapt,TS ts,PetscReal h,PetscInt
 
   if (ts->ops->evaluatewlte) {
     PetscCall(TSEvaluateWLTE(ts,adapt->wnormtype,&order,&enorm));
-    PetscCheckFalse(enorm >= 0 && order < 1,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_OUTOFRANGE,"Computed error order %" PetscInt_FMT " must be positive",order);
+    PetscCheck(enorm < 0 || order >= 1,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_OUTOFRANGE,"Computed error order %" PetscInt_FMT " must be positive",order);
   } else if (ts->ops->evaluatestep) {
     DM  dm;
     Vec Y;

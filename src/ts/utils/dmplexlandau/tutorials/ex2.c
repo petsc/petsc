@@ -605,7 +605,7 @@ static PetscErrorCode ProcessREOptions(REctx *rectx, const LandauCtx *ctx, DM dm
   PetscCall(PetscOptionsFList("-ex2_impurity_source_type","Name of impurity source to run","",plist,pname,pname,sizeof(pname),NULL));
   PetscCall(PetscOptionsFList("-ex2_test_type","Name of test to run","",testlist,testname,testname,sizeof(testname),NULL));
   PetscCall(PetscOptionsInt("-ex2_impurity_index", "index of sink for impurities", "none", rectx->imp_idx, &rectx->imp_idx, NULL));
-  PetscCheckFalse((rectx->imp_idx >= ctx->num_species || rectx->imp_idx < 1) && ctx->num_species > 1,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"index of sink for impurities ions is out of range (%" PetscInt_FMT "), must be > 0 && < NS",rectx->imp_idx);
+  PetscCheck((rectx->imp_idx < ctx->num_species && rectx->imp_idx >= 1) || ctx->num_species <= 1,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"index of sink for impurities ions is out of range (%" PetscInt_FMT "), must be > 0 && < NS",rectx->imp_idx);
   PetscCall(PetscOptionsFList("-ex2_e_field_type","Electric field type","",elist,ename,ename,sizeof(ename),NULL));
   rectx->Ne_ion = -ctx->charges[rectx->imp_idx]/ctx->charges[0];
   PetscCall(PetscOptionsReal("-ex2_t_cold","Temperature of cold electron and ions after ionization in keV","none",rectx->T_cold,&rectx->T_cold, NULL));

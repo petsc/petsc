@@ -1404,7 +1404,7 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
   }
   nm = LANDAU_MAX_SPECIES;
   PetscCall(PetscOptionsRealArray("-dm_landau_n", "Number density of each species = n_s * n_0", "plexland.c", ctx->n, &nm, &flg));
-  PetscCheckFalse(flg && nm != ctx->num_species,ctx->comm,PETSC_ERR_ARG_WRONG,"wrong num n: %" PetscInt_FMT " != num species %" PetscInt_FMT,nm,ctx->num_species);
+  PetscCheck(!flg || nm == ctx->num_species,ctx->comm,PETSC_ERR_ARG_WRONG,"wrong num n: %" PetscInt_FMT " != num species %" PetscInt_FMT,nm,ctx->num_species);
   for (ii=0;ii<LANDAU_MAX_SPECIES;ii++) ctx->masses[ii] *= 1.6720e-27; /* scale by proton mass kg */
   ctx->masses[0] = 9.10938356e-31; /* electron mass kg (should be about right already) */
   ctx->m_0 = ctx->masses[0]; /* arbitrary reference mass, electrons */
@@ -1449,7 +1449,7 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
   /* amr parametres */
   nt = LANDAU_MAX_GRIDS;
   PetscCall(PetscOptionsIntArray("-dm_landau_amr_levels_max", "Number of AMR levels of refinement around origin, after (RE) refinements along z", "plexland.c", ctx->numAMRRefine, &nt, &flg));
-  PetscCheckFalse(flg && nt < ctx->num_grids,ctx->comm,PETSC_ERR_ARG_WRONG,"-dm_landau_amr_levels_max: given %" PetscInt_FMT " != number grids %" PetscInt_FMT,nt,ctx->num_grids);
+  PetscCheck(!flg || nt >= ctx->num_grids,ctx->comm,PETSC_ERR_ARG_WRONG,"-dm_landau_amr_levels_max: given %" PetscInt_FMT " != number grids %" PetscInt_FMT,nt,ctx->num_grids);
   nt = LANDAU_MAX_GRIDS;
   PetscCall(PetscOptionsIntArray("-dm_landau_amr_post_refine", "Number of levels to uniformly refine after AMR", "plexland.c", ctx->postAMRRefine, &nt, &flg));
   for (ii=1;ii<ctx->num_grids;ii++)  ctx->postAMRRefine[ii] = ctx->postAMRRefine[0]; // all grids the same now
@@ -2147,7 +2147,7 @@ PetscErrorCode DMPlexLandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, cons
   IS             grid_batch_is_inv[LANDAU_MAX_GRIDS];
 
   PetscFunctionBegin;
-  PetscCheckFalse(dim!=2 && dim!=3,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Only 2D and 3D supported");
+  PetscCheck(dim == 2 || dim == 3,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Only 2D and 3D supported");
   PetscCheck(LANDAU_DIM == dim,PETSC_COMM_SELF, PETSC_ERR_PLIB, "dim %" PetscInt_FMT " != LANDAU_DIM %d",dim,LANDAU_DIM);
   PetscCall(PetscNew(&ctx));
   ctx->comm = comm; /* used for diagnostics and global errors */
@@ -2835,7 +2835,7 @@ PetscErrorCode DMPlexLandauIJacobian(TS ts, PetscReal time_dummy, Vec X, Vec U_t
   PetscCall(TSGetDM(ts,&pack));
   PetscCall(DMGetApplicationContext(pack, &ctx));
   PetscCheck(ctx,PETSC_COMM_SELF, PETSC_ERR_PLIB, "no context");
-  PetscCheckFalse(Amat!=Pmat || Amat!=ctx->J,ctx->comm, PETSC_ERR_PLIB, "Amat!=Pmat || Amat!=ctx->J");
+  PetscCheck(Amat == Pmat && Amat == ctx->J,ctx->comm, PETSC_ERR_PLIB, "Amat!=Pmat || Amat!=ctx->J");
   PetscCall(DMGetDimension(pack, &dim));
   /* get collision Jacobian into A */
   if (ctx->stage) {

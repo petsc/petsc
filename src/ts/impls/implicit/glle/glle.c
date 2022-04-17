@@ -361,7 +361,7 @@ static PetscErrorCode TSGLLEEstimateHigherMoments_Default(TSGLLEScheme sc,PetscR
   PetscInt       i;
 
   PetscFunctionBegin;
-  PetscCheckFalse(sc->r > 64 || sc->s > 64,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Ridiculous number of stages or items passed between stages");
+  PetscCheck(sc->r <= 64 && sc->s <= 64,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Ridiculous number of stages or items passed between stages");
   /* build error vectors*/
   for (i=0; i<3; i++) {
     PetscScalar phih[64];
@@ -775,7 +775,7 @@ static PetscErrorCode TSGLLEChooseNextScheme(TS ts,PetscReal h,const PetscReal h
     if (i == gl->current_scheme) cur = n;
     n++;
   }
-  PetscCheckFalse(cur < 0 || gl->nschemes <= cur,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Current scheme not found in scheme list");
+  PetscCheck(cur >= 0 && gl->nschemes > cur,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Current scheme not found in scheme list");
   PetscCall(TSGLLEAdaptChoose(gl->adapt,n,orders,errors,costs,cur,h,tleft,&next_sc,next_h,finish));
   *next_scheme = candidates[next_sc];
   PetscCall(PetscInfo(ts,"Adapt chose scheme %" PetscInt_FMT " (%" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ") with step size %6.2e, finish=%s\n",*next_scheme,gl->schemes[*next_scheme]->p,gl->schemes[*next_scheme]->q,gl->schemes[*next_scheme]->r,gl->schemes[*next_scheme]->s,(double)*next_h,PetscBools[*finish]));
