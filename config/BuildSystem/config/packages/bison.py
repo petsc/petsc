@@ -66,11 +66,6 @@ class Configure(config.package.GNUPackage):
           self.foundversion = ".".join(map(str,foundversion))
           if foundversion[0] >= 3:
             self.haveBison3plus = 1
-          else:
-            self.logPrintBox('***** WARNING: You have a version of GNU Bison older than 3.0. It will work,\n\
-but may not be supported by all external packages. You can install the \n\
-latest GNU Bison with your package manager, such as Brew or MacPorts, or use\n\
-the --download-bison option to get the latest GNU Bison *****')
       except RuntimeError as e:
         self.log.write('Bison check failed: '+str(e)+'\n')
     return

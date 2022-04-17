@@ -119,9 +119,3 @@ class Configure(config.package.Package):
       output,err,ret = config.package.Package.executeShellCommand('mkdir -p '+os.path.join(self.installDir,includeDir)+' && mkdir -p '+os.path.join(self.installDir,self.libdir)+' && cd '+self.packageDir+' && cp -f lib/*.a '+libDir+'/. && cp -f include/*.h '+includeDir+'/.', timeout=60, log = self.log)
       self.postInstall(output+err,os.path.join('src','Makefile.inc'))
     return self.installDir
-
-#  def consistencyChecks(self):
-#    config.package.Package.consistencyChecks(self)
-#    if self.argDB['with-'+self.package]:
-#     if self.libraries.rt is None:
-#        raise RuntimeError('Scotch requires a realtime library (librt) with clock_gettime()')
