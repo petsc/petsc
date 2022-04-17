@@ -31,6 +31,11 @@ PetscErrorCode  PetscGetFullPath(const char path[],char fullpath[],size_t flen)
     fullpath[flen-1] = 0;
     PetscFunctionReturn(0);
   }
+  if (path[0] == '.' && path[1] == '/') {
+    PetscCall(PetscGetWorkingDirectory(fullpath,flen));
+    PetscCall(PetscStrlcat(fullpath,path+1,flen));
+    PetscFunctionReturn(0);
+  }
 
   PetscCall(PetscStrncpy(fullpath,path,flen));
   fullpath[flen-1] = 0;
