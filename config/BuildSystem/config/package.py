@@ -1172,16 +1172,16 @@ char     *ver = "petscpkgver(" PetscXstr_({y}) ")";
     if self.download: suggest = '. Suggest using --download-'+self.package+' for a compatible '+self.name
     if self.minversion:
       if self.versionToTuple(self.minversion) > self.version_tuple:
-        raise RuntimeError(self.package+' version is '+self.foundversion+' this version of PETSc needs at least '+self.minversion+suggest+'\n')
+        raise RuntimeError(self.PACKAGE+' version is '+self.foundversion+', this version of PETSc needs at least '+self.minversion+suggest+'\n')
     elif self.version:
       if self.versionToTuple(zeroPatch(self.version)) > self.version_tuple:
-        self.logPrintWarning('Using version '+self.foundversion+' of package '+self.package+' PETSc is tested with '+dropPatch(self.version)+suggest)
+        self.logPrintWarning('Using version '+self.foundversion+' of package '+self.PACKAGE+', PETSc is tested with '+dropPatch(self.version)+suggest)
     if self.maxversion:
       if self.versionToTuple(self.maxversion) < self.version_tuple:
-        raise RuntimeError(self.package+' version is '+self.foundversion+' this version of PETSc needs at most '+self.maxversion+suggest+'\n')
+        raise RuntimeError(self.PACKAGE+' version is '+self.foundversion+', this version of PETSc needs at most '+self.maxversion+suggest+'\n')
     elif self.version:
       if self.versionToTuple(infinitePatch(self.version)) < self.version_tuple:
-        self.logPrintWarning('Using version '+self.foundversion+' of package '+self.package+' PETSc is tested with '+dropPatch(self.version)+suggest)
+        self.logPrintWarning('Using version '+self.foundversion+' of package '+self.PACKAGE+', PETSc is tested with '+dropPatch(self.version)+suggest)
     return
 
   def configure(self):
