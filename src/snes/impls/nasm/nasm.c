@@ -290,7 +290,7 @@ static PetscErrorCode SNESNASMSetType_NASM(SNES snes,PCASMType type)
   SNES_NASM      *nasm = (SNES_NASM*)snes->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(type != PC_ASM_BASIC && type != PC_ASM_RESTRICT,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_OUTOFRANGE,"SNESNASM only supports basic and restrict types");
+  PetscCheck(type == PC_ASM_BASIC || type == PC_ASM_RESTRICT,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_OUTOFRANGE,"SNESNASM only supports basic and restrict types");
   nasm->type = type;
   PetscFunctionReturn(0);
 }
@@ -735,7 +735,7 @@ static PetscErrorCode SNESSolve_NASM(SNES snes)
 
   PetscFunctionBegin;
 
-  PetscCheckFalse(snes->xl || snes->xu || snes->ops->computevariablebounds,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
+  PetscCheck(!snes->xl & !snes->xu && !snes->ops->computevariablebounds,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
 
   PetscCall(PetscCitationsRegister(SNESCitation,&SNEScite));
   X = snes->vec_sol;
@@ -920,7 +920,7 @@ PetscErrorCode SNESNASMGetSNES(SNES snes,PetscInt i,SNES *subsnes)
   SNES_NASM      *nasm = (SNES_NASM*)snes->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(i < 0 || i >= nasm->n,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_OUTOFRANGE,"No such subsolver");
+  PetscCheck(i >= 0 && i < nasm->n,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_OUTOFRANGE,"No such subsolver");
   *subsnes = nasm->subsnes[i];
   PetscFunctionReturn(0);
 }
