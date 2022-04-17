@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 from __future__ import generators
 import config.base
 import config.package

@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 '''A remote dictionary server
 
     RDict is a typed, hierarchical, persistent dictionary intended to manage
