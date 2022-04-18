@@ -315,7 +315,12 @@ PetscErrorCode PetscAttachDebugger(void)
         PetscCall(PetscStrncmp(DebugTerminal,"Terminal",8,&cmp));
         if (cmp) {
           char command[1024];
-          PetscCall(PetscSNPrintf(command,sizeof(command),"osascript -e 'tell app \"Terminal\" to do script \"lldb  -p %s  %s \"'\n",pid,program));
+          if (islldb) PetscCall(PetscSNPrintf(command,sizeof(command),"osascript -e 'tell app \"Terminal\" to do script \"lldb  -p %s \"'\n",pid));
+          else {
+            char fullprogram[PETSC_MAX_PATH_LEN];
+            PetscCall(PetscGetFullPath(program,fullprogram,sizeof(fullprogram)));
+            PetscCall(PetscSNPrintf(command,sizeof(command),"osascript -e 'tell app \"Terminal\" to do script \"%s  %s %s \"'\n",PetscDebugger,fullprogram,pid));
+          }
           PetscCall(PetscPOpen(PETSC_COMM_SELF,NULL,command,"r",NULL));
           exit(0);
         }
