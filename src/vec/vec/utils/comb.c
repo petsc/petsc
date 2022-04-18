@@ -693,7 +693,7 @@ PetscErrorCode  VecMTDotBegin(Vec x,PetscInt nv,const Vec y[],PetscScalar result
   }
   PetscCheck(x->ops->mtdot_local,PETSC_COMM_SELF,PETSC_ERR_SUP,"Vector does not support local mdots");
   PetscCall(PetscLogEventBegin(VEC_ReduceArithmetic,0,0,0,0));
-  PetscCall((*x->ops->mdot_local)(x,nv,y,sr->lvalues+sr->numopsbegin));
+  PetscCall((*x->ops->mtdot_local)(x,nv,y,sr->lvalues+sr->numopsbegin));
   PetscCall(PetscLogEventEnd(VEC_ReduceArithmetic,0,0,0,0));
   sr->numopsbegin += nv;
   PetscFunctionReturn(0);
