@@ -1246,13 +1246,13 @@ static PetscErrorCode MatSetValuesCOO_MPIAIJKokkos(Mat mat,const PetscScalar v[]
   Mat_MPIAIJ                     *mpiaij = static_cast<Mat_MPIAIJ*>(mat->data);
   Mat_MPIAIJKokkos               *mpikok = static_cast<Mat_MPIAIJKokkos*>(mpiaij->spptr);
   Mat                            A = mpiaij->A,B = mpiaij->B;
-  PetscCount                     Annz1 = mpiaij->Annz1,Annz2 = mpiaij->Annz2,Bnnz1 = mpiaij->Bnnz1,Bnnz2 = mpiaij->Bnnz2;
+  PetscCount                     Annz = mpiaij->Annz,Annz2 = mpiaij->Annz2,Bnnz = mpiaij->Bnnz,Bnnz2 = mpiaij->Bnnz2;
   MatScalarKokkosView            Aa,Ba;
   MatScalarKokkosView            v1;
   MatScalarKokkosView&           vsend = mpikok->sendbuf_d;
   const MatScalarKokkosView&     v2 = mpikok->recvbuf_d;
-  const PetscCountKokkosView&    Ajmap1 = mpikok->Ajmap1_d,Ajmap2 = mpikok->Ajmap2_d,Aimap1 = mpikok->Aimap1_d,Aimap2 = mpikok->Aimap2_d;
-  const PetscCountKokkosView&    Bjmap1 = mpikok->Bjmap1_d,Bjmap2 = mpikok->Bjmap2_d,Bimap1 = mpikok->Bimap1_d,Bimap2 = mpikok->Bimap2_d;
+  const PetscCountKokkosView&    Ajmap1 = mpikok->Ajmap1_d,Ajmap2 = mpikok->Ajmap2_d,Aimap2 = mpikok->Aimap2_d;
+  const PetscCountKokkosView&    Bjmap1 = mpikok->Bjmap1_d,Bjmap2 = mpikok->Bjmap2_d,Bimap2 = mpikok->Bimap2_d;
   const PetscCountKokkosView&    Aperm1 = mpikok->Aperm1_d,Aperm2 = mpikok->Aperm2_d,Bperm1 = mpikok->Bperm1_d,Bperm2 = mpikok->Bperm2_d;
   const PetscCountKokkosView&    Cperm1 = mpikok->Cperm1_d;
   PetscMemType                   memtype;
@@ -1268,8 +1268,6 @@ static PetscErrorCode MatSetValuesCOO_MPIAIJKokkos(Mat mat,const PetscScalar v[]
   if (imode == INSERT_VALUES) {
     PetscCall(MatSeqAIJGetKokkosViewWrite(A,&Aa)); /* write matrix values */
     PetscCall(MatSeqAIJGetKokkosViewWrite(B,&Ba));
-    Kokkos::deep_copy(Aa,0.0); /* Zero matrix values since INSERT_VALUES still requires summing replicated values in v[] */
-    Kokkos::deep_copy(Ba,0.0);
   } else {
     PetscCall(MatSeqAIJGetKokkosView(A,&Aa)); /* read & write matrix values */
     PetscCall(MatSeqAIJGetKokkosView(B,&Ba));
@@ -1280,14 +1278,29 @@ static PetscErrorCode MatSetValuesCOO_MPIAIJKokkos(Mat mat,const PetscScalar v[]
 
   /* Send remote entries to their owner and overlap the communication with local computation */
   PetscCall(PetscSFReduceWithMemTypeBegin(mpiaij->coo_sf,MPIU_SCALAR,PETSC_MEMTYPE_KOKKOS,vsend.data(),PETSC_MEMTYPE_KOKKOS,v2.data(),MPI_REPLACE));
-  /* Add local entries to A and B */
-  Kokkos::parallel_for(Annz1,KOKKOS_LAMBDA(const PetscCount i) {for (PetscCount k=Ajmap1(i); k<Ajmap1(i+1); k++) Aa(Aimap1(i)) += v1(Aperm1(k));});
-  Kokkos::parallel_for(Bnnz1,KOKKOS_LAMBDA(const PetscCount i) {for (PetscCount k=Bjmap1(i); k<Bjmap1(i+1); k++) Ba(Bimap1(i)) += v1(Bperm1(k));});
+  /* Add local entries to A and B in one kernel */
+  Kokkos::parallel_for(Annz+Bnnz,KOKKOS_LAMBDA(PetscCount i) {
+    PetscScalar sum = 0.0;
+    if (i<Annz) {
+      for (PetscCount k=Ajmap1(i); k<Ajmap1(i+1); k++) sum += v1(Aperm1(k));
+      Aa[i] = (imode == INSERT_VALUES? 0.0 : Aa[i]) + sum;
+    } else {
+      i -= Annz;
+      for (PetscCount k=Bjmap1(i); k<Bjmap1(i+1); k++) sum += v1(Bperm1(k));
+      Ba[i] = (imode == INSERT_VALUES? 0.0 : Ba[i]) + sum;
+    }
+  });
   PetscCall(PetscSFReduceEnd(mpiaij->coo_sf,MPIU_SCALAR,vsend.data(),v2.data(),MPI_REPLACE));
 
-  /* Add received remote entries to A and B */
-  Kokkos::parallel_for(Annz2,KOKKOS_LAMBDA(const PetscCount i) {for (PetscCount k=Ajmap2(i); k<Ajmap2(i+1); k++) Aa(Aimap2(i)) += v2(Aperm2(k));});
-  Kokkos::parallel_for(Bnnz2,KOKKOS_LAMBDA(const PetscCount i) {for (PetscCount k=Bjmap2(i); k<Bjmap2(i+1); k++) Ba(Bimap2(i)) += v2(Bperm2(k));});
+  /* Add received remote entries to A and B in one kernel */
+  Kokkos::parallel_for(Annz2+Bnnz2,KOKKOS_LAMBDA(PetscCount i) {
+    if (i < Annz2) {
+      for (PetscCount k=Ajmap2(i); k<Ajmap2(i+1); k++) Aa(Aimap2(i)) += v2(Aperm2(k));
+    } else {
+      i -= Annz2;
+      for (PetscCount k=Bjmap2(i); k<Bjmap2(i+1); k++) Ba(Bimap2(i)) += v2(Bperm2(k));
+    }
+  });
 
   if (imode == INSERT_VALUES) {
     PetscCall(MatSeqAIJRestoreKokkosViewWrite(A,&Aa)); /* Increase A & B's state etc. */
