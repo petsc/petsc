@@ -1279,19 +1279,12 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
   PC_IS          *pcis = (PC_IS*)(pc->data);
   Vec            used_vec;
-  PetscBool      iscg = PETSC_FALSE, save_rhs = PETSC_TRUE, benign_correction_computed;
+  PetscBool      iscg, save_rhs = PETSC_TRUE, benign_correction_computed;
 
   PetscFunctionBegin;
   /* if we are working with CG, one dirichlet solve can be avoided during Krylov iterations */
   if (ksp) {
-    PetscBool isgroppcg, ispipecg, ispipelcg, ispipecgrr;
-
-    PetscCall(PetscObjectTypeCompare((PetscObject)ksp,KSPCG,&iscg));
-    PetscCall(PetscObjectTypeCompare((PetscObject)ksp,KSPGROPPCG,&isgroppcg));
-    PetscCall(PetscObjectTypeCompare((PetscObject)ksp,KSPPIPECG,&ispipecg));
-    PetscCall(PetscObjectTypeCompare((PetscObject)ksp,KSPPIPECG,&ispipelcg));
-    PetscCall(PetscObjectTypeCompare((PetscObject)ksp,KSPPIPECGRR,&ispipecgrr));
-    iscg = (PetscBool)(iscg || isgroppcg || ispipecg || ispipelcg || ispipecgrr);
+    PetscCall(PetscObjectTypeCompareAny((PetscObject)ksp,&iscg,KSPCG,KSPGROPPCG,KSPPIPECG,KSPPIPELCG,KSPPIPECGRR,""));
     if (pcbddc->benign_apply_coarse_only || pcbddc->switch_static || !iscg || pc->mat != pc->pmat) {
       PetscCall(PCBDDCSetUseExactDirichlet(pc,PETSC_FALSE));
     }
