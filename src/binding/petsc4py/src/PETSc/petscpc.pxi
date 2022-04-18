@@ -304,6 +304,7 @@ cdef extern from * nogil:
     int PCHPDDMSetCoarseCorrectionType(PetscPC,PetscPCHPDDMCoarseCorrectionType)
     int PCHPDDMGetCoarseCorrectionType(PetscPC,PetscPCHPDDMCoarseCorrectionType*)
     int PCHPDDMGetSTShareSubKSP(PetscPC,PetscBool*)
+    int PCHPDDMSetDeflationMat(PetscPC,PetscIS,PetscMat)
 
     # --- SPAI ---
     int PCSPAISetEpsilon(PetscPC,PetscReal)

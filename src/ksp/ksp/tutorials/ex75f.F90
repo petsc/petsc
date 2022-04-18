@@ -53,13 +53,13 @@
         call PetscObjectTypeCompare(ksp,KSPHPDDM,flg,ierr);CHKERRA(ierr)
 #if defined(PETSC_HAVE_HPDDM)
         if (flg .and. reset) then
-          call KSPHPDDMGetDeflationSpace(ksp,U,ierr);CHKERRA(ierr)
+          call KSPHPDDMGetDeflationMat(ksp,U,ierr);CHKERRA(ierr)
           call KSPReset(ksp,ierr);CHKERRA(ierr)
           call KSPSetOperators(ksp,A,A,ierr);CHKERRA(ierr)
           call KSPSetFromOptions(ksp,ierr);CHKERRA(ierr)
           call KSPSetUp(ksp,ierr);CHKERRA(ierr)
           if (U .ne. PETSC_NULL_MAT) then
-            call KSPHPDDMSetDeflationSpace(ksp,U,ierr);CHKERRA(ierr)
+            call KSPHPDDMSetDeflationMat(ksp,U,ierr);CHKERRA(ierr)
             call MatDestroy(U,ierr);CHKERRA(ierr)
           endif
         endif

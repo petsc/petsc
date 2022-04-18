@@ -253,8 +253,12 @@ PETSC_EXTERN PetscErrorCode KSPFETIDPSetInnerBDDC(KSP,PC);
 PETSC_EXTERN PetscErrorCode KSPFETIDPGetInnerKSP(KSP,KSP*);
 PETSC_EXTERN PetscErrorCode KSPFETIDPSetPressureOperator(KSP,Mat);
 
-PETSC_EXTERN PetscErrorCode KSPHPDDMSetDeflationSpace(KSP,Mat);
-PETSC_EXTERN PetscErrorCode KSPHPDDMGetDeflationSpace(KSP,Mat*);
+PETSC_EXTERN PetscErrorCode KSPHPDDMSetDeflationMat(KSP,Mat);
+PETSC_EXTERN PetscErrorCode KSPHPDDMGetDeflationMat(KSP,Mat*);
+#if PetscDefined(HAVE_HPDDM)
+PETSC_DEPRECATED_FUNCTION("Use KSPHPDDMSetDeflationMat() (since version 3.18)") static inline PetscErrorCode KSPHPDDMSetDeflationSpace(KSP ksp, Mat U) { return KSPHPDDMSetDeflationMat(ksp, U); }
+PETSC_DEPRECATED_FUNCTION("Use KSPHPDDMGetDeflationMat() (since version 3.18)") static inline PetscErrorCode KSPHPDDMGetDeflationSpace(KSP ksp, Mat *U) { return KSPHPDDMGetDeflationMat(ksp, U); }
+#endif
 PETSC_DEPRECATED_FUNCTION("Use KSPMatSolve() (since version 3.14)") static inline PetscErrorCode KSPHPDDMMatSolve(KSP ksp, Mat B, Mat X) { return KSPMatSolve(ksp, B, X); }
 /*E
     KSPHPDDMType - Type of Krylov method used by KSPHPDDM

@@ -46,11 +46,8 @@ int main(int argc,char **args)
       if (size > 2) {
         PetscCall(MatGetSize(A,&M,NULL));
         PetscCall(MatCreate(PETSC_COMM_WORLD,&B));
-        if (rank > 1) {
-          PetscCall(MatSetSizes(B,0,0,M,M));
-        } else {
-          PetscCall(MatSetSizes(B,rank?M-M/2:M/2,rank?M-M/2:M/2,M,M));
-        }
+        if (rank > 1) PetscCall(MatSetSizes(B,0,0,M,M));
+        else PetscCall(MatSetSizes(B,rank?M-M/2:M/2,rank?M-M/2:M/2,M,M));
         PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,&viewer));
         PetscCall(MatLoad(B,viewer));
         PetscCall(PetscViewerDestroy(&viewer));
@@ -69,11 +66,8 @@ int main(int argc,char **args)
       Mat B;
       PetscCall(MatGetSize(A,&M,NULL));
       PetscCall(MatCreate(PETSC_COMM_WORLD,&B));
-      if (rank > 3) {
-        PetscCall(MatSetSizes(B,0,0,M,M));
-      } else {
-        PetscCall(MatSetSizes(B,rank == 0?M-3*(M/4):M/4,rank == 0?M-3*(M/4):M/4,M,M));
-      }
+      if (rank > 3) PetscCall(MatSetSizes(B,0,0,M,M));
+      else PetscCall(MatSetSizes(B,rank == 0?M-3*(M/4):M/4,rank == 0?M-3*(M/4):M/4,M,M));
       PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,&viewer));
       PetscCall(MatLoad(B,viewer));
       PetscCall(PetscViewerDestroy(&viewer));
@@ -83,9 +77,7 @@ int main(int argc,char **args)
   PetscCall(MatGetLocalSize(A,&m,NULL));
   PetscCall(MatCreateDense(PETSC_COMM_WORLD,m,PETSC_DECIDE,PETSC_DECIDE,N,NULL,&B));
   PetscCall(MatCreateDense(PETSC_COMM_WORLD,m,PETSC_DECIDE,PETSC_DECIDE,N,NULL,&X));
-  if (!breakdown) {
-    PetscCall(MatSetRandom(B,NULL));
-  }
+  if (!breakdown) PetscCall(MatSetRandom(B,NULL));
   PetscCall(KSPSetFromOptions(ksp));
   if (!flg) {
     if (!breakdown) {
