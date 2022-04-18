@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 from __future__ import print_function
 import os, sys
 
@@ -92,10 +92,6 @@ def chkenable():
   #Would it mean --with-fc=
   en_dash = u'\N{EN DASH}'
   no_break_space = u'\N{NO-BREAK SPACE}'
-  if sys.version_info < (3, 0):
-    en_dash = en_dash.encode('utf-8')
-    no_break_space = no_break_space.encode('utf-8')
-
   for l in range(0,len(sys.argv)):
     name = sys.argv[l]
     if name.find(no_break_space) >= 0:

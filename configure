@@ -1,33 +1,13 @@
-#!/bin/sh
-
-"true" '''\'
-for pyimpl in python3 python python2; do
-  which $pyimpl > /dev/null 2>&1
-  if [ $? -eq 0 ]; then
-    exec $pyimpl "$0" "$@"
-  fi
-done
-echo "Error! Could not locate Python! Please install and have python3, python, or python2 in PATH."
-echo "Or use: /path/to/valid/python configure $@"
-exit 127
-'''
-
+#!/usr/bin/env python3
 import sys, os
 
 banner_length = 93
 banner_sep    = '*'
 banner_line   = banner_sep*banner_length
 
-if sys.version_info < (3,0):
+if sys.version_info < (3,4):
   print(banner_line)
-  print(banner_sep+'python2 support in configure is deprecated'.center(banner_length-2)+banner_sep)
-  print(banner_sep+'PETSc version 3.18+ will require at least python3.4'.center(banner_length-2)+banner_sep)
-  print(banner_line)
-
-if sys.version_info < (2,7) or ((3,0) <= sys.version_info < (3,4)):
-  print(banner_line)
-  print(banner_sep+'Python version 2.7 or 3.4+ is required to run ./configure'.center(banner_length-2)+banner_sep)
-  print(banner_sep+'Try: "python3 ./configure" or "python2.7 ./configure"'.center(banner_length-2)+banner_sep)
+  print(banner_sep+'Python version 3.4+ is required to run ./configure'.center(banner_length-2)+banner_sep)
   print(banner_line)
   sys.exit(4)
 

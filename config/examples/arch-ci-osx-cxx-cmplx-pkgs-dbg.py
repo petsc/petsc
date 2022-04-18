@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import os
 petsc_hash_pkgs=os.path.join(os.getenv('HOME'),'petsc-hash-pkgs')
@@ -34,6 +34,7 @@ configure_options = [
   '--download-pnetcdf',
   '--download-hdf5',
   '--download-zlib=1',
+  '--with-python-exec=python2',
   '--with-petsc4py=1',
   '--download-mpi4py=1',
   '--download-elemental=1',

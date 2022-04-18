@@ -753,7 +753,7 @@ checkbadSource:
 	@test ! -s badSourceChar.out
 
 vermin:
-	@vermin -vvv -t=2.7- -t=3.4- ${VERMIN_OPTIONS} ${PETSC_DIR}/config
+	@vermin -vvv -t=3.4- ${VERMIN_OPTIONS} ${PETSC_DIR}/config
 
 lint:
 	${PYTHON3} ${PETSC_DIR}/lib/petsc/bin/maint/petscClangLinter.py --verbose=${V} $(LINTER_OPTIONS)

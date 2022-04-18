@@ -36,6 +36,7 @@ petsc-dist/lib/petsc/bin/maint
 petsc-dist/lib/petsc/bin/__pycache__
 petsc-dist/BitKeeper
 petsc-dist/ChangeSet
+petsc-dist/venv-petsc-docs
 petsc-dist/arch-build
 petsc-dist/arch-pydoc
 petsc-dist/arch-fvpf

@@ -68,11 +68,6 @@ PetscErrorCode RunTest(void)
 
 static char help[] = "Python-implemented Mat/KSP/PC.\n\n";
 
-/*
-#define PYTHON_EXE "python2.5"
-#define PYTHON_LIB "/usr/lib/libpython2.5"
-*/
-
 #if !defined(PYTHON_EXE)
 #define PYTHON_EXE 0
 #endif

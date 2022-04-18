@@ -2,14 +2,8 @@ from __future__ import absolute_import
 import logger
 
 import os
-try:
-  from urllib import urlretrieve
-except ImportError:
-  from urllib.request import urlretrieve
-try:
-  import urlparse as urlparse_local # novermin
-except ImportError:
-  from urllib import parse as urlparse_local # novermin
+from urllib.request import urlretrieve
+from urllib import parse as urlparse_local
 import config.base
 import socket
 import shutil

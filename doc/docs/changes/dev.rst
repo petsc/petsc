@@ -59,6 +59,8 @@ In addition to the changes above
 
 .. rubric:: Configure/Build:
 
+- Remove python2 support, python-3.4+ is now required
+
 .. rubric:: Sys:
 
 .. rubric:: PetscViewer:

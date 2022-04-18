@@ -135,10 +135,7 @@ class Logger(args.ArgumentProcessor):
     if self.debugLevel <= 3: return
     import io
     self.logBkp = self.log
-    if sys.version_info < (3,):
-      self.log = io.BytesIO()
-    else:
-      self.log = io.StringIO()
+    self.log = io.StringIO()
 
   def restoreLog(self):
     if self.debugLevel <= 3: return

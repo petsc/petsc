@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import config.base
 import config.package
 import os

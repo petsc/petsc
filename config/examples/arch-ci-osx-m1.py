@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import os
 
@@ -11,6 +11,7 @@ configure_options = [
   'COPTFLAGS=-g -O',
   'FOPTFLAGS=-g -O',
   'CXXOPTFLAGS=-g -O',
+  '--with-python-exec=python2',
   '--with-petsc4py=1',
   '--download-mpi4py=1',
   ]
