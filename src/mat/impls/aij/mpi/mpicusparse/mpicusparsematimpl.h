@@ -14,8 +14,8 @@ struct Mat_MPIAIJCUSPARSE {
   THRUSTARRAY                *coo_pw; /* the work array that stores the partitioned coo scalar values */
 
   /* Extended COO stuff */
-  PetscCount  *Aimap1_d,*Ajmap1_d,*Aperm1_d; /* Local entries to diag */
-  PetscCount  *Bimap1_d,*Bjmap1_d,*Bperm1_d; /* Local entries to offdiag */
+  PetscCount  *Ajmap1_d,*Aperm1_d; /* Local entries to diag */
+  PetscCount  *Bjmap1_d,*Bperm1_d; /* Local entries to offdiag */
   PetscCount  *Aimap2_d,*Ajmap2_d,*Aperm2_d; /* Remote entries to diag */
   PetscCount  *Bimap2_d,*Bjmap2_d,*Bperm2_d; /* Remote entries to offdiag */
   PetscCount  *Cperm1_d; /* Permutation to fill send buffer. 'C' for communication */
