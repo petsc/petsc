@@ -986,7 +986,7 @@ int main(int argc, char **argv)
     PetscCall(DMGetLabel(dm, "marker", &label));
     PetscCall(DMPlexComputeBdIntegral(dm, u, label, 1, &id, bd_integral_2d, &bdInt, NULL));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Solution boundary integral: %.4g\n", (double) PetscAbsScalar(bdInt)));
-    PetscCheckFalse(PetscAbsReal(PetscAbsScalar(bdInt) - exact) > PETSC_SQRT_MACHINE_EPSILON,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Invalid boundary integral %g != %g", (double) PetscAbsScalar(bdInt), (double)exact);
+    PetscCheck(PetscAbsReal(PetscAbsScalar(bdInt) - exact) <= PETSC_SQRT_MACHINE_EPSILON,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Invalid boundary integral %g != %g", (double) PetscAbsScalar(bdInt), (double)exact);
   }
 
   PetscCall(MatNullSpaceDestroy(&nullSpace));

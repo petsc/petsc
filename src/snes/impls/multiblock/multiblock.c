@@ -488,7 +488,7 @@ PetscErrorCode SNESSolve_Multiblock(SNES snes)
   PetscInt        maxits, i;
 
   PetscFunctionBegin;
-  PetscCheckFalse(snes->xl || snes->xu || snes->ops->computevariablebounds,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
+  PetscCheck(!snes->xl && !snes->xu && !snes->ops->computevariablebounds,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
 
   snes->reason = SNES_CONVERGED_ITERATING;
 
@@ -683,7 +683,7 @@ PetscErrorCode  SNESMultiblockSetBlockSize_Default(SNES snes, PetscInt bs)
 
   PetscFunctionBegin;
   PetscCheck(bs >= 1,PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_OUTOFRANGE, "Blocksize must be positive, you gave %" PetscInt_FMT, bs);
-  PetscCheckFalse(mb->bs > 0 && mb->bs != bs,PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_WRONGSTATE, "Cannot change blocksize from %" PetscInt_FMT " to %" PetscInt_FMT " after it has been set", mb->bs, bs);
+  PetscCheck(mb->bs <= 0 || mb->bs == bs,PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_WRONGSTATE, "Cannot change blocksize from %" PetscInt_FMT " to %" PetscInt_FMT " after it has been set", mb->bs, bs);
   mb->bs = bs;
   PetscFunctionReturn(0);
 }

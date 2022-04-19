@@ -182,13 +182,13 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *appctx)
       /* Verify the coupling vertex is a powernet load vertex or a water vertex */
       switch (k) {
       case 0:
-        PetscCheckFalse(key != appctx_power.compkey_bus || nvar != 2,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"key %" PetscInt_FMT " not a power bus vertex or nvar %" PetscInt_FMT " != 2",key,nvar);
+        PetscCheck(key == appctx_power.compkey_bus && nvar == 2,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"key %" PetscInt_FMT " not a power bus vertex or nvar %" PetscInt_FMT " != 2",key,nvar);
         break;
       case 1:
-        PetscCheckFalse(key != appctx_power.compkey_load || nvar != 0 || goffset[1] != goffset[0]+2,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a power load vertex");
+        PetscCheck(key == appctx_power.compkey_load && nvar == 0 && goffset[1] == goffset[0]+2,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a power load vertex");
         break;
       case 2:
-        PetscCheckFalse(key != appctx_water.compkey_vtx || nvar != 1 || goffset[2] != goffset[1],PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a water vertex");
+        PetscCheck(key == appctx_water.compkey_vtx && nvar == 1 && goffset[2] == goffset[1],PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a water vertex");
         break;
       default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "k %" PetscInt_FMT " is wrong",k);
       }

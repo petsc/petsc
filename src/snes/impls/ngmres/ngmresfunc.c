@@ -74,7 +74,7 @@ PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES snes,PetscInt ivec,Pe
     PetscCheck(ngmres->info <= 0,PetscObjectComm((PetscObject)snes),PETSC_ERR_LIB,"SVD failed to converge");
   }
   for (i=0; i<l; i++) {
-    PetscCheckFalse(PetscIsInfOrNanScalar(beta[i]),PetscObjectComm((PetscObject)snes),PETSC_ERR_LIB,"SVD generated inconsistent output");
+    PetscCheck(!PetscIsInfOrNanScalar(beta[i]),PetscObjectComm((PetscObject)snes),PETSC_ERR_LIB,"SVD generated inconsistent output");
   }
   alph_total = 0.;
   for (i = 0; i < l; i++) alph_total += beta[i];
