@@ -171,7 +171,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLa
     PetscCallMMG_NONSTANDARD(MMG3D_Set_iparameter(mmg_mesh, mmg_metric, MMG3D_IPARAM_nosurf, noSurf));
     PetscCallMMG_NONSTANDARD(MMG3D_Set_iparameter(mmg_mesh, mmg_metric, MMG3D_IPARAM_verbose, verbosity));
     PetscCallMMG_NONSTANDARD(MMG3D_Set_dparameter(mmg_mesh, mmg_metric, MMG3D_DPARAM_hgrad, gradationFactor));
-    PetscCallMMG_NONSTANDARD(MMG3D_Set_dparameter(mmg_mesh, mmg_metric, MMG2D_DPARAM_hausd, hausdorffNumber));
+    PetscCallMMG_NONSTANDARD(MMG3D_Set_dparameter(mmg_mesh, mmg_metric, MMG3D_DPARAM_hausd, hausdorffNumber));
     PetscCallMMG_NONSTANDARD(MMG3D_Set_meshSize(mmg_mesh, numVertices, numCells, 0, numFaceTags, 0, 0));
     PetscCallMMG_NONSTANDARD(MMG3D_Set_vertices(mmg_mesh, vertices, verTags));
     PetscCallMMG_NONSTANDARD(MMG3D_Set_tetrahedra(mmg_mesh, cells, cellTags));
