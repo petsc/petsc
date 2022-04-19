@@ -934,6 +934,7 @@ osx-cxx-cmplx-pkgs-dbg:
     - os:macos
   variables:
     TEST_ARCH: arch-ci-osx-cxx-cmplx-pkgs-dbg
+    INIT_SCRIPT: /Users/glci/bin/py3.sh
 
 osx-cxx-pkgs-opt:
   extends:
