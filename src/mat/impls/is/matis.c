@@ -591,12 +591,12 @@ static PetscErrorCode MatMPIXAIJComputeLocalToGlobalMapping_Private(Mat A, ISLoc
     if (A->rmap->n) {
       PetscInt dc,oc,stc,*aux;
 
-      PetscCall(MatGetLocalSize(A,NULL,&dc));
+      PetscCall(MatGetLocalSize(Ad,NULL,&dc));
       PetscCall(MatGetLocalSize(Ao,NULL,&oc));
       PetscCall(MatGetOwnershipRangeColumn(A,&stc,NULL));
       PetscCall(PetscMalloc1((dc+oc)/bs,&aux));
       for (i=0; i<dc/bs; i++) aux[i]       = i+stc/bs;
-      for (i=0; i<oc/bs; i++) aux[i+dc/bs] = garray[i];
+      for (i=0; i<oc/bs; i++) aux[i+dc/bs] = (ismpiaij ? garray[i*bs]/bs : garray[i]);
       PetscCall(ISCreateBlock(comm,bs,(dc+oc)/bs,aux,PETSC_OWN_POINTER,&is));
     } else {
       PetscCall(ISCreateBlock(comm,1,0,NULL,PETSC_OWN_POINTER,&is));
