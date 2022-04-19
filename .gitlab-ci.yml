@@ -318,6 +318,7 @@ pause-for-approval:
     - sw_vers -productVersion
     - echo $(sysctl -n hw.ncpu)
     - ccache --zero-stats
+    - if [ ! -z ${INIT_SCRIPT+x} ]; then echo "sourcing ${INIT_SCRIPT}"; source ${INIT_SCRIPT}; fi
   after_script:
     - date
     - ccache --show-stats
@@ -359,6 +360,7 @@ osx-m1:
   variables:
     TEST_ARCH: arch-ci-osx-m1
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
+    INIT_SCRIPT: /Volumes/Scratch/svcpetsc/soft/py3venv/cython3setup.sh
 
 freebsd-cxx-cmplx-64idx-dbg:
   extends:
