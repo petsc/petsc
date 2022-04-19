@@ -1612,7 +1612,7 @@ static inline PetscErrorCode PetscMemcpy(void *a,const void *b,size_t n)
 #if defined(PETSC_USE_DEBUG)
     PetscCheck(!((al > bl && (al - bl) < nl) || (bl - al) < nl),PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Memory regions overlap: either use PetscMemmov()\n\
               or make sure your copy regions and lengths are correct. \n\
-              Length (bytes) %ld first address %ld second address %ld",nl,al,bl);
+              Length (bytes) %zu first address %zu second address %zu",nl,al,bl);
 #endif
 #if (defined(PETSC_PREFER_DCOPY_FOR_MEMCPY) || defined(PETSC_PREFER_COPY_FOR_MEMCPY) || defined(PETSC_PREFER_FORTRAN_FORMEMCPY))
    if (!(a % sizeof(PetscScalar)) && !(n % sizeof(PetscScalar))) {
