@@ -572,7 +572,7 @@ static PetscErrorCode PCHPDDMShellApply(PC pc, Vec x, Vec y)
       PetscCall(VecAXPBYPCZ(y, -1.0, 1.0, 1.0, ctx->v[1][1], ctx->v[1][0])); /* y = (I - Q A^T) y + Q x */
     } else PetscCall(VecAXPY(y, 1.0, ctx->v[1][0]));              /* y = Q M^-1 (I - A Q) x + Q x     */
   } else {
-    PetscCheck(ctx->parent->correction == PC_HPDDM_COARSE_CORRECTION_ADDITIVE, PETSC_COMM_SELF, PETSC_ERR_PLIB, "PCSHELL from PCHPDDM called with an unknown PCHPDDMCoarseCorrectionType %d", ctx->parent->correction);
+    PetscCheck(ctx->parent->correction == PC_HPDDM_COARSE_CORRECTION_ADDITIVE, PetscObjectComm((PetscObject)pc), PETSC_ERR_PLIB, "PCSHELL from PCHPDDM called with an unknown PCHPDDMCoarseCorrectionType %d", ctx->parent->correction);
     PetscCall(PCApply(ctx->pc, x, ctx->v[1][0]));
     PetscCall(VecAXPY(y, 1.0, ctx->v[1][0]));                     /* y = M^-1 x + Q x                 */
   }
@@ -674,7 +674,7 @@ static PetscErrorCode PCHPDDMShellMatApply(PC pc, Mat X, Mat Y)
     }
     PetscCall(MatAXPY(Y, -1.0, ctx->V[1], SAME_NONZERO_PATTERN));
   } else {
-    PetscCheck(ctx->parent->correction == PC_HPDDM_COARSE_CORRECTION_ADDITIVE, PETSC_COMM_SELF, PETSC_ERR_PLIB, "PCSHELL from PCHPDDM called with an unknown PCHPDDMCoarseCorrectionType %d", ctx->parent->correction);
+    PetscCheck(ctx->parent->correction == PC_HPDDM_COARSE_CORRECTION_ADDITIVE, PetscObjectComm((PetscObject)pc), PETSC_ERR_PLIB, "PCSHELL from PCHPDDM called with an unknown PCHPDDMCoarseCorrectionType %d", ctx->parent->correction);
     PetscCall(PCMatApply(ctx->pc, X, ctx->V[1]));
     PetscCall(MatAXPY(Y, 1.0, ctx->V[1], SAME_NONZERO_PATTERN));
   }
@@ -1412,6 +1412,8 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
 /*@
      PCHPDDMSetCoarseCorrectionType - Sets the coarse correction type.
 
+   Collective on PC
+
    Input Parameters:
 +     pc - preconditioner context
 -     type - PC_HPDDM_COARSE_CORRECTION_DEFLATED, PC_HPDDM_COARSE_CORRECTION_ADDITIVE, or PC_HPDDM_COARSE_CORRECTION_BALANCED
@@ -1461,7 +1463,7 @@ static PetscErrorCode PCHPDDMSetCoarseCorrectionType_HPDDM(PC pc, PCHPDDMCoarseC
   PC_HPDDM *data = (PC_HPDDM*)pc->data;
 
   PetscFunctionBegin;
-  PetscCheck(type >= 0 && type <= 2, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PCHPDDMCoarseCorrectionType %d", type);
+  PetscCheck(type >= 0 && type <= 2, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PCHPDDMCoarseCorrectionType %d", type);
   data->correction = type;
   PetscFunctionReturn(0);
 }
