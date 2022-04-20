@@ -1334,6 +1334,7 @@ PetscErrorCode MatDestroy(Mat *A)
   PetscCall(PetscFree((*A)->bsizes));
   PetscCall(PetscFree((*A)->solvertype));
   for (PetscInt i=0; i<MAT_FACTOR_NUM_TYPES; i++) PetscCall(PetscFree((*A)->preferredordering[i]));
+  if ((*A)->redundant && (*A)->redundant->matseq[0] == *A) (*A)->redundant->matseq[0] = NULL;
   PetscCall(MatDestroy_Redundant(&(*A)->redundant));
   PetscCall(MatProductClear(*A));
   PetscCall(MatNullSpaceDestroy(&(*A)->nullsp));
@@ -10607,7 +10608,16 @@ PetscErrorCode MatGetNonzeroState(Mat mat,PetscObjectState *state)
 @*/
 PetscErrorCode MatCreateMPIMatConcatenateSeqMat(MPI_Comm comm,Mat seqmat,PetscInt n,MatReuse reuse,Mat *mpimat)
 {
+  PetscMPIInt size;
+
   PetscFunctionBegin;
+  PetscCallMPI(MPI_Comm_size(comm,&size));
+  if (size == 1) {
+    *mpimat = seqmat;
+    //    PetscCall(PetscObjectReference((PetscObject)seqmat));
+    PetscFunctionReturn(0);
+  }
+
   PetscCheck(seqmat->ops->creatempimatconcatenateseqmat,PetscObjectComm((PetscObject)seqmat),PETSC_ERR_SUP,"Mat type %s",((PetscObject)seqmat)->type_name);
   PetscCheck(reuse != MAT_REUSE_MATRIX || seqmat != *mpimat,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"MAT_REUSE_MATRIX means reuse the matrix passed in as the final argument, not the original matrix");
 
