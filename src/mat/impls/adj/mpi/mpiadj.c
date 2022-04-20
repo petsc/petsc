@@ -152,6 +152,8 @@ static PetscErrorCode MatCreateSubMatrices_MPIAdj_Private(Mat mat,PetscInt n,con
   }
   PetscCall(PetscMalloc1(nindx,&indices));
   /* construct a submat */
+  if (scall == MAT_INITIAL_MATRIX) PetscCall(PetscMalloc1(n,submat));
+
   for (i=0; i<n; i++) {
     if (subcomm) {
       PetscCall(PetscObjectGetComm((PetscObject)irow[i],&scomm_row));
