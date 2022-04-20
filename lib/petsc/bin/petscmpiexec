@@ -5,7 +5,7 @@
 #    Use PETSCVALGRIND_OPTIONS and MPI_BINDING from environment
 #
 if [ $1 = '-h' ] || [ $1 = '--help' ]; then
-  echo "Usage: petscmpiexec <-valgrind> <-debugger> -n <numberprocessors> programname <programopions>"
+  echo "Usage: petscmpiexec <-valgrind> <-debugger> -n <numberprocessors> programname <programoptions>"
   exit
 fi
 
@@ -20,8 +20,8 @@ if [ x$1 = x"-valgrind" ]; then
   shift
 fi
 
-if [ $1 != "-n" ]; then
-  echo "Error in  mpiexec command: must start with -n <numberprocessors> or -valgrind -n <numberprocessors>"
+if [ $1 != "-n" ] && [ $1 != "-np" ]; then
+  echo "Error in  mpiexec command: must start with -n[p] <numberprocessors> or -valgrind -n[p] <numberprocessors>"
   exit 1
 fi
 shift
