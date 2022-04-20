@@ -1189,6 +1189,8 @@ char     *ver = "petscpkgver(" PetscXstr_({y}) ")";
       self.download = self.download_solaris
     if hasattr(self, 'download_darwin') and config.setCompilers.Configure.isDarwin(self.log):
       self.download = self.download_darwin
+    if hasattr(self, 'download_mingw') and config.setCompilers.Configure.isMINGW(self.framework.getCompiler(), self.log):
+      self.download = self.download_mingw
     if self.download and self.argDB['download-'+self.downloadname.lower()] and (not self.framework.batchBodies or self.installwithbatch):
       self.argDB['with-'+self.package] = 1
       downloadPackageVal = self.argDB['download-'+self.downloadname.lower()]
