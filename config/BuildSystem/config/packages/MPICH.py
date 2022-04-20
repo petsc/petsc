@@ -39,7 +39,7 @@ class Configure(config.package.GNUPackage):
       self.updateCompilers(self.installDir,'mpicc','mpicxx','mpif77','mpif90')
       return self.installDir
     if self.cuda.found:
-      self.logPrintBox('***** WARNING: CUDA enabled! Its best to use --download-openmpi instead of --download-mpich as it provides CUDA enabled MPI! ****')
+      self.logPrintWarning('CUDA enabled! Its best to use --download-openmpi instead of --download-mpich as it provides CUDA enabled MPI!')
     if self.argDB['download-'+self.downloadname.lower()]:
       return self.getInstallDir()
     return ''

@@ -115,7 +115,7 @@ class CompilerOptions(config.base.Configure):
       elif bopt == 'O':
         flags.append('-O')
     if bopt == 'O':
-      self.logPrintBox('***** WARNING: Using default optimization '+language+' flags '+' '.join(flags)+'\nYou might consider manually setting optimal optimization flags for your system with\n '+language.upper()+'OPTFLAGS="optimization flags" see config/examples/arch-*-opt.py for examples')
+      self.logPrintWarning('Using default optimization '+language+' flags "'+' '.join(flags)+'". You might consider manually setting optimal optimization flags for your system with '+language.upper()+'OPTFLAGS="optimization flags" see config/examples/arch-*-opt.py for examples')
     return flags
 
   def getCxxFlags(self, compiler, bopt, language):
@@ -232,7 +232,7 @@ class CompilerOptions(config.base.Configure):
       elif bopt in ['O']:
         flags.append('-O')
     if bopt == 'O':
-      self.logPrintBox('***** WARNING: Using default ' + language + ' optimization flags '+' '.join(flags)+'\nYou might consider manually setting optimal optimization flags for your system with\n ' + language.upper() + 'OPTFLAGS="optimization flags" see config/examples/arch-*-opt.py for examples')
+      self.logPrintWarning('Using default ' + language + ' optimization flags "'+' '.join(flags)+'". You might consider manually setting optimal optimization flags for your system with ' + language.upper() + 'OPTFLAGS="optimization flags" see config/examples/arch-*-opt.py for examples')
     return flags
 
   def getFortranFlags(self, compiler, bopt):
@@ -315,7 +315,7 @@ class CompilerOptions(config.base.Configure):
       elif bopt == 'O':
         flags.append('-O')
     if bopt == 'O':
-      self.logPrintBox('***** WARNING: Using default FORTRAN optimization flags '+' '.join(flags)+'\nYou might consider manually setting optimal optimization flags for your system with\n FOPTFLAGS="optimization flags" see config/examples/arch-*-opt.py for examples')
+      self.logPrintWarning('Using default FORTRAN optimization flags "'+' '.join(flags)+'". You might consider manually setting optimal optimization flags for your system with FOPTFLAGS="optimization flags" see config/examples/arch-*-opt.py for examples')
     return flags
 
   def getCompilerFlags(self, language, compiler, bopt):

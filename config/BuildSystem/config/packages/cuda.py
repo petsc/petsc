@@ -319,8 +319,8 @@ class Configure(config.package.Package):
             self.setCompilers.CUDAFLAGS = cflags
             continue
           else:
-            self.logPrintBox('***** WARNING: Cannot check if gencode '+str(gen)+' works for your hardware, assuming it does.\n\
-You may need to run ./configure with-cuda-arch=numerical value (such as 70)\n\
+            self.logPrintWarning('Cannot check if gencode '+str(gen)+' works for your hardware, assuming it does. \
+You may need to run ./configure with-cuda-arch=numerical value (such as 70) \
 to set the right generation for your hardware.')
             self.cudaArch = gen
             self.setCompilers.CUDAFLAGS = cflags

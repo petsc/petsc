@@ -68,7 +68,7 @@ class Configure(config.base.Configure):
   def cleanConfDir(self):
     import shutil
     if self.framework.argDB['with-clean'] and os.path.isdir(self.confDir):
-      self.logPrintBox('Warning: "with-clean" is specified. Removing all build files from '+ self.confDir)
+      self.logPrintWarning('"with-clean" is specified. Removing all build files from '+ self.confDir)
       shutil.rmtree(self.confDir)
     return
 

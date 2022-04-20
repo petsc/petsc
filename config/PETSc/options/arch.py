@@ -44,9 +44,8 @@ class Configure(config.base.Configure):
     '''Checks PETSC_ARCH and sets if not set'''
     # Warn if PETSC_ARCH doesn't match env variable
     if 'PETSC_ARCH' in self.framework.argDB and 'PETSC_ARCH' in os.environ and self.framework.argDB['PETSC_ARCH'] != os.environ['PETSC_ARCH']:
-      self.logPrintBox('''\
-Warning: PETSC_ARCH from environment does not match command-line or name of script.
-Warning: Using from command-line or name of script: %s, ignoring environment: %s''' % (str(self.framework.argDB['PETSC_ARCH']), str(os.environ['PETSC_ARCH'])))
+      self.logPrintWarning('''\
+PETSC_ARCH from environment does not match command-line or name of script. Using from command-line or name of script: %s, ignoring environment: %s''' % (str(self.framework.argDB['PETSC_ARCH']), str(os.environ['PETSC_ARCH'])))
       os.environ['PETSC_ARCH'] = self.framework.argDB['PETSC_ARCH']
     if 'with-petsc-arch' in self.framework.argDB:
       self.arch = self.framework.argDB['with-petsc-arch']
