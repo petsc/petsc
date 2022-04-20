@@ -9,6 +9,8 @@ class Configure(config.package.Package):
     self.download         = ['git://https://gitlab.inria.fr/scotch/scotch.git',
                              'https://gitlab.inria.fr/scotch/scotch/-/archive/'+self.gitcommit+'/scotch-'+self.gitcommit+'.tar.gz',
                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/scotch-'+self.gitcommit+'.tar.gz']
+    self.download_mingw   = ['https://gitlab.inria.fr/scotch/scotch/-/archive/v6.1.2/scotch-v6.1.2.tar.gz',
+                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/scotch-v6.1.2.tar.gz']
     self.downloaddirnames = ['scotch','petsc-pkg-scotch']
     self.liblist          = [['libptesmumps.a','libptscotchparmetisv3.a','libptscotch.a','libptscotcherr.a','libesmumps.a','libscotch.a','libscotcherr.a'],['libptesmumps.a','libptscotchparmetis.a','libptscotch.a','libptscotcherr.a','libesmumps.a','libscotch.a','libscotcherr.a'],
                              ['libptesmumps.a','libptscotchparmetis.a','libptscotch.a','libptscotcherr.a','libesmumps.a','libscotch.a','libscotcherr.a']]
@@ -88,12 +90,16 @@ class Configure(config.package.Package):
       g.write('CCDFLAGS = '+self.cflags+' '+self.checkNoOptFlag()+'\n')
     g.write('LDFLAGS  = '+ldflags+'\n')
     g.write('CP       = '+self.programs.cp+'\n')
-    g.write('FLEX     = '+self.programs.flex+'\n')
     g.write('LN       = ln\n')
     g.write('MKDIR    = '+self.programs.mkdir+'\n')
     g.write('MV       = '+self.programs.mv+'\n')
     g.write('RANLIB   = '+self.setCompilers.RANLIB+'\n')
-    g.write('BISON    = '+getattr(self.bison,self.bison.executablename)+' -y\n')
+    if self.setCompilers.isMINGW(self.framework.getCompiler(), self.log):
+      g.write('LEX      = '+self.programs.flex+'\n')
+      g.write('YACC     = '+getattr(self.bison,self.bison.executablename)+' -y\n')
+    else:
+      g.write('FLEX     = '+self.programs.flex+'\n')
+      g.write('BISON    = '+getattr(self.bison,self.bison.executablename)+' -y\n')
     g.close()
 
     self.popLanguage()
