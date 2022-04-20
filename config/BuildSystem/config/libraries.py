@@ -624,5 +624,6 @@ extern PETSC_DLLEXPORT int foo() {
     self.executeTest(self.checkMathLog2)
     self.executeTest(self.checkRealtime)
     self.executeTest(self.checkDynamic)
-    self.executeTest(self.checkExecutableExportFlag)
+    if not self.argDB['with-batch']:
+      self.executeTest(self.checkExecutableExportFlag)
     return
