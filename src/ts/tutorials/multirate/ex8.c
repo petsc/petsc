@@ -1144,7 +1144,7 @@ int main(int argc,char *argv[])
      count_slow + count_fast = Mx, counts_slow*hs = 0.5, counts_fast*hf = 0.5 */
   count_slow = Mx/(1+ctx.hratio)/(1+ctx.hratio);
   count_medium = 2*ctx.hratio*count_slow;
-  PetscCheckFalse(count_slow%2 || count_medium%2,PETSC_COMM_WORLD,PETSC_ERR_USER,"Please adjust grid size Mx (-da_grid_x) and hratio (-hratio) so that Mx/(1+hartio)^2 and Mx*2*hratio/(1+hratio)^2 is even");
+  PetscCheck((count_slow%2) == 0 && (count_medium%2) == 0,PETSC_COMM_WORLD,PETSC_ERR_USER,"Please adjust grid size Mx (-da_grid_x) and hratio (-hratio) so that Mx/(1+hartio)^2 and Mx*2*hratio/(1+hratio)^2 is even");
   count_fast = ctx.hratio*ctx.hratio*count_slow;
   ctx.sm = count_slow/2;
   ctx.mf = ctx.sm + count_medium/2;

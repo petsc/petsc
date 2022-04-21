@@ -193,7 +193,7 @@ PetscErrorCode WASHIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void* ctx)
 
     /* Evaluate upstream boundary */
     PetscCall(DMNetworkGetComponent(networkdm,vfrom,0,&type,(void**)&junction,NULL));
-    PetscCheckFalse(junction->type != JUNCTION && junction->type != RESERVOIR,PETSC_COMM_SELF,PETSC_ERR_SUP,"junction type is not supported");
+    PetscCheck(junction->type == JUNCTION || junction->type == RESERVOIR,PETSC_COMM_SELF,PETSC_ERR_SUP,"junction type is not supported");
     juncx = (PipeField*)(xarr + offsetfrom);
     juncf = (PetscScalar*)(farr + offsetfrom);
 
@@ -202,7 +202,7 @@ PetscErrorCode WASHIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void* ctx)
 
     /* Evaluate downstream boundary */
     PetscCall(DMNetworkGetComponent(networkdm,vto,0,&type,(void**)&junction,NULL));
-    PetscCheckFalse(junction->type != JUNCTION && junction->type != VALVE,PETSC_COMM_SELF,PETSC_ERR_SUP,"junction type is not supported");
+    PetscCheck(junction->type == JUNCTION || junction->type == VALVE,PETSC_COMM_SELF,PETSC_ERR_SUP,"junction type is not supported");
     juncx = (PipeField*)(xarr + offsetto);
     juncf = (PetscScalar*)(farr + offsetto);
     nend  = pipe->nnodes - 1;

@@ -448,7 +448,7 @@ static PetscErrorCode TSAlpha2SetRadius_Alpha(TS ts,PetscReal radius)
   PetscReal      alpha_m,alpha_f,gamma,beta;
 
   PetscFunctionBegin;
-  PetscCheckFalse(radius < 0 || radius > 1,PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Radius %g not in range [0,1]",(double)radius);
+  PetscCheck(radius >= 0 && radius <= 1,PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Radius %g not in range [0,1]",(double)radius);
   alpha_m = (2-radius)/(1+radius);
   alpha_f = 1/(1+radius);
   gamma   = (PetscReal)0.5 + alpha_m - alpha_f;
@@ -561,7 +561,7 @@ PetscErrorCode TSAlpha2SetRadius(TS ts,PetscReal radius)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidLogicalCollectiveReal(ts,radius,2);
-  PetscCheckFalse(radius < 0 || radius > 1,((PetscObject)ts)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Radius %g not in range [0,1]",(double)radius);
+  PetscCheck(radius >= 0 && radius <= 1,((PetscObject)ts)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Radius %g not in range [0,1]",(double)radius);
   PetscTryMethod(ts,"TSAlpha2SetRadius_C",(TS,PetscReal),(ts,radius));
   PetscFunctionReturn(0);
 }

@@ -153,7 +153,7 @@ static PetscErrorCode PhysicsRiemann_Shallow_Exact(void *vctx,PetscInt m,const P
         ? PetscSqrtScalar(0.5*g*(h*h - R.h*R.h)*(1/R.h - 1/h)) /* shock */
         : 2*PetscSqrtScalar(g*h) - 2*PetscSqrtScalar(g*R.h);   /* rarefaction */
       res = R.u - L.u + fr + fl;
-      PetscCheckFalse(PetscIsInfOrNanScalar(res),PETSC_COMM_SELF,PETSC_ERR_FP,"Infinity or Not-a-Number generated in computation");
+      PetscCheck(!PetscIsInfOrNanScalar(res),PETSC_COMM_SELF,PETSC_ERR_FP,"Infinity or Not-a-Number generated in computation");
       if (PetscAbsScalar(res) < PETSC_SQRT_MACHINE_EPSILON || (i > 0 && PetscAbsScalar(h-h0) < PETSC_SQRT_MACHINE_EPSILON)) {
         star.h = h;
         star.u = L.u - fl;

@@ -346,7 +346,7 @@ PetscErrorCode go(TS ts, Vec X, const PetscInt NUserV, const PetscInt a_Np, cons
             }
           } // active
         }
-      PetscCheckFalse(ierr == 9999, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Only support one species per grid");
+      PetscCheck(ierr != 9999, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Only support one species per grid");
       PetscCall(ierr);
       // p --> g: make globMpArray & set X
       PetscPragmaOMP(parallel for)
