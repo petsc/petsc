@@ -1,5 +1,6 @@
 import config.package
 import os
+import script
 
 class Configure(config.package.Package):
   def __init__(self, framework):
@@ -38,21 +39,20 @@ class Configure(config.package.Package):
       else:
         archflags = "ARCHFLAGS=\'-arch x86_64\' "
 
-    logfile = os.path.join(self.petscdir.dir,self.arch,'lib','petsc','conf','mpi4py.log')
     self.framework.pushLanguage('C')
     self.logPrintBox('Building mpi4py, this may take several minutes')
-    cleancmd = 'MPICC='+self.framework.getCompiler()+'  '+archflags+self.python.pyexe+' setup.py clean --all  > '+logfile+' 2>&1'
-    output,err,ret  = config.base.Configure.executeShellCommand(cleancmd, cwd=self.packageDir, timeout=100, log=self.log)
-    if ret: raise RuntimeError('Error cleaning mpi4py. Check '+logfile)
+    cleancmd = 'MPICC='+self.framework.getCompiler()+'  '+archflags+self.python.pyexe+' setup.py clean --all  2>&1'
+    output,err,ret  = config.base.Configure.executeShellCommand(cleancmd, cwd=self.packageDir,  checkCommand=script.Script.passCheckCommand, timeout=100, log=self.log)
+    if ret: raise RuntimeError('Error cleaning mpi4py. Check configure.log')
 
-    buildcmd = 'MPICC='+self.framework.getCompiler()+'  '+archflags+self.python.pyexe+' setup.py build >> '+logfile+' 2>&1'
-    output,err,ret  = config.base.Configure.executeShellCommand(buildcmd, cwd=self.packageDir, timeout=100, log=self.log)
-    if ret: raise RuntimeError('Error building mpi4py. Check '+logfile)
+    buildcmd = 'MPICC='+self.framework.getCompiler()+'  '+archflags+self.python.pyexe+' setup.py build 2>&1'
+    output,err,ret  = config.base.Configure.executeShellCommand(buildcmd, cwd=self.packageDir, checkCommand=script.Script.passCheckCommand,timeout=100, log=self.log)
+    if ret: raise RuntimeError('Error building mpi4py. Check configure.log')
 
     self.logPrintBox('Installing mpi4py')
-    installcmd = 'MPICC='+self.framework.getCompiler()+' '+self.python.pyexe+' setup.py install --install-lib='+installLibPath+' >> '+logfile+' 2>&1'
-    output,err,ret  = config.base.Configure.executeShellCommand(installcmd, cwd=self.packageDir, timeout=100, log=self.log)
-    if ret: raise RuntimeError('Error installing mpi4py. Check '+logfile)
+    installcmd = 'MPICC='+self.framework.getCompiler()+' '+self.python.pyexe+' setup.py install --install-lib='+installLibPath+' 2>&1'
+    output,err,ret  = config.base.Configure.executeShellCommand(installcmd, cwd=self.packageDir,checkCommand=script.Script.passCheckCommand, timeout=100, log=self.log)
+    if ret: raise RuntimeError('Error installing mpi4py. Check configure.log')
     self.framework.popLanguage()
     return self.installDir
 
