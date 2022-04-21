@@ -55,5 +55,6 @@ PetscErrorCode  MatPythonCreate(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,P
   PetscCall(MatSetSizes(*A,m,n,M,N));
   PetscCall(MatSetType(*A,MATPYTHON));
   PetscCall(MatPythonSetType(*A,pyname));
+  PetscCall(MatBindToCPU(*A,PETSC_FALSE));
   PetscFunctionReturn(0);
 }
