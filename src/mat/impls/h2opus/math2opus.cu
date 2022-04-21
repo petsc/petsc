@@ -58,14 +58,16 @@ template <class T> class PetscPointCloud : public H2OpusDataSet<T>
 
       pts.resize(num_pts*dim);
       if (coords) {
-        for (size_t n = 0; n < num_points; n++)
+        for (size_t n = 0; n < num_pts; n++)
           for (int i = 0; i < dim; i++)
             pts[n*dim + i] = coords[n*dim + i];
       } else {
-        PetscReal h = 1./(num_points - 1);
-        for (size_t n = 0; n < num_points; n++)
-          for (int i = 0; i < dim; i++)
-            pts[n*dim + i] = i*h;
+        PetscReal h = 1.0; //num_pts > 1 ? 1./(num_pts - 1) : 0.0;
+        for (size_t n = 0; n < num_pts; n++) {
+          pts[n*dim] = n*h;
+          for (int i = 1; i < dim; i++)
+            pts[n*dim + i] = 0.0;
+        }
       }
     }
 
@@ -1186,7 +1188,7 @@ static PetscErrorCode MatH2OpusSetCoords_H2OPUS(Mat A, PetscInt spacedim, const 
   PetscCall(PetscObjectGetComm((PetscObject)A,&comm));
   PetscCall(MatHasCongruentLayouts(A,&cong));
   PetscCheck(cong,comm,PETSC_ERR_SUP,"Only for square matrices with congruent layouts");
-  N    = A->rmap->N;
+  N = A->rmap->N;
   PetscCallMPI(MPI_Comm_size(comm,&size));
   if (spacedim > 0 && size > 1 && cdist) {
     PetscSF      sf;
