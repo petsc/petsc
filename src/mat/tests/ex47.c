@@ -75,7 +75,7 @@ int main(int argc,char **args)
   PetscCall(MatMult(B,x,y));
   PetscCall(VecNorm(y,NORM_2,&norm2));
   rnorm = ((norm1-norm2)*100)/norm1;
-  PetscCheckFalse(rnorm<-0.1 || rnorm>0.01,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatDiagonalScale() failed Norm1 %g Norm2 %g",(double)norm1,(double)norm2);
+  PetscCheck(rnorm >= -0.1 && rnorm <= 0.01,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatDiagonalScale() failed Norm1 %g Norm2 %g",(double)norm1,(double)norm2);
 
   /* Test MatGetRow()/ MatRestoreRow() */
   for (ct=0; ct<100; ct++) {

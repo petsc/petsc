@@ -31,7 +31,7 @@ int main(int argc,char **argv)
   PetscCall(MatSetFromOptions(A));
 
   /* Consistency checks */
-  PetscCheckFalse(o < 1 || m < 1 || n < 1,PETSC_COMM_WORLD,PETSC_ERR_USER,"Dimensions need to be larger than zero!");
+  PetscCheck(o >= 1 && m > 1 && n >= 1,PETSC_COMM_WORLD,PETSC_ERR_USER,"Dimensions need to be larger than zero!");
 
   /************ 2D stencils ***************/
   PetscCall(PetscStrcmp(stencil, "2d5point", &equal));
