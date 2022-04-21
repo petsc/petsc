@@ -1255,7 +1255,6 @@ PETSC_EXTERN PetscErrorCode PetscObjectDestroy(PetscObject*);
 PETSC_EXTERN PetscErrorCode PetscObjectGetComm(PetscObject,MPI_Comm *);
 PETSC_EXTERN PetscErrorCode PetscObjectGetClassId(PetscObject,PetscClassId *);
 PETSC_EXTERN PetscErrorCode PetscObjectGetClassName(PetscObject,const char *[]);
-PETSC_EXTERN PetscErrorCode PetscObjectSetType(PetscObject,const char []);
 PETSC_EXTERN PetscErrorCode PetscObjectGetType(PetscObject,const char *[]);
 PETSC_EXTERN PetscErrorCode PetscObjectSetName(PetscObject,const char[]);
 PETSC_EXTERN PetscErrorCode PetscObjectGetName(PetscObject,const char*[]);

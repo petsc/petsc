@@ -13,10 +13,12 @@ template <typename T> void PetscValidDeviceContext(T,int);
 template <typename T> void PetscCheckCompatibleDeviceContexts(T,int,T,int);
 #elif PetscDefined(USE_DEBUG)
 /* note any changes to these macros must be mirrored in
- * src/sys/objects/device/test/petscdevicecommon.h! */
+ * src/sys/objects/device/test/petscdevicetestcommon.h! */
+/* enums may be handled as unsigned by some compilers, NVHPC for example, the int cast
+ * below is to prevent NVHPC from warning about meaningless comparison of unsigned with zero */
 #define PetscValidDeviceType(_p_dev_type__,_p_arg__) do {                                      \
     PetscCheck(                                                                               \
-      ((_p_dev_type__) >= PETSC_DEVICE_INVALID) && ((_p_dev_type__) <= PETSC_DEVICE_MAX),      \
+      ((int)(_p_dev_type__) >= (int)PETSC_DEVICE_INVALID) && ((_p_dev_type__) <= PETSC_DEVICE_MAX), \
       PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown PetscDeviceType '%d': Argument #%d", \
       (_p_dev_type__),(_p_arg__)                                                               \
     );                                                                                         \
@@ -67,9 +69,11 @@ template <typename T> void PetscCheckCompatibleDeviceContexts(T,int,T,int);
     );                                                                                  \
   } while (0)
 
+/* enums may be handled as unsigned by some compilers, NVHPC for example, the int cast
+ * below is to prevent NVHPC from warning about meaningless comparison of unsigned with zero */
 #define PetscValidStreamType(_p_strm_type__,_p_arg__)  do {                                    \
     PetscCheck(                                                                               \
-      ((_p_strm_type__) >= 0) && ((_p_strm_type__) <= PETSC_STREAM_MAX),                       \
+      ((int)(_p_strm_type__) >= 0) && ((_p_strm_type__) <= PETSC_STREAM_MAX), \
       PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown PetscStreamType '%d': Argument #%d", \
       (_p_strm_type__),(_p_arg__)                                                              \
     );                                                                                         \
