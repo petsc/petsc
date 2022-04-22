@@ -57,12 +57,12 @@ if [ -f makefile ]; then
 
   OMAKE=`grep "OMAKE " "${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables" | cut -f2 -d=`
   if [ "X${PETSC_ARCH}" != "X" ]; then
-    pushd ${PETSC_DIR} > /dev/null
+    cd ${PETSC_DIR}
     ${OMAKE} -q -f gmakefile libs
     if [ $? = 1 ]; then
       echo "Warning: ************** The PETSc libraries are out of date"
     fi
-    popd  > /dev/null
+    cd - > /dev/null
   fi
   ${OMAKE} -q $1
   if [ $? = 1 ]; then

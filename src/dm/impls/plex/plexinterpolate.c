@@ -1290,7 +1290,7 @@ PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF)
   Level: intermediate
 
   Notes:
-    It does not copy over the coordinates.
+    Labels and coordinates are copied.
 
   Developer Notes:
     It sets plex->interpolated = DMPLEX_INTERPOLATED_FULL.
