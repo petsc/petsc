@@ -1,12 +1,23 @@
 #if !defined(__VECKOKKOSIMPL_HPP)
 #define __VECKOKKOSIMPL_HPP
 
+#include <../src/vec/vec/impls/mpi/pvecimpl.h>
 #include <petsc/private/vecimpl_kokkos.hpp>
 
 /* Stuff related to Vec_Kokkos */
 
 struct Vec_Kokkos {
   PetscScalarKokkosDualView      v_dual;
+
+  /* COO stuff */
+  PetscCountKokkosView  jmap1_d; /* [m+1]: i-th entry of the vector has jmap1[i+1]-jmap1[i] repeats in COO arrays */
+  PetscCountKokkosView  perm1_d; /* [tot1]: permutation array for local entries */
+
+  PetscCountKokkosView  imap2_d; /* [nnz2]: i-th unique entry in recvbuf is imap2[i]-th entry in the vector */
+  PetscCountKokkosView  jmap2_d; /* [nnz2+1] */
+  PetscCountKokkosView  perm2_d; /* [recvlen] */
+  PetscCountKokkosView  Cperm_d; /* [sendlen]: permutation array to fill sendbuf[]. 'C' for communication */
+  PetscScalarKokkosView sendbuf_d,recvbuf_d;  /* Buffers for remote values in VecSetValuesCOO() */
 
   /* Construct Vec_Kokkos with the given array(s). n is the length of the array.
     If n != 0, host array (array_h) must not be NULL.
@@ -54,6 +65,22 @@ struct Vec_Kokkos {
     PetscScalarKokkosView v_d(array,v_dual.extent(0));
     v_dual = PetscScalarKokkosDualView(v_d,v_dual.view<Kokkos::HostSpace>());
     v_dual.modify_device();
+  }
+
+  void SetUpCOO(const Vec_Seq *vecseq,PetscInt m) {
+    jmap1_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(),PetscCountKokkosViewHost(vecseq->jmap1,m+1));
+    perm1_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(),PetscCountKokkosViewHost(vecseq->perm1,vecseq->tot1));
+  }
+
+  void SetUpCOO(const Vec_MPI *vecmpi,PetscInt m) {
+    jmap1_d   = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(),PetscCountKokkosViewHost(vecmpi->jmap1,m+1));
+    perm1_d   = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(),PetscCountKokkosViewHost(vecmpi->perm1,vecmpi->tot1));
+    imap2_d   = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(),PetscCountKokkosViewHost(vecmpi->imap2,vecmpi->nnz2));
+    jmap2_d   = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(),PetscCountKokkosViewHost(vecmpi->jmap2,vecmpi->nnz2+1));
+    perm2_d   = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(),PetscCountKokkosViewHost(vecmpi->perm2,vecmpi->recvlen));
+    Cperm_d   = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(),PetscCountKokkosViewHost(vecmpi->Cperm,vecmpi->sendlen));
+    sendbuf_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(),PetscScalarKokkosViewHost(vecmpi->sendbuf,vecmpi->sendlen));
+    recvbuf_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(),PetscScalarKokkosViewHost(vecmpi->recvbuf,vecmpi->recvlen));
   }
 };
 

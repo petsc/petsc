@@ -989,6 +989,80 @@ PetscErrorCode VecDotNorm2_SeqCUDA(Vec s, Vec t, PetscScalar *dp, PetscScalar *n
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode VecResetPreallocationCOO_SeqCUDA(Vec x)
+{
+  Vec_CUDA     *veccuda = static_cast<Vec_CUDA*>(x->spptr);
+
+  PetscFunctionBegin;
+  if (veccuda) {
+    PetscCallCUDA(cudaFree(veccuda->jmap1_d));
+    PetscCallCUDA(cudaFree(veccuda->perm1_d));
+  }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecSetPreallocationCOO_SeqCUDA(Vec x, PetscCount ncoo, const PetscInt coo_i[])
+{
+  Vec_Seq      *vecseq = static_cast<Vec_Seq*>(x->data);
+  Vec_CUDA     *veccuda = static_cast<Vec_CUDA*>(x->spptr);
+  PetscInt     m;
+
+  PetscFunctionBegin;
+  PetscCall(VecResetPreallocationCOO_SeqCUDA(x));
+  PetscCall(VecSetPreallocationCOO_Seq(x,ncoo,coo_i));
+  PetscCall(VecGetLocalSize(x,&m));
+  PetscCallCUDA(cudaMalloc((void**)&veccuda->jmap1_d,sizeof(PetscCount)*(m+1)));
+  PetscCallCUDA(cudaMalloc((void**)&veccuda->perm1_d,sizeof(PetscCount)*vecseq->tot1));
+  PetscCallCUDA(cudaMemcpy(veccuda->jmap1_d,vecseq->jmap1,sizeof(PetscCount)*(m+1),cudaMemcpyHostToDevice));
+  PetscCallCUDA(cudaMemcpy(veccuda->perm1_d,vecseq->perm1,sizeof(PetscCount)*vecseq->tot1,cudaMemcpyHostToDevice));
+  PetscFunctionReturn(0);
+}
+
+__global__ static void VecAddCOOValues(const PetscScalar vv[],PetscCount m,const PetscCount jmap1[],const PetscCount perm1[],InsertMode imode,PetscScalar xv[])
+{
+  PetscCount        i = blockIdx.x*blockDim.x + threadIdx.x;
+  const PetscCount  grid_size = gridDim.x * blockDim.x;
+  for (; i<m; i+= grid_size) {
+    PetscScalar sum = 0.0;
+    for (PetscCount k=jmap1[i]; k<jmap1[i+1]; k++) sum += vv[perm1[k]];
+    xv[i] = (imode == INSERT_VALUES? 0.0 : xv[i]) + sum;
+  }
+}
+
+PetscErrorCode VecSetValuesCOO_SeqCUDA(Vec x,const PetscScalar v[],InsertMode imode)
+{
+  Vec_Seq                     *vecseq = static_cast<Vec_Seq*>(x->data);
+  Vec_CUDA                    *veccuda = static_cast<Vec_CUDA*>(x->spptr);
+  const PetscCount            *jmap1 = veccuda->jmap1_d;
+  const PetscCount            *perm1 = veccuda->perm1_d;
+  PetscScalar                 *xv;
+  const PetscScalar           *vv = v;
+  PetscInt                    m;
+  PetscMemType                memtype;
+
+  PetscFunctionBegin;
+  PetscCall(VecGetLocalSize(x,&m));
+  PetscCall(PetscGetMemType(v,&memtype));
+
+  if (PetscMemTypeHost(memtype)) { /* If user gave v[] in host, we might need to copy it to device if any */
+    PetscCallCUDA(cudaMalloc((void**)&vv,vecseq->coo_n*sizeof(PetscScalar)));
+    PetscCallCUDA(cudaMemcpy((void*)vv,v,vecseq->coo_n*sizeof(PetscScalar),cudaMemcpyHostToDevice));
+  }
+
+  if (imode == INSERT_VALUES) PetscCall(VecCUDAGetArrayWrite(x,&xv)); /* write vector */
+  else PetscCall(VecCUDAGetArray(x,&xv)); /* read & write vector */
+
+  if (m) {
+    VecAddCOOValues<<<(m+255)/256,256>>>(vv,m,jmap1,perm1,imode,xv);
+    PetscCallCUDA(cudaPeekAtLastError());
+  }
+  if (imode == INSERT_VALUES) PetscCall(VecCUDARestoreArrayWrite(x,&xv));
+  else PetscCall(VecCUDARestoreArray(x,&xv));
+
+  if (PetscMemTypeHost(memtype)) PetscCallCUDA(cudaFree((void*)vv));
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode VecDestroy_SeqCUDA(Vec v)
 {
   Vec_CUDA       *veccuda = (Vec_CUDA*)v->spptr;
@@ -1009,6 +1083,7 @@ PetscErrorCode VecDestroy_SeqCUDA(Vec v)
     if (veccuda->stream) {
       PetscCallCUDA(cudaStreamDestroy(veccuda->stream));
     }
+    PetscCall(VecResetPreallocationCOO_SeqCUDA(v));
   }
   PetscCall(VecDestroy_SeqCUDA_Private(v));
   PetscCall(PetscFree(v->spptr));

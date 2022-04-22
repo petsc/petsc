@@ -5932,27 +5932,6 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_MPIDense_MPIAIJ(Mat C)
   PetscFunctionReturn(0);
 }
 
-/* std::upper_bound(): Given a sorted array, return index of the first element in range [first,last) whose value
-   is greater than value, or last if there is no such element.
-*/
-static inline PetscErrorCode PetscSortedIntUpperBound(PetscInt *array,PetscCount first,PetscCount last,PetscInt value,PetscCount *upper)
-{
-  PetscCount  it,step,count = last - first;
-
-  PetscFunctionBegin;
-  while (count > 0) {
-    it   = first;
-    step = count / 2;
-    it  += step;
-    if (!(value < array[it])) {
-      first  = ++it;
-      count -= step + 1;
-    } else count = step;
-  }
-  *upper = first;
-  PetscFunctionReturn(0);
-}
-
 /* Merge two sets of sorted nonzeros and return a CSR for the merged (sequential) matrix
 
   Input Parameters:

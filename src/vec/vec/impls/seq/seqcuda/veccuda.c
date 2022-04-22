@@ -126,7 +126,7 @@ PetscErrorCode VecDestroy_SeqCUDA_Private(Vec v)
         v->pinned_memory = PETSC_FALSE;
       }
     }
-    PetscCall(PetscFree(vs));
+    PetscCall(VecDestroy_Seq(v));
   }
   PetscFunctionReturn(0);
 }
@@ -428,6 +428,8 @@ PetscErrorCode VecBindToCPU_SeqCUDA(Vec V,PetscBool bind)
     V->ops->reciprocal             = VecReciprocal_Default;
     V->ops->sum                    = NULL;
     V->ops->shift                  = NULL;
+    V->ops->setpreallocationcoo    = VecSetPreallocationCOO_Seq;
+    V->ops->setvaluescoo           = VecSetValuesCOO_Seq;
     /* default random number generator */
     PetscCall(PetscFree(V->defaultrandtype));
     PetscCall(PetscStrallocpy(PETSCRANDER48,&V->defaultrandtype));
@@ -475,6 +477,8 @@ PetscErrorCode VecBindToCPU_SeqCUDA(Vec V,PetscBool bind)
     V->ops->reciprocal             = VecReciprocal_SeqCUDA;
     V->ops->sum                    = VecSum_SeqCUDA;
     V->ops->shift                  = VecShift_SeqCUDA;
+    V->ops->setpreallocationcoo    = VecSetPreallocationCOO_SeqCUDA;
+    V->ops->setvaluescoo           = VecSetValuesCOO_SeqCUDA;
 
     /* default random number generator */
     PetscCall(PetscFree(V->defaultrandtype));

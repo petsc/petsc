@@ -3,13 +3,14 @@
    These are the vector functions the user calls.
 */
 #include <petsc/private/vecimpl.h>    /*I  "petscvec.h"   I*/
+#include <petsc/private/deviceimpl.h>
 
 /* Logging support */
 PetscClassId  VEC_CLASSID;
 PetscLogEvent VEC_View, VEC_Max, VEC_Min, VEC_Dot, VEC_MDot, VEC_TDot;
 PetscLogEvent VEC_Norm, VEC_Normalize, VEC_Scale, VEC_Copy, VEC_Set, VEC_AXPY, VEC_AYPX, VEC_WAXPY;
 PetscLogEvent VEC_MTDot, VEC_MAXPY, VEC_Swap, VEC_AssemblyBegin, VEC_ScatterBegin, VEC_ScatterEnd;
-PetscLogEvent VEC_AssemblyEnd, VEC_PointwiseMult, VEC_SetValues, VEC_Load;
+PetscLogEvent VEC_AssemblyEnd, VEC_PointwiseMult, VEC_SetValues, VEC_Load, VEC_SetPreallocateCOO, VEC_SetValuesCOO;
 PetscLogEvent VEC_SetRandom, VEC_ReduceArithmetic, VEC_ReduceCommunication,VEC_ReduceBegin,VEC_ReduceEnd,VEC_Ops;
 PetscLogEvent VEC_DotNorm2, VEC_AXPBYPCZ;
 PetscLogEvent VEC_ViennaCLCopyFromGPU, VEC_ViennaCLCopyToGPU;
@@ -164,6 +165,140 @@ PetscErrorCode  VecAssemblyEnd(Vec vec)
   }
   PetscCall(PetscLogEventEnd(VEC_AssemblyEnd,vec,0,0,0));
   PetscCall(VecViewFromOptions(vec,NULL,"-vec_view"));
+  PetscFunctionReturn(0);
+}
+
+/*@
+   VecSetPreallocationCOO - set preallocation for a vector using a coordinate format of the entries with global indices
+
+   Collective on Vec
+
+   Input Parameters:
++  x - vector being preallocated
+.  ncoo - number of entries
+-  coo_i - entry indices
+
+   Level: beginner
+
+   Notes:
+   Entries can be repeated, see VecSetValuesCOO(). Negative indices are not allowed unless vector option VEC_IGNORE_NEGATIVE_INDICES is set,
+   in which case they, along with the corresponding entries in VecSetValuesCOO(), are ignored. If vector option VEC_NO_OFF_PROC_ENTRIES is set,
+   remote entries are ignored, otherwise, they will be properly added or inserted to the vector.
+
+   The array coo_i[] may be freed immediately after calling this function.
+
+.seealso: VecSetValuesCOO(), VecSetPreallocationCOOLocal()
+@*/
+PetscErrorCode VecSetPreallocationCOO(Vec x,PetscCount ncoo,const PetscInt coo_i[])
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+  PetscValidType(x,1);
+  if (ncoo) PetscValidIntPointer(coo_i,3);
+  PetscCall(PetscLogEventBegin(VEC_SetPreallocateCOO,x,0,0,0));
+  PetscCall(PetscLayoutSetUp(x->map));
+  if (x->ops->setpreallocationcoo) {
+    PetscCall((*x->ops->setpreallocationcoo)(x,ncoo,coo_i));
+  } else {
+    IS is_coo_i;
+    /* The default implementation only supports ncoo within limit of PetscInt */
+    PetscCheck(ncoo <= PETSC_MAX_INT,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"ncoo %" PetscCount_FMT " overflowed PetscInt; configure --with-64-bit-indices or request support",ncoo);
+    PetscCall(ISCreateGeneral(PETSC_COMM_SELF,ncoo,coo_i,PETSC_COPY_VALUES,&is_coo_i));
+    PetscCall(PetscObjectCompose((PetscObject)x,"__PETSc_coo_i",(PetscObject)is_coo_i));
+    PetscCall(ISDestroy(&is_coo_i));
+  }
+  PetscCall(PetscLogEventEnd(VEC_SetPreallocateCOO,x,0,0,0));
+  PetscFunctionReturn(0);
+}
+
+/*@
+   VecSetPreallocationCOOLocal - set preallocation for vectors using a coordinate format of the entries with local indices
+
+   Collective on Mat
+
+   Input Parameters:
++  x - vector being preallocated
+.  ncoo - number of entries
+-  coo_i - row indices (local numbering; may be modified)
+
+   Level: beginner
+
+   Notes:
+   The local indices are translated using the local to global mapping, thus VecSetLocalToGlobalMapping() must have been
+   called prior to this function.
+
+   The indices coo_i may be modified within this function. They might be translated to corresponding global
+   indices, but the caller should not rely on them having any specific value after this function returns. The arrays
+   can be freed or reused immediately after this function returns.
+
+   Entries can be repeated. Negative indices and remote indices might be allowed. see VecSetPreallocationCOO().
+
+.seealso: VecSetPreallocationCOO(), VecSetValuesCOO()
+@*/
+PetscErrorCode VecSetPreallocationCOOLocal(Vec x,PetscCount ncoo,PetscInt coo_i[])
+{
+  ISLocalToGlobalMapping ltog;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+  PetscValidType(x,1);
+  if (ncoo) PetscValidIntPointer(coo_i,3);
+  PetscCheck(ncoo <= PETSC_MAX_INT,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"ncoo %" PetscCount_FMT " overflowed PetscInt; configure --with-64-bit-indices or request support",ncoo);
+  PetscCall(PetscLayoutSetUp(x->map));
+  PetscCall(VecGetLocalToGlobalMapping(x,&ltog));
+  if (ltog) PetscCall(ISLocalToGlobalMappingApply(ltog,ncoo,coo_i,coo_i));
+  PetscCall(VecSetPreallocationCOO(x,ncoo,coo_i));
+  PetscFunctionReturn(0);
+}
+
+/*@
+   VecSetValuesCOO - set values at once in a vector preallocated using VecSetPreallocationCOO()
+
+   Collective on Vec
+
+   Input Parameters:
++  x - vector being set
+.  coo_v - the value array
+-  imode - the insert mode
+
+   Level: beginner
+
+   Notes: The values must follow the order of the indices prescribed with VecSetPreallocationCOO() or VecSetPreallocationCOOLocal().
+          When repeated entries are specified in the COO indices the coo_v values are first properly summed, regardless of the value of imode.
+          The imode flag indicates if coo_v must be added to the current values of the vector (ADD_VALUES) or overwritten (INSERT_VALUES).
+          VecAssemblyBegin() and VecAssemblyEnd() do not need to be called after this routine. It automatically handles the assembly process.
+
+.seealso: VecSetPreallocationCOO(), VecSetPreallocationCOOLocal(), VecSetValues()
+@*/
+PetscErrorCode VecSetValuesCOO(Vec x,const PetscScalar coo_v[],InsertMode imode)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+  PetscValidType(x,1);
+  PetscValidLogicalCollectiveEnum(x,imode,3);
+  PetscCall(PetscLogEventBegin(VEC_SetValuesCOO,x,0,0,0));
+  if (x->ops->setvaluescoo) {
+    PetscCall((*x->ops->setvaluescoo)(x,coo_v,imode));
+    PetscCall(PetscObjectStateIncrease((PetscObject)x));
+  } else {
+    IS             is_coo_i;
+    const PetscInt *coo_i;
+    PetscInt       ncoo;
+    PetscMemType   mtype;
+
+    PetscCall(PetscGetMemType(coo_v,&mtype));
+    PetscCheck(mtype == PETSC_MEMTYPE_HOST,PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_WRONG,"The basic VecSetValuesCOO() only supports v[] on host");
+    PetscCall(PetscObjectQuery((PetscObject)x,"__PETSc_coo_i",(PetscObject*)&is_coo_i));
+    PetscCheck(is_coo_i,PetscObjectComm((PetscObject)x),PETSC_ERR_COR,"Missing coo_i IS");
+    PetscCall(ISGetLocalSize(is_coo_i,&ncoo));
+    PetscCall(ISGetIndices(is_coo_i,&coo_i));
+    if (imode != ADD_VALUES) PetscCall(VecZeroEntries(x));
+    PetscCall(VecSetValues(x,ncoo,coo_i,coo_v,ADD_VALUES));
+    PetscCall(ISRestoreIndices(is_coo_i,&coo_i));
+    PetscCall(VecAssemblyBegin(x));
+    PetscCall(VecAssemblyEnd(x));
+  }
+  PetscCall(PetscLogEventEnd(VEC_SetValuesCOO,x,0,0,0));
   PetscFunctionReturn(0);
 }
 

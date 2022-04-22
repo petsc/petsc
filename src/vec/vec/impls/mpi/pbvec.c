@@ -468,6 +468,22 @@ static struct _VecOps DvOps = {
   PetscDesignatedInitializer(viewnative,VecView_MPI),
   PetscDesignatedInitializer(loadnative,NULL),
   PetscDesignatedInitializer(getlocalvector,NULL),
+  PetscDesignatedInitializer(restorelocalvector,NULL),
+  PetscDesignatedInitializer(getlocalvectorread,NULL),
+  PetscDesignatedInitializer(restorelocalvectorread,NULL),
+  PetscDesignatedInitializer(bindtocpu,NULL),
+  PetscDesignatedInitializer(getarraywrite,NULL),
+  PetscDesignatedInitializer(restorearraywrite,NULL),
+  PetscDesignatedInitializer(getarrayandmemtype,NULL),
+  PetscDesignatedInitializer(restorearrayandmemtype,NULL),
+  PetscDesignatedInitializer(getarrayreadandmemtype,NULL),
+  PetscDesignatedInitializer(restorearrayreadandmemtype,NULL),
+  PetscDesignatedInitializer(getarraywriteandmemtype,NULL),
+  PetscDesignatedInitializer(restorearraywriteandmemtype,NULL),
+  PetscDesignatedInitializer(concatenate,NULL),
+  PetscDesignatedInitializer(sum,NULL),
+  PetscDesignatedInitializer(setpreallocationcoo,VecSetPreallocationCOO_MPI),
+  PetscDesignatedInitializer(setvaluescoo,VecSetValuesCOO_MPI)
 };
 
 /*

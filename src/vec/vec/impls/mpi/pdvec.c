@@ -6,6 +6,23 @@
 #include <petsc/private/viewerhdf5impl.h>
 #include <petsc/private/glvisviewerimpl.h>
 #include <petsc/private/glvisvecimpl.h>
+#include <petscsf.h>
+
+static PetscErrorCode VecResetPreallocationCOO_MPI(Vec v)
+{
+  Vec_MPI        *vmpi = (Vec_MPI*)v->data;
+
+  PetscFunctionBegin;
+  if (vmpi) {
+    PetscCall(PetscFree(vmpi->jmap1));
+    PetscCall(PetscFree(vmpi->perm1));
+    PetscCall(PetscFree(vmpi->Cperm));
+    PetscCall(PetscFree4(vmpi->imap2,vmpi->jmap2,vmpi->sendbuf,vmpi->recvbuf));
+    PetscCall(PetscFree(vmpi->perm2));
+    PetscCall(PetscSFDestroy(&vmpi->coo_sf));
+  }
+  PetscFunctionReturn(0);
+}
 
 PetscErrorCode VecDestroy_MPI(Vec v)
 {
@@ -28,6 +45,8 @@ PetscErrorCode VecDestroy_MPI(Vec v)
   /* Destroy the stashes: note the order - so that the tags are freed properly */
   PetscCall(VecStashDestroy_Private(&v->bstash));
   PetscCall(VecStashDestroy_Private(&v->stash));
+
+  PetscCall(VecResetPreallocationCOO_MPI(v));
   PetscCall(PetscFree(v->data));
   PetscFunctionReturn(0);
 }
@@ -1016,3 +1035,266 @@ PetscErrorCode VecAssemblyEnd_MPI(Vec vec)
   vec->stash.insertmode = NOT_SET_VALUES;
   PetscFunctionReturn(0);
 }
+
+PetscErrorCode VecSetPreallocationCOO_MPI(Vec x,PetscCount coo_n,const PetscInt coo_i[])
+{
+  PetscInt       m,M,rstart,rend;
+  Vec_MPI        *vmpi = (Vec_MPI*)x->data;
+  PetscCount     k,p,q,rem; /* Loop variables over coo arrays */
+  PetscMPIInt    size;
+  MPI_Comm       comm;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectGetComm((PetscObject)x,&comm));
+  PetscCall(MPI_Comm_size(comm,&size));
+  PetscCall(VecResetPreallocationCOO_MPI(x));
+
+  PetscCall(PetscLayoutSetUp(x->map));
+  PetscCall(VecGetOwnershipRange(x,&rstart,&rend));
+  PetscCall(VecGetLocalSize(x,&m));
+  PetscCall(VecGetSize(x,&M));
+
+  /* ---------------------------------------------------------------------------*/
+  /* Sort COOs along with a permuation array, so that negative indices come     */
+  /* first, then local ones, then remote ones.                                  */
+  /* ---------------------------------------------------------------------------*/
+  PetscCount n1 = coo_n,nneg,*perm;
+  PetscInt   *i1; /* Copy of input COOs along with a permutation array */
+  PetscCall(PetscMalloc1(n1,&i1));
+  PetscCall(PetscMalloc1(n1,&perm));
+  PetscCall(PetscArraycpy(i1,coo_i,n1)); /* Make a copy since we'll modify it */
+  for (k=0; k<n1; k++) perm[k] = k;
+
+  /* Manipulate i1[] so that entries with negative indices will have the smallest
+     index, local entries will have greater but negative indices, and remote entries
+     will have positive indices.
+  */
+  for (k=0; k<n1; k++) {
+    if (i1[k] < 0) {
+      if (x->stash.ignorenegidx) i1[k] = PETSC_MIN_INT; /* e.g., -2^31, minimal to move them ahead */
+      else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Found a negative index in VecSetPreallocateCOO() but VEC_IGNORE_NEGATIVE_INDICES was not set");
+    } else if (i1[k] >= rstart && i1[k] < rend) {
+      i1[k] -= PETSC_MAX_INT; /* e.g., minus 2^31-1 to shift local rows to range of [-PETSC_MAX_INT, -1] */
+    } else {
+      PetscCheck(i1[k]<M,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Found index %" PetscInt_FMT " in VecSetPreallocateCOO() larger than the global size %" PetscInt_FMT "",i1[k],M);
+      if (x->stash.donotstash) i1[k] = PETSC_MIN_INT; /* Ignore off-proc indices as if they were negative */
+    }
+  }
+
+  /* Sort the indices, after that, [0,nneg) have ignored entires, [nneg,rem) have local entries and [rem,n1) have remote entries */
+  PetscCall(PetscSortIntWithCountArray(n1,i1,perm));
+  for (k=0; k<n1; k++) {if (i1[k] > PETSC_MIN_INT) break;} /* Advance k to the first entry we need to take care of */
+  nneg = k;
+  PetscCall(PetscSortedIntUpperBound(i1,nneg,n1,rend-1-PETSC_MAX_INT,&rem)); /* rem is upper bound of the last local row */
+  for (k=nneg; k<rem; k++) i1[k] += PETSC_MAX_INT; /* Revert indices of local entries */
+
+  /* ---------------------------------------------------------------------------*/
+  /*           Build stuff for local entries                                    */
+  /* ---------------------------------------------------------------------------*/
+  PetscCount tot1,*jmap1,*perm1;
+  PetscCall(PetscCalloc1(m+1,&jmap1));
+  for (k=nneg; k<rem; k++) jmap1[i1[k]-rstart+1]++; /* Count repeats of each local entry */
+  for (k=0; k<m; k++) jmap1[k+1] += jmap1[k]; /* Transform jmap1[] to CSR-like data structure */
+  tot1 = jmap1[m];
+  PetscAssert(tot1 == rem-nneg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected errors in VecSetPreallocationCOO_MPI");
+  PetscCall(PetscMalloc1(tot1,&perm1));
+  PetscCall(PetscArraycpy(perm1,perm+nneg,tot1));
+
+  /* ---------------------------------------------------------------------------*/
+  /*        Record the permutation array for filling the send buffer            */
+  /* ---------------------------------------------------------------------------*/
+  PetscCount *Cperm;
+  PetscCall(PetscMalloc1(n1-rem,&Cperm));
+  PetscCall(PetscArraycpy(Cperm,perm+rem,n1-rem));
+  PetscCall(PetscFree(perm));
+
+  /* ---------------------------------------------------------------------------*/
+  /*           Send remote entries to their owner                                  */
+  /* ---------------------------------------------------------------------------*/
+  /* Find which entries should be sent to which remote ranks*/
+  PetscInt       nsend = 0; /* Number of MPI ranks to send data to */
+  PetscMPIInt    *sendto;   /* [nsend], storing remote ranks */
+  PetscInt       *nentries; /* [nsend], storing number of entries sent to remote ranks; Assume PetscInt is big enough for this count, and error if not */
+  const PetscInt *ranges;
+  PetscInt       maxNsend = size >= 128? 128 : size; /* Assume max 128 neighbors; realloc when needed */
+
+  PetscCall(PetscLayoutGetRanges(x->map,&ranges));
+  PetscCall(PetscMalloc2(maxNsend,&sendto,maxNsend,&nentries));
+  for (k=rem; k<n1;) {
+    PetscMPIInt  owner;
+    PetscInt     firstRow,lastRow;
+
+    /* Locate a row range */
+    firstRow = i1[k]; /* first row of this owner */
+    PetscCall(PetscLayoutFindOwner(x->map,firstRow,&owner));
+    lastRow  = ranges[owner+1]-1; /* last row of this owner */
+
+    /* Find the first index 'p' in [k,n) with i[p] belonging to next owner */
+    PetscCall(PetscSortedIntUpperBound(i1,k,n1,lastRow,&p));
+
+    /* All entries in [k,p) belong to this remote owner */
+    if (nsend >= maxNsend) { /* Double the remote ranks arrays if not long enough */
+      PetscMPIInt *sendto2;
+      PetscInt    *nentries2;
+      PetscInt    maxNsend2 = (maxNsend <= size/2) ? maxNsend*2 : size;
+
+      PetscCall(PetscMalloc2(maxNsend2,&sendto2,maxNsend2,&nentries2));
+      PetscCall(PetscArraycpy(sendto2,sendto,maxNsend));
+      PetscCall(PetscArraycpy(nentries2,nentries2,maxNsend+1));
+      PetscCall(PetscFree2(sendto,nentries2));
+      sendto      = sendto2;
+      nentries    = nentries2;
+      maxNsend    = maxNsend2;
+    }
+    sendto[nsend]   = owner;
+    nentries[nsend] = p - k;
+    PetscCall(PetscCountCast(p-k,&nentries[nsend]));
+    nsend++;
+    k = p;
+  }
+
+  /* Build 1st SF to know offsets on remote to send data */
+  PetscSF     sf1;
+  PetscInt    nroots = 1,nroots2 = 0;
+  PetscInt    nleaves = nsend,nleaves2 = 0;
+  PetscInt    *offsets;
+  PetscSFNode *iremote;
+
+  PetscCall(PetscSFCreate(comm,&sf1));
+  PetscCall(PetscMalloc1(nsend,&iremote));
+  PetscCall(PetscMalloc1(nsend,&offsets));
+  for (k=0; k<nsend; k++) {
+    iremote[k].rank  = sendto[k];
+    iremote[k].index = 0;
+    nleaves2        += nentries[k];
+    PetscCheck(nleaves2 >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of SF leaves is too large for PetscInt");
+  }
+  PetscCall(PetscSFSetGraph(sf1,nroots,nleaves,NULL,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER));
+  PetscCall(PetscSFFetchAndOpWithMemTypeBegin(sf1,MPIU_INT,PETSC_MEMTYPE_HOST,&nroots2/*rootdata*/,PETSC_MEMTYPE_HOST,nentries/*leafdata*/,PETSC_MEMTYPE_HOST,offsets/*leafupdate*/,MPI_SUM));
+  PetscCall(PetscSFFetchAndOpEnd(sf1,MPIU_INT,&nroots2,nentries,offsets,MPI_SUM)); /* Would nroots2 overflow, we check offsets[] below */
+  PetscCall(PetscSFDestroy(&sf1));
+  PetscAssert(nleaves2 == n1-rem,PETSC_COMM_SELF,PETSC_ERR_PLIB,"nleaves2 %" PetscInt_FMT " != number of remote entries %" PetscCount_FMT "",nleaves2,n1-rem);
+
+  /* Build 2nd SF to send remote COOs to their owner */
+  PetscSF sf2;
+  nroots  = nroots2;
+  nleaves = nleaves2;
+  PetscCall(PetscSFCreate(comm,&sf2));
+  PetscCall(PetscSFSetFromOptions(sf2));
+  PetscCall(PetscMalloc1(nleaves,&iremote));
+  p       = 0;
+  for (k=0; k<nsend; k++) {
+    PetscCheck(offsets[k] >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of SF roots is too large for PetscInt");
+    for (q=0; q<nentries[k]; q++,p++) {
+      iremote[p].rank  = sendto[k];
+      iremote[p].index = offsets[k] + q;
+    }
+  }
+  PetscCall(PetscSFSetGraph(sf2,nroots,nleaves,NULL,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER));
+
+  /* Send the remote COOs to their owner */
+  PetscInt   n2 = nroots,*i2; /* Buffers for received COOs from other ranks, along with a permutation array */
+  PetscCount *perm2;
+  PetscCall(PetscMalloc1(n2,&i2));
+  PetscCall(PetscMalloc1(n2,&perm2));
+  PetscCall(PetscSFReduceWithMemTypeBegin(sf2,MPIU_INT,PETSC_MEMTYPE_HOST,i1+rem,PETSC_MEMTYPE_HOST,i2,MPI_REPLACE));
+  PetscCall(PetscSFReduceEnd(sf2,MPIU_INT,i1+rem,i2,MPI_REPLACE));
+
+  PetscCall(PetscFree(i1));
+  PetscCall(PetscFree(offsets));
+  PetscCall(PetscFree2(sendto,nentries));
+
+  /* ---------------------------------------------------------------*/
+  /* Sort received COOs along with a permutation array            */
+  /* ---------------------------------------------------------------*/
+  PetscCount  *imap2;
+  PetscCount  *jmap2,nnz2;
+  PetscScalar *sendbuf,*recvbuf;
+  PetscInt    old;
+  PetscCount  sendlen = n1-rem,recvlen = n2;
+
+  for (k=0; k<n2; k++) perm2[k] = k;
+  PetscCall(PetscSortIntWithCountArray(n2,i2,perm2));
+
+  /* nnz2 will be # of unique entries in the recvbuf */
+  nnz2 = n2;
+  for (k=1; k<n2; k++) {if (i2[k] == i2[k-1]) nnz2--;}
+
+  /* Build imap2[] and jmap2[] for each unique entry */
+  PetscCall(PetscMalloc4(nnz2,&imap2,nnz2+1,&jmap2,sendlen,&sendbuf,recvlen,&recvbuf));
+  p   = -1;
+  old = -1;
+  jmap2[0] = 0;
+  jmap2++;
+  for (k=0; k<n2; k++) {
+    if (i2[k] != old) { /* Meet a new entry */
+      p++;
+      imap2[p] = i2[k] - rstart;
+      jmap2[p] = 1;
+      old      = i2[k];
+    } else {
+      jmap2[p]++;
+    }
+  }
+  jmap2--;
+  for (k=0; k<nnz2; k++) jmap2[k+1] += jmap2[k];
+
+  PetscCall(PetscFree(i2));
+
+  vmpi->coo_n   = coo_n;
+  vmpi->tot1    = tot1;
+  vmpi->jmap1   = jmap1;
+  vmpi->perm1   = perm1;
+  vmpi->nnz2    = nnz2;
+  vmpi->imap2   = imap2;
+  vmpi->jmap2   = jmap2;
+  vmpi->perm2   = perm2;
+
+  vmpi->Cperm   = Cperm;
+  vmpi->sendbuf = sendbuf;
+  vmpi->recvbuf = recvbuf;
+  vmpi->sendlen = sendlen;
+  vmpi->recvlen = recvlen;
+  vmpi->coo_sf  = sf2;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecSetValuesCOO_MPI(Vec x,const PetscScalar v[],InsertMode imode)
+{
+  Vec_MPI              *vmpi = (Vec_MPI*)x->data;
+  PetscInt             m;
+  PetscScalar          *a,*sendbuf = vmpi->sendbuf,*recvbuf = vmpi->recvbuf;
+  const PetscCount     *jmap1 = vmpi->jmap1;
+  const PetscCount     *perm1 = vmpi->perm1;
+  const PetscCount     *imap2 = vmpi->imap2;
+  const PetscCount     *jmap2 = vmpi->jmap2;
+  const PetscCount     *perm2 = vmpi->perm2;
+  const PetscCount     *Cperm = vmpi->Cperm;
+  const PetscCount     nnz2 = vmpi->nnz2;
+
+  PetscFunctionBegin;
+  PetscCall(VecGetLocalSize(x,&m));
+  PetscCall(VecGetArray(x,&a));
+
+  /* Pack entries to be sent to remote */
+  for (PetscInt i=0; i<vmpi->sendlen; i++) sendbuf[i] = v[Cperm[i]];
+
+  /* Send remote entries to their owner and overlap the communication with local computation */
+  PetscCall(PetscSFReduceWithMemTypeBegin(vmpi->coo_sf,MPIU_SCALAR,PETSC_MEMTYPE_HOST,sendbuf,PETSC_MEMTYPE_HOST,recvbuf,MPI_REPLACE));
+  /* Add local entries to A and B */
+  for (PetscInt i=0; i<m; i++) { /* All entries in a[] are either zero'ed or added with a value (i.e., initialized) */
+    PetscScalar sum = 0.0; /* Do partial summation first to improve numerical stablility */
+    for (PetscCount k=jmap1[i]; k<jmap1[i+1]; k++) sum += v[perm1[k]];
+    a[i] = (imode == INSERT_VALUES? 0.0 : a[i]) + sum;
+  }
+  PetscCall(PetscSFReduceEnd(vmpi->coo_sf,MPIU_SCALAR,sendbuf,recvbuf,MPI_REPLACE));
+
+  /* Add received remote entries to A and B */
+  for (PetscInt i=0; i<nnz2; i++) {
+    for (PetscCount k=jmap2[i]; k<jmap2[i+1]; k++) a[imap2[i]] += recvbuf[perm2[k]];
+  }
+
+  PetscCall(VecRestoreArray(x,&a));
+  PetscFunctionReturn(0);
+}
+

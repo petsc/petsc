@@ -1015,6 +1015,53 @@ PetscErrorCode VecRestoreSubVector_SeqKokkos(Vec x,IS is,Vec *y)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode VecSetPreallocationCOO_SeqKokkos(Vec x, PetscCount ncoo, const PetscInt coo_i[])
+{
+  Vec_Seq      *vecseq = static_cast<Vec_Seq*>(x->data);
+  Vec_Kokkos   *veckok = static_cast<Vec_Kokkos*>(x->spptr);
+  PetscInt     m;
+
+  PetscFunctionBegin;
+  PetscCall(VecSetPreallocationCOO_Seq(x,ncoo,coo_i));
+  PetscCall(VecGetLocalSize(x,&m));
+  PetscCallCXX(veckok->SetUpCOO(vecseq,m));
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode VecSetValuesCOO_SeqKokkos(Vec x,const PetscScalar v[],InsertMode imode)
+{
+  Vec_Seq                     *vecseq = static_cast<Vec_Seq*>(x->data);
+  Vec_Kokkos                  *veckok = static_cast<Vec_Kokkos*>(x->spptr);
+  const PetscCountKokkosView& jmap1 = veckok->jmap1_d;
+  const PetscCountKokkosView& perm1 = veckok->perm1_d;
+  PetscScalarKokkosView       xv; /* View for vector x */
+  ConstPetscScalarKokkosView  vv; /* View for array v[] */
+  PetscInt                    m;
+  PetscMemType                memtype;
+
+  PetscFunctionBegin;
+  PetscCall(VecGetLocalSize(x,&m));
+  PetscCall(PetscGetMemType(v,&memtype));
+  if (PetscMemTypeHost(memtype)) { /* If user gave v[] in host, we might need to copy it to device if any */
+    vv = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(),ConstPetscScalarKokkosViewHost(v,vecseq->coo_n));
+  } else {
+    vv = ConstPetscScalarKokkosView(v,vecseq->coo_n); /* Directly use v[]'s memory */
+  }
+
+  if (imode == INSERT_VALUES) PetscCall(VecGetKokkosViewWrite(x,&xv)); /* write vector */
+  else PetscCall(VecGetKokkosView(x,&xv)); /* read & write vector */
+
+  Kokkos::parallel_for(m,KOKKOS_LAMBDA(const PetscCount i) {
+    PetscScalar sum = 0.0;
+    for (PetscCount k=jmap1(i); k<jmap1(i+1); k++) sum += vv(perm1(k));
+    xv(i) = (imode == INSERT_VALUES? 0.0 : xv(i)) + sum;
+  });
+
+  if (imode == INSERT_VALUES) PetscCall(VecRestoreKokkosViewWrite(x,&xv));
+  else PetscCall(VecRestoreKokkosView(x,&xv));
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode VecSetOps_SeqKokkos(Vec v)
 {
   PetscFunctionBegin;
@@ -1070,6 +1117,9 @@ static PetscErrorCode VecSetOps_SeqKokkos(Vec v)
   v->ops->getarraywriteandmemtype= VecGetArrayWriteAndMemType_SeqKokkos;
   v->ops->getsubvector           = VecGetSubVector_SeqKokkos;
   v->ops->restoresubvector       = VecRestoreSubVector_SeqKokkos;
+
+  v->ops->setpreallocationcoo    = VecSetPreallocationCOO_SeqKokkos;
+  v->ops->setvaluescoo           = VecSetValuesCOO_SeqKokkos;
   PetscFunctionReturn(0);
 }
 

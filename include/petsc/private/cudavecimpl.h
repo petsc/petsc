@@ -10,6 +10,15 @@ typedef struct {
   PetscScalar  *GPUarray_allocated; /* if the array was allocated by PETSc this is its pointer */
   cudaStream_t stream;              /* A stream for doing asynchronous data transfers */
   PetscBool    nvshmem;             /* Is GPUarray_allocated allocated in nvshmem? It is used to allocate Mvctx->lvec in nvshmem */
+
+  /* COO stuff */
+  PetscCount  *jmap1_d; /* [m+1]: i-th entry of the vector has jmap1[i+1]-jmap1[i] repeats in COO arrays */
+  PetscCount  *perm1_d; /* [tot1]: permutation array for local entries */
+  PetscCount  *imap2_d; /* [nnz2]: i-th unique entry in recvbuf is imap2[i]-th entry in the vector */
+  PetscCount  *jmap2_d; /* [nnz2+1] */
+  PetscCount  *perm2_d; /* [recvlen] */
+  PetscCount  *Cperm_d; /* [sendlen]: permutation array to fill sendbuf[]. 'C' for communication */
+  PetscScalar *sendbuf_d,*recvbuf_d;  /* Buffers for remote values in VecSetValuesCOO() */
 } Vec_CUDA;
 
 PETSC_INTERN PetscErrorCode VecCUDAGetArrays_Private(Vec,const PetscScalar**,const PetscScalar**,PetscOffloadMask*);
@@ -63,6 +72,8 @@ PETSC_INTERN PetscErrorCode VecMin_SeqCUDA(Vec,PetscInt*,PetscReal*);
 PETSC_INTERN PetscErrorCode VecReciprocal_SeqCUDA(Vec);
 PETSC_INTERN PetscErrorCode VecSum_SeqCUDA(Vec,PetscScalar*);
 PETSC_INTERN PetscErrorCode VecShift_SeqCUDA(Vec,PetscScalar);
+PETSC_INTERN PetscErrorCode VecSetPreallocationCOO_SeqCUDA(Vec,PetscCount,const PetscInt[]);
+PETSC_INTERN PetscErrorCode VecSetValuesCOO_SeqCUDA(Vec,const PetscScalar[],InsertMode);
 
 #if defined(PETSC_HAVE_NVSHMEM)
 PETSC_EXTERN PetscErrorCode PetscNvshmemInitializeCheck(void);

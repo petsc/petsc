@@ -339,6 +339,10 @@ PETSC_EXTERN PetscErrorCode VecStashView(Vec,PetscViewer);
 PETSC_EXTERN PetscErrorCode VecStashViewFromOptions(Vec,PetscObject,const char[]);
 PETSC_EXTERN PetscErrorCode VecStashGetInfo(Vec,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
 
+PETSC_EXTERN PetscErrorCode VecSetPreallocationCOO(Vec,PetscCount,const PetscInt[]);
+PETSC_EXTERN PetscErrorCode VecSetPreallocationCOOLocal(Vec,PetscCount,PetscInt[]);
+PETSC_EXTERN PetscErrorCode VecSetValuesCOO(Vec,const PetscScalar[],InsertMode);
+
 /*MC
    VecSetValue - Set a single entry into a vector.
 
