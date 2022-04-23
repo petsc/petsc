@@ -43,8 +43,6 @@ int main(int argc,char **args)
       Create a parallel dense matrix shared by all processors
   */
   PetscCall(MatCreateDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,M,N,NULL,&A));
-  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
   PetscCall(MatConvert(A,mattype,MAT_INPLACE_MATRIX,&A));
   /*
      Set values into the matrix

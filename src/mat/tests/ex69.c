@@ -118,10 +118,6 @@ int main(int argc,char **argv)
   }
 
   PetscCall(MatCreateDenseCUDA(PetscObjectComm((PetscObject)v),nloc,PETSC_DECIDE,n,k-l,NULL,&C));
-  PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY));
 
   /* test MatMatMult */
   PetscCall(MatProductCreateWithMat(S,B,NULL,C));

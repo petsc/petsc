@@ -1012,8 +1012,6 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
       user->ones[i]=v;
     }
     PetscCall(MatCreateDense(PETSC_COMM_WORLD,ysubnlocal,PETSC_DECIDE,user->ndesign,1,user->ones,&user->Ones));
-    PetscCall(MatAssemblyBegin(user->Ones, MAT_FINAL_ASSEMBLY));
-    PetscCall(MatAssemblyEnd(user->Ones, MAT_FINAL_ASSEMBLY));
     PetscCall(MatCreateLRC(user->DSG,user->Ones,NULL,user->Ones,&user->JsBlock));
     PetscCall(MatSetUp(user->JsBlock));
   } else {

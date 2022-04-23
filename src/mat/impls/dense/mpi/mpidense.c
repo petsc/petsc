@@ -97,8 +97,6 @@ PetscErrorCode  MatGetDiagonalBlock_MPIDense(Mat A,Mat *a)
     PetscCall(MatDenseGetArrayRead(mdn->A,(const PetscScalar**)&array));
     PetscCall(MatSeqDenseSetPreallocation(B,array+m*rstart));
     PetscCall(MatDenseRestoreArrayRead(mdn->A,(const PetscScalar**)&array));
-    PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
-    PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
     PetscCall(PetscObjectCompose((PetscObject)A,"DiagonalBlock",(PetscObject)B));
     *a   = B;
     PetscCall(MatDestroy(&B));
@@ -1597,8 +1595,6 @@ PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPIDense(MPI_Comm comm,Mat inmat
   /* numeric phase */
   mat = (Mat_MPIDense*)(*outmat)->data;
   PetscCall(MatCopy(inmat,mat->A,SAME_NONZERO_PATTERN));
-  PetscCall(MatAssemblyBegin(*outmat,MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(*outmat,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 

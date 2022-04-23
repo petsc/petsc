@@ -633,13 +633,7 @@ static PetscErrorCode PCHPDDMShellMatApply(PC pc, Mat X, Mat Y)
       else array = NULL;
       PetscCall(MatCreateDense(PetscObjectComm((PetscObject)pc), m, PETSC_DECIDE, M, N, array, ctx->V + 1));
       if (ctx->parent->correction != PC_HPDDM_COARSE_CORRECTION_BALANCED) PetscCall(MatDenseRestoreArrayWrite(ctx->V[0], &array));
-      else {
-        PetscCall(MatAssemblyBegin(ctx->V[1], MAT_FINAL_ASSEMBLY));
-        PetscCall(MatAssemblyEnd(ctx->V[1], MAT_FINAL_ASSEMBLY));
-      }
       PetscCall(MatCreateDense(PetscObjectComm((PetscObject)pc), m, PETSC_DECIDE, M, N, NULL, ctx->V + 2));
-      PetscCall(MatAssemblyBegin(ctx->V[2], MAT_FINAL_ASSEMBLY));
-      PetscCall(MatAssemblyEnd(ctx->V[2], MAT_FINAL_ASSEMBLY));
       PetscCall(MatProductCreateWithMat(A, Y, NULL, ctx->V[1]));
       PetscCall(MatProductSetType(ctx->V[1], MATPRODUCT_AB));
       PetscCall(MatProductSetFromOptions(ctx->V[1]));

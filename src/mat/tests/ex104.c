@@ -153,8 +153,6 @@ int main(int argc,char **argv)
     PetscCall(MatGetSize(A, &aM, &aN));
     PetscCall(MatCreateDense(PetscObjectComm((PetscObject)A),PETSC_DECIDE, an, aM + 10, aN, NULL, &B));
     PetscCall(MatSetRandom(B, NULL));
-    PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
-    PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
     PetscCall(MatMatTransposeMult(A,B,MAT_INITIAL_MATRIX,fill,&D)); /* D = A*A^T */
 
     /* Test MatDuplicate for matrix product */
