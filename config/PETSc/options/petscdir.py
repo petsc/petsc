@@ -62,12 +62,14 @@ class Configure(config.base.Configure):
     else:
       self.version = '.'.join([line.split(' ')[-1] for line in versionInfo[1:3]])
       self.version += '.99'
-    self.logPrint('PETSC_VERSION_RELEASE of 1 indicates the code is from a release branch or a branch created from a release branch.')      
+    self.logPrint('PETSC_VERSION_RELEASE of 1 indicates the code is from a release branch or a branch created from a release branch.')
     self.logPrint('Version Information:')
     for line in versionInfo:
       self.logPrint(line)
-    self.framework.argDB['with-executables-search-path'].append(os.path.join(self.dir, 'lib','petsc','bin', 'win32fe'))
-
+    dirs = self.argDB['with-executables-search-path']
+    if not isinstance(dirs, list): dirs = dirs.split(os.path.pathsep)
+    dirs.append(os.path.join(self.dir, 'lib','petsc','bin', 'win32fe'))
+    self.framework.argDB['with-executables-search-path'] = dirs
     return
 
   def configure(self):

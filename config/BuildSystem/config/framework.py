@@ -219,7 +219,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       self.logWrite('    Files in path provided by default path\n')
       logPrintFilesInPath(os.environ['PATH'].split(os.path.pathsep))
     dirs = self.argDB['with-executables-search-path']
-    if not isinstance(dirs, list): dirs = [dirs]
+    if not isinstance(dirs, list): dirs = dirs.split(os.path.pathsep)
     if dirs:
       self.logWrite('    Files in path provided by --with-executables-search-path\n')
       logPrintFilesInPath(dirs)
