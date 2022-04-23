@@ -35,8 +35,8 @@ int main(int argc, char **args)
   PetscOptionsEnd();
 
   PetscCheck(total_subdomains <= size,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Number of subdomains %" PetscInt_FMT " must not exceed comm size %d",total_subdomains,size);
-  PetscCheckFalse(total_subdomains < 1 || total_subdomains > size,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"number of subdomains must be > 0 and <= %d (comm size), got total_subdomains = %" PetscInt_FMT,size,total_subdomains);
-  PetscCheckFalse(rep != 1 && rep != 2,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid number of test repetitions: %" PetscInt_FMT "; must be 1 or 2",rep);
+  PetscCheck(total_subdomains >= 1 && total_subdomains <= size,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"number of subdomains must be > 0 and <= %d (comm size), got total_subdomains = %" PetscInt_FMT,size,total_subdomains);
+  PetscCheck(rep == 1 || rep == 2,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid number of test repetitions: %" PetscInt_FMT "; must be 1 or 2",rep);
 
   viewer = PETSC_VIEWER_STDOUT_WORLD;
   /* Create logically sparse, but effectively dense matrix for easy verification of submatrix extraction correctness. */

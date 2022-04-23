@@ -51,7 +51,7 @@ int main(int argc,char **argv)
   for (i=0; i<nrow; i++) {
     PetscCall(MatGetRow(A,rstart+i,&ncols,&cols,&vals));
     for (j=0; j<ncols; j++) {
-      PetscCheckFalse(colors[cols[j]] < 0,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Global column %" PetscInt_FMT " had no color",cols[j]);
+      PetscCheck(colors[cols[j]] >= 0,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Global column %" PetscInt_FMT " had no color",cols[j]);
       cm[i + nrow*colors[cols[j]]] = vals[j];
     }
     PetscCall(MatRestoreRow(A,rstart+i,&ncols,&cols,&vals));

@@ -79,7 +79,7 @@ int main(int argc,char **args)
     PetscCall(MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE));
 
     for (i=0; i<nz; i++) {
-      PetscCheckFalse(fscanf(Afile,"%d %d %le\n",&row,&col,(double*)&val) != 3,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Badly formatted input file");
+      PetscCheck(fscanf(Afile,"%d %d %le\n",&row,&col,(double*)&val) == 3,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Badly formatted input file");
       row -= shift; col -= shift;  /* set index set starts at 0 */
       PetscCall(MatSetValues(A,1,&row,1,&col,&val,INSERT_VALUES));
     }
@@ -96,7 +96,7 @@ int main(int argc,char **args)
     PetscCall(PetscPrintf(PETSC_COMM_SELF,"\n Read rhs in ascii format ...\n"));
     PetscCall(PetscFOpen(PETSC_COMM_SELF,rhs,"r",&bfile));
     for (i=0; i<n; i++) {
-      PetscCheckFalse(fscanf(bfile,"%d %le\n",&dummy,(double*)&val) != 2,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Badly formatted input file");
+      PetscCheck(fscanf(bfile,"%d %le\n",&dummy,(double*)&val) == 2,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Badly formatted input file");
       PetscCall(VecSetValues(b,1,&i,&val,INSERT_VALUES));
     }
     PetscCall(VecAssemblyBegin(b));
@@ -112,7 +112,7 @@ int main(int argc,char **args)
     PetscCall(PetscPrintf(PETSC_COMM_SELF,"\n Read exact solution in ascii format ...\n"));
     PetscCall(PetscFOpen(PETSC_COMM_SELF,solu,"r",&ufile));
     for (i=0; i<n; i++) {
-      PetscCheckFalse(fscanf(ufile,"%d  %le\n",&dummy,(double*)&val) != 2,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Badly formatted input file");
+      PetscCheck(fscanf(ufile,"%d  %le\n",&dummy,(double*)&val) == 2,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Badly formatted input file");
       PetscCall(VecSetValues(u,1,&i,&val,INSERT_VALUES));
     }
     PetscCall(VecAssemblyBegin(u));

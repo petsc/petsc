@@ -117,7 +117,7 @@ int main(int argc,char **args)
 #endif
 
   PetscCall(PetscOptionsGetReal(NULL,NULL,"-schur_ratio",&sratio,NULL));
-  PetscCheckFalse(sratio < 0. || sratio > 1.,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Invalid ratio for schur degrees of freedom %g", (double)sratio);
+  PetscCheck(sratio >= 0. && sratio <= 1.,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Invalid ratio for schur degrees of freedom %g", (double)sratio);
   size_schur = (PetscInt)(sratio*m);
 
   PetscCall(PetscPrintf(PETSC_COMM_SELF,"Solving with %s: nrhs %" PetscInt_FMT ", sym %d, herm %d, size schur %" PetscInt_FMT ", size mat %" PetscInt_FMT "\n",solver,nrhs,symm,herm,size_schur,m));
