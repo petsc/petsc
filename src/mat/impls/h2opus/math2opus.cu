@@ -815,6 +815,7 @@ static PetscErrorCode MatSetUpMultiply_H2OPUS(Mat A)
       }
       PetscCall(PetscSFCreate(comm,&a->sf));
       PetscCall(PetscSFSetGraphLayout(a->sf,A->rmap,n,NULL,PETSC_OWN_POINTER,idx));
+      PetscCall(PetscSFSetUp(a->sf));
       PetscCall(PetscSFViewFromOptions(a->sf,(PetscObject)A,"-mat_h2opus_sf_view"));
 #if defined(PETSC_H2OPUS_USE_GPU)
       a->xx_gpu  = new thrust::device_vector<PetscScalar>(n);
