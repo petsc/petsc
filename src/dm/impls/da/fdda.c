@@ -2237,11 +2237,11 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ_Fill(DM da,Mat J)
   */
   PetscCall(DMDAGetInfo(da,&dim,&m,&n,&p,&M,&N,&P,&nc,&s,&bx,&by,&bz,&st));
   col  = 2*s + 1;
-  PetscCheckFalse(bx == DM_BOUNDARY_PERIODIC && (m % col),PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X is divisible\n\
+  PetscCheck(bx != DM_BOUNDARY_PERIODIC || (m % col) == 0,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X is divisible\n\
                  by 2*stencil_width + 1\n");
-  PetscCheckFalse(by == DM_BOUNDARY_PERIODIC && (n % col),PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y is divisible\n\
+  PetscCheck(by != DM_BOUNDARY_PERIODIC || (n % col) == 0,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y is divisible\n\
                  by 2*stencil_width + 1\n");
-  PetscCheckFalse(bz == DM_BOUNDARY_PERIODIC && (p % col),PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Z is divisible\n\
+  PetscCheck(bz != DM_BOUNDARY_PERIODIC || (p % col) == 0,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Z is divisible\n\
                  by 2*stencil_width + 1\n");
 
   /*

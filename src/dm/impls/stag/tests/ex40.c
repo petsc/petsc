@@ -122,7 +122,7 @@ PetscErrorCode FormFunction1D(SNES snes,Vec x,Vec f,void *ctx)
   PetscCall(DMGetDimension(dm,&dim));
   PetscCheck(dim == 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"DM dimension must be 1");
   PetscCall(DMStagGetStencilType(dm,&stencil_type));
-  PetscCheckFalse(stencil_type != DMSTAG_STENCIL_STAR && stencil_type != DMSTAG_STENCIL_BOX,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only star and box stencils supported");
+  PetscCheck(stencil_type == DMSTAG_STENCIL_STAR || stencil_type == DMSTAG_STENCIL_BOX,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only star and box stencils supported");
   PetscCall(DMStagGetStencilWidth(dm,&stencil_width));
 
   PetscCall(DMGetLocalVector(dm,&x_local));

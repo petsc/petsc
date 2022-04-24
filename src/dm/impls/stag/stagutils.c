@@ -746,7 +746,7 @@ PetscErrorCode DMStagMigrateVec(DM dm,Vec vec,DM dmTo,Vec vecTo)
   PetscCall(DMGetDimension(dm,&dim));
   PetscCall(VecGetLocalSize(vec,&nLocal));
   PetscCall(VecGetLocalSize(vecTo,&nLocalTo));
-  PetscCheckFalse(nLocal != stag->entries|| nLocalTo !=stagTo->entries,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Vector migration only implemented for global vector to global vector.");
+  PetscCheck(nLocal == stag->entries&& nLocalTo ==stagTo->entries,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Vector migration only implemented for global vector to global vector.");
   PetscCall(DMStagGetCorners(dm,&start[0],&start[1],&start[2],&n[0],&n[1],&n[2],&nExtra[0],&nExtra[1],&nExtra[2]));
   PetscCall(DMStagGetGhostCorners(dm,&startGhost[0],&startGhost[1],&startGhost[2],NULL,NULL,NULL));
   for (i=0; i<DMSTAG_MAX_DIM; ++i) offset[i] = start[i]-startGhost[i];
@@ -1052,8 +1052,8 @@ PetscErrorCode DMStagSetDOF(DM dm,PetscInt dof0, PetscInt dof1,PetscInt dof2,Pet
   PetscCall(DMGetDimension(dm,&dim));
   PetscCheck(dof0 >= 0,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"dof0 cannot be negative");
   PetscCheck(dof1 >= 0,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"dof1 cannot be negative");
-  PetscCheckFalse(dim > 1 && dof2 < 0,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"dof2 cannot be negative");
-  PetscCheckFalse(dim > 2 && dof3 < 0,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"dof3 cannot be negative");
+  PetscCheck(dim <= 1 || dof2 >= 0,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"dof2 cannot be negative");
+  PetscCheck(dim <= 2 || dof3 >= 0,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"dof3 cannot be negative");
                stag->dof[0] = dof0;
                stag->dof[1] = dof1;
   if (dim > 1) stag->dof[2] = dof2;
@@ -1089,9 +1089,9 @@ PetscErrorCode DMStagSetNumRanks(DM dm,PetscInt nRanks0,PetscInt nRanks1,PetscIn
   PetscValidLogicalCollectiveInt(dm,nRanks2,4);
   PetscCheck(!dm->setupcalled,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
   PetscCall(DMGetDimension(dm,&dim));
-  PetscCheckFalse(nRanks0 != PETSC_DECIDE && nRanks0 < 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"number of ranks in X direction cannot be less than 1");
-  PetscCheckFalse(dim > 1 && nRanks1 != PETSC_DECIDE && nRanks1 < 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"number of ranks in Y direction cannot be less than 1");
-  PetscCheckFalse(dim > 2 && nRanks2 != PETSC_DECIDE && nRanks2 < 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"number of ranks in Z direction cannot be less than 1");
+  PetscCheck(nRanks0 == PETSC_DECIDE || nRanks0 >= 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"number of ranks in X direction cannot be less than 1");
+  PetscCheck(dim <= 1 || nRanks1 == PETSC_DECIDE || nRanks1 >= 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"number of ranks in Y direction cannot be less than 1");
+  PetscCheck(dim <= 2 || nRanks2 == PETSC_DECIDE || nRanks2 >= 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"number of ranks in Z direction cannot be less than 1");
   if (nRanks0) stag->nRanks[0] = nRanks0;
   if (dim > 1 && nRanks1) stag->nRanks[1] = nRanks1;
   if (dim > 2 && nRanks2) stag->nRanks[2] = nRanks2;
@@ -1178,8 +1178,8 @@ PetscErrorCode DMStagSetGlobalSizes(DM dm,PetscInt N0,PetscInt N1,PetscInt N2)
   PetscCheck(!dm->setupcalled,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
   PetscCall(DMGetDimension(dm,&dim));
   PetscCheck(N0 >= 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_SIZ,"Number of elements in X direction must be positive");
-  PetscCheckFalse(dim > 1 && N1 < 0,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_SIZ,"Number of elements in Y direction must be positive");
-  PetscCheckFalse(dim > 2 && N2 < 0,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_SIZ,"Number of elements in Z direction must be positive");
+  PetscCheck(dim <= 1 || N1 >= 0,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_SIZ,"Number of elements in Y direction must be positive");
+  PetscCheck(dim <= 2 || N2 >= 0,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_SIZ,"Number of elements in Z direction must be positive");
   if (N0) stag->N[0] = N0;
   if (N1) stag->N[1] = N1;
   if (N2) stag->N[2] = N2;

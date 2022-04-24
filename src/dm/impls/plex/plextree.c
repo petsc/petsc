@@ -117,7 +117,7 @@ static PetscErrorCode DMPlexReferenceTreeGetChildSymmetry_Default(DM dm, PetscIn
 
           PetscCall(DMPlexGetConeSize(dm,childA,&coneSize));
           /* compose sOrientB and oB[j] */
-          PetscCheckFalse(coneSize != 0 && coneSize != 2,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Expected a vertex or an edge");
+          PetscCheck(coneSize == 0 || coneSize == 2,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Expected a vertex or an edge");
           ct = coneSize ? DM_POLYTOPE_SEGMENT : DM_POLYTOPE_POINT;
           /* we may have to flip an edge */
           oBtrue        = (sOrientB >= 0) ? oB[j] : DMPolytopeTypeComposeOrientation(ct, -1, oB[j]);
@@ -161,7 +161,7 @@ static PetscErrorCode DMPlexReferenceTreeGetChildSymmetry_Default(DM dm, PetscIn
     if (posA >= coneSize) {
       /* this is the triangle in the middle of a uniformly refined triangle: it
        * is invariant */
-      PetscCheckFalse(dim != 2 || posA != 3,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Expected a middle triangle, got something else");
+      PetscCheck(dim == 2 && posA == 3,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Expected a middle triangle, got something else");
       *childB = childA;
     }
     else {
@@ -1906,7 +1906,7 @@ PetscErrorCode DMPlexTreeRefineCell (DM dm, PetscInt cell, DM *ncdm)
       offset = pNewEnd[d];
 
     }
-    PetscCheckFalse(cell < pOldStart[0] || cell >= pOldEnd[0],PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"%" PetscInt_FMT " not in cell range [%" PetscInt_FMT ", %" PetscInt_FMT ")", cell, pOldStart[0], pOldEnd[0]);
+    PetscCheck(cell >= pOldStart[0] && cell < pOldEnd[0],PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"%" PetscInt_FMT " not in cell range [%" PetscInt_FMT ", %" PetscInt_FMT ")", cell, pOldStart[0], pOldEnd[0]);
     /* get the current closure of the cell that we are removing */
     PetscCall(DMPlexGetTransitiveClosure(dm,cell,PETSC_TRUE,&nc,&cellClosure));
 
@@ -2654,7 +2654,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
       }
       PetscCall(PetscSectionGetOffset(globalFine,p,&gOff));
       PetscCheck(gOff >= 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"I though having global dofs meant a non-negative offset");
-      PetscCheckFalse((gOff < rowStart) || ((gOff + gDof - gcDof) > rowEnd),PETSC_COMM_SELF,PETSC_ERR_PLIB,"I thought the row map would constrain the global dofs");
+      PetscCheck(gOff >= rowStart && (gOff + gDof - gcDof) <= rowEnd,PETSC_COMM_SELF,PETSC_ERR_PLIB,"I thought the row map would constrain the global dofs");
       PetscCall(PetscSectionGetDof(leafIndicesSec,p,&numColIndices));
       PetscCall(PetscSectionGetOffset(leafIndicesSec,p,&pIndOff));
       numColIndices -= 2 * numFields;
@@ -2722,11 +2722,11 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
                 PetscInt gIndCoarse = pInd[newOffsets[f] + row];
                 PetscInt gIndFine   = rowIndices[offsets[f] + row];
                 if (gIndCoarse >= colStart && gIndCoarse < colEnd) { /* local */
-                  PetscCheckFalse(gIndFine < rowStart || gIndFine >= rowEnd,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Mismatched number of constrained dofs");
+                  PetscCheck(gIndFine >= rowStart && gIndFine < rowEnd,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Mismatched number of constrained dofs");
                   dnnz[gIndFine - rowStart] = 1;
                 }
                 else if (gIndCoarse >= 0) { /* remote */
-                  PetscCheckFalse(gIndFine < rowStart || gIndFine >= rowEnd,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Mismatched number of constrained dofs");
+                  PetscCheck(gIndFine >= rowStart && gIndFine < rowEnd,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Mismatched number of constrained dofs");
                   onnz[gIndFine - rowStart] = 1;
                 }
                 else { /* constrained */
@@ -2741,11 +2741,11 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
               PetscInt gIndCoarse = pInd[i];
               PetscInt gIndFine   = rowIndices[i];
               if (gIndCoarse >= colStart && gIndCoarse < colEnd) { /* local */
-                PetscCheckFalse(gIndFine < rowStart || gIndFine >= rowEnd,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Mismatched number of constrained dofs");
+                PetscCheck(gIndFine >= rowStart && gIndFine < rowEnd,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Mismatched number of constrained dofs");
                 dnnz[gIndFine - rowStart] = 1;
               }
               else if (gIndCoarse >= 0) { /* remote */
-                PetscCheckFalse(gIndFine < rowStart || gIndFine >= rowEnd,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Mismatched number of constrained dofs");
+                PetscCheck(gIndFine >= rowStart && gIndFine < rowEnd,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Mismatched number of constrained dofs");
                 onnz[gIndFine - rowStart] = 1;
               }
               else { /* constrained */
@@ -2762,7 +2762,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
               for (row = 0; row < numRows; row++) {
                 PetscInt gIndFine = rowIndices[offsets[f] + row];
                 if (gIndFine >= 0) {
-                  PetscCheckFalse(gIndFine < rowStart || gIndFine >= rowEnd,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Mismatched number of constrained dofs");
+                  PetscCheck(gIndFine >= rowStart && gIndFine < rowEnd,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Mismatched number of constrained dofs");
                   dnnz[gIndFine - rowStart] = numD[f];
                   onnz[gIndFine - rowStart] = numO[f];
                 }
@@ -2774,7 +2774,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
             for (i = 0; i < gDof; i++) {
               PetscInt gIndFine = rowIndices[i];
               if (gIndFine >= 0) {
-                PetscCheckFalse(gIndFine < rowStart || gIndFine >= rowEnd,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Mismatched number of constrained dofs");
+                PetscCheck(gIndFine >= rowStart && gIndFine < rowEnd,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Mismatched number of constrained dofs");
                 dnnz[gIndFine - rowStart] = numD[0];
                 onnz[gIndFine - rowStart] = numO[0];
               }
@@ -2790,7 +2790,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
             for (row = 0; row < numRows; row++) {
               PetscInt gIndFine = rowIndices[offsets[f] + row];
               if (gIndFine >= 0) {
-                PetscCheckFalse(gIndFine < rowStart || gIndFine >= rowEnd,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Mismatched number of constrained dofs");
+                PetscCheck(gIndFine >= rowStart && gIndFine < rowEnd,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Mismatched number of constrained dofs");
                 dnnz[gIndFine - rowStart] = numD[f];
                 onnz[gIndFine - rowStart] = numO[f];
               }
@@ -2802,7 +2802,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
           for (i = 0; i < gDof; i++) {
             PetscInt gIndFine = rowIndices[i];
             if (gIndFine >= 0) {
-              PetscCheckFalse(gIndFine < rowStart || gIndFine >= rowEnd,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Mismatched number of constrained dofs");
+              PetscCheck(gIndFine >= rowStart && gIndFine < rowEnd,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Mismatched number of constrained dofs");
               dnnz[gIndFine - rowStart] = numD[0];
               onnz[gIndFine - rowStart] = numO[0];
             }

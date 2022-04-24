@@ -792,7 +792,7 @@ PetscErrorCode PetscFEGetCellTabulation(PetscFE fem, PetscInt k, PetscTabulation
   PetscValidPointer(T, 3);
   PetscCall(PetscQuadratureGetData(fem->quadrature, NULL, NULL, &npoints, &points, NULL));
   if (!fem->T) PetscCall(PetscFECreateTabulation(fem, 1, npoints, points, k, &fem->T));
-  PetscCheckFalse(fem->T && k > fem->T->K,PetscObjectComm((PetscObject) fem), PETSC_ERR_ARG_OUTOFRANGE, "Requested %" PetscInt_FMT " derivatives, but only tabulated %" PetscInt_FMT, k, fem->T->K);
+  PetscCheck(!fem->T || k <= fem->T->K,PetscObjectComm((PetscObject) fem), PETSC_ERR_ARG_OUTOFRANGE, "Requested %" PetscInt_FMT " derivatives, but only tabulated %" PetscInt_FMT, k, fem->T->K);
   *T = fem->T;
   PetscFunctionReturn(0);
 }
@@ -851,7 +851,7 @@ PetscErrorCode PetscFEGetFaceTabulation(PetscFE fem, PetscInt k, PetscTabulation
       PetscCall(PetscFree(facePoints));
     }
   }
-  PetscCheckFalse(fem->Tf && k > fem->Tf->K,PetscObjectComm((PetscObject) fem), PETSC_ERR_ARG_OUTOFRANGE, "Requested %" PetscInt_FMT " derivatives, but only tabulated %" PetscInt_FMT, k, fem->Tf->K);
+  PetscCheck(!fem->Tf || k <= fem->Tf->K,PetscObjectComm((PetscObject) fem), PETSC_ERR_ARG_OUTOFRANGE, "Requested %" PetscInt_FMT " derivatives, but only tabulated %" PetscInt_FMT, k, fem->Tf->K);
   *Tf = fem->Tf;
   PetscFunctionReturn(0);
 }
@@ -1682,7 +1682,7 @@ PetscErrorCode PetscFEGetHeightSubspace(PetscFE fe, PetscInt height, PetscFE *su
   PetscCall(PetscFEGetNumComponents(fe, &Nc));
   PetscCall(PetscFEGetFaceQuadrature(fe, &subq));
   PetscCall(PetscDualSpaceGetDimension(Q, &dim));
-  PetscCheckFalse(height > dim || height < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Asked for space at height %" PetscInt_FMT " for dimension %" PetscInt_FMT " space", height, dim);
+  PetscCheck(height <= dim && height >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Asked for space at height %" PetscInt_FMT " for dimension %" PetscInt_FMT " space", height, dim);
   if (!fe->subspaces) PetscCall(PetscCalloc1(dim, &fe->subspaces));
   if (height <= dim) {
     if (!fe->subspaces[height-1]) {

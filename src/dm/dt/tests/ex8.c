@@ -38,7 +38,7 @@ int main(int argc, char **argv)
         }
         PetscCall(PetscDTIndexToGradedOrder(d, Nk - 1 - k, gtup));
         PetscCall(PetscDTGradedOrderToIndex(d, gtup, &kchk));
-        PetscCheckFalse(kchk != Nk - 1 - k,PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscDTGradedOrderToIndex, d = %" PetscInt_FMT ", n = %" PetscInt_FMT ", k = %" PetscInt_FMT " mismatch", d, n, Nk - 1 - k);
+        PetscCheck(kchk == Nk - 1 - k,PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscDTGradedOrderToIndex, d = %" PetscInt_FMT ", n = %" PetscInt_FMT ", k = %" PetscInt_FMT " mismatch", d, n, Nk - 1 - k);
         for (j = 0; j < d; j++) {
           PetscCheck(gtup[j] == btup[d - 1 - j],PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscDTIndexToGradedOrder, d = %" PetscInt_FMT ", n = %" PetscInt_FMT ", k = %" PetscInt_FMT " incorrect", d, n, Nk - 1 - k);
         }

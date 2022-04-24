@@ -49,7 +49,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)da,&comm));
-  PetscCheckFalse(PetscDefined(USE_COMPLEX),PETSC_COMM_SELF,PETSC_ERR_SUP,"Complex values not supported");
+  PetscCheck(!PetscDefined(USE_COMPLEX),PETSC_COMM_SELF,PETSC_ERR_SUP,"Complex values not supported");
   PetscCallMPI(MPI_Comm_size(comm,&size));
   PetscCallMPI(MPI_Comm_rank(comm,&rank));
   PetscCall(DMDAGetInfo(da,&dim,&mx,&my,&mz,NULL,NULL,NULL,&bs,NULL,NULL,NULL,NULL,NULL));
@@ -60,7 +60,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
     PetscCall(VecGetSize(Coords,&csize));
     PetscCheck(csize % (mx*my*mz) == 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Coordinate vector size mismatch");
     cdim = csize/(mx*my*mz);
-    PetscCheckFalse(cdim < dim || cdim > 3,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Coordinate vector size mismatch");
+    PetscCheck(cdim >= dim && cdim <= 3,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Coordinate vector size mismatch");
   } else {
     cdim = dim;
   }
@@ -278,7 +278,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)da,&comm));
-  PetscCheckFalse(PetscDefined(USE_COMPLEX),PETSC_COMM_SELF,PETSC_ERR_SUP,"Complex values not supported");
+  PetscCheck(!PetscDefined(USE_COMPLEX),PETSC_COMM_SELF,PETSC_ERR_SUP,"Complex values not supported");
   PetscCallMPI(MPI_Comm_size(comm,&size));
   PetscCallMPI(MPI_Comm_rank(comm,&rank));
   PetscCall(DMDAGetInfo(da,&dim,&mx,&my,&mz,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL));

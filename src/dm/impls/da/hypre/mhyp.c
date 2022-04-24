@@ -141,7 +141,7 @@ static PetscErrorCode  MatSetUp_HYPREStruct(Mat mat)
 
   /* create the hypre grid object and set its information */
   PetscCheck(dof <= 1,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Currently only support for scalar problems");
-  PetscCheckFalse(px || py || pz,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Ask us to add periodic support by calling HYPRE_StructGridSetPeriodic()");
+  PetscCheck(!px && !py && !pz,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Ask us to add periodic support by calling HYPRE_StructGridSetPeriodic()");
   PetscStackCallStandard(HYPRE_StructGridCreate,ex->hcomm,dim,&ex->hgrid);
   PetscStackCallStandard(HYPRE_StructGridSetExtents,ex->hgrid,hlower,hupper);
   PetscStackCallStandard(HYPRE_StructGridAssemble,ex->hgrid);
@@ -566,7 +566,7 @@ static PetscErrorCode  MatSetUp_HYPRESStruct(Mat mat)
   ex->nvars= dof;
 
   /* create the hypre grid object and set its information */
-  PetscCheckFalse(px || py || pz,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Ask us to add periodic support by calling HYPRE_SStructGridSetPeriodic()");
+  PetscCheck(!px && !py && !pz,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Ask us to add periodic support by calling HYPRE_SStructGridSetPeriodic()");
   PetscStackCallStandard(HYPRE_SStructGridCreate,ex->hcomm,dim,nparts,&ex->ss_grid);
   PetscStackCallStandard(HYPRE_SStructGridSetExtents,ex->ss_grid,part,ex->hbox.imin,ex->hbox.imax);
   {

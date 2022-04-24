@@ -208,14 +208,14 @@ PetscErrorCode  DMDAGetProcessorSubset(DM da,DMDirection dir,PetscInt gp,MPI_Com
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)da),&size));
   if (dir == DM_Z) {
     PetscCheck(da->dim >= 3,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"DM_Z invalid for DMDA dim < 3");
-    PetscCheckFalse(gp < 0 || gp > dd->P,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"invalid grid point");
+    PetscCheck(gp >= 0 && gp <= dd->P,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"invalid grid point");
     if (gp >= zs && gp < zs+zm) flag = 1;
   } else if (dir == DM_Y) {
     PetscCheck(da->dim != 1,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"DM_Y invalid for DMDA dim = 1");
-    PetscCheckFalse(gp < 0 || gp > dd->N,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"invalid grid point");
+    PetscCheck(gp >= 0 && gp <= dd->N,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"invalid grid point");
     if (gp >= ys && gp < ys+ym) flag = 1;
   } else if (dir == DM_X) {
-    PetscCheckFalse(gp < 0 || gp > dd->M,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"invalid grid point");
+    PetscCheck(gp >= 0 && gp <= dd->M,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"invalid grid point");
     if (gp >= xs && gp < xs+xm) flag = 1;
   } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"Invalid direction");
 

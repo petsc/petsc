@@ -194,7 +194,7 @@ PetscErrorCode  DMClearGlobalVectors(DM dm)
   for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
     Vec g;
 
-    PetscCheckFalse(dm->globalout[i],PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Clearing DM of global vectors that has a global vector obtained with DMGetGlobalVector()");
+    PetscCheck(!dm->globalout[i],PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Clearing DM of global vectors that has a global vector obtained with DMGetGlobalVector()");
     g = dm->globalin[i];
     dm->globalin[i] = NULL;
     if (g) {
@@ -232,7 +232,7 @@ PetscErrorCode  DMClearLocalVectors(DM dm)
   for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
     Vec g;
 
-    PetscCheckFalse(dm->localout[i],PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Clearing DM of local vectors that has a local vector obtained with DMGetLocalVector()");
+    PetscCheck(!dm->localout[i],PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Clearing DM of local vectors that has a local vector obtained with DMGetLocalVector()");
     g = dm->localin[i];
     dm->localin[i] = NULL;
     if (g) {

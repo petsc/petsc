@@ -274,7 +274,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsBool("-distribute", "Distribute the mesh", "ex18.c", options->distribute, &options->distribute, NULL));
   PetscCall(PetscOptionsEList("-interpolate", "Type of mesh interpolation (none, create, after_create, after_distribute)", "ex18.c", interpTypes, 4, interpTypes[options->interpolate], &interp, NULL));
   options->interpolate = (InterpType) interp;
-  PetscCheckFalse(!options->distribute && options->interpolate == AFTER_DISTRIBUTE,comm, PETSC_ERR_SUP, "-interpolate after_distribute  needs  -distribute 1");
+  PetscCheck(options->distribute || options->interpolate != AFTER_DISTRIBUTE,comm, PETSC_ERR_SUP, "-interpolate after_distribute  needs  -distribute 1");
   PetscCall(PetscOptionsBool("-use_generator", "Use a mesh generator to build the mesh", "ex18.c", options->useGenerator, &options->useGenerator, NULL));
   options->ncoords = 128;
   PetscCall(PetscOptionsScalarArray("-view_vertices_from_coords", "Print DAG points corresponding to vertices with given coordinates", "ex18.c", options->coords, &options->ncoords, NULL));
@@ -290,7 +290,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   dim = 3;
   PetscCall(PetscOptionsIntArray("-faces", "Number of faces per dimension", "ex18.c", options->faces, &dim, &flg2));
   if (flg2) {
-    PetscCheckFalse(flg1 && dim != options->dim,comm, PETSC_ERR_ARG_OUTOFRANGE, "specified -dim %" PetscInt_FMT " is not equal to length %" PetscInt_FMT " of -faces (note that -dim can be omitted)", options->dim, dim);
+    PetscCheck(!flg1 || dim == options->dim,comm, PETSC_ERR_ARG_OUTOFRANGE, "specified -dim %" PetscInt_FMT " is not equal to length %" PetscInt_FMT " of -faces (note that -dim can be omitted)", options->dim, dim);
     options->dim = dim;
   }
   PetscCall(PetscOptionsString("-filename", "The mesh file", "ex18.c", options->filename, options->filename, sizeof(options->filename), NULL));
@@ -1097,7 +1097,7 @@ static PetscErrorCode DMPlexSetOrientInterface_Private(DM dm, PetscBool enable)
   }
   if (PetscDefined(USE_DEBUG)) {
     PetscCall(PetscOptionsGetBool(options, prefix, opt, &flg, &set));
-    PetscCheckFalse(set && flg != enable,PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "PetscOptionsSetValue did not have the desired effect");
+    PetscCheck(!set || flg == enable,PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "PetscOptionsSetValue did not have the desired effect");
   }
   PetscFunctionReturn(0);
 }

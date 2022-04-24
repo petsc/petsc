@@ -584,7 +584,7 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
   for (f = 0; f < Nf; ++f) {
     PetscInt d;
     for (d = 1; d < dim; ++d) {
-      PetscCheckFalse((numDof[f*(dim+1)+d] > 0) && (depth < dim),PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Mesh must be interpolated when unknowns are specified on edges or faces.");
+      PetscCheck(numDof[f*(dim+1)+d] <= 0 || depth >= dim,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Mesh must be interpolated when unknowns are specified on edges or faces.");
     }
   }
   PetscCall(DMPlexCreateSection(dm, labels, numComp, numDof, numBC, bcFields, bcComps, bcPoints, NULL, &section));

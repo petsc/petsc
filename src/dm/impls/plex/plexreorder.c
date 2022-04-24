@@ -118,7 +118,7 @@ PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, DMLabel label, IS
       sperm[voff[vloc+1]++] = oldc;
     }
     for (v = 0; v < numValues; ++v) {
-      PetscCheckFalse(voff[v+1] - voff[v] != vsize[v],PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of %" PetscInt_FMT " values found is %" PetscInt_FMT " != %" PetscInt_FMT, values[v], voff[v+1] - voff[v], vsize[v]);
+      PetscCheck(voff[v+1] - voff[v] == vsize[v],PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of %" PetscInt_FMT " values found is %" PetscInt_FMT " != %" PetscInt_FMT, values[v], voff[v+1] - voff[v], vsize[v]);
     }
     PetscCall(ISRestoreIndices(valueIS, &values));
     PetscCall(ISDestroy(&valueIS));

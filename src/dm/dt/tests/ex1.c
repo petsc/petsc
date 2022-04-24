@@ -81,7 +81,7 @@ static PetscErrorCode CheckQuadrature(PetscInt npoints, PetscReal alpha, PetscRe
 
         PetscCall(PetscDTJacobiNorm(alpha, beta, i, &norm));
         norm2diff = PetscAbsReal(norm*norm - I_exact);
-        PetscCheckFalse(norm2diff > eps * I_exact,PETSC_COMM_SELF,PETSC_ERR_PLIB, "Jacobi norm error %g", (double) norm2diff);
+        PetscCheck(norm2diff <= eps * I_exact,PETSC_COMM_SELF,PETSC_ERR_PLIB, "Jacobi norm error %g", (double) norm2diff);
 
         tol = eps * I_exact;
       }

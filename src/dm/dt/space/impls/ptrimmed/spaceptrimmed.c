@@ -61,7 +61,7 @@ static PetscErrorCode PetscSpaceSetUp_Ptrimmed(PetscSpace sp)
 
   PetscFunctionBegin;
   if (pt->setupCalled) PetscFunctionReturn(0);
-  PetscCheckFalse(pt->formDegree < -sp->Nv || pt->formDegree > sp->Nv,PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_OUTOFRANGE, "Form degree %" PetscInt_FMT " not in valid range [%" PetscInt_FMT ",%" PetscInt_FMT "]", pt->formDegree, sp->Nv, sp->Nv);
+  PetscCheck(pt->formDegree >= -sp->Nv && pt->formDegree <= sp->Nv,PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_OUTOFRANGE, "Form degree %" PetscInt_FMT " not in valid range [%" PetscInt_FMT ",%" PetscInt_FMT "]", pt->formDegree, sp->Nv, sp->Nv);
   PetscCall(PetscDTBinomialInt(sp->Nv, PetscAbsInt(pt->formDegree), &Nf));
   if (sp->Nc == PETSC_DETERMINE) {
     sp->Nc = Nf;
@@ -321,7 +321,7 @@ static PetscErrorCode PetscSpaceGetHeightSubspace_Ptrimmed(PetscSpace sp, PetscI
 
   PetscFunctionBegin;
   PetscCall(PetscSpaceGetNumVariables(sp, &dim));
-  PetscCheckFalse(height > dim || height < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Asked for space at height %" PetscInt_FMT " for dimension %" PetscInt_FMT " space", height, dim);
+  PetscCheck(height <= dim && height >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Asked for space at height %" PetscInt_FMT " for dimension %" PetscInt_FMT " space", height, dim);
   if (!pt->subspaces) PetscCall(PetscCalloc1(dim, &(pt->subspaces)));
   if ((dim - height) <= PetscAbsInt(pt->formDegree)) {
     if (!pt->subspaces[height-1]) {

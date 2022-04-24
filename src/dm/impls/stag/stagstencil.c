@@ -38,7 +38,7 @@ PetscErrorCode DMStagCreateISFromStencils(DM dm,PetscInt nStencil,DMStagStencil*
 
   PetscFunctionBegin;
   PetscCall(DMGetDimension(dm,&dim));
-  PetscCheckFalse(dim<1 || dim>3,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported dimension %" PetscInt_FMT,dim);
+  PetscCheck(dim >= 1 && dim <= 3,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported dimension %" PetscInt_FMT,dim);
 
   /* Only use non-redundant stencils */
   PetscCall(PetscMalloc1(nStencil,&ss));

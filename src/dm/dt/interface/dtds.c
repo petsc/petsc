@@ -3397,7 +3397,7 @@ PetscErrorCode PetscDSAddBoundary(PetscDS ds, DMBoundaryConditionType type, cons
     PetscCall(PetscDSGetComponents(ds, &fcomps));
     PetscCheck(Nc <= fcomps[field],PetscObjectComm((PetscObject) ds), PETSC_ERR_ARG_OUTOFRANGE, "Number of constrained components %" PetscInt_FMT " > %" PetscInt_FMT " components for field %" PetscInt_FMT, Nc, fcomps[field], field);
     for (c = 0; c < Nc; ++c) {
-      PetscCheckFalse(comps[c] < 0 || comps[c] >= fcomps[field],PetscObjectComm((PetscObject) ds), PETSC_ERR_ARG_OUTOFRANGE, "Constrained component[%" PetscInt_FMT "] %" PetscInt_FMT " not in [0, %" PetscInt_FMT ") components for field %" PetscInt_FMT, c, comps[c], fcomps[field], field);
+      PetscCheck(comps[c] >= 0 && comps[c] < fcomps[field],PetscObjectComm((PetscObject) ds), PETSC_ERR_ARG_OUTOFRANGE, "Constrained component[%" PetscInt_FMT "] %" PetscInt_FMT " not in [0, %" PetscInt_FMT ") components for field %" PetscInt_FMT, c, comps[c], fcomps[field], field);
     }
   }
   PetscCall(PetscNew(&b));

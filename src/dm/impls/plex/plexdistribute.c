@@ -1239,7 +1239,7 @@ PETSC_UNUSED static PetscErrorCode DMPlexDistributeSF(DM dm, PetscSF migrationSF
     PetscCall(PetscSFBcastBegin(migrationSF, MPIU_2INT, rowners, lowners,MPI_REPLACE));
     PetscCall(PetscSFBcastEnd(migrationSF, MPIU_2INT, rowners, lowners,MPI_REPLACE));
     for (p = 0; p < numLeaves; ++p) {
-      PetscCheckFalse(lowners[p].rank < 0 || lowners[p].index < 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cell partition corrupt: point not claimed");
+      PetscCheck(lowners[p].rank >= 0 && lowners[p].index >= 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cell partition corrupt: point not claimed");
       if (lowners[p].rank != rank) ++numGhostPoints;
     }
     PetscCall(PetscMalloc1(numGhostPoints, &ghostPoints));

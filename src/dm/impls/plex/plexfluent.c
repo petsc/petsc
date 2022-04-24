@@ -178,7 +178,7 @@ static PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentS
             numEntries = numFaceVert + 2;
             PetscCall(PetscMalloc1(numEntries*numFaces, (PetscInt**)&s->data));
           } else {
-            PetscCheckFalse(numEntries != numFaceVert + 2,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No support for mixed faces in Fluent files");
+            PetscCheck(numEntries == numFaceVert + 2,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No support for mixed faces in Fluent files");
           }
         }
         PetscCall(DMPlexCreateFluent_ReadValues(viewer, &(((PetscInt*)s->data)[f*numEntries]), numEntries, PETSC_INT, s->index==2013 ? PETSC_TRUE : PETSC_FALSE));
@@ -273,7 +273,7 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
         } else {              /* Data section */
           unsigned int z;
 
-          PetscCheckFalse(numFaceVertices != PETSC_DETERMINE && s.nd != numFaceVertices,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mixed facets in Fluent files are not supported");
+          PetscCheck(numFaceVertices == PETSC_DETERMINE || s.nd == numFaceVertices,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mixed facets in Fluent files are not supported");
           PetscCheck(numFaces >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No header section for facets in Fluent file");
           if (numFaceVertices == PETSC_DETERMINE) numFaceVertices = s.nd;
           numFaceEntries = numFaceVertices + 2;

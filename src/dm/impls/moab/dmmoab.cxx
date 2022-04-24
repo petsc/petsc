@@ -793,7 +793,7 @@ PetscErrorCode DMMoabIsEntityOnBoundary(DM dm, const moab::EntityHandle ent, Pet
 
   /* get the entity type and handle accordingly */
   etype = dmmoab->mbiface->type_from_handle(ent);
-  PetscCheckFalse(etype >= moab::MBPOLYHEDRON,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Entity type on the boundary skin is invalid. EntityType = %" PetscInt_FMT, etype);
+  PetscCheck(etype < moab::MBPOLYHEDRON,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Entity type on the boundary skin is invalid. EntityType = %" PetscInt_FMT, etype);
 
   /* get the entity dimension */
   edim = dmmoab->mbiface->dimension_from_handle(ent);
@@ -1042,7 +1042,7 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
   }
 
   totsize = dmmoab->vlocal->size();
-  PetscCheckFalse(totsize != dmmoab->nloc + dmmoab->nghost,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Mismatch between local and owned+ghost vertices. %" PetscInt_FMT " != %" PetscInt_FMT ".", totsize, dmmoab->nloc + dmmoab->nghost);
+  PetscCheck(totsize == dmmoab->nloc + dmmoab->nghost,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Mismatch between local and owned+ghost vertices. %" PetscInt_FMT " != %" PetscInt_FMT ".", totsize, dmmoab->nloc + dmmoab->nghost);
   PetscCall(PetscCalloc1(totsize, &dmmoab->gsindices));
   {
     /* first get the local indices */

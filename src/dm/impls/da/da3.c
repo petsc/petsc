@@ -248,7 +248,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
     PetscCheck(p >= 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in Z direction: %" PetscInt_FMT,p);
     else PetscCheck(p <= size,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in Z direction: %" PetscInt_FMT " %d",p,size);
   }
-  PetscCheckFalse((m > 0) && (n > 0) && (p > 0) && (m*n*p != size),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"m %" PetscInt_FMT " * n %" PetscInt_FMT " * p %" PetscInt_FMT " != size %d",m,n,p,size);
+  PetscCheck(m <= 0 || n <= 0 || p <= 0 || m*n*p == size,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"m %" PetscInt_FMT " * n %" PetscInt_FMT " * p %" PetscInt_FMT " != size %d",m,n,p,size);
 
   /* Partition the array among the processors */
   if (m == PETSC_DECIDE && n != PETSC_DECIDE && p != PETSC_DECIDE) {
@@ -328,7 +328,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   x  = lx[rank % m];
   xs = 0;
   for (i=0; i<(rank%m); i++) xs += lx[i];
-  PetscCheckFalse((x < s) && ((m > 1) || (bx == DM_BOUNDARY_PERIODIC)),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local x-width of domain x %" PetscInt_FMT " is smaller than stencil width s %" PetscInt_FMT,x,s);
+  PetscCheck(x >= s || (m <= 1 && bx != DM_BOUNDARY_PERIODIC),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local x-width of domain x %" PetscInt_FMT " is smaller than stencil width s %" PetscInt_FMT,x,s);
 
   if (!ly) {
     PetscCall(PetscMalloc1(n, &dd->ly));
@@ -336,7 +336,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
     for (i=0; i<n; i++) ly[i] = N/n + ((N % n) > (i % n));
   }
   y = ly[(rank % (m*n))/m];
-  PetscCheckFalse((y < s) && ((n > 1) || (by == DM_BOUNDARY_PERIODIC)),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local y-width of domain y %" PetscInt_FMT " is smaller than stencil width s %" PetscInt_FMT,y,s);
+  PetscCheck(y >= s || (n <= 1 && by != DM_BOUNDARY_PERIODIC),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local y-width of domain y %" PetscInt_FMT " is smaller than stencil width s %" PetscInt_FMT,y,s);
 
   ys = 0;
   for (i=0; i<(rank % (m*n))/m; i++) ys += ly[i];
@@ -353,7 +353,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
    in a 3D code.  Additional code for this case is noted with "2d case" comments */
   twod = PETSC_FALSE;
   if (P == 1) twod = PETSC_TRUE;
-  else PetscCheckFalse((z < s) && ((p > 1) || (bz == DM_BOUNDARY_PERIODIC)),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local z-width of domain z %" PetscInt_FMT " is smaller than stencil width s %" PetscInt_FMT,z,s);
+  else PetscCheck(z >= s || (p <= 1 && bz != DM_BOUNDARY_PERIODIC),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local z-width of domain z %" PetscInt_FMT " is smaller than stencil width s %" PetscInt_FMT,z,s);
   zs = 0;
   for (i=0; i<(rank/(m*n)); i++) zs += lz[i];
   ye = ys + y;

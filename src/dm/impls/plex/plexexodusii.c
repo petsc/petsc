@@ -786,7 +786,7 @@ PetscErrorCode VecView_PlexExodusII_Internal(Vec v, PetscViewer viewer)
   PetscCall(DMGetOutputSequenceNumber(dm,&step,NULL));
   PetscCall(EXOGetVarIndex_Internal(exoid,EX_NODAL,vecname,&offsetN));
   PetscCall(EXOGetVarIndex_Internal(exoid,EX_ELEM_BLOCK,vecname,&offsetZ));
-  PetscCheckFalse(offsetN <= 0 && offsetZ <= 0,comm, PETSC_ERR_FILE_UNEXPECTED, "Found both nodal and zonal variable %s in exodus file. ", vecname);
+  PetscCheck(offsetN > 0 || offsetZ > 0,comm, PETSC_ERR_FILE_UNEXPECTED, "Found both nodal and zonal variable %s in exodus file. ", vecname);
   if (offsetN > 0) {
     PetscCall(VecViewPlex_ExodusII_Nodal_Internal(v,exoid,(int) step+1,offsetN));
   } else if (offsetZ > 0) {
@@ -836,12 +836,10 @@ PetscErrorCode VecLoad_PlexExodusII_Internal(Vec v, PetscViewer viewer)
   PetscCall(DMGetOutputSequenceNumber(dm,&step,NULL));
   PetscCall(EXOGetVarIndex_Internal(exoid,EX_NODAL,vecname,&offsetN));
   PetscCall(EXOGetVarIndex_Internal(exoid,EX_ELEM_BLOCK,vecname,&offsetZ));
-  PetscCheckFalse(offsetN <= 0 && offsetZ <= 0,comm, PETSC_ERR_FILE_UNEXPECTED, "Found both nodal and zonal variable %s in exodus file. ", vecname);
-  if (offsetN > 0) {
-    PetscCall(VecLoadPlex_ExodusII_Nodal_Internal(v,exoid,(int) step+1,offsetN));
-  } else if (offsetZ > 0) {
-    PetscCall(VecLoadPlex_ExodusII_Zonal_Internal(v,exoid,(int) step+1,offsetZ));
-  } else SETERRQ(comm, PETSC_ERR_FILE_UNEXPECTED, "Could not find nodal or zonal variable %s in exodus file. ", vecname);
+  PetscCheck(offsetN > 0 || offsetZ > 0,comm, PETSC_ERR_FILE_UNEXPECTED, "Found both nodal and zonal variable %s in exodus file. ", vecname);
+  if (offsetN > 0) PetscCall(VecLoadPlex_ExodusII_Nodal_Internal(v,exoid,(int) step+1,offsetN));
+  else if (offsetZ > 0) PetscCall(VecLoadPlex_ExodusII_Zonal_Internal(v,exoid,(int) step+1,offsetZ));
+  else SETERRQ(comm, PETSC_ERR_FILE_UNEXPECTED, "Could not find nodal or zonal variable %s in exodus file. ", vecname);
   PetscFunctionReturn(0);
 }
 

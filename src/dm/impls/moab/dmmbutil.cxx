@@ -467,8 +467,8 @@ PetscErrorCode DMMBUtil_InitializeOptions(DMMoabMeshGeneratorCtx& genCtx, PetscI
   PetscCheck(genCtx.M * genCtx.N * genCtx.K == nprocs,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid [m, n, k] data: %" PetscInt_FMT ", %" PetscInt_FMT ", %" PetscInt_FMT ". Product must be equal to global size = %" PetscInt_FMT ".", genCtx.M, genCtx.N, genCtx.K, nprocs);
   /* validate the bounds data */
   PetscCheck(genCtx.xyzbounds[0] < genCtx.xyzbounds[1],PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "X-dim: Left boundary cannot be greater than right. [%G >= %G]", genCtx.xyzbounds[0], genCtx.xyzbounds[1]);
-  PetscCheckFalse(genCtx.dim > 1 && (genCtx.xyzbounds[2] >= genCtx.xyzbounds[3]),PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Y-dim: Left boundary cannot be greater than right. [%G >= %G]", genCtx.xyzbounds[2], genCtx.xyzbounds[3]);
-  PetscCheckFalse(genCtx.dim > 2 && (genCtx.xyzbounds[4] >= genCtx.xyzbounds[5]),PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Z-dim: Left boundary cannot be greater than right. [%G >= %G]", genCtx.xyzbounds[4], genCtx.xyzbounds[5]);
+  PetscCheck(genCtx.dim <= 1 || genCtx.xyzbounds[2] < genCtx.xyzbounds[3],PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Y-dim: Left boundary cannot be greater than right. [%G >= %G]", genCtx.xyzbounds[2], genCtx.xyzbounds[3]);
+  PetscCheck(genCtx.dim <= 2 || genCtx.xyzbounds[4] < genCtx.xyzbounds[5],PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Z-dim: Left boundary cannot be greater than right. [%G >= %G]", genCtx.xyzbounds[4], genCtx.xyzbounds[5]);
 
   PetscCall(PetscInfo(NULL, "Local elements:= %" PetscInt_FMT ", %" PetscInt_FMT ", %" PetscInt_FMT "\n", genCtx.blockSizeElementXYZ[0], genCtx.blockSizeElementXYZ[1], genCtx.blockSizeElementXYZ[2]));
   PetscCall(PetscInfo(NULL, "Local vertices:= %" PetscInt_FMT ", %" PetscInt_FMT ", %" PetscInt_FMT "\n", genCtx.blockSizeVertexXYZ[0], genCtx.blockSizeVertexXYZ[1], genCtx.blockSizeVertexXYZ[2]));
@@ -519,7 +519,7 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
   PetscInt               ml = 0, nl = 0, kl = 0;
 
   PetscFunctionBegin;
-  PetscCheckFalse(dim < 1 || dim > 3,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension argument for mesh: dim=[1,3].");
+  PetscCheck(dim >= 1 && dim <= 3,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension argument for mesh: dim=[1,3].");
 
   PetscCall(PetscLogEventRegister("GenerateMesh", DM_CLASSID,   &genCtx.generateMesh));
   PetscCall(PetscLogEventRegister("AddVertices", DM_CLASSID,   &genCtx.generateVertices));

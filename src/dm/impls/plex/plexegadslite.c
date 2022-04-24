@@ -64,7 +64,7 @@ PetscErrorCode DMPlexSnapToGeomModel_EGADSLite_Internal(DM dm, PetscInt p, Petsc
     params[pm] /= Nv;
   }
   PetscCheck(!(params[0] < range[0]) && !(params[0] > range[1]),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %" PetscInt_FMT " had bad interpolation", p);
-  PetscCheckFalse(Np > 1 && ((params[1] < range[2]) || (params[1] > range[3])),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %" PetscInt_FMT " had bad interpolation", p);
+  PetscCheck(Np <= 1 || (params[1] >= range[2] && params[1] <= range[3]),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %" PetscInt_FMT " had bad interpolation", p);
   /* Put coordinates for new vertex in result[] */
   PetscCall(EGlite_evaluate(obj, params, result));
   for (d = 0; d < dE; ++d) gcoords[d] = result[d];
@@ -239,7 +239,7 @@ static PetscErrorCode DMPlexCreateEGADSLite_Internal(MPI_Comm comm, ego context,
         }
       }
     }
-    PetscCheckFalse(numEdges + numQuads != newVertices,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of new vertices %" PetscInt_FMT " != %" PetscInt_FMT " previous count", numEdges + numQuads, newVertices);
+    PetscCheck(numEdges + numQuads == newVertices,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of new vertices %" PetscInt_FMT " != %" PetscInt_FMT " previous count", numEdges + numQuads, newVertices);
 
     /* Get cell vertices by traversing loops */
     numQuads = 0;

@@ -840,7 +840,7 @@ PetscErrorCode PetscDualSpaceSectionCreate_Internal(PetscDualSpace sp, PetscSect
     }
     PetscCall(DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure));
   }
-  PetscCheckFalse(count != pEnd - pStart,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Bad topological ordering");
+  PetscCheck(count == pEnd - pStart,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Bad topological ordering");
   for (i = 0; i < pEnd - pStart; i++) if (perm[i] != i) break;
   if (i < pEnd - pStart) {
     IS permIS;
@@ -1592,7 +1592,7 @@ PetscErrorCode PetscDualSpaceGetHeightSubspace(PetscDualSpace sp, PetscInt heigh
   *subsp = NULL;
   dm = sp->dm;
   PetscCall(DMPlexGetDepth(dm, &depth));
-  PetscCheckFalse(height < 0 || height > depth,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid height");
+  PetscCheck(height >= 0 && height <= depth,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid height");
   PetscCall(DMPlexGetHeightStratum(dm,0,&cStart,&cEnd));
   if (height == 0 && cEnd == cStart + 1) {
     *subsp = sp;
@@ -1660,7 +1660,7 @@ PetscErrorCode PetscDualSpaceGetPointSubspace(PetscDualSpace sp, PetscInt point,
   *bdsp = NULL;
   dm = sp->dm;
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
-  PetscCheckFalse(point < pStart || point > pEnd,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid point");
+  PetscCheck(point >= pStart && point <= pEnd,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid point");
   PetscCall(DMPlexGetHeightStratum(dm,0,&cStart,&cEnd));
   if (point == cStart && cEnd == cStart + 1) { /* the dual space is only equivalent to the dual space on a cell if the reference mesh has just one cell */
     *bdsp = sp;
@@ -1772,7 +1772,7 @@ PetscErrorCode PetscDualSpaceSetFormDegree(PetscDualSpace dsp, PetscInt k)
   PetscValidHeaderSpecific(dsp, PETSCDUALSPACE_CLASSID, 1);
   PetscCheck(!dsp->setupcalled,PetscObjectComm((PetscObject)dsp), PETSC_ERR_ARG_WRONGSTATE, "Cannot change number of components after dualspace is set up");
   dim = dsp->dm->dim;
-  PetscCheckFalse(k < -dim || k > dim,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unsupported %" PetscInt_FMT "-form on %" PetscInt_FMT "-dimensional reference cell", PetscAbsInt(k), dim);
+  PetscCheck(k >= -dim && k <= dim,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unsupported %" PetscInt_FMT "-form on %" PetscInt_FMT "-dimensional reference cell", PetscAbsInt(k), dim);
   dsp->k = k;
   PetscFunctionReturn(0);
 }

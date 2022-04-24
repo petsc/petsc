@@ -588,7 +588,7 @@ static PetscErrorCode DMPlexUpdateAllocation_Static(DM dm, PetscLayout rLayout, 
   PetscFunctionBegin;
   /* This loop needs to change to a loop over points, then field dofs, which means we need to look both sections */
   PetscCall(PetscLayoutGetRange(rLayout, &rStart, &rEnd));
-  PetscCheckFalse(rStart%bs || rEnd%bs,PetscObjectComm((PetscObject) rLayout), PETSC_ERR_ARG_WRONG, "Invalid layout [%" PetscInt_FMT ", %" PetscInt_FMT ") for matrix, must be divisible by block size %" PetscInt_FMT, rStart, rEnd, bs);
+  PetscCheck((rStart%bs) == 0 && (rEnd%bs) == 0,PetscObjectComm((PetscObject) rLayout), PETSC_ERR_ARG_WRONG, "Invalid layout [%" PetscInt_FMT ", %" PetscInt_FMT ") for matrix, must be divisible by block size %" PetscInt_FMT, rStart, rEnd, bs);
   if (f >= 0 && bs == 1) {
     PetscCall(DMGetLocalSection(dm, &section));
     PetscCall(PetscSectionGetChart(section, &pStart, &pEnd));

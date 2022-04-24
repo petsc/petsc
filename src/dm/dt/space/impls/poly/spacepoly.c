@@ -159,7 +159,7 @@ static PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoi
     PetscCall(PetscSpaceEvaluate(sp, npoints, points, B, D, H));
     PetscFunctionReturn(0);
   }
-  PetscCheckFalse(poly->tensor || sp->Nc != 1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "tensor and multicomponent spaces should have been converted");
+  PetscCheck(!poly->tensor && sp->Nc == 1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "tensor and multicomponent spaces should have been converted");
   PetscCall(PetscDTBinomialInt(dim + sp->degree, dim, &Nb));
   if (H) {
     jet = 2;
@@ -323,7 +323,7 @@ static PetscErrorCode PetscSpaceGetHeightSubspace_Polynomial(PetscSpace sp, Pets
   PetscCall(PetscSpaceGetNumVariables(sp, &dim));
   PetscCall(PetscSpaceGetDegree(sp, &order, NULL));
   PetscCall(PetscSpacePolynomialGetTensor(sp, &tensor));
-  PetscCheckFalse(height > dim || height < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Asked for space at height %" PetscInt_FMT " for dimension %" PetscInt_FMT " space", height, dim);
+  PetscCheck(height <= dim && height >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Asked for space at height %" PetscInt_FMT " for dimension %" PetscInt_FMT " space", height, dim);
   if (!poly->subspaces) PetscCall(PetscCalloc1(dim, &poly->subspaces));
   if (height <= dim) {
     if (!poly->subspaces[height-1]) {

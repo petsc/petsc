@@ -297,9 +297,9 @@ static PetscErrorCode DMFTopologyCreate_pforest(DM dm, DMForestTopology topology
       PetscCall(PetscOptionsGetIntArray(((PetscObject)dm)->options,prefix,"-dm_p4est_brick_periodicity",P,&nretP,&flgP));
       PetscCall(PetscOptionsGetRealArray(((PetscObject)dm)->options,prefix,"-dm_p4est_brick_bounds",B,&nretB,&flgB));
       PetscCall(PetscOptionsGetBool(((PetscObject)dm)->options,prefix,"-dm_p4est_brick_use_morton_curve",&useMorton,&flgM));
-      PetscCheckFalse(flgN && nretN != P4EST_DIM,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_SIZ,"Need to give %d sizes in -dm_p4est_brick_size, gave %" PetscInt_FMT,P4EST_DIM,nretN);
-      PetscCheckFalse(flgP && nretP != P4EST_DIM,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_SIZ,"Need to give %d periodicities in -dm_p4est_brick_periodicity, gave %" PetscInt_FMT,P4EST_DIM,nretP);
-      PetscCheckFalse(flgB && nretB != 2 * P4EST_DIM,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_SIZ,"Need to give %d bounds in -dm_p4est_brick_bounds, gave %" PetscInt_FMT,P4EST_DIM,nretP);
+      PetscCheck(!flgN || nretN == P4EST_DIM,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_SIZ,"Need to give %d sizes in -dm_p4est_brick_size, gave %" PetscInt_FMT,P4EST_DIM,nretN);
+      PetscCheck(!flgP || nretP == P4EST_DIM,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_SIZ,"Need to give %d periodicities in -dm_p4est_brick_periodicity, gave %" PetscInt_FMT,P4EST_DIM,nretP);
+      PetscCheck(!flgB || nretB == 2 * P4EST_DIM,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_SIZ,"Need to give %d bounds in -dm_p4est_brick_bounds, gave %" PetscInt_FMT,P4EST_DIM,nretP);
     }
     for (i = 0; i < P4EST_DIM; i++) {
       P[i]  = (P[i] ? DM_BOUNDARY_PERIODIC : DM_BOUNDARY_NONE);
@@ -714,7 +714,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
   PetscCall(DMForestGetAdaptivityForest(dm,&adaptFrom));
   PetscCall(DMForestGetBaseDM(dm,&base));
   PetscCall(DMForestGetTopology(dm,&topoName));
-  PetscCheckFalse(!adaptFrom && !base && !topoName,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"A forest needs a topology, a base DM, or a DM to adapt from");
+  PetscCheck(adaptFrom || base || topoName,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"A forest needs a topology, a base DM, or a DM to adapt from");
 
   /* === Step 1: DMFTopology === */
   if (adaptFrom) { /* reference already created topology */
@@ -1549,7 +1549,7 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
         for (c = 0; c < P4EST_CHILDREN; c++) {
           PetscInt cellVert = closure[2 * (c + vertOff)];
 
-          PetscCheckFalse(cellVert < vStart || cellVert >= vEnd,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Non-standard closure: vertices");
+          PetscCheck(cellVert >= vStart && cellVert < vEnd,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Non-standard closure: vertices");
           if (cellVert == v) {
             PetscCall(PetscSectionAddDof(ctt,v,1));
           }
@@ -1582,7 +1582,7 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
         for (c = 0; c < P8EST_EDGES; c++) {
           PetscInt cellEdge = closure[2 * (c + edgeOff)];
 
-          PetscCheckFalse(cellEdge < eStart || cellEdge >= eEnd,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Non-standard closure: edges");
+          PetscCheck(cellEdge >= eStart && cellEdge < eEnd,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Non-standard closure: edges");
           if (cellEdge == e) {
             PetscCall(PetscSectionAddDof(ett,e,1));
           }
@@ -1612,7 +1612,7 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
     const PetscInt *supp;
 
     PetscCall(DMPlexGetSupportSize(dm, f, &numSupp));
-    PetscCheckFalse(numSupp != 1 && numSupp != 2,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"point %" PetscInt_FMT " has facet with %" PetscInt_FMT " sides: must be 1 or 2 (boundary or conformal)",f,numSupp);
+    PetscCheck(numSupp == 1 || numSupp == 2,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"point %" PetscInt_FMT " has facet with %" PetscInt_FMT " sides: must be 1 or 2 (boundary or conformal)",f,numSupp);
     PetscCall(DMPlexGetSupport(dm, f, &supp));
 
     for (s = 0; s < numSupp; s++) {
@@ -1788,7 +1788,7 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
       PetscScalar *cellCoords = NULL;
 
       PetscCall(DMPlexVecGetClosure(dm, coordSec, coordVec, c, &dof, &cellCoords));
-      PetscCheckFalse(!localized && dof != P4EST_CHILDREN * coordDim,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Need coordinates at the corners: (dof) %" PetscInt_FMT " != %d * %" PetscInt_FMT " (sdim)", dof, P4EST_CHILDREN, coordDim);
+      PetscCheck(localized || dof == P4EST_CHILDREN * coordDim,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Need coordinates at the corners: (dof) %" PetscInt_FMT " != %d * %" PetscInt_FMT " (sdim)", dof, P4EST_CHILDREN, coordDim);
       for (v = 0; v < P4EST_CHILDREN; v++) {
         PetscInt i, lim = PetscMin(3, coordDim);
         PetscInt p4estVert = PetscVertToP4estVert[v];
@@ -1844,7 +1844,7 @@ static PetscErrorCode coords_double_to_PetscScalar(sc_array_t * array, PetscInt 
   size_t     zz, count = array->elem_count;
 
   PetscFunctionBegin;
-  PetscCheckFalse(array->elem_size != 3 * sizeof(double),PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong coordinate size");
+  PetscCheck(array->elem_size == 3 * sizeof(double),PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong coordinate size");
 #if !defined(PETSC_USE_COMPLEX)
   if (sizeof(double) == sizeof(PetscScalar) && dim == 3) PetscFunctionReturn(0);
 #endif
@@ -1872,7 +1872,7 @@ static PetscErrorCode locidx_pair_to_PetscSFNode(sc_array_t * array)
   size_t     zz, count = array->elem_count;
 
   PetscFunctionBegin;
-  PetscCheckFalse(array->elem_size != 2 * sizeof(p4est_locidx_t),PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong locidx size");
+  PetscCheck(array->elem_size == 2 * sizeof(p4est_locidx_t),PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong locidx size");
 
   newarray = sc_array_new_size (sizeof(PetscSFNode), array->elem_count);
   for (zz = 0; zz < count; zz++) {
@@ -1994,7 +1994,7 @@ static PetscErrorCode DMReferenceTreeGetChildSymmetry_pforest(DM dm, PetscInt pa
 
           PetscCall(DMPlexGetConeSize(dm,childA,&coneSize));
           /* compose sOrientB and oB[j] */
-          PetscCheckFalse(coneSize != 0 && coneSize != 2,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Expected a vertex or an edge");
+          PetscCheck(coneSize == 0 || coneSize == 2,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Expected a vertex or an edge");
           ct = coneSize ? DM_POLYTOPE_SEGMENT : DM_POLYTOPE_POINT;
           /* we may have to flip an edge */
           oBtrue        = (sOrientB >= 0) ? oB[j] : DMPolytopeTypeComposeOrientationInv(ct, -1, oB[j]);
@@ -3297,7 +3297,7 @@ static PetscErrorCode DMPforestLabelsInitialize(DM dm, DM plex)
         do {
           p4est_tree_t *tree;
 
-          PetscCheckFalse(guess < lo || guess >= num_trees || lo >= hi,PETSC_COMM_SELF,PETSC_ERR_PLIB,"failed binary search");
+          PetscCheck(guess >= lo && guess < num_trees && lo < hi,PETSC_COMM_SELF,PETSC_ERR_PLIB,"failed binary search");
           tree = &trees[guess];
           if (c < tree->quadrants_offset) {
             hi = guess;
@@ -4024,7 +4024,7 @@ static PetscErrorCode DMPforestLocalizeCoordinates(DM dm, DM plex)
       if (overlap) localize[newCell] = cdof;
     }
   }
-  PetscCheckFalse(cp != cEnd - cStart,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected number of fine cells %" PetscInt_FMT " != %" PetscInt_FMT,cp,cEnd-cStart);
+  PetscCheck(cp == cEnd - cStart,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected number of fine cells %" PetscInt_FMT " != %" PetscInt_FMT,cp,cEnd-cStart);
 
   if (base) { /* we need to localize on all the cells in the star of the coarse cell vertices */
     PetscInt *closure = NULL, closureSize;

@@ -849,7 +849,7 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
     PetscCall(DMFieldDSGetHeightDisc(field, 0, &cellDisc));
     PetscCall(PetscObjectGetClassId(faceDisc,&faceId));
     PetscCall(PetscObjectGetClassId(cellDisc,&cellId));
-    PetscCheckFalse(faceId != PETSCFE_CLASSID || cellId != PETSCFE_CLASSID,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not supported");
+    PetscCheck(faceId == PETSCFE_CLASSID && cellId == PETSCFE_CLASSID,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not supported");
     PetscCall(PetscFEGetDualSpace((PetscFE)cellDisc, &dsp));
     PetscCall(PetscDualSpaceGetDM(dsp, &K));
     PetscCall(DMPlexGetHeightStratum(K, 1, &eStart, NULL));
