@@ -2266,7 +2266,8 @@ static void TPSNearestPointResJac(TPSEvaluateFunc feval, const PetscScalar x[], 
 {
   PetscReal yreal[3] = {PetscRealPart(y[0]), PetscRealPart(y[1]), PetscRealPart(y[2])};
   PetscReal d[3] = {PetscRealPart(y[0] - x[0]), PetscRealPart(y[1] - x[1]), PetscRealPart(y[2] - x[2])};
-  PetscReal f, grad[3], n[3], n_y[3][3], norm, norm_y[3], nd, nd_y[3], sign;
+  PetscReal f, grad[3], n[3], norm, norm_y[3], nd, nd_y[3], sign;
+  PetscReal n_y[3][3] = {{0,0,0},{0,0,0},{0,0,0}};
 
   feval(yreal, &f, grad, n_y);
 
