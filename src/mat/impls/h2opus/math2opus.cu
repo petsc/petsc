@@ -193,6 +193,7 @@ typedef struct {
   PetscInt  norm_max_samples;
   PetscBool check_construction;
   PetscBool hara_verbose;
+  PetscBool resize;
 
   /* keeps track of MatScale values */
   PetscScalar s;
@@ -712,6 +713,7 @@ static PetscErrorCode MatSetFromOptions_H2OPUS(PetscOptionItems *PetscOptionsObj
   PetscCall(PetscOptionsReal("-mat_h2opus_rtol","Relative tolerance for construction from sampling",NULL,a->rtol,&a->rtol,NULL));
   PetscCall(PetscOptionsBool("-mat_h2opus_check","Check error when constructing from sampling during MatAssemblyEnd()",NULL,a->check_construction,&a->check_construction,NULL));
   PetscCall(PetscOptionsBool("-mat_h2opus_hara_verbose","Verbose output from hara construction",NULL,a->hara_verbose,&a->hara_verbose,NULL));
+  PetscCall(PetscOptionsBool("-mat_h2opus_resize","Resize after compression",NULL,a->resize,&a->resize,NULL));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
@@ -1309,6 +1311,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_H2OPUS(Mat A)
   a->rtol             = 1.e-4;
   a->s                = 1.0;
   a->norm_max_samples = 10;
+  a->resize           = PETSC_TRUE; /* reallocate after compression */
 #if defined(H2OPUS_USE_MPI)
   h2opusCreateDistributedHandleComm(&a->handle,PetscObjectComm((PetscObject)A));
 #else
@@ -1464,6 +1467,11 @@ PetscErrorCode MatH2OpusCompress(Mat A, PetscReal tol)
       PetscCheck(a->dist_hmatrix,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Missing CPU matrix");
 #if defined(H2OPUS_USE_MPI)
       distributed_hcompress(*a->dist_hmatrix, tol, a->handle);
+      if (a->resize) {
+        DistributedHMatrix *dist_hmatrix = new DistributedHMatrix(*a->dist_hmatrix);
+        delete a->dist_hmatrix;
+        a->dist_hmatrix = dist_hmatrix;
+      }
 #endif
 #if defined(PETSC_H2OPUS_USE_GPU)
       A->offloadmask = PETSC_OFFLOAD_CPU;
@@ -1472,6 +1480,12 @@ PetscErrorCode MatH2OpusCompress(Mat A, PetscReal tol)
       PetscCall(PetscLogGpuTimeBegin());
 #if defined(H2OPUS_USE_MPI)
       distributed_hcompress(*a->dist_hmatrix_gpu, tol, a->handle);
+
+      if (a->resize) {
+        DistributedHMatrix_GPU *dist_hmatrix_gpu = new DistributedHMatrix_GPU(*a->dist_hmatrix_gpu);
+        delete a->dist_hmatrix_gpu;
+        a->dist_hmatrix_gpu = dist_hmatrix_gpu;
+      }
 #endif
       PetscCall(PetscLogGpuTimeEnd());
 #endif
@@ -1485,6 +1499,12 @@ PetscErrorCode MatH2OpusCompress(Mat A, PetscReal tol)
     if (boundtocpu) {
       PetscCheck(a->hmatrix,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Missing CPU matrix");
       hcompress(*a->hmatrix, tol, handle);
+
+      if (a->resize) {
+        HMatrix *hmatrix = new HMatrix(*a->hmatrix);
+        delete a->hmatrix;
+        a->hmatrix = hmatrix;
+      }
 #if defined(PETSC_H2OPUS_USE_GPU)
       A->offloadmask = PETSC_OFFLOAD_CPU;
     } else {
@@ -1492,6 +1512,12 @@ PetscErrorCode MatH2OpusCompress(Mat A, PetscReal tol)
       PetscCall(PetscLogGpuTimeBegin());
       hcompress(*a->hmatrix_gpu, tol, handle);
       PetscCall(PetscLogGpuTimeEnd());
+
+      if (a->resize) {
+        HMatrix_GPU *hmatrix_gpu = new HMatrix_GPU(*a->hmatrix_gpu);
+        delete a->hmatrix_gpu;
+        a->hmatrix_gpu = hmatrix_gpu;
+      }
 #endif
     }
   }
