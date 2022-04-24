@@ -467,10 +467,10 @@ freebsd-pkgs-opt:
 
 linux-hip-double:
   extends:
-    - .stage-2
+    - .stage-3
     - .linux_test_noflags
   tags:
-    - gpu:amd, os:linux, name:hip-txcorp
+    - gpu:amd, os:linux
   variables:
     TEST_ARCH: arch-ci-linux-hip-double
 
