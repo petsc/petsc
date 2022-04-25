@@ -930,12 +930,8 @@ class Configure(config.base.Configure):
           # user has set both flags
           errorMessage = 'Competing or duplicate C++ dialect flags, have specified {flagdialect} in compiler ({compiler}) flags and used configure option {opt}'.format(flagdialect=langDialectFromFlags,compiler=compiler,opt='--'+configureArg+'='+withLangDialect.lower())
           raise ConfigureSetupError(errorMessage)
-        self.logPrintBox('\n'.join((
-          ' ***** WARNING: Explicitly setting C++ dialect in compiler flags may not be optimal.',
-          'Use ./configure --{opt}={sanitized} if you really want to use that value,',
-          'otherwise remove {flag} from compiler flags and omit --{opt}=[...]',
-          'from configure to have PETSc automatically detect the most appropriate flag for you'
-        )).format(opt=configureArg,sanitized=sanitized,flag=langDialectFromFlags[-1]))
+        mess = 'Explicitly setting C++ dialect in compiler flags may not be optimal. Use ./configure --{opt}={sanitized} if you really want to use that value, otherwise remove {flag} from compiler flags and omit --{opt}=[...] from configure to have PETSc automatically detect the most appropriate flag for you'.format(opt=configureArg,sanitized=sanitized,flag=langDialectFromFlags[-1])
+        self.logPrintWarning(mess)
 
       # the user has already set the flag in their options, no need to set it a second time
       useFlag          = False
@@ -963,11 +959,8 @@ class Configure(config.base.Configure):
       # explicit value
       explicit      = previouslySetExplicitly if processedBefore else True
       if withLangDialect.endswith('20'):
-        self.logPrintBox('\n'.join((
-          ' ***** WARNING: C++20 is not yet fully supported, PETSc only tests up to C++{maxver}.',
-          'Remove -std=[...] from compiler flags and/or omit --{opt}=[...] from',
-          'configure to have PETSc automatically detect the most appropriate flag for you'
-        )).format(maxver=default_cxx_dialect_ranges()[1],opt=configureArg))
+        mess = 'C++20 is not yet fully supported, PETSc only tests up to C++{maxver}. Remove -std=[...] from compiler flags and/or omit --{opt}=[...] from configure to have PETSc automatically detect the most appropriate flag for you'.format(maxver=default_cxx_dialect_ranges()[1],opt=configureArg)
+        self.logPrintWarning(mess)
 
     minDialect,maxDialect = 0,-1
     for i,dialect in enumerate(dialects):
@@ -1297,7 +1290,7 @@ class Configure(config.base.Configure):
     (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -v | head -n 20', log = self.log)
     output = output + error
     if '(gcc version 4.8.5 compatibility)' in output:
-       self.logPrintBox('Warning: Intel compiler being used with gcc 4.8.5 compatibility, failures may occur.\nRecommend having a newer gcc version in your path.')
+       self.logPrintWarning('Intel compiler being used with gcc 4.8.5 compatibility, failures may occur. Recommend having a newer gcc version in your path.')
     if os.path.basename(self.CC).startswith('mpi'):
        self.logPrint('Since MPI c compiler starts with mpi, force searches for other compilers to only look for MPI compilers\n')
        self.argDB['with-mpi-compilers'] = 1
@@ -2406,7 +2399,7 @@ class Configure(config.base.Configure):
       return
     self.LIBS = oldLibs
     self.compilerDefines = tmpCompilerDefines
-    self.logPrint('Warning: Shared linking may not function on this architecture')
+    self.logPrintWarning('Shared linking may not function on this architecture')
     self.staticLibrary=1
     self.sharedLibrary=0
 
@@ -2585,14 +2578,14 @@ if (dlclose(handle)) {
     ignoreEnv = ['CFLAGS','CXXFLAGS','FCFLAGS','FFLAGS','F90FLAGS','CPP','CPPFLAGS','CXXPP','CXXPPFLAGS','LDFLAGS','LIBS','MPI_DIR','RM','MAKEFLAGS','AR','RANLIB']
     for envVal in ignoreEnvCompilers + ignoreEnv:
       if envVal in os.environ:
-        msg = 'Warning: Found environment variable: %s=%s. ' % (envVal, os.environ[envVal])
+        msg = 'Found environment variable: %s=%s. ' % (envVal, os.environ[envVal])
         if envVal in self.framework.clArgDB or (envVal in ignoreEnvCompilers and 'with-'+envVal.lower() in self.framework.clArgDB):
-          self.logPrintBox(msg+'Ignoring it, since its also set on command line')
+          self.logPrintWarning(msg+'Ignoring it, since its also set on command line')
           del os.environ[envVal]
         elif self.argDB['with-environment-variables']:
-          self.logPrintBox(msg+'Using it! Use "./configure --disable-environment-variables" to NOT use the environmental variables')
+          self.logPrintWarning(msg+'Using it! Use "./configure --disable-environment-variables" to NOT use the environmental variables')
         else:
-          self.logPrintBox (msg+'Ignoring it! Use "./configure %s=$%s" if you really want to use this value' % (envVal,envVal))
+          self.logPrintWarning(msg+'Ignoring it! Use "./configure %s=$%s" if you really want to use this value' % (envVal,envVal))
           del os.environ[envVal]
     return
 

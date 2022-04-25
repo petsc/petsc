@@ -2,9 +2,8 @@
 from __future__ import print_function
 import os, sys
 
-extraLogs     = []
-petsc_arch    = ''
-banner_length = 93
+extraLogs  = []
+petsc_arch = ''
 
 # Use en_US as language so that BuildSystem parses compiler messages in english
 def fixLang(lang):
@@ -388,10 +387,6 @@ def petsc_configure(configure_options):
       petscnagupgrade.currentversion(petscdir)
   except:
     pass
-  banner_line = banner_length*'='
-  print(banner_line)
-  print('Configuring PETSc to compile on your system'.center(banner_length))
-  print(banner_line)
 
   try:
     # Command line arguments take precedence (but don't destroy argv[0])
@@ -461,6 +456,7 @@ def petsc_configure(configure_options):
   try:
     framework = config.framework.Framework(['--configModules=PETSc.Configure','--optionsModule=config.compilerOptions']+sys.argv[1:], loadArgDB = 0)
     framework.setup()
+    framework.logPrintBox('Configuring PETSc to compile on your system')
     framework.logPrint('\n'.join(extraLogs))
     framework.configure(out = sys.stdout)
     framework.storeSubstitutions(framework.argDB)

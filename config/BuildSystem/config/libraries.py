@@ -319,7 +319,7 @@ extern "C" {
       self.logPrint('erf() found')
       self.addDefine('HAVE_ERF', 1)
     else:
-      self.logPrint('Warning: erf() not found')
+      self.logPrintWarning('erf() not found')
     return
 
   def checkMathTgamma(self):
@@ -328,7 +328,7 @@ extern "C" {
       self.logPrint('tgamma() found')
       self.addDefine('HAVE_TGAMMA', 1)
     else:
-      self.logPrint('Warning: tgamma() not found')
+      self.logPrintWarning('tgamma() not found')
     return
 
   def checkMathLgamma(self):
@@ -341,7 +341,7 @@ extern "C" {
       self.addDefine('HAVE_LGAMMA', 1)
       self.addDefine('HAVE_LGAMMA_IS_GAMMA', 1)
     else:
-      self.logPrint('Warning: lgamma() and gamma() not found')
+      self.logPrintWarning('lgamma() and gamma() not found')
     return
 
   def checkMathFenv(self):
@@ -349,7 +349,7 @@ extern "C" {
     if not self.math is None and self.check(self.math, ['fesetenv'], prototype = ['#include <fenv.h>'], call = ['fesetenv(FE_DFL_ENV);']):
       self.addDefine('HAVE_FENV_H', 1)
     else:
-      self.logPrint('Warning: <fenv.h> with FE_DFL_ENV not found')
+      self.logPrintWarning('<fenv.h> with FE_DFL_ENV not found')
     return
 
   def checkMathLog2(self):
@@ -358,7 +358,7 @@ extern "C" {
       self.logPrint('log2() found')
       self.addDefine('HAVE_LOG2', 1)
     else:
-      self.logPrint('Warning: log2() not found')
+      self.logPrintWarning('log2() not found')
     return
 
   def checkRealtime(self):
@@ -374,7 +374,7 @@ extern "C" {
       self.logPrint('Using librt for the realtime library')
       self.rt = ['librt.a']
     else:
-      self.logPrint('Warning: No realtime library found')
+      self.logPrintWarning('No realtime library found')
     return
 
   def checkDynamic(self):
