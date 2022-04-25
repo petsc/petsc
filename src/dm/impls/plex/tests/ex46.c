@@ -5,7 +5,7 @@ static char help[] = "Tests 1D nested mesh refinement.\n\n";
 
 typedef struct {
   PetscInt             Nr;       /* Number of refinements */
-  PetscSimplePointFunc funcs[1]; /* Functions to test */
+  PetscSimplePointFunc funcs[2]; /* Functions to test */
 } AppCtx;
 
 static PetscErrorCode constant(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
@@ -65,6 +65,7 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, PETSC_FALSE, NULL, -1, &fe));
   PetscCall(PetscObjectSetName((PetscObject) fe, "scalar"));
   PetscCall(DMSetField(dm, 0, NULL, (PetscObject) fe));
+  PetscCall(DMSetField(dm, 1, NULL, (PetscObject) fe));
   PetscCall(DMCreateDS(dm));
   while (cdm) {
     PetscCall(DMCopyDisc(dm,cdm));
@@ -79,6 +80,7 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   case 3: user->funcs[0] = cubic;break;
   default: SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "Could not determine function to test for degree %" PetscInt_FMT, deg);
   }
+  user->funcs[1] = user->funcs[0];
   PetscCall(PetscFEDestroy(&fe));
   PetscFunctionReturn(0);
 }
