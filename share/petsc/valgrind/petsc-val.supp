@@ -96,3 +96,12 @@
    fun:*ImageLoader*
    obj:/usr/lib/dyld
 }
+
+{
+   <U22.04 HWLOC>
+   Memcheck:Leak
+   ...
+   fun:MPII_hwtopo_init
+   fun:MPII_Init_thread
+   ...
+}

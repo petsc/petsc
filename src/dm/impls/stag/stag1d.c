@@ -11,7 +11,7 @@
   Input Parameters:
 + comm - MPI communicator
 . bndx - boundary type: DM_BOUNDARY_NONE, DM_BOUNDARY_PERIODIC, or DM_BOUNDARY_GHOSTED
-. M - global number of grid points
+. M - global number of elements
 . dof0 - number of degrees of freedom per vertex/0-cell
 . dof1 - number of degrees of freedom per element/1-cell
 . stencilType - ghost/halo region type: DMSTAG_STENCIL_BOX or DMSTAG_STENCIL_NONE
