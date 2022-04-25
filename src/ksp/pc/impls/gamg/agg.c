@@ -804,11 +804,11 @@ static PetscErrorCode PCGAMGGraph_AGG(PC pc,Mat Amat,Mat *a_Gmat)
   symm = (PetscBool)(pc_gamg_agg->sym_graph); /* && !pc_gamg_agg->square_graph; */
 
   PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[GAMG_GRAPH],0,0,0,0));
-  PetscCall(PCGAMGCreateGraph(Amat, &Gmat));
+  PetscCall(PCGAMGCreateGraph(Amat, &Gmat, symm));
   PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_GRAPH],0,0,0,0));
 
   PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[GAMG_FILTER],0,0,0,0));
-  PetscCall(PCGAMGFilterGraph(&Gmat, vfilter, symm));
+  PetscCall(PCGAMGFilterGraph(&Gmat, vfilter));
   PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_FILTER],0,0,0,0));
 
   *a_Gmat = Gmat;

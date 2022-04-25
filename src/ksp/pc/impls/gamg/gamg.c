@@ -397,7 +397,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
       Mat       mat;
       PetscBool flg;
       PetscCall(MatCreateSubMatrix(Cmat, new_eq_indices, new_eq_indices, MAT_INITIAL_MATRIX, &mat));
-      PetscCall(MatGetOption(Cmat, MAT_SPD, &flg));
+      PetscCall(MatGetOption(Cmat, MAT_SPD, &flg)); // like MatPropagateSymmetryOptions, but should set MAT_STRUCTURALLY_SYMMETRIC ?
       if (flg) {
         PetscCall(MatSetOption(mat, MAT_SPD,PETSC_TRUE));
       } else {

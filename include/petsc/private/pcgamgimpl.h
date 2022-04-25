@@ -60,8 +60,8 @@ PetscErrorCode PCCreateGAMG_Classical(PC);
 PetscErrorCode PCDestroy_GAMG(PC);
 
 /* helper methods */
-PetscErrorCode PCGAMGCreateGraph(Mat, Mat*);
-PetscErrorCode PCGAMGFilterGraph(Mat*, PetscReal, PetscBool);
+PetscErrorCode PCGAMGCreateGraph(Mat, Mat*, PetscBool); /* move to Mat */
+PetscErrorCode PCGAMGFilterGraph(Mat*, PetscReal); /* move to Mat */
 PetscErrorCode PCGAMGGetDataWithGhosts(Mat, PetscInt, PetscReal[],PetscInt*, PetscReal **);
 
 enum tag {GAMG_SETUP=0,GAMG_MESH,GAMG_MATRIX,GAMG_GRAPH,GAMG_FILTER,GAMG_COARSEN,GAMG_SQUARE,GAMG_MIS,GAMG_PROL,GAMG_PROLA,GAMG_PROLB,GAMG_OPT,GAMG_OPTSM,GAMG_LEVEL,GAMG_PTAP,GAMG_REDUCE,GAMG_REPART,SET13,SET14,SET15,GAMG_NUM_SET};

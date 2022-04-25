@@ -544,8 +544,8 @@ PetscErrorCode PCGAMGGraph_GEO(PC pc,Mat Amat,Mat *a_Gmat)
   PetscCall(MatIsSymmetricKnown(Amat, &set, &flg));
   symm = (PetscBool)!(set && flg);
 
-  PetscCall(PCGAMGCreateGraph(Amat, &Gmat));
-  PetscCall(PCGAMGFilterGraph(&Gmat, vfilter, symm));
+  PetscCall(PCGAMGCreateGraph(Amat, &Gmat, symm));
+  PetscCall(PCGAMGFilterGraph(&Gmat, vfilter));
 
   *a_Gmat = Gmat;
 
