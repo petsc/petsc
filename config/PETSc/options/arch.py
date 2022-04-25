@@ -12,9 +12,7 @@ class Configure(config.base.Configure):
   def __str1__(self):
     if not hasattr(self, 'arch'):
       return ''
-    desc = ['PETSc:']
-    desc.append('  PETSC_ARCH: '+str(self.arch))
-    return '\n'.join(desc)+'\n'
+    return '  PETSC_ARCH: '+str(self.arch)+'\n'
 
   def setupHelp(self, help):
     import nargs
