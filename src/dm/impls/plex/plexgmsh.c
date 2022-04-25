@@ -1064,13 +1064,13 @@ static PetscErrorCode GmshReadMeshFormat(GmshFile *gmsh)
   snum = sscanf(line, "%f %d %d", &version, &fileType, &dataSize);
   PetscCheck(snum == 3,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Unable to parse Gmsh file header: %s", line);
   PetscCheck(version >= 2.2,PETSC_COMM_SELF, PETSC_ERR_SUP, "Gmsh file version %3.1f must be at least 2.2", (double)version);
-  PetscCheckFalse((int)version == 3,PETSC_COMM_SELF, PETSC_ERR_SUP, "Gmsh file version %3.1f not supported", (double)version);
+  PetscCheck((int)version != 3,PETSC_COMM_SELF, PETSC_ERR_SUP, "Gmsh file version %3.1f not supported", (double)version);
   PetscCheck(version <= 4.1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Gmsh file version %3.1f must be at most 4.1", (double)version);
   PetscCheck(!gmsh->binary || fileType,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Viewer is binary but Gmsh file is ASCII");
   PetscCheck(gmsh->binary || !fileType,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Viewer is ASCII but Gmsh file is binary");
   fileFormat = (int)roundf(version*10);
-  PetscCheckFalse(fileFormat <= 40 && dataSize != sizeof(double),PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Data size %d is not valid for a Gmsh file", dataSize);
-  PetscCheckFalse(fileFormat >= 41 && dataSize != sizeof(int) && dataSize != sizeof(PetscInt64),PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Data size %d is not valid for a Gmsh file", dataSize);
+  PetscCheck(fileFormat > 40 || dataSize == sizeof(double),PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Data size %d is not valid for a Gmsh file", dataSize);
+  PetscCheck(fileFormat < 41 || dataSize == sizeof(int) || dataSize == sizeof(PetscInt64),PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Data size %d is not valid for a Gmsh file", dataSize);
   gmsh->fileFormat = fileFormat;
   gmsh->dataSize = dataSize;
   gmsh->byteSwap = PETSC_FALSE;
@@ -1403,7 +1403,7 @@ PetscErrorCode DMPlexCreateGmshFromFile(MPI_Comm comm, const char filename[], Pe
     snum = sscanf(line, "%f %d", &version, &fileType);
     PetscCheck(snum == 2,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Unable to parse Gmsh file header: %s", line);
     PetscCheck(version >= 2.2,PETSC_COMM_SELF, PETSC_ERR_SUP, "Gmsh file version %3.1f must be at least 2.2", (double)version);
-    PetscCheckFalse((int)version == 3,PETSC_COMM_SELF, PETSC_ERR_SUP, "Gmsh file version %3.1f not supported", (double)version);
+    PetscCheck((int)version != 3,PETSC_COMM_SELF, PETSC_ERR_SUP, "Gmsh file version %3.1f not supported", (double)version);
     PetscCheck(version <= 4.1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Gmsh file version %3.1f must be at most 4.1", (double)version);
     PetscCall(PetscViewerDestroy(&gmsh->viewer));
   }
@@ -1636,7 +1636,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   }
 
   /* Create the label "marker" over the whole boundary */
-  PetscCheckFalse(usemarker && !interpolate && dim > 1,comm,PETSC_ERR_SUP,"Cannot create marker label without interpolation");
+  PetscCheck(!usemarker || interpolate || dim <= 1,comm,PETSC_ERR_SUP,"Cannot create marker label without interpolation");
   if (rank == 0 && usemarker) {
     PetscInt f, fStart, fEnd;
 

@@ -147,7 +147,7 @@ static PetscErrorCode OrderHybridMesh(DM *dm)
     if (coneSize == 6) ind[c] = off[1]++;
     else               ind[c] = off[0]++;
   }
-  PetscCheckFalse(off[0] != cEnd - Nhyb,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of normal cells %" PetscInt_FMT " should be %" PetscInt_FMT, off[0], cEnd - Nhyb);
+  PetscCheck(off[0] == cEnd - Nhyb,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of normal cells %" PetscInt_FMT " should be %" PetscInt_FMT, off[0], cEnd - Nhyb);
   PetscCheck(off[1] == cEnd,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of hybrid cells %" PetscInt_FMT " should be %" PetscInt_FMT, off[1] - off[0], Nhyb);
   PetscCall(ISCreateGeneral(PETSC_COMM_SELF, pEnd-pStart, ind, PETSC_OWN_POINTER, &perm));
   PetscCall(DMPlexPermute(*dm, perm, &pdm));

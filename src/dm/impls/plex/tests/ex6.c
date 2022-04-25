@@ -70,7 +70,7 @@ PetscErrorCode TestLookup(DMLabel label, AppCtx *user)
 
     PetscCall(DMLabelGetValue(label, p, &val));
     PetscCall(DMLabelHasPoint(label, p, &has));
-    PetscCheckFalse(((val >= 0) && !has) || ((val < 0) && has),PETSC_COMM_SELF, PETSC_ERR_PLIB, "Label value %" PetscInt_FMT " does not match contains check %" PetscInt_FMT " for point %" PetscInt_FMT, val, (PetscInt) has, p);
+    PetscCheck((val < 0 || has) || (val >= 0 || has),PETSC_COMM_SELF, PETSC_ERR_PLIB, "Label value %" PetscInt_FMT " does not match contains check %" PetscInt_FMT " for point %" PetscInt_FMT, val, (PetscInt) has, p);
     if (has) ++n;
   }
   PetscCheck(n == user->size,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of label points detected %" PetscInt_FMT " does not match number set %" PetscInt_FMT, n, user->size);

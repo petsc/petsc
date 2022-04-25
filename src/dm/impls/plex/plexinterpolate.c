@@ -408,7 +408,7 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
         PetscCall(DMPlexRestoreRawFaces_Internal(dm, ct, cone, &numFaces, &faceTypes, &faceSizes, &faces));
       }
       for (ct = 1; ct < DM_NUM_POLYTOPES; ++ct) {
-        PetscCheckFalse(faceTypeStart[ct] != faceTypeStart[ct-1] + faceTypeNum[ct],PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistent numbering for cell type %s, %" PetscInt_FMT " != %" PetscInt_FMT " + %" PetscInt_FMT, DMPolytopeTypes[ct], faceTypeStart[ct], faceTypeStart[ct-1], faceTypeNum[ct]);
+        PetscCheck(faceTypeStart[ct] == faceTypeStart[ct-1] + faceTypeNum[ct],PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistent numbering for cell type %s, %" PetscInt_FMT " != %" PetscInt_FMT " + %" PetscInt_FMT, DMPolytopeTypes[ct], faceTypeStart[ct], faceTypeStart[ct-1], faceTypeNum[ct]);
       }
     }
   }
@@ -676,7 +676,7 @@ PetscErrorCode DMPlexOrientInterface_Internal(DM dm)
         /* No need for PetscMPIIntCast because these integers were originally cast from PetscMPIInt. */
         PetscCall(PetscFindMPIInt((PetscMPIInt) leavesRanks[p][c], nranks, ranks, &r));
         PetscCheck(r >= 0,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %" PetscInt_FMT " cone[%" PetscInt_FMT "]=%" PetscInt_FMT " root (%d,%" PetscInt_FMT ") leaf (%d,%" PetscInt_FMT "): leaf rank not found among remote ranks", p, c, cone[c], rootsRanks[p][c], roots[p][c], leavesRanks[p][c], leaves[p][c]);
-        PetscCheckFalse(ranks[r] < 0 || ranks[r] >= size,PETSC_COMM_SELF, PETSC_ERR_PLIB, "p=%" PetscInt_FMT " c=%" PetscInt_FMT " commsize=%d: ranks[%" PetscInt_FMT "] = %d makes no sense", p, c, size, r, ranks[r]);
+        PetscCheck(ranks[r] >= 0 && ranks[r] < size,PETSC_COMM_SELF, PETSC_ERR_PLIB, "p=%" PetscInt_FMT " c=%" PetscInt_FMT " commsize=%d: ranks[%" PetscInt_FMT "] = %d makes no sense", p, c, size, r, ranks[r]);
         /* Find point leaves[p][c] among remote points aimed at rank leavesRanks[p][c] */
         rS = roffset[r];
         rN = roffset[r+1] - rS;
@@ -1253,7 +1253,7 @@ PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF)
     for (p = Nl; p < Nl + NlNew; ++p) {
       PetscInt off;
       PetscCall(PetscHMapIGet(claimshash, localPointsNew[p], &off));
-      PetscCheckFalse(claims[off].rank < 0 || claims[off].index < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid claim for local point %" PetscInt_FMT ", (%" PetscInt_FMT ", %" PetscInt_FMT ")", localPointsNew[p], claims[off].rank, claims[off].index);
+      PetscCheck(claims[off].rank >= 0 && claims[off].index >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid claim for local point %" PetscInt_FMT ", (%" PetscInt_FMT ", %" PetscInt_FMT ")", localPointsNew[p], claims[off].rank, claims[off].index);
       remotePointsNew[p] = claims[off];
     }
     PetscCall(PetscSFCreate(comm, &sfPointNew));

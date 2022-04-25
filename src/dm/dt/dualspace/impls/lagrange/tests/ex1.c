@@ -275,7 +275,7 @@ PetscErrorCode testLagrange(PetscHashLag lagTable, DM K, PetscInt dim, PetscInt 
         PetscCall(MatGetInfo(intMat, MAT_LOCAL, &info));
         PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF, "Interior matrix: %" PetscInt_FMT " nonzeros\n", (PetscInt) info.nz_used));
         PetscCall(PetscLagNodeIndicesGetData_Internal(lag->intNodeIndices, &intNodeIdxDim, &intNodeVecDim, &intNnodes, &intNodeIdx, &intNodeVec));
-        PetscCheckFalse(intNodeIdxDim != nodeIdxDim || intNodeVecDim != nodeVecDim,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Interior node indices not the same shale as all node indices");
+        PetscCheck(intNodeIdxDim == nodeIdxDim && intNodeVecDim == nodeVecDim,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Interior node indices not the same shale as all node indices");
         PetscCheck(intNnodes == spintdim,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect interior nNodes");
         PetscCall(PetscArraycmp(intNodeIdx, nodeIdx, nodeIdxDim * intNnodes, &same));
         PetscCheck(same,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Interior node indices not the same as start of all node indices");

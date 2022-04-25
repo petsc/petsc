@@ -279,7 +279,7 @@ static PetscErrorCode DMFieldEvaluateFE_DA(DMField field, IS cellIS, PetscQuadra
       cD = D ? &((PetscReal *)D)[nc * nq * dim * c] : NULL;
       cH = H ? &((PetscReal *)H)[nc * nq * dim * dim * c] : NULL;
     }
-    PetscCheckFalse(cell < cStart || cell >= cEnd,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Point %" PetscInt_FMT " not a cell [%" PetscInt_FMT ",%" PetscInt_FMT "), not implemented yet",cell,cStart,cEnd);
+    PetscCheck(cell >= cStart && cell < cEnd,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Point %" PetscInt_FMT " not a cell [%" PetscInt_FMT ",%" PetscInt_FMT "), not implemented yet",cell,cStart,cEnd);
     for (i = 0; i < nc * whol; i++) {work[i] = dafield->cornerCoeffs[i];}
     for (j = 0; j < dim; j++) {
       PetscReal e, d;
@@ -351,7 +351,7 @@ static PetscErrorCode DMFieldEvaluateFV_DA(DMField field, IS cellIS, PetscDataTy
     PetscInt  rem  = cell;
     PetscInt  ijk[3] = {0};
 
-    PetscCheckFalse(cell < cStart || cell >= cEnd,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Point %" PetscInt_FMT " not a cell [%" PetscInt_FMT ",%" PetscInt_FMT "), not implemented yet",cell,cStart,cEnd);
+    PetscCheck(cell >= cStart && cell < cEnd,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Point %" PetscInt_FMT " not a cell [%" PetscInt_FMT ",%" PetscInt_FMT "), not implemented yet",cell,cStart,cEnd);
     for (i = 0; i < dim; i++) {
       ijk[i] = (rem % cellsPer[i]);
       rem /= cellsPer[i];

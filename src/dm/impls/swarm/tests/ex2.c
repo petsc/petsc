@@ -377,7 +377,7 @@ static PetscErrorCode TestL2ProjectionParticlesToField(DM dm, DM sw, AppCtx *use
   PetscCall(computeFEMMoments(dm, fhat, fmoments, user));
   PetscCall(PetscPrintf(comm, "L2 projection mass: %20.10e, x-momentum: %20.10e, energy: %20.10e.\n", fmoments[0], fmoments[1], fmoments[2]));
   for (m = 0; m < 3; ++m) {
-    PetscCheckFalse(PetscAbsReal((fmoments[m] - pmoments[m])/fmoments[m]) > user->momentTol,comm, PETSC_ERR_ARG_WRONG, "Moment %" PetscInt_FMT " error too large %g > %g", m, PetscAbsReal((fmoments[m] - pmoments[m])/fmoments[m]), user->momentTol);
+    PetscCheck(PetscAbsReal((fmoments[m] - pmoments[m])/fmoments[m]) <= user->momentTol,comm, PETSC_ERR_ARG_WRONG, "Moment %" PetscInt_FMT " error too large %g > %g", m, PetscAbsReal((fmoments[m] - pmoments[m])/fmoments[m]), user->momentTol);
   }
 
   PetscCall(KSPDestroy(&ksp));
@@ -439,7 +439,7 @@ static PetscErrorCode TestL2ProjectionFieldToParticles(DM dm, DM sw, AppCtx *use
   PetscCall(computeFEMMoments(dm, fhat, fmoments, user));
   PetscCall(PetscPrintf(comm, "L2 projection mass: %20.10e, x-momentum: %20.10e, energy: %20.10e.\n", fmoments[0], fmoments[1], fmoments[2]));
   for (m = 0; m < 3; ++m) {
-    PetscCheckFalse(PetscAbsReal((fmoments[m] - pmoments[m])/fmoments[m]) > user->momentTol,comm, PETSC_ERR_ARG_WRONG, "Moment %" PetscInt_FMT " error too large %g > %g", m, PetscAbsReal((fmoments[m] - pmoments[m])/fmoments[m]), user->momentTol);
+    PetscCheck(PetscAbsReal((fmoments[m] - pmoments[m])/fmoments[m]) <= user->momentTol,comm, PETSC_ERR_ARG_WRONG, "Moment %" PetscInt_FMT " error too large %g > %g", m, PetscAbsReal((fmoments[m] - pmoments[m])/fmoments[m]), user->momentTol);
   }
   PetscCall(KSPDestroy(&ksp));
   PetscCall(MatDestroy(&M));
@@ -607,7 +607,7 @@ static PetscErrorCode TestFieldGradientProjection(DM dm, DM sw, AppCtx *user)
   PetscCall(computeFEMMoments(dm, grad, fmoments, user));
   PetscCall(PetscPrintf(comm, "L2 projection mass: %20.10e, x-momentum: %20.10e, energy: %20.10e.\n", fmoments[0], fmoments[1], fmoments[2]));
   for (m = 0; m < 3; ++m) {
-    PetscCheckFalse(PetscAbsReal((fmoments[m] - pmoments[m])/fmoments[m]) > user->momentTol,comm, PETSC_ERR_ARG_WRONG, "Moment %" PetscInt_FMT " error too large %g > %g", m, PetscAbsReal((fmoments[m] - pmoments[m])/fmoments[m]), user->momentTol);
+    PetscCheck(PetscAbsReal((fmoments[m] - pmoments[m])/fmoments[m]) <= user->momentTol,comm, PETSC_ERR_ARG_WRONG, "Moment %" PetscInt_FMT " error too large %g > %g", m, PetscAbsReal((fmoments[m] - pmoments[m])/fmoments[m]), user->momentTol);
   }
 
   PetscCall(KSPDestroy(&ksp));

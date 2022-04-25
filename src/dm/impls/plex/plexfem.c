@@ -3302,7 +3302,7 @@ PetscErrorCode DMPlexComputeInjectorFEM(DM dmc, DM dmf, VecScatter *sc, void *us
       PetscCall(PetscDualSpaceGetFunctional(QC, c, &cfunc));
       PetscCall(PetscQuadratureGetData(cfunc, NULL, &NqcC, &NpC, &cqpoints, &cqweights));
       PetscCheck(NqcC == NcC,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of quadrature components %" PetscInt_FMT " must match number of field components %" PetscInt_FMT, NqcC, NcC);
-      PetscCheckFalse(NpC != 1 && feRef[field],PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Do not know how to do injection for moments");
+      PetscCheck(NpC == 1 || !feRef[field],PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Do not know how to do injection for moments");
       for (f = 0; f < fpdim; ++f) {
         PetscQuadrature  ffunc;
         const PetscReal *fqpoints, *fqweights;
@@ -3513,7 +3513,7 @@ static PetscErrorCode DMPlexGetHybridAuxFields(DM dm, DM dmAux[], PetscDS dsAux[
 
     PetscCall(DMPlexGetCone(dm, cell, &cone));
     PetscCall(DMPlexGetConeOrientation(dm, cell, &ornt));
-    PetscCheckFalse(ornt[0],PETSC_COMM_SELF, PETSC_ERR_SUP, "Face %" PetscInt_FMT " in hybrid cell %" PetscInt_FMT " has orientation %" PetscInt_FMT " != 0", cone[0], cell, ornt[0]);
+    PetscCheck(!ornt[0],PETSC_COMM_SELF, PETSC_ERR_SUP, "Face %" PetscInt_FMT " in hybrid cell %" PetscInt_FMT " has orientation %" PetscInt_FMT " != 0", cone[0], cell, ornt[0]);
     for (s = 0; s < 2; ++s) {
       const PetscInt *support;
       PetscScalar    *x = NULL, *al = a[s];
@@ -3652,7 +3652,7 @@ PetscErrorCode DMPlexGetFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec lo
         PetscCall(DMPlexGetCone(dm, cells[1], &cone));
         PetscCall(DMPlexGetConeSize(dm, cells[1], &coneSizeR));
         for (faceLocR = 0; faceLocR < coneSizeR; ++faceLocR) if (cone[faceLocR] == face) break;
-        PetscCheckFalse(faceLocL == coneSizeL && faceLocR == coneSizeR,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not find face %" PetscInt_FMT " in cone of cell %" PetscInt_FMT " or cell %" PetscInt_FMT, face, cells[0], cells[1]);
+        PetscCheck(faceLocL != coneSizeL || faceLocR != coneSizeR,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not find face %" PetscInt_FMT " in cone of cell %" PetscInt_FMT " or cell %" PetscInt_FMT, face, cells[0], cells[1]);
         /* Check that FEM field has values in the right cell (sometimes its an FV ghost cell) */
         /* TODO: this is a hack that might not be right for nonconforming */
         if (faceLocL < coneSizeL) {

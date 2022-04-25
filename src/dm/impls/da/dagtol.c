@@ -39,9 +39,9 @@ PetscErrorCode  DMLocalToGlobalBegin_DA(DM da,Vec l,InsertMode mode,Vec g)
   if (mode == ADD_VALUES) {
     PetscCall(VecScatterBegin(dd->gtol,l,g,ADD_VALUES,SCATTER_REVERSE));
   } else if (mode == INSERT_VALUES) {
-    PetscCheckFalse(dd->bx != DM_BOUNDARY_GHOSTED && dd->bx != DM_BOUNDARY_NONE && dd->s > 0 && dd->m == 1,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Available only for boundary none or with parallelism in x direction");
-    PetscCheckFalse(dd->bx != DM_BOUNDARY_GHOSTED && dd->by != DM_BOUNDARY_NONE && dd->s > 0 && dd->n == 1,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Available only for boundary none or with parallelism in y direction");
-    PetscCheckFalse(dd->bx != DM_BOUNDARY_GHOSTED && dd->bz != DM_BOUNDARY_NONE && dd->s > 0 && dd->p == 1,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Available only for boundary none or with parallelism in z direction");
+    PetscCheck(dd->bx == DM_BOUNDARY_GHOSTED || dd->bx == DM_BOUNDARY_NONE || dd->s <= 0 || dd->m != 1,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Available only for boundary none or with parallelism in x direction");
+    PetscCheck(dd->bx == DM_BOUNDARY_GHOSTED || dd->by == DM_BOUNDARY_NONE || dd->s <= 0 || dd->n != 1,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Available only for boundary none or with parallelism in y direction");
+    PetscCheck(dd->bx == DM_BOUNDARY_GHOSTED || dd->bz == DM_BOUNDARY_NONE || dd->s <= 0 || dd->p != 1,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Available only for boundary none or with parallelism in z direction");
     PetscCall(VecScatterBegin(dd->gtol,l,g,INSERT_VALUES,SCATTER_REVERSE_LOCAL));
   } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Not yet implemented");
   PetscFunctionReturn(0);

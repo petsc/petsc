@@ -925,9 +925,9 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     for (d = 0; d < 4; ++d) drawColors[d]  = PETSC_TRUE;
     n = 4;
     PetscCall(PetscOptionsGetBoolArray(((PetscObject) viewer)->options,((PetscObject) viewer)->prefix, "-dm_plex_view_numbers_depth", drawNumbers, &n, &flg));
-    PetscCheckFalse(flg && n != dim+1,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_SIZ, "Number of flags %" PetscInt_FMT " != %" PetscInt_FMT " dim+1", n, dim+1);
+    PetscCheck(!flg || n == dim+1,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_SIZ, "Number of flags %" PetscInt_FMT " != %" PetscInt_FMT " dim+1", n, dim+1);
     PetscCall(PetscOptionsGetBoolArray(((PetscObject) viewer)->options,((PetscObject) viewer)->prefix, "-dm_plex_view_colors_depth", drawColors, &n, &flg));
-    PetscCheckFalse(flg && n != dim+1,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_SIZ, "Number of flags %" PetscInt_FMT " != %" PetscInt_FMT " dim+1", n, dim+1);
+    PetscCheck(!flg || n == dim+1,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_SIZ, "Number of flags %" PetscInt_FMT " != %" PetscInt_FMT " dim+1", n, dim+1);
     PetscCall(PetscOptionsGetStringArray(((PetscObject) viewer)->options,((PetscObject) viewer)->prefix, "-dm_plex_view_labels", names, &numLabels, &useLabels));
     if (!useLabels) numLabels = 0;
     PetscCall(PetscOptionsGetStringArray(((PetscObject) viewer)->options,((PetscObject) viewer)->prefix, "-dm_plex_view_colors", colors, &numColors, &useColors));
@@ -943,7 +943,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     PetscCall(PetscOptionsGetString(((PetscObject) viewer)->options, ((PetscObject) viewer)->prefix, "-dm_plex_view_label_filter", lname, sizeof(lname), &lflg));
     plotEdges = (PetscBool)(depth > 1 && drawNumbers[1] && dim < 3);
     PetscCall(PetscOptionsGetBool(((PetscObject) viewer)->options,((PetscObject) viewer)->prefix, "-dm_plex_view_edges", &plotEdges, &flg));
-    PetscCheckFalse(flg && plotEdges && depth < dim,PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Mesh must be interpolated");
+    PetscCheck(!flg || !plotEdges || depth >= dim,PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Mesh must be interpolated");
     if (depth < dim) plotEdges = PETSC_FALSE;
     PetscCall(PetscOptionsGetBool(((PetscObject) viewer)->options, ((PetscObject) viewer)->prefix, "-dm_plex_view_hasse", &drawHasse, NULL));
 
@@ -2942,7 +2942,7 @@ PetscErrorCode DMPlexRestoreConeRecursive(DM dm, IS points, PetscInt *depth, IS 
 
   PetscFunctionBegin;
   PetscCall(DMPlexGetDepth(dm, &depth_));
-  PetscCheckFalse(depth && *depth != depth_,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "depth changed since last call to DMPlexGetConeRecursive");
+  PetscCheck(!depth || *depth == depth_,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "depth changed since last call to DMPlexGetConeRecursive");
   if (depth) *depth = 0;
   if (expandedPoints) {
     for (d=0; d<depth_; d++) PetscCall(ISDestroy(&((*expandedPoints)[d])));
@@ -3078,7 +3078,7 @@ PetscErrorCode DMPlexSetConeOrientation(DM dm, PetscInt p, const PetscInt coneOr
     PetscInt cdof, o = coneOrientation[c];
 
     PetscCall(PetscSectionGetDof(mesh->coneSection, mesh->cones[off+c], &cdof));
-    PetscCheckFalse(o && ((o < -(cdof+1)) || (o >= cdof)),PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cone orientation %" PetscInt_FMT " is not in the valid range [%" PetscInt_FMT ". %" PetscInt_FMT ")", o, -(cdof+1), cdof);
+    PetscCheck(!o || (o >= -(cdof+1) && o < cdof),PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cone orientation %" PetscInt_FMT " is not in the valid range [%" PetscInt_FMT ". %" PetscInt_FMT ")", o, -(cdof+1), cdof);
     mesh->coneOrientations[off+c] = o;
   }
   PetscFunctionReturn(0);
@@ -5433,9 +5433,12 @@ PetscErrorCode DMPlexSetClosurePermutationTensor(DM dm, PetscInt point, PetscSec
       PetscInt *check;
 
       PetscCall(PetscMalloc1(size, &check));
-      for (i = 0; i < size; ++i) {check[i] = -1; PetscCheckFalse(perm[i] < 0 || perm[i] >= size,PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "Invalid permutation index p[%" PetscInt_FMT "] = %" PetscInt_FMT, i, perm[i]);}
+      for (i = 0; i < size; ++i) {
+        check[i] = -1;
+        PetscCheck(perm[i] >= 0 && perm[i] < size,PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "Invalid permutation index p[%" PetscInt_FMT "] = %" PetscInt_FMT, i, perm[i]);
+      }
       for (i = 0; i < size; ++i) check[perm[i]] = i;
-      for (i = 0; i < size; ++i) {PetscCheck(check[i] >= 0,PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "Missing permutation index %" PetscInt_FMT, i);}
+      for (i = 0; i < size; ++i) PetscCheck(check[i] >= 0,PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "Missing permutation index %" PetscInt_FMT, i);
       PetscCall(PetscFree(check));
     }
     PetscCall(PetscSectionSetClosurePermutation_Internal(section, (PetscObject) dm, d, size, PETSC_OWN_POINTER, perm));
@@ -6823,7 +6826,7 @@ PetscErrorCode DMPlexAnchorsModifyMat(DM dm, PetscSection section, PetscInt numP
     PetscFunctionReturn(0);
   }
 
-  PetscCheckFalse(numFields && newOffsets[numFields] != newNumIndices,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid size for closure %" PetscInt_FMT " should be %" PetscInt_FMT, newOffsets[numFields], newNumIndices);
+  PetscCheck(!numFields || newOffsets[numFields] == newNumIndices,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid size for closure %" PetscInt_FMT " should be %" PetscInt_FMT, newOffsets[numFields], newNumIndices);
 
   PetscCall(DMGetDefaultConstraints(dm, &cSec, &cMat, NULL));
 
@@ -7332,7 +7335,7 @@ PetscErrorCode DMPlexGetClosureIndices(DM dm, PetscSection section, PetscSection
     Ni += dof;
   }
   for (f = 1; f < Nf; ++f) offsets[f+1] += offsets[f];
-  PetscCheckFalse(Nf && offsets[Nf] != Ni,PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "Invalid size for closure %" PetscInt_FMT " should be %" PetscInt_FMT, offsets[Nf], Ni);
+  PetscCheck(!Nf || offsets[Nf] == Ni,PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "Invalid size for closure %" PetscInt_FMT " should be %" PetscInt_FMT, offsets[Nf], Ni);
   /* 3) Get symmetries and sign flips. Apply sign flips to values if passed in (only works for square values matrix) */
   for (f = 0; f < PetscMax(1, Nf); ++f) {
     if (Nf) PetscCall(PetscSectionGetFieldPointSyms(section, f, Ncl, points, &perms[f], &flips[f]));
@@ -7710,8 +7713,8 @@ PetscErrorCode DMPlexMatSetClosureRefined(DM dmf, PetscSection fsection, PetscSe
   }
   for (f = 1; f < numFields; ++f) foffsets[f+1] += foffsets[f];
 
-  PetscCheckFalse(numFields && foffsets[numFields] != numFIndices,PetscObjectComm((PetscObject)dmf), PETSC_ERR_PLIB, "Invalid size for closure %" PetscInt_FMT " should be %" PetscInt_FMT, foffsets[numFields], numFIndices);
-  PetscCheckFalse(numFields && coffsets[numFields] != numCIndices,PetscObjectComm((PetscObject)dmc), PETSC_ERR_PLIB, "Invalid size for closure %" PetscInt_FMT " should be %" PetscInt_FMT, coffsets[numFields], numCIndices);
+  PetscCheck(!numFields || foffsets[numFields] == numFIndices,PetscObjectComm((PetscObject)dmf), PETSC_ERR_PLIB, "Invalid size for closure %" PetscInt_FMT " should be %" PetscInt_FMT, foffsets[numFields], numFIndices);
+  PetscCheck(!numFields || coffsets[numFields] == numCIndices,PetscObjectComm((PetscObject)dmc), PETSC_ERR_PLIB, "Invalid size for closure %" PetscInt_FMT " should be %" PetscInt_FMT, coffsets[numFields], numCIndices);
   PetscCall(DMGetWorkArray(dmf, numFIndices, MPIU_INT, &findices));
   PetscCall(DMGetWorkArray(dmc, numCIndices, MPIU_INT, &cindices));
   if (numFields) {
@@ -7871,8 +7874,8 @@ PetscErrorCode DMPlexMatGetClosureIndicesRefined(DM dmf, PetscSection fsection, 
   }
   for (f = 1; f < numFields; ++f) foffsets[f+1] += foffsets[f];
 
-  PetscCheckFalse(numFields && foffsets[numFields] != numFIndices,PetscObjectComm((PetscObject)dmf), PETSC_ERR_PLIB, "Invalid size for closure %" PetscInt_FMT " should be %" PetscInt_FMT, foffsets[numFields], numFIndices);
-  PetscCheckFalse(numFields && coffsets[numFields] != numCIndices,PetscObjectComm((PetscObject)dmc), PETSC_ERR_PLIB, "Invalid size for closure %" PetscInt_FMT " should be %" PetscInt_FMT, coffsets[numFields], numCIndices);
+  PetscCheck(!numFields || foffsets[numFields] == numFIndices,PetscObjectComm((PetscObject)dmf), PETSC_ERR_PLIB, "Invalid size for closure %" PetscInt_FMT " should be %" PetscInt_FMT, foffsets[numFields], numFIndices);
+  PetscCheck(!numFields || coffsets[numFields] == numCIndices,PetscObjectComm((PetscObject)dmc), PETSC_ERR_PLIB, "Invalid size for closure %" PetscInt_FMT " should be %" PetscInt_FMT, coffsets[numFields], numCIndices);
   if (numFields) {
     const PetscInt **permsF[32] = {NULL};
     const PetscInt **permsC[32] = {NULL};
@@ -8125,7 +8128,7 @@ PetscErrorCode DMPlexCreatePointNumbering(DM dm, IS *globalPointNumbers)
   PetscCall(PetscSortIntWithArray(depth+1, starts, depths));
   PetscCall(MPIU_Allreduce(depths, gdepths, depth+1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject) dm)));
   for (d = 0; d <= depth; ++d) {
-    PetscCheckFalse(starts[d] >= 0 && depths[d] != gdepths[d],PETSC_COMM_SELF,PETSC_ERR_PLIB,"Expected depth %" PetscInt_FMT ", found %" PetscInt_FMT,depths[d],gdepths[d]);
+    PetscCheck(starts[d] < 0 || depths[d] == gdepths[d],PETSC_COMM_SELF,PETSC_ERR_PLIB,"Expected depth %" PetscInt_FMT ", found %" PetscInt_FMT,depths[d],gdepths[d]);
   }
   for (d = 0; d <= depth; ++d) {
     PetscInt pStart, pEnd, gsize;
@@ -8600,11 +8603,11 @@ PetscErrorCode DMPlexCheckGeometry(DM dm)
     PetscCall(DMPlexCellUnsplitVertices_Private(dm, c, ct, &unsplit));
     if (unsplit) continue;
     PetscCall(DMPlexComputeCellGeometryFEM(dm, c, NULL, NULL, J, NULL, &detJ));
-    PetscCheckFalse(detJ < -PETSC_SMALL || (detJ <= 0.0 && !ignoreZeroVol),PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %" PetscInt_FMT " of type %s is inverted, |J| = %g", c, DMPolytopeTypes[ct], (double) detJ);
+    PetscCheck(detJ >= -PETSC_SMALL && (detJ > 0.0 || ignoreZeroVol),PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %" PetscInt_FMT " of type %s is inverted, |J| = %g", c, DMPolytopeTypes[ct], (double) detJ);
     PetscCall(PetscInfo(dm, "Cell %" PetscInt_FMT " FEM Volume %g\n", c, (double)(detJ*refVol)));
     if (depth > 1 && !periodic) {
       PetscCall(DMPlexComputeCellGeometryFVM(dm, c, &vol, NULL, NULL));
-      PetscCheckFalse(vol < -PETSC_SMALL || (vol <= 0.0 && !ignoreZeroVol),PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %" PetscInt_FMT " of type %s is inverted, vol = %g", c, DMPolytopeTypes[ct], (double) vol);
+      PetscCheck(vol >= -PETSC_SMALL && (vol > 0.0 || ignoreZeroVol),PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %" PetscInt_FMT " of type %s is inverted, vol = %g", c, DMPolytopeTypes[ct], (double) vol);
       PetscCall(PetscInfo(dm, "Cell %" PetscInt_FMT " FVM Volume %g\n", c, (double) vol));
     }
   }
@@ -8656,7 +8659,7 @@ PetscErrorCode DMPlexCheckPointSF(DM dm)
   for (l = 0; l < nleaves; ++l) {
     const PetscInt point = locals[l];
 
-    PetscCheckFalse(point >= cStart && point < cEnd,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point SF contains %" PetscInt_FMT " which is a cell", point);
+    PetscCheck(point <= cStart || point >= cEnd,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point SF contains %" PetscInt_FMT " which is a cell", point);
   }
 
   /* 2) if some point is in interface, then all its cone points must be also in interface (either as leaves or roots) */
@@ -9387,12 +9390,12 @@ PetscErrorCode DMPlexSetAnchors(DM dm, PetscSection anchorSection, IS anchorIS)
   if (anchorSection) {
     PetscValidHeaderSpecific(anchorSection,PETSC_SECTION_CLASSID,2);
     PetscCallMPI(MPI_Comm_compare(PETSC_COMM_SELF,PetscObjectComm((PetscObject)anchorSection),&result));
-    PetscCheckFalse(result != MPI_CONGRUENT && result != MPI_IDENT,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMECOMM,"anchor section must have local communicator");
+    PetscCheck(result == MPI_CONGRUENT || result == MPI_IDENT,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMECOMM,"anchor section must have local communicator");
   }
   if (anchorIS) {
     PetscValidHeaderSpecific(anchorIS,IS_CLASSID,3);
     PetscCallMPI(MPI_Comm_compare(PETSC_COMM_SELF,PetscObjectComm((PetscObject)anchorIS),&result));
-    PetscCheckFalse(result != MPI_CONGRUENT && result != MPI_IDENT,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMECOMM,"anchor IS must have local communicator");
+    PetscCheck(result == MPI_CONGRUENT || result == MPI_IDENT,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMECOMM,"anchor IS must have local communicator");
   }
 
   PetscCall(PetscObjectReference((PetscObject)anchorSection));

@@ -70,7 +70,7 @@ static PetscErrorCode DMLabelMakeValid_Private(DMLabel label, PetscInt v)
 
   if (PetscLikely(v >= 0 && v < label->numStrata) && label->validIS[v]) return 0;
   PetscFunctionBegin;
-  PetscCheckFalse(v < 0 || v >= label->numStrata,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Trying to access invalid stratum %" PetscInt_FMT " in DMLabelMakeValid_Private", v);
+  PetscCheck(v >= 0 && v < label->numStrata,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Trying to access invalid stratum %" PetscInt_FMT " in DMLabelMakeValid_Private", v);
   PetscCall(PetscHSetIGetSize(label->ht[v], &label->stratumSizes[v]));
   PetscCall(PetscMalloc1(label->stratumSizes[v], &pointArray));
   PetscCall(PetscHSetIGetElems(label->ht[v], &off, pointArray));
@@ -145,7 +145,7 @@ static PetscErrorCode DMLabelMakeInvalid_Private(DMLabel label, PetscInt v)
 
   if (PetscLikely(v >= 0 && v < label->numStrata) && !label->validIS[v]) return 0;
   PetscFunctionBegin;
-  PetscCheckFalse(v < 0 || v >= label->numStrata,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Trying to access invalid stratum %" PetscInt_FMT " in DMLabelMakeInvalid_Private", v);
+  PetscCheck(v >= 0 && v < label->numStrata,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Trying to access invalid stratum %" PetscInt_FMT " in DMLabelMakeInvalid_Private", v);
   if (label->points[v]) {
     PetscCall(ISGetIndices(label->points[v], &points));
     for (p = 0; p < label->stratumSizes[v]; ++p) {

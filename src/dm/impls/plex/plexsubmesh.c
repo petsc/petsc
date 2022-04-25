@@ -2547,7 +2547,7 @@ static PetscErrorCode DMPlexMarkCohesiveSubmesh_Interpolated(DM dm, DMLabel labe
     PetscCall(DMPlexGetConeSize(dm, c, &coneSize));
     PetscCall(DMPlexGetCone(dm, c, &cone));
     PetscCall(DMPlexGetConeSize(dm, cone[0], &fconeSize));
-    PetscCheckFalse(coneSize != (fconeSize ? fconeSize : 1) + 2,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cohesive cells should separate two cells");
+    PetscCheck(coneSize == (fconeSize ? fconeSize : 1) + 2,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cohesive cells should separate two cells");
     /* Negative face */
     PetscCall(DMPlexGetTransitiveClosure(dm, cone[0], PETSC_TRUE, &closureSize, &closure));
     for (cl = 0; cl < closureSize*2; cl += 2) {
@@ -3492,7 +3492,7 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
         PetscCheck(sremotePoints[sl].index >= 0,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid remote subpoint for local point %" PetscInt_FMT, point);
         ++sl;
       }
-      PetscCheckFalse(sl + ll != numSubleaves,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Mismatch in number of subleaves %" PetscInt_FMT " + %" PetscInt_FMT " != %" PetscInt_FMT, sl, ll, numSubleaves);
+      PetscCheck(sl + ll == numSubleaves,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Mismatch in number of subleaves %" PetscInt_FMT " + %" PetscInt_FMT " != %" PetscInt_FMT, sl, ll, numSubleaves);
       PetscCall(PetscFree2(newLocalPoints,newOwners));
       PetscCall(PetscSFSetGraph(sfPointSub, numSubroots, sl, slocalPoints, PETSC_OWN_POINTER, sremotePoints, PETSC_OWN_POINTER));
     }
@@ -3756,7 +3756,7 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Uninterpolated(DM dm, PetscBoo
         ++sl;
       }
       PetscCall(PetscFree2(newLocalPoints,newOwners));
-      PetscCheckFalse(sl + ll != numSubLeaves,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Mismatch in number of subleaves %" PetscInt_FMT " + %" PetscInt_FMT " != %" PetscInt_FMT, sl, ll, numSubLeaves);
+      PetscCheck(sl + ll == numSubLeaves,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Mismatch in number of subleaves %" PetscInt_FMT " + %" PetscInt_FMT " != %" PetscInt_FMT, sl, ll, numSubLeaves);
       PetscCall(PetscSFSetGraph(sfPointSub, numSubRoots, sl, slocalPoints, PETSC_OWN_POINTER, sremotePoints, PETSC_OWN_POINTER));
     }
   }

@@ -67,7 +67,7 @@ PETSC_INTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit_3d(DM dm,PetscRe
   PetscCall(DMGetCoordinateDM(dm,&dmCoord));
   stagCoord = (DM_Stag*) dmCoord->data;
   for (s=0; s<4; ++s) {
-    PetscCheckFalse(stagCoord->dof[s] !=0 && stagCoord->dof[s] != 3,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Coordinate DM in 3 dimensions must have 0 or 3 dof on each stratum, but stratum %" PetscInt_FMT " has %" PetscInt_FMT " dof",s,stagCoord->dof[s]);
+    PetscCheck(stagCoord->dof[s] ==0 || stagCoord->dof[s] == 3,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Coordinate DM in 3 dimensions must have 0 or 3 dof on each stratum, but stratum %" PetscInt_FMT " has %" PetscInt_FMT " dof",s,stagCoord->dof[s]);
   }
   PetscCall(DMCreateLocalVector(dmCoord,&coordLocal));
   PetscCall(DMStagVecGetArray(dmCoord,coordLocal,&arr));
@@ -244,7 +244,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_3d(DM dm)
 
   /* Check that we will not overflow 32 bit indices (slightly overconservative) */
   if (!PetscDefined(USE_64BIT_INDICES)) {
-    PetscCheckFalse(((PetscInt64) stag->n[0])*((PetscInt64) stag->n[1])*((PetscInt64) stag->n[2])*((PetscInt64) stag->entriesPerElement) > (PetscInt64) PETSC_MPI_INT_MAX,PetscObjectComm((PetscObject)dm),PETSC_ERR_INT_OVERFLOW,"Mesh of %" PetscInt_FMT " x %" PetscInt_FMT " x %" PetscInt_FMT " with %" PetscInt_FMT " entries per (interior) element is likely too large for 32 bit indices",stag->n[0],stag->n[1],stag->n[2],stag->entriesPerElement);
+    PetscCheck(((PetscInt64) stag->n[0])*((PetscInt64) stag->n[1])*((PetscInt64) stag->n[2])*((PetscInt64) stag->entriesPerElement) <= (PetscInt64) PETSC_MPI_INT_MAX,PetscObjectComm((PetscObject)dm),PETSC_ERR_INT_OVERFLOW,"Mesh of %" PetscInt_FMT " x %" PetscInt_FMT " x %" PetscInt_FMT " with %" PetscInt_FMT " entries per (interior) element is likely too large for 32 bit indices",stag->n[0],stag->n[1],stag->n[2],stag->entriesPerElement);
   }
 
   /* Compute offsets for each rank into global vectors
@@ -254,7 +254,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_3d(DM dm)
   */
   PetscCall(DMStagSetUpBuildGlobalOffsets_3d(dm,&globalOffsets));
 
-  for (d=0; d<dim; ++d) PetscCheckFalse(stag->boundaryType[d] != DM_BOUNDARY_NONE && stag->boundaryType[d] != DM_BOUNDARY_PERIODIC && stag->boundaryType[d] != DM_BOUNDARY_GHOSTED,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported boundary type");
+  for (d=0; d<dim; ++d) PetscCheck(stag->boundaryType[d] == DM_BOUNDARY_NONE || stag->boundaryType[d] == DM_BOUNDARY_PERIODIC || stag->boundaryType[d] == DM_BOUNDARY_GHOSTED,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported boundary type");
 
   /* Define ghosted/local sizes */
   for (d=0; d<dim; ++d) {
@@ -373,7 +373,7 @@ static PetscErrorCode DMStagSetUpBuildRankGrid_3d(DM dm)
     PetscCheck(p >= 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in Z direction: %" PetscInt_FMT,p);
     else PetscCheck(p <= size,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in Z direction: %" PetscInt_FMT " %d",p,size);
   }
-  PetscCheckFalse((m > 0) && (n > 0) && (p > 0) && (m*n*p != size),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"m %" PetscInt_FMT " * n %" PetscInt_FMT " * p %" PetscInt_FMT " != size %d",m,n,p,size);
+  PetscCheck(m <= 0 || n <= 0 || p <= 0 || m*n*p == size,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"m %" PetscInt_FMT " * n %" PetscInt_FMT " * p %" PetscInt_FMT " != size %d",m,n,p,size);
 
   /* Partition the array among the processors */
   if (m == PETSC_DECIDE && n != PETSC_DECIDE && p != PETSC_DECIDE) {
@@ -468,7 +468,7 @@ static PetscErrorCode DMStagSetUpBuildNeighbors_3d(DM dm)
   const PetscInt  dim = 3;
 
   PetscFunctionBegin;
-  for (d=0; d<dim; ++d) PetscCheckFalse(stag->boundaryType[d] != DM_BOUNDARY_NONE && stag->boundaryType[d] != DM_BOUNDARY_PERIODIC && stag->boundaryType[d] != DM_BOUNDARY_GHOSTED,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Neighbor determination not implemented for %s",DMBoundaryTypes[stag->boundaryType[d]]);
+  for (d=0; d<dim; ++d) PetscCheck(stag->boundaryType[d] == DM_BOUNDARY_NONE || stag->boundaryType[d] == DM_BOUNDARY_PERIODIC || stag->boundaryType[d] == DM_BOUNDARY_GHOSTED,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Neighbor determination not implemented for %s",DMBoundaryTypes[stag->boundaryType[d]]);
 
   /* Assemble some convenience variables */
   for (d=0; d<dim; ++d) {
@@ -856,7 +856,7 @@ static PetscErrorCode DMStagSetUpBuildScatter_3d(DM dm,const PetscInt *globalOff
   }
 
   /* Check stencil type */
-  PetscCheckFalse(stag->stencilType != DMSTAG_STENCIL_NONE && stag->stencilType != DMSTAG_STENCIL_BOX && stag->stencilType != DMSTAG_STENCIL_STAR,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported stencil type %s",DMStagStencilTypes[stag->stencilType]);
+  PetscCheck(stag->stencilType == DMSTAG_STENCIL_NONE || stag->stencilType == DMSTAG_STENCIL_BOX || stag->stencilType == DMSTAG_STENCIL_STAR,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported stencil type %s",DMStagStencilTypes[stag->stencilType]);
   star = (PetscBool)(stag->stencilType == DMSTAG_STENCIL_STAR || stag->stencilType == DMSTAG_STENCIL_NONE);
 
   /* Compute numbers of elements on each neighbor */
@@ -1553,7 +1553,7 @@ static PetscErrorCode DMStagSetUpBuildL2G_3d(DM dm,const PetscInt *globalOffsets
   PetscFunctionBegin;
 
   /* Check stencil type */
-  PetscCheckFalse(stag->stencilType != DMSTAG_STENCIL_NONE && stag->stencilType != DMSTAG_STENCIL_BOX && stag->stencilType != DMSTAG_STENCIL_STAR,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported stencil type %s",DMStagStencilTypes[stag->stencilType]);
+  PetscCheck(stag->stencilType == DMSTAG_STENCIL_NONE || stag->stencilType == DMSTAG_STENCIL_BOX || stag->stencilType == DMSTAG_STENCIL_STAR,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported stencil type %s",DMStagStencilTypes[stag->stencilType]);
   star = (PetscBool)(stag->stencilType == DMSTAG_STENCIL_STAR || stag->stencilType == DMSTAG_STENCIL_NONE);
 
   /* Convenience variables */

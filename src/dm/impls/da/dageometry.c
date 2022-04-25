@@ -25,8 +25,8 @@ PetscErrorCode DMDAConvertToCell(DM dm, MatStencil s, PetscInt *cell)
   PetscFunctionBegin;
   *cell = -1;
   PetscCheck(!(s.i < da->Xs/da->w) && !(s.i >= da->Xe/da->w),PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Stencil i %" PetscInt_FMT " should be in [%" PetscInt_FMT ", %" PetscInt_FMT ")", s.i, da->Xs/da->w, da->Xe/da->w);
-  PetscCheckFalse((dim > 1) && ((s.j < da->Ys) || (s.j >= da->Ye)),PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Stencil j %" PetscInt_FMT " should be in [%" PetscInt_FMT ", %" PetscInt_FMT ")", s.j, da->Ys, da->Ye);
-  PetscCheckFalse((dim > 2) && ((s.k < da->Zs) || (s.k >= da->Ze)),PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Stencil k %" PetscInt_FMT " should be in [%" PetscInt_FMT ", %" PetscInt_FMT ")", s.k, da->Zs, da->Ze);
+  PetscCheck(dim <= 1 || (s.j >= da->Ys && s.j < da->Ye),PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Stencil j %" PetscInt_FMT " should be in [%" PetscInt_FMT ", %" PetscInt_FMT ")", s.j, da->Ys, da->Ye);
+  PetscCheck(dim <= 2 || (s.k >= da->Zs && s.k < da->Ze),PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Stencil k %" PetscInt_FMT " should be in [%" PetscInt_FMT ", %" PetscInt_FMT ")", s.k, da->Zs, da->Ze);
   *cell = (kl*my + jl)*mx + il;
   PetscFunctionReturn(0);
 }

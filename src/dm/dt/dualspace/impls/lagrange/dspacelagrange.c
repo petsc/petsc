@@ -2072,7 +2072,7 @@ static PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
   PetscCheck(Nc % Nk == 0,comm, PETSC_ERR_ARG_INCOMP, "Number of components is not a multiple of form degree size");
   if (lag->numCopies <= 0) lag->numCopies = Nc / Nk;
   Ncopies = lag->numCopies;
-  PetscCheckFalse(Nc / Nk != Ncopies,comm, PETSC_ERR_ARG_INCOMP, "Number of copies * (dim choose k) != Nc");
+  PetscCheck(Nc/Nk == Ncopies,comm, PETSC_ERR_ARG_INCOMP, "Number of copies * (dim choose k) != Nc");
   if (!dim) sp->order = 0;
   order = sp->order;
   uniform = sp->uniform;
@@ -2099,7 +2099,7 @@ static PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
   PetscCall(DMPlexGetDepth(dm, &depth));
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
-  PetscCheckFalse(pStart != 0 || cStart != 0,PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_WRONGSTATE, "Expect DM with chart starting at zero and cells first");
+  PetscCheck(pStart == 0 && cStart == 0,PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_WRONGSTATE, "Expect DM with chart starting at zero and cells first");
   PetscCheck(cEnd == 1,PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_WRONGSTATE, "Use PETSCDUALSPACEREFINED for multi-cell reference meshes");
   PetscCall(DMPlexIsInterpolated(dm, &interpolated));
   if (interpolated != DMPLEX_INTERPOLATED_FULL) {
@@ -2119,7 +2119,7 @@ static PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
     PetscCall(Petsc1DNodeFamilyCreate(lag->nodeType, lag->nodeExponent, lag->endNodes, &lag->nodeFamily));
   }
   nodeFamily = lag->nodeFamily;
-  PetscCheckFalse(interpolated != DMPLEX_INTERPOLATED_FULL && continuous && (PetscAbsInt(formDegree) > 0 || order > 1),PETSC_COMM_SELF,PETSC_ERR_PLIB,"Reference element won't support all boundary nodes");
+  PetscCheck(interpolated == DMPLEX_INTERPOLATED_FULL || !continuous || (PetscAbsInt(formDegree) <= 0 && order <= 1),PETSC_COMM_SELF,PETSC_ERR_PLIB,"Reference element won't support all boundary nodes");
 
   /* step 2: construct the boundary spaces */
   PetscCall(PetscMalloc2(depth+1,&pStratStart,depth+1,&pStratEnd));
@@ -2762,8 +2762,8 @@ static PetscErrorCode PetscDualSpaceGetSymmetries_Lagrange(PetscDualSpace sp, co
       /* we want to be able to index symmetries directly with the orientations, which range from [-numFaces,numFaces) */
       symperms[0] = &cellSymperms[numFaces];
       symflips[0] = &cellSymflips[numFaces];
-      PetscCheckFalse(lag->intNodeIndices->nodeVecDim * nCopies != Nc,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Node indices incompatible with dofs");
-      PetscCheckFalse(nNodes * nCopies != spintdim,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Node indices incompatible with dofs");
+      PetscCheck(lag->intNodeIndices->nodeVecDim * nCopies == Nc,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Node indices incompatible with dofs");
+      PetscCheck(nNodes * nCopies == spintdim,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Node indices incompatible with dofs");
       for (ornt = -numFaces; ornt < numFaces; ornt++) { /* for every symmetry, compute the symmetry matrix, and extract rows to see if it fits in the perm + flip framework */
         Mat symMat;
         PetscInt *perm;
@@ -2787,9 +2787,9 @@ static PetscErrorCode PetscDualSpaceGetSymmetries_Lagrange(PetscDualSpace sp, co
             if (PetscAbsScalar(vals[j]) > PETSC_SMALL) {
               PetscCheck(!nz_seen,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "This dual space has symmetries that can't be described as a permutation + sign flips");
               nz_seen = PETSC_TRUE;
-              PetscCheckFalse(PetscAbsReal(PetscAbsScalar(vals[j]) - PetscRealConstant(1.)) > PETSC_SMALL,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "This dual space has symmetries that can't be described as a permutation + sign flips");
-              PetscCheckFalse(PetscAbsReal(PetscImaginaryPart(vals[j])) > PETSC_SMALL,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "This dual space has symmetries that can't be described as a permutation + sign flips");
-              PetscCheckFalse(perm[cols[j] * nCopies] >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "This dual space has symmetries that can't be described as a permutation + sign flips");
+              PetscCheck(PetscAbsReal(PetscAbsScalar(vals[j]) - PetscRealConstant(1.)) <= PETSC_SMALL,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "This dual space has symmetries that can't be described as a permutation + sign flips");
+              PetscCheck(PetscAbsReal(PetscImaginaryPart(vals[j])) <= PETSC_SMALL,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "This dual space has symmetries that can't be described as a permutation + sign flips");
+              PetscCheck(perm[cols[j] * nCopies] < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "This dual space has symmetries that can't be described as a permutation + sign flips");
               for (k = 0; k < nCopies; k++) {
                 perm[cols[j] * nCopies + k] = i * nCopies + k;
               }
@@ -3000,7 +3000,7 @@ static PetscErrorCode PetscDualSpaceLagrangeSetNodeType_Lagrange(PetscDualSpace 
   PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *)sp->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(nodeType == PETSCDTNODES_GAUSSJACOBI && exponent <= -1.,PetscObjectComm((PetscObject) sp), PETSC_ERR_ARG_OUTOFRANGE, "Exponent must be > -1");
+  PetscCheck(nodeType != PETSCDTNODES_GAUSSJACOBI || exponent > -1.,PetscObjectComm((PetscObject) sp), PETSC_ERR_ARG_OUTOFRANGE, "Exponent must be > -1");
   lag->nodeType = nodeType;
   lag->endNodes = boundary;
   lag->nodeExponent = exponent;

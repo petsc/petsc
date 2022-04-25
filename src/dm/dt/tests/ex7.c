@@ -77,8 +77,8 @@ static PetscErrorCode CheckPullback(PetscInt N, PetscInt M, const PetscReal *L, 
   }
   PetscCall(PetscDTAltVApply(M, k, ww, Lx, &wLx));
   diff = PetscAbsReal(wLx - Lstarwx);
-  PetscCheckFalse(diff > 10. * PETSC_SMALL * (PetscAbsReal(wLx) + PetscAbsReal(Lstarwx)),PETSC_COMM_WORLD, PETSC_ERR_PLIB, "pullback check: pullback does not commute with application: w(Lx)(%g) != (L* w)(x)(%g)", (double)wLx, (double)Lstarwx);
-  PetscCheckFalse(diffMat > PETSC_SMALL * normMat,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "pullback check: pullback matrix does match matrix free result");
+  PetscCheck(diff <= 10. * PETSC_SMALL * (PetscAbsReal(wLx) + PetscAbsReal(Lstarwx)),PETSC_COMM_WORLD, PETSC_ERR_PLIB, "pullback check: pullback does not commute with application: w(Lx)(%g) != (L* w)(x)(%g)", (double)wLx, (double)Lstarwx);
+  PetscCheck(diffMat <= PETSC_SMALL * normMat,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "pullback check: pullback matrix does match matrix free result");
   PetscCall(PetscFree2(Lstar, Lstarwcheck));
   PetscCall(PetscFree2(Lstarw, Lx));
   PetscCall(PetscFree(walloc));
@@ -128,7 +128,7 @@ int main(int argc, char **argv)
         }
         PetscCall(PetscPrintf(PETSC_COMM_WORLD, ", %s\n", isOdd ? "odd" : "even"));
         PetscCall(PetscDTPermIndex(N, perm, &kCheck, &isOddCheck));
-        PetscCheckFalse(kCheck != k || isOddCheck != isOdd,PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscDTEnumPerm / PetscDTPermIndex mismatch for (%" PetscInt_FMT ", %" PetscInt_FMT ")", N, k);
+        PetscCheck(kCheck == k && isOddCheck == isOdd,PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscDTEnumPerm / PetscDTPermIndex mismatch for (%" PetscInt_FMT ", %" PetscInt_FMT ")", N, k);
       }
       PetscCall(PetscViewerASCIIPopTab(viewer));
       PetscCall(PetscFree(perm));
@@ -201,7 +201,7 @@ int main(int argc, char **argv)
 
         for (l = 0; l < N; l++) wvcheck += w[l] * v[l];
         diff = PetscSqrtReal(PetscSqr(wvcheck - wv));
-        PetscCheckFalse(diff >= PETSC_SMALL * (PetscAbsReal(wv) + PetscAbsReal(wvcheck)),PETSC_COMM_WORLD, PETSC_ERR_PLIB, "1-form / dot product equivalence: wvcheck (%g) != wv (%g)", (double) wvcheck, (double) wv);
+        PetscCheck(diff < PETSC_SMALL * (PetscAbsReal(wv) + PetscAbsReal(wvcheck)),PETSC_COMM_WORLD, PETSC_ERR_PLIB, "1-form / dot product equivalence: wvcheck (%g) != wv (%g)", (double) wvcheck, (double) wv);
       }
       if (k == N && N < 5) { /* n-forms are scaled determinants */
         PetscReal det, wvcheck, diff;
@@ -240,7 +240,7 @@ int main(int argc, char **argv)
         }
         wvcheck = det * w[0];
         diff = PetscSqrtReal(PetscSqr(wvcheck - wv));
-        PetscCheckFalse(diff >= PETSC_SMALL * (PetscAbsReal(wv) + PetscAbsReal(wvcheck)),PETSC_COMM_WORLD, PETSC_ERR_PLIB, "n-form / determinant equivalence: wvcheck (%g) != wv (%g) %g", (double) wvcheck, (double) wv, (double) diff);
+        PetscCheck(diff < PETSC_SMALL * (PetscAbsReal(wv) + PetscAbsReal(wvcheck)),PETSC_COMM_WORLD, PETSC_ERR_PLIB, "n-form / determinant equivalence: wvcheck (%g) != wv (%g) %g", (double) wvcheck, (double) wv, (double) diff);
       }
       if (k > 0) { /* k-forms are linear in each component */
         PetscReal alpha;
@@ -268,7 +268,7 @@ int main(int argc, char **argv)
         PetscCall(PetscDTAltVApply(N, k, w, axv, &waxv));
         waxvcheck = alpha * wx + wv;
         diff = waxv - waxvcheck;
-        PetscCheckFalse(PetscAbsReal(diff) > 10. * PETSC_SMALL * (PetscAbsReal(waxv) + PetscAbsReal(waxvcheck)),PETSC_COMM_WORLD, PETSC_ERR_PLIB, "linearity check: component %" PetscInt_FMT ", waxvcheck (%g) != waxv (%g)", j, (double) waxvcheck, (double) waxv);
+        PetscCheck(PetscAbsReal(diff) <= 10. * PETSC_SMALL * (PetscAbsReal(waxv) + PetscAbsReal(waxvcheck)),PETSC_COMM_WORLD, PETSC_ERR_PLIB, "linearity check: component %" PetscInt_FMT ", waxvcheck (%g) != waxv (%g)", j, (double) waxvcheck, (double) waxv);
         PetscCall(PetscFree2(x,axv));
       }
       if (k > 1) { /* k-forms are antisymmetric */
@@ -292,7 +292,7 @@ int main(int argc, char **argv)
         }
         PetscCall(PetscDTAltVApply(N, k, w, swapv, &wswapv));
         diff = PetscAbsReal(wswapv + wv);
-        PetscCheckFalse(diff > PETSC_SMALL * (PetscAbsReal(wswapv) + PetscAbsReal(wv)),PETSC_COMM_WORLD, PETSC_ERR_PLIB, "antisymmetry check: components %" PetscInt_FMT " & %" PetscInt_FMT ", wswapv (%g) != -wv (%g)", j, l, (double) wswapv, (double) wv);
+        PetscCheck(diff <= PETSC_SMALL * (PetscAbsReal(wswapv) + PetscAbsReal(wv)),PETSC_COMM_WORLD, PETSC_ERR_PLIB, "antisymmetry check: components %" PetscInt_FMT " & %" PetscInt_FMT ", wswapv (%g) != -wv (%g)", j, l, (double) wswapv, (double) wv);
         PetscCall(PetscFree(swapv));
       }
       for (j = 0; j <= k && j + k <= N; j++) { /* wedge product */
@@ -340,7 +340,7 @@ int main(int argc, char **argv)
           uWwxcheck += isOdd ? -(ux * wx) : (ux * wx);
         }
         diff = PetscAbsReal(uWwx - uWwxcheck);
-        PetscCheckFalse(diff > 10. * PETSC_SMALL * (PetscAbsReal(uWwx) + PetscAbsReal(uWwxcheck)),PETSC_COMM_WORLD, PETSC_ERR_PLIB, "wedge check: forms %" PetscInt_FMT " & %" PetscInt_FMT ", uWwxcheck (%g) != uWwx (%g)", j, k, (double) uWwxcheck, (double) uWwx);
+        PetscCheck(diff <= 10. * PETSC_SMALL * (PetscAbsReal(uWwx) + PetscAbsReal(uWwxcheck)),PETSC_COMM_WORLD, PETSC_ERR_PLIB, "wedge check: forms %" PetscInt_FMT " & %" PetscInt_FMT ", uWwxcheck (%g) != uWwx (%g)", j, k, (double) uWwxcheck, (double) uWwx);
         PetscCall(PetscFree(split));
         PetscCall(PetscMalloc2(Nk * Njk, &uWwmat, Njk, &uWwcheck));
         PetscCall(PetscDTAltVWedgeMatrix(N, j, k, u, uWwmat));
@@ -363,7 +363,7 @@ int main(int argc, char **argv)
         }
         diff = PetscSqrtReal(diff);
         norm = PetscSqrtReal(norm);
-        PetscCheckFalse(diff > PETSC_SMALL * norm,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "wedge matrix check: wedge matrix application does not match wedge direct application");
+        PetscCheck(diff <= PETSC_SMALL * norm,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "wedge matrix check: wedge matrix application does not match wedge direct application");
         PetscCall(PetscFree2(uWwmat, uWwcheck));
         PetscCall(PetscFree4(u, uWw, x, xsplit));
         PetscCall(PetscViewerASCIIPopTab(viewer));
@@ -434,7 +434,7 @@ int main(int argc, char **argv)
         }
         diffMat = PetscSqrtReal(diffMat);
         normMat = PetscSqrtReal(normMat);
-        PetscCheckFalse(diffMat > PETSC_SMALL * normMat,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Interior product check: matrix pattern does not match matrix");
+        PetscCheck(diffMat <= PETSC_SMALL * normMat,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Interior product check: matrix pattern does not match matrix");
         diffMat = 0.;
         normMat = 0.;
         for (l = 0; l < Nkm; l++) {
@@ -448,7 +448,7 @@ int main(int argc, char **argv)
         }
         diffMat = PetscSqrtReal(diffMat);
         normMat = PetscSqrtReal(normMat);
-        PetscCheckFalse(diffMat > PETSC_SMALL * normMat,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Interior product check: application does not match matrix");
+        PetscCheck(diffMat <= PETSC_SMALL * normMat,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Interior product check: application does not match matrix");
         if (verbose) {
           PetscCall(PetscViewerASCIIPrintf(viewer, "(w int v_0):\n"));
           PetscCall(PetscViewerASCIIPushTab(viewer));
@@ -462,7 +462,7 @@ int main(int argc, char **argv)
         }
         PetscCall(PetscDTAltVApply(N, k - 1, wIntv0, &v[N], &wvcheck));
         diff = PetscSqrtReal(PetscSqr(wvcheck - wv));
-        PetscCheckFalse(diff >= PETSC_SMALL * (PetscAbsReal(wv) + PetscAbsReal(wvcheck)),PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Interior product check: (w Int v0)(v_rem) (%g) != w(v) (%g)", (double) wvcheck, (double) wv);
+        PetscCheck(diff < PETSC_SMALL * (PetscAbsReal(wv) + PetscAbsReal(wvcheck)),PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Interior product check: (w Int v0)(v_rem) (%g) != w(v) (%g)", (double) wvcheck, (double) wv);
         PetscCall(PetscFree5(wIntv0,wIntv0check,intv0mat,matcheck,indices));
       }
       if (k >= N - k) { /* Hodge star */
@@ -491,7 +491,7 @@ int main(int argc, char **argv)
         starwdotu = 0.;
         for (l = 0; l < Nk; l++) starwdotu += starw[l] * u[l];
         diff = PetscAbsReal(wu - starwdotu);
-        PetscCheckFalse(diff > PETSC_SMALL * (PetscAbsReal(wu) + PetscAbsReal(starwdotu)),PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Hodge star check: (star w, u) (%g) != (w wedge u) (%g)", (double) starwdotu, (double) wu);
+        PetscCheck(diff <= PETSC_SMALL * (PetscAbsReal(wu) + PetscAbsReal(starwdotu)),PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Hodge star check: (star w, u) (%g) != (w wedge u) (%g)", (double) starwdotu, (double) wu);
 
         diff = 0.;
         norm = 0.;
@@ -501,7 +501,7 @@ int main(int argc, char **argv)
         }
         diff = PetscSqrtReal(diff);
         norm = PetscSqrtReal(norm);
-        PetscCheckFalse(diff > PETSC_SMALL * norm,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Hodge star check: star(star(w)) != (-1)^(N*(N-k)) w");
+        PetscCheck(diff <= PETSC_SMALL * norm,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Hodge star check: star(star(w)) != (-1)^(N*(N-k)) w");
         PetscCall(PetscFree3(u, starw, starstarw));
       }
       PetscCall(PetscFree(v));

@@ -211,7 +211,7 @@ PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer
       nc   = ien*(jen>0 ? jen : 1)*(ken>0 ? ken : 1);
 
       PetscCall(VecGetLocalSize(xcoor,&nl));
-      PetscCheckFalse(nc && nl % nc,PETSC_COMM_SELF,PETSC_ERR_SUP,"Incompatible local coordinate size %" PetscInt_FMT " and number of cells %" PetscInt_FMT,nl,nc);
+      PetscCheck(!nc || (nl % nc) == 0,PETSC_COMM_SELF,PETSC_ERR_SUP,"Incompatible local coordinate size %" PetscInt_FMT " and number of cells %" PetscInt_FMT,nl,nc);
       PetscCall(VecDuplicate(xcoor,&xcoorl));
       PetscCall(VecCopy(xcoor,xcoorl));
       PetscCall(VecSetDM(xcoorl,NULL));

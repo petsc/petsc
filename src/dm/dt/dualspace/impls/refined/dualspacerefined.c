@@ -82,7 +82,7 @@ static PetscErrorCode PetscDualSpaceSetUp_Refined(PetscDualSpace sp)
       PetscCheck(sp->pointSpaces[c-pStart]->k == sp->k,PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_INCOMP, "All cell spaces must have the same form degree as the refined dual space");
       PetscCheck(sp->pointSpaces[c-pStart]->Nc == sp->Nc,PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_INCOMP, "All cell spaces must have the same number of components as the refined dual space");
       PetscCall(DMPlexGetHeightStratum(sp->pointSpaces[c-pStart]->dm, 0, &ccStart, &ccEnd));
-      PetscCheckFalse(ccEnd - ccStart != 1,PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_INCOMP, "All cell spaces must have a single cell themselves");
+      PetscCheck(ccEnd - ccStart == 1,PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_INCOMP, "All cell spaces must have a single cell themselves");
     }
   }
   for (c = cStart; c < cEnd; c++) {

@@ -52,11 +52,11 @@ int main(int argc,char **argv)
         PetscCall(DMStagCreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,mx,1,1,DMSTAG_STENCIL_BOX,1,lx,&dm));
         break;
       case 2:
-        PetscCheckFalse(size != ranksx * ranksy,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Must run on %" PetscInt_FMT " ranks with -dim 2 -setSizes",ranksx * ranksy);
+        PetscCheck(size == ranksx*ranksy,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Must run on %" PetscInt_FMT " ranks with -dim 2 -setSizes",ranksx * ranksy);
         PetscCall(DMStagCreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,mx,my,ranksx,ranksy,1,1,1,DMSTAG_STENCIL_BOX,1,lx,ly,&dm));
         break;
       case 3:
-        PetscCheckFalse(size != ranksx * ranksy * ranksz,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Must run on %" PetscInt_FMT " ranks with -dim 3 -setSizes", ranksx * ranksy * ranksz);
+        PetscCheck(size == ranksx*ranksy*ranksz,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Must run on %" PetscInt_FMT " ranks with -dim 3 -setSizes", ranksx * ranksy * ranksz);
         PetscCall(DMStagCreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,mx,my,mz,ranksx,ranksy,ranksz,1,1,1,1,DMSTAG_STENCIL_BOX,1,lx,ly,lz,&dm));
         break;
       default:

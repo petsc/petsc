@@ -632,7 +632,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
     {
       PetscInt dimProj = PetscMin(PetscMin(dim, dimIn), dimAux);
 
-      PetscCheckFalse(PetscAbsInt(dimProj - dim) > 1 || PetscAbsInt(dimProj - dimIn) > 1 || PetscAbsInt(dimProj - dimAux) > 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Do not currently support differences of more than 1 in dimension");
+      PetscCheck(PetscAbsInt(dimProj - dim) <= 1 && PetscAbsInt(dimProj - dimIn) <= 1 && PetscAbsInt(dimProj - dimAux) <= 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Do not currently support differences of more than 1 in dimension");
       if (dimProj < dim) minHeight = 1;
       htInc    =  dim    - dimProj;
       htIncIn  =  dimIn  - dimProj;

@@ -252,13 +252,13 @@ static PetscErrorCode DMPlexGetPointMFEMCellID_Internal(DM dm, DMLabel label, Pe
     *mid = *mid - minl + 1; /* MFEM does not like negative markers */
   } else *mid = 1;
   if (depth >=0 && dim != depth) { /* not interpolated, it assumes cell-vertex mesh */
-    PetscCheckFalse(dim < 0 || dim > 3,PETSC_COMM_SELF,PETSC_ERR_SUP,"Dimension %" PetscInt_FMT,dim);
+    PetscCheck(dim >= 0 && dim <= 3,PETSC_COMM_SELF,PETSC_ERR_SUP,"Dimension %" PetscInt_FMT,dim);
     PetscCheck(csize <= 8,PETSC_COMM_SELF,PETSC_ERR_SUP,"Found cone size %" PetscInt_FMT " for point %" PetscInt_FMT,csize,p);
     PetscCheck(depth == 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Found depth %" PetscInt_FMT " for point %" PetscInt_FMT ". You should interpolate the mesh first",depth,p);
     *cid = mfem_table_cid_unint[dim][csize];
   } else {
     PetscCheck(csize <= 6,PETSC_COMM_SELF,PETSC_ERR_SUP,"Cone size %" PetscInt_FMT " for point %" PetscInt_FMT,csize,p);
-    PetscCheckFalse(pdepth < 0 || pdepth > 3,PETSC_COMM_SELF,PETSC_ERR_SUP,"Depth %" PetscInt_FMT " for point %" PetscInt_FMT,csize,p);
+    PetscCheck(pdepth >= 0 && pdepth <= 3,PETSC_COMM_SELF,PETSC_ERR_SUP,"Depth %" PetscInt_FMT " for point %" PetscInt_FMT,csize,p);
     *cid = mfem_table_cid[pdepth][csize];
   }
   PetscFunctionReturn(0);
@@ -521,7 +521,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   PetscCall(DMPlexGetDepthStratum(dm,0,&vStart,&vEnd));
   PetscCall(DMGetPeriodicity(dm,&periodic,NULL,NULL,NULL));
   PetscCall(DMGetCoordinatesLocalized(dm,&localized));
-  PetscCheckFalse(periodic && !localized && !hovec,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Coordinates need to be localized");
+  PetscCheck(!periodic || localized || hovec,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Coordinates need to be localized");
   PetscCall(DMGetCoordinateSection(dm,&coordSection));
   PetscCall(DMGetCoordinateDim(dm,&sdim));
   PetscCall(DMGetCoordinatesLocal(dm,&coordinates));
@@ -550,10 +550,10 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   if (enable_bmark) enable_boundary = PETSC_TRUE;
 
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)dm),&size));
-  PetscCheckFalse(enable_ncmesh && size > 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Not supported in parallel");
-  PetscCheckFalse(enable_boundary && depth >= 0 && dim != depth,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Mesh must be interpolated. "
+  PetscCheck(!enable_ncmesh || size == 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Not supported in parallel");
+  PetscCheck(!enable_boundary || depth < 0 || dim == depth,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Mesh must be interpolated. "
                                                              "Alternatively, run with -viewer_glvis_dm_plex_enable_boundary 0");
-  PetscCheckFalse(enable_ncmesh && depth >= 0 && dim != depth,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Mesh must be interpolated. "
+  PetscCheck(!enable_ncmesh || depth < 0 || dim == depth,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Mesh must be interpolated. "
                                                            "Alternatively, run with -viewer_glvis_dm_plex_enable_ncmesh 0");
   if (depth >=0 && dim != depth) { /* not interpolated, it assumes cell-vertex mesh */
     PetscCheck(depth == 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported depth %" PetscInt_FMT ". You should interpolate the mesh first",depth);
@@ -692,7 +692,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
 
         if (PetscUnlikely(pown && !PetscBTLookup(pown,p-cStart))) continue;
         PetscCall(DMPlexVecGetClosure(dm,coordSection,coordinates,p,&csize,&vals));
-        PetscCheckFalse(csize != vpc*sdim && csize != vpc*sdim*2,PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported closure size %" PetscInt_FMT " (vpc %" PetscInt_FMT ", sdim %" PetscInt_FMT ")",csize,vpc,sdim);
+        PetscCheck(csize == vpc*sdim || csize == vpc*sdim*2,PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported closure size %" PetscInt_FMT " (vpc %" PetscInt_FMT ", sdim %" PetscInt_FMT ")",csize,vpc,sdim);
         for (v=0;v<vpc;v++) {
           for (d=0;d<sdim;d++) {
             ptr[sdim*dof[v]+d] = vals[sdim*vids[v]+d];

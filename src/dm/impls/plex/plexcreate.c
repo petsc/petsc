@@ -494,7 +494,7 @@ static PetscErrorCode DMPlexCreateBoxSurfaceMesh_Tensor_3D_Internal(DM dm, const
   PetscInt       voffset, iface=0, cone[4];
 
   PetscFunctionBegin;
-  PetscCheckFalse((faces[0] < 1) || (faces[1] < 1) || (faces[2] < 1),PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Must have at least 1 face per side");
+  PetscCheck(faces[0] >= 1 && faces[1] >= 1 && faces[2] >= 1,PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Must have at least 1 face per side");
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank));
   vertices[0] = faces[0]+1; vertices[1] = faces[1]+1; vertices[2] = faces[2]+1;
   numVertices = vertices[0]*vertices[1]*vertices[2];
@@ -4006,7 +4006,7 @@ PetscErrorCode DMPlexBuildFromCellListParallel(DM dm, PetscInt numCells, PetscIn
     PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &NVerticesInCells, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject) dm)));
 
     if (numVertices == PETSC_DECIDE && NVertices == PETSC_DECIDE) NVertices = NVerticesInCells;
-    else PetscCheckFalse(NVertices != PETSC_DECIDE && NVertices < NVerticesInCells,PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Specified global number of vertices %" PetscInt_FMT " must be greater than or equal to the number of vertices in cells %" PetscInt_FMT,NVertices,NVerticesInCells);
+    else PetscCheck(NVertices == PETSC_DECIDE || NVertices >= NVerticesInCells,PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Specified global number of vertices %" PetscInt_FMT " must be greater than or equal to the number of vertices in cells %" PetscInt_FMT,NVertices,NVerticesInCells);
   }
   /* Count locally unique vertices */
   {
@@ -4095,10 +4095,10 @@ PetscErrorCode DMPlexBuildCoordinatesFromCellListParallel(DM dm, PetscInt spaceD
   PetscFunctionBegin;
   PetscCall(PetscLogEventBegin(DMPLEX_BuildCoordinatesFromCellList,dm,0,0,0));
   PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
-  PetscCheckFalse(vStart < 0 || vEnd < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "DM is not set up properly. DMPlexBuildFromCellList() should be called first.");
+  PetscCheck(vStart >= 0 && vEnd >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "DM is not set up properly. DMPlexBuildFromCellList() should be called first.");
   PetscCall(DMSetCoordinateDim(dm, spaceDim));
   PetscCall(PetscSFGetGraph(sfVert, &numVertices, &numVerticesAdj, NULL, NULL));
-  PetscCheckFalse(vEnd - vStart != numVerticesAdj,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Supplied sfVert has wrong number of leaves = %" PetscInt_FMT " != %" PetscInt_FMT " = vEnd - vStart",numVerticesAdj,vEnd - vStart);
+  PetscCheck(vEnd - vStart == numVerticesAdj,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Supplied sfVert has wrong number of leaves = %" PetscInt_FMT " != %" PetscInt_FMT " = vEnd - vStart",numVerticesAdj,vEnd - vStart);
   PetscCall(DMGetCoordinateSection(dm, &coordSection));
   PetscCall(PetscSectionSetNumFields(coordSection, 1));
   PetscCall(PetscSectionSetFieldComponents(coordSection, 0, spaceDim));
@@ -4308,7 +4308,7 @@ PetscErrorCode DMPlexBuildCoordinatesFromCellList(DM dm, PetscInt spaceDim, cons
   PetscFunctionBegin;
   PetscCall(PetscLogEventBegin(DMPLEX_BuildCoordinatesFromCellList,dm,0,0,0));
   PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
-  PetscCheckFalse(vStart < 0 || vEnd < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "DM is not set up properly. DMPlexBuildFromCellList() should be called first.");
+  PetscCheck(vStart >= 0 && vEnd >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "DM is not set up properly. DMPlexBuildFromCellList() should be called first.");
   PetscCall(DMSetCoordinateDim(dm, spaceDim));
   PetscCall(DMGetCoordinateSection(dm, &coordSection));
   PetscCall(PetscSectionSetNumFields(coordSection, 1));
@@ -4449,7 +4449,7 @@ PetscErrorCode DMPlexCreateFromDAG(DM dm, PetscInt depth, const PetscInt numPoin
       firstVertex = p - pStart;
     }
   }
-  PetscCheckFalse(firstVertex < 0 && numPoints[0],PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Expected %" PetscInt_FMT " vertices but could not find any", numPoints[0]);
+  PetscCheck(firstVertex >= 0 || !numPoints[0],PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Expected %" PetscInt_FMT " vertices but could not find any", numPoints[0]);
   PetscCall(DMSetUp(dm)); /* Allocate space for cones */
   for (p = pStart, off = 0; p < pEnd; off += coneSize[p-pStart], ++p) {
     PetscCall(DMPlexSetCone(dm, p, &cones[off]));

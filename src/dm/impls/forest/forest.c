@@ -391,7 +391,7 @@ PetscErrorCode DMForestSetAdaptivityForest(DM dm,DM adapt)
   if (adapt) PetscValidHeaderSpecific(adapt, DM_CLASSID, 2);
   PetscCall(DMIsForest(dm, &isForest));
   if (!isForest) PetscFunctionReturn(0);
-  PetscCheckFalse(adapt != NULL && dm->setupcalled,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the adaptation forest after setup");
+  PetscCheck(adapt == NULL || !dm->setupcalled,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the adaptation forest after setup");
   forest         = (DM_Forest*) dm->data;
   PetscCall(DMForestGetAdaptivityForest(dm,&oldAdapt));
   adaptForest    = (DM_Forest*) (adapt ? adapt->data : NULL);
@@ -1437,7 +1437,7 @@ PETSC_EXTERN PetscErrorCode DMSetFromOptions_Forest(PetscOptionItems *PetscOptio
   PetscCall(PetscOptionsViewer("-dm_forest_base_dm","load the base DM from a viewer specification","DMForestSetBaseDM",&viewer,&format,&flg2));
   PetscCall(PetscOptionsViewer("-dm_forest_coarse_forest","load the coarse forest from a viewer specification","DMForestSetCoarseForest",&viewer,&format,&flg3));
   PetscCall(PetscOptionsViewer("-dm_forest_fine_forest","load the fine forest from a viewer specification","DMForestSetFineForest",&viewer,&format,&flg4));
-  PetscCheckFalse((PetscInt) flg1 + (PetscInt) flg2 + (PetscInt) flg3 + (PetscInt) flg4 > 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_INCOMP,"Specify only one of -dm_forest_{topology,base_dm,coarse_forest,fine_forest}");
+  PetscCheck((PetscInt) flg1 + (PetscInt) flg2 + (PetscInt) flg3 + (PetscInt) flg4 <= 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_INCOMP,"Specify only one of -dm_forest_{topology,base_dm,coarse_forest,fine_forest}");
   if (flg1) {
     PetscCall(DMForestSetTopology(dm,(DMForestTopology)stringBuffer));
     PetscCall(DMForestSetBaseDM(dm,NULL));
@@ -1585,7 +1585,7 @@ PetscErrorCode DMCoarsen_Forest(DM dm, MPI_Comm comm, DM *dmCoarsened)
     MPI_Comm    dmcomm = PetscObjectComm((PetscObject)dm);
 
     PetscCallMPI(MPI_Comm_compare(comm, dmcomm, &mpiComparison));
-    PetscCheckFalse(mpiComparison != MPI_IDENT && mpiComparison != MPI_CONGRUENT,dmcomm,PETSC_ERR_SUP,"No support for different communicators yet");
+    PetscCheck(mpiComparison == MPI_IDENT || mpiComparison == MPI_CONGRUENT,dmcomm,PETSC_ERR_SUP,"No support for different communicators yet");
   }
   PetscCall(DMGetCoarseDM(dm,&coarseDM));
   if (coarseDM) {

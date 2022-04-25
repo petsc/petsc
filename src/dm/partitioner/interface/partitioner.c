@@ -310,14 +310,14 @@ PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, PetscInt nparts,
 
     PetscValidHeaderSpecific(vertexSection, PETSC_SECTION_CLASSID, 6);
     PetscCall(PetscSectionGetChart(vertexSection, &s, &e));
-    PetscCheckFalse(s > 0 || e < numVertices,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid vertexSection chart [%" PetscInt_FMT ",%" PetscInt_FMT ")",s,e);
+    PetscCheck(s <= 0 && e >= numVertices,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid vertexSection chart [%" PetscInt_FMT ",%" PetscInt_FMT ")",s,e);
   }
   if (targetSection) {
     PetscInt s,e;
 
     PetscValidHeaderSpecific(targetSection, PETSC_SECTION_CLASSID, 7);
     PetscCall(PetscSectionGetChart(targetSection, &s, &e));
-    PetscCheckFalse(s > 0 || e < nparts,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid targetSection chart [%" PetscInt_FMT ",%" PetscInt_FMT ")",s,e);
+    PetscCheck(s <= 0 && e >= nparts,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid targetSection chart [%" PetscInt_FMT ",%" PetscInt_FMT ")",s,e);
   }
   PetscValidHeaderSpecific(partSection, PETSC_SECTION_CLASSID, 8);
   PetscValidPointer(partition, 9);

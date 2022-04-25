@@ -59,7 +59,7 @@ static PetscErrorCode ProcessOptions(AppCtx *options)
   len  = (options->dim+1) * PetscMax(1, options->numFields);
   PetscCall(PetscMalloc1(len, &options->numDof));
   PetscCall(PetscOptionsIntArray("-num_dof", "The dof signature for the section", "ex9.c", options->numDof, &len, &flg));
-  PetscCheckFalse(flg && (len != (options->dim+1) * PetscMax(1, options->numFields)),PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Length of dof array is %" PetscInt_FMT " should be %" PetscInt_FMT, len, (options->dim+1) * PetscMax(1, options->numFields));
+  PetscCheck(!flg || len == (options->dim+1) * PetscMax(1, options->numFields),PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Length of dof array is %" PetscInt_FMT " should be %" PetscInt_FMT, len, (options->dim+1) * PetscMax(1, options->numFields));
 
   /* We are specifying the scalar dof, so augment it for multiple components */
   {

@@ -710,7 +710,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Stag(DM dm)
   stag->coordinateDMType                              = NULL;
 
   PetscCall(DMGetDimension(dm,&dim));
-  PetscCheckFalse(dim != 1 && dim != 2 && dim != 3,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"DMSetDimension() must be called to set a dimension with value 1, 2, or 3");
+  PetscCheck(dim == 1 || dim == 2 || dim == 3,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"DMSetDimension() must be called to set a dimension with value 1, 2, or 3");
 
   PetscCall(PetscMemzero(dm->ops,sizeof(*(dm->ops))));
   dm->ops->createcoordinatedm       = DMCreateCoordinateDM_Stag;

@@ -783,11 +783,11 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
   PetscFunctionBegin;
   PetscCall(PetscLogEventBegin(DMPLEX_LocatePoints,0,0,0,0));
   PetscCall(PetscTime(&t0));
-  PetscCheckFalse(ltype == DM_POINTLOCATION_NEAREST && !hash,PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Nearest point location only supported with grid hashing. Use -dm_plex_hash_location to enable it.");
+  PetscCheck(ltype != DM_POINTLOCATION_NEAREST || hash,PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Nearest point location only supported with grid hashing. Use -dm_plex_hash_location to enable it.");
   PetscCall(DMGetCoordinateDim(dm, &dim));
   PetscCall(VecGetBlockSize(v, &bs));
   PetscCallMPI(MPI_Comm_compare(PetscObjectComm((PetscObject)cellSF),PETSC_COMM_SELF,&result));
-  PetscCheckFalse(result != MPI_IDENT && result != MPI_CONGRUENT,PetscObjectComm((PetscObject)cellSF),PETSC_ERR_SUP, "Trying parallel point location: only local point location supported");
+  PetscCheck(result == MPI_IDENT || result == MPI_CONGRUENT,PetscObjectComm((PetscObject)cellSF),PETSC_ERR_SUP, "Trying parallel point location: only local point location supported");
   PetscCheck(bs == dim,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Block size for point vector %" PetscInt_FMT " must be the mesh coordinate dimension %" PetscInt_FMT, bs, dim);
   PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd));
   PetscCall(VecGetLocalSize(v, &numPoints));
@@ -2928,7 +2928,7 @@ static PetscErrorCode DMPlexCoordinatesToReference_Tensor(DM dm, PetscInt cell, 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscCall(DMPlexVecGetClosure(dm, NULL, coords, cell, &coordSize, &coordsScalar));
-  PetscCheckFalse(coordSize < dimC * numV,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Expecting at least %" PetscInt_FMT " coordinates, got %" PetscInt_FMT,dimC * (1 << dimR), coordSize);
+  PetscCheck(coordSize >= dimC * numV,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Expecting at least %" PetscInt_FMT " coordinates, got %" PetscInt_FMT,dimC * (1 << dimR), coordSize);
   PetscCall(DMGetWorkArray(dm, 2 * coordSize + dimR + dimC, MPIU_REAL, &cellData));
   PetscCall(DMGetWorkArray(dm, 3 * dimR * dimC, MPIU_SCALAR, &J));
   cellCoords = &cellData[0];
@@ -3038,7 +3038,7 @@ static PetscErrorCode DMPlexReferenceToCoordinates_Tensor(DM dm, PetscInt cell, 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscCall(DMPlexVecGetClosure(dm, NULL, coords, cell, &coordSize, &coordsScalar));
-  PetscCheckFalse(coordSize < dimC * numV,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Expecting at least %" PetscInt_FMT " coordinates, got %" PetscInt_FMT,dimC * (1 << dimR), coordSize);
+  PetscCheck(coordSize >= dimC * numV,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Expecting at least %" PetscInt_FMT " coordinates, got %" PetscInt_FMT,dimC * (1 << dimR), coordSize);
   PetscCall(DMGetWorkArray(dm, 2 * coordSize, MPIU_REAL, &cellData));
   cellCoords = &cellData[0];
   cellCoeffs = &cellData[coordSize];
@@ -3262,7 +3262,7 @@ PetscErrorCode DMPlexCoordinatesToReference(DM dm, PetscInt cell, PetscInt numPo
     }
   }
   PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd));
-  PetscCheckFalse(cell < cStart || cell >= cEnd,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"point %" PetscInt_FMT " not in cell range [%" PetscInt_FMT ",%" PetscInt_FMT ")",cell,cStart,cEnd);
+  PetscCheck(cell >= cStart && cell < cEnd,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"point %" PetscInt_FMT " not in cell range [%" PetscInt_FMT ",%" PetscInt_FMT ")",cell,cStart,cEnd);
   if (!fe) { /* implicit discretization: affine or multilinear */
     PetscInt  coneSize;
     PetscBool isSimplex, isTensor;
@@ -3343,7 +3343,7 @@ PetscErrorCode DMPlexReferenceToCoordinates(DM dm, PetscInt cell, PetscInt numPo
     }
   }
   PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd));
-  PetscCheckFalse(cell < cStart || cell >= cEnd,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"point %" PetscInt_FMT " not in cell range [%" PetscInt_FMT ",%" PetscInt_FMT ")",cell,cStart,cEnd);
+  PetscCheck(cell >= cStart && cell < cEnd,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"point %" PetscInt_FMT " not in cell range [%" PetscInt_FMT ",%" PetscInt_FMT ")",cell,cStart,cEnd);
   if (!fe) { /* implicit discretization: affine or multilinear */
     PetscInt  coneSize;
     PetscBool isSimplex, isTensor;

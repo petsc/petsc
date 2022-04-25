@@ -63,7 +63,7 @@ PETSC_INTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit_2d(DM dm,PetscRe
   PetscCall(DMGetCoordinateDM(dm, &dmCoord));
   stagCoord = (DM_Stag*) dmCoord->data;
   for (s=0; s<3; ++s) {
-    PetscCheckFalse(stagCoord->dof[s] !=0 && stagCoord->dof[s] != 2,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Coordinate DM in 2 dimensions must have 0 or 2 dof on each stratum, but stratum %" PetscInt_FMT " has %" PetscInt_FMT " dof",s,stagCoord->dof[s]);
+    PetscCheck(stagCoord->dof[s] ==0 || stagCoord->dof[s] == 2,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Coordinate DM in 2 dimensions must have 0 or 2 dof on each stratum, but stratum %" PetscInt_FMT " has %" PetscInt_FMT " dof",s,stagCoord->dof[s]);
   }
   PetscCall(DMCreateLocalVector(dmCoord,&coordLocal));
 
@@ -218,7 +218,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM dm)
      communication.  */
   PetscCall(DMStagSetUpBuildGlobalOffsets_2d(dm,&globalOffsets));
 
-  for (d=0; d<dim; ++d) PetscCheckFalse(stag->boundaryType[d] != DM_BOUNDARY_NONE && stag->boundaryType[d] != DM_BOUNDARY_PERIODIC && stag->boundaryType[d] != DM_BOUNDARY_GHOSTED,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported boundary type");
+  for (d=0; d<dim; ++d) PetscCheck(stag->boundaryType[d] == DM_BOUNDARY_NONE || stag->boundaryType[d] == DM_BOUNDARY_PERIODIC || stag->boundaryType[d] == DM_BOUNDARY_GHOSTED,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported boundary type");
 
   /* Define ghosted/local sizes */
   if (stag->stencilType != DMSTAG_STENCIL_NONE && (stag->n[0] < stag->stencilWidth || stag->n[1] < stag->stencilWidth)) {
@@ -318,7 +318,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM dm)
      */
 
   /* Check stencil type */
-  PetscCheckFalse(stag->stencilType != DMSTAG_STENCIL_NONE && stag->stencilType != DMSTAG_STENCIL_BOX && stag->stencilType != DMSTAG_STENCIL_STAR,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported stencil type %s",DMStagStencilTypes[stag->stencilType]);
+  PetscCheck(stag->stencilType == DMSTAG_STENCIL_NONE || stag->stencilType == DMSTAG_STENCIL_BOX || stag->stencilType == DMSTAG_STENCIL_STAR,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported stencil type %s",DMStagStencilTypes[stag->stencilType]);
   star = (PetscBool)(stag->stencilType == DMSTAG_STENCIL_STAR || stag->stencilType == DMSTAG_STENCIL_NONE);
 
   {
@@ -1069,7 +1069,7 @@ static PetscErrorCode DMStagSetUpBuildNeighbors_2d(DM dm)
   const PetscInt  dim = 2;
 
   PetscFunctionBegin;
-  for (d=0; d<dim; ++d) PetscCheckFalse(stag->boundaryType[d] != DM_BOUNDARY_NONE && stag->boundaryType[d] != DM_BOUNDARY_PERIODIC && stag->boundaryType[d] != DM_BOUNDARY_GHOSTED,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Neighbor determination not implemented for %s",DMBoundaryTypes[stag->boundaryType[d]]);
+  for (d=0; d<dim; ++d) PetscCheck(stag->boundaryType[d] == DM_BOUNDARY_NONE || stag->boundaryType[d] == DM_BOUNDARY_PERIODIC || stag->boundaryType[d] == DM_BOUNDARY_GHOSTED,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Neighbor determination not implemented for %s",DMBoundaryTypes[stag->boundaryType[d]]);
 
   /* Assemble some convenience variables */
   for (d=0; d<dim; ++d) {

@@ -184,7 +184,7 @@ static PetscErrorCode PetscSpaceSumGetSubspace_Sum(PetscSpace space,PetscInt s,P
 
   PetscFunctionBegin;
   PetscCheck(Ns >= 0,PetscObjectComm((PetscObject)space),PETSC_ERR_ARG_WRONGSTATE,"Must call PetscSpaceSumSetNumSubspaces() first");
-  PetscCheckFalse(s<0 || s>=Ns,PetscObjectComm((PetscObject)space),PETSC_ERR_ARG_OUTOFRANGE,"Invalid subspace number %" PetscInt_FMT,s);
+  PetscCheck(s >= 0 && s < Ns,PetscObjectComm((PetscObject)space),PETSC_ERR_ARG_OUTOFRANGE,"Invalid subspace number %" PetscInt_FMT,s);
 
   *subspace = sum->sumspaces[s];
   PetscFunctionReturn(0);
@@ -198,7 +198,7 @@ static PetscErrorCode PetscSpaceSumSetSubspace_Sum(PetscSpace space,PetscInt s,P
   PetscFunctionBegin;
   PetscCheck(!sum->setupCalled,PetscObjectComm((PetscObject)space),PETSC_ERR_ARG_WRONGSTATE,"Cannot change subspace after setup called");
   PetscCheck(Ns >= 0,PetscObjectComm((PetscObject)space),PETSC_ERR_ARG_WRONGSTATE,"Must call PetscSpaceSumSetNumSubspaces() first");
-  PetscCheckFalse(s < 0 || s >= Ns,PetscObjectComm((PetscObject)space),PETSC_ERR_ARG_OUTOFRANGE,"Invalid subspace number %" PetscInt_FMT,s);
+  PetscCheck(s >= 0 && s < Ns,PetscObjectComm((PetscObject)space),PETSC_ERR_ARG_OUTOFRANGE,"Invalid subspace number %" PetscInt_FMT,s);
 
   PetscCall(PetscObjectReference((PetscObject)subspace));
   PetscCall(PetscSpaceDestroy(&sum->sumspaces[s]));
@@ -227,7 +227,7 @@ static PetscErrorCode PetscSpaceSetFromOptions_Sum(PetscOptionItems *PetscOption
                            concatenate,&concatenate,NULL));
   PetscOptionsHeadEnd();
 
-  PetscCheckFalse(Ns < 0 || (Nv > 0 && Ns == 0),PetscObjectComm((PetscObject)sp),PETSC_ERR_ARG_OUTOFRANGE,"Cannot have a sum space of %" PetscInt_FMT " spaces",Ns);
+  PetscCheck(Ns >= 0 && (Nv <= 0 || Ns != 0),PetscObjectComm((PetscObject)sp),PETSC_ERR_ARG_OUTOFRANGE,"Cannot have a sum space of %" PetscInt_FMT " spaces",Ns);
   if (Ns != sum->numSumSpaces) {
     PetscCall(PetscSpaceSumSetNumSubspaces(sp,Ns));
   }
@@ -317,7 +317,7 @@ static PetscErrorCode PetscSpaceSetUp_Sum(PetscSpace sp)
       SETERRQ(PetscObjectComm((PetscObject)sp),PETSC_ERR_ARG_OUTOFRANGE,"Total number of subspace components (%" PetscInt_FMT ") does not match number of target space components (%" PetscInt_FMT ").",sum_Nc,Nc);
     }
   } else {
-    PetscCheckFalse(minNc != Nc || maxNc != Nc,PetscObjectComm((PetscObject)sp),PETSC_ERR_ARG_OUTOFRANGE,"Subspaces must have same number of components as the target space.");
+    PetscCheck(minNc == Nc && maxNc == Nc,PetscObjectComm((PetscObject)sp),PETSC_ERR_ARG_OUTOFRANGE,"Subspaces must have same number of components as the target space.");
   }
 
   sp->degree       = deg;
@@ -452,7 +452,7 @@ static PetscErrorCode PetscSpaceEvaluate_Sum(PetscSpace sp,PetscInt npoints,cons
     PetscCall(PetscSpaceGetNumVariables(sum->sumspaces[s],&sNv));
     PetscCall(PetscSpaceGetNumComponents(sum->sumspaces[s],&sNc));
     PetscCall(PetscSpaceGetDimension(sum->sumspaces[s],&spdim));
-    PetscCheckFalse(offset + spdim > pdimfull,PetscObjectComm((PetscObject)sp),PETSC_ERR_ARG_OUTOFRANGE,"Subspace dimensions exceed target space dimension.");
+    PetscCheck(offset + spdim <= pdimfull,PetscObjectComm((PetscObject)sp),PETSC_ERR_ARG_OUTOFRANGE,"Subspace dimensions exceed target space dimension.");
     if (s == 0 || !sum->uniform) {
       PetscCall(PetscSpaceEvaluate(sum->sumspaces[s],npoints,points,sB,sD,sH));
     }
@@ -523,7 +523,7 @@ static PetscErrorCode PetscSpaceGetHeightSubspace_Sum(PetscSpace sp, PetscInt he
   PetscCall(PetscSpaceGetNumVariables(sp, &dim));
   PetscCall(PetscSpaceGetDegree(sp, &order, NULL));
   PetscCall(PetscSpacePolynomialGetTensor(sp, &tensor));
-  PetscCheckFalse(height > dim || height < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Asked for space at height %" PetscInt_FMT " for dimension %" PetscInt_FMT " space", height, dim);
+  PetscCheck(height <= dim && height >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Asked for space at height %" PetscInt_FMT " for dimension %" PetscInt_FMT " space", height, dim);
   if (!sum->heightsubspaces) PetscCall(PetscCalloc1(dim, &sum->heightsubspaces));
   if (height <= dim) {
     if (!sum->heightsubspaces[height-1]) {

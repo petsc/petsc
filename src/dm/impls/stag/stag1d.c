@@ -62,7 +62,7 @@ PETSC_INTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit_1d(DM dm,PetscRe
   PetscCall(DMGetCoordinateDM(dm, &dmCoord));
   stagCoord = (DM_Stag*) dmCoord->data;
   for (s=0; s<2; ++s) {
-    PetscCheckFalse(stagCoord->dof[s] !=0 && stagCoord->dof[s] != 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Coordinate DM in 1 dimensions must have 0 or 1 dof on each stratum, but stratum %" PetscInt_FMT " has %" PetscInt_FMT " dof",s,stagCoord->dof[s]);
+    PetscCheck(stagCoord->dof[s] ==0 || stagCoord->dof[s] == 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Coordinate DM in 1 dimensions must have 0 or 1 dof on each stratum, but stratum %" PetscInt_FMT " has %" PetscInt_FMT " dof",s,stagCoord->dof[s]);
   }
   PetscCall(DMCreateLocalVector(dmCoord,&coordLocal));
 

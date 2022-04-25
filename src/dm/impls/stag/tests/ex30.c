@@ -74,7 +74,7 @@ static PetscErrorCode CreateMat(DM dmSol,Mat *pA)
   A = *pA;
   PetscCall(DMStagGetCorners(dmSol,&startx,&starty,&startz,&nx,&ny,&nz,NULL,NULL,NULL));
   PetscCall(DMStagGetGlobalSizes(dmSol,&N[0],&N[1],&N[2]));
-  PetscCheckFalse(N[0] < 2 || N[1] < 2 || N[2] < 2,PetscObjectComm((PetscObject)dmSol),PETSC_ERR_ARG_SIZ,"This example requires at least two elements in each dimensions");
+  PetscCheck(N[0] >= 2 && N[1] >= 2 && N[2] >= 2,PetscObjectComm((PetscObject)dmSol),PETSC_ERR_ARG_SIZ,"This example requires at least two elements in each dimensions");
   PetscCall(DMStagGetIsLastRank(dmSol,&isLastRankx,&isLastRanky,&isLastRankz));
   PetscCall(DMStagGetIsFirstRank(dmSol,&isFirstRankx,&isFirstRanky,&isFirstRankz));
   hx = 1.0/N[0]; hy = 1.0/N[1]; hz = 1.0/N[2];
@@ -533,7 +533,7 @@ static PetscErrorCode CheckMat(DM dmSol,Mat A)
   PetscFunctionBeginUser;
   PetscCall(DMStagGetCorners(dmSol,&startx,&starty,&startz,&nx,&ny,&nz,NULL,NULL,NULL));
   PetscCall(DMStagGetGlobalSizes(dmSol,&N[0],&N[1],&N[2]));
-  PetscCheckFalse(N[0] < 2 || N[1] < 2 || N[2] < 2,PetscObjectComm((PetscObject)dmSol),PETSC_ERR_ARG_SIZ,"This example requires at least two elements in each dimensions");
+  PetscCheck(N[0] >= 2 && N[1] >= 2 && N[2] >= 2,PetscObjectComm((PetscObject)dmSol),PETSC_ERR_ARG_SIZ,"This example requires at least two elements in each dimensions");
   PetscCall(DMStagGetIsLastRank(dmSol,&isLastRankx,&isLastRanky,&isLastRankz));
   PetscCall(DMStagGetIsFirstRank(dmSol,&isFirstRankx,&isFirstRanky,&isFirstRankz));
   hx = 1.0/N[0]; hy = 1.0/N[1]; hz = 1.0/N[2];

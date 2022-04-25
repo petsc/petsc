@@ -209,7 +209,7 @@ static PetscErrorCode DMRefine_Redundant(DM dmc,MPI_Comm comm,DM *dmf)
     PetscCall(PetscObjectGetComm((PetscObject)dmc,&comm));
   }
   PetscCallMPI(MPI_Comm_compare(PetscObjectComm((PetscObject)dmc),comm,&flag));
-  PetscCheckFalse(flag != MPI_CONGRUENT && flag != MPI_IDENT,PetscObjectComm((PetscObject)dmc),PETSC_ERR_SUP,"cannot change communicators");
+  PetscCheck(flag == MPI_CONGRUENT || flag == MPI_IDENT,PetscObjectComm((PetscObject)dmc),PETSC_ERR_SUP,"cannot change communicators");
   PetscCall(DMRedundantCreate(comm,redc->rank,redc->N,dmf));
   PetscFunctionReturn(0);
 }
@@ -224,7 +224,7 @@ static PetscErrorCode DMCoarsen_Redundant(DM dmf,MPI_Comm comm,DM *dmc)
     PetscCall(PetscObjectGetComm((PetscObject)dmf,&comm));
   }
   PetscCallMPI(MPI_Comm_compare(PetscObjectComm((PetscObject)dmf),comm,&flag));
-  PetscCheckFalse(flag != MPI_CONGRUENT && flag != MPI_IDENT,PetscObjectComm((PetscObject)dmf),PETSC_ERR_SUP,"cannot change communicators");
+  PetscCheck(flag == MPI_CONGRUENT || flag == MPI_IDENT,PetscObjectComm((PetscObject)dmf),PETSC_ERR_SUP,"cannot change communicators");
   PetscCall(DMRedundantCreate(comm,redf->rank,redf->N,dmc));
   PetscFunctionReturn(0);
 }
@@ -238,7 +238,7 @@ static PetscErrorCode DMCreateInterpolation_Redundant(DM dmc,DM dmf,Mat *P,Vec *
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_compare(PetscObjectComm((PetscObject)dmc),PetscObjectComm((PetscObject)dmf),&flag));
-  PetscCheckFalse(flag != MPI_CONGRUENT && flag != MPI_IDENT,PetscObjectComm((PetscObject)dmf),PETSC_ERR_SUP,"cannot change communicators");
+  PetscCheck(flag == MPI_CONGRUENT || flag == MPI_IDENT,PetscObjectComm((PetscObject)dmf),PETSC_ERR_SUP,"cannot change communicators");
   PetscCheck(redc->rank == redf->rank,PetscObjectComm((PetscObject)dmf),PETSC_ERR_ARG_INCOMP,"Owning rank does not match");
   PetscCheck(redc->N == redf->N,PetscObjectComm((PetscObject)dmf),PETSC_ERR_ARG_INCOMP,"Global size does not match");
   PetscCall(MatCreate(PetscObjectComm((PetscObject)dmc),P));
