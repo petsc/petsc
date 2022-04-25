@@ -2766,8 +2766,9 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
     PetscDualSpace   Q = NULL;
     PetscQuadrature  f;
     const PetscReal *qpoints;
-    PetscInt         Nc, Np, fpdim, i, d;
+    PetscInt         Nc, Np, fpdim, off, i, d;
 
+    PetscCall(PetscDSGetFieldOffset(prob, field, &off));
     PetscCall(PetscDSGetDiscretization(prob, field, &obj));
     PetscCall(PetscObjectGetClassId(obj, &id));
     if (id == PETSCFE_CLASSID) {
@@ -2789,7 +2790,7 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
 
       PetscCall(DMPlexGetClosureIndices(dmf, fsection, globalFSection, cell, PETSC_FALSE, &numFIndices, &findices, NULL, NULL));
       PetscCall(DMPlexComputeCellGeometryFEM(dmf, cell, NULL, v0, J, invJ, &detJ));
-      PetscCheck(numFIndices == fpdim,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of fine indices %" PetscInt_FMT " != %" PetscInt_FMT " dual basis vecs", numFIndices, fpdim);
+      PetscCheck(numFIndices == totDim,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of fine indices %" PetscInt_FMT " != %" PetscInt_FMT " dual basis vecs", numFIndices, totDim);
       for (i = 0; i < fpdim; ++i) {
         Vec             pointVec;
         PetscScalar    *pV;
@@ -2822,7 +2823,7 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
           PetscHashIJKey key;
           PetscBool      missing;
 
-          key.i = findices[i];
+          key.i = findices[i+off];
           if (key.i >= 0) {
             /* Get indices for coarse elements */
             for (ccell = 0; ccell < numCoarseCells; ++ccell) {
@@ -2857,8 +2858,9 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
     PetscTabulation T = NULL;
     PetscQuadrature   f;
     const PetscReal  *qpoints, *qweights;
-    PetscInt          Nc, qNc, Np, fpdim, i, d;
+    PetscInt          Nc, qNc, Np, fpdim, off, i, d;
 
+    PetscCall(PetscDSGetFieldOffset(prob, field, &off));
     PetscCall(PetscDSGetDiscretization(prob, field, &obj));
     PetscCall(PetscObjectGetClassId(obj, &id));
     if (id == PETSCFE_CLASSID) {
@@ -2881,13 +2883,13 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
 
       PetscCall(DMPlexGetClosureIndices(dmf, fsection, globalFSection, cell, PETSC_FALSE, &numFIndices, &findices, NULL, NULL));
       PetscCall(DMPlexComputeCellGeometryFEM(dmf, cell, NULL, v0, J, invJ, &detJ));
-      PetscCheck(numFIndices == fpdim,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of fine indices %" PetscInt_FMT " != %" PetscInt_FMT " dual basis vecs", numFIndices, fpdim);
+      PetscCheck(numFIndices == totDim,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of fine indices %" PetscInt_FMT " != %" PetscInt_FMT " dual basis vecs", numFIndices, totDim);
       for (i = 0; i < fpdim; ++i) {
         Vec             pointVec;
         PetscScalar    *pV;
         PetscSF         coarseCellSF = NULL;
         const PetscSFNode *coarseCells;
-        PetscInt        numCoarseCells, cpdim, q, c, j;
+        PetscInt        numCoarseCells, cpdim, row = findices[i+off], q, c, j;
 
         /* Get points from the dual basis functional quadrature */
         PetscCall(PetscDualSpaceGetFunctional(Q, i, &f));
@@ -2940,8 +2942,8 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
           }
           /* Update interpolator */
           if (mesh->printFEM > 1) PetscCall(DMPrintCellMatrix(cell, name, 1, numCIndices, elemMat));
-          PetscCheck(numCIndices == cpdim,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of element matrix columns %" PetscInt_FMT " != %" PetscInt_FMT, numCIndices, cpdim);
-          PetscCall(MatSetValues(In, 1, &findices[i], numCIndices, cindices, elemMat, INSERT_VALUES));
+          PetscCheck(numCIndices == totDim,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of element matrix columns %" PetscInt_FMT " != %" PetscInt_FMT, numCIndices, totDim);
+          PetscCall(MatSetValues(In, 1, &row, cpdim, &cindices[off], elemMat, INSERT_VALUES));
           PetscCall(DMPlexRestoreClosureIndices(dmc, csection, globalCSection, coarseCells[ccell].index, PETSC_FALSE, &numCIndices, &cindices, NULL, NULL));
         }
         PetscCall(VecRestoreArray(pointVec, &pV));

@@ -5907,7 +5907,7 @@ PetscErrorCode DMTransferDS_Internal(DM dm, DMLabel label, IS fields, PetscDS ds
 {
   PetscDS        dsNew;
   DSBoundary     b;
-  PetscInt       cdim, Nf, f;
+  PetscInt       cdim, Nf, f, d;
   PetscBool      isCohesive;
   void          *ctx;
 
@@ -5923,6 +5923,8 @@ PetscErrorCode DMTransferDS_Internal(DM dm, DMLabel label, IS fields, PetscDS ds
     PetscCall(PetscDSSetContext(dsNew, f, ctx));
     PetscCall(PetscDSGetCohesive(ds, f, &isCohesive));
     PetscCall(PetscDSSetCohesive(dsNew, f, isCohesive));
+    PetscCall(PetscDSGetJetDegree(ds, f, &d));
+    PetscCall(PetscDSSetJetDegree(dsNew, f, d));
   }
   if (Nf) {
     PetscCall(PetscDSGetCoordinateDimension(ds, &cdim));
