@@ -15,6 +15,9 @@
 
 #if defined(PETSC_USE_GCOV)
 EXTERN_C_BEGIN
+#if defined(PETSC_HAVE___GCOV_DUMP)
+#define __gcov_flush(x) __gcov_dump(x)
+#endif
 void  __gcov_flush(void);
 EXTERN_C_END
 #endif
