@@ -6,7 +6,7 @@
 
   Level: intermediate
 
-.seealso:  DMPlexTransformCreate(), DMPlexTransformType
+.seealso: `DMPlexTransformCreate()`, `DMPlexTransformType`
 S*/
 typedef struct _p_DMPlexTransform *DMPlexTransform;
 

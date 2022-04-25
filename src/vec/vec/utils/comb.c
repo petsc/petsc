@@ -107,7 +107,7 @@ PETSC_EXTERN void MPIAPI PetscSplitReduction_Local(void *in,void *out,PetscMPIIn
    Calling this function is optional when using split-mode reduction. On supporting hardware, calling this after all
    VecXxxBegin() allows the reduction to make asynchronous progress before the result is needed (in VecXxxEnd()).
 
-.seealso: VecNormBegin(), VecNormEnd(), VecDotBegin(), VecDotEnd(), VecTDotBegin(), VecTDotEnd(), VecMDotBegin(), VecMDotEnd(), VecMTDotBegin(), VecMTDotEnd()
+.seealso: `VecNormBegin()`, `VecNormEnd()`, `VecDotBegin()`, `VecDotEnd()`, `VecTDotBegin()`, `VecTDotEnd()`, `VecMDotBegin()`, `VecMDotEnd()`, `VecMTDotBegin()`, `VecMTDotEnd()`
 @*/
 PetscErrorCode PetscCommSplitReductionBegin(MPI_Comm comm)
 {
@@ -360,8 +360,8 @@ PetscErrorCode  VecDotBegin(Vec x,Vec y,PetscScalar *result)
    Notes:
    Each call to VecDotBegin() should be paired with a call to VecDotEnd().
 
-.seealso: VecDotBegin(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(),
-         VecTDotBegin(),VecTDotEnd(), PetscCommSplitReductionBegin()
+.seealso: `VecDotBegin()`, `VecNormBegin()`, `VecNormEnd()`, `VecNorm()`, `VecDot()`, `VecMDot()`,
+          `VecTDotBegin(),VecTDotEnd()`, `PetscCommSplitReductionBegin()`
 
 @*/
 PetscErrorCode  VecDotEnd(Vec x,Vec y,PetscScalar *result)
@@ -404,8 +404,8 @@ PetscErrorCode  VecDotEnd(Vec x,Vec y,PetscScalar *result)
    Notes:
    Each call to VecTDotBegin() should be paired with a call to VecTDotEnd().
 
-.seealso: VecTDotEnd(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(),
-         VecDotBegin(), VecDotEnd(), PetscCommSplitReductionBegin()
+.seealso: `VecTDotEnd()`, `VecNormBegin()`, `VecNormEnd()`, `VecNorm()`, `VecDot()`, `VecMDot()`,
+          `VecDotBegin()`, `VecDotEnd()`, `PetscCommSplitReductionBegin()`
 
 @*/
 PetscErrorCode  VecTDotBegin(Vec x,Vec y,PetscScalar *result)
@@ -470,7 +470,7 @@ PetscErrorCode  VecTDotEnd(Vec x,Vec y,PetscScalar *result)
    Notes:
    Each call to VecNormBegin() should be paired with a call to VecNormEnd().
 
-.seealso: VecNormEnd(), VecNorm(), VecDot(), VecMDot(), VecDotBegin(), VecDotEnd(), PetscCommSplitReductionBegin()
+.seealso: `VecNormEnd()`, `VecNorm()`, `VecDot()`, `VecMDot()`, `VecDotBegin()`, `VecDotEnd()`, `PetscCommSplitReductionBegin()`
 
 @*/
 PetscErrorCode  VecNormBegin(Vec x,NormType ntype,PetscReal *result)
@@ -520,7 +520,7 @@ PetscErrorCode  VecNormBegin(Vec x,NormType ntype,PetscReal *result)
 
    The x vector is not allowed to be NULL, otherwise the vector would not have its correctly cached norm value
 
-.seealso: VecNormBegin(), VecNorm(), VecDot(), VecMDot(), VecDotBegin(), VecDotEnd(), PetscCommSplitReductionBegin()
+.seealso: `VecNormBegin()`, `VecNorm()`, `VecDot()`, `VecMDot()`, `VecDotBegin()`, `VecDotEnd()`, `PetscCommSplitReductionBegin()`
 
 @*/
 PetscErrorCode  VecNormEnd(Vec x,NormType ntype,PetscReal *result)
@@ -579,8 +579,8 @@ PetscErrorCode  VecNormEnd(Vec x,NormType ntype,PetscReal *result)
    Notes:
    Each call to VecMDotBegin() should be paired with a call to VecMDotEnd().
 
-.seealso: VecMDotEnd(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(),
-         VecTDotBegin(), VecTDotEnd(), VecMTDotBegin(), VecMTDotEnd(), PetscCommSplitReductionBegin()
+.seealso: `VecMDotEnd()`, `VecNormBegin()`, `VecNormEnd()`, `VecNorm()`, `VecDot()`, `VecMDot()`,
+          `VecTDotBegin()`, `VecTDotEnd()`, `VecMTDotBegin()`, `VecMTDotEnd()`, `PetscCommSplitReductionBegin()`
 @*/
 PetscErrorCode  VecMDotBegin(Vec x,PetscInt nv,const Vec y[],PetscScalar result[])
 {
@@ -623,8 +623,8 @@ PetscErrorCode  VecMDotBegin(Vec x,PetscInt nv,const Vec y[],PetscScalar result[
    Notes:
    Each call to VecMDotBegin() should be paired with a call to VecMDotEnd().
 
-.seealso: VecMDotBegin(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(),
-         VecTDotBegin(),VecTDotEnd(), VecMTDotBegin(), VecMTDotEnd(), PetscCommSplitReductionBegin()
+.seealso: `VecMDotBegin()`, `VecNormBegin()`, `VecNormEnd()`, `VecNorm()`, `VecDot()`, `VecMDot()`,
+          `VecTDotBegin(),VecTDotEnd()`, `VecMTDotBegin()`, `VecMTDotEnd()`, `PetscCommSplitReductionBegin()`
 
 @*/
 PetscErrorCode  VecMDotEnd(Vec x,PetscInt nv,const Vec y[],PetscScalar result[])
@@ -668,8 +668,8 @@ PetscErrorCode  VecMDotEnd(Vec x,PetscInt nv,const Vec y[],PetscScalar result[])
    Notes:
    Each call to VecMTDotBegin() should be paired with a call to VecMTDotEnd().
 
-.seealso: VecMTDotEnd(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(),
-         VecDotBegin(), VecDotEnd(), VecMDotBegin(), VecMDotEnd(), PetscCommSplitReductionBegin()
+.seealso: `VecMTDotEnd()`, `VecNormBegin()`, `VecNormEnd()`, `VecNorm()`, `VecDot()`, `VecMDot()`,
+          `VecDotBegin()`, `VecDotEnd()`, `VecMDotBegin()`, `VecMDotEnd()`, `PetscCommSplitReductionBegin()`
 
 @*/
 PetscErrorCode  VecMTDotBegin(Vec x,PetscInt nv,const Vec y[],PetscScalar result[])
@@ -713,8 +713,8 @@ PetscErrorCode  VecMTDotBegin(Vec x,PetscInt nv,const Vec y[],PetscScalar result
    Notes:
    Each call to VecTDotBegin() should be paired with a call to VecTDotEnd().
 
-.seealso: VecMTDotBegin(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(),
-         VecDotBegin(), VecDotEnd(), VecMDotBegin(), VecMDotEnd(), PetscCommSplitReductionBegin()
+.seealso: `VecMTDotBegin()`, `VecNormBegin()`, `VecNormEnd()`, `VecNorm()`, `VecDot()`, `VecMDot()`,
+          `VecDotBegin()`, `VecDotEnd()`, `VecMDotBegin()`, `VecMDotEnd()`, `PetscCommSplitReductionBegin()`
 @*/
 PetscErrorCode  VecMTDotEnd(Vec x,PetscInt nv,const Vec y[],PetscScalar result[])
 {

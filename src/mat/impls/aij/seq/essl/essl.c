@@ -128,7 +128,7 @@ PetscErrorCode MatFactorGetSolverType_essl(Mat A,MatSolverType *type)
 
    Level: beginner
 
-.seealso: PCLU, PCFactorSetMatSolverType(), MatSolverType
+.seealso: `PCLU`, `PCFactorSetMatSolverType()`, `MatSolverType`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_essl(Mat A,MatFactorType ftype,Mat *F)

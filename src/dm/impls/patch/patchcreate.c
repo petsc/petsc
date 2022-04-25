@@ -86,7 +86,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Patch(DM dm)
 
   Level: beginner
 
-.seealso: DMPatchZoom()
+.seealso: `DMPatchZoom()`
 
 @*/
 PetscErrorCode DMPatchCreate(MPI_Comm comm, DM *mesh)

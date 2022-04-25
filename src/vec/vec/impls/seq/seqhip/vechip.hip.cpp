@@ -191,7 +191,7 @@ PetscErrorCode VecReplaceArray_SeqHIP(Vec vin,const PetscScalar *a)
 
  Level: intermediate
 
- .seealso: VecCreateMPI(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost()
+ .seealso: `VecCreateMPI()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateGhost()`
  @*/
 PetscErrorCode VecCreateSeqHIP(MPI_Comm comm,PetscInt n,Vec *v)
 {
@@ -252,9 +252,9 @@ PetscErrorCode VecCreate_SeqHIP(Vec V)
 
    Level: intermediate
 
-.seealso: VecCreateMPIHIPWithArray(), VecCreate(), VecDuplicate(), VecDuplicateVecs(),
-          VecCreateGhost(), VecCreateSeq(), VecHIPPlaceArray(), VecCreateSeqWithArray(),
-          VecCreateMPIWithArray()
+.seealso: `VecCreateMPIHIPWithArray()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`,
+          `VecCreateGhost()`, `VecCreateSeq()`, `VecHIPPlaceArray()`, `VecCreateSeqWithArray()`,
+          `VecCreateMPIWithArray()`
 @*/
 PetscErrorCode  VecCreateSeqHIPWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,const PetscScalar array[],Vec *V)
 {
@@ -293,9 +293,9 @@ PetscErrorCode  VecCreateSeqHIPWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,co
 
    Level: intermediate
 
-.seealso: VecCreateMPIHIPWithArrays(), VecCreate(), VecCreateSeqWithArray(),
-          VecHIPPlaceArray(), VecCreateSeqHIPWithArray(),
-          VecHIPAllocateCheckHost()
+.seealso: `VecCreateMPIHIPWithArrays()`, `VecCreate()`, `VecCreateSeqWithArray()`,
+          `VecHIPPlaceArray()`, `VecCreateSeqHIPWithArray()`,
+          `VecHIPAllocateCheckHost()`
 @*/
 PetscErrorCode  VecCreateSeqHIPWithArrays(MPI_Comm comm,PetscInt bs,PetscInt n,const PetscScalar cpuarray[],const PetscScalar gpuarray[],Vec *V)
 {

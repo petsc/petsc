@@ -24,7 +24,7 @@ static PetscErrorCode PCISSetUseStiffnessScaling_IS(PC pc, PetscBool use)
 
    Notes:
 
-.seealso: PCBDDC
+.seealso: `PCBDDC`
 @*/
 PetscErrorCode PCISSetUseStiffnessScaling(PC pc, PetscBool use)
 {
@@ -72,7 +72,7 @@ static PetscErrorCode PCISSetSubdomainDiagonalScaling_IS(PC pc, Vec scaling_fact
    Notes:
    Intended to use with jumping coefficients cases.
 
-.seealso: PCBDDC
+.seealso: `PCBDDC`
 @*/
 PetscErrorCode PCISSetSubdomainDiagonalScaling(PC pc, Vec scaling_factors)
 {
@@ -110,7 +110,7 @@ static PetscErrorCode PCISSetSubdomainScalingFactor_IS(PC pc, PetscScalar scal)
    Notes:
    Intended to use with jumping coefficients cases.
 
-.seealso: PCBDDC
+.seealso: `PCBDDC`
 @*/
 PetscErrorCode PCISSetSubdomainScalingFactor(PC pc, PetscScalar scal)
 {

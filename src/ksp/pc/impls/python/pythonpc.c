@@ -14,7 +14,7 @@
 
    Level: intermediate
 
-.seealso: PCCreate(), PCSetType(), PCPYTHON, PetscPythonInitialize()
+.seealso: `PCCreate()`, `PCSetType()`, `PCPYTHON`, `PetscPythonInitialize()`
 @*/
 PetscErrorCode  PCPythonSetType(PC pc,const char pyname[])
 {

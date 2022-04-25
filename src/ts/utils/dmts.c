@@ -144,7 +144,7 @@ static PetscErrorCode DMSubDomainRestrictHook_DMTS(DM dm,VecScatter gscat,VecSca
 
    Level: developer
 
-.seealso: DMTSCreate(), DMTSDestroy()
+.seealso: `DMTSCreate()`, `DMTSDestroy()`
 @*/
 PetscErrorCode DMTSCopy(DMTS kdm,DMTS nkdm)
 {
@@ -198,7 +198,7 @@ PetscErrorCode DMTSCopy(DMTS kdm,DMTS nkdm)
    Notes:
    Use DMGetDMTSWrite() if write access is needed. The DMTSSetXXX API should be used wherever possible.
 
-.seealso: DMGetDMTSWrite()
+.seealso: `DMGetDMTSWrite()`
 @*/
 PetscErrorCode DMGetDMTS(DM dm,DMTS *tsdm)
 {
@@ -229,7 +229,7 @@ PetscErrorCode DMGetDMTS(DM dm,DMTS *tsdm)
 
    Level: developer
 
-.seealso: DMGetDMTS()
+.seealso: `DMGetDMTS()`
 @*/
 PetscErrorCode DMGetDMTSWrite(DM dm,DMTS *tsdm)
 {
@@ -266,7 +266,7 @@ PetscErrorCode DMGetDMTSWrite(DM dm,DMTS *tsdm)
    Note:
    The context is copied by reference. This function does not ensure that a context exists.
 
-.seealso: DMGetDMTS(), TSSetDM()
+.seealso: `DMGetDMTS()`, `TSSetDM()`
 @*/
 PetscErrorCode DMCopyDMTS(DM dmsrc,DM dmdest)
 {
@@ -307,7 +307,7 @@ $     PetscErrorCode func(TS ts,PetscReal t,Vec u,Vec u_t,Vec F,ctx);
    associated with the DM.  This makes the interface consistent regardless of whether the user interacts with a DM or
    not. If DM took a more central role at some later date, this could become the primary method of setting the residual.
 
-.seealso: DMTSSetContext(), TSSetIFunction(), DMTSSetJacobian()
+.seealso: `DMTSSetContext()`, `TSSetIFunction()`, `DMTSSetJacobian()`
 @*/
 PetscErrorCode DMTSSetIFunction(DM dm,TSIFunction func,void *ctx)
 {
@@ -339,7 +339,7 @@ PetscErrorCode DMTSSetIFunction(DM dm,TSIFunction func,void *ctx)
    TSGetFunction() is normally used, but it calls this function internally because the user context is actually
    associated with the DM.
 
-.seealso: DMTSSetContext(), DMTSSetFunction(), TSSetFunction()
+.seealso: `DMTSSetContext()`, `DMTSSetFunction()`, `TSSetFunction()`
 @*/
 PetscErrorCode DMTSGetIFunction(DM dm,TSIFunction *func,void **ctx)
 {
@@ -379,7 +379,7 @@ $     PetscErrorCode fun(TS ts,PetscReal t,Vec U,Vec U_t,Vec U_tt,Vec F,ctx);
    TSSetI2Function() is normally used, but it calls this function internally because the user context is actually
    associated with the DM.
 
-.seealso: TSSetI2Function()
+.seealso: `TSSetI2Function()`
 @*/
 PetscErrorCode DMTSSetI2Function(DM dm,TSI2Function fun,void *ctx)
 {
@@ -411,7 +411,7 @@ PetscErrorCode DMTSSetI2Function(DM dm,TSI2Function fun,void *ctx)
    TSGetI2Function() is normally used, but it calls this function internally because the user context is actually
    associated with the DM.
 
-.seealso: DMTSSetI2Function(),TSGetI2Function()
+.seealso: `DMTSSetI2Function(),TSGetI2Function()`
 @*/
 PetscErrorCode DMTSGetI2Function(DM dm,TSI2Function *fun,void **ctx)
 {
@@ -454,7 +454,7 @@ $    PetscErrorCode jac(TS ts,PetscReal t,Vec U,Vec U_t,Vec U_tt,PetscReal v,Pet
    TSSetI2Jacobian() is normally used, but it calls this function internally because the user context is actually
    associated with the DM.
 
-.seealso: TSSetI2Jacobian()
+.seealso: `TSSetI2Jacobian()`
 @*/
 PetscErrorCode DMTSSetI2Jacobian(DM dm,TSI2Jacobian jac,void *ctx)
 {
@@ -486,7 +486,7 @@ PetscErrorCode DMTSSetI2Jacobian(DM dm,TSI2Jacobian jac,void *ctx)
    TSGetI2Jacobian() is normally used, but it calls this function internally because the user context is actually
    associated with the DM.
 
-.seealso: DMTSSetI2Jacobian(),TSGetI2Jacobian()
+.seealso: `DMTSSetI2Jacobian(),TSGetI2Jacobian()`
 @*/
 PetscErrorCode DMTSGetI2Jacobian(DM dm,TSI2Jacobian *jac,void **ctx)
 {
@@ -526,7 +526,7 @@ $     PetscErrorCode func(TS ts,PetscReal t,Vec u,Vec F,void *ctx);
    associated with the DM.  This makes the interface consistent regardless of whether the user interacts with a DM or
    not. If DM took a more central role at some later date, this could become the primary method of setting the residual.
 
-.seealso: DMTSSetContext(), TSSetRHSFunction(), DMTSSetJacobian()
+.seealso: `DMTSSetContext()`, `TSSetRHSFunction()`, `DMTSSetJacobian()`
 @*/
 PetscErrorCode DMTSSetRHSFunction(DM dm,TSRHSFunction func,void *ctx)
 {
@@ -569,7 +569,7 @@ $     PetscErrorCode tvar(TS ts,Vec p,Vec c,void *ctx);
 
      dF/dP + shift * dF/dCdot dC/dP.
 
-.seealso: TSSetTransientVariable(), DMTSGetTransientVariable(), DMTSSetIFunction(), DMTSSetIJacobian()
+.seealso: `TSSetTransientVariable()`, `DMTSGetTransientVariable()`, `DMTSSetIFunction()`, `DMTSSetIJacobian()`
 @*/
 PetscErrorCode DMTSSetTransientVariable(DM dm,TSTransientVariable tvar,void *ctx)
 {
@@ -597,7 +597,7 @@ PetscErrorCode DMTSSetTransientVariable(DM dm,TSTransientVariable tvar,void *ctx
 
    Level: advanced
 
-.seealso: DMTSSetTransientVariable(), DMTSGetIFunction(), DMTSGetIJacobian()
+.seealso: `DMTSSetTransientVariable()`, `DMTSGetIFunction()`, `DMTSGetIJacobian()`
 @*/
 PetscErrorCode DMTSGetTransientVariable(DM dm,TSTransientVariable *tvar,void *ctx)
 {
@@ -625,7 +625,7 @@ PetscErrorCode DMTSGetTransientVariable(DM dm,TSTransientVariable *tvar,void *ct
 
    Level: advanced
 
-.seealso: DMTSSetContext(), TSSetFunction(), DMTSSetJacobian(), DMTSSetSolutionFunction()
+.seealso: `DMTSSetContext()`, `TSSetFunction()`, `DMTSSetJacobian()`, `DMTSSetSolutionFunction()`
 @*/
 PetscErrorCode DMTSGetSolutionFunction(DM dm,TSSolutionFunction *func,void **ctx)
 {
@@ -664,7 +664,7 @@ $     PetscErrorCode f(TS ts,PetscReal t,Vec u,void *ctx);
    associated with the DM.  This makes the interface consistent regardless of whether the user interacts with a DM or
    not. If DM took a more central role at some later date, this could become the primary method of setting the residual.
 
-.seealso: DMTSSetContext(), TSSetFunction(), DMTSSetJacobian(), DMTSGetSolutionFunction()
+.seealso: `DMTSSetContext()`, `TSSetFunction()`, `DMTSSetJacobian()`, `DMTSGetSolutionFunction()`
 @*/
 PetscErrorCode DMTSSetSolutionFunction(DM dm,TSSolutionFunction func,void *ctx)
 {
@@ -703,7 +703,7 @@ $     PetscErrorCode func (TS ts,PetscReal t,Vec f,void *ctx);
    associated with the DM.  This makes the interface consistent regardless of whether the user interacts with a DM or
    not. If DM took a more central role at some later date, this could become the primary method of setting the residual.
 
-.seealso: DMTSSetContext(), TSSetFunction(), DMTSSetJacobian(), TSSetForcingFunction(), DMTSGetForcingFunction()
+.seealso: `DMTSSetContext()`, `TSSetFunction()`, `DMTSSetJacobian()`, `TSSetForcingFunction()`, `DMTSGetForcingFunction()`
 @*/
 PetscErrorCode DMTSSetForcingFunction(DM dm,TSForcingFunction f,void *ctx)
 {
@@ -736,7 +736,7 @@ PetscErrorCode DMTSSetForcingFunction(DM dm,TSForcingFunction f,void *ctx)
    associated with the DM.  This makes the interface consistent regardless of whether the user interacts with a DM or
    not. If DM took a more central role at some later date, this could become the primary method of setting the residual.
 
-.seealso: DMTSSetContext(), TSSetFunction(), DMTSSetJacobian(), TSSetForcingFunction(), DMTSGetForcingFunction()
+.seealso: `DMTSSetContext()`, `TSSetFunction()`, `DMTSSetJacobian()`, `TSSetForcingFunction()`, `DMTSGetForcingFunction()`
 @*/
 PetscErrorCode DMTSGetForcingFunction(DM dm,TSForcingFunction *f,void **ctx)
 {
@@ -768,7 +768,7 @@ PetscErrorCode DMTSGetForcingFunction(DM dm,TSForcingFunction *f,void **ctx)
    TSGetFunction() is normally used, but it calls this function internally because the user context is actually
    associated with the DM.
 
-.seealso: DMTSSetContext(), DMTSSetRHSFunction(), TSSetRHSFunction()
+.seealso: `DMTSSetContext()`, `DMTSSetRHSFunction()`, `TSSetRHSFunction()`
 @*/
 PetscErrorCode DMTSGetRHSFunction(DM dm,TSRHSFunction *func,void **ctx)
 {
@@ -810,7 +810,7 @@ $    PetscErrorCode f(TS ts,PetscReal t,Vec U,Vec U_t,PetscReal a,Mat Amat,Mat P
    associated with the DM.  This makes the interface consistent regardless of whether the user interacts with a DM or
    not. If DM took a more central role at some later date, this could become the primary method of setting the Jacobian.
 
-.seealso: DMTSSetContext(), TSSetRHSFunction(), DMTSGetJacobian(), TSSetIJacobian(), TSSetIFunction()
+.seealso: `DMTSSetContext()`, `TSSetRHSFunction()`, `DMTSGetJacobian()`, `TSSetIJacobian()`, `TSSetIFunction()`
 @*/
 PetscErrorCode DMTSSetIJacobian(DM dm,TSIJacobian func,void *ctx)
 {
@@ -843,7 +843,7 @@ PetscErrorCode DMTSSetIJacobian(DM dm,TSIJacobian func,void *ctx)
    associated with the DM.  This makes the interface consistent regardless of whether the user interacts with a DM or
    not. If DM took a more central role at some later date, this could become the primary method of setting the Jacobian.
 
-.seealso: DMTSSetContext(), TSSetFunction(), DMTSSetJacobian()
+.seealso: `DMTSSetContext()`, `TSSetFunction()`, `DMTSSetJacobian()`
 @*/
 PetscErrorCode DMTSGetIJacobian(DM dm,TSIJacobian *func,void **ctx)
 {
@@ -883,7 +883,7 @@ $     PetscErrorCode func(TS ts,PetscReal t,Vec u,Mat A,Mat B,void *ctx);
    associated with the DM.  This makes the interface consistent regardless of whether the user interacts with a DM or
    not. If DM took a more central role at some later date, this could become the primary method of setting the Jacobian.
 
-.seealso: DMTSSetContext(), TSSetFunction(), DMTSGetJacobian(), TSSetRHSJacobian()
+.seealso: `DMTSSetContext()`, `TSSetFunction()`, `DMTSGetJacobian()`, `TSSetRHSJacobian()`
 @*/
 PetscErrorCode DMTSSetRHSJacobian(DM dm,TSRHSJacobian func,void *ctx)
 {
@@ -916,7 +916,7 @@ PetscErrorCode DMTSSetRHSJacobian(DM dm,TSRHSJacobian func,void *ctx)
    associated with the DM.  This makes the interface consistent regardless of whether the user interacts with a DM or
    not. If DM took a more central role at some later date, this could become the primary method of setting the Jacobian.
 
-.seealso: DMTSSetContext(), TSSetRHSFunction(), DMTSSetRHSJacobian(), TSSetRHSJacobian()
+.seealso: `DMTSSetContext()`, `TSSetRHSFunction()`, `DMTSSetRHSJacobian()`, `TSSetRHSJacobian()`
 @*/
 PetscErrorCode DMTSGetRHSJacobian(DM dm,TSRHSJacobian *func,void **ctx)
 {
@@ -942,7 +942,7 @@ PetscErrorCode DMTSGetRHSJacobian(DM dm,TSRHSJacobian *func,void **ctx)
 
    Level: advanced
 
-.seealso: DMTSSetContext(), TSSetFunction(), DMTSSetJacobian()
+.seealso: `DMTSSetContext()`, `TSSetFunction()`, `DMTSSetJacobian()`
 @*/
 PetscErrorCode DMTSSetIFunctionSerialize(DM dm,PetscErrorCode (*view)(void*,PetscViewer),PetscErrorCode (*load)(void**,PetscViewer))
 {
@@ -968,7 +968,7 @@ PetscErrorCode DMTSSetIFunctionSerialize(DM dm,PetscErrorCode (*view)(void*,Pets
 
    Level: advanced
 
-.seealso: DMTSSetContext(), TSSetFunction(), DMTSSetJacobian()
+.seealso: `DMTSSetContext()`, `TSSetFunction()`, `DMTSSetJacobian()`
 @*/
 PetscErrorCode DMTSSetIJacobianSerialize(DM dm,PetscErrorCode (*view)(void*,PetscViewer),PetscErrorCode (*load)(void**,PetscViewer))
 {

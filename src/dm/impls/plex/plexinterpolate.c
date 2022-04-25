@@ -947,7 +947,7 @@ static PetscErrorCode DMPlexAddSharedFace_Private(DM dm, PetscSection candidateS
 
    Note: All debugging for this process can be turned on with the options: -dm_interp_pre_view -petscsf_interp_pre_view -petscsection_interp_candidate_view -petscsection_interp_candidate_remote_view -petscsection_interp_claim_view -petscsf_interp_pre_view -dmplex_interp_debug
 
-.seealso: DMPlexInterpolate(), DMPlexUninterpolate()
+.seealso: `DMPlexInterpolate()`, `DMPlexUninterpolate()`
 @*/
 PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF)
 {
@@ -1295,7 +1295,7 @@ PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF)
   Developer Notes:
     It sets plex->interpolated = DMPLEX_INTERPOLATED_FULL.
 
-.seealso: DMPlexUninterpolate(), DMPlexCreateFromCellListPetsc(), DMPlexCopyCoordinates()
+.seealso: `DMPlexUninterpolate()`, `DMPlexCreateFromCellListPetsc()`, `DMPlexCopyCoordinates()`
 @*/
 PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
 {
@@ -1369,7 +1369,7 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
 
   Note: This is typically used when adding pieces other than vertices to a mesh
 
-.seealso: DMCopyLabels(), DMGetCoordinates(), DMGetCoordinatesLocal(), DMGetCoordinateDM(), DMGetCoordinateSection()
+.seealso: `DMCopyLabels()`, `DMGetCoordinates()`, `DMGetCoordinatesLocal()`, `DMGetCoordinateDM()`, `DMGetCoordinateSection()`
 @*/
 PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
 {
@@ -1520,7 +1520,7 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
   Developer Notes:
     It sets plex->interpolated = DMPLEX_INTERPOLATED_NONE.
 
-.seealso: DMPlexInterpolate(), DMPlexCreateFromCellListPetsc(), DMPlexCopyCoordinates()
+.seealso: `DMPlexInterpolate()`, `DMPlexCreateFromCellListPetsc()`, `DMPlexCopyCoordinates()`
 @*/
 PetscErrorCode DMPlexUninterpolate(DM dm, DM *dmUnint)
 {
@@ -1695,7 +1695,7 @@ finish:
   DMPlexInterpolate() sets plex->interpolated = DMPLEX_INTERPOLATED_FULL,
   and DMPlexUninterpolate() sets plex->interpolated = DMPLEX_INTERPOLATED_NONE.
 
-.seealso: DMPlexInterpolate(), DMPlexIsInterpolatedCollective()
+.seealso: `DMPlexInterpolate()`, `DMPlexIsInterpolatedCollective()`
 @*/
 PetscErrorCode DMPlexIsInterpolated(DM dm, DMPlexInterpolatedFlag *interpolated)
 {
@@ -1744,7 +1744,7 @@ PetscErrorCode DMPlexIsInterpolated(DM dm, DMPlexInterpolatedFlag *interpolated)
 
   If plex->interpolatedCollective != DMPLEX_INTERPOLATED_INVALID, this function just returns plex->interpolatedCollective.
 
-.seealso: DMPlexInterpolate(), DMPlexIsInterpolated()
+.seealso: `DMPlexInterpolate()`, `DMPlexIsInterpolated()`
 @*/
 PetscErrorCode DMPlexIsInterpolatedCollective(DM dm, DMPlexInterpolatedFlag *interpolated)
 {

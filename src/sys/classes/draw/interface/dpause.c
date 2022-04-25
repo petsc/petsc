@@ -14,7 +14,7 @@
 
    Level: beginner
 
-.seealso: PetscDrawSetPause(), PetscDrawGetPause()
+.seealso: `PetscDrawSetPause()`, `PetscDrawGetPause()`
 @*/
 PetscErrorCode  PetscDrawPause(PetscDraw draw)
 {
@@ -42,7 +42,7 @@ PetscErrorCode  PetscDrawPause(PetscDraw draw)
    By default the pause time is zero unless the -draw_pause option is given
    during PetscDrawCreate().
 
-.seealso: PetscDrawGetPause(), PetscDrawPause()
+.seealso: `PetscDrawGetPause()`, `PetscDrawPause()`
 @*/
 PetscErrorCode  PetscDrawSetPause(PetscDraw draw,PetscReal lpause)
 {
@@ -68,7 +68,7 @@ PetscErrorCode  PetscDrawSetPause(PetscDraw draw,PetscReal lpause)
    Note:
    By default the pause time is zero unless the -draw_pause option is given
 
-.seealso: PetscDrawSetPause(), PetscDrawPause()
+.seealso: `PetscDrawSetPause()`, `PetscDrawPause()`
 @*/
 PetscErrorCode  PetscDrawGetPause(PetscDraw draw,PetscReal *lpause)
 {

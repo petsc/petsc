@@ -1928,7 +1928,7 @@ static PetscErrorCode  PCFieldSplitSetIS_FieldSplit(PC pc,const char splitname[]
      until PCSetUp_FieldSplit(), because information about the vector/matrix layouts may not be
      available when this routine is called.
 
-.seealso: PCFieldSplitGetSubKSP(), PCFIELDSPLIT, PCFieldSplitSetBlockSize(), PCFieldSplitSetIS()
+.seealso: `PCFieldSplitGetSubKSP()`, `PCFIELDSPLIT`, `PCFieldSplitSetBlockSize()`, `PCFieldSplitSetIS()`
 
 @*/
 PetscErrorCode  PCFieldSplitSetFields(PC pc,const char splitname[],PetscInt n,const PetscInt *fields,const PetscInt *fields_col)
@@ -1956,7 +1956,7 @@ PetscErrorCode  PCFieldSplitSetFields(PC pc,const char splitname[],PetscInt n,co
 
     Level: intermediate
 
-.seealso: PCFieldSplitGetDiagUseAmat(), PCFieldSplitSetOffDiagUseAmat(), PCFIELDSPLIT
+.seealso: `PCFieldSplitGetDiagUseAmat()`, `PCFieldSplitSetOffDiagUseAmat()`, `PCFIELDSPLIT`
 
 @*/
 PetscErrorCode  PCFieldSplitSetDiagUseAmat(PC pc,PetscBool flg)
@@ -1985,7 +1985,7 @@ PetscErrorCode  PCFieldSplitSetDiagUseAmat(PC pc,PetscBool flg)
 
     Level: intermediate
 
-.seealso: PCFieldSplitSetDiagUseAmat(), PCFieldSplitGetOffDiagUseAmat(), PCFIELDSPLIT
+.seealso: `PCFieldSplitSetDiagUseAmat()`, `PCFieldSplitGetOffDiagUseAmat()`, `PCFIELDSPLIT`
 
 @*/
 PetscErrorCode  PCFieldSplitGetDiagUseAmat(PC pc,PetscBool *flg)
@@ -2016,7 +2016,7 @@ PetscErrorCode  PCFieldSplitGetDiagUseAmat(PC pc,PetscBool *flg)
 
     Level: intermediate
 
-.seealso: PCFieldSplitGetOffDiagUseAmat(), PCFieldSplitSetDiagUseAmat(), PCFIELDSPLIT
+.seealso: `PCFieldSplitGetOffDiagUseAmat()`, `PCFieldSplitSetDiagUseAmat()`, `PCFIELDSPLIT`
 
 @*/
 PetscErrorCode  PCFieldSplitSetOffDiagUseAmat(PC pc,PetscBool flg)
@@ -2045,7 +2045,7 @@ PetscErrorCode  PCFieldSplitSetOffDiagUseAmat(PC pc,PetscBool flg)
 
     Level: intermediate
 
-.seealso: PCFieldSplitSetOffDiagUseAmat(), PCFieldSplitGetDiagUseAmat(), PCFIELDSPLIT
+.seealso: `PCFieldSplitSetOffDiagUseAmat()`, `PCFieldSplitGetDiagUseAmat()`, `PCFIELDSPLIT`
 
 @*/
 PetscErrorCode  PCFieldSplitGetOffDiagUseAmat(PC pc,PetscBool *flg)
@@ -2080,7 +2080,7 @@ PetscErrorCode  PCFieldSplitGetOffDiagUseAmat(PC pc,PetscBool *flg)
 
     Level: intermediate
 
-.seealso: PCFieldSplitGetSubKSP(), PCFIELDSPLIT, PCFieldSplitSetBlockSize()
+.seealso: `PCFieldSplitGetSubKSP()`, `PCFIELDSPLIT`, `PCFieldSplitSetBlockSize()`
 
 @*/
 PetscErrorCode  PCFieldSplitSetIS(PC pc,const char splitname[],IS is)
@@ -2107,7 +2107,7 @@ PetscErrorCode  PCFieldSplitSetIS(PC pc,const char splitname[],IS is)
 
     Level: intermediate
 
-.seealso: PCFieldSplitGetSubKSP(), PCFIELDSPLIT, PCFieldSplitSetIS()
+.seealso: `PCFieldSplitGetSubKSP()`, `PCFIELDSPLIT`, `PCFieldSplitSetIS()`
 
 @*/
 PetscErrorCode PCFieldSplitGetIS(PC pc,const char splitname[],IS *is)
@@ -2148,7 +2148,7 @@ PetscErrorCode PCFieldSplitGetIS(PC pc,const char splitname[],IS *is)
 
     Level: intermediate
 
-.seealso: PCFieldSplitGetSubKSP(), PCFIELDSPLIT, PCFieldSplitGetIS(), PCFieldSplitSetIS()
+.seealso: `PCFieldSplitGetSubKSP()`, `PCFIELDSPLIT`, `PCFieldSplitGetIS()`, `PCFieldSplitSetIS()`
 
 @*/
 PetscErrorCode PCFieldSplitGetISByIndex(PC pc,PetscInt index,IS *is)
@@ -2184,7 +2184,7 @@ PetscErrorCode PCFieldSplitGetISByIndex(PC pc,PetscInt index,IS *is)
 
     Level: intermediate
 
-.seealso: PCFieldSplitGetSubKSP(), PCFIELDSPLIT, PCFieldSplitSetFields()
+.seealso: `PCFieldSplitGetSubKSP()`, `PCFIELDSPLIT`, `PCFieldSplitSetFields()`
 
 @*/
 PetscErrorCode  PCFieldSplitSetBlockSize(PC pc,PetscInt bs)
@@ -2227,7 +2227,7 @@ PetscErrorCode  PCFieldSplitSetBlockSize(PC pc,PetscInt bs)
 
    Level: advanced
 
-.seealso: PCFIELDSPLIT
+.seealso: `PCFIELDSPLIT`
 @*/
 PetscErrorCode  PCFieldSplitGetSubKSP(PC pc,PetscInt *n,KSP *subksp[])
 {
@@ -2269,7 +2269,7 @@ PetscErrorCode  PCFieldSplitGetSubKSP(PC pc,PetscInt *n,KSP *subksp[])
 
    Level: advanced
 
-.seealso: PCFIELDSPLIT
+.seealso: `PCFIELDSPLIT`
 @*/
 PetscErrorCode  PCFieldSplitSchurGetSubKSP(PC pc,PetscInt *n,KSP *subksp[])
 {
@@ -2317,8 +2317,8 @@ $             useful mostly as a test that the Schur complement approach can wor
 
     Level: intermediate
 
-.seealso: PCFieldSplitGetSchurPre(), PCFieldSplitGetSubKSP(), PCFIELDSPLIT, PCFieldSplitSetFields(), PCFieldSplitSchurPreType,
-          MatSchurComplementSetAinvType(), PCLSC
+.seealso: `PCFieldSplitGetSchurPre()`, `PCFieldSplitGetSubKSP()`, `PCFIELDSPLIT`, `PCFieldSplitSetFields()`, `PCFieldSplitSchurPreType`,
+          `MatSchurComplementSetAinvType()`, `PCLSC`
 
 @*/
 PetscErrorCode PCFieldSplitSetSchurPre(PC pc,PCFieldSplitSchurPreType ptype,Mat pre)
@@ -2346,7 +2346,7 @@ PetscErrorCode PCFieldSplitSchurPrecondition(PC pc,PCFieldSplitSchurPreType ptyp
 
     Level: intermediate
 
-.seealso: PCFieldSplitSetSchurPre(), PCFieldSplitGetSubKSP(), PCFIELDSPLIT, PCFieldSplitSetFields(), PCFieldSplitSchurPreType, PCLSC
+.seealso: `PCFieldSplitSetSchurPre()`, `PCFieldSplitGetSubKSP()`, `PCFIELDSPLIT`, `PCFieldSplitSetFields()`, `PCFieldSplitSchurPreType`, `PCLSC`
 
 @*/
 PetscErrorCode PCFieldSplitGetSchurPre(PC pc,PCFieldSplitSchurPreType *ptype,Mat *pre)
@@ -2373,7 +2373,7 @@ PetscErrorCode PCFieldSplitGetSchurPre(PC pc,PCFieldSplitSchurPreType *ptype,Mat
 
     Level: advanced
 
-.seealso: PCFieldSplitGetSubKSP(), PCFIELDSPLIT, PCFieldSplitSchurPreType, PCFieldSplitSetSchurPre(), MatSchurComplement, PCFieldSplitSchurRestoreS()
+.seealso: `PCFieldSplitGetSubKSP()`, `PCFIELDSPLIT`, `PCFieldSplitSchurPreType`, `PCFieldSplitSetSchurPre()`, `MatSchurComplement`, `PCFieldSplitSchurRestoreS()`
 
 @*/
 PetscErrorCode  PCFieldSplitSchurGetS(PC pc,Mat *S)
@@ -2404,7 +2404,7 @@ PetscErrorCode  PCFieldSplitSchurGetS(PC pc,Mat *S)
 
     Level: advanced
 
-.seealso: PCFieldSplitGetSubKSP(), PCFIELDSPLIT, PCFieldSplitSchurPreType, PCFieldSplitSetSchurPre(), MatSchurComplement, PCFieldSplitSchurGetS()
+.seealso: `PCFieldSplitGetSubKSP()`, `PCFIELDSPLIT`, `PCFieldSplitSchurPreType`, `PCFieldSplitSetSchurPre()`, `MatSchurComplement`, `PCFieldSplitSchurGetS()`
 
 @*/
 PetscErrorCode  PCFieldSplitSchurRestoreS(PC pc,Mat *S)
@@ -2490,7 +2490,7 @@ static PetscErrorCode  PCFieldSplitGetSchurPre_FieldSplit(PC pc,PCFieldSplitSchu
 +   * - Murphy, Golub, and Wathen, A note on preconditioning indefinite linear systems, SIAM J. Sci. Comput., 21 (2000).
 -   * - Ipsen, A note on preconditioning nonsymmetric matrices, SIAM J. Sci. Comput., 23 (2001).
 
-.seealso: PCFieldSplitGetSubKSP(), PCFIELDSPLIT, PCFieldSplitSetFields(), PCFieldSplitSchurPreType, PCFieldSplitSetSchurScale()
+.seealso: `PCFieldSplitGetSubKSP()`, `PCFIELDSPLIT`, `PCFieldSplitSetFields()`, `PCFieldSplitSchurPreType`, `PCFieldSplitSetSchurScale()`
 @*/
 PetscErrorCode  PCFieldSplitSetSchurFactType(PC pc,PCFieldSplitSchurFactType ftype)
 {
@@ -2523,7 +2523,7 @@ static PetscErrorCode PCFieldSplitSetSchurFactType_FieldSplit(PC pc,PCFieldSplit
 
     Level: intermediate
 
-.seealso: PCFIELDSPLIT, PCFieldSplitSetFields(), PCFieldSplitSchurFactType, PCFieldSplitSetSchurScale()
+.seealso: `PCFIELDSPLIT`, `PCFieldSplitSetFields()`, `PCFieldSplitSchurFactType`, `PCFieldSplitSetSchurScale()`
 @*/
 PetscErrorCode PCFieldSplitSetSchurScale(PC pc,PetscScalar scale)
 {
@@ -2559,7 +2559,7 @@ static PetscErrorCode PCFieldSplitSetSchurScale_FieldSplit(PC pc,PetscScalar sca
 
    Level: advanced
 
-.seealso: PCFIELDSPLIT
+.seealso: `PCFIELDSPLIT`
 @*/
 PetscErrorCode  PCFieldSplitGetSchurBlocks(PC pc,Mat *A00,Mat *A01,Mat *A10, Mat *A11)
 {
@@ -2596,7 +2596,7 @@ PetscErrorCode  PCFieldSplitGetSchurBlocks(PC pc,Mat *A00,Mat *A01,Mat *A10, Mat
 
     Level: intermediate
 
-.seealso: PCFIELDSPLIT, PCFieldSplitSetGKBDelay(), PCFieldSplitSetGKBNu(), PCFieldSplitSetGKBMaxit()
+.seealso: `PCFIELDSPLIT`, `PCFieldSplitSetGKBDelay()`, `PCFieldSplitSetGKBNu()`, `PCFieldSplitSetGKBMaxit()`
 @*/
 PetscErrorCode PCFieldSplitSetGKBTol(PC pc,PetscReal tolerance)
 {
@@ -2631,7 +2631,7 @@ static PetscErrorCode PCFieldSplitSetGKBTol_FieldSplit(PC pc,PetscReal tolerance
 
     Level: intermediate
 
-.seealso: PCFIELDSPLIT, PCFieldSplitSetGKBDelay(), PCFieldSplitSetGKBTol(), PCFieldSplitSetGKBNu()
+.seealso: `PCFIELDSPLIT`, `PCFieldSplitSetGKBDelay()`, `PCFieldSplitSetGKBTol()`, `PCFieldSplitSetGKBNu()`
 @*/
 PetscErrorCode PCFieldSplitSetGKBMaxit(PC pc,PetscInt maxit)
 {
@@ -2673,7 +2673,7 @@ static PetscErrorCode PCFieldSplitSetGKBMaxit_FieldSplit(PC pc,PetscInt maxit)
 
     Level: intermediate
 
-.seealso: PCFIELDSPLIT, PCFieldSplitSetGKBNu(), PCFieldSplitSetGKBTol(), PCFieldSplitSetGKBMaxit()
+.seealso: `PCFIELDSPLIT`, `PCFieldSplitSetGKBNu()`, `PCFieldSplitSetGKBTol()`, `PCFieldSplitSetGKBMaxit()`
 @*/
 PetscErrorCode PCFieldSplitSetGKBDelay(PC pc,PetscInt delay)
 {
@@ -2716,7 +2716,7 @@ static PetscErrorCode PCFieldSplitSetGKBDelay_FieldSplit(PC pc,PetscInt delay)
 
     Level: intermediate
 
-.seealso: PCFIELDSPLIT, PCFieldSplitSetGKBDelay(), PCFieldSplitSetGKBTol(), PCFieldSplitSetGKBMaxit()
+.seealso: `PCFIELDSPLIT`, `PCFieldSplitSetGKBDelay()`, `PCFieldSplitSetGKBTol()`, `PCFieldSplitSetGKBMaxit()`
 @*/
 PetscErrorCode PCFieldSplitSetGKBNu(PC pc,PetscReal nu)
 {
@@ -2846,7 +2846,7 @@ static PetscErrorCode PCSetCoordinates_FieldSplit(PC pc, PetscInt dim, PetscInt 
 
    Level: Intermediate
 
-.seealso: PCCompositeSetType()
+.seealso: `PCCompositeSetType()`
 
 @*/
 PetscErrorCode  PCFieldSplitSetType(PC pc,PCCompositeType type)
@@ -2870,7 +2870,7 @@ PetscErrorCode  PCFieldSplitSetType(PC pc,PCCompositeType type)
 
   Level: Intermediate
 
-.seealso: PCCompositeSetType()
+.seealso: `PCCompositeSetType()`
 @*/
 PetscErrorCode PCFieldSplitGetType(PC pc, PCCompositeType *type)
 {
@@ -2897,7 +2897,7 @@ PetscErrorCode PCFieldSplitGetType(PC pc, PCCompositeType *type)
 
    Level: Intermediate
 
-.seealso: PCFieldSplitGetDMSplits()
+.seealso: `PCFieldSplitGetDMSplits()`
 
 @*/
 PetscErrorCode  PCFieldSplitSetDMSplits(PC pc,PetscBool flg)
@@ -2928,7 +2928,7 @@ PetscErrorCode  PCFieldSplitSetDMSplits(PC pc,PetscBool flg)
 
    Level: Intermediate
 
-.seealso: PCFieldSplitSetDMSplits()
+.seealso: `PCFieldSplitSetDMSplits()`
 
 @*/
 PetscErrorCode  PCFieldSplitGetDMSplits(PC pc,PetscBool* flg)
@@ -2959,7 +2959,7 @@ PetscErrorCode  PCFieldSplitGetDMSplits(PC pc,PetscBool* flg)
 
    Level: Intermediate
 
-.seealso: PCFIELDSPLIT, PCFieldSplitSetDetectSaddlePoint()
+.seealso: `PCFIELDSPLIT`, `PCFieldSplitSetDetectSaddlePoint()`
 
 @*/
 PetscErrorCode PCFieldSplitGetDetectSaddlePoint(PC pc,PetscBool *flg)
@@ -2990,7 +2990,7 @@ PetscErrorCode PCFieldSplitGetDetectSaddlePoint(PC pc,PetscBool *flg)
 
    Level: Intermediate
 
-.seealso: PCFIELDSPLIT, PCFieldSplitSetDetectSaddlePoint(), PCFieldSplitSetType(), PCFieldSplitSetSchurPre()
+.seealso: `PCFIELDSPLIT`, `PCFieldSplitSetDetectSaddlePoint()`, `PCFieldSplitSetType()`, `PCFieldSplitSetSchurPre()`
 
 @*/
 PetscErrorCode PCFieldSplitSetDetectSaddlePoint(PC pc,PetscBool flg)
@@ -3105,10 +3105,10 @@ PetscErrorCode PCFieldSplitSetDetectSaddlePoint(PC pc,PetscBool flg)
      :filter: docname in docnames
      ```
 
-.seealso:  PCCreate(), PCSetType(), PCType, PC, PCLSC,
-           PCFieldSplitGetSubKSP(), PCFieldSplitSchurGetSubKSP(), PCFieldSplitSetFields(),
-           PCFieldSplitSetType(), PCFieldSplitSetIS(), PCFieldSplitSetSchurPre(), PCFieldSplitSetSchurFactType(),
-           MatSchurComplementSetAinvType(), PCFieldSplitSetSchurScale(), PCFieldSplitSetDetectSaddlePoint()
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCLSC`,
+          `PCFieldSplitGetSubKSP()`, `PCFieldSplitSchurGetSubKSP()`, `PCFieldSplitSetFields()`,
+          `PCFieldSplitSetType()`, `PCFieldSplitSetIS()`, `PCFieldSplitSetSchurPre()`, `PCFieldSplitSetSchurFactType()`,
+          `MatSchurComplementSetAinvType()`, `PCFieldSplitSetSchurScale()`, `PCFieldSplitSetDetectSaddlePoint()`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_FieldSplit(PC pc)

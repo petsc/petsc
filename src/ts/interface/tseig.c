@@ -40,7 +40,7 @@ struct _n_TSMonitorSPEigCtx {
 
    Level: intermediate
 
-.seealso: TSMonitorSPEigTimeStep(), TSMonitorSet(), TSMonitorLGSolution(), TSMonitorLGError()
+.seealso: `TSMonitorSPEigTimeStep()`, `TSMonitorSet()`, `TSMonitorLGSolution()`, `TSMonitorLGError()`
 
 @*/
 PetscErrorCode  TSMonitorSPEigCtxCreate(MPI_Comm comm,const char host[],const char label[],int x,int y,int m,int n,PetscInt howoften,TSMonitorSPEigCtx *ctx)
@@ -185,7 +185,7 @@ PetscErrorCode TSMonitorSPEig(TS ts,PetscInt step,PetscReal ptime,Vec v,void *mo
 
    Level: intermediate
 
-.seealso: TSMonitorSPEigCtxCreate(),  TSMonitorSet(), TSMonitorSPEig();
+.seealso: `TSMonitorSPEigCtxCreate()`, `TSMonitorSet()`, `TSMonitorSPEig();`
 @*/
 PetscErrorCode  TSMonitorSPEigCtxDestroy(TSMonitorSPEigCtx *ctx)
 {

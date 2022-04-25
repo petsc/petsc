@@ -30,8 +30,8 @@ PetscClassId PETSC_DRAWSP_CLASSID = 0;
 
   The MPI communicator that owns the PetscDraw owns this PetscDrawSP, and each processc can add points. All MPI processes in the communicator must call PetscDrawSPDraw() to display the updated graph.
 
-.seealso:  PetscDrawLGCreate(), PetscDrawLG, PetscDrawBarCreate(), PetscDrawBar, PetscDrawHGCreate(), PetscDrawHG, PetscDrawSPDestroy(), PetscDraw, PetscDrawSP, PetscDrawSPSetDimension(), PetscDrawSPReset(),
-           PetscDrawSPAddPoint(), PetscDrawSPAddPoints(), PetscDrawSPDraw(), PetscDrawSPSave(), PetscDrawSPSetLimits(), PetscDrawSPGetAxis(),PetscDrawAxis, PetscDrawSPGetDraw()
+.seealso: `PetscDrawLGCreate()`, `PetscDrawLG`, `PetscDrawBarCreate()`, `PetscDrawBar`, `PetscDrawHGCreate()`, `PetscDrawHG`, `PetscDrawSPDestroy()`, `PetscDraw`, `PetscDrawSP`, `PetscDrawSPSetDimension()`, `PetscDrawSPReset()`,
+          `PetscDrawSPAddPoint()`, `PetscDrawSPAddPoints()`, `PetscDrawSPDraw()`, `PetscDrawSPSave()`, `PetscDrawSPSetLimits()`, `PetscDrawSPGetAxis(),PetscDrawAxis`, `PetscDrawSPGetDraw()`
 @*/
 PetscErrorCode PetscDrawSPCreate(PetscDraw draw,int dim,PetscDrawSP *drawsp)
 {
@@ -77,7 +77,7 @@ PetscErrorCode PetscDrawSPCreate(PetscDraw draw,int dim,PetscDrawSP *drawsp)
 
   Level: intermediate
 
-.seealso: PetscDrawSP, PetscDrawSPCreate(), PetscDrawSPAddPoint(), PetscDrawSPAddPoints()
+.seealso: `PetscDrawSP`, `PetscDrawSPCreate()`, `PetscDrawSPAddPoint()`, `PetscDrawSPAddPoints()`
 @*/
 PetscErrorCode PetscDrawSPSetDimension(PetscDrawSP sp,int dim)
 {
@@ -105,7 +105,7 @@ PetscErrorCode PetscDrawSPSetDimension(PetscDrawSP sp,int dim)
 
   Level: intermediate
 
-.seealso: PetscDrawSP, PetscDrawSPCreate(), PetscDrawSPAddPoint(), PetscDrawSPAddPoints()
+.seealso: `PetscDrawSP`, `PetscDrawSPCreate()`, `PetscDrawSPAddPoint()`, `PetscDrawSPAddPoints()`
 @*/
 PetscErrorCode PetscDrawSPGetDimension(PetscDrawSP sp, int *dim)
 {
@@ -126,7 +126,7 @@ PetscErrorCode PetscDrawSPGetDimension(PetscDrawSP sp, int *dim)
 
   Level: intermediate
 
-.seealso: PetscDrawSP, PetscDrawSPCreate(), PetscDrawSPAddPoint(), PetscDrawSPAddPoints(), PetscDrawSPDraw()
+.seealso: `PetscDrawSP`, `PetscDrawSPCreate()`, `PetscDrawSPAddPoint()`, `PetscDrawSPAddPoints()`, `PetscDrawSPDraw()`
 @*/
 PetscErrorCode PetscDrawSPReset(PetscDrawSP sp)
 {
@@ -153,7 +153,7 @@ PetscErrorCode PetscDrawSPReset(PetscDrawSP sp)
 
   Level: intermediate
 
-.seealso: PetscDrawSPCreate(), PetscDrawSP, PetscDrawSPReset()
+.seealso: `PetscDrawSPCreate()`, `PetscDrawSP`, `PetscDrawSPReset()`
 @*/
 PetscErrorCode PetscDrawSPDestroy(PetscDrawSP *sp)
 {
@@ -183,7 +183,7 @@ PetscErrorCode PetscDrawSPDestroy(PetscDrawSP *sp)
   Notes:
   The new points will not be displayed until a call to PetscDrawSPDraw() is made
 
-.seealso: PetscDrawSPAddPoints(), PetscDrawSP, PetscDrawSPCreate(), PetscDrawSPReset(), PetscDrawSPDraw(), PetscDrawSPAddPointColorized()
+.seealso: `PetscDrawSPAddPoints()`, `PetscDrawSP`, `PetscDrawSPCreate()`, `PetscDrawSPReset()`, `PetscDrawSPDraw()`, `PetscDrawSPAddPointColorized()`
 @*/
 PetscErrorCode PetscDrawSPAddPoint(PetscDrawSP sp, PetscReal *x, PetscReal *y)
 {
@@ -233,7 +233,7 @@ PetscErrorCode PetscDrawSPAddPoint(PetscDrawSP sp, PetscReal *x, PetscReal *y)
   Notes:
   The new points will not be displayed until a call to PetscDrawSPDraw() is made
 
-.seealso: PetscDrawSPAddPoint(), PetscDrawSP, PetscDrawSPCreate(), PetscDrawSPReset(), PetscDrawSPDraw(), PetscDrawSPAddPointColorized()
+.seealso: `PetscDrawSPAddPoint()`, `PetscDrawSP`, `PetscDrawSPCreate()`, `PetscDrawSPReset()`, `PetscDrawSPDraw()`, `PetscDrawSPAddPointColorized()`
 @*/
 PetscErrorCode PetscDrawSPAddPoints(PetscDrawSP sp, int n, PetscReal **xx, PetscReal **yy)
 {
@@ -293,7 +293,7 @@ PetscErrorCode PetscDrawSPAddPoints(PetscDrawSP sp, int n, PetscReal **xx, Petsc
   Notes:
   The new points will not be displayed until a call to PetscDrawSPDraw() is made
 
-.seealso: PetscDrawSPAddPoints(), PetscDrawSP, PetscDrawSPCreate(), PetscDrawSPReset(), PetscDrawSPDraw(), PetscDrawSPAddPoint()
+.seealso: `PetscDrawSPAddPoints()`, `PetscDrawSP`, `PetscDrawSPCreate()`, `PetscDrawSPReset()`, `PetscDrawSPDraw()`, `PetscDrawSPAddPoint()`
 @*/
 PetscErrorCode PetscDrawSPAddPointColorized(PetscDrawSP sp, PetscReal *x, PetscReal *y, PetscReal *z)
 {
@@ -343,7 +343,7 @@ PetscErrorCode PetscDrawSPAddPointColorized(PetscDrawSP sp, PetscReal *x, PetscR
 
   Level: intermediate
 
-.seealso: PetscDrawLGDraw(), PetscDrawLGSPDraw(), PetscDrawSP, PetscDrawSPCreate(), PetscDrawSPReset(), PetscDrawSPAddPoint(), PetscDrawSPAddPoints()
+.seealso: `PetscDrawLGDraw()`, `PetscDrawLGSPDraw()`, `PetscDrawSP`, `PetscDrawSPCreate()`, `PetscDrawSPReset()`, `PetscDrawSPAddPoint()`, `PetscDrawSPAddPoints()`
 @*/
 PetscErrorCode PetscDrawSPDraw(PetscDrawSP sp, PetscBool clear)
 {
@@ -401,7 +401,7 @@ PetscErrorCode PetscDrawSPDraw(PetscDrawSP sp, PetscBool clear)
 
   Level: intermediate
 
-.seealso: PetscDrawSPCreate(), PetscDrawSPGetDraw(), PetscDrawSetSave(), PetscDrawSave()
+.seealso: `PetscDrawSPCreate()`, `PetscDrawSPGetDraw()`, `PetscDrawSetSave()`, `PetscDrawSave()`
 @*/
 PetscErrorCode PetscDrawSPSave(PetscDrawSP sp)
 {
@@ -422,7 +422,7 @@ PetscErrorCode PetscDrawSPSave(PetscDrawSP sp)
 
   Level: intermediate
 
-.seealso: PetscDrawSP, PetscDrawSPCreate(), PetscDrawSPDraw(), PetscDrawSPAddPoint(), PetscDrawSPAddPoints(), PetscDrawSPGetAxis()
+.seealso: `PetscDrawSP`, `PetscDrawSPCreate()`, `PetscDrawSPDraw()`, `PetscDrawSPAddPoint()`, `PetscDrawSPAddPoints()`, `PetscDrawSPGetAxis()`
 @*/
 PetscErrorCode PetscDrawSPSetLimits(PetscDrawSP sp, PetscReal x_min, PetscReal x_max, PetscReal y_min, PetscReal y_max)
 {
@@ -451,7 +451,7 @@ PetscErrorCode PetscDrawSPSetLimits(PetscDrawSP sp, PetscReal x_min, PetscReal x
 
   Level: intermediate
 
-.seealso: PetscDrawSP, PetscDrawSPCreate(), PetscDrawSPDraw(), PetscDrawSPAddPoint(), PetscDrawSPAddPoints(), PetscDrawAxis, PetscDrawAxisCreate()
+.seealso: `PetscDrawSP`, `PetscDrawSPCreate()`, `PetscDrawSPDraw()`, `PetscDrawSPAddPoint()`, `PetscDrawSPAddPoints()`, `PetscDrawAxis`, `PetscDrawAxisCreate()`
 @*/
 PetscErrorCode PetscDrawSPGetAxis(PetscDrawSP sp, PetscDrawAxis *axis)
 {
@@ -475,7 +475,7 @@ PetscErrorCode PetscDrawSPGetAxis(PetscDrawSP sp, PetscDrawAxis *axis)
 
   Level: intermediate
 
-.seealso: PetscDrawSP, PetscDrawSPCreate(), PetscDrawSPDraw(), PetscDraw
+.seealso: `PetscDrawSP`, `PetscDrawSPCreate()`, `PetscDrawSPDraw()`, `PetscDraw`
 @*/
 PetscErrorCode PetscDrawSPGetDraw(PetscDrawSP sp, PetscDraw *draw)
 {

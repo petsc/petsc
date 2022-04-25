@@ -107,7 +107,7 @@ PetscErrorCode  SNESNewtonTRDCGetRhoFlag(SNES snes,PetscBool *rho_flag)
 
    Note: This function is called BEFORE the function evaluation within the SNESNEWTONTRDC solver.
 
-.seealso: SNESNewtonTRDCPreCheck(), SNESNewtonTRDCGetPreCheck(), SNESNewtonTRDCSetPostCheck(), SNESNewtonTRDCGetPostCheck()
+.seealso: `SNESNewtonTRDCPreCheck()`, `SNESNewtonTRDCGetPreCheck()`, `SNESNewtonTRDCSetPostCheck()`, `SNESNewtonTRDCGetPostCheck()`
 @*/
 PetscErrorCode  SNESNewtonTRDCSetPreCheck(SNES snes, PetscErrorCode (*func)(SNES,Vec,Vec,PetscBool*,void*),void *ctx)
 {
@@ -134,7 +134,7 @@ PetscErrorCode  SNESNewtonTRDCSetPreCheck(SNES snes, PetscErrorCode (*func)(SNES
 
    Level: intermediate
 
-.seealso: SNESNewtonTRDCSetPreCheck(), SNESNewtonTRDCPreCheck()
+.seealso: `SNESNewtonTRDCSetPreCheck()`, `SNESNewtonTRDCPreCheck()`
 @*/
 PetscErrorCode  SNESNewtonTRDCGetPreCheck(SNES snes, PetscErrorCode (**func)(SNES,Vec,Vec,PetscBool*,void*),void **ctx)
 {
@@ -163,7 +163,7 @@ PetscErrorCode  SNESNewtonTRDCGetPreCheck(SNES snes, PetscErrorCode (**func)(SNE
    Note: This function is called BEFORE the function evaluation within the SNESNEWTONTRDC solver while the function set in
    SNESLineSearchSetPostCheck() is called AFTER the function evaluation.
 
-.seealso: SNESNewtonTRDCPostCheck(), SNESNewtonTRDCGetPostCheck()
+.seealso: `SNESNewtonTRDCPostCheck()`, `SNESNewtonTRDCGetPostCheck()`
 @*/
 PetscErrorCode  SNESNewtonTRDCSetPostCheck(SNES snes,PetscErrorCode (*func)(SNES,Vec,Vec,Vec,PetscBool*,PetscBool*,void*),void *ctx)
 {
@@ -190,7 +190,7 @@ PetscErrorCode  SNESNewtonTRDCSetPostCheck(SNES snes,PetscErrorCode (*func)(SNES
 
    Level: intermediate
 
-.seealso: SNESNewtonTRDCSetPostCheck(), SNESNewtonTRDCPostCheck()
+.seealso: `SNESNewtonTRDCSetPostCheck()`, `SNESNewtonTRDCPostCheck()`
 @*/
 PetscErrorCode  SNESNewtonTRDCGetPostCheck(SNES snes,PetscErrorCode (**func)(SNES,Vec,Vec,Vec,PetscBool*,PetscBool*,void*),void **ctx)
 {
@@ -218,7 +218,7 @@ PetscErrorCode  SNESNewtonTRDCGetPostCheck(SNES snes,PetscErrorCode (**func)(SNE
 
    Level: developer
 
-.seealso: SNESNewtonTRDCSetPreCheck(), SNESNewtonTRDCGetPreCheck()
+.seealso: `SNESNewtonTRDCSetPreCheck()`, `SNESNewtonTRDCGetPreCheck()`
 @*/
 static PetscErrorCode SNESNewtonTRDCPreCheck(SNES snes,Vec X,Vec Y,PetscBool *changed_Y)
 {
@@ -253,7 +253,7 @@ static PetscErrorCode SNESNewtonTRDCPreCheck(SNES snes,Vec X,Vec Y,PetscBool *ch
 
    Level: developer
 
-.seealso: SNESNewtonTRDCSetPostCheck(), SNESNewtonTRDCGetPostCheck()
+.seealso: `SNESNewtonTRDCSetPostCheck()`, `SNESNewtonTRDCGetPostCheck()`
 @*/
 static PetscErrorCode SNESNewtonTRDCPostCheck(SNES snes,Vec X,Vec Y,Vec W,PetscBool *changed_Y,PetscBool *changed_W)
 {
@@ -648,7 +648,7 @@ static PetscErrorCode SNESView_NEWTONTRDC(SNES snes,PetscViewer viewer)
 
    Level: intermediate
 
-.seealso:  SNESCreate(), SNES, SNESSetType(), SNESNEWTONLS, SNESSetTrustRegionTolerance(), SNESNEWTONTRDC
+.seealso: `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONLS`, `SNESSetTrustRegionTolerance()`, `SNESNEWTONTRDC`
 
 M*/
 PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONTRDC(SNES snes)

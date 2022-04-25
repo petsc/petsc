@@ -74,7 +74,7 @@ PetscErrorCode PCLMVMGetMatLMVM(PC pc, Mat *B)
 
    Level: intermediate
 
-.seealso:  MatLMVMUpdate()
+.seealso: `MatLMVMUpdate()`
 @*/
 PetscErrorCode PCLMVMSetIS(PC pc, IS inactive)
 {
@@ -100,7 +100,7 @@ PetscErrorCode PCLMVMSetIS(PC pc, IS inactive)
 
    Level: intermediate
 
-.seealso:  MatLMVMUpdate()
+.seealso: `MatLMVMUpdate()`
 @*/
 PetscErrorCode PCLMVMClearIS(PC pc)
 {
@@ -223,8 +223,8 @@ static PetscErrorCode PCDestroy_LMVM(PC pc)
 
    Level: intermediate
 
-.seealso:  PCCreate(), PCSetType(), PCType,
-           PC, MATLMVM, PCLMVMUpdate(), PCLMVMSetMatLMVM(), PCLMVMGetMatLMVM()
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`,
+          `PC`, `MATLMVM`, `PCLMVMUpdate()`, `PCLMVMSetMatLMVM()`, `PCLMVMGetMatLMVM()`
 M*/
 PETSC_EXTERN PetscErrorCode PCCreate_LMVM(PC pc)
 {

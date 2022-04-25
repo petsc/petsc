@@ -405,7 +405,7 @@ static PetscErrorCode DMPlexCreateSectionBCIndices(DM dm, PetscSection section)
 
   TODO: How is this related to DMCreateLocalSection()
 
-.seealso: DMPlexCreate(), PetscSectionCreate(), PetscSectionSetPermutation()
+.seealso: `DMPlexCreate()`, `PetscSectionCreate()`, `PetscSectionSetPermutation()`
 @*/
 PetscErrorCode DMPlexCreateSection(DM dm, DMLabel label[], const PetscInt numComp[],const PetscInt numDof[], PetscInt numBC, const PetscInt bcField[], const IS bcComps[], const IS bcPoints[], IS perm, PetscSection *section)
 {

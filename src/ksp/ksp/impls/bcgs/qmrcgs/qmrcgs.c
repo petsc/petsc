@@ -244,7 +244,7 @@ static PetscErrorCode  KSPSolve_QMRCGS(KSP ksp)
    References:
 . * - Chan, Gallopoulos, Simoncini, Szeto, and Tong (SISC 1994), Ghai, Lu, and Jiao (NLAA 2019)
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType, KSP, KSPBICG, KSPFBICGS, KSPFBCGSL, KSPSetPCSide()
+.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBICG`, `KSPFBICGS`, `KSPFBCGSL`, `KSPSetPCSide()`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_QMRCGS(KSP ksp)
 {

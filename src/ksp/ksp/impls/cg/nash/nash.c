@@ -612,7 +612,7 @@ $  other KSP converged/diverged reasons
   Reference:
    Nash, Stephen G. Newton-type minimization via the Lanczos method. SIAM Journal on Numerical Analysis 21, no. 4 (1984): 770-788.
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType, KSP, KSPCGSetRadius(), KSPCGGetNormD(), KSPCGGetObjFcn()
+.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPCGSetRadius()`, `KSPCGGetNormD()`, `KSPCGGetObjFcn()`
 M*/
 
 PETSC_EXTERN PetscErrorCode KSPCreate_NASH(KSP ksp)

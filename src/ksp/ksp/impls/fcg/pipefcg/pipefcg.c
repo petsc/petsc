@@ -417,7 +417,7 @@ static PetscErrorCode KSPView_PIPEFCG(KSP ksp,PetscViewer viewer)
   Options Database:
 . -ksp_pipefcg_mmax <N> - maximum number of previous directions
 
-.seealso: KSPPIPEFCG, KSPPIPEFCGSetTruncationType(), KSPPIPEFCGSetNprealloc()
+.seealso: `KSPPIPEFCG`, `KSPPIPEFCGSetTruncationType()`, `KSPPIPEFCGSetNprealloc()`
 @*/
 PetscErrorCode KSPPIPEFCGSetMmax(KSP ksp,PetscInt mmax)
 {
@@ -448,7 +448,7 @@ PetscErrorCode KSPPIPEFCGSetMmax(KSP ksp,PetscInt mmax)
 
    Level: intermediate
 
-.seealso: KSPPIPEFCG, KSPPIPEFCGGetTruncationType(), KSPPIPEFCGGetNprealloc(), KSPPIPEFCGSetMmax()
+.seealso: `KSPPIPEFCG`, `KSPPIPEFCGGetTruncationType()`, `KSPPIPEFCGGetNprealloc()`, `KSPPIPEFCGSetMmax()`
 @*/
 PetscErrorCode KSPPIPEFCGGetMmax(KSP ksp,PetscInt *mmax)
 {
@@ -474,7 +474,7 @@ PetscErrorCode KSPPIPEFCGGetMmax(KSP ksp,PetscInt *mmax)
   Options Database:
 . -ksp_pipefcg_nprealloc <N> - the number of vectors to preallocate
 
-.seealso: KSPPIPEFCG, KSPPIPEFCGSetTruncationType(), KSPPIPEFCGGetNprealloc()
+.seealso: `KSPPIPEFCG`, `KSPPIPEFCGSetTruncationType()`, `KSPPIPEFCGGetNprealloc()`
 @*/
 PetscErrorCode KSPPIPEFCGSetNprealloc(KSP ksp,PetscInt nprealloc)
 {
@@ -500,7 +500,7 @@ PetscErrorCode KSPPIPEFCGSetNprealloc(KSP ksp,PetscInt nprealloc)
 
    Level: advanced
 
-.seealso: KSPPIPEFCG, KSPPIPEFCGGetTruncationType(), KSPPIPEFCGSetNprealloc()
+.seealso: `KSPPIPEFCG`, `KSPPIPEFCGGetTruncationType()`, `KSPPIPEFCGSetNprealloc()`
 @*/
 PetscErrorCode KSPPIPEFCGGetNprealloc(KSP ksp,PetscInt *nprealloc)
 {
@@ -529,7 +529,7 @@ PetscErrorCode KSPPIPEFCGGetNprealloc(KSP ksp,PetscInt *nprealloc)
   Options Database:
 .  -ksp_pipefcg_truncation_type <standard,notay> - which stored search directions to orthogonalize against
 
-.seealso: KSPPIPEFCG, KSPPIPEFCGGetTruncationType, KSPFCDTruncationType
+.seealso: `KSPPIPEFCG`, `KSPPIPEFCGGetTruncationType`, `KSPFCDTruncationType`
 @*/
 PetscErrorCode KSPPIPEFCGSetTruncationType(KSP ksp,KSPFCDTruncationType truncstrat)
 {
@@ -558,7 +558,7 @@ PetscErrorCode KSPPIPEFCGSetTruncationType(KSP ksp,KSPFCDTruncationType truncstr
 
    Level: intermediate
 
-.seealso: KSPPIPEFCG, KSPPIPEFCGSetTruncationType, KSPFCDTruncationType
+.seealso: `KSPPIPEFCG`, `KSPPIPEFCGSetTruncationType`, `KSPFCDTruncationType`
 @*/
 PetscErrorCode KSPPIPEFCGGetTruncationType(KSP ksp,KSPFCDTruncationType *truncstrat)
 {
@@ -612,7 +612,7 @@ static PetscErrorCode KSPSetFromOptions_PIPEFCG(PetscOptionItems *PetscOptionsOb
 
   Level: intermediate
 
-.seealso: KSPFCG, KSPPIPECG, KSPPIPECR, KSPGCR, KSPPIPEGCR, KSPFGMRES, KSPCG, KSPPIPEFCGSetMmax(), KSPPIPEFCGGetMmax(), KSPPIPEFCGSetNprealloc(), KSPPIPEFCGGetNprealloc(), KSPPIPEFCGSetTruncationType(), KSPPIPEFCGGetTruncationType()
+.seealso: `KSPFCG`, `KSPPIPECG`, `KSPPIPECR`, `KSPGCR`, `KSPPIPEGCR`, `KSPFGMRES`, `KSPCG`, `KSPPIPEFCGSetMmax()`, `KSPPIPEFCGGetMmax()`, `KSPPIPEFCGSetNprealloc()`, `KSPPIPEFCGGetNprealloc()`, `KSPPIPEFCGSetTruncationType()`, `KSPPIPEFCGGetTruncationType()`
 
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_PIPEFCG(KSP ksp)

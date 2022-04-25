@@ -28,7 +28,7 @@ $     MatCoarsenSetType(agg,"my_agg")
    or at runtime via the option
 $     -mat_coarsen_type my_agg
 
-.seealso: MatCoarsenRegisterDestroy(), MatCoarsenRegisterAll()
+.seealso: `MatCoarsenRegisterDestroy()`, `MatCoarsenRegisterAll()`
 @*/
 PetscErrorCode  MatCoarsenRegister(const char sname[],PetscErrorCode (*function)(MatCoarsen))
 {
@@ -54,7 +54,7 @@ PetscErrorCode  MatCoarsenRegister(const char sname[],PetscErrorCode (*function)
 
    Not Collective
 
-.seealso: MatCoarsenCreate(), MatCoarsenType, MatCoarsenSetType()
+.seealso: `MatCoarsenCreate()`, `MatCoarsenType`, `MatCoarsenSetType()`
 @*/
 PetscErrorCode  MatCoarsenGetType(MatCoarsen coarsen,MatCoarsenType *type)
 {
@@ -87,9 +87,9 @@ $    -mat_coarsen_view
 
    The user can define additional coarsens; see MatCoarsenRegister().
 
-.seealso:  MatCoarsenRegister(), MatCoarsenCreate(),
-           MatCoarsenDestroy(), MatCoarsenSetAdjacency()
-           MatCoarsenGetData()
+.seealso: `MatCoarsenRegister()`, `MatCoarsenCreate()`,
+          `MatCoarsenDestroy()`, `MatCoarsenSetAdjacency()`
+          `MatCoarsenGetData()`
 @*/
 PetscErrorCode  MatCoarsenApply(MatCoarsen coarser)
 {
@@ -116,7 +116,7 @@ PetscErrorCode  MatCoarsenApply(MatCoarsen coarser)
 
    Level: advanced
 
-.seealso: MatCoarsenCreate(), MatCoarsenApply()
+.seealso: `MatCoarsenCreate()`, `MatCoarsenApply()`
 @*/
 PetscErrorCode  MatCoarsenSetAdjacency(MatCoarsen agg, Mat adj)
 {
@@ -137,7 +137,7 @@ PetscErrorCode  MatCoarsenSetAdjacency(MatCoarsen agg, Mat adj)
 -  str - PETSC_TRUE keep strict aggregates, PETSC_FALSE allow overlap
    Level: advanced
 
-.seealso: MatCoarsenCreate()
+.seealso: `MatCoarsenCreate()`
 @*/
 PetscErrorCode MatCoarsenSetStrictAggs(MatCoarsen agg, PetscBool str)
 {
@@ -157,7 +157,7 @@ PetscErrorCode MatCoarsenSetStrictAggs(MatCoarsen agg, PetscBool str)
 
    Level: advanced
 
-.seealso: MatCoarsenCreate()
+.seealso: `MatCoarsenCreate()`
 @*/
 PetscErrorCode  MatCoarsenDestroy(MatCoarsen *agg)
 {
@@ -191,8 +191,8 @@ PetscErrorCode  MatCoarsenDestroy(MatCoarsen *agg)
 
    Level: advanced
 
-.seealso: MatCoarsenSetType(), MatCoarsenApply(), MatCoarsenDestroy(),
-          MatCoarsenSetAdjacency(), MatCoarsenGetData()
+.seealso: `MatCoarsenSetType()`, `MatCoarsenApply()`, `MatCoarsenDestroy()`,
+          `MatCoarsenSetAdjacency()`, `MatCoarsenGetData()`
 
 @*/
 PetscErrorCode  MatCoarsenCreate(MPI_Comm comm, MatCoarsen *newcrs)
@@ -220,7 +220,7 @@ PetscErrorCode  MatCoarsenCreate(MPI_Comm comm, MatCoarsen *newcrs)
 -  name - command line option
 
    Level: intermediate
-.seealso:  MatCoarsen, MatCoarsenView, PetscObjectViewFromOptions(), MatCoarsenCreate()
+.seealso: `MatCoarsen`, `MatCoarsenView`, `PetscObjectViewFromOptions()`, `MatCoarsenCreate()`
 @*/
 PetscErrorCode  MatCoarsenViewFromOptions(MatCoarsen A,PetscObject obj,const char name[])
 {
@@ -252,7 +252,7 @@ PetscErrorCode  MatCoarsenViewFromOptions(MatCoarsen A,PetscObject obj,const cha
    The user can open alternative visualization contexts with
 .     PetscViewerASCIIOpen() - output to a specified file
 
-.seealso: PetscViewerASCIIOpen()
+.seealso: `PetscViewerASCIIOpen()`
 @*/
 PetscErrorCode  MatCoarsenView(MatCoarsen agg,PetscViewer viewer)
 {
@@ -292,7 +292,7 @@ $      (for instance, mis)
 
    Level: advanced
 
-.seealso: MatCoarsenCreate(), MatCoarsenApply(), MatCoarsenType, MatCoarsenGetType()
+.seealso: `MatCoarsenCreate()`, `MatCoarsenApply()`, `MatCoarsenType`, `MatCoarsenGetType()`
 
 @*/
 PetscErrorCode  MatCoarsenSetType(MatCoarsen coarser, MatCoarsenType type)
@@ -336,7 +336,7 @@ PetscErrorCode  MatCoarsenSetType(MatCoarsen coarser, MatCoarsenType type)
    Notes:
       The IS weights is freed by PETSc, so user has given this to us
 
-.seealso: MatCoarsenCreate(), MatCoarsenSetType()
+.seealso: `MatCoarsenCreate()`, `MatCoarsenSetType()`
 @*/
 PetscErrorCode MatCoarsenSetGreedyOrdering(MatCoarsen coarser, const IS perm)
 {
@@ -359,7 +359,7 @@ PetscErrorCode MatCoarsenSetGreedyOrdering(MatCoarsen coarser, const IS perm)
 
    Level: advanced
 
-.seealso: MatCoarsenCreate(), MatCoarsenSetType()
+.seealso: `MatCoarsenCreate()`, `MatCoarsenSetType()`
 @*/
 PetscErrorCode MatCoarsenGetData(MatCoarsen coarser, PetscCoarsenData **llist)
 {

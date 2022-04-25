@@ -33,7 +33,7 @@
 
    Level: intermediate
 
-.seealso: PetscURLShorten(), PetscGoogleDriveAuthorize(), PetscGoogleDriveUpload()
+.seealso: `PetscURLShorten()`, `PetscGoogleDriveAuthorize()`, `PetscGoogleDriveUpload()`
 
 @*/
 PetscErrorCode PetscGoogleDriveRefresh(MPI_Comm comm,const char refresh_token[],char access_token[],size_t tokensize)
@@ -115,7 +115,7 @@ PetscErrorCode PetscGoogleDriveRefresh(MPI_Comm comm,const char refresh_token[],
 
    Level: intermediate
 
-.seealso: PetscURLShorten(), PetscGoogleDriveAuthorize(), PetscGoogleDriveRefresh()
+.seealso: `PetscURLShorten()`, `PetscGoogleDriveAuthorize()`, `PetscGoogleDriveRefresh()`
 
 @*/
 PetscErrorCode PetscGoogleDriveUpload(MPI_Comm comm,const char access_token[],const char filename[])
@@ -200,7 +200,7 @@ PetscErrorCode PetscGoogleDriveUpload(MPI_Comm comm,const char access_token[],co
 
    Level: intermediate
 
-.seealso: PetscGoogleDriveRefresh(), PetscGoogleDriveUpload(), PetscURLShorten()
+.seealso: `PetscGoogleDriveRefresh()`, `PetscGoogleDriveUpload()`, `PetscURLShorten()`
 
 @*/
 PetscErrorCode PetscGoogleDriveAuthorize(MPI_Comm comm,char access_token[],char refresh_token[],size_t tokensize)
@@ -270,7 +270,7 @@ PetscErrorCode PetscGoogleDriveAuthorize(MPI_Comm comm,char access_token[],char 
 
    Level: intermediate
 
-.seealso: PetscGoogleDriveRefresh(), PetscGoogleDriveUpload(), PetscGoogleDriveAuthorize()
+.seealso: `PetscGoogleDriveRefresh()`, `PetscGoogleDriveUpload()`, `PetscGoogleDriveAuthorize()`
 @*/
 PetscErrorCode PetscURLShorten(const char url[],char shorturl[],size_t lenshorturl)
 {

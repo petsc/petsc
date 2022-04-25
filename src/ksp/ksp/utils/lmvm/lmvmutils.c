@@ -16,7 +16,7 @@
 
    Level: intermediate
 
-.seealso: MatLMVMReset(), MatLMVMAllocate()
+.seealso: `MatLMVMReset()`, `MatLMVMAllocate()`
 @*/
 PetscErrorCode MatLMVMUpdate(Mat B, Vec X, Vec F)
 {
@@ -56,7 +56,7 @@ PetscErrorCode MatLMVMUpdate(Mat B, Vec X, Vec F)
 
    Level: advanced
 
-.seealso: MatLMVMSetJ0()
+.seealso: `MatLMVMSetJ0()`
 @*/
 PetscErrorCode MatLMVMClearJ0(Mat B)
 {
@@ -90,7 +90,7 @@ PetscErrorCode MatLMVMClearJ0(Mat B)
 
    Level: advanced
 
-.seealso: MatLMVMSetDiagScale(), MatLMVMSetJ0()
+.seealso: `MatLMVMSetDiagScale()`, `MatLMVMSetJ0()`
 @*/
 PetscErrorCode MatLMVMSetJ0Scale(Mat B, PetscReal scale)
 {
@@ -121,7 +121,7 @@ PetscErrorCode MatLMVMSetJ0Scale(Mat B, PetscReal scale)
 
    Level: advanced
 
-.seealso: MatLMVMSetScale(), MatLMVMSetJ0()
+.seealso: `MatLMVMSetScale()`, `MatLMVMSetJ0()`
 @*/
 PetscErrorCode MatLMVMSetJ0Diag(Mat B, Vec V)
 {
@@ -169,7 +169,7 @@ PetscErrorCode MatLMVMSetJ0Diag(Mat B, Vec V)
 
    Level: advanced
 
-.seealso: MatLMVMSetJ0PC(), MatLMVMSetJ0KSP()
+.seealso: `MatLMVMSetJ0PC()`, `MatLMVMSetJ0KSP()`
 @*/
 PetscErrorCode MatLMVMSetJ0(Mat B, Mat J0)
 {
@@ -208,7 +208,7 @@ PetscErrorCode MatLMVMSetJ0(Mat B, Mat J0)
 
    Level: advanced
 
-.seealso: MatLMVMGetJ0PC()
+.seealso: `MatLMVMGetJ0PC()`
 @*/
 PetscErrorCode MatLMVMSetJ0PC(Mat B, PC J0pc)
 {
@@ -244,7 +244,7 @@ PetscErrorCode MatLMVMSetJ0PC(Mat B, PC J0pc)
 
    Level: advanced
 
-.seealso: MatLMVMGetJ0KSP()
+.seealso: `MatLMVMGetJ0KSP()`
 @*/
 PetscErrorCode MatLMVMSetJ0KSP(Mat B, KSP J0ksp)
 {
@@ -279,7 +279,7 @@ PetscErrorCode MatLMVMSetJ0KSP(Mat B, KSP J0ksp)
 
    Level: advanced
 
-.seealso: MatLMVMSetJ0()
+.seealso: `MatLMVMSetJ0()`
 @*/
 PetscErrorCode MatLMVMGetJ0(Mat B, Mat *J0)
 {
@@ -308,7 +308,7 @@ PetscErrorCode MatLMVMGetJ0(Mat B, Mat *J0)
 
    Level: advanced
 
-.seealso: MatLMVMSetJ0PC()
+.seealso: `MatLMVMSetJ0PC()`
 @*/
 PetscErrorCode MatLMVMGetJ0PC(Mat B, PC *J0pc)
 {
@@ -341,7 +341,7 @@ PetscErrorCode MatLMVMGetJ0PC(Mat B, PC *J0pc)
 
    Level: advanced
 
-.seealso: MatLMVMSetJ0KSP()
+.seealso: `MatLMVMSetJ0KSP()`
 @*/
 PetscErrorCode MatLMVMGetJ0KSP(Mat B, KSP *J0ksp)
 {
@@ -371,8 +371,8 @@ PetscErrorCode MatLMVMGetJ0KSP(Mat B, KSP *J0ksp)
 
    Level: advanced
 
-.seealso: MatLMVMSetJ0(), MatLMVMSetJ0Scale(), MatLMVMSetJ0ScaleDiag(),
-          MatLMVMSetJ0PC(), MatLMVMSetJ0KSP(), MatLMVMApplyJ0Inv()
+.seealso: `MatLMVMSetJ0()`, `MatLMVMSetJ0Scale()`, `MatLMVMSetJ0ScaleDiag()`,
+          `MatLMVMSetJ0PC()`, `MatLMVMSetJ0KSP()`, `MatLMVMApplyJ0Inv()`
 @*/
 PetscErrorCode MatLMVMApplyJ0Fwd(Mat B, Vec X, Vec Y)
 {
@@ -441,8 +441,8 @@ PetscErrorCode MatLMVMApplyJ0Fwd(Mat B, Vec X, Vec Y)
 
    Level: advanced
 
-.seealso: MatLMVMSetJ0(), MatLMVMSetJ0Scale(), MatLMVMSetJ0ScaleDiag(),
-          MatLMVMSetJ0PC(), MatLMVMSetJ0KSP(), MatLMVMApplyJ0Fwd()
+.seealso: `MatLMVMSetJ0()`, `MatLMVMSetJ0Scale()`, `MatLMVMSetJ0ScaleDiag()`,
+          `MatLMVMSetJ0PC()`, `MatLMVMSetJ0KSP()`, `MatLMVMApplyJ0Fwd()`
 @*/
 PetscErrorCode MatLMVMApplyJ0Inv(Mat B, Vec X, Vec Y)
 {
@@ -501,7 +501,7 @@ PetscErrorCode MatLMVMApplyJ0Inv(Mat B, Vec X, Vec Y)
 
    Level: intermediate
 
-.seealso: MatLMVMAllocate(), MatLMVMReset()
+.seealso: `MatLMVMAllocate()`, `MatLMVMReset()`
 @*/
 
 PetscErrorCode MatLMVMIsAllocated(Mat B, PetscBool *flg)
@@ -534,7 +534,7 @@ PetscErrorCode MatLMVMIsAllocated(Mat B, PetscBool *flg)
 
    Level: intermediate
 
-.seealso: MatLMVMReset(), MatLMVMUpdate()
+.seealso: `MatLMVMReset()`, `MatLMVMUpdate()`
 @*/
 PetscErrorCode MatLMVMAllocate(Mat B, Vec X, Vec F)
 {
@@ -567,7 +567,7 @@ PetscErrorCode MatLMVMAllocate(Mat B, Vec X, Vec F)
 
    Level: intermediate
 
-.seealso: MatLMVMAllocate(), MatLMVMUpdate()
+.seealso: `MatLMVMAllocate()`, `MatLMVMUpdate()`
 @*/
 PetscErrorCode MatLMVMResetShift(Mat B)
 {
@@ -601,7 +601,7 @@ PetscErrorCode MatLMVMResetShift(Mat B)
 
    Level: intermediate
 
-.seealso: MatLMVMAllocate(), MatLMVMUpdate()
+.seealso: `MatLMVMAllocate()`, `MatLMVMUpdate()`
 @*/
 PetscErrorCode MatLMVMReset(Mat B, PetscBool destructive)
 {
@@ -637,7 +637,7 @@ PetscErrorCode MatLMVMReset(Mat B, PetscBool destructive)
 
    Level: beginner
 
-.seealso: MatLMVMGetUpdateCount()
+.seealso: `MatLMVMGetUpdateCount()`
 @*/
 
 PetscErrorCode MatLMVMSetHistorySize(Mat B, PetscInt hist_size)
@@ -680,7 +680,7 @@ PetscErrorCode MatLMVMSetHistorySize(Mat B, PetscInt hist_size)
 
    Level: intermediate
 
-.seealso: MatLMVMGetRejectCount(), MatLMVMReset()
+.seealso: `MatLMVMGetRejectCount()`, `MatLMVMReset()`
 @*/
 PetscErrorCode MatLMVMGetUpdateCount(Mat B, PetscInt *nupdates)
 {
@@ -709,7 +709,7 @@ PetscErrorCode MatLMVMGetUpdateCount(Mat B, PetscInt *nupdates)
 
    Level: intermediate
 
-.seealso: MatLMVMGetRejectCount(), MatLMVMReset()
+.seealso: `MatLMVMGetRejectCount()`, `MatLMVMReset()`
 @*/
 PetscErrorCode MatLMVMGetRejectCount(Mat B, PetscInt *nrejects)
 {

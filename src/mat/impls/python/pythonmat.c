@@ -14,7 +14,7 @@
 
    Level: intermediate
 
-.seealso: MatCreate(), MatSetType(), MATPYTHON, PetscPythonInitialize()
+.seealso: `MatCreate()`, `MatSetType()`, `MATPYTHON`, `PetscPythonInitialize()`
 @*/
 PetscErrorCode  MatPythonSetType(Mat mat,const char pyname[])
 {
@@ -43,7 +43,7 @@ PetscErrorCode  MatPythonSetType(Mat mat,const char pyname[])
 
    Level: intermediate
 
-.seealso: MATPYTHON, MatPythonSetType(), PetscPythonInitialize()
+.seealso: `MATPYTHON`, `MatPythonSetType()`, `PetscPythonInitialize()`
 
 @*/
 PetscErrorCode  MatPythonCreate(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,const char pyname[],Mat *A)

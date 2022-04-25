@@ -87,7 +87,7 @@ PetscErrorCode  DMCreateMatrix_Sliced(DM dm, Mat *J)
 
     Level: advanced
 
-.seealso DMDestroy(), DMCreateGlobalVector()
+.seealso `DMDestroy()`, `DMCreateGlobalVector()`
 
 @*/
 PetscErrorCode  DMSlicedSetGhosts(DM dm,PetscInt bs,PetscInt nlocal,PetscInt Nghosts,const PetscInt ghosts[])
@@ -129,8 +129,8 @@ PetscErrorCode  DMSlicedSetGhosts(DM dm,PetscInt bs,PetscInt nlocal,PetscInt Ngh
 
     Level: advanced
 
-.seealso DMDestroy(), DMCreateGlobalVector(), MatMPIAIJSetPreallocation(),
-         MatMPIBAIJSetPreallocation(), DMSlicedGetMatrix(), DMSlicedSetBlockFills()
+.seealso `DMDestroy()`, `DMCreateGlobalVector()`, `MatMPIAIJSetPreallocation()`,
+         `MatMPIBAIJSetPreallocation()`, `DMSlicedGetMatrix()`, `DMSlicedSetBlockFills()`
 
 @*/
 PetscErrorCode  DMSlicedSetPreallocation(DM dm,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
@@ -187,7 +187,7 @@ static PetscErrorCode DMSlicedSetBlockFills_Private(PetscInt bs,const PetscInt *
 
     Level: advanced
 
-.seealso DMSlicedGetMatrix(), DMDASetBlockFills()
+.seealso `DMSlicedGetMatrix()`, `DMDASetBlockFills()`
 @*/
 PetscErrorCode  DMSlicedSetBlockFills(DM dm,const PetscInt *dfill,const PetscInt *ofill)
 {
@@ -256,7 +256,7 @@ static PetscErrorCode  DMGlobalToLocalEnd_Sliced(DM da,Vec g,InsertMode mode,Vec
 
   Level: intermediate
 
-.seealso: DMType, DMCOMPOSITE, DMCreateSliced(), DMCreate()
+.seealso: `DMType`, `DMCOMPOSITE`, `DMCreateSliced()`, `DMCreate()`
 M*/
 
 PETSC_EXTERN PetscErrorCode DMCreate_Sliced(DM p)
@@ -301,8 +301,8 @@ PETSC_EXTERN PetscErrorCode DMCreate_Sliced(DM p)
 
     Level: advanced
 
-.seealso DMDestroy(), DMCreateGlobalVector(), DMSetType(), DMSLICED, DMSlicedSetGhosts(), DMSlicedSetPreallocation(), VecGhostUpdateBegin(), VecGhostUpdateEnd(),
-         VecGhostGetLocalForm(), VecGhostRestoreLocalForm()
+.seealso `DMDestroy()`, `DMCreateGlobalVector()`, `DMSetType()`, `DMSLICED`, `DMSlicedSetGhosts()`, `DMSlicedSetPreallocation()`, `VecGhostUpdateBegin()`, `VecGhostUpdateEnd()`,
+         `VecGhostGetLocalForm()`, `VecGhostRestoreLocalForm()`
 
 @*/
 PetscErrorCode  DMSlicedCreate(MPI_Comm comm,PetscInt bs,PetscInt nlocal,PetscInt Nghosts,const PetscInt ghosts[], const PetscInt d_nnz[],const PetscInt o_nnz[],DM *dm)

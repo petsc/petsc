@@ -261,7 +261,7 @@ PetscErrorCode MatShellGetContext_Shell(Mat mat,void *ctx)
     To use this from Fortran you must write a Fortran interface definition for this
     function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
 
-.seealso: MatCreateShell(), MatShellSetOperation(), MatShellSetContext()
+.seealso: `MatCreateShell()`, `MatShellSetOperation()`, `MatShellSetContext()`
 @*/
 PetscErrorCode  MatShellGetContext(Mat mat,void *ctx)
 {
@@ -895,7 +895,7 @@ $      [ use C = A*B ]
     It is allowed to specify the same callbacks for different Btype matrix types.
     The couple (Btype,ptype) uniquely identifies the operation: the last specified callbacks takes precedence.
 
-.seealso: MatCreateShell(), MatShellGetContext(), MatShellGetOperation(), MatShellSetContext(), MatSetOperation(), MatProductType, MatType, MatSetUp()
+.seealso: `MatCreateShell()`, `MatShellGetContext()`, `MatShellGetOperation()`, `MatShellSetContext()`, `MatSetOperation()`, `MatProductType`, `MatType`, `MatSetUp()`
 @*/
 PetscErrorCode MatShellSetMatProductOperation(Mat A,MatProductType ptype,PetscErrorCode (*symbolic)(Mat,Mat,Mat,void**),PetscErrorCode (*numeric)(Mat,Mat,Mat,void*),PetscErrorCode (*destroy)(void *),MatType Btype,MatType Ctype)
 {
@@ -1646,7 +1646,7 @@ PetscErrorCode MatShellGetOperation_Shell(Mat mat,MatOperation op,void(**f)(void
 
   Level: advanced
 
-.seealso: MatCreateShell()
+.seealso: `MatCreateShell()`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_Shell(Mat A)
@@ -1766,7 +1766,7 @@ $
    Calling MatAssemblyBegin()/MatAssemblyEnd() on a MATSHELL removes any previously supplied shift and scales that were provided
    with MatDiagonalSet(), MatShift(), MatScale(), or MatDiagonalScale().
 
-.seealso: MatShellSetOperation(), MatHasOperation(), MatShellGetContext(), MatShellSetContext(), MATSHELL, MatShellSetManageScalingShifts(), MatShellSetMatProductOperation()
+.seealso: `MatShellSetOperation()`, `MatHasOperation()`, `MatShellGetContext()`, `MatShellSetContext()`, `MATSHELL`, `MatShellSetManageScalingShifts()`, `MatShellSetMatProductOperation()`
 @*/
 PetscErrorCode  MatCreateShell(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,void *ctx,Mat *A)
 {
@@ -1794,7 +1794,7 @@ PetscErrorCode  MatCreateShell(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,Pe
     To use this from Fortran you must write a Fortran interface definition for this
     function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
 
-.seealso: MatCreateShell(), MatShellGetContext(), MatShellGetOperation()
+.seealso: `MatCreateShell()`, `MatShellGetContext()`, `MatShellGetOperation()`
 @*/
 PetscErrorCode  MatShellSetContext(Mat mat,void *ctx)
 {
@@ -1817,7 +1817,7 @@ PetscErrorCode  MatShellSetContext(Mat mat,void *ctx)
 
  Level: advanced
 
-.seealso: MatCreateVecs()
+.seealso: `MatCreateVecs()`
 @*/
 PetscErrorCode  MatShellSetVecType(Mat mat,VecType vtype)
 {
@@ -1837,7 +1837,7 @@ PetscErrorCode  MatShellSetVecType(Mat mat,VecType vtype)
 
   Level: advanced
 
-.seealso: MatCreateShell(), MatShellGetContext(), MatShellGetOperation(), MatShellSetContext(), MatShellSetOperation()
+.seealso: `MatCreateShell()`, `MatShellGetContext()`, `MatShellGetOperation()`, `MatShellSetContext()`, `MatShellSetOperation()`
 @*/
 PetscErrorCode MatShellSetManageScalingShifts(Mat A)
 {
@@ -1869,7 +1869,7 @@ PetscErrorCode MatShellSetManageScalingShifts(Mat A)
    Fortran Notes:
     Not supported from Fortran
 
-.seealso: MatCreateShell(), MatShellGetContext(), MatShellGetOperation(), MatShellTestMultTranspose()
+.seealso: `MatCreateShell()`, `MatShellGetContext()`, `MatShellGetOperation()`, `MatShellTestMultTranspose()`
 @*/
 PetscErrorCode  MatShellTestMult(Mat mat,PetscErrorCode (*f)(void*,Vec,Vec),Vec base,void *ctx,PetscBool *flg)
 {
@@ -1934,7 +1934,7 @@ PetscErrorCode  MatShellTestMult(Mat mat,PetscErrorCode (*f)(void*,Vec,Vec),Vec 
    Fortran Notes:
     Not supported from Fortran
 
-.seealso: MatCreateShell(), MatShellGetContext(), MatShellGetOperation(), MatShellTestMult()
+.seealso: `MatCreateShell()`, `MatShellGetContext()`, `MatShellGetOperation()`, `MatShellTestMult()`
 @*/
 PetscErrorCode  MatShellTestMultTranspose(Mat mat,PetscErrorCode (*f)(void*,Vec,Vec),Vec base,void *ctx,PetscBool *flg)
 {
@@ -2026,7 +2026,7 @@ $       MatMult(Mat,Vec,Vec) -> usermult(Mat,Vec,Vec)
     For MatCreateVecs() the user code should check if the input left or right matrix is -1 and in that case not
        generate a matrix. See src/mat/tests/ex120f.F
 
-.seealso: MatCreateShell(), MatShellGetContext(), MatShellGetOperation(), MatShellSetContext(), MatSetOperation(), MatShellSetManageScalingShifts(), MatShellSetMatProductOperation()
+.seealso: `MatCreateShell()`, `MatShellGetContext()`, `MatShellGetOperation()`, `MatShellSetContext()`, `MatSetOperation()`, `MatShellSetManageScalingShifts()`, `MatShellSetMatProductOperation()`
 @*/
 PetscErrorCode MatShellSetOperation(Mat mat,MatOperation op,void (*g)(void))
 {
@@ -2066,7 +2066,7 @@ $       MatMult(Mat,Vec,Vec) -> usermult(Mat,Vec,Vec)
     MatShellGetContext() to obtain the user-defined context that was
     set by MatCreateShell().
 
-.seealso: MatCreateShell(), MatShellGetContext(), MatShellSetOperation(), MatShellSetContext()
+.seealso: `MatCreateShell()`, `MatShellGetContext()`, `MatShellSetOperation()`, `MatShellSetContext()`
 @*/
 PetscErrorCode MatShellGetOperation(Mat mat,MatOperation op,void(**g)(void))
 {
@@ -2089,7 +2089,7 @@ PetscErrorCode MatShellGetOperation(Mat mat,MatOperation op,void(**g)(void))
 
     Notes: in the future, we should allow the object type name to be changed still using the MatShell data structure for other matrices (i.e. MATTRANSPOSEMAT, MATSCHURCOMPLEMENT etc)
 
-.seealso: MatCreateShell()
+.seealso: `MatCreateShell()`
 @*/
 PetscErrorCode MatIsShell(Mat mat, PetscBool *flg)
 {

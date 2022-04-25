@@ -1058,7 +1058,7 @@ static PetscErrorCode maxwellian(PetscInt dim, PetscReal time, const PetscReal x
  Level: beginner
 
  .keywords: mesh
- .seealso: DMPlexLandauCreateVelocitySpace()
+ .seealso: `DMPlexLandauCreateVelocitySpace()`
  @*/
 PetscErrorCode DMPlexLandauAddMaxwellians(DM dm, Vec X, PetscReal time, PetscReal temps[], PetscReal ns[], PetscInt grid, PetscInt b_id, void *actx)
 {
@@ -1100,7 +1100,7 @@ PetscErrorCode DMPlexLandauAddMaxwellians(DM dm, Vec X, PetscReal time, PetscRea
  Level: beginner
 
  .keywords: mesh
- .seealso: DMPlexLandauCreateVelocitySpace(), DMPlexLandauAddMaxwellians()
+ .seealso: `DMPlexLandauCreateVelocitySpace()`, `DMPlexLandauAddMaxwellians()`
  */
 static PetscErrorCode LandauSetInitialCondition(DM dm, Vec X, PetscInt grid, PetscInt b_id, void *actx)
 {
@@ -2138,7 +2138,7 @@ PetscErrorCode DMPlexLandauCreateMassMatrix(DM pack, Mat *Amat);
  Level: beginner
 
  .keywords: mesh
- .seealso: DMPlexCreate(), DMPlexLandauDestroyVelocitySpace()
+ .seealso: `DMPlexCreate()`, `DMPlexLandauDestroyVelocitySpace()`
  @*/
 PetscErrorCode DMPlexLandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, const char prefix[], Vec *X, Mat *J, DM *pack)
 {
@@ -2307,7 +2307,7 @@ PetscErrorCode DMPlexLandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, cons
  Level: beginner
 
  .keywords: mesh
- .seealso: DMPlexLandauCreateVelocitySpace()
+ .seealso: `DMPlexLandauCreateVelocitySpace()`
  @*/
 PetscErrorCode DMPlexLandauDestroyVelocitySpace(DM *dm)
 {
@@ -2459,7 +2459,7 @@ static void f0_s_rv2(PetscInt dim, PetscInt Nf, PetscInt NfAux,
  Level: beginner
 
  .keywords: mesh
- .seealso: DMPlexLandauCreateVelocitySpace()
+ .seealso: `DMPlexLandauCreateVelocitySpace()`
  @*/
 PetscErrorCode DMPlexLandauPrintNorms(Vec X, PetscInt stepi)
 {
@@ -2622,7 +2622,7 @@ PetscErrorCode DMPlexLandauPrintNorms(Vec X, PetscInt stepi)
  Level: beginner
 
  .keywords: mesh
- .seealso: DMPlexLandauCreateVelocitySpace()
+ .seealso: `DMPlexLandauCreateVelocitySpace()`
  @*/
 PetscErrorCode DMPlexLandauCreateMassMatrix(DM pack, Mat *Amat)
 {
@@ -2738,7 +2738,7 @@ PetscErrorCode DMPlexLandauCreateMassMatrix(DM pack, Mat *Amat)
  Level: beginner
 
  .keywords: mesh
- .seealso: DMPlexLandauCreateVelocitySpace(), DMPlexLandauIJacobian()
+ .seealso: `DMPlexLandauCreateVelocitySpace()`, `DMPlexLandauIJacobian()`
  @*/
 PetscErrorCode DMPlexLandauIFunction(TS ts, PetscReal time_dummy, Vec X, Vec X_t, Vec F, void *actx)
 {
@@ -2819,7 +2819,7 @@ PetscErrorCode DMPlexLandauIFunction(TS ts, PetscReal time_dummy, Vec X, Vec X_t
  Level: beginner
 
  .keywords: mesh
- .seealso: DMPlexLandauCreateVelocitySpace(), DMPlexLandauIFunction()
+ .seealso: `DMPlexLandauCreateVelocitySpace()`, `DMPlexLandauIFunction()`
  @*/
 PetscErrorCode DMPlexLandauIJacobian(TS ts, PetscReal time_dummy, Vec X, Vec U_tdummy, PetscReal shift, Mat Amat, Mat Pmat, void *actx)
 {

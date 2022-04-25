@@ -10,7 +10,7 @@
 
   Level: intermediate
 
-.seealso:  DM, DMPatchCreate()
+.seealso: `DM`, `DMPatchCreate()`
 S*/
 PETSC_EXTERN PetscErrorCode DMPatchCreate(MPI_Comm, DM*);
 

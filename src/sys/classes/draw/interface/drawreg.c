@@ -37,7 +37,7 @@ PetscFunctionList PetscDrawList = NULL;
 
    Level: beginner
 
-.seealso: PCView(), PetscViewerASCIIOpen()
+.seealso: `PCView()`, `PetscViewerASCIIOpen()`
 @*/
 PetscErrorCode  PetscDrawView(PetscDraw indraw,PetscViewer viewer)
 {
@@ -98,7 +98,7 @@ PetscErrorCode  PetscDrawView(PetscDraw indraw,PetscViewer viewer)
 -  name - command line option
 
    Level: intermediate
-.seealso:  PetscDraw, PetscDrawView, PetscObjectViewFromOptions(), PetscDrawCreate()
+.seealso: `PetscDraw`, `PetscDrawView`, `PetscObjectViewFromOptions()`, `PetscDrawCreate()`
 @*/
 PetscErrorCode  PetscDrawViewFromOptions(PetscDraw A,PetscObject obj,const char name[])
 {
@@ -126,16 +126,16 @@ PetscErrorCode  PetscDrawViewFromOptions(PetscDraw A,PetscObject obj,const char 
 
    Level: beginner
 
-.seealso: PetscDrawSetType(), PetscDrawSetFromOptions(), PetscDrawDestroy(), PetscDrawSetType(), PetscDrawLGCreate(), PetscDrawSPCreate(),
-          PetscDrawViewPortsCreate(), PetscDrawViewPortsSet(), PetscDrawAxisCreate(), PetscDrawHGCreate(), PetscDrawBarCreate(),
-          PetscViewerDrawGetDraw(), PetscDrawSetFromOptions(), PetscDrawSetSave(), PetscDrawSetSaveMovie(), PetscDrawSetSaveFinalImage(),
-          PetscDrawOpenX(), PetscDrawOpenImage(), PetscDrawIsNull(), PetscDrawGetPopup(), PetscDrawCheckResizedWindow(), PetscDrawResizeWindow(),
-          PetscDrawGetWindowSize(), PetscDrawLine(), PetscDrawArrow(), PetscDrawLineSetWidth(), PetscDrawLineGetWidth(), PetscDrawMarker(),
-          PetscDrawPoint(), PetscDrawRectangle(), PetscDrawTriangle(), PetscDrawEllipse(), PetscDrawString(), PetscDrawStringCentered(),
-          PetscDrawStringBoxed(), PetscDrawStringVertical(), PetscDrawSetViewPort(), PetscDrawGetViewPort(),
-          PetscDrawSplitViewPort(), PetscDrawSetTitle(), PetscDrawAppendTitle(), PetscDrawGetTitle(), PetscDrawSetPause(), PetscDrawGetPause(),
-          PetscDrawPause(), PetscDrawSetDoubleBuffer(), PetscDrawClear(), PetscDrawFlush(), PetscDrawGetSingleton(), PetscDrawGetMouseButton(),
-          PetscDrawZoom(), PetscDrawGetBoundingBox()
+.seealso: `PetscDrawSetType()`, `PetscDrawSetFromOptions()`, `PetscDrawDestroy()`, `PetscDrawSetType()`, `PetscDrawLGCreate()`, `PetscDrawSPCreate()`,
+          `PetscDrawViewPortsCreate()`, `PetscDrawViewPortsSet()`, `PetscDrawAxisCreate()`, `PetscDrawHGCreate()`, `PetscDrawBarCreate()`,
+          `PetscViewerDrawGetDraw()`, `PetscDrawSetFromOptions()`, `PetscDrawSetSave()`, `PetscDrawSetSaveMovie()`, `PetscDrawSetSaveFinalImage()`,
+          `PetscDrawOpenX()`, `PetscDrawOpenImage()`, `PetscDrawIsNull()`, `PetscDrawGetPopup()`, `PetscDrawCheckResizedWindow()`, `PetscDrawResizeWindow()`,
+          `PetscDrawGetWindowSize()`, `PetscDrawLine()`, `PetscDrawArrow()`, `PetscDrawLineSetWidth()`, `PetscDrawLineGetWidth()`, `PetscDrawMarker()`,
+          `PetscDrawPoint()`, `PetscDrawRectangle()`, `PetscDrawTriangle()`, `PetscDrawEllipse()`, `PetscDrawString()`, `PetscDrawStringCentered()`,
+          `PetscDrawStringBoxed()`, `PetscDrawStringVertical()`, `PetscDrawSetViewPort()`, `PetscDrawGetViewPort()`,
+          `PetscDrawSplitViewPort()`, `PetscDrawSetTitle()`, `PetscDrawAppendTitle()`, `PetscDrawGetTitle()`, `PetscDrawSetPause()`, `PetscDrawGetPause()`,
+          `PetscDrawPause()`, `PetscDrawSetDoubleBuffer()`, `PetscDrawClear()`, `PetscDrawFlush()`, `PetscDrawGetSingleton()`, `PetscDrawGetMouseButton()`,
+          `PetscDrawZoom()`, `PetscDrawGetBoundingBox()`
 
 @*/
 PetscErrorCode  PetscDrawCreate(MPI_Comm comm,const char display[],const char title[],int x,int y,int w,int h,PetscDraw *indraw)
@@ -208,7 +208,7 @@ PetscErrorCode  PetscDrawCreate(MPI_Comm comm,const char display[],const char ti
    See "petsc/include/petscdraw.h" for available methods (for instance,
    PETSC_DRAW_X, PETSC_DRAW_TIKZ or PETSC_DRAW_IMAGE)
 
-.seealso: PetscDrawSetFromOptions(), PetscDrawCreate(), PetscDrawDestroy(), PetscDrawType
+.seealso: `PetscDrawSetFromOptions()`, `PetscDrawCreate()`, `PetscDrawDestroy()`, `PetscDrawType`
 @*/
 PetscErrorCode  PetscDrawSetType(PetscDraw draw,PetscDrawType type)
 {
@@ -278,7 +278,7 @@ PetscErrorCode  PetscDrawSetType(PetscDraw draw,PetscDrawType type)
 
    Level: advanced
 
-.seealso: PetscDrawSetType(), PetscDrawType
+.seealso: `PetscDrawSetType()`, `PetscDrawType`
 
 @*/
 PetscErrorCode  PetscDrawGetType(PetscDraw draw,PetscDrawType *type)
@@ -314,7 +314,7 @@ $     PetscDrawSetType(ksp,"my_draw_type")
    or at runtime via the option
 $     -draw_type my_draw_type
 
-.seealso: PetscDrawRegisterAll(), PetscDrawRegisterDestroy(), PetscDrawType, PetscDrawSetType()
+.seealso: `PetscDrawRegisterAll()`, `PetscDrawRegisterDestroy()`, `PetscDrawType`, `PetscDrawSetType()`
 @*/
 PetscErrorCode  PetscDrawRegister(const char *sname,PetscErrorCode (*function)(PetscDraw))
 {
@@ -336,7 +336,7 @@ PetscErrorCode  PetscDrawRegister(const char *sname,PetscErrorCode (*function)(P
 
    Level: advanced
 
-.seealso: PetscDrawSetFromOptions(), PetscDrawCreate()
+.seealso: `PetscDrawSetFromOptions()`, `PetscDrawCreate()`
 @*/
 PetscErrorCode  PetscDrawSetOptionsPrefix(PetscDraw draw,const char prefix[])
 {
@@ -372,7 +372,7 @@ PetscErrorCode  PetscDrawSetOptionsPrefix(PetscDraw draw,const char prefix[])
    Notes:
     Must be called after PetscDrawCreate() before the PetscDraw is used.
 
-.seealso: PetscDrawCreate(), PetscDrawSetType(), PetscDrawSetSave(), PetscDrawSetSaveFinalImage(), PetscDrawPause(), PetscDrawSetPause()
+.seealso: `PetscDrawCreate()`, `PetscDrawSetType()`, `PetscDrawSetSave()`, `PetscDrawSetSaveFinalImage()`, `PetscDrawPause()`, `PetscDrawSetPause()`
 
 @*/
 PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)

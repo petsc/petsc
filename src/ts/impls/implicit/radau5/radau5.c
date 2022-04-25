@@ -141,7 +141,7 @@ PetscErrorCode TSDestroy_Radau5(TS ts)
 
     Level: beginner
 
-.seealso:  TSCreate(), TS, TSSetType()
+.seealso: `TSCreate()`, `TS`, `TSSetType()`
 
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_Radau5(TS ts)

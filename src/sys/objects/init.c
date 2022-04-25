@@ -55,7 +55,7 @@ template <> class std::complex<double>; /* instantiate complex template class */
    Note:
    Complex numbers are automatically available if PETSc located a working complex implementation
 
-.seealso: PetscRealPart(), PetscImaginaryPart(), PetscRealPartComplex(), PetscImaginaryPartComplex()
+.seealso: `PetscRealPart()`, `PetscImaginaryPart()`, `PetscRealPartComplex()`, `PetscImaginaryPartComplex()`
 M*/
 PetscComplex PETSC_i;
 MPI_Datatype MPIU___COMPLEX128 = 0;
@@ -190,7 +190,7 @@ void Petsc_MPI_DebuggerOnError(MPI_Comm *comm,PetscMPIInt *flag,...)
    Note:
    See PetscInitialize() for more general runtime options.
 
-.seealso: PetscInitialize(), PetscOptionsView(), PetscMallocDump(), PetscMPIDump(), PetscFinalize()
+.seealso: `PetscInitialize()`, `PetscOptionsView()`, `PetscMallocDump()`, `PetscMPIDump()`, `PetscFinalize()`
 @*/
 PetscErrorCode  PetscEnd(void)
 {

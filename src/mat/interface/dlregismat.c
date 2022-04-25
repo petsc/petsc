@@ -47,7 +47,7 @@ static PetscBool MatPackageInitialized = PETSC_FALSE;
 
   Level: developer
 
-.seealso: PetscFinalize(), MatInitializePackage()
+.seealso: `PetscFinalize()`, `MatInitializePackage()`
 @*/
 PetscErrorCode  MatFinalizePackage(void)
 {
@@ -150,7 +150,7 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_bas(Mat,MatFactorType,Mat*);
 
   Level: developer
 
-.seealso: PetscInitialize(), MatFinalizePackage()
+.seealso: `PetscInitialize()`, `MatFinalizePackage()`
 @*/
 PetscErrorCode  MatInitializePackage(void)
 {

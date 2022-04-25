@@ -17,7 +17,7 @@
 
   Level: intermediate
 
-.seealso: DMPlexGetReferenceTree(), DMPlexCreateDefaultReferenceTree()
+.seealso: `DMPlexGetReferenceTree()`, `DMPlexCreateDefaultReferenceTree()`
 @*/
 PetscErrorCode DMPlexSetReferenceTree(DM dm, DM ref)
 {
@@ -45,7 +45,7 @@ PetscErrorCode DMPlexSetReferenceTree(DM dm, DM ref)
 
   Level: intermediate
 
-.seealso: DMPlexSetReferenceTree(), DMPlexCreateDefaultReferenceTree()
+.seealso: `DMPlexSetReferenceTree()`, `DMPlexCreateDefaultReferenceTree()`
 @*/
 PetscErrorCode DMPlexGetReferenceTree(DM dm, DM *ref)
 {
@@ -193,7 +193,7 @@ static PetscErrorCode DMPlexReferenceTreeGetChildSymmetry_Default(DM dm, PetscIn
 
   Level: developer
 
-.seealso: DMPlexGetReferenceTree(), DMPlexSetReferenceTree(), DMPlexSetTree()
+.seealso: `DMPlexGetReferenceTree()`, `DMPlexSetReferenceTree()`, `DMPlexSetTree()`
 @*/
 PetscErrorCode DMPlexReferenceTreeGetChildSymmetry(DM dm, PetscInt parent, PetscInt parentOrientA, PetscInt childOrientA, PetscInt childA, PetscInt parentOrientB, PetscInt *childOrientB, PetscInt *childB)
 {
@@ -452,7 +452,7 @@ PetscErrorCode DMPlexCreateReferenceTree_Union(DM K, DM Kref, const char *labelN
 
   Level: intermediate
 
-.seealso: DMPlexSetReferenceTree(), DMPlexGetReferenceTree()
+.seealso: `DMPlexSetReferenceTree()`, `DMPlexGetReferenceTree()`
 @*/
 PetscErrorCode DMPlexCreateDefaultReferenceTree(MPI_Comm comm, PetscInt dim, PetscBool simplex, DM *ref)
 {
@@ -1039,7 +1039,7 @@ static PetscErrorCode DMPlexSetTree_Internal(DM dm, PetscSection parentSection, 
 
   Level: intermediate
 
-.seealso: DMPlexGetTree(), DMPlexSetReferenceTree(), DMPlexSetAnchors(), DMPlexGetTreeParent(), DMPlexGetTreeChildren()
+.seealso: `DMPlexGetTree()`, `DMPlexSetReferenceTree()`, `DMPlexSetAnchors()`, `DMPlexGetTreeParent()`, `DMPlexGetTreeChildren()`
 @*/
 PetscErrorCode DMPlexSetTree(DM dm, PetscSection parentSection, PetscInt parents[], PetscInt childIDs[])
 {
@@ -1066,7 +1066,7 @@ PetscErrorCode DMPlexSetTree(DM dm, PetscSection parentSection, PetscInt parents
 
   Level: intermediate
 
-.seealso: DMPlexSetTree(), DMPlexSetReferenceTree(), DMPlexSetAnchors(), DMPlexGetTreeParent(), DMPlexGetTreeChildren()
+.seealso: `DMPlexSetTree()`, `DMPlexSetReferenceTree()`, `DMPlexSetAnchors()`, `DMPlexGetTreeParent()`, `DMPlexGetTreeChildren()`
 @*/
 PetscErrorCode DMPlexGetTree(DM dm, PetscSection *parentSection, PetscInt *parents[], PetscInt *childIDs[], PetscSection *childSection, PetscInt *children[])
 {
@@ -1096,7 +1096,7 @@ PetscErrorCode DMPlexGetTree(DM dm, PetscSection *parentSection, PetscInt *paren
 
   Level: intermediate
 
-.seealso: DMPlexSetTree(), DMPlexGetTree(), DMPlexGetTreeChildren()
+.seealso: `DMPlexSetTree()`, `DMPlexGetTree()`, `DMPlexGetTreeChildren()`
 @*/
 PetscErrorCode DMPlexGetTreeParent(DM dm, PetscInt point, PetscInt *parent, PetscInt *childID)
 {
@@ -1145,7 +1145,7 @@ PetscErrorCode DMPlexGetTreeParent(DM dm, PetscInt point, PetscInt *parent, Pets
   Since it returns an array, this routine is only available in Fortran 90, and you must
   include petsc.h90 in your code.
 
-.seealso: DMPlexSetTree(), DMPlexGetTree(), DMPlexGetTreeParent()
+.seealso: `DMPlexSetTree()`, `DMPlexGetTree()`, `DMPlexGetTreeParent()`
 @*/
 PetscErrorCode DMPlexGetTreeChildren(DM dm, PetscInt point, PetscInt *numChildren, const PetscInt *children[])
 {
@@ -4466,7 +4466,7 @@ static PetscErrorCode DMPlexTransferVecTree_Inject(DM fine, Vec vecFine, DM coar
 
   Level: developer
 
-.seealso: DMPlexSetReferenceTree(), DMPlexGetReferenceTree(), PetscFVGetComputeGradients()
+.seealso: `DMPlexSetReferenceTree()`, `DMPlexGetReferenceTree()`, `PetscFVGetComputeGradients()`
 @*/
 PetscErrorCode DMPlexTransferVecTree(DM dmIn, Vec vecIn, DM dmOut, Vec vecOut, PetscSF sfRefine, PetscSF sfCoarsen, PetscInt *cidsRefine, PetscInt *cidsCoarsen, PetscBool useBCs, PetscReal time)
 {

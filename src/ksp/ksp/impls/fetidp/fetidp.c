@@ -93,7 +93,7 @@ static PetscErrorCode KSPFETIDPSetPressureOperator_FETIDP(KSP ksp, Mat P)
           where pid_1 and pid_2 are two different pressure dof numbers and gid_1 and gid_2 the corresponding
           id in the monolithic global ordering.
 
-.seealso: MATIS, PCBDDC, KSPFETIDPGetInnerBDDC, KSPFETIDPGetInnerKSP, KSPSetOperators
+.seealso: `MATIS`, `PCBDDC`, `KSPFETIDPGetInnerBDDC`, `KSPFETIDPGetInnerKSP`, `KSPSetOperators`
 @*/
 PetscErrorCode KSPFETIDPSetPressureOperator(KSP ksp, Mat P)
 {
@@ -124,7 +124,7 @@ static PetscErrorCode KSPFETIDPGetInnerKSP_FETIDP(KSP ksp, KSP* innerksp)
 
    Notes:
 
-.seealso: MATIS, PCBDDC, KSPFETIDPSetInnerBDDC, KSPFETIDPGetInnerBDDC
+.seealso: `MATIS`, `PCBDDC`, `KSPFETIDPSetInnerBDDC`, `KSPFETIDPGetInnerBDDC`
 @*/
 PetscErrorCode KSPFETIDPGetInnerKSP(KSP ksp, KSP* innerksp)
 {
@@ -155,7 +155,7 @@ static PetscErrorCode KSPFETIDPGetInnerBDDC_FETIDP(KSP ksp, PC* pc)
 
    Notes:
 
-.seealso: MATIS, PCBDDC, KSPFETIDPSetInnerBDDC, KSPFETIDPGetInnerKSP
+.seealso: `MATIS`, `PCBDDC`, `KSPFETIDPSetInnerBDDC`, `KSPFETIDPGetInnerKSP`
 @*/
 PetscErrorCode KSPFETIDPGetInnerBDDC(KSP ksp, PC* pc)
 {
@@ -191,7 +191,7 @@ static PetscErrorCode KSPFETIDPSetInnerBDDC_FETIDP(KSP ksp, PC pc)
 
    Notes:
 
-.seealso: MATIS, PCBDDC, KSPFETIDPGetInnerBDDC, KSPFETIDPGetInnerKSP
+.seealso: `MATIS`, `PCBDDC`, `KSPFETIDPGetInnerBDDC`, `KSPFETIDPGetInnerKSP`
 @*/
 PetscErrorCode KSPFETIDPSetInnerBDDC(KSP ksp, PC pc)
 {
@@ -1333,7 +1333,7 @@ static PetscErrorCode KSPSetFromOptions_FETIDP(PetscOptionItems *PetscOptionsObj
 +  * - C. Farhat, M. Lesoinne, P. LeTallec, K. Pierson, and D. Rixen, FETI-DP: a dual-primal unified FETI method. I. A faster alternative to the two-level FETI method, Internat. J. Numer. Methods Engrg., 50 (2001), pp. 1523--1544
 -  * - X. Tu, J. Li, A FETI-DP type domain decomposition algorithm for three-dimensional incompressible Stokes equations, SIAM J. Numer. Anal., 53 (2015), pp. 720-742
 
-.seealso: MATIS, PCBDDC, KSPFETIDPSetInnerBDDC(), KSPFETIDPGetInnerBDDC(), KSPFETIDPGetInnerKSP()
+.seealso: `MATIS`, `PCBDDC`, `KSPFETIDPSetInnerBDDC()`, `KSPFETIDPGetInnerBDDC()`, `KSPFETIDPGetInnerKSP()`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_FETIDP(KSP ksp)
 {

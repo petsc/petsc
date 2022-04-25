@@ -160,7 +160,7 @@ static PetscErrorCode PCSetFromOptions_SAVIENNACL(PetscOptionItems *PetscOptions
 
    Level: advanced
 
-.seealso:  PCCreate(), PCSetType(), PCType, PC
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`
 
 M*/
 

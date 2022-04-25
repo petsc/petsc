@@ -12,7 +12,7 @@
 
   Level: beginner
 
-.seealso: TaoSetObjective(), TaoSetHessian(), TaoSetObjectiveAndGradient(), TaoGetVariableBounds()
+.seealso: `TaoSetObjective()`, `TaoSetHessian()`, `TaoSetObjectiveAndGradient()`, `TaoGetVariableBounds()`
 @*/
 PetscErrorCode TaoSetVariableBounds(Tao tao, Vec XL, Vec XU)
 {
@@ -50,7 +50,7 @@ $      func (Tao tao, Vec xl, Vec xu);
 
   Level: beginner
 
-.seealso: TaoSetObjective(), TaoSetHessian(), TaoSetObjectiveAndGradient(), TaoSetVariableBounds()
+.seealso: `TaoSetObjective()`, `TaoSetHessian()`, `TaoSetObjectiveAndGradient()`, `TaoSetVariableBounds()`
 
 Note: The func passed in to TaoSetVariableBoundsRoutine() takes
 precedence over any values set in TaoSetVariableBounds().
@@ -80,7 +80,7 @@ PetscErrorCode TaoSetVariableBoundsRoutine(Tao tao, PetscErrorCode (*func)(Tao, 
 
   Level: beginner
 
-.seealso: TaoSetObjective(), TaoSetHessian(), TaoSetObjectiveAndGradient(), TaoSetVariableBounds()
+.seealso: `TaoSetObjective()`, `TaoSetHessian()`, `TaoSetObjectiveAndGradient()`, `TaoSetVariableBounds()`
 @*/
 PetscErrorCode TaoGetVariableBounds(Tao tao, Vec *XL, Vec *XU)
 {
@@ -102,7 +102,7 @@ PetscErrorCode TaoGetVariableBounds(Tao tao, Vec *XL, Vec *XU)
 
    Level: developer
 
-.seealso: TaoSetVariableBoundsRoutine(), TaoSetVariableBounds()
+.seealso: `TaoSetVariableBoundsRoutine()`, `TaoSetVariableBounds()`
 @*/
 
 PetscErrorCode TaoComputeVariableBounds(Tao tao)
@@ -136,7 +136,7 @@ PetscErrorCode TaoComputeVariableBounds(Tao tao)
 
   Level: beginner
 
-.seealso: TaoSetObjective(), TaoSetHessian(), TaoSetObjectiveAndGradient(), TaoGetInequalityBounds()
+.seealso: `TaoSetObjective()`, `TaoSetHessian()`, `TaoSetObjectiveAndGradient()`, `TaoGetInequalityBounds()`
 @*/
 PetscErrorCode TaoSetInequalityBounds(Tao tao, Vec IL, Vec IU)
 {
@@ -168,7 +168,7 @@ PetscErrorCode TaoSetInequalityBounds(Tao tao, Vec IL, Vec IU)
 
   Level: beginner
 
-.seealso: TaoSetObjective(), TaoSetHessian(), TaoSetObjectiveAndGradient(), TaoSetInequalityBounds()
+.seealso: `TaoSetObjective()`, `TaoSetHessian()`, `TaoSetObjectiveAndGradient()`, `TaoSetInequalityBounds()`
 @*/
 PetscErrorCode TaoGetInequalityBounds(Tao tao, Vec *IL, Vec *IU)
 {
@@ -190,7 +190,7 @@ PetscErrorCode TaoGetInequalityBounds(Tao tao, Vec *IL, Vec *IU)
 
    Level: developer
 
-.seealso: TaoSetConstraintsRoutine(), TaoComputeJacobian()
+.seealso: `TaoSetConstraintsRoutine()`, `TaoComputeJacobian()`
 @*/
 
 PetscErrorCode TaoComputeConstraints(Tao tao, Vec X, Vec C)
@@ -232,7 +232,7 @@ $      func (Tao tao, Vec x, Vec c, void *ctx);
 
   Level: intermediate
 
-.seealso: TaoSetObjective(), TaoSetHessian(), TaoSetObjectiveAndGradient(), TaoSetVariablevBounds()
+.seealso: `TaoSetObjective()`, `TaoSetHessian()`, `TaoSetObjectiveAndGradient()`, `TaoSetVariablevBounds()`
 
 @*/
 PetscErrorCode TaoSetConstraintsRoutine(Tao tao, Vec c, PetscErrorCode (*func)(Tao, Vec, Vec, void*), void *ctx)
@@ -271,7 +271,7 @@ PetscErrorCode TaoSetConstraintsRoutine(Tao tao, Vec c, PetscErrorCode (*func)(T
 
   Level: advanced
 
-.seealso: TaoComputeObjective(), TaoSetVariableBounds()
+.seealso: `TaoComputeObjective()`, `TaoSetVariableBounds()`
 @*/
 PetscErrorCode TaoComputeDualVariables(Tao tao, Vec DL, Vec DU)
 {
@@ -304,7 +304,7 @@ PetscErrorCode TaoComputeDualVariables(Tao tao, Vec DL, Vec DU)
 
   Level: advanced
 
-.seealso: TaoComputeDualVariables()
+.seealso: `TaoComputeDualVariables()`
 @*/
 PetscErrorCode TaoGetDualVariables(Tao tao, Vec *DE, Vec *DI)
 {
@@ -336,7 +336,7 @@ $      func (Tao tao, Vec x, Vec ce, void *ctx);
 
   Level: intermediate
 
-.seealso: TaoSetObjective(), TaoSetHessian(), TaoSetObjectiveAndGradient(), TaoSetVariableBounds()
+.seealso: `TaoSetObjective()`, `TaoSetHessian()`, `TaoSetObjectiveAndGradient()`, `TaoSetVariableBounds()`
 
 @*/
 PetscErrorCode TaoSetEqualityConstraintsRoutine(Tao tao, Vec ce, PetscErrorCode (*func)(Tao, Vec, Vec, void*), void *ctx)
@@ -374,7 +374,7 @@ $      func (Tao tao, Vec x, Vec ci, void *ctx);
 
   Level: intermediate
 
-.seealso: TaoSetObjective(), TaoSetHessian(), TaoSetObjectiveAndGradient(), TaoSetVariableBounds()
+.seealso: `TaoSetObjective()`, `TaoSetHessian()`, `TaoSetObjectiveAndGradient()`, `TaoSetVariableBounds()`
 
 @*/
 PetscErrorCode TaoSetInequalityConstraintsRoutine(Tao tao, Vec ci, PetscErrorCode (*func)(Tao, Vec, Vec, void*), void *ctx)
@@ -402,7 +402,7 @@ PetscErrorCode TaoSetInequalityConstraintsRoutine(Tao tao, Vec ci, PetscErrorCod
 
    Level: developer
 
-.seealso: TaoSetEqualityConstraintsRoutine(), TaoComputeJacobianEquality()
+.seealso: `TaoSetEqualityConstraintsRoutine()`, `TaoComputeJacobianEquality()`
 @*/
 
 PetscErrorCode TaoComputeEqualityConstraints(Tao tao, Vec X, Vec CE)
@@ -434,7 +434,7 @@ PetscErrorCode TaoComputeEqualityConstraints(Tao tao, Vec X, Vec CE)
 
    Level: developer
 
-.seealso: TaoSetInequalityConstraintsRoutine(), TaoComputeJacobianInequality()
+.seealso: `TaoSetInequalityConstraintsRoutine()`, `TaoComputeJacobianInequality()`
 @*/
 
 PetscErrorCode TaoComputeInequalityConstraints(Tao tao, Vec X, Vec CI)

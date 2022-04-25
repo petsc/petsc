@@ -47,7 +47,7 @@ PetscBool         KSPMonitorRegisterAllCalled = PETSC_FALSE;
      has not yet been determined
 .ve
 
-.seealso: PetscViewerBinaryOpen(), KSPView(), MatLoad(), VecLoad()
+.seealso: `PetscViewerBinaryOpen()`, `KSPView()`, `MatLoad()`, `VecLoad()`
 @*/
 PetscErrorCode  KSPLoad(KSP newdm, PetscViewer viewer)
 {
@@ -107,7 +107,7 @@ PetscErrorCode  KSPLoad(KSP newdm, PetscViewer viewer)
 
    Level: beginner
 
-.seealso: PCView(), PetscViewerASCIIOpen()
+.seealso: `PCView()`, `PetscViewerASCIIOpen()`
 @*/
 PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
 {
@@ -243,7 +243,7 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
 -  name - command line option
 
    Level: intermediate
-.seealso:  KSP, KSPView, PetscObjectViewFromOptions(), KSPCreate()
+.seealso: `KSP`, `KSPView`, `PetscObjectViewFromOptions()`, `KSPCreate()`
 @*/
 PetscErrorCode  KSPViewFromOptions(KSP A,PetscObject obj,const char name[])
 {
@@ -285,7 +285,7 @@ $   KSP_NORM_NATURAL - supported  by KSPCG, KSPCR, KSPCGNE, KSPCGS
 
    Level: advanced
 
-.seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSPConvergedSkip(), KSPSetCheckNormIteration(), KSPSetPCSide(), KSPGetPCSide(), KSPNormType
+.seealso: `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSPConvergedSkip()`, `KSPSetCheckNormIteration()`, `KSPSetPCSide()`, `KSPGetPCSide()`, `KSPNormType`
 @*/
 PetscErrorCode  KSPSetNormType(KSP ksp,KSPNormType normtype)
 {
@@ -315,7 +315,7 @@ PetscErrorCode  KSPSetNormType(KSP ksp,KSPNormType normtype)
     -ksp_monitor the residual norm will appear to be unchanged for several iterations (though it is not really unchanged).
    Level: advanced
 
-.seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSPConvergedSkip(), KSPSetNormType()
+.seealso: `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSPConvergedSkip()`, `KSPSetNormType()`
 @*/
 PetscErrorCode  KSPSetCheckNormIteration(KSP ksp,PetscInt it)
 {
@@ -348,7 +348,7 @@ PetscErrorCode  KSPSetCheckNormIteration(KSP ksp,PetscInt it)
    If you lag the norm and run with, for example, -ksp_monitor, the residual norm reported will be the lagged one.
    Level: advanced
 
-.seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSPConvergedSkip(), KSPSetNormType(), KSPSetCheckNormIteration()
+.seealso: `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSPConvergedSkip()`, `KSPSetNormType()`, `KSPSetCheckNormIteration()`
 @*/
 PetscErrorCode  KSPSetLagNorm(KSP ksp,PetscBool flg)
 {
@@ -377,7 +377,7 @@ PetscErrorCode  KSPSetLagNorm(KSP ksp,PetscBool flg)
    which norms and preconditioner sides are supported. Users should not need to call this
    function.
 
-.seealso: KSPSetNormType(), KSPSetPCSide()
+.seealso: `KSPSetNormType()`, `KSPSetPCSide()`
 @*/
 PetscErrorCode KSPSetSupportedNorm(KSP ksp,KSPNormType normtype,PCSide pcside,PetscInt priority)
 {
@@ -435,7 +435,7 @@ PetscErrorCode KSPSetUpNorms_Private(KSP ksp,PetscBool errorifnotsupported,KSPNo
 
    Level: advanced
 
-.seealso: KSPNormType, KSPSetNormType(), KSPConvergedSkip()
+.seealso: `KSPNormType`, `KSPSetNormType()`, `KSPConvergedSkip()`
 @*/
 PetscErrorCode  KSPGetNormType(KSP ksp, KSPNormType *normtype)
 {
@@ -514,7 +514,7 @@ $           set size, type, etc of mat and pmat
     Thus, why should YOU have to create the Mat and attach it to the SNES/KSP/PC, when
     it can be created for you?
 
-.seealso: KSPSolve(), KSPGetPC(), PCGetOperators(), PCSetOperators(), KSPGetOperators(), KSPSetComputeOperators(), KSPSetComputeInitialGuess(), KSPSetComputeRHS()
+.seealso: `KSPSolve()`, `KSPGetPC()`, `PCGetOperators()`, `PCSetOperators()`, `KSPGetOperators()`, `KSPSetComputeOperators()`, `KSPSetComputeInitialGuess()`, `KSPSetComputeRHS()`
 @*/
 PetscErrorCode  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat)
 {
@@ -548,7 +548,7 @@ PetscErrorCode  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat)
    Notes:
     DOES NOT increase the reference counts of the matrix, so you should NOT destroy them.
 
-.seealso: KSPSolve(), KSPGetPC(), PCGetOperators(), PCSetOperators(), KSPSetOperators(), KSPGetOperatorsSet()
+.seealso: `KSPSolve()`, `KSPGetPC()`, `PCGetOperators()`, `PCSetOperators()`, `KSPSetOperators()`, `KSPGetOperatorsSet()`
 @*/
 PetscErrorCode  KSPGetOperators(KSP ksp,Mat *Amat,Mat *Pmat)
 {
@@ -574,7 +574,7 @@ PetscErrorCode  KSPGetOperators(KSP ksp,Mat *Amat,Mat *Pmat)
 
    Level: intermediate
 
-.seealso: PCSetOperators(), KSPGetOperators(), KSPSetOperators(), PCGetOperators(), PCGetOperatorsSet()
+.seealso: `PCSetOperators()`, `KSPGetOperators()`, `KSPSetOperators()`, `PCGetOperators()`, `PCGetOperatorsSet()`
 @*/
 PetscErrorCode  KSPGetOperatorsSet(KSP ksp,PetscBool  *mat,PetscBool  *pmat)
 {
@@ -605,7 +605,7 @@ $  func(KSP ksp,Vec rhs,Vec x,void *ctx)
 
    Level: developer
 
-.seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSP, KSPSetPostSolve()
+.seealso: `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSP`, `KSPSetPostSolve()`
 @*/
 PetscErrorCode  KSPSetPreSolve(KSP ksp,PetscErrorCode (*presolve)(KSP,Vec,Vec,void*),void *prectx)
 {
@@ -636,7 +636,7 @@ $  func(KSP ksp,Vec rhs,Vec x,void *ctx)
 .  x - the solution vector
 -  ctx - optional user-provided context
 
-.seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSP, KSPSetPreSolve()
+.seealso: `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSP`, `KSPSetPreSolve()`
 @*/
 PetscErrorCode  KSPSetPostSolve(KSP ksp,PetscErrorCode (*postsolve)(KSP,Vec,Vec,void*),void *postctx)
 {
@@ -664,7 +664,7 @@ PetscErrorCode  KSPSetPostSolve(KSP ksp,PetscErrorCode (*postsolve)(KSP,Vec,Vec,
 
    Level: beginner
 
-.seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSP
+.seealso: `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSP`
 @*/
 PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
 {
@@ -763,7 +763,7 @@ PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
   Developer Note: KSPRegister() is used to add Krylov types to KSPList from which they
   are accessed by KSPSetType().
 
-.seealso: PCSetType(), KSPType, KSPRegister(), KSPCreate()
+.seealso: `PCSetType()`, `KSPType`, `KSPRegister()`, `KSPCreate()`
 
 @*/
 PetscErrorCode  KSPSetType(KSP ksp, KSPType type)
@@ -811,7 +811,7 @@ PetscErrorCode  KSPSetType(KSP ksp, KSPType type)
 
    Level: intermediate
 
-.seealso: KSPSetType()
+.seealso: `KSPSetType()`
 @*/
 PetscErrorCode  KSPGetType(KSP ksp,KSPType *type)
 {
@@ -846,7 +846,7 @@ $     -ksp_type my_solver
 
    Level: advanced
 
-.seealso: KSPRegisterAll()
+.seealso: `KSPRegisterAll()`
 @*/
 PetscErrorCode  KSPRegister(const char sname[],PetscErrorCode (*function)(KSP))
 {
@@ -895,7 +895,7 @@ $     -ksp_monitor_my_monitor
 
    Level: advanced
 
-.seealso: KSPMonitorRegisterAll()
+.seealso: `KSPMonitorRegisterAll()`
 @*/
 PetscErrorCode KSPMonitorRegister(const char name[], PetscViewerType vtype, PetscViewerFormat format,
                                   PetscErrorCode (*monitor)(KSP, PetscInt, PetscReal, PetscViewerAndFormat *),

@@ -545,7 +545,7 @@ PetscErrorCode KSPView_GMRES(KSP ksp,PetscViewer viewer)
     A new PETSCVIEWERDRAW is created for each Krylov vector so they can all be simultaneously viewed
    Level: intermediate
 
-.seealso: KSPMonitorSet(), KSPMonitorResidual(), VecView(), KSPViewersCreate(), KSPViewersDestroy()
+.seealso: `KSPMonitorSet()`, `KSPMonitorResidual()`, `VecView()`, `KSPViewersCreate()`, `KSPViewersDestroy()`
 @*/
 PetscErrorCode  KSPGMRESMonitorKrylov(KSP ksp,PetscInt its,PetscReal fgnorm,void *dummy)
 {
@@ -709,8 +709,8 @@ PetscErrorCode  KSPGMRESGetCGSRefinementType_GMRES(KSP ksp,KSPGMRESCGSRefinement
 
    Level: intermediate
 
-.seealso: KSPGMRESSetOrthogonalization(), KSPGMRESCGSRefinementType, KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESGetCGSRefinementType(),
-          KSPGMRESGetOrthogonalization()
+.seealso: `KSPGMRESSetOrthogonalization()`, `KSPGMRESCGSRefinementType`, `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESGetCGSRefinementType()`,
+          `KSPGMRESGetOrthogonalization()`
 @*/
 PetscErrorCode  KSPGMRESSetCGSRefinementType(KSP ksp,KSPGMRESCGSRefinementType type)
 {
@@ -738,8 +738,8 @@ PetscErrorCode  KSPGMRESSetCGSRefinementType(KSP ksp,KSPGMRESCGSRefinementType t
 
    Level: intermediate
 
-.seealso: KSPGMRESSetOrthogonalization(), KSPGMRESCGSRefinementType, KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESSetCGSRefinementType(),
-          KSPGMRESGetOrthogonalization()
+.seealso: `KSPGMRESSetOrthogonalization()`, `KSPGMRESCGSRefinementType`, `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESSetCGSRefinementType()`,
+          `KSPGMRESGetOrthogonalization()`
 @*/
 PetscErrorCode  KSPGMRESGetCGSRefinementType(KSP ksp,KSPGMRESCGSRefinementType *type)
 {
@@ -765,7 +765,7 @@ PetscErrorCode  KSPGMRESGetCGSRefinementType(KSP ksp,KSPGMRESCGSRefinementType *
 
    Level: intermediate
 
-.seealso: KSPSetTolerances(), KSPGMRESSetOrthogonalization(), KSPGMRESSetPreAllocateVectors(), KSPGMRESGetRestart()
+.seealso: `KSPSetTolerances()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESGetRestart()`
 @*/
 PetscErrorCode  KSPGMRESSetRestart(KSP ksp, PetscInt restart)
 {
@@ -791,7 +791,7 @@ PetscErrorCode  KSPGMRESSetRestart(KSP ksp, PetscInt restart)
 
    Level: intermediate
 
-.seealso: KSPSetTolerances(), KSPGMRESSetOrthogonalization(), KSPGMRESSetPreAllocateVectors(), KSPGMRESSetRestart()
+.seealso: `KSPSetTolerances()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESSetRestart()`
 @*/
 PetscErrorCode  KSPGMRESGetRestart(KSP ksp, PetscInt *restart)
 {
@@ -818,7 +818,7 @@ PetscErrorCode  KSPGMRESGetRestart(KSP ksp, PetscInt *restart)
 
    Level: intermediate
 
-.seealso: KSPSetTolerances()
+.seealso: `KSPSetTolerances()`
 @*/
 PetscErrorCode  KSPGMRESSetHapTol(KSP ksp,PetscReal tol)
 {
@@ -845,7 +845,7 @@ PetscErrorCode  KSPGMRESSetHapTol(KSP ksp,PetscReal tol)
 
    Level: intermediate
 
-.seealso: KSPSetTolerances(), KSPGMRESSetHapTol()
+.seealso: `KSPSetTolerances()`, `KSPGMRESSetHapTol()`
 @*/
 PetscErrorCode  KSPGMRESSetBreakdownTolerance(KSP ksp,PetscReal tol)
 {
@@ -879,10 +879,10 @@ PetscErrorCode  KSPGMRESSetBreakdownTolerance(KSP ksp,PetscReal tol)
 .  * - YOUCEF SAAD AND MARTIN H. SCHULTZ, GMRES: A GENERALIZED MINIMAL RESIDUAL ALGORITHM FOR SOLVING NONSYMMETRIC LINEAR SYSTEMS.
           SIAM J. ScI. STAT. COMPUT. Vo|. 7, No. 3, July 1986.
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType, KSP, KSPFGMRES, KSPLGMRES,
-           KSPGMRESSetRestart(), KSPGMRESSetHapTol(), KSPGMRESSetPreAllocateVectors(), KSPGMRESSetOrthogonalization(), KSPGMRESGetOrthogonalization(),
-           KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESModifiedGramSchmidtOrthogonalization(),
-           KSPGMRESCGSRefinementType, KSPGMRESSetCGSRefinementType(), KSPGMRESGetCGSRefinementType(), KSPGMRESMonitorKrylov(), KSPSetPCSide()
+.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPFGMRES`, `KSPLGMRES`,
+          `KSPGMRESSetRestart()`, `KSPGMRESSetHapTol()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESGetOrthogonalization()`,
+          `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESModifiedGramSchmidtOrthogonalization()`,
+          `KSPGMRESCGSRefinementType`, `KSPGMRESSetCGSRefinementType()`, `KSPGMRESGetCGSRefinementType()`, `KSPGMRESMonitorKrylov()`, `KSPSetPCSide()`
 
 M*/
 

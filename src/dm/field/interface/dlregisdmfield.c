@@ -13,7 +13,7 @@ PetscBool DMFieldRegisterAllCalled;
 
    Level: developer
 
-.seealso: DMFieldFinalizePackage()
+.seealso: `DMFieldFinalizePackage()`
 @*/
 PetscErrorCode DMFieldInitializePackage(void)
 {
@@ -34,7 +34,7 @@ PetscErrorCode DMFieldInitializePackage(void)
 
    Level: developer
 
-.seealso: DMFieldInitializePackage()
+.seealso: `DMFieldInitializePackage()`
 @*/
 PetscErrorCode DMFieldFinalizePackage(void)
 {

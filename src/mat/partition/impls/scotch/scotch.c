@@ -32,7 +32,7 @@ typedef struct {
 
    Level: advanced
 
-.seealso: MatPartitioningPTScotchSetStrategy(), MatPartitioningPTScotchGetImbalance()
+.seealso: `MatPartitioningPTScotchSetStrategy()`, `MatPartitioningPTScotchGetImbalance()`
 @*/
 PetscErrorCode MatPartitioningPTScotchSetImbalance(MatPartitioning part,PetscReal imb)
 {
@@ -70,7 +70,7 @@ PetscErrorCode MatPartitioningPTScotchSetImbalance_PTScotch(MatPartitioning part
 
    Level: advanced
 
-.seealso: MatPartitioningPTScotchSetImbalance()
+.seealso: `MatPartitioningPTScotchSetImbalance()`
 @*/
 PetscErrorCode MatPartitioningPTScotchGetImbalance(MatPartitioning part,PetscReal *imb)
 {
@@ -115,7 +115,7 @@ PetscErrorCode MatPartitioningPTScotchGetImbalance_PTScotch(MatPartitioning part
    Notes:
    The default is MP_SCOTCH_QUALITY. See the PTScotch documentation for more information.
 
-.seealso: MatPartitioningPTScotchSetImbalance(), MatPartitioningPTScotchGetStrategy()
+.seealso: `MatPartitioningPTScotchSetImbalance()`, `MatPartitioningPTScotchGetStrategy()`
 @*/
 PetscErrorCode MatPartitioningPTScotchSetStrategy(MatPartitioning part,MPPTScotchStrategyType strategy)
 {
@@ -155,7 +155,7 @@ PetscErrorCode MatPartitioningPTScotchSetStrategy_PTScotch(MatPartitioning part,
 
    Level: advanced
 
-.seealso: MatPartitioningPTScotchSetStrategy()
+.seealso: `MatPartitioningPTScotchSetStrategy()`
 @*/
 PetscErrorCode MatPartitioningPTScotchGetStrategy(MatPartitioning part,MPPTScotchStrategyType *strategy)
 {
@@ -439,7 +439,7 @@ PetscErrorCode MatPartitioningDestroy_PTScotch(MatPartitioning part)
    Notes:
     See http://www.labri.fr/perso/pelegrin/scotch/
 
-.seealso: MatPartitioningSetType(), MatPartitioningType
+.seealso: `MatPartitioningSetType()`, `MatPartitioningType`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_PTScotch(MatPartitioning part)

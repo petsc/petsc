@@ -28,7 +28,7 @@ struct _n_PetscObjectList {
 
       Developer Note: this is to handle some cases that otherwise would result in having circular references so reference counts never got to zero
 
-.seealso: PetscObjectListDestroy(), PetscObjectListFind(), PetscObjectListDuplicate(), PetscObjectListReverseFind(), PetscObjectListDuplicate(), PetscObjectListAdd()
+.seealso: `PetscObjectListDestroy()`, `PetscObjectListFind()`, `PetscObjectListDuplicate()`, `PetscObjectListReverseFind()`, `PetscObjectListDuplicate()`, `PetscObjectListAdd()`
 
 @*/
 PetscErrorCode  PetscObjectListRemoveReference(PetscObjectList *fl,const char name[])
@@ -67,7 +67,7 @@ PetscErrorCode  PetscObjectListRemoveReference(PetscObjectList *fl,const char na
 
         Use PetscObjectListFind() or PetscObjectListReverseFind() to get the object back
 
-.seealso: PetscObjectListDestroy(), PetscObjectListFind(), PetscObjectListDuplicate(), PetscObjectListReverseFind(), PetscObjectListDuplicate()
+.seealso: `PetscObjectListDestroy()`, `PetscObjectListFind()`, `PetscObjectListDuplicate()`, `PetscObjectListReverseFind()`, `PetscObjectListDuplicate()`
 
 @*/
 PetscErrorCode  PetscObjectListAdd(PetscObjectList *fl,const char name[],PetscObject obj)
@@ -134,7 +134,7 @@ PetscErrorCode  PetscObjectListAdd(PetscObjectList *fl,const char name[],PetscOb
 
     Level: developer
 
-.seealso: PetscObjectListAdd(), PetscObjectListFind(), PetscObjectListDuplicate(), PetscObjectListReverseFind(), PetscObjectListDuplicate()
+.seealso: `PetscObjectListAdd()`, `PetscObjectListFind()`, `PetscObjectListDuplicate()`, `PetscObjectListReverseFind()`, `PetscObjectListDuplicate()`
 
 @*/
 PetscErrorCode  PetscObjectListDestroy(PetscObjectList *ifl)
@@ -171,7 +171,7 @@ PetscErrorCode  PetscObjectListDestroy(PetscObjectList *ifl)
 
     The reference count of the object is not increased
 
-.seealso: PetscObjectListDestroy(), PetscObjectListAdd(), PetscObjectListDuplicate(), PetscObjectListReverseFind(), PetscObjectListDuplicate()
+.seealso: `PetscObjectListDestroy()`, `PetscObjectListAdd()`, `PetscObjectListDuplicate()`, `PetscObjectListReverseFind()`, `PetscObjectListDuplicate()`
 
 @*/
 PetscErrorCode  PetscObjectListFind(PetscObjectList fl,const char name[],PetscObject *obj)
@@ -209,7 +209,7 @@ PetscErrorCode  PetscObjectListFind(PetscObjectList fl,const char name[],PetscOb
 
     The reference count of the object is not increased
 
-.seealso: PetscObjectListDestroy(), PetscObjectListAdd(), PetscObjectListDuplicate(), PetscObjectListFind(), PetscObjectListDuplicate()
+.seealso: `PetscObjectListDestroy()`, `PetscObjectListAdd()`, `PetscObjectListDuplicate()`, `PetscObjectListFind()`, `PetscObjectListDuplicate()`
 
 @*/
 PetscErrorCode  PetscObjectListReverseFind(PetscObjectList fl,PetscObject obj,char **name,PetscBool *skipdereference)
@@ -240,7 +240,7 @@ PetscErrorCode  PetscObjectListReverseFind(PetscObjectList fl,PetscObject obj,ch
 
     Level: developer
 
-.seealso: PetscObjectListDestroy(), PetscObjectListAdd(), PetscObjectListReverseFind(), PetscObjectListFind(), PetscObjectListDuplicate()
+.seealso: `PetscObjectListDestroy()`, `PetscObjectListAdd()`, `PetscObjectListReverseFind()`, `PetscObjectListFind()`, `PetscObjectListDuplicate()`
 
 @*/
 PetscErrorCode  PetscObjectListDuplicate(PetscObjectList fl,PetscObjectList *nl)

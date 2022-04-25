@@ -266,7 +266,7 @@ static PetscErrorCode DMCreateInterpolation_Redundant(DM dmc,DM dmf,Mat *P,Vec *
 
     Level: advanced
 
-.seealso DMDestroy(), DMCreateGlobalVector(), DMRedundantCreate(), DMRedundantGetSize()
+.seealso `DMDestroy()`, `DMCreateGlobalVector()`, `DMRedundantCreate()`, `DMRedundantGetSize()`
 @*/
 PetscErrorCode DMRedundantSetSize(DM dm,PetscMPIInt rank,PetscInt N)
 {
@@ -293,7 +293,7 @@ PetscErrorCode DMRedundantSetSize(DM dm,PetscMPIInt rank,PetscInt N)
 
     Level: advanced
 
-.seealso DMDestroy(), DMCreateGlobalVector(), DMRedundantCreate(), DMRedundantSetSize()
+.seealso `DMDestroy()`, `DMCreateGlobalVector()`, `DMRedundantCreate()`, `DMRedundantSetSize()`
 @*/
 PetscErrorCode DMRedundantGetSize(DM dm,PetscMPIInt *rank,PetscInt *N)
 {
@@ -350,7 +350,7 @@ static PetscErrorCode DMSetUpGLVisViewer_Redundant(PetscObject odm, PetscViewer 
 
   Level: intermediate
 
-.seealso: DMType, DMCOMPOSITE,  DMCreate(), DMRedundantSetSize(), DMRedundantGetSize()
+.seealso: `DMType`, `DMCOMPOSITE`, `DMCreate()`, `DMRedundantSetSize()`, `DMRedundantGetSize()`
 M*/
 
 PETSC_EXTERN PetscErrorCode DMCreate_Redundant(DM dm)
@@ -397,7 +397,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Redundant(DM dm)
 
     Level: advanced
 
-.seealso DMDestroy(), DMCreateGlobalVector(), DMCreateMatrix(), DMCompositeAddDM(), DMREDUNDANT, DMSetType(), DMRedundantSetSize(), DMRedundantGetSize()
+.seealso `DMDestroy()`, `DMCreateGlobalVector()`, `DMCreateMatrix()`, `DMCompositeAddDM()`, `DMREDUNDANT`, `DMSetType()`, `DMRedundantSetSize()`, `DMRedundantGetSize()`
 
 @*/
 PetscErrorCode DMRedundantCreate(MPI_Comm comm,PetscMPIInt rank,PetscInt N,DM *dm)

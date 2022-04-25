@@ -41,7 +41,7 @@
 $       character*(64) name
 $       call PetscGetHostName(name,ierr)
 
-.seealso: PetscGetUserName(),PetscGetArchType()
+.seealso: `PetscGetUserName(),PetscGetArchType()`
 @*/
 PetscErrorCode  PetscGetHostName(char name[],size_t nlen)
 {

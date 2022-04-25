@@ -39,7 +39,7 @@
    to be npoints[0]*npoints[1] (2D) or npoints[0]*npoints[1]*npoints[2] (3D). When using mode = ADD_VALUES,
    new points will be appended to any already existing in the DMSwarm
 
-.seealso: DMSwarmSetType(), DMSwarmSetCellDM(), DMSwarmType
+.seealso: `DMSwarmSetType()`, `DMSwarmSetCellDM()`, `DMSwarmType`
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM dm,PetscReal min[],PetscReal max[],PetscInt npoints[],InsertMode mode)
 {
@@ -207,7 +207,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM dm,PetscReal m
    its sub-domain. If they any values within coor[] are not located in the sub-domain, they will be ignored and will not get
    added to the DMSwarm.
 
-.seealso: DMSwarmSetType(), DMSwarmSetCellDM(), DMSwarmType, DMSwarmSetPointsUniformCoordinates()
+.seealso: `DMSwarmSetType()`, `DMSwarmSetCellDM()`, `DMSwarmType`, `DMSwarmSetPointsUniformCoordinates()`
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinates(DM dm,PetscInt npoints,PetscReal coor[],PetscBool redundant,InsertMode mode)
 {
@@ -376,7 +376,7 @@ extern PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX(DM,DM,DMSwarmP
    (ii) DMSWARMPIC_LAYOUT_GAUSS: 2D and 3D provided the cell is a tri/tet or a quad/hex,
    (iii) DMSWARMPIC_LAYOUT_SUBDIVISION: 2D and 3D for quad/hex and 2D tri.
 
-.seealso: DMSwarmPICLayoutType, DMSwarmSetType(), DMSwarmSetCellDM(), DMSwarmType
+.seealso: `DMSwarmPICLayoutType`, `DMSwarmSetType()`, `DMSwarmSetCellDM()`, `DMSwarmType`
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmInsertPointsUsingCellDM(DM dm,DMSwarmPICLayoutType layout_type,PetscInt fill_param)
 {
@@ -421,7 +421,7 @@ $    DMSwarmGetField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&coor);
 $    // user code to define the coordinates here
 $    DMSwarmRestoreField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&coor);
 
-.seealso: DMSwarmSetCellDM(), DMSwarmInsertPointsUsingCellDM()
+.seealso: `DMSwarmSetCellDM()`, `DMSwarmInsertPointsUsingCellDM()`
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinatesCellwise(DM dm,PetscInt npoints,PetscReal xi[])
 {
@@ -476,7 +476,7 @@ extern PetscErrorCode private_DMSwarmProjectFields_PLEX(DM swarm,DM celldm,Petsc
 
    The only projection methods currently only support the DA (2D) and PLEX (triangles 2D).
 
-.seealso: DMSwarmSetType(), DMSwarmSetCellDM(), DMSwarmType
+.seealso: `DMSwarmSetType()`, `DMSwarmSetCellDM()`, `DMSwarmType`
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmProjectFields(DM dm,PetscInt nfields,const char *fieldnames[],Vec **fields,PetscBool reuse)
 {
@@ -539,7 +539,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmProjectFields(DM dm,PetscInt nfields,const ch
    Notes:
    The array count is allocated internally and must be free'd by the user.
 
-.seealso: DMSwarmSetType(), DMSwarmSetCellDM(), DMSwarmType
+.seealso: `DMSwarmSetType()`, `DMSwarmSetCellDM()`, `DMSwarmType`
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmCreatePointPerCellCount(DM dm,PetscInt *ncells,PetscInt **count)
 {
@@ -620,7 +620,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmCreatePointPerCellCount(DM dm,PetscInt *ncell
 
   Level: intermediate
 
-.seealso: DMSwarmSetNumSpecies(), DMSwarmSetType(), DMSwarmType
+.seealso: `DMSwarmSetNumSpecies()`, `DMSwarmSetType()`, `DMSwarmType`
 @*/
 PetscErrorCode DMSwarmGetNumSpecies(DM sw, PetscInt *Ns)
 {
@@ -642,7 +642,7 @@ PetscErrorCode DMSwarmGetNumSpecies(DM sw, PetscInt *Ns)
 
   Level: intermediate
 
-.seealso: DMSwarmGetNumSpecies(), DMSwarmSetType(), DMSwarmType
+.seealso: `DMSwarmGetNumSpecies()`, `DMSwarmSetType()`, `DMSwarmType`
 @*/
 PetscErrorCode DMSwarmSetNumSpecies(DM sw, PetscInt Ns)
 {
@@ -666,7 +666,7 @@ PetscErrorCode DMSwarmSetNumSpecies(DM sw, PetscInt Ns)
 
   Level: intermediate
 
-.seealso: DMSwarmSetCoordinateFunction(), DMSwarmGetVelocityFunction(), DMSwarmInitializeCoordinates()
+.seealso: `DMSwarmSetCoordinateFunction()`, `DMSwarmGetVelocityFunction()`, `DMSwarmInitializeCoordinates()`
 @*/
 PetscErrorCode DMSwarmGetCoordinateFunction(DM sw, PetscSimplePointFunc *coordFunc)
 {
@@ -690,7 +690,7 @@ PetscErrorCode DMSwarmGetCoordinateFunction(DM sw, PetscSimplePointFunc *coordFu
 
   Level: intermediate
 
-.seealso: DMSwarmGetCoordinateFunction(), DMSwarmSetVelocityFunction(), DMSwarmInitializeCoordinates()
+.seealso: `DMSwarmGetCoordinateFunction()`, `DMSwarmSetVelocityFunction()`, `DMSwarmInitializeCoordinates()`
 @*/
 PetscErrorCode DMSwarmSetCoordinateFunction(DM sw, PetscSimplePointFunc coordFunc)
 {
@@ -716,7 +716,7 @@ PetscErrorCode DMSwarmSetCoordinateFunction(DM sw, PetscSimplePointFunc coordFun
 
   Level: intermediate
 
-.seealso: DMSwarmSetVelocityFunction(), DMSwarmGetCoordinateFunction(), DMSwarmInitializeVelocities()
+.seealso: `DMSwarmSetVelocityFunction()`, `DMSwarmGetCoordinateFunction()`, `DMSwarmInitializeVelocities()`
 @*/
 PetscErrorCode DMSwarmGetVelocityFunction(DM sw, PetscSimplePointFunc *velFunc)
 {
@@ -740,7 +740,7 @@ PetscErrorCode DMSwarmGetVelocityFunction(DM sw, PetscSimplePointFunc *velFunc)
 
   Level: intermediate
 
-.seealso: DMSwarmGetVelocityFunction(), DMSwarmSetCoordinateFunction(), DMSwarmInitializeVelocities()
+.seealso: `DMSwarmGetVelocityFunction()`, `DMSwarmSetCoordinateFunction()`, `DMSwarmInitializeVelocities()`
 @*/
 PetscErrorCode DMSwarmSetVelocityFunction(DM sw, PetscSimplePointFunc velFunc)
 {
@@ -767,7 +767,7 @@ PetscErrorCode DMSwarmSetVelocityFunction(DM sw, PetscSimplePointFunc velFunc)
 
   Level: advanced
 
-.seealso: DMSwarmComputeLocalSizeFromOptions()
+.seealso: `DMSwarmComputeLocalSizeFromOptions()`
 @*/
 PetscErrorCode DMSwarmComputeLocalSize(DM sw, PetscInt N, PetscProbFunc density)
 {
@@ -830,7 +830,7 @@ PetscErrorCode DMSwarmComputeLocalSize(DM sw, PetscInt N, PetscProbFunc density)
 
   Level: advanced
 
-.seealso: DMSwarmComputeLocalSize()
+.seealso: `DMSwarmComputeLocalSize()`
 @*/
 PetscErrorCode DMSwarmComputeLocalSizeFromOptions(DM sw)
 {
@@ -884,7 +884,7 @@ PetscErrorCode DMSwarmComputeLocalSizeFromOptions(DM sw)
 
   Level: advanced
 
-.seealso: DMSwarmComputeLocalSize(), DMSwarmInitializeVelocities()
+.seealso: `DMSwarmComputeLocalSize()`, `DMSwarmInitializeVelocities()`
 @*/
 PetscErrorCode DMSwarmInitializeCoordinates(DM sw)
 {
@@ -975,7 +975,7 @@ PetscErrorCode DMSwarmInitializeCoordinates(DM sw)
 
   Level: advanced
 
-.seealso: DMSwarmComputeLocalSize(), DMSwarmInitializeCoordinates(), DMSwarmInitializeVelocitiesFromOptions()
+.seealso: `DMSwarmComputeLocalSize()`, `DMSwarmInitializeCoordinates()`, `DMSwarmInitializeVelocitiesFromOptions()`
 @*/
 PetscErrorCode DMSwarmInitializeVelocities(DM sw, PetscProbFunc sampler, const PetscReal v0[])
 {
@@ -1036,7 +1036,7 @@ PetscErrorCode DMSwarmInitializeVelocities(DM sw, PetscProbFunc sampler, const P
 
   Level: advanced
 
-.seealso: DMSwarmComputeLocalSize(), DMSwarmInitializeCoordinates(), DMSwarmInitializeVelocities()
+.seealso: `DMSwarmComputeLocalSize()`, `DMSwarmInitializeCoordinates()`, `DMSwarmInitializeVelocities()`
 @*/
 PetscErrorCode DMSwarmInitializeVelocitiesFromOptions(DM sw, const PetscReal v0[])
 {

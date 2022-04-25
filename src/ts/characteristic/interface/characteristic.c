@@ -146,7 +146,7 @@ PetscErrorCode CharacteristicCreate(MPI_Comm comm, Characteristic *c)
 
   Level: intermediate
 
-.seealso: CharacteristicType
+.seealso: `CharacteristicType`
 
 @*/
 PetscErrorCode CharacteristicSetType(Characteristic c, CharacteristicType type)
@@ -187,7 +187,7 @@ PetscErrorCode CharacteristicSetType(Characteristic c, CharacteristicType type)
 
    Level: developer
 
-.seealso: CharacteristicCreate(), CharacteristicSolve(), CharacteristicDestroy()
+.seealso: `CharacteristicCreate()`, `CharacteristicSolve()`, `CharacteristicDestroy()`
 @*/
 PetscErrorCode CharacteristicSetUp(Characteristic c)
 {
@@ -236,7 +236,7 @@ PetscErrorCode CharacteristicSetUp(Characteristic c)
    Notes:
    CharacteristicRegister() may be called multiple times to add several user-defined solvers.
 
-.seealso: CharacteristicRegisterAll(), CharacteristicRegisterDestroy()
+.seealso: `CharacteristicRegisterAll()`, `CharacteristicRegisterDestroy()`
 
   Level: advanced
 @*/

@@ -35,9 +35,9 @@
 
   Level: intermediate
 
-.seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecRestoreArray(), DMDAVecRestoreArrayDOF()
-          DMDAVecGetArrayDOF(), DMDAVecGetArrayWrite(), DMDAVecRestoreArrayWrite(), DMDAVecGetArrayRead(), DMDAVecRestoreArrayRead(),
-          DMStagVecGetArray()
+.seealso: `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecRestoreArray()`, `DMDAVecRestoreArrayDOF()`
+          `DMDAVecGetArrayDOF()`, `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`,
+          `DMStagVecGetArray()`
 @*/
 PetscErrorCode  DMDAVecGetArray(DM da,Vec vec,void *array)
 {
@@ -88,9 +88,9 @@ PetscErrorCode  DMDAVecGetArray(DM da,Vec vec,void *array)
   Fortran Notes:
     From Fortran use DMDAVecRestoreArayF90()
 
-.seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecGetArray(),
-          DMDAVecGetArrayWrite(), DMDAVecRestoreArrayWrite(), DMDAVecGetArrayRead(), DMDAVecRestoreArrayRead(),
-          DMDStagVecRestoreArray()
+.seealso: `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArray()`,
+          `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`,
+          `DMDStagVecRestoreArray()`
 @*/
 PetscErrorCode  DMDAVecRestoreArray(DM da,Vec vec,void *array)
 {
@@ -161,8 +161,8 @@ PetscErrorCode  DMDAVecRestoreArray(DM da,Vec vec,void *array)
 
   Developer Notes: This has code duplication with DMDAVecGetArray() and DMDAVecGetArrayRead()
 
-.seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecRestoreArrayWrite(), DMDAVecRestoreArrayDOF()
-          DMDAVecGetArrayDOF(), DMDAVecGetArray(), DMDAVecRestoreArray(), DMDAVecGetArrayRead(), DMDAVecRestoreArrayRead()
+.seealso: `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecRestoreArrayDOF()`
+          `DMDAVecGetArrayDOF()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`
 @*/
 PetscErrorCode  DMDAVecGetArrayWrite(DM da,Vec vec,void *array)
 {
@@ -217,8 +217,8 @@ PetscErrorCode  DMDAVecGetArrayWrite(DM da,Vec vec,void *array)
   Fortran Notes:
     From Fortran use DMDAVecRestoreArayF90()
 
-.seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecGetArrayWrite(),
-          DMDAVecGetArray(), DMDAVecRestoreArray(), DMDAVecGetArrayRead(), DMDAVecRestoreArrayRead()
+.seealso: `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArrayWrite()`,
+          `DMDAVecGetArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`
 @*/
 PetscErrorCode  DMDAVecRestoreArrayWrite(DM da,Vec vec,void *array)
 {
@@ -281,8 +281,8 @@ PetscErrorCode  DMDAVecRestoreArrayWrite(DM da,Vec vec,void *array)
 
   Level: intermediate
 
-.seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecRestoreArray(), DMDAVecGetArray(), DMDAVecRestoreArrayDOF(),
-          DMDAVecGetArrayWrite(), DMDAVecRestoreArrayWrite(), DMDAVecGetArrayRead(), DMDAVecRestoreArrayRead(), DMStagVecGetArrayDOF(), DMDAVecGetArrayDOFRead()
+.seealso: `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecRestoreArrayDOF()`,
+          `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`, `DMStagVecGetArrayDOF()`, `DMDAVecGetArrayDOFRead()`
 @*/
 PetscErrorCode  DMDAVecGetArrayDOF(DM da,Vec vec,void *array)
 {
@@ -327,8 +327,8 @@ PetscErrorCode  DMDAVecGetArrayDOF(DM da,Vec vec,void *array)
 
   Level: intermediate
 
-.seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecGetArray(), DMDAVecGetArrayDOF(), DMDAVecRestoreArrayDOF(),
-          DMDAVecGetArrayWrite(), DMDAVecRestoreArrayWrite(), DMDAVecGetArrayRead(), DMDAVecRestoreArrayRead(), DMStagVecRestoreArrayDOF(), DMDAVecRestoreArrayDOFRead()
+.seealso: `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecGetArrayDOF()`, `DMDAVecRestoreArrayDOF()`,
+          `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`, `DMStagVecRestoreArrayDOF()`, `DMDAVecRestoreArrayDOFRead()`
 @*/
 PetscErrorCode  DMDAVecRestoreArrayDOF(DM da,Vec vec,void *array)
 {
@@ -394,9 +394,9 @@ PetscErrorCode  DMDAVecRestoreArrayDOF(DM da,Vec vec,void *array)
 
   Level: intermediate
 
-.seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecRestoreArrayRead(), DMDAVecRestoreArrayDOF()
-          DMDAVecGetArrayDOF(), DMDAVecGetArray(), DMDAVecRestoreArray(), DMDAVecGetArrayRead(), DMDAVecRestoreArrayRead(),
-          DMStagVecGetArrayRead()
+.seealso: `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecRestoreArrayRead()`, `DMDAVecRestoreArrayDOF()`
+          `DMDAVecGetArrayDOF()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`,
+          `DMStagVecGetArrayRead()`
 @*/
 PetscErrorCode  DMDAVecGetArrayRead(DM da,Vec vec,void *array)
 {
@@ -447,9 +447,9 @@ PetscErrorCode  DMDAVecGetArrayRead(DM da,Vec vec,void *array)
   Fortran Notes:
     From Fortran use DMDAVecRestoreArrayReadF90()
 
-.seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecGetArrayRead(),
-          DMDAVecGetArray(), DMDAVecRestoreArray(), DMDAVecGetArrayWrite(), DMDAVecRestoreArrayWrite(),
-          DMStagVecRestoreArrayRead()
+.seealso: `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArrayRead()`,
+          `DMDAVecGetArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`,
+          `DMStagVecRestoreArrayRead()`
 @*/
 PetscErrorCode  DMDAVecRestoreArrayRead(DM da,Vec vec,void *array)
 {
@@ -508,8 +508,8 @@ PetscErrorCode  DMDAVecRestoreArrayRead(DM da,Vec vec,void *array)
 
   Level: intermediate
 
-.seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecRestoreArray(), DMDAVecGetArray(), DMDAVecGetArrayDOF(),
-          DMDAVecGetArrayWrite(), DMDAVecRestoreArrayWrite(), DMDAVecGetArrayRead(), DMDAVecRestoreArrayRead(), DMStagVecGetArrayDOFRead()
+.seealso: `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecGetArrayDOF()`,
+          `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`, `DMStagVecGetArrayDOFRead()`
 @*/
 PetscErrorCode  DMDAVecGetArrayDOFRead(DM da,Vec vec,void *array)
 {
@@ -554,8 +554,8 @@ PetscErrorCode  DMDAVecGetArrayDOFRead(DM da,Vec vec,void *array)
 
   Level: intermediate
 
-.seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecGetArray(), DMDAVecGetArrayDOF(), DMDAVecRestoreArrayDOF(),
-          DMDAVecGetArrayWrite(), DMDAVecRestoreArrayWrite(), DMDAVecGetArrayRead(), DMDAVecRestoreArrayRead(), DMStagVecRestoreArrayDOFRead()
+.seealso: `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecGetArrayDOF()`, `DMDAVecRestoreArrayDOF()`,
+          `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`, `DMStagVecRestoreArrayDOFRead()`
 @*/
 PetscErrorCode  DMDAVecRestoreArrayDOFRead(DM da,Vec vec,void *array)
 {
@@ -611,9 +611,9 @@ PetscErrorCode  DMDAVecRestoreArrayDOFRead(DM da,Vec vec,void *array)
 
   Level: intermediate
 
-.seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecRestoreArray(), DMDAVecGetArray(), DMDAVecGetArrayDOF(),
-          DMDAVecGetArrayWrite(), DMDAVecRestoreArrayWrite(), DMDAVecGetArrayWrite(), DMDAVecRestoreArrayWrite(), DMStagVecGetArrayDOFWrite(),
-          DMStagVecRestoreArrayDOFRead(), DMStagVecRestoreArrayDOFRead()
+.seealso: `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecGetArrayDOF()`,
+          `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMStagVecGetArrayDOFWrite()`,
+          `DMStagVecRestoreArrayDOFRead()`, `DMStagVecRestoreArrayDOFRead()`
 @*/
 PetscErrorCode  DMDAVecGetArrayDOFWrite(DM da,Vec vec,void *array)
 {
@@ -658,9 +658,9 @@ PetscErrorCode  DMDAVecGetArrayDOFWrite(DM da,Vec vec,void *array)
 
   Level: intermediate
 
-.seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecGetArray(), DMDAVecGetArrayDOF(), DMDAVecRestoreArrayDOF(),
-          DMDAVecGetArrayWrite(), DMDAVecRestoreArrayWrite(), DMDAVecGetArrayWrite(), DMDAVecRestoreArrayWrite(), DMStagVecRestoreArrayDOFWrite(),
-          DMStagVecRestoreArrayDOFRead(), DMStagVecRestoreArrayDOFRead()
+.seealso: `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecGetArrayDOF()`, `DMDAVecRestoreArrayDOF()`,
+          `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMStagVecRestoreArrayDOFWrite()`,
+          `DMStagVecRestoreArrayDOFRead()`, `DMStagVecRestoreArrayDOFRead()`
 @*/
 PetscErrorCode  DMDAVecRestoreArrayDOFWrite(DM da,Vec vec,void *array)
 {

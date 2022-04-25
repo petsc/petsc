@@ -193,7 +193,7 @@ PetscErrorCode  PetscSignalHandlerDefault(int sig,void *ptr)
 
   Level: developer
 
-.seealso: PetscPopSignalHandler(), PetscSignalHandlerDefault(), PetscPushErrorHandler()
+.seealso: `PetscPopSignalHandler()`, `PetscSignalHandlerDefault()`, `PetscPushErrorHandler()`
 
 @*/
 PetscErrorCode  PetscPushSignalHandler(PetscErrorCode (*routine)(int,void*),void *ctx)
@@ -346,7 +346,7 @@ PetscErrorCode  PetscPushSignalHandler(PetscErrorCode (*routine)(int,void*),void
 
   Level: developer
 
-.seealso: PetscPushSignalHandler()
+.seealso: `PetscPushSignalHandler()`
 
 @*/
 PetscErrorCode  PetscPopSignalHandler(void)

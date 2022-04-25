@@ -949,7 +949,7 @@ static inline PetscErrorCode PetscTimSortBuildRunWithArray_Private(char *arr, ch
 
   Level: developer
 
-.seealso: PetscTimSortWithArray(), PetscIntSortSemiOrdered(), PetscRealSortSemiOrdered(), PetscMPIIntSortSemiOrdered()
+.seealso: `PetscTimSortWithArray()`, `PetscIntSortSemiOrdered()`, `PetscRealSortSemiOrdered()`, `PetscMPIIntSortSemiOrdered()`
 @*/
 PetscErrorCode PetscTimSort(PetscInt n, void *arr, size_t size, int (*cmp)(const void *, const void *, void *), void *ctx)
 {
@@ -1077,7 +1077,7 @@ PetscErrorCode PetscTimSort(PetscInt n, void *arr, size_t size, int (*cmp)(const
 
   Level: developer
 
-.seealso: PetscTimSort(), PetscIntSortSemiOrderedWithArray(), PetscRealSortSemiOrderedWithArrayInt(), PetscMPIIntSortSemiOrderedWithArray()
+.seealso: `PetscTimSort()`, `PetscIntSortSemiOrderedWithArray()`, `PetscRealSortSemiOrderedWithArrayInt()`, `PetscMPIIntSortSemiOrderedWithArray()`
 @*/
 PetscErrorCode PetscTimSortWithArray(PetscInt n, void *arr, size_t asize, void *barr, size_t bsize, int (*cmp)(const void *, const void *, void *), void *ctx)
 {
@@ -1149,7 +1149,7 @@ PetscErrorCode PetscTimSortWithArray(PetscInt n, void *arr, size_t asize, void *
 
    Level: intermediate
 
-.seealso: PetscTimSort(), PetscSortInt(), PetscSortIntWithPermutation()
+.seealso: `PetscTimSort()`, `PetscSortInt()`, `PetscSortIntWithPermutation()`
 @*/
 PetscErrorCode PetscIntSortSemiOrdered(PetscInt n, PetscInt arr[])
 {
@@ -1186,7 +1186,7 @@ PetscErrorCode PetscIntSortSemiOrdered(PetscInt n, PetscInt arr[])
 
    Level: intermediate
 
-.seealso: PetscTimSortWithArray(), PetscSortIntWithArray(), PetscSortIntWithPermutation()
+.seealso: `PetscTimSortWithArray()`, `PetscSortIntWithArray()`, `PetscSortIntWithPermutation()`
 @*/
 PetscErrorCode PetscIntSortSemiOrderedWithArray(PetscInt n, PetscInt arr1[], PetscInt arr2[])
 {
@@ -1220,7 +1220,7 @@ PetscErrorCode PetscIntSortSemiOrderedWithArray(PetscInt n, PetscInt arr1[], Pet
 
    Level: intermediate
 
-.seealso: PetscTimSort(), PetscSortMPIInt()
+.seealso: `PetscTimSort()`, `PetscSortMPIInt()`
 @*/
 PetscErrorCode PetscMPIIntSortSemiOrdered(PetscInt n, PetscMPIInt arr[])
 {
@@ -1257,7 +1257,7 @@ PetscErrorCode PetscMPIIntSortSemiOrdered(PetscInt n, PetscMPIInt arr[])
 
    Level: intermediate
 
-.seealso: PetscTimSortWithArray(), PetscSortMPIIntWithArray(), PetscSortMPIIntWithPermutation()
+.seealso: `PetscTimSortWithArray()`, `PetscSortMPIIntWithArray()`, `PetscSortMPIIntWithPermutation()`
 @*/
 PetscErrorCode PetscMPIIntSortSemiOrderedWithArray(PetscInt n, PetscMPIInt arr1[], PetscMPIInt arr2[])
 {
@@ -1291,7 +1291,7 @@ PetscErrorCode PetscMPIIntSortSemiOrderedWithArray(PetscInt n, PetscMPIInt arr1[
 
    Level: intermediate
 
-.seealso: PetscTimSort(), PetscSortReal(), PetscSortRealWithPermutation()
+.seealso: `PetscTimSort()`, `PetscSortReal()`, `PetscSortRealWithPermutation()`
 @*/
 PetscErrorCode PetscRealSortSemiOrdered(PetscInt n, PetscReal arr[])
 {
@@ -1326,7 +1326,7 @@ PetscErrorCode PetscRealSortSemiOrdered(PetscInt n, PetscReal arr[])
 
    Level: intermediate
 
-.seealso: PetscTimSortWithArray(), PetscSortRealWithArrayInt(), PetscSortRealWithPermutation()
+.seealso: `PetscTimSortWithArray()`, `PetscSortRealWithArrayInt()`, `PetscSortRealWithPermutation()`
 @*/
 PetscErrorCode PetscRealSortSemiOrderedWithArrayInt(PetscInt n, PetscReal arr1[], PetscInt arr2[])
 {

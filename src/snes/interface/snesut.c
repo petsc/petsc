@@ -21,7 +21,7 @@
 
    Level: intermediate
 
-.seealso: SNESMonitorSet(), SNESMonitorDefault(), VecView()
+.seealso: `SNESMonitorSet()`, `SNESMonitorDefault()`, `VecView()`
 @*/
 PetscErrorCode  SNESMonitorSolution(SNES snes,PetscInt its,PetscReal fgnorm,PetscViewerAndFormat *vf)
 {
@@ -54,7 +54,7 @@ PetscErrorCode  SNESMonitorSolution(SNES snes,PetscInt its,PetscReal fgnorm,Pets
 
    Level: intermediate
 
-.seealso: SNESMonitorSet(), SNESMonitorDefault(), VecView()
+.seealso: `SNESMonitorSet()`, `SNESMonitorDefault()`, `VecView()`
 @*/
 PetscErrorCode  SNESMonitorResidual(SNES snes,PetscInt its,PetscReal fgnorm,PetscViewerAndFormat *vf)
 {
@@ -87,7 +87,7 @@ PetscErrorCode  SNESMonitorResidual(SNES snes,PetscInt its,PetscReal fgnorm,Pets
 
    Level: intermediate
 
-.seealso: SNESMonitorSet(), SNESMonitorDefault(), VecView()
+.seealso: `SNESMonitorSet()`, `SNESMonitorDefault()`, `VecView()`
 @*/
 PetscErrorCode  SNESMonitorSolutionUpdate(SNES snes,PetscInt its,PetscReal fgnorm,PetscViewerAndFormat *vf)
 {
@@ -121,7 +121,7 @@ PetscErrorCode  SNESMonitorSolutionUpdate(SNES snes,PetscInt its,PetscReal fgnor
 
   Level: intermediate
 
-.seealso: KSPMonitorSet(), KSPMonitorResidual(),KSPMonitorTrueResidualMaxNorm()
+.seealso: `KSPMonitorSet()`, `KSPMonitorResidual(),KSPMonitorTrueResidualMaxNorm()`
 @*/
 PetscErrorCode KSPMonitorSNESResidual(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
 {
@@ -172,7 +172,7 @@ PetscErrorCode KSPMonitorSNESResidual(KSP ksp, PetscInt n, PetscReal rnorm, Pets
 
   Level: intermediate
 
-.seealso: KSPMonitorSet(), KSPMonitorTrueResidual()
+.seealso: `KSPMonitorSet()`, `KSPMonitorTrueResidual()`
 @*/
 PetscErrorCode KSPMonitorSNESResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
 {
@@ -231,7 +231,7 @@ PetscErrorCode KSPMonitorSNESResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm
 
   Level: intermediate
 
-.seealso: KSPMonitorSet(), KSPMonitorTrueResidual()
+.seealso: `KSPMonitorSet()`, `KSPMonitorTrueResidual()`
 @*/
 PetscErrorCode KSPMonitorSNESResidualDrawLGCreate(PetscViewer viewer, PetscViewerFormat format, void *ctx, PetscViewerAndFormat **vf)
 {
@@ -269,7 +269,7 @@ PetscErrorCode SNESMonitorDefaultSetUp(SNES snes, PetscViewerAndFormat *vf)
 
    Level: intermediate
 
-.seealso: SNESMonitorSet(), SNESMonitorSolution()
+.seealso: `SNESMonitorSet()`, `SNESMonitorSolution()`
 @*/
 PetscErrorCode  SNESMonitorDefault(SNES snes,PetscInt its,PetscReal fgnorm,PetscViewerAndFormat *vf)
 {
@@ -323,7 +323,7 @@ PetscErrorCode  SNESMonitorDefault(SNES snes,PetscInt its,PetscReal fgnorm,Petsc
 
    Level: intermediate
 
-.seealso: SNESMonitorSet(), SNESMonitorSolution()
+.seealso: `SNESMonitorSet()`, `SNESMonitorSolution()`
 @*/
 PetscErrorCode  SNESMonitorScaling(SNES snes,PetscInt its,PetscReal fgnorm,PetscViewerAndFormat *vf)
 {
@@ -443,7 +443,7 @@ PetscErrorCode  SNESMonitorRange_Private(SNES snes,PetscInt it,PetscReal *per)
 
    Level: intermediate
 
-.seealso: SNESMonitorSet(), SNESMonitorDefault(), SNESMonitorLGCreate()
+.seealso: `SNESMonitorSet()`, `SNESMonitorDefault()`, `SNESMonitorLGCreate()`
 @*/
 PetscErrorCode  SNESMonitorRange(SNES snes,PetscInt it,PetscReal rnorm,PetscViewerAndFormat *vf)
 {
@@ -483,7 +483,7 @@ PetscErrorCode  SNESMonitorRange(SNES snes,PetscInt it,PetscReal rnorm,PetscView
 
    Notes:
     Insure that SNESMonitorRatio() is called when you set this monitor
-.seealso: SNESMonitorSet(), SNESMonitorSolution(), SNESMonitorRatio()
+.seealso: `SNESMonitorSet()`, `SNESMonitorSolution()`, `SNESMonitorRatio()`
 @*/
 PetscErrorCode  SNESMonitorRatio(SNES snes,PetscInt its,PetscReal fgnorm,PetscViewerAndFormat *vf)
 {
@@ -517,7 +517,7 @@ PetscErrorCode  SNESMonitorRatio(SNES snes,PetscInt its,PetscReal fgnorm,PetscVi
 
    Level: intermediate
 
-.seealso: SNESMonitorSet(), SNESMonitorSolution(), SNESMonitorDefault(), SNESMonitorRatio()
+.seealso: `SNESMonitorSet()`, `SNESMonitorSolution()`, `SNESMonitorDefault()`, `SNESMonitorRatio()`
 @*/
 PetscErrorCode  SNESMonitorRatioSetUp(SNES snes,PetscViewerAndFormat *vf)
 {
@@ -577,7 +577,7 @@ PetscErrorCode  SNESMonitorDefaultShort(SNES snes,PetscInt its,PetscReal fgnorm,
 
   Level: intermediate
 
-.seealso: SNESMonitorSet(), SNESMonitorSolution(), SNESMonitorDefault()
+.seealso: `SNESMonitorSet()`, `SNESMonitorSolution()`, `SNESMonitorDefault()`
 @*/
 PetscErrorCode SNESMonitorDefaultField(SNES snes, PetscInt its, PetscReal fgnorm, PetscViewerAndFormat *vf)
 {
@@ -660,7 +660,7 @@ $  SNES_DIVERGED_DTOL             - (fnorm > divtol*snes->fnorm0)
 
    Level: intermediate
 
-.seealso: SNESSetConvergenceTest(), SNESConvergedSkip(), SNESSetTolerances(), SNESSetDivergenceTolerance()
+.seealso: `SNESSetConvergenceTest()`, `SNESConvergedSkip()`, `SNESSetTolerances()`, `SNESSetDivergenceTolerance()`
 @*/
 PetscErrorCode  SNESConvergedDefault(SNES snes,PetscInt it,PetscReal xnorm,PetscReal snorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
 {
@@ -724,7 +724,7 @@ PetscErrorCode  SNESConvergedDefault(SNES snes,PetscInt it,PetscReal xnorm,Petsc
 
    Level: advanced
 
-.seealso: SNESConvergedDefault(), SNESSetConvergenceTest()
+.seealso: `SNESConvergedDefault()`, `SNESSetConvergenceTest()`
 @*/
 PetscErrorCode  SNESConvergedSkip(SNES snes,PetscInt it,PetscReal xnorm,PetscReal snorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
 {

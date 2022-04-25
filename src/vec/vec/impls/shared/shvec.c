@@ -175,8 +175,8 @@ PETSC_EXTERN PetscErrorCode VecCreate_Shared(Vec vv)
 
    Level: advanced
 
-.seealso: VecCreateSeq(), VecCreate(), VecCreateMPI(), VecDuplicate(), VecDuplicateVecs(),
-          VecCreateGhost(), VecCreateMPIWithArray(), VecCreateGhostWithArray()
+.seealso: `VecCreateSeq()`, `VecCreate()`, `VecCreateMPI()`, `VecDuplicate()`, `VecDuplicateVecs()`,
+          `VecCreateGhost()`, `VecCreateMPIWithArray()`, `VecCreateGhostWithArray()`
 
 @*/
 PetscErrorCode  VecCreateShared(MPI_Comm comm,PetscInt n,PetscInt N,Vec *v)

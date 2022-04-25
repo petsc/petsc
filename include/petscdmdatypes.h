@@ -9,7 +9,7 @@
 
    Level: beginner
 
-.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMDACreate(), DMDASetStencilType()
+.seealso: `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMDACreate()`, `DMDASetStencilType()`
 E*/
 typedef enum { DMDA_STENCIL_STAR,DMDA_STENCIL_BOX } DMDAStencilType;
 
@@ -19,7 +19,7 @@ typedef enum { DMDA_STENCIL_STAR,DMDA_STENCIL_BOX } DMDAStencilType;
 
    Level: beginner
 
-.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMCreateInterpolation(), DMDASetInterpolationType(), DMDACreate()
+.seealso: `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMCreateInterpolation()`, `DMDASetInterpolationType()`, `DMDACreate()`
 E*/
 typedef enum { DMDA_Q0, DMDA_Q1 } DMDAInterpolationType;
 
@@ -29,8 +29,8 @@ typedef enum { DMDA_Q0, DMDA_Q1 } DMDAInterpolationType;
 
    Level: beginner
 
-.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMCreateInterpolation(), DMDASetInterpolationType(),
-          DMDASetElementType(), DMDAGetElements(), DMDARestoreElements(), DMDACreate()
+.seealso: `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMCreateInterpolation()`, `DMDASetInterpolationType()`,
+          `DMDASetElementType()`, `DMDAGetElements()`, `DMDARestoreElements()`, `DMDACreate()`
 E*/
 typedef enum { DMDA_ELEMENT_P1, DMDA_ELEMENT_Q1 } DMDAElementType;
 
@@ -47,7 +47,7 @@ $    info(DMDA_LOCAL_INFO_DIM)
 $    info(DMDA_LOCAL_INFO_DOF) etc.
    The entries bx,by,bz, st, and da are not accessible from Fortran.
 
-.seealso:  DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMDestroy(), DM, DMDAGetLocalInfo(), DMDAGetInfo()
+.seealso: `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMDestroy()`, `DM`, `DMDAGetLocalInfo()`, `DMDAGetInfo()`
 S*/
 typedef struct {
   PetscInt         dim,dof,sw;

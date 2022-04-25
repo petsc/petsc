@@ -643,7 +643,7 @@ static PetscErrorCode PetscDrawXGetDisplaySize_Private(const char name[],int *wi
 
    Level: beginner
 
-.seealso:  PetscDrawOpenX(), PetscDrawSetDisplay(), PetscDrawSetFromOptions()
+.seealso: `PetscDrawOpenX()`, `PetscDrawSetDisplay()`, `PetscDrawSetFromOptions()`
 
 M*/
 

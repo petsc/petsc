@@ -34,7 +34,7 @@ static PetscErrorCode (*PetscFreeOld)(void*,int,const char[],const char[]);
      This provides a way to use the CUDA malloc and free routines temporarily. One
      can switch back to the previous choice by calling PetscMallocResetCUDAHost().
 
-.seealso: PetscMallocResetCUDAHost()
+.seealso: `PetscMallocResetCUDAHost()`
 @*/
 PetscErrorCode PetscMallocSetCUDAHost(void)
 {
@@ -56,7 +56,7 @@ PetscErrorCode PetscMallocSetCUDAHost(void)
 
    Level: developer
 
-.seealso: PetscMallocSetCUDAHost()
+.seealso: `PetscMallocSetCUDAHost()`
 @*/
 PetscErrorCode PetscMallocResetCUDAHost(void)
 {

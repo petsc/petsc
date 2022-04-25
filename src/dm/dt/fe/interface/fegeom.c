@@ -14,7 +14,7 @@
 
   Level: beginner
 
-.seealso: PetscFEGeomDestroy(), PetscFEGeomComplete()
+.seealso: `PetscFEGeomDestroy()`, `PetscFEGeomComplete()`
 @*/
 PetscErrorCode PetscFEGeomCreate(PetscQuadrature quad, PetscInt numCells, PetscInt dimEmbed, PetscBool faceData, PetscFEGeom **geom)
 {
@@ -52,7 +52,7 @@ PetscErrorCode PetscFEGeomCreate(PetscQuadrature quad, PetscInt numCells, PetscI
 
   Level: beginner
 
-.seealso: PetscFEGeomCreate()
+.seealso: `PetscFEGeomCreate()`
 @*/
 PetscErrorCode PetscFEGeomDestroy(PetscFEGeom **geom)
 {
@@ -79,7 +79,7 @@ PetscErrorCode PetscFEGeomDestroy(PetscFEGeom **geom)
 
   Level: intermediate
 
-.seealso: PetscFEGeomRestoreChunk(), PetscFEGeomCreate()
+.seealso: `PetscFEGeomRestoreChunk()`, `PetscFEGeomCreate()`
 @*/
 PetscErrorCode PetscFEGeomGetChunk(PetscFEGeom *geom, PetscInt cStart, PetscInt cEnd, PetscFEGeom **chunkGeom)
 {
@@ -126,7 +126,7 @@ PetscErrorCode PetscFEGeomGetChunk(PetscFEGeom *geom, PetscInt cStart, PetscInt 
 
   Level: intermediate
 
-.seealso: PetscFEGeomGetChunk(), PetscFEGeomCreate()
+.seealso: `PetscFEGeomGetChunk()`, `PetscFEGeomCreate()`
 @*/
 PetscErrorCode PetscFEGeomRestoreChunk(PetscFEGeom *geom, PetscInt cStart, PetscInt cEnd, PetscFEGeom **chunkGeom)
 {
@@ -154,7 +154,7 @@ PetscErrorCode PetscFEGeomRestoreChunk(PetscFEGeom *geom, PetscInt cStart, Petsc
 
   Level: intermediate
 
-.seealso: PetscFEGeomRestoreChunk(), PetscFEGeomCreate()
+.seealso: `PetscFEGeomRestoreChunk()`, `PetscFEGeomCreate()`
 @*/
 PetscErrorCode PetscFEGeomGetPoint(PetscFEGeom *geom, PetscInt c, PetscInt p, const PetscReal pcoords[], PetscFEGeom *pgeom)
 {
@@ -201,7 +201,7 @@ PetscErrorCode PetscFEGeomGetPoint(PetscFEGeom *geom, PetscInt c, PetscInt p, co
 
   Level: intermediate
 
-.seealso: PetscFEGeomRestoreChunk(), PetscFEGeomCreate()
+.seealso: `PetscFEGeomRestoreChunk()`, `PetscFEGeomCreate()`
 @*/
 PetscErrorCode PetscFEGeomGetCellPoint(PetscFEGeom *geom, PetscInt c, PetscInt p, PetscFEGeom *pgeom)
 {
@@ -248,7 +248,7 @@ PetscErrorCode PetscFEGeomGetCellPoint(PetscFEGeom *geom, PetscInt c, PetscInt p
 
   Level: intermediate
 
-.seealso: PetscFEGeomCreate()
+.seealso: `PetscFEGeomCreate()`
 @*/
 PetscErrorCode PetscFEGeomComplete(PetscFEGeom *geom)
 {

@@ -11,7 +11,7 @@
 
    Level: advanced
 
-.seealso: SNESFASSetLevels(), SNESFASSetGalerkin()
+.seealso: `SNESFASSetLevels()`, `SNESFASSetGalerkin()`
 @*/
 PetscErrorCode SNESFASGetGalerkin(SNES snes, PetscBool *flg)
 {
@@ -33,7 +33,7 @@ PetscErrorCode SNESFASGetGalerkin(SNES snes, PetscBool *flg)
 
    Level: advanced
 
-.seealso: SNESFASSetLevels(), SNESFASGetGalerkin()
+.seealso: `SNESFASSetLevels()`, `SNESFASGetGalerkin()`
 @*/
 PetscErrorCode SNESFASSetGalerkin(SNES snes, PetscBool flg)
 {
@@ -64,7 +64,7 @@ $  F^l(x^l) = I^l_0 F^0(P^0_l x^l)
 
    Level: developer
 
-.seealso: SNESFASGetGalerkin(), SNESFASSetGalerkin()
+.seealso: `SNESFASGetGalerkin()`, `SNESFASSetGalerkin()`
 @*/
 PetscErrorCode SNESFASGalerkinFunctionDefault(SNES snes, Vec X, Vec F, void *ctx)
 {

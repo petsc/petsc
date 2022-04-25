@@ -29,7 +29,7 @@ $     b-Ax
 
    Level: developer
 
-.seealso:  KSPMonitor()
+.seealso: `KSPMonitor()`
 @*/
 
 PetscErrorCode  KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres,Vec vb)
@@ -96,7 +96,7 @@ PetscErrorCode  KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres,Ve
 
    Level: advanced
 
-.seealso: KSPSetPCSide()
+.seealso: `KSPSetPCSide()`
 @*/
 PetscErrorCode  KSPUnwindPreconditioner(KSP ksp,Vec vsoln,Vec vt1)
 {

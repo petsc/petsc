@@ -1283,7 +1283,7 @@ static PetscErrorCode MatBindToCPU_H2OPUS(Mat A, PetscBool flg)
 
    Level: beginner
 
-.seealso: MATHTOOL, MATDENSE, MatCreateH2OpusFromKernel(), MatCreateH2OpusFromMat()
+.seealso: `MATHTOOL`, `MATDENSE`, `MatCreateH2OpusFromKernel()`, `MatCreateH2OpusFromMat()`
 M*/
 PETSC_EXTERN PetscErrorCode MatCreate_H2OPUS(Mat A)
 {
@@ -1349,7 +1349,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_H2OPUS(Mat A)
 
    Level: intermediate
 
-.seealso:  MatCreate(), MATH2OPUS, MatCreateH2OpusFromMat(), MatCreateH2OpusFromKernel(), MatH2OpusCompress()
+.seealso: `MatCreate()`, `MATH2OPUS`, `MatCreateH2OpusFromMat()`, `MatCreateH2OpusFromKernel()`, `MatH2OpusCompress()`
 @*/
 PetscErrorCode MatH2OpusOrthogonalize(Mat A)
 {
@@ -1433,7 +1433,7 @@ PetscErrorCode MatH2OpusOrthogonalize(Mat A)
 
    Level: intermediate
 
-.seealso:  MatCreate(), MATH2OPUS, MatCreateH2OpusFromMat(), MatCreateH2OpusFromKernel(), MatH2OpusOrthogonalize()
+.seealso: `MatCreate()`, `MATH2OPUS`, `MatCreateH2OpusFromMat()`, `MatCreateH2OpusFromKernel()`, `MatH2OpusOrthogonalize()`
 @*/
 PetscErrorCode MatH2OpusCompress(Mat A, PetscReal tol)
 {
@@ -1521,7 +1521,7 @@ PetscErrorCode MatH2OpusCompress(Mat A, PetscReal tol)
 
    Level: intermediate
 
-.seealso:  MatCreate(), MATH2OPUS, MatCreateH2OpusFromMat(), MatCreateH2OpusFromKernel(), MatH2OpusCompress(), MatH2OpusOrthogonalize()
+.seealso: `MatCreate()`, `MATH2OPUS`, `MatCreateH2OpusFromMat()`, `MatCreateH2OpusFromKernel()`, `MatH2OpusCompress()`, `MatH2OpusOrthogonalize()`
 @*/
 PetscErrorCode MatH2OpusSetSamplingMat(Mat A, Mat B, PetscInt bs, PetscReal tol)
 {
@@ -1575,7 +1575,7 @@ PetscErrorCode MatH2OpusSetSamplingMat(Mat A, Mat B, PetscInt bs, PetscReal tol)
 
    Level: intermediate
 
-.seealso:  MatCreate(), MATH2OPUS, MatCreateH2OpusFromMat()
+.seealso: `MatCreate()`, `MATH2OPUS`, `MatCreateH2OpusFromMat()`
 @*/
 PetscErrorCode MatCreateH2OpusFromKernel(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt spacedim, const PetscReal coords[], PetscBool cdist, MatH2OpusKernel kernel, void *kernelctx, PetscReal eta, PetscInt leafsize, PetscInt basisord, Mat* nA)
 {
@@ -1636,7 +1636,7 @@ PetscErrorCode MatCreateH2OpusFromKernel(MPI_Comm comm, PetscInt m, PetscInt n, 
 
    Level: intermediate
 
-.seealso:  MatCreate(), MATH2OPUS, MatCreateH2OpusFromKernel()
+.seealso: `MatCreate()`, `MATH2OPUS`, `MatCreateH2OpusFromKernel()`
 @*/
 PetscErrorCode MatCreateH2OpusFromMat(Mat B, PetscInt spacedim, const PetscReal coords[], PetscBool cdist, PetscReal eta, PetscInt leafsize, PetscInt maxrank, PetscInt bs, PetscReal rtol, Mat *nA)
 {
@@ -1707,7 +1707,7 @@ PetscErrorCode MatCreateH2OpusFromMat(Mat B, PetscInt spacedim, const PetscReal 
 
    Level: intermediate
 
-.seealso:  MatCreate(), MATH2OPUS, MatCreateH2OpusFromMat(), MatCreateH2OpusFromKernel()
+.seealso: `MatCreate()`, `MATH2OPUS`, `MatCreateH2OpusFromMat()`, `MatCreateH2OpusFromKernel()`
 @*/
 PetscErrorCode MatH2OpusGetIndexMap(Mat A, IS *indexmap)
 {
@@ -1738,7 +1738,7 @@ PetscErrorCode MatH2OpusGetIndexMap(Mat A, IS *indexmap)
 
    Level: intermediate
 
-.seealso:  MatCreate(), MATH2OPUS, MatCreateH2OpusFromMat(), MatCreateH2OpusFromKernel()
+.seealso: `MatCreate()`, `MATH2OPUS`, `MatCreateH2OpusFromMat()`, `MatCreateH2OpusFromKernel()`
 @*/
 PetscErrorCode MatH2OpusMapVec(Mat A, PetscBool nativetopetsc, Vec in, Vec* out)
 {
@@ -1791,7 +1791,7 @@ PetscErrorCode MatH2OpusMapVec(Mat A, PetscBool nativetopetsc, Vec in, Vec* out)
 
    Level: intermediate
 
-.seealso:  MatCreate(), MATH2OPUS, MatCreateH2OpusFromMat(), MatCreateH2OpusFromKernel(), MatH2OpusCompress(), MatH2OpusOrthogonalize(), MATDENSE
+.seealso: `MatCreate()`, `MATH2OPUS`, `MatCreateH2OpusFromMat()`, `MatCreateH2OpusFromKernel()`, `MatH2OpusCompress()`, `MatH2OpusOrthogonalize()`, `MATDENSE`
 @*/
 PetscErrorCode MatH2OpusLowRankUpdate(Mat A, Mat U, Mat V, PetscScalar s)
 {

@@ -36,7 +36,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Stag(DM);
 
   Level: advanced
 
-.seealso:  DMRegister(), DMRegisterDestroy()
+.seealso: `DMRegister()`, `DMRegisterDestroy()`
 @*/
 PetscErrorCode  DMRegisterAll(void)
 {
@@ -86,7 +86,7 @@ PETSC_EXTERN PetscErrorCode PetscSpaceCreate_WXY(PetscSpace);
 
   Level: advanced
 
-.seealso:  PetscSpaceRegister(), PetscSpaceRegisterDestroy()
+.seealso: `PetscSpaceRegister()`, `PetscSpaceRegisterDestroy()`
 @*/
 PetscErrorCode PetscSpaceRegisterAll(void)
 {
@@ -119,7 +119,7 @@ PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Refined(PetscDualSpace);
 
   Level: advanced
 
-.seealso:  PetscDualSpaceRegister(), PetscDualSpaceRegisterDestroy()
+.seealso: `PetscDualSpaceRegister()`, `PetscDualSpaceRegisterDestroy()`
 @*/
 PetscErrorCode PetscDualSpaceRegisterAll(void)
 {
@@ -151,7 +151,7 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_OpenCL(PetscFE);
 
   Level: advanced
 
-.seealso:  PetscFERegister(), PetscFERegisterDestroy()
+.seealso: `PetscFERegister()`, `PetscFERegisterDestroy()`
 @*/
 PetscErrorCode PetscFERegisterAll(void)
 {
@@ -187,7 +187,7 @@ PETSC_EXTERN PetscErrorCode PetscLimiterCreate_MC(PetscLimiter);
 
   Level: advanced
 
-.seealso:  PetscLimiterRegister(), PetscLimiterRegisterDestroy()
+.seealso: `PetscLimiterRegister()`, `PetscLimiterRegisterDestroy()`
 @*/
 PetscErrorCode PetscLimiterRegisterAll(void)
 {
@@ -219,7 +219,7 @@ PETSC_EXTERN PetscErrorCode PetscFVCreate_LeastSquares(PetscFV);
 
   Level: advanced
 
-.seealso:  PetscFVRegister(), PetscFVRegisterDestroy()
+.seealso: `PetscFVRegister()`, `PetscFVRegisterDestroy()`
 @*/
 PetscErrorCode PetscFVRegisterAll(void)
 {
@@ -245,7 +245,7 @@ PETSC_EXTERN PetscErrorCode PetscDSCreate_Basic(PetscDS);
 
   Level: advanced
 
-.seealso:  PetscDSRegister(), PetscDSRegisterDestroy()
+.seealso: `PetscDSRegister()`, `PetscDSRegisterDestroy()`
 @*/
 PetscErrorCode PetscDSRegisterAll(void)
 {

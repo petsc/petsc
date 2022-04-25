@@ -430,7 +430,7 @@ PetscErrorCode SNESQNSetRestartType(SNES snes, SNESQNRestartType rtype)
 -   SNES_QN_SCALE_JACOBIAN - scale by solving a linear system coming from the Jacobian you provided with SNESSetJacobian() computed at the first iteration
                              of QN and at ever restart.
 
-.seealso: SNES, SNESQN, SNESLineSearch, SNESQNScaleType, SNESSetJacobian()
+.seealso: `SNES`, `SNESQN`, `SNESLineSearch`, `SNESQNScaleType`, `SNESSetJacobian()`
 @*/
 
 PetscErrorCode SNESQNSetScaleType(SNES snes, SNESQNScaleType stype)
@@ -541,7 +541,7 @@ PetscErrorCode SNESQNSetType_QN(SNES snes, SNESQNType qtype)
 
       Level: beginner
 
-.seealso:  SNESCreate(), SNES, SNESSetType(), SNESNEWTONLS, SNESNEWTONTR
+.seealso: `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONLS`, `SNESNEWTONTR`
 
 M*/
 PETSC_EXTERN PetscErrorCode SNESCreate_QN(SNES snes)

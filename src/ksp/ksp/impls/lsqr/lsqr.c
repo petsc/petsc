@@ -274,7 +274,7 @@ PetscErrorCode KSPDestroy_LSQR(KSP ksp)
 
    Level: intermediate
 
-.seealso: KSPSolve(), KSPLSQR, KSPLSQRGetStandardErrorVec()
+.seealso: `KSPSolve()`, `KSPLSQR`, `KSPLSQRGetStandardErrorVec()`
 @*/
 PetscErrorCode  KSPLSQRSetComputeStandardErrorVec(KSP ksp, PetscBool flg)
 {
@@ -301,7 +301,7 @@ PetscErrorCode  KSPLSQRSetComputeStandardErrorVec(KSP ksp, PetscBool flg)
 
    Level: intermediate
 
-.seealso: KSPSolve(), KSPLSQR, KSPLSQRGetNorms(), KSPLSQRConvergedDefault()
+.seealso: `KSPSolve()`, `KSPLSQR`, `KSPLSQRGetNorms()`, `KSPLSQRConvergedDefault()`
 @*/
 PetscErrorCode  KSPLSQRSetExactMatNorm(KSP ksp, PetscBool flg)
 {
@@ -334,7 +334,7 @@ PetscErrorCode  KSPLSQRSetExactMatNorm(KSP ksp, PetscBool flg)
 
    Level: intermediate
 
-.seealso: KSPSolve(), KSPLSQR, KSPLSQRSetComputeStandardErrorVec()
+.seealso: `KSPSolve()`, `KSPLSQR`, `KSPLSQRSetComputeStandardErrorVec()`
 @*/
 PetscErrorCode  KSPLSQRGetStandardErrorVec(KSP ksp,Vec *se)
 {
@@ -364,7 +364,7 @@ PetscErrorCode  KSPLSQRGetStandardErrorVec(KSP ksp,Vec *se)
 
    Level: intermediate
 
-.seealso: KSPSolve(), KSPLSQR, KSPLSQRSetExactMatNorm()
+.seealso: `KSPSolve()`, `KSPLSQR`, `KSPLSQRSetExactMatNorm()`
 @*/
 PetscErrorCode  KSPLSQRGetNorms(KSP ksp,PetscReal *arnorm, PetscReal *anorm)
 {
@@ -419,7 +419,7 @@ PetscErrorCode KSPLSQRMonitorResidual_LSQR(KSP ksp, PetscInt n, PetscReal rnorm,
 
   Level: intermediate
 
-.seealso: KSPMonitorSet(), KSPMonitorResidual(),KSPMonitorTrueResidualMaxNorm()
+.seealso: `KSPMonitorSet()`, `KSPMonitorResidual(),KSPMonitorTrueResidualMaxNorm()`
 @*/
 PetscErrorCode KSPLSQRMonitorResidual(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
 {
@@ -475,7 +475,7 @@ PetscErrorCode KSPLSQRMonitorResidualDrawLG_LSQR(KSP ksp, PetscInt n, PetscReal 
 
   Level: intermediate
 
-.seealso: KSPMonitorSet(), KSPMonitorTrueResidual()
+.seealso: `KSPMonitorSet()`, `KSPMonitorTrueResidual()`
 @*/
 PetscErrorCode KSPLSQRMonitorResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
 {
@@ -503,7 +503,7 @@ PetscErrorCode KSPLSQRMonitorResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm
 
   Level: intermediate
 
-.seealso: KSPMonitorSet(), KSPLSQRMonitorResidual()
+.seealso: `KSPMonitorSet()`, `KSPLSQRMonitorResidual()`
 @*/
 PetscErrorCode KSPLSQRMonitorResidualDrawLGCreate(PetscViewer viewer, PetscViewerFormat format, void *ctx, PetscViewerAndFormat **vf)
 {
@@ -579,8 +579,8 @@ PetscErrorCode KSPView_LSQR(KSP ksp,PetscViewer viewer)
 
    Level: intermediate
 
-.seealso: KSPLSQR, KSPSetConvergenceTest(), KSPSetTolerances(), KSPConvergedSkip(), KSPConvergedReason, KSPGetConvergedReason(),
-          KSPConvergedDefaultSetUIRNorm(), KSPConvergedDefaultSetUMIRNorm(), KSPConvergedDefaultCreate(), KSPConvergedDefaultDestroy(), KSPConvergedDefault(), KSPLSQRGetNorms(), KSPLSQRSetExactMatNorm()
+.seealso: `KSPLSQR`, `KSPSetConvergenceTest()`, `KSPSetTolerances()`, `KSPConvergedSkip()`, `KSPConvergedReason`, `KSPGetConvergedReason()`,
+          `KSPConvergedDefaultSetUIRNorm()`, `KSPConvergedDefaultSetUMIRNorm()`, `KSPConvergedDefaultCreate()`, `KSPConvergedDefaultDestroy()`, `KSPConvergedDefault()`, `KSPLSQRGetNorms()`, `KSPLSQRSetExactMatNorm()`
 @*/
 PetscErrorCode  KSPLSQRConvergedDefault(KSP ksp,PetscInt n,PetscReal rnorm,KSPConvergedReason *reason,void *ctx)
 {
@@ -636,7 +636,7 @@ PetscErrorCode  KSPLSQRConvergedDefault(KSP ksp,PetscInt n,PetscReal rnorm,KSPCo
     How is this related to the KSPCGNE implementation? One difference is that KSPCGNE applies
             the preconditioner transpose times the preconditioner,  so one does not need to pass A'*A as the third argument to KSPSetOperators().
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType, KSP, KSPSolve(), KSPLSQRConvergedDefault(), KSPLSQRSetComputeStandardErrorVec(), KSPLSQRGetStandardErrorVec(), KSPLSQRSetExactMatNorm()
+.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPSolve()`, `KSPLSQRConvergedDefault()`, `KSPLSQRSetComputeStandardErrorVec()`, `KSPLSQRGetStandardErrorVec()`, `KSPLSQRSetExactMatNorm()`
 
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_LSQR(KSP ksp)

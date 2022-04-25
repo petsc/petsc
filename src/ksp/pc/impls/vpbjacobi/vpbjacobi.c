@@ -157,7 +157,7 @@ static PetscErrorCode PCDestroy_VPBJacobi(PC pc)
 
    Level: beginner
 
-.seealso:  MatSetVariableBlockSizes(), PCCreate(), PCSetType(), PCType, PC, PCJACOBI, PCPBJACOBI, PCBJACOBI
+.seealso: `MatSetVariableBlockSizes()`, `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCJACOBI`, `PCPBJACOBI`, `PCBJACOBI`
 
 M*/
 

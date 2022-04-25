@@ -338,7 +338,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
   This option must be used with SNES_NGMRES_RESTART_DIFFERENCE
 
   The default is FALSE.
-  .seealso: SNES_NGMRES_RESTART_DIFFERENCE
+  .seealso: `SNES_NGMRES_RESTART_DIFFERENCE`
   @*/
 PetscErrorCode SNESNGMRESSetRestartFmRise(SNES snes,PetscBool flg)
 {
@@ -493,7 +493,7 @@ PetscErrorCode SNESNGMRESSetRestartType_NGMRES(SNES snes,SNESNGMRESRestartType r
 -  * - Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers",
    SIAM Review, 57(4), 2015
 
-.seealso: SNESCreate(), SNES, SNESSetType(), SNESType
+.seealso: `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESType`
 M*/
 
 PETSC_EXTERN PetscErrorCode SNESCreate_NGMRES(SNES snes)

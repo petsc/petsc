@@ -30,7 +30,7 @@ $  PETSCSF_PATTERN_ALLTOALL  - A graph that every rank gathers different roots f
                                create a new MPI datatype for the multiple data items, e.g., by MPI_Type_contiguous.
    Level: beginner
 
-.seealso: PetscSFSetGraph(), PetscSFSetGraphWithPattern()
+.seealso: `PetscSFSetGraph()`, `PetscSFSetGraphWithPattern()`
 E*/
 typedef enum {PETSCSF_PATTERN_GENERAL=0,PETSCSF_PATTERN_ALLGATHER,PETSCSF_PATTERN_GATHER,PETSCSF_PATTERN_ALLTOALL} PetscSFPattern;
 
@@ -43,7 +43,7 @@ $  PETSCSF_WINDOW_SYNC_ACTIVE - active model, provides most information to MPI i
 
    Level: advanced
 
-.seealso: PetscSFWindowSetSyncType(), PetscSFWindowGetSyncType()
+.seealso: `PetscSFWindowSetSyncType()`, `PetscSFWindowGetSyncType()`
 E*/
 typedef enum {PETSCSF_WINDOW_SYNC_FENCE,PETSCSF_WINDOW_SYNC_LOCK,PETSCSF_WINDOW_SYNC_ACTIVE} PetscSFWindowSyncType;
 PETSC_EXTERN const char *const PetscSFWindowSyncTypes[];
@@ -58,7 +58,7 @@ $  PETSCSF_WINDOW_FLAVOR_SHARED - Use MPI_Win_allocate_shared
 
    Level: advanced
 
-.seealso: PetscSFWindowSetFlavorType(), PetscSFWindowGetFlavorType()
+.seealso: `PetscSFWindowSetFlavorType()`, `PetscSFWindowGetFlavorType()`
 E*/
 typedef enum {PETSCSF_WINDOW_FLAVOR_CREATE,PETSCSF_WINDOW_FLAVOR_DYNAMIC,PETSCSF_WINDOW_FLAVOR_ALLOCATE,PETSCSF_WINDOW_FLAVOR_SHARED} PetscSFWindowFlavorType;
 PETSC_EXTERN const char *const PetscSFWindowFlavorTypes[];
@@ -72,7 +72,7 @@ $  PETSCSF_DUPLICATE_GRAPH - entire graph duplicated
 
    Level: beginner
 
-.seealso: PetscSFDuplicate()
+.seealso: `PetscSFDuplicate()`
 E*/
 typedef enum {PETSCSF_DUPLICATE_CONFONLY,PETSCSF_DUPLICATE_RANKS,PETSCSF_DUPLICATE_GRAPH} PetscSFDuplicateOption;
 PETSC_EXTERN const char *const PetscSFDuplicateOptions[];

@@ -103,8 +103,8 @@
       SETERRQ() may be called from Fortran subroutines but SETERRA() must be called from the
       Fortran main program.
 
-.seealso: PetscCheck(), PetscAssert(), PetscTraceBackErrorHandler(), PetscPushErrorHandler(),
-PetscError(), PetscCall(), CHKMEMQ, CHKERRA(), PetscCallMPI()
+.seealso: `PetscCheck()`, `PetscAssert()`, `PetscTraceBackErrorHandler()`, `PetscPushErrorHandler()`,
+          `PetscError()`, `PetscCall()`, `CHKMEMQ`, `CHKERRA()`, `PetscCallMPI()`
 M*/
 #define SETERRQ(comm,ierr,...) return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_INITIAL,__VA_ARGS__)
 
@@ -136,7 +136,7 @@ PETSC_EXTERN PetscMPIInt PETSC_MPI_ERROR_CODE;
     This macro is FOR USE IN MPI CALLBACK FUNCTIONS ONLY, such as those passed to MPI_Comm_create_keyval(). It always returns the error code PETSC_MPI_ERROR_CODE
     which is registered with MPI_Add_error_code() when PETSc is initialized.
 
-.seealso: SETERRQ(), PetscCall(), PetscCallMPI(), PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKMEMQ
+.seealso: `SETERRQ()`, `PetscCall()`, `PetscCallMPI()`, `PetscTraceBackErrorHandler()`, `PetscPushErrorHandler()`, `PetscError()`, `CHKMEMQ`
 M*/
 #define SETERRMPI(comm,ierr,...) return (PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_INITIAL,__VA_ARGS__),PETSC_MPI_ERROR_CODE)
 
@@ -163,7 +163,7 @@ M*/
       SETERRQ() may be called from Fortran subroutines but SETERRA() must be called from the
       Fortran main program.
 
-.seealso: SETERRQ(), SETERRABORT(), PetscCall(), CHKERRA(), PetscCallAbort()
+.seealso: `SETERRQ()`, `SETERRABORT()`, `PetscCall()`, `CHKERRA()`, `PetscCallAbort()`
 M*/
 
 /*MC
@@ -185,7 +185,7 @@ M*/
    Notes:
     This function just calls MPI_Abort().
 
-.seealso: SETERRQ(), PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), PetscCall(), CHKMEMQ
+.seealso: `SETERRQ()`, `PetscTraceBackErrorHandler()`, `PetscPushErrorHandler()`, `PetscError()`, `PetscCall()`, `CHKMEMQ`
 M*/
 #define SETERRABORT(comm,ierr,...) do {                                                        \
     PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_INITIAL,__VA_ARGS__); \
@@ -215,7 +215,7 @@ M*/
 
   Level: beginner
 
-.seealso: PetscAssert(), SETERRQ(), PetscError(), PetscCall()
+.seealso: `PetscAssert()`, `SETERRQ()`, `PetscError()`, `PetscCall()`
 M*/
 #define PetscCheck(cond,comm,ierr,...) if (PetscUnlikely(!(cond))) SETERRQ(comm,ierr,__VA_ARGS__)
 
@@ -241,7 +241,7 @@ M*/
 
   Level: deprecated
 
-.seealso: PetscCheck()
+.seealso: `PetscCheck()`
 M*/
 #define PetscCheckFalse(cond,comm,ierr,...) PetscCheck(!(cond),comm,ierr,__VA_ARGS__)
 
@@ -269,7 +269,7 @@ M*/
 
   Level: beginner
 
-.seealso: PetscCheck(), SETERRQ(), PetscError()
+.seealso: `PetscCheck()`, `SETERRQ()`, `PetscError()`
 M*/
 #define PetscAssert(cond,comm,ierr,...) if (PetscUnlikelyDebug(!(cond))) SETERRQ(comm,ierr,__VA_ARGS__)
 
@@ -326,8 +326,8 @@ M*/
 
   Level: beginner
 
-.seealso: SETERRQ(), PetscCheck(), PetscAssert(), PetscTraceBackErrorHandler(),
-PetscPushErrorHandler(), PetscError(), CHKMEMQ, CHKERRA()
+.seealso: `SETERRQ()`, `PetscCheck()`, `PetscAssert()`, `PetscTraceBackErrorHandler()`,
+          `PetscPushErrorHandler()`, `PetscError()`, `CHKMEMQ`, `CHKERRA()`
 M*/
 #if defined(PETSC_CLANG_STATIC_ANALYZER)
 void PetscCall(PetscErrorCode);
@@ -363,7 +363,7 @@ void PetscCallVoid(PetscErrorCode);
 
   Level: deprecated
 
-.seealso: PetscCall()
+.seealso: `PetscCall()`
 M*/
 #define CHKERRQ(...) PetscCall(__VA_ARGS__)
 #define CHKERRV(...) PetscCallVoid(__VA_ARGS__)
@@ -397,8 +397,8 @@ M*/
 
   Level: beginner
 
-.seealso: SETERRMPI(), PetscCall(), SETERRQ(), SETERRABORT(), PetscCallAbort(),
-PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKMEMQ
+.seealso: `SETERRMPI()`, `PetscCall()`, `SETERRQ()`, `SETERRABORT()`, `PetscCallAbort()`,
+          `PetscTraceBackErrorHandler()`, `PetscPushErrorHandler()`, `PetscError()`, `CHKMEMQ`
 M*/
 #if defined(PETSC_CLANG_STATIC_ANALYZER)
 void PetscCallMPI(PetscMPIInt);
@@ -432,7 +432,7 @@ void PetscCallMPI(PetscMPIInt);
 
   Level: deprecated
 
-.seealso: PetscCallMPI()
+.seealso: `PetscCallMPI()`
 M*/
 #define CHKERRMPI(...) PetscCallMPI(__VA_ARGS__)
 
@@ -491,8 +491,8 @@ M*/
 
   Level: intermediate
 
-.seealso: SETERRABORT(), PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(),
-SETERRQ(), CHKMEMQ, PetscCallMPI()
+.seealso: `SETERRABORT()`, `PetscTraceBackErrorHandler()`, `PetscPushErrorHandler()`, `PetscError()`,
+          `SETERRQ()`, `CHKMEMQ`, `PetscCallMPI()`
 M*/
 #if defined(PETSC_CLANG_STATIC_ANALYZER)
 void PetscCallAbort(MPI_Comm,PetscErrorCode);
@@ -529,7 +529,7 @@ void PetscCallContinue(PetscErrorCode);
 
   Level: deprecated
 
-.seealso: PetscCallAbort()
+.seealso: `PetscCallAbort()`
 M*/
 #define CHKERRABORT(comm,...) PetscCallAbort(comm,__VA_ARGS__)
 #define CHKERRCONTINUE(...)   PetscCallContinue(__VA_ARGS__)
@@ -556,7 +556,7 @@ M*/
       PetscCall() may be called from Fortran subroutines but CHKERRA() must be called from the
       Fortran main program.
 
-.seealso: PetscCall(), PetscCallAbort(), SETERRA(), SETERRQ(), SETERRABORT()
+.seealso: `PetscCall()`, `PetscCallAbort()`, `SETERRA()`, `SETERRQ()`, `SETERRABORT()`
 M*/
 
 PETSC_EXTERN PetscErrorCode PetscAbortFindSourceFile_Private(const char*,PetscInt*);
@@ -624,8 +624,8 @@ PETSC_EXTERN PetscBool petscindebugger;
 
   Level: beginner
 
-.seealso: SETERRQ(), PetscCall(), SETERRABORT(), PetscCallAbort(), PetscTraceBackErrorHandler(),
-PetscPushErrorHandler(), PetscError(), CHKMEMQ
+.seealso: `SETERRQ()`, `PetscCall()`, `SETERRABORT()`, `PetscCallAbort()`, `PetscTraceBackErrorHandler()`,
+          `PetscPushErrorHandler()`, `PetscError()`, `CHKMEMQ`
 M*/
 #define PetscCallThrow(...) do {                                                                    \
     PetscErrorCode ierr_cxx_ = __VA_ARGS__;                                                    \
@@ -649,7 +649,7 @@ M*/
 
   Level: deprecated
 
-.seealso: PetscCallThrow()
+.seealso: `PetscCallThrow()`
 M*/
 #define CHKERRXX(...) PetscCallThrow(__VA_ARGS__)
 #endif
@@ -716,8 +716,8 @@ M*/
 
   Level: beginner
 
-.seealso: PetscCallThrow(), SETERRQ(), PetscCall(), SETERRABORT(), PetscCallAbort(),
-PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKMEMQ
+.seealso: `PetscCallThrow()`, `SETERRQ()`, `PetscCall()`, `SETERRABORT()`, `PetscCallAbort()`,
+          `PetscTraceBackErrorHandler()`, `PetscPushErrorHandler()`, `PetscError()`, `CHKMEMQ`
 M*/
 #define PetscCallCXX(...) do {                                  \
     try {                                                       \
@@ -745,7 +745,7 @@ M*/
 
   Level: deprecated
 
-.seealso: PetscCallCXX()
+.seealso: `PetscCallCXX()`
 M*/
 #define CHKERRCXX(...) PetscCallCXX(__VA_ARGS__)
 
@@ -773,7 +773,7 @@ M*/
 
     Use CHKMEMA for functions that return void
 
-.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), PetscMallocValidate()
+.seealso: `PetscTraceBackErrorHandler()`, `PetscPushErrorHandler()`, `PetscError()`, `SETERRQ()`, `PetscMallocValidate()`
 M*/
 #if defined(PETSC_CLANG_STATIC_ANALYZER)
 #define CHKMEMQ
@@ -793,7 +793,7 @@ M*/
   Developer Notes:
     This is currently used to decide when to print the detailed information about the run in PetscTraceBackErrorHandler()
 
-.seealso: PetscError(), SETERRXX()
+.seealso: `PetscError()`, `SETERRXX()`
 E*/
 typedef enum {PETSC_ERROR_INITIAL=0,PETSC_ERROR_REPEAT=1,PETSC_ERROR_IN_CXX = 2} PetscErrorType;
 
@@ -854,7 +854,7 @@ $     PetscErrorPrintf = PetscErrorPrintfDefault; to turn it back on or you can 
     Fortran Note:
     This routine is not supported in Fortran.
 
-.seealso: PetscFPrintf(), PetscSynchronizedPrintf(), PetscHelpPrintf(), PetscPrintf(), PetscPushErrorHandler(), PetscVFPrintf(), PetscHelpPrintf()
+.seealso: `PetscFPrintf()`, `PetscSynchronizedPrintf()`, `PetscHelpPrintf()`, `PetscPrintf()`, `PetscPushErrorHandler()`, `PetscVFPrintf()`, `PetscHelpPrintf()`
 M*/
 PETSC_EXTERN PetscErrorCode (*PetscErrorPrintf)(const char[],...) PETSC_ATTRIBUTE_FORMAT(1,2);
 
@@ -998,7 +998,7 @@ typedef struct {
 
    Level: developer
 
-.seealso: PetscFunctionReturn(), PetscFunctionBeginHot(), PetscFunctionBeginUser()
+.seealso: `PetscFunctionReturn()`, `PetscFunctionBeginHot()`, `PetscFunctionBeginUser()`
 
 M*/
 #define PetscFunctionBegin do {                               \
@@ -1028,7 +1028,7 @@ M*/
 
    Level: developer
 
-.seealso: PetscFunctionBegin, PetscFunctionReturn()
+.seealso: `PetscFunctionBegin`, `PetscFunctionReturn()`
 
 M*/
 #define PetscFunctionBeginHot do {                           \
@@ -1062,7 +1062,7 @@ M*/
 
    Level: intermediate
 
-.seealso: PetscFunctionReturn(), PetscFunctionBegin, PetscFunctionBeginHot
+.seealso: `PetscFunctionReturn()`, `PetscFunctionBegin`, `PetscFunctionBeginHot`
 
 M*/
 #define PetscFunctionBeginUser do {                           \
@@ -1102,7 +1102,7 @@ M*/
 
    Level: developer
 
-.seealso: PetscFunctionBegin()
+.seealso: `PetscFunctionBegin()`
 
 M*/
 #define PetscFunctionReturn(a)    do {          \

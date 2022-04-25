@@ -619,10 +619,10 @@ PetscErrorCode  TSSundialsMonitorInternalSteps_Sundials(TS ts,PetscBool s)
    Notes:
     These return the number since the creation of the TS object
 
-.seealso: TSSundialsSetType(), TSSundialsSetMaxl(),
-          TSSundialsSetLinearTolerance(), TSSundialsSetGramSchmidtType(), TSSundialsSetTolerance(),
-          TSSundialsGetIterations(), TSSundialsSetType(),
-          TSSundialsSetLinearTolerance(), TSSundialsGetPC(), TSSetExactFinalTime()
+.seealso: `TSSundialsSetType()`, `TSSundialsSetMaxl()`,
+          `TSSundialsSetLinearTolerance()`, `TSSundialsSetGramSchmidtType()`, `TSSundialsSetTolerance()`,
+          `TSSundialsGetIterations()`, `TSSundialsSetType()`,
+          `TSSundialsSetLinearTolerance()`, `TSSundialsGetPC()`, `TSSetExactFinalTime()`
 
 @*/
 PetscErrorCode  TSSundialsGetIterations(TS ts,int *nonlin,int *lin)
@@ -643,11 +643,11 @@ PetscErrorCode  TSSundialsGetIterations(TS ts,int *nonlin,int *lin)
 
    Level: intermediate
 
-.seealso: TSSundialsGetIterations(),  TSSundialsSetMaxl(),
-          TSSundialsSetLinearTolerance(), TSSundialsSetGramSchmidtType(), TSSundialsSetTolerance(),
-          TSSundialsGetIterations(), TSSundialsSetType(),
-          TSSundialsSetLinearTolerance(), TSSundialsSetTolerance(), TSSundialsGetPC(),
-          TSSetExactFinalTime()
+.seealso: `TSSundialsGetIterations()`, `TSSundialsSetMaxl()`,
+          `TSSundialsSetLinearTolerance()`, `TSSundialsSetGramSchmidtType()`, `TSSundialsSetTolerance()`,
+          `TSSundialsGetIterations()`, `TSSundialsSetType()`,
+          `TSSundialsSetLinearTolerance()`, `TSSundialsSetTolerance()`, `TSSundialsGetPC()`,
+          `TSSetExactFinalTime()`
 @*/
 PetscErrorCode  TSSundialsSetType(TS ts,TSSundialsLmmType type)
 {
@@ -667,11 +667,11 @@ PetscErrorCode  TSSundialsSetType(TS ts,TSSundialsLmmType type)
 
    Level: advanced
 
-.seealso: TSSundialsGetIterations(), TSSundialsSetType(),
-          TSSundialsSetLinearTolerance(), TSSundialsSetGramSchmidtType(), TSSundialsSetTolerance(),
-          TSSundialsGetIterations(), TSSundialsSetType(),
-          TSSundialsSetLinearTolerance(), TSSundialsSetTolerance(), TSSundialsGetPC(),
-          TSSetExactFinalTime()
+.seealso: `TSSundialsGetIterations()`, `TSSundialsSetType()`,
+          `TSSundialsSetLinearTolerance()`, `TSSundialsSetGramSchmidtType()`, `TSSundialsSetTolerance()`,
+          `TSSundialsGetIterations()`, `TSSundialsSetType()`,
+          `TSSundialsSetLinearTolerance()`, `TSSundialsSetTolerance()`, `TSSundialsGetPC()`,
+          `TSSetExactFinalTime()`
 
 @*/
 PetscErrorCode  TSSundialsSetMaxord(TS ts,PetscInt maxord)
@@ -695,11 +695,11 @@ PetscErrorCode  TSSundialsSetMaxord(TS ts,PetscInt maxord)
 
    Level: advanced
 
-.seealso: TSSundialsGetIterations(), TSSundialsSetType(),
-          TSSundialsSetLinearTolerance(), TSSundialsSetGramSchmidtType(), TSSundialsSetTolerance(),
-          TSSundialsGetIterations(), TSSundialsSetType(),
-          TSSundialsSetLinearTolerance(), TSSundialsSetTolerance(), TSSundialsGetPC(),
-          TSSetExactFinalTime()
+.seealso: `TSSundialsGetIterations()`, `TSSundialsSetType()`,
+          `TSSundialsSetLinearTolerance()`, `TSSundialsSetGramSchmidtType()`, `TSSundialsSetTolerance()`,
+          `TSSundialsGetIterations()`, `TSSundialsSetType()`,
+          `TSSundialsSetLinearTolerance()`, `TSSundialsSetTolerance()`, `TSSundialsGetPC()`,
+          `TSSetExactFinalTime()`
 
 @*/
 PetscErrorCode  TSSundialsSetMaxl(TS ts,PetscInt maxl)
@@ -723,11 +723,11 @@ PetscErrorCode  TSSundialsSetMaxl(TS ts,PetscInt maxl)
 
    Level: advanced
 
-.seealso: TSSundialsGetIterations(), TSSundialsSetType(), TSSundialsSetMaxl(),
-          TSSundialsSetGramSchmidtType(), TSSundialsSetTolerance(),
-          TSSundialsGetIterations(), TSSundialsSetType(),
-          TSSundialsSetLinearTolerance(), TSSundialsSetTolerance(), TSSundialsGetPC(),
-          TSSetExactFinalTime()
+.seealso: `TSSundialsGetIterations()`, `TSSundialsSetType()`, `TSSundialsSetMaxl()`,
+          `TSSundialsSetGramSchmidtType()`, `TSSundialsSetTolerance()`,
+          `TSSundialsGetIterations()`, `TSSundialsSetType()`,
+          `TSSundialsSetLinearTolerance()`, `TSSundialsSetTolerance()`, `TSSundialsGetPC()`,
+          `TSSetExactFinalTime()`
 
 @*/
 PetscErrorCode  TSSundialsSetLinearTolerance(TS ts,PetscReal tol)
@@ -750,11 +750,11 @@ PetscErrorCode  TSSundialsSetLinearTolerance(TS ts,PetscReal tol)
 
    Level: advanced
 
-.seealso: TSSundialsGetIterations(), TSSundialsSetType(), TSSundialsSetMaxl(),
-          TSSundialsSetLinearTolerance(),  TSSundialsSetTolerance(),
-          TSSundialsGetIterations(), TSSundialsSetType(),
-          TSSundialsSetLinearTolerance(), TSSundialsSetTolerance(), TSSundialsGetPC(),
-          TSSetExactFinalTime()
+.seealso: `TSSundialsGetIterations()`, `TSSundialsSetType()`, `TSSundialsSetMaxl()`,
+          `TSSundialsSetLinearTolerance()`, `TSSundialsSetTolerance()`,
+          `TSSundialsGetIterations()`, `TSSundialsSetType()`,
+          `TSSundialsSetLinearTolerance()`, `TSSundialsSetTolerance()`, `TSSundialsGetPC()`,
+          `TSSetExactFinalTime()`
 
 @*/
 PetscErrorCode  TSSundialsSetGramSchmidtType(TS ts,TSSundialsGramSchmidtType type)
@@ -780,11 +780,11 @@ PetscErrorCode  TSSundialsSetGramSchmidtType(TS ts,TSSundialsGramSchmidtType typ
 
    Level: intermediate
 
-.seealso: TSSundialsGetIterations(), TSSundialsSetType(), TSSundialsSetGMRESMaxl(),
-          TSSundialsSetLinearTolerance(), TSSundialsSetGramSchmidtType(),
-          TSSundialsGetIterations(), TSSundialsSetType(),
-          TSSundialsSetLinearTolerance(), TSSundialsSetTolerance(), TSSundialsGetPC(),
-          TSSetExactFinalTime()
+.seealso: `TSSundialsGetIterations()`, `TSSundialsSetType()`, `TSSundialsSetGMRESMaxl()`,
+          `TSSundialsSetLinearTolerance()`, `TSSundialsSetGramSchmidtType()`,
+          `TSSundialsGetIterations()`, `TSSundialsSetType()`,
+          `TSSundialsSetLinearTolerance()`, `TSSundialsSetTolerance()`, `TSSundialsGetPC()`,
+          `TSSetExactFinalTime()`
 
 @*/
 PetscErrorCode  TSSundialsSetTolerance(TS ts,PetscReal aabs,PetscReal rel)
@@ -805,10 +805,10 @@ PetscErrorCode  TSSundialsSetTolerance(TS ts,PetscReal aabs,PetscReal rel)
 
    Level: advanced
 
-.seealso: TSSundialsGetIterations(), TSSundialsSetType(), TSSundialsSetMaxl(),
-          TSSundialsSetLinearTolerance(), TSSundialsSetGramSchmidtType(), TSSundialsSetTolerance(),
-          TSSundialsGetIterations(), TSSundialsSetType(),
-          TSSundialsSetLinearTolerance(), TSSundialsSetTolerance()
+.seealso: `TSSundialsGetIterations()`, `TSSundialsSetType()`, `TSSundialsSetMaxl()`,
+          `TSSundialsSetLinearTolerance()`, `TSSundialsSetGramSchmidtType()`, `TSSundialsSetTolerance()`,
+          `TSSundialsGetIterations()`, `TSSundialsSetType()`,
+          `TSSundialsSetLinearTolerance()`, `TSSundialsSetTolerance()`
 @*/
 PetscErrorCode  TSSundialsGetPC(TS ts,PC *pc)
 {
@@ -830,7 +830,7 @@ PetscErrorCode  TSSundialsGetPC(TS ts,PC *pc)
 
    Level: beginner
 
-.seealso: TSSundialsSetType(), TSSundialsSetTolerance(),
+.seealso: `TSSundialsSetType()`, `TSSundialsSetTolerance()`,
 @*/
 PetscErrorCode  TSSundialsSetMinTimeStep(TS ts,PetscReal mindt)
 {
@@ -848,7 +848,7 @@ PetscErrorCode  TSSundialsSetMinTimeStep(TS ts,PetscReal mindt)
 
    Level: beginner
 
-.seealso: TSSundialsSetType(), TSSundialsSetTolerance(),
+.seealso: `TSSundialsSetType()`, `TSSundialsSetTolerance()`,
 @*/
 PetscErrorCode  TSSundialsSetMaxTimeStep(TS ts,PetscReal maxdt)
 {
@@ -889,7 +889,7 @@ PetscErrorCode  TSSundialsMonitorInternalSteps(TS ts,PetscBool ft)
 
    Level: advanced
 
-.seealso: TSSUNDIALS
+.seealso: `TSSUNDIALS`
 
 @*/
 PetscErrorCode  TSSundialsSetUseDense(TS ts,PetscBool use_dense)
@@ -920,8 +920,8 @@ PetscErrorCode  TSSundialsSetUseDense(TS ts,PetscBool use_dense)
 
     Level: beginner
 
-.seealso:  TSCreate(), TS, TSSetType(), TSSundialsSetType(), TSSundialsSetMaxl(), TSSundialsSetLinearTolerance(),
-           TSSundialsSetGramSchmidtType(), TSSundialsSetTolerance(), TSSundialsGetPC(), TSSundialsGetIterations(), TSSetExactFinalTime()
+.seealso: `TSCreate()`, `TS`, `TSSetType()`, `TSSundialsSetType()`, `TSSundialsSetMaxl()`, `TSSundialsSetLinearTolerance()`,
+          `TSSundialsSetGramSchmidtType()`, `TSSundialsSetTolerance()`, `TSSundialsGetPC()`, `TSSundialsGetIterations()`, `TSSetExactFinalTime()`
 
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_Sundials(TS ts)

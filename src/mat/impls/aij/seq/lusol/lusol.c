@@ -463,6 +463,6 @@ PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_Lusol(void)
 
    Level: beginner
 
-.seealso: PCLU, PCFactorSetMatSolverType(), MatSolverType
+.seealso: `PCLU`, `PCFactorSetMatSolverType()`, `MatSolverType`
 
 M*/

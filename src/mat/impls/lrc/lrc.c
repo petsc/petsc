@@ -151,7 +151,7 @@ static PetscErrorCode MatLRCGetMats_LRC(Mat N,Mat *A,Mat *U,Vec *c,Mat *V)
 
    Level: intermediate
 
-.seealso: MatCreateLRC()
+.seealso: `MatCreateLRC()`
 @*/
 PetscErrorCode MatLRCGetMats(Mat N,Mat *A,Mat *U,Vec *c,Mat *V)
 {
@@ -191,7 +191,7 @@ PetscErrorCode MatLRCGetMats(Mat N,Mat *A,Mat *U,Vec *c,Mat *V)
 
    Level: intermediate
 
-.seealso: MatLRCGetMats()
+.seealso: `MatLRCGetMats()`
 @*/
 PetscErrorCode MatCreateLRC(Mat A,Mat U,Vec c,Mat V,Mat *N)
 {

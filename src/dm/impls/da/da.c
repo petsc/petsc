@@ -16,7 +16,7 @@
   Developer Notes:
   Since the dimension may not yet have been set the code cannot error check for non-positive Y and Z number of grid points
 
-.seealso: PetscSplitOwnership()
+.seealso: `PetscSplitOwnership()`
 @*/
 PetscErrorCode  DMDASetSizes(DM da, PetscInt M, PetscInt N, PetscInt P)
 {
@@ -51,7 +51,7 @@ PetscErrorCode  DMDASetSizes(DM da, PetscInt M, PetscInt N, PetscInt P)
 
   Level: intermediate
 
-.seealso: DMDASetSizes(), PetscSplitOwnership()
+.seealso: `DMDASetSizes()`, `PetscSplitOwnership()`
 @*/
 PetscErrorCode  DMDASetNumProcs(DM da, PetscInt m, PetscInt n, PetscInt p)
 {
@@ -92,7 +92,7 @@ PetscErrorCode  DMDASetNumProcs(DM da, PetscInt m, PetscInt n, PetscInt p)
 
   Level: intermediate
 
-.seealso: DMDACreate(), DMDestroy(), DMDA, DMBoundaryType
+.seealso: `DMDACreate()`, `DMDestroy()`, `DMDA`, `DMBoundaryType`
 @*/
 PetscErrorCode  DMDASetBoundaryType(DM da,DMBoundaryType bx,DMBoundaryType by,DMBoundaryType bz)
 {
@@ -121,7 +121,7 @@ PetscErrorCode  DMDASetBoundaryType(DM da,DMBoundaryType bx,DMBoundaryType by,DM
 
   Level: intermediate
 
-.seealso: DMDAGetDof(), DMDACreate(), DMDestroy(), DMDA
+.seealso: `DMDAGetDof()`, `DMDACreate()`, `DMDestroy()`, `DMDA`
 @*/
 PetscErrorCode  DMDASetDof(DM da, PetscInt dof)
 {
@@ -149,7 +149,7 @@ PetscErrorCode  DMDASetDof(DM da, PetscInt dof)
 
   Level: intermediate
 
-.seealso: DMDASetDof(), DMDACreate(), DMDestroy(), DMDA
+.seealso: `DMDASetDof()`, `DMDACreate()`, `DMDestroy()`, `DMDA`
 @*/
 PetscErrorCode DMDAGetDof(DM da, PetscInt *dof)
 {
@@ -177,7 +177,7 @@ PetscErrorCode DMDAGetDof(DM da, PetscInt *dof)
 
   Level: intermediate
 
-.seealso: DMDACreateDomainDecomposition(), DMDASetOverlap(), DMDA
+.seealso: `DMDACreateDomainDecomposition()`, `DMDASetOverlap()`, `DMDA`
 @*/
 PetscErrorCode  DMDAGetOverlap(DM da,PetscInt *x,PetscInt *y,PetscInt *z)
 {
@@ -204,7 +204,7 @@ PetscErrorCode  DMDAGetOverlap(DM da,PetscInt *x,PetscInt *y,PetscInt *z)
 
   Level: intermediate
 
-.seealso: DMDACreateDomainDecomposition(), DMDAGetOverlap(), DMDA
+.seealso: `DMDACreateDomainDecomposition()`, `DMDAGetOverlap()`, `DMDA`
 @*/
 PetscErrorCode  DMDASetOverlap(DM da,PetscInt x,PetscInt y,PetscInt z)
 {
@@ -234,7 +234,7 @@ PetscErrorCode  DMDASetOverlap(DM da,PetscInt x,PetscInt y,PetscInt z)
 
   Level: intermediate
 
-.seealso: DMDACreateDomainDecomposition(), DMDASetNumLocalSubDomains(), DMDA
+.seealso: `DMDACreateDomainDecomposition()`, `DMDASetNumLocalSubDomains()`, `DMDA`
 @*/
 PetscErrorCode  DMDAGetNumLocalSubDomains(DM da,PetscInt *Nsub)
 {
@@ -257,7 +257,7 @@ PetscErrorCode  DMDAGetNumLocalSubDomains(DM da,PetscInt *Nsub)
 
   Level: intermediate
 
-.seealso: DMDACreateDomainDecomposition(), DMDAGetNumLocalSubDomains(), DMDA
+.seealso: `DMDACreateDomainDecomposition()`, `DMDAGetNumLocalSubDomains()`, `DMDA`
 @*/
 PetscErrorCode  DMDASetNumLocalSubDomains(DM da,PetscInt Nsub)
 {
@@ -287,7 +287,7 @@ PetscErrorCode  DMDASetNumLocalSubDomains(DM da,PetscInt Nsub)
     This is used primarily to overlap a computation on a local DA with that on a global DA without
   changing boundary conditions or subdomain features that depend upon the global offsets.
 
-.seealso: DMDAGetOffset(), DMDAVecGetArray()
+.seealso: `DMDAGetOffset()`, `DMDAVecGetArray()`
 @*/
 PetscErrorCode  DMDASetOffset(DM da, PetscInt xo, PetscInt yo, PetscInt zo, PetscInt Mo, PetscInt No, PetscInt Po)
 {
@@ -332,7 +332,7 @@ PetscErrorCode  DMDASetOffset(DM da, PetscInt xo, PetscInt yo, PetscInt zo, Pets
 
   Level: intermediate
 
-.seealso: DMDASetOffset(), DMDAVecGetArray()
+.seealso: `DMDASetOffset()`, `DMDAVecGetArray()`
 @*/
 PetscErrorCode  DMDAGetOffset(DM da,PetscInt *xo,PetscInt *yo,PetscInt *zo,PetscInt *Mo,PetscInt *No,PetscInt *Po)
 {
@@ -367,7 +367,7 @@ PetscErrorCode  DMDAGetOffset(DM da,PetscInt *xo,PetscInt *yo,PetscInt *zo,Petsc
 
   Level: intermediate
 
-.seealso: DMDAGetOffset(), DMDAVecGetArray()
+.seealso: `DMDAGetOffset()`, `DMDAVecGetArray()`
 @*/
 PetscErrorCode  DMDAGetNonOverlappingRegion(DM da, PetscInt *xs, PetscInt *ys, PetscInt *zs, PetscInt *xm, PetscInt *ym, PetscInt *zm)
 {
@@ -400,7 +400,7 @@ PetscErrorCode  DMDAGetNonOverlappingRegion(DM da, PetscInt *xs, PetscInt *ys, P
 
   Level: intermediate
 
-.seealso: DMDAGetOffset(), DMDAVecGetArray()
+.seealso: `DMDAGetOffset()`, `DMDAVecGetArray()`
 @*/
 PetscErrorCode  DMDASetNonOverlappingRegion(DM da, PetscInt xs, PetscInt ys, PetscInt zs, PetscInt xm, PetscInt ym, PetscInt zm)
 {
@@ -435,7 +435,7 @@ PetscErrorCode  DMDASetNonOverlappingRegion(DM da, PetscInt xs, PetscInt ys, Pet
 
   Level: intermediate
 
-.seealso: DMDACreate(), DMDestroy(), DMDA
+.seealso: `DMDACreate()`, `DMDestroy()`, `DMDA`
 @*/
 PetscErrorCode  DMDASetStencilType(DM da, DMDAStencilType stype)
 {
@@ -462,7 +462,7 @@ PetscErrorCode  DMDASetStencilType(DM da, DMDAStencilType stype)
 
   Level: intermediate
 
-.seealso: DMDACreate(), DMDestroy(), DMDA
+.seealso: `DMDACreate()`, `DMDestroy()`, `DMDA`
 @*/
 PetscErrorCode DMDAGetStencilType(DM da, DMDAStencilType *stype)
 {
@@ -486,7 +486,7 @@ PetscErrorCode DMDAGetStencilType(DM da, DMDAStencilType *stype)
 
   Level: intermediate
 
-.seealso: DMDACreate(), DMDestroy(), DMDA
+.seealso: `DMDACreate()`, `DMDestroy()`, `DMDA`
 @*/
 PetscErrorCode  DMDASetStencilWidth(DM da, PetscInt width)
 {
@@ -513,7 +513,7 @@ PetscErrorCode  DMDASetStencilWidth(DM da, PetscInt width)
 
   Level: intermediate
 
-.seealso: DMDACreate(), DMDestroy(), DMDA
+.seealso: `DMDACreate()`, `DMDestroy()`, `DMDA`
 @*/
 PetscErrorCode DMDAGetStencilWidth(DM da, PetscInt *width)
 {
@@ -552,7 +552,7 @@ static PetscErrorCode DMDACheckOwnershipRanges_Private(DM da,PetscInt M,PetscInt
 
   Note: these numbers are NOT multiplied by the number of dof per node.
 
-.seealso: DMDACreate(), DMDestroy(), DMDA
+.seealso: `DMDACreate()`, `DMDestroy()`, `DMDA`
 @*/
 PetscErrorCode  DMDASetOwnershipRanges(DM da, const PetscInt lx[], const PetscInt ly[], const PetscInt lz[])
 {
@@ -603,7 +603,7 @@ PetscErrorCode  DMDASetOwnershipRanges(DM da, const PetscInt lx[], const PetscIn
    Notes:
     you should call this on the coarser of the two DMDAs you pass to DMCreateInterpolation()
 
-.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMDestroy(), DMDA, DMDAInterpolationType
+.seealso: `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMDestroy()`, `DMDA`, `DMDAInterpolationType`
 @*/
 PetscErrorCode  DMDASetInterpolationType(DM da,DMDAInterpolationType ctype)
 {
@@ -630,7 +630,7 @@ PetscErrorCode  DMDASetInterpolationType(DM da,DMDAInterpolationType ctype)
 
    Level: intermediate
 
-.seealso: DMDA, DMDAInterpolationType, DMDASetInterpolationType(), DMCreateInterpolation()
+.seealso: `DMDA`, `DMDAInterpolationType`, `DMDASetInterpolationType()`, `DMCreateInterpolation()`
 @*/
 PetscErrorCode  DMDAGetInterpolationType(DM da,DMDAInterpolationType *ctype)
 {
@@ -702,7 +702,7 @@ PetscErrorCode  DMDAGetNeighbors(DM da,const PetscMPIInt *ranks[])
 
     These numbers are NOT multiplied by the number of dof per node.
 
-.seealso: DMDAGetCorners(), DMDAGetGhostCorners(), DMDACreate(), DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), VecGetOwnershipRanges()
+.seealso: `DMDAGetCorners()`, `DMDAGetGhostCorners()`, `DMDACreate()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `VecGetOwnershipRanges()`
 @*/
 PetscErrorCode  DMDAGetOwnershipRanges(DM da,const PetscInt *lx[],const PetscInt *ly[],const PetscInt *lz[])
 {
@@ -738,7 +738,7 @@ PetscErrorCode  DMDAGetOwnershipRanges(DM da,const PetscInt *lx[],const PetscInt
     Notes:
     Pass PETSC_IGNORE to leave a value unchanged
 
-.seealso: DMRefine(), DMDAGetRefinementFactor()
+.seealso: `DMRefine()`, `DMDAGetRefinementFactor()`
 @*/
 PetscErrorCode  DMDASetRefinementFactor(DM da, PetscInt refine_x, PetscInt refine_y,PetscInt refine_z)
 {
@@ -774,7 +774,7 @@ PetscErrorCode  DMDASetRefinementFactor(DM da, PetscInt refine_x, PetscInt refin
     Notes:
     Pass NULL for values you do not need
 
-.seealso: DMRefine(), DMDASetRefinementFactor()
+.seealso: `DMRefine()`, `DMDASetRefinementFactor()`
 @*/
 PetscErrorCode  DMDAGetRefinementFactor(DM da, PetscInt *refine_x, PetscInt *refine_y,PetscInt *refine_z)
 {
@@ -805,7 +805,7 @@ PetscErrorCode  DMDAGetRefinementFactor(DM da, PetscInt *refine_x, PetscInt *ref
 
    Not supported from Fortran
 
-.seealso: DMCreateMatrix(), DMDASetBlockFills()
+.seealso: `DMCreateMatrix()`, `DMDASetBlockFills()`
 @*/
 PetscErrorCode  DMDASetGetMatrix(DM da,PetscErrorCode (*f)(DM, Mat*))
 {
@@ -1318,7 +1318,7 @@ PetscErrorCode DMDASetGLLCoordinates_1d(DM dm,PetscInt n,PetscReal *nodes)
 
    Level: advanced
 
-.seealso:   DMDACreate(), PetscDTGaussLobattoLegendreQuadrature(), DMGetCoordinates()
+.seealso: `DMDACreate()`, `PetscDTGaussLobattoLegendreQuadrature()`, `DMGetCoordinates()`
 @*/
 PetscErrorCode DMDASetGLLCoordinates(DM da,PetscInt n,PetscReal *nodes)
 {

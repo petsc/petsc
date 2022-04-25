@@ -35,7 +35,7 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_PTScotch(MatPartitioning);
   do not wish to register.  Make sure that the replacement routine is
   linked before libpetscmat.a.
 
-.seealso: MatPartitioningRegister(), MatPartitioningRegisterDestroy()
+.seealso: `MatPartitioningRegister()`, `MatPartitioningRegisterDestroy()`
 @*/
 PetscErrorCode  MatPartitioningRegisterAll(void)
 {

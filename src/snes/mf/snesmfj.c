@@ -33,8 +33,8 @@
      -snes_mf but rarely used directly by users. (All this routine does is call MatAssemblyBegin/End() on
      the Mat jac.)
 
-.seealso: MatMFFDGetH(), MatCreateSNESMF(), MatCreateMFFD(), MATMFFD,
-          MatMFFDSetHHistory(), MatMFFDSetFunctionError(), MatCreateMFFD(), SNESSetJacobian()
+.seealso: `MatMFFDGetH()`, `MatCreateSNESMF()`, `MatCreateMFFD()`, `MATMFFD`,
+          `MatMFFDSetHHistory()`, `MatMFFDSetFunctionError()`, `MatCreateMFFD()`, `SNESSetJacobian()`
 
 @*/
 PetscErrorCode  MatMFFDComputeJacobian(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
@@ -61,7 +61,7 @@ PETSC_EXTERN PetscErrorCode MatMFFDSetBase_MFFD(Mat,Vec,Vec);
 
     Level: advanced
 
-.seealso: MatCreateSNESMF()
+.seealso: `MatCreateSNESMF()`
 @*/
 PetscErrorCode MatSNESMFGetSNES(Mat J,SNES *snes)
 {
@@ -171,7 +171,7 @@ static PetscErrorCode  MatSNESMFSetReuseBase_SNESMF(Mat J,PetscBool use)
 
     Level: advanced
 
-.seealso: MatCreateSNESMF(), MatSNESMFGetReuseBase()
+.seealso: `MatCreateSNESMF()`, `MatSNESMFGetReuseBase()`
 @*/
 PetscErrorCode  MatSNESMFSetReuseBase(Mat J,PetscBool use)
 {
@@ -213,7 +213,7 @@ static PetscErrorCode  MatSNESMFGetReuseBase_SNESMF(Mat J,PetscBool *use)
 
     Level: advanced
 
-.seealso: MatCreateSNESMF(), MatSNESMFSetReuseBase()
+.seealso: `MatCreateSNESMF()`, `MatSNESMFSetReuseBase()`
 @*/
 PetscErrorCode  MatSNESMFGetReuseBase(Mat J,PetscBool *use)
 {
@@ -258,9 +258,9 @@ PetscErrorCode  MatSNESMFGetReuseBase(Mat J,PetscBool *use)
    Warning:
      Using a different function for the differencing will not work if you are using non-linear left preconditioning.
 
-.seealso: MatDestroy(), MatMFFDSetFunction(), MatMFFDSetFunctionError(), MatMFFDDSSetUmin()
-          MatMFFDSetHHistory(), MatMFFDResetHHistory(), MatCreateMFFD(),
-          MatMFFDGetH(), MatMFFDRegister(), MatMFFDComputeJacobian(), MatSNESMFSetReuseBase(), MatSNESMFGetReuseBase()
+.seealso: `MatDestroy()`, `MatMFFDSetFunction()`, `MatMFFDSetFunctionError()`, `MatMFFDDSSetUmin()`
+          `MatMFFDSetHHistory()`, `MatMFFDResetHHistory()`, `MatCreateMFFD()`,
+          `MatMFFDGetH()`, `MatMFFDRegister()`, `MatMFFDComputeJacobian()`, `MatSNESMFSetReuseBase()`, `MatSNESMFGetReuseBase()`
 
 @*/
 PetscErrorCode  MatCreateSNESMF(SNES snes,Mat *J)

@@ -161,7 +161,7 @@ static PetscErrorCode PCSetFromOptions_CHOWILUVIENNACL(PetscOptionItems *PetscOp
 
    Level: advanced
 
-.seealso:  PCCreate(), PCSetType(), PCType, PC
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`
 
 M*/
 

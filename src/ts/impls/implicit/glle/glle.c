@@ -623,7 +623,7 @@ PetscErrorCode  TSGLLESetType(TS ts,TSGLLEType type)
 
    Level: intermediate
 
-.seealso: TS, TSGLLE, TSGLLEAcceptRegister(), TSGLLEAdapt, set type
+.seealso: `TS`, `TSGLLE`, `TSGLLEAcceptRegister()`, `TSGLLEAdapt`, `set` `type`
 @*/
 PetscErrorCode  TSGLLESetAcceptType(TS ts,TSGLLEAcceptType type)
 {
@@ -651,7 +651,7 @@ PetscErrorCode  TSGLLESetAcceptType(TS ts,TSGLLEAcceptType type)
 
    Level: advanced
 
-.seealso: TSGLLEAdapt, TSGLLEAdaptRegister()
+.seealso: `TSGLLEAdapt`, `TSGLLEAdaptRegister()`
 @*/
 PetscErrorCode  TSGLLEGetAdapt(TS ts,TSGLLEAdapt *adapt)
 {
@@ -1191,7 +1191,7 @@ $     -ts_gl_type my_scheme
 
    Level: advanced
 
-.seealso: TSGLLERegisterAll()
+.seealso: `TSGLLERegisterAll()`
 @*/
 PetscErrorCode  TSGLLERegister(const char sname[],PetscErrorCode (*function)(TS))
 {
@@ -1225,7 +1225,7 @@ $     -ts_gl_accept_type my_scheme
 
    Level: advanced
 
-.seealso: TSGLLERegisterAll()
+.seealso: `TSGLLERegisterAll()`
 @*/
 PetscErrorCode  TSGLLEAcceptRegister(const char sname[],TSGLLEAcceptFunction function)
 {
@@ -1241,7 +1241,7 @@ PetscErrorCode  TSGLLEAcceptRegister(const char sname[],TSGLLEAcceptFunction fun
 
   Level: advanced
 
-.seealso:  TSGLLERegisterDestroy()
+.seealso: `TSGLLERegisterDestroy()`
 @*/
 PetscErrorCode  TSGLLERegisterAll(void)
 {
@@ -1260,7 +1260,7 @@ PetscErrorCode  TSGLLERegisterAll(void)
 
   Level: developer
 
-.seealso: PetscInitialize()
+.seealso: `PetscInitialize()`
 @*/
 PetscErrorCode  TSGLLEInitializePackage(void)
 {
@@ -1278,7 +1278,7 @@ PetscErrorCode  TSGLLEInitializePackage(void)
 
   Level: developer
 
-.seealso: PetscFinalize()
+.seealso: `PetscFinalize()`
 @*/
 PetscErrorCode  TSGLLEFinalizePackage(void)
 {
@@ -1379,7 +1379,7 @@ PetscErrorCode  TSGLLEFinalizePackage(void)
   ordinary differential equations, Journal of Complexity, Vol 23, 2007.
 - * - John Butcher, Numerical methods for ordinary differential equations, second edition, Wiley, 2009.
 
-.seealso:  TSCreate(), TS, TSSetType()
+.seealso: `TSCreate()`, `TS`, `TSSetType()`
 
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_GLLE(TS ts)

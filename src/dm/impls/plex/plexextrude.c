@@ -42,7 +42,7 @@ $  v0--- original ----v3
 
   Level: intermediate
 
-.seealso: DMExtrude(), DMPlexTransform, DMPlexTransformExtrudeSetThickness(), DMPlexTransformExtrudeSetTensor()
+.seealso: `DMExtrude()`, `DMPlexTransform`, `DMPlexTransformExtrudeSetThickness()`, `DMPlexTransformExtrudeSetTensor()`
 @*/
 PetscErrorCode DMPlexExtrude(DM dm, PetscInt layers, PetscReal thickness, PetscBool tensor, PetscBool symmetric, const PetscReal normal[], const PetscReal thicknesses[], DM *edm)
 {

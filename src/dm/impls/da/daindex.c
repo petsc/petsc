@@ -64,9 +64,9 @@ PetscErrorCode DMDAGetNatural_Private(DM da,PetscInt *outNlocal,IS *isnatural)
    Notes:
    It will generate and error if an AO has already been obtained with a call to DMDAGetAO and the user sets a different AOType
 
-.seealso: DMDACreate2d(), DMDAGetAO(), DMDAGetGhostCorners(), DMDAGetCorners(), DMLocalToGlobal()
-          DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMLocalToLocalBegin(), DMLocalToLocalEnd(), DMDAGetGlobalIndices(), DMDAGetOwnershipRanges(),
-          AO, AOPetscToApplication(), AOApplicationToPetsc()
+.seealso: `DMDACreate2d()`, `DMDAGetAO()`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `DMLocalToGlobal()`
+          `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMLocalToLocalBegin()`, `DMLocalToLocalEnd()`, `DMDAGetGlobalIndices()`, `DMDAGetOwnershipRanges()`,
+          `AO`, `AOPetscToApplication()`, `AOApplicationToPetsc()`
 @*/
 PetscErrorCode  DMDASetAOType(DM da,AOType aotype)
 {
@@ -112,9 +112,9 @@ PetscErrorCode  DMDASetAOType(DM da,AOType aotype)
 
    Do NOT call AODestroy() on the ao returned by this function.
 
-.seealso: DMDACreate2d(), DMDASetAOType(), DMDAGetGhostCorners(), DMDAGetCorners(), DMLocalToGlobal()
-          DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMLocalToLocalBegin(), DMLocalToLocalEnd(),  DMDAGetOwnershipRanges(),
-          AO, AOPetscToApplication(), AOApplicationToPetsc()
+.seealso: `DMDACreate2d()`, `DMDASetAOType()`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `DMLocalToGlobal()`
+          `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMLocalToLocalBegin()`, `DMLocalToLocalEnd()`, `DMDAGetOwnershipRanges()`,
+          `AO`, `AOPetscToApplication()`, `AOApplicationToPetsc()`
 @*/
 PetscErrorCode  DMDAGetAO(DM da,AO *ao)
 {

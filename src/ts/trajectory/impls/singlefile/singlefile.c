@@ -38,7 +38,7 @@ static PetscErrorCode TSTrajectoryDestroy_Singlefile(TSTrajectory tj)
 
   Level: intermediate
 
-.seealso:  TSTrajectoryCreate(), TS, TSTrajectorySetType()
+.seealso: `TSTrajectoryCreate()`, `TS`, `TSTrajectorySetType()`
 
 M*/
 PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Singlefile(TSTrajectory tj,TS ts)

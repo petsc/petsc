@@ -325,7 +325,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
 
    Level: intermediate
 
-.seealso: KSPBCGSLSetEll(), KSPBCGSLSetPol(), KSP
+.seealso: `KSPBCGSLSetEll()`, `KSPBCGSLSetPol()`, `KSP`
 @*/
 PetscErrorCode  KSPBCGSLSetXRes(KSP ksp, PetscReal delta)
 {
@@ -360,7 +360,7 @@ PetscErrorCode  KSPBCGSLSetXRes(KSP ksp, PetscReal delta)
 
    Level: intermediate
 
-.seealso: KSPBCGSLSetEll(), KSP
+.seealso: `KSPBCGSLSetEll()`, `KSP`
 @*/
 PetscErrorCode KSPBCGSLSetUsePseudoinverse(KSP ksp,PetscBool use_pinv)
 {
@@ -388,7 +388,7 @@ PetscErrorCode KSPBCGSLSetUsePseudoinverse(KSP ksp,PetscBool use_pinv)
 
    Level: intermediate
 
-.seealso: KSP, KSPBCGSL, KSPCreate(), KSPSetType()
+.seealso: `KSP`, `KSPBCGSL`, `KSPCreate()`, `KSPSetType()`
 @*/
 PetscErrorCode  KSPBCGSLSetPol(KSP ksp, PetscBool uMROR)
 {
@@ -432,7 +432,7 @@ PetscErrorCode  KSPBCGSLSetPol(KSP ksp, PetscBool uMROR)
    test problems, but also for larger problems). Consequently, by default, the system is solved by pseudoinverse, which
    allows the iteration to complete successfully. See KSPBCGSLSetUsePseudoinverse() to switch to a conventional solve.
 
-.seealso: KSPBCGSLSetUsePseudoinverse(), KSP, KSPBCGSL
+.seealso: `KSPBCGSLSetUsePseudoinverse()`, `KSP`, `KSPBCGSL`
 @*/
 PetscErrorCode  KSPBCGSLSetEll(KSP ksp, PetscInt ell)
 {
@@ -575,7 +575,7 @@ PetscErrorCode KSPDestroy_BCGSL(KSP ksp)
 
    Level: beginner
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType, KSP, KSPFGMRES, KSPBCGS, KSPSetPCSide(), KSPBCGSLSetEll(), KSPBCGSLSetXRes()
+.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPFGMRES`, `KSPBCGS`, `KSPSetPCSide()`, `KSPBCGSLSetEll()`, `KSPBCGSLSetXRes()`
 
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_BCGSL(KSP ksp)

@@ -30,7 +30,7 @@ PetscLogEvent SNES_Solve, SNES_Setup, SNES_FunctionEval, SNES_JacobianEval, SNES
     Normally PETSc continues if a linear solver fails to converge, you can call SNESGetConvergedReason() after a SNESSolve()
     to determine if it has converged.
 
-.seealso: SNESGetErrorIfNotConverged(), KSPGetErrorIfNotConverged(), KSPSetErrorIfNotConverged()
+.seealso: `SNESGetErrorIfNotConverged()`, `KSPGetErrorIfNotConverged()`, `KSPSetErrorIfNotConverged()`
 @*/
 PetscErrorCode  SNESSetErrorIfNotConverged(SNES snes,PetscBool flg)
 {
@@ -54,7 +54,7 @@ PetscErrorCode  SNESSetErrorIfNotConverged(SNES snes,PetscBool flg)
 
    Level: intermediate
 
-.seealso:  SNESSetErrorIfNotConverged(), KSPGetErrorIfNotConverged(), KSPSetErrorIfNotConverged()
+.seealso: `SNESSetErrorIfNotConverged()`, `KSPGetErrorIfNotConverged()`, `KSPSetErrorIfNotConverged()`
 @*/
 PetscErrorCode  SNESGetErrorIfNotConverged(SNES snes,PetscBool  *flag)
 {
@@ -76,7 +76,7 @@ PetscErrorCode  SNESGetErrorIfNotConverged(SNES snes,PetscBool  *flag)
 
    Level: advanced
 
-.seealso: SNESGetAlwaysComputesFinalResidual()
+.seealso: `SNESGetAlwaysComputesFinalResidual()`
 @*/
 PetscErrorCode  SNESSetAlwaysComputesFinalResidual(SNES snes, PetscBool flg)
 {
@@ -99,7 +99,7 @@ PetscErrorCode  SNESSetAlwaysComputesFinalResidual(SNES snes, PetscBool flg)
 
    Level: advanced
 
-.seealso: SNESSetAlwaysComputesFinalResidual()
+.seealso: `SNESSetAlwaysComputesFinalResidual()`
 @*/
 PetscErrorCode  SNESGetAlwaysComputesFinalResidual(SNES snes, PetscBool *flg)
 {
@@ -120,7 +120,7 @@ PetscErrorCode  SNESGetAlwaysComputesFinalResidual(SNES snes, PetscBool *flg)
 
    Level: advanced
 
-.seealso: SNESCreate(), SNESSetFunction(), SNESFunction
+.seealso: `SNESCreate()`, `SNESSetFunction()`, `SNESFunction`
 @*/
 PetscErrorCode  SNESSetFunctionDomainError(SNES snes)
 {
@@ -141,7 +141,7 @@ PetscErrorCode  SNESSetFunctionDomainError(SNES snes)
 
    Level: advanced
 
-.seealso: SNESCreate(), SNESSetFunction(), SNESFunction(), SNESSetFunctionDomainError()
+.seealso: `SNESCreate()`, `SNESSetFunction()`, `SNESFunction()`, `SNESSetFunctionDomainError()`
 @*/
 PetscErrorCode SNESSetJacobianDomainError(SNES snes)
 {
@@ -164,7 +164,7 @@ PetscErrorCode SNESSetJacobianDomainError(SNES snes)
 
    Level: advanced
 
-.seealso: SNESCreate(), SNESSetFunction(), SNESFunction(), SNESSetFunctionDomainError(), SNESGetCheckJacobianDomainError()
+.seealso: `SNESCreate()`, `SNESSetFunction()`, `SNESFunction()`, `SNESSetFunctionDomainError()`, `SNESGetCheckJacobianDomainError()`
 @*/
 PetscErrorCode SNESSetCheckJacobianDomainError(SNES snes, PetscBool flg)
 {
@@ -187,7 +187,7 @@ PetscErrorCode SNESSetCheckJacobianDomainError(SNES snes, PetscBool flg)
 
    Level: advanced
 
-.seealso: SNESCreate(), SNESSetFunction(), SNESFunction(), SNESSetFunctionDomainError(), SNESSetCheckJacobianDomainError()
+.seealso: `SNESCreate()`, `SNESSetFunction()`, `SNESFunction()`, `SNESSetFunctionDomainError()`, `SNESSetCheckJacobianDomainError()`
 @*/
 PetscErrorCode SNESGetCheckJacobianDomainError(SNES snes, PetscBool *flg)
 {
@@ -211,7 +211,7 @@ PetscErrorCode SNESGetCheckJacobianDomainError(SNES snes, PetscBool *flg)
 
    Level: advanced
 
-.seealso: SNESSetFunctionDomainError(), SNESComputeFunction()
+.seealso: `SNESSetFunctionDomainError()`, `SNESComputeFunction()`
 @*/
 PetscErrorCode  SNESGetFunctionDomainError(SNES snes, PetscBool *domainerror)
 {
@@ -235,7 +235,7 @@ PetscErrorCode  SNESGetFunctionDomainError(SNES snes, PetscBool *domainerror)
 
    Level: advanced
 
-.seealso: SNESSetFunctionDomainError(), SNESComputeFunction(),SNESGetFunctionDomainError()
+.seealso: `SNESSetFunctionDomainError()`, `SNESComputeFunction(),SNESGetFunctionDomainError()`
 @*/
 PetscErrorCode SNESGetJacobianDomainError(SNES snes, PetscBool *domainerror)
 {
@@ -270,7 +270,7 @@ PetscErrorCode SNESGetJacobianDomainError(SNES snes, PetscBool *domainerror)
      has not yet been determined
 .ve
 
-.seealso: PetscViewerBinaryOpen(), SNESView(), MatLoad(), VecLoad()
+.seealso: `PetscViewerBinaryOpen()`, `SNESView()`, `MatLoad()`, `VecLoad()`
 @*/
 PetscErrorCode  SNESLoad(SNES snes, PetscViewer viewer)
 {
@@ -318,7 +318,7 @@ PetscErrorCode  SNESLoad(SNES snes, PetscViewer viewer)
 -  name - command line option
 
    Level: intermediate
-.seealso:  SNES, SNESView, PetscObjectViewFromOptions(), SNESCreate()
+.seealso: `SNES`, `SNESView`, `PetscObjectViewFromOptions()`, `SNESCreate()`
 @*/
 PetscErrorCode  SNESViewFromOptions(SNES A,PetscObject obj,const char name[])
 {
@@ -361,7 +361,7 @@ PETSC_EXTERN PetscErrorCode SNESComputeJacobian_DMDA(SNES,Vec,Mat,Mat,void*);
 
    Level: beginner
 
-.seealso: PetscViewerASCIIOpen()
+.seealso: `PetscViewerASCIIOpen()`
 @*/
 PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
 {
@@ -560,7 +560,7 @@ static PetscErrorCode (*othersetfromoptions[MAXSETFROMOPTIONS])(SNES);
 
   Level: developer
 
-.seealso: SNESSetFromOptions()
+.seealso: `SNESSetFromOptions()`
 @*/
 PetscErrorCode  SNESAddOptionsChecker(PetscErrorCode (*snescheck)(SNES))
 {
@@ -730,7 +730,7 @@ static PetscErrorCode KSPComputeOperators_SNES(KSP ksp,Mat A,Mat B,void *ctx)
 
    Level: developer
 
-.seealso: SNESSetUp()
+.seealso: `SNESSetUp()`
 @*/
 PetscErrorCode SNESSetUpMatrices(SNES snes)
 {
@@ -835,13 +835,13 @@ static PetscErrorCode SNESMonitorPauseFinal_Internal(SNES snes)
 
    Level: developer
 
-.seealso: PetscOptionsGetViewer(), PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(),
-          PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
-          PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
-          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsFList(), PetscOptionsEList()
+.seealso: `PetscOptionsGetViewer()`, `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`,
+          `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`
+          `PetscOptionsInt()`, `PetscOptionsString()`, `PetscOptionsReal()`, `PetscOptionsBool()`,
+          `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
+          `PetscOptionsStringArray(),PetscOptionsRealArray()`, `PetscOptionsScalar()`,
+          `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
+          `PetscOptionsFList()`, `PetscOptionsEList()`
 @*/
 PetscErrorCode  SNESMonitorSetFromOptions(SNES snes,const char name[],const char help[], const char manual[],PetscErrorCode (*monitor)(SNES,PetscInt,PetscReal,PetscViewerAndFormat*),PetscErrorCode (*monitorsetup)(SNES,PetscViewerAndFormat*))
 {
@@ -926,7 +926,7 @@ PetscErrorCode  SNESMonitorSetFromOptions(SNES snes,const char name[],const char
 
    Level: beginner
 
-.seealso: SNESSetOptionsPrefix(), SNESResetFromOptions(), SNES, SNESCreate()
+.seealso: `SNESSetOptionsPrefix()`, `SNESResetFromOptions()`, `SNES`, `SNESCreate()`
 @*/
 PetscErrorCode  SNESSetFromOptions(SNES snes)
 {
@@ -1164,7 +1164,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
 
    Level: beginner
 
-.seealso: SNESSetFromOptions(), SNESSetOptionsPrefix()
+.seealso: `SNESSetFromOptions()`, `SNESSetOptionsPrefix()`
 @*/
 PetscErrorCode SNESResetFromOptions(SNES snes)
 {
@@ -1189,7 +1189,7 @@ PetscErrorCode SNESResetFromOptions(SNES snes)
    Notes:
    This function is currently not available from Fortran.
 
-.seealso: SNESGetApplicationContext(), SNESSetComputeApplicationContext(), SNESGetApplicationContext()
+.seealso: `SNESGetApplicationContext()`, `SNESSetComputeApplicationContext()`, `SNESGetApplicationContext()`
 @*/
 PetscErrorCode  SNESSetComputeApplicationContext(SNES snes,PetscErrorCode (*compute)(SNES,void**),PetscErrorCode (*destroy)(void**))
 {
@@ -1216,7 +1216,7 @@ PetscErrorCode  SNESSetComputeApplicationContext(SNES snes,PetscErrorCode (*comp
     To use this from Fortran you must write a Fortran interface definition for this
     function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
 
-.seealso: SNESGetApplicationContext()
+.seealso: `SNESGetApplicationContext()`
 @*/
 PetscErrorCode  SNESSetApplicationContext(SNES snes,void *usrP)
 {
@@ -1248,7 +1248,7 @@ PetscErrorCode  SNESSetApplicationContext(SNES snes,void *usrP)
 
    Level: intermediate
 
-.seealso: SNESSetApplicationContext()
+.seealso: `SNESSetApplicationContext()`
 @*/
 PetscErrorCode  SNESGetApplicationContext(SNES snes,void *usrP)
 {
@@ -1280,7 +1280,7 @@ PetscErrorCode  SNESGetApplicationContext(SNES snes,void *usrP)
       SNES supports three approaches for computing (approximate) Jacobians: user provided via SNESSetJacobian(), matrix free, and computing explicitly with
       finite differences and coloring using MatFDColoring. It is also possible to use automatic differentiation and the MatFDColoring object.
 
-.seealso:   SNESGetUseMatrixFree(), MatCreateSNESMF(), SNESComputeJacobianDefaultColor()
+.seealso: `SNESGetUseMatrixFree()`, `MatCreateSNESMF()`, `SNESComputeJacobianDefaultColor()`
 @*/
 PetscErrorCode  SNESSetUseMatrixFree(SNES snes,PetscBool mf_operator,PetscBool mf)
 {
@@ -1311,7 +1311,7 @@ PetscErrorCode  SNESSetUseMatrixFree(SNES snes,PetscBool mf_operator,PetscBool m
 
    Level: intermediate
 
-.seealso:   SNESSetUseMatrixFree(), MatCreateSNESMF()
+.seealso: `SNESSetUseMatrixFree()`, `MatCreateSNESMF()`
 @*/
 PetscErrorCode  SNESGetUseMatrixFree(SNES snes,PetscBool *mf_operator,PetscBool *mf)
 {
@@ -1352,7 +1352,7 @@ PetscErrorCode  SNESGetUseMatrixFree(SNES snes,PetscBool *mf_operator,PetscBool 
 
    Level: intermediate
 
-.seealso:   SNESGetLinearSolveIterations()
+.seealso: `SNESGetLinearSolveIterations()`
 @*/
 PetscErrorCode  SNESGetIterationNumber(SNES snes,PetscInt *iter)
 {
@@ -1374,7 +1374,7 @@ PetscErrorCode  SNESGetIterationNumber(SNES snes,PetscInt *iter)
 
    Level: developer
 
-.seealso:   SNESGetLinearSolveIterations()
+.seealso: `SNESGetLinearSolveIterations()`
 @*/
 PetscErrorCode  SNESSetIterationNumber(SNES snes,PetscInt iter)
 {
@@ -1403,8 +1403,8 @@ PetscErrorCode  SNESSetIterationNumber(SNES snes,PetscInt iter)
 
    Level: intermediate
 
-.seealso: SNESGetMaxLinearSolveFailures(), SNESGetLinearSolveIterations(), SNESSetMaxLinearSolveFailures(), SNESGetLinearSolveFailures(),
-          SNESSetMaxNonlinearStepFailures(), SNESGetMaxNonlinearStepFailures()
+.seealso: `SNESGetMaxLinearSolveFailures()`, `SNESGetLinearSolveIterations()`, `SNESSetMaxLinearSolveFailures()`, `SNESGetLinearSolveFailures()`,
+          `SNESSetMaxNonlinearStepFailures()`, `SNESGetMaxNonlinearStepFailures()`
 @*/
 PetscErrorCode  SNESGetNonlinearStepFailures(SNES snes,PetscInt *nfails)
 {
@@ -1427,8 +1427,8 @@ PetscErrorCode  SNESGetNonlinearStepFailures(SNES snes,PetscInt *nfails)
 
    Level: intermediate
 
-.seealso: SNESGetMaxLinearSolveFailures(), SNESGetLinearSolveIterations(), SNESSetMaxLinearSolveFailures(), SNESGetLinearSolveFailures(),
-          SNESGetMaxNonlinearStepFailures(), SNESGetNonlinearStepFailures()
+.seealso: `SNESGetMaxLinearSolveFailures()`, `SNESGetLinearSolveIterations()`, `SNESSetMaxLinearSolveFailures()`, `SNESGetLinearSolveFailures()`,
+          `SNESGetMaxNonlinearStepFailures()`, `SNESGetNonlinearStepFailures()`
 @*/
 PetscErrorCode  SNESSetMaxNonlinearStepFailures(SNES snes, PetscInt maxFails)
 {
@@ -1452,8 +1452,8 @@ PetscErrorCode  SNESSetMaxNonlinearStepFailures(SNES snes, PetscInt maxFails)
 
    Level: intermediate
 
-.seealso: SNESGetMaxLinearSolveFailures(), SNESGetLinearSolveIterations(), SNESSetMaxLinearSolveFailures(), SNESGetLinearSolveFailures(),
-          SNESSetMaxNonlinearStepFailures(), SNESGetNonlinearStepFailures()
+.seealso: `SNESGetMaxLinearSolveFailures()`, `SNESGetLinearSolveIterations()`, `SNESSetMaxLinearSolveFailures()`, `SNESGetLinearSolveFailures()`,
+          `SNESSetMaxNonlinearStepFailures()`, `SNESGetNonlinearStepFailures()`
 
 @*/
 PetscErrorCode  SNESGetMaxNonlinearStepFailures(SNES snes, PetscInt *maxFails)
@@ -1482,7 +1482,7 @@ PetscErrorCode  SNESGetMaxNonlinearStepFailures(SNES snes, PetscInt *maxFails)
    Notes:
     Reset every time SNESSolve is called unless SNESSetCountersReset() is used.
 
-.seealso: SNESGetMaxLinearSolveFailures(), SNESGetLinearSolveIterations(), SNESSetMaxLinearSolveFailures(), SNESGetLinearSolveFailures(), SNESSetCountersReset()
+.seealso: `SNESGetMaxLinearSolveFailures()`, `SNESGetLinearSolveIterations()`, `SNESSetMaxLinearSolveFailures()`, `SNESGetLinearSolveFailures()`, `SNESSetCountersReset()`
 @*/
 PetscErrorCode  SNESGetNumberFunctionEvals(SNES snes, PetscInt *nfuncs)
 {
@@ -1513,7 +1513,7 @@ PetscErrorCode  SNESGetNumberFunctionEvals(SNES snes, PetscInt *nfuncs)
    Notes:
    This counter is reset to zero for each successive call to SNESSolve().
 
-.seealso: SNESGetMaxLinearSolveFailures(), SNESGetLinearSolveIterations(), SNESSetMaxLinearSolveFailures()
+.seealso: `SNESGetMaxLinearSolveFailures()`, `SNESGetLinearSolveIterations()`, `SNESSetMaxLinearSolveFailures()`
 @*/
 PetscErrorCode  SNESGetLinearSolveFailures(SNES snes,PetscInt *nfails)
 {
@@ -1542,7 +1542,7 @@ PetscErrorCode  SNESGetLinearSolveFailures(SNES snes,PetscInt *nfails)
    Notes:
     By default this is 0; that is SNES returns on the first failed linear solve
 
-.seealso: SNESGetLinearSolveFailures(), SNESGetMaxLinearSolveFailures(), SNESGetLinearSolveIterations()
+.seealso: `SNESGetLinearSolveFailures()`, `SNESGetMaxLinearSolveFailures()`, `SNESGetLinearSolveIterations()`
 @*/
 PetscErrorCode  SNESSetMaxLinearSolveFailures(SNES snes, PetscInt maxFails)
 {
@@ -1570,7 +1570,7 @@ PetscErrorCode  SNESSetMaxLinearSolveFailures(SNES snes, PetscInt maxFails)
    Notes:
     By default this is 1; that is SNES returns on the first failed linear solve
 
-.seealso: SNESGetLinearSolveFailures(), SNESGetLinearSolveIterations(), SNESSetMaxLinearSolveFailures(),
+.seealso: `SNESGetLinearSolveFailures()`, `SNESGetLinearSolveIterations()`, `SNESSetMaxLinearSolveFailures()`,
 @*/
 PetscErrorCode  SNESGetMaxLinearSolveFailures(SNES snes, PetscInt *maxFails)
 {
@@ -1601,7 +1601,7 @@ PetscErrorCode  SNESGetMaxLinearSolveFailures(SNES snes, PetscInt *maxFails)
 
    Level: intermediate
 
-.seealso:  SNESGetIterationNumber(), SNESGetLinearSolveFailures(), SNESGetMaxLinearSolveFailures(), SNESSetCountersReset()
+.seealso: `SNESGetIterationNumber()`, `SNESGetLinearSolveFailures()`, `SNESGetMaxLinearSolveFailures()`, `SNESSetCountersReset()`
 @*/
 PetscErrorCode  SNESGetLinearSolveIterations(SNES snes,PetscInt *lits)
 {
@@ -1627,7 +1627,7 @@ PetscErrorCode  SNESGetLinearSolveIterations(SNES snes,PetscInt *lits)
 
    Level: developer
 
-.seealso:  SNESGetNumberFunctionEvals(), SNESGetLinearSolveIterations(), SNESGetNPC()
+.seealso: `SNESGetNumberFunctionEvals()`, `SNESGetLinearSolveIterations()`, `SNESGetNPC()`
 @*/
 PetscErrorCode  SNESSetCountersReset(SNES snes,PetscBool reset)
 {
@@ -1656,7 +1656,7 @@ PetscErrorCode  SNESSetCountersReset(SNES snes,PetscBool reset)
 
    Level: developer
 
-.seealso: KSPGetPC(), SNESCreate(), KSPCreate(), SNESSetKSP()
+.seealso: `KSPGetPC()`, `SNESCreate()`, `KSPCreate()`, `SNESSetKSP()`
 @*/
 PetscErrorCode  SNESSetKSP(SNES snes,KSP ksp)
 {
@@ -1702,7 +1702,7 @@ PetscErrorCode  SNESSetKSP(SNES snes,KSP ksp)
                     SNES always creates the snes->kspconvctx even though it is used by only one type. This should
                     be fixed.
 
-.seealso: SNESSolve(), SNESDestroy(), SNES, SNESSetLagPreconditioner(), SNESSetLagJacobian()
+.seealso: `SNESSolve()`, `SNESDestroy()`, `SNES`, `SNESSetLagPreconditioner()`, `SNESSetLagJacobian()`
 
 @*/
 PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
@@ -1832,7 +1832,7 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
 
    Level: intermediate
 
-.seealso:   SNESSetFunction(), SNESGetFunction()
+.seealso: `SNESSetFunction()`, `SNESGetFunction()`
 M*/
 
 /*@C
@@ -1856,7 +1856,7 @@ $      f'(x) x = -f(x),
 
    Level: beginner
 
-.seealso: SNESGetFunction(), SNESComputeFunction(), SNESSetJacobian(), SNESSetPicard(), SNESFunction
+.seealso: `SNESGetFunction()`, `SNESComputeFunction()`, `SNESSetJacobian()`, `SNESSetPicard()`, `SNESFunction`
 @*/
 PetscErrorCode  SNESSetFunction(SNES snes,Vec r,PetscErrorCode (*f)(SNES,Vec,Vec,void*),void *ctx)
 {
@@ -1899,7 +1899,7 @@ PetscErrorCode  SNESSetFunction(SNES snes,Vec r,PetscErrorCode (*f)(SNES,Vec,Vec
 
    Level: developer
 
-.seealso: SNESSetFunction(), SNESComputeFunction(), SNESSetInitialFunctionNorm()
+.seealso: `SNESSetFunction()`, `SNESComputeFunction()`, `SNESSetInitialFunctionNorm()`
 @*/
 PetscErrorCode  SNESSetInitialFunction(SNES snes, Vec f)
 {
@@ -1944,7 +1944,7 @@ PetscErrorCode  SNESSetInitialFunction(SNES snes, Vec f)
 
    Level: developer
 
-.seealso: SNESGetNormSchedule(), SNESComputeFunction(), VecNorm(), SNESSetFunction(), SNESSetInitialFunction(), SNESNormSchedule
+.seealso: `SNESGetNormSchedule()`, `SNESComputeFunction()`, `VecNorm()`, `SNESSetFunction()`, `SNESSetInitialFunction()`, `SNESNormSchedule`
 @*/
 PetscErrorCode  SNESSetNormSchedule(SNES snes, SNESNormSchedule normschedule)
 {
@@ -1966,7 +1966,7 @@ PetscErrorCode  SNESSetNormSchedule(SNES snes, SNESNormSchedule normschedule)
 
    Level: advanced
 
-.seealso: SNESSetNormSchedule(), SNESComputeFunction(), VecNorm(), SNESSetFunction(), SNESSetInitialFunction(), SNESNormSchedule
+.seealso: `SNESSetNormSchedule()`, `SNESComputeFunction()`, `VecNorm()`, `SNESSetFunction()`, `SNESSetInitialFunction()`, `SNESNormSchedule`
 @*/
 PetscErrorCode  SNESGetNormSchedule(SNES snes, SNESNormSchedule *normschedule)
 {
@@ -1988,7 +1988,7 @@ PetscErrorCode  SNESGetNormSchedule(SNES snes, SNESNormSchedule *normschedule)
 
   Level: developer
 
-.seealso: SNESGetNormSchedule(), SNESComputeFunction(), VecNorm(), SNESSetFunction(), SNESSetInitialFunction(), SNESNormSchedule
+.seealso: `SNESGetNormSchedule()`, `SNESComputeFunction()`, `VecNorm()`, `SNESSetFunction()`, `SNESSetInitialFunction()`, `SNESNormSchedule`
 @*/
 PetscErrorCode SNESSetFunctionNorm(SNES snes, PetscReal norm)
 {
@@ -2011,7 +2011,7 @@ PetscErrorCode SNESSetFunctionNorm(SNES snes, PetscReal norm)
 
   Level: developer
 
-.seealso: SNESSetNormSchedule(), SNESComputeFunction(), VecNorm(), SNESSetFunction(), SNESSetInitialFunction(), SNESNormSchedule
+.seealso: `SNESSetNormSchedule()`, `SNESComputeFunction()`, `VecNorm()`, `SNESSetFunction()`, `SNESSetInitialFunction()`, `SNESNormSchedule`
 @*/
 PetscErrorCode SNESGetFunctionNorm(SNES snes, PetscReal *norm)
 {
@@ -2035,7 +2035,7 @@ PetscErrorCode SNESGetFunctionNorm(SNES snes, PetscReal *norm)
 
   Level: developer
 
-.seealso: SNESSetNormSchedule(), SNESComputeFunction(), SNESGetFunctionNorm()
+.seealso: `SNESSetNormSchedule()`, `SNESComputeFunction()`, `SNESGetFunctionNorm()`
 @*/
 PetscErrorCode SNESGetUpdateNorm(SNES snes, PetscReal *ynorm)
 {
@@ -2059,7 +2059,7 @@ PetscErrorCode SNESGetUpdateNorm(SNES snes, PetscReal *ynorm)
 
   Level: developer
 
-.seealso: SNESSetNormSchedule(), SNESComputeFunction(), SNESGetFunctionNorm(), SNESGetUpdateNorm()
+.seealso: `SNESSetNormSchedule()`, `SNESComputeFunction()`, `SNESGetFunctionNorm()`, `SNESGetUpdateNorm()`
 @*/
 PetscErrorCode SNESGetSolutionNorm(SNES snes, PetscReal *xnorm)
 {
@@ -2091,7 +2091,7 @@ PetscErrorCode SNESGetSolutionNorm(SNES snes, PetscReal *xnorm)
 
    Level: developer
 
-.seealso: SNESGetNormSchedule(), SNESComputeFunction(), VecNorm(), SNESSetFunction(), SNESSetInitialFunction(), SNESNormSchedule
+.seealso: `SNESGetNormSchedule()`, `SNESComputeFunction()`, `VecNorm()`, `SNESSetFunction()`, `SNESSetInitialFunction()`, `SNESNormSchedule`
 @*/
 PetscErrorCode  SNESSetFunctionType(SNES snes, SNESFunctionType type)
 {
@@ -2113,7 +2113,7 @@ PetscErrorCode  SNESSetFunctionType(SNES snes, SNESFunctionType type)
 
    Level: advanced
 
-.seealso: SNESSetNormSchedule(), SNESComputeFunction(), VecNorm(), SNESSetFunction(), SNESSetInitialFunction(), SNESNormSchedule
+.seealso: `SNESSetNormSchedule()`, `SNESComputeFunction()`, `VecNorm()`, `SNESSetFunction()`, `SNESSetInitialFunction()`, `SNESNormSchedule`
 @*/
 PetscErrorCode  SNESGetFunctionType(SNES snes, SNESFunctionType *type)
 {
@@ -2142,7 +2142,7 @@ $    SNESNGSFunction(SNES snes,Vec x,Vec b,void *ctx);
 
    Level: intermediate
 
-.seealso:   SNESSetNGS(), SNESGetNGS()
+.seealso: `SNESSetNGS()`, `SNESGetNGS()`
 M*/
 
 /*@C
@@ -2161,7 +2161,7 @@ M*/
 
    Level: intermediate
 
-.seealso: SNESGetFunction(), SNESComputeNGS()
+.seealso: `SNESGetFunction()`, `SNESComputeNGS()`
 @*/
 PetscErrorCode SNESSetNGS(SNES snes,PetscErrorCode (*f)(SNES,Vec,Vec,void*),void *ctx)
 {
@@ -2291,7 +2291,7 @@ $     Note that when an exact solver is used this corresponds to the "classic" P
 
    Level: intermediate
 
-.seealso: SNESGetFunction(), SNESSetFunction(), SNESComputeFunction(), SNESSetJacobian(), SNESGetPicard(), SNESLineSearchPreCheckPicard(), SNESJacobianFunction
+.seealso: `SNESGetFunction()`, `SNESSetFunction()`, `SNESComputeFunction()`, `SNESSetJacobian()`, `SNESGetPicard()`, `SNESLineSearchPreCheckPicard()`, `SNESJacobianFunction`
 @*/
 PetscErrorCode  SNESSetPicard(SNES snes,Vec r,PetscErrorCode (*bp)(SNES,Vec,Vec,void*),Mat Amat, Mat Pmat, PetscErrorCode (*J)(SNES,Vec,Mat,Mat,void*),void *ctx)
 {
@@ -2325,7 +2325,7 @@ PetscErrorCode  SNESSetPicard(SNES snes,Vec r,PetscErrorCode (*bp)(SNES,Vec,Vec,
 
    Level: advanced
 
-.seealso: SNESSetPicard(), SNESGetFunction(), SNESGetJacobian(), SNESGetDM(), SNESFunction, SNESJacobianFunction
+.seealso: `SNESSetPicard()`, `SNESGetFunction()`, `SNESGetJacobian()`, `SNESGetDM()`, `SNESFunction`, `SNESJacobianFunction`
 @*/
 PetscErrorCode  SNESGetPicard(SNES snes,Vec *r,PetscErrorCode (**f)(SNES,Vec,Vec,void*),Mat *Amat, Mat *Pmat, PetscErrorCode (**J)(SNES,Vec,Mat,Mat,void*),void **ctx)
 {
@@ -2359,7 +2359,7 @@ $    func (SNES snes,Vec x,void *ctx);
 
    Level: intermediate
 
-.seealso: SNESGetFunction(), SNESComputeFunction(), SNESSetJacobian()
+.seealso: `SNESGetFunction()`, `SNESComputeFunction()`, `SNESSetJacobian()`
 @*/
 PetscErrorCode  SNESSetComputeInitialGuess(SNES snes,PetscErrorCode (*func)(SNES,Vec,void*),void *ctx)
 {
@@ -2385,7 +2385,7 @@ PetscErrorCode  SNESSetComputeInitialGuess(SNES snes,PetscErrorCode (*func)(SNES
 
    Level: intermediate
 
-.seealso: SNESGetSolution(), SNESGetFunction(), SNESComputeFunction(), SNESSetJacobian(), SNESSetFunction()
+.seealso: `SNESGetSolution()`, `SNESGetFunction()`, `SNESComputeFunction()`, `SNESSetJacobian()`, `SNESSetFunction()`
 @*/
 PetscErrorCode  SNESGetRhs(SNES snes,Vec *rhs)
 {
@@ -2414,7 +2414,7 @@ PetscErrorCode  SNESGetRhs(SNES snes,Vec *rhs)
 
    Level: developer
 
-.seealso: SNESSetFunction(), SNESGetFunction(), SNESComputeMFFunction()
+.seealso: `SNESSetFunction()`, `SNESGetFunction()`, `SNESComputeMFFunction()`
 @*/
 PetscErrorCode  SNESComputeFunction(SNES snes,Vec x,Vec y)
 {
@@ -2484,7 +2484,7 @@ PetscErrorCode  SNESComputeFunction(SNES snes,Vec x,Vec y)
 
    Level: developer
 
-.seealso: SNESSetFunction(), SNESGetFunction(), SNESComputeFunction(), MatCreateSNESMF
+.seealso: `SNESSetFunction()`, `SNESGetFunction()`, `SNESComputeFunction()`, `MatCreateSNESMF`
 @*/
 PetscErrorCode  SNESComputeMFFunction(SNES snes,Vec x,Vec y)
 {
@@ -2541,7 +2541,7 @@ PetscErrorCode  SNESComputeMFFunction(SNES snes,Vec x,Vec y)
 
    Level: developer
 
-.seealso: SNESSetNGS(), SNESComputeFunction()
+.seealso: `SNESSetNGS()`, `SNESComputeFunction()`
 @*/
 PetscErrorCode  SNESComputeNGS(SNES snes,Vec b,Vec x)
 {
@@ -2777,7 +2777,7 @@ PetscErrorCode SNESTestJacobian(SNES snes)
 
    Level: developer
 
-.seealso:  SNESSetJacobian(), KSPSetOperators(), MatStructure, SNESSetLagPreconditioner(), SNESSetLagJacobian()
+.seealso: `SNESSetJacobian()`, `KSPSetOperators()`, `MatStructure`, `SNESSetLagPreconditioner()`, `SNESSetLagJacobian()`
 @*/
 PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat A,Mat B)
 {
@@ -3041,7 +3041,7 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat A,Mat B)
 
    Level: intermediate
 
-.seealso:   SNESSetFunction(), SNESGetFunction(), SNESSetJacobian(), SNESGetJacobian()
+.seealso: `SNESSetFunction()`, `SNESGetFunction()`, `SNESSetJacobian()`, `SNESGetJacobian()`
 M*/
 
 /*@C
@@ -3073,8 +3073,8 @@ M*/
 
    Level: beginner
 
-.seealso: KSPSetOperators(), SNESSetFunction(), MatMFFDComputeJacobian(), SNESComputeJacobianDefaultColor(), MatStructure, J,
-          SNESSetPicard(), SNESJacobianFunction
+.seealso: `KSPSetOperators()`, `SNESSetFunction()`, `MatMFFDComputeJacobian()`, `SNESComputeJacobianDefaultColor()`, `MatStructure`, `J`,
+          `SNESSetPicard()`, `SNESJacobianFunction`
 @*/
 PetscErrorCode  SNESSetJacobian(SNES snes,Mat Amat,Mat Pmat,PetscErrorCode (*J)(SNES,Vec,Mat,Mat,void*),void *ctx)
 {
@@ -3120,7 +3120,7 @@ PetscErrorCode  SNESSetJacobian(SNES snes,Mat Amat,Mat Pmat,PetscErrorCode (*J)(
 
    Level: advanced
 
-.seealso: SNESSetJacobian(), SNESComputeJacobian(), SNESJacobianFunction, SNESGetFunction()
+.seealso: `SNESSetJacobian()`, `SNESComputeJacobian()`, `SNESJacobianFunction`, `SNESGetFunction()`
 @*/
 PetscErrorCode SNESGetJacobian(SNES snes,Mat *Amat,Mat *Pmat,PetscErrorCode (**J)(SNES,Vec,Mat,Mat,void*),void **ctx)
 {
@@ -3180,7 +3180,7 @@ static PetscErrorCode SNESSetDefaultComputeJacobian(SNES snes)
 
    Level: advanced
 
-.seealso: SNESCreate(), SNESSolve(), SNESDestroy()
+.seealso: `SNESCreate()`, `SNESSolve()`, `SNESDestroy()`
 @*/
 PetscErrorCode  SNESSetUp(SNES snes)
 {
@@ -3310,7 +3310,7 @@ PetscErrorCode  SNESSetUp(SNES snes)
    Notes:
     Also calls the application context destroy routine set with SNESSetComputeApplicationContext()
 
-.seealso: SNESCreate(), SNESSetUp(), SNESSolve()
+.seealso: `SNESCreate()`, `SNESSetUp()`, `SNESSolve()`
 @*/
 PetscErrorCode  SNESReset(SNES snes)
 {
@@ -3362,7 +3362,7 @@ PetscErrorCode  SNESReset(SNES snes)
 
    Level: intermediate
 
-.seealso: SNESCreate(), SNESDestroy(), SNESReset()
+.seealso: `SNESCreate()`, `SNESDestroy()`, `SNESReset()`
 @*/
 PetscErrorCode  SNESConvergedReasonViewCancel(SNES snes)
 {
@@ -3390,7 +3390,7 @@ PetscErrorCode  SNESConvergedReasonViewCancel(SNES snes)
 
    Level: beginner
 
-.seealso: SNESCreate(), SNESSolve()
+.seealso: `SNESCreate()`, `SNESSolve()`
 @*/
 PetscErrorCode  SNESDestroy(SNES *snes)
 {
@@ -3450,8 +3450,8 @@ PetscErrorCode  SNESDestroy(SNES *snes)
 
    Level: intermediate
 
-.seealso: SNESSetTrustRegionTolerance(), SNESGetLagPreconditioner(), SNESSetLagJacobian(), SNESGetLagJacobian(), SNESSetLagPreconditionerPersists(),
-          SNESSetLagJacobianPersists()
+.seealso: `SNESSetTrustRegionTolerance()`, `SNESGetLagPreconditioner()`, `SNESSetLagJacobian()`, `SNESGetLagJacobian()`, `SNESSetLagPreconditionerPersists()`,
+          `SNESSetLagJacobianPersists()`
 
 @*/
 PetscErrorCode  SNESSetLagPreconditioner(SNES snes,PetscInt lag)
@@ -3482,7 +3482,7 @@ PetscErrorCode  SNESSetLagPreconditioner(SNES snes,PetscInt lag)
    Notes:
    Use SNESGetSolution() to extract the fine grid solution after grid sequencing.
 
-.seealso: SNESSetTrustRegionTolerance(), SNESGetLagPreconditioner(), SNESSetLagJacobian(), SNESGetLagJacobian(), SNESGetGridSequence()
+.seealso: `SNESSetTrustRegionTolerance()`, `SNESGetLagPreconditioner()`, `SNESSetLagJacobian()`, `SNESGetLagJacobian()`, `SNESGetGridSequence()`
 
 @*/
 PetscErrorCode  SNESSetGridSequence(SNES snes,PetscInt steps)
@@ -3513,7 +3513,7 @@ PetscErrorCode  SNESSetGridSequence(SNES snes,PetscInt steps)
    Notes:
    Use SNESGetSolution() to extract the fine grid solution after grid sequencing.
 
-.seealso: SNESSetTrustRegionTolerance(), SNESGetLagPreconditioner(), SNESSetLagJacobian(), SNESGetLagJacobian(), SNESSetGridSequence()
+.seealso: `SNESSetTrustRegionTolerance()`, `SNESGetLagPreconditioner()`, `SNESSetLagJacobian()`, `SNESGetLagJacobian()`, `SNESSetGridSequence()`
 
 @*/
 PetscErrorCode  SNESGetGridSequence(SNES snes,PetscInt *steps)
@@ -3548,7 +3548,7 @@ PetscErrorCode  SNESGetGridSequence(SNES snes,PetscInt *steps)
 
    Level: intermediate
 
-.seealso: SNESSetTrustRegionTolerance(), SNESSetLagPreconditioner(), SNESSetLagJacobianPersists(), SNESSetLagPreconditionerPersists()
+.seealso: `SNESSetTrustRegionTolerance()`, `SNESSetLagPreconditioner()`, `SNESSetLagJacobianPersists()`, `SNESSetLagPreconditionerPersists()`
 
 @*/
 PetscErrorCode  SNESGetLagPreconditioner(SNES snes,PetscInt *lag)
@@ -3584,7 +3584,7 @@ PetscErrorCode  SNESGetLagPreconditioner(SNES snes,PetscInt *lag)
 
    Level: intermediate
 
-.seealso: SNESSetTrustRegionTolerance(), SNESGetLagPreconditioner(), SNESSetLagPreconditioner(), SNESGetLagJacobianPersists(), SNESSetLagPreconditionerPersists()
+.seealso: `SNESSetTrustRegionTolerance()`, `SNESGetLagPreconditioner()`, `SNESSetLagPreconditioner()`, `SNESGetLagJacobianPersists()`, `SNESSetLagPreconditionerPersists()`
 
 @*/
 PetscErrorCode  SNESSetLagJacobian(SNES snes,PetscInt lag)
@@ -3616,7 +3616,7 @@ PetscErrorCode  SNESSetLagJacobian(SNES snes,PetscInt lag)
 
    Level: intermediate
 
-.seealso: SNESSetTrustRegionTolerance(), SNESSetLagJacobian(), SNESSetLagPreconditioner(), SNESGetLagPreconditioner(), SNESSetLagJacobianPersists(), SNESSetLagPreconditionerPersists()
+.seealso: `SNESSetTrustRegionTolerance()`, `SNESSetLagJacobian()`, `SNESSetLagPreconditioner()`, `SNESGetLagPreconditioner()`, `SNESSetLagJacobianPersists()`, `SNESSetLagPreconditionerPersists()`
 
 @*/
 PetscErrorCode  SNESGetLagJacobian(SNES snes,PetscInt *lag)
@@ -3649,7 +3649,7 @@ PetscErrorCode  SNESGetLagJacobian(SNES snes,PetscInt *lag)
 
    Level: developer
 
-.seealso: SNESSetLagPreconditionerPersists(), SNESSetLagJacobian(), SNESGetLagJacobian(), SNESGetNPC(), SNESSetLagJacobianPersists()
+.seealso: `SNESSetLagPreconditionerPersists()`, `SNESSetLagJacobian()`, `SNESGetLagJacobian()`, `SNESGetNPC()`, `SNESSetLagJacobianPersists()`
 
 @*/
 PetscErrorCode  SNESSetLagJacobianPersists(SNES snes,PetscBool flg)
@@ -3683,7 +3683,7 @@ PetscErrorCode  SNESSetLagJacobianPersists(SNES snes,PetscBool flg)
 
    Level: developer
 
-.seealso: SNESSetLagJacobianPersists(), SNESSetLagJacobian(), SNESGetLagJacobian(), SNESGetNPC(), SNESSetLagPreconditioner()
+.seealso: `SNESSetLagJacobianPersists()`, `SNESSetLagJacobian()`, `SNESGetLagJacobian()`, `SNESGetNPC()`, `SNESSetLagPreconditioner()`
 
 @*/
 PetscErrorCode  SNESSetLagPreconditionerPersists(SNES snes,PetscBool flg)
@@ -3712,7 +3712,7 @@ PetscErrorCode  SNESSetLagPreconditionerPersists(SNES snes,PetscBool flg)
 
    Level: intermediate
 
-.seealso: SNESSetTrustRegionTolerance(), SNESSetDivergenceTolerance()
+.seealso: `SNESSetTrustRegionTolerance()`, `SNESSetDivergenceTolerance()`
 @*/
 PetscErrorCode  SNESSetForceIteration(SNES snes,PetscBool force)
 {
@@ -3735,7 +3735,7 @@ PetscErrorCode  SNESSetForceIteration(SNES snes,PetscBool force)
 
    Level: intermediate
 
-.seealso: SNESSetForceIteration(), SNESSetTrustRegionTolerance(), SNESSetDivergenceTolerance()
+.seealso: `SNESSetForceIteration()`, `SNESSetTrustRegionTolerance()`, `SNESSetDivergenceTolerance()`
 @*/
 PetscErrorCode  SNESGetForceIteration(SNES snes,PetscBool *force)
 {
@@ -3771,7 +3771,7 @@ PetscErrorCode  SNESGetForceIteration(SNES snes,PetscBool *force)
 
    Level: intermediate
 
-.seealso: SNESSetTrustRegionTolerance(), SNESSetDivergenceTolerance(), SNESSetForceIteration()
+.seealso: `SNESSetTrustRegionTolerance()`, `SNESSetDivergenceTolerance()`, `SNESSetForceIteration()`
 @*/
 PetscErrorCode  SNESSetTolerances(SNES snes,PetscReal abstol,PetscReal rtol,PetscReal stol,PetscInt maxit,PetscInt maxf)
 {
@@ -3824,7 +3824,7 @@ PetscErrorCode  SNESSetTolerances(SNES snes,PetscReal abstol,PetscReal rtol,Pets
 
    Level: intermediate
 
-.seealso: SNESSetTolerances(), SNESGetDivergenceTolerance
+.seealso: `SNESSetTolerances()`, `SNESGetDivergenceTolerance`
 @*/
 PetscErrorCode  SNESSetDivergenceTolerance(SNES snes,PetscReal divtol)
 {
@@ -3860,7 +3860,7 @@ PetscErrorCode  SNESSetDivergenceTolerance(SNES snes,PetscReal divtol)
 
    Level: intermediate
 
-.seealso: SNESSetTolerances()
+.seealso: `SNESSetTolerances()`
 @*/
 PetscErrorCode  SNESGetTolerances(SNES snes,PetscReal *atol,PetscReal *rtol,PetscReal *stol,PetscInt *maxit,PetscInt *maxf)
 {
@@ -3885,7 +3885,7 @@ PetscErrorCode  SNESGetTolerances(SNES snes,PetscReal *atol,PetscReal *rtol,Pets
 
    Level: intermediate
 
-.seealso: SNESSetDivergenceTolerance()
+.seealso: `SNESSetDivergenceTolerance()`
 @*/
 PetscErrorCode  SNESGetDivergenceTolerance(SNES snes,PetscReal *divtol)
 {
@@ -3909,7 +3909,7 @@ PetscErrorCode  SNESGetDivergenceTolerance(SNES snes,PetscReal *divtol)
 
    Level: intermediate
 
-.seealso: SNESSetTolerances()
+.seealso: `SNESSetTolerances()`
 @*/
 PetscErrorCode  SNESSetTrustRegionTolerance(SNES snes,PetscReal tol)
 {
@@ -4003,7 +4003,7 @@ PetscErrorCode  SNESMonitorLGRange(SNES snes,PetscInt n,PetscReal rnorm,void *mo
 
    Level: developer
 
-.seealso: SNESMonitorSet()
+.seealso: `SNESMonitorSet()`
 @*/
 PetscErrorCode  SNESMonitor(SNES snes,PetscInt iter,PetscReal rnorm)
 {
@@ -4037,7 +4037,7 @@ $    PetscErrorCode SNESMonitorFunction(SNES snes,PetscInt its, PetscReal norm,v
 
    Level: advanced
 
-.seealso:   SNESMonitorSet(), SNESMonitorGet()
+.seealso: `SNESMonitorSet()`, `SNESMonitorGet()`
 M*/
 
 /*@C
@@ -4074,7 +4074,7 @@ M*/
 
    Level: intermediate
 
-.seealso: SNESMonitorDefault(), SNESMonitorCancel(), SNESMonitorFunction
+.seealso: `SNESMonitorDefault()`, `SNESMonitorCancel()`, `SNESMonitorFunction`
 @*/
 PetscErrorCode  SNESMonitorSet(SNES snes,PetscErrorCode (*f)(SNES,PetscInt,PetscReal,void*),void *mctx,PetscErrorCode (*monitordestroy)(void**))
 {
@@ -4112,7 +4112,7 @@ PetscErrorCode  SNESMonitorSet(SNES snes,PetscErrorCode (*f)(SNES,PetscInt,Petsc
 
    Level: intermediate
 
-.seealso: SNESMonitorDefault(), SNESMonitorSet()
+.seealso: `SNESMonitorDefault()`, `SNESMonitorSet()`
 @*/
 PetscErrorCode  SNESMonitorCancel(SNES snes)
 {
@@ -4151,7 +4151,7 @@ $     PetscErrorCode SNESConvergenceTest(SNES snes,PetscInt it,PetscReal xnorm,P
 
    Level: intermediate
 
-.seealso:   SNESSetConvergenceTest(), SNESGetConvergenceTest()
+.seealso: `SNESSetConvergenceTest()`, `SNESGetConvergenceTest()`
 M*/
 
 /*@C
@@ -4168,7 +4168,7 @@ M*/
 
    Level: advanced
 
-.seealso: SNESConvergedDefault(), SNESConvergedSkip(), SNESConvergenceTestFunction
+.seealso: `SNESConvergedDefault()`, `SNESConvergedSkip()`, `SNESConvergenceTestFunction`
 @*/
 PetscErrorCode  SNESSetConvergenceTest(SNES snes,PetscErrorCode (*SNESConvergenceTestFunction)(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*),void *cctx,PetscErrorCode (*destroy)(void*))
 {
@@ -4204,7 +4204,7 @@ PetscErrorCode  SNESSetConvergenceTest(SNES snes,PetscErrorCode (*SNESConvergenc
    Notes:
     Should only be called after the call the SNESSolve() is complete, if it is called earlier it returns the value SNES__CONVERGED_ITERATING.
 
-.seealso: SNESSetConvergenceTest(), SNESSetConvergedReason(), SNESConvergedReason
+.seealso: `SNESSetConvergenceTest()`, `SNESSetConvergedReason()`, `SNESConvergedReason`
 @*/
 PetscErrorCode SNESGetConvergedReason(SNES snes,SNESConvergedReason *reason)
 {
@@ -4228,7 +4228,7 @@ PetscErrorCode SNESGetConvergedReason(SNES snes,SNESConvergedReason *reason)
 
    Level: beginner
 
-.seealso: SNESGetConvergedReason()
+.seealso: `SNESGetConvergedReason()`
 @*/
 PetscErrorCode SNESGetConvergedReasonString(SNES snes, const char** strreason)
 {
@@ -4251,7 +4251,7 @@ PetscErrorCode SNESGetConvergedReasonString(SNES snes, const char** strreason)
 
    Level: intermediate
 
-.seealso: SNESGetConvergedReason(), SNESSetConvergenceTest(), SNESConvergedReason
+.seealso: `SNESGetConvergedReason()`, `SNESSetConvergenceTest()`, `SNESConvergedReason`
 @*/
 PetscErrorCode SNESSetConvergedReason(SNES snes,SNESConvergedReason reason)
 {
@@ -4284,7 +4284,7 @@ PetscErrorCode SNESSetConvergedReason(SNES snes,SNESConvergedReason reason)
 
    Level: intermediate
 
-.seealso: SNESGetConvergenceHistory()
+.seealso: `SNESGetConvergenceHistory()`
 
 @*/
 PetscErrorCode  SNESSetConvergenceHistory(SNES snes,PetscReal a[],PetscInt its[],PetscInt na,PetscBool reset)
@@ -4348,7 +4348,7 @@ $   call SNESGetConvergenceHistory(SNES snes, integer na, integer ierr)
 
    Level: intermediate
 
-.seealso: SNESSetConvergenceHistory()
+.seealso: `SNESSetConvergenceHistory()`
 
 @*/
 PetscErrorCode  SNESGetConvergenceHistory(SNES snes,PetscReal *a[],PetscInt *its[],PetscInt *na)
@@ -4385,8 +4385,8 @@ $ func (SNES snes, PetscInt step);
 
      There are a varity of function hooks one many set that are called at different stages of the nonlinear solution process, see the functions listed below.
 
-.seealso SNESSetJacobian(), SNESSolve(), SNESLineSearchSetPreCheck(), SNESLineSearchSetPostCheck(), SNESNewtonTRSetPreCheck(), SNESNewtonTRSetPostCheck(),
-         SNESMonitorSet(), SNESSetDivergenceTest()
+.seealso `SNESSetJacobian()`, `SNESSolve()`, `SNESLineSearchSetPreCheck()`, `SNESLineSearchSetPostCheck()`, `SNESNewtonTRSetPreCheck()`, `SNESNewtonTRSetPostCheck()`,
+         `SNESMonitorSet()`, `SNESSetDivergenceTest()`
 @*/
 PetscErrorCode  SNESSetUpdate(SNES snes, PetscErrorCode (*func)(SNES, PetscInt))
 {
@@ -4460,8 +4460,8 @@ PetscErrorCode SNESScaleStep_Private(SNES snes,Vec y,PetscReal *fnorm,PetscReal 
 
    Level: beginner
 
-.seealso: SNESCreate(), SNESSetUp(), SNESDestroy(), SNESSetTolerances(), SNESConvergedDefault(), SNESGetConvergedReason(), SNESConvergedReasonViewFromOptions(),
-          PetscViewerPushFormat(), PetscViewerPopFormat()
+.seealso: `SNESCreate()`, `SNESSetUp()`, `SNESDestroy()`, `SNESSetTolerances()`, `SNESConvergedDefault()`, `SNESGetConvergedReason()`, `SNESConvergedReasonViewFromOptions()`,
+          `PetscViewerPushFormat()`, `PetscViewerPopFormat()`
 
 @*/
 PetscErrorCode  SNESConvergedReasonView(SNES snes,PetscViewer viewer)
@@ -4542,7 +4542,7 @@ PetscErrorCode  SNESConvergedReasonView(SNES snes,PetscViewer viewer)
 
    Level: intermediate
 
-.seealso: SNESConvergedReasonView(), SNESConvergedReasonViewCancel()
+.seealso: `SNESConvergedReasonView()`, `SNESConvergedReasonViewCancel()`
 @*/
 PetscErrorCode  SNESConvergedReasonViewSet(SNES snes,PetscErrorCode (*f)(SNES,void*),void *vctx,PetscErrorCode (*reasonviewdestroy)(void**))
 {
@@ -4573,7 +4573,7 @@ PetscErrorCode  SNESConvergedReasonViewSet(SNES snes,PetscErrorCode (*f)(SNES,vo
 
   Level: intermediate
 
-.seealso: SNESCreate(), SNESSetUp(), SNESDestroy(), SNESSetTolerances(), SNESConvergedDefault(), SNESGetConvergedReason(), SNESConvergedReasonView()
+.seealso: `SNESCreate()`, `SNESSetUp()`, `SNESDestroy()`, `SNESSetTolerances()`, `SNESConvergedDefault()`, `SNESGetConvergedReason()`, `SNESConvergedReasonView()`
 
 @*/
 PetscErrorCode SNESConvergedReasonViewFromOptions(SNES snes)
@@ -4624,9 +4624,9 @@ PetscErrorCode SNESConvergedReasonViewFromOptions(SNES snes)
 
    Level: beginner
 
-.seealso: SNESCreate(), SNESDestroy(), SNESSetFunction(), SNESSetJacobian(), SNESSetGridSequence(), SNESGetSolution(),
-          SNESNewtonTRSetPreCheck(), SNESNewtonTRGetPreCheck(), SNESNewtonTRSetPostCheck(), SNESNewtonTRGetPostCheck(),
-          SNESLineSearchSetPostCheck(), SNESLineSearchGetPostCheck(), SNESLineSearchSetPreCheck(), SNESLineSearchGetPreCheck()
+.seealso: `SNESCreate()`, `SNESDestroy()`, `SNESSetFunction()`, `SNESSetJacobian()`, `SNESSetGridSequence()`, `SNESGetSolution()`,
+          `SNESNewtonTRSetPreCheck()`, `SNESNewtonTRGetPreCheck()`, `SNESNewtonTRSetPostCheck()`, `SNESNewtonTRGetPostCheck()`,
+          `SNESLineSearchSetPostCheck()`, `SNESLineSearchGetPostCheck()`, `SNESLineSearchSetPreCheck()`, `SNESLineSearchGetPreCheck()`
 @*/
 PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
 {
@@ -4837,7 +4837,7 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
 
   Level: intermediate
 
-.seealso: SNESType, SNESCreate(), SNESDestroy(), SNESGetType(), SNESSetFromOptions()
+.seealso: `SNESType`, `SNESCreate()`, `SNESDestroy()`, `SNESGetType()`, `SNESSetFromOptions()`
 
 @*/
 PetscErrorCode  SNESSetType(SNES snes,SNESType type)
@@ -4943,7 +4943,7 @@ PetscErrorCode SNESSetSolution(SNES snes, Vec u)
 
    Level: intermediate
 
-.seealso:  SNESGetSolutionUpdate(), SNESGetFunction()
+.seealso: `SNESGetSolutionUpdate()`, `SNESGetFunction()`
 @*/
 PetscErrorCode  SNESGetSolution(SNES snes,Vec *x)
 {
@@ -4968,7 +4968,7 @@ PetscErrorCode  SNESGetSolution(SNES snes,Vec *x)
 
    Level: advanced
 
-.seealso: SNESGetSolution(), SNESGetFunction()
+.seealso: `SNESGetSolution()`, `SNESGetFunction()`
 @*/
 PetscErrorCode  SNESGetSolutionUpdate(SNES snes,Vec *x)
 {
@@ -4996,7 +4996,7 @@ PetscErrorCode  SNESGetSolutionUpdate(SNES snes,Vec *x)
 
     Notes: The vector r DOES NOT, in general contain the current value of the SNES nonlinear function
 
-.seealso: SNESSetFunction(), SNESGetSolution(), SNESFunction
+.seealso: `SNESSetFunction()`, `SNESGetSolution()`, `SNESFunction`
 @*/
 PetscErrorCode  SNESGetFunction(SNES snes,Vec *r,PetscErrorCode (**f)(SNES,Vec,Vec,void*),void **ctx)
 {
@@ -5033,7 +5033,7 @@ PetscErrorCode  SNESGetFunction(SNES snes,Vec *r,PetscErrorCode (**f)(SNES,Vec,V
 
    Level: advanced
 
-.seealso: SNESSetNGS(), SNESGetFunction()
+.seealso: `SNESSetNGS()`, `SNESGetFunction()`
 @*/
 
 PetscErrorCode SNESGetNGS (SNES snes, PetscErrorCode (**f)(SNES, Vec, Vec, void*), void ** ctx)
@@ -5063,7 +5063,7 @@ PetscErrorCode SNESGetNGS (SNES snes, PetscErrorCode (**f)(SNES, Vec, Vec, void*
 
    Level: advanced
 
-.seealso: SNESSetFromOptions()
+.seealso: `SNESSetFromOptions()`
 @*/
 PetscErrorCode  SNESSetOptionsPrefix(SNES snes,const char prefix[])
 {
@@ -5095,7 +5095,7 @@ PetscErrorCode  SNESSetOptionsPrefix(SNES snes,const char prefix[])
 
    Level: advanced
 
-.seealso: SNESGetOptionsPrefix()
+.seealso: `SNESGetOptionsPrefix()`
 @*/
 PetscErrorCode  SNESAppendOptionsPrefix(SNES snes,const char prefix[])
 {
@@ -5129,7 +5129,7 @@ PetscErrorCode  SNESAppendOptionsPrefix(SNES snes,const char prefix[])
 
    Level: advanced
 
-.seealso: SNESAppendOptionsPrefix()
+.seealso: `SNESAppendOptionsPrefix()`
 @*/
 PetscErrorCode  SNESGetOptionsPrefix(SNES snes,const char *prefix[])
 {
@@ -5165,7 +5165,7 @@ $     -snes_type my_solver
 
     Note: If your function is not being put into a shared library then use SNESRegister() instead
 
-.seealso: SNESRegisterAll(), SNESRegisterDestroy()
+.seealso: `SNESRegisterAll()`, `SNESRegisterDestroy()`
 
   Level: advanced
 @*/
@@ -5244,7 +5244,7 @@ PetscErrorCode  SNESTestLocalMin(SNES snes)
    S. C. Eisenstat and H. F. Walker, "Choosing the forcing terms in an
    inexact Newton method", SISC 17 (1), pp.16-32, 1996.
 
-.seealso: SNESKSPGetUseEW(), SNESKSPGetParametersEW(), SNESKSPSetParametersEW()
+.seealso: `SNESKSPGetUseEW()`, `SNESKSPGetParametersEW()`, `SNESKSPSetParametersEW()`
 @*/
 PetscErrorCode  SNESKSPSetUseEW(SNES snes,PetscBool flag)
 {
@@ -5281,7 +5281,7 @@ PetscErrorCode  SNESKSPSetUseEW(SNES snes,PetscBool flag)
    S. C. Eisenstat and H. F. Walker, "Choosing the forcing terms in an
    inexact Newton method", SISC 17 (1), pp.16-32, 1996.
 
-.seealso: SNESKSPSetUseEW(), SNESKSPGetParametersEW(), SNESKSPSetParametersEW()
+.seealso: `SNESKSPSetUseEW()`, `SNESKSPGetParametersEW()`, `SNESKSPSetParametersEW()`
 @*/
 PetscErrorCode  SNESKSPGetUseEW(SNES snes, PetscBool  *flag)
 {
@@ -5322,7 +5322,7 @@ PetscErrorCode  SNESKSPGetUseEW(SNES snes, PetscBool  *flag)
    inexact Newton method", Utah State University Math. Stat. Dept. Res.
    Report 6/94/75, June, 1994, to appear in SIAM J. Sci. Comput.
 
-.seealso: SNESKSPSetUseEW(), SNESKSPGetUseEW(), SNESKSPGetParametersEW()
+.seealso: `SNESKSPSetUseEW()`, `SNESKSPGetUseEW()`, `SNESKSPGetParametersEW()`
 @*/
 PetscErrorCode  SNESKSPSetParametersEW(SNES snes,PetscInt version,PetscReal rtol_0,PetscReal rtol_max,PetscReal gamma,PetscReal alpha,PetscReal alpha2,PetscReal threshold)
 {
@@ -5378,7 +5378,7 @@ PetscErrorCode  SNESKSPSetParametersEW(SNES snes,PetscInt version,PetscReal rtol
 
    Level: advanced
 
-.seealso: SNESKSPSetUseEW(), SNESKSPGetUseEW(), SNESKSPSetParametersEW()
+.seealso: `SNESKSPSetUseEW()`, `SNESKSPGetUseEW()`, `SNESKSPSetParametersEW()`
 @*/
 PetscErrorCode  SNESKSPGetParametersEW(SNES snes,PetscInt *version,PetscReal *rtol_0,PetscReal *rtol_max,PetscReal *gamma,PetscReal *alpha,PetscReal *alpha2,PetscReal *threshold)
 {
@@ -5489,7 +5489,7 @@ PetscErrorCode KSPPostSolve_SNESEW(KSP ksp, Vec b, Vec x, SNES snes)
 
    Level: beginner
 
-.seealso: KSPGetPC(), SNESCreate(), KSPCreate(), SNESSetKSP()
+.seealso: `KSPGetPC()`, `SNESCreate()`, `KSPCreate()`, `SNESSetKSP()`
 @*/
 PetscErrorCode  SNESGetKSP(SNES snes,KSP *ksp)
 {
@@ -5529,7 +5529,7 @@ PetscErrorCode  SNESGetKSP(SNES snes,KSP *ksp)
 
    Level: intermediate
 
-.seealso: SNESGetDM(), KSPSetDM(), KSPGetDM()
+.seealso: `SNESGetDM()`, `KSPSetDM()`, `KSPGetDM()`
 @*/
 PetscErrorCode  SNESSetDM(SNES snes,DM dm)
 {
@@ -5575,7 +5575,7 @@ PetscErrorCode  SNESSetDM(SNES snes,DM dm)
 
    Level: intermediate
 
-.seealso: SNESSetDM(), KSPSetDM(), KSPGetDM()
+.seealso: `SNESSetDM()`, `KSPSetDM()`, `KSPGetDM()`
 @*/
 PetscErrorCode  SNESGetDM(SNES snes,DM *dm)
 {
@@ -5604,7 +5604,7 @@ PetscErrorCode  SNESGetDM(SNES snes,DM *dm)
 
   Level: developer
 
-.seealso: SNESGetNPC(), SNESHasNPC()
+.seealso: `SNESGetNPC()`, `SNESHasNPC()`
 @*/
 PetscErrorCode SNESSetNPC(SNES snes, SNES pc)
 {
@@ -5641,7 +5641,7 @@ PetscErrorCode SNESSetNPC(SNES snes, SNES pc)
 
   Level: developer
 
-.seealso: SNESSetNPC(), SNESHasNPC(), SNES, SNESCreate()
+.seealso: `SNESSetNPC()`, `SNESHasNPC()`, `SNES`, `SNESCreate()`
 @*/
 PetscErrorCode SNESGetNPC(SNES snes, SNES *pc)
 {
@@ -5676,7 +5676,7 @@ PetscErrorCode SNESGetNPC(SNES snes, SNES *pc)
 
   Level: developer
 
-.seealso: SNESSetNPC(), SNESGetNPC()
+.seealso: `SNESSetNPC()`, `SNESGetNPC()`
 @*/
 PetscErrorCode SNESHasNPC(SNES snes, PetscBool *has_npc)
 {
@@ -5709,7 +5709,7 @@ PetscErrorCode SNESHasNPC(SNES snes, PetscBool *has_npc)
 
     Level: intermediate
 
-.seealso: SNESGetNPCSide(), KSPSetPCSide()
+.seealso: `SNESGetNPCSide()`, `KSPSetPCSide()`
 @*/
 PetscErrorCode  SNESSetNPCSide(SNES snes,PCSide side)
 {
@@ -5739,7 +5739,7 @@ PetscErrorCode  SNESSetNPCSide(SNES snes,PCSide side)
 
     Level: intermediate
 
-.seealso: SNESSetNPCSide(), KSPGetPCSide()
+.seealso: `SNESSetNPCSide()`, `KSPGetPCSide()`
 @*/
 PetscErrorCode  SNESGetNPCSide(SNES snes,PCSide *side)
 {
@@ -5765,7 +5765,7 @@ PetscErrorCode  SNESGetNPCSide(SNES snes,PCSide *side)
 
   Level: developer
 
-.seealso: SNESGetLineSearch()
+.seealso: `SNESGetLineSearch()`
 @*/
 PetscErrorCode SNESSetLineSearch(SNES snes, SNESLineSearch linesearch)
 {
@@ -5796,7 +5796,7 @@ PetscErrorCode SNESSetLineSearch(SNES snes, SNESLineSearch linesearch)
 
   Level: beginner
 
-.seealso: SNESSetLineSearch(), SNESLineSearchCreate()
+.seealso: `SNESSetLineSearch()`, `SNESLineSearchCreate()`
 @*/
 PetscErrorCode SNESGetLineSearch(SNES snes, SNESLineSearch *linesearch)
 {

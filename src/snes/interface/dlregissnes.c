@@ -10,7 +10,7 @@ static PetscBool SNESPackageInitialized = PETSC_FALSE;
 
   Level: developer
 
-.seealso: PetscFinalize()
+.seealso: `PetscFinalize()`
 @*/
 PetscErrorCode  SNESFinalizePackage(void)
 {
@@ -30,7 +30,7 @@ PetscErrorCode  SNESFinalizePackage(void)
 
   Level: developer
 
-.seealso: PetscInitialize()
+.seealso: `PetscInitialize()`
 @*/
 PetscErrorCode  SNESInitializePackage(void)
 {

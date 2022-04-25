@@ -201,7 +201,7 @@ PetscErrorCode VecReplaceArray_SeqCUDA(Vec vin,const PetscScalar *a)
 
  Level: intermediate
 
- .seealso: VecCreateMPICUDA(), VecCreateMPI(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost()
+ .seealso: `VecCreateMPICUDA()`, `VecCreateMPI()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateGhost()`
  @*/
 PetscErrorCode VecCreateSeqCUDA(MPI_Comm comm,PetscInt n,Vec *v)
 {
@@ -262,9 +262,9 @@ PetscErrorCode VecCreate_SeqCUDA(Vec V)
 
    Level: intermediate
 
-.seealso: VecCreateMPICUDAWithArray(), VecCreate(), VecDuplicate(), VecDuplicateVecs(),
-          VecCreateGhost(), VecCreateSeq(), VecCUDAPlaceArray(), VecCreateSeqWithArray(),
-          VecCreateMPIWithArray()
+.seealso: `VecCreateMPICUDAWithArray()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`,
+          `VecCreateGhost()`, `VecCreateSeq()`, `VecCUDAPlaceArray()`, `VecCreateSeqWithArray()`,
+          `VecCreateMPIWithArray()`
 @*/
 PetscErrorCode  VecCreateSeqCUDAWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,const PetscScalar array[],Vec *V)
 {
@@ -303,9 +303,9 @@ PetscErrorCode  VecCreateSeqCUDAWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,c
 
    Level: intermediate
 
-.seealso: VecCreateMPICUDAWithArrays(), VecCreate(), VecCreateSeqWithArray(),
-          VecCUDAPlaceArray(), VecCreateSeqCUDAWithArray(),
-          VecCUDAAllocateCheckHost()
+.seealso: `VecCreateMPICUDAWithArrays()`, `VecCreate()`, `VecCreateSeqWithArray()`,
+          `VecCUDAPlaceArray()`, `VecCreateSeqCUDAWithArray()`,
+          `VecCUDAAllocateCheckHost()`
 @*/
 PetscErrorCode  VecCreateSeqCUDAWithArrays(MPI_Comm comm,PetscInt bs,PetscInt n,const PetscScalar cpuarray[],const PetscScalar gpuarray[],Vec *V)
 {

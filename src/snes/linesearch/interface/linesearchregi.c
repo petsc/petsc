@@ -15,7 +15,7 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_NCGLinear(SNESLineSearch);
 
    Level: advanced
 
-.seealso:  SNESLineSearchRegisterDestroy()
+.seealso: `SNESLineSearchRegisterDestroy()`
 @*/
 PetscErrorCode SNESLineSearchRegisterAll(void)
 {

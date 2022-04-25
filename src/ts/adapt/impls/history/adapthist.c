@@ -73,7 +73,7 @@ PetscErrorCode TSAdaptHistorySetTSHistory(TSAdapt adapt, TSHistory hist, PetscBo
 
    Level: advanced
 
-.seealso: TSGetAdapt(), TSAdaptSetType(), TSAdaptHistorySetTrajectory(), TSADAPTHISTORY
+.seealso: `TSGetAdapt()`, `TSAdaptSetType()`, `TSAdaptHistorySetTrajectory()`, `TSADAPTHISTORY`
 @*/
 PetscErrorCode TSAdaptHistoryGetStep(TSAdapt adapt, PetscInt step, PetscReal *t, PetscReal *dt)
 {
@@ -106,7 +106,7 @@ PetscErrorCode TSAdaptHistoryGetStep(TSAdapt adapt, PetscInt step, PetscReal *t,
 
    Level: advanced
 
-.seealso: TSGetAdapt(), TSAdaptSetType(), TSAdaptHistorySetTrajectory(), TSADAPTHISTORY
+.seealso: `TSGetAdapt()`, `TSAdaptSetType()`, `TSAdaptHistorySetTrajectory()`, `TSADAPTHISTORY`
 @*/
 PetscErrorCode TSAdaptHistorySetHistory(TSAdapt adapt, PetscInt n, PetscReal hist[], PetscBool backward)
 {
@@ -142,7 +142,7 @@ PetscErrorCode TSAdaptHistorySetHistory(TSAdapt adapt, PetscInt n, PetscReal his
 
    Level: advanced
 
-.seealso: TSGetAdapt(), TSAdaptSetType(), TSAdaptHistorySetHistory(), TSADAPTHISTORY
+.seealso: `TSGetAdapt()`, `TSAdaptSetType()`, `TSAdaptHistorySetHistory()`, `TSADAPTHISTORY`
 @*/
 PetscErrorCode TSAdaptHistorySetTrajectory(TSAdapt adapt, TSTrajectory tj, PetscBool backward)
 {
@@ -163,7 +163,7 @@ PetscErrorCode TSAdaptHistorySetTrajectory(TSAdapt adapt, TSTrajectory tj, Petsc
 
    Level: developer
 
-.seealso: TS, TSAdapt, TSGetAdapt(), TSAdaptHistorySetHistory()
+.seealso: `TS`, `TSAdapt`, `TSGetAdapt()`, `TSAdaptHistorySetHistory()`
 M*/
 PETSC_EXTERN PetscErrorCode TSAdaptCreate_History(TSAdapt adapt)
 {

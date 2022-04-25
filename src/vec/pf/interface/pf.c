@@ -22,7 +22,7 @@ PetscBool         PFRegisterAllCalled = PETSC_FALSE;
 
    Level: beginner
 
-.seealso: PFCreate(), PFDestroy(), PFSetType(), PFApply(), PFApplyVec()
+.seealso: `PFCreate()`, `PFDestroy()`, `PFSetType()`, `PFApply()`, `PFApplyVec()`
 @*/
 PetscErrorCode  PFSet(PF pf,PetscErrorCode (*apply)(void*,PetscInt,const PetscScalar*,PetscScalar*),PetscErrorCode (*applyvec)(void*,Vec,Vec),PetscErrorCode (*view)(void*,PetscViewer),PetscErrorCode (*destroy)(void*),void*ctx)
 {
@@ -46,7 +46,7 @@ PetscErrorCode  PFSet(PF pf,PetscErrorCode (*apply)(void*,PetscInt,const PetscSc
 
    Level: beginner
 
-.seealso: PFCreate(), PFSet(), PFSetType()
+.seealso: `PFCreate()`, `PFSet()`, `PFSetType()`
 @*/
 PetscErrorCode  PFDestroy(PF *pf)
 {
@@ -79,7 +79,7 @@ PetscErrorCode  PFDestroy(PF *pf)
 
    Level: developer
 
-.seealso: PFSet(), PFApply(), PFDestroy(), PFApplyVec()
+.seealso: `PFSet()`, `PFApply()`, `PFDestroy()`, `PFApplyVec()`
 @*/
 PetscErrorCode  PFCreate(MPI_Comm comm,PetscInt dimin,PetscInt dimout,PF *pf)
 {
@@ -120,7 +120,7 @@ PetscErrorCode  PFCreate(MPI_Comm comm,PetscInt dimin,PetscInt dimout,PF *pf)
 
    Level: beginner
 
-.seealso: PFApply(), PFCreate(), PFDestroy(), PFSetType(), PFSet()
+.seealso: `PFApply()`, `PFCreate()`, `PFDestroy()`, `PFSetType()`, `PFSet()`
 @*/
 PetscErrorCode  PFApplyVec(PF pf,Vec x,Vec y)
 {
@@ -192,7 +192,7 @@ PetscErrorCode  PFApplyVec(PF pf,Vec x,Vec y)
 
    Notes:
 
-.seealso: PFApplyVec(), PFCreate(), PFDestroy(), PFSetType(), PFSet()
+.seealso: `PFApplyVec()`, `PFCreate()`, `PFDestroy()`, `PFSetType()`, `PFSet()`
 @*/
 PetscErrorCode  PFApply(PF pf,PetscInt n,const PetscScalar *x,PetscScalar *y)
 {
@@ -218,7 +218,7 @@ PetscErrorCode  PFApply(PF pf,PetscInt n,const PetscScalar *x,PetscScalar *y)
 -  name - command line option
 
    Level: intermediate
-.seealso:  PF, PFView, PetscObjectViewFromOptions(), PFCreate()
+.seealso: `PF`, `PFView`, `PetscObjectViewFromOptions()`, `PFCreate()`
 @*/
 PetscErrorCode  PFViewFromOptions(PF A,PetscObject obj,const char name[])
 {
@@ -250,7 +250,7 @@ PetscErrorCode  PFViewFromOptions(PF A,PetscObject obj,const char name[])
 
    Level: developer
 
-.seealso: PetscViewerCreate(), PetscViewerASCIIOpen()
+.seealso: `PetscViewerCreate()`, `PetscViewerASCIIOpen()`
 @*/
 PetscErrorCode  PFView(PF pf,PetscViewer viewer)
 {
@@ -302,7 +302,7 @@ $     -pf_type my_function
 
    Level: advanced
 
-.seealso: PFRegisterAll(), PFRegisterDestroy(), PFRegister()
+.seealso: `PFRegisterAll()`, `PFRegisterDestroy()`, `PFRegister()`
 @*/
 PetscErrorCode  PFRegister(const char sname[],PetscErrorCode (*function)(PF,void*))
 {
@@ -326,7 +326,7 @@ PetscErrorCode  PFRegister(const char sname[],PetscErrorCode (*function)(PF,void
 
    Level: intermediate
 
-.seealso: PFSetType()
+.seealso: `PFSetType()`
 
 @*/
 PetscErrorCode  PFGetType(PF pf,PFType *type)
@@ -357,7 +357,7 @@ PetscErrorCode  PFGetType(PF pf,PFType *type)
 
   Level: intermediate
 
-.seealso: PFSet(), PFRegister(), PFCreate(), DMDACreatePF()
+.seealso: `PFSet()`, `PFRegister()`, `PFCreate()`, `DMDACreatePF()`
 
 @*/
 PetscErrorCode  PFSetType(PF pf,PFType type,void *ctx)
@@ -438,7 +438,7 @@ static PetscBool PFPackageInitialized = PETSC_FALSE;
 
   Level: developer
 
-.seealso: PetscFinalize()
+.seealso: `PetscFinalize()`
 @*/
 PetscErrorCode  PFFinalizePackage(void)
 {
@@ -456,7 +456,7 @@ PetscErrorCode  PFFinalizePackage(void)
 
   Level: developer
 
-.seealso: PetscInitialize()
+.seealso: `PetscInitialize()`
 @*/
 PetscErrorCode  PFInitializePackage(void)
 {

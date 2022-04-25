@@ -130,7 +130,7 @@ PetscErrorCode PetscObjectViewFromOptions(PetscObject obj,PetscObject bobj,const
 
    Level: intermediate
 
-.seealso: VecGetType(), KSPGetType(), PCGetType(), SNESGetType(), PetscObjectBaseTypeCompare(), PetscObjectTypeCompareAny(), PetscObjectBaseTypeCompareAny()
+.seealso: `VecGetType()`, `KSPGetType()`, `PCGetType()`, `SNESGetType()`, `PetscObjectBaseTypeCompare()`, `PetscObjectTypeCompareAny()`, `PetscObjectBaseTypeCompareAny()`
 
 @*/
 PetscErrorCode  PetscObjectTypeCompare(PetscObject obj,const char type_name[],PetscBool  *same)
@@ -162,7 +162,7 @@ PetscErrorCode  PetscObjectTypeCompare(PetscObject obj,const char type_name[],Pe
 
    Level: intermediate
 
-.seealso: PetscObjectTypeCompare(), PetscObjectTypeCompareAny(), PetscObjectBaseTypeCompareAny()
+.seealso: `PetscObjectTypeCompare()`, `PetscObjectTypeCompareAny()`, `PetscObjectBaseTypeCompareAny()`
 
 @*/
 PetscErrorCode  PetscObjectBaseTypeCompare(PetscObject obj,const char type_name[],PetscBool  *same)
@@ -195,7 +195,7 @@ PetscErrorCode  PetscObjectBaseTypeCompare(PetscObject obj,const char type_name[
 
    Level: intermediate
 
-.seealso: VecGetType(), KSPGetType(), PCGetType(), SNESGetType(), PetscObjectTypeCompare(), PetscObjectBaseTypeCompare(), PetscObjectTypeCompareAny()
+.seealso: `VecGetType()`, `KSPGetType()`, `PCGetType()`, `SNESGetType()`, `PetscObjectTypeCompare()`, `PetscObjectBaseTypeCompare()`, `PetscObjectTypeCompareAny()`
 
 @*/
 PetscErrorCode PetscObjectTypeCompareAny(PetscObject obj,PetscBool *match,const char type_name[],...)
@@ -235,7 +235,7 @@ PetscErrorCode PetscObjectTypeCompareAny(PetscObject obj,PetscBool *match,const 
 
    Level: intermediate
 
-.seealso: VecGetType(), KSPGetType(), PCGetType(), SNESGetType(), PetscObjectTypeCompare(), PetscObjectBaseTypeCompare(), PetscObjectTypeCompareAny()
+.seealso: `VecGetType()`, `KSPGetType()`, `PCGetType()`, `SNESGetType()`, `PetscObjectTypeCompare()`, `PetscObjectBaseTypeCompare()`, `PetscObjectTypeCompareAny()`
 
 @*/
 PetscErrorCode PetscObjectBaseTypeCompareAny(PetscObject obj,PetscBool *match,const char type_name[],...)
@@ -280,7 +280,7 @@ static PetscObject PetscObjectRegisterDestroy_Objects[MAXREGDESOBJS];
       This is used by, for example, PETSC_VIEWER_XXX_() routines to free the viewer
     when PETSc ends.
 
-.seealso: PetscObjectRegisterDestroyAll()
+.seealso: `PetscObjectRegisterDestroyAll()`
 @*/
 PetscErrorCode  PetscObjectRegisterDestroy(PetscObject obj)
 {
@@ -299,7 +299,7 @@ PetscErrorCode  PetscObjectRegisterDestroy(PetscObject obj)
 
    Level: developer
 
-.seealso: PetscObjectRegisterDestroy()
+.seealso: `PetscObjectRegisterDestroy()`
 @*/
 PetscErrorCode  PetscObjectRegisterDestroyAll(void)
 {
@@ -326,7 +326,7 @@ static PetscErrorCode (*PetscRegisterFinalize_Functions[MAXREGFIN])(void);
    Notes:
       This is used by, for example, DMInitializePackage() to have DMFinalizePackage() called
 
-.seealso: PetscRegisterFinalizeAll()
+.seealso: `PetscRegisterFinalizeAll()`
 @*/
 PetscErrorCode  PetscRegisterFinalize(PetscErrorCode (*f)(void))
 {
@@ -346,7 +346,7 @@ PetscErrorCode  PetscRegisterFinalize(PetscErrorCode (*f)(void))
 
    Level: developer
 
-.seealso: PetscRegisterFinalize()
+.seealso: `PetscRegisterFinalize()`
 @*/
 PetscErrorCode  PetscRegisterFinalizeAll(void)
 {

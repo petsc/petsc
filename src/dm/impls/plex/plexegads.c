@@ -109,7 +109,7 @@ PetscErrorCode DMPlexSnapToGeomModel_EGADS_Internal(DM dm, PetscInt p, ego model
 
   Level: intermediate
 
-.seealso: DMRefine(), DMPlexCreate(), DMPlexSetRefinementUniform()
+.seealso: `DMRefine()`, `DMPlexCreate()`, `DMPlexSetRefinementUniform()`
 @*/
 PetscErrorCode DMPlexSnapToGeomModel(DM dm, PetscInt p, PetscInt dE, const PetscScalar mcoords[], PetscScalar gcoords[])
 {
@@ -1397,7 +1397,7 @@ static PetscErrorCode DMPlexCreateEGADS_Tess_Internal(MPI_Comm comm, ego context
 
   Level: intermediate
 
-.seealso: DMPLEX, DMCreate(), DMPlexCreateEGADS()
+.seealso: `DMPLEX`, `DMCreate()`, `DMPlexCreateEGADS()`
 @*/
 PetscErrorCode DMPlexInflateToGeomModel(DM dm)
 {
@@ -1481,7 +1481,7 @@ PetscErrorCode DMPlexInflateToGeomModel(DM dm)
 
   Level: beginner
 
-.seealso: DMPLEX, DMCreate(), DMPlexCreateEGADS(), DMPlexCreateEGADSLiteFromFile()
+.seealso: `DMPLEX`, `DMCreate()`, `DMPlexCreateEGADS()`, `DMPlexCreateEGADSLiteFromFile()`
 @*/
 PetscErrorCode DMPlexCreateEGADSFromFile(MPI_Comm comm, const char filename[], DM *dm)
 {

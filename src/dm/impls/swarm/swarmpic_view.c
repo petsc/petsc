@@ -335,7 +335,7 @@ PetscErrorCode private_ISView_Swarm_XDMF(IS is,PetscViewer viewer)
    Notes:
    Only fields registered with data type PETSC_DOUBLE or PETSC_INT can be written into the file
 
-.seealso: DMSwarmViewXDMF()
+.seealso: `DMSwarmViewXDMF()`
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmViewFieldsXDMF(DM dm,const char filename[],PetscInt nfields,const char *field_name_list[])
 {
@@ -394,7 +394,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmViewFieldsXDMF(DM dm,const char filename[],Pe
    Developer Notes:
      This should be removed and replaced with the standard use of PetscViewer
 
-.seealso: DMSwarmViewFieldsXDMF()
+.seealso: `DMSwarmViewFieldsXDMF()`
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmViewXDMF(DM dm,const char filename[])
 {

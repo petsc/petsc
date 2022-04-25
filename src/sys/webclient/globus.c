@@ -100,7 +100,7 @@ PETSC_UNUSED static PetscErrorCode base64_decode(const unsigned char *data,unsig
 
    Level: intermediate
 
-.seealso: PetscGoogleDriveRefresh(), PetscGoogleDriveUpload(), PetscURLShorten(), PetscGlobusUpload()
+.seealso: `PetscGoogleDriveRefresh()`, `PetscGoogleDriveUpload()`, `PetscURLShorten()`, `PetscGlobusUpload()`
 
 @*/
 PetscErrorCode PetscGlobusAuthorize(MPI_Comm comm,char access_token[],size_t tokensize)
@@ -164,7 +164,7 @@ PetscErrorCode PetscGlobusAuthorize(MPI_Comm comm,char access_token[],size_t tok
 
    Level: intermediate
 
-.seealso: PetscGoogleDriveRefresh(), PetscGoogleDriveUpload(), PetscURLShorten(), PetscGlobusUpload(), PetscGlobusAuthorize()
+.seealso: `PetscGoogleDriveRefresh()`, `PetscGoogleDriveUpload()`, `PetscURLShorten()`, `PetscGlobusUpload()`, `PetscGlobusAuthorize()`
 
 @*/
 PetscErrorCode PetscGlobusGetTransfers(MPI_Comm comm,const char access_token[],char buff[],size_t buffsize)
@@ -214,7 +214,7 @@ PetscErrorCode PetscGlobusGetTransfers(MPI_Comm comm,const char access_token[],c
 
    Level: intermediate
 
-.seealso: PetscURLShorten(), PetscGoogleDriveAuthorize(), PetscGoogleDriveRefresh(), PetscGlobusAuthorize()
+.seealso: `PetscURLShorten()`, `PetscGoogleDriveAuthorize()`, `PetscGoogleDriveRefresh()`, `PetscGlobusAuthorize()`
 
 @*/
 PetscErrorCode PetscGlobusUpload(MPI_Comm comm,const char access_token[],const char filename[])

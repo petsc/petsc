@@ -78,7 +78,7 @@ static PetscErrorCode SNESTR_Converged_Private(SNES snes,PetscInt it,PetscReal x
 
    Note: This function is called BEFORE the function evaluation within the SNESNEWTONTR solver.
 
-.seealso: SNESNewtonTRPreCheck(), SNESNewtonTRGetPreCheck(), SNESNewtonTRSetPostCheck(), SNESNewtonTRGetPostCheck()
+.seealso: `SNESNewtonTRPreCheck()`, `SNESNewtonTRGetPreCheck()`, `SNESNewtonTRSetPostCheck()`, `SNESNewtonTRGetPostCheck()`
 @*/
 PetscErrorCode  SNESNewtonTRSetPreCheck(SNES snes, PetscErrorCode (*func)(SNES,Vec,Vec,PetscBool*,void*),void *ctx)
 {
@@ -105,7 +105,7 @@ PetscErrorCode  SNESNewtonTRSetPreCheck(SNES snes, PetscErrorCode (*func)(SNES,V
 
    Level: intermediate
 
-.seealso: SNESNewtonTRSetPreCheck(), SNESNewtonTRPreCheck()
+.seealso: `SNESNewtonTRSetPreCheck()`, `SNESNewtonTRPreCheck()`
 @*/
 PetscErrorCode  SNESNewtonTRGetPreCheck(SNES snes, PetscErrorCode (**func)(SNES,Vec,Vec,PetscBool*,void*),void **ctx)
 {
@@ -134,7 +134,7 @@ PetscErrorCode  SNESNewtonTRGetPreCheck(SNES snes, PetscErrorCode (**func)(SNES,
    Note: This function is called BEFORE the function evaluation within the SNESNEWTONTR solver while the function set in
    SNESLineSearchSetPostCheck() is called AFTER the function evaluation.
 
-.seealso: SNESNewtonTRPostCheck(), SNESNewtonTRGetPostCheck()
+.seealso: `SNESNewtonTRPostCheck()`, `SNESNewtonTRGetPostCheck()`
 @*/
 PetscErrorCode  SNESNewtonTRSetPostCheck(SNES snes,PetscErrorCode (*func)(SNES,Vec,Vec,Vec,PetscBool*,PetscBool*,void*),void *ctx)
 {
@@ -161,7 +161,7 @@ PetscErrorCode  SNESNewtonTRSetPostCheck(SNES snes,PetscErrorCode (*func)(SNES,V
 
    Level: intermediate
 
-.seealso: SNESNewtonTRSetPostCheck(), SNESNewtonTRPostCheck()
+.seealso: `SNESNewtonTRSetPostCheck()`, `SNESNewtonTRPostCheck()`
 @*/
 PetscErrorCode  SNESNewtonTRGetPostCheck(SNES snes,PetscErrorCode (**func)(SNES,Vec,Vec,Vec,PetscBool*,PetscBool*,void*),void **ctx)
 {
@@ -189,7 +189,7 @@ PetscErrorCode  SNESNewtonTRGetPostCheck(SNES snes,PetscErrorCode (**func)(SNES,
 
    Level: developer
 
-.seealso: SNESNewtonTRSetPreCheck(), SNESNewtonTRGetPreCheck()
+.seealso: `SNESNewtonTRSetPreCheck()`, `SNESNewtonTRGetPreCheck()`
 @*/
 static PetscErrorCode SNESNewtonTRPreCheck(SNES snes,Vec X,Vec Y,PetscBool *changed_Y)
 {
@@ -224,7 +224,7 @@ static PetscErrorCode SNESNewtonTRPreCheck(SNES snes,Vec X,Vec Y,PetscBool *chan
 
    Level: developer
 
-.seealso: SNESNewtonTRSetPostCheck(), SNESNewtonTRGetPostCheck()
+.seealso: `SNESNewtonTRSetPostCheck()`, `SNESNewtonTRGetPostCheck()`
 @*/
 static PetscErrorCode SNESNewtonTRPostCheck(SNES snes,Vec X,Vec Y,Vec W,PetscBool *changed_Y,PetscBool *changed_W)
 {
@@ -493,7 +493,7 @@ static PetscErrorCode SNESView_NEWTONTR(SNES snes,PetscViewer viewer)
 
    Level: intermediate
 
-.seealso:  SNESCreate(), SNES, SNESSetType(), SNESNEWTONLS, SNESSetTrustRegionTolerance()
+.seealso: `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONLS`, `SNESSetTrustRegionTolerance()`
 
 M*/
 PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONTR(SNES snes)

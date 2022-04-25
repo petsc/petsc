@@ -62,7 +62,7 @@ typedef struct {
 
    Level: advanced
 
-.seealso: TSIRK, TSIRKRegister()
+.seealso: `TSIRK`, `TSIRKRegister()`
 @*/
 PetscErrorCode TSIRKTableauCreate(TS ts,PetscInt nstages,const PetscReal *A,const PetscReal *b,const PetscReal *c,const PetscReal *binterp,const PetscScalar *A_inv,const PetscScalar *A_inv_rowsum,const PetscScalar *I_s)
 {
@@ -189,7 +189,7 @@ $     -ts_irk_type my_scheme
 
    Level: advanced
 
-.seealso: TSIRKRegisterAll()
+.seealso: `TSIRKRegisterAll()`
 @*/
 PetscErrorCode TSIRKRegister(const char sname[],PetscErrorCode (*function)(TS))
 {
@@ -206,7 +206,7 @@ PetscErrorCode TSIRKRegister(const char sname[],PetscErrorCode (*function)(TS))
 
   Level: advanced
 
-.seealso:  TSIRKRegisterDestroy()
+.seealso: `TSIRKRegisterDestroy()`
 @*/
 PetscErrorCode TSIRKRegisterAll(void)
 {
@@ -225,7 +225,7 @@ PetscErrorCode TSIRKRegisterAll(void)
 
    Level: advanced
 
-.seealso: TSIRKRegister(), TSIRKRegisterAll()
+.seealso: `TSIRKRegister()`, `TSIRKRegisterAll()`
 @*/
 PetscErrorCode TSIRKRegisterDestroy(void)
 {
@@ -240,7 +240,7 @@ PetscErrorCode TSIRKRegisterDestroy(void)
 
   Level: developer
 
-.seealso: PetscInitialize()
+.seealso: `PetscInitialize()`
 @*/
 PetscErrorCode TSIRKInitializePackage(void)
 {
@@ -258,7 +258,7 @@ PetscErrorCode TSIRKInitializePackage(void)
 
   Level: developer
 
-.seealso: PetscFinalize()
+.seealso: `PetscFinalize()`
 @*/
 PetscErrorCode TSIRKFinalizePackage(void)
 {
@@ -709,7 +709,7 @@ static PetscErrorCode TSLoad_IRK(TS ts,PetscViewer viewer)
 
   Level: intermediate
 
-.seealso: TSIRKGetType(), TSIRK, TSIRKType, TSIRKGAUSS
+.seealso: `TSIRKGetType()`, `TSIRK`, `TSIRKType`, `TSIRKGAUSS`
 @*/
 PetscErrorCode TSIRKSetType(TS ts,TSIRKType irktype)
 {
@@ -733,7 +733,7 @@ PetscErrorCode TSIRKSetType(TS ts,TSIRKType irktype)
 
   Level: intermediate
 
-.seealso: TSIRKGetType()
+.seealso: `TSIRKGetType()`
 @*/
 PetscErrorCode TSIRKGetType(TS ts,TSIRKType *irktype)
 {
@@ -757,7 +757,7 @@ PetscErrorCode TSIRKGetType(TS ts,TSIRKType *irktype)
 
   Level: intermediate
 
-.seealso: TSIRKGetNumStages(), TSIRK
+.seealso: `TSIRKGetNumStages()`, `TSIRK`
 @*/
 PetscErrorCode TSIRKSetNumStages(TS ts,PetscInt nstages)
 {
@@ -778,7 +778,7 @@ PetscErrorCode TSIRKSetNumStages(TS ts,PetscInt nstages)
 
   Level: intermediate
 
-.seealso: TSIRKSetNumStages(), TSIRK
+.seealso: `TSIRKSetNumStages()`, `TSIRK`
 @*/
 PetscErrorCode TSIRKGetNumStages(TS ts,PetscInt *nstages)
 {
@@ -862,7 +862,7 @@ static PetscErrorCode TSDestroy_IRK(TS ts)
 
   Level: beginner
 
-.seealso:  TSCreate(), TS, TSSetType(), TSIRKSetType(), TSIRKGetType(), TSIRKGAUSS, TSIRKRegister(), TSIRKSetNumStages()
+.seealso: `TSCreate()`, `TS`, `TSSetType()`, `TSIRKSetType()`, `TSIRKGetType()`, `TSIRKGAUSS`, `TSIRKRegister()`, `TSIRKSetNumStages()`
 
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_IRK(TS ts)

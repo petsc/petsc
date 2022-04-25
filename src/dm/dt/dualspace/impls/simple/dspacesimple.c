@@ -103,7 +103,7 @@ static PetscErrorCode PetscDualSpaceSimpleSetFunctional_Simple(PetscDualSpace sp
 
   Level: intermediate
 
-.seealso: PetscDualSpaceSimpleSetFunctional()
+.seealso: `PetscDualSpaceSimpleSetFunctional()`
 @*/
 PetscErrorCode PetscDualSpaceSimpleSetDimension(PetscDualSpace sp, PetscInt dim)
 {
@@ -129,7 +129,7 @@ PetscErrorCode PetscDualSpaceSimpleSetDimension(PetscDualSpace sp, PetscInt dim)
 
   Note: The quadrature will be reweighted so that it has unit volume.
 
-.seealso: PetscDualSpaceSimpleSetDimension()
+.seealso: `PetscDualSpaceSimpleSetDimension()`
 @*/
 PetscErrorCode PetscDualSpaceSimpleSetFunctional(PetscDualSpace sp, PetscInt func, PetscQuadrature q)
 {
@@ -163,7 +163,7 @@ static PetscErrorCode PetscDualSpaceInitialize_Simple(PetscDualSpace sp)
 
   Level: intermediate
 
-.seealso: PetscDualSpaceType, PetscDualSpaceCreate(), PetscDualSpaceSetType()
+.seealso: `PetscDualSpaceType`, `PetscDualSpaceCreate()`, `PetscDualSpaceSetType()`
 M*/
 
 PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Simple(PetscDualSpace sp)

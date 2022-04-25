@@ -18,7 +18,7 @@
 
    Level: intermediate
 
-.seealso: ISExpandIndicesGeneral()
+.seealso: `ISExpandIndicesGeneral()`
 @*/
 PetscErrorCode  ISCompressIndicesGeneral(PetscInt n,PetscInt nkeys,PetscInt bs,PetscInt imax,const IS is_in[],IS is_out[])
 {
@@ -172,7 +172,7 @@ PetscErrorCode  ISCompressIndicesSorted(PetscInt n,PetscInt bs,PetscInt imax,con
 
    Level: intermediate
 
-.seealso: ISCompressIndicesGeneral()
+.seealso: `ISCompressIndicesGeneral()`
 @*/
 PetscErrorCode  ISExpandIndicesGeneral(PetscInt n,PetscInt nkeys,PetscInt bs,PetscInt imax,const IS is_in[],IS is_out[])
 {

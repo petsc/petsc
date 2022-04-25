@@ -14,7 +14,7 @@ typedef struct {
 
    Level: intermediate
 
-.seealso: SNESLineSearchSetLambda(), SNESLineSearchGetTolerances() SNESLINESEARCHBT
+.seealso: `SNESLineSearchSetLambda()`, `SNESLineSearchGetTolerances()` `SNESLINESEARCHBT`
 @*/
 PetscErrorCode SNESLineSearchBTSetAlpha(SNESLineSearch linesearch, PetscReal alpha)
 {
@@ -37,7 +37,7 @@ PetscErrorCode SNESLineSearchBTSetAlpha(SNESLineSearch linesearch, PetscReal alp
 
    Level: intermediate
 
-.seealso: SNESLineSearchGetLambda(), SNESLineSearchGetTolerances() SNESLINESEARCHBT
+.seealso: `SNESLineSearchGetLambda()`, `SNESLineSearchGetTolerances()` `SNESLINESEARCHBT`
 @*/
 PetscErrorCode SNESLineSearchBTGetAlpha(SNESLineSearch linesearch, PetscReal *alpha)
 {
@@ -445,7 +445,7 @@ static PetscErrorCode SNESLineSearchSetFromOptions_BT(PetscOptionItems *PetscOpt
 
    This line search will always produce a step that is less than or equal to, in length, the full step size.
 
-.seealso: SNESLineSearchCreate(), SNESLineSearchSetType()
+.seealso: `SNESLineSearchCreate()`, `SNESLineSearchSetType()`
 M*/
 PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_BT(SNESLineSearch linesearch)
 {

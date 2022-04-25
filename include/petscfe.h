@@ -36,7 +36,7 @@ PETSC_EXTERN PetscClassId PETSCSPACE_CLASSID;
 
   Level: beginner
 
-.seealso: PetscSpaceSetType(), PetscSpace
+.seealso: `PetscSpaceSetType()`, `PetscSpace`
 J*/
 typedef const char* PetscSpaceType;
 #define PETSCSPACEPOLYNOMIAL "poly"
@@ -107,7 +107,7 @@ PETSC_EXTERN PetscClassId PETSCDUALSPACE_CLASSID;
 
   Level: beginner
 
-.seealso: PetscDualSpaceSetType(), PetscDualSpace
+.seealso: `PetscDualSpaceSetType()`, `PetscDualSpace`
 J*/
 typedef const char *PetscDualSpaceType;
 #define PETSCDUALSPACELAGRANGE "lagrange"
@@ -125,7 +125,7 @@ typedef const char *PetscDualSpaceType;
   set for H-div conforming spaces. The type of the dual space is then changed to
   to PETSCDUALSPACELAGRANGE.
 
-.seealso: PetscDualSpaceType, PetscDualSpaceCreate(), PetscDualSpaceSetType(), PETSCDUALSPACELAGRANGE, PetscDualSpaceSetFormDegree()
+.seealso: `PetscDualSpaceType`, `PetscDualSpaceCreate()`, `PetscDualSpaceSetType()`, `PETSCDUALSPACELAGRANGE`, `PetscDualSpaceSetFormDegree()`
 M*/
 
 PETSC_EXTERN PetscFunctionList PetscDualSpaceList;
@@ -220,7 +220,7 @@ PETSC_EXTERN PetscClassId PETSCFE_CLASSID;
 
   Note: Currently, the classes are concerned with the implementation of element integration
 
-.seealso: PetscFESetType(), PetscFE
+.seealso: `PetscFESetType()`, `PetscFE`
 J*/
 typedef const char *PetscFEType;
 #define PETSCFEBASIC     "basic"

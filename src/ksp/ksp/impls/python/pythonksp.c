@@ -14,7 +14,7 @@
 
    Level: intermediate
 
-.seealso: KSPCreate(), KSPSetType(), KSPPYTHON, PetscPythonInitialize()
+.seealso: `KSPCreate()`, `KSPSetType()`, `KSPPYTHON`, `PetscPythonInitialize()`
 @*/
 PetscErrorCode  KSPPythonSetType(KSP ksp,const char pyname[])
 {

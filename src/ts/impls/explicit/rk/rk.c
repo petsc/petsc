@@ -29,7 +29,7 @@ static RKTableauLink RKTableauList;
 
      Level: advanced
 
-.seealso: TSRK, TSRKType, TSRKSetType()
+.seealso: `TSRK`, `TSRKType`, `TSRKSetType()`
 M*/
 /*MC
      TSRK2A - Second order RK scheme (Heun's method).
@@ -41,7 +41,7 @@ M*/
 
      Level: advanced
 
-.seealso: TSRK, TSRKType, TSRKSetType()
+.seealso: `TSRK`, `TSRKType`, `TSRKSetType()`
 M*/
 /*MC
      TSRK2B - Second order RK scheme (the midpoint method).
@@ -53,7 +53,7 @@ M*/
 
      Level: advanced
 
-.seealso: TSRK, TSRKType, TSRKSetType()
+.seealso: `TSRK`, `TSRKType`, `TSRKSetType()`
 M*/
 /*MC
      TSRK3 - Third order RK scheme.
@@ -65,7 +65,7 @@ M*/
 
      Level: advanced
 
-.seealso: TSRK, TSRKType, TSRKSetType()
+.seealso: `TSRK`, `TSRKType`, `TSRKSetType()`
 M*/
 /*MC
      TSRK3BS - Third order RK scheme of Bogacki-Shampine with 2nd order embedded method.
@@ -80,7 +80,7 @@ M*/
      References:
 . * - https://doi.org/10.1016/0893-9659(89)90079-7
 
-.seealso: TSRK, TSRKType, TSRKSetType()
+.seealso: `TSRK`, `TSRKType`, `TSRKSetType()`
 M*/
 /*MC
      TSRK4 - Fourth order RK scheme.
@@ -92,7 +92,7 @@ M*/
 
      Level: advanced
 
-.seealso: TSRK, TSRKType, TSRKSetType()
+.seealso: `TSRK`, `TSRKType`, `TSRKSetType()`
 M*/
 /*MC
      TSRK5F - Fifth order Fehlberg RK scheme with a 4th order embedded method.
@@ -104,7 +104,7 @@ M*/
 
      Level: advanced
 
-.seealso: TSRK, TSRKType, TSRKSetType()
+.seealso: `TSRK`, `TSRKType`, `TSRKSetType()`
 M*/
 /*MC
      TSRK5DP - Fifth order Dormand-Prince RK scheme with the 4th order embedded method.
@@ -119,7 +119,7 @@ M*/
      References:
 . * - https://doi.org/10.1016/0771-050X(80)90013-3
 
-.seealso: TSRK, TSRKType, TSRKSetType()
+.seealso: `TSRK`, `TSRKType`, `TSRKSetType()`
 M*/
 /*MC
      TSRK5BS - Fifth order Bogacki-Shampine RK scheme with 4th order embedded method.
@@ -134,7 +134,7 @@ M*/
      References:
 . * - https://doi.org/10.1016/0898-1221(96)00141-1
 
-.seealso: TSRK, TSRKType, TSRKSetType()
+.seealso: `TSRK`, `TSRKType`, `TSRKSetType()`
 M*/
 /*MC
      TSRK6VR - Sixth order robust Verner RK scheme with fifth order embedded method.
@@ -149,7 +149,7 @@ M*/
      References:
 . * - http://people.math.sfu.ca/~jverner/RKV65.IIIXb.Robust.00010102836.081204.CoeffsOnlyRAT
 
-.seealso: TSRK, TSRKType, TSRKSetType()
+.seealso: `TSRK`, `TSRKType`, `TSRKSetType()`
 M*/
 /*MC
      TSRK7VR - Seventh order robust Verner RK scheme with sixth order embedded method.
@@ -164,7 +164,7 @@ M*/
      References:
 . * - http://people.math.sfu.ca/~jverner/RKV76.IIa.Robust.000027015646.081206.CoeffsOnlyRAT
 
-.seealso: TSRK, TSRKType, TSRKSetType()
+.seealso: `TSRK`, `TSRKType`, `TSRKSetType()`
 M*/
 /*MC
      TSRK8VR - Eigth order robust Verner RK scheme with seventh order embedded method.
@@ -179,7 +179,7 @@ M*/
      References:
 . * - http://people.math.sfu.ca/~jverner/RKV87.IIa.Robust.00000754677.081208.CoeffsOnlyRATandFLOAT
 
-.seealso: TSRK, TSRKType, TSRKSetType()
+.seealso: `TSRK`, `TSRKType`, `TSRKSetType()`
 M*/
 
 /*@C
@@ -189,7 +189,7 @@ M*/
 
   Level: advanced
 
-.seealso:  TSRKRegisterDestroy()
+.seealso: `TSRKRegisterDestroy()`
 @*/
 PetscErrorCode TSRKRegisterAll(void)
 {
@@ -353,7 +353,7 @@ PetscErrorCode TSRKRegisterAll(void)
 
    Level: advanced
 
-.seealso: TSRKRegister(), TSRKRegisterAll()
+.seealso: `TSRKRegister()`, `TSRKRegisterAll()`
 @*/
 PetscErrorCode TSRKRegisterDestroy(void)
 {
@@ -379,7 +379,7 @@ PetscErrorCode TSRKRegisterDestroy(void)
 
   Level: developer
 
-.seealso: PetscInitialize()
+.seealso: `PetscInitialize()`
 @*/
 PetscErrorCode TSRKInitializePackage(void)
 {
@@ -397,7 +397,7 @@ PetscErrorCode TSRKInitializePackage(void)
 
   Level: developer
 
-.seealso: PetscFinalize()
+.seealso: `PetscFinalize()`
 @*/
 PetscErrorCode TSRKFinalizePackage(void)
 {
@@ -428,7 +428,7 @@ PetscErrorCode TSRKFinalizePackage(void)
 
    Level: advanced
 
-.seealso: TSRK
+.seealso: `TSRK`
 @*/
 PetscErrorCode TSRKRegister(TSRKType name,PetscInt order,PetscInt s,
                             const PetscReal A[],const PetscReal b[],const PetscReal c[],
@@ -515,7 +515,7 @@ PetscErrorCode TSRKGetTableau_RK(TS ts, PetscInt *s, const PetscReal **A, const 
 
    Level: developer
 
-.seealso: TSRK
+.seealso: `TSRK`
 @*/
 PetscErrorCode TSRKGetTableau(TS ts, PetscInt *s, const PetscReal **A, const PetscReal **b, const PetscReal **c, const PetscReal **bembed,
                                      PetscInt *p, const PetscReal **binterp, PetscBool *FSAL)
@@ -1257,7 +1257,7 @@ static PetscErrorCode TSLoad_RK(TS ts,PetscViewer viewer)
 
   Level: intermediate
 
-.seealso: TSRKGetType()
+.seealso: `TSRKGetType()`
 @*/
 PetscErrorCode TSRKGetOrder(TS ts,PetscInt *order)
 {
@@ -1282,7 +1282,7 @@ PetscErrorCode TSRKGetOrder(TS ts,PetscInt *order)
 
   Level: intermediate
 
-.seealso: TSRKGetType(), TSRK, TSRKType, TSRK1FE, TSRK2A, TSRK2B, TSRK3, TSRK3BS, TSRK4, TSRK5F, TSRK5DP, TSRK5BS, TSRK6VR, TSRK7VR, TSRK8VR
+.seealso: `TSRKGetType()`, `TSRK`, `TSRKType`, `TSRK1FE`, `TSRK2A`, `TSRK2B`, `TSRK3`, `TSRK3BS`, `TSRK4`, `TSRK5F`, `TSRK5DP`, `TSRK5BS`, `TSRK6VR`, `TSRK7VR`, `TSRK8VR`
 @*/
 PetscErrorCode TSRKSetType(TS ts,TSRKType rktype)
 {
@@ -1306,7 +1306,7 @@ PetscErrorCode TSRKSetType(TS ts,TSRKType rktype)
 
   Level: intermediate
 
-.seealso: TSRKSetType()
+.seealso: `TSRKSetType()`
 @*/
 PetscErrorCode TSRKGetType(TS ts,TSRKType *rktype)
 {
@@ -1436,7 +1436,7 @@ static PetscErrorCode SNESTSFormJacobian_RK(SNES snes,Vec x,Mat A,Mat B,TS ts)
 
   Level: intermediate
 
-.seealso: TSRKGetMultirate()
+.seealso: `TSRKGetMultirate()`
 @*/
 PetscErrorCode TSRKSetMultirate(TS ts,PetscBool use_multirate)
 {
@@ -1458,7 +1458,7 @@ PetscErrorCode TSRKSetMultirate(TS ts,PetscBool use_multirate)
 
   Level: intermediate
 
-.seealso: TSRKSetMultirate()
+.seealso: `TSRKSetMultirate()`
 @*/
 PetscErrorCode TSRKGetMultirate(TS ts,PetscBool *use_multirate)
 {
@@ -1478,8 +1478,8 @@ PetscErrorCode TSRKGetMultirate(TS ts,PetscBool *use_multirate)
 
   Level: beginner
 
-.seealso:  TSCreate(), TS, TSSetType(), TSRKSetType(), TSRKGetType(), TSRK2D, TTSRK2E, TSRK3,
-           TSRK4, TSRK5, TSRKPRSSP2, TSRKBPR3, TSRKType, TSRKRegister(), TSRKSetMultirate(), TSRKGetMultirate()
+.seealso: `TSCreate()`, `TS`, `TSSetType()`, `TSRKSetType()`, `TSRKGetType()`, `TSRK2D`, `TTSRK2E`, `TSRK3`,
+          `TSRK4`, `TSRK5`, `TSRKPRSSP2`, `TSRKBPR3`, `TSRKType`, `TSRKRegister()`, `TSRKSetMultirate()`, `TSRKGetMultirate()`
 
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_RK(TS ts)

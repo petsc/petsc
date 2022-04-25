@@ -103,7 +103,7 @@ PetscErrorCode DMCreateLocalVector_Section_Private(DM dm,Vec *vec)
 
   Level: intermediate
 
-.seealso DMCreateSubDM(), DMGetLocalSection(), DMPlexSetMigrationSF(), DMView()
+.seealso `DMCreateSubDM()`, `DMGetLocalSection()`, `DMPlexSetMigrationSF()`, `DMView()`
 @*/
 PetscErrorCode DMCreateSectionSubDM(DM dm, PetscInt numFields, const PetscInt fields[], IS *is, DM *subdm)
 {
@@ -310,7 +310,7 @@ PetscErrorCode DMCreateSectionSubDM(DM dm, PetscInt numFields, const PetscInt fi
 
   Level: intermediate
 
-.seealso DMCreateSuperDM(), DMGetLocalSection(), DMPlexSetMigrationSF(), DMView()
+.seealso `DMCreateSuperDM()`, `DMGetLocalSection()`, `DMPlexSetMigrationSF()`, `DMView()`
 @*/
 PetscErrorCode DMCreateSectionSuperDM(DM dms[], PetscInt len, IS **is, DM *superdm)
 {

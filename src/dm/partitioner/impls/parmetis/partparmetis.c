@@ -250,7 +250,7 @@ static PetscErrorCode PetscPartitionerInitialize_ParMetis(PetscPartitioner part)
 
   Notes: when the graph is on a single process, this partitioner actually calls METIS and not ParMETIS
 
-.seealso: PetscPartitionerType, PetscPartitionerCreate(), PetscPartitionerSetType()
+.seealso: `PetscPartitionerType`, `PetscPartitionerCreate()`, `PetscPartitionerSetType()`
 M*/
 
 PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_ParMetis(PetscPartitioner part)

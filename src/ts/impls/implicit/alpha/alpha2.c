@@ -495,7 +495,7 @@ static PetscErrorCode TSAlpha2GetParams_Alpha(TS ts,PetscReal *alpha_m,PetscReal
   Dynamics with Improved Numerical Dissipation: The Generalized-alpha
   Method" ASME Journal of Applied Mechanics, 60, 371:375, 1993.
 
-.seealso:  TS, TSCreate(), TSSetType(), TSAlpha2SetRadius(), TSAlpha2SetParams()
+.seealso: `TS`, `TSCreate()`, `TSSetType()`, `TSAlpha2SetRadius()`, `TSAlpha2SetParams()`
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_Alpha2(TS ts)
 {
@@ -554,7 +554,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Alpha2(TS ts)
 
   Level: intermediate
 
-.seealso: TSAlpha2SetParams(), TSAlpha2GetParams()
+.seealso: `TSAlpha2SetParams()`, `TSAlpha2GetParams()`
 @*/
 PetscErrorCode TSAlpha2SetRadius(TS ts,PetscReal radius)
 {
@@ -600,7 +600,7 @@ PetscErrorCode TSAlpha2SetRadius(TS ts,PetscReal radius)
 
   Level: advanced
 
-.seealso: TSAlpha2SetRadius(), TSAlpha2GetParams()
+.seealso: `TSAlpha2SetRadius()`, `TSAlpha2GetParams()`
 @*/
 PetscErrorCode TSAlpha2SetParams(TS ts,PetscReal alpha_m,PetscReal alpha_f,PetscReal gamma,PetscReal beta)
 {
@@ -637,7 +637,7 @@ PetscErrorCode TSAlpha2SetParams(TS ts,PetscReal alpha_m,PetscReal alpha_f,Petsc
 
   Level: advanced
 
-.seealso: TSAlpha2SetRadius(), TSAlpha2SetParams()
+.seealso: `TSAlpha2SetRadius()`, `TSAlpha2SetParams()`
 @*/
 PetscErrorCode TSAlpha2GetParams(TS ts,PetscReal *alpha_m,PetscReal *alpha_f,PetscReal *gamma,PetscReal *beta)
 {

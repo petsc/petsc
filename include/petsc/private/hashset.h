@@ -26,7 +26,7 @@
   References:
     This code uses the standalone and portable C language khash software https://github.com/attractivechaos/klib
 
-.seealso: PetscHSetI, PetscHSetICreate(), PetscHSetIJ, PetscHSetIJCreate()
+.seealso: `PetscHSetI`, `PetscHSetICreate()`, `PetscHSetIJ`, `PetscHSetIJCreate()`
 M*/
 
 #define PETSC_HASH_SET(HashT, KeyType, HashFunc, EqualFunc)                                          \

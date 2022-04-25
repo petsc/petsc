@@ -29,9 +29,9 @@ PetscClassId PETSC_DRAWBAR_CLASSID = 0;
 
    Level: intermediate
 
-.seealso: PetscDrawLGCreate(), PetscDrawLG, PetscDrawSPCreate(), PetscDrawSP, PetscDrawHGCreate(), PetscDrawHG, PetscDrawBarDestroy(), PetscDrawBarSetData(),
-          PetscDrawBar, PetscDrawBarDraw(), PetscDrawBarSave(), PetscDrawBarSetColor(), PetscDrawBarSort(), PetscDrawBarSetLimits(), PetscDrawBarGetAxis(), PetscDrawAxis,
-          PetscDrawBarGetDraw(), PetscDrawBarSetFromOptions()
+.seealso: `PetscDrawLGCreate()`, `PetscDrawLG`, `PetscDrawSPCreate()`, `PetscDrawSP`, `PetscDrawHGCreate()`, `PetscDrawHG`, `PetscDrawBarDestroy()`, `PetscDrawBarSetData()`,
+          `PetscDrawBar`, `PetscDrawBarDraw()`, `PetscDrawBarSave()`, `PetscDrawBarSetColor()`, `PetscDrawBarSort()`, `PetscDrawBarSetLimits()`, `PetscDrawBarGetAxis()`, `PetscDrawAxis`,
+          `PetscDrawBarGetDraw()`, `PetscDrawBarSetFromOptions()`
 @*/
 PetscErrorCode  PetscDrawBarCreate(PetscDraw draw,PetscDrawBar *bar)
 {
@@ -77,7 +77,7 @@ PetscErrorCode  PetscDrawBarCreate(PetscDraw draw,PetscDrawBar *bar)
    Notes:
     Call PetscDrawBarDraw() after this call to display the new plot
 
-.seealso: PetscDrawBarCreate(), PetscDrawBar, PetscDrawBarDraw()
+.seealso: `PetscDrawBarCreate()`, `PetscDrawBar`, `PetscDrawBarDraw()`
 
 @*/
 PetscErrorCode  PetscDrawBarSetData(PetscDrawBar bar,PetscInt bins,const PetscReal data[],const char *const *labels)
@@ -108,7 +108,7 @@ PetscErrorCode  PetscDrawBarSetData(PetscDrawBar bar,PetscInt bins,const PetscRe
 
   Level: intermediate
 
-.seealso:  PetscDrawBarCreate()
+.seealso: `PetscDrawBarCreate()`
 @*/
 PetscErrorCode  PetscDrawBarDestroy(PetscDrawBar *bar)
 {
@@ -135,7 +135,7 @@ PetscErrorCode  PetscDrawBarDestroy(PetscDrawBar *bar)
 
   Level: intermediate
 
-.seealso: PetscDrawBar, PetscDrawBarCreate(), PetscDrawBarSetData()
+.seealso: `PetscDrawBar`, `PetscDrawBarCreate()`, `PetscDrawBarSetData()`
 
 @*/
 PetscErrorCode  PetscDrawBarDraw(PetscDrawBar bar)
@@ -236,7 +236,7 @@ PetscErrorCode  PetscDrawBarDraw(PetscDrawBar bar)
 
   Level: intermediate
 
-.seealso:  PetscDrawBarCreate(), PetscDrawBarGetDraw(), PetscDrawSetSave(), PetscDrawSave(), PetscDrawBarSetData()
+.seealso: `PetscDrawBarCreate()`, `PetscDrawBarGetDraw()`, `PetscDrawSetSave()`, `PetscDrawSave()`, `PetscDrawBarSetData()`
 @*/
 PetscErrorCode  PetscDrawBarSave(PetscDrawBar bar)
 {
@@ -258,7 +258,7 @@ PetscErrorCode  PetscDrawBarSave(PetscDrawBar bar)
 
   Level: intermediate
 
-.seealso: PetscDrawBarCreate(), PetscDrawBar, PetscDrawBarSetData(), PetscDrawBarDraw(), PetscDrawBarGetAxis()
+.seealso: `PetscDrawBarCreate()`, `PetscDrawBar`, `PetscDrawBarSetData()`, `PetscDrawBarDraw()`, `PetscDrawBarGetAxis()`
 
 @*/
 PetscErrorCode  PetscDrawBarSetColor(PetscDrawBar bar, int color)
@@ -281,7 +281,7 @@ PetscErrorCode  PetscDrawBarSetColor(PetscDrawBar bar, int color)
 
   Level: intermediate
 
-.seealso: PetscDrawBarCreate(), PetscDrawBar, PetscDrawBarSetData(), PetscDrawBarSetColor(), PetscDrawBarDraw(), PetscDrawBarGetAxis()
+.seealso: `PetscDrawBarCreate()`, `PetscDrawBar`, `PetscDrawBarSetData()`, `PetscDrawBarSetColor()`, `PetscDrawBarDraw()`, `PetscDrawBarGetAxis()`
 @*/
 PetscErrorCode  PetscDrawBarSort(PetscDrawBar bar, PetscBool sort, PetscReal tolerance)
 {
@@ -305,7 +305,7 @@ PetscErrorCode  PetscDrawBarSort(PetscDrawBar bar, PetscBool sort, PetscReal tol
 
   Level: intermediate
 
-.seealso: PetscDrawBarCreate(), PetscDrawBar, PetscDrawBarGetAxis(), PetscDrawBarSetData(), PetscDrawBarDraw()
+.seealso: `PetscDrawBarCreate()`, `PetscDrawBar`, `PetscDrawBarGetAxis()`, `PetscDrawBarSetData()`, `PetscDrawBarDraw()`
 @*/
 PetscErrorCode  PetscDrawBarSetLimits(PetscDrawBar bar, PetscReal y_min, PetscReal y_max)
 {
@@ -332,7 +332,7 @@ PetscErrorCode  PetscDrawBarSetLimits(PetscDrawBar bar, PetscReal y_min, PetscRe
 
   Level: intermediate
 
-.seealso: PetscDrawBarCreate(), PetscDrawBar, PetscDrawAxis, PetscDrawAxisCreate()
+.seealso: `PetscDrawBarCreate()`, `PetscDrawBar`, `PetscDrawAxis`, `PetscDrawAxisCreate()`
 @*/
 PetscErrorCode  PetscDrawBarGetAxis(PetscDrawBar bar,PetscDrawAxis *axis)
 {
@@ -356,7 +356,7 @@ PetscErrorCode  PetscDrawBarGetAxis(PetscDrawBar bar,PetscDrawAxis *axis)
 
   Level: intermediate
 
-.seealso: PetscDrawBarCreate(), PetscDrawBar, PetscDrawBarDraw(), PetscDraw
+.seealso: `PetscDrawBarCreate()`, `PetscDrawBar`, `PetscDrawBarDraw()`, `PetscDraw`
 @*/
 PetscErrorCode  PetscDrawBarGetDraw(PetscDrawBar bar,PetscDraw *draw)
 {
@@ -377,7 +377,7 @@ PetscErrorCode  PetscDrawBarGetDraw(PetscDrawBar bar,PetscDraw *draw)
 
     Level: intermediate
 
-.seealso:  PetscDrawBarDestroy(), PetscDrawBarCreate(), PetscDrawBarSort()
+.seealso: `PetscDrawBarDestroy()`, `PetscDrawBarCreate()`, `PetscDrawBarSort()`
 @*/
 PetscErrorCode  PetscDrawBarSetFromOptions(PetscDrawBar bar)
 {

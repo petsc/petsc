@@ -22,7 +22,7 @@
   The label name is actually usual PetscObject name.
   One can get/set it with PetscObjectGetName()/PetscObjectSetName().
 
-.seealso: DMLabelDestroy()
+.seealso: `DMLabelDestroy()`
 @*/
 PetscErrorCode DMLabelCreate(MPI_Comm comm, const char name[], DMLabel *label)
 {
@@ -61,7 +61,7 @@ PetscErrorCode DMLabelCreate(MPI_Comm comm, const char name[], DMLabel *label)
 
   Level: developer
 
-.seealso: DMLabelCreate()
+.seealso: `DMLabelCreate()`
 */
 static PetscErrorCode DMLabelMakeValid_Private(DMLabel label, PetscInt v)
 {
@@ -109,7 +109,7 @@ static PetscErrorCode DMLabelMakeValid_Private(DMLabel label, PetscInt v)
 
   Level: developer
 
-.seealso: DMLabelCreate()
+.seealso: `DMLabelCreate()`
 */
 static PetscErrorCode DMLabelMakeAllValid_Private(DMLabel label)
 {
@@ -136,7 +136,7 @@ static PetscErrorCode DMLabelMakeAllValid_Private(DMLabel label)
 
   Level: developer
 
-.seealso: DMLabelCreate()
+.seealso: `DMLabelCreate()`
 */
 static PetscErrorCode DMLabelMakeInvalid_Private(DMLabel label, PetscInt v)
 {
@@ -277,7 +277,7 @@ static inline PetscErrorCode DMLabelGetStratumSize_Private(DMLabel label, PetscI
 
   Level: beginner
 
-.seealso:  DMLabelCreate(), DMLabelDestroy()
+.seealso: `DMLabelCreate()`, `DMLabelDestroy()`
 @*/
 PetscErrorCode DMLabelAddStratum(DMLabel label, PetscInt value)
 {
@@ -301,7 +301,7 @@ PetscErrorCode DMLabelAddStratum(DMLabel label, PetscInt value)
 
   Level: beginner
 
-.seealso:  DMLabelCreate(), DMLabelDestroy()
+.seealso: `DMLabelCreate()`, `DMLabelDestroy()`
 @*/
 PetscErrorCode DMLabelAddStrata(DMLabel label, PetscInt numStrata, const PetscInt stratumValues[])
 {
@@ -363,7 +363,7 @@ PetscErrorCode DMLabelAddStrata(DMLabel label, PetscInt numStrata, const PetscIn
 
   Level: beginner
 
-.seealso:  DMLabelCreate(), DMLabelDestroy()
+.seealso: `DMLabelCreate()`, `DMLabelDestroy()`
 @*/
 PetscErrorCode DMLabelAddStrataIS(DMLabel label, IS valueIS)
 {
@@ -421,7 +421,7 @@ static PetscErrorCode DMLabelView_Ascii(DMLabel label, PetscViewer viewer)
 
   Level: intermediate
 
-.seealso: DMLabelCreate(), DMLabelDestroy()
+.seealso: `DMLabelCreate()`, `DMLabelDestroy()`
 @*/
 PetscErrorCode DMLabelView(DMLabel label, PetscViewer viewer)
 {
@@ -449,7 +449,7 @@ PetscErrorCode DMLabelView(DMLabel label, PetscViewer viewer)
 
   Level: beginner
 
-.seealso: DMLabelDestroy(), DMLabelCreate()
+.seealso: `DMLabelDestroy()`, `DMLabelCreate()`
 @*/
 PetscErrorCode DMLabelReset(DMLabel label)
 {
@@ -489,7 +489,7 @@ PetscErrorCode DMLabelReset(DMLabel label)
 
   Level: beginner
 
-.seealso: DMLabelReset(), DMLabelCreate()
+.seealso: `DMLabelReset()`, `DMLabelCreate()`
 @*/
 PetscErrorCode DMLabelDestroy(DMLabel *label)
 {
@@ -516,7 +516,7 @@ PetscErrorCode DMLabelDestroy(DMLabel *label)
 
   Level: intermediate
 
-.seealso: DMLabelCreate(), DMLabelDestroy()
+.seealso: `DMLabelCreate()`, `DMLabelDestroy()`
 @*/
 PetscErrorCode DMLabelDuplicate(DMLabel label, DMLabel *labelnew)
 {
@@ -585,7 +585,7 @@ PetscErrorCode DMLabelDuplicate(DMLabel label, DMLabel *labelnew)
   Fortran Notes:
   This function is currently not available from Fortran.
 
-.seealso: DMCompareLabels(), DMLabelGetNumValues(), DMLabelGetDefaultValue(), DMLabelGetNonEmptyStratumValuesIS(), DMLabelGetStratumIS()
+.seealso: `DMCompareLabels()`, `DMLabelGetNumValues()`, `DMLabelGetDefaultValue()`, `DMLabelGetNonEmptyStratumValuesIS()`, `DMLabelGetStratumIS()`
 @*/
 PetscErrorCode DMLabelCompare(MPI_Comm comm, DMLabel l0, DMLabel l1, PetscBool *equal, char **message)
 {
@@ -680,7 +680,7 @@ finish:
 
   Level: intermediate
 
-.seealso: DMLabelHasPoint(), DMLabelCreateIndex(), DMLabelDestroyIndex(), DMLabelGetValue(), DMLabelSetValue()
+.seealso: `DMLabelHasPoint()`, `DMLabelCreateIndex()`, `DMLabelDestroyIndex()`, `DMLabelGetValue()`, `DMLabelSetValue()`
 @*/
 PetscErrorCode DMLabelComputeIndex(DMLabel label)
 {
@@ -720,7 +720,7 @@ PetscErrorCode DMLabelComputeIndex(DMLabel label)
 
   Level: intermediate
 
-.seealso: DMLabelHasPoint(), DMLabelComputeIndex(), DMLabelDestroyIndex(), DMLabelGetValue(), DMLabelSetValue()
+.seealso: `DMLabelHasPoint()`, `DMLabelComputeIndex()`, `DMLabelDestroyIndex()`, `DMLabelGetValue()`, `DMLabelSetValue()`
 @*/
 PetscErrorCode DMLabelCreateIndex(DMLabel label, PetscInt pStart, PetscInt pEnd)
 {
@@ -760,7 +760,7 @@ PetscErrorCode DMLabelCreateIndex(DMLabel label, PetscInt pStart, PetscInt pEnd)
 
   Level: intermediate
 
-.seealso: DMLabelHasPoint(), DMLabelCreateIndex(), DMLabelGetValue(), DMLabelSetValue()
+.seealso: `DMLabelHasPoint()`, `DMLabelCreateIndex()`, `DMLabelGetValue()`, `DMLabelSetValue()`
 @*/
 PetscErrorCode DMLabelDestroyIndex(DMLabel label)
 {
@@ -788,7 +788,7 @@ PetscErrorCode DMLabelDestroyIndex(DMLabel label)
 
   Level: intermediate
 
-.seealso: DMLabelHasPoint(), DMLabelCreateIndex(), DMLabelGetValue(), DMLabelSetValue()
+.seealso: `DMLabelHasPoint()`, `DMLabelCreateIndex()`, `DMLabelGetValue()`, `DMLabelSetValue()`
 @*/
 PetscErrorCode DMLabelGetBounds(DMLabel label, PetscInt *pStart, PetscInt *pEnd)
 {
@@ -820,7 +820,7 @@ PetscErrorCode DMLabelGetBounds(DMLabel label, PetscInt *pStart, PetscInt *pEnd)
 
   Level: developer
 
-.seealso: DMLabelHasPoint(), DMLabelGetValue(), DMLabelSetValue()
+.seealso: `DMLabelHasPoint()`, `DMLabelGetValue()`, `DMLabelSetValue()`
 @*/
 PetscErrorCode DMLabelHasValue(DMLabel label, PetscInt value, PetscBool *contains)
 {
@@ -850,7 +850,7 @@ PetscErrorCode DMLabelHasValue(DMLabel label, PetscInt value, PetscBool *contain
 
   Level: developer
 
-.seealso: DMLabelCreateIndex(), DMLabelGetValue(), DMLabelSetValue()
+.seealso: `DMLabelCreateIndex()`, `DMLabelGetValue()`, `DMLabelSetValue()`
 @*/
 PetscErrorCode DMLabelHasPoint(DMLabel label, PetscInt point, PetscBool *contains)
 {
@@ -881,7 +881,7 @@ PetscErrorCode DMLabelHasPoint(DMLabel label, PetscInt point, PetscBool *contain
 
   Level: intermediate
 
-.seealso: DMLabelCreate(), DMLabelSetValue(), DMLabelClearValue()
+.seealso: `DMLabelCreate()`, `DMLabelSetValue()`, `DMLabelClearValue()`
 @*/
 PetscErrorCode DMLabelStratumHasPoint(DMLabel label, PetscInt value, PetscInt point, PetscBool *contains)
 {
@@ -922,7 +922,7 @@ PetscErrorCode DMLabelStratumHasPoint(DMLabel label, PetscInt value, PetscInt po
 
   Level: beginner
 
-.seealso: DMLabelSetDefaultValue(), DMLabelGetValue(), DMLabelSetValue()
+.seealso: `DMLabelSetDefaultValue()`, `DMLabelGetValue()`, `DMLabelSetValue()`
 @*/
 PetscErrorCode DMLabelGetDefaultValue(DMLabel label, PetscInt *defaultValue)
 {
@@ -946,7 +946,7 @@ PetscErrorCode DMLabelGetDefaultValue(DMLabel label, PetscInt *defaultValue)
 
   Level: beginner
 
-.seealso: DMLabelGetDefaultValue(), DMLabelGetValue(), DMLabelSetValue()
+.seealso: `DMLabelGetDefaultValue()`, `DMLabelGetValue()`, `DMLabelSetValue()`
 @*/
 PetscErrorCode DMLabelSetDefaultValue(DMLabel label, PetscInt defaultValue)
 {
@@ -970,7 +970,7 @@ PetscErrorCode DMLabelSetDefaultValue(DMLabel label, PetscInt defaultValue)
 
   Level: intermediate
 
-.seealso: DMLabelCreate(), DMLabelSetValue(), DMLabelClearValue(), DMLabelGetDefaultValue(), DMLabelSetDefaultValue()
+.seealso: `DMLabelCreate()`, `DMLabelSetValue()`, `DMLabelClearValue()`, `DMLabelGetDefaultValue()`, `DMLabelSetDefaultValue()`
 @*/
 PetscErrorCode DMLabelGetValue(DMLabel label, PetscInt point, PetscInt *value)
 {
@@ -1014,7 +1014,7 @@ PetscErrorCode DMLabelGetValue(DMLabel label, PetscInt point, PetscInt *value)
 
   Level: intermediate
 
-.seealso: DMLabelCreate(), DMLabelGetValue(), DMLabelClearValue(), DMLabelGetDefaultValue(), DMLabelSetDefaultValue()
+.seealso: `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelClearValue()`, `DMLabelGetDefaultValue()`, `DMLabelSetDefaultValue()`
 @*/
 PetscErrorCode DMLabelSetValue(DMLabel label, PetscInt point, PetscInt value)
 {
@@ -1043,7 +1043,7 @@ PetscErrorCode DMLabelSetValue(DMLabel label, PetscInt point, PetscInt value)
 
   Level: intermediate
 
-.seealso: DMLabelCreate(), DMLabelGetValue(), DMLabelSetValue()
+.seealso: `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`
 @*/
 PetscErrorCode DMLabelClearValue(DMLabel label, PetscInt point, PetscInt value)
 {
@@ -1078,7 +1078,7 @@ PetscErrorCode DMLabelClearValue(DMLabel label, PetscInt point, PetscInt value)
 
   Level: intermediate
 
-.seealso: DMLabelCreate(), DMLabelGetValue(), DMLabelSetValue(), DMLabelClearValue()
+.seealso: `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`, `DMLabelClearValue()`
 @*/
 PetscErrorCode DMLabelInsertIS(DMLabel label, IS is, PetscInt value)
 {
@@ -1113,7 +1113,7 @@ PetscErrorCode DMLabelInsertIS(DMLabel label, IS is, PetscInt value)
 
   Level: intermediate
 
-.seealso: DMLabelCreate(), DMLabelGetValue(), DMLabelSetValue(), DMLabelClearValue()
+.seealso: `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`, `DMLabelClearValue()`
 @*/
 PetscErrorCode DMLabelGetNumValues(DMLabel label, PetscInt *numValues)
 {
@@ -1142,7 +1142,7 @@ PetscErrorCode DMLabelGetNumValues(DMLabel label, PetscInt *numValues)
   Strata which are allocated but empty [DMLabelGetStratumSize() yields 0] are counted.
   If you need to count only nonempty strata, use DMLabelGetNonEmptyStratumValuesIS().
 
-.seealso: DMLabelGetNonEmptyStratumValuesIS(), DMLabelCreate(), DMLabelGetValue(), DMLabelSetValue(), DMLabelClearValue()
+.seealso: `DMLabelGetNonEmptyStratumValuesIS()`, `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`, `DMLabelClearValue()`
 @*/
 PetscErrorCode DMLabelGetValueIS(DMLabel label, IS *values)
 {
@@ -1170,7 +1170,7 @@ PetscErrorCode DMLabelGetValueIS(DMLabel label, IS *values)
   The output IS should be destroyed when no longer needed.
   This is similar to DMLabelGetValueIS() but counts only nonempty strata.
 
-.seealso: DMLabelGetValueIS(), DMLabelCreate(), DMLabelGetValue(), DMLabelSetValue(), DMLabelClearValue()
+.seealso: `DMLabelGetValueIS()`, `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`, `DMLabelClearValue()`
 @*/
 PetscErrorCode DMLabelGetNonEmptyStratumValuesIS(DMLabel label, IS *values)
 {
@@ -1210,7 +1210,7 @@ PetscErrorCode DMLabelGetNonEmptyStratumValuesIS(DMLabel label, IS *values)
 
   Level: intermediate
 
-.seealso: DMLabelGetValueIS(), DMLabelCreate(), DMLabelGetValue(), DMLabelSetValue(), DMLabelClearValue()
+.seealso: `DMLabelGetValueIS()`, `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`, `DMLabelClearValue()`
 @*/
 PetscErrorCode DMLabelGetValueIndex(DMLabel label, PetscInt value, PetscInt *index)
 {
@@ -1240,7 +1240,7 @@ PetscErrorCode DMLabelGetValueIndex(DMLabel label, PetscInt value, PetscInt *ind
 
   Level: intermediate
 
-.seealso: DMLabelCreate(), DMLabelGetValue(), DMLabelSetValue(), DMLabelClearValue()
+.seealso: `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`, `DMLabelClearValue()`
 @*/
 PetscErrorCode DMLabelHasStratum(DMLabel label, PetscInt value, PetscBool *exists)
 {
@@ -1268,7 +1268,7 @@ PetscErrorCode DMLabelHasStratum(DMLabel label, PetscInt value, PetscBool *exist
 
   Level: intermediate
 
-.seealso: DMLabelCreate(), DMLabelGetValue(), DMLabelSetValue(), DMLabelClearValue()
+.seealso: `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`, `DMLabelClearValue()`
 @*/
 PetscErrorCode DMLabelGetStratumSize(DMLabel label, PetscInt value, PetscInt *size)
 {
@@ -1297,7 +1297,7 @@ PetscErrorCode DMLabelGetStratumSize(DMLabel label, PetscInt value, PetscInt *si
 
   Level: intermediate
 
-.seealso: DMLabelCreate(), DMLabelGetValue(), DMLabelSetValue(), DMLabelClearValue()
+.seealso: `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`, `DMLabelClearValue()`
 @*/
 PetscErrorCode DMLabelGetStratumBounds(DMLabel label, PetscInt value, PetscInt *start, PetscInt *end)
 {
@@ -1335,7 +1335,7 @@ PetscErrorCode DMLabelGetStratumBounds(DMLabel label, PetscInt value, PetscInt *
   The output IS should be destroyed when no longer needed.
   Returns NULL if the stratum is empty.
 
-.seealso: DMLabelCreate(), DMLabelGetValue(), DMLabelSetValue(), DMLabelClearValue()
+.seealso: `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`, `DMLabelClearValue()`
 @*/
 PetscErrorCode DMLabelGetStratumIS(DMLabel label, PetscInt value, IS *points)
 {
@@ -1365,7 +1365,7 @@ PetscErrorCode DMLabelGetStratumIS(DMLabel label, PetscInt value, IS *points)
 
   Level: intermediate
 
-.seealso: DMLabelCreate(), DMLabelGetValue(), DMLabelSetValue(), DMLabelClearValue()
+.seealso: `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`, `DMLabelClearValue()`
 @*/
 PetscErrorCode DMLabelSetStratumIS(DMLabel label, PetscInt value, IS is)
 {
@@ -1409,7 +1409,7 @@ PetscErrorCode DMLabelSetStratumIS(DMLabel label, PetscInt value, IS is)
 
   Level: intermediate
 
-.seealso: DMLabelCreate(), DMLabelGetValue(), DMLabelSetValue(), DMLabelClearValue()
+.seealso: `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`, `DMLabelClearValue()`
 @*/
 PetscErrorCode DMLabelClearStratum(DMLabel label, PetscInt value)
 {
@@ -1459,7 +1459,7 @@ PetscErrorCode DMLabelClearStratum(DMLabel label, PetscInt value)
 
   Level: intermediate
 
-.seealso: DMLabelCreate(), DMLabelSetStratumIS(), DMLabelGetStratumIS()
+.seealso: `DMLabelCreate()`, `DMLabelSetStratumIS()`, `DMLabelGetStratumIS()`
 @*/
 PetscErrorCode DMLabelSetStratumBounds(DMLabel label, PetscInt value, PetscInt pStart, PetscInt pEnd)
 {
@@ -1487,7 +1487,7 @@ PetscErrorCode DMLabelSetStratumBounds(DMLabel label, PetscInt value, PetscInt p
 
   Level: intermediate
 
-.seealso: DMLabelGetValueIndex(), DMLabelGetStratumIS(), DMLabelCreate()
+.seealso: `DMLabelGetValueIndex()`, `DMLabelGetStratumIS()`, `DMLabelCreate()`
 @*/
 PetscErrorCode DMLabelGetStratumPointIndex(DMLabel label, PetscInt value, PetscInt p, PetscInt *index)
 {
@@ -1519,7 +1519,7 @@ PetscErrorCode DMLabelGetStratumPointIndex(DMLabel label, PetscInt value, PetscI
 
   Level: intermediate
 
-.seealso: DMLabelCreate(), DMLabelGetValue(), DMLabelSetValue(), DMLabelClearValue()
+.seealso: `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`, `DMLabelClearValue()`
 @*/
 PetscErrorCode DMLabelFilter(DMLabel label, PetscInt start, PetscInt end)
 {
@@ -1550,7 +1550,7 @@ PetscErrorCode DMLabelFilter(DMLabel label, PetscInt start, PetscInt end)
 
   Level: intermediate
 
-.seealso: DMLabelCreate(), DMLabelGetValue(), DMLabelSetValue(), DMLabelClearValue()
+.seealso: `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`, `DMLabelClearValue()`
 @*/
 PetscErrorCode DMLabelPermute(DMLabel label, IS permutation, DMLabel *labelNew)
 {
@@ -1674,7 +1674,7 @@ PetscErrorCode DMLabelDistribute_Internal(DMLabel label, PetscSF sf, PetscSectio
 
   Level: intermediate
 
-.seealso: DMLabelCreate(), DMLabelGetValue(), DMLabelSetValue(), DMLabelClearValue()
+.seealso: `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`, `DMLabelClearValue()`
 @*/
 PetscErrorCode DMLabelDistribute(DMLabel label, PetscSF sf, DMLabel *labelNew)
 {
@@ -1791,7 +1791,7 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSF sf, DMLabel *labelNew)
 
   Note: This is the inverse operation to DMLabelDistribute.
 
-.seealso: DMLabelDistribute()
+.seealso: `DMLabelDistribute()`
 @*/
 PetscErrorCode DMLabelGather(DMLabel label, PetscSF sf, DMLabel *labelNew)
 {
@@ -1942,7 +1942,7 @@ static PetscErrorCode DMLabelPropagateFini_Internal(DMLabel label, PetscSF point
 
   Level: intermediate
 
-.seealso: DMLabelPropagateEnd(), DMLabelPropagatePush()
+.seealso: `DMLabelPropagateEnd()`, `DMLabelPropagatePush()`
 @*/
 PetscErrorCode DMLabelPropagateBegin(DMLabel label, PetscSF sf)
 {
@@ -1971,7 +1971,7 @@ PetscErrorCode DMLabelPropagateBegin(DMLabel label, PetscSF sf)
 
   Level: intermediate
 
-.seealso: DMLabelPropagateBegin(), DMLabelPropagatePush()
+.seealso: `DMLabelPropagateBegin()`, `DMLabelPropagatePush()`
 @*/
 PetscErrorCode DMLabelPropagateEnd(DMLabel label, PetscSF pointSF)
 {
@@ -2002,7 +2002,7 @@ $ markPoint(DMLabel label, PetscInt p, PetscInt val, void *ctx);
 
   Level: intermediate
 
-.seealso: DMLabelPropagateBegin(), DMLabelPropagateEnd()
+.seealso: `DMLabelPropagateBegin()`, `DMLabelPropagateEnd()`
 @*/
 PetscErrorCode DMLabelPropagatePush(DMLabel label, PetscSF pointSF, PetscErrorCode (*markPoint)(DMLabel, PetscInt, PetscInt, void *), void *ctx)
 {
@@ -2049,7 +2049,7 @@ PetscErrorCode DMLabelPropagatePush(DMLabel label, PetscSF pointSF, PetscErrorCo
 
   Level: developer
 
-.seealso: DMLabelDistribute()
+.seealso: `DMLabelDistribute()`
 @*/
 PetscErrorCode DMLabelConvertToSection(DMLabel label, PetscSection *section, IS *is)
 {
@@ -2118,7 +2118,7 @@ PetscErrorCode DMLabelConvertToSection(DMLabel label, PetscSection *section, IS 
 
   Level: developer
 
-.seealso: PetscSectionCreate()
+.seealso: `PetscSectionCreate()`
 @*/
 PetscErrorCode PetscSectionCreateGlobalSectionLabel(PetscSection s, PetscSF sf, PetscBool includeConstraints, DMLabel label, PetscInt labelValue, PetscSection *gsection)
 {
@@ -2326,7 +2326,7 @@ static PetscErrorCode PetscSectionSymView_Label(PetscSectionSym sym, PetscViewer
 
   Level: developer:
 
-.seealso: PetscSectionSymLabelSetStratum(), PetscSectionSymCreateLabel(), PetscSectionGetPointSyms()
+.seealso: `PetscSectionSymLabelSetStratum()`, `PetscSectionSymCreateLabel()`, `PetscSectionGetPointSyms()`
 @*/
 PetscErrorCode PetscSectionSymLabelSetLabel(PetscSectionSym sym, DMLabel label)
 {
@@ -2368,7 +2368,7 @@ PetscErrorCode PetscSectionSymLabelSetLabel(PetscSectionSym sym, DMLabel label)
 
   Level: developer
 
-.seealso: PetscSectionSymLabelSetStratum(), PetscSectionSymCreate(), PetscSectionSetSym(), PetscSectionGetPointSyms(), PetscSectionSymCreateLabel()
+.seealso: `PetscSectionSymLabelSetStratum()`, `PetscSectionSymCreate()`, `PetscSectionSetSym()`, `PetscSectionGetPointSyms()`, `PetscSectionSymCreateLabel()`
 @*/
 PetscErrorCode PetscSectionSymLabelGetStratum(PetscSectionSym sym, PetscInt stratum, PetscInt *size, PetscInt *minOrient, PetscInt *maxOrient, const PetscInt ***perms, const PetscScalar ***rots)
 {
@@ -2412,7 +2412,7 @@ PetscErrorCode PetscSectionSymLabelGetStratum(PetscSectionSym sym, PetscInt stra
 
   Level: developer
 
-.seealso: PetscSectionSymLabelGetStratum(), PetscSectionSymCreate(), PetscSectionSetSym(), PetscSectionGetPointSyms(), PetscSectionSymCreateLabel()
+.seealso: `PetscSectionSymLabelGetStratum()`, `PetscSectionSymCreate()`, `PetscSectionSetSym()`, `PetscSectionGetPointSyms()`, `PetscSectionSymCreateLabel()`
 @*/
 PetscErrorCode PetscSectionSymLabelSetStratum(PetscSectionSym sym, PetscInt stratum, PetscInt size, PetscInt minOrient, PetscInt maxOrient, PetscCopyMode mode, const PetscInt **perms, const PetscScalar **rots)
 {
@@ -2567,7 +2567,7 @@ PetscErrorCode PetscSectionSymCreate_Label(PetscSectionSym sym)
 
   Level: developer
 
-.seealso: PetscSectionSymCreate(), PetscSectionSetSym(), PetscSectionGetSym(), PetscSectionSymLabelSetStratum(), PetscSectionGetPointSyms()
+.seealso: `PetscSectionSymCreate()`, `PetscSectionSetSym()`, `PetscSectionGetSym()`, `PetscSectionSymLabelSetStratum()`, `PetscSectionGetPointSyms()`
 @*/
 PetscErrorCode PetscSectionSymCreateLabel(MPI_Comm comm, DMLabel label, PetscSectionSym *sym)
 {

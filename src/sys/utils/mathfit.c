@@ -15,7 +15,7 @@
 
   Level: intermediate
 
-.seealso: PetscConvEstGetConvRate()
+.seealso: `PetscConvEstGetConvRate()`
 @*/
 PetscErrorCode PetscLinearRegression(PetscInt n, const PetscReal x[], const PetscReal y[], PetscReal *slope, PetscReal *intercept)
 {

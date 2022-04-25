@@ -25,7 +25,7 @@
     Note:
     By default, the matrix is assumed to be complex, Hermitian.
 
-.seealso: KSP, KSPCG
+.seealso: `KSP`, `KSPCG`
 @*/
 PetscErrorCode  KSPCGSetType(KSP ksp,KSPCGType type)
 {
@@ -57,7 +57,7 @@ PetscErrorCode  KSPCGSetType(KSP ksp,KSPCGType type)
 
      See also KSPPIPECG, KSPPIPECR, and KSPGROPPCG that use non-blocking reductions.
 
-.seealso: KSP, KSPCG, KSPGMRES
+.seealso: `KSP`, `KSPCG`, `KSPGMRES`
 @*/
 PetscErrorCode  KSPCGUseSingleReduction(KSP ksp,PetscBool flg)
 {
@@ -79,7 +79,7 @@ PetscErrorCode  KSPCGUseSingleReduction(KSP ksp,PetscBool flg)
 
     Level: advanced
 
-.seealso: KSP, KSPCG, KSPNASH, KSPSTCG, KSPGLTR
+.seealso: `KSP`, `KSPCG`, `KSPNASH`, `KSPSTCG`, `KSPGLTR`
 @*/
 PetscErrorCode  KSPCGSetRadius(KSP ksp, PetscReal radius)
 {
@@ -101,7 +101,7 @@ PetscErrorCode  KSPCGSetRadius(KSP ksp, PetscReal radius)
 
     Level: advanced
 
-.seealso: KSP, KSPCG, KSPNASH, KSPSTCG, KSPGLTR
+.seealso: `KSP`, `KSPCG`, `KSPNASH`, `KSPSTCG`, `KSPGLTR`
 @*/
 PetscErrorCode  KSPCGGetNormD(KSP ksp, PetscReal *norm_d)
 {
@@ -122,7 +122,7 @@ PetscErrorCode  KSPCGGetNormD(KSP ksp, PetscReal *norm_d)
 
     Level: advanced
 
-.seealso: KSP, KSPCG, KSPNASH, KSPSTCG, KSPGLTR
+.seealso: `KSP`, `KSPCG`, `KSPNASH`, `KSPSTCG`, `KSPGLTR`
 @*/
 PetscErrorCode  KSPCGGetObjFcn(KSP ksp, PetscReal *o_fcn)
 {

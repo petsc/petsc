@@ -323,7 +323,7 @@ static PetscErrorCode PetscParallelSortInt_Samplesort(PetscLayout mapin, PetscLa
 
   If keysin != keysout, then keysin will not be changed during PetscParallelSortInt.
 
-.seealso: PetscParallelSortedInt()
+.seealso: `PetscParallelSortedInt()`
 @*/
 PetscErrorCode PetscParallelSortInt(PetscLayout mapin, PetscLayout mapout, PetscInt keysin[], PetscInt keysout[])
 {

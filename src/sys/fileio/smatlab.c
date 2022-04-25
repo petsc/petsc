@@ -23,7 +23,7 @@
 
      Assumes that all machines share a common file system
 
-.seealso: PetscPOpen(), PetscPClose()
+.seealso: `PetscPOpen()`, `PetscPClose()`
 @*/
 PetscErrorCode  PetscStartMatlab(MPI_Comm comm,const char machine[],const char script[],FILE **fp)
 {

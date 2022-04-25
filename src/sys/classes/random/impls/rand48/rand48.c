@@ -51,7 +51,7 @@ static struct _PetscRandomOps PetscRandomOps_Values = {
 
   Level: beginner
 
-.seealso: PetscRandomCreate(), PetscRandomSetType(), PETSCRAND, PETSCSPRNG
+.seealso: `PetscRandomCreate()`, `PetscRandomSetType()`, `PETSCRAND`, `PETSCSPRNG`
 M*/
 
 PETSC_EXTERN PetscErrorCode PetscRandomCreate_Rand48(PetscRandom r)

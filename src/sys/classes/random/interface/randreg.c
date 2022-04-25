@@ -22,7 +22,7 @@ PetscBool         PetscRandomRegisterAllCalled = PETSC_FALSE;
 
   Level: intermediate
 
-.seealso: PetscRandomGetType(), PetscRandomCreate()
+.seealso: `PetscRandomGetType()`, `PetscRandomCreate()`
 @*/
 
 PetscErrorCode  PetscRandomSetType(PetscRandom rnd, PetscRandomType type)
@@ -63,7 +63,7 @@ PetscErrorCode  PetscRandomSetType(PetscRandom rnd, PetscRandomType type)
 
   Level: intermediate
 
-.seealso: PetscRandomSetType(), PetscRandomCreate()
+.seealso: `PetscRandomSetType()`, `PetscRandomCreate()`
 @*/
 PetscErrorCode  PetscRandomGetType(PetscRandom rnd, PetscRandomType *type)
 {
@@ -107,7 +107,7 @@ PetscErrorCode  PetscRandomGetType(PetscRandom rnd, PetscRandomType *type)
 
   Level: advanced
 
-.seealso: PetscRandomRegisterAll(), PetscRandomRegisterDestroy(), PetscRandomRegister()
+.seealso: `PetscRandomRegisterAll()`, `PetscRandomRegisterDestroy()`, `PetscRandomRegister()`
 @*/
 PetscErrorCode  PetscRandomRegister(const char sname[], PetscErrorCode (*function)(PetscRandom))
 {
@@ -141,7 +141,7 @@ PETSC_EXTERN PetscErrorCode PetscRandomCreate_CURAND(PetscRandom);
 
   Level: advanced
 
-.seealso:  PetscRandomRegister(), PetscRandomRegisterDestroy()
+.seealso: `PetscRandomRegister()`, `PetscRandomRegisterDestroy()`
 @*/
 PetscErrorCode  PetscRandomRegisterAll(void)
 {

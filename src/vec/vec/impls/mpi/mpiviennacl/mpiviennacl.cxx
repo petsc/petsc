@@ -14,7 +14,7 @@
 
   Level: beginner
 
-.seealso: VecCreate(), VecSetType(), VecSetFromOptions(), VecCreateMPIWithArray(), VECSEQVIENNACL, VECMPIVIENNACL, VECSTANDARD, VecType, VecCreateMPI(), VecCreateMPI()
+.seealso: `VecCreate()`, `VecSetType()`, `VecSetFromOptions()`, `VecCreateMPIWithArray()`, `VECSEQVIENNACL`, `VECMPIVIENNACL`, `VECSTANDARD`, `VecType`, `VecCreateMPI()`, `VecCreateMPI()`
 M*/
 
 PetscErrorCode VecDestroy_MPIViennaCL(Vec v)
@@ -109,7 +109,7 @@ PetscErrorCode VecMDot_MPIViennaCL(Vec xin,PetscInt nv,const Vec y[],PetscScalar
 
   Level: beginner
 
-.seealso: VecCreate(), VecSetType(), VecSetFromOptions(), VecCreateMPIWithArray(), VECMPI, VecType, VecCreateMPI(), VecCreateMPI()
+.seealso: `VecCreate()`, `VecSetType()`, `VecSetFromOptions()`, `VecCreateMPIWithArray()`, `VECMPI`, `VecType`, `VecCreateMPI()`, `VecCreateMPI()`
 M*/
 
 PetscErrorCode VecDuplicate_MPIViennaCL(Vec win,Vec *v)
@@ -292,8 +292,8 @@ PETSC_EXTERN PetscErrorCode VecCreate_ViennaCL(Vec v)
 
    Level: intermediate
 
-.seealso: VecCreateSeqViennaCLWithArray(), VecCreateMPIWithArray(), VecCreateSeqWithArray(),
-          VecCreate(), VecCreateMPI(), VecCreateGhostWithArray(), VecViennaCLPlaceArray()
+.seealso: `VecCreateSeqViennaCLWithArray()`, `VecCreateMPIWithArray()`, `VecCreateSeqWithArray()`,
+          `VecCreate()`, `VecCreateMPI()`, `VecCreateGhostWithArray()`, `VecViennaCLPlaceArray()`
 
 @*/
 PetscErrorCode  VecCreateMPIViennaCLWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,PetscInt N,const ViennaCLVector *array,Vec *vv)
@@ -338,11 +338,11 @@ PetscErrorCode  VecCreateMPIViennaCLWithArray(MPI_Comm comm,PetscInt bs,PetscInt
 
    Level: intermediate
 
-.seealso: VecCreateSeqViennaCLWithArrays(), VecCreateMPIWithArray()
-          VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost(),
-          VecCreateMPI(), VecCreateGhostWithArray(), VecViennaCLPlaceArray(),
-          VecPlaceArray(), VecCreateMPICUDAWithArrays(),
-          VecViennaCLAllocateCheckHost()
+.seealso: `VecCreateSeqViennaCLWithArrays()`, `VecCreateMPIWithArray()`
+          `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateGhost()`,
+          `VecCreateMPI()`, `VecCreateGhostWithArray()`, `VecViennaCLPlaceArray()`,
+          `VecPlaceArray()`, `VecCreateMPICUDAWithArrays()`,
+          `VecViennaCLAllocateCheckHost()`
 @*/
 PetscErrorCode  VecCreateMPIViennaCLWithArrays(MPI_Comm comm,PetscInt bs,PetscInt n,PetscInt N,const PetscScalar cpuarray[],const ViennaCLVector *viennaclvec,Vec *vv)
 {

@@ -33,7 +33,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_IRK(TS);
 
   Level: advanced
 
-.seealso: TSCreate(), TSRegister(), TSRegisterDestroy()
+.seealso: `TSCreate()`, `TSRegister()`, `TSRegisterDestroy()`
 @*/
 PetscErrorCode  TSRegisterAll(void)
 {

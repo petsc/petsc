@@ -17,7 +17,7 @@
     If this routine is not called then the object may end up being name by PetscObjectName().
    Level: advanced
 
-.seealso: PetscObjectGetName(), PetscObjectName()
+.seealso: `PetscObjectGetName()`, `PetscObjectName()`
 @*/
 PetscErrorCode  PetscObjectSetName(PetscObject obj,const char name[])
 {
@@ -48,7 +48,7 @@ PetscErrorCode  PetscObjectSetName(PetscObject obj,const char name[])
    Developer Note: The flag donotPetscObjectPrintClassNamePrefixType is useful to prevent double printing of the information when recursion is used
                    to actually print the object.
 
-.seealso: PetscObjectSetName(), PetscObjectName()
+.seealso: `PetscObjectSetName()`, `PetscObjectName()`
 
 @*/
 PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj,PetscViewer viewer)
@@ -107,7 +107,7 @@ PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj,PetscViewer v
 
    Developer Note: this needs to generate the exact same string on all ranks that share the object. The current algorithm may not always work.
 
-.seealso: PetscObjectGetName(), PetscObjectSetName()
+.seealso: `PetscObjectGetName()`, `PetscObjectSetName()`
 @*/
 PetscErrorCode  PetscObjectName(PetscObject obj)
 {

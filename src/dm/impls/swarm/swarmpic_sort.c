@@ -127,7 +127,7 @@ PetscErrorCode DMSwarmSortDestroy(DMSwarmSort *_ctx)
    Notes:
    You must call DMSwarmSortGetAccess() before you can call DMSwarmSortGetNumberOfPointsPerCell()
 
-.seealso: DMSwarmSetType(), DMSwarmSortGetAccess(), DMSwarmSortGetPointsPerCell()
+.seealso: `DMSwarmSetType()`, `DMSwarmSortGetAccess()`, `DMSwarmSortGetPointsPerCell()`
 @*/
 PetscErrorCode DMSwarmSortGetNumberOfPointsPerCell(DM dm,PetscInt e,PetscInt *npoints)
 {
@@ -164,7 +164,7 @@ PetscErrorCode DMSwarmSortGetNumberOfPointsPerCell(DM dm,PetscInt e,PetscInt *np
 
      The array pidlist is internally created and must be free'd by the user
 
-.seealso: DMSwarmSetType(), DMSwarmSortGetAccess(), DMSwarmSortGetNumberOfPointsPerCell()
+.seealso: `DMSwarmSetType()`, `DMSwarmSortGetAccess()`, `DMSwarmSortGetNumberOfPointsPerCell()`
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmSortGetPointsPerCell(DM dm,PetscInt e,PetscInt *npoints,PetscInt **pidlist)
 {
@@ -227,7 +227,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSortGetPointsPerCell(DM dm,PetscInt e,PetscIn
 
    Level: advanced
 
-.seealso: DMSwarmSetType(), DMSwarmSortRestoreAccess()
+.seealso: `DMSwarmSetType()`, `DMSwarmSortRestoreAccess()`
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmSortGetAccess(DM dm)
 {
@@ -286,7 +286,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSortGetAccess(DM dm)
    Note:
    You must call DMSwarmSortGetAccess() before calling DMSwarmSortRestoreAccess()
 
-.seealso: DMSwarmSetType(), DMSwarmSortGetAccess()
+.seealso: `DMSwarmSetType()`, `DMSwarmSortGetAccess()`
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmSortRestoreAccess(DM dm)
 {
@@ -312,7 +312,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSortRestoreAccess(DM dm)
 
  Level: advanced
 
-.seealso: DMSwarmSetType(), DMSwarmSortGetAccess()
+.seealso: `DMSwarmSetType()`, `DMSwarmSortGetAccess()`
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmSortGetIsValid(DM dm,PetscBool *isvalid)
 {
@@ -341,7 +341,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSortGetIsValid(DM dm,PetscBool *isvalid)
 
    Level: advanced
 
-.seealso: DMSwarmSetType(), DMSwarmSortGetAccess()
+.seealso: `DMSwarmSetType()`, `DMSwarmSortGetAccess()`
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmSortGetSizes(DM dm,PetscInt *ncells,PetscInt *npoints)
 {

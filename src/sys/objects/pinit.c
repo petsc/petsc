@@ -89,7 +89,7 @@ PetscSpinlock PetscCommSpinLock;
 
      Developer Note: Turns off PETSc signal handling to allow Julia to manage signals
 
-.seealso: PetscInitialize(), PetscInitializeFortran(), PetscInitializeNoArguments()
+.seealso: `PetscInitialize()`, `PetscInitializeFortran()`, `PetscInitializeNoArguments()`
 */
 PetscErrorCode  PetscInitializeNoPointers(int argc,char **args,const char *filename,const char *help)
 {
@@ -122,7 +122,7 @@ PetscErrorCode  PetscGetPETSC_COMM_SELF(MPI_Comm *comm)
 
    Level: advanced
 
-.seealso: PetscInitialize(), PetscInitializeFortran()
+.seealso: `PetscInitialize()`, `PetscInitializeFortran()`
 @*/
 PetscErrorCode  PetscInitializeNoArguments(void)
 {
@@ -139,7 +139,7 @@ PetscErrorCode  PetscInitializeNoArguments(void)
 
    Level: beginner
 
-.seealso: PetscInitialize(), PetscInitializeNoArguments(), PetscInitializeFortran()
+.seealso: `PetscInitialize()`, `PetscInitializeNoArguments()`, `PetscInitializeFortran()`
 @*/
 PetscErrorCode PetscInitialized(PetscBool *isInitialized)
 {
@@ -154,7 +154,7 @@ PetscErrorCode PetscInitialized(PetscBool *isInitialized)
 
    Level: developer
 
-.seealso: PetscInitialize(), PetscInitializeNoArguments(), PetscInitializeFortran()
+.seealso: `PetscInitialize()`, `PetscInitializeNoArguments()`, `PetscInitializeFortran()`
 @*/
 PetscErrorCode  PetscFinalized(PetscBool  *isFinalized)
 {
@@ -469,7 +469,7 @@ PetscErrorCode  PetscGetProgramName(char name[],size_t len)
 
       The first argument contains the program name as is normal for C arguments.
 
-.seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArguments()
+.seealso: `PetscFinalize()`, `PetscInitializeFortran()`, `PetscGetArguments()`
 
 @*/
 PetscErrorCode  PetscGetArgs(int *argc,char ***args)
@@ -495,7 +495,7 @@ PetscErrorCode  PetscGetArgs(int *argc,char ***args)
    Notes:
       This does NOT start with the program name and IS null terminated (final arg is void)
 
-.seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscFreeArguments()
+.seealso: `PetscFinalize()`, `PetscInitializeFortran()`, `PetscGetArgs()`, `PetscFreeArguments()`
 
 @*/
 PetscErrorCode  PetscGetArguments(char ***args)
@@ -521,7 +521,7 @@ PetscErrorCode  PetscGetArguments(char ***args)
 
    Level: intermediate
 
-.seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscGetArguments()
+.seealso: `PetscFinalize()`, `PetscInitializeFortran()`, `PetscGetArgs()`, `PetscGetArguments()`
 
 @*/
 PetscErrorCode  PetscFreeArguments(char **args)
@@ -1191,7 +1191,7 @@ $       call PetscInitialize(file,ierr)
    If your main program is C but you call Fortran code that also uses PETSc you need to call PetscInitializeFortran() soon after
    calling PetscInitialize().
 
-.seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscInitializeNoArguments(), PetscLogGpuTime()
+.seealso: `PetscFinalize()`, `PetscInitializeFortran()`, `PetscGetArgs()`, `PetscInitializeNoArguments()`, `PetscLogGpuTime()`
 
 @*/
 PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const char help[])
@@ -1292,7 +1292,7 @@ PETSC_INTERN PetscErrorCode PetscLogFinalize(void);
    Note:
    See PetscInitialize() for more general runtime options.
 
-.seealso: PetscInitialize(), PetscOptionsView(), PetscMallocDump(), PetscMPIDump(), PetscEnd()
+.seealso: `PetscInitialize()`, `PetscOptionsView()`, `PetscMallocDump()`, `PetscMPIDump()`, `PetscEnd()`
 @*/
 PetscErrorCode  PetscFinalize(void)
 {

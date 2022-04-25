@@ -41,7 +41,7 @@ typedef struct _n_PetscViewerGLVis *PetscViewerGLVis;
 
   Level: beginner
 
-.seealso: PetscViewerGLVisOpen(), PetscViewerGLVisSetFields(), PetscViewerCreate(), PetscViewerSetType()
+.seealso: `PetscViewerGLVisOpen()`, `PetscViewerGLVisSetFields()`, `PetscViewerCreate()`, `PetscViewerSetType()`
 @*/
 PetscErrorCode PetscViewerGLVisSetPrecision(PetscViewer viewer, PetscInt prec)
 {
@@ -77,7 +77,7 @@ static PetscErrorCode PetscViewerGLVisSetPrecision_GLVis(PetscViewer viewer, Pet
 
   Level: beginner
 
-.seealso: PetscViewerGLVisOpen(), PetscViewerGLVisSetFields(), PetscViewerCreate(), PetscViewerSetType()
+.seealso: `PetscViewerGLVisOpen()`, `PetscViewerGLVisSetFields()`, `PetscViewerCreate()`, `PetscViewerSetType()`
 @*/
 PetscErrorCode PetscViewerGLVisSetSnapId(PetscViewer viewer, PetscInt id)
 {
@@ -122,7 +122,7 @@ static PetscErrorCode PetscViewerGLVisSetSnapId_GLVis(PetscViewer viewer, PetscI
 
   Level: intermediate
 
-.seealso: PetscViewerGLVisOpen(), PetscViewerCreate(), PetscViewerSetType(), PetscObjectSetName()
+.seealso: `PetscViewerGLVisOpen()`, `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscObjectSetName()`
 @*/
 PetscErrorCode PetscViewerGLVisSetFields(PetscViewer viewer, PetscInt nf, const char* fec_type[], PetscInt dim[], PetscErrorCode(*g2l)(PetscObject,PetscInt,PetscObject[],void*), PetscObject Vfield[], void* ctx, PetscErrorCode(*destroyctx)(void*))
 {
@@ -631,7 +631,7 @@ static PetscErrorCode PetscViewerFileSetName_GLVis(PetscViewer viewer, const cha
 
   Level: beginner
 
-.seealso: PetscViewerCreate(), PetscViewerSetType(), PetscViewerGLVisType
+.seealso: `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscViewerGLVisType`
 @*/
 PetscErrorCode PetscViewerGLVisOpen(MPI_Comm comm, PetscViewerGLVisType type, const char name[], PetscInt port, PetscViewer *viewer)
 {
@@ -676,7 +676,7 @@ PetscErrorCode PetscViewerGLVisOpen(MPI_Comm comm, PetscViewerGLVisType type, co
   an error code.  The GLVIS PetscViewer is usually used in the form
 $       XXXView(XXX object, PETSC_VIEWER_GLVIS_(comm));
 
-.seealso: PetscViewerGLVISOpen(), PetscViewerGLVisType, PetscViewerCreate(), PetscViewerDestroy()
+.seealso: `PetscViewerGLVISOpen()`, `PetscViewerGLVisType`, `PetscViewerCreate()`, `PetscViewerDestroy()`
 */
 PetscViewer PETSC_VIEWER_GLVIS_(MPI_Comm comm)
 {

@@ -27,7 +27,7 @@ PETSC_EXTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
 
   Level: intermediate
 
-.seealso DMPlexGetSimplexOrBoxCells(), DMPlexGetCellType(), DMPlexGetHeightStratum(), DMPolytopeTypeGetNumVertices()
+.seealso `DMPlexGetSimplexOrBoxCells()`, `DMPlexGetCellType()`, `DMPlexGetHeightStratum()`, `DMPolytopeTypeGetNumVertices()`
 @*/
 PetscErrorCode DMPlexIsSimplex(DM dm, PetscBool *simplex)
 {
@@ -57,7 +57,7 @@ PetscErrorCode DMPlexIsSimplex(DM dm, PetscBool *simplex)
 
   Level: developer
 
-.seealso DMPlexConstructGhostCells(), DMPlexGetGhostCellStratum()
+.seealso `DMPlexConstructGhostCells()`, `DMPlexGetGhostCellStratum()`
 @*/
 PetscErrorCode DMPlexGetSimplexOrBoxCells(DM dm, PetscInt height, PetscInt *cStart, PetscInt *cEnd)
 {
@@ -150,7 +150,7 @@ PetscErrorCode DMPlexGetFieldType_Internal(DM dm, PetscSection section, PetscInt
 
   Level: advanced
 
-.seealso: VecViewFromOptions(), VecView()
+.seealso: `VecViewFromOptions()`, `VecView()`
 @*/
 PetscErrorCode DMPlexVecView1D(DM dm, PetscInt n, Vec u[], PetscViewer viewer)
 {
@@ -1777,7 +1777,7 @@ PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer)
 
   Level: advanced
 
-.seealso: DMView(), DMPlexCoordinatesView(), DMPlexLabelsView(), DMPlexTopologyLoad()
+.seealso: `DMView()`, `DMPlexCoordinatesView()`, `DMPlexLabelsView()`, `DMPlexTopologyLoad()`
 @*/
 PetscErrorCode DMPlexTopologyView(DM dm, PetscViewer viewer)
 {
@@ -1818,7 +1818,7 @@ PetscErrorCode DMPlexTopologyView(DM dm, PetscViewer viewer)
 
   Level: advanced
 
-.seealso: DMView(), DMPlexTopologyView(), DMPlexLabelsView(), DMPlexCoordinatesLoad()
+.seealso: `DMView()`, `DMPlexTopologyView()`, `DMPlexLabelsView()`, `DMPlexCoordinatesLoad()`
 @*/
 PetscErrorCode DMPlexCoordinatesView(DM dm, PetscViewer viewer)
 {
@@ -1855,7 +1855,7 @@ PetscErrorCode DMPlexCoordinatesView(DM dm, PetscViewer viewer)
 
   Level: advanced
 
-.seealso: DMView(), DMPlexTopologyView(), DMPlexCoordinatesView(), DMPlexLabelsLoad()
+.seealso: `DMView()`, `DMPlexTopologyView()`, `DMPlexCoordinatesView()`, `DMPlexLabelsLoad()`
 @*/
 PetscErrorCode DMPlexLabelsView(DM dm, PetscViewer viewer)
 {
@@ -1902,7 +1902,7 @@ PetscErrorCode DMPlexLabelsView(DM dm, PetscViewer viewer)
 
   In general dm and sectiondm are two different objects, the former carrying the topology and the latter carrying the section, and have been given a topology name and a section name, respectively, with PetscObjectSetName(). In practice, however, they can be the same object if it carries both topology and section; in that case the name of the object is used as both the topology name and the section name.
 
-.seealso: DMView(), DMPlexTopologyView(), DMPlexCoordinatesView(), DMPlexLabelsView(), DMPlexGlobalVectorView(), DMPlexLocalVectorView(), PetscSectionView(), DMPlexSectionLoad()
+.seealso: `DMView()`, `DMPlexTopologyView()`, `DMPlexCoordinatesView()`, `DMPlexLabelsView()`, `DMPlexGlobalVectorView()`, `DMPlexLocalVectorView()`, `PetscSectionView()`, `DMPlexSectionLoad()`
 @*/
 PetscErrorCode DMPlexSectionView(DM dm, PetscViewer viewer, DM sectiondm)
 {
@@ -1962,7 +1962,7 @@ $       DMRestoreGlobalVector(sectiondm, &vec);
 $       DMDestroy(&sectiondm);
 $       DMDestroy(&dm);
 
-.seealso: DMPlexTopologyView(), DMPlexSectionView(), DMPlexLocalVectorView(), DMPlexGlobalVectorLoad(), DMPlexLocalVectorLoad()
+.seealso: `DMPlexTopologyView()`, `DMPlexSectionView()`, `DMPlexLocalVectorView()`, `DMPlexGlobalVectorLoad()`, `DMPlexLocalVectorLoad()`
 @*/
 PetscErrorCode DMPlexGlobalVectorView(DM dm, PetscViewer viewer, DM sectiondm, Vec vec)
 {
@@ -2035,7 +2035,7 @@ $       DMRestoreLocalVector(sectiondm, &vec);
 $       DMDestroy(&sectiondm);
 $       DMDestroy(&dm);
 
-.seealso: DMPlexTopologyView(), DMPlexSectionView(), DMPlexGlobalVectorView(), DMPlexGlobalVectorLoad(), DMPlexLocalVectorLoad()
+.seealso: `DMPlexTopologyView()`, `DMPlexSectionView()`, `DMPlexGlobalVectorView()`, `DMPlexGlobalVectorLoad()`, `DMPlexLocalVectorLoad()`
 @*/
 PetscErrorCode DMPlexLocalVectorView(DM dm, PetscViewer viewer, DM sectiondm, Vec vec)
 {
@@ -2110,7 +2110,7 @@ PetscErrorCode DMLoad_Plex(DM dm, PetscViewer viewer)
 
   Level: advanced
 
-.seealso: DMLoad(), DMPlexCoordinatesLoad(), DMPlexLabelsLoad(), DMView(), PetscViewerHDF5Open(), PetscViewerPushFormat()
+.seealso: `DMLoad()`, `DMPlexCoordinatesLoad()`, `DMPlexLabelsLoad()`, `DMView()`, `PetscViewerHDF5Open()`, `PetscViewerPushFormat()`
 @*/
 PetscErrorCode DMPlexTopologyLoad(DM dm, PetscViewer viewer, PetscSF *globalToLocalPointSF)
 {
@@ -2149,7 +2149,7 @@ PetscErrorCode DMPlexTopologyLoad(DM dm, PetscViewer viewer, PetscSF *globalToLo
 
   Level: advanced
 
-.seealso: DMLoad(), DMPlexTopologyLoad(), DMPlexLabelsLoad(), DMView(), PetscViewerHDF5Open(), PetscViewerPushFormat()
+.seealso: `DMLoad()`, `DMPlexTopologyLoad()`, `DMPlexLabelsLoad()`, `DMView()`, `PetscViewerHDF5Open()`, `PetscViewerPushFormat()`
 @*/
 PetscErrorCode DMPlexCoordinatesLoad(DM dm, PetscViewer viewer, PetscSF globalToLocalPointSF)
 {
@@ -2191,7 +2191,7 @@ PetscErrorCode DMPlexCoordinatesLoad(DM dm, PetscViewer viewer, PetscSF globalTo
   Notes:
   The PetscSF argument must not be NULL if the DM is distributed, otherwise an error occurs.
 
-.seealso: DMLoad(), DMPlexTopologyLoad(), DMPlexCoordinatesLoad(), DMView(), PetscViewerHDF5Open(), PetscViewerPushFormat()
+.seealso: `DMLoad()`, `DMPlexTopologyLoad()`, `DMPlexCoordinatesLoad()`, `DMView()`, `PetscViewerHDF5Open()`, `PetscViewerPushFormat()`
 @*/
 PetscErrorCode DMPlexLabelsLoad(DM dm, PetscViewer viewer, PetscSF globalToLocalPointSF)
 {
@@ -2265,7 +2265,7 @@ $  vecB (global)                  :    [.0 .4 | .1 .2 .3]     <- to be construct
 $
 $  where "|" represents a partition of loaded data, and global point 3 is assumed to be owned by rank 0.
 
-.seealso: DMLoad(), DMPlexTopologyLoad(), DMPlexCoordinatesLoad(), DMPlexLabelsLoad(), DMPlexGlobalVectorLoad(), DMPlexLocalVectorLoad(), PetscSectionLoad(), DMPlexSectionView()
+.seealso: `DMLoad()`, `DMPlexTopologyLoad()`, `DMPlexCoordinatesLoad()`, `DMPlexLabelsLoad()`, `DMPlexGlobalVectorLoad()`, `DMPlexLocalVectorLoad()`, `PetscSectionLoad()`, `DMPlexSectionView()`
 @*/
 PetscErrorCode DMPlexSectionLoad(DM dm, PetscViewer viewer, DM sectiondm, PetscSF globalToLocalPointSF, PetscSF *globalDofSF, PetscSF *localDofSF)
 {
@@ -2325,7 +2325,7 @@ $       PetscSFDestroy(&sfX);
 $       DMDestroy(&sectiondm);
 $       DMDestroy(&dm);
 
-.seealso: DMPlexTopologyLoad(), DMPlexSectionLoad(), DMPlexLocalVectorLoad(), DMPlexGlobalVectorView(), DMPlexLocalVectorView()
+.seealso: `DMPlexTopologyLoad()`, `DMPlexSectionLoad()`, `DMPlexLocalVectorLoad()`, `DMPlexGlobalVectorView()`, `DMPlexLocalVectorView()`
 @*/
 PetscErrorCode DMPlexGlobalVectorLoad(DM dm, PetscViewer viewer, DM sectiondm, PetscSF sf, Vec vec)
 {
@@ -2397,7 +2397,7 @@ $       PetscSFDestroy(&sfX);
 $       DMDestroy(&sectiondm);
 $       DMDestroy(&dm);
 
-.seealso: DMPlexTopologyLoad(), DMPlexSectionLoad(), DMPlexGlobalVectorLoad(), DMPlexGlobalVectorView(), DMPlexLocalVectorView()
+.seealso: `DMPlexTopologyLoad()`, `DMPlexSectionLoad()`, `DMPlexGlobalVectorLoad()`, `DMPlexGlobalVectorView()`, `DMPlexLocalVectorView()`
 @*/
 PetscErrorCode DMPlexLocalVectorLoad(DM dm, PetscViewer viewer, DM sectiondm, PetscSF sf, Vec vec)
 {
@@ -2593,7 +2593,7 @@ PetscErrorCode DMPlexGetSubdomainSection(DM dm, PetscSection *subsection)
 
   Level: beginner
 
-.seealso: DMPlexCreate(), DMPlexSetChart()
+.seealso: `DMPlexCreate()`, `DMPlexSetChart()`
 @*/
 PetscErrorCode DMPlexGetChart(DM dm, PetscInt *pStart, PetscInt *pEnd)
 {
@@ -2619,7 +2619,7 @@ PetscErrorCode DMPlexGetChart(DM dm, PetscInt *pStart, PetscInt *pEnd)
 
   Level: beginner
 
-.seealso: DMPlexCreate(), DMPlexGetChart()
+.seealso: `DMPlexCreate()`, `DMPlexGetChart()`
 @*/
 PetscErrorCode DMPlexSetChart(DM dm, PetscInt pStart, PetscInt pEnd)
 {
@@ -2646,7 +2646,7 @@ PetscErrorCode DMPlexSetChart(DM dm, PetscInt pStart, PetscInt pEnd)
 
   Level: beginner
 
-.seealso: DMPlexCreate(), DMPlexSetConeSize(), DMPlexSetChart()
+.seealso: `DMPlexCreate()`, `DMPlexSetConeSize()`, `DMPlexSetChart()`
 @*/
 PetscErrorCode DMPlexGetConeSize(DM dm, PetscInt p, PetscInt *size)
 {
@@ -2676,7 +2676,7 @@ PetscErrorCode DMPlexGetConeSize(DM dm, PetscInt p, PetscInt *size)
 
   Level: beginner
 
-.seealso: DMPlexCreate(), DMPlexGetConeSize(), DMPlexSetChart()
+.seealso: `DMPlexCreate()`, `DMPlexGetConeSize()`, `DMPlexSetChart()`
 @*/
 PetscErrorCode DMPlexSetConeSize(DM dm, PetscInt p, PetscInt size)
 {
@@ -2705,7 +2705,7 @@ PetscErrorCode DMPlexSetConeSize(DM dm, PetscInt p, PetscInt size)
 
   Level: beginner
 
-.seealso: DMPlexCreate(), DMPlexSetConeSize(), DMPlexGetConeSize(), DMPlexSetChart()
+.seealso: `DMPlexCreate()`, `DMPlexSetConeSize()`, `DMPlexGetConeSize()`, `DMPlexSetChart()`
 @*/
 PetscErrorCode DMPlexAddConeSize(DM dm, PetscInt p, PetscInt size)
 {
@@ -2736,7 +2736,7 @@ PetscErrorCode DMPlexAddConeSize(DM dm, PetscInt p, PetscInt size)
   You must also call DMPlexRestoreCone() after you finish using the returned array.
   DMPlexRestoreCone() is not needed/available in C.
 
-.seealso: DMPlexGetConeSize(), DMPlexSetCone(), DMPlexGetConeTuple(), DMPlexSetChart()
+.seealso: `DMPlexGetConeSize()`, `DMPlexSetCone()`, `DMPlexGetConeTuple()`, `DMPlexSetChart()`
 @*/
 PetscErrorCode DMPlexGetCone(DM dm, PetscInt p, const PetscInt *cone[])
 {
@@ -2766,7 +2766,7 @@ PetscErrorCode DMPlexGetCone(DM dm, PetscInt p, const PetscInt *cone[])
 
   Level: intermediate
 
-.seealso: DMPlexCreate(), DMPlexGetCone(), DMPlexGetConeRecursive(), DMPlexSetChart()
+.seealso: `DMPlexCreate()`, `DMPlexGetCone()`, `DMPlexGetConeRecursive()`, `DMPlexSetChart()`
 @*/
 PetscErrorCode DMPlexGetConeTuple(DM dm, IS p, PetscSection *pConesSection, IS *pCones)
 {
@@ -2805,7 +2805,7 @@ PetscErrorCode DMPlexGetConeTuple(DM dm, IS p, PetscSection *pConesSection, IS *
   Like DMPlexGetConeRecursive but returns only the 0-depth IS (i.e. vertices only) and no sections.
   There is no corresponding Restore function, just call ISDestroy() on the returned IS to deallocate.
 
-.seealso: DMPlexCreate(), DMPlexGetCone(), DMPlexGetConeTuple(), DMPlexGetConeRecursive(), DMPlexRestoreConeRecursive(), DMPlexGetDepth()
+.seealso: `DMPlexCreate()`, `DMPlexGetCone()`, `DMPlexGetConeTuple()`, `DMPlexGetConeRecursive()`, `DMPlexRestoreConeRecursive()`, `DMPlexGetDepth()`
 @*/
 PetscErrorCode DMPlexGetConeRecursiveVertices(DM dm, IS points, IS *expandedPoints)
 {
@@ -2849,7 +2849,7 @@ PetscErrorCode DMPlexGetConeRecursiveVertices(DM dm, IS points, IS *expandedPoin
   (1) DAG points in expandedPoints[d+1] with depth d+1 to their cone points in expandedPoints[d];
   (2) DAG points in expandedPoints[d+1] with depth in [0,d] to the same points in expandedPoints[d].
 
-.seealso: DMPlexCreate(), DMPlexGetCone(), DMPlexGetConeTuple(), DMPlexRestoreConeRecursive(), DMPlexGetConeRecursiveVertices(), DMPlexGetDepth()
+.seealso: `DMPlexCreate()`, `DMPlexGetCone()`, `DMPlexGetConeTuple()`, `DMPlexRestoreConeRecursive()`, `DMPlexGetConeRecursiveVertices()`, `DMPlexGetDepth()`
 @*/
 PetscErrorCode DMPlexGetConeRecursive(DM dm, IS points, PetscInt *depth, IS *expandedPoints[], PetscSection *sections[])
 {
@@ -2934,7 +2934,7 @@ PetscErrorCode DMPlexGetConeRecursive(DM dm, IS points, PetscInt *depth, IS *exp
   Notes:
   See DMPlexGetConeRecursive() for details.
 
-.seealso: DMPlexCreate(), DMPlexGetCone(), DMPlexGetConeTuple(), DMPlexGetConeRecursive(), DMPlexGetConeRecursiveVertices(), DMPlexGetDepth()
+.seealso: `DMPlexCreate()`, `DMPlexGetCone()`, `DMPlexGetConeTuple()`, `DMPlexGetConeRecursive()`, `DMPlexGetConeRecursiveVertices()`, `DMPlexGetDepth()`
 @*/
 PetscErrorCode DMPlexRestoreConeRecursive(DM dm, IS points, PetscInt *depth, IS *expandedPoints[], PetscSection *sections[])
 {
@@ -2972,7 +2972,7 @@ PetscErrorCode DMPlexRestoreConeRecursive(DM dm, IS points, PetscInt *depth, IS 
 
   Level: beginner
 
-.seealso: DMPlexCreate(), DMPlexGetCone(), DMPlexSetChart(), DMPlexSetConeSize(), DMSetUp(), DMPlexSetSupport(), DMPlexSetSupportSize()
+.seealso: `DMPlexCreate()`, `DMPlexGetCone()`, `DMPlexSetChart()`, `DMPlexSetConeSize()`, `DMSetUp()`, `DMPlexSetSupport()`, `DMPlexSetSupportSize()`
 @*/
 PetscErrorCode DMPlexSetCone(DM dm, PetscInt p, const PetscInt cone[])
 {
@@ -3021,7 +3021,7 @@ PetscErrorCode DMPlexSetCone(DM dm, PetscInt p, const PetscInt cone[])
   You must also call DMPlexRestoreConeOrientation() after you finish using the returned array.
   DMPlexRestoreConeOrientation() is not needed/available in C.
 
-.seealso: DMPolytopeTypeComposeOrientation(), DMPolytopeTypeComposeOrientationInv(), DMPlexCreate(), DMPlexGetCone(), DMPlexSetCone(), DMPlexSetChart()
+.seealso: `DMPolytopeTypeComposeOrientation()`, `DMPolytopeTypeComposeOrientationInv()`, `DMPlexCreate()`, `DMPlexGetCone()`, `DMPlexSetCone()`, `DMPlexSetChart()`
 @*/
 PetscErrorCode DMPlexGetConeOrientation(DM dm, PetscInt p, const PetscInt *coneOrientation[])
 {
@@ -3059,7 +3059,7 @@ PetscErrorCode DMPlexGetConeOrientation(DM dm, PetscInt p, const PetscInt *coneO
 
   Level: beginner
 
-.seealso: DMPlexCreate(), DMPlexGetConeOrientation(), DMPlexSetCone(), DMPlexSetChart(), DMPlexSetConeSize(), DMSetUp()
+.seealso: `DMPlexCreate()`, `DMPlexGetConeOrientation()`, `DMPlexSetCone()`, `DMPlexSetChart()`, `DMPlexSetConeSize()`, `DMSetUp()`
 @*/
 PetscErrorCode DMPlexSetConeOrientation(DM dm, PetscInt p, const PetscInt coneOrientation[])
 {
@@ -3097,7 +3097,7 @@ PetscErrorCode DMPlexSetConeOrientation(DM dm, PetscInt p, const PetscInt coneOr
 
   Level: beginner
 
-.seealso: DMPlexCreate(), DMPlexGetCone(), DMPlexSetChart(), DMPlexSetConeSize(), DMSetUp()
+.seealso: `DMPlexCreate()`, `DMPlexGetCone()`, `DMPlexSetChart()`, `DMPlexSetConeSize()`, `DMSetUp()`
 @*/
 PetscErrorCode DMPlexInsertCone(DM dm, PetscInt p, PetscInt conePos, PetscInt conePoint)
 {
@@ -3133,7 +3133,7 @@ PetscErrorCode DMPlexInsertCone(DM dm, PetscInt p, PetscInt conePos, PetscInt co
   Notes:
   The meaning of coneOrientation values is detailed in DMPlexGetConeOrientation().
 
-.seealso: DMPlexCreate(), DMPlexGetCone(), DMPlexSetChart(), DMPlexSetConeSize(), DMSetUp()
+.seealso: `DMPlexCreate()`, `DMPlexGetCone()`, `DMPlexSetChart()`, `DMPlexSetConeSize()`, `DMSetUp()`
 @*/
 PetscErrorCode DMPlexInsertConeOrientation(DM dm, PetscInt p, PetscInt conePos, PetscInt coneOrientation)
 {
@@ -3166,7 +3166,7 @@ PetscErrorCode DMPlexInsertConeOrientation(DM dm, PetscInt p, PetscInt conePos, 
 
   Level: beginner
 
-.seealso: DMPlexCreate(), DMPlexSetConeSize(), DMPlexSetChart(), DMPlexGetConeSize()
+.seealso: `DMPlexCreate()`, `DMPlexSetConeSize()`, `DMPlexSetChart()`, `DMPlexGetConeSize()`
 @*/
 PetscErrorCode DMPlexGetSupportSize(DM dm, PetscInt p, PetscInt *size)
 {
@@ -3196,7 +3196,7 @@ PetscErrorCode DMPlexGetSupportSize(DM dm, PetscInt p, PetscInt *size)
 
   Level: beginner
 
-.seealso: DMPlexCreate(), DMPlexGetSupportSize(), DMPlexSetChart()
+.seealso: `DMPlexCreate()`, `DMPlexGetSupportSize()`, `DMPlexSetChart()`
 @*/
 PetscErrorCode DMPlexSetSupportSize(DM dm, PetscInt p, PetscInt size)
 {
@@ -3228,7 +3228,7 @@ PetscErrorCode DMPlexSetSupportSize(DM dm, PetscInt p, PetscInt size)
   You must also call DMPlexRestoreSupport() after you finish using the returned array.
   DMPlexRestoreSupport() is not needed/available in C.
 
-.seealso: DMPlexGetSupportSize(), DMPlexSetSupport(), DMPlexGetCone(), DMPlexSetChart()
+.seealso: `DMPlexGetSupportSize()`, `DMPlexSetSupport()`, `DMPlexGetCone()`, `DMPlexSetChart()`
 @*/
 PetscErrorCode DMPlexGetSupport(DM dm, PetscInt p, const PetscInt *support[])
 {
@@ -3260,7 +3260,7 @@ PetscErrorCode DMPlexGetSupport(DM dm, PetscInt p, const PetscInt *support[])
 
   Level: beginner
 
-.seealso: DMPlexSetCone(), DMPlexSetConeSize(), DMPlexCreate(), DMPlexGetSupport(), DMPlexSetChart(), DMPlexSetSupportSize(), DMSetUp()
+.seealso: `DMPlexSetCone()`, `DMPlexSetConeSize()`, `DMPlexCreate()`, `DMPlexGetSupport()`, `DMPlexSetChart()`, `DMPlexSetSupportSize()`, `DMSetUp()`
 @*/
 PetscErrorCode DMPlexSetSupport(DM dm, PetscInt p, const PetscInt support[])
 {
@@ -3295,7 +3295,7 @@ PetscErrorCode DMPlexSetSupport(DM dm, PetscInt p, const PetscInt support[])
 
   Level: beginner
 
-.seealso: DMPlexCreate(), DMPlexGetCone(), DMPlexSetChart(), DMPlexSetConeSize(), DMSetUp()
+.seealso: `DMPlexCreate()`, `DMPlexGetCone()`, `DMPlexSetChart()`, `DMPlexSetConeSize()`, `DMSetUp()`
 @*/
 PetscErrorCode DMPlexInsertSupport(DM dm, PetscInt p, PetscInt supportPos, PetscInt supportPoint)
 {
@@ -3629,7 +3629,7 @@ PetscErrorCode DMPlexGetTransitiveClosure_Internal(DM dm, PetscInt p, PetscInt o
 
   Level: beginner
 
-.seealso: DMPlexRestoreTransitiveClosure(), DMPlexCreate(), DMPlexSetCone(), DMPlexSetChart(), DMPlexGetCone()
+.seealso: `DMPlexRestoreTransitiveClosure()`, `DMPlexCreate()`, `DMPlexSetCone()`, `DMPlexSetChart()`, `DMPlexGetCone()`
 @*/
 PetscErrorCode DMPlexGetTransitiveClosure(DM dm, PetscInt p, PetscBool useCone, PetscInt *numPoints, PetscInt *points[])
 {
@@ -3663,7 +3663,7 @@ PetscErrorCode DMPlexGetTransitiveClosure(DM dm, PetscInt p, PetscBool useCone, 
 
   Level: beginner
 
-.seealso: DMPlexGetTransitiveClosure(), DMPlexCreate(), DMPlexSetCone(), DMPlexSetChart(), DMPlexGetCone()
+.seealso: `DMPlexGetTransitiveClosure()`, `DMPlexCreate()`, `DMPlexSetCone()`, `DMPlexSetChart()`, `DMPlexGetCone()`
 @*/
 PetscErrorCode DMPlexRestoreTransitiveClosure(DM dm, PetscInt p, PetscBool useCone, PetscInt *numPoints, PetscInt *points[])
 {
@@ -3688,7 +3688,7 @@ PetscErrorCode DMPlexRestoreTransitiveClosure(DM dm, PetscInt p, PetscBool useCo
 
   Level: beginner
 
-.seealso: DMPlexCreate(), DMPlexSetConeSize(), DMPlexSetChart()
+.seealso: `DMPlexCreate()`, `DMPlexSetConeSize()`, `DMPlexSetChart()`
 @*/
 PetscErrorCode DMPlexGetMaxSizes(DM dm, PetscInt *maxConeSize, PetscInt *maxSupportSize)
 {
@@ -3798,7 +3798,7 @@ PetscErrorCode DMCreateSuperDM_Plex(DM dms[], PetscInt len, IS **is, DM *superdm
 
   Level: beginner
 
-.seealso: DMPlexCreate(), DMPlexSetChart(), DMPlexSetConeSize(), DMPlexSetCone()
+.seealso: `DMPlexCreate()`, `DMPlexSetChart()`, `DMPlexSetConeSize()`, `DMPlexSetCone()`
 @*/
 PetscErrorCode DMPlexSymmetrize(DM dm)
 {
@@ -3904,7 +3904,7 @@ $  depth 1 = {e0, c0}
 
   Level: beginner
 
-.seealso: DMPlexCreate(), DMPlexSymmetrize(), DMPlexComputeCellTypes()
+.seealso: `DMPlexCreate()`, `DMPlexSymmetrize()`, `DMPlexComputeCellTypes()`
 @*/
 PetscErrorCode DMPlexStratify(DM dm)
 {
@@ -4098,7 +4098,7 @@ PetscErrorCode DMPlexComputeCellType_Internal(DM dm, PetscInt p, PetscInt pdepth
   internal DMLabel named "celltype" which can be directly accessed using DMGetLabel(). A user may disable
   automatic creation by creating the label manually, using DMCreateLabel(dm, "celltype").
 
-.seealso: DMPlexCreate(), DMPlexSymmetrize(), DMPlexStratify(), DMGetLabel(), DMCreateLabel()
+.seealso: `DMPlexCreate()`, `DMPlexSymmetrize()`, `DMPlexStratify()`, `DMGetLabel()`, `DMCreateLabel()`
 @*/
 PetscErrorCode DMPlexComputeCellTypes(DM dm)
 {
@@ -4150,7 +4150,7 @@ PetscErrorCode DMPlexComputeCellTypes(DM dm)
 
   The numCoveredPoints argument is not present in the Fortran 90 binding since it is internal to the array.
 
-.seealso: DMPlexRestoreJoin(), DMPlexGetMeet()
+.seealso: `DMPlexRestoreJoin()`, `DMPlexGetMeet()`
 @*/
 PetscErrorCode DMPlexGetJoin(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveredPoints, const PetscInt **coveredPoints)
 {
@@ -4221,7 +4221,7 @@ PetscErrorCode DMPlexGetJoin(DM dm, PetscInt numPoints, const PetscInt points[],
 
   Level: intermediate
 
-.seealso: DMPlexGetJoin(), DMPlexGetFullJoin(), DMPlexGetMeet()
+.seealso: `DMPlexGetJoin()`, `DMPlexGetFullJoin()`, `DMPlexGetMeet()`
 @*/
 PetscErrorCode DMPlexRestoreJoin(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveredPoints, const PetscInt **coveredPoints)
 {
@@ -4257,7 +4257,7 @@ PetscErrorCode DMPlexRestoreJoin(DM dm, PetscInt numPoints, const PetscInt point
 
   Level: intermediate
 
-.seealso: DMPlexGetJoin(), DMPlexRestoreJoin(), DMPlexGetMeet()
+.seealso: `DMPlexGetJoin()`, `DMPlexRestoreJoin()`, `DMPlexGetMeet()`
 @*/
 PetscErrorCode DMPlexGetFullJoin(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveredPoints, const PetscInt **coveredPoints)
 {
@@ -4363,7 +4363,7 @@ PetscErrorCode DMPlexGetFullJoin(DM dm, PetscInt numPoints, const PetscInt point
 
   The numCoveredPoints argument is not present in the Fortran 90 binding since it is internal to the array.
 
-.seealso: DMPlexRestoreMeet(), DMPlexGetJoin()
+.seealso: `DMPlexRestoreMeet()`, `DMPlexGetJoin()`
 @*/
 PetscErrorCode DMPlexGetMeet(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveringPoints, const PetscInt **coveringPoints)
 {
@@ -4434,7 +4434,7 @@ PetscErrorCode DMPlexGetMeet(DM dm, PetscInt numPoints, const PetscInt points[],
 
   The numCoveredPoints argument is not present in the Fortran 90 binding since it is internal to the array.
 
-.seealso: DMPlexGetMeet(), DMPlexGetFullMeet(), DMPlexGetJoin()
+.seealso: `DMPlexGetMeet()`, `DMPlexGetFullMeet()`, `DMPlexGetJoin()`
 @*/
 PetscErrorCode DMPlexRestoreMeet(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveredPoints, const PetscInt **coveredPoints)
 {
@@ -4470,7 +4470,7 @@ PetscErrorCode DMPlexRestoreMeet(DM dm, PetscInt numPoints, const PetscInt point
 
   The numCoveredPoints argument is not present in the Fortran 90 binding since it is internal to the array.
 
-.seealso: DMPlexGetMeet(), DMPlexRestoreMeet(), DMPlexGetJoin()
+.seealso: `DMPlexGetMeet()`, `DMPlexRestoreMeet()`, `DMPlexGetJoin()`
 @*/
 PetscErrorCode DMPlexGetFullMeet(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveredPoints, const PetscInt **coveredPoints)
 {
@@ -4569,7 +4569,7 @@ PetscErrorCode DMPlexGetFullMeet(DM dm, PetscInt numPoints, const PetscInt point
   Notes:
   We are not solving graph isomorphism, so we do not permutation.
 
-.seealso: DMPlexGetCone()
+.seealso: `DMPlexGetCone()`
 @*/
 PetscErrorCode DMPlexEqual(DM dmA, DM dmB, PetscBool *equal)
 {
@@ -4633,7 +4633,7 @@ PetscErrorCode DMPlexEqual(DM dmA, DM dmB, PetscBool *equal)
   Notes:
   Of course this can only work for a restricted set of symmetric shapes
 
-.seealso: DMPlexGetCone()
+.seealso: `DMPlexGetCone()`
 @*/
 PetscErrorCode DMPlexGetNumFaceVertices(DM dm, PetscInt cellDim, PetscInt numCorners, PetscInt *numFaceVertices)
 {
@@ -4716,7 +4716,7 @@ PetscErrorCode DMPlexGetNumFaceVertices(DM dm, PetscInt cellDim, PetscInt numCor
 
   Level: developer
 
-.seealso: DMPlexGetDepth(), DMPlexGetHeightStratum(), DMPlexGetDepthStratum(), DMPlexGetPointDepth(),
+.seealso: `DMPlexGetDepth()`, `DMPlexGetHeightStratum()`, `DMPlexGetDepthStratum()`, `DMPlexGetPointDepth()`,
 @*/
 PetscErrorCode DMPlexGetDepthLabel(DM dm, DMLabel *depthLabel)
 {
@@ -4745,7 +4745,7 @@ PetscErrorCode DMPlexGetDepthLabel(DM dm, DMLabel *depthLabel)
   The point depth is described more in detail in DMPlexGetDepthStratum().
   An empty mesh gives -1.
 
-.seealso: DMPlexGetDepthLabel(), DMPlexGetDepthStratum(), DMPlexGetPointDepth(), DMPlexSymmetrize()
+.seealso: `DMPlexGetDepthLabel()`, `DMPlexGetDepthStratum()`, `DMPlexGetPointDepth()`, `DMPlexSymmetrize()`
 @*/
 PetscErrorCode DMPlexGetDepth(DM dm, PetscInt *depth)
 {
@@ -4781,7 +4781,7 @@ PetscErrorCode DMPlexGetDepth(DM dm, PetscInt *depth)
 
   Level: developer
 
-.seealso: DMPlexGetHeightStratum(), DMPlexGetDepth(), DMPlexGetDepthLabel(), DMPlexGetPointDepth(), DMPlexSymmetrize(), DMPlexInterpolate()
+.seealso: `DMPlexGetHeightStratum()`, `DMPlexGetDepth()`, `DMPlexGetDepthLabel()`, `DMPlexGetPointDepth()`, `DMPlexSymmetrize()`, `DMPlexInterpolate()`
 @*/
 PetscErrorCode DMPlexGetDepthStratum(DM dm, PetscInt stratumValue, PetscInt *start, PetscInt *end)
 {
@@ -4825,7 +4825,7 @@ PetscErrorCode DMPlexGetDepthStratum(DM dm, PetscInt stratumValue, PetscInt *sta
 
   Level: developer
 
-.seealso: DMPlexGetDepthStratum(), DMPlexGetDepth(), DMPlexGetPointHeight()
+.seealso: `DMPlexGetDepthStratum()`, `DMPlexGetDepth()`, `DMPlexGetPointHeight()`
 @*/
 PetscErrorCode DMPlexGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt *start, PetscInt *end)
 {
@@ -4864,7 +4864,7 @@ PetscErrorCode DMPlexGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt *st
 
   Level: intermediate
 
-.seealso: DMPlexGetCellType(), DMPlexGetDepthLabel(), DMPlexGetDepth(), DMPlexGetPointHeight()
+.seealso: `DMPlexGetCellType()`, `DMPlexGetDepthLabel()`, `DMPlexGetDepth()`, `DMPlexGetPointHeight()`
 @*/
 PetscErrorCode DMPlexGetPointDepth(DM dm, PetscInt point, PetscInt *depth)
 {
@@ -4889,7 +4889,7 @@ PetscErrorCode DMPlexGetPointDepth(DM dm, PetscInt point, PetscInt *depth)
 
   Level: intermediate
 
-.seealso: DMPlexGetCellType(), DMPlexGetDepthLabel(), DMPlexGetDepth(), DMPlexGetPointDepth()
+.seealso: `DMPlexGetCellType()`, `DMPlexGetDepthLabel()`, `DMPlexGetDepth()`, `DMPlexGetPointDepth()`
 @*/
 PetscErrorCode DMPlexGetPointHeight(DM dm, PetscInt point, PetscInt *height)
 {
@@ -4920,7 +4920,7 @@ PetscErrorCode DMPlexGetPointHeight(DM dm, PetscInt point, PetscInt *height)
 
   Level: developer
 
-.seealso: DMPlexGetCellType(), DMPlexGetDepthLabel(), DMCreateLabel()
+.seealso: `DMPlexGetCellType()`, `DMPlexGetDepthLabel()`, `DMCreateLabel()`
 @*/
 PetscErrorCode DMPlexGetCellTypeLabel(DM dm, DMLabel *celltypeLabel)
 {
@@ -4946,7 +4946,7 @@ PetscErrorCode DMPlexGetCellTypeLabel(DM dm, DMLabel *celltypeLabel)
 
   Level: intermediate
 
-.seealso: DMPlexGetCellTypeLabel(), DMPlexGetDepthLabel(), DMPlexGetDepth()
+.seealso: `DMPlexGetCellTypeLabel()`, `DMPlexGetDepthLabel()`, `DMPlexGetDepth()`
 @*/
 PetscErrorCode DMPlexGetCellType(DM dm, PetscInt cell, DMPolytopeType *celltype)
 {
@@ -4980,7 +4980,7 @@ PetscErrorCode DMPlexGetCellType(DM dm, PetscInt cell, DMPolytopeType *celltype)
 
   Level: advanced
 
-.seealso: DMPlexGetCellTypeLabel(), DMPlexGetDepthLabel(), DMPlexGetDepth(), DMPlexComputeCellTypes(), DMCreateLabel()
+.seealso: `DMPlexGetCellTypeLabel()`, `DMPlexGetDepthLabel()`, `DMPlexGetDepth()`, `DMPlexComputeCellTypes()`, `DMCreateLabel()`
 @*/
 PetscErrorCode DMPlexSetCellType(DM dm, PetscInt cell, DMPolytopeType celltype)
 {
@@ -5045,7 +5045,7 @@ PetscErrorCode DMCreateCoordinateField_Plex(DM dm, DMField *field)
 
   Level: developer
 
-.seealso: DMPlexGetSupportSection(), DMPlexGetCones(), DMPlexGetConeOrientations()
+.seealso: `DMPlexGetSupportSection()`, `DMPlexGetCones()`, `DMPlexGetConeOrientations()`
 @*/
 PetscErrorCode DMPlexGetConeSection(DM dm, PetscSection *section)
 {
@@ -5070,7 +5070,7 @@ PetscErrorCode DMPlexGetConeSection(DM dm, PetscSection *section)
 
   Level: developer
 
-.seealso: DMPlexGetConeSection()
+.seealso: `DMPlexGetConeSection()`
 @*/
 PetscErrorCode DMPlexGetSupportSection(DM dm, PetscSection *section)
 {
@@ -5095,7 +5095,7 @@ PetscErrorCode DMPlexGetSupportSection(DM dm, PetscSection *section)
 
   Level: developer
 
-.seealso: DMPlexGetConeSection()
+.seealso: `DMPlexGetConeSection()`
 @*/
 PetscErrorCode DMPlexGetCones(DM dm, PetscInt *cones[])
 {
@@ -5125,7 +5125,7 @@ PetscErrorCode DMPlexGetCones(DM dm, PetscInt *cones[])
 
   The meaning of coneOrientations values is detailed in DMPlexGetConeOrientation().
 
-.seealso: DMPlexGetConeSection(), DMPlexGetConeOrientation()
+.seealso: `DMPlexGetConeSection()`, `DMPlexGetConeOrientation()`
 @*/
 PetscErrorCode DMPlexGetConeOrientations(DM dm, PetscInt *coneOrientations[])
 {
@@ -5215,7 +5215,7 @@ static PetscErrorCode PetscSectionFieldGetTensorDegree_Private(PetscSection sect
 
   Level: developer
 
-.seealso: DMGetLocalSection(), PetscSectionSetClosurePermutation(), DMSetGlobalSection()
+.seealso: `DMGetLocalSection()`, `PetscSectionSetClosurePermutation()`, `DMSetGlobalSection()`
 @*/
 PetscErrorCode DMPlexSetClosurePermutationTensor(DM dm, PetscInt point, PetscSection section)
 {
@@ -5760,7 +5760,7 @@ $  PetscFree(values);
 
   Level: intermediate
 
-.seealso DMPlexVecRestoreClosure(), DMPlexVecSetClosure(), DMPlexMatSetClosure()
+.seealso `DMPlexVecRestoreClosure()`, `DMPlexVecSetClosure()`, `DMPlexMatSetClosure()`
 @*/
 PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt point, PetscInt *csize, PetscScalar *values[])
 {
@@ -5911,7 +5911,7 @@ PetscErrorCode DMPlexVecGetClosureAtDepth_Internal(DM dm, PetscSection section, 
 
   Level: intermediate
 
-.seealso DMPlexVecGetClosure(), DMPlexVecSetClosure(), DMPlexMatSetClosure()
+.seealso `DMPlexVecGetClosure()`, `DMPlexVecSetClosure()`, `DMPlexMatSetClosure()`
 @*/
 PetscErrorCode DMPlexVecRestoreClosure(DM dm, PetscSection section, Vec v, PetscInt point, PetscInt *csize, PetscScalar *values[])
 {
@@ -6245,7 +6245,7 @@ static inline PetscErrorCode DMPlexVecSetClosure_Depth1_Static(DM dm, PetscSecti
 
   Level: intermediate
 
-.seealso DMPlexVecGetClosure(), DMPlexMatSetClosure()
+.seealso `DMPlexVecGetClosure()`, `DMPlexMatSetClosure()`
 @*/
 PetscErrorCode DMPlexVecSetClosure(DM dm, PetscSection section, Vec v, PetscInt point, const PetscScalar values[], InsertMode mode)
 {
@@ -7276,7 +7276,7 @@ PetscErrorCode DMPlexAnchorsModifyMat(DM dm, PetscSection section, PetscInt numP
 
   Level: advanced
 
-.seealso DMPlexRestoreClosureIndices(), DMPlexVecGetClosure(), DMPlexMatSetClosure(), DMGetLocalSection(), DMGetGlobalSection()
+.seealso `DMPlexRestoreClosureIndices()`, `DMPlexVecGetClosure()`, `DMPlexMatSetClosure()`, `DMGetLocalSection()`, `DMGetGlobalSection()`
 @*/
 PetscErrorCode DMPlexGetClosureIndices(DM dm, PetscSection section, PetscSection idxSection, PetscInt point, PetscBool useClPerm,
                                        PetscInt *numIndices, PetscInt *indices[], PetscInt outOffsets[], PetscScalar *values[])
@@ -7472,7 +7472,7 @@ PetscErrorCode DMPlexGetClosureIndices(DM dm, PetscSection section, PetscSection
 
   Level: advanced
 
-.seealso DMPlexGetClosureIndices(), DMPlexVecGetClosure(), DMPlexMatSetClosure(), DMGetLocalSection(), DMGetGlobalSection()
+.seealso `DMPlexGetClosureIndices()`, `DMPlexVecGetClosure()`, `DMPlexMatSetClosure()`, `DMGetLocalSection()`, `DMGetGlobalSection()`
 @*/
 PetscErrorCode DMPlexRestoreClosureIndices(DM dm, PetscSection section, PetscSection idxSection, PetscInt point, PetscBool useClPerm,
                                            PetscInt *numIndices, PetscInt *indices[], PetscInt outOffsets[], PetscScalar *values[])
@@ -7503,7 +7503,7 @@ PetscErrorCode DMPlexRestoreClosureIndices(DM dm, PetscSection section, PetscSec
 
   Level: intermediate
 
-.seealso DMPlexMatSetClosureGeneral(), DMPlexVecGetClosure(), DMPlexVecSetClosure()
+.seealso `DMPlexMatSetClosureGeneral()`, `DMPlexVecGetClosure()`, `DMPlexVecSetClosure()`
 @*/
 PetscErrorCode DMPlexMatSetClosure(DM dm, PetscSection section, PetscSection globalSection, Mat A, PetscInt point, const PetscScalar values[], InsertMode mode)
 {
@@ -7567,7 +7567,7 @@ PetscErrorCode DMPlexMatSetClosure(DM dm, PetscSection section, PetscSection glo
 
   Level: intermediate
 
-.seealso DMPlexMatSetClosure(), DMPlexVecGetClosure(), DMPlexVecSetClosure()
+.seealso `DMPlexMatSetClosure()`, `DMPlexVecGetClosure()`, `DMPlexVecSetClosure()`
 @*/
 PetscErrorCode DMPlexMatSetClosureGeneral(DM dmRow, PetscSection sectionRow, PetscSection globalSectionRow, DM dmCol, PetscSection sectionCol, PetscSection globalSectionCol, Mat A, PetscInt point, const PetscScalar values[], InsertMode mode)
 {
@@ -7933,7 +7933,7 @@ PetscErrorCode DMPlexMatGetClosureIndicesRefined(DM dmf, PetscSection fsection, 
 
   Level: developer
 
-.seealso DMPlexSetVTKCellHeight()
+.seealso `DMPlexSetVTKCellHeight()`
 @*/
 PetscErrorCode DMPlexGetVTKCellHeight(DM dm, PetscInt *cellHeight)
 {
@@ -7955,7 +7955,7 @@ PetscErrorCode DMPlexGetVTKCellHeight(DM dm, PetscInt *cellHeight)
 
   Level: developer
 
-.seealso DMPlexGetVTKCellHeight()
+.seealso `DMPlexGetVTKCellHeight()`
 @*/
 PetscErrorCode DMPlexSetVTKCellHeight(DM dm, PetscInt cellHeight)
 {
@@ -7979,7 +7979,7 @@ PetscErrorCode DMPlexSetVTKCellHeight(DM dm, PetscInt cellHeight)
 
   Level: advanced
 
-.seealso DMPlexConstructGhostCells(), DMPlexGetGhostCellStratum()
+.seealso `DMPlexConstructGhostCells()`, `DMPlexGetGhostCellStratum()`
 @*/
 PetscErrorCode DMPlexGetGhostCellStratum(DM dm, PetscInt *gcStart, PetscInt *gcEnd)
 {
@@ -8046,7 +8046,7 @@ PetscErrorCode DMPlexCreateCellNumbering_Internal(DM dm, PetscBool includeHybrid
 
   Level: developer
 
-.seealso DMPlexGetVertexNumbering()
+.seealso `DMPlexGetVertexNumbering()`
 @*/
 PetscErrorCode DMPlexGetCellNumbering(DM dm, IS *globalCellNumbers)
 {
@@ -8081,7 +8081,7 @@ PetscErrorCode DMPlexCreateVertexNumbering_Internal(DM dm, PetscBool includeHybr
 
   Level: developer
 
-.seealso DMPlexGetCellNumbering()
+.seealso `DMPlexGetCellNumbering()`
 @*/
 PetscErrorCode DMPlexGetVertexNumbering(DM dm, IS *globalVertexNumbers)
 {
@@ -8105,7 +8105,7 @@ PetscErrorCode DMPlexGetVertexNumbering(DM dm, IS *globalVertexNumbers)
 
   Level: developer
 
-.seealso DMPlexGetCellNumbering()
+.seealso `DMPlexGetCellNumbering()`
 @*/
 PetscErrorCode DMPlexCreatePointNumbering(DM dm, IS *globalPointNumbers)
 {
@@ -8156,7 +8156,7 @@ PetscErrorCode DMPlexCreatePointNumbering(DM dm, IS *globalPointNumbers)
 
   Level: intermediate
 
-.seealso: DMView()
+.seealso: `DMView()`
 @*/
 PetscErrorCode DMPlexCreateRankField(DM dm, Vec *ranks)
 {
@@ -8211,7 +8211,7 @@ PetscErrorCode DMPlexCreateRankField(DM dm, Vec *ranks)
 
   Level: intermediate
 
-.seealso: DMView()
+.seealso: `DMView()`
 @*/
 PetscErrorCode DMPlexCreateLabelField(DM dm, DMLabel label, Vec *val)
 {
@@ -8261,7 +8261,7 @@ PetscErrorCode DMPlexCreateLabelField(DM dm, DMLabel label, Vec *val)
 
   Level: developer
 
-.seealso: DMCreate(), DMSetFromOptions()
+.seealso: `DMCreate()`, `DMSetFromOptions()`
 @*/
 PetscErrorCode DMPlexCheckSymmetry(DM dm)
 {
@@ -8407,7 +8407,7 @@ static PetscErrorCode DMPlexCellUnsplitVertices_Private(DM dm, PetscInt c, DMPol
 
   Level: developer
 
-.seealso: DMCreate(), DMSetFromOptions()
+.seealso: `DMCreate()`, `DMSetFromOptions()`
 @*/
 PetscErrorCode DMPlexCheckSkeleton(DM dm, PetscInt cellHeight)
 {
@@ -8468,7 +8468,7 @@ PetscErrorCode DMPlexCheckSkeleton(DM dm, PetscInt cellHeight)
 
   Level: developer
 
-.seealso: DMCreate(), DMPlexGetVTKCellHeight(), DMSetFromOptions()
+.seealso: `DMCreate()`, `DMPlexGetVTKCellHeight()`, `DMSetFromOptions()`
 @*/
 PetscErrorCode DMPlexCheckFaces(DM dm, PetscInt cellHeight)
 {
@@ -8559,7 +8559,7 @@ PetscErrorCode DMPlexCheckFaces(DM dm, PetscInt cellHeight)
 
   Level: developer
 
-.seealso: DMCreate(), DMSetFromOptions()
+.seealso: `DMCreate()`, `DMSetFromOptions()`
 @*/
 PetscErrorCode DMPlexCheckGeometry(DM dm)
 {
@@ -8628,7 +8628,7 @@ PetscErrorCode DMPlexCheckGeometry(DM dm)
 
   Level: developer
 
-.seealso: DMGetPointSF(), DMSetFromOptions()
+.seealso: `DMGetPointSF()`, `DMSetFromOptions()`
 @*/
 PetscErrorCode DMPlexCheckPointSF(DM dm)
 {
@@ -8731,7 +8731,7 @@ static void MPIAPI cell_stats_reduce(void *a, void *b, int * len, MPI_Datatype *
 
   Level: developer
 
-.seealso: DMSetFromOptions(), DMPlexComputeOrthogonalQuality()
+.seealso: `DMSetFromOptions()`, `DMPlexComputeOrthogonalQuality()`
 @*/
 PetscErrorCode DMPlexCheckCellShape(DM dm, PetscBool output, PetscReal condLimit)
 {
@@ -8888,7 +8888,7 @@ supported.
 
   Level: intermediate
 
-.seealso: DMPlexCheckCellShape(), DMCreateLabel()
+.seealso: `DMPlexCheckCellShape()`, `DMCreateLabel()`
 @*/
 PetscErrorCode DMPlexComputeOrthogonalQuality(DM dm, PetscFV fv, PetscReal atol, Vec *OrthQual, DMLabel *OrthQualLabel)
 {
@@ -9299,7 +9299,7 @@ PetscErrorCode DMCreateMassMatrix_Plex(DM dmCoarse, DM dmFine, Mat *mass)
 
   Level: intermediate
 
-.seealso: DMPlexSetRegularRefinement()
+.seealso: `DMPlexSetRegularRefinement()`
 @*/
 PetscErrorCode DMPlexGetRegularRefinement(DM dm, PetscBool *regular)
 {
@@ -9319,7 +9319,7 @@ PetscErrorCode DMPlexGetRegularRefinement(DM dm, PetscBool *regular)
 
   Level: intermediate
 
-.seealso: DMPlexGetRegularRefinement()
+.seealso: `DMPlexGetRegularRefinement()`
 @*/
 PetscErrorCode DMPlexSetRegularRefinement(DM dm, PetscBool regular)
 {
@@ -9345,7 +9345,7 @@ PetscErrorCode DMPlexSetRegularRefinement(DM dm, PetscBool regular)
 
   Level: intermediate
 
-.seealso: DMPlexSetAnchors(), DMGetDefaultConstraints(), DMSetDefaultConstraints()
+.seealso: `DMPlexSetAnchors()`, `DMGetDefaultConstraints()`, `DMSetDefaultConstraints()`
 @*/
 PetscErrorCode DMPlexGetAnchors(DM dm, PetscSection *anchorSection, IS *anchorIS)
 {
@@ -9378,7 +9378,7 @@ PetscErrorCode DMPlexGetAnchors(DM dm, PetscSection *anchorSection, IS *anchorIS
 
   Level: intermediate
 
-.seealso: DMPlexGetAnchors(), DMGetDefaultConstraints(), DMSetDefaultConstraints()
+.seealso: `DMPlexGetAnchors()`, `DMGetDefaultConstraints()`, `DMSetDefaultConstraints()`
 @*/
 PetscErrorCode DMPlexSetAnchors(DM dm, PetscSection anchorSection, IS anchorIS)
 {
@@ -9747,7 +9747,7 @@ PetscErrorCode DMCreateSubDomainDM_Plex(DM dm, DMLabel label, PetscInt value, IS
   Options Database Keys:
 . -dm_plex_monitor_throughput - Activate the monitor
 
-.seealso: DMSetFromOptions(), DMPlexCreate()
+.seealso: `DMSetFromOptions()`, `DMPlexCreate()`
 @*/
 PetscErrorCode DMPlexMonitorThroughput(DM dm, void *dummy)
 {

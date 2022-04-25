@@ -140,7 +140,7 @@ static PetscErrorCode  KSPSolve_TFQMR(KSP ksp)
    References:
 .  * - Freund, 1993
 
-.seealso: KSPCreate(), KSPSetType(), KSPType, KSP, KSPTCQMR
+.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPTCQMR`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_TFQMR(KSP ksp)
 {

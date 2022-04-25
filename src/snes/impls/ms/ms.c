@@ -35,7 +35,7 @@ typedef struct {
 
   Level: advanced
 
-.seealso:  SNESMSRegisterDestroy()
+.seealso: `SNESMSRegisterDestroy()`
 @*/
 PetscErrorCode SNESMSRegisterAll(void)
 {
@@ -98,7 +98,7 @@ PetscErrorCode SNESMSRegisterAll(void)
 
    Level: advanced
 
-.seealso: SNESMSRegister(), SNESMSRegisterAll()
+.seealso: `SNESMSRegister()`, `SNESMSRegisterAll()`
 @*/
 PetscErrorCode SNESMSRegisterDestroy(void)
 {
@@ -125,7 +125,7 @@ PetscErrorCode SNESMSRegisterDestroy(void)
 
   Level: developer
 
-.seealso: PetscInitialize()
+.seealso: `PetscInitialize()`
 @*/
 PetscErrorCode SNESMSInitializePackage(void)
 {
@@ -144,7 +144,7 @@ PetscErrorCode SNESMSInitializePackage(void)
 
   Level: developer
 
-.seealso: PetscFinalize()
+.seealso: `PetscFinalize()`
 @*/
 PetscErrorCode SNESMSFinalizePackage(void)
 {
@@ -183,7 +183,7 @@ PetscErrorCode SNESMSFinalizePackage(void)
 
    Level: advanced
 
-.seealso: SNESMS
+.seealso: `SNESMS`
 @*/
 PetscErrorCode SNESMSRegister(SNESMSType name,PetscInt nstages,PetscInt nregisters,PetscReal stability,const PetscReal gamma[],const PetscReal delta[],const PetscReal betasub[])
 {
@@ -498,7 +498,7 @@ static PetscErrorCode SNESMSSetType_MS(SNES snes,SNESMSType mstype)
 
   Level: beginner
 
-.seealso: SNESMSSetType(), SNESMSType, SNESMS
+.seealso: `SNESMSSetType()`, `SNESMSType`, `SNESMS`
 @*/
 PetscErrorCode SNESMSGetType(SNES snes,SNESMSType *mstype)
 {
@@ -520,7 +520,7 @@ PetscErrorCode SNESMSGetType(SNES snes,SNESMSType *mstype)
 
   Level: beginner
 
-.seealso: SNESMSGetType(), SNESMSType, SNESMS
+.seealso: `SNESMSGetType()`, `SNESMSType`, `SNESMS`
 @*/
 PetscErrorCode SNESMSSetType(SNES snes,SNESMSType mstype)
 {
@@ -562,7 +562,7 @@ static PetscErrorCode SNESMSSetDamping_MS(SNES snes,PetscReal damping)
 
   Level: advanced
 
-.seealso: SNESMSSetDamping(), SNESMS
+.seealso: `SNESMSSetDamping()`, `SNESMS`
 @*/
 PetscErrorCode SNESMSGetDamping(SNES snes,PetscReal *damping)
 {
@@ -584,7 +584,7 @@ PetscErrorCode SNESMSGetDamping(SNES snes,PetscReal *damping)
 
   Level: advanced
 
-.seealso: SNESMSGetDamping(), SNESMS
+.seealso: `SNESMSGetDamping()`, `SNESMS`
 @*/
 PetscErrorCode SNESMSSetDamping(SNES snes,PetscReal damping)
 {
@@ -620,7 +620,7 @@ PetscErrorCode SNESMSSetDamping(SNES snes,PetscReal damping)
 
       Level: beginner
 
-.seealso:  SNESCreate(), SNES, SNESSetType(), SNESMS, SNESFAS, KSPCHEBYSHEV
+.seealso: `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESMS`, `SNESFAS`, `KSPCHEBYSHEV`
 
 M*/
 PETSC_EXTERN PetscErrorCode SNESCreate_MS(SNES snes)

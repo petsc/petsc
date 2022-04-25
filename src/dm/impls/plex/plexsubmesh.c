@@ -85,7 +85,7 @@ static PetscErrorCode DMPlexMarkBoundaryFaces_Internal(DM dm, PetscInt val, Pets
 
   Level: developer
 
-.seealso: DMLabelCreate(), DMCreateLabel()
+.seealso: `DMLabelCreate()`, `DMCreateLabel()`
 @*/
 PetscErrorCode DMPlexMarkBoundaryFaces(DM dm, PetscInt val, DMLabel label)
 {
@@ -192,7 +192,7 @@ static PetscErrorCode DMPlexLabelComplete_Internal(DM dm, DMLabel label, PetscBo
 
   Level: developer
 
-.seealso: DMPlexLabelCohesiveComplete()
+.seealso: `DMPlexLabelCohesiveComplete()`
 @*/
 PetscErrorCode DMPlexLabelComplete(DM dm, DMLabel label)
 {
@@ -215,7 +215,7 @@ PetscErrorCode DMPlexLabelComplete(DM dm, DMLabel label)
 
   Note: The cells allow FEM boundary conditions to be applied using the cell geometry
 
-.seealso: DMPlexLabelAddFaceCells(), DMPlexLabelComplete(), DMPlexLabelCohesiveComplete()
+.seealso: `DMPlexLabelAddFaceCells()`, `DMPlexLabelComplete()`, `DMPlexLabelCohesiveComplete()`
 @*/
 PetscErrorCode DMPlexLabelAddCells(DM dm, DMLabel label)
 {
@@ -269,7 +269,7 @@ PetscErrorCode DMPlexLabelAddCells(DM dm, DMLabel label)
 
   Note: The cells allow FEM boundary conditions to be applied using the cell geometry
 
-.seealso: DMPlexLabelAddCells(), DMPlexLabelComplete(), DMPlexLabelCohesiveComplete()
+.seealso: `DMPlexLabelAddCells()`, `DMPlexLabelComplete()`, `DMPlexLabelCohesiveComplete()`
 @*/
 PetscErrorCode DMPlexLabelAddFaceCells(DM dm, DMLabel label)
 {
@@ -326,7 +326,7 @@ PetscErrorCode DMPlexLabelAddFaceCells(DM dm, DMLabel label)
 
   Note: This undoes DMPlexLabelAddCells() or DMPlexLabelAddFaceCells()
 
-.seealso: DMPlexLabelComplete(), DMPlexLabelCohesiveComplete(), DMPlexLabelAddCells()
+.seealso: `DMPlexLabelComplete()`, `DMPlexLabelCohesiveComplete()`, `DMPlexLabelAddCells()`
 @*/
 PetscErrorCode DMPlexLabelClearCells(DM dm, DMLabel label)
 {
@@ -943,7 +943,7 @@ static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, DMLabel label, P
 
   Level: developer
 
-.seealso: DMCreate()
+.seealso: `DMCreate()`
 @*/
 PetscErrorCode DMPlexConstructGhostCells(DM dm, const char labelName[], PetscInt *numGhostCells, DM *dmGhosted)
 {
@@ -1833,7 +1833,7 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
 
   Level: developer
 
-.seealso: DMCreate(), DMPlexLabelCohesiveComplete()
+.seealso: `DMCreate()`, `DMPlexLabelCohesiveComplete()`
 @*/
 PetscErrorCode DMPlexConstructCohesiveCells(DM dm, DMLabel label, DMLabel splitLabel, DM *dmSplit)
 {
@@ -1985,7 +1985,7 @@ static PetscErrorCode CheckFaultEdge_Private(DM dm, DMLabel label)
 
   Level: developer
 
-.seealso: DMPlexConstructCohesiveCells(), DMPlexLabelComplete()
+.seealso: `DMPlexConstructCohesiveCells()`, `DMPlexLabelComplete()`
 @*/
 PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel, PetscBool flip, DM subdm)
 {
@@ -2241,7 +2241,7 @@ PetscErrorCode DMPlexCheckValidSubmesh_Private(DM dm, DMLabel label, DM subdm)
 
   Level: developer
 
-.seealso: DMPlexConstructCohesiveCells(), DMPlexLabelCohesiveComplete(), DMPlexGetSubpointMap(), DMCreate()
+.seealso: `DMPlexConstructCohesiveCells()`, `DMPlexLabelCohesiveComplete()`, `DMPlexGetSubpointMap()`, `DMCreate()`
 @*/
 PetscErrorCode DMPlexCreateHybridMesh(DM dm, DMLabel label, DMLabel bdlabel, DMLabel *hybridLabel, DMLabel *splitLabel, DM *dmInterface, DM *dmHybrid)
 {
@@ -2893,7 +2893,7 @@ static PetscErrorCode DMPlexGetFaceOrientation(DM dm, PetscInt cell, PetscInt nu
 
   Level: developer
 
-.seealso: DMPlexGetCone()
+.seealso: `DMPlexGetCone()`
 @*/
 PetscErrorCode DMPlexGetOrientedFace(DM dm, PetscInt cell, PetscInt faceSize, const PetscInt face[], PetscInt numCorners, PetscInt indices[], PetscInt origVertices[], PetscInt faceVertices[], PetscBool *posOriented)
 {
@@ -3534,7 +3534,7 @@ static PetscErrorCode DMPlexCreateSubmesh_Interpolated(DM dm, DMLabel vertexLabe
 
   Level: developer
 
-.seealso: DMPlexGetSubpointMap(), DMGetLabel(), DMLabelSetValue()
+.seealso: `DMPlexGetSubpointMap()`, `DMGetLabel()`, `DMLabelSetValue()`
 @*/
 PetscErrorCode DMPlexCreateSubmesh(DM dm, DMLabel vertexLabel, PetscInt value, PetscBool markedFaces, DM *subdm)
 {
@@ -3794,7 +3794,7 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Interpolated(DM dm, const char
 
   Level: developer
 
-.seealso: DMPlexGetSubpointMap(), DMPlexCreateSubmesh()
+.seealso: `DMPlexGetSubpointMap()`, `DMPlexCreateSubmesh()`
 @*/
 PetscErrorCode DMPlexCreateCohesiveSubmesh(DM dm, PetscBool hasLagrange, const char label[], PetscInt value, DM *subdm)
 {
@@ -3834,7 +3834,7 @@ PetscErrorCode DMPlexCreateCohesiveSubmesh(DM dm, PetscBool hasLagrange, const c
 
   Level: developer
 
-.seealso: DMPlexGetSubpointMap(), DMGetLabel(), DMLabelSetValue()
+.seealso: `DMPlexGetSubpointMap()`, `DMGetLabel()`, `DMLabelSetValue()`
 @*/
 PetscErrorCode DMPlexFilter(DM dm, DMLabel cellLabel, PetscInt value, DM *subdm)
 {
@@ -3864,7 +3864,7 @@ PetscErrorCode DMPlexFilter(DM dm, DMLabel cellLabel, PetscInt value, DM *subdm)
 
   Level: developer
 
-.seealso: DMPlexCreateSubmesh(), DMPlexGetSubpointIS()
+.seealso: `DMPlexCreateSubmesh()`, `DMPlexGetSubpointIS()`
 @*/
 PetscErrorCode DMPlexGetSubpointMap(DM dm, DMLabel *subpointMap)
 {
@@ -3886,7 +3886,7 @@ PetscErrorCode DMPlexGetSubpointMap(DM dm, DMLabel *subpointMap)
 
   Level: developer
 
-.seealso: DMPlexCreateSubmesh(), DMPlexGetSubpointIS()
+.seealso: `DMPlexCreateSubmesh()`, `DMPlexGetSubpointIS()`
 @*/
 PetscErrorCode DMPlexSetSubpointMap(DM dm, DMLabel subpointMap)
 {
@@ -3973,7 +3973,7 @@ static PetscErrorCode DMPlexCreateSubpointIS_Internal(DM dm, IS *subpointIS)
 
   Level: developer
 
-.seealso: DMPlexCreateSubmesh(), DMPlexGetSubpointMap()
+.seealso: `DMPlexCreateSubmesh()`, `DMPlexGetSubpointMap()`
 @*/
 PetscErrorCode DMPlexGetSubpointIS(DM dm, IS *subpointIS)
 {
@@ -4003,7 +4003,7 @@ PetscErrorCode DMPlexGetSubpointIS(DM dm, IS *subpointIS)
 
   Level: intermediate
 
-.seealso: DMGetEnclosurePoint()
+.seealso: `DMGetEnclosurePoint()`
 @*/
 PetscErrorCode DMGetEnclosureRelation(DM dmA, DM dmB, DMEnclosureType *rel)
 {
@@ -4060,7 +4060,7 @@ PetscErrorCode DMGetEnclosureRelation(DM dmA, DM dmB, DMEnclosureType *rel)
 
   Level: intermediate
 
-.seealso: DMGetEnclosureRelation()
+.seealso: `DMGetEnclosureRelation()`
 @*/
 PetscErrorCode DMGetEnclosurePoint(DM dmA, DM dmB, DMEnclosureType etype, PetscInt pB, PetscInt *pA)
 {

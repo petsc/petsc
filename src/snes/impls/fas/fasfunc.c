@@ -13,7 +13,7 @@ Input Parameters:
 
 Level: intermediate
 
-.seealso: PCMGSetType()
+.seealso: `PCMGSetType()`
 @*/
 PetscErrorCode  SNESFASSetType(SNES snes,SNESFASType fastype)
 {
@@ -43,7 +43,7 @@ Output Parameters:
 
 Level: intermediate
 
-.seealso: PCMGSetType()
+.seealso: `PCMGSetType()`
 @*/
 PetscErrorCode  SNESFASGetType(SNES snes,SNESFASType *fastype)
 {
@@ -73,7 +73,7 @@ PetscErrorCode  SNESFASGetType(SNES snes,SNESFASType *fastype)
      If the number of levels is one then the multigrid uses the -fas_levels prefix
   for setting the level options rather than the -fas_coarse prefix.
 
-.seealso: SNESFASGetLevels()
+.seealso: `SNESFASGetLevels()`
 @*/
 PetscErrorCode SNESFASSetLevels(SNES snes, PetscInt levels, MPI_Comm *comms)
 {
@@ -138,7 +138,7 @@ PetscErrorCode SNESFASSetLevels(SNES snes, PetscInt levels, MPI_Comm *comms)
 
    Level: advanced
 
-.seealso: SNESFASSetLevels(), PCMGGetLevels()
+.seealso: `SNESFASSetLevels()`, `PCMGGetLevels()`
 @*/
 PetscErrorCode SNESFASGetLevels(SNES snes, PetscInt *levels)
 {
@@ -163,7 +163,7 @@ PetscErrorCode SNESFASGetLevels(SNES snes, PetscInt *levels)
 
    Level: advanced
 
-.seealso: SNESFASSetLevels(), SNESFASGetLevels()
+.seealso: `SNESFASSetLevels()`, `SNESFASGetLevels()`
 @*/
 PetscErrorCode SNESFASGetCycleSNES(SNES snes,PetscInt level,SNES *lsnes)
 {
@@ -201,7 +201,7 @@ PetscErrorCode SNESFASGetCycleSNES(SNES snes,PetscInt level,SNES *lsnes)
 
    Level: advanced
 
-.seealso: SNESFASSetNumberSmoothDown()
+.seealso: `SNESFASSetNumberSmoothDown()`
 @*/
 PetscErrorCode SNESFASSetNumberSmoothUp(SNES snes, PetscInt n)
 {
@@ -238,7 +238,7 @@ PetscErrorCode SNESFASSetNumberSmoothUp(SNES snes, PetscInt n)
 
    Level: advanced
 
-.seealso: SNESFASSetNumberSmoothUp()
+.seealso: `SNESFASSetNumberSmoothUp()`
 @*/
 PetscErrorCode SNESFASSetNumberSmoothDown(SNES snes, PetscInt n)
 {
@@ -276,7 +276,7 @@ PetscErrorCode SNESFASSetNumberSmoothDown(SNES snes, PetscInt n)
    Notes:
     This sets the prefix on the upsweep smoothers to -fas_continuation
 
-.seealso: SNESFAS
+.seealso: `SNESFAS`
 @*/
 PetscErrorCode SNESFASSetContinuation(SNES snes,PetscBool continuation)
 {
@@ -318,7 +318,7 @@ PetscErrorCode SNESFASSetContinuation(SNES snes,PetscBool continuation)
 
    Level: advanced
 
-.seealso: SNESFASSetCyclesOnLevel()
+.seealso: `SNESFASSetCyclesOnLevel()`
 @*/
 PetscErrorCode SNESFASSetCycles(SNES snes, PetscInt cycles)
 {
@@ -351,7 +351,7 @@ PetscErrorCode SNESFASSetCycles(SNES snes, PetscInt cycles)
 
    Level: advanced
 
-.seealso: SNESFASSetCyclesOnLevel()
+.seealso: `SNESFASSetCyclesOnLevel()`
 @*/
 PetscErrorCode SNESFASSetMonitor(SNES snes, PetscViewerAndFormat *vf, PetscBool flg)
 {
@@ -394,7 +394,7 @@ PetscErrorCode SNESFASSetMonitor(SNES snes, PetscViewerAndFormat *vf, PetscBool 
 
    Level: advanced
 
-.seealso: SNESFASSetMonitor()
+.seealso: `SNESFASSetMonitor()`
 @*/
 PetscErrorCode SNESFASSetLog(SNES snes, PetscBool flg)
 {
@@ -488,7 +488,7 @@ PetscErrorCode SNESFASCycleCreateSmoother_Private(SNES snes, SNES *smooth)
 
    Level: advanced
 
-.seealso: SNESFASSetCycles()
+.seealso: `SNESFASSetCycles()`
 @*/
 PetscErrorCode SNESFASCycleSetCycles(SNES snes, PetscInt cycles)
 {
@@ -515,7 +515,7 @@ PetscErrorCode SNESFASCycleSetCycles(SNES snes, PetscInt cycles)
 
    Level: advanced
 
-.seealso: SNESFASCycleGetSmootherUp(), SNESFASCycleGetSmootherDown()
+.seealso: `SNESFASCycleGetSmootherUp()`, `SNESFASCycleGetSmootherDown()`
 @*/
 PetscErrorCode SNESFASCycleGetSmoother(SNES snes, SNES *smooth)
 {
@@ -545,7 +545,7 @@ PetscErrorCode SNESFASCycleGetSmoother(SNES snes, SNES *smooth)
 
    Level: advanced
 
-.seealso: SNESFASCycleGetSmoother(), SNESFASCycleGetSmootherDown()
+.seealso: `SNESFASCycleGetSmoother()`, `SNESFASCycleGetSmootherDown()`
 @*/
 PetscErrorCode SNESFASCycleGetSmootherUp(SNES snes, SNES *smoothu)
 {
@@ -573,7 +573,7 @@ PetscErrorCode SNESFASCycleGetSmootherUp(SNES snes, SNES *smoothu)
 
    Level: advanced
 
-.seealso: SNESFASCycleGetSmootherUp(), SNESFASCycleGetSmoother()
+.seealso: `SNESFASCycleGetSmootherUp()`, `SNESFASCycleGetSmoother()`
 @*/
 PetscErrorCode SNESFASCycleGetSmootherDown(SNES snes, SNES *smoothd)
 {
@@ -603,7 +603,7 @@ PetscErrorCode SNESFASCycleGetSmootherDown(SNES snes, SNES *smoothd)
 
    Level: advanced
 
-.seealso: SNESFASCycleGetSmootherUp(), SNESFASCycleGetSmoother()
+.seealso: `SNESFASCycleGetSmootherUp()`, `SNESFASCycleGetSmoother()`
 @*/
 PetscErrorCode SNESFASCycleGetCorrection(SNES snes, SNES *correction)
 {
@@ -630,7 +630,7 @@ PetscErrorCode SNESFASCycleGetCorrection(SNES snes, SNES *correction)
 
    Level: developer
 
-.seealso: SNESFASCycleGetSmootherUp(), SNESFASCycleGetSmoother()
+.seealso: `SNESFASCycleGetSmootherUp()`, `SNESFASCycleGetSmoother()`
 @*/
 PetscErrorCode SNESFASCycleGetInterpolation(SNES snes, Mat *mat)
 {
@@ -657,7 +657,7 @@ PetscErrorCode SNESFASCycleGetInterpolation(SNES snes, Mat *mat)
 
    Level: developer
 
-.seealso: SNESFASGetRestriction(), SNESFASCycleGetInterpolation()
+.seealso: `SNESFASGetRestriction()`, `SNESFASCycleGetInterpolation()`
 @*/
 PetscErrorCode SNESFASCycleGetRestriction(SNES snes, Mat *mat)
 {
@@ -684,7 +684,7 @@ PetscErrorCode SNESFASCycleGetRestriction(SNES snes, Mat *mat)
 
    Level: developer
 
-.seealso: SNESFASGetInjection(), SNESFASCycleGetRestriction()
+.seealso: `SNESFASGetInjection()`, `SNESFASCycleGetRestriction()`
 @*/
 PetscErrorCode SNESFASCycleGetInjection(SNES snes, Mat *mat)
 {
@@ -711,7 +711,7 @@ PetscErrorCode SNESFASCycleGetInjection(SNES snes, Mat *mat)
 
    Level: developer
 
-.seealso: SNESFASCycleGetRestriction(), SNESFASGetRScale()
+.seealso: `SNESFASCycleGetRestriction()`, `SNESFASGetRScale()`
 @*/
 PetscErrorCode SNESFASCycleGetRScale(SNES snes, Vec *vec)
 {
@@ -738,7 +738,7 @@ PetscErrorCode SNESFASCycleGetRScale(SNES snes, Vec *vec)
 
    Level: advanced
 
-.seealso: SNESFASSetLevels()
+.seealso: `SNESFASSetLevels()`
 @*/
 PetscErrorCode SNESFASCycleIsFine(SNES snes, PetscBool *flg)
 {
@@ -773,7 +773,7 @@ PetscErrorCode SNESFASCycleIsFine(SNES snes, PetscBool *flg)
           One can pass in the interpolation matrix or its transpose; PETSc figures
     out from the matrix size which one it is.
 
-.seealso: SNESFASSetInjection(), SNESFASSetRestriction(), SNESFASSetRScale()
+.seealso: `SNESFASSetInjection()`, `SNESFASSetRestriction()`, `SNESFASSetRScale()`
 @*/
 PetscErrorCode SNESFASSetInterpolation(SNES snes, PetscInt level, Mat mat)
 {
@@ -804,7 +804,7 @@ PetscErrorCode SNESFASSetInterpolation(SNES snes, PetscInt level, Mat mat)
 
    Level: advanced
 
-.seealso: SNESFASSetInterpolation(), SNESFASGetInjection(), SNESFASGetRestriction(), SNESFASGetRScale()
+.seealso: `SNESFASSetInterpolation()`, `SNESFASGetInjection()`, `SNESFASGetRestriction()`, `SNESFASGetRScale()`
 @*/
 PetscErrorCode SNESFASGetInterpolation(SNES snes, PetscInt level, Mat *mat)
 {
@@ -841,7 +841,7 @@ PetscErrorCode SNESFASGetInterpolation(SNES snes, PetscInt level, Mat *mat)
          If you do not set this, the transpose of the Mat set with SNESFASSetInterpolation()
     is used.
 
-.seealso: SNESFASSetInterpolation(), SNESFASSetInjection()
+.seealso: `SNESFASSetInterpolation()`, `SNESFASSetInjection()`
 @*/
 PetscErrorCode SNESFASSetRestriction(SNES snes, PetscInt level, Mat mat)
 {
@@ -872,7 +872,7 @@ PetscErrorCode SNESFASSetRestriction(SNES snes, PetscInt level, Mat mat)
 
    Level: advanced
 
-.seealso: SNESFASSetRestriction(), SNESFASGetInjection(), SNESFASGetInterpolation(), SNESFASGetRScale()
+.seealso: `SNESFASSetRestriction()`, `SNESFASGetInjection()`, `SNESFASGetInterpolation()`, `SNESFASGetRScale()`
 @*/
 PetscErrorCode SNESFASGetRestriction(SNES snes, PetscInt level, Mat *mat)
 {
@@ -903,7 +903,7 @@ PetscErrorCode SNESFASGetRestriction(SNES snes, PetscInt level, Mat *mat)
          If you do not set this, the restriction and rscale is used to
    project the solution instead.
 
-.seealso: SNESFASSetInterpolation(), SNESFASSetRestriction()
+.seealso: `SNESFASSetInterpolation()`, `SNESFASSetRestriction()`
 @*/
 PetscErrorCode SNESFASSetInjection(SNES snes, PetscInt level, Mat mat)
 {
@@ -935,7 +935,7 @@ PetscErrorCode SNESFASSetInjection(SNES snes, PetscInt level, Mat mat)
 
    Level: advanced
 
-.seealso: SNESFASSetInjection(), SNESFASGetRestriction(), SNESFASGetInterpolation(), SNESFASGetRScale()
+.seealso: `SNESFASSetInjection()`, `SNESFASGetRestriction()`, `SNESFASGetInterpolation()`, `SNESFASGetRScale()`
 @*/
 PetscErrorCode SNESFASGetInjection(SNES snes, PetscInt level, Mat *mat)
 {
@@ -965,7 +965,7 @@ PetscErrorCode SNESFASGetInjection(SNES snes, PetscInt level, Mat *mat)
    Notes:
          This is only used in the case that the injection is not set.
 
-.seealso: SNESFASSetInjection(), SNESFASSetRestriction()
+.seealso: `SNESFASSetInjection()`, `SNESFASSetRestriction()`
 @*/
 PetscErrorCode SNESFASSetRScale(SNES snes, PetscInt level, Vec rscale)
 {
@@ -995,7 +995,7 @@ PetscErrorCode SNESFASSetRScale(SNES snes, PetscInt level, Vec rscale)
 
    Level: advanced
 
-.seealso: SNESFASSetInjection(), SNESFASSetRestriction()
+.seealso: `SNESFASSetInjection()`, `SNESFASSetRestriction()`
 @*/
 PetscErrorCode SNESFASGetSmoother(SNES snes, PetscInt level, SNES *smooth)
 {
@@ -1026,7 +1026,7 @@ PetscErrorCode SNESFASGetSmoother(SNES snes, PetscInt level, SNES *smooth)
 
    Level: advanced
 
-.seealso: SNESFASSetInjection(), SNESFASSetRestriction()
+.seealso: `SNESFASSetInjection()`, `SNESFASSetRestriction()`
 @*/
 PetscErrorCode SNESFASGetSmootherDown(SNES snes, PetscInt level, SNES *smooth)
 {
@@ -1061,7 +1061,7 @@ PetscErrorCode SNESFASGetSmootherDown(SNES snes, PetscInt level, SNES *smooth)
 
    Level: advanced
 
-.seealso: SNESFASSetInjection(), SNESFASSetRestriction()
+.seealso: `SNESFASSetInjection()`, `SNESFASSetRestriction()`
 @*/
 PetscErrorCode SNESFASGetSmootherUp(SNES snes, PetscInt level, SNES *smooth)
 {
@@ -1095,7 +1095,7 @@ PetscErrorCode SNESFASGetSmootherUp(SNES snes, PetscInt level, SNES *smooth)
 
   Level: advanced
 
-.seealso: SNESFASSetInjection(), SNESFASSetRestriction()
+.seealso: `SNESFASSetInjection()`, `SNESFASSetRestriction()`
 @*/
 PetscErrorCode SNESFASGetCoarseSolve(SNES snes, SNES *coarse)
 {
@@ -1129,7 +1129,7 @@ PetscErrorCode SNESFASGetCoarseSolve(SNES snes, SNES *coarse)
 
    Level: advanced
 
-.seealso: SNESFASSetNumberSmoothUp()
+.seealso: `SNESFASSetNumberSmoothUp()`
 @*/
 PetscErrorCode SNESFASFullSetDownSweep(SNES snes,PetscBool swp)
 {
@@ -1161,7 +1161,7 @@ PetscErrorCode SNESFASFullSetDownSweep(SNES snes,PetscBool swp)
 
    Note: this option is only significant if the interpolation of a coarse correction (MatInterpolate()) is significantly different from total solution interpolation (DMInterpolateSolution()).
 
-.seealso: SNESFASSetNumberSmoothUp(), DMInterpolateSolution()
+.seealso: `SNESFASSetNumberSmoothUp()`, `DMInterpolateSolution()`
 @*/
 PetscErrorCode SNESFASFullSetTotal(SNES snes,PetscBool total)
 {
@@ -1190,7 +1190,7 @@ PetscErrorCode SNESFASFullSetTotal(SNES snes,PetscBool total)
 
    Level: advanced
 
-.seealso: SNESFASSetNumberSmoothUp(), DMInterpolateSolution(), SNESFullSetTotal()
+.seealso: `SNESFASSetNumberSmoothUp()`, `DMInterpolateSolution()`, `SNESFullSetTotal()`
 @*/
 PetscErrorCode SNESFASFullGetTotal(SNES snes,PetscBool *total)
 {

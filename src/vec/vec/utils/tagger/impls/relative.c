@@ -66,7 +66,7 @@ static PetscErrorCode VecTaggerComputeBoxes_Relative(VecTagger tagger,Vec vec,Pe
 
   Level: advanced
 
-.seealso: VecTaggerRelativeGetBox()
+.seealso: `VecTaggerRelativeGetBox()`
 @*/
 PetscErrorCode VecTaggerRelativeSetBox(VecTagger tagger,VecTaggerBox *box)
 {
@@ -88,7 +88,7 @@ PetscErrorCode VecTaggerRelativeSetBox(VecTagger tagger,VecTaggerBox *box)
 
   Level: advanced
 
-.seealso: VecTaggerRelativeSetBox()
+.seealso: `VecTaggerRelativeSetBox()`
 @*/
 PetscErrorCode VecTaggerRelativeGetBox(VecTagger tagger,const VecTaggerBox **box)
 {

@@ -77,8 +77,8 @@ static EH eh = NULL;
    Developer Note:
    Since this is an error handler it cannot call PetscCall(); thus we just return if an error is detected.
 
-.seealso: PetscError(), PetscPushErrorHandler(), PetscPopErrorHandler(), PetscAttachDebuggerErrorHandler(),
-          PetscAbortErrorHandler(), PetscMPIAbortErrorHandler(), PetscTraceBackErrorHandler(), PetscReturnErrorHandler()
+.seealso: `PetscError()`, `PetscPushErrorHandler()`, `PetscPopErrorHandler()`, `PetscAttachDebuggerErrorHandler()`,
+          `PetscAbortErrorHandler()`, `PetscMPIAbortErrorHandler()`, `PetscTraceBackErrorHandler()`, `PetscReturnErrorHandler()`
  @*/
 PetscErrorCode  PetscEmacsClientErrorHandler(MPI_Comm comm,int line,const char *fun,const char *file,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
 {
@@ -139,7 +139,7 @@ $    int handler(MPI_Comm comm,int line,char *func,char *file,PetscErrorCode n,i
    Fortran Notes:
     You can only push one error handler from Fortran before poping it.
 
-.seealso: PetscPopErrorHandler(), PetscAttachDebuggerErrorHandler(), PetscAbortErrorHandler(), PetscTraceBackErrorHandler(), PetscPushSignalHandler()
+.seealso: `PetscPopErrorHandler()`, `PetscAttachDebuggerErrorHandler()`, `PetscAbortErrorHandler()`, `PetscTraceBackErrorHandler()`, `PetscPushSignalHandler()`
 
 @*/
 PetscErrorCode  PetscPushErrorHandler(PetscErrorCode (*handler)(MPI_Comm comm,int,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*),void *ctx)
@@ -164,7 +164,7 @@ PetscErrorCode  PetscPushErrorHandler(PetscErrorCode (*handler)(MPI_Comm comm,in
 
    Level: intermediate
 
-.seealso: PetscPushErrorHandler()
+.seealso: `PetscPushErrorHandler()`
 @*/
 PetscErrorCode  PetscPopErrorHandler(void)
 {
@@ -204,8 +204,8 @@ $     SETERRQ(comm,number,mess)
 
    Use PetscPushErrorHandler() to set the desired error handler.
 
-.seealso:  PetscPushErrorHandler(), PetscPopErrorHandler(), PetscError(), PetscAbortErrorHandler(), PetscMPIAbortErrorHandler(), PetscTraceBackErrorHandler(),
-           PetscAttachDebuggerErrorHandler(), PetscEmacsClientErrorHandler()
+.seealso: `PetscPushErrorHandler()`, `PetscPopErrorHandler()`, `PetscError()`, `PetscAbortErrorHandler()`, `PetscMPIAbortErrorHandler()`, `PetscTraceBackErrorHandler()`,
+          `PetscAttachDebuggerErrorHandler()`, `PetscEmacsClientErrorHandler()`
  @*/
 PetscErrorCode  PetscReturnErrorHandler(MPI_Comm comm,int line,const char *fun,const char *file,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
 {
@@ -278,8 +278,8 @@ static const char *PetscErrorStrings[] = {
 
    Level: developer
 
-.seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), PetscError(), SETERRQ(), PetscCall()
-          PetscAbortErrorHandler(), PetscTraceBackErrorHandler()
+.seealso: `PetscPushErrorHandler()`, `PetscAttachDebuggerErrorHandler()`, `PetscError()`, `SETERRQ()`, `PetscCall()`
+          `PetscAbortErrorHandler()`, `PetscTraceBackErrorHandler()`
  @*/
 PetscErrorCode  PetscErrorMessage(int errnum,const char *text[],char **specific)
 {
@@ -362,9 +362,9 @@ $    PetscError(MPI_Comm comm,PetscErrorCode n,PetscErrorType p,char *message)
    BUT this routine does call regular PETSc functions that may call error handlers, this is problematic and could be fixed by never calling other PETSc routines
    but this annoying.
 
-.seealso: PetscErrorCode, PetscPushErrorHandler(), PetscPopErrorHandler(), PetscTraceBackErrorHandler(),  PetscAbortErrorHandler(), PetscMPIAbortErrorHandler(),
-          PetscReturnErrorHandler(), PetscAttachDebuggerErrorHandler(), PetscEmacsClientErrorHandler(),
-          SETERRQ(), PetscCall(), CHKMEMQ, SETERRQ(), SETERRQ(), PetscErrorMessage(), PETSCABORT()
+.seealso: `PetscErrorCode`, `PetscPushErrorHandler()`, `PetscPopErrorHandler()`, `PetscTraceBackErrorHandler()`, `PetscAbortErrorHandler()`, `PetscMPIAbortErrorHandler()`,
+          `PetscReturnErrorHandler()`, `PetscAttachDebuggerErrorHandler()`, `PetscEmacsClientErrorHandler()`,
+          `SETERRQ()`, `PetscCall()`, `CHKMEMQ`, `SETERRQ()`, `SETERRQ()`, `PetscErrorMessage()`, `PETSCABORT()`
 @*/
 PetscErrorCode PetscError(MPI_Comm comm,int line,const char *func,const char *file,PetscErrorCode n,PetscErrorType p,const char *mess,...)
 {
@@ -433,7 +433,7 @@ PetscErrorCode PetscError(MPI_Comm comm,int line,const char *func,const char *fi
     Developer Notes:
     idx cannot be const because may be passed to binary viewer where byte swapping is done
 
-.seealso: PetscRealView()
+.seealso: `PetscRealView()`
 @*/
 PetscErrorCode  PetscIntView(PetscInt N,const PetscInt idx[],PetscViewer viewer)
 {
@@ -529,7 +529,7 @@ PetscErrorCode  PetscIntView(PetscInt N,const PetscInt idx[],PetscViewer viewer)
     Developer Notes:
     idx cannot be const because may be passed to binary viewer where byte swapping is done
 
-.seealso: PetscIntView()
+.seealso: `PetscIntView()`
 @*/
 PetscErrorCode  PetscRealView(PetscInt N,const PetscReal idx[],PetscViewer viewer)
 {
@@ -633,7 +633,7 @@ PetscErrorCode  PetscRealView(PetscInt N,const PetscReal idx[],PetscViewer viewe
     Developer Notes:
     idx cannot be const because may be passed to binary viewer where byte swapping is done
 
-.seealso: PetscIntView(), PetscRealView()
+.seealso: `PetscIntView()`, `PetscRealView()`
 @*/
 PetscErrorCode  PetscScalarView(PetscInt N,const PetscScalar idx[],PetscViewer viewer)
 {

@@ -23,7 +23,7 @@ typedef struct {
 
    Level: intermediate
 
-.seealso: ()
+.seealso: `()`
 @*/
 PetscErrorCode PCGAMGClassicalSetType(PC pc, PCGAMGClassicalType type)
 {
@@ -46,7 +46,7 @@ PetscErrorCode PCGAMGClassicalSetType(PC pc, PCGAMGClassicalType type)
 
    Level: intermediate
 
-.seealso: ()
+.seealso: `()`
 @*/
 PetscErrorCode PCGAMGClassicalGetType(PC pc, PCGAMGClassicalType *type)
 {

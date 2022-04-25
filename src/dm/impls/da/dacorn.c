@@ -53,7 +53,7 @@ PetscErrorCode DMCreateCoordinateField_DA(DM dm, DMField *field)
 
   Level: intermediate
 
-.seealso: DMDAGetFieldName(), DMDASetCoordinateName(), DMDAGetCoordinateName(), DMDASetFieldNames(), DMSetUp()
+.seealso: `DMDAGetFieldName()`, `DMDASetCoordinateName()`, `DMDAGetCoordinateName()`, `DMDASetFieldNames()`, `DMSetUp()`
 @*/
 PetscErrorCode  DMDASetFieldName(DM da,PetscInt nf,const char name[])
 {
@@ -83,7 +83,7 @@ PetscErrorCode  DMDASetFieldName(DM da,PetscInt nf,const char name[])
 
    Not supported from Fortran, use DMDAGetFieldName()
 
-.seealso: DMDAGetFieldName(), DMDASetCoordinateName(), DMDAGetCoordinateName(), DMDASetFieldName(), DMDASetFieldNames()
+.seealso: `DMDAGetFieldName()`, `DMDASetCoordinateName()`, `DMDAGetCoordinateName()`, `DMDASetFieldName()`, `DMDASetFieldNames()`
 @*/
 PetscErrorCode  DMDAGetFieldNames(DM da,const char * const **names)
 {
@@ -110,7 +110,7 @@ PetscErrorCode  DMDAGetFieldNames(DM da,const char * const **names)
 
    Not supported from Fortran, use DMDASetFieldName()
 
-.seealso: DMDAGetFieldName(), DMDASetCoordinateName(), DMDAGetCoordinateName(), DMDASetFieldName(), DMSetUp()
+.seealso: `DMDAGetFieldName()`, `DMDASetCoordinateName()`, `DMDAGetCoordinateName()`, `DMDASetFieldName()`, `DMSetUp()`
 @*/
 PetscErrorCode  DMDASetFieldNames(DM da,const char * const *names)
 {
@@ -147,7 +147,7 @@ PetscErrorCode  DMDASetFieldNames(DM da,const char * const *names)
 
   Level: intermediate
 
-.seealso: DMDASetFieldName(), DMDASetCoordinateName(), DMDAGetCoordinateName(), DMSetUp()
+.seealso: `DMDASetFieldName()`, `DMDASetCoordinateName()`, `DMDAGetCoordinateName()`, `DMSetUp()`
 @*/
 PetscErrorCode  DMDAGetFieldName(DM da,PetscInt nf,const char **name)
 {
@@ -179,7 +179,7 @@ PetscErrorCode  DMDAGetFieldName(DM da,PetscInt nf,const char **name)
 
   Not supported from Fortran
 
-.seealso: DMDAGetCoordinateName(), DMDASetFieldName(), DMDAGetFieldName(), DMSetUp()
+.seealso: `DMDAGetCoordinateName()`, `DMDASetFieldName()`, `DMDAGetFieldName()`, `DMSetUp()`
 @*/
 PetscErrorCode DMDASetCoordinateName(DM dm,PetscInt nf,const char name[])
 {
@@ -213,7 +213,7 @@ PetscErrorCode DMDASetCoordinateName(DM dm,PetscInt nf,const char name[])
 
   Not supported from Fortran
 
-.seealso: DMDASetCoordinateName(), DMDASetFieldName(), DMDAGetFieldName(), DMSetUp()
+.seealso: `DMDASetCoordinateName()`, `DMDASetFieldName()`, `DMDAGetFieldName()`, `DMSetUp()`
 @*/
 PetscErrorCode DMDAGetCoordinateName(DM dm,PetscInt nf,const char **name)
 {
@@ -254,7 +254,7 @@ PetscErrorCode DMDAGetCoordinateName(DM dm,PetscInt nf,const char **name)
 
   Level: beginner
 
-.seealso: DMDAGetGhostCorners(), DMDAGetOwnershipRanges(), DMStagGetCorners()
+.seealso: `DMDAGetGhostCorners()`, `DMDAGetOwnershipRanges()`, `DMStagGetCorners()`
 @*/
 PetscErrorCode  DMDAGetCorners(DM da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p)
 {
@@ -317,7 +317,7 @@ PetscErrorCode DMDAGetReducedDMDA(DM da,PetscInt nfields,DM *nda)
 
   Level: intermediate
 
-.seealso: DMDAGetGhostCorners(), DMSetCoordinates(), DMDASetUniformCoordinates(), DMGetCoordinates(), DMDAGetGhostedCoordinates(), DMStagCreateCompatibleDMStag()
+.seealso: `DMDAGetGhostCorners()`, `DMSetCoordinates()`, `DMDASetUniformCoordinates()`, `DMGetCoordinates()`, `DMDAGetGhostedCoordinates()`, `DMStagCreateCompatibleDMStag()`
 @*/
 PetscErrorCode  DMDACreateCompatibleDMDA(DM da,PetscInt nfields,DM *nda)
 {
@@ -386,7 +386,7 @@ PetscErrorCode  DMDACreateCompatibleDMDA(DM da,PetscInt nfields,DM *nda)
 
   Not supported from Fortran
 
-.seealso: DMDASetCoordinateName(), DMDASetFieldName(), DMDAGetFieldName(), DMDARestoreCoordinateArray()
+.seealso: `DMDASetCoordinateName()`, `DMDASetFieldName()`, `DMDAGetFieldName()`, `DMDARestoreCoordinateArray()`
 @*/
 PetscErrorCode DMDAGetCoordinateArray(DM dm,void *xc)
 {
@@ -414,7 +414,7 @@ PetscErrorCode DMDAGetCoordinateArray(DM dm,void *xc)
 
   Not supported from Fortran
 
-.seealso: DMDASetCoordinateName(), DMDASetFieldName(), DMDAGetFieldName(), DMDAGetCoordinateArray()
+.seealso: `DMDASetCoordinateName()`, `DMDASetFieldName()`, `DMDAGetFieldName()`, `DMDAGetCoordinateArray()`
 @*/
 PetscErrorCode DMDARestoreCoordinateArray(DM dm,void *xc)
 {

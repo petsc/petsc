@@ -18,8 +18,8 @@
 
   Level: beginner
 
-.seealso: VecSetType(), VecSetSizes(), VecCreateMPIWithArray(), VecCreateMPI(), VecDuplicate(),
-          VecDuplicateVecs(), VecCreateGhost(), VecCreateSeq(), VecPlaceArray()
+.seealso: `VecSetType()`, `VecSetSizes()`, `VecCreateMPIWithArray()`, `VecCreateMPI()`, `VecDuplicate()`,
+          `VecDuplicateVecs()`, `VecCreateGhost()`, `VecCreateSeq()`, `VecPlaceArray()`
 @*/
 PetscErrorCode  VecCreate(MPI_Comm comm, Vec *vec)
 {

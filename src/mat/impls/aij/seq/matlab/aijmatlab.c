@@ -250,7 +250,7 @@ PetscErrorCode MatView_Matlab(Mat A,PetscViewer viewer)
 
   Level: beginner
 
-.seealso: PCLU
+.seealso: `PCLU`
 
-.seealso: PCFactorSetMatSolverType(), MatSolverType
+.seealso: `PCFactorSetMatSolverType()`, `MatSolverType`
 M*/

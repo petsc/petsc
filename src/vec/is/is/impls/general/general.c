@@ -529,7 +529,7 @@ PetscErrorCode ISSetUp_General(IS is)
 
    Level: beginner
 
-.seealso: ISCreateStride(), ISCreateBlock(), ISAllGather(), PETSC_COPY_VALUES, PETSC_OWN_POINTER, PETSC_USE_POINTER, PetscCopyMode
+.seealso: `ISCreateStride()`, `ISCreateBlock()`, `ISAllGather()`, `PETSC_COPY_VALUES`, `PETSC_OWN_POINTER`, `PETSC_USE_POINTER`, `PetscCopyMode`
 @*/
 PetscErrorCode  ISCreateGeneral(MPI_Comm comm,PetscInt n,const PetscInt idx[],PetscCopyMode mode,IS *is)
 {
@@ -553,7 +553,7 @@ PetscErrorCode  ISCreateGeneral(MPI_Comm comm,PetscInt n,const PetscInt idx[],Pe
 
    Level: beginner
 
-.seealso: ISCreateGeneral(), ISGeneralSetIndicesFromMask(), ISBlockSetIndices(), ISGENERAL, PetscCopyMode
+.seealso: `ISCreateGeneral()`, `ISGeneralSetIndicesFromMask()`, `ISBlockSetIndices()`, `ISGENERAL`, `PetscCopyMode`
 @*/
 PetscErrorCode  ISGeneralSetIndices(IS is,PetscInt n,const PetscInt idx[],PetscCopyMode mode)
 {
@@ -621,7 +621,7 @@ $  {11, 14}
 
    Level: beginner
 
-.seealso: ISCreateGeneral(), ISGeneralSetIndices(), ISGENERAL
+.seealso: `ISCreateGeneral()`, `ISGeneralSetIndices()`, `ISGENERAL`
 @*/
 PetscErrorCode ISGeneralSetIndicesFromMask(IS is,PetscInt rstart,PetscInt rend,const PetscBool mask[])
 {
@@ -682,7 +682,7 @@ static PetscErrorCode ISGeneralFilter_General(IS is, PetscInt start, PetscInt en
 
    Level: beginner
 
-.seealso: ISCreateGeneral(), ISGeneralSetIndices()
+.seealso: `ISCreateGeneral()`, `ISGeneralSetIndices()`
 @*/
 PetscErrorCode ISGeneralFilter(IS is, PetscInt start, PetscInt end)
 {

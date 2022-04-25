@@ -70,7 +70,7 @@ typedef struct {
 
      Level: advanced
 
-.seealso: TSGLEE
+.seealso: `TSGLEE`
 M*/
 /*MC
      TSGLEE24 - Second order four stage GLEE method
@@ -80,7 +80,7 @@ M*/
 
      Level: advanced
 
-.seealso: TSGLEE
+.seealso: `TSGLEE`
 M*/
 /*MC
      TSGLEE25i - Second order five stage GLEE method
@@ -90,7 +90,7 @@ M*/
 
      Level: advanced
 
-.seealso: TSGLEE
+.seealso: `TSGLEE`
 M*/
 /*MC
      TSGLEE35  - Third order five stage GLEE method
@@ -100,7 +100,7 @@ M*/
 
      Level: advanced
 
-.seealso: TSGLEE
+.seealso: `TSGLEE`
 M*/
 /*MC
      TSGLEEEXRK2A  - Second order six stage GLEE method
@@ -110,7 +110,7 @@ M*/
 
      Level: advanced
 
-.seealso: TSGLEE
+.seealso: `TSGLEE`
 M*/
 /*MC
      TSGLEERK32G1  - Third order eight stage GLEE method
@@ -120,7 +120,7 @@ M*/
 
      Level: advanced
 
-.seealso: TSGLEE
+.seealso: `TSGLEE`
 M*/
 /*MC
      TSGLEERK285EX  - Second order nine stage GLEE method
@@ -130,7 +130,7 @@ M*/
 
      Level: advanced
 
-.seealso: TSGLEE
+.seealso: `TSGLEE`
 M*/
 
 /*@C
@@ -140,7 +140,7 @@ M*/
 
   Level: advanced
 
-.seealso:  TSGLEERegisterDestroy()
+.seealso: `TSGLEERegisterDestroy()`
 @*/
 PetscErrorCode TSGLEERegisterAll(void)
 {
@@ -359,7 +359,7 @@ PetscErrorCode TSGLEERegisterAll(void)
 
    Level: advanced
 
-.seealso: TSGLEERegister(), TSGLEERegisterAll()
+.seealso: `TSGLEERegister()`, `TSGLEERegisterAll()`
 @*/
 PetscErrorCode TSGLEERegisterDestroy(void)
 {
@@ -388,7 +388,7 @@ PetscErrorCode TSGLEERegisterDestroy(void)
 
   Level: developer
 
-.seealso: PetscInitialize()
+.seealso: `PetscInitialize()`
 @*/
 PetscErrorCode TSGLEEInitializePackage(void)
 {
@@ -407,7 +407,7 @@ PetscErrorCode TSGLEEInitializePackage(void)
 
   Level: developer
 
-.seealso: PetscFinalize()
+.seealso: `PetscFinalize()`
 @*/
 PetscErrorCode TSGLEEFinalizePackage(void)
 {
@@ -446,7 +446,7 @@ PetscErrorCode TSGLEEFinalizePackage(void)
 
    Level: advanced
 
-.seealso: TSGLEE
+.seealso: `TSGLEE`
 @*/
 PetscErrorCode TSGLEERegister(TSGLEEType name,PetscInt order,PetscInt s, PetscInt r,
                               PetscReal gamma,
@@ -932,7 +932,7 @@ static PetscErrorCode TSLoad_GLEE(TS ts,PetscViewer viewer)
 
   Level: intermediate
 
-.seealso: TSGLEEGetType(), TSGLEE
+.seealso: `TSGLEEGetType()`, `TSGLEE`
 @*/
 PetscErrorCode TSGLEESetType(TS ts,TSGLEEType gleetype)
 {
@@ -956,7 +956,7 @@ PetscErrorCode TSGLEESetType(TS ts,TSGLEEType gleetype)
 
   Level: intermediate
 
-.seealso: TSGLEESetType()
+.seealso: `TSGLEESetType()`
 @*/
 PetscErrorCode TSGLEEGetType(TS ts,TSGLEEType *gleetype)
 {
@@ -1106,9 +1106,9 @@ static PetscErrorCode TSDestroy_GLEE(TS ts)
 
   Level: beginner
 
-.seealso:  TSCreate(), TS, TSSetType(), TSGLEESetType(), TSGLEEGetType(),
-           TSGLEE23, TTSGLEE24, TSGLEE35, TSGLEE25I, TSGLEEEXRK2A,
-           TSGLEERK32G1, TSGLEERK285EX, TSGLEEType, TSGLEERegister()
+.seealso: `TSCreate()`, `TS`, `TSSetType()`, `TSGLEESetType()`, `TSGLEEGetType()`,
+          `TSGLEE23`, `TTSGLEE24`, `TSGLEE35`, `TSGLEE25I`, `TSGLEEEXRK2A`,
+          `TSGLEERK32G1`, `TSGLEERK285EX`, `TSGLEEType`, `TSGLEERegister()`
 
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_GLEE(TS ts)

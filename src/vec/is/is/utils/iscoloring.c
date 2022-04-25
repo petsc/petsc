@@ -27,7 +27,7 @@ PetscErrorCode ISColoringReference(ISColoring coloring)
 
    Level: intermediate
 
-.seealso: MatFDColoringCreate(), ISColoring, ISColoringCreate(), IS_COLORING_LOCAL, IS_COLORING_GLOBAL, ISColoringGetType()
+.seealso: `MatFDColoringCreate()`, `ISColoring`, `ISColoringCreate()`, `IS_COLORING_LOCAL`, `IS_COLORING_GLOBAL`, `ISColoringGetType()`
 
 @*/
 PetscErrorCode ISColoringSetType(ISColoring coloring,ISColoringType type)
@@ -51,7 +51,7 @@ PetscErrorCode ISColoringSetType(ISColoring coloring,ISColoringType type)
 
    Level: intermediate
 
-.seealso: MatFDColoringCreate(), ISColoring, ISColoringCreate(), IS_COLORING_LOCAL, IS_COLORING_GLOBAL, ISColoringSetType()
+.seealso: `MatFDColoringCreate()`, `ISColoring`, `ISColoringCreate()`, `IS_COLORING_LOCAL`, `IS_COLORING_GLOBAL`, `ISColoringSetType()`
 
 @*/
 PetscErrorCode ISColoringGetType(ISColoring coloring,ISColoringType *type)
@@ -71,7 +71,7 @@ PetscErrorCode ISColoringGetType(ISColoring coloring,ISColoringType *type)
 
    Level: advanced
 
-.seealso: ISColoringView(), MatColoring
+.seealso: `ISColoringView()`, `MatColoring`
 @*/
 PetscErrorCode  ISColoringDestroy(ISColoring *iscoloring)
 {
@@ -139,7 +139,7 @@ PetscErrorCode ISColoringViewFromOptions(ISColoring obj,PetscObject bobj,const c
 
    Level: advanced
 
-.seealso: ISColoringDestroy(), ISColoringGetIS(), MatColoring
+.seealso: `ISColoringDestroy()`, `ISColoringGetIS()`, `MatColoring`
 @*/
 PetscErrorCode  ISColoringView(ISColoring iscoloring,PetscViewer viewer)
 {
@@ -193,7 +193,7 @@ PetscErrorCode  ISColoringView(ISColoring iscoloring,PetscViewer viewer)
 
    Level: advanced
 
-.seealso: ISColoringRestoreIS(), ISColoringView(), ISColoringGetIS()
+.seealso: `ISColoringRestoreIS()`, `ISColoringView()`, `ISColoringGetIS()`
 @*/
 PetscErrorCode  ISColoringGetColors(ISColoring iscoloring,PetscInt *n,PetscInt *nc,const ISColoringValue **colors)
 {
@@ -221,7 +221,7 @@ PetscErrorCode  ISColoringGetColors(ISColoring iscoloring,PetscInt *n,PetscInt *
 
    Level: advanced
 
-.seealso: ISColoringRestoreIS(), ISColoringView(), ISColoringGetColoring()
+.seealso: `ISColoringRestoreIS()`, `ISColoringView()`, `ISColoringGetColoring()`
 @*/
 PetscErrorCode  ISColoringGetIS(ISColoring iscoloring,PetscCopyMode mode, PetscInt *nn,IS *isis[])
 {
@@ -287,7 +287,7 @@ PetscErrorCode  ISColoringGetIS(ISColoring iscoloring,PetscCopyMode mode, PetscI
 
    Level: advanced
 
-.seealso: ISColoringGetIS(), ISColoringView()
+.seealso: `ISColoringGetIS()`, `ISColoringView()`
 @*/
 PetscErrorCode  ISColoringRestoreIS(ISColoring iscoloring,PetscCopyMode mode,IS *is[])
 {
@@ -322,7 +322,7 @@ PetscErrorCode  ISColoringRestoreIS(ISColoring iscoloring,PetscCopyMode mode,IS 
     Notes:
     By default sets coloring type to  IS_COLORING_GLOBAL
 
-.seealso: MatColoringCreate(), ISColoringView(), ISColoringDestroy(), ISColoringSetType()
+.seealso: `MatColoringCreate()`, `ISColoringView()`, `ISColoringDestroy()`, `ISColoringSetType()`
 
 @*/
 PetscErrorCode  ISColoringCreate(MPI_Comm comm,PetscInt ncolors,PetscInt n,const ISColoringValue colors[],PetscCopyMode mode,ISColoring *iscoloring)
@@ -402,7 +402,7 @@ PetscErrorCode  ISColoringCreate(MPI_Comm comm,PetscInt ncolors,PetscInt n,const
 
    Level: advanced
 
-.seealso: MatPartitioningCreate(), ISPartitioningToNumbering(), ISPartitioningCount()
+.seealso: `MatPartitioningCreate()`, `ISPartitioningToNumbering()`, `ISPartitioningCount()`
 
 @*/
 PetscErrorCode  ISBuildTwoSided(IS ito,IS toindx, IS *rows)
@@ -515,7 +515,7 @@ PetscErrorCode  ISBuildTwoSided(IS ito,IS toindx, IS *rows)
 
    Level: advanced
 
-.seealso: MatPartitioningCreate(), AOCreateBasic(), ISPartitioningCount()
+.seealso: `MatPartitioningCreate()`, `AOCreateBasic()`, `ISPartitioningCount()`
 
 @*/
 PetscErrorCode  ISPartitioningToNumbering(IS part,IS *is)
@@ -600,8 +600,8 @@ PetscErrorCode  ISPartitioningToNumbering(IS part,IS *is)
         If the partitioning has been obtained by MatPartitioningApplyND(),
         the returned count does not include the separators.
 
-.seealso: MatPartitioningCreate(), AOCreateBasic(), ISPartitioningToNumbering(),
-        MatPartitioningSetNParts(), MatPartitioningApply(), MatPartitioningApplyND()
+.seealso: `MatPartitioningCreate()`, `AOCreateBasic()`, `ISPartitioningToNumbering()`,
+          `MatPartitioningSetNParts()`, `MatPartitioningApply()`, `MatPartitioningApplyND()`
 
 @*/
 PetscErrorCode  ISPartitioningCount(IS part,PetscInt len,PetscInt count[])
@@ -672,7 +672,7 @@ PetscErrorCode  ISPartitioningCount(IS part,PetscInt len,PetscInt count[])
 
     Level: intermediate
 
-.seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock()
+.seealso: `ISCreateGeneral()`, `ISCreateStride()`, `ISCreateBlock()`
 @*/
 PetscErrorCode  ISAllGather(IS is,IS *isout)
 {
@@ -736,7 +736,7 @@ PetscErrorCode  ISAllGather(IS is,IS *isout)
 
     Level: intermediate
 
-.seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock(), ISAllGather()
+.seealso: `ISCreateGeneral()`, `ISCreateStride()`, `ISCreateBlock()`, `ISAllGather()`
 @*/
 PetscErrorCode  ISAllGatherColors(MPI_Comm comm,PetscInt n,ISColoringValue *lindices,PetscInt *outN,ISColoringValue *outindices[])
 {
@@ -786,7 +786,7 @@ PetscErrorCode  ISAllGatherColors(MPI_Comm comm,PetscInt n,ISColoringValue *lind
 
     Level: intermediate
 
-.seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock(), ISAllGather()
+.seealso: `ISCreateGeneral()`, `ISCreateStride()`, `ISCreateBlock()`, `ISAllGather()`
 @*/
 PetscErrorCode  ISComplement(IS is,PetscInt nmin,PetscInt nmax,IS *isout)
 {

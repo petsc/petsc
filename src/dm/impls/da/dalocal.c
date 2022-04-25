@@ -81,7 +81,7 @@ PetscErrorCode  DMCreateLocalVector_DA(DM da,Vec *g)
 
   Level: developer
 
-.seealso: DMDAGetCellPoint()
+.seealso: `DMDAGetCellPoint()`
 @*/
 PetscErrorCode DMDAGetNumCells(DM dm, PetscInt *numCellsX, PetscInt *numCellsY, PetscInt *numCellsZ, PetscInt *numCells)
 {
@@ -123,7 +123,7 @@ PetscErrorCode DMDAGetNumCells(DM dm, PetscInt *numCellsX, PetscInt *numCellsY, 
 
   Level: developer
 
-.seealso: DMDAGetNumCells()
+.seealso: `DMDAGetNumCells()`
 @*/
 PetscErrorCode DMDAGetCellPoint(DM dm, PetscInt i, PetscInt j, PetscInt k, PetscInt *point)
 {
@@ -426,7 +426,7 @@ PetscErrorCode DMDASetVertexCoordinates(DM dm, PetscReal xl, PetscReal xu, Petsc
 
   Level: advanced
 
-.seealso: DMDARestoreArray()
+.seealso: `DMDARestoreArray()`
 
 @*/
 PetscErrorCode  DMDAGetArray(DM da,PetscBool ghosted,void *vptr)
@@ -546,7 +546,7 @@ done:
 
      Level: advanced
 
-.seealso: DMDAGetArray()
+.seealso: `DMDAGetArray()`
 
 @*/
 PetscErrorCode  DMDARestoreArray(DM da,PetscBool ghosted,void *vptr)

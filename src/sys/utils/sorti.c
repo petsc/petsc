@@ -223,7 +223,7 @@
 
    Level: intermediate
 
-.seealso: PetscSortInt(), PetscSortedMPIInt(), PetscSortedReal()
+.seealso: `PetscSortInt()`, `PetscSortedMPIInt()`, `PetscSortedReal()`
 @*/
 PetscErrorCode  PetscSortedInt(PetscInt n,const PetscInt X[],PetscBool *sorted)
 {
@@ -250,7 +250,7 @@ PetscErrorCode  PetscSortedInt(PetscInt n,const PetscInt X[],PetscBool *sorted)
 
    Level: intermediate
 
-.seealso: PetscIntSortSemiOrdered(), PetscSortReal(), PetscSortIntWithPermutation()
+.seealso: `PetscIntSortSemiOrdered()`, `PetscSortReal()`, `PetscSortIntWithPermutation()`
 @*/
 PetscErrorCode  PetscSortInt(PetscInt n,PetscInt X[])
 {
@@ -273,7 +273,7 @@ PetscErrorCode  PetscSortInt(PetscInt n,PetscInt X[])
 
    Level: intermediate
 
-.seealso: PetscIntSortSemiOrdered(), PetscSortInt(), PetscSortIntWithPermutation()
+.seealso: `PetscIntSortSemiOrdered()`, `PetscSortInt()`, `PetscSortIntWithPermutation()`
 @*/
 PetscErrorCode  PetscSortReverseInt(PetscInt n,PetscInt X[])
 {
@@ -299,7 +299,7 @@ PetscErrorCode  PetscSortReverseInt(PetscInt n,PetscInt X[])
 
    Level: intermediate
 
-.seealso: PetscSortInt()
+.seealso: `PetscSortInt()`
 @*/
 PetscErrorCode  PetscSortedRemoveDupsInt(PetscInt *n,PetscInt X[])
 {
@@ -331,7 +331,7 @@ PetscErrorCode  PetscSortedRemoveDupsInt(PetscInt *n,PetscInt X[])
 
    Level: intermediate
 
-.seealso: PetscSortInt(), PetscCheckDupsInt(), PetscSortRemoveDupsInt(), PetscSortedRemoveDupsInt()
+.seealso: `PetscSortInt()`, `PetscCheckDupsInt()`, `PetscSortRemoveDupsInt()`, `PetscSortedRemoveDupsInt()`
 @*/
 PetscErrorCode  PetscSortedCheckDupsInt(PetscInt n,const PetscInt X[],PetscBool *flg)
 {
@@ -363,7 +363,7 @@ PetscErrorCode  PetscSortedCheckDupsInt(PetscInt n,const PetscInt X[],PetscBool 
 
    Level: intermediate
 
-.seealso: PetscIntSortSemiOrdered(), PetscSortReal(), PetscSortIntWithPermutation(), PetscSortInt(), PetscSortedRemoveDupsInt()
+.seealso: `PetscIntSortSemiOrdered()`, `PetscSortReal()`, `PetscSortIntWithPermutation()`, `PetscSortInt()`, `PetscSortedRemoveDupsInt()`
 @*/
 PetscErrorCode  PetscSortRemoveDupsInt(PetscInt *n,PetscInt X[])
 {
@@ -389,7 +389,7 @@ PetscErrorCode  PetscSortRemoveDupsInt(PetscInt *n,PetscInt X[])
 
    Level: intermediate
 
-.seealso: PetscIntSortSemiOrdered(), PetscSortInt(), PetscSortIntWithArray(), PetscSortRemoveDupsInt()
+.seealso: `PetscIntSortSemiOrdered()`, `PetscSortInt()`, `PetscSortIntWithArray()`, `PetscSortRemoveDupsInt()`
 @*/
 PetscErrorCode PetscFindInt(PetscInt key, PetscInt n, const PetscInt X[], PetscInt *loc)
 {
@@ -423,7 +423,7 @@ PetscErrorCode PetscFindInt(PetscInt key, PetscInt n, const PetscInt X[], PetscI
 
    Level: intermediate
 
-.seealso: PetscSortRemoveDupsInt(), PetscSortedCheckDupsInt()
+.seealso: `PetscSortRemoveDupsInt()`, `PetscSortedCheckDupsInt()`
 @*/
 PetscErrorCode PetscCheckDupsInt(PetscInt n,const PetscInt X[],PetscBool *dups)
 {
@@ -462,7 +462,7 @@ PetscErrorCode PetscCheckDupsInt(PetscInt n,const PetscInt X[],PetscBool *dups)
 
    Level: intermediate
 
-.seealso: PetscMPIIntSortSemiOrdered(), PetscSortInt(), PetscSortIntWithArray(), PetscSortRemoveDupsInt()
+.seealso: `PetscMPIIntSortSemiOrdered()`, `PetscSortInt()`, `PetscSortIntWithArray()`, `PetscSortRemoveDupsInt()`
 @*/
 PetscErrorCode PetscFindMPIInt(PetscMPIInt key, PetscInt n, const PetscMPIInt X[], PetscInt *loc)
 {
@@ -495,7 +495,7 @@ PetscErrorCode PetscFindMPIInt(PetscMPIInt key, PetscInt n, const PetscMPIInt X[
 
    Level: intermediate
 
-.seealso: PetscIntSortSemiOrderedWithArray(), PetscSortReal(), PetscSortIntWithPermutation(), PetscSortInt(), PetscSortIntWithCountArray()
+.seealso: `PetscIntSortSemiOrderedWithArray()`, `PetscSortReal()`, `PetscSortIntWithPermutation()`, `PetscSortInt()`, `PetscSortIntWithCountArray()`
 @*/
 PetscErrorCode  PetscSortIntWithArray(PetscInt n,PetscInt X[],PetscInt Y[])
 {
@@ -520,7 +520,7 @@ PetscErrorCode  PetscSortIntWithArray(PetscInt n,PetscInt X[],PetscInt Y[])
 
    Level: intermediate
 
-.seealso: PetscSortReal(), PetscSortIntWithPermutation(), PetscSortIntWithArray(), PetscIntSortSemiOrdered(), PetscSortIntWithIntCountArrayPair()
+.seealso: `PetscSortReal()`, `PetscSortIntWithPermutation()`, `PetscSortIntWithArray()`, `PetscIntSortSemiOrdered()`, `PetscSortIntWithIntCountArrayPair()`
 @*/
 PetscErrorCode  PetscSortIntWithArrayPair(PetscInt n,PetscInt X[],PetscInt Y[],PetscInt Z[])
 {
@@ -544,7 +544,7 @@ PetscErrorCode  PetscSortIntWithArrayPair(PetscInt n,PetscInt X[],PetscInt Y[],P
 
    Level: intermediate
 
-.seealso: PetscIntSortSemiOrderedWithArray(), PetscSortReal(), PetscSortIntPermutation(), PetscSortInt(), PetscSortIntWithArray()
+.seealso: `PetscIntSortSemiOrderedWithArray()`, `PetscSortReal()`, `PetscSortIntPermutation()`, `PetscSortInt()`, `PetscSortIntWithArray()`
 @*/
 PetscErrorCode  PetscSortIntWithCountArray(PetscCount n,PetscInt X[],PetscCount Y[])
 {
@@ -573,7 +573,7 @@ PetscErrorCode  PetscSortIntWithCountArray(PetscCount n,PetscInt X[],PetscCount 
    Notes:
     Usually X, Y are matrix row/column indices, and Z is a permutation array and therefore Z's type is PetscCount to allow 2B+ nonzeros even with 32-bit PetscInt.
 
-.seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortIntWithArray(), PetscIntSortSemiOrdered(), PetscSortIntWithArrayPair()
+.seealso: `PetscSortReal()`, `PetscSortIntPermutation()`, `PetscSortIntWithArray()`, `PetscIntSortSemiOrdered()`, `PetscSortIntWithArrayPair()`
 @*/
 PetscErrorCode  PetscSortIntWithIntCountArrayPair(PetscCount n,PetscInt X[],PetscInt Y[],PetscCount Z[])
 {
@@ -599,7 +599,7 @@ PetscErrorCode  PetscSortIntWithIntCountArrayPair(PetscCount n,PetscInt X[],Pets
 
    Level: intermediate
 
-.seealso: PetscMPIIntSortSemiOrdered(), PetscSortMPIInt(), PetscSortedInt(), PetscSortedReal()
+.seealso: `PetscMPIIntSortSemiOrdered()`, `PetscSortMPIInt()`, `PetscSortedInt()`, `PetscSortedReal()`
 @*/
 PetscErrorCode  PetscSortedMPIInt(PetscInt n,const PetscMPIInt X[],PetscBool *sorted)
 {
@@ -624,7 +624,7 @@ PetscErrorCode  PetscSortedMPIInt(PetscInt n,const PetscMPIInt X[],PetscBool *so
    is completely random. There are exceptions to this and so it is __highly__ recommended that the user benchmark their
    code to see which routine is fastest.
 
-.seealso: PetscMPIIntSortSemiOrdered(), PetscSortReal(), PetscSortIntWithPermutation()
+.seealso: `PetscMPIIntSortSemiOrdered()`, `PetscSortReal()`, `PetscSortIntWithPermutation()`
 @*/
 PetscErrorCode  PetscSortMPIInt(PetscInt n,PetscMPIInt X[])
 {
@@ -649,7 +649,7 @@ PetscErrorCode  PetscSortMPIInt(PetscInt n,PetscMPIInt X[])
 
    Level: intermediate
 
-.seealso: PetscSortReal(), PetscSortIntWithPermutation(), PetscSortInt()
+.seealso: `PetscSortReal()`, `PetscSortIntWithPermutation()`, `PetscSortInt()`
 @*/
 PetscErrorCode  PetscSortRemoveDupsMPIInt(PetscInt *n,PetscMPIInt X[])
 {
@@ -679,7 +679,7 @@ PetscErrorCode  PetscSortRemoveDupsMPIInt(PetscInt *n,PetscMPIInt X[])
 
    Level: intermediate
 
-.seealso: PetscMPIIntSortSemiOrderedWithArray(), PetscSortReal(), PetscSortIntWithPermutation(), PetscSortInt()
+.seealso: `PetscMPIIntSortSemiOrderedWithArray()`, `PetscSortReal()`, `PetscSortIntWithPermutation()`, `PetscSortInt()`
 @*/
 PetscErrorCode  PetscSortMPIIntWithArray(PetscMPIInt n,PetscMPIInt X[],PetscMPIInt Y[])
 {
@@ -705,7 +705,7 @@ PetscErrorCode  PetscSortMPIIntWithArray(PetscMPIInt n,PetscMPIInt X[],PetscMPII
 
    Notes: this routine is useful when one needs to sort MPI ranks with other integer arrays.
 
-.seealso: PetscSortMPIIntWithArray(), PetscIntSortSemiOrderedWithArray(), PetscTimSortWithArray()
+.seealso: `PetscSortMPIIntWithArray()`, `PetscIntSortSemiOrderedWithArray()`, `PetscTimSortWithArray()`
 @*/
 PetscErrorCode PetscSortMPIIntWithIntArray(PetscMPIInt n,PetscMPIInt X[],PetscInt Y[])
 {
@@ -730,7 +730,7 @@ PetscErrorCode PetscSortMPIIntWithIntArray(PetscMPIInt n,PetscMPIInt X[],PetscIn
 
    Level: intermediate
 
-.seealso: PetscTimSortWithArray(), PetscSortReal(), PetscSortIntWithPermutation(), PetscSortInt(), PetscSortIntWithArray()
+.seealso: `PetscTimSortWithArray()`, `PetscSortReal()`, `PetscSortIntWithPermutation()`, `PetscSortInt()`, `PetscSortIntWithArray()`
 @*/
 PetscErrorCode  PetscSortIntWithScalarArray(PetscInt n,PetscInt X[],PetscScalar Y[])
 {
@@ -758,7 +758,7 @@ PetscErrorCode  PetscSortIntWithScalarArray(PetscInt n,PetscInt X[],PetscScalar 
 
    Level: intermediate
 
-.seealso: PetscTimSortWithArray(), PetscSortReal(), PetscSortIntWithPermutation(), PetscSortInt(), PetscSortIntWithArray()
+.seealso: `PetscTimSortWithArray()`, `PetscSortReal()`, `PetscSortIntWithPermutation()`, `PetscSortInt()`, `PetscSortIntWithArray()`
 @*/
 PetscErrorCode  PetscSortIntWithDataArray(PetscInt n,PetscInt X[],void *Y,size_t size,void *t2)
 {
@@ -812,7 +812,7 @@ PetscErrorCode  PetscSortIntWithDataArray(PetscInt n,PetscInt X[],void *Y,size_t
 
    Level: intermediate
 
-.seealso: PetscSortReal(), PetscSortIntWithPermutation(), PetscSortInt(), PetscSortIntWithArray()
+.seealso: `PetscSortReal()`, `PetscSortIntWithPermutation()`, `PetscSortInt()`, `PetscSortIntWithArray()`
 @*/
 PetscErrorCode  PetscMergeIntArray(PetscInt an,const PetscInt aI[], PetscInt bn, const PetscInt bI[], PetscInt *n, PetscInt **L)
 {
@@ -876,7 +876,7 @@ PetscErrorCode  PetscMergeIntArray(PetscInt an,const PetscInt aI[], PetscInt bn,
     if L or J point to non-null arrays then this routine will assume they are of the approproate size and use them, otherwise this routine will allocate space for them
    Level: intermediate
 
-.seealso: PetscIntSortSemiOrdered(), PetscSortReal(), PetscSortIntWithPermutation(), PetscSortInt(), PetscSortIntWithArray()
+.seealso: `PetscIntSortSemiOrdered()`, `PetscSortReal()`, `PetscSortIntWithPermutation()`, `PetscSortInt()`, `PetscSortIntWithArray()`
 @*/
 PetscErrorCode  PetscMergeIntArrayPair(PetscInt an,const PetscInt aI[], const PetscInt aJ[], PetscInt bn, const PetscInt bI[], const PetscInt bJ[], PetscInt *n, PetscInt **L, PetscInt **J)
 {
@@ -938,7 +938,7 @@ PetscErrorCode  PetscMergeIntArrayPair(PetscInt an,const PetscInt aI[], const Pe
 
    Level: intermediate
 
-.seealso: PetscIntSortSemiOrdered(), PetscSortReal(), PetscSortIntWithPermutation(), PetscSortInt(), PetscSortIntWithArray()
+.seealso: `PetscIntSortSemiOrdered()`, `PetscSortReal()`, `PetscSortIntWithPermutation()`, `PetscSortInt()`, `PetscSortIntWithArray()`
 @*/
 PetscErrorCode PetscMergeMPIIntArray(PetscInt an,const PetscMPIInt aI[],PetscInt bn,const PetscMPIInt bI[],PetscInt *n,PetscMPIInt **L)
 {
@@ -979,7 +979,7 @@ PetscErrorCode PetscMergeMPIIntArray(PetscInt an,const PetscMPIInt aI[],PetscInt
    Notes:
     This code is not currently used
 
-.seealso: PetscSortReal(), PetscSortIntWithPermutation()
+.seealso: `PetscSortReal()`, `PetscSortIntWithPermutation()`
 @*/
 PetscErrorCode  PetscProcessTree(PetscInt n,const PetscBool mask[],const PetscInt parentid[],PetscInt *Nlevels,PetscInt **Level,PetscInt **Levelcnt,PetscInt **Idbylevel,PetscInt **Column)
 {
@@ -1077,7 +1077,7 @@ PetscErrorCode  PetscProcessTree(PetscInt n,const PetscBool mask[],const PetscIn
 
   Level: developer
 
-.seealso: PetscParallelSortInt()
+.seealso: `PetscParallelSortInt()`
 @*/
 PetscErrorCode PetscParallelSortedInt(MPI_Comm comm, PetscInt n, const PetscInt keys[], PetscBool *is_sorted)
 {

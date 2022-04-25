@@ -63,7 +63,7 @@ static PetscErrorCode MatSTRUMPACKSetReordering_STRUMPACK(Mat F,MatSTRUMPACKReor
    References:
 .  * - STRUMPACK manual
 
-.seealso: MatGetFactor()
+.seealso: `MatGetFactor()`
 @*/
 PetscErrorCode MatSTRUMPACKSetReordering(Mat F,MatSTRUMPACKReordering reordering)
 {
@@ -100,7 +100,7 @@ static PetscErrorCode MatSTRUMPACKSetColPerm_STRUMPACK(Mat F,PetscBool cperm)
    References:
 .  * - STRUMPACK manual
 
-.seealso: MatGetFactor()
+.seealso: `MatGetFactor()`
 @*/
 PetscErrorCode MatSTRUMPACKSetColPerm(Mat F,PetscBool cperm)
 {
@@ -137,7 +137,7 @@ static PetscErrorCode MatSTRUMPACKSetHSSRelTol_STRUMPACK(Mat F,PetscReal rtol)
    References:
 .  * - STRUMPACK manual
 
-.seealso: MatGetFactor()
+.seealso: `MatGetFactor()`
 @*/
 PetscErrorCode MatSTRUMPACKSetHSSRelTol(Mat F,PetscReal rtol)
 {
@@ -174,7 +174,7 @@ static PetscErrorCode MatSTRUMPACKSetHSSAbsTol_STRUMPACK(Mat F,PetscReal atol)
    References:
 .  * - STRUMPACK manual
 
-.seealso: MatGetFactor()
+.seealso: `MatGetFactor()`
 @*/
 PetscErrorCode MatSTRUMPACKSetHSSAbsTol(Mat F,PetscReal atol)
 {
@@ -211,7 +211,7 @@ static PetscErrorCode MatSTRUMPACKSetHSSMaxRank_STRUMPACK(Mat F,PetscInt hssmaxr
    References:
 .  * - STRUMPACK manual
 
-.seealso: MatGetFactor()
+.seealso: `MatGetFactor()`
 @*/
 PetscErrorCode MatSTRUMPACKSetHSSMaxRank(Mat F,PetscInt hssmaxrank)
 {
@@ -248,7 +248,7 @@ static PetscErrorCode MatSTRUMPACKSetHSSLeafSize_STRUMPACK(Mat F,PetscInt leaf_s
    References:
 .  * - STRUMPACK manual
 
-.seealso: MatGetFactor()
+.seealso: `MatGetFactor()`
 @*/
 PetscErrorCode MatSTRUMPACKSetHSSLeafSize(Mat F,PetscInt leaf_size)
 {
@@ -285,7 +285,7 @@ static PetscErrorCode MatSTRUMPACKSetHSSMinSepSize_STRUMPACK(Mat F,PetscInt hssm
    References:
 .  * - STRUMPACK manual
 
-.seealso: MatGetFactor()
+.seealso: `MatGetFactor()`
 @*/
 PetscErrorCode MatSTRUMPACKSetHSSMinSepSize(Mat F,PetscInt hssminsize)
 {
@@ -438,7 +438,7 @@ static PetscErrorCode MatFactorGetSolverType_aij_strumpack(Mat A,MatSolverType *
 
  Level: beginner
 
-.seealso: PCLU, PCILU, MATSOLVERSUPERLU_DIST, MATSOLVERMUMPS, PCFactorSetMatSolverType(), MatSolverType
+.seealso: `PCLU`, `PCILU`, `MATSOLVERSUPERLU_DIST`, `MATSOLVERMUMPS`, `PCFactorSetMatSolverType()`, `MatSolverType`
 M*/
 static PetscErrorCode MatGetFactor_aij_strumpack(Mat A,MatFactorType ftype,Mat *F)
 {

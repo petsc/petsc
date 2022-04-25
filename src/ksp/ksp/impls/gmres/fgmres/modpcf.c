@@ -34,7 +34,7 @@
     KSPFGMRESModifyPCNoChange()
     KSPFGMRESModifyPCKSP()
 
-.seealso: KSPFGMRESModifyPCNoChange(), KSPFGMRESModifyPCKSP()
+.seealso: `KSPFGMRESModifyPCNoChange()`, `KSPFGMRESModifyPCKSP()`
 
 @*/
 PetscErrorCode  KSPFGMRESSetModifyPC(KSP ksp,PetscErrorCode (*fcn)(KSP,PetscInt,PetscInt,PetscReal,void*),void *ctx,PetscErrorCode (*d)(void*))
@@ -65,7 +65,7 @@ PetscErrorCode  KSPFGMRESSetModifyPC(KSP ksp,PetscErrorCode (*fcn)(KSP,PetscInt,
 
 You can use this as a template!
 
-.seealso: KSPFGMRESSetModifyPC(), KSPFGMRESModifyPCKSP()
+.seealso: `KSPFGMRESSetModifyPC()`, `KSPFGMRESModifyPCKSP()`
 
 @*/
 PetscErrorCode  KSPFGMRESModifyPCNoChange(KSP ksp,PetscInt total_its,PetscInt loc_its,PetscReal res_norm,void *dummy)
@@ -93,7 +93,7 @@ PetscErrorCode  KSPFGMRESModifyPCNoChange(KSP ksp,PetscInt total_its,PetscInt lo
 
  This could be used as a template!
 
-.seealso: KSPFGMRESSetModifyPC(), KSPFGMRESModifyPCKSP()
+.seealso: `KSPFGMRESSetModifyPC()`, `KSPFGMRESModifyPCKSP()`
 
 @*/
 PetscErrorCode  KSPFGMRESModifyPCKSP(KSP ksp,PetscInt total_its,PetscInt loc_its,PetscReal res_norm,void *dummy)

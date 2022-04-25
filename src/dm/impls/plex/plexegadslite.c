@@ -596,7 +596,7 @@ static PetscErrorCode DMPlexEGADSLitePrintModel_Internal(ego model)
 
   Level: beginner
 
-.seealso: DMPLEX, DMCreate(), DMPlexCreateEGADS(), DMPlexCreateEGADSFromFile()
+.seealso: `DMPLEX`, `DMCreate()`, `DMPlexCreateEGADS()`, `DMPlexCreateEGADSFromFile()`
 @*/
 PetscErrorCode DMPlexCreateEGADSLiteFromFile(MPI_Comm comm, const char filename[], DM *dm)
 {

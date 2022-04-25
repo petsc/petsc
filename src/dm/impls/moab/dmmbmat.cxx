@@ -232,7 +232,7 @@ $                         0, 1, 1}
 
    Contributed by Glenn Hammond
 
-.seealso DMCreateMatrix(), DMDASetGetMatrix(), DMSetMatrixPreallocateOnly()
+.seealso `DMCreateMatrix()`, `DMDASetGetMatrix()`, `DMSetMatrixPreallocateOnly()`
 
 @*/
 PetscErrorCode  DMMoabSetBlockFills(DM dm, const PetscInt *dfill, const PetscInt *ofill)

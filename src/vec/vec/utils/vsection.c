@@ -76,7 +76,7 @@ static PetscErrorCode PetscSectionVecView_ASCII(PetscSection s, Vec v, PetscView
 
   Level: developer
 
-.seealso: PetscSection, PetscSectionCreate(), VecSetValuesSection()
+.seealso: `PetscSection`, `PetscSectionCreate()`, `VecSetValuesSection()`
 @*/
 PetscErrorCode PetscSectionVecView(PetscSection s, Vec v, PetscViewer viewer)
 {
@@ -122,7 +122,7 @@ PetscErrorCode PetscSectionVecView(PetscSection s, Vec v, PetscViewer viewer)
 
   Level: developer
 
-.seealso: PetscSection, PetscSectionCreate(), VecSetValuesSection()
+.seealso: `PetscSection`, `PetscSectionCreate()`, `VecSetValuesSection()`
 @*/
 PetscErrorCode VecGetValuesSection(Vec v, PetscSection s, PetscInt point, PetscScalar **values)
 {
@@ -157,7 +157,7 @@ $
 $   VecSetValuesSectionF90(vec, section, point, values, mode, ierr)
 $
 
-.seealso: PetscSection, PetscSectionCreate(), VecGetValuesSection()
+.seealso: `PetscSection`, `PetscSectionCreate()`, `VecGetValuesSection()`
 @*/
 PetscErrorCode VecSetValuesSection(Vec v, PetscSection s, PetscInt point, PetscScalar values[], InsertMode mode)
 {
@@ -309,7 +309,7 @@ PetscErrorCode PetscSectionRestoreField_Internal(PetscSection section, PetscSect
 
   Level: intermediate
 
-.seealso: VecNorm(), PetscSectionCreate()
+.seealso: `VecNorm()`, `PetscSectionCreate()`
 @*/
 PetscErrorCode PetscSectionVecNorm(PetscSection s, PetscSection gs, Vec x, NormType type, PetscReal val[])
 {

@@ -30,7 +30,7 @@ PetscErrorCode TaoLineSearchFinalizePackage(void)
 
   Level: developer
 
-.seealso: TaoLineSearchCreate()
+.seealso: `TaoLineSearchCreate()`
 @*/
 PetscErrorCode TaoLineSearchInitializePackage(void)
 {

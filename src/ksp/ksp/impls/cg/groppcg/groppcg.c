@@ -162,7 +162,7 @@ PETSC_INTERN PetscErrorCode KSPBuildResidual_CG(KSP,Vec,Vec,Vec*);
    Reference:
    http://www.cs.uiuc.edu/~wgropp/bib/talks/tdata/2012/icerm.pdf
 
-.seealso: KSPCreate(), KSPSetType(), KSPPIPECG, KSPPIPECR, KSPPGMRES, KSPCG, KSPCGUseSingleReduction()
+.seealso: `KSPCreate()`, `KSPSetType()`, `KSPPIPECG`, `KSPPIPECR`, `KSPPGMRES`, `KSPCG`, `KSPCGUseSingleReduction()`
 M*/
 
 PETSC_EXTERN PetscErrorCode KSPCreate_GROPPCG(KSP ksp)

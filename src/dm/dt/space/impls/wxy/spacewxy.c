@@ -381,7 +381,7 @@ $ = {{2 y z, 0, 0}, {0, 2 x z, 0}, {0, 2 y z, -z^2}, {2 x z, 0, -z^2}, {x^2, x y
 
   Level: intermediate
 
-.seealso: PetscSpaceType, PetscSpaceCreate(), PetscSpaceSetType()
+.seealso: `PetscSpaceType`, `PetscSpaceCreate()`, `PetscSpaceSetType()`
 M*/
 
 PETSC_EXTERN PetscErrorCode PetscSpaceCreate_WXY(PetscSpace sp)

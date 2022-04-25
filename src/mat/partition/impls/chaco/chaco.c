@@ -216,7 +216,7 @@ PetscErrorCode MatPartitioningView_Chaco(MatPartitioning part, PetscViewer viewe
    The default is the multi-level method. See Chaco documentation for
    additional details.
 
-.seealso: MatPartitioningChacoSetLocal(),MatPartitioningChacoGetGlobal()
+.seealso: `MatPartitioningChacoSetLocal(),MatPartitioningChacoGetGlobal()`
 @*/
 PetscErrorCode MatPartitioningChacoSetGlobal(MatPartitioning part,MPChacoGlobalType method)
 {
@@ -258,7 +258,7 @@ PetscErrorCode MatPartitioningChacoSetGlobal_Chaco(MatPartitioning part,MPChacoG
 
    Level: advanced
 
-.seealso: MatPartitioningChacoSetGlobal()
+.seealso: `MatPartitioningChacoSetGlobal()`
 @*/
 PetscErrorCode MatPartitioningChacoGetGlobal(MatPartitioning part,MPChacoGlobalType *method)
 {
@@ -296,7 +296,7 @@ PetscErrorCode MatPartitioningChacoGetGlobal_Chaco(MatPartitioning part,MPChacoG
    The default is to apply the Kernighan-Lin heuristic. See Chaco documentation
    for additional details.
 
-.seealso: MatPartitioningChacoSetGlobal(),MatPartitioningChacoGetLocal()
+.seealso: `MatPartitioningChacoSetGlobal(),MatPartitioningChacoGetLocal()`
 @*/
 PetscErrorCode MatPartitioningChacoSetLocal(MatPartitioning part,MPChacoLocalType method)
 {
@@ -335,7 +335,7 @@ PetscErrorCode MatPartitioningChacoSetLocal_Chaco(MatPartitioning part,MPChacoLo
 
    Level: advanced
 
-.seealso: MatPartitioningChacoSetLocal()
+.seealso: `MatPartitioningChacoSetLocal()`
 @*/
 PetscErrorCode MatPartitioningChacoGetLocal(MatPartitioning part,MPChacoLocalType *method)
 {
@@ -407,8 +407,8 @@ PetscErrorCode MatPartitioningChacoSetCoarseLevel_Chaco(MatPartitioning part,Pet
    Notes:
    The default is to use a Lanczos method. See Chaco documentation for details.
 
-.seealso: MatPartitioningChacoSetEigenTol(),MatPartitioningChacoSetEigenNumber(),
-          MatPartitioningChacoGetEigenSolver()
+.seealso: `MatPartitioningChacoSetEigenTol(),MatPartitioningChacoSetEigenNumber()`,
+          `MatPartitioningChacoGetEigenSolver()`
 @*/
 PetscErrorCode MatPartitioningChacoSetEigenSolver(MatPartitioning part,MPChacoEigenType method)
 {
@@ -447,7 +447,7 @@ PetscErrorCode MatPartitioningChacoSetEigenSolver_Chaco(MatPartitioning part,MPC
 
    Level: advanced
 
-.seealso: MatPartitioningChacoSetEigenSolver()
+.seealso: `MatPartitioningChacoSetEigenSolver()`
 @*/
 PetscErrorCode MatPartitioningChacoGetEigenSolver(MatPartitioning part,MPChacoEigenType *method)
 {
@@ -484,7 +484,7 @@ PetscErrorCode MatPartitioningChacoGetEigenSolver_Chaco(MatPartitioning part,MPC
 
    Level: advanced
 
-.seealso: MatPartitioningChacoSetEigenSolver(), MatPartitioningChacoGetEigenTol()
+.seealso: `MatPartitioningChacoSetEigenSolver()`, `MatPartitioningChacoGetEigenTol()`
 @*/
 PetscErrorCode MatPartitioningChacoSetEigenTol(MatPartitioning part,PetscReal tol)
 {
@@ -521,7 +521,7 @@ PetscErrorCode MatPartitioningChacoSetEigenTol_Chaco(MatPartitioning part,PetscR
 
    Level: advanced
 
-.seealso: MatPartitioningChacoSetEigenTol()
+.seealso: `MatPartitioningChacoSetEigenTol()`
 @*/
 PetscErrorCode MatPartitioningChacoGetEigenTol(MatPartitioning part,PetscReal *tol)
 {
@@ -560,7 +560,7 @@ PetscErrorCode MatPartitioningChacoGetEigenTol_Chaco(MatPartitioning part,PetscR
 
    Level: advanced
 
-.seealso: MatPartitioningChacoSetEigenSolver(), MatPartitioningChacoGetEigenTol()
+.seealso: `MatPartitioningChacoSetEigenSolver()`, `MatPartitioningChacoGetEigenTol()`
 @*/
 PetscErrorCode MatPartitioningChacoSetEigenNumber(MatPartitioning part,PetscInt num)
 {
@@ -597,7 +597,7 @@ PetscErrorCode MatPartitioningChacoSetEigenNumber_Chaco(MatPartitioning part,Pet
 
    Level: advanced
 
-.seealso: MatPartitioningChacoSetEigenNumber()
+.seealso: `MatPartitioningChacoSetEigenNumber()`
 @*/
 PetscErrorCode MatPartitioningChacoGetEigenNumber(MatPartitioning part,PetscInt *num)
 {
@@ -676,7 +676,7 @@ PetscErrorCode MatPartitioningDestroy_Chaco(MatPartitioning part)
     See http://www.cs.sandia.gov/CRF/chac.html
     Does not using MatPartitioningSetUseEdgeWeights()
 
-.seealso: MatPartitioningSetType(), MatPartitioningType
+.seealso: `MatPartitioningSetType()`, `MatPartitioningType`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Chaco(MatPartitioning part)

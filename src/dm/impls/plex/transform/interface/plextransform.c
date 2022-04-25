@@ -75,7 +75,7 @@ static PetscErrorCode DMPlexCreateCellTypeOrder_Internal(PetscInt dim, PetscInt 
 
   Level: advanced
 
-.seealso: DMPlexTransformRegisterAll(), DMPlexTransformRegisterDestroy()
+.seealso: `DMPlexTransformRegisterAll()`, `DMPlexTransformRegisterDestroy()`
 @*/
 PetscErrorCode DMPlexTransformRegister(const char name[], PetscErrorCode (*create_func)(DMPlexTransform))
 {
@@ -101,7 +101,7 @@ PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_Extrude(DMPlexTransform);
 
   Level: advanced
 
-.seealso: DMRegisterAll(), DMPlexTransformRegisterDestroy()
+.seealso: `DMRegisterAll()`, `DMPlexTransformRegisterDestroy()`
 @*/
 PetscErrorCode DMPlexTransformRegisterAll(void)
 {
@@ -125,7 +125,7 @@ PetscErrorCode DMPlexTransformRegisterAll(void)
 
   Level: developer
 
-.seealso: PetscInitialize()
+.seealso: `PetscInitialize()`
 @*/
 PetscErrorCode DMPlexTransformRegisterDestroy(void)
 {
@@ -148,7 +148,7 @@ PetscErrorCode DMPlexTransformRegisterDestroy(void)
 
   Level: beginner
 
-.seealso: DMPlexTransformSetType(), DMPLEXREFINEREGULAR, DMPLEXTRANSFORMFILTER
+.seealso: `DMPlexTransformSetType()`, `DMPLEXREFINEREGULAR`, `DMPLEXTRANSFORMFILTER`
 @*/
 PetscErrorCode DMPlexTransformCreate(MPI_Comm comm, DMPlexTransform *tr)
 {
@@ -183,7 +183,7 @@ PetscErrorCode DMPlexTransformCreate(MPI_Comm comm, DMPlexTransform *tr)
 
   Level: intermediate
 
-.seealso: DMPlexTransformGetType(), DMPlexTransformCreate()
+.seealso: `DMPlexTransformGetType()`, `DMPlexTransformCreate()`
 @*/
 PetscErrorCode DMPlexTransformSetType(DMPlexTransform tr, DMPlexTransformType method)
 {
@@ -219,7 +219,7 @@ PetscErrorCode DMPlexTransformSetType(DMPlexTransform tr, DMPlexTransformType me
 
   Level: intermediate
 
-.seealso: DMPlexTransformSetType(), DMPlexTransformCreate()
+.seealso: `DMPlexTransformSetType()`, `DMPlexTransformCreate()`
 @*/
 PetscErrorCode DMPlexTransformGetType(DMPlexTransform tr, DMPlexTransformType *type)
 {
@@ -291,7 +291,7 @@ static PetscErrorCode DMPlexTransformView_Ascii(DMPlexTransform tr, PetscViewer 
 
   Level: beginner
 
-.seealso DMPlexTransformDestroy(), DMPlexTransformCreate()
+.seealso `DMPlexTransformDestroy()`, `DMPlexTransformCreate()`
 @*/
 PetscErrorCode DMPlexTransformView(DMPlexTransform tr, PetscViewer v)
 {
@@ -323,7 +323,7 @@ PetscErrorCode DMPlexTransformView(DMPlexTransform tr, PetscViewer v)
 
   Level: intermediate
 
-.seealso DMPlexTransformView(), DMPlexTransformCreate()
+.seealso `DMPlexTransformView()`, `DMPlexTransformCreate()`
 @*/
 PetscErrorCode DMPlexTransformSetFromOptions(DMPlexTransform tr)
 {
@@ -354,7 +354,7 @@ PetscErrorCode DMPlexTransformSetFromOptions(DMPlexTransform tr)
 
   Level: beginner
 
-.seealso DMPlexTransformView(), DMPlexTransformCreate()
+.seealso `DMPlexTransformView()`, `DMPlexTransformCreate()`
 @*/
 PetscErrorCode DMPlexTransformDestroy(DMPlexTransform *tr)
 {
@@ -670,7 +670,7 @@ static PetscErrorCode DMPlexTransformGetCoordinateFE(DMPlexTransform tr, DMPolyt
 
   Level: advanced
 
-.seealso: DMPlexTransformApply(), DMPlexTransformCreate()
+.seealso: `DMPlexTransformApply()`, `DMPlexTransformCreate()`
 @*/
 PetscErrorCode DMPlexTransformSetDimensions(DMPlexTransform tr, DM dm, DM tdm)
 {
@@ -705,7 +705,7 @@ PetscErrorCode DMPlexTransformSetDimensions(DMPlexTransform tr, DM dm, DM tdm)
 
   Level: developer
 
-.seealso: DMPlexTransformGetSourcePoint(), DMPlexTransformCellTransform()
+.seealso: `DMPlexTransformGetSourcePoint()`, `DMPlexTransformCellTransform()`
 @*/
 PetscErrorCode DMPlexTransformGetTargetPoint(DMPlexTransform tr, DMPolytopeType ct, DMPolytopeType ctNew, PetscInt p, PetscInt r, PetscInt *pNew)
 {
@@ -762,7 +762,7 @@ PetscErrorCode DMPlexTransformGetTargetPoint(DMPlexTransform tr, DMPolytopeType 
 
   Level: developer
 
-.seealso: DMPlexTransformGetTargetPoint(), DMPlexTransformCellTransform()
+.seealso: `DMPlexTransformGetTargetPoint()`, `DMPlexTransformCellTransform()`
 @*/
 PetscErrorCode DMPlexTransformGetSourcePoint(DMPlexTransform tr, PetscInt pNew, DMPolytopeType *ct, DMPolytopeType *ctNew, PetscInt *p, PetscInt *r)
 {
@@ -873,7 +873,7 @@ $   ornt   = {                         0,                       0,              
 
   Level: advanced
 
-.seealso: DMPlexTransformApply(), DMPlexTransformCreate()
+.seealso: `DMPlexTransformApply()`, `DMPlexTransformCreate()`
 @*/
 PetscErrorCode DMPlexTransformCellTransform(DMPlexTransform tr, DMPolytopeType source, PetscInt p, PetscInt *rt, PetscInt *Nt, DMPolytopeType *target[], PetscInt *size[], PetscInt *cone[], PetscInt *ornt[])
 {
@@ -987,7 +987,7 @@ PetscErrorCode DMPlexTransformCellTransformIdentity(DMPlexTransform tr, DMPolyto
 
   Level: advanced
 
-.seealso: DMPlexTransformCellTransform(), DMPlexTransformApply()
+.seealso: `DMPlexTransformCellTransform()`, `DMPlexTransformApply()`
 @*/
 PetscErrorCode DMPlexTransformGetSubcellOrientation(DMPlexTransform tr, DMPolytopeType sct, PetscInt sp, PetscInt so, DMPolytopeType tct, PetscInt r, PetscInt o, PetscInt *rnew, PetscInt *onew)
 {
@@ -1348,7 +1348,7 @@ static PetscErrorCode DMPlexTransformCreateCellVertices_Internal(DMPlexTransform
 
   Level: developer
 
-.seealso: DMPlexTransformGetSubcellVertices()
+.seealso: `DMPlexTransformGetSubcellVertices()`
 */
 PetscErrorCode DMPlexTransformGetCellVertices(DMPlexTransform tr, DMPolytopeType ct, PetscInt *Nv, PetscScalar *trVerts[])
 {
@@ -1373,7 +1373,7 @@ PetscErrorCode DMPlexTransformGetCellVertices(DMPlexTransform tr, DMPolytopeType
 
   Level: developer
 
-.seealso: DMPlexTransformGetCellVertices()
+.seealso: `DMPlexTransformGetCellVertices()`
 */
 PetscErrorCode DMPlexTransformGetSubcellVertices(DMPlexTransform tr, DMPolytopeType ct, DMPolytopeType rct, PetscInt r, PetscInt *subVerts[])
 {
@@ -1417,7 +1417,7 @@ PetscErrorCode DMPlexTransformMapCoordinatesBarycenter_Internal(DMPlexTransform 
 
   Level: intermediate
 
-.seealso: DMPlexTransformApply()
+.seealso: `DMPlexTransformApply()`
 @*/
 PetscErrorCode DMPlexTransformMapCoordinates(DMPlexTransform tr, DMPolytopeType pct, DMPolytopeType ct, PetscInt p, PetscInt r, PetscInt Nv, PetscInt dE, const PetscScalar in[], PetscScalar out[])
 {
@@ -1693,7 +1693,7 @@ static PetscErrorCode DMPlexTransformCreateSF(DMPlexTransform tr, DM rdm)
 
   Level: developer
 
-.seealso: DMPlexCellRefinerSetCoordinates()
+.seealso: `DMPlexCellRefinerSetCoordinates()`
 */
 static PetscErrorCode DMPlexTransformMapLocalizedCoordinates(DMPlexTransform tr, DMPolytopeType ct, DMPolytopeType rct, PetscInt r, const PetscScalar x[], PetscScalar xr[])
 {

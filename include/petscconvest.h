@@ -10,7 +10,7 @@
 
   Level: developer
 
-.seealso:  PetscConvEstCreate(), PetscConvEstDestroy()
+.seealso: `PetscConvEstCreate()`, `PetscConvEstDestroy()`
 S*/
 typedef struct _p_PetscConvEst *PetscConvEst;
 

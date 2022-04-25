@@ -305,7 +305,7 @@ PetscErrorCode MatNormalGetMat_Normal(Mat A,Mat *M)
 
    Level: intermediate
 
-.seealso: MatCreateNormal()
+.seealso: `MatCreateNormal()`
 
 @*/
 PetscErrorCode MatNormalGetMat(Mat A,Mat *M)

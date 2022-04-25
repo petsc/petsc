@@ -33,7 +33,7 @@ static PetscErrorCode PetscDrawSave_SAWs(PetscDraw);
    Support for .jpg images requires configure --with-libjpeg.
    Support for .ppm images is built-in. The PPM format has no compression (640x480 pixels ~ 900 KiB).
 
-.seealso: PetscDrawSetFromOptions(), PetscDrawCreate(), PetscDrawDestroy(), PetscDrawSetSaveFinalImage()
+.seealso: `PetscDrawSetFromOptions()`, `PetscDrawCreate()`, `PetscDrawDestroy()`, `PetscDrawSetSaveFinalImage()`
 @*/
 PetscErrorCode  PetscDrawSetSave(PetscDraw draw,const char filename[])
 {
@@ -93,7 +93,7 @@ PetscErrorCode  PetscDrawSetSave(PetscDraw draw,const char filename[])
     You should call this AFTER calling PetscDrawSetSave() and BEFORE creating your image with PetscDrawSave().
    The ffmpeg utility must be in your path to make the movie.
 
-.seealso: PetscDrawSetSave(), PetscDrawSetFromOptions(), PetscDrawCreate(), PetscDrawDestroy()
+.seealso: `PetscDrawSetSave()`, `PetscDrawSetFromOptions()`, `PetscDrawCreate()`, `PetscDrawDestroy()`
 @*/
 PetscErrorCode  PetscDrawSetSaveMovie(PetscDraw draw,const char movieext[])
 {
@@ -132,7 +132,7 @@ PetscErrorCode  PetscDrawSetSaveMovie(PetscDraw draw,const char movieext[])
    Support for .jpg images requires configure --with-libjpeg.
    Support for .ppm images is built-in. The PPM format has no compression (640x480 pixels ~ 900 KiB).
 
-.seealso: PetscDrawSetSave(), PetscDrawSetFromOptions(), PetscDrawCreate(), PetscDrawDestroy()
+.seealso: `PetscDrawSetSave()`, `PetscDrawSetFromOptions()`, `PetscDrawCreate()`, `PetscDrawDestroy()`
 @*/
 PetscErrorCode  PetscDrawSetSaveFinalImage(PetscDraw draw,const char filename[])
 {
@@ -166,7 +166,7 @@ PetscErrorCode  PetscDrawSetSaveFinalImage(PetscDraw draw,const char filename[])
    Notes:
     this is not normally called by the user.
 
-.seealso: PetscDrawSetSave()
+.seealso: `PetscDrawSetSave()`
 
 @*/
 PetscErrorCode  PetscDrawSave(PetscDraw draw)
@@ -243,7 +243,7 @@ finally:
     this is not normally called by the user.
    The ffmpeg utility must be in your path to make the movie.
 
-.seealso: PetscDrawSetSave(), PetscDrawSetSaveMovie()
+.seealso: `PetscDrawSetSave()`, `PetscDrawSetSaveMovie()`
 
 @*/
 PetscErrorCode PetscDrawSaveMovie(PetscDraw draw)

@@ -312,7 +312,7 @@ static PetscErrorCode PetscPartitionerInitialize_PTScotch(PetscPartitioner part)
 
   Notes: when the graph is on a single process, this partitioner actually uses Scotch and not PT-Scotch
 
-.seealso: PetscPartitionerType, PetscPartitionerCreate(), PetscPartitionerSetType()
+.seealso: `PetscPartitionerType`, `PetscPartitionerCreate()`, `PetscPartitionerSetType()`
 M*/
 
 PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_PTScotch(PetscPartitioner part)

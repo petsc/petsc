@@ -308,7 +308,7 @@ PetscErrorCode MatCoarsenView_MIS(MatCoarsen coarse,PetscViewer viewer)
 
    Level: beginner
 
-.seealso: MatCoarsenSetType(), MatCoarsenType
+.seealso: `MatCoarsenSetType()`, `MatCoarsenType`
 
 M*/
 

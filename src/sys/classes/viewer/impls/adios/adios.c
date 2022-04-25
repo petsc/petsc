@@ -88,10 +88,10 @@ static PetscErrorCode PetscViewerFileGetName_ADIOS(PetscViewer viewer,const char
 /*MC
    PETSCVIEWERADIOS - A viewer that writes to an ADIOS file
 
-.seealso:  PetscViewerADIOSOpen(), PetscViewerStringSPrintf(), PetscViewerSocketOpen(), PetscViewerDrawOpen(), PETSCVIEWERSOCKET,
-           PetscViewerCreate(), PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), PETSCVIEWERBINARY, PETSCVIEWERDRAW, PETSCVIEWERSTRING,
-           PetscViewerMatlabOpen(), VecView(), DMView(), PetscViewerMatlabPutArray(), PETSCVIEWERASCII, PETSCVIEWERMATLAB,
-           PetscViewerFileSetName(), PetscViewerFileSetMode(), PetscViewerFormat, PetscViewerType, PetscViewerSetType()
+.seealso: `PetscViewerADIOSOpen()`, `PetscViewerStringSPrintf()`, `PetscViewerSocketOpen()`, `PetscViewerDrawOpen()`, `PETSCVIEWERSOCKET`,
+          `PetscViewerCreate()`, `PetscViewerASCIIOpen()`, `PetscViewerBinaryOpen()`, `PETSCVIEWERBINARY`, `PETSCVIEWERDRAW`, `PETSCVIEWERSTRING`,
+          `PetscViewerMatlabOpen()`, `VecView()`, `DMView()`, `PetscViewerMatlabPutArray()`, `PETSCVIEWERASCII`, `PETSCVIEWERMATLAB`,
+          `PetscViewerFileSetName()`, `PetscViewerFileSetMode()`, `PetscViewerFormat`, `PetscViewerType`, `PetscViewerSetType()`
 
   Level: beginner
 M*/
@@ -138,9 +138,9 @@ $    FILE_MODE_APPEND - open existing file for binary output
    Note:
    This PetscViewer should be destroyed with PetscViewerDestroy().
 
-.seealso: PetscViewerASCIIOpen(), PetscViewerPushFormat(), PetscViewerDestroy(), PetscViewerHDF5Open(),
-          VecView(), MatView(), VecLoad(), PetscViewerSetType(), PetscViewerFileSetMode(), PetscViewerFileSetName()
-          MatLoad(), PetscFileMode, PetscViewer
+.seealso: `PetscViewerASCIIOpen()`, `PetscViewerPushFormat()`, `PetscViewerDestroy()`, `PetscViewerHDF5Open()`,
+          `VecView()`, `MatView()`, `VecLoad()`, `PetscViewerSetType()`, `PetscViewerFileSetMode()`, `PetscViewerFileSetName()`
+          `MatLoad()`, `PetscFileMode`, `PetscViewer`
 @*/
 PetscErrorCode  PetscViewerADIOSOpen(MPI_Comm comm, const char name[], PetscFileMode type, PetscViewer *adiosv)
 {
@@ -167,7 +167,7 @@ PetscErrorCode  PetscViewerADIOSOpen(MPI_Comm comm, const char name[], PetscFile
 
   Developer Notes: These have not been verified
 
-.seealso: PetscDataType, PetscADIOSDataTypeToPetscDataType()
+.seealso: `PetscDataType`, `PetscADIOSDataTypeToPetscDataType()`
 @*/
 PetscErrorCode PetscDataTypeToADIOSDataType(PetscDataType ptype, enum ADIOS_DATATYPES *htype)
 {
@@ -204,7 +204,7 @@ PetscErrorCode PetscDataTypeToADIOSDataType(PetscDataType ptype, enum ADIOS_DATA
 
   Developer Notes: These have not been verified
 
-.seealso: PetscDataType, PetscADIOSDataTypeToPetscDataType()
+.seealso: `PetscDataType`, `PetscADIOSDataTypeToPetscDataType()`
 @*/
 PetscErrorCode PetscADIOSDataTypeToPetscDataType(enum ADIOS_DATATYPES htype, PetscDataType *ptype)
 {

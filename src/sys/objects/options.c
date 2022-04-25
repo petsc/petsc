@@ -132,7 +132,7 @@ static PetscErrorCode PetscOptionsMonitor(PetscOptions options,const char name[]
 
    Developer Note: We may want eventually to pass a MPI_Comm to determine the ownership of the object
 
-.seealso: PetscOptionsDestroy(), PetscOptionsPush(), PetscOptionsPop(), PetscOptionsInsert(), PetscOptionsSetValue()
+.seealso: `PetscOptionsDestroy()`, `PetscOptionsPush()`, `PetscOptionsPop()`, `PetscOptionsInsert()`, `PetscOptionsSetValue()`
 @*/
 PetscErrorCode PetscOptionsCreate(PetscOptions *options)
 {
@@ -153,7 +153,7 @@ PetscErrorCode PetscOptionsCreate(PetscOptions *options)
 
    Level: advanced
 
-.seealso: PetscOptionsInsert(), PetscOptionsPush(), PetscOptionsPop(), PetscOptionsInsert(), PetscOptionsSetValue()
+.seealso: `PetscOptionsInsert()`, `PetscOptionsPush()`, `PetscOptionsPop()`, `PetscOptionsInsert()`, `PetscOptionsSetValue()`
 @*/
 PetscErrorCode PetscOptionsDestroy(PetscOptions *options)
 {
@@ -196,7 +196,7 @@ PetscErrorCode PetscOptionsCreateDefault(void)
 
    Level: advanced
 
-.seealso: PetscOptionsPop(), PetscOptionsCreate(), PetscOptionsInsert(), PetscOptionsSetValue(), PetscOptionsLeft()
+.seealso: `PetscOptionsPop()`, `PetscOptionsCreate()`, `PetscOptionsInsert()`, `PetscOptionsSetValue()`, `PetscOptionsLeft()`
 
 @*/
 PetscErrorCode PetscOptionsPush(PetscOptions opt)
@@ -219,7 +219,7 @@ PetscErrorCode PetscOptionsPush(PetscOptions opt)
 
    Level: advanced
 
-.seealso: PetscOptionsPop(), PetscOptionsCreate(), PetscOptionsInsert(), PetscOptionsSetValue(), PetscOptionsLeft()
+.seealso: `PetscOptionsPop()`, `PetscOptionsCreate()`, `PetscOptionsInsert()`, `PetscOptionsSetValue()`, `PetscOptionsLeft()`
 
 @*/
 PetscErrorCode PetscOptionsPop(void)
@@ -301,12 +301,12 @@ PetscErrorCode PetscOptionsValidKey(const char key[],PetscBool *valid)
 
    Contributed by Boyana Norris
 
-.seealso: PetscOptionsSetValue(), PetscOptionsView(), PetscOptionsHasName(), PetscOptionsGetInt(),
-          PetscOptionsGetReal(), PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
-          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsFList(), PetscOptionsEList(), PetscOptionsInsertFile()
+.seealso: `PetscOptionsSetValue()`, `PetscOptionsView()`, `PetscOptionsHasName()`, `PetscOptionsGetInt()`,
+          `PetscOptionsGetReal()`, `PetscOptionsGetString()`, `PetscOptionsGetIntArray()`, `PetscOptionsBool()`,
+          `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
+          `PetscOptionsStringArray(),PetscOptionsRealArray()`, `PetscOptionsScalar()`,
+          `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
+          `PetscOptionsFList()`, `PetscOptionsEList()`, `PetscOptionsInsertFile()`
 @*/
 PetscErrorCode PetscOptionsInsertString(PetscOptions options,const char in_str[])
 {
@@ -604,12 +604,12 @@ destroy:
 
   Level: developer
 
-.seealso: PetscOptionsSetValue(), PetscOptionsView(), PetscOptionsHasName(), PetscOptionsGetInt(),
-          PetscOptionsGetReal(), PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
-          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsFList(), PetscOptionsEList()
+.seealso: `PetscOptionsSetValue()`, `PetscOptionsView()`, `PetscOptionsHasName()`, `PetscOptionsGetInt()`,
+          `PetscOptionsGetReal()`, `PetscOptionsGetString()`, `PetscOptionsGetIntArray()`, `PetscOptionsBool()`,
+          `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
+          `PetscOptionsStringArray(),PetscOptionsRealArray()`, `PetscOptionsScalar()`,
+          `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
+          `PetscOptionsFList()`, `PetscOptionsEList()`
 
 @*/
 PetscErrorCode PetscOptionsInsertFile(MPI_Comm comm,PetscOptions options,const char file[],PetscBool require)
@@ -639,7 +639,7 @@ PetscErrorCode PetscOptionsInsertFile(MPI_Comm comm,PetscOptions options,const c
 
    Level: intermediate
 
-.seealso: PetscOptions, PetscOptionsInsertString(), PetscOptionsInsertFile()
+.seealso: `PetscOptions`, `PetscOptionsInsertString()`, `PetscOptionsInsertFile()`
 @*/
 PetscErrorCode PetscOptionsInsertArgs(PetscOptions options,int argc,char *args[])
 {
@@ -804,8 +804,8 @@ static inline PetscErrorCode PetscOptionsSkipPrecedent(PetscOptions options,cons
 
    Level: advanced
 
-.seealso: PetscOptionsDestroy(), PetscOptionsView(), PetscOptionsInsertString(), PetscOptionsInsertFile(),
-          PetscInitialize()
+.seealso: `PetscOptionsDestroy()`, `PetscOptionsView()`, `PetscOptionsInsertString()`, `PetscOptionsInsertFile()`,
+          `PetscInitialize()`
 @*/
 PetscErrorCode PetscOptionsInsert(PetscOptions options,int *argc,char ***args,const char file[])
 {
@@ -901,7 +901,7 @@ PetscErrorCode PetscOptionsInsert(PetscOptions options,int *argc,char ***args,co
 
    Level: advanced
 
-.seealso: PetscOptionsAllUsed()
+.seealso: `PetscOptionsAllUsed()`
 @*/
 PetscErrorCode PetscOptionsView(PetscOptions options,PetscViewer viewer)
 {
@@ -983,7 +983,7 @@ $ -prefix_push system1_ -options_file system1rc -prefix_pop -prefix_push system2
 
 Level: advanced
 
-.seealso: PetscOptionsPrefixPop(), PetscOptionsPush(), PetscOptionsPop(), PetscOptionsCreate(), PetscOptionsSetValue()
+.seealso: `PetscOptionsPrefixPop()`, `PetscOptionsPush()`, `PetscOptionsPop()`, `PetscOptionsCreate()`, `PetscOptionsSetValue()`
 @*/
 PetscErrorCode PetscOptionsPrefixPush(PetscOptions options,const char prefix[])
 {
@@ -1019,7 +1019,7 @@ PetscErrorCode PetscOptionsPrefixPush(PetscOptions options,const char prefix[])
 
    Level: advanced
 
-.seealso: PetscOptionsPrefixPush(), PetscOptionsPush(), PetscOptionsPop(), PetscOptionsCreate(), PetscOptionsSetValue()
+.seealso: `PetscOptionsPrefixPush()`, `PetscOptionsPush()`, `PetscOptionsPop()`, `PetscOptionsCreate()`, `PetscOptionsSetValue()`
 @*/
 PetscErrorCode PetscOptionsPrefixPop(PetscOptions options)
 {
@@ -1049,7 +1049,7 @@ PetscErrorCode PetscOptionsPrefixPop(PetscOptions options)
 
    Level: developer
 
-.seealso: PetscOptionsInsert()
+.seealso: `PetscOptionsInsert()`
 @*/
 PetscErrorCode PetscOptionsClear(PetscOptions options)
 {
@@ -1098,12 +1098,12 @@ PetscErrorCode PetscOptionsClear(PetscOptions options)
    not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
    on different ranks.
 
-.seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),OptionsHasName(),
-          PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(),PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
-          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsFList(), PetscOptionsEList()
+.seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal(),OptionsHasName()`,
+          `PetscOptionsGetString()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray(),PetscOptionsBool()`,
+          `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
+          `PetscOptionsStringArray(),PetscOptionsRealArray()`, `PetscOptionsScalar()`,
+          `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
+          `PetscOptionsFList()`, `PetscOptionsEList()`
 @*/
 PetscErrorCode PetscOptionsSetAlias(PetscOptions options,const char newname[],const char oldname[])
 {
@@ -1157,7 +1157,7 @@ PetscErrorCode PetscOptionsSetAlias(PetscOptions options,const char newname[],co
 
    Developers Note: Uses malloc() directly because PETSc may not be initialized yet.
 
-.seealso: PetscOptionsInsert(), PetscOptionsClearValue()
+.seealso: `PetscOptionsInsert()`, `PetscOptionsClearValue()`
 @*/
 PetscErrorCode PetscOptionsSetValue(PetscOptions options,const char name[],const char value[])
 {
@@ -1276,7 +1276,7 @@ setvalue:
    not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
    on different ranks.
 
-.seealso: PetscOptionsInsert()
+.seealso: `PetscOptionsInsert()`
 @*/
 PetscErrorCode PetscOptionsClearValue(PetscOptions options,const char name[])
 {
@@ -1341,7 +1341,7 @@ PetscErrorCode PetscOptionsClearValue(PetscOptions options,const char name[])
 
    Level: developer
 
-.seealso: PetscOptionsSetValue(), PetscOptionsClearValue()
+.seealso: `PetscOptionsSetValue()`, `PetscOptionsClearValue()`
 @*/
 PetscErrorCode PetscOptionsFindPair(PetscOptions options,const char pre[],const char name[],const char *value[],PetscBool *set)
 {
@@ -1545,12 +1545,12 @@ PETSC_EXTERN PetscErrorCode PetscOptionsFindPairPrefix_Private(PetscOptions opti
 
    Level: advanced
 
-.seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),OptionsHasName(),
-          PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
-          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsFList(), PetscOptionsEList()
+.seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal(),OptionsHasName()`,
+          `PetscOptionsGetString()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
+          `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
+          `PetscOptionsStringArray(),PetscOptionsRealArray()`, `PetscOptionsScalar()`,
+          `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
+          `PetscOptionsFList()`, `PetscOptionsEList()`
 @*/
 PetscErrorCode PetscOptionsReject(PetscOptions options,const char pre[],const char name[],const char mess[])
 {
@@ -1578,7 +1578,7 @@ PetscErrorCode PetscOptionsReject(PetscOptions options,const char pre[],const ch
 
    Level: advanced
 
-.seealso: PetscOptionsHasName()
+.seealso: `PetscOptionsHasName()`
 @*/
 PetscErrorCode PetscOptionsHasHelp(PetscOptions options,PetscBool *set)
 {
@@ -1617,12 +1617,12 @@ PetscErrorCode PetscOptionsHasHelpIntro_Internal(PetscOptions options,PetscBool 
    Notes:
    In many cases you probably want to use PetscOptionsGetBool() instead of calling this, to allowing toggling values.
 
-.seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
-          PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
-          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsFList(), PetscOptionsEList()
+.seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`,
+          `PetscOptionsGetString()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
+          `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
+          `PetscOptionsStringArray(),PetscOptionsRealArray()`, `PetscOptionsScalar()`,
+          `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
+          `PetscOptionsFList()`, `PetscOptionsEList()`
 @*/
 PetscErrorCode PetscOptionsHasName(PetscOptions options,const char pre[],const char name[],PetscBool *set)
 {
@@ -1652,7 +1652,7 @@ PetscErrorCode PetscOptionsHasName(PetscOptions options,const char pre[],const c
 
    Level: advanced
 
-.seealso: PetscOptionsAllUsed(), PetscOptionsView(), PetscOptionsPush(), PetscOptionsPop()
+.seealso: `PetscOptionsAllUsed()`, `PetscOptionsView()`, `PetscOptionsPush()`, `PetscOptionsPop()`
 @*/
 PetscErrorCode PetscOptionsGetAll(PetscOptions options,char *copts[])
 {
@@ -1705,7 +1705,7 @@ PetscErrorCode PetscOptionsGetAll(PetscOptions options,char *copts[])
    The value returned may be different on each process and depends on which options have been processed
    on the given process
 
-.seealso: PetscOptionsView(), PetscOptionsLeft(), PetscOptionsAllUsed()
+.seealso: `PetscOptionsView()`, `PetscOptionsLeft()`, `PetscOptionsAllUsed()`
 @*/
 PetscErrorCode PetscOptionsUsed(PetscOptions options,const char *name,PetscBool *used)
 {
@@ -1744,7 +1744,7 @@ PetscErrorCode PetscOptionsUsed(PetscOptions options,const char *name,PetscBool 
    The value returned may be different on each process and depends on which options have been processed
    on the given process
 
-.seealso: PetscOptionsView()
+.seealso: `PetscOptionsView()`
 @*/
 PetscErrorCode PetscOptionsAllUsed(PetscOptions options,PetscInt *N)
 {
@@ -1779,7 +1779,7 @@ PetscErrorCode PetscOptionsAllUsed(PetscOptions options,PetscInt *N)
 
    Level: advanced
 
-.seealso: PetscOptionsAllUsed()
+.seealso: `PetscOptionsAllUsed()`
 @*/
 PetscErrorCode PetscOptionsLeft(PetscOptions options)
 {
@@ -1831,7 +1831,7 @@ PetscErrorCode PetscOptionsLeft(PetscOptions options)
    Notes: The value returned may be different on each process and depends on which options have been processed
    on the given process
 
-.seealso: PetscOptionsAllUsed(), PetscOptionsLeft()
+.seealso: `PetscOptionsAllUsed()`, `PetscOptionsLeft()`
 @*/
 PetscErrorCode PetscOptionsLeftGet(PetscOptions options,PetscInt *N,char **names[],char **values[])
 {
@@ -1877,7 +1877,7 @@ PetscErrorCode PetscOptionsLeftGet(PetscOptions options,PetscInt *N,char **names
 
    Level: advanced
 
-.seealso: PetscOptionsAllUsed(), PetscOptionsLeft(), PetscOptionsLeftGet()
+.seealso: `PetscOptionsAllUsed()`, `PetscOptionsLeft()`, `PetscOptionsLeftGet()`
 @*/
 PetscErrorCode PetscOptionsLeftRestore(PetscOptions options,PetscInt *N,char **names[],char **values[])
 {
@@ -1908,7 +1908,7 @@ PetscErrorCode PetscOptionsLeftRestore(PetscOptions options,PetscInt *N,char **n
      The first MPI rank in the PetscViewer viewer actually prints the values, other
      processes may have different values set
 
-.seealso: PetscOptionsMonitorSet()
+.seealso: `PetscOptionsMonitorSet()`
 @*/
 PetscErrorCode PetscOptionsMonitorDefault(const char name[],const char value[],void *ctx)
 {
@@ -1969,7 +1969,7 @@ $     monitor (const char name[], const char value[], void *mctx)
 
    Level: intermediate
 
-.seealso: PetscOptionsMonitorDefault(), PetscInitialize()
+.seealso: `PetscOptionsMonitorDefault()`, `PetscInitialize()`
 @*/
 PetscErrorCode PetscOptionsMonitorSet(PetscErrorCode (*monitor)(const char name[], const char value[], void*),void *mctx,PetscErrorCode (*monitordestroy)(void**))
 {
@@ -2192,12 +2192,12 @@ PetscErrorCode PetscOptionsStringToScalar(const char name[],PetscScalar *a)
        If the user does not supply the option at all ivalue is NOT changed. Thus
      you should ALWAYS initialize the ivalue if you access it without first checking if the set flag is true.
 
-.seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(),
-          PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsGetInt(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
-          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsFList(), PetscOptionsEList()
+.seealso: `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`,
+          `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsGetInt()`, `PetscOptionsBool()`,
+          `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
+          `PetscOptionsStringArray(),PetscOptionsRealArray()`, `PetscOptionsScalar()`,
+          `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
+          `PetscOptionsFList()`, `PetscOptionsEList()`
 @*/
 PetscErrorCode PetscOptionsGetBool(PetscOptions options,const char pre[],const char name[],PetscBool *ivalue,PetscBool *set)
 {
@@ -2242,12 +2242,12 @@ PetscErrorCode PetscOptionsGetBool(PetscOptions options,const char pre[],const c
 
    See PetscOptionsFList() for when the choices are given in a PetscFunctionList()
 
-.seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
-          PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
-          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsFList(), PetscOptionsEList()
+.seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`,
+          `PetscOptionsHasName()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
+          `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
+          `PetscOptionsStringArray(),PetscOptionsRealArray()`, `PetscOptionsScalar()`,
+          `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
+          `PetscOptionsFList()`, `PetscOptionsEList()`
 @*/
 PetscErrorCode PetscOptionsGetEList(PetscOptions options,const char pre[],const char opt[],const char * const *list,PetscInt ntext,PetscInt *value,PetscBool *set)
 {
@@ -2312,13 +2312,13 @@ PetscErrorCode PetscOptionsGetEList(PetscOptions options,const char pre[],const 
 
           List is usually something like PCASMTypes or some other predefined list of enum names
 
-.seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
-          PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
-          PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
-          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsFList(), PetscOptionsEList(), PetscOptionsGetEList(), PetscOptionsEnum()
+.seealso: `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`, `PetscOptionsGetInt()`,
+          `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`
+          `PetscOptionsInt()`, `PetscOptionsString()`, `PetscOptionsReal()`, `PetscOptionsBool()`,
+          `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
+          `PetscOptionsStringArray(),PetscOptionsRealArray()`, `PetscOptionsScalar()`,
+          `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
+          `PetscOptionsFList()`, `PetscOptionsEList()`, `PetscOptionsGetEList()`, `PetscOptionsEnum()`
 @*/
 PetscErrorCode PetscOptionsGetEnum(PetscOptions options,const char pre[],const char opt[],const char * const *list,PetscEnum *value,PetscBool *set)
 {
@@ -2359,13 +2359,13 @@ PetscErrorCode PetscOptionsGetEnum(PetscOptions options,const char pre[],const c
    If the user does not supply the option ivalue is NOT changed. Thus
    you should ALWAYS initialize the ivalue if you access it without first checking if the set flag is true.
 
-.seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(),
-          PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
-          PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
-          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsFList(), PetscOptionsEList()
+.seealso: `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`,
+          `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`
+          `PetscOptionsInt()`, `PetscOptionsString()`, `PetscOptionsReal()`, `PetscOptionsBool()`,
+          `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
+          `PetscOptionsStringArray(),PetscOptionsRealArray()`, `PetscOptionsScalar()`,
+          `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
+          `PetscOptionsFList()`, `PetscOptionsEList()`
 @*/
 PetscErrorCode PetscOptionsGetInt(PetscOptions options,const char pre[],const char name[],PetscInt *ivalue,PetscBool *set)
 {
@@ -2410,12 +2410,12 @@ PetscErrorCode PetscOptionsGetInt(PetscOptions options,const char pre[],const ch
 
    Level: beginner
 
-.seealso: PetscOptionsGetInt(), PetscOptionsHasName(),
-          PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(),PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
-          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsFList(), PetscOptionsEList()
+.seealso: `PetscOptionsGetInt()`, `PetscOptionsHasName()`,
+          `PetscOptionsGetString()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray(),PetscOptionsBool()`,
+          `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
+          `PetscOptionsStringArray(),PetscOptionsRealArray()`, `PetscOptionsScalar()`,
+          `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
+          `PetscOptionsFList()`, `PetscOptionsEList()`
 @*/
 PetscErrorCode PetscOptionsGetReal(PetscOptions options,const char pre[],const char name[],PetscReal *dvalue,PetscBool *set)
 {
@@ -2463,12 +2463,12 @@ PetscErrorCode PetscOptionsGetReal(PetscOptions options,const char pre[],const c
     If the user does not supply the option dvalue is NOT changed. Thus
      you should ALWAYS initialize the ivalue if you access it without first checking if the set flag is true.
 
-.seealso: PetscOptionsGetInt(), PetscOptionsHasName(),
-          PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
-          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsFList(), PetscOptionsEList()
+.seealso: `PetscOptionsGetInt()`, `PetscOptionsHasName()`,
+          `PetscOptionsGetString()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
+          `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
+          `PetscOptionsStringArray(),PetscOptionsRealArray()`, `PetscOptionsScalar()`,
+          `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
+          `PetscOptionsFList()`, `PetscOptionsEList()`
 @*/
 PetscErrorCode PetscOptionsGetScalar(PetscOptions options,const char pre[],const char name[],PetscScalar *dvalue,PetscBool *set)
 {
@@ -2533,12 +2533,12 @@ PetscErrorCode PetscOptionsGetScalar(PetscOptions options,const char pre[],const
     Note:
       Even if the user provided no string (for example -optionname -someotheroption) the flag is set to PETSC_TRUE (and the string is fulled with nulls).
 
-.seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
-          PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
-          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsFList(), PetscOptionsEList()
+.seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`,
+          `PetscOptionsHasName()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
+          `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
+          `PetscOptionsStringArray(),PetscOptionsRealArray()`, `PetscOptionsScalar()`,
+          `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
+          `PetscOptionsFList()`, `PetscOptionsEList()`
 @*/
 PetscErrorCode PetscOptionsGetString(PetscOptions options,const char pre[],const char name[],char string[],size_t len,PetscBool *set)
 {
@@ -2591,12 +2591,12 @@ char *PetscOptionsGetStringMatlab(PetscOptions options,const char pre[],const ch
   Notes:
   TRUE, true, YES, yes, nostring, and 1 all translate to PETSC_TRUE. FALSE, false, NO, no, and 0 all translate to PETSC_FALSE
 
-.seealso: PetscOptionsGetInt(), PetscOptionsHasName(),
-          PetscOptionsGetString(), PetscOptionsGetRealArray(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
-          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsFList(), PetscOptionsEList()
+.seealso: `PetscOptionsGetInt()`, `PetscOptionsHasName()`,
+          `PetscOptionsGetString()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
+          `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
+          `PetscOptionsStringArray(),PetscOptionsRealArray()`, `PetscOptionsScalar()`,
+          `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
+          `PetscOptionsFList()`, `PetscOptionsEList()`
 @*/
 PetscErrorCode PetscOptionsGetBoolArray(PetscOptions options,const char pre[],const char name[],PetscBool dvalue[],PetscInt *nmax,PetscBool *set)
 {
@@ -2652,12 +2652,12 @@ PetscErrorCode PetscOptionsGetBoolArray(PetscOptions options,const char pre[],co
 
   list is usually something like PCASMTypes or some other predefined list of enum names.
 
-.seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
-          PetscOptionsGetEnum(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
-          PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(), PetscOptionsName(),
-          PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(), PetscOptionsStringArray(),PetscOptionsRealArray(),
-          PetscOptionsScalar(), PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsFList(), PetscOptionsEList(), PetscOptionsGetEList(), PetscOptionsEnum()
+.seealso: `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`, `PetscOptionsGetInt()`,
+          `PetscOptionsGetEnum()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`
+          `PetscOptionsInt()`, `PetscOptionsString()`, `PetscOptionsReal()`, `PetscOptionsBool()`, `PetscOptionsName()`,
+          `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`, `PetscOptionsStringArray(),PetscOptionsRealArray()`,
+          `PetscOptionsScalar()`, `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
+          `PetscOptionsFList()`, `PetscOptionsEList()`, `PetscOptionsGetEList()`, `PetscOptionsEnum()`
 @*/
 PetscErrorCode PetscOptionsGetEnumArray(PetscOptions options,const char pre[],const char name[],const char *const *list,PetscEnum ivalue[],PetscInt *nmax,PetscBool *set)
 {
@@ -2718,12 +2718,12 @@ PetscErrorCode PetscOptionsGetEnumArray(PetscOptions options,const char pre[],co
 
   There must be no intervening spaces between the values.
 
-.seealso: PetscOptionsGetInt(), PetscOptionsHasName(),
-          PetscOptionsGetString(), PetscOptionsGetRealArray(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
-          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsFList(), PetscOptionsEList()
+.seealso: `PetscOptionsGetInt()`, `PetscOptionsHasName()`,
+          `PetscOptionsGetString()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
+          `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
+          `PetscOptionsStringArray(),PetscOptionsRealArray()`, `PetscOptionsScalar()`,
+          `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
+          `PetscOptionsFList()`, `PetscOptionsEList()`
 @*/
 PetscErrorCode PetscOptionsGetIntArray(PetscOptions options,const char pre[],const char name[],PetscInt ivalue[],PetscInt *nmax,PetscBool *set)
 {
@@ -2808,12 +2808,12 @@ PetscErrorCode PetscOptionsGetIntArray(PetscOptions options,const char pre[],con
 
   Level: beginner
 
-.seealso: PetscOptionsGetInt(), PetscOptionsHasName(),
-          PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
-          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsFList(), PetscOptionsEList()
+.seealso: `PetscOptionsGetInt()`, `PetscOptionsHasName()`,
+          `PetscOptionsGetString()`, `PetscOptionsGetIntArray()`, `PetscOptionsBool()`,
+          `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
+          `PetscOptionsStringArray(),PetscOptionsRealArray()`, `PetscOptionsScalar()`,
+          `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
+          `PetscOptionsFList()`, `PetscOptionsEList()`
 @*/
 PetscErrorCode PetscOptionsGetRealArray(PetscOptions options,const char pre[],const char name[],PetscReal dvalue[],PetscInt *nmax,PetscBool *set)
 {
@@ -2861,12 +2861,12 @@ PetscErrorCode PetscOptionsGetRealArray(PetscOptions options,const char pre[],co
 
   Level: beginner
 
-.seealso: PetscOptionsGetInt(), PetscOptionsHasName(),
-          PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
-          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsFList(), PetscOptionsEList()
+.seealso: `PetscOptionsGetInt()`, `PetscOptionsHasName()`,
+          `PetscOptionsGetString()`, `PetscOptionsGetIntArray()`, `PetscOptionsBool()`,
+          `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
+          `PetscOptionsStringArray(),PetscOptionsRealArray()`, `PetscOptionsScalar()`,
+          `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
+          `PetscOptionsFList()`, `PetscOptionsEList()`
 @*/
 PetscErrorCode PetscOptionsGetScalarArray(PetscOptions options,const char pre[],const char name[],PetscScalar dvalue[],PetscInt *nmax,PetscBool *set)
 {
@@ -2923,12 +2923,12 @@ PetscErrorCode PetscOptionsGetScalarArray(PetscOptions options,const char pre[],
   The user is responsible for deallocating the strings that are
   returned. The Fortran interface for this routine is not supported.
 
-.seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
-          PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
-          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsFList(), PetscOptionsEList()
+.seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`,
+          `PetscOptionsHasName()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
+          `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
+          `PetscOptionsStringArray(),PetscOptionsRealArray()`, `PetscOptionsScalar()`,
+          `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
+          `PetscOptionsFList()`, `PetscOptionsEList()`
 @*/
 PetscErrorCode PetscOptionsGetStringArray(PetscOptions options,const char pre[],const char name[],char *strings[],PetscInt *nmax,PetscBool *set)
 {
@@ -2988,7 +2988,7 @@ PetscErrorCode PetscOptionsGetStringArray(PetscOptions options,const char pre[],
 
    Level: developer
 
-.seealso: PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsScalar(), PetscOptionsBool(), PetscOptionsString(), PetscOptionsSetValue()
+.seealso: `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsScalar()`, `PetscOptionsBool()`, `PetscOptionsString()`, `PetscOptionsSetValue()`
 
 @*/
 PetscErrorCode PetscOptionsDeprecated_Private(PetscOptionItems *PetscOptionsObject,const char oldname[],const char newname[],const char version[],const char info[])

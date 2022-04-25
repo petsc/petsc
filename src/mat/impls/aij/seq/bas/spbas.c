@@ -19,7 +19,7 @@
      levels of fill it does not. This needs to be investigated. Unless you are interested in drop tolerance ICC and willing to work through the code
      we recommend not using this functionality.
 
-.seealso: PCFactorSetMatSolverType(), MatSolverType, PCFactorSetLevels(), PCFactorSetDropTolerance()
+.seealso: `PCFactorSetMatSolverType()`, `MatSolverType`, `PCFactorSetLevels()`, `PCFactorSetDropTolerance()`
 
 M*/
 

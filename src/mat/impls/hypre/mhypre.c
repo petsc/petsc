@@ -1547,7 +1547,7 @@ static PetscErrorCode MatHYPRESetPreallocation_HYPRE(Mat A, PetscInt dnz, const 
 
    Level: intermediate
 
-.seealso: MatCreate(), MatMPIAIJSetPreallocation(), MATHYPRE
+.seealso: `MatCreate()`, `MatMPIAIJSetPreallocation()`, `MATHYPRE`
 @*/
 PetscErrorCode MatHYPRESetPreallocation(Mat A, PetscInt dnz, const PetscInt dnnz[], PetscInt onz, const PetscInt onnz[])
 {
@@ -1573,7 +1573,7 @@ PetscErrorCode MatHYPRESetPreallocation(Mat A, PetscInt dnz, const PetscInt dnnz
 
    Level: intermediate
 
-.seealso: MatHYPRE, PetscCopyMode
+.seealso: `MatHYPRE`, `PetscCopyMode`
 */
 PETSC_EXTERN PetscErrorCode MatCreateFromParCSR(hypre_ParCSRMatrix *parcsr, MatType mtype, PetscCopyMode copymode, Mat* A)
 {
@@ -1725,7 +1725,7 @@ static PetscErrorCode MatHYPREGetParCSR_HYPRE(Mat A, hypre_ParCSRMatrix **parcsr
 
    Level: intermediate
 
-.seealso: MatHYPRE, PetscCopyMode
+.seealso: `MatHYPRE`, `PetscCopyMode`
 */
 PetscErrorCode MatHYPREGetParCSR(Mat A, hypre_ParCSRMatrix **parcsr)
 {
@@ -2318,7 +2318,7 @@ static PetscErrorCode MatSetValuesCOO_HYPRE(Mat mat, const PetscScalar v[], Inse
 
    Level: intermediate
 
-.seealso: MatCreate()
+.seealso: `MatCreate()`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat B)

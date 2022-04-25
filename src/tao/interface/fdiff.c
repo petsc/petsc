@@ -44,7 +44,7 @@ static PetscErrorCode Fsnes(SNES snes,Vec X,Vec G,void* ctx)
   to get an indication of whether your gradient is correct.
   This finite difference gradient evaluation can be set using the routine TaoSetGradient() or by using the command line option -tao_fd_gradient
 
-.seealso: TaoSetGradient()
+.seealso: `TaoSetGradient()`
 @*/
 PetscErrorCode TaoDefaultComputeGradient(Tao tao,Vec Xin,Vec G,void *dummy)
 {
@@ -110,7 +110,7 @@ PetscErrorCode TaoDefaultComputeGradient(Tao tao,Vec Xin,Vec G,void *dummy)
    in large-scale applications, It can be useful in checking the
    correctness of a user-provided Hessian.
 
-.seealso: TaoSetHessian(), TaoDefaultComputeHessianColor(), SNESComputeJacobianDefault(), TaoSetGradient(), TaoDefaultComputeGradient()
+.seealso: `TaoSetHessian()`, `TaoDefaultComputeHessianColor()`, `SNESComputeJacobianDefault()`, `TaoSetGradient()`, `TaoDefaultComputeGradient()`
 @*/
 PetscErrorCode TaoDefaultComputeHessian(Tao tao,Vec V,Mat H,Mat B,void *dummy)
 {
@@ -161,7 +161,7 @@ PetscErrorCode TaoDefaultComputeHessian(Tao tao,Vec V,Mat H,Mat B,void *dummy)
 
    Level: advanced
 
-.seealso: TaoSetHessian(), TaoDefaultComputeHessian(),SNESComputeJacobianDefaultColor(), TaoSetGradient()
+.seealso: `TaoSetHessian()`, `TaoDefaultComputeHessian(),SNESComputeJacobianDefaultColor()`, `TaoSetGradient()`
 @*/
 PetscErrorCode TaoDefaultComputeHessianColor(Tao tao,Vec V,Mat H,Mat B,void *ctx)
 {

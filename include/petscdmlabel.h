@@ -7,7 +7,7 @@
 
   Level: developer
 
-.seealso:  DM, DMPlexCreate(), DMPlexCreateLabel()
+.seealso: `DM`, `DMPlexCreate()`, `DMPlexCreateLabel()`
 S*/
 typedef struct _p_DMLabel *DMLabel;
 PETSC_EXTERN PetscErrorCode DMLabelCreate(MPI_Comm, const char [], DMLabel *);

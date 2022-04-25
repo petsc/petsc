@@ -203,7 +203,7 @@ static PetscErrorCode  KSPSolve_FBCGSR(KSP ksp)
    Notes:
     Only allow right preconditioning
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType, KSP, KSPBICG, KSPFBCGSL, KSPSetPCSide()
+.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBICG`, `KSPFBCGSL`, `KSPSetPCSide()`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_FBCGSR(KSP ksp)
 {

@@ -66,7 +66,7 @@ static PetscErrorCode DMGlobalToLocalSolve_project1 (PetscInt dim, PetscReal tim
   the union of the closures of the local cells and 0 otherwise.  This difference is only relevant if there are anchor points that are not in the
   closure of any local cell (see DMPlexGetAnchors()/DMPlexSetAnchors()).
 
-.seealso: DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMLocalToGlobalBegin(), DMLocalToGlobalEnd(), DMPlexGetAnchors(), DMPlexSetAnchors()
+.seealso: `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`, `DMLocalToGlobalEnd()`, `DMPlexGetAnchors()`, `DMPlexSetAnchors()`
 @*/
 PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
 {
@@ -206,7 +206,7 @@ $         PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscSc
 
   Level: intermediate
 
-.seealso: DMProjectFieldLocal(), DMProjectFieldLabelLocal(), DMProjectFunction(), DMComputeL2Diff()
+.seealso: `DMProjectFieldLocal()`, `DMProjectFieldLabelLocal()`, `DMProjectFunction()`, `DMComputeL2Diff()`
 @*/
 PetscErrorCode DMProjectField(DM dm, PetscReal time, Vec U,
                               void (**funcs)(PetscInt, PetscInt, PetscInt,

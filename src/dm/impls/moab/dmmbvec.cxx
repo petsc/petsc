@@ -33,7 +33,7 @@ static PetscErrorCode DMVecCreateTagName_Moab_Private(moab::Interface *mbiface,c
 
   Level: beginner
 
-.seealso: VecCreate()
+.seealso: `VecCreate()`
 @*/
 PetscErrorCode DMMoabCreateVector(DM dm, moab::Tag tag, const moab::Range* range, PetscBool is_global_vec, PetscBool destroy_tag, Vec *vec)
 {
@@ -55,7 +55,7 @@ PetscErrorCode DMMoabCreateVector(DM dm, moab::Tag tag, const moab::Range* range
 
   Level: beginner
 
-.seealso: DMMoabCreateVector(), DMMoabGetVecRange()
+.seealso: `DMMoabCreateVector()`, `DMMoabGetVecRange()`
 @*/
 PetscErrorCode DMMoabGetVecTag(Vec vec, moab::Tag *tag)
 {
@@ -84,7 +84,7 @@ PetscErrorCode DMMoabGetVecTag(Vec vec, moab::Tag *tag)
 
   Level: beginner
 
-.seealso: DMMoabCreateVector(), DMMoabGetVecTag()
+.seealso: `DMMoabCreateVector()`, `DMMoabGetVecTag()`
 @*/
 PetscErrorCode DMMoabGetVecRange(Vec vec, moab::Range *range)
 {
@@ -116,7 +116,7 @@ PetscErrorCode DMMoabGetVecRange(Vec vec, moab::Range *range)
 
   Level: intermediate
 
-.seealso: DMMoabVecRestoreArray(), DMMoabVecGetArrayRead(), DMMoabVecRestoreArrayRead()
+.seealso: `DMMoabVecRestoreArray()`, `DMMoabVecGetArrayRead()`, `DMMoabVecRestoreArrayRead()`
 @*/
 PetscErrorCode  DMMoabVecGetArray(DM dm, Vec vec, void* array)
 {
@@ -198,7 +198,7 @@ PetscErrorCode  DMMoabVecGetArray(DM dm, Vec vec, void* array)
 
   Level: intermediate
 
-.seealso: DMMoabVecGetArray(), DMMoabVecGetArrayRead(), DMMoabVecRestoreArrayRead()
+.seealso: `DMMoabVecGetArray()`, `DMMoabVecGetArrayRead()`, `DMMoabVecRestoreArrayRead()`
 @*/
 PetscErrorCode  DMMoabVecRestoreArray(DM dm, Vec vec, void* array)
 {
@@ -281,7 +281,7 @@ PetscErrorCode  DMMoabVecRestoreArray(DM dm, Vec vec, void* array)
 
   Level: intermediate
 
-.seealso: DMMoabVecRestoreArrayRead(), DMMoabVecGetArray(), DMMoabVecRestoreArray()
+.seealso: `DMMoabVecRestoreArrayRead()`, `DMMoabVecGetArray()`, `DMMoabVecRestoreArray()`
 @*/
 PetscErrorCode  DMMoabVecGetArrayRead(DM dm, Vec vec, void* array)
 {
@@ -359,7 +359,7 @@ PetscErrorCode  DMMoabVecGetArrayRead(DM dm, Vec vec, void* array)
 
   Level: intermediate
 
-.seealso: DMMoabVecGetArrayRead(), DMMoabVecGetArray(), DMMoabVecRestoreArray()
+.seealso: `DMMoabVecGetArrayRead()`, `DMMoabVecGetArray()`, `DMMoabVecRestoreArray()`
 @*/
 PetscErrorCode  DMMoabVecRestoreArrayRead(DM dm, Vec vec, void* array)
 {

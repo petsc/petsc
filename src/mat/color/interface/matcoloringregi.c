@@ -22,7 +22,7 @@ PETSC_EXTERN PetscErrorCode MatColoringCreate_LF(MatColoring);
   modify it to incorporate a call to MatColoringRegister() for
   the new method, after the current list.
 
- .seealso: MatColoringRegister(), MatColoringRegisterDestroy()
+ .seealso: `MatColoringRegister()`, `MatColoringRegisterDestroy()`
  @*/
 PetscErrorCode  MatColoringRegisterAll(void)
 {

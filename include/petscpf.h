@@ -16,7 +16,7 @@ PETSC_EXTERN PetscFunctionList PFList;
 
    Level: beginner
 
-.seealso: PFSetType(), PF
+.seealso: `PFSetType()`, `PF`
 J*/
 typedef const char* PFType;
 #define PFCONSTANT      "constant"
@@ -31,7 +31,7 @@ typedef const char* PFType;
 
    Level: beginner
 
-.seealso:  PFCreate(), PFDestroy(), PFSetType(), PFApply(), PFApplyVec(), PFSet(), PFType
+.seealso: `PFCreate()`, `PFDestroy()`, `PFSetType()`, `PFApply()`, `PFApplyVec()`, `PFSet()`, `PFType`
 S*/
 typedef struct _p_PF* PF;
 

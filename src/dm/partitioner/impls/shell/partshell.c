@@ -126,7 +126,7 @@ static PetscErrorCode PetscPartitionerInitialize_Shell(PetscPartitioner part)
   Options Database Keys:
 .  -petscpartitioner_shell_random - Use a random partition
 
-.seealso: PetscPartitionerType, PetscPartitionerCreate(), PetscPartitionerSetType()
+.seealso: `PetscPartitionerType`, `PetscPartitionerCreate()`, `PetscPartitionerSetType()`
 M*/
 
 PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Shell(PetscPartitioner part)
@@ -159,7 +159,7 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Shell(PetscPartitioner part)
   Notes:
     It is safe to free the sizes and points arrays after use in this routine.
 
-.seealso DMPlexDistribute(), PetscPartitionerCreate()
+.seealso `DMPlexDistribute()`, `PetscPartitionerCreate()`
 @*/
 PetscErrorCode PetscPartitionerShellSetPartition(PetscPartitioner part, PetscInt size, const PetscInt sizes[], const PetscInt points[])
 {
@@ -196,7 +196,7 @@ PetscErrorCode PetscPartitionerShellSetPartition(PetscPartitioner part, PetscInt
 
   Level: intermediate
 
-.seealso PetscPartitionerShellGetRandom(), PetscPartitionerCreate()
+.seealso `PetscPartitionerShellGetRandom()`, `PetscPartitionerCreate()`
 @*/
 PetscErrorCode PetscPartitionerShellSetRandom(PetscPartitioner part, PetscBool random)
 {
@@ -221,7 +221,7 @@ PetscErrorCode PetscPartitionerShellSetRandom(PetscPartitioner part, PetscBool r
 
   Level: intermediate
 
-.seealso PetscPartitionerShellSetRandom(), PetscPartitionerCreate()
+.seealso `PetscPartitionerShellSetRandom()`, `PetscPartitionerCreate()`
 @*/
 PetscErrorCode PetscPartitionerShellGetRandom(PetscPartitioner part, PetscBool *random)
 {

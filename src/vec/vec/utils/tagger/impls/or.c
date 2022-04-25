@@ -16,7 +16,7 @@
 
   Level: advanced
 
-.seealso: VecTaggerOrSetSubs()
+.seealso: `VecTaggerOrSetSubs()`
 @*/
 PetscErrorCode VecTaggerOrGetSubs(VecTagger tagger, PetscInt *nsubs, VecTagger **subs)
 {
@@ -37,7 +37,7 @@ PetscErrorCode VecTaggerOrGetSubs(VecTagger tagger, PetscInt *nsubs, VecTagger *
 
   Level: advanced
 
-.seealso: VecTaggerOrSetSubs()
+.seealso: `VecTaggerOrSetSubs()`
 @*/
 PetscErrorCode VecTaggerOrSetSubs(VecTagger tagger, PetscInt nsubs, VecTagger *subs, PetscCopyMode mode)
 {

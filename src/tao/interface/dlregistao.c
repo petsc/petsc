@@ -26,7 +26,7 @@ PetscErrorCode TaoFinalizePackage(void)
 
   Level: developer
 
-.seealso: TaoCreate()
+.seealso: `TaoCreate()`
 @*/
 PetscErrorCode TaoInitializePackage(void)
 {

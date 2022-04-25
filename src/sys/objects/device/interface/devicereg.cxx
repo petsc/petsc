@@ -12,7 +12,7 @@ static PetscBool PetscDevicePackageInitialized = PETSC_FALSE;
 
   Level: developer
 
-.seealso: PetscFinalize(), PetscDeviceInitializePackage()
+.seealso: `PetscFinalize()`, `PetscDeviceInitializePackage()`
 @*/
 PetscErrorCode PetscDeviceFinalizePackage(void)
 {
@@ -28,7 +28,7 @@ PetscErrorCode PetscDeviceFinalizePackage(void)
 
   Level: developer
 
-.seealso: PetscInitialize(), PetscDeviceFinalizePackage(), PetscDeviceContextCreate(), PetscDeviceCreate()
+.seealso: `PetscInitialize()`, `PetscDeviceFinalizePackage()`, `PetscDeviceContextCreate()`, `PetscDeviceCreate()`
 @*/
 PetscErrorCode PetscDeviceInitializePackage(void)
 {

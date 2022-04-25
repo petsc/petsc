@@ -18,7 +18,7 @@ static PetscBool PetscViewerMathematicaPackageInitialized = PETSC_FALSE;
 
   Level: developer
 
-.seealso: PetscFinalize()
+.seealso: `PetscFinalize()`
 @*/
 PetscErrorCode  PetscViewerMathematicaFinalizePackage(void)
 {
@@ -34,7 +34,7 @@ PetscErrorCode  PetscViewerMathematicaFinalizePackage(void)
 
   Level: developer
 
-.seealso: PetscSysInitializePackage(), PetscInitialize()
+.seealso: `PetscSysInitializePackage()`, `PetscInitialize()`
 @*/
 PetscErrorCode  PetscViewerMathematicaInitializePackage(void)
 {
@@ -342,7 +342,7 @@ $    VecView(Vec vector, PetscViewer viewer)
 .    -viewer_math_type <type>        - The plot type, e.g. Triangulation, Vector
 -    -viewer_math_graphics <output>  - The output type, e.g. Motif, PS, PSFile
 
-.seealso: MatView(), VecView()
+.seealso: `MatView()`, `VecView()`
 @*/
 PetscErrorCode  PetscViewerMathematicaOpen(MPI_Comm comm, int port, const char machine[], const char mode[], PetscViewer *v)
 {
@@ -369,7 +369,7 @@ PetscErrorCode  PetscViewerMathematicaOpen(MPI_Comm comm, int port, const char m
   Level: intermediate
 
 .keywords PetscViewer, Mathematica, link
-.seealso PetscViewerMathematicaOpen()
+.seealso `PetscViewerMathematicaOpen()`
 @*/
 PetscErrorCode  PetscViewerMathematicaGetLink(PetscViewer viewer, MLINK *link)
 {
@@ -391,7 +391,7 @@ PetscErrorCode  PetscViewerMathematicaGetLink(PetscViewer viewer, MLINK *link)
   Level: advanced
 
 .keywords PetscViewer, Mathematica, packets
-.seealso PetscViewerMathematicaSetName(), PetscViewerMathematicaGetVector()
+.seealso `PetscViewerMathematicaSetName()`, `PetscViewerMathematicaGetVector()`
 @*/
 PetscErrorCode  PetscViewerMathematicaSkipPackets(PetscViewer viewer, int type)
 {
@@ -420,7 +420,7 @@ PetscErrorCode  PetscViewerMathematicaSkipPackets(PetscViewer viewer, int type)
   Level: intermediate
 
 .keywords PetscViewer, Mathematica, name
-.seealso PetscViewerMathematicaSetName(), PetscViewerMathematicaClearName()
+.seealso `PetscViewerMathematicaSetName()`, `PetscViewerMathematicaClearName()`
 @*/
 PetscErrorCode  PetscViewerMathematicaGetName(PetscViewer viewer, const char **name)
 {
@@ -443,7 +443,7 @@ PetscErrorCode  PetscViewerMathematicaGetName(PetscViewer viewer, const char **n
   Level: intermediate
 
 .keywords PetscViewer, Mathematica, name
-.seealso PetscViewerMathematicaSetName(), PetscViewerMathematicaClearName()
+.seealso `PetscViewerMathematicaSetName()`, `PetscViewerMathematicaClearName()`
 @*/
 PetscErrorCode  PetscViewerMathematicaSetName(PetscViewer viewer, const char name[])
 {
@@ -465,7 +465,7 @@ PetscErrorCode  PetscViewerMathematicaSetName(PetscViewer viewer, const char nam
   Level: intermediate
 
 .keywords PetscViewer, Mathematica, name
-.seealso PetscViewerMathematicaGetName(), PetscViewerMathematicaSetName()
+.seealso `PetscViewerMathematicaGetName()`, `PetscViewerMathematicaSetName()`
 @*/
 PetscErrorCode  PetscViewerMathematicaClearName(PetscViewer viewer)
 {
@@ -489,7 +489,7 @@ PetscErrorCode  PetscViewerMathematicaClearName(PetscViewer viewer)
   Level: intermediate
 
 .keywords PetscViewer, Mathematica, vector
-.seealso VecView(), PetscViewerMathematicaPutVector()
+.seealso `VecView()`, `PetscViewerMathematicaPutVector()`
 @*/
 PetscErrorCode  PetscViewerMathematicaGetVector(PetscViewer viewer, Vec v)
 {
@@ -533,7 +533,7 @@ PetscErrorCode  PetscViewerMathematicaGetVector(PetscViewer viewer, Vec v)
   Level: intermediate
 
 .keywords PetscViewer, Mathematica, vector
-.seealso VecView(), PetscViewerMathematicaGetVector()
+.seealso `VecView()`, `PetscViewerMathematicaGetVector()`
 @*/
 PetscErrorCode  PetscViewerMathematicaPutVector(PetscViewer viewer, Vec v)
 {

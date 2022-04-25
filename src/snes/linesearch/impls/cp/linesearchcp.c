@@ -152,7 +152,7 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
 
    Level: advanced
 
-.seealso: SNESLineSearchCreate(), SNESLineSearchSetType()
+.seealso: `SNESLineSearchCreate()`, `SNESLineSearchSetType()`
 M*/
 PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_CP(SNESLineSearch linesearch)
 {

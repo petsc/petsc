@@ -701,7 +701,7 @@ static PetscErrorCode DMPlexFillMatrix_Static(DM dm, PetscLayout rLayout, PetscI
 
   Level: advanced
 
-.seealso: DMCreateMatrix()
+.seealso: `DMCreateMatrix()`
 @*/
 PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscInt dnz[], PetscInt onz[], PetscInt dnzu[], PetscInt onzu[], Mat A, PetscBool fillMatrix)
 {

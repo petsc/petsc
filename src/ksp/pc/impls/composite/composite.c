@@ -479,7 +479,7 @@ PetscErrorCode  PCCompositeSpecialSetAlpha(PC pc,PetscScalar alpha)
 
   Level: Developer
 
-.seealso: PCCompositeAddPC()
+.seealso: `PCCompositeAddPC()`
 @*/
 PetscErrorCode  PCCompositeAddPCType(PC pc,PCType type)
 {
@@ -500,7 +500,7 @@ PetscErrorCode  PCCompositeAddPCType(PC pc,PCType type)
 
    Level: Developer
 
-.seealso: PCCompositeAddPCType()
+.seealso: `PCCompositeAddPCType()`
 @*/
 PetscErrorCode PCCompositeAddPC(PC pc, PC subpc)
 {
@@ -524,7 +524,7 @@ PetscErrorCode PCCompositeAddPC(PC pc, PC subpc)
 
    Level: Developer
 
-.seealso: PCCompositeGetPC()
+.seealso: `PCCompositeGetPC()`
 @*/
 PetscErrorCode  PCCompositeGetNumberPC(PC pc,PetscInt *num)
 {
@@ -553,7 +553,7 @@ PetscErrorCode  PCCompositeGetNumberPC(PC pc,PetscInt *num)
     To use a different operator to construct one of the inner preconditioners first call PCCompositeGetPC(), then
             call PCSetOperators() on that PC.
 
-.seealso: PCCompositeAddPCType(), PCCompositeGetNumberPC(), PCSetOperators()
+.seealso: `PCCompositeAddPCType()`, `PCCompositeGetNumberPC()`, `PCSetOperators()`
 @*/
 PetscErrorCode PCCompositeGetPC(PC pc,PetscInt n,PC *subpc)
 {
@@ -584,9 +584,9 @@ PetscErrorCode PCCompositeGetPC(PC pc,PetscInt n,PC *subpc)
           To use a different operator to construct one of the inner preconditioners first call PCCompositeGetPC(), then
           call PCSetOperators() on that PC.
 
-.seealso:  PCCreate(), PCSetType(), PCType, PC,
-           PCSHELL, PCKSP, PCCompositeSetType(), PCCompositeSpecialSetAlpha(), PCCompositeAddPCType(),
-           PCCompositeGetPC(), PCSetUseAmat()
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`,
+          `PCSHELL`, `PCKSP`, `PCCompositeSetType()`, `PCCompositeSpecialSetAlpha()`, `PCCompositeAddPCType()`,
+          `PCCompositeGetPC()`, `PCSetUseAmat()`
 
 M*/
 

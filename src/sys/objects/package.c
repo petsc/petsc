@@ -22,7 +22,7 @@
 
    The lookup is case insensitive, i.e. looking for "HDF5" or "hdf5" is the same.
 
-.seealso: PetscViewerType, MatPartitioningType, MatSolverType
+.seealso: `PetscViewerType`, `MatPartitioningType`, `MatSolverType`
 @*/
 PetscErrorCode  PetscHasExternalPackage(const char pkg[], PetscBool *has)
 {

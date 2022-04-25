@@ -38,7 +38,7 @@ PETSC_INTERN PetscErrorCode DMFieldCreate(DM dm,PetscInt numComponents,DMFieldCo
 
    Level: advanced
 
-.seealso: DMFieldCreate()
+.seealso: `DMFieldCreate()`
 @*/
 PetscErrorCode DMFieldDestroy(DMField *field)
 {
@@ -63,7 +63,7 @@ PetscErrorCode DMFieldDestroy(DMField *field)
 
    Level: advanced
 
-.seealso: DMFieldCreate()
+.seealso: `DMFieldCreate()`
 @*/
 PetscErrorCode DMFieldView(DMField field,PetscViewer viewer)
 {
@@ -108,7 +108,7 @@ PetscErrorCode DMFieldView(DMField field,PetscViewer viewer)
 
   Level: advanced
 
-.seealso: DMFieldType,
+.seealso: `DMFieldType`,
 @*/
 PetscErrorCode DMFieldSetType(DMField field,DMFieldType type)
 {
@@ -147,7 +147,7 @@ PetscErrorCode DMFieldSetType(DMField field,DMFieldType type)
 
   Level: advanced
 
-.seealso: DMFieldSetType()
+.seealso: `DMFieldSetType()`
 @*/
 PetscErrorCode  DMFieldGetType(DMField field, DMFieldType *type)
 {
@@ -172,7 +172,7 @@ PetscErrorCode  DMFieldGetType(DMField field, DMFieldType *type)
 
   Level: intermediate
 
-.seealso: DMFieldEvaluate()
+.seealso: `DMFieldEvaluate()`
 @*/
 PetscErrorCode DMFieldGetNumComponents(DMField field, PetscInt *nc)
 {
@@ -196,7 +196,7 @@ PetscErrorCode DMFieldGetNumComponents(DMField field, PetscInt *nc)
 
   Level: intermediate
 
-.seealso: DMFieldEvaluate()
+.seealso: `DMFieldEvaluate()`
 @*/
 PetscErrorCode DMFieldGetDM(DMField field, DM *dm)
 {
@@ -234,7 +234,7 @@ PetscErrorCode DMFieldGetDM(DMField field, DM *dm)
 
   Level: intermediate
 
-.seealso: DMFieldGetDM(), DMFieldGetNumComponents(), DMFieldEvaluateFE(), DMFieldEvaluateFV()
+.seealso: `DMFieldGetDM()`, `DMFieldGetNumComponents()`, `DMFieldEvaluateFE()`, `DMFieldEvaluateFV()`
 @*/
 PetscErrorCode DMFieldEvaluate(DMField field, Vec points, PetscDataType datatype, void *B, void *D, void *H)
 {
@@ -278,7 +278,7 @@ PetscErrorCode DMFieldEvaluate(DMField field, Vec points, PetscDataType datatype
 
   Level: intermediate
 
-.seealso: DMFieldGetNumComponents(), DMFieldEvaluate(), DMFieldEvaluateFV()
+.seealso: `DMFieldGetNumComponents()`, `DMFieldEvaluate()`, `DMFieldEvaluateFV()`
 @*/
 PetscErrorCode DMFieldEvaluateFE(DMField field, IS cellIS, PetscQuadrature points, PetscDataType datatype, void *B, void *D, void *H)
 {
@@ -320,7 +320,7 @@ PetscErrorCode DMFieldEvaluateFE(DMField field, IS cellIS, PetscQuadrature point
 
   Level: intermediate
 
-.seealso: DMFieldGetNumComponents(), DMFieldEvaluate(), DMFieldEvaluateFE()
+.seealso: `DMFieldGetNumComponents()`, `DMFieldEvaluate()`, `DMFieldEvaluateFE()`
 @*/
 PetscErrorCode DMFieldEvaluateFV(DMField field, IS cellIS, PetscDataType datatype, void *B, void *D, void *H)
 {
@@ -352,7 +352,7 @@ PetscErrorCode DMFieldEvaluateFV(DMField field, IS cellIS, PetscDataType datatyp
 
   Level: intermediate
 
-.seealso: DMFieldEvaluateFE()
+.seealso: `DMFieldEvaluateFE()`
 @*/
 PetscErrorCode DMFieldGetDegree(DMField field, IS cellIS, PetscInt *minDegree, PetscInt *maxDegree)
 {
@@ -386,7 +386,7 @@ PetscErrorCode DMFieldGetDegree(DMField field, IS cellIS, PetscInt *minDegree, P
 
   Level: developer
 
-.seealso: DMFieldEvaluteFE(), DMFieldGetDegree()
+.seealso: `DMFieldEvaluteFE()`, `DMFieldGetDegree()`
 @*/
 PetscErrorCode DMFieldCreateDefaultQuadrature(DMField field, IS pointIS, PetscQuadrature *quad)
 {
@@ -419,7 +419,7 @@ PetscErrorCode DMFieldCreateDefaultQuadrature(DMField field, IS pointIS, PetscQu
 
   Level: developer
 
-.seealso: DMFieldEvaluateFE(), DMFieldCreateDefaulteQuadrature(), DMFieldGetDegree()
+.seealso: `DMFieldEvaluateFE()`, `DMFieldCreateDefaulteQuadrature()`, `DMFieldGetDegree()`
 @*/
 PetscErrorCode DMFieldCreateFEGeom(DMField field, IS pointIS, PetscQuadrature quad, PetscBool faceData, PetscFEGeom **geom)
 {

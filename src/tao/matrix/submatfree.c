@@ -20,7 +20,7 @@
 
    Level: developer
 
-.seealso: MatCreate()
+.seealso: `MatCreate()`
 @*/
 PetscErrorCode MatCreateSubMatrixFree(Mat mat,IS Rows, IS Cols, Mat *J)
 {

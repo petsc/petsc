@@ -37,7 +37,7 @@
    the head of the line.  This may cause problems if, for some reason,
    /tmp_mnt is valid and not the result of the automounter.
 
-.seealso: PetscGetFullPath()
+.seealso: `PetscGetFullPath()`
 @*/
 PetscErrorCode  PetscGetRealPath(const char path[],char rpath[])
 {

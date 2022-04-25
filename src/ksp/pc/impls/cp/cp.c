@@ -157,7 +157,7 @@ $    This algorithm can be thought of as Gauss-Seidel on the normal equations
 
   Level: intermediate
 
-.seealso:  PCCreate(), PCSetType(), PCType, PCJACOBI, PCSOR
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PCJACOBI`, `PCSOR`
 
 M*/
 

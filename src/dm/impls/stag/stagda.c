@@ -410,7 +410,7 @@ static PetscErrorCode DMStagTransferCoordinatesToDMDA(DM dmstag,DMStagStencilLoc
 
   Level: advanced
 
-.seealso: DMSTAG, DMDA, DMStagMigrateVec(), DMStagCreateCompatibleDMStag()
+.seealso: `DMSTAG`, `DMDA`, `DMStagMigrateVec()`, `DMStagCreateCompatibleDMStag()`
 @*/
 PetscErrorCode DMStagVecSplitToDMDA(DM dm,Vec vec,DMStagStencilLocation loc,PetscInt c,DM *pda,Vec *pdavec)
 {

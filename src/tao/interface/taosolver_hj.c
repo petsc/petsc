@@ -24,7 +24,7 @@ $    func(Tao tao,Vec x,Mat H,Mat Hpre,void *ctx);
 
    Level: beginner
 
-.seealso: TaoSetObjective(), TaoSetGradient(), TaoSetObjectiveAndGradient(), TaoGetHessian()
+.seealso: `TaoSetObjective()`, `TaoSetGradient()`, `TaoSetObjectiveAndGradient()`, `TaoGetHessian()`
 @*/
 PetscErrorCode TaoSetHessian(Tao tao, Mat H, Mat Hpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, void*), void *ctx)
 {
@@ -78,7 +78,7 @@ $    func(Tao tao,Vec x,Mat H,Mat Hpre,void *ctx);
 
    Level: beginner
 
-.seealso: TaoGetObjective(), TaoGetGradient(), TaoGetObjectiveAndGradient(), TaoSetHessian()
+.seealso: `TaoGetObjective()`, `TaoGetGradient()`, `TaoGetObjectiveAndGradient()`, `TaoSetHessian()`
 @*/
 PetscErrorCode TaoGetHessian(Tao tao, Mat *H, Mat *Hpre, PetscErrorCode (**func)(Tao, Vec, Mat, Mat, void*), void **ctx)
 {
@@ -253,7 +253,7 @@ PetscErrorCode TaoTestHessian(Tao tao)
 
    Level: developer
 
-.seealso: TaoComputeObjective(), TaoComputeObjectiveAndGradient(), TaoSetHessian()
+.seealso: `TaoComputeObjective()`, `TaoComputeObjectiveAndGradient()`, `TaoSetHessian()`
 @*/
 PetscErrorCode TaoComputeHessian(Tao tao, Vec X, Mat H, Mat Hpre)
 {
@@ -299,7 +299,7 @@ PetscErrorCode TaoComputeHessian(Tao tao, Vec X, Mat H, Mat Hpre)
 
    Level: developer
 
-.seealso: TaoComputeObjective(), TaoComputeObjectiveAndGradient(), TaoSetJacobianRoutine()
+.seealso: `TaoComputeObjective()`, `TaoComputeObjectiveAndGradient()`, `TaoSetJacobianRoutine()`
 @*/
 PetscErrorCode TaoComputeJacobian(Tao tao, Vec X, Mat J, Mat Jpre)
 {
@@ -343,7 +343,7 @@ PetscErrorCode TaoComputeJacobian(Tao tao, Vec X, Mat J, Mat Jpre)
 
    Level: developer
 
-.seealso: TaoComputeResidual(), TaoSetJacobianResidual()
+.seealso: `TaoComputeResidual()`, `TaoSetJacobianResidual()`
 @*/
 PetscErrorCode TaoComputeResidualJacobian(Tao tao, Vec X, Mat J, Mat Jpre)
 {
@@ -388,7 +388,7 @@ PetscErrorCode TaoComputeResidualJacobian(Tao tao, Vec X, Mat J, Mat Jpre)
 
    Level: developer
 
-.seealso: TaoComputeObjective(), TaoComputeObjectiveAndGradient(), TaoSetJacobianStateRoutine(), TaoComputeJacobianDesign(), TaoSetStateDesignIS()
+.seealso: `TaoComputeObjective()`, `TaoComputeObjectiveAndGradient()`, `TaoSetJacobianStateRoutine()`, `TaoComputeJacobianDesign()`, `TaoSetStateDesignIS()`
 @*/
 PetscErrorCode TaoComputeJacobianState(Tao tao, Vec X, Mat J, Mat Jpre, Mat Jinv)
 {
@@ -431,7 +431,7 @@ PetscErrorCode TaoComputeJacobianState(Tao tao, Vec X, Mat J, Mat Jpre, Mat Jinv
 
    Level: developer
 
-.seealso:  TaoComputeObjective(), TaoComputeObjectiveAndGradient(), TaoSetJacobianDesignRoutine(), TaoComputeJacobianDesign(), TaoSetStateDesignIS()
+.seealso: `TaoComputeObjective()`, `TaoComputeObjectiveAndGradient()`, `TaoSetJacobianDesignRoutine()`, `TaoComputeJacobianDesign()`, `TaoSetStateDesignIS()`
 @*/
 PetscErrorCode TaoComputeJacobianDesign(Tao tao, Vec X, Mat J)
 {
@@ -589,7 +589,7 @@ $    func(Tao tao,Vec x,Mat J,Mat Jpre,Mat Jinv,void *ctx);
 -  ctx  - [optional] user-defined Jacobian context
 
    Level: intermediate
-.seealso: TaoComputeJacobianState(), TaoSetJacobianDesignRoutine(), TaoSetStateDesignIS()
+.seealso: `TaoComputeJacobianState()`, `TaoSetJacobianDesignRoutine()`, `TaoSetStateDesignIS()`
 @*/
 PetscErrorCode TaoSetJacobianStateRoutine(Tao tao, Mat J, Mat Jpre, Mat Jinv, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, Mat, void*), void *ctx)
 {
@@ -655,7 +655,7 @@ $    func(Tao tao,Vec x,Mat J,void *ctx);
 
    Level: intermediate
 
-.seealso: TaoComputeJacobianDesign(), TaoSetJacobianStateRoutine(), TaoSetStateDesignIS()
+.seealso: `TaoComputeJacobianDesign()`, `TaoSetJacobianStateRoutine()`, `TaoSetStateDesignIS()`
 @*/
 PetscErrorCode TaoSetJacobianDesignRoutine(Tao tao, Mat J, PetscErrorCode (*func)(Tao, Vec, Mat, void*), void *ctx)
 {
@@ -693,7 +693,7 @@ PetscErrorCode TaoSetJacobianDesignRoutine(Tao tao, Mat J, PetscErrorCode (*func
 
    Level: intermediate
 
-.seealso: TaoSetJacobianStateRoutine(), TaoSetJacobianDesignRoutine()
+.seealso: `TaoSetJacobianStateRoutine()`, `TaoSetJacobianDesignRoutine()`
 @*/
 PetscErrorCode TaoSetStateDesignIS(Tao tao, IS s_is, IS d_is)
 {
@@ -727,7 +727,7 @@ PetscErrorCode TaoSetStateDesignIS(Tao tao, IS s_is, IS d_is)
 
    Level: developer
 
-.seealso:  TaoComputeObjective(), TaoComputeObjectiveAndGradient(), TaoSetJacobianStateRoutine(), TaoComputeJacobianDesign(), TaoSetStateDesignIS()
+.seealso: `TaoComputeObjective()`, `TaoComputeObjectiveAndGradient()`, `TaoSetJacobianStateRoutine()`, `TaoComputeJacobianDesign()`, `TaoSetStateDesignIS()`
 @*/
 PetscErrorCode TaoComputeJacobianEquality(Tao tao, Vec X, Mat J, Mat Jpre)
 {
@@ -767,7 +767,7 @@ PetscErrorCode TaoComputeJacobianEquality(Tao tao, Vec X, Mat J, Mat Jpre)
 
    Level: developer
 
-.seealso:  TaoComputeObjective(), TaoComputeObjectiveAndGradient(), TaoSetJacobianStateRoutine(), TaoComputeJacobianDesign(), TaoSetStateDesignIS()
+.seealso: `TaoComputeObjective()`, `TaoComputeObjectiveAndGradient()`, `TaoSetJacobianStateRoutine()`, `TaoComputeJacobianDesign()`, `TaoSetStateDesignIS()`
 @*/
 PetscErrorCode TaoComputeJacobianInequality(Tao tao, Vec X, Mat J, Mat Jpre)
 {
@@ -813,7 +813,7 @@ $    func(Tao tao,Vec x,Mat J,Mat Jpre,void *ctx);
 
    Level: intermediate
 
-.seealso: TaoComputeJacobianEquality(), TaoSetJacobianDesignRoutine(), TaoSetEqualityDesignIS()
+.seealso: `TaoComputeJacobianEquality()`, `TaoSetJacobianDesignRoutine()`, `TaoSetEqualityDesignIS()`
 @*/
 PetscErrorCode TaoSetJacobianEqualityRoutine(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, void*), void *ctx)
 {
@@ -872,7 +872,7 @@ $    func(Tao tao,Vec x,Mat J,Mat Jpre,void *ctx);
 
    Level: intermediate
 
-.seealso: TaoComputeJacobianInequality(), TaoSetJacobianDesignRoutine(), TaoSetInequalityDesignIS()
+.seealso: `TaoComputeJacobianInequality()`, `TaoSetJacobianDesignRoutine()`, `TaoSetInequalityDesignIS()`
 @*/
 PetscErrorCode TaoSetJacobianInequalityRoutine(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat,void*), void *ctx)
 {

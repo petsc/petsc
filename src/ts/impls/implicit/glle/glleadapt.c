@@ -46,7 +46,7 @@ $     -ts_adapt_type my_scheme
 
    Level: advanced
 
-.seealso: TSGLLEAdaptRegisterAll()
+.seealso: `TSGLLEAdaptRegisterAll()`
 @*/
 PetscErrorCode  TSGLLEAdaptRegister(const char sname[],PetscErrorCode (*function)(TSGLLEAdapt))
 {
@@ -63,7 +63,7 @@ PetscErrorCode  TSGLLEAdaptRegister(const char sname[],PetscErrorCode (*function
 
   Level: advanced
 
-.seealso: TSGLLEAdaptRegisterDestroy()
+.seealso: `TSGLLEAdaptRegisterDestroy()`
 @*/
 PetscErrorCode  TSGLLEAdaptRegisterAll(void)
 {
@@ -82,7 +82,7 @@ PetscErrorCode  TSGLLEAdaptRegisterAll(void)
 
   Level: developer
 
-.seealso: PetscFinalize()
+.seealso: `PetscFinalize()`
 @*/
 PetscErrorCode  TSGLLEAdaptFinalizePackage(void)
 {
@@ -99,7 +99,7 @@ PetscErrorCode  TSGLLEAdaptFinalizePackage(void)
 
   Level: developer
 
-.seealso: PetscInitialize()
+.seealso: `PetscInitialize()`
 @*/
 PetscErrorCode  TSGLLEAdaptInitializePackage(void)
 {

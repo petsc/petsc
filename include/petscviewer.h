@@ -16,7 +16,7 @@ PETSC_EXTERN PetscClassId PETSC_VIEWER_CLASSID;
 
    Level: beginner
 
-.seealso: PetscViewerSetType(), PetscViewer, PetscViewerRegister(), PetscViewerCreate()
+.seealso: `PetscViewerSetType()`, `PetscViewer`, `PetscViewerRegister()`, `PetscViewerCreate()`
 J*/
 typedef const char* PetscViewerType;
 #define PETSCVIEWERSOCKET       "socket"
@@ -79,7 +79,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerMatlabOpen(MPI_Comm,const char[],PetscFil
 
     Level: beginner
 
-.seealso: PetscViewerGLVisOpen()
+.seealso: `PetscViewerGLVisOpen()`
 E*/
 typedef enum {PETSC_VIEWER_GLVIS_DUMP, PETSC_VIEWER_GLVIS_SOCKET} PetscViewerGLVisType;
 PETSC_EXTERN PetscErrorCode PetscViewerGLVisOpen(MPI_Comm,PetscViewerGLVisType,const char*,PetscInt,PetscViewer*);
@@ -114,7 +114,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCheckWritable(PetscViewer);
 
    Level: beginner
 
-.seealso: PetscViewer, PetscViewerType, PetscViewerPushFormat(), PetscViewerPopFormat()
+.seealso: `PetscViewer`, `PetscViewerType`, `PetscViewerPushFormat()`, `PetscViewerPopFormat()`
 E*/
 typedef enum {
   PETSC_VIEWER_DEFAULT,
@@ -253,7 +253,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerVUFlushDeferred(PetscViewer);
   Note:
   Use PetscViewerFileSetMode() instead.
 
-.seealso: PetscViewerFileSetMode()
+.seealso: `PetscViewerFileSetMode()`
 @*/
 PETSC_DEPRECATED_FUNCTION("Use PetscViewerFileSetMode (since v3.15)") static inline PetscErrorCode PetscViewerVUSetMode(PetscViewer viewer, PetscFileMode mode) {return PetscViewerFileSetMode(viewer, mode);}
 
@@ -402,8 +402,8 @@ PETSC_EXTERN PetscErrorCode PetscObjectViewSAWs(PetscObject,PetscViewer);
 
    Level: intermediate
 
-.seealso:  PetscViewerCreate(), PetscViewerSetType(), PetscViewerType, PetscViewer, PetscViewersCreate(),
-           PetscViewersGetViewer()
+.seealso: `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscViewerType`, `PetscViewer`, `PetscViewersCreate()`,
+          `PetscViewersGetViewer()`
 S*/
 typedef struct _n_PetscViewers* PetscViewers;
 PETSC_EXTERN PetscErrorCode PetscViewersCreate(MPI_Comm,PetscViewers*);

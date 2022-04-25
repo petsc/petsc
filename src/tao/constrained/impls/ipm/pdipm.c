@@ -11,7 +11,7 @@
 
    Level: beginner
 
-.seealso: TaoPDIPMUpdateConstraints(), TaoPDIPMSetUpBounds()
+.seealso: `TaoPDIPMUpdateConstraints()`, `TaoPDIPMSetUpBounds()`
 */
 static PetscErrorCode TaoPDIPMEvaluateFunctionsAndJacobians(Tao tao,Vec x)
 {
@@ -46,7 +46,7 @@ static PetscErrorCode TaoPDIPMEvaluateFunctionsAndJacobians(Tao tao,Vec x)
 
    Level: beginner
 
-.seealso: TaoPDIPMEvaluateFunctionsAndJacobians()
+.seealso: `TaoPDIPMEvaluateFunctionsAndJacobians()`
 */
 static PetscErrorCode TaoPDIPMUpdateConstraints(Tao tao,Vec x)
 {
@@ -144,7 +144,7 @@ static PetscErrorCode TaoPDIPMUpdateConstraints(Tao tao,Vec x)
 
    Level: beginner
 
-.seealso: TaoPDIPMUpdateConstraints
+.seealso: `TaoPDIPMUpdateConstraints`
 */
 static PetscErrorCode TaoPDIPMSetUpBounds(Tao tao)
 {

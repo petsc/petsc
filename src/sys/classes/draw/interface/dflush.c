@@ -13,7 +13,7 @@
 
    Level: beginner
 
-.seealso: PetscDrawClear()
+.seealso: `PetscDrawClear()`
 @*/
 PetscErrorCode  PetscDrawFlush(PetscDraw draw)
 {

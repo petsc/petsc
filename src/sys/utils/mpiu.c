@@ -81,7 +81,7 @@ PetscMPIInt Petsc_Seq_keyval = MPI_KEYVAL_INVALID;
    even if you flush the output, you may not get the data in the order
    that you want).
 
-.seealso: PetscSequentialPhaseEnd()
+.seealso: `PetscSequentialPhaseEnd()`
 
 @*/
 PetscErrorCode  PetscSequentialPhaseBegin(MPI_Comm comm,int ng)
@@ -124,7 +124,7 @@ PetscErrorCode  PetscSequentialPhaseBegin(MPI_Comm comm,int ng)
    Notes:
    See PetscSequentialPhaseBegin() for more details.
 
-.seealso: PetscSequentialPhaseBegin()
+.seealso: `PetscSequentialPhaseBegin()`
 
 @*/
 PetscErrorCode  PetscSequentialPhaseEnd(MPI_Comm comm,int ng)
@@ -161,7 +161,7 @@ PetscErrorCode  PetscSequentialPhaseEnd(MPI_Comm comm,int ng)
 
   Level: beginner
 
-.seealso: PetscSplitOwnership()
+.seealso: `PetscSplitOwnership()`
 @*/
 PetscErrorCode PetscGlobalMinMaxInt(MPI_Comm comm, const PetscInt minMaxVal[2], PetscInt minMaxValGlobal[2])
 {
@@ -190,7 +190,7 @@ PetscErrorCode PetscGlobalMinMaxInt(MPI_Comm comm, const PetscInt minMaxVal[2], 
 
   Level: beginner
 
-.seealso: PetscSplitOwnership()
+.seealso: `PetscSplitOwnership()`
 @*/
 PetscErrorCode PetscGlobalMinMaxReal(MPI_Comm comm, const PetscReal minMaxVal[2], PetscReal minMaxValGlobal[2])
 {

@@ -36,7 +36,7 @@ PetscBool         PetscSpaceRegisterAllCalled = PETSC_FALSE;
 
   Level: advanced
 
-.seealso: PetscSpaceRegisterAll(), PetscSpaceRegisterDestroy()
+.seealso: `PetscSpaceRegisterAll()`, `PetscSpaceRegisterDestroy()`
 
 @*/
 PetscErrorCode PetscSpaceRegister(const char sname[], PetscErrorCode (*function)(PetscSpace))
@@ -60,7 +60,7 @@ PetscErrorCode PetscSpaceRegister(const char sname[], PetscErrorCode (*function)
 
   Level: intermediate
 
-.seealso: PetscSpaceGetType(), PetscSpaceCreate()
+.seealso: `PetscSpaceGetType()`, `PetscSpaceCreate()`
 @*/
 PetscErrorCode PetscSpaceSetType(PetscSpace sp, PetscSpaceType name)
 {
@@ -99,7 +99,7 @@ PetscErrorCode PetscSpaceSetType(PetscSpace sp, PetscSpaceType name)
 
   Level: intermediate
 
-.seealso: PetscSpaceSetType(), PetscSpaceCreate()
+.seealso: `PetscSpaceSetType()`, `PetscSpaceCreate()`
 @*/
 PetscErrorCode PetscSpaceGetType(PetscSpace sp, PetscSpaceType *name)
 {
@@ -124,7 +124,7 @@ PetscErrorCode PetscSpaceGetType(PetscSpace sp, PetscSpaceType *name)
 -  name - command line option
 
    Level: intermediate
-.seealso:  PetscSpace, PetscSpaceView, PetscObjectViewFromOptions(), PetscSpaceCreate()
+.seealso: `PetscSpace`, `PetscSpaceView`, `PetscObjectViewFromOptions()`, `PetscSpaceCreate()`
 @*/
 PetscErrorCode  PetscSpaceViewFromOptions(PetscSpace A,PetscObject obj,const char name[])
 {
@@ -145,7 +145,7 @@ PetscErrorCode  PetscSpaceViewFromOptions(PetscSpace A,PetscObject obj,const cha
 
   Level: beginner
 
-.seealso PetscSpaceDestroy()
+.seealso `PetscSpaceDestroy()`
 @*/
 PetscErrorCode PetscSpaceView(PetscSpace sp, PetscViewer v)
 {
@@ -181,7 +181,7 @@ PetscErrorCode PetscSpaceView(PetscSpace sp, PetscViewer v)
 
   Level: intermediate
 
-.seealso PetscSpaceView()
+.seealso `PetscSpaceView()`
 @*/
 PetscErrorCode PetscSpaceSetFromOptions(PetscSpace sp)
 {
@@ -232,7 +232,7 @@ PetscErrorCode PetscSpaceSetFromOptions(PetscSpace sp)
 
   Level: intermediate
 
-.seealso PetscSpaceView(), PetscSpaceDestroy()
+.seealso `PetscSpaceView()`, `PetscSpaceDestroy()`
 @*/
 PetscErrorCode PetscSpaceSetUp(PetscSpace sp)
 {
@@ -252,7 +252,7 @@ PetscErrorCode PetscSpaceSetUp(PetscSpace sp)
 
   Level: beginner
 
-.seealso PetscSpaceView()
+.seealso `PetscSpaceView()`
 @*/
 PetscErrorCode PetscSpaceDestroy(PetscSpace *sp)
 {
@@ -282,7 +282,7 @@ PetscErrorCode PetscSpaceDestroy(PetscSpace *sp)
 
   Level: beginner
 
-.seealso: PetscSpaceSetType(), PETSCSPACEPOLYNOMIAL
+.seealso: `PetscSpaceSetType()`, `PETSCSPACEPOLYNOMIAL`
 @*/
 PetscErrorCode PetscSpaceCreate(MPI_Comm comm, PetscSpace *sp)
 {
@@ -319,7 +319,7 @@ PetscErrorCode PetscSpaceCreate(MPI_Comm comm, PetscSpace *sp)
 
   Level: intermediate
 
-.seealso: PetscSpaceGetDegree(), PetscSpaceCreate(), PetscSpace
+.seealso: `PetscSpaceGetDegree()`, `PetscSpaceCreate()`, `PetscSpace`
 @*/
 PetscErrorCode PetscSpaceGetDimension(PetscSpace sp, PetscInt *dim)
 {
@@ -345,7 +345,7 @@ PetscErrorCode PetscSpaceGetDimension(PetscSpace sp, PetscInt *dim)
 
   Level: intermediate
 
-.seealso: PetscSpaceSetDegree(), PetscSpaceGetDimension(), PetscSpaceCreate(), PetscSpace
+.seealso: `PetscSpaceSetDegree()`, `PetscSpaceGetDimension()`, `PetscSpaceCreate()`, `PetscSpace`
 @*/
 PetscErrorCode PetscSpaceGetDegree(PetscSpace sp, PetscInt *minDegree, PetscInt *maxDegree)
 {
@@ -368,7 +368,7 @@ PetscErrorCode PetscSpaceGetDegree(PetscSpace sp, PetscInt *minDegree, PetscInt 
 
   Level: intermediate
 
-.seealso: PetscSpaceGetDegree(), PetscSpaceCreate(), PetscSpace
+.seealso: `PetscSpaceGetDegree()`, `PetscSpaceCreate()`, `PetscSpace`
 @*/
 PetscErrorCode PetscSpaceSetDegree(PetscSpace sp, PetscInt degree, PetscInt maxDegree)
 {
@@ -392,7 +392,7 @@ PetscErrorCode PetscSpaceSetDegree(PetscSpace sp, PetscInt degree, PetscInt maxD
 
   Level: intermediate
 
-.seealso: PetscSpaceSetNumComponents(), PetscSpaceGetNumVariables(), PetscSpaceGetDimension(), PetscSpaceCreate(), PetscSpace
+.seealso: `PetscSpaceSetNumComponents()`, `PetscSpaceGetNumVariables()`, `PetscSpaceGetDimension()`, `PetscSpaceCreate()`, `PetscSpace`
 @*/
 PetscErrorCode PetscSpaceGetNumComponents(PetscSpace sp, PetscInt *Nc)
 {
@@ -412,7 +412,7 @@ PetscErrorCode PetscSpaceGetNumComponents(PetscSpace sp, PetscInt *Nc)
 
   Level: intermediate
 
-.seealso: PetscSpaceGetNumComponents(), PetscSpaceSetNumVariables(), PetscSpaceCreate(), PetscSpace
+.seealso: `PetscSpaceGetNumComponents()`, `PetscSpaceSetNumVariables()`, `PetscSpaceCreate()`, `PetscSpace`
 @*/
 PetscErrorCode PetscSpaceSetNumComponents(PetscSpace sp, PetscInt Nc)
 {
@@ -431,7 +431,7 @@ PetscErrorCode PetscSpaceSetNumComponents(PetscSpace sp, PetscInt Nc)
 
   Level: intermediate
 
-.seealso: PetscSpaceGetNumVariables(), PetscSpaceSetNumComponents(), PetscSpaceCreate(), PetscSpace
+.seealso: `PetscSpaceGetNumVariables()`, `PetscSpaceSetNumComponents()`, `PetscSpaceCreate()`, `PetscSpace`
 @*/
 PetscErrorCode PetscSpaceSetNumVariables(PetscSpace sp, PetscInt n)
 {
@@ -452,7 +452,7 @@ PetscErrorCode PetscSpaceSetNumVariables(PetscSpace sp, PetscInt n)
 
   Level: intermediate
 
-.seealso: PetscSpaceSetNumVariables(), PetscSpaceGetNumComponents(), PetscSpaceGetDimension(), PetscSpaceCreate(), PetscSpace
+.seealso: `PetscSpaceSetNumVariables()`, `PetscSpaceGetNumComponents()`, `PetscSpaceGetDimension()`, `PetscSpaceCreate()`, `PetscSpace`
 @*/
 PetscErrorCode PetscSpaceGetNumVariables(PetscSpace sp, PetscInt *n)
 {
@@ -481,7 +481,7 @@ PetscErrorCode PetscSpaceGetNumVariables(PetscSpace sp, PetscInt *n)
 
   Level: beginner
 
-.seealso: PetscFECreateTabulation(), PetscFEGetCellTabulation(), PetscSpaceCreate()
+.seealso: `PetscFECreateTabulation()`, `PetscFEGetCellTabulation()`, `PetscSpaceCreate()`
 @*/
 PetscErrorCode PetscSpaceEvaluate(PetscSpace sp, PetscInt npoints, const PetscReal points[], PetscReal B[], PetscReal D[], PetscReal H[])
 {
@@ -516,7 +516,7 @@ PetscErrorCode PetscSpaceEvaluate(PetscSpace sp, PetscInt npoints, const PetscRe
 
   Level: advanced
 
-.seealso: PetscDualSpaceGetHeightSubspace(), PetscSpace
+.seealso: `PetscDualSpaceGetHeightSubspace()`, `PetscSpace`
 @*/
 PetscErrorCode PetscSpaceGetHeightSubspace(PetscSpace sp, PetscInt height, PetscSpace *subsp)
 {

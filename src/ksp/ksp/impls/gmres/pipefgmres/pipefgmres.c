@@ -675,8 +675,8 @@ PetscErrorCode KSPReset_PIPEFGMRES(KSP ksp)
     SIAM Journal on Scientific Computing 2016 38:5, C441-C470,
     DOI: 10.1137/15M1049130
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType, KSP, KSPLGMRES, KSPPIPECG, KSPPIPECR, KSPPGMRES, KSPFGMRES
-           KSPGMRESSetRestart(), KSPGMRESSetHapTol(), KSPGMRESSetPreAllocateVectors(), KSPGMRESMonitorKrylov(), KSPPIPEFGMRESSetShift()
+.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPLGMRES`, `KSPPIPECG`, `KSPPIPECR`, `KSPPGMRES`, `KSPFGMRES`
+          `KSPGMRESSetRestart()`, `KSPGMRESSetHapTol()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESMonitorKrylov()`, `KSPPIPEFGMRESSetShift()`
 M*/
 
 PETSC_EXTERN PetscErrorCode KSPCreate_PIPEFGMRES(KSP ksp)
@@ -782,7 +782,7 @@ Level: intermediate
 Options Database:
 . -ksp_pipefgmres_shift <shift> - set the shift parameter
 
-.seealso: KSPComputeEigenvalues()
+.seealso: `KSPComputeEigenvalues()`
 @*/
 PetscErrorCode KSPPIPEFGMRESSetShift(KSP ksp,PetscScalar shift)
 {

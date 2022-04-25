@@ -1081,7 +1081,7 @@ static PetscErrorCode VecSetOps_SeqKokkos(Vec v)
 
   Level: beginner
 
-.seealso: VecCreate(), VecSetType(), VecSetFromOptions(), VecCreateMPIWithArray(), VECMPI, VecType, VecCreateMPI()
+.seealso: `VecCreate()`, `VecSetType()`, `VecSetFromOptions()`, `VecCreateMPIWithArray()`, `VECMPI`, `VecType`, `VecCreateMPI()`
 M*/
 PetscErrorCode VecCreate_SeqKokkos(Vec v)
 {
@@ -1128,9 +1128,9 @@ PetscErrorCode VecCreate_SeqKokkos(Vec v)
 
    Level: intermediate
 
-.seealso: VecCreateMPICUDAWithArray(), VecCreate(), VecDuplicate(), VecDuplicateVecs(),
-          VecCreateGhost(), VecCreateSeq(), VecCreateSeqWithArray(),
-          VecCreateMPIWithArray()
+.seealso: `VecCreateMPICUDAWithArray()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`,
+          `VecCreateGhost()`, `VecCreateSeq()`, `VecCreateSeqWithArray()`,
+          `VecCreateMPIWithArray()`
 @*/
 PetscErrorCode  VecCreateSeqKokkosWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,const PetscScalar darray[],Vec *v)
 {
@@ -1239,7 +1239,7 @@ PetscErrorCode  VecCreateSeqKokkosWithArrays_Private(MPI_Comm comm,PetscInt bs,P
 
  Level: intermediate
 
- .seealso: VecCreateMPI(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost()
+ .seealso: `VecCreateMPI()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateGhost()`
  @*/
 PetscErrorCode VecCreateSeqKokkos(MPI_Comm comm,PetscInt n,Vec *v)
 {

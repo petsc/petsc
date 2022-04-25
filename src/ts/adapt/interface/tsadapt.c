@@ -38,7 +38,7 @@ $     -ts_adapt_type my_scheme
 
    Level: advanced
 
-.seealso: TSAdaptRegisterAll()
+.seealso: `TSAdaptRegisterAll()`
 @*/
 PetscErrorCode  TSAdaptRegister(const char sname[],PetscErrorCode (*function)(TSAdapt))
 {
@@ -55,7 +55,7 @@ PetscErrorCode  TSAdaptRegister(const char sname[],PetscErrorCode (*function)(TS
 
   Level: advanced
 
-.seealso: TSAdaptRegisterDestroy()
+.seealso: `TSAdaptRegisterDestroy()`
 @*/
 PetscErrorCode  TSAdaptRegisterAll(void)
 {
@@ -77,7 +77,7 @@ PetscErrorCode  TSAdaptRegisterAll(void)
 
   Level: developer
 
-.seealso: PetscFinalize()
+.seealso: `PetscFinalize()`
 @*/
 PetscErrorCode  TSAdaptFinalizePackage(void)
 {
@@ -94,7 +94,7 @@ PetscErrorCode  TSAdaptFinalizePackage(void)
 
   Level: developer
 
-.seealso: PetscInitialize()
+.seealso: `PetscInitialize()`
 @*/
 PetscErrorCode  TSAdaptInitializePackage(void)
 {
@@ -121,7 +121,7 @@ PetscErrorCode  TSAdaptInitializePackage(void)
 
   Level: intermediate
 
-.seealso: TSGetAdapt(), TSAdaptDestroy(), TSAdaptType, TSAdaptGetType()
+.seealso: `TSGetAdapt()`, `TSAdaptDestroy()`, `TSAdaptType`, `TSAdaptGetType()`
 @*/
 PetscErrorCode  TSAdaptSetType(TSAdapt adapt,TSAdaptType type)
 {
@@ -155,7 +155,7 @@ PetscErrorCode  TSAdaptSetType(TSAdapt adapt,TSAdaptType type)
 
   Level: intermediate
 
-.seealso TSAdaptSetType()
+.seealso `TSAdaptSetType()`
 @*/
 PetscErrorCode TSAdaptGetType(TSAdapt adapt,TSAdaptType *type)
 {
@@ -199,7 +199,7 @@ PetscErrorCode  TSAdaptSetOptionsPrefix(TSAdapt adapt,const char prefix[])
      has not yet been determined
 .ve
 
-.seealso: PetscViewerBinaryOpen(), TSAdaptView(), MatLoad(), VecLoad()
+.seealso: `PetscViewerBinaryOpen()`, `TSAdaptView()`, `MatLoad()`, `VecLoad()`
 @*/
 PetscErrorCode  TSAdaptLoad(TSAdapt adapt,PetscViewer viewer)
 {
@@ -277,7 +277,7 @@ PetscErrorCode  TSAdaptView(TSAdapt adapt,PetscViewer viewer)
 
    Level: developer
 
-.seealso: TSAdaptCreate(), TSAdaptDestroy()
+.seealso: `TSAdaptCreate()`, `TSAdaptDestroy()`
 @*/
 PetscErrorCode  TSAdaptReset(TSAdapt adapt)
 {
@@ -316,7 +316,7 @@ PetscErrorCode  TSAdaptDestroy(TSAdapt *adapt)
 
    Level: intermediate
 
-.seealso: TSAdaptChoose()
+.seealso: `TSAdaptChoose()`
 @*/
 PetscErrorCode TSAdaptSetMonitor(TSAdapt adapt,PetscBool flg)
 {
@@ -349,7 +349,7 @@ $  PetscErrorCode func(TSAdapt adapt,TS ts,PetscBool *accept)
 
    Level: advanced
 
-.seealso: TSAdaptChoose()
+.seealso: `TSAdaptChoose()`
 @*/
 PetscErrorCode TSAdaptSetCheckStage(TSAdapt adapt,PetscErrorCode (*func)(TSAdapt,TS,PetscReal,Vec,PetscBool*))
 {
@@ -374,7 +374,7 @@ PetscErrorCode TSAdaptSetCheckStage(TSAdapt adapt,PetscErrorCode (*func)(TSAdapt
 
    Level: intermediate
 
-.seealso: TSAdapt, TSAdaptChoose()
+.seealso: `TSAdapt`, `TSAdaptChoose()`
 @*/
 PetscErrorCode TSAdaptSetAlwaysAccept(TSAdapt adapt,PetscBool flag)
 {
@@ -401,7 +401,7 @@ PetscErrorCode TSAdaptSetAlwaysAccept(TSAdapt adapt,PetscBool flag)
 
    Level: intermediate
 
-.seealso: TSAdapt, TSAdaptGetSafety(), TSAdaptChoose()
+.seealso: `TSAdapt`, `TSAdaptGetSafety()`, `TSAdaptChoose()`
 @*/
 PetscErrorCode TSAdaptSetSafety(TSAdapt adapt,PetscReal safety,PetscReal reject_safety)
 {
@@ -432,7 +432,7 @@ PetscErrorCode TSAdaptSetSafety(TSAdapt adapt,PetscReal safety,PetscReal reject_
 
    Level: intermediate
 
-.seealso: TSAdapt, TSAdaptSetSafety(), TSAdaptChoose()
+.seealso: `TSAdapt`, `TSAdaptSetSafety()`, `TSAdaptChoose()`
 @*/
 PetscErrorCode TSAdaptGetSafety(TSAdapt adapt,PetscReal *safety,PetscReal *reject_safety)
 {
@@ -459,7 +459,7 @@ PetscErrorCode TSAdaptGetSafety(TSAdapt adapt,PetscReal *safety,PetscReal *rejec
 
    Level: intermediate
 
-.seealso: TSAdapt, TSAdaptGetMaxIgnore(), TSAdaptChoose()
+.seealso: `TSAdapt`, `TSAdaptGetMaxIgnore()`, `TSAdaptChoose()`
 @*/
 PetscErrorCode TSAdaptSetMaxIgnore(TSAdapt adapt,PetscReal max_ignore)
 {
@@ -483,7 +483,7 @@ PetscErrorCode TSAdaptSetMaxIgnore(TSAdapt adapt,PetscReal max_ignore)
 
    Level: intermediate
 
-.seealso: TSAdapt, TSAdaptSetMaxIgnore(), TSAdaptChoose()
+.seealso: `TSAdapt`, `TSAdaptSetMaxIgnore()`, `TSAdaptChoose()`
 @*/
 PetscErrorCode TSAdaptGetMaxIgnore(TSAdapt adapt,PetscReal *max_ignore)
 {
@@ -509,7 +509,7 @@ PetscErrorCode TSAdaptGetMaxIgnore(TSAdapt adapt,PetscReal *max_ignore)
 
    Level: intermediate
 
-.seealso: TSAdaptChoose(), TSAdaptGetClip(), TSAdaptSetScaleSolveFailed()
+.seealso: `TSAdaptChoose()`, `TSAdaptGetClip()`, `TSAdaptSetScaleSolveFailed()`
 @*/
 PetscErrorCode TSAdaptSetClip(TSAdapt adapt,PetscReal low,PetscReal high)
 {
@@ -539,7 +539,7 @@ PetscErrorCode TSAdaptSetClip(TSAdapt adapt,PetscReal low,PetscReal high)
 
    Level: intermediate
 
-.seealso: TSAdaptChoose(), TSAdaptSetClip(), TSAdaptSetScaleSolveFailed()
+.seealso: `TSAdaptChoose()`, `TSAdaptSetClip()`, `TSAdaptSetScaleSolveFailed()`
 @*/
 PetscErrorCode TSAdaptGetClip(TSAdapt adapt,PetscReal *low,PetscReal *high)
 {
@@ -566,7 +566,7 @@ PetscErrorCode TSAdaptGetClip(TSAdapt adapt,PetscReal *low,PetscReal *high)
 
    Level: intermediate
 
-.seealso: TSAdaptChoose(), TSAdaptGetScaleSolveFailed(), TSAdaptGetClip()
+.seealso: `TSAdaptChoose()`, `TSAdaptGetScaleSolveFailed()`, `TSAdaptGetClip()`
 @*/
 PetscErrorCode TSAdaptSetScaleSolveFailed(TSAdapt adapt,PetscReal scale)
 {
@@ -592,7 +592,7 @@ PetscErrorCode TSAdaptSetScaleSolveFailed(TSAdapt adapt,PetscReal scale)
 
    Level: intermediate
 
-.seealso: TSAdaptChoose(), TSAdaptSetScaleSolveFailed(), TSAdaptSetClip()
+.seealso: `TSAdaptChoose()`, `TSAdaptSetScaleSolveFailed()`, `TSAdaptSetClip()`
 @*/
 PetscErrorCode TSAdaptGetScaleSolveFailed(TSAdapt adapt,PetscReal *scale)
 {
@@ -619,7 +619,7 @@ PetscErrorCode TSAdaptGetScaleSolveFailed(TSAdapt adapt,PetscReal *scale)
 
    Level: intermediate
 
-.seealso: TSAdapt, TSAdaptGetStepLimits(), TSAdaptChoose()
+.seealso: `TSAdapt`, `TSAdaptGetStepLimits()`, `TSAdaptChoose()`
 @*/
 PetscErrorCode TSAdaptSetStepLimits(TSAdapt adapt,PetscReal hmin,PetscReal hmax)
 {
@@ -651,7 +651,7 @@ PetscErrorCode TSAdaptSetStepLimits(TSAdapt adapt,PetscReal hmin,PetscReal hmax)
 
    Level: intermediate
 
-.seealso: TSAdapt, TSAdaptSetStepLimits(), TSAdaptChoose()
+.seealso: `TSAdapt`, `TSAdaptSetStepLimits()`, `TSAdaptChoose()`
 @*/
 PetscErrorCode TSAdaptGetStepLimits(TSAdapt adapt,PetscReal *hmin,PetscReal *hmax)
 {
@@ -689,8 +689,8 @@ PetscErrorCode TSAdaptGetStepLimits(TSAdapt adapt,PetscReal *hmin,PetscReal *hma
    Notes:
    This function is automatically called by TSSetFromOptions()
 
-.seealso: TSGetAdapt(), TSAdaptSetType(), TSAdaptSetAlwaysAccept(), TSAdaptSetSafety(),
-          TSAdaptSetClip(), TSAdaptSetScaleSolveFailed(), TSAdaptSetStepLimits(), TSAdaptSetMonitor()
+.seealso: `TSGetAdapt()`, `TSAdaptSetType()`, `TSAdaptSetAlwaysAccept()`, `TSAdaptSetSafety()`,
+          `TSAdaptSetClip()`, `TSAdaptSetScaleSolveFailed()`, `TSAdaptSetStepLimits()`, `TSAdaptSetMonitor()`
 */
 PetscErrorCode  TSAdaptSetFromOptions(PetscOptionItems *PetscOptionsObject,TSAdapt adapt)
 {
@@ -756,7 +756,7 @@ PetscErrorCode  TSAdaptSetFromOptions(PetscOptionItems *PetscOptionsObject,TSAda
 
    Level: developer
 
-.seealso: TSAdapt, TSAdaptCreate(), TSAdaptCandidateAdd(), TSAdaptChoose()
+.seealso: `TSAdapt`, `TSAdaptCreate()`, `TSAdaptCandidateAdd()`, `TSAdaptChoose()`
 @*/
 PetscErrorCode TSAdaptCandidatesClear(TSAdapt adapt)
 {
@@ -785,7 +785,7 @@ PetscErrorCode TSAdaptCandidatesClear(TSAdapt adapt)
 
    Level: developer
 
-.seealso: TSAdaptCandidatesClear(), TSAdaptChoose()
+.seealso: `TSAdaptCandidatesClear()`, `TSAdaptChoose()`
 @*/
 PetscErrorCode TSAdaptCandidateAdd(TSAdapt adapt,const char name[],PetscInt order,PetscInt stageorder,PetscReal ccfl,PetscReal cost,PetscBool inuse)
 {
@@ -830,7 +830,7 @@ PetscErrorCode TSAdaptCandidateAdd(TSAdapt adapt,const char name[],PetscInt orde
    Note:
    The current scheme is always returned in the first slot
 
-.seealso: TSAdaptCandidatesClear(), TSAdaptCandidateAdd(), TSAdaptChoose()
+.seealso: `TSAdaptCandidatesClear()`, `TSAdaptCandidateAdd()`, `TSAdaptChoose()`
 @*/
 PetscErrorCode TSAdaptCandidatesGet(TSAdapt adapt,PetscInt *n,const PetscInt **order,const PetscInt **stageorder,const PetscReal **ccfl,const PetscReal **cost)
 {
@@ -865,7 +865,7 @@ PetscErrorCode TSAdaptCandidatesGet(TSAdapt adapt,PetscInt *n,const PetscInt **o
 
    Level: developer
 
-.seealso: TSAdapt, TSAdaptCandidatesClear(), TSAdaptCandidateAdd()
+.seealso: `TSAdapt`, `TSAdaptCandidatesClear()`, `TSAdaptCandidateAdd()`
 @*/
 PetscErrorCode TSAdaptChoose(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,PetscReal *next_h,PetscBool *accept)
 {
@@ -1042,7 +1042,7 @@ PetscErrorCode TSAdaptCheckStage(TSAdapt adapt,TS ts,PetscReal t,Vec Y,PetscBool
   Notes:
   TSAdapt creation is handled by TS, so users should not need to call this function.
 
-.seealso: TSGetAdapt(), TSAdaptSetType(), TSAdaptDestroy()
+.seealso: `TSGetAdapt()`, `TSAdaptSetType()`, `TSAdaptDestroy()`
 @*/
 PetscErrorCode  TSAdaptCreate(MPI_Comm comm,TSAdapt *inadapt)
 {

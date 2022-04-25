@@ -51,8 +51,8 @@ static PetscErrorCode SNESComputeMFFunctionCtx(SNES snes,Vec x,Vec f,void *ctx)
        and computing explicitly with finite differences and coloring using MatFDColoring. It is also possible to use automatic differentiation
        and the MatFDColoring object, see src/ts/tutorials/autodiff/ex16adj_tl.cxx
 
-.seealso: SNESSetJacobian(), SNESTestJacobian(), SNESComputeJacobianDefault(), SNESSetUseMatrixFree(),
-          MatFDColoringCreate(), MatFDColoringSetFunction()
+.seealso: `SNESSetJacobian()`, `SNESTestJacobian()`, `SNESComputeJacobianDefault()`, `SNESSetUseMatrixFree()`,
+          `MatFDColoringCreate()`, `MatFDColoringSetFunction()`
 
 @*/
 PetscErrorCode  SNESComputeJacobianDefaultColor(SNES snes,Vec x1,Mat J,Mat B,void *ctx)

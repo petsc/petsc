@@ -13,7 +13,7 @@
 
    Level: beginner
 
-.seealso: DMSwarmSetType()
+.seealso: `DMSwarmSetType()`
 E*/
 typedef enum {
   DMSWARM_BASIC=0,
@@ -48,7 +48,7 @@ typedef enum {
 
    Level: beginner
 
-.seealso DMSwarmInsertPointsUsingCellDM()
+.seealso `DMSwarmInsertPointsUsingCellDM()`
 E*/
 typedef enum {
   DMSWARMPIC_LAYOUT_REGULAR=0,

@@ -21,7 +21,7 @@
 
    Contributed by: Denis Vanderstraeten
 
-.seealso: MatGetRow(), MatGetDiagonal(), MatMult()
+.seealso: `MatGetRow()`, `MatGetDiagonal()`, `MatMult()`
 
 @*/
 PetscErrorCode  MatGetColumnVector(Mat A,Vec yy,PetscInt col)
@@ -84,7 +84,7 @@ PetscErrorCode  MatGetColumnVector(Mat A,Vec yy,PetscInt col)
     Each process has ALL the column norms after the call. Because of the way this is computed each process gets all the values,
     if each process wants only some of the values it should extract the ones it wants from the array.
 
-.seealso: NormType, MatNorm()
+.seealso: `NormType`, `MatNorm()`
 
 @*/
 PetscErrorCode MatGetColumnNorms(Mat A,NormType type,PetscReal norms[])
@@ -115,7 +115,7 @@ PetscErrorCode MatGetColumnNorms(Mat A,NormType type,PetscReal norms[])
     Each process has ALL the column sums after the call. Because of the way this is computed each process gets all the values,
     if each process wants only some of the values it should extract the ones it wants from the array.
 
-.seealso: MatGetColumnSumsImaginaryPart(), VecSum(), MatGetColumnMeans(), MatGetColumnNorms(), MatGetColumnReductions()
+.seealso: `MatGetColumnSumsImaginaryPart()`, `VecSum()`, `MatGetColumnMeans()`, `MatGetColumnNorms()`, `MatGetColumnReductions()`
 
 @*/
 PetscErrorCode MatGetColumnSumsRealPart(Mat A,PetscReal sums[])
@@ -140,7 +140,7 @@ PetscErrorCode MatGetColumnSumsRealPart(Mat A,PetscReal sums[])
     Each process has ALL the column sums after the call. Because of the way this is computed each process gets all the values,
     if each process wants only some of the values it should extract the ones it wants from the array.
 
-.seealso: MatGetColumnSumsRealPart(), VecSum(), MatGetColumnMeans(), MatGetColumnNorms(), MatGetColumnReductions()
+.seealso: `MatGetColumnSumsRealPart()`, `VecSum()`, `MatGetColumnMeans()`, `MatGetColumnNorms()`, `MatGetColumnReductions()`
 
 @*/
 PetscErrorCode MatGetColumnSumsImaginaryPart(Mat A,PetscReal sums[])
@@ -165,7 +165,7 @@ PetscErrorCode MatGetColumnSumsImaginaryPart(Mat A,PetscReal sums[])
     Each process has ALL the column sums after the call. Because of the way this is computed each process gets all the values,
     if each process wants only some of the values it should extract the ones it wants from the array.
 
-.seealso: VecSum(), MatGetColumnMeans(), MatGetColumnNorms(), MatGetColumnReductions()
+.seealso: `VecSum()`, `MatGetColumnMeans()`, `MatGetColumnNorms()`, `MatGetColumnReductions()`
 
 @*/
 PetscErrorCode MatGetColumnSums(Mat A,PetscScalar sums[])
@@ -207,7 +207,7 @@ PetscErrorCode MatGetColumnSums(Mat A,PetscScalar sums[])
     Each process has ALL the column means after the call. Because of the way this is computed each process gets all the values,
     if each process wants only some of the values it should extract the ones it wants from the array.
 
-.seealso: MatGetColumnMeansImaginaryPart(), VecSum(), MatGetColumnSums(), MatGetColumnNorms(), MatGetColumnReductions()
+.seealso: `MatGetColumnMeansImaginaryPart()`, `VecSum()`, `MatGetColumnSums()`, `MatGetColumnNorms()`, `MatGetColumnReductions()`
 
 @*/
 PetscErrorCode MatGetColumnMeansRealPart(Mat A,PetscReal means[])
@@ -232,7 +232,7 @@ PetscErrorCode MatGetColumnMeansRealPart(Mat A,PetscReal means[])
     Each process has ALL the column means after the call. Because of the way this is computed each process gets all the values,
     if each process wants only some of the values it should extract the ones it wants from the array.
 
-.seealso: MatGetColumnMeansRealPart(), VecSum(), MatGetColumnSums(), MatGetColumnNorms(), MatGetColumnReductions()
+.seealso: `MatGetColumnMeansRealPart()`, `VecSum()`, `MatGetColumnSums()`, `MatGetColumnNorms()`, `MatGetColumnReductions()`
 
 @*/
 PetscErrorCode MatGetColumnMeansImaginaryPart(Mat A,PetscReal means[])
@@ -257,7 +257,7 @@ PetscErrorCode MatGetColumnMeansImaginaryPart(Mat A,PetscReal means[])
     Each process has ALL the column means after the call. Because of the way this is computed each process gets all the values,
     if each process wants only some of the values it should extract the ones it wants from the array.
 
-.seealso: VecSum(), MatGetColumnSums(), MatGetColumnNorms(), MatGetColumnReductions()
+.seealso: `VecSum()`, `MatGetColumnSums()`, `MatGetColumnNorms()`, `MatGetColumnReductions()`
 
 @*/
 PetscErrorCode MatGetColumnMeans(Mat A,PetscScalar means[])
@@ -305,7 +305,7 @@ PetscErrorCode MatGetColumnMeans(Mat A,PetscScalar means[])
     This routine is primarily intended as a back-end.
     MatGetColumnNorms(), MatGetColumnSums(), and MatGetColumnMeans() are implemented using this routine.
 
-.seealso: ReductionType, NormType, MatGetColumnNorms(), MatGetColumnSums(), MatGetColumnMeans()
+.seealso: `ReductionType`, `NormType`, `MatGetColumnNorms()`, `MatGetColumnSums()`, `MatGetColumnMeans()`
 
 @*/
 PetscErrorCode MatGetColumnReductions(Mat A,PetscInt type,PetscReal reductions[])

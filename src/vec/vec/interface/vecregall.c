@@ -36,7 +36,7 @@ PETSC_EXTERN PetscErrorCode VecCreate_HIP(Vec);
 
   Level: advanced
 
-.seealso:  VecRegister(), VecRegisterDestroy(), VecRegister()
+.seealso: `VecRegister()`, `VecRegisterDestroy()`, `VecRegister()`
 @*/
 PetscErrorCode VecRegisterAll(void)
 {

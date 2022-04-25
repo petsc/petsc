@@ -70,7 +70,7 @@ typedef struct {
 
      Level: advanced
 
-.seealso: TSARKIMEX, TSARKIMEXType, TSARKIMEXSetType()
+.seealso: `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEXA2 - Second order ARK IMEX scheme with A-stable implicit part.
@@ -82,7 +82,7 @@ M*/
 
      Level: advanced
 
-.seealso: TSARKIMEX, TSARKIMEXType, TSARKIMEXSetType()
+.seealso: `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEXL2 - Second order ARK IMEX scheme with L-stable implicit part.
@@ -97,7 +97,7 @@ M*/
 
      Level: advanced
 
-.seealso: TSARKIMEX, TSARKIMEXType, TSARKIMEXSetType()
+.seealso: `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEX1BEE - First order backward Euler represented as an ARK IMEX scheme with extrapolation as error estimator. This is a 3-stage method.
@@ -109,7 +109,7 @@ M*/
 
      Level: advanced
 
-.seealso: TSARKIMEX, TSARKIMEXType, TSARKIMEXSetType()
+.seealso: `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEX2C - Second order ARK IMEX scheme with L-stable implicit part.
@@ -121,7 +121,7 @@ M*/
 
      Level: advanced
 
-.seealso: TSARKIMEX, TSARKIMEXType, TSARKIMEXSetType()
+.seealso: `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEX2D - Second order ARK IMEX scheme with L-stable implicit part.
@@ -133,7 +133,7 @@ M*/
 
      Level: advanced
 
-.seealso: TSARKIMEX, TSARKIMEXType, TSARKIMEXSetType()
+.seealso: `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEX2E - Second order ARK IMEX scheme with L-stable implicit part.
@@ -145,7 +145,7 @@ M*/
 
     Level: advanced
 
-.seealso: TSARKIMEX, TSARKIMEXType, TSARKIMEXSetType()
+.seealso: `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEXPRSSP2 - Second order SSP ARK IMEX scheme.
@@ -162,7 +162,7 @@ M*/
 
      Level: advanced
 
-.seealso: TSARKIMEX, TSARKIMEXType, TSARKIMEXSetType()
+.seealso: `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEX3 - Third order ARK IMEX scheme with L-stable implicit part.
@@ -177,7 +177,7 @@ M*/
 
      Level: advanced
 
-.seealso: TSARKIMEX, TSARKIMEXType, TSARKIMEXSetType()
+.seealso: `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEXARS443 - Third order ARK IMEX scheme.
@@ -193,7 +193,7 @@ M*/
 
      Level: advanced
 
-.seealso: TSARKIMEX, TSARKIMEXType, TSARKIMEXSetType()
+.seealso: `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEXBPR3 - Third order ARK IMEX scheme.
@@ -208,7 +208,7 @@ M*/
 
      Level: advanced
 
-.seealso: TSARKIMEX, TSARKIMEXType, TSARKIMEXSetType()
+.seealso: `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEX4 - Fourth order ARK IMEX scheme with L-stable implicit part.
@@ -223,7 +223,7 @@ M*/
 
      Level: advanced
 
-.seealso: TSARKIMEX, TSARKIMEXType, TSARKIMEXSetType()
+.seealso: `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEX5 - Fifth order ARK IMEX scheme with L-stable implicit part.
@@ -238,7 +238,7 @@ M*/
 
      Level: advanced
 
-.seealso: TSARKIMEX, TSARKIMEXType, TSARKIMEXSetType()
+.seealso: `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 
 /*@C
@@ -248,7 +248,7 @@ M*/
 
   Level: advanced
 
-.seealso:  TSARKIMEXRegisterDestroy()
+.seealso: `TSARKIMEXRegisterDestroy()`
 @*/
 PetscErrorCode TSARKIMEXRegisterAll(void)
 {
@@ -468,7 +468,7 @@ PetscErrorCode TSARKIMEXRegisterAll(void)
 
    Level: advanced
 
-.seealso: TSARKIMEXRegister(), TSARKIMEXRegisterAll()
+.seealso: `TSARKIMEXRegister()`, `TSARKIMEXRegisterAll()`
 @*/
 PetscErrorCode TSARKIMEXRegisterDestroy(void)
 {
@@ -494,7 +494,7 @@ PetscErrorCode TSARKIMEXRegisterDestroy(void)
 
   Level: developer
 
-.seealso: PetscInitialize()
+.seealso: `PetscInitialize()`
 @*/
 PetscErrorCode TSARKIMEXInitializePackage(void)
 {
@@ -512,7 +512,7 @@ PetscErrorCode TSARKIMEXInitializePackage(void)
 
   Level: developer
 
-.seealso: PetscFinalize()
+.seealso: `PetscFinalize()`
 @*/
 PetscErrorCode TSARKIMEXFinalizePackage(void)
 {
@@ -548,7 +548,7 @@ PetscErrorCode TSARKIMEXFinalizePackage(void)
 
    Level: advanced
 
-.seealso: TSARKIMEX
+.seealso: `TSARKIMEX`
 @*/
 PetscErrorCode TSARKIMEXRegister(TSARKIMEXType name,PetscInt order,PetscInt s,
                                  const PetscReal At[],const PetscReal bt[],const PetscReal ct[],
@@ -1238,8 +1238,8 @@ static PetscErrorCode TSLoad_ARKIMEX(TS ts,PetscViewer viewer)
 
   Level: intermediate
 
-.seealso: TSARKIMEXGetType(), TSARKIMEX, TSARKIMEXType, TSARKIMEX1BEE, TSARKIMEXA2, TSARKIMEXL2, TSARKIMEXARS122, TSARKIMEX2C, TSARKIMEX2D, TSARKIMEX2E, TSARKIMEXPRSSP2,
-          TSARKIMEX3, TSARKIMEXBPR3, TSARKIMEXARS443, TSARKIMEX4, TSARKIMEX5
+.seealso: `TSARKIMEXGetType()`, `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEX1BEE`, `TSARKIMEXA2`, `TSARKIMEXL2`, `TSARKIMEXARS122`, `TSARKIMEX2C`, `TSARKIMEX2D`, `TSARKIMEX2E`, `TSARKIMEXPRSSP2`,
+          `TSARKIMEX3`, `TSARKIMEXBPR3`, `TSARKIMEXARS443`, `TSARKIMEX4`, `TSARKIMEX5`
 @*/
 PetscErrorCode TSARKIMEXSetType(TS ts,TSARKIMEXType arktype)
 {
@@ -1263,7 +1263,7 @@ PetscErrorCode TSARKIMEXSetType(TS ts,TSARKIMEXType arktype)
 
   Level: intermediate
 
-.seealso: TSARKIMEXGetType()
+.seealso: `TSARKIMEXGetType()`
 @*/
 PetscErrorCode TSARKIMEXGetType(TS ts,TSARKIMEXType *arktype)
 {
@@ -1284,7 +1284,7 @@ PetscErrorCode TSARKIMEXGetType(TS ts,TSARKIMEXType *arktype)
 
   Level: intermediate
 
-.seealso: TSARKIMEXGetType(), TSARKIMEXGetFullyImplicit()
+.seealso: `TSARKIMEXGetType()`, `TSARKIMEXGetFullyImplicit()`
 @*/
 PetscErrorCode TSARKIMEXSetFullyImplicit(TS ts,PetscBool flg)
 {
@@ -1308,7 +1308,7 @@ PetscErrorCode TSARKIMEXSetFullyImplicit(TS ts,PetscBool flg)
 
   Level: intermediate
 
-.seealso: TSARKIMEXGetType(), TSARKIMEXSetFullyImplicit()
+.seealso: `TSARKIMEXGetType()`, `TSARKIMEXSetFullyImplicit()`
 @*/
 PetscErrorCode TSARKIMEXGetFullyImplicit(TS ts,PetscBool *flg)
 {
@@ -1404,9 +1404,9 @@ static PetscErrorCode TSDestroy_ARKIMEX(TS ts)
 
   Level: beginner
 
-.seealso:  TSCreate(), TS, TSSetType(), TSARKIMEXSetType(), TSARKIMEXGetType(), TSARKIMEXSetFullyImplicit(), TSARKIMEXGetFullyImplicit(),
-           TSARKIMEX1BEE, TSARKIMEX2C, TSARKIMEX2D, TSARKIMEX2E, TSARKIMEX3, TSARKIMEXL2, TSARKIMEXA2, TSARKIMEXARS122,
-           TSARKIMEX4, TSARKIMEX5, TSARKIMEXPRSSP2, TSARKIMEXARS443, TSARKIMEXBPR3, TSARKIMEXType, TSARKIMEXRegister()
+.seealso: `TSCreate()`, `TS`, `TSSetType()`, `TSARKIMEXSetType()`, `TSARKIMEXGetType()`, `TSARKIMEXSetFullyImplicit()`, `TSARKIMEXGetFullyImplicit()`,
+          `TSARKIMEX1BEE`, `TSARKIMEX2C`, `TSARKIMEX2D`, `TSARKIMEX2E`, `TSARKIMEX3`, `TSARKIMEXL2`, `TSARKIMEXA2`, `TSARKIMEXARS122`,
+          `TSARKIMEX4`, `TSARKIMEX5`, `TSARKIMEXPRSSP2`, `TSARKIMEXARS443`, `TSARKIMEXBPR3`, `TSARKIMEXType`, `TSARKIMEXRegister()`
 
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_ARKIMEX(TS ts)

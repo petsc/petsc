@@ -484,7 +484,7 @@ PETSC_EXTERN PetscErrorCode AOCreate_MemoryScalable(AO ao)
            in the indices. Use AOCreateMapping() or AOCreateMappingIS() if you wish to have "holes" in the indices.
            Comparing with AOCreateBasic(), this routine trades memory with message communication.
 
-.seealso: AOCreateMemoryScalableIS(), AODestroy(), AOPetscToApplication(), AOApplicationToPetsc()
+.seealso: `AOCreateMemoryScalableIS()`, `AODestroy()`, `AOPetscToApplication()`, `AOApplicationToPetsc()`
 @*/
 PetscErrorCode AOCreateMemoryScalable(MPI_Comm comm,PetscInt napp,const PetscInt myapp[],const PetscInt mypetsc[],AO *aoout)
 {
@@ -525,7 +525,7 @@ PetscErrorCode AOCreateMemoryScalable(MPI_Comm comm,PetscInt napp,const PetscInt
     The index sets isapp and ispetsc must contain the all the integers 0 to napp-1 (where napp is the length of the index sets) with no duplicates;
            that is there cannot be any "holes".
            Comparing with AOCreateBasicIS(), this routine trades memory with message communication.
-.seealso: AOCreateMemoryScalable(),  AODestroy()
+.seealso: `AOCreateMemoryScalable()`, `AODestroy()`
 @*/
 PetscErrorCode  AOCreateMemoryScalableIS(IS isapp,IS ispetsc,AO *aoout)
 {

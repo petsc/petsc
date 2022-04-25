@@ -132,7 +132,7 @@ static PetscErrorCode  KSPSolve_BiCG(KSP ksp)
          See KSPCGNE for code that EXACTLY runs the preconditioned conjugate gradient method on the
          normal equations
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType, KSP, KSPBCGS, KSPCGNE
+.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBCGS`, `KSPCGNE`
 
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_BiCG(KSP ksp)

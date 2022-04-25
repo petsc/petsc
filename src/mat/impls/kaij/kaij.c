@@ -42,7 +42,7 @@
 
    Notes: The reference count on the AIJ matrix is not increased so you should not destroy it.
 
-.seealso: MatCreateKAIJ()
+.seealso: `MatCreateKAIJ()`
 @*/
 PetscErrorCode  MatKAIJGetAIJ(Mat A,Mat *B)
 {
@@ -80,7 +80,7 @@ PetscErrorCode  MatKAIJGetAIJ(Mat A,Mat *B)
 
    Level: advanced
 
-.seealso: MatCreateKAIJ(), MatGetBlockSizes()
+.seealso: `MatCreateKAIJ()`, `MatGetBlockSizes()`
 @*/
 PetscErrorCode MatKAIJGetS(Mat A,PetscInt *m,PetscInt *n,PetscScalar **S)
 {
@@ -109,7 +109,7 @@ PetscErrorCode MatKAIJGetS(Mat A,PetscInt *m,PetscInt *n,PetscScalar **S)
 
    Level: advanced
 
-.seealso: MatCreateKAIJ(), MatGetBlockSizes()
+.seealso: `MatCreateKAIJ()`, `MatGetBlockSizes()`
 @*/
 PetscErrorCode MatKAIJGetSRead(Mat A,PetscInt *m,PetscInt *n,const PetscScalar **S)
 {
@@ -136,7 +136,7 @@ PetscErrorCode MatKAIJGetSRead(Mat A,PetscInt *m,PetscInt *n,const PetscScalar *
   If NULL is passed, it will not attempt to zero the array pointer.
 
   Level: advanced
-.seealso: MatKAIJGetS(), MatKAIJGetSRead(), MatKAIJRestoreSRead()
+.seealso: `MatKAIJGetS()`, `MatKAIJGetSRead()`, `MatKAIJRestoreSRead()`
 @*/
 PetscErrorCode MatKAIJRestoreS(Mat A,PetscScalar **S)
 {
@@ -161,7 +161,7 @@ PetscErrorCode MatKAIJRestoreS(Mat A,PetscScalar **S)
   If NULL is passed, it will not attempt to zero the array pointer.
 
   Level: advanced
-.seealso: MatKAIJGetS(), MatKAIJGetSRead(), MatKAIJRestoreSRead()
+.seealso: `MatKAIJGetS()`, `MatKAIJGetSRead()`, `MatKAIJRestoreSRead()`
 @*/
 PetscErrorCode MatKAIJRestoreSRead(Mat A,const PetscScalar **S)
 {
@@ -187,7 +187,7 @@ PetscErrorCode MatKAIJRestoreSRead(Mat A,const PetscScalar **S)
 
    Level: advanced
 
-.seealso: MatCreateKAIJ(), MatGetBlockSizes()
+.seealso: `MatCreateKAIJ()`, `MatGetBlockSizes()`
 @*/
 PetscErrorCode MatKAIJGetT(Mat A,PetscInt *m,PetscInt *n,PetscScalar **T)
 {
@@ -216,7 +216,7 @@ PetscErrorCode MatKAIJGetT(Mat A,PetscInt *m,PetscInt *n,PetscScalar **T)
 
    Level: advanced
 
-.seealso: MatCreateKAIJ(), MatGetBlockSizes()
+.seealso: `MatCreateKAIJ()`, `MatGetBlockSizes()`
 @*/
 PetscErrorCode MatKAIJGetTRead(Mat A,PetscInt *m,PetscInt *n,const PetscScalar **T)
 {
@@ -243,7 +243,7 @@ PetscErrorCode MatKAIJGetTRead(Mat A,PetscInt *m,PetscInt *n,const PetscScalar *
   If NULL is passed, it will not attempt to zero the array pointer.
 
   Level: advanced
-.seealso: MatKAIJGetT(), MatKAIJGetTRead(), MatKAIJRestoreTRead()
+.seealso: `MatKAIJGetT()`, `MatKAIJGetTRead()`, `MatKAIJRestoreTRead()`
 @*/
 PetscErrorCode MatKAIJRestoreT(Mat A,PetscScalar **T)
 {
@@ -268,7 +268,7 @@ PetscErrorCode MatKAIJRestoreT(Mat A,PetscScalar **T)
   If NULL is passed, it will not attempt to zero the array pointer.
 
   Level: advanced
-.seealso: MatKAIJGetT(), MatKAIJGetTRead(), MatKAIJRestoreTRead()
+.seealso: `MatKAIJGetT()`, `MatKAIJGetTRead()`, `MatKAIJRestoreTRead()`
 @*/
 PetscErrorCode MatKAIJRestoreTRead(Mat A,const PetscScalar **T)
 {
@@ -292,7 +292,7 @@ PetscErrorCode MatKAIJRestoreTRead(Mat A,const PetscScalar **T)
 
    Level: advanced
 
-.seealso: MatKAIJGetAIJ(), MatKAIJSetS(), MatKAIJSetT()
+.seealso: `MatKAIJGetAIJ()`, `MatKAIJSetS()`, `MatKAIJSetT()`
 @*/
 PetscErrorCode MatKAIJSetAIJ(Mat A,Mat B)
 {
@@ -330,7 +330,7 @@ PetscErrorCode MatKAIJSetAIJ(Mat A,Mat B)
 
    Level: Advanced
 
-.seealso: MatKAIJGetS(), MatKAIJSetT(), MatKAIJSetAIJ()
+.seealso: `MatKAIJGetS()`, `MatKAIJSetT()`, `MatKAIJSetAIJ()`
 @*/
 PetscErrorCode MatKAIJSetS(Mat A,PetscInt p,PetscInt q,const PetscScalar S[])
 {
@@ -361,7 +361,7 @@ PetscErrorCode MatKAIJSetS(Mat A,PetscInt p,PetscInt q,const PetscScalar S[])
 
    Level: Advanced
 
-.seealso: MatKAIJGetS(), MatKAIJGetT()
+.seealso: `MatKAIJGetS()`, `MatKAIJGetT()`
 @*/
 PetscErrorCode MatKAIJGetScaledIdentity(Mat A,PetscBool* identity)
 {
@@ -405,7 +405,7 @@ PetscErrorCode MatKAIJGetScaledIdentity(Mat A,PetscBool* identity)
 
    Level: Advanced
 
-.seealso: MatKAIJGetT(), MatKAIJSetS(), MatKAIJSetAIJ()
+.seealso: `MatKAIJGetT()`, `MatKAIJSetS()`, `MatKAIJSetAIJ()`
 @*/
 PetscErrorCode MatKAIJSetT(Mat A,PetscInt p,PetscInt q,const PetscScalar T[])
 {
@@ -1400,7 +1400,7 @@ PetscErrorCode  MatCreateSubMatrix_KAIJ(Mat mat,IS isrow,IS iscol,MatReuse cll,M
 
   Level: advanced
 
-.seealso: MatKAIJSetAIJ(), MatKAIJSetS(), MatKAIJSetT(), MatKAIJGetAIJ(), MatKAIJGetS(), MatKAIJGetT(), MATKAIJ
+.seealso: `MatKAIJSetAIJ()`, `MatKAIJSetS()`, `MatKAIJSetT()`, `MatKAIJGetAIJ()`, `MatKAIJGetS()`, `MatKAIJGetT()`, `MATKAIJ`
 @*/
 PetscErrorCode  MatCreateKAIJ(Mat A,PetscInt p,PetscInt q,const PetscScalar S[],const PetscScalar T[],Mat *kaij)
 {
@@ -1432,7 +1432,7 @@ PetscErrorCode  MatCreateKAIJ(Mat A,PetscInt p,PetscInt q,const PetscScalar S[],
 
   Level: advanced
 
-.seealso: MatKAIJSetAIJ(), MatKAIJSetS(), MatKAIJSetT(), MatKAIJGetAIJ(), MatKAIJGetS(), MatKAIJGetT(), MatCreateKAIJ()
+.seealso: `MatKAIJSetAIJ()`, `MatKAIJSetS()`, `MatKAIJSetT()`, `MatKAIJGetAIJ()`, `MatKAIJGetS()`, `MatKAIJGetT()`, `MatCreateKAIJ()`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_KAIJ(Mat A)

@@ -30,7 +30,7 @@
        waiting for part of the message to arrive that does not exist, hence the success flg may be improperly set to false even
        though the message was delivered.
 
-.seealso: PetscTellMyCell(), PetscOpenSocket(), PetscHTTPRequest()
+.seealso: `PetscTellMyCell()`, `PetscOpenSocket()`, `PetscHTTPRequest()`
 @*/
 PetscErrorCode PetscTextBelt(MPI_Comm comm,const char number[],const char message[],PetscBool *flg)
 {

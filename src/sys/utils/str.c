@@ -33,7 +33,7 @@
     Using raw malloc() and does not call error handlers since this may be used before PETSc is initialized. Used
      to generate argc, args arguments passed to MPI_Init()
 
-.seealso: PetscStrToArrayDestroy(), PetscToken, PetscTokenCreate()
+.seealso: `PetscStrToArrayDestroy()`, `PetscToken`, `PetscTokenCreate()`
 
 @*/
 PetscErrorCode PetscStrToArray(const char s[], char sp, int *argc, char ***args)
@@ -108,7 +108,7 @@ PetscErrorCode PetscStrToArray(const char s[], char sp, int *argc, char ***args)
 
    Not for use in Fortran
 
-.seealso: PetscStrToArray()
+.seealso: `PetscStrToArray()`
 
 @*/
 PetscErrorCode PetscStrToArrayDestroy(int argc, char **args)
@@ -167,7 +167,7 @@ PetscErrorCode PetscStrlen(const char s[], size_t *len)
       Warning: If t has previously been allocated then that memory is lost, you may need to PetscFree()
       the array before calling this routine.
 
-.seealso: PetscStrArrayallocpy(), PetscStrcpy(), PetscStrNArrayallocpy()
+.seealso: `PetscStrArrayallocpy()`, `PetscStrcpy()`, `PetscStrNArrayallocpy()`
 
 @*/
 PetscErrorCode PetscStrallocpy(const char s[], char *t[])
@@ -205,7 +205,7 @@ PetscErrorCode PetscStrallocpy(const char s[], char *t[])
       Warning: If t has previously been allocated then that memory is lost, you may need to PetscStrArrayDestroy()
       the array before calling this routine.
 
-.seealso: PetscStrallocpy(), PetscStrArrayDestroy(), PetscStrNArrayallocpy()
+.seealso: `PetscStrallocpy()`, `PetscStrArrayDestroy()`, `PetscStrNArrayallocpy()`
 
 @*/
 PetscErrorCode PetscStrArrayallocpy(const char *const *list, char ***t)
@@ -233,7 +233,7 @@ PetscErrorCode PetscStrArrayallocpy(const char *const *list, char ***t)
    Notes:
     Not for use in Fortran
 
-.seealso: PetscStrArrayallocpy()
+.seealso: `PetscStrArrayallocpy()`
 
 @*/
 PetscErrorCode PetscStrArrayDestroy(char ***list)
@@ -267,7 +267,7 @@ PetscErrorCode PetscStrArrayDestroy(char ***list)
    Note:
       Not for use in Fortran
 
-.seealso: PetscStrallocpy(), PetscStrArrayallocpy(), PetscStrNArrayDestroy()
+.seealso: `PetscStrallocpy()`, `PetscStrArrayallocpy()`, `PetscStrNArrayDestroy()`
 
 @*/
 PetscErrorCode PetscStrNArrayallocpy(PetscInt n, const char *const *list, char ***t)
@@ -292,7 +292,7 @@ PetscErrorCode PetscStrNArrayallocpy(PetscInt n, const char *const *list, char *
    Notes:
     Not for use in Fortran
 
-.seealso: PetscStrArrayallocpy()
+.seealso: `PetscStrArrayallocpy()`
 
 @*/
 PetscErrorCode PetscStrNArrayDestroy(PetscInt n, char ***list)
@@ -324,7 +324,7 @@ PetscErrorCode PetscStrNArrayDestroy(PetscInt n, char ***list)
 
      It is recommended you use PetscStrncpy() instead of this routine
 
-.seealso: PetscStrncpy(), PetscStrcat(), PetscStrlcat()
+.seealso: `PetscStrncpy()`, `PetscStrcat()`, `PetscStrlcat()`
 
 @*/
 
@@ -362,7 +362,7 @@ PetscErrorCode PetscStrcpy(char s[], const char t[])
 
   Developers Note: Should this be PetscStrlcpy() to reflect its behavior which is like strlcpy() not strncpy()
 
-.seealso: PetscStrcpy(), PetscStrcat(), PetscStrlcat()
+.seealso: `PetscStrcpy()`, `PetscStrcat()`, `PetscStrlcat()`
 
 @*/
 PetscErrorCode PetscStrncpy(char s[], const char t[], size_t n)
@@ -397,7 +397,7 @@ PetscErrorCode PetscStrncpy(char s[], const char t[], size_t n)
 
     It is recommended you use PetscStrlcat() instead of this routine
 
-.seealso: PetscStrcpy(), PetscStrncpy(), PetscStrlcat()
+.seealso: `PetscStrcpy()`, `PetscStrncpy()`, `PetscStrlcat()`
 
 @*/
 PetscErrorCode PetscStrcat(char s[], const char t[])
@@ -429,7 +429,7 @@ PetscErrorCode PetscStrcat(char s[], const char t[])
   original allocated space, not the length of the left-over space. This is
   similar to the BSD system call strlcat().
 
-.seealso: PetscStrcpy(), PetscStrncpy(), PetscStrcat()
+.seealso: `PetscStrcpy()`, `PetscStrncpy()`, `PetscStrcat()`
 
 @*/
 PetscErrorCode PetscStrlcat(char s[], const char t[], size_t n)
@@ -471,7 +471,7 @@ void PetscStrcmpNoError(const char a[], const char b[], PetscBool *flg)
    Notes:
     Not for use in Fortran
 
-.seealso: PetscStrgrt(), PetscStrncmp(), PetscStrcasecmp()
+.seealso: `PetscStrgrt()`, `PetscStrncmp()`, `PetscStrcasecmp()`
 @*/
 PetscErrorCode  PetscStrcmp(const char a[],const char b[],PetscBool *flg)
 {
@@ -503,7 +503,7 @@ PetscErrorCode  PetscStrcmp(const char a[],const char b[],PetscBool *flg)
 
    Level: intermediate
 
-.seealso: PetscStrcmp(), PetscStrncmp(), PetscStrcasecmp()
+.seealso: `PetscStrcmp()`, `PetscStrncmp()`, `PetscStrcasecmp()`
 
 @*/
 PetscErrorCode PetscStrgrt(const char a[], const char b[], PetscBool *t)
@@ -541,7 +541,7 @@ PetscErrorCode PetscStrgrt(const char a[], const char b[], PetscBool *t)
 
    Level: intermediate
 
-.seealso: PetscStrcmp(), PetscStrncmp(), PetscStrgrt()
+.seealso: `PetscStrcmp()`, `PetscStrncmp()`, `PetscStrgrt()`
 
 @*/
 PetscErrorCode PetscStrcasecmp(const char a[], const char b[], PetscBool *t)
@@ -591,7 +591,7 @@ PetscErrorCode PetscStrcasecmp(const char a[], const char b[], PetscBool *t)
    Notes:
     Not for use in Fortran
 
-.seealso: PetscStrgrt(), PetscStrcmp(), PetscStrcasecmp()
+.seealso: `PetscStrgrt()`, `PetscStrcmp()`, `PetscStrcasecmp()`
 
 @*/
 PetscErrorCode PetscStrncmp(const char a[], const char b[], size_t n, PetscBool *t)
@@ -766,8 +766,8 @@ PetscErrorCode PetscStrendswith(const char a[], const char b[], PetscBool *flg)
 
    Level: intermediate
 
-.seealso: PetscStrendswithwhich(), PetscStrendswith(), PetscStrtoupper, PetscStrtolower(), PetscStrrchr(), PetscStrchr(),
-          PetscStrncmp(), PetscStrlen(), PetscStrncmp(), PetscStrcmp()
+.seealso: `PetscStrendswithwhich()`, `PetscStrendswith()`, `PetscStrtoupper`, `PetscStrtolower()`, `PetscStrrchr()`, `PetscStrchr()`,
+          `PetscStrncmp()`, `PetscStrlen()`, `PetscStrncmp()`, `PetscStrcmp()`
 
 @*/
 PetscErrorCode PetscStrbeginswith(const char a[], const char b[], PetscBool *flg)
@@ -910,7 +910,7 @@ struct _p_PetscToken {char token;char *array;char *current;};
 
    Level: intermediate
 
-.seealso: PetscTokenCreate(), PetscTokenDestroy()
+.seealso: `PetscTokenCreate()`, `PetscTokenDestroy()`
 @*/
 PetscErrorCode PetscTokenFind(PetscToken a, char *result[])
 {
@@ -960,7 +960,7 @@ PetscErrorCode PetscTokenFind(PetscToken a, char *result[])
 
    Level: intermediate
 
-.seealso: PetscTokenFind(), PetscTokenDestroy()
+.seealso: `PetscTokenFind()`, `PetscTokenDestroy()`
 @*/
 PetscErrorCode PetscTokenCreate(const char a[], const char b, PetscToken *t)
 {
@@ -988,7 +988,7 @@ PetscErrorCode PetscTokenCreate(const char a[], const char b, PetscToken *t)
    Notes:
     Not for use in Fortran
 
-.seealso: PetscTokenCreate(), PetscTokenFind()
+.seealso: `PetscTokenCreate()`, `PetscTokenFind()`
 @*/
 PetscErrorCode PetscTokenDestroy(PetscToken *a)
 {
@@ -1017,7 +1017,7 @@ PetscErrorCode PetscTokenDestroy(PetscToken *a)
    Notes:
     Not for use in Fortran
 
-.seealso: PetscTokenCreate(), PetscTokenFind(), PetscStrcmp()
+.seealso: `PetscTokenCreate()`, `PetscTokenFind()`, `PetscStrcmp()`
 @*/
 PetscErrorCode PetscStrInList(const char str[], const char list[], char sep, PetscBool *found)
 {

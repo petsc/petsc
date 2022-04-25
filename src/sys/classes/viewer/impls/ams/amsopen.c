@@ -31,8 +31,8 @@
 
     Information about the SAWs is available via https://bitbucket.org/saws/saws
 
-.seealso: PetscViewerDestroy(), PetscViewerStringSPrintf(), PETSC_VIEWER_SAWS_(), PetscObjectSAWsBlock(),
-          PetscObjectSAWsViewOff(), PetscObjectSAWsTakeAccess(), PetscObjectSAWsGrantAccess()
+.seealso: `PetscViewerDestroy()`, `PetscViewerStringSPrintf()`, `PETSC_VIEWER_SAWS_()`, `PetscObjectSAWsBlock()`,
+          `PetscObjectSAWsViewOff()`, `PetscObjectSAWsTakeAccess()`, `PetscObjectSAWsGrantAccess()`
 
 @*/
 PetscErrorCode PetscViewerSAWsOpen(MPI_Comm comm,PetscViewer *lab)
@@ -61,7 +61,7 @@ PetscErrorCode PetscViewerSAWsOpen(MPI_Comm comm,PetscViewer *lab)
    The object must have already been named before calling this routine since naming an
    object can be collective.
 
-.seealso: PetscObjectSetName(), PetscObjectSAWsViewOff()
+.seealso: `PetscObjectSetName()`, `PetscObjectSAWsViewOff()`
 
 @*/
 PetscErrorCode  PetscObjectViewSAWs(PetscObject obj,PetscViewer viewer)

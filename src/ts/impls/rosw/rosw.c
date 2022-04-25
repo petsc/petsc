@@ -70,7 +70,7 @@ typedef struct {
 
      Level: intermediate
 
-.seealso: TSROSW
+.seealso: `TSROSW`
 M*/
 
 /*MC
@@ -80,7 +80,7 @@ M*/
 
      Level: intermediate
 
-.seealso: TSROSW
+.seealso: `TSROSW`
 M*/
 
 /*MC
@@ -90,7 +90,7 @@ M*/
 
      Level: intermediate
 
-.seealso: TSROSW
+.seealso: `TSROSW`
 M*/
 
 /*MC
@@ -100,7 +100,7 @@ M*/
 
      Level: intermediate
 
-.seealso: TSROSW
+.seealso: `TSROSW`
 M*/
 
 /*MC
@@ -115,7 +115,7 @@ M*/
 
      Level: intermediate
 
-.seealso: TSROSW
+.seealso: `TSROSW`
 M*/
 
 /*MC
@@ -130,7 +130,7 @@ M*/
 
      Level: intermediate
 
-.seealso: TSROSW
+.seealso: `TSROSW`
 M*/
 
 /*MC
@@ -145,7 +145,7 @@ M*/
 
      Level: intermediate
 
-.seealso: TSROSW, TSROSWSANDU3
+.seealso: `TSROSW`, `TSROSWSANDU3`
 M*/
 
 /*MC
@@ -163,7 +163,7 @@ M*/
 
      Level: intermediate
 
-.seealso: TSROSW, TSROSWRODAS3
+.seealso: `TSROSW`, `TSROSWRODAS3`
 M*/
 
 /*MC
@@ -178,7 +178,7 @@ M*/
 
      Level: intermediate
 
-.seealso: TSROSW, TSROSWLASSP3P4S2C, TSROSWLLSSP3P4S2C, SSP
+.seealso: `TSROSW`, `TSROSWLASSP3P4S2C`, `TSROSWLLSSP3P4S2C`, `SSP`
 M*/
 
 /*MC
@@ -193,7 +193,7 @@ M*/
 
      Level: intermediate
 
-.seealso: TSROSW, TSROSWASSP3P3S1C, TSROSWLLSSP3P4S2C, TSSSP
+.seealso: `TSROSW`, `TSROSWASSP3P3S1C`, `TSROSWLLSSP3P4S2C`, `TSSSP`
 M*/
 
 /*MC
@@ -208,7 +208,7 @@ M*/
 
      Level: intermediate
 
-.seealso: TSROSW, TSROSWASSP3P3S1C, TSROSWLASSP3P4S2C, TSSSP
+.seealso: `TSROSW`, `TSROSWASSP3P3S1C`, `TSROSWLASSP3P4S2C`, `TSSSP`
 M*/
 
 /*MC
@@ -228,7 +228,7 @@ M*/
 
      Level: intermediate
 
-.seealso: TSROSW, TSROSWSHAMP4, TSROSWVELDD4, TSROSW4L
+.seealso: `TSROSW`, `TSROSWSHAMP4`, `TSROSWVELDD4`, `TSROSW4L`
 M*/
 
 /*MC
@@ -248,7 +248,7 @@ M*/
 
      Level: intermediate
 
-.seealso: TSROSW, TSROSWGRK4T, TSROSWVELDD4, TSROSW4L
+.seealso: `TSROSW`, `TSROSWGRK4T`, `TSROSWVELDD4`, `TSROSW4L`
 M*/
 
 /*MC
@@ -268,7 +268,7 @@ M*/
 
      Level: intermediate
 
-.seealso: TSROSW, TSROSWGRK4T, TSROSWSHAMP4, TSROSW4L
+.seealso: `TSROSW`, `TSROSWGRK4T`, `TSROSWSHAMP4`, `TSROSW4L`
 M*/
 
 /*MC
@@ -287,7 +287,7 @@ M*/
 
      Level: intermediate
 
-.seealso: TSROSW, TSROSWGRK4T, TSROSWSHAMP4, TSROSW4L
+.seealso: `TSROSW`, `TSROSWGRK4T`, `TSROSWSHAMP4`, `TSROSW4L`
 M*/
 
 /*@C
@@ -297,7 +297,7 @@ M*/
 
   Level: advanced
 
-.seealso:  TSRosWRegisterDestroy()
+.seealso: `TSRosWRegisterDestroy()`
 @*/
 PetscErrorCode TSRosWRegisterAll(void)
 {
@@ -597,7 +597,7 @@ PetscErrorCode TSRosWRegisterAll(void)
 
    Level: advanced
 
-.seealso: TSRosWRegister(), TSRosWRegisterAll()
+.seealso: `TSRosWRegister()`, `TSRosWRegisterAll()`
 @*/
 PetscErrorCode TSRosWRegisterDestroy(void)
 {
@@ -624,7 +624,7 @@ PetscErrorCode TSRosWRegisterDestroy(void)
 
   Level: developer
 
-.seealso: PetscInitialize()
+.seealso: `PetscInitialize()`
 @*/
 PetscErrorCode TSRosWInitializePackage(void)
 {
@@ -642,7 +642,7 @@ PetscErrorCode TSRosWInitializePackage(void)
 
   Level: developer
 
-.seealso: PetscFinalize()
+.seealso: `PetscFinalize()`
 @*/
 PetscErrorCode TSRosWFinalizePackage(void)
 {
@@ -673,7 +673,7 @@ PetscErrorCode TSRosWFinalizePackage(void)
 
    Level: advanced
 
-.seealso: TSRosW
+.seealso: `TSRosW`
 @*/
 PetscErrorCode TSRosWRegister(TSRosWType name,PetscInt order,PetscInt s,const PetscReal A[],const PetscReal Gamma[],const PetscReal b[],const PetscReal bembed[],
                               PetscInt pinterp,const PetscReal binterpt[])
@@ -800,7 +800,7 @@ PetscErrorCode TSRosWRegister(TSRosWType name,PetscInt order,PetscInt s,const Pe
 
    Level: developer
 
-.seealso: TSRosW, TSRosWRegister()
+.seealso: `TSRosW`, `TSRosWRegister()`
 @*/
 PetscErrorCode TSRosWRegisterRos4(TSRosWType name,PetscReal gamma,PetscReal a2,PetscReal a3,PetscReal b3,PetscReal e4)
 {
@@ -1435,7 +1435,7 @@ static PetscErrorCode TSLoad_RosW(TS ts,PetscViewer viewer)
 
   Level: beginner
 
-.seealso: TSRosWGetType(), TSROSW, TSROSW2M, TSROSW2P, TSROSWRA3PW, TSROSWRA34PW2, TSROSWRODAS3, TSROSWSANDU3, TSROSWASSP3P3S1C, TSROSWLASSP3P4S2C, TSROSWLLSSP3P4S2C, TSROSWARK3
+.seealso: `TSRosWGetType()`, `TSROSW`, `TSROSW2M`, `TSROSW2P`, `TSROSWRA3PW`, `TSROSWRA34PW2`, `TSROSWRODAS3`, `TSROSWSANDU3`, `TSROSWASSP3P3S1C`, `TSROSWLASSP3P4S2C`, `TSROSWLLSSP3P4S2C`, `TSROSWARK3`
 @*/
 PetscErrorCode TSRosWSetType(TS ts,TSRosWType roswtype)
 {
@@ -1459,7 +1459,7 @@ PetscErrorCode TSRosWSetType(TS ts,TSRosWType roswtype)
 
   Level: intermediate
 
-.seealso: TSRosWGetType()
+.seealso: `TSRosWGetType()`
 @*/
 PetscErrorCode TSRosWGetType(TS ts,TSRosWType *rostype)
 {
@@ -1480,7 +1480,7 @@ PetscErrorCode TSRosWGetType(TS ts,TSRosWType *rostype)
 
   Level: intermediate
 
-.seealso: TSRosWGetType()
+.seealso: `TSRosWGetType()`
 @*/
 PetscErrorCode TSRosWSetRecomputeJacobian(TS ts,PetscBool flg)
 {
@@ -1608,8 +1608,8 @@ $  g(u_0 + sum_j a_ij y_j + y_i, ydot_i) = 0
 
   Level: beginner
 
-.seealso:  TSCreate(), TS, TSSetType(), TSRosWSetType(), TSRosWRegister(), TSROSWTHETA1, TSROSWTHETA2, TSROSW2M, TSROSW2P, TSROSWRA3PW, TSROSWRA34PW2, TSROSWRODAS3,
-           TSROSWSANDU3, TSROSWASSP3P3S1C, TSROSWLASSP3P4S2C, TSROSWLLSSP3P4S2C, TSROSWGRK4T, TSROSWSHAMP4, TSROSWVELDD4, TSROSW4L
+.seealso: `TSCreate()`, `TS`, `TSSetType()`, `TSRosWSetType()`, `TSRosWRegister()`, `TSROSWTHETA1`, `TSROSWTHETA2`, `TSROSW2M`, `TSROSW2P`, `TSROSWRA3PW`, `TSROSWRA34PW2`, `TSROSWRODAS3`,
+          `TSROSWSANDU3`, `TSROSWASSP3P3S1C`, `TSROSWLASSP3P4S2C`, `TSROSWLLSSP3P4S2C`, `TSROSWGRK4T`, `TSROSWSHAMP4`, `TSROSWVELDD4`, `TSROSW4L`
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_RosW(TS ts)
 {

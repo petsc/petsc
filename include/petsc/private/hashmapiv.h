@@ -23,7 +23,7 @@ PETSC_HASH_MAP(HMapIV, PetscInt, PetscScalar, PetscHashInt, PetscHashEqual, -1)
 
   Level: developer
 
-.seealso: PetscHMapTGet(), PetscHMapTIterSet(), PetscHMapIVSet()
+.seealso: `PetscHMapTGet()`, `PetscHMapTIterSet()`, `PetscHMapIVSet()`
 M*/
 static inline
 PetscErrorCode PetscHMapIVAddValue(PetscHMapIV ht,PetscInt key,PetscScalar val)

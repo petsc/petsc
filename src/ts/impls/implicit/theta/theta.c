@@ -1254,7 +1254,7 @@ $  Y_i = X + h sum_j a_ij Y'_j
 
    is interpreted as a formula for Y'_i in terms of Y_i and known values (Y'_j, j<i)
 
-.seealso:  TSCreate(), TS, TSSetType(), TSCN, TSBEULER, TSThetaSetTheta(), TSThetaSetEndpoint()
+.seealso: `TSCreate()`, `TS`, `TSSetType()`, `TSCN`, `TSBEULER`, `TSThetaSetTheta()`, `TSThetaSetEndpoint()`
 
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_Theta(TS ts)
@@ -1326,7 +1326,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Theta(TS ts)
 
   Level: Advanced
 
-.seealso: TSThetaSetTheta()
+.seealso: `TSThetaSetTheta()`
 @*/
 PetscErrorCode  TSThetaGetTheta(TS ts,PetscReal *theta)
 {
@@ -1351,7 +1351,7 @@ PetscErrorCode  TSThetaGetTheta(TS ts,PetscReal *theta)
 
   Level: Intermediate
 
-.seealso: TSThetaGetTheta()
+.seealso: `TSThetaGetTheta()`
 @*/
 PetscErrorCode  TSThetaSetTheta(TS ts,PetscReal theta)
 {
@@ -1374,7 +1374,7 @@ PetscErrorCode  TSThetaSetTheta(TS ts,PetscReal theta)
 
   Level: Advanced
 
-.seealso: TSThetaSetEndpoint(), TSTHETA, TSCN
+.seealso: `TSThetaSetEndpoint()`, `TSTHETA`, `TSCN`
 @*/
 PetscErrorCode TSThetaGetEndpoint(TS ts,PetscBool *endpoint)
 {
@@ -1399,7 +1399,7 @@ PetscErrorCode TSThetaGetEndpoint(TS ts,PetscBool *endpoint)
 
   Level: Intermediate
 
-.seealso: TSTHETA, TSCN
+.seealso: `TSTHETA`, `TSCN`
 @*/
 PetscErrorCode TSThetaSetEndpoint(TS ts,PetscBool flg)
 {
@@ -1441,7 +1441,7 @@ static PetscErrorCode TSView_BEuler(TS ts,PetscViewer viewer)
 
 $  -ts_type theta -ts_theta_theta 1.0
 
-.seealso:  TSCreate(), TS, TSSetType(), TSEULER, TSCN, TSTHETA
+.seealso: `TSCreate()`, `TS`, `TSSetType()`, `TSEULER`, `TSCN`, `TSTHETA`
 
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_BEuler(TS ts)
@@ -1482,7 +1482,7 @@ static PetscErrorCode TSView_CN(TS ts,PetscViewer viewer)
 
 $  -ts_type theta -ts_theta_theta 0.5 -ts_theta_endpoint
 
-.seealso:  TSCreate(), TS, TSSetType(), TSBEULER, TSTHETA
+.seealso: `TSCreate()`, `TS`, `TSSetType()`, `TSBEULER`, `TSTHETA`
 
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_CN(TS ts)

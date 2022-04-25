@@ -15,7 +15,7 @@ PETSC_EXTERN PetscClassId PETSCLIMITER_CLASSID;
 
   Level: beginner
 
-.seealso: PetscLimiterSetType(), PetscLimiter
+.seealso: `PetscLimiterSetType()`, `PetscLimiter`
 J*/
 typedef const char *PetscLimiterType;
 #define PETSCLIMITERSIN       "sin"
@@ -50,7 +50,7 @@ PETSC_EXTERN PetscClassId PETSCFV_CLASSID;
 
   Level: beginner
 
-.seealso: PetscFVSetType(), PetscFV
+.seealso: `PetscFVSetType()`, `PetscFV`
 J*/
 typedef const char *PetscFVType;
 #define PETSCFVUPWIND       "upwind"

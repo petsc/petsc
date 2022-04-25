@@ -342,7 +342,7 @@ static PetscErrorCode DMGetNeighbors_DA(DM dm, PetscInt *nranks, const PetscMPII
 
   Level: intermediate
 
-.seealso: DMType, DMCOMPOSITE, DMSTAG, DMDACreate(), DMCreate(), DMSetType()
+.seealso: `DMType`, `DMCOMPOSITE`, `DMSTAG`, `DMDACreate()`, `DMCreate()`, `DMSetType()`
 M*/
 
 extern PetscErrorCode DMLocatePoints_DA_Regular(DM,Vec,DMPointLocationType,PetscSF);
@@ -459,7 +459,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
   Developers Note:
   Since there exists DMDACreate1/2/3d() should this routine even exist?
 
-.seealso:  DMDASetSizes(), DMClone(),  DMDACreate1d(), DMDACreate2d(), DMDACreate3d()
+.seealso: `DMDASetSizes()`, `DMClone()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
 @*/
 PetscErrorCode  DMDACreate(MPI_Comm comm, DM *da)
 {

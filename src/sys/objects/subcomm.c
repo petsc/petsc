@@ -134,7 +134,7 @@ PetscErrorCode PetscSubcommView(PetscSubcomm psubcomm,PetscViewer viewer)
 
    Level: advanced
 
-.seealso: PetscSubcommCreate(),PetscSubcommDestroy(),PetscSubcommSetType(),PetscSubcommSetTypeGeneral()
+.seealso: `PetscSubcommCreate(),PetscSubcommDestroy(),PetscSubcommSetType(),PetscSubcommSetTypeGeneral()`
 @*/
 PetscErrorCode  PetscSubcommSetNumber(PetscSubcomm psubcomm,PetscInt nsubcomm)
 {
@@ -162,7 +162,7 @@ PetscErrorCode  PetscSubcommSetNumber(PetscSubcomm psubcomm,PetscInt nsubcomm)
 
    Level: advanced
 
-.seealso: PetscSubcommCreate(),PetscSubcommDestroy(),PetscSubcommSetNumber(),PetscSubcommSetTypeGeneral(), PetscSubcommType
+.seealso: `PetscSubcommCreate(),PetscSubcommDestroy(),PetscSubcommSetNumber(),PetscSubcommSetTypeGeneral()`, `PetscSubcommType`
 @*/
 PetscErrorCode  PetscSubcommSetType(PetscSubcomm psubcomm,PetscSubcommType subcommtype)
 {
@@ -190,7 +190,7 @@ PetscErrorCode  PetscSubcommSetType(PetscSubcomm psubcomm,PetscSubcommType subco
 
    Level: advanced
 
-.seealso: PetscSubcommCreate(),PetscSubcommDestroy(),PetscSubcommSetNumber(),PetscSubcommSetType()
+.seealso: `PetscSubcommCreate(),PetscSubcommDestroy(),PetscSubcommSetNumber(),PetscSubcommSetType()`
 @*/
 PetscErrorCode PetscSubcommSetTypeGeneral(PetscSubcomm psubcomm,PetscMPIInt color,PetscMPIInt subrank)
 {
@@ -254,7 +254,7 @@ PetscErrorCode PetscSubcommSetTypeGeneral(PetscSubcomm psubcomm,PetscMPIInt colo
 
    Level: advanced
 
-.seealso: PetscSubcommCreate(),PetscSubcommSetType()
+.seealso: `PetscSubcommCreate(),PetscSubcommSetType()`
 @*/
 PetscErrorCode  PetscSubcommDestroy(PetscSubcomm *psubcomm)
 {
@@ -281,8 +281,8 @@ PetscErrorCode  PetscSubcommDestroy(PetscSubcomm *psubcomm)
 
    Level: advanced
 
-.seealso: PetscSubcommDestroy(), PetscSubcommSetTypeGeneral(), PetscSubcommSetFromOptions(), PetscSubcommSetType(),
-          PetscSubcommSetNumber()
+.seealso: `PetscSubcommDestroy()`, `PetscSubcommSetTypeGeneral()`, `PetscSubcommSetFromOptions()`, `PetscSubcommSetType()`,
+          `PetscSubcommSetNumber()`
 @*/
 PetscErrorCode  PetscSubcommCreate(MPI_Comm comm,PetscSubcomm *psubcomm)
 {
@@ -318,8 +318,8 @@ PetscErrorCode  PetscSubcommCreate(MPI_Comm comm,PetscSubcomm *psubcomm)
 
    Level: intermediate
 
-.seealso: PetscSubcommDestroy(), PetscSubcommSetTypeGeneral(), PetscSubcommSetFromOptions(), PetscSubcommSetType(),
-          PetscSubcommSetNumber(), PetscSubcommGetChild(), PetscSubcommContiguousParent()
+.seealso: `PetscSubcommDestroy()`, `PetscSubcommSetTypeGeneral()`, `PetscSubcommSetFromOptions()`, `PetscSubcommSetType()`,
+          `PetscSubcommSetNumber()`, `PetscSubcommGetChild()`, `PetscSubcommContiguousParent()`
 @*/
 PetscErrorCode  PetscSubcommGetParent(PetscSubcomm scomm,MPI_Comm *pcomm)
 {
@@ -341,8 +341,8 @@ PetscErrorCode  PetscSubcommGetParent(PetscSubcomm scomm,MPI_Comm *pcomm)
 
    Level: intermediate
 
-.seealso: PetscSubcommDestroy(), PetscSubcommSetTypeGeneral(), PetscSubcommSetFromOptions(), PetscSubcommSetType(),
-          PetscSubcommSetNumber(), PetscSubcommGetChild(), PetscSubcommContiguousParent()
+.seealso: `PetscSubcommDestroy()`, `PetscSubcommSetTypeGeneral()`, `PetscSubcommSetFromOptions()`, `PetscSubcommSetType()`,
+          `PetscSubcommSetNumber()`, `PetscSubcommGetChild()`, `PetscSubcommContiguousParent()`
 @*/
 PetscErrorCode  PetscSubcommGetContiguousParent(PetscSubcomm scomm,MPI_Comm *pcomm)
 {
@@ -363,8 +363,8 @@ PetscErrorCode  PetscSubcommGetContiguousParent(PetscSubcomm scomm,MPI_Comm *pco
 
    Level: intermediate
 
-.seealso: PetscSubcommDestroy(), PetscSubcommSetTypeGeneral(), PetscSubcommSetFromOptions(), PetscSubcommSetType(),
-          PetscSubcommSetNumber(), PetscSubcommGetParent(), PetscSubcommContiguousParent()
+.seealso: `PetscSubcommDestroy()`, `PetscSubcommSetTypeGeneral()`, `PetscSubcommSetFromOptions()`, `PetscSubcommSetType()`,
+          `PetscSubcommSetNumber()`, `PetscSubcommGetParent()`, `PetscSubcommContiguousParent()`
 @*/
 PetscErrorCode  PetscSubcommGetChild(PetscSubcomm scomm,MPI_Comm *ccomm)
 {

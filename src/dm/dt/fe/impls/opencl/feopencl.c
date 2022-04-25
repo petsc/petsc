@@ -793,7 +793,7 @@ static PetscErrorCode PetscFEInitialize_OpenCL(PetscFE fem)
 
   Level: intermediate
 
-.seealso: PetscFEType, PetscFECreate(), PetscFESetType()
+.seealso: `PetscFEType`, `PetscFECreate()`, `PetscFESetType()`
 M*/
 
 PETSC_EXTERN PetscErrorCode PetscFECreate_OpenCL(PetscFE fem)
@@ -841,7 +841,7 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_OpenCL(PetscFE fem)
 
   Level: developer
 
-.seealso: PetscFEOpenCLGetRealType()
+.seealso: `PetscFEOpenCLGetRealType()`
 @*/
 PetscErrorCode PetscFEOpenCLSetRealType(PetscFE fem, PetscDataType realType)
 {
@@ -864,7 +864,7 @@ PetscErrorCode PetscFEOpenCLSetRealType(PetscFE fem, PetscDataType realType)
 
   Level: developer
 
-.seealso: PetscFEOpenCLSetRealType()
+.seealso: `PetscFEOpenCLSetRealType()`
 @*/
 PetscErrorCode PetscFEOpenCLGetRealType(PetscFE fem, PetscDataType *realType)
 {

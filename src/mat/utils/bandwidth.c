@@ -14,7 +14,7 @@
 
   Level: beginner
 
-.seealso: DMPlexCreate(), DMPlexSetConeSize(), DMPlexSetChart()
+.seealso: `DMPlexCreate()`, `DMPlexSetConeSize()`, `DMPlexSetChart()`
 @*/
 PetscErrorCode MatComputeBandwidth(Mat A, PetscReal fraction, PetscInt *bw)
 {

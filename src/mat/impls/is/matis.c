@@ -1551,7 +1551,7 @@ static PetscErrorCode MatISSetUpSF_IS(Mat B)
 
    Notes:
 
-.seealso: MatCreate(), MatCreateIS(), MatISSetPreallocation(), MatPtAP()
+.seealso: `MatCreate()`, `MatCreateIS()`, `MatISSetPreallocation()`, `MatPtAP()`
 @*/
 PetscErrorCode MatISStoreL2L(Mat A, PetscBool store)
 {
@@ -1588,7 +1588,7 @@ static PetscErrorCode MatISStoreL2L_IS(Mat A, PetscBool store)
 
    Notes: When fix is true, new local matrices and l2g maps are generated during the final assembly process.
 
-.seealso: MatCreate(), MatCreateIS(), MatISSetPreallocation(), MatAssemblyEnd(), MAT_FINAL_ASSEMBLY
+.seealso: `MatCreate()`, `MatCreateIS()`, `MatISSetPreallocation()`, `MatAssemblyEnd()`, `MAT_FINAL_ASSEMBLY`
 @*/
 PetscErrorCode MatISFixLocalEmpty(Mat A, PetscBool fix)
 {
@@ -1641,7 +1641,7 @@ static PetscErrorCode MatISFixLocalEmpty_IS(Mat A, PetscBool fix)
           from the asssembled format to the unassembled one. It overestimates the preallocation of MATIS local
           matrices; for exact preallocation, the user should set the preallocation directly on local matrix objects.
 
-.seealso: MatCreate(), MatCreateIS(), MatMPIAIJSetPreallocation(), MatISGetLocalMat(), MATIS
+.seealso: `MatCreate()`, `MatCreateIS()`, `MatMPIAIJSetPreallocation()`, `MatISGetLocalMat()`, `MATIS`
 @*/
 PetscErrorCode MatISSetPreallocation(Mat B,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
 {
@@ -2081,7 +2081,7 @@ general_assembly:
   Notes:
     This function has been deprecated and it will be removed in future releases. Update your code to use the MatConvert() interface.
 
-.seealso: MATIS, MatConvert()
+.seealso: `MATIS`, `MatConvert()`
 @*/
 PetscErrorCode MatISGetMPIXAIJ(Mat mat, MatReuse reuse, Mat *newmat)
 {
@@ -2850,7 +2850,7 @@ static PetscErrorCode MatISRestoreLocalMat_IS(Mat mat,Mat *local)
 
   Call MatISRestoreLocalMat() when finished with the local matrix.
 
-.seealso: MATIS
+.seealso: `MATIS`
 @*/
 PetscErrorCode MatISGetLocalMat(Mat mat,Mat *local)
 {
@@ -2872,7 +2872,7 @@ PetscErrorCode MatISGetLocalMat(Mat mat,Mat *local)
 
   Level: advanced
 
-.seealso: MATIS
+.seealso: `MATIS`
 @*/
 PetscErrorCode MatISRestoreLocalMat(Mat mat,Mat *local)
 {
@@ -2907,7 +2907,7 @@ static PetscErrorCode MatISSetLocalMatType_IS(Mat mat,MatType mtype)
 
   Level: advanced
 
-.seealso: MATIS, MatSetType(), MatType
+.seealso: `MATIS`, `MatSetType()`, `MatType`
 @*/
 PetscErrorCode MatISSetLocalMatType(Mat mat,MatType mtype)
 {
@@ -2961,7 +2961,7 @@ static PetscErrorCode MatISSetLocalMat_IS(Mat mat,Mat local)
     This can be called if you have precomputed the local matrix and
   want to provide it to the matrix object MATIS.
 
-.seealso: MATIS
+.seealso: `MATIS`
 @*/
 PetscErrorCode MatISSetLocalMat(Mat mat,Mat local)
 {
@@ -3152,7 +3152,7 @@ static PetscErrorCode MatSetFromOptions_IS(PetscOptionItems *PetscOptionsObject,
     used in MatMult operations. The sizes of rmap and cmap define the size of the local matrices.
     If rmap (cmap) is NULL, then the local row (column) spaces matches the global space.
 
-.seealso: MATIS, MatSetLocalToGlobalMapping()
+.seealso: `MATIS`, `MatSetLocalToGlobalMapping()`
 @*/
 PetscErrorCode MatCreateIS(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N,ISLocalToGlobalMapping rmap,ISLocalToGlobalMapping cmap,Mat *A)
 {
@@ -3239,7 +3239,7 @@ static PetscErrorCode MatSetPreallocationCOO_IS(Mat A,PetscCount ncoo,const Pets
 
    Level: advanced
 
-.seealso:  MatSetLocalToGlobalMapping()
+.seealso: `MatSetLocalToGlobalMapping()`
 @*/
 PetscErrorCode MatISGetLocalToGlobalMapping(Mat A,ISLocalToGlobalMapping *rmapping,ISLocalToGlobalMapping *cmapping)
 {
@@ -3282,7 +3282,7 @@ static PetscErrorCode MatISGetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMappi
 
   Level: advanced
 
-.seealso: Mat, MatISGetLocalMat(), MatSetLocalToGlobalMapping(), MatISSetPreallocation(), MatCreateIS(), PCBDDC, KSPFETIDP
+.seealso: `Mat`, `MatISGetLocalMat()`, `MatSetLocalToGlobalMapping()`, `MatISSetPreallocation()`, `MatCreateIS()`, `PCBDDC`, `KSPFETIDP`
 
 M*/
 PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat A)

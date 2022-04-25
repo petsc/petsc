@@ -52,7 +52,7 @@ static PetscErrorCode DMRefineHook_DMKSP(DM dm,DM dmc,void *ctx)
 
    Level: developer
 
-.seealso: DMKSPCreate(), DMKSPDestroy()
+.seealso: `DMKSPCreate()`, `DMKSPDestroy()`
 @*/
 PetscErrorCode DMKSPCopy(DMKSP kdm,DMKSP nkdm)
 {
@@ -96,7 +96,7 @@ PetscErrorCode DMKSPCopy(DMKSP kdm,DMKSP nkdm)
    Notes:
    Use DMGetDMKSPWrite() if write access is needed. The DMKSPSetXXX API should be used wherever possible.
 
-.seealso: DMGetDMKSPWrite()
+.seealso: `DMGetDMKSPWrite()`
 @*/
 PetscErrorCode DMGetDMKSP(DM dm,DMKSP *kspdm)
 {
@@ -127,7 +127,7 @@ PetscErrorCode DMGetDMKSP(DM dm,DMKSP *kspdm)
 
    Level: developer
 
-.seealso: DMGetDMKSP()
+.seealso: `DMGetDMKSP()`
 @*/
 PetscErrorCode DMGetDMKSPWrite(DM dm,DMKSP *kspdm)
 {
@@ -164,7 +164,7 @@ PetscErrorCode DMGetDMKSPWrite(DM dm,DMKSP *kspdm)
    Note:
    The context is copied by reference. This function does not ensure that a context exists.
 
-.seealso: DMGetDMKSP(), KSPSetDM()
+.seealso: `DMGetDMKSP()`, `KSPSetDM()`
 @*/
 PetscErrorCode DMCopyDMKSP(DM dmsrc,DM dmdest)
 {
@@ -196,7 +196,7 @@ PetscErrorCode DMCopyDMKSP(DM dmsrc,DM dmdest)
    associated with the DM.  This makes the interface consistent regardless of whether the user interacts with a DM or
    not. If DM took a more central role at some later date, this could become the primary method of setting the matrix.
 
-.seealso: DMKSPSetContext(), DMKSPGetComputeOperators(), KSPSetOperators()
+.seealso: `DMKSPSetContext()`, `DMKSPGetComputeOperators()`, `KSPSetOperators()`
 @*/
 PetscErrorCode DMKSPSetComputeOperators(DM dm,PetscErrorCode (*func)(KSP,Mat,Mat,void*),void *ctx)
 {
@@ -224,7 +224,7 @@ PetscErrorCode DMKSPSetComputeOperators(DM dm,PetscErrorCode (*func)(KSP,Mat,Mat
 
    Level: advanced
 
-.seealso: DMKSPSetContext(), KSPSetComputeOperators(), DMKSPSetComputeOperators()
+.seealso: `DMKSPSetContext()`, `KSPSetComputeOperators()`, `DMKSPSetComputeOperators()`
 @*/
 PetscErrorCode DMKSPGetComputeOperators(DM dm,PetscErrorCode (**func)(KSP,Mat,Mat,void*),void *ctx)
 {
@@ -255,7 +255,7 @@ PetscErrorCode DMKSPGetComputeOperators(DM dm,PetscErrorCode (**func)(KSP,Mat,Ma
    associated with the DM.  This makes the interface consistent regardless of whether the user interacts with a DM or
    not. If DM took a more central role at some later date, this could become the primary method of setting the matrix.
 
-.seealso: DMKSPSetContext(), DMKSPGetComputeRHS(), KSPSetRHS()
+.seealso: `DMKSPSetContext()`, `DMKSPGetComputeRHS()`, `KSPSetRHS()`
 @*/
 PetscErrorCode DMKSPSetComputeRHS(DM dm,PetscErrorCode (*func)(KSP,Vec,void*),void *ctx)
 {
@@ -285,7 +285,7 @@ PetscErrorCode DMKSPSetComputeRHS(DM dm,PetscErrorCode (*func)(KSP,Vec,void*),vo
    KSPSetComputeInitialGuess() is normally used, but it calls this function internally because the user context is actually
    associated with the DM.
 
-.seealso: DMKSPSetContext(), DMKSPGetComputeRHS(), KSPSetRHS()
+.seealso: `DMKSPSetContext()`, `DMKSPGetComputeRHS()`, `KSPSetRHS()`
 @*/
 PetscErrorCode DMKSPSetComputeInitialGuess(DM dm,PetscErrorCode (*func)(KSP,Vec,void*),void *ctx)
 {
@@ -313,7 +313,7 @@ PetscErrorCode DMKSPSetComputeInitialGuess(DM dm,PetscErrorCode (*func)(KSP,Vec,
 
    Level: advanced
 
-.seealso: DMKSPSetContext(), KSPSetComputeRHS(), DMKSPSetComputeRHS()
+.seealso: `DMKSPSetContext()`, `KSPSetComputeRHS()`, `DMKSPSetComputeRHS()`
 @*/
 PetscErrorCode DMKSPGetComputeRHS(DM dm,PetscErrorCode (**func)(KSP,Vec,void*),void *ctx)
 {
@@ -341,7 +341,7 @@ PetscErrorCode DMKSPGetComputeRHS(DM dm,PetscErrorCode (**func)(KSP,Vec,void*),v
 
    Level: advanced
 
-.seealso: DMKSPSetContext(), KSPSetComputeRHS(), DMKSPSetComputeRHS()
+.seealso: `DMKSPSetContext()`, `KSPSetComputeRHS()`, `DMKSPSetComputeRHS()`
 @*/
 PetscErrorCode DMKSPGetComputeInitialGuess(DM dm,PetscErrorCode (**func)(KSP,Vec,void*),void *ctx)
 {

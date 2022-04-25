@@ -21,7 +21,7 @@ PetscBool         AORegisterAllCalled = PETSC_FALSE;
 
   Level: intermediate
 
-.seealso: AOGetType(), AOCreate()
+.seealso: `AOGetType()`, `AOCreate()`
 @*/
 PetscErrorCode  AOSetType(AO ao, AOType method)
 {
@@ -58,7 +58,7 @@ PetscErrorCode  AOSetType(AO ao, AOType method)
 
   Level: intermediate
 
-.seealso: AOSetType(), AOCreate()
+.seealso: `AOSetType()`, `AOCreate()`
 @*/
 PetscErrorCode  AOGetType(AO ao, AOType *type)
 {
@@ -83,7 +83,7 @@ PetscErrorCode  AOGetType(AO ao, AOType *type)
 
   Level: advanced
 
-.seealso:   AOCreate(), AORegisterAll(), AOBASIC, AOADVANCED, AOMAPPING, AOMEMORYSCALABLE
+.seealso: `AOCreate()`, `AORegisterAll()`, `AOBASIC`, `AOADVANCED`, `AOMAPPING`, `AOMEMORYSCALABLE`
 
 @*/
 PetscErrorCode  AORegister(const char sname[], PetscErrorCode (*function)(AO))

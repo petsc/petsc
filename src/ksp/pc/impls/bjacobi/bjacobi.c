@@ -361,7 +361,7 @@ static PetscErrorCode  PCBJacobiGetLocalBlocks_BJacobi(PC pc, PetscInt *blocks, 
 
    Level: advanced
 
-.seealso: PCASMGetSubKSP()
+.seealso: `PCASMGetSubKSP()`
 @*/
 PetscErrorCode  PCBJacobiGetSubKSP(PC pc,PetscInt *n_local,PetscInt *first_local,KSP *ksp[])
 {
@@ -391,7 +391,7 @@ PetscErrorCode  PCBJacobiGetSubKSP(PC pc,PetscInt *n_local,PetscInt *first_local
 
    Level: intermediate
 
-.seealso: PCSetUseAmat(), PCBJacobiSetLocalBlocks()
+.seealso: `PCSetUseAmat()`, `PCBJacobiSetLocalBlocks()`
 @*/
 PetscErrorCode  PCBJacobiSetTotalBlocks(PC pc,PetscInt blocks,const PetscInt lens[])
 {
@@ -417,7 +417,7 @@ PetscErrorCode  PCBJacobiSetTotalBlocks(PC pc,PetscInt blocks,const PetscInt len
 
    Level: intermediate
 
-.seealso: PCSetUseAmat(), PCBJacobiGetLocalBlocks()
+.seealso: `PCSetUseAmat()`, `PCBJacobiGetLocalBlocks()`
 @*/
 PetscErrorCode  PCBJacobiGetTotalBlocks(PC pc, PetscInt *blocks, const PetscInt *lens[])
 {
@@ -447,7 +447,7 @@ PetscErrorCode  PCBJacobiGetTotalBlocks(PC pc, PetscInt *blocks, const PetscInt 
 
    Level: intermediate
 
-.seealso: PCSetUseAmat(), PCBJacobiSetTotalBlocks()
+.seealso: `PCSetUseAmat()`, `PCBJacobiSetTotalBlocks()`
 @*/
 PetscErrorCode  PCBJacobiSetLocalBlocks(PC pc,PetscInt blocks,const PetscInt lens[])
 {
@@ -474,7 +474,7 @@ PetscErrorCode  PCBJacobiSetLocalBlocks(PC pc,PetscInt blocks,const PetscInt len
 
    Level: intermediate
 
-.seealso: PCSetUseAmat(), PCBJacobiGetTotalBlocks()
+.seealso: `PCSetUseAmat()`, `PCBJacobiGetTotalBlocks()`
 @*/
 PetscErrorCode  PCBJacobiGetLocalBlocks(PC pc, PetscInt *blocks, const PetscInt *lens[])
 {
@@ -519,9 +519,9 @@ PetscErrorCode  PCBJacobiGetLocalBlocks(PC pc, PetscInt *blocks, const PetscInt 
 
    Level: beginner
 
-.seealso:  PCCreate(), PCSetType(), PCType, PC,
-           PCASM, PCSetUseAmat(), PCGetUseAmat(), PCBJacobiGetSubKSP(), PCBJacobiSetTotalBlocks(),
-           PCBJacobiSetLocalBlocks(), PCSetModifySubMatrices(), PCJACOBI, PCVPBJACOBI, PCPBJACOBI
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`,
+          `PCASM`, `PCSetUseAmat()`, `PCGetUseAmat()`, `PCBJacobiGetSubKSP()`, `PCBJacobiSetTotalBlocks()`,
+          `PCBJacobiSetLocalBlocks()`, `PCSetModifySubMatrices()`, `PCJACOBI`, `PCVPBJACOBI`, `PCPBJACOBI`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_BJacobi(PC pc)

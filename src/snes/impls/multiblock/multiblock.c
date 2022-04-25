@@ -757,7 +757,7 @@ PetscErrorCode  SNESMultiblockSetType_Default(SNES snes, PCCompositeType type)
   This function is called once per block (it creates a new block each time). Solve options
   for this block will be available under the prefix -multiblock_BLOCKNAME_.
 
-.seealso: SNESMultiblockGetSubSNES(), SNESMULTIBLOCK, SNESMultiblockSetBlockSize(), SNESMultiblockSetIS()
+.seealso: `SNESMultiblockGetSubSNES()`, `SNESMULTIBLOCK`, `SNESMultiblockSetBlockSize()`, `SNESMultiblockSetIS()`
 @*/
 PetscErrorCode SNESMultiblockSetFields(SNES snes, const char name[], PetscInt n, const PetscInt *fields)
 {
@@ -788,7 +788,7 @@ PetscErrorCode SNESMultiblockSetFields(SNES snes, const char name[], PetscInt n,
 
   Level: intermediate
 
-.seealso: SNESMultiblockGetSubSNES(), SNESMULTIBLOCK, SNESMultiblockSetBlockSize()
+.seealso: `SNESMultiblockGetSubSNES()`, `SNESMULTIBLOCK`, `SNESMultiblockSetBlockSize()`
 @*/
 PetscErrorCode SNESMultiblockSetIS(SNES snes, const char name[], IS is)
 {
@@ -814,7 +814,7 @@ PetscErrorCode SNESMultiblockSetIS(SNES snes, const char name[], IS is)
 
   Level: Developer
 
-.seealso: PCCompositeSetType()
+.seealso: `PCCompositeSetType()`
 @*/
 PetscErrorCode SNESMultiblockSetType(SNES snes, PCCompositeType type)
 {
@@ -835,7 +835,7 @@ PetscErrorCode SNESMultiblockSetType(SNES snes, PCCompositeType type)
 
   Level: intermediate
 
-.seealso: SNESMultiblockGetSubSNES(), SNESMULTIBLOCK, SNESMultiblockSetFields()
+.seealso: `SNESMultiblockGetSubSNES()`, `SNESMULTIBLOCK`, `SNESMultiblockSetFields()`
 @*/
 PetscErrorCode SNESMultiblockSetBlockSize(SNES snes, PetscInt bs)
 {
@@ -866,7 +866,7 @@ PetscErrorCode SNESMultiblockSetBlockSize(SNES snes, PetscInt bs)
 
   Level: advanced
 
-.seealso: SNESMULTIBLOCK
+.seealso: `SNESMULTIBLOCK`
 @*/
 PetscErrorCode SNESMultiblockGetSubSNES(SNES snes, PetscInt *n, SNES *subsnes[])
 {
@@ -883,7 +883,7 @@ PetscErrorCode SNESMultiblockGetSubSNES(SNES snes, PetscInt *n, SNES *subsnes[])
 
   Level: beginner
 
-.seealso:  SNESCreate(), SNES, SNESSetType(), SNESNEWTONLS, SNESNEWTONTR, SNESNRICHARDSON
+.seealso: `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONLS`, `SNESNEWTONTR`, `SNESNRICHARDSON`
 M*/
 PETSC_EXTERN PetscErrorCode SNESCreate_Multiblock(SNES snes)
 {

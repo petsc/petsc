@@ -25,7 +25,7 @@
 
     Level: developer
 
-.seealso: PetscCommGetNewTag()
+.seealso: `PetscCommGetNewTag()`
 @*/
 PetscErrorCode  PetscObjectGetNewTag(PetscObject obj,PetscMPIInt *tag)
 {
@@ -50,7 +50,7 @@ PetscErrorCode  PetscObjectGetNewTag(PetscObject obj,PetscMPIInt *tag)
 
     Level: developer
 
-.seealso: PetscObjectGetNewTag(), PetscCommDuplicate()
+.seealso: `PetscObjectGetNewTag()`, `PetscCommDuplicate()`
 @*/
 PetscErrorCode  PetscCommGetNewTag(MPI_Comm comm,PetscMPIInt *tag)
 {
@@ -101,7 +101,7 @@ PetscErrorCode  PetscCommGetNewTag(MPI_Comm comm,PetscMPIInt *tag)
 
 Level: developer
 
-.seealso: PetscObjectGetNewTag(), PetscCommGetNewTag(), PetscCommDestroy(), PetscCommRestoreComm()
+.seealso: `PetscObjectGetNewTag()`, `PetscCommGetNewTag()`, `PetscCommDestroy()`, `PetscCommRestoreComm()`
 @*/
 PetscErrorCode  PetscCommGetComm(MPI_Comm comm_in,MPI_Comm *comm_out)
 {
@@ -138,7 +138,7 @@ PetscErrorCode  PetscCommGetComm(MPI_Comm comm_in,MPI_Comm *comm_out)
 
 Level: developer
 
-.seealso: PetscObjectGetNewTag(), PetscCommGetNewTag(), PetscCommDestroy(), PetscCommRestoreComm()
+.seealso: `PetscObjectGetNewTag()`, `PetscCommGetNewTag()`, `PetscCommDestroy()`, `PetscCommRestoreComm()`
 @*/
 PetscErrorCode PetscCommRestoreComm(MPI_Comm comm_in,MPI_Comm *comm_out)
 {
@@ -187,7 +187,7 @@ PetscErrorCode PetscCommRestoreComm(MPI_Comm comm_in,MPI_Comm *comm_out)
 
 Level: developer
 
-.seealso: PetscObjectGetNewTag(), PetscCommGetNewTag(), PetscCommDestroy()
+.seealso: `PetscObjectGetNewTag()`, `PetscCommGetNewTag()`, `PetscCommDestroy()`
 @*/
 PetscErrorCode  PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,PetscMPIInt *first_tag)
 {
@@ -259,7 +259,7 @@ PetscErrorCode  PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,PetscMPII
 
    Level: developer
 
-.seealso:   PetscCommDuplicate()
+.seealso: `PetscCommDuplicate()`
 @*/
 PetscErrorCode  PetscCommDestroy(MPI_Comm *comm)
 {

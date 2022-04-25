@@ -872,7 +872,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_BlockMat,
 
    Level: intermediate
 
-.seealso: MatCreate(), MatCreateBlockMat(), MatSetValues()
+.seealso: `MatCreate()`, `MatCreateBlockMat()`, `MatSetValues()`
 
 @*/
 PetscErrorCode  MatBlockMatSetPreallocation(Mat B,PetscInt bs,PetscInt nz,const PetscInt nnz[])
@@ -948,7 +948,7 @@ static PetscErrorCode  MatBlockMatSetPreallocation_BlockMat(Mat A,PetscInt bs,Pe
 
   Level: advanced
 
-.seealso: MatCreateBlockMat()
+.seealso: `MatCreateBlockMat()`
 
 M*/
 
@@ -993,7 +993,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_BlockMat(Mat A)
 
    For matrices containing parallel submatrices and variable block sizes, see MATNEST.
 
-.seealso: MATBLOCKMAT, MatCreateNest()
+.seealso: `MATBLOCKMAT`, `MatCreateNest()`
 @*/
 PetscErrorCode  MatCreateBlockMat(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt bs,PetscInt nz,PetscInt *nnz, Mat *A)
 {

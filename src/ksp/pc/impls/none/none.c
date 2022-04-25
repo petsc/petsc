@@ -27,7 +27,7 @@ PetscErrorCode PCMatApply_None(PC pc,Mat X,Mat Y)
   Notes:
     This is implemented by a VecCopy()
 
-.seealso:  PCCreate(), PCSetType(), PCType, PC
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_None(PC pc)

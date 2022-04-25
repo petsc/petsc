@@ -193,7 +193,7 @@ PetscErrorCode  KSPSolve_SYMMLQ(KSP ksp)
 
    Reference: Paige & Saunders, 1975.
 
-.seealso: KSPCreate(), KSPSetType(), KSPType, KSP
+.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_SYMMLQ(KSP ksp)
 {

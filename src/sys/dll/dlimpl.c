@@ -43,7 +43,7 @@ typedef void* dlsymbol_t;
 
    Level: developer
 
-.seealso: PetscDLClose(), PetscDLSym(), PetscDLAddr()
+.seealso: `PetscDLClose()`, `PetscDLSym()`, `PetscDLAddr()`
 @*/
 PetscErrorCode  PetscDLOpen(const char name[],PetscDLMode mode,PetscDLHandle *handle)
 {
@@ -136,7 +136,7 @@ PetscErrorCode  PetscDLOpen(const char name[],PetscDLMode mode,PetscDLHandle *ha
 
   Level: developer
 
-.seealso: PetscDLOpen(), PetscDLSym(), PetscDLAddr()
+.seealso: `PetscDLOpen()`, `PetscDLSym()`, `PetscDLAddr()`
 @*/
 PetscErrorCode  PetscDLClose(PetscDLHandle *handle)
 {
@@ -209,7 +209,7 @@ PetscErrorCode  PetscDLClose(PetscDLHandle *handle)
    In order to be dynamically loadable, the symbol has to be exported as such.  On many UNIX-like
    systems this requires platform-specific linker flags.
 
-.seealso: PetscDLClose(), PetscDLOpen(), PetscDLAddr()
+.seealso: `PetscDLClose()`, `PetscDLOpen()`, `PetscDLAddr()`
 @*/
 PetscErrorCode  PetscDLSym(PetscDLHandle handle,const char symbol[],void **value)
 {
@@ -322,7 +322,7 @@ PetscErrorCode  PetscDLSym(PetscDLHandle handle,const char symbol[],void **value
   In order to be dynamically loadable, the symbol has to be exported as such.  On many UNIX-like
   systems this requires platform-specific linker flags.
 
-.seealso: PetscDLClose(), PetscDLSym(), PetscDLOpen()
+.seealso: `PetscDLClose()`, `PetscDLSym()`, `PetscDLOpen()`
 @*/
 PetscErrorCode PetscDLAddr(void (*func)(void), char **name)
 {

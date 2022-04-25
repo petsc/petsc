@@ -836,7 +836,7 @@ PetscErrorCode MatMkl_CPardisoSetCntl_MKL_CPARDISO(Mat F,PetscInt icntl,PetscInt
    References:
 .  * - Mkl_Pardiso Users' Guide
 
-.seealso: MatGetFactor()
+.seealso: `MatGetFactor()`
 @*/
 PetscErrorCode MatMkl_CPardisoSetCntl(Mat F,PetscInt icntl,PetscInt ival)
 {
@@ -886,7 +886,7 @@ PetscErrorCode MatMkl_CPardisoSetCntl(Mat F,PetscInt icntl,PetscInt ival)
 
     For more information on the options check the MKL_CPARDISO manual
 
-.seealso: PCFactorSetMatSolverType(), MatSolverType
+.seealso: `PCFactorSetMatSolverType()`, `MatSolverType`
 
 M*/
 

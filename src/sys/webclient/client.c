@@ -35,7 +35,7 @@ $    cat newkey.pem newcert.pem > sslclient.pem
     and put the resulting file in either the current directory (with the application) or in the home directory. This seems kind of
     silly but it was all I could figure out.
 
-.seealso: PetscSSLDestroyContext(), PetscHTTPSConnect(), PetscHTTPSRequest()
+.seealso: `PetscSSLDestroyContext()`, `PetscHTTPSConnect()`, `PetscHTTPSRequest()`
 
 @*/
 PetscErrorCode PetscSSLInitializeContext(SSL_CTX **octx)
@@ -95,7 +95,7 @@ PetscErrorCode PetscSSLInitializeContext(SSL_CTX **octx)
 
     Level: advanced
 
-.seealso: PetscSSLInitializeContext(), PetscHTTPSConnect()
+.seealso: `PetscSSLInitializeContext()`, `PetscHTTPSConnect()`
 @*/
 PetscErrorCode PetscSSLDestroyContext(SSL_CTX *ctx)
 {
@@ -176,7 +176,7 @@ static PetscErrorCode PetscHTTPBuildRequest(const char type[],const char url[],c
 
     Level: advanced
 
-.seealso: PetscHTTPRequest(), PetscHTTPSConnect(), PetscSSLInitializeContext(), PetscSSLDestroyContext(), PetscPullJSONValue()
+.seealso: `PetscHTTPRequest()`, `PetscHTTPSConnect()`, `PetscSSLInitializeContext()`, `PetscSSLDestroyContext()`, `PetscPullJSONValue()`
 
 @*/
 PetscErrorCode PetscHTTPSRequest(const char type[],const char url[],const char header[],const char ctype[],const char body[],SSL *ssl,char buff[],size_t buffsize)
@@ -265,7 +265,7 @@ PetscErrorCode PetscHTTPSRequest(const char type[],const char url[],const char h
 
     Level: advanced
 
-.seealso: PetscHTTPSRequest(), PetscOpenSocket(), PetscHTTPSConnect(), PetscPullJSONValue()
+.seealso: `PetscHTTPSRequest()`, `PetscOpenSocket()`, `PetscHTTPSConnect()`, `PetscPullJSONValue()`
 @*/
 PetscErrorCode PetscHTTPRequest(const char type[],const char url[],const char header[],const char ctype[],const char body[],int sock,char buff[],size_t buffsize)
 {
@@ -298,7 +298,7 @@ PetscErrorCode PetscHTTPRequest(const char type[],const char url[],const char he
 
     Level: advanced
 
-.seealso: PetscOpenSocket(), PetscHTTPSRequest(), PetscSSLInitializeContext()
+.seealso: `PetscOpenSocket()`, `PetscHTTPSRequest()`, `PetscSSLInitializeContext()`
 @*/
 PetscErrorCode PetscHTTPSConnect(const char host[],int port,SSL_CTX *ctx,int *sock,SSL **ssl)
 {

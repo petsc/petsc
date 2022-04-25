@@ -23,7 +23,7 @@ PetscBool         ISRegisterAllCalled = PETSC_FALSE;
 
    Level: beginner
 
-.seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock(), ISAllGather()
+.seealso: `ISCreateGeneral()`, `ISCreateStride()`, `ISCreateBlock()`, `ISAllGather()`
 @*/
 PetscErrorCode  ISCreate(MPI_Comm comm,IS *is)
 {
@@ -55,7 +55,7 @@ PetscErrorCode  ISCreate(MPI_Comm comm,IS *is)
 
   Level: intermediate
 
-.seealso: ISGetType(), ISCreate()
+.seealso: `ISGetType()`, `ISCreate()`
 @*/
 PetscErrorCode  ISSetType(IS is, ISType method)
 {
@@ -92,7 +92,7 @@ PetscErrorCode  ISSetType(IS is, ISType method)
 
   Level: intermediate
 
-.seealso: ISSetType(), ISCreate()
+.seealso: `ISSetType()`, `ISCreate()`
 @*/
 PetscErrorCode  ISGetType(IS is, ISType *type)
 {
@@ -140,7 +140,7 @@ PetscErrorCode  ISGetType(IS is, ISType *type)
 
   Level: developer
 
-.seealso: ISRegisterAll(), ISRegisterDestroy(), ISRegister()
+.seealso: `ISRegisterAll()`, `ISRegisterDestroy()`, `ISRegister()`
 
   Level: advanced
 @*/

@@ -42,8 +42,8 @@
 
    Level: beginner
 
-.seealso: VecRestoreKokkosView(), VecRestoreArray(), VecGetKokkosViewWrite(), VecGetArrayRead(), VecGetArrays(), VecGetArrayF90(), VecGetArrayReadF90(), VecPlaceArray(), VecGetArray2d(),
-          VecGetArrayPair(), VecRestoreArrayPair(), VecGetArrayWrite(), VecRestoreArrayWrite()
+.seealso: `VecRestoreKokkosView()`, `VecRestoreArray()`, `VecGetKokkosViewWrite()`, `VecGetArrayRead()`, `VecGetArrays()`, `VecGetArrayF90()`, `VecGetArrayReadF90()`, `VecPlaceArray()`, `VecGetArray2d()`,
+          `VecGetArrayPair()`, `VecRestoreArrayPair()`, `VecGetArrayWrite()`, `VecRestoreArrayWrite()`
 @*/
   template<class MemorySpace> PetscErrorCode VecGetKokkosView (Vec,Kokkos::View<const PetscScalar*,MemorySpace>*);
   template<class MemorySpace> PetscErrorCode VecGetKokkosView (Vec,Kokkos::View<PetscScalar*,MemorySpace>*);
@@ -68,8 +68,8 @@
 
    Level: beginner
 
-.seealso: VecGetKokkosView(), VecRestoreKokkosViewWrite(), VecRestoreArray(), VecGetArrayRead(), VecGetArrays(), VecGetArrayF90(), VecGetArrayReadF90(), VecPlaceArray(), VecGetArray2d(),
-          VecGetArrayPair(), VecRestoreArrayPair(), VecGetArrayWrite(), VecRestoreArrayWrite()
+.seealso: `VecGetKokkosView()`, `VecRestoreKokkosViewWrite()`, `VecRestoreArray()`, `VecGetArrayRead()`, `VecGetArrays()`, `VecGetArrayF90()`, `VecGetArrayReadF90()`, `VecPlaceArray()`, `VecGetArray2d()`,
+          `VecGetArrayPair()`, `VecRestoreArrayPair()`, `VecGetArrayWrite()`, `VecRestoreArrayWrite()`
 @*/
   template<class MemorySpace> PetscErrorCode VecRestoreKokkosView(Vec,Kokkos::View<const PetscScalar*,MemorySpace>*){return 0;}
   template<class MemorySpace> PetscErrorCode VecRestoreKokkosView(Vec,Kokkos::View<PetscScalar*,MemorySpace>*);
@@ -99,8 +99,8 @@
 
    Level: beginner
 
-.seealso: VecRestoreKokkosViewWrite(), VecRestoreKokkosView(), VecGetKokkosView(), VecRestoreArray(), VecGetArrayRead(), VecGetArrays(), VecGetArrayF90(), VecGetArrayReadF90(), VecPlaceArray(), VecGetArray2d(),
-          VecGetArrayPair(), VecRestoreArrayPair(), VecGetArrayWrite(), VecRestoreArrayWrite()
+.seealso: `VecRestoreKokkosViewWrite()`, `VecRestoreKokkosView()`, `VecGetKokkosView()`, `VecRestoreArray()`, `VecGetArrayRead()`, `VecGetArrays()`, `VecGetArrayF90()`, `VecGetArrayReadF90()`, `VecPlaceArray()`, `VecGetArray2d()`,
+          `VecGetArrayPair()`, `VecRestoreArrayPair()`, `VecGetArrayWrite()`, `VecRestoreArrayWrite()`
 @*/
   template<class MemorySpace> PetscErrorCode VecGetKokkosViewWrite    (Vec,Kokkos::View<PetscScalar*,MemorySpace>*);
 
@@ -123,8 +123,8 @@
 
    Level: beginner
 
-.seealso: VecGetKokkosViewWrite(), VecGetKokkosView(), VecGetKokkosView(), VecRestoreArray(), VecGetArrayRead(), VecGetArrays(), VecGetArrayF90(), VecGetArrayReadF90(), VecPlaceArray(), VecGetArray2d(),
-          VecGetArrayPair(), VecRestoreArrayPair(), VecGetArrayWrite(), VecRestoreArrayWrite()
+.seealso: `VecGetKokkosViewWrite()`, `VecGetKokkosView()`, `VecGetKokkosView()`, `VecRestoreArray()`, `VecGetArrayRead()`, `VecGetArrays()`, `VecGetArrayF90()`, `VecGetArrayReadF90()`, `VecPlaceArray()`, `VecGetArray2d()`,
+          `VecGetArrayPair()`, `VecRestoreArrayPair()`, `VecGetArrayWrite()`, `VecRestoreArrayWrite()`
 @*/
   template<class MemorySpace> PetscErrorCode VecRestoreKokkosViewWrite(Vec,Kokkos::View<PetscScalar*,MemorySpace>*);
 

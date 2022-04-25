@@ -21,7 +21,7 @@ static PetscErrorCode TaoSetUp_BQNKTL(Tao tao)
               accessed via the prefix `-tao_bqnk_`. For options database, see TAOBNK
 
   Level: beginner
-.seealso TAOBNK, TAOBQNKTR, TAOBQNKLS
+.seealso `TAOBNK`, `TAOBQNKTR`, `TAOBQNKLS`
 M*/
 PETSC_EXTERN PetscErrorCode TaoCreate_BQNKTL(Tao tao)
 {

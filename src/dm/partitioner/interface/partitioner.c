@@ -21,7 +21,7 @@ $ PETSCPARTITIONERGATHER   - Gathers all cells onto process 0
 
   Level: intermediate
 
-.seealso: PetscPartitionerGetType(), PetscPartitionerCreate()
+.seealso: `PetscPartitionerGetType()`, `PetscPartitionerCreate()`
 @*/
 PetscErrorCode PetscPartitionerSetType(PetscPartitioner part, PetscPartitionerType name)
 {
@@ -60,7 +60,7 @@ PetscErrorCode PetscPartitionerSetType(PetscPartitioner part, PetscPartitionerTy
 
   Level: intermediate
 
-.seealso: PetscPartitionerSetType(), PetscPartitionerCreate()
+.seealso: `PetscPartitionerSetType()`, `PetscPartitionerCreate()`
 @*/
 PetscErrorCode PetscPartitionerGetType(PetscPartitioner part, PetscPartitionerType *name)
 {
@@ -82,7 +82,7 @@ PetscErrorCode PetscPartitionerGetType(PetscPartitioner part, PetscPartitionerTy
 -  name - command line option
 
    Level: intermediate
-.seealso:  PetscPartitionerView(), PetscObjectViewFromOptions()
+.seealso: `PetscPartitionerView()`, `PetscObjectViewFromOptions()`
 @*/
 PetscErrorCode PetscPartitionerViewFromOptions(PetscPartitioner A,PetscObject obj,const char name[])
 {
@@ -103,7 +103,7 @@ PetscErrorCode PetscPartitionerViewFromOptions(PetscPartitioner A,PetscObject ob
 
   Level: developer
 
-.seealso: PetscPartitionerDestroy()
+.seealso: `PetscPartitionerDestroy()`
 @*/
 PetscErrorCode PetscPartitionerView(PetscPartitioner part, PetscViewer v)
 {
@@ -163,7 +163,7 @@ static PetscErrorCode PetscPartitionerGetDefaultType(MPI_Comm comm, const char *
 
   Level: developer
 
-.seealso: PetscPartitionerView(), PetscPartitionerSetType(), PetscPartitionerPartition()
+.seealso: `PetscPartitionerView()`, `PetscPartitionerSetType()`, `PetscPartitionerPartition()`
 @*/
 PetscErrorCode PetscPartitionerSetFromOptions(PetscPartitioner part)
 {
@@ -203,7 +203,7 @@ PetscErrorCode PetscPartitionerSetFromOptions(PetscPartitioner part)
 
   Level: developer
 
-.seealso: PetscPartitionerView(), PetscPartitionerDestroy()
+.seealso: `PetscPartitionerView()`, `PetscPartitionerDestroy()`
 @*/
 PetscErrorCode PetscPartitionerSetUp(PetscPartitioner part)
 {
@@ -223,7 +223,7 @@ PetscErrorCode PetscPartitionerSetUp(PetscPartitioner part)
 
   Level: developer
 
-.seealso: PetscPartitionerSetUp(), PetscPartitionerDestroy()
+.seealso: `PetscPartitionerSetUp()`, `PetscPartitionerDestroy()`
 @*/
 PetscErrorCode PetscPartitionerReset(PetscPartitioner part)
 {
@@ -243,7 +243,7 @@ PetscErrorCode PetscPartitionerReset(PetscPartitioner part)
 
   Level: developer
 
-.seealso: PetscPartitionerView()
+.seealso: `PetscPartitionerView()`
 @*/
 PetscErrorCode PetscPartitionerDestroy(PetscPartitioner *part)
 {
@@ -291,7 +291,7 @@ PetscErrorCode PetscPartitionerDestroy(PetscPartitioner *part)
 
   Level: developer
 
-.seealso PetscPartitionerCreate(), PetscPartitionerSetType(), PetscSectionCreate(), PetscSectionSetChart(), PetscSectionSetDof()
+.seealso `PetscPartitionerCreate()`, `PetscPartitionerSetType()`, `PetscSectionCreate()`, `PetscSectionSetChart()`, `PetscSectionSetDof()`
 @*/
 PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertexSection, PetscSection targetSection, PetscSection partSection, IS *partition)
 {
@@ -374,7 +374,7 @@ PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, PetscInt nparts,
 
   Level: beginner
 
-.seealso: PetscPartitionerSetType(), PetscPartitionerDestroy()
+.seealso: `PetscPartitionerSetType()`, `PetscPartitionerDestroy()`
 @*/
 PetscErrorCode PetscPartitionerCreate(MPI_Comm comm, PetscPartitioner *part)
 {

@@ -28,7 +28,7 @@ $    is1 = {0, 1} {2, 3}
 $    is2 = {2, 3} {0, 1}
    will return false.
 
-.seealso: ISEqualUnsorted()
+.seealso: `ISEqualUnsorted()`
 @*/
 PetscErrorCode  ISEqual(IS is1,IS is2,PetscBool  *flg)
 {
@@ -107,7 +107,7 @@ PetscErrorCode  ISEqual(IS is1,IS is2,PetscBool  *flg)
    Unlike ISEqual(), this routine does NOT sort the contents of the index sets before
    the comparison is made, i.e., the order of indices is important.
 
-.seealso: ISEqual()
+.seealso: `ISEqual()`
 @*/
 PetscErrorCode  ISEqualUnsorted(IS is1,IS is2,PetscBool  *flg)
 {

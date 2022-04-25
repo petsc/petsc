@@ -13,7 +13,7 @@
 
    Level: developer
 
-.seealso:   PetscViewerVTKAddField()
+.seealso: `PetscViewerVTKAddField()`
 M*/
 
 /*@C
@@ -35,7 +35,7 @@ M*/
 
    Level: developer
 
-.seealso: PetscViewerVTKOpen(), DMDAVTKWriteAll(), PetscViewerVTKWriteFunction, PetscViewerVTKGetDM()
+.seealso: `PetscViewerVTKOpen()`, `DMDAVTKWriteAll()`, `PetscViewerVTKWriteFunction`, `PetscViewerVTKGetDM()`
 @*/
 PetscErrorCode PetscViewerVTKAddField(PetscViewer viewer,PetscObject dm,PetscErrorCode (*PetscViewerVTKWriteFunction)(PetscObject,PetscViewer),PetscInt fieldnum,PetscViewerVTKFieldType fieldtype,PetscBool checkdm,PetscObject vec)
 {
@@ -58,7 +58,7 @@ PetscErrorCode PetscViewerVTKAddField(PetscViewer viewer,PetscObject dm,PetscErr
 
    Level: developer
 
-.seealso: PetscViewerVTKOpen(), DMDAVTKWriteAll(), PetscViewerVTKWriteFunction, PetscViewerVTKAddField()
+.seealso: `PetscViewerVTKOpen()`, `DMDAVTKWriteAll()`, `PetscViewerVTKWriteFunction`, `PetscViewerVTKAddField()`
 @*/
 PetscErrorCode PetscViewerVTKGetDM(PetscViewer viewer,PetscObject *dm)
 {
@@ -202,10 +202,10 @@ PetscErrorCode PetscViewerVTKGetDM_VTK(PetscViewer viewer,PetscObject *dm)
 /*MC
    PETSCVIEWERVTK - A viewer that writes to a VTK file
 
-.seealso:  PetscViewerVTKOpen(), PetscViewerHDF5Open(), PetscViewerStringSPrintf(), PetscViewerSocketOpen(), PetscViewerDrawOpen(), PETSCVIEWERSOCKET,
-           PetscViewerCreate(), PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), PETSCVIEWERBINARY, PETSCVIEWERDRAW, PETSCVIEWERSTRING,
-           PetscViewerMatlabOpen(), VecView(), DMView(), PetscViewerMatlabPutArray(), PETSCVIEWERASCII, PETSCVIEWERMATLAB,
-           PetscViewerFileSetName(), PetscViewerFileSetMode(), PetscViewerFormat, PetscViewerType, PetscViewerSetType()
+.seealso: `PetscViewerVTKOpen()`, `PetscViewerHDF5Open()`, `PetscViewerStringSPrintf()`, `PetscViewerSocketOpen()`, `PetscViewerDrawOpen()`, `PETSCVIEWERSOCKET`,
+          `PetscViewerCreate()`, `PetscViewerASCIIOpen()`, `PetscViewerBinaryOpen()`, `PETSCVIEWERBINARY`, `PETSCVIEWERDRAW`, `PETSCVIEWERSTRING`,
+          `PetscViewerMatlabOpen()`, `VecView()`, `DMView()`, `PetscViewerMatlabPutArray()`, `PETSCVIEWERASCII`, `PETSCVIEWERMATLAB`,
+          `PetscViewerFileSetName()`, `PetscViewerFileSetMode()`, `PetscViewerFormat`, `PetscViewerType`, `PetscViewerSetType()`
 
   Level: beginner
 M*/
@@ -253,9 +253,9 @@ $    FILE_MODE_APPEND - open existing file for binary output (not currently supp
    Note:
    This PetscViewer should be destroyed with PetscViewerDestroy().
 
-.seealso: PetscViewerASCIIOpen(), PetscViewerPushFormat(), PetscViewerDestroy(),
-          VecView(), MatView(), VecLoad(), MatLoad(),
-          PetscFileMode, PetscViewer
+.seealso: `PetscViewerASCIIOpen()`, `PetscViewerPushFormat()`, `PetscViewerDestroy()`,
+          `VecView()`, `MatView()`, `VecLoad()`, `MatLoad()`,
+          `PetscFileMode`, `PetscViewer`
 @*/
 PetscErrorCode PetscViewerVTKOpen(MPI_Comm comm,const char name[],PetscFileMode type,PetscViewer *vtk)
 {
@@ -284,7 +284,7 @@ PetscErrorCode PetscViewerVTKOpen(MPI_Comm comm,const char name[],PetscFileMode 
    Notes:
     If PetscScalar is __float128 then the binary files are written in double precision
 
-.seealso: DMDAVTKWriteAll(), DMPlexVTKWriteAll(), PetscViewerPushFormat(), PetscViewerVTKOpen(), PetscBinaryWrite()
+.seealso: `DMDAVTKWriteAll()`, `DMPlexVTKWriteAll()`, `PetscViewerPushFormat()`, `PetscViewerVTKOpen()`, `PetscBinaryWrite()`
 @*/
 PetscErrorCode PetscViewerVTKFWrite(PetscViewer viewer,FILE *fp,const void *data,PetscInt n,MPI_Datatype dtype)
 {

@@ -9,7 +9,7 @@
    Notes:
     The DMDACreate() based object and the DMCompositeCreate() based object are examples of DMs
 
-.seealso:  DMCompositeCreate(), DMDACreate(), DMSetType(), DMType
+.seealso: `DMCompositeCreate()`, `DMDACreate()`, `DMSetType()`, `DMType`
 S*/
 typedef struct _p_DM* DM;
 
@@ -37,7 +37,7 @@ typedef struct _p_DM* DM;
   References:
 . * -  https://scicomp.stackexchange.com/questions/5355/writing-the-poisson-equation-finite-difference-matrix-with-neumann-boundary-cond
 
-.seealso: DMDASetBoundaryType(), DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMDACreate()
+.seealso: `DMDASetBoundaryType()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMDACreate()`
 E*/
 typedef enum {DM_BOUNDARY_NONE, DM_BOUNDARY_GHOSTED, DM_BOUNDARY_MIRROR, DM_BOUNDARY_PERIODIC, DM_BOUNDARY_TWIST} DMBoundaryType;
 /*E
@@ -55,7 +55,7 @@ natural conditions (type & DM_BC_NATURAL)
 
   Level: beginner
 
-.seealso: DMAddBoundary(), DSAddBoundary(), DSGetBoundary()
+.seealso: `DMAddBoundary()`, `DSAddBoundary()`, `DSGetBoundary()`
 E*/
 typedef enum {DM_BC_ESSENTIAL = 1, DM_BC_ESSENTIAL_FIELD = 5, DM_BC_NATURAL = 2, DM_BC_NATURAL_FIELD = 6, DM_BC_ESSENTIAL_BD_FIELD = 9, DM_BC_NATURAL_RIEMANN = 10} DMBoundaryConditionType;
 
@@ -69,7 +69,7 @@ typedef enum {DM_BC_ESSENTIAL = 1, DM_BC_ESSENTIAL_FIELD = 5, DM_BC_NATURAL = 2,
   used, replacing the given point in the input vector. DM_POINTLOCATION_REMOVE returns values only for points
   which were located.
 
-.seealso: DMLocatePoints()
+.seealso: `DMLocatePoints()`
 E*/
 typedef enum {DM_POINTLOCATION_NONE, DM_POINTLOCATION_NEAREST, DM_POINTLOCATION_REMOVE} DMPointLocationType;
 
@@ -82,7 +82,7 @@ typedef enum {DM_POINTLOCATION_NONE, DM_POINTLOCATION_NEAREST, DM_POINTLOCATION_
   mesh based on a sequence of solves, much like grid sequencing. DM_ADAPTATION_MULTILEVEL will use the sequence
   of constructed meshes in a multilevel solve, much like the Systematic Upscaling of Brandt.
 
-.seealso: DMAdaptorSolve()
+.seealso: `DMAdaptorSolve()`
 E*/
 typedef enum {DM_ADAPTATION_INITIAL, DM_ADAPTATION_SEQUENTIAL, DM_ADAPTATION_MULTILEVEL} DMAdaptationStrategy;
 
@@ -96,7 +96,7 @@ typedef enum {DM_ADAPTATION_INITIAL, DM_ADAPTATION_SEQUENTIAL, DM_ADAPTATION_MUL
   mesh the manifold described by the input metric tensor uniformly. PETSc can also construct such a metric based
   upon an input primal or a gradient field.
 
-.seealso: DMAdaptorSolve()
+.seealso: `DMAdaptorSolve()`
 E*/
 typedef enum {DM_ADAPTATION_NONE, DM_ADAPTATION_REFINE, DM_ADAPTATION_LABEL, DM_ADAPTATION_METRIC} DMAdaptationCriterion;
 
@@ -105,7 +105,7 @@ typedef enum {DM_ADAPTATION_NONE, DM_ADAPTATION_REFINE, DM_ADAPTATION_LABEL, DM_
 
   Level: beginner
 
-.seealso: DMAdaptLabel()
+.seealso: `DMAdaptLabel()`
 E*/
 typedef enum {DM_ADAPT_DETERMINE = PETSC_DETERMINE, DM_ADAPT_KEEP = 0, DM_ADAPT_REFINE, DM_ADAPT_COARSEN, DM_ADAPT_COARSEN_LAST, DM_ADAPT_RESERVED_COUNT} DMAdaptFlag;
 
@@ -114,7 +114,7 @@ typedef enum {DM_ADAPT_DETERMINE = PETSC_DETERMINE, DM_ADAPT_KEEP = 0, DM_ADAPT_
 
   Level: beginner
 
-.seealso: DMDAGetRay(), DMDAGetProcessorSubset(), DMPlexShearGeometry()
+.seealso: `DMDAGetRay()`, `DMDAGetProcessorSubset()`, `DMPlexShearGeometry()`
 E*/
 typedef enum {DM_X, DM_Y, DM_Z} DMDirection;
 
@@ -128,7 +128,7 @@ the situation is reversed, and dmA has boundary dmB, it would be labeled DM_ENC_
 a subregion of dmB, it would be labeled DM_ENC_SUBMESH. If no relation can be determined, DM_ENC_NONE is used.
 If a relation is not yet known, then DM_ENC_UNKNOWN is used.
 
-.seealso: DMGetEnclosureRelation()
+.seealso: `DMGetEnclosureRelation()`
 E*/
 typedef enum {DM_ENC_EQUALITY, DM_ENC_SUPERMESH, DM_ENC_SUBMESH, DM_ENC_NONE, DM_ENC_UNKNOWN} DMEnclosureType;
 
@@ -143,7 +143,7 @@ typedef enum {DM_ENC_EQUALITY, DM_ENC_SUPERMESH, DM_ENC_SUBMESH, DM_ENC_NONE, DM
   constituent points. Normally these types are autoamtically inferred and the user does not specify
   them.
 
-.seealso: DMPlexComputeCellTypes()
+.seealso: `DMPlexComputeCellTypes()`
 E*/
 typedef enum {DM_POLYTOPE_POINT, DM_POLYTOPE_SEGMENT, DM_POLYTOPE_POINT_PRISM_TENSOR, DM_POLYTOPE_TRIANGLE, DM_POLYTOPE_QUADRILATERAL, DM_POLYTOPE_SEG_PRISM_TENSOR, DM_POLYTOPE_TETRAHEDRON, DM_POLYTOPE_HEXAHEDRON, DM_POLYTOPE_TRI_PRISM, DM_POLYTOPE_TRI_PRISM_TENSOR, DM_POLYTOPE_QUAD_PRISM_TENSOR, DM_POLYTOPE_PYRAMID, DM_POLYTOPE_FV_GHOST, DM_POLYTOPE_INTERIOR_GHOST, DM_POLYTOPE_UNKNOWN, DM_NUM_POLYTOPES} DMPolytopeType;
 PETSC_EXTERN const char *const DMPolytopeTypes[];
@@ -153,7 +153,7 @@ PETSC_EXTERN const char *const DMPolytopeTypes[];
 
   Level: beginner
 
-.seealso: DMPlexGetScale(), DMPlexSetScale()
+.seealso: `DMPlexGetScale()`, `DMPlexSetScale()`
 E*/
 typedef enum {PETSC_UNIT_LENGTH, PETSC_UNIT_MASS, PETSC_UNIT_TIME, PETSC_UNIT_CURRENT, PETSC_UNIT_TEMPERATURE, PETSC_UNIT_AMOUNT, PETSC_UNIT_LUMINOSITY, NUM_PETSC_UNITS} PetscUnit;
 

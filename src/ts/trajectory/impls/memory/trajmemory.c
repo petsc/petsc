@@ -1973,7 +1973,7 @@ PetscErrorCode TSTrajectoryMemorySetType(TSTrajectory tj,TSTrajectoryMemoryType 
 
   Level: intermediate
 
-.seealso: TSTrajectorySetMaxUnitsRAM()
+.seealso: `TSTrajectorySetMaxUnitsRAM()`
 @*/
 PetscErrorCode TSTrajectorySetMaxCpsRAM(TSTrajectory tj,PetscInt max_cps_ram)
 {
@@ -1995,7 +1995,7 @@ PetscErrorCode TSTrajectorySetMaxCpsRAM(TSTrajectory tj,PetscInt max_cps_ram)
 
   Level: intermediate
 
-.seealso: TSTrajectorySetMaxUnitsDisk(), TSTrajectorySetMaxUnitsRAM()
+.seealso: `TSTrajectorySetMaxUnitsDisk()`, `TSTrajectorySetMaxUnitsRAM()`
 @*/
 PetscErrorCode TSTrajectorySetMaxCpsDisk(TSTrajectory tj,PetscInt max_cps_disk)
 {
@@ -2017,7 +2017,7 @@ PetscErrorCode TSTrajectorySetMaxCpsDisk(TSTrajectory tj,PetscInt max_cps_disk)
 
   Level: intermediate
 
-.seealso: TSTrajectorySetMaxCpsRAM()
+.seealso: `TSTrajectorySetMaxCpsRAM()`
 @*/
 PetscErrorCode TSTrajectorySetMaxUnitsRAM(TSTrajectory tj,PetscInt max_units_ram)
 {
@@ -2039,7 +2039,7 @@ PetscErrorCode TSTrajectorySetMaxUnitsRAM(TSTrajectory tj,PetscInt max_units_ram
 
   Level: intermediate
 
-.seealso: TSTrajectorySetMaxCpsDisk()
+.seealso: `TSTrajectorySetMaxCpsDisk()`
 @*/
 PetscErrorCode TSTrajectorySetMaxUnitsDisk(TSTrajectory tj,PetscInt max_units_disk)
 {
@@ -2318,7 +2318,7 @@ static PetscErrorCode TSTrajectoryDestroy_Memory(TSTrajectory tj)
 
   Level: intermediate
 
-.seealso:  TSTrajectoryCreate(), TS, TSTrajectorySetType()
+.seealso: `TSTrajectoryCreate()`, `TS`, `TSTrajectorySetType()`
 
 M*/
 PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Memory(TSTrajectory tj,TS ts)

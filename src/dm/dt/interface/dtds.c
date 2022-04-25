@@ -49,7 +49,7 @@ PetscBool         PetscDSRegisterAllCalled = PETSC_FALSE;
 
    Not available from Fortran
 
-.seealso: PetscDSRegisterAll(), PetscDSRegisterDestroy()
+.seealso: `PetscDSRegisterAll()`, `PetscDSRegisterDestroy()`
 
 @*/
 PetscErrorCode PetscDSRegister(const char sname[], PetscErrorCode (*function)(PetscDS))
@@ -75,7 +75,7 @@ PetscErrorCode PetscDSRegister(const char sname[], PetscErrorCode (*function)(Pe
 
    Not available from Fortran
 
-.seealso: PetscDSGetType(), PetscDSCreate()
+.seealso: `PetscDSGetType()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSSetType(PetscDS prob, PetscDSType name)
 {
@@ -115,7 +115,7 @@ PetscErrorCode PetscDSSetType(PetscDS prob, PetscDSType name)
 
    Not available from Fortran
 
-.seealso: PetscDSSetType(), PetscDSCreate()
+.seealso: `PetscDSSetType()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSGetType(PetscDS prob, PetscDSType *name)
 {
@@ -245,7 +245,7 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS ds, PetscViewer viewer)
 -  name - command line option
 
    Level: intermediate
-.seealso:  PetscDS, PetscDSView, PetscObjectViewFromOptions(), PetscDSCreate()
+.seealso: `PetscDS`, `PetscDSView`, `PetscObjectViewFromOptions()`, `PetscDSCreate()`
 @*/
 PetscErrorCode  PetscDSViewFromOptions(PetscDS A,PetscObject obj,const char name[])
 {
@@ -266,7 +266,7 @@ PetscErrorCode  PetscDSViewFromOptions(PetscDS A,PetscObject obj,const char name
 
   Level: developer
 
-.seealso PetscDSDestroy()
+.seealso `PetscDSDestroy()`
 @*/
 PetscErrorCode PetscDSView(PetscDS prob, PetscViewer v)
 {
@@ -299,7 +299,7 @@ PetscErrorCode PetscDSView(PetscDS prob, PetscViewer v)
 
   Level: developer
 
-.seealso PetscDSView()
+.seealso `PetscDSView()`
 @*/
 PetscErrorCode PetscDSSetFromOptions(PetscDS prob)
 {
@@ -369,7 +369,7 @@ PetscErrorCode PetscDSSetFromOptions(PetscDS prob)
 
   Level: developer
 
-.seealso PetscDSView(), PetscDSDestroy()
+.seealso `PetscDSView()`, `PetscDSDestroy()`
 @*/
 PetscErrorCode PetscDSSetUp(PetscDS prob)
 {
@@ -527,7 +527,7 @@ static PetscErrorCode PetscDSEnlarge_Static(PetscDS prob, PetscInt NfNew)
 
   Level: developer
 
-.seealso PetscDSView()
+.seealso `PetscDSView()`
 @*/
 PetscErrorCode PetscDSDestroy(PetscDS *ds)
 {
@@ -574,7 +574,7 @@ PetscErrorCode PetscDSDestroy(PetscDS *ds)
 
   Level: beginner
 
-.seealso: PetscDSSetType(), PETSCDSBASIC
+.seealso: `PetscDSSetType()`, `PETSCDSBASIC`
 @*/
 PetscErrorCode PetscDSCreate(MPI_Comm comm, PetscDS *ds)
 {
@@ -612,7 +612,7 @@ PetscErrorCode PetscDSCreate(MPI_Comm comm, PetscDS *ds)
 
   Level: beginner
 
-.seealso: PetscDSGetSpatialDimension(), PetscDSCreate()
+.seealso: `PetscDSGetSpatialDimension()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSGetNumFields(PetscDS prob, PetscInt *Nf)
 {
@@ -636,7 +636,7 @@ PetscErrorCode PetscDSGetNumFields(PetscDS prob, PetscInt *Nf)
 
   Level: beginner
 
-.seealso: PetscDSGetCoordinateDimension(), PetscDSGetNumFields(), PetscDSCreate()
+.seealso: `PetscDSGetCoordinateDimension()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSGetSpatialDimension(PetscDS prob, PetscInt *dim)
 {
@@ -672,7 +672,7 @@ PetscErrorCode PetscDSGetSpatialDimension(PetscDS prob, PetscInt *dim)
 
   Level: beginner
 
-.seealso: PetscDSSetCoordinateDimension(), PetscDSGetSpatialDimension(), PetscDSGetNumFields(), PetscDSCreate()
+.seealso: `PetscDSSetCoordinateDimension()`, `PetscDSGetSpatialDimension()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSGetCoordinateDimension(PetscDS prob, PetscInt *dimEmbed)
 {
@@ -695,7 +695,7 @@ PetscErrorCode PetscDSGetCoordinateDimension(PetscDS prob, PetscInt *dimEmbed)
 
   Level: beginner
 
-.seealso: PetscDSGetCoordinateDimension(), PetscDSGetSpatialDimension(), PetscDSGetNumFields(), PetscDSCreate()
+.seealso: `PetscDSGetCoordinateDimension()`, `PetscDSGetSpatialDimension()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSSetCoordinateDimension(PetscDS prob, PetscInt dimEmbed)
 {
@@ -719,7 +719,7 @@ PetscErrorCode PetscDSSetCoordinateDimension(PetscDS prob, PetscInt dimEmbed)
 
   Level: developer
 
-.seealso: PetscDSGetNumCohesive(), PetscDSGetCohesive(), PetscDSSetCohesive(), PetscDSCreate()
+.seealso: `PetscDSGetNumCohesive()`, `PetscDSGetCohesive()`, `PetscDSSetCohesive()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSIsCohesive(PetscDS ds, PetscBool *isCohesive)
 {
@@ -743,7 +743,7 @@ PetscErrorCode PetscDSIsCohesive(PetscDS ds, PetscBool *isCohesive)
 
   Level: developer
 
-.seealso: PetscDSSetCohesive(), PetscDSCreate()
+.seealso: `PetscDSSetCohesive()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSGetNumCohesive(PetscDS ds, PetscInt *numCohesive)
 {
@@ -771,7 +771,7 @@ PetscErrorCode PetscDSGetNumCohesive(PetscDS ds, PetscInt *numCohesive)
 
   Level: developer
 
-.seealso: PetscDSSetCohesive(), PetscDSIsCohesive(), PetscDSCreate()
+.seealso: `PetscDSSetCohesive()`, `PetscDSIsCohesive()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSGetCohesive(PetscDS ds, PetscInt f, PetscBool *isCohesive)
 {
@@ -795,7 +795,7 @@ PetscErrorCode PetscDSGetCohesive(PetscDS ds, PetscInt f, PetscBool *isCohesive)
 
   Level: developer
 
-.seealso: PetscDSGetCohesive(), PetscDSIsCohesive(), PetscDSCreate()
+.seealso: `PetscDSGetCohesive()`, `PetscDSIsCohesive()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSSetCohesive(PetscDS ds, PetscInt f, PetscBool isCohesive)
 {
@@ -823,7 +823,7 @@ PetscErrorCode PetscDSSetCohesive(PetscDS ds, PetscInt f, PetscBool isCohesive)
 
   Level: beginner
 
-.seealso: PetscDSGetNumFields(), PetscDSCreate()
+.seealso: `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSGetTotalDimension(PetscDS prob, PetscInt *dim)
 {
@@ -848,7 +848,7 @@ PetscErrorCode PetscDSGetTotalDimension(PetscDS prob, PetscInt *dim)
 
   Level: beginner
 
-.seealso: PetscDSGetNumFields(), PetscDSCreate()
+.seealso: `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSGetTotalComponents(PetscDS prob, PetscInt *Nc)
 {
@@ -874,7 +874,7 @@ PetscErrorCode PetscDSGetTotalComponents(PetscDS prob, PetscInt *Nc)
 
   Level: beginner
 
-.seealso: PetscDSSetDiscretization(), PetscDSAddDiscretization(), PetscDSGetNumFields(), PetscDSCreate()
+.seealso: `PetscDSSetDiscretization()`, `PetscDSAddDiscretization()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSGetDiscretization(PetscDS prob, PetscInt f, PetscObject *disc)
 {
@@ -898,7 +898,7 @@ PetscErrorCode PetscDSGetDiscretization(PetscDS prob, PetscInt f, PetscObject *d
 
   Level: beginner
 
-.seealso: PetscDSGetDiscretization(), PetscDSAddDiscretization(), PetscDSGetNumFields(), PetscDSCreate()
+.seealso: `PetscDSGetDiscretization()`, `PetscDSAddDiscretization()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSSetDiscretization(PetscDS prob, PetscInt f, PetscObject disc)
 {
@@ -937,7 +937,7 @@ PetscErrorCode PetscDSSetDiscretization(PetscDS prob, PetscInt f, PetscObject di
 
   Level: beginner
 
-.seealso: PetscDSSetWeakForm(), PetscDSGetNumFields(), PetscDSCreate()
+.seealso: `PetscDSSetWeakForm()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSGetWeakForm(PetscDS ds, PetscWeakForm *wf)
 {
@@ -959,7 +959,7 @@ PetscErrorCode PetscDSGetWeakForm(PetscDS ds, PetscWeakForm *wf)
 
   Level: beginner
 
-.seealso: PetscDSGetWeakForm(), PetscDSGetNumFields(), PetscDSCreate()
+.seealso: `PetscDSGetWeakForm()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSSetWeakForm(PetscDS ds, PetscWeakForm wf)
 {
@@ -984,7 +984,7 @@ PetscErrorCode PetscDSSetWeakForm(PetscDS ds, PetscWeakForm wf)
 
   Level: beginner
 
-.seealso: PetscDSGetDiscretization(), PetscDSSetDiscretization(), PetscDSGetNumFields(), PetscDSCreate()
+.seealso: `PetscDSGetDiscretization()`, `PetscDSSetDiscretization()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSAddDiscretization(PetscDS prob, PetscObject disc)
 {
@@ -1006,7 +1006,7 @@ PetscErrorCode PetscDSAddDiscretization(PetscDS prob, PetscObject disc)
 
 Level: intermediate
 
-.seealso: PetscDSSetImplicit(), PetscDSSetDiscretization(), PetscDSAddDiscretization(), PetscDSGetNumFields(), PetscDSCreate()
+.seealso: `PetscDSSetImplicit()`, `PetscDSSetDiscretization()`, `PetscDSAddDiscretization()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSGetQuadrature(PetscDS prob, PetscQuadrature *q)
 {
@@ -1038,7 +1038,7 @@ PetscErrorCode PetscDSGetQuadrature(PetscDS prob, PetscQuadrature *q)
 
   Level: developer
 
-.seealso: PetscDSSetImplicit(), PetscDSSetDiscretization(), PetscDSAddDiscretization(), PetscDSGetNumFields(), PetscDSCreate()
+.seealso: `PetscDSSetImplicit()`, `PetscDSSetDiscretization()`, `PetscDSAddDiscretization()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSGetImplicit(PetscDS prob, PetscInt f, PetscBool *implicit)
 {
@@ -1062,7 +1062,7 @@ PetscErrorCode PetscDSGetImplicit(PetscDS prob, PetscInt f, PetscBool *implicit)
 
   Level: developer
 
-.seealso: PetscDSGetImplicit(), PetscDSSetDiscretization(), PetscDSAddDiscretization(), PetscDSGetNumFields(), PetscDSCreate()
+.seealso: `PetscDSGetImplicit()`, `PetscDSSetDiscretization()`, `PetscDSAddDiscretization()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSSetImplicit(PetscDS prob, PetscInt f, PetscBool implicit)
 {
@@ -1087,7 +1087,7 @@ PetscErrorCode PetscDSSetImplicit(PetscDS prob, PetscInt f, PetscBool implicit)
 
   Level: developer
 
-.seealso: PetscDSSetJetDegree(), PetscDSSetDiscretization(), PetscDSAddDiscretization(), PetscDSGetNumFields(), PetscDSCreate()
+.seealso: `PetscDSSetJetDegree()`, `PetscDSSetDiscretization()`, `PetscDSAddDiscretization()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSGetJetDegree(PetscDS ds, PetscInt f, PetscInt *k)
 {
@@ -1111,7 +1111,7 @@ PetscErrorCode PetscDSGetJetDegree(PetscDS ds, PetscInt f, PetscInt *k)
 
   Level: developer
 
-.seealso: PetscDSGetJetDegree(), PetscDSSetDiscretization(), PetscDSAddDiscretization(), PetscDSGetNumFields(), PetscDSCreate()
+.seealso: `PetscDSGetJetDegree()`, `PetscDSSetDiscretization()`, `PetscDSAddDiscretization()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSSetJetDegree(PetscDS ds, PetscInt f, PetscInt k)
 {
@@ -1198,7 +1198,7 @@ $    PetscReal t, const PetscReal x[], PetscScalar f0[])
 
   Level: intermediate
 
-.seealso: PetscDSSetResidual()
+.seealso: `PetscDSSetResidual()`
 @*/
 PetscErrorCode PetscDSGetResidual(PetscDS ds, PetscInt f,
                                   void (**f0)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
@@ -1264,7 +1264,7 @@ $    PetscReal t, const PetscReal x[], PetscScalar f0[])
 
   Level: intermediate
 
-.seealso: PetscDSGetResidual()
+.seealso: `PetscDSGetResidual()`
 @*/
 PetscErrorCode PetscDSSetResidual(PetscDS ds, PetscInt f,
                                   void (*f0)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
@@ -1329,7 +1329,7 @@ $    PetscReal t, const PetscReal x[], PetscScalar f0[])
 
   Level: intermediate
 
-.seealso: PetscDSSetRHSResidual()
+.seealso: `PetscDSSetRHSResidual()`
 @*/
 PetscErrorCode PetscDSGetRHSResidual(PetscDS ds, PetscInt f,
                                      void (**f0)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
@@ -1395,7 +1395,7 @@ $    PetscReal t, const PetscReal x[], PetscScalar f0[])
 
   Level: intermediate
 
-.seealso: PetscDSGetResidual()
+.seealso: `PetscDSGetResidual()`
 @*/
 PetscErrorCode PetscDSSetRHSResidual(PetscDS ds, PetscInt f,
                                      void (*f0)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
@@ -1429,7 +1429,7 @@ PetscErrorCode PetscDSSetRHSResidual(PetscDS ds, PetscInt f,
 
   Level: intermediate
 
-.seealso: PetscDSGetJacobianPreconditioner(), PetscDSSetJacobianPreconditioner(), PetscDSGetJacobian()
+.seealso: `PetscDSGetJacobianPreconditioner()`, `PetscDSSetJacobianPreconditioner()`, `PetscDSGetJacobian()`
 @*/
 PetscErrorCode PetscDSHasJacobian(PetscDS ds, PetscBool *hasJac)
 {
@@ -1487,7 +1487,7 @@ $    PetscReal t, const PetscReal u_tShift, const PetscReal x[], PetscScalar g0[
 
   Level: intermediate
 
-.seealso: PetscDSSetJacobian()
+.seealso: `PetscDSSetJacobian()`
 @*/
 PetscErrorCode PetscDSGetJacobian(PetscDS ds, PetscInt f, PetscInt g,
                                   void (**g0)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
@@ -1568,7 +1568,7 @@ $    PetscReal t, const PetscReal x[], PetscScalar g0[])
 
   Level: intermediate
 
-.seealso: PetscDSGetJacobian()
+.seealso: `PetscDSGetJacobian()`
 @*/
 PetscErrorCode PetscDSSetJacobian(PetscDS ds, PetscInt f, PetscInt g,
                                   void (*g0)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
@@ -1611,7 +1611,7 @@ PetscErrorCode PetscDSSetJacobian(PetscDS ds, PetscInt f, PetscInt g,
 
   Level: intermediate
 
-.seealso: PetscDSGetJacobianPreconditioner(), PetscDSSetJacobianPreconditioner(), PetscDSGetJacobian()
+.seealso: `PetscDSGetJacobianPreconditioner()`, `PetscDSSetJacobianPreconditioner()`, `PetscDSGetJacobian()`
 @*/
 PetscErrorCode PetscDSUseJacobianPreconditioner(PetscDS prob, PetscBool useJacPre)
 {
@@ -1634,7 +1634,7 @@ PetscErrorCode PetscDSUseJacobianPreconditioner(PetscDS prob, PetscBool useJacPr
 
   Level: intermediate
 
-.seealso: PetscDSGetJacobianPreconditioner(), PetscDSSetJacobianPreconditioner(), PetscDSGetJacobian()
+.seealso: `PetscDSGetJacobianPreconditioner()`, `PetscDSSetJacobianPreconditioner()`, `PetscDSGetJacobian()`
 @*/
 PetscErrorCode PetscDSHasJacobianPreconditioner(PetscDS ds, PetscBool *hasJacPre)
 {
@@ -1694,7 +1694,7 @@ $    PetscReal t, const PetscReal u_tShift, const PetscReal x[], PetscScalar g0[
 
   Level: intermediate
 
-.seealso: PetscDSSetJacobianPreconditioner(), PetscDSGetJacobian()
+.seealso: `PetscDSSetJacobianPreconditioner()`, `PetscDSGetJacobian()`
 @*/
 PetscErrorCode PetscDSGetJacobianPreconditioner(PetscDS ds, PetscInt f, PetscInt g,
                                   void (**g0)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
@@ -1775,7 +1775,7 @@ $    PetscReal t, const PetscReal x[], PetscScalar g0[])
 
   Level: intermediate
 
-.seealso: PetscDSGetJacobianPreconditioner(), PetscDSSetJacobian()
+.seealso: `PetscDSGetJacobianPreconditioner()`, `PetscDSSetJacobian()`
 @*/
 PetscErrorCode PetscDSSetJacobianPreconditioner(PetscDS ds, PetscInt f, PetscInt g,
                                   void (*g0)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
@@ -1820,7 +1820,7 @@ PetscErrorCode PetscDSSetJacobianPreconditioner(PetscDS ds, PetscInt f, PetscInt
 
   Level: intermediate
 
-.seealso: PetscDSGetDynamicJacobian(), PetscDSSetDynamicJacobian(), PetscDSGetJacobian()
+.seealso: `PetscDSGetDynamicJacobian()`, `PetscDSSetDynamicJacobian()`, `PetscDSGetJacobian()`
 @*/
 PetscErrorCode PetscDSHasDynamicJacobian(PetscDS ds, PetscBool *hasDynJac)
 {
@@ -1878,7 +1878,7 @@ $    PetscReal t, const PetscReal u_tShift, const PetscReal x[], PetscScalar g0[
 
   Level: intermediate
 
-.seealso: PetscDSSetJacobian()
+.seealso: `PetscDSSetJacobian()`
 @*/
 PetscErrorCode PetscDSGetDynamicJacobian(PetscDS ds, PetscInt f, PetscInt g,
                                          void (**g0)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
@@ -1959,7 +1959,7 @@ $    PetscReal t, const PetscReal x[], PetscScalar g0[])
 
   Level: intermediate
 
-.seealso: PetscDSGetJacobian()
+.seealso: `PetscDSGetJacobian()`
 @*/
 PetscErrorCode PetscDSSetDynamicJacobian(PetscDS ds, PetscInt f, PetscInt g,
                                          void (*g0)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
@@ -2020,7 +2020,7 @@ $ r(PetscInt dim, PetscInt Nf, const PetscReal x[], const PetscReal n[], const P
 
   Level: intermediate
 
-.seealso: PetscDSSetRiemannSolver()
+.seealso: `PetscDSSetRiemannSolver()`
 @*/
 PetscErrorCode PetscDSGetRiemannSolver(PetscDS ds, PetscInt f,
                                        void (**r)(PetscInt dim, PetscInt Nf, const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscInt numConstants, const PetscScalar constants[], PetscScalar flux[], void *ctx))
@@ -2064,7 +2064,7 @@ $ r(PetscInt dim, PetscInt Nf, const PetscReal x[], const PetscReal n[], const P
 
   Level: intermediate
 
-.seealso: PetscDSGetRiemannSolver()
+.seealso: `PetscDSGetRiemannSolver()`
 @*/
 PetscErrorCode PetscDSSetRiemannSolver(PetscDS ds, PetscInt f,
                                        void (*r)(PetscInt dim, PetscInt Nf, const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscInt numConstants, const PetscScalar constants[], PetscScalar flux[], void *ctx))
@@ -2114,7 +2114,7 @@ $        PetscReal t, const PetscReal x[], PetscScalar uNew[])
 
   Level: intermediate
 
-.seealso: PetscDSSetUpdate(), PetscDSSetResidual()
+.seealso: `PetscDSSetUpdate()`, `PetscDSSetResidual()`
 @*/
 PetscErrorCode PetscDSGetUpdate(PetscDS ds, PetscInt f,
                                   void (**update)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
@@ -2164,7 +2164,7 @@ $        PetscReal t, const PetscReal x[], PetscScalar uNew[])
 
   Level: intermediate
 
-.seealso: PetscDSGetResidual()
+.seealso: `PetscDSGetResidual()`
 @*/
 PetscErrorCode PetscDSSetUpdate(PetscDS ds, PetscInt f,
                                 void (*update)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
@@ -2246,7 +2246,7 @@ $    PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f0[])
 
   Level: intermediate
 
-.seealso: PetscDSSetBdResidual()
+.seealso: `PetscDSSetBdResidual()`
 @*/
 PetscErrorCode PetscDSGetBdResidual(PetscDS ds, PetscInt f,
                                     void (**f0)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
@@ -2313,7 +2313,7 @@ $    PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f0[])
 
   Level: intermediate
 
-.seealso: PetscDSGetBdResidual()
+.seealso: `PetscDSGetBdResidual()`
 @*/
 PetscErrorCode PetscDSSetBdResidual(PetscDS ds, PetscInt f,
                                     void (*f0)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
@@ -2345,7 +2345,7 @@ PetscErrorCode PetscDSSetBdResidual(PetscDS ds, PetscInt f,
 
   Level: intermediate
 
-.seealso: PetscDSHasJacobian(), PetscDSSetBdJacobian(), PetscDSGetBdJacobian()
+.seealso: `PetscDSHasJacobian()`, `PetscDSSetBdJacobian()`, `PetscDSGetBdJacobian()`
 @*/
 PetscErrorCode PetscDSHasBdJacobian(PetscDS ds, PetscBool *hasBdJac)
 {
@@ -2405,7 +2405,7 @@ $    PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar g0[])
 
   Level: intermediate
 
-.seealso: PetscDSSetBdJacobian()
+.seealso: `PetscDSSetBdJacobian()`
 @*/
 PetscErrorCode PetscDSGetBdJacobian(PetscDS ds, PetscInt f, PetscInt g,
                                     void (**g0)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
@@ -2487,7 +2487,7 @@ $    PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar g0[])
 
   Level: intermediate
 
-.seealso: PetscDSGetBdJacobian()
+.seealso: `PetscDSGetBdJacobian()`
 @*/
 PetscErrorCode PetscDSSetBdJacobian(PetscDS ds, PetscInt f, PetscInt g,
                                     void (*g0)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
@@ -2532,7 +2532,7 @@ PetscErrorCode PetscDSSetBdJacobian(PetscDS ds, PetscInt f, PetscInt g,
 
   Level: intermediate
 
-.seealso: PetscDSHasJacobian(), PetscDSSetBdJacobian(), PetscDSGetBdJacobian()
+.seealso: `PetscDSHasJacobian()`, `PetscDSSetBdJacobian()`, `PetscDSGetBdJacobian()`
 @*/
 PetscErrorCode PetscDSHasBdJacobianPreconditioner(PetscDS ds, PetscBool *hasBdJacPre)
 {
@@ -2595,7 +2595,7 @@ $    PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstant
 
   Level: intermediate
 
-.seealso: PetscDSSetBdJacobianPreconditioner()
+.seealso: `PetscDSSetBdJacobianPreconditioner()`
 @*/
 PetscErrorCode PetscDSGetBdJacobianPreconditioner(PetscDS ds, PetscInt f, PetscInt g,
                                                   void (**g0)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
@@ -2680,7 +2680,7 @@ $    PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstant
 
   Level: intermediate
 
-.seealso: PetscDSGetBdJacobianPreconditioner()
+.seealso: `PetscDSGetBdJacobianPreconditioner()`
 @*/
 PetscErrorCode PetscDSSetBdJacobianPreconditioner(PetscDS ds, PetscInt f, PetscInt g,
                                                   void (*g0)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
@@ -2738,7 +2738,7 @@ $ sol(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u
 
   Level: intermediate
 
-.seealso: PetscDSSetExactSolution(), PetscDSGetExactSolutionTimeDerivative()
+.seealso: `PetscDSSetExactSolution()`, `PetscDSGetExactSolutionTimeDerivative()`
 @*/
 PetscErrorCode PetscDSGetExactSolution(PetscDS prob, PetscInt f, PetscErrorCode (**sol)(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx), void **ctx)
 {
@@ -2774,7 +2774,7 @@ $ sol(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u
 
   Level: intermediate
 
-.seealso: PetscDSGetExactSolution()
+.seealso: `PetscDSGetExactSolution()`
 @*/
 PetscErrorCode PetscDSSetExactSolution(PetscDS prob, PetscInt f, PetscErrorCode (*sol)(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx), void *ctx)
 {
@@ -2813,7 +2813,7 @@ $ sol(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u
 
   Level: intermediate
 
-.seealso: PetscDSSetExactSolutionTimeDerivative(), PetscDSGetExactSolution()
+.seealso: `PetscDSSetExactSolutionTimeDerivative()`, `PetscDSGetExactSolution()`
 @*/
 PetscErrorCode PetscDSGetExactSolutionTimeDerivative(PetscDS prob, PetscInt f, PetscErrorCode (**sol)(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx), void **ctx)
 {
@@ -2849,7 +2849,7 @@ $ sol(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u
 
   Level: intermediate
 
-.seealso: PetscDSGetExactSolutionTimeDerivative(), PetscDSSetExactSolution()
+.seealso: `PetscDSGetExactSolutionTimeDerivative()`, `PetscDSSetExactSolution()`
 @*/
 PetscErrorCode PetscDSSetExactSolutionTimeDerivative(PetscDS prob, PetscInt f, PetscErrorCode (*sol)(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx), void *ctx)
 {
@@ -2876,7 +2876,7 @@ PetscErrorCode PetscDSSetExactSolutionTimeDerivative(PetscDS prob, PetscInt f, P
 
   Level: intermediate
 
-.seealso: PetscDSSetConstants(), PetscDSCreate()
+.seealso: `PetscDSSetConstants()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSGetConstants(PetscDS prob, PetscInt *numConstants, const PetscScalar *constants[])
 {
@@ -2899,7 +2899,7 @@ PetscErrorCode PetscDSGetConstants(PetscDS prob, PetscInt *numConstants, const P
 
   Level: intermediate
 
-.seealso: PetscDSGetConstants(), PetscDSCreate()
+.seealso: `PetscDSGetConstants()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSSetConstants(PetscDS prob, PetscInt numConstants, PetscScalar constants[])
 {
@@ -2935,7 +2935,7 @@ PetscErrorCode PetscDSSetConstants(PetscDS prob, PetscInt numConstants, PetscSca
 
   Level: beginner
 
-.seealso: PetscGetDiscretization(), PetscDSGetNumFields(), PetscDSCreate()
+.seealso: `PetscGetDiscretization()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSGetFieldIndex(PetscDS prob, PetscObject disc, PetscInt *f)
 {
@@ -2965,7 +2965,7 @@ PetscErrorCode PetscDSGetFieldIndex(PetscDS prob, PetscObject disc, PetscInt *f)
 
   Level: beginner
 
-.seealso: PetscDSGetFieldOffset(), PetscDSGetNumFields(), PetscDSCreate()
+.seealso: `PetscDSGetFieldOffset()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSGetFieldSize(PetscDS prob, PetscInt f, PetscInt *size)
 {
@@ -2992,7 +2992,7 @@ PetscErrorCode PetscDSGetFieldSize(PetscDS prob, PetscInt f, PetscInt *size)
 
   Level: beginner
 
-.seealso: PetscDSGetFieldSize(), PetscDSGetNumFields(), PetscDSCreate()
+.seealso: `PetscDSGetFieldSize()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSGetFieldOffset(PetscDS prob, PetscInt f, PetscInt *off)
 {
@@ -3024,7 +3024,7 @@ PetscErrorCode PetscDSGetFieldOffset(PetscDS prob, PetscInt f, PetscInt *off)
 
   Level: beginner
 
-.seealso: PetscDSGetFieldSize(), PetscDSGetNumFields(), PetscDSCreate()
+.seealso: `PetscDSGetFieldSize()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSGetFieldOffsetCohesive(PetscDS ds, PetscInt f, PetscInt *off)
 {
@@ -3058,7 +3058,7 @@ PetscErrorCode PetscDSGetFieldOffsetCohesive(PetscDS ds, PetscInt f, PetscInt *o
 
   Level: beginner
 
-.seealso: PetscDSGetComponentOffsets(), PetscDSGetNumFields(), PetscDSCreate()
+.seealso: `PetscDSGetComponentOffsets()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSGetDimensions(PetscDS prob, PetscInt *dimensions[])
 {
@@ -3083,7 +3083,7 @@ PetscErrorCode PetscDSGetDimensions(PetscDS prob, PetscInt *dimensions[])
 
   Level: beginner
 
-.seealso: PetscDSGetComponentOffsets(), PetscDSGetNumFields(), PetscDSCreate()
+.seealso: `PetscDSGetComponentOffsets()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSGetComponents(PetscDS prob, PetscInt *components[])
 {
@@ -3109,7 +3109,7 @@ PetscErrorCode PetscDSGetComponents(PetscDS prob, PetscInt *components[])
 
   Level: beginner
 
-.seealso: PetscDSGetNumFields(), PetscDSCreate()
+.seealso: `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSGetComponentOffset(PetscDS prob, PetscInt f, PetscInt *off)
 {
@@ -3135,7 +3135,7 @@ PetscErrorCode PetscDSGetComponentOffset(PetscDS prob, PetscInt f, PetscInt *off
 
   Level: beginner
 
-.seealso: PetscDSGetNumFields(), PetscDSCreate()
+.seealso: `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSGetComponentOffsets(PetscDS prob, PetscInt *offsets[])
 {
@@ -3160,7 +3160,7 @@ PetscErrorCode PetscDSGetComponentOffsets(PetscDS prob, PetscInt *offsets[])
 
   Level: beginner
 
-.seealso: PetscDSGetNumFields(), PetscDSCreate()
+.seealso: `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSGetComponentDerivativeOffsets(PetscDS prob, PetscInt *offsets[])
 {
@@ -3186,7 +3186,7 @@ PetscErrorCode PetscDSGetComponentDerivativeOffsets(PetscDS prob, PetscInt *offs
 
   Level: beginner
 
-.seealso: PetscDSGetNumFields(), PetscDSCreate()
+.seealso: `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSGetComponentOffsetsCohesive(PetscDS ds, PetscInt s, PetscInt *offsets[])
 {
@@ -3214,7 +3214,7 @@ PetscErrorCode PetscDSGetComponentOffsetsCohesive(PetscDS ds, PetscInt s, PetscI
 
   Level: beginner
 
-.seealso: PetscDSGetNumFields(), PetscDSCreate()
+.seealso: `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSGetComponentDerivativeOffsetsCohesive(PetscDS ds, PetscInt s, PetscInt *offsets[])
 {
@@ -3241,7 +3241,7 @@ PetscErrorCode PetscDSGetComponentDerivativeOffsetsCohesive(PetscDS ds, PetscInt
 
   Level: intermediate
 
-.seealso: PetscDSCreate()
+.seealso: `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSGetTabulation(PetscDS prob, PetscTabulation *T[])
 {
@@ -3266,7 +3266,7 @@ PetscErrorCode PetscDSGetTabulation(PetscDS prob, PetscTabulation *T[])
 
   Level: intermediate
 
-.seealso: PetscDSGetTabulation(), PetscDSCreate()
+.seealso: `PetscDSGetTabulation()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSGetFaceTabulation(PetscDS prob, PetscTabulation *Tf[])
 {
@@ -3374,7 +3374,7 @@ $        PetscReal time, const PetscReal x[], PetscScalar bcval[])
 
   Level: developer
 
-.seealso: PetscDSAddBoundaryByName(), PetscDSGetBoundary(), PetscDSSetResidual(), PetscDSSetBdResidual()
+.seealso: `PetscDSAddBoundaryByName()`, `PetscDSGetBoundary()`, `PetscDSSetResidual()`, `PetscDSSetBdResidual()`
 @*/
 PetscErrorCode PetscDSAddBoundary(PetscDS ds, DMBoundaryConditionType type, const char name[], DMLabel label, PetscInt Nv, const PetscInt values[], PetscInt field, PetscInt Nc, const PetscInt comps[], void (*bcFunc)(void), void (*bcFunc_t)(void), void *ctx, PetscInt *bd)
 {
@@ -3493,7 +3493,7 @@ $        PetscReal time, const PetscReal x[], PetscScalar bcval[])
 
   Level: developer
 
-.seealso: PetscDSAddBoundary(), PetscDSGetBoundary(), PetscDSSetResidual(), PetscDSSetBdResidual()
+.seealso: `PetscDSAddBoundary()`, `PetscDSGetBoundary()`, `PetscDSSetResidual()`, `PetscDSSetBdResidual()`
 @*/
 PetscErrorCode PetscDSAddBoundaryByName(PetscDS ds, DMBoundaryConditionType type, const char name[], const char lname[], PetscInt Nv, const PetscInt values[], PetscInt field, PetscInt Nc, const PetscInt comps[], void (*bcFunc)(void), void (*bcFunc_t)(void), void *ctx, PetscInt *bd)
 {
@@ -3563,7 +3563,7 @@ PetscErrorCode PetscDSAddBoundaryByName(PetscDS ds, DMBoundaryConditionType type
 
   Level: developer
 
-.seealso: PetscDSAddBoundary(), PetscDSGetBoundary(), PetscDSGetNumBoundary()
+.seealso: `PetscDSAddBoundary()`, `PetscDSGetBoundary()`, `PetscDSGetNumBoundary()`
 @*/
 PetscErrorCode PetscDSUpdateBoundary(PetscDS ds, PetscInt bd, DMBoundaryConditionType type, const char name[], DMLabel label, PetscInt Nv, const PetscInt values[], PetscInt field, PetscInt Nc, const PetscInt comps[], void (*bcFunc)(void), void (*bcFunc_t)(void), void *ctx)
 {
@@ -3621,7 +3621,7 @@ PetscErrorCode PetscDSUpdateBoundary(PetscDS ds, PetscInt bd, DMBoundaryConditio
 
   Level: intermediate
 
-.seealso: PetscDSAddBoundary(), PetscDSGetBoundary()
+.seealso: `PetscDSAddBoundary()`, `PetscDSGetBoundary()`
 @*/
 PetscErrorCode PetscDSGetNumBoundary(PetscDS ds, PetscInt *numBd)
 {
@@ -3662,7 +3662,7 @@ PetscErrorCode PetscDSGetNumBoundary(PetscDS ds, PetscInt *numBd)
 
   Level: developer
 
-.seealso: PetscDSAddBoundary()
+.seealso: `PetscDSAddBoundary()`
 @*/
 PetscErrorCode PetscDSGetBoundary(PetscDS ds, PetscInt bd, PetscWeakForm *wf, DMBoundaryConditionType *type, const char *name[], DMLabel *label, PetscInt *Nv, const PetscInt *values[], PetscInt *field, PetscInt *Nc, const PetscInt *comps[], void (**func)(void), void (**func_t)(void), void **ctx)
 {
@@ -3766,7 +3766,7 @@ static PetscErrorCode DSBoundaryDuplicate_Internal(DSBoundary b, DSBoundary *bNe
 
   Level: intermediate
 
-.seealso: PetscDSCopyEquations(), PetscDSSetResidual(), PetscDSSetJacobian(), PetscDSSetRiemannSolver(), PetscDSSetBdResidual(), PetscDSSetBdJacobian(), PetscDSCreate()
+.seealso: `PetscDSCopyEquations()`, `PetscDSSetResidual()`, `PetscDSSetJacobian()`, `PetscDSSetRiemannSolver()`, `PetscDSSetBdResidual()`, `PetscDSSetBdJacobian()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSCopyBoundary(PetscDS ds, PetscInt numFields, const PetscInt fields[], PetscDS newds)
 {
@@ -3807,7 +3807,7 @@ PetscErrorCode PetscDSCopyBoundary(PetscDS ds, PetscInt numFields, const PetscIn
 
   Level: intermediate
 
-.seealso: PetscDSCopyBoundary(), PetscDSCopyEquations()
+.seealso: `PetscDSCopyBoundary()`, `PetscDSCopyEquations()`
 @*/
 PetscErrorCode PetscDSDestroyBoundary(PetscDS ds)
 {
@@ -3843,7 +3843,7 @@ PetscErrorCode PetscDSDestroyBoundary(PetscDS ds)
 
   Level: intermediate
 
-.seealso: PetscDSSelectEquations(), PetscDSCopyBoundary(), PetscDSSetResidual(), PetscDSSetJacobian(), PetscDSSetRiemannSolver(), PetscDSSetBdResidual(), PetscDSSetBdJacobian(), PetscDSCreate()
+.seealso: `PetscDSSelectEquations()`, `PetscDSCopyBoundary()`, `PetscDSSetResidual()`, `PetscDSSetJacobian()`, `PetscDSSetRiemannSolver()`, `PetscDSSetBdResidual()`, `PetscDSSetBdJacobian()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSSelectDiscretizations(PetscDS prob, PetscInt numFields, const PetscInt fields[], PetscDS newprob)
 {
@@ -3882,7 +3882,7 @@ PetscErrorCode PetscDSSelectDiscretizations(PetscDS prob, PetscInt numFields, co
 
   Level: intermediate
 
-.seealso: PetscDSSelectDiscretizations(), PetscDSCopyBoundary(), PetscDSSetResidual(), PetscDSSetJacobian(), PetscDSSetRiemannSolver(), PetscDSSetBdResidual(), PetscDSSetBdJacobian(), PetscDSCreate()
+.seealso: `PetscDSSelectDiscretizations()`, `PetscDSCopyBoundary()`, `PetscDSSetResidual()`, `PetscDSSetJacobian()`, `PetscDSSetRiemannSolver()`, `PetscDSSetBdResidual()`, `PetscDSSetBdJacobian()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSSelectEquations(PetscDS prob, PetscInt numFields, const PetscInt fields[], PetscDS newprob)
 {
@@ -3942,7 +3942,7 @@ PetscErrorCode PetscDSSelectEquations(PetscDS prob, PetscInt numFields, const Pe
 
   Level: intermediate
 
-.seealso: PetscDSCopyBoundary(), PetscDSSetResidual(), PetscDSSetJacobian(), PetscDSSetRiemannSolver(), PetscDSSetBdResidual(), PetscDSSetBdJacobian(), PetscDSCreate()
+.seealso: `PetscDSCopyBoundary()`, `PetscDSSetResidual()`, `PetscDSSetJacobian()`, `PetscDSSetRiemannSolver()`, `PetscDSSetBdResidual()`, `PetscDSSetBdJacobian()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSCopyEquations(PetscDS prob, PetscDS newprob)
 {
@@ -3974,7 +3974,7 @@ PetscErrorCode PetscDSCopyEquations(PetscDS prob, PetscDS newprob)
 
   Level: intermediate
 
-.seealso: PetscDSCopyBoundary(), PetscDSCopyEquations(), PetscDSSetResidual(), PetscDSSetJacobian(), PetscDSSetRiemannSolver(), PetscDSSetBdResidual(), PetscDSSetBdJacobian(), PetscDSCreate()
+.seealso: `PetscDSCopyBoundary()`, `PetscDSCopyEquations()`, `PetscDSSetResidual()`, `PetscDSSetJacobian()`, `PetscDSSetRiemannSolver()`, `PetscDSSetBdResidual()`, `PetscDSSetBdJacobian()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSCopyConstants(PetscDS prob, PetscDS newprob)
 {
@@ -4002,7 +4002,7 @@ PetscErrorCode PetscDSCopyConstants(PetscDS prob, PetscDS newprob)
 
   Level: intermediate
 
-.seealso: PetscDSCopyBoundary(), PetscDSCopyEquations(), PetscDSSetResidual(), PetscDSSetJacobian(), PetscDSSetRiemannSolver(), PetscDSSetBdResidual(), PetscDSSetBdJacobian(), PetscDSCreate()
+.seealso: `PetscDSCopyBoundary()`, `PetscDSCopyEquations()`, `PetscDSSetResidual()`, `PetscDSSetJacobian()`, `PetscDSSetRiemannSolver()`, `PetscDSSetBdResidual()`, `PetscDSSetBdJacobian()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSCopyExactSolutions(PetscDS ds, PetscDS newds)
 {
@@ -4100,7 +4100,7 @@ static PetscErrorCode PetscDSInitialize_Basic(PetscDS ds)
 
   Level: intermediate
 
-.seealso: PetscDSType, PetscDSCreate(), PetscDSSetType()
+.seealso: `PetscDSType`, `PetscDSCreate()`, `PetscDSSetType()`
 M*/
 
 PETSC_EXTERN PetscErrorCode PetscDSCreate_Basic(PetscDS ds)

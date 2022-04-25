@@ -19,7 +19,7 @@ const char * const DTProbDensityTypes[] = {"constant", "gaussian", "maxwell_bolt
 
   Level: beginner
 
-.seealso: PetscCDFMaxwellBoltzmann1D
+.seealso: `PetscCDFMaxwellBoltzmann1D`
 @*/
 PetscErrorCode PetscPDFMaxwellBoltzmann1D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
 {
@@ -40,7 +40,7 @@ PetscErrorCode PetscPDFMaxwellBoltzmann1D(const PetscReal x[], const PetscReal d
 
   Level: beginner
 
-.seealso: PetscPDFMaxwellBoltzmann1D
+.seealso: `PetscPDFMaxwellBoltzmann1D`
 @*/
 PetscErrorCode PetscCDFMaxwellBoltzmann1D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
 {
@@ -61,7 +61,7 @@ PetscErrorCode PetscCDFMaxwellBoltzmann1D(const PetscReal x[], const PetscReal d
 
   Level: beginner
 
-.seealso: PetscCDFMaxwellBoltzmann2D
+.seealso: `PetscCDFMaxwellBoltzmann2D`
 @*/
 PetscErrorCode PetscPDFMaxwellBoltzmann2D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
 {
@@ -82,7 +82,7 @@ PetscErrorCode PetscPDFMaxwellBoltzmann2D(const PetscReal x[], const PetscReal d
 
   Level: beginner
 
-.seealso: PetscPDFMaxwellBoltzmann2D
+.seealso: `PetscPDFMaxwellBoltzmann2D`
 @*/
 PetscErrorCode PetscCDFMaxwellBoltzmann2D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
 {
@@ -103,7 +103,7 @@ PetscErrorCode PetscCDFMaxwellBoltzmann2D(const PetscReal x[], const PetscReal d
 
   Level: beginner
 
-.seealso: PetscCDFMaxwellBoltzmann3D
+.seealso: `PetscCDFMaxwellBoltzmann3D`
 @*/
 PetscErrorCode PetscPDFMaxwellBoltzmann3D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
 {
@@ -124,7 +124,7 @@ PetscErrorCode PetscPDFMaxwellBoltzmann3D(const PetscReal x[], const PetscReal d
 
   Level: beginner
 
-.seealso: PetscPDFMaxwellBoltzmann3D
+.seealso: `PetscPDFMaxwellBoltzmann3D`
 @*/
 PetscErrorCode PetscCDFMaxwellBoltzmann3D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
 {
@@ -145,7 +145,7 @@ PetscErrorCode PetscCDFMaxwellBoltzmann3D(const PetscReal x[], const PetscReal d
 
   Level: beginner
 
-.seealso: PetscPDFMaxwellBoltzmann3D
+.seealso: `PetscPDFMaxwellBoltzmann3D`
 @*/
 PetscErrorCode PetscPDFGaussian1D(const PetscReal x[], const PetscReal scale[], PetscReal p[])
 {
@@ -219,7 +219,7 @@ PetscErrorCode PetscPDFSampleGaussian1D(const PetscReal p[], const PetscReal dum
 
   Level: beginner
 
-.seealso: PetscPDFSampleGaussian2D(), PetscPDFMaxwellBoltzmann3D()
+.seealso: `PetscPDFSampleGaussian2D()`, `PetscPDFMaxwellBoltzmann3D()`
 @*/
 PetscErrorCode PetscPDFGaussian2D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
 {
@@ -243,7 +243,7 @@ PetscErrorCode PetscPDFGaussian2D(const PetscReal x[], const PetscReal dummy[], 
 
   Note: https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform
 
-.seealso: PetscPDFGaussian2D(), PetscPDFMaxwellBoltzmann3D()
+.seealso: `PetscPDFGaussian2D()`, `PetscPDFMaxwellBoltzmann3D()`
 @*/
 PetscErrorCode PetscPDFSampleGaussian2D(const PetscReal p[], const PetscReal dummy[], PetscReal x[])
 {
@@ -267,7 +267,7 @@ PetscErrorCode PetscPDFSampleGaussian2D(const PetscReal p[], const PetscReal dum
 
   Level: beginner
 
-.seealso: PetscPDFSampleGaussian3D(), PetscPDFMaxwellBoltzmann3D()
+.seealso: `PetscPDFSampleGaussian3D()`, `PetscPDFMaxwellBoltzmann3D()`
 @*/
 PetscErrorCode PetscPDFGaussian3D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
 {
@@ -291,7 +291,7 @@ PetscErrorCode PetscPDFGaussian3D(const PetscReal x[], const PetscReal dummy[], 
 
   Note: https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform
 
-.seealso: PetscPDFGaussian3D(), PetscPDFMaxwellBoltzmann3D()
+.seealso: `PetscPDFGaussian3D()`, `PetscPDFMaxwellBoltzmann3D()`
 @*/
 PetscErrorCode PetscPDFSampleGaussian3D(const PetscReal p[], const PetscReal dummy[], PetscReal x[])
 {
@@ -313,7 +313,7 @@ PetscErrorCode PetscPDFSampleGaussian3D(const PetscReal p[], const PetscReal dum
 
   Level: beginner
 
-.seealso: PetscCDFConstant1D(), PetscPDFSampleConstant1D(), PetscPDFConstant2D(), PetscPDFConstant3D()
+.seealso: `PetscCDFConstant1D()`, `PetscPDFSampleConstant1D()`, `PetscPDFConstant2D()`, `PetscPDFConstant3D()`
 @*/
 PetscErrorCode PetscPDFConstant1D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
 {
@@ -334,7 +334,7 @@ PetscErrorCode PetscPDFConstant1D(const PetscReal x[], const PetscReal dummy[], 
 
   Level: beginner
 
-.seealso: PetscPDFConstant1D(), PetscPDFSampleConstant1D(), PetscCDFConstant2D(), PetscCDFConstant3D()
+.seealso: `PetscPDFConstant1D()`, `PetscPDFSampleConstant1D()`, `PetscCDFConstant2D()`, `PetscCDFConstant3D()`
 @*/
 PetscErrorCode PetscCDFConstant1D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
 {
@@ -355,7 +355,7 @@ PetscErrorCode PetscCDFConstant1D(const PetscReal x[], const PetscReal dummy[], 
 
   Level: beginner
 
-.seealso: PetscPDFConstant1D(), PetscCDFConstant1D(), PetscPDFSampleConstant2D(), PetscPDFSampleConstant3D()
+.seealso: `PetscPDFConstant1D()`, `PetscCDFConstant1D()`, `PetscPDFSampleConstant2D()`, `PetscPDFSampleConstant3D()`
 @*/
 PetscErrorCode PetscPDFSampleConstant1D(const PetscReal p[], const PetscReal dummy[], PetscReal x[])
 {
@@ -376,7 +376,7 @@ PetscErrorCode PetscPDFSampleConstant1D(const PetscReal p[], const PetscReal dum
 
   Level: beginner
 
-.seealso: PetscCDFConstant2D(), PetscPDFSampleConstant2D(), PetscPDFConstant1D(), PetscPDFConstant3D()
+.seealso: `PetscCDFConstant2D()`, `PetscPDFSampleConstant2D()`, `PetscPDFConstant1D()`, `PetscPDFConstant3D()`
 @*/
 PetscErrorCode PetscPDFConstant2D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
 {
@@ -397,7 +397,7 @@ PetscErrorCode PetscPDFConstant2D(const PetscReal x[], const PetscReal dummy[], 
 
   Level: beginner
 
-.seealso: PetscPDFConstant2D(), PetscPDFSampleConstant2D(), PetscCDFConstant1D(), PetscCDFConstant3D()
+.seealso: `PetscPDFConstant2D()`, `PetscPDFSampleConstant2D()`, `PetscCDFConstant1D()`, `PetscCDFConstant3D()`
 @*/
 PetscErrorCode PetscCDFConstant2D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
 {
@@ -418,7 +418,7 @@ PetscErrorCode PetscCDFConstant2D(const PetscReal x[], const PetscReal dummy[], 
 
   Level: beginner
 
-.seealso: PetscPDFConstant2D(), PetscCDFConstant2D(), PetscPDFSampleConstant1D(), PetscPDFSampleConstant3D()
+.seealso: `PetscPDFConstant2D()`, `PetscCDFConstant2D()`, `PetscPDFSampleConstant1D()`, `PetscPDFSampleConstant3D()`
 @*/
 PetscErrorCode PetscPDFSampleConstant2D(const PetscReal p[], const PetscReal dummy[], PetscReal x[])
 {
@@ -440,7 +440,7 @@ PetscErrorCode PetscPDFSampleConstant2D(const PetscReal p[], const PetscReal dum
 
   Level: beginner
 
-.seealso: PetscCDFConstant3D(), PetscPDFSampleConstant3D(), PetscPDFSampleConstant1D(), PetscPDFSampleConstant2D()
+.seealso: `PetscCDFConstant3D()`, `PetscPDFSampleConstant3D()`, `PetscPDFSampleConstant1D()`, `PetscPDFSampleConstant2D()`
 @*/
 PetscErrorCode PetscPDFConstant3D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
 {
@@ -461,7 +461,7 @@ PetscErrorCode PetscPDFConstant3D(const PetscReal x[], const PetscReal dummy[], 
 
   Level: beginner
 
-.seealso: PetscPDFConstant3D(), PetscPDFSampleConstant3D(), PetscCDFConstant1D(), PetscCDFConstant2D()
+.seealso: `PetscPDFConstant3D()`, `PetscPDFSampleConstant3D()`, `PetscCDFConstant1D()`, `PetscCDFConstant2D()`
 @*/
 PetscErrorCode PetscCDFConstant3D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
 {
@@ -482,7 +482,7 @@ PetscErrorCode PetscCDFConstant3D(const PetscReal x[], const PetscReal dummy[], 
 
   Level: beginner
 
-.seealso: PetscPDFConstant3D(), PetscCDFConstant3D(), PetscPDFSampleConstant1D(), PetscPDFSampleConstant2D()
+.seealso: `PetscPDFConstant3D()`, `PetscCDFConstant3D()`, `PetscPDFSampleConstant1D()`, `PetscPDFSampleConstant2D()`
 @*/
 PetscErrorCode PetscPDFSampleConstant3D(const PetscReal p[], const PetscReal dummy[], PetscReal x[])
 {
@@ -509,7 +509,7 @@ PetscErrorCode PetscPDFSampleConstant3D(const PetscReal p[], const PetscReal dum
 
   Level: intermediate
 
-.seealso: PetscPDFMaxwellBoltzmann1D(), PetscPDFGaussian1D(), PetscPDFConstant1D()
+.seealso: `PetscPDFMaxwellBoltzmann1D()`, `PetscPDFGaussian1D()`, `PetscPDFConstant1D()`
 @*/
 PetscErrorCode PetscProbCreateFromOptions(PetscInt dim, const char prefix[], const char name[], PetscProbFunc *pdf, PetscProbFunc *cdf, PetscProbFunc *sampler)
 {
@@ -617,7 +617,7 @@ The empirical distribution function $F_n(x)$ is discrete, and thus had a ``stair
 cumulative distribution, making $n$ the number of stairs. Intuitively, the statistic takes
 the largest absolute difference between the two distribution functions across all $x$ values.
 
-.seealso: PetscProbFunc
+.seealso: `PetscProbFunc`
 @*/
 PetscErrorCode PetscProbComputeKSStatistic(Vec v, PetscProbFunc cdf, PetscReal *alpha)
 {

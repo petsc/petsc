@@ -487,7 +487,7 @@ PetscErrorCode MatView_PaStiX(Mat A,PetscViewer viewer)
 
   Level: beginner
 
-.seealso: PCFactorSetMatSolverType(), MatSolverType
+.seealso: `PCFactorSetMatSolverType()`, `MatSolverType`
 
 M*/
 

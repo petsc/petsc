@@ -23,7 +23,7 @@ PetscBool         PetscSFRegisterAllCalled;
 
    Level: advanced
 
-.seealso:  PetscSFRegisterDestroy()
+.seealso: `PetscSFRegisterDestroy()`
 @*/
 PetscErrorCode  PetscSFRegisterAll(void)
 {
@@ -69,7 +69,7 @@ $     -sf_type my_impl
 
    Level: advanced
 
-.seealso: PetscSFRegisterAll(), PetscSFInitializePackage()
+.seealso: `PetscSFRegisterAll()`, `PetscSFInitializePackage()`
 @*/
 PetscErrorCode  PetscSFRegister(const char name[],PetscErrorCode (*create)(PetscSF))
 {

@@ -21,7 +21,7 @@ typedef struct {
 
    Level: developer
 
-.seealso: KSPMonitorSAWs(), KSPMonitorSAWsDestroy()
+.seealso: `KSPMonitorSAWs()`, `KSPMonitorSAWsDestroy()`
 @*/
 PetscErrorCode KSPMonitorSAWsCreate(KSP ksp,void **ctx)
 {
@@ -45,7 +45,7 @@ PetscErrorCode KSPMonitorSAWsCreate(KSP ksp,void **ctx)
 
    Level: developer
 
-.seealso: KSPMonitorSAWsCreate()
+.seealso: `KSPMonitorSAWsCreate()`
 @*/
 PetscErrorCode KSPMonitorSAWsDestroy(void **ctx)
 {
@@ -70,7 +70,7 @@ PetscErrorCode KSPMonitorSAWsDestroy(void **ctx)
 
    Level: advanced
 
-.seealso: KSPMonitorSingularValue(), KSPComputeExtremeSingularValues(), PetscViewerSAWsOpen()
+.seealso: `KSPMonitorSingularValue()`, `KSPComputeExtremeSingularValues()`, `PetscViewerSAWsOpen()`
 @*/
 PetscErrorCode KSPMonitorSAWs(KSP ksp,PetscInt n,PetscReal rnorm,void *ctx)
 {

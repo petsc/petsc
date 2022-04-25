@@ -118,7 +118,7 @@ PetscErrorCode  PetscDLLibraryRetrieve(MPI_Comm comm,const char libname[],char *
    ${PETSC_ARCH} occurring in directoryname and filename
    will be replaced with the appropriate value.
 
-.seealso: PetscLoadDynamicLibrary(), PetscDLLibraryAppend()
+.seealso: `PetscLoadDynamicLibrary()`, `PetscDLLibraryAppend()`
 @*/
 PetscErrorCode  PetscDLLibraryOpen(MPI_Comm comm,const char path[],PetscDLLibrary *entry)
 {
@@ -315,7 +315,7 @@ done:;
   If the library has the symbol PetscDLLibraryRegister_basename() in it then that function is automatically run
       when the library is opened.
 
-.seealso: PetscDLLibraryOpen()
+.seealso: `PetscDLLibraryOpen()`
 @*/
 PetscErrorCode  PetscDLLibraryAppend(MPI_Comm comm,PetscDLLibrary *outlist,const char path[])
 {

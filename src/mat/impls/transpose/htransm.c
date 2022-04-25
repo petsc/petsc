@@ -113,7 +113,7 @@ PetscErrorCode MatHermitianTransposeGetMat_HT(Mat N,Mat *M)
 
    Level: intermediate
 
-.seealso: MatCreateHermitianTranspose()
+.seealso: `MatCreateHermitianTranspose()`
 
 @*/
 PetscErrorCode MatHermitianTransposeGetMat(Mat A,Mat *M)
@@ -180,7 +180,7 @@ PetscErrorCode MatConvert_HT(Mat A,MatType newtype,MatReuse reuse,Mat *newmat)
           object performs the matrix-vector product by using the MatMultHermitianTranspose() on
           the original matrix
 
-.seealso: MatCreateNormal(), MatMult(), MatMultHermitianTranspose(), MatCreate()
+.seealso: `MatCreateNormal()`, `MatMult()`, `MatMultHermitianTranspose()`, `MatCreate()`
 @*/
 PetscErrorCode  MatCreateHermitianTranspose(Mat A,Mat *N)
 {

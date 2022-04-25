@@ -687,7 +687,7 @@ static PetscErrorCode DMSetFromOptions_Stag(PetscOptionItems *PetscOptionsObject
 
   Level: beginner
 
-.seealso: DM, DMPRODUCT, DMDA, DMPLEX, DMStagCreate1d(), DMStagCreate2d(), DMStagCreate3d(), DMType, DMCreate(), DMSetType()
+.seealso: `DM`, `DMPRODUCT`, `DMDA`, `DMPLEX`, `DMStagCreate1d()`, `DMStagCreate2d()`, `DMStagCreate3d()`, `DMType`, `DMCreate()`, `DMSetType()`
 M*/
 
 PETSC_EXTERN PetscErrorCode DMCreate_Stag(DM dm)

@@ -6,7 +6,7 @@
 
   Level: beginner
 
-.seealso: PetscLimiterCreate(), PetscLimiterSetType(), PetscLimiterType
+.seealso: `PetscLimiterCreate()`, `PetscLimiterSetType()`, `PetscLimiterType`
 S*/
 typedef struct _p_PetscLimiter *PetscLimiter;
 
@@ -15,7 +15,7 @@ typedef struct _p_PetscLimiter *PetscLimiter;
 
   Level: beginner
 
-.seealso: PetscFVCreate(), PetscFVSetType(), PetscFVType
+.seealso: `PetscFVCreate()`, `PetscFVSetType()`, `PetscFVType`
 S*/
 typedef struct _p_PetscFV *PetscFV;
 
@@ -29,7 +29,7 @@ $  PetscReal   normal[3]   - Area-scaled normals
 $  PetscReal   centroid[3] - Location of centroid (quadrature point)
 $  PetscScalar grad[2][3]  - Face contribution to gradient in left and right cell
 
-.seealso: DMPlexComputeGeometryFVM()
+.seealso: `DMPlexComputeGeometryFVM()`
 S*/
 typedef struct {
   PetscReal   normal[3];   /* Area-scaled normals */
@@ -46,7 +46,7 @@ typedef struct {
 $  PetscReal   centroid[3] - The cell centroid
 $  PetscReal   volume      - The cell volume
 
-.seealso: DMPlexComputeGeometryFVM()
+.seealso: `DMPlexComputeGeometryFVM()`
 S*/
 typedef struct {
   PetscReal centroid[3];

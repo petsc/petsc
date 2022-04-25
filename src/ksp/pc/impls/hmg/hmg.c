@@ -296,7 +296,7 @@ static PetscErrorCode PCHMGSetReuseInterpolation_HMG(PC pc, PetscBool reuse)
 
 .keywords: HMG, multigrid, interpolation, reuse, set
 
-.seealso: PCHMG
+.seealso: `PCHMG`
 @*/
 PetscErrorCode PCHMGSetReuseInterpolation(PC pc, PetscBool reuse)
 {
@@ -332,7 +332,7 @@ static PetscErrorCode PCHMGSetUseSubspaceCoarsening_HMG(PC pc, PetscBool subspac
 
 .keywords: HMG, multigrid, interpolation, subspace, coarsening
 
-.seealso: PCHMG
+.seealso: `PCHMG`
 @*/
 PetscErrorCode PCHMGSetUseSubspaceCoarsening(PC pc, PetscBool subspace)
 {
@@ -368,7 +368,7 @@ static PetscErrorCode PCHMGSetInnerPCType_HMG(PC pc, PCType type)
 
 .keywords: HMG, multigrid, interpolation, coarsening
 
-.seealso: PCHMG, PCType
+.seealso: `PCHMG`, `PCType`
 @*/
 PetscErrorCode PCHMGSetInnerPCType(PC pc, PCType type)
 {
@@ -404,7 +404,7 @@ static PetscErrorCode PCHMGSetCoarseningComponent_HMG(PC pc, PetscInt component)
 
 .keywords: HMG, multigrid, interpolation, coarsening, component
 
-.seealso: PCHMG, PCType
+.seealso: `PCHMG`, `PCType`
 @*/
 PetscErrorCode PCHMGSetCoarseningComponent(PC pc, PetscInt component)
 {
@@ -440,7 +440,7 @@ static PetscErrorCode PCHMGUseMatMAIJ_HMG(PC pc, PetscBool usematmaij)
 
 .keywords: HMG, multigrid, interpolation, coarsening, MatMAIJ
 
-.seealso: PCHMG, PCType
+.seealso: `PCHMG`, `PCType`
 @*/
 PetscErrorCode PCHMGUseMatMAIJ(PC pc, PetscBool usematmaij)
 {
@@ -473,8 +473,8 @@ PetscErrorCode PCHMGUseMatMAIJ(PC pc, PetscBool usematmaij)
     Newton-Krylov-Schwarz method with subspace-based coarsening and partition-based balancing for the multigroup neutron transport equations on
     3D unstructured meshes, arXiv preprint arXiv:1903.03659, 2019
 
-.seealso:  PCCreate(), PCSetType(), PCType, PC, PCMG, PCHYPRE, PCHMG, PCGetCoarseOperators(), PCGetInterpolations(), PCHMGSetReuseInterpolation(), PCHMGSetUseSubspaceCoarsening(),
-           PCHMGSetInnerPCType()
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCMG`, `PCHYPRE`, `PCHMG`, `PCGetCoarseOperators()`, `PCGetInterpolations()`, `PCHMGSetReuseInterpolation()`, `PCHMGSetUseSubspaceCoarsening()`,
+          `PCHMGSetInnerPCType()`
 
 M*/
 PETSC_EXTERN PetscErrorCode PCCreate_HMG(PC pc)

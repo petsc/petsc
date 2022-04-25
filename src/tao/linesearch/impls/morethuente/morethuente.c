@@ -276,7 +276,7 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
 
    Level: developer
 
-.seealso: TaoLineSearchCreate(), TaoLineSearchSetType(), TaoLineSearchApply()
+.seealso: `TaoLineSearchCreate()`, `TaoLineSearchSetType()`, `TaoLineSearchApply()`
 
 .keywords: Tao, linesearch
 M*/

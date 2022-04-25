@@ -21,7 +21,7 @@
 
   Level: developer
 
-.seealso: DMPlexGetClosureIndices(), DMPlexSetClosurePermutationTensor(), DMPlexGetCeedRestriction()
+.seealso: `DMPlexGetClosureIndices()`, `DMPlexSetClosurePermutationTensor()`, `DMPlexGetCeedRestriction()`
 @*/
 PetscErrorCode DMPlexGetLocalOffsets(DM dm, DMLabel domain_label, PetscInt label_value, PetscInt height, PetscInt dm_field, PetscInt *num_cells, PetscInt *cell_size, PetscInt *num_comp, PetscInt *l_size, PetscInt **offsets)
 {

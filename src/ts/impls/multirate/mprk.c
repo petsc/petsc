@@ -138,7 +138,7 @@ static PetscErrorCode TSMPRKGenerateTableau3(PetscInt ratio,PetscInt s,const Pet
 
      Level: advanced
 
-.seealso: TSMPRK, TSMPRKType, TSMPRKSetType()
+.seealso: `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
 M*/
 /*MC
      TSMPRK2A23 - Second Order Multirate Partitioned Runge-Kutta scheme based on RK2A.
@@ -151,7 +151,7 @@ M*/
 
      Level: advanced
 
-.seealso: TSMPRK, TSMPRKType, TSMPRKSetType()
+.seealso: `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
 M*/
 /*MC
      TSMPRK2A32 - Second Order Multirate Partitioned Runge-Kutta scheme based on RK2A.
@@ -164,7 +164,7 @@ M*/
 
      Level: advanced
 
-.seealso: TSMPRK, TSMPRKType, TSMPRKSetType()
+.seealso: `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
 M*/
 /*MC
      TSMPRK2A33 - Second Order Multirate Partitioned Runge-Kutta scheme based on RK2A.
@@ -177,7 +177,7 @@ M*/
 
      Level: advanced
 
-.seealso: TSMPRK, TSMPRKType, TSMPRKSetType()
+.seealso: `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
 M*/
 /*MC
      TSMPRK3P2M - Third Order Multirate Partitioned Runge-Kutta scheme.
@@ -189,7 +189,7 @@ M*/
 
      Level: advanced
 
-.seealso: TSMPRK, TSMPRKType, TSMPRKSetType()
+.seealso: `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
 M*/
 /*MC
      TSMPRKP2 - Second Order Multirate Partitioned Runge-Kutta scheme.
@@ -201,7 +201,7 @@ M*/
 
      Level: advanced
 
-.seealso: TSMPRK, TSMPRKType, TSMPRKSetType()
+.seealso: `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
 M*/
 /*MC
      TSMPRKP3 - Third Order Multirate Partitioned Runge-Kutta scheme.
@@ -213,7 +213,7 @@ M*/
 
      Level: advanced
 
-.seealso: TSMPRK, TSMPRKType, TSMPRKSetType()
+.seealso: `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
 M*/
 
 /*@C
@@ -223,7 +223,7 @@ M*/
 
   Level: advanced
 
-.seealso:  TSMPRKRegisterDestroy()
+.seealso: `TSMPRKRegisterDestroy()`
 @*/
 PetscErrorCode TSMPRKRegisterAll(void)
 {
@@ -391,7 +391,7 @@ PetscErrorCode TSMPRKRegisterAll(void)
 
    Level: advanced
 
-.seealso: TSMPRKRegister(), TSMPRKRegisterAll()
+.seealso: `TSMPRKRegister()`, `TSMPRKRegisterAll()`
 @*/
 PetscErrorCode TSMPRKRegisterDestroy(void)
 {
@@ -420,7 +420,7 @@ PetscErrorCode TSMPRKRegisterDestroy(void)
 
   Level: developer
 
-.seealso: PetscInitialize()
+.seealso: `PetscInitialize()`
 @*/
 PetscErrorCode TSMPRKInitializePackage(void)
 {
@@ -438,7 +438,7 @@ PetscErrorCode TSMPRKInitializePackage(void)
 
   Level: developer
 
-.seealso: PetscFinalize()
+.seealso: `PetscFinalize()`
 @*/
 PetscErrorCode TSMPRKFinalizePackage(void)
 {
@@ -471,7 +471,7 @@ PetscErrorCode TSMPRKFinalizePackage(void)
 
    Level: advanced
 
-.seealso: TSMPRK
+.seealso: `TSMPRK`
 @*/
 PetscErrorCode TSMPRKRegister(TSMPRKType name,PetscInt order,
                               PetscInt sbase,PetscInt ratio1,PetscInt ratio2,
@@ -1207,7 +1207,7 @@ static PetscErrorCode TSLoad_MPRK(TS ts,PetscViewer viewer)
 
   Level: intermediate
 
-.seealso: TSMPRKGetType(), TSMPRK, TSMPRKType
+.seealso: `TSMPRKGetType()`, `TSMPRK`, `TSMPRKType`
 @*/
 PetscErrorCode TSMPRKSetType(TS ts,TSMPRKType mprktype)
 {
@@ -1231,7 +1231,7 @@ PetscErrorCode TSMPRKSetType(TS ts,TSMPRKType mprktype)
 
   Level: intermediate
 
-.seealso: TSMPRKGetType()
+.seealso: `TSMPRKGetType()`
 @*/
 PetscErrorCode TSMPRKGetType(TS ts,TSMPRKType *mprktype)
 {
@@ -1308,8 +1308,8 @@ static PetscErrorCode TSDestroy_MPRK(TS ts)
 
   Level: beginner
 
-.seealso:  TSCreate(), TS, TSSetType(), TSMPRKSetType(), TSMPRKGetType(), TSMPRKType, TSMPRKRegister(), TSMPRKSetMultirateType()
-           TSMPRKM2, TSMPRKM3, TSMPRKRFSMR3, TSMPRKRFSMR2
+.seealso: `TSCreate()`, `TS`, `TSSetType()`, `TSMPRKSetType()`, `TSMPRKGetType()`, `TSMPRKType`, `TSMPRKRegister()`, `TSMPRKSetMultirateType()`
+          `TSMPRKM2`, `TSMPRKM3`, `TSMPRKRFSMR3`, `TSMPRKRFSMR2`
 
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_MPRK(TS ts)

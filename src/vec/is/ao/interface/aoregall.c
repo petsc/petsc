@@ -10,7 +10,7 @@ PETSC_EXTERN PetscErrorCode AOCreate_MemoryScalable(AO ao);
 
   Level: advanced
 
-.seealso:  AORegister(), AORegisterDestroy()
+.seealso: `AORegister()`, `AORegisterDestroy()`
 @*/
 PetscErrorCode  AORegisterAll(void)
 {

@@ -6,7 +6,7 @@
 
    Level: beginner
 
-.seealso: PetscDrawSetType(), PetscDraw, PetscViewer, PetscDrawCreate()
+.seealso: `PetscDrawSetType()`, `PetscDraw`, `PetscViewer`, `PetscDrawCreate()`
 J*/
 typedef const char* PetscDrawType;
 #define PETSC_DRAW_X     "x"
@@ -20,7 +20,7 @@ typedef const char* PetscDrawType;
 
    Level: beginner
 
-.seealso:  PetscDrawCreate(), PetscDrawSetType(), PetscDrawType
+.seealso: `PetscDrawCreate()`, `PetscDrawSetType()`, `PetscDrawType`
 S*/
 typedef struct _p_PetscDraw* PetscDraw;
 
@@ -29,7 +29,7 @@ typedef struct _p_PetscDraw* PetscDraw;
 
    Level: advanced
 
-.seealso:  PetscDrawAxisCreate(), PetscDrawAxisSetLimits(), PetscDrawAxisSetColors(), PetscDrawAxisSetLabels()
+.seealso: `PetscDrawAxisCreate()`, `PetscDrawAxisSetLimits()`, `PetscDrawAxisSetColors()`, `PetscDrawAxisSetLabels()`
 S*/
 typedef struct _p_PetscDrawAxis* PetscDrawAxis;
 
@@ -38,7 +38,7 @@ typedef struct _p_PetscDrawAxis* PetscDrawAxis;
 
    Level: advanced
 
-.seealso:  PetscDrawAxisCreate(), PetscDrawLGCreate(), PetscDrawLGAddPoint()
+.seealso: `PetscDrawAxisCreate()`, `PetscDrawLGCreate()`, `PetscDrawLGAddPoint()`
 S*/
 typedef struct _p_PetscDrawLG*   PetscDrawLG;
 
@@ -47,7 +47,7 @@ typedef struct _p_PetscDrawLG*   PetscDrawLG;
 
    Level: advanced
 
-.seealso:  PetscDrawSPCreate()
+.seealso: `PetscDrawSPCreate()`
 S*/
 typedef struct _p_PetscDrawSP*   PetscDrawSP;
 
@@ -56,7 +56,7 @@ typedef struct _p_PetscDrawSP*   PetscDrawSP;
 
    Level: advanced
 
-.seealso:  PetscDrawHGCreate()
+.seealso: `PetscDrawHGCreate()`
 S*/
 typedef struct _p_PetscDrawHG*   PetscDrawHG;
 
@@ -65,7 +65,7 @@ typedef struct _p_PetscDrawHG*   PetscDrawHG;
 
    Level: advanced
 
-.seealso:  PetscDrawBarCreate()
+.seealso: `PetscDrawBarCreate()`
 S*/
 typedef struct _p_PetscDrawBar*   PetscDrawBar;
 

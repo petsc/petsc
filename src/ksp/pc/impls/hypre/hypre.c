@@ -1414,7 +1414,7 @@ static PetscErrorCode PCHYPRESetDiscreteGradient_HYPRE(PC pc, Mat G)
 
     Each row of G has 2 nonzeros, with column indexes being the global indexes of edge's endpoints: matrix entries are +1 and -1 depending on edge orientation
 
-.seealso: PCHYPRESetDiscreteCurl()
+.seealso: `PCHYPRESetDiscreteCurl()`
 @*/
 PetscErrorCode PCHYPRESetDiscreteGradient(PC pc, Mat G)
 {
@@ -1460,7 +1460,7 @@ static PetscErrorCode PCHYPRESetDiscreteCurl_HYPRE(PC pc, Mat C)
 
     Each row of G has as many nonzeros as the number of edges of a face, with column indexes being the global indexes of the corresponding edge: matrix entries are +1 and -1 depending on edge orientation with respect to the face orientation
 
-.seealso: PCHYPRESetDiscreteGradient()
+.seealso: `PCHYPRESetDiscreteGradient()`
 @*/
 PetscErrorCode PCHYPRESetDiscreteCurl(PC pc, Mat C)
 {
@@ -1644,7 +1644,7 @@ static PetscErrorCode PCHYPRESetPoissonMatrix_HYPRE(PC pc, Mat A, PetscBool isal
    Notes:
     A should be obtained by discretizing the vector valued Poisson problem with linear finite elements
 
-.seealso: PCHYPRESetDiscreteGradient(), PCHYPRESetDiscreteCurl(), PCHYPRESetBetaPoissonMatrix()
+.seealso: `PCHYPRESetDiscreteGradient()`, `PCHYPRESetDiscreteCurl()`, `PCHYPRESetBetaPoissonMatrix()`
 @*/
 PetscErrorCode PCHYPRESetAlphaPoissonMatrix(PC pc, Mat A)
 {
@@ -1671,7 +1671,7 @@ PetscErrorCode PCHYPRESetAlphaPoissonMatrix(PC pc, Mat A)
     A should be obtained by discretizing the Poisson problem with linear finite elements.
           Following HYPRE convention, the scalar Poisson solver of AMS can be turned off by passing NULL.
 
-.seealso: PCHYPRESetDiscreteGradient(), PCHYPRESetDiscreteCurl(), PCHYPRESetAlphaPoissonMatrix()
+.seealso: `PCHYPRESetDiscreteGradient()`, `PCHYPRESetDiscreteCurl()`, `PCHYPRESetAlphaPoissonMatrix()`
 @*/
 PetscErrorCode PCHYPRESetBetaPoissonMatrix(PC pc, Mat A)
 {
@@ -2121,8 +2121,8 @@ PetscErrorCode PCSetFromOptions_HYPRE(PetscOptionItems *PetscOptionsObject,PC pc
 
    Level: intermediate
 
-.seealso:  PCCreate(), PCSetType(), PCType, PC,
-           PCHYPRE
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`,
+          `PCHYPRE`
 
 @*/
 PetscErrorCode  PCHYPRESetType(PC pc,const char name[])
@@ -2145,8 +2145,8 @@ PetscErrorCode  PCHYPRESetType(PC pc,const char name[])
 
    Level: intermediate
 
-.seealso:  PCCreate(), PCHYPRESetType(), PCType, PC,
-           PCHYPRE
+.seealso: `PCCreate()`, `PCHYPRESetType()`, `PCType`, `PC`,
+          `PCHYPRE`
 
 @*/
 PetscErrorCode  PCHYPREGetType(PC pc,const char *name[])
@@ -2172,7 +2172,7 @@ PetscErrorCode  PCHYPREGetType(PC pc,const char *name[])
 
    Level: intermediate
 
-.seealso: PCMGGalerkinGetMatProductAlgorithm()
+.seealso: `PCMGGalerkinGetMatProductAlgorithm()`
 
 @*/
 PetscErrorCode PCMGGalerkinSetMatProductAlgorithm(PC pc,const char name[])
@@ -2196,7 +2196,7 @@ PetscErrorCode PCMGGalerkinSetMatProductAlgorithm(PC pc,const char name[])
 
    Level: intermediate
 
-.seealso: PCMGGalerkinSetMatProductAlgorithm()
+.seealso: `PCMGGalerkinSetMatProductAlgorithm()`
 
 @*/
 PetscErrorCode PCMGGalerkinGetMatProductAlgorithm(PC pc,const char *name[])
@@ -2253,8 +2253,8 @@ PetscErrorCode PCMGGalerkinGetMatProductAlgorithm(PC pc,const char *name[])
      To configure hypre BoomerAMG so that it can utilize AMD GPUs run ./configure --download-hypre --with-hip
      Then pass VECHIP vectors to the solvers and PETSc will automatically utilize hypre's GPU solvers.
 
-.seealso:  PCCreate(), PCSetType(), PCType, PC,
-           PCHYPRESetType(), PCPFMG
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`,
+          `PCHYPRESetType()`, `PCPFMG`
 
 M*/
 
@@ -2467,7 +2467,7 @@ PetscErrorCode PCSetUp_PFMG(PC pc)
            This must be used with the MATHYPRESTRUCT matrix type.
            This is less general than in hypre, it supports only one block per process defined by a PETSc DMDA.
 
-.seealso:  PCMG, MATHYPRESTRUCT
+.seealso: `PCMG`, `MATHYPRESTRUCT`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_PFMG(PC pc)
@@ -2701,7 +2701,7 @@ PetscErrorCode PCSetUp_SysPFMG(PC pc)
            This is less general than in hypre, it supports only one part, and one block per process defined by a PETSc DMDA.
            Also, only cell-centered variables.
 
-.seealso:  PCMG, MATHYPRESSTRUCT
+.seealso: `PCMG`, `MATHYPRESSTRUCT`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_SysPFMG(PC pc)

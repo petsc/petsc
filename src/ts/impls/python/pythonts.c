@@ -14,7 +14,7 @@
 
    Level: intermediate
 
-.seealso: TSCreate(), TSSetType(), TSPYTHON, PetscPythonInitialize()
+.seealso: `TSCreate()`, `TSSetType()`, `TSPYTHON`, `PetscPythonInitialize()`
 @*/
 PetscErrorCode  TSPythonSetType(TS ts,const char pyname[])
 {
