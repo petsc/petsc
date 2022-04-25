@@ -9,8 +9,8 @@
   Input Parameters:
 + comm - MPI communicator
 . bndx,bndy,bndz - boundary type: DM_BOUNDARY_NONE, DM_BOUNDARY_PERIODIC, or DM_BOUNDARY_GHOSTED
-. M,N,P - global number of grid points in x,y directions
-. m,n,p - number of ranks in the x,y directions (may be PETSC_DECIDE)
+. M,N,P - global number of elements in x,y,z directions
+. m,n,p - number of ranks in the x,y,z directions (may be PETSC_DECIDE)
 . dof0 - number of degrees of freedom per vertex/0-cell
 . dof1 - number of degrees of freedom per edge/1-cell
 . dof2 - number of degrees of freedom per face/2-cell
