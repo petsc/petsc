@@ -11,7 +11,9 @@ class Configure(config.base.Configure):
   def __str1__(self):
     if not hasattr(self, 'clanguage'):
       return ''
-    return '  Language used to compile PETSc: ' + self.clanguage +'\n'
+    desc = ['PETSc:']
+    desc.append('  Language used to compile PETSc: ' + self.clanguage)
+    return '\n'.join(desc)+'\n'
 
   def setupHelp(self, help):
     import nargs
