@@ -106,6 +106,28 @@
        end subroutine
       end Interface
 
+      Interface VecCreateSeqWithArray
+        subroutine VecCreateSeqWithArray0(a,b,c,d,e,z)
+          import tVec
+          MPI_Comm a
+          integer4 b ! bs
+          PetscInt c ! length
+          PetscScalar d (*) ! array of values
+          Vec e
+          PetscErrorCode z
+        end subroutine
+        subroutine VecCreateSeqWithArray1(a,b,c,d,e,z)
+          import tVec
+          MPI_Comm a
+          integer8 b ! bs
+          PetscInt c ! length
+          PetscScalar d (*) ! array of values
+          Vec e
+          PetscErrorCode z
+        end subroutine
+      end Interface
+
+
       Interface VecSetValuesLocal
         subroutine VecSetValuesLocal0(a,b,c,d,e,z)
           import tVec
