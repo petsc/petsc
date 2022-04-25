@@ -83,6 +83,19 @@ int main(int argc,char **argv)
     PetscCall(ISView(is,PETSC_VIEWER_STDOUT_WORLD));
     PetscCall(ISDestroy(&is));
   }
+  if (dim == 3) {
+    IS is;
+    DMStagStencil s[4];
+
+    s[0].c = 0; s[0].loc = DMSTAG_ELEMENT;
+    s[1].c = 0; s[1].loc = DMSTAG_BACK_LEFT;
+    s[2].c = 0; s[2].loc = DMSTAG_BACK_DOWN_LEFT;
+    s[3].c = 0; s[3].loc = DMSTAG_DOWN;
+    PetscCall(DMStagCreateISFromStencils(dm,4,s,&is));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Test 6\n"));
+    PetscCall(ISView(is,PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(ISDestroy(&is));
+  }
 
   PetscCall(DMDestroy(&dm));
   PetscCall(PetscFinalize());
