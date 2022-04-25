@@ -46,6 +46,11 @@ if [ ! -f "${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/files" ]; then
   exit 1
 fi
 
+if [ ! -f $1 ]; then
+  echo "Executable appears missing from your command line"
+  exit 1
+fi
+
 if [ -f makefile ]; then
   file=`echo $1 |sed s'?^\./??g'`
   if [ -f \#${file}.[cxF90]*\# ]; then
