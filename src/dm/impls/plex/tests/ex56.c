@@ -2,7 +2,7 @@
 #include <petscviewerhdf5.h>
 #include <petscsf.h>
 
-static const char help[] = "Load and save the mesh to the native HDF5 format\n\n";
+static const char help[] = "Test DMLabel I/O with PETSc native HDF5 mesh format\n\n";
 static const char EX[] = "ex56.c";
 typedef struct {
   MPI_Comm    comm;
