@@ -237,7 +237,7 @@ PetscErrorCode  ISColoringGetIS(ISColoring iscoloring,PetscCopyMode mode, PetscI
 
       if (PetscDefined(USE_DEBUG)) {
         for (i=0; i<n; i++) {
-          PetscCheckFalse(((PetscInt)colors[i]) >= nc,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coloring is our of range index %d value %d number colors %d",(int)i,(int)colors[i],(int)nc);
+          PetscCheck(((PetscInt)colors[i]) < nc,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coloring is our of range index %d value %d number colors %d",(int)i,(int)colors[i],(int)nc);
         }
       }
 

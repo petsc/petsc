@@ -79,7 +79,7 @@ PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
     PetscCall(PetscViewerBinaryRead(viewer,tr,2,NULL,PETSC_INT));
     PetscCheck(tr[0] == VEC_FILE_CLASSID,PetscObjectComm((PetscObject)viewer),PETSC_ERR_FILE_UNEXPECTED,"Not a vector next in file");
     PetscCheck(tr[1] >= 0,PetscObjectComm((PetscObject)viewer),PETSC_ERR_FILE_UNEXPECTED,"Vector size (%" PetscInt_FMT ") in file is negative",tr[1]);
-    PetscCheckFalse(N >= 0 && N != tr[1],PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Vector in file different size (%" PetscInt_FMT ") than input vector (%" PetscInt_FMT ")",tr[1],N);
+    PetscCheck(N < 0 || N == tr[1],PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Vector in file different size (%" PetscInt_FMT ") than input vector (%" PetscInt_FMT ")",tr[1],N);
     rows = tr[1];
   } else {
     PetscCheck(N >= 0,PETSC_COMM_SELF,PETSC_ERR_USER,"Vector binary file header was skipped, thus the user must specify the global size of input vector");
@@ -115,7 +115,7 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
   const char     *vecname;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!((PetscObject)xin)->name,PetscObjectComm((PetscObject)xin), PETSC_ERR_SUP, "Vec name must be set with PetscObjectSetName() before VecLoad()");
+  PetscCheck(((PetscObject)xin)->name,PetscObjectComm((PetscObject)xin), PETSC_ERR_SUP, "Vec name must be set with PetscObjectSetName() before VecLoad()");
 #if defined(PETSC_USE_REAL_SINGLE)
   scalartype = H5T_NATIVE_FLOAT;
 #elif defined(PETSC_USE_REAL___FLOAT128)

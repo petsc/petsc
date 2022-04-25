@@ -622,7 +622,7 @@ static PetscErrorCode VecGetArray_Nest(Vec X,PetscScalar **x)
     PetscCall(ISGetIndices(isy,&ixy));
     for (j=0; j<sm; j++) {
       PetscInt ix = ixy[j];
-      PetscCheckFalse(ix < rstart || rend <= ix,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for getting array from nonlocal subvec");
+      PetscCheck(ix >= rstart && rend > ix,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for getting array from nonlocal subvec");
       (*x)[ix-rstart] = y[j];
     }
     PetscCall(ISRestoreIndices(isy,&ixy));
@@ -650,7 +650,7 @@ static PetscErrorCode VecRestoreArray_Nest(Vec X,PetscScalar **x)
     PetscCall(ISGetIndices(isy,&ixy));
     for (j=0; j<sm; j++) {
       PetscInt ix = ixy[j];
-      PetscCheckFalse(ix < rstart || rend <= ix,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for getting array from nonlocal subvec");
+      PetscCheck(ix >= rstart && rend > ix,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for getting array from nonlocal subvec");
       y[j] = (*x)[ix-rstart];
     }
     PetscCall(ISRestoreIndices(isy,&ixy));

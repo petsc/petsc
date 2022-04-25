@@ -957,7 +957,7 @@ PetscErrorCode  VecStrideSubSetGather_Default(Vec v,PetscInt nidx,const PetscInt
       PetscCheck(idxv[j] >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"idx[%" PetscInt_FMT "] %" PetscInt_FMT " is negative",j,idxv[j]);
       PetscCheck(idxv[j] < bs,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"idx[%" PetscInt_FMT "] %" PetscInt_FMT " is greater than or equal to vector blocksize %" PetscInt_FMT,j,idxv[j],bs);
     }
-    PetscCheckFalse(!idxs && bss != nidx,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must provide idxs when not gathering into all locations");
+    PetscCheck(idxs || bss == nidx,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must provide idxs when not gathering into all locations");
   }
 
   if (addv == INSERT_VALUES) {
@@ -1023,7 +1023,7 @@ PetscErrorCode  VecStrideSubSetScatter_Default(Vec s,PetscInt nidx,const PetscIn
         PetscCheck(idxs[j] < bs,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"idx[%" PetscInt_FMT "] %" PetscInt_FMT " is greater than or equal to vector blocksize %" PetscInt_FMT,j,idxs[j],bs);
       }
     }
-    PetscCheckFalse(!idxs && bss != nidx,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must provide idxs when not scattering from all locations");
+    PetscCheck(idxs || bss == nidx,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must provide idxs when not scattering from all locations");
   }
 
   if (addv == INSERT_VALUES) {

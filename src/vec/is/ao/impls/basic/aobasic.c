@@ -243,9 +243,9 @@ PETSC_EXTERN PetscErrorCode AOCreate_Basic(AO ao)
     ip = allpetsc[i];
     ia = allapp[i];
     /* check there are no duplicates */
-    PetscCheckFalse(aobasic->app[ip],PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Duplicate in PETSc ordering at position %" PetscInt_FMT ". Already mapped to %" PetscInt_FMT ", not %" PetscInt_FMT ".", i, aobasic->app[ip]-1, ia);
+    PetscCheck(!aobasic->app[ip],PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Duplicate in PETSc ordering at position %" PetscInt_FMT ". Already mapped to %" PetscInt_FMT ", not %" PetscInt_FMT ".", i, aobasic->app[ip]-1, ia);
     aobasic->app[ip] = ia + 1;
-    PetscCheckFalse(aobasic->petsc[ia],PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Duplicate in Application ordering at position %" PetscInt_FMT ". Already mapped to %" PetscInt_FMT ", not %" PetscInt_FMT ".", i, aobasic->petsc[ia]-1, ip);
+    PetscCheck(!aobasic->petsc[ia],PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Duplicate in Application ordering at position %" PetscInt_FMT ". Already mapped to %" PetscInt_FMT ", not %" PetscInt_FMT ".", i, aobasic->petsc[ia]-1, ip);
     aobasic->petsc[ia] = ip + 1;
   }
   if (napp && !mypetsc) {

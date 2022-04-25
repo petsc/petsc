@@ -99,8 +99,8 @@ static PetscErrorCode PetscViewerHDF5ReadSizes_Private(PetscViewer viewer, HDF5R
     ctx->complexInd = -1;
   }
   PetscCheck(ctx->lenInd <= ctx->bsInd,PetscObjectComm((PetscObject)viewer), PETSC_ERR_PLIB, "Calculated block dimension index = %d < %d = length dimension index.",ctx->bsInd,ctx->lenInd);
-  PetscCheckFalse(ctx->bsInd > ctx->rdim - 1,PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Calculated block dimension index = %d > %d = total number of dimensions - 1.",ctx->bsInd,ctx->rdim-1);
-  PetscCheckFalse(ctx->complexVal && ctx->dims[ctx->complexInd] != 2,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Complex numbers must have exactly 2 parts (%llu)",ctx->dims[ctx->complexInd]);
+  PetscCheck(ctx->bsInd <= ctx->rdim - 1,PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Calculated block dimension index = %d > %d = total number of dimensions - 1.",ctx->bsInd,ctx->rdim-1);
+  PetscCheck(!ctx->complexVal || ctx->dims[ctx->complexInd] == 2,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Complex numbers must have exactly 2 parts (%llu)",ctx->dims[ctx->complexInd]);
 
   if (hdf5->horizontal) {
     PetscInt t;

@@ -153,7 +153,7 @@ PetscErrorCode CreateSF1(AppCtx *ctx, PetscSF *sf1)
     const PetscInt *tlocal;
 
     PetscCall(PetscSFGetGraph(sf, NULL, NULL, &tlocal, NULL));
-    PetscCheckFalse(tlocal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ilocal=NULL expected for contiguous case");
+    PetscCheck(!tlocal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ilocal=NULL expected for contiguous case");
   }
   *sf1 = sf;
   PetscFunctionReturn(0);

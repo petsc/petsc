@@ -335,7 +335,7 @@ PetscErrorCode PetscParallelSortInt(PetscLayout mapin, PetscLayout mapout, Petsc
   PetscValidPointer(mapin, 1);
   PetscValidPointer(mapout, 2);
   PetscCallMPI(MPI_Comm_compare(mapin->comm, mapout->comm, &result));
-  PetscCheckFalse(result != MPI_IDENT && result != MPI_CONGRUENT,mapin->comm, PETSC_ERR_ARG_NOTSAMECOMM, "layouts are not on the same communicator");
+  PetscCheck(result == MPI_IDENT || result == MPI_CONGRUENT,mapin->comm, PETSC_ERR_ARG_NOTSAMECOMM, "layouts are not on the same communicator");
   PetscCall(PetscLayoutSetUp(mapin));
   PetscCall(PetscLayoutSetUp(mapout));
   if (mapin->n) PetscValidIntPointer(keysin, 3);

@@ -101,7 +101,7 @@ static PetscErrorCode ISRestoreIndices_Block(IS is,const PetscInt *idx[])
     PetscCall(PetscFree(*(void**)idx));
   } else {
     /* F90Array1dCreate() inside ISRestoreArrayF90() does not keep array when zero length array */
-    PetscCheckFalse(is->map->n > 0  && *idx != sub->idx,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must restore with value from ISGetIndices()");
+    PetscCheck(is->map->n <= 0 || *idx == sub->idx,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must restore with value from ISGetIndices()");
   }
   PetscFunctionReturn(0);
 }
@@ -340,7 +340,7 @@ static PetscErrorCode ISOnComm_Block(IS is,MPI_Comm comm,PetscCopyMode mode,IS *
 static PetscErrorCode ISSetBlockSize_Block(IS is,PetscInt bs)
 {
   PetscFunctionBegin;
-  PetscCheckFalse(is->map->bs > 0 && bs != is->map->bs,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot change blocksize %" PetscInt_FMT " (to %" PetscInt_FMT ") if ISType is ISBLOCK",is->map->bs,bs);
+  PetscCheck(is->map->bs <= 0 || bs == is->map->bs,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot change blocksize %" PetscInt_FMT " (to %" PetscInt_FMT ") if ISType is ISBLOCK",is->map->bs,bs);
   PetscCall(PetscLayoutSetBlockSize(is->map, bs));
   PetscFunctionReturn(0);
 }

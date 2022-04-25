@@ -455,7 +455,7 @@ PetscErrorCode ISSetInfo(IS is, ISInfo info, ISInfoType type, PetscBool permanen
     errcomm = PETSC_COMM_SELF;
   }
 
-  PetscCheckFalse(((int) info) <= IS_INFO_MIN || ((int) info) >= IS_INFO_MAX,errcomm,PETSC_ERR_ARG_OUTOFRANGE,"Options %d is out of range",(int)info);
+  PetscCheck(((int) info) > IS_INFO_MIN && ((int) info) < IS_INFO_MAX,errcomm,PETSC_ERR_ARG_OUTOFRANGE,"Options %d is out of range",(int)info);
 
   PetscCallMPI(MPI_Comm_size(comm, &size));
   /* do not use global values if size == 1: it makes it easier to keep the implications straight */
@@ -777,7 +777,7 @@ PetscErrorCode ISGetInfo(IS is, ISInfo info, ISInfoType type, PetscBool compute,
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
 
-  PetscCheckFalse(((int) info) <= IS_INFO_MIN || ((int) info) >= IS_INFO_MAX,errcomm,PETSC_ERR_ARG_OUTOFRANGE,"Options %d is out of range",(int)info);
+  PetscCheck(((int) info) > IS_INFO_MIN && ((int) info) < IS_INFO_MAX,errcomm,PETSC_ERR_ARG_OUTOFRANGE,"Options %d is out of range",(int)info);
   if (size == 1) type = IS_LOCAL;
   itype = (type == IS_LOCAL) ? 0 : 1;
   hasprop = PETSC_FALSE;

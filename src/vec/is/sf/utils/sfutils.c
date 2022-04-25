@@ -98,7 +98,7 @@ PetscErrorCode PetscSFSetGraphSection(PetscSF sf, PetscSection localSection, Pet
 
     PetscCall(PetscSectionGetDof(globalSection, p, &gdof));
     PetscCall(PetscSectionGetConstraintDof(globalSection, p, &gcdof));
-    PetscCheckFalse(gcdof > (gdof < 0 ? -(gdof+1) : gdof),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %" PetscInt_FMT " has %" PetscInt_FMT " constraints > %" PetscInt_FMT " dof", p, gcdof, (gdof < 0 ? -(gdof+1) : gdof));
+    PetscCheck(gcdof <= (gdof < 0 ? -(gdof+1) : gdof),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %" PetscInt_FMT " has %" PetscInt_FMT " constraints > %" PetscInt_FMT " dof", p, gcdof, (gdof < 0 ? -(gdof+1) : gdof));
     nleaves += gdof < 0 ? -(gdof+1)-gcdof : gdof-gcdof;
   }
   PetscCall(PetscMalloc1(nleaves, &local));
@@ -448,7 +448,7 @@ PetscErrorCode PetscSFCreateFromLayouts(PetscLayout rmap, PetscLayout lmap, Pets
   PetscCheck(rmap->setupcalled,rcomm,PETSC_ERR_ARG_WRONGSTATE,"Root layout not setup");
   PetscCheck(lmap->setupcalled,lcomm,PETSC_ERR_ARG_WRONGSTATE,"Leaf layout not setup");
   PetscCallMPI(MPI_Comm_compare(rcomm,lcomm,&flg));
-  PetscCheckFalse(flg != MPI_CONGRUENT && flg != MPI_IDENT,rcomm,PETSC_ERR_SUP,"cannot map two layouts with non-matching communicators");
+  PetscCheck(flg == MPI_CONGRUENT || flg == MPI_IDENT,rcomm,PETSC_ERR_SUP,"cannot map two layouts with non-matching communicators");
   PetscCall(PetscSFCreate(rcomm,sf));
   PetscCall(PetscLayoutGetLocalSize(rmap,&nroots));
   PetscCall(PetscLayoutGetSize(rmap,&rN));
@@ -487,7 +487,7 @@ PetscErrorCode PetscLayoutMapLocal(PetscLayout map,PetscInt N,const PetscInt idx
   PetscCall(PetscMalloc1(N,&ridxs));
   for (r = 0; r < N; ++r) {
     const PetscInt idx = idxs[r];
-    PetscCheckFalse(idx < 0 || map->N <= idx,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index %" PetscInt_FMT " out of range [0,%" PetscInt_FMT ")",idx,map->N);
+    PetscCheck(idx >= 0 && idx < map->N,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index %" PetscInt_FMT " out of range [0,%" PetscInt_FMT ")",idx,map->N);
     if (idx < owners[p] || owners[p+1] <= idx) { /* short-circuit the search if the last p owns this idx too */
       PetscCall(PetscLayoutFindOwner(map,idx,&p));
     }
@@ -650,7 +650,7 @@ PetscErrorCode PetscSFCreateByMatchingIndices(PetscLayout layout, PetscInt numRo
   PetscCall(PetscLayoutGetLocalSize(layout, &n));
   flag = (PetscBool)(leafIndices == rootIndices);
   PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &flag, 1, MPIU_BOOL, MPI_LAND, comm));
-  PetscCheckFalse(flag && numLeafIndices != numRootIndices,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "leafIndices == rootIndices, but numLeafIndices (%" PetscInt_FMT ") != numRootIndices(%" PetscInt_FMT ")", numLeafIndices, numRootIndices);
+  PetscCheck(!flag || numLeafIndices == numRootIndices,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "leafIndices == rootIndices, but numLeafIndices (%" PetscInt_FMT ") != numRootIndices(%" PetscInt_FMT ")", numLeafIndices, numRootIndices);
 #if defined(PETSC_USE_DEBUG)
   N1 = PETSC_MIN_INT;
   for (i = 0; i < numRootIndices; i++) if (rootIndices[i] > N1) N1 = rootIndices[i];

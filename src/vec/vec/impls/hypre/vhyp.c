@@ -30,7 +30,7 @@ PetscErrorCode VecHYPRE_IJVectorDestroy(VecHYPRE_IJVector *ij)
 {
   PetscFunctionBegin;
   if (!*ij) PetscFunctionReturn(0);
-  PetscCheckFalse((*ij)->pvec,PetscObjectComm((PetscObject)((*ij)->pvec)),PETSC_ERR_ORDER,"Forgot to call VecHYPRE_IJVectorPopVec()");
+  PetscCheck(!(*ij)->pvec,PetscObjectComm((PetscObject)((*ij)->pvec)),PETSC_ERR_ORDER,"Forgot to call VecHYPRE_IJVectorPopVec()");
   PetscStackCallStandard(HYPRE_IJVectorDestroy,(*ij)->ij);
   PetscCall(PetscFree(*ij));
   PetscFunctionReturn(0);

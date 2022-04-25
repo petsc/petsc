@@ -3009,7 +3009,7 @@ PetscErrorCode PetscSectionSymDestroy(PetscSectionSym *sym)
   if ((*sym)->ops->destroy) {
     PetscCall((*(*sym)->ops->destroy)(*sym));
   }
-  PetscCheckFalse((*sym)->workout,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Work array still checked out");
+  PetscCheck(!(*sym)->workout,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Work array still checked out");
   for (link=(*sym)->workin; link; link=next) {
     next = link->next;
     PetscCall(PetscFree2(link->perms,link->rots));
@@ -3502,7 +3502,7 @@ PetscErrorCode PetscSectionExtractDofsFromArray(PetscSection origSection, MPI_Da
   PetscCall(PetscSectionCreate(PETSC_COMM_SELF, &s));
   PetscCall(PetscSectionSetChart(s, 0, npoints));
   for (i=0; i<npoints; i++) {
-    PetscCheckFalse(points_[i] < pStart || points_[i] >= pEnd,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "point %" PetscInt_FMT " (index %" PetscInt_FMT ") in input IS out of input section's chart", points_[i], i);
+    PetscCheck(points_[i] >= pStart && points_[i] < pEnd,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "point %" PetscInt_FMT " (index %" PetscInt_FMT ") in input IS out of input section's chart", points_[i], i);
     PetscCall(PetscSectionGetDof(origSection, points_[i], &n));
     PetscCall(PetscSectionSetDof(s, i, n));
   }

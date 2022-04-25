@@ -283,7 +283,7 @@ static PetscErrorCode ISSetBlockSize_Stride(IS is,PetscInt bs)
   IS_Stride     *sub = (IS_Stride*)is->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(sub->step != 1 && bs != 1,PetscObjectComm((PetscObject)is),PETSC_ERR_ARG_SIZ,"ISSTRIDE has stride %" PetscInt_FMT ", cannot be blocked of size %" PetscInt_FMT,sub->step,bs);
+  PetscCheck(sub->step == 1 || bs == 1,PetscObjectComm((PetscObject)is),PETSC_ERR_ARG_SIZ,"ISSTRIDE has stride %" PetscInt_FMT ", cannot be blocked of size %" PetscInt_FMT,sub->step,bs);
   PetscCall(PetscLayoutSetBlockSize(is->map, bs));
   PetscFunctionReturn(0);
 }

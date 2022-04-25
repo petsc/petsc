@@ -47,7 +47,7 @@ PetscErrorCode MPIPetsc_Type_unwrap(MPI_Datatype a,MPI_Datatype *atype,PetscBool
   if (a == MPIU_INT || a == MPIU_REAL || a == MPIU_SCALAR) PetscFunctionReturn(0);
   PetscCallMPI(MPI_Type_get_envelope(a,&nints,&naddrs,&ntypes,&combiner));
   if (combiner == MPI_COMBINER_DUP) {
-    PetscCheckFalse(nints != 0 || naddrs != 0 || ntypes != 1,PETSC_COMM_SELF,PETSC_ERR_LIB,"Unexpected returns from MPI_Type_get_envelope()");
+    PetscCheck(nints == 0 && naddrs == 0 && ntypes == 1,PETSC_COMM_SELF,PETSC_ERR_LIB,"Unexpected returns from MPI_Type_get_envelope()");
     PetscCallMPI(MPI_Type_get_contents(a,0,0,1,ints,addrs,types));
     /* Recursively unwrap dupped types. */
     PetscCall(MPIPetsc_Type_unwrap(types[0],atype,flg));
@@ -60,7 +60,7 @@ PetscErrorCode MPIPetsc_Type_unwrap(MPI_Datatype a,MPI_Datatype *atype,PetscBool
     /* In any case, it's up to the caller to free the returned type in this case. */
     *flg = PETSC_TRUE;
   } else if (combiner == MPI_COMBINER_CONTIGUOUS) {
-    PetscCheckFalse(nints != 1 || naddrs != 0 || ntypes != 1,PETSC_COMM_SELF,PETSC_ERR_LIB,"Unexpected returns from MPI_Type_get_envelope()");
+    PetscCheck(nints == 1 && naddrs == 0 && ntypes == 1,PETSC_COMM_SELF,PETSC_ERR_LIB,"Unexpected returns from MPI_Type_get_envelope()");
     PetscCallMPI(MPI_Type_get_contents(a,1,0,1,ints,addrs,types));
     if (ints[0] == 1) { /* If a is created by MPI_Type_contiguous(1,..) */
       PetscCall(MPIPetsc_Type_unwrap(types[0],atype,flg));

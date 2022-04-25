@@ -75,7 +75,7 @@ PetscErrorCode ISLoad_Binary(IS is, PetscViewer viewer)
     PetscCall(PetscViewerBinaryRead(viewer,tr,2,NULL,PETSC_INT));
     PetscCheck(tr[0] == IS_FILE_CLASSID,PetscObjectComm((PetscObject)viewer),PETSC_ERR_FILE_UNEXPECTED,"Not an IS next in file");
     PetscCheck(tr[1] >= 0,PetscObjectComm((PetscObject)viewer),PETSC_ERR_FILE_UNEXPECTED,"IS size (%" PetscInt_FMT ") in file is negative",tr[1]);
-    PetscCheckFalse(N >= 0 && N != tr[1],PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"IS in file different size (%" PetscInt_FMT ") than input IS (%" PetscInt_FMT ")",tr[1],N);
+    PetscCheck(N < 0 || N == tr[1],PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"IS in file different size (%" PetscInt_FMT ") than input IS (%" PetscInt_FMT ")",tr[1],N);
     rows = tr[1];
   } else {
     PetscCheck(N >= 0,PETSC_COMM_SELF,PETSC_ERR_USER,"IS binary file header was skipped, thus the user must specify the global size of input IS");

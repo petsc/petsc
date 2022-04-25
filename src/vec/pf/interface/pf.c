@@ -149,8 +149,8 @@ PetscErrorCode  PFApplyVec(PF pf,Vec x,Vec y)
 
   PetscCall(VecGetLocalSize(x,&n));
   PetscCall(VecGetLocalSize(y,&p));
-  PetscCheckFalse((pf->dimin*(n/pf->dimin)) != n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local input vector length %" PetscInt_FMT " not divisible by dimin %" PetscInt_FMT " of function",n,pf->dimin);
-  PetscCheckFalse((pf->dimout*(p/pf->dimout)) != p,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local output vector length %" PetscInt_FMT " not divisible by dimout %" PetscInt_FMT " of function",p,pf->dimout);
+  PetscCheck((pf->dimin*(n/pf->dimin)) == n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local input vector length %" PetscInt_FMT " not divisible by dimin %" PetscInt_FMT " of function",n,pf->dimin);
+  PetscCheck((pf->dimout*(p/pf->dimout)) == p,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local output vector length %" PetscInt_FMT " not divisible by dimout %" PetscInt_FMT " of function",p,pf->dimout);
   PetscCheck((n/pf->dimin) == (p/pf->dimout),PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local vector lengths %" PetscInt_FMT " %" PetscInt_FMT " are wrong for dimin and dimout %" PetscInt_FMT " %" PetscInt_FMT " of function",n,p,pf->dimin,pf->dimout);
 
   if (pf->ops->applyvec) {

@@ -32,7 +32,7 @@ PetscErrorCode VecTaggerSetFromOptions_Simple(PetscOptionItems *PetscOptionsObje
   PetscCall(PetscOptionsScalarArray("-vec_tagger_box","lower and upper bounds of the box",funcstring,inBoxVals,&nvals,&set));
   PetscOptionsHeadEnd();
   if (set) {
-    PetscCheckFalse(nvals != 2 *bs,PetscObjectComm((PetscObject)tagger),PETSC_ERR_ARG_INCOMP,"Expect array of %" PetscInt_FMT " values for -vec_tagger_box, got %" PetscInt_FMT,2 * bs,nvals);
+    PetscCheck(nvals == 2*bs,PetscObjectComm((PetscObject)tagger),PETSC_ERR_ARG_INCOMP,"Expect array of %" PetscInt_FMT " values for -vec_tagger_box, got %" PetscInt_FMT,2 * bs,nvals);
     PetscCall(VecTaggerSetBox_Simple(tagger,(VecTaggerBox *)inBoxVals));
   }
   PetscCall(PetscFree(inBoxVals));

@@ -860,8 +860,8 @@ PetscErrorCode VecSetValues_MPI(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
 
   PetscFunctionBegin;
   if (PetscDefined(USE_DEBUG)) {
-    PetscCheckFalse(xin->stash.insertmode == INSERT_VALUES && addv == ADD_VALUES,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"You have already inserted values; you cannot now add");
-    else PetscCheckFalse(xin->stash.insertmode == ADD_VALUES && addv == INSERT_VALUES,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"You have already added values; you cannot now insert");
+    PetscCheck(xin->stash.insertmode != INSERT_VALUES || addv != ADD_VALUES,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"You have already inserted values; you cannot now add");
+    else PetscCheck(xin->stash.insertmode != ADD_VALUES || addv != INSERT_VALUES,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"You have already added values; you cannot now insert");
   }
   PetscCall(VecGetArray(xin,&xx));
   xin->stash.insertmode = addv;
@@ -903,8 +903,8 @@ PetscErrorCode VecSetValuesBlocked_MPI(Vec xin,PetscInt ni,const PetscInt ix[],c
   PetscFunctionBegin;
   PetscCall(VecGetArray(xin,&xx));
   if (PetscDefined(USE_DEBUG)) {
-    PetscCheckFalse(xin->stash.insertmode == INSERT_VALUES && addv == ADD_VALUES,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"You have already inserted values; you cannot now add");
-    else PetscCheckFalse(xin->stash.insertmode == ADD_VALUES && addv == INSERT_VALUES,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"You have already added values; you cannot now insert");
+    PetscCheck(xin->stash.insertmode != INSERT_VALUES || addv != ADD_VALUES,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"You have already inserted values; you cannot now add");
+    else PetscCheck(xin->stash.insertmode != ADD_VALUES || addv != INSERT_VALUES,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"You have already added values; you cannot now insert");
   }
   xin->stash.insertmode = addv;
 

@@ -304,7 +304,7 @@ PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp
   if (PetscDefined(USE_DEBUG)) {
     /* Check that the permutations are complementary */
     for (i = 0; i < N; i++) {
-      PetscCheckFalse(i != aomap->appPerm[aomap->petscPerm[i]],PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid ordering");
+      PetscCheck(i == aomap->appPerm[aomap->petscPerm[i]],PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid ordering");
     }
   }
   /* Cleanup */

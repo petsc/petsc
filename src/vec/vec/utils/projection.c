@@ -476,13 +476,13 @@ PetscErrorCode VecISAXPY(Vec vfull, IS is, PetscScalar alpha, Vec vreduced)
     if (alpha == 1.0) {
       for (i=0; i<n; ++i) {
         if (id[i] < 0) continue;
-        PetscCheckFalse(id[i] < rstart || id[i] >= rend,PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
+        PetscCheck(id[i] >= rstart && id[i] < rend,PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
         y[id[i]] += x[i];
       }
     } else {
       for (i=0; i<n; ++i) {
         if (id[i] < 0) continue;
-        PetscCheckFalse(id[i] < rstart || id[i] >= rend,PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
+        PetscCheck(id[i] >= rstart && id[i] < rend,PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
         y[id[i]] += alpha*x[i];
       }
     }
@@ -552,7 +552,7 @@ PetscErrorCode VecISCopy(Vec vfull, IS is, ScatterMode mode, Vec vreduced)
       y   -= rstart;
       for (i = 0; i < n; ++i) {
         if (id[i] < 0) continue;
-        PetscCheckFalse(id[i] < rstart || id[i] >= rend,PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
+        PetscCheck(id[i] >= rstart && id[i] < rend,PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
         y[id[i]] = x[i];
       }
       y   += rstart;
@@ -566,7 +566,7 @@ PetscErrorCode VecISCopy(Vec vfull, IS is, ScatterMode mode, Vec vreduced)
       PetscCall(VecGetArray(vreduced, &x));
       for (i = 0; i < n; ++i) {
         if (id[i] < 0) continue;
-        PetscCheckFalse(id[i] < rstart || id[i] >= rend,PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
+        PetscCheck(id[i] >= rstart && id[i] < rend,PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
         x[i] = y[id[i]-rstart];
       }
       PetscCall(VecRestoreArray(vreduced, &x));
@@ -637,7 +637,7 @@ PetscErrorCode VecISSet(Vec V,IS S, PetscScalar c)
   PetscCall(VecGetArray(V,&v));
   for (i=0; i<nloc; ++i) {
     if (s[i] < 0) continue;
-    PetscCheckFalse(s[i] < low || s[i] >= high,PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
+    PetscCheck(s[i] >= low && s[i] < high,PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
     v[s[i]-low] = c;
   }
   PetscCall(ISRestoreIndices(S,&s));

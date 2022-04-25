@@ -132,7 +132,7 @@ static PetscErrorCode ISRestoreIndices_General(IS in,const PetscInt *idx[])
 
   PetscFunctionBegin;
    /* F90Array1dCreate() inside ISRestoreArrayF90() does not keep array when zero length array */
-  PetscCheckFalse(in->map->n > 0  && *idx != sub->idx,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must restore with value from ISGetIndices()");
+  PetscCheck(in->map->n <= 0 || *idx == sub->idx,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must restore with value from ISGetIndices()");
   PetscFunctionReturn(0);
 }
 

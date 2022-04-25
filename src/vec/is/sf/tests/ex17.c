@@ -50,7 +50,7 @@ int main(int argc,char **argv)
   PetscCall(PetscSFReduceBegin(sf,MPI_SIGNED_CHAR,leafdata,rootdata,MPI_SUM)); /* rank 1->0, add leafdata to rootdata */
   PetscCall(PetscSFReduceEnd(sf,MPI_SIGNED_CHAR,leafdata,rootdata,MPI_SUM));
   if (!rank) {
-    PetscCheckFalse(rootdata[0] != 22 || rootdata[nroots-1] != 24,PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF: wrong results");
+    PetscCheck(rootdata[0] == 22 && rootdata[nroots-1] == 24,PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF: wrong results");
   }
 
   PetscCall(PetscFree2(rootdata,leafdata));
