@@ -56,7 +56,7 @@ Before filing an MR
 
 -  Read the :any:`style`.
 -  :any:`Set up your git environment <sec_setup_git>`.
--  Start a new branch and make your changes. Only use a GitLab fork of PETSc if you do not have
+-  Start a new branch and make your changes. Only use a GitLab (public) fork of PETSc if you do not have
    developer (write access) to the PETSc GitLab repository.
 
 -  If your contribution can be logically decomposed into 2 or more
@@ -100,6 +100,7 @@ If you have developer access (that is you are not contributing from a fork):
 
 For MRs from forks:
 
+-  Make sure the fork is not private - as gitlab merge request process does not work well (wrt pipelines, merges) with a private fork.
 -  Select the correct target repository ``petsc/petsc`` along with the target branch.
 -  GitLab does not allow you to set labels so  `@`-mention one of the developers in a comment so that they can assign someone to the MR to add labels, run pipelines, and generally assist with the MR. Both the submitter and the this assignee should be listed in the upper right corner as an assigned to the MR.
 
