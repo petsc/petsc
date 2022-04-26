@@ -90,6 +90,7 @@ cdef extern from * nogil:
     int DMGetCoordinateDim(PetscDM,PetscInt*)
     int DMSetCoordinateDim(PetscDM,PetscInt)
     int DMLocalizeCoordinates(PetscDM)
+    int DMProjectCoordinates(PetscDM, PetscFE)
 
     int DMCreateInterpolation(PetscDM,PetscDM,PetscMat*,PetscVec*)
     int DMCreateInjection(PetscDM,PetscDM,PetscMat*)
@@ -125,6 +126,8 @@ cdef extern from * nogil:
     int DMSetSectionSF(PetscDM,PetscSF)
     int DMGetPointSF(PetscDM,PetscSF*)
     int DMSetPointSF(PetscDM,PetscSF)
+
+    int DMCreateSubDM(PetscDM, PetscInt, const PetscInt[], PetscIS*, PetscDM*)
 
     int DMCreateLabel(PetscDM,const char[])
     int DMGetLabelValue(PetscDM,const char[],PetscInt,PetscInt*)

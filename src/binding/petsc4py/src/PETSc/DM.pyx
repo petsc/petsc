@@ -155,6 +155,17 @@ cdef class DM(Object):
 
     #
 
+    def createSubDM(self, fields):
+        cdef IS iset = IS()
+        cdef DM subdm = DM()
+        cdef PetscInt *ifields = NULL
+        cdef PetscInt numFields = 0
+        fields = iarray_i(fields, &numFields, &ifields)
+        CHKERR( DMCreateSubDM( self.dm, numFields, ifields, &iset.iset, &subdm.dm) )
+        return iset, subdm
+
+    #
+
     def setNumFields(self, numFields):
         cdef PetscInt cnum = asInt(numFields)
         CHKERR( DMSetNumFields(self.dm, cnum) )
@@ -306,6 +317,10 @@ cdef class DM(Object):
         CHKERR( DMGetCoordinatesLocal(self.dm, &c.vec) )
         PetscINCREF(c.obj)
         return c
+
+    def projectCoordinates(self, FE disc):
+        CHKERR( DMProjectCoordinates(self.dm, disc.fe))
+        return self
 
     def getBoundingBox(self):
         cdef PetscInt i,dim=0
