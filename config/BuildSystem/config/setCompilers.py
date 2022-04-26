@@ -304,13 +304,15 @@ class Configure(config.base.Configure):
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version', log = log)
       output = output + error
       import re
-      strmatch = re.match('gcc\s+\(.*\)\s+(\d+)\.(\d+)',output)
+      strmatch = re.match('gcc[-0-9]*\s+\(.*\)\s+(\d+)\.(\d+)',output)
       if strmatch:
         VMAJOR,VMINOR = strmatch.groups()
         if (int(VMAJOR),int(VMINOR)) >= (11,0):
           if log: log.write('Detected Gcc110plus compiler\n')
           return 1
+      if log: log.write('Did not detect Gcc110plus compiler\n')
     except RuntimeError:
+      if log: log.write('Did not detect Gcc110plus compiler due to exception\n')
       pass
 
   @staticmethod
