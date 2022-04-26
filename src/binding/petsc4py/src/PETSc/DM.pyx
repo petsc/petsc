@@ -166,6 +166,28 @@ cdef class DM(Object):
 
     #
 
+    def setAuxiliaryVec(self, Vec aux, label=None, value=0, part=0):
+        cdef PetscInt cvalue = asInt(value)
+        cdef PetscInt cpart = asInt(part)
+        cdef const char *cval = NULL
+        cdef PetscDMLabel clbl = NULL
+        label = str2bytes(label, &cval)
+        if cval == NULL: cval = b"" # XXX Should be fixed upstream
+        CHKERR( DMGetLabel(self.dm, cval, &clbl) )
+        CHKERR( DMSetAuxiliaryVec(self.dm, clbl, cvalue, cpart, aux.vec) )
+    
+    def getAuxiliaryVec(self, label=None, value=0, part=0):
+        cdef PetscInt cvalue = asInt(value)
+        cdef PetscInt cpart = asInt(part)
+        cdef const char *cval = NULL
+        cdef PetscDMLabel clbl = NULL
+        cdef Vec aux = Vec()
+        label = str2bytes(label, &cval)
+        if cval == NULL: cval = b"" # XXX Should be fixed upstream
+        CHKERR( DMGetLabel(self.dm, cval, &clbl) )
+        CHKERR( DMGetAuxiliaryVec(self.dm, clbl, cvalue, cpart, &aux.vec) )
+        return aux
+
     def setNumFields(self, numFields):
         cdef PetscInt cnum = asInt(numFields)
         CHKERR( DMSetNumFields(self.dm, cnum) )

@@ -128,6 +128,8 @@ cdef extern from * nogil:
     int DMSetPointSF(PetscDM,PetscSF)
 
     int DMCreateSubDM(PetscDM, PetscInt, const PetscInt[], PetscIS*, PetscDM*)
+    int DMSetAuxiliaryVec(PetscDM, PetscDMLabel, PetscInt, PetscInt, PetscVec)
+    int DMGetAuxiliaryVec(PetscDM, PetscDMLabel, PetscInt, PetscInt, PetscVec*)
 
     int DMCreateLabel(PetscDM,const char[])
     int DMGetLabelValue(PetscDM,const char[],PetscInt,PetscInt*)
