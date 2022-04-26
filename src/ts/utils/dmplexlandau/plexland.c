@@ -23,79 +23,6 @@
 #include <omp.h>
 #endif
 
-/* vector padding not supported */
-#define LANDAU_VL  1
-
-static PetscErrorCode LandauMatMult(Mat A, Vec x, Vec y)
-{
-  LandauCtx       *ctx;
-  PetscContainer  container;
-
-  PetscFunctionBegin;
-  PetscCall(PetscObjectQuery((PetscObject) A, "LandauCtx", (PetscObject *) &container));
-  if (container) {
-    PetscCall(PetscContainerGetPointer(container, (void **) &ctx));
-    PetscCall(VecScatterBegin(ctx->plex_batch,x,ctx->work_vec,INSERT_VALUES,SCATTER_FORWARD));
-    PetscCall(VecScatterEnd(ctx->plex_batch,x,ctx->work_vec,INSERT_VALUES,SCATTER_FORWARD));
-    PetscCall((*ctx->seqaij_mult)(A,ctx->work_vec,y));
-    PetscCall(VecCopy(y, ctx->work_vec));
-    PetscCall(VecScatterBegin(ctx->plex_batch,ctx->work_vec,y,INSERT_VALUES,SCATTER_REVERSE));
-    PetscCall(VecScatterEnd(ctx->plex_batch,ctx->work_vec,y,INSERT_VALUES,SCATTER_REVERSE));
-    PetscFunctionReturn(0);
-  }
-  PetscCall(MatMult(A,x,y));
-  PetscFunctionReturn(0);
-}
-
-// Computes v3 = v2 + A * v1.
-static PetscErrorCode LandauMatMultAdd(Mat A,Vec v1,Vec v2,Vec v3)
-{
-  PetscFunctionBegin;
-  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "?????");
-  PetscCall(LandauMatMult(A,v1,v3));
-  PetscCall(VecAYPX(v3,1,v2));
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode LandauMatMultTranspose(Mat A, Vec x, Vec y)
-{
-  LandauCtx       *ctx;
-  PetscContainer  container;
-
-  PetscFunctionBegin;
-  PetscCall(PetscObjectQuery((PetscObject) A, "LandauCtx", (PetscObject *) &container));
-  if (container) {
-    PetscCall(PetscContainerGetPointer(container, (void **) &ctx));
-    PetscCall(VecScatterBegin(ctx->plex_batch,x,ctx->work_vec,INSERT_VALUES,SCATTER_FORWARD));
-    PetscCall(VecScatterEnd(ctx->plex_batch,x,ctx->work_vec,INSERT_VALUES,SCATTER_FORWARD));
-    PetscCall((*ctx->seqaij_multtranspose)(A,ctx->work_vec,y));
-    PetscCall(VecCopy(y, ctx->work_vec));
-    PetscCall(VecScatterBegin(ctx->plex_batch,ctx->work_vec,y,INSERT_VALUES,SCATTER_REVERSE));
-    PetscCall(VecScatterEnd(ctx->plex_batch,ctx->work_vec,y,INSERT_VALUES,SCATTER_REVERSE));
-    PetscFunctionReturn(0);
-  }
-  PetscCall(MatMultTranspose(A,x,y));
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode LandauMatGetDiagonal(Mat A,Vec x)
-{
-  LandauCtx       *ctx;
-  PetscContainer  container;
-
-  PetscFunctionBegin;
-  PetscCall(PetscObjectQuery((PetscObject) A, "LandauCtx", (PetscObject *) &container));
-  if (container) {
-    PetscCall(PetscContainerGetPointer(container, (void **) &ctx));
-    PetscCall((*ctx->seqaij_getdiagonal)(A,ctx->work_vec));
-    PetscCall(VecScatterBegin(ctx->plex_batch,ctx->work_vec,x,INSERT_VALUES,SCATTER_REVERSE));
-    PetscCall(VecScatterEnd(ctx->plex_batch,ctx->work_vec,x,INSERT_VALUES,SCATTER_REVERSE));
-    PetscFunctionReturn(0);
-  }
-  PetscCall(MatGetDiagonal(A, x));
-  PetscFunctionReturn(0);
-}
-
 static PetscErrorCode LandauGPUMapsDestroy(void *ptr)
 {
   P4estVertexMaps *maps = (P4estVertexMaps*)ptr;
@@ -1480,8 +1407,9 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
     PetscCall(PetscOptionsBool("-dm_landau_coo_assembly", "Assemble Jacobian with Kokkos on 'device'", "plexland.c", ctx->coo_assembly, &ctx->coo_assembly, NULL));
     if (ctx->coo_assembly) PetscCheck(ctx->gpu_assembly,ctx->comm,PETSC_ERR_ARG_WRONG,"COO assembly requires 'gpu assembly' even if Kokkos 'CPU' back-end %d",ctx->coo_assembly);
   }
-  PetscCall(PetscOptionsBool("-dm_landau_jacobian_field_major_order", "Reorder Jacobian for GPU assembly with field major, or block diagonal, ordering", "plexland.c", ctx->jacobian_field_major_order, &ctx->jacobian_field_major_order, NULL));
+  PetscCall(PetscOptionsBool("-dm_landau_jacobian_field_major_order", "Reorder Jacobian for GPU assembly with field major, or block diagonal, ordering (DEPRECATED)", "plexland.c", ctx->jacobian_field_major_order, &ctx->jacobian_field_major_order, NULL));
   if (ctx->jacobian_field_major_order) PetscCheck(ctx->gpu_assembly,ctx->comm,PETSC_ERR_ARG_WRONG,"-dm_landau_jacobian_field_major_order requires -dm_landau_gpu_assembly");
+  PetscCheck(!ctx->jacobian_field_major_order,ctx->comm,PETSC_ERR_ARG_WRONG,"-dm_landau_jacobian_field_major_order DEPRECATED");
   PetscOptionsEnd();
 
   for (ii=ctx->num_species;ii<LANDAU_MAX_SPECIES;ii++) ctx->masses[ii] = ctx->thermal_temps[ii]  = ctx->charges[ii] = 0;
@@ -2093,23 +2021,15 @@ static PetscErrorCode LandauCreateMatrix(MPI_Comm comm, Vec X, IS grid_batch_is_
   PetscCall(MatAssemblyBegin(ctx->J,MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(ctx->J,MAT_FINAL_ASSEMBLY));
 
+  // debug
   if (ctx->gpu_assembly && ctx->jacobian_field_major_order) {
-    Mat            mat_block_order;
+    Mat mat_block_order;
     PetscCall(MatCreateSubMatrix(ctx->J,ctx->batch_is,ctx->batch_is,MAT_INITIAL_MATRIX,&mat_block_order)); // use MatPermute
-    PetscCall(MatViewFromOptions(mat_block_order, NULL, "-dm_landau_field_major_mat_view"));
-    PetscCall(MatDestroy(&ctx->J));
-    ctx->J = mat_block_order;
-    // override ops to make KSP work in field major space
-    ctx->seqaij_mult                  = mat_block_order->ops->mult;
-    mat_block_order->ops->mult        = LandauMatMult;
-    mat_block_order->ops->multadd     = LandauMatMultAdd;
-    ctx->seqaij_solve                 = NULL;
-    ctx->seqaij_getdiagonal           = mat_block_order->ops->getdiagonal;
-    mat_block_order->ops->getdiagonal = LandauMatGetDiagonal;
-    ctx->seqaij_multtranspose         = mat_block_order->ops->multtranspose;
-    mat_block_order->ops->multtranspose = LandauMatMultTranspose;
+    PetscCall(MatViewFromOptions(ctx->J, NULL, "-dm_landau_mat_view"));
+    PetscCall(MatViewFromOptions(mat_block_order, NULL, "-dm_landau_mat_view"));
+    PetscCall(MatDestroy(&mat_block_order));
+    PetscCall(VecScatterCreate(X, ctx->batch_is, X, NULL, &ctx->plex_batch));
     PetscCall(VecDuplicate(X,&ctx->work_vec));
-    PetscCall(VecScatterCreate(X, ctx->batch_is, ctx->work_vec, NULL, &ctx->plex_batch));
   }
 
   PetscFunctionReturn(0);
