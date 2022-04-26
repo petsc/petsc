@@ -1061,12 +1061,14 @@ static PetscErrorCode MatSetValuesCOO_SeqAIJKokkos(Mat A,const PetscScalar v[],I
     kv = ConstMatScalarKokkosView(v,aseq->coo_n); /* Directly use v[]'s memory */
   }
 
-  if (imode == INSERT_VALUES) {
-    PetscCall(MatSeqAIJGetKokkosViewWrite(A,&Aa)); /* write matrix values */
-    Kokkos::deep_copy(Aa,0.0); /* Zero matrix values since INSERT_VALUES still requires summing replicated values in v[] */
-  } else PetscCall(MatSeqAIJGetKokkosView(A,&Aa)); /* read & write matrix values */
+  if (imode == INSERT_VALUES) PetscCall(MatSeqAIJGetKokkosViewWrite(A,&Aa)); /* write matrix values */
+  else PetscCall(MatSeqAIJGetKokkosView(A,&Aa)); /* read & write matrix values */
 
-  Kokkos::parallel_for(Annz,KOKKOS_LAMBDA(const PetscCount i) {for (PetscCount k=jmap(i); k<jmap(i+1); k++) Aa(i) += kv(perm(k));});
+  Kokkos::parallel_for(Annz,KOKKOS_LAMBDA(const PetscCount i) {
+    PetscScalar sum = 0.0;
+    for (PetscCount k=jmap(i); k<jmap(i+1); k++) sum += kv(perm(k));
+    Aa(i) = (imode == INSERT_VALUES? 0.0 : Aa(i)) + sum;
+  });
 
   if (imode == INSERT_VALUES) PetscCall(MatSeqAIJRestoreKokkosViewWrite(A,&Aa));
   else PetscCall(MatSeqAIJRestoreKokkosView(A,&Aa));
