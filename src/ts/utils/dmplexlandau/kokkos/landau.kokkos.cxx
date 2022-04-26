@@ -309,7 +309,8 @@ PetscErrorCode LandauKokkosStaticDataClear(LandauStaticData *SData_d)
   PetscFunctionReturn(0);
 }
 
-#define KOKKOS_SHARED_LEVEL 1
+#define KOKKOS_SHARED_LEVEL 0 // 0 is shared, 1 is global
+
 KOKKOS_INLINE_FUNCTION
 PetscErrorCode landau_mat_assemble(PetscSplitCSRDataStructure d_mat, PetscScalar *coo_vals, const PetscScalar Aij, const PetscInt f, const PetscInt g, const PetscInt Nb,
                                    PetscInt moffset, const PetscInt elem, const PetscInt fieldA, const P4estVertexMaps *d_maps,
@@ -531,7 +532,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
     PetscCall(PetscLogGpuTimeBegin());
 
     const int scr_bytes_fdf = real2_scr_t::shmem_size(Nf_max,Nb);
-    PetscCall(PetscInfo(plex[0], "Jacobian shared memory size: %d bytes in level %d num cells total=%" PetscInt_FMT " team size=%" PetscInt_FMT " #face=%" PetscInt_FMT " Nf_max=%" PetscInt_FMT "\n",scr_bytes_fdf,KOKKOS_SHARED_LEVEL,num_cells_batch*batch_sz,team_size,nfaces,Nf_max));
+    PetscCall(PetscInfo(plex[0], "df & f shared memory size: %d bytes in level %d num cells total=%d team size=%d #face=%d Nf_max=%d\n",scr_bytes_fdf,KOKKOS_SHARED_LEVEL,num_cells_batch*batch_sz,team_size,nfaces,Nf_max));
     Kokkos::parallel_for("f, df", Kokkos::TeamPolicy<>(num_cells_batch*batch_sz, team_size, /* Kokkos::AUTO */ 16).set_scratch_size(KOKKOS_SHARED_LEVEL, Kokkos::PerTeam(scr_bytes_fdf)), KOKKOS_LAMBDA (const team_member team) {
         const PetscInt b_Nelem = d_elem_offset[num_grids], b_elem_idx = team.league_rank()%b_Nelem, b_id = team.league_rank()/b_Nelem, IPf_sz_glb = d_ipf_offset[num_grids];
         // find my grid
@@ -733,13 +734,14 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
     PetscCall(PetscLogEventBegin(events[4],0,0,0,0));
     PetscCall(PetscLogGpuTimeBegin());
     const int scr_bytes = 2*(g2_scr_t::shmem_size(dim,Nf_max,Nq) + g3_scr_t::shmem_size(dim,dim,Nf_max,Nq));
-    Kokkos::parallel_for("Jacobian", Kokkos::TeamPolicy<>(num_cells_batch*batch_sz, team_size, /* Kokkos::AUTO */ 16).set_scratch_size(KOKKOS_SHARED_LEVEL, Kokkos::PerTeam(scr_bytes)), jac_lambda);
+    PetscCall(PetscInfo(plex[0], "Jacobian shared memory size: %d bytes in level %d num cells total=%d team size=%d #face=%d Nf_max=%d\n",scr_bytes,KOKKOS_SHARED_LEVEL,num_cells_batch*batch_sz,team_size,nfaces,Nf_max));
+    Kokkos::parallel_for("Jacobian", Kokkos::TeamPolicy<>(num_cells_batch*batch_sz, team_size, 16).set_scratch_size(KOKKOS_SHARED_LEVEL, Kokkos::PerTeam(scr_bytes)), jac_lambda);
     PetscCall(PetscLogGpuTimeEnd());
     PetscCall(PetscLogEventEnd(events[4],0,0,0,0));
     if (d_vertex_f_k) delete d_vertex_f_k;
   } else { // mass - 2*Nb is guess at max size (2D Q3 is 31 =< 2*Nb = 32)
     using fieldMats_scr_t = Kokkos::View<PetscScalar*, Kokkos::LayoutRight, scr_mem_t>;
-    PetscInt loc_ass_sz = 1; // captured
+    PetscInt loc_ass_sz = 0; // captured
     PetscCall(PetscLogEventBegin(events[16],0,0,0,0));
     PetscCall(PetscLogGpuTimeBegin());
     if (loc_ass_sz) loc_ass_sz = ctx->SData_d.coo_max_fullnb*ctx->SData_d.coo_max_fullnb;
