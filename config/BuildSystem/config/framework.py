@@ -459,7 +459,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     log.write("Preprocess output after filtering:\n"+output+":\n")
     return output
 
-  def filterCompileOutput(self, output):
+  def filterCompileOutput(self, output,flag = ''):
+    if flag and output.find("ignoring unknown option '"+flag+"'"): return output
     if output.find('warning:  attribute "deprecated" is unknown, ignored') >= 0: return output
     if output.find('PGC-W-0129-Floating point overflow') >= 0: return output
     if output.find('warning #264: floating-point value does not fit in required floating-point type') >= 0: return output
