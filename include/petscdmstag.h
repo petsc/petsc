@@ -13,6 +13,9 @@
 
 .seealso: DMSTAG, DMStagStencil, DMStagGetLocationSlot()
 E*/
+
+/* The order of these entries is significant, as it corresponds to the canonical numbering
+   of DOFs, and the fact the the numbering starts at 0 may also be used by the implementation */
 typedef enum {
 DMSTAG_NULL_LOCATION=0,
 DMSTAG_BACK_DOWN_LEFT,

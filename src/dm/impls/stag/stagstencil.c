@@ -14,25 +14,26 @@ const char * const DMStagStencilLocations[] = {"NONE","BACK_DOWN_LEFT","BACK_DOW
 
   Input Parameters:
 + dm - the DMStag object
-. nStencil - the number of stencils provided
-- stencils - an array of DMStagStencil objects (i,j, and k are ignored)
+. n_stencil - the number of stencils provided
+- stencils - an array of DMStagStencil objects (i, j, and k are ignored)
 
   Output Parameter:
 . is - the global IS
 
   Note:
-  Redundant entries in s are ignored
+  Redundant entries in the stencils argument are ignored
 
   Level: advanced
 
 .seealso: DMSTAG, IS, DMStagStencil, DMCreateGlobalVector
 @*/
-PetscErrorCode DMStagCreateISFromStencils(DM dm,PetscInt nStencil,DMStagStencil* stencils,IS *is)
+PetscErrorCode DMStagCreateISFromStencils(DM dm,PetscInt n_stencil,DMStagStencil* stencils,IS *is)
 {
-  DMStagStencil          *ss;
+  PetscInt               *stencil_active;
+  DMStagStencil          *stencils_ordered_unique;
   PetscInt               *idx,*idxLocal;
   const PetscInt         *ltogidx;
-  PetscInt               p,p2,pmax,i,j,k,d,dim,count,nidx;
+  PetscInt               n_stencil_unique,dim,count,nidx,nc_max;
   ISLocalToGlobalMapping ltog;
   PetscInt               start[DMSTAG_MAX_DIM],n[DMSTAG_MAX_DIM],extraPoint[DMSTAG_MAX_DIM];
 
@@ -40,46 +41,63 @@ PetscErrorCode DMStagCreateISFromStencils(DM dm,PetscInt nStencil,DMStagStencil*
   PetscCall(DMGetDimension(dm,&dim));
   PetscCheck(dim >= 1 && dim <= 3,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported dimension %" PetscInt_FMT,dim);
 
-  /* Only use non-redundant stencils */
-  PetscCall(PetscMalloc1(nStencil,&ss));
-  pmax = 0;
-  for (p=0; p<nStencil; ++p) {
-    PetscBool skip = PETSC_FALSE;
-    DMStagStencil stencilPotential = stencils[p];
-    PetscCall(DMStagStencilLocationCanonicalize(stencils[p].loc,&stencilPotential.loc));
-    for (p2=0; p2<pmax; ++p2) { /* Quadratic complexity algorithm in nStencil */
-      if (stencilPotential.loc == ss[p2].loc && stencilPotential.c == ss[p2].c) {
-        skip = PETSC_TRUE;
-        break;
-      }
-    }
-    if (!skip) {
-      ss[pmax] = stencilPotential;
-      ++pmax;
+  /* To assert that the resulting IS has unique, sorted, entries, we perform
+     a bucket sort, taking advantage of the fact that DMStagStencilLocation
+     enum values are integers starting with 1, in canonical order */
+  nc_max = 1; // maximum number of components to represent these stencils
+  n_stencil_unique = 0;
+  for (PetscInt p=0;p<n_stencil;++p) nc_max = PetscMax(nc_max, (stencils[p].c + 1));
+  PetscCall(PetscCalloc1(DMSTAG_NUMBER_LOCATIONS * nc_max, &stencil_active));
+  for (PetscInt p=0; p<n_stencil; ++p) {
+    DMStagStencilLocation loc_canonical;
+    PetscInt              slot;
+
+    PetscCall(DMStagStencilLocationCanonicalize(stencils[p].loc,&loc_canonical));
+    slot = nc_max * ((PetscInt) loc_canonical) + stencils[p].c;
+    if (stencil_active[slot] == 0) {
+      stencil_active[slot] = 1;
+      ++n_stencil_unique;
     }
   }
+  PetscCall(PetscMalloc1(n_stencil_unique,&stencils_ordered_unique));
+  {
+    PetscInt p = 0;
 
-  PetscCall(PetscMalloc1(pmax,&idxLocal));
+    for (PetscInt i=1; i<DMSTAG_NUMBER_LOCATIONS; ++i) {
+      for (PetscInt c = 0; c<nc_max; ++c) {
+        if (stencil_active[nc_max * i + c] != 0) {
+          stencils_ordered_unique[p].loc = (DMStagStencilLocation) i;
+          stencils_ordered_unique[p].c = c;
+          ++p;
+        }
+      }
+    }
+  }
+  PetscCall(PetscFree(stencil_active));
+
+  PetscCall(PetscMalloc1(n_stencil_unique,&idxLocal));
   PetscCall(DMGetLocalToGlobalMapping(dm,&ltog));
   PetscCall(ISLocalToGlobalMappingGetIndices(ltog,&ltogidx));
   PetscCall(DMStagGetCorners(dm,&start[0],&start[1],&start[2],&n[0],&n[1],&n[2],&extraPoint[0],&extraPoint[1],&extraPoint[2]));
-  for (d=dim; d<DMSTAG_MAX_DIM; ++d) {
+  for (PetscInt d=dim; d<DMSTAG_MAX_DIM; ++d) {
     start[d]      = 0;
     n[d]          = 1; /* To allow for a single loop nest below */
     extraPoint[d] = 0;
   }
-  nidx = pmax; for (d=0; d<dim; ++d) nidx *= (n[d]+1); /* Overestimate (always assumes extraPoint) */
+  nidx = n_stencil_unique; for (PetscInt d=0; d<dim; ++d) nidx *= (n[d]+1); /* Overestimate (always assumes extraPoint) */
   PetscCall(PetscMalloc1(nidx,&idx));
   count = 0;
   /* Note that unused loop variables are not accessed, for lower dimensions */
-  for (k=start[2]; k<start[2]+n[2]+extraPoint[2]; ++k) {
-    for (j=start[1]; j<start[1]+n[1]+extraPoint[1]; ++j) {
-      for (i=start[0]; i<start[0]+n[0]+extraPoint[0]; ++i) {
-        for (p=0; p<pmax; ++p) {
-          ss[p].i = i; ss[p].j = j; ss[p].k = k;
+  for (PetscInt k=start[2]; k<start[2]+n[2]+extraPoint[2]; ++k) {
+    for (PetscInt j=start[1]; j<start[1]+n[1]+extraPoint[1]; ++j) {
+      for (PetscInt i=start[0]; i<start[0]+n[0]+extraPoint[0]; ++i) {
+        for (PetscInt p=0; p<n_stencil_unique; ++p) {
+          stencils_ordered_unique[p].i = i;
+          stencils_ordered_unique[p].j = j;
+          stencils_ordered_unique[p].k = k;
         }
-        PetscCall(DMStagStencilToIndexLocal(dm,dim,pmax,ss,idxLocal));
-        for (p=0; p<pmax; ++p) {
+        PetscCall(DMStagStencilToIndexLocal(dm,dim,n_stencil_unique,stencils_ordered_unique,idxLocal));
+        for (PetscInt p=0; p<n_stencil_unique; ++p) {
           const PetscInt gidx = ltogidx[idxLocal[p]];
           if (gidx >= 0) {
             idx[count] = gidx;
@@ -89,11 +107,15 @@ PetscErrorCode DMStagCreateISFromStencils(DM dm,PetscInt nStencil,DMStagStencil*
       }
     }
   }
-  PetscCall(ISLocalToGlobalMappingRestoreIndices(ltog,&ltogidx));
-  PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)dm),count,idx,PETSC_OWN_POINTER,is));
 
-  PetscCall(PetscFree(ss));
+  PetscCall(ISLocalToGlobalMappingRestoreIndices(ltog,&ltogidx));
+  PetscCall(PetscFree(stencils_ordered_unique));
   PetscCall(PetscFree(idxLocal));
+
+  PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)dm),count,idx,PETSC_OWN_POINTER,is));
+  PetscCall(ISSetInfo(*is,IS_SORTED,IS_GLOBAL,PETSC_TRUE,PETSC_TRUE));
+  PetscCall(ISSetInfo(*is,IS_UNIQUE,IS_GLOBAL,PETSC_TRUE,PETSC_TRUE));
+
   PetscFunctionReturn(0);
 }
 
