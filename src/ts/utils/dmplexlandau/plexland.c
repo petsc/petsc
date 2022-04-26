@@ -985,7 +985,7 @@ static PetscErrorCode maxwellian(PetscInt dim, PetscReal time, const PetscReal x
  .keywords: mesh
  .seealso: `DMPlexLandauCreateVelocitySpace()`
  @*/
-PetscErrorCode DMPlexLandauAddMaxwellians(DM dm, Vec X, PetscReal time, PetscReal temps[], PetscReal ns[], PetscInt grid, PetscInt b_id, void *actx)
+PetscErrorCode DMPlexLandauAddMaxwellians(DM dm, Vec X, PetscReal time, PetscReal temps[], PetscReal ns[], PetscInt grid, PetscInt b_id, PetscInt n_batch, void *actx)
 {
   LandauCtx      *ctx = (LandauCtx*)actx;
   PetscErrorCode (*initu[LANDAU_MAX_SPECIES])(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar [], void *);
@@ -999,7 +999,7 @@ PetscErrorCode DMPlexLandauAddMaxwellians(DM dm, Vec X, PetscReal time, PetscRea
     mctxs[i0]      = &data[i0];
     data[i0].v_0   = ctx->v_0; // v_0 same for all grids
     data[i0].kT_m  = ctx->k*temps[ii]/ctx->masses[ii]; /* kT/m */
-    data[i0].n     = ns[ii] * (1+(double)b_id/100.0); // make solves a little different to mimic application, n[0] use for Conner-Hastie
+    data[i0].n     = ns[ii] * (1+0.1*(double)b_id/(double)n_batch); // ramp density up 10% to mimic application, n[0] use for Conner-Hastie
     initu[i0]      = maxwellian;
     data[i0].shift = 0;
   }
@@ -1027,13 +1027,13 @@ PetscErrorCode DMPlexLandauAddMaxwellians(DM dm, Vec X, PetscReal time, PetscRea
  .keywords: mesh
  .seealso: `DMPlexLandauCreateVelocitySpace()`, `DMPlexLandauAddMaxwellians()`
  */
-static PetscErrorCode LandauSetInitialCondition(DM dm, Vec X, PetscInt grid, PetscInt b_id, void *actx)
+static PetscErrorCode LandauSetInitialCondition(DM dm, Vec X, PetscInt grid, PetscInt b_id, PetscInt n_batch, void *actx)
 {
   LandauCtx        *ctx = (LandauCtx*)actx;
   PetscFunctionBegin;
   if (!ctx) PetscCall(DMGetApplicationContext(dm, &ctx));
   PetscCall(VecZeroEntries(X));
-  PetscCall(DMPlexLandauAddMaxwellians(dm, X, 0.0, ctx->thermal_temps, ctx->n, grid, b_id, ctx));
+  PetscCall(DMPlexLandauAddMaxwellians(dm, X, 0.0, ctx->thermal_temps, ctx->n, grid, b_id, n_batch, ctx));
   PetscFunctionReturn(0);
 }
 
@@ -1186,7 +1186,7 @@ static PetscErrorCode adapt(PetscInt grid, LandauCtx *ctx, Vec *uu)
         PetscCall(VecDestroy(uu));
         PetscCall(DMCreateGlobalVector(newForest,uu));
         PetscCall(PetscObjectSetName((PetscObject) *uu, "uAMR"));
-        PetscCall(LandauSetInitialCondition(newForest, *uu, grid, 0, ctx));
+        PetscCall(LandauSetInitialCondition(newForest, *uu, grid, 0, 1, ctx));
         ctx->plex[grid] = newForest;
       } else {
         exit(4); // can happen with no AMR and post refinement
@@ -2082,7 +2082,7 @@ PetscErrorCode DMPlexLandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, cons
     PetscCall(DMCreateGlobalVector(ctx->plex[grid],&Xsub[grid]));
     PetscCall(PetscObjectSetName((PetscObject) Xsub[grid], "u_orig"));
     /* initial static refinement, no solve */
-    PetscCall(LandauSetInitialCondition(ctx->plex[grid], Xsub[grid], grid, 0, ctx));
+    PetscCall(LandauSetInitialCondition(ctx->plex[grid], Xsub[grid], grid, 0, 1, ctx));
     /* forest refinement - forest goes in (if forest), plex comes out */
     if (ctx->use_p4est) {
       DM plex;
@@ -2135,7 +2135,7 @@ PetscErrorCode DMPlexLandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, cons
     for (PetscInt b_id = 0 ; b_id < ctx->batch_sz ; b_id++) {
       PetscScalar const *values;
       const PetscInt    moffset = LAND_MOFFSET(b_id,grid,ctx->batch_sz,ctx->num_grids,ctx->mat_offset);
-      PetscCall(LandauSetInitialCondition(ctx->plex[grid], Xsub[grid], grid, b_id, ctx));
+      PetscCall(LandauSetInitialCondition(ctx->plex[grid], Xsub[grid], grid, b_id, ctx->batch_sz, ctx));
       PetscCall(VecGetArrayRead(Xsub[grid],&values));
       for (int i=0, idx = moffset; i<n; i++, idx++) {
         PetscCall(VecSetValue(*X,idx,values[i],INSERT_VALUES));
