@@ -4026,7 +4026,7 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE(Mat mat, PetscCount coo_n, 
   PetscFunctionReturn(0);
 }
 
-__global__ void MatAddCOOValues(const PetscScalar kv[],PetscCount nnz,const PetscCount jmap[],const PetscCount perm[],InsertMode imode,PetscScalar a[])
+__global__ static void MatAddCOOValues(const PetscScalar kv[],PetscCount nnz,const PetscCount jmap[],const PetscCount perm[],InsertMode imode,PetscScalar a[])
 {
   PetscCount        i = blockIdx.x*blockDim.x + threadIdx.x;
   const PetscCount  grid_size = gridDim.x * blockDim.x;

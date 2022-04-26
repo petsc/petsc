@@ -285,14 +285,14 @@ static PetscErrorCode MatSetPreallocationCOO_MPIAIJCUSPARSE(Mat mat, PetscCount 
   PetscFunctionReturn(0);
 }
 
-__global__ void MatPackCOOValues(const PetscScalar kv[],PetscCount nnz,const PetscCount perm[],PetscScalar buf[])
+__global__ static void MatPackCOOValues(const PetscScalar kv[],PetscCount nnz,const PetscCount perm[],PetscScalar buf[])
 {
   PetscCount       i = blockIdx.x*blockDim.x + threadIdx.x;
   const PetscCount grid_size = gridDim.x * blockDim.x;
   for (; i<nnz; i+= grid_size) buf[i] = kv[perm[i]];
 }
 
-__global__ void MatAddLocalCOOValues(const PetscScalar kv[],InsertMode imode,
+__global__ static void MatAddLocalCOOValues(const PetscScalar kv[],InsertMode imode,
   PetscCount Annz,const PetscCount Ajmap1[],const PetscCount Aperm1[],PetscScalar Aa[],
   PetscCount Bnnz,const PetscCount Bjmap1[],const PetscCount Bperm1[],PetscScalar Ba[])
 {
@@ -311,7 +311,7 @@ __global__ void MatAddLocalCOOValues(const PetscScalar kv[],InsertMode imode,
   }
 }
 
-__global__ void MatAddRemoteCOOValues(const PetscScalar kv[],
+__global__ static void MatAddRemoteCOOValues(const PetscScalar kv[],
   PetscCount Annz2,const PetscCount Aimap2[],const PetscCount Ajmap2[],const PetscCount Aperm2[],PetscScalar Aa[],
   PetscCount Bnnz2,const PetscCount Bimap2[],const PetscCount Bjmap2[],const PetscCount Bperm2[],PetscScalar Ba[])
 {
