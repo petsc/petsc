@@ -125,6 +125,7 @@ cdef extern from * nogil:
     int DMPlexGetRefinementUniform(PetscDM,PetscBool*)
     int DMPlexSetRefinementUniform(PetscDM,PetscBool)
 
+    int DMPlexGetMinRadius(PetscDM, PetscReal*)
     #int DMPlexGetNumFaceVertices(PetscDM,PetscInt,PetscInt,PetscInt*)
     #int DMPlexGetOrientedFace(PetscDM,PetscInt,PetscInt,const PetscInt[],PetscInt,PetscInt[],PetscInt[],PetscInt[],PetscBool*)
 

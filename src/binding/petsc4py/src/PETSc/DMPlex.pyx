@@ -549,6 +549,11 @@ cdef class DMPlex(DM):
                                       newsec.sec, newvec.vec))
         return (newsec, newvec)
 
+    def getMinRadius(self):
+        cdef PetscReal cminradius = 0.
+        CHKERR( DMPlexGetMinRadius(self.dm, &cminradius))
+        return asReal(cminradius)
+
     def createCoarsePointIS(self):
         cdef IS fpoint = IS()
         CHKERR( DMPlexCreateCoarsePointIS(self.dm, &fpoint.iset) )
