@@ -467,7 +467,8 @@ manualpages: chk_manualpage_dir
             -indexdir ../$${LMANSEC} \
             -index ${LOC}/docs/manualpages/manualpages.cit \
             -locdir ${LOCDIR} -Wargdesc ${SOURCED} 2>&1 | tee -a ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err;\
-          chmod -f g+w ${LOC}/docs/manualpages/$${LMANSEC}/* ; fi
+          if [ -n "$$(ls "${LOC}/docs/manualpages/$${LMANSEC}")" ]; then chmod g+w "${LOC}"/docs/manualpages/$${LMANSEC}/*; fi; \
+    fi;
 #
 #   Example usage for manual pages; adds each example that uses a function to that functions
 # manual page up to a limit of 10 examples.
