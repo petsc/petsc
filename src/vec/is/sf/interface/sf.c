@@ -699,6 +699,7 @@ PetscErrorCode PetscSFDuplicate(PetscSF sf,PetscSFDuplicateOption opt,PetscSF *n
   PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)sf),newsf));
   PetscCall(PetscSFGetType(sf,&type));
   if (type) PetscCall(PetscSFSetType(*newsf,type));
+  (*newsf)->allow_multi_leaves = sf->allow_multi_leaves; /* Dup this flag ealier since PetscSFSetGraph() below checks on this flag */
   if (opt == PETSCSF_DUPLICATE_GRAPH) {
     PetscSFCheckGraphSet(sf,1);
     if (sf->pattern == PETSCSF_PATTERN_GENERAL) {
