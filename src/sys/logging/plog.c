@@ -2305,6 +2305,8 @@ static PetscErrorCode PetscLogGpuTime_Off(void)
 
     This routine should only be called once near the beginning of the program. Once it is started it cannot be turned off.
 
+   Level: advanced
+
 .seealso: `PetscLogView()`, `PetscLogGpuFlops()`, `PetscLogGpuTimeEnd()`, `PetscLogGpuTimeBegin()`
 @*/
 PetscErrorCode PetscLogGpuTime(void)
