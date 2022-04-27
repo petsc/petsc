@@ -567,9 +567,9 @@ PetscErrorCode TaoBRGNSetDictionaryMatrix(Tao tao,Mat dict)
    function into the algorithm.
 
    Input Parameters:
-   + tao - the Tao context
-   . func - function pointer for the regularizer value and gradient evaluation
-   - ctx - user context for the regularizer
++ tao - the Tao context
+. func - function pointer for the regularizer value and gradient evaluation
+- ctx - user context for the regularizer
 
    Level: advanced
 @*/
@@ -593,10 +593,10 @@ PetscErrorCode TaoBRGNSetRegularizerObjectiveAndGradientRoutine(Tao tao,PetscErr
    function into the algorithm.
 
    Input Parameters:
-   + tao - the Tao context
-   . Hreg - user-created matrix for the Hessian of the regularization term
-   . func - function pointer for the regularizer Hessian evaluation
-   - ctx - user context for the regularizer Hessian
++ tao - the Tao context
+. Hreg - user-created matrix for the Hessian of the regularization term
+. func - function pointer for the regularizer Hessian evaluation
+- ctx - user context for the regularizer Hessian
 
    Level: advanced
 @*/

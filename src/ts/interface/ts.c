@@ -4766,7 +4766,7 @@ PetscErrorCode TSGetSNESFailures(TS ts,PetscInt *fails)
    The counter is reset to zero for each step
 
    Options Database Key:
- .  -ts_max_reject - Maximum number of step rejections before a step fails
+.  -ts_max_reject - Maximum number of step rejections before a step fails
 
    Level: intermediate
 
@@ -4793,7 +4793,7 @@ PetscErrorCode TSSetMaxStepRejections(TS ts,PetscInt rejects)
    The counter is reset to zero for each successive call to TSSolve().
 
    Options Database Key:
- .  -ts_max_snes_failures - Maximum number of nonlinear solve failures
+.  -ts_max_snes_failures - Maximum number of nonlinear solve failures
 
    Level: intermediate
 
@@ -4817,7 +4817,7 @@ PetscErrorCode TSSetMaxSNESFailures(TS ts,PetscInt fails)
 -  err - PETSC_TRUE to error if no step succeeds, PETSC_FALSE to return without failure
 
    Options Database Key:
- .  -ts_error_if_step_fails - Error if no step succeeds
+.  -ts_error_if_step_fails - Error if no step succeeds
 
    Level: intermediate
 

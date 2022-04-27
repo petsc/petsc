@@ -2617,10 +2617,10 @@ PetscErrorCode DMPlexLandauPrintNorms(Vec X, PetscInt stepi)
  Collective on pack
 
  Input Parameters:
- . pack     - the DM object
+. pack     - the DM object
 
  Output Parameters:
- . Amat - The mass matrix (optional), mass matrix is added to the DM context
+. Amat - The mass matrix (optional), mass matrix is added to the DM context
 
  Level: beginner
 
@@ -2729,14 +2729,14 @@ PetscErrorCode DMPlexLandauCreateMassMatrix(DM pack, Mat *Amat)
  Collective on ts
 
  Input Parameters:
- +   TS  - The time stepping context
- .   time_dummy - current time (not used)
- -   X - Current state
- +   X_t - Time derivative of current state
- .   actx - Landau context
++   TS  - The time stepping context
+.   time_dummy - current time (not used)
+.   X - Current state
+.   X_t - Time derivative of current state
+-   actx - Landau context
 
  Output Parameter:
- .   F  - The residual
+.   F  - The residual
 
  Level: beginner
 
@@ -2804,16 +2804,16 @@ PetscErrorCode DMPlexLandauIFunction(TS ts, PetscReal time_dummy, Vec X, Vec X_t
  Collective on ts
 
  Input Parameters:
- +   TS  - The time stepping context
- .   time_dummy - current time (not used)
- -   X - Current state
- +   U_tdummy - Time derivative of current state (not used)
- .   shift - shift for du/dt term
- -   actx - Landau context
++   TS  - The time stepping context
+.   time_dummy - current time (not used)
+.   X - Current state
+.   U_tdummy - Time derivative of current state (not used)
+.   shift - shift for du/dt term
+-   actx - Landau context
 
- Output Parameter:
- .   Amat  - Jacobian
- +   Pmat  - same as Amat
+ Output Parameters:
++   Amat  - Jacobian
+-   Pmat  - same as Amat
 
  Level: beginner
 
