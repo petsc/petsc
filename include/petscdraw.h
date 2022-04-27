@@ -351,6 +351,8 @@ PETSC_EXTERN PetscXIOErrorHandler PetscSetXIOErrorHandler(PetscXIOErrorHandler);
   Developer Notes:
     This only applies to X windows and so should have a more specific name such as PetscDrawXCollectiveBegin()
 
+  Level: advanced
+
 .seealso: `PetscDrawCollectiveEnd()`
 M*/
 #define PetscDrawCollectiveBegin(draw) do {                                                 \
@@ -391,6 +393,8 @@ M*/
 
   Developer Notes:
     This only applies to X windows and so should have a more specific name such as PetscDrawXCollectiveEnd()
+
+  Level: advanced
 
 .seealso: `PetscDrawCollectiveBegin()`
 M*/
