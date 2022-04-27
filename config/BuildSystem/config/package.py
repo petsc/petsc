@@ -750,7 +750,7 @@ To use the local branch (manually checkout local branch and) - rerun configure w
           prefetch = self.gitcommit
       if prefetch:
         fetched = 0
-        self.logPrintBox('Attempting a "git fetch" commit/branch/tag: %s from git repos: %s' % (str(self.gitcommit) , str(self.retriever.git_urls)))
+        self.logPrintBox('Attempting a "git fetch" commit/branch/tag: %s from Git repositor%s: %s' % (str(self.gitcommit), str('ies' if len(self.retriever.git_urls) > 1 else 'y'), str(self.retriever.git_urls)))
         for git_url in self.retriever.git_urls:
           try:
             config.base.Configure.executeShellCommand([self.sourceControl.git, 'fetch', '--tags', git_url, prefetch], cwd=self.packageDir, log = self.log)
@@ -768,7 +768,7 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
           config.base.Configure.executeShellCommand([self.sourceControl.git, 'clean', '-f', '-d', '-x'], cwd=self.packageDir, log = self.log)
         except RuntimeError as e:
           if str(e).find("Unknown option: -c") >= 0:
-            self.logPrintWaring('Unable to "git stash". Likely due to antique git version (<1.8). Proceeding without stashing!')
+            self.logPrintWarning('Unable to "git stash". Likely due to antique Git version (<1.8). Proceeding without stashing!')
           else:
             raise RuntimeError('Unable to run git stash/clean in repository: '+self.packageDir+'.\nPerhaps its a git error!')
         try:
@@ -1786,6 +1786,20 @@ class GNUPackage(Package):
       raise RuntimeError('Error running make; make install on '+self.PACKAGE)
     self.postInstall(output1+err1+output2+err2+output3+err3+output4+err4, conffile)
     return self.installDir
+
+  def Bootstrap(self,command):
+    '''check for configure script - and run bootstrap - if needed'''
+    import os
+    if not os.path.isfile(os.path.join(self.packageDir,'configure')):
+      if not self.programs.libtoolize:
+        raise RuntimeError('Could not bootstrap '+self.PACKAGE+' using autotools: libtoolize not found')
+      if not self.programs.autoreconf:
+        raise RuntimeError('Could not bootstrap '+self.PACKAGE+' using autotools: autoreconf not found')
+      self.logPrintBox('Bootstrapping '+self.PACKAGE+' using autotools; this may take several minutes')
+      try:
+        self.executeShellCommand(command,cwd=self.packageDir,log=self.log)
+      except RuntimeError as e:
+        raise RuntimeError('Could not boostrap '+self.PACKAGE+': maybe autotools (or recent enough autotools) could not be found?\nError: '+str(e))
 
 class CMakePackage(Package):
   def __init__(self, framework):

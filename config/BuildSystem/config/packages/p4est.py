@@ -62,15 +62,4 @@ class Configure(config.package.GNUPackage):
     return
 
   def preInstall(self):
-    '''check for configure script - and run bootstrap - if needed'''
-    import os
-    if not os.path.isfile(os.path.join(self.packageDir,'configure')):
-      if not self.programs.libtoolize:
-        raise RuntimeError('Could not bootstrap p4est using autotools: libtoolize not found')
-      if not self.programs.autoreconf:
-        raise RuntimeError('Could not bootstrap p4est using autotools: autoreconf not found')
-      self.logPrintBox('Trying to bootstrap p4est using autotools; this may take several minutes')
-      try:
-        self.executeShellCommand('./bootstrap',cwd=self.packageDir,log=self.log)
-      except RuntimeError as e:
-        raise RuntimeError('Could not bootstrap p4est using autotools: maybe autotools (or recent enough autotools) could not be found?\nError: '+str(e))
+    self.Bootstrap('./bootstrap')

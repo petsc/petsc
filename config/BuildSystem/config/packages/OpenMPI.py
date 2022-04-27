@@ -73,18 +73,7 @@ class Configure(config.package.GNUPackage):
     return
 
   def preInstall(self):
-    '''check for configure script - and run bootstrap - if needed'''
-    import os
-    if not os.path.isfile(os.path.join(self.packageDir,'configure')):
-      if not self.programs.libtoolize:
-        raise RuntimeError('Could not bootstrap OpenMPI using autotools: libtoolize not found')
-      if not self.programs.autoreconf:
-        raise RuntimeError('Could not bootstrap OpenMPI using autotools: autoreconf not found')
-      self.logPrintBox('Trying to bootstrap OpenMPI using autotools; this may take several minutes')
-      try:
-        self.executeShellCommand('AUTOMAKE_JOBS=%d ./autogen.pl' % self.make.make_np,cwd=self.packageDir,log=self.log)
-      except RuntimeError as e:
-        raise RuntimeError('Could not autogen.pl with OpenMPI: maybe autotools (or recent enough autotools) could not be found?\nError: '+str(e))
+    self.Bootstrap('AUTOMAKE_JOBS=%d ./autogen.pl' % self.make.make_np)
 
   def checkDownload(self):
     if config.setCompilers.Configure.isCygwin(self.log):
