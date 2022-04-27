@@ -20,6 +20,7 @@
       PetscInt, target, dimension(1) ::  bcField
       PetscInt, pointer :: pBcField(:)
       PetscInt, parameter :: zero = 0, one = 1, two = 2, eight = 8
+      PetscMPIInt :: size
       IS, target, dimension(1) ::   bcCompIS
       IS, target, dimension(1) ::   bcPointIS
       IS, pointer :: pBcCompIS(:)
@@ -31,10 +32,12 @@
         print*,'Unable to initialize PETSc'
         stop
       endif
+      call MPI_Comm_size(PETSC_COMM_WORLD, size, ierr);CHKERRA(ierr)
 !     Create a mesh
       call DMCreate(PETSC_COMM_WORLD, dm, ierr);CHKERRA(ierr)
       call DMSetType(dm, DMPLEX, ierr);CHKERRA(ierr)
       call DMSetFromOptions(dm, ierr);CHKERRA(ierr)
+      call DMViewFromOptions(dm, PETSC_NULL_VEC, '-dm_view', ierr);CHKERRA(ierr)
       call DMGetDimension(dm, dim, ierr);CHKERRA(ierr)
 !     Create a scalar field u, a vector field v, and a surface vector field w
       numFields  = 3
@@ -57,11 +60,11 @@
 !     Test label retrieval
       call DMGetLabel(dm, 'marker', label, ierr);CHKERRA(ierr)
       call DMLabelGetValue(label, zero, val, ierr);CHKERRA(ierr)
-      if (val .ne. -1) then
+      if (size .eq. 1 .and. val .ne. -1) then
         SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error in library')
       endif
       call DMLabelGetValue(label, eight, val, ierr);CHKERRA(ierr)
-      if (val .ne. 1) then
+      if (size .eq. 1 .and. val .ne. 1) then
         SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error in library')
       endif
 !     Prescribe a Dirichlet condition on u on the boundary
@@ -82,7 +85,9 @@
       call PetscSectionSetFieldName(section, zero, 'u', ierr);CHKERRA(ierr)
       call PetscSectionSetFieldName(section, one,  'v', ierr);CHKERRA(ierr)
       call PetscSectionSetFieldName(section, two,  'w', ierr);CHKERRA(ierr)
-      call PetscSectionView(section, PETSC_VIEWER_STDOUT_WORLD, ierr);CHKERRA(ierr)
+      if (size .eq. 1) then
+        call PetscSectionView(section, PETSC_VIEWER_STDOUT_WORLD, ierr);CHKERRA(ierr)
+      endif
 !     Tell the DM to use this data layout
       call DMSetLocalSection(dm, section, ierr);CHKERRA(ierr)
 !     Create a Vec with this layout and view it
@@ -108,6 +113,12 @@
 !    suffix: 0
 !    requires: triangle
 !    args: -info :~sys,mat:
+!
+!  test:
+!    suffix: 0_2
+!    requires: triangle
+!    nsize: 2
+!    args: -info :~sys,mat,partitioner:
 !
 !  test:
 !    suffix: 1
