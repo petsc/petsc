@@ -1934,14 +1934,14 @@ PetscErrorCode DMLabelConvertToSection(DMLabel label, PetscSection *section, IS 
   Collective on sf
 
   Input Parameters:
-  + s - The PetscSection for the local field layout
-  . sf - The SF describing parallel layout of the section points
-  . includeConstraints - By default this is PETSC_FALSE, meaning that the global field vector will not possess constrained dofs
-  . label - The label specifying the points
-  - labelValue - The label stratum specifying the points
++ s - The PetscSection for the local field layout
+. sf - The SF describing parallel layout of the section points
+. includeConstraints - By default this is PETSC_FALSE, meaning that the global field vector will not possess constrained dofs
+. label - The label specifying the points
+- labelValue - The label stratum specifying the points
 
   Output Parameter:
-  . gsection - The PetscSection for the global field layout
+. gsection - The PetscSection for the global field layout
 
   Note: This gives negative sizes and offsets to points not owned by this process
 
