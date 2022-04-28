@@ -1847,7 +1847,7 @@ class Configure(config.base.Configure):
     oldFlags = getattr(self, flagsArg)
     setattr(self, flagsArg, oldFlags+' '+flag)
     (output, error, status) = self.outputCompile(includes, body)
-    output = self.filterCompileOutput(output+'\n'+error)
+    output = self.filterCompileOutput(output+'\n'+error,flag=flag)
     self.logPrint('Output from compiling with '+oldFlags+' '+flag+'\n'+output)
     setattr(self, flagsArg, oldFlags)
     # Please comment each entry and provide an example line
