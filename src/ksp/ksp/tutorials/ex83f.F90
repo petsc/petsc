@@ -12,7 +12,6 @@
       implicit none
 
       PetscInt i,n,nz
-      PetscInt64 Nnz
       PetscBool flg,equal
       PetscErrorCode ierr
       PetscInt,ALLOCATABLE :: ia(:)
@@ -34,7 +33,6 @@
       n = 3
       call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-n',n,flg,ierr);CHKERRA(ierr)
       nz = 3*n - 4;
-      Nnz = nz
 
       ALLOCATE (b(n),x(n))
 
@@ -82,7 +80,7 @@
       call MatCreate(PETSC_COMM_SELF,Jr,ierr);CHKERRA(ierr);
       call MatSetSizes(Jr,n,n,n,n,ierr);CHKERRA(ierr);
       call MatSetType(Jr,MATSEQAIJ,ierr);CHKERRA(ierr);
-      call MatSetPreallocationCOO(Jr,Nnz,rows,cols,ierr);CHKERRA(ierr);
+      call MatSetPreallocationCOO(Jr,nz,rows,cols,ierr);CHKERRA(ierr);
       call MatSetValuesCOO(Jr,a,INSERT_VALUES,ierr);CHKERRA(ierr);
       call MatEqual(J,Jr,equal,ierr);CHKERRA(ierr);
       if (equal .neqv. PETSC_TRUE) then
@@ -120,6 +118,10 @@
       call VecDestroy(rhs,ierr);CHKERRA(ierr);
       call VecDestroy(solution,ierr);CHKERRA(ierr);
       call MatDestroy(J,ierr);CHKERRA(ierr);
+
+      DEALLOCATE (b,x)
+      DEALLOCATE (ia,ja,a)
+      DEALLOCATE (rows,cols)
 
       call PetscFinalize(ierr)
       end
