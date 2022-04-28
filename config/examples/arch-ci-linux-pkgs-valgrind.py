@@ -9,6 +9,7 @@ configure_options = [
   'FOPTFLAGS=-g -O',
   'CXXOPTFLAGS=-g -O',
   '--download-mpich=1',
+  '--with-hwloc=0', # make sure mpich is built without hwloc - as it doesn't work with valgrind
   '--download-fblaslapack=1',
   '--download-hypre=1',
   '--download-cmake=1',

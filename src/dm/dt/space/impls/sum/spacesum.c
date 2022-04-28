@@ -3,10 +3,10 @@
   PetscSpaceSumGetNumSubspaces - Get the number of spaces in the sum
 
   Input Parameter:
-  . sp  - the function space object
+. sp  - the function space object
 
   Output Parameter:
-  . numSumSpaces - the number of spaces
+. numSumSpaces - the number of spaces
 
 Level: intermediate
 
@@ -25,8 +25,8 @@ PetscErrorCode PetscSpaceSumGetNumSubspaces(PetscSpace sp,PetscInt *numSumSpaces
   PetscSpaceSumSetNumSubspaces - Set the number of spaces in the sum
 
   Input Parameters:
-  + sp  - the function space object
-  - numSumSpaces - the number of spaces
++ sp  - the function space object
+- numSumSpaces - the number of spaces
 
 Level: intermediate
 
@@ -46,10 +46,10 @@ PetscErrorCode PetscSpaceSumSetNumSubspaces(PetscSpace sp,PetscInt numSumSpaces)
  or direct sum space will have the same number of components as its subspaces .
 
  Input Parameters:
- . sp - the function space object
+. sp - the function space object
 
  Output Parameters:
- . concatenate - flag indicating whether subspaces are concatenated.
+. concatenate - flag indicating whether subspaces are concatenated.
 
 Level: intermediate
 
@@ -69,8 +69,8 @@ PetscErrorCode PetscSpaceSumGetConcatenate(PetscSpace sp,PetscBool *concatenate)
  or direct sum space will have the same number of components as its subspaces .
 
  Input Parameters:
-  + sp - the function space object
-  - concatenate - are subspaces concatenated components (true) or direct summands (false)
++ sp - the function space object
+- concatenate - are subspaces concatenated components (true) or direct summands (false)
 
 Level: intermediate
 .seealso: PetscSpaceSumGetConcatenate()
@@ -87,11 +87,11 @@ PetscErrorCode PetscSpaceSumSetConcatenate(PetscSpace sp,PetscBool concatenate)
   PetscSpaceSumGetSubspace - Get a space in the sum
 
   Input Parameters:
-  + sp - the function space object
-  - s  - The space number
++ sp - the function space object
+- s  - The space number
 
   Output Parameter:
-  . subsp - the PetscSpace
+. subsp - the PetscSpace
 
 Level: intermediate
 
@@ -110,9 +110,9 @@ PetscErrorCode PetscSpaceSumGetSubspace(PetscSpace sp,PetscInt s,PetscSpace *sub
   PetscSpaceSumSetSubspace - Set a space in the sum
 
   Input Parameters:
-  + sp    - the function space object
-  . s     - The space number
-  - subsp - the number of spaces
++ sp    - the function space object
+. s     - The space number
+- subsp - the number of spaces
 
 Level: intermediate
 

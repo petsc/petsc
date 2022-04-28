@@ -172,11 +172,11 @@ PetscErrorCode PetscCommRestoreComm(MPI_Comm comm_in,MPI_Comm *comm_out)
   Collective
 
   Input Parameter:
-  . comm_in - Input communicator
+. comm_in - Input communicator
 
   Output Parameters:
-  + comm_out - Output communicator.  May be comm_in.
-  - first_tag - Tag available that has not already been used with this communicator (you may
++ comm_out - Output communicator.  May be comm_in.
+- first_tag - Tag available that has not already been used with this communicator (you may
   pass in NULL if you do not need a tag)
 
   PETSc communicators are just regular MPI communicators that keep track of which

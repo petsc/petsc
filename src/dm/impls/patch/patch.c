@@ -24,14 +24,15 @@ Solver loop to update \tau:
   Collective on dm
 
   Input Parameters:
-  + dm - the DM
-  . lower,upper - the upper right corner and the lower left corner of the requested patch
-  - commz - the new communicator for the patch, MPI_COMM_NULL indicates that the given rank will not own a patch
++ dm - the DM
+. lower - the lower left corner of the requested patch
+. upper - the upper right corner of the requested patch
+- commz - the new communicator for the patch, MPI_COMM_NULL indicates that the given rank will not own a patch
 
   Output Parameters:
-  + dmz  - the patch DM
-  . sfz  - the PetscSF mapping the patch+halo to the zoomed version (optional)
-  - sfzr - the PetscSF mapping the patch to the restricted zoomed version
++ dmz  - the patch DM
+. sfz  - the PetscSF mapping the patch+halo to the zoomed version (optional)
+- sfzr - the PetscSF mapping the patch to the restricted zoomed version
 
   Level: intermediate
 

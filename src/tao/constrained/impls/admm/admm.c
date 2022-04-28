@@ -1147,11 +1147,11 @@ PetscErrorCode TaoADMMSetMisfitObjectiveAndGradientRoutine(Tao tao, PetscErrorCo
    Collective on tao
 
    Input Parameters:
-   + tao - the Tao context
-   . H - user-created matrix for the Hessian of the misfit term
-   . Hpre - user-created matrix for the preconditioner of Hessian of the misfit term
-   . func - function pointer for the misfit Hessian evaluation
-   - ctx - user context for the misfit Hessian
++ tao - the Tao context
+. H - user-created matrix for the Hessian of the misfit term
+. Hpre - user-created matrix for the preconditioner of Hessian of the misfit term
+. func - function pointer for the misfit Hessian evaluation
+- ctx - user context for the misfit Hessian
 
    Level: advanced
 
@@ -1197,9 +1197,9 @@ PetscErrorCode TaoADMMSetMisfitHessianRoutine(Tao tao, Mat H, Mat Hpre, PetscErr
    Collective on tao
 
    Input Parameters:
-   + tao - the Tao context
-   . func - function pointer for the regularizer value and gradient evaluation
-   - ctx - user context for the regularizer
++ tao - the Tao context
+. func - function pointer for the regularizer value and gradient evaluation
+- ctx - user context for the regularizer
 
    Level: advanced
 
@@ -1224,11 +1224,11 @@ PetscErrorCode TaoADMMSetRegularizerObjectiveAndGradientRoutine(Tao tao, PetscEr
    Collective on tao
 
    Input Parameters:
-   + tao - the Tao context
-   . H - user-created matrix for the Hessian of the regularization term
-   . Hpre - user-created matrix for the preconditioner of Hessian of the regularization term
-   . func - function pointer for the regularizer Hessian evaluation
-   - ctx - user context for the regularizer Hessian
++ tao - the Tao context
+. H - user-created matrix for the Hessian of the regularization term
+. Hpre - user-created matrix for the preconditioner of Hessian of the regularization term
+. func - function pointer for the regularizer Hessian evaluation
+- ctx - user context for the regularizer Hessian
 
    Level: advanced
 
@@ -1274,10 +1274,10 @@ PetscErrorCode TaoADMMSetRegularizerHessianRoutine(Tao tao, Mat H, Mat Hpre, Pet
    Collective on tao
 
    Input Parameter:
-   . tao - the Tao context
+. tao - the Tao context
 
    Output Parameter:
-   . admm_tao - the parent Tao context
+. admm_tao - the parent Tao context
 
    Level: advanced
 
@@ -1298,10 +1298,10 @@ PetscErrorCode TaoGetADMMParentTao(Tao tao, Tao *admm_tao)
   Not Collective
 
   Input Parameter:
-  . tao - the Tao context
+. tao - the Tao context
 
   Output Parameter:
-  . Y - the current solution
+. Y - the current solution
 
   Level: intermediate
 
