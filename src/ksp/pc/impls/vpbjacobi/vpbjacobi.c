@@ -96,7 +96,6 @@ static PetscErrorCode PCApply_VPBJacobi(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 static PetscErrorCode PCSetUp_VPBJacobi(PC pc)
 {
   PC_VPBJacobi    *jac = (PC_VPBJacobi*)pc->data;
@@ -120,7 +119,7 @@ static PetscErrorCode PCSetUp_VPBJacobi(PC pc)
   pc->ops->apply = PCApply_VPBJacobi;
   PetscFunctionReturn(0);
 }
-/* -------------------------------------------------------------------------- */
+
 static PetscErrorCode PCDestroy_VPBJacobi(PC pc)
 {
   PC_VPBJacobi    *jac = (PC_VPBJacobi*)pc->data;
@@ -134,7 +133,6 @@ static PetscErrorCode PCDestroy_VPBJacobi(PC pc)
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*MC
      PCVPBJACOBI - Variable size point block Jacobi preconditioner
 

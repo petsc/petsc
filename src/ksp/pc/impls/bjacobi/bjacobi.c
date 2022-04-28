@@ -496,7 +496,9 @@ PetscErrorCode  PCBJacobiGetLocalBlocks(PC pc, PetscInt *blocks, const PetscInt 
 -  -pc_bjacobi_blocks <n> - use n total blocks
 
    Notes:
-     Each processor can have one or more blocks, or a single block can be shared by several processes. Defaults to one block per processor.
+    See PCJACOBI for diagonal Jacobi, PCVPBJACOBI for variable point block, and PCPBJACOBI for fixed size point block
+
+    Each processor can have one or more blocks, or a single block can be shared by several processes. Defaults to one block per processor.
 
      To set options on the solvers for each block append -sub_ to all the KSP, KSP, and PC
         options database keys. For example, -sub_pc_type ilu -sub_pc_factor_levels 1 -sub_ksp_type preonly

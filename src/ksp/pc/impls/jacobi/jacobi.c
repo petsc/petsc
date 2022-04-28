@@ -427,11 +427,12 @@ static PetscErrorCode PCView_Jacobi(PC pc, PetscViewer viewer)
 
     Zero entries along the diagonal are replaced with the value 1.0
 
-    See PCPBJACOBI for a point-block Jacobi preconditioner
+    See PCPBJACOBI for fixed-size point block, PCVPBJACOBI for variable-sized point block, and PCBJACOBI for large size blocks
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
            PCJacobiSetType(), PCJacobiSetUseAbs(), PCJacobiGetUseAbs(),
-           PCJacobiSetFixDiagonal(), PCJacobiGetFixDiagonal(), PCPBJACOBI
+           PCJacobiSetFixDiagonal(), PCJacobiGetFixDiagonal()
+           PCJacobiSetType(), PCJacobiSetUseAbs(), PCJacobiGetUseAbs(), PCPBJACOBI, PCBJACOBI, PCVPBJACOBI
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_Jacobi(PC pc)

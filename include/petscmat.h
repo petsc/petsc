@@ -408,9 +408,11 @@ PETSC_EXTERN PetscErrorCode MatGetTrace(Mat,PetscScalar*);
 PETSC_EXTERN PetscErrorCode MatInvertBlockDiagonal(Mat,const PetscScalar **);
 PETSC_EXTERN PetscErrorCode MatInvertVariableBlockDiagonal(Mat,PetscInt,const PetscInt*,PetscScalar*);
 PETSC_EXTERN PetscErrorCode MatInvertBlockDiagonalMat(Mat,Mat);
+PETSC_EXTERN PetscErrorCode MatInvertVariableBlockEnvelope(Mat,MatReuse,Mat*);
 
 /* ------------------------------------------------------------*/
 PETSC_EXTERN PetscErrorCode MatSetValues(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
+PETSC_EXTERN PetscErrorCode MatSetValuesIS(Mat,IS,IS,const PetscScalar[],InsertMode);
 PETSC_EXTERN PetscErrorCode MatSetValuesBlocked(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
 PETSC_EXTERN PetscErrorCode MatSetValuesRow(Mat,PetscInt,const PetscScalar[]);
 PETSC_EXTERN PetscErrorCode MatSetValuesRowLocal(Mat,PetscInt,const PetscScalar[]);
@@ -539,6 +541,7 @@ PETSC_EXTERN PetscErrorCode MatSetBlockSizes(Mat,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode MatSetBlockSizesFromMats(Mat,Mat,Mat);
 PETSC_EXTERN PetscErrorCode MatSetVariableBlockSizes(Mat,PetscInt,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatGetVariableBlockSizes(Mat,PetscInt*,const PetscInt**);
+PETSC_EXTERN PetscErrorCode MatComputeVariableBlockSizes(Mat);
 
 PETSC_EXTERN PetscErrorCode MatDenseGetColumn(Mat,PetscInt,PetscScalar*[]);
 PETSC_EXTERN PetscErrorCode MatDenseRestoreColumn(Mat,PetscScalar*[]);
@@ -708,6 +711,7 @@ PETSC_EXTERN PetscErrorCode MatCreateMPIAIJSumSeqAIJ(MPI_Comm,Mat,PetscInt,Petsc
 PETSC_EXTERN PetscErrorCode MatCreateMPIAIJSumSeqAIJSymbolic(MPI_Comm,Mat,PetscInt,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateMPIAIJSumSeqAIJNumeric(Mat,Mat);
 PETSC_EXTERN PetscErrorCode MatMPIAIJGetLocalMat(Mat,MatReuse,Mat*);
+PETSC_EXTERN PetscErrorCode MatAIJGetLocalMat(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatMPIAIJGetLocalMatCondensed(Mat,MatReuse,IS*,IS*,Mat*);
 PETSC_EXTERN PetscErrorCode MatMPIAIJGetLocalMatMerge(Mat,MatReuse,IS*,Mat*);
 PETSC_EXTERN PetscErrorCode MatGetBrowsOfAcols(Mat,Mat,MatReuse,IS*,IS*,Mat*);
@@ -1349,6 +1353,7 @@ PETSC_EXTERN PetscErrorCode MatFactorSolveSchurComplement(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatFactorSolveSchurComplementTranspose(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatFactorFactorizeSchurComplement(Mat);
 
+PETSC_EXTERN PetscErrorCode MatSeqDenseInvert(Mat);
 /*E
     MatSORType - What type of (S)SOR to perform
 

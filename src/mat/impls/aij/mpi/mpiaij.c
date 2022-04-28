@@ -6,6 +6,28 @@
 #include <petscsf.h>
 #include <petsc/private/hashmapi.h>
 
+PetscErrorCode MatGetRowIJ_MPIAIJ(Mat A,PetscInt oshift,PetscBool symmetric,PetscBool inodecompressed,PetscInt *m,const PetscInt *ia[],const PetscInt *ja[],PetscBool  *done)
+{
+  Mat            B;
+
+  PetscFunctionBegin;
+  PetscCall(MatMPIAIJGetLocalMat(A,MAT_INITIAL_MATRIX,&B));
+  PetscCall(PetscObjectCompose((PetscObject)A,"MatGetRowIJ_MPIAIJ",(PetscObject)B));
+  PetscCall(MatGetRowIJ(B,oshift,symmetric,inodecompressed,m,ia,ja,done));
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatRestoreRowIJ_MPIAIJ(Mat A,PetscInt oshift,PetscBool symmetric,PetscBool inodecompressed,PetscInt *m,const PetscInt *ia[],const PetscInt *ja[],PetscBool  *done)
+{
+  Mat            B;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectQuery((PetscObject)A,"MatGetRowIJ_MPIAIJ",(PetscObject*)&B));
+  PetscCall(MatRestoreRowIJ(B,oshift,symmetric,inodecompressed,m,ia,ja,done));
+  PetscCall(MatDestroy(&B));
+  PetscFunctionReturn(0);
+}
+
 /*MC
    MATAIJ - MATAIJ = "aij" - A matrix type to be used for sparse matrices.
 
@@ -2693,8 +2715,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                        MatDiagonalSet_MPIAIJ,
                                        MatZeroRowsColumns_MPIAIJ,
                                 /*49*/ MatSetRandom_MPIAIJ,
-                                       NULL,
-                                       NULL,
+                                       MatGetRowIJ_MPIAIJ,
+                                       MatRestoreRowIJ_MPIAIJ,
                                        NULL,
                                        NULL,
                                 /*54*/ MatFDColoringCreate_MPIXAIJ,
@@ -4968,6 +4990,45 @@ PetscErrorCode MatCreateMPIAIJSumSeqAIJ(MPI_Comm comm,Mat seqmat,PetscInt m,Pets
 }
 
 /*@
+     MatAIJGetLocalMat - Creates a SeqAIJ from a MATAIJ matrix by taking all its local rows and putting them into a sequential matrix with
+          mlocal rows and n columns. Where mlocal is the row count obtained with MatGetLocalSize() and n is the global column count obtained
+          with MatGetSize()
+
+    Not Collective
+
+   Input Parameters:
++    A - the matrix
+-    scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
+
+   Output Parameter:
+.    A_loc - the local sequential matrix generated
+
+    Level: developer
+
+   Notes:
+     In other words combines the two parts of a parallel MPIAIJ matrix on each process to a single matrix.
+
+     Destroy the matrix with MatDestroy()
+
+.seealso: MatMPIAIJGetLocalMat()
+
+@*/
+PetscErrorCode MatAIJGetLocalMat(Mat A,Mat *A_loc)
+{
+  PetscBool      mpi;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&mpi));
+  if (mpi) {
+    PetscCall(MatMPIAIJGetLocalMat(A,MAT_INITIAL_MATRIX,A_loc));
+  } else {
+    *A_loc = A;
+    PetscCall(PetscObjectReference((PetscObject)*A_loc));
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
      MatMPIAIJGetLocalMat - Creates a SeqAIJ from a MATMPIAIJ matrix by taking all its local rows and putting them into a sequential matrix with
           mlocal rows and n columns. Where mlocal is the row count obtained with MatGetLocalSize() and n is the global column count obtained
           with MatGetSize()
@@ -4984,6 +5045,8 @@ PetscErrorCode MatCreateMPIAIJSumSeqAIJ(MPI_Comm comm,Mat seqmat,PetscInt m,Pets
     Level: developer
 
    Notes:
+     In other words combines the two parts of a parallel MPIAIJ matrix on each process to a single matrix.
+
      When the communicator associated with A has size 1 and MAT_INITIAL_MATRIX is requested, the matrix returned is the diagonal part of A.
      If MAT_REUSE_MATRIX is requested with comm size 1, MatCopy(Adiag,*A_loc,SAME_NONZERO_PATTERN) is called.
      This means that one can preallocate the proper sequential matrix first and then call this routine with MAT_REUSE_MATRIX to safely

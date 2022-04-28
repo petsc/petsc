@@ -933,7 +933,8 @@ PetscClassId PETSC_CONTAINER_CLASSID;
 
    Level: advanced
 
-.seealso: PetscContainerDestroy(), PetscContainerSetPointer(), PetscContainerGetPointer(), PetscObjectCompose(), PetscObjectQuery()
+.seealso: PetscContainerDestroy(), PetscContainerSetPointer(), PetscContainerGetPointer(), PetscObjectCompose(), PetscObjectQuery(),
+          PetscContainerSetUserDestroy()
 @*/
 PetscErrorCode  PetscContainerCreate(MPI_Comm comm,PetscContainer *container)
 {
