@@ -591,8 +591,8 @@ int main(int argc,char **argv)
   PetscInt       its;                          /* iterations for convergence */
   PetscReal      bratu_lambda_max = 6.81;
   PetscReal      bratu_lambda_min = 0.;
-  PetscInt       MMS              = 0;
-  PetscBool      flg              = PETSC_FALSE;
+  PetscInt       MMS              = 1;
+  PetscBool      flg              = PETSC_FALSE,setMMS;
   DM             da;
   Vec            r               = NULL;
   KSP            ksp;
@@ -610,7 +610,7 @@ int main(int argc,char **argv)
   user.param = 6.0;
   PetscCall(PetscOptionsGetReal(NULL,NULL,"-par",&user.param,NULL));
   PetscCheck(user.param <= bratu_lambda_max && user.param >= bratu_lambda_min,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Lambda, %g, is out of range, [%g, %g]", (double)user.param, (double)bratu_lambda_min, (double)bratu_lambda_max);
-  PetscCall(PetscOptionsGetInt(NULL,NULL,"-mms",&MMS,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-mms",&MMS,&setMMS));
   if (MMS == 3) {
     PetscInt mPar = 2, nPar = 1;
     PetscCall(PetscOptionsGetInt(NULL,NULL,"-m_par",&mPar,NULL));
@@ -644,9 +644,8 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set local function evaluation routine
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  user.mms_solution = ZeroBCSolution;
   switch (MMS) {
-  case 0: user.mms_solution = NULL; user.mms_forcing = NULL;
+  case 0: user.mms_solution = ZeroBCSolution; user.mms_forcing = NULL; break;
   case 1: user.mms_solution = MMSSolution1; user.mms_forcing = MMSForcing1; break;
   case 2: user.mms_solution = MMSSolution2; user.mms_forcing = MMSForcing2; break;
   case 3: user.mms_solution = MMSSolution3; user.mms_forcing = MMSForcing3; break;
@@ -696,7 +695,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      If using MMS, check the l_2 error
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  if (MMS) {
+  if (setMMS) {
     Vec       e;
     PetscReal errorl2, errorinf;
     PetscInt  N;
