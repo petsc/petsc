@@ -10,10 +10,10 @@ program main
       use petscksp
 
       implicit none
-      KSP            :: ksp            ! linear solver context
+      KSP            :: ksp              ! linear solver context
       Mat            :: C,Ctmp           ! matrix
       Vec            :: x,u,b            ! approx solution, RHS, exact solution
-      PetscReal      :: norm             ! norm of solution error
+      PetscReal      :: norm,bnorm       ! norm of solution residual
       PetscScalar    :: v
       PetscScalar, parameter :: myNone = -1.0
       PetscInt       :: Ii,JJ,ldim,low,high,iglobal,Istart,Iend
@@ -191,7 +191,6 @@ program main
       ! VecAssemblyBegin(), VecAssemblyEnd()
       ! Computations can be done while messages are in transition,
       ! by placing code between these two statements.
-
       call  VecAssemblyBegin(u,ierr)
       CHKERRA(ierr)
       call  VecAssemblyEnd(u,ierr)
@@ -236,14 +235,14 @@ program main
       call  KSPSolve(ksp,b,x,ierr)
       CHKERRA(ierr)
 
-      ! Check the error
-
+      ! Check the residual
       call VecAXPY(x,myNone,u,ierr)
       call VecNorm(x,NORM_2,norm,ierr)
+      call VecNorm(b,NORM_2,bnorm,ierr)
 
       call KSPGetIterationNumber(ksp,its,ierr)
-      if (.not. testscaledMat .or. norm > 1.e-7) then
-        write(outputString,'(a,f11.9,a,i2.2,a)') 'Norm of error ',norm,', Iterations ',its,'\n'
+      if (.not. testscaledMat .or. norm/bnorm > PETSC_SMALL) then
+        write(outputString,'(a,f11.9,a,i2.2,a)') 'Relative norm of residual ',norm/bnorm,', Iterations ',its,'\n'
         call PetscPrintf(PETSC_COMM_WORLD,outputString,ierr)
       endif
 
@@ -382,17 +381,16 @@ program main
       call KSPSetOperators(ksp,C,C,ierr);CHKERRA(ierr)
 
       ! Solve linear system
-
       call  KSPSetUp(ksp,ierr); CHKERRA(ierr)
       call  KSPSolve(ksp,b,x,ierr); CHKERRA(ierr)
-
-      ! Check the error
+      ! Check the residual
 
       call VecAXPY(x,myNone,u,ierr); CHKERRA(ierr)
       call VecNorm(x,NORM_2,norm,ierr); CHKERRA(ierr)
+      call VecNorm(b,NORM_2,bnorm,ierr); CHKERRA(ierr)
       call KSPGetIterationNumber(ksp,its,ierr); CHKERRA(ierr)
-      if (.not. testscaledMat .or. norm > 1.e-7) then
-        write(outputString,'(a,f11.9,a,i2.2,a)') 'Norm of error ',norm,', Iterations ',its,'\n'
+      if (.not. testscaledMat .or. norm/bnorm > PETSC_SMALL) then
+        write(outputString,'(a,f11.9,a,i2.2,a)') 'Relative norm of residual ',norm/bnorm,', Iterations ',its,'\n'
         call PetscPrintf(PETSC_COMM_WORLD,outputString,ierr)
       endif
 

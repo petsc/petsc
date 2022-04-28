@@ -21,7 +21,7 @@ int main(int argc,char **args)
   KSP            ksp;              /* linear solver context */
   Mat            C;                /* matrix */
   Vec            x,u,b;            /* approx solution, RHS, exact solution */
-  PetscReal      norm;             /* norm of solution error */
+  PetscReal      norm,bnorm;       /* norm of solution error */
   PetscScalar    v,none = -1.0;
   PetscInt       Ii,J,ldim,low,high,iglobal,Istart,Iend;
   PetscInt       i,j,m = 3,n = 2,its;
@@ -189,13 +189,14 @@ int main(int argc,char **args)
   PetscCall(KSPSolve(ksp,b,x));
 
   /*
-     Check the error
+     Check the residual
   */
   PetscCall(VecAXPY(x,none,u));
   PetscCall(VecNorm(x,NORM_2,&norm));
+  PetscCall(VecNorm(b,NORM_2,&bnorm));
   PetscCall(KSPGetIterationNumber(ksp,&its));
-  if (!testscaledMat || norm > 1.e-7) {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %" PetscInt_FMT "\n",(double)norm,its));
+  if (!testscaledMat || norm/bnorm > 1.e-5) {
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Relative norm of the residual %g, Iterations %" PetscInt_FMT "\n",(double)norm/(double)bnorm,its));
   }
 
   /* -------------- Stage 1: Solve Second System ---------------------- */
@@ -297,13 +298,13 @@ int main(int argc,char **args)
   PetscCall(KSPSolve(ksp,b,x));
 
   /*
-     Check the error
+     Check the residual
   */
   PetscCall(VecAXPY(x,none,u));
   PetscCall(VecNorm(x,NORM_2,&norm));
   PetscCall(KSPGetIterationNumber(ksp,&its));
-  if (!testscaledMat || norm > 1.e-7) {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %" PetscInt_FMT "\n",(double)norm,its));
+  if (!testscaledMat || norm/bnorm > PETSC_SMALL) {
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Relative norm of the residual %g, Iterations %" PetscInt_FMT "\n",(double)norm/(double)bnorm,its));
   }
 
   /*

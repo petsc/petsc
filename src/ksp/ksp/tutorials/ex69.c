@@ -230,6 +230,6 @@ int main(int argc,char **args)
    test:
      suffix: 2
      nsize: 2
-     requires: !single superlu_dist
+     requires: superlu_dist
 
 TEST*/
