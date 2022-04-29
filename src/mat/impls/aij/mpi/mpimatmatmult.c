@@ -2169,9 +2169,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_AB(Mat C)
   MPI_Comm       comm;
 
   PetscFunctionBegin;
-  /* Check matrix local sizes */
   PetscCall(PetscObjectGetComm((PetscObject)C,&comm));
-  PetscCheck(A->cmap->rstart == B->rmap->rstart && A->cmap->rend == B->rmap->rend,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, (%" PetscInt_FMT ", %" PetscInt_FMT ") != (%" PetscInt_FMT ",%" PetscInt_FMT ")",A->cmap->rstart,A->cmap->rend,B->rmap->rstart,B->rmap->rend);
 
   /* Set "nonscalable" as default algorithm */
   PetscCall(PetscStrcmp(C->product->alg,"default",&flg));
