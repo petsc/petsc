@@ -13,8 +13,6 @@ int main(int argc, char** argv)
 
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   PetscCall(MatCreateDenseCUDA(comm,global_size,global_size,global_size,global_size,NULL,&cuda_matrix));
-  PetscCall(MatAssemblyBegin(cuda_matrix,MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(cuda_matrix,MAT_FINAL_ASSEMBLY));
 
   PetscCall(VecCreateSeqCUDA(comm,global_size,&input));
   PetscCall(VecDuplicate(input,&output));

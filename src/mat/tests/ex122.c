@@ -37,8 +37,6 @@ int main(int argc,char **argv)
   PetscCall(MatMPIDenseSetPreallocation(B,NULL));
   PetscCall(MatSetRandom(B,r));
   PetscCall(PetscRandomDestroy(&r));
-  PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
 
   /* Test MatMatMult() */
   PetscCall(MatMatMult(B,A,MAT_INITIAL_MATRIX,fill,&C));

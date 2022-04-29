@@ -49,8 +49,6 @@ static PetscErrorCode MatGetDiagonalBlock_Htool(Mat A,Mat *b)
     a->hmatrix->copy_local_diagonal_block(ptr);
     PetscCall(MatDenseRestoreArrayWrite(B,&ptr));
     PetscCall(MatPropagateSymmetryOptions(A,B));
-    PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
-    PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
     PetscCall(MatScale(B,a->s));
     PetscCall(PetscObjectCompose((PetscObject)A,"DiagonalBlock",(PetscObject)B));
     *b   = B;
@@ -248,8 +246,6 @@ static PetscErrorCode MatCreateSubMatrices_Htool(Mat A,PetscInt n,const IS irow[
     PetscCall(ISRestoreIndices(irow[i],&idxr));
     PetscCall(ISRestoreIndices(icol[i],&idxc));
     PetscCall(MatDenseRestoreArrayWrite((*submat)[i],&ptr));
-    PetscCall(MatAssemblyBegin((*submat)[i],MAT_FINAL_ASSEMBLY));
-    PetscCall(MatAssemblyEnd((*submat)[i],MAT_FINAL_ASSEMBLY));
     PetscCall(MatScale((*submat)[i],a->s));
   }
   PetscFunctionReturn(0);

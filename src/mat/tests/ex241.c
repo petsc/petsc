@@ -62,8 +62,6 @@ int main(int argc,char **argv)
   PetscCall(PetscRandomGetValuesReal(rdm,m*dim,coords));
   PetscCall(PetscCalloc1(M*dim,&gcoords));
   PetscCall(MatCreateDense(PETSC_COMM_WORLD,m,PETSC_DECIDE,M,K,NULL,&B));
-  PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
   PetscCall(MatSetRandom(B,rdm));
   PetscCall(MatGetOwnershipRange(B,&begin,NULL));
   PetscCall(PetscArraycpy(gcoords+begin*dim,coords,m*dim));

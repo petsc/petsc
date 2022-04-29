@@ -52,8 +52,6 @@ int main(int argc,char **argv)
   PetscCall(MatSetFromOptions(B));
   PetscCall(MatSetRandom(B,r));
   PetscCall(PetscRandomDestroy(&r));
-  PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
 
   /* Test reuse of user-provided dense C (unassembled) -- not recommended usage */
   PetscCall(MatCreate(PETSC_COMM_WORLD,&C));
