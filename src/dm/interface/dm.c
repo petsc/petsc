@@ -11,8 +11,8 @@
 #include <petscfeceed.h>
 #endif
 
-#if defined(PETSC_HAVE_VALGRIND)
-#  include <valgrind/memcheck.h>
+#if !defined(PETSC_HAVE_WINDOWS_COMPILERS)
+#include <petsc/private/valgrind/memcheck.h>
 #endif
 
 PetscClassId  DM_CLASSID;
@@ -1571,7 +1571,7 @@ PetscErrorCode DMGetWorkArray(DM dm,PetscInt count,MPI_Datatype dtype,void *mem)
   }
   link->next   = dm->workout;
   dm->workout  = link;
-#if defined(PETSC_HAVE_VALGRIND)
+#if defined(__MEMCHECK_H) && (defined(PLAT_amd64_linux) || defined(PLAT_x86_linux) || defined(PLAT_amd64_darwin))
   VALGRIND_MAKE_MEM_NOACCESS((char*)link->mem + (size_t)dsize*count, link->bytes - (size_t)dsize*count);
   VALGRIND_MAKE_MEM_UNDEFINED(link->mem, (size_t)dsize*count);
 #endif
