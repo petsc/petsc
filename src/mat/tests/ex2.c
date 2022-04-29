@@ -191,7 +191,13 @@ int main(int argc,char **argv)
   /* Test MatZeroRows */
   j = rstart - 1;
   if (j < 0) j = m-1;
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"MatZeroRows:\n"));
   PetscCall(MatZeroRows(mat,1,&j,0.0,NULL,NULL));
+  PetscCall(MatView(mat,PETSC_VIEWER_STDOUT_WORLD));
+
+  /* Test MatShift */
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"MatShift: B = B - 2*I\n"));
+  PetscCall(MatShift(mat,-2.0));
   PetscCall(MatView(mat,PETSC_VIEWER_STDOUT_WORLD));
 
   PetscCall(PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD));
