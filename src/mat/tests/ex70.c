@@ -343,9 +343,9 @@ int main(int argc,char **args)
     PetscCall(MatDuplicate(B,MAT_DO_NOT_COPY_VALUES,&T4));
     PetscCall(MatSetRandom(T4,NULL));
     PetscCall(MatAXPY(B2,1.0,T4,SAME_NONZERO_PATTERN));
-    PetscCall(MatDenseGetSubMatrix(B,PetscMin(1,K-1),PetscMin(2,K),&T));
-    PetscCall(MatDenseGetSubMatrix(T4,PetscMin(1,K-1),PetscMin(2,K),&T2));
-    PetscCall(MatDenseGetSubMatrix(B2,PetscMin(1,K-1),PetscMin(2,K),&T3));
+    PetscCall(MatDenseGetSubMatrix(B,PETSC_DECIDE,PETSC_DECIDE,PetscMin(1,K-1),PetscMin(2,K),&T));
+    PetscCall(MatDenseGetSubMatrix(T4,PETSC_DECIDE,PETSC_DECIDE,PetscMin(1,K-1),PetscMin(2,K),&T2));
+    PetscCall(MatDenseGetSubMatrix(B2,PETSC_DECIDE,PETSC_DECIDE,PetscMin(1,K-1),PetscMin(2,K),&T3));
     PetscCall(MatAXPY(T,1.0,T2,SAME_NONZERO_PATTERN));
     PetscCall(MatAXPY(T3,-1.0,T,SAME_NONZERO_PATTERN));
     PetscCall(MatNorm(T3,NORM_FROBENIUS,&err));
@@ -359,6 +359,48 @@ int main(int argc,char **args)
     PetscCall(CheckLocal(B,NULL,aB,NULL));
     PetscCall(MatDestroy(&B2));
     PetscCall(MatDestroy(&T4));
+    if (N >= 2) {
+      PetscCall(MatDuplicate(B,MAT_COPY_VALUES,&B2));
+      PetscCall(MatDuplicate(B,MAT_DO_NOT_COPY_VALUES,&T4));
+      PetscCall(MatSetRandom(T4,NULL));
+      PetscCall(MatAXPY(B2,1.0,T4,SAME_NONZERO_PATTERN));
+      PetscCall(MatDenseGetSubMatrix(B,N-2,PETSC_DECIDE,PetscMin(1,K-1),PetscMin(2,K),&T));
+      PetscCall(MatDenseGetSubMatrix(T4,N-2,PETSC_DECIDE,PetscMin(1,K-1),PetscMin(2,K),&T2));
+      PetscCall(MatDenseGetSubMatrix(B2,N-2,PETSC_DECIDE,PetscMin(1,K-1),PetscMin(2,K),&T3));
+      PetscCall(MatAXPY(T,1.0,T2,SAME_NONZERO_PATTERN));
+      PetscCall(MatAXPY(T3,-1.0,T,SAME_NONZERO_PATTERN));
+      PetscCall(MatNorm(T3,NORM_FROBENIUS,&err));
+      if (err > PETSC_SMALL) {
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error with MatDenseGetSubMatrix\n"));
+        PetscCall(MatView(T3,NULL));
+      }
+      PetscCall(MatDenseRestoreSubMatrix(B,&T));
+      PetscCall(MatDenseRestoreSubMatrix(T4,&T2));
+      PetscCall(MatDenseRestoreSubMatrix(B2,&T3));
+      PetscCall(CheckLocal(B,NULL,aB,NULL));
+      PetscCall(MatDestroy(&B2));
+      PetscCall(MatDestroy(&T4));
+      PetscCall(MatDuplicate(B,MAT_COPY_VALUES,&B2));
+      PetscCall(MatDuplicate(B,MAT_DO_NOT_COPY_VALUES,&T4));
+      PetscCall(MatSetRandom(T4,NULL));
+      PetscCall(MatAXPY(B2,1.0,T4,SAME_NONZERO_PATTERN));
+      PetscCall(MatDenseGetSubMatrix(B,PETSC_DECIDE,2,PetscMin(1,K-1),PetscMin(2,K),&T));
+      PetscCall(MatDenseGetSubMatrix(T4,PETSC_DECIDE,2,PetscMin(1,K-1),PetscMin(2,K),&T2));
+      PetscCall(MatDenseGetSubMatrix(B2,PETSC_DECIDE,2,PetscMin(1,K-1),PetscMin(2,K),&T3));
+      PetscCall(MatAXPY(T,1.0,T2,SAME_NONZERO_PATTERN));
+      PetscCall(MatAXPY(T3,-1.0,T,SAME_NONZERO_PATTERN));
+      PetscCall(MatNorm(T3,NORM_FROBENIUS,&err));
+      if (err > PETSC_SMALL) {
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error with MatDenseGetSubMatrix\n"));
+        PetscCall(MatView(T3,NULL));
+      }
+      PetscCall(MatDenseRestoreSubMatrix(B,&T));
+      PetscCall(MatDenseRestoreSubMatrix(T4,&T2));
+      PetscCall(MatDenseRestoreSubMatrix(B2,&T3));
+      PetscCall(CheckLocal(B,NULL,aB,NULL));
+      PetscCall(MatDestroy(&B2));
+      PetscCall(MatDestroy(&T4));
+    }
   }
 
   /* Test reusing a previously allocated dense buffer */

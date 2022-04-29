@@ -3256,21 +3256,19 @@ PetscErrorCode MatDenseRestoreColumnVecWrite_SeqDense(Mat A,PetscInt col,Vec *v)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatDenseGetSubMatrix_SeqDense(Mat A,PetscInt cbegin,PetscInt cend,Mat *v)
+PetscErrorCode MatDenseGetSubMatrix_SeqDense(Mat A,PetscInt rbegin,PetscInt rend,PetscInt cbegin,PetscInt cend,Mat *v)
 {
   Mat_SeqDense   *a = (Mat_SeqDense*)A->data;
 
   PetscFunctionBegin;
   PetscCheck(!a->vecinuse,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseRestoreColumnVec() first");
   PetscCheck(!a->matinuse,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseRestoreSubMatrix() first");
-  if (a->cmat && cend-cbegin != a->cmat->cmap->N) {
-    PetscCall(MatDestroy(&a->cmat));
-  }
+  if (a->cmat && (cend-cbegin != a->cmat->cmap->N || rend-rbegin != a->cmat->rmap->N)) PetscCall(MatDestroy(&a->cmat));
   if (!a->cmat) {
-    PetscCall(MatCreateDense(PetscObjectComm((PetscObject)A),A->rmap->n,PETSC_DECIDE,A->rmap->N,cend-cbegin,a->v+(size_t)cbegin*a->lda,&a->cmat));
+    PetscCall(MatCreateDense(PetscObjectComm((PetscObject)A),rend-rbegin,PETSC_DECIDE,rend-rbegin,cend-cbegin,a->v+rbegin+(size_t)cbegin*a->lda,&a->cmat));
     PetscCall(PetscLogObjectParent((PetscObject)A,(PetscObject)a->cmat));
   } else {
-    PetscCall(MatDensePlaceArray(a->cmat,a->v+(size_t)cbegin*a->lda));
+    PetscCall(MatDensePlaceArray(a->cmat,a->v+rbegin+(size_t)cbegin*a->lda));
   }
   PetscCall(MatDenseSetLDA(a->cmat,a->lda));
   a->matinuse = cbegin + 1;
@@ -3595,37 +3593,48 @@ PetscErrorCode MatDenseRestoreColumnVecWrite(Mat A,PetscInt col,Vec *v)
 }
 
 /*@
-   MatDenseGetSubMatrix - Gives access to a block of columns of a dense matrix, represented as a Mat.
+   MatDenseGetSubMatrix - Gives access to a block of rows and columns of a dense matrix, represented as a Mat.
 
    Collective
 
    Input Parameters:
 +  mat - the Mat object
-.  cbegin - the first index in the block
--  cend - the index past the last one in the block
+.  rbegin - the first global row index in the block (if PETSC_DECIDE, is 0)
+.  rend - the global row index past the last one in the block (if PETSC_DECIDE, is M)
+.  cbegin - the first global column index in the block (if PETSC_DECIDE, is 0)
+-  cend - the global column index past the last one in the block (if PETSC_DECIDE, is N)
 
    Output Parameter:
 .  v - the matrix
 
    Notes:
      The matrix is owned by PETSc. Users need to call MatDenseRestoreSubMatrix() when the matrix is no longer needed.
+     The output matrix is not redistributed by PETSc, so depending on the values of rbegin and rend, some processes may have no local rows.
 
    Level: intermediate
 
 .seealso: `MATDENSE`, `MATDENSECUDA`, `MatDenseGetColumnVec()`, `MatDenseRestoreColumnVec()`, `MatDenseRestoreSubMatrix()`
 @*/
-PetscErrorCode MatDenseGetSubMatrix(Mat A,PetscInt cbegin,PetscInt cend,Mat *v)
+PetscErrorCode MatDenseGetSubMatrix(Mat A,PetscInt rbegin,PetscInt rend,PetscInt cbegin,PetscInt cend,Mat *v)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
-  PetscValidLogicalCollectiveInt(A,cbegin,2);
-  PetscValidLogicalCollectiveInt(A,cend,3);
-  PetscValidPointer(v,4);
+  PetscValidLogicalCollectiveInt(A,rbegin,2);
+  PetscValidLogicalCollectiveInt(A,rend,3);
+  PetscValidLogicalCollectiveInt(A,cbegin,4);
+  PetscValidLogicalCollectiveInt(A,cend,5);
+  PetscValidPointer(v,6);
+  if (rbegin == PETSC_DECIDE) rbegin = 0;
+  if (rend == PETSC_DECIDE) rend = A->rmap->N;
+  if (cbegin == PETSC_DECIDE) cbegin = 0;
+  if (cend == PETSC_DECIDE) cend = A->cmap->N;
   PetscCheck(A->preallocated,PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Matrix not preallocated");
-  PetscCheck(cbegin >= 0 && cbegin < A->cmap->N,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Invalid cbegin %" PetscInt_FMT ", should be in [0,%" PetscInt_FMT ")",cbegin,A->cmap->N);
-  PetscCheck(cend > cbegin && cend <= A->cmap->N,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Invalid cend %" PetscInt_FMT ", should be in (%" PetscInt_FMT ",%" PetscInt_FMT "]",cend,cbegin,A->cmap->N);
-  PetscUseMethod(A,"MatDenseGetSubMatrix_C",(Mat,PetscInt,PetscInt,Mat*),(A,cbegin,cend,v));
+  PetscCheck(rbegin >= 0 && rbegin <= A->rmap->N,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Invalid rbegin %" PetscInt_FMT ", should be in [0,%" PetscInt_FMT "]",rbegin,A->rmap->N);
+  PetscCheck(rend >= rbegin && rend <= A->rmap->N,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Invalid rend %" PetscInt_FMT ", should be in [%" PetscInt_FMT ",%" PetscInt_FMT "]",rend,rbegin,A->rmap->N);
+  PetscCheck(cbegin >= 0 && cbegin <= A->cmap->N,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Invalid cbegin %" PetscInt_FMT ", should be in [0,%" PetscInt_FMT "]",cbegin,A->cmap->N);
+  PetscCheck(cend >= cbegin && cend <= A->cmap->N,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Invalid cend %" PetscInt_FMT ", should be in [%" PetscInt_FMT ",%" PetscInt_FMT "]",cend,cbegin,A->cmap->N);
+  PetscUseMethod(A,"MatDenseGetSubMatrix_C",(Mat,PetscInt,PetscInt,PetscInt,PetscInt,Mat*),(A,rbegin,rend,cbegin,cend,v));
   PetscFunctionReturn(0);
 }
 

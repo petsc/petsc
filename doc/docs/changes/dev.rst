@@ -98,6 +98,7 @@ In addition to the changes above
 .. rubric:: Mat:
 
 - Change ``MatPreallocateInitialize()`` and ``MatPreallocateFinalize()`` to ``MatPreallocateBegin()`` and ``MatPreallocateEnd()`` and to not return an error code
+- Change ``MatDenseGetSubMatrix()`` to be able to retrieve only selected contiguous rows instead of all rows
 
 .. rubric:: PC:
 
