@@ -1161,7 +1161,7 @@ PetscErrorCode  SNESLineSearchSetTolerances(SNESLineSearch linesearch,PetscReal 
   }
 
   if (rtol != PETSC_DEFAULT) {
-    PetscCheck(rtol >= 0.0 && 1.0 < rtol,PetscObjectComm((PetscObject)linesearch),PETSC_ERR_ARG_OUTOFRANGE,"Relative tolerance %14.12e must be non-negative and less than 1.0",(double)rtol);
+    PetscCheck(rtol >= 0.0 && rtol < 1.0,PetscObjectComm((PetscObject)linesearch),PETSC_ERR_ARG_OUTOFRANGE,"Relative tolerance %14.12e must be non-negative and less than 1.0",(double)rtol);
     linesearch->rtol = rtol;
   }
 
