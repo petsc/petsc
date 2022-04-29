@@ -10,7 +10,7 @@ cdef extern from* nogil:
     #int DMLabelSetDefaultValue(PetscDMLabel,PetscInt)
     #int DMLabelDuplicate(PetscDMLabel,PetscDMLabel*)
     #int DMLabelGetValue(PetscDMLabel,PetscInt,PetscInt*)
-    #int DMLabelSetValue(PetscDMLabel,PetscInt,PetscInt)
+    int DMLabelSetValue(PetscDMLabel,PetscInt,PetscInt)
     #int DMLabelClearValue(PetscDMLabel,PetscInt,PetscInt)
     #int DMLabelAddStratum(PetscDMLabel,PetscInt)
     #int DMLabelAddStrata(PetscDMLabel,PetscInt,const PetscInt[])

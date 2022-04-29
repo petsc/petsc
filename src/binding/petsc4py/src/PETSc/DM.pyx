@@ -375,6 +375,11 @@ cdef class DM(Object):
         CHKERR( DMCreateMatrix(self.dm, &mat.mat) )
         return mat
 
+    def createMassMatrix(self, DM dmf):
+        cdef Mat mat = Mat()
+        CHKERR( DMCreateMassMatrix(self.dm, dmf.dm, &mat.mat) )
+        return mat
+
     def createInterpolation(self, DM dm):
         cdef Mat A = Mat()
         cdef Vec scale = Vec()

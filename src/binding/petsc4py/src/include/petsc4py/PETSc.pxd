@@ -38,6 +38,12 @@ cdef extern from "petsc.h":
     struct _p_VecScatter
     ctypedef _p_VecScatter* PetscScatter "VecScatter"
 
+    struct _p_PetscSpace
+    ctypedef _p_PetscSpace* PetscSpace "PetscSpace"
+
+    struct _p_PetscDualSpace
+    ctypedef _p_PetscDualSpace* PetscDualSpace "PetscDualSpace"
+
     struct _p_PetscFE
     ctypedef _p_PetscFE* PetscFE "PetscFE"
 
@@ -149,6 +155,18 @@ ctypedef public api class Vec(Object) [
     object PyPetscVecObject,
     ]:
     cdef PetscVec vec
+
+ctypedef public api class Space(Object) [
+    type   PyPetscSpace_Type,
+    object PyPetscSpaceObject,
+    ]:
+    cdef PetscSpace space
+
+ctypedef public api class DualSpace(Object) [
+    type   PyPetscDualSpace_Type,
+    object PyPetscDualSpaceObject,
+    ]:
+    cdef PetscDualSpace dualspace
 
 ctypedef public api class FE(Object) [
     type   PyPetscFE_Type,

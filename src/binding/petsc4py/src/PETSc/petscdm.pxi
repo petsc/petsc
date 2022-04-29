@@ -80,6 +80,7 @@ cdef extern from * nogil:
     int DMRestoreGlobalVector(PetscDM,PetscVec*)
     int DMSetMatType(PetscDM,PetscMatType)
     int DMCreateMatrix(PetscDM,PetscMat*)
+    int DMCreateMassMatrix(PetscDM,PetscDM,PetscMat*)
 
     int DMGetCoordinateDM(PetscDM,PetscDM*)
     int DMGetCoordinateSection(PetscDM,PetscSection*)

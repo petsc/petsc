@@ -266,6 +266,14 @@ class TestObjectDMLabel(BaseTestObject, unittest.TestCase):
     FACTORY = 'create'
     TARGS = ("test",)
 
+class TestObjectSpace(BaseTestObject, unittest.TestCase):
+    CLASS  = PETSc.Space
+    FACTORY = 'create'
+
+class TestObjectDualSpace(BaseTestObject, unittest.TestCase):
+    CLASS  = PETSc.DualSpace
+    FACTORY = 'create'
+
 # --------------------------------------------------------------------
 
 import numpy
