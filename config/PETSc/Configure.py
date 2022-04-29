@@ -135,7 +135,7 @@ class Configure(config.base.Configure):
                  'uname','snprintf','_snprintf','lseek','_lseek','time','fork','stricmp',
                  'strcasecmp','bzero','dlopen','dlsym','dlclose','dlerror',
                  '_set_output_format','_mkdir','socket','gethostbyname','_pipe','fpresetsticky',
-                 'fpsetsticky','__gcov_dump']
+                 'fpsetsticky','__gcov_dump','fstatat']
     libraries = [(['fpe'],'handle_sigfpes')]
     librariessock = [(['socket','nsl'],'socket')]
     self.headers.headers.extend(headersC)
