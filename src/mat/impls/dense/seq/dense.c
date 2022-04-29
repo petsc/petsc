@@ -330,7 +330,7 @@ PetscErrorCode MatScale_SeqDense(Mat A,PetscScalar alpha)
     PetscCall(PetscBLASIntCast(A->rmap->n*A->cmap->n,&nz));
     PetscStackCallBLAS("BLASscal",BLASscal_(&nz,&alpha,v,&one));
   }
-  PetscCall(PetscLogFlops(nz));
+  PetscCall(PetscLogFlops(A->rmap->n*A->cmap->n));
   PetscCall(MatDenseRestoreArray(A,&v));
   PetscFunctionReturn(0);
 }
