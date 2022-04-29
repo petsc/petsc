@@ -64,7 +64,7 @@ PetscErrorCode MatCreateSubMatrices_Normal(Mat mat,PetscInt n,const IS irow[],co
   PetscInt       M;
 
   PetscFunctionBegin;
-  PetscCheckFalse(a->left || a->right || irow != icol,PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Not implemented");
+  PetscCheck(!a->left && !a->right && irow == icol,PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Not implemented");
   if (scall != MAT_REUSE_MATRIX) {
     PetscCall(PetscCalloc1(n,submat));
   }

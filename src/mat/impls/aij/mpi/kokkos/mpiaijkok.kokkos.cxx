@@ -243,7 +243,7 @@ static PetscErrorCode MatSetMPIAIJKokkosWithSplitSeqAIJKokkosMatrices(Mat mat,Ma
   PetscCall(MatGetLocalSize(A,&Am,&An));
   PetscCall(MatGetLocalSize(B,&Bm,&Bn));
 
-  PetscCheckFalse(m != Am || m != Bm,PETSC_COMM_SELF,PETSC_ERR_PLIB,"local number of rows do not match");
+  PetscCheck(m == Am && m == Bm,PETSC_COMM_SELF,PETSC_ERR_PLIB,"local number of rows do not match");
   PetscCheck(n == An,PETSC_COMM_SELF,PETSC_ERR_PLIB,"local number of columns do not match");
   PetscCheck(N == Bn,PETSC_COMM_SELF,PETSC_ERR_PLIB,"global number of columns do not match");
   PetscCheck(!mpiaij->A && !mpiaij->B,PETSC_COMM_SELF,PETSC_ERR_PLIB,"A, B of the MPIAIJ matrix are not empty");
@@ -548,7 +548,7 @@ static PetscErrorCode MatSeqAIJKokkosReduce(Mat A,MatReuse reuse,PetscBool local
     for (i=0; i<nrows; i++) {
       r = rows[i]; /* local row id of i-th received row */
      #if defined(PETSC_USE_DEBUG)
-      PetscCheckFalse(r<0 || r>=Cm,PETSC_COMM_SELF,PETSC_ERR_PLIB,"local row id (%" PetscInt_FMT ") is out of range [0,%" PetscInt_FMT ")",r,Cm);
+      PetscCheck(r >= 0 && r < Cm,PETSC_COMM_SELF,PETSC_ERR_PLIB,"local row id (%" PetscInt_FMT ") is out of range [0,%" PetscInt_FMT ")",r,Cm);
      #endif
       Ci_ptr[r+1] += rrowlens[i]; /* add to length of row r in C */
     }
@@ -1544,7 +1544,7 @@ PetscErrorCode MatKokkosGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure *B)
     h_mat.diag.n = n;
     h_mat.diag.ignorezeroentries = jaca->ignorezeroentries;
     PetscCallMPI(MPI_Comm_rank(comm,&h_mat.rank));
-    PetscCheckFalse(jaca->compressedrow.use,PETSC_COMM_SELF,PETSC_ERR_PLIB,"A does not suppport compressed row (todo)");
+    PetscCheck(!jaca->compressedrow.use,PETSC_COMM_SELF,PETSC_ERR_PLIB,"A does not suppport compressed row (todo)");
     else {
       h_mat.diag.i = aijkokA->i_device_data();
     }

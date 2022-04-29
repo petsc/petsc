@@ -1310,7 +1310,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
   }
 
   /*--------- parallel case: MUMPS requires rhs B to be centralized on the host! --------*/
-  PetscCheckFalse(mumps->petsc_size > 1 && mumps->id.ICNTL(19),PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Parallel Schur complements not yet supported from PETSc");
+  PetscCheck(mumps->petsc_size <= 1 || !mumps->id.ICNTL(19),PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Parallel Schur complements not yet supported from PETSc");
 
   /* create msol_loc to hold mumps local solution */
   isol_loc_save = mumps->id.isol_loc; /* save it for MatSolve() */
@@ -1501,7 +1501,7 @@ PetscErrorCode MatGetInertia_SBAIJMUMPS(Mat F,PetscInt *nneg,PetscInt *nzero,Pet
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)F),&size));
   /* MUMPS 4.3.1 calls ScaLAPACK when ICNTL(13)=0 (default), which does not offer the possibility to compute the inertia of a dense matrix. Set ICNTL(13)=1 to skip ScaLAPACK */
-  PetscCheckFalse(size > 1 && mumps->id.ICNTL(13) != 1,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"ICNTL(13)=%d. -mat_mumps_icntl_13 must be set as 1 for correct global matrix inertia",mumps->id.INFOG(13));
+  PetscCheck(size <= 1 || mumps->id.ICNTL(13) == 1,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"ICNTL(13)=%d. -mat_mumps_icntl_13 must be set as 1 for correct global matrix inertia",mumps->id.INFOG(13));
 
   if (nneg) *nneg = mumps->id.INFOG(12);
   if (nzero || npos) {
@@ -1678,7 +1678,7 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
       }
     }
   }
-  PetscCheckFalse(!mumps->myid && mumps->id.ICNTL(16) > 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"  mumps->id.ICNTL(16):=%d",mumps->id.INFOG(16));
+  PetscCheck(mumps->myid || mumps->id.ICNTL(16) <= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"  mumps->id.ICNTL(16):=%d",mumps->id.INFOG(16));
 
   F->assembled    = PETSC_TRUE;
 
@@ -1745,7 +1745,7 @@ PetscErrorCode PetscSetMUMPSFromOptions(Mat F, Mat A)
 
   PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_7","ICNTL(7): computes a symmetric permutation in sequential analysis. 0=AMD, 2=AMF, 3=Scotch, 4=PORD, 5=Metis, 6=QAMD, and 7=auto(default)","None",mumps->id.ICNTL(7),&icntl,&flg));
   if (flg) {
-    PetscCheckFalse(icntl == 1 || icntl < 0 || icntl > 7,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Valid values are 0=AMD, 2=AMF, 3=Scotch, 4=PORD, 5=Metis, 6=QAMD, and 7=auto");
+    PetscCheck(icntl != 1 && icntl >= 0 && icntl <= 7,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Valid values are 0=AMD, 2=AMF, 3=Scotch, 4=PORD, 5=Metis, 6=QAMD, and 7=auto");
     mumps->id.ICNTL(7) = icntl;
   }
 
@@ -1782,9 +1782,9 @@ PetscErrorCode PetscSetMUMPSFromOptions(Mat F, Mat A)
   mumps->ICNTL20 = 10; /* Distributed dense RHS*/
 #endif
   PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_20","ICNTL(20): give mumps centralized (0) or distributed (10) dense right-hand sides","None",mumps->ICNTL20,&mumps->ICNTL20,&flg));
-  PetscCheckFalse(flg && mumps->ICNTL20 != 10 && mumps->ICNTL20 != 0,PETSC_COMM_SELF,PETSC_ERR_SUP,"ICNTL(20)=%d is not supported by the PETSc/MUMPS interface. Allowed values are 0, 10",(int)mumps->ICNTL20);
+  PetscCheck(!flg || mumps->ICNTL20 == 10 || mumps->ICNTL20 == 0,PETSC_COMM_SELF,PETSC_ERR_SUP,"ICNTL(20)=%d is not supported by the PETSc/MUMPS interface. Allowed values are 0, 10",(int)mumps->ICNTL20);
 #if PETSC_PKG_MUMPS_VERSION_LT(5,3,0)
-  PetscCheckFalse(flg && mumps->ICNTL20 == 10,PETSC_COMM_SELF,PETSC_ERR_SUP,"ICNTL(20)=10 is not supported before MUMPS-5.3.0");
+  PetscCheck(!flg || mumps->ICNTL20 != 10,PETSC_COMM_SELF,PETSC_ERR_SUP,"ICNTL(20)=10 is not supported before MUMPS-5.3.0");
 #endif
   /* PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_21","ICNTL(21): the distribution (centralized or distributed) of the solution vectors","None",mumps->id.ICNTL(21),&mumps->id.ICNTL(21),NULL)); we only use distributed solution vector */
 
@@ -1823,7 +1823,7 @@ PetscErrorCode PetscSetMUMPSFromOptions(Mat F, Mat A)
     PetscCall(PetscMalloc1(ninfo,&mumps->info));
     mumps->ninfo = ninfo;
     for (i=0; i<ninfo; i++) {
-      PetscCheckFalse(info[i] < 0 || info[i]>80,PETSC_COMM_SELF,PETSC_ERR_USER,"index of INFO %" PetscInt_FMT " must between 1 and 80",ninfo);
+      PetscCheck(info[i] >= 0 && info[i] <= 80,PETSC_COMM_SELF,PETSC_ERR_USER,"index of INFO %" PetscInt_FMT " must between 1 and 80",ninfo);
       else  mumps->info[i] = info[i];
     }
   }
@@ -2978,7 +2978,7 @@ static PetscErrorCode MatGetFactor_aij_mumps(Mat A,MatFactorType ftype,Mat *F)
 
   PetscFunctionBegin;
  #if defined(PETSC_USE_COMPLEX)
-  PetscCheckFalse(A->hermitian && !A->symmetric && ftype == MAT_FACTOR_CHOLESKY,PETSC_COMM_SELF,PETSC_ERR_SUP,"Hermitian CHOLESKY Factor is not supported");
+  PetscCheck(!A->hermitian || A->symmetric || ftype != MAT_FACTOR_CHOLESKY,PETSC_COMM_SELF,PETSC_ERR_SUP,"Hermitian CHOLESKY Factor is not supported");
  #endif
   /* Create the factorization matrix */
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)A,MATSEQAIJ,&isSeqAIJ));

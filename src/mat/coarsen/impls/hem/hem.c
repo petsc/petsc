@@ -784,7 +784,7 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
           n  = *pt++; kk = *pt++;
           while (n--) {
             PetscInt gid1=*pt++, lid1=gid1-my0; kk=*pt++;
-            PetscCheckFalse(lid_matched[lid1],PETSC_COMM_SELF,PETSC_ERR_PLIB,"Recieved deleted gid %" PetscInt_FMT ", deleted by (lid) %" PetscInt_FMT " from proc %" PetscInt_FMT,sub_it,gid1,kk);
+            PetscCheck(!lid_matched[lid1],PETSC_COMM_SELF,PETSC_ERR_PLIB,"Recieved deleted gid %" PetscInt_FMT ", deleted by (lid) %" PetscInt_FMT " from proc %" PetscInt_FMT,sub_it,gid1,kk);
             lid_matched[lid1] = PETSC_TRUE; /* keep track of what we've done this round */
             PetscCall(PetscCDSizeAt(agg_llists, lid1, &kk));
             count2           += kk + 2;

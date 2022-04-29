@@ -90,7 +90,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part,IS *partit
   /* redirect output to buffer */
 #if defined(PETSC_HAVE_UNISTD_H)
   fd_stdout = dup(1);
-  PetscCheckFalse(pipe(fd_pipe),PETSC_COMM_SELF,PETSC_ERR_SYS,"Could not open pipe");
+  PetscCheck(!pipe(fd_pipe),PETSC_COMM_SELF,PETSC_ERR_SYS,"Could not open pipe");
   close(1);
   dup2(fd_pipe[1],1);
   PetscCall(PetscMalloc1(SIZE_LOG,&mesg_log));
@@ -262,7 +262,7 @@ PetscErrorCode MatPartitioningPartySetCoarseLevel_Party(MatPartitioning part,Pet
   MatPartitioning_Party *party = (MatPartitioning_Party*)part->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(level<0.0 || level>1.0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Party: level of coarsening out of range [0.0-1.0]");
+  PetscCheck(level >= 0.0 && level <= 1.0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Party: level of coarsening out of range [0.0-1.0]");
   party->nbvtxcoarsed = (PetscInt)(part->adj->cmap->N * level);
   if (party->nbvtxcoarsed < 20) party->nbvtxcoarsed = 20;
   PetscFunctionReturn(0);

@@ -357,7 +357,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS isrow,IS iscol,con
   PetscFunctionBegin;
   PetscCheck(A->rmap->n == A->cmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %" PetscInt_FMT " columns %" PetscInt_FMT,A->rmap->n,A->cmap->n);
   if (bs>1) {  /* check shifttype */
-    PetscCheckFalse(info->shifttype == MAT_SHIFT_NONZERO || info->shifttype == MAT_SHIFT_POSITIVE_DEFINITE,PETSC_COMM_SELF,PETSC_ERR_SUP,"Only MAT_SHIFT_NONE and MAT_SHIFT_INBLOCKS are supported for BAIJ matrix");
+    PetscCheck(info->shifttype != MAT_SHIFT_NONZERO && info->shifttype != MAT_SHIFT_POSITIVE_DEFINITE,PETSC_COMM_SELF,PETSC_ERR_SUP,"Only MAT_SHIFT_NONE and MAT_SHIFT_INBLOCKS are supported for BAIJ matrix");
   }
 
   PetscCall(MatMissingDiagonal(A,&missing,&d));
@@ -703,7 +703,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_inplace(Mat fact,Mat A,IS isrow,IS i
       fm       = fill[fm];
     }
     /* make sure row has diagonal entry */
-    PetscCheckFalse(ajnew[ainew[prow]+dloc[prow]] != prow,PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Row %" PetscInt_FMT " has missing diagonal in factored matrix\n\
+    PetscCheck(ajnew[ainew[prow]+dloc[prow]] == prow,PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Row %" PetscInt_FMT " has missing diagonal in factored matrix\n\
                                                         try running with -pc_factor_nonzeros_along_diagonal or -pc_factor_diagonal_fill",prow);
   }
   PetscCall(PetscFree(ajfill));

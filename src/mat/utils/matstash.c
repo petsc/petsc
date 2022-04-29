@@ -843,7 +843,7 @@ static PetscErrorCode MatStashScatterBegin_BTS(Mat mat,MatStash *stash,PetscInt 
       stash->sendhdr[i].count = 0; /* Might remain empty (in which case we send a zero-sized message) if no values are communicated to that process */
       for (; b<nblocks; b++) {
         MatStashBlock *sendblock_b = (MatStashBlock*)&sendblocks[b*stash->blocktype_size];
-        PetscCheckFalse(sendblock_b->row < owners[stash->sendranks[i]],stash->comm,PETSC_ERR_ARG_WRONG,"MAT_SUBSET_OFF_PROC_ENTRIES set, but row %" PetscInt_FMT " owned by %d not communicated in initial assembly",sendblock_b->row,stash->sendranks[i]);
+        PetscCheck(sendblock_b->row >= owners[stash->sendranks[i]],stash->comm,PETSC_ERR_ARG_WRONG,"MAT_SUBSET_OFF_PROC_ENTRIES set, but row %" PetscInt_FMT " owned by %d not communicated in initial assembly",sendblock_b->row,stash->sendranks[i]);
         if (sendblock_b->row >= owners[stash->sendranks[i]+1]) break;
         stash->sendhdr[i].count++;
       }
@@ -948,8 +948,8 @@ static PetscErrorCode MatStashScatterGetMesg_BTS(MatStash *stash,PetscMPIInt *n,
     if (stash->recvframe_count > 0) { /* Check for InsertMode consistency */
       block = (MatStashBlock*)&((char*)stash->recvframe_active->buffer)[0];
       if (PetscUnlikely(*stash->insertmode == NOT_SET_VALUES)) *stash->insertmode = block->row < 0 ? INSERT_VALUES : ADD_VALUES;
-      PetscCheckFalse(*stash->insertmode == INSERT_VALUES && block->row >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Assembling INSERT_VALUES, but rank %d requested ADD_VALUES",stash->recvranks[stash->some_indices[stash->some_i]]);
-      PetscCheckFalse(*stash->insertmode == ADD_VALUES && block->row < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Assembling ADD_VALUES, but rank %d requested INSERT_VALUES",stash->recvranks[stash->some_indices[stash->some_i]]);
+      PetscCheck(*stash->insertmode != INSERT_VALUES || block->row < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Assembling INSERT_VALUES, but rank %d requested ADD_VALUES",stash->recvranks[stash->some_indices[stash->some_i]]);
+      PetscCheck(*stash->insertmode != ADD_VALUES || block->row >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Assembling ADD_VALUES, but rank %d requested INSERT_VALUES",stash->recvranks[stash->some_indices[stash->some_i]]);
     }
     stash->some_i++;
     stash->recvcount++;

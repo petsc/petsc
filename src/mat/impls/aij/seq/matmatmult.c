@@ -30,7 +30,7 @@ PETSC_INTERN PetscErrorCode MatSetSeqAIJWithArrays_private(MPI_Comm comm,PetscIn
   PetscBool      isseqaij, osingle, ofree_a, ofree_ij;
 
   PetscFunctionBegin;
-  PetscCheckFalse(m > 0 && i[0],PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"i (row indices) must start with 0");
+  PetscCheck(m <= 0 || !i[0],PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"i (row indices) must start with 0");
   PetscCall(MatSetSizes(mat,m,n,m,n));
 
   if (!mtype) {

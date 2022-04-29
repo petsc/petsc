@@ -1967,7 +1967,7 @@ PetscErrorCode MatCreateSubMatrix_MPIBAIJ_Private(Mat mat,IS isrow,IS iscol,Pets
     }
     PetscCallMPI(MPI_Scan(&nlocal,&rend,1,MPIU_INT,MPI_SUM,comm));
     rstart = rend - nlocal;
-    PetscCheckFalse(rank == size - 1 && rend != n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local column sizes %" PetscInt_FMT " do not add up to total number of columns %" PetscInt_FMT,rend,n);
+    PetscCheck(rank != size - 1 || rend == n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local column sizes %" PetscInt_FMT " do not add up to total number of columns %" PetscInt_FMT,rend,n);
 
     /* next, compute all the lengths */
     PetscCall(PetscMalloc2(m+1,&dlens,m+1,&olens));
