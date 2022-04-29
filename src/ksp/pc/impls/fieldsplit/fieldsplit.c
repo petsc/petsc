@@ -1251,9 +1251,9 @@ static PetscErrorCode PCApply_FieldSplit(PC pc,Vec x,Vec y)
   if (jac->type == PC_COMPOSITE_ADDITIVE) {
     if (jac->defaultsplit) {
       PetscCall(VecGetBlockSize(x,&bs));
-      PetscCheckFalse(jac->bs > 0 && bs != jac->bs,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Blocksize of x vector %" PetscInt_FMT " does not match fieldsplit blocksize %" PetscInt_FMT,bs,jac->bs);
+      PetscCheck(jac->bs <= 0 || bs == jac->bs,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Blocksize of x vector %" PetscInt_FMT " does not match fieldsplit blocksize %" PetscInt_FMT,bs,jac->bs);
       PetscCall(VecGetBlockSize(y,&bs));
-      PetscCheckFalse(jac->bs > 0 && bs != jac->bs,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Blocksize of y vector %" PetscInt_FMT " does not match fieldsplit blocksize %" PetscInt_FMT,bs,jac->bs);
+      PetscCheck(jac->bs <= 0 || bs == jac->bs,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Blocksize of y vector %" PetscInt_FMT " does not match fieldsplit blocksize %" PetscInt_FMT,bs,jac->bs);
       PetscCall(VecStrideGatherAll(x,jac->x,INSERT_VALUES));
       while (ilink) {
         PetscCall(PetscLogEventBegin(ilink->event,ilink->ksp,ilink->x,ilink->y,NULL));
@@ -1490,9 +1490,9 @@ static PetscErrorCode PCApplyTranspose_FieldSplit(PC pc,Vec x,Vec y)
   if (jac->type == PC_COMPOSITE_ADDITIVE) {
     if (jac->defaultsplit) {
       PetscCall(VecGetBlockSize(x,&bs));
-      PetscCheckFalse(jac->bs > 0 && bs != jac->bs,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Blocksize of x vector %" PetscInt_FMT " does not match fieldsplit blocksize %" PetscInt_FMT,bs,jac->bs);
+      PetscCheck(jac->bs <= 0 || bs == jac->bs,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Blocksize of x vector %" PetscInt_FMT " does not match fieldsplit blocksize %" PetscInt_FMT,bs,jac->bs);
       PetscCall(VecGetBlockSize(y,&bs));
-      PetscCheckFalse(jac->bs > 0 && bs != jac->bs,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Blocksize of y vector %" PetscInt_FMT " does not match fieldsplit blocksize %" PetscInt_FMT,bs,jac->bs);
+      PetscCheck(jac->bs <= 0 || bs == jac->bs,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Blocksize of y vector %" PetscInt_FMT " does not match fieldsplit blocksize %" PetscInt_FMT,bs,jac->bs);
       PetscCall(VecStrideGatherAll(x,jac->x,INSERT_VALUES));
       while (ilink) {
         PetscCall(PetscLogEventBegin(ilink->event,ilink->ksp,ilink->x,ilink->y,NULL));
@@ -2786,7 +2786,7 @@ static PetscErrorCode  PCFieldSplitSetBlockSize_FieldSplit(PC pc,PetscInt bs)
 
   PetscFunctionBegin;
   PetscCheck(bs >= 1,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Blocksize must be positive, you gave %" PetscInt_FMT,bs);
-  PetscCheckFalse(jac->bs > 0 && jac->bs != bs,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Cannot change fieldsplit blocksize from %" PetscInt_FMT " to %" PetscInt_FMT " after it has been set",jac->bs,bs);
+  PetscCheck(jac->bs <= 0 || jac->bs == bs,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Cannot change fieldsplit blocksize from %" PetscInt_FMT " to %" PetscInt_FMT " after it has been set",jac->bs,bs);
   jac->bs = bs;
   PetscFunctionReturn(0);
 }

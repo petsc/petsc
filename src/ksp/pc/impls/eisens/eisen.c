@@ -178,7 +178,7 @@ static PetscErrorCode  PCEisenstatSetOmega_Eisenstat(PC pc,PetscReal omega)
   PC_Eisenstat *eis = (PC_Eisenstat*)pc->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(omega >= 2.0 || omega <= 0.0,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Relaxation out of range");
+  PetscCheck(omega > 0.0 && omega < 2.0,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Relaxation out of range");
   eis->omega = omega;
   PetscFunctionReturn(0);
 }

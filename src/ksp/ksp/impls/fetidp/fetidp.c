@@ -644,7 +644,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
         if (pcbddc->n_ISForDofsLocal) {
           PetscInt np;
 
-          PetscCheckFalse(fid < 0 || fid >= pcbddc->n_ISForDofsLocal,PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Invalid field id for pressure %" PetscInt_FMT ", max %" PetscInt_FMT,fid,pcbddc->n_ISForDofsLocal);
+          PetscCheck(fid >= 0 && fid < pcbddc->n_ISForDofsLocal,PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Invalid field id for pressure %" PetscInt_FMT ", max %" PetscInt_FMT,fid,pcbddc->n_ISForDofsLocal);
           /* need a sequential IS */
           PetscCall(ISGetLocalSize(pcbddc->ISForDofsLocal[fid],&np));
           PetscCall(ISGetIndices(pcbddc->ISForDofsLocal[fid],&idxs));
@@ -652,7 +652,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
           PetscCall(ISRestoreIndices(pcbddc->ISForDofsLocal[fid],&idxs));
           ploc = PETSC_TRUE;
         } else if (pcbddc->n_ISForDofs) {
-          PetscCheckFalse(fid < 0 || fid >= pcbddc->n_ISForDofs,PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Invalid field id for pressure %" PetscInt_FMT ", max %" PetscInt_FMT,fid,pcbddc->n_ISForDofs);
+          PetscCheck(fid >= 0 && fid < pcbddc->n_ISForDofs,PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Invalid field id for pressure %" PetscInt_FMT ", max %" PetscInt_FMT,fid,pcbddc->n_ISForDofs);
           PetscCall(PetscObjectReference((PetscObject)pcbddc->ISForDofs[fid]));
           Pall = pcbddc->ISForDofs[fid];
         } else SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Cannot detect pressure field! Use KSPFETIDPGetInnerBDDC() + PCBDDCSetDofsSplitting or PCBDDCSetDofsSplittingLocal");
@@ -1038,8 +1038,8 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
         PetscCall(ISGetLocalSize(fetidp->pP,&pl));
         PetscCheck(PAM == PAN,PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Pressure matrix must be square, unsupported %" PetscInt_FMT " x %" PetscInt_FMT,PAM,PAN);
         PetscCheck(pam == pan,PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Local sizes of pressure matrix must be equal, unsupported %" PetscInt_FMT " x %" PetscInt_FMT,pam,pan);
-        PetscCheckFalse(pam != am && pam != pl && pam != pIl,PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid number of local rows %" PetscInt_FMT " for pressure matrix! Supported are %" PetscInt_FMT ", %" PetscInt_FMT " or %" PetscInt_FMT,pam,am,pl,pIl);
-        PetscCheckFalse(pan != an && pan != pl && pan != pIl,PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid number of local columns %" PetscInt_FMT " for pressure matrix! Supported are %" PetscInt_FMT ", %" PetscInt_FMT " or %" PetscInt_FMT,pan,an,pl,pIl);
+        PetscCheck(pam == am || pam == pl || pam == pIl,PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid number of local rows %" PetscInt_FMT " for pressure matrix! Supported are %" PetscInt_FMT ", %" PetscInt_FMT " or %" PetscInt_FMT,pam,am,pl,pIl);
+        PetscCheck(pan == an || pan == pl || pan == pIl,PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid number of local columns %" PetscInt_FMT " for pressure matrix! Supported are %" PetscInt_FMT ", %" PetscInt_FMT " or %" PetscInt_FMT,pan,an,pl,pIl);
         if (PAM == AM) { /* monolithic ordering, restrict to pressure */
           if (schp) {
             PetscCall(MatCreateSubMatrix(PPmat,Pall,Pall,MAT_INITIAL_MATRIX,&C));

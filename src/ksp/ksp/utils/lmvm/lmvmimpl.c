@@ -311,7 +311,7 @@ PetscErrorCode MatSetUp_LMVM(Mat B)
 
   PetscFunctionBegin;
   PetscCall(MatGetSize(B, &M, &N));
-  PetscCheckFalse(M == 0 && N == 0,comm, PETSC_ERR_ORDER, "MatSetSizes() must be called before MatSetUp()");
+  PetscCheck(M != 0 || N != 0,comm, PETSC_ERR_ORDER, "MatSetSizes() must be called before MatSetUp()");
   if (!lmvm->allocated) {
     PetscCallMPI(MPI_Comm_size(comm, &size));
     if (size == 1) {

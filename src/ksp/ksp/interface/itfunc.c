@@ -1201,7 +1201,7 @@ PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
   PetscCall(MatGetLocalSize(X, NULL, &n1));
   PetscCall(MatGetSize(B, NULL, &N2));
   PetscCall(MatGetSize(X, NULL, &N1));
-  PetscCheckFalse(n1 != n2 || N1 != N2,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Incompatible number of columns between block of right-hand sides (n,N) = (%" PetscInt_FMT ",%" PetscInt_FMT ") and block of solutions (n,N) = (%" PetscInt_FMT ",%" PetscInt_FMT ")", n2, N2, n1, N1);
+  PetscCheck(n1 == n2 && N1 == N2,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Incompatible number of columns between block of right-hand sides (n,N) = (%" PetscInt_FMT ",%" PetscInt_FMT ") and block of solutions (n,N) = (%" PetscInt_FMT ",%" PetscInt_FMT ")", n2, N2, n1, N1);
   PetscCall(PetscObjectBaseTypeCompareAny((PetscObject)B, &match, MATSEQDENSE, MATMPIDENSE, ""));
   PetscCheck(match,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Provided block of right-hand sides not stored in a dense Mat");
   PetscCall(PetscObjectBaseTypeCompareAny((PetscObject)X, &match, MATSEQDENSE, MATMPIDENSE, ""));
@@ -1606,7 +1606,7 @@ PetscErrorCode  KSPSetTolerances(KSP ksp,PetscReal rtol,PetscReal abstol,PetscRe
   PetscValidLogicalCollectiveInt(ksp,maxits,5);
 
   if (rtol != PETSC_DEFAULT) {
-    PetscCheckFalse(rtol < 0.0 || 1.0 <= rtol,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Relative tolerance %g must be non-negative and less than 1.0",(double)rtol);
+    PetscCheck(rtol >= 0.0 && rtol < 1.0,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Relative tolerance %g must be non-negative and less than 1.0",(double)rtol);
     ksp->rtol = rtol;
   }
   if (abstol != PETSC_DEFAULT) {

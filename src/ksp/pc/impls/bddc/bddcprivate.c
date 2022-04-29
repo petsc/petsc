@@ -7155,7 +7155,7 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
       PetscCall(PCBDDCConsistencyCheckIS(pc,MPI_LOR,&pcbddc->user_primal_vertices_local));
     }
     /* Check validity of the csr graph passed in by the user */
-    PetscCheckFalse(pcbddc->mat_graph->nvtxs_csr && pcbddc->mat_graph->nvtxs_csr != pcbddc->mat_graph->nvtxs,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid size of local CSR graph! Found %" PetscInt_FMT ", expected %" PetscInt_FMT,pcbddc->mat_graph->nvtxs_csr,pcbddc->mat_graph->nvtxs);
+    PetscCheck(!pcbddc->mat_graph->nvtxs_csr || pcbddc->mat_graph->nvtxs_csr == pcbddc->mat_graph->nvtxs,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid size of local CSR graph! Found %" PetscInt_FMT ", expected %" PetscInt_FMT,pcbddc->mat_graph->nvtxs_csr,pcbddc->mat_graph->nvtxs);
 
     /* Set default CSR adjacency of local dofs if not provided by the user with PCBDDCSetLocalAdjacencyGraph */
     if (!pcbddc->mat_graph->xadj && pcbddc->use_local_adj) {
@@ -7195,7 +7195,7 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
       pcbddc->mat_graph->cloc   = PETSC_TRUE;
       pcbddc->mat_graph->cnloc  = n;
     }
-    PetscCheckFalse(pcbddc->mat_graph->cnloc && pcbddc->mat_graph->cnloc != pcbddc->mat_graph->nvtxs,PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid number of local subdomain coordinates! Got %" PetscInt_FMT ", expected %" PetscInt_FMT,pcbddc->mat_graph->cnloc,pcbddc->mat_graph->nvtxs);
+    PetscCheck(!pcbddc->mat_graph->cnloc || pcbddc->mat_graph->cnloc == pcbddc->mat_graph->nvtxs,PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid number of local subdomain coordinates! Got %" PetscInt_FMT ", expected %" PetscInt_FMT,pcbddc->mat_graph->cnloc,pcbddc->mat_graph->nvtxs);
     pcbddc->mat_graph->active_coords = (PetscBool)(pcbddc->corner_selection && pcbddc->mat_graph->cdim && !pcbddc->corner_selected);
 
     /* Setup of Graph */

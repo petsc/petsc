@@ -640,7 +640,7 @@ PetscErrorCode MatLMVMSymBroydenSetDelta(Mat B, PetscScalar delta)
   PetscCall(PetscObjectTypeCompare((PetscObject)B, MATLMVMDFP, &is_dfp));
   PetscCall(PetscObjectTypeCompare((PetscObject)B, MATLMVMSYMBROYDEN, &is_symbrdn));
   PetscCall(PetscObjectTypeCompare((PetscObject)B, MATLMVMSYMBADBROYDEN, &is_symbadbrdn));
-  PetscCheckFalse(!is_bfgs && !is_dfp && !is_symbrdn && !is_symbadbrdn,PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_INCOMP, "diagonal scaling is only available for DFP, BFGS and SymBrdn matrices");
+  PetscCheck(is_bfgs || is_dfp || is_symbrdn || is_symbadbrdn,PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_INCOMP, "diagonal scaling is only available for DFP, BFGS and SymBrdn matrices");
   lsb->delta = PetscAbsReal(PetscRealPart(delta));
   lsb->delta = PetscMin(lsb->delta, lsb->delta_max);
   lsb->delta = PetscMax(lsb->delta, lsb->delta_min);

@@ -674,7 +674,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
       break;
     }
     PetscCall(MatGetSize(Parr[level1], &M, &N)); /* N is next M, a loop test variables */
-    PetscCheckFalse(is_last,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Is last ?");
+    PetscCheck(!is_last,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Is last ?");
     if (N <= pc_gamg->coarse_eq_limit) is_last = PETSC_TRUE;
     if (level1 == pc_gamg->Nlevels-1) is_last = PETSC_TRUE;
     PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[GAMG_LEVEL],0,0,0,0));

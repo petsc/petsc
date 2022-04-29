@@ -508,7 +508,7 @@ PetscErrorCode  KSPDGMRESSetEigen_DGMRES(KSP ksp,PetscInt neig)
   KSP_DGMRES *dgmres = (KSP_DGMRES*) ksp->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(neig< 0 && neig >dgmres->max_k,PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE,"The value of neig must be positive and less than the restart value ");
+  PetscCheck(neig >= 0 && neig <= dgmres->max_k,PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE,"The value of neig must be positive and less than the restart value ");
   dgmres->neig=neig;
   PetscFunctionReturn(0);
 }
@@ -518,7 +518,7 @@ static PetscErrorCode  KSPDGMRESSetMaxEigen_DGMRES(KSP ksp,PetscInt max_neig)
   KSP_DGMRES *dgmres = (KSP_DGMRES*) ksp->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(max_neig < 0 && max_neig >dgmres->max_k,PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE,"The value of max_neig must be positive and less than the restart value ");
+  PetscCheck(max_neig >= 0 && max_neig <= dgmres->max_k,PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE,"The value of max_neig must be positive and less than the restart value ");
   dgmres->max_neig=max_neig;
   PetscFunctionReturn(0);
 }

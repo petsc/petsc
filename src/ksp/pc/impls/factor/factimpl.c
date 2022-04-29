@@ -136,7 +136,7 @@ PetscErrorCode  PCFactorSetLevels_Factor(PC pc,PetscInt levels)
     PetscCall((*pc->ops->reset)(pc)); /* remove previous factored matrices */
     pc->setupcalled  = 0; /* force a complete rebuild of preconditioner factored matrices */
     ilu->info.levels = levels;
-  } else PetscCheckFalse(ilu->info.usedt,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Cannot change levels after use with ILUdt");
+  } else PetscCheck(!ilu->info.usedt,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Cannot change levels after use with ILUdt");
   PetscFunctionReturn(0);
 }
 
@@ -214,7 +214,7 @@ PetscErrorCode  PCFactorSetColumnPivot_Factor(PC pc,PetscReal dtcol)
   PC_Factor *dir = (PC_Factor*)pc->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(dtcol < 0.0 || dtcol > 1.0,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Column pivot tolerance is %g must be between 0 and 1",(double)dtcol);
+  PetscCheck(dtcol >= 0.0 && dtcol <= 1.0,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Column pivot tolerance is %g must be between 0 and 1",(double)dtcol);
   dir->info.dtcol = dtcol;
   PetscFunctionReturn(0);
 }

@@ -446,7 +446,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc)
       }
       PetscCall(PetscSortInt(deluxe_ctx->n_simple,deluxe_ctx->idx_simple_B));
     } else {
-      PetscCheckFalse(deluxe_ctx->n_simple != n_dir + n_com,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of simply scaled dofs %" PetscInt_FMT " is different from the previous one computed %" PetscInt_FMT,n_dir + n_com,deluxe_ctx->n_simple);
+      PetscCheck(deluxe_ctx->n_simple == n_dir + n_com,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of simply scaled dofs %" PetscInt_FMT " is different from the previous one computed %" PetscInt_FMT,n_dir + n_com,deluxe_ctx->n_simple);
     }
   } else {
     deluxe_ctx->n_simple = 0;

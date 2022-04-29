@@ -717,7 +717,6 @@ PetscErrorCode  MatCreateSchurComplementPmat(Mat A00,Mat A01,Mat A10,Mat A11,Mat
   PetscFunctionBegin;
   /* Use an appropriate approximate inverse of A00 to form A11 - A10 inv(DIAGFORM(A00)) A01; a NULL A01, A10 or A11 indicates a zero matrix. */
   /* TODO: Perhaps should create an appropriately-sized zero matrix of the same type as A00? */
-  PetscCheckFalse((!A01 || !A10) & !A11,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot assemble Sp: A01, A10 and A11 are all NULL.");
   PetscValidLogicalCollectiveEnum(A11,preuse,6);
   if (preuse == MAT_IGNORE_MATRIX) PetscFunctionReturn(0);
 

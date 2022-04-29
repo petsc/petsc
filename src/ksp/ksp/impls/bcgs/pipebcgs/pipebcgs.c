@@ -169,7 +169,7 @@ static PetscErrorCode  KSPSolve_PIPEBCGS(KSP ksp)
     PetscCall(VecDotEnd(W,RP,&d2));
     PetscCall(VecDotEnd(Z,RP,&d3));
 
-    PetscCheckFalse(d2 + beta * d1 - beta * omega * d3 == 0.0,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Divide by zero");
+    PetscCheck(d2 + beta * d1 - beta * omega * d3 != 0.0,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Divide by zero");
 
     beta = (rho/rhoold) * (alpha/omega);
     alpha = rho/(d2 + beta * d1 - beta * omega * d3); /* alpha <- rho / (d2 + beta * d1 - beta * omega * d3) */
