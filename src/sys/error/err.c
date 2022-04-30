@@ -245,23 +245,23 @@ static const char *PetscErrorStrings[] = {
           "Unexpected data in file",
   /*80 */ "Arguments must have same communicators",
   /*81 */ "Zero pivot in Cholesky factorization: https://petsc.org/release/faq/#zeropivot",
-          "  ",
-          "  ",
+          "",
+          "",
           "Overflow in integer operation: https://petsc.org/release/faq/#64-bit-indices",
   /*85 */ "Null argument, when expecting valid pointer",
   /*86 */ "Unknown type. Check for miss-spelling or missing package: https://petsc.org/release/install/install/#external-packages",
   /*87 */ "MPI library at runtime is not compatible with MPI used at compile time",
   /*88 */ "Error in system call",
   /*89 */ "Object Type not set: https://petsc.org/release/faq/#object-type-not-set",
-  /*90 */ "  ",
-  /*   */ "  ",
+  /*90 */ "",
+  /*   */ "",
   /*92 */ "See https://petsc.org/release/overview/linear_solve_table/ for possible LU and Cholesky solvers",
   /*93 */ "You cannot overwrite this option since that will conflict with other previously set options",
   /*94 */ "Example/application run with number of MPI ranks it does not support",
-  /*95 */ "Missing or incorrect user input ",
-  /*96 */ "GPU resources unavailable ",
-  /*97 */ "GPU error ",
-  /*98 */ "General MPI error "
+  /*95 */ "Missing or incorrect user input",
+  /*96 */ "GPU resources unavailable",
+  /*97 */ "GPU error",
+  /*98 */ "General MPI error"
 };
 
 /*@C
@@ -283,8 +283,14 @@ static const char *PetscErrorStrings[] = {
  @*/
 PetscErrorCode  PetscErrorMessage(int errnum,const char *text[],char **specific)
 {
+  size_t len;
+
   PetscFunctionBegin;
-  if (text && errnum > PETSC_ERR_MIN_VALUE && errnum < PETSC_ERR_MAX_VALUE) *text = PetscErrorStrings[errnum-PETSC_ERR_MIN_VALUE-1];
+  if (text && errnum > PETSC_ERR_MIN_VALUE && errnum < PETSC_ERR_MAX_VALUE) {
+    *text = PetscErrorStrings[errnum-PETSC_ERR_MIN_VALUE-1];
+    PetscCall(PetscStrlen(*text,&len));
+    if (!len) *text = NULL;
+  }
   else if (text) *text = NULL;
 
   if (specific) *specific = PetscErrorBaseMessage;
