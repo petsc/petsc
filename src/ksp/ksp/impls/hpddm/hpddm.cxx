@@ -45,7 +45,7 @@ static PetscErrorCode KSPSetFromOptions_HPDDM(PetscOptionItems *PetscOptionsObje
       i = (data->cntl[1] == static_cast<char>(PETSC_DECIDE) ? HPDDM_VARIANT_LEFT : data->cntl[1]);
       if (ksp->pc_side_set == PC_SIDE_DEFAULT) PetscCall(PetscOptionsEList("-ksp_hpddm_variant", "Left, right, or variable preconditioning", "KSPHPDDM", HPDDMVariant, PETSC_STATIC_ARRAY_LENGTH(HPDDMVariant), HPDDMVariant[HPDDM_VARIANT_LEFT], &i, NULL));
       else if (ksp->pc_side_set == PC_RIGHT) i = HPDDM_VARIANT_RIGHT;
-      else PetscCheck(ksp->pc_side_set != PC_SYMMETRIC, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Symmetric preconditioning not implemented");
+      PetscCheck(ksp->pc_side_set != PC_SYMMETRIC, PETSC_COMM_SELF, PETSC_ERR_SUP, "Symmetric preconditioning not implemented");
       data->cntl[1] = i;
       if (i > 0) PetscCall(KSPSetPCSide(ksp, PC_RIGHT));
     }
@@ -148,7 +148,7 @@ static PetscErrorCode KSPSetUp_HPDDM(KSP ksp)
       if (data->cntl[0] != HPDDM_KRYLOV_METHOD_BCG && data->cntl[0] != HPDDM_KRYLOV_METHOD_BFBCG) {
         data->cntl[1] = HPDDM_VARIANT_LEFT; /* left preconditioning by default */
         if (ksp->pc_side_set == PC_RIGHT) data->cntl[1] = HPDDM_VARIANT_RIGHT;
-        else PetscCheck(ksp->pc_side_set != PC_SYMMETRIC, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Symmetric preconditioning not implemented");
+        PetscCheck(ksp->pc_side_set != PC_SYMMETRIC, PETSC_COMM_SELF, PETSC_ERR_SUP, "Symmetric preconditioning not implemented");
         if (data->cntl[1] > 0) PetscCall(KSPSetPCSide(ksp, PC_RIGHT));
       }
       if (data->cntl[0] == HPDDM_KRYLOV_METHOD_BGMRES || data->cntl[0] == HPDDM_KRYLOV_METHOD_BGCRODR || data->cntl[0] == HPDDM_KRYLOV_METHOD_BFBCG) {
@@ -246,7 +246,7 @@ static inline PetscErrorCode KSPSolve_HPDDM_Private(KSP ksp, const PetscScalar *
     PetscCall(PetscMalloc2(N, dbl, N, dbl + 1));
     std::copy_n(b, N, dbl[0]);
     std::copy_n(x, N, dbl[1]);
-    PetscCall(static_cast<PetscErrorCode>(HPDDM::IterativeMethod::solve(*data->op, dbl[0], dbl[1], n, PetscObjectComm((PetscObject)ksp))));
+    PetscCall(HPDDM::IterativeMethod::solve(*data->op, dbl[0], dbl[1], n, PetscObjectComm((PetscObject)ksp)));
     std::copy_n(dbl[1], N, x);
     PetscCall(PetscFree2(dbl[0], dbl[1]));
   } else if (data->precision == KSP_HPDDM_PRECISION_SINGLE && PetscDefined(USE_REAL_DOUBLE)) {
@@ -254,14 +254,14 @@ static inline PetscErrorCode KSPSolve_HPDDM_Private(KSP ksp, const PetscScalar *
     sgl[1] = reinterpret_cast<HPDDM::downscaled_type<PetscScalar>*>(x);
     std::copy_n(b, N, sgl[0]);
     for (PetscInt i = 0; i < N; ++i) sgl[1][i] = x[i];
-    PetscCall(static_cast<PetscErrorCode>(HPDDM::IterativeMethod::solve(*data->op, sgl[0], sgl[1], n, PetscObjectComm((PetscObject)ksp))));
+    PetscCall(HPDDM::IterativeMethod::solve(*data->op, sgl[0], sgl[1], n, PetscObjectComm((PetscObject)ksp)));
     if (N) {
       sgl[0][0] = sgl[1][0];
       std::copy_backward(sgl[1] + 1, sgl[1] + N, x + N);
       x[0] = sgl[0][0];
     }
     PetscCall(PetscFree(sgl[0]));
-  } else PetscCall(static_cast<PetscErrorCode>(HPDDM::IterativeMethod::solve(*data->op, b, x, n, PetscObjectComm((PetscObject)ksp))));
+  } else PetscCall(HPDDM::IterativeMethod::solve(*data->op, b, x, n, PetscObjectComm((PetscObject)ksp)));
   if (!ksp->reason) { /* KSPConvergedDefault() is still returning 0 (= KSP_CONVERGED_ITERATING) */
     if (ksp->its >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
     else ksp->reason = KSP_CONVERGED_RTOL; /* early exit by HPDDM, which only happens on breakdowns or convergence */
