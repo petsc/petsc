@@ -112,7 +112,7 @@ SNES Object: 4 MPI processes
                           package used to perform factorization: petsc
                               block size is 20
                   linear system matrix = precond matrix:
-                  Mat Object:       1 MPI processes
+                  Mat Object:       (pc_hpddm_coarse_redundant_)       1 MPI processes
                     type: seqsbaij
                     total number of mallocs used during MatSetValues calls=0
                         block size is 20

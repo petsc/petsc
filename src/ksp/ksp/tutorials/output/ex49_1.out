@@ -31,7 +31,7 @@ PC Object: (elas_) 1 MPI processes
           total: nonzeros=20020, allocated nonzeros=20020
             using I-node routines: found 589 nodes, limit used is 5
   linear system matrix = precond matrix:
-  Mat Object: 1 MPI processes
+  Mat Object: (elas_) 1 MPI processes
     type: seqaij
     rows=1178, cols=1178, bs=2
     total: nonzeros=20020, allocated nonzeros=20020

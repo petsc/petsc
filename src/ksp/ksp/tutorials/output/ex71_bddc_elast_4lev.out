@@ -372,7 +372,7 @@ PC Object: 8 MPI processes
                                             total: nonzeros=169, allocated nonzeros=169
                                               using I-node routines: found 3 nodes, limit used is 5
                                     linear system matrix = precond matrix:
-                                    Mat Object:                   1 MPI processes
+                                    Mat Object:                   (pc_bddc_coarse_l2_redundant_)                   1 MPI processes
                                       type: seqaij
                                       rows=13, cols=13
                                       total: nonzeros=169, allocated nonzeros=169

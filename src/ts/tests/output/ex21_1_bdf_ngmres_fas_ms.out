@@ -89,7 +89,7 @@ TS Object: 1 MPI processes
                     total: nonzeros=105, allocated nonzeros=105
                       not using I-node routines
             linear system matrix = precond matrix:
-            Mat Object: 1 MPI processes
+            Mat Object: (npc_fas_coarse_) 1 MPI processes
               type: seqaij
               rows=25, cols=25
               total: nonzeros=105, allocated nonzeros=105
@@ -122,7 +122,7 @@ TS Object: 1 MPI processes
                     total: nonzeros=369, allocated nonzeros=369
                       not using I-node routines
             linear system matrix = precond matrix:
-            Mat Object: 1 MPI processes
+            Mat Object: (npc_fas_levels_1_) 1 MPI processes
               type: seqaij
               rows=81, cols=81
               total: nonzeros=369, allocated nonzeros=369
@@ -156,7 +156,7 @@ TS Object: 1 MPI processes
                     total: nonzeros=1377, allocated nonzeros=1377
                       not using I-node routines
             linear system matrix = precond matrix:
-            Mat Object: 1 MPI processes
+            Mat Object: (npc_fas_levels_2_) 1 MPI processes
               type: seqaij
               rows=289, cols=289
               total: nonzeros=1377, allocated nonzeros=1377

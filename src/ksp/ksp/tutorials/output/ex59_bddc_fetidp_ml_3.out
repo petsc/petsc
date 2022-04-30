@@ -120,7 +120,7 @@ PC Object: (physical_) 4 MPI processes
       type: redundant
         First (color=0) of 1 PCs follows
       linear system matrix = precond matrix:
-      Mat Object: (physical_pc_bddc_coarse_) 1 MPI processes
+      Mat Object: (physical_pc_bddc_coarse_redundant_) 1 MPI processes
         type: seqaij
         rows=9, cols=9
         total: nonzeros=65, allocated nonzeros=65
@@ -146,7 +146,7 @@ PC Object: (physical_) 4 MPI processes
                     total: nonzeros=73, allocated nonzeros=73
                       using I-node routines: found 3 nodes, limit used is 5
             linear system matrix = precond matrix:
-            Mat Object:   (physical_pc_bddc_coarse_)   1 MPI processes
+            Mat Object:   (physical_pc_bddc_coarse_redundant_)   1 MPI processes
               type: seqaij
               rows=9, cols=9
               total: nonzeros=65, allocated nonzeros=65

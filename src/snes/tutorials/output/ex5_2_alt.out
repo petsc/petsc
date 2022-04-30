@@ -27,7 +27,7 @@ SNES Object: 1 MPI processes
   norm schedule ALWAYS
   total number of grid sequence refinements=3
   Jacobian is built using a DMDA local Jacobian
-SNESLineSearch Object: 1 MPI processes
+  SNESLineSearch Object: 1 MPI processes
     type: bt
       interpolation: cubic
       alpha=1.000000e-04
@@ -68,7 +68,7 @@ SNESLineSearch Object: 1 MPI processes
                 total: nonzeros=142, allocated nonzeros=142
                   using I-node routines: found 11 nodes, limit used is 5
         linear system matrix = precond matrix:
-        Mat Object: 1 MPI processes
+        Mat Object: (mg_coarse_) 1 MPI processes
           type: seqaij
           rows=16, cols=16
           total: nonzeros=100, allocated nonzeros=100

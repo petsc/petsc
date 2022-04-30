@@ -144,7 +144,7 @@ PC Object: (fc_) 1 MPI processes
                     total: nonzeros=4930, allocated nonzeros=4930
                         block size is 1
             linear system matrix = precond matrix:
-            Mat Object: 1 MPI processes
+            Mat Object: (fc_fieldsplit_pressure_lsc_) 1 MPI processes
               type: seqaij
               rows=1024, cols=1024
               total: nonzeros=8836, allocated nonzeros=8836
@@ -359,7 +359,7 @@ PC Object: (fc_) 1 MPI processes
                     total: nonzeros=4930, allocated nonzeros=4930
                         block size is 1
             linear system matrix = precond matrix:
-            Mat Object: 1 MPI processes
+            Mat Object: (fc_fieldsplit_pressure_lsc_) 1 MPI processes
               type: seqaij
               rows=1024, cols=1024
               total: nonzeros=8836, allocated nonzeros=8836
