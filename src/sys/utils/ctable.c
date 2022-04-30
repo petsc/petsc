@@ -271,7 +271,7 @@ PetscErrorCode  PetscTableAddCountExpand(PetscTable ta,PetscInt key)
     }
   }
   PetscCall(PetscTableAddCount(ta,key));
-  PetscCheckFalse(ta->count != tcount + 1,PETSC_COMM_SELF,PETSC_ERR_COR,"corrupted ta->count");
+  PetscCheck(ta->count == tcount + 1,PETSC_COMM_SELF,PETSC_ERR_COR,"corrupted ta->count");
 
   PetscCall(PetscFree(oldtab));
   PetscCall(PetscFree(oldkt));

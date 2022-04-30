@@ -75,7 +75,7 @@ PetscErrorCode  PetscMemoryGetCurrentUsage(PetscLogDouble *mem)
 #if defined(PETSC_USE_PROCFS_FOR_SIZE)
 
   sprintf(proc,"/proc/%d",(int)getpid());
-  PetscCheckFalse((fd = open(proc,O_RDONLY)) == -1,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to access system file %s to get memory usage data",file);
+  PetscCheck((fd = open(proc,O_RDONLY)) != -1,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to access system file %s to get memory usage data",file);
   PetscCheck(ioctl(fd,PIOCPSINFO,&prusage) != -1,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to access system file %s to get memory usage data",file);
   *mem = (PetscLogDouble)prusage.pr_byrssize;
   close(fd);
@@ -86,7 +86,7 @@ PetscErrorCode  PetscMemoryGetCurrentUsage(PetscLogDouble *mem)
 
 #elif defined(PETSC_USE_PROC_FOR_SIZE) && defined(PETSC_HAVE_GETPAGESIZE)
   sprintf(proc,"/proc/%d/statm",(int)getpid());
-  PetscCheckFalse(!(file = fopen(proc,"r")),PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to access system file %s to get memory usage data",proc);
+  PetscCheck((file = fopen(proc,"r")),PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to access system file %s to get memory usage data",proc);
   PetscCheck(fscanf(file,"%d %d",&mm,&rss) == 2,PETSC_COMM_SELF,PETSC_ERR_SYS,"Failed to read two integers (mm and rss) from %s",proc);
   *mem = ((PetscLogDouble)rss) * ((PetscLogDouble)getpagesize());
   err  = fclose(file);

@@ -75,7 +75,7 @@ PetscErrorCode  PetscDrawPointSetSize(PetscDraw draw,PetscReal width)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  PetscCheckFalse(width < 0.0 || width > 1.0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Bad size %g, should be between 0 and 1",(double)width);
+  PetscCheck(width >= 0.0 && width <= 1.0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Bad size %g, should be between 0 and 1",(double)width);
   if (draw->ops->pointsetsize) {
     PetscCall((*draw->ops->pointsetsize)(draw,width));
   }

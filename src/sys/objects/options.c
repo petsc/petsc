@@ -659,20 +659,20 @@ PetscErrorCode PetscOptionsInsertArgs(PetscOptions options,int argc,char *args[]
     if (!key) {
       eargs++; left--;
     } else if (isfile) {
-      PetscCheckFalse(left <= 1 || eargs[1][0] == '-',PETSC_COMM_SELF,PETSC_ERR_USER,"Missing filename for -options_file filename option");
+      PetscCheck(left > 1 && eargs[1][0] != '-',PETSC_COMM_SELF,PETSC_ERR_USER,"Missing filename for -options_file filename option");
       PetscCall(PetscOptionsInsertFile(comm,options,eargs[1],PETSC_TRUE));
       eargs += 2; left -= 2;
     } else if (isfileyaml) {
-      PetscCheckFalse(left <= 1 || eargs[1][0] == '-',PETSC_COMM_SELF,PETSC_ERR_USER,"Missing filename for -options_file_yaml filename option");
+      PetscCheck(left > 1 && eargs[1][0] != '-',PETSC_COMM_SELF,PETSC_ERR_USER,"Missing filename for -options_file_yaml filename option");
       PetscCall(PetscOptionsInsertFileYAML(comm,options,eargs[1],PETSC_TRUE));
       eargs += 2; left -= 2;
     } else if (isstringyaml) {
-      PetscCheckFalse(left <= 1 || eargs[1][0] == '-',PETSC_COMM_SELF,PETSC_ERR_USER,"Missing string for -options_string_yaml string option");
+      PetscCheck(left > 1 && eargs[1][0] != '-',PETSC_COMM_SELF,PETSC_ERR_USER,"Missing string for -options_string_yaml string option");
       PetscCall(PetscOptionsInsertStringYAML(options,eargs[1]));
       eargs += 2; left -= 2;
     } else if (ispush) {
       PetscCheck(left > 1,PETSC_COMM_SELF,PETSC_ERR_USER,"Missing prefix for -prefix_push option");
-      PetscCheckFalse(eargs[1][0] == '-',PETSC_COMM_SELF,PETSC_ERR_USER,"Missing prefix for -prefix_push option (prefixes cannot start with '-')");
+      PetscCheck(eargs[1][0] != '-',PETSC_COMM_SELF,PETSC_ERR_USER,"Missing prefix for -prefix_push option (prefixes cannot start with '-')");
       PetscCall(PetscOptionsPrefixPush(options,eargs[1]));
       eargs += 2; left -= 2;
     } else if (ispop) {
@@ -1285,7 +1285,7 @@ PetscErrorCode PetscOptionsClearValue(PetscOptions options,const char name[])
 
   PetscFunctionBegin;
   options = options ? options : defaultoptions;
-  PetscCheckFalse(name[0] != '-',PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Name must begin with '-': Instead %s",name);
+  PetscCheck(name[0] == '-',PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Name must begin with '-': Instead %s",name);
   if (!PetscOptNameCmp(name,"-help")) options->help = options->help_intro = PETSC_FALSE;
 
   name++; /* skip starting dash */
@@ -1352,7 +1352,7 @@ PetscErrorCode PetscOptionsFindPair(PetscOptions options,const char pre[],const 
   PetscFunctionBegin;
   options = options ? options : defaultoptions;
   PetscCheck(!pre || !PetscUnlikely(pre[0] == '-'),PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Prefix cannot begin with '-': Instead %s",pre);
-  PetscCheckFalse(name[0] != '-',PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Name must begin with '-': Instead %s",name);
+  PetscCheck(name[0] == '-',PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Name must begin with '-': Instead %s",name);
 
   name++; /* skip starting dash */
 
@@ -1460,8 +1460,8 @@ PETSC_EXTERN PetscErrorCode PetscOptionsFindPairPrefix_Private(PetscOptions opti
 
   PetscFunctionBegin;
   options = options ? options : defaultoptions;
-  PetscCheckFalse(pre && pre[0] == '-',PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Prefix cannot begin with '-': Instead %s",pre);
-  PetscCheckFalse(name[0] != '-',PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Name must begin with '-': Instead %s",name);
+  PetscCheck(!pre || pre[0] != '-',PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Prefix cannot begin with '-': Instead %s",pre);
+  PetscCheck(name[0] == '-',PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Name must begin with '-': Instead %s",name);
 
   name++; /* skip starting dash */
 
@@ -2046,7 +2046,7 @@ PetscErrorCode PetscOptionsStringToInt(const char name[],PetscInt *a)
     long strtolval;
 
     strtolval = strtol(name,&endptr,10);
-    PetscCheckFalse((size_t) (endptr - name) != len,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s has no integer value (do not include . in it)",name);
+    PetscCheck((size_t) (endptr - name) == len,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s has no integer value (do not include . in it)",name);
 
 #if defined(PETSC_USE_64BIT_INDICES) && defined(PETSC_HAVE_ATOLL)
     (void) strtolval;
@@ -2752,7 +2752,7 @@ PetscErrorCode PetscOptionsGetIntArray(PetscOptions options,const char pre[],con
     else i=1;
     for (;i<(int)len; i++) {
       if (value[i] == '-') {
-        PetscCheckFalse(i == (int)len-1,PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %" PetscInt_FMT "-th array entry %s",n,value);
+        PetscCheck(i != (int)len-1,PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %" PetscInt_FMT "-th array entry %s",n,value);
         value[i] = 0;
 
         PetscCall(PetscOptionsStringToInt(value,&start));
@@ -2770,7 +2770,7 @@ PetscErrorCode PetscOptionsGetIntArray(PetscOptions options,const char pre[],con
         PetscCall(PetscOptionsStringToInt(value+i+1,&end));
         PetscCheck(end > start,PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %" PetscInt_FMT "-th array entry, %s-%s cannot have decreasing list",n,value,value+i+1);
         nvalues = (end-start)/inc + (end-start)%inc;
-        PetscCheckFalse(n + nvalues  > *nmax,PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %" PetscInt_FMT "-th array entry, not enough space left in array (%" PetscInt_FMT ") to contain entire range from %" PetscInt_FMT " to %" PetscInt_FMT,n,*nmax-n,start,end);
+        PetscCheck(n + nvalues  <= *nmax,PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %" PetscInt_FMT "-th array entry, not enough space left in array (%" PetscInt_FMT ") to contain entire range from %" PetscInt_FMT " to %" PetscInt_FMT,n,*nmax-n,start,end);
         for (;start<end; start+=inc) {
           *ivalue = start; ivalue++;n++;
         }

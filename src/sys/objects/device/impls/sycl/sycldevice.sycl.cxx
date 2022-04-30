@@ -142,8 +142,8 @@ PetscErrorCode Device::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, Pets
   // post-process the options and lay the groundwork for initialization if needs be
   std::vector<sycl::device> gpu_devices = sycl::device::get_devices(sycl::info::device_type::gpu);
   ngpus = static_cast<PetscInt>(gpu_devices.size());
-  PetscCheckFalse(ngpus == 0 && id >= 0,comm,PETSC_ERR_USER_INPUT,"You specified a sycl gpu device with -device_select_sycl %d but there is no GPU", (int)id);
-  PetscCheckFalse(ngpus > 0 && id >= ngpus,comm,PETSC_ERR_USER_INPUT,"You specified a sycl gpu device with -device_select_sycl %d but there are only %d GPU", (int)id, (int)ngpus);
+  PetscCheck(ngpus || id < 0,comm,PETSC_ERR_USER_INPUT,"You specified a sycl gpu device with -device_select_sycl %d but there is no GPU", (int)id);
+  PetscCheck(ngpus <= 0 || id < ngpus,comm,PETSC_ERR_USER_INPUT,"You specified a sycl gpu device with -device_select_sycl %d but there are only %d GPU", (int)id, (int)ngpus);
 
   if (initType == PETSC_DEVICE_INIT_NONE) id = PETSC_SYCL_DEVICE_NONE; /* user wants to disable all sycl devices */
   else {
@@ -162,7 +162,7 @@ PetscErrorCode Device::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, Pets
   if (id == -2) id = PETSC_SYCL_DEVICE_HOST; // user passed in '-device_select_sycl -2'. We transform it into canonical form
 
   defaultDevice_ = static_cast<decltype(defaultDevice_)>(id);
-  PetscCheckFalse(initType == PETSC_DEVICE_INIT_EAGER && id == PETSC_SYCL_DEVICE_NONE,comm,PETSC_ERR_USER_INPUT,"Cannot eagerly initialize sycl devices as you disabled them by -device_enable_sycl none");
+  PetscCheck(initType != PETSC_DEVICE_INIT_EAGER || id != PETSC_SYCL_DEVICE_NONE,comm,PETSC_ERR_USER_INPUT,"Cannot eagerly initialize sycl devices as you disabled them by -device_enable_sycl none");
 
   if (initType == PETSC_DEVICE_INIT_EAGER) {
     devices_[defaultDevice_] = new DeviceInternal(defaultDevice_);

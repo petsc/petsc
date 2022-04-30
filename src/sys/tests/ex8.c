@@ -53,7 +53,7 @@ static PetscErrorCode FSend(MPI_Comm comm,const PetscMPIInt tag[],PetscMPIInt to
 
   PetscFunctionBegin;
   PetscCheck(rank == fctx->toranks[tonum],PETSC_COMM_SELF,PETSC_ERR_PLIB,"Rank %d does not match toranks[%d] %d",rank,tonum,fctx->toranks[tonum]);
-  PetscCheckFalse(fctx->rank != *(PetscMPIInt*)todata,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Todata %d does not match rank %d",*(PetscMPIInt*)todata,fctx->rank);
+  PetscCheck(fctx->rank == *(PetscMPIInt*)todata,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Todata %d does not match rank %d",*(PetscMPIInt*)todata,fctx->rank);
   PetscCallMPI(MPI_Isend(&fctx->todata[tonum].rank,1,MPIU_INT,rank,tag[0],comm,&req[0]));
   PetscCallMPI(MPI_Isend(&fctx->todata[tonum].value,1,MPIU_SCALAR,rank,tag[1],comm,&req[1]));
   PetscFunctionReturn(0);
@@ -65,7 +65,7 @@ static PetscErrorCode FRecv(MPI_Comm comm,const PetscMPIInt tag[],PetscMPIInt ra
   Unit           *buf;
 
   PetscFunctionBegin;
-  PetscCheckFalse(*(PetscMPIInt*)fromdata != rank,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Dummy data %d from rank %d corrupt",*(PetscMPIInt*)fromdata,rank);
+  PetscCheck(*(PetscMPIInt*)fromdata == rank,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Dummy data %d from rank %d corrupt",*(PetscMPIInt*)fromdata,rank);
   PetscCall(PetscSegBufferGet(fctx->seg,1,&buf));
   PetscCallMPI(MPI_Irecv(&buf->rank,1,MPIU_INT,rank,tag[0],comm,&req[0]));
   PetscCallMPI(MPI_Irecv(&buf->value,1,MPIU_SCALAR,rank,tag[1],comm,&req[1]));

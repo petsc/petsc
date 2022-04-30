@@ -761,7 +761,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
   } /* endif (!dvirtual) */
 
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank));
-  PetscCheckFalse(rank == 0 && (w <= 0 || h <= 0),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative window width or height");
+  PetscCheck(rank != 0 || (w > 0 && h > 0),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative window width or height");
 
   PetscCall(PetscNewLog(draw,&Xwin));
   PetscCall(PetscMemcpy(draw->ops,&DvOps,sizeof(DvOps)));

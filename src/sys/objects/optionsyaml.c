@@ -91,7 +91,7 @@ static PetscErrorCode PetscParseLayerYAML(PetscOptions options, yaml_document_t 
           yaml_node_pair_t *kvn = itemnode->data.mapping.pairs.start;
           yaml_node_pair_t *top = itemnode->data.mapping.pairs.top;
 
-          PetscCheckFalse(top - kvn > 1,comm, PETSC_ERR_SUP, "Unsupported YAML node value: expected a single key:value pair");
+          PetscCheck(top - kvn <= 1,comm, PETSC_ERR_SUP, "Unsupported YAML node value: expected a single key:value pair");
           if (top - kvn > 0) {
             yaml_node_t *kn = yaml_document_get_node(doc, kvn->key);
             yaml_node_t *vn = yaml_document_get_node(doc, kvn->value);
@@ -240,14 +240,14 @@ PetscErrorCode PetscOptionsInsertFileYAML(MPI_Comm comm,PetscOptions options,con
       PetscCheck(yamlLength >= 0,PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to query size of YAML file: %s", fname);
       PetscCall(PetscMalloc1(yamlLength+1, &yamlString));
       rd = fread(yamlString, 1, (size_t)yamlLength, fd);
-      PetscCheckFalse(rd != (size_t)yamlLength,PETSC_COMM_SELF, PETSC_ERR_FILE_READ, "Unable to read entire YAML file: %s", fname);
+      PetscCheck(rd == (size_t)yamlLength,PETSC_COMM_SELF, PETSC_ERR_FILE_READ, "Unable to read entire YAML file: %s", fname);
       yamlString[yamlLength] = 0;
       fclose(fd);
     }
   }
 
   PetscCallMPI(MPI_Bcast(&yamlLength, 1, MPI_INT, 0, comm));
-  PetscCheckFalse(require && yamlLength < 0,comm, PETSC_ERR_FILE_OPEN, "Unable to open YAML option file: %s", file);
+  PetscCheck(!require || yamlLength >= 0,comm, PETSC_ERR_FILE_OPEN, "Unable to open YAML option file: %s", file);
   if (yamlLength < 0) PetscFunctionReturn(0);
 
   if (rank) PetscCall(PetscMalloc1(yamlLength+1, &yamlString));

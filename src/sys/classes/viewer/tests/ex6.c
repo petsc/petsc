@@ -183,7 +183,7 @@ int main(int argc,char **args)
     PetscCall(PetscViewerPushFormat(viewer,PETSC_VIEWER_BINARY_MATLAB));
     PetscCall(PetscViewerBinaryGetInfoPointer(viewer,&info));
     PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank));
-    PetscCheckFalse(rank == 0 && !info,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing info pointer");
+    PetscCheck(rank != 0 || info,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing info pointer");
     PetscCall(TestClose(&viewer));
   }
 

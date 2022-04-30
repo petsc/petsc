@@ -32,7 +32,7 @@ int main(int argc,char **argv)
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-vsize",&vsize,NULL));
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-order",NULL,&order));
   PetscCall(PetscOptionsGetViewer(PETSC_COMM_WORLD,NULL,NULL,"-array_view",&vwr,NULL,NULL));
-  PetscCheckFalse(n<1 || r<1 || d<1 || d>n,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Wrong input n=%" PetscInt_FMT ",r=%" PetscInt_FMT ",d=%" PetscInt_FMT ". They must be >=1 and n>=d",n,r,d);
+  PetscCheck(n >= 1 && r >= 1 && d >= 1 && d <=n,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Wrong input n=%" PetscInt_FMT ",r=%" PetscInt_FMT ",d=%" PetscInt_FMT ". They must be >=1 and n>=d",n,r,d);
 
   PetscCall(PetscCalloc6(n,&X,n,&X1,n,&XR,n,&XSO,n,&Y,n,&Z));
   PetscCall(PetscRandomCreate(PETSC_COMM_SELF,&rdm));

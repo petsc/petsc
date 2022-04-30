@@ -110,7 +110,7 @@ PetscErrorCode  PetscViewerFileSetName_Matlab(PetscViewer viewer,const char name
   PetscFileMode      type     = vmatlab->btype;
 
   PetscFunctionBegin;
-  PetscCheckFalse(type == (PetscFileMode) -1,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call PetscViewerFileSetMode() before PetscViewerFileSetName()");
+  PetscCheck(type != (PetscFileMode) -1,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call PetscViewerFileSetMode() before PetscViewerFileSetName()");
   if (vmatlab->ep) matClose(vmatlab->ep);
 
   /* only first processor opens file */

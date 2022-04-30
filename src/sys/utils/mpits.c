@@ -543,7 +543,7 @@ PetscErrorCode PetscCommBuildTwoSidedFReq(MPI_Comm comm,PetscMPIInt count,MPI_Da
   PetscCall(PetscSysInitializePackage());
   PetscCallMPI(MPI_Comm_size(comm,&size));
   for (i=0; i<nto; i++) {
-    PetscCheckFalse(toranks[i] < 0 || size <= toranks[i],comm,PETSC_ERR_ARG_OUTOFRANGE,"toranks[%d] %d not in comm size %d",i,toranks[i],size);
+    PetscCheck(toranks[i] >= 0 && size > toranks[i],comm,PETSC_ERR_ARG_OUTOFRANGE,"toranks[%d] %d not in comm size %d",i,toranks[i],size);
   }
   PetscCall(PetscLogEventSync(PETSC_BuildTwoSidedF,comm));
   PetscCall(PetscLogEventBegin(PETSC_BuildTwoSidedF,0,0,0,0));

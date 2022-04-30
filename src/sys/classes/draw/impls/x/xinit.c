@@ -141,7 +141,7 @@ static PetscErrorCode PetscDrawXiDisplayWindow(PetscDraw_X *XiWin,char *label,in
   /* get the available widths */
   wavail = DisplayWidth(XiWin->disp,XiWin->screen);
   havail = DisplayHeight(XiWin->disp,XiWin->screen);
-  PetscCheckFalse(w <= 0 || h <= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"X Window display has invalid height or width");
+  PetscCheck(w > 0 && h > 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"X Window display has invalid height or width");
   if ((unsigned int)w > wavail) w = wavail;
   if ((unsigned int)h > havail) h = havail;
 
@@ -217,7 +217,7 @@ static PetscErrorCode PetscDrawXiDisplayWindow(PetscDraw_X *XiWin,char *label,in
   XMapWindow(XiWin->disp,XiWin->win);
   /* some window systems are cruel and interfere with the placement of
      windows.  We wait here for the window to be created or to die */
-  PetscCheckFalse(PetscDrawXiWaitMap(XiWin),PETSC_COMM_SELF,PETSC_ERR_LIB,"Wait for X window failed");
+  PetscCall(PetscDrawXiWaitMap(XiWin));
   XSelectInput(XiWin->disp,XiWin->win,NoEventMask);
   PetscFunctionReturn(0);
 }

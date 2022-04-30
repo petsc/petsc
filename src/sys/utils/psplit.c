@@ -30,7 +30,7 @@ PetscErrorCode  PetscSplitOwnershipBlock(MPI_Comm comm,PetscInt bs,PetscInt *n,P
   PetscMPIInt    size,rank;
 
   PetscFunctionBegin;
-  PetscCheckFalse(*N == PETSC_DECIDE && *n == PETSC_DECIDE,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Both n and N cannot be PETSC_DECIDE");
+  PetscCheck(*N != PETSC_DECIDE || *n != PETSC_DECIDE,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Both n and N cannot be PETSC_DECIDE");
 
   if (*N == PETSC_DECIDE) {
     PetscCheck(*n % bs == 0,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"local size %" PetscInt_FMT " not divisible by block size %" PetscInt_FMT,*n,bs);
@@ -72,15 +72,15 @@ PetscErrorCode  PetscSplitOwnership(MPI_Comm comm,PetscInt *n,PetscInt *N)
   PetscMPIInt    size,rank;
 
   PetscFunctionBegin;
-  PetscCheckFalse(*N == PETSC_DECIDE && *n == PETSC_DECIDE,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Both n and N cannot be PETSC_DECIDE\n  likely a call to VecSetSizes() or MatSetSizes() is wrong.\nSee https://petsc.org/release/faq/#split-ownership");
+  PetscCheck(*N != PETSC_DECIDE || *n != PETSC_DECIDE,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Both n and N cannot be PETSC_DECIDE\n  likely a call to VecSetSizes() or MatSetSizes() is wrong.\nSee https://petsc.org/release/faq/#split-ownership");
   if (PetscDefined(USE_DEBUG)) {
     PetscMPIInt l[2],g[2];
     l[0] = (*n == PETSC_DECIDE) ? 1 : 0;
     l[1] = (*N == PETSC_DECIDE) ? 1 : 0;
     PetscCallMPI(MPI_Comm_size(comm,&size));
     PetscCall(MPIU_Allreduce(l,g,2,MPI_INT,MPI_SUM,comm));
-    PetscCheckFalse(g[0] && g[0] != size,comm,PETSC_ERR_ARG_INCOMP,"All processes must supply PETSC_DECIDE for local size");
-    PetscCheckFalse(g[1] && g[1] != size,comm,PETSC_ERR_ARG_INCOMP,"All processes must supply PETSC_DECIDE for global size");
+    PetscCheck(!g[0] || g[0] == size,comm,PETSC_ERR_ARG_INCOMP,"All processes must supply PETSC_DECIDE for local size");
+    PetscCheck(!g[1] || g[1] == size,comm,PETSC_ERR_ARG_INCOMP,"All processes must supply PETSC_DECIDE for global size");
   }
 
   if (*N == PETSC_DECIDE) {
@@ -132,15 +132,15 @@ PetscErrorCode  PetscSplitOwnershipEqual(MPI_Comm comm,PetscInt *n,PetscInt *N)
   PetscMPIInt    size,rank;
 
   PetscFunctionBegin;
-  PetscCheckFalse(*N == PETSC_DECIDE && *n == PETSC_DECIDE,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Both n and N cannot be PETSC_DECIDE");
+  PetscCheck(*N != PETSC_DECIDE || *n != PETSC_DECIDE,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Both n and N cannot be PETSC_DECIDE");
   if (PetscDefined(USE_DEBUG)) {
     PetscMPIInt l[2],g[2];
     l[0] = (*n == PETSC_DECIDE) ? 1 : 0;
     l[1] = (*N == PETSC_DECIDE) ? 1 : 0;
     PetscCallMPI(MPI_Comm_size(comm,&size));
     PetscCall(MPIU_Allreduce(l,g,2,MPI_INT,MPI_SUM,comm));
-    PetscCheckFalse(g[0] && g[0] != size,comm,PETSC_ERR_ARG_INCOMP,"All processes must supply PETSC_DECIDE for local size");
-    PetscCheckFalse(g[1] && g[1] != size,comm,PETSC_ERR_ARG_INCOMP,"All processes must supply PETSC_DECIDE for global size");
+    PetscCheck(!g[0] || g[0] == size,comm,PETSC_ERR_ARG_INCOMP,"All processes must supply PETSC_DECIDE for local size");
+    PetscCheck(!g[1] || g[1] == size,comm,PETSC_ERR_ARG_INCOMP,"All processes must supply PETSC_DECIDE for global size");
   }
 
   if (*N == PETSC_DECIDE) {

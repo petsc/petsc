@@ -1101,7 +1101,7 @@ PetscErrorCode PetscTimSortWithArray(PetscInt n, void *arr, size_t asize, void *
   }
   if (PetscDefined(USE_DEBUG)) {
     PetscCall(PetscInfo(NULL, "minrun = %" PetscInt_FMT "\n", minrun));
-    PetscCheckFalse((n >= 64) && ((minrun < 32) || (minrun > 65)),PETSC_COMM_SELF,PETSC_ERR_PLIB,"Calculated minrun %" PetscInt_FMT " not in range (32,65)",minrun);
+    PetscCheck(n < 64 || (minrun >= 32 && minrun <= 65),PETSC_COMM_SELF,PETSC_ERR_PLIB,"Calculated minrun %" PetscInt_FMT " not in range (32,65)",minrun);
   }
   PetscCall(PetscMalloc1((size_t) minrun*asize, &abuff.ptr));
   abuff.size = (size_t) minrun*asize;

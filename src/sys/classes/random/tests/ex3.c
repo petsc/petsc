@@ -57,10 +57,10 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsInt("-log2n", "The log of n, the number of samples per process", "ex3.c", log2n, &log2n, NULL));
   PetscOptionsEnd();
 
-  PetscCheckFalse((size_t)log2d * t > sizeof(PetscInt64) * 8 - 2,PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE, "The number of bins (2^%" PetscInt_FMT ") is too big for PetscInt64.", log2d * t);
+  PetscCheck((size_t)log2d * t <= sizeof(PetscInt64) * 8 - 2,PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE, "The number of bins (2^%" PetscInt_FMT ") is too big for PetscInt64.", log2d * t);
   d = ((PetscInt64) 1) << log2d;
   k = ((PetscInt64) 1) << (log2d * t);
-  PetscCheckFalse((size_t)log2n > sizeof(size_t) * 8 - 1,PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE, "The number of samples per process (2^%" PetscInt_FMT ") is too big for size_t.", log2n);
+  PetscCheck((size_t)log2n <= sizeof(size_t) * 8 - 1,PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE, "The number of samples per process (2^%" PetscInt_FMT ") is too big for size_t.", log2n);
   n = ((size_t) 1) << log2n;
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   N    = size;

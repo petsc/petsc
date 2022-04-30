@@ -77,10 +77,10 @@ PetscErrorCode PetscSSLInitializeContext(SSL_CTX **octx)
     }
 
     /* Load our keys and certificates*/
-    PetscCheckFalse(!(SSL_CTX_use_certificate_chain_file(ctx,keyfile)),PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot read certificate file");
+    PetscCheck(SSL_CTX_use_certificate_chain_file(ctx,keyfile),PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot read certificate file");
 
     SSL_CTX_set_default_passwd_cb(ctx,password_cb);
-    PetscCheckFalse(!(SSL_CTX_use_PrivateKey_file(ctx,keyfile,SSL_FILETYPE_PEM)),PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot read key file");
+    PetscCheck(SSL_CTX_use_PrivateKey_file(ctx,keyfile,SSL_FILETYPE_PEM),PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot read key file");
 #endif
 
     *octx = ctx;
@@ -193,7 +193,7 @@ PetscErrorCode PetscHTTPSRequest(const char type[],const char url[],const char h
   r = SSL_write(ssl,request,(int)request_len);
   switch (SSL_get_error(ssl,r)) {
     case SSL_ERROR_NONE:
-      PetscCheckFalse(request_len != (size_t)r,PETSC_COMM_SELF,PETSC_ERR_LIB,"Incomplete write to SSL socket");
+      PetscCheck(request_len == (size_t)r,PETSC_COMM_SELF,PETSC_ERR_LIB,"Incomplete write to SSL socket");
       break;
     default:
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"SSL socket write problem");
