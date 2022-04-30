@@ -1827,9 +1827,9 @@ PetscErrorCode MatDenseRestoreSubMatrix_MPIDense(Mat A,Mat *v)
   PetscCheck(a->cmat,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Missing internal matrix");
   PetscCheck(*v == a->cmat,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not the matrix obtained from MatDenseGetSubMatrix()");
   a->matinuse = 0;
-  c    = (Mat_MPIDense*)a->cmat->data;
+  c = (Mat_MPIDense*)a->cmat->data;
   PetscCall(MatDenseRestoreSubMatrix(a->A,&c->A));
-  *v   = NULL;
+  *v = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -2454,17 +2454,16 @@ PetscErrorCode MatLoad_MPIDense(Mat newMat, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatEqual_MPIDense(Mat A,Mat B,PetscBool  *flag)
+static PetscErrorCode MatEqual_MPIDense(Mat A,Mat B,PetscBool *flag)
 {
   Mat_MPIDense   *matB = (Mat_MPIDense*)B->data,*matA = (Mat_MPIDense*)A->data;
   Mat            a,b;
-  PetscBool      flg;
 
   PetscFunctionBegin;
   a    = matA->A;
   b    = matB->A;
-  PetscCall(MatEqual(a,b,&flg));
-  PetscCall(MPIU_Allreduce(&flg,flag,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)A)));
+  PetscCall(MatEqual(a,b,flag));
+  PetscCall(MPIU_Allreduce(MPI_IN_PLACE,flag,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)A)));
   PetscFunctionReturn(0);
 }
 
