@@ -171,7 +171,7 @@ PetscErrorCode  PetscViewerVTKAddField_VTK(PetscViewer viewer,PetscObject dm,Pet
 
   PetscFunctionBegin;
   if (vtk->dm) {
-    PetscCheckFalse(checkdm && dm != vtk->dm,PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_INCOMP,"Refusing to write a field from more than one grid to the same VTK file. Set checkdm = PETSC_FALSE to skip this check.");
+    PetscCheck(!checkdm || dm == vtk->dm,PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_INCOMP,"Refusing to write a field from more than one grid to the same VTK file. Set checkdm = PETSC_FALSE to skip this check.");
   } else {
     PetscCall(PetscObjectReference(dm));
     vtk->dm = dm;
@@ -319,7 +319,7 @@ PetscErrorCode PetscViewerVTKFWrite(PetscViewer viewer,FILE *fp,const void *data
     count = fwrite(&bytes,sizeof(int),1,fp);
     PetscCheck(count == 1,PETSC_COMM_SELF,PETSC_ERR_FILE_WRITE,"Error writing byte count");
     count = fwrite(data,dsize,(size_t)n,fp);
-    PetscCheckFalse((PetscInt)count != n,PETSC_COMM_SELF,PETSC_ERR_FILE_WRITE,"Wrote %" PetscInt_FMT "/%" PetscInt_FMT " array members of size %d",(PetscInt)count,n,dsize);
+    PetscCheck((PetscInt)count == n,PETSC_COMM_SELF,PETSC_ERR_FILE_WRITE,"Wrote %" PetscInt_FMT "/%" PetscInt_FMT " array members of size %d",(PetscInt)count,n,dsize);
 #if defined(PETSC_USE_REAL___FLOAT128)
     if (dtype == MPIU___FLOAT128) {
       PetscCall(PetscFree(tmp));

@@ -24,7 +24,7 @@ static PetscErrorCode PetscViewerFileClose_ASCII(PetscViewer viewer)
       PetscCall(PetscStrlcat(par,vascii->filename,sizeof(par)));
 #if defined(PETSC_HAVE_POPEN)
       PetscCall(PetscPOpen(PETSC_COMM_SELF,NULL,par,"r",&fp));
-      PetscCheckFalse(fgets(buf,1024,fp),PETSC_COMM_SELF,PETSC_ERR_LIB,"Error from compression command %s\n%s",par,buf);
+      PetscCheck(!fgets(buf,1024,fp),PETSC_COMM_SELF,PETSC_ERR_LIB,"Error from compression command %s\n%s",par,buf);
       PetscCall(PetscPClose(PETSC_COMM_SELF,fp));
 #else
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");

@@ -191,7 +191,7 @@ PETSC_INTERN PetscErrorCode PetscSocketEstablish(int portnum,int *ss)
   sa.sin_family = hp->h_addrtype;
   sa.sin_port   = htons((u_short)portnum);
 
-  PetscCheckFalse((s = socket(AF_INET,SOCK_STREAM,0)) < 0,PETSC_COMM_SELF,PETSC_ERR_SYS,"Error running socket() command");
+  PetscCheck((s = socket(AF_INET,SOCK_STREAM,0)) >= 0,PETSC_COMM_SELF,PETSC_ERR_SYS,"Error running socket() command");
 #if defined(PETSC_HAVE_SO_REUSEADDR)
   {
     int optval = 1; /* Turn on the option */
@@ -240,7 +240,7 @@ PETSC_INTERN PetscErrorCode PetscSocketListen(int listenport,int *t)
   PetscFunctionBegin;
   /* wait for someone to try to connect */
   i = sizeof(struct sockaddr_in);
-  PetscCheckFalse((*t = accept(listenport,(struct sockaddr*)&isa,(socklen_t*)&i)) < 0,PETSC_COMM_SELF,PETSC_ERR_SYS,"error from accept()");
+  PetscCheck((*t = accept(listenport,(struct sockaddr*)&isa,(socklen_t*)&i)) >= 0,PETSC_COMM_SELF,PETSC_ERR_SYS,"error from accept()");
   PetscFunctionReturn(0);
 }
 

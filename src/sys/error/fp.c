@@ -528,7 +528,7 @@ PetscErrorCode  PetscSetFPTrap(PetscFPTrap on)
   PetscFunctionBegin;
   if (on == PETSC_FP_TRAP_ON) {
     /* Clear any flags that are currently set so that activating trapping will not immediately call the signal handler. */
-    PetscCheckFalse(feclearexcept(FE_ALL_EXCEPT),PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot clear floating point exception flags");
+    PetscCheck(!feclearexcept(FE_ALL_EXCEPT),PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot clear floating point exception flags");
 #if defined(FE_NOMASK_ENV)
     /* Could use fesetenv(FE_NOMASK_ENV), but that causes spurious exceptions (like gettimeofday() -> PetscLogDouble). */
     PetscCheck(feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW | FE_UNDERFLOW) != -1,PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot activate floating point exceptions");
@@ -542,7 +542,7 @@ PetscErrorCode  PetscSetFPTrap(PetscFPTrap on)
 #endif
     PetscCheck(SIG_ERR != signal(SIGFPE,PetscDefaultFPTrap),PETSC_COMM_SELF,PETSC_ERR_LIB,"Can't set floating point handler");
   } else {
-    PetscCheckFalse(fesetenv(FE_DFL_ENV),PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot disable floating point exceptions");
+    PetscCheck(!fesetenv(FE_DFL_ENV),PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot disable floating point exceptions");
     /* can use _MM_SET_EXCEPTION_MASK(_MM_GET_EXCEPTION_MASK() | _MM_MASK_UNDERFLOW); if PETSC_HAVE_XMMINTRIN_H exists */
     PetscCheck(SIG_ERR != signal(SIGFPE,SIG_DFL),PETSC_COMM_SELF,PETSC_ERR_LIB,"Can't clear floating point handler");
   }

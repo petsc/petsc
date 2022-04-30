@@ -516,7 +516,7 @@ PetscErrorCode  PetscBinaryOpen(const char name[],PetscFileMode mode,int *fd)
 PetscErrorCode  PetscBinaryClose(int fd)
 {
   PetscFunctionBegin;
-  PetscCheckFalse(close(fd),PETSC_COMM_SELF,PETSC_ERR_SYS,"close() failed on file descriptor");
+  PetscCheck(!close(fd),PETSC_COMM_SELF,PETSC_ERR_SYS,"close() failed on file descriptor");
   PetscFunctionReturn(0);
 }
 

@@ -185,7 +185,7 @@ PetscErrorCode  PetscDrawUtilitySetCmap(const char colormap[],int mapsize,unsign
   PetscCall(PetscOptionsGetEList(NULL,NULL,"-draw_cmap",cmap_name_list,count,&id,NULL));
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-draw_cmap_reverse",&reverse,NULL));
   PetscCall(PetscOptionsGetReal(NULL,NULL,"-draw_cmap_brighten",&beta,&brighten));
-  PetscCheckFalse(brighten && (beta <= (PetscReal)-1 || beta >= (PetscReal)+1),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"brighten parameter %g must be in the range (-1,1)",(double)beta);
+  PetscCheck(!brighten || (beta > (PetscReal)-1 && beta < (PetscReal)+1),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"brighten parameter %g must be in the range (-1,1)",(double)beta);
 
   if (PetscDrawCmapTable[id].cmap) {
     PetscCall(PetscDrawCmapTable[id].cmap(mapsize,R,G,B));

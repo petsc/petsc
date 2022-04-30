@@ -53,7 +53,7 @@ static PetscErrorCode PetscViewerGetSubViewer_Binary(PetscViewer viewer,MPI_Comm
     PetscMPIInt flg;
 
     PetscCallMPI(MPI_Comm_compare(PETSC_COMM_SELF,comm,&flg));
-    PetscCheckFalse(flg != MPI_IDENT && flg != MPI_CONGRUENT,PETSC_COMM_SELF,PETSC_ERR_SUP,"PetscViewerGetSubViewer() for PETSCVIEWERBINARY requires a singleton MPI_Comm");
+    PetscCheck(flg == MPI_IDENT || flg == MPI_CONGRUENT,PETSC_COMM_SELF,PETSC_ERR_SUP,"PetscViewerGetSubViewer() for PETSCVIEWERBINARY requires a singleton MPI_Comm");
     PetscCall(PetscViewerCreate(comm,outviewer));
     PetscCall(PetscViewerSetType(*outviewer,PETSCVIEWERBINARY));
     PetscCall(PetscMemcpy((*outviewer)->data,vbinary,sizeof(PetscViewer_Binary)));
@@ -259,7 +259,7 @@ static PetscErrorCode PetscViewerBinarySetUseMPIIO_Binary(PetscViewer viewer,Pet
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
   PetscFunctionBegin;
-  PetscCheckFalse(viewer->setupcalled && vbinary->usempiio != use,PetscObjectComm((PetscObject)viewer),PETSC_ERR_ORDER,"Cannot change MPIIO to %s after setup",PetscBools[use]);
+  PetscCheck(!viewer->setupcalled || vbinary->usempiio == use,PetscObjectComm((PetscObject)viewer),PETSC_ERR_ORDER,"Cannot change MPIIO to %s after setup",PetscBools[use]);
   vbinary->usempiio = use;
   PetscFunctionReturn(0);
 }
@@ -763,7 +763,7 @@ static PetscErrorCode PetscViewerFileClose_BinarySTDIO(PetscViewer v)
       {
         FILE *fp;
         PetscCall(PetscPOpen(PETSC_COMM_SELF,NULL,cmd,"r",&fp));
-        PetscCheckFalse(fgets(out,(int)(sizeof(out)-1),fp),PETSC_COMM_SELF,PETSC_ERR_LIB,"Error from command %s\n%s",cmd,out);
+        PetscCheck(!fgets(out,(int)(sizeof(out)-1),fp),PETSC_COMM_SELF,PETSC_ERR_LIB,"Error from command %s\n%s",cmd,out);
         PetscCall(PetscPClose(PETSC_COMM_SELF,fp));
       }
 #endif
@@ -789,7 +789,7 @@ static PetscErrorCode PetscViewerFileClose_BinaryInfo(PetscViewer v)
   if (vbinary->fdes_info) {
     FILE *info = vbinary->fdes_info;
     vbinary->fdes_info = NULL;
-    PetscCheckFalse(fclose(info),PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
+    PetscCheck(!fclose(info),PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
   }
   PetscFunctionReturn(0);
 }
@@ -1249,7 +1249,7 @@ PetscErrorCode PetscViewerFileSetMode(PetscViewer viewer,PetscFileMode mode)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidLogicalCollectiveEnum(viewer,mode,2);
   PetscCheck(mode != FILE_MODE_UNDEFINED,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Cannot set FILE_MODE_UNDEFINED");
-  else PetscCheckFalse(mode < FILE_MODE_UNDEFINED || mode > FILE_MODE_APPEND_UPDATE,PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_OUTOFRANGE,"Invalid file mode %d",(int)mode);
+  else PetscCheck(mode >= FILE_MODE_UNDEFINED && mode <= FILE_MODE_APPEND_UPDATE,PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_OUTOFRANGE,"Invalid file mode %d",(int)mode);
   PetscTryMethod(viewer,"PetscViewerFileSetMode_C",(PetscViewer,PetscFileMode),(viewer,mode));
   PetscFunctionReturn(0);
 }
@@ -1259,7 +1259,7 @@ static PetscErrorCode PetscViewerFileSetMode_Binary(PetscViewer viewer,PetscFile
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(viewer->setupcalled && vbinary->filemode != mode,PetscObjectComm((PetscObject)viewer),PETSC_ERR_ORDER,"Cannot change mode to %s after setup",PetscFileModes[mode]);
+  PetscCheck(!viewer->setupcalled || vbinary->filemode == mode,PetscObjectComm((PetscObject)viewer),PETSC_ERR_ORDER,"Cannot change mode to %s after setup",PetscFileModes[mode]);
   vbinary->filemode = mode;
   PetscFunctionReturn(0);
 }

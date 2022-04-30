@@ -542,7 +542,7 @@ PetscErrorCode PetscOmpCtrlBarrier(PetscOmpCtrl ctrl)
 
   PetscFunctionBegin;
   err = pthread_barrier_wait(ctrl->barrier);
-  PetscCheckFalse(err && err != PTHREAD_BARRIER_SERIAL_THREAD,PETSC_COMM_SELF,PETSC_ERR_LIB,"pthread_barrier_wait failed within PetscOmpCtrlBarrier with return code %" PetscInt_FMT, err);
+  PetscCheck(!err || err == PTHREAD_BARRIER_SERIAL_THREAD,PETSC_COMM_SELF,PETSC_ERR_LIB,"pthread_barrier_wait failed within PetscOmpCtrlBarrier with return code %" PetscInt_FMT, err);
   PetscFunctionReturn(0);
 }
 

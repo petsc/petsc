@@ -113,7 +113,7 @@ static PetscInt  inoviewers = 0;
 PetscErrorCode  PetscOptionsPushGetViewerOff(PetscBool flg)
 {
   PetscFunctionBegin;
-  PetscCheckFalse(inoviewers > PETSCVIEWERGETVIEWEROFFPUSHESMAX - 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many PetscOptionsPushGetViewerOff(), perhaps you forgot PetscOptionsPopGetViewerOff()?");
+  PetscCheck(inoviewers < PETSCVIEWERGETVIEWEROFFPUSHESMAX,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many PetscOptionsPushGetViewerOff(), perhaps you forgot PetscOptionsPopGetViewerOff()?");
 
   noviewers[inoviewers++] = noviewer;
   noviewer = flg;

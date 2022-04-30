@@ -1134,7 +1134,7 @@ PetscErrorCode PetscStrreplace(MPI_Comm comm, const char aa[], char b[], size_t 
       PetscCall(PetscStrlen(b,&l1));
       PetscCall(PetscStrlen(r[i],&l2));
       PetscCall(PetscStrlen(par,&l3));
-      PetscCheckFalse(l1 + l2 + l3 >= len,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"b len is not long enough to hold new values");
+      PetscCheck(l1 + l2 + l3 < len,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"b len is not long enough to hold new values");
       PetscCall(PetscStrncpy(work,b,len));
       PetscCall(PetscStrlcat(work,r[i],len));
       PetscCall(PetscStrlcat(work,par,len));

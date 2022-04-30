@@ -756,7 +756,7 @@ static PetscErrorCode PetscLogNestedTreeCreate(PetscViewer viewer, PetscNestedEv
       /* Construct the next path in this process's tree:
        * if necessary, supplement with invalid path entries */
       depth++;
-      PetscCheckFalse(depth > maxdepth + 1,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Depth %d > maxdepth+1 %d",depth,maxdepth+1);
+      PetscCheck(depth <= maxdepth + 1,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Depth %d > maxdepth+1 %d",depth,maxdepth+1);
       if (i<nTimers) {
         for (j=0;             j<tree[i].depth; j++) nstMyPath[j] = tree[i].nstPath[j];
         for (j=tree[i].depth; j<depth;         j++) nstMyPath[j] = illegalEvent;

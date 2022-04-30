@@ -129,7 +129,7 @@ PetscErrorCode  PetscViewerDrawBaseAdd(PetscViewer viewer,PetscInt windownumber)
   PetscCheck(isdraw,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
   vdraw = (PetscViewer_Draw*)viewer->data;
 
-  PetscCheckFalse(windownumber + vdraw->draw_base < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Resulting base %" PetscInt_FMT " cannot be negative",windownumber+vdraw->draw_base);
+  PetscCheck(windownumber + vdraw->draw_base >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Resulting base %" PetscInt_FMT " cannot be negative",windownumber+vdraw->draw_base);
   vdraw->draw_base += windownumber;
   PetscFunctionReturn(0);
 }
@@ -419,7 +419,7 @@ PetscErrorCode PetscViewerGetSubViewer_Draw(PetscViewer viewer,MPI_Comm comm,Pet
     PetscDraw   draw,sdraw;
 
     PetscCallMPI(MPI_Comm_compare(PETSC_COMM_SELF,comm,&flg));
-    PetscCheckFalse(flg != MPI_IDENT && flg != MPI_CONGRUENT,PETSC_COMM_SELF,PETSC_ERR_SUP,"PetscViewerGetSubViewer() for PETSCVIEWERDRAW requires a singleton MPI_Comm");
+    PetscCheck(flg == MPI_IDENT || flg == MPI_CONGRUENT,PETSC_COMM_SELF,PETSC_ERR_SUP,"PetscViewerGetSubViewer() for PETSCVIEWERDRAW requires a singleton MPI_Comm");
     PetscCall(PetscViewerCreate(comm,sviewer));
     PetscCall(PetscViewerSetType(*sviewer,PETSCVIEWERDRAW));
     svdraw = (PetscViewer_Draw*)(*sviewer)->data;

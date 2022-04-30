@@ -121,7 +121,7 @@ PetscErrorCode  PetscDrawPopCurrentPoint(PetscDraw draw)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  PetscCheckFalse(draw->currentpoint-- == 0,PETSC_COMM_SELF,PETSC_ERR_SUP,"You have popped too many current points");
+  PetscCheck(draw->currentpoint-- > 0,PETSC_COMM_SELF,PETSC_ERR_SUP,"You have popped too many current points");
   PetscFunctionReturn(0);
 }
 
