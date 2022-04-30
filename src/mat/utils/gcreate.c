@@ -4,8 +4,8 @@ PETSC_INTERN PetscErrorCode MatSetBlockSizes_Default(Mat mat,PetscInt rbs, Petsc
 {
   PetscFunctionBegin;
   if (!mat->preallocated) PetscFunctionReturn(0);
-  PetscCheckFalse(mat->rmap->bs > 0 && mat->rmap->bs != rbs,PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot change row block size %" PetscInt_FMT " to %" PetscInt_FMT,mat->rmap->bs,rbs);
-  PetscCheckFalse(mat->cmap->bs > 0 && mat->cmap->bs != cbs,PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot change column block size %" PetscInt_FMT " to %" PetscInt_FMT,mat->cmap->bs,cbs);
+  PetscCheck(mat->rmap->bs <= 0 || mat->rmap->bs == rbs,PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot change row block size %" PetscInt_FMT " to %" PetscInt_FMT,mat->rmap->bs,rbs);
+  PetscCheck(mat->cmap->bs <= 0 || mat->cmap->bs == cbs,PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot change column block size %" PetscInt_FMT " to %" PetscInt_FMT,mat->cmap->bs,cbs);
   PetscFunctionReturn(0);
 }
 
@@ -151,10 +151,10 @@ PetscErrorCode  MatSetSizes(Mat A, PetscInt m, PetscInt n, PetscInt M, PetscInt 
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidLogicalCollectiveInt(A,M,4);
   PetscValidLogicalCollectiveInt(A,N,5);
-  PetscCheckFalse(M > 0 && m > M,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local row size %" PetscInt_FMT " cannot be larger than global row size %" PetscInt_FMT,m,M);
-  PetscCheckFalse(N > 0 && n > N,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local column size %" PetscInt_FMT " cannot be larger than global column size %" PetscInt_FMT,n,N);
-  PetscCheckFalse((A->rmap->n >= 0 && A->rmap->N >= 0) && (A->rmap->n != m || (M > 0 && A->rmap->N != M)),PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change/reset row sizes to %" PetscInt_FMT " local %" PetscInt_FMT " global after previously setting them to %" PetscInt_FMT " local %" PetscInt_FMT " global",m,M,A->rmap->n,A->rmap->N);
-  PetscCheckFalse((A->cmap->n >= 0 && A->cmap->N >= 0) && (A->cmap->n != n || (N > 0 && A->cmap->N != N)),PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change/reset column sizes to %" PetscInt_FMT " local %" PetscInt_FMT " global after previously setting them to %" PetscInt_FMT " local %" PetscInt_FMT " global",n,N,A->cmap->n,A->cmap->N);
+  PetscCheck(M <= 0 || m <= M,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local row size %" PetscInt_FMT " cannot be larger than global row size %" PetscInt_FMT,m,M);
+  PetscCheck(N <= 0 || n <= N,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local column size %" PetscInt_FMT " cannot be larger than global column size %" PetscInt_FMT,n,N);
+  PetscCheck((A->rmap->n < 0 || A->rmap->N < 0) || (A->rmap->n == m && (M <= 0 || A->rmap->N == M)),PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change/reset row sizes to %" PetscInt_FMT " local %" PetscInt_FMT " global after previously setting them to %" PetscInt_FMT " local %" PetscInt_FMT " global",m,M,A->rmap->n,A->rmap->N);
+  PetscCheck((A->cmap->n < 0 || A->cmap->N < 0) || (A->cmap->n == n && (N <= 0 || A->cmap->N == N)),PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change/reset column sizes to %" PetscInt_FMT " local %" PetscInt_FMT " global after previously setting them to %" PetscInt_FMT " local %" PetscInt_FMT " global",n,N,A->cmap->n,A->cmap->N);
   A->rmap->n = m;
   A->cmap->n = n;
   A->rmap->N = M > -1 ? M : A->rmap->N;
@@ -423,7 +423,7 @@ PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat A,Mat *C)
   PetscValidHeaderSpecific(*C,MAT_CLASSID,2);
   if (A == *C) PetscFunctionReturn(0);
   PetscCheckSameComm(A,1,*C,2);
-  PetscCheckFalse(((PetscObject)*C)->refct != 1,PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"Object C has refct %" PetscInt_FMT " > 1, would leave hanging reference",((PetscObject)*C)->refct);
+  PetscCheck(((PetscObject)*C)->refct == 1,PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"Object C has refct %" PetscInt_FMT " > 1, would leave hanging reference",((PetscObject)*C)->refct);
 
   /* swap C and A */
   refct   = ((PetscObject)A)->refct;

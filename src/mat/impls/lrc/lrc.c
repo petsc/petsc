@@ -238,7 +238,7 @@ PetscErrorCode MatCreateLRC(Mat A,Mat U,Vec c,Mat V,Mat *N)
     PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)c),&csize));
     PetscCall(VecGetSize(c,&k1));
     PetscCheck(k == k1,PetscObjectComm((PetscObject)c),PETSC_ERR_ARG_INCOMP,"The length of c %" PetscInt_FMT " does not match the number of columns of U and V (%" PetscInt_FMT ")",k1,k);
-    PetscCheckFalse(csize != 1 && csize != size, PetscObjectComm((PetscObject)c),PETSC_ERR_ARG_INCOMP,"U and c must have the same communicator size %d != %d",size,csize);
+    PetscCheck(csize == 1 || csize == size, PetscObjectComm((PetscObject)c),PETSC_ERR_ARG_INCOMP,"U and c must have the same communicator size %d != %d",size,csize);
   }
 
   PetscCall(MatCreate(PetscObjectComm((PetscObject)U),N));

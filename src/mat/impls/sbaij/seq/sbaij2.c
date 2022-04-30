@@ -145,7 +145,7 @@ PetscErrorCode MatCreateSubMatrix_SeqSBAIJ_Private(Mat A,IS isrow,IS iscol,MatRe
   if (scall == MAT_REUSE_MATRIX) {
     c = (Mat_SeqSBAIJ*)((*B)->data);
 
-    PetscCheckFalse(c->mbs!=nrows || c->nbs!=ncols || (*B)->rmap->bs!=bs,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Submatrix wrong size");
+    PetscCheck(c->mbs == nrows && c->nbs == ncols && (*B)->rmap->bs == bs,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Submatrix wrong size");
     PetscCall(PetscArraycmp(c->ilen,lens,c->mbs,&flag));
     PetscCheck(flag,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong no of nonzeros");
     PetscCall(PetscArrayzero(c->ilen,c->mbs));
@@ -222,7 +222,7 @@ PetscErrorCode MatCreateSubMatrix_SeqSBAIJ(Mat A,IS isrow,IS iscol,MatReuse scal
   PetscCall(PetscArrayzero(vary,a->mbs));
   for (i=0; i<nrows; i++) vary[irow[i]/bs]++;
   for (i=0; i<a->mbs; i++) {
-    PetscCheckFalse(vary[i]!=0 && vary[i]!=bs,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Index set does not match blocks");
+    PetscCheck(vary[i] == 0 || vary[i] == bs,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Index set does not match blocks");
   }
   count = 0;
   for (i=0; i<nrows; i++) {
@@ -234,7 +234,7 @@ PetscErrorCode MatCreateSubMatrix_SeqSBAIJ(Mat A,IS isrow,IS iscol,MatReuse scal
   PetscCall(PetscArrayzero(vary,a->nbs));
   for (i=0; i<ncols; i++) vary[icol[i]/bs]++;
   for (i=0; i<a->nbs; i++) {
-    PetscCheckFalse(vary[i]!=0 && vary[i]!=bs,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Internal error in PETSc");
+    PetscCheck(vary[i] == 0 || vary[i] == bs,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Internal error in PETSc");
   }
   count = 0;
   for (i=0; i<ncols; i++) {
@@ -1313,7 +1313,7 @@ PetscErrorCode MatGetDiagonal_SeqSBAIJ(Mat A,Vec v)
 
   PetscFunctionBegin;
   bs = A->rmap->bs;
-  PetscCheckFalse(A->factortype && bs>1,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix with bs>1");
+  PetscCheck(!A->factortype || bs <= 1,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix with bs>1");
 
   aa   = a->a;
   ambs = a->mbs;

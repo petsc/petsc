@@ -456,7 +456,7 @@ PetscErrorCode MatGetDiagonal_MPISELL(Mat A,Vec v)
 
   PetscFunctionBegin;
   PetscCheck(A->rmap->N == A->cmap->N,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Supports only square matrix where A->A is diag block");
-  PetscCheckFalse(A->rmap->rstart != A->cmap->rstart || A->rmap->rend != A->cmap->rend,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"row partition must equal col partition");
+  PetscCheck(A->rmap->rstart == A->cmap->rstart && A->rmap->rend == A->cmap->rend,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"row partition must equal col partition");
   PetscCall(MatGetDiagonal(a->A,v));
   PetscFunctionReturn(0);
 }

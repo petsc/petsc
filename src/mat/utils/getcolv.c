@@ -40,7 +40,7 @@ PetscErrorCode  MatGetColumnVector(Mat A,Vec yy,PetscInt col)
   PetscCheck(col < N,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_OUTOFRANGE,"Requested column %" PetscInt_FMT " larger than number columns in matrix %" PetscInt_FMT,col,N);
   PetscCall(MatGetOwnershipRange(A,&Rs,&Re));
   PetscCall(VecGetOwnershipRange(yy,&rs,&re));
-  PetscCheckFalse(Rs != rs || Re != re,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Matrix %" PetscInt_FMT " %" PetscInt_FMT " does not have same ownership range (size) as vector %" PetscInt_FMT " %" PetscInt_FMT,Rs,Re,rs,re);
+  PetscCheck(Rs == rs && Re == re,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Matrix %" PetscInt_FMT " %" PetscInt_FMT " does not have same ownership range (size) as vector %" PetscInt_FMT " %" PetscInt_FMT,Rs,Re,rs,re);
 
   if (A->ops->getcolumnvector) {
     PetscCall((*A->ops->getcolumnvector)(A,yy,col));

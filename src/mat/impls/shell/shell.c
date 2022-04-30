@@ -674,7 +674,7 @@ static PetscErrorCode MatProductNumeric_Shell_X(Mat D)
         break;
       case MATPRODUCT_PtAP: /* s B^t L A R B + v B^t L R B + B^t L D R B */
       case MATPRODUCT_RARt: /* s B L A R B^t + v B L R B^t + B L D R B^t */
-        PetscCheckFalse(shell->dshift || shell->vshift != zero,PetscObjectComm((PetscObject)D),PETSC_ERR_SUP,"MatProductSymbolic type %s not supported for %s and %s matrices with diagonal shift",MatProductTypes[product->type],((PetscObject)A)->type_name,((PetscObject)B)->type_name);
+        PetscCheck(!shell->dshift && shell->vshift == zero,PetscObjectComm((PetscObject)D),PETSC_ERR_SUP,"MatProductSymbolic type %s not supported for %s and %s matrices with diagonal shift",MatProductTypes[product->type],((PetscObject)A)->type_name,((PetscObject)B)->type_name);
         break;
       default: SETERRQ(PetscObjectComm((PetscObject)D),PETSC_ERR_SUP,"MatProductSymbolic type %s not supported for %s and %s matrices",MatProductTypes[product->type],((PetscObject)A)->type_name,((PetscObject)B)->type_name);
       }

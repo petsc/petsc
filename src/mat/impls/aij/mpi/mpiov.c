@@ -841,7 +841,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Local(Mat C,PetscInt imax,PetscB
     while (tpos) {
       PetscCall(PetscTableGetNext(table_data_i,&tpos,&row,&j));
       tdata[--j] = --row;
-      PetscCheckFalse(j > tcount - 1,PETSC_COMM_SELF,PETSC_ERR_PLIB," j %" PetscInt_FMT " >= tcount %" PetscInt_FMT,j,tcount);
+      PetscCheck(j <= tcount - 1,PETSC_COMM_SELF,PETSC_ERR_PLIB," j %" PetscInt_FMT " >= tcount %" PetscInt_FMT,j,tcount);
     }
 #else
     data_i  = data[i];
@@ -1653,7 +1653,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,c
 
   } else { /* scall == MAT_REUSE_MATRIX */
     submat = submats[0];
-    PetscCheckFalse(submat->rmap->n != nrow || submat->cmap->n != ncol,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong size");
+    PetscCheck(submat->rmap->n == nrow && submat->cmap->n == ncol,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong size");
 
     subc    = (Mat_SeqAIJ*)submat->data;
     rmax    = subc->rmax;
@@ -2903,7 +2903,7 @@ PetscErrorCode MatSetSeqMats_MPIAIJ(Mat C,IS rowemb,IS dcolemb,IS ocolemb,MatStr
       PetscCall(ISGetLocalSize(ocolemb,&n));
       PetscCheck(n == B->cmap->n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Off-diag col IS of size %" PetscInt_FMT " is incompatible with off-diag matrix col size %" PetscInt_FMT,n,B->cmap->n);
     } else {
-      PetscCheckFalse(C->cmap->N - C->cmap->n != B->cmap->n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Off-diag seq matrix is col-incompatible with the MPIAIJ matrix");
+      PetscCheck(C->cmap->N - C->cmap->n == B->cmap->n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Off-diag seq matrix is col-incompatible with the MPIAIJ matrix");
     }
   }
 

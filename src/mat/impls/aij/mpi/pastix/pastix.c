@@ -158,7 +158,7 @@ PetscErrorCode MatConvertToCSC(Mat A,PetscBool valOnly,PetscInt *n,PetscInt **co
             }
           }
           /* data structure of sparse matrix has changed */
-          PetscCheckFalse(k == (*colptr)[colidx + 1] - base,PETSC_COMM_SELF,PETSC_ERR_PLIB,"overflow on k %" PetscInt_FMT,k);
+          PetscCheck(k != (*colptr)[colidx + 1] - base,PETSC_COMM_SELF,PETSC_ERR_PLIB,"overflow on k %" PetscInt_FMT,k);
         }
       }
     }

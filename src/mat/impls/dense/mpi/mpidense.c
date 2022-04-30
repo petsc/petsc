@@ -55,7 +55,7 @@ PetscErrorCode MatGetRow_MPIDense(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx
   PetscInt       lrow,rstart = A->rmap->rstart,rend = A->rmap->rend;
 
   PetscFunctionBegin;
-  PetscCheckFalse(row < rstart || row >= rend,PETSC_COMM_SELF,PETSC_ERR_SUP,"only local rows");
+  PetscCheck(row >= rstart && row < rend,PETSC_COMM_SELF,PETSC_ERR_SUP,"only local rows");
   lrow = row - rstart;
   PetscCall(MatGetRow(mat->A,lrow,nz,(const PetscInt**)idx,(const PetscScalar**)v));
   PetscFunctionReturn(0);
@@ -67,7 +67,7 @@ PetscErrorCode MatRestoreRow_MPIDense(Mat A,PetscInt row,PetscInt *nz,PetscInt *
   PetscInt       lrow,rstart = A->rmap->rstart,rend = A->rmap->rend;
 
   PetscFunctionBegin;
-  PetscCheckFalse(row < rstart || row >= rend,PETSC_COMM_SELF,PETSC_ERR_SUP,"only local rows");
+  PetscCheck(row >= rstart && row < rend,PETSC_COMM_SELF,PETSC_ERR_SUP,"only local rows");
   lrow = row - rstart;
   PetscCall(MatRestoreRow(mat->A,lrow,nz,(const PetscInt**)idx,(const PetscScalar**)v));
   PetscFunctionReturn(0);

@@ -791,7 +791,7 @@ PetscErrorCode spbas_power(spbas_matrix in_matrix,PetscInt power, spbas_matrix *
   PetscFunctionBegin;
   PetscCheck(in_matrix.col_idx_type == SPBAS_DIAGONAL_OFFSETS,PETSC_COMM_SELF, PETSC_ERR_SUP_SYS,"must have diagonal offsets in pattern");
   PetscCheck(ncols == nrows,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Dimension error");
-  PetscCheckFalse(in_matrix.values,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Input array must be sparseness pattern (no values)");
+  PetscCheck(!in_matrix.values,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Input array must be sparseness pattern (no values)");
   PetscCheck(power>0,PETSC_COMM_SELF, PETSC_ERR_SUP_SYS, "Power must be 1 or up");
 
   /* Copy input values*/

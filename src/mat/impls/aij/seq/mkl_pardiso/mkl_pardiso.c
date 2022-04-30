@@ -238,7 +238,7 @@ static PetscErrorCode MatMKLPardisoSolveSchur_Private(Mat F, PetscScalar *B, Pet
 
   PetscFunctionBegin;
   PetscCall(MatFactorGetSchurComplement(F,&S,&schurstatus));
-  PetscCheckFalse(X == B && schurstatus == MAT_FACTOR_SCHUR_INVERTED,PETSC_COMM_SELF,PETSC_ERR_SUP,"X and B cannot point to the same address");
+  PetscCheck(X != B || schurstatus != MAT_FACTOR_SCHUR_INVERTED,PETSC_COMM_SELF,PETSC_ERR_SUP,"X and B cannot point to the same address");
   PetscCall(MatCreateSeqDense(PETSC_COMM_SELF,mpardiso->schur_size,mpardiso->nrhs,B,&Bmat));
   PetscCall(MatCreateSeqDense(PETSC_COMM_SELF,mpardiso->schur_size,mpardiso->nrhs,X,&Xmat));
   PetscCall(MatSetType(Bmat,((PetscObject)S)->type_name));

@@ -133,7 +133,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part,IS *partit
   /* redirect output to buffer */
 #if defined(PETSC_HAVE_UNISTD_H)
   fd_stdout = dup(1);
-  PetscCheckFalse(pipe(fd_pipe),PETSC_COMM_SELF,PETSC_ERR_SYS,"Could not open pipe");
+  PetscCheck(!pipe(fd_pipe),PETSC_COMM_SELF,PETSC_ERR_SYS,"Could not open pipe");
   close(1);
   dup2(fd_pipe[1],1);
   PetscCall(PetscMalloc1(SIZE_LOG,&mesg_log));
@@ -384,7 +384,7 @@ PetscErrorCode MatPartitioningChacoSetCoarseLevel_Chaco(MatPartitioning part,Pet
   MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco*)part->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(level<0.0 || level>1.0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Chaco: level of coarsening out of range [0.0-1.0]");
+  PetscCheck(level >= 0.0 && level < 1.0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Chaco: level of coarsening out of range [0.0-1.0]");
   chaco->nbvtxcoarsed = (PetscInt)(part->adj->cmap->N * level);
   if (chaco->nbvtxcoarsed < 20) chaco->nbvtxcoarsed = 20;
   PetscFunctionReturn(0);
@@ -578,7 +578,7 @@ PetscErrorCode MatPartitioningChacoSetEigenNumber_Chaco(MatPartitioning part,Pet
   PetscFunctionBegin;
   if (num==PETSC_DEFAULT) chaco->eignum = 1;
   else {
-    PetscCheckFalse(num<1 || num>3,PetscObjectComm((PetscObject)part),PETSC_ERR_ARG_OUTOFRANGE,"Can only specify 1, 2 or 3 eigenvectors");
+    PetscCheck(num >= 1 && num <= 3,PetscObjectComm((PetscObject)part),PETSC_ERR_ARG_OUTOFRANGE,"Can only specify 1, 2 or 3 eigenvectors");
     chaco->eignum = num;
   }
   PetscFunctionReturn(0);

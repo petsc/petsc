@@ -122,7 +122,7 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_Transpose(Mat D)
   PetscCall(PetscObjectTypeCompare((PetscObject)A,MATTRANSPOSEMAT,&Aistrans));
   PetscCall(PetscObjectTypeCompare((PetscObject)B,MATTRANSPOSEMAT,&Bistrans));
   PetscCall(PetscObjectTypeCompare((PetscObject)C,MATTRANSPOSEMAT,&Cistrans));
-  PetscCheckFalse(!Aistrans && !Bistrans && !Cistrans,PetscObjectComm((PetscObject)D),PETSC_ERR_PLIB,"This should not happen");
+  PetscCheck(Aistrans || Bistrans || Cistrans,PetscObjectComm((PetscObject)D),PETSC_ERR_PLIB,"This should not happen");
   Atrans = 0;
   Ain    = A;
   while (Aistrans) {
