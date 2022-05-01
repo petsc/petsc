@@ -103,6 +103,7 @@ static PetscErrorCode DMProjectPoint_Func_Private(DM dm, PetscDS ds, DM dmIn, Pe
         PetscCall(PetscQuadratureGetData(allPoints,&dim,NULL,&numPoints,&points,NULL));
         PetscCall(DMGetWorkArray(rdm,numPoints*Nc[f],MPIU_SCALAR,&pointEval));
         PetscCall(DMGetWorkArray(rdm,coordDim,MPIU_REAL,&x));
+        PetscCall(PetscArrayzero(pointEval, numPoints*Nc[f]));
         for (q = 0; q < numPoints; q++, tp++) {
           const PetscReal *v0;
 
