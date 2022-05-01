@@ -167,7 +167,7 @@ PC Object: 2 MPI processes
                   total: nonzeros=612, allocated nonzeros=612
                     not using I-node routines
           linear system matrix = precond matrix:
-          Mat Object: 1 MPI processes
+          Mat Object: (mg_coarse_redundant_) 1 MPI processes
             type: seqaij
             rows=128, cols=128
             total: nonzeros=382, allocated nonzeros=382

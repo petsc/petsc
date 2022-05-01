@@ -343,9 +343,9 @@ int main(int argc,char **args)
     PetscCall(MatDuplicate(B,MAT_DO_NOT_COPY_VALUES,&T4));
     PetscCall(MatSetRandom(T4,NULL));
     PetscCall(MatAXPY(B2,1.0,T4,SAME_NONZERO_PATTERN));
-    PetscCall(MatDenseGetSubMatrix(B,PetscMin(1,K),PetscMin(2,K),&T));
-    PetscCall(MatDenseGetSubMatrix(T4,PetscMin(1,K),PetscMin(2,K),&T2));
-    PetscCall(MatDenseGetSubMatrix(B2,PetscMin(1,K),PetscMin(2,K),&T3));
+    PetscCall(MatDenseGetSubMatrix(B,PetscMin(1,K-1),PetscMin(2,K),&T));
+    PetscCall(MatDenseGetSubMatrix(T4,PetscMin(1,K-1),PetscMin(2,K),&T2));
+    PetscCall(MatDenseGetSubMatrix(B2,PetscMin(1,K-1),PetscMin(2,K),&T3));
     PetscCall(MatAXPY(T,1.0,T2,SAME_NONZERO_PATTERN));
     PetscCall(MatAXPY(T3,-1.0,T,SAME_NONZERO_PATTERN));
     PetscCall(MatNorm(T3,NORM_FROBENIUS,&err));

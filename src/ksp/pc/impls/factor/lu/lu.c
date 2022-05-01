@@ -43,8 +43,11 @@ static PetscErrorCode PCSetUp_LU(PC pc)
   PC_LU                  *dir = (PC_LU*)pc->data;
   MatSolverType          stype;
   MatFactorError         err;
+  const char             *prefix;
 
   PetscFunctionBegin;
+  PetscCall(PCGetOptionsPrefix(pc,&prefix));
+  PetscCall(MatSetOptionsPrefix(pc->pmat,prefix));
   pc->failedreason = PC_NOERROR;
   if (dir->hdr.reusefill && pc->setupcalled) ((PC_Factor*)dir)->info.fill = dir->hdr.actualfill;
 

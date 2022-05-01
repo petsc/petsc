@@ -61,7 +61,7 @@ SNES Object: 1 MPI processes
                 total: nonzeros=1, allocated nonzeros=1
                   not using I-node routines
         linear system matrix = precond matrix:
-        Mat Object: 1 MPI processes
+        Mat Object: (mg_coarse_) 1 MPI processes
           type: seqaij
           rows=1, cols=1
           total: nonzeros=1, allocated nonzeros=1
@@ -167,7 +167,7 @@ SNES Object: 1 MPI processes
                 total: nonzeros=1, allocated nonzeros=1
                   not using I-node routines
         linear system matrix = precond matrix:
-        Mat Object: 1 MPI processes
+        Mat Object: (mg_coarse_) 1 MPI processes
           type: seqaij
           rows=1, cols=1
           total: nonzeros=1, allocated nonzeros=1
@@ -273,7 +273,7 @@ SNES Object: 1 MPI processes
                 total: nonzeros=1, allocated nonzeros=1
                   not using I-node routines
         linear system matrix = precond matrix:
-        Mat Object: 1 MPI processes
+        Mat Object: (mg_coarse_) 1 MPI processes
           type: seqaij
           rows=1, cols=1
           total: nonzeros=1, allocated nonzeros=1
@@ -379,7 +379,7 @@ SNES Object: 1 MPI processes
                 total: nonzeros=1, allocated nonzeros=1
                   not using I-node routines
         linear system matrix = precond matrix:
-        Mat Object: 1 MPI processes
+        Mat Object: (mg_coarse_) 1 MPI processes
           type: seqaij
           rows=1, cols=1
           total: nonzeros=1, allocated nonzeros=1
@@ -485,7 +485,7 @@ SNES Object: 1 MPI processes
                 total: nonzeros=1, allocated nonzeros=1
                   not using I-node routines
         linear system matrix = precond matrix:
-        Mat Object: 1 MPI processes
+        Mat Object: (mg_coarse_) 1 MPI processes
           type: seqaij
           rows=1, cols=1
           total: nonzeros=1, allocated nonzeros=1
@@ -591,7 +591,7 @@ SNES Object: 1 MPI processes
                 total: nonzeros=1, allocated nonzeros=1
                   not using I-node routines
         linear system matrix = precond matrix:
-        Mat Object: 1 MPI processes
+        Mat Object: (mg_coarse_) 1 MPI processes
           type: seqaij
           rows=1, cols=1
           total: nonzeros=1, allocated nonzeros=1
@@ -697,7 +697,7 @@ SNES Object: 1 MPI processes
                 total: nonzeros=1, allocated nonzeros=1
                   not using I-node routines
         linear system matrix = precond matrix:
-        Mat Object: 1 MPI processes
+        Mat Object: (mg_coarse_) 1 MPI processes
           type: seqaij
           rows=1, cols=1
           total: nonzeros=1, allocated nonzeros=1
@@ -803,7 +803,7 @@ SNES Object: 1 MPI processes
                 total: nonzeros=1, allocated nonzeros=1
                   not using I-node routines
         linear system matrix = precond matrix:
-        Mat Object: 1 MPI processes
+        Mat Object: (mg_coarse_) 1 MPI processes
           type: seqaij
           rows=1, cols=1
           total: nonzeros=1, allocated nonzeros=1
@@ -909,7 +909,7 @@ SNES Object: 1 MPI processes
                 total: nonzeros=1, allocated nonzeros=1
                   not using I-node routines
         linear system matrix = precond matrix:
-        Mat Object: 1 MPI processes
+        Mat Object: (mg_coarse_) 1 MPI processes
           type: seqaij
           rows=1, cols=1
           total: nonzeros=1, allocated nonzeros=1
@@ -1015,7 +1015,7 @@ SNES Object: 1 MPI processes
                 total: nonzeros=1, allocated nonzeros=1
                   not using I-node routines
         linear system matrix = precond matrix:
-        Mat Object: 1 MPI processes
+        Mat Object: (mg_coarse_) 1 MPI processes
           type: seqaij
           rows=1, cols=1
           total: nonzeros=1, allocated nonzeros=1

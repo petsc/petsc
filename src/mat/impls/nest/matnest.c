@@ -1941,10 +1941,9 @@ PETSC_INTERN PetscErrorCode MatAXPY_Dense_Nest(Mat Y,PetscScalar a,Mat X)
     PetscCall(ISGetSize(bNis,&bN));
     PetscCall(ISGetIndices(bNis,&bNindices));
     for (i=0; i<nest->nr; ++i) {
-      Mat            B,D=NULL;
-      PetscInt       bm, br;
+      Mat            B=nest->m[i][j],D=NULL;
+      PetscInt       bm,br;
       const PetscInt *bmindices;
-      B = nest->m[i][j];
       if (!B) continue;
       PetscCall(PetscObjectTypeCompare((PetscObject)B,MATTRANSPOSEMAT,&flg));
       if (flg) {
@@ -1955,11 +1954,8 @@ PETSC_INTERN PetscErrorCode MatAXPY_Dense_Nest(Mat Y,PetscScalar a,Mat X)
       }
       PetscCall(PetscObjectTypeCompareAny((PetscObject)B,&flg,MATSEQSBAIJ,MATMPISBAIJ,""));
       if (flg) {
-        if (D) {
-          PetscCall(MatConvert(D,MATBAIJ,MAT_INPLACE_MATRIX,&D));
-        } else {
-          PetscCall(MatConvert(B,MATBAIJ,MAT_INITIAL_MATRIX,&D));
-        }
+        if (D) PetscCall(MatConvert(D,MATBAIJ,MAT_INPLACE_MATRIX,&D));
+        else PetscCall(MatConvert(B,MATBAIJ,MAT_INITIAL_MATRIX,&D));
         B = D;
       }
       PetscCall(ISGetLocalSize(nest->isglobal.row[i],&bm));
@@ -1988,9 +1984,7 @@ PETSC_INTERN PetscErrorCode MatAXPY_Dense_Nest(Mat Y,PetscScalar a,Mat X)
         PetscCall(MatRestoreRow(B,br+rstart,&brncols,&brcols,&brcoldata));
         PetscCall(PetscFree(cols));
       }
-      if (D) {
-        PetscCall(MatDestroy(&D));
-      }
+      if (D) PetscCall(MatDestroy(&D));
       PetscCall(ISRestoreIndices(nest->isglobal.row[i],&bmindices));
     }
     PetscCall(ISRestoreIndices(bNis,&bNindices));
@@ -2087,6 +2081,7 @@ PetscErrorCode MatConvert_Nest_AIJ(Mat A,MatType newtype,MatReuse reuse,Mat *new
     IS             bNis;
     PetscInt       bN;
     const PetscInt *bNindices;
+    PetscBool      flg;
     /* Using global column indices and ISAllGather() is not scalable. */
     PetscCall(ISAllGather(nest->isglobal.col[j], &bNis));
     PetscCall(ISGetSize(bNis, &bN));
@@ -2094,10 +2089,9 @@ PetscErrorCode MatConvert_Nest_AIJ(Mat A,MatType newtype,MatReuse reuse,Mat *new
     for (i=0; i<nest->nr; ++i) {
       PetscSF        bmsf;
       PetscSFNode    *iremote;
-      Mat            B;
-      PetscInt       bm, *sub_dnnz,*sub_onnz, br;
+      Mat            B=nest->m[i][j],D=NULL;
+      PetscInt       bm,*sub_dnnz,*sub_onnz,br;
       const PetscInt *bmindices;
-      B = nest->m[i][j];
       if (!B) continue;
       PetscCall(ISGetLocalSize(nest->isglobal.row[i],&bm));
       PetscCall(ISGetIndices(nest->isglobal.row[i],&bmindices));
@@ -2108,6 +2102,19 @@ PetscErrorCode MatConvert_Nest_AIJ(Mat A,MatType newtype,MatReuse reuse,Mat *new
       for (k = 0; k < bm; ++k) {
         sub_dnnz[k] = 0;
         sub_onnz[k] = 0;
+      }
+      PetscCall(PetscObjectTypeCompare((PetscObject)B,MATTRANSPOSEMAT,&flg));
+      if (flg) {
+        PetscTryMethod(B,"MatTransposeGetMat_C",(Mat,Mat*),(B,&D));
+        PetscTryMethod(B,"MatHermitianTransposeGetMat_C",(Mat,Mat*),(B,&D));
+        PetscCall(MatConvert(B,((PetscObject)D)->type_name,MAT_INITIAL_MATRIX,&D));
+        B = D;
+      }
+      PetscCall(PetscObjectTypeCompareAny((PetscObject)B,&flg,MATSEQSBAIJ,MATMPISBAIJ,""));
+      if (flg) {
+        if (D) PetscCall(MatConvert(D,MATBAIJ,MAT_INPLACE_MATRIX,&D));
+        else PetscCall(MatConvert(B,MATBAIJ,MAT_INITIAL_MATRIX,&D));
+        B = D;
       }
       /*
        Locate the owners for all of the locally-owned global row indices for this row block.
@@ -2135,6 +2142,7 @@ PetscErrorCode MatConvert_Nest_AIJ(Mat A,MatType newtype,MatReuse reuse,Mat *new
         }
         PetscCall(MatRestoreRow(B,br+rstart,&brncols,&brcols,NULL));
       }
+      if (D) PetscCall(MatDestroy(&D));
       PetscCall(ISRestoreIndices(nest->isglobal.row[i],&bmindices));
       /* bsf will have to take care of disposing of bedges. */
       PetscCall(PetscSFSetGraph(bmsf,m,bm,NULL,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER));

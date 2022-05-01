@@ -88,7 +88,7 @@ lapack_qlib:\n\
       self.logPrint('Error running make on '+self.packageDir+': '+str(e))
       raise RuntimeError('Error running make on '+self.packageDir)
     try:
-      self.logPrintBox('Installing F2CBLASLAPACK')
+      self.logPrintBox('Installing F2CBLASLAPACK; this may take several minutes')
       output2,err2,ret  = config.package.Package.executeShellCommandSeq([
         ['mkdir', '-p', libdir],
         ['cp', '-f', 'libf2clapack.' + self.setCompilers.AR_LIB_SUFFIX, 'libf2cblas.' + self.setCompilers.AR_LIB_SUFFIX, libdir],

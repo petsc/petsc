@@ -9,8 +9,11 @@ static PetscErrorCode PCSetUp_ICC(PC pc)
   MatSolverType          stype;
   MatFactorError         err;
   PetscBool              canuseordering;
+  const char             *prefix;
 
   PetscFunctionBegin;
+  PetscCall(PCGetOptionsPrefix(pc,&prefix));
+  PetscCall(MatSetOptionsPrefix(pc->pmat,prefix));
   pc->failedreason = PC_NOERROR;
 
   PetscCall(MatSetErrorIfFailure(pc->pmat,pc->erroriffailure));

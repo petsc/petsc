@@ -51,7 +51,7 @@ SNES Object: 1 MPI processes
                 total: nonzeros=120, allocated nonzeros=120
                   using I-node routines: found 12 nodes, limit used is 5
         linear system matrix = precond matrix:
-        Mat Object: 1 MPI processes
+        Mat Object: (mg_coarse_) 1 MPI processes
           type: seqaij
           rows=16, cols=16
           total: nonzeros=64, allocated nonzeros=64

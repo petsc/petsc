@@ -94,7 +94,7 @@ SNES Object: 4 MPI processes
                   total: nonzeros=18714, allocated nonzeros=18714
                     not using I-node routines
           linear system matrix = precond matrix:
-          Mat Object: 1 MPI processes
+          Mat Object: (npc_sub_) 1 MPI processes
             type: seqaij
             rows=784, cols=784
             total: nonzeros=3808, allocated nonzeros=3808

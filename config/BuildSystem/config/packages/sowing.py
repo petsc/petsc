@@ -123,7 +123,7 @@ and run configure again\n')
       if (self.petscclone.isClone and hasattr(self.compilers, 'FC') and self.framework.argDB['with-fortran-bindings']):
         self.buildFortranStubs()
       else:
-        self.logPrintBox('Sowing: Skipping fortran stub generation! Reason: Not a clone of PETSc or no Fortran compiler or fortran-bindings disabled')
+        self.logPrintBox('Sowing: Skipping Fortran stub generation! Reason: Not a clone of PETSc or no Fortran compiler or fortran-bindings disabled')
     else:
       self.logPrint("Not a clone of PETSc or no Fortran compiler or fortran-bindings disabled, don't need Sowing\n")
     return
@@ -134,7 +134,7 @@ and run configure again\n')
         self.logPrintBox('Batch build that could not generate bfort, skipping generating Fortran stubs\n \
                           you will need to copy them from some other system (src/fortran/auto)')
       else:
-        self.logPrintBox('Running '+self.bfort+' to generate fortran stubs')
+        self.logPrintBox('Running '+self.bfort+' to generate Fortran stubs')
         try:
           import os,sys
           sys.path.insert(0, os.path.abspath(os.path.join('lib','petsc','bin','maint')))
