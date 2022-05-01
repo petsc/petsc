@@ -361,12 +361,14 @@ static PetscErrorCode GmshReadDouble(GmshFile *gmsh, double *buf, PetscInt count
   PetscFunctionReturn(0);
 }
 
+#define GMSH_MAX_TAGS 4
+
 typedef struct {
-  PetscInt id;       /* Entity ID */
-  PetscInt dim;      /* Dimension */
-  double   bbox[6];  /* Bounding box */
-  PetscInt numTags;  /* Size of tag array */
-  int      tags[4];  /* Tag array */
+  PetscInt id;      /* Entity ID */
+  PetscInt dim;     /* Dimension */
+  double   bbox[6]; /* Bounding box */
+  PetscInt numTags;             /* Size of tag array */
+  int      tags[GMSH_MAX_TAGS]; /* Tag array */
 } GmshEntity;
 
 typedef struct {
@@ -433,7 +435,7 @@ static PetscErrorCode GmshNodesCreate(PetscInt count, GmshNodes **nodes)
   PetscCall(PetscNew(nodes));
   PetscCall(PetscMalloc1(count*1, &(*nodes)->id));
   PetscCall(PetscMalloc1(count*3, &(*nodes)->xyz));
-  PetscCall(PetscMalloc1(count*1, &(*nodes)->tag));
+  PetscCall(PetscMalloc1(count*GMSH_MAX_TAGS, &(*nodes)->tag));
   PetscFunctionReturn(0);
 }
 
@@ -455,8 +457,8 @@ typedef struct {
   PetscInt numVerts; /* Size of vertex array */
   PetscInt numNodes; /* Size of node array */
   PetscInt *nodes;   /* Vertex/Node array */
-  PetscInt numTags;  /* Size of physical tag array */
-  int      tags[4];  /* Physical tag array */
+  PetscInt numTags;             /* Size of physical tag array */
+  int      tags[GMSH_MAX_TAGS]; /* Physical tag array */
 } GmshElement;
 
 static PetscErrorCode GmshElementsCreate(PetscInt count, GmshElement **elements)
@@ -523,7 +525,7 @@ static PetscErrorCode GmshReadNodes_v22(GmshFile *gmsh, GmshMesh *mesh)
   PetscViewer    viewer = gmsh->viewer;
   PetscBool      byteSwap = gmsh->byteSwap;
   char           line[PETSC_MAX_PATH_LEN];
-  int            n, num, nid, snum;
+  int            n, t, num, nid, snum;
   GmshNodes      *nodes;
 
   PetscFunctionBegin;
@@ -540,7 +542,7 @@ static PetscErrorCode GmshReadNodes_v22(GmshFile *gmsh, GmshMesh *mesh)
     if (byteSwap) PetscCall(PetscByteSwap(&nid, PETSC_ENUM, 1));
     if (byteSwap) PetscCall(PetscByteSwap(xyz, PETSC_DOUBLE, 3));
     nodes->id[n] = nid;
-    nodes->tag[n] = -1;
+    for (t = 0; t < GMSH_MAX_TAGS; ++t) nodes->tag[n*GMSH_MAX_TAGS+t] = -1;
   }
   PetscFunctionReturn(0);
 }
@@ -590,7 +592,7 @@ static PetscErrorCode GmshReadElements_v22(GmshFile* gmsh, GmshMesh *mesh)
       element->cellType = cellType;
       element->numVerts = numVerts;
       element->numNodes = numNodes;
-      element->numTags  = PetscMin(numTags, 4);
+      element->numTags  = PetscMin(numTags, GMSH_MAX_TAGS);
       PetscCall(PetscSegBufferGet(mesh->segbuf, (size_t)element->numNodes, &element->nodes));
       for (p = 0; p < element->numNodes; p++) element->nodes[p] = nodeMap[nodes[p]];
       for (p = 0; p < element->numTags;  p++) element->tags[p]  = tags[p];
@@ -654,7 +656,7 @@ static PetscErrorCode GmshReadEntities_v40(GmshFile *gmsh, GmshMesh *mesh)
       PetscCall(GmshBufferGet(gmsh, num, sizeof(int), &ibuf));
       PetscCall(PetscViewerRead(viewer, ibuf, num, NULL, PETSC_ENUM));
       if (byteSwap) PetscCall(PetscByteSwap(ibuf, PETSC_ENUM, num));
-      entity->numTags = numTags = (int) PetscMin(num, 4);
+      entity->numTags = numTags = (int) PetscMin(num, GMSH_MAX_TAGS);
       for (t = 0; t < numTags; ++t) entity->tags[t] = ibuf[t];
       if (dim == 0) continue;
       PetscCall(PetscViewerRead(viewer, &num, 1, NULL, PETSC_LONG));
@@ -680,7 +682,7 @@ static PetscErrorCode GmshReadNodes_v40(GmshFile *gmsh, GmshMesh *mesh)
 {
   PetscViewer    viewer = gmsh->viewer;
   PetscBool      byteSwap = gmsh->byteSwap;
-  long           block, node, n, numEntityBlocks, numTotalNodes, numNodes;
+  long           block, node, n, t, numEntityBlocks, numTotalNodes, numNodes;
   int            info[3], nid;
   GmshNodes      *nodes;
 
@@ -711,7 +713,7 @@ static PetscErrorCode GmshReadNodes_v40(GmshFile *gmsh, GmshMesh *mesh)
         if (byteSwap) PetscCall(PetscByteSwap(&nid, PETSC_ENUM, 1));
         if (byteSwap) PetscCall(PetscByteSwap(xyz, PETSC_DOUBLE, 3));
         nodes->id[n] = nid;
-        nodes->tag[n] = -1;
+        for (t = 0; t < GMSH_MAX_TAGS; ++t) nodes->tag[n*GMSH_MAX_TAGS+t] = -1;
       }
     } else {
       for (node = 0; node < numNodes; ++node, ++n) {
@@ -721,7 +723,7 @@ static PetscErrorCode GmshReadNodes_v40(GmshFile *gmsh, GmshMesh *mesh)
         if (byteSwap) PetscCall(PetscByteSwap(&nid, PETSC_ENUM, 1));
         if (byteSwap) PetscCall(PetscByteSwap(xyz, PETSC_DOUBLE, 3));
         nodes->id[n] = nid;
-        nodes->tag[n] = -1;
+        for (t = 0; t < GMSH_MAX_TAGS; ++t) nodes->tag[n*GMSH_MAX_TAGS+t] = -1;
       }
     }
   }
@@ -900,7 +902,8 @@ static PetscErrorCode GmshReadEntities_v41(GmshFile *gmsh, GmshMesh *mesh)
       PetscCall(GmshReadSize(gmsh, &numTags, 1));
       PetscCall(GmshBufferGet(gmsh, numTags, sizeof(int), &tags));
       PetscCall(GmshReadInt(gmsh, tags, numTags));
-      entity->numTags = PetscMin(numTags, 4);
+      PetscCheck(numTags <= GMSH_MAX_TAGS, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "PETSc currently supports up to 4 tags per entity, not %" PetscInt_FMT, numTags);
+      entity->numTags = numTags;
       for (i = 0; i < entity->numTags; ++i) entity->tags[i] = tags[i];
       if (dim == 0) continue;
       PetscCall(GmshReadSize(gmsh, &numTags, 1));
@@ -929,7 +932,7 @@ $EndNodes
 static PetscErrorCode GmshReadNodes_v41(GmshFile *gmsh, GmshMesh *mesh)
 {
   int            info[3], dim, eid, parametric;
-  PetscInt       sizes[4], numEntityBlocks, numTags, numNodes, numNodesBlock = 0, block, node, n;
+  PetscInt       sizes[4], numEntityBlocks, numTags, t, numNodes, numNodesBlock = 0, block, node, n;
   GmshEntity     *entity = NULL;
   GmshNodes      *nodes;
 
@@ -943,13 +946,17 @@ static PetscErrorCode GmshReadNodes_v41(GmshFile *gmsh, GmshMesh *mesh)
     PetscCall(GmshReadInt(gmsh, info, 3));
     dim = info[0]; eid = info[1]; parametric = info[2];
     PetscCall(GmshEntitiesGet(mesh->entities, dim, eid, &entity));
-    numTags = PetscMin(1, entity->numTags);
-    if (entity->numTags > 1) PetscInfo(NULL, "Entity %d has more than %d physical tags, assigning only the first to nodes", eid, 1);
+    numTags = entity->numTags;
     PetscCheck(!parametric, PETSC_COMM_SELF, PETSC_ERR_SUP, "Parametric coordinates not supported");
     PetscCall(GmshReadSize(gmsh, &numNodesBlock, 1));
     PetscCall(GmshReadSize(gmsh, nodes->id+node, numNodesBlock));
     PetscCall(GmshReadDouble(gmsh, nodes->xyz+node*3, numNodesBlock*3));
-    for (n = 0; n < numNodesBlock; ++n) nodes->tag[node+n] = numTags ? entity->tags[0] : -1;
+    for (n = 0; n < numNodesBlock; ++n) {
+      PetscInt *tags = &nodes->tag[node*GMSH_MAX_TAGS];
+
+      for (t = 0; t < numTags; ++t) tags[n*GMSH_MAX_TAGS+t] = entity->tags[t];
+      for (t = numTags; t < GMSH_MAX_TAGS; ++t) tags[n*GMSH_MAX_TAGS+t] = -1;
+    }
   }
   gmsh->nodeStart = sizes[2];
   gmsh->nodeEnd   = sizes[3]+1;
@@ -987,8 +994,7 @@ static PetscErrorCode GmshReadElements_v41(GmshFile *gmsh, GmshMesh *mesh)
     PetscCall(GmshCellTypeCheck(cellType));
     numVerts = GmshCellMap[cellType].numVerts;
     numNodes = GmshCellMap[cellType].numNodes;
-    numTags  = PetscMin(4, entity->numTags);
-    if (entity->numTags > 4) PetscInfo(NULL, "Entity %d has more then %d physical tags, assigning only the first to elements", eid, 4);
+    numTags  = entity->numTags;
     PetscCall(GmshReadSize(gmsh, &numBlockElements, 1));
     PetscCall(GmshBufferGet(gmsh, (1+numNodes)*numBlockElements, sizeof(PetscInt), &ibuf));
     PetscCall(GmshReadSize(gmsh, ibuf, (1+numNodes)*numBlockElements));
@@ -1094,7 +1100,7 @@ $EndPhysicalNames
 */
 static PetscErrorCode GmshReadPhysicalNames(GmshFile *gmsh, GmshMesh *mesh)
 {
-  char           line[PETSC_MAX_PATH_LEN], name[128+2], *p, *q;
+  char           line[PETSC_MAX_PATH_LEN], name[128+2], *p, *q, *r;
   int            snum, region, dim, tag;
 
   PetscFunctionBegin;
@@ -1109,9 +1115,11 @@ static PetscErrorCode GmshReadPhysicalNames(GmshFile *gmsh, GmshMesh *mesh)
     PetscCheck(snum == 2,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file");
     PetscCall(GmshReadString(gmsh, line, -(PetscInt)sizeof(line)));
     PetscCall(PetscStrchr(line, '"', &p));
-    PetscCheck(p,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file");
+    PetscCheck(p, PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file");
     PetscCall(PetscStrrchr(line, '"', &q));
-    PetscCheck(q != p,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file");
+    PetscCheck(q != p, PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file");
+    PetscCall(PetscStrrchr(line, ':', &r));
+    if (p != r) q = r;
     PetscCall(PetscStrncpy(name, p+1, (size_t)(q-p-1)));
     mesh->regionTags[region] = tag;
     PetscCall(PetscStrallocpy(name, &mesh->regionNames[region]));
@@ -1720,11 +1728,14 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     }
     if (markvertices) {
       for (v = 0; v < numNodes; ++v) {
-        const PetscInt vv  = mesh->vertexMap[v];
-        const PetscInt tag = mesh->nodelist->tag[v];
-        PetscInt       r;
+        const PetscInt  vv   = mesh->vertexMap[v];
+        const PetscInt *tags = &mesh->nodelist->tag[v*GMSH_MAX_TAGS];
+        PetscInt        r, t;
 
-        if (tag != -1) {
+        for (t = 0; t < GMSH_MAX_TAGS; ++t) {
+          const PetscInt tag = tags[t];
+
+          if (tag == -1) continue;
           if (!Nr) PetscCall(DMSetLabelValue_Fast(*dm, &vertSets, "Vertex Sets", vStart + vv, tag));
           for (r = 0; r < Nr; ++r) {
             if (mesh->regionTags[r] == tag) PetscCall(DMSetLabelValue_Fast(*dm, &regionSets[r], mesh->regionNames[r], vStart + vv, tag));
