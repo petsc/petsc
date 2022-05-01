@@ -66,39 +66,39 @@ Discrete System with 2 fields
     cell total dim 12 total comp 4
     cohesive cell
   Field displacement FEM 2 components (implicit) (Nq 2 Nqc 1) 1-jet
-    PetscFE Object: displacement 1 MPI processes
+    PetscFE Object: displacement 1 MPI process
       type: basic
       Basic Finite Element in 1 dimensions with 2 components
-      PetscSpace Object: displacement 1 MPI processes
+      PetscSpace Object: displacement 1 MPI process
         type: sum
         Space in 1 variables with 2 components, size 4
         Sum space of 2 concatenated subspaces (all identical)
-          PetscSpace Object: sum component 1 MPI processes
+          PetscSpace Object: sum component 1 MPI process
             type: tensor
             Space in 1 variables with 1 components, size 2
             Tensor space of 1 subspaces (all identical)
-              PetscSpace Object: sum component tensor component (displacement_sumcomp_tensorcomp_) 1 MPI processes
+              PetscSpace Object: sum component tensor component (displacement_sumcomp_tensorcomp_) 1 MPI process
                 type: poly
                 Space in 1 variables with 1 components, size 2
                 Polynomial space of degree 1
-      PetscDualSpace Object: displacement 1 MPI processes
+      PetscDualSpace Object: displacement 1 MPI process
         type: lagrange
         Dual space with 2 components, size 4
         Continuous Lagrange dual space
         Quadrature of order 3 on 2 points (dim 1)
   Field fault traction FEM 2 components (implicit) (Nq 2 Nqc 1) 1-jet
-    PetscFE Object: fault traction (faulttraction_) 1 MPI processes
+    PetscFE Object: fault traction (faulttraction_) 1 MPI process
       type: basic
       Basic Finite Element in 1 dimensions with 2 components
-      PetscSpace Object: fault traction (faulttraction_) 1 MPI processes
+      PetscSpace Object: fault traction (faulttraction_) 1 MPI process
         type: sum
         Space in 1 variables with 2 components, size 4
         Sum space of 2 concatenated subspaces (all identical)
-          PetscSpace Object: sum component (faulttraction_sumcomp_) 1 MPI processes
+          PetscSpace Object: sum component (faulttraction_sumcomp_) 1 MPI process
             type: poly
             Space in 1 variables with 1 components, size 2
             Polynomial space of degree 1
-      PetscDualSpace Object: fault traction (faulttraction_) 1 MPI processes
+      PetscDualSpace Object: fault traction (faulttraction_) 1 MPI process
         type: lagrange
         Dual space with 2 components, size 4
         Continuous Lagrange dual space

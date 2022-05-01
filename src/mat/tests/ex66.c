@@ -460,14 +460,14 @@ int main(int argc,char **argv)
 #tests view operation
    test:
      requires: h2opus !cuda
-     filter: grep -v "MPI processes" | grep -v "\[" | grep -v "\]"
+     filter: grep -v " MPI process" | grep -v "\[" | grep -v "\]"
      nsize: {{1 2 3}}
      suffix: view
      args: -ng 64 -kernel 1 -dim 2 -symm 1 -checkexpl -B_view -mat_h2opus_leafsize 17 -mat_h2opus_normsamples 13 -mat_h2opus_indexmap_view ::ascii_matlab -mat_approximate_norm_samples 2 -mat_h2opus_normsamples 2
 
    test:
      requires: h2opus cuda
-     filter: grep -v "MPI processes" | grep -v "\[" | grep -v "\]"
+     filter: grep -v " MPI process" | grep -v "\[" | grep -v "\]"
      nsize: {{1 2 3}}
      suffix: view_cuda
      args: -ng 64 -kernel 1 -dim 2 -symm 1 -checkexpl -bgpu -B_view -mat_h2opus_leafsize 17 -mat_h2opus_normsamples 13 -mat_h2opus_indexmap_view ::ascii_matlab -mat_approximate_norm_samples 2 -mat_h2opus_normsamples 2

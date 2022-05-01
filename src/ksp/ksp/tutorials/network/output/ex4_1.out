@@ -1,4 +1,4 @@
-DM Object: 1 MPI processes
+DM Object: 1 MPI process
   type: network
   NSubnets: 2; NEdges: 6; NVertices: 6; NSharedVertices: 2.
   [0] nEdges: 6; nVertices: 8; nSharedVertices: 2
@@ -15,7 +15,7 @@ DM Object: 1 MPI processes
                                            ----> subnet[1].0
        svtx 1: global index 1, subnet[0].1 ---->
                                            ----> subnet[1].1
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
   Vertex 0:
     1.

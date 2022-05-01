@@ -1,4 +1,4 @@
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqaij
 row 0: (0, 4.)  (1, -1.)  (6, -1.) 
 row 1: (0, -1.)  (1, 4.)  (2, -1.)  (7, -1.) 
@@ -36,7 +36,7 @@ row 32: (26, -1.)  (31, -1.)  (32, 4.)  (33, -1.)
 row 33: (27, -1.)  (32, -1.)  (33, 4.)  (34, -1.) 
 row 34: (28, -1.)  (33, -1.)  (34, 4.)  (35, -1.) 
 row 35: (29, -1.)  (34, -1.)  (35, 4.) 
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqaij
 row 0: (0, 4.)  (1, -1.) 
 row 1: (0, -1.)  (1, 4.)  (2, -1.) 
@@ -44,7 +44,7 @@ row 2: (1, -1.)  (2, 4.)  (3, -1.)
 row 3: (2, -1.)  (3, 4.)  (4, -1.) 
 row 4: (3, -1.)  (4, 4.)  (5, -1.) 
 row 5: (4, -1.)  (5, 4.) 
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqaij
 row 0: (0, 4.)  (3, -1.) 
 row 1: (1, 4.)  (4, -1.) 
@@ -52,7 +52,7 @@ row 2: (2, 4.)  (5, -1.)
 row 3: (0, -1.)  (3, 4.) 
 row 4: (1, -1.)  (4, 4.) 
 row 5: (2, -1.)  (5, 4.) 
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqaij
 row 0: (0, 4.) 
 row 1: (1, 4.)  (2, -1.) 

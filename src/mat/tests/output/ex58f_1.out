@@ -1,32 +1,32 @@
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqaij
 row 0: (0, 1.875) 
 row 1: (1, 2.) 
 row 2: (2, 2.125) 
 row 3: (3, 2.25) 
 row 4: (4, 2.3125) 
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1.875
 2.
 2.125
 2.25
 2.3125
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1.875
 2.
 2.125
 2.25
 2.3125
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1.875
 2.
 2.125
 2.25
 2.3125
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.
 0.

@@ -12,7 +12,7 @@ lid velocity = 0.0625, prandtl # = 1., grashof # = 1.
  10 SNES Function norm 7.696320165213e-05 
  11 SNES Function norm 4.038837939685e-05 
  12 SNES Function norm 2.137207554838e-05 
-SNES Object: 1 MPI processes
+SNES Object: 1 MPI process
   type: ngs
   maximum iterations=10000, maximum function evaluations=10000
   tolerances: relative=0.0001, absolute=1e-50, solution=1e-08

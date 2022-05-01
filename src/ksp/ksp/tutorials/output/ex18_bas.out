@@ -7,13 +7,13 @@
   6 KSP Residual norm 0.000976839 
   7 KSP Residual norm 0.000305636 
   8 KSP Residual norm 4.93246e-05 
-KSP Object: 1 MPI processes
+KSP Object: 1 MPI process
   type: cg
   maximum iterations=10000, initial guess is zero
   tolerances:  relative=3.96825e-05, absolute=1e-50, divergence=10000.
   left preconditioning
   using PRECONDITIONED norm type for convergence test
-PC Object: 1 MPI processes
+PC Object: 1 MPI process
   type: icc
     out-of-place factorization
     1 level of fill
@@ -22,14 +22,14 @@ PC Object: 1 MPI processes
     matrix ordering: natural
     factor fill ratio given 1., needed 0.976077
       Factored matrix follows:
-        Mat Object: 1 MPI processes
+        Mat Object: 1 MPI process
           type: seqsbaij
           rows=221, cols=221
           package used to perform factorization: bas
           total: nonzeros=1020, allocated nonzeros=1020
               block size is 1
   linear system matrix = precond matrix:
-  Mat Object: 1 MPI processes
+  Mat Object: 1 MPI process
     type: seqaij
     rows=221, cols=221
     total: nonzeros=1045, allocated nonzeros=1105

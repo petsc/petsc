@@ -1,5 +1,5 @@
 Local to global mapping of dmred
-ISLocalToGlobalMapping Object: 1 MPI processes
+ISLocalToGlobalMapping Object: 1 MPI process
   type not yet set
 [0] 0 0
 [0] 1 1
@@ -7,7 +7,7 @@ ISLocalToGlobalMapping Object: 1 MPI processes
 [0] 3 3
 [0] 4 4
 Local to global mapping of da
-ISLocalToGlobalMapping Object: 1 MPI processes
+ISLocalToGlobalMapping Object: 1 MPI process
   type not yet set
 [0] 0 -1
 [0] 1 3
@@ -34,7 +34,7 @@ ISLocalToGlobalMapping Object: 1 MPI processes
 [0] 22 4
 [0] 23 5
 [0] 24 -1
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: nest
   Matrix object: 
     type=nest, rows=2, cols=2 
@@ -44,7 +44,7 @@ Mat Object: 1 MPI processes
     (1,0) : NULL 
     (1,1) : type=seqaij, rows=18, cols=18 
 Local to global mapping of dmred vector
-ISLocalToGlobalMapping Object: 1 MPI processes
+ISLocalToGlobalMapping Object: 1 MPI process
   type not yet set
 [0] 0 0
 [0] 1 1
@@ -52,7 +52,7 @@ ISLocalToGlobalMapping Object: 1 MPI processes
 [0] 3 3
 [0] 4 4
 Local to global mapping of da vector
-ISLocalToGlobalMapping Object: 1 MPI processes
+ISLocalToGlobalMapping Object: 1 MPI process
   type not yet set
 [0] 0 -7
 [0] 1 -6

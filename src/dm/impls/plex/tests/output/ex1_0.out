@@ -228,7 +228,7 @@
 [0] TetGenMeshOutputNodes(): Writing nodes.
 [0] TetGenMeshOutputElements(): Writing elements.
 [0] TetGenMeshOutputSubfaces(): Writing faces.
-DM Object: Generated Mesh 1 MPI processes
+DM Object: Generated Mesh 1 MPI process
   type: plex
 Generated Mesh in 3 dimensions:
 Supports:

@@ -1,4 +1,4 @@
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: nest
   Matrix object: 
     type=nest, rows=1, cols=2 

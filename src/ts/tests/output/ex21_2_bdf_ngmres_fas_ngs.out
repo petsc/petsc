@@ -91,13 +91,13 @@ TS Object: 2 MPI processes
               number of blocks = 2
               Local solver information for first block is in the following KSP and PC objects on rank 0:
               Use -npc_fas_coarse_ksp_view ::ascii_info_detail to display information for all blocks
-            KSP Object: (npc_fas_coarse_sub_) 1 MPI processes
+            KSP Object: (npc_fas_coarse_sub_) 1 MPI process
               type: preonly
               maximum iterations=10000, initial guess is zero
               tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
               left preconditioning
               using NONE norm type for convergence test
-            PC Object: (npc_fas_coarse_sub_) 1 MPI processes
+            PC Object: (npc_fas_coarse_sub_) 1 MPI process
               type: ilu
                 out-of-place factorization
                 0 levels of fill
@@ -105,14 +105,14 @@ TS Object: 2 MPI processes
                 matrix ordering: natural
                 factor fill ratio given 1., needed 1.
                   Factored matrix follows:
-                    Mat Object: 1 MPI processes
+                    Mat Object: 1 MPI process
                       type: seqaij
                       rows=15, cols=15
                       package used to perform factorization: petsc
                       total: nonzeros=59, allocated nonzeros=59
                         not using I-node routines
               linear system matrix = precond matrix:
-              Mat Object: (npc_fas_coarse_sub_) 1 MPI processes
+              Mat Object: (npc_fas_coarse_sub_) 1 MPI process
                 type: seqaij
                 rows=15, cols=15
                 total: nonzeros=59, allocated nonzeros=59

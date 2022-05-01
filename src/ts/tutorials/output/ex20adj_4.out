@@ -98,13 +98,13 @@ Skip the step from 0 to 1 (stage values already checkpointed)
 TSTrajectoryGet: stepnum 0, stages 1
 
  sensitivity wrt initial conditions: d[y(tf)]/d[y0]  d[y(tf)]/d[z0]
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1.00844
 5.74982e-06
 
  sensitivity wrt initial conditions: d[z(tf)]/d[y0]  d[z(tf)]/d[z0]
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1.03128
 -0.828692

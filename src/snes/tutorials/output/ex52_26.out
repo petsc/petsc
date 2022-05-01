@@ -5,7 +5,7 @@ Labels:
   marker: 1 strata of sizes (8)
   depth: 2 strata of sizes (8, 6)
 Residual:
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 -1.25
 -1.41667

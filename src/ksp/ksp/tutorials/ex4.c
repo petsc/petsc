@@ -225,7 +225,7 @@ int main(int argc,char **args)
    testset:
       output_file: output/ex4_expl.out
       nsize: {{1 2}}
-      filter: grep -v "MPI processes" | grep -v " type:" | grep -v "Mat Object"
+      filter: grep -v " MPI process" | grep -v " type:" | grep -v "Mat Object"
       args: -ksp_converged_reason -view_explicit_mat -pc_type none -ksp_type {{cg gmres}}
       test:
         suffix: expl_aij

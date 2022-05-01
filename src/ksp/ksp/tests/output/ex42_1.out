@@ -1,5 +1,5 @@
 Linear solve converged due to CONVERGED_RTOL iterations 10
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1.
 1.

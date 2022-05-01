@@ -1,4 +1,4 @@
-DM Object: TPS 1 MPI processes
+DM Object: TPS 1 MPI process
   type: plex
 TPS in 2 dimensions:
   Number of 0-cells per rank: 640

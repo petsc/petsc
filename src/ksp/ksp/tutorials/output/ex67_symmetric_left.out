@@ -8,7 +8,7 @@
   7 KSP preconditioned resid norm 2.984419585039e-11 true resid norm 1.264527842976e-08 ||r(i)||/||b|| 5.655140432672e-09
   8 KSP preconditioned resid norm 1.365787844476e-18 true resid norm 2.056161816083e-15 ||r(i)||/||b|| 9.195435187003e-16
 Linear solve converged due to CONVERGED_RTOL iterations 8
-KSP Object: 1 MPI processes
+KSP Object: 1 MPI process
   type: gmres
     restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
     happy breakdown tolerance 1e-30
@@ -16,11 +16,11 @@ KSP Object: 1 MPI processes
   tolerances:  relative=1e-14, absolute=1e-50, divergence=10000.
   left preconditioning
   using PRECONDITIONED norm type for convergence test
-PC Object: 1 MPI processes
+PC Object: 1 MPI process
   type: sor
     type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
   linear system matrix = precond matrix:
-  Mat Object: 1 MPI processes
+  Mat Object: 1 MPI process
     type: seqaij
     rows=10, cols=10
     total: nonzeros=50, allocated nonzeros=50
@@ -37,7 +37,7 @@ PC Object: 1 MPI processes
   7 KSP preconditioned resid norm 2.984419585039e-11 true resid norm 1.264527842976e-08 ||r(i)||/||b|| 5.655140432672e-09
   8 KSP preconditioned resid norm 1.365787844476e-18 true resid norm 2.056161816083e-15 ||r(i)||/||b|| 9.195435187003e-16
 Linear solve converged due to CONVERGED_RTOL iterations 8
-KSP Object: 1 MPI processes
+KSP Object: 1 MPI process
   type: gmres
     restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
     happy breakdown tolerance 1e-30
@@ -45,11 +45,11 @@ KSP Object: 1 MPI processes
   tolerances:  relative=1e-14, absolute=1e-50, divergence=10000.
   left preconditioning
   using PRECONDITIONED norm type for convergence test
-PC Object: 1 MPI processes
+PC Object: 1 MPI process
   type: sor
     type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
   linear system matrix = precond matrix:
-  Mat Object: 1 MPI processes
+  Mat Object: 1 MPI process
     type: seqaij
     rows=10, cols=10
     total: nonzeros=50, allocated nonzeros=50

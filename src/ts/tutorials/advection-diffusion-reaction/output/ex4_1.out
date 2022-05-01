@@ -51,7 +51,7 @@
 50 TS dt 0.0960447 time 0.860948
 51 TS dt 0.112238 time 0.956993
 52 TS dt 0.136904 time 1.06923
-TS Object: 1 MPI processes
+TS Object: 1 MPI process
   type: rosw
     Rosenbrock-W ra34pw2
     Abscissa of A       =  0.000000  0.871733  0.731580  1.000000 
@@ -63,7 +63,7 @@ TS Object: 1 MPI processes
   total number of linear solve failures=0
   total number of rejected steps=10
   using relative error tolerance of 0.0001,   using absolute error tolerance of 0.0001
-  TSAdapt Object: 1 MPI processes
+  TSAdapt Object: 1 MPI process
     type: basic
     safety factor 0.9
     extra safety factor after step rejection 0.5
@@ -72,7 +72,7 @@ TS Object: 1 MPI processes
     maximum allowed timestep 1e+20
     minimum allowed timestep 1e-20
     maximum solution absolute value to be ignored -1.
-  SNES Object: 1 MPI processes
+  SNES Object: 1 MPI process
     type: ksponly
     maximum iterations=50, maximum function evaluations=10000
     tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
@@ -80,7 +80,7 @@ TS Object: 1 MPI processes
     total number of function evaluations=1
     norm schedule ALWAYS
     Jacobian is built using finite differences with coloring
-    KSP Object: 1 MPI processes
+    KSP Object: 1 MPI process
       type: gmres
         restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
         happy breakdown tolerance 1e-30
@@ -88,21 +88,21 @@ TS Object: 1 MPI processes
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using PRECONDITIONED norm type for convergence test
-    PC Object: 1 MPI processes
+    PC Object: 1 MPI process
       type: lu
         out-of-place factorization
         tolerance for zero pivot 2.22045e-14
         matrix ordering: nd
         factor fill ratio given 5., needed 1.47059
           Factored matrix follows:
-            Mat Object: 1 MPI processes
+            Mat Object: 1 MPI process
               type: seqaij
               rows=58, cols=58, bs=2
               package used to perform factorization: petsc
               total: nonzeros=500, allocated nonzeros=500
                 using I-node routines: found 29 nodes, limit used is 5
       linear system matrix = precond matrix:
-      Mat Object: 1 MPI processes
+      Mat Object: 1 MPI process
         type: seqaij
         rows=58, cols=58, bs=2
         total: nonzeros=340, allocated nonzeros=348

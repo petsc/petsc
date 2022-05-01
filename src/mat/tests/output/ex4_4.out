@@ -13,34 +13,34 @@ row 8:
 row 9:
 
 Submatrices
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqdense
 row 0: (3, 8.) 
 row 1: (4, 9.) 
 row 2: (0, 5.) 
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqdense
 row 0: (3, 8.) 
 row 1: (4, 9.) 
 row 2: (0, 5.) 
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqdense
 row 0: (3, 8.) 
 row 1: (4, 9.) 
 row 2: (0, 5.) 
 
 Submatrices with allcolumns
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqdense
 row 0: (2, 3.)  (7, 8.) 
 row 1: (3, 4.)  (8, 9.) 
 row 2: (4, 5.)  (9, 10.) 
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqdense
 row 0: (2, 3.)  (7, 8.) 
 row 1: (3, 4.)  (8, 9.) 
 row 2: (4, 5.)  (9, 10.) 
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqdense
 row 0: (2, 3.)  (7, 8.) 
 row 1: (3, 4.)  (8, 9.) 

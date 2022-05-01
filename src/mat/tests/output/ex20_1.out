@@ -1,10 +1,10 @@
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqaij
   rows=20, cols=20
   total: nonzeros=41, allocated nonzeros=100
   total number of mallocs used during MatSetValues calls=0
     using I-node routines: found 15 nodes, limit used is 5
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqaij
 row 0: (0, 4.)  (1, -1.)  (4, -1.) 
 row 1: (0, -1.)  (1, 4.)  (2, -1.)  (5, -1.) 
@@ -26,13 +26,13 @@ row 16: (12, -1.)  (16, 4.)  (17, -1.)
 row 17: (13, -1.)  (16, -1.)  (17, 4.)  (18, -1.) 
 row 18:
 row 19:
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqaij
   rows=20, cols=20
   total: nonzeros=41, allocated nonzeros=41
   total number of mallocs used during MatSetValues calls=0
     using I-node routines: found 15 nodes, limit used is 5
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqaij
 row 0: (0, 4.)  (1, -1.)  (4, -1.) 
 row 1: (0, -1.)  (1, 4.)  (2, -1.)  (5, -1.) 

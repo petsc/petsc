@@ -1,6 +1,6 @@
 m=100	n=30	fromFirst=2	fromStep=2	toFirst=3	toStep=3
 fromFirst+(n-1)*fromStep=60	toFirst+(n-1)*toStep=90
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seqcuda
 3.
 3.

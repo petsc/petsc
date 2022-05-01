@@ -4,7 +4,7 @@
   3 KSP Residual norm 0.000925411 
   4 KSP Residual norm 8.96988e-05 
   5 KSP Residual norm 6.38189e-06 
-KSP Object: 1 MPI processes
+KSP Object: 1 MPI process
   type: gmres
     restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
     happy breakdown tolerance 1e-30
@@ -12,7 +12,7 @@ KSP Object: 1 MPI processes
   tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
   left preconditioning
   using PRECONDITIONED norm type for convergence test
-PC Object: 1 MPI processes
+PC Object: 1 MPI process
   type: gamg
     type is MULTIPLICATIVE, levels=2 cycles=v
       Cycles per PCApply=1
@@ -26,24 +26,24 @@ PC Object: 1 MPI processes
           Number smoothing steps 1
         Complexity:    grid = 1.25    operator = 1.3
   Coarse grid solver -- level 0 -------------------------------
-    KSP Object: (mg_coarse_) 1 MPI processes
+    KSP Object: (mg_coarse_) 1 MPI process
       type: preonly
       maximum iterations=10000, initial guess is zero
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
-    PC Object: (mg_coarse_) 1 MPI processes
+    PC Object: (mg_coarse_) 1 MPI process
       type: bjacobi
         number of blocks = 1
         Local solver information for first block is in the following KSP and PC objects on rank 0:
         Use -mg_coarse_ksp_view ::ascii_info_detail to display information for all blocks
-      KSP Object: (mg_coarse_sub_) 1 MPI processes
+      KSP Object: (mg_coarse_sub_) 1 MPI process
         type: preonly
         maximum iterations=1, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
-      PC Object: (mg_coarse_sub_) 1 MPI processes
+      PC Object: (mg_coarse_sub_) 1 MPI process
         type: lu
           out-of-place factorization
           tolerance for zero pivot 2.22045e-14
@@ -51,28 +51,28 @@ PC Object: 1 MPI processes
           matrix ordering: nd
           factor fill ratio given 5., needed 1.06667
             Factored matrix follows:
-              Mat Object: 1 MPI processes
+              Mat Object: 1 MPI process
                 type: seqaijcusparse
                 rows=6, cols=6
                 package used to perform factorization: cusparse
                 total: nonzeros=32, allocated nonzeros=32
                   using I-node routines: found 3 nodes, limit used is 5
         linear system matrix = precond matrix:
-        Mat Object: (mg_coarse_sub_) 1 MPI processes
+        Mat Object: (mg_coarse_sub_) 1 MPI process
           type: seqaijcusparse
           rows=6, cols=6
           total: nonzeros=30, allocated nonzeros=30
           total number of mallocs used during MatSetValues calls=0
             not using I-node routines
       linear system matrix = precond matrix:
-      Mat Object: (mg_coarse_sub_) 1 MPI processes
+      Mat Object: (mg_coarse_sub_) 1 MPI process
         type: seqaijcusparse
         rows=6, cols=6
         total: nonzeros=30, allocated nonzeros=30
         total number of mallocs used during MatSetValues calls=0
           not using I-node routines
   Down solver (pre-smoother) on level 1 -------------------------------
-    KSP Object: (mg_levels_1_) 1 MPI processes
+    KSP Object: (mg_levels_1_) 1 MPI process
       type: chebyshev
         eigenvalue targets used: min 0.185494, max 2.04043
         eigenvalues provided (min 0.145011, max 1.85494) with transform: [0. 0.1; 0. 1.1]
@@ -80,11 +80,11 @@ PC Object: 1 MPI processes
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
-    PC Object: (mg_levels_1_) 1 MPI processes
+    PC Object: (mg_levels_1_) 1 MPI process
       type: jacobi
         type DIAGONAL
       linear system matrix = precond matrix:
-      Mat Object: 1 MPI processes
+      Mat Object: 1 MPI process
         type: seqaijcusparse
         rows=24, cols=24
         total: nonzeros=100, allocated nonzeros=120
@@ -92,7 +92,7 @@ PC Object: 1 MPI processes
           not using I-node routines
   Up solver (post-smoother) same as down solver (pre-smoother)
   linear system matrix = precond matrix:
-  Mat Object: 1 MPI processes
+  Mat Object: 1 MPI process
     type: seqaijcusparse
     rows=24, cols=24
     total: nonzeros=100, allocated nonzeros=120

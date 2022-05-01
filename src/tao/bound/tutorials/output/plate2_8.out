@@ -81,7 +81,7 @@ iter =  75, Function value 1.50566, Residual: 0.000125466
 iter =  76, Function value 1.50566, Residual: 0.000116362 
 iter =  77, Function value 1.50566, Residual: 0.000104974 
 iter =  78, Function value 1.50566, Residual: 9.73568e-05 
-Tao Object: 1 MPI processes
+Tao Object: 1 MPI process
   type: bncg
     CG Type: pcgd
     Skipped Stepdirection Updates: 0
@@ -89,7 +89,7 @@ Tao Object: 1 MPI processes
     Pure gradient steps: 1
     Not a descent direction: 0
     Line search fails: 0
-  TaoLineSearch Object: 1 MPI processes
+  TaoLineSearch Object: 1 MPI process
     type: more-thuente
     maximum function evaluations=30
     tolerances: ftol=0.0001, rtol=1e-10, gtol=0.9

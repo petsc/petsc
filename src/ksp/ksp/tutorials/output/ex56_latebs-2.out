@@ -74,27 +74,27 @@ PC Object: 8 MPI processes
         restriction/interpolation type - BASIC
         Local solver information for first block is in the following KSP and PC objects on rank 0:
         Use -mg_levels_1_ksp_view ::ascii_info_detail to display information for all blocks
-      KSP Object: (mg_levels_1_sub_) 1 MPI processes
+      KSP Object: (mg_levels_1_sub_) 1 MPI process
         type: preonly
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
-      PC Object: (mg_levels_1_sub_) 1 MPI processes
+      PC Object: (mg_levels_1_sub_) 1 MPI process
         type: lu
           out-of-place factorization
           tolerance for zero pivot 2.22045e-14
           matrix ordering: nd
           factor fill ratio given 5., needed 1.43328
             Factored matrix follows:
-              Mat Object: 1 MPI processes
+              Mat Object: 1 MPI process
                 type: seqaij
                 rows=135, cols=135
                 package used to perform factorization: petsc
                 total: nonzeros=8217, allocated nonzeros=8217
                   using I-node routines: found 45 nodes, limit used is 5
         linear system matrix = precond matrix:
-        Mat Object: (mg_levels_1_sub_) 1 MPI processes
+        Mat Object: (mg_levels_1_sub_) 1 MPI process
           type: seqaij
           rows=135, cols=135
           total: nonzeros=5733, allocated nonzeros=5733
@@ -194,27 +194,27 @@ PC Object: 8 MPI processes
         restriction/interpolation type - BASIC
         Local solver information for first block is in the following KSP and PC objects on rank 0:
         Use -mg_levels_1_ksp_view ::ascii_info_detail to display information for all blocks
-      KSP Object: (mg_levels_1_sub_) 1 MPI processes
+      KSP Object: (mg_levels_1_sub_) 1 MPI process
         type: preonly
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
-      PC Object: (mg_levels_1_sub_) 1 MPI processes
+      PC Object: (mg_levels_1_sub_) 1 MPI process
         type: lu
           out-of-place factorization
           tolerance for zero pivot 2.22045e-14
           matrix ordering: nd
           factor fill ratio given 5., needed 1.43328
             Factored matrix follows:
-              Mat Object: 1 MPI processes
+              Mat Object: 1 MPI process
                 type: seqaij
                 rows=135, cols=135
                 package used to perform factorization: petsc
                 total: nonzeros=8217, allocated nonzeros=8217
                   using I-node routines: found 45 nodes, limit used is 5
         linear system matrix = precond matrix:
-        Mat Object: (mg_levels_1_sub_) 1 MPI processes
+        Mat Object: (mg_levels_1_sub_) 1 MPI process
           type: seqaij
           rows=135, cols=135
           total: nonzeros=5733, allocated nonzeros=5733
@@ -314,27 +314,27 @@ PC Object: 8 MPI processes
         restriction/interpolation type - BASIC
         Local solver information for first block is in the following KSP and PC objects on rank 0:
         Use -mg_levels_1_ksp_view ::ascii_info_detail to display information for all blocks
-      KSP Object: (mg_levels_1_sub_) 1 MPI processes
+      KSP Object: (mg_levels_1_sub_) 1 MPI process
         type: preonly
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
-      PC Object: (mg_levels_1_sub_) 1 MPI processes
+      PC Object: (mg_levels_1_sub_) 1 MPI process
         type: lu
           out-of-place factorization
           tolerance for zero pivot 2.22045e-14
           matrix ordering: nd
           factor fill ratio given 5., needed 1.43328
             Factored matrix follows:
-              Mat Object: 1 MPI processes
+              Mat Object: 1 MPI process
                 type: seqaij
                 rows=135, cols=135
                 package used to perform factorization: petsc
                 total: nonzeros=8217, allocated nonzeros=8217
                   using I-node routines: found 45 nodes, limit used is 5
         linear system matrix = precond matrix:
-        Mat Object: (mg_levels_1_sub_) 1 MPI processes
+        Mat Object: (mg_levels_1_sub_) 1 MPI process
           type: seqaij
           rows=135, cols=135
           total: nonzeros=5733, allocated nonzeros=5733

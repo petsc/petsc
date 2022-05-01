@@ -1,9 +1,9 @@
-IS Object: 1 MPI processes
+IS Object: 1 MPI process
   type: general
 Number of indices in set 2
 0 101
 1 1001
-IS Object: 1 MPI processes
+IS Object: 1 MPI process
   type: general
 Number of indices in set 31
 0 8
@@ -37,7 +37,7 @@ Number of indices in set 31
 28 21
 29 17
 30 16
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqaij
 row 0: (0, 0.)  (1, 0.)  (2, 0.)  (3, 0.)  (4, 0.) 
 row 1: (0, 0.)  (1, 0.)  (2, 0.)  (3, 0.)  (12, 0.) 

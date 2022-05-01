@@ -1,6 +1,6 @@
 [0] ==========================
 depth 1 ---------------
-PetscSection Object: 1 MPI processes
+PetscSection Object: 1 MPI process
   type not yet set
 Process 0:
   (   0) dim  3 offset   0
@@ -8,7 +8,7 @@ Process 0:
   (   2) dim  1 offset   4
   (   3) dim  1 offset   5
   (   4) dim  1 offset   6
-IS Object: 1 MPI processes
+IS Object: 1 MPI process
   type: general
 Number of indices in set 7
 0 4
@@ -19,7 +19,7 @@ Number of indices in set 7
 5 5
 6 6
 depth 0 ---------------
-PetscSection Object: 1 MPI processes
+PetscSection Object: 1 MPI process
   type not yet set
 Process 0:
   (   0) dim  2 offset   0
@@ -29,7 +29,7 @@ Process 0:
   (   4) dim  1 offset   7
   (   5) dim  2 offset   8
   (   6) dim  2 offset  10
-IS Object: 1 MPI processes
+IS Object: 1 MPI process
   type: general
 Number of indices in set 12
 0 1
@@ -46,7 +46,7 @@ Number of indices in set 12
 11 3
 [1] ==========================
 depth 1 ---------------
-PetscSection Object: 1 MPI processes
+PetscSection Object: 1 MPI process
   type not yet set
 Process 0:
   (   0) dim  3 offset   0
@@ -54,7 +54,7 @@ Process 0:
   (   2) dim  1 offset   4
   (   3) dim  1 offset   5
   (   4) dim  1 offset   6
-IS Object: 1 MPI processes
+IS Object: 1 MPI process
   type: general
 Number of indices in set 7
 0 4
@@ -65,7 +65,7 @@ Number of indices in set 7
 5 5
 6 6
 depth 0 ---------------
-PetscSection Object: 1 MPI processes
+PetscSection Object: 1 MPI process
   type not yet set
 Process 0:
   (   0) dim  2 offset   0
@@ -75,7 +75,7 @@ Process 0:
   (   4) dim  1 offset   7
   (   5) dim  2 offset   8
   (   6) dim  2 offset  10
-IS Object: 1 MPI processes
+IS Object: 1 MPI process
   type: general
 Number of indices in set 12
 0 1
@@ -92,7 +92,7 @@ Number of indices in set 12
 11 1
 [2] ==========================
 depth 1 ---------------
-PetscSection Object: 1 MPI processes
+PetscSection Object: 1 MPI process
   type not yet set
 Process 0:
   (   0) dim  3 offset   0
@@ -100,7 +100,7 @@ Process 0:
   (   2) dim  1 offset   6
   (   3) dim  1 offset   7
   (   4) dim  1 offset   8
-IS Object: 1 MPI processes
+IS Object: 1 MPI process
   type: general
 Number of indices in set 9
 0 6
@@ -113,7 +113,7 @@ Number of indices in set 9
 7 5
 8 6
 depth 0 ---------------
-PetscSection Object: 1 MPI processes
+PetscSection Object: 1 MPI process
   type not yet set
 Process 0:
   (   0) dim  2 offset   0
@@ -125,7 +125,7 @@ Process 0:
   (   6) dim  1 offset  12
   (   7) dim  1 offset  13
   (   8) dim  2 offset  14
-IS Object: 1 MPI processes
+IS Object: 1 MPI process
   type: general
 Number of indices in set 16
 0 3

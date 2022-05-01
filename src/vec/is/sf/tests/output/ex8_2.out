@@ -1,6 +1,6 @@
 
 Testing VecScatterCreateToZero
-Vec Object: y 1 MPI processes
+Vec Object: y 1 MPI process
 0.
 1.
 2.
@@ -11,7 +11,7 @@ Vec Object: y 1 MPI processes
 7.
 8.
 9.
-Vec Object: y 1 MPI processes
+Vec Object: y 1 MPI process
 0.
 2.
 4.
@@ -52,7 +52,7 @@ Process [2]
 18.
 
 Testing VecScatterCreateToAll
-Vec Object: y 1 MPI processes
+Vec Object: y 1 MPI process
 0.
 1.
 2.
@@ -63,7 +63,7 @@ Vec Object: y 1 MPI processes
 7.
 8.
 9.
-Vec Object: y 1 MPI processes
+Vec Object: y 1 MPI process
 0.
 2.
 4.

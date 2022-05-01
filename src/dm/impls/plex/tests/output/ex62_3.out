@@ -1,4 +1,4 @@
-DM Object: cubit(FourSquareT-large.exo): 12/02/2017: 09:20:39 1 MPI processes
+DM Object: cubit(FourSquareT-large.exo): 12/02/2017: 09:20:39 1 MPI process
   type: plex
 cubit(FourSquareT-large.exo): 12/02/2017: 09:20:39 in 2 dimensions:
   Number of 0-cells per rank: 61
@@ -8,19 +8,19 @@ Labels:
   celltype: 3 strata with value/size (0 (61), 3 (96), 1 (156))
   depth: 3 strata with value/size (0 (61), 1 (156), 2 (96))
   Cell Sets: 4 strata with value/size (1 (24), 2 (18), 3 (28), 5 (26))
-PetscViewer Object: 1 MPI processes
+PetscViewer Object: 1 MPI process
   type: exodusii
   Filename:    FourSquareT-large_out.exo
   exoid:       -1
   IO Mode:     1
   Mesh order:  2
-PetscViewer Object: 1 MPI processes
+PetscViewer Object: 1 MPI process
   type: exodusii
   Filename:    FourSquareT-large_out.exo
   exoid:       65536
   IO Mode:     1
   Mesh order:  2
-PetscSection Object: 1 MPI processes
+PetscSection Object: 1 MPI process
   type not yet set
 3 fields
   field 0 with 2 components

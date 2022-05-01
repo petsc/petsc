@@ -1,4 +1,4 @@
-DM Object: box 1 MPI processes
+DM Object: box 1 MPI process
   type: plex
 box in 2 dimensions:
   Number of 0-cells per rank: 6
@@ -9,11 +9,11 @@ Labels:
   depth: 3 strata with value/size (0 (6), 1 (9), 2 (4))
   marker: 1 strata with value/size (1 (12))
   Face Sets: 1 strata with value/size (1 (6))
-DM Object: Particles 1 MPI processes
+DM Object: Particles 1 MPI process
   type: swarm
 Particles in 2 dimensions:
   Number of particles per rank: 8
-DM Object: SubParticles 1 MPI processes
+DM Object: SubParticles 1 MPI process
   type: swarm
 SubParticles in 2 dimensions:
   Number of particles per rank: 8

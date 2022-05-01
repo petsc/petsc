@@ -1,6 +1,6 @@
 
  IS to select slice from 3D DMDA vector : 
-IS Object: 1 MPI processes
+IS Object: 1 MPI process
   type: general
 Number of indices in set 16
 0 0
@@ -21,7 +21,7 @@ Number of indices in set 16
 15 60
 
  Extracted slice vector, in DMDA ordering : 
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 -4.
 -6.
@@ -42,7 +42,7 @@ Vec Object: 1 MPI processes
 subset MPI subcomm size is : 1, includes global rank : 0 
 
  Extracted slice vector, in natural ordering : 
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: mpi
 Process [0]
 -4.

@@ -1,6 +1,6 @@
-DM Object: 1 MPI processes
+DM Object: 1 MPI process
   type: p4est
-DM Object: 1 MPI processes
+DM Object: 1 MPI process
   type: plex
   Number of 0-cells per rank: 1089
   Number of 1-cells per rank: 2112

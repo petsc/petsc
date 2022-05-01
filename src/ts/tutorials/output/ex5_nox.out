@@ -101,7 +101,7 @@ Timestep 98: time = 0.0140764, 2-norm error = 0.8524, max norm error = 2.32898
 Timestep 99: time = 0.0142201, 2-norm error = 0.858335, max norm error = 2.33963
 Timestep 100: time = 0.0143637, 2-norm error = 0.864248, max norm error = 2.35021
 avg. error (2 norm) = 0.501138, avg. error (max norm) = 1.55605
-TS Object: 1 MPI processes
+TS Object: 1 MPI process
   type: euler
   maximum steps=100
   maximum time=100.
@@ -109,5 +109,5 @@ TS Object: 1 MPI processes
   total number of RHS Jacobian evaluations=100
   total number of rejected steps=0
   using relative error tolerance of 0.0001,   using absolute error tolerance of 0.0001
-  TSAdapt Object: 1 MPI processes
+  TSAdapt Object: 1 MPI process
     type: none

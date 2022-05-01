@@ -6,11 +6,11 @@ Graph Partitioner: 1 MPI Process
   use vertex weights: 1
   using partitioning strategy DEFAULT
   using load imbalance ratio 0.01
-PetscSection Object: NULL SECTION 1 MPI processes
+PetscSection Object: NULL SECTION 1 MPI process
   type not yet set
 Process 0:
   (   0) dim  0 offset   0
-IS Object: NULL PARTITION 1 MPI processes
+IS Object: NULL PARTITION 1 MPI process
   type: stride
 Number of indices in (stride) set 0
 [0]Nv: 4
@@ -25,11 +25,11 @@ Graph Partitioner: 1 MPI Process
   use vertex weights: 1
   using partitioning strategy DEFAULT
   using load imbalance ratio 0.01
-PetscSection Object: SEQ SECTION 1 MPI processes
+PetscSection Object: SEQ SECTION 1 MPI process
   type not yet set
 Process 0:
   (   0) dim  4 offset   0
-IS Object: SEQ PARTITION 1 MPI processes
+IS Object: SEQ PARTITION 1 MPI process
   type: stride
 Number of indices in (stride) set 4
 0 0
@@ -48,11 +48,11 @@ Graph Partitioner: 1 MPI Process
   use vertex weights: 1
   using partitioning strategy DEFAULT
   using load imbalance ratio 0.01
-PetscSection Object: PARVOID SECTION 1 MPI processes
+PetscSection Object: PARVOID SECTION 1 MPI process
   type not yet set
 Process 0:
   (   0) dim  4 offset   0
-IS Object: PARVOID PARTITION 1 MPI processes
+IS Object: PARVOID PARTITION 1 MPI process
   type: stride
 Number of indices in (stride) set 4
 0 0

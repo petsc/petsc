@@ -5,7 +5,7 @@ atol=1e-50, rtol=1e-08, stol=1e-08, maxit=50, maxf=10000
   3 SNES Function norm 0.0213393 
   4 SNES Function norm 2.29937e-06 
   5 SNES Function norm < 1.e-11
-SNES Object: 1 MPI processes
+SNES Object: 1 MPI process
   type: newtontr
     Trust region tolerance 1e-12 (-snes_trtol)
     mu=0.25, eta=0.75, sigma=0.0001
@@ -15,7 +15,7 @@ SNES Object: 1 MPI processes
   total number of linear solver iterations=5
   total number of function evaluations=6
   norm schedule ALWAYS
-  KSP Object: 1 MPI processes
+  KSP Object: 1 MPI process
     type: gmres
       restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
       happy breakdown tolerance 1e-30
@@ -23,7 +23,7 @@ SNES Object: 1 MPI processes
     tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
     left preconditioning
     using PRECONDITIONED norm type for convergence test
-  PC Object: 1 MPI processes
+  PC Object: 1 MPI process
     type: ilu
       out-of-place factorization
       0 levels of fill
@@ -31,14 +31,14 @@ SNES Object: 1 MPI processes
       matrix ordering: natural
       factor fill ratio given 1., needed 1.
         Factored matrix follows:
-          Mat Object: 1 MPI processes
+          Mat Object: 1 MPI process
             type: seqaij
             rows=5, cols=5
             package used to perform factorization: petsc
             total: nonzeros=11, allocated nonzeros=11
               not using I-node routines
     linear system matrix = precond matrix:
-    Mat Object: 1 MPI processes
+    Mat Object: 1 MPI process
       type: seqaij
       rows=5, cols=5
       total: nonzeros=11, allocated nonzeros=15

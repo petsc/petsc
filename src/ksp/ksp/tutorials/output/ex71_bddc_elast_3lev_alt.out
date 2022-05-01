@@ -56,54 +56,54 @@ PC Object: 8 MPI processes
     Local     dofs   :	300	450	371
     Local     subs   :	1	1
   --- Interior solver (rank 0)
-    KSP Object: (pc_bddc_dirichlet_) 1 MPI processes
+    KSP Object: (pc_bddc_dirichlet_) 1 MPI process
       type: preonly
       maximum iterations=10000, initial guess is zero
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
-    PC Object: (pc_bddc_dirichlet_) 1 MPI processes
+    PC Object: (pc_bddc_dirichlet_) 1 MPI process
       type: lu
         out-of-place factorization
         tolerance for zero pivot 2.22045e-14
         matrix ordering: nd
         factor fill ratio given 5., needed 1.55143
           Factored matrix follows:
-            Mat Object: 1 MPI processes
+            Mat Object: 1 MPI process
               type: seqaij
               rows=144, cols=144, bs=3
               package used to perform factorization: petsc
               total: nonzeros=9774, allocated nonzeros=9774
                 using I-node routines: found 45 nodes, limit used is 5
       linear system matrix = precond matrix:
-      Mat Object: (pc_bddc_dirichlet_) 1 MPI processes
+      Mat Object: (pc_bddc_dirichlet_) 1 MPI process
         type: seqaij
         rows=144, cols=144, bs=3
         total: nonzeros=6300, allocated nonzeros=6300
         total number of mallocs used during MatSetValues calls=0
           using I-node routines: found 48 nodes, limit used is 5
   --- Correction solver (rank 0)
-    KSP Object: (pc_bddc_neumann_) 1 MPI processes
+    KSP Object: (pc_bddc_neumann_) 1 MPI process
       type: preonly
       maximum iterations=10000, initial guess is zero
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
-    PC Object: (pc_bddc_neumann_) 1 MPI processes
+    PC Object: (pc_bddc_neumann_) 1 MPI process
       type: lu
         out-of-place factorization
         tolerance for zero pivot 2.22045e-14
         matrix ordering: nd
         factor fill ratio given 5., needed 2.16719
           Factored matrix follows:
-            Mat Object: 1 MPI processes
+            Mat Object: 1 MPI process
               type: seqaij
               rows=279, cols=279, bs=3
               package used to perform factorization: petsc
               total: nonzeros=30915, allocated nonzeros=30915
                 using I-node routines: found 85 nodes, limit used is 5
       linear system matrix = precond matrix:
-      Mat Object: (pc_bddc_neumann_) 1 MPI processes
+      Mat Object: (pc_bddc_neumann_) 1 MPI process
         type: seqaij
         rows=279, cols=279, bs=3
         total: nonzeros=14265, allocated nonzeros=14265
@@ -169,86 +169,86 @@ PC Object: 8 MPI processes
         Local     dofs   :	54	54	54
         Local     subs   :	1	1
         --- Interior solver (rank 0)
-          KSP Object:   (pc_bddc_dirichlet_l1_)   1 MPI processes
+          KSP Object: (pc_bddc_dirichlet_l1_) 1 MPI process
             type: preonly
             maximum iterations=10000, initial guess is zero
             tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
             left preconditioning
             using NONE norm type for convergence test
-          PC Object:   (pc_bddc_dirichlet_l1_)   1 MPI processes
+          PC Object: (pc_bddc_dirichlet_l1_) 1 MPI process
             type: none
             linear system matrix = precond matrix:
-            Mat Object:   (pc_bddc_dirichlet_l1_)   1 MPI processes
+            Mat Object: (pc_bddc_dirichlet_l1_) 1 MPI process
               type: seqaij
               rows=0, cols=0
               total: nonzeros=0, allocated nonzeros=0
               total number of mallocs used during MatSetValues calls=0
                 not using I-node routines
         --- Correction solver (rank 0)
-          KSP Object:   (pc_bddc_neumann_l1_)   1 MPI processes
+          KSP Object: (pc_bddc_neumann_l1_) 1 MPI process
             type: preonly
             maximum iterations=10000, initial guess is zero
             tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
             left preconditioning
             using NONE norm type for convergence test
-          PC Object:   (pc_bddc_neumann_l1_)   1 MPI processes
+          PC Object: (pc_bddc_neumann_l1_) 1 MPI process
             type: lu
               out-of-place factorization
               tolerance for zero pivot 2.22045e-14
               matrix ordering: nd
               factor fill ratio given 5., needed 1.
                 Factored matrix follows:
-                  Mat Object:   1 MPI processes
+                  Mat Object: 1 MPI process
                     type: seqaij
                     rows=33, cols=33
                     package used to perform factorization: petsc
                     total: nonzeros=1089, allocated nonzeros=1089
                       using I-node routines: found 7 nodes, limit used is 5
             linear system matrix = precond matrix:
-            Mat Object:   (pc_bddc_neumann_l1_)   1 MPI processes
+            Mat Object: (pc_bddc_neumann_l1_) 1 MPI process
               type: seqaij
               rows=33, cols=33
               total: nonzeros=1089, allocated nonzeros=1089
               total number of mallocs used during MatSetValues calls=0
                 using I-node routines: found 7 nodes, limit used is 5
-                  KSP Object:       (pc_bddc_coarse_l1_redundant_)       1 MPI processes
+                  KSP Object: (pc_bddc_coarse_l1_redundant_) 1 MPI process
                     type: preonly
                     maximum iterations=10000, initial guess is zero
                     tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
                     left preconditioning
                     using NONE norm type for convergence test
-                  PC Object:       (pc_bddc_coarse_l1_redundant_)       1 MPI processes
+                  PC Object: (pc_bddc_coarse_l1_redundant_) 1 MPI process
                     type: lu
                       out-of-place factorization
                       tolerance for zero pivot 2.22045e-14
                       matrix ordering: nd
                       factor fill ratio given 5., needed 1.18559
                         Factored matrix follows:
-                          Mat Object:       1 MPI processes
+                          Mat Object: 1 MPI process
                             type: seqaij
                             rows=48, cols=48
                             package used to perform factorization: petsc
                             total: nonzeros=1942, allocated nonzeros=1942
                               using I-node routines: found 13 nodes, limit used is 5
                     linear system matrix = precond matrix:
-                    Mat Object:       (pc_bddc_coarse_l1_redundant_)       1 MPI processes
+                    Mat Object: (pc_bddc_coarse_l1_redundant_) 1 MPI process
                       type: seqaij
                       rows=48, cols=48
                       total: nonzeros=1638, allocated nonzeros=1638
                       total number of mallocs used during MatSetValues calls=0
                         using I-node routines: found 15 nodes, limit used is 5
         --- Coarse solver
-          KSP Object:   (pc_bddc_coarse_l1_)   8 MPI processes
+          KSP Object: (pc_bddc_coarse_l1_) 8 MPI processes
             type: preonly
             maximum iterations=1, initial guess is zero
             tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
             left preconditioning
             using NONE norm type for convergence test
-          PC Object:   (pc_bddc_coarse_l1_)   8 MPI processes
+          PC Object: (pc_bddc_coarse_l1_) 8 MPI processes
             type: redundant
               First (color=0) of 8 PCs follows
             linear system matrix = precond matrix:
-            Mat Object:   (pc_bddc_coarse_l1_)   8 MPI processes
+            Mat Object: (pc_bddc_coarse_l1_) 8 MPI processes
               type: mpiaij
               rows=48, cols=48
               total: nonzeros=1638, allocated nonzeros=2136

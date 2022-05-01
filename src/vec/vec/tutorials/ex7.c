@@ -75,7 +75,7 @@ PETSC_INTERN void ex7c_(Vec *fvec,int *fcomm,PetscErrorCode *ierr)
 
    test:
       nsize: 3
-      filter: sort -b |grep -v "MPI processes"
+      filter: sort -b |grep -v " MPI process"
       filter_output: sort -b
 
 TEST*/

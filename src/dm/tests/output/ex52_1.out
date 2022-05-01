@@ -1,4 +1,4 @@
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqaij
 row 0: (1, 0.)  (3, 0.)  (13, 0.) 
 row 1: (1, 0.)  (2, 0.)  (12, 0.) 
@@ -14,7 +14,7 @@ row 10: (9, 0.)  (11, 0.)  (13, 0.)
 row 11: (8, 0.)  (11, 0.)  (12, 0.) 
 row 12: (1, 0.)  (11, 0.)  (13, 0.) 
 row 13: (0, 0.)  (10, 0.)  (13, 0.) 
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqaij
   rows=14, cols=14, bs=2
   total: nonzeros=42, allocated nonzeros=42

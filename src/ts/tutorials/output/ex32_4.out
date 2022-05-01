@@ -1,5 +1,5 @@
 Jacobian:
-Mat Object: (M_) 1 MPI processes
+Mat Object: (M_) 1 MPI process
   type: seqaij
 row 0: (0, 0.0138889)  (1, 0.00694444)  (3, 0.00694444)  (9, 0.0138889) 
 row 1: (0, 0.00694444)  (1, 0.0277778)  (2, 0.00694444)  (4, 0.0138889)  (9, 0.0138889)  (11, 0.0138889) 
@@ -15,7 +15,7 @@ row 10: (3, 0.0138889)  (4, 0.0138889)  (6, 0.0138889)  (7, 0.0138889)  (10, 0.0
 row 11: (1, 0.0138889)  (2, 0.0138889)  (4, 0.0138889)  (5, 0.0138889)  (11, 0.0277778) 
 row 12: (4, 0.0138889)  (5, 0.0138889)  (7, 0.0138889)  (8, 0.0138889)  (12, 0.0277778) 
 Z:
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.0416667
 0.0833333
@@ -31,23 +31,7 @@ Vec Object: 1 MPI processes
 0.0833333
 0.0833333
 Residual:
-Vec Object: 1 MPI processes
-  type: seq
-0.0833333
-0.166667
--0.416667
-0.166667
-0.333333
--0.833333
--0.416667
--0.833333
--0.916667
-0.166667
-0.166667
-0.166667
-0.166667
-Residual:
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.0833333
 0.166667
@@ -63,7 +47,23 @@ Vec Object: 1 MPI processes
 0.166667
 0.166667
 Residual:
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
+  type: seq
+0.0833333
+0.166667
+-0.416667
+0.166667
+0.333333
+-0.833333
+-0.416667
+-0.833333
+-0.916667
+0.166667
+0.166667
+0.166667
+0.166667
+Residual:
+Vec Object: 1 MPI process
   type: seq
 0.0833334
 0.166667
@@ -79,7 +79,7 @@ Vec Object: 1 MPI processes
 0.166667
 0.166667
 Residual:
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.0833333
 0.166667
@@ -95,7 +95,7 @@ Vec Object: 1 MPI processes
 0.166667
 0.166667
 Residual:
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.0833333
 0.166667
@@ -111,7 +111,7 @@ Vec Object: 1 MPI processes
 0.166667
 0.166667
 Residual:
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.0833333
 0.166667
@@ -127,7 +127,7 @@ Vec Object: 1 MPI processes
 0.166667
 0.166667
 Residual:
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.0833333
 0.166667
@@ -143,7 +143,7 @@ Vec Object: 1 MPI processes
 0.166667
 0.166667
 Residual:
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.0833333
 0.166667
@@ -159,7 +159,7 @@ Vec Object: 1 MPI processes
 0.166667
 0.166667
 Residual:
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.0833333
 0.166667
@@ -175,7 +175,7 @@ Vec Object: 1 MPI processes
 0.166667
 0.166667
 Residual:
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.0833333
 0.166667
@@ -191,7 +191,7 @@ Vec Object: 1 MPI processes
 0.166667
 0.166667
 Residual:
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1.15063e-07
 -7.05813e-07
@@ -207,7 +207,7 @@ Vec Object: 1 MPI processes
 -1.68784e-06
 1.1572e-06
 Residual:
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1.22013e-07
 -6.98863e-07
@@ -223,7 +223,7 @@ Vec Object: 1 MPI processes
 -1.68784e-06
 1.16416e-06
 Residual:
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1.57758e-07
 -6.93402e-07
@@ -239,7 +239,7 @@ Vec Object: 1 MPI processes
 -1.68784e-06
 1.16416e-06
 Residual:
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1.15063e-07
 -6.98863e-07
@@ -255,7 +255,7 @@ Vec Object: 1 MPI processes
 -1.56671e-06
 1.1572e-06
 Residual:
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1.15063e-07
 -6.93402e-07
@@ -271,7 +271,7 @@ Vec Object: 1 MPI processes
 -1.68089e-06
 1.1572e-06
 Residual:
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1.15063e-07
 -6.8099e-07
@@ -287,7 +287,7 @@ Vec Object: 1 MPI processes
 -1.68089e-06
 1.16416e-06
 Residual:
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1.27474e-07
 -7.05813e-07
@@ -303,7 +303,7 @@ Vec Object: 1 MPI processes
 -1.68784e-06
 1.1572e-06
 Residual:
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1.15063e-07
 -7.05813e-07
@@ -319,7 +319,7 @@ Vec Object: 1 MPI processes
 -1.68784e-06
 1.27834e-06
 Residual:
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1.15063e-07
 -7.05813e-07
@@ -335,7 +335,7 @@ Vec Object: 1 MPI processes
 -1.68089e-06
 1.16416e-06
 Residual:
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1.27474e-07
 -6.20424e-07
@@ -351,7 +351,7 @@ Vec Object: 1 MPI processes
 -1.68089e-06
 1.1572e-06
 Residual:
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.
 0.

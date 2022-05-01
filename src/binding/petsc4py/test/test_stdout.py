@@ -34,7 +34,7 @@ class TestStdout(unittest.TestCase):
         if not (__name__ == '__main__'):
             PETSc._pop_python_vfprintf()
         stdoutshouldbe = \
-"""Vec Object: 1 MPI processes
+"""Vec Object: 1 MPI process
   type: seq
 0.
 0.

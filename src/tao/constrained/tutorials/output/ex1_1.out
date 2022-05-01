@@ -1,7 +1,7 @@
 ---- Constrained Problem -----
 Solution should be f(1,1)=-2
 TAO solve converged due to CONVERGED_GATOL iterations 8
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1.
 1.

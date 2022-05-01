@@ -1,4 +1,4 @@
-DM Object: 1 MPI processes
+DM Object: 1 MPI process
   type: stag
 Dimension: 1
 Global size: 2
@@ -9,7 +9,7 @@ Elementwise ghost stencil: BOX, width 1
 [0] Local elements : 2 (3 with ghosts)
 [0] Local native entries: 12
 [0] Local entries total : 15
-DM Object: 1 MPI processes
+DM Object: 1 MPI process
   type: stag
 Dimension: 1
 Global size: 2

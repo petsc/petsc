@@ -1,4 +1,4 @@
-PetscViewer Object: 1 MPI processes
+PetscViewer Object: 1 MPI process
   type: hdf5
   Viewer format = HDF5_XDMF
   Filename: my.hdf5

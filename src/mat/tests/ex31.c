@@ -80,6 +80,6 @@ int main(int argc,char **args)
 /*TEST
 
    test:
-      filter: grep -v "MPI processes"
+      filter: grep -v " MPI process"
 
 TEST*/

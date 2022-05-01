@@ -146,13 +146,13 @@ PC Object: 2 MPI processes
     PC Object: (mg_coarse_) 2 MPI processes
       type: redundant
         First (color=0) of 2 PCs follows
-        KSP Object: (mg_coarse_redundant_) 1 MPI processes
+        KSP Object: (mg_coarse_redundant_) 1 MPI process
           type: preonly
           maximum iterations=10000, initial guess is zero
           tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning
           using NONE norm type for convergence test
-        PC Object: (mg_coarse_redundant_) 1 MPI processes
+        PC Object: (mg_coarse_redundant_) 1 MPI process
           type: lu
             out-of-place factorization
             tolerance for zero pivot 2.22045e-14
@@ -160,14 +160,14 @@ PC Object: 2 MPI processes
             matrix ordering: nd
             factor fill ratio given 5., needed 1.60209
               Factored matrix follows:
-                Mat Object: 1 MPI processes
+                Mat Object: 1 MPI process
                   type: seqaij
                   rows=128, cols=128
                   package used to perform factorization: petsc
                   total: nonzeros=612, allocated nonzeros=612
                     not using I-node routines
           linear system matrix = precond matrix:
-          Mat Object: (mg_coarse_redundant_) 1 MPI processes
+          Mat Object: (mg_coarse_redundant_) 1 MPI process
             type: seqaij
             rows=128, cols=128
             total: nonzeros=382, allocated nonzeros=382

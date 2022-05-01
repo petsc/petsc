@@ -34,7 +34,7 @@ iter = 3, Function value: -2.00093,  Residual: 3.65259e-05   Constraint: 0.00029
   iter = 3,   Function value: -2.,    Residual: 0.0372608     Constraint: 0. 
   iter = 4,   Function value: -2.,    Residual: 1.95644e-06     Constraint: 0. 
 iter = 4, Function value: -2.00001,  Residual: 1.93762e-06   Constraint: 2.81803e-06 
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1.
 1.

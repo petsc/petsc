@@ -1,4 +1,4 @@
-DM Object: cubit(blockcylinder-50.exo): 02/04/2013: 17:50:28 1 MPI processes
+DM Object: cubit(blockcylinder-50.exo): 02/04/2013: 17:50:28 1 MPI process
   type: plex
 cubit(blockcylinder-50.exo): 02/04/2013: 17:50:28 in 3 dimensions:
 Supports:
@@ -1269,7 +1269,7 @@ Label 'Cell Sets':
 [0]: 53 (10)
 [0]: 54 (10)
 [0]: 55 (10)
-DM Object: Mesh_new (new_) 1 MPI processes
+DM Object: Mesh_new (new_) 1 MPI process
   type: plex
 Mesh_new in 3 dimensions:
 Supports:

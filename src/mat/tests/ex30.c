@@ -201,7 +201,7 @@ int main(int argc,char **args)
 
    test:
       args: -mat_ordering -display_matrices -nox
-      filter: grep -v "MPI processes"
+      filter: grep -v " MPI process"
 
    test:
       suffix: 2

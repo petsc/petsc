@@ -1,4 +1,4 @@
-DM Object: 1 MPI processes
+DM Object: 1 MPI process
   type: stag
 Dimension: 3
 Global sizes: 2 x 3 x 3
@@ -14,7 +14,7 @@ Elementwise ghost stencil: BOX, width 1
 [0] Local native entries: 341
 [0] Local entries total : 480
 Test 1
-IS Object: 1 MPI processes
+IS Object: 1 MPI process
   type: general
 Number of indices in set 18
 0 9
@@ -36,7 +36,7 @@ Number of indices in set 18
 16 249
 17 259
 Test 2
-IS Object: 1 MPI processes
+IS Object: 1 MPI process
   type: general
 Number of indices in set 27
 0 8
@@ -67,7 +67,7 @@ Number of indices in set 27
 25 258
 26 265
 Test 3
-IS Object: 1 MPI processes
+IS Object: 1 MPI process
   type: general
 Number of indices in set 51
 0 7
@@ -122,7 +122,7 @@ Number of indices in set 51
 49 271
 50 277
 Test 5
-IS Object: 1 MPI processes
+IS Object: 1 MPI process
   type: general
 Number of indices in set 96
 0 0
@@ -222,7 +222,7 @@ Number of indices in set 96
 94 338
 95 339
 Test 6
-IS Object: 1 MPI processes
+IS Object: 1 MPI process
   type: general
 Number of indices in set 126
 0 0

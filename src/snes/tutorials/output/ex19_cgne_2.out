@@ -54,16 +54,16 @@ lid velocity = 0.0625, prandtl # = 1., grashof # = 1.
    52 KSP Residual norm 6.76429e-05 
    53 KSP Residual norm 2.43593e-06 
   Linear solve converged due to CONVERGED_RTOL iterations 53
-KSP Object: 1 MPI processes
+KSP Object: 1 MPI process
   type: cgne
   maximum iterations=10000, initial guess is zero
   tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
   left preconditioning
   using PRECONDITIONED norm type for convergence test
-PC Object: 1 MPI processes
+PC Object: 1 MPI process
   type: jacobi
   linear system matrix = precond matrix:
-  Mat Object: 1 MPI processes
+  Mat Object: 1 MPI process
     type: seqaij
     rows=64, cols=64, bs=4
     total: nonzeros=1024, allocated nonzeros=1024
@@ -137,16 +137,16 @@ PC Object: 1 MPI processes
    65 KSP Residual norm 2.17434e-09 
    66 KSP Residual norm 7.996e-10 
   Linear solve converged due to CONVERGED_RTOL iterations 66
-KSP Object: 1 MPI processes
+KSP Object: 1 MPI process
   type: cgne
   maximum iterations=10000, initial guess is zero
   tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
   left preconditioning
   using PRECONDITIONED norm type for convergence test
-PC Object: 1 MPI processes
+PC Object: 1 MPI process
   type: jacobi
   linear system matrix = precond matrix:
-  Mat Object: 1 MPI processes
+  Mat Object: 1 MPI process
     type: seqaij
     rows=64, cols=64, bs=4
     total: nonzeros=1024, allocated nonzeros=1024
@@ -227,16 +227,16 @@ PC Object: 1 MPI processes
    72 KSP Residual norm < 1.e-11
    73 KSP Residual norm < 1.e-11
   Linear solve converged due to CONVERGED_RTOL iterations 73
-KSP Object: 1 MPI processes
+KSP Object: 1 MPI process
   type: cgne
   maximum iterations=10000, initial guess is zero
   tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
   left preconditioning
   using PRECONDITIONED norm type for convergence test
-PC Object: 1 MPI processes
+PC Object: 1 MPI process
   type: jacobi
   linear system matrix = precond matrix:
-  Mat Object: 1 MPI processes
+  Mat Object: 1 MPI process
     type: seqaij
     rows=64, cols=64, bs=4
     total: nonzeros=1024, allocated nonzeros=1024

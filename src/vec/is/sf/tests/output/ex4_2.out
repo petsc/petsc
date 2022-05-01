@@ -1,36 +1,36 @@
 Initial Vec A
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
 0.
 1.
 2.
 
 Broadcast A->B over sfA
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
 2.
 0.
 1.
 
 Broadcast B->BA over sfB
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
 10.
 2.
 0.
 
 Broadcast A->BA over sfBA (sfB o sfA)
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
 11.
 2.
 0.
-PetscSF Object: sfA 1 MPI processes
+PetscSF Object: sfA 1 MPI process
   [0] Number of roots=3, leaves=3, remote ranks=1
   [0] 0 <- (0,2)
   [0] 1 <- (0,0)
   [0] 2 <- (0,1)
-PetscSF Object: sfB 1 MPI processes
+PetscSF Object: sfB 1 MPI process
   [0] Number of roots=3, leaves=2, remote ranks=1
   [0] 1 <- (0,0)
   [0] 2 <- (0,1)
-PetscSF Object: (sfB o sfA) 1 MPI processes
+PetscSF Object: (sfB o sfA) 1 MPI process
   [0] Number of roots=3, leaves=2, remote ranks=1
   [0] 1 <- (0,2)
   [0] 2 <- (0,0)

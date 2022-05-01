@@ -1,6 +1,6 @@
 Generating 1024 samples (8.192e-06 GB) per process in a 4 dimensional space with 128 bins per dimension.
 Expected spacing collisions per process 1.000000 (1.000000 total).
-PetscRandom Object: 1 MPI processes
+PetscRandom Object: 1 MPI process
   type: rander48
 [0] Random type rander48, seed 305419896
 1 total collisions counted: that many or more should occur with probabilty 0.632121.

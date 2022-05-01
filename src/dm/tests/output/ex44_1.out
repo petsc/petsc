@@ -1,6 +1,6 @@
 
 Local Vector: processor 0
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1.
 1.
@@ -11,7 +11,7 @@ Vec Object: 1 MPI processes
 -2.
 
 Local Vector: processor 1
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1.
 2.
@@ -24,7 +24,7 @@ Vec Object: 1 MPI processes
 -3.
 
 Local Vector: processor 2
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 2.
 3.
@@ -53,7 +53,7 @@ Process [2]
 -3.
 
 Local Vector: processor 0
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1.
 1.
@@ -64,7 +64,7 @@ Vec Object: 1 MPI processes
 -2.
 
 Local Vector: processor 1
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1.
 2.
@@ -77,7 +77,7 @@ Vec Object: 1 MPI processes
 -3.
 
 Local Vector: processor 2
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 2.
 3.

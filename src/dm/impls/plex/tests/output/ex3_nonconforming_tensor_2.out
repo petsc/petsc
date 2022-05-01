@@ -434,7 +434,7 @@ PetscSF Object: 4 MPI processes
   [3] Roots referenced by my leaves, by rank
   MultiSF sort=rank-order
 Symmetric gradient null space: PASS
-Mat Object: Reference Tree Injector 1 MPI processes
+Mat Object: Reference Tree Injector 1 MPI process
   type: seqaij
 row 0: (0, 0.)  (1, 0.)  (2, 0.)  (3, 0.)  (4, 5.55112e-17)  (5, 0.)  (6, 0.)  (7, 0.)  (8, 0.)  (9, 0.)  (10, 5.55112e-17)  (11, 0.)  (12, 5.55112e-17)  (13, 0.)  (14, 0.)  (15, 0.)  (20, 1.)  (21, 0.) 
 row 1: (0, 0.)  (1, 0.)  (2, 0.)  (3, 0.)  (4, 0.)  (5, 5.55112e-17)  (6, 0.)  (7, 0.)  (8, 0.)  (9, 0.)  (10, 0.)  (11, 5.55112e-17)  (12, 0.)  (13, 5.55112e-17)  (14, 0.)  (15, 0.)  (20, 0.)  (21, 1.) 

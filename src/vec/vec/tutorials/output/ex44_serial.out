@@ -1,17 +1,17 @@
 Original X[0] vector
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1.
 2.
 Original X[1] vector
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 3.
 4.
 5.
 6.
 Original X[2] vector
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 7.
 8.
@@ -20,7 +20,7 @@ Vec Object: 1 MPI processes
 11.
 12.
 Expected Y vector
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1.
 2.
@@ -36,7 +36,7 @@ Vec Object: 1 MPI processes
 12.
 ------------------------------------------------------------
 Testing VecConcatenate() for Y = [X[1], X[2], ...]
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1.
 2.
@@ -53,7 +53,7 @@ Vec Object: 1 MPI processes
   PASS
 ------------------------------------------------------------
 Testing VecConcatenate() for Y = [X[1], X[2], ...] w/o IS
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1.
 2.
@@ -70,13 +70,13 @@ Vec Object: 1 MPI processes
   PASS
 ------------------------------------------------------------
 Testing index set for X[0] component
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1.
 2.
   PASS
 Testing index set for X[1] component
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 3.
 4.
@@ -84,7 +84,7 @@ Vec Object: 1 MPI processes
 6.
   PASS
 Testing index set for X[2] component
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 7.
 8.
@@ -95,13 +95,13 @@ Vec Object: 1 MPI processes
   PASS
 ------------------------------------------------------------
 Testing VecScatter for Y -> X[0]
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1.
 2.
   PASS
 Testing VecScatter for Y -> X[1]
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 3.
 4.
@@ -109,7 +109,7 @@ Vec Object: 1 MPI processes
 6.
   PASS
 Testing VecScatter for Y -> X[2]
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 7.
 8.
@@ -120,7 +120,7 @@ Vec Object: 1 MPI processes
   PASS
 ------------------------------------------------------------
 Testing VecScatter for X[:] -> Y
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1.
 2.

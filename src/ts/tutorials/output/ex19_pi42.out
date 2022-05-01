@@ -4,7 +4,7 @@
 [0.3]  15 TS 0.328946 (dt = 0.036756) X -1.317536e+00 -2.191679e+00
 [0.4]  17 TS 0.401712 (dt = 0.035172) X -1.101300e+00 -2.132851e+00
 [0.5]  20 TS 0.504523 (dt = 0.032431) X -8.910767e-01 -2.071367e+00
-TS Object: 1 MPI processes
+TS Object: 1 MPI process
   type: bdf
     Order=2
   maximum time=0.5
@@ -15,7 +15,7 @@ TS Object: 1 MPI processes
   total number of nonlinear solve failures=0
   total number of rejected steps=0
   using relative error tolerance of 1e-06,   using absolute error tolerance of 1e-06
-  TSAdapt Object: 1 MPI processes
+  TSAdapt Object: 1 MPI process
     type: dsp
     safety factor 0.9
     extra safety factor after step rejection 1.
@@ -25,21 +25,21 @@ TS Object: 1 MPI processes
     minimum allowed timestep 1e-20
     maximum solution absolute value to be ignored -1.
     filter parameters kBeta=[0.6,-0.2,0.] Alpha=[0.,0.]
-  SNES Object: 1 MPI processes
+  SNES Object: 1 MPI process
     type: newtonls
     maximum iterations=50, maximum function evaluations=10000
     tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
     total number of linear solver iterations=6
     total number of function evaluations=7
     norm schedule ALWAYS
-    SNESLineSearch Object: 1 MPI processes
+    SNESLineSearch Object: 1 MPI process
       type: bt
         interpolation: cubic
         alpha=1.000000e-04
       maxstep=1.000000e+08, minlambda=1.000000e-12
       tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
       maximum iterations=40
-    KSP Object: 1 MPI processes
+    KSP Object: 1 MPI process
       type: gmres
         restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
         happy breakdown tolerance 1e-30
@@ -47,7 +47,7 @@ TS Object: 1 MPI processes
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using PRECONDITIONED norm type for convergence test
-    PC Object: 1 MPI processes
+    PC Object: 1 MPI process
       type: ilu
         out-of-place factorization
         0 levels of fill
@@ -55,21 +55,21 @@ TS Object: 1 MPI processes
         matrix ordering: natural
         factor fill ratio given 1., needed 1.
           Factored matrix follows:
-            Mat Object: 1 MPI processes
+            Mat Object: 1 MPI process
               type: seqaij
               rows=2, cols=2
               package used to perform factorization: petsc
               total: nonzeros=4, allocated nonzeros=4
                 using I-node routines: found 1 nodes, limit used is 5
       linear system matrix = precond matrix:
-      Mat Object: 1 MPI processes
+      Mat Object: 1 MPI process
         type: seqaij
         rows=2, cols=2
         total: nonzeros=4, allocated nonzeros=4
         total number of mallocs used during MatSetValues calls=0
           using I-node routines: found 1 nodes, limit used is 5
 steps  20, ftime 0.504523
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 -0.881713
 -2.06852

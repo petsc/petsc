@@ -5,37 +5,37 @@
 (min-b) = 0.100223 : index = 5 
 (max-X) = 7.200320 : index = 9 
 (min-X) = 0.100223 : index = 11 
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: nest
   VecNest, rows=2,  structure: 
   (0) : type=nest, rows=6 
-    Vec Object: 1 MPI processes
+    Vec Object: 1 MPI process
       type: nest
       VecNest, rows=2,  structure: 
       (0) : type=seq, rows=3 
-        Vec Object: 1 MPI processes
+        Vec Object: 1 MPI process
           type: seq
         1
         1
         1
       (1) : type=seq, rows=3 
-        Vec Object: 1 MPI processes
+        Vec Object: 1 MPI process
           type: seq
         2
         2
         2
   (1) : type=nest, rows=6 
-    Vec Object: 1 MPI processes
+    Vec Object: 1 MPI process
       type: nest
       VecNest, rows=2,  structure: 
       (0) : type=seq, rows=3 
-        Vec Object: 1 MPI processes
+        Vec Object: 1 MPI process
           type: seq
         3
         3
         3
       (1) : type=seq, rows=3 
-        Vec Object: 1 MPI processes
+        Vec Object: 1 MPI process
           type: seq
         7.20032
         0.61794
@@ -45,14 +45,14 @@ Vec Object: 1 MPI processes
 ============== test_axpy_dot_max ==============
 VecAXPY 
 (1) y1 = 
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 4
 8
 12
 16
 (1) y2 = 
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 15
 18
@@ -62,14 +62,14 @@ Vec Object: 1 MPI processes
 X.Y = 1610.000000 + 0.000000i 
 X.Y = 1610.000000 + 0.000000i     norm2(Y) = 2775.000000
 (2) y1 = 
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 4
 9
 14
 19
 (2) y2 = 
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 25
 30

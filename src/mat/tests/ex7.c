@@ -94,11 +94,11 @@ int main(int argc,char **args)
 
    test:
       suffix: 1
-      filter: grep -v "MPI processes"
+      filter: grep -v " MPI process"
 
    test:
       suffix: 2
       args: -m 1 -n 1 -fill 0.49
-      filter: grep -v "MPI processes"
+      filter: grep -v " MPI process"
 
 TEST*/

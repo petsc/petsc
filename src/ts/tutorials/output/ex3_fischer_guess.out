@@ -201,7 +201,7 @@ Timestep  99: step size = 0.0005, time = 0.0495, 2-norm error = 0.00633143, max 
     Linear solve converged due to CONVERGED_RTOL iterations 0
 Timestep 100: step size = 0.0005, time = 0.05, 2-norm error = 0.00627104, max norm error = 0.00886538
 avg. error (2 norm) = 0.00957673, avg. error (max norm) = 0.0136904
-TS Object: 1 MPI processes
+TS Object: 1 MPI process
   type: beuler
   maximum steps=100
   maximum time=100.
@@ -211,30 +211,30 @@ TS Object: 1 MPI processes
   total number of linear solve failures=0
   total number of rejected steps=0
   using relative error tolerance of 0.0001,   using absolute error tolerance of 0.0001
-  TSAdapt Object: 1 MPI processes
+  TSAdapt Object: 1 MPI process
     type: none
-  SNES Object: 1 MPI processes
+  SNES Object: 1 MPI process
     type: ksponly
     maximum iterations=50, maximum function evaluations=10000
     tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
     total number of linear solver iterations=0
     total number of function evaluations=1
     norm schedule ALWAYS
-    KSP Object: 1 MPI processes
+    KSP Object: 1 MPI process
       type: gmres
         restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
         happy breakdown tolerance 1e-30
       maximum iterations=10000, nonzero initial guess
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
-      KSPGuess Object: 1 MPI processes
+      KSPGuess Object: 1 MPI process
         type: fischer
         Model 1, size 10
       using PRECONDITIONED norm type for convergence test
-    PC Object: 1 MPI processes
+    PC Object: 1 MPI process
       type: none
       linear system matrix = precond matrix:
-      Mat Object: 1 MPI processes
+      Mat Object: 1 MPI process
         type: seqaij
         rows=60, cols=60
         total: nonzeros=176, allocated nonzeros=176

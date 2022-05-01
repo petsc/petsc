@@ -1,4 +1,4 @@
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqaij
 row 0: (0, 4.)  (1, -1.)  (3, -1.) 
 row 1: (0, -1.)  (1, 4.)  (2, -1.)  (4, -1.) 
@@ -9,7 +9,7 @@ row 5: (2, -1.)  (4, -1.)  (5, 4.)  (8, -1.)
 row 6: (3, -1.)  (6, 4.)  (7, -1.) 
 row 7: (4, -1.)  (6, -1.)  (7, 4.)  (8, -1.) 
 row 8: (5, -1.)  (7, -1.)  (8, 4.) 
-IS Object: 1 MPI processes
+IS Object: 1 MPI process
   type: general
 Index set is permutation
 Number of indices in set 9
@@ -25,7 +25,7 @@ Number of indices in set 9
 Frobenius norm of matrix 12.9615
 One  norm of matrix 8.
 Infinity norm of matrix 8.
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 2.
 1.
@@ -36,7 +36,7 @@ Vec Object: 1 MPI processes
 2.
 1.
 2.
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1.
 1.

@@ -5,9 +5,9 @@ mx:4, my:4
   1 TAO,  Function value: 0.0110611,  Residual: 0.0197949 
   2 TAO,  Function value: 4.46353e-05,  Residual: 8.72583e-05 
   3 TAO,  Function value: 8.12611e-10,  Residual: 1.80227e-09 
-Tao Object: 1 MPI processes
+Tao Object: 1 MPI process
   type: ssfls
-  TaoLineSearch Object: 1 MPI processes
+  TaoLineSearch Object: 1 MPI process
     type: armijo
       Armijo linesearch     (projected)    : alpha=1. beta=0.5     sigma=0.0001     memsize=1
     maximum function evaluations=30
@@ -17,7 +17,7 @@ Tao Object: 1 MPI processes
     total number of function/gradient evaluations=0
     using variable bounds
     Termination reason: 1
-  KSP Object: 1 MPI processes
+  KSP Object: 1 MPI process
     type: gmres
       restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
       happy breakdown tolerance 1e-30
@@ -25,7 +25,7 @@ Tao Object: 1 MPI processes
     tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
     left preconditioning
     using PRECONDITIONED norm type for convergence test
-  PC Object: 1 MPI processes
+  PC Object: 1 MPI process
     type: ilu
       out-of-place factorization
       0 levels of fill
@@ -33,14 +33,14 @@ Tao Object: 1 MPI processes
       matrix ordering: natural
       factor fill ratio given 1., needed 1.
         Factored matrix follows:
-          Mat Object: 1 MPI processes
+          Mat Object: 1 MPI process
             type: seqaij
             rows=16, cols=16
             package used to perform factorization: petsc
             total: nonzeros=82, allocated nonzeros=82
               not using I-node routines
     linear system matrix = precond matrix:
-    Mat Object: 1 MPI processes
+    Mat Object: 1 MPI process
       type: seqaij
       rows=16, cols=16
       total: nonzeros=82, allocated nonzeros=112

@@ -1,4 +1,4 @@
-DM Object: BaryDM 1 MPI processes
+DM Object: BaryDM 1 MPI process
   type: plex
 BaryDM in 3 dimensions:
 Supports:
@@ -1003,7 +1003,7 @@ Label 'exterior_facets':
 [0]: 53 (1)
 [0]: 54 (1)
 [0]: 55 (1)
-DM Object: RefinedDM (ref_) 1 MPI processes
+DM Object: RefinedDM (ref_) 1 MPI process
   type: plex
 RefinedDM in 3 dimensions:
 Supports:

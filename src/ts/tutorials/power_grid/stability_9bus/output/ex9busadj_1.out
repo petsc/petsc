@@ -1,6 +1,6 @@
 
  sensitivity wrt initial conditions: 
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 11.6375
 0.0861221

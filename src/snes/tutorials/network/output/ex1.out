@@ -2,7 +2,7 @@ Power network: nb = 9, ngen = 3, nload = 3, nbranch = 9
 [0] Total local nvertices 9 + 7 = 16, nedges 9 + 7 = 16
 
 After DMSetUp, DMView:
-DM Object: 1 MPI processes
+DM Object: 1 MPI process
   type: network
   NSubnets: 2; NEdges: 16; NVertices: 15; NSharedVertices: 1.
   [0] nEdges: 16; nVertices: 16; nSharedVertices: 1

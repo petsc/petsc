@@ -53,7 +53,6 @@ PetscErrorCode  PetscObjectSetName(PetscObject obj,const char name[])
 @*/
 PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj,PetscViewer viewer)
 {
-  MPI_Comm          comm;
   PetscMPIInt       size;
   PetscViewerFormat format;
   PetscBool         flg;
@@ -67,18 +66,8 @@ PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj,PetscViewer v
   if (format == PETSC_VIEWER_ASCII_VTK_DEPRECATED || format == PETSC_VIEWER_ASCII_VTK_CELL_DEPRECATED || format == PETSC_VIEWER_ASCII_VTK_COORDS_DEPRECATED || format == PETSC_VIEWER_ASCII_MATRIXMARKET || format == PETSC_VIEWER_ASCII_LATEX || format == PETSC_VIEWER_ASCII_GLVIS) PetscFunctionReturn(0);
 
   if (format == PETSC_VIEWER_ASCII_MATLAB) PetscCall(PetscViewerASCIIPrintf(viewer,"%%"));
-  PetscCall(PetscViewerASCIIPrintf(viewer,"%s Object:",obj->class_name));
-  PetscCall(PetscViewerASCIIUseTabs(viewer,PETSC_FALSE));
-  if (obj->name) {
-    PetscCall(PetscViewerASCIIPrintf(viewer," %s",obj->name));
-  }
-  if (obj->prefix) {
-    PetscCall(PetscViewerASCIIPrintf(viewer," (%s)",obj->prefix));
-  }
-  PetscCall(PetscObjectGetComm(obj,&comm));
-  PetscCallMPI(MPI_Comm_size(comm,&size));
-  PetscCall(PetscViewerASCIIPrintf(viewer," %d MPI processes\n",size));
-  PetscCall(PetscViewerASCIIUseTabs(viewer,PETSC_TRUE));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm(obj),&size));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"%s Object:%s%s%s%s%s %d MPI process%s\n",obj->class_name,obj->name?" ":"",obj->name?obj->name:"",obj->prefix?" (":"",obj->prefix?obj->prefix:"",obj->prefix?")":"",size,size>1?"es":""));
   if (format == PETSC_VIEWER_ASCII_MATLAB) PetscCall(PetscViewerASCIIPrintf(viewer,"%%"));
   if (obj->type_name) {
     PetscCall(PetscViewerASCIIPrintf(viewer,"  type: %s\n",obj->type_name));

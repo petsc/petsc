@@ -74,27 +74,27 @@ PC Object: 8 MPI processes
         restriction/interpolation type - BASIC
         Local solver information for first block is in the following KSP and PC objects on rank 0:
         Use -mg_levels_1_ksp_view ::ascii_info_detail to display information for all blocks
-      KSP Object: (mg_levels_1_sub_) 1 MPI processes
+      KSP Object: (mg_levels_1_sub_) 1 MPI process
         type: preonly
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
-      PC Object: (mg_levels_1_sub_) 1 MPI processes
+      PC Object: (mg_levels_1_sub_) 1 MPI process
         type: lu
           out-of-place factorization
           tolerance for zero pivot 2.22045e-14
           matrix ordering: nd
           factor fill ratio given 5., needed 1.03896
             Factored matrix follows:
-              Mat Object: 1 MPI processes
+              Mat Object: 1 MPI process
                 type: seqaij
                 rows=84, cols=84
                 package used to perform factorization: petsc
                 total: nonzeros=5760, allocated nonzeros=5760
                   using I-node routines: found 19 nodes, limit used is 5
         linear system matrix = precond matrix:
-        Mat Object: (mg_levels_1_sub_) 1 MPI processes
+        Mat Object: (mg_levels_1_sub_) 1 MPI process
           type: seqaij
           rows=84, cols=84
           total: nonzeros=5544, allocated nonzeros=5544
@@ -131,27 +131,27 @@ PC Object: 8 MPI processes
         restriction/interpolation type - BASIC
         Local solver information for first block is in the following KSP and PC objects on rank 0:
         Use -mg_levels_2_ksp_view ::ascii_info_detail to display information for all blocks
-      KSP Object: (mg_levels_2_sub_) 1 MPI processes
+      KSP Object: (mg_levels_2_sub_) 1 MPI process
         type: preonly
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
-      PC Object: (mg_levels_2_sub_) 1 MPI processes
+      PC Object: (mg_levels_2_sub_) 1 MPI process
         type: lu
           out-of-place factorization
           tolerance for zero pivot 2.22045e-14
           matrix ordering: nd
           factor fill ratio given 5., needed 1.05263
             Factored matrix follows:
-              Mat Object: 1 MPI processes
+              Mat Object: 1 MPI process
                 type: seqaij
                 rows=48, cols=48
                 package used to perform factorization: petsc
                 total: nonzeros=1440, allocated nonzeros=1440
                   using I-node routines: found 14 nodes, limit used is 5
         linear system matrix = precond matrix:
-        Mat Object: (mg_levels_2_sub_) 1 MPI processes
+        Mat Object: (mg_levels_2_sub_) 1 MPI process
           type: seqaij
           rows=48, cols=48
           total: nonzeros=1368, allocated nonzeros=1368
@@ -251,27 +251,27 @@ PC Object: 8 MPI processes
         restriction/interpolation type - BASIC
         Local solver information for first block is in the following KSP and PC objects on rank 0:
         Use -mg_levels_1_ksp_view ::ascii_info_detail to display information for all blocks
-      KSP Object: (mg_levels_1_sub_) 1 MPI processes
+      KSP Object: (mg_levels_1_sub_) 1 MPI process
         type: preonly
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
-      PC Object: (mg_levels_1_sub_) 1 MPI processes
+      PC Object: (mg_levels_1_sub_) 1 MPI process
         type: lu
           out-of-place factorization
           tolerance for zero pivot 2.22045e-14
           matrix ordering: nd
           factor fill ratio given 5., needed 1.03896
             Factored matrix follows:
-              Mat Object: 1 MPI processes
+              Mat Object: 1 MPI process
                 type: seqaij
                 rows=84, cols=84
                 package used to perform factorization: petsc
                 total: nonzeros=5760, allocated nonzeros=5760
                   using I-node routines: found 19 nodes, limit used is 5
         linear system matrix = precond matrix:
-        Mat Object: (mg_levels_1_sub_) 1 MPI processes
+        Mat Object: (mg_levels_1_sub_) 1 MPI process
           type: seqaij
           rows=84, cols=84
           total: nonzeros=5544, allocated nonzeros=5544
@@ -309,27 +309,27 @@ PC Object: 8 MPI processes
         restriction/interpolation type - BASIC
         Local solver information for first block is in the following KSP and PC objects on rank 0:
         Use -mg_levels_2_ksp_view ::ascii_info_detail to display information for all blocks
-      KSP Object: (mg_levels_2_sub_) 1 MPI processes
+      KSP Object: (mg_levels_2_sub_) 1 MPI process
         type: preonly
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
-      PC Object: (mg_levels_2_sub_) 1 MPI processes
+      PC Object: (mg_levels_2_sub_) 1 MPI process
         type: lu
           out-of-place factorization
           tolerance for zero pivot 2.22045e-14
           matrix ordering: nd
           factor fill ratio given 5., needed 1.05263
             Factored matrix follows:
-              Mat Object: 1 MPI processes
+              Mat Object: 1 MPI process
                 type: seqaij
                 rows=48, cols=48
                 package used to perform factorization: petsc
                 total: nonzeros=1440, allocated nonzeros=1440
                   using I-node routines: found 14 nodes, limit used is 5
         linear system matrix = precond matrix:
-        Mat Object: (mg_levels_2_sub_) 1 MPI processes
+        Mat Object: (mg_levels_2_sub_) 1 MPI process
           type: seqaij
           rows=48, cols=48
           total: nonzeros=1368, allocated nonzeros=1368
@@ -429,27 +429,27 @@ PC Object: 8 MPI processes
         restriction/interpolation type - BASIC
         Local solver information for first block is in the following KSP and PC objects on rank 0:
         Use -mg_levels_1_ksp_view ::ascii_info_detail to display information for all blocks
-      KSP Object: (mg_levels_1_sub_) 1 MPI processes
+      KSP Object: (mg_levels_1_sub_) 1 MPI process
         type: preonly
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
-      PC Object: (mg_levels_1_sub_) 1 MPI processes
+      PC Object: (mg_levels_1_sub_) 1 MPI process
         type: lu
           out-of-place factorization
           tolerance for zero pivot 2.22045e-14
           matrix ordering: nd
           factor fill ratio given 5., needed 1.03896
             Factored matrix follows:
-              Mat Object: 1 MPI processes
+              Mat Object: 1 MPI process
                 type: seqaij
                 rows=84, cols=84
                 package used to perform factorization: petsc
                 total: nonzeros=5760, allocated nonzeros=5760
                   using I-node routines: found 19 nodes, limit used is 5
         linear system matrix = precond matrix:
-        Mat Object: (mg_levels_1_sub_) 1 MPI processes
+        Mat Object: (mg_levels_1_sub_) 1 MPI process
           type: seqaij
           rows=84, cols=84
           total: nonzeros=5544, allocated nonzeros=5544
@@ -487,27 +487,27 @@ PC Object: 8 MPI processes
         restriction/interpolation type - BASIC
         Local solver information for first block is in the following KSP and PC objects on rank 0:
         Use -mg_levels_2_ksp_view ::ascii_info_detail to display information for all blocks
-      KSP Object: (mg_levels_2_sub_) 1 MPI processes
+      KSP Object: (mg_levels_2_sub_) 1 MPI process
         type: preonly
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
-      PC Object: (mg_levels_2_sub_) 1 MPI processes
+      PC Object: (mg_levels_2_sub_) 1 MPI process
         type: lu
           out-of-place factorization
           tolerance for zero pivot 2.22045e-14
           matrix ordering: nd
           factor fill ratio given 5., needed 1.05263
             Factored matrix follows:
-              Mat Object: 1 MPI processes
+              Mat Object: 1 MPI process
                 type: seqaij
                 rows=48, cols=48
                 package used to perform factorization: petsc
                 total: nonzeros=1440, allocated nonzeros=1440
                   using I-node routines: found 14 nodes, limit used is 5
         linear system matrix = precond matrix:
-        Mat Object: (mg_levels_2_sub_) 1 MPI processes
+        Mat Object: (mg_levels_2_sub_) 1 MPI process
           type: seqaij
           rows=48, cols=48
           total: nonzeros=1368, allocated nonzeros=1368

@@ -25,7 +25,7 @@ Process [2]
 19.
 20.
 [0] My part of redundant1 vector
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.
 1.
@@ -33,7 +33,7 @@ Vec Object: 1 MPI processes
 3.
 4.
 [1] My part of redundant1 vector
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.
 1.
@@ -41,7 +41,7 @@ Vec Object: 1 MPI processes
 3.
 4.
 [2] My part of redundant1 vector
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.
 1.
@@ -49,14 +49,14 @@ Vec Object: 1 MPI processes
 3.
 4.
 [0] My part of da1 vector
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 5.
 6.
 7.
 10.
 [1] My part of da1 vector
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 7.
 10.
@@ -64,41 +64,41 @@ Vec Object: 1 MPI processes
 12.
 17.
 [2] My part of da1 vector
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 12.
 17.
 18.
 [0] My part of redundant2 vector
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 13.
 14.
 [1] My part of redundant2 vector
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 13.
 14.
 [2] My part of redundant2 vector
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 13.
 14.
 [0] My part of da2 vector
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 8.
 9.
 15.
 [1] My part of da2 vector
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 9.
 15.
 16.
 19.
 [2] My part of da2 vector
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 16.
 19.

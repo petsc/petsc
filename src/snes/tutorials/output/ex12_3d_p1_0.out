@@ -1,4 +1,4 @@
-DM Object: box 1 MPI processes
+DM Object: box 1 MPI process
   type: plex
 box in 3 dimensions:
   Number of 0-cells per rank: 8
@@ -8,7 +8,7 @@ Labels:
   depth: 2 strata with value/size (0 (8), 1 (6))
   celltype: 2 strata with value/size (6 (6), 0 (8))
 Local function:
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.
 0.666667
@@ -19,11 +19,11 @@ Vec Object: 1 MPI processes
 1.33333
 2.
 Initial guess
-Vec Object: potential 1 MPI processes
+Vec Object: potential 1 MPI process
   type: seq
 L_2 Error: 0.338012
 Residual:
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.
 0.
@@ -34,11 +34,11 @@ Vec Object: 1 MPI processes
 0.
 0.
 Initial Residual
-Vec Object: Residual, Iterate 0 1 MPI processes
+Vec Object: Residual, Iterate 0 1 MPI process
   type: seq
 L_2 Residual: 0.
 Residual:
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.
 0.
@@ -49,6 +49,6 @@ Vec Object: 1 MPI processes
 0.
 0.
 Au - b = Au + F(0)
-Vec Object: Residual, Iterate 0 1 MPI processes
+Vec Object: Residual, Iterate 0 1 MPI process
   type: seq
 Linear L_2 Residual: 0.

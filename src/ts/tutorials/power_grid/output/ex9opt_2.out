@@ -21,6 +21,6 @@
   max-norm ||G - Gfd||/||G|| = 1.00004, ||G - Gfd|| = 3.42741e-07
   1 TAO,  Function value: -1.01855,  Residual: 1.38753e-11 
 TAO solve converged due to CONVERGED_GRTOL iterations 1
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1.0194

@@ -1,8 +1,8 @@
-DM Object: 1 MPI processes
+DM Object: 1 MPI process
   type: da
 Processor [0] M 6 N 6 m 1 n 1 w 2 s 1
 X range of indices: 0 6, Y range of indices: 0 6
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqbaij
 row 0-1: (0-1)  (2-3)  (12-13) 
 row 2-3: (0-1)  (2-3)  (4-5)  (14-15) 

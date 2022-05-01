@@ -1,8 +1,8 @@
-DMField Object: field 1 MPI processes
+DMField Object: field 1 MPI process
   type: ds
   2 components
   VERTEX continuity
-  DM Object: mesh 1 MPI processes
+  DM Object: mesh 1 MPI process
     type: plex
   mesh in 2 dimensions:
     Number of 0-cells per rank:   16  
@@ -16,23 +16,23 @@ DMField Object: field 1 MPI processes
   Field MyPetscFE:
     adjacency FEM
   PetscDS field 0
-    PetscFE Object: MyPetscFE 1 MPI processes
+    PetscFE Object: MyPetscFE 1 MPI process
       type: basic
       Basic Finite Element in 2 dimensions with 2 components
-      PetscSpace Object: MyPetscFE 1 MPI processes
+      PetscSpace Object: MyPetscFE 1 MPI process
         type: sum
         Space in 2 variables with 2 components, size 12
         Sum space of 2 concatenated subspaces (all identical)
-          PetscSpace Object: sum component (sumcomp_) 1 MPI processes
+          PetscSpace Object: sum component (sumcomp_) 1 MPI process
             type: poly
             Space in 2 variables with 1 components, size 6
             Polynomial space of degree 2
-      PetscDualSpace Object: MyPetscFE 1 MPI processes
+      PetscDualSpace Object: MyPetscFE 1 MPI process
         type: lagrange
         Dual space with 2 components, size 12
         Continuous Lagrange dual space
         Quadrature of order 5 on 9 points (dim 2)
-    Vec Object: 1 MPI processes
+    Vec Object: 1 MPI process
       type: seq
     0.
     0.
@@ -132,7 +132,7 @@ DMField Object: field 1 MPI processes
     3.38889
     0.694444
     1.38889
-Vec Object: Test Points 1 MPI processes
+Vec Object: Test Points 1 MPI process
   type: mpi
 Process [0]
 0.720032
@@ -164,7 +164,7 @@ rH:
 10:   9.9920e-16   2.0000e+00   4.0000e+00   2.6645e-15   1.9984e-15
 15:   4.0000e+00
   Quadrature of order 1 on 1 points (dim 2)
-IS Object: FE Test Cells 1 MPI processes
+IS Object: FE Test Cells 1 MPI process
   type: general
 Number of indices in set 2
 0 7
@@ -193,7 +193,7 @@ rH:
  5:  -1.6650e-16  -1.6650e-16   1.1111e-01   5.5556e-02   5.5556e-02
 10:   5.5556e-02   1.1111e-01   1.1111e-01   1.1111e-01   1.1111e-01
 15:   2.2222e-01
-IS Object: FV Test Cells 1 MPI processes
+IS Object: FV Test Cells 1 MPI process
   type: general
 Number of indices in set 2
 0 1

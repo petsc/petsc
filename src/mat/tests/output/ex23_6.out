@@ -4,9 +4,9 @@ GlobalMax  : 36 72 36 1 0
 GlobalSum  : 36 72 36 1 0
 Test MatIsSymmetric: 0
 Test MatView
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: is
-  Mat Object: (is_) 1 MPI processes
+  Mat Object: (is_) 1 MPI process
     type: seqaij
 row 0: (0, 2.)  (1, -1.)  (11, -1.) 
 row 1: (0, -2.)  (1, 4.)  (2, -2.) 
@@ -20,7 +20,7 @@ row 8: (7, -9.)  (8, 18.)  (9, -9.)
 row 9: (8, -10.)  (9, 20.)  (10, -10.) 
 row 10: (9, -11.)  (10, 22.)  (11, -11.) 
 row 11: (0, -12.)  (10, -12.)  (11, 24.) 
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqaij
 row 0: (0, 2.)  (1, -1.)  (11, -1.) 
 row 1: (0, -2.)  (1, 4.)  (2, -2.) 
@@ -81,7 +81,7 @@ Test MatConvert_Nest_IS
 Test MatCreateSubMatrix
 Test MatDiagonalSet
 Test MatShift
-IS Object: 1 MPI processes
+IS Object: 1 MPI process
   type: stride
 Number of indices in (stride) set 1
 0 0
@@ -89,7 +89,7 @@ Test MatZeroRows (diag nonzero)
 Test MatZeroRowsColumns (diag nonzero)
 Test MatMissingDiagonal
 [0] [0,12) Missing 0, row -1 (diag nonzero)
-IS Object: 1 MPI processes
+IS Object: 1 MPI process
   type: stride
 Number of indices in (stride) set 1
 0 0

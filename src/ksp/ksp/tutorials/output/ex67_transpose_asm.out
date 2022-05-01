@@ -1,7 +1,7 @@
   0 KSP Residual norm 9.498551328864e-01 
   1 KSP Residual norm 1.118520285740e-16 
 Linear solve converged due to CONVERGED_RTOL iterations 1
-KSP Object: 1 MPI processes
+KSP Object: 1 MPI process
   type: gmres
     restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
     happy breakdown tolerance 1e-30
@@ -9,40 +9,40 @@ KSP Object: 1 MPI processes
   tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
   left preconditioning
   using PRECONDITIONED norm type for convergence test
-PC Object: 1 MPI processes
+PC Object: 1 MPI process
   type: asm
     total subdomain blocks = 1, amount of overlap = 1
     restriction/interpolation type - RESTRICT
     Local solver information for first block is in the following KSP and PC objects on rank 0:
     Use -ksp_view ::ascii_info_detail to display information for all blocks
-  KSP Object: (sub_) 1 MPI processes
+  KSP Object: (sub_) 1 MPI process
     type: preonly
     maximum iterations=10000, initial guess is zero
     tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
     left preconditioning
     using NONE norm type for convergence test
-  PC Object: (sub_) 1 MPI processes
+  PC Object: (sub_) 1 MPI process
     type: lu
       out-of-place factorization
       tolerance for zero pivot 1e-33
       matrix ordering: nd
       factor fill ratio given 5., needed 1.4
         Factored matrix follows:
-          Mat Object: 1 MPI processes
+          Mat Object: 1 MPI process
             type: seqaij
             rows=10, cols=10
             package used to perform factorization: petsc
             total: nonzeros=77, allocated nonzeros=77
               using I-node routines: found 8 nodes, limit used is 5
     linear system matrix = precond matrix:
-    Mat Object: (sub_) 1 MPI processes
+    Mat Object: (sub_) 1 MPI process
       type: seqaij
       rows=10, cols=10
       total: nonzeros=55, allocated nonzeros=55
       total number of mallocs used during MatSetValues calls=0
         not using I-node routines
   linear system matrix = precond matrix:
-  Mat Object: 1 MPI processes
+  Mat Object: 1 MPI process
     type: seqaij
     rows=10, cols=10
     total: nonzeros=55, allocated nonzeros=65
@@ -53,7 +53,7 @@ PC Object: 1 MPI processes
   0 KSP Residual norm 4.716750439283e-02 
   1 KSP Residual norm 7.423680515748e-18 
 Linear solve converged due to CONVERGED_RTOL iterations 1
-KSP Object: 1 MPI processes
+KSP Object: 1 MPI process
   type: gmres
     restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
     happy breakdown tolerance 1e-30
@@ -61,40 +61,40 @@ KSP Object: 1 MPI processes
   tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
   left preconditioning
   using PRECONDITIONED norm type for convergence test
-PC Object: 1 MPI processes
+PC Object: 1 MPI process
   type: asm
     total subdomain blocks = 1, amount of overlap = 1
     restriction/interpolation type - RESTRICT
     Local solver information for first block is in the following KSP and PC objects on rank 0:
     Use -ksp_view ::ascii_info_detail to display information for all blocks
-  KSP Object: (sub_) 1 MPI processes
+  KSP Object: (sub_) 1 MPI process
     type: preonly
     maximum iterations=10000, initial guess is zero
     tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
     left preconditioning
     using NONE norm type for convergence test
-  PC Object: (sub_) 1 MPI processes
+  PC Object: (sub_) 1 MPI process
     type: lu
       out-of-place factorization
       tolerance for zero pivot 1e-33
       matrix ordering: nd
       factor fill ratio given 5., needed 1.4
         Factored matrix follows:
-          Mat Object: 1 MPI processes
+          Mat Object: 1 MPI process
             type: seqaij
             rows=10, cols=10
             package used to perform factorization: petsc
             total: nonzeros=77, allocated nonzeros=77
               using I-node routines: found 8 nodes, limit used is 5
     linear system matrix = precond matrix:
-    Mat Object: (sub_) 1 MPI processes
+    Mat Object: (sub_) 1 MPI process
       type: seqaij
       rows=10, cols=10
       total: nonzeros=55, allocated nonzeros=55
       total number of mallocs used during MatSetValues calls=0
         not using I-node routines
   linear system matrix = precond matrix:
-  Mat Object: 1 MPI processes
+  Mat Object: 1 MPI process
     type: seqaij
     rows=10, cols=10
     total: nonzeros=55, allocated nonzeros=65

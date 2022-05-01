@@ -1,4 +1,4 @@
-DM Object: 1 MPI processes
+DM Object: 1 MPI process
   type: plex
 Mesh in 2 dimensions:
   Number of 0-cells per rank: 12
@@ -27,7 +27,7 @@ Labels:
  14  time    4.667  |x| (       1,        1) |x|_1 (       9,        1)         Error [           0, 1.39999e-05] int  3.11109e-06
  15  time        5  |x| (       1,        1) |x|_1 (       9,        1)         Error [           0, 1.49999e-05] int  3.33331e-06
  16  time    5.333  |x| (       1,        1) |x|_1 (       9,        1)         Error [           0, 1.59999e-05] int  3.55553e-06
-TS Object: 1 MPI processes
+TS Object: 1 MPI process
   type: euler
   maximum steps=20
   maximum time=5.

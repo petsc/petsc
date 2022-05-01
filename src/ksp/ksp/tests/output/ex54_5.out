@@ -1,4 +1,4 @@
-KSP Object: 1 MPI processes
+KSP Object: 1 MPI process
   type: lsqr
     standard error not computed
     using inexact matrix norm
@@ -6,29 +6,29 @@ KSP Object: 1 MPI processes
   tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
   left preconditioning
   using UNPRECONDITIONED norm type for convergence test
-PC Object: 1 MPI processes
+PC Object: 1 MPI process
   type: qr
     out-of-place factorization
     tolerance for zero pivot 2.22045e-14
     matrix ordering: external
     factor fill ratio given 0., needed 0.
       Factored matrix follows:
-        Mat Object: 1 MPI processes
+        Mat Object: 1 MPI process
           type: spqr
           rows=3, cols=3
           package used to perform factorization: spqr
           total: nonzeros=6, allocated nonzeros=6
   linear system matrix followed by preconditioner matrix:
-  Mat Object: 1 MPI processes
+  Mat Object: 1 MPI process
     type: seqaij
     rows=8, cols=3
     total: nonzeros=18, allocated nonzeros=18
     total number of mallocs used during MatSetValues calls=0
       not using I-node routines
-  Mat Object: 1 MPI processes
+  Mat Object: 1 MPI process
     type: normalh
     rows=3, cols=3
-KSP Object: 1 MPI processes
+KSP Object: 1 MPI process
   type: lsqr
     standard error not computed
     using inexact matrix norm
@@ -36,27 +36,27 @@ KSP Object: 1 MPI processes
   tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
   left preconditioning
   using UNPRECONDITIONED norm type for convergence test
-PC Object: 1 MPI processes
+PC Object: 1 MPI process
   type: cholesky
     out-of-place factorization
     tolerance for zero pivot 2.22045e-14
     matrix ordering: nd
     factor fill ratio given 5., needed 1.
       Factored matrix follows:
-        Mat Object: 1 MPI processes
+        Mat Object: 1 MPI process
           type: seqsbaij
           rows=3, cols=3
           package used to perform factorization: petsc
           total: nonzeros=6, allocated nonzeros=6
               block size is 1
   linear system matrix followed by preconditioner matrix:
-  Mat Object: 1 MPI processes
+  Mat Object: 1 MPI process
     type: seqaij
     rows=8, cols=3
     total: nonzeros=18, allocated nonzeros=18
     total number of mallocs used during MatSetValues calls=0
       not using I-node routines
-  Mat Object: 1 MPI processes
+  Mat Object: 1 MPI process
     type: seqaij
     rows=3, cols=3
     total: nonzeros=9, allocated nonzeros=9

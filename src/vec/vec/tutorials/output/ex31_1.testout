@@ -9,7 +9,7 @@ MPI_Comm_rank =
   MPI_Comm_size      1x1                 8  double              
   x                  5x1                40  double              
 
-Vec Object: x 1 MPI processes
+Vec Object: x 1 MPI process
   type: seq
 0.
 0.

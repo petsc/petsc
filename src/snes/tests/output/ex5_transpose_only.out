@@ -5,7 +5,7 @@ atol=1e-50, rtol=1e-08, stol=1e-08, maxit=50, maxf=10000
     O(1.e-8), the hand-coded Jacobian is probably correct.
   ||J - Jfd||_F/||J||_F = 0.481271, ||J - Jfd||_F = 32.
   Hand-coded Jacobian ----------
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqaij
 row 0: (0, 1.)  (1, 16.) 
 row 1: (1, -31.)  (2, 16.) 
@@ -13,7 +13,7 @@ row 2: (1, 16.)  (2, -31.)  (3, 16.)
 row 3: (2, 16.)  (3, -31.) 
 row 4: (3, 16.)  (4, 1.) 
   Finite difference Jacobian ----------
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqaij
 row 0: (0, 1.) 
 row 1: (0, 16.)  (1, -31.)  (2, 16.) 
@@ -21,7 +21,7 @@ row 2: (1, 16.)  (2, -31.)  (3, 16.)
 row 3: (2, 16.)  (3, -31.)  (4, 16.) 
 row 4: (4, 1.) 
   Hand-coded minus finite-difference Jacobian with tolerance 1e-05 ----------
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqaij
 row 0: (1, 16.) 
 row 1: (0, -16.) 
@@ -30,28 +30,28 @@ row 3: (4, -16.)
 row 4: (3, 16.) 
     0 KSP Residual norm 6.945929944146e+00 
     1 KSP Residual norm 2.792520156365e-15 
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.5
 -1.25024
 -2.76563
 -4.42798
 -0.5
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 -3.39308
 0.243317
 0.393287
 0.345825
 -6.0332
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqaij
 row 0: (0, 1.)  (1, 16.) 
 row 1: (1, -31.)  (2, 16.) 
 row 2: (1, 16.)  (2, -31.)  (3, 16.) 
 row 3: (2, 16.)  (3, -31.) 
 row 4: (3, 16.)  (4, 1.) 
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqaij
 row 0: (0, 1.) 
 row 1: (1, 1.) 
@@ -59,14 +59,14 @@ row 2: (2, 1.)
 row 3: (3, 1.) 
 row 4: (4, 1.) 
   1 SNES Function norm 111.09 
-SNES Object: 1 MPI processes
+SNES Object: 1 MPI process
   type: ksptransposeonly
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
   total number of linear solver iterations=1
   total number of function evaluations=4
   norm schedule ALWAYS
-  KSP Object: 1 MPI processes
+  KSP Object: 1 MPI process
     type: gmres
       restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
       happy breakdown tolerance 1e-30
@@ -74,7 +74,7 @@ SNES Object: 1 MPI processes
     tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
     left preconditioning
     using PRECONDITIONED norm type for convergence test
-  PC Object: 1 MPI processes
+  PC Object: 1 MPI process
     type: ilu
       out-of-place factorization
       0 levels of fill
@@ -82,14 +82,14 @@ SNES Object: 1 MPI processes
       matrix ordering: natural
       factor fill ratio given 1., needed 1.
         Factored matrix follows:
-          Mat Object: 1 MPI processes
+          Mat Object: 1 MPI process
             type: seqaij
             rows=5, cols=5
             package used to perform factorization: petsc
             total: nonzeros=11, allocated nonzeros=11
               not using I-node routines
     linear system matrix = precond matrix:
-    Mat Object: 1 MPI processes
+    Mat Object: 1 MPI process
       type: seqaij
       rows=5, cols=5
       total: nonzeros=11, allocated nonzeros=15

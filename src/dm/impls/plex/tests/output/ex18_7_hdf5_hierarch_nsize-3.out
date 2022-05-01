@@ -18,7 +18,7 @@ MatPartitioning Graph Partitioner:
           Load imbalance ratio=0.01
      Number of fine parts: 2
      Fine partitioner: ptscotch
-    MatPartitioning Object: (hierarch_fine_) 1 MPI processes
+    MatPartitioning Object: (hierarch_fine_) 1 MPI process
       type: ptscotch
       Using vertex weights
         Strategy=Default behavior

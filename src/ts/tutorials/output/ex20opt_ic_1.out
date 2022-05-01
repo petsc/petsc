@@ -9,10 +9,10 @@
   8 TAO,  Function value: 8.96281e-10,  Residual: 0.000135237 
   9 TAO,  Function value: 2.64402e-10,  Residual: 6.92484e-05 
  10 TAO,  Function value: 1.75752e-18,  Residual: 2.84042e-09 
-Tao Object: 1 MPI processes
+Tao Object: 1 MPI process
   type: blmvm
   Gradient steps: 0
-  Mat Object: (tao_blmvm_) 1 MPI processes
+  Mat Object: (tao_blmvm_) 1 MPI process
     type: lmvmbfgs
     rows=2, cols=2
       Scale type: DIAGONAL
@@ -24,7 +24,7 @@ Tao Object: 1 MPI processes
       Number of updates: 9
       Number of rejects: 0
       Number of resets: 1
-      Mat Object: (J0_) 1 MPI processes
+      Mat Object: (J0_) 1 MPI process
         type: lmvmdiagbroyden
         rows=2, cols=2
           Scale history: 1
@@ -35,7 +35,7 @@ Tao Object: 1 MPI processes
           Number of updates: 9
           Number of rejects: 0
           Number of resets: 1
-  TaoLineSearch Object: 1 MPI processes
+  TaoLineSearch Object: 1 MPI process
     type: more-thuente
     maximum function evaluations=30
     tolerances: ftol=0.0001, rtol=1e-10, gtol=0.9

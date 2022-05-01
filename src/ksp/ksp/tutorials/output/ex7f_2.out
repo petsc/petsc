@@ -12,7 +12,7 @@ PC Object: 2 MPI processes
     Local solver information for each block is in the following KSP and PC objects:
   [0] number of local blocks = 2, first local block number = 0
     [0] local block number 0
-    KSP Object: (sub_) 1 MPI processes
+    KSP Object: (sub_) 1 MPI process
       type: gmres
         restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
         happy breakdown tolerance 1e-30
@@ -20,14 +20,14 @@ PC Object: 2 MPI processes
       tolerances:  relative=1e-06, absolute=1e-50, divergence=10000.
       left preconditioning
       using PRECONDITIONED norm type for convergence test
-    PC Object: (sub_) 1 MPI processes
+    PC Object: (sub_) 1 MPI process
       type: jacobi
         type DIAGONAL
-      Vec Object: 1 MPI processes
+      Vec Object: 1 MPI process
         type: seq
         length=6
       linear system matrix = precond matrix:
-      Mat Object: (sub_) 1 MPI processes
+      Mat Object: (sub_) 1 MPI process
         type: seqaij
         rows=6, cols=6
         total: nonzeros=16, allocated nonzeros=16
@@ -35,7 +35,7 @@ PC Object: 2 MPI processes
           not using I-node routines
     - - - - - - - - - - - - - - - - - -
     [0] local block number 1
-    KSP Object: (sub_) 1 MPI processes
+    KSP Object: (sub_) 1 MPI process
       type: gmres
         restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
         happy breakdown tolerance 1e-30
@@ -43,14 +43,14 @@ PC Object: 2 MPI processes
       tolerances:  relative=1e-06, absolute=1e-50, divergence=10000.
       left preconditioning
       using PRECONDITIONED norm type for convergence test
-    PC Object: (sub_) 1 MPI processes
+    PC Object: (sub_) 1 MPI process
       type: jacobi
         type DIAGONAL
-      Vec Object: 1 MPI processes
+      Vec Object: 1 MPI process
         type: seq
         length=6
       linear system matrix = precond matrix:
-      Mat Object: (sub_) 1 MPI processes
+      Mat Object: (sub_) 1 MPI process
         type: seqaij
         rows=6, cols=6
         total: nonzeros=16, allocated nonzeros=16
@@ -59,16 +59,16 @@ PC Object: 2 MPI processes
     - - - - - - - - - - - - - - - - - -
   [1] number of local blocks = 2, first local block number = 1
     [1] local block number 0
-    KSP Object: (sub_) 1 MPI processes
+    KSP Object: (sub_) 1 MPI process
       type: bcgs
       maximum iterations=10000, initial guess is zero
       tolerances:  relative=1e-06, absolute=1e-50, divergence=10000.
       left preconditioning
       using PRECONDITIONED norm type for convergence test
-    PC Object: (sub_) 1 MPI processes
+    PC Object: (sub_) 1 MPI process
       type: none
       linear system matrix = precond matrix:
-      Mat Object: (sub_) 1 MPI processes
+      Mat Object: (sub_) 1 MPI process
         type: seqaij
         rows=6, cols=6
         total: nonzeros=16, allocated nonzeros=16
@@ -76,13 +76,13 @@ PC Object: 2 MPI processes
           not using I-node routines
     - - - - - - - - - - - - - - - - - -
     [1] local block number 1
-    KSP Object: (sub_) 1 MPI processes
+    KSP Object: (sub_) 1 MPI process
       type: preonly
       maximum iterations=10000, initial guess is zero
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
-    PC Object: (sub_) 1 MPI processes
+    PC Object: (sub_) 1 MPI process
       type: ilu
         out-of-place factorization
         0 levels of fill
@@ -90,14 +90,14 @@ PC Object: 2 MPI processes
         matrix ordering: natural
         factor fill ratio given 1., needed 1.
           Factored matrix follows:
-            Mat Object: 1 MPI processes
+            Mat Object: 1 MPI process
               type: seqaij
               rows=6, cols=6
               package used to perform factorization: petsc
               total: nonzeros=16, allocated nonzeros=16
                 not using I-node routines
       linear system matrix = precond matrix:
-      Mat Object: (sub_) 1 MPI processes
+      Mat Object: (sub_) 1 MPI process
         type: seqaij
         rows=6, cols=6
         total: nonzeros=16, allocated nonzeros=16

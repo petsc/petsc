@@ -1,4 +1,4 @@
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 10.
 11.
@@ -7,7 +7,7 @@ Vec Object: 1 MPI processes
 14.
 15.
 ----
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 10.
 2.

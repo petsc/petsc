@@ -16,7 +16,7 @@ Timestep   2: step size = 0.000500257, time = 0.000647692, 2-norm error = 0.0010
     Linear solve converged due to CONVERGED_RTOL iterations 1
 Timestep   3: step size = 0.000526001, time = 0.00114795, 2-norm error = 0.0015392, max norm error = 0.0022348
 avg. error (2 norm) = 0.000957327, avg. error (max norm) = 0.00138698
-TS Object: 1 MPI processes
+TS Object: 1 MPI process
   type: rosw
     Rosenbrock-W ra34pw2
     Abscissa of A       =  0.000000  0.871733  0.731580  1.000000 
@@ -29,7 +29,7 @@ TS Object: 1 MPI processes
   total number of linear solve failures=0
   total number of rejected steps=0
   using relative error tolerance of 0.0001,   using absolute error tolerance of 0.0001
-  TSAdapt Object: 1 MPI processes
+  TSAdapt Object: 1 MPI process
     type: basic
     safety factor 0.9
     extra safety factor after step rejection 0.5
@@ -38,14 +38,14 @@ TS Object: 1 MPI processes
     maximum allowed timestep 1e+20
     minimum allowed timestep 1e-20
     maximum solution absolute value to be ignored -1.
-  SNES Object: 1 MPI processes
+  SNES Object: 1 MPI process
     type: ksponly
     maximum iterations=50, maximum function evaluations=10000
     tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
     total number of linear solver iterations=1
     total number of function evaluations=1
     norm schedule ALWAYS
-    KSP Object: 1 MPI processes
+    KSP Object: 1 MPI process
       type: gmres
         restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
         happy breakdown tolerance 1e-30
@@ -53,7 +53,7 @@ TS Object: 1 MPI processes
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using PRECONDITIONED norm type for convergence test
-    PC Object: 1 MPI processes
+    PC Object: 1 MPI process
       type: ilu
         out-of-place factorization
         0 levels of fill
@@ -61,20 +61,20 @@ TS Object: 1 MPI processes
         matrix ordering: natural
         factor fill ratio given 1., needed 1.
           Factored matrix follows:
-            Mat Object: 1 MPI processes
+            Mat Object: 1 MPI process
               type: seqaij
               rows=60, cols=60
               package used to perform factorization: petsc
               total: nonzeros=176, allocated nonzeros=176
                 not using I-node routines
       linear system matrix followed by preconditioner matrix:
-      Mat Object: 1 MPI processes
+      Mat Object: 1 MPI process
         type: seqaij
         rows=60, cols=60
         total: nonzeros=176, allocated nonzeros=176
         total number of mallocs used during MatSetValues calls=0
           not using I-node routines
-      Mat Object: 1 MPI processes
+      Mat Object: 1 MPI process
         type: seqaij
         rows=60, cols=60
         total: nonzeros=176, allocated nonzeros=176
