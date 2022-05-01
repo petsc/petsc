@@ -815,3 +815,33 @@ PETSC_EXTERN const char* PetscHIPBLASGetErrorName(hipblasStatus_t status)
   }
 }
 #endif
+
+/*@
+      PetscMPIErrorString - Given an MPI error code returns the MPI_Error_string() appropriately
+           formatted for displaying with the PETSc error handlers.
+
+ Input Parameter:
+.  err - the MPI error code
+
+ Output Parameter:
+.  string - the MPI error message, should declare its length to be larger than MPI_MAX_ERROR_STRING
+
+ Notes:
+    Does not return an error code or do error handling because it may be called from inside an error handler
+
+@*/
+void PetscMPIErrorString(PetscMPIInt err, char* string)
+{
+  char        errorstring[MPI_MAX_ERROR_STRING];
+  PetscMPIInt len, j = 0;
+
+  MPI_Error_string(err,(char*)errorstring,&len);
+  for (PetscMPIInt i=0; i<len; i++) {
+    string[j++] = errorstring[i];
+    if (errorstring[i] == '\n') {
+      for (PetscMPIInt k=0; k<16; k++) string[j++] = ' ';
+    }
+  }
+  string[j] = 0;
+}
+

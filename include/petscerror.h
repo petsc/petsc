@@ -344,6 +344,8 @@ M*/
 #define CHKERRQ(...) PetscCall(__VA_ARGS__)
 #define CHKERRV(...) PetscCallVoid(__VA_ARGS__)
 
+PETSC_EXTERN void PetscMPIErrorString(PetscMPIInt, char*);
+
 /*MC
   PetscCallMPI - Checks error code returned from MPI calls, if non-zero it calls the error
   handler and then returns
@@ -382,10 +384,9 @@ void PetscCallMPI(PetscMPIInt);
 #define PetscCallMPI(...) do {                                                                 \
     PetscMPIInt _7_errorcode = __VA_ARGS__;                                                    \
     if (PetscUnlikely(_7_errorcode)) {                                                         \
-      char        _7_errorstring[MPI_MAX_ERROR_STRING];                                        \
-      PetscMPIInt _7_resultlen;                                                                \
-      MPI_Error_string(_7_errorcode,(char*)_7_errorstring,&_7_resultlen); \
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MPI,"MPI error %d %s Ignore the following value %d",(int)_7_errorcode,_7_errorstring,_7_resultlen); \
+      char        _7_errorstring[2*MPI_MAX_ERROR_STRING];                                      \
+      PetscMPIErrorString(_7_errorcode,(char*)_7_errorstring); \
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MPI,"MPI error %d %s",(int)_7_errorcode,_7_errorstring); \
     }                                                                                          \
   } while (0)
 #endif
