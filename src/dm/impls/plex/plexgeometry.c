@@ -1834,7 +1834,7 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_Implicit(DM dm, PetscInt cell
 - cell - the cell
 
   Output Parameters:
-+ v0   - the translation part of this affine transform
++ v0   - the translation part of this affine transform, meaning the translation to the origin (not the first vertex of the reference cell)
 . J    - the Jacobian of the transform from the reference element
 . invJ - the inverse of the Jacobian
 - detJ - the Jacobian determinant
