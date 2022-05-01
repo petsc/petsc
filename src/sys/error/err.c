@@ -381,7 +381,6 @@ PetscErrorCode PetscError(MPI_Comm comm,int line,const char *func,const char *fi
   PetscErrorCode ierr;
 
   if (!PetscErrorHandlingInitialized) return n;
-  if (!func) func = "User provided function";
   if (!file) file = "User file";
   if (comm == MPI_COMM_NULL) comm = PETSC_COMM_SELF;
 
@@ -406,14 +405,13 @@ PetscErrorCode PetscError(MPI_Comm comm,int line,const char *func,const char *fi
 
     Does not call PETSCABORT() since that would provide the wrong source file and line number information
   */
-  PetscStrncmp(func,"main",4,&ismain);
-  if (ismain) {
-    PetscMPIInt errcode;
-    errcode = (PetscMPIInt)(0 + 0*line*1000 + ierr);
-    if (petscwaitonerrorflg) { PetscSleep(1000); }
-    MPI_Abort(MPI_COMM_WORLD,errcode);
+  if (func) {
+    PetscStrncmp(func,"main",4,&ismain);
+    if (ismain) {
+      if (petscwaitonerrorflg) PetscSleep(1000);
+      MPI_Abort(MPI_COMM_WORLD,(PetscMPIInt)(0 + 0*line*1000 + ierr));
+    }
   }
-
 #if defined(PETSC_CLANGUAGE_CXX)
   if (p == PETSC_ERROR_IN_CXX) {
     PetscCxxErrorThrow();
@@ -825,6 +823,8 @@ PETSC_EXTERN const char* PetscHIPBLASGetErrorName(hipblasStatus_t status)
 
  Output Parameter:
 .  string - the MPI error message, should declare its length to be larger than MPI_MAX_ERROR_STRING
+
+   Level: developer
 
  Notes:
     Does not return an error code or do error handling because it may be called from inside an error handler

@@ -156,7 +156,7 @@ PetscErrorCode  PetscSignalHandlerDefault(int sig,void *ptr)
   (*PetscErrorPrintf)("configure using --with-debugging=yes, recompile, link, and run \n");
   (*PetscErrorPrintf)("to get more information on the crash.\n");
 #endif
-  ierr =  PetscError(PETSC_COMM_SELF,0,"User provided function","unknown file",PETSC_ERR_SIG,PETSC_ERROR_INITIAL,NULL);
+  ierr =  PetscError(PETSC_COMM_SELF,0,NULL,NULL,PETSC_ERR_SIG,PETSC_ERROR_INITIAL,NULL);
 #if !defined(PETSC_MISSING_SIGBUS)
   if (sig == SIGSEGV || sig == SIGBUS) {
 #else
