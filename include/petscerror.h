@@ -220,32 +220,6 @@ M*/
 #define PetscCheck(cond,comm,ierr,...) if (PetscUnlikely(!(cond))) SETERRQ(comm,ierr,__VA_ARGS__)
 
 /*MC
-  PetscCheckFalse - Check that a particular condition is false
-
-  Synopsis:
-  #include <petscerror.h>
-  void PetscCheckFalse(bool cond, MPI_Comm comm, PetscErrorCode ierr, const char *message, ...)
-
-  Collective
-
-  Input Parameters:
-+ cond    - The boolean condition
-. comm    - The communicator on which the check can be collective on
-. ierr    - A nonzero error code, see include/petscerror.h for the complete list
-- message - Error message in printf format
-
-  Notes:
-  Invert your boolean condition and use PetscCheck() instead. This macro is a temporary stopgap
-  to converting to PetscCheck() and is subject to removal without deprecation in a future
-  release.
-
-  Level: deprecated
-
-.seealso: `PetscCheck()`
-M*/
-#define PetscCheckFalse(cond,comm,ierr,...) PetscCheck(!(cond),comm,ierr,__VA_ARGS__)
-
-/*MC
   PetscAssert - Assert that a particular condition is true
 
   Synopsis:
