@@ -5,6 +5,13 @@
 #define PETSC_SKIP_IMMINTRIN_H_CUDAWORKAROUND 1
 #include <../src/mat/impls/dense/seq/dense.h> /*I "petscmat.h" I*/
 #include <petsc/private/cudavecimpl.h> /* cublas definitions are here */
+#include <thrust/device_ptr.h>
+#include <thrust/functional.h>
+#include <thrust/iterator/counting_iterator.h>
+#include <thrust/iterator/transform_iterator.h>
+#include <thrust/iterator/permutation_iterator.h>
+#include <thrust/transform.h>
+#include <thrust/device_vector.h>
 
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
@@ -1093,6 +1100,78 @@ PetscErrorCode MatScale_SeqDenseCUDA(Mat Y,PetscScalar alpha)
   PetscFunctionReturn(0);
 }
 
+struct petscshift: public thrust::unary_function<PetscScalar,PetscScalar>
+{
+  const PetscScalar shift_;
+  petscshift(PetscScalar shift): shift_(shift) {}
+  __device__ PetscScalar operator()(PetscScalar x) {return x + shift_;}
+};
+
+template <typename Iterator> class strided_range
+{
+  public:
+    typedef typename thrust::iterator_difference<Iterator>::type difference_type;
+    struct stride_functor: public thrust::unary_function<difference_type,difference_type>
+    {
+        difference_type stride;
+        stride_functor(difference_type stride): stride(stride) {}
+        __device__ difference_type operator()(const difference_type& i) const { return stride*i; }
+    };
+    typedef typename thrust::counting_iterator<difference_type>                  CountingIterator;
+    typedef typename thrust::transform_iterator<stride_functor,CountingIterator> TransformIterator;
+    typedef typename thrust::permutation_iterator<Iterator,TransformIterator>    PermutationIterator;
+    typedef PermutationIterator iterator; // type of the strided_range iterator
+    // construct strided_range for the range [first,last)
+    strided_range(Iterator first, Iterator last, difference_type stride): first(first), last(last), stride(stride) {}
+    iterator begin(void) const
+    {
+      return PermutationIterator(first,TransformIterator(CountingIterator(0),stride_functor(stride)));
+    }
+    iterator end(void) const
+    {
+      return begin() + ((last-first)+(stride-1))/stride;
+    }
+  protected:
+    Iterator first;
+    Iterator last;
+    difference_type stride;
+};
+
+PetscErrorCode MatShift_DenseCUDA_Private(PetscScalar *da,PetscScalar alpha,PetscInt lda,PetscInt rstart,PetscInt rend,PetscInt cols)
+{
+  PetscFunctionBegin;
+  PetscInt rend2 = PetscMin(rend,cols);
+  if (rend2>rstart) {
+    PetscCall(PetscLogGpuTimeBegin());
+    try {
+      const auto dptr  = thrust::device_pointer_cast(da);
+      size_t     begin = rstart*lda;
+      size_t     end   = rend2-rstart+rend2*lda;
+      strided_range<thrust::device_vector<PetscScalar>::iterator> diagonal(dptr+begin,dptr+end,lda+1);
+      thrust::transform(diagonal.begin(),diagonal.end(),diagonal.begin(),petscshift(alpha));
+    } catch (char *ex) {
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
+    }
+    PetscCall(PetscLogGpuTimeEnd());
+    PetscCall(PetscLogGpuFlops(rend2-rstart));
+  }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatShift_SeqDenseCUDA(Mat A,PetscScalar alpha)
+{
+  PetscScalar *da;
+  PetscInt    m=A->rmap->n,n=A->cmap->n,lda;
+
+  PetscFunctionBegin;
+  PetscCall(MatDenseCUDAGetArray(A,&da));
+  PetscCall(MatDenseGetLDA(A,&lda));
+  PetscCall(PetscInfo(A,"Performing Shift %d x %d on backend\n",m,n));
+  PetscCall(MatShift_DenseCUDA_Private(da,alpha,lda,0,m,n));
+  PetscCall(MatDenseCUDARestoreArray(A,&da));
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MatAXPY_SeqDenseCUDA(Mat Y,PetscScalar alpha,Mat X,MatStructure str)
 {
   Mat_SeqDense      *x = (Mat_SeqDense*)X->data;
@@ -1443,6 +1522,7 @@ static PetscErrorCode MatBindToCPU_SeqDenseCUDA(Mat A,PetscBool flg)
     A->ops->productsetfromoptions   = MatProductSetFromOptions_SeqDenseCUDA;
     A->ops->getcolumnvector         = MatGetColumnVector_SeqDenseCUDA;
     A->ops->scale                   = MatScale_SeqDenseCUDA;
+    A->ops->shift                   = MatShift_SeqDenseCUDA;
     A->ops->copy                    = MatCopy_SeqDenseCUDA;
     A->ops->zeroentries             = MatZeroEntries_SeqDenseCUDA;
     A->ops->setup                   = MatSetUp_SeqDenseCUDA;
@@ -1478,6 +1558,7 @@ static PetscErrorCode MatBindToCPU_SeqDenseCUDA(Mat A,PetscBool flg)
     A->ops->productsetfromoptions   = MatProductSetFromOptions_SeqDense;
     A->ops->getcolumnvector         = MatGetColumnVector_SeqDense;
     A->ops->scale                   = MatScale_SeqDense;
+    A->ops->shift                   = MatShift_SeqDense;
     A->ops->copy                    = MatCopy_SeqDense;
     A->ops->zeroentries             = MatZeroEntries_SeqDense;
     A->ops->setup                   = MatSetUp_SeqDense;

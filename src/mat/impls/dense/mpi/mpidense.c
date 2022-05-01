@@ -1032,6 +1032,20 @@ PetscErrorCode MatGetColumnReductions_MPIDense(Mat A,PetscInt type,PetscReal *re
 }
 
 #if defined(PETSC_HAVE_CUDA)
+PetscErrorCode MatShift_MPIDenseCUDA(Mat A,PetscScalar alpha)
+{
+  PetscScalar *da;
+  PetscInt    lda;
+
+  PetscFunctionBegin;
+  PetscCall(MatDenseCUDAGetArray(A,&da));
+  PetscCall(MatDenseGetLDA(A,&lda));
+  PetscCall(PetscInfo(A,"Performing Shift on backend\n"));
+  PetscCall(MatShift_DenseCUDA_Private(da,alpha,lda,A->rmap->rstart,A->rmap->rend,A->cmap->N));
+  PetscCall(MatDenseCUDARestoreArray(A,&da));
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode MatDenseGetColumnVec_MPIDenseCUDA(Mat A,PetscInt col,Vec *v)
 {
   Mat_MPIDense   *a = (Mat_MPIDense*)A->data;
@@ -1259,6 +1273,7 @@ static PetscErrorCode MatBindToCPU_MPIDenseCUDA(Mat mat,PetscBool bind)
     PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatDenseRestoreColumnVecRead_C",MatDenseRestoreColumnVecRead_MPIDenseCUDA));
     PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatDenseGetColumnVecWrite_C",MatDenseGetColumnVecWrite_MPIDenseCUDA));
     PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatDenseRestoreColumnVecWrite_C",MatDenseRestoreColumnVecWrite_MPIDenseCUDA));
+    mat->ops->shift                   = MatShift_MPIDenseCUDA;
   } else {
     PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatDenseGetColumnVec_C",MatDenseGetColumnVec_MPIDense));
     PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatDenseRestoreColumnVec_C",MatDenseRestoreColumnVec_MPIDense));
@@ -1266,6 +1281,7 @@ static PetscErrorCode MatBindToCPU_MPIDenseCUDA(Mat mat,PetscBool bind)
     PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatDenseRestoreColumnVecRead_C",MatDenseRestoreColumnVecRead_MPIDense));
     PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatDenseGetColumnVecWrite_C",MatDenseGetColumnVecWrite_MPIDense));
     PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatDenseRestoreColumnVecWrite_C",MatDenseRestoreColumnVecWrite_MPIDense));
+    mat->ops->shift                   = MatShift_MPIDense;
   }
   if (d->cmat) {
     PetscCall(MatBindToCPU(d->cmat,bind));
