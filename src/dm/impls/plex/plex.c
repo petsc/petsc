@@ -8453,7 +8453,7 @@ PetscErrorCode DMPlexCheckSkeleton(DM dm, PetscInt cellHeight)
 /*@
   DMPlexCheckFaces - Check that the faces of each cell give a vertex order this is consistent with what we expect from the cell type
 
-  Not Collective
+  Collective
 
   Input Parameters:
 + dm - The DMPlex object
@@ -8478,15 +8478,11 @@ PetscErrorCode DMPlexCheckFaces(DM dm, PetscInt cellHeight)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscCall(DMPlexIsInterpolated(dm, &interpEnum));
+  PetscCall(DMPlexIsInterpolatedCollective(dm, &interpEnum));
   if (interpEnum == DMPLEX_INTERPOLATED_NONE) PetscFunctionReturn(0);
-  if (interpEnum == DMPLEX_INTERPOLATED_PARTIAL) {
-    PetscMPIInt rank;
-    MPI_Comm    comm;
-
-    PetscCall(PetscObjectGetComm((PetscObject) dm, &comm));
-    PetscCallMPI(MPI_Comm_rank(comm, &rank));
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Mesh is only partially interpolated on rank %d, this is currently not supported", rank);
+  if (interpEnum != DMPLEX_INTERPOLATED_FULL) {
+    PetscPrintf(PetscObjectComm((PetscObject)dm), "DMPlexCheckFaces() warning: Mesh is only partially interpolated, this is currently not supported");
+    PetscFunctionReturn(0);
   }
 
   PetscCall(DMGetDimension(dm, &dim));
