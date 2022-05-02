@@ -326,7 +326,7 @@ static PetscErrorCode PCBDDCSetDiscreteGradient_BDDC(PC pc, Mat G, PetscInt orde
           In the latter case, it should hold gid[i] < gid[j] iff geid[i] < geid[j], with gid the global orderding for all the dofs
           and geid the one for the Nedelec field.
 
-.seealso: `PCBDDC,PCBDDCSetDofsSplitting(),PCBDDCSetDofsSplittingLocal()`
+.seealso: `PCBDDC`, `PCBDDCSetDofsSplitting()`, `PCBDDCSetDofsSplittingLocal()`
 @*/
 PetscErrorCode PCBDDCSetDiscreteGradient(PC pc, Mat G, PetscInt order, PetscInt field, PetscBool global, PetscBool conforming)
 {
@@ -1091,7 +1091,7 @@ static PetscErrorCode PCBDDCSetLocalAdjacencyGraph_BDDC(PC pc, PetscInt nvtxs,co
    Notes:
     A dof is considered connected with all local dofs if xadj[dof+1]-xadj[dof] == 1 and adjncy[xadj[dof]] is negative.
 
-.seealso: `PCBDDC,PetscCopyMode`
+.seealso: `PCBDDC`, `PetscCopyMode`
 @*/
 PetscErrorCode PCBDDCSetLocalAdjacencyGraph(PC pc,PetscInt nvtxs,const PetscInt xadj[],const PetscInt adjncy[], PetscCopyMode copymode)
 {
@@ -2380,7 +2380,7 @@ static PetscErrorCode PCBDDCMatFETIDPGetRHS_BDDC(Mat fetidp_mat, Vec standard_rh
 
    Notes:
 
-.seealso: `PCBDDC`, `PCBDDCCreateFETIDPOperators`, `PCBDDCMatFETIDPGetSolution`
+.seealso: `PCBDDC`, `PCBDDCCreateFETIDPOperators()`, `PCBDDCMatFETIDPGetSolution()`
 @*/
 PetscErrorCode PCBDDCMatFETIDPGetRHS(Mat fetidp_mat, Vec standard_rhs, Vec fetidp_flux_rhs)
 {
@@ -2568,7 +2568,7 @@ static PetscErrorCode PCDestroy_BDDCIPC(PC pc)
 
    Notes:
 
-.seealso: `PCBDDC`, `PCBDDCCreateFETIDPOperators`, `PCBDDCMatFETIDPGetRHS`
+.seealso: `PCBDDC`, `PCBDDCCreateFETIDPOperators()`, `PCBDDCMatFETIDPGetRHS()`
 @*/
 PetscErrorCode PCBDDCMatFETIDPGetSolution(Mat fetidp_mat, Vec fetidp_flux_sol, Vec standard_sol)
 {
@@ -2839,7 +2839,7 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_re
    Notes:
      Currently the only operations provided for FETI-DP matrix are MatMult and MatMultTranspose
 
-.seealso: `PCBDDC`, `PCBDDCMatFETIDPGetRHS`, `PCBDDCMatFETIDPGetSolution`
+.seealso: `PCBDDC`, `PCBDDCMatFETIDPGetRHS()`, `PCBDDCMatFETIDPGetSolution()`
 @*/
 PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, PetscBool fully_redundant, const char *prefix, Mat *fetidp_mat, PC *fetidp_pc)
 {
