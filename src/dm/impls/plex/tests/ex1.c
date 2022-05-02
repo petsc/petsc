@@ -81,12 +81,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 #if defined(PETSC_HAVE_P4EST)
     DM dmConv = NULL;
 
-    PetscCall(DMPlexCheckSymmetry(*dm));
-    PetscCall(DMPlexCheckSkeleton(*dm, 0));
-    PetscCall(DMPlexCheckFaces(*dm, 0));
-    PetscCall(DMPlexCheckGeometry(*dm));
-    PetscCall(DMPlexCheckPointSF(*dm));
-    PetscCall(DMPlexCheckInterfaceCones(*dm));
+    PetscCall(DMPlexCheck(*dm));
     PetscCall(DMPlexSetRefinementUniform(*dm, PETSC_TRUE));
     PetscCall(DMPlexSetTransformType(*dm, DMPLEXREFINETOBOX));
     PetscCall(DMRefine(*dm, PETSC_COMM_WORLD, &dmConv));
@@ -96,12 +91,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       *dm  = dmConv;
     }
     PetscCall(DMViewFromOptions(*dm,NULL,"-initref_dm_view"));
-    PetscCall(DMPlexCheckSymmetry(*dm));
-    PetscCall(DMPlexCheckSkeleton(*dm, 0));
-    PetscCall(DMPlexCheckFaces(*dm, 0));
-    PetscCall(DMPlexCheckGeometry(*dm));
-    PetscCall(DMPlexCheckPointSF(*dm));
-    PetscCall(DMPlexCheckInterfaceCones(*dm));
+    PetscCall(DMPlexCheck(*dm));
 
     PetscCall(DMConvert(*dm,dim == 2 ? DMP4EST : DMP8EST,&dmConv));
     if (dmConv) {
@@ -149,6 +139,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 #if defined(PETSC_HAVE_P4EST)
     DM dmConv = NULL;
 
+    PetscCall(DMPlexCheck(*dm));
     PetscCall(DMViewFromOptions(*dm, NULL, "-dm_tobox_view"));
     PetscCall(DMPlexSetRefinementUniform(*dm, PETSC_TRUE));
     PetscCall(DMPlexSetTransformType(*dm, DMPLEXREFINETOBOX));
@@ -159,12 +150,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       *dm  = dmConv;
     }
     PetscCall(DMViewFromOptions(*dm, NULL, "-dm_tobox_view"));
-    PetscCall(DMPlexCheckSymmetry(*dm));
-    PetscCall(DMPlexCheckSkeleton(*dm, 0));
-    PetscCall(DMPlexCheckFaces(*dm, 0));
-    PetscCall(DMPlexCheckGeometry(*dm));
-    PetscCall(DMPlexCheckPointSF(*dm));
-    PetscCall(DMPlexCheckInterfaceCones(*dm));
+    PetscCall(DMPlexCheck(*dm));
 
     PetscCall(DMConvert(*dm,dim == 2 ? DMP4EST : DMP8EST,&dmConv));
     if (dmConv) {
@@ -243,19 +229,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscCall(PetscObjectSetName((PetscObject) *dm, "Generated Mesh"));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
   if (user->final_diagnostics) {
-    DMPlexInterpolatedFlag interpolated;
-    PetscInt  dim, depth;
-
-    PetscCall(DMGetDimension(*dm, &dim));
-    PetscCall(DMPlexGetDepth(*dm, &depth));
-    PetscCall(DMPlexIsInterpolatedCollective(*dm, &interpolated));
-
-    PetscCall(DMPlexCheckSymmetry(*dm));
-    if (interpolated == DMPLEX_INTERPOLATED_FULL) {
-      PetscCall(DMPlexCheckFaces(*dm, 0));
-    }
-    PetscCall(DMPlexCheckSkeleton(*dm, 0));
-    PetscCall(DMPlexCheckGeometry(*dm));
+    PetscCall(DMPlexCheck(*dm));
   }
   PetscCall(PetscLogEventEnd(user->createMeshEvent,0,0,0,0));
   PetscFunctionReturn(0);
