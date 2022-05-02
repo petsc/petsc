@@ -586,7 +586,7 @@ PetscErrorCode DMPlexOrientInterface_Internal(DM dm)
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCall(DMGetPointSF(dm, &sf));
   PetscCall(DMViewFromOptions(dm, NULL, "-before_orient_interface_dm_view"));
-  if (PetscDefined(USE_DEBUG)) PetscCall(DMPlexCheckPointSF(dm));
+  if (PetscDefined(USE_DEBUG)) PetscCall(DMPlexCheckPointSF(dm, sf));
   PetscCall(PetscSFGetGraph(sf, &nroots, &nleaves, &locals, &remotes));
   if (nroots < 0) PetscFunctionReturn(0);
   PetscCall(PetscSFSetUp(sf));

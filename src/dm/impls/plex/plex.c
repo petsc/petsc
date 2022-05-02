@@ -8615,14 +8615,16 @@ PetscErrorCode DMPlexCheckGeometry(DM dm)
 }
 
 /*@
-  DMPlexCheckPointSF - Check that several necessary conditions are met for the point SF of this plex.
+  DMPlexCheckPointSF - Check that several necessary conditions are met for the Point SF of this plex.
+
+  Collective
 
   Input Parameters:
-. dm - The DMPlex object
++ dm - The DMPlex object
+- pointSF - The Point SF, or NULL for Point SF attached to DM
 
   Notes:
   This is mainly intended for debugging/testing purposes.
-  It currently checks only meshes with no partition overlapping.
 
   For the complete list of DMPlexCheck* functions, see DMSetFromOptions().
 
@@ -8630,50 +8632,87 @@ PetscErrorCode DMPlexCheckGeometry(DM dm)
 
 .seealso: `DMGetPointSF()`, `DMSetFromOptions()`
 @*/
-PetscErrorCode DMPlexCheckPointSF(DM dm)
+PetscErrorCode DMPlexCheckPointSF(DM dm, PetscSF pointSF)
 {
-  PetscSF         pointSF;
-  PetscInt        cellHeight, cStart, cEnd, l, nleaves, nroots, overlap;
-  const PetscInt *locals, *rootdegree;
+  PetscInt        l, nleaves, nroots, overlap;
+  const PetscInt *locals;
+  const PetscSFNode *remotes;
   PetscBool       distributed;
+  MPI_Comm        comm;
+  PetscMPIInt     rank;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscCall(DMGetPointSF(dm, &pointSF));
+  if (pointSF) PetscValidHeaderSpecific(pointSF, PETSCSF_CLASSID, 2);
+  else         pointSF = dm->sf;
+  PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
+  PetscCheck(pointSF, comm, PETSC_ERR_ARG_WRONGSTATE, "DMPlex must have Point SF attached");
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
+  {
+    PetscMPIInt    mpiFlag;
+
+    PetscCallMPI(MPI_Comm_compare(comm, PetscObjectComm((PetscObject)pointSF),&mpiFlag));
+    PetscCheck(mpiFlag == MPI_CONGRUENT || mpiFlag == MPI_IDENT, PETSC_COMM_SELF, PETSC_ERR_ARG_NOTSAMECOMM, "DM and Point SF have different communicators (flag %d)",mpiFlag);
+  }
+  PetscCall(PetscSFGetGraph(pointSF, &nroots, &nleaves, &locals, &remotes));
   PetscCall(DMPlexIsDistributed(dm, &distributed));
-  if (!distributed) PetscFunctionReturn(0);
-  PetscCall(DMPlexGetOverlap(dm, &overlap));
-  if (overlap) {
-    PetscCall(PetscPrintf(PetscObjectComm((PetscObject)dm), "Warning: DMPlexCheckPointSF() is currently not implemented for meshes with partition overlapping"));
+  if (!distributed) {
+    PetscCheck(nroots < 0 || nleaves == 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Undistributed DMPlex cannot have non-empty PointSF (has %" PetscInt_FMT " roots, %" PetscInt_FMT " leaves)", nroots, nleaves);
     PetscFunctionReturn(0);
   }
-  PetscCheck(pointSF,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "This DMPlex is distributed but does not have PointSF attached");
-  PetscCall(PetscSFGetGraph(pointSF, &nroots, &nleaves, &locals, NULL));
-  PetscCheck(nroots >= 0,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "This DMPlex is distributed but its PointSF has no graph set");
-  PetscCall(PetscSFComputeDegreeBegin(pointSF, &rootdegree));
-  PetscCall(PetscSFComputeDegreeEnd(pointSF, &rootdegree));
+  PetscCheck(nroots >= 0, comm, PETSC_ERR_ARG_WRONGSTATE, "This DMPlex is distributed but its PointSF has no graph set (has %" PetscInt_FMT " roots, %" PetscInt_FMT " leaves)", nroots, nleaves);
+  PetscCall(DMPlexGetOverlap(dm, &overlap));
 
-  /* 1) check there are no faces in 2D, cells in 3D, in interface */
-  PetscCall(DMPlexGetVTKCellHeight(dm, &cellHeight));
-  PetscCall(DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd));
-  for (l = 0; l < nleaves; ++l) {
-    const PetscInt point = locals[l];
+  /* Check SF graph is compatible with DMPlex chart */
+  {
+    PetscInt pStart, pEnd, maxLeaf;
 
-    PetscCheck(point <= cStart || point >= cEnd,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point SF contains %" PetscInt_FMT " which is a cell", point);
+    PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
+    PetscCall(PetscSFGetLeafRange(pointSF, NULL, &maxLeaf));
+    PetscCheck(pEnd - pStart == nroots, PETSC_COMM_SELF, PETSC_ERR_PLIB, "pEnd - pStart = %" PetscInt_FMT " != nroots = %" PetscInt_FMT, pEnd-pStart, nroots);
+    PetscCheck(maxLeaf < pEnd, PETSC_COMM_SELF, PETSC_ERR_PLIB, "maxLeaf = %" PetscInt_FMT " >= pEnd = %" PetscInt_FMT, maxLeaf, pEnd);
   }
 
-  /* 2) if some point is in interface, then all its cone points must be also in interface (either as leaves or roots) */
-  for (l = 0; l < nleaves; ++l) {
-    const PetscInt  point = locals[l];
-    const PetscInt *cone;
-    PetscInt        coneSize, c, idx;
+  /* Check Point SF has no local points referenced */
+  for (l = 0; l < nleaves; l++) {
+    PetscAssert(remotes[l].rank != (PetscInt) rank, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point SF contains local point %" PetscInt_FMT " <- (%" PetscInt_FMT ",%" PetscInt_FMT ")", locals ? locals[l] : l, remotes[l].rank, remotes[l].index);
+  }
 
-    PetscCall(DMPlexGetConeSize(dm, point, &coneSize));
-    PetscCall(DMPlexGetCone(dm, point, &cone));
-    for (c = 0; c < coneSize; ++c) {
-      if (!rootdegree[cone[c]]) {
-        PetscCall(PetscFindInt(cone[c], nleaves, locals, &idx));
-        PetscCheck(idx >= 0,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point SF contains %" PetscInt_FMT " but not %" PetscInt_FMT " from its cone", point, cone[c]);
+  /* Check there are no cells in interface */
+  if (!overlap) {
+    PetscInt cellHeight, cStart, cEnd;
+
+    PetscCall(DMPlexGetVTKCellHeight(dm, &cellHeight));
+    PetscCall(DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd));
+    for (l = 0; l < nleaves; ++l) {
+      const PetscInt point = locals ? locals[l] : l;
+
+      PetscCheck(point < cStart || point >= cEnd, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point SF contains %" PetscInt_FMT " which is a cell", point);
+    }
+  }
+
+  /* If some point is in interface, then all its cone points must be also in interface (either as leaves or roots) */
+  {
+    const PetscInt *rootdegree;
+
+    PetscCall(PetscSFComputeDegreeBegin(pointSF, &rootdegree));
+    PetscCall(PetscSFComputeDegreeEnd(pointSF, &rootdegree));
+    for (l = 0; l < nleaves; ++l) {
+      const PetscInt  point = locals ? locals[l] : l;
+      const PetscInt *cone;
+      PetscInt        coneSize, c, idx;
+
+      PetscCall(DMPlexGetConeSize(dm, point, &coneSize));
+      PetscCall(DMPlexGetCone(dm, point, &cone));
+      for (c = 0; c < coneSize; ++c) {
+        if (!rootdegree[cone[c]]) {
+          if (locals) {
+            PetscCall(PetscFindInt(cone[c], nleaves, locals, &idx));
+          } else {
+            idx = (cone[c] < nleaves) ? cone[c] : -1;
+          }
+          PetscCheck(idx >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point SF contains %" PetscInt_FMT " but not %" PetscInt_FMT " from its cone", point, cone[c]);
+        }
       }
     }
   }
@@ -8687,7 +8726,7 @@ PetscErrorCode DMPlexCheckAll_Internal(DM dm, PetscInt cellHeight)
   PetscCall(DMPlexCheckSkeleton(dm, cellHeight));
   PetscCall(DMPlexCheckFaces(dm, cellHeight));
   PetscCall(DMPlexCheckGeometry(dm));
-  PetscCall(DMPlexCheckPointSF(dm));
+  PetscCall(DMPlexCheckPointSF(dm, NULL));
   PetscCall(DMPlexCheckInterfaceCones(dm));
   PetscFunctionReturn(0);
 }
