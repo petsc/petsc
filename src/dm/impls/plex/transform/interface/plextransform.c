@@ -1934,7 +1934,7 @@ PetscErrorCode DMPlexTransformApply(DMPlexTransform tr, DM dm, DM *tdm)
   PetscCall(DMSetType(rdm, DMPLEX));
   PetscCall(DMPlexTransformSetDimensions(tr, dm, rdm));
   /* Calculate number of new points of each depth */
-  PetscCall(DMPlexIsInterpolated(dm, &interp));
+  PetscCall(DMPlexIsInterpolatedCollective(dm, &interp));
   PetscCheck(interp == DMPLEX_INTERPOLATED_FULL,PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Mesh must be fully interpolated for regular refinement");
   /* Step 1: Set chart */
   PetscCall(DMPlexSetChart(rdm, 0, tr->ctStartNew[tr->ctOrderNew[DM_NUM_POLYTOPES]]));
