@@ -888,10 +888,9 @@ PetscErrorCode  SNESMonitorSetFromOptions(SNES snes,const char name[],const char
 .  -snes_lag_jacobian <lag> - how often Jacobian is rebuilt (use -1 to never rebuild)
 .  -snes_lag_jacobian_persists <true,false> - retains the -snes_lag_jacobian information across multiple SNESSolve()
 .  -snes_trtol <trtol> - trust region tolerance
-.  -snes_no_convergence_test - skip convergence test in nonlinear
-                               solver; hence iterations will continue until max_it
-                               or some other criterion is reached. Saves expense
-                               of convergence test
+.  -snes_convergence_test - <default,skip,correct_pressure> convergence test in nonlinear solver.
+                               default SNESConvergedDefault(). skip SNESConvergedSkip() means continue iterating until max_it or some other criterion is reached, saving expense
+                               of convergence test. correct_pressure SNESConvergedCorrectPressure() has special handling of a pressure null space.
 .  -snes_monitor [ascii][:filename][:viewer format] - prints residual norm at each iteration. if no filename given prints to stdout
 .  -snes_monitor_solution [ascii binary draw][:filename][:viewer format] - plots solution at each iteration
 .  -snes_monitor_residual [ascii binary draw][:filename][:viewer format] - plots residual (not its norm) at each iteration
