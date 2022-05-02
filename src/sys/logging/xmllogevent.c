@@ -123,7 +123,7 @@ PETSC_INTERN PetscErrorCode PetscLogView_Flamegraph(PetscViewer);
 
   Level: advanced
 
-.seealso: PetscLogDump(), PetscLogAllBegin(), PetscLogView(), PetscLogTraceBegin(), PetscLogDefaultBegin()
+.seealso: `PetscLogDump()`, `PetscLogAllBegin()`, `PetscLogView()`, `PetscLogTraceBegin()`, `PetscLogDefaultBegin()`
 @*/
 PetscErrorCode PetscLogNestedBegin(void)
 {
@@ -427,8 +427,8 @@ static PetscErrorCode PetscLogEventEndNested(NestedEventId nstEvent, int t, Pets
 
   Level: advanced
 
-.seealso: PetscLogDump(), PetscLogAllBegin(), PetscLogView(), PetscLogTraceBegin(), PetscLogDefaultBegin(),
-          PetscLogNestedBegin()
+.seealso: `PetscLogDump()`, `PetscLogAllBegin()`, `PetscLogView()`, `PetscLogTraceBegin()`, `PetscLogDefaultBegin()`,
+          `PetscLogNestedBegin()`
 @*/
 PetscErrorCode PetscLogSetThreshold(PetscLogDouble newThresh, PetscLogDouble *oldThresh)
 {

@@ -10,7 +10,7 @@
   A star  https://en.wikipedia.org/wiki/Star_(graph_theory) forest is simply a collection of trees of height 1. The leave nodes represent
   "ghost locations" for the root nodes.
 
-.seealso: PetscSFCreate(), VecScatter, VecScatterCreate()
+.seealso: `PetscSFCreate()`, `VecScatter`, `VecScatterCreate()`
 S*/
 typedef struct _p_PetscSF* PetscSF;
 
@@ -19,7 +19,7 @@ typedef struct _p_PetscSF* PetscSF;
 
    Level: beginner
 
-.seealso: PetscSFSetType(), PetscSF
+.seealso: `PetscSFSetType()`, `PetscSF`
 J*/
 typedef const char *PetscSFType;
 
@@ -41,7 +41,7 @@ $     type(PetscSFNode) remote(6)
 $      remote(1)%rank  = modulo(rank+size-1,size)
 $      remote(1)%index = 1 * stride
 
-.seealso: PetscSFSetGraph()
+.seealso: `PetscSFSetGraph()`
 S*/
 typedef struct {
   PetscInt rank;                /* Rank of owner */
@@ -54,7 +54,7 @@ typedef struct {
 
    Level: beginner
 
-.seealso:  VecScatterCreate(), VecScatterBegin(), VecScatterEnd()
+.seealso: `VecScatterCreate()`, `VecScatterBegin()`, `VecScatterEnd()`
 S*/
 typedef PetscSF VecScatter;
 
@@ -63,7 +63,7 @@ typedef PetscSF VecScatter;
 
    Level: beginner
 
-.seealso: VecScatterSetType(), VecScatter, VecScatterCreate(), VecScatterDestroy()
+.seealso: `VecScatterSetType()`, `VecScatter`, `VecScatterCreate()`, `VecScatterDestroy()`
 J*/
 typedef PetscSFType VecScatterType;
 #endif

@@ -37,7 +37,7 @@ $   PETSC_INFO_COMM_ONLY_SELF - PetscInfo will ONLY print for communicators with
 
     Level: intermediate
 
-.seealso: PetscInfo(), PetscInfoSetFromOptions(), PetscInfoSetFilterCommSelf()
+.seealso: `PetscInfo()`, `PetscInfoSetFromOptions()`, `PetscInfoSetFilterCommSelf()`
 E*/
 typedef enum {
   PETSC_INFO_COMM_ALL = -1,
@@ -67,7 +67,7 @@ PETSC_EXTERN PetscBool      PetscLogPrintInfo;  /* if true, indicates PetscInfo(
 
     Level: intermediate
 
-.seealso: PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd(), PetscLogStage
+.seealso: `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscLogStage`
 M*/
 typedef int PetscLogEvent;
 
@@ -76,7 +76,7 @@ typedef int PetscLogEvent;
 
     Level: intermediate
 
-.seealso: PetscLogStageRegister(), PetscLogStagePush(), PetscLogStagePop(), PetscLogEvent
+.seealso: `PetscLogStageRegister()`, `PetscLogStagePush()`, `PetscLogStagePop()`, `PetscLogEvent`
 M*/
 typedef int PetscLogStage;
 
@@ -256,7 +256,7 @@ PETSC_EXTERN PetscErrorCode PetscStageLogGetEventPerfLog(PetscStageLog,int,Petsc
 
    Level: intermediate
 
-.seealso: PetscLogView(), PetscLogGpuFlops()
+.seealso: `PetscLogView()`, `PetscLogGpuFlops()`
 @*/
 
 static inline PetscErrorCode PetscLogFlops(PetscLogDouble n)
@@ -662,7 +662,7 @@ static inline PetscErrorCode PetscLogGpuToCpuScalar(PetscLogDouble size)
 
    Level: intermediate
 
-.seealso: PetscLogView(), PetscLogFlops(), PetscLogGpuTimeBegin(), PetscLogGpuTimeEnd()
+.seealso: `PetscLogView()`, `PetscLogFlops()`, `PetscLogGpuTimeBegin()`, `PetscLogGpuTimeEnd()`
 @*/
 static inline PetscErrorCode PetscLogGpuFlops(PetscLogDouble n)
 {

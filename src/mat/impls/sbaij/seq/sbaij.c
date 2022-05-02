@@ -1088,7 +1088,7 @@ PetscErrorCode  MatSeqSBAIJSetColumnIndices_SeqSBAIJ(Mat mat,PetscInt *indices)
 
   MUST be called before any calls to MatSetValues()
 
-  .seealso: MatCreateSeqSBAIJ
+  .seealso: `MatCreateSeqSBAIJ`
 @*/
 PetscErrorCode  MatSeqSBAIJSetColumnIndices(Mat mat,PetscInt *indices)
 {
@@ -1872,7 +1872,7 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqsbaij_petsc(Mat A,MatFactorType ftyp
 
    Level: intermediate
 
-.seealso: MatSeqSBAIJRestoreArray(), MatSeqAIJGetArray(), MatSeqAIJRestoreArray()
+.seealso: `MatSeqSBAIJRestoreArray()`, `MatSeqAIJGetArray()`, `MatSeqAIJRestoreArray()`
 @*/
 PetscErrorCode  MatSeqSBAIJGetArray(Mat A,PetscScalar **array)
 {
@@ -1892,7 +1892,7 @@ PetscErrorCode  MatSeqSBAIJGetArray(Mat A,PetscScalar **array)
 
    Level: intermediate
 
-.seealso: MatSeqSBAIJGetArray(), MatSeqAIJGetArray(), MatSeqAIJRestoreArray()
+.seealso: `MatSeqSBAIJGetArray()`, `MatSeqAIJGetArray()`, `MatSeqAIJRestoreArray()`
 @*/
 PetscErrorCode  MatSeqSBAIJRestoreArray(Mat A,PetscScalar **array)
 {
@@ -1920,7 +1920,7 @@ PetscErrorCode  MatSeqSBAIJRestoreArray(Mat A,PetscScalar **array)
 
   Level: beginner
 
-  .seealso: MatCreateSeqSBAIJ(), MatType, MATMPISBAIJ
+  .seealso: `MatCreateSeqSBAIJ()`, `MatType`, `MATMPISBAIJ`
 M*/
 PETSC_EXTERN PetscErrorCode MatCreate_SeqSBAIJ(Mat B)
 {
@@ -2049,7 +2049,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqSBAIJ(Mat B)
 
    If the nnz parameter is given then the nz parameter is ignored
 
-.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatCreateSBAIJ()
+.seealso: `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatCreateSBAIJ()`
 @*/
 PetscErrorCode  MatSeqSBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt nz,const PetscInt nnz[])
 {
@@ -2085,7 +2085,7 @@ PetscErrorCode  MatSeqSBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt nz,const 
    Though this routine has Preallocation() in the name it also sets the exact nonzero locations of the matrix entries
    and usually the numerical values as well
 
-.seealso: MatCreate(), MatCreateSeqSBAIJ(), MatSetValuesBlocked(), MatSeqSBAIJSetPreallocation(), MATSEQSBAIJ
+.seealso: `MatCreate()`, `MatCreateSeqSBAIJ()`, `MatSetValuesBlocked()`, `MatSeqSBAIJSetPreallocation()`, `MATSEQSBAIJ`
 @*/
 PetscErrorCode MatSeqSBAIJSetPreallocationCSR(Mat B,PetscInt bs,const PetscInt i[],const PetscInt j[], const PetscScalar v[])
 {
@@ -2139,7 +2139,7 @@ PetscErrorCode MatSeqSBAIJSetPreallocationCSR(Mat B,PetscInt bs,const PetscInt i
 
    If the nnz parameter is given then the nz parameter is ignored
 
-.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatCreateSBAIJ()
+.seealso: `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatCreateSBAIJ()`
 @*/
 PetscErrorCode  MatCreateSeqSBAIJ(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt nz,const PetscInt nnz[],Mat *A)
 {
@@ -2305,7 +2305,7 @@ PetscErrorCode MatLoad_SeqSBAIJ(Mat mat,PetscViewer viewer)
        When block size is greater than 1 the matrix values must be stored using the SBAIJ storage format (see the SBAIJ code to determine this). For block size of 1
        it is the regular CSR format excluding the lower triangular elements.
 
-.seealso: MatCreate(), MatCreateSBAIJ(), MatCreateSeqSBAIJ()
+.seealso: `MatCreate()`, `MatCreateSBAIJ()`, `MatCreateSeqSBAIJ()`
 
 @*/
 PetscErrorCode  MatCreateSeqSBAIJWithArrays(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt i[],PetscInt j[],PetscScalar a[],Mat *mat)

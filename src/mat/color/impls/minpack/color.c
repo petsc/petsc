@@ -135,7 +135,7 @@ static PetscErrorCode MatColoringApply_SL(MatColoring mc,ISColoring *iscoloring)
 .  * - TF Coleman and J More, "Estimation of sparse Jacobian matrices and graph coloring," SIAM Journal on Numerical Analysis, vol. 20, no. 1,
    pp. 187-209, 1983.
 
-.seealso: MatColoringCreate(), MatColoring, MatColoringSetType(), MATCOLORINGGREEDY, MatColoringType
+.seealso: `MatColoringCreate()`, `MatColoring`, `MatColoringSetType()`, `MATCOLORINGGREEDY`, `MatColoringType`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatColoringCreate_SL(MatColoring mc)
@@ -244,7 +244,7 @@ static PetscErrorCode MatColoringApply_LF(MatColoring mc,ISColoring *iscoloring)
 .  * - TF Coleman and J More, "Estimation of sparse Jacobian matrices and graph coloring," SIAM Journal on Numerical Analysis, vol. 20, no. 1,
    pp. 187-209, 1983.
 
-.seealso: MatColoringCreate(), MatColoring, MatColoringSetType(), MATCOLORINGGREEDY, MatColoringType
+.seealso: `MatColoringCreate()`, `MatColoring`, `MatColoringSetType()`, `MATCOLORINGGREEDY`, `MatColoringType`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatColoringCreate_LF(MatColoring mc)
@@ -355,7 +355,7 @@ static PetscErrorCode MatColoringApply_ID(MatColoring mc,ISColoring *iscoloring)
 .  * - TF Coleman and J More, "Estimation of sparse Jacobian matrices and graph coloring," SIAM Journal on Numerical Analysis, vol. 20, no. 1,
    pp. 187-209, 1983.
 
-.seealso: MatColoringCreate(), MatColoring, MatColoringSetType(), MATCOLORINGGREEDY, MatColoringType
+.seealso: `MatColoringCreate()`, `MatColoring`, `MatColoringSetType()`, `MATCOLORINGGREEDY`, `MatColoringType`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatColoringCreate_ID(MatColoring mc)

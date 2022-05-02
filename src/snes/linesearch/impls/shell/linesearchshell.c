@@ -45,7 +45,7 @@ $  PetscCall(SNESLineSearchShellSetUserFunc(linesearch, shellfunc, NULL));
 
    Level: advanced
 
-   .seealso: SNESLineSearchShellGetUserFunc(), SNESLINESEARCHSHELL
+   .seealso: `SNESLineSearchShellGetUserFunc()`, `SNESLINESEARCHSHELL`
 @*/
 PetscErrorCode SNESLineSearchShellSetUserFunc(SNESLineSearch linesearch, SNESLineSearchUserFunc func, void *ctx)
 {
@@ -76,7 +76,7 @@ PetscErrorCode SNESLineSearchShellSetUserFunc(SNESLineSearch linesearch, SNESLin
 
    Level: advanced
 
-   .seealso: SNESLineSearchShellSetUserFunc()
+   .seealso: `SNESLineSearchShellSetUserFunc()`
 @*/
 PetscErrorCode SNESLineSearchShellGetUserFunc(SNESLineSearch linesearch, SNESLineSearchUserFunc *func, void **ctx)
 {

@@ -199,7 +199,7 @@ $  -snes_mf_compute_err
 $  -snes_mf_freq_err <freq>
 $  -snes_mf_jorge
 
-.seealso: MatDestroy(), MatMFFDSetFunctionError()
+.seealso: `MatDestroy()`, `MatMFFDSetFunctionError()`
 @*/
 PetscErrorCode  SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,Mat *J)
 {
@@ -293,7 +293,7 @@ $
    If the user sets the parameter h directly, then this value will be used
    instead of the default computation indicated above.
 
-.seealso: MatCreateSNESMF()
+.seealso: `MatCreateSNESMF()`
 @*/
 PetscErrorCode  SNESDefaultMatrixFreeSetParameters2(Mat mat,PetscReal error,PetscReal umin,PetscReal h)
 {

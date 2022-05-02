@@ -167,7 +167,7 @@ static PetscErrorCode VecScatterRemap_Internal(VecScatter sf,const PetscInt *tom
 + num_procs   - number of remote processors
 - num_entries - number of vector entries to send or recv
 
-  .seealso: VecScatterGetRemote_Private(), VecScatterGetRemoteOrdered_Private()
+  .seealso: `VecScatterGetRemote_Private()`, `VecScatterGetRemoteOrdered_Private()`
 
   Notes:
   Sometimes PETSc internally needs to use the matrix-vector-multiply vecscatter context for other purposes. The client code
@@ -219,7 +219,7 @@ PetscErrorCode VecScatterGetRemoteCount_Private(VecScatter sf,PetscBool send,Pet
 . procs    - ranks of remote processors
 - bs       - block size
 
-  .seealso: VecScatterRestoreRemote_Private(), VecScatterGetRemoteOrdered_Private()
+  .seealso: `VecScatterRestoreRemote_Private()`, `VecScatterGetRemoteOrdered_Private()`
  */
 PetscErrorCode VecScatterGetRemote_Private(VecScatter sf,PetscBool send,PetscInt *n,const PetscInt **starts,const PetscInt **indices,const PetscMPIInt **procs,PetscInt *bs)
 {
@@ -269,7 +269,7 @@ PetscErrorCode VecScatterGetRemote_Private(VecScatter sf,PetscBool send,PetscInt
 . procs    - ranks of remote processors
 - bs       - block size
 
-  .seealso: VecScatterRestoreRemoteOrdered_Private(), VecScatterGetRemote_Private()
+  .seealso: `VecScatterRestoreRemoteOrdered_Private()`, `VecScatterGetRemote_Private()`
 
   Notes:
   Output parameters like starts, indices must also be adapted according to the sorted ranks.
@@ -300,7 +300,7 @@ PetscErrorCode VecScatterGetRemoteOrdered_Private(VecScatter sf,PetscBool send,P
 . procs    - ranks of remote processors
 - bs       - block size
 
-  .seealso: VecScatterGetRemote_Private()
+  .seealso: `VecScatterGetRemote_Private()`
  */
 PetscErrorCode VecScatterRestoreRemote_Private(VecScatter sf,PetscBool send,PetscInt *n,const PetscInt **starts,const PetscInt **indices,const PetscMPIInt **procs,PetscInt *bs)
 {
@@ -325,7 +325,7 @@ PetscErrorCode VecScatterRestoreRemote_Private(VecScatter sf,PetscBool send,Pets
 . procs    - ranks of remote processors
 - bs       - block size
 
-  .seealso: VecScatterGetRemoteOrdered_Private()
+  .seealso: `VecScatterGetRemoteOrdered_Private()`
  */
 PetscErrorCode VecScatterRestoreRemoteOrdered_Private(VecScatter sf,PetscBool send,PetscInt *n,const PetscInt **starts,const PetscInt **indices,const PetscMPIInt **procs,PetscInt *bs)
 {
@@ -344,7 +344,7 @@ PetscErrorCode VecScatterRestoreRemoteOrdered_Private(VecScatter sf,PetscBool se
 
    Level: intermediate
 
-.seealso: VecScatterCreate(), VecScatterCopy()
+.seealso: `VecScatterCreate()`, `VecScatterCopy()`
 @*/
 PetscErrorCode VecScatterSetUp(VecScatter sf)
 {
@@ -370,7 +370,7 @@ PetscErrorCode VecScatterSetUp(VecScatter sf)
 
   Level: intermediate
 
-.seealso: VecScatterGetType(), VecScatterCreate()
+.seealso: `VecScatterGetType()`, `VecScatterCreate()`
 @*/
 PetscErrorCode VecScatterSetType(VecScatter sf, VecScatterType type)
 {
@@ -392,7 +392,7 @@ PetscErrorCode VecScatterSetType(VecScatter sf, VecScatterType type)
 
   Level: intermediate
 
-.seealso: VecScatterSetType(), VecScatterCreate()
+.seealso: `VecScatterSetType()`, `VecScatterCreate()`
 @*/
 PetscErrorCode VecScatterGetType(VecScatter sf, VecScatterType *type)
 {
@@ -412,7 +412,7 @@ PetscErrorCode VecScatterGetType(VecScatter sf, VecScatterType *type)
 
   Level: advanced
 
-.seealso: VecRegister()
+.seealso: `VecRegister()`
 @*/
 PetscErrorCode VecScatterRegister(const char sname[], PetscErrorCode (*function)(VecScatter))
 {
@@ -436,7 +436,7 @@ PetscErrorCode VecScatterRegister(const char sname[], PetscErrorCode (*function)
 
    Level: developer
 
-.seealso: VecScatterCreate(), VecScatterEnd(), VecScatterBegin()
+.seealso: `VecScatterCreate()`, `VecScatterEnd()`, `VecScatterBegin()`
 @*/
 PetscErrorCode  VecScatterGetMerged(VecScatter sf,PetscBool *flg)
 {
@@ -455,7 +455,7 @@ PetscErrorCode  VecScatterGetMerged(VecScatter sf,PetscBool *flg)
 
    Level: intermediate
 
-.seealso: VecScatterCreate(), VecScatterCopy()
+.seealso: `VecScatterCreate()`, `VecScatterCopy()`
 @*/
 PetscErrorCode VecScatterDestroy(VecScatter *sf)
 {
@@ -477,7 +477,7 @@ PetscErrorCode VecScatterDestroy(VecScatter *sf)
 
    Level: advanced
 
-.seealso: VecScatterCreate(), VecScatterDestroy()
+.seealso: `VecScatterCreate()`, `VecScatterDestroy()`
 @*/
 PetscErrorCode  VecScatterCopy(VecScatter sf,VecScatter *newsf)
 {
@@ -499,7 +499,7 @@ PetscErrorCode  VecScatterCopy(VecScatter sf,VecScatter *newsf)
 -  name - command line option
 
    Level: intermediate
-.seealso:  VecScatter, VecScatterView, PetscObjectViewFromOptions(), VecScatterCreate()
+.seealso: `VecScatter`, `VecScatterView`, `PetscObjectViewFromOptions()`, `VecScatterCreate()`
 @*/
 PetscErrorCode  VecScatterViewFromOptions(VecScatter sf,PetscObject obj,const char name[])
 {
@@ -579,7 +579,7 @@ PetscErrorCode  VecScatterRemap(VecScatter sf,PetscInt tomap[],PetscInt frommap[
 
   Level: beginner
 
-.seealso: VecScatterCreate(), VecScatterDestroy(), VecScatterSetUp()
+.seealso: `VecScatterCreate()`, `VecScatterDestroy()`, `VecScatterSetUp()`
 @*/
 PetscErrorCode VecScatterSetFromOptions(VecScatter sf)
 {
@@ -641,7 +641,7 @@ PetscErrorCode VecScatterSetFromOptions(VecScatter sf)
    Use VecScatterCreateToZero() to create a vecscatter that copies an MPI vector to a sequential vector on MPI rank 0.
    These special vecscatters have better performance than general ones.
 
-.seealso: VecScatterDestroy(), VecScatterCreateToAll(), VecScatterCreateToZero(), PetscSFCreate()
+.seealso: `VecScatterDestroy()`, `VecScatterCreateToAll()`, `VecScatterCreateToZero()`, `PetscSFCreate()`
 @*/
 PetscErrorCode VecScatterCreate(Vec x,IS ix,Vec y,IS iy,VecScatter *newsf)
 {
@@ -1105,7 +1105,7 @@ $        VecDestroy(&vout);
     Do NOT create a vector and then pass it in as the final argument vout! vout is created by this routine
   automatically (unless you pass NULL in for that argument if you do not need it).
 
-.seealso VecScatterCreate(), VecScatterCreateToZero(), VecScatterBegin(), VecScatterEnd()
+.seealso `VecScatterCreate()`, `VecScatterCreateToZero()`, `VecScatterBegin()`, `VecScatterEnd()`
 
 @*/
 PetscErrorCode  VecScatterCreateToAll(Vec vin,VecScatter *ctx,Vec *vout)
@@ -1173,7 +1173,7 @@ $        // destroy scatter context and local vector when no longer needed
 $        VecScatterDestroy(&ctx);
 $        VecDestroy(&vout);
 
-.seealso VecScatterCreate(), VecScatterCreateToAll(), VecScatterBegin(), VecScatterEnd()
+.seealso `VecScatterCreate()`, `VecScatterCreateToAll()`, `VecScatterBegin()`, `VecScatterEnd()`
 
     Do NOT create a vector and then pass it in as the final argument vout! vout is created by this routine
   automatically (unless you pass NULL in for that argument if you do not need it).
@@ -1258,7 +1258,7 @@ PetscErrorCode  VecScatterCreateToZero(Vec vin,VecScatter *ctx,Vec *vout)
    single processor.  Similarly, if y is parallel and x sequential, the
    routine can scatter from one processor to many processors.
 
-.seealso: VecScatterCreate(), VecScatterEnd()
+.seealso: `VecScatterCreate()`, `VecScatterEnd()`
 @*/
 PetscErrorCode  VecScatterBegin(VecScatter sf,Vec x,Vec y,InsertMode addv,ScatterMode mode)
 {
@@ -1320,7 +1320,7 @@ PetscErrorCode  VecScatterBegin(VecScatter sf,Vec x,Vec y,InsertMode addv,Scatte
 
    y[iy[i]] = x[ix[i]], for i=0,...,ni-1
 
-.seealso: VecScatterBegin(), VecScatterCreate()
+.seealso: `VecScatterBegin()`, `VecScatterCreate()`
 @*/
 PetscErrorCode  VecScatterEnd(VecScatter sf,Vec x,Vec y,InsertMode addv,ScatterMode mode)
 {

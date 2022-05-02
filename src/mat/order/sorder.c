@@ -101,7 +101,7 @@ $     MatOrderingSetType(part,"my_order)
    or at runtime via the option
 $     -pc_factor_mat_ordering_type my_order
 
-.seealso: MatOrderingRegisterAll()
+.seealso: `MatOrderingRegisterAll()`
 @*/
 PetscErrorCode  MatOrderingRegister(const char sname[],PetscErrorCode (*function)(Mat,MatOrderingType,IS*,IS*))
 {
@@ -157,7 +157,7 @@ $      MATORDERINGEXTERNAL - Use an ordering internal to the factorzation packag
            One-way Dissection, Cholesky, Reverse Cuthill-McKee,
            Quotient Minimum Degree
 
-.seealso:   MatOrderingRegister(), PCFactorSetMatOrderingType(), MatColoring, MatColoringCreate()
+.seealso: `MatOrderingRegister()`, `PCFactorSetMatOrderingType()`, `MatColoring`, `MatColoringCreate()`
 @*/
 PetscErrorCode  MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
 {

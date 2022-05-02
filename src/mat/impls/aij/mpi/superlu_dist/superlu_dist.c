@@ -883,8 +883,8 @@ PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_SuperLU_DIST(void)
 
   Level: beginner
 
-.seealso: PCLU
+.seealso: `PCLU`
 
-.seealso: PCFactorSetMatSolverType(), MatSolverType
+.seealso: `PCFactorSetMatSolverType()`, `MatSolverType`
 
 M*/

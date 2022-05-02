@@ -24,7 +24,7 @@
 $       comm = PetscObjectComm((PetscObject)obj);
         instead use PetscObjectGetComm()
 
-.seealso: PetscObjectGetComm()
+.seealso: `PetscObjectGetComm()`
 @*/
 MPI_Comm  PetscObjectComm(PetscObject obj)
 {
@@ -47,7 +47,7 @@ MPI_Comm  PetscObjectComm(PetscObject obj)
 
    Level: advanced
 
-.seealso: PetscObjectComm()
+.seealso: `PetscObjectComm()`
 @*/
 PetscErrorCode  PetscObjectGetComm(PetscObject obj,MPI_Comm *comm)
 {
@@ -79,7 +79,7 @@ PetscErrorCode  PetscObjectGetComm(PetscObject obj,MPI_Comm *comm)
       the KSP object inside a SNES object. By indenting each lower level further the hierarchy of objects
       is very clear.
 
-.seealso:  PetscObjectIncrementTabLevel()
+.seealso: `PetscObjectIncrementTabLevel()`
 
 @*/
 PetscErrorCode  PetscObjectGetTabLevel(PetscObject obj,PetscInt *tab)
@@ -109,7 +109,7 @@ PetscErrorCode  PetscObjectGetTabLevel(PetscObject obj,PetscInt *tab)
       the KSP object inside a SNES object. By indenting each lower level further the hierarchy of objects
       is very clear.
 
-.seealso:  PetscObjectIncrementTabLevel()
+.seealso: `PetscObjectIncrementTabLevel()`
 @*/
 PetscErrorCode  PetscObjectSetTabLevel(PetscObject obj,PetscInt tab)
 {
@@ -137,7 +137,7 @@ PetscErrorCode  PetscObjectSetTabLevel(PetscObject obj,PetscInt tab)
       the KSP object inside a SNES object. By indenting each lower level further the hierarchy of objects
       is very clear.
 
-.seealso:   PetscObjectSetTabLevel(),  PetscObjectGetTabLevel()
+.seealso: `PetscObjectSetTabLevel()`, `PetscObjectGetTabLevel()`
 
 @*/
 PetscErrorCode  PetscObjectIncrementTabLevel(PetscObject obj,PetscObject oldobj,PetscInt tab)

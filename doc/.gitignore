@@ -1,2 +1,10 @@
-_build*
-images
+/_build*
+/images
+
+# Populated from the classic docs build
+/docs/manualpages/*/*.md
+/docs/manualpages/singleindex.md
+/docs/manualpages/help.html
+/docs/manualpages/manualpages.cit
+/docs/manualpages/concepts
+/docs/manualpages/htmlmap*

@@ -1586,7 +1586,7 @@ PetscErrorCode MatConvert_SeqDense_SeqDenseCUDA(Mat M,MatType type,MatReuse reus
 
    Level: intermediate
 
-.seealso: MatCreate(), MatCreateSeqDense()
+.seealso: `MatCreate()`, `MatCreateSeqDense()`
 @*/
 PetscErrorCode  MatCreateSeqDenseCUDA(MPI_Comm comm,PetscInt m,PetscInt n,PetscScalar *data,Mat *A)
 {

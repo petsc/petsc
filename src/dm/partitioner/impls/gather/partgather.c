@@ -55,7 +55,7 @@ static PetscErrorCode PetscPartitionerInitialize_Gather(PetscPartitioner part)
 
   Level: intermediate
 
-.seealso: PetscPartitionerType, PetscPartitionerCreate(), PetscPartitionerSetType()
+.seealso: `PetscPartitionerType`, `PetscPartitionerCreate()`, `PetscPartitionerSetType()`
 M*/
 
 PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Gather(PetscPartitioner part)

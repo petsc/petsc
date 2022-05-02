@@ -22,7 +22,7 @@
      If one processor calls this with N of PETSC_DECIDE then all processors
      must, otherwise the program will hang.
 
-.seealso: PetscSplitOwnership()
+.seealso: `PetscSplitOwnership()`
 
 @*/
 PetscErrorCode  PetscSplitOwnershipBlock(MPI_Comm comm,PetscInt bs,PetscInt *n,PetscInt *N)
@@ -64,7 +64,7 @@ PetscErrorCode  PetscSplitOwnershipBlock(MPI_Comm comm,PetscInt bs,PetscInt *n,P
      must. Otherwise, an error is thrown in debug mode while the program will hang
      in optimized (i.e. configured --with-debugging=0) mode.
 
-.seealso: PetscSplitOwnershipBlock()
+.seealso: `PetscSplitOwnershipBlock()`
 
 @*/
 PetscErrorCode  PetscSplitOwnership(MPI_Comm comm,PetscInt *n,PetscInt *N)
@@ -124,7 +124,7 @@ PetscErrorCode  PetscSplitOwnership(MPI_Comm comm,PetscInt *n,PetscInt *N)
      must. Otherwise, an error is thrown in debug mode while the program will hang
      in optimized (i.e. configured --with-debugging=0) mode.
 
-.seealso: PetscSplitOwnership(), PetscSplitOwnershipBlock()
+.seealso: `PetscSplitOwnership()`, `PetscSplitOwnershipBlock()`
 
 @*/
 PetscErrorCode  PetscSplitOwnershipEqual(MPI_Comm comm,PetscInt *n,PetscInt *N)

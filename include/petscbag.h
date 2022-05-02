@@ -25,9 +25,9 @@ $      PetscCall(PetscBagSetName(bag,"MyParameters"));
 $      PetscCall(PetscBagRegisterInt(bag,&params.height,22,"height","Height of the water tower"));
 $
 
-.seealso:  PetscBagSetName(), PetscBagGetName(), PetscBagView(), PetscBagLoad(), PetscBagGetData()
-           PetscBagRegisterReal(), PetscBagRegisterInt(), PetscBagRegisterBool(), PetscBagRegisterScalar()
-           PetscBagSetFromOptions(), PetscBagRegisterVec(), PetscBagCreate(), PetscBagDestroy(), PetscBagRegisterEnum()
+.seealso: `PetscBagSetName()`, `PetscBagGetName()`, `PetscBagView()`, `PetscBagLoad()`, `PetscBagGetData()`
+          `PetscBagRegisterReal()`, `PetscBagRegisterInt()`, `PetscBagRegisterBool()`, `PetscBagRegisterScalar()`
+          `PetscBagSetFromOptions()`, `PetscBagRegisterVec()`, `PetscBagCreate()`, `PetscBagDestroy()`, `PetscBagRegisterEnum()`
 S*/
 typedef struct _n_PetscBag*     PetscBag;
 typedef struct _n_PetscBagItem* PetscBagItem;

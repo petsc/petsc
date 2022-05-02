@@ -397,7 +397,7 @@ PetscErrorCode TaoBoundStep(Vec X, Vec XL, Vec XU, IS active_lower, IS active_up
 
   Level: developer
 
-.seealso: TAOBNCG, TAOBNTL, TAOBNTR
+.seealso: `TAOBNCG`, `TAOBNTL`, `TAOBNTR`
 @*/
 PetscErrorCode TaoBoundSolution(Vec X, Vec XL, Vec XU, PetscReal bound_tol, PetscInt *nDiff, Vec Xout)
 {

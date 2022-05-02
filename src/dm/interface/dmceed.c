@@ -16,7 +16,7 @@
 
   Level: intermediate
 
-.seealso: DMCreate()
+.seealso: `DMCreate()`
 @*/
 PetscErrorCode DMGetCeed(DM dm, Ceed *ceed)
 {

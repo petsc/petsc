@@ -34,7 +34,7 @@ static PetscErrorCode (*PetscFreeOld)(void*,int,const char[],const char[]);
      This provides a way to use the HIP malloc and free routines temporarily. One
      can switch back to the previous choice by calling PetscMallocResetHIPHost().
 
-.seealso: PetscMallocResetHIPHost()
+.seealso: `PetscMallocResetHIPHost()`
 @*/
 PETSC_EXTERN PetscErrorCode PetscMallocSetHIPHost(void)
 {
@@ -56,7 +56,7 @@ PETSC_EXTERN PetscErrorCode PetscMallocSetHIPHost(void)
 
    Level: developer
 
-.seealso: PetscMallocSetHIPHost()
+.seealso: `PetscMallocSetHIPHost()`
 @*/
 PETSC_EXTERN PetscErrorCode PetscMallocResetHIPHost(void)
 {

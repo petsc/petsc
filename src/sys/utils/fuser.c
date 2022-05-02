@@ -29,7 +29,7 @@ PetscErrorCode  PetscGetUserName(char name[],size_t nlen)
 
     Level: developer
 
-.seealso: PetscGetHostName()
+.seealso: `PetscGetHostName()`
 @*/
 PetscErrorCode  PetscGetUserName(char name[],size_t nlen)
 {

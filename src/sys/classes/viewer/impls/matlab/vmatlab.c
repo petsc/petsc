@@ -162,9 +162,9 @@ $                xnew(:) = x;    % reshape one dimensional vector back to two di
 
               Use PetscViewerMatlabPutArray() to just put an array of doubles into the .mat file
 
-.seealso:  PETSC_VIEWER_MATLAB_(),PETSC_VIEWER_MATLAB_SELF, PETSC_VIEWER_MATLAB_WORLD,PetscViewerCreate(),
-           PetscViewerMatlabOpen(), VecView(), DMView(), PetscViewerMatlabPutArray(), PETSCVIEWERBINARY, PETSCVIEWERASCII, PETSCVIEWERDRAW,
-           PETSC_VIEWER_STDOUT_(), PetscViewerFileSetName(), PetscViewerFileSetMode(), PetscViewerFormat
+.seealso: `PETSC_VIEWER_MATLAB_(),PETSC_VIEWER_MATLAB_SELF`, `PETSC_VIEWER_MATLAB_WORLD,PetscViewerCreate()`,
+          `PetscViewerMatlabOpen()`, `VecView()`, `DMView()`, `PetscViewerMatlabPutArray()`, `PETSCVIEWERBINARY`, `PETSCVIEWERASCII`, `PETSCVIEWERDRAW`,
+          `PETSC_VIEWER_STDOUT_()`, `PetscViewerFileSetName()`, `PetscViewerFileSetMode()`, `PetscViewerFormat`
 
 M*/
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_Matlab(PetscViewer viewer)
@@ -209,8 +209,8 @@ $    FILE_MODE_WRITE - open existing file for MATLAB output
      This only saves Vecs it cannot be used to save Mats. We recommend using the PETSCVIEWERBINARY to save objects to be loaded into MATLAB
      instead of this routine.
 
-.seealso: PetscViewerASCIIOpen(), PetscViewerPushFormat(), PetscViewerDestroy(), PETSCVIEWERBINARY, PetscViewerBinaryOpen()
-          VecView(), MatView(), VecLoad(), MatLoad()
+.seealso: `PetscViewerASCIIOpen()`, `PetscViewerPushFormat()`, `PetscViewerDestroy()`, `PETSCVIEWERBINARY`, `PetscViewerBinaryOpen()`
+          `VecView()`, `MatView()`, `VecLoad()`, `MatLoad()`
 @*/
 PetscErrorCode  PetscViewerMatlabOpen(MPI_Comm comm,const char name[],PetscFileMode type,PetscViewer *binv)
 {
@@ -248,8 +248,8 @@ $       XXXView(XXX object,PETSC_VIEWER_MATLAB_(comm));
 
      Use PETSC_VIEWER_SOCKET_() or PetscViewerSocketOpen() to communicator with an interactive MATLAB session.
 
-.seealso: PETSC_VIEWER_MATLAB_WORLD, PETSC_VIEWER_MATLAB_SELF, PetscViewerMatlabOpen(), PetscViewerCreate(),
-          PetscViewerDestroy()
+.seealso: `PETSC_VIEWER_MATLAB_WORLD`, `PETSC_VIEWER_MATLAB_SELF`, `PetscViewerMatlabOpen()`, `PetscViewerCreate()`,
+          `PetscViewerDestroy()`
 @*/
 PetscViewer  PETSC_VIEWER_MATLAB_(MPI_Comm comm)
 {

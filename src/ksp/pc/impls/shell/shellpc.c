@@ -45,7 +45,7 @@ typedef struct {
     To use this from Fortran you must write a Fortran interface definition for this
     function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
 
-.seealso: PCShellSetContext()
+.seealso: `PCShellSetContext()`
 @*/
 PetscErrorCode  PCShellGetContext(PC pc,void *ctx)
 {
@@ -75,7 +75,7 @@ PetscErrorCode  PCShellGetContext(PC pc,void *ctx)
     To use this from Fortran you must write a Fortran interface definition for this
     function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
 
-.seealso: PCShellGetContext(), PCSHELL
+.seealso: `PCShellGetContext()`, `PCSHELL`
 @*/
 PetscErrorCode  PCShellSetContext(PC pc,void *ctx)
 {
@@ -448,7 +448,7 @@ static PetscErrorCode  PCShellGetName_Shell(PC pc,const char *name[])
 
    Level: developer
 
-.seealso: PCShellSetApply(), PCShellSetContext()
+.seealso: `PCShellSetApply()`, `PCShellSetContext()`
 @*/
 PetscErrorCode  PCShellSetDestroy(PC pc,PetscErrorCode (*destroy)(PC))
 {
@@ -480,7 +480,7 @@ PetscErrorCode  PCShellSetDestroy(PC pc,PetscErrorCode (*destroy)(PC))
 
    Level: developer
 
-.seealso: PCShellSetApplyRichardson(), PCShellSetApply(), PCShellSetContext()
+.seealso: `PCShellSetApplyRichardson()`, `PCShellSetApply()`, `PCShellSetContext()`
 @*/
 PetscErrorCode  PCShellSetSetUp(PC pc,PetscErrorCode (*setup)(PC))
 {
@@ -512,7 +512,7 @@ PetscErrorCode  PCShellSetSetUp(PC pc,PetscErrorCode (*setup)(PC))
 
    Level: developer
 
-.seealso: PCShellSetApplyRichardson(), PCShellSetSetUp(), PCShellSetApplyTranspose()
+.seealso: `PCShellSetApplyRichardson()`, `PCShellSetSetUp()`, `PCShellSetApplyTranspose()`
 @*/
 PetscErrorCode  PCShellSetView(PC pc,PetscErrorCode (*view)(PC,PetscViewer))
 {
@@ -545,7 +545,7 @@ PetscErrorCode  PCShellSetView(PC pc,PetscErrorCode (*view)(PC,PetscViewer))
 
    Level: developer
 
-.seealso: PCShellSetApplyRichardson(), PCShellSetSetUp(), PCShellSetApplyTranspose(), PCShellSetContext(), PCShellSetApplyBA(), PCShellSetApplySymmetricRight(),PCShellSetApplySymmetricLeft()
+.seealso: `PCShellSetApplyRichardson()`, `PCShellSetSetUp()`, `PCShellSetApplyTranspose()`, `PCShellSetContext()`, `PCShellSetApplyBA()`, `PCShellSetApplySymmetricRight(),PCShellSetApplySymmetricLeft()`
 @*/
 PetscErrorCode  PCShellSetApply(PC pc,PetscErrorCode (*apply)(PC,Vec,Vec))
 {
@@ -578,7 +578,7 @@ PetscErrorCode  PCShellSetApply(PC pc,PetscErrorCode (*apply)(PC,Vec,Vec))
 
    Level: developer
 
-.seealso: PCShellSetApply()
+.seealso: `PCShellSetApply()`
 @*/
 PetscErrorCode  PCShellSetMatApply(PC pc,PetscErrorCode (*matapply)(PC,Mat,Mat))
 {
@@ -611,7 +611,7 @@ PetscErrorCode  PCShellSetMatApply(PC pc,PetscErrorCode (*matapply)(PC,Mat,Mat))
 
    Level: developer
 
-.seealso: PCShellSetApply(), PCShellSetApplySymmetricLeft(), PCShellSetSetUp(), PCShellSetApplyTranspose(), PCShellSetContext()
+.seealso: `PCShellSetApply()`, `PCShellSetApplySymmetricLeft()`, `PCShellSetSetUp()`, `PCShellSetApplyTranspose()`, `PCShellSetContext()`
 @*/
 PetscErrorCode  PCShellSetApplySymmetricLeft(PC pc,PetscErrorCode (*apply)(PC,Vec,Vec))
 {
@@ -644,7 +644,7 @@ PetscErrorCode  PCShellSetApplySymmetricLeft(PC pc,PetscErrorCode (*apply)(PC,Ve
 
    Level: developer
 
-.seealso: PCShellSetApply(), PCShellSetApplySymmetricLeft(), PCShellSetSetUp(), PCShellSetApplyTranspose(), PCShellSetContext()
+.seealso: `PCShellSetApply()`, `PCShellSetApplySymmetricLeft()`, `PCShellSetSetUp()`, `PCShellSetApplyTranspose()`, `PCShellSetContext()`
 @*/
 PetscErrorCode  PCShellSetApplySymmetricRight(PC pc,PetscErrorCode (*apply)(PC,Vec,Vec))
 {
@@ -677,7 +677,7 @@ PetscErrorCode  PCShellSetApplySymmetricRight(PC pc,PetscErrorCode (*apply)(PC,V
 
    Level: developer
 
-.seealso: PCShellSetApplyRichardson(), PCShellSetSetUp(), PCShellSetApplyTranspose(), PCShellSetContext(), PCShellSetApply()
+.seealso: `PCShellSetApplyRichardson()`, `PCShellSetSetUp()`, `PCShellSetApplyTranspose()`, `PCShellSetContext()`, `PCShellSetApply()`
 @*/
 PetscErrorCode  PCShellSetApplyBA(PC pc,PetscErrorCode (*applyBA)(PC,PCSide,Vec,Vec,Vec))
 {
@@ -713,7 +713,7 @@ PetscErrorCode  PCShellSetApplyBA(PC pc,PetscErrorCode (*applyBA)(PC,PCSide,Vec,
    Notes:
    Uses the same context variable as PCShellSetApply().
 
-.seealso: PCShellSetApplyRichardson(), PCShellSetSetUp(), PCShellSetApply(), PCSetContext(), PCShellSetApplyBA()
+.seealso: `PCShellSetApplyRichardson()`, `PCShellSetSetUp()`, `PCShellSetApply()`, `PCSetContext()`, `PCShellSetApplyBA()`
 @*/
 PetscErrorCode  PCShellSetApplyTranspose(PC pc,PetscErrorCode (*applytranspose)(PC,Vec,Vec))
 {
@@ -748,7 +748,7 @@ PetscErrorCode  PCShellSetApplyTranspose(PC pc,PetscErrorCode (*applytranspose)(
 
    Level: developer
 
-.seealso: PCShellSetApplyRichardson(), PCShellSetSetUp(), PCShellSetApplyTranspose(), PCShellSetPostSolve(), PCShellSetContext()
+.seealso: `PCShellSetApplyRichardson()`, `PCShellSetSetUp()`, `PCShellSetApplyTranspose()`, `PCShellSetPostSolve()`, `PCShellSetContext()`
 @*/
 PetscErrorCode  PCShellSetPreSolve(PC pc,PetscErrorCode (*presolve)(PC,KSP,Vec,Vec))
 {
@@ -783,7 +783,7 @@ PetscErrorCode  PCShellSetPreSolve(PC pc,PetscErrorCode (*presolve)(PC,KSP,Vec,V
 
    Level: developer
 
-.seealso: PCShellSetApplyRichardson(), PCShellSetSetUp(), PCShellSetApplyTranspose(), PCShellSetPreSolve(), PCShellSetContext()
+.seealso: `PCShellSetApplyRichardson()`, `PCShellSetSetUp()`, `PCShellSetApplyTranspose()`, `PCShellSetPreSolve()`, `PCShellSetContext()`
 @*/
 PetscErrorCode  PCShellSetPostSolve(PC pc,PetscErrorCode (*postsolve)(PC,KSP,Vec,Vec))
 {
@@ -805,7 +805,7 @@ PetscErrorCode  PCShellSetPostSolve(PC pc,PetscErrorCode (*postsolve)(PC,KSP,Vec
 
    Level: developer
 
-.seealso: PCShellGetName()
+.seealso: `PCShellGetName()`
 @*/
 PetscErrorCode  PCShellSetName(PC pc,const char name[])
 {
@@ -829,7 +829,7 @@ PetscErrorCode  PCShellSetName(PC pc,const char name[])
 
    Level: developer
 
-.seealso: PCShellSetName()
+.seealso: `PCShellSetName()`
 @*/
 PetscErrorCode  PCShellGetName(PC pc,const char *name[])
 {
@@ -869,7 +869,7 @@ PetscErrorCode  PCShellGetName(PC pc,const char *name[])
 
    Level: developer
 
-.seealso: PCShellSetApply(), PCShellSetContext()
+.seealso: `PCShellSetApply()`, `PCShellSetContext()`
 @*/
 PetscErrorCode  PCShellSetApplyRichardson(PC pc,PetscErrorCode (*apply)(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt,PetscBool,PetscInt*,PCRichardsonConvergedReason*))
 {
@@ -901,10 +901,10 @@ $             PCShellSetApplyTranspose(pc,applytranspose); (optional)
 $             PCShellSetSetUp(pc,setup);                   (optional)
 $             PCShellSetDestroy(pc,destroy);               (optional)
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
-           MATSHELL, PCShellSetSetUp(), PCShellSetApply(), PCShellSetView(),
-           PCShellSetApplyTranspose(), PCShellSetName(), PCShellSetApplyRichardson(),
-           PCShellGetName(), PCShellSetContext(), PCShellGetContext(), PCShellSetApplyBA()
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`,
+          `MATSHELL`, `PCShellSetSetUp()`, `PCShellSetApply()`, `PCShellSetView()`,
+          `PCShellSetApplyTranspose()`, `PCShellSetName()`, `PCShellSetApplyRichardson()`,
+          `PCShellGetName()`, `PCShellSetContext()`, `PCShellGetContext()`, `PCShellSetApplyBA()`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_Shell(PC pc)

@@ -32,13 +32,13 @@ typedef struct {
 /*MC
   TSBASICSYMPLECTICSIEULER - first order semi-implicit Euler method
   Level: intermediate
-.seealso: TSBASICSYMPLECTIC
+.seealso: `TSBASICSYMPLECTIC`
 M*/
 
 /*MC
   TSBASICSYMPLECTICVELVERLET - second order Velocity Verlet method (leapfrog method with starting process and determing velocity and position at the same time)
 Level: intermediate
-.seealso: TSBASICSYMPLECTIC
+.seealso: `TSBASICSYMPLECTIC`
 M*/
 
 /*@C
@@ -48,7 +48,7 @@ M*/
 
   Level: advanced
 
-.seealso:  TSBasicSymplecticRegisterDestroy()
+.seealso: `TSBasicSymplecticRegisterDestroy()`
 @*/
 PetscErrorCode TSBasicSymplecticRegisterAll(void)
 {
@@ -82,7 +82,7 @@ PetscErrorCode TSBasicSymplecticRegisterAll(void)
 
    Level: advanced
 
-.seealso: TSBasicSymplecticRegister(), TSBasicSymplecticRegisterAll()
+.seealso: `TSBasicSymplecticRegister()`, `TSBasicSymplecticRegisterAll()`
 @*/
 PetscErrorCode TSBasicSymplecticRegisterDestroy(void)
 {
@@ -106,7 +106,7 @@ PetscErrorCode TSBasicSymplecticRegisterDestroy(void)
 
   Level: developer
 
-.seealso: PetscInitialize()
+.seealso: `PetscInitialize()`
 @*/
 PetscErrorCode TSBasicSymplecticInitializePackage(void)
 {
@@ -124,7 +124,7 @@ PetscErrorCode TSBasicSymplecticInitializePackage(void)
 
   Level: developer
 
-.seealso: PetscFinalize()
+.seealso: `PetscFinalize()`
 @*/
 PetscErrorCode TSBasicSymplecticFinalizePackage(void)
 {
@@ -151,7 +151,7 @@ PetscErrorCode TSBasicSymplecticFinalizePackage(void)
 
    Level: advanced
 
-.seealso: TSBasicSymplectic
+.seealso: `TSBasicSymplectic`
 @*/
 PetscErrorCode TSBasicSymplecticRegister(TSRosWType name,PetscInt order,PetscInt s,PetscReal c[],PetscReal d[])
 {
@@ -459,7 +459,7 @@ $  i=0,1,...,n.
 
   Level: beginner
 
-.seealso:  TSCreate(), TSSetType(), TSRHSSplitSetIS(), TSRHSSplitSetRHSFunction()
+.seealso: `TSCreate()`, `TSSetType()`, `TSRHSSplitSetIS()`, `TSRHSSplitSetRHSFunction()`
 
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_BasicSymplectic(TS ts)

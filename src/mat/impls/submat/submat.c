@@ -181,7 +181,7 @@ static PetscErrorCode MatDestroy_SubMatrix(Mat N)
    Notes:
    Most will use MatCreateSubMatrix which provides a more efficient representation if it is available.
 
-.seealso: MatCreateSubMatrix(), MatSubMatrixVirtualUpdate()
+.seealso: `MatCreateSubMatrix()`, `MatSubMatrixVirtualUpdate()`
 @*/
 PetscErrorCode MatCreateSubMatrixVirtual(Mat A,IS isrow,IS iscol,Mat *newmat)
 {
@@ -261,7 +261,7 @@ PetscErrorCode MatCreateSubMatrixVirtual(Mat A,IS isrow,IS iscol,Mat *newmat)
    Notes:
    Most will use MatCreateSubMatrix which provides a more efficient representation if it is available.
 
-.seealso: MatCreateSubMatrixVirtual()
+.seealso: `MatCreateSubMatrixVirtual()`
 @*/
 PetscErrorCode  MatSubMatrixVirtualUpdate(Mat N,Mat A,IS isrow,IS iscol)
 {

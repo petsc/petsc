@@ -435,8 +435,8 @@ static PetscErrorCode TaoSetFromOptions_ALMM(PetscOptionItems *PetscOptionsObjec
   endwhile
 .ve
 
-.seealso: TaoALMMGetType(), TaoALMMSetType(), TaoALMMSetSubsolver(), TaoALMMGetSubsolver(),
-          TaoALMMGetMultipliers(), TaoALMMSetMultipliers(), TaoALMMGetPrimalIS(), TaoALMMGetDualIS()
+.seealso: `TaoALMMGetType()`, `TaoALMMSetType()`, `TaoALMMSetSubsolver()`, `TaoALMMGetSubsolver()`,
+          `TaoALMMGetMultipliers()`, `TaoALMMSetMultipliers()`, `TaoALMMGetPrimalIS()`, `TaoALMMGetDualIS()`
 M*/
 PETSC_EXTERN PetscErrorCode TaoCreate_ALMM(Tao tao)
 {

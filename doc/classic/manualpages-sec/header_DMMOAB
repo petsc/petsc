@@ -1,12 +1,7 @@
-<HTML>
-<HEAD>
-<TITLE>DMMOAB Manual Pages</TITLE>
-</HEAD>
-<BODY BGCOLOR="FFFFFF">
+# DMMOAB Manual Pages
 
-<H2> DMMOAB <A HREF="PETSC_DIRsrc/dm/impls/moab/tests/index.html">Examples</A></H2>
+<A HREF="PETSC_DIRsrc/dm/impls/moab/tests/index.html">Examples</A><BR>
 
 The DMMOAB class is a wrapper for the MOAB mesh and discretization package.
 
 
-<P>

@@ -1374,7 +1374,7 @@ PetscErrorCode DMCreateAggregates(DM dac,DM daf,Mat *mat)
    It is not clear what its use case is and it may be removed in a future release.
    Users should contact petsc-maint@mcs.anl.gov if they plan to use it.
 
-.seealso: DMRefine(), DMCreateInjection(), DMCreateInterpolation()
+.seealso: `DMRefine()`, `DMCreateInjection()`, `DMCreateInterpolation()`
 @*/
 PetscErrorCode DMDACreateAggregates(DM dac,DM daf,Mat *rest)
 {

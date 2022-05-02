@@ -30,7 +30,7 @@ $ func (TS ts,PetscReal t,Vec y,Mat A,void *ctx);
   Notes:
     Amat has the same number of rows and the same row parallel layout as u, Amat has the same number of columns and parallel layout as p
 
-.seealso: TSGetRHSJacobianP()
+.seealso: `TSGetRHSJacobianP()`
 @*/
 PetscErrorCode TSSetRHSJacobianP(TS ts,Mat Amat,PetscErrorCode (*func)(TS,PetscReal,Vec,Mat,void*),void *ctx)
 {
@@ -73,7 +73,7 @@ $ func (TS ts,PetscReal t,Vec y,Mat A,void *ctx);
   Notes:
     Amat has the same number of rows and the same row parallel layout as u, Amat has the same number of columns and parallel layout as p
 
-.seealso: TSSetRHSJacobianP()
+.seealso: `TSSetRHSJacobianP()`
 @*/
 PetscErrorCode TSGetRHSJacobianP(TS ts,Mat *Amat,PetscErrorCode (**func)(TS,PetscReal,Vec,Mat,void*),void **ctx)
 {
@@ -94,7 +94,7 @@ PetscErrorCode TSGetRHSJacobianP(TS ts,Mat *Amat,PetscErrorCode (**func)(TS,Pets
 
   Level: developer
 
-.seealso: TSSetRHSJacobianP()
+.seealso: `TSSetRHSJacobianP()`
 @*/
 PetscErrorCode TSComputeRHSJacobianP(TS ts,PetscReal t,Vec U,Mat Amat)
 {
@@ -170,7 +170,7 @@ PetscErrorCode TSSetIJacobianP(TS ts,Mat Amat,PetscErrorCode (*func)(TS,PetscRea
 
   Level: developer
 
-.seealso: TSSetIJacobianP()
+.seealso: `TSSetIJacobianP()`
 @*/
 PetscErrorCode TSComputeIJacobianP(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shift,Mat Amat,PetscBool imex)
 {
@@ -243,7 +243,7 @@ $   PetscErroCode drdpf(TS ts,PetscReal t,Vec U,Vec *dRdP,void *ctx);
     Notes:
     For optimization there is usually a single cost function (numcost = 1). For sensitivities there may be multiple cost functions
 
-.seealso: TSSetRHSJacobianP(), TSGetCostGradients(), TSSetCostGradients()
+.seealso: `TSSetRHSJacobianP()`, `TSGetCostGradients()`, `TSSetCostGradients()`
 @*/
 PetscErrorCode TSSetCostIntegrand(TS ts,PetscInt numcost,Vec costintegral,PetscErrorCode (*rf)(TS,PetscReal,Vec,Vec,void*),
                                                           PetscErrorCode (*drduf)(TS,PetscReal,Vec,Vec*,void*),
@@ -294,7 +294,7 @@ PetscErrorCode TSSetCostIntegrand(TS ts,PetscInt numcost,Vec costintegral,PetscE
 
    Level: intermediate
 
-.seealso: TSSetCostIntegrand()
+.seealso: `TSSetCostIntegrand()`
 
 @*/
 PetscErrorCode  TSGetCostIntegral(TS ts,Vec *v)
@@ -326,7 +326,7 @@ PetscErrorCode  TSGetCostIntegral(TS ts,Vec *v)
 
    Level: deprecated
 
-.seealso: TSSetCostIntegrand()
+.seealso: `TSSetCostIntegrand()`
 @*/
 PetscErrorCode TSComputeCostIntegrand(TS ts,PetscReal t,Vec U,Vec Q)
 {
@@ -462,7 +462,7 @@ PetscErrorCode TSSetIHessianProduct(TS ts,Vec *ihp1,PetscErrorCode (*ihessianpro
 
   Level: developer
 
-.seealso: TSSetIHessianProduct()
+.seealso: `TSSetIHessianProduct()`
 @*/
 PetscErrorCode TSComputeIHessianProductFunctionUU(TS ts,PetscReal t,Vec U,Vec *Vl,Vec Vr,Vec *VHV)
 {
@@ -501,7 +501,7 @@ PetscErrorCode TSComputeIHessianProductFunctionUU(TS ts,PetscReal t,Vec U,Vec *V
 
   Level: developer
 
-.seealso: TSSetIHessianProduct()
+.seealso: `TSSetIHessianProduct()`
 @*/
 PetscErrorCode TSComputeIHessianProductFunctionUP(TS ts,PetscReal t,Vec U,Vec *Vl,Vec Vr,Vec *VHV)
 {
@@ -540,7 +540,7 @@ PetscErrorCode TSComputeIHessianProductFunctionUP(TS ts,PetscReal t,Vec U,Vec *V
 
   Level: developer
 
-.seealso: TSSetIHessianProduct()
+.seealso: `TSSetIHessianProduct()`
 @*/
 PetscErrorCode TSComputeIHessianProductFunctionPU(TS ts,PetscReal t,Vec U,Vec *Vl,Vec Vr,Vec *VHV)
 {
@@ -579,7 +579,7 @@ PetscErrorCode TSComputeIHessianProductFunctionPU(TS ts,PetscReal t,Vec U,Vec *V
 
   Level: developer
 
-.seealso: TSSetIHessianProduct()
+.seealso: `TSSetIHessianProduct()`
 @*/
 PetscErrorCode TSComputeIHessianProductFunctionPP(TS ts,PetscReal t,Vec U,Vec *Vl,Vec Vr,Vec *VHV)
 {
@@ -680,7 +680,7 @@ PetscErrorCode TSSetRHSHessianProduct(TS ts,Vec *rhshp1,PetscErrorCode (*rhshess
 
   Level: developer
 
-.seealso: TSSetRHSHessianProduct()
+.seealso: `TSSetRHSHessianProduct()`
 @*/
 PetscErrorCode TSComputeRHSHessianProductFunctionUU(TS ts,PetscReal t,Vec U,Vec *Vl,Vec Vr,Vec *VHV)
 {
@@ -709,7 +709,7 @@ PetscErrorCode TSComputeRHSHessianProductFunctionUU(TS ts,PetscReal t,Vec U,Vec 
 
   Level: developer
 
-.seealso: TSSetRHSHessianProduct()
+.seealso: `TSSetRHSHessianProduct()`
 @*/
 PetscErrorCode TSComputeRHSHessianProductFunctionUP(TS ts,PetscReal t,Vec U,Vec *Vl,Vec Vr,Vec *VHV)
 {
@@ -738,7 +738,7 @@ PetscErrorCode TSComputeRHSHessianProductFunctionUP(TS ts,PetscReal t,Vec U,Vec 
 
   Level: developer
 
-.seealso: TSSetRHSHessianProduct()
+.seealso: `TSSetRHSHessianProduct()`
 @*/
 PetscErrorCode TSComputeRHSHessianProductFunctionPU(TS ts,PetscReal t,Vec U,Vec *Vl,Vec Vr,Vec *VHV)
 {
@@ -767,7 +767,7 @@ PetscErrorCode TSComputeRHSHessianProductFunctionPU(TS ts,PetscReal t,Vec U,Vec 
 
   Level: developer
 
-.seealso: TSSetRHSHessianProduct()
+.seealso: `TSSetRHSHessianProduct()`
 @*/
 PetscErrorCode TSComputeRHSHessianProductFunctionPP(TS ts,PetscReal t,Vec U,Vec *Vl,Vec Vr,Vec *VHV)
 {
@@ -803,7 +803,7 @@ PetscErrorCode TSComputeRHSHessianProductFunctionPP(TS ts,PetscReal t,Vec U,Vec 
 
    After TSAdjointSolve() is called the lamba and the mu contain the computed sensitivities
 
-.seealso TSGetCostGradients()
+.seealso `TSGetCostGradients()`
 @*/
 PetscErrorCode TSSetCostGradients(TS ts,PetscInt numcost,Vec *lambda,Vec *mu)
 {
@@ -832,7 +832,7 @@ PetscErrorCode TSSetCostGradients(TS ts,PetscInt numcost,Vec *lambda,Vec *mu)
 
    Level: intermediate
 
-.seealso: TSSetCostGradients()
+.seealso: `TSSetCostGradients()`
 @*/
 PetscErrorCode TSGetCostGradients(TS ts,PetscInt *numcost,Vec **lambda,Vec **mu)
 {
@@ -866,7 +866,7 @@ PetscErrorCode TSGetCostGradients(TS ts,PetscInt *numcost,Vec **lambda,Vec **mu)
    After TSAdjointSolve() is called, the lamba2 and the mu2 will contain the computed second-order adjoint sensitivities, and can be used to produce Hessian-vector product (not the full Hessian matrix). Users must provide a direction vector; it is usually generated by an optimization solver.
 
    Passing NULL for lambda2 disables the second-order calculation.
-.seealso: TSAdjointSetForward()
+.seealso: `TSAdjointSetForward()`
 @*/
 PetscErrorCode TSSetCostHessianProducts(TS ts,PetscInt numcost,Vec *lambda2,Vec *mu2,Vec dir)
 {
@@ -896,7 +896,7 @@ PetscErrorCode TSSetCostHessianProducts(TS ts,PetscInt numcost,Vec *lambda2,Vec 
 
    Level: intermediate
 
-.seealso: TSSetCostHessianProducts()
+.seealso: `TSSetCostHessianProducts()`
 @*/
 PetscErrorCode TSGetCostHessianProducts(TS ts,PetscInt *numcost,Vec **lambda2,Vec **mu2, Vec *dir)
 {
@@ -922,7 +922,7 @@ PetscErrorCode TSGetCostHessianProducts(TS ts,PetscInt *numcost,Vec **lambda2,Ve
 
   Notes: When computing sensitivies w.r.t. initial condition, set didp to NULL so that the solver will take it as an identity matrix mathematically. TSAdjoint does not reset the tangent linear solver automatically, TSAdjointResetForward() should be called to reset the tangent linear solver.
 
-.seealso: TSSetCostHessianProducts(), TSAdjointResetForward()
+.seealso: `TSSetCostHessianProducts()`, `TSAdjointResetForward()`
 @*/
 PetscErrorCode TSAdjointSetForward(TS ts,Mat didp)
 {
@@ -972,7 +972,7 @@ PetscErrorCode TSAdjointSetForward(TS ts,Mat didp)
 
   Level: intermediate
 
-.seealso: TSAdjointSetForward()
+.seealso: `TSAdjointSetForward()`
 @*/
 PetscErrorCode TSAdjointResetForward(TS ts)
 {
@@ -993,7 +993,7 @@ PetscErrorCode TSAdjointResetForward(TS ts)
 
    Level: advanced
 
-.seealso: TSCreate(), TSAdjointStep(), TSSetCostGradients()
+.seealso: `TSCreate()`, `TSAdjointStep()`, `TSSetCostGradients()`
 @*/
 PetscErrorCode TSAdjointSetUp(TS ts)
 {
@@ -1038,7 +1038,7 @@ PetscErrorCode TSAdjointSetUp(TS ts)
 
    Level: beginner
 
-.seealso: TSCreate(), TSAdjointSetUp(), TSADestroy()
+.seealso: `TSCreate()`, `TSAdjointSetUp()`, `TSADestroy()`
 @*/
 PetscErrorCode TSAdjointReset(TS ts)
 {
@@ -1077,7 +1077,7 @@ PetscErrorCode TSAdjointReset(TS ts)
     Normally one does not call this and TSAdjointSolve() integrates back to the original timestep. One can call this
           so as to integrate back to less than the original timestep
 
-.seealso: TSSetExactFinalTime()
+.seealso: `TSSetExactFinalTime()`
 @*/
 PetscErrorCode TSAdjointSetSteps(TS ts,PetscInt steps)
 {
@@ -1172,7 +1172,7 @@ PetscErrorCode TSAdjointComputeDRDPFunction(TS ts,PetscReal t,Vec U,Vec *DRDP)
 
    Level: intermediate
 
-.seealso: TSAdjointMonitorSet()
+.seealso: `TSAdjointMonitorSet()`
 @*/
 PetscErrorCode TSAdjointMonitorSensi(TS ts,PetscInt step,PetscReal ptime,Vec v,PetscInt numcost,Vec *lambda,Vec *mu,PetscViewerAndFormat *vf)
 {
@@ -1201,13 +1201,13 @@ PetscErrorCode TSAdjointMonitorSensi(TS ts,PetscInt step,PetscReal ptime,Vec v,P
 
    Level: developer
 
-.seealso: PetscOptionsGetViewer(), PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(),
-          PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
-          PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHeadBegin(),
-          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsFList(), PetscOptionsEList()
+.seealso: `PetscOptionsGetViewer()`, `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`,
+          `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`
+          `PetscOptionsInt()`, `PetscOptionsString()`, `PetscOptionsReal()`, `PetscOptionsBool()`,
+          `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
+          `PetscOptionsStringArray(),PetscOptionsRealArray()`, `PetscOptionsScalar()`,
+          `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
+          `PetscOptionsFList()`, `PetscOptionsEList()`
 @*/
 PetscErrorCode TSAdjointMonitorSetFromOptions(TS ts,const char name[],const char help[], const char manual[],PetscErrorCode (*monitor)(TS,PetscInt,PetscReal,Vec,PetscInt,Vec*,Vec*,PetscViewerAndFormat*),PetscErrorCode (*monitorsetup)(TS,PetscViewerAndFormat*))
 {
@@ -1265,7 +1265,7 @@ $    int adjointmonitor(TS ts,PetscInt steps,PetscReal time,Vec u,PetscInt numco
 
    Level: intermediate
 
-.seealso: TSAdjointMonitorCancel()
+.seealso: `TSAdjointMonitorCancel()`
 @*/
 PetscErrorCode TSAdjointMonitorSet(TS ts,PetscErrorCode (*adjointmonitor)(TS,PetscInt,PetscReal,Vec,PetscInt,Vec*,Vec*,void*),void *adjointmctx,PetscErrorCode (*adjointmdestroy)(void**))
 {
@@ -1298,7 +1298,7 @@ PetscErrorCode TSAdjointMonitorSet(TS ts,PetscErrorCode (*adjointmonitor)(TS,Pet
 
    Level: intermediate
 
-.seealso: TSAdjointMonitorSet()
+.seealso: `TSAdjointMonitorSet()`
 @*/
 PetscErrorCode TSAdjointMonitorCancel(TS ts)
 {
@@ -1320,7 +1320,7 @@ PetscErrorCode TSAdjointMonitorCancel(TS ts)
 
    Level: intermediate
 
-.seealso: TSAdjointMonitorSet()
+.seealso: `TSAdjointMonitorSet()`
 @*/
 PetscErrorCode TSAdjointMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,PetscInt numcost,Vec *lambda,Vec *mu,PetscViewerAndFormat *vf)
 {
@@ -1354,7 +1354,7 @@ PetscErrorCode TSAdjointMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v
 
    Level: intermediate
 
-.seealso: TSAdjointMonitorSet(), TSAdjointMonitorDefault(), VecView()
+.seealso: `TSAdjointMonitorSet()`, `TSAdjointMonitorDefault()`, `VecView()`
 @*/
 PetscErrorCode TSAdjointMonitorDrawSensi(TS ts,PetscInt step,PetscReal ptime,Vec u,PetscInt numcost,Vec *lambda,Vec *mu,void *dummy)
 {
@@ -1394,7 +1394,7 @@ PetscErrorCode TSAdjointMonitorDrawSensi(TS ts,PetscInt step,PetscReal ptime,Vec
    Notes:
     This is not normally called directly by users
 
-.seealso: TSSetSaveTrajectory(), TSTrajectorySetUp()
+.seealso: `TSSetSaveTrajectory()`, `TSTrajectorySetUp()`
 */
 PetscErrorCode TSAdjointSetFromOptions(PetscOptionItems *PetscOptionsObject,TS ts)
 {
@@ -1434,7 +1434,7 @@ PetscErrorCode TSAdjointSetFromOptions(PetscOptionItems *PetscOptionsObject,TS t
 
    Level: intermediate
 
-.seealso: TSAdjointSetUp(), TSAdjointSolve()
+.seealso: `TSAdjointSetUp()`, `TSAdjointSolve()`
 @*/
 PetscErrorCode TSAdjointStep(TS ts)
 {
@@ -1480,7 +1480,7 @@ PetscErrorCode TSAdjointStep(TS ts)
 
    By default this will integrate back to the initial time, one can use TSAdjointSetSteps() to step back to a later time
 
-.seealso: TSCreate(), TSSetCostGradients(), TSSetSolution(), TSAdjointStep()
+.seealso: `TSCreate()`, `TSSetCostGradients()`, `TSSetSolution()`, `TSAdjointStep()`
 @*/
 PetscErrorCode TSAdjointSolve(TS ts)
 {
@@ -1587,7 +1587,7 @@ PetscErrorCode TSAdjointMonitor(TS ts,PetscInt step,PetscReal ptime,Vec u,PetscI
  Notes:
  This function cannot be called until TSAdjointStep() has been completed.
 
- .seealso: TSAdjointSolve(), TSAdjointStep
+ .seealso: `TSAdjointSolve()`, `TSAdjointStep`
  @*/
 PetscErrorCode TSAdjointCostIntegral(TS ts)
 {
@@ -1611,7 +1611,7 @@ PetscErrorCode TSAdjointCostIntegral(TS ts)
 
   Level: advanced
 
-.seealso: TSCreate(), TSDestroy(), TSSetUp()
+.seealso: `TSCreate()`, `TSDestroy()`, `TSSetUp()`
 @*/
 PetscErrorCode TSForwardSetUp(TS ts)
 {
@@ -1636,7 +1636,7 @@ PetscErrorCode TSForwardSetUp(TS ts)
 
   Level: advanced
 
-.seealso: TSCreate(), TSDestroy(), TSForwardSetUp()
+.seealso: `TSCreate()`, `TSDestroy()`, `TSForwardSetUp()`
 @*/
 PetscErrorCode TSForwardReset(TS ts)
 {
@@ -1667,7 +1667,7 @@ PetscErrorCode TSForwardReset(TS ts)
 
   Level: deprecated
 
-.seealso: TSForwardGetSensitivities(), TSForwardSetIntegralGradients(), TSForwardGetIntegralGradients(), TSForwardStep()
+.seealso: `TSForwardGetSensitivities()`, `TSForwardSetIntegralGradients()`, `TSForwardGetIntegralGradients()`, `TSForwardStep()`
 @*/
 PetscErrorCode TSForwardSetIntegralGradients(TS ts,PetscInt numfwdint,Vec *vp)
 {
@@ -1691,7 +1691,7 @@ PetscErrorCode TSForwardSetIntegralGradients(TS ts,PetscInt numfwdint,Vec *vp)
 
   Level: deprecated
 
-.seealso: TSForwardSetSensitivities(), TSForwardSetIntegralGradients(), TSForwardGetIntegralGradients(), TSForwardStep()
+.seealso: `TSForwardSetSensitivities()`, `TSForwardSetIntegralGradients()`, `TSForwardGetIntegralGradients()`, `TSForwardStep()`
 @*/
 PetscErrorCode TSForwardGetIntegralGradients(TS ts,PetscInt *numfwdint,Vec **vp)
 {
@@ -1716,7 +1716,7 @@ PetscErrorCode TSForwardGetIntegralGradients(TS ts,PetscInt *numfwdint,Vec **vp)
   Notes:
   This function cannot be called until TSStep() has been completed.
 
-.seealso: TSForwardSetSensitivities(), TSForwardGetSensitivities(), TSForwardSetIntegralGradients(), TSForwardGetIntegralGradients(), TSForwardSetUp()
+.seealso: `TSForwardSetSensitivities()`, `TSForwardGetSensitivities()`, `TSForwardSetIntegralGradients()`, `TSForwardGetIntegralGradients()`, `TSForwardSetUp()`
 @*/
 PetscErrorCode TSForwardStep(TS ts)
 {
@@ -1748,7 +1748,7 @@ PetscErrorCode TSForwardStep(TS ts)
   You must call this function before TSSolve().
   The entries in the sensitivity matrix must be correctly initialized with the values S = dy/dp|startingtime.
 
-.seealso: TSForwardGetSensitivities(), TSForwardSetIntegralGradients(), TSForwardGetIntegralGradients(), TSForwardStep()
+.seealso: `TSForwardGetSensitivities()`, `TSForwardSetIntegralGradients()`, `TSForwardGetIntegralGradients()`, `TSForwardStep()`
 @*/
 PetscErrorCode TSForwardSetSensitivities(TS ts,PetscInt nump,Mat Smat)
 {
@@ -1777,7 +1777,7 @@ PetscErrorCode TSForwardSetSensitivities(TS ts,PetscInt nump,Mat Smat)
 
   Level: intermediate
 
-.seealso: TSForwardSetSensitivities(), TSForwardSetIntegralGradients(), TSForwardGetIntegralGradients(), TSForwardStep()
+.seealso: `TSForwardSetSensitivities()`, `TSForwardSetIntegralGradients()`, `TSForwardGetIntegralGradients()`, `TSForwardStep()`
 @*/
 PetscErrorCode TSForwardGetSensitivities(TS ts,PetscInt *nump,Mat *Smat)
 {
@@ -1801,7 +1801,7 @@ PetscErrorCode TSForwardGetSensitivities(TS ts,PetscInt *nump,Mat *Smat)
    Notes:
    This function cannot be called until TSStep() has been completed.
 
-.seealso: TSSolve(), TSAdjointCostIntegral()
+.seealso: `TSSolve()`, `TSAdjointCostIntegral()`
 @*/
 PetscErrorCode TSForwardCostIntegral(TS ts)
 {
@@ -1825,7 +1825,7 @@ PetscErrorCode TSForwardCostIntegral(TS ts)
 
   Notes: TSSolve() allows users to pass the initial solution directly to TS. But the tangent linear variables cannot be initialized in this way. This function is used to set initial values for tangent linear variables.
 
-.seealso: TSForwardSetSensitivities()
+.seealso: `TSForwardSetSensitivities()`
 @*/
 PetscErrorCode TSForwardSetInitialSensitivities(TS ts,Mat didp)
 {
@@ -1875,7 +1875,7 @@ PetscErrorCode TSForwardGetStages(TS ts,PetscInt *ns,Mat **S)
 
    Level: intermediate
 
-.seealso: TSGetQuadratureTS()
+.seealso: `TSGetQuadratureTS()`
 @*/
 PetscErrorCode TSCreateQuadratureTS(TS ts,PetscBool fwd,TS *quadts)
 {
@@ -1913,7 +1913,7 @@ PetscErrorCode TSCreateQuadratureTS(TS ts,PetscBool fwd,TS *quadts)
 
    Level: intermediate
 
-.seealso: TSCreateQuadratureTS()
+.seealso: `TSCreateQuadratureTS()`
 @*/
 PetscErrorCode TSGetQuadratureTS(TS ts,PetscBool *fwd,TS *quadts)
 {

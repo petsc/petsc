@@ -36,7 +36,7 @@ PetscErrorCode  PetscDrawClear(PetscDraw draw)
 
    Level: advanced
 
-.seealso: PetscDrawEOP(), PetscDrawClear()
+.seealso: `PetscDrawEOP()`, `PetscDrawClear()`
 @*/
 PetscErrorCode  PetscDrawBOP(PetscDraw draw)
 {
@@ -57,7 +57,7 @@ PetscErrorCode  PetscDrawBOP(PetscDraw draw)
 
    Level: advanced
 
-.seealso: PetscDrawBOP(), PetscDrawClear()
+.seealso: `PetscDrawBOP()`, `PetscDrawClear()`
 @*/
 PetscErrorCode  PetscDrawEOP(PetscDraw draw)
 {

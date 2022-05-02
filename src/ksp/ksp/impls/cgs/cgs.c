@@ -147,7 +147,7 @@ static PetscErrorCode  KSPSolve_CGS(KSP ksp)
     Has this weird support for doing the convergence test with the natural norm, I assume this works only with
       no preconditioning and symmetric positive definite operator.
 
-.seealso: KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBCGS, KSPSetPCSide()
+.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBCGS`, `KSPSetPCSide()`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_CGS(KSP ksp)
 {

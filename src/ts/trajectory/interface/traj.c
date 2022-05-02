@@ -21,7 +21,7 @@ PetscLogEvent     TSTrajectory_Set, TSTrajectory_Get, TSTrajectory_GetVecs, TSTr
 
   Level: developer
 
-.seealso: TSTrajectoryRegisterAll()
+.seealso: `TSTrajectoryRegisterAll()`
 @*/
 PetscErrorCode TSTrajectoryRegister(const char sname[],PetscErrorCode (*function)(TSTrajectory,TS))
 {
@@ -46,7 +46,7 @@ PetscErrorCode TSTrajectoryRegister(const char sname[],PetscErrorCode (*function
 
   Notes: Usually one does not call this routine, it is called automatically during TSSolve()
 
-.seealso: TSTrajectorySetUp(), TSTrajectoryDestroy(), TSTrajectorySetType(), TSTrajectorySetVariableNames(), TSGetTrajectory(), TSTrajectoryGet(), TSTrajectoryGetVecs()
+.seealso: `TSTrajectorySetUp()`, `TSTrajectoryDestroy()`, `TSTrajectorySetType()`, `TSTrajectorySetVariableNames()`, `TSGetTrajectory()`, `TSTrajectoryGet()`, `TSTrajectoryGetVecs()`
 @*/
 PetscErrorCode TSTrajectorySet(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal time,Vec X)
 {
@@ -85,7 +85,7 @@ PetscErrorCode TSTrajectorySet(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal 
 
   Level: developer
 
-.seealso: TSTrajectorySet()
+.seealso: `TSTrajectorySet()`
 @*/
 PetscErrorCode TSTrajectoryGetNumSteps(TSTrajectory tj, PetscInt *steps)
 {
@@ -113,7 +113,7 @@ PetscErrorCode TSTrajectoryGetNumSteps(TSTrajectory tj, PetscInt *steps)
 
   Notes: Usually one does not call this routine, it is called automatically during TSSolve()
 
-.seealso: TSTrajectorySetUp(), TSTrajectoryDestroy(), TSTrajectorySetType(), TSTrajectorySetVariableNames(), TSGetTrajectory(), TSTrajectorySet(), TSTrajectoryGetVecs(), TSGetSolution()
+.seealso: `TSTrajectorySetUp()`, `TSTrajectoryDestroy()`, `TSTrajectorySetType()`, `TSTrajectorySetVariableNames()`, `TSGetTrajectory()`, `TSTrajectorySet()`, `TSTrajectoryGetVecs()`, `TSGetSolution()`
 @*/
 PetscErrorCode TSTrajectoryGet(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal *time)
 {
@@ -158,7 +158,7 @@ PetscErrorCode TSTrajectoryGet(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal 
   Notes: If the step number is PETSC_DECIDE, the time argument is used to inquire the trajectory.
          If the requested time does not match any in the trajectory, Lagrangian interpolations are returned.
 
-.seealso: TSTrajectorySetUp(), TSTrajectoryDestroy(), TSTrajectorySetType(), TSTrajectorySetVariableNames(), TSGetTrajectory(), TSTrajectorySet(), TSTrajectoryGet()
+.seealso: `TSTrajectorySetUp()`, `TSTrajectoryDestroy()`, `TSTrajectorySetType()`, `TSTrajectorySetVariableNames()`, `TSGetTrajectory()`, `TSTrajectorySet()`, `TSTrajectoryGet()`
 @*/
 PetscErrorCode TSTrajectoryGetVecs(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal *time,Vec U,Vec Udot)
 {
@@ -270,7 +270,7 @@ PetscErrorCode TSTrajectoryGetVecs(TSTrajectory tj,TS ts,PetscInt stepnum,PetscR
 -  name - command line option
 
    Level: intermediate
-.seealso:  TSTrajectory, TSTrajectoryView, PetscObjectViewFromOptions(), TSTrajectoryCreate()
+.seealso: `TSTrajectory`, `TSTrajectoryView`, `PetscObjectViewFromOptions()`, `TSTrajectoryCreate()`
 @*/
 PetscErrorCode  TSTrajectoryViewFromOptions(TSTrajectory A,PetscObject obj,const char name[])
 {
@@ -305,7 +305,7 @@ PetscErrorCode  TSTrajectoryViewFromOptions(TSTrajectory A,PetscObject obj,const
 
     Level: developer
 
-.seealso: PetscViewerASCIIOpen()
+.seealso: `PetscViewerASCIIOpen()`
 @*/
 PetscErrorCode  TSTrajectoryView(TSTrajectory tj,PetscViewer viewer)
 {
@@ -347,7 +347,7 @@ PetscErrorCode  TSTrajectoryView(TSTrajectory tj,PetscViewer viewer)
 
    Note: Fortran interface is not possible because of the string array argument
 
-.seealso: TSTrajectory, TSGetTrajectory()
+.seealso: `TSTrajectory`, `TSGetTrajectory()`
 @*/
 PetscErrorCode  TSTrajectorySetVariableNames(TSTrajectory ctx,const char * const *names)
 {
@@ -372,7 +372,7 @@ PetscErrorCode  TSTrajectorySetVariableNames(TSTrajectory ctx,const char * const
 
    Level: intermediate
 
-.seealso:  TSTrajectorySetVariableNames(), TSTrajectory, TSMonitorLGSetTransform()
+.seealso: `TSTrajectorySetVariableNames()`, `TSTrajectory`, `TSMonitorLGSetTransform()`
 @*/
 PetscErrorCode  TSTrajectorySetTransform(TSTrajectory tj,PetscErrorCode (*transform)(void*,Vec,Vec*),PetscErrorCode (*destroy)(void*),void *tctx)
 {
@@ -400,7 +400,7 @@ PetscErrorCode  TSTrajectorySetTransform(TSTrajectory tj,PetscErrorCode (*transf
   Notes:
     Usually one does not call this routine, it is called automatically when one calls TSSetSaveTrajectory().
 
-.seealso: TSTrajectorySetUp(), TSTrajectoryDestroy(), TSTrajectorySetType(), TSTrajectorySetVariableNames(), TSGetTrajectory(), TSTrajectorySetKeepFiles()
+.seealso: `TSTrajectorySetUp()`, `TSTrajectoryDestroy()`, `TSTrajectorySetType()`, `TSTrajectorySetVariableNames()`, `TSGetTrajectory()`, `TSTrajectorySetKeepFiles()`
 @*/
 PetscErrorCode  TSTrajectoryCreate(MPI_Comm comm,TSTrajectory *tj)
 {
@@ -455,7 +455,7 @@ PetscErrorCode  TSTrajectoryCreate(MPI_Comm comm,TSTrajectory *tj)
 
    Level: developer
 
-.seealso: TS, TSTrajectoryCreate(), TSTrajectorySetFromOptions(), TSTrajectoryDestroy(), TSTrajectoryGetType()
+.seealso: `TS`, `TSTrajectoryCreate()`, `TSTrajectorySetFromOptions()`, `TSTrajectoryDestroy()`, `TSTrajectoryGetType()`
 
 @*/
 PetscErrorCode  TSTrajectorySetType(TSTrajectory tj,TS ts,TSTrajectoryType type)
@@ -496,7 +496,7 @@ PetscErrorCode  TSTrajectorySetType(TSTrajectory tj,TS ts,TSTrajectoryType type)
 
   Level: developer
 
-.seealso: TS, TSTrajectoryCreate(), TSTrajectorySetFromOptions(), TSTrajectoryDestroy(), TSTrajectorySetType()
+.seealso: `TS`, `TSTrajectoryCreate()`, `TSTrajectorySetFromOptions()`, `TSTrajectoryDestroy()`, `TSTrajectorySetType()`
 
 @*/
 PetscErrorCode TSTrajectoryGetType(TSTrajectory tj,TS ts,TSTrajectoryType *type)
@@ -519,7 +519,7 @@ PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Visualization(TSTrajectory,TS);
 
   Level: developer
 
-.seealso: TSTrajectoryRegister()
+.seealso: `TSTrajectoryRegister()`
 @*/
 PetscErrorCode  TSTrajectoryRegisterAll(void)
 {
@@ -544,7 +544,7 @@ PetscErrorCode  TSTrajectoryRegisterAll(void)
 
    Level: developer
 
-.seealso: TSTrajectoryCreate(), TSTrajectorySetUp()
+.seealso: `TSTrajectoryCreate()`, `TSTrajectorySetUp()`
 @*/
 PetscErrorCode TSTrajectoryReset(TSTrajectory tj)
 {
@@ -571,7 +571,7 @@ PetscErrorCode TSTrajectoryReset(TSTrajectory tj)
 
    Level: developer
 
-.seealso: TSTrajectoryCreate(), TSTrajectorySetUp()
+.seealso: `TSTrajectoryCreate()`, `TSTrajectorySetUp()`
 @*/
 PetscErrorCode TSTrajectoryDestroy(TSTrajectory *tj)
 {
@@ -620,7 +620,7 @@ PetscErrorCode TSTrajectoryDestroy(TSTrajectory *tj)
 
   Level: developer
 
-.seealso: TSTrajectorySetFromOptions(), TSTrajectorySetType()
+.seealso: `TSTrajectorySetFromOptions()`, `TSTrajectorySetType()`
 */
 static PetscErrorCode TSTrajectorySetTypeFromOptions_Private(PetscOptionItems *PetscOptionsObject,TSTrajectory tj,TS ts)
 {
@@ -656,7 +656,7 @@ static PetscErrorCode TSTrajectorySetTypeFromOptions_Private(PetscOptionItems *P
 
    Level: advanced
 
-.seealso: TSTrajectoryCreate(), TSTrajectoryDestroy(), TSTrajectorySetUp()
+.seealso: `TSTrajectoryCreate()`, `TSTrajectoryDestroy()`, `TSTrajectorySetUp()`
 @*/
 PetscErrorCode TSTrajectorySetUseHistory(TSTrajectory tj,PetscBool flg)
 {
@@ -681,7 +681,7 @@ PetscErrorCode TSTrajectorySetUseHistory(TSTrajectory tj,PetscBool flg)
 
    Level: developer
 
-.seealso: TSTrajectoryCreate(), TSTrajectoryDestroy(), TSTrajectorySetUp()
+.seealso: `TSTrajectoryCreate()`, `TSTrajectoryDestroy()`, `TSTrajectorySetUp()`
 @*/
 PetscErrorCode TSTrajectorySetMonitor(TSTrajectory tj,PetscBool flg)
 {
@@ -710,7 +710,7 @@ PetscErrorCode TSTrajectorySetMonitor(TSTrajectory tj,PetscBool flg)
 
    Level: advanced
 
-.seealso: TSTrajectoryCreate(), TSTrajectoryDestroy(), TSTrajectorySetUp(), TSTrajectorySetMonitor()
+.seealso: `TSTrajectoryCreate()`, `TSTrajectoryDestroy()`, `TSTrajectorySetUp()`, `TSTrajectorySetMonitor()`
 @*/
 PetscErrorCode TSTrajectorySetKeepFiles(TSTrajectory tj,PetscBool flg)
 {
@@ -738,7 +738,7 @@ PetscErrorCode TSTrajectorySetKeepFiles(TSTrajectory tj,PetscBool flg)
 
    Level: developer
 
-.seealso: TSTrajectorySetFiletemplate(),TSTrajectorySetUp()
+.seealso: `TSTrajectorySetFiletemplate(),TSTrajectorySetUp()`
 @*/
 PetscErrorCode TSTrajectorySetDirname(TSTrajectory tj,const char dirname[])
 {
@@ -775,7 +775,7 @@ PetscErrorCode TSTrajectorySetDirname(TSTrajectory tj,const char dirname[])
 
    Level: developer
 
-.seealso: TSTrajectorySetDirname(),TSTrajectorySetUp()
+.seealso: `TSTrajectorySetDirname(),TSTrajectorySetUp()`
 @*/
 PetscErrorCode TSTrajectorySetFiletemplate(TSTrajectory tj,const char filetemplate[])
 {
@@ -819,7 +819,7 @@ PetscErrorCode TSTrajectorySetFiletemplate(TSTrajectory tj,const char filetempla
    Notes:
     This is not normally called directly by users
 
-.seealso: TSSetSaveTrajectory(), TSTrajectorySetUp()
+.seealso: `TSSetSaveTrajectory()`, `TSTrajectorySetUp()`
 @*/
 PetscErrorCode  TSTrajectorySetFromOptions(TSTrajectory tj,TS ts)
 {
@@ -871,7 +871,7 @@ PetscErrorCode  TSTrajectorySetFromOptions(TSTrajectory tj,TS ts)
 
    Level: developer
 
-.seealso: TSSetSaveTrajectory(), TSTrajectoryCreate(), TSTrajectoryDestroy()
+.seealso: `TSSetSaveTrajectory()`, `TSTrajectoryCreate()`, `TSTrajectoryDestroy()`
 @*/
 PetscErrorCode  TSTrajectorySetUp(TSTrajectory tj,TS ts)
 {
@@ -917,7 +917,7 @@ PetscErrorCode  TSTrajectorySetUp(TSTrajectory tj,TS ts)
 
    Level: developer
 
-.seealso: TSSetSaveTrajectory(), TSTrajectoryCreate(), TSTrajectoryDestroy(), TSTrajectoryGetSolutionOnly()
+.seealso: `TSSetSaveTrajectory()`, `TSTrajectoryCreate()`, `TSTrajectoryDestroy()`, `TSTrajectoryGetSolutionOnly()`
 @*/
 PetscErrorCode TSTrajectorySetSolutionOnly(TSTrajectory tj,PetscBool solution_only)
 {
@@ -941,7 +941,7 @@ PetscErrorCode TSTrajectorySetSolutionOnly(TSTrajectory tj,PetscBool solution_on
 
    Level: developer
 
-.seealso: TSSetSaveTrajectory(), TSTrajectoryCreate(), TSTrajectoryDestroy(), TSTrajectorySetSolutionOnly()
+.seealso: `TSSetSaveTrajectory()`, `TSTrajectoryCreate()`, `TSTrajectoryDestroy()`, `TSTrajectorySetSolutionOnly()`
 @*/
 PetscErrorCode TSTrajectoryGetSolutionOnly(TSTrajectory tj,PetscBool *solution_only)
 {
@@ -972,7 +972,7 @@ PetscErrorCode TSTrajectoryGetSolutionOnly(TSTrajectory tj,PetscBool *solution_o
           This function differs from TSTrajectoryGetVecs since the vectors obtained cannot be modified, and they need to be returned by
           calling TSTrajectoryRestoreUpdatedHistoryVecs().
 
-.seealso: TSSetSaveTrajectory(), TSTrajectoryCreate(), TSTrajectoryDestroy(), TSTrajectoryRestoreUpdatedHistoryVecs(), TSTrajectoryGetVecs()
+.seealso: `TSSetSaveTrajectory()`, `TSTrajectoryCreate()`, `TSTrajectoryDestroy()`, `TSTrajectoryRestoreUpdatedHistoryVecs()`, `TSTrajectoryGetVecs()`
 @*/
 PetscErrorCode TSTrajectoryGetUpdatedHistoryVecs(TSTrajectory tj, TS ts, PetscReal time, Vec *U, Vec *Udot)
 {
@@ -1018,7 +1018,7 @@ PetscErrorCode TSTrajectoryGetUpdatedHistoryVecs(TSTrajectory tj, TS ts, PetscRe
 
    Level: developer
 
-.seealso: TSTrajectoryGetUpdatedHistoryVecs()
+.seealso: `TSTrajectoryGetUpdatedHistoryVecs()`
 @*/
 PetscErrorCode TSTrajectoryRestoreUpdatedHistoryVecs(TSTrajectory tj, Vec *U, Vec *Udot)
 {

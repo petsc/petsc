@@ -36,7 +36,7 @@ $    invj (x_cell - v0) = x_face
 
   Level: developer
 
-.seealso: DMPlexCellRefinerGetAffineTransforms(), Create()
+.seealso: `DMPlexCellRefinerGetAffineTransforms()`, `Create()`
 @*/
 PetscErrorCode DMPlexRefineRegularGetAffineFaceTransforms(DMPlexTransform tr, DMPolytopeType ct, PetscInt *Nf, PetscReal *v0[], PetscReal *J[], PetscReal *invJ[], PetscReal *detJ[])
 {
@@ -108,7 +108,7 @@ PetscErrorCode DMPlexRefineRegularGetAffineFaceTransforms(DMPlexTransform tr, DM
 
   Level: developer
 
-.seealso: DMPlexRefineRegularGetAffineFaceTransforms(), DMPLEXREFINEREGULAR
+.seealso: `DMPlexRefineRegularGetAffineFaceTransforms()`, `DMPLEXREFINEREGULAR`
 @*/
 PetscErrorCode DMPlexRefineRegularGetAffineTransforms(DMPlexTransform tr, DMPolytopeType ct, PetscInt *Nc, PetscReal *v0[], PetscReal *J[], PetscReal *invJ[])
 {

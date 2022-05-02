@@ -50,7 +50,7 @@ static PetscErrorCode DMMoab_GetWriteOptions_Private(PetscInt fsetid, PetscInt n
 
   Level: intermediate
 
-.seealso: DMMoabLoadFromFile(), DMMoabSetGlobalFieldVector()
+.seealso: `DMMoabLoadFromFile()`, `DMMoabSetGlobalFieldVector()`
 @*/
 PetscErrorCode DMMoabOutput(DM dm, const char* filename, const char* usrwriteopts)
 {

@@ -37,7 +37,7 @@ static PetscErrorCode PFDestroy_String(void *value)
   Output Parameter:
 .    f - the function pointer.
 
-.seealso: PFSetFromOptions()
+.seealso: `PFSetFromOptions()`
 
 */
 PetscErrorCode  PFStringCreateFunction(PF pf,char *string,void **f)

@@ -24,7 +24,7 @@ static PetscMPIInt Petsc_Viewer_SAWs_keyval = MPI_KEYVAL_INVALID;
      an error code.  The resulting PetscViewer is usually used in the form
 $       XXXView(XXX object,PETSC_VIEWER_SAWS_(comm));
 
-.seealso: PETSC_VIEWER_SAWS_WORLD, PETSC_VIEWER_SAWS_SELF
+.seealso: `PETSC_VIEWER_SAWS_WORLD`, `PETSC_VIEWER_SAWS_SELF`
 @*/
 PetscViewer PETSC_VIEWER_SAWS_(MPI_Comm comm)
 {

@@ -135,8 +135,8 @@ static
     Notes:
       Any row or column indices that are outside the bounds of the matrix on the rank are discarded
 
-.seealso: MatSetValues(), MatCreate(), MatCreateDenseCUDA(), MatCreateAIJCUSPARSE(), MatKokkosGetDeviceMatWrite(),
-          MatCUSPARSEGetDeviceMatWrite()
+.seealso: `MatSetValues()`, `MatCreate()`, `MatCreateDenseCUDA()`, `MatCreateAIJCUSPARSE()`, `MatKokkosGetDeviceMatWrite()`,
+          `MatCUSPARSEGetDeviceMatWrite()`
 @*/
 PetscErrorCode MatSetValuesDevice(PetscSplitCSRDataStructure d_mat, PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const PetscScalar v[],InsertMode is)
 {

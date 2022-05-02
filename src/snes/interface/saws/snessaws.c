@@ -18,7 +18,7 @@ typedef struct {
 
    Level: developer
 
-.seealso: SNESMonitorSAWs(), SNESMonitorSAWsDestroy()
+.seealso: `SNESMonitorSAWs()`, `SNESMonitorSAWsDestroy()`
 @*/
 PetscErrorCode SNESMonitorSAWsCreate(SNES snes,void **ctx)
 {
@@ -42,7 +42,7 @@ PetscErrorCode SNESMonitorSAWsCreate(SNES snes,void **ctx)
 
    Level: developer
 
-.seealso: SNESMonitorSAWsCreate()
+.seealso: `SNESMonitorSAWsCreate()`
 @*/
 PetscErrorCode SNESMonitorSAWsDestroy(void **ctx)
 {
@@ -64,7 +64,7 @@ PetscErrorCode SNESMonitorSAWsDestroy(void **ctx)
 
    Level: advanced
 
-.seealso: PetscViewerSAWsOpen()
+.seealso: `PetscViewerSAWsOpen()`
 @*/
 PetscErrorCode SNESMonitorSAWs(SNES snes,PetscInt n,PetscReal rnorm,void *ctx)
 {

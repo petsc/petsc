@@ -61,11 +61,11 @@ PETSC_INTERN PetscErrorCode MatShift_Basic(Mat Y,PetscScalar a)
 
    Level: beginner
 
-.seealso: MatCreateSeqAIJ(), MatCreateAIJ(),
-          MatCreateSeqDense(), MatCreateDense(),
-          MatCreateSeqBAIJ(), MatCreateBAIJ(),
-          MatCreateSeqSBAIJ(), MatCreateSBAIJ(),
-          MatConvert()
+.seealso: `MatCreateSeqAIJ()`, `MatCreateAIJ()`,
+          `MatCreateSeqDense()`, `MatCreateDense()`,
+          `MatCreateSeqBAIJ()`, `MatCreateBAIJ()`,
+          `MatCreateSeqSBAIJ()`, `MatCreateSBAIJ()`,
+          `MatConvert()`
 @*/
 PetscErrorCode  MatCreate(MPI_Comm comm,Mat *A)
 {
@@ -102,7 +102,7 @@ PetscErrorCode  MatCreate(MPI_Comm comm,Mat *A)
 
    Level: advanced
 
-.seealso: PCSetErrorIfFailure()
+.seealso: `PCSetErrorIfFailure()`
 @*/
 PetscErrorCode  MatSetErrorIfFailure(Mat mat,PetscBool flg)
 {
@@ -143,7 +143,7 @@ PetscErrorCode  MatSetErrorIfFailure(Mat mat,PetscBool flg)
 
   Level: beginner
 
-.seealso: MatGetSize(), PetscSplitOwnership()
+.seealso: `MatGetSize()`, `PetscSplitOwnership()`
 @*/
 PetscErrorCode  MatSetSizes(Mat A, PetscInt m, PetscInt n, PetscInt M, PetscInt N)
 {
@@ -188,11 +188,11 @@ PetscErrorCode  MatSetSizes(Mat A, PetscInt m, PetscInt n, PetscInt M, PetscInt 
 
    Level: beginner
 
-.seealso: MatCreateSeqAIJ((), MatCreateAIJ(),
-          MatCreateSeqDense(), MatCreateDense(),
-          MatCreateSeqBAIJ(), MatCreateBAIJ(),
-          MatCreateSeqSBAIJ(), MatCreateSBAIJ(),
-          MatConvert()
+.seealso: `MatCreateSeqAIJ(()`, `MatCreateAIJ()`,
+          `MatCreateSeqDense()`, `MatCreateDense()`,
+          `MatCreateSeqBAIJ()`, `MatCreateBAIJ()`,
+          `MatCreateSeqSBAIJ()`, `MatCreateSBAIJ()`,
+          `MatConvert()`
 @*/
 PetscErrorCode  MatSetFromOptions(Mat B)
 {
@@ -274,8 +274,8 @@ PetscErrorCode  MatSetFromOptions(Mat B)
 
    Level: beginner
 
-.seealso: MatSeqAIJSetPreallocation(), MatMPIAIJSetPreallocation(), MatSeqBAIJSetPreallocation(), MatMPIBAIJSetPreallocation(), MatSeqSBAIJSetPreallocation(), MatMPISBAIJSetPreallocation(),
-          PetscSplitOwnership()
+.seealso: `MatSeqAIJSetPreallocation()`, `MatMPIAIJSetPreallocation()`, `MatSeqBAIJSetPreallocation()`, `MatMPIBAIJSetPreallocation()`, `MatSeqSBAIJSetPreallocation()`, `MatMPISBAIJSetPreallocation()`,
+          `PetscSplitOwnership()`
 @*/
 PetscErrorCode MatXAIJSetPreallocation(Mat A,PetscInt bs,const PetscInt dnnz[],const PetscInt onnz[],const PetscInt dnnzu[],const PetscInt onnzu[])
 {
@@ -453,7 +453,7 @@ PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat A,Mat *C)
 
    Level: intermediate
 
-.seealso: MatBoundToCPU()
+.seealso: `MatBoundToCPU()`
 @*/
 PetscErrorCode MatBindToCPU(Mat A,PetscBool flg)
 {
@@ -481,7 +481,7 @@ PetscErrorCode MatBindToCPU(Mat A,PetscBool flg)
 
    Level: intermediate
 
-.seealso: MatBindToCPU()
+.seealso: `MatBindToCPU()`
 @*/
 PetscErrorCode MatBoundToCPU(Mat A,PetscBool *flg)
 {
@@ -576,7 +576,7 @@ PetscErrorCode MatSetPreallocationCOO_Basic(Mat A,PetscCount ncoo,const PetscInt
 
    The arrays coo_i and coo_j may be freed immediately after calling this function.
 
-.seealso: MatSetValuesCOO(), MatSeqAIJSetPreallocation(), MatMPIAIJSetPreallocation(), MatSeqBAIJSetPreallocation(), MatMPIBAIJSetPreallocation(), MatSeqSBAIJSetPreallocation(), MatMPISBAIJSetPreallocation(), MatSetPreallocationCOOLocal(), DMSetMatrixPreallocateSkip()
+.seealso: `MatSetValuesCOO()`, `MatSeqAIJSetPreallocation()`, `MatMPIAIJSetPreallocation()`, `MatSeqBAIJSetPreallocation()`, `MatMPIBAIJSetPreallocation()`, `MatSeqSBAIJSetPreallocation()`, `MatMPISBAIJSetPreallocation()`, `MatSetPreallocationCOOLocal()`, `DMSetMatrixPreallocateSkip()`
 @*/
 PetscErrorCode MatSetPreallocationCOO(Mat A,PetscCount ncoo,const PetscInt coo_i[],const PetscInt coo_j[])
 {
@@ -628,7 +628,7 @@ PetscErrorCode MatSetPreallocationCOO(Mat A,PetscCount ncoo,const PetscInt coo_i
    but will be ignored. The corresponding entries in MatSetValuesCOO() will be ignored too. Remote entries
    are allowed and will be properly added or inserted to the matrix.
 
-.seealso: MatSetValuesCOO(), MatSeqAIJSetPreallocation(), MatMPIAIJSetPreallocation(), MatSeqBAIJSetPreallocation(), MatMPIBAIJSetPreallocation(), MatSeqSBAIJSetPreallocation(), MatMPISBAIJSetPreallocation(), MatSetPreallocationCOO(), DMSetMatrixPreallocateSkip()
+.seealso: `MatSetValuesCOO()`, `MatSeqAIJSetPreallocation()`, `MatMPIAIJSetPreallocation()`, `MatSeqBAIJSetPreallocation()`, `MatMPIBAIJSetPreallocation()`, `MatSeqSBAIJSetPreallocation()`, `MatMPISBAIJSetPreallocation()`, `MatSetPreallocationCOO()`, `DMSetMatrixPreallocateSkip()`
 @*/
 PetscErrorCode MatSetPreallocationCOOLocal(Mat A,PetscCount ncoo,PetscInt coo_i[],PetscInt coo_j[])
 {
@@ -675,7 +675,7 @@ PetscErrorCode MatSetPreallocationCOOLocal(Mat A,PetscCount ncoo,PetscInt coo_i[
           The imode flag indicates if coo_v must be added to the current values of the matrix (ADD_VALUES) or overwritten (INSERT_VALUES).
           MatAssemblyBegin() and MatAssemblyEnd() do not need to be called after this routine. It automatically handles the assembly process.
 
-.seealso: MatSetPreallocationCOO(), MatSetPreallocationCOOLocal(), InsertMode, INSERT_VALUES, ADD_VALUES
+.seealso: `MatSetPreallocationCOO()`, `MatSetPreallocationCOOLocal()`, `InsertMode`, `INSERT_VALUES`, `ADD_VALUES`
 @*/
 PetscErrorCode MatSetValuesCOO(Mat A, const PetscScalar coo_v[], InsertMode imode)
 {
@@ -719,7 +719,7 @@ PetscErrorCode MatSetValuesCOO(Mat A, const PetscScalar coo_v[], InsertMode imod
    If the fine-scale DMDA has the -dm_bind_below option set to true, then DMCreateInterpolationScale() calls MatSetBindingPropagates()
    on the restriction/interpolation operator to set the bindingpropagates flag to true.
 
-.seealso: VecSetBindingPropagates(), MatGetBindingPropagates()
+.seealso: `VecSetBindingPropagates()`, `MatGetBindingPropagates()`
 @*/
 PetscErrorCode MatSetBindingPropagates(Mat A,PetscBool flg)
 {
@@ -742,7 +742,7 @@ PetscErrorCode MatSetBindingPropagates(Mat A,PetscBool flg)
 
    Level: developer
 
-.seealso: MatSetBindingPropagates()
+.seealso: `MatSetBindingPropagates()`
 @*/
 PetscErrorCode MatGetBindingPropagates(Mat A,PetscBool *flg)
 {

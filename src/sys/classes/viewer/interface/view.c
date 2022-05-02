@@ -11,7 +11,7 @@ static PetscBool PetscViewerPackageInitialized = PETSC_FALSE;
 
   Level: developer
 
-.seealso: PetscFinalize()
+.seealso: `PetscFinalize()`
 @*/
 PetscErrorCode  PetscViewerFinalizePackage(void)
 {
@@ -52,7 +52,7 @@ PetscErrorCode  PetscViewerFinalizePackage(void)
 
   Level: developer
 
-.seealso: PetscInitialize()
+.seealso: `PetscInitialize()`
 @*/
 PetscErrorCode  PetscViewerInitializePackage(void)
 {
@@ -97,7 +97,7 @@ PetscErrorCode  PetscViewerInitializePackage(void)
 
    Level: beginner
 
-.seealso: PetscViewerSocketOpen(), PetscViewerASCIIOpen(), PetscViewerCreate(), PetscViewerDrawOpen()
+.seealso: `PetscViewerSocketOpen()`, `PetscViewerASCIIOpen()`, `PetscViewerCreate()`, `PetscViewerDrawOpen()`
 
 @*/
 PetscErrorCode  PetscViewerDestroy(PetscViewer *viewer)
@@ -135,7 +135,7 @@ PetscErrorCode  PetscViewerDestroy(PetscViewer *viewer)
 
    This is used as the context variable for many of the TS, SNES, and KSP monitor functions
 
-.seealso: PetscViewerSocketOpen(), PetscViewerASCIIOpen(), PetscViewerCreate(), PetscViewerDrawOpen(), PetscViewerAndFormatDestroy()
+.seealso: `PetscViewerSocketOpen()`, `PetscViewerASCIIOpen()`, `PetscViewerCreate()`, `PetscViewerDrawOpen()`, `PetscViewerAndFormatDestroy()`
 
 @*/
 PetscErrorCode PetscViewerAndFormatCreate(PetscViewer viewer, PetscViewerFormat format, PetscViewerAndFormat **vf)
@@ -160,7 +160,7 @@ PetscErrorCode PetscViewerAndFormatCreate(PetscViewer viewer, PetscViewerFormat 
 
    Level: developer
 
-.seealso: PetscViewerSocketOpen(), PetscViewerASCIIOpen(), PetscViewerCreate(), PetscViewerDrawOpen(), PetscViewerAndFormatCreate()
+.seealso: `PetscViewerSocketOpen()`, `PetscViewerASCIIOpen()`, `PetscViewerCreate()`, `PetscViewerDrawOpen()`, `PetscViewerAndFormatCreate()`
 @*/
 PetscErrorCode PetscViewerAndFormatDestroy(PetscViewerAndFormat **vf)
 {
@@ -196,7 +196,7 @@ PetscErrorCode PetscViewerAndFormatDestroy(PetscViewerAndFormat **vf)
 
    PetscViewerType is actually a string
 
-.seealso: PetscViewerCreate(), PetscViewerSetType(), PetscViewerType
+.seealso: `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscViewerType`
 
 @*/
 PetscErrorCode  PetscViewerGetType(PetscViewer viewer,PetscViewerType *type)
@@ -224,7 +224,7 @@ PetscErrorCode  PetscViewerGetType(PetscViewer viewer,PetscViewerType *type)
 
    Level: advanced
 
-.seealso: PetscViewerSetFromOptions()
+.seealso: `PetscViewerSetFromOptions()`
 @*/
 PetscErrorCode  PetscViewerSetOptionsPrefix(PetscViewer viewer,const char prefix[])
 {
@@ -250,7 +250,7 @@ PetscErrorCode  PetscViewerSetOptionsPrefix(PetscViewer viewer,const char prefix
 
    Level: advanced
 
-.seealso: PetscViewerGetOptionsPrefix()
+.seealso: `PetscViewerGetOptionsPrefix()`
 @*/
 PetscErrorCode  PetscViewerAppendOptionsPrefix(PetscViewer viewer,const char prefix[])
 {
@@ -278,7 +278,7 @@ PetscErrorCode  PetscViewerAppendOptionsPrefix(PetscViewer viewer,const char pre
 
    Level: advanced
 
-.seealso: PetscViewerAppendOptionsPrefix()
+.seealso: `PetscViewerAppendOptionsPrefix()`
 @*/
 PetscErrorCode  PetscViewerGetOptionsPrefix(PetscViewer viewer,const char *prefix[])
 {
@@ -302,7 +302,7 @@ PetscErrorCode  PetscViewerGetOptionsPrefix(PetscViewer viewer,const char *prefi
 
    Level: advanced
 
-.seealso: PetscViewerCreate(), PetscViewerDestroy()
+.seealso: `PetscViewerCreate()`, `PetscViewerDestroy()`
 @*/
 PetscErrorCode  PetscViewerSetUp(PetscViewer viewer)
 {
@@ -327,7 +327,7 @@ PetscErrorCode  PetscViewerSetUp(PetscViewer viewer)
 -  name - command line option
 
    Level: intermediate
-.seealso:  PetscViewer, PetscViewerView, PetscObjectViewFromOptions(), PetscViewerCreate()
+.seealso: `PetscViewer`, `PetscViewerView`, `PetscObjectViewFromOptions()`, `PetscViewerCreate()`
 @*/
 PetscErrorCode  PetscViewerViewFromOptions(PetscViewer A,PetscObject obj,const char name[])
 {
@@ -357,8 +357,8 @@ PetscErrorCode  PetscViewerViewFromOptions(PetscViewer A,PetscObject obj,const c
 
    Level: beginner
 
-.seealso: PetscViewerPushFormat(), PetscViewerASCIIOpen(), PetscViewerDrawOpen(),
-          PetscViewerSocketOpen(), PetscViewerBinaryOpen(), PetscViewerLoad()
+.seealso: `PetscViewerPushFormat()`, `PetscViewerASCIIOpen()`, `PetscViewerDrawOpen()`,
+          `PetscViewerSocketOpen()`, `PetscViewerBinaryOpen()`, `PetscViewerLoad()`
 @*/
 PetscErrorCode  PetscViewerView(PetscViewer v,PetscViewer viewer)
 {
@@ -427,9 +427,9 @@ PetscErrorCode  PetscViewerView(PetscViewer v,PetscViewer viewer)
 
    Level: beginner
 
-.seealso: PetscViewerASCIIOpen(), PetscViewerPushFormat(), PetscViewerDestroy(),
-          VecView(), MatView(), VecLoad(), MatLoad(), PetscViewerBinaryGetDescriptor(),
-          PetscViewerBinaryGetInfoPointer(), PetscFileMode, PetscViewer
+.seealso: `PetscViewerASCIIOpen()`, `PetscViewerPushFormat()`, `PetscViewerDestroy()`,
+          `VecView()`, `MatView()`, `VecLoad()`, `MatLoad()`, `PetscViewerBinaryGetDescriptor()`,
+          `PetscViewerBinaryGetInfoPointer()`, `PetscFileMode`, `PetscViewer`
 @*/
 PetscErrorCode  PetscViewerRead(PetscViewer viewer, void *data, PetscInt num, PetscInt *count, PetscDataType dtype)
 {
@@ -484,7 +484,7 @@ PetscErrorCode  PetscViewerRead(PetscViewer viewer, void *data, PetscInt num, Pe
 
    Level: intermediate
 
-.seealso: PetscViewerWritable(), PetscViewerCheckReadable(), PetscViewerCreate(), PetscViewerFileSetMode(), PetscViewerFileSetType()
+.seealso: `PetscViewerWritable()`, `PetscViewerCheckReadable()`, `PetscViewerCreate()`, `PetscViewerFileSetMode()`, `PetscViewerFileSetType()`
 @*/
 PetscErrorCode  PetscViewerReadable(PetscViewer viewer, PetscBool *flg)
 {
@@ -525,7 +525,7 @@ PetscErrorCode  PetscViewerReadable(PetscViewer viewer, PetscBool *flg)
 
    Level: intermediate
 
-.seealso: PetscViewerReadable(), PetscViewerCheckWritable(), PetscViewerCreate(), PetscViewerFileSetMode(), PetscViewerFileSetType()
+.seealso: `PetscViewerReadable()`, `PetscViewerCheckWritable()`, `PetscViewerCreate()`, `PetscViewerFileSetMode()`, `PetscViewerFileSetType()`
 @*/
 PetscErrorCode  PetscViewerWritable(PetscViewer viewer, PetscBool *flg)
 {
@@ -553,7 +553,7 @@ PetscErrorCode  PetscViewerWritable(PetscViewer viewer, PetscBool *flg)
 
    Level: intermediate
 
-.seealso: PetscViewerReadable(), PetscViewerCheckWritable(), PetscViewerCreate(), PetscViewerFileSetMode(), PetscViewerFileSetType()
+.seealso: `PetscViewerReadable()`, `PetscViewerCheckWritable()`, `PetscViewerCreate()`, `PetscViewerFileSetMode()`, `PetscViewerFileSetType()`
 @*/
 PetscErrorCode  PetscViewerCheckReadable(PetscViewer viewer)
 {
@@ -576,7 +576,7 @@ PetscErrorCode  PetscViewerCheckReadable(PetscViewer viewer)
 
    Level: intermediate
 
-.seealso: PetscViewerWritable(), PetscViewerCheckReadable(), PetscViewerCreate(), PetscViewerFileSetMode(), PetscViewerFileSetType()
+.seealso: `PetscViewerWritable()`, `PetscViewerCheckReadable()`, `PetscViewerCreate()`, `PetscViewerFileSetMode()`, `PetscViewerFileSetType()`
 @*/
 PetscErrorCode  PetscViewerCheckWritable(PetscViewer viewer)
 {

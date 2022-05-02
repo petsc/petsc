@@ -235,7 +235,7 @@ $    -pc_type  sor  -pc_sor_symmetric
 
    Level: intermediate
 
-.seealso: PCSORSetOmega()
+.seealso: `PCSORSetOmega()`
 @*/
 PetscErrorCode  PCEisenstatSetOmega(PC pc,PetscReal omega)
 {
@@ -266,7 +266,7 @@ PetscErrorCode  PCEisenstatSetOmega(PC pc,PetscReal omega)
      If you use the KSPSetDiagonalScaling() or -ksp_diagonal_scale option then you will
    likley want to use this routine since it will save you some unneeded flops.
 
-.seealso: PCEisenstatSetOmega()
+.seealso: `PCEisenstatSetOmega()`
 @*/
 PetscErrorCode  PCEisenstatSetNoDiagonalScaling(PC pc,PetscBool flg)
 {
@@ -303,7 +303,7 @@ $    -pc_type  sor  -pc_sor_symmetric
 
    Level: intermediate
 
-.seealso: PCSORGetOmega(), PCEisenstatSetOmega()
+.seealso: `PCSORGetOmega()`, `PCEisenstatSetOmega()`
 @*/
 PetscErrorCode  PCEisenstatGetOmega(PC pc,PetscReal *omega)
 {
@@ -335,7 +335,7 @@ PetscErrorCode  PCEisenstatGetOmega(PC pc,PetscReal *omega)
      If you use the KSPSetDiagonalScaling() or -ksp_diagonal_scale option then you will
    likley want to use this routine since it will save you some unneeded flops.
 
-.seealso: PCEisenstatGetOmega()
+.seealso: `PCEisenstatGetOmega()`
 @*/
 PetscErrorCode  PCEisenstatGetNoDiagonalScaling(PC pc,PetscBool *flg)
 {
@@ -369,8 +369,8 @@ static PetscErrorCode PCPreSolveChangeRHS_Eisenstat(PC pc, PetscBool* change)
           Not a true parallel SOR, in parallel this implementation corresponds to block
           Jacobi with SOR on each block.
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
-           PCEisenstatSetNoDiagonalScaling(), PCEisenstatSetOmega(), PCSOR
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`,
+          `PCEisenstatSetNoDiagonalScaling()`, `PCEisenstatSetOmega()`, `PCSOR`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_Eisenstat(PC pc)

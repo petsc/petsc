@@ -28,8 +28,8 @@
     Fortran Note:
     This routine is not supported in Fortran.
 
-.seealso: PetscFClose(), PetscSynchronizedFGets(), PetscSynchronizedPrintf(), PetscSynchronizedFlush(),
-          PetscFPrintf()
+.seealso: `PetscFClose()`, `PetscSynchronizedFGets()`, `PetscSynchronizedPrintf()`, `PetscSynchronizedFlush()`,
+          `PetscFPrintf()`
 @*/
 PetscErrorCode  PetscFOpen(MPI_Comm comm,const char name[],const char mode[],FILE **fp)
 {
@@ -77,7 +77,7 @@ PetscErrorCode  PetscFOpen(MPI_Comm comm,const char name[],const char mode[],FIL
     Fortran Note:
     This routine is not supported in Fortran.
 
-.seealso: PetscFOpen()
+.seealso: `PetscFOpen()`
 @*/
 PetscErrorCode  PetscFClose(MPI_Comm comm,FILE *fd)
 {
@@ -110,7 +110,7 @@ static char PetscPOpenMachine[128] = "";
    Notes:
        Does not work under Windows
 
-.seealso: PetscFOpen(), PetscFClose(), PetscPOpen()
+.seealso: `PetscFOpen()`, `PetscFClose()`, `PetscPOpen()`
 
 @*/
 PetscErrorCode PetscPClose(MPI_Comm comm,FILE *fd)
@@ -154,7 +154,7 @@ PetscErrorCode PetscPClose(MPI_Comm comm,FILE *fd)
        The program string may contain ${DISPLAY}, ${HOMEDIRECTORY} or ${WORKINGDIRECTORY}; these
     will be replaced with relevant values.
 
-.seealso: PetscFOpen(), PetscFClose(), PetscPClose(), PetscPOpenSetMachine()
+.seealso: `PetscFOpen()`, `PetscFClose()`, `PetscPClose()`, `PetscPOpenSetMachine()`
 
 @*/
 PetscErrorCode  PetscPOpen(MPI_Comm comm,const char machine[],const char program[],const char mode[],FILE **fp)
@@ -214,7 +214,7 @@ PetscErrorCode  PetscPOpen(MPI_Comm comm,const char machine[],const char program
 
    Level: intermediate
 
-.seealso: PetscFOpen(), PetscFClose(), PetscPClose(), PetscPOpen()
+.seealso: `PetscFOpen()`, `PetscFClose()`, `PetscPClose()`, `PetscPOpen()`
 @*/
 PetscErrorCode  PetscPOpenSetMachine(const char machine[])
 {

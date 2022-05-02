@@ -28,7 +28,7 @@
 
   Level: developer
 
-  .seealso: DMClone(), DMStagCreateCompatibleDMStag(), DMCoarsen(), DMRefine()
+  .seealso: `DMClone()`, `DMStagCreateCompatibleDMStag()`, `DMCoarsen()`, `DMRefine()`
 @*/
 PetscErrorCode DMStagDuplicateWithoutSetup(DM dm, MPI_Comm comm, DM *newdm)
 {

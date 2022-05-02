@@ -490,7 +490,7 @@ static PetscErrorCode MatSuperluSetILUDropTol_SuperLU(Mat F,PetscReal dtol)
    References:
 .  * - SuperLU Users' Guide
 
-.seealso: MatGetFactor()
+.seealso: `MatGetFactor()`
 @*/
 PetscErrorCode MatSuperluSetILUDropTol(Mat F,PetscReal dtol)
 {
@@ -542,7 +542,7 @@ PetscErrorCode MatFactorGetSolverType_seqaij_superlu(Mat A,MatSolverType *type)
 
    Level: beginner
 
-.seealso: PCLU, PCILU, MATSOLVERSUPERLU_DIST, MATSOLVERMUMPS, PCFactorSetMatSolverType(), MatSolverType
+.seealso: `PCLU`, `PCILU`, `MATSOLVERSUPERLU_DIST`, `MATSOLVERMUMPS`, `PCFactorSetMatSolverType()`, `MatSolverType`
 M*/
 
 static PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)

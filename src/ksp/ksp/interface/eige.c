@@ -52,7 +52,7 @@ static PetscErrorCode MatMult_KSP(Mat A,Vec X,Vec Y)
 
     Level: advanced
 
-.seealso: KSPComputeEigenvaluesExplicitly(), PCComputeOperator(), KSPSetDiagonalScale(), KSPSetNullSpace(), MatType
+.seealso: `KSPComputeEigenvaluesExplicitly()`, `PCComputeOperator()`, `KSPSetDiagonalScale()`, `KSPSetNullSpace()`, `MatType`
 @*/
 PetscErrorCode  KSPComputeOperator(KSP ksp, MatType mattype, Mat *mat)
 {
@@ -107,7 +107,7 @@ PetscErrorCode  KSPComputeOperator(KSP ksp, MatType mattype, Mat *mat)
 
    Level: advanced
 
-.seealso: KSPComputeEigenvalues(), KSPMonitorSingularValue(), KSPComputeExtremeSingularValues(), KSPSetOperators(), KSPSolve()
+.seealso: `KSPComputeEigenvalues()`, `KSPMonitorSingularValue()`, `KSPComputeExtremeSingularValues()`, `KSPSetOperators()`, `KSPSolve()`
 @*/
 PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal r[],PetscReal c[])
 {

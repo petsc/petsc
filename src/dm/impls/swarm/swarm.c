@@ -108,7 +108,7 @@ PetscErrorCode VecView_Swarm(Vec v, PetscViewer viewer)
    This function must be called prior to calling DMCreateLocalVector(), DMCreateGlobalVector().
    Mutiple calls to DMSwarmVectorDefineField() are permitted.
 
-.seealso: DMSwarmRegisterPetscDatatypeField(), DMCreateGlobalVector(), DMCreateLocalVector()
+.seealso: `DMSwarmRegisterPetscDatatypeField()`, `DMCreateGlobalVector()`, `DMCreateLocalVector()`
 @*/
 PetscErrorCode DMSwarmVectorDefineField(DM dm,const char fieldname[])
 {
@@ -627,7 +627,7 @@ static PetscErrorCode DMSwarmComputeMassMatrixSquare_Private(DM dmc, DM dmf, Mat
   We only compute the block diagonal since this provides a good preconditioner and is completely local. It would be possible in the
   future to compute the full normal equations.
 
-.seealso: DMCreateMassMatrix()
+.seealso: `DMCreateMassMatrix()`
 @*/
 PetscErrorCode DMSwarmCreateMassMatrixSquare(DM dmCoarse, DM dmFine, Mat *mass)
 {
@@ -663,7 +663,7 @@ PetscErrorCode DMSwarmCreateMassMatrixSquare(DM dmCoarse, DM dmFine, Mat *mass)
    Notes:
    The vector must be returned using a matching call to DMSwarmDestroyGlobalVectorFromField().
 
-.seealso: DMSwarmRegisterPetscDatatypeField(), DMSwarmDestroyGlobalVectorFromField()
+.seealso: `DMSwarmRegisterPetscDatatypeField()`, `DMSwarmDestroyGlobalVectorFromField()`
 @*/
 PetscErrorCode DMSwarmCreateGlobalVectorFromField(DM dm,const char fieldname[],Vec *vec)
 {
@@ -688,7 +688,7 @@ PetscErrorCode DMSwarmCreateGlobalVectorFromField(DM dm,const char fieldname[],V
 
    Level: beginner
 
-.seealso: DMSwarmRegisterPetscDatatypeField(), DMSwarmCreateGlobalVectorFromField()
+.seealso: `DMSwarmRegisterPetscDatatypeField()`, `DMSwarmCreateGlobalVectorFromField()`
 @*/
 PetscErrorCode DMSwarmDestroyGlobalVectorFromField(DM dm,const char fieldname[],Vec *vec)
 {
@@ -714,7 +714,7 @@ PetscErrorCode DMSwarmDestroyGlobalVectorFromField(DM dm,const char fieldname[],
    Notes:
    The vector must be returned using a matching call to DMSwarmDestroyLocalVectorFromField().
 
-.seealso: DMSwarmRegisterPetscDatatypeField(), DMSwarmDestroyLocalVectorFromField()
+.seealso: `DMSwarmRegisterPetscDatatypeField()`, `DMSwarmDestroyLocalVectorFromField()`
 @*/
 PetscErrorCode DMSwarmCreateLocalVectorFromField(DM dm,const char fieldname[],Vec *vec)
 {
@@ -739,7 +739,7 @@ PetscErrorCode DMSwarmCreateLocalVectorFromField(DM dm,const char fieldname[],Ve
 
    Level: beginner
 
-.seealso: DMSwarmRegisterPetscDatatypeField(), DMSwarmCreateLocalVectorFromField()
+.seealso: `DMSwarmRegisterPetscDatatypeField()`, `DMSwarmCreateLocalVectorFromField()`
 @*/
 PetscErrorCode DMSwarmDestroyLocalVectorFromField(DM dm,const char fieldname[],Vec *vec)
 {
@@ -761,8 +761,8 @@ PetscErrorCode DMSwarmDestroyLocalVectorFromField(DM dm,const char fieldname[],V
    Notes:
    After all fields have been registered, you must call DMSwarmFinalizeFieldRegister().
 
-.seealso: DMSwarmFinalizeFieldRegister(), DMSwarmRegisterPetscDatatypeField(),
-          DMSwarmRegisterUserStructField(), DMSwarmRegisterUserDatatypeField()
+.seealso: `DMSwarmFinalizeFieldRegister()`, `DMSwarmRegisterPetscDatatypeField()`,
+          `DMSwarmRegisterUserStructField()`, `DMSwarmRegisterUserDatatypeField()`
 @*/
 PetscErrorCode DMSwarmInitializeFieldRegister(DM dm)
 {
@@ -790,8 +790,8 @@ PetscErrorCode DMSwarmInitializeFieldRegister(DM dm)
    Notes:
    After DMSwarmFinalizeFieldRegister() has been called, no new fields can be defined on the DMSwarm.
 
-.seealso: DMSwarmInitializeFieldRegister(), DMSwarmRegisterPetscDatatypeField(),
-          DMSwarmRegisterUserStructField(), DMSwarmRegisterUserDatatypeField()
+.seealso: `DMSwarmInitializeFieldRegister()`, `DMSwarmRegisterPetscDatatypeField()`,
+          `DMSwarmRegisterUserStructField()`, `DMSwarmRegisterUserDatatypeField()`
 @*/
 PetscErrorCode DMSwarmFinalizeFieldRegister(DM dm)
 {
@@ -817,7 +817,7 @@ PetscErrorCode DMSwarmFinalizeFieldRegister(DM dm)
 
    Level: beginner
 
-.seealso: DMSwarmGetLocalSize()
+.seealso: `DMSwarmGetLocalSize()`
 @*/
 PetscErrorCode DMSwarmSetLocalSizes(DM dm,PetscInt nlocal,PetscInt buffer)
 {
@@ -845,7 +845,7 @@ PetscErrorCode DMSwarmSetLocalSizes(DM dm,PetscInt nlocal,PetscInt buffer)
    The attached DM (dmcell) will be queried for point location and
    neighbor MPI-rank information if DMSwarmMigrate() is called.
 
-.seealso: DMSwarmSetType(), DMSwarmGetCellDM(), DMSwarmMigrate()
+.seealso: `DMSwarmSetType()`, `DMSwarmGetCellDM()`, `DMSwarmMigrate()`
 @*/
 PetscErrorCode DMSwarmSetCellDM(DM dm,DM dmcell)
 {
@@ -869,7 +869,7 @@ PetscErrorCode DMSwarmSetCellDM(DM dm,DM dmcell)
 
    Level: beginner
 
-.seealso: DMSwarmSetCellDM()
+.seealso: `DMSwarmSetCellDM()`
 @*/
 PetscErrorCode DMSwarmGetCellDM(DM dm,DM *dmcell)
 {
@@ -893,7 +893,7 @@ PetscErrorCode DMSwarmGetCellDM(DM dm,DM *dmcell)
 
    Level: beginner
 
-.seealso: DMSwarmGetSize(), DMSwarmSetLocalSizes()
+.seealso: `DMSwarmGetSize()`, `DMSwarmSetLocalSizes()`
 @*/
 PetscErrorCode DMSwarmGetLocalSize(DM dm,PetscInt *nlocal)
 {
@@ -920,7 +920,7 @@ PetscErrorCode DMSwarmGetLocalSize(DM dm,PetscInt *nlocal)
    Note:
    This calls MPI_Allreduce upon each call (inefficient but safe)
 
-.seealso: DMSwarmGetLocalSize(), DMSwarmSetLocalSizes()
+.seealso: `DMSwarmGetLocalSize()`, `DMSwarmSetLocalSizes()`
 @*/
 PetscErrorCode DMSwarmGetSize(DM dm,PetscInt *n)
 {
@@ -949,7 +949,7 @@ PetscErrorCode DMSwarmGetSize(DM dm,PetscInt *n)
    Notes:
    The textual name for each registered field must be unique.
 
-.seealso: DMSwarmRegisterUserStructField(), DMSwarmRegisterUserDatatypeField()
+.seealso: `DMSwarmRegisterUserStructField()`, `DMSwarmRegisterUserDatatypeField()`
 @*/
 PetscErrorCode DMSwarmRegisterPetscDatatypeField(DM dm,const char fieldname[],PetscInt blocksize,PetscDataType type)
 {
@@ -994,7 +994,7 @@ PetscErrorCode DMSwarmRegisterPetscDatatypeField(DM dm,const char fieldname[],Pe
    Notes:
    The textual name for each registered field must be unique.
 
-.seealso: DMSwarmRegisterPetscDatatypeField(), DMSwarmRegisterUserDatatypeField()
+.seealso: `DMSwarmRegisterPetscDatatypeField()`, `DMSwarmRegisterUserDatatypeField()`
 @*/
 PetscErrorCode DMSwarmRegisterUserStructField(DM dm,const char fieldname[],size_t size)
 {
@@ -1022,7 +1022,7 @@ PetscErrorCode DMSwarmRegisterUserStructField(DM dm,const char fieldname[],size_
    Notes:
    The textual name for each registered field must be unique.
 
-.seealso: DMSwarmRegisterPetscDatatypeField(), DMSwarmRegisterUserStructField(), DMSwarmRegisterUserDatatypeField()
+.seealso: `DMSwarmRegisterPetscDatatypeField()`, `DMSwarmRegisterUserStructField()`, `DMSwarmRegisterUserDatatypeField()`
 @*/
 PetscErrorCode DMSwarmRegisterUserDatatypeField(DM dm,const char fieldname[],size_t size,PetscInt blocksize)
 {
@@ -1059,7 +1059,7 @@ PetscErrorCode DMSwarmRegisterUserDatatypeField(DM dm,const char fieldname[],siz
    Notes:
    The array must be returned using a matching call to DMSwarmRestoreField().
 
-.seealso: DMSwarmRestoreField()
+.seealso: `DMSwarmRestoreField()`
 @*/
 PetscErrorCode DMSwarmGetField(DM dm,const char fieldname[],PetscInt *blocksize,PetscDataType *type,void **data)
 {
@@ -1095,7 +1095,7 @@ PetscErrorCode DMSwarmGetField(DM dm,const char fieldname[],PetscInt *blocksize,
    Notes:
    The user must call DMSwarmGetField() prior to calling DMSwarmRestoreField().
 
-.seealso: DMSwarmGetField()
+.seealso: `DMSwarmGetField()`
 @*/
 PetscErrorCode DMSwarmRestoreField(DM dm,const char fieldname[],PetscInt *blocksize,PetscDataType *type,void **data)
 {
@@ -1122,7 +1122,7 @@ PetscErrorCode DMSwarmRestoreField(DM dm,const char fieldname[],PetscInt *blocks
    Notes:
    The new point will have all fields initialized to zero.
 
-.seealso: DMSwarmAddNPoints()
+.seealso: `DMSwarmAddNPoints()`
 @*/
 PetscErrorCode DMSwarmAddPoint(DM dm)
 {
@@ -1150,7 +1150,7 @@ PetscErrorCode DMSwarmAddPoint(DM dm)
    Notes:
    The new point will have all fields initialized to zero.
 
-.seealso: DMSwarmAddPoint()
+.seealso: `DMSwarmAddPoint()`
 @*/
 PetscErrorCode DMSwarmAddNPoints(DM dm,PetscInt npoints)
 {
@@ -1176,7 +1176,7 @@ PetscErrorCode DMSwarmAddNPoints(DM dm,PetscInt npoints)
 
    Level: beginner
 
-.seealso: DMSwarmRemovePointAtIndex()
+.seealso: `DMSwarmRemovePointAtIndex()`
 @*/
 PetscErrorCode DMSwarmRemovePoint(DM dm)
 {
@@ -1200,7 +1200,7 @@ PetscErrorCode DMSwarmRemovePoint(DM dm)
 
    Level: beginner
 
-.seealso: DMSwarmRemovePoint()
+.seealso: `DMSwarmRemovePoint()`
 @*/
 PetscErrorCode DMSwarmRemovePointAtIndex(DM dm,PetscInt idx)
 {
@@ -1225,7 +1225,7 @@ PetscErrorCode DMSwarmRemovePointAtIndex(DM dm,PetscInt idx)
 
  Level: beginner
 
-.seealso: DMSwarmRemovePoint()
+.seealso: `DMSwarmRemovePoint()`
 @*/
 PetscErrorCode DMSwarmCopyPoint(DM dm,PetscInt pi,PetscInt pj)
 {
@@ -1260,7 +1260,7 @@ PetscErrorCode DMSwarmMigrate_Basic(DM dm,PetscBool remove_sent_points)
 
    Level: advanced
 
-.seealso: DMSwarmSetMigrateType()
+.seealso: `DMSwarmSetMigrateType()`
 @*/
 PetscErrorCode DMSwarmMigrate(DM dm,PetscBool remove_sent_points)
 {
@@ -1315,7 +1315,7 @@ PetscErrorCode DMSwarmMigrate_GlobalToLocal_Basic(DM dm,PetscInt *globalsize);
 
    Level: advanced
 
-.seealso: DMSwarmCollectViewDestroy(), DMSwarmSetCollectType()
+.seealso: `DMSwarmCollectViewDestroy()`, `DMSwarmSetCollectType()`
 @*/
 PetscErrorCode DMSwarmCollectViewCreate(DM dm)
 {
@@ -1355,7 +1355,7 @@ PetscErrorCode DMSwarmCollectViewCreate(DM dm)
 
    Level: advanced
 
-.seealso: DMSwarmCollectViewCreate(), DMSwarmSetCollectType()
+.seealso: `DMSwarmCollectViewCreate()`, `DMSwarmSetCollectType()`
 @*/
 PetscErrorCode DMSwarmCollectViewDestroy(DM dm)
 {
@@ -1397,7 +1397,7 @@ PetscErrorCode DMSwarmSetUpPIC(DM dm)
 
   Level: intermediate
 
-.seealso: DMSwarmSetCellDM()
+.seealso: `DMSwarmSetCellDM()`
 @*/
 PetscErrorCode DMSwarmSetPointCoordinatesRandom(DM dm, PetscInt Npc)
 {
@@ -1458,7 +1458,7 @@ PetscErrorCode DMSwarmSetPointCoordinatesRandom(DM dm, PetscInt Npc)
 
    Level: advanced
 
-.seealso: DMSwarmSetMigrateType(), DMSwarmSetCollectType(), DMSwarmType, DMSWARM_PIC, DMSWARM_BASIC
+.seealso: `DMSwarmSetMigrateType()`, `DMSwarmSetCollectType()`, `DMSwarmType`, `DMSWARM_PIC`, `DMSWARM_BASIC`
 @*/
 PetscErrorCode DMSwarmSetType(DM dm,DMSwarmType stype)
 {
@@ -1678,7 +1678,7 @@ PetscErrorCode DMView_Swarm(DM dm, PetscViewer viewer)
 
       Should be restored with DMSwarmRestoreCellSwarm()
 
-.seealso: DMSwarmRestoreCellSwarm()
+.seealso: `DMSwarmRestoreCellSwarm()`
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmGetCellSwarm(DM sw, PetscInt cellID, DM cellswarm)
 {
@@ -1726,7 +1726,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmGetCellSwarm(DM sw, PetscInt cellID, DM cells
    Note:
     This only supports DMSWARM_PIC types of DMSwarms
 
-.seealso: DMSwarmGetCellSwarm()
+.seealso: `DMSwarmGetCellSwarm()`
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmRestoreCellSwarm(DM sw, PetscInt cellID, DM cellswarm)
 {
@@ -1848,7 +1848,7 @@ $    DMSwarmFinalizeFieldRegister(dm)
 
  Level: beginner
 
-.seealso: DMType, DMCreate(), DMSetType()
+.seealso: `DMType`, `DMCreate()`, `DMSetType()`
 M*/
 PETSC_EXTERN PetscErrorCode DMCreate_Swarm(DM dm)
 {

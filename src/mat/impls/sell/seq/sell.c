@@ -79,7 +79,7 @@ static const char citation[] =
 
  Level: intermediate
 
- .seealso: MatCreate(), MatCreateSELL(), MatSetValues(), MatGetInfo()
+ .seealso: `MatCreate()`, `MatCreateSELL()`, `MatSetValues()`, `MatGetInfo()`
 
  @*/
 PetscErrorCode MatSeqSELLSetPreallocation(Mat B,PetscInt rlenmax,const PetscInt rlen[])
@@ -1906,7 +1906,7 @@ PetscErrorCode MatRetrieveValues_SeqSELL(Mat mat)
 
  Level: intermediate
 
- .seealso: MatSeqSELLGetArray(), MatSeqSELLRestoreArrayF90()
+ .seealso: `MatSeqSELLGetArray()`, `MatSeqSELLRestoreArrayF90()`
  @*/
 PetscErrorCode MatSeqSELLRestoreArray(Mat A,PetscScalar **array)
 {
@@ -2059,7 +2059,7 @@ PetscErrorCode MatDuplicate_SeqSELL(Mat A,MatDuplicateOption cpvalues,Mat *B)
 
    Level: beginner
 
-.seealso: MatCreateSeqSell(), MATSELL, MATMPISELL, MATSEQAIJ, MATAIJ, MATMPIAIJ
+.seealso: `MatCreateSeqSell()`, `MATSELL`, `MATMPISELL`, `MATSEQAIJ`, `MATAIJ`, `MATMPIAIJ`
 M*/
 
 /*MC
@@ -2114,7 +2114,7 @@ M*/
 . * - Hong Zhang, Richard T. Mills, Karl Rupp, and Barry F. Smith, Vectorized Parallel Sparse Matrix-Vector Multiplication in {PETSc} Using {AVX-512},
    Proceedings of the 47th International Conference on Parallel Processing, 2018.
 
-.seealso: MatCreateSeqSELL(), MatCreateSeqAIJ(), MatCreateSell(), MATSEQSELL, MATMPISELL, MATSEQAIJ, MATMPIAIJ, MATAIJ
+.seealso: `MatCreateSeqSELL()`, `MatCreateSeqAIJ()`, `MatCreateSell()`, `MATSEQSELL`, `MATMPISELL`, `MATSEQAIJ`, `MATMPIAIJ`, `MATAIJ`
 M*/
 
 /*@C
@@ -2147,7 +2147,7 @@ M*/
 
  Level: intermediate
 
- .seealso: MatCreate(), MatCreateSELL(), MatSetValues(), MatSeqSELLSetPreallocation(), MATSELL, MATSEQSELL, MATMPISELL
+ .seealso: `MatCreate()`, `MatCreateSELL()`, `MatSetValues()`, `MatSeqSELLSetPreallocation()`, `MATSELL`, `MATSEQSELL`, `MATMPISELL`
 
  @*/
 PetscErrorCode MatCreateSeqSELL(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt maxallocrow,const PetscInt rlen[],Mat *A)

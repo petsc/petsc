@@ -16,7 +16,7 @@
 
    Level: beginner
 
-.seealso: PetscDrawLine(), PetscDrawRectangle(), PetscDrawEllipse(), PetscDrawMarker(), PetscDrawPoint(), PetscDrawArrow()
+.seealso: `PetscDrawLine()`, `PetscDrawRectangle()`, `PetscDrawEllipse()`, `PetscDrawMarker()`, `PetscDrawPoint()`, `PetscDrawArrow()`
 @*/
 PetscErrorCode  PetscDrawTriangle(PetscDraw draw,PetscReal x1,PetscReal y_1,PetscReal x2,PetscReal y2,PetscReal x3,PetscReal y3,int c1,int c2,int c3)
 {
@@ -42,7 +42,7 @@ PetscErrorCode  PetscDrawTriangle(PetscDraw draw,PetscReal x1,PetscReal y_1,Pets
    Notes:
     All processors that share the draw MUST call this routine
 
-.seealso: PetscDrawGetPopup(), PetscDrawTensorContour()
+.seealso: `PetscDrawGetPopup()`, `PetscDrawTensorContour()`
 
 @*/
 PetscErrorCode  PetscDrawScalePopup(PetscDraw popup,PetscReal min,PetscReal max)
@@ -128,7 +128,7 @@ static PetscErrorCode PetscDrawTensorContour_Zoom(PetscDraw win,void *dctx)
 
    Level: intermediate
 
-.seealso: PetscDrawTensorContourPatch(), PetscDrawScalePopup()
+.seealso: `PetscDrawTensorContourPatch()`, `PetscDrawScalePopup()`
 
 @*/
 PetscErrorCode  PetscDrawTensorContour(PetscDraw draw,int m,int n,const PetscReal xi[],const PetscReal yi[],PetscReal *v)
@@ -212,7 +212,7 @@ PetscErrorCode  PetscDrawTensorContour(PetscDraw draw,int m,int n,const PetscRea
    This is a lower level support routine, usually the user will call
    PetscDrawTensorContour().
 
-.seealso: PetscDrawTensorContour()
+.seealso: `PetscDrawTensorContour()`
 
 @*/
 PetscErrorCode  PetscDrawTensorContourPatch(PetscDraw draw,int m,int n,PetscReal *x,PetscReal *y,PetscReal min,PetscReal max,PetscReal *v)

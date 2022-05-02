@@ -44,7 +44,7 @@ PetscBool        petscindebugger  = PETSC_FALSE;
    Fortran Note:
    This routine is not supported in Fortran.
 
-.seealso: PetscSetDebugger()
+.seealso: `PetscSetDebugger()`
 @*/
 PetscErrorCode PetscSetDebugTerminal(const char terminal[])
 {
@@ -77,7 +77,7 @@ PetscErrorCode PetscSetDebugTerminal(const char terminal[])
    Fortran Note:
    This routine is not supported in Fortran.
 
-.seealso: PetscAttachDebugger(), PetscAttachDebuggerErrorHandler(), PetscSetDebugTerminal()
+.seealso: `PetscAttachDebugger()`, `PetscAttachDebuggerErrorHandler()`, `PetscSetDebugTerminal()`
 @*/
 PetscErrorCode PetscSetDebugger(const char debugger[], PetscBool usedebugterminal)
 {
@@ -94,7 +94,7 @@ PetscErrorCode PetscSetDebugger(const char debugger[], PetscBool usedebugtermina
 
     Level: developer
 
-.seealso: PetscSetDebugger(), PetscSetDebuggerFromString()
+.seealso: `PetscSetDebugger()`, `PetscSetDebuggerFromString()`
 @*/
 PetscErrorCode PetscSetDefaultDebugger(void)
 {
@@ -133,7 +133,7 @@ static PetscErrorCode PetscCheckDebugger_Private(const char defaultDbg[], const 
 
    Level: developer
 
-.seealso: PetscSetDebugger(), PetscSetDefaultDebugger()
+.seealso: `PetscSetDebugger()`, `PetscSetDefaultDebugger()`
 @*/
 PetscErrorCode  PetscSetDebuggerFromString(const char *string)
 {
@@ -178,7 +178,7 @@ PetscErrorCode  PetscSetDebuggerFromString(const char *string)
       When -start_in_debugger -debugger_ranks x,y,z is used this prevents the processes NOT listed in x,y,z from calling MPI_Abort and
       killing the user's debugging sessions.
 
-.seealso: PetscSetDebugger(), PetscAttachDebugger()
+.seealso: `PetscSetDebugger()`, `PetscAttachDebugger()`
 @*/
 PetscErrorCode  PetscWaitOnError()
 {
@@ -200,7 +200,7 @@ PetscErrorCode  PetscWaitOnError()
    Developer Notes:
     Since this can be called by the error handler should it be calling SETERRQ() and PetscCall()?
 
-.seealso: PetscSetDebugger(), PetscSetDefaultDebugger(), PetscSetDebugTerminal(), PetscAttachDebuggerErrorHandler(), PetscStopForDebugger()
+.seealso: `PetscSetDebugger()`, `PetscSetDefaultDebugger()`, `PetscSetDebugTerminal()`, `PetscAttachDebuggerErrorHandler()`, `PetscStopForDebugger()`
 @*/
 PetscErrorCode PetscAttachDebugger(void)
 {
@@ -466,8 +466,8 @@ $    PetscAttachDebuggerErrorHandler()
 $    PetscAbortErrorHandler()
    or you may write your own.
 
-.seealso:  PetscSetDebuggerFromString(), PetscSetDebugger(), PetscSetDefaultDebugger(), PetscError(), PetscPushErrorHandler(), PetscPopErrorHandler(), PetscTraceBackErrorHandler(),
-           PetscAbortErrorHandler(), PetscMPIAbortErrorHandler(), PetscEmacsClientErrorHandler(), PetscReturnErrorHandler(), PetscSetDebugTermainal()
+.seealso: `PetscSetDebuggerFromString()`, `PetscSetDebugger()`, `PetscSetDefaultDebugger()`, `PetscError()`, `PetscPushErrorHandler()`, `PetscPopErrorHandler()`, `PetscTraceBackErrorHandler()`,
+          `PetscAbortErrorHandler()`, `PetscMPIAbortErrorHandler()`, `PetscEmacsClientErrorHandler()`, `PetscReturnErrorHandler()`, `PetscSetDebugTermainal()`
 @*/
 PetscErrorCode  PetscAttachDebuggerErrorHandler(MPI_Comm comm,int line,const char *fun,const char *file,PetscErrorCode num,PetscErrorType p,const char *mess,void *ctx)
 {
@@ -502,7 +502,7 @@ PetscErrorCode  PetscAttachDebuggerErrorHandler(MPI_Comm comm,int line,const cha
    Developer Notes:
     Since this can be called by the error handler, should it be calling SETERRQ() and PetscCall()?
 
-.seealso: PetscSetDebugger(), PetscAttachDebugger()
+.seealso: `PetscSetDebugger()`, `PetscAttachDebugger()`
 @*/
 PetscErrorCode  PetscStopForDebugger(void)
 {

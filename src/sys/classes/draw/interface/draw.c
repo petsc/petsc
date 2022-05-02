@@ -14,7 +14,7 @@ static PetscBool PetscDrawPackageInitialized = PETSC_FALSE;
 
   Level: developer
 
-.seealso: PetscFinalize()
+.seealso: `PetscFinalize()`
 @*/
 PetscErrorCode  PetscDrawFinalizePackage(void)
 {
@@ -32,7 +32,7 @@ PetscErrorCode  PetscDrawFinalizePackage(void)
 
   Level: developer
 
-.seealso: PetscInitialize()
+.seealso: `PetscInitialize()`
 @*/
 PetscErrorCode  PetscDrawInitializePackage(void)
 {
@@ -92,7 +92,7 @@ PetscErrorCode  PetscDrawInitializePackage(void)
 
    Level: intermediate
 
-.seealso: PetscDrawCheckResizedWindow()
+.seealso: `PetscDrawCheckResizedWindow()`
 @*/
 PetscErrorCode  PetscDrawResizeWindow(PetscDraw draw,int w,int h)
 {
@@ -119,7 +119,7 @@ PetscErrorCode  PetscDrawResizeWindow(PetscDraw draw,int w,int h)
 
    Level: intermediate
 
-.seealso: PetscDrawResizeWindow(), PetscDrawCheckResizedWindow()
+.seealso: `PetscDrawResizeWindow()`, `PetscDrawCheckResizedWindow()`
 @*/
 PetscErrorCode  PetscDrawGetWindowSize(PetscDraw draw,int *w,int *h)
 {
@@ -142,7 +142,7 @@ PetscErrorCode  PetscDrawGetWindowSize(PetscDraw draw,int *w,int *h)
 
    Level: advanced
 
-.seealso: PetscDrawResizeWindow()
+.seealso: `PetscDrawResizeWindow()`
 
 @*/
 PetscErrorCode  PetscDrawCheckResizedWindow(PetscDraw draw)
@@ -168,7 +168,7 @@ PetscErrorCode  PetscDrawCheckResizedWindow(PetscDraw draw)
 
    Level: intermediate
 
-.seealso: PetscDrawSetTitle()
+.seealso: `PetscDrawSetTitle()`
 @*/
 PetscErrorCode  PetscDrawGetTitle(PetscDraw draw,const char *title[])
 {
@@ -198,7 +198,7 @@ PetscErrorCode  PetscDrawGetTitle(PetscDraw draw,const char *title[])
 
    You can use PetscDrawAxisSetLabels() to indicate a title within the window
 
-.seealso: PetscDrawGetTitle(), PetscDrawAppendTitle()
+.seealso: `PetscDrawGetTitle()`, `PetscDrawAppendTitle()`
 @*/
 PetscErrorCode  PetscDrawSetTitle(PetscDraw draw,const char title[])
 {
@@ -228,7 +228,7 @@ PetscErrorCode  PetscDrawSetTitle(PetscDraw draw,const char title[])
 
    Level: advanced
 
-.seealso: PetscDrawSetTitle(), PetscDrawGetTitle()
+.seealso: `PetscDrawSetTitle()`, `PetscDrawGetTitle()`
 @*/
 PetscErrorCode  PetscDrawAppendTitle(PetscDraw draw,const char title[])
 {
@@ -280,7 +280,7 @@ static PetscErrorCode PetscDrawDestroy_Private(PetscDraw draw)
 
    Level: beginner
 
-.seealso: PetscDrawCreate()
+.seealso: `PetscDrawCreate()`
 
 @*/
 PetscErrorCode  PetscDrawDestroy(PetscDraw *draw)
@@ -327,7 +327,7 @@ PetscErrorCode  PetscDrawDestroy(PetscDraw *draw)
 
    Level: advanced
 
-.seealso: PetscDrawScalePopup(), PetscDrawCreate()
+.seealso: `PetscDrawScalePopup()`, `PetscDrawCreate()`
 
 @*/
 PetscErrorCode  PetscDrawGetPopup(PetscDraw draw,PetscDraw *popup)
@@ -357,7 +357,7 @@ PetscErrorCode  PetscDrawGetPopup(PetscDraw draw,PetscDraw *popup)
 
   Level: advanced
 
-.seealso: PetscDrawCreate()
+.seealso: `PetscDrawCreate()`
 
 @*/
 PetscErrorCode  PetscDrawSetDisplay(PetscDraw draw,const char display[])
@@ -403,7 +403,7 @@ PetscErrorCode  PetscDrawSetDoubleBuffer(PetscDraw draw)
 
    Level: advanced
 
-.seealso: PetscDrawRestoreSingleton(), PetscViewerGetSingleton(), PetscViewerRestoreSingleton()
+.seealso: `PetscDrawRestoreSingleton()`, `PetscViewerGetSingleton()`, `PetscViewerRestoreSingleton()`
 
 @*/
 PetscErrorCode  PetscDrawGetSingleton(PetscDraw draw,PetscDraw *sdraw)
@@ -438,7 +438,7 @@ PetscErrorCode  PetscDrawGetSingleton(PetscDraw draw,PetscDraw *sdraw)
 
    Level: advanced
 
-.seealso: PetscDrawGetSingleton(), PetscViewerGetSingleton(), PetscViewerRestoreSingleton()
+.seealso: `PetscDrawGetSingleton()`, `PetscViewerGetSingleton()`, `PetscViewerRestoreSingleton()`
 
 @*/
 PetscErrorCode  PetscDrawRestoreSingleton(PetscDraw draw,PetscDraw *sdraw)

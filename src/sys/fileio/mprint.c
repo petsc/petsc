@@ -32,7 +32,7 @@ FILE *PETSC_STDERR = NULL;
 
  Level: developer
 
-.seealso: PetscFormatConvert(), PetscVSNPrintf(), PetscVFPrintf()
+.seealso: `PetscFormatConvert()`, `PetscVSNPrintf()`, `PetscVFPrintf()`
 
 @*/
 PetscErrorCode PetscFormatConvertGetSize(const char *format,size_t *size)
@@ -84,7 +84,7 @@ PetscErrorCode PetscFormatConvertGetSize(const char *format,size_t *size)
 
  Level: developer
 
-.seealso: PetscFormatConvertGetSize(), PetscVSNPrintf(), PetscVFPrintf()
+.seealso: `PetscFormatConvertGetSize()`, `PetscVSNPrintf()`, `PetscVFPrintf()`
 
 @*/
 PetscErrorCode PetscFormatConvert(const char *format,char *newformat)
@@ -153,7 +153,7 @@ PetscErrorCode PetscFormatConvert(const char *format,char *newformat)
 
  Level: developer
 
-.seealso: PetscVSNPrintf(), PetscErrorPrintf(), PetscVPrintf()
+.seealso: `PetscVSNPrintf()`, `PetscErrorPrintf()`, `PetscVPrintf()`
 
 @*/
 PetscErrorCode PetscVSNPrintf(char *str,size_t len,const char *format,size_t *fullLength,va_list Argp)
@@ -272,7 +272,7 @@ $    PetscVFPrintf = mypetscvfprintf;
 
   Level:  developer
 
-.seealso: PetscVSNPrintf(), PetscErrorPrintf()
+.seealso: `PetscVSNPrintf()`, `PetscErrorPrintf()`
 
 @*/
 PetscErrorCode PetscVFPrintfDefault(FILE *fd,const char *format,va_list Argp)
@@ -318,8 +318,8 @@ PetscErrorCode PetscVFPrintfDefault(FILE *fd,const char *format,va_list Argp)
 
    Level: intermediate
 
-.seealso: PetscSynchronizedFlush(), PetscSynchronizedFPrintf(), PetscFPrintf(), PetscVSNPrintf(),
-          PetscPrintf(), PetscViewerASCIIPrintf(), PetscViewerASCIISynchronizedPrintf(), PetscVFPrintf()
+.seealso: `PetscSynchronizedFlush()`, `PetscSynchronizedFPrintf()`, `PetscFPrintf()`, `PetscVSNPrintf()`,
+          `PetscPrintf()`, `PetscViewerASCIIPrintf()`, `PetscViewerASCIISynchronizedPrintf()`, `PetscVFPrintf()`
 @*/
 PetscErrorCode PetscSNPrintf(char *str,size_t len,const char format[],...)
 {
@@ -348,8 +348,8 @@ PetscErrorCode PetscSNPrintf(char *str,size_t len,const char format[],...)
 
    Level: intermediate
 
-.seealso: PetscSynchronizedFlush(), PetscSynchronizedFPrintf(), PetscFPrintf(), PetscVSNPrintf(),
-          PetscPrintf(), PetscViewerASCIIPrintf(), PetscViewerASCIISynchronizedPrintf(), PetscSNPrintf(), PetscVFPrintf()
+.seealso: `PetscSynchronizedFlush()`, `PetscSynchronizedFPrintf()`, `PetscFPrintf()`, `PetscVSNPrintf()`,
+          `PetscPrintf()`, `PetscViewerASCIIPrintf()`, `PetscViewerASCIISynchronizedPrintf()`, `PetscSNPrintf()`, `PetscVFPrintf()`
 @*/
 PetscErrorCode PetscSNPrintfCount(char *str,size_t len,const char format[],size_t *countused,...)
 {
@@ -386,8 +386,8 @@ int         petsc_printfqueuelength = 0;
     The call sequence is PetscSynchronizedPrintf(MPI_Comm, character(*), PetscErrorCode ierr) from Fortran.
     That is, you can only pass a single character string from Fortran.
 
-.seealso: PetscSynchronizedFlush(), PetscSynchronizedFPrintf(), PetscFPrintf(),
-          PetscPrintf(), PetscViewerASCIIPrintf(), PetscViewerASCIISynchronizedPrintf()
+.seealso: `PetscSynchronizedFlush()`, `PetscSynchronizedFPrintf()`, `PetscFPrintf()`,
+          `PetscPrintf()`, `PetscViewerASCIIPrintf()`, `PetscViewerASCIISynchronizedPrintf()`
 @*/
 PetscErrorCode PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
 {
@@ -452,8 +452,8 @@ PetscErrorCode PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
     REQUIRES a intervening call to PetscSynchronizedFlush() for the information
     from all the processors to be printed.
 
-.seealso: PetscSynchronizedPrintf(), PetscSynchronizedFlush(), PetscFPrintf(),
-          PetscFOpen(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIPrintf()
+.seealso: `PetscSynchronizedPrintf()`, `PetscSynchronizedFlush()`, `PetscFPrintf()`,
+          `PetscFOpen()`, `PetscViewerASCIISynchronizedPrintf()`, `PetscViewerASCIIPrintf()`
 
 @*/
 PetscErrorCode PetscSynchronizedFPrintf(MPI_Comm comm,FILE *fp,const char format[],...)
@@ -519,8 +519,8 @@ PetscErrorCode PetscSynchronizedFPrintf(MPI_Comm comm,FILE *fp,const char format
 
     From Fortran pass PETSC_STDOUT if the flush is for standard out; otherwise pass a value obtained from PetscFOpen()
 
-.seealso: PetscSynchronizedPrintf(), PetscFPrintf(), PetscPrintf(), PetscViewerASCIIPrintf(),
-          PetscViewerASCIISynchronizedPrintf()
+.seealso: `PetscSynchronizedPrintf()`, `PetscFPrintf()`, `PetscPrintf()`, `PetscViewerASCIIPrintf()`,
+          `PetscViewerASCIISynchronizedPrintf()`
 @*/
 PetscErrorCode PetscSynchronizedFlush(MPI_Comm comm,FILE *fd)
 {
@@ -588,8 +588,8 @@ PetscErrorCode PetscSynchronizedFlush(MPI_Comm comm,FILE *fd)
     Fortran Note:
     This routine is not supported in Fortran.
 
-.seealso: PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(),
-          PetscViewerASCIISynchronizedPrintf(), PetscSynchronizedFlush()
+.seealso: `PetscPrintf()`, `PetscSynchronizedPrintf()`, `PetscViewerASCIIPrintf()`,
+          `PetscViewerASCIISynchronizedPrintf()`, `PetscSynchronizedFlush()`
 @*/
 PetscErrorCode PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
 {
@@ -631,7 +631,7 @@ PetscErrorCode PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
     The call sequence is PetscPrintf(MPI_Comm, character(*), PetscErrorCode ierr) from Fortran.
     That is, you can only pass a single character string from Fortran.
 
-.seealso: PetscFPrintf(), PetscSynchronizedPrintf(), PetscFormatConvert()
+.seealso: `PetscFPrintf()`, `PetscSynchronizedPrintf()`, `PetscFormatConvert()`
 @*/
 PetscErrorCode PetscPrintf(MPI_Comm comm,const char format[],...)
 {
@@ -690,8 +690,8 @@ PetscErrorCode PetscHelpPrintfDefault(MPI_Comm comm,const char format[],...)
 
     Level: intermediate
 
-.seealso: PetscSynchronizedPrintf(), PetscSynchronizedFlush(),
-          PetscFOpen(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIPrintf()
+.seealso: `PetscSynchronizedPrintf()`, `PetscSynchronizedFlush()`,
+          `PetscFOpen()`, `PetscViewerASCIISynchronizedPrintf()`, `PetscViewerASCIIPrintf()`
 
 @*/
 PetscErrorCode PetscSynchronizedFGets(MPI_Comm comm,FILE *fp,size_t len,char string[])

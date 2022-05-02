@@ -273,7 +273,7 @@ static PetscErrorCode  PCSPAISetSp_SPAI(PC pc,PetscInt sp)
 
   Level: intermediate
 
-.seealso: PCSPAI, PCSetType()
+.seealso: `PCSPAI`, `PCSetType()`
   @*/
 PetscErrorCode  PCSPAISetEpsilon(PC pc,PetscReal epsilon1)
 {
@@ -302,7 +302,7 @@ PetscErrorCode  PCSPAISetEpsilon(PC pc,PetscReal epsilon1)
 
   Level: intermediate
 
-.seealso: PCSPAI, PCSetType(), PCSPAISetMaxNew()
+.seealso: `PCSPAI`, `PCSetType()`, `PCSPAISetMaxNew()`
 @*/
 PetscErrorCode  PCSPAISetNBSteps(PC pc,PetscInt nbsteps1)
 {
@@ -324,7 +324,7 @@ PetscErrorCode  PCSPAISetNBSteps(PC pc,PetscInt nbsteps1)
 
   Level: intermediate
 
-.seealso: PCSPAI, PCSetType()
+.seealso: `PCSPAI`, `PCSetType()`
 @*/
 PetscErrorCode  PCSPAISetMax(PC pc,PetscInt max1)
 {
@@ -345,7 +345,7 @@ PetscErrorCode  PCSPAISetMax(PC pc,PetscInt max1)
 
   Level: intermediate
 
-.seealso: PCSPAI, PCSetType(), PCSPAISetNBSteps()
+.seealso: `PCSPAI`, `PCSetType()`, `PCSPAISetNBSteps()`
 @*/
 PetscErrorCode  PCSPAISetMaxNew(PC pc,PetscInt maxnew1)
 {
@@ -383,7 +383,7 @@ PetscErrorCode  PCSPAISetMaxNew(PC pc,PetscInt maxnew1)
 
   Level: intermediate
 
-.seealso: PCSPAI, PCSetType()
+.seealso: `PCSPAI`, `PCSetType()`
 @*/
 PetscErrorCode  PCSPAISetBlockSize(PC pc,PetscInt block_size1)
 {
@@ -409,7 +409,7 @@ PetscErrorCode  PCSPAISetBlockSize(PC pc,PetscInt block_size1)
 
   Level: intermediate
 
-.seealso: PCSPAI, PCSetType()
+.seealso: `PCSPAI`, `PCSetType()`
 @*/
 PetscErrorCode  PCSPAISetCacheSize(PC pc,PetscInt cache_size)
 {
@@ -432,7 +432,7 @@ PetscErrorCode  PCSPAISetCacheSize(PC pc,PetscInt cache_size)
 
   Level: intermediate
 
-.seealso: PCSPAI, PCSetType()
+.seealso: `PCSPAI`, `PCSetType()`
 @*/
 PetscErrorCode  PCSPAISetVerbose(PC pc,PetscInt verbose)
 {
@@ -460,7 +460,7 @@ PetscErrorCode  PCSPAISetVerbose(PC pc,PetscInt verbose)
 
   Level: intermediate
 
-.seealso: PCSPAI, PCSetType()
+.seealso: `PCSPAI`, `PCSetType()`
 @*/
 PetscErrorCode  PCSPAISetSp(PC pc,PetscInt sp)
 {
@@ -540,9 +540,9 @@ static PetscErrorCode PCSetFromOptions_SPAI(PetscOptionItems *PetscOptionsObject
 
    Level: beginner
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
-    PCSPAISetEpsilon(), PCSPAISetMax(), PCSPAISetMaxNew(), PCSPAISetBlockSize(),
-    PCSPAISetVerbose(), PCSPAISetSp()
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`,
+          `PCSPAISetEpsilon()`, `PCSPAISetMax()`, `PCSPAISetMaxNew()`, `PCSPAISetBlockSize()`,
+          `PCSPAISetVerbose()`, `PCSPAISetSp()`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_SPAI(PC pc)

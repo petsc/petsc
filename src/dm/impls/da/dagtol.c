@@ -78,8 +78,8 @@ extern PetscErrorCode DMDAGetNatural_Private(DM,PetscInt*,IS*);
     This is an internal routine called by DMDAGlobalToNatural() to
      create the scatter context.
 
-.seealso: DMDAGlobalToNaturalBegin(), DMDAGlobalToNaturalEnd(), DMLocalToGlobalBegin(), DMDACreate2d(),
-          DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMDACreateNaturalVector()
+.seealso: `DMDAGlobalToNaturalBegin()`, `DMDAGlobalToNaturalEnd()`, `DMLocalToGlobalBegin()`, `DMDACreate2d()`,
+          `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMDACreateNaturalVector()`
 */
 PetscErrorCode DMDAGlobalToNatural_Create(DM da)
 {
@@ -132,8 +132,8 @@ PetscErrorCode DMDAGlobalToNatural_Create(DM da)
 
    You must call DMDACreateNaturalVector() before using this routine
 
-.seealso: DMDAGlobalToNaturalEnd(), DMLocalToGlobalBegin(), DMDACreate2d(),
-          DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMDACreateNaturalVector()
+.seealso: `DMDAGlobalToNaturalEnd()`, `DMLocalToGlobalBegin()`, `DMDACreate2d()`,
+          `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMDACreateNaturalVector()`
 
 @*/
 PetscErrorCode  DMDAGlobalToNaturalBegin(DM da,Vec g,InsertMode mode,Vec n)
@@ -174,8 +174,8 @@ PetscErrorCode  DMDAGlobalToNaturalBegin(DM da,Vec g,InsertMode mode,Vec n)
    must have the same parallel data layout; they could, for example, be
    obtained with VecDuplicate() from the DMDA originating vectors.
 
-.seealso: DMDAGlobalToNaturalBegin(), DMLocalToGlobalBegin(), DMDACreate2d(),
-          DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMDACreateNaturalVector()
+.seealso: `DMDAGlobalToNaturalBegin()`, `DMLocalToGlobalBegin()`, `DMDACreate2d()`,
+          `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMDACreateNaturalVector()`
 
 @*/
 PetscErrorCode  DMDAGlobalToNaturalEnd(DM da,Vec g,InsertMode mode,Vec n)
@@ -213,8 +213,8 @@ PetscErrorCode  DMDAGlobalToNaturalEnd(DM da,Vec g,InsertMode mode,Vec n)
    must have the same parallel data layout; they could, for example, be
    obtained with VecDuplicate() from the DMDA originating vectors.
 
-.seealso: DMDAGlobalToNaturalEnd(), DMDAGlobalToNaturalBegin(), DMLocalToGlobalBegin(), DMDACreate2d(),
-          DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMDACreateNaturalVector()
+.seealso: `DMDAGlobalToNaturalEnd()`, `DMDAGlobalToNaturalBegin()`, `DMLocalToGlobalBegin()`, `DMDACreate2d()`,
+          `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMDACreateNaturalVector()`
 
 @*/
 PetscErrorCode  DMDANaturalToGlobalBegin(DM da,Vec n,InsertMode mode,Vec g)
@@ -255,8 +255,8 @@ PetscErrorCode  DMDANaturalToGlobalBegin(DM da,Vec n,InsertMode mode,Vec g)
    must have the same parallel data layout; they could, for example, be
    obtained with VecDuplicate() from the DMDA originating vectors.
 
-.seealso: DMDAGlobalToNaturalBegin(), DMDAGlobalToNaturalEnd(), DMLocalToGlobalBegin(), DMDACreate2d(),
-          DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMDACreateNaturalVector()
+.seealso: `DMDAGlobalToNaturalBegin()`, `DMDAGlobalToNaturalEnd()`, `DMLocalToGlobalBegin()`, `DMDACreate2d()`,
+          `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMDACreateNaturalVector()`
 
 @*/
 PetscErrorCode  DMDANaturalToGlobalEnd(DM da,Vec n,InsertMode mode,Vec g)

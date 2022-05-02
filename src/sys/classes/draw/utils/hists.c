@@ -51,9 +51,9 @@ struct _p_PetscDrawHG {
 
    Level: intermediate
 
-.seealso: PetscDrawHGDestroy(), PetscDrawHG, PetscDrawBarCreate(), PetscDrawBar, PetscDrawLGCreate(), PetscDrawLG, PetscDrawSPCreate(), PetscDrawSP,
-          PetscDrawHGSetNumberBins(), PetscDrawHGReset(), PetscDrawHGAddValue(), PetscDrawHGDraw(), PetscDrawHGSave(), PetscDrawHGView(), PetscDrawHGSetColor(),
-          PetscDrawHGSetLimits(), PetscDrawHGCalcStats(), PetscDrawHGIntegerBins(), PetscDrawHGGetAxis(), PetscDrawAxis, PetscDrawHGGetDraw()
+.seealso: `PetscDrawHGDestroy()`, `PetscDrawHG`, `PetscDrawBarCreate()`, `PetscDrawBar`, `PetscDrawLGCreate()`, `PetscDrawLG`, `PetscDrawSPCreate()`, `PetscDrawSP`,
+          `PetscDrawHGSetNumberBins()`, `PetscDrawHGReset()`, `PetscDrawHGAddValue()`, `PetscDrawHGDraw()`, `PetscDrawHGSave()`, `PetscDrawHGView()`, `PetscDrawHGSetColor()`,
+          `PetscDrawHGSetLimits()`, `PetscDrawHGCalcStats()`, `PetscDrawHGIntegerBins()`, `PetscDrawHGGetAxis()`, `PetscDrawAxis`, `PetscDrawHGGetDraw()`
 
 @*/
 PetscErrorCode  PetscDrawHGCreate(PetscDraw draw,int bins,PetscDrawHG *hist)
@@ -109,7 +109,7 @@ PetscErrorCode  PetscDrawHGCreate(PetscDraw draw,int bins,PetscDrawHG *hist)
 
    Level: intermediate
 
-.seealso: PetscDrawHGCreate(), PetscDrawHG, PetscDrawHGDraw(), PetscDrawHGIntegerBins()
+.seealso: `PetscDrawHGCreate()`, `PetscDrawHG`, `PetscDrawHGDraw()`, `PetscDrawHGIntegerBins()`
 
 @*/
 PetscErrorCode  PetscDrawHGSetNumberBins(PetscDrawHG hist, int bins)
@@ -138,7 +138,7 @@ PetscErrorCode  PetscDrawHGSetNumberBins(PetscDrawHG hist, int bins)
 
   Level: intermediate
 
-.seealso: PetscDrawHGCreate(), PetscDrawHG, PetscDrawHGDraw(), PetscDrawHGAddValue()
+.seealso: `PetscDrawHGCreate()`, `PetscDrawHG`, `PetscDrawHGDraw()`, `PetscDrawHGAddValue()`
 
 @*/
 PetscErrorCode  PetscDrawHGReset(PetscDrawHG hist)
@@ -164,7 +164,7 @@ PetscErrorCode  PetscDrawHGReset(PetscDrawHG hist)
 
   Level: intermediate
 
-.seealso:  PetscDrawHGCreate(), PetscDrawHG
+.seealso: `PetscDrawHGCreate()`, `PetscDrawHG`
 @*/
 PetscErrorCode  PetscDrawHGDestroy(PetscDrawHG *hist)
 {
@@ -192,7 +192,7 @@ PetscErrorCode  PetscDrawHGDestroy(PetscDrawHG *hist)
 
   Level: intermediate
 
-.seealso: PetscDrawHGCreate(), PetscDrawHG, PetscDrawHGDraw(), PetscDrawHGAddValue(), PetscDrawHGReset()
+.seealso: `PetscDrawHGCreate()`, `PetscDrawHG`, `PetscDrawHGDraw()`, `PetscDrawHGAddValue()`, `PetscDrawHGReset()`
 @*/
 PetscErrorCode  PetscDrawHGAddValue(PetscDrawHG hist, PetscReal value)
 {
@@ -250,7 +250,7 @@ PetscErrorCode  PetscDrawHGAddValue(PetscDrawHG hist, PetscReal value)
 
   Level: intermediate
 
-.seealso: PetscDrawHGCreate(), PetscDrawHG, PetscDrawHGDraw(), PetscDrawHGAddValue(), PetscDrawHGReset()
+.seealso: `PetscDrawHGCreate()`, `PetscDrawHG`, `PetscDrawHGDraw()`, `PetscDrawHGAddValue()`, `PetscDrawHGReset()`
 
 @*/
 PetscErrorCode  PetscDrawHGDraw(PetscDrawHG hist)
@@ -396,7 +396,7 @@ PetscErrorCode  PetscDrawHGDraw(PetscDrawHG hist)
 
   Level: intermediate
 
-.seealso:  PetscDrawHGCreate(), PetscDrawHGGetDraw(), PetscDrawSetSave(), PetscDrawSave(), PetscDrawHGDraw()
+.seealso: `PetscDrawHGCreate()`, `PetscDrawHGGetDraw()`, `PetscDrawSetSave()`, `PetscDrawSave()`, `PetscDrawHGDraw()`
 @*/
 PetscErrorCode  PetscDrawHGSave(PetscDrawHG hg)
 {
@@ -416,7 +416,7 @@ PetscErrorCode  PetscDrawHGSave(PetscDrawHG hg)
 
   Level: beginner
 
-.seealso:  PetscDrawHGCreate(), PetscDrawHGGetDraw(), PetscDrawSetSave(), PetscDrawSave(), PetscDrawHGDraw()
+.seealso: `PetscDrawHGCreate()`, `PetscDrawHGGetDraw()`, `PetscDrawSetSave()`, `PetscDrawSave()`, `PetscDrawHGDraw()`
 
 @*/
 PetscErrorCode  PetscDrawHGView(PetscDrawHG hist,PetscViewer viewer)
@@ -511,7 +511,7 @@ PetscErrorCode  PetscDrawHGView(PetscDrawHG hist,PetscViewer viewer)
 
   Level: intermediate
 
-.seealso:  PetscDrawHGCreate(), PetscDrawHGGetDraw(), PetscDrawSetSave(), PetscDrawSave(), PetscDrawHGDraw(), PetscDrawHGGetAxis()
+.seealso: `PetscDrawHGCreate()`, `PetscDrawHGGetDraw()`, `PetscDrawSetSave()`, `PetscDrawSave()`, `PetscDrawHGDraw()`, `PetscDrawHGGetAxis()`
 
 @*/
 PetscErrorCode  PetscDrawHGSetColor(PetscDrawHG hist,int color)
@@ -536,7 +536,7 @@ PetscErrorCode  PetscDrawHGSetColor(PetscDrawHG hist,int color)
 
   Level: intermediate
 
-.seealso:  PetscDrawHGCreate(), PetscDrawHGGetDraw(), PetscDrawSetSave(), PetscDrawSave(), PetscDrawHGDraw(), PetscDrawHGGetAxis()
+.seealso: `PetscDrawHGCreate()`, `PetscDrawHGGetDraw()`, `PetscDrawSetSave()`, `PetscDrawSave()`, `PetscDrawHGDraw()`, `PetscDrawHGGetAxis()`
 
 @*/
 PetscErrorCode  PetscDrawHGSetLimits(PetscDrawHG hist, PetscReal x_min, PetscReal x_max, int y_min, int y_max)
@@ -562,7 +562,7 @@ PetscErrorCode  PetscDrawHGSetLimits(PetscDrawHG hist, PetscReal x_min, PetscRea
 
   Level: intermediate
 
-.seealso:  PetscDrawHGCreate(), PetscDrawHGAddValue(), PetscDrawHGView(), PetscDrawHGDraw()
+.seealso: `PetscDrawHGCreate()`, `PetscDrawHGAddValue()`, `PetscDrawHGView()`, `PetscDrawHGDraw()`
 
 @*/
 PetscErrorCode  PetscDrawHGCalcStats(PetscDrawHG hist, PetscBool calc)
@@ -585,7 +585,7 @@ PetscErrorCode  PetscDrawHGCalcStats(PetscDrawHG hist, PetscBool calc)
 
   Level: intermediate
 
-.seealso:  PetscDrawHGCreate(), PetscDrawHGAddValue(), PetscDrawHGView(), PetscDrawHGDraw(), PetscDrawHGSetColor()
+.seealso: `PetscDrawHGCreate()`, `PetscDrawHGAddValue()`, `PetscDrawHGView()`, `PetscDrawHGDraw()`, `PetscDrawHGSetColor()`
 
 @*/
 PetscErrorCode  PetscDrawHGIntegerBins(PetscDrawHG hist, PetscBool ints)
@@ -613,7 +613,7 @@ PetscErrorCode  PetscDrawHGIntegerBins(PetscDrawHG hist, PetscBool ints)
 
   Level: intermediate
 
-.seealso:  PetscDrawHGCreate(), PetscDrawHGAddValue(), PetscDrawHGView(), PetscDrawHGDraw(), PetscDrawHGSetColor(), PetscDrawAxis, PetscDrawHGSetLimits()
+.seealso: `PetscDrawHGCreate()`, `PetscDrawHGAddValue()`, `PetscDrawHGView()`, `PetscDrawHGDraw()`, `PetscDrawHGSetColor()`, `PetscDrawAxis`, `PetscDrawHGSetLimits()`
 
 @*/
 PetscErrorCode  PetscDrawHGGetAxis(PetscDrawHG hist,PetscDrawAxis *axis)
@@ -638,7 +638,7 @@ PetscErrorCode  PetscDrawHGGetAxis(PetscDrawHG hist,PetscDrawAxis *axis)
 
   Level: intermediate
 
-.seealso:  PetscDrawHGCreate(), PetscDrawHGAddValue(), PetscDrawHGView(), PetscDrawHGDraw(), PetscDrawHGSetColor(), PetscDrawAxis, PetscDrawHGSetLimits()
+.seealso: `PetscDrawHGCreate()`, `PetscDrawHGAddValue()`, `PetscDrawHGView()`, `PetscDrawHGDraw()`, `PetscDrawHGSetColor()`, `PetscDrawAxis`, `PetscDrawHGSetLimits()`
 
 @*/
 PetscErrorCode  PetscDrawHGGetDraw(PetscDrawHG hist,PetscDraw *draw)

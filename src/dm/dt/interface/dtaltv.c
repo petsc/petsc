@@ -51,7 +51,7 @@
 
    Level: intermediate
 
-.seealso: PetscDTAltVApply(), PetscDTAltVWedge(), PetscDTAltVInterior(), PetscDTAltVPullback(), PetscDTAltVStar()
+.seealso: `PetscDTAltVApply()`, `PetscDTAltVWedge()`, `PetscDTAltVInterior()`, `PetscDTAltVPullback()`, `PetscDTAltVStar()`
 M*/
 
 /*@
@@ -68,7 +68,7 @@ M*/
 
    Level: intermediate
 
-.seealso: PetscDTAltV, PetscDTAltVPullback(), PetscDTAltVPullbackMatrix()
+.seealso: `PetscDTAltV`, `PetscDTAltVPullback()`, `PetscDTAltVPullbackMatrix()`
 @*/
 PetscErrorCode PetscDTAltVApply(PetscInt N, PetscInt k, const PetscReal *w, const PetscReal *v, PetscReal *wv)
 {
@@ -144,7 +144,7 @@ PetscErrorCode PetscDTAltVApply(PetscInt N, PetscInt k, const PetscReal *w, cons
 
    Level: intermediate
 
-.seealso: PetscDTAltV, PetscDTAltVWedgeMatrix(), PetscDTAltVPullback(), PetscDTAltVPullbackMatrix()
+.seealso: `PetscDTAltV`, `PetscDTAltVWedgeMatrix()`, `PetscDTAltVPullback()`, `PetscDTAltVPullbackMatrix()`
 @*/
 PetscErrorCode PetscDTAltVWedge(PetscInt N, PetscInt j, PetscInt k, const PetscReal *a, const PetscReal *b, PetscReal *awedgeb)
 {
@@ -222,7 +222,7 @@ PetscErrorCode PetscDTAltVWedge(PetscInt N, PetscInt j, PetscInt k, const PetscR
 
    Level: intermediate
 
-.seealso: PetscDTAltV, PetscDTAltVPullback(), PetscDTAltVPullbackMatrix()
+.seealso: `PetscDTAltV`, `PetscDTAltVPullback()`, `PetscDTAltVPullbackMatrix()`
 @*/
 PetscErrorCode PetscDTAltVWedgeMatrix(PetscInt N, PetscInt j, PetscInt k, const PetscReal *a, PetscReal *awedgeMat)
 {
@@ -309,7 +309,7 @@ PetscErrorCode PetscDTAltVWedgeMatrix(PetscInt N, PetscInt j, PetscInt k, const 
    but its normal trace is integrated on faces, like a 2-form.  The correct pullback then is to apply the Hodge star transformation from (M-2)-form to 2-form, pullback as a 2-form,
    then the inverse Hodge star transformation.
 
-.seealso: PetscDTAltV, PetscDTAltVPullbackMatrix(), PetscDTAltVStar()
+.seealso: `PetscDTAltV`, `PetscDTAltVPullbackMatrix()`, `PetscDTAltVStar()`
 @*/
 PetscErrorCode PetscDTAltVPullback(PetscInt N, PetscInt M, const PetscReal *L, PetscInt k, const PetscReal *w, PetscReal *Lstarw)
 {
@@ -445,7 +445,7 @@ PetscErrorCode PetscDTAltVPullback(PetscInt N, PetscInt M, const PetscReal *L, P
 
    Level: intermediate
 
-.seealso: PetscDTAltV, PetscDTAltVPullback(), PetscDTAltVStar()
+.seealso: `PetscDTAltV`, `PetscDTAltVPullback()`, `PetscDTAltVStar()`
 @*/
 PetscErrorCode PetscDTAltVPullbackMatrix(PetscInt N, PetscInt M, const PetscReal *L, PetscInt k, PetscReal *Lstar)
 {
@@ -560,7 +560,7 @@ PetscErrorCode PetscDTAltVPullbackMatrix(PetscInt N, PetscInt M, const PetscReal
 
    Level: intermediate
 
-.seealso: PetscDTAltV, PetscDTAltVInteriorMatrix(), PetscDTAltVInteriorPattern(), PetscDTAltVPullback(), PetscDTAltVPullbackMatrix()
+.seealso: `PetscDTAltV`, `PetscDTAltVInteriorMatrix()`, `PetscDTAltVInteriorPattern()`, `PetscDTAltVPullback()`, `PetscDTAltVPullbackMatrix()`
 @*/
 PetscErrorCode PetscDTAltVInterior(PetscInt N, PetscInt k, const PetscReal *w, const PetscReal *v, PetscReal *wIntv)
 {
@@ -627,7 +627,7 @@ PetscErrorCode PetscDTAltVInterior(PetscInt N, PetscInt k, const PetscReal *w, c
 
    Level: intermediate
 
-.seealso: PetscDTAltV, PetscDTAltVInterior(), PetscDTAltVInteriorPattern(), PetscDTAltVPullback(), PetscDTAltVPullbackMatrix()
+.seealso: `PetscDTAltV`, `PetscDTAltVInterior()`, `PetscDTAltVInteriorPattern()`, `PetscDTAltVPullback()`, `PetscDTAltVPullbackMatrix()`
 @*/
 PetscErrorCode PetscDTAltVInteriorMatrix(PetscInt N, PetscInt k, const PetscReal *v, PetscReal *intvMat)
 {
@@ -690,7 +690,7 @@ PetscErrorCode PetscDTAltVInteriorMatrix(PetscInt N, PetscInt k, const PetscReal
 
    Note: this function is useful when the interior product needs to be computed at multiple locations, as when computing the Koszul differential
 
-.seealso: PetscDTAltV, PetscDTAltVInterior(), PetscDTAltVInteriorMatrix(), PetscDTAltVPullback(), PetscDTAltVPullbackMatrix()
+.seealso: `PetscDTAltV`, `PetscDTAltVInterior()`, `PetscDTAltVInteriorMatrix()`, `PetscDTAltVPullback()`, `PetscDTAltVPullbackMatrix()`
 @*/
 PetscErrorCode PetscDTAltVInteriorPattern(PetscInt N, PetscInt k, PetscInt (*indices)[3])
 {
@@ -763,7 +763,7 @@ PetscErrorCode PetscDTAltVInteriorPattern(PetscInt N, PetscInt k, PetscInt (*ind
 
    Level: intermediate
 
-.seealso: PetscDTAltV, PetscDTAltVPullback(), PetscDTAltVPullbackMatrix()
+.seealso: `PetscDTAltV`, `PetscDTAltVPullback()`, `PetscDTAltVPullbackMatrix()`
 @*/
 PetscErrorCode PetscDTAltVStar(PetscInt N, PetscInt k, PetscInt pow, const PetscReal *w, PetscReal *starw)
 {

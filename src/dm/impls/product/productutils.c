@@ -15,7 +15,7 @@
 
   Level: advanced
 
-.seealso: DMPRODUCT, DMProductSetDM()
+.seealso: `DMPRODUCT`, `DMProductSetDM()`
 @*/
 PETSC_EXTERN PetscErrorCode DMProductGetDM(DM dm,PetscInt slot,DM *subdm)
 {
@@ -45,7 +45,7 @@ PETSC_EXTERN PetscErrorCode DMProductGetDM(DM dm,PetscInt slot,DM *subdm)
 
   Level: advanced
 
-.seealso: DMPRODUCT, DMProductGetDM(), DMProductSetDimensionIndex()
+.seealso: `DMPRODUCT`, `DMProductGetDM()`, `DMProductSetDimensionIndex()`
 @*/
 PETSC_EXTERN PetscErrorCode DMProductSetDM(DM dm,PetscInt slot,DM subdm)
 {
@@ -74,7 +74,7 @@ PETSC_EXTERN PetscErrorCode DMProductSetDM(DM dm,PetscInt slot,DM subdm)
 
   Level: advanced
 
-.seealso: DMPRODUCT
+.seealso: `DMPRODUCT`
 @*/
 PETSC_EXTERN PetscErrorCode DMProductSetDimensionIndex(DM dm,PetscInt slot,PetscInt idx)
 {

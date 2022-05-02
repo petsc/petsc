@@ -273,7 +273,7 @@ static PetscErrorCode SNESView_NASM(SNES snes, PetscViewer viewer)
 
    Level: intermediate
 
-.seealso: SNESNASM, SNESNASMGetType(), PCASMSetType()
+.seealso: `SNESNASM`, `SNESNASMGetType()`, `PCASMSetType()`
 @*/
 PetscErrorCode SNESNASMSetType(SNES snes,PCASMType type)
 {
@@ -308,7 +308,7 @@ static PetscErrorCode SNESNASMSetType_NASM(SNES snes,PCASMType type)
 
    Level: intermediate
 
-.seealso: SNESNASM, SNESNASMSetType(), PCASMGetType()
+.seealso: `SNESNASM`, `SNESNASMSetType()`, `PCASMGetType()`
 @*/
 PetscErrorCode SNESNASMGetType(SNES snes,PCASMType *type)
 {
@@ -341,7 +341,7 @@ static PetscErrorCode SNESNASMGetType_NASM(SNES snes,PCASMType *type)
 
    Level: intermediate
 
-.seealso: SNESNASM, SNESNASMGetSubdomains()
+.seealso: `SNESNASM`, `SNESNASMGetSubdomains()`
 @*/
 PetscErrorCode SNESNASMSetSubdomains(SNES snes,PetscInt n,SNES subsnes[],VecScatter iscatter[],VecScatter oscatter[],VecScatter gscatter[])
 {
@@ -421,7 +421,7 @@ static PetscErrorCode SNESNASMSetSubdomains_NASM(SNES snes,PetscInt n,SNES subsn
 
    Level: intermediate
 
-.seealso: SNESNASM, SNESNASMSetSubdomains()
+.seealso: `SNESNASM`, `SNESNASMSetSubdomains()`
 @*/
 PetscErrorCode SNESNASMGetSubdomains(SNES snes,PetscInt *n,SNES *subsnes[],VecScatter *iscatter[],VecScatter *oscatter[],VecScatter *gscatter[])
 {
@@ -463,7 +463,7 @@ static PetscErrorCode SNESNASMGetSubdomains_NASM(SNES snes,PetscInt *n,SNES *sub
 
    Level: developer
 
-.seealso: SNESNASM, SNESNASMGetSubdomains()
+.seealso: `SNESNASM`, `SNESNASMGetSubdomains()`
 @*/
 PetscErrorCode SNESNASMGetSubdomainVecs(SNES snes,PetscInt *n,Vec **x,Vec **y,Vec **b, Vec **xl)
 {
@@ -503,7 +503,7 @@ static PetscErrorCode SNESNASMGetSubdomainVecs_NASM(SNES snes,PetscInt *n,Vec **
    This is used almost exclusively in the implementation of ASPIN, where the converged subdomain and global Jacobian
    is needed at each linear iteration.
 
-.seealso: SNESNASM, SNESNASMGetSubdomains()
+.seealso: `SNESNASM`, `SNESNASMGetSubdomains()`
 @*/
 PetscErrorCode SNESNASMSetComputeFinalJacobian(SNES snes,PetscBool flg)
 {
@@ -538,7 +538,7 @@ static PetscErrorCode SNESNASMSetComputeFinalJacobian_NASM(SNES snes,PetscBool f
    Notes:
     The new solution is obtained as old solution plus dmp times (sum of the solutions on the subdomains)
 
-.seealso: SNESNASM, SNESNASMGetDamping()
+.seealso: `SNESNASM`, `SNESNASMGetDamping()`
 @*/
 PetscErrorCode SNESNASMSetDamping(SNES snes,PetscReal dmp)
 {
@@ -570,7 +570,7 @@ static PetscErrorCode SNESNASMSetDamping_NASM(SNES snes,PetscReal dmp)
 
    Level: intermediate
 
-.seealso: SNESNASM, SNESNASMSetDamping()
+.seealso: `SNESNASM`, `SNESNASMSetDamping()`
 @*/
 PetscErrorCode SNESNASMGetDamping(SNES snes,PetscReal *dmp)
 {
@@ -839,7 +839,7 @@ static PetscErrorCode SNESSolve_NASM(SNES snes)
 .  * - Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers",
    SIAM Review, 57(4), 2015
 
-.seealso: SNESCreate(), SNES, SNESSetType(), SNESType (for list of available types), SNESNASMSetType(), SNESNASMGetType(), SNESNASMSetSubdomains(), SNESNASMGetSubdomains(), SNESNASMGetSubdomainVecs(), SNESNASMSetComputeFinalJacobian(), SNESNASMSetDamping(), SNESNASMGetDamping()
+.seealso: `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESType`, `SNESNASMSetType()`, `SNESNASMGetType()`, `SNESNASMSetSubdomains()`, `SNESNASMGetSubdomains()`, `SNESNASMGetSubdomainVecs()`, `SNESNASMSetComputeFinalJacobian()`, `SNESNASMSetDamping()`, `SNESNASMGetDamping()`
 M*/
 
 PETSC_EXTERN PetscErrorCode SNESCreate_NASM(SNES snes)
@@ -913,7 +913,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NASM(SNES snes)
 
    Level: intermediate
 
-.seealso: SNESNASM, SNESNASMGetNumber()
+.seealso: `SNESNASM`, `SNESNASMGetNumber()`
 @*/
 PetscErrorCode SNESNASMGetSNES(SNES snes,PetscInt i,SNES *subsnes)
 {
@@ -938,7 +938,7 @@ PetscErrorCode SNESNASMGetSNES(SNES snes,PetscInt i,SNES *subsnes)
 
    Level: intermediate
 
-.seealso: SNESNASM, SNESNASMGetSNES()
+.seealso: `SNESNASM`, `SNESNASMGetSNES()`
 @*/
 PetscErrorCode SNESNASMGetNumber(SNES snes,PetscInt *n)
 {
@@ -960,7 +960,7 @@ PetscErrorCode SNESNASMGetNumber(SNES snes,PetscInt *n)
 
    Level: intermediate
 
-.seealso: SNESNASM
+.seealso: `SNESNASM`
 @*/
 PetscErrorCode SNESNASMSetWeight(SNES snes,Vec weight)
 {

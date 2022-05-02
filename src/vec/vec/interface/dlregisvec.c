@@ -16,7 +16,7 @@ const char       *ISInfos[] = {"SORTED", "UNIQUE", "PERMUTATION", "INTERVAL", "I
 
   Level: developer
 
-.seealso: PetscFinalize()
+.seealso: `PetscFinalize()`
 @*/
 PetscErrorCode  ISFinalizePackage(void)
 {
@@ -37,7 +37,7 @@ PetscErrorCode  ISFinalizePackage(void)
 
   Level: developer
 
-.seealso: PetscInitialize()
+.seealso: `PetscInitialize()`
 @*/
 PetscErrorCode  ISInitializePackage(void)
 {
@@ -154,7 +154,7 @@ static PetscBool  VecPackageInitialized = PETSC_FALSE;
 
   Level: developer
 
-.seealso: PetscInitialize()
+.seealso: `PetscInitialize()`
 @*/
 PetscErrorCode  VecInitializePackage(void)
 {
@@ -277,7 +277,7 @@ PetscErrorCode  VecInitializePackage(void)
 
   Level: developer
 
-.seealso: PetscInitialize()
+.seealso: `PetscInitialize()`
 @*/
 PetscErrorCode  VecFinalizePackage(void)
 {

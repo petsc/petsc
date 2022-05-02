@@ -261,8 +261,8 @@ $    -ksp_type richardson -pc_type jacobi gives one classically Jacobi precondit
   Philosophical Transactions of the Royal Society of London. Series A,
   Containing Papers of a Mathematical or Physical Character, Vol. 210, 1911 (1911).
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,
-           KSPRichardsonSetScale(), KSPPREONLY
+.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`,
+          `KSPRichardsonSetScale()`, `KSPPREONLY`
 
 M*/
 

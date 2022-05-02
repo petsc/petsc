@@ -30,7 +30,7 @@ PETSC_EXTERN const char *const TaoSubsetTypes[];
 
    Level: advanced
 
-.seealso TaoCreate(), TaoDestroy(), TaoSetType(), TaoType
+.seealso `TaoCreate()`, `TaoDestroy()`, `TaoSetType()`, `TaoType`
 S*/
 
 /*E
@@ -38,7 +38,7 @@ S*/
 
   Level: advanced
 
-.seealso TaoADMMSetUpdateType()
+.seealso `TaoADMMSetUpdateType()`
 E*/
 typedef enum {TAO_ADMM_UPDATE_BASIC,TAO_ADMM_UPDATE_ADAPTIVE,TAO_ADMM_UPDATE_ADAPTIVE_RELAXED} TaoADMMUpdateType;
 PETSC_EXTERN const char *const TaoADMMUpdateTypes[];
@@ -49,7 +49,7 @@ PETSC_EXTERN const char *const TaoADMMUpdateTypes[];
 
   Note: Most basic implementation. Generally slower than adaptive or adaptive relaxed version.
 
-.seealso: TaoADMMSetUpdateType(), TAO_ADMM_UPDATE_ADAPTIVE, TAO_ADMM_UPDATE_ADAPTIVE_RELAXED
+.seealso: `TaoADMMSetUpdateType()`, `TAO_ADMM_UPDATE_ADAPTIVE`, `TAO_ADMM_UPDATE_ADAPTIVE_RELAXED`
 M*/
 
 /*MC
@@ -59,7 +59,7 @@ M*/
 
   Note: Adaptively updates spectral penalty by using both steepest descent and minimum gradient.
 
-.seealso: TaoADMMSetUpdateType(), TAO_ADMM_UPDATE_BASIC, TAO_ADMM_UPDATE_ADAPTIVE_RELAXED
+.seealso: `TaoADMMSetUpdateType()`, `TAO_ADMM_UPDATE_BASIC`, `TAO_ADMM_UPDATE_ADAPTIVE_RELAXED`
 M*/
 
 /*MC
@@ -69,7 +69,7 @@ M*/
 
   Note: With adaptive spectral penalty update, it also relaxes x vector update by a factor.
 
-.seealso: TaoADMMSetUpdateType(), TAO_ADMM_UPDATE_BASIC, TAO_ADMM_UPDATE_ADAPTIVE
+.seealso: `TaoADMMSetUpdateType()`, `TAO_ADMM_UPDATE_BASIC`, `TAO_ADMM_UPDATE_ADAPTIVE`
 M*/
 
 /*E
@@ -77,7 +77,7 @@ M*/
 
   Level: advanced
 
-.seealso TaoADMMSetRegularizerType()
+.seealso `TaoADMMSetRegularizerType()`
 E*/
 typedef enum {TAO_ADMM_REGULARIZER_USER,TAO_ADMM_REGULARIZER_SOFT_THRESH} TaoADMMRegularizerType;
 PETSC_EXTERN const char *const TaoADMMRegularizerTypes[];
@@ -88,7 +88,7 @@ PETSC_EXTERN const char *const TaoADMMRegularizerTypes[];
 
   Note: User needs to provided appropriate routines and type for regularizer solver
 
-.seealso: TaoADMMSetRegularizerType(), TAO_ADMM_REGULARIZER_SOFT_THRESH
+.seealso: `TaoADMMSetRegularizerType()`, `TAO_ADMM_REGULARIZER_SOFT_THRESH`
 M*/
 
 /*MC
@@ -98,8 +98,8 @@ M*/
 
   Note: Utilizes built-in SoftThreshold routines
 
-.seealso: TaoSoftThreshold(), TaoADMMSetRegularizerObjectiveAndGradientRoutine(),
-          TaoADMMSetRegularizerHessianRoutine(), TaoADMMSetRegularizerType(), TAO_ADMM_REGULARIZER_USER
+.seealso: `TaoSoftThreshold()`, `TaoADMMSetRegularizerObjectiveAndGradientRoutine()`,
+          `TaoADMMSetRegularizerHessianRoutine()`, `TaoADMMSetRegularizerType()`, `TAO_ADMM_REGULARIZER_USER`
 M*/
 
 /*E
@@ -110,7 +110,7 @@ $  TAO_ALMM_PHR     - Powell-Hestenes-Rockafellar formulation without slack vari
 
   Level: advanced
 
-.seealso TAOALMM, TaoALMMSetType(), TaoALMMGetType()
+.seealso `TAOALMM`, `TaoALMMSetType()`, `TaoALMMGetType()`
 E*/
 typedef enum {TAO_ALMM_CLASSIC,TAO_ALMM_PHR} TaoALMMType;
 PETSC_EXTERN const char *const TaoALMMTypes[];
@@ -177,7 +177,7 @@ $      testing with -pc_type lu to eliminate the linear solver as the cause of t
        The string versions of these are in TAOConvergedReasons, if you change any value here you must
      also adjust that array.
 
-.seealso: TaoSolve(), TaoGetConvergedReason(), KSPConvergedReason, SNESConvergedReason, TSConvergedReason
+.seealso: `TaoSolve()`, `TaoGetConvergedReason()`, `KSPConvergedReason`, `SNESConvergedReason`, `TSConvergedReason`
 E*/
 typedef enum {/* converged */
   TAO_CONVERGED_GATOL         =  3, /* ||g(X)|| < gatol */

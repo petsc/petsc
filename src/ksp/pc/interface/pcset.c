@@ -48,7 +48,7 @@ PetscFunctionList PCList = NULL;
   Developer Note: PCRegister() is used to add preconditioner types to PCList from which they
   are accessed by PCSetType().
 
-.seealso: KSPSetType(), PCType, PCRegister(), PCCreate(), KSPGetPC()
+.seealso: `KSPSetType()`, `PCType`, `PCRegister()`, `PCCreate()`, `KSPGetPC()`
 
 @*/
 PetscErrorCode  PCSetType(PC pc,PCType type)
@@ -99,7 +99,7 @@ PetscErrorCode  PCSetType(PC pc,PCType type)
 
    Level: intermediate
 
-.seealso: PCSetType()
+.seealso: `PCSetType()`
 
 @*/
 PetscErrorCode  PCGetType(PC pc,PCType *type)
@@ -128,7 +128,7 @@ extern PetscErrorCode PCGetDefaultType_Private(PC,const char*[]);
 
    Level: developer
 
-.seealso: PCSetUseAmat()
+.seealso: `PCSetUseAmat()`
 
 @*/
 PetscErrorCode  PCSetFromOptions(PC pc)
@@ -187,7 +187,7 @@ PetscErrorCode  PCSetFromOptions(PC pc)
     The routines KSP/SNES/TSSetDM() require the dm to be non-NULL, but this one can be NULL since all it does is
     replace the current DM
 
-.seealso: PCGetDM(), KSPSetDM(), KSPGetDM()
+.seealso: `PCGetDM()`, `KSPSetDM()`, `KSPGetDM()`
 @*/
 PetscErrorCode  PCSetDM(PC pc,DM dm)
 {
@@ -212,7 +212,7 @@ PetscErrorCode  PCSetDM(PC pc,DM dm)
 
    Level: intermediate
 
-.seealso: PCSetDM(), KSPSetDM(), KSPGetDM()
+.seealso: `PCSetDM()`, `KSPSetDM()`, `KSPGetDM()`
 @*/
 PetscErrorCode  PCGetDM(PC pc,DM *dm)
 {
@@ -233,7 +233,7 @@ PetscErrorCode  PCGetDM(PC pc,DM *dm)
 
    Level: intermediate
 
-.seealso: PCGetApplicationContext()
+.seealso: `PCGetApplicationContext()`
 @*/
 PetscErrorCode  PCSetApplicationContext(PC pc,void *usrP)
 {
@@ -256,7 +256,7 @@ PetscErrorCode  PCSetApplicationContext(PC pc,void *usrP)
 
    Level: intermediate
 
-.seealso: PCSetApplicationContext()
+.seealso: `PCSetApplicationContext()`
 @*/
 PetscErrorCode  PCGetApplicationContext(PC pc,void *usrP)
 {

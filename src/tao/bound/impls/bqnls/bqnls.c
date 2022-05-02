@@ -77,7 +77,7 @@ static PetscErrorCode TaoSetFromOptions_BQNLS(PetscOptionItems *PetscOptionsObje
 - -tao_bnk_as_step - (developer) trial step length used in estimating bounded active variables (-as_type bertsekas)
 
   Level: beginner
-.seealso: TAOBNK
+.seealso: `TAOBNK`
 M*/
 PETSC_EXTERN PetscErrorCode TaoCreate_BQNLS(Tao tao)
 {

@@ -1151,7 +1151,7 @@ static PetscErrorCode PetscFEInitialize_Basic(PetscFE fem)
 
   Level: intermediate
 
-.seealso: PetscFEType, PetscFECreate(), PetscFESetType()
+.seealso: `PetscFEType`, `PetscFECreate()`, `PetscFESetType()`
 M*/
 
 PETSC_EXTERN PetscErrorCode PetscFECreate_Basic(PetscFE fem)

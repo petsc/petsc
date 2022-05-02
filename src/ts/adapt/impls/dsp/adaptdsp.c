@@ -320,7 +320,7 @@ static PetscErrorCode TSAdaptSetFromOptions_DSP(PetscOptionItems *PetscOptionsOb
    Options Database:
 .   -ts_adapt_dsp_filter <name> - Sets predefined controller by name; use -help for a list of available controllers
 
-.seealso: TS, TSAdapt, TSGetAdapt(), TSAdaptDSPSetPID()
+.seealso: `TS`, `TSAdapt`, `TSGetAdapt()`, `TSAdaptDSPSetPID()`
 @*/
 PetscErrorCode TSAdaptDSPSetFilter(TSAdapt adapt,const char *name)
 {
@@ -348,7 +348,7 @@ PetscErrorCode TSAdaptDSPSetFilter(TSAdapt adapt,const char *name)
    Options Database:
 .   -ts_adapt_dsp_pid <kkI,kkP,kkD> - Sets PID controller parameters
 
-.seealso: TS, TSAdapt, TSGetAdapt(), TSAdaptDSPSetFilter()
+.seealso: `TS`, `TSAdapt`, `TSGetAdapt()`, `TSAdaptDSPSetFilter()`
 @*/
 PetscErrorCode TSAdaptDSPSetPID(TSAdapt adapt,PetscReal kkI,PetscReal kkP,PetscReal kkD)
 {
@@ -376,7 +376,7 @@ PetscErrorCode TSAdaptDSPSetPID(TSAdapt adapt,PetscReal kkI,PetscReal kkP,PetscR
 .   -ts_adapt_dsp_kbeta <b1,b2,b2> - Sets general filter parameters
 -   -ts_adapt_dsp_alpha <a2,a3> - Sets general filter parameters
 
-.seealso: TS, TSAdapt, TSGetAdapt(), TSAdaptDSPSetPID(), TSAdaptDSPSetFilter()
+.seealso: `TS`, `TSAdapt`, `TSGetAdapt()`, `TSAdaptDSPSetPID()`, `TSAdaptDSPSetFilter()`
 M*/
 PETSC_EXTERN PetscErrorCode TSAdaptCreate_DSP(TSAdapt adapt)
 {

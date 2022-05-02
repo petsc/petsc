@@ -147,7 +147,7 @@ static struct _PetscDrawOps DvOps = { NULL,/* PetscDrawSetDoubleBuffer_Null */
 
    Level: beginner
 
-.seealso:  PetscDrawOpenNull(), PetscDrawIsNull()
+.seealso: `PetscDrawOpenNull()`, `PetscDrawIsNull()`
 M*/
 PETSC_EXTERN PetscErrorCode PetscDrawCreate_Null(PetscDraw);
 

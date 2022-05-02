@@ -499,7 +499,7 @@ static PetscErrorCode MatColoringApply_JP(MatColoring mc,ISColoring *iscoloring)
 .  * - M. Jones and P. Plassmann, "A parallel graph coloring heuristic," SIAM Journal on Scientific Computing, vol. 14, no. 3,
    pp. 654-669, 1993.
 
-.seealso: MatColoringCreate(), MatColoring, MatColoringSetType()
+.seealso: `MatColoringCreate()`, `MatColoring`, `MatColoringSetType()`
 M*/
 PETSC_EXTERN PetscErrorCode MatColoringCreate_JP(MatColoring mc)
 {

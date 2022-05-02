@@ -210,7 +210,7 @@ PetscErrorCode MatNormalGetMatHermitian_Normal(Mat A,Mat *M)
 
    Level: intermediate
 
-.seealso: MatCreateNormalHermitian()
+.seealso: `MatCreateNormalHermitian()`
 
 @*/
 PetscErrorCode MatNormalHermitianGetMat(Mat A,Mat *M)

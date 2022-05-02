@@ -60,7 +60,7 @@ static PetscErrorCode PetscSFWindowOpTranslate(MPI_Op *op)
 
    Level: developer
 
-.seealso: PetscSFSetGraph(), PetscSFView()
+.seealso: `PetscSFSetGraph()`, `PetscSFView()`
 @*/
 static PetscErrorCode PetscSFWindowGetDataTypes(PetscSF sf,MPI_Datatype unit,const MPI_Datatype **localtypes,const MPI_Datatype **remotetypes)
 {
@@ -154,7 +154,7 @@ static PetscErrorCode PetscSFWindowGetDataTypes(PetscSF sf,MPI_Datatype unit,con
 
      PETSCSF_WINDOW_FLAVOR_SHARED: uses MPI_Win_allocate_shared, reusage policy as for PETSCSF_WINDOW_FLAVOR_ALLOCATE
 
-.seealso: PetscSFSetFromOptions(), PetscSFWindowGetFlavorType()
+.seealso: `PetscSFSetFromOptions()`, `PetscSFWindowGetFlavorType()`
 @*/
 PetscErrorCode PetscSFWindowSetFlavorType(PetscSF sf,PetscSFWindowFlavorType flavor)
 {
@@ -187,7 +187,7 @@ static PetscErrorCode PetscSFWindowSetFlavorType_Window(PetscSF sf,PetscSFWindow
 
    Level: advanced
 
-.seealso: PetscSFSetFromOptions(), PetscSFWindowSetFlavorType()
+.seealso: `PetscSFSetFromOptions()`, `PetscSFWindowSetFlavorType()`
 @*/
 PetscErrorCode PetscSFWindowGetFlavorType(PetscSF sf,PetscSFWindowFlavorType *flavor)
 {
@@ -221,7 +221,7 @@ static PetscErrorCode PetscSFWindowGetFlavorType_Window(PetscSF sf,PetscSFWindow
 
    Level: advanced
 
-.seealso: PetscSFSetFromOptions(), PetscSFWindowGetSyncType()
+.seealso: `PetscSFSetFromOptions()`, `PetscSFWindowGetSyncType()`
 @*/
 PetscErrorCode PetscSFWindowSetSyncType(PetscSF sf,PetscSFWindowSyncType sync)
 {
@@ -254,7 +254,7 @@ static PetscErrorCode PetscSFWindowSetSyncType_Window(PetscSF sf,PetscSFWindowSy
 
    Level: advanced
 
-.seealso: PetscSFSetFromOptions(), PetscSFWindowSetSyncType()
+.seealso: `PetscSFSetFromOptions()`, `PetscSFWindowSetSyncType()`
 @*/
 PetscErrorCode PetscSFWindowGetSyncType(PetscSF sf,PetscSFWindowSyncType *sync)
 {
@@ -287,7 +287,7 @@ static PetscErrorCode PetscSFWindowGetSyncType_Window(PetscSF sf,PetscSFWindowSy
 
    Notes: the info handle is duplicated with a call to MPI_Info_dup unless info = MPI_INFO_NULL.
 
-.seealso: PetscSFSetFromOptions(), PetscSFWindowGetInfo()
+.seealso: `PetscSFSetFromOptions()`, `PetscSFWindowGetInfo()`
 @*/
 PetscErrorCode PetscSFWindowSetInfo(PetscSF sf,MPI_Info info)
 {
@@ -326,7 +326,7 @@ static PetscErrorCode PetscSFWindowSetInfo_Window(PetscSF sf,MPI_Info info)
 
    Notes: if PetscSFWindowSetInfo() has not be called, this returns MPI_INFO_NULL
 
-.seealso: PetscSFSetFromOptions(), PetscSFWindowSetInfo()
+.seealso: `PetscSFSetFromOptions()`, `PetscSFWindowSetInfo()`
 @*/
 PetscErrorCode PetscSFWindowGetInfo(PetscSF sf,MPI_Info *info)
 {
@@ -367,7 +367,7 @@ static PetscErrorCode PetscSFWindowGetInfo_Window(PetscSF sf,MPI_Info *info)
 -  win - window
 
    Level: developer
-.seealso: PetscSFGetRootRanks(), PetscSFWindowGetDataTypes()
+.seealso: `PetscSFGetRootRanks()`, `PetscSFWindowGetDataTypes()`
 */
 static PetscErrorCode PetscSFGetWindow(PetscSF sf,MPI_Datatype unit,void *array,PetscSFWindowSyncType sync,PetscBool epoch,PetscMPIInt fenceassert,PetscMPIInt postassert,PetscMPIInt startassert,const MPI_Aint **target_disp, MPI_Request **reqs, MPI_Win *win)
 {
@@ -550,7 +550,7 @@ found:
 
    Level: developer
 
-.seealso: PetscSFGetWindow(), PetscSFRestoreWindow()
+.seealso: `PetscSFGetWindow()`, `PetscSFRestoreWindow()`
 */
 static PetscErrorCode PetscSFFindWindow(PetscSF sf,MPI_Datatype unit,const void *array,MPI_Win *win,MPI_Request **reqs)
 {
@@ -587,7 +587,7 @@ static PetscErrorCode PetscSFFindWindow(PetscSF sf,MPI_Datatype unit,const void 
 
    Level: developer
 
-.seealso: PetscSFFindWindow()
+.seealso: `PetscSFFindWindow()`
 */
 static PetscErrorCode PetscSFRestoreWindow(PetscSF sf,MPI_Datatype unit,void *array,PetscSFWindowSyncType sync,PetscBool epoch,PetscMPIInt fenceassert,PetscBool update,MPI_Win *win)
 {

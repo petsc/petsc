@@ -22,7 +22,7 @@ static PetscBool PCPackageInitialized = PETSC_FALSE;
 
   Level: developer
 
-.seealso: PetscFinalize()
+.seealso: `PetscFinalize()`
 @*/
 PetscErrorCode  PCFinalizePackage(void)
 {
@@ -41,7 +41,7 @@ PetscErrorCode  PCFinalizePackage(void)
 
   Level: developer
 
-.seealso: PetscInitialize()
+.seealso: `PetscInitialize()`
 @*/
 PetscErrorCode  PCInitializePackage(void)
 {
@@ -127,7 +127,7 @@ static PetscBool KSPPackageInitialized = PETSC_FALSE;
 
   Level: developer
 
-.seealso: PetscFinalize()
+.seealso: `PetscFinalize()`
 @*/
 PetscErrorCode  KSPFinalizePackage(void)
 {
@@ -150,7 +150,7 @@ PetscErrorCode  KSPFinalizePackage(void)
 
   Level: developer
 
-.seealso: PetscInitialize()
+.seealso: `PetscInitialize()`
 @*/
 PetscErrorCode KSPInitializePackage(void)
 {

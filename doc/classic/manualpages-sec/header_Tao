@@ -1,16 +1,7 @@
-<HTML>
-<HEAD>
-<TITLE>TAO Optimization Solver Manual Pages</TITLE>
-</HEAD>
-<BODY BGCOLOR="FFFFFF">
-
-<H2> TAO Solver Manual Pages
-</H2>
+# TAO Optimization Solver Manual Pages
 
 The Toolkit for Advance Optimization provides an
 interface to create solvers, customize
 them to a particular application, and apply them to a problem.
 Many of the options for TAO can also be set at runtime.
-<P>
-
 

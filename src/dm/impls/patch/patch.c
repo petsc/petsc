@@ -36,7 +36,7 @@ Solver loop to update \tau:
 
   Level: intermediate
 
-.seealso: DMPatchSolve(), DMDACreatePatchIS()
+.seealso: `DMPatchSolve()`, `DMDACreatePatchIS()`
 @*/
 PetscErrorCode DMPatchZoom(DM dm, MatStencil lower, MatStencil upper, MPI_Comm commz, DM *dmz, PetscSF *sfz, PetscSF *sfzr)
 {

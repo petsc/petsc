@@ -264,7 +264,7 @@ PetscErrorCode MatGetInfo_ConstantDiagonal(Mat A,MatInfoType flag,MatInfo *info)
    Notes:
     Only supports square matrices with the same number of local rows and columns
 
-.seealso: MatDestroy(), MATCONSTANTDIAGONAL, MatScale(), MatShift(), MatMult(), MatGetDiagonal(), MatGetFactor(), MatSolve()
+.seealso: `MatDestroy()`, `MATCONSTANTDIAGONAL`, `MatScale()`, `MatShift()`, `MatMult()`, `MatGetDiagonal()`, `MatGetFactor()`, `MatSolve()`
 
 @*/
 PetscErrorCode  MatCreateConstantDiagonal(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscScalar diag,Mat *J)

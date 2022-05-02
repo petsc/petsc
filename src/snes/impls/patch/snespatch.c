@@ -335,8 +335,8 @@ static PetscErrorCode SNESSolve_Patch(SNES snes)
 
   Level: intermediate
 
-.seealso:  SNESCreate(), SNESSetType(), SNESType (for list of available types), SNES,
-           PCPATCH
+.seealso: `SNESCreate()`, `SNESSetType()`, `SNESType`, `SNES`,
+          `PCPATCH`
 
    References:
 .  * - Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers", SIAM Review, 57(4), 2015

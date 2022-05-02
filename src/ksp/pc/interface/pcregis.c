@@ -77,7 +77,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_H2OPUS(PC);
 
    Level: advanced
 
-.seealso: PCRegister()
+.seealso: `PCRegister()`
 @*/
 PetscErrorCode  PCRegisterAll(void)
 {

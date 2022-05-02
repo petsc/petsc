@@ -69,7 +69,7 @@ static PetscErrorCode MatColoringApply_Natural(MatColoring mc,ISColoring *iscolo
 
   Level: beginner
 
-.seealso: MatColoringCreate(), MatColoring, MatColoringSetType(), MatColoringType
+.seealso: `MatColoringCreate()`, `MatColoring`, `MatColoringSetType()`, `MatColoringType`
 M*/
 PETSC_EXTERN PetscErrorCode MatColoringCreate_Natural(MatColoring mc)
 {

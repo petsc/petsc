@@ -129,7 +129,7 @@ static PetscErrorCode MatConvert_MPIBAIJ_MPIBAIJMKL(Mat A,MatType type,MatReuse 
 
    Level: intermediate
 
-.seealso: MatCreate(), MatCreateSeqBAIJMKL(), MatSetValues(), MatCreateBAIJMKL(), MatMPIBAIJSetPreallocation(), MatMPIBAIJSetPreallocationCSR()
+.seealso: `MatCreate()`, `MatCreateSeqBAIJMKL()`, `MatSetValues()`, `MatCreateBAIJMKL()`, `MatMPIBAIJSetPreallocation()`, `MatMPIBAIJSetPreallocationCSR()`
 @*/
 
 PetscErrorCode  MatCreateBAIJMKL(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[],Mat *A)
@@ -172,5 +172,5 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIBAIJMKL(Mat A)
 
   Level: beginner
 
-.seealso: MatCreateBAIJMKL(), MATSEQBAIJMKL, MATMPIBAIJMKL
+.seealso: `MatCreateBAIJMKL()`, `MATSEQBAIJMKL`, `MATMPIBAIJMKL`
 M*/

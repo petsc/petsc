@@ -13,7 +13,7 @@ PetscFunctionList DMFieldList;
 
    Level: advanced
 
-.seealso:  DMFieldRegisterDestroy()
+.seealso: `DMFieldRegisterDestroy()`
 @*/
 PetscErrorCode  DMFieldRegisterAll(void)
 {
@@ -48,7 +48,7 @@ $     DMFieldSetType(tagger,"my_impl")
 
    Level: advanced
 
-.seealso: DMFieldRegisterAll(), DMFieldRegisterDestroy()
+.seealso: `DMFieldRegisterAll()`, `DMFieldRegisterDestroy()`
 @*/
 PetscErrorCode  DMFieldRegister(const char sname[],PetscErrorCode (*function)(DMField))
 {

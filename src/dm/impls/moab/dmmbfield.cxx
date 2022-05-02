@@ -15,7 +15,7 @@
 
   Level: intermediate
 
-.seealso: DMMoabGetFieldName(), DMMoabSetGlobalFieldVector()
+.seealso: `DMMoabGetFieldName()`, `DMMoabSetGlobalFieldVector()`
 @*/
 PetscErrorCode DMMoabSetFieldVector(DM dm, PetscInt ifield, Vec fvec)
 {
@@ -73,7 +73,7 @@ PetscErrorCode DMMoabSetFieldVector(DM dm, PetscInt ifield, Vec fvec)
 
   Level: intermediate
 
-.seealso: DMMoabGetFieldName(), DMMoabSetFieldVector()
+.seealso: `DMMoabGetFieldName()`, `DMMoabSetFieldVector()`
 @*/
 PetscErrorCode DMMoabSetGlobalFieldVector(DM dm, Vec fvec)
 {
@@ -153,7 +153,7 @@ PetscErrorCode DMMoabSetGlobalFieldVector(DM dm, Vec fvec)
 
   Level: intermediate
 
-.seealso: DMMoabGetFieldName(), DMMoabSetFieldName()
+.seealso: `DMMoabGetFieldName()`, `DMMoabSetFieldName()`
 @*/
 PetscErrorCode DMMoabSetFieldNames(DM dm, PetscInt numFields, const char* fields[])
 {
@@ -200,7 +200,7 @@ PetscErrorCode DMMoabSetFieldNames(DM dm, PetscInt numFields, const char* fields
 
   Level: intermediate
 
-.seealso: DMMoabSetFieldName(), DMMoabSetFields()
+.seealso: `DMMoabSetFieldName()`, `DMMoabSetFields()`
 @*/
 PetscErrorCode DMMoabGetFieldName(DM dm, PetscInt field, const char **fieldName)
 {
@@ -229,7 +229,7 @@ PetscErrorCode DMMoabGetFieldName(DM dm, PetscInt field, const char **fieldName)
   Notes:
     Can only be called after DMMoabSetFields supplied with correct numFields
 
-.seealso: DMMoabGetFieldName(), DMMoabSetFields()
+.seealso: `DMMoabGetFieldName()`, `DMMoabSetFields()`
 @*/
 PetscErrorCode DMMoabSetFieldName(DM dm, PetscInt field, const char *fieldName)
 {
@@ -265,7 +265,7 @@ PetscErrorCode DMMoabSetFieldName(DM dm, PetscInt field, const char *fieldName)
 
   Level: beginner
 
-.seealso: DMMoabGetFieldDofs(), DMMoabGetFieldDofsLocal()
+.seealso: `DMMoabGetFieldDofs()`, `DMMoabGetFieldDofsLocal()`
 @*/
 PetscErrorCode DMMoabGetFieldDof(DM dm, moab::EntityHandle point, PetscInt field, PetscInt* dof)
 {
@@ -297,7 +297,7 @@ PetscErrorCode DMMoabGetFieldDof(DM dm, moab::EntityHandle point, PetscInt field
 
   Level: intermediate
 
-.seealso: DMMoabGetFieldDof(), DMMoabGetFieldDofsLocal()
+.seealso: `DMMoabGetFieldDof()`, `DMMoabGetFieldDofsLocal()`
 @*/
 PetscErrorCode DMMoabGetFieldDofs(DM dm, PetscInt npoints, const moab::EntityHandle* points, PetscInt field, PetscInt* dof)
 {
@@ -339,7 +339,7 @@ PetscErrorCode DMMoabGetFieldDofs(DM dm, PetscInt npoints, const moab::EntityHan
 
   Level: intermediate
 
-.seealso: DMMoabGetFieldDof(), DMMoabGetFieldDofs()
+.seealso: `DMMoabGetFieldDof()`, `DMMoabGetFieldDofs()`
 @*/
 PetscErrorCode DMMoabGetFieldDofsLocal(DM dm, PetscInt npoints, const moab::EntityHandle* points, PetscInt field, PetscInt* dof)
 {
@@ -381,7 +381,7 @@ PetscErrorCode DMMoabGetFieldDofsLocal(DM dm, PetscInt npoints, const moab::Enti
 
   Level: intermediate
 
-.seealso: DMMoabGetFieldDofs(), DMMoabGetDofsLocal(), DMMoabGetDofsBlocked()
+.seealso: `DMMoabGetFieldDofs()`, `DMMoabGetDofsLocal()`, `DMMoabGetDofsBlocked()`
 @*/
 PetscErrorCode DMMoabGetDofs(DM dm, PetscInt npoints, const moab::EntityHandle* points, PetscInt* dof)
 {
@@ -425,7 +425,7 @@ PetscErrorCode DMMoabGetDofs(DM dm, PetscInt npoints, const moab::EntityHandle* 
 
   Level: intermediate
 
-.seealso: DMMoabGetFieldDofs(), DMMoabGetDofs(), DMMoabGetDofsBlocked()
+.seealso: `DMMoabGetFieldDofs()`, `DMMoabGetDofs()`, `DMMoabGetDofsBlocked()`
 @*/
 PetscErrorCode DMMoabGetDofsLocal(DM dm, PetscInt npoints, const moab::EntityHandle* points, PetscInt* dof)
 {
@@ -470,7 +470,7 @@ PetscErrorCode DMMoabGetDofsLocal(DM dm, PetscInt npoints, const moab::EntityHan
 
   Level: intermediate
 
-.seealso: DMMoabGetDofsLocal(), DMMoabGetDofs(), DMMoabGetDofsBlockedLocal()
+.seealso: `DMMoabGetDofsLocal()`, `DMMoabGetDofs()`, `DMMoabGetDofsBlockedLocal()`
 @*/
 PetscErrorCode DMMoabGetDofsBlocked(DM dm, PetscInt npoints, const moab::EntityHandle* points, PetscInt* dof)
 {
@@ -509,7 +509,7 @@ PetscErrorCode DMMoabGetDofsBlocked(DM dm, PetscInt npoints, const moab::EntityH
 
   Level: intermediate
 
-.seealso: DMMoabGetDofsLocal(), DMMoabGetDofs(), DMMoabGetDofsBlockedLocal()
+.seealso: `DMMoabGetDofsLocal()`, `DMMoabGetDofs()`, `DMMoabGetDofsBlockedLocal()`
 @*/
 PetscErrorCode DMMoabGetDofsBlockedLocal(DM dm, PetscInt npoints, const moab::EntityHandle* points, PetscInt* dof)
 {
@@ -542,7 +542,7 @@ PetscErrorCode DMMoabGetDofsBlockedLocal(DM dm, PetscInt npoints, const moab::En
 
   Level: intermediate
 
-.seealso: DMMoabGetVertexDofsBlockedLocal(), DMMoabGetDofsBlocked(), DMMoabGetDofsBlockedLocal()
+.seealso: `DMMoabGetVertexDofsBlockedLocal()`, `DMMoabGetDofsBlocked()`, `DMMoabGetDofsBlockedLocal()`
 @*/
 PetscErrorCode DMMoabGetVertexDofsBlocked(DM dm, PetscInt** dof)
 {
@@ -571,7 +571,7 @@ PetscErrorCode DMMoabGetVertexDofsBlocked(DM dm, PetscInt** dof)
 
   Level: intermediate
 
-.seealso: DMMoabGetVertexDofsBlocked(), DMMoabGetDofsBlocked(), DMMoabGetDofsBlockedLocal()
+.seealso: `DMMoabGetVertexDofsBlocked()`, `DMMoabGetDofsBlocked()`, `DMMoabGetDofsBlockedLocal()`
 @*/
 PetscErrorCode DMMoabGetVertexDofsBlockedLocal(DM dm, PetscInt** dof)
 {

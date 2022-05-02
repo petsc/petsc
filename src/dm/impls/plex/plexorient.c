@@ -13,7 +13,7 @@
 
   Level: intermediate
 
-.seealso: DMPlexOrient(), DMPlexGetCone(), DMPlexGetConeOrientation(), DMPlexInterpolate(), DMPlexGetChart()
+.seealso: `DMPlexOrient()`, `DMPlexGetCone()`, `DMPlexGetConeOrientation()`, `DMPlexInterpolate()`, `DMPlexGetChart()`
 @*/
 PetscErrorCode DMPlexOrientPoint(DM dm, PetscInt p, PetscInt o)
 {
@@ -142,7 +142,7 @@ $ This routine will fail for non-orientable surfaces, such as the Moebius strip.
 
   Level: advanced
 
-.seealso: DMCreate(), DMPLEX
+.seealso: `DMCreate()`, `DMPLEX`
 @*/
 PetscErrorCode DMPlexOrient(DM dm)
 {

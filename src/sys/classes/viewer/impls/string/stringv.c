@@ -34,7 +34,7 @@ static PetscErrorCode PetscViewerDestroy_String(PetscViewer viewer)
     Fortran Note:
     This routine is not supported in Fortran.
 
-.seealso: PetscViewerStringOpen(), PetscViewerStringGetStringRead(), PetscViewerStringSetString(), PETSCVIEWERSTRING
+.seealso: `PetscViewerStringOpen()`, `PetscViewerStringGetStringRead()`, `PetscViewerStringSetString()`, `PETSCVIEWERSTRING`
 @*/
 PetscErrorCode  PetscViewerStringSPrintf(PetscViewer viewer,const char format[],...)
 {
@@ -84,7 +84,7 @@ PetscErrorCode  PetscViewerStringSPrintf(PetscViewer viewer,const char format[],
     Fortran Note:
     This routine is not supported in Fortran.
 
-.seealso: PetscViewerDestroy(), PetscViewerStringSPrintf(), PetscViewerStringGetStringRead(), PetscViewerStringSetString(), PETSCVIEWERSTRING
+.seealso: `PetscViewerDestroy()`, `PetscViewerStringSPrintf()`, `PetscViewerStringGetStringRead()`, `PetscViewerStringSetString()`, `PETSCVIEWERSTRING`
 @*/
 PetscErrorCode  PetscViewerStringOpen(MPI_Comm comm,char string[],size_t len,PetscViewer *lab)
 {
@@ -119,10 +119,10 @@ PetscErrorCode PetscViewerRestoreSubViewer_String(PetscViewer viewer,MPI_Comm co
 /*MC
    PETSCVIEWERSTRING - A viewer that writes to a string
 
-.seealso:  PetscViewerStringOpen(), PetscViewerStringSPrintf(), PetscViewerSocketOpen(), PetscViewerDrawOpen(), PETSCVIEWERSOCKET,
-           PetscViewerCreate(), PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), PETSCVIEWERBINARY, PETSCVIEWERDRAW,
-           PetscViewerMatlabOpen(), VecView(), DMView(), PetscViewerMatlabPutArray(), PETSCVIEWERASCII, PETSCVIEWERMATLAB,
-           PetscViewerFileSetName(), PetscViewerFileSetMode(), PetscViewerFormat, PetscViewerType, PetscViewerSetType()
+.seealso: `PetscViewerStringOpen()`, `PetscViewerStringSPrintf()`, `PetscViewerSocketOpen()`, `PetscViewerDrawOpen()`, `PETSCVIEWERSOCKET`,
+          `PetscViewerCreate()`, `PetscViewerASCIIOpen()`, `PetscViewerBinaryOpen()`, `PETSCVIEWERBINARY`, `PETSCVIEWERDRAW`,
+          `PetscViewerMatlabOpen()`, `VecView()`, `DMView()`, `PetscViewerMatlabPutArray()`, `PETSCVIEWERASCII`, `PETSCVIEWERMATLAB`,
+          `PetscViewerFileSetName()`, `PetscViewerFileSetMode()`, `PetscViewerFormat`, `PetscViewerType`, `PetscViewerSetType()`
 
   Level: beginner
 M*/
@@ -160,8 +160,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_String(PetscViewer v)
 
   Level: advanced
 
-.seealso: PetscViewerStringOpen(), PETSCVIEWERSTRING, PetscViewerStringSetString(), PetscViewerStringSPrintf(),
-          PetscViewerStringSetOwnString()
+.seealso: `PetscViewerStringOpen()`, `PETSCVIEWERSTRING`, `PetscViewerStringSetString()`, `PetscViewerStringSPrintf()`,
+          `PetscViewerStringSetOwnString()`
 @*/
 PetscErrorCode  PetscViewerStringGetStringRead(PetscViewer viewer,const char *string[],size_t *len)
 {
@@ -195,8 +195,8 @@ PetscErrorCode  PetscViewerStringGetStringRead(PetscViewer viewer,const char *st
 
   Level: advanced
 
-.seealso: PetscViewerStringOpen(), PETSCVIEWERSTRING, PetscViewerStringGetStringRead(), PetscViewerStringSPrintf(),
-          PetscViewerStringSetOwnString()
+.seealso: `PetscViewerStringOpen()`, `PETSCVIEWERSTRING`, `PetscViewerStringGetStringRead()`, `PetscViewerStringSPrintf()`,
+          `PetscViewerStringSetOwnString()`
 @*/
 PetscErrorCode  PetscViewerStringSetString(PetscViewer viewer,char string[],size_t len)
 {
@@ -231,8 +231,8 @@ PetscErrorCode  PetscViewerStringSetString(PetscViewer viewer,char string[],size
 
   Level: advanced
 
-.seealso: PetscViewerStringOpen(), PETSCVIEWERSTRING, PetscViewerStringGetStringRead(), PetscViewerStringSPrintf(),
-          PetscViewerStringSetString()
+.seealso: `PetscViewerStringOpen()`, `PETSCVIEWERSTRING`, `PetscViewerStringGetStringRead()`, `PetscViewerStringSPrintf()`,
+          `PetscViewerStringSetString()`
 @*/
 PetscErrorCode  PetscViewerStringSetOwnString(PetscViewer viewer)
 {

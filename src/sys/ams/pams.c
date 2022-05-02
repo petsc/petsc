@@ -15,7 +15,7 @@
 
    Level: advanced
 
-.seealso: PetscObjectSetName(), PetscObjectSAWsViewOff(), PetscObjectSAWsGrantAccess()
+.seealso: `PetscObjectSetName()`, `PetscObjectSAWsViewOff()`, `PetscObjectSAWsGrantAccess()`
 
 @*/
 PetscErrorCode  PetscObjectSAWsTakeAccess(PetscObject obj)
@@ -39,7 +39,7 @@ PetscErrorCode  PetscObjectSAWsTakeAccess(PetscObject obj)
 
    Level: advanced
 
-.seealso: PetscObjectSetName(), PetscObjectSAWsViewOff(), PetscObjectSAWsTakeAccess()
+.seealso: `PetscObjectSetName()`, `PetscObjectSAWsViewOff()`, `PetscObjectSAWsTakeAccess()`
 
 @*/
 PetscErrorCode  PetscObjectSAWsGrantAccess(PetscObject obj)
@@ -58,7 +58,7 @@ PetscErrorCode  PetscObjectSAWsGrantAccess(PetscObject obj)
 
    Level: advanced
 
-.seealso: PetscObjectSetName(), PetscObjectSAWsViewOff(), PetscObjectSAWsSetBlock(), PetscObjectSAWsBlock()
+.seealso: `PetscObjectSetName()`, `PetscObjectSAWsViewOff()`, `PetscObjectSAWsSetBlock()`, `PetscObjectSAWsBlock()`
 
 @*/
 PetscErrorCode  PetscSAWsBlock(void)
@@ -92,7 +92,7 @@ PetscErrorCode  PetscSAWsBlock(void)
 
    Level: advanced
 
-.seealso: PetscObjectSetName(), PetscObjectSAWsViewOff(), PetscObjectSAWsSetBlock()
+.seealso: `PetscObjectSetName()`, `PetscObjectSAWsViewOff()`, `PetscObjectSAWsSetBlock()`
 
 @*/
 PetscErrorCode  PetscObjectSAWsBlock(PetscObject obj)
@@ -118,7 +118,7 @@ PetscErrorCode  PetscObjectSAWsBlock(PetscObject obj)
 
    Level: advanced
 
-.seealso: PetscObjectSetName(), PetscObjectSAWsViewOff(), PetscObjectSAWsBlock()
+.seealso: `PetscObjectSetName()`, `PetscObjectSAWsViewOff()`, `PetscObjectSAWsBlock()`
 
 @*/
 PetscErrorCode  PetscObjectSAWsSetBlock(PetscObject obj,PetscBool flg)

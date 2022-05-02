@@ -339,7 +339,7 @@ static inline PetscErrorCode PetscOmpCtrlDestroyBarrier(PetscOmpCtrl ctrl)
 
     TODO: Possibly use the variable PetscNumOMPThreads to determine the number for threads to use
 
-.seealso PetscOmpCtrlDestroy()
+.seealso `PetscOmpCtrlDestroy()`
 @*/
 PetscErrorCode PetscOmpCtrlCreate(MPI_Comm petsc_comm,PetscInt nthreads,PetscOmpCtrl *pctrl)
 {
@@ -468,7 +468,7 @@ PetscErrorCode PetscOmpCtrlCreate(MPI_Comm petsc_comm,PetscInt nthreads,PetscOmp
 
     Level: developer
 
-.seealso PetscOmpCtrlCreate()
+.seealso `PetscOmpCtrlCreate()`
 @*/
 PetscErrorCode PetscOmpCtrlDestroy(PetscOmpCtrl *pctrl)
 {
@@ -534,7 +534,7 @@ PetscErrorCode PetscOmpCtrlGetOmpComms(PetscOmpCtrl ctrl,MPI_Comm *omp_comm,MPI_
 
     Level: developer
 
-.seealso PetscOmpCtrlOmpRegionOnMasterBegin(), PetscOmpCtrlOmpRegionOnMasterEnd()
+.seealso `PetscOmpCtrlOmpRegionOnMasterBegin()`, `PetscOmpCtrlOmpRegionOnMasterEnd()`
 @*/
 PetscErrorCode PetscOmpCtrlBarrier(PetscOmpCtrl ctrl)
 {
@@ -558,7 +558,7 @@ PetscErrorCode PetscOmpCtrlBarrier(PetscOmpCtrl ctrl)
 
     Level: developer
 
-.seealso: PetscOmpCtrlOmpRegionOnMasterEnd()
+.seealso: `PetscOmpCtrlOmpRegionOnMasterEnd()`
 @*/
 PetscErrorCode PetscOmpCtrlOmpRegionOnMasterBegin(PetscOmpCtrl ctrl)
 {
@@ -580,7 +580,7 @@ PetscErrorCode PetscOmpCtrlOmpRegionOnMasterBegin(PetscOmpCtrl ctrl)
 
    Level: developer
 
-.seealso: PetscOmpCtrlOmpRegionOnMasterBegin()
+.seealso: `PetscOmpCtrlOmpRegionOnMasterBegin()`
 @*/
 PetscErrorCode PetscOmpCtrlOmpRegionOnMasterEnd(PetscOmpCtrl ctrl)
 {

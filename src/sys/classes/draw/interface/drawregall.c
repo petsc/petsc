@@ -23,7 +23,7 @@ PetscBool PetscDrawRegisterAllCalled = PETSC_FALSE;
 
   Level: developer
 
-.seealso:  PetscDrawRegisterDestroy()
+.seealso: `PetscDrawRegisterDestroy()`
 @*/
 PetscErrorCode  PetscDrawRegisterAll(void)
 {

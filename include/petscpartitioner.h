@@ -8,7 +8,7 @@
 
   Level: intermediate
 
-.seealso: PetscPartitionerCreate(), PetscPartitionerSetType(), PetscPartitionerType
+.seealso: `PetscPartitionerCreate()`, `PetscPartitionerSetType()`, `PetscPartitionerType`
 S*/
 typedef struct _p_PetscPartitioner *PetscPartitioner;
 
@@ -21,7 +21,7 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerFinalizePackage(void);
 
   Level: beginner
 
-.seealso: PetscPartitionerSetType(), PetscPartitioner
+.seealso: `PetscPartitionerSetType()`, `PetscPartitioner`
 J*/
 typedef const char *PetscPartitionerType;
 #define PETSCPARTITIONERPARMETIS "parmetis"

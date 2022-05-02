@@ -24,7 +24,7 @@
 
    Level: intermediate
 
-.seealso: ISDestroy(), ISView(), ISSum(), ISExpand()
+.seealso: `ISDestroy()`, `ISView()`, `ISSum()`, `ISExpand()`
 @*/
 PetscErrorCode  ISDifference(IS is1,IS is2,IS *isout)
 {
@@ -110,7 +110,7 @@ PetscErrorCode  ISDifference(IS is1,IS is2,IS *isout)
 
    Level: intermediate
 
-.seealso: ISDestroy(), ISView(), ISDifference(), ISExpand()
+.seealso: `ISDestroy()`, `ISView()`, `ISDifference()`, `ISExpand()`
 
 @*/
 PetscErrorCode  ISSum(IS is1,IS is2,IS *is3)
@@ -236,7 +236,7 @@ PetscErrorCode  ISSum(IS is1,IS is2,IS *is3)
 
    Level: intermediate
 
-.seealso: ISDestroy(), ISView(), ISDifference(), ISSum()
+.seealso: `ISDestroy()`, `ISView()`, `ISDifference()`, `ISSum()`
 
 @*/
 PetscErrorCode ISExpand(IS is1,IS is2,IS *isout)
@@ -319,7 +319,7 @@ PetscErrorCode ISExpand(IS is1,IS is2,IS *isout)
 
    Level: intermediate
 
-.seealso: ISDestroy(), ISView(), ISDifference(), ISSum(), ISExpand()
+.seealso: `ISDestroy()`, `ISView()`, `ISDifference()`, `ISSum()`, `ISExpand()`
 @*/
 PetscErrorCode ISIntersect(IS is1,IS is2,IS *isout)
 {
@@ -434,7 +434,7 @@ PetscErrorCode ISIntersect_Caching_Internal(IS is1, IS is2, IS *isect)
 
    Level: intermediate
 
-.seealso: ISDifference(), ISSum(), ISExpand()
+.seealso: `ISDifference()`, `ISSum()`, `ISExpand()`
 
 @*/
 PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS *isout)
@@ -507,7 +507,7 @@ PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS 
   Equivalently, the local numbers of the subcomms on each local list are drawn from some global
   numbering. This is ensured, for example, by ISPairToList().
 
-.seealso ISPairToList()
+.seealso `ISPairToList()`
 @*/
 PetscErrorCode ISListToPair(MPI_Comm comm, PetscInt listlen, IS islist[], IS *xis, IS *yis)
 {
@@ -565,7 +565,7 @@ PetscErrorCode ISListToPair(MPI_Comm comm, PetscInt listlen, IS islist[], IS *xi
 
   Level: advanced
 
-.seealso ISListToPair()
+.seealso `ISListToPair()`
  @*/
 PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
 {
@@ -691,7 +691,7 @@ PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
 
   Level: advanced
 
-.seealso ISLocalToGlobalMapping
+.seealso `ISLocalToGlobalMapping`
  @*/
 PetscErrorCode ISEmbed(IS a, IS b, PetscBool drop, IS *c)
 {
@@ -740,7 +740,7 @@ PetscErrorCode ISEmbed(IS a, IS b, PetscBool drop, IS *c)
 
   Level: advanced
 
-.seealso ISLocalToGlobalMapping, ISSort()
+.seealso `ISLocalToGlobalMapping`, `ISSort()`
  @*/
 PetscErrorCode ISSortPermutation(IS f,PetscBool always,IS *h)
 {

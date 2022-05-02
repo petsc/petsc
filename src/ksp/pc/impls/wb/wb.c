@@ -618,7 +618,7 @@ PetscErrorCode DMDAGetFaceInterpolation(PC pc,DM da,PC_Exotic *exotic,Mat Agloba
 
    Level: intermediate
 
-.seealso: PCEXOTIC, PCExoticType()
+.seealso: `PCEXOTIC`, `PCExoticType()`
 @*/
 PetscErrorCode  PCExoticSetType(PC pc,PCExoticType type)
 {
@@ -780,7 +780,7 @@ PetscErrorCode PCSetFromOptions_Exotic(PetscOptionItems *PetscOptionsObject,PC p
 
    Level: advanced
 
-.seealso:  PCMG, PCSetDM(), PCExoticType, PCExoticSetType()
+.seealso: `PCMG`, `PCSetDM()`, `PCExoticType`, `PCExoticSetType()`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_Exotic(PC pc)

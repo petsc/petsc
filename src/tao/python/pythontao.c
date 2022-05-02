@@ -14,7 +14,7 @@
 
    Level: intermediate
 
-.seealso: TaoCreate(), TaoSetType(), TAOPYTHON, PetscPythonInitialize()
+.seealso: `TaoCreate()`, `TaoSetType()`, `TAOPYTHON`, `PetscPythonInitialize()`
 @*/
 PetscErrorCode TaoPythonSetType(Tao tao, const char pyname[])
 {

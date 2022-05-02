@@ -30,7 +30,7 @@ static PetscErrorCode SetUpNetworkHeaderComponentValue(DM dm,DMNetworkComponentH
 
   Level: Advanced
 
-.seealso: DMNetworkCreate()
+.seealso: `DMNetworkCreate()`
 @*/
 PetscErrorCode DMNetworkGetPlex(DM dm,DM *plexdm)
 {
@@ -55,7 +55,7 @@ PetscErrorCode DMNetworkGetPlex(DM dm,DM *plexdm)
 
   Level: beginner
 
-.seealso: DMNetworkCreate(), DMNetworkSetNumSubNetworks()
+.seealso: `DMNetworkCreate()`, `DMNetworkSetNumSubNetworks()`
 @*/
 PetscErrorCode DMNetworkGetNumSubNetworks(DM dm,PetscInt *nsubnet,PetscInt *Nsubnet)
 {
@@ -79,7 +79,7 @@ PetscErrorCode DMNetworkGetNumSubNetworks(DM dm,PetscInt *nsubnet,PetscInt *Nsub
 
    Level: beginner
 
-.seealso: DMNetworkCreate(), DMNetworkGetNumSubNetworks()
+.seealso: `DMNetworkCreate()`, `DMNetworkGetNumSubNetworks()`
 @*/
 PetscErrorCode DMNetworkSetNumSubNetworks(DM dm,PetscInt nsubnet,PetscInt Nsubnet)
 {
@@ -178,7 +178,7 @@ $            [first vertex of first edge, second vertex of first edge, first ver
  rank[1]:
    edgelist = [0 3 | 3 2 | 2 1]
 
-.seealso: DMNetworkCreate(), DMNetworkSetNumSubnetworks()
+.seealso: `DMNetworkCreate()`, `DMNetworkSetNumSubnetworks()`
 @*/
 PetscErrorCode DMNetworkAddSubnetwork(DM dm,const char* name,PetscInt ne,PetscInt edgelist[],PetscInt *netnum)
 {
@@ -274,7 +274,7 @@ PetscErrorCode DMNetworkAddSubnetwork(DM dm,const char* name,PetscInt ne,PetscIn
 
   Level: intermediate
 
-.seealso: DMNetworkGetSharedVertices()
+.seealso: `DMNetworkGetSharedVertices()`
 @*/
 PetscErrorCode DMNetworkSharedVertexGetInfo(DM dm,PetscInt v,PetscInt *gidx,PetscInt *n,const PetscInt **sv)
 {
@@ -589,7 +589,7 @@ static PetscErrorCode GetEdgelist_Coupling(DM dm,PetscInt *edges,PetscInt *nmerg
 
   Level: beginner
 
-.seealso: DMNetworkSetNumSubNetworks(), DMNetworkAddSubnetwork()
+.seealso: `DMNetworkSetNumSubNetworks()`, `DMNetworkAddSubnetwork()`
 @*/
 PetscErrorCode DMNetworkLayoutSetUp(DM dm)
 {
@@ -767,7 +767,7 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
 
   Level: intermediate
 
-.seealso: DMNetworkCreate(), DMNetworkAddSubnetwork(), DMNetworkLayoutSetUp()
+.seealso: `DMNetworkCreate()`, `DMNetworkAddSubnetwork()`, `DMNetworkLayoutSetUp()`
 @*/
 PetscErrorCode DMNetworkGetSubnetwork(DM dm,PetscInt netnum,PetscInt *nv,PetscInt *ne,const PetscInt **vtx,const PetscInt **edge)
 {
@@ -797,7 +797,7 @@ PetscErrorCode DMNetworkGetSubnetwork(DM dm,PetscInt netnum,PetscInt *nv,PetscIn
 
   Level: beginner
 
-.seealso: DMNetworkCreate(), DMNetworkAddSubnetwork(), DMNetworkGetSharedVertices()
+.seealso: `DMNetworkCreate()`, `DMNetworkAddSubnetwork()`, `DMNetworkGetSharedVertices()`
 @*/
 PetscErrorCode DMNetworkAddSharedVertices(DM dm,PetscInt anetnum,PetscInt bnetnum,PetscInt nsvtx,PetscInt asvtx[],PetscInt bsvtx[])
 {
@@ -840,7 +840,7 @@ PetscErrorCode DMNetworkAddSharedVertices(DM dm,PetscInt anetnum,PetscInt bnetnu
 
   Level: intermediate
 
-.seealso: DMNetworkGetSubnetwork(), DMNetworkLayoutSetUp(), DMNetworkAddSharedVertices()
+.seealso: `DMNetworkGetSubnetwork()`, `DMNetworkLayoutSetUp()`, `DMNetworkAddSharedVertices()`
 @*/
 PetscErrorCode DMNetworkGetSharedVertices(DM dm,PetscInt *nsv,const PetscInt **svtx)
 {
@@ -871,7 +871,7 @@ PetscErrorCode DMNetworkGetSharedVertices(DM dm,PetscInt *nsv,const PetscInt **s
 
    Level: beginner
 
-.seealso: DMNetworkCreate(), DMNetworkLayoutSetUp()
+.seealso: `DMNetworkCreate()`, `DMNetworkLayoutSetUp()`
 @*/
 PetscErrorCode DMNetworkRegisterComponent(DM dm,const char *name,size_t size,PetscInt *key)
 {
@@ -931,7 +931,7 @@ PetscErrorCode DMNetworkRegisterComponent(DM dm,const char *name,size_t size,Pet
 
   Level: beginner
 
-.seealso: DMNetworkGetEdgeRange()
+.seealso: `DMNetworkGetEdgeRange()`
 @*/
 PetscErrorCode DMNetworkGetVertexRange(DM dm,PetscInt *vStart,PetscInt *vEnd)
 {
@@ -957,7 +957,7 @@ PetscErrorCode DMNetworkGetVertexRange(DM dm,PetscInt *vStart,PetscInt *vEnd)
 
   Level: beginner
 
-.seealso: DMNetworkGetVertexRange()
+.seealso: `DMNetworkGetVertexRange()`
 @*/
 PetscErrorCode DMNetworkGetEdgeRange(DM dm,PetscInt *eStart,PetscInt *eEnd)
 {
@@ -1002,7 +1002,7 @@ static PetscErrorCode DMNetworkGetIndex(DM dm,PetscInt p,PetscInt *index)
 
   Level: intermediate
 
-.seealso: DMNetworkGetGlobalVertexIndex()
+.seealso: `DMNetworkGetGlobalVertexIndex()`
 @*/
 PetscErrorCode DMNetworkGetGlobalEdgeIndex(DM dm,PetscInt p,PetscInt *index)
 {
@@ -1025,7 +1025,7 @@ PetscErrorCode DMNetworkGetGlobalEdgeIndex(DM dm,PetscInt p,PetscInt *index)
 
   Level: intermediate
 
-.seealso: DMNetworkGetGlobalEdgeIndex(), DMNetworkGetLocalVertexIndex()
+.seealso: `DMNetworkGetGlobalEdgeIndex()`, `DMNetworkGetLocalVertexIndex()`
 @*/
 PetscErrorCode DMNetworkGetGlobalVertexIndex(DM dm,PetscInt p,PetscInt *index)
 {
@@ -1048,7 +1048,7 @@ PetscErrorCode DMNetworkGetGlobalVertexIndex(DM dm,PetscInt p,PetscInt *index)
 
   Level: beginner
 
-.seealso: DMNetworkRegisterComponent(), DMNetworkAddComponent()
+.seealso: `DMNetworkRegisterComponent()`, `DMNetworkAddComponent()`
 @*/
 PetscErrorCode DMNetworkGetNumComponents(DM dm,PetscInt p,PetscInt *numcomponents)
 {
@@ -1086,7 +1086,7 @@ PetscErrorCode DMNetworkGetNumComponents(DM dm,PetscInt p,PetscInt *numcomponent
 
   Level: intermediate
 
-.seealso: DMGetLocalVector(), DMNetworkGetComponent(), DMNetworkGetGlobalVecOffset(), DMCreateGlobalVector(), VecGetArray(), VecSetValuesLocal(), MatSetValuesLocal()
+.seealso: `DMGetLocalVector()`, `DMNetworkGetComponent()`, `DMNetworkGetGlobalVecOffset()`, `DMCreateGlobalVector()`, `VecGetArray()`, `VecSetValuesLocal()`, `MatSetValuesLocal()`
 @*/
 PetscErrorCode DMNetworkGetLocalVecOffset(DM dm,PetscInt p,PetscInt compnum,PetscInt *offset)
 {
@@ -1130,7 +1130,7 @@ PetscErrorCode DMNetworkGetLocalVecOffset(DM dm,PetscInt p,PetscInt compnum,Pets
 
   Level: intermediate
 
-.seealso: DMNetworkGetLocalVecOffset(), DMGetGlobalVector(), DMNetworkGetComponent(), DMCreateGlobalVector(), VecGetArray(), VecSetValues(), MatSetValues()
+.seealso: `DMNetworkGetLocalVecOffset()`, `DMGetGlobalVector()`, `DMNetworkGetComponent()`, `DMCreateGlobalVector()`, `VecGetArray()`, `VecSetValues()`, `MatSetValues()`
 @*/
 PetscErrorCode DMNetworkGetGlobalVecOffset(DM dm,PetscInt p,PetscInt compnum,PetscInt *offsetg)
 {
@@ -1166,7 +1166,7 @@ PetscErrorCode DMNetworkGetGlobalVecOffset(DM dm,PetscInt p,PetscInt compnum,Pet
 
   Level: intermediate
 
-.seealso: DMNetworkGetLocalVecOffset(), DMGetLocalVector()
+.seealso: `DMNetworkGetLocalVecOffset()`, `DMGetLocalVector()`
 @*/
 PetscErrorCode DMNetworkGetEdgeOffset(DM dm,PetscInt p,PetscInt *offset)
 {
@@ -1191,7 +1191,7 @@ PetscErrorCode DMNetworkGetEdgeOffset(DM dm,PetscInt p,PetscInt *offset)
 
   Level: intermediate
 
-.seealso: DMNetworkGetEdgeOffset(), DMGetLocalVector()
+.seealso: `DMNetworkGetEdgeOffset()`, `DMGetLocalVector()`
 @*/
 PetscErrorCode DMNetworkGetVertexOffset(DM dm,PetscInt p,PetscInt *offset)
 {
@@ -1224,7 +1224,7 @@ PetscErrorCode DMNetworkGetVertexOffset(DM dm,PetscInt p,PetscInt *offset)
      The requirement that all the ranks with access to a vertex (as owner or as ghost) add all the components comes from a limitation of the underlying implementation based on DMPLEX.
   Level: beginner
 
-.seealso: DMNetworkGetComponent(), DMNetworkGetSubnetwork(), DMNetworkIsGhostVertex(), DMNetworkLayoutSetUp()
+.seealso: `DMNetworkGetComponent()`, `DMNetworkGetSubnetwork()`, `DMNetworkIsGhostVertex()`, `DMNetworkLayoutSetUp()`
 @*/
 PetscErrorCode DMNetworkAddComponent(DM dm,PetscInt p,PetscInt componentkey,void* compvalue,PetscInt nvar)
 {
@@ -1324,7 +1324,7 @@ PetscErrorCode DMNetworkAddComponent(DM dm,PetscInt p,PetscInt componentkey,void
 
   Level: beginner
 
-.seealso: DMNetworkAddComponent(), DMNetworkGetNumComponents()
+.seealso: `DMNetworkAddComponent()`, `DMNetworkGetNumComponents()`
 @*/
 PetscErrorCode DMNetworkGetComponent(DM dm,PetscInt p,PetscInt compnum,PetscInt *compkey,void **component,PetscInt *nvar)
 {
@@ -1545,7 +1545,7 @@ static inline PetscErrorCode SetSubnetIdLookupBT(DM dm,PetscInt v,PetscInt Nsubn
 
   Level: intermediate
 
-.seealso: DMNetworkCreate()
+.seealso: `DMNetworkCreate()`
 @*/
 PetscErrorCode DMNetworkDistribute(DM *dm,PetscInt overlap)
 {
@@ -1825,7 +1825,7 @@ PetscErrorCode PetscSFGetSubSF(PetscSF mainsf,ISLocalToGlobalMapping map,PetscSF
   Since it returns an array, this routine is only available in Fortran 90, and you must
   include petsc.h90 in your code.
 
-.seealso: DMNetworkCreate(), DMNetworkGetConnectedVertices()
+.seealso: `DMNetworkCreate()`, `DMNetworkGetConnectedVertices()`
 @*/
 PetscErrorCode DMNetworkGetSupportingEdges(DM dm,PetscInt vertex,PetscInt *nedges,const PetscInt *edges[])
 {
@@ -1855,7 +1855,7 @@ PetscErrorCode DMNetworkGetSupportingEdges(DM dm,PetscInt vertex,PetscInt *nedge
   Since it returns an array, this routine is only available in Fortran 90, and you must
   include petsc.h90 in your code.
 
-.seealso: DMNetworkCreate(), DMNetworkGetSupportingEdges()
+.seealso: `DMNetworkCreate()`, `DMNetworkGetSupportingEdges()`
 @*/
 PetscErrorCode DMNetworkGetConnectedVertices(DM dm,PetscInt edge,const PetscInt *vertices[])
 {
@@ -1880,7 +1880,7 @@ PetscErrorCode DMNetworkGetConnectedVertices(DM dm,PetscInt edge,const PetscInt 
 
   Level: beginner
 
-.seealso: DMNetworkAddSharedVertices(), DMNetworkIsGhostVertex()
+.seealso: `DMNetworkAddSharedVertices()`, `DMNetworkIsGhostVertex()`
 @*/
 PetscErrorCode DMNetworkIsSharedVertex(DM dm,PetscInt p,PetscBool *flag)
 {
@@ -1923,7 +1923,7 @@ PetscErrorCode DMNetworkIsSharedVertex(DM dm,PetscInt p,PetscBool *flag)
 
   Level: beginner
 
-.seealso: DMNetworkGetConnectedVertices(), DMNetworkGetVertexRange(), DMNetworkIsSharedVertex()
+.seealso: `DMNetworkGetConnectedVertices()`, `DMNetworkGetVertexRange()`, `DMNetworkIsSharedVertex()`
 @*/
 PetscErrorCode DMNetworkIsGhostVertex(DM dm,PetscInt p,PetscBool *isghost)
 {
@@ -2020,7 +2020,7 @@ PetscErrorCode DMNetworkHasJacobian(DM dm,PetscBool eflg,PetscBool vflg)
 
   Level: advanced
 
-.seealso: DMNetworkVertexSetMatrix()
+.seealso: `DMNetworkVertexSetMatrix()`
 @*/
 PetscErrorCode DMNetworkEdgeSetMatrix(DM dm,PetscInt p,Mat J[])
 {
@@ -2052,7 +2052,7 @@ PetscErrorCode DMNetworkEdgeSetMatrix(DM dm,PetscInt p,Mat J[])
 
   Level: advanced
 
-.seealso: DMNetworkEdgeSetMatrix()
+.seealso: `DMNetworkEdgeSetMatrix()`
 @*/
 PetscErrorCode DMNetworkVertexSetMatrix(DM dm,PetscInt p,Mat J[])
 {
@@ -2691,7 +2691,7 @@ PetscErrorCode DMLocalToGlobalEnd_Network(DM dm, Vec l, InsertMode mode, Vec g)
 
   Level: advanced
 
-.seealso: DMNetworkSetVertexLocalToGlobalOrdering()
+.seealso: `DMNetworkSetVertexLocalToGlobalOrdering()`
 @*/
 PetscErrorCode DMNetworkGetVertexLocalToGlobalOrdering(DM dm,PetscInt vloc,PetscInt *vg)
 {
@@ -2714,7 +2714,7 @@ PetscErrorCode DMNetworkGetVertexLocalToGlobalOrdering(DM dm,PetscInt vloc,Petsc
 
   Level: advanced
 
-.seealso: DMNetworkGetGlobalVertexIndex()
+.seealso: `DMNetworkGetGlobalVertexIndex()`
 @*/
 PetscErrorCode DMNetworkSetVertexLocalToGlobalOrdering(DM dm)
 {
@@ -2900,7 +2900,7 @@ static inline PetscErrorCode DMISComputeIdx_private(DM dm,PetscInt p,PetscInt nu
   Notes:
     Use blocksize[i] of -1 to indicate select all the variables of the i-th component, for which nselectvar[i] and selectedvar[i] are ignored. Use NULL, NULL, NULL to indicate for all selected components one wishes to obtain all the values of that component. For example, DMNetworkCreateIS(dm,1,&key,NULL,NULL,NULL,&is) will return an is that extracts all the variables for the 0-th component.
 
-.seealso: DMNetworkCreate(), ISCreateGeneral(), DMNetworkCreateLocalIS()
+.seealso: `DMNetworkCreate()`, `ISCreateGeneral()`, `DMNetworkCreateLocalIS()`
 @*/
 PetscErrorCode DMNetworkCreateIS(DM dm,PetscInt numkeys,PetscInt keys[],PetscInt blocksize[],PetscInt nselectedvar[],PetscInt *selectedvar[],IS *is)
 {
@@ -3001,7 +3001,7 @@ static inline PetscErrorCode DMISComputeLocalIdx_private(DM dm,PetscInt p,PetscI
   Notes:
     Use blocksize[i] of -1 to indicate select all the variables of the i-th component, for which nselectvar[i] and selectedvar[i] are ignored. Use NULL, NULL, NULL to indicate for all selected components one wishes to obtain all the values of that component. For example, DMNetworkCreateLocalIS(dm,1,&key,NULL,NULL,NULL,&is) will return an is that extracts all the variables for the 0-th component.
 
-.seealso: DMNetworkCreate(), DMNetworkCreateIS, ISCreateGeneral()
+.seealso: `DMNetworkCreate()`, `DMNetworkCreateIS`, `ISCreateGeneral()`
 @*/
 PetscErrorCode DMNetworkCreateLocalIS(DM dm,PetscInt numkeys,PetscInt keys[],PetscInt blocksize[],PetscInt nselectedvar[],PetscInt *selectedvar[],IS *is)
 {

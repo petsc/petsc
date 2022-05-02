@@ -168,7 +168,7 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscObjectViewFunction)(PetscObje
 
     Level: developer
 
-.seealso: PetscHeaderDestroy(), PetscClassIdRegister()
+.seealso: `PetscHeaderDestroy()`, `PetscClassIdRegister()`
 
 @*/
 #define PetscHeaderCreate(h,classid,class_name,descr,mansec,comm,destroy,view) \
@@ -188,7 +188,7 @@ PETSC_EXTERN PetscErrorCode PetscHeaderCreate_Private(PetscObject,PetscClassId,c
 
     Level: developer
 
-.seealso: PetscHeaderCreate()
+.seealso: `PetscHeaderCreate()`
 @*/
 #define PetscHeaderDestroy(h) (PetscHeaderDestroy_Private((PetscObject)(*(h))) || PetscFree(*(h)))
 
@@ -455,7 +455,7 @@ void PetscValidLogicalCollectiveEnum(Ta,Tb,int);
 
    Level: developer
 
-.seealso: PetscUseMethod()
+.seealso: `PetscUseMethod()`
 */
 #define PetscTryMethod(obj,A,B,C) do {                             \
     PetscErrorCode (*_7_f)B;                                       \
@@ -469,7 +469,7 @@ void PetscValidLogicalCollectiveEnum(Ta,Tb,int);
 
    Level: developer
 
-.seealso: PetscTryMethod()
+.seealso: `PetscTryMethod()`
 */
 #define PetscUseMethod(obj,A,B,C) do {                                                         \
     PetscErrorCode (*_7_f)B;                                                                   \

@@ -89,7 +89,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawViewFromOptions(PetscDraw,PetscObject,const
 
    Level: intermediate
 
-.seealso: PetscDrawPointPixel(), PetscDrawPoint(), PetscDrawLine(), PetscDrawTriangle(), PetscDrawRectangle()
+.seealso: `PetscDrawPointPixel()`, `PetscDrawPoint()`, `PetscDrawLine()`, `PetscDrawTriangle()`, `PetscDrawRectangle()`
 
 M*/
 static inline int PetscDrawRealToColor(PetscReal value,PetscReal min,PetscReal max)
@@ -136,7 +136,7 @@ $  PETSC_MARKER_PLUS - a small pixel based + symbol or the character + if that i
 $  PETSC_MARKER_CIRCLE - a small pixel based circle symbol or the character o if that is not available
 $  PETSC_MARKER_POINT - the make obtained with PetscDrawPoint()
 
-.seealso: PetscDrawMarker(), PetscDrawSetMarkerType()
+.seealso: `PetscDrawMarker()`, `PetscDrawSetMarkerType()`
 E*/
 typedef enum {PETSC_DRAW_MARKER_CROSS, PETSC_DRAW_MARKER_POINT,PETSC_DRAW_MARKER_PLUS,PETSC_DRAW_MARKER_CIRCLE} PetscDrawMarkerType;
 PETSC_EXTERN const char *const PetscDrawMarkerTypes[];
@@ -199,7 +199,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawGetBoundingBox(PetscDraw,PetscReal*,PetscRe
 
    Level: intermediate
 
-.seealso: PetscDrawGetMouseButton()
+.seealso: `PetscDrawGetMouseButton()`
 E*/
 typedef enum { PETSC_BUTTON_NONE = 0,
                PETSC_BUTTON_LEFT,PETSC_BUTTON_CENTER,PETSC_BUTTON_RIGHT,
@@ -215,7 +215,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawZoom(PetscDraw,PetscErrorCode (*)(PetscDraw
 
    Level: intermediate
 
-.seealso:  PetscDrawViewPortsCreate(), PetscDrawViewPortsSet()
+.seealso: `PetscDrawViewPortsCreate()`, `PetscDrawViewPortsSet()`
 S*/
 typedef struct {
   PetscInt  nports;
@@ -351,7 +351,9 @@ PETSC_EXTERN PetscXIOErrorHandler PetscSetXIOErrorHandler(PetscXIOErrorHandler);
   Developer Notes:
     This only applies to X windows and so should have a more specific name such as PetscDrawXCollectiveBegin()
 
-.seealso: PetscDrawCollectiveEnd()
+  Level: advanced
+
+.seealso: `PetscDrawCollectiveEnd()`
 M*/
 #define PetscDrawCollectiveBegin(draw) do {                                                 \
   jmp_buf                       _Petsc_jmpbuf;                                                 \
@@ -392,7 +394,9 @@ M*/
   Developer Notes:
     This only applies to X windows and so should have a more specific name such as PetscDrawXCollectiveEnd()
 
-.seealso: PetscDrawCollectiveBegin()
+  Level: advanced
+
+.seealso: `PetscDrawCollectiveBegin()`
 M*/
 #define PetscDrawCollectiveEnd(draw)                                                           \
   if (_Petsc_isdrawx) {                                                                        \

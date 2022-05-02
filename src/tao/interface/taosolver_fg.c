@@ -10,7 +10,7 @@
 - x0  - the initial guess
 
   Level: beginner
-.seealso: TaoCreate(), TaoSolve(), TaoGetSolution()
+.seealso: `TaoCreate()`, `TaoSolve()`, `TaoGetSolution()`
 @*/
 PetscErrorCode TaoSetSolution(Tao tao, Vec x0)
 {
@@ -125,7 +125,7 @@ PetscErrorCode TaoTestGradient(Tao tao,Vec x,Vec g1)
 
   Level: advanced
 
-.seealso: TaoComputeObjective(), TaoComputeObjectiveAndGradient(), TaoSetGradient()
+.seealso: `TaoComputeObjective()`, `TaoComputeObjectiveAndGradient()`, `TaoSetGradient()`
 @*/
 PetscErrorCode TaoComputeGradient(Tao tao, Vec X, Vec G)
 {
@@ -177,7 +177,7 @@ PetscErrorCode TaoComputeGradient(Tao tao, Vec X, Vec G)
 
   Level: advanced
 
-.seealso: TaoComputeGradient(), TaoComputeObjectiveAndGradient(), TaoSetObjective()
+.seealso: `TaoComputeGradient()`, `TaoComputeObjectiveAndGradient()`, `TaoSetObjective()`
 @*/
 PetscErrorCode TaoComputeObjective(Tao tao, Vec X, PetscReal *f)
 {
@@ -230,7 +230,7 @@ PetscErrorCode TaoComputeObjective(Tao tao, Vec X, PetscReal *f)
 
   Level: advanced
 
-.seealso: TaoComputeGradient(), TaoComputeObjectiveAndGradient(), TaoSetObjective()
+.seealso: `TaoComputeGradient()`, `TaoComputeObjectiveAndGradient()`, `TaoSetObjective()`
 @*/
 PetscErrorCode TaoComputeObjectiveAndGradient(Tao tao, Vec X, PetscReal *f, Vec G)
 {
@@ -294,7 +294,7 @@ $      func (Tao tao, Vec x, PetscReal *f, void *ctx);
 
   Level: beginner
 
-.seealso: TaoSetGradient(), TaoSetHessian(), TaoSetObjectiveAndGradient(), TaoGetObjective()
+.seealso: `TaoSetGradient()`, `TaoSetHessian()`, `TaoSetObjectiveAndGradient()`, `TaoGetObjective()`
 @*/
 PetscErrorCode TaoSetObjective(Tao tao, PetscErrorCode (*func)(Tao, Vec, PetscReal*,void*),void *ctx)
 {
@@ -326,7 +326,7 @@ $      func (Tao tao, Vec x, PetscReal *f, void *ctx);
 
   Level: beginner
 
-.seealso: TaoSetGradient(), TaoSetHessian(), TaoSetObjective()
+.seealso: `TaoSetGradient()`, `TaoSetHessian()`, `TaoSetObjective()`
 @*/
 PetscErrorCode TaoGetObjective(Tao tao, PetscErrorCode (**func)(Tao, Vec, PetscReal*,void*),void **ctx)
 {
@@ -357,7 +357,7 @@ $      func (Tao tao, Vec x, Vec f, void *ctx);
 
   Level: beginner
 
-.seealso: TaoSetObjective(), TaoSetJacobianRoutine()
+.seealso: `TaoSetObjective()`, `TaoSetJacobianRoutine()`
 @*/
 PetscErrorCode TaoSetResidualRoutine(Tao tao, Vec res, PetscErrorCode (*func)(Tao, Vec, Vec, void*),void *ctx)
 {
@@ -392,7 +392,7 @@ PetscErrorCode TaoSetResidualRoutine(Tao tao, Vec res, PetscErrorCode (*func)(Ta
 
   Level: intermediate
 
-.seealso: TaoSetResidualRoutine()
+.seealso: `TaoSetResidualRoutine()`
 @*/
 PetscErrorCode TaoSetResidualWeights(Tao tao, Vec sigma_v, PetscInt n, PetscInt *rows, PetscInt *cols, PetscReal *vals)
 {
@@ -443,7 +443,7 @@ PetscErrorCode TaoSetResidualWeights(Tao tao, Vec sigma_v, PetscInt n, PetscInt 
 
   Level: advanced
 
-.seealso: TaoSetResidualRoutine()
+.seealso: `TaoSetResidualRoutine()`
 @*/
 PetscErrorCode TaoComputeResidual(Tao tao, Vec X, Vec F)
 {
@@ -486,7 +486,7 @@ $      func (Tao tao, Vec x, Vec g, void *ctx);
 
   Level: beginner
 
-.seealso: TaoSetObjective(), TaoSetHessian(), TaoSetObjectiveAndGradient(), TaoGetGradient()
+.seealso: `TaoSetObjective()`, `TaoSetHessian()`, `TaoSetObjectiveAndGradient()`, `TaoGetGradient()`
 @*/
 PetscErrorCode TaoSetGradient(Tao tao, Vec g, PetscErrorCode (*func)(Tao, Vec, Vec, void*),void *ctx)
 {
@@ -526,7 +526,7 @@ $      func (Tao tao, Vec x, Vec g, void *ctx);
 
   Level: beginner
 
-.seealso: TaoSetObjective(), TaoSetHessian(), TaoSetObjectiveAndGradient(), TaoSetGradient()
+.seealso: `TaoSetObjective()`, `TaoSetHessian()`, `TaoSetObjectiveAndGradient()`, `TaoSetGradient()`
 @*/
 PetscErrorCode TaoGetGradient(Tao tao, Vec *g, PetscErrorCode (**func)(Tao, Vec, Vec, void*),void **ctx)
 {
@@ -560,7 +560,7 @@ $      func (Tao tao, Vec x, PetscReal *f, Vec g, void *ctx);
 
   Level: beginner
 
-.seealso: TaoSetObjective(), TaoSetHessian(), TaoSetGradient(), TaoGetObjectiveAndGradient()
+.seealso: `TaoSetObjective()`, `TaoSetHessian()`, `TaoSetGradient()`, `TaoGetObjectiveAndGradient()`
 @*/
 PetscErrorCode TaoSetObjectiveAndGradient(Tao tao, Vec g, PetscErrorCode (*func)(Tao, Vec, PetscReal*, Vec, void*), void *ctx)
 {
@@ -601,7 +601,7 @@ $      func (Tao tao, Vec x, PetscReal *f, Vec g, void *ctx);
 
   Level: beginner
 
-.seealso: TaoSetObjective(), TaoSetGradient(), TaoSetHessian(), TaoSetObjectiveAndGradient()
+.seealso: `TaoSetObjective()`, `TaoSetGradient()`, `TaoSetHessian()`, `TaoSetObjectiveAndGradient()`
 @*/
 PetscErrorCode TaoGetObjectiveAndGradient(Tao tao, Vec *g, PetscErrorCode (**func)(Tao, Vec, PetscReal*, Vec, void*), void **ctx)
 {
@@ -629,7 +629,7 @@ PetscErrorCode TaoGetObjectiveAndGradient(Tao tao, Vec *g, PetscErrorCode (**fun
 
   Level: developer
 
-.seealso: TaoSetObjective(), TaoIsGradientDefined(), TaoIsObjectiveAndGradientDefined()
+.seealso: `TaoSetObjective()`, `TaoIsGradientDefined()`, `TaoIsObjectiveAndGradientDefined()`
 @*/
 PetscErrorCode TaoIsObjectiveDefined(Tao tao, PetscBool *flg)
 {
@@ -656,7 +656,7 @@ PetscErrorCode TaoIsObjectiveDefined(Tao tao, PetscBool *flg)
 
   Level: developer
 
-.seealso: TaoSetGradient(), TaoIsObjectiveDefined(), TaoIsObjectiveAndGradientDefined()
+.seealso: `TaoSetGradient()`, `TaoIsObjectiveDefined()`, `TaoIsObjectiveAndGradientDefined()`
 @*/
 PetscErrorCode TaoIsGradientDefined(Tao tao, PetscBool *flg)
 {
@@ -683,7 +683,7 @@ PetscErrorCode TaoIsGradientDefined(Tao tao, PetscBool *flg)
 
   Level: developer
 
-.seealso: TaoSetObjectiveAndGradient(), TaoIsObjectiveDefined(), TaoIsGradientDefined()
+.seealso: `TaoSetObjectiveAndGradient()`, `TaoIsObjectiveDefined()`, `TaoIsGradientDefined()`
 @*/
 PetscErrorCode TaoIsObjectiveAndGradientDefined(Tao tao, PetscBool *flg)
 {

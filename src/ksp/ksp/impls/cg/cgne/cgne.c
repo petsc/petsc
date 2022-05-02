@@ -222,8 +222,8 @@ static PetscErrorCode  KSPSolve_CGNE(KSP ksp)
 
    This object is subclassed off of KSPCG
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,
-           KSPCGSetType(), KSPBICG
+.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`,
+          `KSPCGSetType()`, `KSPBICG`
 
 M*/
 

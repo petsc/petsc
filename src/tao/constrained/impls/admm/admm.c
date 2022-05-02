@@ -739,14 +739,14 @@ static PetscErrorCode TaoDestroy_ADMM(Tao tao)
 
   Level: beginner
 
-.seealso: TaoADMMSetMisfitHessianChangeStatus(), TaoADMMSetRegHessianChangeStatus(), TaoADMMGetSpectralPenalty(),
-          TaoADMMGetMisfitSubsolver(), TaoADMMGetRegularizationSubsolver(), TaoADMMSetConstraintVectorRHS(),
-          TaoADMMSetMinimumSpectralPenalty(), TaoADMMSetRegularizerCoefficient(),
-          TaoADMMSetRegularizerConstraintJacobian(), TaoADMMSetMisfitConstraintJacobian(),
-          TaoADMMSetMisfitObjectiveAndGradientRoutine(), TaoADMMSetMisfitHessianRoutine(),
-          TaoADMMSetRegularizerObjectiveAndGradientRoutine(), TaoADMMSetRegularizerHessianRoutine(),
-          TaoGetADMMParentTao(), TaoADMMGetDualVector(), TaoADMMSetRegularizerType(),
-          TaoADMMGetRegularizerType(), TaoADMMSetUpdateType(), TaoADMMGetUpdateType()
+.seealso: `TaoADMMSetMisfitHessianChangeStatus()`, `TaoADMMSetRegHessianChangeStatus()`, `TaoADMMGetSpectralPenalty()`,
+          `TaoADMMGetMisfitSubsolver()`, `TaoADMMGetRegularizationSubsolver()`, `TaoADMMSetConstraintVectorRHS()`,
+          `TaoADMMSetMinimumSpectralPenalty()`, `TaoADMMSetRegularizerCoefficient()`,
+          `TaoADMMSetRegularizerConstraintJacobian()`, `TaoADMMSetMisfitConstraintJacobian()`,
+          `TaoADMMSetMisfitObjectiveAndGradientRoutine()`, `TaoADMMSetMisfitHessianRoutine()`,
+          `TaoADMMSetRegularizerObjectiveAndGradientRoutine()`, `TaoADMMSetRegularizerHessianRoutine()`,
+          `TaoGetADMMParentTao()`, `TaoADMMGetDualVector()`, `TaoADMMSetRegularizerType()`,
+          `TaoADMMGetRegularizerType()`, `TaoADMMSetUpdateType()`, `TaoADMMGetUpdateType()`
 M*/
 
 PETSC_EXTERN PetscErrorCode TaoCreate_ADMM(Tao tao)
@@ -819,7 +819,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_ADMM(Tao tao)
 
   Level: advanced
 
-.seealso: TAOADMM
+.seealso: `TAOADMM`
 
 @*/
 PetscErrorCode TaoADMMSetMisfitHessianChangeStatus(Tao tao, PetscBool b)
@@ -842,7 +842,7 @@ PetscErrorCode TaoADMMSetMisfitHessianChangeStatus(Tao tao, PetscBool b)
 
   Level: advanced
 
-.seealso: TAOADMM
+.seealso: `TAOADMM`
 
 @*/
 PetscErrorCode TaoADMMSetRegHessianChangeStatus(Tao tao, PetscBool b)
@@ -865,7 +865,7 @@ PetscErrorCode TaoADMMSetRegHessianChangeStatus(Tao tao, PetscBool b)
 
   Level: advanced
 
-.seealso: TaoADMMSetMinimumSpectralPenalty(), TAOADMM
+.seealso: `TaoADMMSetMinimumSpectralPenalty()`, `TAOADMM`
 @*/
 PetscErrorCode TaoADMMSetSpectralPenalty(Tao tao, PetscReal mu)
 {
@@ -889,7 +889,7 @@ PetscErrorCode TaoADMMSetSpectralPenalty(Tao tao, PetscReal mu)
 
   Level: advanced
 
-.seealso: TaoADMMSetMinimumSpectralPenalty(), TaoADMMSetSpectralPenalty(), TAOADMM
+.seealso: `TaoADMMSetMinimumSpectralPenalty()`, `TaoADMMSetSpectralPenalty()`, `TAOADMM`
 @*/
 PetscErrorCode TaoADMMGetSpectralPenalty(Tao tao, PetscReal *mu)
 {
@@ -915,7 +915,7 @@ PetscErrorCode TaoADMMGetSpectralPenalty(Tao tao, PetscReal *mu)
 
   Level: advanced
 
-.seealso: TAOADMM
+.seealso: `TAOADMM`
 
 @*/
 PetscErrorCode TaoADMMGetMisfitSubsolver(Tao tao, Tao *misfit)
@@ -940,7 +940,7 @@ PetscErrorCode TaoADMMGetMisfitSubsolver(Tao tao, Tao *misfit)
 
   Level: advanced
 
-.seealso: TAOADMM
+.seealso: `TAOADMM`
 
 @*/
 PetscErrorCode TaoADMMGetRegularizationSubsolver(Tao tao, Tao *reg)
@@ -963,7 +963,7 @@ PetscErrorCode TaoADMMGetRegularizationSubsolver(Tao tao, Tao *reg)
 
   Level: advanced
 
-.seealso: TAOADMM
+.seealso: `TAOADMM`
 
 @*/
 PetscErrorCode TaoADMMSetConstraintVectorRHS(Tao tao, Vec c)
@@ -986,7 +986,7 @@ PetscErrorCode TaoADMMSetConstraintVectorRHS(Tao tao, Vec c)
 
   Level: advanced
 
-.seealso: TaoADMMGetSpectralPenalty(), TAOADMM
+.seealso: `TaoADMMGetSpectralPenalty()`, `TAOADMM`
 @*/
 PetscErrorCode TaoADMMSetMinimumSpectralPenalty(Tao tao, PetscReal mu)
 {
@@ -1008,7 +1008,7 @@ PetscErrorCode TaoADMMSetMinimumSpectralPenalty(Tao tao, PetscReal mu)
 
   Level: advanced
 
-.seealso: TaoADMMSetMisfitConstraintJacobian(), TaoADMMSetRegularizerConstraintJacobian(), TAOADMM
+.seealso: `TaoADMMSetMisfitConstraintJacobian()`, `TaoADMMSetRegularizerConstraintJacobian()`, `TAOADMM`
 
 @*/
 PetscErrorCode TaoADMMSetRegularizerCoefficient(Tao tao, PetscReal lambda)
@@ -1034,7 +1034,7 @@ PetscErrorCode TaoADMMSetRegularizerCoefficient(Tao tao, PetscReal lambda)
 
   Level: advanced
 
-.seealso: TaoADMMSetRegularizerCoefficient(), TaoADMMSetRegularizerConstraintJacobian(), TAOADMM
+.seealso: `TaoADMMSetRegularizerCoefficient()`, `TaoADMMSetRegularizerConstraintJacobian()`, `TAOADMM`
 
 @*/
 PetscErrorCode TaoADMMSetMisfitConstraintJacobian(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, void*), void *ctx)
@@ -1081,7 +1081,7 @@ PetscErrorCode TaoADMMSetMisfitConstraintJacobian(Tao tao, Mat J, Mat Jpre, Pets
 
   Level: advanced
 
-.seealso: TaoADMMSetRegularizerCoefficient(), TaoADMMSetMisfitConstraintJacobian(), TAOADMM
+.seealso: `TaoADMMSetRegularizerCoefficient()`, `TaoADMMSetMisfitConstraintJacobian()`, `TAOADMM`
 
 @*/
 PetscErrorCode TaoADMMSetRegularizerConstraintJacobian(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, void*), void *ctx)
@@ -1126,7 +1126,7 @@ PetscErrorCode TaoADMMSetRegularizerConstraintJacobian(Tao tao, Mat J, Mat Jpre,
 
    Level: advanced
 
-.seealso: TAOADMM
+.seealso: `TAOADMM`
 
 @*/
 PetscErrorCode TaoADMMSetMisfitObjectiveAndGradientRoutine(Tao tao, PetscErrorCode (*func)(Tao, Vec, PetscReal*, Vec, void*), void *ctx)
@@ -1155,7 +1155,7 @@ PetscErrorCode TaoADMMSetMisfitObjectiveAndGradientRoutine(Tao tao, PetscErrorCo
 
    Level: advanced
 
-.seealso: TAOADMM
+.seealso: `TAOADMM`
 
 @*/
 PetscErrorCode TaoADMMSetMisfitHessianRoutine(Tao tao, Mat H, Mat Hpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, void*), void *ctx)
@@ -1203,7 +1203,7 @@ PetscErrorCode TaoADMMSetMisfitHessianRoutine(Tao tao, Mat H, Mat Hpre, PetscErr
 
    Level: advanced
 
-.seealso: TAOADMM
+.seealso: `TAOADMM`
 
 @*/
 PetscErrorCode TaoADMMSetRegularizerObjectiveAndGradientRoutine(Tao tao, PetscErrorCode (*func)(Tao, Vec, PetscReal*, Vec, void*), void *ctx)
@@ -1232,7 +1232,7 @@ PetscErrorCode TaoADMMSetRegularizerObjectiveAndGradientRoutine(Tao tao, PetscEr
 
    Level: advanced
 
-.seealso: TAOADMM
+.seealso: `TAOADMM`
 
 @*/
 PetscErrorCode TaoADMMSetRegularizerHessianRoutine(Tao tao, Mat H, Mat Hpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, void*), void *ctx)
@@ -1281,7 +1281,7 @@ PetscErrorCode TaoADMMSetRegularizerHessianRoutine(Tao tao, Mat H, Mat Hpre, Pet
 
    Level: advanced
 
-.seealso: TAOADMM
+.seealso: `TAOADMM`
 
 @*/
 PetscErrorCode TaoGetADMMParentTao(Tao tao, Tao *admm_tao)
@@ -1305,7 +1305,7 @@ PetscErrorCode TaoGetADMMParentTao(Tao tao, Tao *admm_tao)
 
   Level: intermediate
 
-.seealso: TAOADMM
+.seealso: `TAOADMM`
 
 @*/
 PetscErrorCode TaoADMMGetDualVector(Tao tao, Vec *Y)
@@ -1332,7 +1332,7 @@ PetscErrorCode TaoADMMGetDualVector(Tao tao, Vec *Y)
 
   Level: intermediate
 
-.seealso: TaoADMMGetRegularizerType(), TaoADMMRegularizerType, TAOADMM
+.seealso: `TaoADMMGetRegularizerType()`, `TaoADMMRegularizerType`, `TAOADMM`
 @*/
 PetscErrorCode TaoADMMSetRegularizerType(Tao tao, TaoADMMRegularizerType type)
 {
@@ -1356,7 +1356,7 @@ PetscErrorCode TaoADMMSetRegularizerType(Tao tao, TaoADMMRegularizerType type)
 
    Level: intermediate
 
-.seealso: TaoADMMSetRegularizerType(), TaoADMMRegularizerType, TAOADMM
+.seealso: `TaoADMMSetRegularizerType()`, `TaoADMMRegularizerType`, `TAOADMM`
 @*/
 PetscErrorCode TaoADMMGetRegularizerType(Tao tao, TaoADMMRegularizerType *type)
 {
@@ -1377,7 +1377,7 @@ PetscErrorCode TaoADMMGetRegularizerType(Tao tao, TaoADMMRegularizerType *type)
 
   Level: intermediate
 
-.seealso: TaoADMMGetUpdateType(), TaoADMMUpdateType, TAOADMM
+.seealso: `TaoADMMGetUpdateType()`, `TaoADMMUpdateType`, `TAOADMM`
 @*/
 PetscErrorCode TaoADMMSetUpdateType(Tao tao, TaoADMMUpdateType type)
 {
@@ -1401,7 +1401,7 @@ PetscErrorCode TaoADMMSetUpdateType(Tao tao, TaoADMMUpdateType type)
 
    Level: intermediate
 
-.seealso: TaoADMMSetUpdateType(), TaoADMMUpdateType, TAOADMM
+.seealso: `TaoADMMSetUpdateType()`, `TaoADMMUpdateType`, `TAOADMM`
 @*/
 PetscErrorCode TaoADMMGetUpdateType(Tao tao, TaoADMMUpdateType *type)
 {

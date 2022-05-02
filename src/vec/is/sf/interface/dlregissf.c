@@ -26,7 +26,7 @@ PetscLogEvent PETSCSF_Unpack;
 
    Level: developer
 
-.seealso: PetscSFFinalizePackage()
+.seealso: `PetscSFFinalizePackage()`
 @*/
 PetscErrorCode PetscSFInitializePackage(void)
 {
@@ -80,7 +80,7 @@ PetscErrorCode PetscSFInitializePackage(void)
 
    Level: developer
 
-.seealso: PetscSFInitializePackage()
+.seealso: `PetscSFInitializePackage()`
 @*/
 PetscErrorCode PetscSFFinalizePackage(void)
 {

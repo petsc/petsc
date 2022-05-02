@@ -22,7 +22,7 @@ PetscStageLog petsc_stageLog = NULL;
   Developer Notes:
     Inline since called for EACH PetscEventLogBeginDefault() and PetscEventLogEndDefault()
 
-.seealso: PetscStageLogCreate()
+.seealso: `PetscStageLogCreate()`
 @*/
 PetscErrorCode PetscLogGetStageLog(PetscStageLog *stageLog)
 {
@@ -55,7 +55,7 @@ PetscErrorCode PetscLogGetStageLog(PetscStageLog *stageLog)
   Developer Notes:
     Inline since called for EACH PetscEventLogBeginDefault() and PetscEventLogEndDefault()
 
-.seealso: PetscStageLogPush(), PetscStageLogPop(), PetscLogGetStageLog()
+.seealso: `PetscStageLogPush()`, `PetscStageLogPop()`, `PetscLogGetStageLog()`
 @*/
 PetscErrorCode  PetscStageLogGetCurrent(PetscStageLog stageLog, int *stage)
 {
@@ -89,7 +89,7 @@ PetscErrorCode  PetscStageLogGetCurrent(PetscStageLog stageLog, int *stage)
   Developer Notes:
     Inline since called for EACH PetscEventLogBeginDefault() and PetscEventLogEndDefault()
 
-.seealso: PetscStageLogPush(), PetscStageLogPop(), PetscLogGetStageLog()
+.seealso: `PetscStageLogPush()`, `PetscStageLogPop()`, `PetscLogGetStageLog()`
 @*/
 PetscErrorCode  PetscStageLogGetEventPerfLog(PetscStageLog stageLog, int stage, PetscEventPerfLog *eventLog)
 {
@@ -110,7 +110,7 @@ PetscErrorCode  PetscStageLogGetEventPerfLog(PetscStageLog stageLog, int stage, 
 
   Level: developer
 
-.seealso: PetscStageLogCreate()
+.seealso: `PetscStageLogCreate()`
 @*/
 PetscErrorCode  PetscStageInfoDestroy(PetscStageInfo *stageInfo)
 {
@@ -131,7 +131,7 @@ PetscErrorCode  PetscStageInfoDestroy(PetscStageInfo *stageInfo)
 
   Level: developer
 
-.seealso: PetscStageLogCreate()
+.seealso: `PetscStageLogCreate()`
 @*/
 PetscErrorCode  PetscStageLogDestroy(PetscStageLog stageLog)
 {
@@ -164,7 +164,7 @@ PetscErrorCode  PetscStageLogDestroy(PetscStageLog stageLog)
 
   Level: developer
 
-.seealso: PetscStageLogPush(), PetscStageLogPop(), PetscStageLogCreate()
+.seealso: `PetscStageLogPush()`, `PetscStageLogPop()`, `PetscStageLogCreate()`
 @*/
 PetscErrorCode  PetscStageLogRegister(PetscStageLog stageLog, const char sname[], int *stage)
 {
@@ -236,7 +236,7 @@ PetscErrorCode  PetscStageLogRegister(PetscStageLog stageLog, const char sname[]
 
   Level: developer
 
-.seealso: PetscStageLogPop(), PetscStageLogGetCurrent(), PetscStageLogRegister(), PetscLogGetStageLog()
+.seealso: `PetscStageLogPop()`, `PetscStageLogGetCurrent()`, `PetscStageLogRegister()`, `PetscLogGetStageLog()`
 @*/
 PetscErrorCode  PetscStageLogPush(PetscStageLog stageLog, int stage)
 {
@@ -303,7 +303,7 @@ PetscErrorCode  PetscStageLogPush(PetscStageLog stageLog, int stage)
 
   Level: developer
 
-.seealso: PetscStageLogPush(), PetscStageLogGetCurrent(), PetscStageLogRegister(), PetscLogGetStageLog()
+.seealso: `PetscStageLogPush()`, `PetscStageLogGetCurrent()`, `PetscStageLogRegister()`, `PetscLogGetStageLog()`
 @*/
 PetscErrorCode  PetscStageLogPop(PetscStageLog stageLog)
 {
@@ -349,7 +349,7 @@ PetscErrorCode  PetscStageLogPop(PetscStageLog stageLog)
 
   Level: developer
 
-.seealso: PetscStageLogPush(), PetscStageLogPop(), PetscLogGetStageLog()
+.seealso: `PetscStageLogPush()`, `PetscStageLogPop()`, `PetscLogGetStageLog()`
 @*/
 PetscErrorCode  PetscStageLogGetClassRegLog(PetscStageLog stageLog, PetscClassRegLog *classLog)
 {
@@ -372,7 +372,7 @@ PetscErrorCode  PetscStageLogGetClassRegLog(PetscStageLog stageLog, PetscClassRe
 
   Level: developer
 
-.seealso: PetscStageLogPush(), PetscStageLogPop(), PetscLogGetStageLog()
+.seealso: `PetscStageLogPush()`, `PetscStageLogPop()`, `PetscLogGetStageLog()`
 @*/
 PetscErrorCode  PetscStageLogGetEventRegLog(PetscStageLog stageLog, PetscEventRegLog *eventLog)
 {
@@ -396,7 +396,7 @@ PetscErrorCode  PetscStageLogGetEventRegLog(PetscStageLog stageLog, PetscEventRe
 
   Level: developer
 
-.seealso: PetscStageLogPush(), PetscStageLogPop(), PetscLogGetStageLog()
+.seealso: `PetscStageLogPush()`, `PetscStageLogPop()`, `PetscLogGetStageLog()`
 @*/
 PetscErrorCode  PetscStageLogGetClassPerfLog(PetscStageLog stageLog, int stage, PetscClassPerfLog *classLog)
 {
@@ -419,7 +419,7 @@ PetscErrorCode  PetscStageLogGetClassPerfLog(PetscStageLog stageLog, int stage, 
 
   Level: developer
 
-.seealso: PetscStageLogGetActive(), PetscStageLogGetCurrent(), PetscStageLogRegister(), PetscLogGetStageLog()
+.seealso: `PetscStageLogGetActive()`, `PetscStageLogGetCurrent()`, `PetscStageLogRegister()`, `PetscLogGetStageLog()`
 @*/
 PetscErrorCode  PetscStageLogSetActive(PetscStageLog stageLog, int stage, PetscBool isActive)
 {
@@ -443,7 +443,7 @@ PetscErrorCode  PetscStageLogSetActive(PetscStageLog stageLog, int stage, PetscB
 
   Level: developer
 
-.seealso: PetscStageLogSetActive(), PetscStageLogGetCurrent(), PetscStageLogRegister(), PetscLogGetStageLog()
+.seealso: `PetscStageLogSetActive()`, `PetscStageLogGetCurrent()`, `PetscStageLogRegister()`, `PetscLogGetStageLog()`
 @*/
 PetscErrorCode  PetscStageLogGetActive(PetscStageLog stageLog, int stage, PetscBool  *isActive)
 {
@@ -469,7 +469,7 @@ PetscErrorCode  PetscStageLogGetActive(PetscStageLog stageLog, int stage, PetscB
 
   Level: developer
 
-.seealso: PetscStageLogGetVisible(), PetscStageLogGetCurrent(), PetscStageLogRegister(), PetscLogGetStageLog()
+.seealso: `PetscStageLogGetVisible()`, `PetscStageLogGetCurrent()`, `PetscStageLogRegister()`, `PetscLogGetStageLog()`
 @*/
 PetscErrorCode  PetscStageLogSetVisible(PetscStageLog stageLog, int stage, PetscBool isVisible)
 {
@@ -496,7 +496,7 @@ PetscErrorCode  PetscStageLogSetVisible(PetscStageLog stageLog, int stage, Petsc
 
   Level: developer
 
-.seealso: PetscStageLogSetVisible(), PetscStageLogGetCurrent(), PetscStageLogRegister(), PetscLogGetStageLog()
+.seealso: `PetscStageLogSetVisible()`, `PetscStageLogGetCurrent()`, `PetscStageLogRegister()`, `PetscLogGetStageLog()`
 @*/
 PetscErrorCode  PetscStageLogGetVisible(PetscStageLog stageLog, int stage, PetscBool  *isVisible)
 {
@@ -521,7 +521,7 @@ PetscErrorCode  PetscStageLogGetVisible(PetscStageLog stageLog, int stage, Petsc
 
   Level: developer
 
-.seealso: PetscStageLogGetCurrent(), PetscStageLogRegister(), PetscLogGetStageLog()
+.seealso: `PetscStageLogGetCurrent()`, `PetscStageLogRegister()`, `PetscLogGetStageLog()`
 @*/
 PetscErrorCode  PetscStageLogGetStage(PetscStageLog stageLog, const char name[], PetscLogStage *stage)
 {
@@ -552,7 +552,7 @@ PetscErrorCode  PetscStageLogGetStage(PetscStageLog stageLog, const char name[],
 
   Level: developer
 
-.seealso: PetscStageLogCreate()
+.seealso: `PetscStageLogCreate()`
 @*/
 PetscErrorCode  PetscStageLogCreate(PetscStageLog *stageLog)
 {

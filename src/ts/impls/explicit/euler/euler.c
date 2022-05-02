@@ -102,7 +102,7 @@ static PetscErrorCode TSComputeLinearStability_Euler(TS ts,PetscReal xr,PetscRea
 
   Level: beginner
 
-.seealso:  TSCreate(), TS, TSSetType(), TSBEULER
+.seealso: `TSCreate()`, `TS`, `TSSetType()`, `TSBEULER`
 
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_Euler(TS ts)

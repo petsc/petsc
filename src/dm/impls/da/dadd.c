@@ -24,7 +24,7 @@ the indices returned in this mode are appropriate. If offproc is set to PETSC_FA
 the IS only returns the subset of indices that are present on the requesting rank and there
 is no duplication of indices.
 
-.seealso: DMDACreateDomainDecomposition(), DMDACreateDomainDecompositionScatters()
+.seealso: `DMDACreateDomainDecomposition()`, `DMDACreateDomainDecompositionScatters()`
 @*/
 PetscErrorCode DMDACreatePatchIS(DM da,MatStencil *lower,MatStencil *upper,IS *is, PetscBool offproc)
 {

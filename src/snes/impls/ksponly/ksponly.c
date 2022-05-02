@@ -89,7 +89,7 @@ static PetscErrorCode SNESDestroy_KSPONLY(SNES snes)
 
    Level: beginner
 
-.seealso:  SNESCreate(), SNES, SNESSetType(), SNESNEWTONLS, SNESNEWTONTR
+.seealso: `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONLS`, `SNESNEWTONTR`
 M*/
 PETSC_EXTERN PetscErrorCode SNESCreate_KSPONLY(SNES snes)
 {
@@ -120,7 +120,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_KSPONLY(SNES snes)
 
    Level: beginner
 
-.seealso:  SNESCreate(), SNES, SNESSetType(), SNESKSPTRANSPOSEONLY, SNESNEWTONLS, SNESNEWTONTR
+.seealso: `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESKSPTRANSPOSEONLY`, `SNESNEWTONLS`, `SNESNEWTONTR`
 M*/
 PETSC_EXTERN PetscErrorCode SNESCreate_KSPTRANSPOSEONLY(SNES snes)
 {

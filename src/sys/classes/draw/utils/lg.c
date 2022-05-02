@@ -17,7 +17,7 @@
    Note: You must call PetscDrawLGDraw() to display any added points
          Call PetscDrawLGReset() to remove all points
 
-.seealso: PetscDrawLGCreate(), PetscDrawLGAddPoints(), PetscDrawLGAddPoint(), PetscDrawLGReset(), PetscDrawLGDraw()
+.seealso: `PetscDrawLGCreate()`, `PetscDrawLGAddPoints()`, `PetscDrawLGAddPoint()`, `PetscDrawLGReset()`, `PetscDrawLGDraw()`
 @*/
 PetscErrorCode  PetscDrawLGAddCommonPoint(PetscDrawLG lg,const PetscReal x,const PetscReal *y)
 {
@@ -66,7 +66,7 @@ PetscErrorCode  PetscDrawLGAddCommonPoint(PetscDrawLG lg,const PetscReal x,const
 
    Level: intermediate
 
-.seealso: PetscDrawLGCreate(), PetscDrawLGAddPoints(), PetscDrawLGAddCommonPoint(), PetscDrawLGReset(), PetscDrawLGDraw()
+.seealso: `PetscDrawLGCreate()`, `PetscDrawLGAddPoints()`, `PetscDrawLGAddCommonPoint()`, `PetscDrawLGReset()`, `PetscDrawLGDraw()`
 @*/
 PetscErrorCode  PetscDrawLGAddPoint(PetscDrawLG lg,const PetscReal *x,const PetscReal *y)
 {
@@ -122,7 +122,7 @@ PetscErrorCode  PetscDrawLGAddPoint(PetscDrawLG lg,const PetscReal *x,const Pets
    Note: You must call PetscDrawLGDraw() to display any added points
          Call PetscDrawLGReset() to remove all points
 
-.seealso: PetscDrawLGCreate(), PetscDrawLGAddPoint(), PetscDrawLGAddCommonPoint(), PetscDrawLGReset(), PetscDrawLGDraw()
+.seealso: `PetscDrawLGCreate()`, `PetscDrawLGAddPoint()`, `PetscDrawLGAddCommonPoint()`, `PetscDrawLGReset()`, `PetscDrawLGDraw()`
 @*/
 PetscErrorCode  PetscDrawLGAddPoints(PetscDrawLG lg,PetscInt n,PetscReal **xx,PetscReal **yy)
 {

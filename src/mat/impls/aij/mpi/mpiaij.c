@@ -46,7 +46,7 @@ PetscErrorCode MatRestoreRowIJ_MPIAIJ(Mat A,PetscInt oshift,PetscBool symmetric,
 
   Level: beginner
 
-.seealso: MatCreateAIJ(), MatCreateSeqAIJ(), MATSEQAIJ, MATMPIAIJ
+.seealso: `MatCreateAIJ()`, `MatCreateSeqAIJ()`, `MATSEQAIJ`, `MATMPIAIJ`
 M*/
 
 /*MC
@@ -63,7 +63,7 @@ M*/
 
   Level: beginner
 
-.seealso: MatCreateMPIAIJCRL,MATSEQAIJCRL,MATMPIAIJCRL, MATSEQAIJCRL, MATMPIAIJCRL
+.seealso: `MatCreateMPIAIJCRL,MATSEQAIJCRL,MATMPIAIJCRL`, `MATSEQAIJCRL`, `MATMPIAIJCRL`
 M*/
 
 static PetscErrorCode MatBindToCPU_MPIAIJ(Mat A,PetscBool flg)
@@ -3414,7 +3414,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,MatReuse call
        See MatCreateAIJ() for the definition of "diagonal" and "off-diagonal" portion of the matrix.
        A becomes part of output mat, B is destroyed by this routine. The user cannot use A and B anymore.
 
-.seealso: MatCreateMPIAIJWithSplitArrays()
+.seealso: `MatCreateMPIAIJWithSplitArrays()`
 @*/
 PetscErrorCode MatCreateMPIAIJWithSeqAIJ(MPI_Comm comm,Mat A,Mat B,const PetscInt garray[],Mat *mat)
 {
@@ -3923,8 +3923,8 @@ $        i =  {0,3}    [size = nrow+1  = 1+1]
 $        j =  {0,1,2}  [size = 3]
 $        v =  {4,5,6}  [size = 3]
 
-.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatMPIAIJSetPreallocation(), MatCreateAIJ(), MATMPIAIJ,
-          MatCreateSeqAIJWithArrays(), MatCreateMPIAIJWithSplitArrays()
+.seealso: `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIAIJSetPreallocation()`, `MatCreateAIJ()`, `MATMPIAIJ`,
+          `MatCreateSeqAIJWithArrays()`, `MatCreateMPIAIJWithSplitArrays()`
 @*/
 PetscErrorCode  MatMPIAIJSetPreallocationCSR(Mat B,const PetscInt i[],const PetscInt j[], const PetscScalar v[])
 {
@@ -4059,8 +4059,8 @@ PetscErrorCode  MatMPIAIJSetPreallocationCSR(Mat B,const PetscInt i[],const Pets
 
    Level: intermediate
 
-.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatCreateAIJ(), MatMPIAIJSetPreallocationCSR(),
-          MATMPIAIJ, MatGetInfo(), PetscSplitOwnership()
+.seealso: `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatCreateAIJ()`, `MatMPIAIJSetPreallocationCSR()`,
+          `MATMPIAIJ`, `MatGetInfo()`, `PetscSplitOwnership()`
 @*/
 PetscErrorCode MatMPIAIJSetPreallocation(Mat B,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
 {
@@ -4122,8 +4122,8 @@ $        i =  {0,3}    [size = nrow+1  = 1+1]
 $        j =  {0,1,2}  [size = 3]
 $        v =  {4,5,6}  [size = 3]
 
-.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatMPIAIJSetPreallocation(), MatMPIAIJSetPreallocationCSR(),
-          MATMPIAIJ, MatCreateAIJ(), MatCreateMPIAIJWithSplitArrays(), MatUpdateMPIAIJWithArrays()
+.seealso: `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIAIJSetPreallocation()`, `MatMPIAIJSetPreallocationCSR()`,
+          `MATMPIAIJ`, `MatCreateAIJ()`, `MatCreateMPIAIJWithSplitArrays()`, `MatUpdateMPIAIJWithArrays()`
 @*/
 PetscErrorCode MatCreateMPIAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,const PetscInt i[],const PetscInt j[],const PetscScalar a[],Mat *mat)
 {
@@ -4158,8 +4158,8 @@ PetscErrorCode MatCreateMPIAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pet
 
    Level: intermediate
 
-.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatMPIAIJSetPreallocation(), MatMPIAIJSetPreallocationCSR(),
-          MATMPIAIJ, MatCreateAIJ(), MatCreateMPIAIJWithSplitArrays(), MatUpdateMPIAIJWithArrays()
+.seealso: `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIAIJSetPreallocation()`, `MatMPIAIJSetPreallocationCSR()`,
+          `MATMPIAIJ`, `MatCreateAIJ()`, `MatCreateMPIAIJWithSplitArrays()`, `MatUpdateMPIAIJWithArrays()`
 @*/
 PetscErrorCode MatUpdateMPIAIJWithArrays(Mat mat,PetscInt m,PetscInt n,PetscInt M,PetscInt N,const PetscInt Ii[],const PetscInt J[],const PetscScalar v[])
 {
@@ -4393,8 +4393,8 @@ $     MatMPIAIJSetPreallocation(A,...);
 
    Level: intermediate
 
-.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatMPIAIJSetPreallocation(), MatMPIAIJSetPreallocationCSR(),
-          MATMPIAIJ, MatCreateMPIAIJWithArrays()
+.seealso: `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIAIJSetPreallocation()`, `MatMPIAIJSetPreallocationCSR()`,
+          `MATMPIAIJ`, `MatCreateMPIAIJWithArrays()`
 @*/
 PetscErrorCode  MatCreateAIJ(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[],Mat *A)
 {
@@ -4434,7 +4434,7 @@ PetscErrorCode  MatCreateAIJ(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,Pets
 
   Level: intermediate
 
-.seealso: MatMPIAIJGetLocalMat(), MatMPIAIJGetLocalMatCondensed(), MatCreateAIJ(), MATMPIAIJ, MATSEQAIJ
+.seealso: `MatMPIAIJGetLocalMat()`, `MatMPIAIJGetLocalMatCondensed()`, `MatCreateAIJ()`, `MATMPIAIJ`, `MATSEQAIJ`
 @*/
 PetscErrorCode MatMPIAIJGetSeqAIJ(Mat A,Mat *Ad,Mat *Ao,const PetscInt *colmap[])
 {
@@ -5052,7 +5052,7 @@ PetscErrorCode MatAIJGetLocalMat(Mat A,Mat *A_loc)
      This means that one can preallocate the proper sequential matrix first and then call this routine with MAT_REUSE_MATRIX to safely
      modify the values of the returned A_loc.
 
-.seealso: MatGetOwnershipRange(), MatMPIAIJGetLocalMatCondensed(), MatMPIAIJGetLocalMatMerge()
+.seealso: `MatGetOwnershipRange()`, `MatMPIAIJGetLocalMatCondensed()`, `MatMPIAIJGetLocalMatMerge()`
 @*/
 PetscErrorCode MatMPIAIJGetLocalMat(Mat A,MatReuse scall,Mat *A_loc)
 {
@@ -5174,7 +5174,7 @@ PetscErrorCode MatMPIAIJGetLocalMat(Mat A,MatReuse scall,Mat *A_loc)
    Notes:
      This is different from MatMPIAIJGetLocalMat() since the first columns in the returning matrix are those associated with the diagonal part, then those associated with the offdiagonal part (in its local ordering)
 
-.seealso: MatGetOwnershipRange(), MatMPIAIJGetLocalMat(), MatMPIAIJGetLocalMatCondensed()
+.seealso: `MatGetOwnershipRange()`, `MatMPIAIJGetLocalMat()`, `MatMPIAIJGetLocalMatCondensed()`
 
 @*/
 PetscErrorCode MatMPIAIJGetLocalMatMerge(Mat A,MatReuse scall,IS *glob,Mat *A_loc)
@@ -5289,7 +5289,7 @@ PetscErrorCode MatMPIAIJGetLocalMatMerge(Mat A,MatReuse scall,IS *glob,Mat *A_lo
 
     Level: developer
 
-.seealso: MatGetOwnershipRange(), MatMPIAIJGetLocalMat()
+.seealso: `MatGetOwnershipRange()`, `MatMPIAIJGetLocalMat()`
 
 @*/
 PetscErrorCode MatMPIAIJGetLocalMatCondensed(Mat A,MatReuse scall,IS *row,IS *col,Mat *A_loc)
@@ -6639,7 +6639,7 @@ static PetscErrorCode MatSetValuesCOO_MPIAIJ(Mat mat,const PetscScalar v[],Inser
     MatSetOptions(,MAT_STRUCTURE_ONLY,PETSC_TRUE) may be called for this matrix type. In this no
     space is allocated for the nonzero entries and any entries passed with MatSetValues() are ignored
 
-.seealso: MatCreateAIJ()
+.seealso: `MatCreateAIJ()`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat B)
@@ -6765,8 +6765,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat B)
        keep track of the underlying array. Use MatSetOption(A,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE) to disable all
        communication if it is known that only local entries will be set.
 
-.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatMPIAIJSetPreallocation(), MatMPIAIJSetPreallocationCSR(),
-          MATMPIAIJ, MatCreateAIJ(), MatCreateMPIAIJWithArrays()
+.seealso: `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIAIJSetPreallocation()`, `MatMPIAIJSetPreallocationCSR()`,
+          `MATMPIAIJ`, `MatCreateAIJ()`, `MatCreateMPIAIJWithArrays()`
 @*/
 PetscErrorCode MatCreateMPIAIJWithSplitArrays(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt i[],PetscInt j[],PetscScalar a[],PetscInt oi[], PetscInt oj[],PetscScalar oa[],Mat *mat)
 {

@@ -16,7 +16,7 @@ $ DM_SHAPE_DOUBLET     - The mesh of two cells of a specified type
 
   Level: beginner
 
-.seealso: DMPlexGetCellRefiner(), DMPlexSetCellRefiner(), DMRefine(), DMPolytopeType
+.seealso: `DMPlexGetCellRefiner()`, `DMPlexSetCellRefiner()`, `DMRefine()`, `DMPolytopeType`
 E*/
 typedef enum {DM_SHAPE_BOX, DM_SHAPE_BOX_SURFACE, DM_SHAPE_BALL, DM_SHAPE_SPHERE, DM_SHAPE_CYLINDER, DM_SHAPE_SCHWARZ_P, DM_SHAPE_GYROID, DM_SHAPE_DOUBLET, DM_SHAPE_UNKNOWN} DMPlexShape;
 PETSC_EXTERN const char * const DMPlexShapes[];
@@ -31,7 +31,7 @@ $ DM_PLEX_CSR_OVERLAP - Build an overlapped Plex and then locally compute
 
   Level: beginner
 
-.seealso: DMPlexCreatePartitionerGraph(), PetscPartitionerDMPlexPartition(), DMPlexDistribute()
+.seealso: `DMPlexCreatePartitionerGraph()`, `PetscPartitionerDMPlexPartition()`, `DMPlexDistribute()`
 E*/
 typedef enum {DM_PLEX_CSR_MAT, DM_PLEX_CSR_GRAPH, DM_PLEX_CSR_OVERLAP} DMPlexCSRAlgorithm;
 PETSC_EXTERN const char * const DMPlexCSRAlgorithms[];

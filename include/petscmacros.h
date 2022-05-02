@@ -117,7 +117,7 @@ void assert_never_put_petsc_headers_inside_an_extern_c(int); void assert_never_p
 
   Level: intermediate
 
-.seealso: PetscDefined(), PetscLikely(), PetscUnlikely(), PETSC_ATTRIBUTE_FORMAT
+.seealso: `PetscDefined()`, `PetscLikely()`, `PetscUnlikely()`, `PETSC_ATTRIBUTE_FORMAT`
 M*/
 #if !defined(__has_attribute)
 #  define __has_attribute(x) 0
@@ -167,7 +167,7 @@ M*/
 
   Level: developer
 
-.seealso: PETSC_ATTRIBUTE_COLD, PetscHasAttribute()
+.seealso: `PETSC_ATTRIBUTE_COLD`, `PetscHasAttribute()`
 M*/
 #if PetscHasAttribute(format) && !defined(PETSC_SKIP_ATTRIBUTE_FORMAT)
 #  define PETSC_ATTRIBUTE_FORMAT(strIdx,vaArgIdx) __attribute__((format(printf,strIdx,vaArgIdx)))
@@ -198,8 +198,8 @@ M*/
 
   Level: intermediate
 
-.seealso: PetscUnlikely(), PetscUnlikelyDebug(), PetscLikely(), PetscLikelyDebug(),
-PetscUnreachable(), PETSC_ATTRIBUTE_FORMAT
+.seealso: `PetscUnlikely()`, `PetscUnlikelyDebug()`, `PetscLikely()`, `PetscLikelyDebug()`,
+          `PetscUnreachable()`, `PETSC_ATTRIBUTE_FORMAT`
 M*/
 #if PetscHasAttribute(__cold__)
 #  define PETSC_ATTRIBUTE_COLD __attribute__((__cold__))
@@ -261,7 +261,7 @@ M*/
 
   Level: beginner
 
-.seealso: PETSC_CONSTEXPR_14, PETSC_NODISCARD
+.seealso: `PETSC_CONSTEXPR_14`, `PETSC_NODISCARD`
 M*/
 
 /*MC
@@ -291,7 +291,7 @@ M*/
 
   Level: beginner
 
-.seealso: PETSC_NULLPTR, PETSC_NODISCARD
+.seealso: `PETSC_NULLPTR`, `PETSC_NODISCARD`
 M*/
 
 /*MC
@@ -334,7 +334,7 @@ M*/
 
   Level: beginner
 
-.seealso: PETSC_NULLPTR, PETSC_CONSTEXPR_14
+.seealso: `PETSC_NULLPTR`, `PETSC_CONSTEXPR_14`
 M*/
 
 /* C++11 features */
@@ -403,8 +403,8 @@ M*/
 
   Level: advanced
 
-.seealso: PetscLikely(), PetscUnlikelyDebug(), PetscCall(), PetscDefined(), PetscHasAttribute(),
-PETSC_ATTRIBUTE_COLD
+.seealso: `PetscLikely()`, `PetscUnlikelyDebug()`, `PetscCall()`, `PetscDefined()`, `PetscHasAttribute()`,
+          `PETSC_ATTRIBUTE_COLD`
 M*/
 
 /*MC
@@ -436,8 +436,8 @@ M*/
 
   Level: advanced
 
-.seealso: PetscUnlikely(), PetscDefined(), PetscHasAttribute()
-PETSC_ATTRIBUTE_COLD
+.seealso: `PetscUnlikely()`, `PetscDefined()`, `PetscHasAttribute()`
+          `PETSC_ATTRIBUTE_COLD`
 M*/
 #if defined(PETSC_HAVE_BUILTIN_EXPECT)
 #  define PetscUnlikely(cond) __builtin_expect(!!(cond),0)
@@ -483,7 +483,7 @@ M*/
 
   Level: advanced
 
-.seealso: SETERRABORT(), PETSCABORT(), PETSC_ATTRIBUTE_COLD
+.seealso: `SETERRABORT()`, `PETSCABORT()`, `PETSC_ATTRIBUTE_COLD`
 M*/
 #if defined(__GNUC__)
 /* GCC 4.8+, Clang, Intel and other compilers compatible with GCC (-std=c++0x or above) */
@@ -506,7 +506,7 @@ M*/
 
   Level: beginner
 
-.seealso: PetscStringize(), PetscConcat()
+.seealso: `PetscStringize()`, `PetscConcat()`
 M*/
 #define PetscExpand_(...) __VA_ARGS__
 #define PetscExpand(...)  PetscExpand_(__VA_ARGS__)
@@ -545,7 +545,7 @@ M*/
 
   Level: beginner
 
-.seealso: PetscConcat(), PetscExpandToNothing(), PetscExpand()
+.seealso: `PetscConcat()`, `PetscExpandToNothing()`, `PetscExpand()`
 M*/
 #define PetscStringize_(x) #x
 #define PetscStringize(x)  PetscStringize_(x)
@@ -578,7 +578,7 @@ M*/
 
   Level: beginner
 
-.seealso: PetscStringize(), PetscExpand()
+.seealso: `PetscStringize()`, `PetscExpand()`
 M*/
 #define PetscConcat_(x,y) x ## y
 #define PetscConcat(x,y)  PetscConcat_(x,y)
@@ -622,7 +622,7 @@ $ #define PETSC_DONT_HAVE_FOO PetscCompl(PetscDefined(HAVE_FOO))
 
   Level: beginner
 
-.seealso: PetscConcat(), PetscDefined()
+.seealso: `PetscConcat()`, `PetscDefined()`
 M*/
 #define PetscCompl(b) PetscConcat_(PETSC_INTERNAL_COMPL_,PetscExpand(b))
 
@@ -701,8 +701,8 @@ $ #define FooDefined(d) PetscDefined_(PetscConcat(FOO_,d))
 
   Level: intermediate
 
-.seealso: PetscHasAttribute(), PetscUnlikely(), PetscLikely(), PetscConcat(),
-PetscExpandToNothing(), PetscCompl()
+.seealso: `PetscHasAttribute()`, `PetscUnlikely()`, `PetscLikely()`, `PetscConcat()`,
+          `PetscExpandToNothing()`, `PetscCompl()`
 M*/
 #define PetscDefined_arg_1 shift,
 #define PetscDefined_arg_  shift,
@@ -763,7 +763,7 @@ M*/
 
   Level: advanced
 
-.seealso: PetscUnlikely(), PetscLikely(), PetscCall(), SETERRQ
+.seealso: `PetscUnlikely()`, `PetscLikely()`, `PetscCall()`, `SETERRQ`
 M*/
 #define PetscUnlikelyDebug(cond) (PetscDefined(USE_DEBUG) && PetscUnlikely(cond))
 
@@ -798,7 +798,7 @@ M*/
 
   Level: beginner
 
-.seealso: PetscConcat(), PetscDefined(), PetscStringize(), PetscExpand()
+.seealso: `PetscConcat()`, `PetscDefined()`, `PetscStringize()`, `PetscExpand()`
 M*/
 #define PetscExpandToNothing(...)
 
@@ -874,7 +874,7 @@ M*/
 
   Level: intermediate
 
-.seealso: PetscExpand(), PetscConcat(), PetscStringize()
+.seealso: `PetscExpand()`, `PetscConcat()`, `PetscStringize()`
 M*/
 #define PetscMacroReturns(retexpr,...) PetscMacroReturns_(retexpr,__VA_ARGS__)
 

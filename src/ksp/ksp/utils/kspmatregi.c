@@ -11,7 +11,7 @@ static PetscBool KSPMatRegisterAllCalled = PETSC_FALSE;
 
   Level: advanced
 
-.seealso: MatRegisterAll(),  KSPInitializePackage()
+.seealso: `MatRegisterAll()`, `KSPInitializePackage()`
 @*/
 PetscErrorCode KSPMatRegisterAll(void)
 {

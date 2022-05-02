@@ -168,7 +168,7 @@ PetscErrorCode  DMCompositeGetNumberDM(DM dm,PetscInt *nDM)
 
     Level: advanced
 
-.seealso: DMCompositeGetEntries(), DMCompositeScatter()
+.seealso: `DMCompositeGetEntries()`, `DMCompositeScatter()`
 @*/
 PetscErrorCode  DMCompositeGetAccess(DM dm,Vec gvec,...)
 {
@@ -235,7 +235,7 @@ PetscErrorCode  DMCompositeGetAccess(DM dm,Vec gvec,...)
 
     Level: advanced
 
-.seealso: DMCompositeGetAccess(), DMCompositeGetEntries(), DMCompositeScatter(), DMCompositeGather()
+.seealso: `DMCompositeGetAccess()`, `DMCompositeGetEntries()`, `DMCompositeScatter()`, `DMCompositeGather()`
 @*/
 PetscErrorCode  DMCompositeGetAccessArray(DM dm,Vec pvec,PetscInt nwanted,const PetscInt *wanted,Vec *vecs)
 {
@@ -298,8 +298,8 @@ PetscErrorCode  DMCompositeGetAccessArray(DM dm,Vec pvec,PetscInt nwanted,const 
 
     Level: advanced
 
-.seealso: DMCompositeRestoreLocalAccessArray(), DMCompositeGetAccess(),
-DMCompositeGetEntries(), DMCompositeScatter(), DMCompositeGather()
+.seealso: `DMCompositeRestoreLocalAccessArray()`, `DMCompositeGetAccess()`,
+          `DMCompositeGetEntries()`, `DMCompositeScatter()`, `DMCompositeGather()`
 @*/
 PetscErrorCode  DMCompositeGetLocalAccessArray(DM dm,Vec pvec,PetscInt nwanted,const PetscInt *wanted,Vec *vecs)
 {
@@ -359,9 +359,9 @@ PetscErrorCode  DMCompositeGetLocalAccessArray(DM dm,Vec pvec,PetscInt nwanted,c
 
     Level: advanced
 
-.seealso  DMCompositeAddDM(), DMCreateGlobalVector(),
-         DMCompositeGather(), DMCompositeCreate(), DMCompositeGetISLocalToGlobalMappings(), DMCompositeScatter(),
-         DMCompositeRestoreAccess(), DMCompositeGetAccess()
+.seealso `DMCompositeAddDM()`, `DMCreateGlobalVector()`,
+         `DMCompositeGather()`, `DMCompositeCreate()`, `DMCompositeGetISLocalToGlobalMappings()`, `DMCompositeScatter()`,
+         `DMCompositeRestoreAccess()`, `DMCompositeGetAccess()`
 
 @*/
 PetscErrorCode  DMCompositeRestoreAccess(DM dm,Vec gvec,...)
@@ -415,7 +415,7 @@ PetscErrorCode  DMCompositeRestoreAccess(DM dm,Vec gvec,...)
 
     Level: advanced
 
-.seealso: DMCompositeRestoreAccess(), DMCompositeRestoreEntries(), DMCompositeScatter(), DMCompositeGather()
+.seealso: `DMCompositeRestoreAccess()`, `DMCompositeRestoreEntries()`, `DMCompositeScatter()`, `DMCompositeGather()`
 @*/
 PetscErrorCode  DMCompositeRestoreAccessArray(DM dm,Vec pvec,PetscInt nwanted,const PetscInt *wanted,Vec *vecs)
 {
@@ -466,9 +466,9 @@ PetscErrorCode  DMCompositeRestoreAccessArray(DM dm,Vec pvec,PetscInt nwanted,co
     nwanted and wanted must match the values given to DMCompositeGetLocalAccessArray()
     otherwise the call will fail.
 
-.seealso: DMCompositeGetLocalAccessArray(), DMCompositeRestoreAccessArray(),
-DMCompositeRestoreAccess(), DMCompositeRestoreEntries(),
-DMCompositeScatter(), DMCompositeGather()
+.seealso: `DMCompositeGetLocalAccessArray()`, `DMCompositeRestoreAccessArray()`,
+          `DMCompositeRestoreAccess()`, `DMCompositeRestoreEntries()`,
+          `DMCompositeScatter()`, `DMCompositeGather()`
 @*/
 PetscErrorCode  DMCompositeRestoreLocalAccessArray(DM dm,Vec pvec,PetscInt nwanted,const PetscInt *wanted,Vec *vecs)
 {
@@ -517,10 +517,10 @@ PetscErrorCode  DMCompositeRestoreLocalAccessArray(DM dm,Vec pvec,PetscInt nwant
     DMCompositeScatterArray() is a non-variadic alternative that is often more convenient for library callers and is
     accessible from Fortran.
 
-.seealso DMDestroy(), DMCompositeAddDM(), DMCreateGlobalVector(),
-         DMCompositeGather(), DMCompositeCreate(), DMCompositeGetISLocalToGlobalMappings(), DMCompositeGetAccess(),
-         DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors(), DMCompositeGetEntries()
-         DMCompositeScatterArray()
+.seealso `DMDestroy()`, `DMCompositeAddDM()`, `DMCreateGlobalVector()`,
+         `DMCompositeGather()`, `DMCompositeCreate()`, `DMCompositeGetISLocalToGlobalMappings()`, `DMCompositeGetAccess()`,
+         `DMCompositeGetLocalVectors()`, `DMCompositeRestoreLocalVectors()`, `DMCompositeGetEntries()`
+         `DMCompositeScatterArray()`
 
 @*/
 PetscErrorCode  DMCompositeScatter(DM dm,Vec gvec,...)
@@ -578,9 +578,9 @@ PetscErrorCode  DMCompositeScatter(DM dm,Vec gvec,...)
     Note:
     This is a non-variadic alternative to DMCompositeScatter()
 
-.seealso DMDestroy(), DMCompositeAddDM(), DMCreateGlobalVector()
-         DMCompositeGather(), DMCompositeCreate(), DMCompositeGetISLocalToGlobalMappings(), DMCompositeGetAccess(),
-         DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors(), DMCompositeGetEntries()
+.seealso `DMDestroy()`, `DMCompositeAddDM()`, `DMCreateGlobalVector()`
+         `DMCompositeGather()`, `DMCompositeCreate()`, `DMCompositeGetISLocalToGlobalMappings()`, `DMCompositeGetAccess()`,
+         `DMCompositeGetLocalVectors()`, `DMCompositeRestoreLocalVectors()`, `DMCompositeGetEntries()`
 
 @*/
 PetscErrorCode  DMCompositeScatterArray(DM dm,Vec gvec,Vec *lvecs)
@@ -633,9 +633,9 @@ PetscErrorCode  DMCompositeScatterArray(DM dm,Vec gvec,Vec *lvecs)
 
     Not available from Fortran, Fortran users can use DMCompositeGatherArray()
 
-.seealso DMDestroy(), DMCompositeAddDM(), DMCreateGlobalVector(),
-         DMCompositeScatter(), DMCompositeCreate(), DMCompositeGetISLocalToGlobalMappings(), DMCompositeGetAccess(),
-         DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors(), DMCompositeGetEntries()
+.seealso `DMDestroy()`, `DMCompositeAddDM()`, `DMCreateGlobalVector()`,
+         `DMCompositeScatter()`, `DMCompositeCreate()`, `DMCompositeGetISLocalToGlobalMappings()`, `DMCompositeGetAccess()`,
+         `DMCompositeGetLocalVectors()`, `DMCompositeRestoreLocalVectors()`, `DMCompositeGetEntries()`
 
 @*/
 PetscErrorCode  DMCompositeGather(DM dm,InsertMode imode,Vec gvec,...)
@@ -694,9 +694,9 @@ PetscErrorCode  DMCompositeGather(DM dm,InsertMode imode,Vec gvec,...)
     Notes:
     This is a non-variadic alternative to DMCompositeGather().
 
-.seealso DMDestroy(), DMCompositeAddDM(), DMCreateGlobalVector(),
-         DMCompositeScatter(), DMCompositeCreate(), DMCompositeGetISLocalToGlobalMappings(), DMCompositeGetAccess(),
-         DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors(), DMCompositeGetEntries(),
+.seealso `DMDestroy()`, `DMCompositeAddDM()`, `DMCreateGlobalVector()`,
+         `DMCompositeScatter()`, `DMCompositeCreate()`, `DMCompositeGetISLocalToGlobalMappings()`, `DMCompositeGetAccess()`,
+         `DMCompositeGetLocalVectors()`, `DMCompositeRestoreLocalVectors()`, `DMCompositeGetEntries()`,
 @*/
 PetscErrorCode  DMCompositeGatherArray(DM dm,InsertMode imode,Vec gvec,Vec *lvecs)
 {
@@ -744,9 +744,9 @@ PetscErrorCode  DMCompositeGatherArray(DM dm,InsertMode imode,Vec gvec,Vec *lvec
 
     Level: advanced
 
-.seealso DMDestroy(), DMCompositeGather(), DMCompositeAddDM(), DMCreateGlobalVector(),
-         DMCompositeScatter(), DMCompositeCreate(), DMCompositeGetISLocalToGlobalMappings(), DMCompositeGetAccess(),
-         DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors(), DMCompositeGetEntries()
+.seealso `DMDestroy()`, `DMCompositeGather()`, `DMCompositeAddDM()`, `DMCreateGlobalVector()`,
+         `DMCompositeScatter()`, `DMCompositeCreate()`, `DMCompositeGetISLocalToGlobalMappings()`, `DMCompositeGetAccess()`,
+         `DMCompositeGetLocalVectors()`, `DMCompositeRestoreLocalVectors()`, `DMCompositeGetEntries()`
 
 @*/
 PetscErrorCode  DMCompositeAddDM(DM dmc,DM dm)
@@ -891,9 +891,9 @@ PetscErrorCode  DMCreateLocalVector_Composite(DM dm,Vec *lvec)
 
     Not available from Fortran
 
-.seealso DMDestroy(), DMCompositeAddDM(), DMCreateGlobalVector(),
-         DMCompositeGather(), DMCompositeCreate(), DMCompositeGetAccess(), DMCompositeScatter(),
-         DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors(),DMCompositeGetEntries()
+.seealso `DMDestroy()`, `DMCompositeAddDM()`, `DMCreateGlobalVector()`,
+         `DMCompositeGather()`, `DMCompositeCreate()`, `DMCompositeGetAccess()`, `DMCompositeScatter()`,
+         `DMCompositeGetLocalVectors()`, `DMCompositeRestoreLocalVectors(),DMCompositeGetEntries()`
 
 @*/
 PetscErrorCode  DMCompositeGetISLocalToGlobalMappings(DM dm,ISLocalToGlobalMapping **ltogs)
@@ -981,7 +981,7 @@ PetscErrorCode  DMCompositeGetISLocalToGlobalMappings(DM dm,ISLocalToGlobalMappi
 
    Not available from Fortran
 
-.seealso: DMCompositeGetGlobalISs(), DMCompositeGetISLocalToGlobalMappings(), MatGetLocalSubMatrix(), MatCreateLocalRef()
+.seealso: `DMCompositeGetGlobalISs()`, `DMCompositeGetISLocalToGlobalMappings()`, `MatGetLocalSubMatrix()`, `MatCreateLocalRef()`
 @*/
 PetscErrorCode  DMCompositeGetLocalISs(DM dm,IS **is)
 {
@@ -1031,9 +1031,9 @@ PetscErrorCode  DMCompositeGetLocalISs(DM dm,IS **is)
 
        The output argument 'is' must be an allocated array of sufficient length, which can be learned using DMCompositeGetNumberDM().
 
-.seealso DMDestroy(), DMCompositeAddDM(), DMCreateGlobalVector(),
-         DMCompositeGather(), DMCompositeCreate(), DMCompositeGetAccess(), DMCompositeScatter(),
-         DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors(),DMCompositeGetEntries()
+.seealso `DMDestroy()`, `DMCompositeAddDM()`, `DMCreateGlobalVector()`,
+         `DMCompositeGather()`, `DMCompositeCreate()`, `DMCompositeGetAccess()`, `DMCompositeScatter()`,
+         `DMCompositeGetLocalVectors()`, `DMCompositeRestoreLocalVectors(),DMCompositeGetEntries()`
 
 @*/
 PetscErrorCode  DMCompositeGetGlobalISs(DM dm,IS *is[])
@@ -1164,9 +1164,9 @@ PetscErrorCode DMCreateFieldDecomposition_Composite(DM dm, PetscInt *len,char **
 
     Not available from Fortran
 
-.seealso DMDestroy(), DMCompositeAddDM(), DMCreateGlobalVector(),
-         DMCompositeGather(), DMCompositeCreate(), DMCompositeGetISLocalToGlobalMappings(), DMCompositeGetAccess(),
-         DMCompositeRestoreLocalVectors(), DMCompositeScatter(), DMCompositeGetEntries()
+.seealso `DMDestroy()`, `DMCompositeAddDM()`, `DMCreateGlobalVector()`,
+         `DMCompositeGather()`, `DMCompositeCreate()`, `DMCompositeGetISLocalToGlobalMappings()`, `DMCompositeGetAccess()`,
+         `DMCompositeRestoreLocalVectors()`, `DMCompositeScatter()`, `DMCompositeGetEntries()`
 
 @*/
 PetscErrorCode  DMCompositeGetLocalVectors(DM dm,...)
@@ -1208,9 +1208,9 @@ PetscErrorCode  DMCompositeGetLocalVectors(DM dm,...)
 
     Not available from Fortran
 
-.seealso DMDestroy(), DMCompositeAddDM(), DMCreateGlobalVector(),
-         DMCompositeGather(), DMCompositeCreate(), DMCompositeGetISLocalToGlobalMappings(), DMCompositeGetAccess(),
-         DMCompositeGetLocalVectors(), DMCompositeScatter(), DMCompositeGetEntries()
+.seealso `DMDestroy()`, `DMCompositeAddDM()`, `DMCreateGlobalVector()`,
+         `DMCompositeGather()`, `DMCompositeCreate()`, `DMCompositeGetISLocalToGlobalMappings()`, `DMCompositeGetAccess()`,
+         `DMCompositeGetLocalVectors()`, `DMCompositeScatter()`, `DMCompositeGetEntries()`
 
 @*/
 PetscErrorCode  DMCompositeRestoreLocalVectors(DM dm,...)
@@ -1254,10 +1254,10 @@ PetscErrorCode  DMCompositeRestoreLocalVectors(DM dm,...)
     Fortran Notes:
     Available as DMCompositeGetEntries() for one output DM, DMCompositeGetEntries2() for 2, etc
 
-.seealso DMDestroy(), DMCompositeAddDM(), DMCreateGlobalVector(), DMCompositeGetEntriesArray()
-         DMCompositeGather(), DMCompositeCreate(), DMCompositeGetISLocalToGlobalMappings(), DMCompositeGetAccess(),
-         DMCompositeRestoreLocalVectors(), DMCompositeGetLocalVectors(),  DMCompositeScatter(),
-         DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors()
+.seealso `DMDestroy()`, `DMCompositeAddDM()`, `DMCreateGlobalVector()`, `DMCompositeGetEntriesArray()`
+         `DMCompositeGather()`, `DMCompositeCreate()`, `DMCompositeGetISLocalToGlobalMappings()`, `DMCompositeGetAccess()`,
+         `DMCompositeRestoreLocalVectors()`, `DMCompositeGetLocalVectors()`, `DMCompositeScatter()`,
+         `DMCompositeGetLocalVectors()`, `DMCompositeRestoreLocalVectors()`
 
 @*/
 PetscErrorCode  DMCompositeGetEntries(DM dm,...)
@@ -1297,10 +1297,10 @@ PetscErrorCode  DMCompositeGetEntries(DM dm,...)
 
     Level: advanced
 
-.seealso DMDestroy(), DMCompositeAddDM(), DMCreateGlobalVector(), DMCompositeGetEntries()
-         DMCompositeGather(), DMCompositeCreate(), DMCompositeGetISLocalToGlobalMappings(), DMCompositeGetAccess(),
-         DMCompositeRestoreLocalVectors(), DMCompositeGetLocalVectors(),  DMCompositeScatter(),
-         DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors()
+.seealso `DMDestroy()`, `DMCompositeAddDM()`, `DMCreateGlobalVector()`, `DMCompositeGetEntries()`
+         `DMCompositeGather()`, `DMCompositeCreate()`, `DMCompositeGetISLocalToGlobalMappings()`, `DMCompositeGetAccess()`,
+         `DMCompositeRestoreLocalVectors()`, `DMCompositeGetLocalVectors()`, `DMCompositeScatter()`,
+         `DMCompositeGetLocalVectors()`, `DMCompositeRestoreLocalVectors()`
 
 @*/
 PetscErrorCode DMCompositeGetEntriesArray(DM dm,DM dms[])
@@ -1745,7 +1745,7 @@ PetscErrorCode  DMLocalToLocalEnd_Composite(DM dm,Vec lvec,InsertMode mode,Vec g
 
   Level: intermediate
 
-.seealso: DMType, DM, DMDACreate(), DMCreate(), DMSetType(), DMCompositeCreate()
+.seealso: `DMType`, `DM`, `DMDACreate()`, `DMCreate()`, `DMSetType()`, `DMCompositeCreate()`
 M*/
 
 PETSC_EXTERN PetscErrorCode DMCreate_Composite(DM p)
@@ -1798,9 +1798,9 @@ PETSC_EXTERN PetscErrorCode DMCreate_Composite(DM p)
 
     Level: advanced
 
-.seealso DMDestroy(), DMCompositeAddDM(), DMCompositeScatter(), DMCOMPOSITE,DMCreate()
-         DMCompositeGather(), DMCreateGlobalVector(), DMCompositeGetISLocalToGlobalMappings(), DMCompositeGetAccess()
-         DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors(), DMCompositeGetEntries()
+.seealso `DMDestroy()`, `DMCompositeAddDM()`, `DMCompositeScatter()`, `DMCOMPOSITE,DMCreate()`
+         `DMCompositeGather()`, `DMCreateGlobalVector()`, `DMCompositeGetISLocalToGlobalMappings()`, `DMCompositeGetAccess()`
+         `DMCompositeGetLocalVectors()`, `DMCompositeRestoreLocalVectors()`, `DMCompositeGetEntries()`
 
 @*/
 PetscErrorCode  DMCompositeCreate(MPI_Comm comm,DM *packer)

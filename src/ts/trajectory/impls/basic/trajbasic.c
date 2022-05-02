@@ -155,7 +155,7 @@ static PetscErrorCode TSTrajectoryDestroy_Basic(TSTrajectory tj)
 
   Level: intermediate
 
-.seealso:  TSTrajectoryCreate(), TS, TSTrajectorySetType(), TSTrajectorySetDirname(), TSTrajectorySetFile()
+.seealso: `TSTrajectoryCreate()`, `TS`, `TSTrajectorySetType()`, `TSTrajectorySetDirname()`, `TSTrajectorySetFile()`
 
 M*/
 PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Basic(TSTrajectory tj,TS ts)

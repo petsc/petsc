@@ -46,7 +46,7 @@ static struct PetscFPTrapLink *_trapstack;                   /* Any pushed state
 $       gfortran -ffpe-trap=invalid,zero,overflow,underflow,denormal
 $       ifort -fpe0
 
-.seealso: PetscFPTrapPop(), PetscSetFPTrap(), PetscDetermineInitialFPTrap()
+.seealso: `PetscFPTrapPop()`, `PetscSetFPTrap()`, `PetscDetermineInitialFPTrap()`
 @*/
 PetscErrorCode PetscFPTrapPush(PetscFPTrap trap)
 {
@@ -68,7 +68,7 @@ PetscErrorCode PetscFPTrapPush(PetscFPTrap trap)
 
    Level: advanced
 
-.seealso: PetscFPTrapPush(), PetscSetFPTrap(), PetscDetermineInitialFPTrap()
+.seealso: `PetscFPTrapPush()`, `PetscSetFPTrap()`, `PetscDetermineInitialFPTrap()`
 @*/
 PetscErrorCode PetscFPTrapPop(void)
 {
@@ -151,7 +151,7 @@ sigfpe_handler_type PetscDefaultFPTrap(int sig,int code,struct sigcontext *scp,c
    On certain machines, in particular the IBM PowerPC, floating point
    trapping may be VERY slow!
 
-.seealso: PetscFPTrapPush(), PetscFPTrapPop(), PetscDetermineInitialFPTrap()
+.seealso: `PetscFPTrapPush()`, `PetscFPTrapPop()`, `PetscDetermineInitialFPTrap()`
 @*/
 PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
 {
@@ -182,7 +182,7 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
 
    Level: advanced
 
-.seealso: PetscFPTrapPush(), PetscFPTrapPop(), PetscDetermineInitialFPTrap()
+.seealso: `PetscFPTrapPush()`, `PetscFPTrapPop()`, `PetscDetermineInitialFPTrap()`
 @*/
 PetscErrorCode  PetscDetermineInitialFPTrap(void)
 {

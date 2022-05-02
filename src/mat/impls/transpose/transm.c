@@ -263,7 +263,7 @@ PetscErrorCode MatTransposeGetMat_Transpose(Mat A,Mat *M)
 
    Level: intermediate
 
-.seealso: MatCreateTranspose()
+.seealso: `MatCreateTranspose()`
 
 @*/
 PetscErrorCode MatTransposeGetMat(Mat A,Mat *M)
@@ -294,7 +294,7 @@ PetscErrorCode MatTransposeGetMat(Mat A,Mat *M)
           object performs the matrix-vector product by using the MatMultTranspose() on
           the original matrix
 
-.seealso: MatCreateNormal(), MatMult(), MatMultTranspose(), MatCreate()
+.seealso: `MatCreateNormal()`, `MatMult()`, `MatMultTranspose()`, `MatCreate()`
 
 @*/
 PetscErrorCode  MatCreateTranspose(Mat A,Mat *N)

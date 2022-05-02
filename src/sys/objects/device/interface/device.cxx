@@ -105,8 +105,8 @@ static_assert(
 
   Level: beginner
 
-.seealso: PetscDevice, PetscDeviceInitType, PetscDeviceInitialize(),
-PetscDeviceInitialized(), PetscDeviceConfigure(), PetscDeviceView(), PetscDeviceDestroy()
+.seealso: `PetscDevice`, `PetscDeviceInitType`, `PetscDeviceInitialize()`,
+          `PetscDeviceInitialized()`, `PetscDeviceConfigure()`, `PetscDeviceView()`, `PetscDeviceDestroy()`
 @*/
 PetscErrorCode PetscDeviceCreate(PetscDeviceType type, PetscInt devid, PetscDevice *device)
 {
@@ -148,7 +148,7 @@ PetscErrorCode PetscDeviceCreate(PetscDeviceType type, PetscInt devid, PetscDevi
 
   Level: beginner
 
-.seealso: PetscDevice, PetscDeviceCreate(), PetscDeviceConfigure(), PetscDeviceView()
+.seealso: `PetscDevice`, `PetscDeviceCreate()`, `PetscDeviceConfigure()`, `PetscDeviceView()`
 @*/
 PetscErrorCode PetscDeviceDestroy(PetscDevice *device)
 {
@@ -178,7 +178,7 @@ PetscErrorCode PetscDeviceDestroy(PetscDevice *device)
 
   Level: beginner
 
-.seealso: PetscDevice, PetscDeviceCreate(), PetscDeviceView(), PetscDeviceDestroy()
+.seealso: `PetscDevice`, `PetscDeviceCreate()`, `PetscDeviceView()`, `PetscDeviceDestroy()`
 @*/
 PetscErrorCode PetscDeviceConfigure(PetscDevice device)
 {
@@ -212,7 +212,7 @@ PetscErrorCode PetscDeviceConfigure(PetscDevice device)
 
   Level: beginner
 
-.seealso: PetscDevice, PetscDeviceCreate(), PetscDeviceConfigure(), PetscDeviceDestroy()
+.seealso: `PetscDevice`, `PetscDeviceCreate()`, `PetscDeviceConfigure()`, `PetscDeviceDestroy()`
 @*/
 PetscErrorCode PetscDeviceView(PetscDevice device, PetscViewer viewer)
 {
@@ -237,7 +237,7 @@ PetscErrorCode PetscDeviceView(PetscDevice device, PetscViewer viewer)
 
   Level: beginner
 
-.seealso: PetscDevice, PetscDeviceCreate(), PetscDeviceConfigure(), PetscDeviceDestroy()
+.seealso: `PetscDevice`, `PetscDeviceCreate()`, `PetscDeviceConfigure()`, `PetscDeviceDestroy()`
 @*/
 PetscErrorCode PetscDeviceGetDeviceId(PetscDevice device, PetscInt *id)
 {
@@ -265,7 +265,7 @@ static_assert(initializedDevice.size() == defaultDevices.size(),"");
 
   Level: beginner
 
-.seealso: PetscDevice, PetscDeviceInitType, PetscDeviceInitialized(), PetscDeviceCreate(), PetscDeviceDestroy()
+.seealso: `PetscDevice`, `PetscDeviceInitType`, `PetscDeviceInitialized()`, `PetscDeviceCreate()`, `PetscDeviceDestroy()`
 @*/
 PetscErrorCode PetscDeviceInitialize(PetscDeviceType type)
 {
@@ -293,7 +293,7 @@ PetscErrorCode PetscDeviceInitialize(PetscDeviceType type)
 
   Level: beginner
 
-.seealso: PetscDevice, PetscDeviceInitType, PetscDeviceInitialize(), PetscDeviceCreate(), PetscDeviceDestroy()
+.seealso: `PetscDevice`, `PetscDeviceInitType`, `PetscDeviceInitialize()`, `PetscDeviceCreate()`, `PetscDeviceDestroy()`
 @*/
 PetscBool PetscDeviceInitialized(PetscDeviceType type)
 {

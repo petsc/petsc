@@ -305,7 +305,7 @@ PetscErrorCode TaoLMVMRecycle(Tao tao, PetscBool flg)
 
   Level: advanced
 
-.seealso: TaoLMVMGetH0(), TaoLMVMGetH0KSP()
+.seealso: `TaoLMVMGetH0()`, `TaoLMVMGetH0KSP()`
 @*/
 PetscErrorCode TaoLMVMSetH0(Tao tao, Mat H0)
 {
@@ -339,7 +339,7 @@ PetscErrorCode TaoLMVMSetH0(Tao tao, Mat H0)
 
   Level: advanced
 
-.seealso: TaoLMVMSetH0(), TaoLMVMGetH0KSP()
+.seealso: `TaoLMVMSetH0()`, `TaoLMVMGetH0KSP()`
 @*/
 PetscErrorCode TaoLMVMGetH0(Tao tao, Mat *H0)
 {
@@ -373,7 +373,7 @@ PetscErrorCode TaoLMVMGetH0(Tao tao, Mat *H0)
 
   Level: advanced
 
-.seealso: TaoLMVMGetH0(), TaoLMVMGetH0KSP()
+.seealso: `TaoLMVMGetH0()`, `TaoLMVMGetH0KSP()`
 @*/
 PetscErrorCode TaoLMVMGetH0KSP(Tao tao, KSP *ksp)
 {

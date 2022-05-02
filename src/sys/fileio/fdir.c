@@ -61,7 +61,7 @@ PetscErrorCode PetscMkdir(const char dir[])
 
   Level: developer
 
-.seealso: PetscMkdir()
+.seealso: `PetscMkdir()`
 @*/
 PetscErrorCode PetscMkdtemp(char dir[])
 {

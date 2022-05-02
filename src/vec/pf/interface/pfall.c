@@ -17,7 +17,7 @@ PETSC_EXTERN PetscErrorCode PFCreate_Matlab(PF,void*);
 
    Level: advanced
 
-.seealso: PFRegister(), PFRegisterDestroy()
+.seealso: `PFRegister()`, `PFRegisterDestroy()`
 @*/
 PetscErrorCode  PFRegisterAll(void)
 {

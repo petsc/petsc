@@ -17,7 +17,7 @@
 
    Not supported from Fortran
 
-.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMDestroy(), DMCreateGlobalVector()
+.seealso: `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMDestroy()`, `DMCreateGlobalVector()`
 @*/
 PetscErrorCode  DMDACreatePF(DM da,PF *pf)
 {

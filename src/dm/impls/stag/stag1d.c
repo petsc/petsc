@@ -34,7 +34,7 @@
 
   Level: beginner
 
-.seealso: DMSTAG, DMStagCreate2d(), DMStagCreate3d(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateLocalVector(), DMLocalToGlobalBegin(), DMDACreate1d()
+.seealso: `DMSTAG`, `DMStagCreate2d()`, `DMStagCreate3d()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateLocalVector()`, `DMLocalToGlobalBegin()`, `DMDACreate1d()`
 @*/
 PETSC_EXTERN PetscErrorCode DMStagCreate1d(MPI_Comm comm,DMBoundaryType bndx,PetscInt M,PetscInt dof0,PetscInt dof1,DMStagStencilType stencilType,PetscInt stencilWidth,const PetscInt lx[],DM* dm)
 {

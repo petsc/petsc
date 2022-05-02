@@ -47,7 +47,7 @@
       PetscRandomDestroy(&r);
 .ve
 
-.seealso: PetscRandomCreate(), PetscRandomDestroy(), VecSetRandom(), PetscRandomGetValueReal()
+.seealso: `PetscRandomCreate()`, `PetscRandomDestroy()`, `VecSetRandom()`, `PetscRandomGetValueReal()`
 @*/
 PetscErrorCode  PetscRandomGetValue(PetscRandom r,PetscScalar *val)
 {
@@ -90,7 +90,7 @@ PetscErrorCode  PetscRandomGetValue(PetscRandom r,PetscScalar *val)
       PetscRandomDestroy(&r);
 .ve
 
-.seealso: PetscRandomCreate(), PetscRandomDestroy(), VecSetRandom(), PetscRandomGetValue()
+.seealso: `PetscRandomCreate()`, `PetscRandomDestroy()`, `VecSetRandom()`, `PetscRandomGetValue()`
 @*/
 PetscErrorCode  PetscRandomGetValueReal(PetscRandom r,PetscReal *val)
 {
@@ -128,7 +128,7 @@ PetscErrorCode  PetscRandomGetValueReal(PetscRandom r,PetscReal *val)
    When PETSc is compiled for complex numbers this returns an array of complex numbers with random real and complex parts.
    Use PetscRandomGetValuesReal() to get an array of random real numbers.
 
-.seealso: PetscRandomCreate(), PetscRandomDestroy(), VecSetRandom(), PetscRandomGetValue()
+.seealso: `PetscRandomCreate()`, `PetscRandomDestroy()`, `VecSetRandom()`, `PetscRandomGetValue()`
 @*/
 PetscErrorCode  PetscRandomGetValues(PetscRandom r, PetscInt n, PetscScalar *val)
 {
@@ -166,7 +166,7 @@ PetscErrorCode  PetscRandomGetValues(PetscRandom r, PetscInt n, PetscScalar *val
    Notes:
    Use VecSetRandom() to set the elements of a vector to random numbers.
 
-.seealso: PetscRandomCreate(), PetscRandomDestroy(), VecSetRandom(), PetscRandomGetValues()
+.seealso: `PetscRandomCreate()`, `PetscRandomDestroy()`, `VecSetRandom()`, `PetscRandomGetValues()`
 @*/
 PetscErrorCode  PetscRandomGetValuesReal(PetscRandom r, PetscInt n, PetscReal *val)
 {
@@ -201,7 +201,7 @@ PetscErrorCode  PetscRandomGetValuesReal(PetscRandom r, PetscInt n, PetscReal *v
 
    Level: intermediate
 
-.seealso: PetscRandomCreate(), PetscRandomSetInterval()
+.seealso: `PetscRandomCreate()`, `PetscRandomSetInterval()`
 @*/
 PetscErrorCode  PetscRandomGetInterval(PetscRandom r,PetscScalar *low,PetscScalar *high)
 {
@@ -235,7 +235,7 @@ PetscErrorCode  PetscRandomGetInterval(PetscRandom r,PetscScalar *low,PetscScala
     for complex numbers either the real part or the imaginary part of high must be greater than its low part; or both of them can be greater.
     If the real or imaginary part of low and high are the same then that value is always returned in the real or imaginary part.
 
-.seealso: PetscRandomCreate(), PetscRandomGetInterval()
+.seealso: `PetscRandomCreate()`, `PetscRandomGetInterval()`
 @*/
 PetscErrorCode  PetscRandomSetInterval(PetscRandom r,PetscScalar low,PetscScalar high)
 {

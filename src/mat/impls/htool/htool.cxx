@@ -575,7 +575,7 @@ static PetscErrorCode MatHtoolGetHierarchicalMat_Htool(Mat A,const htool::Virtua
 
    Level: advanced
 
-.seealso:  MATHTOOL
+.seealso: `MATHTOOL`
 @*/
 PETSC_EXTERN PetscErrorCode MatHtoolGetHierarchicalMat(Mat A,const htool::VirtualHMatrix<PetscScalar> **hmatrix)
 {
@@ -608,7 +608,7 @@ static PetscErrorCode MatHtoolSetKernel_Htool(Mat A,MatHtoolKernel kernel,void *
 
    Level: advanced
 
-.seealso:  MATHTOOL, MatCreateHtoolFromKernel()
+.seealso: `MATHTOOL`, `MatCreateHtoolFromKernel()`
 @*/
 PETSC_EXTERN PetscErrorCode MatHtoolSetKernel(Mat A,MatHtoolKernel kernel,void *kernelctx)
 {
@@ -643,7 +643,7 @@ static PetscErrorCode MatHtoolGetPermutationSource_Htool(Mat A,IS* is)
 
    Level: advanced
 
-.seealso:  MATHTOOL, MatHtoolGetPermutationTarget(), MatHtoolUsePermutation()
+.seealso: `MATHTOOL`, `MatHtoolGetPermutationTarget()`, `MatHtoolUsePermutation()`
 @*/
 PETSC_EXTERN PetscErrorCode MatHtoolGetPermutationSource(Mat A,IS* is)
 {
@@ -677,7 +677,7 @@ static PetscErrorCode MatHtoolGetPermutationTarget_Htool(Mat A,IS* is)
 
    Level: advanced
 
-.seealso:  MATHTOOL, MatHtoolGetPermutationSource(), MatHtoolUsePermutation()
+.seealso: `MATHTOOL`, `MatHtoolGetPermutationSource()`, `MatHtoolUsePermutation()`
 @*/
 PETSC_EXTERN PetscErrorCode MatHtoolGetPermutationTarget(Mat A,IS* is)
 {
@@ -706,7 +706,7 @@ static PetscErrorCode MatHtoolUsePermutation_Htool(Mat A,PetscBool use)
 
    Level: advanced
 
-.seealso:  MATHTOOL, MatHtoolGetPermutationSource(), MatHtoolGetPermutationTarget()
+.seealso: `MATHTOOL`, `MatHtoolGetPermutationSource()`, `MatHtoolGetPermutationTarget()`
 @*/
 PETSC_EXTERN PetscErrorCode MatHtoolUsePermutation(Mat A,PetscBool use)
 {
@@ -848,7 +848,7 @@ static PetscErrorCode MatTranspose_Htool(Mat A,MatReuse reuse,Mat *B)
 
    Level: intermediate
 
-.seealso:  MatCreate(), MATHTOOL, PCSetCoordinates(), MatHtoolSetKernel(), MatHtoolCompressorType, MATH2OPUS, MatCreateH2OpusFromKernel()
+.seealso: `MatCreate()`, `MATHTOOL`, `PCSetCoordinates()`, `MatHtoolSetKernel()`, `MatHtoolCompressorType`, `MATH2OPUS`, `MatCreateH2OpusFromKernel()`
 @*/
 PetscErrorCode MatCreateHtoolFromKernel(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt spacedim,const PetscReal coords_target[],const PetscReal coords_source[],MatHtoolKernel kernel,void *kernelctx,Mat *B)
 {
@@ -893,7 +893,7 @@ PetscErrorCode MatCreateHtoolFromKernel(MPI_Comm comm,PetscInt m,PetscInt n,Pets
 
    Level: beginner
 
-.seealso: MATH2OPUS, MATDENSE, MatCreateHtoolFromKernel(), MatHtoolSetKernel()
+.seealso: `MATH2OPUS`, `MATDENSE`, `MatCreateHtoolFromKernel()`, `MatHtoolSetKernel()`
 M*/
 PETSC_EXTERN PetscErrorCode MatCreate_Htool(Mat A)
 {

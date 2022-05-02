@@ -26,7 +26,7 @@ PetscBool PetscLogGpuTraffic = PETSC_FALSE;
 
   Level: developer
 
-.seealso: PetscEventRegLogDestroy(), PetscStageLogCreate()
+.seealso: `PetscEventRegLogDestroy()`, `PetscStageLogCreate()`
 @*/
 PetscErrorCode PetscEventRegLogCreate(PetscEventRegLog *eventLog)
 {
@@ -51,7 +51,7 @@ PetscErrorCode PetscEventRegLogCreate(PetscEventRegLog *eventLog)
 
   Level: developer
 
-.seealso: PetscEventRegLogCreate()
+.seealso: `PetscEventRegLogCreate()`
 @*/
 PetscErrorCode PetscEventRegLogDestroy(PetscEventRegLog eventLog)
 {
@@ -76,7 +76,7 @@ PetscErrorCode PetscEventRegLogDestroy(PetscEventRegLog eventLog)
 
   Level: developer
 
-.seealso: PetscEventPerfLogDestroy(), PetscStageLogCreate()
+.seealso: `PetscEventPerfLogDestroy()`, `PetscStageLogCreate()`
 @*/
 PetscErrorCode PetscEventPerfLogCreate(PetscEventPerfLog *eventLog)
 {
@@ -101,7 +101,7 @@ PetscErrorCode PetscEventPerfLogCreate(PetscEventPerfLog *eventLog)
 
   Level: developer
 
-.seealso: PetscEventPerfLogCreate()
+.seealso: `PetscEventPerfLogCreate()`
 @*/
 PetscErrorCode PetscEventPerfLogDestroy(PetscEventPerfLog eventLog)
 {
@@ -122,7 +122,7 @@ PetscErrorCode PetscEventPerfLogDestroy(PetscEventPerfLog eventLog)
 
   Level: developer
 
-.seealso: PetscEventPerfLogCreate()
+.seealso: `PetscEventPerfLogCreate()`
 @*/
 PetscErrorCode PetscEventPerfInfoClear(PetscEventPerfInfo *eventInfo)
 {
@@ -182,7 +182,7 @@ PetscErrorCode PetscEventPerfInfoClear(PetscEventPerfInfo *eventInfo)
 
   Level: developer
 
-.seealso: PetscEventPerfInfoClear()
+.seealso: `PetscEventPerfInfoClear()`
 @*/
 PetscErrorCode PetscEventPerfInfoCopy(PetscEventPerfInfo *eventInfo,PetscEventPerfInfo *outInfo)
 {
@@ -204,7 +204,7 @@ PetscErrorCode PetscEventPerfInfoCopy(PetscEventPerfInfo *eventInfo,PetscEventPe
 
   Level: developer
 
-.seealso: PetscEventPerfLogCreate()
+.seealso: `PetscEventPerfLogCreate()`
 @*/
 PetscErrorCode PetscEventPerfLogEnsureSize(PetscEventPerfLog eventLog,int size)
 {
@@ -278,8 +278,8 @@ PetscErrorCode PetscLogEventEndMPE(PetscLogEvent event,int t,PetscObject o1,Pets
 
   Level: developer
 
-.seealso: PetscLogEventBegin(), PetscLogEventEnd(), PetscLogFlops(),
-          PetscEventLogActivate(), PetscEventLogDeactivate()
+.seealso: `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscLogFlops()`,
+          `PetscEventLogActivate()`, `PetscEventLogDeactivate()`
 @*/
 PetscErrorCode PetscEventRegLogRegister(PetscEventRegLog eventLog,const char ename[],PetscClassId classid,PetscLogEvent *event)
 {
@@ -351,7 +351,7 @@ PetscErrorCode PetscEventRegLogRegister(PetscEventRegLog eventLog,const char ena
 
   Level: developer
 
-.seealso: PetscEventPerfLogDeactivate(), PetscEventPerfLogDeactivatePop(), PetscEventPerfLogDeactivatePush()
+.seealso: `PetscEventPerfLogDeactivate()`, `PetscEventPerfLogDeactivatePop()`, `PetscEventPerfLogDeactivatePush()`
 @*/
 PetscErrorCode PetscEventPerfLogActivate(PetscEventPerfLog eventLog,PetscLogEvent event)
 {
@@ -383,7 +383,7 @@ PetscErrorCode PetscEventPerfLogActivate(PetscEventPerfLog eventLog,PetscLogEven
 
   Level: developer
 
-.seealso: PetscEventPerfLogActivate(), PetscEventPerfLogDeactivatePop(), PetscEventPerfLogDeactivatePush()
+.seealso: `PetscEventPerfLogActivate()`, `PetscEventPerfLogDeactivatePop()`, `PetscEventPerfLogDeactivatePush()`
 @*/
 PetscErrorCode PetscEventPerfLogDeactivate(PetscEventPerfLog eventLog,PetscLogEvent event)
 {
@@ -415,7 +415,7 @@ PetscErrorCode PetscEventPerfLogDeactivate(PetscEventPerfLog eventLog,PetscLogEv
 
   Level: developer
 
-.seealso: PetscEventPerfLogDeactivate(), PetscEventPerfLogActivate(), PetscEventPerfLogDeactivatePop()
+.seealso: `PetscEventPerfLogDeactivate()`, `PetscEventPerfLogActivate()`, `PetscEventPerfLogDeactivatePop()`
 @*/
 PetscErrorCode PetscEventPerfLogDeactivatePush(PetscEventPerfLog eventLog,PetscLogEvent event)
 {
@@ -447,7 +447,7 @@ PetscErrorCode PetscEventPerfLogDeactivatePush(PetscEventPerfLog eventLog,PetscL
 
   Level: developer
 
-.seealso: PetscEventPerfLogDeactivate(), PetscEventPerfLogActivate(), PetscEventPerfLogDeactivatePush()
+.seealso: `PetscEventPerfLogDeactivate()`, `PetscEventPerfLogActivate()`, `PetscEventPerfLogDeactivatePush()`
 @*/
 PetscErrorCode PetscEventPerfLogDeactivatePop(PetscEventPerfLog eventLog,PetscLogEvent event)
 {
@@ -468,7 +468,7 @@ PetscErrorCode PetscEventPerfLogDeactivatePop(PetscEventPerfLog eventLog,PetscLo
 
   Level: developer
 
-.seealso: PetscEventPerfLogDeactivateClass(), PetscEventPerfLogActivate(), PetscEventPerfLogDeactivate()
+.seealso: `PetscEventPerfLogDeactivateClass()`, `PetscEventPerfLogActivate()`, `PetscEventPerfLogDeactivate()`
 @*/
 PetscErrorCode PetscEventPerfLogActivateClass(PetscEventPerfLog eventLog,PetscEventRegLog eventRegLog,PetscClassId classid)
 {
@@ -494,7 +494,7 @@ PetscErrorCode PetscEventPerfLogActivateClass(PetscEventPerfLog eventLog,PetscEv
 
   Level: developer
 
-.seealso: PetscEventPerfLogDeactivateClass(), PetscEventPerfLogDeactivate(), PetscEventPerfLogActivate()
+.seealso: `PetscEventPerfLogDeactivateClass()`, `PetscEventPerfLogDeactivate()`, `PetscEventPerfLogActivate()`
 @*/
 PetscErrorCode PetscEventPerfLogDeactivateClass(PetscEventPerfLog eventLog,PetscEventRegLog eventRegLog,PetscClassId classid)
 {
@@ -523,7 +523,7 @@ PetscErrorCode PetscEventPerfLogDeactivateClass(PetscEventPerfLog eventLog,Petsc
 
   Level: developer
 
-.seealso: PetscEventRegLogRegister()
+.seealso: `PetscEventRegLogRegister()`
 @*/
 PetscErrorCode  PetscEventRegLogGetEvent(PetscEventRegLog eventLog,const char name[],PetscLogEvent *event)
 {
@@ -559,7 +559,7 @@ PetscErrorCode  PetscEventRegLogGetEvent(PetscEventRegLog eventLog,const char na
 
   Level: developer
 
-.seealso: PetscEventPerfLogGetVisible(), PetscEventRegLogRegister(), PetscStageLogGetEventLog()
+.seealso: `PetscEventPerfLogGetVisible()`, `PetscEventRegLogRegister()`, `PetscStageLogGetEventLog()`
 @*/
 PetscErrorCode PetscEventPerfLogSetVisible(PetscEventPerfLog eventLog,PetscLogEvent event,PetscBool isVisible)
 {
@@ -585,7 +585,7 @@ PetscErrorCode PetscEventPerfLogSetVisible(PetscEventPerfLog eventLog,PetscLogEv
 
   Level: developer
 
-.seealso: PetscEventPerfLogSetVisible(), PetscEventRegLogRegister(), PetscStageLogGetEventLog()
+.seealso: `PetscEventPerfLogSetVisible()`, `PetscEventRegLogRegister()`, `PetscStageLogGetEventLog()`
 @*/
 PetscErrorCode PetscEventPerfLogGetVisible(PetscEventPerfLog eventLog,PetscLogEvent event,PetscBool  *isVisible)
 {
@@ -607,7 +607,7 @@ PetscErrorCode PetscEventPerfLogGetVisible(PetscEventPerfLog eventLog,PetscLogEv
 
   Level: Intermediate
 
-.seealso: PetscLogEventGetFlops()
+.seealso: `PetscLogEventGetFlops()`
 @*/
 PetscErrorCode PetscLogEventGetPerfInfo(int stage,PetscLogEvent event,PetscEventPerfInfo *info)
 {
@@ -972,7 +972,7 @@ PetscErrorCode PetscLogEventEndTrace(PetscLogEvent event,int t,PetscObject o1,Pe
 
   Level: developer
 
-.seealso: PetscLogEventSetError(), PetscEventRegLogRegister(), PetscStageLogGetEventLog()
+.seealso: `PetscLogEventSetError()`, `PetscEventRegLogRegister()`, `PetscStageLogGetEventLog()`
 @*/
 PetscErrorCode PetscLogEventSetDof(PetscLogEvent event, PetscInt n, PetscLogDouble dof)
 {
@@ -1007,7 +1007,7 @@ PetscErrorCode PetscLogEventSetDof(PetscLogEvent event, PetscInt n, PetscLogDoub
 
   Level: developer
 
-.seealso: PetscLogEventSetDof(), PetscEventRegLogRegister(), PetscStageLogGetEventLog()
+.seealso: `PetscLogEventSetDof()`, `PetscEventRegLogRegister()`, `PetscStageLogGetEventLog()`
 @*/
 PetscErrorCode PetscLogEventSetError(PetscLogEvent event, PetscInt n, PetscLogDouble error)
 {

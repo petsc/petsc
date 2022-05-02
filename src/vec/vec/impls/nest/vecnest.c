@@ -786,7 +786,7 @@ PetscErrorCode  VecNestGetSubVec_Nest(Vec X,PetscInt idxm,Vec *sx)
 
  Level: developer
 
-.seealso: VecNestGetSize(), VecNestGetSubVecs()
+.seealso: `VecNestGetSize()`, `VecNestGetSubVecs()`
 @*/
 PetscErrorCode  VecNestGetSubVec(Vec X,PetscInt idxm,Vec *sx)
 {
@@ -825,7 +825,7 @@ PetscErrorCode  VecNestGetSubVecs_Nest(Vec X,PetscInt *N,Vec **sx)
 
  Level: developer
 
-.seealso: VecNestGetSize(), VecNestGetSubVec()
+.seealso: `VecNestGetSize()`, `VecNestGetSubVec()`
 @*/
 PetscErrorCode  VecNestGetSubVecs(Vec X,PetscInt *N,Vec **sx)
 {
@@ -924,7 +924,7 @@ PetscErrorCode  VecNestSetSubVec_Nest(Vec X,PetscInt idxm,Vec sx)
 
    Level: developer
 
-.seealso: VecNestSetSubVecs(), VecNestGetSubVec()
+.seealso: `VecNestSetSubVecs()`, `VecNestGetSubVec()`
 @*/
 PetscErrorCode  VecNestSetSubVec(Vec X,PetscInt idxm,Vec sx)
 {
@@ -961,7 +961,7 @@ PetscErrorCode  VecNestSetSubVecs_Nest(Vec X,PetscInt N,PetscInt *idxm,Vec *sx)
 
    Level: developer
 
-.seealso: VecNestGetSize(), VecNestGetSubVec()
+.seealso: `VecNestGetSize()`, `VecNestGetSubVec()`
 @*/
 PetscErrorCode  VecNestSetSubVecs(Vec X,PetscInt N,PetscInt *idxm,Vec *sx)
 {
@@ -994,7 +994,7 @@ PetscErrorCode  VecNestGetSize_Nest(Vec X,PetscInt *N)
 
  Level: developer
 
-.seealso: VecNestGetSubVec(), VecNestGetSubVecs()
+.seealso: `VecNestGetSubVec()`, `VecNestGetSubVecs()`
 @*/
 PetscErrorCode  VecNestGetSize(Vec X,PetscInt *N)
 {
@@ -1086,7 +1086,7 @@ static PetscErrorCode VecSetUp_NestIS_Private(Vec V,PetscInt nb,IS is[])
 
    Level: advanced
 
-.seealso: VecCreate(), MatCreateNest(), DMSetVecType(), VECNEST
+.seealso: `VecCreate()`, `MatCreateNest()`, `DMSetVecType()`, `VECNEST`
 @*/
 PetscErrorCode  VecCreateNest(MPI_Comm comm,PetscInt nb,IS is[],Vec x[],Vec *Y)
 {
@@ -1140,5 +1140,5 @@ PetscErrorCode  VecCreateNest(MPI_Comm comm,PetscInt nb,IS is[],Vec x[],Vec *Y)
   This vector type reduces the number of copies for certain solvers applied to multi-physics problems.
   It is usually used with MATNEST and DMComposite via DMSetVecType().
 
-.seealso: VecCreate(), VecType, VecCreateNest(), MatCreateNest()
+.seealso: `VecCreate()`, `VecType`, `VecCreateNest()`, `MatCreateNest()`
 M*/

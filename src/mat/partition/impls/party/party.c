@@ -176,7 +176,7 @@ PetscErrorCode MatPartitioningView_Party(MatPartitioning part,PetscViewer viewer
    alternatively a string describing the method. Two or more methods can be
    combined like "gbf,gcf". Check the Party Library Users Manual for details.
 
-.seealso: MatPartitioningPartySetLocal()
+.seealso: `MatPartitioningPartySetLocal()`
 @*/
 PetscErrorCode MatPartitioningPartySetGlobal(MatPartitioning part,const char *global)
 {
@@ -213,7 +213,7 @@ PetscErrorCode MatPartitioningPartySetGlobal_Party(MatPartitioning part,const ch
    The method may be one of MP_PARTY_HELPFUL_SETS, MP_PARTY_KERNIGHAN_LIN, or
    MP_PARTY_NONE. Check the Party Library Users Manual for details.
 
-.seealso: MatPartitioningPartySetGlobal()
+.seealso: `MatPartitioningPartySetGlobal()`
 @*/
 PetscErrorCode MatPartitioningPartySetLocal(MatPartitioning part,const char *local)
 {
@@ -380,7 +380,7 @@ PetscErrorCode MatPartitioningDestroy_Party(MatPartitioning part)
 
     Does not support using MatPartitioningSetUseEdgeWeights()
 
-.seealso: MatPartitioningSetType(), MatPartitioningType
+.seealso: `MatPartitioningSetType()`, `MatPartitioningType`
 
 M*/
 

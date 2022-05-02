@@ -67,7 +67,7 @@ $     MATORDERINGQMD - Quotient Minimum Degree
 
   Level: intermediate
 
-.seealso: DMPlexPermute(), MatGetOrdering()
+.seealso: `DMPlexPermute()`, `MatGetOrdering()`
 @*/
 PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, DMLabel label, IS *perm)
 {
@@ -148,7 +148,7 @@ PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, DMLabel label, IS
 
   Level: intermediate
 
-.seealso: DMPlexGetOrdering(), DMPlexPermute(), MatGetOrdering()
+.seealso: `DMPlexGetOrdering()`, `DMPlexPermute()`, `MatGetOrdering()`
 @*/
 PetscErrorCode DMPlexGetOrdering1D(DM dm, IS *perm)
 {
@@ -207,7 +207,7 @@ PetscErrorCode DMPlexGetOrdering1D(DM dm, IS *perm)
 
   Level: intermediate
 
-.seealso: MatPermute()
+.seealso: `MatPermute()`
 @*/
 PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)
 {

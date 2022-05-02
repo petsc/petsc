@@ -536,7 +536,7 @@ static const unsigned char BasicColors[PETSC_DRAW_BASIC_COLORS][3] = {
 
    Level: beginner
 
-.seealso:  PetscDrawOpenImage(), PetscDrawSetFromOptions()
+.seealso: `PetscDrawOpenImage()`, `PetscDrawSetFromOptions()`
 M*/
 PETSC_EXTERN PetscErrorCode PetscDrawCreate_Image(PetscDraw);
 
@@ -607,7 +607,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_Image(PetscDraw draw)
 
    Level: beginner
 
-.seealso: PetscDrawSetSave(), PetscDrawSetFromOptions(), PetscDrawCreate(), PetscDrawDestroy()
+.seealso: `PetscDrawSetSave()`, `PetscDrawSetFromOptions()`, `PetscDrawCreate()`, `PetscDrawDestroy()`
 @*/
 PetscErrorCode PetscDrawOpenImage(MPI_Comm comm,const char filename[],int w,int h,PetscDraw *draw)
 {

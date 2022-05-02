@@ -1087,7 +1087,7 @@ static PetscErrorCode MatCoarsenView_HEM(MatCoarsen coarse,PetscViewer viewer)
 
    Level: beginner
 
-.seealso: MatCoarsenSetType(), MatCoarsenType, MatCoarsenCreate()
+.seealso: `MatCoarsenSetType()`, `MatCoarsenType`, `MatCoarsenCreate()`
 
 M*/
 

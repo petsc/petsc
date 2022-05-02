@@ -30,7 +30,7 @@ static PetscErrorCode DMAdaptorTransferSolution_Exact_Private(DMAdaptor adaptor,
 
   Level: beginner
 
-.seealso: DMAdaptorDestroy(), DMAdaptorAdapt()
+.seealso: `DMAdaptorDestroy()`, `DMAdaptorAdapt()`
 @*/
 PetscErrorCode DMAdaptorCreate(MPI_Comm comm, DMAdaptor *adaptor)
 {
@@ -70,7 +70,7 @@ PetscErrorCode DMAdaptorCreate(MPI_Comm comm, DMAdaptor *adaptor)
 
   Level: beginner
 
-.seealso: DMAdaptorCreate(), DMAdaptorAdapt()
+.seealso: `DMAdaptorCreate()`, `DMAdaptorAdapt()`
 @*/
 PetscErrorCode DMAdaptorDestroy(DMAdaptor *adaptor)
 {
@@ -104,7 +104,7 @@ PetscErrorCode DMAdaptorDestroy(DMAdaptor *adaptor)
 
   Level: beginner
 
-.seealso: DMAdaptorCreate(), DMAdaptorAdapt()
+.seealso: `DMAdaptorCreate()`, `DMAdaptorAdapt()`
 @*/
 PetscErrorCode DMAdaptorSetFromOptions(DMAdaptor adaptor)
 {
@@ -131,7 +131,7 @@ PetscErrorCode DMAdaptorSetFromOptions(DMAdaptor adaptor)
 
   Level: beginner
 
-.seealso: DMAdaptorCreate(), DMAdaptorAdapt()
+.seealso: `DMAdaptorCreate()`, `DMAdaptorAdapt()`
 @*/
 PetscErrorCode DMAdaptorView(DMAdaptor adaptor, PetscViewer viewer)
 {
@@ -157,7 +157,7 @@ PetscErrorCode DMAdaptorView(DMAdaptor adaptor, PetscViewer viewer)
 
   Level: intermediate
 
-.seealso: DMAdaptorSetSolver(), DMAdaptorCreate(), DMAdaptorAdapt()
+.seealso: `DMAdaptorSetSolver()`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
 @*/
 PetscErrorCode DMAdaptorGetSolver(DMAdaptor adaptor, SNES *snes)
 {
@@ -181,7 +181,7 @@ PetscErrorCode DMAdaptorGetSolver(DMAdaptor adaptor, SNES *snes)
 
   Note: The solver MUST have an attached DM/DS, so that we know the exact solution
 
-.seealso: DMAdaptorGetSolver(), DMAdaptorCreate(), DMAdaptorAdapt()
+.seealso: `DMAdaptorGetSolver()`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
 @*/
 PetscErrorCode DMAdaptorSetSolver(DMAdaptor adaptor, SNES snes)
 {
@@ -206,7 +206,7 @@ PetscErrorCode DMAdaptorSetSolver(DMAdaptor adaptor, SNES snes)
 
   Level: intermediate
 
-.seealso: DMAdaptorSetSequenceLength(), DMAdaptorCreate(), DMAdaptorAdapt()
+.seealso: `DMAdaptorSetSequenceLength()`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
 @*/
 PetscErrorCode DMAdaptorGetSequenceLength(DMAdaptor adaptor, PetscInt *num)
 {
@@ -228,7 +228,7 @@ PetscErrorCode DMAdaptorGetSequenceLength(DMAdaptor adaptor, PetscInt *num)
 
   Level: intermediate
 
-.seealso: DMAdaptorGetSequenceLength(), DMAdaptorCreate(), DMAdaptorAdapt()
+.seealso: `DMAdaptorGetSequenceLength()`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
 @*/
 PetscErrorCode DMAdaptorSetSequenceLength(DMAdaptor adaptor, PetscInt num)
 {
@@ -248,7 +248,7 @@ PetscErrorCode DMAdaptorSetSequenceLength(DMAdaptor adaptor, PetscInt num)
 
   Level: beginner
 
-.seealso: DMAdaptorCreate(), DMAdaptorAdapt()
+.seealso: `DMAdaptorCreate()`, `DMAdaptorAdapt()`
 @*/
 PetscErrorCode DMAdaptorSetUp(DMAdaptor adaptor)
 {
@@ -413,7 +413,7 @@ PetscErrorCode DMAdaptorPostAdapt(DMAdaptor adaptor)
   Output Parameter:
 . errInd   - The error indicator
 
-.seealso: DMAdaptorComputeErrorIndicator()
+.seealso: `DMAdaptorComputeErrorIndicator()`
 */
 static PetscErrorCode DMAdaptorSimpleErrorIndicator_Private(DMAdaptor adaptor, PetscInt dim, PetscInt Nc, const PetscScalar *field, const PetscScalar *gradient, const PetscFVCellGeom *cg, PetscReal *errInd, void *ctx)
 {
@@ -788,7 +788,7 @@ $ 3) Solve the problem on a hierarchy of adapted meshes generated to satisfy a q
 
   Level: intermediate
 
-.seealso: DMAdaptorSetSolver(), DMAdaptorCreate(), DMAdaptorAdapt()
+.seealso: `DMAdaptorSetSolver()`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
 @*/
 PetscErrorCode DMAdaptorAdapt(DMAdaptor adaptor, Vec x, DMAdaptationStrategy strategy, DM *adm, Vec *ax)
 {

@@ -566,7 +566,7 @@ static PetscErrorCode MatDestroy_SeqAIJKokkos(Mat A)
 
   Level: beginner
 
-.seealso: MatCreateSeqAIJKokkos(), MATMPIAIJKOKKOS
+.seealso: `MatCreateSeqAIJKokkos()`, `MATMPIAIJKOKKOS`
 M*/
 PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJKokkos(Mat A)
 {
@@ -1243,7 +1243,7 @@ PETSC_INTERN PetscErrorCode  MatCreateSeqAIJKokkosWithCSRMatrix(MPI_Comm comm,Ma
 
    Level: intermediate
 
-.seealso: MatCreate(), MatCreateAIJ(), MatSetValues(), MatSeqAIJSetColumnIndices(), MatCreateSeqAIJWithArrays(), MatCreateAIJ()
+.seealso: `MatCreate()`, `MatCreateAIJ()`, `MatSetValues()`, `MatSeqAIJSetColumnIndices()`, `MatCreateSeqAIJWithArrays()`, `MatCreateAIJ()`
 @*/
 PetscErrorCode  MatCreateSeqAIJKokkos(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt nz,const PetscInt nnz[],Mat *A)
 {
@@ -1725,7 +1725,7 @@ static PetscErrorCode MatFactorGetSolverType_seqaij_kokkos_device(Mat A,MatSolve
 
   Level: beginner
 
-.seealso: PCFactorSetMatSolverType(), MatSolverType, MatCreateSeqAIJKokkos(), MATAIJKOKKOS, MatKokkosSetFormat(), MatKokkosStorageFormat, MatKokkosFormatOperation
+.seealso: `PCFactorSetMatSolverType()`, `MatSolverType`, `MatCreateSeqAIJKokkos()`, `MATAIJKOKKOS`, `MatKokkosSetFormat()`, `MatKokkosStorageFormat`, `MatKokkosFormatOperation`
 M*/
 PETSC_EXTERN PetscErrorCode MatGetFactor_SeqAIJKokkos_Kokkos(Mat A,MatFactorType ftype,Mat *B) /* MatGetFactor_<MatType>_<MatSolverType> */
 {

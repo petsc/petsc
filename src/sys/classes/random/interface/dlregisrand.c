@@ -8,7 +8,7 @@ static PetscBool PetscRandomPackageInitialized = PETSC_FALSE;
 
   Level: developer
 
-.seealso: PetscFinalize()
+.seealso: `PetscFinalize()`
 @*/
 PetscErrorCode  PetscRandomFinalizePackage(void)
 {
@@ -26,7 +26,7 @@ PetscErrorCode  PetscRandomFinalizePackage(void)
 
   Level: developer
 
-.seealso: PetscInitialize()
+.seealso: `PetscInitialize()`
 @*/
 PetscErrorCode  PetscRandomInitializePackage(void)
 {

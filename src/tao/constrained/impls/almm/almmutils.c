@@ -14,7 +14,7 @@
 
    Level: advanced
 
-.seealso: TAOALMM, TaoALMMSetType(), TaoALMMType
+.seealso: `TAOALMM`, `TaoALMMSetType()`, `TaoALMMType`
 @*/
 PetscErrorCode TaoALMMGetType(Tao tao, TaoALMMType *type)
 {
@@ -43,7 +43,7 @@ PetscErrorCode TaoALMMGetType_Private(Tao tao, TaoALMMType *type)
 
    Level: advanced
 
-.seealso: TAOALMM, TaoALMMGetType(), TaoALMMType
+.seealso: `TAOALMM`, `TaoALMMGetType()`, `TaoALMMType`
 @*/
 PetscErrorCode TaoALMMSetType(Tao tao, TaoALMMType type)
 {
@@ -74,7 +74,7 @@ PetscErrorCode TaoALMMSetType_Private(Tao tao, TaoALMMType type)
 
    Level: advanced
 
-.seealso: TAOALMM, TaoALMMSetSubsolver()
+.seealso: `TAOALMM`, `TaoALMMSetSubsolver()`
 @*/
 PetscErrorCode TaoALMMGetSubsolver(Tao tao, Tao *subsolver)
 {
@@ -103,7 +103,7 @@ PetscErrorCode TaoALMMGetSubsolver_Private(Tao tao, Tao *subsolver)
 
    Level: advanced
 
-.seealso: TAOALMM, TaoALMMGetSubsolver()
+.seealso: `TAOALMM`, `TaoALMMGetSubsolver()`
 @*/
 PetscErrorCode TaoALMMSetSubsolver(Tao tao, Tao subsolver)
 {
@@ -158,7 +158,7 @@ PetscErrorCode TaoALMMSetSubsolver_Private(Tao tao, Tao subsolver)
    can recover copies of the subcomponents using index sets
    provided by TaoALMMGetDualIS() and use VecGetSubVector().
 
-.seealso: TAOALMM, TaoALMMSetMultipliers(), TaoALMMGetDualIS()
+.seealso: `TAOALMM`, `TaoALMMSetMultipliers()`, `TaoALMMGetDualIS()`
 @*/
 PetscErrorCode TaoALMMGetMultipliers(Tao tao, Vec *Y)
 {
@@ -200,7 +200,7 @@ PetscErrorCode TaoALMMGetMultipliers_Private(Tao tao, Vec *Y)
    it is strongly recommended that the user retreive the dual vector
    created by the solver using TaoALMMGetMultipliers().
 
-.seealso: TAOALMM, TaoALMMGetMultipliers()
+.seealso: `TAOALMM`, `TaoALMMGetMultipliers()`
 @*/
 PetscErrorCode TaoALMMSetMultipliers(Tao tao, Vec Y)
 {
@@ -285,7 +285,7 @@ PetscErrorCode TaoALMMSetMultipliers_Private(Tao tao, Vec Y)
 
    Level: advanced
 
-.seealso: TAOALMM, TaoALMMGetPrimalVector()
+.seealso: `TAOALMM`, `TaoALMMGetPrimalVector()`
 @*/
 PetscErrorCode TaoALMMGetPrimalIS(Tao tao, IS *opt_is, IS *slack_is)
 {
@@ -322,7 +322,7 @@ PetscErrorCode TaoALMMGetPrimalIS_Private(Tao tao, IS *opt_is, IS *slack_is)
 
    Level: advanced
 
-.seealso: TAOALMM, TaoALMMGetMultipliers()
+.seealso: `TAOALMM`, `TaoALMMGetMultipliers()`
 @*/
 PetscErrorCode TaoALMMGetDualIS(Tao tao, IS *eq_is, IS *ineq_is)
 {

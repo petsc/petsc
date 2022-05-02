@@ -16,7 +16,7 @@
      Determines what ghost point values are brought over to each process; in this case the "corner" values are not
      brought over and hence should not be accessed locally
 
-.seealso: DMDA_STENCIL_BOX, DMDAStencilType, DMDASetStencilType()
+.seealso: `DMDA_STENCIL_BOX`, `DMDAStencilType`, `DMDASetStencilType()`
 M*/
 
 /*MC
@@ -25,7 +25,7 @@ M*/
 
      Level: beginner
 
-.seealso: DMDA_STENCIL_STAR, DMDAStencilType, DMDASetStencilType()
+.seealso: `DMDA_STENCIL_STAR`, `DMDAStencilType`, `DMDASetStencilType()`
 M*/
 
 PETSC_EXTERN PetscErrorCode DMDASetInterpolationType(DM,DMDAInterpolationType);
@@ -151,7 +151,7 @@ PETSC_EXTERN PetscErrorCode DMDACreatePatchIS(DM,MatStencil*,MatStencil*,IS*,Pet
       }
       DMDAVecRestoreArray(dac,vcoors,&coors);
 
-.seealso: DMDACoor3d, DMGetCoordinateDM(), DMGetCoordinates()
+.seealso: `DMDACoor3d`, `DMGetCoordinateDM()`, `DMGetCoordinates()`
 M*/
 typedef struct {PetscScalar x,y;} DMDACoor2d;
 
@@ -179,7 +179,7 @@ typedef struct {PetscScalar x,y;} DMDACoor2d;
       }
       DMDAVecRestoreArray(dac,vcoors,&coors);
 
-.seealso: DMDACoor2d, DMGetCoordinateDM(), DMGetCoordinates()
+.seealso: `DMDACoor2d`, `DMGetCoordinateDM()`, `DMGetCoordinates()`
 M*/
 typedef struct {PetscScalar x,y,z;} DMDACoor3d;
 

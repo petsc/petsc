@@ -233,7 +233,7 @@ static PetscErrorCode  KSPGCRSetModifyPC_GCR(KSP ksp,KSPGCRModifyPCFunction func
  Notes:
  The default modifypc routine is KSPGCRModifyPCNoChange()
 
- .seealso: KSPGCRModifyPCNoChange()
+ .seealso: `KSPGCRModifyPCNoChange()`
 
  @*/
 PetscErrorCode  KSPGCRSetModifyPC(KSP ksp,PetscErrorCode (*function)(KSP,PetscInt,PetscReal,void*),void *data,PetscErrorCode (*destroy)(void*))
@@ -276,7 +276,7 @@ static PetscErrorCode KSPGCRGetRestart_GCR(KSP ksp,PetscInt *restart)
 
    Level: intermediate
 
-.seealso: KSPSetTolerances(), KSPGCRGetRestart(), KSPGMRESSetRestart()
+.seealso: `KSPSetTolerances()`, `KSPGCRGetRestart()`, `KSPGMRESSetRestart()`
 @*/
 PetscErrorCode KSPGCRSetRestart(KSP ksp, PetscInt restart)
 {
@@ -300,7 +300,7 @@ PetscErrorCode KSPGCRSetRestart(KSP ksp, PetscInt restart)
 
    Level: intermediate
 
-.seealso: KSPSetTolerances(), KSPGCRSetRestart(), KSPGMRESGetRestart()
+.seealso: `KSPSetTolerances()`, `KSPGCRSetRestart()`, `KSPGMRESGetRestart()`
 @*/
 PetscErrorCode KSPGCRGetRestart(KSP ksp, PetscInt *restart)
 {
@@ -373,8 +373,8 @@ static PetscErrorCode  KSPBuildResidual_GCR(KSP ksp, Vec t, Vec v, Vec *V)
 .   * - S. C. Eisenstat, H. C. Elman, and H. C. Schultz. Variational iterative methods for
            nonsymmetric systems of linear equations. SIAM J. Numer. Anal., 20, 1983
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,
-           KSPGCRSetRestart(), KSPGCRSetModifyPC(), KSPGMRES, KSPFGMRES
+.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`,
+          `KSPGCRSetRestart()`, `KSPGCRSetModifyPC()`, `KSPGMRES`, `KSPFGMRES`
 
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_GCR(KSP ksp)

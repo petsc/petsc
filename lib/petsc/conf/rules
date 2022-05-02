@@ -446,9 +446,6 @@ deleteshared:
 #   Rules for the automatic generation of documentation, tutorials etc
 # See rule for allmanualpages and allhtml in ${PETSC_DIR}/makefile
 #
-# Builds manual pages in HTML in two stages
-#   1.) manualpages_buildcite: builds the file manualpages.cit for hyperlinks
-#   2.) manualpages: builds the html pages, complete with hyperlinks
 
 chk_mansec:
 	@if [ "${MANSEC}" = "" ] ; then \
@@ -460,29 +457,23 @@ chk_manualpage_dir:
          if [ ! -d "${LOC}/docs/manualpages/$${LMANSEC}" ]; then \
 	  echo Making directory ${LOC}/docs/manualpages/$${LMANSEC} for library; ${MKDIR} ${LOC}/docs/manualpages/$${LMANSEC}; fi
 
-manualpages_buildcite: chk_manualpage_dir
-	@-if [ "${MANSEC}" != "" ] ; then \
-          if [ "${SUBMANSEC}" = "" ] ; then LMANSEC=${MANSEC}; else LMANSEC=${SUBMANSEC}; fi; \
-          DOCTEXT_PATH=${PETSC_DIR}/doc/classic/doctext; export DOCTEXT_PATH; \
-	  TEXTFILTER_PATH=${PETSC_DIR}/doc/classic/doctext; export TEXTFILTER_PATH; \
-          ${DOCTEXT} -html -indexdir ../$${LMANSEC} \
-		-index ${LOC}/docs/manualpages/manualpages.cit \
-		-mpath ${LOC}/docs/manualpages/$${LMANSEC} ${SOURCED};  fi
-#
-#
-manualpages:
+manualpages: chk_manualpage_dir
 	-@if [ "${MANSEC}" != "" ] ; then \
           if [ "${SUBMANSEC}" = "" ] ; then LMANSEC=${MANSEC}; else LMANSEC=${SUBMANSEC}; fi; \
           DOCTEXT_PATH=${PETSC_DIR}/doc/classic/doctext; export DOCTEXT_PATH; \
-          ${DOCTEXT} -html \
+          ${DOCTEXT} -myst \
             -mpath ${LOC}/docs/manualpages/$${LMANSEC} -heading PETSc \
-            -defn ${PETSC_DIR}/doc/classic/doctext/html.def \
-            -locdir ${LOCDIR} -mapref ${LOC}/docs/manualpages/manualpages.cit -Wargdesc ${SOURCED} 2>&1 | tee -a ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err;\
-          chmod -f g+w ${LOC}/docs/manualpages/$${LMANSEC}/* ; fi
+            -defn ${PETSC_DIR}/doc/classic/doctext/myst.def \
+            -indexdir ../$${LMANSEC} \
+            -index ${LOC}/docs/manualpages/manualpages.cit \
+            -locdir ${LOCDIR} -Wargdesc ${SOURCED} 2>&1 | tee -a ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err;\
+          if [ -n "$$(ls "${LOC}/docs/manualpages/$${LMANSEC}")" ]; then chmod g+w "${LOC}"/docs/manualpages/$${LMANSEC}/*; fi; \
+    fi;
 #
 #   Example usage for manual pages; adds each example that uses a function to that functions
 # manual page up to a limit of 10 examples.
 #
+# Note: PETSC_DOC_OUT_ROOT_PLACEHOLDER must match the term used elsewhere in doc/
 manexamples:
 	-@base=`basename ${LOCDIR}`; \
         if [ "$${base}" = "tutorials" ] ; then \
@@ -490,18 +481,15 @@ manexamples:
           for i in ${EXAMPLESALL} foo ; do \
             if [ "$$i" != "foo" ] ; then \
               a=`cat $$i | ${MAPNAMES} -map ${LOC}/docs/manualpages/manualpages.cit \
-                   -printmatch-link -o /dev/null| cut -f 2 | cut -d '#' -f 1 |sed -e s~^../~~ | grep \\.html$$ | sort | uniq` ;  \
+                   -printmatch-link -o /dev/null| cut -f 2 | cut -d '#' -f 1 |sed -e s~^../~~ | grep \\.md$$ | sort | uniq` ;  \
               for j in $$a ; do \
                 b=`ls ${LOC}/docs/manualpages/$${j} | grep -v /all/ | cut -f9` ; \
-                l=`grep "^<A HREF=\"\.\./\.\./\.\..*/tutorials/" $${b} | wc -l`; \
+                l=`grep "^<A HREF=\"PETSC_DOC_OUT_ROOT_PLACEHOLDER.*/tutorials/" $${b} | wc -l`; \
                 if [ $$l -le 10 ] ; then \
                   if [ $$l -eq 0 ] ; then \
-                    echo "<P><H3><FONT COLOR=\"#CC3333\">Examples</FONT></H3>" >> $$b; \
+                    printf "\n## Examples\n" >> $$b; \
                   fi; \
-                  echo  "<A HREF=\"../../../BB\">BB</A><BR>" | sed s?BB?${LOCDIR}$$i.html?g >> $$b; \
-                  grep -v /BODY $$b > ltmp; \
-                  echo "</BODY></HTML>" >> ltmp; \
-                  mv -f ltmp $$b; \
+                  echo  "<A HREF=\"PETSC_DOC_OUT_ROOT_PLACEHOLDER/BB\">BB</A><BR>" | sed s?BB?${LOCDIR}$$i.html?g >> $$b; \
                 fi; \
               done; \
             fi; \
@@ -530,30 +518,24 @@ manexamples:
 # and then grep for particular values of itemName, generating implsClass.txt,
 # which is processed to generate HTML.
 #
+# Note: PETSC_DOC_OUT_ROOT_PLACEHOLDER must match the term used elsewhere in doc/
 manimplementations:
 	-@git grep "struct\s\+_[pn]_[^\s]\+.*{" -- *.cu *.c *.h *.cxx | grep -v -e ";" -e "/tests/" -e "/tutorials/" > implsClassAll.txt ; \
   git grep -n "^\(static \)\?\(PETSC_EXTERN \)\?\(PETSC_INTERN \)\?\(extern \)\?PetscErrorCode \+[^_ ]\+_[^_ ]\+(" -- '*/impls/*.c' '*/impls/*.cu' '*/impls/*.cxx' '*/impls/*.h' | grep -v -e ";" -e "_[Pp]rivate" > implsFuncAll.txt ; \
-  for i in ${LOC}/docs/manualpages/*/*.html foo; do \
+  for i in ${LOC}/docs/manualpages/*/*.md foo; do \
        if [ "$$i" != "foo" ] ; then \
           printf "manimplementations in: $$i\n"; \
-          itemName=`basename $$i .html`; \
+          itemName=`basename $$i .md`; \
           grep "\s$${itemName}_" implsFuncAll.txt > implsFunc.txt ; \
           grep "_p_$${itemName}\b" implsClassAll.txt > implsClass.txt ; \
           if [ -s implsFunc.txt ] || [ -s implsClass.txt ] ; then \
-            printf "<P><H3><FONT COLOR=\"CC3333\">Implementations</FONT></H3>" >> $$i; \
+            printf "\n## Implementations\n\n" >> $$i; \
           fi ; \
           if [ -s implsFunc.txt ] ; then \
-            sed "s?\(.*\.[ch]x*u*\).*\($${itemName}.*\)(.*)?<A HREF=\"../../../\1.html#\2\">\2 in \1</A><BR>?" implsFunc.txt >> $$i ; \
+            sed "s?\(.*\.[ch]x*u*\).*\($${itemName}.*\)(.*)?<A HREF=\"PETSC_DOC_OUT_ROOT_PLACEHOLDER/\1.html#\2\">\2 in \1</A><BR>?" implsFunc.txt >> $$i ; \
           fi ; \
           if [ -s implsClass.txt ] ; then \
-            sed "s?\(.*\.[ch]x*u*\):.*\(_p_$${itemName}\)\b.*{?<A HREF=\"../../../\1.html#\2\">\2 in \1</A><BR>?" implsClass.txt >> $$i ; \
-          fi ; \
-          if [ -s implsFunc.txt ] || [ -s implsClass.txt ] ; then \
-            export atmpfile=$$(mktemp) ; \
-            grep -v /BODY $$i > $$atmpfile; \
-            printf "</BODY></HTML>" >> $$atmpfile; \
-            mv $$atmpfile $$i ; \
-            ${RM} $$atmpfile ; \
+            sed "s?\(.*\.[ch]x*u*\):.*\(_p_$${itemName}\)\b.*{?<A HREF=\"PETSC_DOC_OUT_ROOT_PLACEHOLDER/\1.html#\2\">\2 in \1</A><BR>?" implsClass.txt >> $$i ; \
           fi ; \
           ${RM} implsFunc.txt implsClass.txt; \
        fi ; \
@@ -590,7 +572,7 @@ simplehtml: chk_c2html
 
 html: chk_c2html
 	-@export htmlmap_tmp=$$(mktemp) ;\
-          sed -e s?man+../?man+ROOT/docs/manualpages/? ${LOC}/docs/manualpages/manualpages.cit > $$htmlmap_tmp ;\
+          sed -e s?man+manualpages/?man+ROOT/docs/manualpages/? ${LOC}/docs/manualpages/htmlmap_modified > $$htmlmap_tmp ;\
           cat ${PETSC_DIR}/doc/classic/mpi.www.index >> $$htmlmap_tmp ;\
           ROOT=`echo ${LOCDIR} | sed -e s?/[a-z]*?/..?g -e s?src/??g -e s?include/??g` ;\
           loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`;  \

@@ -11,8 +11,8 @@ PETSC_EXTERN PetscErrorCode MatCreateMFFD_WP(MatMFFD);
 
   Level: developer
 
-.seealso:  MatMFFDRegisterDestroy(), MatMFFDRegister(), MatCreateMFFD(),
-           MatMFFDSetType()
+.seealso: `MatMFFDRegisterDestroy()`, `MatMFFDRegister()`, `MatCreateMFFD()`,
+          `MatMFFDSetType()`
 @*/
 PetscErrorCode  MatMFFDRegisterAll(void)
 {

@@ -218,7 +218,7 @@ static PetscErrorCode PetscFEInitialize_Composite(PetscFE fem)
 
   Level: intermediate
 
-.seealso: PetscFEType, PetscFECreate(), PetscFESetType()
+.seealso: `PetscFEType`, `PetscFECreate()`, `PetscFESetType()`
 M*/
 PETSC_EXTERN PetscErrorCode PetscFECreate_Composite(PetscFE fem)
 {
@@ -253,7 +253,7 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_Composite(PetscFE fem)
 
   Level: intermediate
 
-.seealso: PetscFECreate()
+.seealso: `PetscFECreate()`
 @*/
 PetscErrorCode PetscFECompositeGetMapping(PetscFE fem, PetscInt *numSubelements, const PetscReal *v0[], const PetscReal *jac[], const PetscReal *invjac[])
 {

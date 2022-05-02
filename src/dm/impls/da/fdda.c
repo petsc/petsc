@@ -115,7 +115,7 @@ $                         0, 1, 1}
 
    Contributed by Glenn Hammond
 
-.seealso DMCreateMatrix(), DMDASetGetMatrix(), DMSetMatrixPreallocateOnly()
+.seealso `DMCreateMatrix()`, `DMDASetGetMatrix()`, `DMSetMatrixPreallocateOnly()`
 
 @*/
 PetscErrorCode  DMDASetBlockFills(DM da,const PetscInt *dfill,const PetscInt *ofill)
@@ -169,7 +169,7 @@ PetscErrorCode  DMDASetBlockFills(DM da,const PetscInt *dfill,const PetscInt *of
 
    Contributed by Philip C. Roth
 
-.seealso DMDASetBlockFills(), DMCreateMatrix(), DMDASetGetMatrix(), DMSetMatrixPreallocateOnly()
+.seealso `DMDASetBlockFills()`, `DMCreateMatrix()`, `DMDASetGetMatrix()`, `DMSetMatrixPreallocateOnly()`
 
 @*/
 PetscErrorCode  DMDASetBlockFillsSparse(DM da,const PetscInt *dfillsparse,const PetscInt *ofillsparse)

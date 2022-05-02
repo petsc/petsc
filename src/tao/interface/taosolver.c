@@ -51,7 +51,7 @@ struct _n_TaoMonitorDrawCtx {
 
    Level: beginner
 
-.seealso: TaoSolve(), TaoDestroy()
+.seealso: `TaoSolve()`, `TaoDestroy()`
 @*/
 PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
 {
@@ -109,7 +109,7 @@ PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
 
   Level: beginner
 
-.seealso: TaoCreate(), TaoSetObjective(), TaoSetGradient(), TaoSetHessian(), TaoGetConvergedReason()
+.seealso: `TaoCreate()`, `TaoSetObjective()`, `TaoSetGradient()`, `TaoSetHessian()`, `TaoGetConvergedReason()`
  @*/
 PetscErrorCode TaoSolve(Tao tao)
 {
@@ -167,7 +167,7 @@ PetscErrorCode TaoSolve(Tao tao)
 
   Level: advanced
 
-.seealso: TaoCreate(), TaoSolve()
+.seealso: `TaoCreate()`, `TaoSolve()`
 @*/
 PetscErrorCode TaoSetUp(Tao tao)
 {
@@ -193,7 +193,7 @@ PetscErrorCode TaoSetUp(Tao tao)
 
   Level: beginner
 
-.seealso: TaoCreate(), TaoSolve()
+.seealso: `TaoCreate()`, `TaoSolve()`
 @*/
 PetscErrorCode TaoDestroy(Tao *tao)
 {
@@ -481,7 +481,7 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
 -  name - command line option
 
    Level: intermediate
-.seealso:  Tao, TaoView, PetscObjectViewFromOptions(), TaoCreate()
+.seealso: `Tao`, `TaoView`, `PetscObjectViewFromOptions()`, `TaoCreate()`
 @*/
 PetscErrorCode  TaoViewFromOptions(Tao A,PetscObject obj,const char name[])
 {
@@ -513,7 +513,7 @@ PetscErrorCode  TaoViewFromOptions(Tao A,PetscObject obj,const char name[])
 
   Level: beginner
 
-.seealso: PetscViewerASCIIOpen()
+.seealso: `PetscViewerASCIIOpen()`
 @*/
 PetscErrorCode TaoView(Tao tao, PetscViewer viewer)
 {
@@ -690,7 +690,7 @@ PetscErrorCode TaoView(Tao tao, PetscViewer viewer)
 
   Level: intermediate
 
-.seealso: TaoSetRecycleHistory(), TAOBNCG, TAOBQNLS, TAOBQNKLS, TAOBQNKTR, TAOBQNKTL
+.seealso: `TaoSetRecycleHistory()`, `TAOBNCG`, `TAOBQNLS`, `TAOBQNKLS`, `TAOBQNKTR`, `TAOBQNKTL`
 
 @*/
 PetscErrorCode TaoSetRecycleHistory(Tao tao, PetscBool recycle)
@@ -716,7 +716,7 @@ PetscErrorCode TaoSetRecycleHistory(Tao tao, PetscBool recycle)
 
   Level: intermediate
 
-.seealso: TaoGetRecycleHistory(), TAOBNCG, TAOBQNLS, TAOBQNKLS, TAOBQNKTR, TAOBQNKTL
+.seealso: `TaoGetRecycleHistory()`, `TAOBNCG`, `TAOBQNLS`, `TAOBQNKLS`, `TAOBQNKTR`, `TAOBQNKTL`
 
 @*/
 PetscErrorCode TaoGetRecycleHistory(Tao tao, PetscBool *recycle)
@@ -754,7 +754,7 @@ $ ||g(X)|| / ||g(X0)||                <= gttol
 
   Level: beginner
 
-.seealso: TaoGetTolerances()
+.seealso: `TaoGetTolerances()`
 
 @*/
 PetscErrorCode TaoSetTolerances(Tao tao, PetscReal gatol, PetscReal grtol, PetscReal gttol)
@@ -813,7 +813,7 @@ PetscErrorCode TaoSetTolerances(Tao tao, PetscReal gatol, PetscReal grtol, Petsc
 
   Level: intermediate
 
-.seealso: TaoGetTolerances(), TaoGetConstraintTolerances(), TaoSetTolerances()
+.seealso: `TaoGetTolerances()`, `TaoGetConstraintTolerances()`, `TaoSetTolerances()`
 
 @*/
 PetscErrorCode TaoSetConstraintTolerances(Tao tao, PetscReal catol, PetscReal crtol)
@@ -857,7 +857,7 @@ PetscErrorCode TaoSetConstraintTolerances(Tao tao, PetscReal catol, PetscReal cr
 
   Level: intermediate
 
-.seealso: TaoGetTolerances(), TaoSetTolerances(), TaoSetConstraintTolerances()
+.seealso: `TaoGetTolerances()`, `TaoSetTolerances()`, `TaoSetConstraintTolerances()`
 
 @*/
 PetscErrorCode TaoGetConstraintTolerances(Tao tao, PetscReal *catol, PetscReal *crtol)
@@ -885,7 +885,7 @@ PetscErrorCode TaoGetConstraintTolerances(Tao tao, PetscReal *catol, PetscReal *
 
    Level: intermediate
 
-.seealso: TaoSetTolerances()
+.seealso: `TaoSetTolerances()`
 @*/
 PetscErrorCode TaoSetFunctionLowerBound(Tao tao,PetscReal fmin)
 {
@@ -912,7 +912,7 @@ PetscErrorCode TaoSetFunctionLowerBound(Tao tao,PetscReal fmin)
 
    Level: intermediate
 
-.seealso: TaoSetFunctionLowerBound()
+.seealso: `TaoSetFunctionLowerBound()`
 @*/
 PetscErrorCode TaoGetFunctionLowerBound(Tao tao,PetscReal *fmin)
 {
@@ -938,7 +938,7 @@ PetscErrorCode TaoGetFunctionLowerBound(Tao tao,PetscReal *fmin)
 
    Level: intermediate
 
-.seealso: TaoSetTolerances(), TaoSetMaximumIterations()
+.seealso: `TaoSetTolerances()`, `TaoSetMaximumIterations()`
 @*/
 
 PetscErrorCode TaoSetMaximumFunctionEvaluations(Tao tao,PetscInt nfcn)
@@ -966,7 +966,7 @@ PetscErrorCode TaoSetMaximumFunctionEvaluations(Tao tao,PetscInt nfcn)
 
    Level: intermediate
 
-.seealso: TaoSetMaximumFunctionEvaluations(), TaoGetMaximumIterations()
+.seealso: `TaoSetMaximumFunctionEvaluations()`, `TaoGetMaximumIterations()`
 @*/
 
 PetscErrorCode TaoGetMaximumFunctionEvaluations(Tao tao,PetscInt *nfcn)
@@ -992,7 +992,7 @@ PetscErrorCode TaoGetMaximumFunctionEvaluations(Tao tao,PetscInt *nfcn)
 
    Level: intermediate
 
-.seealso: TaoSetMaximumFunctionEvaluations(), TaoGetMaximumFunctionEvaluations(), TaoGetMaximumIterations()
+.seealso: `TaoSetMaximumFunctionEvaluations()`, `TaoGetMaximumFunctionEvaluations()`, `TaoGetMaximumIterations()`
 @*/
 
 PetscErrorCode TaoGetCurrentFunctionEvaluations(Tao tao,PetscInt *nfuncs)
@@ -1018,7 +1018,7 @@ PetscErrorCode TaoGetCurrentFunctionEvaluations(Tao tao,PetscInt *nfuncs)
 
    Level: intermediate
 
-.seealso: TaoSetTolerances(), TaoSetMaximumFunctionEvaluations()
+.seealso: `TaoSetTolerances()`, `TaoSetMaximumFunctionEvaluations()`
 @*/
 PetscErrorCode TaoSetMaximumIterations(Tao tao,PetscInt maxits)
 {
@@ -1043,7 +1043,7 @@ PetscErrorCode TaoSetMaximumIterations(Tao tao,PetscInt maxits)
 
    Level: intermediate
 
-.seealso: TaoSetMaximumIterations(), TaoGetMaximumFunctionEvaluations()
+.seealso: `TaoSetMaximumIterations()`, `TaoGetMaximumFunctionEvaluations()`
 @*/
 PetscErrorCode TaoGetMaximumIterations(Tao tao,PetscInt *maxits)
 {
@@ -1068,7 +1068,7 @@ PetscErrorCode TaoGetMaximumIterations(Tao tao,PetscInt *maxits)
    Options Database Key:
 .  -tao_trust0 <t0> - sets initial trust region radius
 
-.seealso: TaoGetTrustRegionRadius(), TaoSetTrustRegionTolerance()
+.seealso: `TaoGetTrustRegionRadius()`, `TaoSetTrustRegionTolerance()`
 @*/
 PetscErrorCode TaoSetInitialTrustRegionRadius(Tao tao, PetscReal radius)
 {
@@ -1093,7 +1093,7 @@ PetscErrorCode TaoSetInitialTrustRegionRadius(Tao tao, PetscReal radius)
 
    Level: intermediate
 
-.seealso: TaoSetInitialTrustRegionRadius(), TaoGetCurrentTrustRegionRadius()
+.seealso: `TaoSetInitialTrustRegionRadius()`, `TaoGetCurrentTrustRegionRadius()`
 @*/
 PetscErrorCode TaoGetInitialTrustRegionRadius(Tao tao, PetscReal *radius)
 {
@@ -1117,7 +1117,7 @@ PetscErrorCode TaoGetInitialTrustRegionRadius(Tao tao, PetscReal *radius)
 
    Level: intermediate
 
-.seealso: TaoSetInitialTrustRegionRadius(), TaoGetInitialTrustRegionRadius()
+.seealso: `TaoSetInitialTrustRegionRadius()`, `TaoGetInitialTrustRegionRadius()`
 @*/
 PetscErrorCode TaoGetCurrentTrustRegionRadius(Tao tao, PetscReal *radius)
 {
@@ -1143,7 +1143,7 @@ PetscErrorCode TaoGetCurrentTrustRegionRadius(Tao tao, PetscReal *radius)
 
   Note: NULL can be used as an argument if not all tolerances values are needed
 
-.seealso TaoSetTolerances()
+.seealso `TaoSetTolerances()`
 
   Level: intermediate
 @*/
@@ -1199,7 +1199,7 @@ PetscErrorCode TaoGetKSP(Tao tao, KSP *ksp)
 
    Level: intermediate
 
-.seealso:  TaoGetKSP()
+.seealso: `TaoGetKSP()`
 @*/
 PetscErrorCode TaoGetLinearSolveIterations(Tao tao, PetscInt *lits)
 {
@@ -1245,7 +1245,7 @@ PetscErrorCode TaoGetLineSearch(Tao tao, TaoLineSearch *ls)
 
    Level: developer
 
-.seealso: TaoLineSearchApply()
+.seealso: `TaoLineSearchApply()`
 @*/
 PetscErrorCode TaoAddLineSearchCounts(Tao tao)
 {
@@ -1302,7 +1302,7 @@ PetscErrorCode TaoGetSolution(Tao tao, Vec *X)
 
    Level: developer
 
-.seealso: TaoCreate(), TaoSolve()
+.seealso: `TaoCreate()`, `TaoSolve()`
 @*/
 PetscErrorCode TaoResetStatistics(Tao tao)
 {
@@ -1345,7 +1345,7 @@ $ func (Tao tao, PetscInt step);
 
   Level: advanced
 
-.seealso TaoSolve()
+.seealso `TaoSolve()`
 @*/
 PetscErrorCode TaoSetUpdate(Tao tao, PetscErrorCode (*func)(Tao, PetscInt, void*), void *ctx)
 {
@@ -1379,7 +1379,7 @@ $   PetscErrorCode conv(Tao tao, void *ctx)
 
   Level: advanced
 
-.seealso: TaoSetConvergedReason(), TaoGetSolutionStatus(), TaoGetTolerances(), TaoSetMonitor
+.seealso: `TaoSetConvergedReason()`, `TaoGetSolutionStatus()`, `TaoGetTolerances()`, `TaoSetMonitor`
 
 @*/
 PetscErrorCode TaoSetConvergenceTest(Tao tao, PetscErrorCode (*conv)(Tao, void*), void *ctx)
@@ -1431,7 +1431,7 @@ PetscErrorCode TaoSetConvergenceTest(Tao tao, PetscErrorCode (*conv)(Tao, void*)
 
    Level: intermediate
 
-.seealso: TaoMonitorDefault(), TaoCancelMonitors(),  TaoSetDestroyRoutine()
+.seealso: `TaoMonitorDefault()`, `TaoCancelMonitors()`, `TaoSetDestroyRoutine()`
 @*/
 PetscErrorCode TaoSetMonitor(Tao tao, PetscErrorCode (*func)(Tao, void*), void *ctx,PetscErrorCode (*dest)(void**))
 {
@@ -1471,7 +1471,7 @@ PetscErrorCode TaoSetMonitor(Tao tao, PetscErrorCode (*func)(Tao, void*), void *
 
    Level: advanced
 
-.seealso: TaoMonitorDefault(), TaoSetMonitor()
+.seealso: `TaoMonitorDefault()`, `TaoSetMonitor()`
 @*/
 PetscErrorCode TaoCancelMonitors(Tao tao)
 {
@@ -1505,7 +1505,7 @@ PetscErrorCode TaoCancelMonitors(Tao tao)
 
    Level: advanced
 
-.seealso: TaoDefaultSMonitor(), TaoSetMonitor()
+.seealso: `TaoDefaultSMonitor()`, `TaoSetMonitor()`
 @*/
 PetscErrorCode TaoMonitorDefault(Tao tao, void *ctx)
 {
@@ -1556,7 +1556,7 @@ PetscErrorCode TaoMonitorDefault(Tao tao, void *ctx)
 
    Level: advanced
 
-.seealso: TaoDefaultSMonitor(), TaoSetMonitor()
+.seealso: `TaoDefaultSMonitor()`, `TaoSetMonitor()`
 @*/
 PetscErrorCode TaoDefaultGMonitor(Tao tao, void *ctx)
 {
@@ -1610,7 +1610,7 @@ PetscErrorCode TaoDefaultGMonitor(Tao tao, void *ctx)
 
    Level: advanced
 
-.seealso: TaoMonitorDefault(), TaoSetMonitor()
+.seealso: `TaoMonitorDefault()`, `TaoSetMonitor()`
 @*/
 PetscErrorCode TaoDefaultSMonitor(Tao tao, void *ctx)
 {
@@ -1657,7 +1657,7 @@ PetscErrorCode TaoDefaultSMonitor(Tao tao, void *ctx)
 
    Level: advanced
 
-.seealso: TaoMonitorDefault(), TaoSetMonitor()
+.seealso: `TaoMonitorDefault()`, `TaoSetMonitor()`
 @*/
 PetscErrorCode TaoDefaultCMonitor(Tao tao, void *ctx)
 {
@@ -1697,7 +1697,7 @@ PetscErrorCode TaoDefaultCMonitor(Tao tao, void *ctx)
 
    Level: advanced
 
-.seealso: TaoDefaultSMonitor(), TaoSetMonitor()
+.seealso: `TaoDefaultSMonitor()`, `TaoSetMonitor()`
 @*/
 PetscErrorCode TaoSolutionMonitor(Tao tao, void *ctx)
 {
@@ -1726,7 +1726,7 @@ PetscErrorCode TaoSolutionMonitor(Tao tao, void *ctx)
 
    Level: advanced
 
-.seealso: TaoDefaultSMonitor(), TaoSetMonitor()
+.seealso: `TaoDefaultSMonitor()`, `TaoSetMonitor()`
 @*/
 PetscErrorCode TaoGradientMonitor(Tao tao, void *ctx)
 {
@@ -1753,7 +1753,7 @@ PetscErrorCode TaoGradientMonitor(Tao tao, void *ctx)
 
    Level: advanced
 
-.seealso: TaoDefaultSMonitor(), TaoSetMonitor()
+.seealso: `TaoDefaultSMonitor()`, `TaoSetMonitor()`
 @*/
 PetscErrorCode TaoStepDirectionMonitor(Tao tao, void *ctx)
 {
@@ -1782,7 +1782,7 @@ PetscErrorCode TaoStepDirectionMonitor(Tao tao, void *ctx)
 
    Level: advanced
 
-.seealso: TaoSolutionMonitor(), TaoSetMonitor(), TaoDrawGradientMonitor
+.seealso: `TaoSolutionMonitor()`, `TaoSetMonitor()`, `TaoDrawGradientMonitor`
 @*/
 PetscErrorCode TaoDrawSolutionMonitor(Tao tao, void *ctx)
 {
@@ -1811,7 +1811,7 @@ PetscErrorCode TaoDrawSolutionMonitor(Tao tao, void *ctx)
 
    Level: advanced
 
-.seealso: TaoGradientMonitor(), TaoSetMonitor(), TaoDrawSolutionMonitor
+.seealso: `TaoGradientMonitor()`, `TaoSetMonitor()`, `TaoDrawSolutionMonitor`
 @*/
 PetscErrorCode TaoDrawGradientMonitor(Tao tao, void *ctx)
 {
@@ -1838,7 +1838,7 @@ PetscErrorCode TaoDrawGradientMonitor(Tao tao, void *ctx)
 
    Level: advanced
 
-.seealso: TaoSetMonitor(), TaoDrawSolutionMonitor
+.seealso: `TaoSetMonitor()`, `TaoDrawSolutionMonitor`
 @*/
 PetscErrorCode TaoDrawStepMonitor(Tao tao, void *ctx)
 {
@@ -1865,7 +1865,7 @@ PetscErrorCode TaoDrawStepMonitor(Tao tao, void *ctx)
 
    Level: advanced
 
-.seealso: TaoDefaultSMonitor(), TaoSetMonitor()
+.seealso: `TaoDefaultSMonitor()`, `TaoSetMonitor()`
 @*/
 PetscErrorCode TaoResidualMonitor(Tao tao, void *ctx)
 {
@@ -1899,7 +1899,7 @@ PetscErrorCode TaoResidualMonitor(Tao tao, void *ctx)
 
    Level: developer
 
-.seealso: TaoSetTolerances(),TaoGetConvergedReason(),TaoSetConvergedReason()
+.seealso: `TaoSetTolerances(),TaoGetConvergedReason(),TaoSetConvergedReason()`
 @*/
 
 PetscErrorCode TaoDefaultConvergenceTest(Tao tao,void *dummy)
@@ -1980,7 +1980,7 @@ PetscErrorCode TaoDefaultConvergenceTest(Tao tao,void *dummy)
 
    Level: advanced
 
-.seealso: TaoAppendOptionsPrefix(), TaoGetOptionsPrefix()
+.seealso: `TaoAppendOptionsPrefix()`, `TaoGetOptionsPrefix()`
 @*/
 
 PetscErrorCode TaoSetOptionsPrefix(Tao tao, const char p[])
@@ -2013,7 +2013,7 @@ PetscErrorCode TaoSetOptionsPrefix(Tao tao, const char p[])
 
    Level: advanced
 
-.seealso: TaoSetOptionsPrefix(), TaoGetOptionsPrefix()
+.seealso: `TaoSetOptionsPrefix()`, `TaoGetOptionsPrefix()`
 @*/
 PetscErrorCode TaoAppendOptionsPrefix(Tao tao, const char p[])
 {
@@ -2047,7 +2047,7 @@ PetscErrorCode TaoAppendOptionsPrefix(Tao tao, const char p[])
 
   Level: advanced
 
-.seealso: TaoSetOptionsPrefix(), TaoAppendOptionsPrefix()
+.seealso: `TaoSetOptionsPrefix()`, `TaoAppendOptionsPrefix()`
 @*/
 PetscErrorCode TaoGetOptionsPrefix(Tao tao, const char *p[])
 {
@@ -2084,7 +2084,7 @@ PetscErrorCode TaoGetOptionsPrefix(Tao tao, const char *p[])
 
   Level: intermediate
 
-.seealso: TaoCreate(), TaoGetType(), TaoType
+.seealso: `TaoCreate()`, `TaoGetType()`, `TaoType`
 
 @*/
 PetscErrorCode TaoSetType(Tao tao, TaoType type)
@@ -2150,7 +2150,7 @@ $     -tao_type my_solver
 
    Level: advanced
 
-.seealso: TaoRegisterAll(), TaoRegisterDestroy()
+.seealso: `TaoRegisterAll()`, `TaoRegisterDestroy()`
 M*/
 PetscErrorCode TaoRegister(const char sname[], PetscErrorCode (*func)(Tao))
 {
@@ -2168,7 +2168,7 @@ PetscErrorCode TaoRegister(const char sname[], PetscErrorCode (*func)(Tao))
 
    Level: advanced
 
-.seealso: TaoRegisterAll(), TaoRegister()
+.seealso: `TaoRegisterAll()`, `TaoRegister()`
 @*/
 PetscErrorCode TaoRegisterDestroy(void)
 {
@@ -2195,7 +2195,7 @@ PetscErrorCode TaoRegisterDestroy(void)
 
    Level: intermediate
 
-.seealso:   TaoGetLinearSolveIterations(), TaoGetResidualNorm(), TaoGetObjective()
+.seealso: `TaoGetLinearSolveIterations()`, `TaoGetResidualNorm()`, `TaoGetObjective()`
 @*/
 PetscErrorCode  TaoGetIterationNumber(Tao tao,PetscInt *iter)
 {
@@ -2223,7 +2223,7 @@ PetscErrorCode  TaoGetIterationNumber(Tao tao,PetscInt *iter)
    Developer Note: This is the 2-norm of the residual, we cannot use TaoGetGradientNorm() because that has
                    a different meaning. For some reason Tao sometimes calls the gradient the residual.
 
-.seealso:   TaoGetLinearSolveIterations(), TaoGetIterationNumber(), TaoGetObjective()
+.seealso: `TaoGetLinearSolveIterations()`, `TaoGetIterationNumber()`, `TaoGetObjective()`
 @*/
 PetscErrorCode TaoGetResidualNorm(Tao tao,PetscReal *value)
 {
@@ -2245,7 +2245,7 @@ PetscErrorCode TaoGetResidualNorm(Tao tao,PetscReal *value)
 
    Level: developer
 
-.seealso:   TaoGetLinearSolveIterations()
+.seealso: `TaoGetLinearSolveIterations()`
 @*/
 PetscErrorCode  TaoSetIterationNumber(Tao tao,PetscInt iter)
 {
@@ -2277,7 +2277,7 @@ PetscErrorCode  TaoSetIterationNumber(Tao tao,PetscInt iter)
 
    Level: intermediate
 
-.seealso:   TaoGetLinearSolveIterations()
+.seealso: `TaoGetLinearSolveIterations()`
 @*/
 PetscErrorCode  TaoGetTotalIterationNumber(Tao tao,PetscInt *iter)
 {
@@ -2299,7 +2299,7 @@ PetscErrorCode  TaoGetTotalIterationNumber(Tao tao,PetscInt *iter)
 
    Level: developer
 
-.seealso:   TaoGetLinearSolveIterations()
+.seealso: `TaoGetLinearSolveIterations()`
 @*/
 PetscErrorCode  TaoSetTotalIterationNumber(Tao tao,PetscInt iter)
 {
@@ -2382,7 +2382,7 @@ $  TAO_CONTINUE_ITERATING (0)
 
    Level: intermediate
 
-.seealso: TaoSetConvergenceTest(), TaoSetTolerances()
+.seealso: `TaoSetConvergenceTest()`, `TaoSetTolerances()`
 
 @*/
 PetscErrorCode TaoGetConvergedReason(Tao tao, TaoConvergedReason *reason)
@@ -2419,7 +2419,7 @@ PetscErrorCode TaoGetConvergedReason(Tao tao, TaoConvergedReason *reason)
    Note:
    If any of the output arguments are set to NULL, no corresponding value will be returned.
 
-.seealso: TaoMonitor(), TaoGetConvergedReason()
+.seealso: `TaoMonitor()`, `TaoGetConvergedReason()`
 @*/
 PetscErrorCode TaoGetSolutionStatus(Tao tao, PetscInt *its, PetscReal *f, PetscReal *gnorm, PetscReal *cnorm, PetscReal *xdiff, TaoConvergedReason *reason)
 {
@@ -2477,7 +2477,7 @@ PetscErrorCode TaoGetType(Tao tao,TaoType *type)
    Options Database Key:
 .  -tao_monitor - Use the default monitor, which prints statistics to standard output
 
-.seealso TaoGetConvergedReason(), TaoMonitorDefault(), TaoSetMonitor()
+.seealso `TaoGetConvergedReason()`, `TaoMonitorDefault()`, `TaoSetMonitor()`
 
    Level: developer
 
@@ -2534,7 +2534,7 @@ PetscErrorCode TaoMonitor(Tao tao, PetscInt its, PetscReal f, PetscReal res, Pet
 
    Level: intermediate
 
-.seealso: TaoGetConvergenceHistory()
+.seealso: `TaoGetConvergenceHistory()`
 
 @*/
 PetscErrorCode TaoSetConvergenceHistory(Tao tao, PetscReal obj[], PetscReal resid[], PetscReal cnorm[], PetscInt lits[], PetscInt na,PetscBool reset)
@@ -2590,7 +2590,7 @@ $   call TaoGetConvergenceHistory(Tao tao, PetscInt nhist, PetscErrorCode ierr)
 
    Level: advanced
 
-.seealso: TaoSetConvergenceHistory()
+.seealso: `TaoSetConvergenceHistory()`
 
 @*/
 PetscErrorCode TaoGetConvergenceHistory(Tao tao, PetscReal **obj, PetscReal **resid, PetscReal **cnorm, PetscInt **lits, PetscInt *nhist)
@@ -2616,7 +2616,7 @@ PetscErrorCode TaoGetConvergenceHistory(Tao tao, PetscReal **obj, PetscReal **re
 
    Level: intermediate
 
-.seealso: TaoGetApplicationContext(), TaoSetApplicationContext()
+.seealso: `TaoGetApplicationContext()`, `TaoSetApplicationContext()`
 @*/
 PetscErrorCode  TaoSetApplicationContext(Tao tao,void *usrP)
 {
@@ -2640,7 +2640,7 @@ PetscErrorCode  TaoSetApplicationContext(Tao tao,void *usrP)
 
    Level: intermediate
 
-.seealso: TaoSetApplicationContext()
+.seealso: `TaoSetApplicationContext()`
 @*/
 PetscErrorCode  TaoGetApplicationContext(Tao tao,void *usrP)
 {
@@ -2662,7 +2662,7 @@ PetscErrorCode  TaoGetApplicationContext(Tao tao,void *usrP)
 
    Level: beginner
 
-.seealso: TaoGetGradientNorm(), TaoGradientNorm()
+.seealso: `TaoGetGradientNorm()`, `TaoGradientNorm()`
 @*/
 PetscErrorCode  TaoSetGradientNorm(Tao tao, Mat M)
 {
@@ -2690,7 +2690,7 @@ PetscErrorCode  TaoSetGradientNorm(Tao tao, Mat M)
 
    Level: beginner
 
-.seealso: TaoSetGradientNorm(), TaoGradientNorm()
+.seealso: `TaoSetGradientNorm()`, `TaoGradientNorm()`
 @*/
 PetscErrorCode  TaoGetGradientNorm(Tao tao, Mat *M)
 {
@@ -2716,7 +2716,7 @@ PetscErrorCode  TaoGetGradientNorm(Tao tao, Mat *M)
 
    Level: developer
 
-.seealso: TaoSetGradientNorm(), TaoGetGradientNorm()
+.seealso: `TaoSetGradientNorm()`, `TaoGetGradientNorm()`
 @*/
 PetscErrorCode  TaoGradientNorm(Tao tao, Vec gradient, NormType type, PetscReal *gnorm)
 {
@@ -2751,7 +2751,7 @@ PetscErrorCode  TaoGradientNorm(Tao tao, Vec gradient, NormType type, PetscReal 
 
    Level: intermediate
 
-.seealso: TaoMonitorSet(), TaoMonitorDefault(), VecView(), TaoMonitorDrawCtx()
+.seealso: `TaoMonitorSet()`, `TaoMonitorDefault()`, `VecView()`, `TaoMonitorDrawCtx()`
 @*/
 PetscErrorCode  TaoMonitorDrawCtxCreate(MPI_Comm comm,const char host[],const char label[],int x,int y,int m,int n,PetscInt howoften,TaoMonitorDrawCtx *ctx)
 {
@@ -2773,7 +2773,7 @@ PetscErrorCode  TaoMonitorDrawCtxCreate(MPI_Comm comm,const char host[],const ch
 
    Level: intermediate
 
-.seealso: TaoMonitorSet(), TaoMonitorDefault(), VecView(), TaoMonitorDrawSolution()
+.seealso: `TaoMonitorSet()`, `TaoMonitorDefault()`, `VecView()`, `TaoMonitorDrawSolution()`
 @*/
 PetscErrorCode  TaoMonitorDrawCtxDestroy(TaoMonitorDrawCtx *ictx)
 {

@@ -219,7 +219,7 @@ PetscErrorCode ISRenumber(IS subset, IS subset_mult, PetscInt *N, IS *subset_n)
    The output index set (subis) should look like:
    | 11 7 | 9 0 | 4 6|
 
-.seealso: VecGetSubVector(), MatCreateSubMatrix()
+.seealso: `VecGetSubVector()`, `MatCreateSubMatrix()`
 @*/
 PetscErrorCode ISCreateSubIS(IS is,IS comps,IS *subis)
 {
@@ -285,7 +285,7 @@ PetscErrorCode ISCreateSubIS(IS is,IS comps,IS *subis)
 
    Level: developer
 
-.seealso:  ISInfo, ISInfoType, ISSetInfo(), ISClearInfoCache()
+.seealso: `ISInfo`, `ISInfoType`, `ISSetInfo()`, `ISClearInfoCache()`
 
 @*/
 PetscErrorCode ISClearInfoCache(IS is, PetscBool clear_permanent_local)
@@ -434,7 +434,7 @@ static PetscErrorCode ISSetInfo_Internal(IS is, ISInfo info, ISInfoType type, IS
 
    Level: advanced
 
-.seealso:  ISInfo, ISInfoType, IS
+.seealso: `ISInfo`, `ISInfoType`, `IS`
 
 @*/
 PetscErrorCode ISSetInfo(IS is, ISInfo info, ISInfoType type, PetscBool permanent, PetscBool flg)
@@ -752,7 +752,7 @@ static PetscErrorCode ISGetInfo_Identity(IS is, ISInfoType type, PetscBool *flg)
 
    Level: advanced
 
-.seealso:  ISInfo, ISInfoType, ISSetInfo(), ISClearInfoCache()
+.seealso: `ISInfo`, `ISInfoType`, `ISSetInfo()`, `ISClearInfoCache()`
 
 @*/
 PetscErrorCode ISGetInfo(IS is, ISInfo info, ISInfoType type, PetscBool compute, PetscBool *flg)
@@ -846,7 +846,7 @@ static PetscErrorCode ISCopyInfo(IS source, IS dest)
    which may require synchronization on the communicator of IS.  To avoid this computation,
    call ISGetInfo() directly with the compute flag set to PETSC_FALSE, and ident will be assumed false.
 
-.seealso: ISSetIdentity(), ISGetInfo()
+.seealso: `ISSetIdentity()`, `ISGetInfo()`
 @*/
 PetscErrorCode  ISIdentity(IS is,PetscBool  *ident)
 {
@@ -871,7 +871,7 @@ PetscErrorCode  ISIdentity(IS is,PetscBool  *ident)
    ISGeneralSetIndices()).  It's a good idea to only set this property if the IS will not change in the future.
    To clear this property, use ISClearInfoCache().
 
-.seealso: ISIdentity(), ISSetInfo(), ISClearInfoCache()
+.seealso: `ISIdentity()`, `ISSetInfo()`, `ISClearInfoCache()`
 @*/
 PetscErrorCode  ISSetIdentity(IS is)
 {
@@ -897,7 +897,7 @@ PetscErrorCode  ISSetIdentity(IS is)
 
    Level: developer
 
-.seealso: ISGetLocalSize(), VecGetOwnershipRange()
+.seealso: `ISGetLocalSize()`, `VecGetOwnershipRange()`
 @*/
 PetscErrorCode  ISContiguousLocal(IS is,PetscInt gstart,PetscInt gend,PetscInt *start,PetscBool *contig)
 {
@@ -933,7 +933,7 @@ PetscErrorCode  ISContiguousLocal(IS is,PetscInt gstart,PetscInt gend,PetscInt *
    To compute the value when it is not already known, use ISGetInfo() with
    the compute flag set to PETSC_TRUE.
 
-.seealso: ISSetPermutation(), ISGetInfo()
+.seealso: `ISSetPermutation()`, `ISGetInfo()`
 @*/
 PetscErrorCode  ISPermutation(IS is,PetscBool  *perm)
 {
@@ -961,7 +961,7 @@ PetscErrorCode  ISPermutation(IS is,PetscBool  *perm)
    ISGeneralSetIndices()).  It's a good idea to only set this property if the IS will not change in the future.
    To clear this property, use ISClearInfoCache().
 
-.seealso: ISPermutation(), ISSetInfo(), ISClearInfoCache().
+.seealso: `ISPermutation()`, `ISSetInfo()`, `ISClearInfoCache().`
 @*/
 PetscErrorCode  ISSetPermutation(IS is)
 {
@@ -1001,7 +1001,7 @@ PetscErrorCode  ISSetPermutation(IS is)
 
    Level: beginner
 
-.seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlocked()
+.seealso: `ISCreateGeneral()`, `ISCreateStride()`, `ISCreateBlocked()`
 @*/
 PetscErrorCode  ISDestroy(IS *is)
 {
@@ -1135,7 +1135,7 @@ PetscErrorCode  ISGetLocalSize(IS is,PetscInt *size)
 
    Level: developer
 
-.seealso: ISSetLayout(), ISGetSize(), ISGetLocalSize()
+.seealso: `ISSetLayout()`, `ISGetSize()`, `ISGetLocalSize()`
 @*/
 PetscErrorCode ISGetLayout(IS is,PetscLayout *map)
 {
@@ -1163,7 +1163,7 @@ PetscErrorCode ISGetLayout(IS is,PetscLayout *map)
    This function can be useful in some special cases of constructing a new IS, e.g. after ISCreate() and before ISLoad().
    Otherwise, it is only valid to replace the layout with a layout known to be equivalent.
 
-.seealso: ISCreate(), ISGetLayout(), ISGetSize(), ISGetLocalSize()
+.seealso: `ISCreate()`, `ISGetLayout()`, `ISGetSize()`, `ISGetLocalSize()`
 @*/
 PetscErrorCode ISSetLayout(IS is,PetscLayout map)
 {
@@ -1212,7 +1212,7 @@ $          call ISGetIndicesF90(i,array,ierr)
 
    Level: intermediate
 
-.seealso: ISRestoreIndices(), ISGetIndicesF90()
+.seealso: `ISRestoreIndices()`, `ISGetIndicesF90()`
 @*/
 PetscErrorCode  ISGetIndices(IS is,const PetscInt *ptr[])
 {
@@ -1241,7 +1241,7 @@ PetscErrorCode  ISGetIndices(IS is,const PetscInt *ptr[])
     Empty index sets return min=PETSC_MAX_INT and max=PETSC_MIN_INT.
     In parallel, it returns the min and max of the local portion of the IS
 
-.seealso: ISGetIndices(), ISRestoreIndices(), ISGetIndicesF90()
+.seealso: `ISGetIndices()`, `ISRestoreIndices()`, `ISGetIndicesF90()`
 @*/
 PetscErrorCode  ISGetMinMax(IS is,PetscInt *min,PetscInt *max)
 {
@@ -1329,7 +1329,7 @@ $       call ISRestoreIndices(is,is_array,i_is,ierr)
    Note:
    This routine zeros out ptr. This is to prevent accidental us of the array after it has been restored.
 
-.seealso: ISGetIndices(), ISRestoreIndicesF90()
+.seealso: `ISGetIndices()`, `ISRestoreIndicesF90()`
 @*/
 PetscErrorCode  ISRestoreIndices(IS is,const PetscInt *ptr[])
 {
@@ -1395,7 +1395,7 @@ static PetscErrorCode ISGatherTotal_Private(IS is)
      (use ISGetIndices() and ISGetNonlocalIndices() to retrieve just the local and just
       the nonlocal part (complement), respectively).
 
-.seealso: ISRestoreTotalIndices(), ISGetNonlocalIndices(), ISGetSize()
+.seealso: `ISRestoreTotalIndices()`, `ISGetNonlocalIndices()`, `ISGetSize()`
 @*/
 PetscErrorCode ISGetTotalIndices(IS is, const PetscInt *indices[])
 {
@@ -1427,7 +1427,7 @@ PetscErrorCode ISGetTotalIndices(IS is, const PetscInt *indices[])
 
    Level: intermediate
 
-.seealso: ISRestoreTotalIndices(), ISGetNonlocalIndices()
+.seealso: `ISRestoreTotalIndices()`, `ISGetNonlocalIndices()`
 @*/
 PetscErrorCode  ISRestoreTotalIndices(IS is, const PetscInt *indices[])
 {
@@ -1467,7 +1467,7 @@ PetscErrorCode  ISRestoreTotalIndices(IS is, const PetscInt *indices[])
           The same scalability considerations as those for ISGetTotalIndices
           apply here.
 
-.seealso: ISGetTotalIndices(), ISRestoreNonlocalIndices(), ISGetSize(), ISGetLocalSize().
+.seealso: `ISGetTotalIndices()`, `ISRestoreNonlocalIndices()`, `ISGetSize()`, `ISGetLocalSize().`
 @*/
 PetscErrorCode  ISGetNonlocalIndices(IS is, const PetscInt *indices[])
 {
@@ -1504,7 +1504,7 @@ PetscErrorCode  ISGetNonlocalIndices(IS is, const PetscInt *indices[])
 
    Level: intermediate
 
-.seealso: ISGetTotalIndices(), ISGetNonlocalIndices(), ISRestoreTotalIndices()
+.seealso: `ISGetTotalIndices()`, `ISGetNonlocalIndices()`, `ISRestoreTotalIndices()`
 @*/
 PetscErrorCode  ISRestoreNonlocalIndices(IS is, const PetscInt *indices[])
 {
@@ -1535,7 +1535,7 @@ PetscErrorCode  ISRestoreNonlocalIndices(IS is, const PetscInt *indices[])
           Therefore scalability issues similar to ISGetNonlocalIndices apply.
           The resulting IS must be restored using ISRestoreNonlocalIS().
 
-.seealso: ISGetNonlocalIndices(), ISRestoreNonlocalIndices(),  ISAllGather(), ISGetSize()
+.seealso: `ISGetNonlocalIndices()`, `ISRestoreNonlocalIndices()`, `ISAllGather()`, `ISGetSize()`
 @*/
 PetscErrorCode  ISGetNonlocalIS(IS is, IS *complement)
 {
@@ -1570,7 +1570,7 @@ PetscErrorCode  ISGetNonlocalIS(IS is, IS *complement)
 
    Level: intermediate
 
-.seealso: ISGetNonlocalIS(), ISGetNonlocalIndices(), ISRestoreNonlocalIndices()
+.seealso: `ISGetNonlocalIS()`, `ISGetNonlocalIndices()`, `ISRestoreNonlocalIndices()`
 @*/
 PetscErrorCode  ISRestoreNonlocalIS(IS is, IS *complement)
 {
@@ -1597,7 +1597,7 @@ PetscErrorCode  ISRestoreNonlocalIS(IS is, IS *complement)
 -  name - command line option
 
    Level: intermediate
-.seealso:  IS, ISView, PetscObjectViewFromOptions(), ISCreate()
+.seealso: `IS`, `ISView`, `PetscObjectViewFromOptions()`, `ISCreate()`
 @*/
 PetscErrorCode  ISViewFromOptions(IS A,PetscObject obj,const char name[])
 {
@@ -1618,7 +1618,7 @@ PetscErrorCode  ISViewFromOptions(IS A,PetscObject obj,const char name[])
 
    Level: intermediate
 
-.seealso: PetscViewerASCIIOpen()
+.seealso: `PetscViewerASCIIOpen()`
 @*/
 PetscErrorCode  ISView(IS is,PetscViewer viewer)
 {
@@ -1651,7 +1651,7 @@ PetscErrorCode  ISView(IS is,PetscViewer viewer)
   that was stored in the file using PetscObjectSetName(). Otherwise you will
   get the error message: "Cannot H5DOpen2() with Vec name NAMEOFOBJECT"
 
-.seealso: PetscViewerBinaryOpen(), ISView(), MatLoad(), VecLoad()
+.seealso: `PetscViewerBinaryOpen()`, `ISView()`, `MatLoad()`, `VecLoad()`
 @*/
 PetscErrorCode ISLoad(IS is, PetscViewer viewer)
 {
@@ -1681,7 +1681,7 @@ PetscErrorCode ISLoad(IS is, PetscViewer viewer)
 
    Level: intermediate
 
-.seealso: ISSortRemoveDups(), ISSorted()
+.seealso: `ISSortRemoveDups()`, `ISSorted()`
 @*/
 PetscErrorCode  ISSort(IS is)
 {
@@ -1702,7 +1702,7 @@ PetscErrorCode  ISSort(IS is)
 
   Level: intermediate
 
-.seealso: ISSort(), ISSorted()
+.seealso: `ISSort()`, `ISSorted()`
 @*/
 PetscErrorCode ISSortRemoveDups(IS is)
 {
@@ -1725,7 +1725,7 @@ PetscErrorCode ISSortRemoveDups(IS is)
 
    Level: intermediate
 
-.seealso: ISSorted()
+.seealso: `ISSorted()`
 @*/
 PetscErrorCode  ISToGeneral(IS is)
 {
@@ -1756,7 +1756,7 @@ PetscErrorCode  ISToGeneral(IS is)
 
    Level: intermediate
 
-.seealso: ISSort(), ISSortRemoveDups()
+.seealso: `ISSort()`, `ISSortRemoveDups()`
 @*/
 PetscErrorCode  ISSorted(IS is,PetscBool  *flg)
 {
@@ -1780,7 +1780,7 @@ PetscErrorCode  ISSorted(IS is,PetscBool  *flg)
 
    Level: beginner
 
-.seealso: ISCreateGeneral(), ISCopy()
+.seealso: `ISCreateGeneral()`, `ISCopy()`
 @*/
 PetscErrorCode  ISDuplicate(IS is,IS *newIS)
 {
@@ -1805,7 +1805,7 @@ PetscErrorCode  ISDuplicate(IS is,IS *newIS)
 
    Level: beginner
 
-.seealso: ISDuplicate(), ISShift()
+.seealso: `ISDuplicate()`, `ISShift()`
 @*/
 PetscErrorCode  ISCopy(IS is,IS isy)
 {
@@ -1846,7 +1846,7 @@ PetscErrorCode  ISCopy(IS is,IS isy)
 
    Level: beginner
 
-.seealso: ISDuplicate(), ISCopy()
+.seealso: `ISDuplicate()`, `ISCopy()`
 @*/
 PetscErrorCode ISShift(IS is,PetscInt offset,IS isy)
 {
@@ -1925,7 +1925,7 @@ PetscErrorCode  ISOnComm(IS is,MPI_Comm comm,PetscCopyMode mode,IS *newis)
    within a block but this is not the case for other IS.
    ISBlockGetIndices() only works for ISBlock IS, not others.
 
-.seealso: ISGetBlockSize(), ISCreateBlock(), ISBlockGetIndices(),
+.seealso: `ISGetBlockSize()`, `ISCreateBlock()`, `ISBlockGetIndices()`,
 @*/
 PetscErrorCode  ISSetBlockSize(IS is,PetscInt bs)
 {
@@ -1971,7 +1971,7 @@ Notes:
    within a block but this is not the case for other IS.
    ISBlockGetIndices() only works for ISBlock IS, not others.
 
-.seealso: ISBlockGetSize(), ISGetSize(), ISCreateBlock(), ISSetBlockSize()
+.seealso: `ISBlockGetSize()`, `ISGetSize()`, `ISCreateBlock()`, `ISSetBlockSize()`
 @*/
 PetscErrorCode  ISGetBlockSize(IS is,PetscInt *size)
 {
@@ -2021,7 +2021,7 @@ PetscErrorCode ISGetIndicesCopy(IS is, PetscInt idx[])
 
     Level: intermediate
 
-.seealso:  ISRestoreIndicesF90(), ISGetIndices(), ISRestoreIndices()
+.seealso: `ISRestoreIndicesF90()`, `ISGetIndices()`, `ISRestoreIndices()`
 
 M*/
 
@@ -2052,7 +2052,7 @@ M*/
 
     Level: intermediate
 
-.seealso:  ISGetIndicesF90(), ISGetIndices(), ISRestoreIndices()
+.seealso: `ISGetIndicesF90()`, `ISGetIndices()`, `ISRestoreIndices()`
 
 M*/
 
@@ -2083,8 +2083,8 @@ M*/
 
     Level: intermediate
 
-.seealso:  ISBlockRestoreIndicesF90(), ISGetIndices(), ISRestoreIndices(),
-           ISRestoreIndices()
+.seealso: `ISBlockRestoreIndicesF90()`, `ISGetIndices()`, `ISRestoreIndices()`,
+          `ISRestoreIndices()`
 
 M*/
 
@@ -2118,6 +2118,6 @@ M*/
 
     Level: intermediate
 
-.seealso:  ISBlockGetIndicesF90(), ISGetIndices(), ISRestoreIndices(), ISRestoreIndicesF90()
+.seealso: `ISBlockGetIndicesF90()`, `ISGetIndices()`, `ISRestoreIndices()`, `ISRestoreIndicesF90()`
 
 M*/

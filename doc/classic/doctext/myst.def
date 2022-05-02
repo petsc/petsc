@@ -1,0 +1,44 @@
+#
+# These are the definitions for doc2lt and doctext MyST (Markdown) output
+#
+
+# There are some HTML tags below. These should work with Markdown, but it would
+# be cleaner to use MyST-native syntax where possible.
+
+# Note that the definition lists require the MyST "deflist" extension to be active
+
+key                %n`%1`
+synopsis           %n%1
+definition         %n**%1**%n
+section            %n%n## %1%n
+s_synopsis         %n%n## Synopsis%n```%n
+e_synopsis         %n```%n
+em_dash
+eof
+bof
+bop
+eop
+
+s_arg_list         %n%n
+s_arg_inlist       %n
+e_arg_inlist       %n
+s_defn_inlist      : 
+e_defn_inlist      %n%n
+e_arg_list         %n%n
+
+s_arg              %n
+s_defn             : 
+e_defn             %n%n
+e_arg              %n
+s_doctext_verbatim %n```none%n
+e_doctext_verbatim %n```%n
+s_caption          <CENTER><B>
+e_caption          </B></CENTER>
+picture            ![%1](%1)
+
+location           **Location:**<A HREF="PETSC_DOC_OUT_ROOT_PLACEHOLDER/%1#%rq0">%1</A>%n
+
+mantitle           # %1%n
+mantitlemany       %n%n# %1%n
+bofmanyend
+anchor	           <a name="%1"></a>

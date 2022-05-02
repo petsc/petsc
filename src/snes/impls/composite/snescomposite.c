@@ -619,7 +619,7 @@ PetscErrorCode  SNESCompositeAddSNES(SNES snes,SNESType type)
 
    Level: Developer
 
-.seealso: SNESCompositeAddSNES()
+.seealso: `SNESCompositeAddSNES()`
 @*/
 PetscErrorCode  SNESCompositeGetSNES(SNES snes,PetscInt n,SNES *subsnes)
 {
@@ -690,7 +690,7 @@ static PetscErrorCode  SNESCompositeSetDamping_Composite(SNES snes,PetscInt n,Pe
 
    Level: Developer
 
-.seealso: SNESCompositeAddSNES()
+.seealso: `SNESCompositeAddSNES()`
 @*/
 PetscErrorCode  SNESCompositeSetDamping(SNES snes,PetscInt n,PetscReal dmp)
 {
@@ -828,9 +828,9 @@ static PetscErrorCode SNESSolve_Composite(SNES snes)
 
    Level: intermediate
 
-.seealso:  SNESCreate(), SNESSetType(), SNESType (for list of available types), SNES,
-           SNESSHELL, SNESCompositeSetType(), SNESCompositeSpecialSetAlpha(), SNESCompositeAddSNES(),
-           SNESCompositeGetSNES()
+.seealso: `SNESCreate()`, `SNESSetType()`, `SNESType`, `SNES`,
+          `SNESSHELL`, `SNESCompositeSetType()`, `SNESCompositeSpecialSetAlpha()`, `SNESCompositeAddSNES()`,
+          `SNESCompositeGetSNES()`
 
    References:
 .  * - Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers",

@@ -14,7 +14,7 @@
 
    Level: intermediate
 
-.seealso: SNESCreate(), SNESSetType(), SNESPYTHON, PetscPythonInitialize()
+.seealso: `SNESCreate()`, `SNESSetType()`, `SNESPYTHON`, `PetscPythonInitialize()`
 @*/
 PetscErrorCode  SNESPythonSetType(SNES snes,const char pyname[])
 {

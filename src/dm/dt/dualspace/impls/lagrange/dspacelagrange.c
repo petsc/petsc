@@ -2912,7 +2912,7 @@ static PetscErrorCode PetscDualSpaceLagrangeSetContinuity_Lagrange(PetscDualSpac
 
   Level: intermediate
 
-.seealso: PetscDualSpaceLagrangeSetContinuity()
+.seealso: `PetscDualSpaceLagrangeSetContinuity()`
 @*/
 PetscErrorCode PetscDualSpaceLagrangeGetContinuity(PetscDualSpace sp, PetscBool *continuous)
 {
@@ -2937,7 +2937,7 @@ PetscErrorCode PetscDualSpaceLagrangeGetContinuity(PetscDualSpace sp, PetscBool 
 
   Level: intermediate
 
-.seealso: PetscDualSpaceLagrangeGetContinuity()
+.seealso: `PetscDualSpaceLagrangeGetContinuity()`
 @*/
 PetscErrorCode PetscDualSpaceLagrangeSetContinuity(PetscDualSpace sp, PetscBool continuous)
 {
@@ -3056,7 +3056,7 @@ static PetscErrorCode PetscDualSpaceLagrangeSetMomentOrder_Lagrange(PetscDualSpa
 
   Level: intermediate
 
-.seealso: PetscDualSpaceLagrangeSetTensor(), PetscDualSpaceCreate()
+.seealso: `PetscDualSpaceLagrangeSetTensor()`, `PetscDualSpaceCreate()`
 @*/
 PetscErrorCode PetscDualSpaceLagrangeGetTensor(PetscDualSpace sp, PetscBool *tensor)
 {
@@ -3078,7 +3078,7 @@ PetscErrorCode PetscDualSpaceLagrangeGetTensor(PetscDualSpace sp, PetscBool *ten
 
   Level: intermediate
 
-.seealso: PetscDualSpaceLagrangeGetTensor(), PetscDualSpaceCreate()
+.seealso: `PetscDualSpaceLagrangeGetTensor()`, `PetscDualSpaceCreate()`
 @*/
 PetscErrorCode PetscDualSpaceLagrangeSetTensor(PetscDualSpace sp, PetscBool tensor)
 {
@@ -3101,7 +3101,7 @@ PetscErrorCode PetscDualSpaceLagrangeSetTensor(PetscDualSpace sp, PetscBool tens
 
   Level: intermediate
 
-.seealso: PetscDualSpaceLagrangeSetTrimmed(), PetscDualSpaceCreate()
+.seealso: `PetscDualSpaceLagrangeSetTrimmed()`, `PetscDualSpaceCreate()`
 @*/
 PetscErrorCode PetscDualSpaceLagrangeGetTrimmed(PetscDualSpace sp, PetscBool *trimmed)
 {
@@ -3123,7 +3123,7 @@ PetscErrorCode PetscDualSpaceLagrangeGetTrimmed(PetscDualSpace sp, PetscBool *tr
 
   Level: intermediate
 
-.seealso: PetscDualSpaceLagrangeGetTrimmed(), PetscDualSpaceCreate()
+.seealso: `PetscDualSpaceLagrangeGetTrimmed()`, `PetscDualSpaceCreate()`
 @*/
 PetscErrorCode PetscDualSpaceLagrangeSetTrimmed(PetscDualSpace sp, PetscBool trimmed)
 {
@@ -3151,7 +3151,7 @@ PetscErrorCode PetscDualSpaceLagrangeSetTrimmed(PetscDualSpace sp, PetscBool tri
 
   Level: advanced
 
-.seealso: PetscDTNodeType, PetscDualSpaceLagrangeSetNodeType()
+.seealso: `PetscDTNodeType`, `PetscDualSpaceLagrangeSetNodeType()`
 @*/
 PetscErrorCode PetscDualSpaceLagrangeGetNodeType(PetscDualSpace sp, PetscDTNodeType *nodeType, PetscBool *boundary, PetscReal *exponent)
 {
@@ -3180,7 +3180,7 @@ PetscErrorCode PetscDualSpaceLagrangeGetNodeType(PetscDualSpace sp, PetscDTNodeT
 
   Level: advanced
 
-.seealso: PetscDTNodeType, PetscDualSpaceLagrangeGetNodeType()
+.seealso: `PetscDTNodeType`, `PetscDualSpaceLagrangeGetNodeType()`
 @*/
 PetscErrorCode PetscDualSpaceLagrangeSetNodeType(PetscDualSpace sp, PetscDTNodeType nodeType, PetscBool boundary, PetscReal exponent)
 {
@@ -3203,7 +3203,7 @@ PetscErrorCode PetscDualSpaceLagrangeSetNodeType(PetscDualSpace sp, PetscDTNodeT
 
   Level: advanced
 
-.seealso: PetscDualSpaceLagrangeSetUseMoments()
+.seealso: `PetscDualSpaceLagrangeSetUseMoments()`
 @*/
 PetscErrorCode PetscDualSpaceLagrangeGetUseMoments(PetscDualSpace sp, PetscBool *useMoments)
 {
@@ -3225,7 +3225,7 @@ PetscErrorCode PetscDualSpaceLagrangeGetUseMoments(PetscDualSpace sp, PetscBool 
 
   Level: advanced
 
-.seealso: PetscDualSpaceLagrangeGetUseMoments()
+.seealso: `PetscDualSpaceLagrangeGetUseMoments()`
 @*/
 PetscErrorCode PetscDualSpaceLagrangeSetUseMoments(PetscDualSpace sp, PetscBool useMoments)
 {
@@ -3248,7 +3248,7 @@ PetscErrorCode PetscDualSpaceLagrangeSetUseMoments(PetscDualSpace sp, PetscBool 
 
   Level: advanced
 
-.seealso: PetscDualSpaceLagrangeSetMomentOrder()
+.seealso: `PetscDualSpaceLagrangeSetMomentOrder()`
 @*/
 PetscErrorCode PetscDualSpaceLagrangeGetMomentOrder(PetscDualSpace sp, PetscInt *order)
 {
@@ -3270,7 +3270,7 @@ PetscErrorCode PetscDualSpaceLagrangeGetMomentOrder(PetscDualSpace sp, PetscInt 
 
   Level: advanced
 
-.seealso: PetscDualSpaceLagrangeGetMomentOrder()
+.seealso: `PetscDualSpaceLagrangeGetMomentOrder()`
 @*/
 PetscErrorCode PetscDualSpaceLagrangeSetMomentOrder(PetscDualSpace sp, PetscInt order)
 {
@@ -3304,7 +3304,7 @@ static PetscErrorCode PetscDualSpaceInitialize_Lagrange(PetscDualSpace sp)
 
   Level: intermediate
 
-.seealso: PetscDualSpaceType, PetscDualSpaceCreate(), PetscDualSpaceSetType()
+.seealso: `PetscDualSpaceType`, `PetscDualSpaceCreate()`, `PetscDualSpaceSetType()`
 M*/
 PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Lagrange(PetscDualSpace sp)
 {

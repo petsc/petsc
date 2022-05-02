@@ -376,7 +376,7 @@ static PetscErrorCode MatNorm_ADA(Mat mat,NormType type,PetscReal *norm)
 
    Level: developer
 
-.seealso: MatCreate()
+.seealso: `MatCreate()`
 @*/
 PetscErrorCode MatCreateADA(Mat mat,Vec d1, Vec d2, Mat *J)
 {

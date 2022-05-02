@@ -26,7 +26,7 @@ $ xxxxyyy1 = 0000,0101 - SYCL memory
   Notes:
   PETSC_MEMTYPE_KOKKOS depends on the KOKKOS backend configuration
 
-.seealso: VecGetArrayAndMemType(), PetscSFBcastWithMemTypeBegin(), PetscSFReduceWithMemTypeBegin()
+.seealso: `VecGetArrayAndMemType()`, `PetscSFBcastWithMemTypeBegin()`, `PetscSFReduceWithMemTypeBegin()`
 E*/
 typedef enum {
   PETSC_MEMTYPE_HOST    = 0,
@@ -87,7 +87,7 @@ $ PETSC_DEVICE_INIT_EAGER - PetscDevice is initialized as soon as possible
 
   Level: beginner
 
-.seealso: PetscDevice, PetscDeviceType, PetscDeviceInitialize(), PetscDeviceInitialized(), PetscDeviceCreate()
+.seealso: `PetscDevice`, `PetscDeviceType`, `PetscDeviceInitialize()`, `PetscDeviceInitialized()`, `PetscDeviceCreate()`
 E*/
 typedef enum {
   PETSC_DEVICE_INIT_NONE,
@@ -111,7 +111,7 @@ $ PETSC_DEVICE_MAX     - Always 1 greater than the largest valid PetscDeviceType
 
   Level: beginner
 
-.seealso: PetscDevice, PetscDeviceInitType, PetscDeviceCreate()
+.seealso: `PetscDevice`, `PetscDeviceInitType`, `PetscDeviceCreate()`
 E*/
 typedef enum {
   PETSC_DEVICE_INVALID,
@@ -140,7 +140,7 @@ PETSC_EXTERN const char *const PetscDeviceTypes[];
 
   Level: beginner
 
-.seealso: PetscDeviceType, PetscDeviceInitType, PetscDeviceCreate(), PetscDeviceConfigure(), PetscDeviceDestroy(), PetscDeviceContext, PetscDeviceContextSetDevice(), PetscDeviceContextGetDevice()
+.seealso: `PetscDeviceType`, `PetscDeviceInitType`, `PetscDeviceCreate()`, `PetscDeviceConfigure()`, `PetscDeviceDestroy()`, `PetscDeviceContext`, `PetscDeviceContextSetDevice()`, `PetscDeviceContextGetDevice()`
 S*/
 typedef struct _n_PetscDevice *PetscDevice;
 
@@ -155,7 +155,7 @@ $ PETSC_STREAM_MAX                - Always 1 greater than the largest PetscStrea
 
   Level: intermediate
 
-.seealso: PetscDeviceContextSetStreamType(), PetscDeviceContextGetStreamType()
+.seealso: `PetscDeviceContextSetStreamType()`, `PetscDeviceContextGetStreamType()`
 E*/
 typedef enum {
   PETSC_STREAM_GLOBAL_BLOCKING,
@@ -174,7 +174,7 @@ $ PETSC_DEVICE_CONTEXT_JOIN_NO_SYNC - Do not synchronize incoming sub-contexts a
 
   Level: beginner
 
-.seealso: PetscDeviceContext, PetscDeviceContextFork(), PetscDeviceContextJoin()
+.seealso: `PetscDeviceContext`, `PetscDeviceContextFork()`, `PetscDeviceContextJoin()`
 E*/
 typedef enum {
   PETSC_DEVICE_CONTEXT_JOIN_DESTROY,
@@ -188,8 +188,8 @@ PETSC_EXTERN const char *const PetscDeviceContextJoinModes[];
 
   Level: beginner
 
-.seealso: PetscDevice, PetscDeviceContextCreate(), PetscDeviceContextSetDevice(), PetscDeviceContextDestroy(),
-PetscDeviceContextFork(), PetscDeviceContextJoin()
+.seealso: `PetscDevice`, `PetscDeviceContextCreate()`, `PetscDeviceContextSetDevice()`, `PetscDeviceContextDestroy()`,
+          `PetscDeviceContextFork()`, `PetscDeviceContextJoin()`
 S*/
 typedef struct _n_PetscDeviceContext *PetscDeviceContext;
 #endif /* PETSCDEVICETYPES_H */

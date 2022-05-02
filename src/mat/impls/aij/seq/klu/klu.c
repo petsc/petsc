@@ -271,7 +271,7 @@ PetscErrorCode MatFactorGetSolverType_seqaij_klu(Mat A,MatSolverType *type)
 
    Level: beginner
 
-.seealso: PCLU, MATSOLVERUMFPACK, MATSOLVERCHOLMOD, PCFactorSetMatSolverType(), MatSolverType
+.seealso: `PCLU`, `MATSOLVERUMFPACK`, `MATSOLVERCHOLMOD`, `PCFactorSetMatSolverType()`, `MatSolverType`
 M*/
 
 PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_klu(Mat A,MatFactorType ftype,Mat *F)

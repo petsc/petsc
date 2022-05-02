@@ -13,7 +13,7 @@ PetscBool VecTaggerRegisterAllCalled;
 
    Level: developer
 
-.seealso: VecTaggerFinalizePackage()
+.seealso: `VecTaggerFinalizePackage()`
 @*/
 PetscErrorCode VecTaggerInitializePackage(void)
 {
@@ -34,7 +34,7 @@ PetscErrorCode VecTaggerInitializePackage(void)
 
    Level: developer
 
-.seealso: VecTaggerInitializePackage()
+.seealso: `VecTaggerInitializePackage()`
 @*/
 PetscErrorCode VecTaggerFinalizePackage(void)
 {

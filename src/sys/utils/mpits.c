@@ -29,7 +29,7 @@ static PetscBuildTwoSidedType _twosided_type = PETSC_BUILDTWOSIDED_NOTSET;
    Note:
    This option is currently global, but could be made per-communicator.
 
-.seealso: PetscCommBuildTwoSided(), PetscCommBuildTwoSidedGetType()
+.seealso: `PetscCommBuildTwoSided()`, `PetscCommBuildTwoSidedGetType()`
 @*/
 PetscErrorCode PetscCommBuildTwoSidedSetType(MPI_Comm comm,PetscBuildTwoSidedType twosided)
 {
@@ -56,7 +56,7 @@ PetscErrorCode PetscCommBuildTwoSidedSetType(MPI_Comm comm,PetscBuildTwoSidedTyp
 
    Level: developer
 
-.seealso: PetscCommBuildTwoSided(), PetscCommBuildTwoSidedSetType()
+.seealso: `PetscCommBuildTwoSided()`, `PetscCommBuildTwoSidedSetType()`
 @*/
 PetscErrorCode PetscCommBuildTwoSidedGetType(MPI_Comm comm,PetscBuildTwoSidedType *twosided)
 {
@@ -270,7 +270,7 @@ static PetscErrorCode PetscCommBuildTwoSided_RedScatter(MPI_Comm comm,PetscMPIIn
 .  * - Hoefler, Siebert and Lumsdaine, The MPI_Ibarrier implementation uses the algorithm in
    Scalable communication protocols for dynamic sparse data exchange, 2010.
 
-.seealso: PetscGatherNumberOfMessages(), PetscGatherMessageLengths()
+.seealso: `PetscGatherNumberOfMessages()`, `PetscGatherMessageLengths()`
 @*/
 PetscErrorCode PetscCommBuildTwoSided(MPI_Comm comm,PetscMPIInt count,MPI_Datatype dtype,PetscMPIInt nto,const PetscMPIInt *toranks,const void *todata,PetscMPIInt *nfrom,PetscMPIInt **fromranks,void *fromdata)
 {
@@ -472,7 +472,7 @@ static PetscErrorCode PetscCommBuildTwoSidedFReq_Ibarrier(MPI_Comm comm,PetscMPI
 .  * - Hoefler, Siebert and Lumsdaine, The MPI_Ibarrier implementation uses the algorithm in
    Scalable communication protocols for dynamic sparse data exchange, 2010.
 
-.seealso: PetscCommBuildTwoSided(), PetscCommBuildTwoSidedFReq(), PetscGatherNumberOfMessages(), PetscGatherMessageLengths()
+.seealso: `PetscCommBuildTwoSided()`, `PetscCommBuildTwoSidedFReq()`, `PetscGatherNumberOfMessages()`, `PetscGatherMessageLengths()`
 @*/
 PetscErrorCode PetscCommBuildTwoSidedF(MPI_Comm comm,PetscMPIInt count,MPI_Datatype dtype,PetscMPIInt nto,const PetscMPIInt *toranks,const void *todata,PetscMPIInt *nfrom,PetscMPIInt **fromranks,void *fromdata,PetscMPIInt ntags,
                                        PetscErrorCode (*send)(MPI_Comm,const PetscMPIInt[],PetscMPIInt,PetscMPIInt,void*,MPI_Request[],void*),
@@ -525,7 +525,7 @@ PetscErrorCode PetscCommBuildTwoSidedF(MPI_Comm comm,PetscMPIInt count,MPI_Datat
 .  * - Hoefler, Siebert and Lumsdaine, The MPI_Ibarrier implementation uses the algorithm in
    Scalable communication protocols for dynamic sparse data exchange, 2010.
 
-.seealso: PetscCommBuildTwoSided(), PetscCommBuildTwoSidedF(), PetscGatherNumberOfMessages(), PetscGatherMessageLengths()
+.seealso: `PetscCommBuildTwoSided()`, `PetscCommBuildTwoSidedF()`, `PetscGatherNumberOfMessages()`, `PetscGatherMessageLengths()`
 @*/
 PetscErrorCode PetscCommBuildTwoSidedFReq(MPI_Comm comm,PetscMPIInt count,MPI_Datatype dtype,PetscMPIInt nto,const PetscMPIInt *toranks,const void *todata,
                                           PetscMPIInt *nfrom,PetscMPIInt **fromranks,void *fromdata,PetscMPIInt ntags,MPI_Request **toreqs,MPI_Request **fromreqs,

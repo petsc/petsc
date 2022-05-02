@@ -45,7 +45,7 @@ typedef struct {
     The routine to be called here to compute the timestep should be
     set by calling TSPseudoSetTimeStep().
 
-.seealso: TSPseudoTimeStepDefault(), TSPseudoSetTimeStep()
+.seealso: `TSPseudoTimeStepDefault()`, `TSPseudoSetTimeStep()`
 @*/
 PetscErrorCode  TSPseudoComputeTimeStep(TS ts,PetscReal *dt)
 {
@@ -79,7 +79,7 @@ PetscErrorCode  TSPseudoComputeTimeStep(TS ts,PetscReal *dt)
    This routine always returns a flag of 1, indicating an acceptable
    timestep.
 
-.seealso: TSPseudoSetVerifyTimeStep(), TSPseudoVerifyTimeStep()
+.seealso: `TSPseudoSetVerifyTimeStep()`, `TSPseudoVerifyTimeStep()`
 @*/
 PetscErrorCode  TSPseudoVerifyTimeStepDefault(TS ts,Vec update,void *dtctx,PetscReal *newdt,PetscBool  *flag)
 {
@@ -107,7 +107,7 @@ PetscErrorCode  TSPseudoVerifyTimeStepDefault(TS ts,Vec update,void *dtctx,Petsc
     The routine to be called here to compute the timestep should be
     set by calling TSPseudoSetVerifyTimeStep().
 
-.seealso: TSPseudoSetVerifyTimeStep(), TSPseudoVerifyTimeStepDefault()
+.seealso: `TSPseudoSetVerifyTimeStep()`, `TSPseudoVerifyTimeStepDefault()`
 @*/
 PetscErrorCode  TSPseudoVerifyTimeStep(TS ts,Vec update,PetscReal *dt,PetscBool *flag)
 {
@@ -370,7 +370,7 @@ $  func (TS ts,Vec update,void *ctx,PetscReal *newdt,PetscBool  *flag);
    The routine set here will be called by TSPseudoVerifyTimeStep()
    during the timestepping process.
 
-.seealso: TSPseudoVerifyTimeStepDefault(), TSPseudoVerifyTimeStep()
+.seealso: `TSPseudoVerifyTimeStepDefault()`, `TSPseudoVerifyTimeStep()`
 @*/
 PetscErrorCode  TSPseudoSetVerifyTimeStep(TS ts,PetscErrorCode (*dt)(TS,Vec,void*,PetscReal*,PetscBool*),void *ctx)
 {
@@ -395,7 +395,7 @@ PetscErrorCode  TSPseudoSetVerifyTimeStep(TS ts,PetscErrorCode (*dt)(TS,Vec,void
 
     Level: advanced
 
-.seealso: TSPseudoSetTimeStep(), TSPseudoTimeStepDefault()
+.seealso: `TSPseudoSetTimeStep()`, `TSPseudoTimeStepDefault()`
 @*/
 PetscErrorCode  TSPseudoSetTimeStepIncrement(TS ts,PetscReal inc)
 {
@@ -421,7 +421,7 @@ PetscErrorCode  TSPseudoSetTimeStepIncrement(TS ts,PetscReal inc)
 
     Level: advanced
 
-.seealso: TSPseudoSetTimeStep(), TSPseudoTimeStepDefault()
+.seealso: `TSPseudoSetTimeStep()`, `TSPseudoTimeStepDefault()`
 @*/
 PetscErrorCode  TSPseudoSetMaxTimeStep(TS ts,PetscReal maxdt)
 {
@@ -449,7 +449,7 @@ $         dt = current_dt*previous_fnorm/current_fnorm.
 
     Level: advanced
 
-.seealso: TSPseudoSetTimeStep(), TSPseudoTimeStepDefault()
+.seealso: `TSPseudoSetTimeStep()`, `TSPseudoTimeStepDefault()`
 @*/
 PetscErrorCode  TSPseudoIncrementDtFromInitialDt(TS ts)
 {
@@ -484,7 +484,7 @@ $  func (TS ts,PetscReal *newdt,void *ctx);
    during the timestepping process.
    If not set then TSPseudoTimeStepDefault() is automatically used
 
-.seealso: TSPseudoTimeStepDefault(), TSPseudoComputeTimeStep()
+.seealso: `TSPseudoTimeStepDefault()`, `TSPseudoComputeTimeStep()`
 @*/
 PetscErrorCode  TSPseudoSetTimeStep(TS ts,PetscErrorCode (*dt)(TS,PetscReal*,void*),void *ctx)
 {
@@ -588,7 +588,7 @@ $  Xdot = (Xpredicted - Xold)/dt = (Xold-Xold)/dt = 0
   described above and in the papers.  If the user chooses to perform multiple Newton iterations, the
   algorithm is no longer the one described in the referenced papers.
 
-.seealso:  TSCreate(), TS, TSSetType()
+.seealso: `TSCreate()`, `TS`, `TSSetType()`
 
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_Pseudo(TS ts)
@@ -653,7 +653,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Pseudo(TS ts)
 
    Level: advanced
 
-.seealso: TSPseudoSetTimeStep(), TSPseudoComputeTimeStep()
+.seealso: `TSPseudoSetTimeStep()`, `TSPseudoComputeTimeStep()`
 @*/
 PetscErrorCode  TSPseudoTimeStepDefault(TS ts,PetscReal *newdt,void *dtctx)
 {

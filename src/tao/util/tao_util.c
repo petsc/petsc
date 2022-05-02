@@ -140,7 +140,7 @@ $        phi(a,b) := sqrt(a*a + b*b + 2*mu*mu) - a - b
 
    Level: developer
 
-.seealso  VecFischer()
+.seealso `VecFischer()`
 @*/
 PetscErrorCode VecSFischer(Vec X, Vec F, Vec L, Vec U, PetscReal mu, Vec FB)
 {
@@ -232,7 +232,7 @@ static inline PetscReal fischsnorm(PetscReal a, PetscReal b, PetscReal c)
 
    Level: developer
 
-.seealso: VecFischer()
+.seealso: `VecFischer()`
 @*/
 PetscErrorCode MatDFischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU, Vec T1, Vec T2, Vec Da, Vec Db)
 {
@@ -378,7 +378,7 @@ PetscErrorCode MatDFischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU, Vec T1, Vec 
 
    Level: developer
 
-.seealso MatDFischer()
+.seealso `MatDFischer()`
 @*/
 PetscErrorCode MatDSFischer(Mat jac, Vec X, Vec Con,Vec XL, Vec XU, PetscReal mu,Vec T1, Vec T2,Vec Da, Vec Db, Vec Dm)
 {

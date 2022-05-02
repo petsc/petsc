@@ -24,7 +24,7 @@ PetscBool         VecRegisterAllCalled = PETSC_FALSE;
 
   Level: intermediate
 
-.seealso: VecGetType(), VecCreate()
+.seealso: `VecGetType()`, `VecCreate()`
 @*/
 PetscErrorCode VecSetType(Vec vec, VecType method)
 {
@@ -107,7 +107,7 @@ PetscErrorCode VecSetType(Vec vec, VecType method)
 
   Level: intermediate
 
-.seealso: VecSetType(), VecCreate()
+.seealso: `VecSetType()`, `VecCreate()`
 @*/
 PetscErrorCode VecGetType(Vec vec, VecType *type)
 {
@@ -169,7 +169,7 @@ PetscErrorCode VecGetRootType_Private(Vec vec, VecType *vtype)
 
   Level: advanced
 
-.seealso: VecRegisterAll(), VecRegisterDestroy()
+.seealso: `VecRegisterAll()`, `VecRegisterDestroy()`
 @*/
 PetscErrorCode VecRegister(const char sname[], PetscErrorCode (*function)(Vec))
 {

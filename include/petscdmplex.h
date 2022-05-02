@@ -90,7 +90,7 @@ $  DMPLEX_INTERPOLATED_FULL    - Mesh is fully interpolated
    Developer Note:
    Any additions/changes here MUST also be made in include/petsc/finclude/petscdmplex.h and src/dm/f90-mod/petscdmplex.h
 
-.seealso: DMPlexIsInterpolated(), DMPlexIsInterpolatedCollective(), DMPlexInterpolate(), DMPlexUninterpolate()
+.seealso: `DMPlexIsInterpolated()`, `DMPlexIsInterpolatedCollective()`, `DMPlexInterpolate()`, `DMPlexUninterpolate()`
 E*/
 typedef enum {
   DMPLEX_INTERPOLATED_INVALID = -1,
@@ -148,7 +148,7 @@ $  DMPLEX_TPS_GYROID    - Gyroid surface, defined by the equation sin(x)cos(y) +
    Developer Note:
    Any additions/changes here MUST also be made in include/petsc/finclude/petscdmplex.h and src/dm/f90-mod/petscdmplex.h
 
-.seealso: DMPlexCreateTPSMesh()
+.seealso: `DMPlexCreateTPSMesh()`
 E*/
 typedef enum {
   DMPLEX_TPS_SCHWARZ_P,

@@ -29,8 +29,8 @@
    PetscArraycmp() is preferred
    This routine is anologous to memcmp()
 
-.seealso: PetscMemcpy(), PetscMemcmp(), PetscArrayzero(), PetscMemzero(), PetscArraycmp(), PetscArraycpy(), PetscStrallocpy(),
-          PetscArraymove()
+.seealso: `PetscMemcpy()`, `PetscMemcmp()`, `PetscArrayzero()`, `PetscMemzero()`, `PetscArraycmp()`, `PetscArraycpy()`, `PetscStrallocpy()`,
+          `PetscArraymove()`
 @*/
 PetscErrorCode PetscMemcmp(const void *str1, const void *str2, size_t len, PetscBool *e)
 {

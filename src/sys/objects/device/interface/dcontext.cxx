@@ -82,9 +82,9 @@ static Petsc::ObjectPool<PetscDeviceContext,PetscDeviceContextAllocator> context
 
   Level: beginner
 
-.seealso: PetscDeviceContextDuplicate(), PetscDeviceContextSetDevice(),
-PetscDeviceContextSetStreamType(), PetscDeviceContextSetUp(),
-PetscDeviceContextSetFromOptions(), PetscDeviceContextDestroy()
+.seealso: `PetscDeviceContextDuplicate()`, `PetscDeviceContextSetDevice()`,
+          `PetscDeviceContextSetStreamType()`, `PetscDeviceContextSetUp()`,
+          `PetscDeviceContextSetFromOptions()`, `PetscDeviceContextDestroy()`
 @*/
 PetscErrorCode PetscDeviceContextCreate(PetscDeviceContext *dctx)
 {
@@ -115,7 +115,7 @@ PetscErrorCode PetscDeviceContextCreate(PetscDeviceContext *dctx)
 
   Level: beginner
 
-.seealso: PetscDeviceContextCreate(), PetscDeviceContextSetDevice(), PetscDeviceContextSetUp(), PetscDeviceContextSynchronize()
+.seealso: `PetscDeviceContextCreate()`, `PetscDeviceContextSetDevice()`, `PetscDeviceContextSetUp()`, `PetscDeviceContextSynchronize()`
 @*/
 PetscErrorCode PetscDeviceContextDestroy(PetscDeviceContext *dctx)
 {
@@ -142,7 +142,7 @@ PetscErrorCode PetscDeviceContextDestroy(PetscDeviceContext *dctx)
 
   Level: intermediate
 
-.seealso: PetscStreamType, PetscDeviceContextGetStreamType(), PetscDeviceContextCreate(), PetscDeviceContextSetUp(), PetscDeviceContextSetFromOptions()
+.seealso: `PetscStreamType`, `PetscDeviceContextGetStreamType()`, `PetscDeviceContextCreate()`, `PetscDeviceContextSetUp()`, `PetscDeviceContextSetFromOptions()`
 @*/
 PetscErrorCode PetscDeviceContextSetStreamType(PetscDeviceContext dctx, PetscStreamType type)
 {
@@ -174,7 +174,7 @@ PetscErrorCode PetscDeviceContextSetStreamType(PetscDeviceContext dctx, PetscStr
 
   Level: intermediate
 
-.seealso: PetscDeviceContextSetStreamType(), PetscDeviceContextCreate(), PetscDeviceContextSetFromOptions()
+.seealso: `PetscDeviceContextSetStreamType()`, `PetscDeviceContextCreate()`, `PetscDeviceContextSetFromOptions()`
 @*/
 PetscErrorCode PetscDeviceContextGetStreamType(PetscDeviceContext dctx, PetscStreamType *type)
 {
@@ -206,7 +206,7 @@ PetscErrorCode PetscDeviceContextGetStreamType(PetscDeviceContext dctx, PetscStr
 
   Level: intermediate
 
-.seealso: PetscDeviceCreate(), PetscDeviceConfigure(), PetscDeviceContextGetDevice()
+.seealso: `PetscDeviceCreate()`, `PetscDeviceConfigure()`, `PetscDeviceContextGetDevice()`
 @*/
 PetscErrorCode PetscDeviceContextSetDevice(PetscDeviceContext dctx, PetscDevice device)
 {
@@ -243,7 +243,7 @@ PetscErrorCode PetscDeviceContextSetDevice(PetscDeviceContext dctx, PetscDevice 
 
   Level: intermediate
 
-.seealso: PetscDeviceContextSetDevice(), PetscDevice
+.seealso: `PetscDeviceContextSetDevice()`, `PetscDevice`
 @*/
 PetscErrorCode PetscDeviceContextGetDevice(PetscDeviceContext dctx, PetscDevice *device)
 {
@@ -269,7 +269,7 @@ PetscErrorCode PetscDeviceContextGetDevice(PetscDeviceContext dctx, PetscDevice 
 
   Level: beginner
 
-.seealso: PetscDeviceContextCreate(), PetscDeviceContextSetDevice(), PetscDeviceContextDestroy(), PetscDeviceContextSetFromOptions()
+.seealso: `PetscDeviceContextCreate()`, `PetscDeviceContextSetDevice()`, `PetscDeviceContextDestroy()`, `PetscDeviceContextSetFromOptions()`
 @*/
 PetscErrorCode PetscDeviceContextSetUp(PetscDeviceContext dctx)
 {
@@ -304,7 +304,7 @@ PetscErrorCode PetscDeviceContextSetUp(PetscDeviceContext dctx)
 
   Level: beginner
 
-.seealso: PetscDeviceContextCreate(), PetscDeviceContextSetDevice(), PetscDeviceContextSetStreamType()
+.seealso: `PetscDeviceContextCreate()`, `PetscDeviceContextSetDevice()`, `PetscDeviceContextSetStreamType()`
 @*/
 PetscErrorCode PetscDeviceContextDuplicate(PetscDeviceContext dctx, PetscDeviceContext *dctxdup)
 {
@@ -339,7 +339,7 @@ PetscErrorCode PetscDeviceContextDuplicate(PetscDeviceContext dctx, PetscDeviceC
 
   Level: intermediate
 
-.seealso: PetscDeviceContextCreate(), PetscDeviceContextWaitForContext(), PetscDeviceContextFork()
+.seealso: `PetscDeviceContextCreate()`, `PetscDeviceContextWaitForContext()`, `PetscDeviceContextFork()`
 @*/
 PetscErrorCode PetscDeviceContextQueryIdle(PetscDeviceContext dctx, PetscBool *idle)
 {
@@ -366,7 +366,7 @@ PetscErrorCode PetscDeviceContextQueryIdle(PetscDeviceContext dctx, PetscBool *i
 
   Level: beginner
 
-.seealso: PetscDeviceContextCreate(), PetscDeviceContextQueryIdle(), PetscDeviceContextJoin()
+.seealso: `PetscDeviceContextCreate()`, `PetscDeviceContextQueryIdle()`, `PetscDeviceContextJoin()`
 @*/
 PetscErrorCode PetscDeviceContextWaitForContext(PetscDeviceContext dctxa, PetscDeviceContext dctxb)
 {
@@ -413,7 +413,7 @@ PetscErrorCode PetscDeviceContextWaitForContext(PetscDeviceContext dctxa, PetscD
 
   Level: intermediate
 
-.seealso: PetscDeviceContextJoin(), PetscDeviceContextSynchronize(), PetscDeviceContextQueryIdle()
+.seealso: `PetscDeviceContextJoin()`, `PetscDeviceContextSynchronize()`, `PetscDeviceContextQueryIdle()`
 @*/
 PetscErrorCode PetscDeviceContextFork(PetscDeviceContext dctx, PetscInt n, PetscDeviceContext **dsub)
 {
@@ -535,7 +535,7 @@ PetscErrorCode PetscDeviceContextFork(PetscDeviceContext dctx, PetscInt n, Petsc
 
   Level: intermediate
 
-.seealso: PetscDeviceContextFork(), PetscDeviceContextSynchronize(), PetscDeviceContextJoinMode
+.seealso: `PetscDeviceContextFork()`, `PetscDeviceContextSynchronize()`, `PetscDeviceContextJoinMode`
 @*/
 PetscErrorCode PetscDeviceContextJoin(PetscDeviceContext dctx, PetscInt n, PetscDeviceContextJoinMode joinMode, PetscDeviceContext **dsub)
 {
@@ -609,7 +609,7 @@ PetscErrorCode PetscDeviceContextJoin(PetscDeviceContext dctx, PetscInt n, Petsc
 
   Level: beginner
 
-.seealso: PetscDeviceContextFork(), PetscDeviceContextJoin(), PetscDeviceContextQueryIdle()
+.seealso: `PetscDeviceContextFork()`, `PetscDeviceContextJoin()`, `PetscDeviceContextQueryIdle()`
 @*/
 PetscErrorCode PetscDeviceContextSynchronize(PetscDeviceContext dctx)
 {
@@ -695,8 +695,8 @@ static PetscErrorCode PetscDeviceContextSetupGlobalContext_Private(void)
 
   Level: beginner
 
-.seealso: PetscDeviceContextSetCurrentContext(), PetscDeviceContextFork(),
-PetscDeviceContextJoin(), PetscDeviceContextCreate()
+.seealso: `PetscDeviceContextSetCurrentContext()`, `PetscDeviceContextFork()`,
+          `PetscDeviceContextJoin()`, `PetscDeviceContextCreate()`
 @*/
 PetscErrorCode PetscDeviceContextGetCurrentContext(PetscDeviceContext *dctx)
 {
@@ -730,8 +730,8 @@ PetscErrorCode PetscDeviceContextGetCurrentContext(PetscDeviceContext *dctx)
 
   Level: beginner
 
-.seealso: PetscDeviceContextGetCurrentContext(), PetscDeviceContextFork(),
-PetscDeviceContextJoin(), PetscDeviceContextCreate()
+.seealso: `PetscDeviceContextGetCurrentContext()`, `PetscDeviceContextFork()`,
+          `PetscDeviceContextJoin()`, `PetscDeviceContextCreate()`
 @*/
 PetscErrorCode PetscDeviceContextSetCurrentContext(PetscDeviceContext dctx)
 {
@@ -763,7 +763,7 @@ PetscErrorCode PetscDeviceContextSetCurrentContext(PetscDeviceContext dctx)
 
   Level: beginner
 
-.seealso: PetscDeviceContextSetStreamType(), PetscDeviceContextSetDevice()
+.seealso: `PetscDeviceContextSetStreamType()`, `PetscDeviceContextSetDevice()`
 @*/
 PetscErrorCode PetscDeviceContextSetFromOptions(MPI_Comm comm, const char prefix[], PetscDeviceContext dctx)
 {

@@ -3107,7 +3107,7 @@ PetscErrorCode MatSeqBAIJSetPreallocationCSR_SeqBAIJ(Mat B,PetscInt bs,const Pet
 
    Level: intermediate
 
-.seealso: MatSeqBAIJRestoreArray(), MatSeqAIJGetArray(), MatSeqAIJRestoreArray()
+.seealso: `MatSeqBAIJRestoreArray()`, `MatSeqAIJGetArray()`, `MatSeqAIJRestoreArray()`
 @*/
 PetscErrorCode MatSeqBAIJGetArray(Mat A,PetscScalar **array)
 {
@@ -3127,7 +3127,7 @@ PetscErrorCode MatSeqBAIJGetArray(Mat A,PetscScalar **array)
 
    Level: intermediate
 
-.seealso: MatSeqBAIJGetArray(), MatSeqAIJGetArray(), MatSeqAIJRestoreArray()
+.seealso: `MatSeqBAIJGetArray()`, `MatSeqAIJGetArray()`, `MatSeqAIJRestoreArray()`
 @*/
 PetscErrorCode MatSeqBAIJRestoreArray(Mat A,PetscScalar **array)
 {
@@ -3152,7 +3152,7 @@ PetscErrorCode MatSeqBAIJRestoreArray(Mat A,PetscScalar **array)
 
    Run with -info to see what version of the matrix-vector product is being used
 
-.seealso: MatCreateSeqBAIJ()
+.seealso: `MatCreateSeqBAIJ()`
 M*/
 
 PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqBSTRM(Mat, MatType,MatReuse,Mat*);
@@ -3466,7 +3466,7 @@ PetscErrorCode MatLoad_SeqBAIJ(Mat mat,PetscViewer viewer)
    allocation.  See Users-Manual: ch_mat for details.
    matrices.
 
-.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatCreateBAIJ()
+.seealso: `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatCreateBAIJ()`
 @*/
 PetscErrorCode  MatCreateSeqBAIJ(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt nz,const PetscInt nnz[],Mat *A)
 {
@@ -3518,7 +3518,7 @@ PetscErrorCode  MatCreateSeqBAIJ(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n
    Set nz=PETSC_DEFAULT and nnz=NULL for PETSc to control dynamic memory
    allocation.  See Users-Manual: ch_mat for details.
 
-.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatCreateBAIJ(), MatGetInfo()
+.seealso: `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatCreateBAIJ()`, `MatGetInfo()`
 @*/
 PetscErrorCode  MatSeqBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt nz,const PetscInt nnz[])
 {
@@ -3552,7 +3552,7 @@ PetscErrorCode  MatSeqBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt nz,const P
 
    Though this routine has Preallocation() in the name it also sets the exact nonzero locations of the matrix entries and usually the numerical values as well
 
-.seealso: MatCreate(), MatCreateSeqBAIJ(), MatSetValues(), MatSeqBAIJSetPreallocation(), MATSEQBAIJ
+.seealso: `MatCreate()`, `MatCreateSeqBAIJ()`, `MatSetValues()`, `MatSeqBAIJSetPreallocation()`, `MATSEQBAIJ`
 @*/
 PetscErrorCode  MatSeqBAIJSetPreallocationCSR(Mat B,PetscInt bs,const PetscInt i[],const PetscInt j[], const PetscScalar v[])
 {
@@ -3598,7 +3598,7 @@ PetscErrorCode  MatSeqBAIJSetPreallocationCSR(Mat B,PetscInt bs,const PetscInt i
       block, followed by the second column of the first block etc etc.  That is, the blocks are contiguous in memory
       with column-major ordering within blocks.
 
-.seealso: MatCreate(), MatCreateBAIJ(), MatCreateSeqBAIJ()
+.seealso: `MatCreate()`, `MatCreateBAIJ()`, `MatCreateSeqBAIJ()`
 
 @*/
 PetscErrorCode  MatCreateSeqBAIJWithArrays(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt i[],PetscInt j[],PetscScalar a[],Mat *mat)

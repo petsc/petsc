@@ -27,7 +27,7 @@
   provided (NULL) it can be computed from ilengths. If iflags is
   provided, ilengths is not required.
 
-.seealso: PetscGatherMessageLengths()
+.seealso: `PetscGatherMessageLengths()`
 @*/
 PetscErrorCode  PetscGatherNumberOfMessages(MPI_Comm comm,const PetscMPIInt iflags[],const PetscMPIInt ilengths[],PetscMPIInt *nrecvs)
 {
@@ -84,7 +84,7 @@ PetscErrorCode  PetscGatherNumberOfMessages(MPI_Comm comm,const PetscMPIInt ifla
 
   To determine nrecvs, one can use PetscGatherNumberOfMessages()
 
-.seealso: PetscGatherNumberOfMessages()
+.seealso: `PetscGatherNumberOfMessages()`
 @*/
 PetscErrorCode  PetscGatherMessageLengths(MPI_Comm comm,PetscMPIInt nsends,PetscMPIInt nrecvs,const PetscMPIInt ilengths[],PetscMPIInt **onodes,PetscMPIInt **olengths)
 {
@@ -237,7 +237,7 @@ PetscErrorCode  PetscGatherMessageLengths_Private(MPI_Comm comm,PetscMPIInt nsen
 
   To determine nrecvs, one can use PetscGatherNumberOfMessages()
 
-.seealso: PetscGatherMessageLengths() and PetscGatherNumberOfMessages()
+.seealso: `PetscGatherMessageLengths()` `and` `PetscGatherNumberOfMessages()`
 @*/
 PetscErrorCode  PetscGatherMessageLengths2(MPI_Comm comm,PetscMPIInt nsends,PetscMPIInt nrecvs,const PetscMPIInt ilengths1[],const PetscMPIInt ilengths2[],PetscMPIInt **onodes,PetscMPIInt **olengths1,PetscMPIInt **olengths2)
 {

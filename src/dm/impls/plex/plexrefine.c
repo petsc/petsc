@@ -19,7 +19,7 @@
 
   Level: developer
 
-.seealso: PetscSFCreate(), DMPlexCreateTwoSidedProcessSF()
+.seealso: `PetscSFCreate()`, `DMPlexCreateTwoSidedProcessSF()`
 @*/
 PetscErrorCode DMPlexCreateProcessSF(DM dm, PetscSF sfPoint, IS *processRanks, PetscSF *sfProcess)
 {
@@ -77,7 +77,7 @@ PetscErrorCode DMPlexCreateProcessSF(DM dm, PetscSF sfPoint, IS *processRanks, P
 
   Level: developer
 
-.seealso: DMRefine(), DMPlexSetRefinementUniform(), DMPlexGetSubpointIS()
+.seealso: `DMRefine()`, `DMPlexSetRefinementUniform()`, `DMPlexGetSubpointIS()`
 @*/
 PetscErrorCode DMPlexCreateCoarsePointIS(DM dm, IS *fpointIS)
 {
@@ -112,7 +112,7 @@ PetscErrorCode DMPlexCreateCoarsePointIS(DM dm, IS *fpointIS)
 
   Level: developer
 
-.seealso: DMPlexTransformType, DMRefine(), DMPlexGetTransformType(), DMPlexSetRefinementUniform()
+.seealso: `DMPlexTransformType`, `DMRefine()`, `DMPlexGetTransformType()`, `DMPlexSetRefinementUniform()`
 @*/
 PetscErrorCode DMPlexSetTransformType(DM dm, DMPlexTransformType type)
 {
@@ -137,7 +137,7 @@ PetscErrorCode DMPlexSetTransformType(DM dm, DMPlexTransformType type)
 
   Level: developer
 
-.seealso: DMPlexTransformType, DMRefine(), DMPlexSetTransformType(), DMPlexGetRefinementUniform()
+.seealso: `DMPlexTransformType`, `DMRefine()`, `DMPlexSetTransformType()`, `DMPlexGetRefinementUniform()`
 @*/
 PetscErrorCode DMPlexGetTransformType(DM dm, DMPlexTransformType *type)
 {
@@ -159,7 +159,7 @@ PetscErrorCode DMPlexGetTransformType(DM dm, DMPlexTransformType *type)
 
   Level: developer
 
-.seealso: DMRefine(), DMPlexGetRefinementUniform(), DMPlexGetRefinementLimit(), DMPlexSetRefinementLimit()
+.seealso: `DMRefine()`, `DMPlexGetRefinementUniform()`, `DMPlexGetRefinementLimit()`, `DMPlexSetRefinementLimit()`
 @*/
 PetscErrorCode DMPlexSetRefinementUniform(DM dm, PetscBool refinementUniform)
 {
@@ -182,7 +182,7 @@ PetscErrorCode DMPlexSetRefinementUniform(DM dm, PetscBool refinementUniform)
 
   Level: developer
 
-.seealso: DMRefine(), DMPlexSetRefinementUniform(), DMPlexGetRefinementLimit(), DMPlexSetRefinementLimit()
+.seealso: `DMRefine()`, `DMPlexSetRefinementUniform()`, `DMPlexGetRefinementLimit()`, `DMPlexSetRefinementLimit()`
 @*/
 PetscErrorCode DMPlexGetRefinementUniform(DM dm, PetscBool *refinementUniform)
 {
@@ -204,7 +204,7 @@ PetscErrorCode DMPlexGetRefinementUniform(DM dm, PetscBool *refinementUniform)
 
   Level: developer
 
-.seealso: DMRefine(), DMPlexGetRefinementLimit(), DMPlexGetRefinementUniform(), DMPlexSetRefinementUniform()
+.seealso: `DMRefine()`, `DMPlexGetRefinementLimit()`, `DMPlexGetRefinementUniform()`, `DMPlexSetRefinementUniform()`
 @*/
 PetscErrorCode DMPlexSetRefinementLimit(DM dm, PetscReal refinementLimit)
 {
@@ -227,7 +227,7 @@ PetscErrorCode DMPlexSetRefinementLimit(DM dm, PetscReal refinementLimit)
 
   Level: developer
 
-.seealso: DMRefine(), DMPlexSetRefinementLimit(), DMPlexGetRefinementUniform(), DMPlexSetRefinementUniform()
+.seealso: `DMRefine()`, `DMPlexSetRefinementLimit()`, `DMPlexGetRefinementUniform()`, `DMPlexSetRefinementUniform()`
 @*/
 PetscErrorCode DMPlexGetRefinementLimit(DM dm, PetscReal *refinementLimit)
 {
@@ -254,7 +254,7 @@ $ limit  - The maximum cell volume for a cell containing this point
 
   Level: developer
 
-.seealso: DMRefine(), DMPlexGetRefinementFunction(), DMPlexGetRefinementUniform(), DMPlexSetRefinementUniform(), DMPlexGetRefinementLimit(), DMPlexSetRefinementLimit()
+.seealso: `DMRefine()`, `DMPlexGetRefinementFunction()`, `DMPlexGetRefinementUniform()`, `DMPlexSetRefinementUniform()`, `DMPlexGetRefinementLimit()`, `DMPlexSetRefinementLimit()`
 @*/
 PetscErrorCode DMPlexSetRefinementFunction(DM dm, PetscErrorCode (*refinementFunc)(const PetscReal [], PetscReal *))
 {
@@ -281,7 +281,7 @@ $ limit  - The maximum cell volume for a cell containing this point
 
   Level: developer
 
-.seealso: DMRefine(), DMPlexSetRefinementFunction(), DMPlexGetRefinementUniform(), DMPlexSetRefinementUniform(), DMPlexGetRefinementLimit(), DMPlexSetRefinementLimit()
+.seealso: `DMRefine()`, `DMPlexSetRefinementFunction()`, `DMPlexGetRefinementUniform()`, `DMPlexSetRefinementUniform()`, `DMPlexGetRefinementLimit()`, `DMPlexSetRefinementLimit()`
 @*/
 PetscErrorCode DMPlexGetRefinementFunction(DM dm, PetscErrorCode (**refinementFunc)(const PetscReal [], PetscReal *))
 {

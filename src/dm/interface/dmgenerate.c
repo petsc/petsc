@@ -36,7 +36,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptLabel_Forest(DM, Vec, DMLabel, DMLabel, DM*);
 
   Level: advanced
 
-.seealso:  DMGenerateRegisterDestroy()
+.seealso: `DMGenerateRegisterDestroy()`
 @*/
 PetscErrorCode DMGenerateRegisterAll(void)
 {
@@ -93,7 +93,7 @@ $     -dm_generator my_generator
 
    Level: advanced
 
-.seealso: DMGenerateRegisterAll(), DMPlexGenerate(), DMGenerateRegisterDestroy()
+.seealso: `DMGenerateRegisterAll()`, `DMPlexGenerate()`, `DMGenerateRegisterDestroy()`
 
 @*/
 PetscErrorCode DMGenerateRegister(const char sname[], PetscErrorCode (*fnc)(DM, PetscBool, DM*), PetscErrorCode (*rfnc)(DM, PetscReal*, DM*), PetscErrorCode (*alfnc)(DM, Vec, DMLabel, DMLabel, DM*), PetscInt dim)
@@ -151,7 +151,7 @@ PetscErrorCode DMGenerateRegisterDestroy(void)
 
   Level: intermediate
 
-.seealso: DMAdaptMetric(), DMCoarsen(), DMRefine()
+.seealso: `DMAdaptMetric()`, `DMCoarsen()`, `DMRefine()`
 @*/
 PetscErrorCode DMAdaptLabel(DM dm, DMLabel label, DM *dmAdapt)
 {
@@ -208,7 +208,7 @@ PetscErrorCode DMAdaptLabel(DM dm, DMLabel label, DM *dmAdapt)
 
   Level: advanced
 
-.seealso: DMAdaptLabel(), DMCoarsen(), DMRefine()
+.seealso: `DMAdaptLabel()`, `DMCoarsen()`, `DMRefine()`
 @*/
 PetscErrorCode DMAdaptMetric(DM dm, Vec metric, DMLabel bdLabel, DMLabel rgLabel, DM *dmAdapt)
 {

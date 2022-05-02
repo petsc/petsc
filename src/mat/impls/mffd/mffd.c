@@ -15,7 +15,7 @@ static PetscBool MatMFFDPackageInitialized = PETSC_FALSE;
 
   Level: developer
 
-.seealso: PetscFinalize(), MatCreateMFFD(), MatCreateSNESMF()
+.seealso: `PetscFinalize()`, `MatCreateMFFD()`, `MatCreateSNESMF()`
 @*/
 PetscErrorCode  MatMFFDFinalizePackage(void)
 {
@@ -32,7 +32,7 @@ PetscErrorCode  MatMFFDFinalizePackage(void)
 
   Level: developer
 
-.seealso: PetscInitialize()
+.seealso: `PetscInitialize()`
 @*/
 PetscErrorCode  MatMFFDInitializePackage(void)
 {
@@ -110,7 +110,7 @@ static PetscErrorCode  MatMFFDSetType_MFFD(Mat mat,MatMFFDType ftype)
           F'(u)a  ~=  ----------------
                               h
 
-.seealso: MatCreateSNESMF(), MatMFFDRegister(), MatMFFDSetFunction(), MatCreateMFFD()
+.seealso: `MatCreateSNESMF()`, `MatMFFDRegister()`, `MatMFFDSetFunction()`, `MatCreateMFFD()`
 @*/
 PetscErrorCode  MatMFFDSetType(Mat mat,MatMFFDType ftype)
 {
@@ -190,7 +190,7 @@ $     MatMFFDSetType(mfctx,"my_h")
    or at runtime via the option
 $     -mat_mffd_type my_h
 
-.seealso: MatMFFDRegisterAll(), MatMFFDRegisterDestroy()
+.seealso: `MatMFFDRegisterAll()`, `MatMFFDRegisterDestroy()`
  @*/
 PetscErrorCode  MatMFFDRegister(const char sname[],PetscErrorCode (*function)(MatMFFD))
 {
@@ -492,7 +492,7 @@ static PetscErrorCode  MatMFFDSetCheckh_MFFD(Mat J,FCN3 fun,void *ectx)
 
    Level: advanced
 
-.seealso: MatSetFromOptions(), MatCreateSNESMF(), MatCreateMFFD()
+.seealso: `MatSetFromOptions()`, `MatCreateSNESMF()`, `MatCreateMFFD()`
 @*/
 PetscErrorCode  MatMFFDSetOptionsPrefix(Mat mat,const char prefix[])
 {
@@ -590,10 +590,10 @@ PetscErrorCode  MatMFFDSetHHistory_MFFD(Mat J,PetscScalar history[],PetscInt nhi
 
   Developers Note: This is implemented on top of MATSHELL to get support for scaling and shifting without requiring duplicate code
 
-.seealso: MatCreateMFFD(), MatCreateSNESMF(), MatMFFDSetFunction(), MatMFFDSetType(),
-          MatMFFDSetFunctionError(), MatMFFDDSSetUmin(), MatMFFDSetFunction()
-          MatMFFDSetHHistory(), MatMFFDResetHHistory(), MatCreateSNESMF(),
-          MatMFFDGetH(),
+.seealso: `MatCreateMFFD()`, `MatCreateSNESMF()`, `MatMFFDSetFunction()`, `MatMFFDSetType()`,
+          `MatMFFDSetFunctionError()`, `MatMFFDDSSetUmin()`, `MatMFFDSetFunction()`
+          `MatMFFDSetHHistory()`, `MatMFFDResetHHistory()`, `MatCreateSNESMF()`,
+          `MatMFFDGetH()`,
 M*/
 PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A)
 {
@@ -712,9 +712,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A)
 .  -mat_mffd_umin <umin> - Sets umin (for default PETSc routine that computes h only)
 -  -mat_mffd_check_positivity - check positivity
 
-.seealso: MatDestroy(), MatMFFDSetFunctionError(), MatMFFDDSSetUmin(), MatMFFDSetFunction()
-          MatMFFDSetHHistory(), MatMFFDResetHHistory(), MatCreateSNESMF(),
-          MatMFFDGetH(), MatMFFDRegister(), MatMFFDComputeJacobian()
+.seealso: `MatDestroy()`, `MatMFFDSetFunctionError()`, `MatMFFDDSSetUmin()`, `MatMFFDSetFunction()`
+          `MatMFFDSetHHistory()`, `MatMFFDResetHHistory()`, `MatCreateSNESMF()`,
+          `MatMFFDGetH()`, `MatMFFDRegister()`, `MatMFFDComputeJacobian()`
 
 @*/
 PetscErrorCode  MatCreateMFFD(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,Mat *J)
@@ -741,7 +741,7 @@ PetscErrorCode  MatCreateMFFD(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,Pet
 
    Level: advanced
 
-.seealso: MatCreateSNESMF(),MatMFFDSetHHistory(), MatCreateMFFD(), MATMFFD, MatMFFDResetHHistory()
+.seealso: `MatCreateSNESMF(),MatMFFDSetHHistory()`, `MatCreateMFFD()`, `MATMFFD`, `MatMFFDResetHHistory()`
 @*/
 PetscErrorCode  MatMFFDGetH(Mat mat,PetscScalar *h)
 {
@@ -777,8 +777,8 @@ $     func (void *funcctx, Vec x, Vec f)
 
     If this is not set then it will use the function set with SNESSetFunction() if MatCreateSNESMF() was used.
 
-.seealso: MatCreateSNESMF(),MatMFFDGetH(), MatCreateMFFD(), MATMFFD,
-          MatMFFDSetHHistory(), MatMFFDResetHHistory(), SNESetFunction()
+.seealso: `MatCreateSNESMF(),MatMFFDGetH()`, `MatCreateMFFD()`, `MATMFFD`,
+          `MatMFFDSetHHistory()`, `MatMFFDResetHHistory()`, `SNESetFunction()`
 @*/
 PetscErrorCode  MatMFFDSetFunction(Mat mat,PetscErrorCode (*func)(void*,Vec,Vec),void *funcctx)
 {
@@ -805,7 +805,7 @@ PetscErrorCode  MatMFFDSetFunction(Mat mat,PetscErrorCode (*func)(void*,Vec,Vec)
     This function is necessary to compute the diagonal of the matrix.
     funci must not contain any MPI call as it is called inside a loop on the local portion of the vector.
 
-.seealso: MatCreateSNESMF(),MatMFFDGetH(), MatMFFDSetHHistory(), MatMFFDResetHHistory(), SNESetFunction(), MatGetDiagonal()
+.seealso: `MatCreateSNESMF(),MatMFFDGetH()`, `MatMFFDSetHHistory()`, `MatMFFDResetHHistory()`, `SNESetFunction()`, `MatGetDiagonal()`
 
 @*/
 PetscErrorCode  MatMFFDSetFunctioni(Mat mat,PetscErrorCode (*funci)(void*,PetscInt,Vec,PetscScalar*))
@@ -832,8 +832,8 @@ PetscErrorCode  MatMFFDSetFunctioni(Mat mat,PetscErrorCode (*funci)(void*,PetscI
     matrix inside your compute Jacobian routine.
     This function is necessary to compute the diagonal of the matrix.
 
-.seealso: MatCreateSNESMF(),MatMFFDGetH(), MatCreateMFFD(), MATMFFD
-          MatMFFDSetHHistory(), MatMFFDResetHHistory(), SNESetFunction(), MatGetDiagonal()
+.seealso: `MatCreateSNESMF(),MatMFFDGetH()`, `MatCreateMFFD()`, `MATMFFD`
+          `MatMFFDSetHHistory()`, `MatMFFDResetHHistory()`, `SNESetFunction()`, `MatGetDiagonal()`
 @*/
 PetscErrorCode  MatMFFDSetFunctioniBase(Mat mat,PetscErrorCode (*func)(void*,Vec))
 {
@@ -857,8 +857,8 @@ PetscErrorCode  MatMFFDSetFunctioniBase(Mat mat,PetscErrorCode (*func)(void*,Vec
 
    Level: advanced
 
-.seealso: MatCreateSNESMF(),MatMFFDGetH(),
-          MatMFFDSetHHistory(), MatMFFDResetHHistory()
+.seealso: `MatCreateSNESMF(),MatMFFDGetH()`,
+          `MatMFFDSetHHistory()`, `MatMFFDResetHHistory()`
 @*/
 PetscErrorCode  MatMFFDSetPeriod(Mat mat,PetscInt period)
 {
@@ -893,8 +893,8 @@ PetscErrorCode  MatMFFDSetPeriod(Mat mat,PetscInt period)
        = error_rel*umin*sign(u'a)*||a||_{1}/||a||^2   else
 .ve
 
-.seealso: MatCreateSNESMF(),MatMFFDGetH(), MatCreateMFFD(), MATMFFD
-          MatMFFDSetHHistory(), MatMFFDResetHHistory()
+.seealso: `MatCreateSNESMF(),MatMFFDGetH()`, `MatCreateMFFD()`, `MATMFFD`
+          `MatMFFDSetHHistory()`, `MatMFFDResetHHistory()`
 @*/
 PetscErrorCode  MatMFFDSetFunctionError(Mat mat,PetscReal error)
 {
@@ -923,8 +923,8 @@ PetscErrorCode  MatMFFDSetFunctionError(Mat mat,PetscReal error)
    Use MatMFFDResetHHistory() to reset the history counter and collect
    a new batch of differencing parameters, h.
 
-.seealso: MatMFFDGetH(), MatCreateSNESMF(),
-          MatMFFDResetHHistory(), MatMFFDSetFunctionError()
+.seealso: `MatMFFDGetH()`, `MatCreateSNESMF()`,
+          `MatMFFDResetHHistory()`, `MatMFFDSetFunctionError()`
 
 @*/
 PetscErrorCode  MatMFFDSetHHistory(Mat J,PetscScalar history[],PetscInt nhistory)
@@ -951,8 +951,8 @@ PetscErrorCode  MatMFFDSetHHistory(Mat J,PetscScalar history[],PetscInt nhistory
    Notes:
    Use MatMFFDSetHHistory() to create the original history counter.
 
-.seealso: MatMFFDGetH(), MatCreateSNESMF(),
-          MatMFFDSetHHistory(), MatMFFDSetFunctionError()
+.seealso: `MatMFFDGetH()`, `MatCreateSNESMF()`,
+          `MatMFFDSetHHistory()`, `MatMFFDSetFunctionError()`
 
 @*/
 PetscErrorCode  MatMFFDResetHHistory(Mat J)
@@ -1016,7 +1016,7 @@ PetscErrorCode  MatMFFDSetBase(Mat J,Vec U,Vec F)
      The function you provide is called after the default h has been computed and allows you to
      modify it.
 
-.seealso:  MatMFFDCheckPositivity()
+.seealso: `MatMFFDCheckPositivity()`
 @*/
 PetscErrorCode  MatMFFDSetCheckh(Mat J,PetscErrorCode (*fun)(void*,Vec,Vec,PetscScalar*),void *ctx)
 {
@@ -1047,7 +1047,7 @@ PetscErrorCode  MatMFFDSetCheckh(Mat J,PetscErrorCode (*fun)(void*,Vec,Vec,Petsc
     This is rarely used directly, rather it is passed as an argument to
            MatMFFDSetCheckh()
 
-.seealso:  MatMFFDSetCheckh()
+.seealso: `MatMFFDSetCheckh()`
 @*/
 PetscErrorCode  MatMFFDCheckPositivity(void *dummy,Vec U,Vec a,PetscScalar *h)
 {

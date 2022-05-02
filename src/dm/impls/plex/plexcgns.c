@@ -36,7 +36,7 @@ do { \
 
   Level: beginner
 
-.seealso: DMPlexCreate(), DMPlexCreateCGNS(), DMPlexCreateExodus()
+.seealso: `DMPlexCreate()`, `DMPlexCreateCGNS()`, `DMPlexCreateExodus()`
 @*/
 PetscErrorCode DMPlexCreateCGNSFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm)
 {
@@ -78,7 +78,7 @@ PetscErrorCode DMPlexCreateCGNSFromFile(MPI_Comm comm, const char filename[], Pe
 
   Level: beginner
 
-.seealso: DMPlexCreate(), DMPlexCreateExodus()
+.seealso: `DMPlexCreate()`, `DMPlexCreateExodus()`
 @*/
 PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpolate, DM *dm)
 {

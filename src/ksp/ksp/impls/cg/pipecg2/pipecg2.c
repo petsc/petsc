@@ -707,7 +707,7 @@ static PetscErrorCode  KSPSolve_PIPECG2(KSP ksp)
    Manasi Tiwari and Sathish Vadhiyar, "Pipelined Conjugate Gradient Methods for Distributed Memory Systems",
    Submitted to International Conference on High Performance Computing, Data and Analytics 2020.
 
-.seealso: KSPCreate(), KSPSetType(), KSPCG, KSPPIPECG
+.seealso: `KSPCreate()`, `KSPSetType()`, `KSPCG`, `KSPPIPECG`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_PIPECG2(KSP ksp)
 {

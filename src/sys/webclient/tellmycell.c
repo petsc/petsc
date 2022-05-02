@@ -31,7 +31,7 @@
    Developer Notes:
     Perhaps the Username and Password should be arguments to this function.
 
-.seealso: PetscTextBelt(), PetscHTTPSRequest(), PetscHTTPSConnect(), PetscSSLInitializeContext()
+.seealso: `PetscTextBelt()`, `PetscHTTPSRequest()`, `PetscHTTPSConnect()`, `PetscSSLInitializeContext()`
 @*/
 PetscErrorCode PetscTellMyCell(MPI_Comm comm,const char number[],const char message[],PetscBool *flg)
 {

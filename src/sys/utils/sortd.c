@@ -24,7 +24,7 @@
 
    Level: intermediate
 
-.seealso: PetscSortReal(), PetscSortedInt(), PetscSortedMPIInt()
+.seealso: `PetscSortReal()`, `PetscSortedInt()`, `PetscSortedMPIInt()`
 @*/
 PetscErrorCode  PetscSortedReal(PetscInt n,const PetscReal X[],PetscBool *sorted)
 {
@@ -74,7 +74,7 @@ static PetscErrorCode PetscSortReal_Private(PetscReal *v,PetscInt right)
 
    Level: intermediate
 
-.seealso: PetscRealSortSemiOrdered(), PetscSortInt(), PetscSortRealWithPermutation(), PetscSortRealWithArrayInt()
+.seealso: `PetscRealSortSemiOrdered()`, `PetscSortInt()`, `PetscSortRealWithPermutation()`, `PetscSortRealWithArrayInt()`
 @*/
 PetscErrorCode  PetscSortReal(PetscInt n,PetscReal v[])
 {
@@ -136,7 +136,7 @@ static PetscErrorCode PetscSortRealWithArrayInt_Private(PetscReal *v,PetscInt *V
 
    Level: intermediate
 
-.seealso: PetscSortReal()
+.seealso: `PetscSortReal()`
 @*/
 PetscErrorCode  PetscSortRealWithArrayInt(PetscInt n,PetscReal r[],PetscInt Ii[])
 {
@@ -178,7 +178,7 @@ PetscErrorCode  PetscSortRealWithArrayInt(PetscInt n,PetscReal r[],PetscInt Ii[]
 
    Level: intermediate
 
-.seealso: PetscSortReal(), PetscSortRealWithArrayInt()
+.seealso: `PetscSortReal()`, `PetscSortRealWithArrayInt()`
 @*/
 PetscErrorCode PetscFindReal(PetscReal key, PetscInt n, const PetscReal t[], PetscReal eps, PetscInt *loc)
 {
@@ -212,7 +212,7 @@ PetscErrorCode PetscFindReal(PetscReal key, PetscInt n, const PetscReal t[], Pet
 
    Level: intermediate
 
-.seealso: PetscSortReal(), PetscSortRemoveDupsInt()
+.seealso: `PetscSortReal()`, `PetscSortRemoveDupsInt()`
 @*/
 PetscErrorCode  PetscSortRemoveDupsReal(PetscInt *n,PetscReal v[])
 {
@@ -246,7 +246,7 @@ PetscErrorCode  PetscSortRemoveDupsReal(PetscInt *n,PetscReal v[])
 
    Level: intermediate
 
-.seealso: PetscSortInt(), PetscSortRealWithPermutation()
+.seealso: `PetscSortInt()`, `PetscSortRealWithPermutation()`
 @*/
 PetscErrorCode  PetscSortSplit(PetscInt ncut,PetscInt n,PetscScalar a[],PetscInt idx[])
 {
@@ -305,7 +305,7 @@ PetscErrorCode  PetscSortSplit(PetscInt ncut,PetscInt n,PetscScalar a[],PetscInt
 
    Level: intermediate
 
-.seealso: PetscSortInt(), PetscSortRealWithPermutation()
+.seealso: `PetscSortInt()`, `PetscSortRealWithPermutation()`
 @*/
 PetscErrorCode  PetscSortSplitReal(PetscInt ncut,PetscInt n,PetscReal a[],PetscInt idx[])
 {

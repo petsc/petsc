@@ -33,7 +33,7 @@ PetscLogEvent AO_PetscToApplication, AO_ApplicationToPetsc;
    The user can open an alternative visualization context with
    PetscViewerASCIIOpen() - output to a specified file.
 
-.seealso: PetscViewerASCIIOpen()
+.seealso: `PetscViewerASCIIOpen()`
 @*/
 PetscErrorCode  AOView(AO ao,PetscViewer viewer)
 {
@@ -60,7 +60,7 @@ PetscErrorCode  AOView(AO ao,PetscViewer viewer)
 -  name - command line option
 
    Level: intermediate
-.seealso:  AO, AOView, PetscObjectViewFromOptions(), AOCreate()
+.seealso: `AO`, `AOView`, `PetscObjectViewFromOptions()`, `AOCreate()`
 @*/
 PetscErrorCode  AOViewFromOptions(AO ao,PetscObject obj,const char name[])
 {
@@ -80,7 +80,7 @@ PetscErrorCode  AOViewFromOptions(AO ao,PetscObject obj,const char name[])
 
    Level: beginner
 
-.seealso: AOCreate()
+.seealso: `AOCreate()`
 @*/
 PetscErrorCode  AODestroy(AO *ao)
 {
@@ -128,8 +128,8 @@ PETSC_INTERN PetscErrorCode ISSetUp_General(IS);
          entries to indicate nonexistent neighbors due to boundary conditions
          etc.
 
-.seealso: AOCreateBasic(), AOView(),AOApplicationToPetsc(),
-          AOApplicationToPetscIS(),AOPetscToApplication()
+.seealso: `AOCreateBasic()`, `AOView(),AOApplicationToPetsc()`,
+          `AOApplicationToPetscIS(),AOPetscToApplication()`
 @*/
 PetscErrorCode  AOPetscToApplicationIS(AO ao,IS is)
 {
@@ -172,8 +172,8 @@ PetscErrorCode  AOPetscToApplicationIS(AO ao,IS is)
    allows one to convert, for example, neighbor lists that use negative
    entries to indicate nonexistent neighbors due to boundary conditions, etc.
 
-.seealso: AOCreateBasic(), AOView(), AOPetscToApplication(),
-          AOPetscToApplicationIS(), AOApplicationToPetsc()
+.seealso: `AOCreateBasic()`, `AOView()`, `AOPetscToApplication()`,
+          `AOPetscToApplicationIS()`, `AOApplicationToPetsc()`
 @*/
 PetscErrorCode  AOApplicationToPetscIS(AO ao,IS is)
 {
@@ -216,8 +216,8 @@ PetscErrorCode  AOApplicationToPetscIS(AO ao,IS is)
 
    Integers that are out of range are mapped to -1
 
-.seealso: AOCreateBasic(), AOView(),AOApplicationToPetsc(),
-          AOPetscToApplicationIS(), AOApplicationToPetsc()
+.seealso: `AOCreateBasic()`, `AOView(),AOApplicationToPetsc()`,
+          `AOPetscToApplicationIS()`, `AOApplicationToPetsc()`
 @*/
 PetscErrorCode  AOPetscToApplication(AO ao,PetscInt n,PetscInt ia[])
 {
@@ -251,8 +251,8 @@ PetscErrorCode  AOPetscToApplication(AO ao,PetscInt n,PetscInt ia[])
 
    Integers that are out of range are mapped to -1
 
-.seealso: AOCreateBasic(), AOView(), AOPetscToApplication(),
-          AOPetscToApplicationIS(), AOApplicationToPetsc()
+.seealso: `AOCreateBasic()`, `AOView()`, `AOPetscToApplication()`,
+          `AOPetscToApplicationIS()`, `AOApplicationToPetsc()`
 @*/
 PetscErrorCode  AOApplicationToPetsc(AO ao,PetscInt n,PetscInt ia[])
 {
@@ -286,7 +286,7 @@ PetscErrorCode  AOApplicationToPetsc(AO ao,PetscInt n,PetscInt ia[])
 
   Level: beginner
 
-.seealso: AOCreateBasic(), AOView(), AOApplicationToPetsc(), AOPetscToApplicationIS()
+.seealso: `AOCreateBasic()`, `AOView()`, `AOApplicationToPetsc()`, `AOPetscToApplicationIS()`
 @*/
 PetscErrorCode  AOPetscToApplicationPermuteInt(AO ao, PetscInt block, PetscInt array[])
 {
@@ -320,7 +320,7 @@ PetscErrorCode  AOPetscToApplicationPermuteInt(AO ao, PetscInt block, PetscInt a
 
   Level: beginner
 
-.seealso: AOCreateBasic(), AOView(), AOPetscToApplicationIS(), AOApplicationToPetsc()
+.seealso: `AOCreateBasic()`, `AOView()`, `AOPetscToApplicationIS()`, `AOApplicationToPetsc()`
 @*/
 PetscErrorCode  AOApplicationToPetscPermuteInt(AO ao, PetscInt block, PetscInt array[])
 {
@@ -354,7 +354,7 @@ PetscErrorCode  AOApplicationToPetscPermuteInt(AO ao, PetscInt block, PetscInt a
 
   Level: beginner
 
-.seealso: AOCreateBasic(), AOView(), AOApplicationToPetsc(), AOPetscToApplicationIS()
+.seealso: `AOCreateBasic()`, `AOView()`, `AOApplicationToPetsc()`, `AOPetscToApplicationIS()`
 @*/
 PetscErrorCode  AOPetscToApplicationPermuteReal(AO ao, PetscInt block, PetscReal array[])
 {
@@ -388,7 +388,7 @@ PetscErrorCode  AOPetscToApplicationPermuteReal(AO ao, PetscInt block, PetscReal
 
   Level: beginner
 
-.seealso: AOCreateBasic(), AOView(),AOApplicationToPetsc(), AOPetscToApplicationIS()
+.seealso: `AOCreateBasic()`, `AOView(),AOApplicationToPetsc()`, `AOPetscToApplicationIS()`
 @*/
 PetscErrorCode  AOApplicationToPetscPermuteReal(AO ao, PetscInt block, PetscReal array[])
 {
@@ -409,7 +409,7 @@ PetscErrorCode  AOApplicationToPetscPermuteReal(AO ao, PetscInt block, PetscReal
 
    Level: beginner
 
-.seealso: AOCreate(), AOSetType(), AODestroy(), AOPetscToApplication(), AOApplicationToPetsc()
+.seealso: `AOCreate()`, `AOSetType()`, `AODestroy()`, `AOPetscToApplication()`, `AOApplicationToPetsc()`
 @*/
 PetscErrorCode AOSetFromOptions(AO ao)
 {
@@ -449,7 +449,7 @@ PetscErrorCode AOSetFromOptions(AO ao)
 
    Level: beginner
 
-.seealso: AOCreate(), AODestroy(), AOPetscToApplication(), AOApplicationToPetsc()
+.seealso: `AOCreate()`, `AODestroy()`, `AOPetscToApplication()`, `AOApplicationToPetsc()`
 @*/
 PetscErrorCode AOSetIS(AO ao,IS isapp,IS ispetsc)
 {
@@ -486,7 +486,7 @@ PetscErrorCode AOSetIS(AO ao,IS isapp,IS ispetsc)
 
    Level: beginner
 
-.seealso: AOSetIS(), AODestroy(), AOPetscToApplication(), AOApplicationToPetsc()
+.seealso: `AOSetIS()`, `AODestroy()`, `AOPetscToApplication()`, `AOApplicationToPetsc()`
 @*/
 PetscErrorCode  AOCreate(MPI_Comm comm,AO *ao)
 {

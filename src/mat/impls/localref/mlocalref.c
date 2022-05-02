@@ -187,7 +187,7 @@ static PetscErrorCode MatDestroy_LocalRef(Mat B)
    The new matrix forwards MatSetValuesLocal() and MatSetValuesBlockedLocal() to the global system.
    In general, it does not define MatMult() or any other functions.  Local submatrices can be nested.
 
-.seealso: MatSetValuesLocal(), MatSetValuesBlockedLocal(), MatGetLocalSubMatrix(), MatCreateSubMatrix()
+.seealso: `MatSetValuesLocal()`, `MatSetValuesBlockedLocal()`, `MatGetLocalSubMatrix()`, `MatCreateSubMatrix()`
 @*/
 PetscErrorCode  MatCreateLocalRef(Mat A,IS isrow,IS iscol,Mat *newmat)
 {

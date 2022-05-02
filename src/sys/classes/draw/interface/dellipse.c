@@ -17,7 +17,7 @@
 
   Level: beginner
 
-.seealso: PetscDrawRectangle(), PetscDrawTriangle(), PetscDrawMarker(), PetscDrawPoint(), PetscDrawString(), PetscDrawArrow()
+.seealso: `PetscDrawRectangle()`, `PetscDrawTriangle()`, `PetscDrawMarker()`, `PetscDrawPoint()`, `PetscDrawString()`, `PetscDrawArrow()`
 @*/
 PetscErrorCode  PetscDrawEllipse(PetscDraw draw, PetscReal x, PetscReal y, PetscReal a, PetscReal b, int c)
 {

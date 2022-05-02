@@ -14,7 +14,7 @@
 
   Level: beginner
 
-.seealso: DMPlexCreateFromFile(), DMPlexCreateFluent(), DMPlexCreate()
+.seealso: `DMPlexCreateFromFile()`, `DMPlexCreateFluent()`, `DMPlexCreate()`
 @*/
 PetscErrorCode DMPlexCreateFluentFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm)
 {
@@ -219,7 +219,7 @@ static PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentS
 
   Level: beginner
 
-.seealso: DMPLEX, DMCreate()
+.seealso: `DMPLEX`, `DMCreate()`
 @*/
 PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool interpolate, DM *dm)
 {

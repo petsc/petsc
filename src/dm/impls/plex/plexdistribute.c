@@ -16,7 +16,7 @@
 
      Any setting here overrides other configuration of DMPlex adjacency determination.
 
-.seealso: DMSetAdjacency(), DMPlexDistribute(), DMPlexPreallocateOperator(), DMPlexGetAdjacency(), DMPlexGetAdjacencyUser()
+.seealso: `DMSetAdjacency()`, `DMPlexDistribute()`, `DMPlexPreallocateOperator()`, `DMPlexGetAdjacency()`, `DMPlexGetAdjacencyUser()`
 @*/
 PetscErrorCode DMPlexSetAdjacencyUser(DM dm,PetscErrorCode (*user)(DM,PetscInt,PetscInt*,PetscInt[],void*),void *ctx)
 {
@@ -41,7 +41,7 @@ PetscErrorCode DMPlexSetAdjacencyUser(DM dm,PetscErrorCode (*user)(DM,PetscInt,P
 
   Level: advanced
 
-.seealso: DMSetAdjacency(), DMPlexDistribute(), DMPlexPreallocateOperator(), DMPlexGetAdjacency(), DMPlexSetAdjacencyUser()
+.seealso: `DMSetAdjacency()`, `DMPlexDistribute()`, `DMPlexPreallocateOperator()`, `DMPlexGetAdjacency()`, `DMPlexSetAdjacencyUser()`
 @*/
 PetscErrorCode DMPlexGetAdjacencyUser(DM dm, PetscErrorCode (**user)(DM,PetscInt,PetscInt*,PetscInt[],void*), void **ctx)
 {
@@ -63,7 +63,7 @@ PetscErrorCode DMPlexGetAdjacencyUser(DM dm, PetscErrorCode (**user)(DM,PetscInt
 
   Level: intermediate
 
-.seealso: DMGetAdjacency(), DMSetAdjacency(), DMPlexDistribute(), DMPlexPreallocateOperator(), DMPlexSetAnchors()
+.seealso: `DMGetAdjacency()`, `DMSetAdjacency()`, `DMPlexDistribute()`, `DMPlexPreallocateOperator()`, `DMPlexSetAnchors()`
 @*/
 PetscErrorCode DMPlexSetAdjacencyUseAnchors(DM dm, PetscBool useAnchors)
 {
@@ -86,7 +86,7 @@ PetscErrorCode DMPlexSetAdjacencyUseAnchors(DM dm, PetscBool useAnchors)
 
   Level: intermediate
 
-.seealso: DMPlexSetAdjacencyUseAnchors(), DMSetAdjacency(), DMGetAdjacency(), DMPlexDistribute(), DMPlexPreallocateOperator(), DMPlexSetAnchors()
+.seealso: `DMPlexSetAdjacencyUseAnchors()`, `DMSetAdjacency()`, `DMGetAdjacency()`, `DMPlexDistribute()`, `DMPlexPreallocateOperator()`, `DMPlexSetAnchors()`
 @*/
 PetscErrorCode DMPlexGetAdjacencyUseAnchors(DM dm, PetscBool *useAnchors)
 {
@@ -280,7 +280,7 @@ PetscErrorCode DMPlexGetAdjacency_Internal(DM dm, PetscInt p, PetscBool useCone,
   Notes:
     The user must PetscFree the adj array if it was not passed in.
 
-.seealso: DMSetAdjacency(), DMPlexDistribute(), DMCreateMatrix(), DMPlexPreallocateOperator()
+.seealso: `DMSetAdjacency()`, `DMPlexDistribute()`, `DMCreateMatrix()`, `DMPlexPreallocateOperator()`
 @*/
 PetscErrorCode DMPlexGetAdjacency(DM dm, PetscInt p, PetscInt *adjSize, PetscInt *adj[])
 {
@@ -315,7 +315,7 @@ PetscErrorCode DMPlexGetAdjacency(DM dm, PetscInt p, PetscInt *adjSize, PetscInt
 
   Level: developer
 
-.seealso: PetscSFCreate(), DMPlexCreateProcessSF()
+.seealso: `PetscSFCreate()`, `DMPlexCreateProcessSF()`
 @*/
 PetscErrorCode DMPlexCreateTwoSidedProcessSF(DM dm, PetscSF sfPoint, PetscSection rootRankSection, IS rootRanks, PetscSection leafRankSection, IS leafRanks, IS *processRanks, PetscSF *sfProcess)
 {
@@ -405,7 +405,7 @@ PetscErrorCode DMPlexCreateTwoSidedProcessSF(DM dm, PetscSF sfPoint, PetscSectio
 
   Level: developer
 
-.seealso: DMPlexCreateOverlapLabel(), DMPlexDistribute(), DMPlexDistributeOverlap()
+.seealso: `DMPlexCreateOverlapLabel()`, `DMPlexDistribute()`, `DMPlexDistributeOverlap()`
 @*/
 PetscErrorCode DMPlexDistributeOwnership(DM dm, PetscSection rootSection, IS *rootrank, PetscSection leafSection, IS *leafrank)
 {
@@ -461,7 +461,7 @@ PetscErrorCode DMPlexDistributeOwnership(DM dm, PetscSection rootSection, IS *ro
 
   Level: developer
 
-.seealso: DMPlexDistributeOwnership(), DMPlexDistribute()
+.seealso: `DMPlexDistributeOwnership()`, `DMPlexDistribute()`
 @*/
 PetscErrorCode DMPlexCreateOverlapLabel(DM dm, PetscInt levels, PetscSection rootSection, IS rootrank, PetscSection leafSection, IS leafrank, DMLabel *ovLabel)
 {
@@ -578,7 +578,7 @@ PetscErrorCode DMPlexCreateOverlapLabel(DM dm, PetscInt levels, PetscSection roo
 
   Level: developer
 
-.seealso: DMPlexCreateOverlapLabel(), DMPlexDistributeOverlap(), DMPlexDistribute()
+.seealso: `DMPlexCreateOverlapLabel()`, `DMPlexDistributeOverlap()`, `DMPlexDistribute()`
 @*/
 PetscErrorCode DMPlexCreateOverlapMigrationSF(DM dm, PetscSF overlapSF, PetscSF *migrationSF)
 {
@@ -689,7 +689,7 @@ PetscErrorCode DMPlexCreateOverlapMigrationSF(DM dm, PetscSF overlapSF, PetscSF 
 
   Level: developer
 
-.seealso: DMPlexPartitionLabelCreateSF(), DMPlexDistribute(), DMPlexDistributeOverlap()
+.seealso: `DMPlexPartitionLabelCreateSF()`, `DMPlexDistribute()`, `DMPlexDistributeOverlap()`
 @*/
 PetscErrorCode DMPlexStratifyMigrationSF(DM dm, PetscSF sf, PetscSF *migrationSF)
 {
@@ -807,7 +807,7 @@ PetscErrorCode DMPlexStratifyMigrationSF(DM dm, PetscSF sf, PetscSF *migrationSF
 
   Level: developer
 
-.seealso: DMPlexDistribute(), DMPlexDistributeFieldIS(), DMPlexDistributeData()
+.seealso: `DMPlexDistribute()`, `DMPlexDistributeFieldIS()`, `DMPlexDistributeData()`
 @*/
 PetscErrorCode DMPlexDistributeField(DM dm, PetscSF pointSF, PetscSection originalSection, Vec originalVec, PetscSection newSection, Vec newVec)
 {
@@ -853,7 +853,7 @@ PetscErrorCode DMPlexDistributeField(DM dm, PetscSF pointSF, PetscSection origin
 
   Level: developer
 
-.seealso: DMPlexDistribute(), DMPlexDistributeField(), DMPlexDistributeData()
+.seealso: `DMPlexDistribute()`, `DMPlexDistributeField()`, `DMPlexDistributeData()`
 @*/
 PetscErrorCode DMPlexDistributeFieldIS(DM dm, PetscSF pointSF, PetscSection originalSection, IS originalIS, PetscSection newSection, IS *newIS)
 {
@@ -898,7 +898,7 @@ PetscErrorCode DMPlexDistributeFieldIS(DM dm, PetscSF pointSF, PetscSection orig
 
   Level: developer
 
-.seealso: DMPlexDistribute(), DMPlexDistributeField()
+.seealso: `DMPlexDistribute()`, `DMPlexDistributeField()`
 @*/
 PetscErrorCode DMPlexDistributeData(DM dm, PetscSF pointSF, PetscSection originalSection, MPI_Datatype datatype, void *originalData, PetscSection newSection, void **newData)
 {
@@ -1277,7 +1277,7 @@ PETSC_UNUSED static PetscErrorCode DMPlexDistributeSF(DM dm, PetscSF migrationSF
 
   Level: intermediate
 
-.seealso: DMPlexDistribute(), DMPlexGetPartitionBalance()
+.seealso: `DMPlexDistribute()`, `DMPlexGetPartitionBalance()`
 @*/
 PetscErrorCode DMPlexSetPartitionBalance(DM dm, PetscBool flg)
 {
@@ -1299,7 +1299,7 @@ PetscErrorCode DMPlexSetPartitionBalance(DM dm, PetscBool flg)
 
   Level: intermediate
 
-.seealso: DMPlexDistribute(), DMPlexSetPartitionBalance()
+.seealso: `DMPlexDistribute()`, `DMPlexSetPartitionBalance()`
 @*/
 PetscErrorCode DMPlexGetPartitionBalance(DM dm, PetscBool *flg)
 {
@@ -1352,7 +1352,7 @@ static void MPIAPI MaxLocCarry(void *in_, void *inout_, PetscMPIInt *len_, MPI_D
 
   Level: developer
 
-.seealso: DMPlexDistribute(), DMPlexDistributeOverlap()
+.seealso: `DMPlexDistribute()`, `DMPlexDistributeOverlap()`
 @*/
 PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownership, PetscSF *pointSF)
 {
@@ -1481,7 +1481,7 @@ PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownersh
 
   Level: intermediate
 
-.seealso: DMPlexDistribute(), DMPlexDistributeOverlap()
+.seealso: `DMPlexDistribute()`, `DMPlexDistributeOverlap()`
 @*/
 PetscErrorCode DMPlexMigrate(DM dm, PetscSF sf, DM targetDM)
 {
@@ -1564,7 +1564,7 @@ PetscErrorCode DMPlexMigrate(DM dm, PetscSF sf, DM targetDM)
 
   Level: intermediate
 
-.seealso: DMPlexCreate(), DMSetAdjacency(), DMPlexGetOverlap()
+.seealso: `DMPlexCreate()`, `DMSetAdjacency()`, `DMPlexGetOverlap()`
 @*/
 PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmParallel)
 {
@@ -1746,7 +1746,7 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
 
   Level: advanced
 
-.seealso: DMPlexCreate(), DMSetAdjacency(), DMPlexDistribute(), DMPlexCreateOverlapLabel(), DMPlexGetOverlap()
+.seealso: `DMPlexCreate()`, `DMSetAdjacency()`, `DMPlexDistribute()`, `DMPlexCreateOverlapLabel()`, `DMPlexGetOverlap()`
 @*/
 PetscErrorCode DMPlexDistributeOverlap(DM dm, PetscInt overlap, PetscSF *sf, DM *dmOverlap)
 {
@@ -1834,7 +1834,7 @@ PetscErrorCode DMPlexGetOverlap_Plex(DM dm, PetscInt *overlap)
 
   Level: intermediate
 
-.seealso: DMPlexDistribute(), DMPlexDistributeOverlap(), DMPlexCreateOverlapLabel()
+.seealso: `DMPlexDistribute()`, `DMPlexDistributeOverlap()`, `DMPlexCreateOverlapLabel()`
 @*/
 PetscErrorCode DMPlexGetOverlap(DM dm, PetscInt *overlap)
 {
@@ -1864,7 +1864,7 @@ PetscErrorCode DMPlexDistributeSetDefault_Plex(DM dm, PetscBool dist)
 
   Level: intermediate
 
-.seealso: DMDistributeGetDefault(), DMPlexDistribute()
+.seealso: `DMDistributeGetDefault()`, `DMPlexDistribute()`
 @*/
 PetscErrorCode DMPlexDistributeSetDefault(DM dm, PetscBool dist)
 {
@@ -1897,7 +1897,7 @@ PetscErrorCode DMPlexDistributeGetDefault_Plex(DM dm, PetscBool *dist)
 
   Level: intermediate
 
-.seealso: DMDistributeSetDefault(), DMPlexDistribute()
+.seealso: `DMDistributeSetDefault()`, `DMPlexDistribute()`
 @*/
 PetscErrorCode DMPlexDistributeGetDefault(DM dm, PetscBool *dist)
 {
@@ -1923,7 +1923,7 @@ PetscErrorCode DMPlexDistributeGetDefault(DM dm, PetscBool *dist)
 
   Level: intermediate
 
-.seealso: DMPlexDistribute(), DMPlexGetRedundantDM()
+.seealso: `DMPlexDistribute()`, `DMPlexGetRedundantDM()`
 @*/
 PetscErrorCode DMPlexGetGatherDM(DM dm, PetscSF *sf, DM *gatherMesh)
 {
@@ -1966,7 +1966,7 @@ PetscErrorCode DMPlexGetGatherDM(DM dm, PetscSF *sf, DM *gatherMesh)
 
   Level: intermediate
 
-.seealso: DMPlexDistribute(), DMPlexGetGatherDM()
+.seealso: `DMPlexDistribute()`, `DMPlexGetGatherDM()`
 @*/
 PetscErrorCode DMPlexGetRedundantDM(DM dm, PetscSF *sf, DM *redundantMesh)
 {
@@ -2044,7 +2044,7 @@ PetscErrorCode DMPlexGetRedundantDM(DM dm, PetscSF *sf, DM *redundantMesh)
   This involves MPI_Allreduce() with one integer.
   The result is currently not stashed so every call to this routine involves this global communication.
 
-.seealso: DMPlexDistribute(), DMPlexGetOverlap(), DMPlexIsInterpolated()
+.seealso: `DMPlexDistribute()`, `DMPlexGetOverlap()`, `DMPlexIsInterpolated()`
 @*/
 PetscErrorCode DMPlexIsDistributed(DM dm, PetscBool *distributed)
 {

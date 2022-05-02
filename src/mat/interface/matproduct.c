@@ -218,7 +218,7 @@ static PetscErrorCode MatProductSymbolic_Unsafe(Mat mat)
      If the type of any of the input matrices is different than what was previously used, or their symmetry changed but
      the symbolic phase took advantage of their symmetry, the product is cleared and MatProductSetFromOptions()/MatProductSymbolic() are invoked again.
 
-.seealso: MatProductCreate(), MatProductSetFromOptions(), MatProductSymbolic(). MatProductClear()
+.seealso: `MatProductCreate()`, `MatProductSetFromOptions()`, `MatProductSymbolic().` `MatProductClear()`
 @*/
 PetscErrorCode MatProductReplaceMats(Mat A,Mat B,Mat C,Mat D)
 {
@@ -512,7 +512,7 @@ static PetscErrorCode MatProductSetFromOptions_Private(Mat mat)
 
    Level: intermediate
 
-.seealso: MatSetFromOptions(), MatProductCreate(), MatProductCreateWithMat()
+.seealso: `MatSetFromOptions()`, `MatProductCreate()`, `MatProductCreateWithMat()`
 @*/
 PetscErrorCode MatProductSetFromOptions(Mat mat)
 {
@@ -539,7 +539,7 @@ PetscErrorCode MatProductSetFromOptions(Mat mat)
 
    Level: intermediate
 
-.seealso: MatView(), MatProductCreate(), MatProductCreateWithMat()
+.seealso: `MatView()`, `MatProductCreate()`, `MatProductCreateWithMat()`
 @*/
 PetscErrorCode MatProductView(Mat mat, PetscViewer viewer)
 {
@@ -638,7 +638,7 @@ PetscErrorCode MatProductNumeric_ABC(Mat mat)
 
    Notes: MatProductSymbolic() must have been called on mat before calling this function
 
-.seealso: MatProductCreate(), MatSetType(), MatProductSymbolic()
+.seealso: `MatProductCreate()`, `MatSetType()`, `MatProductSymbolic()`
 @*/
 PetscErrorCode MatProductNumeric(Mat mat)
 {
@@ -760,7 +760,7 @@ PetscErrorCode MatProductSymbolic_ABC(Mat mat)
 
    Notes: MatProductSetFromOptions() must have been called on mat before calling this function
 
-.seealso: MatProductCreate(), MatProductCreateWithMat(), MatProductSetFromOptions(), MatProductNumeric(), MatProductSetType(), MatProductSetAlgorithm()
+.seealso: `MatProductCreate()`, `MatProductCreateWithMat()`, `MatProductSetFromOptions()`, `MatProductNumeric()`, `MatProductSetType()`, `MatProductSetAlgorithm()`
 @*/
 PetscErrorCode MatProductSymbolic(Mat mat)
 {
@@ -825,7 +825,7 @@ PetscErrorCode MatProductSymbolic(Mat mat)
 
    Level: intermediate
 
-.seealso: MatProductSetType(), MatProductSetAlgorithm(), MatProductCreate()
+.seealso: `MatProductSetType()`, `MatProductSetAlgorithm()`, `MatProductCreate()`
 @*/
 PetscErrorCode MatProductSetFill(Mat mat,PetscReal fill)
 {
@@ -852,7 +852,7 @@ PetscErrorCode MatProductSetFill(Mat mat,PetscReal fill)
 
    Level: intermediate
 
-.seealso: MatProductSetType(), MatProductSetFill(), MatProductCreate(), MatProductAlgorithm
+.seealso: `MatProductSetType()`, `MatProductSetFill()`, `MatProductCreate()`, `MatProductAlgorithm`
 @*/
 PetscErrorCode MatProductSetAlgorithm(Mat mat,MatProductAlgorithm alg)
 {
@@ -875,7 +875,7 @@ PetscErrorCode MatProductSetAlgorithm(Mat mat,MatProductAlgorithm alg)
 
    Level: intermediate
 
-.seealso: MatProductCreate(), MatProductType
+.seealso: `MatProductCreate()`, `MatProductType`
 @*/
 PetscErrorCode MatProductSetType(Mat mat,MatProductType productype)
 {
@@ -977,7 +977,7 @@ PetscErrorCode MatProductCreate_Private(Mat A,Mat B,Mat C,Mat D)
 
    Level: intermediate
 
-.seealso: MatProductCreate(), MatProductClear()
+.seealso: `MatProductCreate()`, `MatProductClear()`
 @*/
 PetscErrorCode MatProductCreateWithMat(Mat A,Mat B,Mat C,Mat D)
 {
@@ -1029,7 +1029,7 @@ PetscErrorCode MatProductCreateWithMat(Mat A,Mat B,Mat C,Mat D)
 
    Level: intermediate
 
-.seealso: MatProductCreateWithMat(), MatProductSetType(), MatProductSetAlgorithm()
+.seealso: `MatProductCreateWithMat()`, `MatProductSetType()`, `MatProductSetAlgorithm()`
 @*/
 PetscErrorCode MatProductCreate(Mat A,Mat B,Mat C,Mat *D)
 {
@@ -1184,7 +1184,7 @@ PetscErrorCode MatProductSymbolic_ABC_Basic(Mat mat)
 
    Level: intermediate
 
-.seealso: MatProductCreateWithMat(), MatProductSetType(), MatProductCreate()
+.seealso: `MatProductCreateWithMat()`, `MatProductSetType()`, `MatProductCreate()`
 @*/
 PetscErrorCode MatProductGetType(Mat mat, MatProductType *mtype)
 {
@@ -1211,7 +1211,7 @@ PetscErrorCode MatProductGetType(Mat mat, MatProductType *mtype)
 
    Level: intermediate
 
-.seealso: MatProductCreateWithMat(), MatProductSetType(), MatProductSetAlgorithm()
+.seealso: `MatProductCreateWithMat()`, `MatProductSetType()`, `MatProductSetAlgorithm()`
 @*/
 PetscErrorCode MatProductGetMats(Mat mat, Mat *A, Mat *B, Mat *C)
 {

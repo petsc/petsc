@@ -409,7 +409,7 @@ static PetscErrorCode TSView_EIMEX(TS ts,PetscViewer viewer)
 
   Level: intermediate
 
-.seealso: TSEIMEXSetRowCol(), TSEIMEXSetOrdAdapt(), TSEIMEX
+.seealso: `TSEIMEXSetRowCol()`, `TSEIMEXSetOrdAdapt()`, `TSEIMEX`
 @*/
 PetscErrorCode TSEIMEXSetMaxRows(TS ts, PetscInt nrows)
 {
@@ -430,7 +430,7 @@ PetscErrorCode TSEIMEXSetMaxRows(TS ts, PetscInt nrows)
 
   Level: intermediate
 
-.seealso: TSEIMEXSetMaxRows(), TSEIMEXSetOrdAdapt(), TSEIMEX
+.seealso: `TSEIMEXSetMaxRows()`, `TSEIMEXSetOrdAdapt()`, `TSEIMEX`
 @*/
 PetscErrorCode TSEIMEXSetRowCol(TS ts, PetscInt row, PetscInt col)
 {
@@ -451,7 +451,7 @@ PetscErrorCode TSEIMEXSetRowCol(TS ts, PetscInt row, PetscInt col)
 
   Level: intermediate
 
-.seealso: TSEIMEXSetRowCol(), TSEIMEXSetOrdAdapt(), TSEIMEX
+.seealso: `TSEIMEXSetRowCol()`, `TSEIMEXSetOrdAdapt()`, `TSEIMEX`
 @*/
 PetscErrorCode TSEIMEXSetOrdAdapt(TS ts, PetscBool flg)
 {
@@ -531,7 +531,7 @@ Computing, 31 (2010), pp. 4452-4477.
 
       Level: beginner
 
-.seealso:  TSCreate(), TS, TSSetType(), TSEIMEXSetMaxRows(), TSEIMEXSetRowCol(), TSEIMEXSetOrdAdapt()
+.seealso: `TSCreate()`, `TS`, `TSSetType()`, `TSEIMEXSetMaxRows()`, `TSEIMEXSetRowCol()`, `TSEIMEXSetOrdAdapt()`
 
  M*/
 PETSC_EXTERN PetscErrorCode TSCreate_EIMEX(TS ts)

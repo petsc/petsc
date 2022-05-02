@@ -17,7 +17,7 @@
 
    Level: advanced
 
-.seealso: PetscDrawGetCoordinates()
+.seealso: `PetscDrawGetCoordinates()`
 
 @*/
 PetscErrorCode  PetscDrawSetCoordinates(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr)
@@ -49,7 +49,7 @@ PetscErrorCode  PetscDrawSetCoordinates(PetscDraw draw,PetscReal xl,PetscReal yl
 .  xr - the horizontal coordinate of the upper right corner of the drawing region.
 -  yr - the vertical coordinate of the upper right corner of the drawing region.
 
-.seealso: PetscDrawSetCoordinates()
+.seealso: `PetscDrawSetCoordinates()`
 
 @*/
 PetscErrorCode  PetscDrawGetCoordinates(PetscDraw draw,PetscReal *xl,PetscReal *yl,PetscReal *xr,PetscReal *yr)

@@ -12,7 +12,7 @@
 
    Level: intermediate
 
-.seealso:  AOCreateBasic(), AOCreateBasicIS(), AOPetscToApplication(), AOView(), AOApplicationToPetsc()
+.seealso: `AOCreateBasic()`, `AOCreateBasicIS()`, `AOPetscToApplication()`, `AOView()`, `AOApplicationToPetsc()`
 S*/
 typedef struct _p_AO* AO;
 
@@ -22,7 +22,7 @@ typedef struct _p_AO* AO;
 
    Level: beginner
 
-.seealso: AOSetType(), AO
+.seealso: `AOSetType()`, `AO`
 J*/
 typedef const char* AOType;
 #define AOBASIC               "basic"

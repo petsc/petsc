@@ -474,7 +474,7 @@ static PetscErrorCode KSPDestroy_PIPEGCR(KSP ksp)
   Options Database:
 . -ksp_pipegcr_unroll_w <bool> -  use unrolling
 
-.seealso: KSPPIPEGCR, KSPPIPEGCRSetTruncationType(), KSPPIPEGCRSetNprealloc(),KSPPIPEGCRGetUnrollW()
+.seealso: `KSPPIPEGCR`, `KSPPIPEGCRSetTruncationType()`, `KSPPIPEGCRSetNprealloc(),KSPPIPEGCRGetUnrollW()`
 @*/
 PetscErrorCode KSPPIPEGCRSetUnrollW(KSP ksp,PetscBool unroll_w)
 {
@@ -500,7 +500,7 @@ PetscErrorCode KSPPIPEGCRSetUnrollW(KSP ksp,PetscBool unroll_w)
 
   Level: intermediate
 
-.seealso: KSPPIPEGCR, KSPPIPEGCRGetTruncationType(), KSPPIPEGCRGetNprealloc(),KSPPIPEGCRSetUnrollW()
+.seealso: `KSPPIPEGCR`, `KSPPIPEGCRGetTruncationType()`, `KSPPIPEGCRGetNprealloc(),KSPPIPEGCRSetUnrollW()`
 @*/
 PetscErrorCode KSPPIPEGCRGetUnrollW(KSP ksp,PetscBool *unroll_w)
 {
@@ -530,7 +530,7 @@ PetscErrorCode KSPPIPEGCRGetUnrollW(KSP ksp,PetscBool *unroll_w)
   Options Database:
 . -ksp_pipegcr_mmax <N> - maximum number of previous directions
 
-.seealso: KSPPIPEGCR, KSPPIPEGCRSetTruncationType(), KSPPIPEGCRSetNprealloc()
+.seealso: `KSPPIPEGCR`, `KSPPIPEGCRSetTruncationType()`, `KSPPIPEGCRSetNprealloc()`
 @*/
 PetscErrorCode KSPPIPEGCRSetMmax(KSP ksp,PetscInt mmax)
 {
@@ -558,7 +558,7 @@ PetscErrorCode KSPPIPEGCRSetMmax(KSP ksp,PetscInt mmax)
 
    Level: intermediate
 
-.seealso: KSPPIPEGCR, KSPPIPEGCRGetTruncationType(), KSPPIPEGCRGetNprealloc(), KSPPIPEGCRSetMmax()
+.seealso: `KSPPIPEGCR`, `KSPPIPEGCRGetTruncationType()`, `KSPPIPEGCRGetNprealloc()`, `KSPPIPEGCRSetMmax()`
 @*/
 
 PetscErrorCode KSPPIPEGCRGetMmax(KSP ksp,PetscInt *mmax)
@@ -585,7 +585,7 @@ PetscErrorCode KSPPIPEGCRGetMmax(KSP ksp,PetscInt *mmax)
   Options Database:
 . -ksp_pipegcr_nprealloc <N> - number of vectors to preallocate
 
-.seealso: KSPPIPEGCR, KSPPIPEGCRGetTruncationType(), KSPPIPEGCRGetNprealloc()
+.seealso: `KSPPIPEGCR`, `KSPPIPEGCRGetTruncationType()`, `KSPPIPEGCRGetNprealloc()`
 @*/
 PetscErrorCode KSPPIPEGCRSetNprealloc(KSP ksp,PetscInt nprealloc)
 {
@@ -611,7 +611,7 @@ PetscErrorCode KSPPIPEGCRSetNprealloc(KSP ksp,PetscInt nprealloc)
 
    Level: advanced
 
-.seealso: KSPPIPEGCR, KSPPIPEGCRGetTruncationType(), KSPPIPEGCRSetNprealloc()
+.seealso: `KSPPIPEGCR`, `KSPPIPEGCRGetTruncationType()`, `KSPPIPEGCRSetNprealloc()`
 @*/
 PetscErrorCode KSPPIPEGCRGetNprealloc(KSP ksp,PetscInt *nprealloc)
 {
@@ -640,7 +640,7 @@ PetscErrorCode KSPPIPEGCRGetNprealloc(KSP ksp,PetscInt *nprealloc)
   Options Database:
 . -ksp_pipegcr_truncation_type <standard,notay> - which stored basis vectors to orthogonalize against
 
-.seealso: KSPPIPEGCR, KSPPIPEGCRSetTruncationType, KSPPIPEGCRTruncationType, KSPFCDTruncationType
+.seealso: `KSPPIPEGCR`, `KSPPIPEGCRSetTruncationType`, `KSPPIPEGCRTruncationType`, `KSPFCDTruncationType`
 @*/
 PetscErrorCode KSPPIPEGCRSetTruncationType(KSP ksp,KSPFCDTruncationType truncstrat)
 {
@@ -672,7 +672,7 @@ PetscErrorCode KSPPIPEGCRSetTruncationType(KSP ksp,KSPFCDTruncationType truncstr
 
    Level: intermediate
 
-.seealso: KSPPIPEGCR, KSPPIPEGCRSetTruncationType, KSPPIPEGCRTruncationType, KSPFCDTruncationType
+.seealso: `KSPPIPEGCR`, `KSPPIPEGCRSetTruncationType`, `KSPPIPEGCRTruncationType`, `KSPFCDTruncationType`
 @*/
 PetscErrorCode KSPPIPEGCRGetTruncationType(KSP ksp,KSPFCDTruncationType *truncstrat)
 {
@@ -742,7 +742,7 @@ static PetscErrorCode  KSPPIPEGCRSetModifyPC_PIPEGCR(KSP ksp,KSPPIPEGCRModifyPCF
  Notes:
  The default modifypc routine is KSPPIPEGCRModifyPCNoChange()
 
- .seealso: KSPPIPEGCRModifyPCNoChange()
+ .seealso: `KSPPIPEGCRModifyPCNoChange()`
 
  @*/
 PetscErrorCode  KSPPIPEGCRSetModifyPC(KSP ksp,PetscErrorCode (*function)(KSP,PetscInt,PetscReal,void*),void *data,PetscErrorCode (*destroy)(void*))
@@ -782,8 +782,8 @@ PetscErrorCode  KSPPIPEGCRSetModifyPC(KSP ksp,PetscErrorCode (*function)(KSP,Pet
 
    Level: intermediate
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,
-           KSPPIPEFGMRES, KSPPIPECG, KSPPIPECR, KSPPIPEFCG,KSPPIPEGCRSetTruncationType(),KSPPIPEGCRSetNprealloc(),KSPPIPEGCRSetUnrollW(),KSPPIPEGCRSetMmax()
+.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`,
+          `KSPPIPEFGMRES`, `KSPPIPECG`, `KSPPIPECR`, `KSPPIPEFCG,KSPPIPEGCRSetTruncationType(),KSPPIPEGCRSetNprealloc(),KSPPIPEGCRSetUnrollW(),KSPPIPEGCRSetMmax()`
 
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_PIPEGCR(KSP ksp)

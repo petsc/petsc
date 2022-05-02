@@ -14,7 +14,7 @@
 
   Level: intermediate
 
-.seealso: MatChop()
+.seealso: `MatChop()`
  @*/
 PetscErrorCode MatCreateLaplacian(Mat A, PetscReal tol, PetscBool weighted, Mat *L)
 {

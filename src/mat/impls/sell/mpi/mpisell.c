@@ -19,7 +19,7 @@
 
   Level: beginner
 
-.seealso: MatCreateSELL(), MatCreateSeqSELL(), MATSEQSELL, MATMPISELL
+.seealso: `MatCreateSELL()`, `MatCreateSeqSELL()`, `MATSEQSELL`, `MATMPISELL`
 M*/
 
 PetscErrorCode MatDiagonalSet_MPISELL(Mat Y,Vec D,InsertMode is)
@@ -1352,8 +1352,8 @@ PetscErrorCode MatDuplicate_MPISELL(Mat matin,MatDuplicateOption cpvalues,Mat *n
 
    Level: intermediate
 
-.seealso: MatCreate(), MatCreateSeqSELL(), MatSetValues(), MatCreatesell(),
-          MATMPISELL, MatGetInfo(), PetscSplitOwnership()
+.seealso: `MatCreate()`, `MatCreateSeqSELL()`, `MatSetValues()`, `MatCreatesell()`,
+          `MATMPISELL`, `MatGetInfo()`, `PetscSplitOwnership()`
 @*/
 PetscErrorCode MatMPISELLSetPreallocation(Mat B,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
 {
@@ -1373,7 +1373,7 @@ PetscErrorCode MatMPISELLSetPreallocation(Mat B,PetscInt d_nz,const PetscInt d_n
 
    Level: beginner
 
-.seealso: MatCreateSell(), MATSEQSELL, MATSELL, MATSEQAIJ, MATAIJ, MATMPIAIJ
+.seealso: `MatCreateSell()`, `MATSEQSELL`, `MATSELL`, `MATSEQAIJ`, `MATAIJ`, `MATMPIAIJ`
 M*/
 
 /*@C
@@ -1532,8 +1532,8 @@ M*/
 
    Level: intermediate
 
-.seealso: MatCreate(), MatCreateSeqSELL(), MatSetValues(), MatMPISELLSetPreallocation(), MatMPISELLSetPreallocationSELL(),
-          MATMPISELL, MatCreateMPISELLWithArrays()
+.seealso: `MatCreate()`, `MatCreateSeqSELL()`, `MatSetValues()`, `MatMPISELLSetPreallocation()`, `MatMPISELLSetPreallocationSELL()`,
+          `MATMPISELL`, `MatCreateMPISELLWithArrays()`
 @*/
 PetscErrorCode MatCreateSELL(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt d_rlenmax,const PetscInt d_rlen[],PetscInt o_rlenmax,const PetscInt o_rlen[],Mat *A)
 {
@@ -1582,7 +1582,7 @@ PetscErrorCode MatMPISELLGetSeqSELL(Mat A,Mat *Ad,Mat *Ao,const PetscInt *colmap
 
     Level: developer
 
-.seealso: MatGetOwnershipRange(), MatMPISELLGetLocalMat()
+.seealso: `MatGetOwnershipRange()`, `MatMPISELLGetLocalMat()`
 
 @*/
 PetscErrorCode MatMPISELLGetLocalMatCondensed(Mat A,MatReuse scall,IS *row,IS *col,Mat *A_loc)
@@ -1808,7 +1808,7 @@ PetscErrorCode MatSOR_MPISELL(Mat matin,Vec bb,PetscReal omega,MatSORType flag,P
 
   Level: beginner
 
-.seealso: MatCreateSELL()
+.seealso: `MatCreateSELL()`
 M*/
 PETSC_EXTERN PetscErrorCode MatCreate_MPISELL(Mat B)
 {

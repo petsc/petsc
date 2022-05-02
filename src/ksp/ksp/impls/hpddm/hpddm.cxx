@@ -327,7 +327,7 @@ static PetscErrorCode KSPSolve_HPDDM(KSP ksp)
 
    Level: intermediate
 
-.seealso:  KSPCreate(), KSPType (for list of available types), KSPHPDDMGetDeflationMat()
+.seealso: `KSPCreate()`, `KSPType`, `KSPHPDDMGetDeflationMat()`
 @*/
 PetscErrorCode KSPHPDDMSetDeflationMat(KSP ksp, Mat U)
 {
@@ -350,7 +350,7 @@ PetscErrorCode KSPHPDDMSetDeflationMat(KSP ksp, Mat U)
 
    Level: intermediate
 
-.seealso:  KSPCreate(), KSPType (for list of available types), KSPHPDDMSetDeflationMat()
+.seealso: `KSPCreate()`, `KSPType`, `KSPHPDDMSetDeflationMat()`
 @*/
 PetscErrorCode KSPHPDDMGetDeflationMat(KSP ksp, Mat *U)
 {
@@ -470,7 +470,7 @@ static PetscErrorCode KSPMatSolve_HPDDM(KSP ksp, Mat B, Mat X)
      Unlike KSPReset(), this function does not destroy any deflation space attached to the KSP.
      As an example, in the following sequence: KSPHPDDMSetType(ksp, KSPGCRODR); KSPSolve(ksp, b, x); KSPHPDDMSetType(ksp, KSPGMRES); KSPHPDDMSetType(ksp, KSPGCRODR); KSPSolve(ksp, b, x); the recycled space is reused in the second KSPSolve().
 
-.seealso:  KSPCreate(), KSPType (for list of available types), KSPHPDDMType, KSPHPDDMGetType()
+.seealso: `KSPCreate()`, `KSPType`, `KSPHPDDMType`, `KSPHPDDMGetType()`
 @*/
 PetscErrorCode KSPHPDDMSetType(KSP ksp, KSPHPDDMType type)
 {
@@ -492,7 +492,7 @@ PetscErrorCode KSPHPDDMSetType(KSP ksp, KSPHPDDMType type)
 
    Level: intermediate
 
-.seealso:  KSPCreate(), KSPType (for list of available types), KSPHPDDMType, KSPHPDDMSetType()
+.seealso: `KSPCreate()`, `KSPType`, `KSPHPDDMType`, `KSPHPDDMSetType()`
 @*/
 PetscErrorCode KSPHPDDMGetType(KSP ksp, KSPHPDDMType *type)
 {
@@ -562,7 +562,7 @@ static PetscErrorCode KSPHPDDMGetType_HPDDM(KSP ksp, KSPHPDDMType *type)
 
    Level: intermediate
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPGMRES, KSPCG, KSPLGMRES, KSPDGMRES
+.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPGMRES`, `KSPCG`, `KSPLGMRES`, `KSPDGMRES`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_HPDDM(KSP ksp)
 {

@@ -156,7 +156,7 @@ static PetscErrorCode PCDestroy_NN(PC pc)
 
    Contributed by Paulo Goldfeld
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,  MATIS
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `MATIS`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_NN(PC pc)

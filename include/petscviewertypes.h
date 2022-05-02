@@ -11,7 +11,7 @@
 
    Level: beginner
 
-.seealso:  PetscViewerCreate(), PetscViewerSetType(), PetscViewerType
+.seealso: `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscViewerType`
 S*/
 typedef struct _p_PetscViewer* PetscViewer;
 

@@ -289,7 +289,7 @@ old_bs:
    Notes:
     This is called before graph coarsers are called.
 
-.seealso: PCGAMGSetThreshold()
+.seealso: `PCGAMGSetThreshold()`
 @*/
 PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm)
 {

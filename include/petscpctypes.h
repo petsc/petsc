@@ -6,7 +6,7 @@
 
    Level: beginner
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types)
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`
 S*/
 typedef struct _p_PC* PC;
 
@@ -20,7 +20,7 @@ typedef struct _p_PC* PC;
 
           PCRegister() is used to register preconditioners that are then accessible via PCSetType()
 
-.seealso: PCSetType(), PC, PCCreate(), PCRegister(), PCSetFromOptions()
+.seealso: `PCSetType()`, `PC`, `PCCreate()`, `PCRegister()`, `PCSetFromOptions()`
 J*/
 typedef const char* PCType;
 #define PCNONE            "none"
@@ -94,7 +94,7 @@ typedef enum { PC_SIDE_DEFAULT=-1,PC_LEFT,PC_RIGHT,PC_SYMMETRIC} PCSide;
    Notes:
     this must match petsc/finclude/petscpc.h and the KSPConvergedReason values in petscksp.h
 
-.seealso: PCApplyRichardson()
+.seealso: `PCApplyRichardson()`
 E*/
 typedef enum {
               PCRICHARDSON_CONVERGED_RTOL               =  2,
@@ -128,7 +128,7 @@ $                        Not very good.
 
    Level: beginner
 
-.seealso: PCASMSetType()
+.seealso: `PCASMSetType()`
 E*/
 typedef enum {PC_ASM_BASIC = 3,PC_ASM_RESTRICT = 1,PC_ASM_INTERPOLATE = 2,PC_ASM_NONE = 0} PCASMType;
 
@@ -158,7 +158,7 @@ $                        Not very good.
 
    Level: beginner
 
-.seealso: PCGASMSetType()
+.seealso: `PCGASMSetType()`
 E*/
 typedef enum {PC_GASM_BASIC = 3,PC_GASM_RESTRICT = 1,PC_GASM_INTERPOLATE = 2,PC_GASM_NONE = 0} PCGASMType;
 
@@ -176,7 +176,7 @@ $                         alpha I + R
 
    Level: beginner
 
-.seealso: PCCompositeSetType()
+.seealso: `PCCompositeSetType()`
 E*/
 typedef enum {PC_COMPOSITE_ADDITIVE,PC_COMPOSITE_MULTIPLICATIVE,PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE,PC_COMPOSITE_SPECIAL,PC_COMPOSITE_SCHUR,PC_COMPOSITE_GKB} PCCompositeType;
 
@@ -185,7 +185,7 @@ typedef enum {PC_COMPOSITE_ADDITIVE,PC_COMPOSITE_MULTIPLICATIVE,PC_COMPOSITE_SYM
 
     Level: intermediate
 
-.seealso: PCFieldSplitSetSchurPre()
+.seealso: `PCFieldSplitSetSchurPre()`
 E*/
 typedef enum {PC_FIELDSPLIT_SCHUR_PRE_SELF,PC_FIELDSPLIT_SCHUR_PRE_SELFP,PC_FIELDSPLIT_SCHUR_PRE_A11,PC_FIELDSPLIT_SCHUR_PRE_USER,PC_FIELDSPLIT_SCHUR_PRE_FULL} PCFieldSplitSchurPreType;
 
@@ -194,7 +194,7 @@ typedef enum {PC_FIELDSPLIT_SCHUR_PRE_SELF,PC_FIELDSPLIT_SCHUR_PRE_SELFP,PC_FIEL
 
     Level: intermediate
 
-.seealso: PCFieldSplitSetSchurFactType()
+.seealso: `PCFieldSplitSetSchurFactType()`
 E*/
 typedef enum {
   PC_FIELDSPLIT_SCHUR_FACT_DIAG,
@@ -208,7 +208,7 @@ typedef enum {
 
     Level: intermediate
 
-.seealso: PCPARMSSetGlobal()
+.seealso: `PCPARMSSetGlobal()`
 E*/
 typedef enum {PC_PARMS_GLOBAL_RAS,PC_PARMS_GLOBAL_SCHUR,PC_PARMS_GLOBAL_BJ} PCPARMSGlobalType;
 
@@ -217,7 +217,7 @@ typedef enum {PC_PARMS_GLOBAL_RAS,PC_PARMS_GLOBAL_SCHUR,PC_PARMS_GLOBAL_BJ} PCPA
 
     Level: intermediate
 
-.seealso: PCPARMSSetLocal()
+.seealso: `PCPARMSSetLocal()`
 E*/
 typedef enum {PC_PARMS_LOCAL_ILU0,PC_PARMS_LOCAL_ILUK,PC_PARMS_LOCAL_ILUT,PC_PARMS_LOCAL_ARMS} PCPARMSLocalType;
 
@@ -230,7 +230,7 @@ $   PCGAMGAGG - (the default) smoothed aggregation algorithm, robust, very well 
 $   PCGAMGGEO - geometric coarsening, uses mesh generator to produce coarser meshes, limited to triangles, not well tested
 $   PCGAMGCLASSICAL - classical algebraic multigrid preconditioner, incomplete, poorly tested
 
-.seealso: PCMG, PCSetType(), PCGAMGSetThreshold(), PCGAMGSetThreshold(), PCGAMGSetReuseInterpolation()
+.seealso: `PCMG`, `PCSetType()`, `PCGAMGSetThreshold()`, `PCGAMGSetThreshold()`, `PCGAMGSetReuseInterpolation()`
 J*/
 typedef const char *PCGAMGType;
 #define PCGAMGAGG         "agg"
@@ -259,7 +259,7 @@ typedef const char *PCGAMGClassicalType;
 -  PC_MG_KASKADE - like full multigrid except one never goes back to a coarser level
                from a finer
 
-.seealso: PCMGSetType(), PCMGSetCycleType(), PCMGSetCycleTypeOnLevel()
+.seealso: `PCMGSetType()`, `PCMGSetCycleType()`, `PCMGSetCycleTypeOnLevel()`
 
 E*/
 typedef enum { PC_MG_MULTIPLICATIVE,PC_MG_ADDITIVE,PC_MG_FULL,PC_MG_KASKADE } PCMGType;
@@ -274,7 +274,7 @@ typedef enum { PC_MG_MULTIPLICATIVE,PC_MG_ADDITIVE,PC_MG_FULL,PC_MG_KASKADE } PC
 +  PC_MG_V_CYCLE - use the v cycle
 -  PC_MG_W_CYCLE - use the w cycle
 
-.seealso: PCMGSetCycleType()
+.seealso: `PCMGSetCycleType()`
 
 E*/
 typedef enum { PC_MG_CYCLE_V = 1,PC_MG_CYCLE_W = 2 } PCMGCycleType;
@@ -292,7 +292,7 @@ typedef enum { PC_MG_CYCLE_V = 1,PC_MG_CYCLE_W = 2 } PCMGCycleType;
 
    Users should never set PC_MG_GALERKIN_EXTERNAL, it is used by GAMG and ML
 
-.seealso: PCMGSetCycleType()
+.seealso: `PCMGSetCycleType()`
 
 E*/
 typedef enum { PC_MG_GALERKIN_BOTH,PC_MG_GALERKIN_PMAT,PC_MG_GALERKIN_MAT, PC_MG_GALERKIN_NONE, PC_MG_GALERKIN_EXTERNAL} PCMGGalerkinType;
@@ -302,7 +302,7 @@ typedef enum { PC_MG_GALERKIN_BOTH,PC_MG_GALERKIN_PMAT,PC_MG_GALERKIN_MAT, PC_MG
 
    Level: beginner
 
-.seealso: PCExoticSetType(), PCEXOTIC
+.seealso: `PCExoticSetType()`, `PCEXOTIC`
 E*/
 typedef enum { PC_EXOTIC_FACE,PC_EXOTIC_WIREBASKET } PCExoticType;
 
@@ -326,7 +326,7 @@ typedef enum {
 
   Level: beginner
 
-.seealso: PCMGSetAdaptCoarseSpaceType(), PCMG
+.seealso: `PCMGSetAdaptCoarseSpaceType()`, `PCMG`
 E*/
 typedef enum { PCMG_POLYNOMIAL, PCMG_HARMONIC, PCMG_EIGENVECTOR, PCMG_GENERALIZED_EIGENVECTOR } PCMGCoarseSpaceType;
 
@@ -335,7 +335,7 @@ typedef enum { PCMG_POLYNOMIAL, PCMG_HARMONIC, PCMG_EIGENVECTOR, PCMG_GENERALIZE
 
    Level: beginner
 
-.seealso: PCPatchSetConstructType(), PCEXOTIC
+.seealso: `PCPatchSetConstructType()`, `PCEXOTIC`
 E*/
 typedef enum {PC_PATCH_STAR, PC_PATCH_VANKA, PC_PATCH_PARDECOMP, PC_PATCH_USER, PC_PATCH_PYTHON} PCPatchConstructType;
 
@@ -358,7 +358,7 @@ typedef enum {PC_PATCH_STAR, PC_PATCH_VANKA, PC_PATCH_PARDECOMP, PC_PATCH_USER, 
 
     Level: intermediate
 
-.seealso: PCDeflationSetSpaceToCompute(), PCDEFLATION
+.seealso: `PCDeflationSetSpaceToCompute()`, `PCDEFLATION`
 E*/
 typedef enum {
   PC_DEFLATION_SPACE_HAAR,
@@ -382,7 +382,7 @@ typedef enum {
 .   PC_HPDDM_COARSE_CORRECTION_ADDITIVE - eq. (2)
 -   PC_HPDDM_COARSE_CORRECTION_BALANCED - eq. (3)
 
-.seealso: PCHPDDM, PCSetType(), PCHPDDMShellApply()
+.seealso: `PCHPDDM`, `PCSetType()`, `PCHPDDMShellApply()`
 E*/
 typedef enum { PC_HPDDM_COARSE_CORRECTION_DEFLATED, PC_HPDDM_COARSE_CORRECTION_ADDITIVE, PC_HPDDM_COARSE_CORRECTION_BALANCED } PCHPDDMCoarseCorrectionType;
 
@@ -400,7 +400,8 @@ typedef enum {PC_SETUP_ERROR = -1,PC_NOERROR,PC_FACTOR_STRUCT_ZEROPIVOT,PC_FACTO
 
     Level: intermediate
 
-.seealso: PCGAMGSetCoarseGridLayoutType()
+.seealso: `PCGAMGSetCoarseGridLayoutType()`
+
     Any additions/changes here MUST also be made in include/petsc/finclude/petscpc.h
 E*/
 typedef enum {PCGAMG_LAYOUT_COMPACT,PCGAMG_LAYOUT_SPREAD} PCGAMGLayoutType;

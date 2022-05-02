@@ -18,7 +18,7 @@
 
   Level: intermediate
 
-.seealso: DMType, DMMoabCreate(), DMCreate(), DMSetType(), DMMoabCreateMoab()
+.seealso: `DMType`, `DMMoabCreate()`, `DMCreate()`, `DMSetType()`, `DMMoabCreateMoab()`
 M*/
 
 /* External function declarations here */
@@ -636,7 +636,7 @@ PetscErrorCode DMMoabGetMaterialBlock(DM dm, const moab::EntityHandle ehandle, P
 
   Level: beginner
 
-.seealso: DMMoabGetVertexConnectivity()
+.seealso: `DMMoabGetVertexConnectivity()`
 @*/
 PetscErrorCode DMMoabGetVertexCoordinates(DM dm, PetscInt nconn, const moab::EntityHandle *conn, PetscReal *vpos)
 {
@@ -674,7 +674,7 @@ PetscErrorCode DMMoabGetVertexCoordinates(DM dm, PetscInt nconn, const moab::Ent
 
   Level: beginner
 
-.seealso: DMMoabGetVertexCoordinates(), DMMoabRestoreVertexConnectivity()
+.seealso: `DMMoabGetVertexCoordinates()`, `DMMoabRestoreVertexConnectivity()`
 @*/
 PetscErrorCode DMMoabGetVertexConnectivity(DM dm, moab::EntityHandle vhandle, PetscInt* nconn, moab::EntityHandle **conn)
 {
@@ -712,7 +712,7 @@ PetscErrorCode DMMoabGetVertexConnectivity(DM dm, moab::EntityHandle vhandle, Pe
 
   Level: beginner
 
-.seealso: DMMoabGetVertexCoordinates(), DMMoabGetVertexConnectivity()
+.seealso: `DMMoabGetVertexCoordinates()`, `DMMoabGetVertexConnectivity()`
 @*/
 PetscErrorCode DMMoabRestoreVertexConnectivity(DM dm, moab::EntityHandle ehandle, PetscInt* nconn, moab::EntityHandle **conn)
 {
@@ -742,7 +742,7 @@ PetscErrorCode DMMoabRestoreVertexConnectivity(DM dm, moab::EntityHandle ehandle
 
   Level: beginner
 
-.seealso: DMMoabGetVertexCoordinates(), DMMoabGetVertexConnectivity(), DMMoabRestoreVertexConnectivity()
+.seealso: `DMMoabGetVertexCoordinates()`, `DMMoabGetVertexConnectivity()`, `DMMoabRestoreVertexConnectivity()`
 @*/
 PetscErrorCode DMMoabGetElementConnectivity(DM dm, moab::EntityHandle ehandle, PetscInt* nconn, const moab::EntityHandle **conn)
 {
@@ -778,7 +778,7 @@ PetscErrorCode DMMoabGetElementConnectivity(DM dm, moab::EntityHandle ehandle, P
 
   Level: beginner
 
-.seealso: DMMoabCheckBoundaryVertices()
+.seealso: `DMMoabCheckBoundaryVertices()`
 @*/
 PetscErrorCode DMMoabIsEntityOnBoundary(DM dm, const moab::EntityHandle ent, PetscBool* ent_on_boundary)
 {
@@ -826,7 +826,7 @@ PetscErrorCode DMMoabIsEntityOnBoundary(DM dm, const moab::EntityHandle ent, Pet
 
   Level: beginner
 
-.seealso: DMMoabIsEntityOnBoundary()
+.seealso: `DMMoabIsEntityOnBoundary()`
 @*/
 PetscErrorCode DMMoabCheckBoundaryVertices(DM dm, PetscInt nconn, const moab::EntityHandle *cnt, PetscBool* isbdvtx)
 {
@@ -858,7 +858,7 @@ PetscErrorCode DMMoabCheckBoundaryVertices(DM dm, PetscInt nconn, const moab::En
 
   Level: beginner
 
-.seealso: DMMoabCheckBoundaryVertices(), DMMoabIsEntityOnBoundary()
+.seealso: `DMMoabCheckBoundaryVertices()`, `DMMoabIsEntityOnBoundary()`
 @*/
 PetscErrorCode DMMoabGetBoundaryMarkers(DM dm, const moab::Range **bdvtx, const moab::Range** bdelems, const moab::Range** bdfaces)
 {
@@ -1236,7 +1236,7 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
 
   Level: beginner
 
-.seealso: DMMoabCreateSubmesh(), DMMoabCreateElement()
+.seealso: `DMMoabCreateSubmesh()`, `DMMoabCreateElement()`
 @*/
 PetscErrorCode DMMoabCreateVertices(DM dm, const PetscReal* coords, PetscInt nverts, moab::Range* overts)
 {
@@ -1274,7 +1274,7 @@ PetscErrorCode DMMoabCreateVertices(DM dm, const PetscReal* coords, PetscInt nve
 
   Level: beginner
 
-.seealso: DMMoabCreateSubmesh(), DMMoabCreateVertices()
+.seealso: `DMMoabCreateSubmesh()`, `DMMoabCreateVertices()`
 @*/
 PetscErrorCode DMMoabCreateElement(DM dm, const moab::EntityType type, const moab::EntityHandle* conn, PetscInt nverts, moab::EntityHandle* oelem)
 {
@@ -1311,7 +1311,7 @@ PetscErrorCode DMMoabCreateElement(DM dm, const moab::EntityType type, const moa
 
   Level: advanced
 
-.seealso: DMCreate(), DMMoabCreateVertices(), DMMoabCreateElement()
+.seealso: `DMCreate()`, `DMMoabCreateVertices()`, `DMMoabCreateElement()`
 @*/
 PetscErrorCode DMMoabCreateSubmesh(DM dm, DM *newdm)
 {

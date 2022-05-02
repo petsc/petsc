@@ -37,7 +37,7 @@ PetscErrorCode MatDestroy_FFT(Mat A)
 
    Level: intermediate
 
-.seealso: MatCreateVecsFFTW()
+.seealso: `MatCreateVecsFFTW()`
 @*/
 PetscErrorCode MatCreateFFT(MPI_Comm comm,PetscInt ndim,const PetscInt dim[],MatType mattype,Mat *A)
 {

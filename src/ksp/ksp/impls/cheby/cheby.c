@@ -236,7 +236,7 @@ static PetscErrorCode KSPChebyshevEstEigSetUseNoisy_Chebyshev(KSP ksp,PetscBool 
 
    Level: intermediate
 
-.seealso: KSPChebyshevEstEigSet()
+.seealso: `KSPChebyshevEstEigSet()`
 @*/
 PetscErrorCode  KSPChebyshevSetEigenvalues(KSP ksp,PetscReal emax,PetscReal emin)
 {
@@ -310,7 +310,7 @@ PetscErrorCode KSPChebyshevEstEigSet(KSP ksp,PetscReal a,PetscReal b,PetscReal c
 
   Level: intermediate
 
-.seealso: KSPChebyshevEstEigSet()
+.seealso: `KSPChebyshevEstEigSet()`
 @*/
 PetscErrorCode KSPChebyshevEstEigSetUseNoisy(KSP ksp,PetscBool use)
 {
@@ -333,7 +333,7 @@ PetscErrorCode KSPChebyshevEstEigSetUseNoisy(KSP ksp,PetscBool use)
 
   Level: intermediate
 
-.seealso: KSPChebyshevEstEigSet()
+.seealso: `KSPChebyshevEstEigSet()`
 @*/
 PetscErrorCode KSPChebyshevEstEigGetKSP(KSP ksp, KSP *kspest)
 {
@@ -634,9 +634,9 @@ static PetscErrorCode KSPDestroy_Chebyshev(KSP ksp)
           Chebyshev is configured as a smoother by default, targetting the "upper" part of the spectrum.
           The user should call KSPChebyshevSetEigenvalues() if they have eigenvalue estimates.
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,
-           KSPChebyshevSetEigenvalues(), KSPChebyshevEstEigSet(), KSPChebyshevEstEigSetUseNoisy()
-           KSPRICHARDSON, KSPCG, PCMG
+.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`,
+          `KSPChebyshevSetEigenvalues()`, `KSPChebyshevEstEigSet()`, `KSPChebyshevEstEigSetUseNoisy()`
+          `KSPRICHARDSON`, `KSPCG`, `PCMG`
 
 M*/
 

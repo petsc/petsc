@@ -34,7 +34,7 @@ PetscBool         PetscPartitionerRegisterAllCalled = PETSC_FALSE;
 
   Level: advanced
 
-.seealso: PetscPartitionerRegisterAll()
+.seealso: `PetscPartitionerRegisterAll()`
 
 @*/
 PetscErrorCode PetscPartitionerRegister(const char sname[], PetscErrorCode (*function)(PetscPartitioner))
@@ -62,7 +62,7 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_MatPartitioning(PetscPartitio
 
   Level: advanced
 
-.seealso:  PetscPartitionerRegister(), PetscPartitionerRegisterDestroy()
+.seealso: `PetscPartitionerRegister()`, `PetscPartitionerRegisterDestroy()`
 @*/
 PetscErrorCode PetscPartitionerRegisterAll(void)
 {
@@ -88,7 +88,7 @@ static PetscBool PetscPartitionerPackageInitialized = PETSC_FALSE;
 
   Level: developer
 
-.seealso: PetscInitialize()
+.seealso: `PetscInitialize()`
 @*/
 PetscErrorCode  PetscPartitionerFinalizePackage(void)
 {
@@ -104,7 +104,7 @@ PetscErrorCode  PetscPartitionerFinalizePackage(void)
 
   Level: developer
 
-.seealso: PetscInitialize()
+.seealso: `PetscInitialize()`
 @*/
 PetscErrorCode  PetscPartitionerInitializePackage(void)
 {

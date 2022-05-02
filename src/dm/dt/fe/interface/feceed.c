@@ -14,7 +14,7 @@
 
   Level: intermediate
 
-.seealso: PetscFEGetCeedBasis(), DMGetCeed()
+.seealso: `PetscFEGetCeedBasis()`, `DMGetCeed()`
 @*/
 PetscErrorCode PetscFESetCeed(PetscFE fe, Ceed ceed)
 {
@@ -40,7 +40,7 @@ PetscErrorCode PetscFESetCeed(PetscFE fe, Ceed ceed)
 
   Level: intermediate
 
-.seealso: PetscFESetCeed(), DMGetCeed()
+.seealso: `PetscFESetCeed()`, `DMGetCeed()`
 @*/
 PetscErrorCode PetscFEGetCeedBasis(PetscFE fe, CeedBasis *basis)
 {

@@ -101,7 +101,7 @@ static PetscViewer PetscLogMallocTraceViewer   = NULL;
    Developers Note:
      Uses the flg TRdebugLevel (set as the first argument to PetscMallocSetDebug()) to determine if it should run
 
-.seealso: CHKMEMQ
+.seealso: `CHKMEMQ`
 
 @*/
 PetscErrorCode  PetscMallocValidate(int line,const char function[],const char file[])
@@ -345,7 +345,7 @@ PetscErrorCode  PetscTrFreeDefault(void *aa,int lineno,const char function[],con
 
   Level: developer
 
-.seealso: PetscTrMallocDefault(), PetscTrFreeDefault()
+.seealso: `PetscTrMallocDefault()`, `PetscTrFreeDefault()`
 */
 PetscErrorCode PetscTrReallocDefault(size_t len, int lineno, const char function[], const char filename[], void **result)
 {
@@ -482,7 +482,7 @@ PetscErrorCode PetscTrReallocDefault(size_t len, int lineno, const char function
 
     Level: intermediate
 
-.seealso: PetscMallocDump(), PetscMemoryGetCurrentUsage(), PetscMemorySetGetMaximumUsage(), PetscMallocView()
+.seealso: `PetscMallocDump()`, `PetscMemoryGetCurrentUsage()`, `PetscMemorySetGetMaximumUsage()`, `PetscMallocView()`
  @*/
 PetscErrorCode  PetscMemoryView(PetscViewer viewer,const char message[])
 {
@@ -559,8 +559,8 @@ PetscErrorCode  PetscMemoryView(PetscViewer viewer,const char message[])
 
     Level: intermediate
 
-.seealso: PetscMallocDump(), PetscMallocGetMaximumUsage(), PetscMemoryGetCurrentUsage(),
-          PetscMemoryGetMaximumUsage()
+.seealso: `PetscMallocDump()`, `PetscMallocGetMaximumUsage()`, `PetscMemoryGetCurrentUsage()`,
+          `PetscMemoryGetMaximumUsage()`
  @*/
 PetscErrorCode  PetscMallocGetCurrentUsage(PetscLogDouble *space)
 {
@@ -580,8 +580,8 @@ PetscErrorCode  PetscMallocGetCurrentUsage(PetscLogDouble *space)
 
     Level: intermediate
 
-.seealso: PetscMallocDump(), PetscMallocView(), PetscMallocGetMaximumUsage(), PetscMemoryGetCurrentUsage(),
-          PetscMallocPushMaximumUsage()
+.seealso: `PetscMallocDump()`, `PetscMallocView()`, `PetscMallocGetMaximumUsage()`, `PetscMemoryGetCurrentUsage()`,
+          `PetscMallocPushMaximumUsage()`
  @*/
 PetscErrorCode  PetscMallocGetMaximumUsage(PetscLogDouble *space)
 {
@@ -600,8 +600,8 @@ PetscErrorCode  PetscMallocGetMaximumUsage(PetscLogDouble *space)
 
     Level: developer
 
-.seealso: PetscMallocDump(), PetscMallocView(), PetscMallocGetMaximumUsage(), PetscMemoryGetCurrentUsage(),
-          PetscMallocPopMaximumUsage()
+.seealso: `PetscMallocDump()`, `PetscMallocView()`, `PetscMallocGetMaximumUsage()`, `PetscMemoryGetCurrentUsage()`,
+          `PetscMallocPopMaximumUsage()`
  @*/
 PetscErrorCode  PetscMallocPushMaximumUsage(int event)
 {
@@ -625,8 +625,8 @@ PetscErrorCode  PetscMallocPushMaximumUsage(int event)
 
     Level: developer
 
-.seealso: PetscMallocDump(), PetscMallocView(), PetscMallocGetMaximumUsage(), PetscMemoryGetCurrentUsage(),
-          PetscMallocPushMaximumUsage()
+.seealso: `PetscMallocDump()`, `PetscMallocView()`, `PetscMallocGetMaximumUsage()`, `PetscMemoryGetCurrentUsage()`,
+          `PetscMallocPushMaximumUsage()`
  @*/
 PetscErrorCode  PetscMallocPopMaximumUsage(int event,PetscLogDouble *mu)
 {
@@ -652,7 +652,7 @@ PetscErrorCode  PetscMallocPopMaximumUsage(int event,PetscLogDouble *mu)
 
    Level: intermediate
 
-.seealso:  PetscMallocGetCurrentUsage(), PetscMallocView()
+.seealso: `PetscMallocGetCurrentUsage()`, `PetscMallocView()`
 @*/
 PetscErrorCode  PetscMallocGetStack(void *ptr,PetscStack **stack)
 {
@@ -699,7 +699,7 @@ PetscErrorCode  PetscMallocGetStack(void *ptr,void **stack)
 
      PetscMallocView() prints a list of all memory ever allocated
 
-.seealso:  PetscMallocGetCurrentUsage(), PetscMallocView(), PetscMallocViewSet(), PetscMallocValidate()
+.seealso: `PetscMallocGetCurrentUsage()`, `PetscMallocView()`, `PetscMallocViewSet()`, `PetscMallocValidate()`
 @*/
 PetscErrorCode  PetscMallocDump(FILE *fp)
 {
@@ -751,7 +751,7 @@ PetscErrorCode  PetscMallocDump(FILE *fp)
 
     Uses MPI_COMM_WORLD to determine rank because PETSc communicators may not be available
 
-.seealso: PetscMallocDump(), PetscMallocView(), PetscMallocViewSet(), PetscMallocTraceSet(), PetscMallocValidate()
+.seealso: `PetscMallocDump()`, `PetscMallocView()`, `PetscMallocViewSet()`, `PetscMallocTraceSet()`, `PetscMallocValidate()`
 @*/
 PetscErrorCode PetscMallocViewSet(PetscLogDouble logmin)
 {
@@ -776,7 +776,7 @@ PetscErrorCode PetscMallocViewSet(PetscLogDouble logmin)
 
     Level: advanced
 
-.seealso: PetscMallocDump(), PetscMallocView(), PetscMallocTraceGet()
+.seealso: `PetscMallocDump()`, `PetscMallocView()`, `PetscMallocTraceGet()`
 @*/
 PetscErrorCode PetscMallocViewGet(PetscBool *logging)
 {
@@ -800,7 +800,7 @@ PetscErrorCode PetscMallocViewGet(PetscBool *logging)
 
   Level: advanced
 
-.seealso: PetscMallocTraceGet(), PetscMallocViewGet(), PetscMallocDump(), PetscMallocView()
+.seealso: `PetscMallocTraceGet()`, `PetscMallocViewGet()`, `PetscMallocDump()`, `PetscMallocView()`
 @*/
 PetscErrorCode PetscMallocTraceSet(PetscViewer viewer, PetscBool active, PetscLogDouble logmin)
 {
@@ -827,7 +827,7 @@ PetscErrorCode PetscMallocTraceSet(PetscViewer viewer, PetscBool active, PetscLo
 
   Level: advanced
 
-.seealso: PetscMallocTraceSet(), PetscMallocViewGet(), PetscMallocDump(), PetscMallocView()
+.seealso: `PetscMallocTraceSet()`, `PetscMallocViewGet()`, `PetscMallocDump()`, `PetscMallocView()`
 @*/
 PetscErrorCode PetscMallocTraceGet(PetscBool *logging)
 {
@@ -859,7 +859,7 @@ PetscErrorCode PetscMallocTraceGet(PetscBool *logging)
 
      PetscMemoryView() gives a brief summary of current memory usage
 
-.seealso: PetscMallocGetCurrentUsage(), PetscMallocDump(), PetscMallocViewSet(), PetscMemoryView()
+.seealso: `PetscMallocGetCurrentUsage()`, `PetscMallocDump()`, `PetscMallocViewSet()`, `PetscMemoryView()`
 @*/
 PetscErrorCode  PetscMallocView(FILE *fp)
 {
@@ -944,7 +944,7 @@ foundit:;
 
     Notes: This is called in PetscInitialize() and should not be called elsewhere
 
-.seealso: CHKMEMQ(), PetscMallocValidate(), PetscMallocGetDebug()
+.seealso: `CHKMEMQ()`, `PetscMallocValidate()`, `PetscMallocGetDebug()`
 @*/
 PetscErrorCode PetscMallocSetDebug(PetscBool eachcall, PetscBool initializenan)
 {
@@ -979,7 +979,7 @@ PetscErrorCode PetscMallocSetDebug(PetscBool eachcall, PetscBool initializenan)
    Notes:
      By default, the debug version always does some debugging unless you run with -malloc_debug no
 
-.seealso: CHKMEMQ(), PetscMallocValidate(), PetscMallocSetDebug()
+.seealso: `CHKMEMQ()`, `PetscMallocValidate()`, `PetscMallocSetDebug()`
 @*/
 PetscErrorCode PetscMallocGetDebug(PetscBool *basic, PetscBool *eachcall, PetscBool *initializenan)
 {
@@ -1003,7 +1003,7 @@ PetscErrorCode PetscMallocGetDebug(PetscBool *basic, PetscBool *eachcall, PetscB
 
   Level: developer
 
-.seealso: PetscMallocLogRequestedSizeGet(), PetscMallocViewSet()
+.seealso: `PetscMallocLogRequestedSizeGet()`, `PetscMallocViewSet()`
 @*/
 PetscErrorCode PetscMallocLogRequestedSizeSet(PetscBool flg)
 {
@@ -1022,7 +1022,7 @@ PetscErrorCode PetscMallocLogRequestedSizeSet(PetscBool flg)
 
   Level: developer
 
-.seealso: PetscMallocLogRequestedSizeSetinalSizeSet(), PetscMallocViewSet()
+.seealso: `PetscMallocLogRequestedSizeSetinalSizeSet()`, `PetscMallocViewSet()`
 @*/
 PetscErrorCode PetscMallocLogRequestedSizeGet(PetscBool *flg)
 {

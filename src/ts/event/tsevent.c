@@ -70,7 +70,7 @@ PetscErrorCode TSEventDestroy(TSEvent *event)
   If not, then a larger time-step can be used.
 
   Level: Advanced
-  .seealso: TS, TSEvent, TSSetEventHandler()
+  .seealso: `TS`, `TSEvent`, `TSSetEventHandler()`
 @*/
 PetscErrorCode TSSetPostEventIntervalStep(TS ts,PetscReal dt)
 {
@@ -99,7 +99,7 @@ PetscErrorCode TSSetPostEventIntervalStep(TS ts,PetscReal dt)
 
    Level: beginner
 
-.seealso: TS, TSEvent, TSSetEventHandler()
+.seealso: `TS`, `TSEvent`, `TSSetEventHandler()`
 @*/
 PetscErrorCode TSSetEventTolerances(TS ts,PetscReal tol,PetscReal vtol[])
 {
@@ -166,7 +166,7 @@ PetscErrorCode TSSetEventTolerances(TS ts,PetscReal tol,PetscReal vtol[])
 
    Level: intermediate
 
-.seealso: TSCreate(), TSSetTimeStep(), TSSetConvergedReason()
+.seealso: `TSCreate()`, `TSSetTimeStep()`, `TSSetConvergedReason()`
 @*/
 PetscErrorCode TSSetEventHandler(TS ts,PetscInt nevents,PetscInt direction[],PetscBool terminate[],PetscErrorCode (*eventhandler)(TS,PetscReal,Vec,PetscScalar[],void*),PetscErrorCode (*postevent)(TS,PetscInt,PetscInt[],PetscReal,Vec,PetscBool,void*),void *ctx)
 {
@@ -609,7 +609,7 @@ PetscErrorCode TSAdjointEventHandler(TS ts)
 
   Level: intermediate
 
-.seealso: TSSetEventHandler()
+.seealso: `TSSetEventHandler()`
 
 @*/
 PetscErrorCode TSGetNumEvents(TS ts,PetscInt * nevents)

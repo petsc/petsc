@@ -194,7 +194,7 @@ PetscErrorCode MatMFFDDSSetUmin_DS(Mat mat,PetscReal umin)
    See the manual page for MatCreateSNESMF() for a complete description of the
    algorithm used to compute h.
 
-.seealso: MatMFFDSetFunctionError(), MatCreateSNESMF()
+.seealso: `MatMFFDSetFunctionError()`, `MatCreateSNESMF()`
 
 @*/
 PetscErrorCode  MatMFFDDSSetUmin(Mat A,PetscReal umin)
@@ -229,7 +229,7 @@ PetscErrorCode  MatMFFDDSSetUmin(Mat A,PetscReal umin)
      error_rel = square root of relative error in function evaluation
      umin = minimum iterate parameter
 
-.seealso: MATMFFD, MatCreateMFFD(), MatCreateSNESMF(), MATMFFD_WP, MatMFFDDSSetUmin()
+.seealso: `MATMFFD`, `MatCreateMFFD()`, `MatCreateSNESMF()`, `MATMFFD_WP`, `MatMFFDDSSetUmin()`
 
 M*/
 PETSC_EXTERN PetscErrorCode MatCreateMFFD_DS(MatMFFD ctx)

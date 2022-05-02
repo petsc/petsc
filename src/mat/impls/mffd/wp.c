@@ -26,7 +26,7 @@
    Formula used:
      F'(u)*a = [F(u+h*a) - F(u)]/h where
 
-.seealso: MATMFFD, MatCreateMFFD(), MatCreateSNESMF(), MATMFFD_DS
+.seealso: `MATMFFD`, `MatCreateMFFD()`, `MatCreateSNESMF()`, `MATMFFD_DS`
 
 M*/
 
@@ -176,7 +176,7 @@ PetscErrorCode  MatMFFDWPSetComputeNormU_P(Mat mat,PetscBool flag)
    See the manual page for MATMFFD_WP for a complete description of the
    algorithm used to compute h.
 
-.seealso: MatMFFDSetFunctionError(), MatCreateSNESMF()
+.seealso: `MatMFFDSetFunctionError()`, `MatCreateSNESMF()`
 
 @*/
 PetscErrorCode  MatMFFDWPSetComputeNormU(Mat A,PetscBool flag)

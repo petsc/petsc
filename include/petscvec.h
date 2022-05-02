@@ -17,7 +17,7 @@
 
    Level: beginner
 
-.seealso:  VecCreate(), VecType, VecSetType()
+.seealso: `VecCreate()`, `VecType`, `VecSetType()`
 S*/
 typedef struct _p_Vec*         Vec;
 
@@ -26,7 +26,7 @@ typedef struct _p_Vec*         Vec;
 
   Level: beginner
 
-.seealso: VecScatter, VecScatterBegin(), VecScatterEnd()
+.seealso: `VecScatter`, `VecScatterBegin()`, `VecScatterEnd()`
 E*/
 typedef enum {SCATTER_FORWARD=0, SCATTER_REVERSE=1, SCATTER_FORWARD_LOCAL=2, SCATTER_REVERSE_LOCAL=3, SCATTER_LOCAL=2} ScatterMode;
 
@@ -35,8 +35,8 @@ typedef enum {SCATTER_FORWARD=0, SCATTER_REVERSE=1, SCATTER_FORWARD_LOCAL=2, SCA
 
     Level: beginner
 
-.seealso: VecScatter, ScatterMode, VecScatterCreate(), VecScatterBegin(), VecScatterEnd(), SCATTER_REVERSE, SCATTER_FORWARD_LOCAL,
-          SCATTER_REVERSE_LOCAL
+.seealso: `VecScatter`, `ScatterMode`, `VecScatterCreate()`, `VecScatterBegin()`, `VecScatterEnd()`, `SCATTER_REVERSE`, `SCATTER_FORWARD_LOCAL`,
+          `SCATTER_REVERSE_LOCAL`
 
 M*/
 
@@ -46,8 +46,8 @@ M*/
 
     Level: beginner
 
-.seealso: VecScatter, ScatterMode, VecScatterCreate(), VecScatterBegin(), VecScatterEnd(), SCATTER_FORWARD, SCATTER_FORWARD_LOCAL,
-          SCATTER_REVERSE_LOCAL
+.seealso: `VecScatter`, `ScatterMode`, `VecScatterCreate()`, `VecScatterBegin()`, `VecScatterEnd()`, `SCATTER_FORWARD`, `SCATTER_FORWARD_LOCAL`,
+          `SCATTER_REVERSE_LOCAL`
 
 M*/
 
@@ -57,8 +57,8 @@ M*/
 
     Level: developer
 
-.seealso: VecScatter, ScatterMode, VecScatterCreate(), VecScatterBegin(), VecScatterEnd(), SCATTER_REVERSE, SCATTER_FORWARD,
-          SCATTER_REVERSE_LOCAL
+.seealso: `VecScatter`, `ScatterMode`, `VecScatterCreate()`, `VecScatterBegin()`, `VecScatterEnd()`, `SCATTER_REVERSE`, `SCATTER_FORWARD`,
+          `SCATTER_REVERSE_LOCAL`
 
 M*/
 
@@ -69,8 +69,8 @@ M*/
 
     Level: developer
 
-.seealso: VecScatter, ScatterMode, VecScatterCreate(), VecScatterBegin(), VecScatterEnd(), SCATTER_FORWARD, SCATTER_FORWARD_LOCAL,
-          SCATTER_REVERSE
+.seealso: `VecScatter`, `ScatterMode`, `VecScatterCreate()`, `VecScatterBegin()`, `VecScatterEnd()`, `SCATTER_FORWARD`, `SCATTER_FORWARD_LOCAL`,
+          `SCATTER_REVERSE`
 
 M*/
 
@@ -79,7 +79,7 @@ M*/
 
    Level: beginner
 
-.seealso: VecSetType(), Vec, VecCreate(), VecDestroy()
+.seealso: `VecSetType()`, `Vec`, `VecCreate()`, `VecDestroy()`
 J*/
 typedef const char* VecType;
 #define VECSEQ         "seq"
@@ -151,7 +151,7 @@ PETSC_EXTERN PetscErrorCode VecConcatenate(PetscInt,const Vec[],Vec*,IS*[]);
 
     Level: beginner
 
-.seealso: VecNorm(), VecNormBegin(), VecNormEnd(), MatNorm()
+.seealso: `VecNorm()`, `VecNormBegin()`, `VecNormEnd()`, `MatNorm()`
 E*/
 typedef enum {NORM_1=0,
               NORM_2=1,
@@ -167,8 +167,8 @@ PETSC_EXTERN const char *const NormTypes[];
 
    Level: beginner
 
-.seealso:  NormType, MatNorm(), VecNorm(), VecNormBegin(), VecNormEnd(), NORM_2, NORM_FROBENIUS,
-           NORM_INFINITY, NORM_1_AND_2
+.seealso: `NormType`, `MatNorm()`, `VecNorm()`, `VecNormBegin()`, `VecNormEnd()`, `NORM_2`, `NORM_FROBENIUS`,
+          `NORM_INFINITY`, `NORM_1_AND_2`
 
 M*/
 
@@ -177,8 +177,8 @@ M*/
 
    Level: beginner
 
-.seealso:  NormType, MatNorm(), VecNorm(), VecNormBegin(), VecNormEnd(), NORM_1, NORM_FROBENIUS,
-           NORM_INFINITY, NORM_1_AND_2
+.seealso: `NormType`, `MatNorm()`, `VecNorm()`, `VecNormBegin()`, `VecNormEnd()`, `NORM_1`, `NORM_FROBENIUS`,
+          `NORM_INFINITY`, `NORM_1_AND_2`
 
 M*/
 
@@ -187,8 +187,8 @@ M*/
 
    Level: beginner
 
-.seealso:  NormType, MatNorm(), VecNorm(), VecNormBegin(), VecNormEnd(), NORM_1, NORM_2,
-           NORM_INFINITY, NORM_1_AND_2
+.seealso: `NormType`, `MatNorm()`, `VecNorm()`, `VecNormBegin()`, `VecNormEnd()`, `NORM_1`, `NORM_2`,
+          `NORM_INFINITY`, `NORM_1_AND_2`
 
 M*/
 
@@ -197,8 +197,8 @@ M*/
 
    Level: beginner
 
-.seealso:  NormType, MatNorm(), VecNorm(), VecNormBegin(), VecNormEnd(), NORM_1, NORM_2,
-           NORM_FROBENIUS, NORM_1_AND_2
+.seealso: `NormType`, `MatNorm()`, `VecNorm()`, `VecNormBegin()`, `VecNormEnd()`, `NORM_1`, `NORM_2`,
+          `NORM_FROBENIUS`, `NORM_1_AND_2`
 
 M*/
 
@@ -207,8 +207,8 @@ M*/
 
    Level: beginner
 
-.seealso:  NormType, MatNorm(), VecNorm(), VecNormBegin(), VecNormEnd(), NORM_1, NORM_2,
-           NORM_FROBENIUS, NORM_INFINITY
+.seealso: `NormType`, `MatNorm()`, `VecNorm()`, `VecNormBegin()`, `VecNormEnd()`, `NORM_1`, `NORM_2`,
+          `NORM_FROBENIUS`, `NORM_INFINITY`
 
 M*/
 
@@ -224,7 +224,7 @@ M*/
 
     Level: beginner
 
-.seealso: MatGetColumnReductions(), MatGetColumnNorms(), NormType
+.seealso: `MatGetColumnReductions()`, `MatGetColumnNorms()`, `NormType`
 E*/
 /* NOTE: The integer constants defined in ReductionType MUST BE DISTINCT from those defined in NormType.
  * This is because MatGetColumnReductions() is used to compute both norms and other types of reductions,
@@ -240,8 +240,8 @@ typedef enum {REDUCTION_SUM_REALPART=10,
 
    Level: beginner
 
-.seealso:  ReductionType, MatGetColumnReductions(), REDUCTION_SUM_IMAGINARYPART, REDUCTION_MEAN_REALPART, REDUCTION_NORM_1,
-           REDUCTION_NORM_2, REDUCTION_NORM_FROBENIUS, REDUCTION_NORM_INFINITY
+.seealso: `ReductionType`, `MatGetColumnReductions()`, `REDUCTION_SUM_IMAGINARYPART`, `REDUCTION_MEAN_REALPART`, `REDUCTION_NORM_1`,
+          `REDUCTION_NORM_2`, `REDUCTION_NORM_FROBENIUS`, `REDUCTION_NORM_INFINITY`
 
 M*/
 
@@ -250,8 +250,8 @@ M*/
 
    Level: beginner
 
-.seealso:  ReductionType, MatGetColumnReductions(), REDUCTION_SUM_REALPART, REDUCTION_MEAN_IMAGINARYPART, REDUCTION_NORM_1,
-           REDUCTION_NORM_2, REDUCTION_NORM_FROBENIUS, REDUCTION_NORM_INFINITY
+.seealso: `ReductionType`, `MatGetColumnReductions()`, `REDUCTION_SUM_REALPART`, `REDUCTION_MEAN_IMAGINARYPART`, `REDUCTION_NORM_1`,
+          `REDUCTION_NORM_2`, `REDUCTION_NORM_FROBENIUS`, `REDUCTION_NORM_INFINITY`
 
 M*/
 
@@ -260,8 +260,8 @@ M*/
 
    Level: beginner
 
-.seealso:  ReductionType, MatGetColumnReductions(), REDUCTION_MEAN_IMAGINARYPART, REDUCTION_SUM_REALPART, REDUCTION_NORM_1,
-           REDUCTION_NORM_2, REDUCTION_NORM_FROBENIUS, REDUCTION_NORM_INFINITY
+.seealso: `ReductionType`, `MatGetColumnReductions()`, `REDUCTION_MEAN_IMAGINARYPART`, `REDUCTION_SUM_REALPART`, `REDUCTION_NORM_1`,
+          `REDUCTION_NORM_2`, `REDUCTION_NORM_FROBENIUS`, `REDUCTION_NORM_INFINITY`
 
 M*/
 
@@ -270,8 +270,8 @@ M*/
 
    Level: beginner
 
-.seealso:  ReductionType, MatGetColumnReductions(), REDUCTION_MEAN_REALPART, REDUCTION_SUM_IMAGINARYPART, REDUCTION_NORM_1,
-           REDUCTION_NORM_2, REDUCTION_NORM_FROBENIUS, REDUCTION_NORM_INFINITY
+.seealso: `ReductionType`, `MatGetColumnReductions()`, `REDUCTION_MEAN_REALPART`, `REDUCTION_SUM_IMAGINARYPART`, `REDUCTION_NORM_1`,
+          `REDUCTION_NORM_2`, `REDUCTION_NORM_FROBENIUS`, `REDUCTION_NORM_INFINITY`
 
 M*/
 
@@ -365,7 +365,7 @@ PETSC_EXTERN PetscErrorCode VecStashGetInfo(Vec,PetscInt*,PetscInt*,PetscInt*,Pe
 
    Level: beginner
 
-.seealso: VecSetValues(), VecAssemblyBegin(), VecAssemblyEnd(), VecSetValuesBlockedLocal(), VecSetValueLocal()
+.seealso: `VecSetValues()`, `VecAssemblyBegin()`, `VecAssemblyEnd()`, `VecSetValuesBlockedLocal()`, `VecSetValueLocal()`
 M*/
 static inline PetscErrorCode VecSetValue(Vec v,PetscInt i,PetscScalar va,InsertMode mode) {return VecSetValues(v,1,&i,&va,mode);}
 
@@ -497,7 +497,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMem(Vec);
 
    Level: beginner
 
-.seealso: VecSetValues(), VecAssemblyBegin(), VecAssemblyEnd(), VecSetValuesBlockedLocal(), VecSetValue()
+.seealso: `VecSetValues()`, `VecAssemblyBegin()`, `VecAssemblyEnd()`, `VecSetValuesBlockedLocal()`, `VecSetValue()`
 M*/
 static inline PetscErrorCode VecSetValueLocal(Vec v,PetscInt i,PetscScalar va,InsertMode mode) {return VecSetValuesLocal(v,1,&i,&va,mode);}
 
@@ -564,7 +564,7 @@ PETSC_EXTERN PetscErrorCode VecRestoreArrayWriteAndMemType(Vec,PetscScalar**);
 
    Not available from Fortran
 
-.seealso: VecGetArray(), VecGetArrayRead(), VecRestoreArrayPair()
+.seealso: `VecGetArray()`, `VecGetArrayRead()`, `VecRestoreArrayPair()`
 
 @*/
 static inline PetscErrorCode VecGetArrayPair(Vec x,Vec y,PetscScalar **xv,PetscScalar **yv)
@@ -593,7 +593,7 @@ static inline PetscErrorCode VecGetArrayPair(Vec x,Vec y,PetscScalar **xv,PetscS
 
    Not available from Fortran
 
-.seealso: VecGetArray(), VecGetArrayRead(), VecGetArrayPair()
+.seealso: `VecGetArray()`, `VecGetArrayRead()`, `VecGetArrayPair()`
 
 @*/
 static inline PetscErrorCode VecRestoreArrayPair(Vec x,Vec y,PetscScalar **xv,PetscScalar **yv)
@@ -807,7 +807,7 @@ PETSC_EXTERN PetscErrorCode VecTaggerDestroy(VecTagger *);
 
    Level: beginner
 
-.seealso: VecTaggerComputeIntervals()
+.seealso: `VecTaggerComputeIntervals()`
 S*/
 typedef struct {
   PetscScalar min;
@@ -828,7 +828,7 @@ PETSC_EXTERN PetscErrorCode VecTaggerCDFGetBox(VecTagger,const VecTaggerBox **);
   VecTaggerCDFMethod - Determines what method is used to compute absolute values from cumulative distribution values (e.g., what value is the preimage of .95 in the cdf).  Relevant only in parallel: in serial it is directly computed.
 
   Level: advanced
-.seealso: VecTaggerCDFSetMethod(), VecTaggerCDFMethods
+.seealso: `VecTaggerCDFSetMethod()`, `VecTaggerCDFMethods`
 E*/
 typedef enum {VECTAGGER_CDF_GATHER,VECTAGGER_CDF_ITERATIVE,VECTAGGER_CDF_NUM_METHODS} VecTaggerCDFMethod;
 PETSC_EXTERN const char *const VecTaggerCDFMethods[];

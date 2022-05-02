@@ -1178,7 +1178,7 @@ PetscErrorCode PCTelescopeGetDM(PC pc,DM *subdm)
 
  Level: advanced
 
-.seealso: PetscSubcommType, PetscSubcomm, PCTELESCOPE
+.seealso: `PetscSubcommType`, `PetscSubcomm`, `PCTELESCOPE`
 @*/
 PetscErrorCode PCTelescopeSetSubcommType(PC pc, PetscSubcommType subcommtype)
 {
@@ -1200,7 +1200,7 @@ PetscErrorCode PCTelescopeSetSubcommType(PC pc, PetscSubcommType subcommtype)
 
  Level: advanced
 
-.seealso: PetscSubcomm, PetscSubcommType, PCTELESCOPE
+.seealso: `PetscSubcomm`, `PetscSubcommType`, `PCTELESCOPE`
 @*/
 PetscErrorCode PCTelescopeGetSubcommType(PC pc, PetscSubcommType *subcommtype)
 {
@@ -1347,7 +1347,7 @@ PetscErrorCode PCTelescopeGetSubcommType(PC pc, PetscSubcommType *subcommtype)
   Reference:
   Dave A. May, Patrick Sanan, Karl Rupp, Matthew G. Knepley, and Barry F. Smith, "Extreme-Scale Multigrid Components within PETSc". 2016. In Proceedings of the Platform for Advanced Scientific Computing Conference (PASC '16). DOI: 10.1145/2929908.2929913
 
-.seealso:  PCTelescopeGetKSP(), PCTelescopeGetDM(), PCTelescopeGetReductionFactor(), PCTelescopeSetReductionFactor(), PCTelescopeGetIgnoreDM(), PCTelescopeSetIgnoreDM(), PCREDUNDANT
+.seealso: `PCTelescopeGetKSP()`, `PCTelescopeGetDM()`, `PCTelescopeGetReductionFactor()`, `PCTelescopeSetReductionFactor()`, `PCTelescopeGetIgnoreDM()`, `PCTelescopeSetIgnoreDM()`, `PCREDUNDANT`
 M*/
 PETSC_EXTERN PetscErrorCode PCCreate_Telescope(PC pc)
 {

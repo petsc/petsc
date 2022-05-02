@@ -218,8 +218,8 @@ static PetscFunctionList dlallhead = NULL;
 
     Level: developer
 
-.seealso: PetscFunctionListDestroy(), SNESRegister(), KSPRegister(),
-          PCRegister(), TSRegister(), PetscFunctionList, PetscObjectComposeFunction()
+.seealso: `PetscFunctionListDestroy()`, `SNESRegister()`, `KSPRegister()`,
+          `PCRegister()`, `TSRegister()`, `PetscFunctionList`, `PetscObjectComposeFunction()`
 M*/
 PETSC_EXTERN PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl,const char name[],void (*fnc)(void))
 {
@@ -277,7 +277,7 @@ PETSC_EXTERN PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl,c
 
     Level: developer
 
-.seealso: PetscFunctionListAdd(), PetscFunctionList
+.seealso: `PetscFunctionListAdd()`, `PetscFunctionList`
 @*/
 PetscErrorCode  PetscFunctionListDestroy(PetscFunctionList *fl)
 {
@@ -346,7 +346,7 @@ PetscErrorCode  PetscFunctionListPrintAll(void)
 
     Level: developer
 
-.seealso: PetscFunctionListAdd(), PetscFunctionList, PetscObjectQueryFunction()
+.seealso: `PetscFunctionListAdd()`, `PetscFunctionList`, `PetscObjectQueryFunction()`
 M*/
 PETSC_EXTERN PetscErrorCode PetscFunctionListFind_Private(PetscFunctionList fl,const char name[],void (**r)(void))
 {
@@ -379,7 +379,7 @@ PETSC_EXTERN PetscErrorCode PetscFunctionListFind_Private(PetscFunctionList fl,c
 
    Level: developer
 
-.seealso: PetscFunctionListAdd(), PetscFunctionListPrintTypes(), PetscFunctionList
+.seealso: `PetscFunctionListAdd()`, `PetscFunctionListPrintTypes()`, `PetscFunctionList`
 @*/
 PetscErrorCode  PetscFunctionListView(PetscFunctionList list,PetscViewer viewer)
 {
@@ -420,7 +420,7 @@ PetscErrorCode  PetscFunctionListView(PetscFunctionList list,PetscViewer viewer)
 
    Level: developer
 
-.seealso: PetscFunctionListAdd(), PetscFunctionList
+.seealso: `PetscFunctionListAdd()`, `PetscFunctionList`
 @*/
 PetscErrorCode  PetscFunctionListGet(PetscFunctionList list,const char ***array,int *n)
 {
@@ -462,7 +462,7 @@ PetscErrorCode  PetscFunctionListGet(PetscFunctionList list,const char ***array,
 
    Level: developer
 
-.seealso: PetscFunctionListAdd(), PetscFunctionList
+.seealso: `PetscFunctionListAdd()`, `PetscFunctionList`
 @*/
 PetscErrorCode  PetscFunctionListPrintTypes(MPI_Comm comm,FILE *fd,const char prefix[],const char name[],const char text[],const char man[],PetscFunctionList list,const char def[],const char newv[])
 {
@@ -494,7 +494,7 @@ PetscErrorCode  PetscFunctionListPrintTypes(MPI_Comm comm,FILE *fd,const char pr
 
     Level: developer
 
-.seealso: PetscFunctionList, PetscFunctionListAdd(), PetscFlistDestroy()
+.seealso: `PetscFunctionList`, `PetscFunctionListAdd()`, `PetscFlistDestroy()`
 
 @*/
 PetscErrorCode  PetscFunctionListDuplicate(PetscFunctionList fl,PetscFunctionList *nl)

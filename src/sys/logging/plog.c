@@ -34,7 +34,7 @@ PetscErrorCode PetscLogObjectParent(PetscObject p,PetscObject c)
    Developer Notes:
     Currently we do not always do a good job of associating all memory allocations with an object.
 
-.seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscInitializeNoArguments()
+.seealso: `PetscFinalize()`, `PetscInitializeFortran()`, `PetscGetArgs()`, `PetscInitializeNoArguments()`
 
 @*/
 PetscErrorCode PetscLogObjectMemory(PetscObject p,PetscLogDouble m)
@@ -215,7 +215,7 @@ PETSC_INTERN PetscErrorCode PetscLogFinalize(void)
 
   Level: developer
 
-.seealso: PetscLogDump(), PetscLogDefaultBegin(), PetscLogAllBegin(), PetscLogTraceBegin()
+.seealso: `PetscLogDump()`, `PetscLogDefaultBegin()`, `PetscLogAllBegin()`, `PetscLogTraceBegin()`
 @*/
 PetscErrorCode  PetscLogSet(PetscErrorCode (*b)(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject),
                             PetscErrorCode (*e)(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject))
@@ -236,7 +236,7 @@ PetscErrorCode  PetscLogSet(PetscErrorCode (*b)(PetscLogEvent, int, PetscObject,
 
   Level: beginner
 
-.seealso: PetscLogDefaultBegin(), PetscLogAllBegin(), PetscLogSet()
+.seealso: `PetscLogDefaultBegin()`, `PetscLogAllBegin()`, `PetscLogSet()`
 @*/
 PetscErrorCode PetscLogIsActive(PetscBool *isActive)
 {
@@ -271,7 +271,7 @@ PetscErrorCode PetscLogIsActive(PetscBool *isActive)
 
   Level: advanced
 
-.seealso: PetscLogDump(), PetscLogAllBegin(), PetscLogView(), PetscLogTraceBegin()
+.seealso: `PetscLogDump()`, `PetscLogAllBegin()`, `PetscLogView()`, `PetscLogTraceBegin()`
 @*/
 PetscErrorCode  PetscLogDefaultBegin(void)
 {
@@ -305,7 +305,7 @@ PetscErrorCode  PetscLogDefaultBegin(void)
 
   Level: advanced
 
-.seealso: PetscLogDump(), PetscLogDefaultBegin(), PetscLogTraceBegin()
+.seealso: `PetscLogDump()`, `PetscLogDefaultBegin()`, `PetscLogTraceBegin()`
 @*/
 PetscErrorCode  PetscLogAllBegin(void)
 {
@@ -336,7 +336,7 @@ PetscErrorCode  PetscLogAllBegin(void)
 
   Level: intermediate
 
-.seealso: PetscLogDump(), PetscLogAllBegin(), PetscLogView(), PetscLogDefaultBegin()
+.seealso: `PetscLogDump()`, `PetscLogAllBegin()`, `PetscLogView()`, `PetscLogDefaultBegin()`
 @*/
 PetscErrorCode  PetscLogTraceBegin(FILE *file)
 {
@@ -363,7 +363,7 @@ PetscErrorCode  PetscLogTraceBegin(FILE *file)
   Options Database Keys:
 . -log_exclude_actions - Turns off actions logging
 
-.seealso: PetscLogStagePush(), PetscLogStagePop()
+.seealso: `PetscLogStagePush()`, `PetscLogStagePop()`
 @*/
 PetscErrorCode  PetscLogActions(PetscBool flag)
 {
@@ -388,7 +388,7 @@ PetscErrorCode  PetscLogActions(PetscBool flag)
   Options Database Keys:
 . -log_exclude_objects - Turns off objects logging
 
-.seealso: PetscLogStagePush(), PetscLogStagePop()
+.seealso: `PetscLogStagePush()`, `PetscLogStagePop()`
 @*/
 PetscErrorCode  PetscLogObjects(PetscBool flag)
 {
@@ -411,7 +411,7 @@ PetscErrorCode  PetscLogObjects(PetscBool flag)
 
   Level: intermediate
 
-.seealso: PetscLogStagePush(), PetscLogStagePop()
+.seealso: `PetscLogStagePush()`, `PetscLogStagePop()`
 @*/
 PetscErrorCode  PetscLogStageRegister(const char sname[],PetscLogStage *stage)
 {
@@ -458,7 +458,7 @@ PetscErrorCode  PetscLogStageRegister(const char sname[],PetscLogStage *stage)
 
   Level: intermediate
 
-.seealso: PetscLogStagePop(), PetscLogStageRegister(), PetscBarrier()
+.seealso: `PetscLogStagePop()`, `PetscLogStageRegister()`, `PetscBarrier()`
 @*/
 PetscErrorCode  PetscLogStagePush(PetscLogStage stage)
 {
@@ -495,7 +495,7 @@ PetscErrorCode  PetscLogStagePush(PetscLogStage stage)
 
   Level: intermediate
 
-.seealso: PetscLogStagePush(), PetscLogStageRegister(), PetscBarrier()
+.seealso: `PetscLogStagePush()`, `PetscLogStageRegister()`, `PetscBarrier()`
 @*/
 PetscErrorCode  PetscLogStagePop(void)
 {
@@ -518,7 +518,7 @@ PetscErrorCode  PetscLogStagePop(void)
 
   Level: intermediate
 
-.seealso: PetscLogStagePush(), PetscLogStagePop(), PetscLogEventBegin(), PetscLogEventEnd(), PetscPreLoadBegin(), PetscPreLoadEnd(), PetscPreLoadStage()
+.seealso: `PetscLogStagePush()`, `PetscLogStagePop()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscPreLoadBegin()`, `PetscPreLoadEnd()`, `PetscPreLoadStage()`
 @*/
 PetscErrorCode  PetscLogStageSetActive(PetscLogStage stage, PetscBool isActive)
 {
@@ -543,7 +543,7 @@ PetscErrorCode  PetscLogStageSetActive(PetscLogStage stage, PetscBool isActive)
 
   Level: intermediate
 
-.seealso: PetscLogStagePush(), PetscLogStagePop(), PetscLogEventBegin(), PetscLogEventEnd(), PetscPreLoadBegin(), PetscPreLoadEnd(), PetscPreLoadStage()
+.seealso: `PetscLogStagePush()`, `PetscLogStagePop()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscPreLoadBegin()`, `PetscPreLoadEnd()`, `PetscPreLoadStage()`
 @*/
 PetscErrorCode  PetscLogStageGetActive(PetscLogStage stage, PetscBool  *isActive)
 {
@@ -566,7 +566,7 @@ PetscErrorCode  PetscLogStageGetActive(PetscLogStage stage, PetscBool  *isActive
 
   Level: intermediate
 
-.seealso: PetscLogStagePush(), PetscLogStagePop(), PetscLogView()
+.seealso: `PetscLogStagePush()`, `PetscLogStagePop()`, `PetscLogView()`
 @*/
 PetscErrorCode  PetscLogStageSetVisible(PetscLogStage stage, PetscBool isVisible)
 {
@@ -591,7 +591,7 @@ PetscErrorCode  PetscLogStageSetVisible(PetscLogStage stage, PetscBool isVisible
 
   Level: intermediate
 
-.seealso: PetscLogStagePush(), PetscLogStagePop(), PetscLogView()
+.seealso: `PetscLogStagePush()`, `PetscLogStagePop()`, `PetscLogView()`
 @*/
 PetscErrorCode  PetscLogStageGetVisible(PetscLogStage stage, PetscBool  *isVisible)
 {
@@ -616,7 +616,7 @@ PetscErrorCode  PetscLogStageGetVisible(PetscLogStage stage, PetscBool  *isVisib
 
   Level: intermediate
 
-.seealso: PetscLogStagePush(), PetscLogStagePop(), PetscPreLoadBegin(), PetscPreLoadEnd(), PetscPreLoadStage()
+.seealso: `PetscLogStagePush()`, `PetscLogStagePop()`, `PetscPreLoadBegin()`, `PetscPreLoadEnd()`, `PetscPreLoadStage()`
 @*/
 PetscErrorCode  PetscLogStageGetId(const char name[], PetscLogStage *stage)
 {
@@ -680,8 +680,8 @@ PetscErrorCode  PetscLogStageGetId(const char name[], PetscLogStage *stage)
 
   Level: intermediate
 
-.seealso: PetscLogEventBegin(), PetscLogEventEnd(), PetscLogFlops(),
-          PetscLogEventActivate(), PetscLogEventDeactivate(), PetscClassIdRegister()
+.seealso: `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscLogFlops()`,
+          `PetscLogEventActivate()`, `PetscLogEventDeactivate()`, `PetscClassIdRegister()`
 @*/
 PetscErrorCode  PetscLogEventRegister(const char name[],PetscClassId classid,PetscLogEvent *event)
 {
@@ -715,7 +715,7 @@ PetscErrorCode  PetscLogEventRegister(const char name[],PetscClassId classid,Pet
 
   Level: developer
 
-.seealso: PetscLogEventRegister()
+.seealso: `PetscLogEventRegister()`
 @*/
 PetscErrorCode PetscLogEventSetCollective(PetscLogEvent event,PetscBool collective)
 {
@@ -740,7 +740,7 @@ PetscErrorCode PetscLogEventSetCollective(PetscLogEvent event,PetscBool collecti
 
   Level: developer
 
-.seealso: PetscLogEventActivateClass(),PetscLogEventDeactivateClass(),PetscLogEventActivate(),PetscLogEventDeactivate()
+.seealso: `PetscLogEventActivateClass(),PetscLogEventDeactivateClass(),PetscLogEventActivate(),PetscLogEventDeactivate()`
 @*/
 PetscErrorCode  PetscLogEventIncludeClass(PetscClassId classid)
 {
@@ -765,7 +765,7 @@ PetscErrorCode  PetscLogEventIncludeClass(PetscClassId classid)
 
   Level: developer
 
-.seealso: PetscLogEventDeactivateClass(),PetscLogEventActivateClass(),PetscLogEventDeactivate(),PetscLogEventActivate()
+.seealso: `PetscLogEventDeactivateClass(),PetscLogEventActivateClass(),PetscLogEventDeactivate(),PetscLogEventActivate()`
 @*/
 PetscErrorCode  PetscLogEventExcludeClass(PetscClassId classid)
 {
@@ -802,7 +802,7 @@ PetscErrorCode  PetscLogEventExcludeClass(PetscClassId classid)
 
   Level: advanced
 
-.seealso: PlogEventDeactivate(), PlogEventDeactivatePush(), PetscLogEventDeactivatePop()
+.seealso: `PlogEventDeactivate()`, `PlogEventDeactivatePush()`, `PetscLogEventDeactivatePop()`
 @*/
 PetscErrorCode  PetscLogEventActivate(PetscLogEvent event)
 {
@@ -838,7 +838,7 @@ PetscErrorCode  PetscLogEventActivate(PetscLogEvent event)
 
   Level: advanced
 
-.seealso: PetscLogEventActivate(), PetscLogEventDeactivatePush(), PetscLogEventDeactivatePop()
+.seealso: `PetscLogEventActivate()`, `PetscLogEventDeactivatePush()`, `PetscLogEventDeactivatePop()`
 @*/
 PetscErrorCode  PetscLogEventDeactivate(PetscLogEvent event)
 {
@@ -874,7 +874,7 @@ PetscErrorCode  PetscLogEventDeactivate(PetscLogEvent event)
 
   Level: advanced
 
-.seealso: PetscLogEventActivate(), PetscLogEventDeactivatePop()
+.seealso: `PetscLogEventActivate()`, `PetscLogEventDeactivatePop()`
 @*/
 PetscErrorCode  PetscLogEventDeactivatePush(PetscLogEvent event)
 {
@@ -910,7 +910,7 @@ PetscErrorCode  PetscLogEventDeactivatePush(PetscLogEvent event)
 
   Level: advanced
 
-.seealso: PetscLogEventActivate(), PetscLogEventDeactivatePush()
+.seealso: `PetscLogEventActivate()`, `PetscLogEventDeactivatePush()`
 @*/
 PetscErrorCode  PetscLogEventDeactivatePop(PetscLogEvent event)
 {
@@ -935,7 +935,7 @@ PetscErrorCode  PetscLogEventDeactivatePop(PetscLogEvent event)
 
   Level: advanced
 
-.seealso: PlogEventActivate(),PlogEventDeactivate()
+.seealso: `PlogEventActivate(),PlogEventDeactivate()`
 @*/
 PetscErrorCode  PetscLogEventSetActiveAll(PetscLogEvent event, PetscBool isActive)
 {
@@ -964,7 +964,7 @@ PetscErrorCode  PetscLogEventSetActiveAll(PetscLogEvent event, PetscBool isActiv
 
   Level: developer
 
-.seealso: PetscLogEventDeactivateClass(),PetscLogEventActivate(),PetscLogEventDeactivate()
+.seealso: `PetscLogEventDeactivateClass(),PetscLogEventActivate(),PetscLogEventDeactivate()`
 @*/
 PetscErrorCode  PetscLogEventActivateClass(PetscClassId classid)
 {
@@ -988,7 +988,7 @@ PetscErrorCode  PetscLogEventActivateClass(PetscClassId classid)
 
   Level: developer
 
-.seealso: PetscLogEventActivateClass(),PetscLogEventActivate(),PetscLogEventDeactivate()
+.seealso: `PetscLogEventActivateClass(),PetscLogEventActivate(),PetscLogEventDeactivate()`
 @*/
 PetscErrorCode  PetscLogEventDeactivateClass(PetscClassId classid)
 {
@@ -1031,7 +1031,7 @@ PetscErrorCode  PetscLogEventDeactivateClass(PetscClassId classid)
 
    Level: developer
 
-.seealso: PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd()
+.seealso: `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`
 
 M*/
 
@@ -1074,7 +1074,7 @@ M*/
 
    Level: intermediate
 
-.seealso: PetscLogEventRegister(), PetscLogEventEnd(), PetscLogFlops()
+.seealso: `PetscLogEventRegister()`, `PetscLogEventEnd()`, `PetscLogFlops()`
 
 M*/
 
@@ -1111,7 +1111,7 @@ M*/
 
    Level: intermediate
 
-.seealso: PetscLogEventRegister(), PetscLogEventBegin(), PetscLogFlops()
+.seealso: `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogFlops()`
 
 M*/
 
@@ -1128,7 +1128,7 @@ M*/
 
   Level: intermediate
 
-.seealso: PetscLogEventBegin(), PetscLogEventEnd(), PetscLogStageGetId()
+.seealso: `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscLogStageGetId()`
 @*/
 PetscErrorCode  PetscLogEventGetId(const char name[], PetscLogEvent *event)
 {
@@ -1167,7 +1167,7 @@ $    Log.<rank>
 
   Level: advanced
 
-.seealso: PetscLogDefaultBegin(), PetscLogAllBegin(), PetscLogView()
+.seealso: `PetscLogDefaultBegin()`, `PetscLogAllBegin()`, `PetscLogView()`
 @*/
 PetscErrorCode  PetscLogDump(const char sname[])
 {
@@ -2042,7 +2042,7 @@ $    Safari - see https://ccm.net/faq/36342-safari-how-to-enable-local-file-acce
 
   Level: beginner
 
-.seealso: PetscLogDefaultBegin(), PetscLogDump()
+.seealso: `PetscLogDefaultBegin()`, `PetscLogDump()`
 @*/
 PetscErrorCode  PetscLogView(PetscViewer viewer)
 {
@@ -2124,7 +2124,7 @@ PetscErrorCode PetscLogViewFromOptions(void)
 
    Level: intermediate
 
-.seealso: PetscTime(), PetscLogFlops()
+.seealso: `PetscTime()`, `PetscLogFlops()`
 @*/
 PetscErrorCode  PetscGetFlops(PetscLogDouble *flops)
 {
@@ -2175,7 +2175,7 @@ PetscErrorCode  PetscLogObjectState(PetscObject obj, const char format[], ...)
 
    Level: intermediate
 
-.seealso: PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd(), PetscGetFlops()
+.seealso: `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscGetFlops()`
 
 M*/
 
@@ -2217,7 +2217,7 @@ M*/
 
    Level: intermediate
 
-.seealso: PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd(), PetscPreLoadEnd(), PetscPreLoadStage()
+.seealso: `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscPreLoadEnd()`, `PetscPreLoadStage()`
 
 M*/
 
@@ -2245,7 +2245,7 @@ M*/
 
    Level: intermediate
 
-.seealso: PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd(), PetscPreLoadBegin(), PetscPreLoadStage()
+.seealso: `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscPreLoadBegin()`, `PetscPreLoadStage()`
 
 M*/
 
@@ -2273,7 +2273,7 @@ M*/
 
    Level: intermediate
 
-.seealso: PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd(), PetscPreLoadBegin(), PetscPreLoadEnd()
+.seealso: `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscPreLoadBegin()`, `PetscPreLoadEnd()`
 
 M*/
 
@@ -2305,7 +2305,9 @@ static PetscErrorCode PetscLogGpuTime_Off(void)
 
     This routine should only be called once near the beginning of the program. Once it is started it cannot be turned off.
 
-.seealso: PetscLogView(), PetscLogGpuFlops(), PetscLogGpuTimeEnd(), PetscLogGpuTimeBegin()
+   Level: advanced
+
+.seealso: `PetscLogView()`, `PetscLogGpuFlops()`, `PetscLogGpuTimeEnd()`, `PetscLogGpuTimeBegin()`
 @*/
 PetscErrorCode PetscLogGpuTime(void)
 {
@@ -2331,7 +2333,7 @@ PetscErrorCode PetscLogGpuTime(void)
 
   Level: intermediate
 
-.seealso:  PetscLogView(), PetscLogGpuFlops(), PetscLogGpuTimeEnd(), PetscLogGpuTime()
+.seealso: `PetscLogView()`, `PetscLogGpuFlops()`, `PetscLogGpuTimeEnd()`, `PetscLogGpuTime()`
 @*/
 PetscErrorCode PetscLogGpuTimeBegin(void)
 {
@@ -2353,7 +2355,7 @@ PetscErrorCode PetscLogGpuTimeBegin(void)
 
   Level: intermediate
 
-.seealso:  PetscLogView(), PetscLogGpuFlops(), PetscLogGpuTimeBegin()
+.seealso: `PetscLogView()`, `PetscLogGpuFlops()`, `PetscLogGpuTimeBegin()`
 @*/
 PetscErrorCode PetscLogGpuTimeEnd(void)
 {
@@ -2443,8 +2445,8 @@ PETSC_INTERN PetscErrorCode PetscLogEventEndMPE(PetscLogEvent,int,PetscObject,Pe
 
    Level: advanced
 
-.seealso: PetscLogDump(), PetscLogDefaultBegin(), PetscLogAllBegin(), PetscLogEventActivate(),
-          PetscLogEventDeactivate()
+.seealso: `PetscLogDump()`, `PetscLogDefaultBegin()`, `PetscLogAllBegin()`, `PetscLogEventActivate()`,
+          `PetscLogEventDeactivate()`
 @*/
 PetscErrorCode  PetscLogMPEBegin(void)
 {
@@ -2469,7 +2471,7 @@ PetscErrorCode  PetscLogMPEBegin(void)
 
    Level: advanced
 
-.seealso: PetscLogDump(), PetscLogAllBegin(), PetscLogMPEBegin()
+.seealso: `PetscLogDump()`, `PetscLogAllBegin()`, `PetscLogMPEBegin()`
 @*/
 PetscErrorCode  PetscLogMPEDump(const char sname[])
 {
@@ -2543,7 +2545,7 @@ static const char *PetscLogMPERGBColors[PETSC_RGB_COLORS_MAX] = {
 
   Level: developer
 
-.seealso: PetscLogEventRegister
+.seealso: `PetscLogEventRegister`
 @*/
 PetscErrorCode  PetscLogMPEGetRGBColor(const char *str[])
 {

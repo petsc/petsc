@@ -15,7 +15,7 @@
 
   Level: developer
 
-.seealso: DMPlexSetActivePoint()
+.seealso: `DMPlexSetActivePoint()`
 @*/
 PetscErrorCode DMPlexGetActivePoint(DM dm, PetscInt *point)
 {
@@ -35,7 +35,7 @@ PetscErrorCode DMPlexGetActivePoint(DM dm, PetscInt *point)
 
   Level: developer
 
-.seealso: DMPlexGetActivePoint()
+.seealso: `DMPlexGetActivePoint()`
 @*/
 PetscErrorCode DMPlexSetActivePoint(DM dm, PetscInt point)
 {
@@ -65,7 +65,7 @@ PetscErrorCode DMPlexSetActivePoint(DM dm, PetscInt point)
 
   Level: developer
 
-.seealso: DMProjectPoint_Field_Private()
+.seealso: `DMProjectPoint_Field_Private()`
 */
 static PetscErrorCode DMProjectPoint_Func_Private(DM dm, PetscDS ds, DM dmIn, PetscDS dsIn, PetscReal time, PetscFEGeom *fegeom, PetscFVCellGeom *fvgeom, PetscBool isFE[], PetscDualSpace sp[],
                                                   PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs,
@@ -178,7 +178,7 @@ static PetscErrorCode DMProjectPoint_Func_Private(DM dm, PetscDS ds, DM dmIn, Pe
 
   Level: developer
 
-.seealso: DMProjectPoint_Field_Private()
+.seealso: `DMProjectPoint_Field_Private()`
 */
 static PetscErrorCode DMProjectPoint_Field_Private(DM dm, PetscDS ds, DM dmIn, DMEnclosureType encIn, PetscDS dsIn, DM dmAux, DMEnclosureType encAux, PetscDS dsAux, PetscReal time, Vec localU, Vec localA, PetscFEGeom *cgeom, PetscDualSpace sp[], PetscInt p,
                                                    PetscTabulation *T, PetscTabulation *TAux,

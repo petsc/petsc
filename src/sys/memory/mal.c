@@ -274,7 +274,7 @@ static PetscErrorCode (*PetscTrFreeOld)(void*,int,const char[],const char[])    
      This provides a way to do the allocation on DRAM temporarily. One
      can switch back to the previous choice by calling PetscMallocReset().
 
-.seealso: PetscMallocReset()
+.seealso: `PetscMallocReset()`
 @*/
 PetscErrorCode PetscMallocSetDRAM(void)
 {
@@ -303,7 +303,7 @@ PetscErrorCode PetscMallocSetDRAM(void)
 
    Level: developer
 
-.seealso: PetscMallocSetDRAM()
+.seealso: `PetscMallocSetDRAM()`
 @*/
 PetscErrorCode PetscMallocResetDRAM(void)
 {
@@ -345,7 +345,7 @@ static PetscBool petscmalloccoalesce =
 
    Level: developer
 
-.seealso: PetscMallocA()
+.seealso: `PetscMallocA()`
 @*/
 PetscErrorCode PetscMallocSetCoalesce(PetscBool coalesce)
 {
@@ -375,7 +375,7 @@ PetscErrorCode PetscMallocSetCoalesce(PetscBool coalesce)
 
    Level: developer
 
-.seealso: PetscMallocAlign(), PetscMallocSet(), PetscMalloc1(), PetscMalloc2(), PetscMalloc3(), PetscMalloc4(), PetscMalloc5(), PetscMalloc6(), PetscMalloc7(), PetscCalloc1(), PetscCalloc2(), PetscCalloc3(), PetscCalloc4(), PetscCalloc5(), PetscCalloc6(), PetscCalloc7(), PetscFreeA()
+.seealso: `PetscMallocAlign()`, `PetscMallocSet()`, `PetscMalloc1()`, `PetscMalloc2()`, `PetscMalloc3()`, `PetscMalloc4()`, `PetscMalloc5()`, `PetscMalloc6()`, `PetscMalloc7()`, `PetscCalloc1()`, `PetscCalloc2()`, `PetscCalloc3()`, `PetscCalloc4()`, `PetscCalloc5()`, `PetscCalloc6()`, `PetscCalloc7()`, `PetscFreeA()`
 @*/
 PetscErrorCode PetscMallocA(int n,PetscBool clear,int lineno,const char *function,const char *filename,size_t bytes0,void *ptr0,...)
 {
@@ -430,7 +430,7 @@ PetscErrorCode PetscMallocA(int n,PetscBool clear,int lineno,const char *functio
 
    Level: developer
 
-.seealso: PetscMallocAlign(), PetscMallocSet(), PetscMallocA(), PetscFree1(), PetscFree2(), PetscFree3(), PetscFree4(), PetscFree5(), PetscFree6(), PetscFree7()
+.seealso: `PetscMallocAlign()`, `PetscMallocSet()`, `PetscMallocA()`, `PetscFree1()`, `PetscFree2()`, `PetscFree3()`, `PetscFree4()`, `PetscFree5()`, `PetscFree6()`, `PetscFree7()`
 @*/
 PetscErrorCode PetscFreeA(int n,int lineno,const char *function,const char *filename,void *ptr0,...)
 {

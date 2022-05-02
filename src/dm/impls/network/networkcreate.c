@@ -302,7 +302,7 @@ PetscErrorCode DMClone_Network(DM dm, DM *newdm)
 
   Level: intermediate
 
-.seealso: DMType, DMNetworkCreate(), DMCreate(), DMSetType()
+.seealso: `DMType`, `DMNetworkCreate()`, `DMCreate()`, `DMSetType()`
 M*/
 
 PETSC_EXTERN PetscErrorCode DMCreate_Network(DM dm)

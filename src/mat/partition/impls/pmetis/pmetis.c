@@ -363,7 +363,7 @@ PetscErrorCode MatPartitioningDestroy_Parmetis(MatPartitioning part)
    Notes:
     See https://www-users.cs.umn.edu/~karypis/metis/
 
-.seealso: MatPartitioningSetType(), MatPartitioningType
+.seealso: `MatPartitioningSetType()`, `MatPartitioningType`
 
 M*/
 
@@ -415,7 +415,7 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Parmetis(MatPartitioning part)
 
    Level: advanced
 
-.seealso: MatMeshToCellGraph(), MatCreateMPIAdj(), MatPartitioningCreate()
+.seealso: `MatMeshToCellGraph()`, `MatCreateMPIAdj()`, `MatPartitioningCreate()`
 
 @*/
 PetscErrorCode MatMeshToVertexGraph(Mat mesh,PetscInt ncommonnodes,Mat *dual)
@@ -450,7 +450,7 @@ $     The number of rows in mesh is number of cells, the number of columns is th
 
    Level: advanced
 
-.seealso: MatMeshToVertexGraph(), MatCreateMPIAdj(), MatPartitioningCreate()
+.seealso: `MatMeshToVertexGraph()`, `MatCreateMPIAdj()`, `MatPartitioningCreate()`
 
 @*/
 PetscErrorCode MatMeshToCellGraph(Mat mesh,PetscInt ncommonnodes,Mat *dual)

@@ -1,11 +1,4 @@
-<HTML>
-<HEAD>
-<TITLE>DMLABEL Manual Pages</TITLE>
-</HEAD>
-<BODY BGCOLOR="FFFFFF">
+# DMLABEL Manual Pages
 
-<H2> DMLABEL</H2>
+The DMLABEL object is used to mark pieces of a mesh or DM, for example to indicate that a boundary condition should hold on that section. Markers are integers, so it can be seen as a multimap between integers and mesh pieces. Insertion is amortized $O(1)$ since hash tables are used, but each bin is then sorted so that extraction into sorted levels is also $O(1)$. The total cost should be $O(N log N)$ for $N$ entries.
 
-The DMLABEL object is used to mark pieces of a mesh or DM, for example to indicate that a boundary condition should hold on that section. Markers are integers, so it can be seen as a multimap between integers and mesh pieces. Insertion is amortized O(1) since hash tables are used, but each bin is then sorted so that extraction into sorted levels is also O(1). The total cost should be O(N log N) for N entries.
-
-<P>

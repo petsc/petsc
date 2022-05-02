@@ -198,7 +198,7 @@ static PetscErrorCode TSComputeIJacobian_DMLocal(TS ts, PetscReal time, Vec X, V
 
   Level: intermediate
 
-.seealso: DMTSSetIFunction(), DMTSSetIJacobianLocal()
+.seealso: `DMTSSetIFunction()`, `DMTSSetIJacobianLocal()`
 @*/
 PetscErrorCode DMTSSetBoundaryLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal, Vec, Vec, void *), void *ctx)
 {
@@ -232,7 +232,7 @@ PetscErrorCode DMTSSetBoundaryLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal,
 
   Level: beginner
 
-.seealso: DMTSSetIFunctionLocal((), DMTSSetIFunction(), DMTSSetIJacobianLocal()
+.seealso: `DMTSSetIFunctionLocal(()`, `DMTSSetIFunction()`, `DMTSSetIJacobianLocal()`
 @*/
 PetscErrorCode DMTSGetIFunctionLocal(DM dm, PetscErrorCode (**func)(DM, PetscReal, Vec, Vec, Vec, void *), void **ctx)
 {
@@ -263,7 +263,7 @@ PetscErrorCode DMTSGetIFunctionLocal(DM dm, PetscErrorCode (**func)(DM, PetscRea
 
   Level: beginner
 
-.seealso: DMTSGetIFunctionLocal(), DMTSSetIFunction(), DMTSSetIJacobianLocal()
+.seealso: `DMTSGetIFunctionLocal()`, `DMTSSetIFunction()`, `DMTSSetIJacobianLocal()`
 @*/
 PetscErrorCode DMTSSetIFunctionLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal, Vec, Vec, Vec, void *), void *ctx)
 {
@@ -299,7 +299,7 @@ PetscErrorCode DMTSSetIFunctionLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal
 
   Level: beginner
 
-.seealso: DMTSSetIJacobianLocal(), DMTSSetIFunctionLocal(), DMTSSetIJacobian(), DMTSSetIFunction()
+.seealso: `DMTSSetIJacobianLocal()`, `DMTSSetIFunctionLocal()`, `DMTSSetIJacobian()`, `DMTSSetIFunction()`
 @*/
 PetscErrorCode DMTSGetIJacobianLocal(DM dm, PetscErrorCode (**func)(DM, PetscReal, Vec, Vec, PetscReal, Mat, Mat, void *), void **ctx)
 {
@@ -328,7 +328,7 @@ PetscErrorCode DMTSGetIJacobianLocal(DM dm, PetscErrorCode (**func)(DM, PetscRea
 
   Level: beginner
 
-.seealso: DMTSGetIJacobianLocal(), DMTSSetIFunctionLocal(), DMTSSetIJacobian(), DMTSSetIFunction()
+.seealso: `DMTSGetIJacobianLocal()`, `DMTSSetIFunctionLocal()`, `DMTSSetIJacobian()`, `DMTSSetIFunction()`
 @*/
 PetscErrorCode DMTSSetIJacobianLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal, Vec, Vec, PetscReal, Mat, Mat, void *), void *ctx)
 {
@@ -363,7 +363,7 @@ PetscErrorCode DMTSSetIJacobianLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal
 
   Level: beginner
 
-.seealso: DMTSSetRHSFunctionLocal(), DMTSSetRHSFunction(), DMTSSetIFunction(), DMTSSetIJacobianLocal()
+.seealso: `DMTSSetRHSFunctionLocal()`, `DMTSSetRHSFunction()`, `DMTSSetIFunction()`, `DMTSSetIJacobianLocal()`
 @*/
 PetscErrorCode DMTSGetRHSFunctionLocal(DM dm, PetscErrorCode (**func)(DM, PetscReal, Vec, Vec, void *), void **ctx)
 {
@@ -394,7 +394,7 @@ PetscErrorCode DMTSGetRHSFunctionLocal(DM dm, PetscErrorCode (**func)(DM, PetscR
 
   Level: beginner
 
-.seealso: DMTSGetRHSFunctionLocal(), DMTSSetRHSFunction(), DMTSSetIFunction(), DMTSSetIJacobianLocal()
+.seealso: `DMTSGetRHSFunctionLocal()`, `DMTSSetRHSFunction()`, `DMTSSetIFunction()`, `DMTSSetIJacobianLocal()`
 @*/
 PetscErrorCode DMTSSetRHSFunctionLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal, Vec, Vec, void *), void *ctx)
 {
@@ -425,7 +425,7 @@ PetscErrorCode DMTSSetRHSFunctionLocal(DM dm, PetscErrorCode (*func)(DM, PetscRe
 
   Level: developer
 
-.seealso: DMTSCreateRHSMassMatrixLumped(), DMTSDestroyRHSMassMatrix(), DMCreateMassMatrix(), DMTS
+.seealso: `DMTSCreateRHSMassMatrixLumped()`, `DMTSDestroyRHSMassMatrix()`, `DMCreateMassMatrix()`, `DMTS`
 @*/
 PetscErrorCode DMTSCreateRHSMassMatrix(DM dm)
 {
@@ -460,7 +460,7 @@ PetscErrorCode DMTSCreateRHSMassMatrix(DM dm)
 
   Level: developer
 
-.seealso: DMTSCreateRHSMassMatrix(), DMTSDestroyRHSMassMatrix(), DMCreateMassMatrix(), DMTS
+.seealso: `DMTSCreateRHSMassMatrix()`, `DMTSDestroyRHSMassMatrix()`, `DMCreateMassMatrix()`, `DMTS`
 @*/
 PetscErrorCode DMTSCreateRHSMassMatrixLumped(DM dm)
 {
@@ -487,7 +487,7 @@ PetscErrorCode DMTSCreateRHSMassMatrixLumped(DM dm)
 
   Level: developer
 
-.seealso: DMTSCreateRHSMassMatrixLumped(), DMCreateMassMatrix(), DMCreateMassMatrix(), DMTS
+.seealso: `DMTSCreateRHSMassMatrixLumped()`, `DMCreateMassMatrix()`, `DMCreateMassMatrix()`, `DMTS`
 @*/
 PetscErrorCode DMTSDestroyRHSMassMatrix(DM dm)
 {

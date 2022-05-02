@@ -23,7 +23,7 @@
 
    Level: advanced
 
-.seealso: VecNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax(), VecStrideScale()
+.seealso: `VecNorm()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMin()`, `VecStrideMax()`, `VecStrideScale()`
 @*/
 PetscErrorCode  VecStrideSet(Vec v,PetscInt start,PetscScalar s)
 {
@@ -61,7 +61,7 @@ PetscErrorCode  VecStrideSet(Vec v,PetscInt start,PetscScalar s)
 
    Level: advanced
 
-.seealso: VecNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax(), VecStrideScale()
+.seealso: `VecNorm()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMin()`, `VecStrideMax()`, `VecStrideScale()`
 @*/
 PetscErrorCode  VecStrideScale(Vec v,PetscInt start,PetscScalar scale)
 {
@@ -108,7 +108,7 @@ PetscErrorCode  VecStrideScale(Vec v,PetscInt start,PetscScalar scale)
 
    Level: advanced
 
-.seealso: VecNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax()
+.seealso: `VecNorm()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMin()`, `VecStrideMax()`
 @*/
 PetscErrorCode  VecStrideNorm(Vec v,PetscInt start,NormType ntype,PetscReal *nrm)
 {
@@ -173,7 +173,7 @@ PetscErrorCode  VecStrideNorm(Vec v,PetscInt start,NormType ntype,PetscReal *nrm
 
    Level: advanced
 
-.seealso: VecMax(), VecStrideNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin()
+.seealso: `VecMax()`, `VecStrideNorm()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMin()`
 @*/
 PetscErrorCode  VecStrideMax(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
 {
@@ -241,7 +241,7 @@ PetscErrorCode  VecStrideMax(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
    the pressure is stored (interlaced) with other variables, e.g., density, etc.
    This will only work if the desire subvector is a stride subvector.
 
-.seealso: VecMin(), VecStrideNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMax()
+.seealso: `VecMin()`, `VecStrideNorm()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMax()`
 @*/
 PetscErrorCode  VecStrideMin(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
 {
@@ -300,7 +300,7 @@ PetscErrorCode  VecStrideMin(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
 
    Level: advanced
 
-.seealso: VecNorm(), VecStrideScale(), VecScale(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax()
+.seealso: `VecNorm()`, `VecStrideScale()`, `VecScale()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMin()`, `VecStrideMax()`
 @*/
 PetscErrorCode  VecStrideScaleAll(Vec v,const PetscScalar *scales)
 {
@@ -347,7 +347,7 @@ PetscErrorCode  VecStrideScaleAll(Vec v,const PetscScalar *scales)
 
    Level: advanced
 
-.seealso: VecNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax()
+.seealso: `VecNorm()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMin()`, `VecStrideMax()`
 @*/
 PetscErrorCode  VecStrideNormAll(Vec v,NormType ntype,PetscReal nrm[])
 {
@@ -424,7 +424,7 @@ PetscErrorCode  VecStrideNormAll(Vec v,NormType ntype,PetscReal nrm[])
 
    Level: advanced
 
-.seealso: VecMax(), VecStrideNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin()
+.seealso: `VecMax()`, `VecStrideNorm()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMin()`
 @*/
 PetscErrorCode  VecStrideMaxAll(Vec v,PetscInt idex[],PetscReal nrm[])
 {
@@ -483,7 +483,7 @@ PetscErrorCode  VecStrideMaxAll(Vec v,PetscInt idex[],PetscReal nrm[])
 
    The dimension of nrm must be the same as the vector block size
 
-.seealso: VecMin(), VecStrideNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMax()
+.seealso: `VecMin()`, `VecStrideNorm()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMax()`
 @*/
 PetscErrorCode  VecStrideMinAll(Vec v,PetscInt idex[],PetscReal nrm[])
 {
@@ -549,8 +549,8 @@ PetscErrorCode  VecStrideMinAll(Vec v,PetscInt idex[],PetscReal nrm[])
 
    Level: advanced
 
-.seealso: VecStrideNorm(), VecStrideScatter(), VecStrideMin(), VecStrideMax(), VecStrideGather(),
-          VecStrideScatterAll()
+.seealso: `VecStrideNorm()`, `VecStrideScatter()`, `VecStrideMin()`, `VecStrideMax()`, `VecStrideGather()`,
+          `VecStrideScatterAll()`
 @*/
 PetscErrorCode  VecStrideGatherAll(Vec v,Vec s[],InsertMode addv)
 {
@@ -642,8 +642,8 @@ PetscErrorCode  VecStrideGatherAll(Vec v,Vec s[],InsertMode addv)
 
    Level: advanced
 
-.seealso: VecStrideNorm(), VecStrideScatter(), VecStrideMin(), VecStrideMax(), VecStrideGather(),
-          VecStrideScatterAll()
+.seealso: `VecStrideNorm()`, `VecStrideScatter()`, `VecStrideMin()`, `VecStrideMax()`, `VecStrideGather()`,
+          `VecStrideScatterAll()`
 @*/
 PetscErrorCode  VecStrideScatterAll(Vec s[],Vec v,InsertMode addv)
 {
@@ -738,8 +738,8 @@ PetscErrorCode  VecStrideScatterAll(Vec s[],Vec v,InsertMode addv)
 
    Level: advanced
 
-.seealso: VecStrideNorm(), VecStrideScatter(), VecStrideMin(), VecStrideMax(), VecStrideGatherAll(),
-          VecStrideScatterAll()
+.seealso: `VecStrideNorm()`, `VecStrideScatter()`, `VecStrideMin()`, `VecStrideMax()`, `VecStrideGatherAll()`,
+          `VecStrideScatterAll()`
 @*/
 PetscErrorCode  VecStrideGather(Vec v,PetscInt start,Vec s,InsertMode addv)
 {
@@ -777,8 +777,8 @@ PetscErrorCode  VecStrideGather(Vec v,PetscInt start,Vec s,InsertMode addv)
 
    Level: advanced
 
-.seealso: VecStrideNorm(), VecStrideGather(), VecStrideMin(), VecStrideMax(), VecStrideGatherAll(),
-          VecStrideScatterAll(), VecStrideSubSetScatter(), VecStrideSubSetGather()
+.seealso: `VecStrideNorm()`, `VecStrideGather()`, `VecStrideMin()`, `VecStrideMax()`, `VecStrideGatherAll()`,
+          `VecStrideScatterAll()`, `VecStrideSubSetScatter()`, `VecStrideSubSetGather()`
 @*/
 PetscErrorCode  VecStrideScatter(Vec s,PetscInt start,Vec v,InsertMode addv)
 {
@@ -818,8 +818,8 @@ PetscErrorCode  VecStrideScatter(Vec s,PetscInt start,Vec v,InsertMode addv)
 
    Level: advanced
 
-.seealso: VecStrideNorm(), VecStrideScatter(), VecStrideGather(), VecStrideSubSetScatter(), VecStrideMin(), VecStrideMax(), VecStrideGatherAll(),
-          VecStrideScatterAll()
+.seealso: `VecStrideNorm()`, `VecStrideScatter()`, `VecStrideGather()`, `VecStrideSubSetScatter()`, `VecStrideMin()`, `VecStrideMax()`, `VecStrideGatherAll()`,
+          `VecStrideScatterAll()`
 @*/
 PetscErrorCode  VecStrideSubSetGather(Vec v,PetscInt nidx,const PetscInt idxv[],const PetscInt idxs[],Vec s,InsertMode addv)
 {
@@ -857,8 +857,8 @@ PetscErrorCode  VecStrideSubSetGather(Vec v,PetscInt nidx,const PetscInt idxv[],
 
    Level: advanced
 
-.seealso: VecStrideNorm(), VecStrideGather(), VecStrideGather(), VecStrideSubSetGather(), VecStrideMin(), VecStrideMax(), VecStrideGatherAll(),
-          VecStrideScatterAll()
+.seealso: `VecStrideNorm()`, `VecStrideGather()`, `VecStrideGather()`, `VecStrideSubSetGather()`, `VecStrideMin()`, `VecStrideMax()`, `VecStrideGatherAll()`,
+          `VecStrideScatterAll()`
 @*/
 PetscErrorCode  VecStrideSubSetScatter(Vec s,PetscInt nidx,const PetscInt idxs[],const PetscInt idxv[],Vec v,InsertMode addv)
 {
@@ -1093,7 +1093,7 @@ PetscErrorCode VecReciprocal_Default(Vec v)
 
   Level: beginner
 
-.seealso:  VecLog(), VecAbs(), VecSqrtAbs(), VecReciprocal()
+.seealso: `VecLog()`, `VecAbs()`, `VecSqrtAbs()`, `VecReciprocal()`
 
 @*/
 PetscErrorCode  VecExp(Vec v)
@@ -1127,7 +1127,7 @@ PetscErrorCode  VecExp(Vec v)
 
   Level: beginner
 
-.seealso:  VecExp(), VecAbs(), VecSqrtAbs(), VecReciprocal()
+.seealso: `VecExp()`, `VecAbs()`, `VecSqrtAbs()`, `VecReciprocal()`
 
 @*/
 PetscErrorCode  VecLog(Vec v)
@@ -1163,7 +1163,7 @@ PetscErrorCode  VecLog(Vec v)
 
   Note: The actual function is sqrt(|x_i|)
 
-.seealso: VecLog(), VecExp(), VecReciprocal(), VecAbs()
+.seealso: `VecLog()`, `VecExp()`, `VecReciprocal()`, `VecAbs()`
 
 @*/
 PetscErrorCode  VecSqrtAbs(Vec v)
@@ -1202,7 +1202,7 @@ PetscErrorCode  VecSqrtAbs(Vec v)
   Notes:
     conj(x) is the complex conjugate of x when x is complex
 
-.seealso:   VecDot(), VecNorm(), VecDotBegin(), VecNormBegin(), VecDotEnd(), VecNormEnd()
+.seealso: `VecDot()`, `VecNorm()`, `VecDotBegin()`, `VecNormBegin()`, `VecDotEnd()`, `VecNormEnd()`
 
 @*/
 PetscErrorCode  VecDotNorm2(Vec s,Vec t,PetscScalar *dp, PetscReal *nm)
@@ -1263,7 +1263,7 @@ PetscErrorCode  VecDotNorm2(Vec s,Vec t,PetscScalar *dp, PetscReal *nm)
 
    Level: beginner
 
-.seealso: VecMean(), VecNorm()
+.seealso: `VecMean()`, `VecNorm()`
 @*/
 PetscErrorCode  VecSum(Vec v,PetscScalar *sum)
 {
@@ -1299,7 +1299,7 @@ PetscErrorCode  VecSum(Vec v,PetscScalar *sum)
 
    Level: beginner
 
-.seealso: VecSum(), VecNorm()
+.seealso: `VecSum()`, `VecNorm()`
 @*/
 PetscErrorCode  VecMean(Vec v,PetscScalar *mean)
 {
@@ -1324,7 +1324,7 @@ PetscErrorCode  VecMean(Vec v,PetscScalar *mean)
 
    Level: beginner
 
-.seealso: VecNorm(), VecRealPart()
+.seealso: `VecNorm()`, `VecRealPart()`
 @*/
 PetscErrorCode  VecImaginaryPart(Vec v)
 {
@@ -1350,7 +1350,7 @@ PetscErrorCode  VecImaginaryPart(Vec v)
 
    Level: beginner
 
-.seealso: VecNorm(), VecImaginaryPart()
+.seealso: `VecNorm()`, `VecImaginaryPart()`
 @*/
 PetscErrorCode  VecRealPart(Vec v)
 {
@@ -1444,7 +1444,7 @@ PetscErrorCode  VecAbs(Vec v)
 
   Note: This function does not yet support parallel Index Sets with non-local permutations
 
-.seealso: MatPermute()
+.seealso: `MatPermute()`
 @*/
 PetscErrorCode  VecPermute(Vec x, IS row, PetscBool inv)
 {

@@ -113,7 +113,7 @@ static PetscErrorCode PCHPDDMSetAuxiliaryMat_HPDDM(PC pc, IS is, Mat A, PetscErr
 
    Level: intermediate
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCHPDDMSetRHSMat(), MATIS
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCHPDDMSetRHSMat()`, `MATIS`
 @*/
 PetscErrorCode PCHPDDMSetAuxiliaryMat(PC pc, IS is, Mat A, PetscErrorCode (*setup)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void*), void* setup_ctx)
 {
@@ -147,7 +147,7 @@ static PetscErrorCode PCHPDDMHasNeumannMat_HPDDM(PC pc, PetscBool has)
 
    Level: intermediate
 
-.seealso:  PCHPDDM, PCHPDDMSetAuxiliaryMat()
+.seealso: `PCHPDDM`, `PCHPDDMSetAuxiliaryMat()`
 @*/
 PetscErrorCode PCHPDDMHasNeumannMat(PC pc, PetscBool has)
 {
@@ -177,7 +177,7 @@ static PetscErrorCode PCHPDDMSetRHSMat_HPDDM(PC pc, Mat B)
 
    Level: advanced
 
-.seealso:  PCHPDDMSetAuxiliaryMat(), PCHPDDM
+.seealso: `PCHPDDMSetAuxiliaryMat()`, `PCHPDDM`
 @*/
 PetscErrorCode PCHPDDMSetRHSMat(PC pc, Mat B)
 {
@@ -320,7 +320,7 @@ static PetscErrorCode PCMatApply_HPDDM(PC pc, Mat X, Mat Y)
 
    Level: advanced
 
-.seealso:  PCMGGetGridComplexity(), PCHPDDM
+.seealso: `PCMGGetGridComplexity()`, `PCHPDDM`
 @*/
 static PetscErrorCode PCHPDDMGetComplexities(PC pc, PetscReal *gc, PetscReal *oc)
 {
@@ -542,7 +542,7 @@ static inline PetscErrorCode PCHPDDMDeflate_Private(PC pc, Type X, Type Y)
 
    Level: advanced
 
-.seealso:  PCHPDDM, PCHPDDMCoarseCorrectionType
+.seealso: `PCHPDDM`, `PCHPDDMCoarseCorrectionType`
 @*/
 static PetscErrorCode PCHPDDMShellApply(PC pc, Vec x, Vec y)
 {
@@ -593,7 +593,7 @@ static PetscErrorCode PCHPDDMShellApply(PC pc, Vec x, Vec y)
 
    Level: advanced
 
-.seealso:  PCHPDDM, PCHPDDMShellMatApply(), PCHPDDMCoarseCorrectionType
+.seealso: `PCHPDDM`, `PCHPDDMShellMatApply()`, `PCHPDDMCoarseCorrectionType`
 @*/
 static PetscErrorCode PCHPDDMShellMatApply(PC pc, Mat X, Mat Y)
 {
@@ -1421,7 +1421,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
 
    Level: intermediate
 
-.seealso:  PCHPDDMGetCoarseCorrectionType(), PCHPDDM, PCHPDDMCoarseCorrectionType
+.seealso: `PCHPDDMGetCoarseCorrectionType()`, `PCHPDDM`, `PCHPDDMCoarseCorrectionType`
 @*/
 PetscErrorCode PCHPDDMSetCoarseCorrectionType(PC pc, PCHPDDMCoarseCorrectionType type)
 {
@@ -1443,7 +1443,7 @@ PetscErrorCode PCHPDDMSetCoarseCorrectionType(PC pc, PCHPDDMCoarseCorrectionType
 
    Level: intermediate
 
-.seealso:  PCHPDDMSetCoarseCorrectionType(), PCHPDDM, PCHPDDMCoarseCorrectionType
+.seealso: `PCHPDDMSetCoarseCorrectionType()`, `PCHPDDM`, `PCHPDDMCoarseCorrectionType`
 @*/
 PetscErrorCode PCHPDDMGetCoarseCorrectionType(PC pc, PCHPDDMCoarseCorrectionType *type)
 {
@@ -1521,7 +1521,7 @@ static PetscErrorCode PCHPDDMGetSTShareSubKSP_HPDDM(PC pc, PetscBool *share)
 
    Level: advanced
 
-.seealso:  PCDeflationSetSpace(), PCMGSetRestriction()
+.seealso: `PCDeflationSetSpace()`, `PCMGSetRestriction()`
 @*/
 PetscErrorCode PCHPDDMSetDeflationMat(PC pc, IS is, Mat U)
 {
@@ -1602,7 +1602,7 @@ PetscErrorCode HPDDMLoadDL_Private(PetscBool *found)
 
    Level: intermediate
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCHPDDMSetAuxiliaryMat(), MATIS, PCBDDC, PCDEFLATION, PCTELESCOPE
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCHPDDMSetAuxiliaryMat()`, `MATIS`, `PCBDDC`, `PCDEFLATION`, `PCTELESCOPE`
 M*/
 PETSC_EXTERN PetscErrorCode PCCreate_HPDDM(PC pc)
 {
@@ -1640,7 +1640,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_HPDDM(PC pc)
 
    Level: intermediate
 
-.seealso:  PetscInitialize()
+.seealso: `PetscInitialize()`
 @*/
 PetscErrorCode PCHPDDMInitializePackage(void)
 {
@@ -1683,7 +1683,7 @@ PetscErrorCode PCHPDDMInitializePackage(void)
 
    Level: intermediate
 
-.seealso:  PetscFinalize()
+.seealso: `PetscFinalize()`
 @*/
 PetscErrorCode PCHPDDMFinalizePackage(void)
 {

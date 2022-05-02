@@ -760,7 +760,7 @@ PetscErrorCode  MatMPIAdjToSeq_MPIAdj(Mat A,Mat *B)
 
    The matrix B should be destroyed with MatDestroy(). The arrays are not copied, so B should be destroyed before A is destroyed.
 
-.seealso: MatCreateMPIAdj()
+.seealso: `MatCreateMPIAdj()`
 @*/
 PetscErrorCode MatMPIAdjCreateNonemptySubcommMat(Mat A,Mat *B)
 {
@@ -776,7 +776,7 @@ PetscErrorCode MatMPIAdjCreateNonemptySubcommMat(Mat A,Mat *B)
 
   Level: beginner
 
-.seealso: MatCreateMPIAdj
+.seealso: `MatCreateMPIAdj`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAdj(Mat B)
@@ -809,7 +809,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAdj(Mat B)
 
    Level: intermediate
 
-.seealso: MatCreate(), MatCreateMPIAdj(), MatSetValues()
+.seealso: `MatCreate()`, `MatCreateMPIAdj()`, `MatSetValues()`
 @*/
 PetscErrorCode  MatMPIAdjToSeq(Mat A,Mat *B)
 {
@@ -832,7 +832,7 @@ PetscErrorCode  MatMPIAdjToSeq(Mat A,Mat *B)
 
    Level: intermediate
 
-.seealso: MatCreate(), MatCreateMPIAdj(), MatSetValues()
+.seealso: `MatCreate()`, `MatCreateMPIAdj()`, `MatSetValues()`
 @*/
 PetscErrorCode  MatMPIAdjSetPreallocation(Mat B,PetscInt *i,PetscInt *j,PetscInt *values)
 {
@@ -875,7 +875,7 @@ PetscErrorCode  MatMPIAdjSetPreallocation(Mat B,PetscInt *i,PetscInt *j,PetscInt
 
    Possible values for MatSetOption() - MAT_STRUCTURALLY_SYMMETRIC
 
-.seealso: MatCreate(), MatConvert(), MatGetOrdering()
+.seealso: `MatCreate()`, `MatConvert()`, `MatGetOrdering()`
 @*/
 PetscErrorCode  MatCreateMPIAdj(MPI_Comm comm,PetscInt m,PetscInt N,PetscInt *i,PetscInt *j,PetscInt *values,Mat *A)
 {

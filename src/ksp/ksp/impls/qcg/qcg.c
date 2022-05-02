@@ -372,8 +372,8 @@ $  other KSP converged/diverged reasons
 . * - Trond Steihaug, The Conjugate Gradient Method and Trust Regions in Large Scale Optimization,
    SIAM Journal on Numerical Analysis, Vol. 20, No. 3 (Jun., 1983).
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPQCGSetTrustRegionRadius()
-           KSPQCGGetTrialStepNorm(), KSPQCGGetQuadratic()
+.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPQCGSetTrustRegionRadius()`
+          `KSPQCGGetTrialStepNorm()`, `KSPQCGGetQuadratic()`
 M*/
 
 PETSC_EXTERN PetscErrorCode KSPCreate_QCG(KSP ksp)

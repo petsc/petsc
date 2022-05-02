@@ -13,7 +13,7 @@
 
    Level: beginner
 
-.seealso: DMForestSetTopology(), DMForestGetTopology(), DMFOREST
+.seealso: `DMForestSetTopology()`, `DMForestGetTopology()`, `DMFOREST`
 J*/
 typedef const char* DMForestTopology;
 
@@ -65,7 +65,7 @@ PETSC_EXTERN PetscErrorCode DMForestGetAdaptivityLabel(DM, DMLabel*);
 
    Level: intermediate
 
-.seealso: DMForestSetType(), DMForest
+.seealso: `DMForestSetType()`, `DMForest`
 J*/
 typedef const char* DMForestAdaptivityStrategy;
 #define DMFORESTADAPTALL "all"

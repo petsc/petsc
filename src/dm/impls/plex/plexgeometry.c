@@ -31,7 +31,7 @@
 
   Complexity of this function is currently O(mn) with m number of vertices to find and n number of vertices in the local mesh. This could probably be improved if needed.
 
-.seealso: DMPlexCreate(), DMGetCoordinatesLocal()
+.seealso: `DMPlexCreate()`, `DMGetCoordinatesLocal()`
 @*/
 PetscErrorCode DMPlexFindVertices(DM dm, Vec coordinates, PetscReal eps, IS *points)
 {
@@ -403,7 +403,7 @@ PetscErrorCode PetscGridHashEnlarge(PetscGridHash box, const PetscScalar point[]
 
   Level: developer
 
-.seealso: PetscGridHashCreate()
+.seealso: `PetscGridHashCreate()`
 */
 PetscErrorCode PetscGridHashSetGrid(PetscGridHash box, const PetscInt n[], const PetscReal h[])
 {
@@ -439,7 +439,7 @@ PetscErrorCode PetscGridHashSetGrid(PetscGridHash box, const PetscInt n[], const
 
   Level: developer
 
-.seealso: PetscGridHashCreate()
+.seealso: `PetscGridHashCreate()`
 */
 PetscErrorCode PetscGridHashGetEnclosingBox(PetscGridHash box, PetscInt numPoints, const PetscScalar points[], PetscInt dboxes[], PetscInt boxes[])
 {
@@ -483,7 +483,7 @@ PetscErrorCode PetscGridHashGetEnclosingBox(PetscGridHash box, PetscInt numPoint
 
   Level: developer
 
-.seealso: PetscGridHashGetEnclosingBox()
+.seealso: `PetscGridHashGetEnclosingBox()`
 */
 PetscErrorCode PetscGridHashGetEnclosingBoxQuery(PetscGridHash box, PetscInt numPoints, const PetscScalar points[], PetscInt dboxes[], PetscInt boxes[],PetscBool *found)
 {
@@ -584,7 +584,7 @@ PetscErrorCode DMPlexClosestPoint_Internal(DM dm, PetscInt dim, const PetscScala
 
   Level: developer
 
-.seealso: PetscGridHashCreate(), PetscGridHashGetEnclosingBox()
+.seealso: `PetscGridHashCreate()`, `PetscGridHashGetEnclosingBox()`
 */
 PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
 {
@@ -968,7 +968,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
 
   Level: developer
 
-.seealso: DMPlexComputeProjection3Dto1D(), DMPlexComputeProjection3Dto2D()
+.seealso: `DMPlexComputeProjection3Dto1D()`, `DMPlexComputeProjection3Dto2D()`
 @*/
 PetscErrorCode DMPlexComputeProjection2Dto1D(PetscScalar coords[], PetscReal R[])
 {
@@ -999,7 +999,7 @@ PetscErrorCode DMPlexComputeProjection2Dto1D(PetscScalar coords[], PetscReal R[]
 
   Level: developer
 
-.seealso: DMPlexComputeProjection2Dto1D(), DMPlexComputeProjection3Dto2D()
+.seealso: `DMPlexComputeProjection2Dto1D()`, `DMPlexComputeProjection3Dto2D()`
 @*/
 PetscErrorCode DMPlexComputeProjection3Dto1D(PetscScalar coords[], PetscReal R[])
 {
@@ -1048,7 +1048,7 @@ PetscErrorCode DMPlexComputeProjection3Dto1D(PetscScalar coords[], PetscReal R[]
 
   Level: developer
 
-.seealso: DMPlexComputeProjection2Dto1D(), DMPlexComputeProjection3Dto1D()
+.seealso: `DMPlexComputeProjection2Dto1D()`, `DMPlexComputeProjection3Dto1D()`
 @*/
 PetscErrorCode DMPlexComputeProjection3Dto2D(PetscInt coordSize, PetscScalar coords[], PetscReal R[])
 {
@@ -1845,7 +1845,7 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_Implicit(DM dm, PetscInt cell
   Since it returns arrays, this routine is only available in Fortran 90, and you must
   include petsc.h90 in your code.
 
-.seealso: DMPlexComputeCellGeometryFEM(), DMGetCoordinateSection(), DMGetCoordinates()
+.seealso: `DMPlexComputeCellGeometryFEM()`, `DMGetCoordinateSection()`, `DMGetCoordinates()`
 @*/
 PetscErrorCode DMPlexComputeCellGeometryAffineFEM(DM dm, PetscInt cell, PetscReal *v0, PetscReal *J, PetscReal *invJ, PetscReal *detJ)
 {
@@ -1981,7 +1981,7 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_FE(DM dm, PetscFE fe, PetscIn
   Since it returns arrays, this routine is only available in Fortran 90, and you must
   include petsc.h90 in your code.
 
-.seealso: DMGetCoordinateSection(), DMGetCoordinates()
+.seealso: `DMGetCoordinateSection()`, `DMGetCoordinates()`
 @*/
 PetscErrorCode DMPlexComputeCellGeometryFEM(DM dm, PetscInt cell, PetscQuadrature quad, PetscReal *v, PetscReal *J, PetscReal *invJ, PetscReal *detJ)
 {
@@ -2284,7 +2284,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_3D_Internal(DM dm, PetscInt dim, 
   Since it returns arrays, this routine is only available in Fortran 90, and you must
   include petsc.h90 in your code.
 
-.seealso: DMGetCoordinateSection(), DMGetCoordinates()
+.seealso: `DMGetCoordinateSection()`, `DMGetCoordinates()`
 @*/
 PetscErrorCode DMPlexComputeCellGeometryFVM(DM dm, PetscInt cell, PetscReal *vol, PetscReal centroid[], PetscReal normal[])
 {
@@ -2375,7 +2375,7 @@ PetscErrorCode DMPlexComputeGeometryFEM(DM dm, Vec *cellgeom)
 
   Level: developer
 
-.seealso: PetscFVFaceGeom, PetscFVCellGeom, DMPlexComputeGeometryFEM()
+.seealso: `PetscFVFaceGeom`, `PetscFVCellGeom`, `DMPlexComputeGeometryFEM()`
 @*/
 PetscErrorCode DMPlexComputeGeometryFVM(DM dm, Vec *cellgeom, Vec *facegeom)
 {
@@ -2529,7 +2529,7 @@ PetscErrorCode DMPlexComputeGeometryFVM(DM dm, Vec *cellgeom, Vec *facegeom)
 
   Level: developer
 
-.seealso: DMGetCoordinates()
+.seealso: `DMGetCoordinates()`
 @*/
 PetscErrorCode DMPlexGetMinRadius(DM dm, PetscReal *minradius)
 {
@@ -2551,7 +2551,7 @@ PetscErrorCode DMPlexGetMinRadius(DM dm, PetscReal *minradius)
 
   Level: developer
 
-.seealso: DMSetCoordinates()
+.seealso: `DMSetCoordinates()`
 @*/
 PetscErrorCode DMPlexSetMinRadius(DM dm, PetscReal minradius)
 {
@@ -2754,7 +2754,7 @@ static PetscErrorCode BuildGradientReconstruction_Internal_Tree(DM dm, PetscFV f
 
   Level: developer
 
-.seealso: DMPlexGetFaceGeometryFVM(), DMPlexGetCellGeometryFVM()
+.seealso: `DMPlexGetFaceGeometryFVM()`, `DMPlexGetCellGeometryFVM()`
 @*/
 PetscErrorCode DMPlexComputeGradientFVM(DM dm, PetscFV fvm, Vec faceGeometry, Vec cellGeometry, DM *dmGrad)
 {
@@ -2808,7 +2808,7 @@ PetscErrorCode DMPlexComputeGradientFVM(DM dm, PetscFV fvm, Vec faceGeometry, Ve
 
   Level: developer
 
-.seealso: DMPlexComputeGeometryFVM()
+.seealso: `DMPlexComputeGeometryFVM()`
 @*/
 PetscErrorCode DMPlexGetDataFVM(DM dm, PetscFV fv, Vec *cellgeom, Vec *facegeom, DM *gradDM)
 {
@@ -3229,7 +3229,7 @@ static PetscErrorCode DMPlexReferenceToCoordinates_FE(DM dm, PetscFE fe, PetscIn
 
   Level: intermediate
 
-.seealso: DMPlexReferenceToCoordinates()
+.seealso: `DMPlexReferenceToCoordinates()`
 @*/
 PetscErrorCode DMPlexCoordinatesToReference(DM dm, PetscInt cell, PetscInt numPoints, const PetscReal realCoords[], PetscReal refCoords[])
 {
@@ -3310,7 +3310,7 @@ PetscErrorCode DMPlexCoordinatesToReference(DM dm, PetscInt cell, PetscInt numPo
 
    Level: intermediate
 
-.seealso: DMPlexCoordinatesToReference()
+.seealso: `DMPlexCoordinatesToReference()`
 @*/
 PetscErrorCode DMPlexReferenceToCoordinates(DM dm, PetscInt cell, PetscInt numPoints, const PetscReal refCoords[], PetscReal realCoords[])
 {
@@ -3409,7 +3409,7 @@ $         PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscSc
 
   Level: intermediate
 
-.seealso: DMGetCoordinates(), DMGetCoordinatesLocal(), DMGetCoordinateDM(), DMProjectFieldLocal(), DMProjectFieldLabelLocal()
+.seealso: `DMGetCoordinates()`, `DMGetCoordinatesLocal()`, `DMGetCoordinateDM()`, `DMProjectFieldLocal()`, `DMProjectFieldLabelLocal()`
 @*/
 PetscErrorCode DMPlexRemapGeometry(DM dm, PetscReal time,
                                    void (*func)(PetscInt, PetscInt, PetscInt,
@@ -3467,7 +3467,7 @@ static void f0_shear(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 
   Level: intermediate
 
-.seealso: DMPlexRemapGeometry()
+.seealso: `DMPlexRemapGeometry()`
 @*/
 PetscErrorCode DMPlexShearGeometry(DM dm, DMDirection direction, PetscReal multipliers[])
 {

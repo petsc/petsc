@@ -329,7 +329,7 @@ static PetscErrorCode KSPView_FCG(KSP ksp,PetscViewer viewer)
 
   Level: intermediate
 
-.seealso: KSPFCG, KSPFCGGetTruncationType(), KSPFCGGetNprealloc()
+.seealso: `KSPFCG`, `KSPFCGGetTruncationType()`, `KSPFCGGetNprealloc()`
 @*/
 PetscErrorCode KSPFCGSetMmax(KSP ksp,PetscInt mmax)
 {
@@ -357,7 +357,7 @@ PetscErrorCode KSPFCGSetMmax(KSP ksp,PetscInt mmax)
 
    Level: intermediate
 
-.seealso: KSPFCG, KSPFCGGetTruncationType(), KSPFCGGetNprealloc(), KSPFCGSetMmax()
+.seealso: `KSPFCG`, `KSPFCGGetTruncationType()`, `KSPFCGGetNprealloc()`, `KSPFCGSetMmax()`
 @*/
 
 PetscErrorCode KSPFCGGetMmax(KSP ksp,PetscInt *mmax)
@@ -384,7 +384,7 @@ PetscErrorCode KSPFCGGetMmax(KSP ksp,PetscInt *mmax)
   Options Database:
 . -ksp_fcg_nprealloc <N> - number of directions to preallocate
 
-.seealso: KSPFCG, KSPFCGGetTruncationType(), KSPFCGGetNprealloc()
+.seealso: `KSPFCG`, `KSPFCGGetTruncationType()`, `KSPFCGGetNprealloc()`
 @*/
 PetscErrorCode KSPFCGSetNprealloc(KSP ksp,PetscInt nprealloc)
 {
@@ -411,7 +411,7 @@ PetscErrorCode KSPFCGSetNprealloc(KSP ksp,PetscInt nprealloc)
 
    Level: advanced
 
-.seealso: KSPFCG, KSPFCGGetTruncationType(), KSPFCGSetNprealloc()
+.seealso: `KSPFCG`, `KSPFCGGetTruncationType()`, `KSPFCGSetNprealloc()`
 @*/
 PetscErrorCode KSPFCGGetNprealloc(KSP ksp,PetscInt *nprealloc)
 {
@@ -440,7 +440,7 @@ PetscErrorCode KSPFCGGetNprealloc(KSP ksp,PetscInt *nprealloc)
   Options Database:
 . -ksp_fcg_truncation_type <standard, notay> - specify how many of its stored previous directions FCG uses during orthoganalization
 
-  .seealso: KSPFCDTruncationType, KSPFCGGetTruncationType
+  .seealso: `KSPFCDTruncationType`, `KSPFCGGetTruncationType`
 @*/
 PetscErrorCode KSPFCGSetTruncationType(KSP ksp,KSPFCDTruncationType truncstrat)
 {
@@ -466,7 +466,7 @@ PetscErrorCode KSPFCGSetTruncationType(KSP ksp,KSPFCDTruncationType truncstrat)
 
    Level: intermediate
 
-.seealso: KSPFCG, KSPFCGSetTruncationType, KSPFCDTruncationType
+.seealso: `KSPFCG`, `KSPFCGSetTruncationType`, `KSPFCDTruncationType`
 @*/
 PetscErrorCode KSPFCGGetTruncationType(KSP ksp,KSPFCDTruncationType *truncstrat)
 {
@@ -519,7 +519,7 @@ static PetscErrorCode KSPSetFromOptions_FCG(PetscOptionItems *PetscOptionsObject
 - * - Axelsson, O. and Vassilevski, P. S. "A Black Box Generalized Conjugate Gradient Solver with Inner Iterations and Variable step Preconditioning",
     SIAM J. Matrix Anal. Appl. 12:4, 1991
 
- .seealso : KSPGCR, KSPFGMRES, KSPCG, KSPFCGSetMmax(), KSPFCGGetMmax(), KSPFCGSetNprealloc(), KSPFCGGetNprealloc(), KSPFCGSetTruncationType(), KSPFCGGetTruncationType()
+ .seealso `:` `KSPGCR`, `KSPFGMRES`, `KSPCG`, `KSPFCGSetMmax()`, `KSPFCGGetMmax()`, `KSPFCGSetNprealloc()`, `KSPFCGGetNprealloc()`, `KSPFCGSetTruncationType()`, `KSPFCGGetTruncationType()`
 
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_FCG(KSP ksp)

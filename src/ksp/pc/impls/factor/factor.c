@@ -87,7 +87,7 @@ static PetscErrorCode  PCFactorGetUseInPlace_Factor(PC pc,PetscBool *flg)
 
   Level: intermediate
 
-.seealso: PCFactorSetMatSolverType(), PCFactorGetMatrix()
+.seealso: `PCFactorSetMatSolverType()`, `PCFactorGetMatrix()`
 @*/
 PetscErrorCode PCFactorSetUpMatSolverType(PC pc)
 {
@@ -111,7 +111,7 @@ PetscErrorCode PCFactorSetUpMatSolverType(PC pc)
 
    Level: intermediate
 
-.seealso: PCFactorSetShiftType(), PCFactorSetShiftAmount()
+.seealso: `PCFactorSetShiftType()`, `PCFactorSetShiftAmount()`
 @*/
 PetscErrorCode  PCFactorSetZeroPivot(PC pc,PetscReal zero)
 {
@@ -137,7 +137,7 @@ PetscErrorCode  PCFactorSetZeroPivot(PC pc,PetscReal zero)
 
    Level: intermediate
 
-.seealso: PCFactorSetZeroPivot(), PCFactorSetShiftAmount()
+.seealso: `PCFactorSetZeroPivot()`, `PCFactorSetShiftAmount()`
 @*/
 PetscErrorCode  PCFactorSetShiftType(PC pc,MatFactorShiftType shifttype)
 {
@@ -163,7 +163,7 @@ PetscErrorCode  PCFactorSetShiftType(PC pc,MatFactorShiftType shifttype)
 
    Level: intermediate
 
-.seealso: PCFactorSetZeroPivot(), PCFactorSetShiftType()
+.seealso: `PCFactorSetZeroPivot()`, `PCFactorSetShiftType()`
 @*/
 PetscErrorCode  PCFactorSetShiftAmount(PC pc,PetscReal shiftamount)
 {
@@ -219,7 +219,7 @@ PetscErrorCode  PCFactorSetDropTolerance(PC pc,PetscReal dt,PetscReal dtcol,Pets
 
    Level: intermediate
 
-.seealso: PCFactorSetZeroPivot()
+.seealso: `PCFactorSetZeroPivot()`
 @*/
 PetscErrorCode  PCFactorGetZeroPivot(PC pc,PetscReal *pivot)
 {
@@ -242,7 +242,7 @@ PetscErrorCode  PCFactorGetZeroPivot(PC pc,PetscReal *pivot)
 
    Level: intermediate
 
-.seealso: PCFactorSetShiftAmount(), PCFactorSetShiftType(), PCFactorGetShiftType()
+.seealso: `PCFactorSetShiftAmount()`, `PCFactorSetShiftType()`, `PCFactorGetShiftType()`
 @*/
 PetscErrorCode  PCFactorGetShiftAmount(PC pc,PetscReal *shift)
 {
@@ -265,7 +265,7 @@ PetscErrorCode  PCFactorGetShiftAmount(PC pc,PetscReal *shift)
 
    Level: intermediate
 
-.seealso: PCFactorSetShiftType(), MatFactorShiftType, PCFactorSetShiftAmount(), PCFactorGetShiftAmount()
+.seealso: `PCFactorSetShiftType()`, `MatFactorShiftType`, `PCFactorSetShiftAmount()`, `PCFactorGetShiftAmount()`
 @*/
 PetscErrorCode  PCFactorGetShiftType(PC pc,MatFactorShiftType *type)
 {
@@ -340,7 +340,7 @@ PetscErrorCode  PCFactorSetLevels(PC pc,PetscInt levels)
 
    Level: intermediate
 
-.seealso: PCFactorGetAllowDiagonalFill()
+.seealso: `PCFactorGetAllowDiagonalFill()`
 @*/
 PetscErrorCode  PCFactorSetAllowDiagonalFill(PC pc,PetscBool flg)
 {
@@ -367,7 +367,7 @@ PetscErrorCode  PCFactorSetAllowDiagonalFill(PC pc,PetscBool flg)
 
    Level: intermediate
 
-.seealso: PCFactorSetAllowDiagonalFill()
+.seealso: `PCFactorSetAllowDiagonalFill()`
 @*/
 PetscErrorCode  PCFactorGetAllowDiagonalFill(PC pc,PetscBool *flg)
 {
@@ -391,7 +391,7 @@ PetscErrorCode  PCFactorGetAllowDiagonalFill(PC pc,PetscBool *flg)
 
    Level: intermediate
 
-.seealso: PCFactorSetFill(), PCFactorSetShiftNonzero(), PCFactorSetZeroPivot(), MatReorderForNonzeroDiagonal()
+.seealso: `PCFactorSetFill()`, `PCFactorSetShiftNonzero()`, `PCFactorSetZeroPivot()`, `MatReorderForNonzeroDiagonal()`
 @*/
 PetscErrorCode  PCFactorReorderForNonzeroDiagonal(PC pc,PetscReal rtol)
 {
@@ -419,7 +419,7 @@ PetscErrorCode  PCFactorReorderForNonzeroDiagonal(PC pc,PetscReal rtol)
    Note:
      By default this will use the PETSc factorization if it exists
 
-.seealso: MatGetFactor(), MatSolverType, PCFactorGetMatSolverType()
+.seealso: `MatGetFactor()`, `MatSolverType`, `PCFactorGetMatSolverType()`
 @*/
 PetscErrorCode  PCFactorSetMatSolverType(PC pc,MatSolverType stype)
 {
@@ -442,7 +442,7 @@ PetscErrorCode  PCFactorSetMatSolverType(PC pc,MatSolverType stype)
 
    Level: intermediate
 
-.seealso: MatGetFactor(), MatSolverType, PCFactorGetMatSolverType()
+.seealso: `MatGetFactor()`, `MatSolverType`, `PCFactorGetMatSolverType()`
 @*/
 PetscErrorCode  PCFactorGetMatSolverType(PC pc,MatSolverType *stype)
 {
@@ -517,7 +517,7 @@ PetscErrorCode  PCFactorSetFill(PC pc,PetscReal fill)
 
    Level: intermediate
 
-.seealso: PCFactorGetUseInPlace()
+.seealso: `PCFactorGetUseInPlace()`
 @*/
 PetscErrorCode  PCFactorSetUseInPlace(PC pc,PetscBool flg)
 {
@@ -540,7 +540,7 @@ PetscErrorCode  PCFactorSetUseInPlace(PC pc,PetscBool flg)
 
    Level: intermediate
 
-.seealso: PCFactorSetUseInPlace()
+.seealso: `PCFactorSetUseInPlace()`
 @*/
 PetscErrorCode  PCFactorGetUseInPlace(PC pc,PetscBool *flg)
 {
@@ -575,7 +575,7 @@ PetscErrorCode  PCFactorGetUseInPlace(PC pc,PetscBool *flg)
 
       MATORDERINGEXTERNAL means PETSc will not compute an ordering and the package will use its own ordering, usable with MATSOLVERCHOLMOD, MATSOLVERUMFPACK, and others.
 
-.seealso: MatOrderingType
+.seealso: `MatOrderingType`
 
 @*/
 PetscErrorCode  PCFactorSetMatOrderingType(PC pc,MatOrderingType ordering)
@@ -602,7 +602,7 @@ PetscErrorCode  PCFactorSetMatOrderingType(PC pc,MatOrderingType ordering)
 
     Level: intermediate
 
-.seealso: PCILUSetMatOrdering(), PCFactorSetPivotInBlocks()
+.seealso: `PCILUSetMatOrdering()`, `PCFactorSetPivotInBlocks()`
 @*/
 PetscErrorCode  PCFactorSetColumnPivot(PC pc,PetscReal dtcol)
 {
@@ -628,7 +628,7 @@ PetscErrorCode  PCFactorSetColumnPivot(PC pc,PetscReal dtcol)
 
     Level: intermediate
 
-.seealso: PCILUSetMatOrdering(), PCFactorSetColumnPivot()
+.seealso: `PCILUSetMatOrdering()`, `PCFactorSetColumnPivot()`
 @*/
 PetscErrorCode  PCFactorSetPivotInBlocks(PC pc,PetscBool pivot)
 {
@@ -654,7 +654,7 @@ PetscErrorCode  PCFactorSetPivotInBlocks(PC pc,PetscBool pivot)
 
    Level: intermediate
 
-.seealso: PCFactorSetReuseOrdering()
+.seealso: `PCFactorSetReuseOrdering()`
 @*/
 PetscErrorCode  PCFactorSetReuseFill(PC pc,PetscBool flag)
 {

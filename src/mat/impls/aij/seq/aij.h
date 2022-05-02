@@ -425,7 +425,7 @@ PETSC_INTERN PetscErrorCode MatSetSeqAIJWithArrays_private(MPI_Comm,PetscInt,Pet
   Developer Notes:
     The macro changes sum but not other parameters
 
-.seealso: PetscSparseDensePlusDot()
+.seealso: `PetscSparseDensePlusDot()`
 
 */
 #if defined(PETSC_KERNEL_USE_UNROLL_4)
@@ -478,7 +478,7 @@ PETSC_INTERN PetscErrorCode MatSetSeqAIJWithArrays_private(MPI_Comm,PetscInt,Pet
   Developer Notes:
     The macro changes sum but not other parameters
 
-.seealso: PetscSparseDenseMinusDot()
+.seealso: `PetscSparseDenseMinusDot()`
 
 */
 #if defined(PETSC_KERNEL_USE_UNROLL_4)
@@ -568,7 +568,7 @@ static inline void PetscSparseDensePlusDot_AVX512_Private(PetscScalar *sum,const
   Output Parameter:
 .  max - the max of results
 
-.seealso: PetscSparseDensePlusDot(), PetscSparseDenseMinusDot()
+.seealso: `PetscSparseDensePlusDot()`, `PetscSparseDenseMinusDot()`
 
 */
 #define PetscSparseDenseMaxDot(max,r,xv,xi,nnz) { \

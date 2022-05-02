@@ -29,7 +29,7 @@ struct _n_TaoShell
 
    Level: advanced
 
-.seealso: TAOSHELL, TaoShellSetContext(), TaoShellGetContext()
+.seealso: `TAOSHELL`, `TaoShellSetContext()`, `TaoShellGetContext()`
 @*/
 PetscErrorCode TaoShellSetSolve(Tao tao, PetscErrorCode (*solve) (Tao))
 {
@@ -57,7 +57,7 @@ PetscErrorCode TaoShellSetSolve(Tao tao, PetscErrorCode (*solve) (Tao))
     Notes:
     This routine is intended for use within various shell routines
 
-.seealso: TaoCreateShell(), TaoShellSetContext()
+.seealso: `TaoCreateShell()`, `TaoShellSetContext()`
 @*/
 PetscErrorCode  TaoShellGetContext(Tao tao,void *ctx)
 {
@@ -87,7 +87,7 @@ PetscErrorCode  TaoShellGetContext(Tao tao,void *ctx)
     The context can only be an integer or a PetscObject
       unfortunately it cannot be a Fortran array or derived type.
 
-.seealso: TaoCreateShell(), TaoShellGetContext()
+.seealso: `TaoCreateShell()`, `TaoShellGetContext()`
 @*/
 PetscErrorCode  TaoShellSetContext(Tao tao,void *ctx)
 {
@@ -142,7 +142,7 @@ PetscErrorCode TaoView_Shell(Tao tao, PetscViewer viewer)
 
    Level: advanced
 
-.seealso: TaoCreate(), Tao, TaoSetType(), TaoType (for list of available types)
+.seealso: `TaoCreate()`, `Tao`, `TaoSetType()`, `TaoType`
 M*/
 PETSC_EXTERN PetscErrorCode TaoCreate_Shell(Tao tao)
 {

@@ -21,7 +21,7 @@ static PetscErrorCode zero_private(PetscInt dim, PetscReal time, const PetscReal
 
   Level: beginner
 
-.seealso: PetscConvEstCreate(), PetscConvEstGetConvRate()
+.seealso: `PetscConvEstCreate()`, `PetscConvEstGetConvRate()`
 @*/
 PetscErrorCode PetscConvEstDestroy(PetscConvEst *ce)
 {
@@ -48,7 +48,7 @@ PetscErrorCode PetscConvEstDestroy(PetscConvEst *ce)
 
   Level: beginner
 
-.seealso: PetscConvEstCreate(), PetscConvEstGetConvRate()
+.seealso: `PetscConvEstCreate()`, `PetscConvEstGetConvRate()`
 @*/
 PetscErrorCode PetscConvEstSetFromOptions(PetscConvEst ce)
 {
@@ -73,7 +73,7 @@ PetscErrorCode PetscConvEstSetFromOptions(PetscConvEst ce)
 
   Level: beginner
 
-.seealso: PetscConvEstCreate(), PetscConvEstGetConvRate()
+.seealso: `PetscConvEstCreate()`, `PetscConvEstGetConvRate()`
 @*/
 PetscErrorCode PetscConvEstView(PetscConvEst ce, PetscViewer viewer)
 {
@@ -96,7 +96,7 @@ PetscErrorCode PetscConvEstView(PetscConvEst ce, PetscViewer viewer)
 
   Level: intermediate
 
-.seealso: PetscConvEstSetSolver(), PetscConvEstCreate(), PetscConvEstGetConvRate()
+.seealso: `PetscConvEstSetSolver()`, `PetscConvEstCreate()`, `PetscConvEstGetConvRate()`
 @*/
 PetscErrorCode PetscConvEstGetSolver(PetscConvEst ce, PetscObject *solver)
 {
@@ -120,7 +120,7 @@ PetscErrorCode PetscConvEstGetSolver(PetscConvEst ce, PetscObject *solver)
 
   Note: The solver MUST have an attached DM/DS, so that we know the exact solution
 
-.seealso: PetscConvEstGetSNES(), PetscConvEstCreate(), PetscConvEstGetConvRate()
+.seealso: `PetscConvEstGetSNES()`, `PetscConvEstCreate()`, `PetscConvEstGetConvRate()`
 @*/
 PetscErrorCode PetscConvEstSetSolver(PetscConvEst ce, PetscObject solver)
 {
@@ -142,7 +142,7 @@ PetscErrorCode PetscConvEstSetSolver(PetscConvEst ce, PetscObject solver)
 
   Level: beginner
 
-.seealso: PetscConvEstCreate(), PetscConvEstGetConvRate()
+.seealso: `PetscConvEstCreate()`, `PetscConvEstGetConvRate()`
 @*/
 PetscErrorCode PetscConvEstSetUp(PetscConvEst ce)
 {
@@ -212,7 +212,7 @@ PetscErrorCode PetscConvEstComputeError(PetscConvEst ce, PetscInt r, DM dm, Vec 
 
   Level: intermediate
 
-.seealso: PetscConvEstCreate(), PetscConvEstGetConvRate(), SNESSolve(), TSSolve()
+.seealso: `PetscConvEstCreate()`, `PetscConvEstGetConvRate()`, `SNESSolve()`, `TSSolve()`
 @*/
 PetscErrorCode PetscConvEstMonitorDefault(PetscConvEst ce, PetscInt r)
 {
@@ -458,7 +458,7 @@ based upon the exact solution in the DS, and then fit the result to our model ab
 
   Level: intermediate
 
-.seealso: PetscConvEstSetSolver(), PetscConvEstCreate(), PetscConvEstGetConvRate(), SNESSolve(), TSSolve()
+.seealso: `PetscConvEstSetSolver()`, `PetscConvEstCreate()`, `PetscConvEstGetConvRate()`, `SNESSolve()`, `TSSolve()`
 @*/
 PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal alpha[])
 {
@@ -486,7 +486,7 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal alpha[])
 
    Level: developer
 
-.seealso: PetscConvEstGetRate()
+.seealso: `PetscConvEstGetRate()`
 @*/
 PetscErrorCode PetscConvEstRateView(PetscConvEst ce, const PetscReal alpha[], PetscViewer viewer)
 {
@@ -524,7 +524,7 @@ PetscErrorCode PetscConvEstRateView(PetscConvEst ce, const PetscReal alpha[], Pe
 
   Level: beginner
 
-.seealso: PetscConvEstDestroy(), PetscConvEstGetConvRate()
+.seealso: `PetscConvEstDestroy()`, `PetscConvEstGetConvRate()`
 @*/
 PetscErrorCode PetscConvEstCreate(MPI_Comm comm, PetscConvEst *ce)
 {

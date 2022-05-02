@@ -19,7 +19,7 @@ static PetscBool amsmemstack = PETSC_FALSE;
 
    Developers Note: Cannot use PetscFunctionBegin/Return() or PetscStackCallSAWs() since it may be used within those routines
 
-.seealso: PetscObjectSetName(), PetscObjectSAWsViewOff(), PetscObjectSAWsTakeAccess()
+.seealso: `PetscObjectSetName()`, `PetscObjectSAWsViewOff()`, `PetscObjectSAWsTakeAccess()`
 
 @*/
 void  PetscStackSAWsGrantAccess(void)
@@ -39,7 +39,7 @@ void  PetscStackSAWsGrantAccess(void)
 
    Developers Note: Cannot use PetscFunctionBegin/Return() or PetscStackCallSAWs() since it may be used within those routines
 
-.seealso: PetscObjectSetName(), PetscObjectSAWsViewOff(), PetscObjectSAWsTakeAccess()
+.seealso: `PetscObjectSetName()`, `PetscObjectSAWsViewOff()`, `PetscObjectSAWsTakeAccess()`
 
 @*/
 void  PetscStackSAWsTakeAccess(void)

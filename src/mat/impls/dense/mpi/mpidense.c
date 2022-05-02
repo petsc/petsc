@@ -1841,7 +1841,7 @@ PetscErrorCode MatDenseRestoreSubMatrix_MPIDense(Mat A,Mat *v)
 
   Level: beginner
 
-.seealso: MatCreateDense()
+.seealso: `MatCreateDense()`
 
 M*/
 PETSC_EXTERN PetscErrorCode MatCreate_MPIDense(Mat mat)
@@ -1943,7 +1943,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIDenseCUDA(Mat B)
 
   Level: beginner
 
-.seealso: MATSEQDENSE,MATMPIDENSE,MATDENSECUDA
+.seealso: `MATSEQDENSE,MATMPIDENSE,MATDENSECUDA`
 M*/
 
 /*MC
@@ -1957,7 +1957,7 @@ M*/
 
   Level: beginner
 
-.seealso: MATSEQDENSECUDA,MATMPIDENSECUDA,MATDENSE
+.seealso: `MATSEQDENSECUDA,MATMPIDENSECUDA,MATDENSE`
 M*/
 
 /*@C
@@ -1980,7 +1980,7 @@ M*/
 
    Level: intermediate
 
-.seealso: MatCreate(), MatCreateSeqDense(), MatSetValues()
+.seealso: `MatCreate()`, `MatCreateSeqDense()`, `MatSetValues()`
 @*/
 PetscErrorCode  MatMPIDenseSetPreallocation(Mat B,PetscScalar *data)
 {
@@ -2007,7 +2007,7 @@ PetscErrorCode  MatMPIDenseSetPreallocation(Mat B,PetscScalar *data)
 
    Level: developer
 
-.seealso: MatDenseGetArray(), MatDenseResetArray(), VecPlaceArray(), VecGetArray(), VecRestoreArray(), VecReplaceArray(), VecResetArray()
+.seealso: `MatDenseGetArray()`, `MatDenseResetArray()`, `VecPlaceArray()`, `VecGetArray()`, `VecRestoreArray()`, `VecReplaceArray()`, `VecResetArray()`
 
 @*/
 PetscErrorCode  MatDensePlaceArray(Mat mat,const PetscScalar *array)
@@ -2035,7 +2035,7 @@ PetscErrorCode  MatDensePlaceArray(Mat mat,const PetscScalar *array)
 
    Level: developer
 
-.seealso: MatDenseGetArray(), MatDensePlaceArray(), VecPlaceArray(), VecGetArray(), VecRestoreArray(), VecReplaceArray(), VecResetArray()
+.seealso: `MatDenseGetArray()`, `MatDensePlaceArray()`, `VecPlaceArray()`, `VecGetArray()`, `VecRestoreArray()`, `VecReplaceArray()`, `VecResetArray()`
 
 @*/
 PetscErrorCode  MatDenseResetArray(Mat mat)
@@ -2064,7 +2064,7 @@ PetscErrorCode  MatDenseResetArray(Mat mat)
 
    Level: developer
 
-.seealso: MatDenseGetArray(), VecReplaceArray()
+.seealso: `MatDenseGetArray()`, `VecReplaceArray()`
 @*/
 PetscErrorCode  MatDenseReplaceArray(Mat mat,const PetscScalar *array)
 {
@@ -2096,7 +2096,7 @@ PetscErrorCode  MatDenseReplaceArray(Mat mat,const PetscScalar *array)
 
    Level: developer
 
-.seealso: MatDenseCUDAGetArray(), MatDenseCUDAResetArray()
+.seealso: `MatDenseCUDAGetArray()`, `MatDenseCUDAResetArray()`
 @*/
 PetscErrorCode  MatDenseCUDAPlaceArray(Mat mat,const PetscScalar *array)
 {
@@ -2121,7 +2121,7 @@ PetscErrorCode  MatDenseCUDAPlaceArray(Mat mat,const PetscScalar *array)
 
    Level: developer
 
-.seealso: MatDenseCUDAGetArray(), MatDenseCUDAPlaceArray()
+.seealso: `MatDenseCUDAGetArray()`, `MatDenseCUDAPlaceArray()`
 
 @*/
 PetscErrorCode  MatDenseCUDAResetArray(Mat mat)
@@ -2151,7 +2151,7 @@ PetscErrorCode  MatDenseCUDAResetArray(Mat mat)
 
    Level: developer
 
-.seealso: MatDenseCUDAGetArray(), MatDenseCUDAPlaceArray(), MatDenseCUDAResetArray()
+.seealso: `MatDenseCUDAGetArray()`, `MatDenseCUDAPlaceArray()`, `MatDenseCUDAResetArray()`
 @*/
 PetscErrorCode  MatDenseCUDAReplaceArray(Mat mat,const PetscScalar *array)
 {
@@ -2179,7 +2179,7 @@ PetscErrorCode  MatDenseCUDAReplaceArray(Mat mat,const PetscScalar *array)
 
    Level: developer
 
-.seealso: MatDenseCUDAGetArray(), MatDenseCUDARestoreArray(), MatDenseCUDARestoreArrayWrite(), MatDenseCUDAGetArrayRead(), MatDenseCUDARestoreArrayRead()
+.seealso: `MatDenseCUDAGetArray()`, `MatDenseCUDARestoreArray()`, `MatDenseCUDARestoreArrayWrite()`, `MatDenseCUDAGetArrayRead()`, `MatDenseCUDARestoreArrayRead()`
 @*/
 PetscErrorCode MatDenseCUDAGetArrayWrite(Mat A, PetscScalar **a)
 {
@@ -2203,7 +2203,7 @@ PetscErrorCode MatDenseCUDAGetArrayWrite(Mat A, PetscScalar **a)
 
    Level: developer
 
-.seealso: MatDenseCUDAGetArray(), MatDenseCUDARestoreArray(), MatDenseCUDAGetArrayWrite(), MatDenseCUDARestoreArrayRead(), MatDenseCUDAGetArrayRead()
+.seealso: `MatDenseCUDAGetArray()`, `MatDenseCUDARestoreArray()`, `MatDenseCUDAGetArrayWrite()`, `MatDenseCUDARestoreArrayRead()`, `MatDenseCUDAGetArrayRead()`
 @*/
 PetscErrorCode MatDenseCUDARestoreArrayWrite(Mat A, PetscScalar **a)
 {
@@ -2231,7 +2231,7 @@ PetscErrorCode MatDenseCUDARestoreArrayWrite(Mat A, PetscScalar **a)
 
    Level: developer
 
-.seealso: MatDenseCUDAGetArray(), MatDenseCUDARestoreArray(), MatDenseCUDARestoreArrayWrite(), MatDenseCUDAGetArrayWrite(), MatDenseCUDARestoreArrayRead()
+.seealso: `MatDenseCUDAGetArray()`, `MatDenseCUDARestoreArray()`, `MatDenseCUDARestoreArrayWrite()`, `MatDenseCUDAGetArrayWrite()`, `MatDenseCUDARestoreArrayRead()`
 @*/
 PetscErrorCode MatDenseCUDAGetArrayRead(Mat A, const PetscScalar **a)
 {
@@ -2255,7 +2255,7 @@ PetscErrorCode MatDenseCUDAGetArrayRead(Mat A, const PetscScalar **a)
 
    Level: developer
 
-.seealso: MatDenseCUDAGetArray(), MatDenseCUDARestoreArray(), MatDenseCUDARestoreArrayWrite(), MatDenseCUDAGetArrayWrite(), MatDenseCUDAGetArrayRead()
+.seealso: `MatDenseCUDAGetArray()`, `MatDenseCUDARestoreArray()`, `MatDenseCUDARestoreArrayWrite()`, `MatDenseCUDAGetArrayWrite()`, `MatDenseCUDAGetArrayRead()`
 @*/
 PetscErrorCode MatDenseCUDARestoreArrayRead(Mat A, const PetscScalar **a)
 {
@@ -2280,7 +2280,7 @@ PetscErrorCode MatDenseCUDARestoreArrayRead(Mat A, const PetscScalar **a)
 
    Level: developer
 
-.seealso: MatDenseCUDAGetArrayRead(), MatDenseCUDARestoreArray(), MatDenseCUDARestoreArrayWrite(), MatDenseCUDAGetArrayWrite(), MatDenseCUDARestoreArrayRead()
+.seealso: `MatDenseCUDAGetArrayRead()`, `MatDenseCUDARestoreArray()`, `MatDenseCUDARestoreArrayWrite()`, `MatDenseCUDAGetArrayWrite()`, `MatDenseCUDARestoreArrayRead()`
 @*/
 PetscErrorCode MatDenseCUDAGetArray(Mat A, PetscScalar **a)
 {
@@ -2304,7 +2304,7 @@ PetscErrorCode MatDenseCUDAGetArray(Mat A, PetscScalar **a)
 
    Level: developer
 
-.seealso: MatDenseCUDAGetArray(), MatDenseCUDARestoreArrayWrite(), MatDenseCUDAGetArrayWrite(), MatDenseCUDARestoreArrayRead(), MatDenseCUDAGetArrayRead()
+.seealso: `MatDenseCUDAGetArray()`, `MatDenseCUDARestoreArrayWrite()`, `MatDenseCUDAGetArrayWrite()`, `MatDenseCUDARestoreArrayRead()`, `MatDenseCUDAGetArrayRead()`
 @*/
 PetscErrorCode MatDenseCUDARestoreArray(Mat A, PetscScalar **a)
 {
@@ -2349,7 +2349,7 @@ PetscErrorCode MatDenseCUDARestoreArray(Mat A, PetscScalar **a)
 
    Level: intermediate
 
-.seealso: MatCreate(), MatCreateSeqDense(), MatSetValues()
+.seealso: `MatCreate()`, `MatCreateSeqDense()`, `MatSetValues()`
 @*/
 PetscErrorCode  MatCreateDense(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscScalar *data,Mat *A)
 {
@@ -2384,7 +2384,7 @@ PetscErrorCode  MatCreateDense(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,Pe
 
    Level: intermediate
 
-.seealso: MatCreate(), MatCreateDense()
+.seealso: `MatCreate()`, `MatCreateDense()`
 @*/
 PetscErrorCode  MatCreateDenseCUDA(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscScalar *data,Mat *A)
 {

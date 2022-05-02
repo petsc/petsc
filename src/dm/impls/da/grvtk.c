@@ -519,7 +519,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
    If any fields have been named (see e.g. DMDASetFieldName()), then individual scalar
    fields are written. Otherwise, a single multi-dof (vector) field is written.
 
-.seealso: PETSCVIEWERVTK
+.seealso: `PETSCVIEWERVTK`
 @*/
 PetscErrorCode DMDAVTKWriteAll(PetscObject odm,PetscViewer viewer)
 {

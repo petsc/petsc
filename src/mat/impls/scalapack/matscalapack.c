@@ -1599,7 +1599,7 @@ static PetscErrorCode MatScaLAPACKSetBlockSizes_ScaLAPACK(Mat A,PetscInt mb,Pets
 
    Level: intermediate
 
-.seealso: MatCreateScaLAPACK(), MatScaLAPACKGetBlockSizes()
+.seealso: `MatCreateScaLAPACK()`, `MatScaLAPACKGetBlockSizes()`
 @*/
 PetscErrorCode MatScaLAPACKSetBlockSizes(Mat A,PetscInt mb,PetscInt nb)
 {
@@ -1636,7 +1636,7 @@ static PetscErrorCode MatScaLAPACKGetBlockSizes_ScaLAPACK(Mat A,PetscInt *mb,Pet
 
    Level: intermediate
 
-.seealso: MatCreateScaLAPACK(), MatScaLAPACKSetBlockSizes()
+.seealso: `MatCreateScaLAPACK()`, `MatScaLAPACKSetBlockSizes()`
 @*/
 PetscErrorCode MatScaLAPACKGetBlockSizes(Mat A,PetscInt *mb,PetscInt *nb)
 {
@@ -1663,7 +1663,7 @@ PETSC_INTERN PetscErrorCode MatStashScatterEnd_Ref(MatStash*);
 
    Level: beginner
 
-.seealso: MATDENSE, MATELEMENTAL
+.seealso: `MATDENSE`, `MATELEMENTAL`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_ScaLAPACK(Mat A)
@@ -1788,7 +1788,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_ScaLAPACK(Mat A)
 
    Level: intermediate
 
-.seealso: MatCreate(), MatCreateDense(), MatSetValues()
+.seealso: `MatCreate()`, `MatCreateDense()`, `MatSetValues()`
 @*/
 PetscErrorCode MatCreateScaLAPACK(MPI_Comm comm,PetscInt mb,PetscInt nb,PetscInt M,PetscInt N,PetscInt rsrc,PetscInt csrc,Mat *A)
 {

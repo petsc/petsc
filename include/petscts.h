@@ -12,7 +12,7 @@
 
    Level: beginner
 
-.seealso:  TSCreate(), TSSetType(), TSType, SNES, KSP, PC, TSDestroy()
+.seealso: `TSCreate()`, `TSSetType()`, `TSType`, `SNES`, `KSP`, `PC`, `TSDestroy()`
 S*/
 typedef struct _p_TS* TS;
 
@@ -21,7 +21,7 @@ typedef struct _p_TS* TS;
 
    Level: beginner
 
-.seealso: TSSetType(), TS, TSRegister()
+.seealso: `TSSetType()`, `TS`, `TSRegister()`
 J*/
 typedef const char* TSType;
 #define TSEULER           "euler"
@@ -53,7 +53,7 @@ typedef const char* TSType;
 
    Level: beginner
 
-.seealso: TSCreate()
+.seealso: `TSCreate()`
 E*/
 typedef enum {TS_LINEAR,TS_NONLINEAR} TSProblemType;
 
@@ -70,7 +70,7 @@ typedef enum {TS_LINEAR,TS_NONLINEAR} TSProblemType;
      TS_EQ_EXPLICIT {ODE and DAE index 1, 2, 3, HI}: F(t,U,U_t) := M(t) U_t - G(U,t) = 0
      TS_EQ_IMPLICIT {ODE and DAE index 1, 2, 3, HI}: F(t,U,U_t) = 0
 
-.seealso: TSGetEquationType(), TSSetEquationType()
+.seealso: `TSGetEquationType()`, `TSSetEquationType()`
 E*/
 typedef enum {
   TS_EQ_UNSPECIFIED               = -1,
@@ -99,7 +99,7 @@ PETSC_EXTERN const char *const*TSEquationTypes;
 
    Each reason has its own manual page.
 
-.seealso: TSGetConvergedReason()
+.seealso: `TSGetConvergedReason()`
 E*/
 typedef enum {
   TS_CONVERGED_ITERATING          = 0,
@@ -121,7 +121,7 @@ PETSC_EXTERN const char *const*TSConvergedReasons;
 
    Level: beginner
 
-.seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt()
+.seealso: `TSSolve()`, `TSGetConvergedReason()`, `TSGetAdapt()`
 M*/
 
 /*MC
@@ -129,7 +129,7 @@ M*/
 
    Level: beginner
 
-.seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt(), TSSetMaxTime(), TSGetMaxTime(), TSGetSolveTime()
+.seealso: `TSSolve()`, `TSGetConvergedReason()`, `TSGetAdapt()`, `TSSetMaxTime()`, `TSGetMaxTime()`, `TSGetSolveTime()`
 M*/
 
 /*MC
@@ -137,7 +137,7 @@ M*/
 
    Level: beginner
 
-.seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt(), TSSetMaxSteps(), TSGetMaxSteps()
+.seealso: `TSSolve()`, `TSGetConvergedReason()`, `TSGetAdapt()`, `TSSetMaxSteps()`, `TSGetMaxSteps()`
 M*/
 
 /*MC
@@ -145,7 +145,7 @@ M*/
 
    Level: beginner
 
-.seealso: TSSolve(), TSGetConvergedReason(), TSSetConvergedReason()
+.seealso: `TSSolve()`, `TSGetConvergedReason()`, `TSSetConvergedReason()`
 M*/
 
 /*MC
@@ -153,7 +153,7 @@ M*/
 
    Level: beginner
 
-.seealso: TSSolve(), TSGetConvergedReason(), TSSetConvergedReason()
+.seealso: `TSSolve()`, `TSGetConvergedReason()`, `TSSetConvergedReason()`
 M*/
 
 /*MC
@@ -164,7 +164,7 @@ M*/
    Options Database:
 .   -ts_pseudo_frtol <rtol> - use sepcified rtol
 
-.seealso: TSSolve(), TSGetConvergedReason(), TSSetConvergedReason(), TS_CONVERGED_PSEUDO_FATOL
+.seealso: `TSSolve()`, `TSGetConvergedReason()`, `TSSetConvergedReason()`, `TS_CONVERGED_PSEUDO_FATOL`
 M*/
 
 /*MC
@@ -175,7 +175,7 @@ M*/
    Options Database:
 .   -ts_pseudo_fatol <atol> - use specified atol
 
-.seealso: TSSolve(), TSGetConvergedReason(), TSSetConvergedReason(), TS_CONVERGED_PSEUDO_FRTOL
+.seealso: `TSSolve()`, `TSGetConvergedReason()`, `TSSetConvergedReason()`, `TS_CONVERGED_PSEUDO_FRTOL`
 M*/
 
 /*MC
@@ -186,7 +186,7 @@ M*/
    Notes:
     See TSSetMaxSNESFailures() for how to allow more nonlinear solver failures.
 
-.seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt(), TSGetSNES(), SNESGetConvergedReason(), TSSetMaxSNESFailures()
+.seealso: `TSSolve()`, `TSGetConvergedReason()`, `TSGetAdapt()`, `TSGetSNES()`, `SNESGetConvergedReason()`, `TSSetMaxSNESFailures()`
 M*/
 
 /*MC
@@ -197,7 +197,7 @@ M*/
    Notes:
     See TSSetMaxStepRejections() for how to allow more step rejections.
 
-.seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt(), TSSetMaxStepRejections()
+.seealso: `TSSolve()`, `TSGetConvergedReason()`, `TSGetAdapt()`, `TSSetMaxStepRejections()`
 M*/
 
 /*E
@@ -212,7 +212,7 @@ $  TS_EXACTFINALTIME_STEPOVER    - Don't do anything if final time is exceeded
 $  TS_EXACTFINALTIME_INTERPOLATE - Interpolate back to final time
 $  TS_EXACTFINALTIME_MATCHSTEP - Adapt final time step to match the final time
 
-.seealso: TSGetConvergedReason(), TSSetExactFinalTime(), TSGetExactFinalTime()
+.seealso: `TSGetConvergedReason()`, `TSSetExactFinalTime()`, `TSGetExactFinalTime()`
 
 E*/
 typedef enum {TS_EXACTFINALTIME_UNSPECIFIED=0,TS_EXACTFINALTIME_STEPOVER=1,TS_EXACTFINALTIME_INTERPOLATE=2,TS_EXACTFINALTIME_MATCHSTEP=3} TSExactFinalTimeOption;
@@ -289,7 +289,7 @@ PETSC_EXTERN PetscErrorCode TSComputeSNESJacobian(TS,Vec,Mat,Mat);
 
    Level: advanced
 
-.seealso:  TSSetSaveTrajectory(), TSTrajectoryCreate(), TSTrajectorySetType(), TSTrajectoryDestroy(), TSTrajectoryReset()
+.seealso: `TSSetSaveTrajectory()`, `TSTrajectoryCreate()`, `TSTrajectorySetType()`, `TSTrajectoryDestroy()`, `TSTrajectoryReset()`
 S*/
 typedef struct _p_TSTrajectory* TSTrajectory;
 
@@ -298,7 +298,7 @@ typedef struct _p_TSTrajectory* TSTrajectory;
 
    Level: intermediate
 
-.seealso:  TSSetSaveTrajectory(), TSTrajectoryCreate(), TSTrajectoryDestroy()
+.seealso: `TSSetSaveTrajectory()`, `TSTrajectoryCreate()`, `TSTrajectoryDestroy()`
 J*/
 typedef const char* TSTrajectoryType;
 #define TSTRAJECTORYBASIC         "basic"
@@ -672,7 +672,7 @@ PETSC_EXTERN PetscErrorCode TSGetNumEvents(TS,PetscInt*);
 
    Level: beginner
 
-.seealso: TSSSPSetType(), TS
+.seealso: `TSSSPSetType()`, `TS`
 J*/
 typedef const char* TSSSPType;
 #define TSSSPRKS2  "rks2"
@@ -692,7 +692,7 @@ PETSC_EXTERN PetscFunctionList TSSSPList;
 
    Level: beginner
 
-.seealso: TS, TSAdaptCreate(), TSAdaptType
+.seealso: `TS`, `TSAdaptCreate()`, `TSAdaptType`
 S*/
 typedef struct _p_TSAdapt *TSAdapt;
 
@@ -701,7 +701,7 @@ typedef struct _p_TSAdapt *TSAdapt;
 
    Level: beginner
 
-.seealso: TSAdaptSetType(), TS
+.seealso: `TSAdaptSetType()`, `TS`
 J*/
 typedef const char *TSAdaptType;
 #define TSADAPTNONE    "none"
@@ -757,7 +757,7 @@ PETSC_EXTERN PetscErrorCode TSAdaptDSPSetPID(TSAdapt,PetscReal,PetscReal,PetscRe
    Developer Notes:
    This functionality should be replaced by the TSAdapt.
 
-.seealso: TSGLLE, TSGLLEAdaptCreate(), TSGLLEAdaptType
+.seealso: `TSGLLE`, `TSGLLEAdaptCreate()`, `TSGLLEAdaptType`
 S*/
 typedef struct _p_TSGLLEAdapt *TSGLLEAdapt;
 
@@ -766,7 +766,7 @@ typedef struct _p_TSGLLEAdapt *TSGLLEAdapt;
 
    Level: beginner
 
-.seealso: TSGLLEAdaptSetType(), TS
+.seealso: `TSGLLEAdaptSetType()`, `TS`
 J*/
 typedef const char *TSGLLEAdaptType;
 #define TSGLLEADAPT_NONE "none"
@@ -789,7 +789,7 @@ PETSC_EXTERN PetscErrorCode TSGLLEAdaptDestroy(TSGLLEAdapt*);
 
    Level: beginner
 
-.seealso: TSGLLESetAcceptType(), TS
+.seealso: `TSGLLESetAcceptType()`, `TS`
 J*/
 typedef const char *TSGLLEAcceptType;
 #define TSGLLEACCEPT_ALWAYS "always"
@@ -802,7 +802,7 @@ PETSC_EXTERN PetscErrorCode TSGLLEAcceptRegister(const char[],TSGLLEAcceptFuncti
 
   Level: beginner
 
-.seealso: TSGLLESetType(), TSGLLERegister()
+.seealso: `TSGLLESetType()`, `TSGLLERegister()`
 J*/
 typedef const char* TSGLLEType;
 #define TSGLLE_IRKS   "irks"
@@ -819,7 +819,7 @@ PETSC_EXTERN PetscErrorCode TSGLLESetAcceptType(TS,TSGLLEAcceptType);
 
    Level: beginner
 
-.seealso: TSEIMEXSetType(), TS, TSEIMEX, TSEIMEXRegister()
+.seealso: `TSEIMEXSetType()`, `TS`, `TSEIMEX`, `TSEIMEXRegister()`
 J*/
 #define TSEIMEXType   char*
 
@@ -832,7 +832,7 @@ PETSC_EXTERN PetscErrorCode TSEIMEXSetOrdAdapt(TS,PetscBool);
 
    Level: beginner
 
-.seealso: TSRKSetType(), TS, TSRK, TSRKRegister()
+.seealso: `TSRKSetType()`, `TS`, `TSRK`, `TSRKRegister()`
 J*/
 typedef const char* TSRKType;
 #define TSRK1FE   "1fe"
@@ -864,7 +864,7 @@ PETSC_EXTERN PetscErrorCode TSRKRegisterDestroy(void);
 
    Level: beginner
 
-.seealso: TSMPRKSetType(), TS, TSMPRK, TSMPRKRegister()
+.seealso: `TSMPRKSetType()`, `TS`, `TSMPRK`, `TSMPRKRegister()`
 J*/
 typedef const char* TSMPRKType;
 #define TSMPRK2A22  "2a22"
@@ -886,7 +886,7 @@ PETSC_EXTERN PetscErrorCode TSMPRKRegisterDestroy(void);
 
    Level: beginner
 
-.seealso: TSIRKSetType(), TS, TSIRK, TSIRKRegister()
+.seealso: `TSIRKSetType()`, `TS`, `TSIRK`, `TSIRKRegister()`
 J*/
 typedef const char* TSIRKType;
 #define TSIRKGAUSS   "gauss"
@@ -907,7 +907,7 @@ PETSC_EXTERN PetscErrorCode TSIRKRegisterDestroy(void);
 
    Level: beginner
 
-.seealso: TSGLEESetType(), TS, TSGLEE, TSGLEERegister()
+.seealso: `TSGLEESetType()`, `TS`, `TSGLEE`, `TSGLEERegister()`
 J*/
 typedef const char* TSGLEEType;
 #define TSGLEEi1      "BE1"
@@ -923,7 +923,7 @@ typedef const char* TSGLEEType;
 
    Level: beginner
 
-.seealso: TSGLEESetMode(), TS, TSGLEE, TSGLEERegister()
+.seealso: `TSGLEESetMode()`, `TS`, `TSGLEE`, `TSGLEERegister()`
 J*/
 PETSC_EXTERN PetscErrorCode TSGLEEGetType(TS ts,TSGLEEType*);
 PETSC_EXTERN PetscErrorCode TSGLEESetType(TS ts,TSGLEEType);
@@ -937,7 +937,7 @@ PETSC_EXTERN PetscErrorCode TSGLEERegisterDestroy(void);
 
    Level: beginner
 
-.seealso: TSARKIMEXSetType(), TS, TSARKIMEX, TSARKIMEXRegister()
+.seealso: `TSARKIMEXSetType()`, `TS`, `TSARKIMEX`, `TSARKIMEXRegister()`
 J*/
 typedef const char* TSARKIMEXType;
 #define TSARKIMEX1BEE   "1bee"
@@ -967,7 +967,7 @@ PETSC_EXTERN PetscErrorCode TSARKIMEXRegisterDestroy(void);
 
    Level: beginner
 
-.seealso: TSRosWSetType(), TS, TSROSW, TSRosWRegister()
+.seealso: `TSRosWSetType()`, `TS`, `TSROSW`, `TSRosWRegister()`
 J*/
 typedef const char* TSRosWType;
 #define TSROSW2M          "2m"
@@ -1004,7 +1004,7 @@ PETSC_EXTERN PetscErrorCode TSBDFGetOrder(TS,PetscInt*);
 
   Level: beginner
 
-  .seealso: TSBasicSymplecticSetType(), TS, TSBASICSYMPLECTIC, TSBasicSymplecticRegister()
+  .seealso: `TSBasicSymplecticSetType()`, `TS`, `TSBASICSYMPLECTIC`, `TSBasicSymplecticRegister()`
 J*/
 typedef const char* TSBasicSymplecticType;
 #define TSBASICSYMPLECTICSIEULER   "1"
@@ -1023,7 +1023,7 @@ PETSC_EXTERN PetscErrorCode TSBasicSymplecticRegisterDestroy(void);
 
   Level: beginner
 
-  .seealso: TS, TSDISCGRAD, TSDiscGradSetFormulation(), TSDiscGradGetFormulation
+  .seealso: `TS`, `TSDISCGRAD`, `TSDiscGradSetFormulation()`, `TSDiscGradGetFormulation`
 J*/
 PETSC_EXTERN PetscErrorCode TSDiscGradSetFormulation(TS, PetscErrorCode(*)(TS, PetscReal, Vec, Mat, void *), PetscErrorCode(*)(TS, PetscReal, Vec, PetscScalar *, void *), PetscErrorCode(*)(TS, PetscReal, Vec, Vec, void *), void *);
 PETSC_EXTERN PetscErrorCode TSDiscGradIsGonzalez(TS,PetscBool*);

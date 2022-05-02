@@ -13,7 +13,7 @@ PETSC_EXTERN PetscClassId PETSCQUADRATURE_CLASSID;
 
   Level: beginner
 
-.seealso:  PetscQuadratureCreate(), PetscQuadratureDestroy()
+.seealso: `PetscQuadratureCreate()`, `PetscQuadratureDestroy()`
 S*/
 typedef struct _p_PetscQuadrature *PetscQuadrature;
 
@@ -352,7 +352,7 @@ static inline PetscErrorCode PetscDTPermIndex(PetscInt n, const PetscInt *perm, 
 
    Level: beginner
 
-.seealso: PetscDTSubsetIndex()
+.seealso: `PetscDTSubsetIndex()`
 M*/
 static inline PetscErrorCode PetscDTEnumSubset(PetscInt n, PetscInt k, PetscInt j, PetscInt *subset)
 {
@@ -390,7 +390,7 @@ static inline PetscErrorCode PetscDTEnumSubset(PetscInt n, PetscInt k, PetscInt 
 
    Level: beginner
 
-.seealso: PetscDTEnumSubset()
+.seealso: `PetscDTEnumSubset()`
 M*/
 static inline PetscErrorCode PetscDTSubsetIndex(PetscInt n, PetscInt k, const PetscInt *subset, PetscInt *index)
 {
@@ -431,7 +431,7 @@ static inline PetscErrorCode PetscDTSubsetIndex(PetscInt n, PetscInt k, const Pe
 
    Level: beginner
 
-.seealso: PetscDTEnumSubset(), PetscDTSubsetIndex()
+.seealso: `PetscDTEnumSubset()`, `PetscDTSubsetIndex()`
 M*/
 static inline PetscErrorCode PetscDTEnumSplit(PetscInt n, PetscInt k, PetscInt j, PetscInt *perm, PetscBool *isOdd)
 {

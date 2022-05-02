@@ -16,7 +16,7 @@
    or that it is not MPI_UNEQUAL to MPI_COMM_WORLD.
    Users who do not have a custom PETSC_COMM_WORLD do not have to call this function.
 
-.seealso: MATELEMENTAL, PetscElementalFinalizePackage()
+.seealso: `MATELEMENTAL`, `PetscElementalFinalizePackage()`
 @*/
 PetscErrorCode PetscElementalInitializePackage(void)
 {
@@ -43,7 +43,7 @@ PetscErrorCode PetscElementalInitializePackage(void)
    Note:
    Can be called outside of PetscInitialize() and PetscFinalize().
 
-.seealso: MATELEMENTAL, PetscElementalInitializePackage()
+.seealso: `MATELEMENTAL`, `PetscElementalInitializePackage()`
 @*/
 PetscErrorCode PetscElementalInitialized(PetscBool *isInitialized)
 {
@@ -62,7 +62,7 @@ PetscErrorCode PetscElementalInitialized(PetscBool *isInitialized)
    Can be called outside of PetscInitialize() and PetscFinalize().
    Users who do not call PetscElementalInitializePackage() do not have to call this function.
 
-.seealso: MATELEMENTAL, PetscElementalInitializePackage()
+.seealso: `MATELEMENTAL`, `PetscElementalInitializePackage()`
 @*/
 PetscErrorCode PetscElementalFinalizePackage(void)
 {

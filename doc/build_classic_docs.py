@@ -7,14 +7,22 @@ import subprocess
 import shutil
 import argparse
 
+
 CLASSIC_DOCS_LOC = os.path.join(os.getcwd(), '_build_classic')
 CLASSIC_DOCS_ARCH = 'arch-classic-docs'
+HTMLMAP_DEFAULT_LOCATION = os.path.join(CLASSIC_DOCS_LOC, "docs", "manualpages", "htmlmap")
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
-def main():
+
+def main(stage):
     """ Operations to provide data from the 'classic' PETSc docs system. """
-    petsc_dir = os.path.abspath('..')
-    _configure_minimal_petsc(petsc_dir, CLASSIC_DOCS_ARCH)
-    _build_classic_docs_subset(petsc_dir, CLASSIC_DOCS_ARCH)
+    petsc_dir = os.path.abspath(os.path.join(THIS_DIR, ".."))  # abspath essential since classic 'html' target uses sed to modify paths from the source to target tree
+    if stage == "pre":
+        _configure_minimal_petsc(petsc_dir, CLASSIC_DOCS_ARCH)
+    else:
+        if not os.path.isfile(os.path.join(petsc_dir, "configure.log")):
+            raise Exception("Expected PETSc configuration not found")
+    _build_classic_docs_subset(petsc_dir, CLASSIC_DOCS_ARCH, stage)
 
 
 def clean():
@@ -63,21 +71,27 @@ def _configure_minimal_petsc(petsc_dir, petsc_arch) -> None:
     return petsc_arch
 
 
-def _build_classic_docs_subset(petsc_dir, petsc_arch):
-    # Use htmlmap file as a sentinel
-    htmlmap_filename = os.path.join(CLASSIC_DOCS_LOC, 'docs', 'manualpages', 'htmlmap')
-    if os.path.isfile(htmlmap_filename):
+def _build_classic_docs_subset(petsc_dir, petsc_arch, stage):
+    if stage == "pre":
+        sentinel_filename = HTMLMAP_DEFAULT_LOCATION
+        target = "alldoc1"
+    elif stage == "post":
+        sentinel_filename = os.path.join(CLASSIC_DOCS_LOC, "include", "petscversion.h.html")
+        target = "alldoc_post"
+    else:
+        raise Exception("Unrecognized stage %s" % stage)
+    if os.path.isfile(sentinel_filename):
         print('============================================')
-        print('Assuming that the classic docs in %s are current' % CLASSIC_DOCS_LOC)
+        print('Assuming that the classic docs in %s are current wrt stage "%s"' % (CLASSIC_DOCS_LOC, stage))
         print('To rebuild, manually run the following before re-making:\n  rm -rf %s' % CLASSIC_DOCS_LOC)
         print('============================================')
     else:
-        command = ['make', 'alldoc12',
+        command = ['make', target,
                    'PETSC_DIR=%s' % petsc_dir,
                    'PETSC_ARCH=%s' % petsc_arch,
                    'LOC=%s' % CLASSIC_DOCS_LOC]
         print('============================================')
-        print('Building a subset of PETSc classic docs')
+        print('Building a subset of PETSc classic docs (%s)' % stage)
         print('PETSC_DIR=%s' % petsc_dir)
         print('PETSC_ARCH=%s' % petsc_arch)
         print(command)
@@ -85,15 +99,16 @@ def _build_classic_docs_subset(petsc_dir, petsc_arch):
         subprocess.run(command, cwd=petsc_dir, check=True)
 
 
-def classic_docs_subdirs():
-    return [
-            os.path.join('docs', 'manualpages'),
-            'include',
-            'src',
-            ]
+def classic_docs_subdirs(stage):
+    if stage == 'pre':
+        return [os.path.join('docs', 'manualpages')]
+    if stage == 'post':
+        return ['include', 'src']
+    raise Exception('Unrecognized stage %s' % stage)
 
-def copy_classic_docs(outdir):
-    for subdir in classic_docs_subdirs():
+
+def copy_classic_docs(outdir, stage):
+    for subdir in classic_docs_subdirs(stage):
         source_dir = os.path.join(CLASSIC_DOCS_LOC, subdir)
         target_dir = os.path.join(outdir, subdir)
         print('Copying directory %s to %s' % (source_dir, target_dir))
@@ -112,9 +127,10 @@ def copy_classic_docs(outdir):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--clean', '-c', action='store_true')
+    parser.add_argument('--stage', '-s')
     args = parser.parse_args()
 
     if args.clean:
         clean()
     else:
-        main()
+        main(args.stage)

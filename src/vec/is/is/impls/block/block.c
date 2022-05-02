@@ -420,7 +420,7 @@ static struct _ISOps myops = { ISGetIndices_Block,
 
    Level: beginner
 
-.seealso: ISCreateStride(), ISCreateGeneral(), ISAllGather(), ISCreateBlock(), ISBLOCK, ISGeneralSetIndices()
+.seealso: `ISCreateStride()`, `ISCreateGeneral()`, `ISAllGather()`, `ISCreateBlock()`, `ISBLOCK`, `ISGeneralSetIndices()`
 @*/
 PetscErrorCode  ISBlockSetIndices(IS is,PetscInt bs,PetscInt n,const PetscInt idx[],PetscCopyMode mode)
 {
@@ -503,7 +503,7 @@ static PetscErrorCode  ISBlockSetIndices_Block(IS is,PetscInt bs,PetscInt n,cons
 
    Level: beginner
 
-.seealso: ISCreateStride(), ISCreateGeneral(), ISAllGather(), ISBlockSetIndices(), ISBLOCK, ISGENERAL
+.seealso: `ISCreateStride()`, `ISCreateGeneral()`, `ISAllGather()`, `ISBlockSetIndices()`, `ISBLOCK`, `ISGENERAL`
 @*/
 PetscErrorCode  ISCreateBlock(MPI_Comm comm,PetscInt bs,PetscInt n,const PetscInt idx[],PetscCopyMode mode,IS *is)
 {
@@ -547,7 +547,7 @@ static PetscErrorCode  ISBlockRestoreIndices_Block(IS is,const PetscInt *idx[])
 
    Level: intermediate
 
-.seealso: ISGetIndices(), ISBlockRestoreIndices(), ISBLOCK, ISBlockSetIndices(), ISCreateBlock()
+.seealso: `ISGetIndices()`, `ISBlockRestoreIndices()`, `ISBLOCK`, `ISBlockSetIndices()`, `ISCreateBlock()`
 @*/
 PetscErrorCode  ISBlockGetIndices(IS is,const PetscInt *idx[])
 {
@@ -569,7 +569,7 @@ PetscErrorCode  ISBlockGetIndices(IS is,const PetscInt *idx[])
 
    Level: intermediate
 
-.seealso: ISRestoreIndices(), ISBlockGetIndices()
+.seealso: `ISRestoreIndices()`, `ISBlockGetIndices()`
 @*/
 PetscErrorCode  ISBlockRestoreIndices(IS is,const PetscInt *idx[])
 {
@@ -591,7 +591,7 @@ PetscErrorCode  ISBlockRestoreIndices(IS is,const PetscInt *idx[])
 
    Level: intermediate
 
-.seealso: ISGetBlockSize(), ISBlockGetSize(), ISGetSize(), ISCreateBlock(), ISBLOCK
+.seealso: `ISGetBlockSize()`, `ISBlockGetSize()`, `ISGetSize()`, `ISCreateBlock()`, `ISBLOCK`
 @*/
 PetscErrorCode  ISBlockGetLocalSize(IS is,PetscInt *size)
 {
@@ -624,7 +624,7 @@ static PetscErrorCode  ISBlockGetLocalSize_Block(IS is,PetscInt *size)
 
    Level: intermediate
 
-.seealso: ISGetBlockSize(), ISBlockGetLocalSize(), ISGetSize(), ISCreateBlock(), ISBLOCK
+.seealso: `ISGetBlockSize()`, `ISBlockGetLocalSize()`, `ISGetSize()`, `ISCreateBlock()`, `ISBLOCK`
 @*/
 PetscErrorCode  ISBlockGetSize(IS is,PetscInt *size)
 {

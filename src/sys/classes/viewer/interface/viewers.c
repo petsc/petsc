@@ -18,7 +18,7 @@ struct _n_PetscViewers {
 
    Level: intermediate
 
-.seealso: PetscViewerSocketOpen(), PetscViewerASCIIOpen(), PetscViewerCreate(), PetscViewerDrawOpen(), PetscViewersCreate()
+.seealso: `PetscViewerSocketOpen()`, `PetscViewerASCIIOpen()`, `PetscViewerCreate()`, `PetscViewerDrawOpen()`, `PetscViewersCreate()`
 
 @*/
 PetscErrorCode  PetscViewersDestroy(PetscViewers *v)
@@ -48,7 +48,7 @@ PetscErrorCode  PetscViewersDestroy(PetscViewers *v)
 
    Level: intermediate
 
-.seealso: PetscViewerCreate(), PetscViewersDestroy()
+.seealso: `PetscViewerCreate()`, `PetscViewersDestroy()`
 
 @*/
 PetscErrorCode  PetscViewersCreate(MPI_Comm comm,PetscViewers *v)
@@ -77,7 +77,7 @@ PetscErrorCode  PetscViewersCreate(MPI_Comm comm,PetscViewers *v)
 
    Level: intermediate
 
-.seealso: PetscViewersCreate(), PetscViewersDestroy()
+.seealso: `PetscViewersCreate()`, `PetscViewersDestroy()`
 
 @*/
 PetscErrorCode  PetscViewersGetViewer(PetscViewers viewers,PetscInt n,PetscViewer *viewer)

@@ -337,7 +337,7 @@ PetscErrorCode  PCRedistributeGetKSP(PC pc,KSP *innerksp)
 
    Level: intermediate
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PCRedistributeGetKSP()
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PCRedistributeGetKSP()`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_Redistribute(PC pc)

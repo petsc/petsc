@@ -153,7 +153,7 @@ static PetscErrorCode PetscGetFileStat(const char fname[], uid_t *fileUid, gid_t
 
    Notes: if mode is '\0', no permissions checks are performed
 
-.seealso: PetscTestDirectory(), PetscLs()
+.seealso: `PetscTestDirectory()`, `PetscLs()`
 @*/
 PetscErrorCode  PetscTestFile(const char fname[], char mode, PetscBool  *flg)
 {
@@ -190,7 +190,7 @@ PetscErrorCode  PetscTestFile(const char fname[], char mode, PetscBool  *flg)
 
    Level: intermediate
 
-.seealso: PetscTestFile(), PetscLs()
+.seealso: `PetscTestFile()`, `PetscLs()`
 @*/
 PetscErrorCode  PetscTestDirectory(const char dirname[],char mode,PetscBool  *flg)
 {
@@ -229,7 +229,7 @@ PetscErrorCode  PetscTestDirectory(const char dirname[],char mode,PetscBool  *fl
 
    Level: intermediate
 
-.seealso: PetscTestFile(), PetscLs()
+.seealso: `PetscTestFile()`, `PetscLs()`
 @*/
 PetscErrorCode  PetscLs(MPI_Comm comm,const char dirname[],char found[],size_t tlen,PetscBool  *flg)
 {

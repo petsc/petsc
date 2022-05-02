@@ -63,7 +63,7 @@ static struct _PetscRandomOps PetscRandomOps_Values = {
    This is NOT currently using a parallel random number generator. Sprng does have
    an MPI version we should investigate.
 
-.seealso: RandomCreate(), RandomSetType(), PETSCRAND, PETSCRAND48
+.seealso: `RandomCreate()`, `RandomSetType()`, `PETSCRAND`, `PETSCRAND48`
 M*/
 
 PETSC_EXTERN PetscErrorCode PetscRandomCreate_Sprng(PetscRandom r)

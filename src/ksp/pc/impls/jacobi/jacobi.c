@@ -429,10 +429,10 @@ static PetscErrorCode PCView_Jacobi(PC pc, PetscViewer viewer)
 
     See PCPBJACOBI for fixed-size point block, PCVPBJACOBI for variable-sized point block, and PCBJACOBI for large size blocks
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
-           PCJacobiSetType(), PCJacobiSetUseAbs(), PCJacobiGetUseAbs(),
-           PCJacobiSetFixDiagonal(), PCJacobiGetFixDiagonal()
-           PCJacobiSetType(), PCJacobiSetUseAbs(), PCJacobiGetUseAbs(), PCPBJACOBI, PCBJACOBI, PCVPBJACOBI
+.seealso:  `PCCreate()`, `PCSetType()`, `PCType`, `PC`,
+           `PCJacobiSetType()`, `PCJacobiSetUseAbs()`, `PCJacobiGetUseAbs()`,
+           `PCJacobiSetFixDiagonal()`, `PCJacobiGetFixDiagonal()`
+           `PCJacobiSetType()`, `PCJacobiSetUseAbs()`, `PCJacobiGetUseAbs()`, `PCPBJACOBI`, `PCBJACOBI`, `PCVPBJACOBI`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_Jacobi(PC pc)
@@ -503,7 +503,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Jacobi(PC pc)
 
    Level: intermediate
 
-.seealso: PCJacobiaSetType(), PCJacobiGetUseAbs()
+.seealso: `PCJacobiaSetType()`, `PCJacobiGetUseAbs()`
 
 @*/
 PetscErrorCode  PCJacobiSetUseAbs(PC pc,PetscBool flg)
@@ -528,7 +528,7 @@ PetscErrorCode  PCJacobiSetUseAbs(PC pc,PetscBool flg)
 
    Level: intermediate
 
-.seealso: PCJacobiaSetType(), PCJacobiSetUseAbs(), PCJacobiGetType()
+.seealso: `PCJacobiaSetType()`, `PCJacobiSetUseAbs()`, `PCJacobiGetType()`
 
 @*/
 PetscErrorCode  PCJacobiGetUseAbs(PC pc,PetscBool *flg)
@@ -556,7 +556,7 @@ PetscErrorCode  PCJacobiGetUseAbs(PC pc,PetscBool *flg)
 
    Level: intermediate
 
-.seealso: PCJacobiSetType(), PCJacobiGetFixDiagonal()
+.seealso: `PCJacobiSetType()`, `PCJacobiGetFixDiagonal()`
 
 @*/
 PetscErrorCode  PCJacobiSetFixDiagonal(PC pc,PetscBool flg)
@@ -583,7 +583,7 @@ PetscErrorCode  PCJacobiSetFixDiagonal(PC pc,PetscBool flg)
 
    Level: intermediate
 
-.seealso: PCJacobiSetType(), PCJacobiSetFixDiagonal()
+.seealso: `PCJacobiSetType()`, `PCJacobiSetFixDiagonal()`
 
 @*/
 PetscErrorCode  PCJacobiGetFixDiagonal(PC pc,PetscBool *flg)
@@ -609,7 +609,7 @@ PetscErrorCode  PCJacobiGetFixDiagonal(PC pc,PetscBool *flg)
 
    Level: intermediate
 
-.seealso: PCJacobiaUseAbs(), PCJacobiGetType()
+.seealso: `PCJacobiaUseAbs()`, `PCJacobiGetType()`
 @*/
 PetscErrorCode  PCJacobiSetType(PC pc,PCJacobiType type)
 {
@@ -632,7 +632,7 @@ PetscErrorCode  PCJacobiSetType(PC pc,PCJacobiType type)
 
    Level: intermediate
 
-.seealso: PCJacobiaUseAbs(), PCJacobiSetType()
+.seealso: `PCJacobiaUseAbs()`, `PCJacobiSetType()`
 @*/
 PetscErrorCode  PCJacobiGetType(PC pc,PCJacobiType *type)
 {

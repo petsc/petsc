@@ -26,7 +26,7 @@ typedef struct {
 
    Level: intermediate
 
-.seealso: ()
+.seealso: `()`
 @*/
 PetscErrorCode PCGAMGSetNSmooths(PC pc, PetscInt n)
 {
@@ -62,7 +62,7 @@ static PetscErrorCode PCGAMGSetNSmooths_AGG(PC pc, PetscInt n)
 
    Level: intermediate
 
-.seealso: PCGAMGSetSquareGraph()
+.seealso: `PCGAMGSetSquareGraph()`
 @*/
 PetscErrorCode PCGAMGSetSymGraph(PC pc, PetscBool n)
 {
@@ -101,7 +101,7 @@ static PetscErrorCode PCGAMGSetSymGraph_AGG(PC pc, PetscBool n)
 
    Level: intermediate
 
-.seealso: PCGAMGSetSymGraph(), PCGAMGSetThreshold()
+.seealso: `PCGAMGSetSymGraph()`, `PCGAMGSetThreshold()`
 @*/
 PetscErrorCode PCGAMGSetSquareGraph(PC pc, PetscInt n)
 {

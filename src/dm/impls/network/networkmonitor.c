@@ -14,7 +14,7 @@
 
   Level: intermediate
 
-.seealso: DMNetworkMonitorDestroy(), DMNetworkMonitorAdd()
+.seealso: `DMNetworkMonitorDestroy()`, `DMNetworkMonitorAdd()`
 @*/
 PetscErrorCode DMNetworkMonitorCreate(DM network,DMNetworkMonitor *monitorptr)
 {
@@ -46,7 +46,7 @@ PetscErrorCode DMNetworkMonitorCreate(DM network,DMNetworkMonitor *monitorptr)
 
   Level: intermediate
 
-.seealso: DMNetworkMonitorCreate, DMNetworkMonitorAdd
+.seealso: `DMNetworkMonitorCreate`, `DMNetworkMonitorAdd`
 @*/
 PetscErrorCode DMNetworkMonitorDestroy(DMNetworkMonitor *monitor)
 {
@@ -69,7 +69,7 @@ PetscErrorCode DMNetworkMonitorDestroy(DMNetworkMonitor *monitor)
 
   Level: intermediate
 
-.seealso: DMNetworkMonitorCreate(), DMNetworkMonitorDestroy()
+.seealso: `DMNetworkMonitorCreate()`, `DMNetworkMonitorDestroy()`
 @*/
 PetscErrorCode DMNetworkMonitorPop(DMNetworkMonitor monitor)
 {
@@ -116,7 +116,7 @@ PetscErrorCode DMNetworkMonitorPop(DMNetworkMonitor monitor)
   Precisely, the parameters nodes, start and blocksize allow you to select a general
   strided subarray of the variables to monitor.
 
-.seealso: DMNetworkMonitorCreate(), DMNetworkMonitorDestroy()
+.seealso: `DMNetworkMonitorCreate()`, `DMNetworkMonitorDestroy()`
 @*/
 PetscErrorCode DMNetworkMonitorAdd(DMNetworkMonitor monitor,const char *name,PetscInt element,PetscInt nodes,PetscInt start,PetscInt blocksize,PetscReal xmin,PetscReal xmax,PetscReal ymin,PetscReal ymax,PetscBool hold)
 {
@@ -182,7 +182,7 @@ PetscErrorCode DMNetworkMonitorAdd(DMNetworkMonitor monitor,const char *name,Pet
 
   Level: intermediate
 
-.seealso: DMNetworkMonitorCreate(), DMNetworkMonitorDestroy(), DMNetworkMonitorAdd()
+.seealso: `DMNetworkMonitorCreate()`, `DMNetworkMonitorDestroy()`, `DMNetworkMonitorAdd()`
 @*/
 
 PetscErrorCode DMNetworkMonitorView(DMNetworkMonitor monitor,Vec x)

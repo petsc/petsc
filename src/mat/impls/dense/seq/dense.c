@@ -2088,7 +2088,7 @@ PetscErrorCode MatDenseRestoreArray_SeqDense(Mat A,PetscScalar **array)
 
    Level: intermediate
 
-.seealso: MatDenseGetArray(), MatDenseRestoreArray(), MatDenseGetArrayRead(), MatDenseRestoreArrayRead(), MatDenseSetLDA()
+.seealso: `MatDenseGetArray()`, `MatDenseRestoreArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseSetLDA()`
 @*/
 PetscErrorCode  MatDenseGetLDA(Mat A,PetscInt *lda)
 {
@@ -2111,7 +2111,7 @@ PetscErrorCode  MatDenseGetLDA(Mat A,PetscInt *lda)
 
    Level: intermediate
 
-.seealso: MatDenseGetArray(), MatDenseRestoreArray(), MatDenseGetArrayRead(), MatDenseRestoreArrayRead(), MatDenseGetLDA()
+.seealso: `MatDenseGetArray()`, `MatDenseRestoreArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseGetLDA()`
 @*/
 PetscErrorCode  MatDenseSetLDA(Mat A,PetscInt lda)
 {
@@ -2134,7 +2134,7 @@ PetscErrorCode  MatDenseSetLDA(Mat A,PetscInt lda)
 
    Level: intermediate
 
-.seealso: MatDenseRestoreArray(), MatDenseGetArrayRead(), MatDenseRestoreArrayRead(), MatDenseGetArrayWrite(), MatDenseRestoreArrayWrite()
+.seealso: `MatDenseRestoreArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`
 @*/
 PetscErrorCode  MatDenseGetArray(Mat A,PetscScalar **array)
 {
@@ -2156,7 +2156,7 @@ PetscErrorCode  MatDenseGetArray(Mat A,PetscScalar **array)
 
    Level: intermediate
 
-.seealso: MatDenseGetArray(), MatDenseGetArrayRead(), MatDenseRestoreArrayRead(), MatDenseGetArrayWrite(), MatDenseRestoreArrayWrite()
+.seealso: `MatDenseGetArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`
 @*/
 PetscErrorCode  MatDenseRestoreArray(Mat A,PetscScalar **array)
 {
@@ -2184,7 +2184,7 @@ PetscErrorCode  MatDenseRestoreArray(Mat A,PetscScalar **array)
 
    Level: intermediate
 
-.seealso: MatDenseRestoreArrayRead(), MatDenseGetArray(), MatDenseRestoreArray(), MatDenseGetArrayWrite(), MatDenseRestoreArrayWrite()
+.seealso: `MatDenseRestoreArrayRead()`, `MatDenseGetArray()`, `MatDenseRestoreArray()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`
 @*/
 PetscErrorCode  MatDenseGetArrayRead(Mat A,const PetscScalar **array)
 {
@@ -2206,7 +2206,7 @@ PetscErrorCode  MatDenseGetArrayRead(Mat A,const PetscScalar **array)
 
    Level: intermediate
 
-.seealso: MatDenseGetArrayRead(), MatDenseGetArray(), MatDenseRestoreArray(), MatDenseGetArrayWrite(), MatDenseRestoreArrayWrite()
+.seealso: `MatDenseGetArrayRead()`, `MatDenseGetArray()`, `MatDenseRestoreArray()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`
 @*/
 PetscErrorCode  MatDenseRestoreArrayRead(Mat A,const PetscScalar **array)
 {
@@ -2230,7 +2230,7 @@ PetscErrorCode  MatDenseRestoreArrayRead(Mat A,const PetscScalar **array)
 
    Level: intermediate
 
-.seealso: MatDenseRestoreArrayWrite(), MatDenseGetArray(), MatDenseRestoreArray(), MatDenseGetArrayRead(), MatDenseRestoreArrayRead()
+.seealso: `MatDenseRestoreArrayWrite()`, `MatDenseGetArray()`, `MatDenseRestoreArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`
 @*/
 PetscErrorCode  MatDenseGetArrayWrite(Mat A,PetscScalar **array)
 {
@@ -2252,7 +2252,7 @@ PetscErrorCode  MatDenseGetArrayWrite(Mat A,PetscScalar **array)
 
    Level: intermediate
 
-.seealso: MatDenseGetArrayWrite(), MatDenseGetArray(), MatDenseRestoreArray(), MatDenseGetArrayRead(), MatDenseRestoreArrayRead()
+.seealso: `MatDenseGetArrayWrite()`, `MatDenseGetArray()`, `MatDenseRestoreArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`
 @*/
 PetscErrorCode  MatDenseRestoreArrayWrite(Mat A,PetscScalar **array)
 {
@@ -2969,7 +2969,7 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqDense,
 
    Level: intermediate
 
-.seealso: MatCreate(), MatCreateDense(), MatSetValues()
+.seealso: `MatCreate()`, `MatCreateDense()`, `MatSetValues()`
 @*/
 PetscErrorCode  MatCreateSeqDense(MPI_Comm comm,PetscInt m,PetscInt n,PetscScalar *data,Mat *A)
 {
@@ -2997,7 +2997,7 @@ PetscErrorCode  MatCreateSeqDense(MPI_Comm comm,PetscInt m,PetscInt n,PetscScala
 
    Level: intermediate
 
-.seealso: MatCreate(), MatCreateDense(), MatSetValues(), MatDenseSetLDA()
+.seealso: `MatCreate()`, `MatCreateDense()`, `MatSetValues()`, `MatDenseSetLDA()`
 
 @*/
 PetscErrorCode  MatSeqDenseSetPreallocation(Mat B,PetscScalar data[])
@@ -3256,7 +3256,7 @@ PetscErrorCode MatDenseRestoreSubMatrix_SeqDense(Mat A,Mat *v)
 
   Level: beginner
 
-.seealso: MatCreateSeqDense()
+.seealso: `MatCreateSeqDense()`
 
 M*/
 PetscErrorCode MatCreate_SeqDense(Mat B)
@@ -3333,7 +3333,7 @@ PetscErrorCode MatCreate_SeqDense(Mat B)
 
    Level: intermediate
 
-.seealso: MatDenseRestoreColumn()
+.seealso: `MatDenseRestoreColumn()`
 @*/
 PetscErrorCode MatDenseGetColumn(Mat A,PetscInt col,PetscScalar **vals)
 {
@@ -3358,7 +3358,7 @@ PetscErrorCode MatDenseGetColumn(Mat A,PetscInt col,PetscScalar **vals)
 
    Level: intermediate
 
-.seealso: MatDenseGetColumn()
+.seealso: `MatDenseGetColumn()`
 @*/
 PetscErrorCode MatDenseRestoreColumn(Mat A,PetscScalar **vals)
 {
@@ -3387,7 +3387,7 @@ PetscErrorCode MatDenseRestoreColumn(Mat A,PetscScalar **vals)
 
    Level: intermediate
 
-.seealso: MATDENSE, MATDENSECUDA, MatDenseGetColumnVecRead(), MatDenseGetColumnVecWrite(), MatDenseRestoreColumnVec(), MatDenseRestoreColumnVecRead(), MatDenseRestoreColumnVecWrite()
+.seealso: `MATDENSE`, `MATDENSECUDA`, `MatDenseGetColumnVecRead()`, `MatDenseGetColumnVecWrite()`, `MatDenseRestoreColumnVec()`, `MatDenseRestoreColumnVecRead()`, `MatDenseRestoreColumnVecWrite()`
 @*/
 PetscErrorCode MatDenseGetColumnVec(Mat A,PetscInt col,Vec *v)
 {
@@ -3414,7 +3414,7 @@ PetscErrorCode MatDenseGetColumnVec(Mat A,PetscInt col,Vec *v)
 
    Level: intermediate
 
-.seealso: MATDENSE, MATDENSECUDA, MatDenseGetColumnVec(), MatDenseGetColumnVecRead(), MatDenseGetColumnVecWrite(), MatDenseRestoreColumnVecRead(), MatDenseRestoreColumnVecWrite()
+.seealso: `MATDENSE`, `MATDENSECUDA`, `MatDenseGetColumnVec()`, `MatDenseGetColumnVecRead()`, `MatDenseGetColumnVecWrite()`, `MatDenseRestoreColumnVecRead()`, `MatDenseRestoreColumnVecWrite()`
 @*/
 PetscErrorCode MatDenseRestoreColumnVec(Mat A,PetscInt col,Vec *v)
 {
@@ -3447,7 +3447,7 @@ PetscErrorCode MatDenseRestoreColumnVec(Mat A,PetscInt col,Vec *v)
 
    Level: intermediate
 
-.seealso: MATDENSE, MATDENSECUDA, MatDenseGetColumnVec(), MatDenseGetColumnVecWrite(), MatDenseRestoreColumnVec(), MatDenseRestoreColumnVecRead(), MatDenseRestoreColumnVecWrite()
+.seealso: `MATDENSE`, `MATDENSECUDA`, `MatDenseGetColumnVec()`, `MatDenseGetColumnVecWrite()`, `MatDenseRestoreColumnVec()`, `MatDenseRestoreColumnVecRead()`, `MatDenseRestoreColumnVecWrite()`
 @*/
 PetscErrorCode MatDenseGetColumnVecRead(Mat A,PetscInt col,Vec *v)
 {
@@ -3474,7 +3474,7 @@ PetscErrorCode MatDenseGetColumnVecRead(Mat A,PetscInt col,Vec *v)
 
    Level: intermediate
 
-.seealso: MATDENSE, MATDENSECUDA, MatDenseGetColumnVec(), MatDenseGetColumnVecRead(), MatDenseGetColumnVecWrite(), MatDenseRestoreColumnVec(), MatDenseRestoreColumnVecWrite()
+.seealso: `MATDENSE`, `MATDENSECUDA`, `MatDenseGetColumnVec()`, `MatDenseGetColumnVecRead()`, `MatDenseGetColumnVecWrite()`, `MatDenseRestoreColumnVec()`, `MatDenseRestoreColumnVecWrite()`
 @*/
 PetscErrorCode MatDenseRestoreColumnVecRead(Mat A,PetscInt col,Vec *v)
 {
@@ -3506,7 +3506,7 @@ PetscErrorCode MatDenseRestoreColumnVecRead(Mat A,PetscInt col,Vec *v)
 
    Level: intermediate
 
-.seealso: MATDENSE, MATDENSECUDA, MatDenseGetColumnVec(), MatDenseGetColumnVecRead(), MatDenseRestoreColumnVec(), MatDenseRestoreColumnVecRead(), MatDenseRestoreColumnVecWrite()
+.seealso: `MATDENSE`, `MATDENSECUDA`, `MatDenseGetColumnVec()`, `MatDenseGetColumnVecRead()`, `MatDenseRestoreColumnVec()`, `MatDenseRestoreColumnVecRead()`, `MatDenseRestoreColumnVecWrite()`
 @*/
 PetscErrorCode MatDenseGetColumnVecWrite(Mat A,PetscInt col,Vec *v)
 {
@@ -3533,7 +3533,7 @@ PetscErrorCode MatDenseGetColumnVecWrite(Mat A,PetscInt col,Vec *v)
 
    Level: intermediate
 
-.seealso: MATDENSE, MATDENSECUDA, MatDenseGetColumnVec(), MatDenseGetColumnVecRead(), MatDenseGetColumnVecWrite(), MatDenseRestoreColumnVec(), MatDenseRestoreColumnVecRead()
+.seealso: `MATDENSE`, `MATDENSECUDA`, `MatDenseGetColumnVec()`, `MatDenseGetColumnVecRead()`, `MatDenseGetColumnVecWrite()`, `MatDenseRestoreColumnVec()`, `MatDenseRestoreColumnVecRead()`
 @*/
 PetscErrorCode MatDenseRestoreColumnVecWrite(Mat A,PetscInt col,Vec *v)
 {
@@ -3565,7 +3565,7 @@ PetscErrorCode MatDenseRestoreColumnVecWrite(Mat A,PetscInt col,Vec *v)
 
    Level: intermediate
 
-.seealso: MATDENSE, MATDENSECUDA, MatDenseGetColumnVec(), MatDenseRestoreColumnVec(), MatDenseRestoreSubMatrix()
+.seealso: `MATDENSE`, `MATDENSECUDA`, `MatDenseGetColumnVec()`, `MatDenseRestoreColumnVec()`, `MatDenseRestoreSubMatrix()`
 @*/
 PetscErrorCode MatDenseGetSubMatrix(Mat A,PetscInt cbegin,PetscInt cend,Mat *v)
 {
@@ -3593,7 +3593,7 @@ PetscErrorCode MatDenseGetSubMatrix(Mat A,PetscInt cbegin,PetscInt cend,Mat *v)
 
    Level: intermediate
 
-.seealso: MATDENSE, MATDENSECUDA, MatDenseGetColumnVec(), MatDenseRestoreColumnVec(), MatDenseGetSubMatrix()
+.seealso: `MATDENSE`, `MATDENSECUDA`, `MatDenseGetColumnVec()`, `MatDenseRestoreColumnVec()`, `MatDenseGetSubMatrix()`
 @*/
 PetscErrorCode MatDenseRestoreSubMatrix(Mat A,Mat *v)
 {

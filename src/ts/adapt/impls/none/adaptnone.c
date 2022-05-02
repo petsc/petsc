@@ -17,7 +17,7 @@ static PetscErrorCode TSAdaptChoose_None(TSAdapt adapt,TS ts,PetscReal h,PetscIn
 
    Level: intermediate
 
-.seealso: TS, TSAdapt, TSAdaptChoose()
+.seealso: `TS`, `TSAdapt`, `TSAdaptChoose()`
 M*/
 PETSC_EXTERN PetscErrorCode TSAdaptCreate_None(TSAdapt adapt)
 {

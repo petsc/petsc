@@ -87,7 +87,7 @@ static PetscErrorCode PetscChunkBufferEnlargeChunk(PetscChunkBuffer *buffer, Pet
 
   Level: intermediate
 
-.seealso: PetscIntSortSemiOrdered(), PetscSortInt()
+.seealso: `PetscIntSortSemiOrdered()`, `PetscSortInt()`
 @*/
 PetscErrorCode PetscFormKeySort(PetscInt n, PetscFormKey arr[])
 {
@@ -228,7 +228,7 @@ PetscErrorCode PetscWeakFormClearIndexFunction_Private(PetscWeakForm wf, PetscHM
 
   Level: intermediate
 
-.seealso: PetscWeakFormCreate(), PetscWeakFormDestroy()
+.seealso: `PetscWeakFormCreate()`, `PetscWeakFormDestroy()`
 @*/
 PetscErrorCode PetscWeakFormCopy(PetscWeakForm wf, PetscWeakForm wfNew)
 {
@@ -255,7 +255,7 @@ PetscErrorCode PetscWeakFormCopy(PetscWeakForm wf, PetscWeakForm wfNew)
 
   Level: intermediate
 
-.seealso: PetscWeakFormCopy(), PetscWeakFormCreate(), PetscWeakFormDestroy()
+.seealso: `PetscWeakFormCopy()`, `PetscWeakFormCreate()`, `PetscWeakFormDestroy()`
 @*/
 PetscErrorCode PetscWeakFormClear(PetscWeakForm wf)
 {
@@ -308,7 +308,7 @@ static PetscErrorCode PetscWeakFormRewriteKeys_Internal(PetscWeakForm wf, PetscH
 
   Level: intermediate
 
-.seealso: PetscWeakFormReplaceLabel(), PetscWeakFormCreate(), PetscWeakFormDestroy()
+.seealso: `PetscWeakFormReplaceLabel()`, `PetscWeakFormCreate()`, `PetscWeakFormDestroy()`
 @*/
 PetscErrorCode PetscWeakFormRewriteKeys(PetscWeakForm wf, DMLabel label, PetscInt Nv, const PetscInt values[])
 {
@@ -383,7 +383,7 @@ static PetscErrorCode PetscWeakFormReplaceLabel_Internal(PetscWeakForm wf, Petsc
 
   Level: intermediate
 
-.seealso: PetscWeakFormRewriteKeys(), PetscWeakFormCreate(), PetscWeakFormDestroy()
+.seealso: `PetscWeakFormRewriteKeys()`, `PetscWeakFormCreate()`, `PetscWeakFormDestroy()`
 @*/
 PetscErrorCode PetscWeakFormReplaceLabel(PetscWeakForm wf, DMLabel label)
 {
@@ -1330,7 +1330,7 @@ PetscErrorCode PetscWeakFormSetIndexRiemannSolver(PetscWeakForm wf, DMLabel labe
 
   Level: beginner
 
-.seealso: PetscWeakFormSetNumFields(), PetscWeakFormCreate()
+.seealso: `PetscWeakFormSetNumFields()`, `PetscWeakFormCreate()`
 @*/
 PetscErrorCode PetscWeakFormGetNumFields(PetscWeakForm wf, PetscInt *Nf)
 {
@@ -1352,7 +1352,7 @@ PetscErrorCode PetscWeakFormGetNumFields(PetscWeakForm wf, PetscInt *Nf)
 
   Level: beginner
 
-.seealso: PetscWeakFormGetNumFields(), PetscWeakFormCreate()
+.seealso: `PetscWeakFormGetNumFields()`, `PetscWeakFormCreate()`
 @*/
 PetscErrorCode PetscWeakFormSetNumFields(PetscWeakForm wf, PetscInt Nf)
 {
@@ -1372,7 +1372,7 @@ PetscErrorCode PetscWeakFormSetNumFields(PetscWeakForm wf, PetscInt Nf)
 
   Level: developer
 
-.seealso PetscWeakFormCreate(), PetscWeakFormView()
+.seealso `PetscWeakFormCreate()`, `PetscWeakFormView()`
 @*/
 PetscErrorCode PetscWeakFormDestroy(PetscWeakForm *wf)
 {
@@ -1495,7 +1495,7 @@ static PetscErrorCode PetscWeakFormView_Ascii(PetscWeakForm wf, PetscViewer view
 
   Level: developer
 
-.seealso PetscWeakFormDestroy(), PetscWeakFormCreate()
+.seealso `PetscWeakFormDestroy()`, `PetscWeakFormCreate()`
 @*/
 PetscErrorCode PetscWeakFormView(PetscWeakForm wf, PetscViewer v)
 {
@@ -1524,7 +1524,7 @@ PetscErrorCode PetscWeakFormView(PetscWeakForm wf, PetscViewer v)
 
   Level: beginner
 
-.seealso: PetscDS, PetscWeakFormDestroy()
+.seealso: `PetscDS`, `PetscWeakFormDestroy()`
 @*/
 PetscErrorCode PetscWeakFormCreate(MPI_Comm comm, PetscWeakForm *wf)
 {

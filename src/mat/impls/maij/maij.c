@@ -35,7 +35,7 @@
    Notes:
     The reference count on the AIJ matrix is not increased so you should not destroy it.
 
-.seealso: MatCreateMAIJ()
+.seealso: `MatCreateMAIJ()`
 @*/
 PetscErrorCode  MatMAIJGetAIJ(Mat A,Mat *B)
 {
@@ -72,7 +72,7 @@ PetscErrorCode  MatMAIJGetAIJ(Mat A,Mat *B)
 
    Level: advanced
 
-.seealso: MatCreateMAIJ()
+.seealso: `MatCreateMAIJ()`
 @*/
 PetscErrorCode  MatMAIJRedimension(Mat A,PetscInt dof,Mat *B)
 {
@@ -157,7 +157,7 @@ PetscErrorCode MatDestroy_MPIMAIJ(Mat A)
 
   Level: advanced
 
-.seealso: MatMAIJGetAIJ(), MatMAIJRedimension(), MatCreateMAIJ()
+.seealso: `MatMAIJGetAIJ()`, `MatMAIJRedimension()`, `MatCreateMAIJ()`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_MAIJ(Mat A)
@@ -3337,7 +3337,7 @@ PetscErrorCode MatCreateSubMatrices_MAIJ(Mat mat,PetscInt n,const IS irow[],cons
 
   Level: advanced
 
-.seealso: MatMAIJGetAIJ(), MatMAIJRedimension(), MATMAIJ
+.seealso: `MatMAIJGetAIJ()`, `MatMAIJRedimension()`, `MATMAIJ`
 @*/
 PetscErrorCode  MatCreateMAIJ(Mat A,PetscInt dof,Mat *maij)
 {

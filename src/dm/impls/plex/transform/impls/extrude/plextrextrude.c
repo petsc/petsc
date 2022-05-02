@@ -600,7 +600,7 @@ PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_Extrude(DMPlexTransform tr)
 
   Level: intermediate
 
-.seealso: DMPlexTransformExtrudeSetLayers()
+.seealso: `DMPlexTransformExtrudeSetLayers()`
 @*/
 PetscErrorCode DMPlexTransformExtrudeGetLayers(DMPlexTransform tr, PetscInt *layers)
 {
@@ -624,7 +624,7 @@ PetscErrorCode DMPlexTransformExtrudeGetLayers(DMPlexTransform tr, PetscInt *lay
 
   Level: intermediate
 
-.seealso: DMPlexTransformExtrudeGetLayers()
+.seealso: `DMPlexTransformExtrudeGetLayers()`
 @*/
 PetscErrorCode DMPlexTransformExtrudeSetLayers(DMPlexTransform tr, PetscInt layers)
 {
@@ -651,7 +651,7 @@ PetscErrorCode DMPlexTransformExtrudeSetLayers(DMPlexTransform tr, PetscInt laye
 
   Level: intermediate
 
-.seealso: DMPlexTransformExtrudeSetThickness()
+.seealso: `DMPlexTransformExtrudeSetThickness()`
 @*/
 PetscErrorCode DMPlexTransformExtrudeGetThickness(DMPlexTransform tr, PetscReal *thickness)
 {
@@ -675,7 +675,7 @@ PetscErrorCode DMPlexTransformExtrudeGetThickness(DMPlexTransform tr, PetscReal 
 
   Level: intermediate
 
-.seealso: DMPlexTransformExtrudeGetThickness()
+.seealso: `DMPlexTransformExtrudeGetThickness()`
 @*/
 PetscErrorCode DMPlexTransformExtrudeSetThickness(DMPlexTransform tr, PetscReal thickness)
 {
@@ -703,7 +703,7 @@ PetscErrorCode DMPlexTransformExtrudeSetThickness(DMPlexTransform tr, PetscReal 
 
   Level: intermediate
 
-.seealso: DMPlexTransformExtrudeSetTensor()
+.seealso: `DMPlexTransformExtrudeSetTensor()`
 @*/
 PetscErrorCode DMPlexTransformExtrudeGetTensor(DMPlexTransform tr, PetscBool *useTensor)
 {
@@ -729,7 +729,7 @@ PetscErrorCode DMPlexTransformExtrudeGetTensor(DMPlexTransform tr, PetscBool *us
 
   Level: intermediate
 
-.seealso: DMPlexTransformExtrudeGetTensor()
+.seealso: `DMPlexTransformExtrudeGetTensor()`
 @*/
 PetscErrorCode DMPlexTransformExtrudeSetTensor(DMPlexTransform tr, PetscBool useTensor)
 {
@@ -754,7 +754,7 @@ PetscErrorCode DMPlexTransformExtrudeSetTensor(DMPlexTransform tr, PetscBool use
 
   Level: intermediate
 
-.seealso: DMPlexTransformExtrudeSetSymmetric()
+.seealso: `DMPlexTransformExtrudeSetSymmetric()`
 @*/
 PetscErrorCode DMPlexTransformExtrudeGetSymmetric(DMPlexTransform tr, PetscBool *symmetric)
 {
@@ -778,7 +778,7 @@ PetscErrorCode DMPlexTransformExtrudeGetSymmetric(DMPlexTransform tr, PetscBool 
 
   Level: intermediate
 
-.seealso: DMPlexTransformExtrudeGetSymmetric()
+.seealso: `DMPlexTransformExtrudeGetSymmetric()`
 @*/
 PetscErrorCode DMPlexTransformExtrudeSetSymmetric(DMPlexTransform tr, PetscBool symmetric)
 {
@@ -805,7 +805,7 @@ PetscErrorCode DMPlexTransformExtrudeSetSymmetric(DMPlexTransform tr, PetscBool 
 
   Level: intermediate
 
-.seealso: DMPlexTransformExtrudeSetNormal()
+.seealso: `DMPlexTransformExtrudeSetNormal()`
 @*/
 PetscErrorCode DMPlexTransformExtrudeGetNormal(DMPlexTransform tr, PetscReal normal[])
 {
@@ -830,7 +830,7 @@ PetscErrorCode DMPlexTransformExtrudeGetNormal(DMPlexTransform tr, PetscReal nor
 
   Level: intermediate
 
-.seealso: DMPlexTransformExtrudeGetNormal()
+.seealso: `DMPlexTransformExtrudeGetNormal()`
 @*/
 PetscErrorCode DMPlexTransformExtrudeSetNormal(DMPlexTransform tr, const PetscReal normal[])
 {
@@ -863,7 +863,7 @@ $ ctx  - An optional user context
 
   Level: intermediate
 
-.seealso: DMPlexTransformExtrudeGetNormal()
+.seealso: `DMPlexTransformExtrudeGetNormal()`
 @*/
 PetscErrorCode DMPlexTransformExtrudeSetNormalFunction(DMPlexTransform tr, PetscSimplePointFunc normalFunc)
 {
@@ -887,7 +887,7 @@ PetscErrorCode DMPlexTransformExtrudeSetNormalFunction(DMPlexTransform tr, Petsc
 
   Level: intermediate
 
-.seealso: DMPlexTransformExtrudeSetThickness(), DMPlexTransformExtrudeGetThickness()
+.seealso: `DMPlexTransformExtrudeSetThickness()`, `DMPlexTransformExtrudeGetThickness()`
 @*/
 PetscErrorCode DMPlexTransformExtrudeSetThicknesses(DMPlexTransform tr, PetscInt Nth, const PetscReal thicknesses[])
 {

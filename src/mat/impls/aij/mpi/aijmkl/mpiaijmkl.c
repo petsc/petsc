@@ -74,7 +74,7 @@
 
    Level: intermediate
 
-.seealso: MatCreate(), MatCreateSeqAIJMKL(), MatSetValues()
+.seealso: `MatCreate()`, `MatCreateSeqAIJMKL()`, `MatSetValues()`
 @*/
 PetscErrorCode  MatCreateMPIAIJMKL(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[],Mat *A)
 {
@@ -141,5 +141,5 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJMKL(Mat A)
 
   Level: beginner
 
-.seealso: MatCreateMPIAIJMKL(), MATSEQAIJMKL, MATMPIAIJMKL
+.seealso: `MatCreateMPIAIJMKL()`, `MATSEQAIJMKL`, `MATMPIAIJMKL`
 M*/

@@ -205,7 +205,7 @@ PETSC_INTERN PetscErrorCode TaoCreate_BQNK(Tao tao)
 
    Level: advanced
 
-.seealso: TAOBQNLS, TAOBQNKLS, TAOBQNKTL, TAOBQNKTR, MATLMVM, TaoSetLMVMMatrix()
+.seealso: `TAOBQNLS`, `TAOBQNKLS`, `TAOBQNKTL`, `TAOBQNKTR`, `MATLMVM`, `TaoSetLMVMMatrix()`
 @*/
 PetscErrorCode TaoGetLMVMMatrix(Tao tao, Mat *B)
 {
@@ -233,7 +233,7 @@ PetscErrorCode TaoGetLMVMMatrix(Tao tao, Mat *B)
 
    Level: advanced
 
-.seealso: TAOBQNLS, TAOBQNKLS, TAOBQNKTL, TAOBQNKTR, MATLMVM, TaoGetLMVMMatrix()
+.seealso: `TAOBQNLS`, `TAOBQNKLS`, `TAOBQNKTL`, `TAOBQNKTR`, `MATLMVM`, `TaoGetLMVMMatrix()`
 @*/
 PetscErrorCode TaoSetLMVMMatrix(Tao tao, Mat B)
 {

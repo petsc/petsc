@@ -174,7 +174,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_VU(PetscViewer viewer)
 
   Level: intermediate
 
-.seealso: PetscViewerASCIIGetPointer()
+.seealso: `PetscViewerASCIIGetPointer()`
 @*/
 PetscErrorCode  PetscViewerVUGetPointer(PetscViewer viewer, FILE **fd)
 {
@@ -199,7 +199,7 @@ PetscErrorCode  PetscViewerVUGetPointer(PetscViewer viewer, FILE **fd)
 
   Level: advanced
 
-.seealso: PetscViewerVUGetVecSeen()
+.seealso: `PetscViewerVUGetVecSeen()`
 @*/
 PetscErrorCode  PetscViewerVUSetVecSeen(PetscViewer viewer, PetscBool vecSeen)
 {
@@ -224,7 +224,7 @@ PetscErrorCode  PetscViewerVUSetVecSeen(PetscViewer viewer, PetscBool vecSeen)
 
   Level: advanced
 
-.seealso: PetscViewerVUGetVecSeen()
+.seealso: `PetscViewerVUGetVecSeen()`
 @*/
 PetscErrorCode  PetscViewerVUGetVecSeen(PetscViewer viewer, PetscBool  *vecSeen)
 {
@@ -248,7 +248,7 @@ PetscErrorCode  PetscViewerVUGetVecSeen(PetscViewer viewer, PetscBool  *vecSeen)
 
   Level: intermediate
 
-.seealso: PetscViewerVUFlushDeferred()
+.seealso: `PetscViewerVUFlushDeferred()`
 @*/
 PetscErrorCode  PetscViewerVUPrintDeferred(PetscViewer viewer, const char format[], ...)
 {
@@ -285,7 +285,7 @@ PetscErrorCode  PetscViewerVUPrintDeferred(PetscViewer viewer, const char format
 
   Level: intermediate
 
-.seealso: PetscViewerVUPrintDeferred()
+.seealso: `PetscViewerVUPrintDeferred()`
 @*/
 PetscErrorCode  PetscViewerVUFlushDeferred(PetscViewer viewer)
 {

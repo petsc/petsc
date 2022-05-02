@@ -47,7 +47,7 @@ PetscErrorCode MatDestroy_Dummy(Mat A)
 
   Level: developer
 
-.seealso: Mat
+.seealso: `Mat`
 
 M*/
 

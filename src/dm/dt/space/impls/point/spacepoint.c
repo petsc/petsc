@@ -108,7 +108,7 @@ static PetscErrorCode PetscSpaceInitialize_Point(PetscSpace sp)
 
   Level: intermediate
 
-.seealso: PetscSpaceType, PetscSpaceCreate(), PetscSpaceSetType()
+.seealso: `PetscSpaceType`, `PetscSpaceCreate()`, `PetscSpaceSetType()`
 M*/
 
 PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Point(PetscSpace sp)
@@ -140,7 +140,7 @@ PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Point(PetscSpace sp)
 
   Level: intermediate
 
-.seealso: PetscSpaceCreate(), PetscSpaceSetType()
+.seealso: `PetscSpaceCreate()`, `PetscSpaceSetType()`
 @*/
 PetscErrorCode PetscSpacePointSetPoints(PetscSpace sp, PetscQuadrature q)
 {
@@ -167,7 +167,7 @@ PetscErrorCode PetscSpacePointSetPoints(PetscSpace sp, PetscQuadrature q)
 
   Level: intermediate
 
-.seealso: PetscSpaceCreate(), PetscSpaceSetType()
+.seealso: `PetscSpaceCreate()`, `PetscSpaceSetType()`
 @*/
 PetscErrorCode PetscSpacePointGetPoints(PetscSpace sp, PetscQuadrature *q)
 {

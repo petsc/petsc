@@ -125,7 +125,7 @@ static struct _PetscRandomOps PetscRandomOps_Values = {
    PETSc must have been ./configure with the option --download-random123 to use
    this random number generator.
 
-.seealso: RandomCreate(), RandomSetType(), PETSCRAND, PETSCRAND48, PETSCSPRNG
+.seealso: `RandomCreate()`, `RandomSetType()`, `PETSCRAND`, `PETSCRAND48`, `PETSCSPRNG`
 M*/
 
 PETSC_EXTERN PetscErrorCode PetscRandomCreate_Random123(PetscRandom r)

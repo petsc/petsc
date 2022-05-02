@@ -15,7 +15,7 @@
 
    Level: advanced
 
-.seealso:   SNESSetFunction(), SNESGetFunction(), SNESSetObjective(), SNESGetObjective(), SNESJacobianFunction, SNESFunction
+.seealso: `SNESSetFunction()`, `SNESGetFunction()`, `SNESSetObjective()`, `SNESGetObjective()`, `SNESJacobianFunction`, `SNESFunction`
 M*/
 
 /*@C
@@ -35,7 +35,7 @@ M*/
 
          If not provided then this defaults to the two norm of the function evaluation (set with SNESSetFunction())
 
-.seealso: SNESGetObjective(), SNESComputeObjective(), SNESSetFunction(), SNESSetJacobian(), SNESObjectiveFunction
+.seealso: `SNESGetObjective()`, `SNESComputeObjective()`, `SNESSetFunction()`, `SNESSetJacobian()`, `SNESObjectiveFunction`
 @*/
 PetscErrorCode  SNESSetObjective(SNES snes,PetscErrorCode (*obj)(SNES,Vec,PetscReal*,void*),void *ctx)
 {
@@ -62,7 +62,7 @@ PetscErrorCode  SNESSetObjective(SNES snes,PetscErrorCode (*obj)(SNES,Vec,PetscR
 
    Level: advanced
 
-.seealso: SNESSetObjective(), SNESGetSolution()
+.seealso: `SNESSetObjective()`, `SNESGetSolution()`
 @*/
 PetscErrorCode SNESGetObjective(SNES snes,PetscErrorCode (**obj)(SNES,Vec,PetscReal*,void*),void **ctx)
 {
@@ -89,7 +89,7 @@ PetscErrorCode SNESGetObjective(SNES snes,PetscErrorCode (**obj)(SNES,Vec,PetscR
 
    Level: advanced
 
-.seealso: SNESSetObjective(), SNESGetSolution()
+.seealso: `SNESSetObjective()`, `SNESGetSolution()`
 @*/
 PetscErrorCode SNESComputeObjective(SNES snes,Vec X,PetscReal *ob)
 {
@@ -138,7 +138,7 @@ PetscErrorCode SNESComputeObjective(SNES snes,Vec X,PetscReal *ob)
 
    Level: advanced
 
-.seealso: SNESSetFunction(), SNESComputeObjective(), SNESComputeJacobianDefault()
+.seealso: `SNESSetFunction()`, `SNESComputeObjective()`, `SNESComputeJacobianDefault()`
 @*/
 PetscErrorCode SNESObjectiveComputeFunctionDefaultFD(SNES snes,Vec X,Vec F,void *ctx)
 {

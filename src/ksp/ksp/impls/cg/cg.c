@@ -563,8 +563,8 @@ PETSC_INTERN PetscErrorCode KSPBuildResidual_CG(KSP ksp,Vec t,Vec v,Vec *V)
 -  * - Josef Malek and Zdenek Strakos, Preconditioning and the Conjugate Gradient Method in the Context of Solving PDEs,
     SIAM, 2014.
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,
-           KSPCGSetType(), KSPCGUseSingleReduction(), KSPPIPECG, KSPGROPPCG
+.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`,
+          `KSPCGSetType()`, `KSPCGUseSingleReduction()`, `KSPPIPECG`, `KSPGROPPCG`
 
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_CG(KSP ksp)

@@ -7,7 +7,7 @@ static PetscBool CharacteristicPackageInitialized = PETSC_FALSE;
 
   Level: developer
 
-.seealso: PetscFinalize()
+.seealso: `PetscFinalize()`
 @*/
 PetscErrorCode CharacteristicFinalizePackage(void)
 {
@@ -25,7 +25,7 @@ PetscErrorCode CharacteristicFinalizePackage(void)
 
   Level: developer
 
-.seealso: PetscInitialize()
+.seealso: `PetscInitialize()`
 @*/
 PetscErrorCode CharacteristicInitializePackage(void)
 {

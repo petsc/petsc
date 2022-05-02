@@ -32,7 +32,7 @@ static PetscErrorCode VecTaggerComputeBoxes_Absolute(VecTagger tagger,Vec vec,Pe
 
   Level: advanced
 
-.seealso: VecTaggerAbsoluteGetBox()
+.seealso: `VecTaggerAbsoluteGetBox()`
 @*/
 PetscErrorCode VecTaggerAbsoluteSetBox(VecTagger tagger,VecTaggerBox *box)
 {
@@ -54,7 +54,7 @@ PetscErrorCode VecTaggerAbsoluteSetBox(VecTagger tagger,VecTaggerBox *box)
 
   Level: advanced
 
-.seealso: VecTaggerAbsoluteSetBox()
+.seealso: `VecTaggerAbsoluteSetBox()`
 @*/
 PetscErrorCode VecTaggerAbsoluteGetBox(VecTagger tagger,const VecTaggerBox **box)
 {

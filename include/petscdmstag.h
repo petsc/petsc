@@ -11,7 +11,7 @@
 
   Level: beginner
 
-.seealso: DMSTAG, DMStagStencil, DMStagGetLocationSlot()
+.seealso: `DMSTAG`, `DMStagStencil`, `DMStagGetLocationSlot()`
 E*/
 
 /* The order of these entries is significant, as it corresponds to the canonical numbering
@@ -60,7 +60,7 @@ PETSC_EXTERN const char *const DMStagStencilLocations[]; /* Corresponding string
 
 Level: beginner
 
-.seealso: DMSTAG, DMStagMatSetValuesStencil(), DMStagVecSetValuesStencil(), DMStagStencilLocation, DMStagSetStencilWidth(), DMStagSetStencilType(), DMStagVecGetValuesStencil()
+.seealso: `DMSTAG`, `DMStagMatSetValuesStencil()`, `DMStagVecSetValuesStencil()`, `DMStagStencilLocation`, `DMStagSetStencilWidth()`, `DMStagSetStencilType()`, `DMStagVecGetValuesStencil()`
 S*/
 typedef struct {
   DMStagStencilLocation loc;
@@ -72,7 +72,7 @@ typedef struct {
 
   Level: beginner
 
-.seealso: DMSTAG, DMStagCreate1d(), DMStagCreate2d(), DMStagCreate3d(), DMStagStencil
+.seealso: `DMSTAG`, `DMStagCreate1d()`, `DMStagCreate2d()`, `DMStagCreate3d()`, `DMStagStencil`
 E*/
 
 typedef enum{DMSTAG_STENCIL_NONE=0,DMSTAG_STENCIL_STAR,DMSTAG_STENCIL_BOX} DMStagStencilType;

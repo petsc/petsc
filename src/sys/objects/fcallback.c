@@ -47,7 +47,7 @@ static PetscErrorCode PetscFortranCallbackFinalize(void)
 
    Level: developer
 
-.seealso: PetscFortranCallbackGetSizes()
+.seealso: `PetscFortranCallbackGetSizes()`
 @*/
 PetscErrorCode PetscFortranCallbackRegister(PetscClassId classid,const char *subtype,PetscFortranCallbackId *id)
 {
@@ -110,7 +110,7 @@ found:
 
    Level: developer
 
-.seealso: PetscFortranCallbackRegister()
+.seealso: `PetscFortranCallbackRegister()`
 @*/
 PetscErrorCode PetscFortranCallbackGetSizes(PetscClassId classid,PetscFortranCallbackId *numbase,PetscFortranCallbackId *numsubtype)
 {

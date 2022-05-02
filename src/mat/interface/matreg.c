@@ -23,7 +23,7 @@ PetscFunctionList MatList = NULL;
 
    Level: developer
 
-.seealso: MatGetType(), MatSetType(), MatType, Mat
+.seealso: `MatGetType()`, `MatSetType()`, `MatType`, `Mat`
 */
 PetscErrorCode MatGetRootType_Private(Mat mat, MatType *rootType)
 {
@@ -66,7 +66,7 @@ PetscErrorCode MatGetRootType_Private(Mat mat, MatType *rootType)
 
   Level: intermediate
 
-.seealso: PCSetType(), VecSetType(), MatCreate(), MatType, Mat
+.seealso: `PCSetType()`, `VecSetType()`, `MatCreate()`, `MatType`, `Mat`
 @*/
 PetscErrorCode  MatSetType(Mat mat, MatType matype)
 {
@@ -140,7 +140,7 @@ PetscErrorCode  MatSetType(Mat mat, MatType matype)
 
    Level: intermediate
 
-.seealso: MatSetType()
+.seealso: `MatSetType()`
 @*/
 PetscErrorCode  MatGetType(Mat mat,MatType *type)
 {
@@ -164,7 +164,7 @@ PetscErrorCode  MatGetType(Mat mat,MatType *type)
 
    Level: intermediate
 
-.seealso: MatSetVecType()
+.seealso: `MatSetVecType()`
 @*/
 PetscErrorCode MatGetVecType(Mat mat,VecType *vtype)
 {
@@ -189,7 +189,7 @@ PetscErrorCode MatGetVecType(Mat mat,VecType *vtype)
 
   Level: intermediate
 
-.seealso: VecSetType(), MatGetVecType()
+.seealso: `VecSetType()`, `MatGetVecType()`
 @*/
 PetscErrorCode MatSetVecType(Mat mat,VecType vtype)
 {
@@ -224,7 +224,7 @@ $     -mat_type my_mat
 
    Level: advanced
 
-.seealso: MatRegisterAll()
+.seealso: `MatRegisterAll()`
 
   Level: advanced
 @*/
@@ -257,7 +257,7 @@ MatRootName MatRootNameList = NULL;
 
   Level: developer
 
-.seealso: PetscObjectBaseTypeCompare()
+.seealso: `PetscObjectBaseTypeCompare()`
 
 @*/
 PetscErrorCode  MatRegisterRootName(const char rname[],const char sname[],const char mname[])

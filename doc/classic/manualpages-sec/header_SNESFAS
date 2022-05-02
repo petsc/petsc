@@ -1,11 +1,6 @@
-<HTML>
-<HEAD>
-<TITLE>SNESFAS Manual Pages</TITLE>
-</HEAD>
-<BODY BGCOLOR="FFFFFF">
+# SNESFAS Manual Pages
 
-<H2> SNESFAS <A HREF="PETSC_DIRsrc/snes/tutorials/index.html">Examples</A></H2>
+<A HREF="PETSC_DIRsrc/snes/tutorials/index.html">Examples</A><BR>
 
-The SNESFAS object is a nonlinear multigrid solver which uses the Full Approximation Storage scheme.
+The `SNESFAS` object is a nonlinear multigrid solver which uses the Full Approximation Storage scheme.
 
-<P>

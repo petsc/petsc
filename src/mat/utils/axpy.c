@@ -49,7 +49,7 @@ static PetscErrorCode MatTransposeAXPY_Private(Mat Y,PetscScalar a,Mat X,MatStru
 
    Level: intermediate
 
-.seealso: MatAYPX()
+.seealso: `MatAYPX()`
  @*/
 PetscErrorCode MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure str)
 {
@@ -285,7 +285,7 @@ PetscErrorCode MatAXPY_BasicWithPreallocation(Mat B,Mat Y,PetscScalar a,Mat X,Ma
 
    To form Y = Y + diag(V) use MatDiagonalSet()
 
-.seealso: MatDiagonalSet(), MatScale(), MatDiagonalScale()
+.seealso: `MatDiagonalSet()`, `MatScale()`, `MatDiagonalScale()`
  @*/
 PetscErrorCode  MatShift(Mat Y,PetscScalar a)
 {
@@ -339,7 +339,7 @@ PetscErrorCode  MatDiagonalSet_Default(Mat Y,Vec D,InsertMode is)
 
    Level: intermediate
 
-.seealso: MatShift(), MatScale(), MatDiagonalScale()
+.seealso: `MatShift()`, `MatScale()`, `MatDiagonalScale()`
 @*/
 PetscErrorCode  MatDiagonalSet(Mat Y,Vec D,InsertMode is)
 {
@@ -373,7 +373,7 @@ PetscErrorCode  MatDiagonalSet(Mat Y,Vec D,InsertMode is)
 
    Level: intermediate
 
-.seealso: MatAXPY()
+.seealso: `MatAXPY()`
  @*/
 PetscErrorCode  MatAYPX(Mat Y,PetscScalar a,Mat X,MatStructure str)
 {
@@ -458,7 +458,7 @@ PetscErrorCode  MatComputeOperatorTranspose(Mat inmat,MatType mattype,Mat *mat)
 
   Level: intermediate
 
-.seealso: MatCreate(), MatZeroEntries()
+.seealso: `MatCreate()`, `MatZeroEntries()`
  @*/
 PetscErrorCode MatChop(Mat A, PetscReal tol)
 {

@@ -101,7 +101,7 @@ $    cat newkey.pem newcert.pem > sslclient.pem
 
    Level: intermediate
 
-.seealso: PetscBoxRefresh(), PetscBoxUpload(), PetscURLShorten()
+.seealso: `PetscBoxRefresh()`, `PetscBoxUpload()`, `PetscURLShorten()`
 
 @*/
 PetscErrorCode PetscBoxAuthorize(MPI_Comm comm,char access_token[],char refresh_token[],size_t tokensize)
@@ -173,7 +173,7 @@ PetscErrorCode PetscBoxAuthorize(MPI_Comm comm,char access_token[],char refresh_
 
    Level: intermediate
 
-.seealso: PetscURLShorten(), PetscBoxAuthorize(), PetscBoxUpload()
+.seealso: `PetscURLShorten()`, `PetscBoxAuthorize()`, `PetscBoxUpload()`
 
 @*/
 PetscErrorCode PetscBoxRefresh(MPI_Comm comm,const char refresh_token[],char access_token[],char new_refresh_token[],size_t tokensize)
@@ -267,7 +267,7 @@ PetscErrorCode PetscBoxRefresh(MPI_Comm comm,const char refresh_token[],char acc
 
    Level: intermediate
 
-.seealso: PetscURLShorten(), PetscBoxAuthorize(), PetscBoxRefresh()
+.seealso: `PetscURLShorten()`, `PetscBoxAuthorize()`, `PetscBoxRefresh()`
 
 @*/
 PetscErrorCode PetscBoxUpload(MPI_Comm comm,const char access_token[],const char filename[])

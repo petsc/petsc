@@ -236,7 +236,7 @@ $ func(DMDALocalInfo info,PetscReal t,void *x,void *f,void *ctx)
 
    Level: beginner
 
-.seealso: DMTSSetRHSFunction(), DMDATSSetRHSJacobianLocal(), DMDASNESSetFunctionLocal()
+.seealso: `DMTSSetRHSFunction()`, `DMDATSSetRHSJacobianLocal()`, `DMDASNESSetFunctionLocal()`
 @*/
 PetscErrorCode DMDATSSetRHSFunctionLocal(DM dm,InsertMode imode,DMDATSRHSFunctionLocal func,void *ctx)
 {
@@ -277,7 +277,7 @@ $ func(DMDALocalInfo* info,PetscReal t,void* x,Mat J,Mat B,void *ctx);
 
    Level: beginner
 
-.seealso: DMTSSetRHSJacobian(), DMDATSSetRHSFunctionLocal(), DMDASNESSetJacobianLocal()
+.seealso: `DMTSSetRHSJacobian()`, `DMDATSSetRHSFunctionLocal()`, `DMDASNESSetJacobianLocal()`
 @*/
 PetscErrorCode DMDATSSetRHSJacobianLocal(DM dm,DMDATSRHSJacobianLocal func,void *ctx)
 {
@@ -314,7 +314,7 @@ PetscErrorCode DMDATSSetRHSJacobianLocal(DM dm,DMDATSRHSJacobianLocal func,void 
 
    Level: beginner
 
-.seealso: DMTSSetIFunction(), DMDATSSetIJacobianLocal(), DMDASNESSetFunctionLocal()
+.seealso: `DMTSSetIFunction()`, `DMDATSSetIJacobianLocal()`, `DMDASNESSetFunctionLocal()`
 @*/
 PetscErrorCode DMDATSSetIFunctionLocal(DM dm,InsertMode imode,DMDATSIFunctionLocal func,void *ctx)
 {
@@ -357,7 +357,7 @@ $ func(DMDALocalInfo* info,PetscReal t,void* x,void *xdot,PetscScalar shift,Mat 
 
    Level: beginner
 
-.seealso: DMTSSetJacobian(), DMDATSSetIFunctionLocal(), DMDASNESSetJacobianLocal()
+.seealso: `DMTSSetJacobian()`, `DMDATSSetIFunctionLocal()`, `DMDASNESSetJacobianLocal()`
 @*/
 PetscErrorCode DMDATSSetIJacobianLocal(DM dm,DMDATSIJacobianLocal func,void *ctx)
 {

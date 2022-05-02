@@ -870,7 +870,7 @@ PetscErrorCode PCDestroy_GAMG(PC pc)
 
    Level: intermediate
 
-.seealso: PCGAMGSetCoarseEqLim(), PCGAMGSetRankReductionFactors()
+.seealso: `PCGAMGSetCoarseEqLim()`, `PCGAMGSetRankReductionFactors()`
 @*/
 PetscErrorCode  PCGAMGSetProcEqLim(PC pc, PetscInt n)
 {
@@ -907,7 +907,7 @@ static PetscErrorCode PCGAMGSetProcEqLim_GAMG(PC pc, PetscInt n)
 
    Level: intermediate
 
-.seealso: PCGAMGSetProcEqLim(), PCGAMGSetRankReductionFactors()
+.seealso: `PCGAMGSetProcEqLim()`, `PCGAMGSetRankReductionFactors()`
 @*/
 PetscErrorCode PCGAMGSetCoarseEqLim(PC pc, PetscInt n)
 {
@@ -984,7 +984,7 @@ static PetscErrorCode PCGAMGSetRepartition_GAMG(PC pc, PetscBool n)
 
    Level: advanced
 
-.seealso: KSPChebyshevSetEigenvalues(), KSPChebyshevEstEigSet()
+.seealso: `KSPChebyshevSetEigenvalues()`, `KSPChebyshevEstEigSet()`
 @*/
 PetscErrorCode PCGAMGSetUseSAEstEig(PC pc, PetscBool n)
 {
@@ -1019,7 +1019,7 @@ static PetscErrorCode PCGAMGSetUseSAEstEig_GAMG(PC pc, PetscBool n)
 
    Level: intermediate
 
-.seealso: PCGAMGSetUseSAEstEig()
+.seealso: `PCGAMGSetUseSAEstEig()`
 @*/
 PetscErrorCode PCGAMGSetEigenvalues(PC pc, PetscReal emax,PetscReal emin)
 {
@@ -1126,7 +1126,7 @@ static PetscErrorCode PCGAMGASMSetUseAggs_GAMG(PC pc, PetscBool flg)
 
    Level: intermediate
 
-.seealso: PCGAMGSetCoarseGridLayoutType(), PCGAMGSetCpuPinCoarseGrids()
+.seealso: `PCGAMGSetCoarseGridLayoutType()`, `PCGAMGSetCpuPinCoarseGrids()`
 @*/
 PetscErrorCode PCGAMGSetUseParallelCoarseGridSolve(PC pc, PetscBool flg)
 {
@@ -1160,7 +1160,7 @@ static PetscErrorCode PCGAMGSetUseParallelCoarseGridSolve_GAMG(PC pc, PetscBool 
 
    Level: intermediate
 
-.seealso: PCGAMGSetCoarseGridLayoutType(), PCGAMGSetUseParallelCoarseGridSolve()
+.seealso: `PCGAMGSetCoarseGridLayoutType()`, `PCGAMGSetUseParallelCoarseGridSolve()`
 @*/
 PetscErrorCode PCGAMGSetCpuPinCoarseGrids(PC pc, PetscBool flg)
 {
@@ -1194,7 +1194,7 @@ static PetscErrorCode PCGAMGSetCpuPinCoarseGrids_GAMG(PC pc, PetscBool flg)
 
    Level: intermediate
 
-.seealso: PCGAMGSetUseParallelCoarseGridSolve(), PCGAMGSetCpuPinCoarseGrids()
+.seealso: `PCGAMGSetUseParallelCoarseGridSolve()`, `PCGAMGSetCpuPinCoarseGrids()`
 @*/
 PetscErrorCode PCGAMGSetCoarseGridLayoutType(PC pc, PCGAMGLayoutType flg)
 {
@@ -1270,7 +1270,7 @@ static PetscErrorCode PCGAMGSetNlevels_GAMG(PC pc, PetscInt n)
 
    Level: intermediate
 
-.seealso: PCGAMGFilterGraph(), PCGAMGSetSquareGraph()
+.seealso: `PCGAMGFilterGraph()`, `PCGAMGSetSquareGraph()`
 @*/
 PetscErrorCode PCGAMGSetThreshold(PC pc, PetscReal v[], PetscInt n)
 {
@@ -1307,7 +1307,7 @@ static PetscErrorCode PCGAMGSetThreshold_GAMG(PC pc, PetscReal v[], PetscInt n)
 
    Level: intermediate
 
-.seealso: PCGAMGSetProcEqLim(), PCGAMGSetCoarseEqLim()
+.seealso: `PCGAMGSetProcEqLim()`, `PCGAMGSetCoarseEqLim()`
 @*/
 PetscErrorCode PCGAMGSetRankReductionFactors(PC pc, PetscInt v[], PetscInt n)
 {
@@ -1347,7 +1347,7 @@ static PetscErrorCode PCGAMGSetRankReductionFactors_GAMG(PC pc, PetscInt v[], Pe
 
    Level: advanced
 
-.seealso: PCGAMGSetThreshold()
+.seealso: `PCGAMGSetThreshold()`
 @*/
 PetscErrorCode PCGAMGSetThresholdScale(PC pc, PetscReal v)
 {
@@ -1380,7 +1380,7 @@ static PetscErrorCode PCGAMGSetThresholdScale_GAMG(PC pc, PetscReal v)
 
    Level: intermediate
 
-.seealso: PCGAMGGetType(), PCGAMG, PCGAMGType
+.seealso: `PCGAMGGetType()`, `PCGAMG`, `PCGAMGType`
 @*/
 PetscErrorCode PCGAMGSetType(PC pc, PCGAMGType type)
 {
@@ -1403,7 +1403,7 @@ PetscErrorCode PCGAMGSetType(PC pc, PCGAMGType type)
 
    Level: intermediate
 
-.seealso: PCGAMGSetType(), PCGAMGType
+.seealso: `PCGAMGSetType()`, `PCGAMGType`
 @*/
 PetscErrorCode PCGAMGGetType(PC pc, PCGAMGType *type)
 {
@@ -1579,8 +1579,8 @@ PetscErrorCode PCSetFromOptions_GAMG(PetscOptionItems *PetscOptionsObject,PC pc)
 
   Level: intermediate
 
-.seealso:  PCCreate(), PCSetType(), MatSetBlockSize(), PCMGType, PCSetCoordinates(), MatSetNearNullSpace(), PCGAMGSetType(), PCGAMGAGG, PCGAMGGEO, PCGAMGCLASSICAL, PCGAMGSetProcEqLim(),
-           PCGAMGSetCoarseEqLim(), PCGAMGSetRepartition(), PCGAMGRegister(), PCGAMGSetReuseInterpolation(), PCGAMGASMSetUseAggs(), PCGAMGSetUseParallelCoarseGridSolve(), PCGAMGSetNlevels(), PCGAMGSetThreshold(), PCGAMGGetType(), PCGAMGSetReuseInterpolation(), PCGAMGSetUseSAEstEig()
+.seealso: `PCCreate()`, `PCSetType()`, `MatSetBlockSize()`, `PCMGType`, `PCSetCoordinates()`, `MatSetNearNullSpace()`, `PCGAMGSetType()`, `PCGAMGAGG`, `PCGAMGGEO`, `PCGAMGCLASSICAL`, `PCGAMGSetProcEqLim()`,
+          `PCGAMGSetCoarseEqLim()`, `PCGAMGSetRepartition()`, `PCGAMGRegister()`, `PCGAMGSetReuseInterpolation()`, `PCGAMGASMSetUseAggs()`, `PCGAMGSetUseParallelCoarseGridSolve()`, `PCGAMGSetNlevels()`, `PCGAMGSetThreshold()`, `PCGAMGGetType()`, `PCGAMGSetReuseInterpolation()`, `PCGAMGSetUseSAEstEig()`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
@@ -1662,7 +1662,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
 
  Level: developer
 
- .seealso: PetscInitialize()
+ .seealso: `PetscInitialize()`
 @*/
 PetscErrorCode PCGAMGInitializePackage(void)
 {
@@ -1721,7 +1721,7 @@ PetscErrorCode PCGAMGInitializePackage(void)
 
  Level: developer
 
- .seealso: PetscFinalize()
+ .seealso: `PetscFinalize()`
 @*/
 PetscErrorCode PCGAMGFinalizePackage(void)
 {
@@ -1740,7 +1740,7 @@ PetscErrorCode PCGAMGFinalizePackage(void)
 
   Level: advanced
 
- .seealso: PCGAMGType, PCGAMG, PCGAMGSetType()
+ .seealso: `PCGAMGType`, `PCGAMG`, `PCGAMGSetType()`
 @*/
 PetscErrorCode PCGAMGRegister(PCGAMGType type, PetscErrorCode (*create)(PC))
 {

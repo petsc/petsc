@@ -544,7 +544,7 @@ PetscErrorCode MatSetValues_SeqAIJ_SortedFullNoPreallocation(Mat A,PetscInt m,co
     Simply call MatSetValues() after this call to provide the matrix entries in the usual manner. This matrix may be used
     as always with multiple matrix assemblies.
 
-.seealso: MatSetOption(), MAT_SORTED_FULL, MatSetValues(), MatSeqAIJSetPreallocation()
+.seealso: `MatSetOption()`, `MAT_SORTED_FULL`, `MatSetValues()`, `MatSeqAIJSetPreallocation()`
 @*/
 
 PetscErrorCode MatSeqAIJSetTotalPreallocation(Mat A,PetscInt nztotal)
@@ -3790,7 +3790,7 @@ $    endloop
     When this is called multiple times it overwrites the previous set of stored values
     and does not allocated additional space.
 
-.seealso: MatRetrieveValues()
+.seealso: `MatRetrieveValues()`
 
 @*/
 PetscErrorCode  MatStoreValues(Mat mat)
@@ -3828,7 +3828,7 @@ PetscErrorCode  MatRetrieveValues_SeqAIJ(Mat mat)
 
   Level: advanced
 
-.seealso: MatStoreValues()
+.seealso: `MatStoreValues()`
 
 @*/
 PetscErrorCode  MatRetrieveValues(Mat mat)
@@ -3890,7 +3890,7 @@ PetscErrorCode  MatRetrieveValues(Mat mat)
 
    Level: intermediate
 
-.seealso: MatCreate(), MatCreateAIJ(), MatSetValues(), MatSeqAIJSetColumnIndices(), MatCreateSeqAIJWithArrays()
+.seealso: `MatCreate()`, `MatCreateAIJ()`, `MatSetValues()`, `MatSeqAIJSetColumnIndices()`, `MatCreateSeqAIJWithArrays()`
 
 @*/
 PetscErrorCode  MatCreateSeqAIJ(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt nz,const PetscInt nnz[],Mat *A)
@@ -3949,8 +3949,8 @@ PetscErrorCode  MatCreateSeqAIJ(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt nz,
 
    Level: intermediate
 
-.seealso: MatCreate(), MatCreateAIJ(), MatSetValues(), MatSeqAIJSetColumnIndices(), MatCreateSeqAIJWithArrays(), MatGetInfo(),
-          MatSeqAIJSetTotalPreallocation()
+.seealso: `MatCreate()`, `MatCreateAIJ()`, `MatSetValues()`, `MatSeqAIJSetColumnIndices()`, `MatCreateSeqAIJWithArrays()`, `MatGetInfo()`,
+          `MatSeqAIJSetTotalPreallocation()`
 
 @*/
 PetscErrorCode  MatSeqAIJSetPreallocation(Mat B,PetscInt nz,const PetscInt nnz[])
@@ -4117,7 +4117,7 @@ PetscErrorCode MatResetPreallocation_SeqAIJ(Mat A)
 
       This routine could also take a PetscCopyMode argument to allow sharing the values instead of always copying them.
 
-.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatSeqAIJSetPreallocation(), MatCreateSeqAIJ(), MATSEQAIJ, MatResetPreallocation()
+.seealso: `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatSeqAIJSetPreallocation()`, `MatCreateSeqAIJ()`, `MATSEQAIJ`, `MatResetPreallocation()`
 @*/
 PetscErrorCode MatSeqAIJSetPreallocationCSR(Mat B,const PetscInt i[],const PetscInt j[],const PetscScalar v[])
 {
@@ -4178,7 +4178,7 @@ PetscErrorCode  MatSeqAIJSetPreallocationCSR_SeqAIJ(Mat B,const PetscInt Ii[],co
    Notes:
       MAT_REUSE_MATRIX can only be used when the nonzero structure of the product matrix has not changed from that last call to MatSeqAIJKron().
 
-.seealso: MatCreateSeqAIJ(), MATSEQAIJ, MATKAIJ, MatReuse
+.seealso: `MatCreateSeqAIJ()`, `MATSEQAIJ`, `MATKAIJ`, `MatReuse`
 @*/
 PetscErrorCode MatSeqAIJKron(Mat A,Mat B,MatReuse reuse,Mat *C)
 {
@@ -4346,7 +4346,7 @@ PetscErrorCode MatMatMultSymbolic_SeqDense_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat
   Developer Notes:
     It would be nice if all matrix formats supported passing NULL in for the numerical values
 
-.seealso: MatCreateSeqAIJ(), MatSetFromOptions(), MatSetType(), MatCreate(), MatType, MATSELL, MATSEQSELL, MATMPISELL
+.seealso: `MatCreateSeqAIJ()`, `MatSetFromOptions()`, `MatSetType()`, `MatCreate()`, `MatType`, `MATSELL`, `MATSEQSELL`, `MATMPISELL`
 M*/
 
 /*MC
@@ -4367,7 +4367,7 @@ M*/
 
   Level: beginner
 
-.seealso: MatCreateAIJ(), MatCreateSeqAIJ(), MATSEQAIJ, MATMPIAIJ, MATSELL, MATSEQSELL, MATMPISELL
+.seealso: `MatCreateAIJ()`, `MatCreateSeqAIJ()`, `MATSEQAIJ`, `MATMPIAIJ`, `MATSELL`, `MATSEQSELL`, `MATMPISELL`
 M*/
 
 /*MC
@@ -4384,7 +4384,7 @@ M*/
 
   Level: beginner
 
-.seealso: MatCreateMPIAIJCRL,MATSEQAIJCRL,MATMPIAIJCRL, MATSEQAIJCRL, MATMPIAIJCRL
+.seealso: `MatCreateMPIAIJCRL,MATSEQAIJCRL,MATMPIAIJCRL`, `MATSEQAIJCRL`, `MATMPIAIJCRL`
 M*/
 
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCRL(Mat,MatType,MatReuse,Mat*);
@@ -4415,7 +4415,7 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_IS_XAIJ(Mat);
 
    Level: intermediate
 
-.seealso: MatSeqAIJRestoreArray(), MatSeqAIJGetArrayF90()
+.seealso: `MatSeqAIJRestoreArray()`, `MatSeqAIJGetArrayF90()`
 @*/
 PetscErrorCode  MatSeqAIJGetArray(Mat A,PetscScalar **array)
 {
@@ -4441,7 +4441,7 @@ PetscErrorCode  MatSeqAIJGetArray(Mat A,PetscScalar **array)
 
    Level: intermediate
 
-.seealso: MatSeqAIJGetArray(), MatSeqAIJRestoreArrayF90()
+.seealso: `MatSeqAIJGetArray()`, `MatSeqAIJRestoreArrayF90()`
 @*/
 PetscErrorCode  MatSeqAIJRestoreArray(Mat A,PetscScalar **array)
 {
@@ -4471,7 +4471,7 @@ PetscErrorCode  MatSeqAIJRestoreArray(Mat A,PetscScalar **array)
 
    Level: intermediate
 
-.seealso: MatSeqAIJGetArray(), MatSeqAIJRestoreArrayRead()
+.seealso: `MatSeqAIJGetArray()`, `MatSeqAIJRestoreArrayRead()`
 @*/
 PetscErrorCode  MatSeqAIJGetArrayRead(Mat A,const PetscScalar **array)
 {
@@ -4499,7 +4499,7 @@ PetscErrorCode  MatSeqAIJGetArrayRead(Mat A,const PetscScalar **array)
 
    Level: intermediate
 
-.seealso: MatSeqAIJGetArray(), MatSeqAIJGetArrayRead()
+.seealso: `MatSeqAIJGetArray()`, `MatSeqAIJGetArrayRead()`
 @*/
 PetscErrorCode  MatSeqAIJRestoreArrayRead(Mat A,const PetscScalar **array)
 {
@@ -4527,7 +4527,7 @@ PetscErrorCode  MatSeqAIJRestoreArrayRead(Mat A,const PetscScalar **array)
 
    Level: intermediate
 
-.seealso: MatSeqAIJGetArray(), MatSeqAIJRestoreArrayRead()
+.seealso: `MatSeqAIJGetArray()`, `MatSeqAIJRestoreArrayRead()`
 @*/
 PetscErrorCode  MatSeqAIJGetArrayWrite(Mat A,PetscScalar **array)
 {
@@ -4557,7 +4557,7 @@ PetscErrorCode  MatSeqAIJGetArrayWrite(Mat A,PetscScalar **array)
 
    Level: intermediate
 
-.seealso: MatSeqAIJGetArray(), MatSeqAIJGetArrayRead()
+.seealso: `MatSeqAIJGetArray()`, `MatSeqAIJGetArrayRead()`
 @*/
 PetscErrorCode  MatSeqAIJRestoreArrayWrite(Mat A,PetscScalar **array)
 {
@@ -4595,7 +4595,7 @@ PetscErrorCode  MatSeqAIJRestoreArrayWrite(Mat A,PetscScalar **array)
 
    Level: Developer
 
-.seealso: MatSeqAIJGetArray(), MatSeqAIJGetArrayRead()
+.seealso: `MatSeqAIJGetArray()`, `MatSeqAIJGetArrayRead()`
 @*/
 PetscErrorCode MatSeqAIJGetCSRAndMemType(Mat mat,const PetscInt **i,const PetscInt **j,PetscScalar **a,PetscMemType *mtype)
 {
@@ -4627,7 +4627,7 @@ PetscErrorCode MatSeqAIJGetCSRAndMemType(Mat mat,const PetscInt **i,const PetscI
 
    Level: intermediate
 
-.seealso: MatSeqAIJRestoreArray(), MatSeqAIJGetArrayF90()
+.seealso: `MatSeqAIJRestoreArray()`, `MatSeqAIJGetArrayF90()`
 @*/
 PetscErrorCode  MatSeqAIJGetMaxRowNonzeros(Mat A,PetscInt *nz)
 {
@@ -5134,7 +5134,7 @@ $        i =  {0,1,3,6}  [size = nrow+1  = 3+1]
 $        j =  {0,0,2,0,1,2}  [size = 6]; values must be sorted for each row
 $        v =  {1,2,3,4,5,6}  [size = 6]
 
-.seealso: MatCreate(), MatCreateAIJ(), MatCreateSeqAIJ(), MatCreateMPIAIJWithArrays(), MatMPIAIJSetPreallocationCSR()
+.seealso: `MatCreate()`, `MatCreateAIJ()`, `MatCreateSeqAIJ()`, `MatCreateMPIAIJWithArrays()`, `MatMPIAIJSetPreallocationCSR()`
 
 @*/
 PetscErrorCode  MatCreateSeqAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt i[],PetscInt j[],PetscScalar a[],Mat *mat)
@@ -5217,7 +5217,7 @@ PetscErrorCode  MatCreateSeqAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pe
         v =  {1,2,3,4,5,6}
 .ve
 
-.seealso: MatCreate(), MatCreateAIJ(), MatCreateSeqAIJ(), MatCreateSeqAIJWithArrays(), MatMPIAIJSetPreallocationCSR(), MatSetValuesCOO()
+.seealso: `MatCreate()`, `MatCreateAIJ()`, `MatCreateSeqAIJ()`, `MatCreateSeqAIJWithArrays()`, `MatMPIAIJSetPreallocationCSR()`, `MatSetValuesCOO()`
 
 @*/
 PetscErrorCode  MatCreateSeqAIJFromTriple(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt i[],PetscInt j[],PetscScalar a[],Mat *mat,PetscInt nz,PetscBool idx)
@@ -5370,7 +5370,7 @@ PetscFunctionList MatSeqAIJList = NULL;
 
   Level: intermediate
 
-.seealso: PCSetType(), VecSetType(), MatCreate(), MatType, Mat
+.seealso: `PCSetType()`, `VecSetType()`, `MatCreate()`, `MatType`, `Mat`
 @*/
 PetscErrorCode  MatSeqAIJSetType(Mat mat, MatType matype)
 {
@@ -5405,7 +5405,7 @@ $     -mat_seqaij_type my_mat
 
    Level: advanced
 
-.seealso: MatSeqAIJRegisterAll()
+.seealso: `MatSeqAIJRegisterAll()`
 
   Level: advanced
 @*/
@@ -5426,7 +5426,7 @@ PetscBool MatSeqAIJRegisterAllCalled = PETSC_FALSE;
 
   Level: advanced
 
-.seealso:  MatRegisterAll(), MatSeqAIJRegister()
+.seealso: `MatRegisterAll()`, `MatSeqAIJRegister()`
 @*/
 PetscErrorCode  MatSeqAIJRegisterAll(void)
 {

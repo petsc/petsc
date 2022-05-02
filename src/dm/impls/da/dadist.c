@@ -63,9 +63,9 @@ PetscErrorCode  DMCreateGlobalVector_DA(DM da,Vec *g)
    The number of local entries in the vector on each process is the same
    as in a vector created with DMCreateGlobalVector().
 
-.seealso: DMCreateLocalVector(), VecDuplicate(), VecDuplicateVecs(),
-          DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMGlobalToLocalBegin(),
-          DMGlobalToLocalEnd(), DMLocalToGlobalBegin()
+.seealso: `DMCreateLocalVector()`, `VecDuplicate()`, `VecDuplicateVecs()`,
+          `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMGlobalToLocalBegin()`,
+          `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`
 @*/
 PetscErrorCode  DMDACreateNaturalVector(DM da,Vec *g)
 {

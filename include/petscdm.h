@@ -21,7 +21,7 @@ PETSC_EXTERN PetscClassId DMLABEL_CLASSID;
 
    Level: beginner
 
-.seealso: DMSetType(), DM
+.seealso: `DMSetType()`, `DM`
 J*/
 typedef const char* DMType;
 #define DMDA        "da"
@@ -296,7 +296,7 @@ PETSC_EXTERN PetscErrorCode DMCopyAuxiliaryVec(DM, DM);
     coords - The point coordinates
     dof    - The number of components to interpolate
 
-.seealso: DMInterpolationCreate(), DMInterpolationEvaluate(), DMInterpolationAddPoints()
+.seealso: `DMInterpolationCreate()`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`
 M*/
 struct _DMInterpolationInfo {
   MPI_Comm   comm;

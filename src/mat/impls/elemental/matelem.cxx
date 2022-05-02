@@ -1333,7 +1333,7 @@ static struct _MatOps MatOps_Values = {
 
   Level: beginner
 
-.seealso: MATDENSE
+.seealso: `MATDENSE`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)

@@ -38,7 +38,7 @@ $ ISRestorePointRange(is, &pstart, &pEnd, &points);
 
   Level: intermediate
 
-.seealso: ISRestorePointRange(), ISGetPointSubrange(), ISGetIndices(), ISCreateStride()
+.seealso: `ISRestorePointRange()`, `ISGetPointSubrange()`, `ISGetIndices()`, `ISCreateStride()`
 @*/
 PetscErrorCode ISGetPointRange(IS pointIS, PetscInt *pStart, PetscInt *pEnd, const PetscInt **points)
 {
@@ -77,7 +77,7 @@ $ ISRestorePointRange(is, &pstart, &pEnd, &points);
 
   Level: intermediate
 
-.seealso: ISGetPointRange(), ISGetPointSubrange(), ISGetIndices(), ISCreateStride()
+.seealso: `ISGetPointRange()`, `ISGetPointSubrange()`, `ISGetIndices()`, `ISCreateStride()`
 @*/
 PetscErrorCode ISRestorePointRange(IS pointIS, PetscInt *pStart, PetscInt *pEnd, const PetscInt **points)
 {
@@ -110,7 +110,7 @@ PetscErrorCode ISRestorePointRange(IS pointIS, PetscInt *pStart, PetscInt *pEnd,
 
   Level: intermediate
 
-.seealso: ISGetPointRange(), ISRestorePointRange(), ISGetIndices(), ISCreateStride()
+.seealso: `ISGetPointRange()`, `ISRestorePointRange()`, `ISGetIndices()`, `ISCreateStride()`
 @*/
 PetscErrorCode ISGetPointSubrange(IS subpointIS, PetscInt pStart, PetscInt pEnd, const PetscInt *points)
 {
@@ -268,7 +268,7 @@ static PetscErrorCode ISLocalToGlobalMappingDestroy_Hash(ISLocalToGlobalMapping 
 
     Level: advanced
 
-.seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreate()
+.seealso: `ISLocalToGlobalMappingDestroy()`, `ISLocalToGlobalMappingCreate()`
 @*/
 PetscErrorCode  ISLocalToGlobalMappingDuplicate(ISLocalToGlobalMapping ltog,ISLocalToGlobalMapping* nltog)
 {
@@ -295,7 +295,7 @@ PetscErrorCode  ISLocalToGlobalMappingDuplicate(ISLocalToGlobalMapping ltog,ISLo
 
     Level: advanced
 
-.seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreate()
+.seealso: `ISLocalToGlobalMappingDestroy()`, `ISLocalToGlobalMappingCreate()`
 @*/
 PetscErrorCode  ISLocalToGlobalMappingGetSize(ISLocalToGlobalMapping mapping,PetscInt *n)
 {
@@ -317,7 +317,7 @@ PetscErrorCode  ISLocalToGlobalMappingGetSize(ISLocalToGlobalMapping mapping,Pet
 -  name - command line option
 
    Level: intermediate
-.seealso:  ISLocalToGlobalMapping, ISLocalToGlobalMappingView, PetscObjectViewFromOptions(), ISLocalToGlobalMappingCreate()
+.seealso: `ISLocalToGlobalMapping`, `ISLocalToGlobalMappingView`, `PetscObjectViewFromOptions()`, `ISLocalToGlobalMappingCreate()`
 @*/
 PetscErrorCode  ISLocalToGlobalMappingViewFromOptions(ISLocalToGlobalMapping A,PetscObject obj,const char name[])
 {
@@ -338,7 +338,7 @@ PetscErrorCode  ISLocalToGlobalMappingViewFromOptions(ISLocalToGlobalMapping A,P
 
     Level: advanced
 
-.seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreate()
+.seealso: `ISLocalToGlobalMappingDestroy()`, `ISLocalToGlobalMappingCreate()`
 @*/
 PetscErrorCode  ISLocalToGlobalMappingView(ISLocalToGlobalMapping mapping,PetscViewer viewer)
 {
@@ -383,7 +383,7 @@ PetscErrorCode  ISLocalToGlobalMappingView(ISLocalToGlobalMapping mapping,PetscV
     the block size of the IS determines the block size of the mapping
     Level: advanced
 
-.seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreate(), ISLocalToGlobalMappingSetFromOptions()
+.seealso: `ISLocalToGlobalMappingDestroy()`, `ISLocalToGlobalMappingCreate()`, `ISLocalToGlobalMappingSetFromOptions()`
 @*/
 PetscErrorCode  ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *mapping)
 {
@@ -430,7 +430,7 @@ PetscErrorCode  ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *map
     Notes:
     If any processor calls this with start = PETSC_DECIDE then all processors must, otherwise the program will hang.
 
-.seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreate(), ISLocalToGlobalMappingCreateIS(), ISLocalToGlobalMappingSetFromOptions()
+.seealso: `ISLocalToGlobalMappingDestroy()`, `ISLocalToGlobalMappingCreate()`, `ISLocalToGlobalMappingCreateIS()`, `ISLocalToGlobalMappingSetFromOptions()`
 @*/
 PetscErrorCode ISLocalToGlobalMappingCreateSF(PetscSF sf,PetscInt start,ISLocalToGlobalMapping *mapping)
 {
@@ -470,7 +470,7 @@ PetscErrorCode ISLocalToGlobalMappingCreateSF(PetscSF sf,PetscInt start,ISLocalT
 
     Level: advanced
 
-.seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS()
+.seealso: `ISLocalToGlobalMappingDestroy()`, `ISLocalToGlobalMappingCreateIS()`
 @*/
 PetscErrorCode  ISLocalToGlobalMappingSetBlockSize(ISLocalToGlobalMapping mapping,PetscInt bs)
 {
@@ -547,7 +547,7 @@ PetscErrorCode  ISLocalToGlobalMappingSetBlockSize(ISLocalToGlobalMapping mappin
 
     Level: advanced
 
-.seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS()
+.seealso: `ISLocalToGlobalMappingDestroy()`, `ISLocalToGlobalMappingCreateIS()`
 @*/
 PetscErrorCode  ISLocalToGlobalMappingGetBlockSize(ISLocalToGlobalMapping mapping,PetscInt *bs)
 {
@@ -582,8 +582,8 @@ PetscErrorCode  ISLocalToGlobalMappingGetBlockSize(ISLocalToGlobalMapping mappin
 
     Level: advanced
 
-.seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS(), ISLocalToGlobalMappingSetFromOptions(), ISLOCALTOGLOBALMAPPINGBASIC, ISLOCALTOGLOBALMAPPINGHASH
-          ISLocalToGlobalMappingSetType(), ISLocalToGlobalMappingType
+.seealso: `ISLocalToGlobalMappingDestroy()`, `ISLocalToGlobalMappingCreateIS()`, `ISLocalToGlobalMappingSetFromOptions()`, `ISLOCALTOGLOBALMAPPINGBASIC`, `ISLOCALTOGLOBALMAPPINGHASH`
+          `ISLocalToGlobalMappingSetType()`, `ISLocalToGlobalMappingType`
 @*/
 PetscErrorCode  ISLocalToGlobalMappingCreate(MPI_Comm comm,PetscInt bs,PetscInt n,const PetscInt indices[],PetscCopyMode mode,ISLocalToGlobalMapping *mapping)
 {
@@ -658,7 +658,7 @@ PetscErrorCode ISLocalToGlobalMappingSetFromOptions(ISLocalToGlobalMapping mappi
 
    Level: advanced
 
-.seealso: ISLocalToGlobalMappingCreate()
+.seealso: `ISLocalToGlobalMappingCreate()`
 @*/
 PetscErrorCode  ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping *mapping)
 {
@@ -711,8 +711,8 @@ PetscErrorCode  ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping *mapping)
 
     Level: advanced
 
-.seealso: ISLocalToGlobalMappingApply(), ISLocalToGlobalMappingCreate(),
-          ISLocalToGlobalMappingDestroy(), ISGlobalToLocalMappingApply()
+.seealso: `ISLocalToGlobalMappingApply()`, `ISLocalToGlobalMappingCreate()`,
+          `ISLocalToGlobalMappingDestroy()`, `ISGlobalToLocalMappingApply()`
 @*/
 PetscErrorCode  ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping,IS is,IS *newis)
 {
@@ -752,9 +752,9 @@ PetscErrorCode  ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping,IS 
 
    Level: advanced
 
-.seealso: ISLocalToGlobalMappingApplyBlock(), ISLocalToGlobalMappingCreate(),ISLocalToGlobalMappingDestroy(),
-          ISLocalToGlobalMappingApplyIS(),AOCreateBasic(),AOApplicationToPetsc(),
-          AOPetscToApplication(), ISGlobalToLocalMappingApply()
+.seealso: `ISLocalToGlobalMappingApplyBlock()`, `ISLocalToGlobalMappingCreate(),ISLocalToGlobalMappingDestroy()`,
+          `ISLocalToGlobalMappingApplyIS(),AOCreateBasic(),AOApplicationToPetsc()`,
+          `AOPetscToApplication()`, `ISGlobalToLocalMappingApply()`
 
 @*/
 PetscErrorCode ISLocalToGlobalMappingApply(ISLocalToGlobalMapping mapping,PetscInt N,const PetscInt in[],PetscInt out[])
@@ -811,9 +811,9 @@ PetscErrorCode ISLocalToGlobalMappingApply(ISLocalToGlobalMapping mapping,PetscI
 
    Level: advanced
 
-.seealso: ISLocalToGlobalMappingApply(), ISLocalToGlobalMappingCreate(),ISLocalToGlobalMappingDestroy(),
-          ISLocalToGlobalMappingApplyIS(),AOCreateBasic(),AOApplicationToPetsc(),
-          AOPetscToApplication(), ISGlobalToLocalMappingApply()
+.seealso: `ISLocalToGlobalMappingApply()`, `ISLocalToGlobalMappingCreate(),ISLocalToGlobalMappingDestroy()`,
+          `ISLocalToGlobalMappingApplyIS(),AOCreateBasic(),AOApplicationToPetsc()`,
+          `AOPetscToApplication()`, `ISGlobalToLocalMappingApply()`
 
 @*/
 PetscErrorCode ISLocalToGlobalMappingApplyBlock(ISLocalToGlobalMapping mapping,PetscInt N,const PetscInt in[],PetscInt out[])
@@ -869,8 +869,8 @@ PetscErrorCode ISLocalToGlobalMappingApplyBlock(ISLocalToGlobalMapping mapping,P
     Developer Note: The manual page states that idx and idxout may be identical but the calling
        sequence declares idx as const so it cannot be the same as idxout.
 
-.seealso: ISLocalToGlobalMappingApply(), ISGlobalToLocalMappingApplyBlock(), ISLocalToGlobalMappingCreate(),
-          ISLocalToGlobalMappingDestroy()
+.seealso: `ISLocalToGlobalMappingApply()`, `ISGlobalToLocalMappingApplyBlock()`, `ISLocalToGlobalMappingCreate()`,
+          `ISLocalToGlobalMappingDestroy()`
 @*/
 PetscErrorCode  ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping,ISGlobalToLocalMappingMode type,PetscInt n,const PetscInt idx[],PetscInt *nout,PetscInt idxout[])
 {
@@ -904,8 +904,8 @@ PetscErrorCode  ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping,ISGlo
 
     Level: advanced
 
-.seealso: ISGlobalToLocalMappingApply(), ISLocalToGlobalMappingCreate(),
-          ISLocalToGlobalMappingDestroy()
+.seealso: `ISGlobalToLocalMappingApply()`, `ISLocalToGlobalMappingCreate()`,
+          `ISLocalToGlobalMappingDestroy()`
 @*/
 PetscErrorCode  ISGlobalToLocalMappingApplyIS(ISLocalToGlobalMapping mapping,ISGlobalToLocalMappingMode type,IS is,IS *newis)
 {
@@ -964,8 +964,8 @@ PetscErrorCode  ISGlobalToLocalMappingApplyIS(ISLocalToGlobalMapping mapping,ISG
     Developer Note: The manual page states that idx and idxout may be identical but the calling
        sequence declares idx as const so it cannot be the same as idxout.
 
-.seealso: ISLocalToGlobalMappingApply(), ISGlobalToLocalMappingApply(), ISLocalToGlobalMappingCreate(),
-          ISLocalToGlobalMappingDestroy()
+.seealso: `ISLocalToGlobalMappingApply()`, `ISGlobalToLocalMappingApply()`, `ISLocalToGlobalMappingCreate()`,
+          `ISLocalToGlobalMappingDestroy()`
 @*/
 PetscErrorCode  ISGlobalToLocalMappingApplyBlock(ISLocalToGlobalMapping mapping,ISGlobalToLocalMappingMode type,
                                                  PetscInt n,const PetscInt idx[],PetscInt *nout,PetscInt idxout[])
@@ -1003,8 +1003,8 @@ $        ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping,PetscInt nproc, Pe
         There is no ISLocalToGlobalMappingRestoreInfo() in Fortran. You must make sure that procs[], numprocs[] and
         indices[][] are large enough arrays, either by allocating them dynamically or defining static ones large enough.
 
-.seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS(), ISLocalToGlobalMappingCreate(),
-          ISLocalToGlobalMappingRestoreInfo()
+.seealso: `ISLocalToGlobalMappingDestroy()`, `ISLocalToGlobalMappingCreateIS()`, `ISLocalToGlobalMappingCreate()`,
+          `ISLocalToGlobalMappingRestoreInfo()`
 @*/
 PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo(ISLocalToGlobalMapping mapping,PetscInt *nproc,PetscInt *procs[],PetscInt *numprocs[],PetscInt **indices[])
 {
@@ -1444,8 +1444,8 @@ static PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGloba
 
     Level: advanced
 
-.seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS(), ISLocalToGlobalMappingCreate(),
-          ISLocalToGlobalMappingGetInfo()
+.seealso: `ISLocalToGlobalMappingDestroy()`, `ISLocalToGlobalMappingCreateIS()`, `ISLocalToGlobalMappingCreate()`,
+          `ISLocalToGlobalMappingGetInfo()`
 @*/
 PetscErrorCode  ISLocalToGlobalMappingRestoreBlockInfo(ISLocalToGlobalMapping mapping,PetscInt *nproc,PetscInt *procs[],PetscInt *numprocs[],PetscInt **indices[])
 {
@@ -1496,8 +1496,8 @@ $        ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping,PetscInt nproc, Pe
         There is no ISLocalToGlobalMappingRestoreInfo() in Fortran. You must make sure that procs[], numprocs[] and
         indices[][] are large enough arrays, either by allocating them dynamically or defining static ones large enough.
 
-.seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS(), ISLocalToGlobalMappingCreate(),
-          ISLocalToGlobalMappingRestoreInfo()
+.seealso: `ISLocalToGlobalMappingDestroy()`, `ISLocalToGlobalMappingCreateIS()`, `ISLocalToGlobalMappingCreate()`,
+          `ISLocalToGlobalMappingRestoreInfo()`
 @*/
 PetscErrorCode  ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,PetscInt *nproc,PetscInt *procs[],PetscInt *numprocs[],PetscInt **indices[])
 {
@@ -1543,8 +1543,8 @@ PetscErrorCode  ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,Pet
 
     Level: advanced
 
-.seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS(), ISLocalToGlobalMappingCreate(),
-          ISLocalToGlobalMappingGetInfo()
+.seealso: `ISLocalToGlobalMappingDestroy()`, `ISLocalToGlobalMappingCreateIS()`, `ISLocalToGlobalMappingCreate()`,
+          `ISLocalToGlobalMappingGetInfo()`
 @*/
 PetscErrorCode  ISLocalToGlobalMappingRestoreInfo(ISLocalToGlobalMapping mapping,PetscInt *nproc,PetscInt *procs[],PetscInt *numprocs[],PetscInt **indices[])
 {
@@ -1570,8 +1570,8 @@ PetscErrorCode  ISLocalToGlobalMappingRestoreInfo(ISLocalToGlobalMapping mapping
 
     Notes: The user needs to call ISLocalToGlobalMappingRestoreInfo when the data is no longer needed.
 
-.seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS(), ISLocalToGlobalMappingCreate(),
-          ISLocalToGlobalMappingGetInfo(), ISLocalToGlobalMappingRestoreNodeInfo()
+.seealso: `ISLocalToGlobalMappingDestroy()`, `ISLocalToGlobalMappingCreateIS()`, `ISLocalToGlobalMappingCreate()`,
+          `ISLocalToGlobalMappingGetInfo()`, `ISLocalToGlobalMappingRestoreNodeInfo()`
 @*/
 PetscErrorCode  ISLocalToGlobalMappingGetNodeInfo(ISLocalToGlobalMapping mapping,PetscInt *nnodes,PetscInt *count[],PetscInt **indices[])
 {
@@ -1632,8 +1632,8 @@ PetscErrorCode  ISLocalToGlobalMappingGetNodeInfo(ISLocalToGlobalMapping mapping
 
     Level: advanced
 
-.seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS(), ISLocalToGlobalMappingCreate(),
-          ISLocalToGlobalMappingGetInfo()
+.seealso: `ISLocalToGlobalMappingDestroy()`, `ISLocalToGlobalMappingCreateIS()`, `ISLocalToGlobalMappingCreate()`,
+          `ISLocalToGlobalMappingGetInfo()`
 @*/
 PetscErrorCode  ISLocalToGlobalMappingRestoreNodeInfo(ISLocalToGlobalMapping mapping,PetscInt *nnodes,PetscInt *count[],PetscInt **indices[])
 {
@@ -1661,7 +1661,7 @@ PetscErrorCode  ISLocalToGlobalMappingRestoreNodeInfo(ISLocalToGlobalMapping map
    Notes:
     ISLocalToGlobalMappingGetSize() returns the length the this array
 
-.seealso: ISLocalToGlobalMappingCreate(), ISLocalToGlobalMappingApply(), ISLocalToGlobalMappingRestoreIndices(), ISLocalToGlobalMappingGetBlockIndices(), ISLocalToGlobalMappingRestoreBlockIndices()
+.seealso: `ISLocalToGlobalMappingCreate()`, `ISLocalToGlobalMappingApply()`, `ISLocalToGlobalMappingRestoreIndices()`, `ISLocalToGlobalMappingGetBlockIndices()`, `ISLocalToGlobalMappingRestoreBlockIndices()`
 @*/
 PetscErrorCode  ISLocalToGlobalMappingGetIndices(ISLocalToGlobalMapping ltog,const PetscInt **array)
 {
@@ -1696,7 +1696,7 @@ PetscErrorCode  ISLocalToGlobalMappingGetIndices(ISLocalToGlobalMapping ltog,con
 
    Level: advanced
 
-.seealso: ISLocalToGlobalMappingCreate(), ISLocalToGlobalMappingApply(), ISLocalToGlobalMappingGetIndices()
+.seealso: `ISLocalToGlobalMappingCreate()`, `ISLocalToGlobalMappingApply()`, `ISLocalToGlobalMappingGetIndices()`
 @*/
 PetscErrorCode  ISLocalToGlobalMappingRestoreIndices(ISLocalToGlobalMapping ltog,const PetscInt **array)
 {
@@ -1724,7 +1724,7 @@ PetscErrorCode  ISLocalToGlobalMappingRestoreIndices(ISLocalToGlobalMapping ltog
 
    Level: advanced
 
-.seealso: ISLocalToGlobalMappingCreate(), ISLocalToGlobalMappingApply(), ISLocalToGlobalMappingRestoreBlockIndices()
+.seealso: `ISLocalToGlobalMappingCreate()`, `ISLocalToGlobalMappingApply()`, `ISLocalToGlobalMappingRestoreBlockIndices()`
 @*/
 PetscErrorCode  ISLocalToGlobalMappingGetBlockIndices(ISLocalToGlobalMapping ltog,const PetscInt **array)
 {
@@ -1746,7 +1746,7 @@ PetscErrorCode  ISLocalToGlobalMappingGetBlockIndices(ISLocalToGlobalMapping lto
 
    Level: advanced
 
-.seealso: ISLocalToGlobalMappingCreate(), ISLocalToGlobalMappingApply(), ISLocalToGlobalMappingGetIndices()
+.seealso: `ISLocalToGlobalMappingCreate()`, `ISLocalToGlobalMappingApply()`, `ISLocalToGlobalMappingGetIndices()`
 @*/
 PetscErrorCode  ISLocalToGlobalMappingRestoreBlockIndices(ISLocalToGlobalMapping ltog,const PetscInt **array)
 {
@@ -1777,7 +1777,7 @@ PetscErrorCode  ISLocalToGlobalMappingRestoreBlockIndices(ISLocalToGlobalMapping
 
    Level: advanced
 
-.seealso: ISLocalToGlobalMappingCreate()
+.seealso: `ISLocalToGlobalMappingCreate()`
 @*/
 PetscErrorCode ISLocalToGlobalMappingConcatenate(MPI_Comm comm,PetscInt n,const ISLocalToGlobalMapping ltogs[],ISLocalToGlobalMapping *ltogcat)
 {
@@ -1814,7 +1814,7 @@ PetscErrorCode ISLocalToGlobalMappingConcatenate(MPI_Comm comm,PetscInt n,const 
 
    Level: beginner
 
-.seealso:  ISLocalToGlobalMappingCreate(), ISLocalToGlobalMappingSetType(), ISLOCALTOGLOBALMAPPINGHASH
+.seealso: `ISLocalToGlobalMappingCreate()`, `ISLocalToGlobalMappingSetType()`, `ISLOCALTOGLOBALMAPPINGHASH`
 M*/
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingCreate_Basic(ISLocalToGlobalMapping ltog)
 {
@@ -1838,7 +1838,7 @@ PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingCreate_Basic(ISLocalToGlobalMa
 
    Level: beginner
 
-.seealso:  ISLocalToGlobalMappingCreate(), ISLocalToGlobalMappingSetType(), ISLOCALTOGLOBALMAPPINGHASH
+.seealso: `ISLocalToGlobalMappingCreate()`, `ISLocalToGlobalMappingSetType()`, `ISLOCALTOGLOBALMAPPINGHASH`
 M*/
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingCreate_Hash(ISLocalToGlobalMapping ltog)
 {
@@ -1874,7 +1874,7 @@ $     -islocaltoglobalmapping_type my_mapper
 
    Level: advanced
 
-.seealso: ISLocalToGlobalMappingRegisterAll(), ISLocalToGlobalMappingRegisterDestroy(), ISLOCALTOGLOBALMAPPINGBASIC, ISLOCALTOGLOBALMAPPINGHASH
+.seealso: `ISLocalToGlobalMappingRegisterAll()`, `ISLocalToGlobalMappingRegisterDestroy()`, `ISLOCALTOGLOBALMAPPINGBASIC`, `ISLOCALTOGLOBALMAPPINGHASH`
 
 @*/
 PetscErrorCode  ISLocalToGlobalMappingRegister(const char sname[],PetscErrorCode (*function)(ISLocalToGlobalMapping))
@@ -1910,7 +1910,7 @@ PetscErrorCode  ISLocalToGlobalMappingRegister(const char sname[],PetscErrorCode
   Developer Note: ISLocalToGlobalMappingRegister() is used to add new types to ISLocalToGlobalMappingList from which they
   are accessed by ISLocalToGlobalMappingSetType().
 
-.seealso: ISLocalToGlobalMappingType, ISLocalToGlobalMappingRegister(), ISLocalToGlobalMappingCreate(), ISLocalToGlobalMappingGetType()
+.seealso: `ISLocalToGlobalMappingType`, `ISLocalToGlobalMappingRegister()`, `ISLocalToGlobalMappingCreate()`, `ISLocalToGlobalMappingGetType()`
 @*/
 PetscErrorCode  ISLocalToGlobalMappingSetType(ISLocalToGlobalMapping ltog, ISLocalToGlobalMappingType type)
 {
@@ -1952,7 +1952,7 @@ PetscErrorCode  ISLocalToGlobalMappingSetType(ISLocalToGlobalMapping ltog, ISLoc
 
    Level: intermediate
 
-.seealso: ISLocalToGlobalMappingType, ISLocalToGlobalMappingRegister(), ISLocalToGlobalMappingCreate(), ISLocalToGlobalMappingSetType()
+.seealso: `ISLocalToGlobalMappingType`, `ISLocalToGlobalMappingRegister()`, `ISLocalToGlobalMappingCreate()`, `ISLocalToGlobalMappingSetType()`
 @*/
 PetscErrorCode  ISLocalToGlobalMappingGetType(ISLocalToGlobalMapping ltog, ISLocalToGlobalMappingType *type)
 {
@@ -1972,7 +1972,7 @@ PetscBool ISLocalToGlobalMappingRegisterAllCalled = PETSC_FALSE;
 
   Level: advanced
 
-.seealso:  ISRegister(),  ISLocalToGlobalRegister()
+.seealso: `ISRegister()`, `ISLocalToGlobalRegister()`
 @*/
 PetscErrorCode  ISLocalToGlobalMappingRegisterAll(void)
 {

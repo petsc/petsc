@@ -50,7 +50,7 @@
    usage than PetscMallocGetCurrentUsage() for codes that employ Fortran with
    hardwired arrays.
 
-.seealso: PetscMallocGetMaximumUsage(), PetscMemoryGetMaximumUsage(), PetscMallocGetCurrentUsage(), PetscMemorySetGetMaximumUsage(), PetscMemoryView()
+.seealso: `PetscMallocGetMaximumUsage()`, `PetscMemoryGetMaximumUsage()`, `PetscMallocGetCurrentUsage()`, `PetscMemorySetGetMaximumUsage()`, `PetscMemoryView()`
 
 @*/
 PetscErrorCode  PetscMemoryGetCurrentUsage(PetscLogDouble *mem)
@@ -136,8 +136,8 @@ PetscLogDouble PetscMemoryMaximumUsage        = 0;
    usage than PetscMallocGetCurrentUsage() for codes that employ Fortran with
    hardwired arrays.
 
-.seealso: PetscMallocGetMaximumUsage(), PetscMemoryGetCurrentUsage(), PetscMallocGetCurrentUsage(),
-          PetscMemorySetGetMaximumUsage()
+.seealso: `PetscMallocGetMaximumUsage()`, `PetscMemoryGetCurrentUsage()`, `PetscMallocGetCurrentUsage()`,
+          `PetscMemorySetGetMaximumUsage()`
 
 @*/
 PetscErrorCode  PetscMemoryGetMaximumUsage(PetscLogDouble *mem)
@@ -160,8 +160,8 @@ PetscErrorCode  PetscMemoryGetMaximumUsage(PetscLogDouble *mem)
 
    Level: intermediate
 
-.seealso: PetscMallocGetMaximumUsage(), PetscMemoryGetCurrentUsage(), PetscMallocGetCurrentUsage(),
-          PetscMemoryGetMaximumUsage()
+.seealso: `PetscMallocGetMaximumUsage()`, `PetscMemoryGetCurrentUsage()`, `PetscMallocGetCurrentUsage()`,
+          `PetscMemoryGetMaximumUsage()`
 
 @*/
 PetscErrorCode  PetscMemorySetGetMaximumUsage(void)

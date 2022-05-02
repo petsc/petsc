@@ -15,7 +15,7 @@ PetscFunctionList VecTaggerList;
 
    Level: advanced
 
-.seealso:  VecTaggerRegisterDestroy()
+.seealso: `VecTaggerRegisterDestroy()`
 @*/
 PetscErrorCode  VecTaggerRegisterAll(void)
 {
@@ -54,7 +54,7 @@ $     -snes_type my_solver
 
    Level: advanced
 
-.seealso: VecTaggerRegisterAll(), VecTaggerRegisterDestroy()
+.seealso: `VecTaggerRegisterAll()`, `VecTaggerRegisterDestroy()`
 @*/
 PetscErrorCode  VecTaggerRegister(const char sname[],PetscErrorCode (*function)(VecTagger))
 {

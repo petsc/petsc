@@ -20,7 +20,7 @@
 
    Level: intermediate
 
-.seealso: SNESSetTrustRegionTolerance()
+.seealso: `SNESSetTrustRegionTolerance()`
 @*/
 PetscErrorCode  SNESNGSSetTolerances(SNES snes,PetscReal abstol,PetscReal rtol,PetscReal stol,PetscInt maxit)
 {
@@ -66,7 +66,7 @@ PetscErrorCode  SNESNGSSetTolerances(SNES snes,PetscReal abstol,PetscReal rtol,P
 
    Level: intermediate
 
-.seealso: SNESSetTolerances()
+.seealso: `SNESSetTolerances()`
 @*/
 PetscErrorCode  SNESNGSGetTolerances(SNES snes,PetscReal *atol,PetscReal *rtol,PetscReal *stol,PetscInt *maxit)
 {
@@ -90,7 +90,7 @@ PetscErrorCode  SNESNGSGetTolerances(SNES snes,PetscReal *atol,PetscReal *rtol,P
 
    Level: intermediate
 
-.seealso: SNESSetNGS(), SNESGetNGS(), SNESSetNPC(), SNESNGSGetSweeps()
+.seealso: `SNESSetNGS()`, `SNESGetNGS()`, `SNESSetNPC()`, `SNESNGSGetSweeps()`
 @*/
 
 PetscErrorCode SNESNGSSetSweeps(SNES snes, PetscInt sweeps)
@@ -114,7 +114,7 @@ PetscErrorCode SNESNGSSetSweeps(SNES snes, PetscInt sweeps)
 
    Level: intermediate
 
-.seealso: SNESSetNGS(), SNESGetNGS(), SNESSetNPC(), SNESNGSSetSweeps()
+.seealso: `SNESSetNGS()`, `SNESGetNGS()`, `SNESSetNPC()`, `SNESNGSSetSweeps()`
 @*/
 PetscErrorCode SNESNGSGetSweeps(SNES snes, PetscInt * sweeps)
 {
@@ -319,8 +319,8 @@ PetscErrorCode SNESSolve_NGS(SNES snes)
 .  * - Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers",
    SIAM Review, 57(4), 2015
 
-.seealso: SNESCreate(), SNES, SNESSetType(), SNESSetNGS(), SNESType (for list of available types), SNESNGSSetSweeps(), SNESNGSSetTolerances(),
-          SNESSetNormSchedule()
+.seealso: `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESSetNGS()`, `SNESType`, `SNESNGSSetSweeps()`, `SNESNGSSetTolerances()`,
+          `SNESSetNormSchedule()`
 M*/
 
 PETSC_EXTERN PetscErrorCode SNESCreate_NGS(SNES snes)

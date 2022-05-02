@@ -327,7 +327,7 @@ static PetscErrorCode VecResetArray_SeqViennaCL_Private(Vec vin)
 
   Level: beginner
 
-.seealso: VecCreate(), VecSetType(), VecSetFromOptions(), VecCreateSeqWithArray(), VECMPI, VecType, VecCreateMPI(), VecCreateSeq()
+.seealso: `VecCreate()`, `VecSetType()`, `VecSetFromOptions()`, `VecCreateSeqWithArray()`, `VECMPI`, `VecType`, `VecCreateMPI()`, `VecCreateSeq()`
 M*/
 
 PetscErrorCode VecAYPX_SeqViennaCL(Vec yin, PetscScalar alpha, Vec xin)
@@ -954,7 +954,7 @@ PetscErrorCode VecReplaceArray_SeqViennaCL(Vec vin,const PetscScalar *a)
 
    Level: intermediate
 
-.seealso: VecCreateMPI(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost()
+.seealso: `VecCreateMPI()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateGhost()`
 @*/
 PetscErrorCode VecCreateSeqViennaCL(MPI_Comm comm,PetscInt n,Vec *v)
 {
@@ -992,9 +992,9 @@ PetscErrorCode VecCreateSeqViennaCL(MPI_Comm comm,PetscInt n,Vec *v)
 
    Level: intermediate
 
-.seealso: VecCreateMPIViennaCLWithArray(), VecCreate(), VecDuplicate(), VecDuplicateVecs(),
-          VecCreateGhost(), VecCreateSeq(), VecCUDAPlaceArray(), VecCreateSeqWithArray(),
-          VecCreateMPIWithArray()
+.seealso: `VecCreateMPIViennaCLWithArray()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`,
+          `VecCreateGhost()`, `VecCreateSeq()`, `VecCUDAPlaceArray()`, `VecCreateSeqWithArray()`,
+          `VecCreateMPIWithArray()`
 @*/
 PETSC_EXTERN PetscErrorCode  VecCreateSeqViennaCLWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,const ViennaCLVector* array,Vec *V)
 {
@@ -1036,9 +1036,9 @@ PETSC_EXTERN PetscErrorCode  VecCreateSeqViennaCLWithArray(MPI_Comm comm,PetscIn
 
    Level: intermediate
 
-.seealso: VecCreateMPIViennaCLWithArrays(), VecCreate(), VecCreateSeqWithArray(),
-          VecViennaCLPlaceArray(), VecPlaceArray(), VecCreateSeqCUDAWithArrays(),
-          VecViennaCLAllocateCheckHost()
+.seealso: `VecCreateMPIViennaCLWithArrays()`, `VecCreate()`, `VecCreateSeqWithArray()`,
+          `VecViennaCLPlaceArray()`, `VecPlaceArray()`, `VecCreateSeqCUDAWithArrays()`,
+          `VecViennaCLAllocateCheckHost()`
 @*/
 PetscErrorCode  VecCreateSeqViennaCLWithArrays(MPI_Comm comm,PetscInt bs,PetscInt n,const PetscScalar cpuarray[],const ViennaCLVector* viennaclvec,Vec *V)
 {
@@ -1086,8 +1086,8 @@ PetscErrorCode  VecCreateSeqViennaCLWithArrays(MPI_Comm comm,PetscInt bs,PetscIn
 
    Level: intermediate
 
-.seealso: VecPlaceArray(), VecSetValues(), VecViennaCLResetArray(),
-          VecCUDAPlaceArray(),
+.seealso: `VecPlaceArray()`, `VecSetValues()`, `VecViennaCLResetArray()`,
+          `VecCUDAPlaceArray()`,
 
 @*/
 PETSC_EXTERN PetscErrorCode VecViennaCLPlaceArray(Vec vin,const ViennaCLVector* a)
@@ -1114,7 +1114,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLPlaceArray(Vec vin,const ViennaCLVector* 
 
    Level: developer
 
-.seealso: VecViennaCLPlaceArray(), VecResetArray(), VecCUDAResetArray(), VecPlaceArray()
+.seealso: `VecViennaCLPlaceArray()`, `VecResetArray()`, `VecCUDAResetArray()`, `VecPlaceArray()`
 @*/
 PETSC_EXTERN PetscErrorCode VecViennaCLResetArray(Vec vin)
 {
@@ -1298,7 +1298,7 @@ PETSC_EXTERN PetscErrorCode VecCreate_SeqViennaCL(Vec V)
 
   Level: intermediate
 
-.seealso: VecViennaCLGetCLQueue(), VecViennaCLGetCLMemRead()
+.seealso: `VecViennaCLGetCLQueue()`, `VecViennaCLGetCLMemRead()`
 @*/
 PETSC_EXTERN PetscErrorCode VecViennaCLGetCLContext(Vec v, PETSC_UINTPTR_T* ctx)
 {
@@ -1338,7 +1338,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLContext(Vec v, PETSC_UINTPTR_T* ctx)
 
   Level: intermediate
 
-.seealso: VecViennaCLGetCLContext(), VecViennaCLGetCLMemRead()
+.seealso: `VecViennaCLGetCLContext()`, `VecViennaCLGetCLMemRead()`
 @*/
 PETSC_EXTERN PetscErrorCode VecViennaCLGetCLQueue(Vec v, PETSC_UINTPTR_T* queue)
 {
@@ -1377,7 +1377,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLQueue(Vec v, PETSC_UINTPTR_T* queue)
 
   Level: intermediate
 
-.seealso: VecViennaCLGetCLContext(), VecViennaCLGetCLMemWrite()
+.seealso: `VecViennaCLGetCLContext()`, `VecViennaCLGetCLMemWrite()`
 @*/
 PETSC_EXTERN PetscErrorCode VecViennaCLGetCLMemRead(Vec v, PETSC_UINTPTR_T* mem)
 {
@@ -1418,7 +1418,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLMemRead(Vec v, PETSC_UINTPTR_T* mem)
 
   Level: intermediate
 
-.seealso: VecViennaCLGetCLContext(), VecViennaCLRestoreCLMemWrite()
+.seealso: `VecViennaCLGetCLContext()`, `VecViennaCLRestoreCLMemWrite()`
 @*/
 PETSC_EXTERN PetscErrorCode VecViennaCLGetCLMemWrite(Vec v, PETSC_UINTPTR_T* mem)
 {
@@ -1454,7 +1454,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLMemWrite(Vec v, PETSC_UINTPTR_T* mem
 
   Level: intermediate
 
-.seealso: VecViennaCLGetCLContext(), VecViennaCLGetCLMemWrite()
+.seealso: `VecViennaCLGetCLContext()`, `VecViennaCLGetCLMemWrite()`
 @*/
 PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMemWrite(Vec v)
 {
@@ -1488,7 +1488,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMemWrite(Vec v)
 
   Level: intermediate
 
-.seealso: VecViennaCLGetCLContext(), VecViennaCLRestoreCLMem()
+.seealso: `VecViennaCLGetCLContext()`, `VecViennaCLRestoreCLMem()`
 @*/
 PETSC_EXTERN PetscErrorCode VecViennaCLGetCLMem(Vec v, PETSC_UINTPTR_T* mem)
 {
@@ -1524,7 +1524,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLMem(Vec v, PETSC_UINTPTR_T* mem)
 
   Level: intermediate
 
-.seealso: VecViennaCLGetCLContext(), VecViennaCLGetCLMem()
+.seealso: `VecViennaCLGetCLContext()`, `VecViennaCLGetCLMem()`
 @*/
 PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMem(Vec v)
 {

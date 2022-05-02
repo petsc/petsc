@@ -554,7 +554,7 @@ PETSC_EXTERN PetscClassId PETSCDS_CLASSID;
 
   Level: beginner
 
-.seealso: PetscDSSetType(), PetscDS
+.seealso: `PetscDSSetType()`, `PetscDS`
 J*/
 typedef const char *PetscDSType;
 #define PETSCDSBASIC "basic"

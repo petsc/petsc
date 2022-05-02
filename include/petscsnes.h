@@ -13,7 +13,7 @@
 
    Level: beginner
 
-.seealso:  SNESCreate(), SNESSetType(), SNESType, TS, KSP, KSP, PC, SNESDestroy()
+.seealso: `SNESCreate()`, `SNESSetType()`, `SNESType`, `TS`, `KSP`, `KSP`, `PC`, `SNESDestroy()`
 S*/
 typedef struct _p_SNES* SNES;
 
@@ -22,7 +22,7 @@ typedef struct _p_SNES* SNES;
 
    Level: beginner
 
-.seealso: SNESSetType(), SNES, SNESCreate(), SNESDestroy(), SNESSetFromOptions()
+.seealso: `SNESSetType()`, `SNES`, `SNESCreate()`, `SNESDestroy()`, `SNESSetFromOptions()`
 J*/
 typedef const char* SNESType;
 #define SNESNEWTONLS         "newtonls"
@@ -241,7 +241,7 @@ $      testing with -pc_type lu to eliminate the linear solver as the cause of t
 
    Each reason has its own manual page.
 
-.seealso: SNESSolve(), SNESGetConvergedReason(), KSPConvergedReason, SNESSetConvergenceTest()
+.seealso: `SNESSolve()`, `SNESGetConvergedReason()`, `KSPConvergedReason`, `SNESSetConvergenceTest()`
 E*/
 typedef enum {/* converged */
               SNES_CONVERGED_FNORM_ABS         =  2, /* ||F|| < atol */
@@ -272,7 +272,7 @@ PETSC_EXTERN const char *const*SNESConvergedReasons;
 
    Level: beginner
 
-.seealso:  SNESSolve(), SNESGetConvergedReason(), SNESConvergedReason, SNESSetTolerances()
+.seealso: `SNESSolve()`, `SNESGetConvergedReason()`, `SNESConvergedReason`, `SNESSetTolerances()`
 
 M*/
 
@@ -281,7 +281,7 @@ M*/
 
    Level: beginner
 
-.seealso:  SNESSolve(), SNESGetConvergedReason(), SNESConvergedReason, SNESSetTolerances()
+.seealso: `SNESSolve()`, `SNESGetConvergedReason()`, `SNESConvergedReason`, `SNESSetTolerances()`
 
 M*/
 
@@ -294,7 +294,7 @@ M*/
 
    Level: beginner
 
-.seealso:  SNESSolve(), SNESGetConvergedReason(), SNESConvergedReason, SNESSetTolerances()
+.seealso: `SNESSolve()`, `SNESGetConvergedReason()`, `SNESConvergedReason`, `SNESSetTolerances()`
 
 M*/
 
@@ -304,7 +304,7 @@ M*/
 
    Level: beginner
 
-.seealso:  SNESSolve(), SNESGetConvergedReason(), SNESConvergedReason, SNESSetTolerances()
+.seealso: `SNESSolve()`, `SNESGetConvergedReason()`, `SNESConvergedReason`, `SNESSetTolerances()`
 
 M*/
 
@@ -313,7 +313,7 @@ M*/
 
    Level: beginner
 
-.seealso:  SNESSolve(), SNESGetConvergedReason(), SNESConvergedReason, SNESSetTolerances(), SNESSetDivergenceTolerance()
+.seealso: `SNESSolve()`, `SNESGetConvergedReason()`, `SNESConvergedReason`, `SNESSetTolerances()`, `SNESSetDivergenceTolerance()`
 
 M*/
 
@@ -323,7 +323,7 @@ M*/
 
    Level: beginner
 
-.seealso:  SNESSolve(), SNESGetConvergedReason(), SNESConvergedReason, SNESSetTolerances()
+.seealso: `SNESSolve()`, `SNESGetConvergedReason()`, `SNESConvergedReason`, `SNESSetTolerances()`
 
 M*/
 
@@ -332,7 +332,7 @@ M*/
 
    Level: beginner
 
-.seealso:  SNESSolve(), SNESGetConvergedReason(), SNESConvergedReason, SNESSetTolerances()
+.seealso: `SNESSolve()`, `SNESGetConvergedReason()`, `SNESConvergedReason`, `SNESSetTolerances()`
 
 M*/
 
@@ -341,7 +341,7 @@ M*/
 
    Level: beginner
 
-.seealso:  SNESSolve(), SNESGetConvergedReason(), SNESConvergedReason, SNESSetTolerances(), SNESLineSearch
+.seealso: `SNESSolve()`, `SNESGetConvergedReason()`, `SNESConvergedReason`, `SNESSetTolerances()`, `SNESLineSearch`
 
 M*/
 
@@ -351,7 +351,7 @@ M*/
 
    Level: beginner
 
-.seealso:  SNESSolve(), SNESGetConvergedReason(), SNESConvergedReason, SNESSetTolerances()
+.seealso: `SNESSolve()`, `SNESGetConvergedReason()`, `SNESConvergedReason`, `SNESSetTolerances()`
 
 M*/
 
@@ -360,7 +360,7 @@ M*/
 
    Level: beginner
 
-.seealso:  SNESSolve(), SNESGetConvergedReason(), SNESConvergedReason, SNESSetTolerances()
+.seealso: `SNESSolve()`, `SNESGetConvergedReason()`, `SNESConvergedReason`, `SNESSetTolerances()`
 
 M*/
 
@@ -409,8 +409,8 @@ PETSC_EXTERN PetscErrorCode SNESComputeObjective(SNES,Vec,PetscReal *);
    This is primarily used to turn off extra norm and function computation
    when the solvers are composed.
 
-.seealso: SNESSolve(), SNESGetConvergedReason(), KSPSetNormType(),
-          KSPSetConvergenceTest(), KSPSetPCSide()
+.seealso: `SNESSolve()`, `SNESGetConvergedReason()`, `KSPSetNormType()`,
+          `KSPSetConvergenceTest()`, `KSPSetPCSide()`
 E*/
 
 typedef enum {SNES_NORM_DEFAULT            = -1,
@@ -429,7 +429,7 @@ PETSC_EXTERN const char *const*const SNESNormSchedules;
     Notes:
     This is most useful for stationary solvers with a fixed number of iterations used as smoothers.
 
-.seealso: SNESNormSchedule, SNESSetNormSchedule(), SNES_NORM_DEFAULT
+.seealso: `SNESNormSchedule`, `SNESSetNormSchedule()`, `SNES_NORM_DEFAULT`
 M*/
 
 /*MC
@@ -440,7 +440,7 @@ M*/
     Notes:
     Most solvers will use this no matter what norm type is passed to them.
 
-.seealso: SNESNormSchedule, SNESSetNormSchedule(), SNES_NORM_NONE
+.seealso: `SNESNormSchedule`, `SNESSetNormSchedule()`, `SNES_NORM_NONE`
 M*/
 
 /*MC
@@ -455,7 +455,7 @@ M*/
    For solvers that require the computation of the L2 norm of the function as part of the method, this merely cancels
    the norm computation at the last iteration (if possible).
 
-.seealso: SNESNormSchedule, SNESSetNormSchedule(), SNES_NORM_FINAL_ONLY, SNES_NORM_INITIAL_FINAL_ONLY
+.seealso: `SNESNormSchedule`, `SNESSetNormSchedule()`, `SNES_NORM_FINAL_ONLY`, `SNES_NORM_INITIAL_FINAL_ONLY`
 M*/
 
 /*MC
@@ -469,7 +469,7 @@ M*/
    used in subsequent computation for methods that do not need the norm computed during the rest of the
    solution procedure.
 
-.seealso: SNESNormSchedule, SNESSetNormSchedule(), SNES_NORM_INITIAL_ONLY, SNES_NORM_INITIAL_FINAL_ONLY
+.seealso: `SNESNormSchedule`, `SNESSetNormSchedule()`, `SNES_NORM_INITIAL_ONLY`, `SNES_NORM_INITIAL_FINAL_ONLY`
 M*/
 
 /*MC
@@ -480,7 +480,7 @@ M*/
    Notes:
    This method combines the benefits of SNES_NORM_INITIAL_ONLY and SNES_NORM_FINAL_ONLY.
 
-.seealso: SNESNormSchedule, SNESSetNormSchedule(), SNES_NORM_SNES_NORM_INITIAL_ONLY, SNES_NORM_FINAL_ONLY
+.seealso: `SNESNormSchedule`, `SNESSetNormSchedule()`, `SNES_NORM_SNES_NORM_INITIAL_ONLY`, `SNES_NORM_FINAL_ONLY`
 M*/
 
 PETSC_EXTERN PetscErrorCode SNESSetNormSchedule(SNES,SNESNormSchedule);
@@ -497,8 +497,8 @@ PETSC_EXTERN PetscErrorCode SNESGetSolutionNorm(SNES,PetscReal*);
 
    Support for these is highly dependent on the solver.
 
-.seealso: SNESSolve(), SNESGetConvergedReason(), KSPSetNormType(),
-          KSPSetConvergenceTest(), KSPSetPCSide()
+.seealso: `SNESSolve()`, `SNESGetConvergedReason()`, `KSPSetNormType()`,
+          `KSPSetConvergenceTest()`, `KSPSetPCSide()`
 E*/
 typedef enum {SNES_FUNCTION_DEFAULT          = -1,
               SNES_FUNCTION_UNPRECONDITIONED =  0,
@@ -531,7 +531,7 @@ PETSC_EXTERN PetscErrorCode SNESShellSetSolve(SNES,PetscErrorCode (*)(SNES,Vec))
 
    Level: beginner
 
-.seealso:  SNESLineSearchCreate(), SNESLineSearchSetType(), SNES
+.seealso: `SNESLineSearchCreate()`, `SNESLineSearchSetType()`, `SNES`
 S*/
 typedef struct _p_LineSearch* SNESLineSearch;
 
@@ -540,7 +540,7 @@ typedef struct _p_LineSearch* SNESLineSearch;
 
    Level: beginner
 
-.seealso: SNESLineSearchSetType(), SNES
+.seealso: `SNESLineSearchSetType()`, `SNES`
 J*/
 typedef const char* SNESLineSearchType;
 #define SNESLINESEARCHBT                 "bt"
@@ -621,7 +621,7 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchSetOrder(SNESLineSearch,PetscInt order
    Developer Note: The string versions of these are in SNESLineSearchReasons, if you change any value here you must
      also adjust that array.
 
-.seealso: SNESSolve(), SNESGetConvergedReason(), KSPConvergedReason, SNESSetConvergenceTest()
+.seealso: `SNESSolve()`, `SNESGetConvergedReason()`, `KSPConvergedReason`, `SNESSetConvergenceTest()`
 E*/
 typedef enum {SNES_LINESEARCH_SUCCEEDED,
               SNES_LINESEARCH_FAILED_NANORINF,
@@ -736,7 +736,7 @@ PETSC_EXTERN PetscErrorCode SNESMultiblockSetType(SNES, PCCompositeType);
 
    Level: intermediate
 
-.seealso: SNESMSGetType(), SNESMSSetType(), SNES
+.seealso: `SNESMSGetType()`, `SNESMSSetType()`, `SNES`
 J*/
 typedef const char* SNESMSType;
 #define SNESMSM62       "m62"
@@ -847,7 +847,7 @@ PETSC_EXTERN PetscErrorCode SNESPatchSetCellNumbering(SNES,PetscSection);
 .  SNES_FAS_ADDITIVE                 - additive FAS cycle
 .  SNES_FAS_FULL                     - full FAS cycle
 -  SNES_FAS_KASKADE                  - Kaskade FAS cycle
-.seealso: PCMGSetType(), PCMGType
+.seealso: `PCMGSetType()`, `PCMGType`
 
 E*/
 typedef enum { SNES_FAS_MULTIPLICATIVE, SNES_FAS_ADDITIVE, SNES_FAS_FULL, SNES_FAS_KASKADE } SNESFASType;
