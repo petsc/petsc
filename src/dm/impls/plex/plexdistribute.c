@@ -1464,6 +1464,7 @@ PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownersh
   PetscCall(PetscSFSetGraph(*pointSF, nleaves, npointLeaves, pointLocal, PETSC_OWN_POINTER, pointRemote, PETSC_OWN_POINTER));
   PetscCall(PetscFree2(rootNodes, leafNodes));
   PetscCall(PetscLogEventEnd(DMPLEX_CreatePointSF,dm,0,0,0));
+  if (PetscDefined(USE_DEBUG)) PetscCall(DMPlexCheckPointSF(dm, *pointSF));
   PetscFunctionReturn(0);
 }
 
