@@ -1583,30 +1583,35 @@ PetscErrorCode DMPlexUninterpolate(DM dm, DM *dmUnint)
     const PetscInt    *localPoints;
     PetscSFNode       *remotePointsUn;
     PetscInt          *localPointsUn;
-    PetscInt           vEnd, numRoots, numLeaves, l;
+    PetscInt           numRoots, numLeaves, l;
     PetscInt           numLeavesUn = 0, n = 0;
 
     /* Get original SF information */
     PetscCall(DMGetPointSF(dm, &sfPoint));
     PetscCall(DMGetPointSF(udm, &sfPointUn));
-    PetscCall(DMPlexGetDepthStratum(dm, 0, NULL, &vEnd));
     PetscCall(PetscSFGetGraph(sfPoint, &numRoots, &numLeaves, &localPoints, &remotePoints));
-    /* Allocate space for cells and vertices */
-    for (l = 0; l < numLeaves; ++l) if (localPoints[l] < vEnd) numLeavesUn++;
-    /* Fill in leaves */
-    if (vEnd >= 0) {
+    if (numRoots >= 0) {
+      /* Allocate space for cells and vertices */
+      for (l = 0; l < numLeaves; ++l) {
+        const PetscInt p = localPoints[l];
+
+        if ((vStart <= p && p < vEnd) || (cStart <= p && p < cEnd)) numLeavesUn++;
+      }
+      /* Fill in leaves */
       PetscCall(PetscMalloc1(numLeavesUn, &remotePointsUn));
       PetscCall(PetscMalloc1(numLeavesUn, &localPointsUn));
       for (l = 0; l < numLeaves; l++) {
-        if (localPoints[l] < vEnd) {
-          localPointsUn[n]        = localPoints[l];
+        const PetscInt p = localPoints[l];
+
+        if ((vStart <= p && p < vEnd) || (cStart <= p && p < cEnd)) {
+          localPointsUn[n]        = p;
           remotePointsUn[n].rank  = remotePoints[l].rank;
           remotePointsUn[n].index = remotePoints[l].index;
           ++n;
         }
       }
       PetscCheck(n == numLeavesUn,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistent number of leaves %" PetscInt_FMT " != %" PetscInt_FMT, n, numLeavesUn);
-      PetscCall(PetscSFSetGraph(sfPointUn, vEnd, numLeavesUn, localPointsUn, PETSC_OWN_POINTER, remotePointsUn, PETSC_OWN_POINTER));
+      PetscCall(PetscSFSetGraph(sfPointUn, cEnd-cStart + vEnd-vStart, numLeavesUn, localPointsUn, PETSC_OWN_POINTER, remotePointsUn, PETSC_OWN_POINTER));
     }
   }
   /* This function makes the mesh fully uninterpolated on all ranks */
