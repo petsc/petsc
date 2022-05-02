@@ -8720,9 +8720,29 @@ PetscErrorCode DMPlexCheckPointSF(DM dm, PetscSF pointSF)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexCheckAll_Internal(DM dm, PetscInt cellHeight)
+/*@
+  DMPlexCheck - Perform various checks of Plex sanity
+
+  Input Parameter:
+. dm - The DMPlex object
+
+  Notes:
+  This is a useful diagnostic when creating meshes programmatically.
+
+  For the complete list of DMPlexCheck* functions, see DMSetFromOptions().
+
+  Currently does not include DMPlexCheckCellShape().
+
+  Level: developer
+
+.seealso: DMCreate(), DMSetFromOptions()
+@*/
+PetscErrorCode DMPlexCheck(DM dm)
 {
+  PetscInt cellHeight;
+
   PetscFunctionBegin;
+  PetscCall(DMPlexGetVTKCellHeight(dm, &cellHeight));
   PetscCall(DMPlexCheckSymmetry(dm));
   PetscCall(DMPlexCheckSkeleton(dm, cellHeight));
   PetscCall(DMPlexCheckFaces(dm, cellHeight));

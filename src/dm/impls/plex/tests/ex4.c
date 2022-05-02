@@ -829,18 +829,16 @@ int main(int argc, char **argv)
     args: -dim 2 -cell_hybrid 0 -hyb_dm_plex_check_all -dm_plex_check_all
     test:
       suffix: 0
-      args: -hyb_dm_plex_check_faces
     test:
       suffix: 1
-      args: -dm_refine 1 -hyb_dm_plex_check_faces
+      args: -dm_refine 1
     test:
       suffix: 2
       nsize: 2
-      args: -hyb_dm_plex_check_faces
     test:
       suffix: 3
       nsize: 2
-      args: -dm_refine 1 -hyb_dm_plex_check_faces
+      args: -dm_refine 1
     test:
       suffix: 32
       args: -dm_refine 1 -uninterpolate

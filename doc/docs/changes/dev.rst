@@ -124,6 +124,7 @@ In addition to the changes above
 - Add ``DMPlexPointQueue`` and API
 - Add label value argument to ``DMPlexLabelCohesiveComplete()`` and ``DMPlexCreateHybridMesh()``
 - Change ``DMPlexCheckPointSF()`` to take optional ``PetscSF`` parameter
+- Add ``DMPlexCheck()``
 
 .. rubric:: FE/FV:
 
