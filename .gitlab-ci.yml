@@ -1034,9 +1034,9 @@ pages:  # this job name has special meaning to GitLab
   script:
     - mkdir -p ../public/ && cp public/* ../public/
     - git fetch --unshallow --no-tags origin +release:remotes/origin/release +main:remotes/origin/main
-    - git checkout origin/main && make website-deploy BUILDDIR="../public/main" && make latexpdf && mkdir -p ../public/main/docs/manual && cp _build/latex/manual.pdf ../public/main/docs/manual/
+    - git checkout origin/main && pip install -r requirements.txt && make website-deploy BUILDDIR="../public/main" && make latexpdf && mkdir -p ../public/main/docs/manual && cp _build/latex/manual.pdf ../public/main/docs/manual/
     - make clean BUILDDIR="../public/release"
-    - git checkout origin/release && make website-deploy BUILDDIR="../public/release" && make latexpdf && mkdir -p ../public/release/docs/manual && cp _build/latex/manual.pdf ../public/release/docs/manual/
+    - git checkout origin/release && pip install -r requirements.txt && make website-deploy BUILDDIR="../public/release" && make latexpdf && mkdir -p ../public/release/docs/manual && cp _build/latex/manual.pdf ../public/release/docs/manual/
   only:
     variables:
       - $PETSC_CI_SCHEDULED == "yes"
