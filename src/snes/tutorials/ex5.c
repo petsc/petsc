@@ -59,170 +59,6 @@ struct AppCtx {
   PetscErrorCode (*mms_forcing)(AppCtx*,const DMDACoor2d*,PetscScalar*);
 };
 
-/*
-   User-defined routines
-*/
-extern PetscErrorCode FormInitialGuess(DM,AppCtx*,Vec);
-extern PetscErrorCode FormFunctionLocal(DMDALocalInfo*,PetscScalar**,PetscScalar**,AppCtx*);
-extern PetscErrorCode FormExactSolution(DM,AppCtx*,Vec);
-extern PetscErrorCode ZeroBCSolution(AppCtx*,const DMDACoor2d*,PetscScalar*);
-extern PetscErrorCode MMSSolution1(AppCtx*,const DMDACoor2d*,PetscScalar*);
-extern PetscErrorCode MMSForcing1(AppCtx*,const DMDACoor2d*,PetscScalar*);
-extern PetscErrorCode MMSSolution2(AppCtx*,const DMDACoor2d*,PetscScalar*);
-extern PetscErrorCode MMSForcing2(AppCtx*,const DMDACoor2d*,PetscScalar*);
-extern PetscErrorCode MMSSolution3(AppCtx*,const DMDACoor2d*,PetscScalar*);
-extern PetscErrorCode MMSForcing3(AppCtx*,const DMDACoor2d*,PetscScalar*);
-extern PetscErrorCode MMSSolution4(AppCtx*,const DMDACoor2d*,PetscScalar*);
-extern PetscErrorCode MMSForcing4(AppCtx*,const DMDACoor2d*,PetscScalar*);
-extern PetscErrorCode FormJacobianLocal(DMDALocalInfo*,PetscScalar**,Mat,Mat,AppCtx*);
-extern PetscErrorCode FormObjectiveLocal(DMDALocalInfo*,PetscScalar**,PetscReal*,AppCtx*);
-extern PetscErrorCode FormFunctionMatlab(SNES,Vec,Vec,void*);
-extern PetscErrorCode NonlinearGS(SNES,Vec,Vec,void*);
-
-int main(int argc,char **argv)
-{
-  SNES           snes;                         /* nonlinear solver */
-  Vec            x;                            /* solution vector */
-  AppCtx         user;                         /* user-defined work context */
-  PetscInt       its;                          /* iterations for convergence */
-  PetscReal      bratu_lambda_max = 6.81;
-  PetscReal      bratu_lambda_min = 0.;
-  PetscInt       MMS              = 0;
-  PetscBool      flg              = PETSC_FALSE;
-  DM             da;
-  Vec            r               = NULL;
-  KSP            ksp;
-  PetscInt       lits,slits;
-
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Initialize program
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
-
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Initialize problem parameters
-  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  user.param = 6.0;
-  PetscCall(PetscOptionsGetReal(NULL,NULL,"-par",&user.param,NULL));
-  PetscCheck(user.param <= bratu_lambda_max && user.param >= bratu_lambda_min,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Lambda, %g, is out of range, [%g, %g]", (double)user.param, (double)bratu_lambda_min, (double)bratu_lambda_max);
-  PetscCall(PetscOptionsGetInt(NULL,NULL,"-mms",&MMS,NULL));
-  if (MMS == 3) {
-    PetscInt mPar = 2, nPar = 1;
-    PetscCall(PetscOptionsGetInt(NULL,NULL,"-m_par",&mPar,NULL));
-    PetscCall(PetscOptionsGetInt(NULL,NULL,"-n_par",&nPar,NULL));
-    user.m = PetscPowInt(2,mPar);
-    user.n = PetscPowInt(2,nPar);
-  }
-
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Create nonlinear solver context
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(SNESCreate(PETSC_COMM_WORLD,&snes));
-  PetscCall(SNESSetCountersReset(snes,PETSC_FALSE));
-  PetscCall(SNESSetNGS(snes, NonlinearGS, NULL));
-
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Create distributed array (DMDA) to manage parallel grid and vectors
-  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,4,4,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da));
-  PetscCall(DMSetFromOptions(da));
-  PetscCall(DMSetUp(da));
-  PetscCall(DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0));
-  PetscCall(DMSetApplicationContext(da,&user));
-  PetscCall(SNESSetDM(snes,da));
-  /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Extract global vectors from DMDA; then duplicate for remaining
-     vectors that are the same types
-   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(DMCreateGlobalVector(da,&x));
-
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Set local function evaluation routine
-  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  user.mms_solution = ZeroBCSolution;
-  switch (MMS) {
-  case 0: user.mms_solution = NULL; user.mms_forcing = NULL;
-  case 1: user.mms_solution = MMSSolution1; user.mms_forcing = MMSForcing1; break;
-  case 2: user.mms_solution = MMSSolution2; user.mms_forcing = MMSForcing2; break;
-  case 3: user.mms_solution = MMSSolution3; user.mms_forcing = MMSForcing3; break;
-  case 4: user.mms_solution = MMSSolution4; user.mms_forcing = MMSForcing4; break;
-  default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Unknown MMS type %" PetscInt_FMT,MMS);
-  }
-  PetscCall(DMDASNESSetFunctionLocal(da,INSERT_VALUES,(DMDASNESFunction)FormFunctionLocal,&user));
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-fd",&flg,NULL));
-  if (!flg) {
-    PetscCall(DMDASNESSetJacobianLocal(da,(DMDASNESJacobian)FormJacobianLocal,&user));
-  }
-
-  PetscCall(PetscOptionsGetBool(NULL,NULL,"-obj",&flg,NULL));
-  if (flg) {
-    PetscCall(DMDASNESSetObjectiveLocal(da,(DMDASNESObjective)FormObjectiveLocal,&user));
-  }
-
-  if (PetscDefined(HAVE_MATLAB_ENGINE)) {
-    PetscBool matlab_function = PETSC_FALSE;
-    PetscCall(PetscOptionsGetBool(NULL,NULL,"-matlab_function",&matlab_function,0));
-    if (matlab_function) {
-      PetscCall(VecDuplicate(x,&r));
-      PetscCall(SNESSetFunction(snes,r,FormFunctionMatlab,&user));
-    }
-  }
-
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Customize nonlinear solver; set runtime options
-   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(SNESSetFromOptions(snes));
-
-  PetscCall(FormInitialGuess(da,&user,x));
-
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Solve nonlinear system
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(SNESSolve(snes,NULL,x));
-  PetscCall(SNESGetIterationNumber(snes,&its));
-
-  PetscCall(SNESGetLinearSolveIterations(snes,&slits));
-  PetscCall(SNESGetKSP(snes,&ksp));
-  PetscCall(KSPGetTotalIterations(ksp,&lits));
-  PetscCheck(lits == slits,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Number of total linear iterations reported by SNES %" PetscInt_FMT " does not match reported by KSP %" PetscInt_FMT,slits,lits);
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     If using MMS, check the l_2 error
-   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  if (MMS) {
-    Vec       e;
-    PetscReal errorl2, errorinf;
-    PetscInt  N;
-
-    PetscCall(VecDuplicate(x, &e));
-    PetscCall(PetscObjectViewFromOptions((PetscObject) x, NULL, "-sol_view"));
-    PetscCall(FormExactSolution(da, &user, e));
-    PetscCall(PetscObjectViewFromOptions((PetscObject) e, NULL, "-exact_view"));
-    PetscCall(VecAXPY(e, -1.0, x));
-    PetscCall(PetscObjectViewFromOptions((PetscObject) e, NULL, "-error_view"));
-    PetscCall(VecNorm(e, NORM_2, &errorl2));
-    PetscCall(VecNorm(e, NORM_INFINITY, &errorinf));
-    PetscCall(VecGetSize(e, &N));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "N: %" PetscInt_FMT " error L2 %g inf %g\n", N, (double)(errorl2/PetscSqrtReal((PetscReal)N)), (double) errorinf));
-    PetscCall(VecDestroy(&e));
-    PetscCall(PetscLogEventSetDof(SNES_Solve, 0, N));
-    PetscCall(PetscLogEventSetError(SNES_Solve, 0, errorl2/PetscSqrtReal(N)));
-  }
-
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Free work space.  All PETSc objects should be destroyed when they
-     are no longer needed.
-   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(VecDestroy(&r));
-  PetscCall(VecDestroy(&x));
-  PetscCall(SNESDestroy(&snes));
-  PetscCall(DMDestroy(&da));
-  PetscCall(PetscFinalize());
-  return 0;
-}
 /* ------------------------------------------------------------------- */
 /*
    FormInitialGuess - Forms initial approximation.
@@ -234,7 +70,7 @@ int main(int argc,char **argv)
    Output Parameter:
    X - vector
  */
-PetscErrorCode FormInitialGuess(DM da,AppCtx *user,Vec X)
+static PetscErrorCode FormInitialGuess(DM da,AppCtx *user,Vec X)
 {
   PetscInt       i,j,Mx,My,xs,ys,xm,ym;
   PetscReal      lambda,temp1,temp,hx,hy;
@@ -297,7 +133,7 @@ PetscErrorCode FormInitialGuess(DM da,AppCtx *user,Vec X)
   Output Parameter:
   X - vector
  */
-PetscErrorCode FormExactSolution(DM da, AppCtx *user, Vec U)
+static PetscErrorCode FormExactSolution(DM da, AppCtx *user, Vec U)
 {
   DM             coordDA;
   Vec            coordinates;
@@ -321,7 +157,7 @@ PetscErrorCode FormExactSolution(DM da, AppCtx *user, Vec U)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ZeroBCSolution(AppCtx *user,const DMDACoor2d *c,PetscScalar *u)
+static PetscErrorCode ZeroBCSolution(AppCtx *user,const DMDACoor2d *c,PetscScalar *u)
 {
   u[0] = 0.;
   return 0;
@@ -333,42 +169,42 @@ PetscErrorCode ZeroBCSolution(AppCtx *user,const DMDACoor2d *c,PetscScalar *u)
 
   such that u(x,y) is an exact solution with f(x,y) as the right hand side forcing term.
  */
-PetscErrorCode MMSSolution1(AppCtx *user,const DMDACoor2d *c,PetscScalar *u)
+static PetscErrorCode MMSSolution1(AppCtx *user,const DMDACoor2d *c,PetscScalar *u)
 {
   PetscReal x = PetscRealPart(c->x), y = PetscRealPart(c->y);
   u[0] = x*(1 - x)*y*(1 - y);
   PetscLogFlops(5);
   return 0;
 }
-PetscErrorCode MMSForcing1(AppCtx *user,const DMDACoor2d *c,PetscScalar *f)
+static PetscErrorCode MMSForcing1(AppCtx *user,const DMDACoor2d *c,PetscScalar *f)
 {
   PetscReal x = PetscRealPart(c->x), y = PetscRealPart(c->y);
   f[0] = 2*x*(1 - x) + 2*y*(1 - y) - user->param*PetscExpReal(x*(1 - x)*y*(1 - y));
   return 0;
 }
 
-PetscErrorCode MMSSolution2(AppCtx *user,const DMDACoor2d *c,PetscScalar *u)
+static PetscErrorCode MMSSolution2(AppCtx *user,const DMDACoor2d *c,PetscScalar *u)
 {
   PetscReal x = PetscRealPart(c->x), y = PetscRealPart(c->y);
   u[0] = PetscSinReal(PETSC_PI*x)*PetscSinReal(PETSC_PI*y);
   PetscLogFlops(5);
   return 0;
 }
-PetscErrorCode MMSForcing2(AppCtx *user,const DMDACoor2d *c,PetscScalar *f)
+static PetscErrorCode MMSForcing2(AppCtx *user,const DMDACoor2d *c,PetscScalar *f)
 {
   PetscReal x = PetscRealPart(c->x), y = PetscRealPart(c->y);
   f[0] = 2*PetscSqr(PETSC_PI)*PetscSinReal(PETSC_PI*x)*PetscSinReal(PETSC_PI*y) - user->param*PetscExpReal(PetscSinReal(PETSC_PI*x)*PetscSinReal(PETSC_PI*y));
   return 0;
 }
 
-PetscErrorCode MMSSolution3(AppCtx *user,const DMDACoor2d *c,PetscScalar *u)
+static PetscErrorCode MMSSolution3(AppCtx *user,const DMDACoor2d *c,PetscScalar *u)
 {
   PetscReal x = PetscRealPart(c->x), y = PetscRealPart(c->y);
   u[0] = PetscSinReal(user->m*PETSC_PI*x*(1-y))*PetscSinReal(user->n*PETSC_PI*y*(1-x));
   PetscLogFlops(5);
   return 0;
 }
-PetscErrorCode MMSForcing3(AppCtx *user,const DMDACoor2d *c,PetscScalar *f)
+static PetscErrorCode MMSForcing3(AppCtx *user,const DMDACoor2d *c,PetscScalar *f)
 {
   PetscReal x = PetscRealPart(c->x), y = PetscRealPart(c->y);
   PetscReal m = user->m, n = user->n, lambda = user->param;
@@ -379,7 +215,7 @@ PetscErrorCode MMSForcing3(AppCtx *user,const DMDACoor2d *c,PetscScalar *f)
   return 0;
 }
 
-PetscErrorCode MMSSolution4(AppCtx *user,const DMDACoor2d *c,PetscScalar *u)
+static PetscErrorCode MMSSolution4(AppCtx *user,const DMDACoor2d *c,PetscScalar *u)
 {
   const PetscReal Lx = 1.,Ly = 1.;
   PetscReal x = PetscRealPart(c->x), y = PetscRealPart(c->y);
@@ -387,7 +223,7 @@ PetscErrorCode MMSSolution4(AppCtx *user,const DMDACoor2d *c,PetscScalar *u)
   PetscLogFlops(9);
   return 0;
 }
-PetscErrorCode MMSForcing4(AppCtx *user,const DMDACoor2d *c,PetscScalar *f)
+static PetscErrorCode MMSForcing4(AppCtx *user,const DMDACoor2d *c,PetscScalar *f)
 {
   const PetscReal Lx = 1.,Ly = 1.;
   PetscReal x = PetscRealPart(c->x), y = PetscRealPart(c->y);
@@ -402,7 +238,7 @@ PetscErrorCode MMSForcing4(AppCtx *user,const DMDACoor2d *c,PetscScalar *f)
    FormFunctionLocal - Evaluates nonlinear function, F(x) on local process patch
 
  */
-PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar **f,AppCtx *user)
+static PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar **f,AppCtx *user)
 {
   PetscInt       i,j;
   PetscReal      lambda,hx,hy,hxdhy,hydhx;
@@ -451,7 +287,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
 }
 
 /* FormObjectiveLocal - Evaluates nonlinear function, F(x) on local process patch */
-PetscErrorCode FormObjectiveLocal(DMDALocalInfo *info,PetscScalar **x,PetscReal *obj,AppCtx *user)
+static PetscErrorCode FormObjectiveLocal(DMDALocalInfo *info,PetscScalar **x,PetscReal *obj,AppCtx *user)
 {
   PetscInt       i,j;
   PetscReal      lambda,hx,hy,hxdhy,hydhx,sc,lobj=0;
@@ -503,7 +339,7 @@ PetscErrorCode FormObjectiveLocal(DMDALocalInfo *info,PetscScalar **x,PetscReal 
 /*
    FormJacobianLocal - Evaluates Jacobian matrix on local process patch
 */
-PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,Mat jacpre,AppCtx *user)
+static PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,Mat jacpre,AppCtx *user)
 {
   PetscInt       i,j,k;
   MatStencil     col[5],row;
@@ -588,7 +424,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,Mat
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FormFunctionMatlab(SNES snes,Vec X,Vec F,void *ptr)
+static PetscErrorCode FormFunctionMatlab(SNES snes,Vec X,Vec F,void *ptr)
 {
 #if PetscDefined(HAVE_MATLAB_ENGINE)
   AppCtx         *user = (AppCtx*)ptr;
@@ -641,7 +477,7 @@ PetscErrorCode FormFunctionMatlab(SNES snes,Vec X,Vec F,void *ptr)
       Applies some sweeps on nonlinear Gauss-Seidel on each process
 
  */
-PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void *ctx)
+static PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void *ctx)
 {
   PetscInt       i,j,k,Mx,My,xs,ys,xm,ym,its,tot_its,sweeps,l;
   PetscReal      lambda,hx,hy,hxdhy,hydhx,sc;
@@ -745,6 +581,150 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void *ctx)
     PetscCall(DMRestoreLocalVector(da,&localB));
   }
   PetscFunctionReturn(0);
+}
+
+int main(int argc,char **argv)
+{
+  SNES           snes;                         /* nonlinear solver */
+  Vec            x;                            /* solution vector */
+  AppCtx         user;                         /* user-defined work context */
+  PetscInt       its;                          /* iterations for convergence */
+  PetscReal      bratu_lambda_max = 6.81;
+  PetscReal      bratu_lambda_min = 0.;
+  PetscInt       MMS              = 1;
+  PetscBool      flg              = PETSC_FALSE,setMMS;
+  DM             da;
+  Vec            r               = NULL;
+  KSP            ksp;
+  PetscInt       lits,slits;
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Initialize program
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Initialize problem parameters
+  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  user.param = 6.0;
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-par",&user.param,NULL));
+  PetscCheck(user.param <= bratu_lambda_max && user.param >= bratu_lambda_min,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Lambda, %g, is out of range, [%g, %g]", (double)user.param, (double)bratu_lambda_min, (double)bratu_lambda_max);
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-mms",&MMS,&setMMS));
+  if (MMS == 3) {
+    PetscInt mPar = 2, nPar = 1;
+    PetscCall(PetscOptionsGetInt(NULL,NULL,"-m_par",&mPar,NULL));
+    PetscCall(PetscOptionsGetInt(NULL,NULL,"-n_par",&nPar,NULL));
+    user.m = PetscPowInt(2,mPar);
+    user.n = PetscPowInt(2,nPar);
+  }
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Create nonlinear solver context
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  PetscCall(SNESCreate(PETSC_COMM_WORLD,&snes));
+  PetscCall(SNESSetCountersReset(snes,PETSC_FALSE));
+  PetscCall(SNESSetNGS(snes, NonlinearGS, NULL));
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Create distributed array (DMDA) to manage parallel grid and vectors
+  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,4,4,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0));
+  PetscCall(DMSetApplicationContext(da,&user));
+  PetscCall(SNESSetDM(snes,da));
+  /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Extract global vectors from DMDA; then duplicate for remaining
+     vectors that are the same types
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  PetscCall(DMCreateGlobalVector(da,&x));
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Set local function evaluation routine
+  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  switch (MMS) {
+  case 0: user.mms_solution = ZeroBCSolution; user.mms_forcing = NULL; break;
+  case 1: user.mms_solution = MMSSolution1; user.mms_forcing = MMSForcing1; break;
+  case 2: user.mms_solution = MMSSolution2; user.mms_forcing = MMSForcing2; break;
+  case 3: user.mms_solution = MMSSolution3; user.mms_forcing = MMSForcing3; break;
+  case 4: user.mms_solution = MMSSolution4; user.mms_forcing = MMSForcing4; break;
+  default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Unknown MMS type %" PetscInt_FMT,MMS);
+  }
+  PetscCall(DMDASNESSetFunctionLocal(da,INSERT_VALUES,(DMDASNESFunction)FormFunctionLocal,&user));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-fd",&flg,NULL));
+  if (!flg) {
+    PetscCall(DMDASNESSetJacobianLocal(da,(DMDASNESJacobian)FormJacobianLocal,&user));
+  }
+
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-obj",&flg,NULL));
+  if (flg) {
+    PetscCall(DMDASNESSetObjectiveLocal(da,(DMDASNESObjective)FormObjectiveLocal,&user));
+  }
+
+  if (PetscDefined(HAVE_MATLAB_ENGINE)) {
+    PetscBool matlab_function = PETSC_FALSE;
+    PetscCall(PetscOptionsGetBool(NULL,NULL,"-matlab_function",&matlab_function,0));
+    if (matlab_function) {
+      PetscCall(VecDuplicate(x,&r));
+      PetscCall(SNESSetFunction(snes,r,FormFunctionMatlab,&user));
+    }
+  }
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Customize nonlinear solver; set runtime options
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  PetscCall(SNESSetFromOptions(snes));
+
+  PetscCall(FormInitialGuess(da,&user,x));
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Solve nonlinear system
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  PetscCall(SNESSolve(snes,NULL,x));
+  PetscCall(SNESGetIterationNumber(snes,&its));
+
+  PetscCall(SNESGetLinearSolveIterations(snes,&slits));
+  PetscCall(SNESGetKSP(snes,&ksp));
+  PetscCall(KSPGetTotalIterations(ksp,&lits));
+  PetscCheck(lits == slits,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Number of total linear iterations reported by SNES %" PetscInt_FMT " does not match reported by KSP %" PetscInt_FMT,slits,lits);
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     If using MMS, check the l_2 error
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  if (setMMS) {
+    Vec       e;
+    PetscReal errorl2, errorinf;
+    PetscInt  N;
+
+    PetscCall(VecDuplicate(x, &e));
+    PetscCall(PetscObjectViewFromOptions((PetscObject) x, NULL, "-sol_view"));
+    PetscCall(FormExactSolution(da, &user, e));
+    PetscCall(PetscObjectViewFromOptions((PetscObject) e, NULL, "-exact_view"));
+    PetscCall(VecAXPY(e, -1.0, x));
+    PetscCall(PetscObjectViewFromOptions((PetscObject) e, NULL, "-error_view"));
+    PetscCall(VecNorm(e, NORM_2, &errorl2));
+    PetscCall(VecNorm(e, NORM_INFINITY, &errorinf));
+    PetscCall(VecGetSize(e, &N));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "N: %" PetscInt_FMT " error L2 %g inf %g\n", N, (double)(errorl2/PetscSqrtReal((PetscReal)N)), (double) errorinf));
+    PetscCall(VecDestroy(&e));
+    PetscCall(PetscLogEventSetDof(SNES_Solve, 0, N));
+    PetscCall(PetscLogEventSetError(SNES_Solve, 0, errorl2/PetscSqrtReal(N)));
+  }
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Free work space.  All PETSc objects should be destroyed when they
+     are no longer needed.
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  PetscCall(VecDestroy(&r));
+  PetscCall(VecDestroy(&x));
+  PetscCall(SNESDestroy(&snes));
+  PetscCall(DMDestroy(&da));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST
