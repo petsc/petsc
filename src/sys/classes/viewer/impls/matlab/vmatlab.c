@@ -162,7 +162,7 @@ $                xnew(:) = x;    % reshape one dimensional vector back to two di
 
               Use PetscViewerMatlabPutArray() to just put an array of doubles into the .mat file
 
-.seealso: `PETSC_VIEWER_MATLAB_(),PETSC_VIEWER_MATLAB_SELF`, `PETSC_VIEWER_MATLAB_WORLD,PetscViewerCreate()`,
+.seealso: `PETSC_VIEWER_MATLAB_()`, `PETSC_VIEWER_MATLAB_SELF`, `PETSC_VIEWER_MATLAB_WORLD`, `PetscViewerCreate()`,
           `PetscViewerMatlabOpen()`, `VecView()`, `DMView()`, `PetscViewerMatlabPutArray()`, `PETSCVIEWERBINARY`, `PETSCVIEWERASCII`, `PETSCVIEWERDRAW`,
           `PETSC_VIEWER_STDOUT_()`, `PetscViewerFileSetName()`, `PetscViewerFileSetMode()`, `PetscViewerFormat`
 

@@ -738,7 +738,7 @@ PetscErrorCode TSTrajectorySetKeepFiles(TSTrajectory tj,PetscBool flg)
 
    Level: developer
 
-.seealso: `TSTrajectorySetFiletemplate(),TSTrajectorySetUp()`
+.seealso: `TSTrajectorySetFiletemplate()`, `TSTrajectorySetUp()`
 @*/
 PetscErrorCode TSTrajectorySetDirname(TSTrajectory tj,const char dirname[])
 {
@@ -775,7 +775,7 @@ PetscErrorCode TSTrajectorySetDirname(TSTrajectory tj,const char dirname[])
 
    Level: developer
 
-.seealso: `TSTrajectorySetDirname(),TSTrajectorySetUp()`
+.seealso: `TSTrajectorySetDirname()`, `TSTrajectorySetUp()`
 @*/
 PetscErrorCode TSTrajectorySetFiletemplate(TSTrajectory tj,const char filetemplate[])
 {

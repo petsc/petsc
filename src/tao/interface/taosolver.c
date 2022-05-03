@@ -1899,7 +1899,7 @@ PetscErrorCode TaoResidualMonitor(Tao tao, void *ctx)
 
    Level: developer
 
-.seealso: `TaoSetTolerances(),TaoGetConvergedReason(),TaoSetConvergedReason()`
+.seealso: `TaoSetTolerances()`, `TaoGetConvergedReason()`, `TaoSetConvergedReason()`
 @*/
 
 PetscErrorCode TaoDefaultConvergenceTest(Tao tao,void *dummy)

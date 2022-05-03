@@ -893,7 +893,7 @@ PetscErrorCode  DMCreateLocalVector_Composite(DM dm,Vec *lvec)
 
 .seealso `DMDestroy()`, `DMCompositeAddDM()`, `DMCreateGlobalVector()`,
          `DMCompositeGather()`, `DMCompositeCreate()`, `DMCompositeGetAccess()`, `DMCompositeScatter()`,
-         `DMCompositeGetLocalVectors()`, `DMCompositeRestoreLocalVectors(),DMCompositeGetEntries()`
+         `DMCompositeGetLocalVectors()`, `DMCompositeRestoreLocalVectors()`, `DMCompositeGetEntries()`
 
 @*/
 PetscErrorCode  DMCompositeGetISLocalToGlobalMappings(DM dm,ISLocalToGlobalMapping **ltogs)
@@ -1033,7 +1033,7 @@ PetscErrorCode  DMCompositeGetLocalISs(DM dm,IS **is)
 
 .seealso `DMDestroy()`, `DMCompositeAddDM()`, `DMCreateGlobalVector()`,
          `DMCompositeGather()`, `DMCompositeCreate()`, `DMCompositeGetAccess()`, `DMCompositeScatter()`,
-         `DMCompositeGetLocalVectors()`, `DMCompositeRestoreLocalVectors(),DMCompositeGetEntries()`
+         `DMCompositeGetLocalVectors()`, `DMCompositeRestoreLocalVectors()`, `DMCompositeGetEntries()`
 
 @*/
 PetscErrorCode  DMCompositeGetGlobalISs(DM dm,IS *is[])
@@ -1798,7 +1798,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Composite(DM p)
 
     Level: advanced
 
-.seealso `DMDestroy()`, `DMCompositeAddDM()`, `DMCompositeScatter()`, `DMCOMPOSITE,DMCreate()`
+.seealso `DMDestroy()`, `DMCompositeAddDM()`, `DMCompositeScatter()`, `DMCOMPOSITE`, `DMCreate()`
          `DMCompositeGather()`, `DMCreateGlobalVector()`, `DMCompositeGetISLocalToGlobalMappings()`, `DMCompositeGetAccess()`
          `DMCompositeGetLocalVectors()`, `DMCompositeRestoreLocalVectors()`, `DMCompositeGetEntries()`
 

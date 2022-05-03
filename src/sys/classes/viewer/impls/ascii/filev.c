@@ -802,7 +802,7 @@ PetscErrorCode  PetscViewerView_ASCII(PetscViewer v,PetscViewer viewer)
 /*MC
    PETSCVIEWERASCII - A viewer that prints to stdout or an ASCII file
 
-.seealso: `PETSC_VIEWER_STDOUT_(),PETSC_VIEWER_STDOUT_SELF`, `PETSC_VIEWER_STDOUT_WORLD,PetscViewerCreate()`, `PetscViewerASCIIOpen()`,
+.seealso: `PETSC_VIEWER_STDOUT_()`, `PETSC_VIEWER_STDOUT_SELF`, `PETSC_VIEWER_STDOUT_WORLD`, `PetscViewerCreate()`, `PetscViewerASCIIOpen()`,
           `PetscViewerMatlabOpen()`, `VecView()`, `DMView()`, `PetscViewerMatlabPutArray()`, `PETSCVIEWERBINARY`, `PETSCVIEWERMATLAB`,
           `PetscViewerFileSetName()`, `PetscViewerFileSetMode()`, `PetscViewerFormat`, `PetscViewerType`, `PetscViewerSetType()`
 

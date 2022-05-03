@@ -63,7 +63,7 @@ M*/
 
   Level: beginner
 
-.seealso: `MatCreateMPIAIJCRL,MATSEQAIJCRL,MATMPIAIJCRL`, `MATSEQAIJCRL`, `MATMPIAIJCRL`
+.seealso: `MatCreateMPIAIJCRL`, `MATSEQAIJCRL`, `MATMPIAIJCRL`, `MATSEQAIJCRL`, `MATMPIAIJCRL`
 M*/
 
 static PetscErrorCode MatBindToCPU_MPIAIJ(Mat A,PetscBool flg)

@@ -752,8 +752,8 @@ PetscErrorCode  ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping,IS 
 
    Level: advanced
 
-.seealso: `ISLocalToGlobalMappingApplyBlock()`, `ISLocalToGlobalMappingCreate(),ISLocalToGlobalMappingDestroy()`,
-          `ISLocalToGlobalMappingApplyIS(),AOCreateBasic(),AOApplicationToPetsc()`,
+.seealso: `ISLocalToGlobalMappingApplyBlock()`, `ISLocalToGlobalMappingCreate()`, `ISLocalToGlobalMappingDestroy()`,
+          `ISLocalToGlobalMappingApplyIS()`, `AOCreateBasic()`, `AOApplicationToPetsc()`,
           `AOPetscToApplication()`, `ISGlobalToLocalMappingApply()`
 
 @*/
@@ -811,8 +811,8 @@ PetscErrorCode ISLocalToGlobalMappingApply(ISLocalToGlobalMapping mapping,PetscI
 
    Level: advanced
 
-.seealso: `ISLocalToGlobalMappingApply()`, `ISLocalToGlobalMappingCreate(),ISLocalToGlobalMappingDestroy()`,
-          `ISLocalToGlobalMappingApplyIS(),AOCreateBasic(),AOApplicationToPetsc()`,
+.seealso: `ISLocalToGlobalMappingApply()`, `ISLocalToGlobalMappingCreate()`, `ISLocalToGlobalMappingDestroy()`,
+          `ISLocalToGlobalMappingApplyIS()`, `AOCreateBasic()`, `AOApplicationToPetsc()`,
           `AOPetscToApplication()`, `ISGlobalToLocalMappingApply()`
 
 @*/

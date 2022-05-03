@@ -216,7 +216,7 @@ PetscErrorCode MatPartitioningView_Chaco(MatPartitioning part, PetscViewer viewe
    The default is the multi-level method. See Chaco documentation for
    additional details.
 
-.seealso: `MatPartitioningChacoSetLocal(),MatPartitioningChacoGetGlobal()`
+.seealso: `MatPartitioningChacoSetLocal()`, `MatPartitioningChacoGetGlobal()`
 @*/
 PetscErrorCode MatPartitioningChacoSetGlobal(MatPartitioning part,MPChacoGlobalType method)
 {
@@ -296,7 +296,7 @@ PetscErrorCode MatPartitioningChacoGetGlobal_Chaco(MatPartitioning part,MPChacoG
    The default is to apply the Kernighan-Lin heuristic. See Chaco documentation
    for additional details.
 
-.seealso: `MatPartitioningChacoSetGlobal(),MatPartitioningChacoGetLocal()`
+.seealso: `MatPartitioningChacoSetGlobal()`, `MatPartitioningChacoGetLocal()`
 @*/
 PetscErrorCode MatPartitioningChacoSetLocal(MatPartitioning part,MPChacoLocalType method)
 {
@@ -407,7 +407,7 @@ PetscErrorCode MatPartitioningChacoSetCoarseLevel_Chaco(MatPartitioning part,Pet
    Notes:
    The default is to use a Lanczos method. See Chaco documentation for details.
 
-.seealso: `MatPartitioningChacoSetEigenTol(),MatPartitioningChacoSetEigenNumber()`,
+.seealso: `MatPartitioningChacoSetEigenTol()`, `MatPartitioningChacoSetEigenNumber()`,
           `MatPartitioningChacoGetEigenSolver()`
 @*/
 PetscErrorCode MatPartitioningChacoSetEigenSolver(MatPartitioning part,MPChacoEigenType method)

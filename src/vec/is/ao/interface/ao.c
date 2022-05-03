@@ -128,8 +128,8 @@ PETSC_INTERN PetscErrorCode ISSetUp_General(IS);
          entries to indicate nonexistent neighbors due to boundary conditions
          etc.
 
-.seealso: `AOCreateBasic()`, `AOView(),AOApplicationToPetsc()`,
-          `AOApplicationToPetscIS(),AOPetscToApplication()`
+.seealso: `AOCreateBasic()`, `AOView()`, `AOApplicationToPetsc()`,
+          `AOApplicationToPetscIS()`, `AOPetscToApplication()`
 @*/
 PetscErrorCode  AOPetscToApplicationIS(AO ao,IS is)
 {
@@ -216,7 +216,7 @@ PetscErrorCode  AOApplicationToPetscIS(AO ao,IS is)
 
    Integers that are out of range are mapped to -1
 
-.seealso: `AOCreateBasic()`, `AOView(),AOApplicationToPetsc()`,
+.seealso: `AOCreateBasic()`, `AOView()`, `AOApplicationToPetsc()`,
           `AOPetscToApplicationIS()`, `AOApplicationToPetsc()`
 @*/
 PetscErrorCode  AOPetscToApplication(AO ao,PetscInt n,PetscInt ia[])
@@ -388,7 +388,7 @@ PetscErrorCode  AOPetscToApplicationPermuteReal(AO ao, PetscInt block, PetscReal
 
   Level: beginner
 
-.seealso: `AOCreateBasic()`, `AOView(),AOApplicationToPetsc()`, `AOPetscToApplicationIS()`
+.seealso: `AOCreateBasic()`, `AOView()`, `AOApplicationToPetsc()`, `AOPetscToApplicationIS()`
 @*/
 PetscErrorCode  AOApplicationToPetscPermuteReal(AO ao, PetscInt block, PetscReal array[])
 {
