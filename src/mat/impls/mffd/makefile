@@ -1,8 +1,5 @@
 -include ../../../../petscdir.mk
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = mffd.c  mffddef.c mfregis.c wp.c
 SOURCEF  =
 SOURCEH  = mffdimpl.h

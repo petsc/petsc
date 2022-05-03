@@ -1,4 +1,3 @@
-#
 #requirespackage  'PETSC_USE_MATLAB_SOCKET'
 #requiresscalar real
 #requiresprecision  double
@@ -8,9 +7,6 @@
 #
 matlabcodes: sread sopen sclose swrite
 
-CFLAGS    =
-FFLAGS    =
-CPPFLAGS  =
 SOURCEC   =
 SOURCEF   =
 SOURCEH   = sopen.c sclose.c  bread.c sread.c swrite.c

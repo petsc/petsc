@@ -1,8 +1,5 @@
 #requiresdefine   'PETSC_HAVE_FORTRAN'
 
-ALL: lib
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = f90_cwrap.c
 SOURCEF  =
 SOURCEH  =

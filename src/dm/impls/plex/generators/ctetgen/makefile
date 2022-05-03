@@ -1,8 +1,5 @@
 #requirespackage  'PETSC_HAVE_CTETGEN'
 
-CPPFLAGS =
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = ctetgenerate.c
 SOURCEF  =
 SOURCEH  =

@@ -1,8 +1,5 @@
 -include ../../../../../../petscdir.mk
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = nash.c
 SOURCEF  =
 SOURCEH  = nashimpl.h

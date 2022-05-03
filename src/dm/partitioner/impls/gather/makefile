@@ -1,9 +1,4 @@
 
-ALL: lib
-
-CFLAGS    =
-FFLAGS    =
-CPPFLAGS  =
 SOURCEC   = partgather.c
 SOURCEH   =
 LIBBASE   = libpetscdm

@@ -1,4 +1,3 @@
-ALL: lib
 
 SOURCEH       =
 SOURCEC       = sfbasic.c sfpack.c sfmpi.c

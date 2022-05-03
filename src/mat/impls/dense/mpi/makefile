@@ -1,8 +1,5 @@
 -include ../../../../../petscdir.mk
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = mpidense.c mmdense.c
 SOURCEF  =
 SOURCEH  = mpidense.h

@@ -1,6 +1,4 @@
 
-ALL: lib
-
 SOURCEH  =
 DIRS     = basic singlefile memory visualization
 LOCDIR   = src/ts/trajectory/impls/

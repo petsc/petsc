@@ -1,9 +1,5 @@
 -include ../../../petscdir.mk
-ALL: lib
 
-CFLAGS    =
-FFLAGS    =
-CPPFLAGS  =
 SOURCEC   = coarsen.c scoarsen.c
 SOURCEH   =
 LIBBASE   = libpetscmat

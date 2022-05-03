@@ -1,8 +1,5 @@
 #requirespackage 'PETSC_HAVE_CUDA'
-ALL: lib
 
-CFLAGS   = 
-FFLAGS   =
 SOURCECU = mpicuda.cu
 SOURCEF  =
 SOURCEH  =

@@ -1,8 +1,5 @@
 -include ../../../../petscdir.mk
-ALL: lib
 
-CFLAGS    =
-FFLAGS    =
 SOURCEC   = matcoloring.c matcoloringregi.c
 SOURCEF   =
 SOURCEH   =

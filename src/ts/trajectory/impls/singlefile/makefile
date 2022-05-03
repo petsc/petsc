@@ -1,6 +1,4 @@
 
-ALL: lib
-
 SOURCEC  = singlefile.c
 SOURCEH  =
 DIRS     =

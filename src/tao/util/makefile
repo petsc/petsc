@@ -1,9 +1,4 @@
 
-ALL: lib
-
-CFLAGS   =
-FFLAGS   =
-CPPFLAGS =
 SOURCEC  = tao_util.c
 SOURCEF  =
 SOURCEH  =

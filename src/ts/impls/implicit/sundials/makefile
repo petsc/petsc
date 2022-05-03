@@ -1,11 +1,5 @@
-
-ALL: lib
-
 #requirespackage   'PETSC_HAVE_SUNDIALS2'
 
-CFLAGS   =
-FFLAGS   =
-CPPFLAGS =
 SOURCEC  = sundials.c
 SOURCEF  =
 SOURCEH  = sundials.h

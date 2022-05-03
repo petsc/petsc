@@ -1,8 +1,5 @@
-
 #requiresdefine   'PETSC_HAVE_FORTRAN'
-ALL: lib
-CFLAGS   =
-FFLAGS   =
+
 SOURCEC  = zsnesshellf.c
 SOURCEF  =
 SOURCEH  =

@@ -1,10 +1,4 @@
 
-
-ALL: lib
-
-CFLAGS    =
-FFLAGS    =
-CPPFLAGS  =
 SOURCEC   = tikz.c
 SOURCEF   =
 SOURCEH   =

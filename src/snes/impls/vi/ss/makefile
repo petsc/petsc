@@ -1,8 +1,4 @@
 
-ALL: lib
-
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = viss.c
 SOURCEF  =
 SOURCEH  = vissimpl.h

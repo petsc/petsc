@@ -1,8 +1,4 @@
 
-ALL: lib
-
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = ntrdc.c
 SOURCEF  =
 SOURCEH  = ntrdcimpl.h

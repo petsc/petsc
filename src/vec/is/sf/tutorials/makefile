@@ -1,9 +1,5 @@
 -include ../../../../../petscdir.mk
 
-CFLAGS	         =
-FFLAGS	         =
-CPPFLAGS         =
-FPPFLAGS         =
 LOCDIR           = src/vec/is/sf/tutorials/
 EXAMPLESC        = ex1.c ex2.c
 EXAMPLESF        = ex1f.F90

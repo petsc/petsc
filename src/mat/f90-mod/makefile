@@ -1,8 +1,5 @@
 #requiresdefine   'PETSC_HAVE_FORTRAN'
-#
 
-CFLAGS	   =
-FFLAGS	   =
 SOURCEC	   =
 SOURCEF90  = petscmatmod.F90
 SOURCEH	   = petscmat.h petscmat.h90 petscmatfactorinfosize.h petscmatinfosize.h

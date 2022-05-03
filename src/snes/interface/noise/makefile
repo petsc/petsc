@@ -1,11 +1,6 @@
-
-ALL: lib
-
 #requiresscalar real
 #requiresprecision double
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = snesmfj2.c snesnoise.c snesdnest.c
 SOURCEF  =
 SOURCEH  =

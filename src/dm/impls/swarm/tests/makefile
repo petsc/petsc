@@ -1,8 +1,5 @@
 -include ../../../../../petscdir.mk
-CFLAGS	        =
-FFLAGS	        =
-CPPFLAGS        =
-FPPFLAGS        =
+
 LOCDIR          = src/dm/impls/swarm/tests/
 EXAMPLESC       = ex1.c ex2.c ex4.c ex5.c
 EXAMPLESF       =

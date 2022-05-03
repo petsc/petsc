@@ -1,10 +1,6 @@
 
-CFLAGS	        =
-FFLAGS	        =
-CPPFLAGS        =
-FPPFLAGS        =
 LOCDIR          = src/dm/dt/dualspace/impls/lagrange/tests/
-EXAMPLESC       = 
+EXAMPLESC       =
 EXAMPLESF       =
 MANSEC          = DM
 

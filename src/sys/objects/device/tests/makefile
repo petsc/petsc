@@ -1,9 +1,5 @@
 -include ../../../../../petscdir.mk
 
-CFLAGS	        =
-FFLAGS	        =
-CPPFLAGS        =
-FPPFLAGS        =
 LOCDIR          = src/sys/objects/device/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c
 EXAMPLESCU      = ex1cu.cu ex2cu.cu

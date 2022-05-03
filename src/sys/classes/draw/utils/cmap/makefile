@@ -1,4 +1,3 @@
-ALL: lib
 
 MANSEC    = Sys
 SUBMANSEC = Draw

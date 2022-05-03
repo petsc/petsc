@@ -1,11 +1,5 @@
-
-ALL: lib
-
 #requirespackage   'PETSC_HAVE_RADAU5'
 
-CFLAGS   =
-FFLAGS   =
-CPPFLAGS =
 SOURCEC  = radau5.c
 SOURCEF  =
 SOURCEH  =

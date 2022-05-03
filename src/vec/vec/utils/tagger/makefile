@@ -1,6 +1,4 @@
 
-ALL: lib
-
 SOURCEH = ../../../../../include/petsc/private/vecimpl.h ../../../../../include/petscvec.h
 DIRS    = interface impls tutorials
 LOCDIR  = src/vec/vec/utils/tagger/

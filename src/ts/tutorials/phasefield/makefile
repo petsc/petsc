@@ -1,8 +1,5 @@
 -include ../../../../petscdir.mk
-CFLAGS	        =
-FFLAGS	        =
-CPPFLAGS        =
-FPPFLAGS        =
+
 LOCDIR          = src/ts/tutorials/phasefield/
 EXAMPLESC       = potentials.c heat.c biharmonic.c biharmonic2.c biharmonic3.c
 EXAMPLESF       =

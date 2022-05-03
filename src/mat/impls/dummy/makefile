@@ -1,11 +1,8 @@
 -include ../../../../petscdir.mk
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = matdummy.c
 SOURCEF  =
-SOURCEH  = 
+SOURCEH  =
 LIBBASE  = libpetscmat
 MANSEC   = Mat
 DIRS     =

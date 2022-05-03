@@ -1,5 +1,4 @@
 -include ../../../../petscdir.mk
-ALL: lib
 
 DIRS     = parmetis ptscotch chaco simple shell gather matpart
 LOCDIR   = src/dm/partitioner/impls/

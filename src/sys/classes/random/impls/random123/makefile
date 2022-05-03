@@ -1,9 +1,6 @@
 #requirespackage 'PETSC_HAVE_RANDOM123'
 
-ALL: lib
-
 CFLAGS   = ${RANDOM123_INCLUDE}
-FFLAGS   =
 SOURCEC  = random123.c
 SOURCEF  =
 SOURCEH  =

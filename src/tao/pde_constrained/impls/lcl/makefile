@@ -1,7 +1,4 @@
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = lcl.c
 SOURCEF  =
 SOURCEH  = lcl.h

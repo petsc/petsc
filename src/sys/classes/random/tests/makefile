@@ -1,8 +1,5 @@
 -include ../../../../../petscdir.mk
-CFLAGS	        =
-FFLAGS	        =
-CPPFLAGS        =
-FPPFLAGS        =
+
 LOCDIR          = src/sys/classes/random/tests/
 EXAMPLESC       = ex3.c
 EXAMPLESF       =

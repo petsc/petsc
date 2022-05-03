@@ -4,12 +4,8 @@
 # COMPLEX arithmetic (since most C++ compilers do not do a good job
 # optimizing complex number calculations), but can also be used to
 # compare against C versions of the same kernels.
-
-ALL: lib
 #requiresdefine   'PETSC_USE_FORTRAN_KERNELS'
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  =
 SOURCEF90= fmultcrl.F90
 SOURCEH  =

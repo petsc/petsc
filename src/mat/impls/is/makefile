@@ -1,9 +1,5 @@
 -include ../../../../petscdir.mk
 
-ALL: lib
-
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = matis.c
 SOURCEF  =
 SOURCEH  = matis.h

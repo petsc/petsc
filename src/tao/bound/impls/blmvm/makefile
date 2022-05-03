@@ -1,9 +1,6 @@
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = blmvm.c
-SOURCEF  = 
+SOURCEF  =
 SOURCEH  = blmvm.h
 LIBBASE  = libpetsctao
 MANSEC   = Tao

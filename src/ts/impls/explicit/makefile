@@ -1,6 +1,4 @@
 
-ALL: lib
-
 MANSEC   = TS
 LOCDIR   = src/ts/impls/explicit/
 DIRS     = euler rk ssp

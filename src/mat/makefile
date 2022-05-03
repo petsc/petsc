@@ -1,8 +1,5 @@
 -include ../../petscdir.mk
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  =
 SOURCEF  =
 SOURCEH  = ../../include/petsc/private/matimpl.h ../../include/petscmat.h ../../include/petsc/private/kernels/blockinvert.h ../../include/petsc/private/kernels/blocktranspose.h ../../include/petsc/private/kernels/blockmatmult.h ../../include/petscmatelemental.h

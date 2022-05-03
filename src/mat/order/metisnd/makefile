@@ -1,10 +1,7 @@
 -include ../../../../petscdir.mk
 #requirespackage   'PETSC_HAVE_METIS'
 
-ALL: lib
-
 CFLAGS    = ${METIS_INCLUDE}
-FFLAGS    =
 SOURCEC   = metisnd.c
 SOURCEF   =
 SOURCEH   =

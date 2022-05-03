@@ -1,9 +1,6 @@
 -include ../../../../petscdir.mk
 #requirespackage 'PETSC_HAVE_SCALAPACK'
 
-ALL: lib
-
-FFLAGS   =
 SOURCEC  = matscalapack.c
 SOURCEF  =
 SOURCEH  =

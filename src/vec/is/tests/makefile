@@ -1,8 +1,4 @@
 
-CFLAGS	        =
-FFLAGS	        =
-CPPFLAGS        =
-FPPFLAGS        =
 LOCDIR          = src/vec/is/tests/
 DIRS            =
 EXAMPLESC       = ex1.c ex2.c ex3.c ex5.c ex6.c

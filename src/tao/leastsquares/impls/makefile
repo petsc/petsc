@@ -1,6 +1,5 @@
-ALL: lib
 
-SOURCEH  = 
+SOURCEH  =
 DIRS     = pounders brgn
 LOCDIR   = src/tao/leastsquares/impls/
 

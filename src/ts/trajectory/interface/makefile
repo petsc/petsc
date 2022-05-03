@@ -1,6 +1,4 @@
 
-ALL: lib
-
 SOURCEC  = traj.c
 SOURCEH  =
 DIRS     =

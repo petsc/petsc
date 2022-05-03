@@ -1,7 +1,4 @@
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = snesngmres.c ngmresfunc.c anderson.c
 SOURCEF  =
 SOURCEH  =

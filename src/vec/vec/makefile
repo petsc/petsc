@@ -1,5 +1,4 @@
 -include ../../../petscdir.mk
-ALL: lib
 
 SOURCEH  = ../../../include/petsc/private/vecimpl.h ../../../include/petscvec.h ../../../include/petsc/private/kernels/petscaxpy.h ../../../include/petscviennacl.h ../../../include/petscvec_kokkos.hpp
 DIRS     = utils interface impls tests tutorials

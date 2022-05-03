@@ -1,5 +1,4 @@
 #requirespackage 'PETSC_HAVE_NVSHMEM'
-ALL: lib
 
 SOURCEH       =
 SOURCEC       =

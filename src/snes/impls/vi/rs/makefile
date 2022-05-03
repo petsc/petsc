@@ -1,8 +1,4 @@
 
-ALL: lib
-
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = virs.c
 SOURCEF  =
 SOURCEH  = virsimpl.h

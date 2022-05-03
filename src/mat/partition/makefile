@@ -1,9 +1,5 @@
 -include ../../../petscdir.mk
-ALL: lib
 
-CFLAGS    =
-FFLAGS    =
-CPPFLAGS  =
 SOURCEC   = partition.c spartition.c
 SOURCEH   =
 LIBBASE   = libpetscmat

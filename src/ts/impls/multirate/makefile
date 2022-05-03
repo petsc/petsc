@@ -1,7 +1,4 @@
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = mprk.c
 SOURCEF  =
 SOURCEH  =

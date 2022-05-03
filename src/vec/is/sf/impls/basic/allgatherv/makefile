@@ -1,4 +1,3 @@
-ALL: lib
 
 SOURCEH   =
 SOURCEC   = sfallgatherv.c

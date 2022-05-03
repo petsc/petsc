@@ -1,9 +1,6 @@
 #requirespackage  'PETSC_HAVE_HDF5'
 
-ALL: lib
-
 CFLAGS    = ${HDF5_INCLUDE}
-FFLAGS    =
 SOURCEC   = hdf5v.c
 SOURCEF   =
 SOURCEH   = ../../../../../../include/petscviewerhdf5.h

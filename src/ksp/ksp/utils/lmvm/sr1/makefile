@@ -1,9 +1,5 @@
 -include ../../../../../../petscdir.mk
 
-ALL: lib
-
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = sr1.c
 SOURCEF  =
 SOURCEH  =

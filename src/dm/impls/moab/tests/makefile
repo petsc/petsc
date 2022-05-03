@@ -1,9 +1,6 @@
 -include ../../../../../petscdir.mk
 #requirespackage  'PETSC_HAVE_MOAB'
-CFLAGS	        =
-FFLAGS	        =
-CPPFLAGS        =
-FPPFLAGS        =
+
 LOCDIR          = src/dm/impls/moab/tests/
 EXAMPLESC       = ex1.cxx ex2.cxx ex3.cxx
 EXAMPLESF       =

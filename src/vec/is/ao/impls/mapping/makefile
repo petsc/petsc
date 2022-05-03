@@ -1,8 +1,4 @@
 
-ALL: lib
-
-CFLAGS    =
-FFLAGS    =
 SOURCEC   = aomapping.c
 SOURCEH   =
 LIBBASE   = libpetscvec

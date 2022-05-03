@@ -1,10 +1,4 @@
 
-
-ALL: lib
-
-CFLAGS    =
-FFLAGS    =
-CPPFLAGS  =
 SOURCEC   = drawnull.c
 SOURCEF   =
 SOURCEH   =

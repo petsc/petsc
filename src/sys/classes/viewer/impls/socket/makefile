@@ -1,11 +1,5 @@
 #requiresdefine  'PETSC_USE_SOCKET_VIEWER'
-#
-#
-ALL: lib
 
-CFLAGS    =
-FFLAGS    =
-CPPFLAGS  =
 SOURCEC   = send.c
 SOURCEF   =
 SOURCEH   = socket.h

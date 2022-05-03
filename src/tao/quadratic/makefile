@@ -1,7 +1,6 @@
 #requiresscalar    real
-ALL: lib
 
-SOURCEH  = 
+SOURCEH  =
 DIRS     = impls
 LOCDIR   = src/tao/quadratic/
 

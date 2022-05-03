@@ -1,6 +1,4 @@
 
-ALL: lib
-
 DIRS     = da
 LOCDIR   = src/ts/characteristic/impls/
 

@@ -6,10 +6,6 @@
 ALL: all
 LOCDIR	 = ./
 DIRS	 = src include tutorials interfaces share/petsc/matlab
-CFLAGS	 =
-FFLAGS	 =
-CPPFLAGS =
-FPPFLAGS =
 
 # next line defines PETSC_DIR and PETSC_ARCH if they are not set
 include ././${PETSC_ARCH}/lib/petsc/conf/petscvariables

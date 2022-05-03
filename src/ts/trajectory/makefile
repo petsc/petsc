@@ -1,6 +1,4 @@
 
-ALL: lib
-
 SOURCEH  =
 DIRS     = interface utils impls
 LOCDIR   = src/ts/trajectory/

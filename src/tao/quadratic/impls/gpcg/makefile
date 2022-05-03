@@ -1,7 +1,4 @@
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = gpcg.c
 SOURCEF  =
 SOURCEH  = gpcg.h

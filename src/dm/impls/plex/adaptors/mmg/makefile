@@ -1,8 +1,5 @@
 #requirespackage  'PETSC_HAVE_MMG'
 
-CPPFLAGS =
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = mmgadapt.c
 SOURCEF  =
 SOURCEH  =

@@ -1,6 +1,4 @@
 
-ALL: lib
-
 LIBBASE  = libpetscvec
 DIRS     = general stride block
 LOCDIR   = src/vec/is/is/impls/

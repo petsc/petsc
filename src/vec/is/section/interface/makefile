@@ -1,4 +1,3 @@
-ALL: lib
 
 SOURCEH	  =
 SOURCEC   = section.c sectionhdf5.c

@@ -1,8 +1,5 @@
 -include ../../../../../../petscdir.mk
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = gltr.c
 SOURCEF  =
 SOURCEH  = gltrimpl.h

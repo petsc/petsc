@@ -1,5 +1,4 @@
 -include ../../../../petscdir.mk
-ALL: lib
 
 DIRS   = mis hem
 LOCDIR = src/mat/coarsen/impls/

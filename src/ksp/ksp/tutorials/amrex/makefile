@@ -1,9 +1,6 @@
 -include ../../../../../petscdir.mk
-CFLAGS           =
+
 CXXFLAGS         = ${AMREX_INCLUDE}
-FFLAGS		 =
-CPPFLAGS         =
-FPPFLAGS         =
 LOCDIR		 = src/ksp/ksp/tutorials/amrex/
 MANSEC           = KSP
 EXAMPLESC	 =

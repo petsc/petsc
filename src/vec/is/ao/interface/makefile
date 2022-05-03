@@ -1,8 +1,4 @@
 
-ALL: lib
-
-CFLAGS    =
-FFLAGS    =
 SOURCEC   = ao.c dlregisdm.c aoreg.c aoregall.c
 SOURCEF   =
 SOURCEH   =

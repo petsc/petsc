@@ -1,8 +1,4 @@
 
-ALL: lib
-
-CFLAGS    =
-FFLAGS    =
 SOURCEC	  = hdf5io.c isio.c isltog.c pmap.c psort.c
 SOURCEF	  =
 SOURCEH	  = isltog.h

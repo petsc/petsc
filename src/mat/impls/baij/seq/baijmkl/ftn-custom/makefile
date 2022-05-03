@@ -1,9 +1,7 @@
 -include ../../../../../../../petscdir.mk
 #requiresdefine   'PETSC_HAVE_FORTRAN'
 #requirespackage 'PETSC_HAVE_MKL_SPARSE_OPTIMIZE'
-ALL: lib
-CFLAGS   =
-FFLAGS   =
+
 SOURCEC  = zbaijmklf.c
 SOURCEF  =
 SOURCEH  =

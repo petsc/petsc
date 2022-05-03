@@ -1,9 +1,6 @@
 -include ../../../../petscdir.mk
 #requirespackage 'PETSC_HAVE_HTOOL'
 
-ALL: lib
-
-FFLAGS    =
 SOURCECXX = htool.cxx
 SOURCECU  =
 SOURCEF   =

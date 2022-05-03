@@ -1,8 +1,5 @@
 #requirespackage 'PETSC_HAVE_KOKKOS'
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  =
 SOURCECU =
 SOURCEKOKKOS = kinit.kokkos.cxx

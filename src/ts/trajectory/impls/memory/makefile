@@ -1,6 +1,4 @@
 
-ALL: lib
-
 SOURCEC  = trajmemory.c
 DIRS     =
 LOCDIR   = src/ts/trajectory/impls/memory/

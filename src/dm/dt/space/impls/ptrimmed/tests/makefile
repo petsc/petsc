@@ -1,10 +1,6 @@
 
-CFLAGS	        =
-FFLAGS	        =
-CPPFLAGS        =
-FPPFLAGS        =
 LOCDIR          = src/dm/dt/space/impls/ptrimmed/tests/
-EXAMPLESC       = 
+EXAMPLESC       =
 EXAMPLESF       =
 MANSEC          = DM
 

@@ -1,8 +1,5 @@
 -include ../../../../petscdir.mk
-CFLAGS		 =
-FFLAGS		 =
-CPPFLAGS         =
-FPPFLAGS         =
+
 LOCDIR		 = src/snes/tutorials/ex10d/
 EXAMPLESC	 = ex10.c
 EXAMPLESF	 =

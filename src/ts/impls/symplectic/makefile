@@ -1,6 +1,4 @@
 
-ALL: lib
-
 MANSEC   = TS
 LOCDIR   = src/ts/impls/symplectic/
 DIRS     = basicsymplectic

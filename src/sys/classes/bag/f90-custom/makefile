@@ -1,8 +1,5 @@
 #requiresdefine   'PETSC_HAVE_FORTRAN'
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = zbagf90.c
 SOURCEF  =
 SOURCEH  =

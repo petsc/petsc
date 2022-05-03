@@ -1,9 +1,6 @@
 -include ../../../../../petscdir.mk
 #requirespackage 'PETSC_HAVE_HYPRE'
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = mhyp.c
 SOURCEF  =
 SOURCEH  = mhyp.h

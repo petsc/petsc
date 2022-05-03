@@ -1,7 +1,5 @@
 #requiresdefine 'PETSC_HAVE_MPI_WIN_CREATE'
 
-ALL: lib
-
 SOURCEH	  =
 SOURCEC   = sfwindow.c
 LIBBASE	  = libpetscvec

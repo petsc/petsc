@@ -1,11 +1,8 @@
 -include ../../../../../petscdir.mk
-CFLAGS	        =
-FFLAGS	        =
-CPPFLAGS        =
-FPPFLAGS        =
+
 LOCDIR          = src/dm/impls/composite/tests/
 EXAMPLESC       = ex1.c
-EXAMPLESF       = 
+EXAMPLESF       =
 MANSEC          = DM
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

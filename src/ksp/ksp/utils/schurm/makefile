@@ -1,13 +1,10 @@
 -include ../../../../../petscdir.mk
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = schurm.c
 SOURCEF  =
 SOURCEH  = schurm.h
 LIBBASE  = libpetscksp
-DIRS     = 
+DIRS     =
 MANSEC   = KSP
 LOCDIR   = src/ksp/ksp/utils/schurm/
 

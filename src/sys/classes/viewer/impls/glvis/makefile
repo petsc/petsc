@@ -1,7 +1,4 @@
-ALL: lib
 
-CFLAGS    =
-FFLAGS    =
 SOURCEC   = glvis.c
 SOURCEF   =
 SOURCEH   =

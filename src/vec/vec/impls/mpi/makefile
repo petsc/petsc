@@ -1,8 +1,4 @@
 
-ALL: lib
-
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = pbvec.c pdvec.c pvec2.c vmpicr.c commonmpvec.c
 SOURCEF  =
 SOURCEH  = pvecimpl.h

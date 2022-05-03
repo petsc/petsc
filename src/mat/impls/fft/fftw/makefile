@@ -1,10 +1,7 @@
 -include ../../../../../petscdir.mk
 #requirespackage   'PETSC_HAVE_FFTW'
 
-ALL: lib
-
 CFLAGS   = ${FFTW_INCLUDE}
-FFLAGS   =
 SOURCEC  = fftw.c
 SOURCEF  =
 SOURCEH  =

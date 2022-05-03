@@ -1,8 +1,4 @@
 
-ALL: lib
-
-CFLAGS    =
-FFLAGS    =
 SOURCEC   = taolinesearch.c dlregis_taolinesearch.c
 SOURCEF   =
 SOURCEH   =

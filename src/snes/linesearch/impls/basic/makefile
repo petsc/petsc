@@ -1,7 +1,4 @@
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = linesearchbasic.c
 SOURCEF  =
 SOURCEH  = basicimpls.h

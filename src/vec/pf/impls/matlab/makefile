@@ -1,10 +1,5 @@
-
 #requiresdefine  'PETSC_HAVE_MATLAB_ENGINE'
 
-ALL: lib
-
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = cmatlab.c
 SOURCEF  =
 SOURCEH  =

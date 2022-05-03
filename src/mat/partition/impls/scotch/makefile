@@ -1,10 +1,6 @@
 -include ../../../../../petscdir.mk
-ALL: lib
-
 #requirespackage 'PETSC_HAVE_PTSCOTCH'
 
-CFLAGS    =
-FFLAGS    =
 CPPFLAGS  = ${SCOTCH_INCLUDE}
 SOURCEC   = scotch.c
 SOURCEH   =

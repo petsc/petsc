@@ -1,8 +1,4 @@
 
-ALL: lib
-
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = posindep.c
 SOURCEF  =
 SOURCEH  =

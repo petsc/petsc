@@ -1,8 +1,5 @@
 -include ../../../../../petscdir.mk
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = mpibaij.c mmbaij.c baijov.c mpb_baij.c mpiaijbaij.c
 SOURCEF  =
 SOURCEH  = mpibaij.h

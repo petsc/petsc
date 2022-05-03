@@ -1,8 +1,6 @@
 -include ../../../../../petscdir.mk
-ALL: lib
 
 CFLAGS    = ${HYPRE_INCLUDE}
-FFLAGS    =
 SOURCEC   = hmg.c
 SOURCEF   =
 SOURCEH   =

@@ -1,8 +1,5 @@
 #requirespackage 'PETSC_HAVE_CUDA'
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = veccuda.c
 SOURCECU = veccuda2.cu
 SOURCEF  =

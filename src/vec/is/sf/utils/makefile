@@ -1,6 +1,4 @@
 
-ALL: lib
-
 SOURCEC   = sfutils.c
 SOURCEF   =
 SOURCEH   =

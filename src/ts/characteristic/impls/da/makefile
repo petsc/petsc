@@ -1,8 +1,4 @@
 
-ALL: lib
-
-CFLAGS    =
-FFLAGS    =
 SOURCEC   = slda.c
 SOURCEF   =
 SOURCEH   = slda.h

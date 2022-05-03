@@ -1,10 +1,7 @@
 -include ../../../../petscdir.mk
 #requirespackage   'PETSC_HAVE_SUITESPARSE'
 
-ALL: lib
-
 CFLAGS    = ${SUITESPARSE_INCLUDE}
-FFLAGS    =
 SOURCEC   = amd.c
 SOURCEF   =
 SOURCEH   =

@@ -1,5 +1,4 @@
 -include ../../../../../petscdir.mk
-ALL: lib
 
 LIBBASE  = libpetscksp
 DIRS     = fischer pod

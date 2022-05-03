@@ -1,9 +1,5 @@
 #requiresdefine   'PETSC_HAVE_FORTRAN'
 
-ALL: lib
-
-CFLAGS   =
-FFLAGS   =
 SOURCEC  =
 SOURCEF90= somefort.F90
 SOURCEH  =

@@ -1,8 +1,4 @@
 
-ALL: lib
-
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = ls.c
 SOURCEF  =
 SOURCEH  = lsimpl.h

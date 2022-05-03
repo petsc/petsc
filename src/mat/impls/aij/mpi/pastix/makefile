@@ -1,10 +1,7 @@
 -include ../../../../../../petscdir.mk
 #requirespackage   'PETSC_HAVE_PASTIX'
 
-ALL: lib
-
 CFLAGS   = ${PASTIX_INCLUDE}
-FFLAGS   =
 SOURCEC	 = pastix.c
 SOURCEF	 =
 SOURCEH	 =

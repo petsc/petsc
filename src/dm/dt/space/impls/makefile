@@ -1,5 +1,4 @@
 -include ../../../../../petscdir.mk
-ALL: lib
 
 LIBBASE  = libpetscdm
 DIRS     = poly ptrimmed tensor point subspace sum wxy

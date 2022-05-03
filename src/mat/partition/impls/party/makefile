@@ -1,10 +1,6 @@
 -include ../../../../../petscdir.mk
-ALL: lib
-
 #requirespackage 'PETSC_HAVE_PARTY'
 
-CFLAGS    =
-FFLAGS    =
 CPPFLAGS  = ${PARTY_INCLUDE}
 SOURCEC   = party.c
 SOURCEH   =

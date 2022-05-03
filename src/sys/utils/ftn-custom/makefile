@@ -1,8 +1,5 @@
-
 #requiresdefine   'PETSC_HAVE_FORTRAN'
-ALL: lib
-CFLAGS   =
-FFLAGS   =
+
 SOURCEC  = zarchf.c zstrf.c zfhostf.c zsortsof.c
 SOURCEF  =
 SOURCEH  =

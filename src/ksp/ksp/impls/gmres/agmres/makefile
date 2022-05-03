@@ -1,10 +1,6 @@
 -include ../../../../../../petscdir.mk
 #requiresscalar real
 
-ALL: lib
-
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = agmres.c agmresorthog.c agmresleja.c agmresdeflation.c
 SOURCEF  =
 SOURCEH  = agmresimpl.h

@@ -1,8 +1,5 @@
 -include ../../../../../petscdir.mk
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = gmres.c borthog.c borthog2.c gmres2.c gmreig.c gmpre.c
 SOURCEH  = gmresimpl.h
 SOURCEF  =

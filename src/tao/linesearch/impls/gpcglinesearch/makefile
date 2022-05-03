@@ -1,8 +1,4 @@
 
-ALL: lib
-
-CFLAGS    =
-FFLAGS    =
 SOURCEC   = gpcglinesearch.c
 SOURCEF   =
 SOURCEH   = gpcglinesearch.h

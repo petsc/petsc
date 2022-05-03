@@ -1,8 +1,5 @@
 -include ../../../../petscdir.mk
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = matnest.c
 SOURCEF  =
 SOURCEH  = matnestimpl.h

@@ -1,8 +1,4 @@
-ALL: lib
 
-CFLAGS    =
-FFLAGS    =
-CPPFLAGS  =
 SOURCEC	  = tv_data_display.c
 SOURCEF	  =
 SOURCEH	  = tv_data_display.h

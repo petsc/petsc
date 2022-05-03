@@ -1,10 +1,6 @@
 -include ../../../../petscdir.mk
 #requirespackage  'PETSC_HAVE_MOAB'
 
-ALL: lib
-
-CFLAGS   =
-FFLAGS   =
 SOURCECXX= dmmoab.cxx dmmbvec.cxx dmmbmat.cxx dmmbfield.cxx dmmbmg.cxx dmmbfem.cxx dmmbio.cxx dmmbutil.cxx
 SOURCEF  =
 SOURCEH  =

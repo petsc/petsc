@@ -1,8 +1,4 @@
 
-ALL: lib
-
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = rk.c mrk.c
 SOURCEF  =
 SOURCEH  = rk.h

@@ -1,5 +1,4 @@
 -include ../../../petscdir.mk
-ALL: lib
 
 SOURCEH  =
 DIRS     = interface impls tests

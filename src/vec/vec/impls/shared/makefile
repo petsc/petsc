@@ -1,8 +1,4 @@
 
-ALL: lib
-
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = shvec.c
 SOURCEF  =
 SOURCEH  =

@@ -1,7 +1,4 @@
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = pounders.c gqt.c
 SOURCEF  =
 SOURCEH  = pounders.h

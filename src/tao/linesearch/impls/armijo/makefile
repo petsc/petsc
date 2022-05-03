@@ -1,8 +1,4 @@
 
-ALL: lib
-
-CFLAGS    =
-FFLAGS    =
 SOURCEC   = armijo.c
 SOURCEF   =
 SOURCEH   = armijo.h

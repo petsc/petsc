@@ -1,8 +1,4 @@
 
-ALL: lib
-
-CFLAGS    =
-FFLAGS    =
 SOURCEC   = stride.c
 SOURCEF   =
 SOURCEH   =

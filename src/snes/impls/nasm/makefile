@@ -1,7 +1,4 @@
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = nasm.c aspin.c
 SOURCEF  =
 SOURCEH  =

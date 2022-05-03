@@ -1,8 +1,4 @@
 
-ALL: lib
-
-CFLAGS    =
-FFLAGS    =
 CPPFLAGS  = ${PARMETIS_INCLUDE}
 SOURCEC   = partparmetis.c
 SOURCEH   =

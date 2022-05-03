@@ -3,10 +3,6 @@
 #requiresscalar    real
 #requiresprecision double
 
-ALL: lib
-
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = lusol.c
 SOURCEF  =
 SOURCEH  =

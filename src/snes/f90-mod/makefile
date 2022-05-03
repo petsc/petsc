@@ -1,8 +1,5 @@
 #requiresdefine   'PETSC_HAVE_FORTRAN'
-#
 
-CFLAGS	   =
-FFLAGS	   =
 SOURCEC	   =
 SOURCEF90  = petscsnesmod.F90
 SOURCEH	   = petscsnes.h petscsnes.h90 petscsnesfas.h

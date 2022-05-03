@@ -1,8 +1,4 @@
 
-ALL: lib
-
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = adaptglee.c
 SOURCEF  =
 SOURCEH  =

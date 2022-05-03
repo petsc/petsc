@@ -1,7 +1,4 @@
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = linesearchl2.c
 SOURCEF  =
 SOURCEH  =

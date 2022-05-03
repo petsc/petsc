@@ -1,8 +1,5 @@
 -include ../../../../../petscdir.mk
-CFLAGS	        =
-FFLAGS	        =
-CPPFLAGS        =
-FPPFLAGS        =
+
 LOCDIR          = src/dm/impls/patch/tests/
 EXAMPLESC       = ex1.c
 EXAMPLESF       =

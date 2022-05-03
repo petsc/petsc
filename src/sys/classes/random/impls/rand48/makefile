@@ -1,9 +1,5 @@
 #requiresfunction 'PETSC_HAVE_DRAND48'
 
-ALL: lib
-
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = rand48.c
 SOURCEF  =
 SOURCEH  =

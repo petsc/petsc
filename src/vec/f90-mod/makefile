@@ -1,8 +1,5 @@
 #requiresdefine   'PETSC_HAVE_FORTRAN'
-#
 
-CFLAGS	   =
-FFLAGS	   =
 SOURCEC	   =
 SOURCEF90  = petscvecmod.F90
 SOURCEH	   = petscao.h petscis.h petscis.h90 petscvec.h petscvec.h90

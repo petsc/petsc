@@ -1,8 +1,4 @@
 
-ALL: lib
-
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = adaptdsp.c
 SOURCEF  =
 SOURCEH  =

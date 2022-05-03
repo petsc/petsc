@@ -1,8 +1,4 @@
 
-ALL: lib
-
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = vecnest.c
 SOURCEF  =
 SOURCEH  = vecnestimpl.h

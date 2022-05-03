@@ -1,8 +1,5 @@
 -include ../../../petscdir.mk
-CFLAGS	        =
-FFLAGS	        =
-CPPFLAGS        =
-FPPFLAGS        =
+
 LOCDIR          = src/sys/tests/options
 EXAMPLESC       = ex55.c
 EXAMPLESF       =

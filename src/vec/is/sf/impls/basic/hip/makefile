@@ -1,8 +1,5 @@
 #requirespackage 'PETSC_HAVE_HIP'
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  =
 SOURCEHIP = sfhip.hip.cpp
 SOURCEF  =

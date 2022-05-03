@@ -1,4 +1,3 @@
-ALL: lib
 
 DIRS = ssls asls
 LOCDIR = src/tao/complementarity/impls/

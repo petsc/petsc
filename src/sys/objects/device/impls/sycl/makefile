@@ -1,9 +1,5 @@
 #requirespackage 'PETSC_HAVE_SYCL'
-ALL: lib
 
-CFLAGS    =
-FFLAGS    =
-CPPFLAGS  =
 SOURCEC	  =
 SOURCESYCL = sycldevice.sycl.cxx syclcontext.sycl.cxx
 SOURCEF	  =

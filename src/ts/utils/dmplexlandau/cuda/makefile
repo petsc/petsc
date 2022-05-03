@@ -1,9 +1,6 @@
 #requirespackage 'PETSC_HAVE_CUDA'
 -include ../../../../../petscdir.mk
 
-CPPFLAGS =
-CFLAGS   =
-FFLAGS   =
 SOURCEC  =
 SOURCECU = landaucu.cu
 SOURCEF  =

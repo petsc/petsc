@@ -1,7 +1,4 @@
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = pipecg2.c
 SOURCEF  =
 SOURCEH  =

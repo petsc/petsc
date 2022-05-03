@@ -1,8 +1,5 @@
 #requiresdefine   'PETSC_HAVE_FORTRAN'
-#
 
-CFLAGS	   =
-FFLAGS	   =
 SOURCEC	   =
 SOURCEF90  = mpiunimod.F90
 SOURCEH	   =

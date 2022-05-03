@@ -1,8 +1,5 @@
 -include ../../../../petscdir.mk
-CFLAGS	  =
-FFLAGS    =
-CPPFLAGS  =
-FPPFLAGS  =
+
 LOCDIR    = src/ksp/ksp/tests/
 EXAMPLESC = ex1.c ex2.c ex3.c ex4.c ex6.c ex7.c ex8.c ex9.c ex10.c ex11.c ex14.c \
             ex15.c ex17.c ex18.c ex19.c ex20.c ex21.c ex22.c ex24.c \

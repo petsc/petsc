@@ -1,8 +1,5 @@
 #requirespackage  'PETSC_HAVE_PARMMG'
 
-CPPFLAGS =
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = parmmgadapt.c
 SOURCEF  =
 SOURCEH  =

@@ -1,9 +1,5 @@
 -include ../../../../petscdir.mk
-ALL: lib
 
-CPPFLAGS =
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = networkcreate.c network.c networkmonitor.c
 SOURCEF  =
 SOURCEH  =

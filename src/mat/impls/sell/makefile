@@ -1,5 +1,4 @@
 -include ../../../../petscdir.mk
-ALL: lib
 
 DIRS     = seq mpi
 LOCDIR   = src/mat/impls/sell/

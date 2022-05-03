@@ -1,10 +1,4 @@
 
-
-ALL: lib
-
-CFLAGS    =
-FFLAGS    =
-CPPFLAGS  =
 SOURCEC   = drawimage.c
 SOURCEF   =
 SOURCEH   = drawimage.h

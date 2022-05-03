@@ -1,6 +1,4 @@
 
-ALL: lib
-
 DIRS      = basic mapping memscalable
 LOCDIR    = src/vec/is/ao/impls/
 MANSEC    = Vec

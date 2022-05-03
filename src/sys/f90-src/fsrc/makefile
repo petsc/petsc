@@ -1,7 +1,4 @@
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  =
 SOURCEF90= f90_fwrap.F90
 SOURCEH  =

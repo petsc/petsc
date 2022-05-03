@@ -1,10 +1,7 @@
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = isutil.c
-SOURCEF  = 
-SOURCEH  = 
+SOURCEF  =
+SOURCEH  =
 LIBBASE  = libpetsctao
 MANSEC   = Tao
 LOCDIR   = src/tao/bound/utils/

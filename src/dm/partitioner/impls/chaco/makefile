@@ -1,8 +1,4 @@
 
-ALL: lib
-
-CFLAGS    =
-FFLAGS    =
 CPPFLAGS  = ${CHACO_INCLUDE}
 SOURCEC   = partchaco.c
 SOURCEH   =

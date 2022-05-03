@@ -1,8 +1,4 @@
 
-ALL: lib
-
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = ssls.c ssils.c ssfls.c
 SOURCEF  =
 SOURCEH  = ssls.h

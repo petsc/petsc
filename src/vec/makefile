@@ -1,5 +1,4 @@
 -include ../../petscdir.mk
-ALL: lib
 
 SOURCEH  =
 DIRS     = vec is pf f90-mod

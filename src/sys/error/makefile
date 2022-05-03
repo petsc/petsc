@@ -1,9 +1,4 @@
 
-ALL: lib
-
-CFLAGS    =
-FFLAGS    =
-CPPFLAGS  =
 SOURCEC	  = adebug.c err.c errtrace.c errabort.c errstop.c fp.c signal.c pstack.c checkptr.c
 SOURCEF	  =
 SOURCEH	  = ../../../include/petscerror.h

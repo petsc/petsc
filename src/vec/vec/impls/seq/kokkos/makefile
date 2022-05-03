@@ -1,8 +1,5 @@
 #requirespackage 'PETSC_HAVE_KOKKOS_KERNELS'
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  =
 SOURCECU =
 SOURCEKOKKOS = veckok.kokkos.cxx

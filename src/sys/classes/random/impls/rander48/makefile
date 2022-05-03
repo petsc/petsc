@@ -1,7 +1,4 @@
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = rander48.c
 SOURCEF  =
 SOURCEH  =

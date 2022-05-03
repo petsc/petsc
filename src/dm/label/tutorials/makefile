@@ -1,8 +1,5 @@
 -include ../../../../petscdir.mk
-CFLAGS	        =
-FFLAGS	        =
-CPPFLAGS        =
-FPPFLAGS        =
+
 EXAMPLESC       = ex1.c
 EXAMPLESF       = ex1f90.F90
 LOCDIR          = src/dm/label/tutorials/

@@ -1,9 +1,6 @@
 -include ../../../../../petscdir.mk
 #requiresdefine   'PETSC_HAVE_ATTRIBUTEALIGNED'
-CFLAGS	         =
-FFLAGS	         =
-CPPFLAGS         =
-FPPFLAGS         =
+
 EXAMPLESC        = water.c
 LOCDIR           = src/snes/tutorials/network/water/
 

@@ -1,9 +1,6 @@
 #requirespackage  'PETSC_HAVE_ADIOS'
 
-ALL: lib
-
 CFLAGS    = ${ADIOS_INCLUDE}
-FFLAGS    =
 SOURCEC   = adios.c
 SOURCEF   =
 SOURCEH   =

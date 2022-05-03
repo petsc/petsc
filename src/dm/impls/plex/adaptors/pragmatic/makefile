@@ -1,8 +1,5 @@
 #requirespackage  'PETSC_HAVE_PRAGMATIC'
 
-CPPFLAGS =
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = pragmaticadapt.c
 SOURCEF  =
 SOURCEH  =

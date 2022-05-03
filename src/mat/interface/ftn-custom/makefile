@@ -1,9 +1,6 @@
 -include ../../../../petscdir.mk
-
 #requiresdefine   'PETSC_HAVE_FORTRAN'
-ALL: lib
-CFLAGS   =
-FFLAGS   =
+
 SOURCEC  = zmatregf.c  zmatrixf.c zmatnullf.c
 SOURCEF  =
 SOURCEH  =

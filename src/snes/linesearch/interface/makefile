@@ -1,8 +1,4 @@
 
-ALL: lib
-
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = linesearch.c linesearchregi.c
 SOURCEF  =
 SOURCEH  =

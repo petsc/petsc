@@ -1,8 +1,5 @@
 -include ../../../../../petscdir.mk
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = aij.c aijfact.c ij.c fdaij.c matmatmult.c symtranspose.c matptap.c matrart.c inode.c inode2.c matmatmatmult.c mattransposematmult.c aijhdf5.c
 SOURCEF  =
 SOURCEH  = aij.h

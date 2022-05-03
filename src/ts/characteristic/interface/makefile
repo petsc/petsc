@@ -1,9 +1,4 @@
 
-ALL: lib
-
-CPPFLAGS  =
-CFLAGS    =
-FFLAGS    =
 SOURCEC   = characteristic.c mocregis.c slregis.c
 SOURCEF   =
 SOURCEH   =

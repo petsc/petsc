@@ -1,9 +1,6 @@
 #requirespackage 'PETSC_HAVE_SPRNG'
 
-ALL: lib
-
 CFLAGS   = ${SPRNG_INCLUDE}
-FFLAGS   =
 SOURCEC  = sprng.c
 SOURCEF  =
 SOURCEH  =

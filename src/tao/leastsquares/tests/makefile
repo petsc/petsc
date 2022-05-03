@@ -1,8 +1,5 @@
 -include ../../../../petscdir.mk
-CFLAGS		 =
-FFLAGS		 =
-CPPFLAGS         =
-FPPFLAGS         =
+
 LOCDIR		 = src/tao/leastsquares/tests/
 MANSEC		 =
 EXAMPLESC        = chwirut2.c

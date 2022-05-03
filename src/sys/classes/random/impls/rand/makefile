@@ -1,9 +1,5 @@
 #requiresfunction 'PETSC_HAVE_RAND'
 
-ALL: lib
-
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = rand.c
 SOURCEF  =
 SOURCEH  =

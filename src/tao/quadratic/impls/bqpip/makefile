@@ -1,7 +1,4 @@
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = bqpip.c
 SOURCEF  =
 SOURCEH  = bqpipimpl.h

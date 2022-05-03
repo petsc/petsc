@@ -1,8 +1,4 @@
 
-CFLAGS	        =
-FFLAGS	        =
-CPPFLAGS        =
-FPPFLAGS        =
 LOCDIR          = src/vec/is/ao/tests/ex3d/
 EXAMPLESC       = ex3.cxx
 EXAMPLESF       =

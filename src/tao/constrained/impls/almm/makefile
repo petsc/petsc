@@ -1,7 +1,4 @@
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = almm.c almmutils.c
 SOURCEF  =
 SOURCEH  = almm.h

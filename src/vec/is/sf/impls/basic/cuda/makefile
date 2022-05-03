@@ -1,5 +1,4 @@
 #requirespackage 'PETSC_HAVE_CUDA'
-ALL: lib
 
 SOURCEH       =
 SOURCEC       =

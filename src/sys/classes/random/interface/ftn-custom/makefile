@@ -1,9 +1,5 @@
 #requiresdefine   'PETSC_HAVE_FORTRAN'
 
-ALL: lib
-
-CFLAGS    =
-FFLAGS    =
 SOURCEC	  = zrandomf.c
 SOURCEF	  =
 SOURCEH	  =

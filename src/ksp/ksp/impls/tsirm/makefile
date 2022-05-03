@@ -1,13 +1,10 @@
 -include ../../../../../petscdir.mk
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = tsirm.c
-SOURCEH  = 
+SOURCEH  =
 SOURCEF  =
 LIBBASE  = libpetscksp
-DIRS     = 
+DIRS     =
 MANSEC   = KSP
 LOCDIR   = src/ksp/ksp/impls/tsirm/
 

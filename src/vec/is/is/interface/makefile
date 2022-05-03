@@ -1,8 +1,4 @@
 
-ALL: lib
-
-CFLAGS    =
-FFLAGS    =
 SOURCEC   = index.c isregall.c isreg.c
 SOURCEF   =
 SOURCEH   =

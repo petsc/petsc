@@ -1,9 +1,4 @@
 
-ALL: lib
-
-CFLAGS    =
-FFLAGS    =
-CPPFLAGS  =
 SOURCEC   = partshell.c
 SOURCEH   =
 LIBBASE   = libpetscdm

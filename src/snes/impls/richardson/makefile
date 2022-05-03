@@ -1,7 +1,4 @@
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = snesrichardson.c
 SOURCEF  =
 SOURCEH  = snesrichardsonimpl.h

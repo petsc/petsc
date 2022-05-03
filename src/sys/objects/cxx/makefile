@@ -1,8 +1,5 @@
 #requirespackage 'PETSC_HAVE_ELEMENTAL'
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCECXX= elemental.cxx
 SOURCEF  =
 SOURCEH  =

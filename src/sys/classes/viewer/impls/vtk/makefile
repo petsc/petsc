@@ -1,7 +1,4 @@
-ALL: lib
 
-CFLAGS    =
-FFLAGS    =
 SOURCEC   = vtkv.c
 SOURCEF   =
 SOURCEH   = vtkvimpl.h

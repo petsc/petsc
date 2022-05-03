@@ -1,6 +1,4 @@
 
-ALL: lib
-
 SOURCEC  = trajvisualization.c
 SOURCEH  =
 DIRS     =

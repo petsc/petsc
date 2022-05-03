@@ -1,6 +1,4 @@
 
-ALL: lib
-
 DIRS     = basic l2 cp shell bt nleqerr
 LOCDIR   = src/snes/linesearch/impls/
 

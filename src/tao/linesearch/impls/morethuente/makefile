@@ -1,8 +1,4 @@
 
-ALL: lib
-
-CFLAGS    =
-FFLAGS    =
 SOURCEC   = morethuente.c
 SOURCEF   =
 SOURCEH   = morethuente.h

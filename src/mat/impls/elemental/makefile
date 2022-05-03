@@ -1,9 +1,6 @@
 -include ../../../../petscdir.mk
 #requirespackage 'PETSC_HAVE_ELEMENTAL'
 
-ALL: lib
-
-FFLAGS   =
 SOURCECXX= matelem.cxx
 SOURCEF  =
 SOURCEH  =

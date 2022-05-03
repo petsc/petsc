@@ -1,6 +1,4 @@
 
-ALL: lib
-
 SOURCEC  = reconstruct.c
 SOURCEH  =
 DIRS     = 

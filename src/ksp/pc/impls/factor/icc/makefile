@@ -1,9 +1,5 @@
 -include ../../../../../../petscdir.mk
-ALL: lib1
 
-CFLAGS    =
-FFLAGS    =
-CPPFLAGS  =
 SOURCEC   = icc.c
 SOURCEF   =
 SOURCEH   = icc.h

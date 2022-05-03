@@ -1,11 +1,5 @@
-
 #requiresdefine 'PETSC_USE_WINDOWS_GRAPHICS'
 
-ALL: lib
-
-CFLAGS    =
-FFLAGS    =
-CPPFLAGS  =
 SOURCEC   = win32draw.c
 SOURCEF   =
 SOURCEH   = win32draw.h

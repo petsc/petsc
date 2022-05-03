@@ -1,7 +1,4 @@
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = lmvm.c
 SOURCEF  =
 SOURCEH  = lmvm.h

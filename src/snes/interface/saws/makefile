@@ -1,9 +1,5 @@
 #requirespackage  'PETSC_HAVE_SAWS'
 
-ALL: lib
-
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = snessaws.c
 SOURCEF  =
 SOURCEH  =

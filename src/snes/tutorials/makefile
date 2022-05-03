@@ -1,8 +1,5 @@
 -include ../../../petscdir.mk
-CFLAGS           =
-FFLAGS		 =
-CPPFLAGS         =
-FPPFLAGS         =
+
 LOCDIR		 = src/snes/tutorials/
 MANSEC           = SNES
 EXAMPLESC	 = ex1.c ex2.c ex3.c  ex5.c ex6.c ex9.c \

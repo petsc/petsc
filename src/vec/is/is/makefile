@@ -1,6 +1,4 @@
 
-ALL: lib
-
 SOURCEH	  = ../../../../include/petsc/private/isimpl.h ../../../../include/petscis.h ../../../../include/petscistypes.h
 LIBBASE	  = libpetscvec
 DIRS	  = interface impls  tests tutorials utils

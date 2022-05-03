@@ -1,7 +1,6 @@
 #requiresscalar    real
-ALL: lib
 
-SOURCEH  = 
+SOURCEH  =
 DIRS     = impls tutorials
 LOCDIR   = src/tao/constrained/
 

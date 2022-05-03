@@ -1,7 +1,4 @@
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = snesncg.c
 SOURCEF  =
 SOURCEH  = snesncgimpl.h
