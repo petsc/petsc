@@ -1,3 +1,4 @@
+-include ../../../petsckdir.mk
 
 SOURCEC  = adamat.c submatfree.c
 SOURCEF  =

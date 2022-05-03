@@ -1,3 +1,4 @@
+-include ../../../petsckdir.mk
 
 SOURCEC  = dmts.c dmlocalts.c dmdats.c dmplexts.c tsconvest.c dmnetworkts.c
 SOURCEF  =

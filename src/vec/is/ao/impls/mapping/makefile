@@ -1,3 +1,4 @@
+-include ../../../../../../petsckdir.mk
 
 SOURCEC   = aomapping.c
 SOURCEH   =

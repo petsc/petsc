@@ -1,3 +1,4 @@
+-include ../../../../../petsckdir.mk
 
 SOURCEC  = adaptdsp.c
 SOURCEF  =

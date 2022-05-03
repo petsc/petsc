@@ -1,3 +1,4 @@
+-include ../../../petsckdir.mk
 
 SOURCEC	  = tv_data_display.c
 SOURCEF	  =

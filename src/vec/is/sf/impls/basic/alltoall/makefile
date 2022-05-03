@@ -1,3 +1,4 @@
+-include ../../../../../../../petsckdir.mk
 
 SOURCEH   =
 SOURCEC   = sfalltoall.c

@@ -1,3 +1,4 @@
+-include ../../../../../petsckdir.mk
 
 SOURCEC  = ssls.c ssils.c ssfls.c
 SOURCEF  =

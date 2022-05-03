@@ -1,3 +1,4 @@
+-include ../../../../../../petsckdir.mk
 
 SOURCEC   = aomemscalable.c
 SOURCEF   =

@@ -1,3 +1,4 @@
+-include ../../../petsckdir.mk
 
 SOURCEC	  = plog.c xmllogevent.c xmlviewer.c
 SOURCEF	  =

@@ -1,3 +1,4 @@
+-include ../../../../petsckdir.mk
 
 SOURCEC   = taolinesearch.c dlregis_taolinesearch.c
 SOURCEF   =

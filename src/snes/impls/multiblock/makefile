@@ -1,3 +1,4 @@
+-include ../../../../petsckdir.mk
 
 SOURCEC  = multiblock.c
 SOURCEF  =

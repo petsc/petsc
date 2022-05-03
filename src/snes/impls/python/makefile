@@ -1,3 +1,4 @@
+-include ../../../../petsckdir.mk
 
 SOURCEC  = pythonsnes.c
 SOURCEF  =

@@ -1,3 +1,4 @@
+-include ../../../../petsckdir.mk
 
 SOURCEC  = linesearch.c linesearchregi.c
 SOURCEF  =

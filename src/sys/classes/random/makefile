@@ -1,3 +1,4 @@
+-include ../../../../petsckdir.mk
 
 SOURCEH  = ../../../../include/petsc/private/randomimpl.h
 DIRS     = interface tests tutorials impls

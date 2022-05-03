@@ -1,3 +1,4 @@
+-include ../../../../../petsckdir.mk
 
 SOURCEC  = ipm.c pdipm.c
 SOURCEF  =

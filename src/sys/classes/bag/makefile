@@ -1,3 +1,4 @@
+-include ../../../../petsckdir.mk
 
 SOURCEC	  = bag.c
 SOURCEF	  =

@@ -1,3 +1,4 @@
+-include ../../../../petsckdir.mk
 
 MANSEC   = TS
 LOCDIR   = src/ts/impls/symplectic/

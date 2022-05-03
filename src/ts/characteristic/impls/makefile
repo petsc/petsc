@@ -1,3 +1,4 @@
+-include ../../../../petsckdir.mk
 
 DIRS     = da
 LOCDIR   = src/ts/characteristic/impls/

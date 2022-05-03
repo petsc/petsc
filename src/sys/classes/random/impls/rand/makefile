@@ -1,3 +1,4 @@
+-include ../../../../../../petsckdir.mk
 #requiresfunction 'PETSC_HAVE_RAND'
 
 SOURCEC  = rand.c

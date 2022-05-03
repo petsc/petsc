@@ -1,3 +1,4 @@
+-include ../../../../../../petsckdir.mk
 
 SOURCEH       =
 SOURCEC       = sfbasic.c sfpack.c sfmpi.c

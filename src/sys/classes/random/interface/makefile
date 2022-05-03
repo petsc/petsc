@@ -1,3 +1,4 @@
+-include ../../../../../petsckdir.mk
 
 SOURCEC	  = random.c randreg.c dlregisrand.c randomc.c
 SOURCEF	  =

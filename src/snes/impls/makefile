@@ -1,3 +1,4 @@
+-include ../../../petsckdir.mk
 
 DIRS     = ksponly ls tr richardson python vi ngmres qn shell ncg fas gs ms nasm composite patch multiblock ntrdc
 LOCDIR   = src/snes/impls/

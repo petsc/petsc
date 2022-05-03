@@ -1,3 +1,4 @@
+-include ../../../power_../stability_../petsckdir.mk
 
 LOCDIR          = src/ts/tutorials/power_grid/stability_9bus/
 EXAMPLESC       = ex9bus.c ex9busadj.c ex9busopt.c ex9busoptfd.c ex9busdmnetwork.c

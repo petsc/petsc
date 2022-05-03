@@ -1,3 +1,4 @@
+-include ../../../../../petsckdir.mk
 
 SOURCEC  = tsdiscgrad.c
 SOURCEF  =

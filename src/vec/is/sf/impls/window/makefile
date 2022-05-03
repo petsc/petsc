@@ -1,3 +1,4 @@
+-include ../../../../../../petsckdir.mk
 #requiresdefine 'PETSC_HAVE_MPI_WIN_CREATE'
 
 SOURCEH	  =

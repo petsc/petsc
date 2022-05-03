@@ -1,3 +1,4 @@
+-include ../../../petsckdir.mk
 
 SOURCEC	  = dlimpl.c dl.c   reg.c
 SOURCEF	  =

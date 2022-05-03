@@ -1,3 +1,4 @@
+-include ../../../../petsckdir.mk
 #requiresdefine  'PETSC_HAVE_MATLAB_ENGINE'
 
 CFLAGS    = ${MATLAB_INCLUDE}

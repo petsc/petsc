@@ -1,3 +1,4 @@
+-include ../../../../petsckdir.mk
 
 SOURCEH   = ../../../../include/petscviewer.h ../../../../include/petscviewertypes.h ../../../../include/petsc/private/viewerimpl.h
 DIRS      = impls tests tutorials interface

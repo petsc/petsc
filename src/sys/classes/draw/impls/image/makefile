@@ -1,3 +1,4 @@
+-include ../../../../../../petsckdir.mk
 
 SOURCEC   = drawimage.c
 SOURCEF   =

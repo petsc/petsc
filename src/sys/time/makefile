@@ -1,3 +1,4 @@
+-include ../../../petsckdir.mk
 
 SOURCEC	  = cputime.c fdate.c
 SOURCEF	  =

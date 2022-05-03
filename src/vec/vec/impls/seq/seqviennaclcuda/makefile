@@ -1,3 +1,4 @@
+-include ../../../../../../petsckdir.mk
 #requirespackage 'PETSC_HAVE_VIENNACL'
 #requiresdefine 'PETSC_HAVE_CUDA'
 

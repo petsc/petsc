@@ -1,3 +1,4 @@
+-include ../../../../../petsckdir.mk
 #requirespackage   'PETSC_HAVE_SUNDIALS2'
 
 SOURCEC  = sundials.c

@@ -1,3 +1,4 @@
+-include ../../../../petsckdir.mk
 #requiresdefine   'PETSC_USE_FORTRAN_KERNELS'
 
 SOURCEC  =

@@ -1,3 +1,4 @@
+-include ../../../../../../petsckdir.mk
 #requirespackage 'PETSC_HAVE_SPRNG'
 
 CFLAGS   = ${SPRNG_INCLUDE}

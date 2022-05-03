@@ -1,3 +1,4 @@
+-include ../../../../../../petsckdir.mk
 #requirespackage 'PETSC_HAVE_RANDOM123'
 
 CFLAGS   = ${RANDOM123_INCLUDE}

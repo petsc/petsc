@@ -1,3 +1,4 @@
+-include ../../../petsckdir.mk
 
 SOURCEH   =
 DIRS      = viewer draw matlabengine random bag

@@ -1,3 +1,4 @@
+-include ../../../../../petsckdir.mk
 
 SOURCEC  = almm.c almmutils.c
 SOURCEF  =

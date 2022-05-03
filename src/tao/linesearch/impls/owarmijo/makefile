@@ -1,3 +1,4 @@
+-include ../../../../../petsckdir.mk
 
 SOURCEC   = owarmijo.c
 SOURCEF   =

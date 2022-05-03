@@ -1,3 +1,4 @@
+-include ../../../../../../../petsckdir.mk
 #requiresdefine 'PETSC_HAVE_MPI_NEIGHBORHOOD_COLLECTIVES'
 
 SOURCEH   =

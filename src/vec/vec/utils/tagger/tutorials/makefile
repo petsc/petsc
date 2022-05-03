@@ -1,3 +1,4 @@
+-include ../../../../../../petsckdir.mk
 
 MANSEC     = Vec
 LOCDIR     = src/vec/vec/utils/tagger/tutorials/

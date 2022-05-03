@@ -1,3 +1,4 @@
+-include ../../../../petsckdir.mk
 
 SOURCEC  = nasm.c aspin.c
 SOURCEF  =

@@ -1,3 +1,4 @@
+-include ../../../../../petsckdir.mk
 
 CPPFLAGS  = ${PARMETIS_INCLUDE}
 SOURCEC   = partparmetis.c

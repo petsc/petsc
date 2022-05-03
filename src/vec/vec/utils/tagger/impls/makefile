@@ -1,3 +1,4 @@
+-include ../../../../../../petsckdir.mk
 
 SOURCEC  = simple.c absolute.c relative.c cdf.c andor.c or.c and.c
 SOURCEF  =

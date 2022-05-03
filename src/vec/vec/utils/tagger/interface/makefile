@@ -1,3 +1,4 @@
+-include ../../../../../../petsckdir.mk
 
 SOURCEC  = tagger.c taggerregi.c dlregistagger.c
 SOURCEF  =

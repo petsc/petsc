@@ -1,3 +1,4 @@
+-include ../../../../../petsckdir.mk
 
 SOURCEC   = slda.c
 SOURCEF   =

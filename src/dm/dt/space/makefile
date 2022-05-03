@@ -1,3 +1,4 @@
+-include ../../../../petsckdir.mk
 
 SOURCEH   = ../../../../include/petscdt.h ../../../../include/petscfe.h ../../../../include/petscfetypes.h
 DIRS      = interface impls

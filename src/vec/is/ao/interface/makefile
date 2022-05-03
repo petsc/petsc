@@ -1,3 +1,4 @@
+-include ../../../../../petsckdir.mk
 
 SOURCEC   = ao.c dlregisdm.c aoreg.c aoregall.c
 SOURCEF   =

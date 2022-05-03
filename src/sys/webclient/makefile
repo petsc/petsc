@@ -1,3 +1,4 @@
+-include ../../../petsckdir.mk
 #requirespackage  'PETSC_HAVE_SSL'
 #requiresdefine   'PETSC_USE_SOCKET_VIEWER'
 

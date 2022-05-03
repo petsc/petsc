@@ -1,3 +1,4 @@
+-include ../../../../petsckdir.mk
 
 SOURCEC   = pf.c pfall.c
 SOURCEF   =

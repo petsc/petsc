@@ -1,3 +1,4 @@
+-include ../../../../../petsckdir.mk
 
 SOURCEC  = pounders.c gqt.c
 SOURCEF  =

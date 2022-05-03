@@ -1,3 +1,4 @@
+-include ../../../../../../petsckdir.mk
 #requirespackage  'PETSC_HAVE_SAWS'
 
 CFLAGS    = -DSAWS_HOME='"${SAWS_HOME}"'

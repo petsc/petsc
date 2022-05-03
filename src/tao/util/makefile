@@ -1,3 +1,4 @@
+-include ../../../petsckdir.mk
 
 SOURCEC  = tao_util.c
 SOURCEF  =

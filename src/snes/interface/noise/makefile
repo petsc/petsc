@@ -1,3 +1,4 @@
+-include ../../../../petsckdir.mk
 #requiresscalar real
 #requiresprecision double
 

@@ -1,3 +1,4 @@
+-include ../../../../../../petsckdir.mk
 #requiresdefine  'PETSC_USE_SOCKET_VIEWER'
 
 SOURCEC   = send.c

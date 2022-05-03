@@ -1,3 +1,4 @@
+-include ../../../../../../../petsckdir.mk
 
 LOCDIR          = src/dm/dt/dualspace/impls/lagrange/tutorials/
 EXAMPLESC       =

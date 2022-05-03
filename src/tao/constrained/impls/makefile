@@ -1,3 +1,4 @@
+-include ../../../../petsckdir.mk
 
 DIRS     = ipm admm almm
 LOCDIR   = src/tao/constrained/impls/

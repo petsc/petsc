@@ -1,3 +1,4 @@
+-include ../../../petsckdir.mk
 
 SOURCEC  = snesmfj.c
 SOURCEF  =

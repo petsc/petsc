@@ -1,3 +1,4 @@
+-include ../../../../petsckdir.mk
 
 LOCDIR          = src/vec/is/tests/
 DIRS            =

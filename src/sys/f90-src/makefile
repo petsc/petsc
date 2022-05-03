@@ -1,3 +1,4 @@
+-include ../../../petsckdir.mk
 #requiresdefine   'PETSC_HAVE_FORTRAN'
 
 SOURCEC  = f90_cwrap.c

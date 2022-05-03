@@ -1,3 +1,4 @@
+-include ../../../../../../petsckdir.mk
 
 MANSEC    = Sys
 SUBMANSEC = Draw

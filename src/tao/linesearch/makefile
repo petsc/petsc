@@ -1,3 +1,4 @@
+-include ../../../petsckdir.mk
 
 SOURCEH  =
 DIRS     = impls  interface

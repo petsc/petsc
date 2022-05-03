@@ -1,3 +1,4 @@
+-include ../../../../petsckdir.mk
 
 DIRS     = bqpip gpcg
 LOCDIR   = src/tao/quadratic/impls/

@@ -1,3 +1,4 @@
+-include ../../../../../../petsckdir.mk
 #requiresdefine   'PETSC_HAVE_FORTRAN'
 
 SOURCEC  = zaxisf.c zlgcf.c zzoomf.c

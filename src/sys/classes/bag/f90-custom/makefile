@@ -1,3 +1,4 @@
+-include ../../../../../petsckdir.mk
 #requiresdefine   'PETSC_HAVE_FORTRAN'
 
 SOURCEC  = zbagf90.c

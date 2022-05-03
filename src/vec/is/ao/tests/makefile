@@ -1,3 +1,4 @@
+-include ../../../../../petsckdir.mk
 
 LOCDIR          = src/vec/is/ao/tests/
 DIRS            = ex3d

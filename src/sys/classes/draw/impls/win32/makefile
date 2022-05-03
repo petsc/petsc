@@ -1,3 +1,4 @@
+-include ../../../../../../petsckdir.mk
 #requiresdefine 'PETSC_USE_WINDOWS_GRAPHICS'
 
 SOURCEC   = win32draw.c
