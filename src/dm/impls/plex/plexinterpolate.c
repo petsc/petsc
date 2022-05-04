@@ -1348,7 +1348,7 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
     DM_Plex *plex = (DM_Plex *) idm->data;
     plex->interpolated = plex->interpolatedCollective = DMPLEX_INTERPOLATED_FULL;
   }
-  PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, idm));
+  PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, PETSC_TRUE, idm));
   *dmInt = idm;
   PetscCall(PetscLogEventEnd(DMPLEX_Interpolate,dm,0,0,0));
   PetscFunctionReturn(0);
@@ -1619,7 +1619,7 @@ PetscErrorCode DMPlexUninterpolate(DM dm, DM *dmUnint)
     DM_Plex *plex = (DM_Plex *) udm->data;
     plex->interpolated = plex->interpolatedCollective = DMPLEX_INTERPOLATED_NONE;
   }
-  PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, udm));
+  PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, PETSC_TRUE, udm));
   *dmUnint = udm;
   PetscFunctionReturn(0);
 }

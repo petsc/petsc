@@ -333,7 +333,7 @@ PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)
     PetscCall(PetscSectionDestroy(&csectionNew));
     PetscCall(VecDestroy(&coordinatesNew));
   }
-  PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, *pdm));
+  PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, PETSC_TRUE, *pdm));
   (*pdm)->setupcalled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }

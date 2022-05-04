@@ -12,7 +12,7 @@ PetscLogEvent DMPLEX_CreateFromFile, DMPLEX_BuildFromCellList, DMPLEX_BuildCoord
 static PetscErrorCode DMInitialize_Plex(DM dm);
 
 /* This copies internal things in the Plex structure that we generally want when making a new, related Plex */
-PetscErrorCode DMPlexCopy_Internal(DM dmin, PetscBool copyPeriodicity, DM dmout)
+PetscErrorCode DMPlexCopy_Internal(DM dmin, PetscBool copyPeriodicity, PetscBool copyOverlap, DM dmout)
 {
   const DMBoundaryType *bd;
   const PetscReal      *maxCell, *L;
@@ -25,7 +25,10 @@ PetscErrorCode DMPlexCopy_Internal(DM dmin, PetscBool copyPeriodicity, DM dmout)
   }
   PetscCall(DMPlexDistributeGetDefault(dmin, &dist));
   PetscCall(DMPlexDistributeSetDefault(dmout, dist));
-  ((DM_Plex *) dmout->data)->useHashLocation = ((DM_Plex *) dmin->data)->useHashLocation;
+  ((DM_Plex *) dmout->data)->useHashLocation  = ((DM_Plex *) dmin->data)->useHashLocation;
+  if (copyOverlap) {
+    ((DM_Plex *) dmout->data)->overlap        = ((DM_Plex *) dmin->data)->overlap;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -747,7 +750,7 @@ static PetscErrorCode DMPlexCreateBoxMesh_Simplex_Internal(DM dm, PetscInt dim, 
   PetscCall(DMSetType(boundary, DMPLEX));
   PetscCall(DMPlexCreateBoxSurfaceMesh_Internal(boundary, dim, faces, lower, upper, PETSC_FALSE));
   PetscCall(DMPlexGenerate(boundary, NULL, interpolate, &vol));
-  PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, vol));
+  PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, PETSC_FALSE, vol));
   PetscCall(DMPlexReplace_Static(dm, &vol));
   PetscCall(DMDestroy(&boundary));
   PetscFunctionReturn(0);
@@ -3210,7 +3213,7 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
     DM dmnew;
 
     PetscCall(DMPlexCreateFromFile(PetscObjectComm((PetscObject) dm), filename, plexname, interpolate, &dmnew));
-    PetscCall(DMPlexCopy_Internal(dm, PETSC_FALSE, dmnew));
+    PetscCall(DMPlexCopy_Internal(dm, PETSC_FALSE, PETSC_FALSE, dmnew));
     PetscCall(DMPlexReplace_Static(dm, &dmnew));
   } else if (refDomain) {
     PetscCall(DMPlexCreateReferenceCell_Internal(dm, cell));
@@ -3222,7 +3225,7 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
     PetscCall(DMSetFromOptions(bdm));
     PetscCall(DMPlexGenerate(bdm, NULL, interpolate, &dmnew));
     PetscCall(DMDestroy(&bdm));
-    PetscCall(DMPlexCopy_Internal(dm, PETSC_FALSE, dmnew));
+    PetscCall(DMPlexCopy_Internal(dm, PETSC_FALSE, PETSC_FALSE, dmnew));
     PetscCall(DMPlexReplace_Static(dm, &dmnew));
   } else {
     PetscCall(PetscObjectSetName((PetscObject) dm, DMPlexShapes[shape]));
@@ -3340,7 +3343,7 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
 
         PetscCall(PetscOptionsReal("-dm_plex_doublet_refinementlimit", "Refinement limit", NULL, rl, &rl, NULL));
         PetscCall(DMPlexCreateDoublet(PetscObjectComm((PetscObject)dm), dim, simplex, interpolate, rl, &dmnew));
-        PetscCall(DMPlexCopy_Internal(dm, PETSC_FALSE, dmnew));
+        PetscCall(DMPlexCopy_Internal(dm, PETSC_FALSE, PETSC_FALSE, dmnew));
         PetscCall(DMPlexReplace_Static(dm, &dmnew));
       }
       break;

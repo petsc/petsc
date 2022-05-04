@@ -1716,7 +1716,7 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
     PetscCall(DMPlexCreateGlobalToNaturalSF(*dmParallel, section, sfMigration, &(*dmParallel)->sfNatural));
     PetscCall(DMSetUseNatural(*dmParallel, PETSC_TRUE));
   }
-  PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, *dmParallel));
+  PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, PETSC_FALSE, *dmParallel));
   /* Cleanup */
   if (sf) {*sf = sfMigration;}
   else    PetscCall(PetscSFDestroy(&sfMigration));
@@ -2022,7 +2022,7 @@ PetscErrorCode DMPlexGetRedundantDM(DM dm, PetscSF *sf, DM *redundantMesh)
   PetscCall(PetscSFDestroy(&gatherSF));
   PetscCall(DMDestroy(&gatherDM));
   PetscCall(DMCopyDisc(dm, *redundantMesh));
-  PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, *redundantMesh));
+  PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, PETSC_FALSE, *redundantMesh));
   PetscFunctionReturn(0);
 }
 

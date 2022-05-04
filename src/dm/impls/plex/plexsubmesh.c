@@ -972,7 +972,7 @@ PetscErrorCode DMPlexConstructGhostCells(DM dm, const char labelName[], PetscInt
   }
   PetscCall(DMPlexConstructGhostCells_Internal(dm, label, &Ng, gdm));
   PetscCall(DMCopyDisc(dm, gdm));
-  PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, gdm));
+  PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, PETSC_TRUE, gdm));
   gdm->setfromoptionscalled = dm->setfromoptionscalled;
   if (numGhostCells) *numGhostCells = Ng;
   *dmGhosted = gdm;
@@ -2276,7 +2276,7 @@ PetscErrorCode DMPlexCreateHybridMesh(DM dm, DMLabel label, DMLabel bdlabel, DML
   if (dmInterface) {*dmInterface = idm;}
   else             PetscCall(DMDestroy(&idm));
   PetscCall(DMPlexConstructCohesiveCells(dm, hlabel, slabel, dmHybrid));
-  PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, *dmHybrid));
+  PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, PETSC_TRUE, *dmHybrid));
   if (hybridLabel) *hybridLabel = hlabel;
   else             PetscCall(DMLabelDestroy(&hlabel));
   if (splitLabel)  *splitLabel  = slabel;
@@ -3557,7 +3557,7 @@ PetscErrorCode DMPlexCreateSubmesh(DM dm, DMLabel vertexLabel, PetscInt value, P
   } else {
     PetscCall(DMPlexCreateSubmesh_Uninterpolated(dm, vertexLabel, value, *subdm));
   }
-  PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, *subdm));
+  PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, PETSC_TRUE, *subdm));
   PetscFunctionReturn(0);
 }
 
@@ -3815,7 +3815,7 @@ PetscErrorCode DMPlexCreateCohesiveSubmesh(DM dm, PetscBool hasLagrange, const c
   } else {
     PetscCall(DMPlexCreateCohesiveSubmesh_Uninterpolated(dm, hasLagrange, label, value, *subdm));
   }
-  PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, *subdm));
+  PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, PETSC_TRUE, *subdm));
   PetscFunctionReturn(0);
 }
 
@@ -3849,7 +3849,7 @@ PetscErrorCode DMPlexFilter(DM dm, DMLabel cellLabel, PetscInt value, DM *subdm)
   PetscCall(DMSetDimension(*subdm, dim));
   /* Extract submesh in place, could be empty on some procs, could have inconsistency if procs do not both extract a shared cell */
   PetscCall(DMPlexCreateSubmeshGeneric_Interpolated(dm, cellLabel, value, PETSC_FALSE, PETSC_FALSE, 0, *subdm));
-  PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, *subdm));
+  PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, PETSC_TRUE, *subdm));
   PetscFunctionReturn(0);
 }
 

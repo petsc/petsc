@@ -1950,7 +1950,7 @@ PetscErrorCode DMPlexTransformApply(DMPlexTransform tr, DM dm, DM *tdm)
   PetscCall(DMPlexTransformCreateLabels(tr, rdm));
   /* Step 7: Set coordinates */
   PetscCall(DMPlexTransformSetCoordinates(tr, rdm));
-  PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, rdm));
+  PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, PETSC_TRUE, rdm));
   *tdm = rdm;
   PetscFunctionReturn(0);
 }

@@ -233,7 +233,7 @@ PetscErrorCode DMPlexRefine_Internal(DM dm, PETSC_UNUSED Vec metric, DMLabel ada
     default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Mesh refinement in dimension %" PetscInt_FMT " is not supported.", dim);
   }
   PetscCall(DMCopyDisc(dm, *dmRefined));
-  PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, *dmRefined));
+  PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, PETSC_TRUE, *dmRefined));
   if (localized) PetscCall(DMLocalizeCoordinates(*dmRefined));
   PetscFunctionReturn(0);
 }
@@ -258,7 +258,7 @@ PetscErrorCode DMPlexCoarsen_Internal(DM dm, PETSC_UNUSED Vec metric, DMLabel ad
   PetscCall(DMAdaptMetric(dm, metricVec, bdLabel, rgLabel, dmCoarsened));
   PetscCall(VecDestroy(&metricVec));
   PetscCall(DMCopyDisc(dm, *dmCoarsened));
-  PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, *dmCoarsened));
+  PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, PETSC_TRUE, *dmCoarsened));
   if (localized) PetscCall(DMLocalizeCoordinates(*dmCoarsened));
   PetscFunctionReturn(0);
 }
