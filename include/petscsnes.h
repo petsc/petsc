@@ -716,10 +716,18 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMDASNESFunction)(DMDALocalInfo*,v
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMDASNESJacobian)(DMDALocalInfo*,void*,Mat,Mat,void*);
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMDASNESObjective)(DMDALocalInfo*,void*,PetscReal*,void*);
 
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMDASNESFunctionVec)(DMDALocalInfo*,Vec,Vec,void*);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMDASNESJacobianVec)(DMDALocalInfo*,Vec,Mat,Mat,void*);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMDASNESObjectiveVec)(DMDALocalInfo*,Vec,PetscReal*,void*);
+
 PETSC_EXTERN PetscErrorCode DMDASNESSetFunctionLocal(DM,InsertMode,DMDASNESFunction,void*);
 PETSC_EXTERN PetscErrorCode DMDASNESSetJacobianLocal(DM,DMDASNESJacobian,void*);
 PETSC_EXTERN PetscErrorCode DMDASNESSetObjectiveLocal(DM,DMDASNESObjective,void*);
 PETSC_EXTERN PetscErrorCode DMDASNESSetPicardLocal(DM,InsertMode,PetscErrorCode (*)(DMDALocalInfo*,void*,void*,void*),PetscErrorCode (*)(DMDALocalInfo*,void*,Mat,Mat,void*),void*);
+
+PETSC_EXTERN PetscErrorCode DMDASNESSetFunctionLocalVec(DM,InsertMode,DMDASNESFunctionVec,void*);
+PETSC_EXTERN PetscErrorCode DMDASNESSetJacobianLocalVec(DM,DMDASNESJacobianVec,void*);
+PETSC_EXTERN PetscErrorCode DMDASNESSetObjectiveLocalVec(DM,DMDASNESObjectiveVec,void*);
 
 PETSC_EXTERN PetscErrorCode DMSNESSetBoundaryLocal(DM,PetscErrorCode (*)(DM,Vec,void*),void*);
 PETSC_EXTERN PetscErrorCode DMSNESSetFunctionLocal(DM,PetscErrorCode (*)(DM,Vec,Vec,void*),void*);
