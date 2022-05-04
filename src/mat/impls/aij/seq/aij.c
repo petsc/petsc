@@ -1730,7 +1730,7 @@ PetscErrorCode MatShift_SeqAIJ(Mat A,PetscScalar v)
   } else {
     PetscCall(PetscCalloc1(A->rmap->n,&mdiag));
     for (i=0; i<A->rmap->n; i++) {
-      if (diag[i] >= ii[i+1]) {
+      if (i < A->cmap->n && diag[i] >= ii[i+1]) { /* 'out of range' rows never have diagonals */
         cnt++;
         mdiag[i] = 1;
       }
@@ -1747,9 +1747,8 @@ PetscErrorCode MatShift_SeqAIJ(Mat A,PetscScalar v)
     a->j = NULL;
     a->i = NULL;
     /* increase the values in imax for each row where a diagonal is being inserted then reallocate the matrix data structures */
-    for (i=0; i<A->rmap->n; i++) {
+    for (i=0; i<PetscMin(A->rmap->n,A->cmap->n); i++) {
       a->imax[i] += mdiag[i];
-      a->imax[i] = PetscMin(a->imax[i],A->cmap->n);
     }
     PetscCall(MatSeqAIJSetPreallocation_SeqAIJ(A,0,a->imax));
 

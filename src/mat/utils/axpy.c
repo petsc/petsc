@@ -279,6 +279,8 @@ PetscErrorCode MatAXPY_BasicWithPreallocation(Mat B,Mat Y,PetscScalar a,Mat X,Ma
    Level: intermediate
 
    Notes:
+    If Y is a rectangular matrix, the shift is done on the main diagonal Y_{ii} of the matrix (https://en.wikipedia.org/wiki/Main_diagonal)
+
     If the matrix Y is missing some diagonal entries this routine can be very slow. To make it fast one should initially
    fill the matrix so that all diagonal entries have a value (with a value of zero for those locations that would not have an
    entry). No operation is performed when a is zero.
