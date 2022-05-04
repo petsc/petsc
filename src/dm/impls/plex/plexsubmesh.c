@@ -2267,11 +2267,12 @@ PetscErrorCode DMPlexCreateHybridMesh(DM dm, DMLabel label, DMLabel bdlabel, Pet
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (label) PetscValidPointer(label, 2);
   if (bdlabel) PetscValidPointer(bdlabel, 3);
-  if (hybridLabel) PetscValidPointer(hybridLabel, 4);
-  if (splitLabel)  PetscValidPointer(splitLabel, 5);
-  if (dmInterface) PetscValidPointer(dmInterface, 6);
-  PetscValidPointer(dmHybrid, 7);
+  if (hybridLabel) PetscValidPointer(hybridLabel, 5);
+  if (splitLabel)  PetscValidPointer(splitLabel, 6);
+  if (dmInterface) PetscValidPointer(dmInterface, 7);
+  PetscValidPointer(dmHybrid, 8);
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMPlexCreateSubmesh(dm, label, 1, PETSC_FALSE, &idm));
   PetscCall(DMPlexCheckValidSubmesh_Private(dm, label, idm));
