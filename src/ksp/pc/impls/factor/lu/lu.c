@@ -46,8 +46,10 @@ static PetscErrorCode PCSetUp_LU(PC pc)
   const char             *prefix;
 
   PetscFunctionBegin;
-  PetscCall(PCGetOptionsPrefix(pc,&prefix));
-  PetscCall(MatSetOptionsPrefix(pc->pmat,prefix));
+  if (!((PetscObject)pc->pmat)->prefix) {
+    PetscCall(PCGetOptionsPrefix(pc,&prefix));
+    PetscCall(MatSetOptionsPrefix(pc->pmat,prefix));
+  }
   pc->failedreason = PC_NOERROR;
   if (dir->hdr.reusefill && pc->setupcalled) ((PC_Factor*)dir)->info.fill = dir->hdr.actualfill;
 
