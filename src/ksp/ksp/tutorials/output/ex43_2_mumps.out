@@ -4,7 +4,7 @@
   2 KSP Residual norm 3.95184e-05 
   3 KSP Residual norm 8.60318e-07 
   4 KSP Residual norm 9.54453e-08 
-KSP Object: (stokes_) 1 MPI processes
+KSP Object: (stokes_) 1 MPI process
   type: fgmres
     restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
     happy breakdown tolerance 1e-30
@@ -12,7 +12,7 @@ KSP Object: (stokes_) 1 MPI processes
   tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
   right preconditioning
   using UNPRECONDITIONED norm type for convergence test
-PC Object: (stokes_) 1 MPI processes
+PC Object: (stokes_) 1 MPI process
   type: fieldsplit
     FieldSplit with SYMMETRIC_MULTIPLICATIVE composition: total splits = 2, blocksize = 3
     using Amat (not Pmat) as operator for blocks
@@ -20,20 +20,20 @@ PC Object: (stokes_) 1 MPI processes
     using Amat (not Pmat) as operator for off-diagonal blocks
     Solver info for each split is in the following KSP objects:
   Split number 0 Fields  0, 1
-  KSP Object: (stokes_fieldsplit_u_) 1 MPI processes
+  KSP Object: (stokes_fieldsplit_u_) 1 MPI process
     type: preonly
     maximum iterations=10000, initial guess is zero
     tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
     left preconditioning
     using NONE norm type for convergence test
-  PC Object: (stokes_fieldsplit_u_) 1 MPI processes
+  PC Object: (stokes_fieldsplit_u_) 1 MPI process
     type: lu
       out-of-place factorization
       tolerance for zero pivot 2.22045e-14
       matrix ordering: nd
       factor fill ratio given 0., needed 0.
         Factored matrix follows:
-          Mat Object: 1 MPI processes
+          Mat Object: 1 MPI process
             type: mumps
             rows=882, cols=882
             package used to perform factorization: mumps
@@ -81,49 +81,49 @@ PC Object: (stokes_) 1 MPI processes
                 CNTL(7) (dropping parameter for BLR):       0. 
                 INFOG(7) (ordering option effectively used after analysis): 1
     linear system matrix followed by preconditioner matrix:
-    Mat Object: 1 MPI processes
+    Mat Object: 1 MPI process
       type: seqaij
       rows=882, cols=882, bs=2
       total: nonzeros=14884, allocated nonzeros=14884
       total number of mallocs used during MatSetValues calls=0
         using I-node routines: found 441 nodes, limit used is 5
-    Mat Object: (stokes_fieldsplit_u_) 1 MPI processes
+    Mat Object: (stokes_fieldsplit_u_) 1 MPI process
       type: seqaij
       rows=882, cols=882, bs=2
       total: nonzeros=14884, allocated nonzeros=14884
       total number of mallocs used during MatSetValues calls=0
         using I-node routines: found 441 nodes, limit used is 5
   Split number 1 Fields  2
-  KSP Object: (stokes_fieldsplit_p_) 1 MPI processes
+  KSP Object: (stokes_fieldsplit_p_) 1 MPI process
     type: preonly
     maximum iterations=10000, initial guess is zero
     tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
     left preconditioning
     using NONE norm type for convergence test
-  PC Object: (stokes_fieldsplit_p_) 1 MPI processes
+  PC Object: (stokes_fieldsplit_p_) 1 MPI process
     type: jacobi
       type DIAGONAL
     linear system matrix followed by preconditioner matrix:
-    Mat Object: 1 MPI processes
+    Mat Object: 1 MPI process
       type: seqaij
       rows=441, cols=441
       total: nonzeros=3721, allocated nonzeros=3721
       total number of mallocs used during MatSetValues calls=0
         not using I-node routines
-    Mat Object: (stokes_fieldsplit_p_) 1 MPI processes
+    Mat Object: (stokes_fieldsplit_p_) 1 MPI process
       type: seqaij
       rows=441, cols=441
       total: nonzeros=3721, allocated nonzeros=3721
       total number of mallocs used during MatSetValues calls=0
         not using I-node routines
   linear system matrix followed by preconditioner matrix:
-  Mat Object: 1 MPI processes
+  Mat Object: 1 MPI process
     type: seqaij
     rows=1323, cols=1323, bs=3
     total: nonzeros=33489, allocated nonzeros=33489
     total number of mallocs used during MatSetValues calls=0
       using I-node routines: found 441 nodes, limit used is 5
-  Mat Object: 1 MPI processes
+  Mat Object: 1 MPI process
     type: seqaij
     rows=1323, cols=1323, bs=3
     total: nonzeros=33489, allocated nonzeros=33489

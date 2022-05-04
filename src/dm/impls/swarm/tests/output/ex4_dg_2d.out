@@ -1,4 +1,4 @@
-DM Object: box 1 MPI processes
+DM Object: box 1 MPI process
   type: plex
 box in 2 dimensions:
   Number of 0-cells per rank: 4

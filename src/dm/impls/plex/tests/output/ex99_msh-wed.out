@@ -1,4 +1,4 @@
-DM Object: mesh-wed 1 MPI processes
+DM Object: mesh-wed 1 MPI process
   type: plex
 mesh-wed in 3 dimensions:
 Supports:

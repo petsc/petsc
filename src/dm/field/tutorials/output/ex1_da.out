@@ -1,8 +1,8 @@
-DMField Object: field 1 MPI processes
+DMField Object: field 1 MPI process
   type: da
   2 components
   VERTEX continuity
-  DM Object: mesh 1 MPI processes
+  DM Object: mesh 1 MPI process
     type: da
   Processor [0] M 3 N 3 m 1 n 1 w 1 s 1
   X range of indices: 0 3, Y range of indices: 0 3
@@ -11,7 +11,7 @@ DMField Object: field 1 MPI processes
     0.0100223     0.144639     
     0.397778     0.0730366     
     0.103866     0.25078     
-Vec Object: Test Points 1 MPI processes
+Vec Object: Test Points 1 MPI process
   type: mpi
 Process [0]
 0.984052
@@ -43,7 +43,7 @@ rH:
 10:   1.0402e-01   0.0000e+00   0.0000e+00   2.3725e-02   2.3725e-02
 15:   0.0000e+00
   Quadrature of order 3 on 4 points (dim 2)
-IS Object: FE Test Cells 1 MPI processes
+IS Object: FE Test Cells 1 MPI process
   type: general
 Number of indices in set 2
 0 1
@@ -117,7 +117,7 @@ rH:
 50:   1.1558e-02   0.0000e+00   0.0000e+00   2.6361e-03   2.6361e-03
 55:   0.0000e+00   0.0000e+00   1.1558e-02   1.1558e-02   0.0000e+00
 60:   0.0000e+00   2.6361e-03   2.6361e-03   0.0000e+00
-IS Object: FV Test Cells 1 MPI processes
+IS Object: FV Test Cells 1 MPI process
   type: general
 Number of indices in set 2
 0 0

@@ -51,13 +51,13 @@ SNES Object: 4 MPI processes
         number of blocks = 4
         Local solver information for first block is in the following KSP and PC objects on rank 0:
         Use -pc_hpddm_levels_1_ksp_view ::ascii_info_detail to display information for all blocks
-      KSP Object: (pc_hpddm_levels_1_sub_) 1 MPI processes
+      KSP Object: (pc_hpddm_levels_1_sub_) 1 MPI process
         type: preonly
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
-      PC Object: (pc_hpddm_levels_1_sub_) 1 MPI processes
+      PC Object: (pc_hpddm_levels_1_sub_) 1 MPI process
         type: icc
           out-of-place factorization
           3 levels of fill
@@ -66,12 +66,12 @@ SNES Object: 4 MPI processes
           matrix ordering: natural
           factor fill ratio given 1., needed 2.69786
             Factored matrix follows:
-              Mat Object: 1 MPI processes
+              Mat Object: 1 MPI process
                 type: seqsbaij
                 package used to perform factorization: petsc
                     block size is 1
         linear system matrix = precond matrix:
-        Mat Object: (pc_hpddm_levels_1_sub_) 1 MPI processes
+        Mat Object: (pc_hpddm_levels_1_sub_) 1 MPI process
           type: seqaij
           total number of mallocs used during MatSetValues calls=0
             not using I-node routines
@@ -94,25 +94,25 @@ SNES Object: 4 MPI processes
           type: mpibaij
           total number of mallocs used during MatSetValues calls=0
               block size is 20
-                KSP Object:       (pc_hpddm_coarse_redundant_)       1 MPI processes
+                KSP Object: (pc_hpddm_coarse_redundant_) 1 MPI process
                   type: preonly
                   maximum iterations=10000, initial guess is zero
                   tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
                   left preconditioning
                   using NONE norm type for convergence test
-                PC Object:       (pc_hpddm_coarse_redundant_)       1 MPI processes
+                PC Object: (pc_hpddm_coarse_redundant_) 1 MPI process
                   type: lu
                     out-of-place factorization
                     tolerance for zero pivot 2.22045e-14
                     matrix ordering: nd
                     factor fill ratio given 5., needed 1.
                       Factored matrix follows:
-                        Mat Object:       1 MPI processes
+                        Mat Object: 1 MPI process
                           type: seqbaij
                           package used to perform factorization: petsc
                               block size is 20
                   linear system matrix = precond matrix:
-                  Mat Object:       (pc_hpddm_coarse_redundant_)       1 MPI processes
+                  Mat Object: (pc_hpddm_coarse_redundant_) 1 MPI process
                     type: seqbaij
                     total number of mallocs used during MatSetValues calls=0
                         block size is 20

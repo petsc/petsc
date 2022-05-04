@@ -255,7 +255,7 @@ int main(int argc,char **argv)
    test:
       suffix: 21
       args: -mat_type mpiaij
-      filter: grep -v type | grep -v "MPI processes"
+      filter: grep -v type | grep -v " MPI process"
 
    test:
       suffix: 22
@@ -280,7 +280,7 @@ int main(int argc,char **argv)
       suffix: 23
       nsize: 3
       args: -mat_type mpiaij
-      filter: grep -v type | grep -v "MPI processes"
+      filter: grep -v type | grep -v " MPI process"
 
    test:
       suffix: 24
@@ -301,14 +301,14 @@ int main(int argc,char **argv)
       args: -mat_type mpiaijcusparse
       output_file: output/ex2_21.out
       requires: cuda
-      filter: grep -v type | grep -v "MPI processes"
+      filter: grep -v type | grep -v " MPI process"
 
    test:
       suffix: 2_aijkokkos_1
       args: -mat_type aijkokkos
       output_file: output/ex2_21.out
       requires: kokkos_kernels
-      filter: grep -v type | grep -v "MPI processes"
+      filter: grep -v type | grep -v " MPI process"
 
    test:
       suffix: 2_aijcusparse_2
@@ -316,7 +316,7 @@ int main(int argc,char **argv)
       args: -mat_type mpiaijcusparse
       output_file: output/ex2_23.out
       requires: cuda
-      filter: grep -v type | grep -v "MPI processes"
+      filter: grep -v type | grep -v " MPI process"
 
    test:
       suffix: 2_aijkokkos_2
@@ -325,7 +325,7 @@ int main(int argc,char **argv)
       output_file: output/ex2_23.out
       # Turn off hip due to intermittent CI failures on hip.txcorp.com. Should re-enable this test when the machine is upgraded.
       requires: !sycl !hip kokkos_kernels
-      filter: grep -v type | grep -v "MPI processes"
+      filter: grep -v type | grep -v " MPI process"
 
    test:
       suffix: 3
@@ -342,7 +342,7 @@ int main(int argc,char **argv)
       suffix: 4
       nsize: 2
       args: -mat_type mpidense -rectA
-      filter: grep -v type | grep -v "MPI processes"
+      filter: grep -v type | grep -v " MPI process"
 
    test:
       requires: cuda
@@ -350,7 +350,7 @@ int main(int argc,char **argv)
       nsize: 2
       output_file: output/ex2_4.out
       args: -mat_type mpidensecuda -rectA
-      filter: grep -v type | grep -v "MPI processes"
+      filter: grep -v type | grep -v " MPI process"
 
    test:
       suffix: aijcusparse_1

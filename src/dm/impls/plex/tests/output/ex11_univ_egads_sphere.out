@@ -50,7 +50,7 @@ Label 'depth':
 [0]: 22 (0)
 [0]: 23 (0)
 [0]: 24 (0)
-DM Object: First Mesh 1 MPI processes
+DM Object: First Mesh 1 MPI process
   type: plex
 First Mesh in 2 dimensions:
   Number of 0-cells per rank: 18
@@ -162,7 +162,7 @@ Label 'universal':
 [0]: 49 (399)
 [0]: 90 (399)
 [0]: 92 (399)
-DM Object: Second Mesh 1 MPI processes
+DM Object: Second Mesh 1 MPI process
   type: plex
 Second Mesh in 2 dimensions:
   Number of 0-cells per rank: 18

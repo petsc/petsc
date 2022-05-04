@@ -1,4 +1,4 @@
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.
 1.
@@ -12,7 +12,7 @@ Vec Object: 1 MPI processes
 9.
 writing vector in binary to vector.dat ...
 reading vector in binary from vector.dat ...
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.
 1.

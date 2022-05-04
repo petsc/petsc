@@ -1,6 +1,6 @@
 
  trajectory sensitivity: d[phi(tf)]/d[pm]  d[omega(tf)]/d[pm]
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqdense
 -4.7646171251077840e-03 
 1.4998524221585170e-02 

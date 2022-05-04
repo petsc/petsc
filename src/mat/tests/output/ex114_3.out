@@ -1,4 +1,4 @@
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqaij
 row 0: (0, -2.)  (1, -2.)  (2, -2.)  (3, -4.)  (4, 1.)  (5, 1.) 
 row 1:
@@ -7,7 +7,7 @@ row 3: (0, -2.)  (1, -2.)  (4, -2.)
 row 4: (0, -2.)  (1, -2.)  (2, -2.) 
 
  MatGetRowMax
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1.
 0.
@@ -15,7 +15,7 @@ Vec Object: 1 MPI processes
 0.
 0.
 0: 4 0 1 2 3
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqaij
 row 0: (0, 2.)  (1, 2.)  (2, 2.)  (3, 4.)  (4, -1.)  (5, -1.) 
 row 1:
@@ -26,7 +26,7 @@ row 4: (0, 2.)  (1, 2.)  (2, 2.)
  MatGetRowMin
 
  MatGetRowMaxAbs
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 4.
 0.
@@ -36,7 +36,7 @@ Vec Object: 1 MPI processes
 0: 3 0 0 0 0
 
  MatGetRowMinAbs
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 -1.
 0.

@@ -1,13 +1,13 @@
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqaij
 row 0: (0, 1.) 
-PC Object: 1 MPI processes
+PC Object: 1 MPI process
   type: lu
   PC has not been set up so information may be incomplete
     out-of-place factorization
     tolerance for zero pivot 2.22045e-14
   linear system matrix = precond matrix:
-  Mat Object: 1 MPI processes
+  Mat Object: 1 MPI process
     type: seqaij
     rows=1, cols=1
     total: nonzeros=1, allocated nonzeros=1

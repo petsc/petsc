@@ -1,6 +1,6 @@
   0 TAO, Function value: -1.01855,  Residual: 0.00218604 
   1 TAO, Function value: -1.01855,  Residual: 1.38751e-11 
 TAO solve converged due to CONVERGED_GRTOL iterations 1
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1.0194

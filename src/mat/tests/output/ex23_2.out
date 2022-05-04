@@ -9,7 +9,7 @@ Test MatIsSymmetric: 0
 Test MatView
 Mat Object: 4 MPI processes
   type: is
-  Mat Object: (is_) 1 MPI processes
+  Mat Object: (is_) 1 MPI process
     type: seqaij
 row 0: (0, 2.)  (1, -1.)  (7, -1.) 
 row 1: (0, -2.)  (1, 4.)  (2, -2.) 
@@ -19,7 +19,7 @@ row 4: (3, -5.)  (4, 10.)  (5, -5.)
 row 5: (4, -6.)  (5, 12.)  (6, -6.) 
 row 6: (5, -7.)  (6, 14.)  (7, -7.) 
 row 7: (0, -8.)  (6, -8.)  (7, 16.) 
-  Mat Object: (is_) 1 MPI processes
+  Mat Object: (is_) 1 MPI process
     type: seqaij
 row 0: (0, 2.)  (1, -1.)  (7, -1.) 
 row 1: (0, -2.)  (1, 4.)  (2, -2.) 
@@ -29,7 +29,7 @@ row 4: (3, -5.)  (4, 10.)  (5, -5.)
 row 5: (4, -6.)  (5, 12.)  (6, -6.) 
 row 6: (5, -7.)  (6, 14.)  (7, -7.) 
 row 7: (0, -8.)  (6, -8.)  (7, 16.) 
-  Mat Object: (is_) 1 MPI processes
+  Mat Object: (is_) 1 MPI process
     type: seqaij
 row 0: (0, 2.)  (1, -1.)  (7, -1.) 
 row 1: (0, -2.)  (1, 4.)  (2, -2.) 
@@ -39,7 +39,7 @@ row 4: (3, -5.)  (4, 10.)  (5, -5.)
 row 5: (4, -6.)  (5, 12.)  (6, -6.) 
 row 6: (5, -7.)  (6, 14.)  (7, -7.) 
 row 7: (0, -8.)  (6, -8.)  (7, 16.) 
-  Mat Object: (is_) 1 MPI processes
+  Mat Object: (is_) 1 MPI process
     type: seqaij
 row 0: (0, 2.)  (1, -1.)  (7, -1.) 
 row 1: (0, -2.)  (1, 4.)  (2, -2.) 

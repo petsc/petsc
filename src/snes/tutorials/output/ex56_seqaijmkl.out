@@ -13,7 +13,7 @@
   Linear solve converged due to CONVERGED_RTOL iterations 10
   1 SNES Function norm 2.222e-10 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
-DM Object: Mesh (ex56_) 1 MPI processes
+DM Object: Mesh (ex56_) 1 MPI process
   type: plex
 Mesh in 3 dimensions:
   Number of 0-cells per rank: 18
@@ -54,7 +54,7 @@ Field deformation:
   Linear solve converged due to CONVERGED_RTOL iterations 21
   1 SNES Function norm 2.956e-10 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
-DM Object: Mesh (ex56_) 1 MPI processes
+DM Object: Mesh (ex56_) 1 MPI process
   type: plex
 Mesh in 3 dimensions:
   Number of 0-cells per rank: 75

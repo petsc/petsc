@@ -1,4 +1,4 @@
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqaij
 row 0:
 row 1:
@@ -10,7 +10,7 @@ row 6:
 row 7: (4, 0.) 
 row 8:
 row 9: (7, 0.) 
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqaij
 row 0:
 row 1:

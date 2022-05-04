@@ -5,7 +5,7 @@ Patch DM Patch Mesh
 Patch 0: (0, 0, 0)--(2, 2, 1)
 Processor [0] M 3 N 3 m 1 n 1 w 1 s 0
 X range of indices: 0 3, Y range of indices: 0 3
-PetscSF Object: Buffered Map 1 MPI processes
+PetscSF Object: Buffered Map 1 MPI process
   type not yet set
   [0] Number of roots=36, leaves=9, remote ranks=1
   [0] 0 <- (0,0)
@@ -17,7 +17,7 @@ PetscSF Object: Buffered Map 1 MPI processes
   [0] 6 <- (0,12)
   [0] 7 <- (0,13)
   [0] 8 <- (0,14)
-PetscSF Object: Restricted Map 1 MPI processes
+PetscSF Object: Restricted Map 1 MPI process
   type not yet set
   [0] Number of roots=36, leaves=4, remote ranks=1
   [0] 0 <- (0,0)
@@ -27,7 +27,7 @@ PetscSF Object: Restricted Map 1 MPI processes
 Patch 1: (2, 0, 0)--(4, 2, 1)
 Processor [0] M 4 N 3 m 1 n 1 w 1 s 0
 X range of indices: 0 4, Y range of indices: 0 3
-PetscSF Object: Buffered Map 1 MPI processes
+PetscSF Object: Buffered Map 1 MPI process
   type not yet set
   [0] Number of roots=36, leaves=12, remote ranks=1
   [0] 0 <- (0,1)
@@ -42,7 +42,7 @@ PetscSF Object: Buffered Map 1 MPI processes
   [0] 9 <- (0,14)
   [0] 10 <- (0,15)
   [0] 11 <- (0,16)
-PetscSF Object: Restricted Map 1 MPI processes
+PetscSF Object: Restricted Map 1 MPI process
   type not yet set
   [0] Number of roots=36, leaves=4, remote ranks=1
   [0] 1 <- (0,2)
@@ -52,7 +52,7 @@ PetscSF Object: Restricted Map 1 MPI processes
 Patch 2: (4, 0, 0)--(6, 2, 1)
 Processor [0] M 3 N 3 m 1 n 1 w 1 s 0
 X range of indices: 0 3, Y range of indices: 0 3
-PetscSF Object: Buffered Map 1 MPI processes
+PetscSF Object: Buffered Map 1 MPI process
   type not yet set
   [0] Number of roots=36, leaves=9, remote ranks=1
   [0] 0 <- (0,3)
@@ -64,7 +64,7 @@ PetscSF Object: Buffered Map 1 MPI processes
   [0] 6 <- (0,15)
   [0] 7 <- (0,16)
   [0] 8 <- (0,17)
-PetscSF Object: Restricted Map 1 MPI processes
+PetscSF Object: Restricted Map 1 MPI process
   type not yet set
   [0] Number of roots=36, leaves=4, remote ranks=1
   [0] 1 <- (0,4)
@@ -74,7 +74,7 @@ PetscSF Object: Restricted Map 1 MPI processes
 Patch 3: (0, 2, 0)--(2, 4, 1)
 Processor [0] M 3 N 4 m 1 n 1 w 1 s 0
 X range of indices: 0 3, Y range of indices: 0 4
-PetscSF Object: Buffered Map 1 MPI processes
+PetscSF Object: Buffered Map 1 MPI process
   type not yet set
   [0] Number of roots=36, leaves=12, remote ranks=1
   [0] 0 <- (0,6)
@@ -89,7 +89,7 @@ PetscSF Object: Buffered Map 1 MPI processes
   [0] 9 <- (0,24)
   [0] 10 <- (0,25)
   [0] 11 <- (0,26)
-PetscSF Object: Restricted Map 1 MPI processes
+PetscSF Object: Restricted Map 1 MPI process
   type not yet set
   [0] Number of roots=36, leaves=4, remote ranks=1
   [0] 3 <- (0,12)
@@ -99,7 +99,7 @@ PetscSF Object: Restricted Map 1 MPI processes
 Patch 4: (2, 2, 0)--(4, 4, 1)
 Processor [0] M 4 N 4 m 1 n 1 w 1 s 0
 X range of indices: 0 4, Y range of indices: 0 4
-PetscSF Object: Buffered Map 1 MPI processes
+PetscSF Object: Buffered Map 1 MPI process
   type not yet set
   [0] Number of roots=36, leaves=16, remote ranks=1
   [0] 0 <- (0,7)
@@ -118,7 +118,7 @@ PetscSF Object: Buffered Map 1 MPI processes
   [0] 13 <- (0,26)
   [0] 14 <- (0,27)
   [0] 15 <- (0,28)
-PetscSF Object: Restricted Map 1 MPI processes
+PetscSF Object: Restricted Map 1 MPI process
   type not yet set
   [0] Number of roots=36, leaves=4, remote ranks=1
   [0] 5 <- (0,14)
@@ -128,7 +128,7 @@ PetscSF Object: Restricted Map 1 MPI processes
 Patch 5: (4, 2, 0)--(6, 4, 1)
 Processor [0] M 3 N 4 m 1 n 1 w 1 s 0
 X range of indices: 0 3, Y range of indices: 0 4
-PetscSF Object: Buffered Map 1 MPI processes
+PetscSF Object: Buffered Map 1 MPI process
   type not yet set
   [0] Number of roots=36, leaves=12, remote ranks=1
   [0] 0 <- (0,9)
@@ -143,7 +143,7 @@ PetscSF Object: Buffered Map 1 MPI processes
   [0] 9 <- (0,27)
   [0] 10 <- (0,28)
   [0] 11 <- (0,29)
-PetscSF Object: Restricted Map 1 MPI processes
+PetscSF Object: Restricted Map 1 MPI process
   type not yet set
   [0] Number of roots=36, leaves=4, remote ranks=1
   [0] 4 <- (0,16)
@@ -153,7 +153,7 @@ PetscSF Object: Restricted Map 1 MPI processes
 Patch 6: (0, 4, 0)--(2, 6, 1)
 Processor [0] M 3 N 3 m 1 n 1 w 1 s 0
 X range of indices: 0 3, Y range of indices: 0 3
-PetscSF Object: Buffered Map 1 MPI processes
+PetscSF Object: Buffered Map 1 MPI process
   type not yet set
   [0] Number of roots=36, leaves=9, remote ranks=1
   [0] 0 <- (0,18)
@@ -165,7 +165,7 @@ PetscSF Object: Buffered Map 1 MPI processes
   [0] 6 <- (0,30)
   [0] 7 <- (0,31)
   [0] 8 <- (0,32)
-PetscSF Object: Restricted Map 1 MPI processes
+PetscSF Object: Restricted Map 1 MPI process
   type not yet set
   [0] Number of roots=36, leaves=4, remote ranks=1
   [0] 3 <- (0,24)
@@ -175,7 +175,7 @@ PetscSF Object: Restricted Map 1 MPI processes
 Patch 7: (2, 4, 0)--(4, 6, 1)
 Processor [0] M 4 N 3 m 1 n 1 w 1 s 0
 X range of indices: 0 4, Y range of indices: 0 3
-PetscSF Object: Buffered Map 1 MPI processes
+PetscSF Object: Buffered Map 1 MPI process
   type not yet set
   [0] Number of roots=36, leaves=12, remote ranks=1
   [0] 0 <- (0,19)
@@ -190,7 +190,7 @@ PetscSF Object: Buffered Map 1 MPI processes
   [0] 9 <- (0,32)
   [0] 10 <- (0,33)
   [0] 11 <- (0,34)
-PetscSF Object: Restricted Map 1 MPI processes
+PetscSF Object: Restricted Map 1 MPI process
   type not yet set
   [0] Number of roots=36, leaves=4, remote ranks=1
   [0] 5 <- (0,26)
@@ -200,7 +200,7 @@ PetscSF Object: Restricted Map 1 MPI processes
 Patch 8: (4, 4, 0)--(6, 6, 1)
 Processor [0] M 3 N 3 m 1 n 1 w 1 s 0
 X range of indices: 0 3, Y range of indices: 0 3
-PetscSF Object: Buffered Map 1 MPI processes
+PetscSF Object: Buffered Map 1 MPI process
   type not yet set
   [0] Number of roots=36, leaves=9, remote ranks=1
   [0] 0 <- (0,21)
@@ -212,7 +212,7 @@ PetscSF Object: Buffered Map 1 MPI processes
   [0] 6 <- (0,33)
   [0] 7 <- (0,34)
   [0] 8 <- (0,35)
-PetscSF Object: Restricted Map 1 MPI processes
+PetscSF Object: Restricted Map 1 MPI process
   type not yet set
   [0] Number of roots=36, leaves=4, remote ranks=1
   [0] 4 <- (0,28)

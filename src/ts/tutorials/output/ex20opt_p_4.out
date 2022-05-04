@@ -3,6 +3,6 @@
   1 TAO,  Function value: 1.57482e-08,  Residual: 2.89238e-08 
   2 TAO,  Function value: 4.75584e-09,  Residual: 1.60414e-08 
   3 TAO,  Function value: 1.38679e-12,  Residual: 2.77051e-10 
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 99.99

@@ -42,7 +42,7 @@ int main(int argc,char **argv)
 
    testset:
       diff_args: -j
-      filter: grep -v type | grep -v "MPI processes" | grep -v Process
+      filter: grep -v type | grep -v " MPI process" | grep -v Process
       output_file: output/ex21_1.out
 
       test:

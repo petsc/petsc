@@ -91,12 +91,12 @@ int main(int argc,char **argv)
 /*TEST
 
    test:
-      filter: grep -v type | grep -v "MPI processes" | grep -v Process
+      filter: grep -v type | grep -v " MPI process" | grep -v Process
       diff_args: -j
       nsize: 2
 
    test:
-      filter: grep -v type | grep -v "MPI processes" | grep -v Process
+      filter: grep -v type | grep -v " MPI process" | grep -v Process
       output_file: output/ex45_1.out
       diff_args: -j
       suffix: 2

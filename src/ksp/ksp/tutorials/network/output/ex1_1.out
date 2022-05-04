@@ -1,6 +1,6 @@
   0 KSP Residual norm 9.69536 
   1 KSP Residual norm < 1.e-11
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
   Edge 0:
     -1.

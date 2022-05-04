@@ -1,5 +1,5 @@
 Jacobian:
-Mat Object: (M_) 1 MPI processes
+Mat Object: (M_) 1 MPI process
   type: seqaij
 row 0: (0, 0.0138889)  (1, 0.0138889)  (3, 0.0138889) 
 row 1: (0, 0.0138889)  (1, 0.0416667)  (2, 0.0138889)  (3, 0.0277778)  (4, 0.0277778) 
@@ -11,7 +11,7 @@ row 6: (3, 0.0138889)  (4, 0.0277778)  (6, 0.0277778)  (7, 0.0138889)
 row 7: (4, 0.0277778)  (5, 0.0277778)  (6, 0.0138889)  (7, 0.0416667)  (8, 0.0138889) 
 row 8: (5, 0.0138889)  (7, 0.0138889)  (8, 0.0138889) 
 Z:
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.0416667
 0.125
@@ -23,7 +23,7 @@ Vec Object: 1 MPI processes
 0.125
 0.0416667
 Residual:
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.
 0.
@@ -35,7 +35,7 @@ Vec Object: 1 MPI processes
 0.
 0.
 Residual:
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.
 0.
@@ -47,7 +47,7 @@ Vec Object: 1 MPI processes
 0.
 0.
 Residual:
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.
 0.

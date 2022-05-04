@@ -9,7 +9,7 @@
  Called MatAXPY
  Called MatShift
  Called MatDiagonalSet
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: shell
  Called MatView
  Called MatCreateVecs

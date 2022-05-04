@@ -1,8 +1,8 @@
-DM Object: 1 MPI processes
+DM Object: 1 MPI process
   type: da
 Processor [0] M 25 N 13 m 1 n 1 w 1 s 1
 X range of indices: 0 25, Y range of indices: 0 13
-DM Object: Swarm 1 MPI processes
+DM Object: Swarm 1 MPI process
   type: swarm
 Swarm in 2 dimensions:
   Number of particles per rank: 3492

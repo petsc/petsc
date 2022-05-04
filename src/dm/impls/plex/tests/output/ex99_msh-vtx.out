@@ -1,4 +1,4 @@
-DM Object: mesh-vtx 1 MPI processes
+DM Object: mesh-vtx 1 MPI process
   type: plex
 mesh-vtx in 0 dimensions:
 Supports:

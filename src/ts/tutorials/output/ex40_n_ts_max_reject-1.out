@@ -1,7 +1,7 @@
       TSAdapt basic alpha 0: step   0 rejected t=0          + 2.500e-01 dt=2.500e-02  wlte=  538  wltea=   -1 wlter=   -1
       TSAdapt basic alpha 0: step   0 rejected t=0          + 2.500e-02 dt=2.500e-03  wlte= 20.5  wltea=   -1 wlter=   -1
 Ball hit the ground at t =  0.00 seconds
-TS Object: 1 MPI processes
+TS Object: 1 MPI process
   type: alpha
     Alpha_m=0.5, Alpha_f=0.5, Gamma=0.5
   maximum steps=1
@@ -13,7 +13,7 @@ TS Object: 1 MPI processes
   total number of nonlinear solve failures=0
   total number of rejected steps=2
   using relative error tolerance of 0.0001,   using absolute error tolerance of 0.0001
-  TSAdapt Object: 1 MPI processes
+  TSAdapt Object: 1 MPI process
     type: basic
     safety factor 0.9
     extra safety factor after step rejection 0.5
@@ -22,21 +22,21 @@ TS Object: 1 MPI processes
     maximum allowed timestep 0.5
     minimum allowed timestep 0.
     maximum solution absolute value to be ignored -1.
-  SNES Object: 1 MPI processes
+  SNES Object: 1 MPI process
     type: newtonls
     maximum iterations=50, maximum function evaluations=10000
     tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
     total number of linear solver iterations=1
     total number of function evaluations=2
     norm schedule ALWAYS
-    SNESLineSearch Object: 1 MPI processes
+    SNESLineSearch Object: 1 MPI process
       type: bt
         interpolation: cubic
         alpha=1.000000e-04
       maxstep=1.000000e+08, minlambda=1.000000e-12
       tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
       maximum iterations=40
-    KSP Object: 1 MPI processes
+    KSP Object: 1 MPI process
       type: gmres
         restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
         happy breakdown tolerance 1e-30
@@ -44,7 +44,7 @@ TS Object: 1 MPI processes
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using PRECONDITIONED norm type for convergence test
-    PC Object: 1 MPI processes
+    PC Object: 1 MPI process
       type: ilu
         out-of-place factorization
         0 levels of fill
@@ -52,13 +52,13 @@ TS Object: 1 MPI processes
         matrix ordering: external
         factor fill ratio given 0., needed 0.
           Factored matrix follows:
-            Mat Object: 1 MPI processes
+            Mat Object: 1 MPI process
               type: seqdense
               rows=2, cols=2
               package used to perform factorization: petsc
               total: nonzeros=4, allocated nonzeros=4
       linear system matrix = precond matrix:
-      Mat Object: 1 MPI processes
+      Mat Object: 1 MPI process
         type: seqdense
         rows=2, cols=2
         total: nonzeros=4, allocated nonzeros=4

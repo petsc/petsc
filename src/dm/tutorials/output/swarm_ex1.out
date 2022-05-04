@@ -1,4 +1,4 @@
-DM Object: Particles 1 MPI processes
+DM Object: Particles 1 MPI process
   type: swarm
 Particles in 0 dimensions:
   Number of particles per rank: 5
@@ -11,14 +11,14 @@ DMSwarmDataEx: instance=0
     [0] neighbours: 0 
   Message lengths:
 rank[0] before(5,5) after(5,5)
-Vec Object: DMSwarmSharedField_viscosity 1 MPI processes
+Vec Object: DMSwarmSharedField_viscosity 1 MPI process
   type: seq
 11.1
 11.2
 11.3
 11.4
 11.5
-Vec Object: DMSwarmSharedField_strain 1 MPI processes
+Vec Object: DMSwarmSharedField_strain 1 MPI process
   type: seq
 0.02
 0.021

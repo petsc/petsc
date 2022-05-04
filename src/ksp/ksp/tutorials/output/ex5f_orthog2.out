@@ -1,4 +1,4 @@
-KSP Object: 1 MPI processes
+KSP Object: 1 MPI process
   type: gmres
     restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
     happy breakdown tolerance 1e-30
@@ -6,7 +6,7 @@ KSP Object: 1 MPI processes
   tolerances:  relative=1e-05, absolute=1e-25, divergence=10000.
   left preconditioning
   using PRECONDITIONED norm type for convergence test
-PC Object: 1 MPI processes
+PC Object: 1 MPI process
   type: icc
     out-of-place factorization
     0 levels of fill
@@ -15,21 +15,21 @@ PC Object: 1 MPI processes
     matrix ordering: natural
     factor fill ratio given 1., needed 1.
       Factored matrix follows:
-        Mat Object: 1 MPI processes
+        Mat Object: 1 MPI process
           type: seqsbaij
           rows=6, cols=6
           package used to perform factorization: petsc
           total: nonzeros=13, allocated nonzeros=13
               block size is 1
   linear system matrix = precond matrix:
-  Mat Object: 1 MPI processes
+  Mat Object: 1 MPI process
     type: seqaij
     rows=6, cols=6
     total: nonzeros=20, allocated nonzeros=30
     total number of mallocs used during MatSetValues calls=0
       not using I-node routines
 Relative norm of residual 0.000000428, Iterations 04 
-KSP Object: 1 MPI processes
+KSP Object: 1 MPI process
   type: gmres
     restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
     happy breakdown tolerance 1e-30
@@ -37,7 +37,7 @@ KSP Object: 1 MPI processes
   tolerances:  relative=1e-05, absolute=1e-25, divergence=10000.
   left preconditioning
   using PRECONDITIONED norm type for convergence test
-PC Object: 1 MPI processes
+PC Object: 1 MPI process
   type: icc
     out-of-place factorization
     0 levels of fill
@@ -46,14 +46,14 @@ PC Object: 1 MPI processes
     matrix ordering: natural
     factor fill ratio given 1., needed 1.
       Factored matrix follows:
-        Mat Object: 1 MPI processes
+        Mat Object: 1 MPI process
           type: seqsbaij
           rows=6, cols=6
           package used to perform factorization: petsc
           total: nonzeros=13, allocated nonzeros=13
               block size is 1
   linear system matrix = precond matrix:
-  Mat Object: 1 MPI processes
+  Mat Object: 1 MPI process
     type: seqaij
     rows=6, cols=6
     total: nonzeros=20, allocated nonzeros=30

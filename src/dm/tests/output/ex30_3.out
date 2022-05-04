@@ -39,7 +39,7 @@ Process [1]
 0.0161527
 -0.0606527
 Local form of b on rank 0, last two nodes are ghost nodes
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 7.45331e-06
 1.0842e-18

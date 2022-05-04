@@ -24,18 +24,18 @@ PC Object: 4 MPI processes
     PC Object: (mg_coarse_) 4 MPI processes
       type: redundant
         First (color=0) of 4 PCs follows
-        KSP Object: (mg_coarse_redundant_) 1 MPI processes
+        KSP Object: (mg_coarse_redundant_) 1 MPI process
           type: preonly
           maximum iterations=10000, initial guess is zero
           tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning
           using NONE norm type for convergence test
-        PC Object: (mg_coarse_redundant_) 1 MPI processes
+        PC Object: (mg_coarse_redundant_) 1 MPI process
           type: svd
             All singular values smaller than 1e-12 treated as zero
             Provided essential rank of the matrix 0 (all other eigenvalues are zeroed)
           linear system matrix = precond matrix:
-          Mat Object: 1 MPI processes
+          Mat Object: 1 MPI process
             type: seqaij
             rows=121, cols=121
             total: nonzeros=583, allocated nonzeros=583

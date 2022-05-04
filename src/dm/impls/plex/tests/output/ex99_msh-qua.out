@@ -1,4 +1,4 @@
-DM Object: mesh-qua 1 MPI processes
+DM Object: mesh-qua 1 MPI process
   type: plex
 mesh-qua in 2 dimensions:
 Supports:

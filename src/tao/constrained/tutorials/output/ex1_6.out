@@ -60,7 +60,7 @@ iter = 8, Function value: -2.00009,  Residual: 3.8465e-10   Constraint: 2.25401e
   iter = 3,   Function value: -0.437527,    Residual: 5.29292e-05     Constraint: 0. 
   iter = 4,   Function value: -0.437527,    Residual: 1.40117e-10     Constraint: 0. 
 iter = 9, Function value: -2.00002,  Residual: 1.40117e-10   Constraint: 5.27541e-06 
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1.
 1.

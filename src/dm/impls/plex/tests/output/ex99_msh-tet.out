@@ -1,4 +1,4 @@
-DM Object: mesh-tet 1 MPI processes
+DM Object: mesh-tet 1 MPI process
   type: plex
 mesh-tet in 3 dimensions:
 Supports:

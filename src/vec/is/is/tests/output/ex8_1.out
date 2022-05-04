@@ -1,4 +1,4 @@
-ISLocalToGlobalMapping Object: 1 MPI processes
+ISLocalToGlobalMapping Object: 1 MPI process
   type not yet set
 [0] 0 0
 [0] 1 1
@@ -12,7 +12,7 @@ ISLocalToGlobalMapping Object: 1 MPI processes
 [0] 9 5
 [0] 10 6
 [0] 11 7
-ISLocalToGlobalMapping Object: 1 MPI processes
+ISLocalToGlobalMapping Object: 1 MPI process
   type not yet set
 [0] 0 0
 [0] 1 1
@@ -20,12 +20,12 @@ ISLocalToGlobalMapping Object: 1 MPI processes
 [0] 3 -1
 [0] 4 2
 [0] 5 3
-ISLocalToGlobalMapping Object: 1 MPI processes
+ISLocalToGlobalMapping Object: 1 MPI process
   type not yet set
 [0] 0 0
 [0] 1 -1
 [0] 2 1
-ISLocalToGlobalMapping Object: 1 MPI processes
+ISLocalToGlobalMapping Object: 1 MPI process
   type not yet set
 [0] 0 0
 [0] 1 1
@@ -33,7 +33,7 @@ ISLocalToGlobalMapping Object: 1 MPI processes
 [0] 3 -1
 [0] 4 2
 [0] 5 3
-ISLocalToGlobalMapping Object: 1 MPI processes
+ISLocalToGlobalMapping Object: 1 MPI process
   type not yet set
 [0] 0 0
 [0] 1 1
@@ -47,7 +47,7 @@ ISLocalToGlobalMapping Object: 1 MPI processes
 [0] 9 5
 [0] 10 6
 [0] 11 7
-ISLocalToGlobalMapping Object: 1 MPI processes
+ISLocalToGlobalMapping Object: 1 MPI process
   type not yet set
 [0] 0 0
 [0] 1 1
@@ -67,7 +67,7 @@ ISLocalToGlobalMapping Object: 1 MPI processes
 [0] 15 9
 [0] 16 10
 [0] 17 11
-ISLocalToGlobalMapping Object: 1 MPI processes
+ISLocalToGlobalMapping Object: 1 MPI process
   type not yet set
 [0] 0 0
 [0] 1 1
@@ -75,12 +75,12 @@ ISLocalToGlobalMapping Object: 1 MPI processes
 [0] 3 -1
 [0] 4 2
 [0] 5 3
-ISLocalToGlobalMapping Object: 1 MPI processes
+ISLocalToGlobalMapping Object: 1 MPI process
   type not yet set
 [0] 0 0
 [0] 1 -1
 [0] 2 1
-ISLocalToGlobalMapping Object: 1 MPI processes
+ISLocalToGlobalMapping Object: 1 MPI process
   type not yet set
 [0] 0 0
 [0] 1 1
@@ -88,7 +88,7 @@ ISLocalToGlobalMapping Object: 1 MPI processes
 [0] 3 -1
 [0] 4 2
 [0] 5 3
-ISLocalToGlobalMapping Object: 1 MPI processes
+ISLocalToGlobalMapping Object: 1 MPI process
   type not yet set
 [0] 0 0
 [0] 1 1
@@ -108,11 +108,11 @@ ISLocalToGlobalMapping Object: 1 MPI processes
 [0] 15 9
 [0] 16 10
 [0] 17 11
-ISLocalToGlobalMapping Object: 1 MPI processes
+ISLocalToGlobalMapping Object: 1 MPI process
   type not yet set
 [0] 0 0
 [0] 1 1
-ISLocalToGlobalMapping Object: 1 MPI processes
+ISLocalToGlobalMapping Object: 1 MPI process
   type not yet set
 [0] 0 0
 [0] 1 1

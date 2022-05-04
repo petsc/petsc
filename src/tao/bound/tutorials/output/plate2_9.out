@@ -22,7 +22,7 @@ iter =  16, Function value 1.50566, Residual: 0.000326351
 iter =  17, Function value 1.50566, Residual: 0.000313038 
 iter =  18, Function value 1.50566, Residual: 0.000144096 
 iter =  19, Function value 1.50566, Residual: 8.16242e-05 
-Tao Object: 1 MPI processes
+Tao Object: 1 MPI process
   type: bncg
     CG Type: ssml_bfgs
     Skipped Stepdirection Updates: 0
@@ -30,7 +30,7 @@ Tao Object: 1 MPI processes
     Pure gradient steps: 0
     Not a descent direction: 0
     Line search fails: 0
-    Mat Object: (tao_bncg_) 1 MPI processes
+    Mat Object: (tao_bncg_) 1 MPI process
       type: lmvmdiagbroyden
       rows=48, cols=48
         Scale history: 1
@@ -41,7 +41,7 @@ Tao Object: 1 MPI processes
         Number of updates: 18
         Number of rejects: 0
         Number of resets: 1
-  TaoLineSearch Object: 1 MPI processes
+  TaoLineSearch Object: 1 MPI process
     type: more-thuente
     maximum function evaluations=30
     tolerances: ftol=0.0001, rtol=1e-10, gtol=0.9

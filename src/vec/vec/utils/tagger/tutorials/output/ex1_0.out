@@ -1,4 +1,4 @@
-Vec Object: Vec to Tag 1 MPI processes
+Vec Object: Vec to Tag 1 MPI process
   type: seq
 0.720032
 0.061794
@@ -12,13 +12,13 @@ Vec Object: Vec to Tag 1 MPI processes
 0.738516
 0.401147
 0.527649
-VecTagger Object: 1 MPI processes
+VecTagger Object: 1 MPI process
   type: absolute
   Block size: 1
    absolute box=[  0.1,1.5  ]
 Num boxes: 1
   0:   [0.1,1.5]  
-IS Object: Tagged IS (block global) 1 MPI processes
+IS Object: Tagged IS (block global) 1 MPI process
   type: block
 Block size 1
 Number of block indices in set 9
@@ -32,13 +32,13 @@ Block 5 Index 8
 Block 6 Index 9
 Block 7 Index 10
 Block 8 Index 11
-IS Object: Untagged IS (global) 1 MPI processes
+IS Object: Untagged IS (global) 1 MPI process
   type: general
 Number of indices in set 3
 0 1
 1 2
 2 5
-Vec Object: Tagged selection 1 MPI processes
+Vec Object: Tagged selection 1 MPI process
   type: seq
 0.720032
 0.144639
@@ -49,7 +49,7 @@ Vec Object: Tagged selection 1 MPI processes
 0.738516
 0.401147
 0.527649
-Vec Object: Untagged selection 1 MPI processes
+Vec Object: Untagged selection 1 MPI process
   type: seq
 0.061794
 0.0100223

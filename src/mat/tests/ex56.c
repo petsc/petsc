@@ -73,18 +73,18 @@ int main(int argc,char **args)
 /*TEST
 
    test:
-      filter: grep -v "MPI processes"
+      filter: grep -v " MPI process"
 
    test:
       suffix: 4
       nsize: 3
       args: -ass_extern
-      filter: grep -v "MPI processes"
+      filter: grep -v " MPI process"
 
    test:
       suffix: 5
       nsize: 3
       args: -ass_extern -zero_rows
-      filter: grep -v "MPI processes"
+      filter: grep -v " MPI process"
 
 TEST*/

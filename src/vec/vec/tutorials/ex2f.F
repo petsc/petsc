@@ -83,6 +83,6 @@
 !
 !     test:
 !       nsize: 2
-!       filter: grep -v "MPI processes"
+!       filter: grep -v " MPI process"
 !
 !TEST*/

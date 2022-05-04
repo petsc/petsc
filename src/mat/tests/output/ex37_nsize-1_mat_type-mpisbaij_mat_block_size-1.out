@@ -1,4 +1,4 @@
-Mat Object: initial 1 MPI processes
+Mat Object: initial 1 MPI process
   type: mpisbaij
 row 0: (0, 2.)  (1, -1.) 
 row 1: (1, 2.)  (2, -1.) 
@@ -10,67 +10,67 @@ row 6: (6, 2.)  (7, -1.)
 row 7: (7, 2.)  (8, -1.) 
 row 8: (8, 2.)  (9, -1.) 
 row 9: (9, 2.) 
-Mat Object: initial 1 MPI processes
+Mat Object: initial 1 MPI process
   type: mpisbaij
   rows=10, cols=10
   total: nonzeros=19, allocated nonzeros=30
   total number of mallocs used during MatSetValues calls=0
       block size is 1
-Mat Object: duplicate_copy 1 MPI processes
+Mat Object: duplicate_copy 1 MPI process
   type: mpisbaij
   rows=10, cols=10
   total: nonzeros=19, allocated nonzeros=19
   total number of mallocs used during MatSetValues calls=0
       block size is 1
-Mat Object: copy_diffnnz 1 MPI processes
+Mat Object: copy_diffnnz 1 MPI process
   type: mpisbaij
   rows=10, cols=10
   total: nonzeros=19, allocated nonzeros=19
   total number of mallocs used during MatSetValues calls=0
       block size is 1
-Mat Object: copy_samennz 1 MPI processes
+Mat Object: copy_samennz 1 MPI process
   type: mpisbaij
   rows=10, cols=10
   total: nonzeros=19, allocated nonzeros=19
   total number of mallocs used during MatSetValues calls=0
       block size is 1
-Mat Object: copy_subnnz 1 MPI processes
+Mat Object: copy_subnnz 1 MPI process
   type: mpisbaij
   rows=10, cols=10
   total: nonzeros=19, allocated nonzeros=19
   total number of mallocs used during MatSetValues calls=0
       block size is 1
-Mat Object: symm_initial 1 MPI processes
+Mat Object: symm_initial 1 MPI process
   type: seqaij
   rows=10, cols=10
   total: nonzeros=28, allocated nonzeros=28
   total number of mallocs used during MatSetValues calls=0
     not using I-node routines
-Mat Object: symm_conv_init 1 MPI processes
+Mat Object: symm_conv_init 1 MPI process
   type: mpisbaij
   rows=10, cols=10
   total: nonzeros=19, allocated nonzeros=30
   total number of mallocs used during MatSetValues calls=0
       block size is 1
-Mat Object: symm_conv_reuse 1 MPI processes
+Mat Object: symm_conv_reuse 1 MPI process
   type: mpisbaij
   rows=10, cols=10
   total: nonzeros=19, allocated nonzeros=30
   total number of mallocs used during MatSetValues calls=0
       block size is 1
-Mat Object: symm_conv_copy_samennz 1 MPI processes
+Mat Object: symm_conv_copy_samennz 1 MPI process
   type: mpisbaij
   rows=10, cols=10
   total: nonzeros=19, allocated nonzeros=30
   total number of mallocs used during MatSetValues calls=0
       block size is 1
-Mat Object: symm_conv_copy_subnnz 1 MPI processes
+Mat Object: symm_conv_copy_subnnz 1 MPI process
   type: mpisbaij
   rows=10, cols=10
   total: nonzeros=19, allocated nonzeros=30
   total number of mallocs used during MatSetValues calls=0
       block size is 1
-Mat Object: symm_conv_copy_diffnnz 1 MPI processes
+Mat Object: symm_conv_copy_diffnnz 1 MPI process
   type: mpisbaij
   rows=10, cols=10
   total: nonzeros=19, allocated nonzeros=19

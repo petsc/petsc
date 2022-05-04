@@ -8,13 +8,13 @@ Graph Partitioner: 1 MPI Process
   load imbalance ratio 1.05
   debug flag 0
   random seed -1
-PetscSection Object: NULL SECTION 1 MPI processes
+PetscSection Object: NULL SECTION 1 MPI process
   type not yet set
 Process 0:
   (   0) dim  0 offset   0
   (   1) dim  0 offset   0
   (   2) dim  0 offset   0
-IS Object: NULL PARTITION 1 MPI processes
+IS Object: NULL PARTITION 1 MPI process
   type: general
 Number of indices in set 0
 [0]Nv: 4
@@ -31,13 +31,13 @@ Graph Partitioner: 1 MPI Process
   load imbalance ratio 1.05
   debug flag 0
   random seed -1
-PetscSection Object: SEQ SECTION 1 MPI processes
+PetscSection Object: SEQ SECTION 1 MPI process
   type not yet set
 Process 0:
   (   0) dim  0 offset   0
   (   1) dim  2 offset   0
   (   2) dim  2 offset   2
-IS Object: SEQ PARTITION 1 MPI processes
+IS Object: SEQ PARTITION 1 MPI process
   type: general
 Number of indices in set 4
 0 0
@@ -58,13 +58,13 @@ Graph Partitioner: 1 MPI Process
   load imbalance ratio 1.05
   debug flag 0
   random seed -1
-PetscSection Object: PARVOID SECTION 1 MPI processes
+PetscSection Object: PARVOID SECTION 1 MPI process
   type not yet set
 Process 0:
   (   0) dim  0 offset   0
   (   1) dim  2 offset   0
   (   2) dim  2 offset   2
-IS Object: PARVOID PARTITION 1 MPI processes
+IS Object: PARVOID PARTITION 1 MPI process
   type: general
 Number of indices in set 4
 0 0

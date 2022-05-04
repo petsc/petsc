@@ -83,7 +83,7 @@ int main(int argc,char **argv)
    test:
       nsize: 2
       args: -nox
-      filter: grep -v "MPI processes"
+      filter: grep -v " MPI process"
       output_file: output/ex2_1.out
       requires: x
 

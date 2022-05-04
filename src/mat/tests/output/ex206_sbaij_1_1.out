@@ -1,5 +1,5 @@
 First MatLoad! 
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqsbaij
 row 0: (0, 4.)  (1, -1.)  (6, -1.) 
 row 1: (1, 4.)  (2, -1.)  (7, -1.) 
@@ -38,7 +38,7 @@ row 33: (33, 4.)  (34, -1.)
 row 34: (34, 4.)  (35, -1.) 
 row 35: (35, 4.) 
 Second MatLoad! 
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqsbaij
 row 0: (0, 4.)  (1, -1.)  (6, -1.) 
 row 1: (1, 4.)  (2, -1.)  (7, -1.) 

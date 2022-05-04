@@ -1,4 +1,4 @@
-DM Object: Sphere 1 MPI processes
+DM Object: Sphere 1 MPI process
   type: plex
 Sphere in 3 dimensions:
   Number of 0-cells per rank: 120

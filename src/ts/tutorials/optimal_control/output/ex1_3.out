@@ -7,7 +7,7 @@
   5 TAO,  Function value: 0.849937,  Residual: 0.000146559 
   6 TAO,  Function value: 0.849937,  Residual: 3.75599e-07 
   7 TAO,  Function value: 0.849937,  Residual: 1.60656e-12 
-Tao Object: 1 MPI processes
+Tao Object: 1 MPI process
   type: bntr
     CG steps: 0
     Newton steps: 7
@@ -21,7 +21,7 @@ Tao Object: 1 MPI processes
       dtol: 0
       iter: 0
       othr: 0
-  TaoLineSearch Object: 1 MPI processes
+  TaoLineSearch Object: 1 MPI process
     type: more-thuente
     maximum function evaluations=30
     tolerances: ftol=0.0001, rtol=1e-10, gtol=0.9
@@ -30,16 +30,16 @@ Tao Object: 1 MPI processes
     total number of function/gradient evaluations=0
     using variable bounds
     Termination reason: 0
-  KSP Object: (tao_bnk_) 1 MPI processes
+  KSP Object: (tao_bnk_) 1 MPI process
     type: stcg
     maximum iterations=10000, initial guess is zero
     tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
     left preconditioning
     using UNPRECONDITIONED norm type for convergence test
-  PC Object: (tao_bnk_) 1 MPI processes
+  PC Object: (tao_bnk_) 1 MPI process
     type: none
     linear system matrix = precond matrix:
-    Mat Object: 1 MPI processes
+    Mat Object: 1 MPI process
       type: submatrix
       rows=10, cols=10
   total KSP iterations: 45
@@ -51,7 +51,7 @@ Tao Object: 1 MPI processes
   total number of function/gradient evaluations=21,      (max: -1)
   total number of Hessian evaluations=8
   Solution converged:    ||g(X)|| <= gatol
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 2.
 2.88134

@@ -48,26 +48,26 @@ PC Object: 4 MPI processes
       restriction/interpolation type - RESTRICT
       Local solver information for first block is in the following KSP and PC objects on rank 0:
       Use -pc_hpddm_levels_1_ksp_view ::ascii_info_detail to display information for all blocks
-    KSP Object: (pc_hpddm_levels_1_sub_) 1 MPI processes
+    KSP Object: (pc_hpddm_levels_1_sub_) 1 MPI process
       type: preonly
       maximum iterations=10000, initial guess is zero
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
-    PC Object: (pc_hpddm_levels_1_sub_) 1 MPI processes
+    PC Object: (pc_hpddm_levels_1_sub_) 1 MPI process
       type: lu
         out-of-place factorization
         tolerance for zero pivot 2.22045e-14
         matrix ordering: external
         factor fill ratio given 0., needed 0.
           Factored matrix follows:
-            Mat Object: 1 MPI processes
+            Mat Object: 1 MPI process
               type: seqdense
               rows=202, cols=202
               package used to perform factorization: petsc
               total: nonzeros=40804, allocated nonzeros=40804
       linear system matrix = precond matrix:
-      Mat Object: (pc_hpddm_levels_1_sub_) 1 MPI processes
+      Mat Object: (pc_hpddm_levels_1_sub_) 1 MPI process
         type: seqdense
         rows=202, cols=202
         total: nonzeros=40804, allocated nonzeros=40804
@@ -90,7 +90,7 @@ PC Object: 4 MPI processes
         (minimum, mean, maximum) dense block sizes: (144, 288.562, 2500)
         (minimum, mean, maximum) low rank block sizes: (144, 164.113, 625)
         (minimum, mean, maximum) ranks: (2, 4.8792, 7)
-    KSP Object: (pc_hpddm_coarse_) 1 MPI processes
+    KSP Object: (pc_hpddm_coarse_) 1 MPI process
       type: gmres
         restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
         happy breakdown tolerance 1e-30
@@ -98,20 +98,20 @@ PC Object: 4 MPI processes
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using PRECONDITIONED norm type for convergence test
-    PC Object: (pc_hpddm_coarse_) 1 MPI processes
+    PC Object: (pc_hpddm_coarse_) 1 MPI process
       type: lu
         out-of-place factorization
         tolerance for zero pivot 2.22045e-14
         matrix ordering: external
         factor fill ratio given 0., needed 0.
           Factored matrix follows:
-            Mat Object: 1 MPI processes
+            Mat Object: 1 MPI process
               type: seqdense
               rows=4, cols=4
               package used to perform factorization: petsc
               total: nonzeros=16, allocated nonzeros=16
       linear system matrix = precond matrix:
-      Mat Object: (pc_hpddm_coarse_) 1 MPI processes
+      Mat Object: (pc_hpddm_coarse_) 1 MPI process
         type: seqdense
         rows=4, cols=4
         total: nonzeros=16, allocated nonzeros=16

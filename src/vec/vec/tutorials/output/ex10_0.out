@@ -1,4 +1,4 @@
-Vec Object: Test_Vec 1 MPI processes
+Vec Object: Test_Vec 1 MPI process
   type: seq
 0
 1
@@ -22,7 +22,7 @@ Vec Object: Test_Vec 1 MPI processes
 19
 writing vector in hdf5 to vector.dat ...
 reading vector in hdf5 from vector.dat ...
-Vec Object: Test_Vec 1 MPI processes
+Vec Object: Test_Vec 1 MPI process
   type: seq
 0
 1

@@ -10,11 +10,11 @@
 9 TS dt 0.1 time 0.9
 10 TS dt 0.1 time 1.
 Interpolated solution at time 1. between steps 9 and 10
-TS Object: 1 MPI processes
+TS Object: 1 MPI process
   type: euler
   maximum time=1.
   total number of RHS function evaluations=10
   total number of rejected steps=0
   using relative error tolerance of 0.0001,   using absolute error tolerance of 0.0001
-  TSAdapt Object: 1 MPI processes
+  TSAdapt Object: 1 MPI process
     type: none

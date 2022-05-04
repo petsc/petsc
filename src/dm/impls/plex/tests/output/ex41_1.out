@@ -1,4 +1,4 @@
-DM Object: box 1 MPI processes
+DM Object: box 1 MPI process
   type: plex
 box in 2 dimensions:
 Supports:
@@ -190,7 +190,7 @@ Label 'Face Sets':
 [0]: 29 (1)
 [0]: 30 (1)
 [0]: 32 (1)
-DM Object: Adapted Mesh 1 MPI processes
+DM Object: Adapted Mesh 1 MPI process
   type: plex
 Adapted Mesh in 2 dimensions:
 Supports:

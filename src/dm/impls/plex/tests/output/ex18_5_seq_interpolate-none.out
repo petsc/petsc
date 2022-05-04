@@ -3,7 +3,7 @@ DMPlexIsDistributed: FALSE
 DMPlexIsInterpolatedCollective: none
 DMPlexCheckPointSFHeavy PASSED
 DMPlexCheckPointSFHeavy PASSED
-DM Object: Parallel Mesh 1 MPI processes
+DM Object: Parallel Mesh 1 MPI process
   type: plex
 Parallel Mesh in 2 dimensions:
 Supports:

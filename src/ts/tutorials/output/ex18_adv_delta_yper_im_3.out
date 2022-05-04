@@ -31,7 +31,7 @@
  15  time        5  |x| (       1,        1) |x|_1 (       6,        1)         Error [           0, 1.50039e-05] int  3.33419e-06
   Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
  16  time    5.333  |x| (       1,        1) |x|_1 (       6,        1)         Error [           0, 1.60038e-05] int  3.55641e-06
-TS Object: 1 MPI processes
+TS Object: 1 MPI process
   type: mimex
   maximum steps=20
   maximum time=5

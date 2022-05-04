@@ -1,31 +1,31 @@
-PetscFE Object: P1 1 MPI processes
+PetscFE Object: P1 1 MPI process
   type: basic
   Basic Finite Element in 2 dimensions with 3 components
-  PetscSpace Object: P1 1 MPI processes
+  PetscSpace Object: P1 1 MPI process
     type: sum
     Space in 2 variables with 3 components, size 9
     Sum space of 3 concatenated subspaces (all identical)
-      PetscSpace Object: sum component (sumcomp_) 1 MPI processes
+      PetscSpace Object: sum component (sumcomp_) 1 MPI process
         type: poly
         Space in 2 variables with 1 components, size 3
         Polynomial space of degree 1
-  PetscDualSpace Object: P1 1 MPI processes
+  PetscDualSpace Object: P1 1 MPI process
     type: lagrange
     Dual space with 3 components, size 9
     Discontinuous Lagrange dual space
     Quadrature of order 3 on 4 points (dim 2)
-PetscFE Object: P2 1 MPI processes
+PetscFE Object: P2 1 MPI process
   type: basic
   Basic Finite Element in 2 dimensions with 3 components
-  PetscSpace Object: P2 1 MPI processes
+  PetscSpace Object: P2 1 MPI process
     type: sum
     Space in 2 variables with 3 components, size 18
     Sum space of 3 concatenated subspaces (all identical)
-      PetscSpace Object: sum component (sumcomp_) 1 MPI processes
+      PetscSpace Object: sum component (sumcomp_) 1 MPI process
         type: poly
         Space in 2 variables with 1 components, size 6
         Polynomial space of degree 2
-  PetscDualSpace Object: P2 1 MPI processes
+  PetscDualSpace Object: P2 1 MPI process
     type: lagrange
     Dual space with 3 components, size 18
     Discontinuous Lagrange dual space

@@ -54,10 +54,10 @@ int main(int argc,char **argv)
 
    test:
       nsize: 3
-      filter: grep -v "MPI processes"
+      filter: grep -v " MPI process"
 
    test:
       suffix: 2
-      filter: grep -v "MPI processes"
+      filter: grep -v " MPI process"
 
 TEST*/

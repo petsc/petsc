@@ -2,7 +2,7 @@ Setup pipesCase 1
 0 TS dt 0.1 time 0.
 1 TS dt 0.1 time 0.1
 CONVERGED_ITS at time 0.1 after 1 steps
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
   Edge 0:
     0.477432

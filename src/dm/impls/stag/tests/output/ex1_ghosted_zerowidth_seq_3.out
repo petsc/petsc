@@ -1,4 +1,4 @@
-DM Object: 1 MPI processes
+DM Object: 1 MPI process
   type: stag
 Dimension: 3
 Global sizes: 3 x 5 x 4

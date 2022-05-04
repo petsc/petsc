@@ -1,4 +1,4 @@
-DM Object: mesh-hex 1 MPI processes
+DM Object: mesh-hex 1 MPI process
   type: plex
 mesh-hex in 3 dimensions:
 Supports:

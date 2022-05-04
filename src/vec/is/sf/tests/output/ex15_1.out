@@ -266,7 +266,7 @@ Process [1]
 127.
 
 Before VecScatterRemap on SGToSG, SEQ vector y is:
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.
 1.
@@ -333,7 +333,7 @@ Vec Object: 1 MPI processes
 62.
 63.
 After VecScatterRemap on SGToSG, SEQ vector y is:
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 32.
 33.
@@ -401,7 +401,7 @@ Vec Object: 1 MPI processes
 31.
 
 Before VecScatterRemap on SGToSS_Stride1, SEQ vector y is:
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.
 2.
@@ -436,7 +436,7 @@ Vec Object: 1 MPI processes
 60.
 62.
 After VecScatterRemap on SGToSS_Stride1, SEQ vector y is:
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 32.
 34.

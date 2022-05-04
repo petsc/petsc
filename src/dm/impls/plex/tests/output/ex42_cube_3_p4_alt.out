@@ -12,18 +12,18 @@ libCEED Backend: /cpu/self/avx/blocked
 Discrete System with 1 fields
     cell total dim 16 total comp 1
   Field indicator FEM 1 component  (implicit) (Nq 25 Nqc 1) 1-jet
-    PetscFE Object: indicator 1 MPI processes
+    PetscFE Object: indicator 1 MPI process
       type: basic
       Basic Finite Element in 2 dimensions with 1 components
-      PetscSpace Object: indicator 1 MPI processes
+      PetscSpace Object: indicator 1 MPI process
         type: tensor
         Space in 2 variables with 1 components, size 16
         Tensor space of 2 subspaces (all identical)
-          PetscSpace Object: tensor component (tensorcomp_) 1 MPI processes
+          PetscSpace Object: tensor component (tensorcomp_) 1 MPI process
             type: poly
             Space in 1 variables with 1 components, size 4
             Polynomial space of degree 3
-      PetscDualSpace Object: indicator 1 MPI processes
+      PetscDualSpace Object: indicator 1 MPI process
         type: lagrange
         Dual space with 1 components, size 16
         Continuous tensor Lagrange dual space

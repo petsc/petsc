@@ -16,7 +16,7 @@
 Norm2 of Ax - b = {0.00000000000000000e+00}
   0 KSP Residual norm 0.000000000000e+00 
 Linear solve converged due to CONVERGED_ATOL iterations 0
-KSP Object: 1 MPI processes
+KSP Object: 1 MPI process
   type: gmres
     restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
     happy breakdown tolerance 1e-30
@@ -24,14 +24,14 @@ KSP Object: 1 MPI processes
   tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
   left preconditioning
   using PRECONDITIONED norm type for convergence test
-PC Object: 1 MPI processes
+PC Object: 1 MPI process
   type: lu
     out-of-place factorization
     tolerance for zero pivot 2.22045e-14
     matrix ordering: nd
     factor fill ratio given 0., needed 0.
       Factored matrix follows:
-        Mat Object: 1 MPI processes
+        Mat Object: 1 MPI process
           type: superlu_dist
           rows=12, cols=12
           package used to perform factorization: superlu_dist
@@ -48,7 +48,7 @@ PC Object: 1 MPI processes
               Parallel symbolic factorization FALSE 
               Repeated factorization SamePattern
   linear system matrix = precond matrix:
-  Mat Object: 1 MPI processes
+  Mat Object: 1 MPI process
     type: seqaij
     rows=12, cols=12
     total: nonzeros=46, allocated nonzeros=46

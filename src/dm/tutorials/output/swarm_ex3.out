@@ -1,4 +1,4 @@
-DM Object: Particles 1 MPI processes
+DM Object: Particles 1 MPI process
   type: swarm
 Particles in 2 dimensions:
   Number of particles per rank: 711

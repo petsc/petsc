@@ -1,4 +1,4 @@
-DM Object: Material Point Swarm 1 MPI processes
+DM Object: Material Point Swarm 1 MPI process
   type: swarm
 Material Point Swarm in 2 dimensions:
   Number of particles per rank: 4290

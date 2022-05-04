@@ -101,7 +101,7 @@ Timestep  98: step size = 0.0005, time = 0.049, 2-norm error = 0.000570416, max 
 Timestep  99: step size = 0.0005, time = 0.0495, 2-norm error = 0.000564979, max norm error = 0.000798713
 Timestep 100: step size = 0.0005, time = 0.05, 2-norm error = 0.000559537, max norm error = 0.00079102
 avg. error (2 norm) = 0.000913004, avg. error (max norm) = 0.00130754
-TS Object: 1 MPI processes
+TS Object: 1 MPI process
   type: ssp
     Scheme: rks2
   maximum steps=100
@@ -110,5 +110,5 @@ TS Object: 1 MPI processes
   total number of RHS Jacobian evaluations=500
   total number of rejected steps=0
   using relative error tolerance of 0.0001,   using absolute error tolerance of 0.0001
-  TSAdapt Object: 1 MPI processes
+  TSAdapt Object: 1 MPI process
     type: none

@@ -14,7 +14,7 @@ IS Object: 2 MPI processes
 [1] 2 42
 [1] 3 43
 [0] ISLocalJunctions:
-IS Object: 1 MPI processes
+IS Object: 1 MPI process
   type: general
 Number of indices in set 6
 0 24

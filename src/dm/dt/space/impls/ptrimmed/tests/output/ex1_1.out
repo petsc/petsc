@@ -1,1184 +1,1184 @@
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: poly
   Space in 0 variables with 1 components, size 1
   Polynomial space of degree 1
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 0 variables with 2 components, size 2
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 0 variables with 1 components, size 1
       Polynomial space of degree 1
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: poly
   Space in 0 variables with 1 components, size 1
   Polynomial space of degree 2
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 0 variables with 2 components, size 2
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 0 variables with 1 components, size 1
       Polynomial space of degree 2
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: poly
   Space in 0 variables with 1 components, size 1
   Polynomial space of degree 3
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 0 variables with 2 components, size 2
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 0 variables with 1 components, size 1
       Polynomial space of degree 3
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: poly
   Space in 0 variables with 1 components, size 1
   Polynomial space of degree 4
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 0 variables with 2 components, size 2
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 0 variables with 1 components, size 1
       Polynomial space of degree 4
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: poly
   Space in 1 variables with 1 components, size 1
   Polynomial space of degree 0
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 1 variables with 2 components, size 2
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 1 variables with 1 components, size 1
       Polynomial space of degree 0
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: poly
   Space in 1 variables with 1 components, size 2
   Polynomial space of degree 1
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 1 variables with 2 components, size 4
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 1 variables with 1 components, size 2
       Polynomial space of degree 1
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: poly
   Space in 1 variables with 1 components, size 3
   Polynomial space of degree 2
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 1 variables with 2 components, size 6
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 1 variables with 1 components, size 3
       Polynomial space of degree 2
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: poly
   Space in 1 variables with 1 components, size 4
   Polynomial space of degree 3
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 1 variables with 2 components, size 8
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 1 variables with 1 components, size 4
       Polynomial space of degree 3
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: poly
   Space in 1 variables with 1 components, size 5
   Polynomial space of degree 4
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 1 variables with 2 components, size 10
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 1 variables with 1 components, size 5
       Polynomial space of degree 4
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: poly
   Space in 1 variables with 1 components, size 2
   Polynomial space of degree 1
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 1 variables with 2 components, size 4
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 1 variables with 1 components, size 2
       Polynomial space of degree 1
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: poly
   Space in 1 variables with 1 components, size 3
   Polynomial space of degree 2
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 1 variables with 2 components, size 6
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 1 variables with 1 components, size 3
       Polynomial space of degree 2
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: poly
   Space in 1 variables with 1 components, size 4
   Polynomial space of degree 3
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 1 variables with 2 components, size 8
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 1 variables with 1 components, size 4
       Polynomial space of degree 3
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: poly
   Space in 1 variables with 1 components, size 5
   Polynomial space of degree 4
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 1 variables with 2 components, size 10
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 1 variables with 1 components, size 5
       Polynomial space of degree 4
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: poly
   Space in 1 variables with 1 components, size 1
   Polynomial space of degree 0
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 1 variables with 2 components, size 2
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 1 variables with 1 components, size 1
       Polynomial space of degree 0
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: poly
   Space in 1 variables with 1 components, size 2
   Polynomial space of degree 1
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 1 variables with 2 components, size 4
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 1 variables with 1 components, size 2
       Polynomial space of degree 1
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: poly
   Space in 1 variables with 1 components, size 3
   Polynomial space of degree 2
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 1 variables with 2 components, size 6
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 1 variables with 1 components, size 3
       Polynomial space of degree 2
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: poly
   Space in 1 variables with 1 components, size 4
   Polynomial space of degree 3
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 1 variables with 2 components, size 8
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 1 variables with 1 components, size 4
       Polynomial space of degree 3
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: poly
   Space in 1 variables with 1 components, size 5
   Polynomial space of degree 4
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 1 variables with 2 components, size 10
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 1 variables with 1 components, size 5
       Polynomial space of degree 4
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: poly
   Space in 2 variables with 1 components, size 1
   Polynomial space of degree 0
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 2 variables with 2 components, size 2
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 2 variables with 1 components, size 1
       Polynomial space of degree 0
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: poly
   Space in 2 variables with 1 components, size 3
   Polynomial space of degree 1
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 2 variables with 2 components, size 6
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 2 variables with 1 components, size 3
       Polynomial space of degree 1
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: poly
   Space in 2 variables with 1 components, size 6
   Polynomial space of degree 2
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 2 variables with 2 components, size 12
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 2 variables with 1 components, size 6
       Polynomial space of degree 2
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: poly
   Space in 2 variables with 1 components, size 10
   Polynomial space of degree 3
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 2 variables with 2 components, size 20
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 2 variables with 1 components, size 10
       Polynomial space of degree 3
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: poly
   Space in 2 variables with 1 components, size 15
   Polynomial space of degree 4
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 2 variables with 2 components, size 30
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 2 variables with 1 components, size 15
       Polynomial space of degree 4
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: ptrimmed
   Space in 2 variables with 2 components, size 3
   Trimmed polynomials 1*-forms of degree 0 (P-1/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 2 variables with 4 components, size 6
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 2 variables with 2 components, size 3
       Trimmed polynomials 1*-forms of degree 0 (P-1/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: ptrimmed
   Space in 2 variables with 2 components, size 8
   Trimmed polynomials 1*-forms of degree 1 (P-2/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 2 variables with 4 components, size 16
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 2 variables with 2 components, size 8
       Trimmed polynomials 1*-forms of degree 1 (P-2/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: ptrimmed
   Space in 2 variables with 2 components, size 15
   Trimmed polynomials 1*-forms of degree 2 (P-3/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 2 variables with 4 components, size 30
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 2 variables with 2 components, size 15
       Trimmed polynomials 1*-forms of degree 2 (P-3/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: ptrimmed
   Space in 2 variables with 2 components, size 24
   Trimmed polynomials 1*-forms of degree 3 (P-4/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 2 variables with 4 components, size 48
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 2 variables with 2 components, size 24
       Trimmed polynomials 1*-forms of degree 3 (P-4/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: ptrimmed
   Space in 2 variables with 2 components, size 35
   Trimmed polynomials 1*-forms of degree 4 (P-5/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 2 variables with 4 components, size 70
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 2 variables with 2 components, size 35
       Trimmed polynomials 1*-forms of degree 4 (P-5/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: poly
   Space in 2 variables with 1 components, size 3
   Polynomial space of degree 1
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 2 variables with 2 components, size 6
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 2 variables with 1 components, size 3
       Polynomial space of degree 1
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: poly
   Space in 2 variables with 1 components, size 6
   Polynomial space of degree 2
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 2 variables with 2 components, size 12
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 2 variables with 1 components, size 6
       Polynomial space of degree 2
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: poly
   Space in 2 variables with 1 components, size 10
   Polynomial space of degree 3
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 2 variables with 2 components, size 20
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 2 variables with 1 components, size 10
       Polynomial space of degree 3
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: poly
   Space in 2 variables with 1 components, size 15
   Polynomial space of degree 4
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 2 variables with 2 components, size 30
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 2 variables with 1 components, size 15
       Polynomial space of degree 4
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: ptrimmed
   Space in 2 variables with 2 components, size 3
   Trimmed polynomials 1-forms of degree 0 (P-1/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 2 variables with 4 components, size 6
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 2 variables with 2 components, size 3
       Trimmed polynomials 1-forms of degree 0 (P-1/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: ptrimmed
   Space in 2 variables with 2 components, size 8
   Trimmed polynomials 1-forms of degree 1 (P-2/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 2 variables with 4 components, size 16
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 2 variables with 2 components, size 8
       Trimmed polynomials 1-forms of degree 1 (P-2/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: ptrimmed
   Space in 2 variables with 2 components, size 15
   Trimmed polynomials 1-forms of degree 2 (P-3/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 2 variables with 4 components, size 30
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 2 variables with 2 components, size 15
       Trimmed polynomials 1-forms of degree 2 (P-3/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: ptrimmed
   Space in 2 variables with 2 components, size 24
   Trimmed polynomials 1-forms of degree 3 (P-4/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 2 variables with 4 components, size 48
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 2 variables with 2 components, size 24
       Trimmed polynomials 1-forms of degree 3 (P-4/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: ptrimmed
   Space in 2 variables with 2 components, size 35
   Trimmed polynomials 1-forms of degree 4 (P-5/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 2 variables with 4 components, size 70
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 2 variables with 2 components, size 35
       Trimmed polynomials 1-forms of degree 4 (P-5/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: poly
   Space in 2 variables with 1 components, size 1
   Polynomial space of degree 0
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 2 variables with 2 components, size 2
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 2 variables with 1 components, size 1
       Polynomial space of degree 0
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: poly
   Space in 2 variables with 1 components, size 3
   Polynomial space of degree 1
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 2 variables with 2 components, size 6
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 2 variables with 1 components, size 3
       Polynomial space of degree 1
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: poly
   Space in 2 variables with 1 components, size 6
   Polynomial space of degree 2
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 2 variables with 2 components, size 12
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 2 variables with 1 components, size 6
       Polynomial space of degree 2
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: poly
   Space in 2 variables with 1 components, size 10
   Polynomial space of degree 3
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 2 variables with 2 components, size 20
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 2 variables with 1 components, size 10
       Polynomial space of degree 3
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: poly
   Space in 2 variables with 1 components, size 15
   Polynomial space of degree 4
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 2 variables with 2 components, size 30
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 2 variables with 1 components, size 15
       Polynomial space of degree 4
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: poly
   Space in 3 variables with 1 components, size 1
   Polynomial space of degree 0
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 2 components, size 2
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 3 variables with 1 components, size 1
       Polynomial space of degree 0
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 3 components, size 3
   Sum space of 3 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 3 variables with 1 components, size 1
       Polynomial space of degree 0
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: poly
   Space in 3 variables with 1 components, size 4
   Polynomial space of degree 1
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 2 components, size 8
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 3 variables with 1 components, size 4
       Polynomial space of degree 1
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 3 components, size 12
   Sum space of 3 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 3 variables with 1 components, size 4
       Polynomial space of degree 1
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: poly
   Space in 3 variables with 1 components, size 10
   Polynomial space of degree 2
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 2 components, size 20
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 3 variables with 1 components, size 10
       Polynomial space of degree 2
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 3 components, size 30
   Sum space of 3 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 3 variables with 1 components, size 10
       Polynomial space of degree 2
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: poly
   Space in 3 variables with 1 components, size 20
   Polynomial space of degree 3
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 2 components, size 40
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 3 variables with 1 components, size 20
       Polynomial space of degree 3
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 3 components, size 60
   Sum space of 3 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 3 variables with 1 components, size 20
       Polynomial space of degree 3
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: poly
   Space in 3 variables with 1 components, size 35
   Polynomial space of degree 4
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 2 components, size 70
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 3 variables with 1 components, size 35
       Polynomial space of degree 4
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 3 components, size 105
   Sum space of 3 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 3 variables with 1 components, size 35
       Polynomial space of degree 4
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: ptrimmed
   Space in 3 variables with 3 components, size 4
   Trimmed polynomials 2*-forms of degree 0 (P-1/\2)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 6 components, size 8
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 3 variables with 3 components, size 4
       Trimmed polynomials 2*-forms of degree 0 (P-1/\2)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 9 components, size 12
   Sum space of 3 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 3 variables with 3 components, size 4
       Trimmed polynomials 2*-forms of degree 0 (P-1/\2)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: ptrimmed
   Space in 3 variables with 3 components, size 15
   Trimmed polynomials 2*-forms of degree 1 (P-2/\2)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 6 components, size 30
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 3 variables with 3 components, size 15
       Trimmed polynomials 2*-forms of degree 1 (P-2/\2)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 9 components, size 45
   Sum space of 3 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 3 variables with 3 components, size 15
       Trimmed polynomials 2*-forms of degree 1 (P-2/\2)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: ptrimmed
   Space in 3 variables with 3 components, size 36
   Trimmed polynomials 2*-forms of degree 2 (P-3/\2)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 6 components, size 72
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 3 variables with 3 components, size 36
       Trimmed polynomials 2*-forms of degree 2 (P-3/\2)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 9 components, size 108
   Sum space of 3 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 3 variables with 3 components, size 36
       Trimmed polynomials 2*-forms of degree 2 (P-3/\2)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: ptrimmed
   Space in 3 variables with 3 components, size 70
   Trimmed polynomials 2*-forms of degree 3 (P-4/\2)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 6 components, size 140
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 3 variables with 3 components, size 70
       Trimmed polynomials 2*-forms of degree 3 (P-4/\2)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 9 components, size 210
   Sum space of 3 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 3 variables with 3 components, size 70
       Trimmed polynomials 2*-forms of degree 3 (P-4/\2)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: ptrimmed
   Space in 3 variables with 3 components, size 120
   Trimmed polynomials 2*-forms of degree 4 (P-5/\2)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 6 components, size 240
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 3 variables with 3 components, size 120
       Trimmed polynomials 2*-forms of degree 4 (P-5/\2)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 9 components, size 360
   Sum space of 3 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 3 variables with 3 components, size 120
       Trimmed polynomials 2*-forms of degree 4 (P-5/\2)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: ptrimmed
   Space in 3 variables with 3 components, size 6
   Trimmed polynomials 1*-forms of degree 0 (P-1/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 6 components, size 12
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 3 variables with 3 components, size 6
       Trimmed polynomials 1*-forms of degree 0 (P-1/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 9 components, size 18
   Sum space of 3 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 3 variables with 3 components, size 6
       Trimmed polynomials 1*-forms of degree 0 (P-1/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: ptrimmed
   Space in 3 variables with 3 components, size 20
   Trimmed polynomials 1*-forms of degree 1 (P-2/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 6 components, size 40
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 3 variables with 3 components, size 20
       Trimmed polynomials 1*-forms of degree 1 (P-2/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 9 components, size 60
   Sum space of 3 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 3 variables with 3 components, size 20
       Trimmed polynomials 1*-forms of degree 1 (P-2/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: ptrimmed
   Space in 3 variables with 3 components, size 45
   Trimmed polynomials 1*-forms of degree 2 (P-3/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 6 components, size 90
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 3 variables with 3 components, size 45
       Trimmed polynomials 1*-forms of degree 2 (P-3/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 9 components, size 135
   Sum space of 3 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 3 variables with 3 components, size 45
       Trimmed polynomials 1*-forms of degree 2 (P-3/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: ptrimmed
   Space in 3 variables with 3 components, size 84
   Trimmed polynomials 1*-forms of degree 3 (P-4/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 6 components, size 168
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 3 variables with 3 components, size 84
       Trimmed polynomials 1*-forms of degree 3 (P-4/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 9 components, size 252
   Sum space of 3 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 3 variables with 3 components, size 84
       Trimmed polynomials 1*-forms of degree 3 (P-4/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: ptrimmed
   Space in 3 variables with 3 components, size 140
   Trimmed polynomials 1*-forms of degree 4 (P-5/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 6 components, size 280
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 3 variables with 3 components, size 140
       Trimmed polynomials 1*-forms of degree 4 (P-5/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 9 components, size 420
   Sum space of 3 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 3 variables with 3 components, size 140
       Trimmed polynomials 1*-forms of degree 4 (P-5/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: poly
   Space in 3 variables with 1 components, size 4
   Polynomial space of degree 1
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 2 components, size 8
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 3 variables with 1 components, size 4
       Polynomial space of degree 1
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 3 components, size 12
   Sum space of 3 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 3 variables with 1 components, size 4
       Polynomial space of degree 1
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: poly
   Space in 3 variables with 1 components, size 10
   Polynomial space of degree 2
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 2 components, size 20
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 3 variables with 1 components, size 10
       Polynomial space of degree 2
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 3 components, size 30
   Sum space of 3 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 3 variables with 1 components, size 10
       Polynomial space of degree 2
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: poly
   Space in 3 variables with 1 components, size 20
   Polynomial space of degree 3
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 2 components, size 40
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 3 variables with 1 components, size 20
       Polynomial space of degree 3
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 3 components, size 60
   Sum space of 3 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 3 variables with 1 components, size 20
       Polynomial space of degree 3
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: poly
   Space in 3 variables with 1 components, size 35
   Polynomial space of degree 4
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 2 components, size 70
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 3 variables with 1 components, size 35
       Polynomial space of degree 4
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 3 components, size 105
   Sum space of 3 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 3 variables with 1 components, size 35
       Polynomial space of degree 4
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: ptrimmed
   Space in 3 variables with 3 components, size 6
   Trimmed polynomials 1-forms of degree 0 (P-1/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 6 components, size 12
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 3 variables with 3 components, size 6
       Trimmed polynomials 1-forms of degree 0 (P-1/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 9 components, size 18
   Sum space of 3 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 3 variables with 3 components, size 6
       Trimmed polynomials 1-forms of degree 0 (P-1/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: ptrimmed
   Space in 3 variables with 3 components, size 20
   Trimmed polynomials 1-forms of degree 1 (P-2/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 6 components, size 40
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 3 variables with 3 components, size 20
       Trimmed polynomials 1-forms of degree 1 (P-2/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 9 components, size 60
   Sum space of 3 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 3 variables with 3 components, size 20
       Trimmed polynomials 1-forms of degree 1 (P-2/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: ptrimmed
   Space in 3 variables with 3 components, size 45
   Trimmed polynomials 1-forms of degree 2 (P-3/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 6 components, size 90
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 3 variables with 3 components, size 45
       Trimmed polynomials 1-forms of degree 2 (P-3/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 9 components, size 135
   Sum space of 3 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 3 variables with 3 components, size 45
       Trimmed polynomials 1-forms of degree 2 (P-3/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: ptrimmed
   Space in 3 variables with 3 components, size 84
   Trimmed polynomials 1-forms of degree 3 (P-4/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 6 components, size 168
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 3 variables with 3 components, size 84
       Trimmed polynomials 1-forms of degree 3 (P-4/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 9 components, size 252
   Sum space of 3 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 3 variables with 3 components, size 84
       Trimmed polynomials 1-forms of degree 3 (P-4/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: ptrimmed
   Space in 3 variables with 3 components, size 140
   Trimmed polynomials 1-forms of degree 4 (P-5/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 6 components, size 280
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 3 variables with 3 components, size 140
       Trimmed polynomials 1-forms of degree 4 (P-5/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 9 components, size 420
   Sum space of 3 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 3 variables with 3 components, size 140
       Trimmed polynomials 1-forms of degree 4 (P-5/\1)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: ptrimmed
   Space in 3 variables with 3 components, size 4
   Trimmed polynomials 2-forms of degree 0 (P-1/\2)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 6 components, size 8
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 3 variables with 3 components, size 4
       Trimmed polynomials 2-forms of degree 0 (P-1/\2)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 9 components, size 12
   Sum space of 3 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 3 variables with 3 components, size 4
       Trimmed polynomials 2-forms of degree 0 (P-1/\2)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: ptrimmed
   Space in 3 variables with 3 components, size 15
   Trimmed polynomials 2-forms of degree 1 (P-2/\2)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 6 components, size 30
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 3 variables with 3 components, size 15
       Trimmed polynomials 2-forms of degree 1 (P-2/\2)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 9 components, size 45
   Sum space of 3 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 3 variables with 3 components, size 15
       Trimmed polynomials 2-forms of degree 1 (P-2/\2)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: ptrimmed
   Space in 3 variables with 3 components, size 36
   Trimmed polynomials 2-forms of degree 2 (P-3/\2)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 6 components, size 72
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 3 variables with 3 components, size 36
       Trimmed polynomials 2-forms of degree 2 (P-3/\2)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 9 components, size 108
   Sum space of 3 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 3 variables with 3 components, size 36
       Trimmed polynomials 2-forms of degree 2 (P-3/\2)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: ptrimmed
   Space in 3 variables with 3 components, size 70
   Trimmed polynomials 2-forms of degree 3 (P-4/\2)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 6 components, size 140
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 3 variables with 3 components, size 70
       Trimmed polynomials 2-forms of degree 3 (P-4/\2)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 9 components, size 210
   Sum space of 3 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 3 variables with 3 components, size 70
       Trimmed polynomials 2-forms of degree 3 (P-4/\2)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: ptrimmed
   Space in 3 variables with 3 components, size 120
   Trimmed polynomials 2-forms of degree 4 (P-5/\2)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 6 components, size 240
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 3 variables with 3 components, size 120
       Trimmed polynomials 2-forms of degree 4 (P-5/\2)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 9 components, size 360
   Sum space of 3 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: ptrimmed
       Space in 3 variables with 3 components, size 120
       Trimmed polynomials 2-forms of degree 4 (P-5/\2)
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: poly
   Space in 3 variables with 1 components, size 1
   Polynomial space of degree 0
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 2 components, size 2
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 3 variables with 1 components, size 1
       Polynomial space of degree 0
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 3 components, size 3
   Sum space of 3 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 3 variables with 1 components, size 1
       Polynomial space of degree 0
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: poly
   Space in 3 variables with 1 components, size 4
   Polynomial space of degree 1
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 2 components, size 8
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 3 variables with 1 components, size 4
       Polynomial space of degree 1
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 3 components, size 12
   Sum space of 3 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 3 variables with 1 components, size 4
       Polynomial space of degree 1
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: poly
   Space in 3 variables with 1 components, size 10
   Polynomial space of degree 2
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 2 components, size 20
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 3 variables with 1 components, size 10
       Polynomial space of degree 2
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 3 components, size 30
   Sum space of 3 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 3 variables with 1 components, size 10
       Polynomial space of degree 2
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: poly
   Space in 3 variables with 1 components, size 20
   Polynomial space of degree 3
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 2 components, size 40
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 3 variables with 1 components, size 20
       Polynomial space of degree 3
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 3 components, size 60
   Sum space of 3 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 3 variables with 1 components, size 20
       Polynomial space of degree 3
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: poly
   Space in 3 variables with 1 components, size 35
   Polynomial space of degree 4
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 2 components, size 70
   Sum space of 2 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 3 variables with 1 components, size 35
       Polynomial space of degree 4
-PetscSpace Object: ptrimmed 1 MPI processes
+PetscSpace Object: ptrimmed 1 MPI process
   type: sum
   Space in 3 variables with 3 components, size 105
   Sum space of 3 concatenated subspaces (all identical)
-    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI processes
+    PetscSpace Object: ptrimmed sum component (sumcomp_) 1 MPI process
       type: poly
       Space in 3 variables with 1 components, size 35
       Polynomial space of degree 4

@@ -9,13 +9,13 @@
   7 KSP Residual norm 0.00010782
   8 KSP Residual norm 1.60974e-05
 Linear elas_ solve converged due to CONVERGED_RTOL iterations 8
-KSP Object: (elas_) 1 MPI processes
+KSP Object: (elas_) 1 MPI process
   type: cg
   maximum iterations=10000, initial guess is zero
   tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
   left preconditioning
   using NATURAL norm type for convergence test
-PC Object: (elas_) 1 MPI processes
+PC Object: (elas_) 1 MPI process
   type: hypre
     HYPRE BoomerAMG preconditioning
       Cycle type V
@@ -46,7 +46,7 @@ PC Object: (elas_) 1 MPI processes
       HYPRE_BoomerAMGSetInterpVecQMax() 0
       HYPRE_BoomerAMGSetSmoothInterpVectors() 0
   linear system matrix = precond matrix:
-  Mat Object: 1 MPI processes
+  Mat Object: 1 MPI process
     type: seqaij
     rows=966, cols=966, bs=2
     total: nonzeros=16348, allocated nonzeros=16348

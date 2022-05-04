@@ -1,5 +1,5 @@
 steps 472, ftime 0.50073
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1.99944
 -0.000693981

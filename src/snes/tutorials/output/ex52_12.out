@@ -7,7 +7,7 @@ Labels:
 GPU layout grid(1,1,1) block(6,1,1) with 2 batches
  N_t: 6, N_cb: 2
 Residual:
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 -0.25
 -0.25
