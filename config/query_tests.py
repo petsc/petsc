@@ -107,8 +107,9 @@ def query(invDict,fields,labels):
             continue
 
         foundLabel=False   # easy to do if you misspell argument search
+        label=label.lower()
         for key in invDict[field]:
-            if fnmatch.filter([key],label):
+            if fnmatch.filter([key.lower()],label):
               foundLabel=True
               # Do not return values with not unless label itself has not
               if label.startswith('!') and not key.startswith('!'): continue
