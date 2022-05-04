@@ -1450,7 +1450,7 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
           else                 {ocell = support[0]; flip = vals[0] < 0 ? PETSC_TRUE : PETSC_FALSE;}
           PetscCall(DMPlexGetConeSize(dm, ocell, &nconeSize));
           PetscCall(DMPlexGetCone(dm, ocell, &ncone));
-          PetscCall(DMPlexGetConeOrientation(dm, support[s], &nconeO));
+          PetscCall(DMPlexGetConeOrientation(dm, ocell, &nconeO));
           for (nc = 0; nc < nconeSize; ++nc) {
             if (ncone[nc] == oldp) {
               coneONew[0] = flip ? -(nconeO[nc]+1) : nconeO[nc];
@@ -1934,6 +1934,20 @@ static PetscErrorCode CheckFaultEdge_Private(DM dm, DMLabel label)
     PetscCall(DMLabelGetValue(label, support[1], &valB));
     if ((valA == -1) || (valB == -1)) continue;
     if (valA*valB > 0) continue;
+    /* Check that this face is not incident on only unsplit faces, meaning has at least one split face */
+    {
+      PetscInt *closure = NULL;
+      PetscBool split   = PETSC_FALSE;
+      PetscInt  closureSize, cl;
+
+      PetscCall(DMPlexGetTransitiveClosure(dm, point, PETSC_TRUE, &closureSize, &closure));
+      for (cl = 0; cl < closureSize*2; cl += 2) {
+        PetscCall(DMLabelGetValue(label, closure[cl], &valA));
+        if ((valA >= 0) && (valA <= dim)) {split = PETSC_TRUE; break;}
+      }
+      PetscCall(DMPlexRestoreTransitiveClosure(dm, point, PETSC_TRUE, &closureSize, &closure));
+      if (!split) continue;
+    }
     /* Split the face */
     PetscCall(DMLabelGetValue(label, point, &valA));
     PetscCall(DMLabelClearValue(label, point, valA));
@@ -2099,7 +2113,7 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
 
         /* Mark as unsplit */
         PetscCall(DMLabelGetValue(label, point, &val));
-        PetscCheck(!(val < 0) && !(val > dim),PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %" PetscInt_FMT " has label value %" PetscInt_FMT ", should be part of the fault", point, val);
+        PetscCheck(val >= 0 && val <= dim, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %" PetscInt_FMT " has label value %" PetscInt_FMT ", should be part of the fault", point, val);
         PetscCall(DMLabelClearValue(label, point, val));
         PetscCall(DMLabelSetValue(label, point, shift2+val));
         /* Check for cross-edge
@@ -2110,7 +2124,7 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
         for (s = 0; s < supportSize; ++s) {
           PetscCall(DMPlexGetCone(dm, support[s], &cone));
           PetscCall(DMPlexGetConeSize(dm, support[s], &coneSize));
-          PetscCheck(coneSize == 2,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Edge %" PetscInt_FMT " has %" PetscInt_FMT " vertices != 2", support[s], coneSize);
+          PetscCheck(coneSize == 2, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Edge %" PetscInt_FMT " has %" PetscInt_FMT " vertices != 2", support[s], coneSize);
           PetscCall(DMLabelGetValue(blabel, cone[0], &valA));
           PetscCall(DMLabelGetValue(blabel, cone[1], &valB));
           PetscCall(DMLabelGetValue(blabel, support[s], &valE));

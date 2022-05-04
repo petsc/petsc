@@ -152,6 +152,28 @@ This is Test 2 on two processes. After the fault, we have
 Test 4:
 This is Test 2 on six processes. After the fault, we have
 
+Test 5:
+
+  Fault only on points 2 and 5:
+
+        6
+      / | \
+    13  |  17
+    /  15   \
+   7  0 | 1  9
+   |\   |   /|
+   | 14 | 16 |
+   |  \ | /  |
+ 18| 2  8  3 |21
+   |  / | \  |
+   | 19 | 20 |
+   |/   |   \|
+  10  4 | 5  12
+    \  23   /
+    22  |  24
+      \ | /
+       11
+
 Tetrahedron
 -----------
 Test 0:
@@ -465,6 +487,23 @@ static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
       for (p = 0; p < 8; ++p) PetscCall(DMSetLabelValue(*dm, "marker", markerPoints[p*2], markerPoints[p*2+1]));
       if (testNum == 2) for (p = 0; p < 2; ++p) PetscCall(DMSetLabelValue(*dm, "fault", faultPoints[p], 1));
       if (testNum == 3 || testNum == 4) for (p = 0; p < 2; ++p) PetscCall(DMSetLabelValue(*dm, "pfault", faultPoints[p], 1));
+    }
+    break;
+    case 5:
+    {
+      PetscInt    numPoints[2]         = {7, 6};
+      PetscInt    coneSize[13]         = {3, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0};
+      PetscInt    cones[18]            = {6, 7, 8,  8, 9, 6,  7, 10, 8,  9, 8, 12,  8, 10, 11,  11, 12, 8};
+      PetscInt    coneOrientations[18] = {0, 0, 0,  0, 0, 0,  0,  0, 0,  0, 0,  0,  0,  0,  0,   0,  0, 0};
+      PetscScalar vertexCoords[14]     = {0.0, 2.0,  -1.0, 1.0,  0.0, 0.0,  1.0, 1.0,  -1.0, -1.0,  0.0, -2.0,  1.0, -1.0};
+      PetscInt    faultPoints[2]       = {8, 11};
+      PetscInt    faultBdPoints[1]     = {8};
+
+      PetscCall(DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords));
+      for (p = 0; p < 2; ++p) PetscCall(DMSetLabelValue(*dm, "fault", faultPoints[p], 1));
+      for (p = 0; p < 1; ++p) PetscCall(DMSetLabelValue(*dm, "faultBd", faultBdPoints[p], 1));
+      PetscCall(DMSetLabelValue(*dm, "material", 0, 0));PetscCall(DMSetLabelValue(*dm, "material", 2, 0));PetscCall(DMSetLabelValue(*dm, "material", 4, 0));
+      PetscCall(DMSetLabelValue(*dm, "material", 1, 2));PetscCall(DMSetLabelValue(*dm, "material", 3, 2));PetscCall(DMSetLabelValue(*dm, "material", 5, 2));
     }
     break;
     default:
@@ -1217,6 +1256,10 @@ int main(int argc, char **argv)
     test:
       suffix: tri_t2_0
       args: -dim 2 -test_num 2
+      filter: sed -e "s/_start//g" -e "s/f0_bd_u//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul//g" -e "s/g0_bd_lu//g"
+    test:
+      suffix: tri_t5_0
+      args: -dim 2 -test_num 5
       filter: sed -e "s/_start//g" -e "s/f0_bd_u//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul//g" -e "s/g0_bd_lu//g"
     test:
       suffix: tet_0
