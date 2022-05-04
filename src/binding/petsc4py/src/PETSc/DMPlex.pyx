@@ -439,9 +439,10 @@ cdef class DMPlex(DM):
     def labelComplete(self, DMLabel label):
         CHKERR( DMPlexLabelComplete(self.dm, label.dmlabel) )
 
-    def labelCohesiveComplete(self, DMLabel label, DMLabel bdlabel, flip, DMPlex subdm):
+    def labelCohesiveComplete(self, DMLabel label, DMLabel bdlabel, bdvalue, flip, DMPlex subdm):
         cdef PetscBool flg = flip
-        CHKERR( DMPlexLabelCohesiveComplete(self.dm, label.dmlabel, bdlabel.dmlabel, flg, subdm.dm) )
+        cdef PetscInt  val = asInt(bdvalue)
+        CHKERR( DMPlexLabelCohesiveComplete(self.dm, label.dmlabel, bdlabel.dmlabel, val, flg, subdm.dm) )
 
     def setAdjacencyUseAnchors(self, useAnchors=True):
         cdef PetscBool flag = useAnchors
