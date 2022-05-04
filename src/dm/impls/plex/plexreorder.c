@@ -106,7 +106,7 @@ PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, DMLabel label, IS
       if (v < numValues-1) voff[v+2] += vsize[v] + voff[v+1];
       numPoints += vsize[v];
     }
-    PetscCheck(numPoints == numCells,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label only covers %" PetscInt_FMT " cells < %" PetscInt_FMT " total", numPoints, numCells);
+    PetscCheck(numPoints == numCells, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label only covers %" PetscInt_FMT " cells != %" PetscInt_FMT " total cells", numPoints, numCells);
     for (c = 0; c < numCells; ++c) {
       const PetscInt oldc = cperm[c];
       PetscInt       val, vloc;
