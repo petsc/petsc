@@ -837,7 +837,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
     PetscCall(DMGetLabel(*dm, "fault", &faultLabel));
     PetscCall(DMGetLabel(*dm, "faultBd", &faultBdLabel));
-    PetscCall(DMPlexCreateHybridMesh(*dm, faultLabel, faultBdLabel, &hybridLabel, &splitLabel, &dmInterface, &dmHybrid));
+    PetscCall(DMPlexCreateHybridMesh(*dm, faultLabel, faultBdLabel, 1, &hybridLabel, &splitLabel, &dmInterface, &dmHybrid));
     PetscCall(DMLabelView(hybridLabel, PETSC_VIEWER_STDOUT_WORLD));
     PetscCall(DMLabelDestroy(&hybridLabel));
     PetscCall(DMLabelView(splitLabel, PETSC_VIEWER_STDOUT_WORLD));
@@ -859,7 +859,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
     PetscCall(DMGetLabel(*dm, "fault2", &faultLabel));
     PetscCall(DMGetLabel(*dm, "fault2Bd", &faultBdLabel));
-    PetscCall(DMPlexCreateHybridMesh(*dm, faultLabel, faultBdLabel, &hybridLabel, NULL, NULL, &dmHybrid));
+    PetscCall(DMPlexCreateHybridMesh(*dm, faultLabel, faultBdLabel, 1, &hybridLabel, NULL, NULL, &dmHybrid));
     PetscCall(DMLabelView(hybridLabel, PETSC_VIEWER_STDOUT_WORLD));
     PetscCall(DMLabelDestroy(&hybridLabel));
     PetscCall(DMDestroy(dm));
@@ -977,7 +977,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
     PetscCall(DMGetLabel(*dm, "pfault", &faultLabel));
     PetscCall(DMGetLabel(*dm, "pfaultBd", &faultBdLabel));
-    PetscCall(DMPlexCreateHybridMesh(*dm, faultLabel, faultBdLabel, &hybridLabel, NULL, &dmInterface, &dmHybrid));
+    PetscCall(DMPlexCreateHybridMesh(*dm, faultLabel, faultBdLabel, 1, &hybridLabel, NULL, &dmInterface, &dmHybrid));
     PetscCall(DMViewFromOptions(dmInterface, NULL, "-dm_fault_view"));
     {
       PetscViewer viewer;

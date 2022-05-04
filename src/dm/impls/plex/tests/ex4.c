@@ -179,7 +179,7 @@ PetscErrorCode CreateSimplexHybrid_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
     PetscCall(DMSetFromOptions(idm));
     PetscCall(DMViewFromOptions(idm, NULL, "-dm_view"));
     PetscCall(DMGetLabel(*dm, "fault", &faultLabel));
-    PetscCall(DMPlexCreateHybridMesh(idm, faultLabel, NULL, &hybridLabel, NULL, NULL, &hdm));
+    PetscCall(DMPlexCreateHybridMesh(idm, faultLabel, NULL, 0, &hybridLabel, NULL, NULL, &hdm));
     PetscCall(DMLabelDestroy(&hybridLabel));
     PetscCall(DMDestroy(&idm));
     PetscCall(DMDestroy(dm));
@@ -193,7 +193,7 @@ PetscErrorCode CreateSimplexHybrid_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
     PetscCall(DMPlexDistributeSetDefault(idm, PETSC_FALSE));
     PetscCall(DMSetFromOptions(idm));
     PetscCall(DMViewFromOptions(idm, NULL, "-dm_view"));
-    PetscCall(DMPlexCreateHybridMesh(idm, NULL, NULL, NULL, NULL, NULL, &hdm));
+    PetscCall(DMPlexCreateHybridMesh(idm, NULL, NULL, 0, NULL, NULL, NULL, &hdm));
     PetscCall(DMDestroy(&idm));
     PetscCall(DMDestroy(dm));
     *dm  = hdm;
@@ -261,7 +261,7 @@ PetscErrorCode CreateTensorProductHybrid_2D(MPI_Comm comm, PetscInt testNum, DM 
     PetscCall(DMSetFromOptions(idm));
     PetscCall(DMViewFromOptions(idm, NULL, "-dm_view"));
     PetscCall(DMGetLabel(*dm, "fault", &faultLabel));
-    PetscCall(DMPlexCreateHybridMesh(idm, faultLabel, NULL, &hybridLabel, NULL, NULL, &hdm));
+    PetscCall(DMPlexCreateHybridMesh(idm, faultLabel, NULL, 0, &hybridLabel, NULL, NULL, &hdm));
     PetscCall(DMLabelDestroy(&hybridLabel));
   } else {
     PetscInt numPoints[3] = {0, 0, 0};
@@ -272,7 +272,7 @@ PetscErrorCode CreateTensorProductHybrid_2D(MPI_Comm comm, PetscInt testNum, DM 
     PetscCall(DMPlexDistributeSetDefault(idm, PETSC_FALSE));
     PetscCall(DMSetFromOptions(idm));
     PetscCall(DMViewFromOptions(idm, NULL, "-dm_view"));
-    PetscCall(DMPlexCreateHybridMesh(idm, NULL, NULL, NULL, NULL, NULL, &hdm));
+    PetscCall(DMPlexCreateHybridMesh(idm, NULL, NULL, 0, NULL, NULL, NULL, &hdm));
   }
   PetscCall(DMDestroy(&idm));
   PetscCall(DMDestroy(dm));
@@ -426,7 +426,7 @@ PetscErrorCode CreateSimplexHybrid_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
     PetscCall(DMSetFromOptions(idm));
     PetscCall(DMViewFromOptions(idm, NULL, "-dm_view"));
     PetscCall(DMGetLabel(*dm, "fault", &faultLabel));
-    PetscCall(DMPlexCreateHybridMesh(idm, faultLabel, NULL, &hybridLabel, NULL, NULL, &hdm));
+    PetscCall(DMPlexCreateHybridMesh(idm, faultLabel, NULL, 0, &hybridLabel, NULL, NULL, &hdm));
     PetscCall(DMLabelDestroy(&hybridLabel));
     PetscCall(DMDestroy(&idm));
     PetscCall(DMDestroy(dm));
@@ -440,7 +440,7 @@ PetscErrorCode CreateSimplexHybrid_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
     PetscCall(DMPlexDistributeSetDefault(idm, PETSC_FALSE));
     PetscCall(DMSetFromOptions(idm));
     PetscCall(DMViewFromOptions(idm, NULL, "-dm_view"));
-    PetscCall(DMPlexCreateHybridMesh(idm, NULL, NULL, NULL, NULL, NULL, &hdm));
+    PetscCall(DMPlexCreateHybridMesh(idm, NULL, NULL, 0, NULL, NULL, NULL, &hdm));
     PetscCall(DMDestroy(&idm));
     PetscCall(DMDestroy(dm));
     *dm  = hdm;
@@ -553,7 +553,7 @@ PetscErrorCode CreateTensorProductHybrid_3D(MPI_Comm comm, PetscInt testNum, DM 
     PetscCall(DMSetFromOptions(idm));
     PetscCall(DMViewFromOptions(idm, NULL, "-dm_view"));
     PetscCall(DMGetLabel(*dm, "fault", &faultLabel));
-    PetscCall(DMPlexCreateHybridMesh(idm, faultLabel, NULL, NULL, NULL, NULL, &hdm));
+    PetscCall(DMPlexCreateHybridMesh(idm, faultLabel, NULL, 0, NULL, NULL, NULL, &hdm));
     PetscCall(DMDestroy(&idm));
     PetscCall(DMDestroy(dm));
     *dm  = hdm;
@@ -566,7 +566,7 @@ PetscErrorCode CreateTensorProductHybrid_3D(MPI_Comm comm, PetscInt testNum, DM 
     PetscCall(DMPlexDistributeSetDefault(idm, PETSC_FALSE));
     PetscCall(DMSetFromOptions(idm));
     PetscCall(DMViewFromOptions(idm, NULL, "-dm_view"));
-    PetscCall(DMPlexCreateHybridMesh(idm, NULL, NULL, NULL, NULL, NULL, &hdm));
+    PetscCall(DMPlexCreateHybridMesh(idm, NULL, NULL, 0, NULL, NULL, NULL, &hdm));
     PetscCall(DMDestroy(&idm));
     PetscCall(DMDestroy(dm));
     *dm  = hdm;

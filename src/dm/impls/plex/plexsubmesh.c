@@ -1975,6 +1975,7 @@ static PetscErrorCode CheckFaultEdge_Private(DM dm, DMLabel label)
 + dm     - The DM
 . label  - A DMLabel marking the surface
 . blabel - A DMLabel marking the vertices on the boundary which will not be duplicated, or NULL to find them automatically
+. bvalue - Value of DMLabel marking the vertices on the boundary
 . flip   - Flag to flip the submesh normal and replace points on the other side
 - subdm  - The subDM associated with the label, or NULL
 
@@ -1987,7 +1988,7 @@ static PetscErrorCode CheckFaultEdge_Private(DM dm, DMLabel label)
 
 .seealso: `DMPlexConstructCohesiveCells()`, `DMPlexLabelComplete()`
 @*/
-PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel, PetscBool flip, DM subdm)
+PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel, PetscInt bvalue, PetscBool flip, DM subdm)
 {
   DMLabel         depthLabel;
   IS              dimIS, subpointIS = NULL;
@@ -2072,7 +2073,7 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
   if (blabel) {
     IS bdIS;
 
-    PetscCall(DMLabelGetStratumIS(blabel, 1, &bdIS));
+    PetscCall(DMLabelGetStratumIS(blabel, bvalue, &bdIS));
     PetscCall(ISGetLocalSize(bdIS, &numPoints));
     PetscCall(ISGetIndices(bdIS, &points));
     for (p = 0; p < numPoints; ++p) {
@@ -2218,7 +2219,8 @@ PetscErrorCode DMPlexCheckValidSubmesh_Private(DM dm, DMLabel label, DM subdm)
   Input Parameters:
 + dm - The original DM
 . label - The label specifying the interface vertices
-- bdlabel - The optional label specifying the interface boundary vertices
+. bdlabel - The optional label specifying the interface boundary vertices
+- bdvalue - Value of optional label specifying the interface boundary vertices
 
   Output Parameters:
 + hybridLabel - The label fully marking the interface, or NULL if no output is desired
@@ -2243,7 +2245,7 @@ PetscErrorCode DMPlexCheckValidSubmesh_Private(DM dm, DMLabel label, DM subdm)
 
 .seealso: `DMPlexConstructCohesiveCells()`, `DMPlexLabelCohesiveComplete()`, `DMPlexGetSubpointMap()`, `DMCreate()`
 @*/
-PetscErrorCode DMPlexCreateHybridMesh(DM dm, DMLabel label, DMLabel bdlabel, DMLabel *hybridLabel, DMLabel *splitLabel, DM *dmInterface, DM *dmHybrid)
+PetscErrorCode DMPlexCreateHybridMesh(DM dm, DMLabel label, DMLabel bdlabel, PetscInt bdvalue, DMLabel *hybridLabel, DMLabel *splitLabel, DM *dmInterface, DM *dmHybrid)
 {
   DM             idm;
   DMLabel        subpointMap, hlabel, slabel = NULL;
@@ -2272,7 +2274,7 @@ PetscErrorCode DMPlexCreateHybridMesh(DM dm, DMLabel label, DMLabel bdlabel, DML
     PetscCall(PetscStrcat(sname, " split"));
     PetscCall(DMLabelCreate(PETSC_COMM_SELF, sname, &slabel));
   }
-  PetscCall(DMPlexLabelCohesiveComplete(dm, hlabel, bdlabel, PETSC_FALSE, idm));
+  PetscCall(DMPlexLabelCohesiveComplete(dm, hlabel, bdlabel, bdvalue, PETSC_FALSE, idm));
   if (dmInterface) {*dmInterface = idm;}
   else             PetscCall(DMDestroy(&idm));
   PetscCall(DMPlexConstructCohesiveCells(dm, hlabel, slabel, dmHybrid));

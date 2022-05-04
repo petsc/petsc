@@ -110,7 +110,7 @@ cdef extern from * nogil:
     int DMPlexPermute(PetscDM,PetscIS,PetscDM*)
 
     #int DMPlexCreateSubmesh(PetscDM,PetscDMLabel,PetscInt,PetscDM*)
-    #int DMPlexCreateHybridMesh(PetscDM,PetscDMLabel,PetscDMLabel*,PetscDM*)
+    #int DMPlexCreateHybridMesh(PetscDM,PetscDMLabel,PetscDMLabel,PetscInt,PetscDMLabel*,PetscDMLabel*,PetscDM *,PetscDM *)
     #int DMPlexGetSubpointMap(PetscDM,PetscDMLabel*)
     #int DMPlexSetSubpointMap(PetscDM,PetscDMLabel)
     #int DMPlexCreateSubpointIS(PetscDM,PetscIS*)
@@ -118,7 +118,7 @@ cdef extern from * nogil:
     int DMPlexCreateCoarsePointIS(PetscDM,PetscIS*)
     int DMPlexMarkBoundaryFaces(PetscDM,PetscInt,PetscDMLabel)
     int DMPlexLabelComplete(PetscDM,PetscDMLabel)
-    int DMPlexLabelCohesiveComplete(PetscDM,PetscDMLabel,PetscDMLabel,PetscBool,PetscDM)
+    int DMPlexLabelCohesiveComplete(PetscDM,PetscDMLabel,PetscDMLabel,PetscInt,PetscBool,PetscDM)
 
     int DMPlexGetRefinementLimit(PetscDM,PetscReal*)
     int DMPlexSetRefinementLimit(PetscDM,PetscReal)

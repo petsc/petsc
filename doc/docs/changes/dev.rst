@@ -120,6 +120,7 @@ In addition to the changes above
 
 - Add ``DMLabelPropagateBegin()``, ``DMLabelPropagatePush()``, and ``DMLabelPropagateEnd()``
 - Add ``DMPlexPointQueue`` and API
+- Add label value argument to ``DMPlexLabelCohesiveComplete()`` and ``DMPlexCreateHybridMesh()``
 
 .. rubric:: FE/FV:
 
