@@ -3054,7 +3054,7 @@ PetscErrorCode PCFieldSplitSetDetectSaddlePoint(PC pc,PetscBool flg)
       ```
      where the action of $\text{inv}(A_{00})$ is applied using the KSP solver with prefix `-fieldsplit_0_`.  $S$ is the Schur complement
      ```{math}
-     S = A_{11} - A10 \text{ksp}(A_{00}) A_{01}
+     S = A_{11} - A_{10} \text{ksp}(A_{00}) A_{01}
      ```
      which is usually dense and not stored explicitly.  The action of $\text{ksp}(S)$ is computed using the KSP solver with prefix `-fieldsplit_splitname_` (where `splitname` was given
      in providing the SECOND split or 1 if not given). For `PCFieldSplitGetSub\text{ksp}()` when field number is 0,
