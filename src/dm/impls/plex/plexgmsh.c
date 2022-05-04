@@ -361,7 +361,7 @@ static PetscErrorCode GmshReadDouble(GmshFile *gmsh, double *buf, PetscInt count
   PetscFunctionReturn(0);
 }
 
-#define GMSH_MAX_TAGS 4
+#define GMSH_MAX_TAGS 16
 
 typedef struct {
   PetscInt id;      /* Entity ID */
@@ -902,7 +902,7 @@ static PetscErrorCode GmshReadEntities_v41(GmshFile *gmsh, GmshMesh *mesh)
       PetscCall(GmshReadSize(gmsh, &numTags, 1));
       PetscCall(GmshBufferGet(gmsh, numTags, sizeof(int), &tags));
       PetscCall(GmshReadInt(gmsh, tags, numTags));
-      PetscCheck(numTags <= GMSH_MAX_TAGS, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "PETSc currently supports up to 4 tags per entity, not %" PetscInt_FMT, numTags);
+      PetscCheck(numTags <= GMSH_MAX_TAGS, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "PETSc currently supports up to %" PetscInt_FMT " tags per entity, not %" PetscInt_FMT, (PetscInt) GMSH_MAX_TAGS, numTags);
       entity->numTags = numTags;
       for (i = 0; i < entity->numTags; ++i) entity->tags[i] = tags[i];
       if (dim == 0) continue;
