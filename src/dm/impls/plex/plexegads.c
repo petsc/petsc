@@ -690,7 +690,7 @@ static PetscErrorCode DMPlexCreateEGADS(MPI_Comm comm, ego context, ego model, D
 
   PetscFunctionBeginUser;
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
-  if (!rank) {
+  if (rank == 0) {
     // ---------------------------------------------------------------------------------------------------
     // Generate Petsc Plex
     //  Get all Nodes in model, record coordinates in a correctly formatted array
@@ -1096,7 +1096,7 @@ static PetscErrorCode DMPlexCreateEGADS_Tess_Internal(MPI_Comm comm, ego context
 
   PetscFunctionBeginUser;
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
-  if (!rank) {
+  if (rank == 0) {
     // ---------------------------------------------------------------------------------------------------
     // Generate Petsc Plex from EGADSlite created Tessellation of geometry
     // ---------------------------------------------------------------------------------------------------
@@ -1175,7 +1175,7 @@ static PetscErrorCode DMPlexCreateEGADS_Tess_Internal(MPI_Comm comm, ego context
     totalNumPoints += bodyNumPoints;
     totalNumTris += bodyNumTris;
     }
-  //}  - Original End of (!rank)
+  //}  - Original End of (rank == 0)
 
   dim = 2;
   cdim = 3;

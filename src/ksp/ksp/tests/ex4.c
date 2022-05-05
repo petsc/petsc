@@ -53,7 +53,7 @@ int main(int argc,char **args)
   PetscCall(FormElementStiffness(h*h,Ke));
 
   /* assemble the matrix: only process 0 adds the values, not scalable */
-  if (!rank) {
+  if (rank == 0) {
     for (i=0; i<M; i++) {
       /* node numbers for the four corners of element */
       idx[0] = (m+1)*(i/m) + (i % m);
@@ -80,7 +80,7 @@ int main(int argc,char **args)
   PetscCall(VecSet(b,0.0));
 
   /* assemble the right hand side: only process 0 adds the values, not scalable */
-  if (!rank) {
+  if (rank == 0) {
     for (i=0; i<M; i++) {
       /* location of lower left corner of element */
       x = h*(i%m);
@@ -98,7 +98,7 @@ int main(int argc,char **args)
   PetscCall(VecAssemblyEnd(b));
 
   /* modify matrix and rhs for Dirichlet boundary conditions */
-  if (!rank) {
+  if (rank == 0) {
     PetscCall(PetscMalloc1(4*m+1,&rows));
     for (i=0; i<m+1; i++) {
       rows[i]       = i; /* bottom */
@@ -139,7 +139,7 @@ int main(int argc,char **args)
 
   /* check error */
   if (usezerorows) {
-    if (!rank) {
+    if (rank == 0) {
       for (i=0; i<N; i++) {
         val  = h*(i/(m+1));
         PetscCall(VecSetValues(ustar,1,&i,&val,INSERT_VALUES));

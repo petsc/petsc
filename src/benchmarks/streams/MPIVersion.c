@@ -187,7 +187,7 @@ int main(int argc,char **args)
   for (int j = 0; j < 4; ++j) irate[j] = 1.0E-06 * bytes[j]/mintime[j];
   PetscCallMPI(MPI_Reduce(irate,rate,4,MPI_DOUBLE,MPI_SUM,0,MPI_COMM_WORLD));
 
-  if (!rank) {
+  if (rank == 0) {
     FILE *fd;
 
     if (size) {

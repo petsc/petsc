@@ -135,7 +135,7 @@ int main(int argc,char **argv)
   for (n=1,i=0; n<=maxn; n*=2,i++) {
     PetscCall(PetscSFCreate(PETSC_COMM_WORLD,&sf[i]));
     PetscCall(PetscSFSetFromOptions(sf[i]));
-    if (!rank) {
+    if (rank == 0) {
       nroots  = n;
       nleaves = 0;
     } else {

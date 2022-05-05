@@ -641,7 +641,7 @@ PetscErrorCode DMPlexOrientInterface_Internal(DM dm)
   PetscCall(PetscSFBcastEnd(sf, MPI_4INT, rootsRanks, leavesRanks, MPI_REPLACE));
   if (debug) {
     PetscCall(PetscSynchronizedFlush(comm, NULL));
-    if (!rank) PetscCall(PetscSynchronizedPrintf(comm, "Referenced roots\n"));
+    if (rank == 0) PetscCall(PetscSynchronizedPrintf(comm, "Referenced roots\n"));
   }
   PetscCall(PetscSFGetRootRanks(sf, &nranks, &ranks, &roffset, NULL, NULL));
   for (p = 0; p < nroots; ++p) {

@@ -136,7 +136,7 @@ PetscErrorCode BuildMatrix(const PetscInt *parts, PetscInt nblocks, const PetscI
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   PetscCall(MatCreateAIJ(PETSC_COMM_WORLD,parts[rank],parts[rank],PETSC_DETERMINE,PETSC_DETERMINE,0,NULL,0,NULL,A));
   PetscCall(MatSetOption(*A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE));
-  if (!rank) {
+  if (rank == 0) {
     for (i=0; i<nblocks; i++) {
       PetscCall(MatSetValue(*A,cnt,cnt+blocksizes[i]-1,1.0,INSERT_VALUES));
       PetscCall(MatSetValue(*A,cnt+blocksizes[i]-1,cnt,1.0,INSERT_VALUES));

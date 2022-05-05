@@ -1196,7 +1196,7 @@ static PetscErrorCode TestAssembly(DM dm, AppCtx *user)
     PetscCall(PetscWeakFormSetIndexBdResidual(wf, fault, 1, 1, 0, 0, f0_bd_l, 0, NULL));
     PetscCall(PetscWeakFormSetIndexBdJacobian(wf, fault, 1, 1, 0, 0, 0, g0_bd_lu, 0, NULL, 0, NULL, 0, NULL));
   }
-  if (!rank) PetscCall(PetscDSView(probh, NULL));
+  if (rank == 0) PetscCall(PetscDSView(probh, NULL));
 
   keys[0].label = NULL;
   keys[0].value = 0;
