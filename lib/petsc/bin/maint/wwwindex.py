@@ -72,6 +72,7 @@ def printindex(outfilename, headfilename, levels, titles, tables):
 def printsingleindex(outfilename, alphabet_dict):
       with open(outfilename, "w") as fd:
           fd.write("# Single Index of all PETSc Manual Pages\n\n")
+          fd.write(" Also see the [Manual page table of contents, by section](/docs/manualpages/index.md).\n\n")
           for key in sorted(alphabet_dict.keys()):
                 fd.write("## %s\n\n" % key.upper())
                 fd.write("```{hlist}\n")
