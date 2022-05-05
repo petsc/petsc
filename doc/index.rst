@@ -169,6 +169,6 @@ If you utilize the TS adjoint solver please cite
 
 .. literalinclude:: /petsc.bib
    :language: none
-   :start-at: @techreport{ZhangConstantinescuSmith2019
+   :start-at: @article{Zhang2022tsadjoint
    :end-at: year
    :append: }
