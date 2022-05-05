@@ -889,50 +889,57 @@ typedef struct {
 #define PetscStackPop
 #define PetscStackPush(f)
 #elif defined(PETSC_USE_DEBUG)
+#define PetscStackPush_Private(stack__,file__,func__,line__,petsc_routine__,hot__) do { \
+    if (stack__.currentsize < PETSCSTACKSIZE) {                                         \
+      stack__.file[stack__.currentsize]         = file__;                               \
+      stack__.function[stack__.currentsize]     = func__;                               \
+      stack__.line[stack__.currentsize]         = line__;                               \
+      stack__.petscroutine[stack__.currentsize] = petsc_routine__;                      \
+    }                                                                                   \
+    ++stack__.currentsize;                                                              \
+    stack__.hotdepth += (hot__ || stack__.hotdepth);                                    \
+  } while (0)
+
+#define PetscStackPop_Private(stack__,func__) do {                                             \
+    if (PetscUnlikely(stack__.currentsize <= 0)) {                                             \
+      if (PetscUnlikely(stack__.check)) {                                                      \
+        printf("Invalid stack size %d, pop %s\n",stack__.currentsize,func__);                  \
+      }                                                                                        \
+    } else {                                                                                   \
+      if (--stack__.currentsize < PETSCSTACKSIZE) {                                            \
+        if (PetscUnlikely(                                                                     \
+              stack__.check                           &&                                       \
+              stack__.petscroutine[stack__.currentsize] &&                                     \
+              (stack__.function[stack__.currentsize]    != (const char*)(func__)))) {          \
+          /* We need this string comparison because "unknown" can be defined in different static strings: */ \
+          PetscBool _cmpflg;                                                                   \
+          const char *_funct = stack__.function[stack__.currentsize];                          \
+          PetscStrcmp(_funct,func__,&_cmpflg);                                                 \
+          if (!_cmpflg) printf("Invalid stack: push from %s, pop from %s\n",_funct,func__);    \
+        }                                                                                      \
+        stack__.function[stack__.currentsize]     = PETSC_NULLPTR;                             \
+        stack__.file[stack__.currentsize]         = PETSC_NULLPTR;                             \
+        stack__.line[stack__.currentsize]         = 0;                                         \
+        stack__.petscroutine[stack__.currentsize] = 0;                                         \
+      }                                                                                        \
+      stack__.hotdepth = PetscMax(stack__.hotdepth-1,0);                                       \
+    }                                                                                          \
+  } while (0)
+
 /* Stack handling is based on the following two "NoCheck" macros.  These should only be called directly by other error
  * handling macros.  We record the line of the call, which may or may not be the location of the definition.  But is at
  * least more useful than "unknown" because it can distinguish multiple calls from the same function.
  */
-#define PetscStackPushNoCheck(funct,petsc_routine,hot) do {             \
-    PetscStackSAWsTakeAccess();                                         \
-    if (petscstack.currentsize < PETSCSTACKSIZE) {                      \
-      petscstack.function[petscstack.currentsize]     = funct;          \
-      petscstack.file[petscstack.currentsize]         = __FILE__;       \
-      petscstack.line[petscstack.currentsize]         = __LINE__;       \
-      petscstack.petscroutine[petscstack.currentsize] = petsc_routine;  \
-    }                                                                   \
-    ++petscstack.currentsize;                                           \
-    petscstack.hotdepth += (hot || petscstack.hotdepth);                \
-    PetscStackSAWsGrantAccess();                                        \
+#define PetscStackPushNoCheck(funct,petsc_routine,hot) do {                             \
+    PetscStackSAWsTakeAccess();                                                         \
+    PetscStackPush_Private(petscstack,__FILE__,funct,__LINE__,petsc_routine,hot);       \
+    PetscStackSAWsGrantAccess();                                                        \
   } while (0)
 
-#define PetscStackPopNoCheck(funct)                    do {                                    \
-    PetscStackSAWsTakeAccess();                                                                \
-    if (PetscUnlikely(petscstack.currentsize <= 0)) {                                          \
-      if (PetscUnlikely(petscstack.check)) {                                                   \
-        printf("Invalid stack size %d, pop %s\n",petscstack.currentsize,funct);                \
-      }                                                                                        \
-    } else {                                                                                   \
-      if (--petscstack.currentsize < PETSCSTACKSIZE) {                                         \
-        if (PetscUnlikely(                                                                     \
-              petscstack.check                                &&                               \
-              petscstack.petscroutine[petscstack.currentsize] &&                               \
-              (petscstack.function[petscstack.currentsize]    !=                               \
-               (const char*)funct))) {                                                         \
-          /* We need this string comparison because "unknown" can be defined in different static strings: */ \
-          PetscBool _cmpflg;                                                                   \
-          const char *_funct = petscstack.function[petscstack.currentsize];                    \
-          PetscStrcmp(_funct,funct,&_cmpflg);                                                  \
-          if (!_cmpflg) printf("Invalid stack: push from %s, pop from %s\n", _funct,funct);    \
-        }                                                                                      \
-        petscstack.function[petscstack.currentsize]     = PETSC_NULLPTR;                       \
-        petscstack.file[petscstack.currentsize]         = PETSC_NULLPTR;                       \
-        petscstack.line[petscstack.currentsize]         = 0;                                   \
-        petscstack.petscroutine[petscstack.currentsize] = 0;                                   \
-      }                                                                                        \
-      petscstack.hotdepth = PetscMax(petscstack.hotdepth-1,0);                                 \
-    }                                                                                          \
-    PetscStackSAWsGrantAccess();                                                               \
+#define PetscStackPopNoCheck(funct)                    do {     \
+    PetscStackSAWsTakeAccess();                                 \
+    PetscStackPop_Private(petscstack,funct);                    \
+    PetscStackSAWsGrantAccess();                                \
   } while (0)
 
 #define PetscStackClearTop                             do {             \
