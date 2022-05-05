@@ -16,6 +16,8 @@ import glob
 import posixpath
 import subprocess
 
+HLIST_COLUMNS = 3
+
 # Now use the level info, and print a html formatted index
 # table. Can also provide a header file, whose contents are
 # first copied over.
@@ -31,24 +33,38 @@ def printindex(outfilename, headfilename, levels, titles, tables):
 
       with open(outfilename, "w") as fd:
           fd.write(headbuf)
+          fd.write('[Manual Pages Table of Contents](/docs/manualpages/index.md)\n')
+          all_names = []
+          fd.write('\n## Manual Pages by Level\n')
           for i, level in enumerate(levels):
                 title = titles[i]
                 if not tables[i]:
                       if level != 'none':
-                          fd.write('\n## No %s routines\n' % level)
+                          fd.write('\n### No %s routines\n' % level)
                       continue
 
-                fd.write('\n## %s\n' % title)
-                fd.write('```{toctree}\n')
-                fd.write(':maxdepth: 1\n\n')
+                fd.write('\n### %s\n' % title)
+                fd.write('```{hlist}\n')
+                fd.write("---\n")
+                fd.write("columns: %d\n" % HLIST_COLUMNS)
+                fd.write("---\n")
 
                 for filename in tables[i]:
                       path,name     = posixpath.split(filename)
                       func_name,ext = posixpath.splitext(name)
-                      fd.write('%s\n' % name)
+                      fd.write('- [](%s)\n' % name)
+                      all_names.append(name)
                 fd.write('```\n\n\n')
 
-          fd.write('[Table of Contents](/docs/manualpages/index.md)\n')
+          fd.write('\n## Single list of manual pages\n')
+          fd.write('```{toctree}\n')
+          fd.write("---\n")
+          fd.write("maxdepth: 1\n")
+          fd.write("---\n")
+          for name in sorted(all_names):
+              fd.write('%s\n' % name)
+          fd.write('```\n\n\n')
+
 
 # This routine takes in as input a dictionary, which contains the
 # alhabetical index to all the man page functions, and prints them all in
@@ -58,6 +74,10 @@ def printsingleindex(outfilename, alphabet_dict):
           fd.write("# Single Index of all PETSc Manual Pages\n\n")
           for key in sorted(alphabet_dict.keys()):
                 fd.write("## %s\n\n" % key.upper())
+                fd.write("```{hlist}\n")
+                fd.write("---\n")
+                fd.write("columns: %d\n" % HLIST_COLUMNS)
+                fd.write("---\n")
                 function_dict = alphabet_dict[key]
                 for name in sorted(function_dict.keys()):
                       if name:
@@ -65,6 +85,7 @@ def printsingleindex(outfilename, alphabet_dict):
                       else:
                             path_name = ''
                       fd.write("- [%s](%s)\n" % (name, path_name))
+                fd.write("```\n")
 
 
 # Read in the filename contents, and search for the formatted
