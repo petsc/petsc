@@ -1491,13 +1491,15 @@ PetscErrorCode TSAdjointSolve(TS ts)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscCall(PetscCitationsRegister("@article{tsadjointpaper,\n"
-                                 "  title         = {{PETSc TSAdjoint: a discrete adjoint ODE solver for first-order and second-order sensitivity analysis}},\n"
+  PetscCall(PetscCitationsRegister("@article{Zhang2022tsadjoint,\n"
+                                 "  title         = {{PETSc TSAdjoint: A Discrete Adjoint ODE Solver for First-Order and Second-Order Sensitivity Analysis}},\n"
                                  "  author        = {Zhang, Hong and Constantinescu, Emil M.  and Smith, Barry F.},\n"
-                                 "  journal       = {arXiv e-preprints},\n"
-                                 "  eprint        = {1912.07696},\n"
-                                 "  archivePrefix = {arXiv},\n"
-                                 "  year          = {2019}\n}\n",&cite));
+                                 "  journal       = {SIAM Journal on Scientific Computing},\n"
+                                 "  volume        = {44},\n"
+                                 "  number        = {1},\n"
+                                 "  pages         = {C1-C24},\n"
+                                 "  doi           = {10.1137/21M140078X},\n"
+                                 "  year          = {2022}\n}\n",&cite));
 #if defined(TSADJOINT_STAGE)
   PetscCall(PetscLogStageRegister("TSAdjoint",&adjoint_stage));
   PetscCall(PetscLogStagePush(adjoint_stage));
