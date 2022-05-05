@@ -21,7 +21,7 @@ class CompilerOptions(config.base.Configure):
     # GNU gcc
     if config.setCompilers.Configure.isGNU(compiler, self.log) or config.setCompilers.Configure.isClang(compiler, self.log):
       if bopt == '':
-        flags.extend(['-Wall', '-Wwrite-strings', '-Wno-unknown-pragmas'])
+        flags.extend(['-Wall', '-Wwrite-strings', '-Wno-unknown-pragmas', '-Wno-lto-type-mismatch'])
         if config.setCompilers.Configure.isGcc110plus(compiler, self.log):
           flags.extend(['-Wno-stringop-overflow'])
         # skip -fstack-protector for brew gcc - as this gives SEGV
@@ -134,7 +134,7 @@ class CompilerOptions(config.base.Configure):
     # GNU g++
     if config.setCompilers.Configure.isGNU(compiler, self.log) or config.setCompilers.Configure.isClang(compiler, self.log):
       if bopt == '':
-        flags.extend(['-Wall', '-Wwrite-strings', '-Wno-strict-aliasing','-Wno-unknown-pragmas'])
+        flags.extend(['-Wall', '-Wwrite-strings', '-Wno-strict-aliasing','-Wno-unknown-pragmas', '-Wno-lto-type-mismatch'])
         if not any([
             # skip -fstack-protector for brew gcc - as this gives SEGV
             config.setCompilers.Configure.isDarwin(self.log) and config.setCompilers.Configure.isGNU(compiler, self.log),
@@ -249,7 +249,7 @@ class CompilerOptions(config.base.Configure):
     flags = []
     if config.setCompilers.Configure.isGNU(compiler, self.log):
       if bopt == '':
-        flags.extend(['-Wall', '-ffree-line-length-0'])
+        flags.extend(['-Wall', '-ffree-line-length-0', '-Wno-lto-type-mismatch'])
         if config.setCompilers.Configure.isGfortran46plus(compiler, self.log):
           flags.extend(['-Wno-unused-dummy-argument']) # Silence warning because dummy parameters are sometimes necessary
         if not config.setCompilers.Configure.isGfortran47plus(compiler, self.log):
