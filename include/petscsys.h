@@ -18,6 +18,8 @@
 #include <petscfix.h>
 #include <petscmacros.h>
 
+/* SUBMANSEC = Sys */
+
 #if defined(PETSC_DESIRE_FEATURE_TEST_MACROS)
 /*
    Feature test macros must be included before headers defined by IEEE Std 1003.1-2001

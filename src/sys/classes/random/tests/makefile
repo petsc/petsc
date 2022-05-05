@@ -1,8 +1,6 @@
 -include ../../../../../petscdir.mk
 
 LOCDIR          = src/sys/classes/random/tests/
-EXAMPLESC       = ex3.c
-EXAMPLESF       =
 MANSEC          = Sys
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

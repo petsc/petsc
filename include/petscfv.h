@@ -3,10 +3,13 @@
 */
 #if !defined(PETSCFV_H)
 #define PETSCFV_H
+
 #include <petscdm.h>
 #include <petscdt.h>
 #include <petscfvtypes.h>
 #include <petscdstypes.h>
+
+/* SUBMANSEC = FV */
 
 PETSC_EXTERN PetscClassId PETSCLIMITER_CLASSID;
 

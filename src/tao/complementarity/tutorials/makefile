@@ -1,10 +1,5 @@
 -include ../../../../petscdir.mk
 
-EXAMPLESC        = minsurf1.c blackscholes.c
-EXAMPLESF        =
-EXAMPLESCH       =
-EXAMPLESFH       =
-TUTORIALS        = minsurf1.c blackscholes.c
 LOCDIR		 = src/tao/complementarity/tutorials/
 MANSEC		 =
 DOCS		 =

@@ -3,7 +3,10 @@
 */
 #if !defined(PETSCPF_H)
 #define PETSCPF_H
+
 #include <petscvec.h>
+
+/* SUBMANSEC = PF */
 
 /*
     PFList contains the list of mathematical functions currently registered

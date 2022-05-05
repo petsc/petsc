@@ -4,6 +4,8 @@
 #include <petscvec_kokkos.hpp>
 #include <petscdmda.h>
 
+/* SUBMANSEC = DMDA */
+
 #if defined(PETSC_HAVE_KOKKOS)
 #include <Kokkos_Core.hpp>
 #include <Kokkos_OffsetView.hpp>

@@ -2,7 +2,6 @@
 
 LOCDIR		 = src/tao/leastsquares/tests/
 MANSEC		 =
-EXAMPLESC        = chwirut2.c
 DOCS		 =
 DIRS		 =
 

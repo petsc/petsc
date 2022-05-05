@@ -3,6 +3,8 @@
 
 #include <petscdmlabel.h>
 
+/* SUBMANSEC = DT */
+
 /*S
   PetscDS - PETSc object that manages a discrete system, which is a set of discretizations + continuum equations from a PetscWeakForm
 

@@ -1,9 +1,5 @@
 -include ../../../../petscdir.mk
 
-EXAMPLESC        = eptorsion1.c eptorsion2.c minsurf2.c rosenbrock1.c rosenbrock2.c rosenbrock3.c spectraladjointassimilation.c
-EXAMPLESF        = eptorsion2f.F rosenbrock1f.F90
-EXAMPLESCH       =
-EXAMPLESFH       = rosenbrock1f.h
 LOCDIR		 = src/tao/unconstrained/tutorials/
 MANSEC		 =
 DOCS		 =

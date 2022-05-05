@@ -1,6 +1,8 @@
 #if !defined(PETSCFETYPES_H)
 #define PETSCFETYPES_H
 
+/* SUBMANSEC = FE */
+
 /*S
   PetscSpace - PETSc object that manages a linear space, e.g. the space of d-dimensional polynomials of given degree
 

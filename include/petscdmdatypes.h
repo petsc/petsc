@@ -3,6 +3,8 @@
 
 #include <petscdmtypes.h>
 
+/* SUBMANSEC = DMDA */
+
 /*E
     DMDAStencilType - Determines if the stencil extends only along the coordinate directions, or also
       to the northeast, northwest etc

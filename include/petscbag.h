@@ -1,7 +1,10 @@
 
 #if !defined(PETSCBAG_H)
 #define PETSCBAG_H
+
 #include <petscsys.h>
+
+/* SUBMANSEC = Sys */
 
 /*S
      PetscBag - PETSc object that manages a collection of user data including parameters.

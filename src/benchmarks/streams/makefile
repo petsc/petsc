@@ -1,9 +1,6 @@
 -include ../../../petscdir.mk
 
 LOCDIR        = src/benchmarks/streams/
-EXAMPLESC     = BasicVersion.c MPIVersion.c OpenMPVersion.c SSEVersion.c PthreadVersion.c CUDAVersion.cu
-EXAMPLESF     =
-TESTS         = BasicVersion OpenMPVersion
 MANSEC        = Sys
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

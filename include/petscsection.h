@@ -1,8 +1,11 @@
 #if !defined(PETSCSECTION_H)
 #define PETSCSECTION_H
+
 #include <petscsys.h>
 #include <petscis.h>
 #include <petscsectiontypes.h>
+
+/* SUBMANSEC = PetscSection */
 
 PETSC_EXTERN PetscClassId PETSC_SECTION_CLASSID;
 

@@ -1,13 +1,14 @@
 /*
      PetscViewers are objects where other objects can be looked at or stored.
 */
-
 #if !defined(PETSCVIEWER_H)
 #define PETSCVIEWER_H
 
 #include <petscsys.h>
 #include <petscviewertypes.h>
 #include <petscdrawtypes.h>
+
+/* SUBMANSEC = Viewer */
 
 PETSC_EXTERN PetscClassId PETSC_VIEWER_CLASSID;
 

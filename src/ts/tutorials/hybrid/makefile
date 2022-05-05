@@ -1,9 +1,6 @@
 -include ../../../../petscdir.mk
 
 LOCDIR          = src/ts/tutorials/hybrid/
-EXAMPLESC       = ex1.c
-EXAMPLESF       =
-EXAMPLESFH      =
 MANSEC          = TS
 DIRS            =
 

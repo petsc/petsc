@@ -3,8 +3,11 @@
 */
 #if !defined(PETSCDMADAPTOR_H)
 #define PETSCDMADAPTOR_H
+
 #include <petscdm.h>
 #include <petscconvest.h>
+
+/* SUBMANSEC = DM */
 
 /*S
   DMAdaptor - The adaptor constructs a DMLabel or metric Vec that can be used to modify the DM.

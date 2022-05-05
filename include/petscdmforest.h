@@ -6,6 +6,8 @@
 
 #include <petscdm.h>
 
+/* SUBMANSEC = DMForest */
+
 /*J
     DMForestTopology - String with the name of a PETSc DMFOREST base mesh topology. The topology is a string (e.g.
   "cube", "shell") and can be interpreted by subtypes of DMFOREST) to construct the base DM of a forest during

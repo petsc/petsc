@@ -3,9 +3,12 @@
 */
 #if !defined(PETSCSF_H)
 #define PETSCSF_H
+
 #include <petscsys.h>
 #include <petscsftypes.h>
 #include <petscvec.h> /* for Vec, VecScatter etc */
+
+/* SUBMANSEC = PetscSF */
 
 PETSC_EXTERN PetscClassId PETSCSF_CLASSID;
 

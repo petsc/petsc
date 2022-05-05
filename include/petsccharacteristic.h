@@ -7,6 +7,8 @@
 #include <petscvec.h>
 #include <petscdmdatypes.h>
 
+/* SUBMANSEC = Characteristic */
+
 PETSC_EXTERN PetscErrorCode CharacteristicInitializePackage(void);
 
 /*S

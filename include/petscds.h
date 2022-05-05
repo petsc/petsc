@@ -3,9 +3,12 @@
 */
 #if !defined(PETSCDS_H)
 #define PETSCDS_H
+
 #include <petscfe.h>
 #include <petscfv.h>
 #include <petscdstypes.h>
+
+/* SUBMANSEC = DT */
 
 PETSC_EXTERN PetscClassId PETSCWEAKFORM_CLASSID;
 

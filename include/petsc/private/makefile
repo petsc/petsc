@@ -6,7 +6,6 @@ SOURCEH = bagimpl.h characteristicimpl.h dmdaimpl.h dmforestimpl.h dmimpl.h dmla
 LIBBASE  = libpetscvec
 DIRS     =
 LOCDIR   = include/petsc/private/
-MANSEC   = Sys
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

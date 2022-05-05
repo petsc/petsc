@@ -3,6 +3,8 @@
 
 #include <petsc/private/hashtable.h>
 
+/* SUBMANSEC = Sys */
+
 /*MC
   PETSC_HASH_MAP - Instantiate a PETSc hash table map type
 

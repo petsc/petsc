@@ -3,10 +3,6 @@
 CXXFLAGS         = ${AMREX_INCLUDE}
 LOCDIR		 = src/ksp/ksp/tutorials/amrex/
 MANSEC           = KSP
-EXAMPLESC	 =
-EXAMPLESF	 =
-EXAMPLESCH	 = MyEB.H MyTest.H
-EXAMPLESFH       =
 OBJECTS          = main.o MyTest.o initEB.o
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

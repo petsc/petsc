@@ -1,6 +1,5 @@
 -include ../../../../petscdir.mk
 
-EXAMPLESC = googledriveupload.c urlshorten.c googleobtainrefreshtoken.c boxobtainrefreshtoken.c boxupload.c
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
 DIRS	  =

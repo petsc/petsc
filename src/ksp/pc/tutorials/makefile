@@ -1,8 +1,6 @@
 -include ../../../../petscdir.mk
 
 LOCDIR          = src/ksp/pc/tutorials/
-EXAMPLESC       = ex1.c ex2.c ex3.c
-EXAMPLESF       =
 MANSEC          = KSP
 SUBMANSEC       = PC
 

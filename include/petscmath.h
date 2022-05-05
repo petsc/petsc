@@ -7,11 +7,13 @@
     This file is included by petscsys.h and should not be used directly.
 
 */
-
 #if !defined(PETSCMATH_H)
 #define PETSCMATH_H
+
 #include <math.h>
 #include <petscsystypes.h>
+
+/* SUBMANSEC = Sys */
 
 /*
 

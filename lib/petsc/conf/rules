@@ -147,6 +147,14 @@ tree_basic: ${ACTION}
 	PETSC_ARCH=${PETSC_ARCH}  LOC=${LOC}) ;fi; \
 	done
 
+# Skips all tutorial and test directories and their children
+tree_src: ${ACTION}
+	-@for dir in ${DIRS} ftn-custom ; do DIR=`basename $$dir`; if [[ -d $$dir && $$DIR != "tests" && $$DIR != "tutorials" && $$DIR != "doc" ]]; then \
+	(cd $$dir ; echo ${ACTION} in: `pwd`; \
+	${OMAKE}  tree_src ACTION=${ACTION}  \
+	PETSC_ARCH=${PETSC_ARCH}  LOC=${LOC}) ;fi; \
+	done
+
 #This target goes through all the source directories that contains a makefile
 alltree_src: ${ACTION}
 	-@DIRS=`ls | sed -e s'?tutorials??'g -e s'?tests??g'  -e s'?docs??'g -e s'?include??'g`; \
@@ -457,18 +465,27 @@ chk_manualpage_dir:
          if [ ! -d "${LOC}/docs/manualpages/$${LMANSEC}" ]; then \
 	  echo Making directory ${LOC}/docs/manualpages/$${LMANSEC} for library; ${MKDIR} ${LOC}/docs/manualpages/$${LMANSEC}; fi
 
+#
+#  If this produces an error such as Could not open output file /Users/barrysmith/Src/petsc/docs/manualpages/MissingSUBMANSEC/*
+#  this indicates the makefile is missing a MANSEC definition or the include file is missing a SUBMANSEC definition
 manualpages: chk_manualpage_dir
-	-@if [ "${MANSEC}" != "" ] ; then \
+	-@base=`basename ${LOCDIR}`; \
+        if [ "${MANSEC}" = "" ] ; then \
+          for f in ${SOURCED}; do \
+            LMANSEC=`grep SUBMANSEC $${f} | sed s'?[ ]*/\*[ ]*SUBMANSEC[ ]*=[ ]*\([a-zA-Z]*\)[ ]*\*/?\1?'g`; \
+            if [ "$${LMANSEC}" = "" ] ; then LMANSEC="MissingSUBMANSEC"; fi; \
+            DOCTEXT_PATH=${PETSC_DIR}/doc/classic/doctext \
+            ${DOCTEXT} -myst -mpath ${LOC}/docs/manualpages/$${LMANSEC} -heading PETSc -defn ${PETSC_DIR}/doc/classic/doctext/myst.def \
+                -indexdir ../$${LMANSEC} -index ${LOC}/docs/manualpages/manualpages.cit -locdir ${LOCDIR} -Wargdesc $${f} 2>&1 | tee -a ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err;\
+            if [ -f "${LOC}/docs/manualpages/$${LMANSEC}" ]; then chmod g+w "${LOC}"/docs/manualpages/$${LMANSEC}/*; fi; \
+          done; \
+        else \
           if [ "${SUBMANSEC}" = "" ] ; then LMANSEC=${MANSEC}; else LMANSEC=${SUBMANSEC}; fi; \
-          DOCTEXT_PATH=${PETSC_DIR}/doc/classic/doctext; export DOCTEXT_PATH; \
-          ${DOCTEXT} -myst \
-            -mpath ${LOC}/docs/manualpages/$${LMANSEC} -heading PETSc \
-            -defn ${PETSC_DIR}/doc/classic/doctext/myst.def \
-            -indexdir ../$${LMANSEC} \
-            -index ${LOC}/docs/manualpages/manualpages.cit \
-            -locdir ${LOCDIR} -Wargdesc ${SOURCED} 2>&1 | tee -a ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err;\
-          if [ -n "$$(ls "${LOC}/docs/manualpages/$${LMANSEC}")" ]; then chmod g+w "${LOC}"/docs/manualpages/$${LMANSEC}/*; fi; \
-    fi;
+          DOCTEXT_PATH=${PETSC_DIR}/doc/classic/doctext  \
+          ${DOCTEXT} -myst -mpath ${LOC}/docs/manualpages/$${LMANSEC} -heading PETSc -defn ${PETSC_DIR}/doc/classic/doctext/myst.def \
+              -indexdir ../$${LMANSEC} -index ${LOC}/docs/manualpages/manualpages.cit -locdir ${LOCDIR} -Wargdesc ${SOURCED} 2>&1 | tee -a ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err;\
+          if [ -f "${LOC}/docs/manualpages/$${LMANSEC}" ]; then chmod g+w "${LOC}"/docs/manualpages/$${LMANSEC}/*; fi; \
+        fi;
 #
 #   Example usage for manual pages; adds each example that uses a function to that functions
 # manual page up to a limit of 10 examples.

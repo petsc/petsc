@@ -4,10 +4,6 @@
 
 LOCDIR           = src/tao/leastsquares/tutorials/matlab/
 MANSEC           = Tao
-EXAMPLESC        = matlab_ls_test.c
-EXAMPLESF        =
-EXAMPLESCH       =
-EXAMPLESFH       =
 EXAMPLESMATLAB   = TestingInitialize.m TestingFinalize.m ProblemInitialize.m ProblemFinalize.m
 DIRS             =
 

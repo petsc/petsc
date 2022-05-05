@@ -4,6 +4,8 @@
 #include <petscdm.h>
 #include <petscdmproduct.h>
 
+/* SUBMANSEC = DMStag */
+
 /*E
   DMStagStencilLocation - enumerated type denoted a location relative to an element in a DMStag grid
 

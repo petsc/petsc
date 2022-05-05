@@ -3,10 +3,13 @@
 */
 #if !defined(PETSCSNES_H)
 #define PETSCSNES_H
+
 #include <petscksp.h>
 #include <petscdmtypes.h>
 #include <petscfvtypes.h>
 #include <petscdmdatypes.h>
+
+/* SUBMANSEC = SNES */
 
 /*S
      SNES - Abstract PETSc object that manages all nonlinear solves

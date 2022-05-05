@@ -1,7 +1,9 @@
-
 #ifndef PETSCMATCOARSEN_H
 #define PETSCMATCOARSEN_H
+
 #include <petscmat.h>
+
+/* SUBMANSEC = Mat */
 
 PETSC_EXTERN PetscFunctionList MatCoarsenList;
 

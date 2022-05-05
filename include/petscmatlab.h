@@ -1,9 +1,10 @@
 /*
     Defines an interface to the MATLAB Engine from PETSc
 */
-
 #if !defined(PETSCMATLAB_H)
 #define PETSCMATLAB_H
+
+/* SUBMANSEC = Sys */
 
 PETSC_EXTERN PetscClassId MATLABENGINE_CLASSID;
 

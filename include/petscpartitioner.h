@@ -3,6 +3,8 @@
 
 #include <petscsection.h>
 
+/* SUBMANSEC = MatOrderings */
+
 /*S
   PetscPartitioner - PETSc object that manages a graph partitioner
 

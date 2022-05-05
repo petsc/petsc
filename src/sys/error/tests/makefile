@@ -1,8 +1,6 @@
 -include ../../../../petscdir.mk
 
 LOCDIR           = src/sys/error/tests/
-EXAMPLESC        = ex1.c
-EXAMPLESF        =
 MANSEC           = Sys
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

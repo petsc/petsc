@@ -2,10 +2,11 @@
 /*
     Defines the basic header of all PETSc objects.
 */
-
 #if !defined(PETSCIMPL_H)
 #define PETSCIMPL_H
 #include <petscsys.h>
+
+/* SUBMANSEC = Sys */
 
 #if defined(PETSC_CLANG_STATIC_ANALYZER)
 #define PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(expr)

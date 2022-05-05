@@ -1,8 +1,6 @@
 -include ../../../../../../petsckdir.mk
 
 LOCDIR          = src/vec/is/ao/tests/ex3d/
-EXAMPLESC       = ex3.cxx
-EXAMPLESF       =
 MANSEC          = Vec
 SUBMANSEC       = AO
 

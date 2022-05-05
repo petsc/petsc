@@ -3,14 +3,16 @@
   degrees of freedom for finite element/finite difference functions
   on a grid. They have more mathematical structure then simple arrays.
 */
-
 #if !defined(PETSCVEC_H)
 #define PETSCVEC_H
+
 #include <petscsys.h>
 #include <petscsftypes.h> /* for VecScatter, VecScatterType */
 #include <petscis.h>
 #include <petscdevicetypes.h>
 #include <petscviewer.h>
+
+/* SUBMANSEC = Vec */
 
 /*S
      Vec - Abstract PETSc vector object

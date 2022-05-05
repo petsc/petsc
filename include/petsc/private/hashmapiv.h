@@ -3,6 +3,7 @@
 
 #include <petsc/private/hashmap.h>
 
+/* SUBMANSEC = Sys */
 /*
  * Hash map from PetscInt --> PetscScalar
  * */

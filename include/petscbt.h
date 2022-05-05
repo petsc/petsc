@@ -3,6 +3,8 @@
 
 #include <petscviewer.h>
 
+/* SUBMANSEC = Sys */
+
 /*S
      PetscBT - PETSc bitarrays
 

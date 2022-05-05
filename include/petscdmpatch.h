@@ -3,7 +3,10 @@
 */
 #if !defined(PETSCDMPATCH_H)
 #define PETSCDMPATCH_H
+
 #include <petscdm.h>
+
+/* SUBMANSEC = DMPatch */
 
 /*S
   DMPATCH - DM object that encapsulates a domain divided into many patches

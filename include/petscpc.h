@@ -3,9 +3,12 @@
 */
 #if !defined(PETSCPC_H)
 #define PETSCPC_H
+
 #include <petscmat.h>
 #include <petscdmtypes.h>
 #include <petscpctypes.h>
+
+/* SUBMANSEC = PC */
 
 PETSC_EXTERN PetscErrorCode PCInitializePackage(void);
 

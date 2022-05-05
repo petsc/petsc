@@ -7,6 +7,8 @@
 #include <petscao.h>
 #include <petscfe.h>
 
+/* SUBMANSEC = DMDA */
+
 /*MC
      DMDA_STENCIL_STAR - "Star"-type stencil. In logical grid coordinates, only (i,j,k), (i+s,j,k), (i,j+s,k),
                        (i,j,k+s) are in the stencil  NOT, for example, (i+s,j+s,k)
