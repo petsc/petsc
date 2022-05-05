@@ -617,7 +617,7 @@ static PetscErrorCode CreateConesIS_Private(DM dm, PetscInt cStart, PetscInt cEn
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexWriteTopology_Vertices_HDF5_Static(DM dm, IS globalCellNumbers, PetscViewer viewer)
+static PetscErrorCode DMPlexTopologyView_HDF5_XDMF_Private(DM dm, IS globalCellNumbers, PetscViewer viewer)
 {
   DM              cdm;
   DMLabel         depthLabel, ctLabel;
@@ -750,7 +750,7 @@ PetscErrorCode DMPlexCoordinatesView_HDF5_Internal(DM dm, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexWriteCoordinates_Vertices_HDF5_Static(DM dm, PetscViewer viewer)
+static PetscErrorCode DMPlexCoordinatesView_HDF5_XDMF_Private(DM dm, PetscViewer viewer)
 {
   DM               cdm;
   Vec              coordinatesLocal, newcoords;
@@ -994,8 +994,8 @@ PetscErrorCode DMPlexView_HDF5_Internal(DM dm, PetscViewer viewer)
       SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "PetscViewerFormat %s not supported for HDF5 output.", PetscViewerFormats[format]);
   }
 
-  if (viz_geom)   PetscCall(DMPlexWriteCoordinates_Vertices_HDF5_Static(dm, viewer));
-  if (xdmf_topo)  PetscCall(DMPlexWriteTopology_Vertices_HDF5_Static(dm, globalPointNumbers, viewer));
+  if (viz_geom)   PetscCall(DMPlexCoordinatesView_HDF5_XDMF_Private(dm, viewer));
+  if (xdmf_topo)  PetscCall(DMPlexTopologyView_HDF5_XDMF_Private(dm, globalPointNumbers, viewer));
   if (petsc_topo) {
     PetscCall(DMPlexTopologyView_HDF5_Internal(dm, globalPointNumbers, viewer));
     PetscCall(DMPlexLabelsView_HDF5_Internal(dm, globalPointNumbers, viewer));

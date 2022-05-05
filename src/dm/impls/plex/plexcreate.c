@@ -3856,53 +3856,21 @@ PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
 
   mesh->refct             = 1;
   PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)dm), &mesh->coneSection));
-  mesh->cones             = NULL;
-  mesh->coneOrientations  = NULL;
   PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)dm), &mesh->supportSection));
-  mesh->supports          = NULL;
   mesh->refinementUniform = PETSC_TRUE;
   mesh->refinementLimit   = -1.0;
   mesh->distDefault       = PETSC_TRUE;
   mesh->interpolated      = DMPLEX_INTERPOLATED_INVALID;
   mesh->interpolatedCollective = DMPLEX_INTERPOLATED_INVALID;
 
-  mesh->facesTmp = NULL;
-
-  mesh->tetgenOpts   = NULL;
-  mesh->triangleOpts = NULL;
   PetscCall(PetscPartitionerCreate(PetscObjectComm((PetscObject)dm), &mesh->partitioner));
   mesh->remeshBd     = PETSC_FALSE;
 
-  mesh->subpointMap = NULL;
-
   for (unit = 0; unit < NUM_PETSC_UNITS; ++unit) mesh->scale[unit] = 1.0;
 
-  mesh->regularRefinement   = PETSC_FALSE;
   mesh->depthState          = -1;
   mesh->celltypeState       = -1;
-  mesh->globalVertexNumbers = NULL;
-  mesh->globalCellNumbers   = NULL;
-  mesh->anchorSection       = NULL;
-  mesh->anchorIS            = NULL;
-  mesh->createanchors       = NULL;
-  mesh->computeanchormatrix = NULL;
-  mesh->parentSection       = NULL;
-  mesh->parents             = NULL;
-  mesh->childIDs            = NULL;
-  mesh->childSection        = NULL;
-  mesh->children            = NULL;
-  mesh->referenceTree       = NULL;
-  mesh->getchildsymmetry    = NULL;
-  mesh->vtkCellHeight       = 0;
-  mesh->useAnchors          = PETSC_FALSE;
-
-  mesh->maxProjectionHeight = 0;
-
-  mesh->neighbors           = NULL;
-
-  mesh->printSetValues = PETSC_FALSE;
-  mesh->printFEM       = 0;
-  mesh->printTol       = 1.0e-10;
+  mesh->printTol            = 1.0e-10;
 
   PetscCall(DMInitialize_Plex(dm));
   PetscFunctionReturn(0);

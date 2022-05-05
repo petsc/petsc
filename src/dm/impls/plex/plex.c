@@ -4767,8 +4767,8 @@ PetscErrorCode DMPlexGetDepth(DM dm, PetscInt *depth)
   Not Collective
 
   Input Parameters:
-+ dm           - The DMPlex object
-- stratumValue - The requested depth
++ dm    - The DMPlex object
+- depth - The requested depth
 
   Output Parameters:
 + start - The first point at this depth
@@ -4783,7 +4783,7 @@ PetscErrorCode DMPlexGetDepth(DM dm, PetscInt *depth)
 
 .seealso: `DMPlexGetHeightStratum()`, `DMPlexGetDepth()`, `DMPlexGetDepthLabel()`, `DMPlexGetPointDepth()`, `DMPlexSymmetrize()`, `DMPlexInterpolate()`
 @*/
-PetscErrorCode DMPlexGetDepthStratum(DM dm, PetscInt stratumValue, PetscInt *start, PetscInt *end)
+PetscErrorCode DMPlexGetDepthStratum(DM dm, PetscInt depth, PetscInt *start, PetscInt *end)
 {
   DMLabel        label;
   PetscInt       pStart, pEnd;
@@ -4794,14 +4794,14 @@ PetscErrorCode DMPlexGetDepthStratum(DM dm, PetscInt stratumValue, PetscInt *sta
   if (end)   {PetscValidIntPointer(end,   4); *end   = 0;}
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
   if (pStart == pEnd) PetscFunctionReturn(0);
-  if (stratumValue < 0) {
+  if (depth < 0) {
     if (start) *start = pStart;
     if (end)   *end   = pEnd;
     PetscFunctionReturn(0);
   }
   PetscCall(DMPlexGetDepthLabel(dm, &label));
   PetscCheck(label,PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "No label named depth was found");
-  PetscCall(DMLabelGetStratumBounds(label, stratumValue, start, end));
+  PetscCall(DMLabelGetStratumBounds(label, depth, start, end));
   PetscFunctionReturn(0);
 }
 
@@ -4811,8 +4811,8 @@ PetscErrorCode DMPlexGetDepthStratum(DM dm, PetscInt stratumValue, PetscInt *sta
   Not Collective
 
   Input Parameters:
-+ dm           - The DMPlex object
-- stratumValue - The requested height
++ dm     - The DMPlex object
+- height - The requested height
 
   Output Parameters:
 + start - The first point at this height
@@ -4827,7 +4827,7 @@ PetscErrorCode DMPlexGetDepthStratum(DM dm, PetscInt stratumValue, PetscInt *sta
 
 .seealso: `DMPlexGetDepthStratum()`, `DMPlexGetDepth()`, `DMPlexGetPointHeight()`
 @*/
-PetscErrorCode DMPlexGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt *start, PetscInt *end)
+PetscErrorCode DMPlexGetHeightStratum(DM dm, PetscInt height, PetscInt *start, PetscInt *end)
 {
   DMLabel        label;
   PetscInt       depth, pStart, pEnd;
@@ -4838,7 +4838,7 @@ PetscErrorCode DMPlexGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt *st
   if (end)   {PetscValidIntPointer(end,   4); *end   = 0;}
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
   if (pStart == pEnd) PetscFunctionReturn(0);
-  if (stratumValue < 0) {
+  if (height < 0) {
     if (start) *start = pStart;
     if (end)   *end   = pEnd;
     PetscFunctionReturn(0);
@@ -4846,7 +4846,7 @@ PetscErrorCode DMPlexGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt *st
   PetscCall(DMPlexGetDepthLabel(dm, &label));
   PetscCheck(label,PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "No label named depth was found");
   PetscCall(DMLabelGetNumValues(label, &depth));
-  PetscCall(DMLabelGetStratumBounds(label, depth-1-stratumValue, start, end));
+  PetscCall(DMLabelGetStratumBounds(label, depth-1-height, start, end));
   PetscFunctionReturn(0);
 }
 

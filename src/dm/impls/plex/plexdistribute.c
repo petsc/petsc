@@ -1490,7 +1490,6 @@ PetscErrorCode DMPlexMigrate(DM dm, PetscSF sf, DM targetDM)
   PetscSF                sfPoint;
   ISLocalToGlobalMapping ltogMigration;
   ISLocalToGlobalMapping ltogOriginal = NULL;
-  PetscBool              flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -1528,11 +1527,8 @@ PetscErrorCode DMPlexMigrate(DM dm, PetscSF sf, DM targetDM)
     /* One-to-all distribution pattern: We can derive LToG from SF */
     PetscCall(ISLocalToGlobalMappingCreateSF(sf, 0, &ltogMigration));
   }
-  PetscCall(PetscOptionsHasName(((PetscObject) dm)->options,((PetscObject) dm)->prefix, "-partition_view", &flg));
-  if (flg) {
-    PetscCall(PetscPrintf(comm, "Point renumbering for DM migration:\n"));
-    PetscCall(ISLocalToGlobalMappingView(ltogMigration, NULL));
-  }
+  PetscCall(PetscObjectSetName((PetscObject)ltogMigration, "Point renumbering for DM migration"));
+  PetscCall(ISLocalToGlobalMappingViewFromOptions(ltogMigration, (PetscObject)dm, "-partition_view"));
   /* Migrate DM data to target DM */
   PetscCall(DMPlexDistributeCones(dm, sf, ltogOriginal, ltogMigration, targetDM));
   PetscCall(DMPlexDistributeLabels(dm, sf, targetDM));
