@@ -635,7 +635,7 @@ static PetscErrorCode PetscFEIntegrateHybridResidual_Basic(PetscDS ds, PetscForm
         PetscCall(DMPrintCellMatrix(e, "invJ", dim, dE, fegeom.invJ));
 #endif
       }
-      if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  quad point %" PetscInt_FMT "\n", q));
+      if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  quad point %" PetscInt_FMT " weight %g detJ %g\n", q, (double) quadWeights[q], (double) fegeom.detJ[0]));
       /* TODO Is this cell or face quadrature, meaning should we use 'q' or 'face*Nq+q' */
       PetscCall(PetscFEEvaluateFieldJets_Hybrid_Internal(ds, Nf, 0, q, Tf, &fegeom, &coefficients[cOffset], &coefficients_t[cOffset], u, u_x, u_t));
       if (dsAux) PetscCall(PetscFEEvaluateFieldJets_Internal(dsAux, NfAux, 0, auxOnBd ? q : face*Nq+q, TfAux, &fegeom, &coefficientsAux[cOffsetAux], NULL, a, a_x, NULL));
@@ -1040,10 +1040,10 @@ PetscErrorCode PetscFEIntegrateHybridJacobian_Basic(PetscDS ds, PetscFEJacobianT
     if (isAffine) {
       fegeom.v    = x;
       fegeom.xi   = fgeom->xi;
-      fegeom.J    = &fgeom->J[e*dE*dE];
-      fegeom.invJ = &fgeom->invJ[e*dE*dE];
-      fegeom.detJ = &fgeom->detJ[e];
-      fegeom.n    = &fgeom->n[e*dE];
+      fegeom.J    = &fgeom->J[e*Np*dE*dE];
+      fegeom.invJ = &fgeom->invJ[e*Np*dE*dE];
+      fegeom.detJ = &fgeom->detJ[e*Np];
+      fegeom.n    = &fgeom->n[e*dE*Np];
     }
     for (q = 0; q < Nq; ++q) {
       PetscReal w;
@@ -1051,7 +1051,7 @@ PetscErrorCode PetscFEIntegrateHybridJacobian_Basic(PetscDS ds, PetscFEJacobianT
 
       if (isAffine) {
         /* TODO Is it correct to have 'dim' here, or should it be 'dim-1'? */
-        CoordinatesRefToReal(dE, dim, fegeom.xi, &fgeom->v[e*dE], fegeom.J, &quadPoints[q*dim], x);
+        CoordinatesRefToReal(dE, dim, fegeom.xi, &fgeom->v[e*Np*dE], fegeom.J, &quadPoints[q*dim], x);
       } else {
         fegeom.v    = &fegeom.v[(e*Np+q)*dE];
         fegeom.J    = &fgeom->J[(e*Np+q)*dE*dE];
