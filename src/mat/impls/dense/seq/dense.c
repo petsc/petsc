@@ -330,7 +330,22 @@ PetscErrorCode MatScale_SeqDense(Mat A,PetscScalar alpha)
     PetscCall(PetscBLASIntCast(A->rmap->n*A->cmap->n,&nz));
     PetscStackCallBLAS("BLASscal",BLASscal_(&nz,&alpha,v,&one));
   }
-  PetscCall(PetscLogFlops(nz));
+  PetscCall(PetscLogFlops(A->rmap->n*A->cmap->n));
+  PetscCall(MatDenseRestoreArray(A,&v));
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatShift_SeqDense(Mat A,PetscScalar alpha)
+{
+  Mat_SeqDense   *a = (Mat_SeqDense*)A->data;
+  PetscScalar    *v;
+  PetscInt       j,k;
+
+  PetscFunctionBegin;
+  PetscCall(MatDenseGetArray(A,&v));
+  k = PetscMin(A->rmap->n,A->cmap->n);
+  for (j=0; j<k; j++) v[j+j*a->lda] += alpha;
+  PetscCall(PetscLogFlops(k));
   PetscCall(MatDenseRestoreArray(A,&v));
   PetscFunctionReturn(0);
 }
@@ -2841,7 +2856,7 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqDense,
                                         MatCopy_SeqDense,
                                 /* 44*/ MatGetRowMax_SeqDense,
                                         MatScale_SeqDense,
-                                        MatShift_Basic,
+                                        MatShift_SeqDense,
                                         NULL,
                                         MatZeroRowsColumns_SeqDense,
                                 /* 49*/ MatSetRandom_SeqDense,

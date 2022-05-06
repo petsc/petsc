@@ -49,6 +49,24 @@ PetscErrorCode MatCopy_MPIDense(Mat A, Mat B, MatStructure s)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MatShift_MPIDense(Mat A,PetscScalar alpha)
+{
+  Mat_MPIDense   *mat = (Mat_MPIDense*)A->data;
+  PetscInt       j,lda,rstart = A->rmap->rstart,rend = A->rmap->rend,rend2;
+  PetscScalar    *v;
+
+  PetscFunctionBegin;
+  PetscCall(MatDenseGetArray(mat->A,&v));
+  PetscCall(MatDenseGetLDA(mat->A,&lda));
+  rend2 = PetscMin(rend,A->cmap->N);
+  if (rend2>rstart) {
+    for (j=rstart; j<rend2; j++) v[j-rstart+j*lda] += alpha;
+    PetscCall(PetscLogFlops(rend2-rstart));
+  }
+  PetscCall(MatDenseRestoreArray(mat->A,&v));
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MatGetRow_MPIDense(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,PetscScalar **v)
 {
   Mat_MPIDense   *mat = (Mat_MPIDense*)A->data;
@@ -1014,6 +1032,20 @@ PetscErrorCode MatGetColumnReductions_MPIDense(Mat A,PetscInt type,PetscReal *re
 }
 
 #if defined(PETSC_HAVE_CUDA)
+PetscErrorCode MatShift_MPIDenseCUDA(Mat A,PetscScalar alpha)
+{
+  PetscScalar *da;
+  PetscInt    lda;
+
+  PetscFunctionBegin;
+  PetscCall(MatDenseCUDAGetArray(A,&da));
+  PetscCall(MatDenseGetLDA(A,&lda));
+  PetscCall(PetscInfo(A,"Performing Shift on backend\n"));
+  PetscCall(MatShift_DenseCUDA_Private(da,alpha,lda,A->rmap->rstart,A->rmap->rend,A->cmap->N));
+  PetscCall(MatDenseCUDARestoreArray(A,&da));
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode MatDenseGetColumnVec_MPIDenseCUDA(Mat A,PetscInt col,Vec *v)
 {
   Mat_MPIDense   *a = (Mat_MPIDense*)A->data;
@@ -1241,6 +1273,7 @@ static PetscErrorCode MatBindToCPU_MPIDenseCUDA(Mat mat,PetscBool bind)
     PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatDenseRestoreColumnVecRead_C",MatDenseRestoreColumnVecRead_MPIDenseCUDA));
     PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatDenseGetColumnVecWrite_C",MatDenseGetColumnVecWrite_MPIDenseCUDA));
     PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatDenseRestoreColumnVecWrite_C",MatDenseRestoreColumnVecWrite_MPIDenseCUDA));
+    mat->ops->shift                   = MatShift_MPIDenseCUDA;
   } else {
     PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatDenseGetColumnVec_C",MatDenseGetColumnVec_MPIDense));
     PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatDenseRestoreColumnVec_C",MatDenseRestoreColumnVec_MPIDense));
@@ -1248,6 +1281,7 @@ static PetscErrorCode MatBindToCPU_MPIDenseCUDA(Mat mat,PetscBool bind)
     PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatDenseRestoreColumnVecRead_C",MatDenseRestoreColumnVecRead_MPIDense));
     PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatDenseGetColumnVecWrite_C",MatDenseGetColumnVecWrite_MPIDense));
     PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatDenseRestoreColumnVecWrite_C",MatDenseRestoreColumnVecWrite_MPIDense));
+    mat->ops->shift                   = MatShift_MPIDense;
   }
   if (d->cmat) {
     PetscCall(MatBindToCPU(d->cmat,bind));
@@ -1349,7 +1383,7 @@ static struct _MatOps MatOps_Values = { MatSetValues_MPIDense,
                                         MatCopy_MPIDense,
                                 /* 44*/ NULL,
                                         MatScale_MPIDense,
-                                        MatShift_Basic,
+                                        MatShift_MPIDense,
                                         NULL,
                                         NULL,
                                 /* 49*/ MatSetRandom_MPIDense,

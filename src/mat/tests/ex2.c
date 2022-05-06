@@ -191,7 +191,13 @@ int main(int argc,char **argv)
   /* Test MatZeroRows */
   j = rstart - 1;
   if (j < 0) j = m-1;
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"MatZeroRows:\n"));
   PetscCall(MatZeroRows(mat,1,&j,0.0,NULL,NULL));
+  PetscCall(MatView(mat,PETSC_VIEWER_STDOUT_WORLD));
+
+  /* Test MatShift */
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"MatShift: B = B - 2*I\n"));
+  PetscCall(MatShift(mat,-2.0));
   PetscCall(MatView(mat,PETSC_VIEWER_STDOUT_WORLD));
 
   PetscCall(PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD));
@@ -238,20 +244,24 @@ int main(int argc,char **argv)
       args: -mat_type seqdense -rectB
       filter: grep -v type | grep -v "Mat Object"
 
-   test:
-      requires: cuda
-      suffix: 12_B_cuda
-      args: -mat_type seqdensecuda -rectB
+   testset:
+      args: -rectB
       output_file: output/ex2_12_B.out
       filter: grep -v type | grep -v "Mat Object"
 
-   test:
-      requires: kokkos_kernels
-      suffix: 12_B_kokkos
-      args: -mat_type aijkokkos -rectB
-      output_file: output/ex2_12_B.out
-      filter: grep -v type | grep -v "Mat Object"
+      test:
+         requires: cuda
+         suffix: 12_B_cuda
+         args: -mat_type {{seqdensecuda seqaijcusparse}}
 
+      test:
+         requires: kokkos_kernels
+         suffix: 12_B_kokkos
+         args: -mat_type aijkokkos
+
+      test:
+         suffix: 12_B_aij
+         args: -mat_type aij
    test:
       suffix: 21
       args: -mat_type mpiaij
@@ -357,13 +367,6 @@ int main(int argc,char **argv)
       args: -mat_type seqaijcusparse -rectA
       filter: grep -v "Mat Object"
       output_file: output/ex2_11_A_aijcusparse.out
-      requires: cuda
-
-   test:
-      suffix: aijcusparse_2
-      args: -mat_type seqaijcusparse -rectB
-      filter: grep -v "Mat Object"
-      output_file: output/ex2_11_B_aijcusparse.out
       requires: cuda
 
 TEST*/

@@ -4058,6 +4058,10 @@ PetscErrorCode  MatSeqAIJSetPreallocation_SeqAIJ(Mat B,PetscInt nz,const PetscIn
   }
   B->was_assembled = PETSC_FALSE;
   B->assembled     = PETSC_FALSE;
+  /* We simply deem preallocation has changed nonzero state. Updating the state
+     will give clients (like AIJKokkos) a chance to know something has happened.
+  */
+  B->nonzerostate++;
   PetscFunctionReturn(0);
 }
 
