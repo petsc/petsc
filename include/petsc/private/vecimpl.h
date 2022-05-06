@@ -105,6 +105,8 @@ struct _VecOps {
   PetscErrorCode (*restorearraywriteandmemtype)(Vec,PetscScalar**,PetscMemType*);
   PetscErrorCode (*concatenate)(PetscInt,const Vec[],Vec*,IS*[]);
   PetscErrorCode (*sum)(Vec,PetscScalar*);
+  PetscErrorCode (*setpreallocationcoo)(Vec,PetscCount,const PetscInt[]);
+  PetscErrorCode (*setvaluescoo)(Vec,const PetscScalar[],InsertMode);
 };
 
 /*
@@ -180,6 +182,8 @@ PETSC_EXTERN PetscLogEvent VEC_MAXPY;
 PETSC_EXTERN PetscLogEvent VEC_AssemblyEnd;
 PETSC_EXTERN PetscLogEvent VEC_PointwiseMult;
 PETSC_EXTERN PetscLogEvent VEC_SetValues;
+PETSC_EXTERN PetscLogEvent VEC_SetPreallocateCOO;
+PETSC_EXTERN PetscLogEvent VEC_SetValuesCOO;
 PETSC_EXTERN PetscLogEvent VEC_Load;
 PETSC_EXTERN PetscLogEvent VEC_ScatterBegin;
 PETSC_EXTERN PetscLogEvent VEC_ScatterEnd;
@@ -358,5 +362,26 @@ PETSC_INTERN PetscErrorCode VecGetSubVectorThroughVecScatter_Private(Vec,IS,Pets
 PETSC_INTERN PetscErrorCode VecCreateSeqKokkosWithArrays_Private(MPI_Comm,PetscInt,PetscInt,const PetscScalar*,const PetscScalar*,Vec*);
 PETSC_INTERN PetscErrorCode VecCreateMPIKokkosWithArrays_Private(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscScalar*,const PetscScalar*,Vec*);
 #endif
+
+/* std::upper_bound(): Given a sorted array, return index of the first element in range [first,last) whose value
+   is greater than value, or last if there is no such element.
+*/
+static inline PetscErrorCode PetscSortedIntUpperBound(PetscInt *array,PetscCount first,PetscCount last,PetscInt value,PetscCount *upper)
+{
+  PetscCount  it,step,count = last - first;
+
+  PetscFunctionBegin;
+  while (count > 0) {
+    it   = first;
+    step = count / 2;
+    it  += step;
+    if (!(value < array[it])) {
+      first  = ++it;
+      count -= step + 1;
+    } else count = step;
+  }
+  *upper = first;
+  PetscFunctionReturn(0);
+}
 
 #endif /* __VECIMPL_H */

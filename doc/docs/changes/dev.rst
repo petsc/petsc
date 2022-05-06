@@ -83,6 +83,8 @@ In addition to the changes above
 
 .. rubric:: Vec:
 
+- Add ``VecSetPreallocationCOO()``, ``VecSetValuesCOO()`` and ``VecSetPreallocationCOOLocal()`` to support vector assembly with coordinates
+
 .. rubric:: PetscSection:
 
 - Add ``PetscSectionCreateSubdomainSection()``

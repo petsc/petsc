@@ -5,8 +5,140 @@
 #define PETSC_SKIP_SPINLOCK
 
 #include <petscconf.h>
+#include <petscsf.h>
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>   /*I  "petscvec.h"   I*/
 #include <petsc/private/cudavecimpl.h>
+
+static PetscErrorCode VecResetPreallocationCOO_MPICUDA(Vec x)
+{
+  Vec_CUDA     *veccuda = static_cast<Vec_CUDA*>(x->spptr);
+
+  PetscFunctionBegin;
+  if (veccuda) {
+    PetscCallCUDA(cudaFree(veccuda->jmap1_d));
+    PetscCallCUDA(cudaFree(veccuda->perm1_d));
+    PetscCallCUDA(cudaFree(veccuda->imap2_d));
+    PetscCallCUDA(cudaFree(veccuda->jmap2_d));
+    PetscCallCUDA(cudaFree(veccuda->perm2_d));
+    PetscCallCUDA(cudaFree(veccuda->Cperm_d));
+    PetscCallCUDA(cudaFree(veccuda->sendbuf_d));
+    PetscCallCUDA(cudaFree(veccuda->recvbuf_d));
+  }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecSetPreallocationCOO_MPICUDA(Vec x, PetscCount ncoo, const PetscInt coo_i[])
+{
+  Vec_MPI      *vecmpi = static_cast<Vec_MPI*>(x->data);
+  Vec_CUDA     *veccuda = static_cast<Vec_CUDA*>(x->spptr);
+  PetscInt     m;
+
+  PetscFunctionBegin;
+  PetscCall(VecResetPreallocationCOO_MPICUDA(x));
+  PetscCall(VecSetPreallocationCOO_MPI(x,ncoo,coo_i));
+  PetscCall(VecGetLocalSize(x,&m));
+
+  PetscCallCUDA(cudaMalloc((void**)&veccuda->jmap1_d,sizeof(PetscCount)*m));
+  PetscCallCUDA(cudaMalloc((void**)&veccuda->perm1_d,sizeof(PetscCount)*vecmpi->tot1));
+  PetscCallCUDA(cudaMalloc((void**)&veccuda->imap2_d,sizeof(PetscInt)*vecmpi->nnz2));
+  PetscCallCUDA(cudaMalloc((void**)&veccuda->jmap2_d,sizeof(PetscCount)*(vecmpi->nnz2+1)));
+  PetscCallCUDA(cudaMalloc((void**)&veccuda->perm2_d,sizeof(PetscCount)*vecmpi->recvlen));
+  PetscCallCUDA(cudaMalloc((void**)&veccuda->Cperm_d,sizeof(PetscCount)*vecmpi->sendlen));
+  PetscCallCUDA(cudaMalloc((void**)&veccuda->sendbuf_d,sizeof(PetscScalar)*vecmpi->sendlen));
+  PetscCallCUDA(cudaMalloc((void**)&veccuda->recvbuf_d,sizeof(PetscScalar)*vecmpi->recvlen));
+
+  PetscCallCUDA(cudaMemcpy(veccuda->jmap1_d,vecmpi->jmap1,sizeof(PetscCount)*m,cudaMemcpyHostToDevice));
+  PetscCallCUDA(cudaMemcpy(veccuda->perm1_d,vecmpi->perm1,sizeof(PetscCount)*vecmpi->tot1,cudaMemcpyHostToDevice));
+  PetscCallCUDA(cudaMemcpy(veccuda->imap2_d,vecmpi->imap2,sizeof(PetscInt)*vecmpi->nnz2,cudaMemcpyHostToDevice));
+  PetscCallCUDA(cudaMemcpy(veccuda->jmap2_d,vecmpi->jmap2,sizeof(PetscCount)*(vecmpi->nnz2+1),cudaMemcpyHostToDevice));
+  PetscCallCUDA(cudaMemcpy(veccuda->perm2_d,vecmpi->perm2,sizeof(PetscCount)*vecmpi->recvlen,cudaMemcpyHostToDevice));
+  PetscCallCUDA(cudaMemcpy(veccuda->Cperm_d,vecmpi->Cperm,sizeof(PetscCount)*vecmpi->sendlen,cudaMemcpyHostToDevice));
+  PetscCallCUDA(cudaMemcpy(veccuda->sendbuf_d,vecmpi->sendbuf,sizeof(PetscScalar)*vecmpi->sendlen,cudaMemcpyHostToDevice));
+  PetscCallCUDA(cudaMemcpy(veccuda->recvbuf_d,vecmpi->recvbuf,sizeof(PetscScalar)*vecmpi->recvlen,cudaMemcpyHostToDevice));
+  PetscFunctionReturn(0);
+}
+
+__global__ static void VecPackCOOValues(const PetscScalar vv[],PetscCount nnz,const PetscCount perm[],PetscScalar buf[])
+{
+  PetscCount       i = blockIdx.x*blockDim.x + threadIdx.x;
+  const PetscCount grid_size = gridDim.x * blockDim.x;
+  for (; i<nnz; i+= grid_size) buf[i] = vv[perm[i]];
+}
+
+__global__ static void VecAddCOOValues(const PetscScalar vv[],PetscCount m,const PetscCount jmap1[],const PetscCount perm1[],InsertMode imode,PetscScalar xv[])
+{
+  PetscCount        i = blockIdx.x*blockDim.x + threadIdx.x;
+  const PetscCount  grid_size = gridDim.x * blockDim.x;
+  for (; i<m; i+= grid_size) {
+    PetscScalar sum = 0.0;
+    for (PetscCount k=jmap1[i]; k<jmap1[i+1]; k++) sum += vv[perm1[k]];
+    xv[i] = (imode == INSERT_VALUES? 0.0 : xv[i]) + sum;
+  }
+}
+
+__global__ static void VecAddRemoteCOOValues(const PetscScalar vv[],PetscCount nnz2,const PetscCount imap2[],const PetscCount jmap2[],const PetscCount perm2[],PetscScalar xv[])
+{
+  PetscCount       i = blockIdx.x*blockDim.x + threadIdx.x;
+  const PetscCount grid_size = gridDim.x * blockDim.x;
+  for (; i<nnz2; i+= grid_size) {
+    for (PetscCount k=jmap2[i]; k<jmap2[i+1]; k++) xv[imap2[i]] += vv[perm2[k]];
+  }
+}
+
+PetscErrorCode VecSetValuesCOO_MPICUDA(Vec x,const PetscScalar v[],InsertMode imode)
+{
+  Vec_MPI                     *vecmpi = static_cast<Vec_MPI*>(x->data);
+  Vec_CUDA                    *veccuda = static_cast<Vec_CUDA*>(x->spptr);
+  const PetscCount            *jmap1 = veccuda->jmap1_d;
+  const PetscCount            *perm1 = veccuda->perm1_d;
+  const PetscCount            *imap2 = veccuda->imap2_d;
+  const PetscCount            *jmap2 = veccuda->jmap2_d;
+  const PetscCount            *perm2 = veccuda->perm2_d;
+  const PetscCount            *Cperm = veccuda->Cperm_d;
+  PetscScalar                 *sendbuf = veccuda->sendbuf_d;
+  PetscScalar                 *recvbuf = veccuda->recvbuf_d;
+  PetscScalar                 *xv = NULL;
+  const PetscScalar           *vv = v;
+  PetscMemType                memtype;
+  PetscInt                    m;
+
+  PetscFunctionBegin;
+  PetscCall(VecGetLocalSize(x,&m));
+  PetscCall(PetscGetMemType(v,&memtype));
+  if (PetscMemTypeHost(memtype)) { /* If user gave v[] on host, copy it to device */
+    PetscCallCUDA(cudaMalloc((void**)&vv,sizeof(PetscScalar)*vecmpi->coo_n));
+    PetscCallCUDA(cudaMemcpy((void*)vv,v,sizeof(PetscScalar)*vecmpi->coo_n,cudaMemcpyHostToDevice));
+  } else {
+    vv = (PetscScalar*)v;
+  }
+
+  /* Pack entries to be sent to remote */
+  if (vecmpi->sendlen) {
+    VecPackCOOValues<<<(vecmpi->sendlen+255)/256,256>>>(vv,vecmpi->sendlen,Cperm,sendbuf);
+    PetscCallCUDA(cudaPeekAtLastError());
+  }
+
+  PetscCall(PetscSFReduceWithMemTypeBegin(vecmpi->coo_sf,MPIU_SCALAR,PETSC_MEMTYPE_CUDA,sendbuf,PETSC_MEMTYPE_CUDA,recvbuf,MPI_REPLACE));
+  if (imode == INSERT_VALUES) PetscCall(VecCUDAGetArrayWrite(x,&xv)); /* write vector */
+  else PetscCall(VecCUDAGetArray(x,&xv)); /* read & write vector */
+
+  if (m) {
+    VecAddCOOValues<<<(m+255)/256,256>>>(vv,m,jmap1,perm1,imode,xv);
+    PetscCallCUDA(cudaPeekAtLastError());
+  }
+  PetscCall(PetscSFReduceEnd(vecmpi->coo_sf,MPIU_SCALAR,sendbuf,recvbuf,MPI_REPLACE));
+
+  /* Add received remote entries */
+  if (vecmpi->nnz2) {
+    VecAddRemoteCOOValues<<<(vecmpi->nnz2+255)/256,256>>>(recvbuf,vecmpi->nnz2,imap2,jmap2,perm2,xv);
+    PetscCallCUDA(cudaPeekAtLastError());
+  }
+
+  if (PetscMemTypeHost(memtype)) PetscCallCUDA(cudaFree((void*)vv));
+  if (imode == INSERT_VALUES) PetscCall(VecCUDARestoreArrayWrite(x,&xv));
+  else PetscCall(VecCUDARestoreArray(x,&xv));
+  PetscFunctionReturn(0);
+}
 
 /*MC
    VECCUDA - VECCUDA = "cuda" - A VECSEQCUDA on a single-process communicator, and VECMPICUDA otherwise.
@@ -40,6 +172,7 @@ PetscErrorCode VecDestroy_MPICUDA(Vec v)
       PetscCall(PetscMallocResetCUDAHost());
       v->pinned_memory = PETSC_FALSE;
     }
+    PetscCall(VecResetPreallocationCOO_MPICUDA(v));
     PetscCall(PetscFree(v->spptr));
   }
   PetscCall(VecDestroy_MPI(v));

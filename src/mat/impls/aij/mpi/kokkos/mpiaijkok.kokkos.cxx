@@ -1283,11 +1283,11 @@ static PetscErrorCode MatSetValuesCOO_MPIAIJKokkos(Mat mat,const PetscScalar v[]
     PetscScalar sum = 0.0;
     if (i<Annz) {
       for (PetscCount k=Ajmap1(i); k<Ajmap1(i+1); k++) sum += v1(Aperm1(k));
-      Aa[i] = (imode == INSERT_VALUES? 0.0 : Aa[i]) + sum;
+      Aa(i) = (imode == INSERT_VALUES? 0.0 : Aa(i)) + sum;
     } else {
       i -= Annz;
       for (PetscCount k=Bjmap1(i); k<Bjmap1(i+1); k++) sum += v1(Bperm1(k));
-      Ba[i] = (imode == INSERT_VALUES? 0.0 : Ba[i]) + sum;
+      Ba(i) = (imode == INSERT_VALUES? 0.0 : Ba(i)) + sum;
     }
   });
   PetscCall(PetscSFReduceEnd(mpiaij->coo_sf,MPIU_SCALAR,vsend.data(),v2.data(),MPI_REPLACE));

@@ -13,6 +13,11 @@
 
 typedef struct {
   VECHEADER
+  /* VecSetValuesCOO() related fields on host. m is the vector's local size */
+  PetscCount  coo_n;  /* Number of entries in VecSetPreallocationCOO() */
+  PetscCount  tot1;   /* Total number of valid (i.e., w/ non-negative indices) entries in the COO array */
+  PetscCount  *jmap1; /* [m+1]: perm1[jmap1[i]..jmap1[i+1]) give indices of entries in v[] associated with i-th nonzero of the vector */
+  PetscCount  *perm1; /* [tot1]: The permutation array in sorting coo_i[] */
 } Vec_Seq;
 
 PETSC_INTERN PetscErrorCode VecMDot_Seq(Vec,PetscInt,const Vec[],PetscScalar*);
@@ -53,5 +58,6 @@ PETSC_INTERN PetscErrorCode VecPointwiseDivide_Seq(Vec,Vec,Vec);
 
 PETSC_EXTERN PetscErrorCode VecCreate_Seq(Vec);
 PETSC_INTERN PetscErrorCode VecCreate_Seq_Private(Vec,const PetscScalar[]);
-
+PETSC_INTERN PetscErrorCode VecSetPreallocationCOO_Seq(Vec,PetscCount,const PetscInt[]);
+PETSC_INTERN PetscErrorCode VecSetValuesCOO_Seq(Vec,const PetscScalar[],InsertMode);
 #endif
