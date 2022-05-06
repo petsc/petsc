@@ -856,24 +856,6 @@ checkbadURLS:
 checkbadSpelling:
 	-@x=`python3 ../bin/extract.py | aspell list | sort -u` ;
 
-sourcelist:
-	-@for i in ${SOURCEALL}; do \
-	    /bin/echo -n ${LOCDIR}$${i} " " >> ${BASE_DIR}/files; \
-        done
-
-#
-# Remove trailing blanks from source code
-rmtrailingblanks:
-	@for i in ${SOURCEALL} ${EXAMPLESALL}; do \
-	  sed -i '' s"/[ ]*$$//"g $$i; \
-	done
-
-#
-uncrustify:
-	@for i in ${SOURCED} ${EXAMPLESALL}; do \
-	  uncrustify -c ${PETSC_DIR}/lib/petsc/conf/uncrustify.cfg $$i; \
-	done
-
 updatedatafiles:
 	-@if [ -d "${HOME}/datafiles" ]; then \
             echo " ** Updating datafiles at ${HOME}/datafiles **"; \
