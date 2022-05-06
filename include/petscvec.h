@@ -613,13 +613,22 @@ PETSC_EXTERN PetscErrorCode VecLockReadPush(Vec);
 PETSC_EXTERN PetscErrorCode VecLockReadPop(Vec);
 /* We also have a non-public VecLockWriteSet_Private() in vecimpl.h */
 PETSC_EXTERN PetscErrorCode VecLockGet(Vec,PetscInt*);
+/* this API is not public, but is only in here because VecSetErrorIfLocked() is in here */
+PETSC_EXTERN PetscErrorCode VecLockGetLocation(Vec,const char*[],const char*[],int*);
 static inline PetscErrorCode VecSetErrorIfLocked(Vec x,PetscInt arg)
 {
   PetscInt state;
 
   PetscFunctionBegin;
   PetscCall(VecLockGet(x,&state));
-  PetscCheck(state == 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE," Vec is already locked for read-only or read/write access, argument # %" PetscInt_FMT,arg);
+  if (PetscUnlikely(state != 0)) {
+    const char *file,*func,*name;
+    int         line;
+
+    PetscCall(VecLockGetLocation(x,&file,&func,&line));
+    PetscCall(PetscObjectGetName((PetscObject)x,&name));
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Vector '%s' (argument #%" PetscInt_FMT ") was locked for %s access in %s() at %s:%d (line numbers only accurate to function begin)",name,arg,state > 0 ? "read-only" : "write-only",func ? func : "unknown_function",file ? file : "unknown file",line ? line : 0);
+  }
   PetscFunctionReturn(0);
 }
 /* The three are deprecated */
