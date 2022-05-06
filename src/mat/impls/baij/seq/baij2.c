@@ -223,6 +223,7 @@ PetscErrorCode MatDestroySubMatrix_SeqBAIJ(Mat C)
   PetscFunctionReturn(0);
 }
 
+/* Note this has code duplication with MatDestroySubMatrices_SeqAIJ() */
 PetscErrorCode MatDestroySubMatrices_SeqBAIJ(PetscInt n,Mat *mat[])
 {
   PetscInt       i;
