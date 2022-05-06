@@ -41,13 +41,13 @@ class Configure(config.package.Package):
     self.ptscotch         = framework.require('config.packages.PTScotch',self)
     self.scalapack        = framework.require('config.packages.scalapack',self)
     self.hwloc            = framework.require('config.packages.hwloc',self)
+    self.openmp           = framework.require('config.packages.openmp',self)
     if self.argDB['with-mumps-serial']:
       self.deps           = [self.blasLapack,self.flibs]
-      self.odeps          = [self.metis]
+      self.odeps          = [self.metis,self.openmp]
     else:
       self.deps           = [self.scalapack,self.mpi,self.blasLapack,self.flibs]
-      self.odeps          = [self.metis,self.parmetis,self.ptscotch,self.hwloc]
-    self.openmp           = framework.require('config.packages.openmp',self)
+      self.odeps          = [self.metis,self.parmetis,self.ptscotch,self.hwloc,self.openmp]
     return
 
   def configureLibrary(self):
