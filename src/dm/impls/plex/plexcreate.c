@@ -27,7 +27,7 @@ PetscErrorCode DMPlexCopy_Internal(DM dmin, PetscBool copyPeriodicity, PetscBool
   PetscCall(DMPlexDistributeSetDefault(dmout, dist));
   ((DM_Plex *) dmout->data)->useHashLocation  = ((DM_Plex *) dmin->data)->useHashLocation;
   if (copyOverlap) {
-    ((DM_Plex *) dmout->data)->overlap        = ((DM_Plex *) dmin->data)->overlap;
+    PetscCall(DMPlexSetOverlap_Plex(dmout, dmin, 0));
   }
   PetscFunctionReturn(0);
 }

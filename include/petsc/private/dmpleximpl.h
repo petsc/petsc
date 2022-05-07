@@ -309,6 +309,7 @@ PETSC_INTERN PetscErrorCode DMPlexCoarsen_Internal(DM, Vec, DMLabel, DMLabel, DM
 PETSC_INTERN PetscErrorCode DMCreateMatrix_Plex(DM, Mat*);
 
 PETSC_INTERN PetscErrorCode DMPlexGetOverlap_Plex(DM, PetscInt *);
+PETSC_INTERN PetscErrorCode DMPlexSetOverlap_Plex(DM, DM, PetscInt);
 PETSC_INTERN PetscErrorCode DMPlexDistributeGetDefault_Plex(DM, PetscBool *);
 PETSC_INTERN PetscErrorCode DMPlexDistributeSetDefault_Plex(DM, PetscBool);
 

@@ -4258,7 +4258,7 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
     }
     PetscCheck(ctype == P4EST_CONNECT_FULL,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONG,"Adjacency dimension %" PetscInt_FMT " / codimension %" PetscInt_FMT " not supported yet",adjDim,adjCodim);
     PetscCall(DMForestGetPartitionOverlap(dm,&overlap));
-    ((DM_Plex *) newPlex->data)->overlap = overlap;
+    PetscCall(DMPlexSetOverlap_Plex(newPlex,NULL,overlap));
 
     points_per_dim    = sc_array_new(sizeof(p4est_locidx_t));
     cone_sizes        = sc_array_new(sizeof(p4est_locidx_t));

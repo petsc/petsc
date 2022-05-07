@@ -1793,7 +1793,7 @@ PetscErrorCode DMPlexDistributeOverlap(DM dm, PetscInt overlap, PetscSF *sf, DM 
   PetscCall(PetscObjectSetName((PetscObject) *dmOverlap, "Parallel Mesh"));
   PetscCall(DMPlexMigrate(dm, sfOverlap, *dmOverlap));
   /* Store the overlap in the new DM */
-  ((DM_Plex*)(*dmOverlap)->data)->overlap = overlap + ((DM_Plex*)dm->data)->overlap;
+  PetscCall(DMPlexSetOverlap_Plex(*dmOverlap, dm, overlap));
   /* Build the new point SF */
   PetscCall(DMPlexCreatePointSF(*dmOverlap, sfOverlap, PETSC_FALSE, &sfPoint));
   PetscCall(DMSetPointSF(*dmOverlap, sfPoint));
@@ -1814,6 +1814,23 @@ PetscErrorCode DMPlexGetOverlap_Plex(DM dm, PetscInt *overlap)
 
   PetscFunctionBegin;
   *overlap = mesh->overlap;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMPlexSetOverlap_Plex(DM dm, DM dmSrc, PetscInt overlap)
+{
+  DM_Plex        *mesh=NULL;
+  DM_Plex        *meshSrc=NULL;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMPLEX);
+  mesh = (DM_Plex*) dm->data;
+  mesh->overlap = overlap;
+  if (dmSrc) {
+    PetscValidHeaderSpecificType(dmSrc, DM_CLASSID, 2, DMPLEX);
+    meshSrc = (DM_Plex*) dmSrc->data;
+    mesh->overlap += meshSrc->overlap;
+  }
   PetscFunctionReturn(0);
 }
 
