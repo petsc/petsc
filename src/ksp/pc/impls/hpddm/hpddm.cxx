@@ -855,12 +855,12 @@ static PetscErrorCode PCHPDDMAlgebraicAuxiliaryMat_Private(Mat P, IS *is, Mat *s
   IS        icol[3], irow[2];
   Mat       *M, Q;
   PetscReal *ptr;
-  PetscInt  *idx, p = 0, n;
+  PetscInt  *idx, p = 0, n, bs = PetscAbs(P->cmap->bs);
   PetscBool flg;
 
   PetscFunctionBegin;
   PetscCall(ISCreateStride(PETSC_COMM_SELF, P->cmap->N, 0, 1, icol + 2));
-  PetscCall(ISSetBlockSize(icol[2], P->cmap->bs));
+  PetscCall(ISSetBlockSize(icol[2], bs));
   PetscCall(ISSetIdentity(icol[2]));
   PetscCall(PetscObjectTypeCompare((PetscObject)P, MATMPISBAIJ, &flg));
   if (flg) {
@@ -875,19 +875,19 @@ static PetscErrorCode PCHPDDMAlgebraicAuxiliaryMat_Private(Mat P, IS *is, Mat *s
   }
   PetscCall(ISDestroy(icol + 2));
   PetscCall(ISCreateStride(PETSC_COMM_SELF, M[0]->rmap->N, 0, 1, irow));
-  PetscCall(ISSetBlockSize(irow[0], P->cmap->bs));
+  PetscCall(ISSetBlockSize(irow[0], bs));
   PetscCall(ISSetIdentity(irow[0]));
   if (!block) {
     PetscCall(PetscMalloc2(P->cmap->N, &ptr, P->cmap->N, &idx));
     PetscCall(MatGetColumnNorms(M[0], NORM_INFINITY, ptr));
     /* check for nonzero columns so that M[0] may be expressed in compact form */
-    for (n = 0; n < P->cmap->N; n += P->cmap->bs)
-      if (std::find_if(ptr + n, ptr + n + P->cmap->bs, [](PetscReal v) { return v > PETSC_MACHINE_EPSILON; }) != ptr + n + P->cmap->bs) {
-        std::iota(idx + p, idx + p + P->cmap->bs, n);
-        p += P->cmap->bs;
+    for (n = 0; n < P->cmap->N; n += bs)
+      if (std::find_if(ptr + n, ptr + n + bs, [](PetscReal v) { return v > PETSC_MACHINE_EPSILON; }) != ptr + n + bs) {
+        std::iota(idx + p, idx + p + bs, n);
+        p += bs;
       }
     PetscCall(ISCreateGeneral(PETSC_COMM_SELF, p, idx, PETSC_USE_POINTER, icol + 1));
-    PetscCall(ISSetBlockSize(icol[1], P->cmap->bs));
+    PetscCall(ISSetBlockSize(icol[1], bs));
     PetscCall(ISSetInfo(icol[1], IS_SORTED, IS_GLOBAL, PETSC_TRUE, PETSC_TRUE));
     PetscCall(ISEmbed(*is, icol[1], PETSC_FALSE, icol + 2));
     irow[1] = irow[0];
@@ -907,7 +907,7 @@ static PetscErrorCode PCHPDDMAlgebraicAuxiliaryMat_Private(Mat P, IS *is, Mat *s
     PetscCall(MatCreateSubMatrices(M[0], 1, irow, is, MAT_INITIAL_MATRIX, sub));
     PetscCall(MatDuplicate((*sub)[0], MAT_COPY_VALUES, &aux));
     PetscCall(MatSetOption(aux, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE));
-    if (P->cmap->bs == 1) { /* scalar case */
+    if (bs == 1) { /* scalar case */
       Vec sum[2];
       PetscCall(MatCreateVecs(aux, sum, sum + 1));
       PetscCall(MatGetRowSum(M[0], sum[0]));
@@ -924,14 +924,14 @@ static PetscErrorCode PCHPDDMAlgebraicAuxiliaryMat_Private(Mat P, IS *is, Mat *s
       /* be more efficient by avoiding all these MatMatMult()          */
       Mat         sum[2], ones;
       PetscScalar *ptr;
-      PetscCall(PetscCalloc1(M[0]->cmap->n * P->cmap->bs, &ptr));
-      PetscCall(MatCreateDense(PETSC_COMM_SELF, M[0]->cmap->n, P->cmap->bs, M[0]->cmap->n, P->cmap->bs, ptr, &ones));
-      for (n = 0; n < M[0]->cmap->n; n += P->cmap->bs) {
-        for (p = 0; p < P->cmap->bs; ++p) ptr[n + p * (M[0]->cmap->n + 1)] = 1.0;
+      PetscCall(PetscCalloc1(M[0]->cmap->n * bs, &ptr));
+      PetscCall(MatCreateDense(PETSC_COMM_SELF, M[0]->cmap->n, bs, M[0]->cmap->n, bs, ptr, &ones));
+      for (n = 0; n < M[0]->cmap->n; n += bs) {
+        for (p = 0; p < bs; ++p) ptr[n + p * (M[0]->cmap->n + 1)] = 1.0;
       }
       PetscCall(MatMatMult(M[0], ones, MAT_INITIAL_MATRIX, PETSC_DEFAULT, sum));
       PetscCall(MatDestroy(&ones));
-      PetscCall(MatCreateDense(PETSC_COMM_SELF, aux->cmap->n, P->cmap->bs, aux->cmap->n, P->cmap->bs, ptr, &ones));
+      PetscCall(MatCreateDense(PETSC_COMM_SELF, aux->cmap->n, bs, aux->cmap->n, bs, ptr, &ones));
       PetscCall(MatDenseSetLDA(ones, M[0]->cmap->n));
       PetscCall(MatMatMult(aux, ones, MAT_INITIAL_MATRIX, PETSC_DEFAULT, sum + 1));
       PetscCall(MatDestroy(&ones));
@@ -943,9 +943,9 @@ static PetscErrorCode PCHPDDMAlgebraicAuxiliaryMat_Private(Mat P, IS *is, Mat *s
       /* equivalent to MatTranspose() which does not truly handle              */
       /* MAT_INPLACE_MATRIX in the rectangular case, as it calls PetscMalloc() */
       PetscCall(MatDenseGetArrayWrite(sum[0], &ptr));
-      HPDDM::Wrapper<PetscScalar>::imatcopy<'T'>(P->cmap->bs, sum[0]->rmap->n, ptr, sum[0]->rmap->n, P->cmap->bs);
+      HPDDM::Wrapper<PetscScalar>::imatcopy<'T'>(bs, sum[0]->rmap->n, ptr, sum[0]->rmap->n, bs);
       /* subdomain matrix plus off-diagonal block row sum */
-      for (n = 0; n < aux->cmap->n / P->cmap->bs; ++n) PetscCall(MatSetValuesBlocked(aux, 1, &n, 1, &n, ptr + n * P->cmap->bs * P->cmap->bs, ADD_VALUES));
+      for (n = 0; n < aux->cmap->n / bs; ++n) PetscCall(MatSetValuesBlocked(aux, 1, &n, 1, &n, ptr + n * bs * bs, ADD_VALUES));
       PetscCall(MatAssemblyBegin(aux, MAT_FINAL_ASSEMBLY));
       PetscCall(MatAssemblyEnd(aux, MAT_FINAL_ASSEMBLY));
       PetscCall(MatDenseRestoreArrayWrite(sum[0], &ptr));
