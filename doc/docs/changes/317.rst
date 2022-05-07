@@ -71,7 +71,7 @@ Changes: 3.17
 - Add ``PetscCallCUDA()``, ``PetscCallCUBLAS()``, ``PetscCallCUSPARSE()``, ``PetscCallCUSOLVER()``, ``PetscCallCUFFT()``, and ``PetscCallCURAND()``. These supersede ``CHKERRCUDA()``, ``CHKERRCUBLAS()``, ``CHKERRCUSPARSE()``, ``CHKERRCUSOLVER()``, ``CHKERRCUFFT()``, and ``CHKERRCURAND()`` respectively
 - Add ``PetscCallHIP()``, ``PetscCallHIPBLAS()``, and ``PetscCallHIPSOLVER()``. These supersede ``CHKERRHIP()``, ``CHKERRHIPBLAS()``, and ``CHKERRHIPSOLVER()`` respectively
 - Add ``PetscCallCEED()`` which supersedes ``CHKERRQ_CEED()``
-- Soft-deprecate ``CHKERR`` variants listed above. New code should prefer the ``PetscCall`` variants, but no compiler diagnostics will be emitted if the old versions are used
+- Soft-deprecate ``CHKERR`` variants listed above in C/C++ sources. New code should prefer the ``PetscCall`` variants though no compiler diagnostics will be emitted if the old versions are used. One may use ``${PETSC_DIR}/share/petsc/chkerrconvert.py`` to perform the conversions automatically, though users should note that this script is considered "beta" software. It was used to facilitate the ``CHKERR`` changes during development and is being exposed to users in order to smooth the transition -- while every reasonable effort was made to ensure correctness, we provide no guarantee of it.
 
 .. rubric:: PetscViewer:
 

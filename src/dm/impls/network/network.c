@@ -1212,7 +1212,8 @@ PetscErrorCode DMNetworkGetVertexOffset(DM dm,PetscInt p,PetscInt *offset)
 + dm - the DMNetwork
 . p - the vertex/edge point. These points are local indices provided by DMNetworkGetSubnetwork()
 . componentkey - component key returned while registering the component with DMNetworkRegisterComponent()
-. compvalue - pointer to the data structure for the component, or NULL if the component does not require data
+. compvalue - pointer to the data structure for the component, or NULL if the component does not require data, this data is not copied so you cannot
+              free this space until after DMSetUp() is called.
 - nvar - number of variables for the component at the vertex/edge point, zero if the component does not introduce any degrees of freedom at the point
 
   Notes:

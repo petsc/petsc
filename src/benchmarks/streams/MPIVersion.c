@@ -130,8 +130,8 @@ int main(int argc,char **args)
 
   if (rank == 0) {
     int quantum;
-    if  ((quantum = checktick()) >= 1) ; /* printf("Your clock granularity/precision appears to be %d microseconds.\n", quantum); */
-    else ; /* printf("Your clock granularity appears to be less than one microsecond.\n");*/
+    if  ((quantum = checktick()) >= 1) { } /* printf("Your clock granularity/precision appears to be %d microseconds.\n", quantum); */
+    else { } /* printf("Your clock granularity appears to be less than one microsecond.\n");*/
   }
 
   t = MPI_Wtime();
@@ -190,7 +190,7 @@ int main(int argc,char **args)
   if (!rank) {
     FILE *fd;
 
-    if (size) {
+    if (size != 1) {
       double prate;
 
       fd = fopen("flops","r");
