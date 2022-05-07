@@ -2019,6 +2019,8 @@ PetscErrorCode DMPlexGetRedundantDM(DM dm, PetscSF *sf, DM *redundantMesh)
   PetscCall(DMPlexCreate(comm, redundantMesh));
   PetscCall(PetscObjectSetName((PetscObject) *redundantMesh, "Redundant Mesh"));
   PetscCall(DMPlexMigrate(gatherDM, migrationSF, *redundantMesh));
+  /* This is to express that all point are in overlap */
+  PetscCall(DMPlexSetOverlap_Plex(*redundantMesh, NULL, PETSC_MAX_INT));
   PetscCall(DMPlexCreatePointSF(*redundantMesh, migrationSF, PETSC_FALSE, &sfPoint));
   PetscCall(DMSetPointSF(*redundantMesh, sfPoint));
   PetscCall(DMGetCoordinateDM(*redundantMesh, &dmCoord));
