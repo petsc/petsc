@@ -176,11 +176,12 @@ PETSC_EXTERN PetscErrorCode DMPlexExtrude(DM, PetscInt, PetscReal, PetscBool, Pe
 PETSC_EXTERN PetscErrorCode DMPlexCreateConeSection(DM, PetscSection *);
 PETSC_EXTERN PetscErrorCode DMPlexInflateToGeomModel(DM);
 
+PETSC_EXTERN PetscErrorCode DMPlexCheck(DM);
 PETSC_EXTERN PetscErrorCode DMPlexCheckSymmetry(DM);
 PETSC_EXTERN PetscErrorCode DMPlexCheckSkeleton(DM, PetscInt);
 PETSC_EXTERN PetscErrorCode DMPlexCheckFaces(DM, PetscInt);
 PETSC_EXTERN PetscErrorCode DMPlexCheckGeometry(DM);
-PETSC_EXTERN PetscErrorCode DMPlexCheckPointSF(DM);
+PETSC_EXTERN PetscErrorCode DMPlexCheckPointSF(DM, PetscSF);
 PETSC_EXTERN PetscErrorCode DMPlexCheckInterfaceCones(DM);
 PETSC_EXTERN PetscErrorCode DMPlexCheckCellShape(DM, PetscBool, PetscReal);
 PETSC_EXTERN PetscErrorCode DMPlexComputeOrthogonalQuality(DM, PetscFV, PetscReal, Vec *, DMLabel *);

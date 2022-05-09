@@ -27,7 +27,7 @@ PetscErrorCode DMPlexCopy_Internal(DM dmin, PetscBool copyPeriodicity, PetscBool
   PetscCall(DMPlexDistributeSetDefault(dmout, dist));
   ((DM_Plex *) dmout->data)->useHashLocation  = ((DM_Plex *) dmin->data)->useHashLocation;
   if (copyOverlap) {
-    ((DM_Plex *) dmout->data)->overlap        = ((DM_Plex *) dmin->data)->overlap;
+    PetscCall(DMPlexSetOverlap_Plex(dmout, dmin, 0));
   }
   PetscFunctionReturn(0);
 }
@@ -3360,7 +3360,7 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
 PetscErrorCode DMSetFromOptions_NonRefinement_Plex(PetscOptionItems *PetscOptionsObject, DM dm)
 {
   DM_Plex       *mesh = (DM_Plex*) dm->data;
-  PetscBool      flg;
+  PetscBool      flg, flg2;
   char           bdLabel[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
@@ -3385,21 +3385,25 @@ PetscErrorCode DMSetFromOptions_NonRefinement_Plex(PetscOptionItems *PetscOption
   PetscCall(PetscOptionsBool("-dm_plex_regular_refinement", "Use special nested projection algorithm for regular refinement", "DMPlexSetRegularRefinement", mesh->regularRefinement, &mesh->regularRefinement, NULL));
   /* Checking structure */
   {
-    PetscBool   flg = PETSC_FALSE, flg2 = PETSC_FALSE, all = PETSC_FALSE;
+    PetscBool   all = PETSC_FALSE;
 
-    PetscCall(PetscOptionsBool("-dm_plex_check_all", "Perform all checks", NULL, PETSC_FALSE, &all, &flg2));
-    PetscCall(PetscOptionsBool("-dm_plex_check_symmetry", "Check that the adjacency information in the mesh is symmetric", "DMPlexCheckSymmetry", PETSC_FALSE, &flg, &flg2));
-    if (all || (flg && flg2)) PetscCall(DMPlexCheckSymmetry(dm));
-    PetscCall(PetscOptionsBool("-dm_plex_check_skeleton", "Check that each cell has the correct number of vertices (only for homogeneous simplex or tensor meshes)", "DMPlexCheckSkeleton", PETSC_FALSE, &flg, &flg2));
-    if (all || (flg && flg2)) PetscCall(DMPlexCheckSkeleton(dm, 0));
-    PetscCall(PetscOptionsBool("-dm_plex_check_faces", "Check that the faces of each cell give a vertex order this is consistent with what we expect from the cell type", "DMPlexCheckFaces", PETSC_FALSE, &flg, &flg2));
-    if (all || (flg && flg2)) PetscCall(DMPlexCheckFaces(dm, 0));
-    PetscCall(PetscOptionsBool("-dm_plex_check_geometry", "Check that cells have positive volume", "DMPlexCheckGeometry", PETSC_FALSE, &flg, &flg2));
-    if (all || (flg && flg2)) PetscCall(DMPlexCheckGeometry(dm));
-    PetscCall(PetscOptionsBool("-dm_plex_check_pointsf", "Check some necessary conditions for PointSF", "DMPlexCheckPointSF", PETSC_FALSE, &flg, &flg2));
-    if (all || (flg && flg2)) PetscCall(DMPlexCheckPointSF(dm));
-    PetscCall(PetscOptionsBool("-dm_plex_check_interface_cones", "Check points on inter-partition interfaces have conforming order of cone points", "DMPlexCheckInterfaceCones", PETSC_FALSE, &flg, &flg2));
-    if (all || (flg && flg2)) PetscCall(DMPlexCheckInterfaceCones(dm));
+    PetscCall(PetscOptionsBool("-dm_plex_check_all", "Perform all basic checks", "DMPlexCheck", PETSC_FALSE, &all, NULL));
+    if (all) {
+      PetscCall(DMPlexCheck(dm));
+    } else {
+      PetscCall(PetscOptionsBool("-dm_plex_check_symmetry", "Check that the adjacency information in the mesh is symmetric", "DMPlexCheckSymmetry", PETSC_FALSE, &flg, &flg2));
+      if (flg && flg2) PetscCall(DMPlexCheckSymmetry(dm));
+      PetscCall(PetscOptionsBool("-dm_plex_check_skeleton", "Check that each cell has the correct number of vertices (only for homogeneous simplex or tensor meshes)", "DMPlexCheckSkeleton", PETSC_FALSE, &flg, &flg2));
+      if (flg && flg2) PetscCall(DMPlexCheckSkeleton(dm, 0));
+      PetscCall(PetscOptionsBool("-dm_plex_check_faces", "Check that the faces of each cell give a vertex order this is consistent with what we expect from the cell type", "DMPlexCheckFaces", PETSC_FALSE, &flg, &flg2));
+      if (flg && flg2) PetscCall(DMPlexCheckFaces(dm, 0));
+      PetscCall(PetscOptionsBool("-dm_plex_check_geometry", "Check that cells have positive volume", "DMPlexCheckGeometry", PETSC_FALSE, &flg, &flg2));
+      if (flg && flg2) PetscCall(DMPlexCheckGeometry(dm));
+      PetscCall(PetscOptionsBool("-dm_plex_check_pointsf", "Check some necessary conditions for PointSF", "DMPlexCheckPointSF", PETSC_FALSE, &flg, &flg2));
+      if (flg && flg2) PetscCall(DMPlexCheckPointSF(dm, NULL));
+      PetscCall(PetscOptionsBool("-dm_plex_check_interface_cones", "Check points on inter-partition interfaces have conforming order of cone points", "DMPlexCheckInterfaceCones", PETSC_FALSE, &flg, &flg2));
+      if (flg && flg2) PetscCall(DMPlexCheckInterfaceCones(dm));
+    }
     PetscCall(PetscOptionsBool("-dm_plex_check_cell_shape", "Check cell shape", "DMPlexCheckCellShape", PETSC_FALSE, &flg, &flg2));
     if (flg && flg2) PetscCall(DMPlexCheckCellShape(dm, PETSC_TRUE, PETSC_DETERMINE));
   }
