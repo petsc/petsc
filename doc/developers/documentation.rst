@@ -42,7 +42,7 @@ We suggest using a `Python 3 virtual environment <https://docs.python.org/3/tuto
    $ cd $PETSC_DIR
    $ python3 -m venv petsc-doc-env
    $ . petsc-doc-env/bin/activate
-   $ pip install -r doc/requirements.txt
+   $ python3 -m pip install -r doc/requirements.txt
 
 Then,
 
