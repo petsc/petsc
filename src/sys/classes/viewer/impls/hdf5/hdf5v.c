@@ -440,6 +440,7 @@ static PetscErrorCode PetscViewerFileSetName_HDF5(PetscViewer viewer, const char
   }
   PetscCheck(hdf5->file_id >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "H5Fcreate failed for %s", name);
   PetscCallHDF5(H5Pclose, (plist_id));
+  PetscCall(PetscViewerHDF5ResetAttachedDMPlexStorageVersion(viewer));
   PetscFunctionReturn(0);
 }
 

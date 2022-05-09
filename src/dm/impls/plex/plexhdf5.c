@@ -5,37 +5,65 @@
 #include <petsclayouthdf5.h>
 
 #if defined(PETSC_HAVE_HDF5)
-
-typedef struct {
-  int major, minor, subminor;
-} DMPlexStorageVersion;
+static PetscErrorCode PetscViewerParseVersion_Private(PetscViewer, const char[], DMPlexStorageVersion *);
+static PetscErrorCode PetscViewerCheckVersion_Private(PetscViewer, DMPlexStorageVersion);
+static PetscErrorCode PetscViewerAttachVersion_Private(PetscViewer, const char[], DMPlexStorageVersion);
+static PetscErrorCode PetscViewerGetAttachedVersion_Private(PetscViewer, const char[], DMPlexStorageVersion *);
 
 PETSC_EXTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
 
-static PetscErrorCode DMPlexStorageVersionParseString_Private(DM dm, const char str[], DMPlexStorageVersion *v)
+static PetscErrorCode PetscViewerParseVersion_Private(PetscViewer viewer, const char str[], DMPlexStorageVersion *version)
 {
-  PetscToken t;
-  char      *ts;
-  PetscInt   i;
-  PetscInt   ti[3];
+  PetscToken           t;
+  char                *ts;
+  PetscInt             i;
+  PetscInt             ti[3];
+  DMPlexStorageVersion v;
 
   PetscFunctionBegin;
   PetscCall(PetscTokenCreate(str, '.', &t));
   for (i = 0; i < 3; i++) {
     PetscCall(PetscTokenFind(t, &ts));
-    PetscCheck(ts, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Malformed version string %s", str);
+    PetscCheck(ts, PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_WRONG, "Malformed version string %s", str);
     PetscCall(PetscOptionsStringToInt(ts, &ti[i]));
   }
   PetscCall(PetscTokenFind(t, &ts));
-  PetscCheck(!ts, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Malformed version string %s", str);
+  PetscCheck(!ts, PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_WRONG, "Malformed version string %s", str);
   PetscCall(PetscTokenDestroy(&t));
+  PetscCall(PetscNew(&v));
   v->major    = ti[0];
   v->minor    = ti[1];
   v->subminor = ti[2];
+  PetscCall(PetscViewerCheckVersion_Private(viewer, v));
+  *version = v;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexStorageVersionCheck_Private(DM dm, DMPlexStorageVersion *version)
+static PetscErrorCode PetscViewerAttachVersion_Private(PetscViewer viewer, const char key[], DMPlexStorageVersion v)
+{
+  PetscContainer cont;
+
+  PetscFunctionBegin;
+  PetscCall(PetscContainerCreate(PetscObjectComm((PetscObject)viewer), &cont));
+  PetscCall(PetscContainerSetPointer(cont, v));
+  PetscCall(PetscContainerSetUserDestroy(cont, PetscContainerUserDestroyDefault));
+  PetscCall(PetscObjectCompose((PetscObject)viewer, key, (PetscObject)cont));
+  PetscCall(PetscContainerDestroy(&cont));
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PetscViewerGetAttachedVersion_Private(PetscViewer viewer, const char key[], DMPlexStorageVersion *v)
+{
+  PetscContainer cont;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectQuery((PetscObject)viewer, key, (PetscObject *)&cont));
+  *v = NULL;
+  if (cont) PetscCall(PetscContainerGetPointer(cont, (void **)v));
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PetscViewerCheckVersion_Private(PetscViewer viewer, DMPlexStorageVersion version)
 {
   PetscBool valid = PETSC_FALSE;
 
@@ -64,17 +92,22 @@ static PetscErrorCode DMPlexStorageVersionCheck_Private(DM dm, DMPlexStorageVers
     };
     break;
   }
-  PetscCheck(valid, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "DMPlexStorageVersion %d.%d.%d not supported", version->major, version->minor, version->subminor);
+  PetscCheck(valid, PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "DMPlexStorageVersion %d.%d.%d not supported", version->major, version->minor, version->subminor);
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexStorageVersionSetUpWriting_Private(DM dm, PetscViewer viewer, DMPlexStorageVersion *version)
+PetscErrorCode PetscViewerHDF5GetDMPlexStorageVersionWriting(PetscViewer viewer, DMPlexStorageVersion *version)
 {
   const char ATTR_NAME[] = "dmplex_storage_version";
   PetscBool  fileHasVersion;
   char       optVersion[16], fileVersion[16];
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecificType(viewer, PETSC_VIEWER_CLASSID, 1, PETSCVIEWERHDF5);
+  PetscValidPointer(version, 2);
+  PetscCall(PetscViewerGetAttachedVersion_Private(viewer, DMPLEX_STORAGE_VERSION_WRITING_KEY, version));
+  if (*version) PetscFunctionReturn(0);
+
   PetscCall(PetscStrcpy(fileVersion, DMPLEX_STORAGE_VERSION_STABLE));
   PetscCall(PetscViewerHDF5HasAttribute(viewer, NULL, ATTR_NAME, &fileHasVersion));
   if (fileHasVersion) {
@@ -85,7 +118,7 @@ static PetscErrorCode DMPlexStorageVersionSetUpWriting_Private(DM dm, PetscViewe
     PetscCall(PetscFree(tmp));
   }
   PetscCall(PetscStrcpy(optVersion, fileVersion));
-  PetscOptionsBegin(PetscObjectComm((PetscObject)dm), ((PetscObject)dm)->prefix, "DMPlex HDF5 Viewer Options", "PetscViewer");
+  PetscObjectOptionsBegin((PetscObject)viewer);
   PetscCall(PetscOptionsString("-dm_plex_view_hdf5_storage_version", "DMPlex HDF5 viewer storage version", NULL, optVersion, optVersion, sizeof(optVersion), NULL));
   PetscOptionsEnd();
   if (!fileHasVersion) {
@@ -94,26 +127,31 @@ static PetscErrorCode DMPlexStorageVersionSetUpWriting_Private(DM dm, PetscViewe
     PetscBool flg;
 
     PetscCall(PetscStrcmp(fileVersion, optVersion, &flg));
-    PetscCheck(flg, PetscObjectComm((PetscObject)dm), PETSC_ERR_FILE_UNEXPECTED, "User requested DMPlex storage version %s but file already has version %s - cannot mix versions", optVersion, fileVersion);
+    PetscCheck(flg, PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "User requested DMPlex storage version %s but file already has version %s - cannot mix versions", optVersion, fileVersion);
   }
   PetscCall(PetscViewerHDF5WriteAttribute(viewer, NULL, "petsc_version_git", PETSC_STRING, PETSC_VERSION_GIT));
-  PetscCall(DMPlexStorageVersionParseString_Private(dm, optVersion, version));
-  PetscCall(DMPlexStorageVersionCheck_Private(dm, version));
+  PetscCall(PetscViewerParseVersion_Private(viewer, optVersion, version));
+  PetscCall(PetscViewerAttachVersion_Private(viewer, DMPLEX_STORAGE_VERSION_WRITING_KEY, *version));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexStorageVersionGet_Private(DM dm, PetscViewer viewer, DMPlexStorageVersion *version)
+PetscErrorCode PetscViewerHDF5GetDMPlexStorageVersionReading(PetscViewer viewer, DMPlexStorageVersion *version)
 {
   const char ATTR_NAME[] = "dmplex_storage_version";
   char      *defaultVersion;
   char      *versionString;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecificType(viewer, PETSC_VIEWER_CLASSID, 1, PETSCVIEWERHDF5);
+  PetscValidPointer(version, 2);
+  PetscCall(PetscViewerGetAttachedVersion_Private(viewer, DMPLEX_STORAGE_VERSION_READING_KEY, version));
+  if (*version) PetscFunctionReturn(0);
+
   //TODO string HDF5 attribute handling is terrible and should be redesigned
   PetscCall(PetscStrallocpy("1.0.0", &defaultVersion));
   PetscCall(PetscViewerHDF5ReadAttribute(viewer, "/", ATTR_NAME, PETSC_STRING, &defaultVersion, &versionString));
-  PetscCall(DMPlexStorageVersionParseString_Private(dm, versionString, version));
-  PetscCall(DMPlexStorageVersionCheck_Private(dm, version));
+  PetscCall(PetscViewerParseVersion_Private(viewer, versionString, version));
+  PetscCall(PetscViewerAttachVersion_Private(viewer, DMPLEX_STORAGE_VERSION_READING_KEY, *version));
   PetscCall(PetscFree(versionString));
   PetscCall(PetscFree(defaultVersion));
   PetscFunctionReturn(0);
@@ -478,8 +516,8 @@ static PetscErrorCode DMPlexDistributionView_HDF5_Static(DM dm, IS globalPointNu
   char                 group[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  PetscCall(DMPlexStorageVersionSetUpWriting_Private(dm, viewer, &version));
-  if (version.major < 2) PetscFunctionReturn(0);
+  PetscCall(PetscViewerHDF5GetDMPlexStorageVersionWriting(viewer, &version));
+  if (version->major < 2) PetscFunctionReturn(0);
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
@@ -623,9 +661,9 @@ PetscErrorCode DMPlexTopologyView_HDF5_Internal(DM dm, IS globalPointNumbers, Pe
   char                 group[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  PetscCall(DMPlexStorageVersionSetUpWriting_Private(dm, viewer, &version));
+  PetscCall(PetscViewerHDF5GetDMPlexStorageVersionWriting(viewer, &version));
   PetscCall(DMPlexGetHDF5Name_Private(dm, &topologydm_name));
-  if (version.major < 2) {
+  if (version->major < 2) {
     PetscCall(PetscStrcpy(group, "/topology"));
   } else {
     /* since DMPlexStorageVersion 2.0.0 */
@@ -832,8 +870,8 @@ PetscErrorCode DMPlexCoordinatesView_HDF5_Internal(DM dm, PetscViewer viewer)
     DMPlexStorageVersion version;
 
     PetscCall(PetscViewerGetFormat(viewer, &format));
-    PetscCall(DMPlexStorageVersionSetUpWriting_Private(dm, viewer, &version));
-    if (format == PETSC_VIEWER_HDF5_XDMF || format == PETSC_VIEWER_HDF5_VIZ || version.major < 2) {
+    PetscCall(PetscViewerHDF5GetDMPlexStorageVersionWriting(viewer, &version));
+    if (format == PETSC_VIEWER_HDF5_XDMF || format == PETSC_VIEWER_HDF5_VIZ || version->major < 2) {
       PetscCall(DMPlexCoordinatesView_HDF5_Legacy_Private(dm, viewer));
       PetscFunctionReturn(0);
     }
@@ -1008,10 +1046,10 @@ PetscErrorCode DMPlexLabelsView_HDF5_Internal(DM dm, IS globalPointNumbers, Pets
   char                 group[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  PetscCall(DMPlexStorageVersionSetUpWriting_Private(dm, viewer, &version));
+  PetscCall(PetscViewerHDF5GetDMPlexStorageVersionWriting(viewer, &version));
   PetscCall(ISGetIndices(globalPointNumbers, &gpoint));
   PetscCall(DMPlexGetHDF5Name_Private(dm, &topologydm_name));
-  if (version.major < 2) {
+  if (version->major < 2) {
     PetscCall(PetscStrcpy(group, "/labels"));
   } else {
     /* since DMPlexStorageVersion 2.0.0 */
@@ -1451,8 +1489,8 @@ PetscErrorCode DMPlexLabelsLoad_HDF5_Internal(DM dm, PetscViewer viewer, PetscSF
   if (distributed) PetscCheck(sfXC, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_NULL, "PetscSF must be given for parallel load");
   PetscCall(LoadLabelsCtxCreate(dm, viewer, sfXC, &ctx));
   PetscCall(DMPlexGetHDF5Name_Private(dm, &topologydm_name));
-  PetscCall(DMPlexStorageVersionGet_Private(dm, viewer, &version));
-  if (version.major < 2) {
+  PetscCall(PetscViewerHDF5GetDMPlexStorageVersionReading(viewer, &version));
+  if (version->major < 2) {
     PetscCall(PetscStrcpy(group, "labels"));
   } else {
     /* since DMPlexStorageVersion 2.0.0 */
@@ -1771,8 +1809,8 @@ PetscErrorCode DMPlexTopologyLoad_HDF5_Internal(DM dm, PetscViewer viewer, Petsc
 
   PetscFunctionBegin;
   PetscCall(DMPlexGetHDF5Name_Private(dm, &topologydm_name));
-  PetscCall(DMPlexStorageVersionGet_Private(dm, viewer, &version));
-  if (version.major < 2) {
+  PetscCall(PetscViewerHDF5GetDMPlexStorageVersionReading(viewer, &version));
+  if (version->major < 2) {
     PetscCall(PetscStrcpy(group, "/topology"));
   } else {
     /* since DMPlexStorageVersion 2.0.0 */
@@ -1842,8 +1880,8 @@ PetscErrorCode DMPlexCoordinatesLoad_HDF5_Internal(DM dm, PetscViewer viewer, Pe
   char                *coordinatedm_name, *coordinates_name;
 
   PetscFunctionBegin;
-  PetscCall(DMPlexStorageVersionGet_Private(dm, viewer, &version));
-  if (version.major < 2) {
+  PetscCall(PetscViewerHDF5GetDMPlexStorageVersionReading(viewer, &version));
+  if (version->major < 2) {
     PetscCall(DMPlexCoordinatesLoad_HDF5_Legacy_Private(dm, viewer));
     PetscFunctionReturn(0);
   }
@@ -1882,8 +1920,8 @@ PetscErrorCode DMPlexLoad_HDF5_Internal(DM dm, PetscViewer viewer)
   DMPlexStorageVersion version;
 
   PetscFunctionBegin;
-  PetscCall(DMPlexStorageVersionGet_Private(dm, viewer, &version));
-  if (version.major < 2) {
+  PetscCall(PetscViewerHDF5GetDMPlexStorageVersionReading(viewer, &version));
+  if (version->major < 2) {
     PetscCall(DMPlexTopologyLoad_HDF5_Internal(dm, viewer, NULL));
     PetscCall(DMPlexLabelsLoad_HDF5_Internal(dm, viewer, NULL));
     PetscCall(DMPlexCoordinatesLoad_HDF5_Legacy_Private(dm, viewer));
