@@ -213,10 +213,10 @@ int main(int argc, char **argv)
             -mg_levels_pc_type jacobi
   test:
     suffix: 2d_p1_gmg_vcycle_adapt_rate
-    requires: triangle bamg
+    requires: triangle
     args: -potential_petscspace_degree 1 -dm_plex_box_faces 2,2 -dm_refine_hierarchy 3 \
           -ksp_rtol 5e-10 -ksp_converged_rate -pc_type mg \
-            -pc_mg_galerkin -pc_mg_adapt_interp -pc_mg_adapt_interp_coarse_space harmonic -pc_mg_adapt_interp_n 8 \
+            -pc_mg_galerkin -pc_mg_adapt_interp_coarse_space harmonic -pc_mg_adapt_interp_n 8 \
             -mg_levels_ksp_max_it 5 -mg_levels_ksp_norm_type preconditioned -mg_levels_ksp_converged_rate \
             -mg_levels_esteig_ksp_type cg \
             -mg_levels_esteig_ksp_max_it 10 \

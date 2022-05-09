@@ -69,42 +69,49 @@ PetscErrorCode DMSetBasisFunction_Internal(PetscInt Nf, PetscBool usePoly, Petsc
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCMGCreateCoarseSpaceDefault_Private(PC pc, PetscInt level, PCMGCoarseSpaceType cstype, DM dm, KSP ksp, PetscInt Nc, const Vec initialGuess[], Vec **coarseSpace)
+static PetscErrorCode PCMGCreateCoarseSpaceDefault_Private(PC pc, PetscInt level, PCMGCoarseSpaceType cstype, DM dm, KSP ksp, PetscInt Nc, Mat initialGuess, Mat *coarseSpace)
 {
-  PetscBool         poly = cstype == PCMG_POLYNOMIAL ? PETSC_TRUE : PETSC_FALSE;
+  PetscBool         poly = cstype == PCMG_ADAPT_POLYNOMIAL ? PETSC_TRUE : PETSC_FALSE;
   PetscErrorCode (**funcs)(PetscInt,PetscReal,const PetscReal[],PetscInt,PetscScalar*,void*);
   void            **ctxs;
-  PetscInt          dim, d, Nf, f, k;
+  PetscInt          dim, d, Nf, f, k, m, M;
+  Vec               tmp;
 
   PetscFunctionBegin;
+  Nc = Nc < 0 ? 6 : Nc;
   PetscCall(DMGetCoordinateDim(dm, &dim));
   PetscCall(DMGetNumFields(dm, &Nf));
   PetscCheck(Nc % dim == 0,PetscObjectComm((PetscObject) pc), PETSC_ERR_ARG_WRONG, "The number of coarse vectors %" PetscInt_FMT " must be divisible by the dimension %" PetscInt_FMT, Nc, dim);
   PetscCall(PetscMalloc2(Nf, &funcs, Nf, &ctxs));
-  if (!*coarseSpace) PetscCall(PetscCalloc1(Nc, coarseSpace));
+  PetscCall(DMGetGlobalVector(dm, &tmp));
+  PetscCall(VecGetSize(tmp, &M));
+  PetscCall(VecGetLocalSize(tmp, &m));
+  PetscCall(MatCreateDense(PetscObjectComm((PetscObject) pc), m, PETSC_DECIDE, M, Nc, NULL, coarseSpace));
+  PetscCall(DMRestoreGlobalVector(dm, &tmp));
   for (k = 0; k < Nc/dim; ++k) {
-    for (f = 0; f < Nf; ++f) {ctxs[f] = &k;}
+    for (f = 0; f < Nf; ++f) ctxs[f] = &k;
     for (d = 0; d < dim; ++d) {
-      if (!(*coarseSpace)[k*dim+d]) PetscCall(DMCreateGlobalVector(dm, &(*coarseSpace)[k*dim+d]));
+      PetscCall(MatDenseGetColumnVecWrite(*coarseSpace,k*dim+d,&tmp));
       PetscCall(DMSetBasisFunction_Internal(Nf, poly, d, funcs));
-      PetscCall(DMProjectFunction(dm, 0.0, funcs, ctxs, INSERT_ALL_VALUES, (*coarseSpace)[k*dim+d]));
+      PetscCall(DMProjectFunction(dm, 0.0, funcs, ctxs, INSERT_ALL_VALUES, tmp));
+      PetscCall(MatDenseRestoreColumnVecWrite(*coarseSpace,k*dim+d,&tmp));
     }
   }
   PetscCall(PetscFree2(funcs, ctxs));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCMGCreateCoarseSpace_Polynomial(PC pc, PetscInt level, DM dm, KSP ksp, PetscInt Nc, const Vec initialGuess[], Vec **coarseSpace)
+static PetscErrorCode PCMGCreateCoarseSpace_Polynomial(PC pc, PetscInt level, DM dm, KSP ksp, PetscInt Nc, Mat initialGuess, Mat *coarseSpace)
 {
   PetscFunctionBegin;
-  PetscCall(PCMGCreateCoarseSpaceDefault_Private(pc, level, PCMG_POLYNOMIAL, dm, ksp, Nc, initialGuess, coarseSpace));
+  PetscCall(PCMGCreateCoarseSpaceDefault_Private(pc, level, PCMG_ADAPT_POLYNOMIAL, dm, ksp, Nc, initialGuess, coarseSpace));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCMGCreateCoarseSpace_Harmonic(PC pc, PetscInt level, DM dm, KSP ksp, PetscInt Nc, const Vec initialGuess[], Vec **coarseSpace)
+PetscErrorCode PCMGCreateCoarseSpace_Harmonic(PC pc, PetscInt level, DM dm, KSP ksp, PetscInt Nc, Mat initialGuess, Mat *coarseSpace)
 {
   PetscFunctionBegin;
-  PetscCall(PCMGCreateCoarseSpaceDefault_Private(pc, level, PCMG_HARMONIC, dm, ksp, Nc, initialGuess, coarseSpace));
+  PetscCall(PCMGCreateCoarseSpaceDefault_Private(pc, level, PCMG_ADAPT_HARMONIC, dm, ksp, Nc, initialGuess, coarseSpace));
   PetscFunctionReturn(0);
 }
 
@@ -114,53 +121,63 @@ PetscErrorCode PCMGCreateCoarseSpace_Harmonic(PC pc, PetscInt level, DM dm, KSP 
   Input Parameters:
 + pc     - The PCMG
 . l      - The level
-. Nc     - The size of the space (number of vectors)
-- cspace - The space from level l-1, or NULL
+. Nc     - The number of vectors requested
+- cspace - The initial guess for the space, or NULL
 
   Output Parameter:
 . space  - The space which must be accurately interpolated.
 
   Level: developer
 
-  Note: This space is normally used to adapt the interpolator.
+  Note: This space is normally used to adapt the interpolator. If Nc is negative, an adaptive choice can be made.
 
 .seealso: `PCMGAdaptInterpolator_Private()`
 */
-PetscErrorCode PCMGComputeCoarseSpace_Internal(PC pc, PetscInt l, PCMGCoarseSpaceType cstype, PetscInt Nc, const Vec cspace[], Vec *space[])
+PetscErrorCode PCMGComputeCoarseSpace_Internal(PC pc, PetscInt l, PCMGCoarseSpaceType cstype, PetscInt Nc, Mat cspace, Mat *space)
 {
-  PetscErrorCode (*coarseConstructor)(PC, PetscInt, DM, KSP, PetscInt, const Vec[], Vec*[]);
+  PetscErrorCode (*coarseConstructor)(PC, PetscInt, DM, KSP, PetscInt, Mat, Mat*) = NULL;
   DM             dm;
   KSP            smooth;
 
   PetscFunctionBegin;
+  *space = NULL;
   switch (cstype) {
-  case PCMG_POLYNOMIAL: coarseConstructor = &PCMGCreateCoarseSpace_Polynomial;break;
-  case PCMG_HARMONIC:   coarseConstructor = &PCMGCreateCoarseSpace_Harmonic;break;
-  case PCMG_EIGENVECTOR:
+  case PCMG_ADAPT_POLYNOMIAL:
+    coarseConstructor = &PCMGCreateCoarseSpace_Polynomial;
+    break;
+  case PCMG_ADAPT_HARMONIC:
+    coarseConstructor = &PCMGCreateCoarseSpace_Harmonic;
+    break;
+  case PCMG_ADAPT_EIGENVECTOR:
+    Nc = Nc < 0 ? 6 : Nc;
     if (l > 0) PetscCall(PCMGGetCoarseSpaceConstructor("BAMG_MEV", &coarseConstructor));
     else       PetscCall(PCMGGetCoarseSpaceConstructor("BAMG_EV", &coarseConstructor));
     break;
-  case PCMG_GENERALIZED_EIGENVECTOR:
+  case PCMG_ADAPT_GENERALIZED_EIGENVECTOR:
+    Nc = Nc < 0 ? 6 : Nc;
     if (l > 0) PetscCall(PCMGGetCoarseSpaceConstructor("BAMG_MGEV", &coarseConstructor));
     else       PetscCall(PCMGGetCoarseSpaceConstructor("BAMG_GEV", &coarseConstructor));
     break;
-  default: SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle coarse space type %d", cstype);
+  case PCMG_ADAPT_NONE:
+    break;
+  default: SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Cannot handle coarse space type %d", cstype);
   }
-  PetscCall(PCMGGetSmoother(pc, l, &smooth));
-  PetscCall(KSPGetDM(smooth, &dm));
-  PetscCall((*coarseConstructor)(pc, l, dm, smooth, Nc, cspace, space));
+  if (coarseConstructor) {
+    PetscCall(PCMGGetSmoother(pc, l, &smooth));
+    PetscCall(KSPGetDM(smooth, &dm));
+    PetscCall((*coarseConstructor)(pc, l, dm, smooth, Nc, cspace, space));
+  }
   PetscFunctionReturn(0);
 }
 
 /*
-  PCMGAdaptInterpolator_Internal - Adapt interpolator from level l-1 to level 1
+  PCMGAdaptInterpolator_Internal - Adapt interpolator from level l-1 to level l
 
   Input Parameters:
 + pc      - The PCMG
 . l       - The level l
 . csmooth - The (coarse) smoother for level l-1
 . fsmooth - The (fine) smoother for level l
-. Nc      - The size of the subspace used for adaptation
 . cspace  - The (coarse) vectors in the subspace for level l-1
 - fspace  - The (fine) vectors in the subspace for level l
 
@@ -170,7 +187,7 @@ PetscErrorCode PCMGComputeCoarseSpace_Internal(PC pc, PetscInt l, PCMGCoarseSpac
 
 .seealso: `PCMGComputeCoarseSpace_Private()`
 */
-PetscErrorCode PCMGAdaptInterpolator_Internal(PC pc, PetscInt l, KSP csmooth, KSP fsmooth, PetscInt Nc, Vec cspace[], Vec fspace[])
+PetscErrorCode PCMGAdaptInterpolator_Internal(PC pc, PetscInt l, KSP csmooth, KSP fsmooth, Mat cspace, Mat fspace)
 {
   PC_MG         *mg = (PC_MG *) pc->data;
   DM             dm, cdm;
@@ -182,11 +199,11 @@ PetscErrorCode PCMGAdaptInterpolator_Internal(PC pc, PetscInt l, KSP csmooth, KS
   PetscCall(KSPGetDM(csmooth, &cdm));
   PetscCall(KSPGetDM(fsmooth, &dm));
   PetscCall(PCMGGetInterpolation(pc, l, &Interp));
-
-  PetscCall(DMAdaptInterpolator(cdm, dm, Interp, fsmooth, Nc, fspace, cspace, &InterpAdapt, pc));
-  if (mg->mespMonitor) PetscCall(DMCheckInterpolator(dm, InterpAdapt, Nc, cspace, fspace, 0.5/* PETSC_SMALL */));
+  if (Interp == fspace && !cspace) PetscFunctionReturn(0);
+  PetscCall(DMAdaptInterpolator(cdm, dm, Interp, fsmooth, fspace, cspace, &InterpAdapt, pc));
+  if (mg->mespMonitor) PetscCall(DMCheckInterpolator(dm, InterpAdapt, cspace, fspace, 0.5/* PETSC_SMALL */));
   PetscCall(PCMGSetInterpolation(pc, l, InterpAdapt));
-  PetscCall(PCMGSetRestriction(pc, l, InterpAdapt));
+  PetscCall(PCMGSetRestriction(pc, l, InterpAdapt)); /* MATT: Remove????? */
   PetscCall(MatDestroy(&InterpAdapt));
   PetscFunctionReturn(0);
 }

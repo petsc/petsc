@@ -542,30 +542,40 @@ static PetscErrorCode CheckTransfer(DM dm, InterpType inType, PetscInt order, Ap
   PetscCall(CheckTransferError(fdm, PETSC_TRUE, order, 0, testname, fu, user));
   if (user->K && (inType == INTERPOLATION)) {
     KSP      smoother;
-    Mat      A;
-    Vec     *iV, *fV;
-    PetscInt k, dim, d;
+    Mat      A, iVM, fVM;
+    Vec      iV, fV;
+    PetscInt k, dim, d, im, fm;
 
     PetscCall(PetscPrintf(comm, " Adapting interpolator using %s\n", user->usePoly ? "polynomials" : "harmonics"));
     PetscCall(DMGetDimension(dm, &dim));
-    PetscCall(PetscMalloc2(user->K*dim, &iV, user->K*dim, &fV));
     /* Project coarse modes into initial and final FE function space */
+    PetscCall(DMGetGlobalVector(idm, &iV));
+    PetscCall(DMGetGlobalVector(fdm, &fV));
+    PetscCall(VecGetLocalSize(iV,&im));
+    PetscCall(VecGetLocalSize(fV,&fm));
+    PetscCall(MatCreateDense(PetscObjectComm((PetscObject)dm),im,PETSC_DECIDE,PETSC_DECIDE,user->K*dim,NULL,&iVM));
+    PetscCall(MatCreateDense(PetscObjectComm((PetscObject)dm),fm,PETSC_DECIDE,PETSC_DECIDE,user->K*dim,NULL,&fVM));
+    PetscCall(DMRestoreGlobalVector(idm, &iV));
+    PetscCall(DMRestoreGlobalVector(fdm, &fV));
     for (k = 0; k < user->K; ++k) {
       for (d = 0; d < dim; ++d) {
-        PetscCall(DMGetGlobalVector(idm, &iV[k*dim+d]));
-        PetscCall(DMGetGlobalVector(fdm, &fV[k*dim+d]));
+        PetscCall(MatDenseGetColumnVecWrite(iVM,k*dim+d,&iV));
+        PetscCall(MatDenseGetColumnVecWrite(fVM,k*dim+d,&fV));
         PetscCall(SetupFunctions(idm, user->usePoly, user->usePoly ? k : k+1, d, exactFuncs, exactFuncDers, user));
-        PetscCall(DMProjectFunction(idm, 0.0, exactFuncs, exactCtxs, INSERT_ALL_VALUES, iV[k*dim+d]));
-        PetscCall(DMProjectFunction(fdm, 0.0, exactFuncs, exactCtxs, INSERT_ALL_VALUES, fV[k*dim+d]));
+        PetscCall(DMProjectFunction(idm, 0.0, exactFuncs, exactCtxs, INSERT_ALL_VALUES, iV));
+        PetscCall(DMProjectFunction(fdm, 0.0, exactFuncs, exactCtxs, INSERT_ALL_VALUES, fV));
+        PetscCall(MatDenseRestoreColumnVecWrite(iVM,k*dim+d,&iV));
+        PetscCall(MatDenseRestoreColumnVecWrite(fVM,k*dim+d,&fV));
       }
     }
+
     /* Adapt interpolator */
     PetscCall(DMCreateMatrix(rdm, &A));
     PetscCall(MatShift(A, 1.0));
     PetscCall(KSPCreate(comm, &smoother));
     PetscCall(KSPSetFromOptions(smoother));
     PetscCall(KSPSetOperators(smoother, A, A));
-    PetscCall(DMAdaptInterpolator(dm, rdm, Interp, smoother, user->K*dim, fV, iV, &InterpAdapt, user));
+    PetscCall(DMAdaptInterpolator(dm, rdm, Interp, smoother, fVM, iVM, &InterpAdapt, user));
     /* Interpolate function into final FE function space */
     PetscCall(PetscSNPrintf(checkname, PETSC_MAX_PATH_LEN, "  %s poly", testname));
     PetscCall(MatInterpolate(InterpAdapt, iu, fu));
@@ -573,21 +583,20 @@ static PetscErrorCode CheckTransfer(DM dm, InterpType inType, PetscInt order, Ap
     for (k = 0; k < user->K; ++k) {
       for (d = 0; d < dim; ++d) {
         PetscCall(PetscSNPrintf(checkname, PETSC_MAX_PATH_LEN, "  %s trig (%" PetscInt_FMT ", %" PetscInt_FMT ")", testname, k, d));
-        PetscCall(MatInterpolate(InterpAdapt, iV[k*dim+d], fV[k*dim+d]));
-        PetscCall(CheckTransferError(fdm, PETSC_FALSE, k+1, d, checkname, fV[k*dim+d], user));
+        PetscCall(MatDenseGetColumnVecRead(iVM,k*dim+d,&iV));
+        PetscCall(MatDenseGetColumnVecWrite(fVM,k*dim+d,&fV));
+        PetscCall(MatInterpolate(InterpAdapt, iV, fV));
+        PetscCall(CheckTransferError(fdm, PETSC_FALSE, k+1, d, checkname, fV, user));
+        PetscCall(MatDenseRestoreColumnVecRead(iVM,k*dim+d,&iV));
+        PetscCall(MatDenseRestoreColumnVecWrite(fVM,k*dim+d,&fV));
       }
     }
     /* Cleanup */
     PetscCall(KSPDestroy(&smoother));
     PetscCall(MatDestroy(&A));
-    for (k = 0; k < user->K; ++k) {
-      for (d = 0; d < dim; ++d) {
-        PetscCall(DMRestoreGlobalVector(idm, &iV[k*dim+d]));
-        PetscCall(DMRestoreGlobalVector(fdm, &fV[k*dim+d]));
-      }
-    }
-    PetscCall(PetscFree2(iV, fV));
     PetscCall(MatDestroy(&InterpAdapt));
+    PetscCall(MatDestroy(&iVM));
+    PetscCall(MatDestroy(&fVM));
   }
   PetscCall(DMRestoreGlobalVector(idm, &iu));
   PetscCall(DMRestoreGlobalVector(fdm, &fu));
