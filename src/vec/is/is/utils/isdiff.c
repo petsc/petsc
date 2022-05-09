@@ -444,13 +444,13 @@ PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS 
   PetscInt *idx;
 
   PetscFunctionBegin;
-  PetscValidPointer(islist,3);
+  if (len) PetscValidPointer(islist, 3);
   if (PetscDefined(USE_DEBUG)) {
     for (i = 0; i < len; ++i) if (islist[i]) PetscValidHeaderSpecific(islist[i], IS_CLASSID, 3);
   }
   PetscValidPointer(isout, 4);
   if (!len) {
-    PetscCall(ISCreateStride(comm, 0,0,0, isout));
+    PetscCall(ISCreateGeneral(comm, 0, NULL, PETSC_OWN_POINTER, isout));
     PetscFunctionReturn(0);
   }
   PetscCheckFalse(len < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Negative array length: %" PetscInt_FMT, len);
@@ -467,7 +467,7 @@ PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS 
     if (islist[i]) {
       PetscCall(ISGetLocalSize(islist[i], &n));
       PetscCall(ISGetIndices(islist[i], &iidx));
-      PetscCall(PetscArraycpy(idx+N,iidx, n));
+      PetscCall(PetscArraycpy(idx+N, iidx, n));
       PetscCall(ISRestoreIndices(islist[i], &iidx));
       N   += n;
     }
