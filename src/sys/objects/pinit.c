@@ -1097,7 +1097,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char* prog,const char* 
 .  -on_error_emacs <machinename> - causes emacsclient to jump to error file
 .  -on_error_abort - calls abort() when error detected (no traceback)
 .  -on_error_mpiabort - calls MPI_abort() when error detected
-.  -error_output_stderr - prints error messages to stderr instead of the default stdout
+.  -error_output_stdout - prints PETSc error messages to stdout instead of the default stderr
 .  -error_output_none - does not print the error messages (but handles errors in the same way as if this was not called)
 .  -debugger_ranks [rank1,rank2,...] - Indicates ranks to start in debugger
 .  -debugger_pause [sleeptime] (in seconds) - Pauses debugger
