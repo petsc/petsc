@@ -910,15 +910,10 @@ PetscErrorCode DMPlexP1FieldCreate_Private(DM dm, PetscInt f, PetscInt size, Vec
 @*/
 PetscErrorCode DMPlexMetricCreate(DM dm, PetscInt f, Vec *metric)
 {
-  DM_Plex       *plex = (DM_Plex *) dm->data;
-  PetscBool      isotropic, uniform;
-  PetscInt       coordDim, Nd;
+  PetscBool isotropic, uniform;
+  PetscInt  coordDim, Nd;
 
   PetscFunctionBegin;
-  if (!plex->metricCtx) {
-    PetscCall(PetscNew(&plex->metricCtx));
-    PetscCall(DMPlexMetricSetFromOptions(dm));
-  }
   PetscCall(DMGetCoordinateDim(dm, &coordDim));
   Nd = coordDim*coordDim;
   PetscCall(DMPlexMetricIsUniform(dm, &uniform));
@@ -931,11 +926,8 @@ PetscErrorCode DMPlexMetricCreate(DM dm, PetscInt f, Vec *metric)
     PetscCall(VecCreate(comm, metric));
     PetscCall(VecSetSizes(*metric, 1, PETSC_DECIDE));
     PetscCall(VecSetFromOptions(*metric));
-  } else if (isotropic) {
-    PetscCall(DMPlexP1FieldCreate_Private(dm, f, 1, metric));
-  } else {
-    PetscCall(DMPlexP1FieldCreate_Private(dm, f, Nd, metric));
-  }
+  } else if (isotropic) PetscCall(DMPlexP1FieldCreate_Private(dm, f, 1, metric));
+  else PetscCall(DMPlexP1FieldCreate_Private(dm, f, Nd, metric));
   PetscFunctionReturn(0);
 }
 
@@ -1019,6 +1011,39 @@ PetscErrorCode DMPlexMetricCreateIsotropic(DM dm, PetscInt f, Vec indicator, Vec
     funcs[0] = identity;
     PetscCall(DMProjectFieldLocal(dmIndi, 0.0, indicator, funcs, INSERT_VALUES, *metric));
   }
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexMetricDeterminantCreate - Create the determinant field for a Riemannian metric
+
+  Input parameters:
++ dm          - The DM of the metric field
+- f           - The field number to use
+
+  Output parameter:
++ determinant - The determinant field
+- dmDet       - The corresponding DM
+
+  Level: beginner
+
+.seealso: DMPlexMetricCreateUniform(), DMPlexMetricCreateIsotropic(), DMPlexMetricCreate()
+@*/
+PetscErrorCode DMPlexMetricDeterminantCreate(DM dm, PetscInt f, Vec *determinant, DM *dmDet)
+{
+  PetscBool uniform;
+
+  PetscFunctionBegin;
+  PetscCall(DMPlexMetricIsUniform(dm, &uniform));
+  PetscCall(DMClone(dm, dmDet));
+  if (uniform) {
+    MPI_Comm comm;
+
+    PetscCall(PetscObjectGetComm((PetscObject) *dmDet, &comm));
+    PetscCall(VecCreate(comm, determinant));
+    PetscCall(VecSetSizes(*determinant, 1, PETSC_DECIDE));
+    PetscCall(VecSetFromOptions(*determinant));
+  } else PetscCall(DMPlexP1FieldCreate_Private(*dmDet, f, 1, determinant));
   PetscFunctionReturn(0);
 }
 
@@ -1160,7 +1185,7 @@ static PetscErrorCode DMPlexMetricModify_Private(PetscInt dim, PetscReal h_min, 
 
 .seealso: `DMPlexMetricNormalize()`, `DMPlexMetricIntersection()`
 @*/
-PetscErrorCode DMPlexMetricEnforceSPD(DM dm, Vec metricIn, PetscBool restrictSizes, PetscBool restrictAnisotropy, Vec *metricOut, Vec *determinant)
+PetscErrorCode DMPlexMetricEnforceSPD(DM dm, Vec metricIn, PetscBool restrictSizes, PetscBool restrictAnisotropy, Vec metricOut, Vec determinant)
 {
   DM             dmDet;
   PetscBool      isotropic, uniform;
@@ -1186,21 +1211,19 @@ PetscErrorCode DMPlexMetricEnforceSPD(DM dm, Vec metricIn, PetscBool restrictSiz
   }
 
   /* Setup output metric */
-  PetscCall(DMPlexMetricCreate(dm, 0, metricOut));
-  PetscCall(VecCopy(metricIn, *metricOut));
+  PetscCall(VecCopy(metricIn, metricOut));
 
   /* Enforce SPD and extract determinant */
-  PetscCall(VecGetArray(*metricOut, &met));
+  PetscCall(VecGetArray(metricOut, &met));
   PetscCall(DMPlexMetricIsUniform(dm, &uniform));
   PetscCall(DMPlexMetricIsIsotropic(dm, &isotropic));
   if (uniform) {
     PetscCheck(isotropic, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Uniform anisotropic metrics cannot exist");
 
     /* Uniform case */
-    PetscCall(VecDuplicate(metricIn, determinant));
-    PetscCall(VecGetArray(*determinant, &det));
+    PetscCall(VecGetArray(determinant, &det));
     PetscCall(DMPlexMetricModify_Private(1, h_min, h_max, a_max, met, det));
-    PetscCall(VecRestoreArray(*determinant, &det));
+    PetscCall(VecRestoreArray(determinant, &det));
   } else {
 
     /* Spatially varying case */
@@ -1208,19 +1231,18 @@ PetscErrorCode DMPlexMetricEnforceSPD(DM dm, Vec metricIn, PetscBool restrictSiz
 
     if (isotropic) nrow = 1;
     else nrow = dim;
-    PetscCall(DMClone(dm, &dmDet));
-    PetscCall(DMPlexP1FieldCreate_Private(dmDet, 0, 1, determinant));
+    PetscCall(VecGetDM(determinant, &dmDet));
     PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
-    PetscCall(VecGetArray(*determinant, &det));
+    PetscCall(VecGetArray(determinant, &det));
     for (v = vStart; v < vEnd; ++v) {
       PetscScalar *vmet, *vdet;
       PetscCall(DMPlexPointLocalRef(dm, v, met, &vmet));
       PetscCall(DMPlexPointLocalRef(dmDet, v, det, &vdet));
       PetscCall(DMPlexMetricModify_Private(nrow, h_min, h_max, a_max, vmet, vdet));
     }
-    PetscCall(VecRestoreArray(*determinant, &det));
+    PetscCall(VecRestoreArray(determinant, &det));
   }
-  PetscCall(VecRestoreArray(*metricOut, &met));
+  PetscCall(VecRestoreArray(metricOut, &met));
 
   PetscCall(PetscLogEventEnd(DMPLEX_MetricEnforceSPD,0,0,0,0));
   PetscFunctionReturn(0);
@@ -1265,7 +1287,7 @@ static void detMFunc(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 
 .seealso: `DMPlexMetricEnforceSPD()`, `DMPlexMetricIntersection()`
 @*/
-PetscErrorCode DMPlexMetricNormalize(DM dm, Vec metricIn, PetscBool restrictSizes, PetscBool restrictAnisotropy, Vec *metricOut)
+PetscErrorCode DMPlexMetricNormalize(DM dm, Vec metricIn, PetscBool restrictSizes, PetscBool restrictAnisotropy, Vec metricOut, Vec determinant)
 {
   DM               dmDet;
   MPI_Comm         comm;
@@ -1274,7 +1296,6 @@ PetscErrorCode DMPlexMetricNormalize(DM dm, Vec metricIn, PetscBool restrictSize
   PetscInt         dim, Nd, vStart, vEnd, v, i;
   PetscScalar     *met, *det, integral, constants[1];
   PetscReal        p, h_min = 1.0e-30, h_max = 1.0e+30, a_max = 0.0, factGlob, fact, target, realIntegral;
-  Vec              determinant;
 
   PetscFunctionBegin;
   PetscCall(PetscLogEventBegin(DMPLEX_MetricNormalize,0,0,0,0));
@@ -1289,7 +1310,7 @@ PetscErrorCode DMPlexMetricNormalize(DM dm, Vec metricIn, PetscBool restrictSize
 
   /* Set up metric and ensure it is SPD */
   PetscCall(DMPlexMetricRestrictAnisotropyFirst(dm, &restrictAnisotropyFirst));
-  PetscCall(DMPlexMetricEnforceSPD(dm, metricIn, PETSC_FALSE, (PetscBool)(restrictAnisotropy && restrictAnisotropyFirst), metricOut, &determinant));
+  PetscCall(DMPlexMetricEnforceSPD(dm, metricIn, PETSC_FALSE, (PetscBool)(restrictAnisotropy && restrictAnisotropyFirst), metricOut, determinant));
 
   /* Compute global normalization factor */
   PetscCall(DMPlexMetricGetTargetComplexity(dm, &target));
@@ -1334,7 +1355,7 @@ PetscErrorCode DMPlexMetricNormalize(DM dm, Vec metricIn, PetscBool restrictSize
     PetscCall(DMPlexMetricGetMaximumAnisotropy(dm, &a_max));
     a_max = PetscMin(a_max, 1.0e+30);
   }
-  PetscCall(VecGetArray(*metricOut, &met));
+  PetscCall(VecGetArray(metricOut, &met));
   PetscCall(VecGetArray(determinant, &det));
   if (uniform) {
 
@@ -1349,6 +1370,7 @@ PetscErrorCode DMPlexMetricNormalize(DM dm, Vec metricIn, PetscBool restrictSize
     if (isotropic) nrow = 1;
     else nrow = dim;
     PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
+    PetscCall(VecGetDM(determinant, &dmDet));
     for (v = vStart; v < vEnd; ++v) {
       PetscScalar *Mp, *detM;
 
@@ -1360,9 +1382,7 @@ PetscErrorCode DMPlexMetricNormalize(DM dm, Vec metricIn, PetscBool restrictSize
     }
   }
   PetscCall(VecRestoreArray(determinant, &det));
-  PetscCall(VecRestoreArray(*metricOut, &met));
-  PetscCall(VecDestroy(&determinant));
-  if (!uniform) PetscCall(DMDestroy(&dmDet));
+  PetscCall(VecRestoreArray(metricOut, &met));
 
   PetscCall(PetscLogEventEnd(DMPLEX_MetricNormalize,0,0,0,0));
   PetscFunctionReturn(0);
@@ -1389,7 +1409,7 @@ PetscErrorCode DMPlexMetricNormalize(DM dm, Vec metricIn, PetscBool restrictSize
 
 .seealso: `DMPlexMetricAverage2()`, `DMPlexMetricAverage3()`, `DMPlexMetricIntersection()`
 @*/
-PetscErrorCode DMPlexMetricAverage(DM dm, PetscInt numMetrics, PetscReal weights[], Vec metrics[], Vec *metricAvg)
+PetscErrorCode DMPlexMetricAverage(DM dm, PetscInt numMetrics, PetscReal weights[], Vec metrics[], Vec metricAvg)
 {
   PetscBool haveWeights = PETSC_TRUE;
   PetscInt  i, m, n;
@@ -1398,9 +1418,8 @@ PetscErrorCode DMPlexMetricAverage(DM dm, PetscInt numMetrics, PetscReal weights
   PetscFunctionBegin;
   PetscCall(PetscLogEventBegin(DMPLEX_MetricAverage,0,0,0,0));
   PetscCheck(numMetrics >= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot average %" PetscInt_FMT " < 1 metrics", numMetrics);
-  PetscCall(DMPlexMetricCreate(dm, 0, metricAvg));
-  PetscCall(VecSet(*metricAvg, 0.0));
-  PetscCall(VecGetSize(*metricAvg, &m));
+  PetscCall(VecSet(metricAvg, 0.0));
+  PetscCall(VecGetSize(metricAvg, &m));
   for (i = 0; i < numMetrics; ++i) {
     PetscCall(VecGetSize(metrics[i], &n));
     PetscCheck(m == n, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Averaging different metric types not implemented");
@@ -1418,7 +1437,7 @@ PetscErrorCode DMPlexMetricAverage(DM dm, PetscInt numMetrics, PetscReal weights
   PetscCheck(PetscAbsReal(sum - 1) <= tol, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Weights do not sum to unity");
 
   /* Compute metric average */
-  for (i = 0; i < numMetrics; ++i) PetscCall(VecAXPY(*metricAvg, weights[i], metrics[i]));
+  for (i = 0; i < numMetrics; ++i) PetscCall(VecAXPY(metricAvg, weights[i], metrics[i]));
   if (!haveWeights) PetscCall(PetscFree(weights));
 
   PetscCall(PetscLogEventEnd(DMPLEX_MetricAverage,0,0,0,0));
@@ -1440,7 +1459,7 @@ PetscErrorCode DMPlexMetricAverage(DM dm, PetscInt numMetrics, PetscReal weights
 
 .seealso: `DMPlexMetricAverage()`, `DMPlexMetricAverage3()`
 @*/
-PetscErrorCode DMPlexMetricAverage2(DM dm, Vec metric1, Vec metric2, Vec *metricAvg)
+PetscErrorCode DMPlexMetricAverage2(DM dm, Vec metric1, Vec metric2, Vec metricAvg)
 {
   PetscReal      weights[2] = {0.5, 0.5};
   Vec            metrics[2] = {metric1, metric2};
@@ -1466,7 +1485,7 @@ PetscErrorCode DMPlexMetricAverage2(DM dm, Vec metric1, Vec metric2, Vec *metric
 
 .seealso: `DMPlexMetricAverage()`, `DMPlexMetricAverage2()`
 @*/
-PetscErrorCode DMPlexMetricAverage3(DM dm, Vec metric1, Vec metric2, Vec metric3, Vec *metricAvg)
+PetscErrorCode DMPlexMetricAverage3(DM dm, Vec metric1, Vec metric2, Vec metric3, Vec metricAvg)
 {
   PetscReal      weights[3] = {1.0/3.0, 1.0/3.0, 1.0/3.0};
   Vec            metrics[3] = {metric1, metric2, metric3};
@@ -1486,7 +1505,7 @@ static PetscErrorCode DMPlexMetricIntersection_Private(PetscInt dim, PetscScalar
 
   /* Isotropic case */
   if (dim == 1) {
-    M2[0] = (PetscScalar)PetscMin(PetscRealPart(M1[0]), PetscRealPart(M2[0]));
+    M2[0] = (PetscScalar)PetscMax(PetscRealPart(M1[0]), PetscRealPart(M2[0]));
     PetscFunctionReturn(0);
   }
 
@@ -1623,7 +1642,7 @@ static PetscErrorCode DMPlexMetricIntersection_Private(PetscInt dim, PetscScalar
 
 .seealso: `DMPlexMetricIntersection2()`, `DMPlexMetricIntersection3()`, `DMPlexMetricAverage()`
 @*/
-PetscErrorCode DMPlexMetricIntersection(DM dm, PetscInt numMetrics, Vec metrics[], Vec *metricInt)
+PetscErrorCode DMPlexMetricIntersection(DM dm, PetscInt numMetrics, Vec metrics[], Vec metricInt)
 {
   PetscBool      isotropic, uniform;
   PetscInt       v, i, m, n;
@@ -1634,10 +1653,9 @@ PetscErrorCode DMPlexMetricIntersection(DM dm, PetscInt numMetrics, Vec metrics[
   PetscCheck(numMetrics >= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot intersect %" PetscInt_FMT " < 1 metrics", numMetrics);
 
   /* Copy over the first metric */
-  PetscCall(DMPlexMetricCreate(dm, 0, metricInt));
-  PetscCall(VecCopy(metrics[0], *metricInt));
+  PetscCall(VecCopy(metrics[0], metricInt));
   if (numMetrics == 1) PetscFunctionReturn(0);
-  PetscCall(VecGetSize(*metricInt, &m));
+  PetscCall(VecGetSize(metricInt, &m));
   for (i = 0; i < numMetrics; ++i) {
     PetscCall(VecGetSize(metrics[i], &n));
     PetscCheck(m == n, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Intersecting different metric types not implemented");
@@ -1649,13 +1667,13 @@ PetscErrorCode DMPlexMetricIntersection(DM dm, PetscInt numMetrics, Vec metrics[
   if (uniform) {
 
     /* Uniform case */
-    PetscCall(VecGetArray(*metricInt, &met));
+    PetscCall(VecGetArray(metricInt, &met));
     for (i = 1; i < numMetrics; ++i) {
       PetscCall(VecGetArray(metrics[i], &meti));
       PetscCall(DMPlexMetricIntersection_Private(1, meti, met));
       PetscCall(VecRestoreArray(metrics[i], &meti));
     }
-    PetscCall(VecRestoreArray(*metricInt, &met));
+    PetscCall(VecRestoreArray(metricInt, &met));
   } else {
 
     /* Spatially varying case */
@@ -1666,7 +1684,7 @@ PetscErrorCode DMPlexMetricIntersection(DM dm, PetscInt numMetrics, Vec metrics[
     if (isotropic) nrow = 1;
     else nrow = dim;
     PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
-    PetscCall(VecGetArray(*metricInt, &met));
+    PetscCall(VecGetArray(metricInt, &met));
     for (i = 1; i < numMetrics; ++i) {
       PetscCall(VecGetArray(metrics[i], &meti));
       for (v = vStart; v < vEnd; ++v) {
@@ -1676,7 +1694,7 @@ PetscErrorCode DMPlexMetricIntersection(DM dm, PetscInt numMetrics, Vec metrics[
       }
       PetscCall(VecRestoreArray(metrics[i], &meti));
     }
-    PetscCall(VecRestoreArray(*metricInt, &met));
+    PetscCall(VecRestoreArray(metricInt, &met));
   }
 
   PetscCall(PetscLogEventEnd(DMPLEX_MetricIntersection,0,0,0,0));
@@ -1698,7 +1716,7 @@ PetscErrorCode DMPlexMetricIntersection(DM dm, PetscInt numMetrics, Vec metrics[
 
 .seealso: `DMPlexMetricIntersection()`, `DMPlexMetricIntersection3()`
 @*/
-PetscErrorCode DMPlexMetricIntersection2(DM dm, Vec metric1, Vec metric2, Vec *metricInt)
+PetscErrorCode DMPlexMetricIntersection2(DM dm, Vec metric1, Vec metric2, Vec metricInt)
 {
   Vec            metrics[2] = {metric1, metric2};
 
@@ -1723,7 +1741,7 @@ PetscErrorCode DMPlexMetricIntersection2(DM dm, Vec metric1, Vec metric2, Vec *m
 
 .seealso: `DMPlexMetricIntersection()`, `DMPlexMetricIntersection2()`
 @*/
-PetscErrorCode DMPlexMetricIntersection3(DM dm, Vec metric1, Vec metric2, Vec metric3, Vec *metricInt)
+PetscErrorCode DMPlexMetricIntersection3(DM dm, Vec metric1, Vec metric2, Vec metric3, Vec metricInt)
 {
   Vec            metrics[3] = {metric1, metric2, metric3};
 

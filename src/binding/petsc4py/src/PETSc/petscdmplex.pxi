@@ -135,6 +135,8 @@ cdef extern from * nogil:
     int DMPlexConstructGhostCells(PetscDM,const char[],PetscInt*,PetscDM*)
 
     int DMPlexMetricSetFromOptions(PetscDM)
+    int DMPlexMetricSetUniform(PetscDM,PetscBool)
+    int DMPlexMetricIsUniform(PetscDM,PetscBool*)
     int DMPlexMetricSetIsotropic(PetscDM,PetscBool)
     int DMPlexMetricIsIsotropic(PetscDM,PetscBool*)
     int DMPlexMetricSetRestrictAnisotropyFirst(PetscDM,PetscBool)
@@ -168,12 +170,13 @@ cdef extern from * nogil:
     int DMPlexMetricCreate(PetscDM,PetscInt,PetscVec*)
     int DMPlexMetricCreateUniform(PetscDM,PetscInt,PetscReal,PetscVec*)
     int DMPlexMetricCreateIsotropic(PetscDM,PetscInt,PetscVec,PetscVec*)
-    int DMPlexMetricEnforceSPD(PetscDM,PetscVec,PetscBool,PetscBool,PetscVec*,PetscVec*)
-    int DMPlexMetricNormalize(PetscDM,PetscVec,PetscBool,PetscBool,PetscVec*)
-    int DMPlexMetricAverage2(PetscDM,PetscVec,PetscVec,PetscVec*)
-    int DMPlexMetricAverage3(PetscDM,PetscVec,PetscVec,PetscVec,PetscVec*)
-    int DMPlexMetricIntersection2(PetscDM,PetscVec,PetscVec,PetscVec*)
-    int DMPlexMetricIntersection3(PetscDM,PetscVec,PetscVec,PetscVec,PetscVec*)
+    int DMPlexMetricDeterminantCreate(PetscDM,PetscInt,PetscVec*,PetscDM*)
+    int DMPlexMetricEnforceSPD(PetscDM,PetscVec,PetscBool,PetscBool,PetscVec,PetscVec)
+    int DMPlexMetricNormalize(PetscDM,PetscVec,PetscBool,PetscBool,PetscVec,PetscVec)
+    int DMPlexMetricAverage2(PetscDM,PetscVec,PetscVec,PetscVec)
+    int DMPlexMetricAverage3(PetscDM,PetscVec,PetscVec,PetscVec,PetscVec)
+    int DMPlexMetricIntersection2(PetscDM,PetscVec,PetscVec,PetscVec)
+    int DMPlexMetricIntersection3(PetscDM,PetscVec,PetscVec,PetscVec,PetscVec)
 
     int DMPlexComputeGradientClementInterpolant(PetscDM,PetscVec,PetscVec)
 

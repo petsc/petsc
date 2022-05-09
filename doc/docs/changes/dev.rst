@@ -125,6 +125,15 @@ In addition to the changes above
 - Add label value argument to ``DMPlexLabelCohesiveComplete()`` and ``DMPlexCreateHybridMesh()``
 - Change ``DMPlexCheckPointSF()`` to take optional ``PetscSF`` parameter
 - Add ``DMPlexCheck()``
+- Add ``DMPlexMetricDeterminantCreate()`` for creating determinant fields for Riemannian metrics
+- Change ``DMPlexMetricEnforceSPD()``:
+    - pass determinant Vec, rather than its address
+    - pass output metric, rather than its address
+- Change ``DMPlexMetricNormalize()``:
+    - pass output metric, rather than its address
+    - pass determinant Vec, rather than its address
+- Change ``DMPlexMetricAverage()``, ``DMPlexMetricAverage2()`` and ``DMPlexMetricAverage3()`` to pass output metric, rather than its address
+- Change ``DMPlexMetricIntersection()``, ``DMPlexMetricIntersection2()`` and ``DMPlexMetricIntersection3()`` to pass output metric, rather than its address
 
 .. rubric:: FE/FV:
 

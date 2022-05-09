@@ -65,9 +65,9 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
 static PetscErrorCode ComputeMetricSensor(DM dm, AppCtx *user, Vec *metric)
 {
   PetscSimplePointFunc funcs[1] = {sensor};
-  DM             dmSensor, dmGrad, dmHess;
+  DM             dmSensor, dmGrad, dmHess, dmDet;
   PetscFE        fe;
-  Vec            f, g, H;
+  Vec            f, g, H, determinant;
   PetscBool      simplex;
   PetscInt       dim;
 
@@ -103,7 +103,11 @@ static PetscErrorCode ComputeMetricSensor(DM dm, AppCtx *user, Vec *metric)
   PetscCall(VecViewFromOptions(H, NULL, "-hessian_view"));
 
   // Obtain a metric by Lp normalization
-  PetscCall(DMPlexMetricNormalize(dmHess, H, PETSC_TRUE, PETSC_TRUE, metric));
+  PetscCall(DMPlexMetricCreate(dm, 0, metric));
+  PetscCall(DMPlexMetricDeterminantCreate(dm, 0, &determinant, &dmDet));
+  PetscCall(DMPlexMetricNormalize(dmHess, H, PETSC_TRUE, PETSC_TRUE, *metric, determinant));
+  PetscCall(VecDestroy(&determinant));
+  PetscCall(DMDestroy(&dmDet));
   PetscCall(VecDestroy(&H));
   PetscCall(DMDestroy(&dmHess));
   PetscCall(DMDestroy(&dmGrad));
@@ -301,53 +305,50 @@ int main (int argc, char * argv[]) {
     args: -dm_plex_box_faces 4,4,4 -dm_adaptor pragmatic -met 2 -init_dm_view -adapt_dm_view -dm_adaptor pragmatic
 
     test:
-      suffix: 0
+      suffix: 2d
       args: -dm_plex_separate_marker 0
     test:
-      suffix: 1
+      suffix: 2d_sep
       args: -dm_plex_separate_marker 1
     test:
-      suffix: 2
-      args: -dm_plex_dim 3
-    test:
-      suffix: 3
+      suffix: 3d
       args: -dm_plex_dim 3
 
   # Pragmatic hangs for simple partitioner
   testset:
     requires: parmetis
-    args: -dm_plex_box_faces 2,2 -dm_adaptor pragmatic -petscpartitioner_type parmetis -met 2 -init_dm_view -adapt_dm_view -dm_adaptor pragmatic
+    args: -dm_plex_box_faces 2,2 -petscpartitioner_type parmetis -met 2 -init_dm_view -adapt_dm_view -dm_adaptor pragmatic
 
     test:
-      suffix: 4
+      suffix: 2d_parmetis_np2
       nsize: 2
     test:
-      suffix: 5
+      suffix: 2d_parmetis_np4
       nsize: 4
 
   test:
     requires: parmetis
-    suffix: 6
+    suffix: 3d_parmetis_met0
     nsize: 2
     args: -dm_plex_dim 3 -dm_plex_box_faces 9,9,9 -dm_adaptor pragmatic -petscpartitioner_type parmetis \
           -met 0 -hmin 0.01 -hmax 0.03 -init_dm_view -adapt_dm_view -dm_adaptor pragmatic
   test:
     requires: parmetis
-    suffix: 7
+    suffix: 3d_parmetis_met2
     nsize: 2
     args: -dm_plex_box_faces 19,19 -dm_adaptor pragmatic -petscpartitioner_type parmetis \
           -met 2 -hmax 0.5 -hmin 0.001 -init_dm_view -adapt_dm_view -dm_adaptor pragmatic
   test:
-    suffix: proj_0
+    suffix: proj2
     args: -dm_plex_box_faces 2,2 -dm_plex_hash_location -dm_adaptor pragmatic -init_dm_view -adapt_dm_view -do_L2 \
           -petscspace_degree 1 -petscfe_default_quadrature_order 1 -pc_type lu -dm_adaptor pragmatic
   test:
-    suffix: proj_1
+    suffix: proj4
     args: -dm_plex_box_faces 4,4 -dm_plex_hash_location -dm_adaptor pragmatic -init_dm_view -adapt_dm_view -do_L2 \
           -petscspace_degree 1 -petscfe_default_quadrature_order 1 -pc_type lu -dm_adaptor pragmatic
 
   test:
-    suffix: sensor
+    suffix: 2d_met3
     args: -dm_plex_box_faces 9,9 -met 3 -dm_adaptor pragmatic -init_dm_view -adapt_dm_view \
           -dm_plex_metric_h_min 1.e-10 -dm_plex_metric_h_max 1.0e-01 -dm_plex_metric_a_max 1.0e+05 -dm_plex_metric_p 1.0 \
             -dm_plex_metric_target_complexity 10000.0 -dm_adaptor pragmatic
