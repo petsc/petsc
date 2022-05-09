@@ -58,14 +58,16 @@ template <class T> class PetscPointCloud : public H2OpusDataSet<T>
 
       pts.resize(num_pts*dim);
       if (coords) {
-        for (size_t n = 0; n < num_points; n++)
+        for (size_t n = 0; n < num_pts; n++)
           for (int i = 0; i < dim; i++)
             pts[n*dim + i] = coords[n*dim + i];
       } else {
-        PetscReal h = 1./(num_points - 1);
-        for (size_t n = 0; n < num_points; n++)
-          for (int i = 0; i < dim; i++)
-            pts[n*dim + i] = i*h;
+        PetscReal h = 1.0; //num_pts > 1 ? 1./(num_pts - 1) : 0.0;
+        for (size_t n = 0; n < num_pts; n++) {
+          pts[n*dim] = n*h;
+          for (int i = 1; i < dim; i++)
+            pts[n*dim + i] = 0.0;
+        }
       }
     }
 
@@ -191,6 +193,7 @@ typedef struct {
   PetscInt  norm_max_samples;
   PetscBool check_construction;
   PetscBool hara_verbose;
+  PetscBool resize;
 
   /* keeps track of MatScale values */
   PetscScalar s;
@@ -710,6 +713,7 @@ static PetscErrorCode MatSetFromOptions_H2OPUS(PetscOptionItems *PetscOptionsObj
   PetscCall(PetscOptionsReal("-mat_h2opus_rtol","Relative tolerance for construction from sampling",NULL,a->rtol,&a->rtol,NULL));
   PetscCall(PetscOptionsBool("-mat_h2opus_check","Check error when constructing from sampling during MatAssemblyEnd()",NULL,a->check_construction,&a->check_construction,NULL));
   PetscCall(PetscOptionsBool("-mat_h2opus_hara_verbose","Verbose output from hara construction",NULL,a->hara_verbose,&a->hara_verbose,NULL));
+  PetscCall(PetscOptionsBool("-mat_h2opus_resize","Resize after compression",NULL,a->resize,&a->resize,NULL));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
@@ -813,6 +817,7 @@ static PetscErrorCode MatSetUpMultiply_H2OPUS(Mat A)
       }
       PetscCall(PetscSFCreate(comm,&a->sf));
       PetscCall(PetscSFSetGraphLayout(a->sf,A->rmap,n,NULL,PETSC_OWN_POINTER,idx));
+      PetscCall(PetscSFSetUp(a->sf));
       PetscCall(PetscSFViewFromOptions(a->sf,(PetscObject)A,"-mat_h2opus_sf_view"));
 #if defined(PETSC_H2OPUS_USE_GPU)
       a->xx_gpu  = new thrust::device_vector<PetscScalar>(n);
@@ -1097,7 +1102,7 @@ static PetscErrorCode MatDuplicate_H2OPUS(Mat B, MatDuplicateOption op, Mat *nA)
 static PetscErrorCode MatView_H2OPUS(Mat A, PetscViewer view)
 {
   Mat_H2OPUS        *h2opus = (Mat_H2OPUS*)A->data;
-  PetscBool         isascii;
+  PetscBool         isascii, vieweps;
   PetscMPIInt       size;
   PetscViewerFormat format;
 
@@ -1157,16 +1162,17 @@ static PetscErrorCode MatView_H2OPUS(Mat A, PetscViewer view)
       }
     }
   }
-#if 0
-  if (size == 1) {
+  vieweps = PETSC_FALSE;
+  PetscCall(PetscOptionsGetBool(((PetscObject)A)->options,((PetscObject)A)->prefix,"-mat_h2opus_vieweps",&vieweps,NULL));
+  if (vieweps) {
     char filename[256];
     const char *name;
 
     PetscCall(PetscObjectGetName((PetscObject)A,&name));
     PetscCall(PetscSNPrintf(filename,sizeof(filename),"%s_structure.eps",name));
+    PetscCall(PetscOptionsGetString(((PetscObject)A)->options,((PetscObject)A)->prefix,"-mat_h2opus_vieweps_filename",filename,sizeof(filename),NULL));
     outputEps(*h2opus->hmatrix,filename);
   }
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -1185,7 +1191,7 @@ static PetscErrorCode MatH2OpusSetCoords_H2OPUS(Mat A, PetscInt spacedim, const 
   PetscCall(PetscObjectGetComm((PetscObject)A,&comm));
   PetscCall(MatHasCongruentLayouts(A,&cong));
   PetscCheck(cong,comm,PETSC_ERR_SUP,"Only for square matrices with congruent layouts");
-  N    = A->rmap->N;
+  N = A->rmap->N;
   PetscCallMPI(MPI_Comm_size(comm,&size));
   if (spacedim > 0 && size > 1 && cdist) {
     PetscSF      sf;
@@ -1305,6 +1311,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_H2OPUS(Mat A)
   a->rtol             = 1.e-4;
   a->s                = 1.0;
   a->norm_max_samples = 10;
+  a->resize           = PETSC_TRUE; /* reallocate after compression */
 #if defined(H2OPUS_USE_MPI)
   h2opusCreateDistributedHandleComm(&a->handle,PetscObjectComm((PetscObject)A));
 #else
@@ -1460,6 +1467,11 @@ PetscErrorCode MatH2OpusCompress(Mat A, PetscReal tol)
       PetscCheck(a->dist_hmatrix,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Missing CPU matrix");
 #if defined(H2OPUS_USE_MPI)
       distributed_hcompress(*a->dist_hmatrix, tol, a->handle);
+      if (a->resize) {
+        DistributedHMatrix *dist_hmatrix = new DistributedHMatrix(*a->dist_hmatrix);
+        delete a->dist_hmatrix;
+        a->dist_hmatrix = dist_hmatrix;
+      }
 #endif
 #if defined(PETSC_H2OPUS_USE_GPU)
       A->offloadmask = PETSC_OFFLOAD_CPU;
@@ -1468,6 +1480,12 @@ PetscErrorCode MatH2OpusCompress(Mat A, PetscReal tol)
       PetscCall(PetscLogGpuTimeBegin());
 #if defined(H2OPUS_USE_MPI)
       distributed_hcompress(*a->dist_hmatrix_gpu, tol, a->handle);
+
+      if (a->resize) {
+        DistributedHMatrix_GPU *dist_hmatrix_gpu = new DistributedHMatrix_GPU(*a->dist_hmatrix_gpu);
+        delete a->dist_hmatrix_gpu;
+        a->dist_hmatrix_gpu = dist_hmatrix_gpu;
+      }
 #endif
       PetscCall(PetscLogGpuTimeEnd());
 #endif
@@ -1481,6 +1499,12 @@ PetscErrorCode MatH2OpusCompress(Mat A, PetscReal tol)
     if (boundtocpu) {
       PetscCheck(a->hmatrix,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Missing CPU matrix");
       hcompress(*a->hmatrix, tol, handle);
+
+      if (a->resize) {
+        HMatrix *hmatrix = new HMatrix(*a->hmatrix);
+        delete a->hmatrix;
+        a->hmatrix = hmatrix;
+      }
 #if defined(PETSC_H2OPUS_USE_GPU)
       A->offloadmask = PETSC_OFFLOAD_CPU;
     } else {
@@ -1488,6 +1512,12 @@ PetscErrorCode MatH2OpusCompress(Mat A, PetscReal tol)
       PetscCall(PetscLogGpuTimeBegin());
       hcompress(*a->hmatrix_gpu, tol, handle);
       PetscCall(PetscLogGpuTimeEnd());
+
+      if (a->resize) {
+        HMatrix_GPU *hmatrix_gpu = new HMatrix_GPU(*a->hmatrix_gpu);
+        delete a->hmatrix_gpu;
+        a->hmatrix_gpu = hmatrix_gpu;
+      }
 #endif
     }
   }

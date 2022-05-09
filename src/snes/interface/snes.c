@@ -627,7 +627,7 @@ static PetscErrorCode SNESSetUpMatrixFree_Private(SNES snes, PetscBool hasOperat
       /* Force no preconditioner */
       PetscCall(SNESGetKSP(snes,&ksp));
       PetscCall(KSPGetPC(ksp,&pc));
-      PetscCall(PetscObjectTypeCompare((PetscObject)pc,PCSHELL,&match));
+      PetscCall(PetscObjectTypeCompareAny((PetscObject)pc,&match,PCSHELL,PCH2OPUS,""));
       if (!match) {
         PetscCall(PetscInfo(snes,"Setting default matrix-free preconditioner routines\nThat is no preconditioner is being used\n"));
         PetscCall(PCSetType(pc,PCNONE));
