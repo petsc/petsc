@@ -98,6 +98,24 @@ typedef enum {
 } PetscSFDuplicateOption;
 PETSC_EXTERN const char *const PetscSFDuplicateOptions[];
 
+/*E
+    PetscSFConcatenateRootMode - Modes of root concatenation when concatenating SFs
+
+$  `PETSCSF_CONCATENATE_ROOTMODE_LOCAL`  - concatenate root spaces locally (separately on each rank)
+$  `PETSCSF_CONCATENATE_ROOTMODE_SHARED` - do not concatenate roots; root space is considered the same for each input SF (checked in debug mode)
+$  `PETSCSF_CONCATENATE_ROOTMODE_GLOBAL` - concatenate root spaces globally
+
+   Level: advanced
+
+.seealso: `PetscSFConcatenate()`
+E*/
+typedef enum {
+  PETSCSF_CONCATENATE_ROOTMODE_LOCAL,
+  PETSCSF_CONCATENATE_ROOTMODE_SHARED,
+  PETSCSF_CONCATENATE_ROOTMODE_GLOBAL,
+} PetscSFConcatenateRootMode;
+PETSC_EXTERN const char *const PetscSFConcatenateRootModes[];
+
 PETSC_EXTERN PetscFunctionList PetscSFList;
 PETSC_EXTERN PetscErrorCode    PetscSFRegister(const char[], PetscErrorCode (*)(PetscSF));
 
@@ -132,7 +150,7 @@ PETSC_EXTERN PetscErrorCode PetscSFGetLeafRanks(PetscSF, PetscInt *, const Petsc
 PETSC_EXTERN PetscErrorCode PetscSFGetGroups(PetscSF, MPI_Group *, MPI_Group *);
 PETSC_EXTERN PetscErrorCode PetscSFGetMultiSF(PetscSF, PetscSF *);
 PETSC_EXTERN PetscErrorCode PetscSFCreateInverseSF(PetscSF, PetscSF *);
-PETSC_EXTERN PetscErrorCode PetscSFConcatenate(MPI_Comm, PetscInt, PetscSF[], PetscBool, PetscInt[], PetscSF *);
+PETSC_EXTERN PetscErrorCode PetscSFConcatenate(MPI_Comm, PetscInt, PetscSF[], PetscSFConcatenateRootMode, PetscInt[], PetscSF *);
 
 /* Build PetscSF from PetscLayout */
 PETSC_EXTERN PetscErrorCode PetscSFSetGraphLayout(PetscSF, PetscLayout, PetscInt, PetscInt *, PetscCopyMode, const PetscInt *);

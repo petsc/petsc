@@ -23,7 +23,8 @@ void PetscSFCheckGraphSet(PetscSF, int);
   #endif
 #endif
 
-const char *const PetscSFDuplicateOptions[] = {"CONFONLY", "RANKS", "GRAPH", "PetscSFDuplicateOption", "PETSCSF_DUPLICATE_", NULL};
+const char *const PetscSFDuplicateOptions[]     = {"CONFONLY", "RANKS", "GRAPH", "PetscSFDuplicateOption", "PETSCSF_DUPLICATE_", NULL};
+const char *const PetscSFConcatenateRootModes[] = {"local", "shared", "global", "PetscSFConcatenateRootMode", "PETSCSF_CONCATENATE_ROOTMODE_", NULL};
 
 /*@
    PetscSFCreate - create a star forest communication context
@@ -2219,36 +2220,144 @@ PetscErrorCode PetscSFBcastToZero_Private(PetscSF sf, MPI_Datatype unit, const v
 + comm - the communicator
 . nsfs - the number of input `PetscSF`
 . sfs  - the array of input `PetscSF`
-. shareRoots - the flag whether roots of input `PetscSF` are taken as shared (`PETSC_TRUE`), or separate and concatenated (`PETSC_FALSE`)
+. rootMode - the root mode specifying how roots are handled
 - leafOffsets - the array of local leaf offsets, one for each input `PetscSF`, or NULL for contiguous storage
 
   Output Parameters:
 . newsf - The resulting `PetscSF`
 
-  Level: developer
+  Level: advanced
 
   Notes:
   The communicator of all SFs in sfs must be comm.
 
+  Leaves are always concatenated locally, keeping them ordered by the input SF index and original local order.
   The offsets in leafOffsets are added to the original leaf indices.
-
   If all input SFs use contiguous leaf storage (ilocal = NULL), leafOffsets can be passed as NULL as well.
   In this case, NULL is also passed as ilocal to the resulting SF.
-
   If any input SF has non-null ilocal, leafOffsets is needed to distinguish leaves from different input SFs.
   In this case, user is responsible to provide correct offsets so that the resulting leaves are unique (otherwise an error occurs).
 
-.seealso: `PetscSF`, `PetscSFCompose()`, `PetscSFGetGraph()`, `PetscSFSetGraph()`
+  All root modes retain the essential connectivity condition:
+  If two leaves of the same input SF are connected (sharing the same root), they are also connected in the output SF.
+  Parameter rootMode controls how the input root spaces are combined.
+  For `PETSCSF_CONCATENATE_ROOTMODE_SHARED`, the root space is considered the same for each input SF (checked in debug mode) and is also the same in the output SF.
+  For `PETSCSF_CONCATENATE_ROOTMODE_LOCAL` and `PETSCSF_CONCATENATE_ROOTMODE_GLOBAL`, the input root spaces are taken as separate and joined.
+  `PETSCSF_CONCATENATE_ROOTMODE_LOCAL` joins the root spaces locally;
+  roots of sfs[0], sfs[1], sfs[2], ... are joined on each rank separately, ordered by input SF and original local index, and renumbered contiguously.
+  `PETSCSF_CONCATENATE_ROOTMODE_GLOBAL` joins the root spaces globally;
+  roots of sfs[0], sfs[1], sfs[2, ... are joined globally, ordered by input SF index and original global index, and renumbered contiguously;
+  the original root ranks are ignored.
+  For both `PETSCSF_CONCATENATE_ROOTMODE_LOCAL` and `PETSCSF_CONCATENATE_ROOTMODE_GLOBAL`,
+  the output SF's root layout is such that the local number of roots is a sum of the input SF's local numbers of roots on each rank to keep the load balancing.
+  However, for `PETSCSF_CONCATENATE_ROOTMODE_GLOBAL`, that means roots can move to different ranks.
+
+   Example:
+   We can use src/vec/is/sf/tests/ex18.c to compare the root modes. By running
+$ make -C $PETSC_DIR/src/vec/is/sf/tests ex18
+$ for m in {local,global,shared}; do
+$   mpirun -n 2 $PETSC_DIR/src/vec/is/sf/tests/ex18 -nsfs 2 -n 2 -root_mode $m -sf_view
+$ done
+   we generate two identical SFs sf_0 and sf_1,
+$ PetscSF Object: sf_0 2 MPI processes
+$   type: basic
+$   rank #leaves #roots
+$   [ 0]       4      2
+$   [ 1]       4      2
+$   leaves      roots       roots in global numbering
+$   ( 0,  0) <- ( 0,  0)  =   0
+$   ( 0,  1) <- ( 0,  1)  =   1
+$   ( 0,  2) <- ( 1,  0)  =   2
+$   ( 0,  3) <- ( 1,  1)  =   3
+$   ( 1,  0) <- ( 0,  0)  =   0
+$   ( 1,  1) <- ( 0,  1)  =   1
+$   ( 1,  2) <- ( 1,  0)  =   2
+$   ( 1,  3) <- ( 1,  1)  =   3
+   and pass them to `PetscSFConcatenate()` along with different choices of rootMode, yielding different result_sf:
+$ rootMode = local:
+$ PetscSF Object: result_sf 2 MPI processes
+$   type: basic
+$   rank #leaves #roots
+$   [ 0]       8      4
+$   [ 1]       8      4
+$   leaves      roots       roots in global numbering
+$   ( 0,  0) <- ( 0,  0)  =   0
+$   ( 0,  1) <- ( 0,  1)  =   1
+$   ( 0,  2) <- ( 1,  0)  =   4
+$   ( 0,  3) <- ( 1,  1)  =   5
+$   ( 0,  4) <- ( 0,  2)  =   2
+$   ( 0,  5) <- ( 0,  3)  =   3
+$   ( 0,  6) <- ( 1,  2)  =   6
+$   ( 0,  7) <- ( 1,  3)  =   7
+$   ( 1,  0) <- ( 0,  0)  =   0
+$   ( 1,  1) <- ( 0,  1)  =   1
+$   ( 1,  2) <- ( 1,  0)  =   4
+$   ( 1,  3) <- ( 1,  1)  =   5
+$   ( 1,  4) <- ( 0,  2)  =   2
+$   ( 1,  5) <- ( 0,  3)  =   3
+$   ( 1,  6) <- ( 1,  2)  =   6
+$   ( 1,  7) <- ( 1,  3)  =   7
+$
+$ rootMode = global:
+$ PetscSF Object: result_sf 2 MPI processes
+$   type: basic
+$   rank #leaves #roots
+$   [ 0]       8      4
+$   [ 1]       8      4
+$   leaves      roots       roots in global numbering
+$   ( 0,  0) <- ( 0,  0)  =   0
+$   ( 0,  1) <- ( 0,  1)  =   1
+$   ( 0,  2) <- ( 0,  2)  =   2
+$   ( 0,  3) <- ( 0,  3)  =   3
+$   ( 0,  4) <- ( 1,  0)  =   4
+$   ( 0,  5) <- ( 1,  1)  =   5
+$   ( 0,  6) <- ( 1,  2)  =   6
+$   ( 0,  7) <- ( 1,  3)  =   7
+$   ( 1,  0) <- ( 0,  0)  =   0
+$   ( 1,  1) <- ( 0,  1)  =   1
+$   ( 1,  2) <- ( 0,  2)  =   2
+$   ( 1,  3) <- ( 0,  3)  =   3
+$   ( 1,  4) <- ( 1,  0)  =   4
+$   ( 1,  5) <- ( 1,  1)  =   5
+$   ( 1,  6) <- ( 1,  2)  =   6
+$   ( 1,  7) <- ( 1,  3)  =   7
+$
+$ rootMode = shared:
+$ PetscSF Object: result_sf 2 MPI processes
+$   type: basic
+$   rank #leaves #roots
+$   [ 0]       8      2
+$   [ 1]       8      2
+$   leaves      roots       roots in global numbering
+$   ( 0,  0) <- ( 0,  0)  =   0
+$   ( 0,  1) <- ( 0,  1)  =   1
+$   ( 0,  2) <- ( 1,  0)  =   2
+$   ( 0,  3) <- ( 1,  1)  =   3
+$   ( 0,  4) <- ( 0,  0)  =   0
+$   ( 0,  5) <- ( 0,  1)  =   1
+$   ( 0,  6) <- ( 1,  0)  =   2
+$   ( 0,  7) <- ( 1,  1)  =   3
+$   ( 1,  0) <- ( 0,  0)  =   0
+$   ( 1,  1) <- ( 0,  1)  =   1
+$   ( 1,  2) <- ( 1,  0)  =   2
+$   ( 1,  3) <- ( 1,  1)  =   3
+$   ( 1,  4) <- ( 0,  0)  =   0
+$   ( 1,  5) <- ( 0,  1)  =   1
+$   ( 1,  6) <- ( 1,  0)  =   2
+$   ( 1,  7) <- ( 1,  1)  =   3
+
+.seealso: `PetscSF`, `PetscSFCompose()`, `PetscSFGetGraph()`, `PetscSFSetGraph()`, `PetscSFConcatenateRootMode`
 @*/
-PetscErrorCode PetscSFConcatenate(MPI_Comm comm, PetscInt nsfs, PetscSF sfs[], PetscBool shareRoots, PetscInt leafOffsets[], PetscSF *newsf)
+PetscErrorCode PetscSFConcatenate(MPI_Comm comm, PetscInt nsfs, PetscSF sfs[], PetscSFConcatenateRootMode rootMode, PetscInt leafOffsets[], PetscSF *newsf)
 {
   PetscInt     i, s, nLeaves, nRoots;
   PetscInt    *leafArrayOffsets;
   PetscInt    *ilocal_new;
   PetscSFNode *iremote_new;
-  PetscInt    *rootOffsets;
   PetscBool    all_ilocal_null = PETSC_FALSE;
-  PetscMPIInt  rank;
+  PetscLayout  glayout         = NULL;
+  PetscInt    *gremote         = NULL;
+  PetscMPIInt  rank, size;
 
   PetscFunctionBegin;
   {
@@ -2261,7 +2370,7 @@ PetscErrorCode PetscSFConcatenate(MPI_Comm comm, PetscInt nsfs, PetscSF sfs[], P
       PetscValidHeaderSpecific(sfs[i], PETSCSF_CLASSID, 3);
       PetscCheckSameComm(dummy, 1, sfs[i], 3);
     }
-    PetscValidLogicalCollectiveBool(dummy, shareRoots, 4);
+    PetscValidLogicalCollectiveEnum(dummy, rootMode, 4);
     if (leafOffsets) PetscValidIntPointer(leafOffsets, 5);
     PetscValidPointer(newsf, 6);
     PetscCall(PetscSFDestroy(&dummy));
@@ -2272,29 +2381,9 @@ PetscErrorCode PetscSFConcatenate(MPI_Comm comm, PetscInt nsfs, PetscSF sfs[], P
     PetscFunctionReturn(0);
   }
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
+  PetscCallMPI(MPI_Comm_size(comm, &size));
 
-  PetscCall(PetscCalloc1(nsfs + 1, &rootOffsets));
-  if (shareRoots) {
-    PetscCall(PetscSFGetGraph(sfs[0], &nRoots, NULL, NULL, NULL));
-    if (PetscDefined(USE_DEBUG)) {
-      for (s = 1; s < nsfs; s++) {
-        PetscInt nr;
-
-        PetscCall(PetscSFGetGraph(sfs[s], &nr, NULL, NULL, NULL));
-        PetscCheck(nr == nRoots, comm, PETSC_ERR_ARG_SIZ, "shareRoots = PETSC_TRUE but sfs[%" PetscInt_FMT "] has a different number of roots (%" PetscInt_FMT ") than sfs[0] (%" PetscInt_FMT ")", s, nr, nRoots);
-      }
-    }
-  } else {
-    for (s = 0; s < nsfs; s++) {
-      PetscInt nr;
-
-      PetscCall(PetscSFGetGraph(sfs[s], &nr, NULL, NULL, NULL));
-      rootOffsets[s + 1] = rootOffsets[s] + nr;
-    }
-    nRoots = rootOffsets[nsfs];
-  }
-
-  /* Calculate leaf array offsets and automatic root offsets */
+  /* Calculate leaf array offsets */
   PetscCall(PetscMalloc1(nsfs + 1, &leafArrayOffsets));
   leafArrayOffsets[0] = 0;
   for (s = 0; s < nsfs; s++) {
@@ -2304,6 +2393,55 @@ PetscErrorCode PetscSFConcatenate(MPI_Comm comm, PetscInt nsfs, PetscSF sfs[], P
     leafArrayOffsets[s + 1] = leafArrayOffsets[s] + nl;
   }
   nLeaves = leafArrayOffsets[nsfs];
+
+  /* Calculate number of roots */
+  switch (rootMode) {
+  case PETSCSF_CONCATENATE_ROOTMODE_SHARED: {
+    PetscCall(PetscSFGetGraph(sfs[0], &nRoots, NULL, NULL, NULL));
+    if (PetscDefined(USE_DEBUG)) {
+      for (s = 1; s < nsfs; s++) {
+        PetscInt nr;
+
+        PetscCall(PetscSFGetGraph(sfs[s], &nr, NULL, NULL, NULL));
+        PetscCheck(nr == nRoots, comm, PETSC_ERR_ARG_SIZ, "rootMode = %s but sfs[%" PetscInt_FMT "] has a different number of roots (%" PetscInt_FMT ") than sfs[0] (%" PetscInt_FMT ")", PetscSFConcatenateRootModes[rootMode], s, nr, nRoots);
+      }
+    }
+  } break;
+  case PETSCSF_CONCATENATE_ROOTMODE_GLOBAL: {
+    /* Calculate also global layout in this case */
+    PetscInt    *nls;
+    PetscLayout *lts;
+    PetscInt   **inds;
+    PetscInt     j;
+    PetscInt     rootOffset = 0;
+
+    PetscCall(PetscCalloc3(nsfs, &lts, nsfs, &nls, nsfs, &inds));
+    PetscCall(PetscLayoutCreate(comm, &glayout));
+    glayout->bs = 1;
+    glayout->n  = 0;
+    glayout->N  = 0;
+    for (s = 0; s < nsfs; s++) {
+      PetscCall(PetscSFGetGraphLayout(sfs[s], &lts[s], &nls[s], NULL, &inds[s]));
+      glayout->n += lts[s]->n;
+      glayout->N += lts[s]->N;
+    }
+    PetscCall(PetscLayoutSetUp(glayout));
+    PetscCall(PetscMalloc1(nLeaves, &gremote));
+    for (s = 0, j = 0; s < nsfs; s++) {
+      for (i = 0; i < nls[s]; i++, j++) gremote[j] = inds[s][i] + rootOffset;
+      rootOffset += lts[s]->N;
+      PetscCall(PetscLayoutDestroy(&lts[s]));
+      PetscCall(PetscFree(inds[s]));
+    }
+    PetscCall(PetscFree3(lts, nls, inds));
+    nRoots = glayout->N;
+  } break;
+  case PETSCSF_CONCATENATE_ROOTMODE_LOCAL:
+    /* nRoots calculated later in this case */
+    break;
+  default:
+    SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Invalid PetscSFConcatenateRootMode %d", rootMode);
+  }
 
   if (!leafOffsets) {
     all_ilocal_null = PETSC_TRUE;
@@ -2335,39 +2473,58 @@ PetscErrorCode PetscSFConcatenate(MPI_Comm comm, PetscInt nsfs, PetscSF sfs[], P
   }
 
   /* Renumber and concatenate remote roots */
-  PetscCall(PetscMalloc1(nLeaves, &iremote_new));
-  for (i = 0; i < nLeaves; i++) {
-    iremote_new[i].rank  = -1;
-    iremote_new[i].index = -1;
-  }
-  for (s = 0; s < nsfs; s++) {
-    PetscInt           i, nl, nr;
-    PetscSF            tmp_sf;
-    const PetscSFNode *iremote;
-    PetscSFNode       *tmp_rootdata;
-    PetscSFNode       *tmp_leafdata = &iremote_new[leafArrayOffsets[s]];
+  if (rootMode == PETSCSF_CONCATENATE_ROOTMODE_LOCAL || rootMode == PETSCSF_CONCATENATE_ROOTMODE_SHARED) {
+    PetscInt rootOffset = 0;
 
-    PetscCall(PetscSFGetGraph(sfs[s], &nr, &nl, NULL, &iremote));
-    PetscCall(PetscSFCreate(comm, &tmp_sf));
-    /* create helper SF with contiguous leaves */
-    PetscCall(PetscSFSetGraph(tmp_sf, nr, nl, NULL, PETSC_USE_POINTER, (PetscSFNode *)iremote, PETSC_COPY_VALUES));
-    PetscCall(PetscSFSetUp(tmp_sf));
-    PetscCall(PetscMalloc1(nr, &tmp_rootdata));
-    for (i = 0; i < nr; i++) {
-      tmp_rootdata[i].index = i + rootOffsets[s];
-      tmp_rootdata[i].rank  = (PetscInt)rank;
+    PetscCall(PetscMalloc1(nLeaves, &iremote_new));
+    for (i = 0; i < nLeaves; i++) {
+      iremote_new[i].rank  = -1;
+      iremote_new[i].index = -1;
     }
-    PetscCall(PetscSFBcastBegin(tmp_sf, MPIU_2INT, tmp_rootdata, tmp_leafdata, MPI_REPLACE));
-    PetscCall(PetscSFBcastEnd(tmp_sf, MPIU_2INT, tmp_rootdata, tmp_leafdata, MPI_REPLACE));
-    PetscCall(PetscSFDestroy(&tmp_sf));
-    PetscCall(PetscFree(tmp_rootdata));
-  }
+    for (s = 0; s < nsfs; s++) {
+      PetscInt           i, nl, nr;
+      PetscSF            tmp_sf;
+      const PetscSFNode *iremote;
+      PetscSFNode       *tmp_rootdata;
+      PetscSFNode       *tmp_leafdata = &iremote_new[leafArrayOffsets[s]];
 
-  /* Build the new SF */
-  PetscCall(PetscSFCreate(comm, newsf));
-  PetscCall(PetscSFSetGraph(*newsf, nRoots, nLeaves, ilocal_new, PETSC_OWN_POINTER, iremote_new, PETSC_OWN_POINTER));
+      PetscCall(PetscSFGetGraph(sfs[s], &nr, &nl, NULL, &iremote));
+      PetscCall(PetscSFCreate(comm, &tmp_sf));
+      /* create helper SF with contiguous leaves */
+      PetscCall(PetscSFSetGraph(tmp_sf, nr, nl, NULL, PETSC_USE_POINTER, (PetscSFNode *)iremote, PETSC_COPY_VALUES));
+      PetscCall(PetscSFSetUp(tmp_sf));
+      PetscCall(PetscMalloc1(nr, &tmp_rootdata));
+      if (rootMode == PETSCSF_CONCATENATE_ROOTMODE_LOCAL) {
+        for (i = 0; i < nr; i++) {
+          tmp_rootdata[i].index = i + rootOffset;
+          tmp_rootdata[i].rank  = (PetscInt)rank;
+        }
+        rootOffset += nr;
+      } else {
+        for (i = 0; i < nr; i++) {
+          tmp_rootdata[i].index = i;
+          tmp_rootdata[i].rank  = (PetscInt)rank;
+        }
+      }
+      PetscCall(PetscSFBcastBegin(tmp_sf, MPIU_2INT, tmp_rootdata, tmp_leafdata, MPI_REPLACE));
+      PetscCall(PetscSFBcastEnd(tmp_sf, MPIU_2INT, tmp_rootdata, tmp_leafdata, MPI_REPLACE));
+      PetscCall(PetscSFDestroy(&tmp_sf));
+      PetscCall(PetscFree(tmp_rootdata));
+    }
+    if (rootMode == PETSCSF_CONCATENATE_ROOTMODE_LOCAL) { nRoots = rootOffset; } // else nRoots already calculated above
+
+    /* Build the new SF */
+    PetscCall(PetscSFCreate(comm, newsf));
+    PetscCall(PetscSFSetGraph(*newsf, nRoots, nLeaves, ilocal_new, PETSC_OWN_POINTER, iremote_new, PETSC_OWN_POINTER));
+  } else {
+    /* Build the new SF */
+    PetscCall(PetscSFCreate(comm, newsf));
+    PetscCall(PetscSFSetGraphLayout(*newsf, glayout, nLeaves, ilocal_new, PETSC_OWN_POINTER, gremote));
+  }
   PetscCall(PetscSFSetUp(*newsf));
-  PetscCall(PetscFree(rootOffsets));
+  PetscCall(PetscSFViewFromOptions(*newsf, NULL, "-sf_concat_view"));
+  PetscCall(PetscLayoutDestroy(&glayout));
+  PetscCall(PetscFree(gremote));
   PetscCall(PetscFree(leafArrayOffsets));
   PetscFunctionReturn(0);
 }
