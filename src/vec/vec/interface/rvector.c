@@ -290,7 +290,7 @@ PetscErrorCode  VecNormAvailable(Vec x,NormType type,PetscBool  *available,Petsc
 .  x - the vector
 
    Output Parameter:
-.  val - the vector norm before normalization
+.  val - the vector norm before normalization. May be `NULL` if the value is not needed.
 
    Level: intermediate
 
