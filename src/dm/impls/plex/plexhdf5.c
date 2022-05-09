@@ -166,7 +166,7 @@ PetscErrorCode PetscViewerHDF5GetDMPlexStorageVersionReading(PetscViewer viewer,
   if (*version) PetscFunctionReturn(0);
 
   //TODO string HDF5 attribute handling is terrible and should be redesigned
-  PetscCall(PetscStrallocpy("1.0.0", &defaultVersion));
+  PetscCall(PetscStrallocpy(DMPLEX_STORAGE_VERSION_FIRST, &defaultVersion));
   PetscCall(PetscViewerHDF5ReadAttribute(viewer, "/", ATTR_NAME, PETSC_STRING, &defaultVersion, &versionString));
   PetscCall(PetscViewerParseVersion_Private(viewer, versionString, version));
   PetscCall(PetscViewerAttachVersion_Private(viewer, DMPLEX_STORAGE_VERSION_READING_KEY, *version));

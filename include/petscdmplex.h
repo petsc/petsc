@@ -523,6 +523,7 @@ PETSC_EXTERN PetscErrorCode DMPlexLocalToGlobalBasis(DM, Vec);
 PETSC_EXTERN PetscErrorCode DMPlexCreateBasisRotation(DM, PetscReal, PetscReal, PetscReal);
 
 /* storage version */
+#define DMPLEX_STORAGE_VERSION_FIRST  "1.0.0"
 #define DMPLEX_STORAGE_VERSION_STABLE "1.0.0"
 #define DMPLEX_STORAGE_VERSION_LATEST "2.0.0"
 
