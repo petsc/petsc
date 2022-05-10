@@ -10,8 +10,9 @@ class Configure(config.package.CMakePackage):
     self.includes         = ['KokkosBlas.hpp','KokkosSparse_CrsMatrix.hpp']
     self.liblist          = [['libkokkoskernels.a']]
     self.functions        = ['']
-    # I don't know how to make it work since all KK routines are templated and always need Kokkos::View. So I cheat here and use functionCxx from Kokkos.
-    self.functionsCxx     = [1,'namespace Kokkos {void initialize(int&,char*[]);}','int one = 1;char* args[1];Kokkos::initialize(one,args);']
+    # use one of the only non-templated functions in all of KK to check this library
+    # exists
+    self.functionsCxx     = [1,'namespace KokkosBatched { void print_compiler_info(); }','KokkosBatched::print_compiler_info();']
     self.buildLanguages   = ['Cxx']
     self.downloadonWindows= 0
     self.hastests         = 1
