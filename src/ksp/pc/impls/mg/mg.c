@@ -981,55 +981,64 @@ PetscErrorCode PCSetUp_MG(PC pc)
    Skipping if user has provided all interpolation/restriction needed (since DM might not be able to produce them (when coming from SNES/TS)
    Skipping for externally managed hierarchy (such as ML and GAMG). Cleaner logic here would be great. Wrap ML/GAMG as DMs?
   */
-  if (missinginterpolate && pc->dm && mg->galerkin != PC_MG_GALERKIN_EXTERNAL && !pc->setupcalled) {
-    /* construct the interpolation from the DMs */
-    Mat p;
-    Vec rscale;
-    PetscCall(PetscMalloc1(n,&dms));
-    dms[n-1] = pc->dm;
-    /* Separately create them so we do not get DMKSP interference between levels */
-    for (i=n-2; i>-1; i--) PetscCall(DMCoarsen(dms[i+1],MPI_COMM_NULL,&dms[i]));
-    for (i=n-2; i>-1; i--) {
-      DMKSP     kdm;
-      PetscBool dmhasrestrict, dmhasinject;
-      PetscCall(KSPSetDM(mglevels[i]->smoothd,dms[i]));
-      if (!needRestricts) PetscCall(KSPSetDMActive(mglevels[i]->smoothd,PETSC_FALSE));
-      if (mglevels[i]->smoothd != mglevels[i]->smoothu) {
-        PetscCall(KSPSetDM(mglevels[i]->smoothu,dms[i]));
-        if (!needRestricts) PetscCall(KSPSetDMActive(mglevels[i]->smoothu,PETSC_FALSE));
+  if (missinginterpolate && mg->galerkin != PC_MG_GALERKIN_EXTERNAL && !pc->setupcalled) {
+    /* first see if we can compute a coarse space */
+    if (mg->coarseSpaceType == PCMG_ADAPT_GDSW) {
+      for (i=n-2; i>-1; i--) {
+        if (!mglevels[i+1]->restrct && !mglevels[i+1]->interpolate) {
+          PetscCall(PCMGComputeCoarseSpace_Internal(pc, i+1, mg->coarseSpaceType, mg->Nc, NULL, &mglevels[i+1]->coarseSpace));
+          PetscCall(PCMGSetInterpolation(pc,i+1,mglevels[i+1]->coarseSpace));
+        }
       }
-      if (mglevels[i]->cr) {
-        PetscCall(KSPSetDM(mglevels[i]->cr,dms[i]));
-        if (!needRestricts) PetscCall(KSPSetDMActive(mglevels[i]->cr,PETSC_FALSE));
+    } else { /* construct the interpolation from the DMs */
+      Mat p;
+      Vec rscale;
+      PetscCall(PetscMalloc1(n,&dms));
+      dms[n-1] = pc->dm;
+      /* Separately create them so we do not get DMKSP interference between levels */
+      for (i=n-2; i>-1; i--) PetscCall(DMCoarsen(dms[i+1],MPI_COMM_NULL,&dms[i]));
+      for (i=n-2; i>-1; i--) {
+        DMKSP     kdm;
+        PetscBool dmhasrestrict, dmhasinject;
+        PetscCall(KSPSetDM(mglevels[i]->smoothd,dms[i]));
+        if (!needRestricts) PetscCall(KSPSetDMActive(mglevels[i]->smoothd,PETSC_FALSE));
+        if (mglevels[i]->smoothd != mglevels[i]->smoothu) {
+          PetscCall(KSPSetDM(mglevels[i]->smoothu,dms[i]));
+          if (!needRestricts) PetscCall(KSPSetDMActive(mglevels[i]->smoothu,PETSC_FALSE));
+        }
+        if (mglevels[i]->cr) {
+          PetscCall(KSPSetDM(mglevels[i]->cr,dms[i]));
+          if (!needRestricts) PetscCall(KSPSetDMActive(mglevels[i]->cr,PETSC_FALSE));
+        }
+        PetscCall(DMGetDMKSPWrite(dms[i],&kdm));
+        /* Ugly hack so that the next KSPSetUp() will use the RHS that we set. A better fix is to change dmActive to take
+         * a bitwise OR of computing the matrix, RHS, and initial iterate. */
+        kdm->ops->computerhs = NULL;
+        kdm->rhsctx          = NULL;
+        if (!mglevels[i+1]->interpolate) {
+          PetscCall(DMCreateInterpolation(dms[i],dms[i+1],&p,&rscale));
+          PetscCall(PCMGSetInterpolation(pc,i+1,p));
+          if (rscale) PetscCall(PCMGSetRScale(pc,i+1,rscale));
+          PetscCall(VecDestroy(&rscale));
+          PetscCall(MatDestroy(&p));
+        }
+        PetscCall(DMHasCreateRestriction(dms[i],&dmhasrestrict));
+        if (dmhasrestrict && !mglevels[i+1]->restrct) {
+          PetscCall(DMCreateRestriction(dms[i],dms[i+1],&p));
+          PetscCall(PCMGSetRestriction(pc,i+1,p));
+          PetscCall(MatDestroy(&p));
+        }
+        PetscCall(DMHasCreateInjection(dms[i],&dmhasinject));
+        if (dmhasinject && !mglevels[i+1]->inject) {
+          PetscCall(DMCreateInjection(dms[i],dms[i+1],&p));
+          PetscCall(PCMGSetInjection(pc,i+1,p));
+          PetscCall(MatDestroy(&p));
+        }
       }
-      PetscCall(DMGetDMKSPWrite(dms[i],&kdm));
-      /* Ugly hack so that the next KSPSetUp() will use the RHS that we set. A better fix is to change dmActive to take
-       * a bitwise OR of computing the matrix, RHS, and initial iterate. */
-      kdm->ops->computerhs = NULL;
-      kdm->rhsctx          = NULL;
-      if (!mglevels[i+1]->interpolate) {
-        PetscCall(DMCreateInterpolation(dms[i],dms[i+1],&p,&rscale));
-        PetscCall(PCMGSetInterpolation(pc,i+1,p));
-        if (rscale) PetscCall(PCMGSetRScale(pc,i+1,rscale));
-        PetscCall(VecDestroy(&rscale));
-        PetscCall(MatDestroy(&p));
-      }
-      PetscCall(DMHasCreateRestriction(dms[i],&dmhasrestrict));
-      if (dmhasrestrict && !mglevels[i+1]->restrct) {
-        PetscCall(DMCreateRestriction(dms[i],dms[i+1],&p));
-        PetscCall(PCMGSetRestriction(pc,i+1,p));
-        PetscCall(MatDestroy(&p));
-      }
-      PetscCall(DMHasCreateInjection(dms[i],&dmhasinject));
-      if (dmhasinject && !mglevels[i+1]->inject) {
-        PetscCall(DMCreateInjection(dms[i],dms[i+1],&p));
-        PetscCall(PCMGSetInjection(pc,i+1,p));
-        PetscCall(MatDestroy(&p));
-      }
-    }
 
-    for (i=n-2; i>-1; i--) PetscCall(DMDestroy(&dms[i]));
-    PetscCall(PetscFree(dms));
+      for (i=n-2; i>-1; i--) PetscCall(DMDestroy(&dms[i]));
+      PetscCall(PetscFree(dms));
+    }
   }
 
   if (mg->galerkin < PC_MG_GALERKIN_NONE) {
@@ -1041,10 +1050,6 @@ PetscErrorCode PCSetUp_MG(PC pc)
     if (mg->galerkin == PC_MG_GALERKIN_MAT || (mg->galerkin == PC_MG_GALERKIN_BOTH && dA != dB)) doA = PETSC_TRUE;
     if (pc->setupcalled) reuse = MAT_REUSE_MATRIX;
     for (i=n-2; i>-1; i--) {
-      if (!mglevels[i+1]->restrct && !mglevels[i+1]->interpolate) { /* see if we can compute a coarse space */
-        PetscCall(PCMGComputeCoarseSpace_Internal(pc, i+1, mg->coarseSpaceType, mg->Nc, NULL, &mglevels[i+1]->coarseSpace));
-        PetscCall(PCMGSetInterpolation(pc,i+1,mglevels[i+1]->coarseSpace));
-      }
       PetscCheck(mglevels[i+1]->restrct || mglevels[i+1]->interpolate,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must provide interpolation or restriction for each MG level except level 0");
       if (!mglevels[i+1]->interpolate) {
         PetscCall(PCMGSetInterpolation(pc,i+1,mglevels[i+1]->restrct));

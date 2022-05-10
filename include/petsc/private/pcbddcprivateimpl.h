@@ -28,6 +28,7 @@ PETSC_EXTERN PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph,PetscInt*,IS*
 PETSC_EXTERN PetscErrorCode PCBDDCGraphRestoreCandidatesIS(PCBDDCGraph,PetscInt*,IS*[],PetscInt*,IS*[],IS*);
 PETSC_EXTERN PetscErrorCode PCBDDCGraphGetDirichletDofs(PCBDDCGraph,IS*);
 PETSC_EXTERN PetscErrorCode PCBDDCGraphGetDirichletDofsB(PCBDDCGraph,IS*);
+PETSC_EXTERN PetscErrorCode PCBDDCDestroyGraphCandidatesIS(void*);
 
 /* interface for scaling operator */
 PETSC_EXTERN PetscErrorCode PCBDDCScalingSetUp(PC);
@@ -65,7 +66,7 @@ PETSC_EXTERN PetscErrorCode PCBDDCComputeNoNetFlux(Mat,Mat,PetscBool,IS,PCBDDCGr
 PETSC_EXTERN PetscErrorCode PCBDDCNullSpaceCreate(MPI_Comm,PetscBool,PetscInt,Vec[],MatNullSpace*);
 PETSC_EXTERN PetscErrorCode PCBDDCNedelecSupport(PC);
 PETSC_EXTERN PetscErrorCode PCBDDCAddPrimalVerticesLocalIS(PC,IS);
-PETSC_EXTERN PetscErrorCode PCBDDCComputeFakeChange(PC,PetscBool,PCBDDCGraph,Mat*,IS*,IS*,PetscBool*);
+PETSC_EXTERN PetscErrorCode PCBDDCComputeFakeChange(PC,PetscBool,PCBDDCGraph,PCBDDCSubSchurs,Mat*,IS*,IS*,PetscBool*);
 
 /* benign subspace trick */
 PETSC_EXTERN PetscErrorCode PCBDDCBenignPopOrPushB0(PC,PetscBool);
@@ -93,9 +94,9 @@ PETSC_EXTERN PetscErrorCode PCBDDCDestroyFETIDPMat(Mat);
 PETSC_EXTERN PetscErrorCode PCBDDCInitSubSchurs(PC);
 PETSC_EXTERN PetscErrorCode PCBDDCSetUpSubSchurs(PC);
 
-/* sub schurs */
+/* sub schurs API */
 PETSC_EXTERN PetscErrorCode PCBDDCSubSchursCreate(PCBDDCSubSchurs*);
-PETSC_EXTERN PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs,const char*,IS,IS,PCBDDCGraph,ISLocalToGlobalMapping,PetscBool);
+PETSC_EXTERN PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs,const char*,IS,IS,PCBDDCGraph,ISLocalToGlobalMapping,PetscBool,PetscBool);
 PETSC_EXTERN PetscErrorCode PCBDDCSubSchursReset(PCBDDCSubSchurs);
 PETSC_EXTERN PetscErrorCode PCBDDCSubSchursDestroy(PCBDDCSubSchurs*);
 PETSC_EXTERN PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs,Mat,Mat,PetscBool,PetscInt[],PetscInt[],PetscInt,Vec,PetscBool,PetscBool,PetscBool,PetscInt,PetscInt[],IS[],Mat,IS);

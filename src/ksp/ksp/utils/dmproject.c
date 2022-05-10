@@ -330,7 +330,9 @@ PetscErrorCode DMAdaptInterpolator(DM dmc, DM dmf, Mat In, KSP smoother, Mat MF,
     allocVc = PETSC_TRUE;
     PetscCall(MatTransposeMatMult(In, MF, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &MC));
   }
-  /* Solve a LS system for each fine row */
+  /* Solve a LS system for each fine row
+     MATT: Can we generalize to the case where Nc for the fine space
+     is different for Nc for the coarse? */
   PetscCall(MatDenseGetArrayRead(MF, &af));
   PetscCall(MatDenseGetLDA(MF, &ldaf));
   PetscCall(MatDenseGetArrayRead(MC, &ac));

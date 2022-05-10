@@ -158,6 +158,9 @@ PetscErrorCode PCMGComputeCoarseSpace_Internal(PC pc, PetscInt l, PCMGCoarseSpac
     if (l > 0) PetscCall(PCMGGetCoarseSpaceConstructor("BAMG_MGEV", &coarseConstructor));
     else       PetscCall(PCMGGetCoarseSpaceConstructor("BAMG_GEV", &coarseConstructor));
     break;
+  case PCMG_ADAPT_GDSW:
+    coarseConstructor = &PCMGGDSWCreateCoarseSpace_Private;
+    break;
   case PCMG_ADAPT_NONE:
     break;
   default: SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Cannot handle coarse space type %d", cstype);
