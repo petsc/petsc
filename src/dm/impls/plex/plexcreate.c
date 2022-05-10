@@ -4702,10 +4702,13 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const 
   PetscCheck(len,comm, PETSC_ERR_ARG_WRONG, "Filename must be a valid path");
 
 #define CheckExtension(extension__,is_extension__) do {                                        \
-    if (len < sizeof(extension__)) {                                                           \
+    PetscAssert(sizeof(extension__), comm, PETSC_ERR_PLIB, "Zero-size extension: %s", extension__); \
+    /* don't count the null-terminator at the end */                                           \
+    const size_t ext_len = sizeof(extension__)-1;                                              \
+    if (len < ext_len) {                                                                       \
       is_extension__ = PETSC_FALSE;                                                            \
     } else {                                                                                   \
-      PetscCall(PetscStrncmp(filename+len-sizeof(extension__), extension__, sizeof(extension__), &is_extension__)); \
+      PetscCall(PetscStrncmp(filename+len-ext_len, extension__, ext_len, &is_extension__));    \
     }                                                                                          \
   } while (0)
 
