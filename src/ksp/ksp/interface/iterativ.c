@@ -104,9 +104,16 @@ PetscErrorCode  KSPGetTotalIterations(KSP ksp,PetscInt *its)
   Options Database Key:
 . -ksp_monitor - Activates KSPMonitorResidual()
 
+  Notes:
+  This is not called directly by users, rather one calls `KSPMonitorSet()`, with this function as an argument, to cause the monitor
+  to be used during the KSP solve.
+
   Level: intermediate
 
-.seealso: `KSPMonitorSet()`, `KSPMonitorTrueResidual()`
+.seealso: `KSPMonitorSet()`, `KSPMonitorTrueResidual()`,  `KSPMonitorResidualDraw()`, `KSPMonitorResidualDrawLG()`,
+          `KSPMonitorResidualRange()`, `KSPMonitorTrueResidualDraw()`, `KSPMonitorTrueResidualDrawLG()`, `KSPMonitorTrueResidualMax()`,
+          `KSPMonitorSingularValue()`, `KSPMonitorSolutionDrawLG()`, `KSPMonitorSolutionDraw()`, `KSPMonitorSolution()`,
+          `KSPMonitorErrorDrawLG()`, `KSPMonitorErrorDraw()`, KSPMonitorError()`
 @*/
 PetscErrorCode KSPMonitorResidual(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
 {
@@ -142,9 +149,13 @@ PetscErrorCode KSPMonitorResidual(KSP ksp, PetscInt n, PetscReal rnorm, PetscVie
   Options Database Key:
 . -ksp_monitor draw - Activates KSPMonitorResidualDraw()
 
+  Notes:
+  This is not called directly by users, rather one calls `KSPMonitorSet()`, with this function as an argument, to cause the monitor
+  to be used during the KSP solve.
+
   Level: intermediate
 
-.seealso: `KSPMonitorSet()`, `KSPMonitorTrueResidual()`
+.seealso: `KSPMonitorSet()`, `KSPMonitorTrueResidual()`, , `KSPMonitorResidual()`, `KSPMonitorResidualDrawLG()`
 @*/
 PetscErrorCode KSPMonitorResidualDraw(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
 {
@@ -179,9 +190,13 @@ PetscErrorCode KSPMonitorResidualDraw(KSP ksp, PetscInt n, PetscReal rnorm, Pets
   Options Database Key:
 . -ksp_monitor draw::draw_lg - Activates KSPMonitorResidualDrawLG()
 
+  Notes:
+  This is not called directly by users, rather one calls `KSPMonitorSet()`, with this function as an argument, to cause the monitor
+  to be used during the KSP solve.
+
   Level: intermediate
 
-.seealso: `KSPMonitorSet()`, `KSPMonitorTrueResidual()`
+.seealso: `KSPMonitorSet()`, `KSPMonitorTrueResidual()`, `KSPMonitorResidualDraw()`, `KSPMonitorResidual()`
 @*/
 PetscErrorCode KSPMonitorResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
 {
@@ -300,6 +315,10 @@ PetscErrorCode KSPMonitorRange_Private(KSP ksp, PetscInt it, PetscReal *per)
   Options Database Key:
 . -ksp_monitor_range - Activates KSPMonitorResidualRange()
 
+  Notes:
+  This is not called directly by users, rather one calls `KSPMonitorSet()`, with this function as an argument, to cause the monitor
+  to be used during the KSP solve.
+
   Level: intermediate
 
 .seealso: `KSPMonitorSet()`, `KSPMonitorResidual()`
@@ -346,6 +365,9 @@ PetscErrorCode KSPMonitorResidualRange(KSP ksp, PetscInt it, PetscReal rnorm, Pe
 
   Notes:
   When using right preconditioning, these values are equivalent.
+
+  This is not called directly by users, rather one calls `KSPMonitorSet()`, with this function as an argument, to cause the monitor
+  to be used during the KSP solve.
 
   Level: intermediate
 
@@ -395,6 +417,10 @@ PetscErrorCode KSPMonitorTrueResidual(KSP ksp, PetscInt n, PetscReal rnorm, Pets
   Options Database Key:
 . -ksp_monitor_true_residual draw - Activates KSPMonitorResidualDraw()
 
+  Notes:
+  This is not called directly by users, rather one calls `KSPMonitorSet()`, with this function as an argument, to cause the monitor
+  to be used during the KSP solve.
+
   Level: intermediate
 
 .seealso: `KSPMonitorSet()`, `KSPMonitorTrueResidual()`
@@ -431,6 +457,10 @@ PetscErrorCode KSPMonitorTrueResidualDraw(KSP ksp, PetscInt n, PetscReal rnorm, 
 
   Options Database Key:
 . -ksp_monitor_true_residual draw::draw_lg - Activates KSPMonitorTrueResidualDrawLG()
+
+  Notes:
+  This is not called directly by users, rather one calls `KSPMonitorSet()`, with this function as an argument, to cause the monitor
+  to be used during the KSP solve.
 
   Level: intermediate
 
@@ -482,6 +512,10 @@ PetscErrorCode KSPMonitorTrueResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm
   Output Parameter:
 . vf    - The viewer context
 
+  Notes:
+  This is not called directly by users, rather one calls `KSPMonitorSet()`, with this function as an argument, to cause the monitor
+  to be used during the KSP solve.
+
   Level: intermediate
 
 .seealso: `KSPMonitorSet()`, `KSPMonitorTrueResidual()`
@@ -513,6 +547,9 @@ PetscErrorCode KSPMonitorTrueResidualDrawLGCreate(PetscViewer viewer, PetscViewe
 
   Notes:
   When using right preconditioning, these values are equivalent.
+
+  This is not called directly by users, rather one calls `KSPMonitorSet()`, with this function as an argument, to cause the monitor
+  to be used during the KSP solve.
 
   Level: intermediate
 
@@ -561,6 +598,10 @@ PetscErrorCode KSPMonitorTrueResidualMax(KSP ksp, PetscInt n, PetscReal rnorm, P
 
   Options Database Key:
 . -ksp_monitor_error - Activates KSPMonitorError()
+
+  Notes:
+  This is not called directly by users, rather one calls `KSPMonitorSet()`, with this function as an argument, to cause the monitor
+  to be used during the KSP solve.
 
   Level: intermediate
 
@@ -621,6 +662,10 @@ PetscErrorCode KSPMonitorError(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewer
   Options Database Key:
 . -ksp_monitor_error draw - Activates KSPMonitorErrorDraw()
 
+  Notes:
+  This is not called directly by users, rather one calls `KSPMonitorSet()`, with this function as an argument, to cause the monitor
+  to be used during the KSP solve.
+
   Level: intermediate
 
 .seealso: `KSPMonitorSet()`, `KSPMonitorTrueResidual()`
@@ -662,6 +707,10 @@ PetscErrorCode KSPMonitorErrorDraw(KSP ksp, PetscInt n, PetscReal rnorm, PetscVi
 
   Options Database Key:
 . -ksp_monitor_error draw::draw_lg - Activates KSPMonitorTrueResidualDrawLG()
+
+  Notes:
+  This is not called directly by users, rather one calls `KSPMonitorSet()`, with this function as an argument, to cause the monitor
+  to be used during the KSP solve.
 
   Level: intermediate
 
@@ -721,6 +770,10 @@ PetscErrorCode KSPMonitorErrorDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, Petsc
   Output Parameter:
 . vf    - The viewer context
 
+  Notes:
+  This is not called directly by users, rather one calls `KSPMonitorSet()`, with this function as an argument, to cause the monitor
+  to be used during the KSP solve.
+
   Level: intermediate
 
 .seealso: `KSPMonitorSet()`, `KSPMonitorTrueResidual()`
@@ -770,6 +823,10 @@ PetscErrorCode KSPMonitorErrorDrawLGCreate(PetscViewer viewer, PetscViewerFormat
   Options Database Key:
 . -ksp_monitor_solution - Activates KSPMonitorSolution()
 
+  Notes:
+  This is not called directly by users, rather one calls `KSPMonitorSet()`, with this function as an argument, to cause the monitor
+  to be used during the KSP solve.
+
   Level: intermediate
 
 .seealso: `KSPMonitorSet()`, `KSPMonitorTrueResidual()`
@@ -812,6 +869,10 @@ PetscErrorCode KSPMonitorSolution(KSP ksp, PetscInt n, PetscReal rnorm, PetscVie
   Options Database Key:
 . -ksp_monitor_solution draw - Activates KSPMonitorSolutionDraw()
 
+  Notes:
+  This is not called directly by users, rather one calls `KSPMonitorSet()`, with this function as an argument, to cause the monitor
+  to be used during the KSP solve.
+
   Level: intermediate
 
 .seealso: `KSPMonitorSet()`, `KSPMonitorTrueResidual()`
@@ -847,6 +908,10 @@ PetscErrorCode KSPMonitorSolutionDraw(KSP ksp, PetscInt n, PetscReal rnorm, Pets
 
   Options Database Key:
 . -ksp_monitor_solution draw::draw_lg - Activates KSPMonitorSolutionDrawLG()
+
+  Notes:
+  This is not called directly by users, rather one calls `KSPMonitorSet()`, with this function as an argument, to cause the monitor
+  to be used during the KSP solve.
 
   Level: intermediate
 
@@ -894,6 +959,10 @@ PetscErrorCode KSPMonitorSolutionDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, Pe
   Output Parameter:
 . vf    - The viewer context
 
+  Notes:
+  This is not called directly by users, rather one calls `KSPMonitorSet()`, with this function as an argument, to cause the monitor
+  to be used during the KSP solve.
+
   Level: intermediate
 
 .seealso: `KSPMonitorSet()`, `KSPMonitorTrueResidual()`
@@ -926,9 +995,12 @@ PetscErrorCode KSPMonitorSolutionDrawLGCreate(PetscViewer viewer, PetscViewerFor
   while GMRES uses the Arnoldi technique; other iterative methods do
   not currently compute singular values.
 
+  This is not called directly by users, rather one calls `KSPMonitorSet()`, with this function as an argument, to cause the monitor
+  to be used during the KSP solve.
+
   Level: intermediate
 
-.seealso: `KSPComputeExtremeSingularValues()`
+.seealso: `KSPComputeExtremeSingularValues()`, `KSPMonitorSingularValueCreate()`
 @*/
 PetscErrorCode KSPMonitorSingularValue(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
 {
@@ -1003,6 +1075,9 @@ PetscErrorCode KSPMonitorSingularValueCreate(PetscViewer viewer, PetscViewerForm
    This may be useful for a flexibly preconditioner Krylov method to
    control the accuracy of the inner solves needed to guarantee the
    convergence of the outer iterations.
+
+   This is not called directly by users, rather one calls `KSPMonitorSet()`, with this function as an argument, to cause the monitor
+   to be used during the KSP solve.
 
    Level: advanced
 
