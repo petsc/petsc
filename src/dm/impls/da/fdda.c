@@ -1109,7 +1109,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM da,Mat J)
          col - number of colors needed in one direction for single component problem
 
   */
-  PetscCall(DMDAGetInfo(da,&dim,&m,&n,&M,&N,NULL,NULL,&nc,&s,&bx,&by,NULL,&st));
+  PetscCall(DMDAGetInfo(da,&dim,&m,&n,NULL,&M,&N,NULL,&nc,&s,&bx,&by,NULL,&st));
   if (bx == DM_BOUNDARY_NONE && by == DM_BOUNDARY_NONE) {
     PetscCall(MatSetOption(J,MAT_SORTED_FULL,PETSC_TRUE));
   }
@@ -1234,7 +1234,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ_Fill(DM da,Mat J)
          col - number of colors needed in one direction for single component problem
 
   */
-  PetscCall(DMDAGetInfo(da,&dim,&m,&n,&M,&N,NULL,NULL,&nc,&s,&bx,&by,NULL,&st));
+  PetscCall(DMDAGetInfo(da,&dim,&m,&n,NULL,&M,&N,NULL,&nc,&s,&bx,&by,NULL,&st));
   col  = 2*s + 1;
   /*
        With one processor in periodic domains in a skinny dimension the code will label nonzero columns multiple times
