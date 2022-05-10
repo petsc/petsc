@@ -1977,7 +1977,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIDenseCUDA(Mat B)
 
   Level: beginner
 
-.seealso: `MATSEQDENSE,MATMPIDENSE,MATDENSECUDA`
+.seealso: `MATSEQDENSE`, `MATMPIDENSE`, `MATDENSECUDA`
 M*/
 
 /*MC
@@ -1991,7 +1991,7 @@ M*/
 
   Level: beginner
 
-.seealso: `MATSEQDENSECUDA,MATMPIDENSECUDA,MATDENSE`
+.seealso: `MATSEQDENSECUDA`, `MATMPIDENSECUDA`, `MATDENSE`
 M*/
 
 /*@C

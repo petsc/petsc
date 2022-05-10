@@ -192,7 +192,7 @@ PetscErrorCode  VecGhostRestoreLocalForm(Vec g,Vec *l)
    Level: advanced
 
 .seealso: `VecCreateGhost()`, `VecGhostUpdateEnd()`, `VecGhostGetLocalForm()`,
-          `VecGhostRestoreLocalForm(),VecCreateGhostWithArray()`
+          `VecGhostRestoreLocalForm()`, `VecCreateGhostWithArray()`
 
 @*/
 PetscErrorCode  VecGhostUpdateBegin(Vec g,InsertMode insertmode,ScatterMode scattermode)
@@ -256,7 +256,7 @@ PetscErrorCode  VecGhostUpdateBegin(Vec g,InsertMode insertmode,ScatterMode scat
    Level: advanced
 
 .seealso: `VecCreateGhost()`, `VecGhostUpdateBegin()`, `VecGhostGetLocalForm()`,
-          `VecGhostRestoreLocalForm(),VecCreateGhostWithArray()`
+          `VecGhostRestoreLocalForm()`, `VecCreateGhostWithArray()`
 
 @*/
 PetscErrorCode  VecGhostUpdateEnd(Vec g,InsertMode insertmode,ScatterMode scattermode)

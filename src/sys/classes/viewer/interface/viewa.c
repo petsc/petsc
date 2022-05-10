@@ -94,7 +94,7 @@ const char *const PetscViewerFormats[] = {
     Note: This supports passing in a NULL for the viewer for use in the debugger, but it should never be called in the code with a NULL viewer
 
 .seealso: `PetscViewerGetFormat()`, `PetscViewerASCIIOpen()`, `PetscViewerBinaryOpen()`, `MatView()`, `VecView()`, `PetscViewerType`,
-          `PetscViewerPushFormat()`, `PetscViewerPopFormat()`, `PetscViewerDrawOpen(),PetscViewerSocketOpen()`
+          `PetscViewerPushFormat()`, `PetscViewerPopFormat()`, `PetscViewerDrawOpen()`, `PetscViewerSocketOpen()`
 @*/
 PetscErrorCode  PetscViewerSetFormat(PetscViewer viewer,PetscViewerFormat format)
 {
@@ -224,7 +224,7 @@ PetscErrorCode  PetscViewerPopFormat(PetscViewer viewer)
   for that viewer to be used.
 
 .seealso: `PetscViewerSetFormat()`, `PetscViewerASCIIOpen()`, `PetscViewerBinaryOpen()`, `MatView()`, `VecView()`, `PetscViewerType`,
-          `PetscViewerPushFormat()`, `PetscViewerPopFormat()`, `PetscViewerDrawOpen(),PetscViewerSocketOpen()`
+          `PetscViewerPushFormat()`, `PetscViewerPopFormat()`, `PetscViewerDrawOpen()`, `PetscViewerSocketOpen()`
 @*/
 PetscErrorCode PetscViewerGetFormat(PetscViewer viewer,PetscViewerFormat *format)
 {

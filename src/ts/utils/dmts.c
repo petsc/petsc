@@ -411,7 +411,7 @@ PetscErrorCode DMTSSetI2Function(DM dm,TSI2Function fun,void *ctx)
    TSGetI2Function() is normally used, but it calls this function internally because the user context is actually
    associated with the DM.
 
-.seealso: `DMTSSetI2Function(),TSGetI2Function()`
+.seealso: `DMTSSetI2Function()`, `TSGetI2Function()`
 @*/
 PetscErrorCode DMTSGetI2Function(DM dm,TSI2Function *fun,void **ctx)
 {
@@ -486,7 +486,7 @@ PetscErrorCode DMTSSetI2Jacobian(DM dm,TSI2Jacobian jac,void *ctx)
    TSGetI2Jacobian() is normally used, but it calls this function internally because the user context is actually
    associated with the DM.
 
-.seealso: `DMTSSetI2Jacobian(),TSGetI2Jacobian()`
+.seealso: `DMTSSetI2Jacobian()`, `TSGetI2Jacobian()`
 @*/
 PetscErrorCode DMTSGetI2Jacobian(DM dm,TSI2Jacobian *jac,void **ctx)
 {

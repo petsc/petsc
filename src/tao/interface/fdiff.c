@@ -161,7 +161,7 @@ PetscErrorCode TaoDefaultComputeHessian(Tao tao,Vec V,Mat H,Mat B,void *dummy)
 
    Level: advanced
 
-.seealso: `TaoSetHessian()`, `TaoDefaultComputeHessian(),SNESComputeJacobianDefaultColor()`, `TaoSetGradient()`
+.seealso: `TaoSetHessian()`, `TaoDefaultComputeHessian()`, `SNESComputeJacobianDefaultColor()`, `TaoSetGradient()`
 @*/
 PetscErrorCode TaoDefaultComputeHessianColor(Tao tao,Vec V,Mat H,Mat B,void *ctx)
 {

@@ -20,7 +20,7 @@
 
    Level: developer
 
-.seealso: `SNESGetNPC(),SNESSetNPC(),SNESComputeFunction()`
+.seealso: `SNESGetNPC()`, `SNESSetNPC()`, `SNESComputeFunction()`
 @*/
 PetscErrorCode  SNESApplyNPC(SNES snes,Vec x,Vec f,Vec y)
 {
@@ -77,7 +77,7 @@ PetscErrorCode SNESComputeFunctionDefaultNPC(SNES snes,Vec X,Vec F)
 
    Level: developer
 
-.seealso: `SNESGetNPC(),SNESSetNPC(),SNESComputeFunction(),SNESApplyNPC(),SNESSolve()`
+.seealso: `SNESGetNPC()`, `SNESSetNPC()`, `SNESComputeFunction()`, `SNESApplyNPC()`, `SNESSolve()`
 @*/
 PetscErrorCode SNESGetNPCFunction(SNES snes,Vec F,PetscReal *fnorm)
 {

@@ -242,7 +242,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_ExodusII(PetscViewer v)
 
   Level: beginner
 
-.seealso: `EXOGetVarIndex(),DMPlexView_ExodusII_Internal(),VecViewPlex_ExodusII_Nodal_Internal(),VecLoadNodal_PlexEXO(),VecLoadZonal_PlexEXO()`
+.seealso: `EXOGetVarIndex()`, `DMPlexView_ExodusII_Internal()`, `VecViewPlex_ExodusII_Nodal_Internal()`, `VecLoadNodal_PlexEXO()`, `VecLoadZonal_PlexEXO()`
 */
 PetscErrorCode EXOGetVarIndex_Internal(int exoid, ex_entity_type obj_type, const char name[], int *varIndex)
 {
@@ -764,7 +764,7 @@ PetscErrorCode DMView_PlexExodusII(DM dm, PetscViewer viewer)
 
   Level: beginner
 
-.seealso: `EXOGetVarIndex_Internal(),DMPlexView_ExodusII(),VecView_PlexExodusII()`
+.seealso: `EXOGetVarIndex_Internal()`, `DMPlexView_ExodusII()`, `VecView_PlexExodusII()`
 @*/
 PetscErrorCode VecView_PlexExodusII_Internal(Vec v, PetscViewer viewer)
 {
@@ -814,7 +814,7 @@ PetscErrorCode VecView_PlexExodusII_Internal(Vec v, PetscViewer viewer)
 
   Level: beginner
 
-.seealso: `EXOGetVarIndex_Internal(),DMPlexView_ExodusII(),VecView_PlexExodusII()`
+.seealso: `EXOGetVarIndex_Internal()`, `DMPlexView_ExodusII()`, `VecView_PlexExodusII()`
 @*/
 PetscErrorCode VecLoad_PlexExodusII_Internal(Vec v, PetscViewer viewer)
 {
@@ -862,7 +862,7 @@ PetscErrorCode VecLoad_PlexExodusII_Internal(Vec v, PetscViewer viewer)
 
   Level: beginner
 
-.seealso: `EXOGetVarIndex_Internal(),DMPlexView_ExodusII_Internal(),VecLoadNodal_PlexEXO(),VecViewZonal_PlexEXO(),VecLoadZonal_PlexEXO()`
+.seealso: `EXOGetVarIndex_Internal()`, `DMPlexView_ExodusII_Internal()`, `VecLoadNodal_PlexEXO()`, `VecViewZonal_PlexEXO()`, `VecLoadZonal_PlexEXO()`
 @*/
 PetscErrorCode VecViewPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step, int offset)
 {
@@ -1005,7 +1005,7 @@ PetscErrorCode VecLoadPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step, i
 
   Level: beginner
 
-.seealso: `EXOGetVarIndex_Internal(),DMPlexView_ExodusII_Internal(),VecViewPlex_ExodusII_Nodal_Internal(),VecLoadPlex_ExodusII_Nodal_Internal(),VecLoadPlex_ExodusII_Zonal_Internal()`
+.seealso: `EXOGetVarIndex_Internal()`, `DMPlexView_ExodusII_Internal()`, `VecViewPlex_ExodusII_Nodal_Internal()`, `VecLoadPlex_ExodusII_Nodal_Internal()`, `VecLoadPlex_ExodusII_Zonal_Internal()`
 */
 PetscErrorCode VecViewPlex_ExodusII_Zonal_Internal(Vec v, int exoid, int step, int offset)
 {

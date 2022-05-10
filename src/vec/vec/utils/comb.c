@@ -361,7 +361,7 @@ PetscErrorCode  VecDotBegin(Vec x,Vec y,PetscScalar *result)
    Each call to VecDotBegin() should be paired with a call to VecDotEnd().
 
 .seealso: `VecDotBegin()`, `VecNormBegin()`, `VecNormEnd()`, `VecNorm()`, `VecDot()`, `VecMDot()`,
-          `VecTDotBegin(),VecTDotEnd()`, `PetscCommSplitReductionBegin()`
+          `VecTDotBegin()`, `VecTDotEnd()`, `PetscCommSplitReductionBegin()`
 
 @*/
 PetscErrorCode  VecDotEnd(Vec x,Vec y,PetscScalar *result)
@@ -624,7 +624,7 @@ PetscErrorCode  VecMDotBegin(Vec x,PetscInt nv,const Vec y[],PetscScalar result[
    Each call to VecMDotBegin() should be paired with a call to VecMDotEnd().
 
 .seealso: `VecMDotBegin()`, `VecNormBegin()`, `VecNormEnd()`, `VecNorm()`, `VecDot()`, `VecMDot()`,
-          `VecTDotBegin(),VecTDotEnd()`, `VecMTDotBegin()`, `VecMTDotEnd()`, `PetscCommSplitReductionBegin()`
+          `VecTDotBegin()`, `VecTDotEnd()`, `VecMTDotBegin()`, `VecMTDotEnd()`, `PetscCommSplitReductionBegin()`
 
 @*/
 PetscErrorCode  VecMDotEnd(Vec x,PetscInt nv,const Vec y[],PetscScalar result[])

@@ -740,7 +740,7 @@ PetscErrorCode PetscLogEventSetCollective(PetscLogEvent event,PetscBool collecti
 
   Level: developer
 
-.seealso: `PetscLogEventActivateClass(),PetscLogEventDeactivateClass(),PetscLogEventActivate(),PetscLogEventDeactivate()`
+.seealso: `PetscLogEventActivateClass()`, `PetscLogEventDeactivateClass()`, `PetscLogEventActivate()`, `PetscLogEventDeactivate()`
 @*/
 PetscErrorCode  PetscLogEventIncludeClass(PetscClassId classid)
 {
@@ -765,7 +765,7 @@ PetscErrorCode  PetscLogEventIncludeClass(PetscClassId classid)
 
   Level: developer
 
-.seealso: `PetscLogEventDeactivateClass(),PetscLogEventActivateClass(),PetscLogEventDeactivate(),PetscLogEventActivate()`
+.seealso: `PetscLogEventDeactivateClass()`, `PetscLogEventActivateClass()`, `PetscLogEventDeactivate()`, `PetscLogEventActivate()`
 @*/
 PetscErrorCode  PetscLogEventExcludeClass(PetscClassId classid)
 {
@@ -935,7 +935,7 @@ PetscErrorCode  PetscLogEventDeactivatePop(PetscLogEvent event)
 
   Level: advanced
 
-.seealso: `PlogEventActivate(),PlogEventDeactivate()`
+.seealso: `PlogEventActivate()`, `PlogEventDeactivate()`
 @*/
 PetscErrorCode  PetscLogEventSetActiveAll(PetscLogEvent event, PetscBool isActive)
 {
@@ -964,7 +964,7 @@ PetscErrorCode  PetscLogEventSetActiveAll(PetscLogEvent event, PetscBool isActiv
 
   Level: developer
 
-.seealso: `PetscLogEventDeactivateClass(),PetscLogEventActivate(),PetscLogEventDeactivate()`
+.seealso: `PetscLogEventDeactivateClass()`, `PetscLogEventActivate()`, `PetscLogEventDeactivate()`
 @*/
 PetscErrorCode  PetscLogEventActivateClass(PetscClassId classid)
 {
@@ -988,7 +988,7 @@ PetscErrorCode  PetscLogEventActivateClass(PetscClassId classid)
 
   Level: developer
 
-.seealso: `PetscLogEventActivateClass(),PetscLogEventActivate(),PetscLogEventDeactivate()`
+.seealso: `PetscLogEventActivateClass()`, `PetscLogEventActivate()`, `PetscLogEventDeactivate()`
 @*/
 PetscErrorCode  PetscLogEventDeactivateClass(PetscClassId classid)
 {
