@@ -119,7 +119,9 @@ $    PetscErrorCode monitor(TS ts,PetscInt steps,PetscReal time,Vec u,void *mctx
 
    Level: intermediate
 
-.seealso: `TSMonitorDefault()`, `TSMonitorCancel()`
+.seealso: `TSMonitorDefault()`, `TSMonitorCancel()`, `TSDMSwarmMonitorMoments()`, `TSMonitorExtreme()`,  `TSMonitorDrawSolution()`,
+          `TSMonitorDrawSolutionPhase()`, `TSMonitorDrawSolutionFunction()`, `TSMonitorDrawError()`, `TSMonitorSolution()`, `TSMonitorSolutionVTK()`,
+          `TSMonitorLGSolution()`, `TSMonitorLGError()`, `TSMonitorSPSwarmSolution()`, `TSMonitorError()`, `TSMonitorEnvelope()`, `TSDMSwarmMonitorMoments()`
 @*/
 PetscErrorCode  TSMonitorSet(TS ts,PetscErrorCode (*monitor)(TS,PetscInt,PetscReal,Vec,void*),void *mctx,PetscErrorCode (*mdestroy)(void**))
 {
@@ -172,9 +174,18 @@ PetscErrorCode  TSMonitorCancel(TS ts)
 /*@C
    TSMonitorDefault - The Default monitor, prints the timestep and time for each step
 
+   Options Database:
+.  -ts_monitor - monitors the time integration
+
+   Notes:
+   This is not called directly by users, rather one calls `TSMonitorSet()`, with this function as an argument, to cause the monitor
+   to be used during the TS integration.
+
    Level: intermediate
 
-.seealso: `TSMonitorSet()`
+.seealso: `TSMonitorSet()`,  `TSDMSwarmMonitorMoments()`, `TSMonitorExtreme()`,  `TSMonitorDrawSolution()`,
+          `TSMonitorDrawSolutionPhase()`, `TSMonitorDrawSolutionFunction()`, `TSMonitorDrawError()`, `TSMonitorSolution()`, `TSMonitorSolutionVTK()`,
+          `TSMonitorLGSolution()`, `TSMonitorLGError()`, `TSMonitorSPSwarmSolution()`, `TSMonitorError()`, `TSMonitorEnvelope()`, `TSDMSwarmMonitorMoments()`
 @*/
 PetscErrorCode TSMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,PetscViewerAndFormat *vf)
 {
@@ -216,6 +227,10 @@ PetscErrorCode TSMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,PetscV
 
 /*@C
    TSMonitorExtreme - Prints the extreme values of the solution at each timestep
+
+   Notes:
+   This is not called directly by users, rather one calls `TSMonitorSet()`, with this function as an argument, to cause the monitor
+   to be used during the TS integration.
 
    Level: intermediate
 
@@ -401,8 +416,11 @@ PetscErrorCode TSMonitorSPCtxDestroy(TSMonitorSPCtx *ctx)
 .   -ts_monitor_draw_solution_initial - show initial solution as well as current solution
 
    Notes:
-    the initial solution and current solution are not display with a common axis scaling so generally the option -ts_monitor_draw_solution_initial
-       will look bad
+   The initial solution and current solution are not displayed with a common axis scaling so generally the option -ts_monitor_draw_solution_initial
+   will look bad
+
+   This is not called directly by users, rather one calls `TSMonitorSet()`, with this function as an argument, to cause the monitor
+   to be used during the TS integration.
 
    Level: intermediate
 
@@ -459,6 +477,10 @@ PetscErrorCode  TSMonitorDrawSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,
 .  step - current time-step
 .  ptime - current time
 -  dummy - either a viewer or NULL
+
+   Notes:
+   This is not called directly by users, rather one calls `TSMonitorSet()`, with this function as an argument, to cause the monitor
+   to be used during the TS integration.
 
    Level: intermediate
 
@@ -580,6 +602,9 @@ PetscErrorCode  TSMonitorDrawCtxCreate(MPI_Comm comm,const char host[],const cha
    Options Database:
 .  -ts_monitor_draw_solution_function - Monitor error graphically, requires user to have provided TSSetSolutionFunction()
 
+   This is not called directly by users, rather one calls `TSMonitorSet()`, with this function as an argument, to cause the monitor
+   to be used during the TS integration.
+
    Level: intermediate
 
 .seealso: `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`, `TSSetSolutionFunction()`
@@ -614,6 +639,10 @@ PetscErrorCode  TSMonitorDrawSolutionFunction(TS ts,PetscInt step,PetscReal ptim
    Options Database:
 .  -ts_monitor_draw_error - Monitor error graphically, requires user to have provided TSSetSolutionFunction()
 
+   Notes:
+   This is not called directly by users, rather one calls `TSMonitorSet()`, with this function as an argument, to cause the monitor
+   to be used during the TS integration.
+
    Level: intermediate
 
 .seealso: `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`, `TSSetSolutionFunction()`
@@ -646,6 +675,10 @@ PetscErrorCode  TSMonitorDrawError(TS ts,PetscInt step,PetscReal ptime,Vec u,voi
 .  u - current state
 -  vf - viewer and its format
 
+   Notes:
+   This is not called directly by users, rather one calls `TSMonitorSet()`, with this function as an argument, to cause the monitor
+   to be used during the TS integration.
+
    Level: intermediate
 
 .seealso: `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`
@@ -677,7 +710,8 @@ PetscErrorCode  TSMonitorSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,Pets
    The VTK format does not allow writing multiple time steps in the same file, therefore a different file will be written for each time step.
    These are named according to the file name template.
 
-   This function is normally passed as an argument to TSMonitorSet() along with TSMonitorSolutionVTKDestroy().
+   This is not called directly by users, rather one calls `TSMonitorSet()`, with this function as an argument, to cause the monitor
+   to be used during the TS integration.
 
 .seealso: `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`
 @*/
@@ -736,7 +770,10 @@ PetscErrorCode TSMonitorSolutionVTKDestroy(void *filenametemplate)
    Level: intermediate
 
    Notes:
-    Each process in a parallel run displays its component solutions in a separate window
+   Each process in a parallel run displays its component solutions in a separate window
+
+   This is not called directly by users, rather one calls `TSMonitorSet()`, with this function as an argument, to cause the monitor
+   to be used during the TS integration.
 
 .seealso: `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`, `TSMonitorLGCtxCreate()`, `TSMonitorLGCtxSetVariableNames()`, `TSMonitorLGCtxGetVariableNames()`,
           `TSMonitorLGSetVariableNames()`, `TSMonitorLGGetVariableNames()`, `TSMonitorLGSetDisplayVariables()`, `TSMonitorLGCtxSetDisplayVariables()`,
@@ -1054,6 +1091,9 @@ PetscErrorCode  TSMonitorLGCtxSetTransform(TSMonitorLGCtx ctx,PetscErrorCode (*t
 .  u - current solution
 -  dctx - TSMonitorLGCtx object created with TSMonitorLGCtxCreate()
 
+   Options Database Keys:
+.  -ts_monitor_lg_error - create a graphical monitor of error history
+
    Level: intermediate
 
    Notes:
@@ -1061,8 +1101,8 @@ PetscErrorCode  TSMonitorLGCtxSetTransform(TSMonitorLGCtx ctx,PetscErrorCode (*t
 
    The user must provide the solution using TSSetSolutionFunction() to use this monitor.
 
-   Options Database Keys:
-.  -ts_monitor_lg_error - create a graphical monitor of error history
+   This is not called directly by users, rather one calls `TSMonitorSet()`, with this function as an argument, to cause the monitor
+   to be used during the TS integration.
 
 .seealso: `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`, `TSSetSolutionFunction()`
 @*/
@@ -1124,6 +1164,10 @@ PetscErrorCode  TSMonitorLGError(TS ts,PetscInt step,PetscReal ptime,Vec u,void 
 - -ts_monitor_sp_swarm_phase <bool> - Plot in phase space, as opposed to coordinate space
 
    Level: intermediate
+
+   Notes:
+   This is not called directly by users, rather one calls `TSMonitorSet()`, with this function as an argument, to cause the monitor
+   to be used during the TS integration.
 
 .seealso: `TSMonitoSet()`
 @*/
@@ -1201,6 +1245,10 @@ PetscErrorCode TSMonitorSPSwarmSolution(TS ts, PetscInt step, PetscReal ptime, V
 -  dctx - unused context
 
    Level: intermediate
+
+   Notes:
+   This is not called directly by users, rather one calls `TSMonitorSet()`, with this function as an argument, to cause the monitor
+   to be used during the TS integration.
 
    The user must provide the solution using TSSetSolutionFunction() to use this monitor.
 
@@ -1361,7 +1409,10 @@ PetscErrorCode  TSMonitorEnvelopeCtxCreate(TS ts,TSMonitorEnvelopeCtx *ctx)
    Level: intermediate
 
    Notes:
-    after a solve you can use TSMonitorEnvelopeGetBounds() to access the envelope
+   After a solve you can use TSMonitorEnvelopeGetBounds() to access the envelope
+
+   This is not called directly by users, rather one calls `TSMonitorSet()`, with this function as an argument, to cause the monitor
+   to be used during the TS integration.
 
 .seealso: `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`, `TSMonitorEnvelopeGetBounds()`, `TSMonitorEnvelopeCtxCreate()`
 @*/
@@ -1459,6 +1510,9 @@ PetscErrorCode  TSMonitorEnvelopeCtxDestroy(TSMonitorEnvelopeCtx *ctx)
 
   Notes:
   This requires a DMSwarm be attached to the TS.
+
+  This is not called directly by users, rather one calls `TSMonitorSet()`, with this function as an argument, to cause the monitor
+  to be used during the TS integration.
 
 .seealso: `TSMonitorSet()`, `TSMonitorDefault()`, `DMSWARM`
 @*/
