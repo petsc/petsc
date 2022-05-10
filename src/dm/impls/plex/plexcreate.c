@@ -4705,7 +4705,7 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const 
     if (len < sizeof(extension__)) {                                                           \
       is_extension__ = PETSC_FALSE;                                                            \
     } else {                                                                                   \
-      PetscCall(PetscStrncmp(&filename[PetscMax(0,len-sizeof(extension__))], extension__, sizeof(extension__), &is_extension__)); \
+      PetscCall(PetscStrncmp(filename+PetscMax(0,len-sizeof(extension__)), extension__, sizeof(extension__), &is_extension__)); \
     }                                                                                          \
   } while (0)
 
