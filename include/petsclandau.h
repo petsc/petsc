@@ -20,8 +20,8 @@ typedef int LandauIdx;
 #define LANDAU_MAX_SPECIES 10
 #define LANDAU_MAX_GRIDS 3
 #else
-#define LANDAU_MAX_SPECIES 3
-#define LANDAU_MAX_GRIDS 3
+#define LANDAU_MAX_SPECIES 10
+#define LANDAU_MAX_GRIDS 4
 #endif
 #else
 #define LANDAU_MAX_GRIDS 3
@@ -34,7 +34,7 @@ typedef int LandauIdx;
 #if defined(PETSC_USE_DMLANDAU_2D)
 #define LANDAU_MAX_Q 5
 #else
-#define LANDAU_MAX_Q 3
+#define LANDAU_MAX_Q 4
 #endif
 #else
 #undef LANDAU_MAX_NQ
