@@ -433,7 +433,7 @@ PetscErrorCode FormInequalityJacobian(Tao tao, Vec X, Mat JI, Mat JIpre,  void *
   PetscCall(VecScatterEnd(scat,X,Xseq,INSERT_VALUES,SCATTER_FORWARD));
 
   PetscCall(VecGetArrayRead(Xseq,&x));
-  if (!rank) {
+  if (rank == 0) {
     cols[0] = 0; cols[1] = 1;
     vals[0] = 2*x[0]; vals[1] = -1.0;
     PetscCall(MatSetValues(JI,1,&zero,2,cols,vals,INSERT_VALUES));

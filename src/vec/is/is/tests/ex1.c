@@ -50,13 +50,13 @@ int main(int argc,char **argv)
   PetscCheck(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISPermutation");
   PetscCall(ISGetInfo(is,IS_PERMUTATION,IS_LOCAL,compute,&flg));
   PetscCheck(rank != 0 || flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_PERMUTATION,IS_LOCAL)");
-  PetscCheck(!rank || !flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_PERMUTATION,IS_LOCAL)");
+  PetscCheck(rank == 0 || !flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_PERMUTATION,IS_LOCAL)");
   PetscCall(ISIdentity(is,&flg));
   PetscCheck(rank != 0 || flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISIdentity");
-  PetscCheck(!rank || !flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISIdentity");
+  PetscCheck(rank == 0 || !flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISIdentity");
   PetscCall(ISGetInfo(is,IS_IDENTITY,IS_LOCAL,compute,&flg));
   PetscCheck(rank != 0 || flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_IDENTITY,IS_LOCAL)");
-  PetscCheck(!rank || !flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_IDENTITY,IS_LOCAL)");
+  PetscCheck(rank == 0 || !flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_IDENTITY,IS_LOCAL)");
   /* we can override the computed values with ISSetInfo() */
   PetscCall(ISSetInfo(is,IS_PERMUTATION,IS_LOCAL,permanent,PETSC_TRUE));
   PetscCall(ISSetInfo(is,IS_IDENTITY,IS_LOCAL,permanent,PETSC_TRUE));

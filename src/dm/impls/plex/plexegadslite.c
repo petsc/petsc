@@ -95,7 +95,7 @@ static PetscErrorCode DMPlexCreateEGADSLite_Internal(MPI_Comm comm, ego context,
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
-  if (!rank) {
+  if (rank == 0) {
     const PetscInt debug = 0;
 
     /* ---------------------------------------------------------------------------------------------------
@@ -611,7 +611,7 @@ PetscErrorCode DMPlexCreateEGADSLiteFromFile(MPI_Comm comm, const char filename[
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-dm_plex_egads_print_model", &printModel, NULL));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
 #if defined(PETSC_HAVE_EGADS)
-  if (!rank) {
+  if (rank == 0) {
 
     PetscCall(EGlite_open(&context));
     PetscCall(EGlite_loadModel(context, 0, filename, &model));

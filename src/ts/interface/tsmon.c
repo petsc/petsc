@@ -208,7 +208,7 @@ PetscErrorCode TSMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,PetscV
   } else if (ibinary) {
     PetscMPIInt rank;
     PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank));
-    if (!rank) {
+    if (rank == 0) {
       PetscBool skipHeader;
       PetscInt  classid = REAL_FILE_CLASSID;
 

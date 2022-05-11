@@ -410,7 +410,7 @@ PetscErrorCode ISJunctionsView(DM networkdm,PetscInt KeyJunc)
 
   /* Create a local isfrom for all junction variables */
   PetscCall(DMNetworkCreateLocalIS(networkdm,numkeys,&KeyJunc,NULL,NULL,NULL,&isfrom));
-  if (!rank) {
+  if (rank == 0) {
     PetscCall(PetscPrintf(PETSC_COMM_SELF,"[%d] ISLocalJunctions:\n",rank));
     PetscCall(ISView(isfrom,PETSC_VIEWER_STDOUT_SELF));
   }

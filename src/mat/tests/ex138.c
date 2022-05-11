@@ -47,13 +47,13 @@ int main(int argc,char **args)
   }
 
   PetscCall(MatGetColumnSums(A,reductions_scalar));
-  if (!rank) {
+  if (rank == 0) {
     PetscCall(PetscPrintf(PETSC_COMM_SELF,"REDUCTION_SUM:\n"));
     PetscCall(PetscScalarView(n,reductions_scalar,PETSC_VIEWER_STDOUT_SELF));
   }
 
   PetscCall(MatGetColumnMeans(A,reductions_scalar));
-  if (!rank) {
+  if (rank == 0) {
     PetscCall(PetscPrintf(PETSC_COMM_SELF,"REDUCTION_MEAN:\n"));
     PetscCall(PetscScalarView(n,reductions_scalar,PETSC_VIEWER_STDOUT_SELF));
   }

@@ -26,7 +26,7 @@ int main(int argc,char **argv)
   PetscCall(PetscSFCreate(PETSC_COMM_WORLD,&sf));
   PetscCall(PetscSFSetFromOptions(sf));
 
-  if (!rank) {
+  if (rank == 0) {
     nroots  = n;
     nleaves = 0;
   } else {
@@ -40,7 +40,7 @@ int main(int argc,char **argv)
   }
   PetscCall(PetscSFSetGraph(sf,nroots,nleaves,NULL,PETSC_COPY_VALUES,iremote,PETSC_COPY_VALUES));
   PetscCall(PetscMalloc2(nroots,&rootdata,nleaves,&leafdata));
-  if (!rank) {
+  if (rank == 0) {
     memset(rootdata,11,nroots);
     rootdata[nroots-1] = 12; /* Use a different value at the end */
   }
@@ -49,9 +49,7 @@ int main(int argc,char **argv)
   PetscCall(PetscSFBcastEnd(sf,MPI_SIGNED_CHAR,rootdata,leafdata,MPI_REPLACE));
   PetscCall(PetscSFReduceBegin(sf,MPI_SIGNED_CHAR,leafdata,rootdata,MPI_SUM)); /* rank 1->0, add leafdata to rootdata */
   PetscCall(PetscSFReduceEnd(sf,MPI_SIGNED_CHAR,leafdata,rootdata,MPI_SUM));
-  if (!rank) {
-    PetscCheck(rootdata[0] == 22 && rootdata[nroots-1] == 24,PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF: wrong results");
-  }
+  PetscCheck(rank != 0 || (rootdata[0] == 22 && rootdata[nroots-1] == 24),PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF: wrong results");
 
   PetscCall(PetscFree2(rootdata,leafdata));
   PetscCall(PetscFree(iremote));

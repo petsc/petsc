@@ -334,7 +334,7 @@ static PetscErrorCode DMPlexCreateBoxSurfaceMesh_Tensor_1D_Internal(DM dm, const
     markerLeft   = 1;
   }
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank));
-  if (!rank) {
+  if (rank == 0) {
     PetscCall(DMPlexSetChart(dm, 0, numVertices));
     PetscCall(DMSetUp(dm)); /* Allocate space for cones */
     PetscCall(DMSetLabelValue(dm, "marker", 0, markerLeft));
@@ -2356,7 +2356,7 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
   switch (tpstype) {
   case DMPLEX_TPS_SCHWARZ_P:
     PetscCheck(!periodic || (periodic[0] == DM_BOUNDARY_NONE && periodic[1] == DM_BOUNDARY_NONE && periodic[2] == DM_BOUNDARY_NONE), PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Schwarz P does not support periodic meshes");
-    if (!rank) {
+    if (rank == 0) {
       PetscInt (*cells)[6][4][4] = NULL; // [junction, junction-face, cell, conn]
       PetscInt Njunctions = 0, Ncuts = 0, Npipes[3], vcount;
       PetscReal L = 1;
@@ -2475,7 +2475,7 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
     normalFunc = TPSExtrudeNormalFunc_SchwarzP;
     break;
   case DMPLEX_TPS_GYROID:
-    if (!rank) {
+    if (rank == 0) {
       // This is a coarse mesh approximation of the gyroid shifted to being the zero of the level set
       //
       //     sin(pi*x)*cos(pi*(y+1/2)) + sin(pi*(y+1/2))*cos(pi*(z+1/4)) + sin(pi*(z+1/4))*cos(x)
@@ -2730,16 +2730,16 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
   }
 
   PetscCall(DMSetDimension(dm, topoDim));
-  if (!rank) PetscCall(DMPlexBuildFromCellList(dm, numFaces, numVertices, 4, cells_flat));
-  else       PetscCall(DMPlexBuildFromCellList(dm, 0, 0, 0, NULL));
+  if (rank == 0) PetscCall(DMPlexBuildFromCellList(dm, numFaces, numVertices, 4, cells_flat));
+  else           PetscCall(DMPlexBuildFromCellList(dm, 0, 0, 0, NULL));
   PetscCall(PetscFree(cells_flat));
   {
     DM idm;
     PetscCall(DMPlexInterpolate(dm, &idm));
     PetscCall(DMPlexReplace_Static(dm, &idm));
   }
-  if (!rank) PetscCall(DMPlexBuildCoordinatesFromCellList(dm, spaceDim, vtxCoords));
-  else       PetscCall(DMPlexBuildCoordinatesFromCellList(dm, spaceDim, NULL));
+  if (rank == 0) PetscCall(DMPlexBuildCoordinatesFromCellList(dm, spaceDim, vtxCoords));
+  else           PetscCall(DMPlexBuildCoordinatesFromCellList(dm, spaceDim, NULL));
   PetscCall(PetscFree(vtxCoords));
 
   PetscCall(DMCreateLabel(dm, "Face Sets"));
@@ -4353,8 +4353,8 @@ PetscErrorCode DMPlexCreateFromCellListPetsc(MPI_Comm comm, PetscInt dim, PetscI
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMSetDimension(*dm, dim));
-  if (!rank) PetscCall(DMPlexBuildFromCellList(*dm, numCells, numVertices, numCorners, cells));
-  else       PetscCall(DMPlexBuildFromCellList(*dm, 0, 0, 0, NULL));
+  if (rank == 0) PetscCall(DMPlexBuildFromCellList(*dm, numCells, numVertices, numCorners, cells));
+  else           PetscCall(DMPlexBuildFromCellList(*dm, 0, 0, 0, NULL));
   if (interpolate) {
     DM idm;
 
@@ -4362,8 +4362,8 @@ PetscErrorCode DMPlexCreateFromCellListPetsc(MPI_Comm comm, PetscInt dim, PetscI
     PetscCall(DMDestroy(dm));
     *dm  = idm;
   }
-  if (!rank) PetscCall(DMPlexBuildCoordinatesFromCellList(*dm, spaceDim, vertexCoords));
-  else       PetscCall(DMPlexBuildCoordinatesFromCellList(*dm, spaceDim, NULL));
+  if (rank == 0) PetscCall(DMPlexBuildCoordinatesFromCellList(*dm, spaceDim, vertexCoords));
+  else           PetscCall(DMPlexBuildCoordinatesFromCellList(*dm, spaceDim, NULL));
   PetscFunctionReturn(0);
 }
 

@@ -99,7 +99,7 @@ static PetscErrorCode PetscViewerRestoreSubViewer_Binary(PetscViewer viewer,MPI_
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank));
-  PetscCheck(!rank || !*outviewer,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Subviewer not obtained from viewer");
+  PetscCheck(rank == 0 || !*outviewer,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Subviewer not obtained from viewer");
 
 #if defined(PETSC_HAVE_MPIIO)
   if (vbinary->usempiio && *outviewer) {

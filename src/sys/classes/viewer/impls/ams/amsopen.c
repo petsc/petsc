@@ -73,7 +73,7 @@ PetscErrorCode  PetscObjectViewSAWs(PetscObject obj,PetscViewer viewer)
   PetscValidHeader(obj,1);
   if (obj->amsmem) PetscFunctionReturn(0);
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  PetscCheck(!rank,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Should only be being called on rank zero");
+  PetscCheck(rank == 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Should only be being called on rank zero");
   PetscCheck(obj->name,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Object must already have been named");
 
   obj->amsmem = PETSC_TRUE;

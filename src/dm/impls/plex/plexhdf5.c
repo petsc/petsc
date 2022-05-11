@@ -1481,7 +1481,7 @@ static PetscErrorCode DMPlexCoordinatesLoad_HDF5_Legacy_Private(DM dm, PetscView
   {
     /* Force serial load */
     PetscCall(PetscViewerHDF5ReadSizes(viewer, "vertices", &spatialDim, &N));
-    PetscCall(VecSetSizes(coordinates, !rank ? N : 0, N));
+    PetscCall(VecSetSizes(coordinates, rank == 0 ? N : 0, N));
     PetscCall(VecSetBlockSize(coordinates, spatialDim));
   }
   PetscCall(VecLoad(coordinates, viewer));

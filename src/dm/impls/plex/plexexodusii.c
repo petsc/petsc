@@ -348,7 +348,7 @@ PetscErrorCode DMView_PlexExodusII(DM dm, PetscViewer viewer)
   */
   PetscCall(PetscSectionCreate(comm, &coordSection));
   PetscCall(DMGetCoordinatesLocalSetUp(dm));
-  if (!rank) {
+  if (rank == 0) {
     switch (exo->btype) {
     case FILE_MODE_READ:
     case FILE_MODE_APPEND:
