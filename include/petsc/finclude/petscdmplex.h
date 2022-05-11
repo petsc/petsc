@@ -10,5 +10,6 @@
 
 #define DMPlexInterpolatedFlag PetscEnum
 #define DMPlexTPSType PetscEnum
+#define DMPlexReorderDefaultFlag PetscEnum
 
 #endif

@@ -243,9 +243,30 @@ PETSC_EXTERN PetscErrorCode DMPlexGetAdjacency(DM, PetscInt, PetscInt *, PetscIn
 PETSC_EXTERN PetscErrorCode DMPlexSetMigrationSF(DM, PetscSF);
 PETSC_EXTERN PetscErrorCode DMPlexGetMigrationSF(DM, PetscSF *);
 
+/*E
+   DMPlexReorderDefaultFlag - Flag indicating whether the DMPlex should be reordered by default
+
+$  DMPLEX_REORDER_DEFAULT_NOTSET - Flag not set.
+$  DMPLEX_REORDER_DEFAULT_FALSE  - Do not Reorder by default.
+$  DMPLEX_REORDER_DEFAULT_TRUE   - Reorder by default.
+
+   Level: intermediate
+
+   Developer Note:
+   Any additions/changes here MUST also be made in include/petsc/finclude/petscdmplex.h and src/dm/f90-mod/petscdmplex.h
+
+.seealso: `DMPlexReorderSetDefault()`, `DMPlexReorderGetDefault()`
+E*/
+typedef enum {
+  DMPLEX_REORDER_DEFAULT_NOTSET = -1,
+  DMPLEX_REORDER_DEFAULT_FALSE = 0,
+  DMPLEX_REORDER_DEFAULT_TRUE
+} DMPlexReorderDefaultFlag;
 PETSC_EXTERN PetscErrorCode DMPlexGetOrdering(DM, MatOrderingType, DMLabel, IS *);
 PETSC_EXTERN PetscErrorCode DMPlexGetOrdering1D(DM, IS *);
 PETSC_EXTERN PetscErrorCode DMPlexPermute(DM, IS, DM *);
+PETSC_EXTERN PetscErrorCode DMPlexReorderGetDefault(DM, DMPlexReorderDefaultFlag *);
+PETSC_EXTERN PetscErrorCode DMPlexReorderSetDefault(DM, DMPlexReorderDefaultFlag);
 
 PETSC_EXTERN PetscErrorCode DMPlexCreateProcessSF(DM, PetscSF, IS *, PetscSF *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateTwoSidedProcessSF(DM, PetscSF, PetscSection, IS, PetscSection, IS, IS *, PetscSF *);
