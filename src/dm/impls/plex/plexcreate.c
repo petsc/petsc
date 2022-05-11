@@ -4671,25 +4671,25 @@ $ -dm_plex_create_viewer_hdf5_collective
 @*/
 PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const char plexname[], PetscBool interpolate, DM *dm)
 {
-  const char    *extGmsh      = ".msh";
-  const char    *extGmsh2     = ".msh2";
-  const char    *extGmsh4     = ".msh4";
-  const char    *extCGNS      = ".cgns";
-  const char    *extExodus    = ".exo";
-  const char    *extExodus_e  = ".e";
-  const char    *extGenesis   = ".gen";
-  const char    *extFluent    = ".cas";
-  const char    *extHDF5      = ".h5";
-  const char    *extMed       = ".med";
-  const char    *extPLY       = ".ply";
-  const char    *extEGADSLite = ".egadslite";
-  const char    *extEGADS     = ".egads";
-  const char    *extIGES      = ".igs";
-  const char    *extSTEP      = ".stp";
-  const char    *extCV        = ".dat";
-  size_t         len;
-  PetscBool      isGmsh, isGmsh2, isGmsh4, isCGNS, isExodus, isGenesis, isFluent, isHDF5, isMed, isPLY, isEGADSLite, isEGADS, isIGES, isSTEP, isCV;
-  PetscMPIInt    rank;
+  const char  extGmsh[]      = ".msh";
+  const char  extGmsh2[]     = ".msh2";
+  const char  extGmsh4[]     = ".msh4";
+  const char  extCGNS[]      = ".cgns";
+  const char  extExodus[]    = ".exo";
+  const char  extExodus_e[]  = ".e";
+  const char  extGenesis[]   = ".gen";
+  const char  extFluent[]    = ".cas";
+  const char  extHDF5[]      = ".h5";
+  const char  extMed[]       = ".med";
+  const char  extPLY[]       = ".ply";
+  const char  extEGADSLite[] = ".egadslite";
+  const char  extEGADS[]     = ".egads";
+  const char  extIGES[]      = ".igs";
+  const char  extSTEP[]      = ".stp";
+  const char  extCV[]        = ".dat";
+  size_t      len;
+  PetscBool   isGmsh, isGmsh2, isGmsh4, isCGNS, isExodus, isGenesis, isFluent, isHDF5, isMed, isPLY, isEGADSLite, isEGADS, isIGES, isSTEP, isCV;
+  PetscMPIInt rank;
 
   PetscFunctionBegin;
   PetscValidCharPointer(filename, 2);
@@ -4700,24 +4700,37 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const 
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCall(PetscStrlen(filename, &len));
   PetscCheck(len,comm, PETSC_ERR_ARG_WRONG, "Filename must be a valid path");
-  PetscCall(PetscStrncmp(&filename[PetscMax(0,len-4)],  extGmsh,      4, &isGmsh));
-  PetscCall(PetscStrncmp(&filename[PetscMax(0,len-5)],  extGmsh2,     5, &isGmsh2));
-  PetscCall(PetscStrncmp(&filename[PetscMax(0,len-5)],  extGmsh4,     5, &isGmsh4));
-  PetscCall(PetscStrncmp(&filename[PetscMax(0,len-5)],  extCGNS,      5, &isCGNS));
-  PetscCall(PetscStrncmp(&filename[PetscMax(0,len-4)],  extExodus,    4, &isExodus));
-  if (!isExodus) {
-    PetscCall(PetscStrncmp(&filename[PetscMax(0,len-2)],  extExodus_e,    2, &isExodus));
-  }
-  PetscCall(PetscStrncmp(&filename[PetscMax(0,len-4)],  extGenesis,   4, &isGenesis));
-  PetscCall(PetscStrncmp(&filename[PetscMax(0,len-4)],  extFluent,    4, &isFluent));
-  PetscCall(PetscStrncmp(&filename[PetscMax(0,len-3)],  extHDF5,      3, &isHDF5));
-  PetscCall(PetscStrncmp(&filename[PetscMax(0,len-4)],  extMed,       4, &isMed));
-  PetscCall(PetscStrncmp(&filename[PetscMax(0,len-4)],  extPLY,       4, &isPLY));
-  PetscCall(PetscStrncmp(&filename[PetscMax(0,len-10)], extEGADSLite, 10, &isEGADSLite));
-  PetscCall(PetscStrncmp(&filename[PetscMax(0,len-6)],  extEGADS,     6, &isEGADS));
-  PetscCall(PetscStrncmp(&filename[PetscMax(0,len-4)],  extIGES,      4, &isIGES));
-  PetscCall(PetscStrncmp(&filename[PetscMax(0,len-4)],  extSTEP,      4, &isSTEP));
-  PetscCall(PetscStrncmp(&filename[PetscMax(0,len-4)],  extCV,        4, &isCV));
+
+#define CheckExtension(extension__,is_extension__) do {                                        \
+    PetscAssert(sizeof(extension__), comm, PETSC_ERR_PLIB, "Zero-size extension: %s", extension__); \
+    /* don't count the null-terminator at the end */                                           \
+    const size_t ext_len = sizeof(extension__)-1;                                              \
+    if (len < ext_len) {                                                                       \
+      is_extension__ = PETSC_FALSE;                                                            \
+    } else {                                                                                   \
+      PetscCall(PetscStrncmp(filename+len-ext_len, extension__, ext_len, &is_extension__));    \
+    }                                                                                          \
+  } while (0)
+
+  CheckExtension(extGmsh, isGmsh);
+  CheckExtension(extGmsh2, isGmsh2);
+  CheckExtension(extGmsh4, isGmsh4);
+  CheckExtension(extCGNS, isCGNS);
+  CheckExtension(extExodus, isExodus);
+  if (!isExodus) CheckExtension(extExodus_e, isExodus);
+  CheckExtension(extGenesis, isGenesis);
+  CheckExtension(extFluent, isFluent);
+  CheckExtension(extHDF5, isHDF5);
+  CheckExtension(extMed, isMed);
+  CheckExtension(extPLY, isPLY);
+  CheckExtension(extEGADSLite, isEGADSLite);
+  CheckExtension(extEGADS, isEGADS);
+  CheckExtension(extIGES, isIGES);
+  CheckExtension(extSTEP, isSTEP);
+  CheckExtension(extCV, isCV);
+
+#undef CheckExtension
+
   if (isGmsh || isGmsh2 || isGmsh4) {
     PetscCall(DMPlexCreateGmshFromFile(comm, filename, interpolate, dm));
   } else if (isCGNS) {
