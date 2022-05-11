@@ -121,6 +121,8 @@ In addition to the changes above
 
 .. rubric:: DM/DA:
 
+- Add ``DMDAMapMatStencilToGlobal()`` to map MatStencils to global indices
+
 .. rubric:: DMSwarm:
 
 - Add ``DMSwarmGetCoordinateFunction()``, ``DMSwarmSetCoordinateFunction()``, ``DMSwarmGetVelocityFunction()``, ``DMSwarmSetVelocityFunction()`` to allow flexible layout of particles
