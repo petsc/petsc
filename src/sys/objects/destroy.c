@@ -195,7 +195,7 @@ PetscErrorCode  PetscObjectBaseTypeCompare(PetscObject obj,const char type_name[
 
    Level: intermediate
 
-.seealso: `VecGetType()`, `KSPGetType()`, `PCGetType()`, `SNESGetType()`, `PetscObjectTypeCompare()`, `PetscObjectBaseTypeCompare()`, `PetscObjectTypeCompareAny()`
+.seealso: `VecGetType()`, `KSPGetType()`, `PCGetType()`, `SNESGetType()`, `PetscObjectTypeCompare()`, `PetscObjectBaseTypeCompare()`
 
 @*/
 PetscErrorCode PetscObjectTypeCompareAny(PetscObject obj,PetscBool *match,const char type_name[],...)
