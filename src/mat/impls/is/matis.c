@@ -409,6 +409,7 @@ static PetscErrorCode MatMPIXAIJComputeLocalToGlobalMapping_Private(Mat A, ISLoc
   MatISDisassemblel2gType mode = MAT_IS_DISASSEMBLE_L2G_NATURAL;
   MatPartitioning         part;
   PetscSF                 sf;
+  PetscObject             dm;
 
   PetscFunctionBegin;
   PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"MatIS l2g disassembling options","Mat");
@@ -581,6 +582,12 @@ static PetscErrorCode MatMPIXAIJComputeLocalToGlobalMapping_Private(Mat A, ISLoc
     PetscCall(ISLocalToGlobalMappingViewFromOptions(*l2g,NULL,"-matis_nd_l2g_view"));
     break;
   case MAT_IS_DISASSEMBLE_L2G_NATURAL:
+    PetscCall(PetscObjectQuery((PetscObject)A,"__PETSc_dm",(PetscObject*)&dm));
+    if (dm) { /* if a matrix comes from a DM, most likely we can use the l2gmap if any */
+      PetscCall(MatGetLocalToGlobalMapping(A,l2g,NULL));
+      PetscCall(PetscObjectReference((PetscObject)*l2g));
+      if (*l2g) PetscFunctionReturn(0);
+    }
     if (ismpiaij) {
       PetscCall(MatMPIAIJGetSeqAIJ(A,&Ad,&Ao,&garray));
     } else if (ismpibaij) {
