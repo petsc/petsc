@@ -250,42 +250,29 @@ M*/
 #define PetscAssert(cond,comm,ierr,...) if (PetscUnlikelyDebug(!(cond))) SETERRQ(comm,ierr,__VA_ARGS__)
 
 /*MC
-  PetscCall - Checks error code returned from a PETSc function, if non-zero it calls the error
-  handler and and returns from the current function.
+  PetscCall - Calls a PETSc function and then checks the resulting error code, if it is non-zero it calls the error
+  handler and returns from the current function with the error code.
 
   Synopsis:
   #include <petscerror.h>
-  void PetscCall(PetscErrorCode ierr)
+  void PetscCall(PetscFunction(args))
 
   Not Collective
 
   Input Parameter:
-. ierr - nonzero error code, see the list of standard error codes in include/petscerror.h
+. PetscFunction - any PETSc function that returns an error code
 
   Notes:
   Once the error handler is called the calling function is then returned from with the given
   error code. Experienced users can set the error handler with PetscPushErrorHandler().
 
-  PetscCall(ierr) is fundamentally a macro replacement for
-.vb
-  if (ierr) return PetscError(...,ierr,...);
-.ve
-
   PetscCall() cannot be used in functions returning a datatype not convertable to
   PetscErrorCode. For example, PetscCall() may not be used in functions returning void, use
   PetscCallVoid() in this case.
 
-  Fortran Notes:
-  PetscCall() may be called from Fortran subroutines but CHKERRA() must be called from the
-  Fortran main program.
-
   Example Usage:
 .vb
   PetscCall(PetscInitiailize(...)); // OK to call even when PETSc is not yet initialized!
-
-  extern int foo(int);
-
-  PetscCall(foo(1)); // OK if int is convertable to PetscErrorCode
 
   struct my_struct
   {
@@ -300,10 +287,32 @@ M*/
   PetscCall(bar()) // ERROR input not convertable to PetscErrorCode
 .ve
 
+  It is also possible to call this directory on a PetscErrorCode variable
+.vb
+  PetscCall(ierr);  // check if ierr is nonzero
+.ve
+
+  Fortran Notes:
+    The Fortran function from which this is used must declare a variable PetscErrorCode ierr and ierr must be
+    the final argument to the PetscFunction being called.
+
+    In the main program and in Fortran subroutines that do not have ierr as the final return parameter one
+    should use PetscCallA()
+
+  Example Fortran Usage:
+.vb
+  PetscErrorCode ierr
+  Vec v
+
+  ...
+  PetscCall(VecShift(v,1.0,ierr))
+  PetscCallA(VecShift(v,1.0,ierr))
+.ve
+
   Level: beginner
 
-.seealso: `SETERRQ()`, `PetscCheck()`, `PetscAssert()`, `PetscTraceBackErrorHandler()`,
-          `PetscPushErrorHandler()`, `PetscError()`, `CHKMEMQ`, `CHKERRA()`
+.seealso: `SETERRQ()`, `PetscCheck()`, `PetscAssert()`, `PetscTraceBackErrorHandler()`, `PetscCallMPI()`
+          `PetscPushErrorHandler()`, `PetscError()`, `CHKMEMQ`, `CHKERRA()`, `CHKERRMPI()`
 M*/
 #if defined(PETSC_CLANG_STATIC_ANALYZER)
 void PetscCall(PetscErrorCode);
@@ -344,18 +353,20 @@ M*/
 #define CHKERRQ(...) PetscCall(__VA_ARGS__)
 #define CHKERRV(...) PetscCallVoid(__VA_ARGS__)
 
+PETSC_EXTERN void PetscMPIErrorString(PetscMPIInt, char*);
+
 /*MC
   PetscCallMPI - Checks error code returned from MPI calls, if non-zero it calls the error
   handler and then returns
 
   Synopsis:
   #include <petscerror.h>
-  void PetscCallMPI(PetscErrorCode ierr)
+  void PetscCallMPI(MPI_Function(args))
 
   Not Collective
 
   Input Parameters:
-. ierr - nonzero error code, see the list of standard error codes in include/petscerror.h
+. MPI_Function - an MPI function that returns an MPI error code
 
   Notes:
   Always returns the error code PETSC_ERR_MPI; the MPI error code and string are embedded in
@@ -371,6 +382,23 @@ M*/
   PetscCallMPI(PetscFunction(...)); // ERROR, use PetscCall() instead!
 .ve
 
+  Fortran Notes:
+    The Fortran function from which this is used must declare a variable PetscErrorCode ierr and ierr must be
+    the final argument to the MPI function being called.
+
+    In the main program and in Fortran subroutines that do not have ierr as the final return parameter one
+    should use PetscCallMPIA()
+
+  Fortran Usage:
+.vb
+  PetscErrorCode ierr or integer ierr
+  ...
+  PetscCallMPI(MPI_Comm_size(...,ierr))
+  PetscCallMPIA(MPI_Comm_size(...,ierr)) ! Will abort after calling error handler
+
+  PetscCallMPI(MPI_Comm_size(...,eflag)) ! ERROR, final argument must be ierr
+.ve
+
   Level: beginner
 
 .seealso: `SETERRMPI()`, `PetscCall()`, `SETERRQ()`, `SETERRABORT()`, `PetscCallAbort()`,
@@ -382,10 +410,9 @@ void PetscCallMPI(PetscMPIInt);
 #define PetscCallMPI(...) do {                                                                 \
     PetscMPIInt _7_errorcode = __VA_ARGS__;                                                    \
     if (PetscUnlikely(_7_errorcode)) {                                                         \
-      char        _7_errorstring[MPI_MAX_ERROR_STRING];                                        \
-      PetscMPIInt _7_resultlen;                                                                \
-      MPI_Error_string(_7_errorcode,(char*)_7_errorstring,&_7_resultlen); \
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MPI,"MPI error %d %s Ignore the following value %d",(int)_7_errorcode,_7_errorstring,_7_resultlen); \
+      char        _7_errorstring[2*MPI_MAX_ERROR_STRING];                                      \
+      PetscMPIErrorString(_7_errorcode,(char*)_7_errorstring); \
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MPI,"MPI error %d %s",(int)_7_errorcode,_7_errorstring); \
     }                                                                                          \
   } while (0)
 #endif

@@ -11,6 +11,7 @@
 #define petscattachdebuggererrorhandler_   PETSCATTACHDEBUGGERERRORHANDLER
 #define petscerror_                PETSCERROR
 #define petscerrorf_                PETSCERRORF
+#define petscerrormpi_             PETSCERRORMPI
 #define petscrealview_             PETSCREALVIEW
 #define petscintview_              PETSCINTVIEW
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
@@ -22,6 +23,7 @@
 #define petscattachdebuggererrorhandler_   petscattachdebuggererrorhandler
 #define petscerror_                petscerror
 #define petscerrorf_                petscerrorf
+#define petscerrormpi_             petscerrormpi
 #define petscrealview_             petscrealview
 #define petscintview_              petscintview
 #endif
@@ -89,11 +91,44 @@ PETSC_EXTERN void petscerror_(MPI_Fint *comm,PetscErrorCode *number,PetscErrorTy
   FREECHAR(message,t1);
 }
 
-/* helper routine for CHKERRQ and PetscCallAbort macros on the fortran side */
-PETSC_EXTERN void petscerrorf_(PetscErrorCode *number)
+#if defined(PETSC_HAVE_FORTRAN_FREE_LINE_LENGTH_NONE)
+PETSC_EXTERN void petscerrorf_(PetscErrorCode *err,int *line,char *file,PETSC_FORTRAN_CHARLEN_T len)
 {
-  PetscError(PETSC_COMM_SELF,0,NULL,NULL,*number,PETSC_ERROR_REPEAT,NULL);
+  char           *tfile;
+  PetscErrorCode derr,*ierr = &derr; /* needed by FIXCHAR */
+
+  FIXCHAR(file,len,tfile);
+  PetscError(PETSC_COMM_SELF,*line,NULL,tfile,*err,PETSC_ERROR_REPEAT,NULL);
+  FREECHAR(file,tfile);
 }
+
+PETSC_EXTERN void petscerrormpi_(PetscErrorCode *err,int *line,char *file,PETSC_FORTRAN_CHARLEN_T len)
+{
+  char           errorstring[2*MPI_MAX_ERROR_STRING];
+  char           *tfile;
+  PetscErrorCode derr,*ierr = &derr; /* needed by FIXCHAR */
+
+  FIXCHAR(file,len,tfile);
+  PetscMPIErrorString(*err,errorstring);
+  PetscError(PETSC_COMM_SELF,*line,NULL,file,PETSC_ERR_MPI,PETSC_ERROR_INITIAL,"MPI error %d %s",*err,errorstring);
+  FREECHAR(file,tfile);
+  *err = PETSC_ERR_MPI;
+}
+#else
+PETSC_EXTERN void petscerrorf_(PetscErrorCode *err)
+{
+  PetscError(PETSC_COMM_SELF,0,NULL,NULL,*err,PETSC_ERROR_REPEAT,NULL);
+}
+
+PETSC_EXTERN void petscerrormpi_(PetscErrorCode *err)
+{
+  char           errorstring[2*MPI_MAX_ERROR_STRING];
+
+  PetscMPIErrorString(*err,errorstring);
+  PetscError(PETSC_COMM_SELF,0,NULL,NULL,PETSC_ERR_MPI,PETSC_ERROR_INITIAL,"MPI error %d %s",*err,errorstring);
+  *err = PETSC_ERR_MPI;
+}
+#endif
 
 PETSC_EXTERN void petscrealview_(PetscInt *n,PetscReal *d,PetscViewer *viwer,PetscErrorCode *ierr)
 {

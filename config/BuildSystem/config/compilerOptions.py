@@ -249,7 +249,7 @@ class CompilerOptions(config.base.Configure):
     flags = []
     if config.setCompilers.Configure.isGNU(compiler, self.log):
       if bopt == '':
-        flags.extend(['-Wall', '-ffree-line-length-0', '-Wno-lto-type-mismatch'])
+        flags.extend(['-Wall', '-ffree-line-length-none', '-ffree-line-length-0', '-Wno-lto-type-mismatch'])
         if config.setCompilers.Configure.isGfortran46plus(compiler, self.log):
           flags.extend(['-Wno-unused-dummy-argument']) # Silence warning because dummy parameters are sometimes necessary
         if not config.setCompilers.Configure.isGfortran47plus(compiler, self.log):

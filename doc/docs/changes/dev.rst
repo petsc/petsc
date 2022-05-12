@@ -8,7 +8,7 @@ Changes you should make for main and version 3.18 so that it is portable to prev
 - Remove the error handling from uses of ``PetscDrawCollectiveBegin()`` and ``PetscDrawCollectiveEnd()``
 - Remove the error handling from uses of ``MatPreallocateInitialize()`` and ``MatPreallocateFinalize()``
 
-Changes you should make for main and version 3.18 so that is not portable to previous versions of PETSc. This will remove all deprecation warnings when you build.
+Changes you can make for main and version 3.18 so that is not portable to previous versions of PETSc. This will remove all deprecation warnings when you build.
 In addition to the changes above
 
 - Change  ``PetscOptionsHead()`` and ``PetscOptionsTail()`` to  ``PetscOptionsHeadBegin()`` and ``PetscOptionsHeadEnd()``
@@ -62,6 +62,10 @@ In addition to the changes above
 - Remove python2 support, python-3.4+ is now required
 
 .. rubric:: Sys:
+
+-  Change ``PetscCall()`` from Fortran so that ``call PetscFunction(args,ierr);CHKERRQ(ierr);`` can be replaced with ``PetscCall(PetscFunction(args,ierr))``
+-  Add ``PetscCallA()`` from Fortran so that ``call PetscFunction(args,ierr);CHKERRA(ierr);`` can be replaced with ``PetscCallA(PetscFunction(args,ierr))``
+-  Add ``PetscCallMPI()`` and ``PetscCallMPIA()`` that may be used to call MPI functions from Fortran
 
 .. rubric:: PetscViewer:
 

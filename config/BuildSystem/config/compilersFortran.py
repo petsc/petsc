@@ -159,6 +159,17 @@ class Configure(config.base.Configure):
     self.popLanguage()
     return
 
+  def checkFortran90LineLength(self):
+    '''Determine whether the Fortran compiler has infinite line length'''
+    self.pushLanguage('FC')
+    if self.checkLink(body = '      INTEGER, PARAMETER ::        int = SELECTED_INT_KIND(8);              INTEGER (KIND=int) :: ierr,ierr2;       ierr                            =                                                                                                               1; ierr2 =                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      2'):
+      self.addDefine('HAVE_FORTRAN_FREE_LINE_LENGTH_NONE', 1)
+      self.logPrint('Fortran compiler has unlimited line length')
+    else:
+      self.logPrint('Fortran compiler does not have unlimited line length')
+    self.popLanguage()
+    return
+
   def checkFortran90FreeForm(self):
     '''Determine whether the Fortran compiler handles F90FreeForm
        We also require that the compiler handles lines longer than 132 characters'''
@@ -468,5 +479,6 @@ class Configure(config.base.Configure):
       self.executeTest(self.checkFortranTypeInitialize)
       self.executeTest(self.configureFortranFlush)
       self.executeTest(self.checkDependencyGenerationFlag)
+      self.executeTest(self.checkFortran90LineLength)
     return
 
