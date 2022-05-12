@@ -1,9 +1,6 @@
+-include ../../../../../../../petsckdir.mk
 #requirespackage 'PETSC_HAVE_CUDA'
-ALL: lib
 
-CFLAGS    =
-FFLAGS    =
-CPPFLAGS  =
 SOURCEC	  =
 SOURCECU  = cupmcontext.cu
 SOURCEF	  =

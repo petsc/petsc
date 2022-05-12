@@ -1,9 +1,5 @@
 -include ../../../../petscdir.mk
-ALL: lib
 
-CPPFLAGS =
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = product.c productutils.c
 SOURCEF  =
 SOURCEH  = ../../../../include/petscdmproduct.h ../../../../include/petsc/private/dmproductimpl.h

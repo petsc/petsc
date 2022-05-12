@@ -1,8 +1,5 @@
 -include ../../../../petscdir.mk
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = snesgs.c gssecant.c
 SOURCEF  =
 SOURCEH  =

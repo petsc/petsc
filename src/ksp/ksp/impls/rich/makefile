@@ -1,8 +1,5 @@
 -include ../../../../../petscdir.mk
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = rich.c richscale.c
 SOURCEF  =
 SOURCEH  = richardsonimpl.h

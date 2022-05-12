@@ -1,5 +1,4 @@
 -include ../../../../../petscdir.mk
-ALL: lib
 
 LIBBASE  = libpetscdm
 DIRS     = basic opencl composite

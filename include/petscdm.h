@@ -9,6 +9,8 @@
 #include <petscdstypes.h>
 #include <petscdmlabel.h>
 
+/* SUBMANSEC = DM */
+
 PETSC_EXTERN PetscErrorCode DMInitializePackage(void);
 
 PETSC_EXTERN PetscClassId DM_CLASSID;

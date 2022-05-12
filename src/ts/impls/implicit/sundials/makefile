@@ -1,11 +1,6 @@
-
-ALL: lib
-
+-include ../../../../../petsckdir.mk
 #requirespackage   'PETSC_HAVE_SUNDIALS2'
 
-CFLAGS   =
-FFLAGS   =
-CPPFLAGS =
 SOURCEC  = sundials.c
 SOURCEF  =
 SOURCEH  = sundials.h

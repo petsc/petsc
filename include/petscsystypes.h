@@ -6,6 +6,8 @@
 #include <petscfix.h>
 #include <stddef.h>
 
+/* SUBMANSEC = Sys */
+
 /*MC
     PetscErrorCode - datatype used for return error code from almost all PETSc functions
 

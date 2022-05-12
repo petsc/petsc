@@ -1,10 +1,7 @@
 -include ../../../../../petscdir.mk
 #requirespackage  'PETSC_HAVE_ML'
 
-ALL: lib
-
 CFLAGS    = ${ML_INCLUDE}
-FFLAGS    =
 SOURCEC   = ml.c
 SOURCEF   =
 SOURCEH   =

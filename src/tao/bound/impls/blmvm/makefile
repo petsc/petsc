@@ -1,9 +1,7 @@
-ALL: lib
+-include ../../../../../petsckdir.mk
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = blmvm.c
-SOURCEF  = 
+SOURCEF  =
 SOURCEH  = blmvm.h
 LIBBASE  = libpetsctao
 MANSEC   = Tao

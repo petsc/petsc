@@ -1,10 +1,7 @@
 -include ../../../../../petscdir.mk
 #requirespackage  'PETSC_HAVE_HYPRE'
 
-ALL: lib
-
 CFLAGS    = ${HYPRE_INCLUDE}
-FFLAGS    =
 SOURCEC   = hypre.c
 SOURCEF   =
 SOURCEH   =

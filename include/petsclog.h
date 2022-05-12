@@ -1,11 +1,13 @@
 /*
     Defines profile/logging in PETSc.
 */
-
 #if !defined(PETSCLOG_H)
 #define PETSCLOG_H
+
 #include <petscsys.h>
 #include <petsctime.h>
+
+/* SUBMANSEC = Sys */
 
 /* General logging of information; different from event logging */
 PETSC_EXTERN PetscErrorCode PetscInfo_Private(const char[],PetscObject,const char[],...) PETSC_ATTRIBUTE_FORMAT(3,4);

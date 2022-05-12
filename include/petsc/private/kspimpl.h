@@ -6,6 +6,8 @@
 #include <petscds.h>
 #include <petsc/private/petscimpl.h>
 
+/* SUBMANSEC = KSP */
+
 PETSC_EXTERN PetscBool KSPRegisterAllCalled;
 PETSC_EXTERN PetscBool KSPMonitorRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode KSPRegisterAll(void);

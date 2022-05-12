@@ -1,9 +1,5 @@
 -include ../../../../../../petscdir.mk
 
-ALL: lib
-
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = symbrdn.c symbadbrdn.c
 SOURCEF  =
 SOURCEH  = symbrdn.h

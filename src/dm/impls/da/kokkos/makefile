@@ -1,9 +1,6 @@
 #requirespackage 'PETSC_HAVE_KOKKOS_KERNELS'
 -include ../../../../../petscdir.mk
-ALL: lib
 
-CFLAGS       =
-FFLAGS       =
 SOURCEC      =
 SOURCEF      =
 SOURCEKOKKOS = dagetov.kokkos.cxx

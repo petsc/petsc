@@ -1,8 +1,11 @@
 #if !defined(PETSCDMFIELD_H)
 #define      PETSCDMFIELD_H
+
 #include <petscdm.h>
 #include <petscdt.h>
 #include <petscfe.h>
+
+/* SUBMANSEC = DM */
 
 PETSC_EXTERN PetscErrorCode DMFieldInitializePackage(void);
 PETSC_EXTERN PetscErrorCode DMFieldFinalizePackage(void);

@@ -1,9 +1,5 @@
 -include ../../../../../petscdir.mk
 
-ALL: lib
-
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = lmvmimpl.c lmvmutils.c
 SOURCEF  =
 SOURCEH  = lmvm.h

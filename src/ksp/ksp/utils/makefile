@@ -1,8 +1,5 @@
 -include ../../../../petscdir.mk
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = kspmatregi.c dmproject.c
 SOURCEF  =
 SOURCEH  =

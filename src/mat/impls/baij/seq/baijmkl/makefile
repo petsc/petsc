@@ -1,10 +1,6 @@
 -include ../../../../../../petscdir.mk
 #requirespackage 'PETSC_HAVE_MKL_SPARSE_OPTIMIZE'
 
-ALL: lib
-
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = baijmkl.c
 SOURCEF  =
 SOURCEH  =

@@ -1,10 +1,7 @@
 -include ../../../../../petscdir.mk
 #requirespackage 'PETSC_HAVE_VIENNACL'
 #requiresdefine 'PETSC_HAVE_CUDA'
-ALL: lib
 
-CFLAGS    =
-FFLAGS    =
 SOURCECU  = chowiluviennacl.cu
 SOURCEF   =
 SOURCEH   =

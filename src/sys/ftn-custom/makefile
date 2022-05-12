@@ -1,9 +1,6 @@
+-include ../../../petsckdir.mk
 #requiresdefine   'PETSC_HAVE_FORTRAN'
 
-ALL: lib
-
-CFLAGS   =
-FFLAGS   =
 SOURCEC  =  zsys.c  zutils.c
 SOURCEF  =
 SOURCEH  = ../../../include/petsc/private/fortranimpl.h

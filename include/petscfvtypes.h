@@ -1,6 +1,8 @@
 #if !defined(PETSCFVTYPES_H)
 #define PETSCFVTYPES_H
 
+/* SUBMANSEC = FV */
+
 /*S
   PetscLimiter - PETSc object that manages a finite volume slope limiter
 

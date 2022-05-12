@@ -1,8 +1,5 @@
 -include ../../../../petscdir.mk
-ALL: lib
 
-CFLAGS    =
-FFLAGS    =
 SOURCEC   = bipartite.c valid.c weights.c
 SOURCEF   =
 SOURCEH   =

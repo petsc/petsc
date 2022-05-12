@@ -1,11 +1,7 @@
 -include ../../../../petscdir.mk
-CFLAGS		 =
-FFLAGS		 =
-CPPFLAGS   =
-FPPFLAGS   =
+
 MANSEC     = DM
-LOCDIR		 = src/dm/field/tutorials/
-EXAMPLESC	 = ex1.c
+LOCDIR	   = src/dm/field/tutorials/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

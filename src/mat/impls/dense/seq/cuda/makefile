@@ -1,10 +1,6 @@
 -include ../../../../../../petscdir.mk
 #requirespackage   'PETSC_HAVE_CUDA'
 
-ALL: lib
-
-CFLAGS   =
-FFLAGS   =
 SOURCECU = densecuda.cu
 SOURCEF  =
 SOURCEH  =

@@ -1,5 +1,4 @@
 -include ../../petscdir.mk
-ALL: lib
 
 SOURCEH  = ../../include/petsc/private/tsimpl.h ../../include/petscts.h
 DIRS     = trajectory interface impls tests tutorials f90-mod characteristic adapt utils event

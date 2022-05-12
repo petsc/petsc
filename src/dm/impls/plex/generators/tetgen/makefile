@@ -1,8 +1,6 @@
+-include ../../../../../../petsckdir.mk
 #requirespackage  'PETSC_HAVE_TETGEN'
 
-CPPFLAGS  =
-CFLAGS    =
-FFLAGS    =
 SOURCECXX = tetgenerate.cxx
 SOURCEF   =
 SOURCEH   =

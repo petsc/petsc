@@ -1,8 +1,5 @@
 -include ../../../../../petscdir.mk
-ALL: lib
 
-CFLAGS    =
-FFLAGS    =
 SOURCEC   = telescope.c telescope_dmda.c telescope_coarsedm.c
 SOURCEF   =
 SOURCEH   =

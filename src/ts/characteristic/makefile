@@ -1,6 +1,5 @@
+-include ../../../petsckdir.mk
 #requiresscalar    real
-
-ALL: lib
 
 SOURCEH   = ../../../include/petsc/private/characteristicimpl.h ../../../include/petsccharacteristic.h
 DIRS      = interface impls

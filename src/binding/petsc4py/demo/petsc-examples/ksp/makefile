@@ -1,3 +1,4 @@
+-include ../../../../../../petsckdir.mk
 # -*- makefile -*-
 
 MPIEXEC=mpiexec -n 2

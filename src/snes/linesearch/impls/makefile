@@ -1,5 +1,4 @@
-
-ALL: lib
+-include ../../../../petsckdir.mk
 
 DIRS     = basic l2 cp shell bt nleqerr
 LOCDIR   = src/snes/linesearch/impls/

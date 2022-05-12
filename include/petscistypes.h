@@ -1,6 +1,8 @@
 #if !defined(PETSCISTYPES_H)
 #define PETSCISTYPES_H
 
+/* SUBMANSEC = IS */
+
 /*S
      IS - Abstract PETSc object that allows indexing.
 

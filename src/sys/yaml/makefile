@@ -1,4 +1,4 @@
-ALL: lib
+-include ../../../petsckdir.mk
 
 MANSEC    = Sys
 LOCDIR    = src/sys/yaml/

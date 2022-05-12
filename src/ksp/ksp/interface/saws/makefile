@@ -1,10 +1,6 @@
 -include ../../../../../petscdir.mk
 #requirespackage  'PETSC_HAVE_SAWS'
 
-ALL: lib
-
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = kspsaws.c
 SOURCEF  =
 SOURCEH  =

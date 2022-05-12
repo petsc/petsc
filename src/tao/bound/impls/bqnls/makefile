@@ -1,10 +1,8 @@
-ALL: lib
+-include ../../../../../petsckdir.mk
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = bqnls.c
 SOURCEF  =
-SOURCEH  = 
+SOURCEH  =
 LIBBASE  = libpetsctao
 MANSEC   = Tao
 LOCDIR   = src/tao/bound/impls/bqnls/

@@ -1,8 +1,5 @@
+-include ../../../../../petsckdir.mk
 
-ALL: lib
-
-CFLAGS    =
-FFLAGS    =
 SOURCEC	  = iscomp.c iscoloring.c isdiff.c isblock.c
 SOURCEF	  =
 SOURCEH	  =

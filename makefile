@@ -6,10 +6,6 @@
 ALL: all
 LOCDIR	 = ./
 DIRS	 = src include tutorials interfaces share/petsc/matlab
-CFLAGS	 =
-FFLAGS	 =
-CPPFLAGS =
-FPPFLAGS =
 
 # next line defines PETSC_DIR and PETSC_ARCH if they are not set
 include ././${PETSC_ARCH}/lib/petsc/conf/petscvariables
@@ -347,7 +343,7 @@ allmanpages: chk_loc deletemanualpages
 	-sed -e 's?<T>?I?g' -e 's?<t>?i?g' -e 's?<Type>?PetscInt?g' ${hloc}/hashset.txt > ${hloc}/generated_hashset.txt
 	-sed -e 's?<T>?IJ?g' -e 's?<t>?ij?g' -e 's?<Type>?struct {PetscInt i,j;}?g' ${hloc}/hashset.txt >> ${hloc}/generated_hashset.txt
 	-${RM} ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err
-	-${OMAKE_SELF} ACTION=manualpages tree_basic LOC=${LOC}
+	-${OMAKE_SELF} ACTION=manualpages tree_src LOC=${LOC}
 	-@sed -e s%man+../%man+manualpages/% ${LOC}/docs/manualpages/manualpages.cit > ${LOC}/docs/manualpages/htmlmap
 	-@cat ${PETSC_DIR}/doc/classic/mpi.www.index >> ${LOC}/docs/manualpages/htmlmap
 	cat ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err

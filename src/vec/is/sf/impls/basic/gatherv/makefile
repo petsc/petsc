@@ -1,4 +1,4 @@
-ALL: lib
+-include ../../../../../../../petsckdir.mk
 
 SOURCEH   =
 SOURCEC   = sfgatherv.c

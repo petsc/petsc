@@ -1,8 +1,5 @@
+-include ../../../petsckdir.mk
 
-ALL: lib
-
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = dmts.c dmlocalts.c dmdats.c dmplexts.c tsconvest.c dmnetworkts.c
 SOURCEF  =
 SOURCEH  =

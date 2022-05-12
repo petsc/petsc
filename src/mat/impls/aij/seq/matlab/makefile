@@ -1,10 +1,7 @@
 -include ../../../../../../petscdir.mk
 #requiresdefine   'PETSC_HAVE_MATLAB_ENGINE'
 
-ALL: lib
-
 CFLAGS   = ${MATLAB_INCLUDE}
-FFLAGS   =
 SOURCEC  = aijmatlab.c
 SOURCEF  =
 SOURCEH  =

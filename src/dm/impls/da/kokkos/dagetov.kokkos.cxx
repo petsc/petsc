@@ -2,7 +2,9 @@
 #include <petsc/private/dmdaimpl.h>
 #include <petscdmda_kokkos.hpp>
 
-/* Use macro instead of inlined function just to avoid annoying warnings like: 'dof' may be used uninitialized in this function [-Wmaybe-uninitialized] */
+/* SUBMANSEC = DMDA */
+
+/* Use macro instead of inlined function to avoid annoying warnings like: 'dof' may be used uninitialized in this function [-Wmaybe-uninitialized] */
 #define DMDA_VEC_GET_SHAPE(da,vec,xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof) \
 do { \
   PetscCall(DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm)); \

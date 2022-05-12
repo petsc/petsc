@@ -1,5 +1,4 @@
-
-ALL: lib
+-include ../../../petsckdir.mk
 
 SOURCEH  = ../../../include/petsc/private/linesearchimpl.h
 DIRS     = interface impls

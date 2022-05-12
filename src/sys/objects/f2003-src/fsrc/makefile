@@ -1,7 +1,5 @@
-ALL: lib
+-include ../../../../../petsckdir.mk
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  =
 SOURCEF90= optionenum.F90
 SOURCEH  =

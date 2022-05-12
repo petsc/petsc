@@ -1,6 +1,8 @@
 #if !defined(PETSCPCTYPES_H)
 #define PETSCPCTYPES_H
 
+/* SUBMANSEC = PC */
+
 /*S
      PC - Abstract PETSc object that manages all preconditioners including direct solvers such as PCLU
 

@@ -3,7 +3,10 @@
 */
 #ifndef PETSCMAT_H
 #define PETSCMAT_H
+
 #include <petscvec.h>
+
+/* SUBMANSEC = Mat */
 
 /*S
      Mat - Abstract PETSc matrix object used to manage all linear operators in PETSc, even those without

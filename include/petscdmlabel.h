@@ -2,6 +2,8 @@
 #define PETSCDMLABEL_H
 #include <petscis.h>
 
+/* SUBMANSEC = DMLabel */
+
 /*S
   DMLabel - Object which encapsulates a subset of the mesh from this DM
 

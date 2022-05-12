@@ -1,5 +1,4 @@
 -include ../../../../petscdir.mk
-ALL: lib
 
 LIBBASE  = libpetscksp
 DIRS     = cr bcgs bcgsl cg cgs gmres cheby rich lsqr preonly tcqmr tfqmr qcg bicg minres symmlq lcd ibcgs python gcr fcg tsirm fetidp hpddm

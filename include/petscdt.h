@@ -6,6 +6,8 @@
 
 #include <petscsys.h>
 
+/* SUBMANSEC = DT */
+
 PETSC_EXTERN PetscClassId PETSCQUADRATURE_CLASSID;
 
 /*S

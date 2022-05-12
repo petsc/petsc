@@ -8,6 +8,8 @@
 #include <petscfetypes.h>
 #include <petscdstypes.h>
 
+/* SUBMANSEC = FE */
+
 typedef struct _n_PetscFEGeom {
   const PetscReal *xi;
   PetscReal *v;           /* v[Nc*Np*dE]:           The first point in each each in real coordinates */

@@ -1,9 +1,6 @@
+-include ../../../../petsckdir.mk
 #requirespackage 'PETSC_HAVE_HIP'
 
-ALL: lib
-
-CFLAGS   =
-FFLAGS   =
 SOURCEC  =
 SOURCEHIP = mhiphost.hip.cpp
 SOURCEF  =

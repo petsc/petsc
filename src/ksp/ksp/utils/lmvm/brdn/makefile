@@ -1,9 +1,5 @@
 -include ../../../../../../petscdir.mk
 
-ALL: lib
-
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = brdn.c badbrdn.c
 SOURCEF  =
 SOURCEH  = brdn.h

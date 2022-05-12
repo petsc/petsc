@@ -1,5 +1,4 @@
 -include ../../../../petscdir.mk
-ALL: lib
 
 DIRS   = chaco party pmetis scotch hierarchical
 LOCDIR = src/mat/partition/impls/

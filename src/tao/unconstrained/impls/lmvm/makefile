@@ -1,7 +1,5 @@
-ALL: lib
+-include ../../../../../petsckdir.mk
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = lmvm.c
 SOURCEF  =
 SOURCEH  = lmvm.h

@@ -1,10 +1,6 @@
 -include ../../../../../petscdir.mk
 #requiresdefine   'PETSC_HAVE_ATTRIBUTEALIGNED'
-CFLAGS	         =
-FFLAGS	         =
-CPPFLAGS         =
-FPPFLAGS         =
-EXAMPLESC        = ex1.c ex2.c ex1_nest.c ex3.c ex4.c
+
 LOCDIR		 = src/ksp/ksp/tutorials/network/
 MANSEC           = KSP
 

@@ -1,8 +1,6 @@
+-include ../../../../../../petsckdir.mk
 #requirespackage  'PETSC_HAVE_TRIANGLE'
 
-CPPFLAGS =
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = trigenerate.c
 SOURCEF  =
 SOURCEH  =

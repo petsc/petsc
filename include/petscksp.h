@@ -3,7 +3,10 @@
 */
 #ifndef PETSCKSP_H
 #define PETSCKSP_H
+
 #include <petscpc.h>
+
+/* SUBMANSEC = KSP */
 
 PETSC_EXTERN PetscErrorCode KSPInitializePackage(void);
 

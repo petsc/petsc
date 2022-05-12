@@ -1,9 +1,6 @@
+-include ../../../../../petsckdir.mk
 #requiresdefine 'PETSC_HAVE_CXX'
-ALL: lib
 
-CFLAGS    =
-FFLAGS    =
-CPPFLAGS  =
 SOURCEC	  =
 SOURCECXX = dcontext.cxx device.cxx devicereg.cxx
 SOURCEF	  =

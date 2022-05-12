@@ -1,9 +1,6 @@
+-include ../../../petsckdir.mk
 #requirespackage    'PETSC_HAVE_MPIUNI'
 
-ALL: lib
-
-CFLAGS   =
-FFLAGS   =
 SOURCEC	 = mpi.c mpitime.c
 SOURCEF	 =
 SOURCEH	 = ../../../include/petsc/mpiuni/mpi.h ../../../include/petsc/mpiuni/mpif.h

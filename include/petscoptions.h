@@ -3,8 +3,11 @@
 */
 #if !defined(PETSCOPTIONS_H)
 #define PETSCOPTIONS_H
+
 #include <petscsys.h>
 #include <petscviewertypes.h>
+
+/* SUBMANSEC = Sys */
 
 #define PETSC_MAX_OPTION_NAME 512
 typedef struct _n_PetscOptions* PetscOptions;

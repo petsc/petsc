@@ -1,10 +1,6 @@
 -include ../../../../../petscdir.mk
-ALL: lib
-
 #requirespackage 'PETSC_HAVE_PARMETIS'
 
-CFLAGS    =
-FFLAGS    =
 CPPFLAGS  = ${PARMETIS_INCLUDE}
 SOURCEC   = pmetis.c
 SOURCEH   =

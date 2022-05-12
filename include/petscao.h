@@ -5,7 +5,10 @@
 */
 #if !defined(PETSCAO_H)
 #define PETSCAO_H
+
 #include <petscis.h>
+
+/* SUBMANSEC = AO */
 
 /*S
      AO - Abstract PETSc object that manages mapping between different global numbering

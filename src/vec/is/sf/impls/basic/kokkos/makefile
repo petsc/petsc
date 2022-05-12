@@ -1,5 +1,5 @@
+-include ../../../../../../../petsckdir.mk
 #requirespackage 'PETSC_HAVE_KOKKOS'
-ALL: lib
 
 SOURCEH       =
 SOURCEC       =

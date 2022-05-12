@@ -1,5 +1,4 @@
-
-ALL: lib
+-include ../../../../../petsckdir.mk
 
 LIBBASE  = libpetscvec
 DIRS     = general stride block

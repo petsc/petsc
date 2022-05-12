@@ -1,10 +1,6 @@
 -include ../../../../../petscdir.mk
-ALL: lib
-
 #requirespackage 'PETSC_HAVE_CHACO'
 
-CFLAGS    =
-FFLAGS    =
 CPPFLAGS  = ${CHACO_INCLUDE}
 SOURCEC   = chaco.c
 SOURCEH   =

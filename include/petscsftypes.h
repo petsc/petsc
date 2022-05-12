@@ -1,6 +1,8 @@
 #if !defined(PETSCSFTYPES_H)
 #define PETSCSFTYPES_H
 
+/* SUBMANSEC = PetscSF */
+
 /*S
    PetscSF - PETSc object for setting up and managing the communication of certain entries of arrays and Vecs between MPI processes.
 

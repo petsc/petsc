@@ -1,10 +1,7 @@
 -include ../../../../../../petscdir.mk
 #requirespackage   'PETSC_HAVE_SUPERLU'
 
-ALL: lib
-
 CFLAGS   = ${SUPERLU_INCLUDE}
-FFLAGS   =
 SOURCEC  = superlu.c
 SOURCEF  =
 SOURCEH  =

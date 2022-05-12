@@ -6,6 +6,8 @@
 #include <petscsys.h>
 #include <petscdrawtypes.h>
 
+/* SUBMANSEC = Sys */
+
 PETSC_EXTERN PetscClassId PETSC_DRAW_CLASSID;
 
 PETSC_EXTERN PetscFunctionList PetscDrawList;

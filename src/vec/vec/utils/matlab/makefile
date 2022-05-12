@@ -1,9 +1,7 @@
+-include ../../../../../petsckdir.mk
 #requiresdefine   'PETSC_HAVE_MATLAB_ENGINE'
 
-ALL: lib
-
 CFLAGS   = ${MATLAB_INCLUDE}
-FFLAGS   =
 SOURCEC  = gcreatev.c
 SOURCEF  =
 SOURCEH  =

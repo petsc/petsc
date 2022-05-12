@@ -1,3 +1,4 @@
+-include ../../../petsckdir.mk
 .PHONY: default
 default: build
 

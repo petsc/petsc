@@ -1,5 +1,5 @@
+-include ../../../../petsckdir.mk
 #requiresscalar    real
-ALL: lib
 
 DIRS     = unit morethuente  gpcglinesearch armijo owarmijo
 LOCDIR   = src/tao/linesearch/impls/

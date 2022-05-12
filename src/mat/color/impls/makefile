@@ -1,5 +1,4 @@
 -include ../../../../petscdir.mk
-ALL: lib
 
 DIRS     = natural minpack jp greedy power
 LOCDIR   = src/mat/color/impls/

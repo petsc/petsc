@@ -1,6 +1,8 @@
 #ifndef PETSCDRAWTYPES_H
 #define PETSCDRAWTYPES_H
 
+/* SUBMANSEC = Draw */
+
 /*J
     PetscDrawType - String with the name of a PetscDraw
 

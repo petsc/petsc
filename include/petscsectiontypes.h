@@ -1,6 +1,8 @@
 #if !defined(PETSCSECTIONTYPES_H)
 #define PETSCSECTIONTYPES_H
 
+/* SUBMANSEC = PetscSection */
+
 /*S
   PetscSection - Mapping from integers in a designated range to contiguous sets of integers.
 

@@ -1,6 +1,8 @@
 #if !defined(PETSCDMPLEXTYPES_H)
 #define PETSCDMPLEXTYPES_H
 
+/* SUBMANSEC = DMPlex */
+
 /*E
   DMPlexShape - The domain shape used for automatic mesh creation.
 

@@ -1,3 +1,4 @@
+-include ../../../../../petsckdir.mk.f2py
 # -*- makefile -*-
 
 MODULE=App

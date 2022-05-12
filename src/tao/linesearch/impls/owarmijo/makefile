@@ -1,8 +1,5 @@
+-include ../../../../../petsckdir.mk
 
-ALL: lib
-
-CFLAGS    =
-FFLAGS    =
 SOURCEC   = owarmijo.c
 SOURCEF   =
 SOURCEH   = owarmijo.h

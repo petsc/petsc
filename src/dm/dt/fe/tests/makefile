@@ -1,8 +1,5 @@
+-include ../../../../../petsckdir.mk
 
-CFLAGS	        =
-FFLAGS	        =
-CPPFLAGS        =
-FPPFLAGS        =
 LOCDIR          = src/dm/dt/fe/tests/
 MANSEC          = DM
 

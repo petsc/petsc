@@ -1,8 +1,5 @@
+-include ../../../../../petsckdir.mk
 
-ALL: lib
-
-CFLAGS    =
-FFLAGS    =
 CPPFLAGS  = ${PTSCOTCH_INCLUDE}
 SOURCEC   = partptscotch.c
 SOURCEH   =

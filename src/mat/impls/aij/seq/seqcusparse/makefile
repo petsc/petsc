@@ -1,9 +1,6 @@
 -include ../../../../../../petscdir.mk
 #requirespackage 'PETSC_HAVE_CUDA'
-ALL: lib
 
-CFLAGS    =
-FFLAGS    =
 SOURCECU  = aijcusparse.cu aijcusparseband.cu
 SOURCEF   =
 SOURCEH   = cusparsematimpl.h

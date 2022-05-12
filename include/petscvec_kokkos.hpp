@@ -3,6 +3,8 @@
 
 #include <petscconf.h>
 
+/* SUBMANSEC = Vec */
+
 #if defined(PETSC_HAVE_KOKKOS)
   #if defined(petsccomplexlib)
     #error "Error: You must include petscvec_kokkos.hpp before other petsc headers in this C++ file to use petsc complex with Kokkos"

@@ -1,9 +1,5 @@
 -include ../../../../../petscdir.mk
 
-ALL: lib
-
-CFLAGS    =
-FFLAGS    =
 SOURCEC   = gasm.c
 SOURCEF   =
 SOURCEH   =

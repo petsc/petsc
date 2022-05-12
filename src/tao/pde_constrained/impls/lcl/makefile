@@ -1,7 +1,5 @@
-ALL: lib
+-include ../../pde_../../../petsckdir.mk
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = lcl.c
 SOURCEF  =
 SOURCEH  = lcl.h

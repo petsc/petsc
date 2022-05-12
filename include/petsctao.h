@@ -3,6 +3,8 @@
 
 #include <petscsnes.h>
 
+/* SUBMANSEC = Tao */
+
 PETSC_EXTERN PetscErrorCode VecFischer(Vec,Vec,Vec,Vec,Vec);
 PETSC_EXTERN PetscErrorCode VecSFischer(Vec,Vec,Vec,Vec,PetscReal,Vec);
 PETSC_EXTERN PetscErrorCode MatDFischer(Mat,Vec,Vec,Vec,Vec,Vec,Vec,Vec,Vec);

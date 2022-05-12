@@ -1,6 +1,8 @@
 #if !defined(PETSCDMTYPES_H)
 #define PETSCDMTYPES_H
 
+/* SUBMANSEC = DM */
+
 /*S
      DM - Abstract PETSc object that manages an abstract grid object and its interactions with the algebraic solvers
 

@@ -1,8 +1,5 @@
 -include ../../../../../petscdir.mk
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = cg.c cgeig.c cgtype.c cgls.c
 SOURCEF  =
 SOURCEH  = cgimpl.h

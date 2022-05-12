@@ -1,4 +1,4 @@
-ALL: lib
+-include ../../../../petsckdir.mk
 
 DIRS     = lmvm nls neldermead cg ntl ntr owlqn bmrm
 LOCDIR   = src/tao/unconstrained/impls/

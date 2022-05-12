@@ -1,19 +1,9 @@
+-include ../../petsckdir.mk
 
 ALL:
 
-CFLAGS	      =
-FFLAGS	      =	
-CPPFLAGS      =
-FPPFLAGS      =
-LOCDIR        = src/benchmarks/
-EXAMPLESC    = PetscTime.c PetscGetTime.c MPI_Wtime.c PLogEvent.c PetscMalloc.c \
-		PetscMemcpy.c PetscMemzero.c PetscMemcmp.c Index.c PetscVecNorm.c \
-		PetscGetCPUTime.c
-EXAMPLESF     =
-TESTS         = PetscTime PetscGetTime MPI_Wtime PLogEvent PetscMalloc \
-		PetscMemcpy PetscMemzero PetscMemcmp Index PetscVecNorm \
-		PetscGetCPUTime sizeof
-MANSEC        = Sys
+LOCDIR    = src/benchmarks/
+MANSEC    = Sys
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

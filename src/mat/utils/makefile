@@ -1,8 +1,5 @@
 -include ../../../petscdir.mk
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = convert.c matstash.c axpy.c zerodiag.c factorschur.c matio.c getcolv.c gcreate.c freespace.c compressedrow.c multequal.c matstashspace.c pheap.c bandwidth.c overlapsplit.c zerorows.c
 SOURCEF  =
 SOURCEH  = freespace.h

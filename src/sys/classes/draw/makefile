@@ -1,8 +1,5 @@
+-include ../../../../petsckdir.mk
 
-ALL: lib
-
-CFLAGS    =
-FFLAGS    =
 SOURCEC   =
 SOURCEF   =
 SOURCEH   = ../../../../include/petsc/private/drawimpl.h ../../../../include/petscdraw.h ../../../../include/petscdrawtypes.h

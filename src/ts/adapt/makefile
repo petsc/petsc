@@ -1,7 +1,6 @@
+-include ../../../petsckdir.mk
 
-ALL: lib
-
-SOURCEH  = 
+SOURCEH  =
 DIRS     = interface impls
 LOCDIR   = src/ts/adapt/
 MANSEC   = TS

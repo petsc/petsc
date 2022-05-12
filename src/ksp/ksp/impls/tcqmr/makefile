@@ -1,8 +1,5 @@
 -include ../../../../../petscdir.mk
-ALL: lib
 
-CFLAGS    =
-FFLAGS    =
 SOURCEC   = tcqmr.c
 SOURCEF   =
 SOURCEH   = tcqmrimpl.h

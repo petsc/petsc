@@ -1,8 +1,5 @@
+-include ../../../../petsckdir.mk
 
-ALL: lib
-
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = linesearch.c linesearchregi.c
 SOURCEF  =
 SOURCEH  =

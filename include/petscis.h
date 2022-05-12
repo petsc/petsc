@@ -4,10 +4,13 @@
 */
 #if !defined(PETSCIS_H)
 #define PETSCIS_H
+
 #include <petscsys.h>
 #include <petscsftypes.h>
 #include <petscsectiontypes.h>
 #include <petscistypes.h>    /*I  "petscis.h" I*/
+
+/* SUBMANSEC = IS */
 
 #define IS_FILE_CLASSID 1211218
 PETSC_EXTERN PetscClassId IS_CLASSID;

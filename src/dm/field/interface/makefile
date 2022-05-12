@@ -1,8 +1,5 @@
 -include ../../../../petscdir.mk
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = dmfield.c dmfieldregi.c dlregisdmfield.c
 SOURCEF  =
 SOURCEH  =

@@ -1,9 +1,7 @@
+-include ../../../../../petsckdir.mk
 #requiresdefine   'PETSC_HAVE_FORTRAN'
 #requiresdefine   'PETSC_USING_F2003'
 
-ALL: lib
-CFLAGS   =
-FFLAGS   =
 SOURCEC  =
 SOURCEF  =
 SOURCEH  =

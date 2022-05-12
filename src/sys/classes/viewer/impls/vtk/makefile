@@ -1,7 +1,5 @@
-ALL: lib
+-include ../../../../../../petsckdir.mk
 
-CFLAGS    =
-FFLAGS    =
 SOURCEC   = vtkv.c
 SOURCEF   =
 SOURCEH   = vtkvimpl.h

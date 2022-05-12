@@ -1,7 +1,5 @@
-ALL: lib
+-include ../../../../../petsckdir.mk
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = ntl.c
 SOURCEF  =
 SOURCEH  = ntlimpl.h

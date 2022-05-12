@@ -1,10 +1,7 @@
 -include ../../../../../../petscdir.mk
 #requirespackage   'PETSC_HAVE_STRUMPACK'
 
-ALL: lib
-
 CFLAGS   = ${STRUMPACK_INCLUDE}
-FFLAGS   =
 SOURCEC	 = strumpack.c
 SOURCEF	 =
 SOURCEH	 =

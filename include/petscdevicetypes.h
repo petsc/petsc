@@ -3,6 +3,8 @@
 
 #include <petscmacros.h> /*I <petscdevicetypes.h> I*/
 
+/* SUBMANSEC = Sys */
+
 /*E
   PetscMemType - Memory type of a pointer
 

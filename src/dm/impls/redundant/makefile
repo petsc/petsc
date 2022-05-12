@@ -1,8 +1,5 @@
 -include ../../../../petscdir.mk
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = dmredundant.c
 SOURCEF  =
 SOURCEH  = ../../../../include/petscdmredundant.h

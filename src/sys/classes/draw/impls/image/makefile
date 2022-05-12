@@ -1,10 +1,5 @@
+-include ../../../../../../petsckdir.mk
 
-
-ALL: lib
-
-CFLAGS    =
-FFLAGS    =
-CPPFLAGS  =
 SOURCEC   = drawimage.c
 SOURCEF   =
 SOURCEH   = drawimage.h

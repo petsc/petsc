@@ -1,8 +1,5 @@
 -include ../../../../../petscdir.mk
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = sell.c fdsell.c
 SOURCEF  =
 SOURCEH  = sell.h

@@ -4,8 +4,11 @@
 */
 #if !defined(PETSCTS_H)
 #define PETSCTS_H
+
 #include <petscsnes.h>
 #include <petscconvest.h>
+
+/* SUBMANSEC = TS */
 
 /*S
      TS - Abstract PETSc object that manages all time-steppers (ODE integrators)

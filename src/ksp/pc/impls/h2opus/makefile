@@ -1,9 +1,6 @@
 -include ../../../../../petscdir.mk
 #requirespackage 'PETSC_HAVE_H2OPUS'
 
-ALL: lib
-
-FFLAGS    =
 SOURCEC   = pch2opus.c
 SOURCEF   =
 SOURCEH   =

@@ -4,6 +4,8 @@
 #include <petscconf.h>
 #include <petscconf_poison.h> /* for PetscDefined() error checking */
 
+/* SUBMANSEC = Sys */
+
 /* ========================================================================== */
 /* This facilitates using the C version of PETSc from C++ and the C++ version from C. */
 #if defined(__cplusplus)

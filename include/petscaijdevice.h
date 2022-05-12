@@ -3,6 +3,8 @@
 
 #include <petscmat.h>
 
+/* SUBMANSEC = Mat */
+
 #define CSRDataStructure(datatype)  \
   PetscInt    *i; \
   PetscInt    *j; \
@@ -130,10 +132,12 @@ static
 .   n - number of columns to insert or add to
 .   in - the columns to insert or add to
 .   v - the values to insert or add to the matrix (treated as a  by n row oriented dense array
-+   is - either INSERT_VALUES or ADD_VALUES
+-   is - either INSERT_VALUES or ADD_VALUES
 
     Notes:
       Any row or column indices that are outside the bounds of the matrix on the rank are discarded
+
+   Level: advanced
 
 .seealso: `MatSetValues()`, `MatCreate()`, `MatCreateDenseCUDA()`, `MatCreateAIJCUSPARSE()`, `MatKokkosGetDeviceMatWrite()`,
           `MatCUSPARSEGetDeviceMatWrite()`

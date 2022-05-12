@@ -1,8 +1,5 @@
 -include ../../../../petscdir.mk
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = pack.c packm.c
 SOURCEF  =
 SOURCEH  = packimpl.h

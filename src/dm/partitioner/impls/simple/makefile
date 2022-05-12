@@ -1,9 +1,5 @@
+-include ../../../../../petsckdir.mk
 
-ALL: lib
-
-CFLAGS    =
-FFLAGS    =
-CPPFLAGS  =
 SOURCEC   = partsimple.c
 SOURCEH   =
 LIBBASE   = libpetscdm

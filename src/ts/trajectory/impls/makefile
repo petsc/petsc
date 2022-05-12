@@ -1,5 +1,4 @@
-
-ALL: lib
+-include ../../../../petsckdir.mk
 
 SOURCEH  =
 DIRS     = basic singlefile memory visualization

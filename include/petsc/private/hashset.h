@@ -3,6 +3,8 @@
 
 #include <petsc/private/hashtable.h>
 
+/* SUBMANSEC = Sys */
+
 /*MC
   PETSC_HASH_SET - Instantiate a new PETSc hash set type
 

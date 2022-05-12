@@ -1,8 +1,5 @@
-ALL: lib
+-include ../../../petsckdir.mk
 
-CFLAGS    =
-FFLAGS    =
-CPPFLAGS  =
 SOURCEC	  = plog.c xmllogevent.c xmlviewer.c
 SOURCEF	  =
 SOURCEH	  = ../../../include/petsc/private/logimpl.h ../../../include/petsclog.h xmlviewer.h

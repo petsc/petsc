@@ -1,9 +1,6 @@
+-include ../../../../../../petsckdir.mk
 #requiresdefine 'PETSC_HAVE_CUPM'
-ALL: lib
 
-CFLAGS    =
-FFLAGS    =
-CPPFLAGS  =
 SOURCEC	  =
 SOURCECXX = cupminterface.cxx cupmblasinterface.cxx cupmdevice.cxx
 SOURCEF	  =

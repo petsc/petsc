@@ -1,10 +1,6 @@
 -include ../../../../../../petscdir.mk
 #requirespackage   'PETSC_HAVE_ELEMENTAL'
 
-ALL: lib
-
-CFLAGS   =
-FFLAGS   =
 SOURCECXX= clique.cxx
 SOURCEF	 =
 SOURCEH	 = matcliqueimpl.h

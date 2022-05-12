@@ -1,7 +1,5 @@
-ALL: lib
+-include ../../../../../petsckdir.mk
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = linesearchbasic.c
 SOURCEF  =
 SOURCEH  = basicimpls.h

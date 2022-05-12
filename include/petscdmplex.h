@@ -15,6 +15,8 @@
 #include <petscdmfield.h>
 #include <petscviewer.h>
 
+/* SUBMANSEC = DMPlex */
+
 PETSC_EXTERN PetscErrorCode PetscPartitionerDMPlexPartition(PetscPartitioner, DM, PetscSection, PetscSection, IS *);
 
 PETSC_EXTERN PetscErrorCode DMPlexBuildFromCellList(DM, PetscInt, PetscInt, PetscInt, const PetscInt[]);

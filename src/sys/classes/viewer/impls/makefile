@@ -1,5 +1,4 @@
-
-ALL: lib
+-include ../../../../../petsckdir.mk
 
 DIRS      = socket ascii binary string draw vu mathematica hdf5 matlab ams vtk glvis adios
 LOCDIR    = src/sys/classes/viewer/impls/

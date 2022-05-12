@@ -1,10 +1,7 @@
 -include ../../../../../../petscdir.mk
 #requirespackage   'PETSC_HAVE_MKL_CPARDISO'
 
-ALL: lib
-
 CFLAGS   = ${MKL_CPARDISO_INCLUDE}
-FFLAGS   =
 SOURCEC	 = mkl_cpardiso.c
 SOURCEF	 =
 SOURCEH	 =

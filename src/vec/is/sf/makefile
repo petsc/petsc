@@ -1,7 +1,5 @@
 -include ../../../../petscdir.mk
 
-ALL: lib
-
 SOURCEH	  = ../../../../include/petsc/private/sfimpl.h ../../../../include/petscsf.h ../../../../include/petscsftypes.h
 SOURCEC   =
 LIBBASE	  = libpetscvec

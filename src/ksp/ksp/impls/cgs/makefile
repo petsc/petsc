@@ -1,8 +1,5 @@
 -include ../../../../../petscdir.mk
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = cgs.c
 SOURCEF  =
 LIBBASE  = libpetscksp

@@ -1,5 +1,4 @@
 -include ../../../petscdir.mk
-ALL: lib
 
 SOURCEH = ../../../include/petscdt.h ../../../include/petscds.h ../../../include/petscdstypes.h
 DIRS    = interface tests space dualspace fe fv

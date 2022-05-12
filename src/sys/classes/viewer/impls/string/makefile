@@ -1,8 +1,5 @@
+-include ../../../../../../petsckdir.mk
 
-ALL: lib
-
-CFLAGS    =
-FFLAGS    =
 SOURCEC   = stringv.c
 SOURCEF   =
 SOURCEH   =

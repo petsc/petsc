@@ -1,10 +1,6 @@
 -include ../../../../../../petscdir.mk
 #requiresscalar real
 
-ALL: lib
-
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = dgmres.c
 SOURCEF  =
 SOURCEH  = dgmresimpl.h
