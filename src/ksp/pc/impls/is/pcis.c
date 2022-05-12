@@ -1,5 +1,5 @@
 
-#include <../src/ksp/pc/impls/is/pcis.h> /*I "petscpc.h" I*/
+#include <petsc/private/pcisimpl.h> /*I "petscpc.h" I*/
 
 static PetscErrorCode PCISSetUseStiffnessScaling_IS(PC pc, PetscBool use)
 {

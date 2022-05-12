@@ -2,7 +2,7 @@
 #if !defined(__pcnn_h)
 #define __pcnn_h
 
-#include <../src/ksp/pc/impls/is/pcis.h>
+#include <petsc/private/pcisimpl.h>
 
 /*
    Private context (data structure) for the NN preconditioner.

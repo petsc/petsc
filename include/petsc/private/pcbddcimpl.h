@@ -1,8 +1,8 @@
 #if !defined(__pcbddc_h)
 #define __pcbddc_h
 
-#include <../src/ksp/pc/impls/is/pcis.h>
-#include <../src/ksp/pc/impls/bddc/bddcstructs.h>
+#include <petsc/private/pcisimpl.h>
+#include <petsc/private/pcbddcstructsimpl.h>
 
 #if !defined(PETSC_PCBDDC_MAXLEVELS)
 #define PETSC_PCBDDC_MAXLEVELS 8

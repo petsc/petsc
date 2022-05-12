@@ -1,6 +1,6 @@
 #include <petsc/private/kspimpl.h> /*I <petscksp.h> I*/
-#include <../src/ksp/pc/impls/bddc/bddc.h>
-#include <../src/ksp/pc/impls/bddc/bddcprivate.h>
+#include <petsc/private/pcbddcimpl.h>
+#include <petsc/private/pcbddcprivateimpl.h>
 #include <petscdm.h>
 
 static PetscBool  cited  = PETSC_FALSE;

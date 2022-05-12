@@ -19,8 +19,8 @@
 
 */
 
-#include <../src/ksp/pc/impls/bddc/bddc.h> /*I "petscpc.h" I*/  /* includes for fortran wrappers */
-#include <../src/ksp/pc/impls/bddc/bddcprivate.h>
+#include <petsc/private/pcbddcimpl.h> /*I "petscpc.h" I*/  /* includes for fortran wrappers */
+#include <petsc/private/pcbddcprivateimpl.h>
 #include <petscblaslapack.h>
 
 static PetscBool PCBDDCPackageInitialized = PETSC_FALSE;

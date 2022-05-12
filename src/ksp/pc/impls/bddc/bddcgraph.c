@@ -1,6 +1,6 @@
 #include <petsc/private/petscimpl.h>
-#include <../src/ksp/pc/impls/bddc/bddcprivate.h>
-#include <../src/ksp/pc/impls/bddc/bddcstructs.h>
+#include <petsc/private/pcbddcprivateimpl.h>
+#include <petsc/private/pcbddcstructsimpl.h>
 
 PetscErrorCode PCBDDCGraphGetDirichletDofsB(PCBDDCGraph graph, IS* dirdofs)
 {

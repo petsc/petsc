@@ -1,5 +1,5 @@
-#include <../src/ksp/pc/impls/bddc/bddc.h>
-#include <../src/ksp/pc/impls/bddc/bddcprivate.h>
+#include <petsc/private/pcbddcimpl.h>
+#include <petsc/private/pcbddcprivateimpl.h>
 #include <petscblaslapack.h>
 
 static PetscErrorCode MatMult_BDdelta_deluxe_nonred(Mat A, Vec x, Vec y)
