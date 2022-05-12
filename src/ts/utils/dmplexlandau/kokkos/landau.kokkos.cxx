@@ -243,6 +243,8 @@ PetscErrorCode LandauKokkosStaticDataSet(DM plex, const PetscInt Nq, const Petsc
     SData_d->coo_elem_offsets       = static_cast<void*>(coo_elem_offsets);
     SData_d->coo_elem_fullNb        = static_cast<void*>(coo_elem_fullNb);
     SData_d->coo_elem_point_offsets = static_cast<void*>(coo_elem_point_offsets);
+    auto coo_vals = new Kokkos::View<PetscScalar*, Kokkos::LayoutRight, Kokkos::DefaultExecutionSpace> ("coo_vals", SData_d->coo_size);
+    SData_d->coo_vals = static_cast<void*>(coo_vals);
   }
   SData_d->maps = NULL; // not used
   PetscFunctionReturn(0);
@@ -305,6 +307,8 @@ PetscErrorCode LandauKokkosStaticDataClear(LandauStaticData *SData_d)
     SData_d->coo_elem_offsets = NULL;
     SData_d->coo_elem_point_offsets = NULL;
     SData_d->coo_elem_fullNb = NULL;
+    auto coo_vals = static_cast<Kokkos::View<PetscScalar*, Kokkos::LayoutRight, Kokkos::DefaultExecutionSpace>*>((void*)SData_d->coo_vals);
+    delete coo_vals;
   }
   PetscFunctionReturn(0);
 }
@@ -457,12 +461,11 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
   LandauIdx *d_coo_elem_fullNb    = (SData_d->coo_size==0) ? NULL : d_coo_elem_fullNb_k->data();
   auto d_coo_elem_point_offsets_k = static_cast<Kokkos::View<LandauIdx*, Kokkos::LayoutLeft>*>(SData_d->coo_elem_point_offsets);
   LandauIdx (*d_coo_elem_point_offsets)[LANDAU_MAX_NQ+1] = (SData_d->coo_size==0) ? NULL : (LandauIdx (*)[LANDAU_MAX_NQ+1])d_coo_elem_point_offsets_k->data();
-
-  Kokkos::View<PetscScalar*, Kokkos::LayoutRight,Kokkos::DefaultExecutionSpace> d_coo_vals_k("coo_vals", SData_d->coo_size); // device data (default space)
-  PetscScalar* d_coo_vals = (SData_d->coo_size==0) ? NULL : d_coo_vals_k.data();
+  auto d_coo_vals_k               = static_cast<Kokkos::View<PetscScalar*, Kokkos::LayoutRight>*>(SData_d->coo_vals);
+  PetscScalar *d_coo_vals         = (SData_d->coo_size==0) ? NULL : d_coo_vals_k->data();
 
   PetscFunctionBegin;
-  while (vector_size & vector_size - 1) vector_size =vector_size & vector_size - 1;
+  while (vector_size & (vector_size - 1)) vector_size = vector_size & (vector_size - 1);
   if (vector_size>16) vector_size = 16; // printf("DEBUG\n");
   PetscCall(PetscLogEventBegin(events[3],0,0,0,0));
   PetscCall(DMGetApplicationContext(plex[0], &ctx));
@@ -504,7 +507,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
   }
   const PetscInt totDim_max = Nf_max*Nq, elem_mat_size_max = totDim_max*totDim_max;
   const PetscInt elem_mat_num_cells_max_grid = container ? 0 : num_cells_max;
-  Kokkos::View<PetscScalar****, Kokkos::LayoutRight> d_elem_mats("element matrices", batch_sz, num_grids, elem_mat_num_cells_max_grid, elem_mat_size_max); // first call have large set of global (Jac) element matrices
+  Kokkos::View<PetscScalar****, Kokkos::LayoutRight> d_elem_mats("element matrices", batch_sz, num_grids, elem_mat_num_cells_max_grid, elem_mat_size_max); // not used (cpu assembly)
   const Kokkos::View<PetscReal*, Kokkos::LayoutLeft, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged> >  h_Eq_m_k (a_Eq_m, Nftot);
   if (a_elem_closure || a_xarray) {
     Kokkos::deep_copy (*d_Eq_m_k, h_Eq_m_k);
@@ -742,11 +745,10 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
     PetscCall(PetscLogEventEnd(events[4],0,0,0,0));
     if (d_vertex_f_k) delete d_vertex_f_k;
   } else { // mass
-    using fieldMats_scr_t = Kokkos::View<PetscScalar*, Kokkos::LayoutRight, scr_mem_t>;
     PetscCall(PetscLogEventBegin(events[16],0,0,0,0));
     PetscCall(PetscLogGpuTimeBegin());
     PetscCall(PetscInfo(plex[0], "Mass team size=%d vector size=%d #face=%d Nb=%" PetscInt_FMT ", %s assembly\n",team_size,vector_size,nfaces,Nb, d_coo_vals ? "COO" : "CSR"));
-    Kokkos::parallel_for("Mass", Kokkos::TeamPolicy<>(num_cells_batch*batch_sz, team_size, Kokkos::AUTO /* vector_size */), KOKKOS_LAMBDA (const team_member team) {
+    Kokkos::parallel_for("Mass", Kokkos::TeamPolicy<>(num_cells_batch*batch_sz, team_size, vector_size), KOKKOS_LAMBDA (const team_member team) {
         const PetscInt  b_Nelem = d_elem_offset[num_grids], b_elem_idx = team.league_rank()%b_Nelem, b_id = team.league_rank()/b_Nelem;
         // find my grid
         PetscInt grid = 0;

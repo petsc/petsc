@@ -84,6 +84,7 @@ typedef struct {
   void             *coo_elem_offsets;
   void             *coo_elem_point_offsets;
   void             *coo_elem_fullNb;
+  void             *coo_vals;
   LandauIdx        coo_n_cellsTot;
   LandauIdx        coo_size;
   LandauIdx        coo_max_fullnb;
