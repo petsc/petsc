@@ -6886,20 +6886,19 @@ PetscErrorCode MatCreateSubMatrices(Mat mat,PetscInt n,const IS irow[],const IS 
   PetscValidType(mat,1);
   if (n) {
     PetscValidPointer(irow,3);
-    PetscValidHeaderSpecific(*irow,IS_CLASSID,3);
+    for (i=0; i<n; i++) PetscValidHeaderSpecific(irow[i],IS_CLASSID,3);
     PetscValidPointer(icol,4);
-    PetscValidHeaderSpecific(*icol,IS_CLASSID,4);
+    for (i=0; i<n; i++) PetscValidHeaderSpecific(icol[i],IS_CLASSID,4);
   }
   PetscValidPointer(submat,6);
   if (n && scall == MAT_REUSE_MATRIX) {
     PetscValidPointer(*submat,6);
-    PetscValidHeaderSpecific(**submat,MAT_CLASSID,6);
+    for (i=0; i<n; i++) PetscValidHeaderSpecific((*submat)[i],MAT_CLASSID,6);
   }
   PetscCheck(mat->ops->createsubmatrices,PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   PetscCheck(mat->assembled,PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   PetscCheck(!mat->factortype,PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   MatCheckPreallocated(mat,1);
-
   PetscCall(PetscLogEventBegin(MAT_CreateSubMats,mat,0,0,0));
   PetscCall((*mat->ops->createsubmatrices)(mat,n,irow,icol,scall,submat));
   PetscCall(PetscLogEventEnd(MAT_CreateSubMats,mat,0,0,0));

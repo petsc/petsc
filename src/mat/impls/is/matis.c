@@ -7,7 +7,7 @@
     Currently this allows for only one subdomain per processor.
 */
 
-#include <../src/mat/impls/is/matis.h>      /*I "petscmat.h" I*/
+#include <petsc/private/matisimpl.h>      /*I "petscmat.h" I*/
 #include <petsc/private/sfimpl.h>
 #include <petsc/private/vecimpl.h>
 #include <petsc/private/hashseti.h>
@@ -593,12 +593,12 @@ static PetscErrorCode MatMPIXAIJComputeLocalToGlobalMapping_Private(Mat A, ISLoc
     } else if (ismpibaij) {
       PetscCall(MatMPIBAIJGetSeqBAIJ(A,&Ad,&Ao,&garray));
     } else SETERRQ(comm,PETSC_ERR_SUP,"Type %s",((PetscObject)A)->type_name);
-    PetscCheck(garray,comm,PETSC_ERR_ARG_WRONGSTATE,"garray not present");
     if (A->rmap->n) {
       PetscInt dc,oc,stc,*aux;
 
       PetscCall(MatGetLocalSize(Ad,NULL,&dc));
       PetscCall(MatGetLocalSize(Ao,NULL,&oc));
+      PetscCheck(!oc || garray,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"garray not present");
       PetscCall(MatGetOwnershipRangeColumn(A,&stc,NULL));
       PetscCall(PetscMalloc1((dc+oc)/bs,&aux));
       for (i=0; i<dc/bs; i++) aux[i]       = i+stc/bs;
@@ -2196,6 +2196,8 @@ static PetscErrorCode MatDestroy_IS(Mat A)
   PetscCall(PetscFree2(b->sf_rootdata,b->sf_leafdata));
   PetscCall(ISLocalToGlobalMappingDestroy(&b->rmapping));
   PetscCall(ISLocalToGlobalMappingDestroy(&b->cmapping));
+  PetscCall(MatDestroy(&b->dA));
+  PetscCall(MatDestroy(&b->assembledA));
   PetscCall(PetscFree(A->data));
   PetscCall(PetscObjectChangeTypeName((PetscObject)A,NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatISSetLocalMatType_C",NULL));
@@ -2714,6 +2716,8 @@ static PetscErrorCode MatZeroRowsColumns_Private_IS(Mat A,PetscInt n,const Petsc
   for (i=0,nr=0;i<nl;i++) if (matis->sf_leafdata[i]) lrows[nr++] = i;
   PetscCall(MatISZeroRowsColumnsLocal_Private(A,nr,lrows,diag,columns));
   PetscCall(PetscFree(lrows));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 
@@ -2742,7 +2746,8 @@ static PetscErrorCode MatAssemblyBegin_IS(Mat A,MatAssemblyType type)
 
 static PetscErrorCode MatAssemblyEnd_IS(Mat A,MatAssemblyType type)
 {
-  Mat_IS         *is = (Mat_IS*)A->data;
+  Mat_IS    *is = (Mat_IS*)A->data;
+  PetscBool lnnz;
 
   PetscFunctionBegin;
   PetscCall(MatAssemblyEnd(is->A,type));
@@ -2820,6 +2825,10 @@ static PetscErrorCode MatAssemblyEnd_IS(Mat A,MatAssemblyType type)
     PetscCall(ISDestroy(&nzc));
     is->locempty = PETSC_FALSE;
   }
+  lnnz = (PetscBool)(is->A->nonzerostate == is->lnnzstate);
+  is->lnnzstate = is->A->nonzerostate;
+  PetscCall(MPIU_Allreduce(MPI_IN_PLACE,&lnnz,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)A)));
+  if (lnnz) A->nonzerostate++;
   PetscFunctionReturn(0);
 }
 
@@ -3124,6 +3133,7 @@ static PetscErrorCode MatSetFromOptions_IS(PetscOptionItems *PetscOptionsObject,
 
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject,"MATIS options");
+  PetscCall(PetscOptionsBool("-matis_keepassembled","Store an assembled version if needed","MatISKeepAssembled",a->keepassembled,&a->keepassembled,NULL));
   PetscCall(PetscOptionsBool("-matis_fixempty","Fix local matrices in case of empty local rows/columns","MatISFixLocalEmpty",a->locempty,&a->locempty,NULL));
   PetscCall(PetscOptionsBool("-matis_storel2l","Store local-to-local matrices generated from PtAP operations","MatISStoreL2L",a->storel2l,&a->storel2l,NULL));
   PetscCall(PetscOptionsFList("-matis_localmat_type","Matrix type","MatISSetLocalMatType",MatList,a->lmattype,type,256,&flg));
@@ -3176,11 +3186,14 @@ PetscErrorCode MatCreateIS(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,Petsc
 
 static PetscErrorCode MatHasOperation_IS(Mat A, MatOperation op, PetscBool *has)
 {
-  Mat_IS         *a = (Mat_IS*)A->data;
+  Mat_IS              *a = (Mat_IS*)A->data;
+  static MatOperation tobefiltered[] = { MATOP_MULT_ADD, MATOP_MULT_TRANSPOSE_ADD, MATOP_GET_DIAGONAL_BLOCK, MATOP_INCREASE_OVERLAP };
 
   PetscFunctionBegin;
   *has = PETSC_FALSE;
   if (!((void**)A->ops)[op]) PetscFunctionReturn(0);
+  *has = PETSC_TRUE;
+  for (PetscInt i = 0; PETSC_STATIC_ARRAY_LENGTH(tobefiltered); i++) if (op == tobefiltered[i]) PetscFunctionReturn(0);
   PetscCall(MatHasOperation(a->A,op,has));
   PetscFunctionReturn(0);
 }
@@ -3227,6 +3240,124 @@ static PetscErrorCode MatSetPreallocationCOO_IS(Mat A,PetscCount ncoo,const Pets
   PetscCall(PetscFree2(coo_il,coo_jl));
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatSetValuesCOO_C",MatSetValuesCOO_IS));
   A->preallocated = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatISGetAssembled_Private(Mat A, Mat *tA)
+{
+  Mat_IS           *a = (Mat_IS*)A->data;
+  PetscObjectState Astate, aAstate = PETSC_MIN_INT;
+  PetscObjectState Annzstate, aAnnzstate = PETSC_MIN_INT;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectStateGet((PetscObject)A,&Astate));
+  Annzstate = A->nonzerostate;
+  if (a->assembledA) {
+    PetscCall(PetscObjectStateGet((PetscObject)a->assembledA,&aAstate));
+    aAnnzstate = a->assembledA->nonzerostate;
+  }
+  if (aAnnzstate != Annzstate) PetscCall(MatDestroy(&a->assembledA));
+  if (Astate != aAstate || !a->assembledA) {
+    MatType     aAtype;
+    PetscMPIInt size;
+    PetscInt    rbs, cbs, bs;
+
+    /* the assembled form is used as temporary storage for parallel operations
+       like createsubmatrices and the like, do not waste device memory */
+    PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)A),&size));
+    PetscCall(ISLocalToGlobalMappingGetBlockSize(a->cmapping,&cbs));
+    PetscCall(ISLocalToGlobalMappingGetBlockSize(a->rmapping,&rbs));
+    bs = rbs == cbs ? rbs : 1;
+    if (a->assembledA) PetscCall(MatGetType(a->assembledA,&aAtype));
+    else if (size > 1) aAtype = bs > 1 ? MATMPIBAIJ : MATMPIAIJ;
+    else aAtype = bs > 1 ? MATSEQBAIJ : MATSEQAIJ;
+
+    PetscCall(MatConvert(A,aAtype,a->assembledA ? MAT_REUSE_MATRIX : MAT_INITIAL_MATRIX,&a->assembledA));
+    PetscCall(PetscObjectStateSet((PetscObject)a->assembledA,Astate));
+    a->assembledA->nonzerostate = Annzstate;
+  }
+  PetscCall(PetscObjectReference((PetscObject)a->assembledA));
+  *tA = a->assembledA;
+  if (!a->keepassembled) PetscCall(MatDestroy(&a->assembledA));
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatISRestoreAssembled_Private(Mat A, Mat *tA)
+{
+  PetscFunctionBegin;
+  PetscCall(MatDestroy(tA));
+  *tA = NULL;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatGetDiagonalBlock_IS(Mat A, Mat *dA)
+{
+  Mat_IS           *a = (Mat_IS*)A->data;
+  PetscObjectState Astate, dAstate = PETSC_MIN_INT;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectStateGet((PetscObject)A,&Astate));
+  if (a->dA) PetscCall(PetscObjectStateGet((PetscObject)a->dA,&dAstate));
+  if (Astate != dAstate) {
+    Mat     tA;
+    MatType ltype;
+
+    PetscCall(MatDestroy(&a->dA));
+    PetscCall(MatISGetAssembled_Private(A,&tA));
+    PetscCall(MatGetDiagonalBlock(tA,&a->dA));
+    PetscCall(MatPropagateSymmetryOptions(tA,a->dA));
+    PetscCall(MatGetType(a->A,&ltype));
+    PetscCall(MatConvert(a->dA,ltype,MAT_INPLACE_MATRIX,&a->dA));
+    PetscCall(PetscObjectReference((PetscObject)a->dA));
+    PetscCall(MatISRestoreAssembled_Private(A,&tA));
+    PetscCall(PetscObjectStateSet((PetscObject)a->dA,Astate));
+  }
+  *dA = a->dA;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatCreateSubMatrices_IS(Mat A,PetscInt n,const IS irow[],const IS icol[],MatReuse reuse,Mat *submat[])
+{
+  Mat tA;
+
+  PetscFunctionBegin;
+  PetscCall(MatISGetAssembled_Private(A,&tA));
+  PetscCall(MatCreateSubMatrices(tA,n,irow,icol,reuse,submat));
+  /* MatCreateSubMatrices_MPIAIJ is a mess at the moment */
+#if 0
+  {
+    Mat_IS    *a = (Mat_IS*)A->data;
+    MatType   ltype;
+    VecType   vtype;
+    char      *flg;
+
+    PetscCall(MatGetType(a->A,&ltype));
+    PetscCall(MatGetVecType(a->A,&vtype));
+    PetscCall(PetscStrstr(vtype,"cuda",&flg));
+    if (!flg) PetscCall(PetscStrstr(vtype,"hip",&flg));
+    if (!flg) PetscCall(PetscStrstr(vtype,"kokkos",&flg));
+    if (flg) {
+      for (PetscInt i = 0; i < n; i++) {
+        Mat sA = (*submat)[i];
+
+        PetscCall(MatConvert(sA,ltype,MAT_INPLACE_MATRIX,&sA));
+        (*submat)[i] = sA;
+      }
+    }
+  }
+#endif
+  PetscCall(MatISRestoreAssembled_Private(A,&tA));
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatIncreaseOverlap_IS(Mat A, PetscInt n, IS is[], PetscInt ov)
+{
+  Mat tA;
+
+  PetscFunctionBegin;
+  PetscCall(MatISGetAssembled_Private(A,&tA));
+  PetscCall(MatIncreaseOverlap(tA,n,is,ov));
+  PetscCall(MatISRestoreAssembled_Private(A,&tA));
   PetscFunctionReturn(0);
 }
 
@@ -3339,6 +3470,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat A)
   A->ops->setfromoptions          = MatSetFromOptions_IS;
   A->ops->setup                   = MatSetUp_IS;
   A->ops->hasoperation            = MatHasOperation_IS;
+  A->ops->getdiagonalblock        = MatGetDiagonalBlock_IS;
+  A->ops->createsubmatrices       = MatCreateSubMatrices_IS;
+  A->ops->increaseoverlap         = MatIncreaseOverlap_IS;
 
   /* special MATIS functions */
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatISSetLocalMatType_C",MatISSetLocalMatType_IS));

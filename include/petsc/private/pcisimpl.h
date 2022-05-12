@@ -3,7 +3,7 @@
 #define __pcis_h
 
 #include <petsc/private/pcimpl.h>
-#include <../src/mat/impls/is/matis.h>
+#include <petsc/private/matisimpl.h>
 #include <petscksp.h>
 
 /*
