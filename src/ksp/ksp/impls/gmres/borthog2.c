@@ -30,8 +30,8 @@
 
    Level: intermediate
 
-.seelaso:  KSPGMRESSetOrthogonalization(), KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESSetCGSRefinementType(),
-           KSPGMRESGetCGSRefinementType(), KSPGMRESGetOrthogonalization(), KSPGMRESModifiedGramSchmidtOrthogonalization()
+.seelalso:  `KSPGMRESSetOrthogonalization()`, `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESSetCGSRefinementType()`,
+            `KSPGMRESGetCGSRefinementType()`, `KSPGMRESGetOrthogonalization(), `KSPGMRESModifiedGramSchmidtOrthogonalization()`
 
 @*/
 PetscErrorCode  KSPGMRESClassicalGramSchmidtOrthogonalization(KSP ksp,PetscInt it)
