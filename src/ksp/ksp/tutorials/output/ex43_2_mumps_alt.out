@@ -1,0 +1,132 @@
+  Residual norms for stokes_ solve.
+  0 KSP Residual norm 0.0239928 
+  1 KSP Residual norm 0.00018525 
+  2 KSP Residual norm 3.95184e-05 
+  3 KSP Residual norm 8.60318e-07 
+  4 KSP Residual norm 9.54453e-08 
+KSP Object: (stokes_) 1 MPI process
+  type: fgmres
+    restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+    happy breakdown tolerance 1e-30
+  maximum iterations=10000, initial guess is zero
+  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  right preconditioning
+  using UNPRECONDITIONED norm type for convergence test
+PC Object: (stokes_) 1 MPI process
+  type: fieldsplit
+    FieldSplit with SYMMETRIC_MULTIPLICATIVE composition: total splits = 2, blocksize = 3
+    using Amat (not Pmat) as operator for blocks
+    using Amat (not Pmat) as operator for diagonal blocks
+    using Amat (not Pmat) as operator for off-diagonal blocks
+    Solver info for each split is in the following KSP objects:
+  Split number 0 Fields  0, 1
+  KSP Object: (stokes_fieldsplit_u_) 1 MPI process
+    type: preonly
+    maximum iterations=10000, initial guess is zero
+    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+    left preconditioning
+    using NONE norm type for convergence test
+  PC Object: (stokes_fieldsplit_u_) 1 MPI process
+    type: lu
+      out-of-place factorization
+      tolerance for zero pivot 2.22045e-14
+      matrix ordering: nd
+      factor fill ratio given 0., needed 0.
+        Factored matrix follows:
+          Mat Object: 1 MPI process
+            type: mumps
+            rows=882, cols=882
+            package used to perform factorization: mumps
+            total: nonzeros=204188, allocated nonzeros=204188
+              MUMPS run parameters:
+                SYM (matrix type):                   0
+                PAR (host participation):            1
+                ICNTL(1) (output for error):         6
+                ICNTL(2) (output of diagnostic msg): 0
+                ICNTL(3) (output for global info):   0
+                ICNTL(4) (level of printing):        0
+                ICNTL(5) (input mat struct):         0
+                ICNTL(6) (matrix prescaling):        7
+                ICNTL(7) (sequential matrix ordering):1
+                ICNTL(8) (scaling strategy):        77
+                ICNTL(10) (max num of refinements):  0
+                ICNTL(11) (error analysis):          0
+                ICNTL(12) (efficiency control):                         1
+                ICNTL(13) (sequential factorization of the root node):  0
+                ICNTL(14) (percentage of estimated workspace increase): 20
+                ICNTL(15) (compression of the input matrix):            -2
+                ICNTL(18) (input mat struct):                           0
+                ICNTL(19) (Schur complement info):                      0
+                ICNTL(20) (RHS sparse pattern):                         0
+                ICNTL(21) (solution struct):                            0
+                ICNTL(22) (in-core/out-of-core facility):               0
+                ICNTL(23) (max size of memory can be allocated locally):0
+                ICNTL(24) (detection of null pivot rows):               0
+                ICNTL(25) (computation of a null space basis):          0
+                ICNTL(26) (Schur options for RHS or solution):          0
+                ICNTL(27) (blocking size for multiple RHS):             -32
+                ICNTL(28) (use parallel or sequential ordering):        1
+                ICNTL(29) (parallel ordering):                          0
+                ICNTL(30) (user-specified set of entries in inv(A)):    0
+                ICNTL(31) (factors is discarded in the solve phase):    0
+                ICNTL(33) (compute determinant):                        0
+                ICNTL(35) (activate BLR based factorization):           0
+                ICNTL(36) (choice of BLR factorization variant):        0
+                ICNTL(38) (estimated compression rate of LU factors):   333
+                CNTL(1) (relative pivoting threshold):      0.01 
+                CNTL(2) (stopping criterion of refinement): 1.49012e-08 
+                CNTL(3) (absolute pivoting threshold):      0. 
+                CNTL(4) (value of static pivoting):         -1. 
+                CNTL(5) (fixation for null pivots):         0. 
+                CNTL(7) (dropping parameter for BLR):       0. 
+                INFOG(7) (ordering option effectively used after analysis): 1
+    linear system matrix followed by preconditioner matrix:
+    Mat Object: 1 MPI process
+      type: seqaij
+      rows=882, cols=882, bs=2
+      total: nonzeros=14884, allocated nonzeros=14884
+      total number of mallocs used during MatSetValues calls=0
+        using I-node routines: found 441 nodes, limit used is 5
+    Mat Object: (stokes_fieldsplit_u_) 1 MPI process
+      type: seqaij
+      rows=882, cols=882, bs=2
+      total: nonzeros=14884, allocated nonzeros=14884
+      total number of mallocs used during MatSetValues calls=0
+        using I-node routines: found 441 nodes, limit used is 5
+  Split number 1 Fields  2
+  KSP Object: (stokes_fieldsplit_p_) 1 MPI process
+    type: preonly
+    maximum iterations=10000, initial guess is zero
+    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+    left preconditioning
+    using NONE norm type for convergence test
+  PC Object: (stokes_fieldsplit_p_) 1 MPI process
+    type: jacobi
+      type DIAGONAL
+    linear system matrix followed by preconditioner matrix:
+    Mat Object: 1 MPI process
+      type: seqaij
+      rows=441, cols=441
+      total: nonzeros=3721, allocated nonzeros=3721
+      total number of mallocs used during MatSetValues calls=0
+        not using I-node routines
+    Mat Object: (stokes_fieldsplit_p_) 1 MPI process
+      type: seqaij
+      rows=441, cols=441
+      total: nonzeros=3721, allocated nonzeros=3721
+      total number of mallocs used during MatSetValues calls=0
+        not using I-node routines
+  linear system matrix followed by preconditioner matrix:
+  Mat Object: 1 MPI process
+    type: seqaij
+    rows=1323, cols=1323, bs=3
+    total: nonzeros=33489, allocated nonzeros=33489
+    total number of mallocs used during MatSetValues calls=0
+      using I-node routines: found 441 nodes, limit used is 5
+  Mat Object: 1 MPI process
+    type: seqaij
+    rows=1323, cols=1323, bs=3
+    total: nonzeros=33489, allocated nonzeros=33489
+    total number of mallocs used during MatSetValues calls=0
+      using I-node routines: found 441 nodes, limit used is 5
+4.7619e-02   5.4794e-03   7.1439e-05   2.3332e-03

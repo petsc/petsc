@@ -292,7 +292,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
   }
 
   /* Destroy previous submatrices of a different type than pc->pmat since MAT_REUSE_MATRIX won't work in that case */
-  if ((scall == MAT_REUSE_MATRIX) && osm->sub_mat_type) {
+  if (scall == MAT_REUSE_MATRIX && osm->sub_mat_type) {
     if (osm->n_local_true > 0) {
       PetscCall(MatDestroySubMatrices(osm->n_local_true,&osm->pmat));
     }
@@ -1089,7 +1089,7 @@ PetscErrorCode  PCASMSetOverlap(PC pc,PetscInt ovl)
 -   type - variant of ASM, one of
 .vb
       PC_ASM_BASIC       - full interpolation and restriction
-      PC_ASM_RESTRICT    - full restriction, local processor interpolation
+      PC_ASM_RESTRICT    - full restriction, local processor interpolation (default)
       PC_ASM_INTERPOLATE - full interpolation, local processor restriction
       PC_ASM_NONE        - local processor restriction and interpolation
 .ve

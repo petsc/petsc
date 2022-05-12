@@ -21,7 +21,7 @@ PetscLogEvent IS_Load;
 -  subset_mult - the multiplicity of each entry in subset (optional, can be NULL)
 
    Output Parameters:
-+  N - the maximum entry of the new IS
++  N - one past the largest entry of the new IS
 -  subset_n - the new IS
 
    Notes: All negative entries are mapped to -1. Indices with non positive multiplicities are skipped.
