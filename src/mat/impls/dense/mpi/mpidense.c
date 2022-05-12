@@ -616,6 +616,8 @@ PetscErrorCode MatDestroy_MPIDense(Mat mat)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatDenseRestoreColumnVecWrite_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatDenseGetSubMatrix_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatDenseRestoreSubMatrix_C",NULL));
+
+  PetscCall(PetscObjectCompose((PetscObject)mat,"DiagonalBlock",NULL));
   PetscFunctionReturn(0);
 }
 
