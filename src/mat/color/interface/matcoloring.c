@@ -126,11 +126,11 @@ PetscErrorCode MatColoringDestroy(MatColoring *mc)
    Level: beginner
 
    Notes:
-    Possible types include the sequential types MATCOLORINGLF,
-   MATCOLORINGSL, and MATCOLORINGID from the MINPACK package as well
-   as a parallel MATCOLORINGMIS algorithm.
+    Possible types include the sequential types `MATCOLORINGLF`,
+   `MATCOLORINGSL`, and `MATCOLORINGID` from the MINPACK package as well
+   as a parallel `MATCOLORINGGREEDY` algorithm.
 
-.seealso: `MatColoringCreate()`, `MatColoringApply()`
+.seealso: `MatColoringType`, `MatColoringCreate()`, `MatColoringApply()`
 @*/
 PetscErrorCode MatColoringSetType(MatColoring mc,MatColoringType type)
 {
