@@ -10,11 +10,12 @@ if __name__ == '__main__':
   import configure
   configure_options = [
     '--package-prefix-hash='+petsc_hash_pkgs,
-    '--with-make-test-np=2',
+    '--with-make-test-np=15',
     'COPTFLAGS=-g -O',
     'FOPTFLAGS=-g -O',
     'CXXOPTFLAGS=-g -O',
-    '--with-cuda-dir=/usr/local/cuda-11.0',
+    '--with-cuda=1',
+    '--with-gcov=1',
   ]
 
   configure.petsc_configure(configure_options)

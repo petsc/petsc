@@ -14,14 +14,12 @@ if __name__ == '__main__':
     'COPTFLAGS=-g -O',
     'FOPTFLAGS=-g -O',
     'CXXOPTFLAGS=-g -O',
-    '--with-gcov=1',
     '--download-suitesparse',
     '--download-mumps',
     '--download-scalapack',
     '--download-chaco',
     '--download-ctetgen',
     '--download-exodusii',
-    '--download-cmake',   # for exodus as it breaks with cmake version 2.8.12.2
     '--download-pnetcdf',
     '--download-generator',
     '--download-hdf5',
@@ -32,15 +30,19 @@ if __name__ == '__main__':
     '--download-parmetis',
     '--download-triangle',
     '--download-p4est',
-    '--download-viennacl',
-    '--download-hypre',
     '--with-cuda',
     '--with-shared-libraries',
     '--download-magma',
     '--with-magma-fortran-bindings=0',
     '--download-kblas',
     '--download-h2opus',
-    '--download-cub',
+    '--download-kokkos',
+    '--download-kokkos-kernels',
+    '--download-hwloc',
+    '--download-hypre',
+    '--download-hypre-configure-arguments=--enable-unified-memory',
+    '--download-raja',
+
   ]
 
   configure.petsc_configure(configure_options)
