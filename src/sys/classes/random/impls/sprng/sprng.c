@@ -50,7 +50,7 @@ static struct _PetscRandomOps PetscRandomOps_Values = {
 };
 
 /*MC
-   PETSCSPRNG- access to the publically available random number generator sprng
+   PETSCSPRNG - access to the publically available random number generator sprng
 
    Options Database Keys:
 . -random_type <rand,rand48,sprng>
