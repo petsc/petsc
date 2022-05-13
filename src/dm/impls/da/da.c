@@ -815,6 +815,67 @@ PetscErrorCode  DMDASetGetMatrix(DM da,PetscErrorCode (*f)(DM, Mat*))
   PetscFunctionReturn(0);
 }
 
+/*@
+   DMDAMapMatStencilToGlobal - Map a list of MatStencils on a grid to global indices.
+
+   Not Collective
+
+   Input Parameters:
++  da - the DMDA object
+.  m - number of MatStencils
+-  idxm - grid points (and component number when dof > 1)
+
+   Output Parameters:
++  gidxm - global row indices
+
+.seealso: `MatStencil`
+@*/
+PetscErrorCode DMDAMapMatStencilToGlobal(DM da,PetscInt m,const MatStencil idxm[],PetscInt gidxm[])
+{
+  const DM_DA            *dd = (const DM_DA*)da->data;
+  const PetscInt         *dxm = (const PetscInt*)idxm;
+  PetscInt               i,j,sdim,tmp,dim;
+  PetscInt               dims[4],starts[4],dims2[3],starts2[3],dof = dd->w;
+  ISLocalToGlobalMapping ltog;
+
+  PetscFunctionBegin;
+  if (m <= 0) PetscFunctionReturn(0);
+  dim       = da->dim; /* DA dim: 1 to 3 */
+  sdim      = dim + (dof > 1? 1 : 0); /* Dimension in MatStencil's (k,j,i,c) view */
+
+  starts2[0] = dd->Xs/dof + dd->xo;
+  starts2[1] = dd->Ys   + dd->yo;
+  starts2[2] = dd->Zs   + dd->zo;
+  dims2[0]   = (dd->Xe - dd->Xs)/dof;
+  dims2[1]   = (dd->Ye - dd->Ys);
+  dims2[2]   = (dd->Ze - dd->Zs);
+
+  for (i=0; i<dim; i++) {
+    dims[i]   = dims2[dim-i-1];  /* copy the values in backwards */
+    starts[i] = starts2[dim-i-1];
+  }
+  starts[dim] = 0;
+  dims[dim]   = dof;
+
+  /* Map stencils to local indices (code adapted from MatSetValuesStencil()) */
+  for (i=0; i<m; i++) {
+    for (j=0; j<3-dim; j++) dxm++; /* dxm[] is in k,j,i,c order; move to the first significant index */
+    tmp = *dxm++ - starts[0];
+    for (j=0; j<sdim-1; j++) {
+      if (tmp < 0 || (*dxm - starts[j+1]) < 0) tmp = -1; /* Beyond the ghost region, therefore ignored with negative indices */
+      else                                     tmp = tmp*dims[j] + (*dxm - starts[j+1]);
+      dxm++;
+    }
+    if (dof == 1) dxm++; /* If no dof, skip the unused c */
+    gidxm[i] = tmp;
+  }
+
+  /* Map local indices to global indices */
+  PetscCall(DMGetLocalToGlobalMapping(da,&ltog));
+  PetscCall(ISLocalToGlobalMappingApply(ltog,m,gidxm,gidxm));
+  PetscFunctionReturn(0);
+}
+
 /*
   Creates "balanced" ownership ranges after refinement, constrained by the need for the
   fine grid boundaries to fall within one stencil width of the coarse partition.

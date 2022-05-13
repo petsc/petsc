@@ -107,6 +107,9 @@ In addition to the changes above
 
 .. rubric:: SNES:
 
+- Add ``DMDASNESSetFunctionLocalVec()``, ``DMDASNESSetJacobianLocalVec()`` and ``DMDASNESSetObjectiveLocalVec()``, and associate types ``DMDASNESFunctionVec``, ``DMDASNESJacobianVec`` and ``DMDASNESObjectiveVec``,
+  which accept Vec parameters instead of void pointers in contrast to versions without the Vec suffix
+
 .. rubric:: SNESLineSearch:
 
 .. rubric:: TS:
@@ -117,6 +120,8 @@ In addition to the changes above
 .. rubric:: TAO:
 
 .. rubric:: DM/DA:
+
+- Add ``DMDAMapMatStencilToGlobal()`` to map MatStencils to global indices
 
 .. rubric:: DMSwarm:
 
