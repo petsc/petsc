@@ -650,11 +650,10 @@ linux-pkgs-valgrind:
     - .stage-3
     - .linux_test
   tags:
-    - gce-nfs, linux-fast
+    - gce-valgrind
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-valgrind
     TIMEOUT: 7200
-    LOAD_MODULES: valgrind/3.17.0
 
 linux-pkgs-opt:
   extends:
