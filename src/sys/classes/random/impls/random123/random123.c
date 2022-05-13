@@ -115,7 +115,7 @@ static struct _PetscRandomOps PetscRandomOps_Values = {
 };
 
 /*MC
-   PETSCRANDOM123- access to Random123 counter based pseudorandom number generators (currently threefry4x64)
+   PETSCRANDOM123 - access to Random123 counter based pseudorandom number generators (currently threefry4x64)
 
    Options Database Keys:
 . -random_type <rand,rand48,sprng,random123>
