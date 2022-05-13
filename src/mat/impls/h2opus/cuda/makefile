@@ -1,16 +1,13 @@
--include ../../../../petscdir.mk
-#requirespackage 'PETSC_HAVE_H2OPUS'
+-include ../../../../../petscdir.mk
+#requirespackage   'PETSC_HAVE_CUDA'
 
-ALL: lib
-
-FFLAGS    =
-SOURCECXX = math2opuscpu.cxx math2opusutilscpu.cxx
+SOURCECU  = math2opus.cu math2opusutils.cu
 SOURCEF   =
 SOURCEH   =
 LIBBASE   = libpetscmat
-DIRS      = cuda
+DIRS      =
 MANSEC    = Mat
-LOCDIR    = src/mat/impls/h2opus/
+LOCDIR    = src/mat/impls/h2opus/cuda/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
