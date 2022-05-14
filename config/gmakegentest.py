@@ -386,10 +386,6 @@ class generateExamples(Petsc):
     subst['petsc_index_size']=str(self.conf['PETSC_INDEX_SIZE'])
     subst['petsc_scalar_size']=str(self.conf['PETSC_SCALAR_SIZE'])
 
-    if 'PETSC_OPTIONS' in os.environ:
-      subst['petsc_options']=os.environ['PETSC_OPTIONS']
-    else:
-      subst['petsc_options']=''
     subst['petsc_test_options']=self.conf['PETSC_TEST_OPTIONS']
 
     #Conf vars
