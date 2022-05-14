@@ -123,8 +123,8 @@ PetscErrorCode MatCreateSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,MatReu
     kstart   = ai[row];
     kend     = kstart + a->ilen[row];
     mat_i    = c->i[i];
-    mat_j    = c->j + mat_i;
-    mat_a    = c->a + mat_i*bs2;
+    mat_j    = c->j ? c->j + mat_i : NULL; /* mustn't add to NULL, that is UB */
+    mat_a    = c->a ? c->a + mat_i*bs2 : NULL; /* mustn't add to NULL, that is UB */
     mat_ilen = c->ilen + i;
     for (k=kstart; k<kend; k++) {
       if ((tcol=ssmap[a->j[k]])) {
@@ -136,7 +136,7 @@ PetscErrorCode MatCreateSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,MatReu
     }
   }
   /* sort */
-  {
+  if (c->j && c->a) {
     MatScalar *work;
     PetscCall(PetscMalloc1(bs2,&work));
     for (i=0; i<nrows; i++) {

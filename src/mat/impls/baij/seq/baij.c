@@ -1773,7 +1773,8 @@ PetscErrorCode MatGetValues_SeqBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscIn
     row = im[k]; brow = row/bs;
     if (row < 0) {v += n; continue;} /* negative row */
     PetscCheck(row < A->rmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row %" PetscInt_FMT " too large", row);
-    rp   = aj + ai[brow]; ap = aa + bs2*ai[brow];
+    rp   = aj ? aj + ai[brow] : NULL; /* mustn't add to NULL, that is UB */
+    ap   = aa ? aa + bs2*ai[brow] : NULL; /* mustn't add to NULL, that is UB */
     nrow = ailen[brow];
     for (l=0; l<n; l++) { /* loop over columns */
       if (in[l] < 0) {v++; continue;} /* negative column */
