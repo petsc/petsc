@@ -5,99 +5,100 @@
 #include <petsc/private/pcbddcstructsimpl.h>
 
 /* main functions */
-PetscErrorCode PCBDDCAnalyzeInterface(PC);
-PetscErrorCode PCBDDCConstraintsSetUp(PC);
+PETSC_EXTERN PetscErrorCode PCBDDCAnalyzeInterface(PC);
+PETSC_EXTERN PetscErrorCode PCBDDCConstraintsSetUp(PC);
 
 /* reset functions */
-PetscErrorCode PCBDDCResetTopography(PC);
-PetscErrorCode PCBDDCResetSolvers(PC);
-PetscErrorCode PCBDDCResetCustomization(PC);
+PETSC_EXTERN PetscErrorCode PCBDDCResetTopography(PC);
+PETSC_EXTERN PetscErrorCode PCBDDCResetSolvers(PC);
+PETSC_EXTERN PetscErrorCode PCBDDCResetCustomization(PC);
 
 /* graph */
-PetscErrorCode PCBDDCGraphCreate(PCBDDCGraph*);
-PetscErrorCode PCBDDCGraphDestroy(PCBDDCGraph*);
-PetscErrorCode PCBDDCGraphInit(PCBDDCGraph,ISLocalToGlobalMapping,PetscInt,PetscInt);
-PetscErrorCode PCBDDCGraphReset(PCBDDCGraph);
-PetscErrorCode PCBDDCGraphResetCSR(PCBDDCGraph);
-PetscErrorCode PCBDDCGraphResetCoords(PCBDDCGraph);
-PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph,PetscInt,IS,IS,PetscInt,IS[],IS);
-PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph);
-PetscErrorCode PCBDDCGraphComputeConnectedComponentsLocal(PCBDDCGraph);
-PetscErrorCode PCBDDCGraphASCIIView(PCBDDCGraph,PetscInt,PetscViewer);
-PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph,PetscInt*,IS*[],PetscInt*,IS*[],IS*);
-PetscErrorCode PCBDDCGraphRestoreCandidatesIS(PCBDDCGraph,PetscInt*,IS*[],PetscInt*,IS*[],IS*);
-PetscErrorCode PCBDDCGraphGetDirichletDofs(PCBDDCGraph,IS*);
-PetscErrorCode PCBDDCGraphGetDirichletDofsB(PCBDDCGraph,IS*);
+PETSC_EXTERN PetscErrorCode PCBDDCGraphCreate(PCBDDCGraph*);
+PETSC_EXTERN PetscErrorCode PCBDDCGraphDestroy(PCBDDCGraph*);
+PETSC_EXTERN PetscErrorCode PCBDDCGraphInit(PCBDDCGraph,ISLocalToGlobalMapping,PetscInt,PetscInt);
+PETSC_EXTERN PetscErrorCode PCBDDCGraphReset(PCBDDCGraph);
+PETSC_EXTERN PetscErrorCode PCBDDCGraphResetCSR(PCBDDCGraph);
+PETSC_EXTERN PetscErrorCode PCBDDCGraphResetCoords(PCBDDCGraph);
+PETSC_EXTERN PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph,PetscInt,IS,IS,PetscInt,IS[],IS);
+PETSC_EXTERN PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph);
+PETSC_EXTERN PetscErrorCode PCBDDCGraphComputeConnectedComponentsLocal(PCBDDCGraph);
+PETSC_EXTERN PetscErrorCode PCBDDCGraphASCIIView(PCBDDCGraph,PetscInt,PetscViewer);
+PETSC_EXTERN PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph,PetscInt*,IS*[],PetscInt*,IS*[],IS*);
+PETSC_EXTERN PetscErrorCode PCBDDCGraphRestoreCandidatesIS(PCBDDCGraph,PetscInt*,IS*[],PetscInt*,IS*[],IS*);
+PETSC_EXTERN PetscErrorCode PCBDDCGraphGetDirichletDofs(PCBDDCGraph,IS*);
+PETSC_EXTERN PetscErrorCode PCBDDCGraphGetDirichletDofsB(PCBDDCGraph,IS*);
 
 /* interface for scaling operator */
-PetscErrorCode PCBDDCScalingSetUp(PC);
-PetscErrorCode PCBDDCScalingDestroy(PC);
-PetscErrorCode PCBDDCScalingRestriction(PC,Vec,Vec);
-PetscErrorCode PCBDDCScalingExtension(PC,Vec,Vec);
+PETSC_EXTERN PetscErrorCode PCBDDCScalingSetUp(PC);
+PETSC_EXTERN PetscErrorCode PCBDDCScalingDestroy(PC);
+PETSC_EXTERN PetscErrorCode PCBDDCScalingRestriction(PC,Vec,Vec);
+PETSC_EXTERN PetscErrorCode PCBDDCScalingExtension(PC,Vec,Vec);
 
 /* nullspace correction */
-PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC,PetscBool,PetscBool);
+PETSC_EXTERN PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC,PetscBool,PetscBool);
 
 /* utils */
-PetscErrorCode PCBDDCComputeLocalMatrix(PC,Mat);
-PetscErrorCode PCBDDCSetUpLocalWorkVectors(PC);
-PetscErrorCode PCBDDCSetUpSolvers(PC);
-PetscErrorCode PCBDDCSetUpLocalScatters(PC);
-PetscErrorCode PCBDDCSetUpLocalSolvers(PC,PetscBool,PetscBool);
-PetscErrorCode PCBDDCSetUpCorrection(PC,PetscScalar**);
-PetscErrorCode PCBDDCSetUpCoarseSolver(PC,PetscScalar*);
-PetscErrorCode PCBDDCComputePrimalNumbering(PC,PetscInt*,PetscInt**);
-PetscErrorCode PCBDDCScatterCoarseDataBegin(PC,InsertMode,ScatterMode);
-PetscErrorCode PCBDDCScatterCoarseDataEnd(PC,InsertMode,ScatterMode);
-PetscErrorCode PCBDDCApplyInterfacePreconditioner(PC,PetscBool);
-PetscErrorCode PCBDDCOrthonormalizeVecs(PetscInt*,Vec[]);
-PetscErrorCode PCBDDCSetUseExactDirichlet(PC,PetscBool);
-PetscErrorCode PCBDDCSetLevel(PC,PetscInt);
-PetscErrorCode PCBDDCGlobalToLocal(VecScatter,Vec,Vec,IS,IS*);
-PetscErrorCode PCBDDCAdaptiveSelection(PC);
-PetscErrorCode PCBDDCConsistencyCheckIS(PC,MPI_Op,IS*);
-PetscErrorCode PCBDDCComputeLocalTopologyInfo(PC);
-PetscErrorCode MatCreateSubMatrixUnsorted(Mat,IS,IS,Mat*);
-PetscErrorCode PCBDDCDetectDisconnectedComponents(PC,PetscBool,PetscInt*,IS*[],IS*);
-PetscErrorCode MatSeqAIJCompress(Mat,Mat*);
-PetscErrorCode PCBDDCReuseSolversBenignAdapt(PCBDDCReuseSolvers,Vec,Vec,PetscBool,PetscBool);
-PetscErrorCode PCBDDCComputeNoNetFlux(Mat,Mat,PetscBool,IS,PCBDDCGraph,MatNullSpace*);
-PetscErrorCode PCBDDCNullSpaceCreate(MPI_Comm,PetscBool,PetscInt,Vec[],MatNullSpace*);
-PetscErrorCode PCBDDCNedelecSupport(PC);
-PetscErrorCode PCBDDCAddPrimalVerticesLocalIS(PC,IS);
+PETSC_EXTERN PetscErrorCode PCBDDCComputeLocalMatrix(PC,Mat);
+PETSC_EXTERN PetscErrorCode PCBDDCSetUpLocalWorkVectors(PC);
+PETSC_EXTERN PetscErrorCode PCBDDCSetUpSolvers(PC);
+PETSC_EXTERN PetscErrorCode PCBDDCSetUpLocalScatters(PC);
+PETSC_EXTERN PetscErrorCode PCBDDCSetUpLocalSolvers(PC,PetscBool,PetscBool);
+PETSC_EXTERN PetscErrorCode PCBDDCSetUpCorrection(PC,PetscScalar**);
+PETSC_EXTERN PetscErrorCode PCBDDCSetUpCoarseSolver(PC,PetscScalar*);
+PETSC_EXTERN PetscErrorCode PCBDDCComputePrimalNumbering(PC,PetscInt*,PetscInt**);
+PETSC_EXTERN PetscErrorCode PCBDDCScatterCoarseDataBegin(PC,InsertMode,ScatterMode);
+PETSC_EXTERN PetscErrorCode PCBDDCScatterCoarseDataEnd(PC,InsertMode,ScatterMode);
+PETSC_EXTERN PetscErrorCode PCBDDCApplyInterfacePreconditioner(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCBDDCOrthonormalizeVecs(PetscInt*,Vec[]);
+PETSC_EXTERN PetscErrorCode PCBDDCSetUseExactDirichlet(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCBDDCSetLevel(PC,PetscInt);
+PETSC_EXTERN PetscErrorCode PCBDDCGlobalToLocal(VecScatter,Vec,Vec,IS,IS*);
+PETSC_EXTERN PetscErrorCode PCBDDCAdaptiveSelection(PC);
+PETSC_EXTERN PetscErrorCode PCBDDCConsistencyCheckIS(PC,MPI_Op,IS*);
+PETSC_EXTERN PetscErrorCode PCBDDCComputeLocalTopologyInfo(PC);
+PETSC_EXTERN PetscErrorCode MatCreateSubMatrixUnsorted(Mat,IS,IS,Mat*);
+PETSC_EXTERN PetscErrorCode PCBDDCDetectDisconnectedComponents(PC,PetscBool,PetscInt*,IS*[],IS*);
+PETSC_EXTERN PetscErrorCode MatSeqAIJCompress(Mat,Mat*);
+PETSC_EXTERN PetscErrorCode PCBDDCReuseSolversBenignAdapt(PCBDDCReuseSolvers,Vec,Vec,PetscBool,PetscBool);
+PETSC_EXTERN PetscErrorCode PCBDDCComputeNoNetFlux(Mat,Mat,PetscBool,IS,PCBDDCGraph,MatNullSpace*);
+PETSC_EXTERN PetscErrorCode PCBDDCNullSpaceCreate(MPI_Comm,PetscBool,PetscInt,Vec[],MatNullSpace*);
+PETSC_EXTERN PetscErrorCode PCBDDCNedelecSupport(PC);
+PETSC_EXTERN PetscErrorCode PCBDDCAddPrimalVerticesLocalIS(PC,IS);
+PETSC_EXTERN PetscErrorCode PCBDDCComputeFakeChange(PC,PetscBool,PCBDDCGraph,Mat*,IS*,IS*,PetscBool*);
 
 /* benign subspace trick */
-PetscErrorCode PCBDDCBenignPopOrPushB0(PC,PetscBool);
-PetscErrorCode PCBDDCBenignGetOrSetP0(PC,Vec,PetscBool);
-PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC,PetscBool,IS*);
-PetscErrorCode PCBDDCBenignCheck(PC,IS);
-PetscErrorCode PCBDDCBenignShellMat(PC,PetscBool);
-PetscErrorCode PCBDDCBenignRemoveInterior(PC,Vec,Vec);
+PETSC_EXTERN PetscErrorCode PCBDDCBenignPopOrPushB0(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCBDDCBenignGetOrSetP0(PC,Vec,PetscBool);
+PETSC_EXTERN PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC,PetscBool,IS*);
+PETSC_EXTERN PetscErrorCode PCBDDCBenignCheck(PC,IS);
+PETSC_EXTERN PetscErrorCode PCBDDCBenignShellMat(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCBDDCBenignRemoveInterior(PC,Vec,Vec);
 
 /* feti-dp */
-PetscErrorCode PCBDDCCreateFETIDPMatContext(PC,FETIDPMat_ctx*);
-PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx);
-PetscErrorCode PCBDDCCreateFETIDPPCContext(PC,FETIDPPC_ctx*);
-PetscErrorCode PCBDDCSetupFETIDPPCContext(Mat,FETIDPPC_ctx);
-PetscErrorCode FETIDPPCApply(PC,Vec,Vec);
-PetscErrorCode FETIDPPCApplyTranspose(PC,Vec,Vec);
-PetscErrorCode FETIDPPCView(PC,PetscViewer);
-PetscErrorCode PCBDDCDestroyFETIDPPC(PC);
-PetscErrorCode FETIDPMatMult(Mat,Vec,Vec);
-PetscErrorCode FETIDPMatMultTranspose(Mat,Vec,Vec);
+PETSC_EXTERN PetscErrorCode PCBDDCCreateFETIDPMatContext(PC,FETIDPMat_ctx*);
+PETSC_EXTERN PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx);
+PETSC_EXTERN PetscErrorCode PCBDDCCreateFETIDPPCContext(PC,FETIDPPC_ctx*);
+PETSC_EXTERN PetscErrorCode PCBDDCSetupFETIDPPCContext(Mat,FETIDPPC_ctx);
+PETSC_EXTERN PetscErrorCode FETIDPPCApply(PC,Vec,Vec);
+PETSC_EXTERN PetscErrorCode FETIDPPCApplyTranspose(PC,Vec,Vec);
+PETSC_EXTERN PetscErrorCode FETIDPPCView(PC,PetscViewer);
+PETSC_EXTERN PetscErrorCode PCBDDCDestroyFETIDPPC(PC);
+PETSC_EXTERN PetscErrorCode FETIDPMatMult(Mat,Vec,Vec);
+PETSC_EXTERN PetscErrorCode FETIDPMatMultTranspose(Mat,Vec,Vec);
 
-PetscErrorCode PCBDDCDestroyFETIDPMat(Mat);
+PETSC_EXTERN PetscErrorCode PCBDDCDestroyFETIDPMat(Mat);
 
 /* interface to SubSchurs */
-PetscErrorCode PCBDDCInitSubSchurs(PC);
-PetscErrorCode PCBDDCSetUpSubSchurs(PC);
+PETSC_EXTERN PetscErrorCode PCBDDCInitSubSchurs(PC);
+PETSC_EXTERN PetscErrorCode PCBDDCSetUpSubSchurs(PC);
 
 /* sub schurs */
-PetscErrorCode PCBDDCSubSchursCreate(PCBDDCSubSchurs*);
-PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs,const char*,IS,IS,PCBDDCGraph,ISLocalToGlobalMapping,PetscBool);
-PetscErrorCode PCBDDCSubSchursReset(PCBDDCSubSchurs);
-PetscErrorCode PCBDDCSubSchursDestroy(PCBDDCSubSchurs*);
-PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs,Mat,Mat,PetscBool,PetscInt[],PetscInt[],PetscInt,Vec,PetscBool,PetscBool,PetscBool,PetscInt,PetscInt[],IS[],Mat,IS);
+PETSC_EXTERN PetscErrorCode PCBDDCSubSchursCreate(PCBDDCSubSchurs*);
+PETSC_EXTERN PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs,const char*,IS,IS,PCBDDCGraph,ISLocalToGlobalMapping,PetscBool);
+PETSC_EXTERN PetscErrorCode PCBDDCSubSchursReset(PCBDDCSubSchurs);
+PETSC_EXTERN PetscErrorCode PCBDDCSubSchursDestroy(PCBDDCSubSchurs*);
+PETSC_EXTERN PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs,Mat,Mat,PetscBool,PetscInt[],PetscInt[],PetscInt,Vec,PetscBool,PetscBool,PetscBool,PetscInt,PetscInt[],IS[],Mat,IS);
 
 #endif
 

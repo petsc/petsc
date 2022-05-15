@@ -6622,7 +6622,6 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     /* extra space for debugging */
     PetscScalar  *dbg_work = NULL;
 
-    /* local temporary change of basis acts on local interfaces -> dimension is n_B x n_B */
     PetscCall(MatCreate(PETSC_COMM_SELF,&localChangeOfBasisMatrix));
     PetscCall(MatSetType(localChangeOfBasisMatrix,MATAIJ));
     PetscCall(MatSetSizes(localChangeOfBasisMatrix,pcis->n,pcis->n,pcis->n,pcis->n));
@@ -6681,9 +6680,9 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
        Change of basis matrix is evaluated similarly to the FIRST APPROACH in
        Klawonn and Widlund, Dual-primal FETI-DP methods for linear elasticity, (see Sect 6.2.1)
 
-       Basic blocks of change of basis matrix T computed by
+       Basic blocks of change of basis matrix T computed:
 
-          - Using the following block transformation if there is only a primal dof on the cc (and -pc_bddc_use_qr_single is not specified)
+          - By using the following block transformation if there is only a primal dof on the cc (and -pc_bddc_use_qr_single is not specified)
 
             | 1        0   ...        0         s_1/S |
             | 0        1   ...        0         s_2/S |
@@ -8745,6 +8744,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
 
     if (CoarseNullSpace) {
       PetscBool isnull;
+
       PetscCall(MatNullSpaceTest(CoarseNullSpace,coarse_mat,&isnull));
       if (isnull) {
         PetscCall(MatSetNullSpace(coarse_mat,CoarseNullSpace));
@@ -9021,6 +9021,56 @@ PetscErrorCode PCBDDCGlobalToLocal(VecScatter g2l_ctx,Vec gwork, Vec lwork, IS g
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode PCBDDCComputeFakeChange(PC pc, PetscBool constraints, PCBDDCGraph graph, Mat *change, IS *change_primal, IS *change_primal_mult, PetscBool *change_with_qr)
+{
+  PC_IS   *pcis = (PC_IS*)pc->data;
+  PC_BDDC *pcbddc = (PC_BDDC*)pc->data;
+  PC_IS   *pcisf;
+  PC_BDDC *pcbddcf;
+  PC      pcf;
+
+  PetscFunctionBegin;
+  PetscCall(PCCreate(PetscObjectComm((PetscObject)pc),&pcf));
+  PetscCall(PetscLogObjectParent((PetscObject)pc,(PetscObject)pcf));
+  PetscCall(PCSetOperators(pcf,pc->mat,pc->pmat));
+  PetscCall(PCSetType(pcf,PCBDDC));
+
+  pcisf             = (PC_IS*)pcf->data;
+  pcisf->is_B_local = pcis->is_B_local;
+  pcisf->vec1_N     = pcis->vec1_N;
+  pcisf->BtoNmap    = pcis->BtoNmap;
+  pcisf->n          = pcis->n;
+  pcisf->n_B        = pcis->n_B;
+
+  pcbddcf = (PC_BDDC*)pcf->data;
+  PetscCall(PetscFree(pcbddcf->mat_graph));
+  pcbddcf->mat_graph           = graph ? graph : pcbddc->mat_graph;
+  pcbddcf->use_faces           = PETSC_TRUE;
+  pcbddcf->use_change_of_basis = !constraints;
+  pcbddcf->use_change_on_faces = !constraints;
+  pcbddcf->use_qr_single       = !constraints;
+  pcbddcf->fake_change         = PETSC_TRUE;
+  PetscCall(PCBDDCConstraintsSetUp(pcf));
+
+  *change = pcbddcf->ConstraintMatrix;
+  if (change_primal) PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)pc->pmat),pcbddcf->local_primal_size_cc,pcbddcf->local_primal_ref_node,PETSC_COPY_VALUES,change_primal));
+  if (change_primal_mult) PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)pc->pmat),pcbddcf->local_primal_size_cc,pcbddcf->local_primal_ref_mult,PETSC_COPY_VALUES,change_primal_mult));
+  if (change_with_qr) *change_with_qr = pcbddcf->use_qr_single;
+
+  /* free unneeded memory allocated in PCBDDCConstraintsSetUp */
+  pcbddcf->ConstraintMatrix = NULL;
+  PetscCall(PetscFree(pcbddcf->sub_schurs));
+  PetscCall(MatNullSpaceDestroy(&pcbddcf->onearnullspace));
+  PetscCall(PetscFree2(pcbddcf->local_primal_ref_node,pcbddcf->local_primal_ref_mult));
+  PetscCall(PetscFree(pcbddcf->primal_indices_local_idxs));
+  PetscCall(PetscFree(pcbddcf->onearnullvecs_state));
+  PetscCall(PetscFree(pcf->data));
+  pcf->ops->destroy = NULL;
+  pcf->ops->reset   = NULL;
+  PetscCall(PCDestroy(&pcf));
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode PCBDDCSetUpSubSchurs(PC pc)
 {
   PC_IS               *pcis=(PC_IS*)pc->data;
@@ -9098,51 +9148,11 @@ PetscErrorCode PCBDDCSetUpSubSchurs(PC pc)
       PetscCall(MPIU_Allreduce(&have_loc_change,&need_change,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)pc)));
       need_change = (PetscBool)(!need_change);
     }
-    /* If the user defines additional constraints, we import them here.
-       We need to compute the change of basis according to the quadrature weights attached to pmat via MatSetNearNullSpace, and this could not be done (at the moment) without some hacking */
+    /* If the user defines additional constraints, we import them here */
     if (need_change) {
-      PC_IS   *pcisf;
-      PC_BDDC *pcbddcf;
-      PC      pcf;
-
       PetscCheck(!pcbddc->sub_schurs_rebuild,PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot compute change of basis with a different graph");
-      PetscCall(PCCreate(PetscObjectComm((PetscObject)pc),&pcf));
-      PetscCall(PCSetOperators(pcf,pc->mat,pc->pmat));
-      PetscCall(PCSetType(pcf,PCBDDC));
+      PetscCall(PCBDDCComputeFakeChange(pc,PETSC_FALSE,NULL,&change,&change_primal,NULL,&sub_schurs->change_with_qr));
 
-      /* hacks */
-      pcisf                        = (PC_IS*)pcf->data;
-      pcisf->is_B_local            = pcis->is_B_local;
-      pcisf->vec1_N                = pcis->vec1_N;
-      pcisf->BtoNmap               = pcis->BtoNmap;
-      pcisf->n                     = pcis->n;
-      pcisf->n_B                   = pcis->n_B;
-      pcbddcf                      = (PC_BDDC*)pcf->data;
-      PetscCall(PetscFree(pcbddcf->mat_graph));
-      pcbddcf->mat_graph           = pcbddc->mat_graph;
-      pcbddcf->use_faces           = PETSC_TRUE;
-      pcbddcf->use_change_of_basis = PETSC_TRUE;
-      pcbddcf->use_change_on_faces = PETSC_TRUE;
-      pcbddcf->use_qr_single       = PETSC_TRUE;
-      pcbddcf->fake_change         = PETSC_TRUE;
-
-      /* setup constraints so that we can get information on primal vertices and change of basis (in local numbering) */
-      PetscCall(PCBDDCConstraintsSetUp(pcf));
-      sub_schurs->change_with_qr = pcbddcf->use_qr_single;
-      PetscCall(ISCreateGeneral(PETSC_COMM_SELF,pcbddcf->n_vertices,pcbddcf->local_primal_ref_node,PETSC_COPY_VALUES,&change_primal));
-      change = pcbddcf->ConstraintMatrix;
-      pcbddcf->ConstraintMatrix = NULL;
-
-      /* free unneeded memory allocated in PCBDDCConstraintsSetUp */
-      PetscCall(PetscFree(pcbddcf->sub_schurs));
-      PetscCall(MatNullSpaceDestroy(&pcbddcf->onearnullspace));
-      PetscCall(PetscFree2(pcbddcf->local_primal_ref_node,pcbddcf->local_primal_ref_mult));
-      PetscCall(PetscFree(pcbddcf->primal_indices_local_idxs));
-      PetscCall(PetscFree(pcbddcf->onearnullvecs_state));
-      PetscCall(PetscFree(pcf->data));
-      pcf->ops->destroy = NULL;
-      pcf->ops->reset   = NULL;
-      PetscCall(PCDestroy(&pcf));
     }
     if (!pcbddc->use_deluxe_scaling) scaling = pcis->D;
 
