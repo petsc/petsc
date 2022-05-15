@@ -46,6 +46,7 @@ int main(int argc,char **args)
   PetscBool      preload=PETSC_TRUE,isSymmetric,cknorm=PETSC_FALSE,initialguessfile = PETSC_FALSE;
   PetscMPIInt    rank;
   char           initialguessfilename[PETSC_MAX_PATH_LEN];
+  char           mtype[PETSC_MAX_PATH_LEN];
 
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
@@ -102,6 +103,10 @@ int main(int argc,char **args)
   PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
   PetscCall(MatSetFromOptions(A));
   PetscCall(MatLoad(A,viewer));
+
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-mat_convert_type",mtype,sizeof(mtype),&flg));
+  if (flg) PetscCall(MatConvert(A,mtype,MAT_INPLACE_MATRIX,&A));
+
   if (nearnulldim) {
     MatNullSpace nullsp;
     Vec          *nullvecs;
@@ -815,7 +820,20 @@ int main(int argc,char **args)
 
    testset:
       requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
-      args: -f0 ${DATAFILESPATH}/matrices/medium -ksp_type fgmres
+      args: -mat_convert_type is -f0 ${DATAFILESPATH}/matrices/medium -ksp_type fgmres
+      test:
+         suffix: aij_gdsw
+         nsize: 4
+         args: -mat_convert_type aij -pc_type mg -pc_mg_levels 2 -pc_mg_adapt_interp_coarse_space gdsw -pc_mg_galerkin -mg_levels_pc_type asm
+      test:
+         output_file: output/ex72_aij_gdsw.out
+         suffix: is_gdsw
+         nsize: 4
+         args: -pc_type mg -pc_mg_levels 2  -pc_mg_adapt_interp_coarse_space gdsw -pc_mg_galerkin -mg_levels_pc_type asm
+      test:
+         suffix: is_asm
+         nsize: {{1 2}separate output}
+         args: -pc_type asm
       test:
          suffix: bddc_seq
          nsize: 1

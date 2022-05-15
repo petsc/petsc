@@ -658,4 +658,27 @@ int main(int argc,char **args)
      args: -sub_0_pc_bddc_interface_ext_type dirichlet
      suffix: composite_bddc_dirichlet
 
+ testset:
+   nsize: 8
+   filter: grep -v "variant HERMITIAN"
+   args: -cells 7,9,8 -dim 3 -ksp_view -ksp_error_if_not_converged -pc_type mg -pc_mg_levels 2 -pc_mg_galerkin -pc_mg_adapt_interp_coarse_space gdsw -mg_levels_pc_type asm -mg_levels_sub_pc_type icc -mg_coarse_redundant_pc_type cholesky
+   test:
+     suffix: gdsw_poisson
+     args: -pde_type Poisson
+   test:
+     requires: mumps !complex
+     suffix: gdsw_poisson_adaptive
+     args: -pde_type Poisson -mg_levels_gdsw_tolerance 0.01 -ksp_monitor_singular_value -mg_levels_gdsw_userdefined {{0 1}separate output} -mg_levels_gdsw_pseudo_pc_type qr
+   test:
+     suffix: gdsw_elast
+     args: -pde_type Elasticity
+   test:
+     requires: hpddm
+     suffix: gdsw_elast_hpddm
+     args: -pde_type Elasticity -mg_levels_gdsw_ksp_type hpddm -mg_levels_gdsw_ksp_hpddm_type cg
+   test:
+     requires: mumps !complex
+     suffix: gdsw_elast_adaptive
+     args: -pde_type Elasticity -mg_levels_gdsw_tolerance 0.01 -ksp_monitor_singular_value -mg_levels_gdsw_userdefined {{0 1}separate output}
+
 TEST*/

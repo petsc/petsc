@@ -641,7 +641,7 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_p1_gmg_vcycle_adapt
     requires: triangle
-    args: -potential_petscspace_degree 1 -dm_plex_box_faces 2,2 -dm_refine_hierarchy 3 \
+    args: -petscpartitioner_type simple -potential_petscspace_degree 1 -dm_plex_box_faces 2,2 -dm_refine_hierarchy 3 \
           -ksp_rtol 5e-10 -pc_type mg -pc_mg_galerkin -pc_mg_adapt_interp_coarse_space harmonic -pc_mg_adapt_interp_n 8 \
             -mg_levels_ksp_max_it 1 \
             -mg_levels_esteig_ksp_type cg \
