@@ -247,8 +247,8 @@ static PetscErrorCode TSDestroy_SSP(TS ts)
 -  ssptype - type of scheme to use
 
    Options Database Keys:
-   -ts_ssp_type <rks2>: Type of SSP method (one of) rks2 rks3 rk104
-   -ts_ssp_nstages <5>: Number of stages
+   -ts_ssp_type <rks2>               : Type of SSP method (one of) rks2 rks3 rk104
+   -ts_ssp_nstages<rks2: 5, rks3: 9> : Number of stages
 
    Level: beginner
 
@@ -287,7 +287,8 @@ PetscErrorCode TSSSPGetType(TS ts,TSSSPType *type)
 }
 
 /*@
-   TSSSPSetNumStages - set the number of stages to use with the SSP method
+   TSSSPSetNumStages - set the number of stages to use with the SSP method. Must be called after
+   TSSSPSetType().
 
    Logically Collective
 
@@ -296,8 +297,8 @@ PetscErrorCode TSSSPGetType(TS ts,TSSSPType *type)
 -  nstages - number of stages
 
    Options Database Keys:
-   -ts_ssp_type <rks2>: NumStages of SSP method (one of) rks2 rks3 rk104
-   -ts_ssp_nstages <5>: Number of stages
+   -ts_ssp_type <rks2>               : Type of SSP method (one of) rks2 rks3 rk104
+   -ts_ssp_nstages<rks2: 5, rks3: 9> : Number of stages
 
    Level: beginner
 
@@ -338,6 +339,7 @@ static PetscErrorCode TSSSPSetType_SSP(TS ts,TSSSPType type)
 {
   TS_SSP         *ssp = (TS_SSP*)ts->data;
   PetscErrorCode (*r)(TS,PetscReal,PetscReal,Vec);
+  PetscBool      flag;
 
   PetscFunctionBegin;
   PetscCall(PetscFunctionListFind(TSSSPList,type,&r));
@@ -346,6 +348,17 @@ static PetscErrorCode TSSSPSetType_SSP(TS ts,TSSSPType type)
   PetscCall(PetscFree(ssp->type_name));
   PetscCall(PetscStrallocpy(type,&ssp->type_name));
   ts->default_adapt_type = TSADAPTNONE;
+  PetscCall(PetscStrcmp(type,TSSSPRKS2,&flag));
+  if (flag) {
+    ssp->nstages = 5;
+  } else {
+    PetscCall(PetscStrcmp(type,TSSSPRKS3,&flag));
+    if (flag) {
+      ssp->nstages = 9;
+    } else {
+      ssp->nstages = 5;
+    }
+  }
   PetscFunctionReturn(0);
 }
 static PetscErrorCode TSSSPGetType_SSP(TS ts,TSSSPType *type)
@@ -470,7 +483,6 @@ PETSC_EXTERN PetscErrorCode TSCreate_SSP(TS ts)
   PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSSSPSetNumStages_C",TSSSPSetNumStages_SSP));
 
   PetscCall(TSSSPSetType(ts,TSSSPRKS2));
-  ssp->nstages = 5;
   PetscFunctionReturn(0);
 }
 
