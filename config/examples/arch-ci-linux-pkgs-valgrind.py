@@ -5,14 +5,14 @@ petsc_hash_pkgs=os.path.join(os.getenv('HOME'),'petsc-hash-pkgs')
 
 configure_options = [
   '--package-prefix-hash='+petsc_hash_pkgs,
+  '--with-make-test-np=18', # for petsc-gpu-01 - attempt to run 2 simultaneous valgrind jobs
   'COPTFLAGS=-g -O',
   'FOPTFLAGS=-g -O',
   'CXXOPTFLAGS=-g -O',
-  '--download-mpich=1',
-  '--with-hwloc=0', # make sure mpich is built without hwloc - as it doesn't work with valgrind
+  #'--download-mpich=1',
+  #'--with-hwloc=0', # make sure mpich is built without hwloc - as it doesn't work with valgrind
   '--download-fblaslapack=1',
   '--download-hypre=1',
-  '--download-cmake=1',
   '--download-metis=1',
   '--download-parmetis=1',
   '--download-ptscotch=1',
