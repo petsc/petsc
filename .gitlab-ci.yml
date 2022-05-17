@@ -107,9 +107,9 @@ check-ci-settings:
 ompi-cuda:
   extends: .stage-1
   tags:
-  - stage1, name:p1
+  - cuda-stage1
   variables:
-    CONFIG_OPTS: --with-mpi-dir=/home/petsc/soft/openmpi-4.0.2-cuda --with-cuda=1 --with-fc=0
+    CONFIG_OPTS: --with-mpi-dir=/nfs/gce/software/custom/linux-ubuntu22.04-x86_64/spack/opt/spack/linux-ubuntu22.04-x86_64/gcc-11.3.0/openmpi-4.1.3-qrpnszy --with-cuda=1 --with-fc=0
     TEST_SEARCH: snes_tutorials-ex19_cuda%
     MAKE_CXXFLAGS: -Werror
 
@@ -380,15 +380,6 @@ freebsd-c-single-opt:
   variables:
     TEST_ARCH: arch-ci-freebsd-c-single-opt
 
-linux-cuda-double:
-  extends:
-    - .stage-3
-    - .linux_test
-  tags:
-    - gpu:nvidia, os:linux, name:p1
-  variables:
-    TEST_ARCH: arch-ci-linux-cuda-double
-
 linux-gcc-quad-64idx-dbg:
   extends:
     - .stage-2
@@ -497,77 +488,77 @@ linux-sycl-double:
     LOAD_MODULES: compiler/latest mpi/latest cmake/3.20.5-yjp2hz6
     TEST_OPTS: query=requires queryval=kokkos_kernels
 
-linux-c-exodus-dbg:
+linux-cuda-pkgs:
   extends:
     - .stage-3
     - .linux_test
   tags:
-    - gpu:nvidia, os:linux, name:frog
+    - cuda-stage3
   variables:
-    TEST_ARCH: arch-ci-linux-c-exodus-dbg
+    TEST_ARCH: arch-ci-linux-cuda-pkgs
+    TEST_OPTS: -j3 query=requires queryval=cuda
+
+linux-cuda112-gcov:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - cuda-stage3
+  variables:
+    TEST_ARCH: arch-ci-linux-cuda112-gcov
+    LOAD_MODULES: cuda/11.2.2 gcc/9.4.0
     RUN_GCOV: 1
-    TEST_OPTS: -j1 query=requires queryval=cuda
 
-linux-cuda11-double:
+linux-cuda-cmplx:
   extends:
     - .stage-3
     - .linux_test
   tags:
-    - gpu:nvidia, os:linux, name:frog
+    - cuda-stage3
   variables:
-    TEST_ARCH: arch-ci-linux-cuda11-double
-    TEST_OPTS: -j1 query=requires queryval=cuda
-
-linux-cuda11-complex:
-  extends:
-    - .stage-3
-    - .linux_test
-  tags:
-    - gpu:nvidia, os:linux, name:frog
-  variables:
-    TEST_ARCH: arch-ci-linux-cuda11-complex
-    TEST_OPTS: -j1 query=requires queryval=cuda
+    TEST_ARCH: arch-ci-linux-cuda-cmplx
 
 linux-cuda-double-64idx:
   extends:
     - .stage-3
     - .linux_test
   tags:
-    - gpu:nvidia, os:linux, name:p1
+    - cuda-stage3
   variables:
     TEST_ARCH: arch-ci-linux-cuda-double-64idx
-    TEST_OPTS: -j1 query=requires queryval=cuda
+    TEST_OPTS: -j15 query=requires queryval=cuda
 
 linux-cuda-single-cxx:
   extends:
     - .stage-3
-    - .linux_test
+    - .linux_test_noflags
   tags:
-    - gpu:nvidia, os:linux
+    - cuda-stage3
   variables:
     TEST_ARCH: arch-ci-linux-cuda-single-cxx
-    TEST_OPTS: -j1 query=requires queryval=cuda
+    LOAD_MODULES: nvhpc/22.3
+    TEST_OPTS: -j15 query=requires queryval=cuda
 
 linux-cuda-uni-pkgs:
   extends:
     - .stage-3
     - .linux_test
   tags:
-    - gpu:nvidia, os:linux
+    - cuda-stage3
   variables:
     TEST_ARCH: arch-ci-linux-cuda-uni-pkgs
-    TEST_OPTS: -j4 query=requires queryval=cuda
+    TEST_OPTS: -j20 query=requires queryval=cuda
 
 linux-viennacl:
   extends:
     - .stage-3
     - .linux_test
   tags:
-    - gpu:nvidia, os:linux
+    - cuda-stage3
   variables:
     TEST_ARCH: arch-ci-linux-viennacl
     MAKE_CXXFLAGS: -Werror -Wno-ignored-attributes
-    TEST_OPTS: -j1 query=requires queryval=viennacl
+    TEST_OPTS: -j20 query=requires queryval=viennacl
 
 linux-without-fc:
   extends:
@@ -662,11 +653,10 @@ linux-pkgs-valgrind:
     - .stage-3
     - .linux_test
   tags:
-    - gce-nfs, linux-fast
+    - gce-valgrind
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-valgrind
     TIMEOUT: 7200
-    LOAD_MODULES: valgrind/3.17.0
 
 linux-pkgs-opt:
   extends:
@@ -980,7 +970,7 @@ analyze-pipeline:
   tags:
     - gce-nfs-short
   dependencies:
-    - linux-c-exodus-dbg
+    - linux-cuda112-gcov
     - linux-pkgs-gcov
     - linux-cmplx-gcov
     - linux-matlab-ilp64-gcov

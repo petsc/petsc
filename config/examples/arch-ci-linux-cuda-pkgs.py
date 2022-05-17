@@ -10,23 +10,39 @@ if __name__ == '__main__':
   import configure
   configure_options = [
     '--package-prefix-hash='+petsc_hash_pkgs,
-    '--with-make-test-np=1',
-    '--with-mpi-dir=/home/petsc/soft/openmpi-4.0.2-cuda',
+    '--with-make-test-np=3',
     'COPTFLAGS=-g -O',
     'FOPTFLAGS=-g -O',
     'CXXOPTFLAGS=-g -O',
-    # Note: If using nvcc with a host compiler other than the CUDA SDK default for your platform (GCC on Linux, clang
-    # on Mac OS X, MSVC on Windows), you must set -ccbin appropriately in CUDAFLAGS, as in the example for PGI below:
-    # 'CUDAFLAGS=-ccbin pgc++',
-    '--with-cuda=1',
-    '--with-precision=double',
-    '--with-clanguage=c',
+    '--download-suitesparse',
+    '--download-mumps',
+    '--download-scalapack',
+    '--download-chaco',
+    '--download-ctetgen',
+    '--download-exodusii',
+    '--download-pnetcdf',
+    '--download-generator',
+    '--download-hdf5',
+    '--download-zlib=1',
+    '--download-metis',
+    '--download-ml',
+    '--download-netcdf',
+    '--download-parmetis',
+    '--download-triangle',
+    '--download-p4est',
+    '--with-cuda',
+    '--with-shared-libraries',
+    '--download-magma',
+    '--with-magma-fortran-bindings=0',
+    '--download-kblas',
+    '--download-h2opus',
     '--download-kokkos',
     '--download-kokkos-kernels',
     '--download-hwloc',
     '--download-hypre',
     '--download-hypre-configure-arguments=--enable-unified-memory',
     '--download-raja',
+
   ]
 
   configure.petsc_configure(configure_options)

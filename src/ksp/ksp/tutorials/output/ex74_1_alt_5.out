@@ -1,0 +1,36 @@
+  0 KSP Residual norm 0.474966 
+  1 KSP Residual norm 0.239063 
+  2 KSP Residual norm 1.19874e-05 
+  3 KSP Residual norm 1.80901e-06 
+  0 KSP Residual norm 0.290272 
+  1 KSP Residual norm 0.146102 
+  2 KSP Residual norm 0.00104805 
+  3 KSP Residual norm 9.34849e-05 
+  4 KSP Residual norm 2.74414e-05 
+  5 KSP Residual norm 5.9649e-06 
+  6 KSP Residual norm 1.35117e-06 
+  0 KSP Residual norm 0.177397 
+  1 KSP Residual norm 0.0892889 
+  2 KSP Residual norm 0.00115501 
+  3 KSP Residual norm 0.000102496 
+  4 KSP Residual norm 3.09463e-05 
+  5 KSP Residual norm 7.952e-06 
+  6 KSP Residual norm 1.51127e-06 
+  0 KSP Residual norm 0.108415 
+  1 KSP Residual norm 0.0545682 
+  2 KSP Residual norm 0.00114579 
+  3 KSP Residual norm 0.000122907 
+  4 KSP Residual norm 3.44561e-05 
+  5 KSP Residual norm 1.11935e-05 
+  6 KSP Residual norm 2.21895e-06 
+  7 KSP Residual norm 8.17783e-07 
+  0 KSP Residual norm 0.066257 
+  1 KSP Residual norm 0.033349 
+  2 KSP Residual norm 0.000967208 
+  3 KSP Residual norm 8.38944e-05 
+  4 KSP Residual norm 2.87469e-05 
+  5 KSP Residual norm 8.92335e-06 
+  6 KSP Residual norm 2.31992e-06 
+  7 KSP Residual norm 8.65766e-07 
+L2 norm of the numerical error = 0.000317126 (time=0.625)
+Number of time steps: 5 (29 Krylov iterations)
