@@ -94,13 +94,13 @@
 #elif defined(PETSC_HAVE_MPICH_NUMVERSION)
 #  if !defined(MPICH_NUMVERSION) || defined(MVAPICH2_NUMVERSION) || defined(I_MPI_NUMVERSION)
 #    error "PETSc was configured with MPICH but now appears to be compiling using a non-MPICH mpi.h"
-#  elif (MPICH_NUMVERSION/100000 != PETSC_HAVE_MPICH_NUMVERSION/100000) || (MPICH_NUMVERSION%100000/1000 < PETSC_HAVE_MPICH_NUMVERSION%100000/1000)
+#  elif (MPICH_NUMVERSION/100000000 != PETSC_HAVE_MPICH_NUMVERSION/100000000) || (MPICH_NUMVERSION/100000 < PETSC_HAVE_MPICH_NUMVERSION/100000) || (MPICH_NUMVERSION/100000 == PETSC_HAVE_MPICH_NUMVERSION/100000 && MPICH_NUMVERSION%100000/1000 < PETSC_HAVE_MPICH_NUMVERSION%100000/1000)
 #    error "PETSc was configured with one MPICH mpi.h version but now appears to be compiling using a different MPICH mpi.h version"
 #  endif
 #elif defined(PETSC_HAVE_OMPI_MAJOR_VERSION)
 #  if !defined(OMPI_MAJOR_VERSION)
 #    error "PETSc was configured with OpenMPI but now appears to be compiling using a non-OpenMPI mpi.h"
-#  elif (OMPI_MAJOR_VERSION != PETSC_HAVE_OMPI_MAJOR_VERSION) || (OMPI_MINOR_VERSION != PETSC_HAVE_OMPI_MINOR_VERSION) || (OMPI_RELEASE_VERSION < PETSC_HAVE_OMPI_RELEASE_VERSION)
+#  elif (OMPI_MAJOR_VERSION != PETSC_HAVE_OMPI_MAJOR_VERSION) || (OMPI_MINOR_VERSION < PETSC_HAVE_OMPI_MINOR_VERSION) || (OMPI_MINOR_VERSION == PETSC_HAVE_OMPI_MINOR_VERSION && OMPI_RELEASE_VERSION < PETSC_HAVE_OMPI_RELEASE_VERSION)
 #    error "PETSc was configured with one OpenMPI mpi.h version but now appears to be compiling using a different OpenMPI mpi.h version"
 #  endif
 #  define PETSC_MPI_COMM_FMT "p"
