@@ -750,7 +750,7 @@ PetscErrorCode MatMult_SeqBAIJ_9_AVX2(Mat A,Vec xx,Vec zz)
       a1 = _mm256_loadu_pd(&v[j*81+58]); z1 = _mm256_fmadd_pd(a1,w2,z1);
       a2 = _mm256_loadu_pd(&v[j*81+62]); z2 = _mm256_fmadd_pd(a2,w2,z2);
 
-      /* eigth column of a */
+      /* eighth column of a */
       w3 = _mm256_set1_pd(work[j*9+ 7]);
       a3 = _mm256_loadu_pd(&v[j*81+63]); z0 = _mm256_fmadd_pd(a3,w3,z0);
       a4 = _mm256_loadu_pd(&v[j*81+67]); z1 = _mm256_fmadd_pd(a4,w3,z1);
@@ -1257,7 +1257,7 @@ PetscErrorCode MatMult_SeqBAIJ_12_AVX2(Mat A,Vec xx,Vec zz)
       a1 = _mm256_loadu_pd(v+76); z1 = _mm256_fmadd_pd(a1,w2,z1);
       a2 = _mm256_loadu_pd(v+80); z2 = _mm256_fmadd_pd(a2,w2,z2);
 
-      /* eigth column of a */
+      /* eighth column of a */
       w3 = _mm256_set1_pd(work[7]);
       a3 = _mm256_loadu_pd(v+84); z0 = _mm256_fmadd_pd(a3,w3,z0);
       a4 = _mm256_loadu_pd(v+88); z1 = _mm256_fmadd_pd(a4,w3,z1);
@@ -2211,7 +2211,7 @@ PetscErrorCode MatMultAdd_SeqBAIJ_9_AVX2(Mat A,Vec xx,Vec yy,Vec zz)
       a1 = _mm256_loadu_pd(&v[j*81+58]); z1 = _mm256_fmadd_pd(a1,w2,z1);
       a2 = _mm256_loadu_pd(&v[j*81+62]); z2 = _mm256_fmadd_pd(a2,w2,z2);
 
-      /* eigth column of a */
+      /* eighth column of a */
       w3 = _mm256_set1_pd(work[j*9+ 7]);
       a3 = _mm256_loadu_pd(&v[j*81+63]); z0 = _mm256_fmadd_pd(a3,w3,z0);
       a4 = _mm256_loadu_pd(&v[j*81+67]); z1 = _mm256_fmadd_pd(a4,w3,z1);

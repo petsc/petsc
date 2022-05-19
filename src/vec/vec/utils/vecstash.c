@@ -127,7 +127,7 @@ PetscErrorCode VecStashScatterEnd_Private(VecStash *stash)
 }
 
 /*
-   VecStashGetInfo_Private - Gets the relavant statistics of the stash
+   VecStashGetInfo_Private - Gets the relevant statistics of the stash
 
    Input Parameters:
    stash    - the stash

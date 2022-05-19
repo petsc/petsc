@@ -896,9 +896,9 @@ PetscErrorCode MatZeroRows_SeqSBAIJ_Check_Blocks(PetscInt idx[],PetscInt n,Petsc
       sizes[j] = 1;
       i++;
     } else if (i+bs > n) { /* Beginning of a block, but complete block doesn't exist (at idx end) */
-      sizes[j] = 1;         /* Also makes sure atleast 'bs' values exist for next else */
+      sizes[j] = 1;         /* Also makes sure at least 'bs' values exist for next else */
       i++;
-    } else { /* Begining of the block, so check if the complete block exists */
+    } else { /* Beginning of the block, so check if the complete block exists */
       flg = PETSC_TRUE;
       for (k=1; k<bs; k++) {
         if (row+k != idx[i+k]) { /* break in the block */

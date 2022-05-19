@@ -200,7 +200,7 @@ PetscErrorCode  PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,PetscMPII
 
   if (!flg) {  /* this is NOT a PETSc comm */
     union {MPI_Comm comm; void *ptr;} ucomm;
-    /* check if this communicator has a PETSc communicator imbedded in it */
+    /* check if this communicator has a PETSc communicator embedded in it */
     PetscCallMPI(MPI_Comm_get_attr(comm_in,Petsc_InnerComm_keyval,&ucomm,&flg));
     if (!flg) {
       /* This communicator is not yet known to this system, so we duplicate it and make an internal communicator */
@@ -229,7 +229,7 @@ PetscErrorCode  PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,PetscMPII
   if (PetscDefined(USE_DEBUG)) {
     /*
      Hanging here means that some processes have called PetscCommDuplicate() and others have not.
-     This likley means that a subset of processes in a MPI_Comm have attempted to create a PetscObject!
+     This likely means that a subset of processes in a MPI_Comm have attempted to create a PetscObject!
      ALL processes that share a communicator MUST shared objects created from that communicator.
      */
     PetscCallMPI(MPI_Barrier(comm_in));

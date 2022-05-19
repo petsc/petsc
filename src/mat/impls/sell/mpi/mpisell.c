@@ -301,7 +301,7 @@ PetscErrorCode MatAssemblyEnd_MPISELL(Mat mat,MatAssemblyType mode)
 
   /*
      determine if any processor has disassembled, if so we must
-     also disassemble ourselfs, in order that we may reassemble.
+     also disassemble ourselves, in order that we may reassemble.
   */
   /*
      if nonzero structure of submatrix B cannot change then we know that

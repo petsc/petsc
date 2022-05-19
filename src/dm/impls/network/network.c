@@ -433,7 +433,7 @@ static PetscErrorCode SharedVtxCreate(DM dm,PetscInt Nsedgelist,PetscInt *sedgel
     k += 4;
   }
 
-  /* (2) Create svtable for querry shared vertices using gidx */
+  /* (2) Create svtable for query shared vertices using gidx */
   PetscCall(PetscTableCreate(nta,network->NVertices+1,&network->svtable));
 
   /* (3) Construct svtx from svtas
@@ -460,7 +460,7 @@ static PetscErrorCode SharedVtxCreate(DM dm,PetscInt Nsedgelist,PetscInt *sedgel
       sv[2*k+1] = sedgelist[j+1]; /* index on the subnet */
     }
 
-    /* Setup svtable for querry shared vertices */
+    /* Setup svtable for query shared vertices */
     PetscCall(PetscTableAdd(network->svtable,svtx[nsv].gidx+1,nsv+1,INSERT_VALUES));
   }
 
@@ -619,7 +619,7 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
   if (network->Nsvtx) { /* subnetworks are coupled via shared vertices */
     PetscCall(GetEdgelist_Coupling(dm,edges,&nmerged));
   } else { /* subnetworks are not coupled */
-    /* Create a 0-size svtable for querry shared vertices */
+    /* Create a 0-size svtable for query shared vertices */
     PetscCall(PetscTableCreate(0,network->NVertices+1,&network->svtable));
     ctr = 0;
     for (i=0; i < Nsubnet; i++) {

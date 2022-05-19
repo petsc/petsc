@@ -554,7 +554,7 @@ PetscErrorCode DMTSSetRHSFunction(DM dm,TSRHSFunction func,void *ctx)
 $     PetscErrorCode tvar(TS ts,Vec p,Vec c,void *ctx);
 
 +   ts - timestep context
-.   p - input vector (primative form)
+.   p - input vector (primitive form)
 .   c - output vector, transient variables (conservative form)
 -   ctx - [optional] user-defined function context
 

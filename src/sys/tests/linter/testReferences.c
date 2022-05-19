@@ -1,7 +1,7 @@
 /* for access to private vec members */
 #include <petsc/private/viewerimpl.h>
 
-/* foward declare */
+/* forward declare */
 void extractFunc(PetscViewer,void**);
 
 void testOutOfLineReference(PetscViewer v, PetscViewer v2)

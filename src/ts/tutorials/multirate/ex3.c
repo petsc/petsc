@@ -104,7 +104,7 @@ int main(int argc,char **argv)
   PetscCall(ISCreateGeneral(PETSC_COMM_SELF,1,indicesf,PETSC_COPY_VALUES,&isf));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    Create necesary vector
+    Create necessary vector
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscCall(VecCreate(PETSC_COMM_WORLD,&U));
   PetscCall(VecSetSizes(U,n,PETSC_DETERMINE));

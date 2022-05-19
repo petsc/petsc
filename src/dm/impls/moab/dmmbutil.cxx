@@ -572,7 +572,7 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
   if (dim > 1) PetscCall(PetscOptionsInt("-dmb_grid_y", "Number of grid points in y direction", "DMMoabSetSizes", genCtx.blockSizeElementXYZ[1], &genCtx.blockSizeElementXYZ[1], &genCtx.usrxyzgrid));
   if (dim > 2) PetscCall(PetscOptionsInt("-dmb_grid_z", "Number of grid points in z direction", "DMMoabSetSizes", genCtx.blockSizeElementXYZ[2], &genCtx.blockSizeElementXYZ[2], &genCtx.usrxyzgrid));
 
-  /* Handle DMMoab parallel distibution */
+  /* Handle DMMoab parallel distribution */
   PetscCall(PetscOptionsInt("-dmb_processors_x", "Number of processors in x direction", "DMMoabSetNumProcs", genCtx.M, &genCtx.M, &genCtx.usrprocgrid));
   if (dim > 1) PetscCall(PetscOptionsInt("-dmb_processors_y", "Number of processors in y direction", "DMMoabSetNumProcs", genCtx.N, &genCtx.N, &genCtx.usrprocgrid));
   if (dim > 2) PetscCall(PetscOptionsInt("-dmb_processors_z", "Number of processors in z direction", "DMMoabSetNumProcs", genCtx.K, &genCtx.K, &genCtx.usrprocgrid));

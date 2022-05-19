@@ -16,7 +16,7 @@
       vol 19, pp. 302--318.
 
    Options Database Keys:
-.   -mat_mffd_compute_normu -Compute the norm of u everytime see MatMFFDWPSetComputeNormU()
+.   -mat_mffd_compute_normu -Compute the norm of u every time see MatMFFDWPSetComputeNormU()
 
    Level: intermediate
 

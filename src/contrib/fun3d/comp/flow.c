@@ -1277,7 +1277,7 @@ int GetLocalOrdering(GRID *grid)
   PetscCall(PetscFree(tmp2));
   PetscCall(PetscFree(ftmp));
 
-/* Now identify the triangles on which the current proceesor
+/* Now identify the triangles on which the current processor
    would perform force calculation */
   ICALLOC(nnfacetLoc, &grid->sface_bit);
   PetscCall(PetscMemzero(grid->sface_bit,nnfacetLoc*sizeof(int)));
@@ -1392,7 +1392,7 @@ int GetLocalOrdering(GRID *grid)
   PetscCall(PetscFree(tmp2));
   PetscCall(PetscFree(ftmp));
 
-/* Now identify the triangles on which the current proceesor
+/* Now identify the triangles on which the current processor
    would perform force calculation */
   ICALLOC(nvfacetLoc, &grid->vface_bit);
   PetscCall(PetscMemzero(grid->vface_bit,nvfacetLoc*sizeof(int)));

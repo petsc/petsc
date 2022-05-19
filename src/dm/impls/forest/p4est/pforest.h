@@ -1944,7 +1944,7 @@ static PetscErrorCode DMReferenceTreeGetChildSymmetry_pforest(DM dm, PetscInt pa
     PetscFunctionReturn(0);
   }
   PetscCall(DMPlexGetDepthStratum(dm,0,&vStart,&vEnd));
-  if (childA >= vStart && childA < vEnd) { /* vertices (always in the middle) are invarient under rotation */
+  if (childA >= vStart && childA < vEnd) { /* vertices (always in the middle) are invariant under rotation */
     if (childOrientB) *childOrientB = 0;
     if (childB) *childB = childA;
     PetscFunctionReturn(0);

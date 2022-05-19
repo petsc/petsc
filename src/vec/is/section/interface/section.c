@@ -28,7 +28,7 @@ $       PetscSectionSetUp(PetscSection);
 $       PetscSectionGetOffset(PetscSection,point,PetscInt *);
 $       PetscSectionDestroy(PetscSection);
 
-  The PetscSection object and methods are intended to be used in the PETSc Vec and Mat implementions; it is
+  The PetscSection object and methods are intended to be used in the PETSc Vec and Mat implementations; it is
   recommended they not be used in user codes unless you really gain something in their use.
 
 .seealso: PetscSection, PetscSectionDestroy()

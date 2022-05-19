@@ -220,7 +220,7 @@ $      testing with -pc_type lu to eliminate the linear solver as the cause of t
        its linear approximation and minimizing the 2-norm of that. That is F(x+s) approx F(x) + F'(x)s
        so we minimize || F(x) + F'(x) s ||^2_2; do this using Least Squares. If F'(x) is invertible then
        s = - F'(x)^(-1)F(x) otherwise F'(x)^T F'(x) s = -F'(x)^T F(x). If F'(x)^T F(x) is NOT zero then there
-       exists a nontrival (that is F'(x)s != 0) solution to the equation and this direction is
+       exists a nontrivial (that is F'(x)s != 0) solution to the equation and this direction is
        s = - [F'(x)^T F'(x)]^(-1) F'(x)^T F(x) so Q'(0) = - F(x)^T F'(x) [F'(x)^T F'(x)]^(-T) F'(x)^T F(x)
        = - (F'(x)^T F(x)) [F'(x)^T F'(x)]^(-T) (F'(x)^T F(x)). Since we are assuming (F'(x)^T F(x)) != 0
        and F'(x)^T F'(x) has no negative eigenvalues Q'(0) < 0 so s is a descent direction and the line

@@ -4,7 +4,7 @@ static const char help[] = "1D periodic Finite Volume solver by a particular slo
   "  for this toy problem, we choose different meshsizes for different sub-domains, say\n"
   "                hxs  = (xmax - xmin)/2.0*(hratio+1.0)/Mx, \n"
   "                hxf  = (xmax - xmin)/2.0*(1.0+1.0/hratio)/Mx, \n"
-  "  with x belongs to (xmin,xmax), the number of total mesh points is Mx and the ratio between the meshsize of corse\n\n"
+  "  with x belongs to (xmin,xmax), the number of total mesh points is Mx and the ratio between the meshsize of coarse\n\n"
   "  grids and fine grids is hratio.\n"
   "  exact       - Exact Riemann solver which usually needs to perform a Newton iteration to connect\n"
   "                the states across shocks and rarefactions\n"

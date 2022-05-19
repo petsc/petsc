@@ -976,7 +976,7 @@ PetscErrorCode FVRHSFunctionfast_3WaySplit(TS ts,PetscReal time,Vec X,Vec F,void
       for (j=0; j<dof; j++) x[i*dof+j] = x[(xs+xm-1)*dof+j];
     }
   }
-  for (i=xs-1; i<xs+xm+1; i++) { /* fast components and the last slow componets before fast components and the first slow component after fast components */
+  for (i=xs-1; i<xs+xm+1; i++) { /* fast components and the last slow components before fast components and the first slow component after fast components */
     struct _LimitInfo info;
     PetscScalar       *cjmpL,*cjmpR;
     if (i > mf-2 && i < fm+1) {

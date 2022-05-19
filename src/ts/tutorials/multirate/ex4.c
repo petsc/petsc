@@ -1,6 +1,6 @@
 /*
   Note:
-    -hratio is the ratio between mesh size of corse grids and fine grids
+    -hratio is the ratio between mesh size of coarse grids and fine grids
 */
 
 static const char help[] = "1D periodic Finite Volume solver in slope-limiter form with semidiscrete time stepping.\n"

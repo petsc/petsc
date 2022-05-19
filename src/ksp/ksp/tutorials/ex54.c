@@ -1,7 +1,7 @@
 
 static char help[] = "Creates a matrix from quadrilateral finite elements in 2D, Laplacian \n\
   -ne <size>       : problem size in number of elements (eg, -ne 31 gives 32^2 grid)\n\
-  -alpha <v>      : scaling of material coeficient in embedded circle\n\n";
+  -alpha <v>      : scaling of material coefficient in embedded circle\n\n";
 
 #include <petscksp.h>
 
