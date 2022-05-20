@@ -1587,7 +1587,7 @@ static PetscErrorCode MatScaLAPACKSetBlockSizes_ScaLAPACK(Mat A,PetscInt mb,Pets
 }
 
 /*@
-   MatScaLAPACKSetBlockSizes - Sets the block sizes to be used for the distibution of
+   MatScaLAPACKSetBlockSizes - Sets the block sizes to be used for the distribution of
    the ScaLAPACK matrix
 
    Logically Collective on A
@@ -1622,7 +1622,7 @@ static PetscErrorCode MatScaLAPACKGetBlockSizes_ScaLAPACK(Mat A,PetscInt *mb,Pet
 }
 
 /*@
-   MatScaLAPACKGetBlockSizes - Gets the block sizes used in the distibution of
+   MatScaLAPACKGetBlockSizes - Gets the block sizes used in the distribution of
    the ScaLAPACK matrix
 
    Not collective

@@ -124,7 +124,7 @@ program ex62f90
     call PetscViewerView(viewer,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)
     !
     !    Notice how the exodus file is actually NOT open at this point (exoid is -1)
-    !    Since we are overwritting the file (mode is FILE_MODE_WRITE), we are going to have to
+    !    Since we are overwriting the file (mode is FILE_MODE_WRITE), we are going to have to
     !    write the geometry (the DM), which can only be done on a brand new file.
     !
 

@@ -110,7 +110,7 @@ static PetscErrorCode PCApply_Shell(PC pc,Vec x,Vec y)
   PetscStackCall("PCSHELL user function apply()",PetscCall((*shell->apply)(pc,x,y)));
   PetscCall(PetscObjectStateGet((PetscObject)y, &outstate));
   if (instate == outstate) {
-    /* increase the state of the output vector since the user did not update its state themselve as should have been done */
+    /* increase the state of the output vector since the user did not update its state themself as should have been done */
     PetscCall(PetscObjectStateIncrease((PetscObject)y));
   }
   PetscFunctionReturn(0);
@@ -127,7 +127,7 @@ static PetscErrorCode PCMatApply_Shell(PC pc,Mat X,Mat Y)
   PetscStackCall("PCSHELL user function apply()",PetscCall((*shell->matapply)(pc,X,Y)));
   PetscCall(PetscObjectStateGet((PetscObject)Y, &outstate));
   if (instate == outstate) {
-    /* increase the state of the output vector since the user did not update its state themselve as should have been done */
+    /* increase the state of the output vector since the user did not update its state themself as should have been done */
     PetscCall(PetscObjectStateIncrease((PetscObject)Y));
   }
   PetscFunctionReturn(0);
@@ -164,7 +164,7 @@ static PetscErrorCode PCApplyBA_Shell(PC pc,PCSide side,Vec x,Vec y,Vec w)
   PetscStackCall("PCSHELL user function applyBA()",PetscCall((*shell->applyBA)(pc,side,x,y,w)));
   PetscCall(PetscObjectStateGet((PetscObject)w, &outstate));
   if (instate == outstate) {
-    /* increase the state of the output vector since the user did not update its state themselve as should have been done */
+    /* increase the state of the output vector since the user did not update its state themself as should have been done */
     PetscCall(PetscObjectStateIncrease((PetscObject)w));
   }
   PetscFunctionReturn(0);

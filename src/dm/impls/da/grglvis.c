@@ -166,7 +166,7 @@ PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer
     } else {
       hashocoord = PETSC_TRUE;
     }
-    PetscCall(PetscInfo(da,"Creating auxilary DMDA for managing GLVis graphics\n"));
+    PetscCall(PetscInfo(da,"Creating auxiliary DMDA for managing GLVis graphics\n"));
     switch (dim) {
     case 1:
       PetscCall(DMDACreate1d(PetscObjectComm((PetscObject)da),DM_BOUNDARY_NONE,M,dof,1,lx,&daview));

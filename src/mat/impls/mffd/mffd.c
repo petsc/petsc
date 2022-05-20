@@ -676,7 +676,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A)
    Options Database Keys: call MatSetFromOptions() to trigger these
 +  -mat_mffd_type - wp or ds (see MATMFFD_WP or MATMFFD_DS)
 .  -mat_mffd_err - square root of estimated relative error in function evaluation
-.  -mat_mffd_period - how often h is recomputed, defaults to 1, everytime
+.  -mat_mffd_period - how often h is recomputed, defaults to 1, every time
 .  -mat_mffd_check_positivity - possibly decrease h until U + h*a has only positive values
 -  -mat_mffd_complex - use the Lyness trick with complex numbers to compute the matrix-vector product instead of differencing
                        (requires real valued functions but that PETSc be configured for complex numbers)
@@ -845,13 +845,13 @@ PetscErrorCode  MatMFFDSetFunctioniBase(Mat mat,PetscErrorCode (*func)(void*,Vec
 }
 
 /*@
-   MatMFFDSetPeriod - Sets how often h is recomputed, by default it is everytime
+   MatMFFDSetPeriod - Sets how often h is recomputed, by default it is every time
 
    Logically Collective on Mat
 
    Input Parameters:
 +  mat - the matrix free matrix created via MatCreateSNESMF()
--  period - 1 for everytime, 2 for every second etc
+-  period - 1 for every time, 2 for every second etc
 
    Options Database Keys:
 .  -mat_mffd_period <period> - Sets how often h is recomputed

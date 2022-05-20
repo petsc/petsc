@@ -5,7 +5,7 @@ Vec Object: 1 MPI processes
 1.91376
 -0.716567
 
- Forward TS solve successfull! Adjoint run begins!
+ Forward TS solve successful! Adjoint run begins!
 
  sensitivity wrt  params: d[cost]/d[p], where p refers to 
                     the interlaced vector made by combining mu1,mu2

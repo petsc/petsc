@@ -295,7 +295,7 @@ M*/
   if (ierr) return PetscError(...,ierr,...);
 .ve
 
-  PetscCall() cannot be used in functions returning a datatype not convertable to
+  PetscCall() cannot be used in functions returning a datatype not convertible to
   PetscErrorCode. For example, PetscCall() may not be used in functions returning void, use
   PetscCallVoid() in this case.
 
@@ -309,7 +309,7 @@ M*/
 
   extern int foo(int);
 
-  PetscCall(foo(1)); // OK if int is convertable to PetscErrorCode
+  PetscCall(foo(1)); // OK if int is convertible to PetscErrorCode
 
   struct my_struct
   {
@@ -318,10 +318,10 @@ M*/
 
   struct my_struct bar(void)
   {
-    PetscCall(foo(15)); // ERROR PetscErrorCode not convertable to struct my_struct!
+    PetscCall(foo(15)); // ERROR PetscErrorCode not convertible to struct my_struct!
   }
 
-  PetscCall(bar()) // ERROR input not convertable to PetscErrorCode
+  PetscCall(bar()) // ERROR input not convertible to PetscErrorCode
 .ve
 
   Level: beginner

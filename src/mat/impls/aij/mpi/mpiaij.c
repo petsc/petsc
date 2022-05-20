@@ -5731,7 +5731,7 @@ PetscErrorCode MatGetBrowsOfAoCols_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscInt **
     }
     PetscCall(PetscFree(rvalues));
 
-    /* allocate space for j and a arrrays of B_oth */
+    /* allocate space for j and a arrays of B_oth */
     PetscCall(PetscMalloc1(b_othi[aBn]+1,&b_othj));
     PetscCall(PetscMalloc1(b_othi[aBn]+1,&b_otha));
 
@@ -6111,7 +6111,7 @@ static PetscErrorCode MatSplitEntries_Internal(Mat mat,PetscCount n,const PetscI
   /* Allocation according to Atot, Btot, Annz, Bnnz */
   PetscCall(PetscMalloc4(Atot,&Aperm,Btot,&Bperm,Annz+1,&Ajmap,Bnnz+1,&Bjmap));
 
-  /* Re-scan indices and copy diag/offdiag permuation indices to Aperm, Bperm and also fill Ajmap and Bjmap */
+  /* Re-scan indices and copy diag/offdiag permutation indices to Aperm, Bperm and also fill Ajmap and Bjmap */
   Ajmap[0] = Bjmap[0] = Atot = Btot = Annz = Bnnz = 0;
   for (r=0; r<m; r++) {
     k     = rowBegin[r];
@@ -6183,7 +6183,7 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, const Pe
   PetscCall(MatGetSize(mat,&M,&N));
 
   /* ---------------------------------------------------------------------------*/
-  /* Sort (i,j) by row along with a permuation array, so that the to-be-ignored */
+  /* Sort (i,j) by row along with a permutation array, so that the to-be-ignored */
   /* entries come first, then local rows, then remote rows.                     */
   /* ---------------------------------------------------------------------------*/
   PetscCount n1 = coo_n,*perm1;
@@ -6305,7 +6305,7 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, const Pe
   }
   PetscCall(PetscSFSetGraph(sf2,nroots,nleaves,NULL,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER));
 
-  /* sf2 only sends contiguous leafdata to contiguous rootdata. We record the permuation which will be used to fill leafdata */
+  /* sf2 only sends contiguous leafdata to contiguous rootdata. We record the permutation which will be used to fill leafdata */
   PetscCall(PetscArraycpy(Cperm1,perm1+rem,n1-rem));
 
   /* Send the remote COOs to their owner */

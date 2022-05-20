@@ -1,4 +1,4 @@
-static char help[] = " * Example code testing SeqDense matrices with an LDA (leading dimension of the user-allocated arrray) larger than M.\n";
+static char help[] = " * Example code testing SeqDense matrices with an LDA (leading dimension of the user-allocated array) larger than M.\n";
 
 #include <petscksp.h>
 

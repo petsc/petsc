@@ -20,7 +20,7 @@ Changes: 3.0.0
    located. It is also changed to be more scalable, only the 0th
    process opens it and broadcasts the input to the other processes.
 -  Added PetscObjectIncrementTabLevel() to allow proper indenting of
-   monitor output for imbedded solvers for multigrid levels, for
+   monitor output for embedded solvers for multigrid levels, for
    block Jacobi, for SNES inside TS and KSP inside SNES etc.
 
 .. rubric:: Logging:
@@ -116,7 +116,7 @@ Changes: 3.0.0
 -  KSPDefaultConverged() now has a KSPDefaultConvergedCreate() and
    KSPDefaultConvergedDestroy() that creates the default context to
    be passed KSPSetConvergenceTest() and the destroy to be passed in.
--  Added KSPIBCGS a varient of Bi-CG-stab that has only 1
+-  Added KSPIBCGS a variant of Bi-CG-stab that has only 1
    synchronization point rather than 3 in the usual.
 
 .. rubric:: SNES:

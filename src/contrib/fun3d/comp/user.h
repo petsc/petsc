@@ -153,7 +153,7 @@ typedef struct {                             /* GENERAL INFORMATION        */
   REAL Re;                                   /* Reynolds number            */
   REAL dt;                                   /* Input cfl                  */
   REAL tot;                                  /* total computer time        */
-  REAL res0;                                 /* Begining residual          */
+  REAL res0;                                 /* Beginning residual         */
   REAL resc;                                 /* Current residual           */
   int  ntt;                                  /* A counter                  */
   int  mseq;                                 /* Mesh sequencing            */

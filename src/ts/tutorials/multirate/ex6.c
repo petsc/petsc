@@ -1,6 +1,6 @@
 /*
   Note:
-    -hratio is the ratio between mesh size of corse grids and fine grids
+    -hratio is the ratio between mesh size of coarse grids and fine grids
     -ts_rk_dtratio is the ratio between the large stepsize and the small stepsize
 */
 

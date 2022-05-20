@@ -1,7 +1,7 @@
-static char help[] = "testing SeqDense matrices with an LDA (leading dimension of the user-allocated arrray) larger than M.\n";
+static char help[] = "testing SeqDense matrices with an LDA (leading dimension of the user-allocated array) larger than M.\n";
 /*
  * Example code testing SeqDense matrices with an LDA (leading dimension
- * of the user-allocated arrray) larger than M.
+ * of the user-allocated array) larger than M.
  * This example tests the functionality of MatSetValues(), MatMult(),
  * and MatMultTranspose().
  */

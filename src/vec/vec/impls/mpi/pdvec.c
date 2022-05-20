@@ -1,6 +1,6 @@
 
 /*
-     Code for some of the parallel vector primatives.
+     Code for some of the parallel vector primitives.
 */
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>   /*I  "petscvec.h"   I*/
 #include <petsc/private/viewerhdf5impl.h>

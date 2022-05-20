@@ -758,7 +758,7 @@ static PetscErrorCode TSEvaluateStep_MPRKSPLIT(TS ts,PetscInt order,Vec X,PetscB
 {
   TS_MPRK        *mprk = (TS_MPRK*)ts->data;
   MPRKTableau    tab  = mprk->tableau;
-  Vec            Xslow,Xfast,Xslowbuffer; /* subvectors for slow and fast componets in X respectively */
+  Vec            Xslow,Xfast,Xslowbuffer; /* subvectors for slow and fast components in X respectively */
   PetscScalar    *wf = mprk->work_fast,*ws = mprk->work_slow,*wsb = mprk->work_slowbuffer;
   PetscReal      h = ts->time_step;
   PetscInt       s = tab->s,j,computedstages;

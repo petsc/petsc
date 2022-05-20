@@ -1933,7 +1933,7 @@
 !================================= SPLIT =============================72
 !
 ! Calculates the fluxes on the face and performs the flux balance
-! Note that this subroutine uses primative variables
+! Note that this subroutine uses primitive variables
 !
 !=====================================================================72
       subroutine SPLIT(nnodes, ncell, nedge,

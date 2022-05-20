@@ -308,7 +308,7 @@ PetscErrorCode  PetscRandomView(PetscRandom rnd,PetscViewer viewer)
    Notes:
    The random type has to be set by PetscRandomSetType().
 
-   This is only a primative "parallel" random number generator, it should NOT
+   This is only a primitive "parallel" random number generator, it should NOT
    be used for sophisticated parallel Monte Carlo methods since it will very likely
    not have the correct statistics across processors. You can provide your own
    parallel generator using PetscRandomRegister();

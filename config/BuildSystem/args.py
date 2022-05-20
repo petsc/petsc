@@ -55,7 +55,7 @@ class ArgumentProcessor(object):
 
   def setupArguments(self, argDB):
     '''Setup types in the argument database
-       - This method shouldbe overidden by any subclass with special arguments, making sure to call the superclass method'''
+       - This method should be overridden by any subclass with special arguments, making sure to call the superclass method'''
     return argDB
 
   def insertArguments(self, useEnvironment = 0):
@@ -71,12 +71,12 @@ class ArgumentProcessor(object):
     return
 
   def setup(self):
-    '''This method should be overidden for any setup after initialization
+    '''This method should be overridden for any setup after initialization
        - Here we determine argument types and insert arguments into the dictionary'''
     self.setupArguments(self.argDB)
     self.insertArguments()
     return
 
   def cleanup(self):
-    '''This method should be overidden for any cleanup before finalization'''
+    '''This method should be overridden for any cleanup before finalization'''
     return
