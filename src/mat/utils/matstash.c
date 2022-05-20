@@ -171,7 +171,7 @@ PETSC_INTERN PetscErrorCode MatStashScatterEnd_Ref(MatStash *stash)
 }
 
 /*
-   MatStashGetInfo_Private - Gets the relavant statistics of the stash
+   MatStashGetInfo_Private - Gets the relevant statistics of the stash
 
    Input Parameters:
    stash    - the stash

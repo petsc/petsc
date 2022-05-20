@@ -3,7 +3,7 @@ of linear elasticity.  E=1.0, nu=0.25.\n\
 Unit square domain with Dirichelet boundary condition on the y=0 side only.\n\
 Load of 1.0 in x + 2y direction on all nodes (not a true uniform load).\n\
   -ne <size>      : number of (square) quadrilateral elements in each dimension\n\
-  -alpha <v>      : scaling of material coeficient in embedded circle\n\n";
+  -alpha <v>      : scaling of material coefficient in embedded circle\n\n";
 
 #include <petscksp.h>
 

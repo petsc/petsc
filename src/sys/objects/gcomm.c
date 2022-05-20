@@ -75,7 +75,7 @@ PetscErrorCode  PetscObjectGetComm(PetscObject obj,MPI_Comm *comm)
    Level: developer
 
     Notes:
-    this is used to manage the output from options that are imbedded in other objects. For example
+    this is used to manage the output from options that are embedded in other objects. For example
       the KSP object inside a SNES object. By indenting each lower level further the hierarchy of objects
       is very clear.
 
@@ -105,7 +105,7 @@ PetscErrorCode  PetscObjectGetTabLevel(PetscObject obj,PetscInt *tab)
    Level: developer
 
     Notes:
-    this is used to manage the output from options that are imbedded in other objects. For example
+    this is used to manage the output from options that are embedded in other objects. For example
       the KSP object inside a SNES object. By indenting each lower level further the hierarchy of objects
       is very clear.
 
@@ -133,7 +133,7 @@ PetscErrorCode  PetscObjectSetTabLevel(PetscObject obj,PetscInt tab)
    Level: developer
 
     Notes:
-    this is used to manage the output from options that are imbedded in other objects. For example
+    this is used to manage the output from options that are embedded in other objects. For example
       the KSP object inside a SNES object. By indenting each lower level further the hierarchy of objects
       is very clear.
 

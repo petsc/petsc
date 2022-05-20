@@ -301,7 +301,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
     ncrs_new = ncrs_eq_new/cr_bs;
 
     PetscCall(PetscFree(counts));
-    /* data movement scope -- this could be moved to subclasses so that we don't try to cram all auxilary data into some complex abstracted thing */
+    /* data movement scope -- this could be moved to subclasses so that we don't try to cram all auxiliary data into some complex abstracted thing */
     {
       Vec            src_crd, dest_crd;
       const PetscInt *idx,ndata_rows=pc_gamg->data_cell_rows,ndata_cols=pc_gamg->data_cell_cols,node_data_sz=ndata_rows*ndata_cols;

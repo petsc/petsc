@@ -1170,7 +1170,7 @@ static PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGloba
     else starts[i] = starts[i-1];
   }
 
-  /* for each nontrival globally owned node list all arriving processors */
+  /* for each nontrivial globally owned node list all arriving processors */
   for (i=0; i<nrecvs; i++) {
     for (j=0; j<len[i]; j++) {
       node = recvs[2*i*nmax+2*j]-rstart;

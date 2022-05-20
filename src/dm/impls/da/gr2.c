@@ -163,7 +163,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
       */
       PetscCall(DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,N,zctx.m,zctx.n,w,1,lx,ly,&dac));
       PetscCall(DMSetUp(dac));
-      PetscCall(PetscInfo(da,"Creating auxilary DMDA for managing graphics ghost points\n"));
+      PetscCall(PetscInfo(da,"Creating auxiliary DMDA for managing graphics ghost points\n"));
     } else {
       /* otherwise we can use the da we already have */
       dac = da;
@@ -230,7 +230,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
     /* create DMDA to get local version of graphics */
     PetscCall(DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,N,zctx.m,zctx.n,2,1,lx,ly,&dag));
     PetscCall(DMSetUp(dag));
-    PetscCall(PetscInfo(dag,"Creating auxilary DMDA for managing graphics coordinates ghost points\n"));
+    PetscCall(PetscInfo(dag,"Creating auxiliary DMDA for managing graphics coordinates ghost points\n"));
     PetscCall(DMCreateLocalVector(dag,&xcoorl));
     PetscCall(PetscObjectCompose((PetscObject)da,"GraphicsCoordinateGhosted",(PetscObject)xcoorl));
     PetscCall(PetscObjectDereference((PetscObject)dag));

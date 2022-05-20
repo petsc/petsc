@@ -990,7 +990,7 @@ static PetscErrorCode TSStep_RosW(TS ts)
         PetscCall(TSGetSNES(ts,&snes));
         if (!ros->recompute_jacobian && !i) {
           PetscCall(SNESGetLagJacobian(snes,&lag));
-          if (lag == 1) {  /* use did not set a nontrival lag, so lag over all stages */
+          if (lag == 1) {  /* use did not set a nontrivial lag, so lag over all stages */
             PetscCall(SNESSetLagJacobian(snes,-2)); /* Recompute the Jacobian on this solve, but not again for the rest of the stages */
           }
         }

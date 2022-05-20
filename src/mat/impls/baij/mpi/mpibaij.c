@@ -916,7 +916,7 @@ PetscErrorCode MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
   PetscCall(MatAssemblyEnd(baij->A,mode));
 
   /* determine if any processor has disassembled, if so we must
-     also disassemble ourselfs, in order that we may reassemble. */
+     also disassemble ourselves, in order that we may reassemble. */
   /*
      if nonzero structure of submatrix B cannot change then we know that
      no processor disassembled thus we can skip this stuff

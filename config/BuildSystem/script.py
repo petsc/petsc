@@ -93,7 +93,7 @@ class Script(logger.Logger):
     return argDB
 
   def setupHelp(self, help):
-    '''This method should be overidden to provide help for arguments'''
+    '''This method should be overridden to provide help for arguments'''
     import nargs
 
     help.addArgument('Script', '-h',    nargs.ArgBool(None, 0, 'Print this help message', isTemporary = 1), ignoreDuplicates = 1)

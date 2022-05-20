@@ -790,7 +790,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat B,Mat A,cons
         SSE_STOREH_PS(SSE_ARG_2,FLOAT_14,XMM0)
 
         /* Simplify Bookkeeping -- Completely Unnecessary Instructions */
-        /* This is code to be maintained and read by humans afterall. */
+        /* This is code to be maintained and read by humans after all. */
         /* Copy Multiplier Col 3 into XMM3 */
         SSE_COPY_PS(XMM3,XMM0)
         /* Copy Multiplier Col 2 into XMM2 */
@@ -1233,7 +1233,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace(Mat 
         SSE_STOREH_PS(SSE_ARG_2,FLOAT_14,XMM0)
 
         /* Simplify Bookkeeping -- Completely Unnecessary Instructions */
-        /* This is code to be maintained and read by humans afterall. */
+        /* This is code to be maintained and read by humans after all. */
         /* Copy Multiplier Col 3 into XMM3 */
         SSE_COPY_PS(XMM3,XMM0)
         /* Copy Multiplier Col 2 into XMM2 */
@@ -1677,7 +1677,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat C,Mat A,
         SSE_STOREH_PS(SSE_ARG_2,FLOAT_14,XMM0)
 
         /* Simplify Bookkeeping -- Completely Unnecessary Instructions */
-        /* This is code to be maintained and read by humans afterall. */
+        /* This is code to be maintained and read by humans after all. */
         /* Copy Multiplier Col 3 into XMM3 */
         SSE_COPY_PS(XMM3,XMM0)
         /* Copy Multiplier Col 2 into XMM2 */

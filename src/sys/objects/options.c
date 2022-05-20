@@ -634,7 +634,7 @@ PetscErrorCode PetscOptionsInsertFile(MPI_Comm comm,PetscOptions options,const c
 
    Input Parameters:
 +  options - options object
-.  argc - the array lenght
+.  argc - the array length
 -  args - the string array
 
    Level: intermediate

@@ -183,7 +183,7 @@ PetscErrorCode MatSeqAIJPERM_create_perm(Mat A)
   PetscCall(PetscMalloc1(m, &aijperm->iperm));
 
   /* Allocate some temporary work arrays that will be used in
-   * calculating the permuation vector and groupings. */
+   * calculating the permutation vector and groupings. */
   PetscCall(PetscMalloc1(m, &nz_in_row));
 
   /* Now actually figure out the permutation and grouping. */

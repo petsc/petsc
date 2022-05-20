@@ -4,7 +4,7 @@
 #include <petsc/private/vecimpl.h>
 
 /*@
-   TaoALMMGetType - Retreive the augmented Lagrangian formulation type for the subproblem.
+   TaoALMMGetType - Retrieve the augmented Lagrangian formulation type for the subproblem.
 
    Input Parameters:
 .  tao - the Tao context for the TAOALMM solver
@@ -142,7 +142,7 @@ PetscErrorCode TaoALMMSetSubsolver_Private(Tao tao, Tao subsolver)
 }
 
 /*@
-   TaoALMMGetMultipliers - Retreive a pointer to the Lagrange multipliers.
+   TaoALMMGetMultipliers - Retrieve a pointer to the Lagrange multipliers.
 
    Input Parameters:
 .  tao - the Tao context for the TAOALMM solver
@@ -272,7 +272,7 @@ PetscErrorCode TaoALMMSetMultipliers_Private(Tao tao, Vec Y)
 }
 
 /*@
-   TaoALMMGetPrimalIS - Retreive a pointer to the index set that identifies optimization
+   TaoALMMGetPrimalIS - Retrieve a pointer to the index set that identifies optimization
                         and slack variable components of the subsolver's solution vector.
                         Not valid for problems with only equality constraints.
 
@@ -308,7 +308,7 @@ PetscErrorCode TaoALMMGetPrimalIS_Private(Tao tao, IS *opt_is, IS *slack_is)
 }
 
 /*@
-   TaoALMMGetDualIS - Retreive a pointer to the index set that identifies equality
+   TaoALMMGetDualIS - Retrieve a pointer to the index set that identifies equality
                       and inequality constraint components of the dual vector returned
                       by TaoALMMGetMultipliers(). Not valid for problems with only one
                       type of constraint.

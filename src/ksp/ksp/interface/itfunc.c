@@ -185,7 +185,7 @@ PetscErrorCode  KSPComputeRitz(KSP ksp,PetscBool ritz,PetscBool small,PetscInt *
 .  ksp - the KSP context
 
    Notes:
-   KSPSetUpOnBlocks() is a routine that the user can optinally call for
+   KSPSetUpOnBlocks() is a routine that the user can optionally call for
    more precise profiling (via -log_view) of the setup phase for these
    block preconditioners.  If the user does not call KSPSetUpOnBlocks(),
    it will automatically be called from within KSPSolve().

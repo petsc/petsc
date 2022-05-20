@@ -359,7 +359,7 @@ int main(int argc,char **args)
     PetscCall(VecAXPY(u,-1.0,b));
     PetscCall(VecNorm(u,NORM_2,&norm));
     /*
-     Write output (optinally using table for solver details).
+     Write output (optionally using table for solver details).
       - PetscPrintf() handles output for multiprocessor jobs
         by printing from only one processor in the communicator.
       - KSPView() prints information about the linear solver.

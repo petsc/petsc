@@ -148,7 +148,7 @@ PETSC_INTERN PetscErrorCode PetscSFReduceEnd_Allgatherv(PetscSF sf,MPI_Datatype 
     /* A rare case happens when op is MPI_REPLACE, using GPUs but no GPU aware MPI. In PetscSFReduceBegin_Allgather(v),
       we did a device to device copy and in effect finished the communication. But in PetscSFLinkFinishCommunication()
       of PetscSFReduceEnd_Basic(), it thinks since there is rootbuf, it calls PetscSFLinkCopyRootBufferInCaseNotUseGpuAwareMPI().
-      It does a host to device memory copy on rootbuf, wrongly overwritting the results. So we don't overload
+      It does a host to device memory copy on rootbuf, wrongly overwriting the results. So we don't overload
       PetscSFReduceEnd_Basic() in this case, and just reclaim the link.
      */
     PetscCall(PetscSFLinkGetInUse(sf,unit,rootdata,leafdata,PETSC_OWN_POINTER,&link));

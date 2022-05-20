@@ -1,5 +1,5 @@
 
-static char help[] = "Solves the trival ODE du/dt = 1, u(0) = 0. \n\n";
+static char help[] = "Solves the trivial ODE du/dt = 1, u(0) = 0. \n\n";
 /*
   This example tests TSEvent's capability to handle complicated cases.
   Test 1: an event close to endpoint of a time step should not be detected twice.

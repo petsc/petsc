@@ -1,5 +1,5 @@
 
-static char help[] = "Solves the trival ODE du/dt = 1, u(0) = 0. \n\n";
+static char help[] = "Solves the trivial ODE du/dt = 1, u(0) = 0. \n\n";
 
 #include <petscts.h>
 #include <petscpc.h>

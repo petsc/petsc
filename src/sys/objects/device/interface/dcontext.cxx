@@ -293,7 +293,7 @@ PetscErrorCode PetscDeviceContextSetUp(PetscDeviceContext dctx)
   Input Parameter:
 . dctx - The PetscDeviceContext to duplicate
 
-  Output Paramter:
+  Output Parameter:
 . dctxdup - The duplicated PetscDeviceContext
 
   Notes:

@@ -1751,7 +1751,7 @@ PetscErrorCode TSComputeI2Jacobian(TS ts,PetscReal t,Vec U,Vec V,Vec A,PetscReal
 $     PetscErrorCode tvar(TS ts,Vec p,Vec c,void *ctx);
 
 +   ts - timestep context
-.   p - input vector (primative form)
+.   p - input vector (primitive form)
 .   c - output vector, transient variables (conservative form)
 -   ctx - [optional] user-defined function context
 

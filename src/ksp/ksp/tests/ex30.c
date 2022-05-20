@@ -310,7 +310,7 @@ int main(int argc,char **args)
     }   /* while (num_rhs--) */
 
     /*
-     Write output (optinally using table for solver details).
+     Write output (optionally using table for solver details).
       - PetscPrintf() handles output for multiprocessor jobs
         by printing from only one processor in the communicator.
       - KSPView() prints information about the linear solver.

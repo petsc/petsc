@@ -2,8 +2,8 @@ static char help[]= "  Test VecScatterRemap() on various vecscatter. \n\
 We may do optimization based on index patterns. After index remapping by VecScatterRemap(), we need to \n\
 make sure the vecscatter works as expected with the optimizaiton. \n\
   VecScatterRemap() does not support all kinds of vecscatters. In addition, it only supports remapping \n\
-entries where we read the data (i.e., todata in paralle scatter, fromdata in sequential scatter). This test \n\
-tests VecScatterRemap on parallel to paralle (PtoP) vecscatter, sequential general to sequential \n\
+entries where we read the data (i.e., todata in parallel scatter, fromdata in sequential scatter). This test \n\
+tests VecScatterRemap on parallel to parallel (PtoP) vecscatter, sequential general to sequential \n\
 general (SGToSG) vecscatter and sequential general to sequential stride 1 (SGToSS_Stride1) vecscatter.\n\n";
 
 #include <petscvec.h>
@@ -67,7 +67,7 @@ int main(int argc,char **argv)
   /* now call the weird subroutine VecScatterRemap to slightly change the vecscatter. It changes where we read vector
      x entries to send out, but does not change the communication pattern (i.e., send/recv pairs and msg lengths).
 
-     We create tomap as {32~63,0~31}. Originaly, we read from indices {0~64} of the local x to send out. The remap
+     We create tomap as {32~63,0~31}. Originally, we read from indices {0~64} of the local x to send out. The remap
      does indices[i] = tomap[indices[i]]. Therefore, after the remap, we read from indices {32~63,0~31} of the local x.
      isy is unchanged. So, we will shift x to {Q2,Q1,Q0,Q3}, that is {64~95,32~63,0~31,96~127}
   */
@@ -123,7 +123,7 @@ int main(int argc,char **argv)
 
   /* now call the weird subroutine VecScatterRemap to slightly change the vecscatter.
 
-     Create tomap as {32~63,0~31}. Originaly, we read from indices {0~64} of seq x to write to y. The remap
+     Create tomap as {32~63,0~31}. Originally, we read from indices {0~64} of seq x to write to y. The remap
      does indices[i] = tomap[indices[i]]. Therefore, after the remap, we read from indices{32~63,0~31} of seq x.
    */
   PetscCall(PetscMalloc1(n,&tomap));
@@ -180,7 +180,7 @@ int main(int argc,char **argv)
 
   /* now call the weird subroutine VecScatterRemap to slightly change the vecscatter.
 
-     Create tomap as {32~63,0~31}. Originaly, we read from indices{0:63:2} of seq x to write to y. The remap
+     Create tomap as {32~63,0~31}. Originally, we read from indices{0:63:2} of seq x to write to y. The remap
      does indices[i] = tomap[indices[i]]. Therefore, after the remap, we read from indices{32:63:2,0:31:2} of seq x.
    */
   PetscCall(PetscMalloc1(n,&tomap));

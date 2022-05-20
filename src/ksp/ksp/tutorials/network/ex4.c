@@ -50,7 +50,7 @@ int main(int argc,char ** argv)
   /* Create a dmnetwork */
   PetscCall(DMNetworkCreate(PETSC_COMM_WORLD,&dmnetwork));
 
-  /* Register zero size componets to get compkeys to be used by DMNetworkAddComponent() */
+  /* Register zero size components to get compkeys to be used by DMNetworkAddComponent() */
   PetscCall(DMNetworkRegisterComponent(dmnetwork,"comp0",0,&compkey0));
   PetscCall(DMNetworkRegisterComponent(dmnetwork,"comp1",0,&compkey1));
 

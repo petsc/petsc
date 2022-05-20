@@ -40,7 +40,7 @@
   PetscLayoutDestroy(PetscLayout*);
 .ve
 
-  The PetscLayout object and methods are intended to be used in the PETSc Vec and Mat implementions; it is often not needed in
+  The PetscLayout object and methods are intended to be used in the PETSc Vec and Mat implementations; it is often not needed in
   user codes unless you really gain something in their use.
 
 .seealso: `PetscLayoutSetLocalSize()`, `PetscLayoutSetSize()`, `PetscLayoutGetSize()`, `PetscLayoutGetLocalSize()`, `PetscLayout`, `PetscLayoutDestroy()`,
@@ -121,7 +121,7 @@ PetscErrorCode PetscLayoutCreateFromSizes(MPI_Comm comm,PetscInt n,PetscInt N,Pe
   Level: developer
 
   Note:
-  The PetscLayout object and methods are intended to be used in the PETSc Vec and Mat implementions; it is
+  The PetscLayout object and methods are intended to be used in the PETSc Vec and Mat implementations; it is
   recommended they not be used in user codes unless you really gain something in their use.
 
 .seealso: `PetscLayoutSetLocalSize()`, `PetscLayoutSetSize()`, `PetscLayoutGetSize()`, `PetscLayoutGetLocalSize()`, `PetscLayout`, `PetscLayoutCreate()`,

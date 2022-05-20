@@ -209,7 +209,7 @@ namespace Impl
 // template <typename... T>
 // static constexpr auto cupmBlasXdot(T&&... args) *noexcept and returntype detection*
 // {
-//   return cublasCdotc(std::foward<T>(args)...);
+//   return cublasCdotc(std::forward<T>(args)...);
 // }
 #define PETSC_CUPMBLAS_ALIAS_BLAS_FUNCTION_EXACT(MACRO_SUFFIX,our_suffix,their_suffix) \
   PETSC_CUPM_ALIAS_FUNCTION_EXACT(                                      \
@@ -247,7 +247,7 @@ namespace Impl
 // template <typename... T>
 // static constexpr auto cupmBlasCreate(T&&... args) *noexcept and returntype detection*
 // {
-//   return hipblasCreate(std::foward<T>(args)...);
+//   return hipblasCreate(std::forward<T>(args)...);
 // }
 #define PETSC_CUPMBLAS_ALIAS_FUNCTION(suffix)                           \
   PETSC_CUPM_ALIAS_FUNCTION_EXACT(cupmBlas,suffix,PETSC_CUPMBLAS_PREFIX,suffix)

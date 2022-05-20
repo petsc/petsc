@@ -7645,9 +7645,9 @@ PetscErrorCode PCBDDCMatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomain
 
     color = 0;
     if (restrict_full) {
-      if (!n_recvs) color = 1; /* processes not receiving anything will not partecipate in new comm (full restriction) */
+      if (!n_recvs) color = 1; /* processes not receiving anything will not participate in new comm (full restriction) */
     } else {
-      if (!n_recvs && n_sends) color = 1; /* just those processes that are sending but not receiving anything will not partecipate in new comm */
+      if (!n_recvs && n_sends) color = 1; /* just those processes that are sending but not receiving anything will not participate in new comm */
     }
     PetscCall(MPIU_Allreduce(&color,&subcommsize,1,MPI_INT,MPI_SUM,comm));
     subcommsize = size - subcommsize;
@@ -7723,7 +7723,7 @@ PetscErrorCode PCBDDCMatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomain
       PetscInt plen;
       PetscCall(ISGetLocalSize(isarray[j],&plen));
       PetscCall(PetscMPIIntCast(plen,&len));
-      psum += len+1; /* indices + lenght */
+      psum += len+1; /* indices + length */
     }
     PetscCall(PetscMalloc1(psum,&send_buffer_idxs_is));
     for (j=0,psum=0;j<nis;j++) {
@@ -7734,7 +7734,7 @@ PetscErrorCode PCBDDCMatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomain
       PetscCall(ISGetIndices(isarray[j],&is_array_idxs));
       PetscCall(PetscArraycpy(&send_buffer_idxs_is[psum+1],is_array_idxs,plen));
       PetscCall(ISRestoreIndices(isarray[j],&is_array_idxs));
-      psum += plen+1; /* indices + lenght */
+      psum += plen+1; /* indices + length */
     }
     for (i=0;i<n_sends;i++) {
       ilengths_idxs_is[is_indices[i]] = psum;
@@ -8076,7 +8076,7 @@ PetscErrorCode PCBDDCMatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomain
     PetscCall(PetscFree(onodes_is));
   }
   PetscCall(PetscSubcommDestroy(&subcomm));
-  if (destroy_mat) { /* destroy mat is true only if restrict comm is true and process will not partecipate */
+  if (destroy_mat) { /* destroy mat is true only if restrict comm is true and process will not participate */
     PetscCall(MatDestroy(mat_n));
     for (i=0;i<nis;i++) {
       PetscCall(ISDestroy(&isarray[i]));

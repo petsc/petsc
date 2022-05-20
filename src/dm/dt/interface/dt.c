@@ -790,7 +790,7 @@ static PetscErrorCode PetscDTJacobiEval_Internal(PetscInt npoints, PetscReal a, 
 . degree - the maximm degree polynomial space to evaluate, (degree + 1) will be evaluated total.
 - k - the maximum derivative to evaluate in the jet, (k + 1) will be evaluated total.
 
-  Output Argments:
+  Output Parameters:
 - p - an array containing the evaluations of the Jacobi polynomials's jets on the points.  the size is (degree + 1) x
   (k + 1) x npoints, which also describes the order of the dimensions of this three-dimensional array: the first
   (slowest varying) dimension is polynomial degree; the second dimension is derivative order; the third (fastest
@@ -1012,7 +1012,7 @@ const char       PKDCitation[] = "@article{Kirby2010,\n"
 - k - the maximum order partial derivative to evaluate in the jet.  There are (dim + k choose dim) partial derivatives
   in the jet.  Choosing k = 0 means to evaluate just the function and no derivatives
 
-  Output Argments:
+  Output Parameters:
 - p - an array containing the evaluations of the PKD polynomials' jets on the points.  The size is ((dim + degree)
   choose dim) x ((dim + k) choose dim) x npoints, which also describes the order of the dimensions of this
   three-dimensional array: the first (slowest varying) dimension is basis function index; the second dimension is jet
@@ -1175,7 +1175,7 @@ PetscErrorCode PetscDTPKDEvalJet(PetscInt dim, PetscInt npoints, const PetscReal
 . degree - the degree (sum of degrees on the variables in a monomial) of the trimmed polynomial space.
 - formDegree - the degree of the form
 
-  Output Argments:
+  Output Parameters:
 - size - The number ((dim + degree) choose (dim + formDegree)) x ((degree + formDegree - 1) choose (formDegree))
 
   Level: advanced
@@ -1328,7 +1328,7 @@ static PetscErrorCode PetscDTPTrimmedEvalJet_Internal(PetscInt dim, PetscInt npo
 - jetDegree - the maximum order partial derivative to evaluate in the jet.  There are ((dim + jetDegree) choose dim) partial derivatives
               in the jet.  Choosing jetDegree = 0 means to evaluate just the function and no derivatives
 
-  Output Argments:
+  Output Parameters:
 - p - an array containing the evaluations of the PKD polynomials' jets on the points.  The size is
       PetscDTPTrimmedSize() x ((dim + formDegree) choose dim) x ((dim + k) choose dim) x npoints,
       which also describes the order of the dimensions of this

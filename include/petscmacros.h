@@ -503,7 +503,7 @@ M*/
   #include <petscmacros.h>
   <macro-expansion> PetscExpand(x)
 
-  Input Paramter:
+  Input Parameter:
 . x - The preprocessor token to expand
 
   Level: beginner
@@ -598,7 +598,7 @@ M*/
   Input Parameter:
 . b - Preprocessor variable, must expand to either integer literal 0 or 1
 
-  Output Paramter:
+  Output Parameter:
 . <return-value> - Either integer literal 0 or 1
 
   Notes:

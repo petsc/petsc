@@ -333,7 +333,7 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
 
     PetscCall(PetscOptionsReal("-tao_catol","Stop if constraints violations within","TaoSetConstraintTolerances",tao->catol,&tao->catol,&flg));
     if (flg) tao->catol_changed = PETSC_TRUE;
-    PetscCall(PetscOptionsReal("-tao_crtol","Stop if relative contraint violations within","TaoSetConstraintTolerances",tao->crtol,&tao->crtol,&flg));
+    PetscCall(PetscOptionsReal("-tao_crtol","Stop if relative constraint violations within","TaoSetConstraintTolerances",tao->crtol,&tao->crtol,&flg));
     if (flg) tao->crtol_changed = PETSC_TRUE;
     PetscCall(PetscOptionsReal("-tao_gatol","Stop if norm of gradient less than","TaoSetTolerances",tao->gatol,&tao->gatol,&flg));
     if (flg) tao->gatol_changed = PETSC_TRUE;
@@ -802,7 +802,7 @@ PetscErrorCode TaoSetTolerances(Tao tao, PetscReal gatol, PetscReal grtol, Petsc
   Input Parameters:
 + tao - the Tao context
 . catol - absolute constraint tolerance, constraint norm must be less than catol for used for gatol convergence criteria
-- crtol - relative contraint tolerance, constraint norm must be less than crtol for used for gatol, gttol convergence criteria
+- crtol - relative constraint tolerance, constraint norm must be less than crtol for used for gatol, gttol convergence criteria
 
   Options Database Keys:
 + -tao_catol <catol> - Sets catol
@@ -853,7 +853,7 @@ PetscErrorCode TaoSetConstraintTolerances(Tao tao, PetscReal catol, PetscReal cr
 
   Output Parameters:
 + catol - absolute constraint tolerance, constraint norm must be less than catol for used for gatol convergence criteria
-- crtol - relative contraint tolerance, constraint norm must be less than crtol for used for gatol, gttol convergence criteria
+- crtol - relative constraint tolerance, constraint norm must be less than crtol for used for gatol, gttol convergence criteria
 
   Level: intermediate
 

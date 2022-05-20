@@ -31,7 +31,7 @@ int main(int argc,char **args)
   PetscCall(VecDuplicate(xx,&s2));
   PetscCall(VecDuplicate(xx,&yy));
 
-  /* For each row add atleast 15 elements */
+  /* For each row add at least 15 elements */
   for (row=0; row<M; row++) {
     for (i=0; i<25*bs; i++) {
       PetscCall(PetscRandomGetValue(rdm,&rval));

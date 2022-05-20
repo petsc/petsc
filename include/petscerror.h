@@ -266,7 +266,7 @@ M*/
   Once the error handler is called the calling function is then returned from with the given
   error code. Experienced users can set the error handler with PetscPushErrorHandler().
 
-  PetscCall() cannot be used in functions returning a datatype not convertable to
+  PetscCall() cannot be used in functions returning a datatype not convertible to
   PetscErrorCode. For example, PetscCall() may not be used in functions returning void, use
   PetscCallVoid() in this case.
 
@@ -281,10 +281,10 @@ M*/
 
   struct my_struct bar(void)
   {
-    PetscCall(foo(15)); // ERROR PetscErrorCode not convertable to struct my_struct!
+    PetscCall(foo(15)); // ERROR PetscErrorCode not convertible to struct my_struct!
   }
 
-  PetscCall(bar()) // ERROR input not convertable to PetscErrorCode
+  PetscCall(bar()) // ERROR input not convertible to PetscErrorCode
 .ve
 
   It is also possible to call this directory on a PetscErrorCode variable

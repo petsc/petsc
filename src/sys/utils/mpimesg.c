@@ -115,7 +115,7 @@ PetscErrorCode  PetscGatherMessageLengths(MPI_Comm comm,PetscMPIInt nsends,Petsc
     }
   }
 
-  /* Post waits on sends and receivs */
+  /* Post waits on sends and receives */
   if (nrecvs+nsends) PetscCallMPI(MPI_Waitall(nrecvs+nsends,r_waits,w_status));
 
   /* Pack up the received data */
@@ -195,7 +195,7 @@ PetscErrorCode  PetscGatherMessageLengths_Private(MPI_Comm comm,PetscMPIInt nsen
     }
   }
 
-  /* Post waits on sends and receivs */
+  /* Post waits on sends and receives */
   if (nrecvs+nsends) PetscCallMPI(MPI_Waitall(nrecvs+nsends,r_waits,w_status));
 
   /* Pack up the received data */
@@ -273,7 +273,7 @@ PetscErrorCode  PetscGatherMessageLengths2(MPI_Comm comm,PetscMPIInt nsends,Pets
   }
   PetscCheck(j == nsends,PETSC_COMM_SELF,PETSC_ERR_PLIB,"j %d not equal to expected number of sends %d",j,nsends);
 
-  /* Post waits on sends and receivs */
+  /* Post waits on sends and receives */
   if (nrecvs+nsends) PetscCallMPI(MPI_Waitall(nrecvs+nsends,r_waits,w_status));
 
   /* Pack up the received data */

@@ -358,7 +358,7 @@ static PetscErrorCode TaoSetFromOptions_ALMM(PetscOptionItems *PetscOptionsObjec
   PetscInt       i;
 
   PetscFunctionBegin;
-  PetscOptionsHeadBegin(PetscOptionsObject,"Augmented Lagrangian multipler method solves problems with general constraints by converting them into a sequence of unconstrained problems.");
+  PetscOptionsHeadBegin(PetscOptionsObject,"Augmented Lagrangian multiplier method solves problems with general constraints by converting them into a sequence of unconstrained problems.");
   PetscCall(PetscOptionsReal("-tao_almm_mu_init","initial penalty parameter","",auglag->mu0,&auglag->mu0,NULL));
   PetscCall(PetscOptionsReal("-tao_almm_mu_factor","increase factor for the penalty parameter","",auglag->mu_fac,&auglag->mu_fac,NULL));
   PetscCall(PetscOptionsReal("-tao_almm_mu_power_good","exponential for penalty parameter when multiplier update is accepted","",auglag->mu_pow_good,&auglag->mu_pow_good,NULL));

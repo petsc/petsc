@@ -65,7 +65,7 @@ PetscErrorCode MatMult_SeqFFTW(Mat A,Vec x,Vec y)
   PetscFunctionBegin;
   PetscCall(VecGetArrayRead(x,&x_array));
   PetscCall(VecGetArray(y,&y_array));
-  if (!fftw->p_forward) { /* create a plan, then excute it */
+  if (!fftw->p_forward) { /* create a plan, then execute it */
     switch (ndim) {
     case 1:
 #if defined(PETSC_USE_COMPLEX)
@@ -166,7 +166,7 @@ PetscErrorCode MatMultTranspose_SeqFFTW(Mat A,Vec x,Vec y)
   PetscFunctionBegin;
   PetscCall(VecGetArrayRead(x,&x_array));
   PetscCall(VecGetArray(y,&y_array));
-  if (!fftw->p_backward) { /* create a plan, then excute it */
+  if (!fftw->p_backward) { /* create a plan, then execute it */
     switch (ndim) {
     case 1:
 #if defined(PETSC_USE_COMPLEX)
@@ -242,7 +242,7 @@ PetscErrorCode MatMult_MPIFFTW(Mat A,Vec x,Vec y)
   PetscCall(PetscObjectGetComm((PetscObject)A,&comm));
   PetscCall(VecGetArrayRead(x,&x_array));
   PetscCall(VecGetArray(y,&y_array));
-  if (!fftw->p_forward) { /* create a plan, then excute it */
+  if (!fftw->p_forward) { /* create a plan, then execute it */
     switch (ndim) {
     case 1:
 #if defined(PETSC_USE_COMPLEX)
@@ -312,7 +312,7 @@ PetscErrorCode MatMultTranspose_MPIFFTW(Mat A,Vec x,Vec y)
   PetscCall(PetscObjectGetComm((PetscObject)A,&comm));
   PetscCall(VecGetArrayRead(x,&x_array));
   PetscCall(VecGetArray(y,&y_array));
-  if (!fftw->p_backward) { /* create a plan, then excute it */
+  if (!fftw->p_backward) { /* create a plan, then execute it */
     switch (ndim) {
     case 1:
 #if defined(PETSC_USE_COMPLEX)

@@ -5,7 +5,7 @@ Vec Object: 1 MPI process
 1.91376
 -0.716567
 
- Forward TS solve successfull! Adjoint run begins!
+ Forward TS solve successful! Adjoint run begins!
 
  sensitivity wrt  mu1: d[cost]/d[mu1]
 Vec Object: 1 MPI process

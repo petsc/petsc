@@ -352,7 +352,7 @@ int main(int argc,char **argv)
   PetscCall(TSSolve(ts,user.U));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\n Solution of forward TS :\n"));
   PetscCall(VecView(user.U,PETSC_VIEWER_STDOUT_WORLD));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\n Forward TS solve successfull! Adjoint run begins!\n"));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\n Forward TS solve successful! Adjoint run begins!\n"));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Adjoint model starts here! Create adjoint vectors.
