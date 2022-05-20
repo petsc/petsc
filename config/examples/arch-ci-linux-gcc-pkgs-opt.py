@@ -28,6 +28,7 @@ configure_options = [
   '--download-amrex',
   '--download-hypre',
   '--download-ks',
+  '--with-ssl=1',
 ]
 
 if __name__ == '__main__':

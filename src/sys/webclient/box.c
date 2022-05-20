@@ -302,9 +302,9 @@ PetscErrorCode PetscBoxUpload(MPI_Comm comm,const char access_token[],const char
     PetscCall(PetscPushJSONValue(body,"mimeType","text.html",len));
     PetscCall(PetscStrcat(body,","));
     PetscCall(PetscPushJSONValue(body,"description","a file",len));
-    PetscCallPetscStrcat(body, "}\r\n\r\n"
-                               "--foo_bar_baz\r\n"
-                               "Content-Type: text/html\r\n\r\n"));
+    PetscCall(PetscStrcat(body, "}\r\n\r\n"
+                                "--foo_bar_baz\r\n"
+                                "Content-Type: text/html\r\n\r\n"));
     PetscCall(PetscStrlen(body,&blen));
     fd = fopen (filename, "r");
     PetscCheck(fd,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open file: %s",filename);
