@@ -36,6 +36,7 @@ configure_options = [
   '--with-mpi-f90module-visibility=0',
   '--download-kokkos=1',
   '--download-kokkos-kernels=1',
+  '--with-ssl=1',
   ]
 
 if __name__ == '__main__':

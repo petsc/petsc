@@ -123,7 +123,7 @@ static PetscErrorCode PetscHTTPBuildRequest(const char type[],const char url[],c
 
   if (header) {
     PetscCall(PetscStrendswith(header,"\r\n",&flg));
-    PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"header must end with \\r\");
+    PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"header must end with \\r\\n");
   }
 
   PetscCall(PetscStrlen(type,&typelen));
