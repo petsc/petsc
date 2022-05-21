@@ -1399,7 +1399,7 @@ static PetscErrorCode PetscWeakFormViewTable_Ascii(PetscWeakForm wf, PetscViewer
   PetscCall(PetscHMapFormGetSize(map, &Nk));
   if (Nk) {
     PetscFormKey *keys;
-    void       (**funcs)(void);
+    void       (**funcs)(void) = NULL;
     const char  **names;
     PetscInt     *values, *idx1, *idx2, *idx;
     PetscBool     showPart = PETSC_FALSE, showPointer = PETSC_FALSE;

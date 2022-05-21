@@ -455,6 +455,7 @@ PetscErrorCode MatMult_SeqSELL(Mat A,Vec xx,Vec yy)
     #pragma unroll(2)
     for (j=a->sliidx[i]; j<a->sliidx[i+1]; j+=8) {
       vec_vals  = _mm256_loadu_pd(aval);
+      vec_x_tmp = _mm_setzero_pd();
       vec_x_tmp = _mm_loadl_pd(vec_x_tmp, x + *acolidx++);
       vec_x_tmp = _mm_loadh_pd(vec_x_tmp, x + *acolidx++);
       vec_x     = _mm256_insertf128_pd(vec_x,vec_x_tmp,0);
@@ -620,8 +621,10 @@ PetscErrorCode MatMultAdd_SeqSELL(Mat A,Vec xx,Vec yy,Vec zz)
     /* Process slice of height 8 (512 bits) via two subslices of height 4 (256 bits) via AVX */
     for (j=a->sliidx[i]; j<a->sliidx[i+1]; j+=8) {
       vec_vals  = _mm256_loadu_pd(aval);
+      vec_x_tmp = _mm_setzero_pd();
       vec_x_tmp = _mm_loadl_pd(vec_x_tmp, x + *acolidx++);
       vec_x_tmp = _mm_loadh_pd(vec_x_tmp, x + *acolidx++);
+      vec_x     = _mm256_setzero_pd();
       vec_x     = _mm256_insertf128_pd(vec_x,vec_x_tmp,0);
       vec_x_tmp = _mm_loadl_pd(vec_x_tmp, x + *acolidx++);
       vec_x_tmp = _mm_loadh_pd(vec_x_tmp, x + *acolidx++);
