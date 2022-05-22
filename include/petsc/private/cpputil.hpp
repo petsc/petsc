@@ -252,7 +252,7 @@ static inline constexpr PetscObject& PetscObjectCast(const T& object) noexcept
     -> decltype(original(std::get<idx>(tuple)...))                      \
   {                                                                     \
     return original(std::get<idx>(tuple)...);                           \
-  };                                                                    \
+  }                                                                     \
   template <typename... Args>                                           \
   PETSC_NODISCARD auto alias(Args&&... args)                            \
     noexcept(noexcept(gobblefn(std::forward_as_tuple(args...),Petsc::util::make_index_sequence<sizeof...(Args)-(N)>{}))) \

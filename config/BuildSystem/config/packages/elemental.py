@@ -24,8 +24,6 @@ class Configure(config.package.CMakePackage):
     self.metis           = framework.require('config.packages.metis',self)
     self.parmetis        = framework.require('config.packages.parmetis',self)
     self.deps            = [self.mpi,self.blasLapack,self.metis,self.parmetis]
-    #
-    # also requires the ./configure option --with-cxx-dialect=C++11
     return
 
   def formCMakeConfigureArgs(self):
