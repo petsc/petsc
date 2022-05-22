@@ -79,3 +79,7 @@
       PetscEnum, parameter :: KSP_GMRES_CGS_REFINE_NEVER = 0
       PetscEnum, parameter :: KSP_GMRES_CGS_REFINE_IFNEEDED = 1
       PetscEnum, parameter :: KSP_GMRES_CGS_REFINE_ALWAYS = 2
+
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_KSP
+#endif

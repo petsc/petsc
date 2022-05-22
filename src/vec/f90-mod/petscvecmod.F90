@@ -61,6 +61,13 @@
           petscsfequals = (A%v .eq. B%v)
         end function
 
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::isnotequal
+!DEC$ ATTRIBUTES DLLEXPORT::petscsfnotequal
+!DEC$ ATTRIBUTES DLLEXPORT::isequals
+!DEC$ ATTRIBUTES DLLEXPORT::petscsfequals
+#endif
+
         module  petscaodef
         use petscisdef
         use petscsysdef
@@ -128,6 +135,13 @@
           type(tVecScatter), intent(in) :: A,B
           vecscatterequals = (A%v .eq. B%v)
         end function
+
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::vecnotequal
+!DEC$ ATTRIBUTES DLLEXPORT::vecscatternotequal
+!DEC$ ATTRIBUTES DLLEXPORT::vecequals
+!DEC$ ATTRIBUTES DLLEXPORT::vecscatterequals
+#endif
 
         module petscis
         use petscisdef
