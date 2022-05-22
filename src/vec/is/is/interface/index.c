@@ -652,7 +652,6 @@ static PetscErrorCode ISGetInfo_Interval(IS is, ISInfoType type, PetscBool *flg)
       /* default: get the local indices and directly check */
       intervalLocal = PETSC_TRUE;
       PetscCall(ISGetLocalSize(is, &n));
-      PetscCall(PetscMalloc1(n, &idx));
       PetscCall(ISGetIndices(is, &idx));
       for (i = 1; i < n; i++) if (idx[i] != idx[i-1] + 1) break;
       if (i < n) intervalLocal = PETSC_FALSE;
