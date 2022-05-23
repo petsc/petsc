@@ -907,6 +907,10 @@ PetscErrorCode PetscDualSpaceGetSection(PetscDualSpace sp, PetscSection *section
   PetscInt       pStart, pEnd, p;
 
   PetscFunctionBegin;
+  if (!sp->dm) {
+    *section = NULL;
+    PetscFunctionReturn(0);
+  }
   if (!sp->pointSection) {
     /* mark the boundary */
     PetscCall(PetscDualSpaceSectionCreate_Internal(sp, &(sp->pointSection)));
