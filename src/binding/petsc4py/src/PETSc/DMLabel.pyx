@@ -22,3 +22,9 @@ cdef class DMLabel(Object):
         cdef PetscInt cvalue = asInt(value)
         CHKERR( DMLabelInsertIS(self.dmlabel, iset.iset, cvalue)  )
         return self
+
+    def setValue(self, point, value):
+        cdef PetscInt cpoint = asInt(point)
+        cdef PetscInt cvalue = asInt(value)
+        CHKERR( DMLabelSetValue(self.dmlabel, cpoint, cvalue) )
+    

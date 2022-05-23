@@ -6,6 +6,11 @@ cdef class Quad(Object):
         self.obj = <PetscObject*> &self.quad
         self.quad = NULL
 
+    def view(self, Viewer viewer=None):
+        cdef PetscViewer vwr = NULL
+        if viewer is not None: vwr = viewer.vwr
+        CHKERR( PetscQuadratureView(self.quad, vwr) )
+
     def create(self, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscQuadrature newquad = NULL
@@ -13,14 +18,14 @@ cdef class Quad(Object):
         PetscCLEAR(self.obj); self.quad = newquad
         return self
 
+    def duplicate(self):
+        cdef Quad newquad = Quad()
+        CHKERR( PetscQuadratureDuplicate(self.quad, &newquad.quad) )
+        return newquad
+
     def destroy(self):
         CHKERR( PetscQuadratureDestroy(&self.quad) )
         return self
-
-    def view(self, Viewer viewer=None):
-        cdef PetscViewer vwr = NULL
-        if viewer is not None: vwr = viewer.vwr
-        CHKERR( PetscQuadratureView(self.quad, vwr) )
 
     def getData(self):
         cdef PetscInt cdim = 0 
