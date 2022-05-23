@@ -6354,7 +6354,9 @@ PetscErrorCode TSGetTimeSpan(TS ts,PetscInt *n,const PetscReal **span_times)
 
    Level: beginner
 
-   Notes: Both nsol and Sols can be NULL.
+   Notes:
+    Both nsol and Sols can be NULL.
+    Some time points in the time span may be skipped by TS so that nsol is less than the number of points specified by TSSetTimeSpan(). For example, manipulating the step size, especially with a reduced precision, may cause TS to step over certain points in the span.
 
 .seealso: `TSSetTimeSpan()`
 @*/
@@ -6368,7 +6370,7 @@ PetscErrorCode TSGetTimeSpanSolutions(TS ts,PetscInt *nsol,Vec **Sols)
     if (nsol) *nsol = 0;
     if (Sols) *Sols = NULL;
   } else {
-    if (nsol) *nsol = ts->tspan->num_span_times;
+    if (nsol) *nsol = ts->tspan->spanctr;
     if (Sols) *Sols = ts->tspan->vecs_sol;
   }
   PetscFunctionReturn(0);
