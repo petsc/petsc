@@ -230,6 +230,19 @@ static PetscErrorCode PCApply_SVD(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PCMatApply_SVD(PC pc,Mat X,Mat Y)
+{
+  PC_SVD *jac = (PC_SVD*)pc->data;
+  Mat    W;
+
+  PetscFunctionBegin;
+  PetscCall(MatTransposeMatMult(jac->U,X,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&W));
+  PetscCall(MatDiagonalScale(W,jac->diag,NULL));
+  PetscCall(MatTransposeMatMult(jac->Vt,W,MAT_REUSE_MATRIX,PETSC_DEFAULT,&Y));
+  PetscCall(MatDestroy(&W));
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PCApplyTranspose_SVD(PC pc,Vec x,Vec y)
 {
   PC_SVD         *jac = (PC_SVD*)pc->data;
@@ -342,7 +355,8 @@ M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_SVD(PC pc)
 {
-  PC_SVD         *jac;
+  PC_SVD      *jac;
+  PetscMPIInt size = 0;
 
   PetscFunctionBegin;
   /*
@@ -360,6 +374,11 @@ PETSC_EXTERN PetscErrorCode PCCreate_SVD(PC pc)
       choose not to provide a couple of these functions since they are
       not needed.
   */
+
+#if defined(PETSC_HAVE_COMPLEX)
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size));
+#endif
+  if (size == 1) pc->ops->matapply = PCMatApply_SVD;
   pc->ops->apply           = PCApply_SVD;
   pc->ops->applytranspose  = PCApplyTranspose_SVD;
   pc->ops->setup           = PCSetUp_SVD;
