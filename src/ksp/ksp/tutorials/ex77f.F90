@@ -19,53 +19,49 @@
       PetscBool                      flg
       PetscErrorCode                 ierr
 
-      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      if (ierr .ne. 0) then
-        print *,'Unable to initialize PETSc'
-        stop
-      endif
-      call PetscOptionsGetString(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-f',name,flg,ierr);CHKERRA(ierr)
+      PetscCallA(PetscInitialize(ierr))
+      PetscCallA(PetscOptionsGetString(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-f',name,flg,ierr))
       if (flg .eqv. PETSC_FALSE) then
         SETERRA(PETSC_COMM_WORLD,PETSC_ERR_SUP,'Must provide a binary file for the matrix')
       endif
       K = 5
-      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-n',K,flg,ierr);CHKERRA(ierr)
-      call MatCreate(PETSC_COMM_WORLD,A,ierr);CHKERRA(ierr)
-      call KSPCreate(PETSC_COMM_WORLD,ksp,ierr);CHKERRA(ierr)
-      call KSPSetOperators(ksp,A,A,ierr);CHKERRA(ierr)
-      call PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,viewer,ierr);CHKERRA(ierr)
-      call MatLoad(A,viewer,ierr);CHKERRA(ierr)
-      call PetscViewerDestroy(viewer,ierr);CHKERRA(ierr)
-      call MatGetLocalSize(A,m,PETSC_NULL_INTEGER,ierr);CHKERRA(ierr)
-      call MatCreateDense(PETSC_COMM_WORLD,m,PETSC_DECIDE,PETSC_DECIDE,K,PETSC_NULL_SCALAR,B,ierr);CHKERRA(ierr)
-      call MatCreateDense(PETSC_COMM_WORLD,m,PETSC_DECIDE,PETSC_DECIDE,K,PETSC_NULL_SCALAR,X,ierr);CHKERRA(ierr)
-      call MatSetRandom(B,PETSC_NULL_RANDOM,ierr);CHKERRA(ierr)
-      call KSPSetFromOptions(ksp,ierr);CHKERRA(ierr)
-      call KSPSetUp(ksp,ierr);CHKERRA(ierr)
-      call KSPMatSolve(ksp,B,X,ierr);CHKERRA(ierr)
-      call KSPGetMatSolveBatchSize(ksp,M,ierr);CHKERRA(ierr)
+      PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-n',K,flg,ierr))
+      PetscCallA(MatCreate(PETSC_COMM_WORLD,A,ierr))
+      PetscCallA(KSPCreate(PETSC_COMM_WORLD,ksp,ierr))
+      PetscCallA(KSPSetOperators(ksp,A,A,ierr))
+      PetscCallA(PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,viewer,ierr))
+      PetscCallA(MatLoad(A,viewer,ierr))
+      PetscCallA(PetscViewerDestroy(viewer,ierr))
+      PetscCallA(MatGetLocalSize(A,m,PETSC_NULL_INTEGER,ierr))
+      PetscCallA(MatCreateDense(PETSC_COMM_WORLD,m,PETSC_DECIDE,PETSC_DECIDE,K,PETSC_NULL_SCALAR,B,ierr))
+      PetscCallA(MatCreateDense(PETSC_COMM_WORLD,m,PETSC_DECIDE,PETSC_DECIDE,K,PETSC_NULL_SCALAR,X,ierr))
+      PetscCallA(MatSetRandom(B,PETSC_NULL_RANDOM,ierr))
+      PetscCallA(KSPSetFromOptions(ksp,ierr))
+      PetscCallA(KSPSetUp(ksp,ierr))
+      PetscCallA(KSPMatSolve(ksp,B,X,ierr))
+      PetscCallA(KSPGetMatSolveBatchSize(ksp,M,ierr))
       if (M .ne. PETSC_DECIDE) then
-        call KSPSetMatSolveBatchSize(ksp,PETSC_DECIDE,ierr);CHKERRA(ierr)
-        call MatZeroEntries(X,ierr);CHKERRA(ierr)
-        call KSPMatSolve(ksp,B,X,ierr);CHKERRA(ierr)
+        PetscCallA(KSPSetMatSolveBatchSize(ksp,PETSC_DECIDE,ierr))
+        PetscCallA(MatZeroEntries(X,ierr))
+        PetscCallA(KSPMatSolve(ksp,B,X,ierr))
       endif
-      call KSPGetPC(ksp,pc,ierr);CHKERRA(ierr)
-      call PetscObjectTypeCompare(pc,PCLU,flg,ierr);CHKERRA(ierr)
+      PetscCallA(KSPGetPC(ksp,pc,ierr))
+      PetscCallA(PetscObjectTypeCompare(pc,PCLU,flg,ierr))
       if (flg) then
-        call PCFactorGetMatrix(pc,F,ierr);CHKERRA(ierr)
-        call MatMatSolve(F,B,B,ierr);CHKERRA(ierr)
+        PetscCallA(PCFactorGetMatrix(pc,F,ierr))
+        PetscCallA(MatMatSolve(F,B,B,ierr))
         alpha = -1.0
-        call MatAYPX(B,alpha,X,SAME_NONZERO_PATTERN,ierr);CHKERRA(ierr)
-        call MatNorm(B,NORM_INFINITY,norm,ierr);CHKERRA(ierr)
+        PetscCallA(MatAYPX(B,alpha,X,SAME_NONZERO_PATTERN,ierr))
+        PetscCallA(MatNorm(B,NORM_INFINITY,norm,ierr))
         if (norm > 100*PETSC_MACHINE_EPSILON) then
           SETERRA(PETSC_COMM_WORLD,PETSC_ERR_PLIB,'KSPMatSolve() and MatMatSolve() difference has nonzero norm')
         endif
       endif
-      call MatDestroy(X,ierr);CHKERRA(ierr)
-      call MatDestroy(B,ierr);CHKERRA(ierr)
-      call MatDestroy(A,ierr);CHKERRA(ierr)
-      call KSPDestroy(ksp,ierr);CHKERRA(ierr)
-      call PetscFinalize(ierr)
+      PetscCallA(MatDestroy(X,ierr))
+      PetscCallA(MatDestroy(B,ierr))
+      PetscCallA(MatDestroy(A,ierr))
+      PetscCallA(KSPDestroy(ksp,ierr))
+      PetscCallA(PetscFinalize(ierr))
       end
 
 !/*TEST

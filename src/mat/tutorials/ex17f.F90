@@ -23,20 +23,16 @@ implicit none
   PetscBool  set
   PetscInt,parameter :: zero = 0, one = 1, two = 2, three = 3
 
-  call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-  if (ierr /= 0) then
-    print*,'PetscInitialize failed'
-    stop
-  endif
+  PetscCallA(PetscInitialize(ierr))
 
-  call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr);CHKERRA(ierr)
-  call MPI_Comm_size(PETSC_COMM_WORLD,sizef,ierr);CHKERRA(ierr)
+  PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr))
+  PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD,sizef,ierr))
 
   allocate(emptyranks(nemptyranks))
   allocate(bigranks(nbigranks))
 
-  call PetscOptionsGetIntArray(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-emptyranks",emptyranks,nemptyranks,set,ierr);CHKERRA(ierr)
-  call PetscOptionsGetIntArray(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-bigranks",bigranks,nbigranks,set,ierr);CHKERRA(ierr)
+  PetscCallA(PetscOptionsGetIntArray(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-emptyranks",emptyranks,nemptyranks,set,ierr))
+  PetscCallA(PetscOptionsGetIntArray(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-bigranks",bigranks,nbigranks,set,ierr))
 
   m = 1
   do i=1,nemptyranks
@@ -49,18 +45,18 @@ implicit none
   deallocate(emptyranks)
   deallocate(bigranks)
 
-  call MatCreate(PETSC_COMM_WORLD,A,ierr);CHKERRA(ierr)
-  call MatSetsizes(A,m,m,PETSC_DECIDE,PETSC_DECIDE,ierr);CHKERRA(ierr)
-  call MatSetFromOptions(A,ierr);CHKERRA(ierr)
-  call MatSeqAIJSetPreallocation(A,three,PETSC_NULL_INTEGER,ierr);CHKERRA(ierr)
-  call MatMPIAIJSetPreallocation(A,three,PETSC_NULL_INTEGER,two,PETSC_NULL_INTEGER,ierr);CHKERRA(ierr)
-  call MatSeqBAIJSetPreallocation(A,one,three,PETSC_NULL_INTEGER,ierr);CHKERRA(ierr)
-  call MatMPIBAIJSetPreallocation(A,one,three,PETSC_NULL_INTEGER,2,PETSC_NULL_INTEGER,ierr);CHKERRA(ierr)
-  call MatSeqSBAIJSetPreallocation(A,one,two,PETSC_NULL_INTEGER,ierr);CHKERRA(ierr)
-  call MatMPISBAIJSetPreallocation(A,one,two,PETSC_NULL_INTEGER,1,PETSC_NULL_INTEGER,ierr);CHKERRA(ierr)
+  PetscCallA(MatCreate(PETSC_COMM_WORLD,A,ierr))
+  PetscCallA(MatSetsizes(A,m,m,PETSC_DECIDE,PETSC_DECIDE,ierr))
+  PetscCallA(MatSetFromOptions(A,ierr))
+  PetscCallA(MatSeqAIJSetPreallocation(A,three,PETSC_NULL_INTEGER,ierr))
+  PetscCallA(MatMPIAIJSetPreallocation(A,three,PETSC_NULL_INTEGER,two,PETSC_NULL_INTEGER,ierr))
+  PetscCallA(MatSeqBAIJSetPreallocation(A,one,three,PETSC_NULL_INTEGER,ierr))
+  PetscCallA(MatMPIBAIJSetPreallocation(A,one,three,PETSC_NULL_INTEGER,2,PETSC_NULL_INTEGER,ierr))
+  PetscCallA(MatSeqSBAIJSetPreallocation(A,one,two,PETSC_NULL_INTEGER,ierr))
+  PetscCallA(MatMPISBAIJSetPreallocation(A,one,two,PETSC_NULL_INTEGER,1,PETSC_NULL_INTEGER,ierr))
 
-  call MatGetSize(A,PETSC_NULL_INTEGER,N,ierr);CHKERRA(ierr)
-  call MatGetOwnershipRange(A,rstart,rend,ierr);CHKERRA(ierr)
+  PetscCallA(MatGetSize(A,PETSC_NULL_INTEGER,N,ierr))
+  PetscCallA(MatGetOwnershipRange(A,rstart,rend,ierr))
 
   allocate(cols(0:3))
   allocate(vals(0:3))
@@ -68,23 +64,23 @@ implicit none
 
     cols = (/mod((i+N-1),N),i,mod((i+1),N)/)
     vals = [1.0,1.0,1.0]
-    call MatSetValues(A,one,i,three,cols,vals,INSERT_VALUES,ierr);CHKERRA(ierr)
+    PetscCallA(MatSetValues(A,one,i,three,cols,vals,INSERT_VALUES,ierr))
   end do
   deallocate(cols)
   deallocate(vals)
-  call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr);CHKERRA(ierr)
-  call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr);CHKERRA(ierr)
-  call MatView(A,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)
+  PetscCallA(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr))
+  PetscCallA(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr))
+  PetscCallA(MatView(A,PETSC_VIEWER_STDOUT_WORLD,ierr))
 
-  call MatPartitioningCreate(PETSC_COMM_WORLD,part,ierr);CHKERRA(ierr)
-  call MatPartitioningSetAdjacency(part,A,ierr);CHKERRA(ierr)
-  call MatPartitioningSetFromOptions(part,ierr);CHKERRA(ierr)
-  call MatPartitioningApply(part,is,ierr);CHKERRA(ierr)
-  call ISView(is,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)
-  call ISDestroy(is,ierr);CHKERRA(ierr)
-  call MatPartitioningDestroy(part,ierr);CHKERRA(ierr)
-  call MatDestroy(A,ierr);CHKERRA(ierr)
-  call PetscFinalize(ierr);CHKERRA(ierr)
+  PetscCallA(MatPartitioningCreate(PETSC_COMM_WORLD,part,ierr))
+  PetscCallA(MatPartitioningSetAdjacency(part,A,ierr))
+  PetscCallA(MatPartitioningSetFromOptions(part,ierr))
+  PetscCallA(MatPartitioningApply(part,is,ierr))
+  PetscCallA(ISView(is,PETSC_VIEWER_STDOUT_WORLD,ierr))
+  PetscCallA(ISDestroy(is,ierr))
+  PetscCallA(MatPartitioningDestroy(part,ierr))
+  PetscCallA(MatDestroy(A,ierr))
+  PetscCallA(PetscFinalize(ierr))
 
 end program
 

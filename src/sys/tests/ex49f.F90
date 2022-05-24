@@ -44,7 +44,7 @@ program main
   PetscInt                i
   PetscSizeT              sizeofentry
 
-  PetscCallA(PetscInitialize(PETSC_NULL_CHARACTER,ierr))
+  PetscCallA(PetscInitialize(ierr))
 
   x  = [3, 2, 1]
   x1 = [3, 2, 1]

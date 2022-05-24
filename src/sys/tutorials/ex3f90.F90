@@ -43,7 +43,7 @@
       integer4,parameter        :: one=1
 
 !     Initializations
-      PetscCallA( PetscInitialize(PETSC_NULL_CHARACTER,ierr))
+      PetscCallA( PetscInitialize(ierr))
       PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD, size,ierr))
       PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD, rank,ierr))
 
@@ -85,14 +85,9 @@
          PetscCallA(PetscLogFlops(23000d0,ierr))
          PetscCallA(PetscSleep(1*second, ierr))
          if (size>1) then
-         call MPI_Isend( message, msgLen, MPI_DOUBLE_PRECISION,                             &
-     &                        mod(rank+1,size),                                             &
-     &                        tagMsg+rank, PETSC_COMM_WORLD, req, ierr)
-         call  MPI_Recv( message, msgLen, MPI_DOUBLE_PRECISION,                             &
-     &                       mod(rank-1+size,size),                                         &
-     &                  tagMsg+mod(rank-1+size,size), PETSC_COMM_WORLD,                     &
-     &        status, ierr)
-         PetscCallMPIA(MPI_Wait(req,MPI_STATUS_IGNORE,ierr))
+           PetscCallMPIA(MPI_Isend( message, msgLen, MPI_DOUBLE_PRECISION,mod(rank+1,size),tagMsg+rank, PETSC_COMM_WORLD, req, ierr))
+           PetscCallMPIA(MPI_Recv( message, msgLen, MPI_DOUBLE_PRECISION,mod(rank-1+size,size),tagMsg+mod(rank-1+size,size), PETSC_COMM_WORLD,status, ierr))
+           PetscCallMPIA(MPI_Wait(req,MPI_STATUS_IGNORE,ierr))
          end if
          PetscCallA(PetscLogEventEnd(Lessons,ierr))
 
@@ -200,14 +195,9 @@
          PetscCallA(PetscLogFlops(23000d0,ierr))
          PetscCallA(PetscSleep(1*second, ierr))
          if (size>1) then
-         call MPI_Isend( message, msgLen, MPI_DOUBLE_PRECISION,                             &
-     &                   mod(rank+1,size),                                                  &
-     &                   tagMsg+rank, PETSC_COMM_WORLD, req, ierr)
-         call MPI_Recv( message, msgLen, MPI_DOUBLE_PRECISION,                              &
-     &                  mod(rank-1+size,size),                                              &
-     &                  tagMsg+mod(rank-1+size,size), PETSC_COMM_WORLD,                     &
-     &                  status, ierr)
-         PetscCallMPIA(MPI_Wait(req,MPI_STATUS_IGNORE,ierr))
+           PetscCallMPIA(MPI_Isend( message, msgLen, MPI_DOUBLE_PRECISION,mod(rank+1,size),tagMsg+rank, PETSC_COMM_WORLD, req, ierr))
+           PetscCallMPIA(MPI_Recv( message, msgLen, MPI_DOUBLE_PRECISION,mod(rank-1+size,size),tagMsg+mod(rank-1+size,size), PETSC_COMM_WORLD,status, ierr))
+           PetscCallMPIA(MPI_Wait(req,MPI_STATUS_IGNORE,ierr))
          end if
          PetscCallA(PetscLogEventEnd(Lessons,ierr))
 

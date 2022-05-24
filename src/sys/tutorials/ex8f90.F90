@@ -10,7 +10,7 @@
       PetscEnum                                 :: opt=-1
       PetscBool                                 :: set=PETSC_FALSE
 
-      PetscCallA(PetscInitialize(PETSC_NULL_CHARACTER,ierr))
+      PetscCallA(PetscInitialize(ierr))
       list1(1) = 'a123'
       list1(2) = 'b456'
       list1(3) = 'c789'

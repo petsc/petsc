@@ -28,7 +28,7 @@
 !     Every PETSc routine should begin with the PetscInitialize()
 !     routine.
 
-      PetscCallA(PetscInitialize(PETSC_NULL_CHARACTER,ierr))
+      PetscCallA(PetscInitialize(ierr))
 
 !     The following MPI calls return the number of processes being used
 !     and the rank of this process in the group.
@@ -52,7 +52,7 @@
 
 !     Since we initialized MPI, we must call MPI_Finalize()
 
-      PetscCallMPIA( MPI_Finalize(ierr))
+      PetscCallMPIA(MPI_Finalize(ierr))
       end
 
 !

@@ -35,7 +35,7 @@
 !                 Beginning of program
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      PetscCallA(PetscInitialize(PETSC_NULL_CHARACTER,ierr))
+      PetscCallA(PetscInitialize(ierr))
 
 !
 !     Create a new user-defined event.

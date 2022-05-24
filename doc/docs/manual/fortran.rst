@@ -286,24 +286,24 @@ throughout the manual, since PETSc usage within the two languages
 differs only slightly.
 
 
-.. admonition:: Listing: ``src/vec/vec/tests/ex19f.F``
+.. admonition:: Listing: ``src/vec/vec/tests/ex19f.F90``
    :name: vec-test-ex19f
 
-   .. literalinclude:: /../src/vec/vec/tests/ex19f.F
+   .. literalinclude:: /../src/vec/vec/tests/ex19f.F90
       :language: fortran
 
 .. _listing_vec_ex4f:
 
-.. admonition:: Listing: ``src/vec/vec/tutorials/ex4f.F``
+.. admonition:: Listing: ``src/vec/vec/tutorials/ex4f.F90``
    :name: vec-ex4f
 
-   .. literalinclude:: /../src/vec/vec/tutorials/ex4f.F
+   .. literalinclude:: /../src/vec/vec/tutorials/ex4f.F90
       :language: fortran
 
-.. admonition:: Listing: ``src/sys/classes/draw/tests/ex5f.F``
+.. admonition:: Listing: ``src/sys/classes/draw/tests/ex5f.F90``
    :name: draw-test-ex5f
 
-   .. literalinclude:: /../src/sys/classes/draw/tests/ex5f.F
+   .. literalinclude:: /../src/sys/classes/draw/tests/ex5f.F90
       :language: fortran
 
 .. admonition:: Listing: ``src/snes/tutorials/ex1f.F90``

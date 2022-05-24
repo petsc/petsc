@@ -11,7 +11,7 @@ program main
 
       ! Every PETSc routine should begin with the PetscInitialize() routine.
 
-      PetscCallA(PetscInitialize(PETSC_NULL_CHARACTER,ierr))
+      PetscCallA(PetscInitialize(ierr))
       PetscCallA(PetscGetVersionNumber(major,minor,subminor,PETSC_NULL_INTEGER,ierr))
 
       if (major /= PETSC_VERSION_MAJOR) then

@@ -13,18 +13,14 @@
       PetscInt idxm(1),i,j
       PetscScalar v
 
-      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      if (ierr .ne. 0) then
-        print*,'Unable to initialize PETSc'
-        stop
-      endif
+      PetscCallA(PetscInitialize(ierr))
 
-      call MatCreate(PETSC_COMM_WORLD,A,ierr);CHKERRA(ierr)
+      PetscCallA(MatCreate(PETSC_COMM_WORLD,A,ierr))
       three = 3
-      call MatSetSizes(A,three,three,three,three,ierr);CHKERRA(ierr)
-      call MatSetBlockSize(A,three,ierr);CHKERRA(ierr)
-      call MatSetType(A, MATSEQBAIJ,ierr);CHKERRA(ierr)
-      call MatSetUp(A,ierr);CHKERRA(ierr)
+      PetscCallA(MatSetSizes(A,three,three,three,three,ierr))
+      PetscCallA(MatSetBlockSize(A,three,ierr))
+      PetscCallA(MatSetType(A, MATSEQBAIJ,ierr))
+      PetscCallA(MatSetUp(A,ierr))
 
       one = 1
       idxm(1) = 0
@@ -35,18 +31,18 @@
         enddo
       enddo
 
-      call MatSetValuesBlocked(A, one, idxm, one, idxm, km, ADD_VALUES, ierr);CHKERRA(ierr)
-      call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr);CHKERRA(ierr)
-      call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr);CHKERRA(ierr)
-      call MatView(A,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)
+      PetscCallA(MatSetValuesBlocked(A, one, idxm, one, idxm, km, ADD_VALUES, ierr))
+      PetscCallA(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr))
+      PetscCallA(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr))
+      PetscCallA(MatView(A,PETSC_VIEWER_STDOUT_WORLD,ierr))
 
       j = 0
-      call MatGetValues(A,one,j,one,j,v,ierr);CHKERRA(ierr)
+      PetscCallA(MatGetValues(A,one,j,one,j,v,ierr))
 
-      call MatDestroy(A,ierr);CHKERRA(ierr)
+      PetscCallA(MatDestroy(A,ierr))
 
       deallocate(km)
-      call PetscFinalize(ierr)
+      PetscCallA(PetscFinalize(ierr))
       end
 
 !/*TEST

@@ -54,7 +54,7 @@
       PetscReal value
       PetscScalar svalue
 
-      PetscCallA(PetscInitialize(PETSC_NULL_CHARACTER,ierr))
+      PetscCallA(PetscInitialize(ierr))
       list(1) = 'a123'
       list(2) = 'b456'
       list(3) = 'c789'

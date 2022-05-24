@@ -25,32 +25,27 @@
       s = 1
       dof = 1
       sw = 1
-      CALL PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      if (ierr .ne. 0) then
-        print*,'Unable to initialize PETSc'
-        stop
-      endif
-      call DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,m,dof,sw,PETSC_NULL_INTEGER,ada,ierr);CHKERRA(ierr)
-      call DMSetUp(ada,ierr);CHKERRA(ierr)
-      call DMGetGlobalVector(ada,g,ierr);CHKERRA(ierr)
-      call DMDAGetCorners(ada,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,xl,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr);CHKERRA(ierr)
-      call DMDAVecGetArrayF90(ada,g,x1,ierr);CHKERRA(ierr)
+      PetscCallA(PetscInitialize(ierr))
+      PetscCallA(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,m,dof,sw,PETSC_NULL_INTEGER,ada,ierr))
+      PetscCallA(DMSetUp(ada,ierr))
+      PetscCallA(DMGetGlobalVector(ada,g,ierr))
+      PetscCallA(DMDAGetCorners(ada,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,xl,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr))
+      PetscCallA(DMDAVecGetArrayF90(ada,g,x1,ierr))
       do i=xs,xs+xl-1
 !         CHKMEMQ
          x1(i) = i
 !         CHKMEMQ
       enddo
-      call DMDAVecRestoreArrayF90(ada,g,x1,ierr);CHKERRA(ierr)
-      call VecView(g,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)
-      call DMRestoreGlobalVector(ada,g,ierr);CHKERRA(ierr)
-      call DMDestroy(ada,ierr);CHKERRA(ierr)
+      PetscCallA(DMDAVecRestoreArrayF90(ada,g,x1,ierr))
+      PetscCallA(VecView(g,PETSC_VIEWER_STDOUT_WORLD,ierr))
+      PetscCallA(DMRestoreGlobalVector(ada,g,ierr))
+      PetscCallA(DMDestroy(ada,ierr))
 
-      call DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,m,n,PETSC_DECIDE,PETSC_DECIDE,dof,s,  &
-     &     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ada,ierr);CHKERRA(ierr)
-      call DMSetUp(ada,ierr);CHKERRA(ierr)
-      call DMGetGlobalVector(ada,g,ierr);CHKERRA(ierr)
-      call DMDAGetCorners(ada,xs,ys,PETSC_NULL_INTEGER,xl,yl,PETSC_NULL_INTEGER,ierr);CHKERRA(ierr)
-      call DMDAVecGetArrayF90(ada,g,x2,ierr);CHKERRA(ierr)
+      PetscCallA(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,m,n,PETSC_DECIDE,PETSC_DECIDE,dof,s,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ada,ierr))
+      PetscCallA(DMSetUp(ada,ierr))
+      PetscCallA(DMGetGlobalVector(ada,g,ierr))
+      PetscCallA(DMDAGetCorners(ada,xs,ys,PETSC_NULL_INTEGER,xl,yl,PETSC_NULL_INTEGER,ierr))
+      PetscCallA(DMDAVecGetArrayF90(ada,g,x2,ierr))
       do i=xs,xs+xl-1
         do j=ys,ys+yl-1
 !           CHKMEMQ
@@ -58,17 +53,16 @@
 !           CHKMEMQ
         enddo
       enddo
-      call DMDAVecRestoreArrayF90(ada,g,x2,ierr);CHKERRA(ierr)
-      call VecView(g,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)
-      call DMRestoreGlobalVector(ada,g,ierr);CHKERRA(ierr)
-      call DMDestroy(ada,ierr);CHKERRA(ierr)
+      PetscCallA(DMDAVecRestoreArrayF90(ada,g,x2,ierr))
+      PetscCallA(VecView(g,PETSC_VIEWER_STDOUT_WORLD,ierr))
+      PetscCallA(DMRestoreGlobalVector(ada,g,ierr))
+      PetscCallA(DMDestroy(ada,ierr))
 
-      call DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX, m,n,p,PETSC_DECIDE,PETSC_DECIDE,                     &
-     &                PETSC_DECIDE,dof,s,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ada,ierr);CHKERRA(ierr)
-      call DMSetUp(ada,ierr);CHKERRA(ierr)
-      call DMGetGlobalVector(ada,g,ierr);CHKERRA(ierr)
-      call DMDAGetCorners(ada,xs,ys,zs,xl,yl,zl,ierr);CHKERRA(ierr)
-      call DMDAVecGetArrayF90(ada,g,x3,ierr);CHKERRA(ierr)
+      PetscCallA(DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX, m,n,p,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,s,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ada,ierr))
+      PetscCallA(DMSetUp(ada,ierr))
+      PetscCallA(DMGetGlobalVector(ada,g,ierr))
+      PetscCallA(DMDAGetCorners(ada,xs,ys,zs,xl,yl,zl,ierr))
+      PetscCallA(DMDAVecGetArrayF90(ada,g,x3,ierr))
       do i=xs,xs+xl-1
         do j=ys,ys+yl-1
           do k=zs,zs+zl-1
@@ -78,38 +72,37 @@
           enddo
         enddo
       enddo
-      call DMDAVecRestoreArrayF90(ada,g,x3,ierr);CHKERRA(ierr)
-      call VecView(g,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)
-      call DMRestoreGlobalVector(ada,g,ierr);CHKERRA(ierr)
-      call DMDestroy(ada,ierr);CHKERRA(ierr)
+      PetscCallA(DMDAVecRestoreArrayF90(ada,g,x3,ierr))
+      PetscCallA(VecView(g,PETSC_VIEWER_STDOUT_WORLD,ierr))
+      PetscCallA(DMRestoreGlobalVector(ada,g,ierr))
+      PetscCallA(DMDestroy(ada,ierr))
 
 !
 !  Same tests but now with DOF > 1, so dimensions of array are one higher
 !
       dof = 2
-      call DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,m,dof,sw,PETSC_NULL_INTEGER,ada,ierr);CHKERRA(ierr)
-      call DMSetUp(ada,ierr);CHKERRA(ierr)
-      call DMGetGlobalVector(ada,g,ierr);CHKERRA(ierr)
-      call DMDAGetCorners(ada,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,xl,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr);CHKERRA(ierr)
-      call DMDAVecGetArrayF90(ada,g,x2,ierr);CHKERRA(ierr)
+      PetscCallA(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,m,dof,sw,PETSC_NULL_INTEGER,ada,ierr))
+      PetscCallA(DMSetUp(ada,ierr))
+      PetscCallA(DMGetGlobalVector(ada,g,ierr))
+      PetscCallA(DMDAGetCorners(ada,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,xl,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr))
+      PetscCallA(DMDAVecGetArrayF90(ada,g,x2,ierr))
       do i=xs,xs+xl-1
 !         CHKMEMQ
          x2(0,i) = i
          x2(1,i) = -i
 !         CHKMEMQ
       enddo
-      call DMDAVecRestoreArrayF90(ada,g,x1,ierr);CHKERRA(ierr)
-      call VecView(g,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)
-      call DMRestoreGlobalVector(ada,g,ierr);CHKERRA(ierr)
-      call DMDestroy(ada,ierr);CHKERRA(ierr)
+      PetscCallA(DMDAVecRestoreArrayF90(ada,g,x1,ierr))
+      PetscCallA(VecView(g,PETSC_VIEWER_STDOUT_WORLD,ierr))
+      PetscCallA(DMRestoreGlobalVector(ada,g,ierr))
+      PetscCallA(DMDestroy(ada,ierr))
 
       dof = 2
-      call DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,m,n,PETSC_DECIDE,PETSC_DECIDE,dof,s,   &
-     &     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ada,ierr);CHKERRA(ierr)
-      call DMSetUp(ada,ierr);CHKERRA(ierr)
-      call DMGetGlobalVector(ada,g,ierr);CHKERRA(ierr)
-      call DMDAGetCorners(ada,xs,ys,PETSC_NULL_INTEGER,xl,yl,PETSC_NULL_INTEGER,ierr);CHKERRA(ierr)
-      call DMDAVecGetArrayF90(ada,g,x3,ierr);CHKERRA(ierr)
+      PetscCallA(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,m,n,PETSC_DECIDE,PETSC_DECIDE,dof,s,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ada,ierr))
+      PetscCallA(DMSetUp(ada,ierr))
+      PetscCallA(DMGetGlobalVector(ada,g,ierr))
+      PetscCallA(DMDAGetCorners(ada,xs,ys,PETSC_NULL_INTEGER,xl,yl,PETSC_NULL_INTEGER,ierr))
+      PetscCallA(DMDAVecGetArrayF90(ada,g,x3,ierr))
       do i=xs,xs+xl-1
         do j=ys,ys+yl-1
 !           CHKMEMQ
@@ -118,18 +111,17 @@
 !           CHKMEMQ
         enddo
       enddo
-      call DMDAVecRestoreArrayF90(ada,g,x3,ierr);CHKERRA(ierr)
-      call VecView(g,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)
-      call DMRestoreGlobalVector(ada,g,ierr);CHKERRA(ierr)
-      call DMDestroy(ada,ierr);CHKERRA(ierr)
+      PetscCallA(DMDAVecRestoreArrayF90(ada,g,x3,ierr))
+      PetscCallA(VecView(g,PETSC_VIEWER_STDOUT_WORLD,ierr))
+      PetscCallA(DMRestoreGlobalVector(ada,g,ierr))
+      PetscCallA(DMDestroy(ada,ierr))
 
       dof = 3
-      call DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,m,n,p,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,s,                &
-     &                PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ada,ierr);CHKERRA(ierr)
-      call DMSetUp(ada,ierr);CHKERRA(ierr)
-      call DMGetGlobalVector(ada,g,ierr);CHKERRA(ierr)
-      call DMDAGetCorners(ada,xs,ys,zs,xl,yl,zl,ierr);CHKERRA(ierr)
-      call DMDAVecGetArrayF90(ada,g,x4,ierr);CHKERRA(ierr)
+      PetscCallA(DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,m,n,p,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,s,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ada,ierr))
+      PetscCallA(DMSetUp(ada,ierr))
+      PetscCallA(DMGetGlobalVector(ada,g,ierr))
+      PetscCallA(DMDAGetCorners(ada,xs,ys,zs,xl,yl,zl,ierr))
+      PetscCallA(DMDAVecGetArrayF90(ada,g,x4,ierr))
       do i=xs,xs+xl-1
         do j=ys,ys+yl-1
           do k=zs,zs+zl-1
@@ -141,12 +133,12 @@
           enddo
         enddo
       enddo
-      call DMDAVecRestoreArrayF90(ada,g,x4,ierr);CHKERRA(ierr)
-      call VecView(g,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)
-      call DMRestoreGlobalVector(ada,g,ierr);CHKERRA(ierr)
-      call DMDestroy(ada,ierr);CHKERRA(ierr)
+      PetscCallA(DMDAVecRestoreArrayF90(ada,g,x4,ierr))
+      PetscCallA(VecView(g,PETSC_VIEWER_STDOUT_WORLD,ierr))
+      PetscCallA(DMRestoreGlobalVector(ada,g,ierr))
+      PetscCallA(DMDestroy(ada,ierr))
 
-      CALL PetscFinalize(ierr)
+      PetscCallA(PetscFinalize(ierr))
       END PROGRAM
 
 !

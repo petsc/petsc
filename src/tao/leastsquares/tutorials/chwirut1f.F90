@@ -38,14 +38,10 @@
       external FormFunction
 
 !  Initialize TAO and PETSc
-      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      if (ierr .ne. 0) then
-         print*,'Unable to initialize PETSc'
-         stop
-      endif
+      PetscCallA(PetscInitialize(ierr))
 
-      call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
-      call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
+      PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD,size,ierr))
+      PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr))
       if (size .ne. 1) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_WRONG_MPI_SIZE,'This is a uniprocessor example only '); endif
 
 !  Initialize problem parameters
@@ -53,39 +49,31 @@
       n = 3
 
 !  Allocate vectors for the solution and gradient
-      call VecCreateSeq(PETSC_COMM_SELF,n,x,ierr)
-      call VecCreateSeq(PETSC_COMM_SELF,m,f,ierr)
+      PetscCallA(VecCreateSeq(PETSC_COMM_SELF,n,x,ierr))
+      PetscCallA(VecCreateSeq(PETSC_COMM_SELF,m,f,ierr))
 
 !  The TAO code begins here
 
 !  Create TAO solver
-      call TaoCreate(PETSC_COMM_SELF,tao,ierr);CHKERRA(ierr)
-      call TaoSetType(tao,TAOPOUNDERS,ierr);CHKERRA(ierr)
+      PetscCallA(TaoCreate(PETSC_COMM_SELF,tao,ierr))
+      PetscCallA(TaoSetType(tao,TAOPOUNDERS,ierr))
 !  Set routines for function, gradient, and hessian evaluation
 
-      call TaoSetResidualRoutine(tao,f,                       &
-     &      FormFunction,0,ierr)
-      CHKERRA(ierr)
+      PetscCallA(TaoSetResidualRoutine(tao,f,FormFunction,0,ierr))
 
 !  Optional: Set initial guess
       call InitializeData()
       call FormStartingPoint(x)
-      call TaoSetSolution(tao, x, ierr)
-      CHKERRA(ierr)
+      PetscCallA(TaoSetSolution(tao, x, ierr))
 
 !  Check for TAO command line options
-      call TaoSetFromOptions(tao,ierr)
-      CHKERRA(ierr)
+      PetscCallA(TaoSetFromOptions(tao,ierr))
       oh = 100
-      call TaoSetConvergenceHistory(tao,hist,resid,cnorm,lits,          &
-     &     oh,PETSC_TRUE,ierr)
-      CHKERRA(ierr)
+      PetscCallA(TaoSetConvergenceHistory(tao,hist,resid,cnorm,lits,oh,PETSC_TRUE,ierr))
 !  SOLVE THE APPLICATION
-      call TaoSolve(tao,ierr)
-      CHKERRA(ierr)
-      call TaoGetConvergenceHistory(tao,nhist,ierr)
-      CHKERRA(ierr)
-      call TaoGetConvergedReason(tao, reason, ierr)
+      PetscCallA(TaoSolve(tao,ierr))
+      PetscCallA(TaoGetConvergenceHistory(tao,nhist,ierr))
+      PetscCallA(TaoGetConvergedReason(tao, reason, ierr))
       if (reason .le. 0) then
          print *,'Tao failed.'
          print *,'Try a different TAO method, adjust some parameters,'
@@ -93,13 +81,13 @@
       endif
 
 !  Free TAO data structures
-      call TaoDestroy(tao,ierr)
+      PetscCallA(TaoDestroy(tao,ierr))
 
 !  Free PETSc data structures
-      call VecDestroy(x,ierr)
-      call VecDestroy(f,ierr)
+      PetscCallA(VecDestroy(x,ierr))
+      PetscCallA(VecDestroy(f,ierr))
 
-      call PetscFinalize(ierr)
+      PetscCallA(PetscFinalize(ierr))
 
       end
 
@@ -128,8 +116,8 @@
       ierr = 0
 
 !     Get pointers to vector data
-      call VecGetArrayF90(x,x_v,ierr);CHKERRQ(ierr)
-      call VecGetArrayF90(f,f_v,ierr);CHKERRQ(ierr)
+      PetscCall(VecGetArrayF90(x,x_v,ierr))
+      PetscCall(VecGetArrayF90(f,f_v,ierr))
 
 !     Compute F(X)
       do i=0,m-1
@@ -137,8 +125,8 @@
       enddo
 
 !     Restore vectors
-      call VecRestoreArrayF90(X,x_v,ierr);CHKERRQ(ierr)
-      call VecRestoreArrayF90(F,f_v,ierr);CHKERRQ(ierr)
+      PetscCall(VecRestoreArrayF90(X,x_v,ierr))
+      PetscCall(VecRestoreArrayF90(F,f_v,ierr))
 
       return
       end
@@ -150,11 +138,11 @@
       PetscScalar, pointer, dimension(:)  :: x_v
       PetscErrorCode  ierr
 
-      call VecGetArrayF90(x,x_v,ierr)
+      PetscCall(VecGetArrayF90(x,x_v,ierr))
       x_v(1) = 0.15
       x_v(2) = 0.008
       x_v(3) = 0.01
-      call VecRestoreArrayF90(x,x_v,ierr)
+      PetscCall(VecRestoreArrayF90(x,x_v,ierr))
       return
       end
 

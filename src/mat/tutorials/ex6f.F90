@@ -67,22 +67,17 @@
        PetscErrorCode :: ierr
        PetscInt :: n=128
 
-       CALL PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-       if (ierr .ne. 0) then
-          print*,'Unable to initialize PETSc'
-          stop
-        endif
+       PetscCallA(PetscInitialize(ierr))
+       ctxF%lambda = 3.14d0
+       PetscCallA(MatCreateShell(PETSC_COMM_WORLD,n,n,n,n,ctxF,F,ierr))
+       PetscCallA(MatShellSetContext(F,ctxF,ierr))
+       PRINT*,'ctxF%lambda = ',ctxF%lambda
 
-        ctxF%lambda = 3.14d0
-        CALL MatCreateShell(PETSC_COMM_WORLD,n,n,n,n,ctxF,F,ierr)
-        CALL MatShellSetContext(F,ctxF,ierr)
-        PRINT*,'ctxF%lambda = ',ctxF%lambda
+       PetscCallA(MatShellGetContext(F,ctxF_pt,ierr))
+       PRINT*,'ctxF_pt%lambda = ',ctxF_pt%lambda
 
-        CALL MatShellGetContext(F,ctxF_pt,ierr)
-        PRINT*,'ctxF_pt%lambda = ',ctxF_pt%lambda
-
-        call MatDestroy(F,ierr)
-        CALL PetscFinalize(ierr)
+       PetscCallA(MatDestroy(F,ierr))
+       PetscCallA(PetscFinalize(ierr))
       END PROGRAM main
 
 !/*TEST

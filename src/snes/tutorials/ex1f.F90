@@ -59,20 +59,16 @@
 !                 Beginning of program
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      if (ierr .ne. 0) then
-        print*,'Unable to initialize PETSc'
-        stop
-      endif
-      call PetscLogNestedBegin(ierr);CHKERRA(ierr)
+      PetscCallA(PetscInitialize(ierr))
+      PetscCallA(PetscLogNestedBegin(ierr))
       threshold = 1.0
-      call PetscLogSetThreshold(threshold,oldthreshold,ierr)
+      PetscCallA(PetscLogSetThreshold(threshold,oldthreshold,ierr))
 ! dummy test of logging a reduction
 #if defined(PETSC_USE_LOG)
       ierr = PetscAReduce()
 #endif
-      call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
-      call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
+      PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD,size,ierr))
+      PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr))
       if (size .ne. 1) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_WRONG_MPI_SIZE,'Uniprocessor example'); endif
 
       i2  = 2
@@ -81,7 +77,7 @@
 !  Create nonlinear solver context
 ! - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      call SNESCreate(PETSC_COMM_WORLD,snes,ierr)
+      PetscCallA(SNESCreate(PETSC_COMM_WORLD,snes,ierr))
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create matrix and vector data structures; set corresponding routines
@@ -89,23 +85,23 @@
 
 !  Create vectors for solution and nonlinear function
 
-      call VecCreateSeq(PETSC_COMM_SELF,i2,x,ierr)
-      call VecDuplicate(x,r,ierr)
+      PetscCallA(VecCreateSeq(PETSC_COMM_SELF,i2,x,ierr))
+      PetscCallA(VecDuplicate(x,r,ierr))
 
 !  Create Jacobian matrix data structure
 
-      call MatCreate(PETSC_COMM_SELF,J,ierr)
-      call MatSetSizes(J,PETSC_DECIDE,PETSC_DECIDE,i2,i2,ierr)
-      call MatSetFromOptions(J,ierr)
-      call MatSetUp(J,ierr)
+      PetscCallA(MatCreate(PETSC_COMM_SELF,J,ierr))
+      PetscCallA(MatSetSizes(J,PETSC_DECIDE,PETSC_DECIDE,i2,i2,ierr))
+      PetscCallA(MatSetFromOptions(J,ierr))
+      PetscCallA(MatSetUp(J,ierr))
 
 !  Set function evaluation routine and vector
 
-      call SNESSetFunction(snes,r,FormFunction,0,ierr)
+      PetscCallA(SNESSetFunction(snes,r,FormFunction,0,ierr))
 
 !  Set Jacobian matrix data structure and Jacobian evaluation routine
 
-      call SNESSetJacobian(snes,J,J,FormJacobian,0,ierr)
+      PetscCallA(SNESSetJacobian(snes,J,J,FormJacobian,0,ierr))
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Customize nonlinear solver; set runtime options
@@ -115,12 +111,11 @@
 !  KSP, KSP, and PC contexts from the SNES context, we can then
 !  directly call any KSP, KSP, and PC routines to set various options.
 
-      call SNESGetKSP(snes,ksp,ierr)
-      call KSPGetPC(ksp,pc,ierr)
-      call PCSetType(pc,PCNONE,ierr)
+      PetscCallA(SNESGetKSP(snes,ksp,ierr))
+      PetscCallA(KSPGetPC(ksp,pc,ierr))
+      PetscCallA(PCSetType(pc,PCNONE,ierr))
       tol = 1.e-4
-      call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_REAL,                  &
-     &                      PETSC_DEFAULT_REAL,i20,ierr)
+      PetscCallA(KSPSetTolerances(ksp,tol,PETSC_DEFAULT_REAL,PETSC_DEFAULT_REAL,i20,ierr))
 
 !  Set SNES/KSP/KSP/PC runtime options, e.g.,
 !      -snes_view -snes_monitor -ksp_type <ksp> -pc_type <pc>
@@ -128,16 +123,14 @@
 !  SNESSetFromOptions() is called _after_ any other customization
 !  routines.
 
-      call SNESSetFromOptions(snes,ierr)
+      PetscCallA(SNESSetFromOptions(snes,ierr))
 
-      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,   &
-     &                         '-setls',setls,ierr)
+      PetscCallA(PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-setls',setls,ierr))
 
       if (setls) then
-        call SNESGetLineSearch(snes, linesearch, ierr)
-        call SNESLineSearchSetType(linesearch, 'shell', ierr)
-        call SNESLineSearchShellSetUserFunc(linesearch, MyLineSearch,   &
-     &                                      0, ierr)
+        PetscCallA(SNESGetLineSearch(snes, linesearch, ierr))
+        PetscCallA(SNESLineSearchSetType(linesearch, 'shell', ierr))
+        PetscCallA(SNESLineSearchShellSetUserFunc(linesearch, MyLineSearch,0,ierr))
       endif
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -150,13 +143,13 @@
 !  this vector to zero by calling VecSet().
 
       pfive = 0.5
-      call VecSet(x,pfive,ierr)
-      call SNESSolve(snes,PETSC_NULL_VEC,x,ierr)
+      PetscCallA(VecSet(x,pfive,ierr))
+      PetscCallA(SNESSolve(snes,PETSC_NULL_VEC,x,ierr))
 
 !  View solver converged reason; we could instead use the option -snes_converged_reason
-      call SNESConvergedReasonView(snes,PETSC_VIEWER_STDOUT_WORLD,ierr)
+      PetscCallA(SNESConvergedReasonView(snes,PETSC_VIEWER_STDOUT_WORLD,ierr))
 
-      call SNESGetIterationNumber(snes,its,ierr);
+      PetscCallA(SNESGetIterationNumber(snes,its,ierr))
       if (rank .eq. 0) then
          write(6,100) its
       endif
@@ -167,17 +160,17 @@
 !  are no longer needed.
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      call VecDestroy(x,ierr)
-      call VecDestroy(r,ierr)
-      call MatDestroy(J,ierr)
-      call SNESDestroy(snes,ierr)
+      PetscCallA(VecDestroy(x,ierr))
+      PetscCallA(VecDestroy(r,ierr))
+      PetscCallA(MatDestroy(J,ierr))
+      PetscCallA(SNESDestroy(snes,ierr))
 #if defined(PETSC_USE_LOG)
-      call PetscViewerASCIIOpen(PETSC_COMM_WORLD,'filename.xml',viewer,ierr)
-      call PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_XML,ierr)
-      call PetscLogView(viewer,ierr)
-      call PetscViewerDestroy(viewer,ierr)
+      PetscCallA(PetscViewerASCIIOpen(PETSC_COMM_WORLD,'filename.xml',viewer,ierr))
+      PetscCallA(PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_XML,ierr))
+      PetscCallA(PetscLogView(viewer,ierr))
+      PetscCallA(PetscViewerDestroy(viewer,ierr))
 #endif
-      call PetscFinalize(ierr)
+      PetscCallA(PetscFinalize(ierr))
       end
 !
 ! ------------------------------------------------------------------------
@@ -214,20 +207,18 @@
 !    - Note that the Fortran interface to VecGetArray() differs from the
 !      C version.  See the Fortran chapter of the users manual for details.
 
-      call VecGetArrayRead(x,lx_v,lx_i,ierr)
-      call VecGetArray(f,lf_v,lf_i,ierr)
+      PetscCall(VecGetArrayRead(x,lx_v,lx_i,ierr))
+      PetscCall(VecGetArray(f,lf_v,lf_i,ierr))
 
 !  Compute function
 
-      lf_a(1) = lx_a(1)*lx_a(1)                                         &
-     &          + lx_a(1)*lx_a(2) - 3.0
-      lf_a(2) = lx_a(1)*lx_a(2)                                         &
-     &          + lx_a(2)*lx_a(2) - 6.0
+      lf_a(1) = lx_a(1)*lx_a(1) + lx_a(1)*lx_a(2) - 3.0
+      lf_a(2) = lx_a(1)*lx_a(2) + lx_a(2)*lx_a(2) - 6.0
 
 !  Restore vectors
 
-      call VecRestoreArrayRead(x,lx_v,lx_i,ierr)
-      call VecRestoreArray(f,lf_v,lf_i,ierr)
+      PetscCall(VecRestoreArrayRead(x,lx_v,lx_i,ierr))
+      PetscCall(VecRestoreArray(f,lf_v,lf_i,ierr))
 
       return
       end
@@ -265,7 +256,7 @@
 !  Get pointer to vector data
 
       i2 = 2
-      call VecGetArrayRead(x,lx_v,lx_i,ierr)
+      PetscCall(VecGetArrayRead(x,lx_v,lx_i,ierr))
 
 !  Compute Jacobian entries and insert into matrix.
 !   - Since this is such a small problem, we set all entries for
@@ -279,19 +270,19 @@
       A(2) = lx_a(1)
       A(3) = lx_a(2)
       A(4) = lx_a(1) + 2.0*lx_a(2)
-      call MatSetValues(B,i2,idx,i2,idx,A,INSERT_VALUES,ierr)
+      PetscCall(MatSetValues(B,i2,idx,i2,idx,A,INSERT_VALUES,ierr))
 
 !  Restore vector
 
-      call VecRestoreArrayRead(x,lx_v,lx_i,ierr)
+      PetscCall(VecRestoreArrayRead(x,lx_v,lx_i,ierr))
 
 !  Assemble matrix
 
-      call MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY,ierr)
-      call MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY,ierr)
+      PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY,ierr))
+      PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY,ierr))
       if (B .ne. jac) then
-        call MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr)
-        call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr)
+        PetscCall(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr))
+        PetscCall(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr))
       endif
 
       return
@@ -311,16 +302,15 @@
       PetscScalar       mone
 
       mone = -1.0
-      call SNESLineSearchGetSNES(linesearch, snes, ierr)
-      call SNESLineSearchGetVecs(linesearch, x, f, y, w, g, ierr)
-      call VecNorm(y,NORM_2,ynorm,ierr)
-      call VecAXPY(x,mone,y,ierr)
-      call SNESComputeFunction(snes,x,f,ierr)
-      call VecNorm(f,NORM_2,gnorm,ierr)
-      call VecNorm(x,NORM_2,xnorm,ierr)
-      call VecNorm(y,NORM_2,ynorm,ierr)
-      call SNESLineSearchSetNorms(linesearch, xnorm, gnorm, ynorm,      &
-     & ierr)
+      PetscCall(SNESLineSearchGetSNES(linesearch, snes, ierr))
+      PetscCall(SNESLineSearchGetVecs(linesearch, x, f, y, w, g, ierr))
+      PetscCall(VecNorm(y,NORM_2,ynorm,ierr))
+      PetscCall(VecAXPY(x,mone,y,ierr))
+      PetscCall(SNESComputeFunction(snes,x,f,ierr))
+      PetscCall(VecNorm(f,NORM_2,gnorm,ierr))
+      PetscCall(VecNorm(x,NORM_2,xnorm,ierr))
+      PetscCall(VecNorm(y,NORM_2,ynorm,ierr))
+      PetscCall(SNESLineSearchSetNorms(linesearch, xnorm, gnorm, ynorm,ierr))
       return
       end
 

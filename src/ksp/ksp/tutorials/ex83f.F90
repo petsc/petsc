@@ -28,10 +28,10 @@
       KSP ksp
       PC pc
 
-      call PetscInitialize(ierr);CHKERRA(ierr);
+      PetscCallA(PetscInitialize(ierr))
 
       n = 3
-      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-n',n,flg,ierr);CHKERRA(ierr)
+      PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-n',n,flg,ierr))
       nz = 3*n - 4;
 
       ALLOCATE (b(n),x(n))
@@ -70,60 +70,60 @@
       rows(nz) = n-1; cols(nz) = n-1
       a(nz) = 1.0
 
-      call MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,n,n,ia,ja,a,J,ierr);CHKERRA(ierr);
-      call MatCreateSeqAIJFromTriple(PETSC_COMM_SELF,n,n,rows,cols,a,Jt,nz,PETSC_FALSE,ierr);CHKERRA(ierr);
-      call MatEqual(J,Jt,equal,ierr);CHKERRA(ierr);
+      PetscCallA(MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,n,n,ia,ja,a,J,ierr))
+      PetscCallA(MatCreateSeqAIJFromTriple(PETSC_COMM_SELF,n,n,rows,cols,a,Jt,nz,PETSC_FALSE,ierr))
+      PetscCallA(MatEqual(J,Jt,equal,ierr))
       if (equal .neqv. PETSC_TRUE) then
          SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Matrices J and Jt should be equal')
       endif
-      call MatDestroy(Jt,ierr);CHKERRA(ierr);
-      call MatCreate(PETSC_COMM_SELF,Jr,ierr);CHKERRA(ierr);
-      call MatSetSizes(Jr,n,n,n,n,ierr);CHKERRA(ierr);
-      call MatSetType(Jr,MATSEQAIJ,ierr);CHKERRA(ierr);
-      call MatSetPreallocationCOO(Jr,nz,rows,cols,ierr);CHKERRA(ierr);
-      call MatSetValuesCOO(Jr,a,INSERT_VALUES,ierr);CHKERRA(ierr);
-      call MatEqual(J,Jr,equal,ierr);CHKERRA(ierr);
+      PetscCallA(MatDestroy(Jt,ierr))
+      PetscCallA(MatCreate(PETSC_COMM_SELF,Jr,ierr))
+      PetscCallA(MatSetSizes(Jr,n,n,n,n,ierr))
+      PetscCallA(MatSetType(Jr,MATSEQAIJ,ierr))
+      PetscCallA(MatSetPreallocationCOO(Jr,nz,rows,cols,ierr))
+      PetscCallA(MatSetValuesCOO(Jr,a,INSERT_VALUES,ierr))
+      PetscCallA(MatEqual(J,Jr,equal,ierr))
       if (equal .neqv. PETSC_TRUE) then
          SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Matrices J and Jr should be equal')
       endif
 
-      call VecCreateSeqWithArray(PETSC_COMM_SELF,1,n,b,rhs,ierr);CHKERRA(ierr);
-      call VecCreateSeqWithArray(PETSC_COMM_SELF,1,n,x,solution,ierr);CHKERRA(ierr);
+      PetscCallA(VecCreateSeqWithArray(PETSC_COMM_SELF,1,n,b,rhs,ierr))
+      PetscCallA(VecCreateSeqWithArray(PETSC_COMM_SELF,1,n,x,solution,ierr))
 
-      call KSPCreate(PETSC_COMM_SELF,ksp,ierr);CHKERRA(ierr);
-      call KSPSetErrorIfNotConverged(ksp,PETSC_TRUE,ierr);CHKERRA(ierr);
+      PetscCallA(KSPCreate(PETSC_COMM_SELF,ksp,ierr))
+      PetscCallA(KSPSetErrorIfNotConverged(ksp,PETSC_TRUE,ierr))
 !     Default to a direct sparse LU solver for robustness
-      call KSPGetPC(ksp,pc,ierr);CHKERRA(ierr);
-      call PCSetType(pc,PCLU,ierr);CHKERRA(ierr);
-      call KSPSetFromOptions(ksp,ierr);CHKERRA(ierr);
-      call KSPSetOperators(ksp,J,J,ierr);CHKERRA(ierr);
+      PetscCallA(KSPGetPC(ksp,pc,ierr))
+      PetscCallA(PCSetType(pc,PCLU,ierr))
+      PetscCallA(KSPSetFromOptions(ksp,ierr))
+      PetscCallA(KSPSetOperators(ksp,J,J,ierr))
 
-      call KSPSolve(ksp,rhs,solution,ierr);CHKERRA(ierr);
+      PetscCallA(KSPSolve(ksp,rhs,solution,ierr))
 
 !     Keep the same size and nonzero structure of the matrix but change its numerical entries
       do i=2,n-1
          a(2+3*(i-2)+1)  = 4.0;
       enddo
-      call PetscObjectStateIncrease(J,ierr);CHKERRA(ierr);
-      call MatSetValuesCOO(Jr,a,INSERT_VALUES,ierr);CHKERRA(ierr);
-      call MatEqual(J,Jr,equal,ierr);CHKERRA(ierr);
+      PetscCallA(PetscObjectStateIncrease(J,ierr))
+      PetscCallA(MatSetValuesCOO(Jr,a,INSERT_VALUES,ierr))
+      PetscCallA(MatEqual(J,Jr,equal,ierr))
       if (equal .neqv. PETSC_TRUE) then
          SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Matrices J and Jr should be equal')
       endif
-      call MatDestroy(Jr,ierr);CHKERRA(ierr);
+      PetscCallA(MatDestroy(Jr,ierr))
 
-      call KSPSolve(ksp,rhs,solution,ierr);CHKERRA(ierr);
+      PetscCallA(KSPSolve(ksp,rhs,solution,ierr))
 
-      call KSPDestroy(ksp,ierr);CHKERRA(ierr);
-      call VecDestroy(rhs,ierr);CHKERRA(ierr);
-      call VecDestroy(solution,ierr);CHKERRA(ierr);
-      call MatDestroy(J,ierr);CHKERRA(ierr);
+      PetscCallA(KSPDestroy(ksp,ierr))
+      PetscCallA(VecDestroy(rhs,ierr))
+      PetscCallA(VecDestroy(solution,ierr))
+      PetscCallA(MatDestroy(J,ierr))
 
       DEALLOCATE (b,x)
       DEALLOCATE (ia,ja,a)
       DEALLOCATE (rows,cols)
 
-      call PetscFinalize(ierr)
+      PetscCallA(PetscFinalize(ierr))
       end
 
 !/*TEST

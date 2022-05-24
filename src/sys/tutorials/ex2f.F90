@@ -12,7 +12,7 @@ program main
 
       ! Every PETSc program should begin with the PetscInitialize() routine.
 
-      PetscCallA(PetscInitialize(PETSC_NULL_CHARACTER,ierr))
+      PetscCallA(PetscInitialize(ierr))
 
       ! The following MPI calls return the number of processes
       ! being used and the rank of this process in the group
@@ -31,7 +31,6 @@ program main
       write(outputString,*) rank,'Synchronized Hello World - Part II\n'
       PetscCallA(PetscSynchronizedPrintf(PETSC_COMM_WORLD,outputString,ierr))
       PetscCallA(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT,ierr))
-
 
       ! Here a barrier is used to separate the two program states.
       PetscCallMPIA(MPI_Barrier(PETSC_COMM_WORLD,ierr))

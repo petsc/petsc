@@ -15,12 +15,6 @@ program main
       PetscCallA(PetscOptionsSetValue(PETSC_NULL_OPTIONS,"-no_signal_handler","true",ierr))
       PetscCallA(PetscInitialize(ierr))
 
-      ! Since when PetscInitialize() returns with an error the PETSc data structures
-      ! may not be set up hence we cannot call CHKERRA() hence directly return the error code.
-
-      ! Since PetscOptionsSetValue() is called before the PetscInitialize() we cannot call
-      ! CHKERRA() on the error code and just return it directly.
-
       ! We can now change the communicator universe for PETSc
 
       PetscCallMPIA(MPI_Comm_size(MPI_COMM_WORLD,size,ierr))

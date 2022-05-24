@@ -38,14 +38,11 @@ program main
   PetscInt :: i,j,k,igmax,jgmax,kgmax,ib1,ibn,jb1,jbn,kb1,kbn,imax,jmax,kmax,itime,maxstep,nscreen,dof,stw,ndim
 
   ! Fire up PETSc:
-  call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-  if (ierr .ne. 0) then
-    print*,'Unable to initialize PETSc'
-    stop
-  endif
+  PetscCallA(PetscInitialize(ierr))
+
   comm = PETSC_COMM_WORLD
-  call MPI_Comm_rank(comm,rank,ierr);CHKERRA(ierr)
-  call MPI_Comm_size(comm,size,ierr);CHKERRA(ierr)
+  PetscCallMPIA(MPI_Comm_rank(comm,rank,ierr))
+  PetscCallMPIA(MPI_Comm_size(comm,size,ierr))
   if (rank == 0) then
     write(*,*) 'Hi! We are solving van der Pol using ',size,' processes.'
     write(*,*) ' '
@@ -67,15 +64,14 @@ program main
   ndim = 3 ! 3D code
 
   ! Get the BCs and create the DMDA
-  call get_boundary_cond(b_x,b_y,b_z);CHKERRA(ierr)
-  call DMDACreate3d(comm,b_x,b_y,b_z,DMDA_STENCIL_STAR,igmax,jgmax,kgmax,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,stw,  &
-                    PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,SolScal,ierr);CHKERRA(ierr)
-  call DMSetFromOptions(SolScal,ierr);CHKERRA(ierr)
-  call DMSetUp(SolScal,ierr);CHKERRA(ierr)
+  call get_boundary_cond(b_x,b_y,b_z)
+  PetscCallA(DMDACreate3d(comm,b_x,b_y,b_z,DMDA_STENCIL_STAR,igmax,jgmax,kgmax,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,stw,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,SolScal,ierr))
+  PetscCallA(DMSetFromOptions(SolScal,ierr))
+  PetscCallA(DMSetUp(SolScal,ierr))
 
   ! Set global coordinates, get a global and a local work vector
-  call DMDASetUniformCoordinates(SolScal,xgmin,xgmax,ygmin,ygmax,zgmin,zgmax,ierr);CHKERRA(ierr)
-  call DMCreateLocalVector(SolScal,Lvec,ierr);CHKERRA(ierr)
+  PetscCallA(DMDASetUniformCoordinates(SolScal,xgmin,xgmax,ygmin,ygmax,zgmin,zgmax,ierr))
+  PetscCallA(DMCreateLocalVector(SolScal,Lvec,ierr))
 
   ! Get ib1,imax,ibn etc. of the local grid.
   ! Our convention is:
@@ -85,7 +81,7 @@ program main
   ! the last  local ghost cell is ibn.
   !
   ! i,j,k must be in this call, but are not used
-  call DMDAGetCorners(SolScal,i,j,k,imax,jmax,kmax,ierr);CHKERRA(ierr)
+  PetscCallA(DMDAGetCorners(SolScal,i,j,k,imax,jmax,kmax,ierr))
   ib1=1-stw
   jb1=1-stw
   kb1=1-stw
@@ -97,19 +93,19 @@ program main
 
   ! Get xmin,xmax etc. for the local grid
   ! The "coords" local vector here is borrowed, so we shall not destroy it.
-  call DMGetCoordinatesLocal(SolScal,coords,ierr);CHKERRA(ierr)
+  PetscCallA(DMGetCoordinatesLocal(SolScal,coords,ierr))
   ! We need a new DM for coordinate stuff since PETSc supports unstructured grid
-  call DMGetCoordinateDM(SolScal,CoordDM,ierr);CHKERRA(ierr)
+  PetscCallA(DMGetCoordinateDM(SolScal,CoordDM,ierr))
   ! petsc_to_local and local_to_petsc are convenience functions, see
   ! ex13f90aux.F90.
-  call petsc_to_local(CoordDM,coords,array,grid,ndim,stw);CHKERRA(ierr)
+  call petsc_to_local(CoordDM,coords,array,grid,ndim,stw)
   xmin=grid(1,1,1,1)
   ymin=grid(2,1,1,1)
   zmin=grid(3,1,1,1)
   xmax=grid(1,imax,jmax,kmax)
   ymax=grid(2,imax,jmax,kmax)
   zmax=grid(3,imax,jmax,kmax)
-  call local_to_petsc(CoordDM,coords,array,grid,ndim,stw);CHKERRA(ierr)
+  call local_to_petsc(CoordDM,coords,array,grid,ndim,stw)
 
   ! Note that we never use xmin,xmax in this example, but the preceding way of
   ! getting the local xmin,xmax etc. from PETSc for a structured uniform grid
@@ -124,10 +120,10 @@ program main
   nscreen = int(1.0/dt)+1
 
   ! Set initial condition
-  call DMDAVecGetArrayF90(SolScal,Lvec,array,ierr);CHKERRA(ierr)
+  PetscCallA(DMDAVecGetArrayF90(SolScal,Lvec,array,ierr))
   array(0,:,:,:) = 0.5
   array(1,:,:,:) = 0.5
-  call DMDAVecRestoreArrayF90(SolScal,Lvec,array,ierr);CHKERRA(ierr)
+  PetscCallA(DMDAVecRestoreArrayF90(SolScal,Lvec,array,ierr))
 
   ! Initial set-up finished.
   ! Time loop
@@ -135,11 +131,11 @@ program main
   do itime=1,maxstep
 
     ! Communicate such that everyone has the correct values in ghost cells
-    call DMLocalToLocalBegin(SolScal,Lvec,INSERT_VALUES,Lvec,ierr);CHKERRA(ierr)
-    call DMLocalToLocalEnd(SolScal,Lvec,INSERT_VALUES,Lvec,ierr);CHKERRA(ierr)
+    PetscCallA(DMLocalToLocalBegin(SolScal,Lvec,INSERT_VALUES,Lvec,ierr))
+    PetscCallA(DMLocalToLocalEnd(SolScal,Lvec,INSERT_VALUES,Lvec,ierr))
 
     ! Get the old solution from the PETSc data structures
-    call petsc_to_local(SolScal,Lvec,array,f,dof,stw);CHKERRA(ierr)
+    call petsc_to_local(SolScal,Lvec,array,f,dof,stw)
 
     ! Do the time step
     call forw_euler(t,dt,ib1,ibn,jb1,jbn,kb1,kbn,imax,jmax,kmax,dof,f,dfdt_vdp)
@@ -155,11 +151,11 @@ program main
   end do
 
   ! Deallocate and finalize
-  call DMRestoreLocalVector(SolScal,Lvec,ierr);CHKERRA(ierr)
-  call DMDestroy(SolScal,ierr);CHKERRA(ierr)
+  PetscCallA(DMRestoreLocalVector(SolScal,Lvec,ierr))
+  PetscCallA(DMDestroy(SolScal,ierr))
   deallocate(f)
   deallocate(grid)
-  call PetscFinalize(ierr)
+  PetscCallA(PetscFinalize(ierr))
 
   ! Format for writing output to screen
 101 format(F5.1,2F11.6)

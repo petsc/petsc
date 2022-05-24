@@ -11,7 +11,7 @@
       PetscRandom     r
       PetscScalar     rand
 
-      PetscCallA(PetscInitialize(PETSC_NULL_CHARACTER,ierr))
+      PetscCallA(PetscInitialize(ierr))
 
       PetscCallA(PetscRandomCreate(PETSC_COMM_WORLD,r,ierr))
       PetscCallA(PetscRandomSetFromOptions(r,ierr))

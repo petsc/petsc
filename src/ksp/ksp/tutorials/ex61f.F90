@@ -40,26 +40,9 @@
          end subroutine split_indices
        end module omp_module
 
-      module assert_mod
-      implicit none
-      contains
-      subroutine assert(lcond,msg,icase)
-      logical,intent(in) :: lcond
-      character(len=*), intent(in) :: msg
-      integer, intent(in) :: icase
-
-      if (.not.lcond) then
-         write(*,*) msg, icase
-         stop 'assertion error '
-      endif
-      return
-      end subroutine assert
-      end module assert_mod
-
       program tpetsc
 
 #include <petsc/finclude/petsc.h>
-      use assert_mod
       use omp_module
       use petsc
       implicit none
@@ -106,11 +89,7 @@
       integer :: t1,t2,count_rate
       real :: ttime
 
-      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      if (ierr .ne. 0) then
-        print*,'Unable to initialize PETSc'
-        stop
-      endif
+      PetscCallA(PetscInitialize(ierr))
 
       allocate(ilist(n*n*nz_per_row),jlist(n*n*nz_per_row),alist(n*n*nz_per_row))
       allocate(x(0:(n*n-1)),b(0:(n*n-1)))
@@ -136,18 +115,10 @@
          col_f_vecx => Mcol_f_vecx(ith)
          col_f_ksp => Mcol_f_ksp(ith)
 
-         call MatCreateSeqAIJ( PETSC_COMM_SELF, nrow,ncol, nz_per_row,PETSC_NULL_INTEGER, col_f_mat, ierr)
-         call assert(ierr.eq.0,'matcreateseqaij return ',ierr)
-
-         call VecCreateSeqWithArray(PETSC_COMM_SELF,1,nrow,PETSC_NULL_SCALAR, col_f_vecb, ierr)
-         call assert(ierr.eq.0,'veccreateseqwitharray return ierr',ierr)
-
-         call VecDuplicate(col_f_vecb, col_f_vecx,ierr)
-         call assert(ierr.eq.0,'vecduplicate return ierr',ierr)
-
-         call KSPCreate(PETSC_COMM_SELF, col_f_ksp,ierr)
-         call assert(ierr.eq.0,'kspcreate return ierr',ierr)
-
+         PetscCallA(MatCreateSeqAIJ( PETSC_COMM_SELF, nrow,ncol, nz_per_row,PETSC_NULL_INTEGER, col_f_mat, ierr))
+         PetscCallA(VecCreateSeqWithArray(PETSC_COMM_SELF,1,nrow,PETSC_NULL_SCALAR, col_f_vecb, ierr))
+         PetscCallA(VecDuplicate(col_f_vecb, col_f_vecx,ierr))
+         PetscCallA(KSPCreate(PETSC_COMM_SELF, col_f_ksp,ierr))
        enddo
 
 !      -----------------------
@@ -211,31 +182,21 @@
            ii = ilist(ip)
            jj = jlist(ip)
            aij = alist(ip)
-           call MatSetValue(col_f_mat,ii,jj,aij,INSERT_VALUES,ierr)
-           call assert(ierr.eq.0,'matsetvalue return ierr',ierr)
+           PetscCallA(MatSetValue(col_f_mat,ii,jj,aij,INSERT_VALUES,ierr))
          enddo
-         call MatAssemblyBegin(col_f_mat,MAT_FINAL_ASSEMBLY,ierr)
-         call assert(ierr.eq.0,'matassemblybegin return ierr',ierr)
-
-         call MatAssemblyEnd(col_f_mat,MAT_FINAL_ASSEMBLY,ierr)
-         call assert(ierr.eq.0,'matassemblyend return ierr',ierr)
-
-         call KSPSetOperators(col_f_ksp,col_f_mat,col_f_mat,ierr)
-         call assert(ierr.eq.0,'KSPSetOperators return ierr',ierr)
+         PetscCallA(MatAssemblyBegin(col_f_mat,MAT_FINAL_ASSEMBLY,ierr))
+         PetscCallA(MatAssemblyEnd(col_f_mat,MAT_FINAL_ASSEMBLY,ierr))
+         PetscCallA(KSPSetOperators(col_f_ksp,col_f_mat,col_f_mat,ierr))
 
          ! set linear solver
-         call KSPGetPC(col_f_ksp,pc,ierr)
-         call assert(ierr.eq.0,'KSPGetPC return ierr ', ierr)
-
-         call PCSetType(pc,PCLU,ierr)
-         call assert(ierr.eq.0,'PCSetType return ierr ',ierr)
+         PetscCallA(KSPGetPC(col_f_ksp,pc,ierr))
+         PetscCallA(PCSetType(pc,PCLU,ierr))
 
          ! associate petsc vector with allocated array
          x(:) = 1
 !$omp    critical
-         call VecPlaceArray(col_f_vecx,x,ierr)
+         PetscCallA(VecPlaceArray(col_f_vecx,x,ierr))
 !$omp    end critical
-         call assert(ierr.eq.0,'VecPlaceArray col_f_vecx return ',ierr)
 
          b(:) = 0
          do ip=1,nz
@@ -246,21 +207,16 @@
          enddo
          x = 0
 !$omp    critical
-         call VecPlaceArray(col_f_vecb,b,ierr)
+         PetscCallA(VecPlaceArray(col_f_vecb,b,ierr))
 !$omp    end critical
-         call assert(ierr.eq.0,'VecPlaceArray col_f_vecb return ',ierr)
 
 !  -----------------------------------------------------------
 !  key test, need to solve multiple linear systems in parallel
 !  -----------------------------------------------------------
-         call KSPSetFromOptions(col_f_ksp,ierr)
-         call assert(ierr.eq.0,'KSPSetFromOptions return ierr ',ierr)
+         PetscCallA(KSPSetFromOptions(col_f_ksp,ierr))
 
-         call KSPSetUp(col_f_ksp,ierr)
-         call assert(ierr.eq.0,'KSPSetup return ierr ',ierr)
-
-         call KSPSolve(col_f_ksp,col_f_vecb,col_f_vecx,ierr)
-         call assert(ierr.eq.0,'KSPSolve return ierr ',ierr)
+         PetscCallA(KSPSetUp(col_f_ksp,ierr))
+         PetscCallA(KSPSolve(col_f_ksp,col_f_vecb,col_f_vecx,ierr))
 
 !        ------------
 !        check answer
@@ -268,14 +224,12 @@
          err(icase) = maxval(abs(x(:)-1))
 
 !$omp    critical
-         call VecResetArray(col_f_vecx,ierr)
+         PetscCallA(VecResetArray(col_f_vecx,ierr))
 !$omp    end critical
-         call assert(ierr.eq.0,'VecResetArray return ierr ',ierr)
 
 !$omp    critical
-         call VecResetArray(col_f_vecb,ierr)
+         PetscCallA(VecResetArray(col_f_vecb,ierr))
 !$omp    end critical
-         call assert(ierr.eq.0,'VecResetArray return ierr ',ierr)
 
        enddo
        enddo
@@ -289,17 +243,11 @@
          col_f_vecx => Mcol_f_vecx(ith)
          col_f_ksp => Mcol_f_ksp(ith)
 
-         call MatDestroy(col_f_mat, ierr)
-         call assert(ierr.eq.0,'matdestroy return ',ierr)
+         PetscCallA(MatDestroy(col_f_mat, ierr))
+         PetscCallA(VecDestroy(col_f_vecb, ierr))
+         PetscCallA(VecDestroy(col_f_vecx,ierr))
 
-         call VecDestroy(col_f_vecb, ierr)
-         call assert(ierr.eq.0,'vecdestroy return ierr',ierr)
-
-         call VecDestroy(col_f_vecx,ierr)
-         call assert(ierr.eq.0,'vecdestroy return ierr',ierr)
-
-         call KSPDestroy(col_f_ksp,ierr)
-         call assert(ierr.eq.0,'kspdestroy return ierr',ierr)
+         PetscCallA(KSPDestroy(col_f_ksp,ierr))
 
        enddo
 
@@ -316,9 +264,7 @@
 
        deallocate(ilist,jlist,alist)
        deallocate(x,b)
-       call PetscFinalize(ierr)
-       call assert(ierr.eq.0,'petscfinalize return ierr',ierr)
-
+       PetscCallA(PetscFinalize(ierr))
        end program tpetsc
 
 !/*TEST

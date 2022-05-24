@@ -55,12 +55,8 @@
 !                 Beginning of program
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      if (ierr .ne. 0) then
-         print*,'Unable to initialize PETSc'
-         stop
-      endif
-      call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
+      PetscCallA(PetscInitialize(ierr))
+      PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD,size,ierr))
       if (size .ne. 1) then; SETERRA(PETSC_COMM_WORLD,1,'requires one process'); endif
 
       big  = 2.88
@@ -71,7 +67,7 @@
 !  Create nonlinear solver context
 ! - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      call SNESCreate(PETSC_COMM_WORLD,snes,ierr)
+      PetscCallA(SNESCreate(PETSC_COMM_WORLD,snes,ierr))
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create matrix and vector data structures; set corresponding routines
@@ -79,57 +75,55 @@
 
 !  Create vectors for solution and nonlinear function
 
-      call VecCreateSeq(PETSC_COMM_SELF,i2,x,ierr)
-      call VecDuplicate(x,r,ierr)
+      PetscCallA(VecCreateSeq(PETSC_COMM_SELF,i2,x,ierr))
+      PetscCallA(VecDuplicate(x,r,ierr))
 
 !  Create Jacobian matrix data structure
 
-      call MatCreateDense(PETSC_COMM_SELF,26,26,26,26,                          &
-     &                    PETSC_NULL_SCALAR,J,ierr)
+      PetscCallA(MatCreateDense(PETSC_COMM_SELF,26,26,26,26,PETSC_NULL_SCALAR,J,ierr))
 
 !  Set function evaluation routine and vector
 
-      call SNESSetFunction(snes,r,FormFunction,0,ierr)
+      PetscCallA(SNESSetFunction(snes,r,FormFunction,0,ierr))
 
 !  Set Jacobian matrix data structure and Jacobian evaluation routine
 
-      call SNESSetJacobian(snes,J,J,FormJacobian,0,ierr)
+      PetscCallA(SNESSetJacobian(snes,J,J,FormJacobian,0,ierr))
 
-      call VecDuplicate(x,lb,ierr)
-      call VecDuplicate(x,ub,ierr)
-      call VecSet(lb,zero,ierr)
-!      call VecGetArrayF90(lb,xx,ierr)
-!      call ShashiLowerBound(xx)
-!      call VecRestoreArrayF90(lb,xx,ierr)
-      call VecSet(ub,big,ierr)
-!      call SNESVISetVariableBounds(snes,lb,ub,ierr)
+      PetscCallA(VecDuplicate(x,lb,ierr))
+      PetscCallA(VecDuplicate(x,ub,ierr))
+      PetscCallA(VecSet(lb,zero,ierr))
+!      PetscCallA(VecGetArrayF90(lb,xx,ierr))
+!      PetscCallA(ShashiLowerBound(xx)
+!      PetscCallA(VecRestoreArrayF90(lb,xx,ierr))
+      PetscCallA(VecSet(ub,big,ierr))
+!      PetscCallA(SNESVISetVariableBounds(snes,lb,ub,ierr))
 
-      call SNESGetLineSearch(snes,ls,ierr)
-      call SNESLineSearchSetPostCheck(ls,ShashiPostCheck,                 &
-     &                                0,ierr)
-      call SNESSetType(snes,SNESVINEWTONRSLS,ierr)
+      PetscCallA(SNESGetLineSearch(snes,ls,ierr))
+      PetscCallA(SNESLineSearchSetPostCheck(ls,ShashiPostCheck,0,ierr))
+      PetscCallA(SNESSetType(snes,SNESVINEWTONRSLS,ierr))
 
-      call SNESSetFromOptions(snes,ierr)
+      PetscCallA(SNESSetFromOptions(snes,ierr))
 
 !     set initial guess
 
-      call VecGetArrayF90(x,xx,ierr)
-      call ShashiInitialGuess(xx)
-      call VecRestoreArrayF90(x,xx,ierr)
+      PetscCallA(VecGetArrayF90(x,xx,ierr))
+      PetscCallA(ShashiInitialGuess(xx)
+      PetscCallA(VecRestoreArrayF90(x,xx,ierr))
 
-      call SNESSolve(snes,PETSC_NULL_VEC,x,ierr)
+      PetscCallA(SNESSolve(snes,PETSC_NULL_VEC,x,ierr))
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Free work space.  All PETSc objects should be destroyed when they
 !  are no longer needed.
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      call VecDestroy(lb,ierr)
-      call VecDestroy(ub,ierr)
-      call VecDestroy(x,ierr)
-      call VecDestroy(r,ierr)
-      call MatDestroy(J,ierr)
-      call SNESDestroy(snes,ierr)
-      call PetscFinalize(ierr)
+      PetscCallA(VecDestroy(lb,ierr))
+      PetscCallA(VecDestroy(ub,ierr))
+      PetscCallA(VecDestroy(x,ierr))
+      PetscCallA(VecDestroy(r,ierr))
+      PetscCallA(MatDestroy(J,ierr))
+      PetscCallA(SNESDestroy(snes,ierr))
+      PetscCallA(PetscFinalize(ierr))
       end
 !
 ! ------------------------------------------------------------------------
@@ -166,11 +160,11 @@
 !    - Note that the Fortran interface to VecGetArray() differs from the
 !      C version.  See the Fortran chapter of the users manual for details.
 
-      call VecGetArrayRead(x,lx_v,lx_i,ierr)
-      call VecGetArray(f,lf_v,lf_i,ierr)
-      call ShashiFormFunction(lx_a(1),lf_a(1))
-      call VecRestoreArrayRead(x,lx_v,lx_i,ierr)
-      call VecRestoreArray(f,lf_v,lf_i,ierr)
+      PetscCall(VecGetArrayRead(x,lx_v,lx_i,ierr))
+      PetscCall(VecGetArray(f,lf_v,lf_i,ierr))
+      PetscCall(ShashiFormFunction(lx_a(1),lf_a(1))
+      PetscCall(VecRestoreArrayRead(x,lx_v,lx_i,ierr))
+      PetscCall(VecRestoreArray(f,lf_v,lf_i,ierr))
 
       return
       end
@@ -208,16 +202,16 @@
 
 !  Get pointer to vector data
 
-      call VecGetArrayRead(x,lx_v,lx_i,ierr)
-      call MatDenseGetArray(B,lf_v,lf_i,ierr)
-      call ShashiFormJacobian(lx_a(1),lf_a(1))
-      call MatDenseRestoreArray(B,lf_v,lf_i,ierr)
-      call VecRestoreArrayRead(x,lx_v,lx_i,ierr)
+      PetscCall(VecGetArrayRead(x,lx_v,lx_i,ierr))
+      PetscCall(MatDenseGetArray(B,lf_v,lf_i,ierr))
+      PetscCall(ShashiFormJacobian(lx_a(1),lf_a(1))
+      PetscCall(MatDenseRestoreArray(B,lf_v,lf_i,ierr))
+      PetscCall(VecRestoreArrayRead(x,lx_v,lx_i,ierr))
 
 !  Assemble matrix
 
-      call MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr)
-      call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr)
+      PetscCall(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr))
+      PetscCall(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr))
 
       return
       end
@@ -1064,7 +1058,7 @@
       PetscBool c_Y,c_W
       PetscScalar,pointer :: xx(:)
       PetscInt i
-      call VecGetArrayF90(W,xx,ierr)
+      PetscCall(VecGetArrayF90(W,xx,ierr))
       do i=1,26
          if (xx(i) < 0.0) then
             xx(i) = 0.0
@@ -1074,6 +1068,6 @@
            xx(i) = 3.0
         endif
       enddo
-      call VecRestoreArrayF90(W,xx,ierr)
+      PetscCall(VecRestoreArrayF90(W,xx,ierr))
       return
       end

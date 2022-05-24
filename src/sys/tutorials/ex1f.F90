@@ -10,7 +10,7 @@ program main
       character(len=80) :: outputString
 
       ! Every PETSc routine should begin with the PetscInitialize() routine.
-      PetscCallA(PetscInitialize(PETSC_NULL_CHARACTER,ierr))
+      PetscCallA(PetscInitialize(ierr))
 
       ! We can now change the communicator universe for PETSc
       PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD,size,ierr))

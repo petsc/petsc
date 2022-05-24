@@ -22,34 +22,30 @@
       PetscInt one,zero,two
       external FormFunction,FormJacobian
 
-      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      if (ierr .ne. 0) then
-        print*,'Unable to initialize PETSc'
-        stop
-      endif
+      PetscCallA(PetscInitialize(ierr))
 
       one = 1
       zero = 0
       two = 2
-      call MatCreateSeqAIJ(PETSC_COMM_SELF,two,two,two,PETSC_NULL_INTEGER,user%A,ierr)
-      val = 2.0; call MatSetValues(user%A,one,zero,one,zero,val,INSERT_VALUES,ierr)
-      val = -1.0; call MatSetValues(user%A,one,zero,one,one,val,INSERT_VALUES,ierr)
-      val = -1.0; call MatSetValues(user%A,one,one,one,zero,val,INSERT_VALUES,ierr)
-      val = 1.0; call MatSetValues(user%A,one,one,one,one,val,INSERT_VALUES,ierr)
-      call MatAssemblyBegin(user%A,MAT_FINAL_ASSEMBLY,ierr)
-      call MatAssemblyEnd(user%A,MAT_FINAL_ASSEMBLY,ierr)
+      PetscCallA(MatCreateSeqAIJ(PETSC_COMM_SELF,two,two,two,PETSC_NULL_INTEGER,user%A,ierr))
+      val = 2.0; PetscCallA(MatSetValues(user%A,one,zero,one,zero,val,INSERT_VALUES,ierr))
+      val = -1.0; PetscCallA(MatSetValues(user%A,one,zero,one,one,val,INSERT_VALUES,ierr))
+      val = -1.0; PetscCallA(MatSetValues(user%A,one,one,one,zero,val,INSERT_VALUES,ierr))
+      val = 1.0; PetscCallA(MatSetValues(user%A,one,one,one,one,val,INSERT_VALUES,ierr))
+      PetscCallA(MatAssemblyBegin(user%A,MAT_FINAL_ASSEMBLY,ierr))
+      PetscCallA(MatAssemblyEnd(user%A,MAT_FINAL_ASSEMBLY,ierr))
 
-      call MatCreateVecs(user%A,x,res,ierr)
+      PetscCallA(MatCreateVecs(user%A,x,res,ierr))
 
-      call SNESCreate(PETSC_COMM_SELF,snes, ierr)
-      call SNESSetPicard(snes, res, FormFunction, user%A, user%A, FormJacobian, user, ierr)
-      call SNESSetFromOptions(snes,ierr)
-      call SNESSolve(snes, PETSC_NULL_VEC, x, ierr)
-      call VecDestroy(x,ierr)
-      call VecDestroy(res,ierr)
-      call MatDestroy(user%A,ierr)
-      call SNESDestroy(snes,ierr)
-      call PetscFinalize(ierr)
+      PetscCallA(SNESCreate(PETSC_COMM_SELF,snes, ierr))
+      PetscCallA(SNESSetPicard(snes, res, FormFunction, user%A, user%A, FormJacobian, user, ierr))
+      PetscCallA(SNESSetFromOptions(snes,ierr))
+      PetscCallA(SNESSolve(snes, PETSC_NULL_VEC, x, ierr))
+      PetscCallA(VecDestroy(x,ierr))
+      PetscCallA(VecDestroy(res,ierr))
+      PetscCallA(MatDestroy(user%A,ierr))
+      PetscCallA(SNESDestroy(snes,ierr))
+      PetscCallA(PetscFinalize(ierr))
       end
 
       subroutine FormFunction(snes, x, f, user, ierr)
@@ -61,15 +57,15 @@
       PetscInt i,n
       PetscScalar, pointer :: xx(:),ff(:)
 
-      call MatMult(user%A, x, f, ierr)
-      call VecGetArrayF90(f,ff,ierr)
-      call VecGetArrayReadF90(x,xx,ierr)
-      call VecGetLocalSize(x,n,ierr)
+      PetscCallA(MatMult(user%A, x, f, ierr))
+      PetscCallA(VecGetArrayF90(f,ff,ierr))
+      PetscCallA(VecGetArrayReadF90(x,xx,ierr))
+      PetscCallA(VecGetLocalSize(x,n,ierr))
       do 10, i=1,n
          ff(i) = ff(i) - xx(i)*xx(i)*xx(i)*xx(i) + 1.0
  10   continue
-      call VecRestoreArrayF90(f,ff,ierr)
-      call VecRestoreArrayReadF90(x,xx,ierr)
+      PetscCallA(VecRestoreArrayF90(f,ff,ierr))
+      PetscCallA(VecRestoreArrayReadF90(x,xx,ierr))
       end subroutine
 
 !      The matrix is constant so no need to recompute it

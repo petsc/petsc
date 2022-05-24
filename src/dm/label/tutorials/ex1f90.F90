@@ -12,24 +12,20 @@ program  ex1f90
   PetscInt                          :: izero
   izero = 0
 
-  call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-    if (ierr .ne. 0) then
-    print*,'Unable to initialize PETSc'
-    stop
-  endif
-  call PetscOptionsGetString(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-i",filename,flg,ierr);CHKERRA(ierr)
-  call PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-interpolate",interpolate,flg,ierr);CHKERRA(ierr)
+  PetscCallA(PetscInitialize(ierr))
+  PetscCallA(PetscOptionsGetString(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-i",filename,flg,ierr))
+  PetscCallA(PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-interpolate",interpolate,flg,ierr))
 
-  call DMPlexCreateFromFile(PETSC_COMM_WORLD,filename,"ex1f90_plex",interpolate,dm,ierr);CHKERRA(ierr)
-  call DMPlexDistribute(dm,izero,PETSC_NULL_SF,dmDist,ierr);CHKERRA(ierr)
+  PetscCallA(DMPlexCreateFromFile(PETSC_COMM_WORLD,filename,"ex1f90_plex",interpolate,dm,ierr))
+  PetscCallA(DMPlexDistribute(dm,izero,PETSC_NULL_SF,dmDist,ierr))
   if (dmDist /= PETSC_NULL_DM) then
-    call DMDestroy(dm,ierr);CHKERRA(ierr)
+    PetscCallA(DMDestroy(dm,ierr))
     dm = dmDist
   end if
 
-  call ViewLabels(dm,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)
-  call DMDestroy(dm,ierr);CHKERRA(ierr)
-  call PetscFinalize(ierr)
+  PetscCallA(ViewLabels(dm,PETSC_VIEWER_STDOUT_WORLD,ierr))
+  PetscCallA(DMDestroy(dm,ierr))
+  PetscCallA(PetscFinalize(ierr))
 
 contains
   subroutine ViewLabels(dm,viewer,ierr)
@@ -42,29 +38,29 @@ contains
     character(len=PETSC_MAX_PATH_LEN):: labelName,IObuffer
     PetscInt                         :: numLabels,l
 
-    call DMGetNumLabels(dm, numLabels, ierr);CHKERRQ(ierr);
+    PetscCall(DMGetNumLabels(dm, numLabels, ierr))
     write(IObuffer,*) 'Number of labels: ', numLabels, '\n'
-    call PetscViewerASCIIPrintf(viewer, IObuffer, ierr);CHKERRQ(ierr)
+    PetscCall(PetscViewerASCIIPrintf(viewer, IObuffer, ierr))
     do l = 0, numLabels-1
-      call DMGetLabelName(dm, l, labelName, ierr);CHKERRQ(ierr)
+      PetscCall(DMGetLabelName(dm, l, labelName, ierr))
       write(IObuffer,*) 'label ',l,' name: ',trim(labelName),'\n'
-      call PetscViewerASCIIPrintf(viewer, IObuffer, ierr);CHKERRQ(ierr)
+      PetscCall(PetscViewerASCIIPrintf(viewer, IObuffer, ierr))
 
-      call PetscViewerASCIIPrintf(viewer, "IS of values\n", ierr);CHKERRQ(ierr)
-      call DMGetLabel(dm, labelName, label, ierr);CHKERRQ(ierr)
-      call DMLabelGetValueIS(label, labelIS, ierr);CHKERRQ(ierr)
-!      call PetscViewerASCIIPushTab(viewer,ierr);CHKERRQ(ierr)
-      call ISView(labelIS, viewer, ierr);CHKERRQ(ierr)
-!      call PetscViewerASCIIPopTab(viewer,ierr);CHKERRQ(ierr)
-      call ISDestroy(labelIS, ierr);CHKERRQ(ierr)
-      call PetscViewerASCIIPrintf(viewer, "\n", ierr);CHKERRQ(ierr)
+      PetscCall(PetscViewerASCIIPrintf(viewer, "IS of values\n", ierr))
+      PetscCall(DMGetLabel(dm, labelName, label, ierr))
+      PetscCall(DMLabelGetValueIS(label, labelIS, ierr))
+!      PetscCall(PetscViewerASCIIPushTab(viewer,ierr))
+      PetscCall(ISView(labelIS, viewer, ierr))
+!      PetscCall(PetscViewerASCIIPopTab(viewer,ierr))
+      PetscCall(ISDestroy(labelIS, ierr))
+      PetscCall(PetscViewerASCIIPrintf(viewer, "\n", ierr))
     end do
 
-    call PetscViewerASCIIPrintf(viewer,"\n\nCell Set label IS\n",ierr);CHKERRQ(ierr)
-    call DMGetLabel(dm, "Cell Sets", label, ierr);CHKERRQ(ierr)
-    call DMLabelGetValueIS(label, labelIS, ierr);CHKERRQ(ierr)
-    call ISView(labelIS, viewer, ierr);CHKERRQ(ierr)
-    call ISDestroy(labelIS, ierr);CHKERRQ(ierr)
+    PetscCall(PetscViewerASCIIPrintf(viewer,"\n\nCell Set label IS\n",ierr))
+    PetscCall(DMGetLabel(dm, "Cell Sets", label, ierr))
+    PetscCall(DMLabelGetValueIS(label, labelIS, ierr))
+    PetscCall(ISView(labelIS, viewer, ierr))
+    PetscCall(ISDestroy(labelIS, ierr))
   end subroutine viewLabels
 end program ex1F90
 
