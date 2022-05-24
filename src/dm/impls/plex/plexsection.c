@@ -202,32 +202,34 @@ static PetscErrorCode DMPlexCreateSectionBCDof(DM dm, PetscInt numBC, const Pets
     }
     if (bcComps && bcComps[bc]) PetscCall(ISGetLocalSize(bcComps[bc], &cNc));
     if (bcComps && bcComps[bc]) PetscCall(ISGetIndices(bcComps[bc], &comp));
-    PetscCall(ISGetLocalSize(bcPoints[bc], &n));
-    PetscCall(ISGetIndices(bcPoints[bc], &idx));
-    for (i = 0; i < n; ++i) {
-      const PetscInt p = idx[i];
-      PetscInt       numConst;
+    if (bcPoints[bc]) {
+      PetscCall(ISGetLocalSize(bcPoints[bc], &n));
+      PetscCall(ISGetIndices(bcPoints[bc], &idx));
+      for (i = 0; i < n; ++i) {
+        const PetscInt p = idx[i];
+        PetscInt       numConst;
 
-      if (Nf) {
-        PetscCall(PetscSectionGetFieldDof(section, p, field, &numConst));
-      } else {
-        PetscCall(PetscSectionGetDof(section, p, &numConst));
-      }
-      /* If Nc <= 0, constrain every dof on the point */
-      if (cNc > 0) {
-        /* We assume that a point may have multiple "nodes", which are collections of Nc dofs,
-           and that those dofs are numbered n*Nc+c */
         if (Nf) {
-          PetscCheck(numConst % Nc == 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %" PetscInt_FMT " has %" PetscInt_FMT " dof which is not divisible by %" PetscInt_FMT " field components", p, numConst, Nc);
-          numConst = (numConst/Nc) * cNc;
+          PetscCall(PetscSectionGetFieldDof(section, p, field, &numConst));
         } else {
-          numConst = PetscMin(numConst, cNc);
+          PetscCall(PetscSectionGetDof(section, p, &numConst));
         }
+        /* If Nc <= 0, constrain every dof on the point */
+        if (cNc > 0) {
+          /* We assume that a point may have multiple "nodes", which are collections of Nc dofs,
+             and that those dofs are numbered n*Nc+c */
+          if (Nf) {
+            PetscCheck(numConst % Nc == 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %" PetscInt_FMT " has %" PetscInt_FMT " dof which is not divisible by %" PetscInt_FMT " field components", p, numConst, Nc);
+            numConst = (numConst/Nc) * cNc;
+          } else {
+            numConst = PetscMin(numConst, cNc);
+          }
+        }
+        if (Nf) PetscCall(PetscSectionAddFieldConstraintDof(section, p, field, numConst));
+        PetscCall(PetscSectionAddConstraintDof(section, p, numConst));
       }
-      if (Nf) PetscCall(PetscSectionAddFieldConstraintDof(section, p, field, numConst));
-      PetscCall(PetscSectionAddConstraintDof(section, p, numConst));
+      PetscCall(ISRestoreIndices(bcPoints[bc], &idx));
     }
-    PetscCall(ISRestoreIndices(bcPoints[bc], &idx));
     if (bcComps && bcComps[bc]) PetscCall(ISRestoreIndices(bcComps[bc], &comp));
   }
   PetscCall(DMPlexGetAnchors(dm, &aSec, NULL));
@@ -280,35 +282,37 @@ static PetscErrorCode DMPlexCreateSectionBCIndicesField(DM dm, PetscInt numBC,co
     PetscCall(PetscSectionGetFieldComponents(section, field, &Nc));
     if (bcComps && bcComps[bc]) PetscCall(ISGetLocalSize(bcComps[bc], &cNc));
     if (bcComps && bcComps[bc]) PetscCall(ISGetIndices(bcComps[bc], &comp));
-    PetscCall(ISGetLocalSize(bcPoints[bc], &n));
-    PetscCall(ISGetIndices(bcPoints[bc], &idx));
-    for (i = 0; i < n; ++i) {
-      const PetscInt  p = idx[i];
-      const PetscInt *find;
-      PetscInt        fdof, fcdof, c, j;
+    if (bcPoints[bc]) {
+      PetscCall(ISGetLocalSize(bcPoints[bc], &n));
+      PetscCall(ISGetIndices(bcPoints[bc], &idx));
+      for (i = 0; i < n; ++i) {
+        const PetscInt  p = idx[i];
+        const PetscInt *find;
+        PetscInt        fdof, fcdof, c, j;
 
-      PetscCall(PetscSectionGetFieldDof(section, p, field, &fdof));
-      if (!fdof) continue;
-      if (cNc < 0) {
-        for (d = 0; d < fdof; ++d) indices[d] = d;
-        fcdof = fdof;
-      } else {
-        /* We assume that a point may have multiple "nodes", which are collections of Nc dofs,
-           and that those dofs are numbered n*Nc+c */
-        PetscCall(PetscSectionGetFieldConstraintDof(section, p, field, &fcdof));
-        PetscCall(PetscSectionGetFieldConstraintIndices(section, p, field, &find));
-        /* Get indices constrained by previous bcs */
-        for (d = 0; d < fcdof; ++d) {if (find[d] < 0) break; indices[d] = find[d];}
-        for (j = 0; j < fdof/Nc; ++j) for (c = 0; c < cNc; ++c) indices[d++] = j*Nc + comp[c];
-        PetscCall(PetscSortRemoveDupsInt(&d, indices));
-        for (c = d; c < fcdof; ++c) indices[c] = -1;
-        fcdof = d;
+        PetscCall(PetscSectionGetFieldDof(section, p, field, &fdof));
+        if (!fdof) continue;
+        if (cNc < 0) {
+          for (d = 0; d < fdof; ++d) indices[d] = d;
+          fcdof = fdof;
+        } else {
+          /* We assume that a point may have multiple "nodes", which are collections of Nc dofs,
+             and that those dofs are numbered n*Nc+c */
+          PetscCall(PetscSectionGetFieldConstraintDof(section, p, field, &fcdof));
+          PetscCall(PetscSectionGetFieldConstraintIndices(section, p, field, &find));
+          /* Get indices constrained by previous bcs */
+          for (d = 0; d < fcdof; ++d) {if (find[d] < 0) break; indices[d] = find[d];}
+          for (j = 0; j < fdof/Nc; ++j) for (c = 0; c < cNc; ++c) indices[d++] = j*Nc + comp[c];
+          PetscCall(PetscSortRemoveDupsInt(&d, indices));
+          for (c = d; c < fcdof; ++c) indices[c] = -1;
+          fcdof = d;
+        }
+        PetscCall(PetscSectionSetFieldConstraintDof(section, p, field, fcdof));
+        PetscCall(PetscSectionSetFieldConstraintIndices(section, p, field, indices));
       }
-      PetscCall(PetscSectionSetFieldConstraintDof(section, p, field, fcdof));
-      PetscCall(PetscSectionSetFieldConstraintIndices(section, p, field, indices));
+      PetscCall(ISRestoreIndices(bcPoints[bc], &idx));
     }
     if (bcComps && bcComps[bc]) PetscCall(ISRestoreIndices(bcComps[bc], &comp));
-    PetscCall(ISRestoreIndices(bcPoints[bc], &idx));
   }
   /* Handle anchors */
   PetscCall(DMPlexGetAnchors(dm, &aSec, NULL));
