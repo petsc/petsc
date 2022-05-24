@@ -38,6 +38,8 @@ PetscBool   PetscNvshmemInitialized       = PETSC_FALSE;
 
 PetscBool   use_gpu_aware_mpi             = PetscDefined(HAVE_MPIUNI) ? PETSC_FALSE : PETSC_TRUE;
 
+PetscBool   PetscPrintFunctionList        = PETSC_FALSE;
+
 #if defined(PETSC_HAVE_COMPLEX)
 #if defined(PETSC_COMPLEX_INSTANTIATE)
 template <> class std::complex<double>; /* instantiate complex template class */
@@ -262,6 +264,7 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(const char help[])
     PetscCall(PetscOptionsGetBool(NULL,NULL,"-checkstack",&flg1,NULL));
     PetscCall(PetscStackSetCheck(flg1));
   }
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-checkfunctionlist",&PetscPrintFunctionList,NULL));
 
 #if !defined(PETSC_HAVE_THREADSAFETY)
   if (!(PETSC_RUNNING_ON_VALGRIND)) {

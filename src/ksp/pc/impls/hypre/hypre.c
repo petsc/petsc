@@ -500,17 +500,17 @@ static PetscErrorCode PCDestroy_HYPRE(PC pc)
   PetscCall(PetscObjectChangeTypeName((PetscObject)pc,0));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetType_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCHYPREGetType_C",NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetCoordinates_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetDiscreteGradient_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetDiscreteCurl_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetInterpolations_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetConstantEdgeVectors_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetPoissonMatrix_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetEdgeConstantVectors_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCGetInterpolations_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCGetCoarseOperators_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCMGGalerkinSetMatProductAlgorithm_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCMGGalerkinGetMatProductAlgorithm_C",NULL));
-
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCSetCoordinates_C",NULL));
   PetscFunctionReturn(0);
 }
 

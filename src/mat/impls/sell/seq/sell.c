@@ -867,6 +867,9 @@ PetscErrorCode MatDestroy_SeqSELL(Mat A)
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatStoreValues_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatRetrieveValues_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatSeqSELLSetPreallocation_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatSeqSELLGetArray_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatSeqSELLRestoreArray_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqsell_seqaij_C",NULL));
   PetscFunctionReturn(0);
 }
 

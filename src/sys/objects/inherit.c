@@ -119,6 +119,7 @@ PetscErrorCode  PetscHeaderDestroy_Private(PetscObject h)
   /* next destroy other things */
   h->classid = PETSCFREEDHEADER;
 
+  if (PetscPrintFunctionList) PetscCall(PetscFunctionListPrintNonEmpty(h->qlist));
   PetscCall(PetscFunctionListDestroy(&h->qlist));
   PetscCall(PetscFree(h->type_name));
   PetscCall(PetscFree(h->name));

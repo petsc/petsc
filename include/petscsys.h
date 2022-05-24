@@ -1367,6 +1367,8 @@ PETSC_EXTERN PetscErrorCode PetscFunctionListPrintTypes(MPI_Comm,FILE*,const cha
 PETSC_EXTERN PetscErrorCode PetscFunctionListDuplicate(PetscFunctionList,PetscFunctionList *);
 PETSC_EXTERN PetscErrorCode PetscFunctionListView(PetscFunctionList,PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscFunctionListGet(PetscFunctionList,const char ***,int*);
+PETSC_EXTERN PetscErrorCode PetscFunctionListPrintNonEmpty(PetscFunctionList);
+PETSC_EXTERN PetscErrorCode PetscFunctionListPrintAll(void);
 
 PETSC_EXTERN PetscDLLibrary  PetscDLLibrariesLoaded;
 PETSC_EXTERN PetscErrorCode PetscDLLibraryAppend(MPI_Comm,PetscDLLibrary *,const char[]);

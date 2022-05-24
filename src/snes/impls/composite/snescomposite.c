@@ -416,6 +416,10 @@ static PetscErrorCode SNESDestroy_Composite(SNES snes)
     next     = next->next;
     PetscCall(PetscFree(next_tmp));
   }
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes,"SNESCompositeSetType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes,"SNESCompositeAddSNES_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes,"SNESCompositeGetSNES_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes,"SNESCompositeSetDamping_C",NULL));
   PetscCall(PetscFree(snes->data));
   PetscFunctionReturn(0);
 }

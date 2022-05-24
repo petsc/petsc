@@ -79,6 +79,7 @@ static PetscErrorCode PetscViewerDestroy_ExodusII(PetscViewer viewer)
   PetscCall(PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetName_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileGetName_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetMode_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileGetMode_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerGetId_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerGetOrder_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerSetOrder_C",NULL));

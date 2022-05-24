@@ -204,6 +204,7 @@ PetscErrorCode MatDestroy_Pastix(Mat A)
     PetscCall(PetscFree(lu->invp));
     PetscCallMPI(MPI_Comm_free(&(lu->pastix_comm)));
   }
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverType_C",NULL));
   PetscCall(PetscFree(A->data));
   PetscFunctionReturn(0);
 }

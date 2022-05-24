@@ -44,6 +44,7 @@ static PetscErrorCode PetscPartitionerDestroy_MatPartitioning(PetscPartitioner p
 
   PetscFunctionBegin;
   PetscCall(MatPartitioningDestroy(&p->mp));
+  PetscCall(PetscObjectComposeFunction((PetscObject)part,"PetscPartitionerMatPartitioningGetMatPartitioning_C",NULL));
   PetscCall(PetscFree(part->data));
   PetscFunctionReturn(0);
 }

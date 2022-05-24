@@ -348,6 +348,14 @@ static PetscErrorCode TaoDestroy_ALMM(Tao tao)
       PetscCall(VecDestroy(&auglag->PU));                /* upper bounds for subsolver */
     }
   }
+  PetscCall(PetscObjectComposeFunction((PetscObject)tao,"TaoALMMGetType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)tao,"TaoALMMSetType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)tao,"TaoALMMGetSubsolver_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)tao,"TaoALMMSetSubsolver_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)tao,"TaoALMMGetMultipliers_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)tao,"TaoALMMSetMultipliers_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)tao,"TaoALMMGetPrimalIS_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)tao,"TaoALMMGetDualIS_C",NULL));
   PetscCall(PetscFree(tao->data));
   PetscFunctionReturn(0);
 }

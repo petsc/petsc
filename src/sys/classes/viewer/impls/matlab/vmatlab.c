@@ -130,6 +130,8 @@ PetscErrorCode PetscViewerDestroy_Matlab(PetscViewer v)
   PetscFunctionBegin;
   if (vf->ep) matClose(vf->ep);
   PetscCall(PetscFree(vf));
+  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetName_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetMode_C",NULL));
   PetscFunctionReturn(0);
 }
 

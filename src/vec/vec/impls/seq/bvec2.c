@@ -766,6 +766,8 @@ PetscErrorCode VecDestroy_Seq(Vec v)
 #endif
   if (vs) PetscCall(PetscFree(vs->array_allocated));
   PetscCall(VecResetPreallocationCOO_Seq(v));
+  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscMatlabEnginePut_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscMatlabEngineGet_C",NULL));
   PetscCall(PetscFree(v->data));
   PetscFunctionReturn(0);
 }

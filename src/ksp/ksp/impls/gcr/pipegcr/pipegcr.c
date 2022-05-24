@@ -456,6 +456,7 @@ static PetscErrorCode KSPDestroy_PIPEGCR(KSP ksp)
   }
 
   PetscCall(KSPReset_PIPEGCR(ksp));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPPIPEGCRSetModifyPC_C",NULL));
   PetscCall(KSPDestroyDefault(ksp));
   PetscFunctionReturn(0);
 }

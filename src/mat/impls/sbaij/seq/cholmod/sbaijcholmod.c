@@ -279,6 +279,8 @@ PETSC_INTERN PetscErrorCode  MatDestroy_CHOLMOD(Mat F)
   PetscCall(PetscFree(chol->common));
   PetscCall(PetscFree(chol->matrix));
   PetscCall(PetscObjectComposeFunction((PetscObject)F,"MatFactorGetSolverType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)F,"MatQRFactorSymbolic_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)F,"MatQRFactorNumeric_C",NULL));
   PetscCall(PetscFree(F->data));
   PetscFunctionReturn(0);
 }

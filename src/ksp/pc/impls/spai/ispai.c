@@ -141,6 +141,14 @@ static PetscErrorCode PCDestroy_SPAI(PC pc)
   PetscCall(MatDestroy(&ispai->PM));
   PetscCallMPI(MPI_Comm_free(&(ispai->comm_spai)));
   PetscCall(PetscFree(pc->data));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCSPAISetEpsilon_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCSPAISetNBSteps_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCSPAISetMax_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCSPAISetMaxNew_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCSPAISetBlockSize_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCSPAISetCacheSize_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCSPAISetVerbose_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCSPAISetSp_C",NULL));
   PetscFunctionReturn(0);
 }
 

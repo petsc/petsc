@@ -261,6 +261,7 @@ PetscErrorCode TSDestroy_Sundials(TS ts)
   PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSSundialsGetPC_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSSundialsGetIterations_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSSundialsMonitorInternalSteps_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetUseDense_C",NULL));
   PetscFunctionReturn(0);
 }
 

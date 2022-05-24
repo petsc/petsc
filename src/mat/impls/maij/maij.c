@@ -92,6 +92,7 @@ PetscErrorCode MatDestroy_SeqMAIJ(Mat A)
   PetscFunctionBegin;
   PetscCall(MatDestroy(&b->AIJ));
   PetscCall(PetscFree(A->data));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqmaij_seqaijcusparse_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqmaij_seqaij_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_seqaij_seqmaij_C",NULL));
   PetscFunctionReturn(0);
@@ -136,6 +137,7 @@ PetscErrorCode MatDestroy_MPIMAIJ(Mat A)
   PetscCall(VecScatterDestroy(&b->ctx));
   PetscCall(VecDestroy(&b->w));
   PetscCall(PetscFree(A->data));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatConvert_mpimaij_mpiaijcusparse_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatConvert_mpimaij_mpiaij_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_mpiaij_mpimaij_C",NULL));
   PetscCall(PetscObjectChangeTypeName((PetscObject)A,NULL));

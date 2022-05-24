@@ -47,6 +47,8 @@ PetscErrorCode VecDestroy_MPI(Vec v)
   PetscCall(VecStashDestroy_Private(&v->stash));
 
   PetscCall(VecResetPreallocationCOO_MPI(v));
+  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscMatlabEnginePut_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscMatlabEngineGet_C",NULL));
   PetscCall(PetscFree(v->data));
   PetscFunctionReturn(0);
 }

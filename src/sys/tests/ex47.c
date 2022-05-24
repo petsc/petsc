@@ -33,7 +33,7 @@ int main(int argc,char **argv)
 
    testset:
      args: -options_left false
-     filter:  egrep -v "(options_left|options_monitor|malloc_dump|malloc_test|saws_port_auto_select|display|check_pointer_intensity|error_output_stdout|nox|vecscatter_mpi1|use_gpu_aware_mpi|checkstack)"
+     filter:  egrep -v "(options_left|options_monitor|malloc_dump|malloc_test|saws_port_auto_select|display|check_pointer_intensity|error_output_stdout|nox|vecscatter_mpi1|use_gpu_aware_mpi|checkstack|checkfunctionlist)"
      localrunfiles: petsc.yml
 
      test:

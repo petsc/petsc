@@ -1383,6 +1383,10 @@ static PetscErrorCode TSDestroy_RK(TS ts)
   PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSRKGetTableau_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSRKSetMultirate_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSRKGetMultirate_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSSetUp_RK_MultirateSplit_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSReset_RK_MultirateSplit_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSSetUp_RK_MultirateNonsplit_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSReset_RK_MultirateNonsplit_C",NULL));
   PetscFunctionReturn(0);
 }
 

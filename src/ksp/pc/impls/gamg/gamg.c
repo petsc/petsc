@@ -848,6 +848,22 @@ PetscErrorCode PCDestroy_GAMG(PC pc)
   PetscCall(PetscFree(pc_gamg->ops));
   PetscCall(PetscFree(pc_gamg->gamg_type_name));
   PetscCall(PetscFree(pc_gamg));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetProcEqLim_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetCoarseEqLim_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetRepartition_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetEigenvalues_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetUseSAEstEig_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetReuseInterpolation_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCGAMGASMSetUseAggs_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetUseParallelCoarseGridSolve_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetCpuPinCoarseGrids_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetCoarseGridLayoutType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetThreshold_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetRankReductionFactors_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetThresholdScale_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCGAMGGetType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetNlevels_C",NULL));
   PetscCall(PCDestroy_MG(pc));
   PetscFunctionReturn(0);
 }
@@ -1615,8 +1631,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
   pc->ops->destroy        = PCDestroy_GAMG;
   mg->view                = PCView_GAMG;
 
-  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCMGGetLevels_C",PCMGGetLevels_MG));
-  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCMGSetLevels_C",PCMGSetLevels_MG));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetProcEqLim_C",PCGAMGSetProcEqLim_GAMG));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetCoarseEqLim_C",PCGAMGSetCoarseEqLim_GAMG));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetRepartition_C",PCGAMGSetRepartition_GAMG));

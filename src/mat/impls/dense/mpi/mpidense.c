@@ -605,6 +605,21 @@ PetscErrorCode MatDestroy_MPIDense(Mat mat)
 #if defined (PETSC_HAVE_CUDA)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatProductSetFromOptions_mpiaijcusparse_mpidense_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatProductSetFromOptions_mpidense_mpiaijcusparse_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpidense_mpidensecuda_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpidensecuda_mpidense_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatProductSetFromOptions_mpiaij_mpidensecuda_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatProductSetFromOptions_mpiaijcusparse_mpidensecuda_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatProductSetFromOptions_mpidensecuda_mpiaij_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatProductSetFromOptions_mpidensecuda_mpiaijcusparse_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatDenseCUDAGetArray_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatDenseCUDAGetArrayRead_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatDenseCUDAGetArrayWrite_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatDenseCUDARestoreArray_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatDenseCUDARestoreArrayRead_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatDenseCUDARestoreArrayWrite_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatDenseCUDAPlaceArray_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatDenseCUDAResetArray_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatDenseCUDAReplaceArray_C",NULL));
 #endif
   PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatDenseGetColumn_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatDenseRestoreColumn_C",NULL));

@@ -202,6 +202,7 @@ static PetscErrorCode PCDestroy_ILU(PC pc)
   PetscCall(PetscFree(((PC_Factor*)ilu)->solvertype));
   PetscCall(PetscFree(((PC_Factor*)ilu)->ordering));
   PetscCall(PetscFree(pc->data));
+  PetscCall(PCFactorClearComposedFunctions(pc));
   PetscFunctionReturn(0);
 }
 

@@ -35,6 +35,7 @@ static PetscErrorCode PCReset_HPDDM(PC pc)
     PetscCall(PetscFree(data->levels));
   }
 
+  if (pc->pmat) PetscCall(PetscObjectComposeFunction((PetscObject)pc->pmat, "PCHPDDMAlgebraicAuxiliaryMat_Private_C", NULL));
   PetscCall(ISDestroy(&data->is));
   PetscCall(MatDestroy(&data->aux));
   PetscCall(MatDestroy(&data->B));
@@ -1627,6 +1628,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_HPDDM(PC pc)
   pc->ops->matapply       = PCMatApply_HPDDM;
   pc->ops->view           = PCView_HPDDM;
   pc->ops->presolve       = PCPreSolve_HPDDM;
+
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMSetAuxiliaryMat_C", PCHPDDMSetAuxiliaryMat_HPDDM));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMHasNeumannMat_C", PCHPDDMHasNeumannMat_HPDDM));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMSetRHSMat_C", PCHPDDMSetRHSMat_HPDDM));

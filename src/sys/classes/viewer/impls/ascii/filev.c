@@ -87,6 +87,10 @@ PetscErrorCode PetscViewerDestroy_ASCII(PetscViewer viewer)
       PetscCallMPI(MPI_Comm_delete_attr(PetscObjectComm((PetscObject)viewer),Petsc_Viewer_Stderr_keyval));
     }
   }
+  PetscCall(PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetName_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileGetName_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileGetMode_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetMode_C",NULL));
   PetscFunctionReturn(0);
 }
 

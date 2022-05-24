@@ -1278,6 +1278,7 @@ PetscErrorCode MatDestroy_SeqBAIJ(Mat A)
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqbaij_hypre_C",NULL));
 #endif
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqbaij_is_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverType_C",NULL));
   PetscFunctionReturn(0);
 }
 

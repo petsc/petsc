@@ -43,11 +43,11 @@ static PetscErrorCode VecDestroy_Nest(Vec v)
     PetscCall(ISDestroy(&vs->is[i]));
   }
   PetscCall(PetscFree(vs->is));
-  PetscCall(PetscObjectComposeFunction((PetscObject)v,"",NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)v,"",NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)v,"",NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)v,"",NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)v,"",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)v,"VecNestGetSubVec_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)v,"VecNestGetSubVecs_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)v,"VecNestSetSubVec_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)v,"VecNestSetSubVecs_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)v,"VecNestGetSize_C",NULL));
 
   PetscCall(PetscFree(vs));
   PetscFunctionReturn(0);

@@ -28,6 +28,10 @@ PetscErrorCode SNESDestroy_NGMRES(SNES snes)
   PetscCall(PetscFree(ngmres->rwork));
 #endif
   PetscCall(PetscFree(ngmres->work));
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes,"SNESNGMRESSetSelectType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes,"SNESNGMRESSetRestartType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes,"SNESNGMRESSetRestartFmRise_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes,"SNESNGMRESGetRestartFmRise_C",NULL));
   PetscCall(PetscFree(snes->data));
   PetscFunctionReturn(0);
 }

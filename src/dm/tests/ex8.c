@@ -64,6 +64,7 @@ int main(int argc, char **argv)
   PetscCall(DMGetGlobalVector(dm,&v));
   PetscCall(VecViewFromOptions(v,NULL,"-vec_view"));
   PetscCall(DMRestoreGlobalVector(dm,&v));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm,"DMSetUpGLVisViewer_C",NULL));
   PetscCall(DMDestroy(&dm));
   PetscCall(PetscFinalize());
   return 0;

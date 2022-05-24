@@ -75,6 +75,14 @@ static PetscErrorCode SNESDestroy_NASM(SNES snes)
 {
   PetscFunctionBegin;
   PetscCall(SNESReset_NASM(snes));
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes,"SNESNASMSetType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes,"SNESNASMGetType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes,"SNESNASMSetSubdomains_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes,"SNESNASMGetSubdomains_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes,"SNESNASMSetDamping_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes,"SNESNASMGetDamping_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes,"SNESNASMGetSubdomainVecs_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes,"SNESNASMSetComputeFinalJacobian_C",NULL));
   PetscCall(PetscFree(snes->data));
   PetscFunctionReturn(0);
 }

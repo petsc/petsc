@@ -958,6 +958,7 @@ PETSC_EXTERN PetscLogEvent PETSC_Barrier;
 PETSC_EXTERN PetscLogEvent PETSC_BuildTwoSided;
 PETSC_EXTERN PetscLogEvent PETSC_BuildTwoSidedF;
 PETSC_EXTERN PetscBool     use_gpu_aware_mpi;
+PETSC_EXTERN PetscBool     PetscPrintFunctionList;
 
 #if defined(PETSC_HAVE_ADIOS)
 PETSC_EXTERN int64_t Petsc_adios_group;

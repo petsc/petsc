@@ -1257,12 +1257,18 @@ PetscErrorCode MatDestroy_SeqAIJ(Mat A)
   PetscCall(PetscObjectCompose((PetscObject)A,"__PETSc__ab_dense",NULL));
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)A,NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"PetscMatlabEnginePut_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"PetscMatlabEngineGet_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatSeqAIJSetColumnIndices_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatStoreValues_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatRetrieveValues_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqaij_seqsbaij_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqaij_seqbaij_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqaij_seqaijperm_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqaij_seqaijsell_C",NULL));
+#if defined(PETSC_HAVE_MKL_SPARSE)
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqaij_seqaijmkl_C",NULL));
+#endif
 #if defined(PETSC_HAVE_CUDA)
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqaij_seqaijcusparse_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_seqaijcusparse_seqaij_C",NULL));
@@ -1286,6 +1292,7 @@ PetscErrorCode MatDestroy_SeqAIJ(Mat A)
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqaij_seqsell_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqaij_is_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatIsTranspose_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatIsHermitianTranspose_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatSeqAIJSetPreallocation_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatResetPreallocation_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatSeqAIJSetPreallocationCSR_C",NULL));
@@ -1296,6 +1303,13 @@ PetscErrorCode MatDestroy_SeqAIJ(Mat A)
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatSeqAIJKron_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatSetPreallocationCOO_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatSetValuesCOO_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverType_C",NULL));
+  /* these calls do not belong here: the subclasses Duplicate/Destroy are wrong */
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqaijsell_seqaij_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqaijperm_seqaij_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqaij_seqaijviennacl_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_seqaijviennacl_seqdense_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_seqaijviennacl_seqaij_C",NULL));
   PetscFunctionReturn(0);
 }
 
@@ -4813,12 +4827,10 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJ(Mat B)
   b->keepnonzeropattern = PETSC_FALSE;
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ));
-
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   PetscCall(PetscObjectComposeFunction((PetscObject)B,"PetscMatlabEnginePut_C",MatlabEnginePut_SeqAIJ));
   PetscCall(PetscObjectComposeFunction((PetscObject)B,"PetscMatlabEngineGet_C",MatlabEngineGet_SeqAIJ));
 #endif
-
   PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatSeqAIJSetColumnIndices_C",MatSeqAIJSetColumnIndices_SeqAIJ));
   PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatStoreValues_C",MatStoreValues_SeqAIJ));
   PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatRetrieveValues_C",MatRetrieveValues_SeqAIJ));

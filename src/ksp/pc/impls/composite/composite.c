@@ -212,6 +212,13 @@ static PetscErrorCode PCDestroy_Composite(PC pc)
     next     = next->next;
     PetscCall(PetscFree(next_tmp));
   }
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCCompositeSetType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCCompositeGetType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCCompositeAddPCType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCCompositeAddPC_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCCompositeGetNumberPC_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCCompositeGetPC_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCCompositeSpecialSetAlpha_C",NULL));
   PetscCall(PetscFree(pc->data));
   PetscFunctionReturn(0);
 }

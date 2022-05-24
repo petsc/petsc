@@ -892,6 +892,11 @@ static PetscErrorCode PCDestroy_GASM(PC pc)
   }
   PetscCall(PetscFree(osm->x));
   PetscCall(PetscFree(osm->y));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCGASMSetSubdomains_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCGASMSetOverlap_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCGASMSetType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCGASMSetSortIndices_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCGASMGetSubKSP_C",NULL));
   PetscCall(PetscFree(pc->data));
   PetscFunctionReturn(0);
 }

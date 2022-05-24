@@ -185,6 +185,8 @@ static PetscErrorCode TSDestroy_DiscGrad(TS ts)
   PetscCall(PetscFree(ts->data));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSDiscGradGetFormulation_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSDiscGradSetFormulation_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSDiscGradIsGonzalez_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSDiscGradUseGonzalez_C",NULL));
   PetscFunctionReturn(0);
 }
 

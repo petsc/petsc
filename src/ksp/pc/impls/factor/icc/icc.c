@@ -84,6 +84,7 @@ static PetscErrorCode PCDestroy_ICC(PC pc)
   PetscCall(PCReset_ICC(pc));
   PetscCall(PetscFree(((PC_Factor*)icc)->ordering));
   PetscCall(PetscFree(((PC_Factor*)icc)->solvertype));
+  PetscCall(PCFactorClearComposedFunctions(pc));
   PetscCall(PetscFree(pc->data));
   PetscFunctionReturn(0);
 }

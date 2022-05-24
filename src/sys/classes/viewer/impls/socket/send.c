@@ -72,6 +72,9 @@ static PetscErrorCode PetscViewerDestroy_Socket(PetscViewer viewer)
     PetscCheck(!ierr,PETSC_COMM_SELF,PETSC_ERR_SYS,"System error closing socket");
   }
   PetscCall(PetscFree(vmatlab));
+  PetscCall(PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerBinarySetSkipHeader_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerBinaryGetSkipHeader_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerBinaryGetFlowControl_C",NULL));
   PetscFunctionReturn(0);
 }
 

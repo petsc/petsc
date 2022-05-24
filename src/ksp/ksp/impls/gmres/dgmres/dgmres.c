@@ -312,6 +312,14 @@ PetscErrorCode KSPDestroy_DGMRES(KSP ksp)
     PetscCall(PetscFree(SR2));
   }
   PetscCall(PetscFree(SR));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPDGMRESSetEigen_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPDGMRESSetMaxEigen_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPDGMRESSetRatio_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPDGMRESForce_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPDGMRESComputeSchurForm_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPDGMRESComputeDeflationData_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPDGMRESApplyDeflation_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPDGMRESImproveEig_C",NULL));
   PetscCall(KSPDestroy_GMRES(ksp));
   PetscFunctionReturn(0);
 }

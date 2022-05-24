@@ -700,3 +700,31 @@ PetscErrorCode PCFactorInitialize(PC pc,MatFactorType ftype)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetReuseFill_C",PCFactorSetReuseFill_Factor));
   PetscFunctionReturn(0);
 }
+
+PetscErrorCode PCFactorClearComposedFunctions(PC pc)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetZeroPivot_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetZeroPivot_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetShiftType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetShiftType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetShiftAmount_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetShiftAmount_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetMatSolverType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetMatSolverType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetUpMatSolverType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetFill_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetMatOrderingType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetLevels_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetLevels_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetAllowDiagonalFill_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetAllowDiagonalFill_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetPivotInBlocks_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetUseInPlace_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetUseInPlace_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetReuseOrdering_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetReuseFill_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorReorderForNonzeroDiagonal_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetDropTolerance_C",NULL));
+  PetscFunctionReturn(0);
+}
