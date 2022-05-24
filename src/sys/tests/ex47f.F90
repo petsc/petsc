@@ -10,19 +10,14 @@ program main
       character(len=PETSC_MAX_PATH_LEN) :: filename
       PetscBool                         ::  flg
 
-      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      if (ierr /= 0) then
-        write(6,*)'Unable to initialize PETSc'
-        stop
-      endif
-
-      call PetscOptionsGetString(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-f",filename,flg,ierr)
+      PetscCallA(PetscInitialize(ierr))
+      PetscCallA(PetscOptionsGetString(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-f",filename,flg,ierr))
       if (flg) then
-        call PetscOptionsInsertFileYAML(PETSC_COMM_WORLD,PETSC_NULL_OPTIONS,filename,PETSC_TRUE,ierr)
+        PetscCallA(PetscOptionsInsertFileYAML(PETSC_COMM_WORLD,PETSC_NULL_OPTIONS,filename,PETSC_TRUE,ierr))
       end if
 
-      call  PetscOptionsView(PETSC_NULL_OPTIONS,PETSC_VIEWER_STDOUT_WORLD,ierr)
-      call  PetscFinalize(ierr)
+      PetscCallA(PetscOptionsView(PETSC_NULL_OPTIONS,PETSC_VIEWER_STDOUT_WORLD,ierr))
+      PetscCallA(PetscFinalize(ierr))
 
 !/*TEST
 !

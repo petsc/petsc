@@ -54,11 +54,7 @@
       PetscReal value
       PetscScalar svalue
 
-      Call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      if (ierr .ne. 0) then
-         print*,'Unable to initialize PETSc'
-         stop
-      endif
+      PetscCallA(PetscInitialize(PETSC_NULL_CHARACTER,ierr))
       list(1) = 'a123'
       list(2) = 'b456'
       list(3) = 'c789'
@@ -73,30 +69,30 @@
       sizeofbag = size(transfer(dummydata,dummychar))
 
 ! create the bag
-      call PetscBagCreate(PETSC_COMM_WORLD,sizeofbag,bag,ierr);CHKERRA(ierr)
-      call PetscBagGetData(bag,data,ierr);CHKERRA(ierr)
-      call PetscBagSetName(bag,'demo parameters','super secret demo parameters in a bag',ierr);CHKERRA(ierr)
-      call PetscBagSetOptionsPrefix(bag, 'pbag_', ierr);CHKERRA(ierr)
+      PetscCallA(PetscBagCreate(PETSC_COMM_WORLD,sizeofbag,bag,ierr))
+      PetscCallA(PetscBagGetData(bag,data,ierr))
+      PetscCallA(PetscBagSetName(bag,'demo parameters','super secret demo parameters in a bag',ierr))
+      PetscCallA(PetscBagSetOptionsPrefix(bag, 'pbag_', ierr))
 
 ! register the data within the bag, grabbing values from the options database
 !     Need to put the value into a variable for 64 bit indices
       int56 = 56
-      call PetscBagRegisterInt(bag,data%nxc ,int56,'nxc','nxc_variable help message',ierr);CHKERRA(ierr)
-      call PetscBagRegisterRealArray(bag,data%rarray,three,'rarray','rarray help message',ierr);CHKERRA(ierr)
+      PetscCallA(PetscBagRegisterInt(bag,data%nxc ,int56,'nxc','nxc_variable help message',ierr))
+      PetscCallA(PetscBagRegisterRealArray(bag,data%rarray,three,'rarray','rarray help message',ierr))
 !     Need to put the value into a variable to pass correctly for 128 bit quad precision numbers
       svalue = 103.20
-      call PetscBagRegisterScalar(bag,data%x ,svalue,'x','x variable help message',ierr);CHKERRA(ierr)
-      call PetscBagRegisterBool(bag,data%t ,PETSC_TRUE,'t','t boolean help message',ierr);CHKERRA(ierr)
-      call PetscBagRegisterBoolArray(bag,data%tarray,three,'tarray','tarray help message',ierr);CHKERRA(ierr)
-      call PetscBagRegisterString(bag,data%c,'hello','c','string help message',ierr);CHKERRA(ierr)
+      PetscCallA(PetscBagRegisterScalar(bag,data%x ,svalue,'x','x variable help message',ierr))
+      PetscCallA(PetscBagRegisterBool(bag,data%t ,PETSC_TRUE,'t','t boolean help message',ierr))
+      PetscCallA(PetscBagRegisterBoolArray(bag,data%tarray,three,'tarray','tarray help message',ierr))
+      PetscCallA(PetscBagRegisterString(bag,data%c,'hello','c','string help message',ierr))
       value = -11.00
-      call PetscBagRegisterReal(bag,data%y ,value,'y','y variable help message',ierr);CHKERRA(ierr)
+      PetscCallA(PetscBagRegisterReal(bag,data%y ,value,'y','y variable help message',ierr))
       value = 1.00
-      call PetscBagRegisterReal(bag,data%pos%x1 ,value,'pos_x1','tuple value 1 help message',ierr);CHKERRA(ierr)
+      PetscCallA(PetscBagRegisterReal(bag,data%pos%x1 ,value,'pos_x1','tuple value 1 help message',ierr))
       value = 2.00
-      call PetscBagRegisterReal(bag,data%pos%x2 ,value,'pos_x2','tuple value 2 help message',ierr);CHKERRA(ierr)
-      call PetscBagRegisterEnum(bag,data%enum ,list,1,'enum','tuple value 2 help message',ierr);CHKERRA(ierr)
-      call PetscBagView(bag,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)
+      PetscCallA(PetscBagRegisterReal(bag,data%pos%x2 ,value,'pos_x2','tuple value 2 help message',ierr))
+      PetscCallA(PetscBagRegisterEnum(bag,data%enum ,list,1,'enum','tuple value 2 help message',ierr))
+      PetscCallA(PetscBagView(bag,PETSC_VIEWER_STDOUT_WORLD,ierr))
 
       data%nxc = 23
       data%rarray(1) = -1.0
@@ -106,18 +102,18 @@
       data%c   = 'a whole new string'
       data%t   = PETSC_TRUE
       data%tarray   = (/PETSC_TRUE,PETSC_FALSE,PETSC_TRUE/)
-      call PetscBagView(bag,PETSC_VIEWER_BINARY_WORLD,ierr);CHKERRA(ierr)
+      PetscCallA(PetscBagView(bag,PETSC_VIEWER_BINARY_WORLD,ierr))
 
-      call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'binaryoutput',FILE_MODE_READ,viewer,ierr);CHKERRA(ierr)
-      call PetscBagLoad(viewer,bag,ierr);CHKERRA(ierr)
-      call PetscViewerDestroy(viewer,ierr);CHKERRA(ierr)
-      call PetscBagView(bag,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)
+      PetscCallA(PetscViewerBinaryOpen(PETSC_COMM_WORLD,'binaryoutput',FILE_MODE_READ,viewer,ierr))
+      PetscCallA(PetscBagLoad(viewer,bag,ierr))
+      PetscCallA(PetscViewerDestroy(viewer,ierr))
+      PetscCallA(PetscBagView(bag,PETSC_VIEWER_STDOUT_WORLD,ierr))
 
-      call PetscBagSetFromOptions(bag,ierr);CHKERRA(ierr)
-      call PetscBagView(bag,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)
-      call PetscBagDestroy(bag,ierr);CHKERRA(ierr)
+      PetscCallA(PetscBagSetFromOptions(bag,ierr))
+      PetscCallA(PetscBagView(bag,PETSC_VIEWER_STDOUT_WORLD,ierr))
+      PetscCallA(PetscBagDestroy(bag,ierr))
 
-      call PetscFinalize(ierr)
+      PetscCallA(PetscFinalize(ierr))
       end program ex5f90
 
 !

@@ -10,19 +10,15 @@
        PetscMPIInt     rank
        character*(80) arch
 
-       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-       if (ierr .ne. 0) then
-         print*, 'Unable to begin PETSc program'
-       endif
-
-       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
+       PetscCallA(PetscInitialize(ierr))
+       PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr))
        print*, 'Greetings from rank', rank
 
-       call PetscGetArchType(arch,ierr)
+       PetscCallA(PetscGetArchType(arch,ierr))
        write(6,100) arch
  100   format (' PETSC_ARCH ',A)
 
-       call PetscFinalize(ierr)
+       PetscCallA(PetscFinalize(ierr))
        end
 
 !

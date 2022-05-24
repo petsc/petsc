@@ -11,14 +11,8 @@ program main
 
       ! Every PETSc routine should begin with the PetscInitialize() routine.
 
-      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      if (ierr /= 0) then
-        write(6,*)'Unable to initialize PETSc'
-        stop
-      endif
-
-      call PetscGetVersionNumber(major,minor,subminor,PETSC_NULL_INTEGER,ierr)
-      CHKERRA(ierr)
+      PetscCallA(PetscInitialize(PETSC_NULL_CHARACTER,ierr))
+      PetscCallA(PetscGetVersionNumber(major,minor,subminor,PETSC_NULL_INTEGER,ierr))
 
       if (major /= PETSC_VERSION_MAJOR) then
         write(outputString,*)'Library major',major,'does not equal include',PETSC_VERSION_MAJOR
@@ -35,8 +29,7 @@ program main
         SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,trim(outputString))
       endif
 
-      call PetscFinalize(ierr)
-
+      PetscCallA(PetscFinalize(ierr))
 end program main
 
 !/*TEST

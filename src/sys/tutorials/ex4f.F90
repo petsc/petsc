@@ -13,41 +13,35 @@
       PetscMPIInt    rank, size,grank,zero,two
       PetscReal globalrank
 
-!     We must call MPI_Init() first, making us, not PETSc, responsible
-!     for MPI
+!     We must call MPI_Init() first, making us, not PETSc, responsible for MPI
 
-      call MPI_Init(ierr)
+      PetscCallMPIA(MPI_Init(ierr))
 #if defined(PETSC_HAVE_ELEMENTAL)
-      call PetscElementalInitializePackage(ierr)
+      PetscCallA(PetscElementalInitializePackage(ierr))
 #endif
 !     We can now change the communicator universe for PETSc
 
       zero = 0
       two = 2
-      call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
-      call MPI_Comm_split(MPI_COMM_WORLD,mod(rank,two),zero,            &
-     &     PETSC_COMM_WORLD,ierr)
+      PetscCallMPIA(MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr))
+      PetscCallMPIA(MPI_Comm_split(MPI_COMM_WORLD,mod(rank,two),zero,PETSC_COMM_WORLD,ierr))
 
 !     Every PETSc routine should begin with the PetscInitialize()
 !     routine.
-      call PetscInitializeNoArguments(ierr)
-      if (ierr .ne. 0) then
-         print*,'Unable to initialize PETSc'
-         stop
-      endif
+      PetscCallA(PetscInitializeNoArguments(ierr))
 
 !     The following MPI calls return the number of processes being used
 !     and the rank of this process in the group.
 
-      call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
-      call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
+      PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD,size,ierr))
+      PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr))
 
 !     Here we would like to print only one message that represents all
 !     the processes in the group. Sleep so that IO from different ranks
 !     don't get mixed up. Note this is not an ideal solution
-      call MPI_Comm_rank(MPI_COMM_WORLD,grank,ierr)
+      PetscCallMPIA(MPI_Comm_rank(MPI_COMM_WORLD,grank,ierr))
       globalrank = grank
-      call PetscSleep(globalrank,ierr)
+      PetscCallA(PetscSleep(globalrank,ierr))
       if (rank .eq. 0) write(6,100) size,rank
  100  format('No of Procs = ',i4,' rank = ',i4)
 
@@ -57,15 +51,15 @@
 !     chosen (e.g., -log_view).  See PetscFinalize() manpage for more
 !     information.
 
-      call PetscFinalize(ierr)
-      call MPI_Comm_free(PETSC_COMM_WORLD,ierr)
+      PetscCallA(PetscFinalize(ierr))
+      PetscCallMPIA(MPI_Comm_free(PETSC_COMM_WORLD,ierr))
 #if defined(PETSC_HAVE_ELEMENTAL)
-      call PetscElementalFinalizePackage(ierr)
+      PetscCallA(PetscElementalFinalizePackage(ierr))
 #endif
 
 !     Since we initialized MPI, we must call MPI_Finalize()
 
-      call  MPI_Finalize(ierr)
+      PetscCallMPIA(MPI_Finalize(ierr))
       end
 
 !/*TEST

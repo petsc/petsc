@@ -354,9 +354,9 @@
           PetscErrorCode             :: ierr
 
           if (filename .ne. PETSC_NULL_CHARACTER) then
-             call PetscInitializeF(trim(filename),help,PETSC_TRUE,ierr)
+             PetscCall(PetscInitializeF(trim(filename),help,PETSC_TRUE,ierr))
           else
-             call PetscInitializeF(filename,help,PETSC_TRUE,ierr)
+             PetscCall(PetscInitializeF(filename,help,PETSC_TRUE,ierr))
           endif
         end subroutine PetscInitializeWithHelp
 
@@ -365,16 +365,16 @@
           PetscErrorCode             :: ierr
 
           if (filename .ne. PETSC_NULL_CHARACTER) then
-             call PetscInitializeF(trim(filename),PETSC_NULL_CHARACTER,PETSC_TRUE,ierr)
+             PetscCall(PetscInitializeF(trim(filename),PETSC_NULL_CHARACTER,PETSC_TRUE,ierr))
           else
-             call PetscInitializeF(filename,PETSC_NULL_CHARACTER,PETSC_TRUE,ierr)
+             PetscCall(PetscInitializeF(filename,PETSC_NULL_CHARACTER,PETSC_TRUE,ierr))
           endif
         end subroutine PetscInitializeNoHelp
 
         subroutine PetscInitializeNoArguments(ierr)
           PetscErrorCode             :: ierr
 
-          call PetscInitializeF(PETSC_NULL_CHARACTER,PETSC_NULL_CHARACTER,PETSC_TRUE,ierr)
+          PetscCall(PetscInitializeF(PETSC_NULL_CHARACTER,PETSC_NULL_CHARACTER,PETSC_TRUE,ierr))
         end subroutine PetscInitializeNoArguments
         end module
 
