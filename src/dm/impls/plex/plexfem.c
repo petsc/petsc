@@ -4605,7 +4605,7 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscFormKey key, IS cellIS
   if (locA) {
     PetscInt subcell;
     PetscCall(VecGetDM(locA, &dmAux));
-    PetscCall(DMGetEnclosurePoint(dmAux, dm, DM_ENC_UNKNOWN, cStart, &subcell));
+    PetscCall(DMGetEnclosurePoint(dmAux, dm, DM_ENC_UNKNOWN, cells ? cells[cStart] : cStart, &subcell));
     PetscCall(DMGetCellDS(dmAux, subcell, &dsAux));
     PetscCall(PetscDSGetTotalDimension(dsAux, &totDimAux));
   }
@@ -4970,29 +4970,31 @@ PetscErrorCode DMPlexComputeResidual_Hybrid_Internal(DM dm, PetscFormKey key[], 
   /* 1: Get sizes from dm and dmAux */
   PetscCall(DMGetSection(dm, &section));
   PetscCall(DMGetLabel(dm, "ghost", &ghostLabel));
-  PetscCall(DMGetCellDS(dm, cStart, &ds));
+  PetscCall(DMGetCellDS(dm, cells ? cells[cStart] : cStart, &ds));
   PetscCall(PetscDSGetNumFields(ds, &Nf));
   PetscCall(PetscDSGetTotalDimension(ds, &totDim));
   PetscCall(DMGetAuxiliaryVec(dm, key[2].label, key[2].value, key[2].part, &locA[2]));
   if (locA[2]) {
+    const PetscInt cellStart = cells ? cells[cStart] : cStart;
+
     PetscCall(VecGetDM(locA[2], &dmAux[2]));
-    PetscCall(DMGetCellDS(dmAux[2], cStart, &dsAux[2]));
+    PetscCall(DMGetCellDS(dmAux[2], cellStart, &dsAux[2]));
     PetscCall(PetscDSGetTotalDimension(dsAux[2], &totDimAux[2]));
     {
       const PetscInt *cone;
       PetscInt        c;
 
-      PetscCall(DMPlexGetCone(dm, cStart, &cone));
+      PetscCall(DMPlexGetCone(dm, cellStart, &cone));
       for (c = 0; c < 2; ++c) {
         const PetscInt *support;
         PetscInt ssize, s;
 
         PetscCall(DMPlexGetSupport(dm, cone[c], &support));
         PetscCall(DMPlexGetSupportSize(dm, cone[c], &ssize));
-        PetscCheck(ssize == 2,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %" PetscInt_FMT " from cell %" PetscInt_FMT " has support size %" PetscInt_FMT " != 2", cone[c], cStart, ssize);
-        if      (support[0] == cStart) s = 1;
-        else if (support[1] == cStart) s = 0;
-        else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %" PetscInt_FMT " does not have cell %" PetscInt_FMT " in its support", cone[c], cStart);
+        PetscCheck(ssize == 2,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %" PetscInt_FMT " from cell %" PetscInt_FMT " has support size %" PetscInt_FMT " != 2", cone[c], cellStart, ssize);
+        if      (support[0] == cellStart) s = 1;
+        else if (support[1] == cellStart) s = 0;
+        else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %" PetscInt_FMT " does not have cell %" PetscInt_FMT " in its support", cone[c], cellStart);
         PetscCall(DMGetAuxiliaryVec(dm, key[c].label, key[c].value, key[c].part, &locA[c]));
         if (locA[c]) PetscCall(VecGetDM(locA[c], &dmAux[c]));
         else         {dmAux[c] = dmAux[2];}
@@ -5559,33 +5561,35 @@ PetscErrorCode DMPlexComputeJacobian_Hybrid_Internal(DM dm, PetscFormKey key[], 
   PetscCall(DMGetSection(dm, &section));
   PetscCall(DMGetGlobalSection(dm, &globalSection));
   PetscCall(DMGetLabel(dm, "ghost", &ghostLabel));
-  PetscCall(DMGetCellDS(dm, cStart, &ds));
+  PetscCall(DMGetCellDS(dm, cells ? cells[cStart] : cStart, &ds));
   PetscCall(PetscDSGetNumFields(ds, &Nf));
   PetscCall(PetscDSGetTotalDimension(ds, &totDim));
   PetscCall(PetscDSHasBdJacobian(ds, &hasBdJac));
   PetscCall(PetscDSHasBdJacobianPreconditioner(ds, &hasBdPrec));
   PetscCall(DMGetAuxiliaryVec(dm, key[2].label, key[2].value, key[2].part, &locA[2]));
   if (locA[2]) {
+    const PetscInt cellStart = cells ? cells[cStart] : cStart;
+
     PetscCall(VecGetDM(locA[2], &dmAux[2]));
     PetscCall(DMConvert(dmAux[2], DMPLEX, &plexA));
     PetscCall(DMGetSection(dmAux[2], &sectionAux[2]));
-    PetscCall(DMGetCellDS(dmAux[2], cStart, &dsAux[2]));
+    PetscCall(DMGetCellDS(dmAux[2], cellStart, &dsAux[2]));
     PetscCall(PetscDSGetTotalDimension(dsAux[2], &totDimAux[2]));
     {
       const PetscInt *cone;
       PetscInt        c;
 
-      PetscCall(DMPlexGetCone(dm, cStart, &cone));
+      PetscCall(DMPlexGetCone(dm, cellStart, &cone));
       for (c = 0; c < 2; ++c) {
         const PetscInt *support;
         PetscInt ssize, s;
 
         PetscCall(DMPlexGetSupport(dm, cone[c], &support));
         PetscCall(DMPlexGetSupportSize(dm, cone[c], &ssize));
-        PetscCheck(ssize == 2,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %" PetscInt_FMT " from cell %" PetscInt_FMT " has support size %" PetscInt_FMT " != 2", cone[c], cStart, ssize);
-        if      (support[0] == cStart) s = 1;
-        else if (support[1] == cStart) s = 0;
-        else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %" PetscInt_FMT " does not have cell %" PetscInt_FMT " in its support", cone[c], cStart);
+        PetscCheck(ssize == 2,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %" PetscInt_FMT " from cell %" PetscInt_FMT " has support size %" PetscInt_FMT " != 2", cone[c], cellStart, ssize);
+        if      (support[0] == cellStart) s = 1;
+        else if (support[1] == cellStart) s = 0;
+        else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %" PetscInt_FMT " does not have cell %" PetscInt_FMT " in its support", cone[c], cellStart);
         PetscCall(DMGetAuxiliaryVec(dm, key[c].label, key[c].value, key[c].part, &locA[c]));
         if (locA[c]) PetscCall(VecGetDM(locA[c], &dmAux[c]));
         else         {dmAux[c] = dmAux[2];}
@@ -5912,6 +5916,7 @@ PetscErrorCode DMPlexComputeJacobian_Action_Internal(DM dm, PetscFormKey key, IS
     PetscCall(PetscPrintf(PetscObjectComm((PetscObject)Z), "Z:\n"));
     PetscCall(VecView(Z, NULL));
   }
+  PetscCall(ISRestorePointRange(cellIS, &cStart, &cEnd, &cells));
   PetscCall(PetscFree(a));
   PetscCall(ISDestroy(&cellIS));
   PetscCall(DMDestroy(&plexAux));
