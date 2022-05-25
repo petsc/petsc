@@ -710,10 +710,12 @@ static PetscErrorCode PetscOptionsProcessPrecedentFlags(PetscOptions options,int
   size_t            o;
   int               a;
   const char        **val;
+  char              **cval;
   PetscBool         *set;
 
   PetscFunctionBegin;
-  PetscCall(PetscCalloc2(n,&val,n,&set));
+  PetscCall(PetscCalloc2(n,&cval,n,&set));
+  val = (const char**) cval;
 
   /* Look for options possibly set using PetscOptionsSetValue beforehand */
   for (o=0; o<n; o++) {
@@ -753,8 +755,7 @@ static PetscErrorCode PetscOptionsProcessPrecedentFlags(PetscOptions options,int
       options->used[a] = PETSC_TRUE;
     }
   }
-
-  PetscCall(PetscFree2(val,set));
+  PetscCall(PetscFree2(cval,set));
   options->precedentProcessed = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
