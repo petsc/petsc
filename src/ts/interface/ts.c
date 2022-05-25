@@ -365,11 +365,8 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   PetscCall(PetscOptionsBool("-ts_fd_color", "Use finite differences with coloring to compute IJacobian", "TSComputeJacobianDefaultColor", flg, &flg, NULL));
   if (flg) {
     DM   dm;
-    DMTS tdm;
 
-    PetscCall(TSGetDM(ts, &dm));
-    PetscCall(DMGetDMTS(dm, &tdm));
-    tdm->ijacobianctx = NULL;
+    PetscCall(TSGetDM(ts, &dm));    PetscCall(DMTSUnsetIJacobianContext_Internal(dm));
     PetscCall(TSSetIJacobian(ts, NULL, NULL, TSComputeIJacobianDefaultColor, NULL));
     PetscCall(PetscInfo(ts, "Setting default finite difference coloring Jacobian matrix\n"));
   }

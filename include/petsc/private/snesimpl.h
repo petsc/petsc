@@ -197,11 +197,11 @@ struct _DMSNESOps {
 
 struct _p_DMSNES {
   PETSCHEADER(struct _DMSNESOps);
-  void *functionctx;
+  PetscContainer functionctxcontainer;
+  PetscContainer jacobianctxcontainer;
   void *mffunctionctx;
   void *gsctx;
   void *pctx;
-  void *jacobianctx;
   void *objectivectx;
 
   void *data;
@@ -263,6 +263,8 @@ PETSC_INTERN PetscErrorCode SNESVISetVariableBounds_VI(SNES,Vec,Vec);
 PETSC_INTERN PetscErrorCode SNESConvergedDefault_VI(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*);
 
 PetscErrorCode SNESScaleStep_Private(SNES,Vec,PetscReal*,PetscReal*,PetscReal*,PetscReal*);
+PETSC_EXTERN PetscErrorCode DMSNESUnsetFunctionContext_Internal(DM);
+PETSC_EXTERN PetscErrorCode DMSNESUnsetJacobianContext_Internal(DM);
 PETSC_EXTERN PetscErrorCode DMSNESCheck_Internal(SNES,DM,Vec);
 
 PETSC_EXTERN PetscLogEvent SNES_Solve;

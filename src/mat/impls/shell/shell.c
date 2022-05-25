@@ -59,7 +59,7 @@ typedef struct {
   MatShellMatFunctionList matmat;
 
   /* user defined context */
-  void *ctx;
+  PetscContainer ctxcontainer;
 } Mat_Shell;
 
 /*
@@ -235,10 +235,13 @@ static PetscErrorCode MatShellShiftAndScale(Mat A,Vec X,Vec Y)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatShellGetContext_Shell(Mat mat,void *ctx)
+static PetscErrorCode MatShellGetContext_Shell(Mat mat,void *ctx)
 {
+  Mat_Shell      *shell = (Mat_Shell*)mat->data;
+
   PetscFunctionBegin;
-  *(void**)ctx = ((Mat_Shell*)(mat->data))->ctx;
+  if (shell->ctxcontainer) PetscCall(PetscContainerGetPointer(shell->ctxcontainer,(void**)ctx));
+  else *(void**)ctx = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -458,7 +461,7 @@ static PetscErrorCode MatZeroRowsColumns_Shell(Mat mat,PetscInt n,const PetscInt
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatDestroy_Shell(Mat mat)
+static PetscErrorCode MatDestroy_Shell(Mat mat)
 {
   Mat_Shell               *shell = (Mat_Shell*)mat->data;
   MatShellMatFunctionList matmat;
@@ -493,8 +496,10 @@ PetscErrorCode MatDestroy_Shell(Mat mat)
     PetscCall(PetscFree(matmat));
     matmat = next;
   }
+  PetscCall(MatShellSetContext(mat,NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatShellGetContext_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatShellSetContext_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatShellSetContextDestroy_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatShellSetVecType_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatShellSetManageScalingShifts_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatShellSetOperation_C",NULL));
@@ -890,7 +895,7 @@ PetscErrorCode MatShellSetMatProductOperation(Mat A,MatProductType ptype,PetscEr
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatShellSetMatProductOperation_Shell(Mat A,MatProductType ptype,PetscErrorCode (*symbolic)(Mat,Mat,Mat,void**),PetscErrorCode (*numeric)(Mat,Mat,Mat,void*),PetscErrorCode (*destroy)(void *),MatType Btype,MatType Ctype)
+static PetscErrorCode MatShellSetMatProductOperation_Shell(Mat A,MatProductType ptype,PetscErrorCode (*symbolic)(Mat,Mat,Mat,void**),PetscErrorCode (*numeric)(Mat,Mat,Mat,void*),PetscErrorCode (*destroy)(void *),MatType Btype,MatType Ctype)
 {
   PetscBool      flg;
   char           composedname[256];
@@ -917,7 +922,7 @@ PetscErrorCode MatShellSetMatProductOperation_Shell(Mat A,MatProductType ptype,P
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatCopy_Shell(Mat A,Mat B,MatStructure str)
+static PetscErrorCode MatCopy_Shell(Mat A,Mat B,MatStructure str)
 {
   Mat_Shell               *shellA = (Mat_Shell*)A->data,*shellB = (Mat_Shell*)B->data;
   PetscBool               matflg;
@@ -990,13 +995,12 @@ PetscErrorCode MatCopy_Shell(Mat A,Mat B,MatStructure str)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatDuplicate_Shell(Mat mat,MatDuplicateOption op,Mat *M)
+static PetscErrorCode MatDuplicate_Shell(Mat mat,MatDuplicateOption op,Mat *M)
 {
-  void           *ctx;
-
   PetscFunctionBegin;
-  PetscCall(MatShellGetContext(mat,&ctx));
-  PetscCall(MatCreateShell(PetscObjectComm((PetscObject)mat),mat->rmap->n,mat->cmap->n,mat->rmap->N,mat->cmap->N,ctx,M));
+  PetscCall(MatCreateShell(PetscObjectComm((PetscObject)mat),mat->rmap->n,mat->cmap->n,mat->rmap->N,mat->cmap->N,NULL,M));
+  ((Mat_Shell*)(*M)->data)->ctxcontainer = ((Mat_Shell*)mat->data)->ctxcontainer;
+  PetscCall(PetscObjectCompose((PetscObject)(*M),"MatShell ctx",(PetscObject)((Mat_Shell*)(*M)->data)->ctxcontainer));
   PetscCall(PetscObjectChangeTypeName((PetscObject)(*M),((PetscObject)mat)->type_name));
   if (op != MAT_DO_NOT_COPY_VALUES) {
     PetscCall(MatCopy(mat,*M,SAME_NONZERO_PATTERN));
@@ -1041,7 +1045,7 @@ PetscErrorCode MatMult_Shell(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatMultAdd_Shell(Mat A,Vec x,Vec y,Vec z)
+static PetscErrorCode MatMultAdd_Shell(Mat A,Vec x,Vec y,Vec z)
 {
   Mat_Shell      *shell = (Mat_Shell*)A->data;
 
@@ -1057,7 +1061,7 @@ PetscErrorCode MatMultAdd_Shell(Mat A,Vec x,Vec y,Vec z)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatMultTranspose_Shell(Mat A,Vec x,Vec y)
+static PetscErrorCode MatMultTranspose_Shell(Mat A,Vec x,Vec y)
 {
   Mat_Shell        *shell = (Mat_Shell*)A->data;
   Vec              xx;
@@ -1093,7 +1097,7 @@ PetscErrorCode MatMultTranspose_Shell(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatMultTransposeAdd_Shell(Mat A,Vec x,Vec y,Vec z)
+static PetscErrorCode MatMultTransposeAdd_Shell(Mat A,Vec x,Vec y,Vec z)
 {
   Mat_Shell      *shell = (Mat_Shell*)A->data;
 
@@ -1112,7 +1116,7 @@ PetscErrorCode MatMultTransposeAdd_Shell(Mat A,Vec x,Vec y,Vec z)
 /*
           diag(left)(vscale*A + diag(dshift) + vshift I)diag(right)
 */
-PetscErrorCode MatGetDiagonal_Shell(Mat A,Vec v)
+static PetscErrorCode MatGetDiagonal_Shell(Mat A,Vec v)
 {
   Mat_Shell      *shell = (Mat_Shell*)A->data;
 
@@ -1143,7 +1147,7 @@ PetscErrorCode MatGetDiagonal_Shell(Mat A,Vec v)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatShift_Shell(Mat Y,PetscScalar a)
+static PetscErrorCode MatShift_Shell(Mat Y,PetscScalar a)
 {
   Mat_Shell      *shell = (Mat_Shell*)Y->data;
   PetscBool      flg;
@@ -1167,7 +1171,7 @@ PetscErrorCode MatShift_Shell(Mat Y,PetscScalar a)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatDiagonalSet_Shell_Private(Mat A,Vec D,PetscScalar s)
+static PetscErrorCode MatDiagonalSet_Shell_Private(Mat A,Vec D,PetscScalar s)
 {
   Mat_Shell      *shell = (Mat_Shell*)A->data;
 
@@ -1214,7 +1218,7 @@ PetscErrorCode MatDiagonalSet_Shell(Mat A,Vec D,InsertMode ins)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatScale_Shell(Mat Y,PetscScalar a)
+static PetscErrorCode MatScale_Shell(Mat Y,PetscScalar a)
 {
   Mat_Shell      *shell = (Mat_Shell*)Y->data;
 
@@ -1465,12 +1469,32 @@ static struct _MatOps MatOps_Values = {NULL,
                                /*150*/ NULL
 };
 
-PetscErrorCode  MatShellSetContext_Shell(Mat mat,void *ctx)
+static PetscErrorCode  MatShellSetContext_Shell(Mat mat,void *ctx)
 {
   Mat_Shell *shell = (Mat_Shell*)mat->data;
 
   PetscFunctionBegin;
-  shell->ctx = ctx;
+  if (ctx) {
+    PetscContainer ctxcontainer;
+    PetscCall(PetscContainerCreate(PetscObjectComm((PetscObject)mat),&ctxcontainer));
+    PetscCall(PetscContainerSetPointer(ctxcontainer,ctx));
+    PetscCall(PetscObjectCompose((PetscObject)mat,"MatShell ctx",(PetscObject)ctxcontainer));
+    shell->ctxcontainer = ctxcontainer;
+    PetscCall(PetscContainerDestroy(&ctxcontainer));
+  } else {
+    PetscCall(PetscObjectCompose((PetscObject)mat,"MatShell ctx",NULL));
+    shell->ctxcontainer = NULL;
+  }
+
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatShellSetContextDestroy_Shell(Mat mat,PetscErrorCode (*f)(void*))
+{
+  Mat_Shell      *shell = (Mat_Shell*)mat->data;
+
+  PetscFunctionBegin;
+  if (shell->ctxcontainer) PetscCall(PetscContainerSetUserDestroy(shell->ctxcontainer,f));
   PetscFunctionReturn(0);
 }
 
@@ -1496,7 +1520,7 @@ PetscErrorCode MatShellSetManageScalingShifts_Shell(Mat A)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatShellSetOperation_Shell(Mat mat,MatOperation op,void (*f)(void))
+static PetscErrorCode MatShellSetOperation_Shell(Mat mat,MatOperation op,void (*f)(void))
 {
   Mat_Shell      *shell = (Mat_Shell*)mat->data;
 
@@ -1558,7 +1582,7 @@ PetscErrorCode MatShellSetOperation_Shell(Mat mat,MatOperation op,void (*f)(void
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatShellGetOperation_Shell(Mat mat,MatOperation op,void(**f)(void))
+static PetscErrorCode MatShellGetOperation_Shell(Mat mat,MatOperation op,void(**f)(void))
 {
   Mat_Shell      *shell = (Mat_Shell*)mat->data;
 
@@ -1624,7 +1648,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Shell(Mat A)
   PetscCall(PetscNewLog(A,&b));
   A->data = (void*)b;
 
-  b->ctx                 = NULL;
+  b->ctxcontainer        = NULL;
   b->vshift              = 0.0;
   b->vscale              = 1.0;
   b->managescalingshifts = PETSC_TRUE;
@@ -1633,6 +1657,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Shell(Mat A)
 
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatShellGetContext_C",MatShellGetContext_Shell));
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatShellSetContext_C",MatShellSetContext_Shell));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatShellSetContextDestroy_C",MatShellSetContextDestroy_Shell));
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatShellSetVecType_C",MatShellSetVecType_Shell));
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatShellSetManageScalingShifts_C",MatShellSetManageScalingShifts_Shell));
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatShellSetOperation_C",MatShellSetOperation_Shell));
@@ -1766,6 +1791,33 @@ PetscErrorCode  MatShellSetContext(Mat mat,void *ctx)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscTryMethod(mat,"MatShellSetContext_C",(Mat,void*),(mat,ctx));
+  PetscFunctionReturn(0);
+}
+
+/*@
+    MatShellSetContextDestroy - sets the destroy function for a shell matrix context
+
+   Logically Collective on Mat
+
+    Input Parameters:
++   mat - the shell matrix
+-   f - the context destroy function
+
+    Note:
+    If the `MatShell` is never duplicated, the behavior of this function is equivalent
+    to `MatShellSetOperation(Mat,MATOP_DESTROY,f)`. However, `MatShellSetContextDestroy()`
+    ensures proper reference counting for the user provided context data in the case that
+    the `MatShell` is duplicated.
+
+   Level: advanced
+
+.seealso: `MatCreateShell()`, `MatShellSetContext()`
+@*/
+PetscErrorCode MatShellSetContextDestroy(Mat mat,PetscErrorCode (*f)(void*))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscTryMethod(mat,"MatShellSetContextDestroy_C",(Mat,PetscErrorCode (*)(void*)),(mat,f));
   PetscFunctionReturn(0);
 }
 

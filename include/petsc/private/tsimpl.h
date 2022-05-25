@@ -388,14 +388,14 @@ struct _DMTSOps {
 
 struct _p_DMTS {
   PETSCHEADER(struct _DMTSOps);
-  void *rhsfunctionctx;
-  void *rhsjacobianctx;
+  PetscContainer rhsfunctionctxcontainer;
+  PetscContainer rhsjacobianctxcontainer;
 
-  void *ifunctionctx;
-  void *ijacobianctx;
+  PetscContainer ifunctionctxcontainer;
+  PetscContainer ijacobianctxcontainer;
 
-  void *i2functionctx;
-  void *i2jacobianctx;
+  PetscContainer i2functionctxcontainer;
+  PetscContainer i2jacobianctxcontainer;
 
   void *transientvarctx;
 
@@ -413,6 +413,13 @@ struct _p_DMTS {
    */
   DM originaldm;
 };
+
+PETSC_EXTERN PetscErrorCode DMTSUnsetRHSFunctionContext_Internal(DM);
+PETSC_EXTERN PetscErrorCode DMTSUnsetRHSJacobianContext_Internal(DM);
+PETSC_EXTERN PetscErrorCode DMTSUnsetIFunctionContext_Internal(DM);
+PETSC_EXTERN PetscErrorCode DMTSUnsetIJacobianContext_Internal(DM);
+PETSC_EXTERN PetscErrorCode DMTSUnsetI2FunctionContext_Internal(DM);
+PETSC_EXTERN PetscErrorCode DMTSUnsetI2JacobianContext_Internal(DM);
 
 PETSC_EXTERN PetscErrorCode DMGetDMTS(DM,DMTS*);
 PETSC_EXTERN PetscErrorCode DMGetDMTSWrite(DM,DMTS*);
