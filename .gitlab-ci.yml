@@ -498,16 +498,18 @@ linux-cuda-pkgs:
     TEST_ARCH: arch-ci-linux-cuda-pkgs
     TEST_OPTS: -j3 query=requires queryval=cuda
 
-linux-cuda112-gcov:
+linux-cuda112-omp:
   extends:
     - .stage-3
     - .linux_test
   tags:
     - cuda-stage3
   variables:
-    TEST_ARCH: arch-ci-linux-cuda112-gcov
-    LOAD_MODULES: cuda/11.2.2 gcc/9.4.0
-    RUN_GCOV: 1
+    TEST_ARCH: arch-ci-linux-cuda112-omp
+    TEST_OPTS: -j4 query=requires queryval=kokkos_kernels
+    LOAD_MODULES: cuda/11.2.2 u-gcc-9/9.4.0
+    OMP_PROC_BIND: "false"
+    OMP_NUM_THREADS: 1
 
 linux-cuda-cmplx:
   extends:
@@ -969,7 +971,6 @@ analyze-pipeline:
   tags:
     - gce-nfs-short
   dependencies:
-    - linux-cuda112-gcov
     - linux-pkgs-gcov
     - linux-cmplx-gcov
     - linux-matlab-ilp64-gcov

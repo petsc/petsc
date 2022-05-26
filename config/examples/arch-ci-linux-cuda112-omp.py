@@ -15,7 +15,9 @@ if __name__ == '__main__':
     'FOPTFLAGS=-g -O',
     'CXXOPTFLAGS=-g -O',
     '--with-cuda=1',
-    '--with-gcov=1',
+    '--with-openmp',
+    '--download-kokkos',
+    '--download-kokkos-kernels',
   ]
 
   configure.petsc_configure(configure_options)
