@@ -194,7 +194,13 @@ class Processor:
 
   def summary(self):
     if self.verbose:
-      print(self.delcount,'deletions and',self.addcount,'insertions')
+      print(self.delcount,'deletion(s) and',self.addcount,'insertion(s)')
+    if self.delcount or self.addcount:
+      mod = 'found' if self.dry_run else 'made'
+      print(
+        'Insertions and/or deletions were',mod+','
+        ' suggest running the tool again until no more changes are',mod
+      )
     return
 
 
@@ -241,18 +247,16 @@ def get_paths_list(start_path,search_tool,force):
   assert 'chkerrconvert.py' not in found_list
   return found_list
 
-def main(petsc_dir,search_tool,start_path,dry_run,verbose,force,del_empty_last_line):
-  if petsc_dir == '${PETSC_DIR}':
+def main(search_tool,start_path,dry_run,verbose,force,del_empty_last_line):
+  if start_path == '${PETSC_DIR}/src':
     try:
       petsc_dir = os.environ['PETSC_DIR']
     except KeyError as ke:
-      mess = 'Must either define PETSC_DIR as environment variable or pass it via flags'
+      mess = 'Must either define PETSC_DIR as environment variable or pass it via flags to use '+start_path
       raise RuntimeError(mess) from ke
-  petsc_dir = path_resolve_strict(petsc_dir)
-
-  if start_path == '${PETSC_DIR}/src':
-    start_path = petsc_dir/'src'
+    start_path = path_resolve_strict(petsc_dir)/'src'
   start_path = path_resolve_strict(start_path)
+  this_path  = path_resolve_strict(os.getcwd())
 
   found_list = get_paths_list(start_path,search_tool,force)
   processor  = Processor(verbose,dry_run,del_empty_last_line)
@@ -272,7 +276,7 @@ def main(petsc_dir,search_tool,start_path,dry_run,verbose,force,del_empty_last_l
 
     if dry_run:
       if len(changes):
-        print(str(path.relative_to(petsc_dir))+':')
+        print(str(path.relative_to(this_path))+':')
         for lineno,line,repl in changes:
           lineno += 1
           print(f'{lineno}: - {line}')
@@ -294,9 +298,8 @@ if __name__ == '__main__':
 
   signal.signal(signal.SIGPIPE,signal.SIG_DFL) # allow the output of this script to be piped
   parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-  parser.add_argument('--petsc-dir',default='${PETSC_DIR}',help='petsc directory (containing src, include, config, etc.)')
-  parser.add_argument('--search-tool',default='rg',metavar='<executable>',choices=['rg','grep'],help='search tool to use to find files containing matches (rg or grep)')
   parser.add_argument('path',nargs='?',default='${PETSC_DIR}/src',metavar='<path>',help='path to directory base or file')
+  parser.add_argument('-s','--search-tool',default='rg',metavar='<executable>',choices=['rg','grep'],help='search tool to use to find files containing matches (rg or grep)')
   parser.add_argument('-n','--dry-run',action='store_true',help='print what the result would be')
   parser.add_argument('-v','--verbose',action='count',default=0,help='verbose')
   parser.add_argument('-f','--force',action='store_true',help='don\'t narrow search using SEARCH TOOL, just replace everything under PATH')
@@ -306,4 +309,4 @@ if __name__ == '__main__':
     parser.print_help()
   else:
     args = parser.parse_args()
-    main(args.petsc_dir,args.search_tool,args.path,args.dry_run,args.verbose,args.force,args.delete_empty_last_line)
+    main(args.search_tool,args.path,args.dry_run,args.verbose,args.force,args.delete_empty_last_line)
