@@ -3011,8 +3011,10 @@ PetscErrorCode PetscSectionSymDestroy(PetscSectionSym *sym)
   }
   PetscCheck(!(*sym)->workout,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Work array still checked out");
   for (link=(*sym)->workin; link; link=next) {
+    PetscInt    **perms = (PetscInt **)link->perms;
+    PetscScalar **rots  = (PetscScalar **) link->rots;
+    PetscCall(PetscFree2(perms,rots));
     next = link->next;
-    PetscCall(PetscFree2(link->perms,link->rots));
     PetscCall(PetscFree(link));
   }
   (*sym)->workin = NULL;
@@ -3233,8 +3235,10 @@ PetscErrorCode PetscSectionGetPointSyms(PetscSection section, PetscInt numPoints
       PetscCall(PetscNewLog(sym,&link));
     }
     if (numPoints > link->numPoints) {
-      PetscCall(PetscFree2(link->perms,link->rots));
-      PetscCall(PetscMalloc2(numPoints,&link->perms,numPoints,&link->rots));
+      PetscInt    **perms = (PetscInt **)link->perms;
+      PetscScalar **rots  = (PetscScalar **) link->rots;
+      PetscCall(PetscFree2(perms,rots));
+      PetscCall(PetscMalloc2(numPoints,(PetscInt***)&link->perms,numPoints,(PetscScalar***)&link->rots));
       link->numPoints = numPoints;
     }
     link->next   = sym->workout;

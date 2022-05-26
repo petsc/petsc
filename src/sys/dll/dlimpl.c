@@ -329,7 +329,7 @@ PetscErrorCode PetscDLAddr(void (*func)(void), char **name)
   PetscFunctionBegin;
   PetscValidPointer(name,2);
   *name = NULL;
-#if defined(PETSC_HAVE_DLADDR)
+#if defined(PETSC_HAVE_DLADDR) && defined(__USE_GNU)
   dlerror(); /* clear any previous error */
   {
     Dl_info info;

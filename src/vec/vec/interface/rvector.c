@@ -2231,7 +2231,10 @@ PetscErrorCode VecRestoreArrayWriteAndMemType(Vec x,PetscScalar **a)
 -  array - the array
 
    Notes:
-   You can return to the original array with a call to VecResetArray()
+   You can return to the original array with a call to `VecResetArray()`. `vec` does not take
+   ownership of `array` in any way. The user must free `array` themselves but be careful not to
+   do so before the vector has either been destroyed, had its original array restored with
+   `VecResetArray()` or permanently replaced with `VecReplaceArray()`.
 
    Level: developer
 
@@ -2515,6 +2518,11 @@ PETSC_EXTERN PetscErrorCode VecCUDARestoreArrayWrite(Vec v, PetscScalar **a)
    You can return to the original GPU array with a call to VecCUDAResetArray()
    It is not possible to use VecCUDAPlaceArray() and VecPlaceArray() at the
    same time on the same vector.
+
+   `vec` does not take ownership of `array` in any way. The user must free `array` themselves
+   but be careful not to do so before the vector has either been destroyed, had its original
+   array restored with `VecCUDAResetArray()` or permanently replaced with
+   `VecCUDAReplaceArray()`.
 
    Level: developer
 
@@ -2838,6 +2846,11 @@ PETSC_EXTERN PetscErrorCode VecHIPRestoreArrayWrite(Vec v, PetscScalar **a)
    You can return to the original GPU array with a call to VecHIPResetArray()
    It is not possible to use VecHIPPlaceArray() and VecPlaceArray() at the
    same time on the same vector.
+
+   `vec` does not take ownership of `array` in any way. The user must free `array` themselves
+   but be careful not to do so before the vector has either been destroyed, had its original
+   array restored with `VecHIPResetArray()` or permanently replaced with
+   `VecHIPReplaceArray()`.
 
    Level: developer
 
