@@ -302,14 +302,16 @@ extern "C" {
                   '#include <stdio.h>\ndouble floor(double);',
                   '#include <stdio.h>\ndouble log10(double);',
                   '#include <stdio.h>\ndouble pow(double, double);']
-    calls = ['double x,y; scanf("%lf",&x); y = sin(x); printf("%f",y);\n',
-             'double x,y; scanf("%lf",&x); y = floor(x); printf("%f",y);\n',
-             'double x,y; scanf("%lf",&x); y = log10(x); printf("%f",y);\n',
-             'double x,y; scanf("%lf",&x); y = pow(x,x); printf("%f",y);\n']
+    calls = ['double x,y; int s = scanf("%lf",&x); y = sin(x); printf("%f %d",y,s);\n',
+             'double x,y; int s = scanf("%lf",&x); y = floor(x); printf("%f %d",y,s);\n',
+             'double x,y; int s = scanf("%lf",&x); y = log10(x); printf("%f %d",y,s);\n',
+             'double x,y; int s = scanf("%lf",&x); y = pow(x,x); printf("%f %d",y,s);\n']
     if self.check('', funcs, prototype = prototypes, call = calls):
       self.math = []
     elif self.check('m', funcs, prototype = prototypes, call = calls):
       self.math = ['libm.a']
+    if self.math == None:
+      raise RuntimeError('Cannot find basic math functions')
     self.logPrint('CheckMath: using math library '+str(self.math))
     return
 
