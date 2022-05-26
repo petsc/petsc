@@ -429,8 +429,8 @@ PetscErrorCode DMStagVecSplitToDMDA(DM dm,Vec vec,DMStagStencilLocation loc,Pets
   PetscCall(DMStagCreateCompatibleDMDA(dm,locCanonical,c,pda));
   da = *pda;
   PetscCall(DMSetUp(*pda));
-  PetscCall(DMGetCoordinateDM(dm,&coordDM));
-  if (coordDM) {
+  if (dm->coordinateDM != NULL) {
+    PetscCall(DMGetCoordinateDM(dm,&coordDM));
     PetscCall(DMStagTransferCoordinatesToDMDA(dm,locCanonical,da));
   }
   PetscCall(DMCreateGlobalVector(da,pdavec));
