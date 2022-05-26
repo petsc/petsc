@@ -479,7 +479,7 @@ PetscErrorCode VecBindToCPU_SeqCUDA(Vec V,PetscBool bind)
     V->ops->shift                  = VecShift_SeqCUDA;
     V->ops->setpreallocationcoo    = VecSetPreallocationCOO_SeqCUDA;
     V->ops->setvaluescoo           = VecSetValuesCOO_SeqCUDA;
-
+    V->ops->sqrt                   = VecSqrt_SeqCUDA;
     /* default random number generator */
     PetscCall(PetscFree(V->defaultrandtype));
     PetscCall(PetscStrallocpy(PETSCCURAND,&V->defaultrandtype));

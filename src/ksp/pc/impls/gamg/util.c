@@ -4,6 +4,10 @@
 #include <petsc/private/matimpl.h>
 #include <../src/ksp/pc/impls/gamg/gamg.h>           /*I "petscpc.h" I*/
 #include <petsc/private/kspimpl.h>
+#if defined(PETSC_HAVE_CUDA)
+  #include <../src/ksp/pc/impls/gamg/cuda_test.h>
+  #include <cuda_runtime.h>
+#endif
 
 /*
    Produces a set of block column indices of the matrix row, one for each block represented in the original row
@@ -125,7 +129,8 @@ PetscErrorCode PCGAMGCreateGraph(Mat Amat, Mat *a_Gmat)
     PetscCall(MatCreate(comm, &Gmat));
     PetscCall(MatSetSizes(Gmat,nloc,nloc,PETSC_DETERMINE,PETSC_DETERMINE));
     PetscCall(MatSetBlockSizes(Gmat, 1, 1));
-    PetscCall(MatSetType(Gmat, MATAIJ));
+    //PetscCall(MatSetType(Gmat, MATAIJ));
+    PetscCall(MatSetType(Gmat, MATAIJCUSPARSE));
     PetscCall(MatSeqAIJSetPreallocation(Gmat,0,d_nnz));
     PetscCall(MatMPIAIJSetPreallocation(Gmat,0,d_nnz,0,o_nnz));
     PetscCall(PetscFree2(d_nnz,o_nnz));
@@ -245,7 +250,8 @@ old_bs:
     PetscCall(MatCreate(comm, &Gmat));
     PetscCall(MatSetSizes(Gmat,nloc,nloc,PETSC_DETERMINE,PETSC_DETERMINE));
     PetscCall(MatSetBlockSizes(Gmat, 1, 1));
-    PetscCall(MatSetType(Gmat, MATAIJ));
+    //PetscCall(MatSetType(Gmat, MATAIJ));
+    PetscCall(MatSetType(Gmat, MATAIJCUSPARSE));
     PetscCall(MatSeqAIJSetPreallocation(Gmat,0,d_nnz));
     PetscCall(MatMPIAIJSetPreallocation(Gmat,0,d_nnz,0,o_nnz));
     PetscCall(PetscFree2(d_nnz,o_nnz));
@@ -357,6 +363,46 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm)
   PetscCall(VecDestroy(&diag));
 
   /* Determine upper bound on nonzeros needed in new filtered matrix */
+#define TEST
+#ifdef TEST
+  PetscBool  flg;
+  const PetscInt *ia,*ja;
+  const PetscScalar *aa;
+  PetscInt *coo_i, *coo_j;
+  PetscScalar *coo_values;
+  PetscInt rownum;
+  PetscCall(PetscMalloc2(nloc, &coo_i,nloc, &coo_j));
+  PetscCall(PetscMalloc1(nloc, &coo_values));
+  PetscCall(MatGetRowIJ(Gmat, 0, symm, PETSC_FALSE, &rownum, &ia, &ja, &flg));
+  PetscCall(MatSeqAIJGetArrayRead(Gmat,&aa));
+  for (Ii = Istart, nnz0 = nnz1 = 0; Ii < Iend; Ii++) {
+    ncols = ia[Ii+1] - ia[Ii];
+    idx  = ja + ja[Ii];
+    vals = (PetscScalar*)(aa + ia[Ii]);
+    for (jj=0; jj<ncols; jj++,nnz0++) {
+      PetscScalar sv = PetscAbs(PetscRealPart(vals[jj]));
+      if (PetscRealPart(sv) > vfilter) {
+        nnz1++;
+        coo_values[nnz1-1] = sv;
+        coo_i[nnz1-1] = Ii;
+        coo_j[nnz1-1] = idx[jj];
+      }
+    }
+  }
+
+  PetscCall(MatSeqAIJRestoreArrayRead(Gmat,&aa));
+  PetscCall(MatRestoreRowIJ(Gmat, 0, symm,  PETSC_FALSE, &rownum, &ia, &ja, &flg));
+  PetscCall(MatCreate(comm, &tGmat));
+  PetscCall(MatSetSizes(tGmat,nloc,nloc,MM,MM));
+  PetscCall(MatSetBlockSizes(tGmat, 1, 1));
+  PetscCall(MatSetType(tGmat, MATAIJCUSPARSE));
+  PetscCall(MatSetPreallocationCOO(tGmat,nloc, coo_i, coo_j));
+
+  PetscCall(MatSetOption(tGmat,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE));
+  PetscCall(PetscFree2(coo_i,coo_j));
+  MatSetValuesCOO(tGmat, coo_values, INSERT_VALUES);
+  PetscCall(PetscFree(coo_values));
+#else
   PetscCall(PetscMalloc2(nloc, &d_nnz,nloc, &o_nnz));
   for (Ii = Istart, jj = 0; Ii < Iend; Ii++, jj++) {
     PetscCall(MatGetRow(Gmat,Ii,&ncols,NULL,NULL));
@@ -369,7 +415,8 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm)
   PetscCall(MatCreate(comm, &tGmat));
   PetscCall(MatSetSizes(tGmat,nloc,nloc,MM,MM));
   PetscCall(MatSetBlockSizes(tGmat, 1, 1));
-  PetscCall(MatSetType(tGmat, MATAIJ));
+  //PetscCall(MatSetType(tGmat, MATAIJ));
+  PetscCall(MatSetType(tGmat, MATAIJCUSPARSE));
   PetscCall(MatSeqAIJSetPreallocation(tGmat,0,d_nnz));
   PetscCall(MatMPIAIJSetPreallocation(tGmat,0,d_nnz,0,o_nnz));
   PetscCall(MatSetOption(tGmat,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE));
@@ -386,6 +433,7 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm)
     }
     PetscCall(MatRestoreRow(Gmat,Ii,&ncols,&idx,&vals));
   }
+#endif
   PetscCall(MatAssemblyBegin(tGmat,MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(tGmat,MAT_FINAL_ASSEMBLY));
   if (symm) {

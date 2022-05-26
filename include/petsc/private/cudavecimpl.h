@@ -74,6 +74,7 @@ PETSC_INTERN PetscErrorCode VecSum_SeqCUDA(Vec,PetscScalar*);
 PETSC_INTERN PetscErrorCode VecShift_SeqCUDA(Vec,PetscScalar);
 PETSC_INTERN PetscErrorCode VecSetPreallocationCOO_SeqCUDA(Vec,PetscCount,const PetscInt[]);
 PETSC_INTERN PetscErrorCode VecSetValuesCOO_SeqCUDA(Vec,const PetscScalar[],InsertMode);
+PETSC_INTERN PetscErrorCode VecSqrt_SeqCUDA(Vec);
 
 #if defined(PETSC_HAVE_NVSHMEM)
 PETSC_EXTERN PetscErrorCode PetscNvshmemInitializeCheck(void);

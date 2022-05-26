@@ -7,6 +7,12 @@
 #include <petscdm.h>
 #include <petsc/private/kspimpl.h>
 
+#if defined(PETSC_HAVE_CUDA)
+  #include <../src/ksp/pc/impls/gamg/cuda_test.h>
+  #include <cuda_runtime.h>
+#endif
+
+
 typedef struct {
   PetscInt  nsmooths;
   PetscBool sym_graph;
@@ -839,8 +845,14 @@ static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **
   PetscBool      *bIndexSet;
   MatCoarsen     crs;
   MPI_Comm       comm;
+ #define TEST_RANDOM
+ #ifdef TEST_RANDOM
+  PetscReal      *hashfact_sppr;
+  PetscInt       *permute_sppr;
+ #else
   PetscReal      hashfact;
   PetscInt       iSwapIndex;
+ #endif
   PetscRandom    random;
 
   PetscFunctionBegin;
@@ -858,12 +870,27 @@ static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **
   } else Gmat2 = Gmat1;
 
   /* get MIS aggs - randomize */
+#ifndef TEST_RANDOM
   PetscCall(PetscMalloc1(nloc, &permute));
   PetscCall(PetscCalloc1(nloc, &bIndexSet));
+#else 
+  PetscCall(PetscMalloc1(nloc, &permute));
+  cudaMalloc((void **)&permute_sppr, sizeof(PetscInt)*nloc);
+  cudaMalloc((void **)&bIndexSet, sizeof(PetscBool)*nloc);
+#endif 
   for (Ii = 0; Ii < nloc; Ii++) permute[Ii] = Ii;
   PetscCall(PetscRandomCreate(PETSC_COMM_SELF,&random));
   PetscCall(MatGetOwnershipRange(Gmat1, &Istart, &Iend));
-  for (Ii = 0; Ii < nloc; Ii++) {
+#ifdef TEST_RANDOM
+  cudaMalloc((void **)&hashfact_sppr, sizeof(PetscReal)*nloc);
+  PetscCall(PetscRandomGetValuesReal(random,nloc, hashfact_sppr));
+  PetscCall(RamdonSetC(nloc, hashfact_sppr, permute_sppr, bIndexSet));
+  cudaMemcpy(permute, permute_sppr, sizeof(PetscInt)*nloc, cudaMemcpyDeviceToHost);
+  cudaFree(hashfact_sppr);
+  cudaFree(permute_sppr);
+  cudaFree(bIndexSet);
+#else
+  for (Ii = 0; Ii < nloc; Ii++) { //1.34S/2.25s);
     PetscCall(PetscRandomGetValueReal(random,&hashfact));
     iSwapIndex = (PetscInt) (hashfact*nloc)%nloc;
     if (!bIndexSet[iSwapIndex] && iSwapIndex != Ii) {
@@ -874,6 +901,7 @@ static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **
     }
   }
   PetscCall(PetscFree(bIndexSet));
+#endif
   PetscCall(PetscRandomDestroy(&random));
   PetscCall(ISCreateGeneral(PETSC_COMM_SELF, nloc, permute, PETSC_USE_POINTER, &perm));
   PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[GAMG_MIS],0,0,0,0));

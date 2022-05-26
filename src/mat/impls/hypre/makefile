@@ -3,8 +3,9 @@
 
 CFLAGS   = ${HYPRE_INCLUDE}
 SOURCEC  = mhypre.c
+SOURCECU = svalue.cu
 SOURCEF  =
-SOURCEH  = mhypre.h
+SOURCEH  = mhypre.h svalue.h
 LIBBASE  = libpetscmat
 DIRS     =
 MANSEC   = Mat

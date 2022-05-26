@@ -1387,6 +1387,24 @@ PetscErrorCode VecMin_SeqCUDA(Vec v, PetscInt *p, PetscReal *m)
   PetscFunctionReturn(0);
 }
 
+__global__ void doSqrt(PetscInt    n, PetscScalar *x){
+  int i = blockIdx.x*blockDim.x + threadIdx.x;
+  if(i < n){
+    x[i] = PetscSqrtReal(PetscAbsScalar(x[i]));
+  }
+}
+
+PetscErrorCode VecSqrt_SeqCUDA(Vec v){
+  PetscScalar    *x;
+  PetscInt       n = v->map->n;
+
+  PetscFunctionBegin;
+  PetscCall(VecCUDAGetArrayWrite(v,&x));
+  doSqrt<<<(n+255)/256,256>>>(n, x);
+  PetscCall(VecCUDARestoreArrayWrite(v, &x));
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode VecSum_SeqCUDA(Vec v,PetscScalar *sum)
 {
   PetscInt                              n = v->map->n;

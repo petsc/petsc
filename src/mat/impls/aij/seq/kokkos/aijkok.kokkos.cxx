@@ -17,6 +17,22 @@
 
 #include <../src/mat/impls/aij/seq/kokkos/aijkok.hpp>
 
+#include <../src/mat/impls/aij/seq/seqcusparse/cusparsematimpl.h>
+#include <thrust/adjacent_difference.h>
+#include <thrust/async/for_each.h>
+#include <thrust/iterator/constant_iterator.h>
+#include <thrust/remove.h>
+#include <thrust/replace.h>
+#include <thrust/sort.h>
+#include <thrust/unique.h>
+
+#define THRUSTINTARRAY32_k thrust::device_vector<int>
+#define THRUSTINTARRAY_k thrust::device_vector<PetscInt>
+#define THRUSTARRAY_k thrust::device_vector<PetscCount>
+#define THRUSTINTARRAY_k_h thrust::host_vector<PetscInt>
+#define THRUSTARRAY_k_h thrust::host_vector<PetscCount>
+
+
 static PetscErrorCode MatSetOps_SeqAIJKokkos(Mat); /* Forward declaration */
 
 /* MatAssemblyEnd_SeqAIJKokkos() happens when we finalized nonzeros of the matrix, either after
@@ -1031,13 +1047,141 @@ static PetscErrorCode MatAXPY_SeqAIJKokkos(Mat Y,PetscScalar alpha,Mat X,MatStru
   PetscFunctionReturn(0);
 }
 
+struct IJCompare
+{
+  __host__ __device__
+  inline bool operator() (const thrust::tuple<PetscInt, PetscInt> &t1, const thrust::tuple<PetscInt, PetscInt> &t2)
+  {
+    if (t1.get<0>() < t2.get<0>()) return true;
+    if (t1.get<0>() == t2.get<0>()) return t1.get<1>() < t2.get<1>();
+    return false;
+  }
+};
+
+struct is_less_than_zero
+{
+  __host__ __device__
+  bool operator()(int x)
+  {
+    return x < 0;
+  }
+};
+
+struct IJEqual
+{
+  __host__ __device__
+  inline bool operator() (const thrust::tuple<PetscInt, PetscInt> &t1, const thrust::tuple<PetscInt, PetscInt> &t2)
+  {
+    if (t1.get<0>() != t2.get<0>() || t1.get<1>() != t2.get<1>()) return false;
+    return true;
+  }
+};
+
+struct IJDiff
+{
+  __host__ __device__
+  inline PetscInt operator() (const PetscInt &t1, const PetscInt &t2)
+  {
+    return t1 == t2 ? 0 : 1;
+  }
+};
+
+struct IJSum
+{
+  __host__ __device__
+  inline PetscInt operator() (const PetscInt &t1, const PetscInt &t2)
+  {
+    return t1||t2;
+  }
+};
+
+
+PetscErrorCode MatSetPreallocationCOO_SeqAIJ_Kokkos(Mat mat, PetscCount coo_n, const PetscInt coo_i[], const PetscInt coo_j[])
+{
+  MPI_Comm                  comm;
+  PetscInt                  M,N,nzr;
+  PetscCount                nneg,nnz; /* Index the coo array, so use PetscCount as their type */
+  PetscInt                  *Ai; /* Change to PetscCount once we use it for row pointers */
+  PetscInt                  *Aj;
+  PetscScalar               *Aa;
+  Mat_SeqAIJ                *seqaij = (Mat_SeqAIJ*)(mat->data);
+  MatType                   rtype;
+  PetscCount                *perm,*jmap;
+  PetscFunctionBegin;
+  PetscCall(MatResetPreallocationCOO_SeqAIJ(mat));
+  PetscCall(PetscObjectGetComm((PetscObject)mat,&comm));
+  PetscCall(MatGetSize(mat,&M,&N));
+  PetscCall(MatSeqXAIJFreeAIJ(mat,&seqaij->a,&seqaij->j,&seqaij->i));
+  seqaij->singlemalloc = PETSC_FALSE;
+  seqaij->free_a       = PETSC_TRUE;
+  seqaij->free_ij      = PETSC_TRUE;
+  PetscCall(PetscMalloc1(mat->rmap->n+1,&seqaij->i));
+  if (!seqaij->ilen) PetscCall(PetscMalloc1(mat->rmap->n,&seqaij->ilen));
+  if (!seqaij->imax) PetscCall(PetscMalloc1(mat->rmap->n,&seqaij->imax));
+  THRUSTARRAY_k d_i(coo_n);
+  THRUSTINTARRAY_k d_j(coo_n);
+  THRUSTARRAY_k *cooPerm   = new THRUSTARRAY_k(coo_n);
+  THRUSTARRAY_k *cooPerm_a = new THRUSTARRAY_k(coo_n+1);
+  d_i.assign(coo_i,coo_i+coo_n);
+  d_j.assign(coo_j,coo_j+coo_n);
+  thrust::replace_if(thrust::device, d_i.begin(), d_i.end(), d_j.begin(), is_less_than_zero(), -1);
+  auto fkey = thrust::make_zip_iterator(thrust::make_tuple(d_i.begin(),d_j.begin()));
+  auto ekey = thrust::make_zip_iterator(thrust::make_tuple(d_i.end(),d_j.end()));
+  thrust::sequence(thrust::device, cooPerm->begin(), cooPerm->end(), 0);
+  thrust::sort_by_key(fkey, ekey, cooPerm->begin(), IJCompare()); /* sort by row, then by col */
+  nneg = 0;
+  nnz  = 0; /* Total number of unique nonzeros to be counted */
+  *cooPerm_a = d_i; /* copy the sorted array */
+  THRUSTINTARRAY_k w = d_j;
+  THRUSTINTARRAY_k ii(mat->rmap->n);
+  auto nekey = thrust::unique(fkey, ekey, IJEqual()); /* unique (d_i, d_j) */
+  adjacent_difference(cooPerm_a->begin(),cooPerm_a->end(),cooPerm_a->begin(),IJDiff()); /* cooPerm_a: [1,1,3,3,4,4] => [1,0,1,0,1,0]*/
+  adjacent_difference(w.begin(),w.end(),w.begin(),IJDiff());                                              /* w:         [2,2,2,3,5,6] => [2,0,0,1,1,1]*/
+  (*cooPerm_a)[0] = 0; /* clear the first entry, though accessing an entry on device implies a cudaMemcpy */
+  w[0] = 0;
+  thrust::transform(cooPerm_a->begin(),cooPerm_a->end(),w.begin(),cooPerm_a->begin(),IJSum()); /* cooPerm_a =          [0,0,1,1,1,1]*/
+  cooPerm_a->push_back(1);
+  thrust::inclusive_scan(cooPerm_a->begin(),cooPerm_a->end(),cooPerm_a->begin(),thrust::plus<PetscInt>()); /*cooPerm_a=[0,0,1,2,3,4]*/
+  thrust::counting_iterator<PetscInt> search_begin(0);
+  thrust::upper_bound(d_i.begin(), nekey.get_iterator_tuple().get<0>(), /* binary search entries of [0,1,2,3,4,5,6) in ordered array d_i = [1,3,3,4,4], supposing A->rmap->n = 6. */
+                      search_begin, search_begin + mat->rmap->n,  /* return in ii[] the index of last position in d_i[] where value could be inserted without violating the ordering */
+                      ii.begin()); /* ii = [0,1,1,3,5,5]. A leading 0 will be added later */
+
+#if 1
+    seqaij->i[0] = 0; /* a->i = [0,0,1,1,3,5,5] */
+    PetscCallCUDA(cudaMemcpy(seqaij->i+1,ii.data().get(),mat->rmap->n*sizeof(PetscInt),cudaMemcpyDeviceToHost));
+    seqaij->nz = seqaij->maxnz = seqaij->i[mat->rmap->n];
+    seqaij->rmax = 0;
+    PetscCall(PetscMalloc1(seqaij->nz,&seqaij->j));
+    PetscCallCUDA(cudaMemcpy(seqaij->j,d_j.data().get(),seqaij->nz*sizeof(PetscInt),cudaMemcpyDeviceToHost));
+    PetscCall(PetscMalloc1(seqaij->nz,&seqaij->a));
+    for (PetscInt i = 0; i < mat->rmap->n; i++) {
+      const PetscInt nnzr = seqaij->i[i+1] - seqaij->i[i];
+      nzr += (PetscInt)!!(nnzr);
+      seqaij->ilen[i] = seqaij->imax[i] = nnzr;
+      seqaij->rmax = PetscMax(seqaij->rmax,nnzr);
+    }
+    seqaij->nonzerorowcnt = nzr;
+    mat->preallocated = PETSC_TRUE;
+#else
+  PetscCall(MatSetSeqAIJWithArrays_private(PETSC_COMM_SELF,M,N,Ai,Aj,Aa,rtype,mat));
+#endif
+  /* Record COO fields */
+  seqaij->coo_n        = coo_n;
+  seqaij->Atot         = coo_n-nneg; /* Annz is seqaij->nz, so no need to record that again */
+  seqaij->jmap         = cooPerm_a->data().get(); /* of length nnz+1 */
+  seqaij->perm         = cooPerm->data().get();
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode MatSetPreallocationCOO_SeqAIJKokkos(Mat mat, PetscCount coo_n, const PetscInt coo_i[], const PetscInt coo_j[])
 {
   Mat_SeqAIJKokkos *akok;
   Mat_SeqAIJ       *aseq;
 
   PetscFunctionBegin;
-  PetscCall(MatSetPreallocationCOO_SeqAIJ(mat,coo_n,coo_i,coo_j));
+  PetscCall(MatSetPreallocationCOO_SeqAIJ_Kokkos(mat,coo_n,coo_i,coo_j));
+
   aseq = static_cast<Mat_SeqAIJ*>(mat->data);
   akok = static_cast<Mat_SeqAIJKokkos*>(mat->spptr);
   delete akok;

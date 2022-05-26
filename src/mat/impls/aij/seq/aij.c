@@ -1219,8 +1219,13 @@ PETSC_INTERN PetscErrorCode MatResetPreallocationCOO_SeqAIJ(Mat A)
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
 
   PetscFunctionBegin;
+  if(0){
   PetscCall(PetscFree(a->perm));
   PetscCall(PetscFree(a->jmap));
+  }else{
+    a->perm = NULL;
+    a->jmap = NULL;
+  }
   PetscFunctionReturn(0);
 }
 
