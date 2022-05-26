@@ -1061,7 +1061,7 @@ static PetscErrorCode DMView_Shell(DM dm,PetscViewer v)
   DM_Shell       *shell = (DM_Shell*)dm->data;
 
   PetscFunctionBegin;
-  PetscCall(VecView(shell->Xglobal,v));
+  if (shell->Xglobal) PetscCall(VecView(shell->Xglobal,v));
   PetscFunctionReturn(0);
 }
 
