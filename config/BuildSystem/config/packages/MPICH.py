@@ -38,8 +38,6 @@ class Configure(config.package.GNUPackage):
       self.installDir = self.defaultInstallDir
       self.updateCompilers(self.installDir,'mpicc','mpicxx','mpif77','mpif90')
       return self.installDir
-    if self.cuda.found:
-      self.logPrintWarning('CUDA enabled! Its best to use --download-openmpi instead of --download-mpich as it provides CUDA enabled MPI!')
     if self.argDB['download-'+self.downloadname.lower()]:
       return self.getInstallDir()
     return ''
@@ -63,6 +61,9 @@ class Configure(config.package.GNUPackage):
       mpich_device = 'ch3:sock'
     else:
       mpich_device = 'ch3:nemesis'
+    if self.cuda.found:
+      args.append('--with-cuda='+self.cuda.cudaDir)
+      mpich_device = 'ch4:ucx'
     if 'download-mpich-device' in self.argDB:
       mpich_device = self.argDB['download-mpich-device']
     args.append('--with-device='+mpich_device)

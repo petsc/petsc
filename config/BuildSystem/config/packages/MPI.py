@@ -491,14 +491,18 @@ Unable to run hostname to check the network')
                        if (MPI_Neighbor_alltoallv(0,0,0,MPI_INT,0,0,0,MPI_INT,distcomm));\n\
                        if (MPI_Ineighbor_alltoallv(0,0,0,MPI_INT,0,0,0,MPI_INT,distcomm,&req));\n'):
       self.addDefine('HAVE_MPI_NEIGHBORHOOD_COLLECTIVES',1)
+    cuda_aware = 0
     if hasattr(self, 'ompi_major_version'):
       openmpi_cuda_test = '#include<mpi.h>\n #include <mpi-ext.h>\n #if defined(MPIX_CUDA_AWARE_SUPPORT) && MPIX_CUDA_AWARE_SUPPORT\n #else\n #error This OpenMPI is not CUDA-aware\n #endif\n'
       if self.checkCompile(openmpi_cuda_test):
-        self.addDefine('HAVE_MPI_GPU_AWARE', 1)
-      else:
-        self.testoptions = '-use_gpu_aware_mpi 0'
+        cuda_aware = 1
+    elif hasattr(self, 'mpich_numversion'):
+      if self.libraries.check(self.dlib, "yaksuri_cudai_unpack_wchar_t"):
+        cuda_aware = 1
+    if cuda_aware:
+      self.addDefine('HAVE_MPI_GPU_AWARE', 1)
     else:
-        self.testoptions = '-use_gpu_aware_mpi 0'
+      self.testoptions = '-use_gpu_aware_mpi 0'
     if self.checkLink('#include <mpi.h>\n', 'int ptr[1]; MPI_Win win; if (MPI_Get_accumulate(ptr,1,MPI_INT,ptr,1,MPI_INT,0,0,1,MPI_INT,MPI_SUM,win));\n'):
       self.addDefine('HAVE_MPI_GET_ACCUMULATE', 1)
     if self.checkLink('#include <mpi.h>\n', 'int ptr[1]; MPI_Win win; MPI_Request req; if (MPI_Rget(ptr,1,MPI_INT,0,1,1,MPI_INT,win,&req));\n'):
