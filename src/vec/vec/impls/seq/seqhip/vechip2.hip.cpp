@@ -271,7 +271,6 @@ PetscErrorCode VecMAXPY_SeqHIP(Vec xin, PetscInt nv,const PetscScalar *alpha,Vec
   const PetscScalar *yarray;
   PetscBLASInt      one = 1,bn = 0;
   hipblasHandle_t   hipblasv2handle;
-  hipblasStatus_t   cberr;
 
   PetscFunctionBegin;
   PetscCall(PetscLogGpuFlops(nv*2.0*n));
@@ -295,7 +294,6 @@ PetscErrorCode VecDot_SeqHIP(Vec xin,Vec yin,PetscScalar *z)
   const PetscScalar *xarray,*yarray;
   PetscBLASInt      one = 1,bn = 0;
   hipblasHandle_t   hipblasv2handle;
-  hipblasStatus_t   cerr;
 
   PetscFunctionBegin;
   PetscCall(PetscHIPBLASGetHandle(&hipblasv2handle));
@@ -763,7 +761,6 @@ PetscErrorCode VecTDot_SeqHIP(Vec xin,Vec yin,PetscScalar *z)
   const PetscScalar *xarray,*yarray;
   PetscBLASInt      one = 1,bn = 0;
   hipblasHandle_t   hipblasv2handle;
-  hipblasStatus_t   cerr;
 
   PetscFunctionBegin;
   PetscCall(PetscHIPBLASGetHandle(&hipblasv2handle));
