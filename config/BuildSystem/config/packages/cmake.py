@@ -4,7 +4,7 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.version            = '3.23.1'
+    self.version            = '3.23.2'
     self.download           = ['https://github.com/Kitware/CMake/releases/download/v'+self.version+'/cmake-'+self.version+'.tar.gz',
                               'https://gitlab.kitware.com/cmake/cmake/-/archive/v'+self.version+'/cmake-v'+self.version+'.tar.gz']
     self.download_solaris   = ['https://cmake.org/files/v3.11/cmake-3.11.4.tar.gz',

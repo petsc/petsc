@@ -1504,10 +1504,10 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
   /* Get the total elapsed time */
   PetscTime(&locTotalTime);  locTotalTime -= petsc_BaseTime;
 
-  PetscCall(PetscFPrintf(comm, fd, "**************************************** ***********************************************************************************************************************\n"));
+  PetscCall(PetscFPrintf(comm, fd, "****************************************************************************************************************************************************************\n"));
   PetscCall(PetscFPrintf(comm, fd, "***                                WIDEN YOUR WINDOW TO 160 CHARACTERS.  Use 'enscript -r -fCourier9' to print this document                                 ***\n"));
   PetscCall(PetscFPrintf(comm, fd, "****************************************************************************************************************************************************************\n"));
-  PetscCall(PetscFPrintf(comm, fd, "\n------------------------------------------------------------------ PETSc Performance Summary: -------------------------------------------------------------------\n\n"));
+  PetscCall(PetscFPrintf(comm, fd, "\n------------------------------------------------------------------ PETSc Performance Summary: ------------------------------------------------------------------\n\n"));
   PetscCall(PetscLogViewWarnSync(comm,fd));
   PetscCall(PetscLogViewWarnDebugging(comm,fd));
   PetscCall(PetscLogViewWarnNoGpuAwareMpi(comm,fd));

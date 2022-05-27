@@ -460,6 +460,8 @@ static PetscErrorCode KSPMatSolve_HPDDM(KSP ksp, Mat B, Mat X)
 /*@
      KSPHPDDMSetType - Sets the type of Krylov method used in KSPHPDDM.
 
+   Collective on KSP
+
    Input Parameters:
 +     ksp - iterative context
 -     type - any of gmres, bgmres, cg, bcg, gcrodr, bgcrodr, bfbcg, or preonly
