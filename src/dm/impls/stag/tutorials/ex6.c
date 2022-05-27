@@ -19,17 +19,18 @@ Reference:
   year      = {1986},
 }
 
-Notes:
+This example uses y in 2 dimensions, where the paper uses z.
 
-  This example uses y in 2 dimensions, where the paper uses z.
-  This example uses the dual grid of the one pictured in Fig. 1. of the paper,
-so that velocities are on face boundaries, shear stresses are defined on vertices,
-and normal stresses are defined on elements.
-  There is a typo in the paragraph after (5) in the paper: Sigma, Xi, and Tau
+This example uses the dual grid of the one pictured in Fig. 1. of the paper, so
+that velocities are on face boundaries, shear stresses are defined on
+vertices(2D) or edges(3D), and normal stresses are defined on elements.
+
+There is a typo in the paragraph after (5) in the paper: Sigma, Xi, and Tau
 represent tau_xx, tau_xz, and tau_zz, respectively (the last two entries are
 transposed in the paper).
-  This example treats the boundaries naively (by leaving ~zero velocity and stress there).
 
+This example treats the boundaries naively (by leaving ~zero velocity and
+stress there).
 */
 
 #include <petscdmstag.h>
