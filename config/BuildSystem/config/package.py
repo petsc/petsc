@@ -1873,7 +1873,8 @@ class CMakePackage(Package):
       self.framework.popLanguage()
 
     if self.setCompilers.LDFLAGS:
-      args.append('-DCMAKE_EXE_LINKER_FLAGS:STRING="'+self.setCompilers.LDFLAGS+'"')
+      ldflags = self.setCompilers.LDFLAGS.replace('"','\\"') # escape double quotes (") in LDFLAGS
+      args.append('-DCMAKE_EXE_LINKER_FLAGS:STRING="'+ldflags+'"')
 
     if self.checkSharedLibrariesEnabled():
       args.append('-DBUILD_SHARED_LIBS:BOOL=ON')
