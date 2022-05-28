@@ -12,12 +12,11 @@
  Error checking to ensure the swarm type is correct and that a cell DM has been set
 */
 #define DMSWARMPICVALID(dm) \
-{ \
-  DM_Swarm *_swarm = (DM_Swarm*)(dm)->data; \
-  PetscCheck(_swarm->swarm_type == DMSWARM_PIC,PetscObjectComm((PetscObject)(dm)),PETSC_ERR_SUP,"Valid only for DMSwarm-PIC. You must call DMSwarmSetType(dm,DMSWARM_PIC)"); \
-  else \
+  do { \
+    DM_Swarm *_swarm = (DM_Swarm*)(dm)->data; \
+    PetscCheck(_swarm->swarm_type == DMSWARM_PIC,PetscObjectComm((PetscObject)(dm)),PETSC_ERR_SUP,"Valid only for DMSwarm-PIC. You must call DMSwarmSetType(dm,DMSWARM_PIC)"); \
     PetscCheck(_swarm->dmcell,PetscObjectComm((PetscObject)(dm)),PETSC_ERR_SUP,"Valid only for DMSwarmPIC if the cell DM is set. You must call DMSwarmSetCellDM(dm,celldm)"); \
-}
+  } while (0)
 
 /* Coordinate insertition/addition API */
 /*@C
@@ -434,7 +433,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinatesCellwise(DM dm,PetscInt np
   PetscCall(PetscObjectTypeCompare((PetscObject)celldm,DMDA,&isDA));
   PetscCall(PetscObjectTypeCompare((PetscObject)celldm,DMPLEX,&isPLEX));
   PetscCheck(!isDA,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only supported for cell DMs of type DMPLEX. Recommended you use DMSwarmInsertPointsUsingCellDM()");
-  else if (isPLEX) {
+  if (isPLEX) {
     PetscCall(private_DMSwarmSetPointCoordinatesCellwise_PLEX(dm,celldm,npoints,xi));
   } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only supported for cell DMs of type DMDA and DMPLEX");
   PetscFunctionReturn(0);

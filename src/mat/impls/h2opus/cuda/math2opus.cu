@@ -1016,12 +1016,10 @@ static PetscErrorCode MatZeroEntries_H2OPUS(Mat A)
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)A),&size));
   PetscCheck(size <= 1,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Not yet supported");
-  else {
-    a->hmatrix->clearData();
+  a->hmatrix->clearData();
 #if defined(PETSC_H2OPUS_USE_GPU)
-    if (a->hmatrix_gpu) a->hmatrix_gpu->clearData();
+  if (a->hmatrix_gpu) a->hmatrix_gpu->clearData();
 #endif
-  }
   PetscFunctionReturn(0);
 }
 

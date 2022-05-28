@@ -1820,7 +1820,7 @@ PetscErrorCode MatSetFromOptions_MUMPS(Mat F, Mat A)
     mumps->ninfo = ninfo;
     for (i=0; i<ninfo; i++) {
       PetscCheck(info[i] >= 0 && info[i] <= 80,PETSC_COMM_SELF,PETSC_ERR_USER,"index of INFO %" PetscInt_FMT " must between 1 and 80",ninfo);
-      else  mumps->info[i] = info[i];
+      mumps->info[i] = info[i];
     }
   }
 

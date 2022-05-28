@@ -449,18 +449,16 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFacto
     PetscStackCall("SuperLU_DIST:pgssvx",pgssvx(&lu->options, &lu->A_sup, &lu->ScalePermstruct, 0, A->rmap->n, 0, &lu->grid, &lu->LUstruct, &lu->SOLVEstruct, berr, &stat, &sinfo));
   if (sinfo > 0) {
     PetscCheck(!A->erroriffailure,PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot in row %d",sinfo);
-    else {
-      if (sinfo <= lu->A_sup.ncol) {
-        F->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
-        PetscCall(PetscInfo(F,"U(i,i) is exactly zero, i= %d\n",sinfo));
-      } else if (sinfo > lu->A_sup.ncol) {
-        /*
-         number of bytes allocated when memory allocation
-         failure occurred, plus A->ncol.
-         */
-        F->factorerrortype = MAT_FACTOR_OUTMEMORY;
-        PetscCall(PetscInfo(F,"Number of bytes allocated when memory allocation fails %d\n",sinfo));
-      }
+    if (sinfo <= lu->A_sup.ncol) {
+      F->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+      PetscCall(PetscInfo(F,"U(i,i) is exactly zero, i= %d\n",sinfo));
+    } else if (sinfo > lu->A_sup.ncol) {
+      /*
+       number of bytes allocated when memory allocation
+       failure occurred, plus A->ncol.
+       */
+      F->factorerrortype = MAT_FACTOR_OUTMEMORY;
+      PetscCall(PetscInfo(F,"Number of bytes allocated when memory allocation fails %d\n",sinfo));
     }
   } else PetscCheck(sinfo >= 0,PETSC_COMM_SELF,PETSC_ERR_LIB, "info = %d, argument in p*gssvx() had an illegal value", sinfo);
 

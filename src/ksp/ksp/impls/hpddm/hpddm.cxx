@@ -95,7 +95,7 @@ static PetscErrorCode KSPSetFromOptions_HPDDM(PetscOptionItems *PetscOptionsObje
     data->scntl[1] = 1;
   }
   PetscCheck(ksp->nmax >= std::numeric_limits<int>::min() && ksp->nmax <= std::numeric_limits<int>::max(), PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "KSPMatSolve() block size %" PetscInt_FMT " not representable by an integer, which is not handled by KSPHPDDM", ksp->nmax);
-  else data->icntl[1] = static_cast<int>(ksp->nmax);
+  data->icntl[1] = static_cast<int>(ksp->nmax);
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
@@ -174,7 +174,7 @@ static PetscErrorCode KSPSetUp_HPDDM(KSP ksp)
     } else data->scntl[1] = 1;
   }
   PetscCheck(ksp->nmax >= std::numeric_limits<int>::min() && ksp->nmax <= std::numeric_limits<int>::max(), PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "KSPMatSolve() block size %" PetscInt_FMT " not representable by an integer, which is not handled by KSPHPDDM", ksp->nmax);
-  else data->icntl[1] = static_cast<int>(ksp->nmax);
+  data->icntl[1] = static_cast<int>(ksp->nmax);
   PetscFunctionReturn(0);
 }
 

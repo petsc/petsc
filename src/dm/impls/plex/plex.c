@@ -8309,7 +8309,7 @@ PetscErrorCode DMPlexCheckSymmetry(DM dm)
         }
         PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n"));
         PetscCheck(!dup,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %" PetscInt_FMT " not repeatedly found in support of repeated cone point %" PetscInt_FMT, p, cone[c]);
-        else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %" PetscInt_FMT " not found in support of cone point %" PetscInt_FMT, p, cone[c]);
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %" PetscInt_FMT " not found in support of cone point %" PetscInt_FMT, p, cone[c]);
       }
     }
     PetscCall(DMPlexGetTreeParent(dm, p, &pp, NULL));

@@ -219,7 +219,7 @@ M*/
 
 .seealso: `PetscAssert()`, `SETERRQ()`, `PetscError()`, `PetscCall()`
 M*/
-#define PetscCheck(cond,comm,ierr,...) if (PetscUnlikely(!(cond))) SETERRQ(comm,ierr,__VA_ARGS__)
+#define PetscCheck(cond,comm,ierr,...) do { if (PetscUnlikely(!(cond))) SETERRQ(comm,ierr,__VA_ARGS__); } while (0)
 
 /*MC
   PetscAssert - Assert that a particular condition is true
@@ -247,7 +247,7 @@ M*/
 
 .seealso: `PetscCheck()`, `SETERRQ()`, `PetscError()`
 M*/
-#define PetscAssert(cond,comm,ierr,...) if (PetscUnlikelyDebug(!(cond))) SETERRQ(comm,ierr,__VA_ARGS__)
+#define PetscAssert(cond,comm,ierr,...) do { if (PetscUnlikelyDebug(!(cond))) SETERRQ(comm,ierr,__VA_ARGS__); } while (0)
 
 /*MC
   PetscCall - Calls a PETSc function and then checks the resulting error code, if it is non-zero it calls the error

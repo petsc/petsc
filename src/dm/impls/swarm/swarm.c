@@ -1647,11 +1647,17 @@ PetscErrorCode DMView_Swarm(DM dm, PetscViewer viewer)
         PetscCall(DMSwarmDataBucketView(PetscObjectComm((PetscObject) dm), swarm->db, NULL, DATABUCKET_VIEW_STDOUT));break;
       default: PetscCall(DMView_Swarm_Ascii(dm, viewer));
     }
-  } else PetscCheck(!ibinary,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"NO Binary support");
+  } else {
+    PetscCheck(!ibinary,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"NO Binary support");
 #if defined(PETSC_HAVE_HDF5)
-  else if (ishdf5) PetscCall(DMSwarmView_HDF5(dm, viewer));
+    if (ishdf5) {
+      PetscCall(DMSwarmView_HDF5(dm, viewer));
+    }
 #endif
-  else if (isdraw) PetscCall(DMSwarmView_Draw(dm, viewer));
+    if (isdraw) {
+      PetscCall(DMSwarmView_Draw(dm, viewer));
+    }
+  }
   PetscFunctionReturn(0);
 }
 

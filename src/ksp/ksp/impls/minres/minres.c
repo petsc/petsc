@@ -9,7 +9,7 @@ static PetscErrorCode KSPSetUp_MINRES(KSP ksp)
 {
   PetscFunctionBegin;
   PetscCheck(ksp->pc_side != PC_RIGHT,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"No right preconditioning for KSPMINRES");
-  else PetscCheck(ksp->pc_side != PC_SYMMETRIC,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"No symmetric preconditioning for KSPMINRES");
+  PetscCheck(ksp->pc_side != PC_SYMMETRIC,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"No symmetric preconditioning for KSPMINRES");
   PetscCall(KSPSetWorkVecs(ksp,9));
   PetscFunctionReturn(0);
 }

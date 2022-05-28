@@ -385,7 +385,7 @@ PetscErrorCode PetscViewerGLVisGetWindow_Private(PetscViewer viewer,PetscInt wid
   switch (status) {
     case PETSCVIEWERGLVIS_DISCONNECTED:
       PetscCheck(!socket->window[wid],PETSC_COMM_SELF,PETSC_ERR_USER,"This should not happen");
-      else if (socket->type == PETSC_VIEWER_GLVIS_DUMP) {
+      if (socket->type == PETSC_VIEWER_GLVIS_DUMP) {
         size_t    len;
         PetscBool isstdout;
 

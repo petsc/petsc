@@ -2527,31 +2527,29 @@ PetscErrorCode MatGetColumnIJ_SeqBAIJ(Mat A,PetscInt oshift,PetscBool symmetric,
   *nn = n;
   if (!ia) PetscFunctionReturn(0);
   PetscCheck(!symmetric,PETSC_COMM_SELF,PETSC_ERR_SUP,"Not for BAIJ matrices");
-  else {
-    PetscCall(PetscCalloc1(n,&collengths));
-    PetscCall(PetscMalloc1(n+1,&cia));
-    PetscCall(PetscMalloc1(nz,&cja));
-    jj   = a->j;
-    for (i=0; i<nz; i++) {
-      collengths[jj[i]]++;
-    }
-    cia[0] = oshift;
-    for (i=0; i<n; i++) {
-      cia[i+1] = cia[i] + collengths[i];
-    }
-    PetscCall(PetscArrayzero(collengths,n));
-    jj   = a->j;
-    for (row=0; row<m; row++) {
-      mr = a->i[row+1] - a->i[row];
-      for (i=0; i<mr; i++) {
-        col = *jj++;
-
-        cja[cia[col] + collengths[col]++ - oshift] = row + oshift;
-      }
-    }
-    PetscCall(PetscFree(collengths));
-    *ia  = cia; *ja = cja;
+  PetscCall(PetscCalloc1(n,&collengths));
+  PetscCall(PetscMalloc1(n+1,&cia));
+  PetscCall(PetscMalloc1(nz,&cja));
+  jj   = a->j;
+  for (i=0; i<nz; i++) {
+    collengths[jj[i]]++;
   }
+  cia[0] = oshift;
+  for (i=0; i<n; i++) {
+    cia[i+1] = cia[i] + collengths[i];
+  }
+  PetscCall(PetscArrayzero(collengths,n));
+  jj   = a->j;
+  for (row=0; row<m; row++) {
+    mr = a->i[row+1] - a->i[row];
+    for (i=0; i<mr; i++) {
+      col = *jj++;
+
+      cja[cia[col] + collengths[col]++ - oshift] = row + oshift;
+    }
+  }
+  PetscCall(PetscFree(collengths));
+  *ia  = cia; *ja = cja;
   PetscFunctionReturn(0);
 }
 
