@@ -773,7 +773,7 @@ linux-analyzer:
     - .stage-2
     - .linux_test
   tags:
-    - gce-stage2
+    - gce-u22-stage2
   script:
     - printf "PATH:$PATH\n"
     - printf "PYTHONPATH:$PYTHONPATH\n"
@@ -786,8 +786,7 @@ linux-analyzer:
     - make LINTER_OPTIONS="${LINTER_OPTIONS}" lint
   variables:
     TEST_ARCH: arch-ci-linux-analyzer
-    LOAD_MODULES: llvm/12.0.0-hgg7qmu cmake/3.20.5-zyz2eld
-    LINTER_OPTIONS: "--PETSC_ARCH=${TEST_ARCH} --clang_lib=`llvm-config --libdir`/libclang.so.12 --verbose --werror"
+    LINTER_OPTIONS: "--PETSC_ARCH=${TEST_ARCH} --clang_lib=`llvm-config-14 --libdir`/libclang.so.1 --verbose --werror"
   artifacts:
     paths:
     - ${TEST_ARCH}/lib/petsc/conf/*.log
