@@ -143,12 +143,12 @@ PETSC_ARCH from environment does not match command-line or name of script. Using
         self.arch = 'arch-'+hprefix[0:6]
       else:
         if not os.path.isdir(self.argDB['package-prefix-hash']):
-          self.logPrintBox('Specified package-prefix-hash location %s not found! Attemping to create this dir!' % self.argDB['package-prefix-hash'])
+          self.logPrint('Specified package-prefix-hash location %s not found! Attemping to create this dir!' % self.argDB['package-prefix-hash'])
           try:
             os.makedirs(self.argDB['package-prefix-hash'])
           except Exception as e:
             self.logPrint('Error creating package-prefix-hash directory '+self.argDB['package-prefix-hash']+': '+str(e))
-            raise RuntimeError('You must have write permission to create this directory!')
+            raise RuntimeError('You must have write permission to create prefix directory '+self.argDB['package-prefix-hash'])
         status = False
         for idx in range(6,len(hprefix)):
           hashdirpackages = os.path.join(self.argDB['package-prefix-hash'],hprefix[0:idx])
