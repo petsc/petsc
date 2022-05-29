@@ -1482,7 +1482,7 @@ PetscErrorCode PCHPDDMGetSTShareSubKSP(PC pc, PetscBool *share)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   if (share) {
-    PetscValidPointer(share, 2);
+    PetscValidBoolPointer(share, 2);
     PetscUseMethod(pc, "PCHPDDMGetSTShareSubKSP_C", (PC, PetscBool*), (pc, share));
   }
   PetscFunctionReturn(0);
