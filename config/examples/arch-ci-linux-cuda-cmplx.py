@@ -11,6 +11,8 @@ if __name__ == '__main__':
   configure_options = [
     '--package-prefix-hash='+petsc_hash_pkgs,
     '--with-make-test-np=15',
+    #'--with-make-test-np=4', Disabled for now - OpenMPI works with 15 so hopefully future MPICH release will fix its GPU memory usage to be lower - similar to OpenMPI
+    #'--download-mpich',
     'COPTFLAGS=-g -O',
     'FOPTFLAGS=-g -O',
     'CXXOPTFLAGS=-g -O',
