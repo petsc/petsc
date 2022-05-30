@@ -13,5 +13,6 @@ Programming with PETSc/TAO
    tao
    high_level_mg
    dmplex
+   dmstag
    dt
    fe
