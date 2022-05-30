@@ -664,26 +664,26 @@ static PetscErrorCode DMSetFromOptions_Stag(PetscOptionItems *PetscOptionsObject
 }
 
 /*MC
-  DMSTAG = "stag" - A DM object representing a "staggered grid" or a structured cell complex.
+  DMSTAG - `"stag"` - A DM object representing a "staggered grid" or a structured cell complex.
 
-  This implementation parallels the DMDA implementation in many ways, but allows degrees of freedom
+  See the [manual chapter on DMStag](/docs/manual/dmstag).
+
+  This implementation parallels the `DMDA` implementation in many ways, but allows degrees of freedom
   to be associated with all "strata" in a logically-rectangular grid.
 
-  Each stratum can be characterized by the dimension of the entities ("points", to borrow the DMPLEX
+  Each stratum can be characterized by the dimension of the entities ("points", to borrow the `DMPLEX`
   terminology), from 0- to 3-dimensional.
 
-  In some cases this numbering is used directly, for example with DMStagGetDOF().
+  In some cases this numbering is used directly, for example with `DMStagGetDOF()`.
   To allow easier reading and to some extent more similar code between different-dimensional implementations
   of the same problem, we associate canonical names for each type of point, for each dimension of DMStag.
 
-  1-dimensional DMStag objects have vertices (0D) and elements (1D).
+  * 1-dimensional DMStag objects have vertices (0D) and elements (1D).
+  * 2-dimensional DMStag objects have vertices (0D), faces (1D), and elements (2D).
+  * 3-dimensional DMStag objects have vertices (0D), edges (1D), faces (2D), and elements (3D).
 
-  2-dimensional DMStag objects have vertices (0D), faces (1D), and elements (2D).
-
-  3-dimensional DMStag objects have vertices (0D), edges (1D), faces (2D), and elements (3D).
-
-  This naming is reflected when viewing a DMStag object with DMView() , and in forming
-  convenient options prefixes when creating a decomposition with DMCreateFieldDecomposition().
+  This naming is reflected when viewing a DMStag object with `DMView()`, and in forming
+  convenient options prefixes when creating a decomposition with `DMCreateFieldDecomposition()`.
 
   Level: beginner
 
