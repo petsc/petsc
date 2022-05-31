@@ -38,7 +38,7 @@ if __name__ == '__main__':
     '--with-cxx=CC',
     '--with-fc=ftn',
     'LIBS=-L{x}/gtl/lib -lmpi_gtl_hsa'.format(x=os.environ['CRAY_MPICH_ROOTDIR']),
-    #'--with-openmp=1', 'HIPFLAGS=-fopenmp', 'HIPPPFLAGS=-fopenmp' # enable if using "craype-accel-amd-gfx90a" module
+    #'--with-openmp=1', # enable if using "craype-accel-amd-gfx90a" module
     '--with-debugging=0',
     '--with-mpiexec=srun -p batch -N 1 -A csc314_crusher -t 00:10:00',
     '--with-hip',
