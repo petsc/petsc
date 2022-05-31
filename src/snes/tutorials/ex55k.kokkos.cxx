@@ -6,7 +6,6 @@
 #include <petscsnes.h>
 #include "ex55.h"
 
-using namespace Kokkos;
 using DefaultMemorySpace                 = Kokkos::DefaultExecutionSpace::memory_space;
 using ConstPetscScalarKokkosOffsetView2D = Kokkos::Experimental::OffsetView<const PetscScalar**,Kokkos::LayoutRight,DefaultMemorySpace>;
 using PetscScalarKokkosOffsetView2D      = Kokkos::Experimental::OffsetView<PetscScalar**,Kokkos::LayoutRight,DefaultMemorySpace>;
@@ -15,6 +14,9 @@ using PetscCountKokkosView           = Kokkos::View<PetscCount*,DefaultMemorySpa
 using PetscIntKokkosView             = Kokkos::View<PetscInt*,DefaultMemorySpace>;
 using PetscCountKokkosViewHost       = Kokkos::View<PetscCount*,Kokkos::HostSpace>;
 using PetscScalarKokkosView          = Kokkos::View<PetscScalar*,DefaultMemorySpace>;
+using Kokkos::Iterate;
+using Kokkos::Rank;
+using Kokkos::MDRangePolicy;
 
 KOKKOS_INLINE_FUNCTION PetscErrorCode MMSSolution1(AppCtx *user,const DMDACoor2d *c,PetscScalar *u)
 {
