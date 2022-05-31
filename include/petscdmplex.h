@@ -214,6 +214,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerExodusIISetOrder(PetscViewer, PetscInt);
 PETSC_EXTERN PetscErrorCode PetscViewerExodusIIGetOrder(PetscViewer, PetscInt *);
 
 /* Mesh Partitioning and Distribution */
+#define DMPLEX_OVERLAP_MANUAL -1
+
 PETSC_EXTERN PetscErrorCode DMPlexCreateNeighborCSR(DM, PetscInt, PetscInt *, PetscInt **, PetscInt **);
 PETSC_EXTERN PetscErrorCode DMPlexGetPartitioner(DM, PetscPartitioner *);
 PETSC_EXTERN PetscErrorCode DMPlexSetPartitioner(DM, PetscPartitioner);

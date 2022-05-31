@@ -1790,8 +1790,8 @@ PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer) {
   Collective on DM
 
   Input Parameters:
-+ dm     - The DM whose topology is to be saved
-- viewer - The PetscViewer for saving
++ dm                - The DM whose topology is to be saved
+- viewer            - The PetscViewer for saving
 
   Level: advanced
 
@@ -2113,8 +2113,8 @@ PetscErrorCode DMLoad_Plex(DM dm, PetscViewer viewer) {
   Collective on DM
 
   Input Parameters:
-+ dm     - The DM into which the topology is loaded
-- viewer - The PetscViewer for the saved topology
++ dm                - The DM into which the topology is loaded
+- viewer            - The PetscViewer for the saved topology
 
   Output Parameters:
 . globalToLocalPointSF - The PetscSF that pushes points in [0, N) to the associated points in the loaded plex, where N is the global number of points; NULL if unneeded
