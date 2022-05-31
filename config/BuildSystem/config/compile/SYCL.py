@@ -25,7 +25,7 @@ class Preprocessor(config.compile.processor.Processor):
 
 class Compiler(config.compile.processor.Processor):
   '''The SYCL compiler'''
-  def __init__(self, argDB, usePreprocessorFlags = False):
+  def __init__(self, argDB, usePreprocessorFlags = True):
     config.compile.processor.Processor.__init__(self, argDB, 'SYCLC', 'SYCLFLAGS', '.sycl.cxx', '.o')
     self.language        = 'SYCL'
     self.requiredFlags[-1]  = '-c'
