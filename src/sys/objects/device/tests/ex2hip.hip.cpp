@@ -3,14 +3,14 @@ static char help[] = "Benchmarking hipPointerGetAttributes() time\n";
   Running example on Crusher at OLCF:
     # run with 1 mpi rank (-n1), 32 CPUs (-c32), and map the process to CPU 0 and GPU 0
   $ srun -n1 -c32 --cpu-bind=map_cpu:0 --gpus-per-node=8 --gpu-bind=map_gpu:0 ./ex2hip
-    Average hipPointerGetAttributes() time = 0.10 microseconds
+    Average hipPointerGetAttributes() time = 0.24 microseconds
 */
 #include <petscsys.h>
 #include <petscdevice.h>
 
 int main(int argc,char **argv)
 {
-  PetscInt                     i,n=2000;
+  PetscInt                     i,n=4000;
   hipError_t                   cerr;
   PetscScalar                  **ptrs;
   PetscLogDouble               tstart,tend,time;
@@ -18,6 +18,7 @@ int main(int argc,char **argv)
 
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCallHIP(hipStreamSynchronize(NULL)); /* Initialize HIP runtime to get more accurate timing below */
 
   PetscCall(PetscMalloc1(n,&ptrs));
   for (i=0; i<n; i++) {
@@ -28,7 +29,7 @@ int main(int argc,char **argv)
   PetscCall(PetscTime(&tstart));
   for (i=0; i<n; i++) {
     cerr = hipPointerGetAttributes(&attr,ptrs[i]);
-    if (cerr) hipGetLastError();
+    if (cerr) cerr = hipGetLastError();
   }
   PetscCall(PetscTime(&tend));
   time = (tend-tstart)*1e6/n;

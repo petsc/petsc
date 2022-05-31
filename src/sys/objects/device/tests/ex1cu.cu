@@ -3,7 +3,7 @@ static char help[] = "Benchmarking CUDA kernel launch time\n";
   Running example on Summit at OLCF:
   # run with total 1 resource set (RS) (-n1), 1 RS per node (-r1), 1 MPI rank (-a1), 7 cores (-c7) and 1 GPU (-g1) per RS
   $ jsrun -n1 -a1 -c7 -g1 -r1  ./ex1cu
-  Average asynchronous CUDA kernel launch time = 9.48 microseconds
+  Average asynchronous CUDA kernel launch time = 4.86 microseconds
   Average synchronous  CUDA kernel launch time = 12.83 microseconds
 */
 #include <petscsys.h>
@@ -18,6 +18,7 @@ int main(int argc,char **argv)
 
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCallCUDA(cudaStreamSynchronize(NULL)); /* Initialize CUDA runtime to get more accurate timing below */
 
   /* Launch a sequence of kernels asynchronously. Previous launched kernels do not need to be completed before launching a new one */
   PetscCall(PetscTime(&tstart));

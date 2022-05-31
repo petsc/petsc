@@ -3,7 +3,7 @@ static char help[] = "Benchmarking HIP kernel launch time\n";
   Running example on Crusher at OLCF:
   # run with 1 mpi rank (-n1), 32 CPUs (-c32), and map the process to CPU 0 and GPU 0
   $ srun -n1 -c32 --cpu-bind=map_cpu:0 --gpus-per-node=8 --gpu-bind=map_gpu:0 ./ex1hip
-  Average asynchronous HIP kernel launch time = 3.74 microseconds
+  Average asynchronous HIP kernel launch time = 1.34 microseconds
   Average synchronous  HIP kernel launch time = 6.66 microseconds
 */
 #include <petscsys.h>
@@ -14,11 +14,11 @@ __global__ void NullKernel(){}
 int main(int argc,char **argv)
 {
   PetscInt       i,n=100000;
-  hipError_t     cerr;
   PetscLogDouble tstart,tend,time;
 
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCallHIP(hipStreamSynchronize(NULL)); /* Initialize HIP runtime to get more accurate timing below */
 
   /* Launch a sequence of kernels asynchronously. Previous launched kernels do not need to be completed before launching a new one */
   PetscCall(PetscTime(&tstart));
