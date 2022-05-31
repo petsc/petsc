@@ -91,7 +91,7 @@
 {
    <macOS ImageLoader in /usr/lib/dyld>
    Memcheck:Leak
-   fun:malloc
+   fun:malloc*
    ...
    fun:*ImageLoader*
    obj:/usr/lib/dyld
