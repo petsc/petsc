@@ -875,15 +875,15 @@ mswin-intel-cxx-cmplx:
 #  variables:
 #    TEST_ARCH: arch-ci-mswin-intel
 
-#mswin-opt-impi:
-#  extends:
-#    - .stage-3
-#    - .mswin_test
-#  tags:
-#    - os:win
-#  variables:
-#    TEST_ARCH: arch-ci-mswin-opt-impi
-#    DISABLE_TESTS: 1
+mswin-opt-impi:
+  extends:
+    - .stage-2
+    - .mswin_test
+  tags:
+    - win-stage2
+  variables:
+    TEST_ARCH: arch-ci-mswin-opt-impi
+    TEST_OPTS: search='ksp_ksp_tests*'
 
 opensolaris-pkgs-opt:
   extends:
