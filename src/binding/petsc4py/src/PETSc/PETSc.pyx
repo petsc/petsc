@@ -148,6 +148,7 @@ include "petscdmlabel.pxi"
 include "petscdmswarm.pxi"
 include "petscpartitioner.pxi"
 include "petscspace.pxi"
+include "petscdmutils.pxi"
 
 # --------------------------------------------------------------------
 
@@ -190,6 +191,7 @@ include "DMLabel.pyx"
 include "DMSwarm.pyx"
 include "Partitioner.pyx"
 include "Space.pyx"
+include "DMUtils.pyx"
 
 # --------------------------------------------------------------------
 
