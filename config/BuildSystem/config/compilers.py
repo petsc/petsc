@@ -887,6 +887,7 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
             skipfortranlibraries = 1
           else:
             self.logWrite(self.setCompilers.restoreLog())
+            self.setCompilers.LIBS = oldLibs
             self.logPrint('Fortran code cannot directly be linked with C linker, therefore will determine needed Fortran libraries')
             skipfortranlibraries = 0
     except RuntimeError as e:
