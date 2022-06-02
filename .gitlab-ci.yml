@@ -368,6 +368,16 @@ freebsd-c-single-opt:
   variables:
     TEST_ARCH: arch-ci-freebsd-c-single-opt
 
+mswin-opt-impi:
+  extends:
+    - .stage-2
+    - .mswin_test
+  tags:
+    - mswin-stage2
+  variables:
+    TEST_ARCH: arch-ci-mswin-opt-impi
+    TEST_OPTS: search='ksp_ksp_tests*'
+
 linux-gcc-quad-64idx-dbg:
   extends:
     - .stage-2
@@ -394,35 +404,6 @@ linux-gcc-complex-opt-32bit:
     - gce-stage2
   variables:
     TEST_ARCH: arch-ci-linux-gcc-complex-opt-32bit
-
-#do not run checkstack on MSWIN-UNI
-mswin-uni:
-  extends:
-    - .stage-3
-    - .mswin_test
-  tags:
-    - win-stage2
-  variables:
-    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
-    TEST_ARCH: arch-ci-mswin-uni
-
-mswin-gnu:
-  extends:
-    - .stage-3
-    - .mswin_test
-  tags:
-    - win-stage2
-  variables:
-    TEST_ARCH: arch-ci-mswin-gnu
-    MAKE_CFLAGS: -Werror
-    MAKE_CXXFLAGS: -Werror
-    MAKE_FFLAGS: -Werror
-    DISABLE_TESTS: 1
-  artifacts:
-    reports:
-    paths:
-    - arch-*/lib/petsc/conf/*.log
-    expire_in: 4 days
 
 #
 # The following tests run as part of stage-3.
@@ -862,9 +843,38 @@ mswin-intel-cxx-cmplx:
     - .stage-3
     - .mswin_test
   tags:
-    - os:win
+    - mswin-stage3
   variables:
     TEST_ARCH: arch-ci-mswin-intel-cxx-cmplx
+
+#do not run checkstack on MSWIN-UNI
+mswin-uni:
+  extends:
+    - .stage-3
+    - .mswin_test
+  tags:
+    - mswin-stage3
+  variables:
+    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
+    TEST_ARCH: arch-ci-mswin-uni
+
+mswin-gnu:
+  extends:
+    - .stage-3
+    - .mswin_test
+  tags:
+    - mswin-stage3
+  variables:
+    TEST_ARCH: arch-ci-mswin-gnu
+    MAKE_CFLAGS: -Werror
+    MAKE_CXXFLAGS: -Werror
+    MAKE_FFLAGS: -Werror
+    DISABLE_TESTS: 1
+  artifacts:
+    reports:
+    paths:
+    - arch-*/lib/petsc/conf/*.log
+    expire_in: 4 days
 
 #mswin-intel:
 #  extends:
@@ -874,16 +884,6 @@ mswin-intel-cxx-cmplx:
 #    - os:win
 #  variables:
 #    TEST_ARCH: arch-ci-mswin-intel
-
-#mswin-opt-impi:
-#  extends:
-#    - .stage-3
-#    - .mswin_test
-#  tags:
-#    - os:win
-#  variables:
-#    TEST_ARCH: arch-ci-mswin-opt-impi
-#    DISABLE_TESTS: 1
 
 opensolaris-pkgs-opt:
   extends:
