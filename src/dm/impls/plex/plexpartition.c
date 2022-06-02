@@ -58,14 +58,14 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_Overlap(DM dm, PetscInt heigh
   /* Determine sizes */
   for (*numVertices = 0, c = cStart; c < cEnd; ++c) {
     /* Skip non-owned cells in parallel (ParMetis expects no overlap) */
-    if (cellNum[c] < 0) continue;
+    if (cellNum[c-cStart] < 0) continue;
     (*numVertices)++;
   }
   PetscCall(PetscCalloc1(*numVertices+1, &vOffsets));
   for (c = cStart, v = 0; c < cEnd; ++c) {
     PetscInt adjSize = PETSC_DETERMINE, a, vsize = 0;
 
-    if (cellNum[c] < 0) continue;
+    if (cellNum[c-cStart] < 0) continue;
     PetscCall(DMPlexGetAdjacency(ovdm, c, &adjSize, &adj));
     for (a = 0; a < adjSize; ++a) {
       const PetscInt point = adj[a];
@@ -80,12 +80,12 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_Overlap(DM dm, PetscInt heigh
     PetscInt adjSize = PETSC_DETERMINE, a, off = vOffsets[v];
 
     /* Skip non-owned cells in parallel (ParMetis expects no overlap) */
-    if (cellNum[c] < 0) continue;
+    if (cellNum[c-cStart] < 0) continue;
     PetscCall(DMPlexGetAdjacency(ovdm, c, &adjSize, &adj));
     for (a = 0; a < adjSize; ++a) {
       const PetscInt point = adj[a];
       if (point != c && cStart <= point && point < cEnd) {
-        vAdj[off++] = DMPlex_GlobalID(cellNum[point]);
+        vAdj[off++] = DMPlex_GlobalID(cellNum[point-cStart]);
       }
     }
     PetscCheck(off == vOffsets[v+1],PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Offsets %" PetscInt_FMT " should be %" PetscInt_FMT, off, vOffsets[v+1]);
@@ -169,12 +169,12 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_Native(DM dm, PetscInt height
 
       PetscCall(DMPlexGetSupport(dm, f, &support));
       PetscCall(DMPlexGetSupportSize(dm, f, &supportSize));
-      if (supportSize == 1) adjCells[f] = DMPlex_GlobalID(cellNum[support[0]]);
+      if (supportSize == 1) adjCells[f] = DMPlex_GlobalID(cellNum[support[0]-pStart]);
       else if (supportSize == 2) {
         PetscCall(PetscFindInt(support[0], nleaves, local, &p));
-        if (p >= 0) adjCells[f] = DMPlex_GlobalID(cellNum[support[1]]);
+        if (p >= 0) adjCells[f] = DMPlex_GlobalID(cellNum[support[1]-pStart]);
         PetscCall(PetscFindInt(support[1], nleaves, local, &p));
-        if (p >= 0) adjCells[f] = DMPlex_GlobalID(cellNum[support[0]]);
+        if (p >= 0) adjCells[f] = DMPlex_GlobalID(cellNum[support[0]-pStart]);
       }
       /* Handle non-conforming meshes */
       if (supportSize > 2) {
@@ -187,12 +187,12 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_Native(DM dm, PetscInt height
           if (fStart <= child && child < fEnd) {
             PetscCall(DMPlexGetSupport(dm, child, &support));
             PetscCall(DMPlexGetSupportSize(dm, child, &supportSize));
-            if (supportSize == 1) adjCells[child] = DMPlex_GlobalID(cellNum[support[0]]);
+            if (supportSize == 1) adjCells[child] = DMPlex_GlobalID(cellNum[support[0]-pStart]);
             else if (supportSize == 2) {
               PetscCall(PetscFindInt(support[0], nleaves, local, &p));
-              if (p >= 0) adjCells[child] = DMPlex_GlobalID(cellNum[support[1]]);
+              if (p >= 0) adjCells[child] = DMPlex_GlobalID(cellNum[support[1]-pStart]);
               PetscCall(PetscFindInt(support[1], nleaves, local, &p));
-              if (p >= 0) adjCells[child] = DMPlex_GlobalID(cellNum[support[0]]);
+              if (p >= 0) adjCells[child] = DMPlex_GlobalID(cellNum[support[0]-pStart]);
             }
           }
         }
@@ -207,10 +207,10 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_Native(DM dm, PetscInt height
   /* Combine local and global adjacencies */
   for (*numVertices = 0, p = pStart; p < pEnd; p++) {
     /* Skip non-owned cells in parallel (ParMetis expects no overlap) */
-    if (nroots > 0) {if (cellNum[p] < 0) continue;}
+    if (nroots > 0) {if (cellNum[p-pStart] < 0) continue;}
     /* Add remote cells */
     if (remoteCells) {
-      const PetscInt gp = DMPlex_GlobalID(cellNum[p]);
+      const PetscInt gp = DMPlex_GlobalID(cellNum[p-pStart]);
       PetscInt       coneSize, numChildren, c, i;
       const PetscInt *cone, *children;
 
@@ -246,7 +246,7 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_Native(DM dm, PetscInt height
         PetscInt *PETSC_RESTRICT pBuf;
         PetscCall(PetscSectionAddDof(section, p, 1));
         PetscCall(PetscSegBufferGetInts(adjBuffer, 1, &pBuf));
-        *pBuf = DMPlex_GlobalID(cellNum[point]);
+        *pBuf = DMPlex_GlobalID(cellNum[point-pStart]);
       }
     }
     (*numVertices)++;
@@ -260,7 +260,7 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_Native(DM dm, PetscInt height
   PetscCall(PetscSectionGetStorageSize(section, &size));
   PetscCall(PetscMalloc1(*numVertices+1, &vOffsets));
   for (idx = 0, p = pStart; p < pEnd; p++) {
-    if (nroots > 0) {if (cellNum[p] < 0) continue;}
+    if (nroots > 0) {if (cellNum[p-pStart] < 0) continue;}
     PetscCall(PetscSectionGetOffset(section, p, &(vOffsets[idx++])));
   }
   vOffsets[*numVertices] = size;
