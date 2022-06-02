@@ -16,33 +16,25 @@
 !     We must call MPI_Init() first, making us, not PETSc, responsible
 !     for MPI
 
-      call MPI_Init(ierr)
-      if (ierr .ne. 0) then
-         print*,'Unable to initialize MPI'
-         stop
-      endif
+      PetscCallMPIA(MPI_Init(ierr))
 
 !     We can now change the communicator universe for PETSc
 
       zero = 0
       two = 2
-      call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
-      call MPI_Comm_split(MPI_COMM_WORLD,mod(rank,two),zero,PETSC_COMM_WORLD,ierr)
+      PetscCallMPIA(MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr))
+      PetscCallMPIA(MPI_Comm_split(MPI_COMM_WORLD,mod(rank,two),zero,PETSC_COMM_WORLD,ierr))
 
 !     Every PETSc routine should begin with the PetscInitialize()
 !     routine.
 
-      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      if (ierr .ne. 0) then
-        print*,'Unable to initialize PETSc'
-        stop
-      endif
+      PetscCallA(PetscInitialize(ierr))
 
 !     The following MPI calls return the number of processes being used
 !     and the rank of this process in the group.
 
-      call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr);CHKERRA(ierr)
-      call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr);CHKERRA(ierr)
+      PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD,size,ierr))
+      PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr))
 
 !     Here we would like to print only one message that represents all
 !     the processes in the group.
@@ -55,12 +47,12 @@
 !     chosen (e.g., -log_view).  See PetscFinalize() manpage for more
 !     information.
 
-      call PetscFinalize(ierr)
-      call MPI_Comm_free(PETSC_COMM_WORLD,ierr)
+      PetscCallA(PetscFinalize(ierr))
+      PetscCallMPIA(MPI_Comm_free(PETSC_COMM_WORLD,ierr))
 
 !     Since we initialized MPI, we must call MPI_Finalize()
 
-      call  MPI_Finalize(ierr)
+      PetscCallMPIA(MPI_Finalize(ierr))
       end
 
 !

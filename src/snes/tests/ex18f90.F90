@@ -95,37 +95,32 @@ end interface
   nullify(extended)
   allocate(base)
   allocate(extended)
-  call PetscInitialize(PETSC_NULL_CHARACTER, ierr)
-  if (ierr .ne. 0) then
-    print*,'Unable to initialize PETSc'
-    stop
-  endif
-  call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr);CHKERRA(ierr)
-  call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr);CHKERRA(ierr)
+  PetscCallA(PetscInitialize(ierr))
+  PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD,size,ierr))
+  PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr))
 
-  call VecCreate(PETSC_COMM_WORLD,x,ierr);CHKERRA(ierr)
+  PetscCallA(VecCreate(PETSC_COMM_WORLD,x,ierr))
 
   ! use the base class as the context
   print *
   print *, 'the base class will succeed by printing out Base printout below'
-  call SNESCreate(PETSC_COMM_WORLD,snes_base,ierr);CHKERRA(ierr)
-  call SNESSetFunction(snes_base,x,TestFunction,base,ierr);CHKERRA(ierr)
-  call SNESComputeFunction(snes_base,x,x,ierr);CHKERRA(ierr)
-  call SNESDestroy(snes_base,ierr);CHKERRA(ierr)
+  PetscCallA(SNESCreate(PETSC_COMM_WORLD,snes_base,ierr))
+  PetscCallA(SNESSetFunction(snes_base,x,TestFunction,base,ierr))
+  PetscCallA(SNESComputeFunction(snes_base,x,x,ierr))
+  PetscCallA(SNESDestroy(snes_base,ierr))
 
   ! use the extended class as the context
   print *, 'the extended class will succeed by printing out Extended printout below'
-  call SNESCreate(PETSC_COMM_WORLD,snes_extended,ierr);CHKERRA(ierr)
-  call SNESSetFunction(snes_extended,x,TestFunction,extended,ierr);CHKERRA(ierr)
-  call SNESComputeFunction(snes_extended,x,x,ierr);CHKERRA(ierr)
-  call VecDestroy(x,ierr);CHKERRA(ierr)
-  call SNESDestroy(snes_extended,ierr);CHKERRA(ierr)
+  PetscCallA(SNESCreate(PETSC_COMM_WORLD,snes_extended,ierr))
+  PetscCallA(SNESSetFunction(snes_extended,x,TestFunction,extended,ierr))
+  PetscCallA(SNESComputeFunction(snes_extended,x,x,ierr))
+  PetscCallA(VecDestroy(x,ierr))
+  PetscCallA(SNESDestroy(snes_extended,ierr))
   if (associated(base)) deallocate(base)
   if (associated(extended)) deallocate(extended)
-  call PetscFinalize(ierr)
+  PetscCallA(PetscFinalize(ierr))
 
   print *, 'End of Fortran2003 test program'
-
 end program ex18f90
 
 !/*TEST

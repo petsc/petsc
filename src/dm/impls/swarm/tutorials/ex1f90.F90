@@ -24,89 +24,84 @@
       PetscScalar, pointer :: wq(:)
       PetscErrorCode :: ierr
 
-      call PetscInitialize(PETSC_NULL_CHARACTER, ierr)
-      if (ierr .ne. 0) then
-        print*,'Unable to initialize PETSc'
-        stop
-      endif
-
-      call DMCreate(PETSC_COMM_WORLD, dm, ierr);CHKERRA(ierr)
-      call DMSetType(dm, DMPLEX, ierr);CHKERRA(ierr)
-      call DMSetFromOptions(dm, ierr);CHKERRA(ierr)
-      call DMGetDimension(dm, dim, ierr);CHKERRA(ierr)
-      call DMViewFromOptions(dm, PETSC_NULL_VEC, '-dm_view', ierr);CHKERRA(ierr)
+      PetscCallA(PetscInitialize(PETSC_NULL_CHARACTER, ierr))
+      PetscCallA(DMCreate(PETSC_COMM_WORLD, dm, ierr))
+      PetscCallA(DMSetType(dm, DMPLEX, ierr))
+      PetscCallA(DMSetFromOptions(dm, ierr))
+      PetscCallA(DMGetDimension(dm, dim, ierr))
+      PetscCallA(DMViewFromOptions(dm, PETSC_NULL_VEC, '-dm_view', ierr))
 
 !     Create finite element space
-      call PetscFECreateLagrange(PETSC_COMM_SELF, dim, Nc, PETSC_FALSE, degree, PETSC_DETERMINE, fe, ierr);CHKERRA(ierr)
-      call DMSetField(dm, field, PETSC_NULL_DMLABEL, fe, ierr);CHKERRA(ierr)
-      call DMCreateDS(dm, ierr);CHKERRA(ierr)
-      call PetscFEDestroy(fe, ierr);CHKERRA(ierr)
+      PetscCallA(PetscFECreateLagrange(PETSC_COMM_SELF, dim, Nc, PETSC_FALSE, degree, PETSC_DETERMINE, fe, ierr))
+      PetscCallA(DMSetField(dm, field, PETSC_NULL_DMLABEL, fe, ierr))
+      PetscCallA(DMCreateDS(dm, ierr))
+      PetscCallA(PetscFEDestroy(fe, ierr))
 
 !     Create particle swarm
-      call DMCreate(PETSC_COMM_WORLD, sw, ierr);CHKERRA(ierr)
-      call DMSetType(sw, DMSWARM, ierr);CHKERRA(ierr)
-      call DMSetDimension(sw, dim, ierr);CHKERRA(ierr)
-      call DMSwarmSetType(sw, DMSWARM_PIC, ierr);CHKERRA(ierr)
-      call DMSwarmSetCellDM(sw, dm, ierr);CHKERRA(ierr)
-      call DMSwarmRegisterPetscDatatypeField(sw, 'w_q', Nc, PETSC_SCALAR, ierr);CHKERRA(ierr)
-      call DMSwarmFinalizeFieldRegister(sw, ierr);CHKERRA(ierr)
-      call DMSwarmSetLocalSizes(sw, Np, zero, ierr);CHKERRA(ierr)
-      call DMSetFromOptions(sw, ierr);CHKERRA(ierr)
-      call DMSwarmGetField(sw, 'w_q', bs, dtype, wq, ierr);CHKERRA(ierr)
-      call DMSwarmGetField(sw, 'DMSwarmPIC_coor', bs, dtype, coords, ierr);CHKERRA(ierr)
+      PetscCallA(DMCreate(PETSC_COMM_WORLD, sw, ierr))
+      PetscCallA(DMSetType(sw, DMSWARM, ierr))
+      PetscCallA(DMSetDimension(sw, dim, ierr))
+      PetscCallA(DMSwarmSetType(sw, DMSWARM_PIC, ierr))
+      PetscCallA(DMSwarmSetCellDM(sw, dm, ierr))
+      PetscCallA(DMSwarmRegisterPetscDatatypeField(sw, 'w_q', Nc, PETSC_SCALAR, ierr))
+      PetscCallA(DMSwarmFinalizeFieldRegister(sw, ierr))
+      PetscCallA(DMSwarmSetLocalSizes(sw, Np, zero, ierr))
+      PetscCallA(DMSetFromOptions(sw, ierr))
+      PetscCallA(DMSwarmGetField(sw, 'w_q', bs, dtype, wq, ierr))
+      PetscCallA(DMSwarmGetField(sw, 'DMSwarmPIC_coor', bs, dtype, coords, ierr))
       do p = 1, Np
         coords(p*2-1) = -cos(dble(p)/dble(Np+1) * PETSC_PI)
         coords(p*2-0) =  sin(dble(p)/dble(Np+1) * PETSC_PI)
         wq(p)         = 1.0
       end do
-      call DMSwarmRestoreField(sw, 'DMSwarmPIC_coor', bs, dtype, coords, ierr);CHKERRA(ierr)
-      call DMSwarmRestoreField(sw, 'w_q', bs, dtype, wq, ierr);CHKERRA(ierr)
-      call DMSwarmMigrate(sw, removePoints, ierr);CHKERRA(ierr)
-      call DMViewFromOptions(sw, PETSC_NULL_VEC, '-swarm_view', ierr);CHKERRA(ierr)
+      PetscCallA(DMSwarmRestoreField(sw, 'DMSwarmPIC_coor', bs, dtype, coords, ierr))
+      PetscCallA(DMSwarmRestoreField(sw, 'w_q', bs, dtype, wq, ierr))
+      PetscCallA(DMSwarmMigrate(sw, removePoints, ierr))
+      PetscCallA(DMViewFromOptions(sw, PETSC_NULL_VEC, '-swarm_view', ierr))
 
 !     Project particles to field
 !       This gives M f = \int_\Omega \phi f, which looks like a rhs for a PDE
-      call DMCreateMassMatrix(sw, dm, M_p, ierr);CHKERRA(ierr)
-      call DMCreateGlobalVector(dm, rho, ierr);CHKERRA(ierr)
-      call DMSwarmCreateGlobalVectorFromField(sw, 'w_q', f, ierr);CHKERRA(ierr)
-      call MatMultTranspose(M_p, f, rho, ierr);CHKERRA(ierr)
+      PetscCallA(DMCreateMassMatrix(sw, dm, M_p, ierr))
+      PetscCallA(DMCreateGlobalVector(dm, rho, ierr))
+      PetscCallA(DMSwarmCreateGlobalVectorFromField(sw, 'w_q', f, ierr))
+      PetscCallA(MatMultTranspose(M_p, f, rho, ierr))
 
 !     Visualize mesh field
-      call DMSetOutputSequenceNumber(dm, timestep, time, ierr);CHKERRA(ierr)
-      call PetscObjectViewFromOptions(rho, PETSC_NULL_VEC, '-rho_view', ierr);CHKERRA(ierr)
+      PetscCallA(DMSetOutputSequenceNumber(dm, timestep, time, ierr))
+      PetscCallA(PetscObjectViewFromOptions(rho, PETSC_NULL_VEC, '-rho_view', ierr))
 
 !     Project field to particles
 !       This gives f_p = M_p^+ M f
-      call DMCreateMassMatrix(dm, dm, M, ierr);CHKERRA(ierr)
-      call DMCreateGlobalVector(dm, rhs, ierr);CHKERRA(ierr)
+      PetscCallA(DMCreateMassMatrix(dm, dm, M, ierr))
+      PetscCallA(DMCreateGlobalVector(dm, rhs, ierr))
       if (.false.) then
-         call MatMult(M, rho, rhs, ierr);CHKERRA(ierr) ! this is what you would do for and FE solve
+         PetscCallA(MatMult(M, rho, rhs, ierr)) ! this is what you would do for and FE solve
       else
-         call VecCopy(rho, rhs, ierr);CHKERRA(ierr) ! Identity: M^1 M rho
+         PetscCallA(VecCopy(rho, rhs, ierr)) ! Identity: M^1 M rho
       end if
-      call KSPCreate(PETSC_COMM_WORLD, ksp, ierr);CHKERRA(ierr)
-      call KSPSetOptionsPrefix(ksp, 'ftop_', ierr);CHKERRA(ierr)
-      call KSPSetFromOptions(ksp, ierr);CHKERRA(ierr)
-      call KSPSetOperators(ksp, M_p, M_p, ierr);CHKERRA(ierr)
-      call KSPSolveTranspose(ksp, rhs, f, ierr);CHKERRA(ierr)
-      call KSPDestroy(ksp, ierr);CHKERRA(ierr)
-      call VecDestroy(rhs, ierr);CHKERRA(ierr)
-      call MatDestroy(M_p, ierr);CHKERRA(ierr)
-      call MatDestroy(M, ierr);CHKERRA(ierr)
+      PetscCallA(KSPCreate(PETSC_COMM_WORLD, ksp, ierr))
+      PetscCallA(KSPSetOptionsPrefix(ksp, 'ftop_', ierr))
+      PetscCallA(KSPSetFromOptions(ksp, ierr))
+      PetscCallA(KSPSetOperators(ksp, M_p, M_p, ierr))
+      PetscCallA(KSPSolveTranspose(ksp, rhs, f, ierr))
+      PetscCallA(KSPDestroy(ksp, ierr))
+      PetscCallA(VecDestroy(rhs, ierr))
+      PetscCallA(MatDestroy(M_p, ierr))
+      PetscCallA(MatDestroy(M, ierr))
 
 !     Visualize particle field
-      call DMSetOutputSequenceNumber(sw, timestep, time, ierr);CHKERRA(ierr)
-      call PetscObjectViewFromOptions(f, PETSC_NULL_VEC, '-weights_view', ierr);CHKERRA(ierr)
-      call VecNorm(f,NORM_1,norm,ierr);CHKERRA(ierr)
+      PetscCallA(DMSetOutputSequenceNumber(sw, timestep, time, ierr))
+      PetscCallA(PetscObjectViewFromOptions(f, PETSC_NULL_VEC, '-weights_view', ierr))
+      PetscCallA(VecNorm(f,NORM_1,norm,ierr))
       print *, 'Total number density = ', norm
 !     Cleanup
-      call DMSwarmDestroyGlobalVectorFromField(sw, 'w_q', f, ierr);CHKERRA(ierr)
-      call MatDestroy(M_p, ierr);CHKERRA(ierr)
-      call VecDestroy(rho, ierr);CHKERRA(ierr)
-      call DMDestroy(sw, ierr);CHKERRA(ierr)
-      call DMDestroy(dm, ierr);CHKERRA(ierr)
+      PetscCallA(DMSwarmDestroyGlobalVectorFromField(sw, 'w_q', f, ierr))
+      PetscCallA(MatDestroy(M_p, ierr))
+      PetscCallA(VecDestroy(rho, ierr))
+      PetscCallA(DMDestroy(sw, ierr))
+      PetscCallA(DMDestroy(dm, ierr))
 
-      call PetscFinalize(ierr)
+      PetscCallA(PetscFinalize(ierr))
       end program DMSwarmTestProjection
 
 !/*TEST

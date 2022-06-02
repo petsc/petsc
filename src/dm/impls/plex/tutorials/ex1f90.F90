@@ -27,18 +27,14 @@
       IS, pointer :: pBcPointIS(:)
       PetscErrorCode :: ierr
 
-      call PetscInitialize(PETSC_NULL_CHARACTER, ierr)
-      if (ierr .ne. 0) then
-        print*,'Unable to initialize PETSc'
-        stop
-      endif
-      call MPI_Comm_size(PETSC_COMM_WORLD, size, ierr);CHKERRA(ierr)
+      PetscCallA(PetscInitialize(ierr))
+      PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD, size, ierr))
 !     Create a mesh
-      call DMCreate(PETSC_COMM_WORLD, dm, ierr);CHKERRA(ierr)
-      call DMSetType(dm, DMPLEX, ierr);CHKERRA(ierr)
-      call DMSetFromOptions(dm, ierr);CHKERRA(ierr)
-      call DMViewFromOptions(dm, PETSC_NULL_VEC, '-dm_view', ierr);CHKERRA(ierr)
-      call DMGetDimension(dm, dim, ierr);CHKERRA(ierr)
+      PetscCallA(DMCreate(PETSC_COMM_WORLD, dm, ierr))
+      PetscCallA(DMSetType(dm, DMPLEX, ierr))
+      PetscCallA(DMSetFromOptions(dm, ierr))
+      PetscCallA(DMViewFromOptions(dm, PETSC_NULL_VEC, '-dm_view', ierr))
+      PetscCallA(DMGetDimension(dm, dim, ierr))
 !     Create a scalar field u, a vector field v, and a surface vector field w
       numFields  = 3
       numComp(1) = 1
@@ -58,12 +54,12 @@
 !     Setup boundary conditions
       numBC = 1
 !     Test label retrieval
-      call DMGetLabel(dm, 'marker', label, ierr);CHKERRA(ierr)
-      call DMLabelGetValue(label, zero, val, ierr);CHKERRA(ierr)
+      PetscCallA(DMGetLabel(dm, 'marker', label, ierr))
+      PetscCallA(DMLabelGetValue(label, zero, val, ierr))
       if (size .eq. 1 .and. val .ne. -1) then
         SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error in library')
       endif
-      call DMLabelGetValue(label, eight, val, ierr);CHKERRA(ierr)
+      PetscCallA(DMLabelGetValue(label, eight, val, ierr))
       if (size .eq. 1 .and. val .ne. 1) then
         SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error in library')
       endif
@@ -71,38 +67,37 @@
 !       Label "marker" is made by the mesh creation routine
       bcField(1) = 0
       pBcField => bcField
-      call ISCreateStride(PETSC_COMM_WORLD, one, zero, one, bcCompIS(1), ierr);CHKERRA(ierr)
+      PetscCallA(ISCreateStride(PETSC_COMM_WORLD, one, zero, one, bcCompIS(1), ierr))
       pBcCompIS => bcCompIS
-      call DMGetStratumIS(dm, 'marker', one, bcPointIS(1),ierr);CHKERRA(ierr)
+      PetscCallA(DMGetStratumIS(dm, 'marker', one, bcPointIS(1),ierr))
       pBcPointIS => bcPointIS
 !     Create a PetscSection with this data layout
-      call DMSetNumFields(dm, numFields,ierr);CHKERRA(ierr)
-      call DMPlexCreateSection(dm,nolabel,pNumComp,pNumDof,numBC,pBcField,pBcCompIS,pBcPointIS,PETSC_NULL_IS,section,ierr)
-      CHKERRA(ierr)
-      call ISDestroy(bcCompIS(1), ierr);CHKERRA(ierr)
-      call ISDestroy(bcPointIS(1), ierr);CHKERRA(ierr)
+      PetscCallA(DMSetNumFields(dm, numFields,ierr))
+      PetscCallA(DMPlexCreateSection(dm,nolabel,pNumComp,pNumDof,numBC,pBcField,pBcCompIS,pBcPointIS,PETSC_NULL_IS,section,ierr))
+      PetscCallA(ISDestroy(bcCompIS(1), ierr))
+      PetscCallA(ISDestroy(bcPointIS(1), ierr))
 !     Name the Field variables
-      call PetscSectionSetFieldName(section, zero, 'u', ierr);CHKERRA(ierr)
-      call PetscSectionSetFieldName(section, one,  'v', ierr);CHKERRA(ierr)
-      call PetscSectionSetFieldName(section, two,  'w', ierr);CHKERRA(ierr)
+      PetscCallA(PetscSectionSetFieldName(section, zero, 'u', ierr))
+      PetscCallA(PetscSectionSetFieldName(section, one,  'v', ierr))
+      PetscCallA(PetscSectionSetFieldName(section, two,  'w', ierr))
       if (size .eq. 1) then
-        call PetscSectionView(section, PETSC_VIEWER_STDOUT_WORLD, ierr);CHKERRA(ierr)
+        PetscCallA(PetscSectionView(section, PETSC_VIEWER_STDOUT_WORLD, ierr))
       endif
 !     Tell the DM to use this data layout
-      call DMSetLocalSection(dm, section, ierr);CHKERRA(ierr)
+      PetscCallA(DMSetLocalSection(dm, section, ierr))
 !     Create a Vec with this layout and view it
-      call DMGetGlobalVector(dm, u, ierr);CHKERRA(ierr)
-      call PetscViewerCreate(PETSC_COMM_WORLD, viewer, ierr);CHKERRA(ierr)
-      call PetscViewerSetType(viewer, PETSCVIEWERVTK, ierr);CHKERRA(ierr)
-      call PetscViewerFileSetName(viewer, 'sol.vtu', ierr);CHKERRA(ierr)
-      call VecView(u, viewer, ierr);CHKERRA(ierr)
-      call PetscViewerDestroy(viewer, ierr);CHKERRA(ierr)
-      call DMRestoreGlobalVector(dm, u, ierr);CHKERRA(ierr)
+      PetscCallA(DMGetGlobalVector(dm, u, ierr))
+      PetscCallA(PetscViewerCreate(PETSC_COMM_WORLD, viewer, ierr))
+      PetscCallA(PetscViewerSetType(viewer, PETSCVIEWERVTK, ierr))
+      PetscCallA(PetscViewerFileSetName(viewer, 'sol.vtu', ierr))
+      PetscCallA(VecView(u, viewer, ierr))
+      PetscCallA(PetscViewerDestroy(viewer, ierr))
+      PetscCallA(DMRestoreGlobalVector(dm, u, ierr))
 !     Cleanup
-      call PetscSectionDestroy(section, ierr);CHKERRA(ierr)
-      call DMDestroy(dm, ierr);CHKERRA(ierr)
+      PetscCallA(PetscSectionDestroy(section, ierr))
+      PetscCallA(DMDestroy(dm, ierr))
 
-      call PetscFinalize(ierr)
+      PetscCallA(PetscFinalize(ierr))
       end program DMPlexTestField
 
 !/*TEST

@@ -60,11 +60,7 @@
       i3=3
       i7=7
 
-      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      if (ierr .ne. 0) then
-        print*,'Unable to initialize PETSc'
-        stop
-      endif
+      PetscCallA(PetscInitialize(ierr))
 
 ! Specify default dimensions of the problem
       mx = 10
@@ -73,25 +69,15 @@
 
 ! Check for any command line arguments that override defaults
 
-      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,     &
-     &                        '-mx',mx,flg,ierr)
-      CHKERRA(ierr)
-      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,     &
-     &                        '-my',my,flg,ierr)
-      CHKERRA(ierr)
+      PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-mx',mx,flg,ierr))
+      PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-my',my,flg,ierr))
 
       bmx = mx/2
       bmy = my/2
 
-      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,     &
-     &                        '-bmx',bmx,flg,ierr)
-      CHKERRA(ierr)
-      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,     &
-     &                        '-bmy',bmy,flg,ierr)
-      CHKERRA(ierr)
-      call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,    &
-     &                         '-bheight',bheight,flg,ierr)
-      CHKERRA(ierr)
+      PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-bmx',bmx,flg,ierr))
+      PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-bmy',bmy,flg,ierr))
+      PetscCallA(PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-bheight',bheight,flg,ierr))
 
 ! Calculate any derived values from parameters
       N = mx*my
@@ -104,103 +90,76 @@
 ! derives from an elliptic PDE on a two-dimensional domain.  From the
 ! distributed array, create the vectors
 
-      call DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,                    &
-     &     DM_BOUNDARY_NONE, DMDA_STENCIL_BOX,                              &
-     &     mx,my,Nx,Ny,i1,i1,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,           &
-     &     dm,ierr)
-      CHKERRA(ierr)
-      call DMSetFromOptions(dm,ierr)
-      call DMSetUp(dm,ierr)
+      PetscCallA(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE, DMDA_STENCIL_BOX,mx,my,Nx,Ny,i1,i1,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,dm,ierr))
+      PetscCallA(DMSetFromOptions(dm,ierr))
+      PetscCallA(DMSetUp(dm,ierr))
 
 ! Extract global and local vectors from DM; The local vectors are
 ! used solely as work space for the evaluation of the function,
 ! gradient, and Hessian.  Duplicate for remaining vectors that are
 ! the same types.
 
-      call DMCreateGlobalVector(dm,x,ierr)
-      CHKERRA(ierr)
-      call DMCreateLocalVector(dm,localX,ierr)
-      CHKERRA(ierr)
-      call VecDuplicate(localX,localV,ierr)
-      CHKERRA(ierr)
+      PetscCallA(DMCreateGlobalVector(dm,x,ierr))
+      PetscCallA(DMCreateLocalVector(dm,localX,ierr))
+      PetscCallA(VecDuplicate(localX,localV,ierr))
 
 ! Create a matrix data structure to store the Hessian.
 ! Here we (optionally) also associate the local numbering scheme
 ! with the matrix so that later we can use local indices for matrix
 ! assembly
 
-      call VecGetLocalSize(x,m,ierr)
-      CHKERRA(ierr)
-      call MatCreateAIJ(PETSC_COMM_WORLD,m,m,N,N,i7,PETSC_NULL_INTEGER,   &
-     &     i3,PETSC_NULL_INTEGER,H,ierr)
-      CHKERRA(ierr)
+      PetscCallA(VecGetLocalSize(x,m,ierr))
+      PetscCallA(MatCreateAIJ(PETSC_COMM_WORLD,m,m,N,N,i7,PETSC_NULL_INTEGER,i3,PETSC_NULL_INTEGER,H,ierr))
 
-      call MatSetOption(H,MAT_SYMMETRIC,PETSC_TRUE,ierr)
-      CHKERRA(ierr)
-      call DMGetLocalToGlobalMapping(dm,isltog,ierr)
-      CHKERRA(ierr)
-      call MatSetLocalToGlobalMapping(H,isltog,isltog,ierr)
-      CHKERRA(ierr)
+      PetscCallA(MatSetOption(H,MAT_SYMMETRIC,PETSC_TRUE,ierr))
+      PetscCallA(DMGetLocalToGlobalMapping(dm,isltog,ierr))
+      PetscCallA(MatSetLocalToGlobalMapping(H,isltog,isltog,ierr))
 
 ! The Tao code begins here
 ! Create TAO solver and set desired solution method.
 ! This problems uses bounded variables, so the
 ! method must either be 'tao_tron' or 'tao_blmvm'
 
-      call TaoCreate(PETSC_COMM_WORLD,tao,ierr)
-      CHKERRA(ierr)
-      call TaoSetType(tao,TAOBLMVM,ierr)
-      CHKERRA(ierr)
+      PetscCallA(TaoCreate(PETSC_COMM_WORLD,tao,ierr))
+      PetscCallA(TaoSetType(tao,TAOBLMVM,ierr))
 
 !     Set minimization function and gradient, hessian evaluation functions
 
-      call TaoSetObjectiveAndGradient(tao,PETSC_NULL_VEC,               &
-     &     FormFunctionGradient,0,ierr)
-      CHKERRA(ierr)
+      PetscCallA(TaoSetObjectiveAndGradient(tao,PETSC_NULL_VEC,FormFunctionGradient,0,ierr))
 
-      call TaoSetHessian(tao,H,H,FormHessian,                    &
-     &     0, ierr)
-      CHKERRA(ierr)
+      PetscCallA(TaoSetHessian(tao,H,H,FormHessian,0, ierr))
 
 ! Set Variable bounds
-      call MSA_BoundaryConditions(ierr)
-      CHKERRA(ierr)
-      call TaoSetVariableBoundsRoutine(tao,MSA_Plate,                   &
-     &     0,ierr)
-      CHKERRA(ierr)
+      PetscCallA(MSA_BoundaryConditions(ierr))
+      PetscCallA(TaoSetVariableBoundsRoutine(tao,MSA_Plate,0,ierr))
 
 ! Set the initial solution guess
-      call MSA_InitialPoint(x, ierr)
-      CHKERRA(ierr)
-      call TaoSetSolution(tao,x,ierr)
-      CHKERRA(ierr)
+      PetscCallA(MSA_InitialPoint(x, ierr))
+      PetscCallA(TaoSetSolution(tao,x,ierr))
 
 ! Check for any tao command line options
-      call TaoSetFromOptions(tao,ierr)
-      CHKERRA(ierr)
+      PetscCallA(TaoSetFromOptions(tao,ierr))
 
 ! Solve the application
-      call TaoSolve(tao,ierr)
-      CHKERRA(ierr)
+      PetscCallA(TaoSolve(tao,ierr))
 
 ! Free TAO data structures
-      call TaoDestroy(tao,ierr)
-      CHKERRA(ierr)
+      PetscCallA(TaoDestroy(tao,ierr))
 
 ! Free PETSc data structures
-      call VecDestroy(x,ierr)
-      call VecDestroy(Top,ierr)
-      call VecDestroy(Bottom,ierr)
-      call VecDestroy(Left,ierr)
-      call VecDestroy(Right,ierr)
-      call MatDestroy(H,ierr)
-      call VecDestroy(localX,ierr)
-      call VecDestroy(localV,ierr)
-      call DMDestroy(dm,ierr)
+      PetscCallA(VecDestroy(x,ierr))
+      PetscCallA(VecDestroy(Top,ierr))
+      PetscCallA(VecDestroy(Bottom,ierr))
+      PetscCallA(VecDestroy(Left,ierr))
+      PetscCallA(VecDestroy(Right,ierr))
+      PetscCallA(MatDestroy(H,ierr))
+      PetscCallA(VecDestroy(localX,ierr))
+      PetscCallA(VecDestroy(localV,ierr))
+      PetscCallA(DMDestroy(dm,ierr))
 
 ! Finalize TAO
 
-      call PetscFinalize(ierr)
+      PetscCallA(PetscFinalize(ierr))
 
       end
 
@@ -267,25 +226,23 @@
       rhy = real(my) + 1.0
 
 ! Get local mesh boundaries
-      call DMDAGetCorners(dm,xs,ys,PETSC_NULL_INTEGER,xm,ym,              &
-     &                  PETSC_NULL_INTEGER,ierr)
-      call DMDAGetGhostCorners(dm,gxs,gys,PETSC_NULL_INTEGER,             &
-     &                       gxm,gym,PETSC_NULL_INTEGER,ierr)
+      PetscCall(DMDAGetCorners(dm,xs,ys,PETSC_NULL_INTEGER,xm,ym,PETSC_NULL_INTEGER,ierr))
+      PetscCall(DMDAGetGhostCorners(dm,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,PETSC_NULL_INTEGER,ierr))
 
 ! Scatter ghost points to local vector
-      call DMGlobalToLocalBegin(dm,X,INSERT_VALUES,localX,ierr)
-      call DMGlobalToLocalEnd(dm,X,INSERT_VALUES,localX,ierr)
+      PetscCall(DMGlobalToLocalBegin(dm,X,INSERT_VALUES,localX,ierr))
+      PetscCall(DMGlobalToLocalEnd(dm,X,INSERT_VALUES,localX,ierr))
 
 ! Initialize the vector to zero
-      call VecSet(localV,zero,ierr)
+      PetscCall(VecSet(localV,zero,ierr))
 
 ! Get arrays to vector data (See note above about using VecGetArray in Fortran)
-      call VecGetArray(localX,x_v,x_i,ierr)
-      call VecGetArray(localV,g_v,g_i,ierr)
-      call VecGetArray(Top,top_v,top_i,ierr)
-      call VecGetArray(Bottom,bottom_v,bottom_i,ierr)
-      call VecGetArray(Left,left_v,left_i,ierr)
-      call VecGetArray(Right,right_v,right_i,ierr)
+      PetscCall(VecGetArray(localX,x_v,x_i,ierr))
+      PetscCall(VecGetArray(localV,g_v,g_i,ierr))
+      PetscCall(VecGetArray(Top,top_v,top_i,ierr))
+      PetscCall(VecGetArray(Bottom,bottom_v,bottom_i,ierr))
+      PetscCall(VecGetArray(Left,left_v,left_i,ierr))
+      PetscCall(VecGetArray(Right,right_v,right_i,ierr))
 
 ! Compute function over the locally owned part of the mesh
       do j = ys,ys+ym-1
@@ -376,26 +333,22 @@
             df5dxc = df5dxc / f5
             df6dxc = df6dxc / f6
 
-            g_v(row + g_i) = 0.5 * (df1dxc + df2dxc + df3dxc + df4dxc +  &
-     &                              df5dxc + df6dxc)
+            g_v(row + g_i) = 0.5 * (df1dxc + df2dxc + df3dxc + df4dxc + df5dxc + df6dxc)
          enddo
       enddo
 
 ! Compute triangular areas along the border of the domain.
       if (xs .eq. 0) then  ! left side
          do j=ys,ys+ym-1
-            d3 = (left_v(j-ys+1+left_i) - left_v(j-ys+2+left_i))         &
-     &                 * rhy
-            d2 = (left_v(j-ys+1+left_i) - x_v((j-gys)*gxm + x_i))        &
-     &                 * rhx
+            d3 = (left_v(j-ys+1+left_i) - left_v(j-ys+2+left_i)) * rhy
+            d2 = (left_v(j-ys+1+left_i) - x_v((j-gys)*gxm + x_i)) * rhx
             ft = ft + sqrt(1.0 + d3*d3 + d2*d2)
          enddo
       endif
 
       if (ys .eq. 0) then !bottom side
          do i=xs,xs+xm-1
-            d2 = (bottom_v(i+1-xs+bottom_i)-bottom_v(i-xs+2+bottom_i))    &
-     &                    * rhx
+            d2 = (bottom_v(i+1-xs+bottom_i)-bottom_v(i-xs+2+bottom_i)) * rhx
             d3 = (bottom_v(i-xs+1+bottom_i)-x_v(i-gxs+x_i))*rhy
             ft = ft + sqrt(1.0 + d3*d3 + d2*d2)
          enddo
@@ -430,22 +383,21 @@
       endif
 
       ft = ft * area
-      call MPI_Allreduce(ft,fcn,1,MPIU_SCALAR,                            &
-     &             MPIU_SUM,PETSC_COMM_WORLD,ierr)
+      PetscCallMPI(MPI_Allreduce(ft,fcn,1,MPIU_SCALAR,MPIU_SUM,PETSC_COMM_WORLD,ierr))
 
 ! Restore vectors
-      call VecRestoreArray(localX,x_v,x_i,ierr)
-      call VecRestoreArray(localV,g_v,g_i,ierr)
-      call VecRestoreArray(Left,left_v,left_i,ierr)
-      call VecRestoreArray(Top,top_v,top_i,ierr)
-      call VecRestoreArray(Bottom,bottom_v,bottom_i,ierr)
-      call VecRestoreArray(Right,right_v,right_i,ierr)
+      PetscCall(VecRestoreArray(localX,x_v,x_i,ierr))
+      PetscCall(VecRestoreArray(localV,g_v,g_i,ierr))
+      PetscCall(VecRestoreArray(Left,left_v,left_i,ierr))
+      PetscCall(VecRestoreArray(Top,top_v,top_i,ierr))
+      PetscCall(VecRestoreArray(Bottom,bottom_v,bottom_i,ierr))
+      PetscCall(VecRestoreArray(Right,right_v,right_i,ierr))
 
 ! Scatter values to global vector
-      call DMLocalToGlobalBegin(dm,localV,INSERT_VALUES,G,ierr)
-      call DMLocalToGlobalEnd(dm,localV,INSERT_VALUES,G,ierr)
+      PetscCall(DMLocalToGlobalBegin(dm,localV,INSERT_VALUES,G,ierr))
+      PetscCall(DMLocalToGlobalEnd(dm,localV,INSERT_VALUES,G,ierr))
 
-      call PetscLogFlops(70.0d0*xm*ym,ierr)
+      PetscCall(PetscLogFlops(70.0d0*xm*ym,ierr))
 
       return
       end  !FormFunctionGradient
@@ -513,29 +465,26 @@
       i1=1
 
 ! Set various matrix options
-      call MatSetOption(Hessian,MAT_IGNORE_OFF_PROC_ENTRIES,              &
-     &                  PETSC_TRUE,ierr)
+      PetscCall(MatSetOption(Hessian,MAT_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE,ierr))
 
 ! Get local mesh boundaries
-      call DMDAGetCorners(dm,xs,ys,PETSC_NULL_INTEGER,xm,ym,              &
-     &                  PETSC_NULL_INTEGER,ierr)
-      call DMDAGetGhostCorners(dm,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,     &
-     &                       PETSC_NULL_INTEGER,ierr)
+      PetscCall(DMDAGetCorners(dm,xs,ys,PETSC_NULL_INTEGER,xm,ym,PETSC_NULL_INTEGER,ierr))
+      PetscCall(DMDAGetGhostCorners(dm,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,PETSC_NULL_INTEGER,ierr))
 
 ! Scatter ghost points to local vectors
-      call DMGlobalToLocalBegin(dm,X,INSERT_VALUES,localX,ierr)
-      call DMGlobalToLocalEnd(dm,X,INSERT_VALUES,localX,ierr)
+      PetscCall(DMGlobalToLocalBegin(dm,X,INSERT_VALUES,localX,ierr))
+      PetscCall(DMGlobalToLocalEnd(dm,X,INSERT_VALUES,localX,ierr))
 
 ! Get pointers to vector data (see note on Fortran arrays above)
-      call VecGetArray(localX,x_v,x_i,ierr)
-      call VecGetArray(Top,top_v,top_i,ierr)
-      call VecGetArray(Bottom,bottom_v,bottom_i,ierr)
-      call VecGetArray(Left,left_v,left_i,ierr)
-      call VecGetArray(Right,right_v,right_i,ierr)
+      PetscCall(VecGetArray(localX,x_v,x_i,ierr))
+      PetscCall(VecGetArray(Top,top_v,top_i,ierr))
+      PetscCall(VecGetArray(Bottom,bottom_v,bottom_i,ierr))
+      PetscCall(VecGetArray(Left,left_v,left_i,ierr))
+      PetscCall(VecGetArray(Right,right_v,right_i,ierr))
 
 ! Initialize matrix entries to zero
-      call MatAssembled(Hessian,assembled,ierr)
-      if (assembled .eqv. PETSC_TRUE) call MatZeroEntries(Hessian,ierr)
+      PetscCall(MatAssembled(Hessian,assembled,ierr))
+      if (assembled .eqv. PETSC_TRUE) PetscCall(MatZeroEntries(Hessian,ierr))
 
       rhx = real(mx) + 1.0
       rhy = real(my) + 1.0
@@ -609,28 +558,20 @@
             f5 = sqrt(1.0 + d2*d2 + d5*d5)
             f6 = sqrt(1.0 + d4*d4 + d6*d6)
 
-            hl = (-hydhx*(1.0+d7*d7)+d1*d7)/(f1*f1*f1)+                 &
-     &              (-hydhx*(1.0+d4*d4)+d1*d4)/(f2*f2*f2)
+            hl = (-hydhx*(1.0+d7*d7)+d1*d7)/(f1*f1*f1)+(-hydhx*(1.0+d4*d4)+d1*d4)/(f2*f2*f2)
 
-            hr = (-hydhx*(1.0+d5*d5)+d2*d5)/(f5*f5*f5)+                 &
-     &            (-hydhx*(1.0+d3*d3)+d2*d3)/(f4*f4*f4)
+            hr = (-hydhx*(1.0+d5*d5)+d2*d5)/(f5*f5*f5)+(-hydhx*(1.0+d3*d3)+d2*d3)/(f4*f4*f4)
 
-            ht = (-hxdhy*(1.0+d8*d8)+d3*d8)/(f3*f3*f3)+                 &
-     &                (-hxdhy*(1.0+d2*d2)+d2*d3)/(f4*f4*f4)
+            ht = (-hxdhy*(1.0+d8*d8)+d3*d8)/(f3*f3*f3)+(-hxdhy*(1.0+d2*d2)+d2*d3)/(f4*f4*f4)
 
-            hb = (-hxdhy*(1.0+d6*d6)+d4*d6)/(f6*f6*f6)+                 &
-     &              (-hxdhy*(1.0+d1*d1)+d1*d4)/(f2*f2*f2)
+            hb = (-hxdhy*(1.0+d6*d6)+d4*d6)/(f6*f6*f6)+(-hxdhy*(1.0+d1*d1)+d1*d4)/(f2*f2*f2)
 
             hbr = -d2*d5/(f5*f5*f5) - d4*d6/(f6*f6*f6)
             htl = -d1*d7/(f1*f1*f1) - d3*d8/(f3*f3*f3)
 
-            hc = hydhx*(1.0+d7*d7)/(f1*f1*f1) +                         &
-     &              hxdhy*(1.0+d8*d8)/(f3*f3*f3) +                      &
-     &              hydhx*(1.0+d5*d5)/(f5*f5*f5) +                      &
-     &              hxdhy*(1.0+d6*d6)/(f6*f6*f6) +                      &
-     &              (hxdhy*(1.0+d1*d1)+hydhx*(1.0+d4*d4)-               &
-     &              2*d1*d4)/(f2*f2*f2) +  (hxdhy*(1.0+d2*d2)+          &
-     &              hydhx*(1.0+d3*d3)-2*d2*d3)/(f4*f4*f4)
+            hc = hydhx*(1.0+d7*d7)/(f1*f1*f1) + hxdhy*(1.0+d8*d8)/(f3*f3*f3) + hydhx*(1.0+d5*d5)/(f5*f5*f5) +                      &
+     &           hxdhy*(1.0+d6*d6)/(f6*f6*f6) + (hxdhy*(1.0+d1*d1)+hydhx*(1.0+d4*d4)- 2*d1*d4)/(f2*f2*f2) +  (hxdhy*(1.0+d2*d2)+   &
+     &           hydhx*(1.0+d3*d3)-2*d2*d3)/(f4*f4*f4)
 
             hl = hl * 0.5
             hr = hr * 0.5
@@ -683,24 +624,23 @@
             endif
 
 ! Set matrix values using local numbering, defined earlier in main routine
-            call MatSetValuesLocal(Hessian,i1,row,k,col,v,INSERT_VALUES,      &
-     &                              ierr)
+            PetscCall(MatSetValuesLocal(Hessian,i1,row,k,col,v,INSERT_VALUES,ierr))
 
          enddo
       enddo
 
 ! restore vectors
-      call VecRestoreArray(localX,x_v,x_i,ierr)
-      call VecRestoreArray(Left,left_v,left_i,ierr)
-      call VecRestoreArray(Right,right_v,right_i,ierr)
-      call VecRestoreArray(Top,top_v,top_i,ierr)
-      call VecRestoreArray(Bottom,bottom_v,bottom_i,ierr)
+      PetscCall(VecRestoreArray(localX,x_v,x_i,ierr))
+      PetscCall(VecRestoreArray(Left,left_v,left_i,ierr))
+      PetscCall(VecRestoreArray(Right,right_v,right_i,ierr))
+      PetscCall(VecRestoreArray(Top,top_v,top_i,ierr))
+      PetscCall(VecRestoreArray(Bottom,bottom_v,bottom_i,ierr))
 
 ! Assemble the matrix
-      call MatAssemblyBegin(Hessian,MAT_FINAL_ASSEMBLY,ierr)
-      call MatAssemblyEnd(Hessian,MAT_FINAL_ASSEMBLY,ierr)
+      PetscCall(MatAssemblyBegin(Hessian,MAT_FINAL_ASSEMBLY,ierr))
+      PetscCall(MatAssemblyEnd(Hessian,MAT_FINAL_ASSEMBLY,ierr))
 
-      call PetscLogFlops(199.0d0*xm*ym,ierr)
+      PetscCall(PetscLogFlops(199.0d0*xm*ym,ierr))
 
       return
       end
@@ -748,20 +688,18 @@
       two=2.0
       three=3.0
 
-      call DMDAGetCorners(dm,xs,ys,PETSC_NULL_INTEGER,xm,ym,               &
-     &                  PETSC_NULL_INTEGER,ierr)
-      call DMDAGetGhostCorners(dm,gxs,gys,PETSC_NULL_INTEGER,              &
-     &                       gxm,gym,PETSC_NULL_INTEGER,ierr)
+      PetscCall(DMDAGetCorners(dm,xs,ys,PETSC_NULL_INTEGER,xm,ym,PETSC_NULL_INTEGER,ierr))
+      PetscCall(DMDAGetGhostCorners(dm,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,PETSC_NULL_INTEGER,ierr))
 
       bsize = xm + 2
       lsize = ym + 2
       rsize = ym + 2
       tsize = xm + 2
 
-      call VecCreateMPI(PETSC_COMM_WORLD,bsize,PETSC_DECIDE,Bottom,ierr)
-      call VecCreateMPI(PETSC_COMM_WORLD,tsize,PETSC_DECIDE,Top,ierr)
-      call VecCreateMPI(PETSC_COMM_WORLD,lsize,PETSC_DECIDE,Left,ierr)
-      call VecCreateMPI(PETSC_COMM_WORLD,rsize,PETSC_DECIDE,Right,ierr)
+      PetscCall(VecCreateMPI(PETSC_COMM_WORLD,bsize,PETSC_DECIDE,Bottom,ierr))
+      PetscCall(VecCreateMPI(PETSC_COMM_WORLD,tsize,PETSC_DECIDE,Top,ierr))
+      PetscCall(VecCreateMPI(PETSC_COMM_WORLD,lsize,PETSC_DECIDE,Left,ierr))
+      PetscCall(VecCreateMPI(PETSC_COMM_WORLD,rsize,PETSC_DECIDE,Right,ierr))
 
       hx= (r-l)/(mx+1)
       hy= (t-b)/(my+1)
@@ -772,25 +710,25 @@
             yt=b
             xt=l+hx*xs
             limit=bsize
-            call VecGetArray(Bottom,boundary_v,boundary_i,ierr)
+            PetscCall(VecGetArray(Bottom,boundary_v,boundary_i,ierr))
 
          elseif (j.eq.1) then
             yt=t
             xt=l+hx*xs
             limit=tsize
-            call VecGetArray(Top,boundary_v,boundary_i,ierr)
+            PetscCall(VecGetArray(Top,boundary_v,boundary_i,ierr))
 
          elseif (j.eq.2) then
             yt=b+hy*ys
             xt=l
             limit=lsize
-            call VecGetArray(Left,boundary_v,boundary_i,ierr)
+            PetscCall(VecGetArray(Left,boundary_v,boundary_i,ierr))
 
          elseif (j.eq.3) then
             yt=b+hy*ys
             xt=r
             limit=rsize
-            call VecGetArray(Right,boundary_v,boundary_i,ierr)
+            PetscCall(VecGetArray(Right,boundary_v,boundary_i,ierr))
          endif
 
          do i=0,limit-1
@@ -828,40 +766,36 @@
          enddo
 
          if (j.eq.0) then
-            call VecRestoreArray(Bottom,boundary_v,boundary_i,ierr)
+            PetscCall(VecRestoreArray(Bottom,boundary_v,boundary_i,ierr))
          elseif (j.eq.1) then
-            call VecRestoreArray(Top,boundary_v,boundary_i,ierr)
+            PetscCall(VecRestoreArray(Top,boundary_v,boundary_i,ierr))
          elseif (j.eq.2) then
-            call VecRestoreArray(Left,boundary_v,boundary_i,ierr)
+            PetscCall(VecRestoreArray(Left,boundary_v,boundary_i,ierr))
          elseif (j.eq.3) then
-            call VecRestoreArray(Right,boundary_v,boundary_i,ierr)
+            PetscCall(VecRestoreArray(Right,boundary_v,boundary_i,ierr))
          endif
 
       enddo
 
 ! Scale the boundary if desired
-      call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,          &
-     &                         '-bottom',scl,flg,ierr)
+      PetscCall(PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-bottom',scl,flg,ierr))
       if (flg .eqv. PETSC_TRUE) then
-         call VecScale(Bottom,scl,ierr)
+         PetscCall(VecScale(Bottom,scl,ierr))
       endif
 
-      call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,          &
-     &                         '-top',scl,flg,ierr)
+      PetscCall(PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-top',scl,flg,ierr))
       if (flg .eqv. PETSC_TRUE) then
-         call VecScale(Top,scl,ierr)
+         PetscCall(VecScale(Top,scl,ierr))
       endif
 
-      call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,          &
-     &                         '-right',scl,flg,ierr)
+      PetscCall(PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-right',scl,flg,ierr))
       if (flg .eqv. PETSC_TRUE) then
-         call VecScale(Right,scl,ierr)
+         PetscCall(VecScale(Right,scl,ierr))
       endif
 
-      call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,          &
-     &                         '-left',scl,flg,ierr)
+      PetscCall(PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-left',scl,flg,ierr))
       if (flg .eqv. PETSC_TRUE) then
-         call VecScale(Left,scl,ierr)
+         PetscCall(VecScale(Left,scl,ierr))
       endif
 
       return
@@ -906,13 +840,12 @@
       if (bmx .lt. 0) bmx = 0
       if (bmx .gt. mx) bmx = mx
 
-      call DMDAGetCorners(dm,xs,ys,PETSC_NULL_INTEGER,xm,ym,               &
-     &             PETSC_NULL_INTEGER,ierr)
+      PetscCall(DMDAGetCorners(dm,xs,ys,PETSC_NULL_INTEGER,xm,ym,PETSC_NULL_INTEGER,ierr))
 
-      call VecSet(xl,lb,ierr)
-      call VecSet(xu,ub,ierr)
+      PetscCall(VecSet(xl,lb,ierr))
+      PetscCall(VecSet(xu,ub,ierr))
 
-      call VecGetArray(xl,xl_v,xl_i,ierr)
+      PetscCall(VecGetArray(xl,xl_v,xl_i,ierr))
 
       do i=xs,xs+xm-1
 
@@ -929,7 +862,7 @@
          enddo
       enddo
 
-      call VecRestoreArray(xl,xl_v,xl_i,ierr)
+      PetscCall(VecRestoreArray(xl,xl_v,xl_i,ierr))
 
       return
       end
@@ -972,58 +905,53 @@
       zero = 0.0
       np5 = -0.5
 
-      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,        &
-     &                        '-start', start,flg,ierr)
+      PetscCall(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-start', start,flg,ierr))
 
       if ((flg .eqv. PETSC_TRUE) .and. (start .eq. 0)) then  ! the zero vector is reasonable
-         call VecSet(X,zero,ierr)
+         PetscCall(VecSet(X,zero,ierr))
 
       elseif ((flg .eqv. PETSC_TRUE) .and. (start .gt. 0)) then  ! random start -0.5 < xi < 0.5
-         call PetscRandomCreate(PETSC_COMM_WORLD,rctx,ierr)
+         PetscCall(PetscRandomCreate(PETSC_COMM_WORLD,rctx,ierr))
          do i=0,start-1
-            call VecSetRandom(X,rctx,ierr)
+            PetscCall(VecSetRandom(X,rctx,ierr))
          enddo
 
-         call PetscRandomDestroy(rctx,ierr)
-         call VecShift(X,np5,ierr)
+         PetscCall(PetscRandomDestroy(rctx,ierr))
+         PetscCall(VecShift(X,np5,ierr))
 
       else   ! average of boundary conditions
 
 !        Get Local mesh boundaries
-         call DMDAGetCorners(dm,xs,ys,PETSC_NULL_INTEGER,xm,ym,             &
-     &                     PETSC_NULL_INTEGER,ierr)
-         call DMDAGetGhostCorners(dm,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,    &
-     &                     PETSC_NULL_INTEGER,ierr)
+         PetscCall(DMDAGetCorners(dm,xs,ys,PETSC_NULL_INTEGER,xm,ym,PETSC_NULL_INTEGER,ierr))
+         PetscCall(DMDAGetGhostCorners(dm,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,PETSC_NULL_INTEGER,ierr))
 
 !        Get pointers to vector data
-         call VecGetArray(Top,top_v,top_i,ierr)
-         call VecGetArray(Bottom,bottom_v,bottom_i,ierr)
-         call VecGetArray(Left,left_v,left_i,ierr)
-         call VecGetArray(Right,right_v,right_i,ierr)
+         PetscCall(VecGetArray(Top,top_v,top_i,ierr))
+         PetscCall(VecGetArray(Bottom,bottom_v,bottom_i,ierr))
+         PetscCall(VecGetArray(Left,left_v,left_i,ierr))
+         PetscCall(VecGetArray(Right,right_v,right_i,ierr))
 
-         call VecGetArray(localX,x_v,x_i,ierr)
+         PetscCall(VecGetArray(localX,x_v,x_i,ierr))
 
 !        Perform local computations
          do  j=ys,ys+ym-1
             do i=xs,xs+xm-1
                row = (j-gys)*gxm  + (i-gxs)
-               x_v(x_i + row) = ((j+1)*bottom_v(bottom_i +i-xs+1)/my        &
-     &             + (my-j+1)*top_v(top_i+i-xs+1)/(my+2) +                  &
-     &              (i+1)*left_v(left_i+j-ys+1)/mx       +                  &
-     &              (mx-i+1)*right_v(right_i+j-ys+1)/(mx+2))*0.5
+               x_v(x_i + row) = ((j+1)*bottom_v(bottom_i +i-xs+1)/my + (my-j+1)*top_v(top_i+i-xs+1)/(my+2) +                  &
+     &                          (i+1)*left_v(left_i+j-ys+1)/mx + (mx-i+1)*right_v(right_i+j-ys+1)/(mx+2))*0.5
             enddo
          enddo
 
 !        Restore vectors
-         call VecRestoreArray(localX,x_v,x_i,ierr)
+         PetscCall(VecRestoreArray(localX,x_v,x_i,ierr))
 
-         call VecRestoreArray(Left,left_v,left_i,ierr)
-         call VecRestoreArray(Top,top_v,top_i,ierr)
-         call VecRestoreArray(Bottom,bottom_v,bottom_i,ierr)
-         call VecRestoreArray(Right,right_v,right_i,ierr)
+         PetscCall(VecRestoreArray(Left,left_v,left_i,ierr))
+         PetscCall(VecRestoreArray(Top,top_v,top_i,ierr))
+         PetscCall(VecRestoreArray(Bottom,bottom_v,bottom_i,ierr))
+         PetscCall(VecRestoreArray(Right,right_v,right_i,ierr))
 
-         call DMLocalToGlobalBegin(dm,localX,INSERT_VALUES,X,ierr)
-         call DMLocalToGlobalEnd(dm,localX,INSERT_VALUES,X,ierr)
+         PetscCall(DMLocalToGlobalBegin(dm,localX,INSERT_VALUES,X,ierr))
+         PetscCall(DMLocalToGlobalEnd(dm,localX,INSERT_VALUES,X,ierr))
 
       endif
 

@@ -7,32 +7,21 @@ program main
 
       implicit none
       PetscErrorCode :: ierr
-      PetscMPIInt  ::  myRank,mySize
+      PetscMPIInt  ::  rank,size
       character(len=80) :: outputString
 
       ! Every PETSc routine should begin with the PetscInitialize() routine.
 
-      call PetscOptionsSetValue(PETSC_NULL_OPTIONS,"-no_signal_handler","true",ierr)
-      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      if (ierr/=0) then
-        write(6,*) 'Unable to initialize PETSc'
-        stop
-      endif
-
-      ! Since when PetscInitialize() returns with an error the PETSc data structures
-      ! may not be set up hence we cannot call CHKERRA() hence directly return the error code.
-
-      ! Since PetscOptionsSetValue() is called before the PetscInitialize() we cannot call
-      ! CHKERRA() on the error code and just return it directly.
+      PetscCallA(PetscOptionsSetValue(PETSC_NULL_OPTIONS,"-no_signal_handler","true",ierr))
+      PetscCallA(PetscInitialize(ierr))
 
       ! We can now change the communicator universe for PETSc
 
-      call MPI_Comm_size(MPI_COMM_WORLD,mySize,ierr); CHKERRA(ierr)
-      call MPI_Comm_rank(MPI_COMM_WORLD,myRank,ierr); CHKERRA(ierr)
-      write(outputString,*) 'Number of processors =',mySize,'rank =',myRank,'\n'
-      call PetscPrintf(PETSC_COMM_WORLD,outputString,ierr); CHKERRA(ierr)
-      call PetscFinalize(ierr)
-
+      PetscCallMPIA(MPI_Comm_size(MPI_COMM_WORLD,size,ierr))
+      PetscCallMPIA(MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr))
+      write(outputString,*) 'Number of processors =',size,'rank =',rank,'\n'
+      PetscCallA(PetscPrintf(PETSC_COMM_WORLD,outputString,ierr))
+      PetscCallA(PetscFinalize(ierr))
 end program main
 
 !/*TEST

@@ -27,13 +27,9 @@
       nlocal = 6
       nghost = 2
 
-      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      if (ierr /= 0) then
-        print*,'PetscInitialize failed'
-        stop
-      endif
-      call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
-      call MPI_Comm_size(PETSC_COMM_WORLD,mySize,ierr)
+      PetscCallA(PetscInitialize(ierr))
+      PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr))
+      PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD,mySize,ierr))
 
       if (mySize /= 2) then; SETERRA(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,'Requires 2 processors'); endif
 
@@ -69,50 +65,47 @@
 !     the local vector (lx) and the global vector (gx) share the same
 !     array for storing vector values.
 
-      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,   &
-     &                         '-allocate',flag,ierr)
+      PetscCallA(PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-allocate',flag,ierr))
       if (flag) then
-        call VecCreateGhostWithArray(PETSC_COMM_WORLD,nlocal,            &
-     &        PETSC_DECIDE,nghost,ifrom,tarray,gxs,ierr)
+        PetscCallA(VecCreateGhostWithArray(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,nghost,ifrom,tarray,gxs,ierr))
       else
-        call VecCreateGhost(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,        &
-     &       nghost,ifrom,gxs,ierr)
+        PetscCallA(VecCreateGhost(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,nghost,ifrom,gxs,ierr))
       endif
 
 !      Test VecDuplicate
 
-       call VecDuplicate(gxs,gx,ierr)
-       call VecDestroy(gxs,ierr)
+       PetscCallA(VecDuplicate(gxs,gx,ierr))
+       PetscCallA(VecDestroy(gxs,ierr))
 
 !      Access the local Form
 
-       call VecGhostGetLocalForm(gx,lx,ierr)
+       PetscCallA(VecGhostGetLocalForm(gx,lx,ierr))
 
 !     Set the values from 0 to 12 into the 'global' vector
 
-       call VecGetOwnershipRange(gx,rstart,rend,ierr)
+       PetscCallA(VecGetOwnershipRange(gx,rstart,rend,ierr))
 
        ione = 1
        do 10, i=rstart,rend-1
          value = real(i)
-         call VecSetValues(gx,ione,i,value,INSERT_VALUES,ierr)
+         PetscCallA(VecSetValues(gx,ione,i,value,INSERT_VALUES,ierr))
  10    continue
 
-       call VecAssemblyBegin(gx,ierr)
-       call VecAssemblyEnd(gx,ierr)
+       PetscCallA(VecAssemblyBegin(gx,ierr))
+       PetscCallA(VecAssemblyEnd(gx,ierr))
 
-       call VecGhostUpdateBegin(gx,INSERT_VALUES,SCATTER_FORWARD,ierr)
-       call VecGhostUpdateEnd(gx,INSERT_VALUES,SCATTER_FORWARD,ierr)
+       PetscCallA(VecGhostUpdateBegin(gx,INSERT_VALUES,SCATTER_FORWARD,ierr))
+       PetscCallA(VecGhostUpdateEnd(gx,INSERT_VALUES,SCATTER_FORWARD,ierr))
 
 !     Print out each vector, including the ghost padding region.
 
-       call PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,subviewer,ierr)
-       call VecView(lx,subviewer,ierr)
-       call PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,subviewer,ierr)
+       PetscCallA(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,subviewer,ierr))
+       PetscCallA(VecView(lx,subviewer,ierr))
+       PetscCallA(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,subviewer,ierr))
 
-       call VecGhostRestoreLocalForm(gx,lx,ierr)
-       call VecDestroy(gx,ierr)
-       call PetscFinalize(ierr)
+       PetscCallA(VecGhostRestoreLocalForm(gx,lx,ierr))
+       PetscCallA(VecDestroy(gx,ierr))
+       PetscCallA(PetscFinalize(ierr))
        end
 
 !/*TEST

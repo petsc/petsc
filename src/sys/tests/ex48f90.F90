@@ -9,18 +9,14 @@
       PetscBool                                 :: flg
       PetscInt                                  :: n
 
-      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      if (ierr .ne. 0) then
-        print*,'Unable to initialize PETSc'
-        stop
-      endif
-      call PetscOptionsGetString(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-f',filename,flg,ierr);CHKERRA(ierr)
+      PetscCallA(PetscInitialize(ierr))
+      PetscCallA(PetscOptionsGetString(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-f',filename,flg,ierr))
       if (flg) then
-         call PetscOptionsInsertFileYAML(PETSC_COMM_WORLD,PETSC_NULL_OPTIONS,filename,PETSC_TRUE,ierr);CHKERRA(ierr)
+         PetscCallA(PetscOptionsInsertFileYAML(PETSC_COMM_WORLD,PETSC_NULL_OPTIONS,filename,PETSC_TRUE,ierr))
       end if
-      call PetscOptionsView(PETSC_NULL_OPTIONS,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)
-      call PetscOptionsAllUsed(PETSC_NULL_OPTIONS,n,ierr);CHKERRA(ierr);
-      Call PetscFinalize(ierr)
+      PetscCallA(PetscOptionsView(PETSC_NULL_OPTIONS,PETSC_VIEWER_STDOUT_WORLD,ierr))
+      PetscCallA(PetscOptionsAllUsed(PETSC_NULL_OPTIONS,n,ierr));
+      PetscCallA(PetscFinalize(ierr))
       end program ex10f90
 
 !

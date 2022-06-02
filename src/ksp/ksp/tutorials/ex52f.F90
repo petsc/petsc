@@ -31,33 +31,29 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      if (ierr .ne. 0) then
-        print*,'Unable to initialize PETSc'
-        stop
-      endif
+      PetscCallA(PetscInitialize(ierr))
       one     = 1.0
       neg_one = -1.0
       i1      = 1
       m       = 8
       n       = 7
       five    = 5
-      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-m',m,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
-      call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
+      PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-m',m,flg,ierr))
+      PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-n',n,flg,ierr))
+      PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr))
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !      Compute the matrix and right-hand-side vector that define
 !      the linear system, Ax = b.
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      call MatCreate(PETSC_COMM_WORLD,A,ierr)
-      call MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,ierr)
-      call MatSetType(A, MATAIJ,ierr)
-      call MatSetFromOptions(A,ierr)
-      call MatMPIAIJSetPreallocation(A,five,PETSC_NULL_INTEGER,five,PETSC_NULL_INTEGER,ierr)
-      call MatSeqAIJSetPreallocation(A,five,PETSC_NULL_INTEGER,ierr)
+      PetscCallA(MatCreate(PETSC_COMM_WORLD,A,ierr))
+      PetscCallA(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,ierr))
+      PetscCallA(MatSetType(A, MATAIJ,ierr))
+      PetscCallA(MatSetFromOptions(A,ierr))
+      PetscCallA(MatMPIAIJSetPreallocation(A,five,PETSC_NULL_INTEGER,five,PETSC_NULL_INTEGER,ierr))
+      PetscCallA(MatSeqAIJSetPreallocation(A,five,PETSC_NULL_INTEGER,ierr))
 
-      call MatGetOwnershipRange(A,Istart,Iend,ierr)
+      PetscCallA(MatGetOwnershipRange(A,Istart,Iend,ierr))
 
 !  Set matrix elements for the 2-D, five-point stencil in parallel.
 !   - Each processor needs to insert only elements that it owns
@@ -72,84 +68,84 @@
         j = II - i*n
         if (i.gt.0) then
           JJ = II - n
-          call MatSetValues(A,i1,II,i1,JJ,v,ADD_VALUES,ierr)
+          PetscCallA(MatSetValues(A,i1,II,i1,JJ,v,ADD_VALUES,ierr))
         endif
         if (i.lt.m-1) then
           JJ = II + n
-          call MatSetValues(A,i1,II,i1,JJ,v,ADD_VALUES,ierr)
+          PetscCallA(MatSetValues(A,i1,II,i1,JJ,v,ADD_VALUES,ierr))
         endif
         if (j.gt.0) then
           JJ = II - 1
-          call MatSetValues(A,i1,II,i1,JJ,v,ADD_VALUES,ierr)
+          PetscCallA(MatSetValues(A,i1,II,i1,JJ,v,ADD_VALUES,ierr))
         endif
         if (j.lt.n-1) then
           JJ = II + 1
-          call MatSetValues(A,i1,II,i1,JJ,v,ADD_VALUES,ierr)
+          PetscCallA(MatSetValues(A,i1,II,i1,JJ,v,ADD_VALUES,ierr))
         endif
         v = 4.0
-        call  MatSetValues(A,i1,II,i1,II,v,ADD_VALUES,ierr)
+        PetscCallA( MatSetValues(A,i1,II,i1,II,v,ADD_VALUES,ierr))
  10   continue
 
 !  Assemble matrix, using the 2-step process:
-      call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
-      call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
+      PetscCallA(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr))
+      PetscCallA(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr))
 
 !  Create parallel vectors.
-      call VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,u,ierr)
-      call VecDuplicate(u,b,ierr)
-      call VecDuplicate(b,x,ierr)
+      PetscCallA(VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,u,ierr))
+      PetscCallA(VecDuplicate(u,b,ierr))
+      PetscCallA(VecDuplicate(b,x,ierr))
 
 !  Set exact solution; then compute right-hand-side vector.
-      call VecSet(u,one,ierr)
-      call MatMult(A,u,b,ierr)
+      PetscCallA(VecSet(u,one,ierr))
+      PetscCallA(MatMult(A,u,b,ierr))
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !         Create the linear solver and set various options
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      call KSPCreate(PETSC_COMM_WORLD,ksp,ierr)
-      call KSPSetOperators(ksp,A,A,ierr)
+      PetscCallA(KSPCreate(PETSC_COMM_WORLD,ksp,ierr))
+      PetscCallA(KSPSetOperators(ksp,A,A,ierr))
       tol = 1.e-7
-      call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_REAL,PETSC_DEFAULT_REAL,PETSC_DEFAULT_INTEGER,ierr)
+      PetscCallA(KSPSetTolerances(ksp,tol,PETSC_DEFAULT_REAL,PETSC_DEFAULT_REAL,PETSC_DEFAULT_INTEGER,ierr))
 
 !  Test MUMPS
 #if defined(PETSC_HAVE_MUMPS)
-      call KSPSetType(ksp,KSPPREONLY,ierr)
-      call KSPGetPC(ksp,pc,ierr)
-      call PCSetType(pc,PCLU,ierr)
-      call PCFactorSetMatSolverType(pc,MATSOLVERMUMPS,ierr)
-      call PCFactorSetUpMatSolverType(pc,ierr)
-      call PCFactorGetMatrix(pc,F,ierr)
+      PetscCallA(KSPSetType(ksp,KSPPREONLY,ierr))
+      PetscCallA(KSPGetPC(ksp,pc,ierr))
+      PetscCallA(PCSetType(pc,PCLU,ierr))
+      PetscCallA(PCFactorSetMatSolverType(pc,MATSOLVERMUMPS,ierr))
+      PetscCallA(PCFactorSetUpMatSolverType(pc,ierr))
+      PetscCallA(PCFactorGetMatrix(pc,F,ierr))
 
 !     sequential ordering
       icntl = 7
       ival  = 2
-      call MatMumpsSetIcntl(F,icntl,ival,ierr)
+      PetscCallA(MatMumpsSetIcntl(F,icntl,ival,ierr))
 
 !     threshold for row pivot detection
       icntl = 24
       ival  = 1
-      call MatMumpsSetIcntl(F,icntl,ival,ierr)
+      PetscCallA(MatMumpsSetIcntl(F,icntl,ival,ierr))
       icntl = 3
       val = 1.e-6
-      call MatMumpsSetCntl(F,icntl,val,ierr)
+      PetscCallA(MatMumpsSetCntl(F,icntl,val,ierr))
 
 !     compute determinant of A
       icntl = 33
       ival  = 1
-      call MatMumpsSetIcntl(F,icntl,ival,ierr)
+      PetscCallA(MatMumpsSetIcntl(F,icntl,ival,ierr))
 #endif
 
-      call KSPSetFromOptions(ksp,ierr)
-      call KSPSetUp(ksp,ierr)
+      PetscCallA(KSPSetFromOptions(ksp,ierr))
+      PetscCallA(KSPSetUp(ksp,ierr))
 #if defined(PETSC_HAVE_MUMPS)
       icntl = 3;
-      call MatMumpsGetCntl(F,icntl,cntl,ierr)
+      PetscCallA(MatMumpsGetCntl(F,icntl,cntl,ierr))
       icntl = 34
-      call MatMumpsGetInfog(F,icntl,infog34,ierr)
+      PetscCallA(MatMumpsGetInfog(F,icntl,infog34,ierr))
       icntl = 12
-      call MatMumpsGetRinfog(F,icntl,rinfo12,ierr)
+      PetscCallA(MatMumpsGetRinfog(F,icntl,rinfo12,ierr))
       icntl = 13
-      call MatMumpsGetRinfog(F,icntl,rinfo13,ierr)
+      PetscCallA(MatMumpsGetRinfog(F,icntl,rinfo13,ierr))
       if (rank .eq. 0) then
          write(6,98) cntl
          write(6,99) rinfo12,rinfo13,infog34
@@ -161,14 +157,14 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                      Solve the linear system
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      call KSPSolve(ksp,b,x,ierr)
+      PetscCallA(KSPSolve(ksp,b,x,ierr))
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                     Check solution and clean up
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      call VecAXPY(x,neg_one,u,ierr)
-      call VecNorm(x,NORM_2,norm,ierr)
-      call KSPGetIterationNumber(ksp,its,ierr)
+      PetscCallA(VecAXPY(x,neg_one,u,ierr))
+      PetscCallA(VecNorm(x,NORM_2,norm,ierr))
+      PetscCallA(KSPGetIterationNumber(ksp,its,ierr))
 
       if (rank .eq. 0) then
         if (norm .gt. 1.e-12) then
@@ -183,14 +179,14 @@
 !  Free work space.  All PETSc objects should be destroyed when they
 !  are no longer needed.
 
-      call KSPDestroy(ksp,ierr)
-      call VecDestroy(u,ierr)
-      call VecDestroy(x,ierr)
-      call VecDestroy(b,ierr)
-      call MatDestroy(A,ierr)
+      PetscCallA(KSPDestroy(ksp,ierr))
+      PetscCallA(VecDestroy(u,ierr))
+      PetscCallA(VecDestroy(x,ierr))
+      PetscCallA(VecDestroy(b,ierr))
+      PetscCallA(MatDestroy(A,ierr))
 
 !  Always call PetscFinalize() before exiting a program.
-      call PetscFinalize(ierr)
+      PetscCallA(PetscFinalize(ierr))
       end
 
 !

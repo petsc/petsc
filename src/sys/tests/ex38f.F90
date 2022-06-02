@@ -9,14 +9,10 @@
 
        PetscErrorCode  ierr
        PetscInt f(1)
-       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-       if (ierr .ne. 0) then
-         print*, 'Unable to begin PETSc program'
-       endif
-
+       PetscCallA(PetscInitialize(ierr))
        f(1) = 1
-       call MPI_Allreduce(MPI_IN_PLACE,f,1,MPIU_INTEGER,MPI_MIN,PETSC_COMM_WORLD,ierr)
-       call PetscFinalize(ierr)
+       PetscCallMPIA(MPI_Allreduce(MPI_IN_PLACE,f,1,MPIU_INTEGER,MPI_MIN,PETSC_COMM_WORLD,ierr))
+       PetscCallA(PetscFinalize(ierr))
        end
 
 !/*TEST

@@ -177,7 +177,7 @@
 #else
 #define CHKERRQ(ierr) if (ierr .ne. 0) then;call PetscErrorF(ierr);return;endif
 #define CHKERRA(ierr) if (ierr .ne. 0) then;call PetscErrorF(ierr);call MPIU_Abort(PETSC_COMM_SELF,ierr);endif
-#define CHKERRMPI(ierr) if (ierr .ne. 0) then;call PetscErrorMPI(ierr,);return;endif
+#define CHKERRMPI(ierr) if (ierr .ne. 0) then;call PetscErrorMPI(ierr);return;endif
 #define CHKERRMPIA(ierr) if (ierr .ne. 0) then;call PetscErrorMPI(ierr);call MPIU_Abort(PETSC_COMM_SELF,ierr);endif
 #endif
 #define CHKMEMQ call chkmemfortran(__LINE__,__FILE__,ierr)

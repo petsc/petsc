@@ -49,37 +49,32 @@
       pJ => J
       pinvJ => invJ
 
-      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      if (ierr .ne. 0) then
-        print*,'Unable to initialize PETSc'
-        stop
-      endif
+      PetscCallA(PetscInitialize(ierr))
+      PetscCallA(DMPlexCreate(PETSC_COMM_WORLD, dm, ierr))
+      PetscCallA(PetscObjectSetName(dm, 'testplex', ierr))
+      PetscCallA(DMSetDimension(dm, dim, ierr))
 
-      call DMPlexCreate(PETSC_COMM_WORLD, dm, ierr);CHKERRA(ierr)
-      call PetscObjectSetName(dm, 'testplex', ierr);CHKERRA(ierr)
-      call DMSetDimension(dm, dim, ierr);CHKERRA(ierr)
+      PetscCallA(DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones,coneOrientations, vertexCoords, ierr))
 
-      call DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones,coneOrientations, vertexCoords, ierr);CHKERRA(ierr)
-
-      call DMPlexInterpolate(dm, dmi, ierr);CHKERRA(ierr)
-      call DMPlexCopyCoordinates(dm, dmi, ierr);CHKERRA(ierr)
-      call DMDestroy(dm, ierr);CHKERRA(ierr)
+      PetscCallA(DMPlexInterpolate(dm, dmi, ierr))
+      PetscCallA(DMPlexCopyCoordinates(dm, dmi, ierr))
+      PetscCallA(DMDestroy(dm, ierr))
       dm = dmi
 
-      call DMView(dm, PETSC_VIEWER_STDOUT_WORLD, ierr);CHKERRA(ierr)
+      PetscCallA(DMView(dm, PETSC_VIEWER_STDOUT_WORLD, ierr))
 
       do i = 0, 1
-        call DMPlexComputeCellGeometryFVM(dm, i, vol, pcentroid, pnormal, ierr);CHKERRA(ierr)
+        PetscCallA(DMPlexComputeCellGeometryFVM(dm, i, vol, pcentroid, pnormal, ierr))
         write(*, '(a, i2, a, f8.4, a, 3(f8.4, 1x))') 'cell: ', i, ' volume: ', vol, ' centroid: ',pcentroid(1), pcentroid(2), pcentroid(3)
-        call DMPlexComputeCellGeometryAffineFEM(dm, i, pv0, pJ, pinvJ,detJ, ierr);CHKERRA(ierr)
+        PetscCallA(DMPlexComputeCellGeometryAffineFEM(dm, i, pv0, pJ, pinvJ,detJ, ierr))
       end do
 
-      call PetscFVCreate(PETSC_COMM_WORLD, fvm, ierr);CHKERRA(ierr)
-      call PetscFVSetUp(fvm, ierr);CHKERRA(ierr)
-      call PetscFVDestroy(fvm, ierr);CHKERRA(ierr)
+      PetscCallA(PetscFVCreate(PETSC_COMM_WORLD, fvm, ierr))
+      PetscCallA(PetscFVSetUp(fvm, ierr))
+      PetscCallA(PetscFVDestroy(fvm, ierr))
 
-      call DMDestroy(dm, ierr);CHKERRA(ierr)
-      call PetscFinalize(ierr)
+      PetscCallA(DMDestroy(dm, ierr))
+      PetscCallA(PetscFinalize(ierr))
       end program main
 
 !/*TEST

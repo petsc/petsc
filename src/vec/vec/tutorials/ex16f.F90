@@ -12,28 +12,23 @@ implicit none
   PetscScalar  ::  myValue
   PetscBool :: flg
 
-  call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+  PetscCallA(PetscInitialize(ierr))
 
-  if (ierr /= 0) then
-    print*,'PetscInitialize failed'
-    stop
-  endif
-
-  call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-n",n,flg,ierr);CHKERRA(ierr)
+  PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-n",n,flg,ierr))
 
   !Create multi-component vector with 2 components
-  call VecCreate(PETSC_COMM_WORLD,v,ierr);CHKERRA(ierr)
-  call VecSetSizes(v,PETSC_DECIDE,n,ierr);CHKERRA(ierr)
-  call VecSetBlockSize(v,four,ierr);CHKERRA(ierr)
-  call VecSetFromOptions(v,ierr);CHKERRA(ierr)
+  PetscCallA(VecCreate(PETSC_COMM_WORLD,v,ierr))
+  PetscCallA(VecSetSizes(v,PETSC_DECIDE,n,ierr))
+  PetscCallA(VecSetBlockSize(v,four,ierr))
+  PetscCallA(VecSetFromOptions(v,ierr))
 
   ! Create double-component vectors
 
-  call VecCreate(PETSC_COMM_WORLD,s,ierr);CHKERRA(ierr)
-  call VecSetSizes(s,PETSC_DECIDE,n/two,ierr);CHKERRA(ierr)
-  call VecSetBlockSize(s,two,ierr);CHKERRA(ierr)
-  call VecSetFromOptions(s,ierr);CHKERRA(ierr)
-  call VecDuplicate(s,r,ierr);CHKERRA(ierr)
+  PetscCallA(VecCreate(PETSC_COMM_WORLD,s,ierr))
+  PetscCallA(VecSetSizes(s,PETSC_DECIDE,n/two,ierr))
+  PetscCallA(VecSetBlockSize(s,two,ierr))
+  PetscCallA(VecSetFromOptions(s,ierr))
+  PetscCallA(VecDuplicate(s,r,ierr))
   allocate(vecs(0:2))
 
   vecs(0) = s
@@ -41,30 +36,30 @@ implicit none
 
   !Set the vector values
 
-  call VecGetOwnershipRange(v,start,endd,ierr);CHKERRA(ierr)
+  PetscCallA(VecGetOwnershipRange(v,start,endd,ierr))
   do i=start,endd-1
      myValue = real(i)
-     call VecSetValues(v,one,i,myValue,INSERT_VALUES,ierr);CHKERRA(ierr)
+     PetscCallA(VecSetValues(v,one,i,myValue,INSERT_VALUES,ierr))
   end do
 
   ! Get the components from the multi-component vector to the other vectors
 
-  call VecStrideGatherAll(v,vecs,INSERT_VALUES,ierr);CHKERRA(ierr)
+  PetscCallA(VecStrideGatherAll(v,vecs,INSERT_VALUES,ierr))
 
-  call VecView(s,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)
-  call VecView(r,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)
+  PetscCallA(VecView(s,PETSC_VIEWER_STDOUT_WORLD,ierr))
+  PetscCallA(VecView(r,PETSC_VIEWER_STDOUT_WORLD,ierr))
 
-  call VecStrideScatterAll(vecs,v,ADD_VALUES,ierr);CHKERRA(ierr)
+  PetscCallA(VecStrideScatterAll(vecs,v,ADD_VALUES,ierr))
 
-  call VecView(v,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)
+  PetscCallA(VecView(v,PETSC_VIEWER_STDOUT_WORLD,ierr))
 
   !Free work space.All PETSc objects should be destroyed when they are no longer needed.
 
   deallocate(vecs)
-  call VecDestroy(v,ierr);CHKERRA(ierr)
-  call VecDestroy(s,ierr);CHKERRA(ierr)
-  call VecDestroy(r,ierr);CHKERRA(ierr)
-  call PetscFinalize(ierr);CHKERRA(ierr)
+  PetscCallA(VecDestroy(v,ierr))
+  PetscCallA(VecDestroy(s,ierr))
+  PetscCallA(VecDestroy(r,ierr))
+  PetscCallA(PetscFinalize(ierr))
 
 end program
 

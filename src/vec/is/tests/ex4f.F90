@@ -17,19 +17,19 @@ program main
   n = 0
   allocate(indices(n), source=n)
 
-  call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+  PetscCallA(PetscInitialize(ierr))
 
-  call ISCreateGeneral(PETSC_COMM_SELF,n,indices,PETSC_USE_POINTER,is,ierr);CHKERRA(ierr)
-  call ISGetIndicesF90(is,idx,ierr);CHKERRA(ierr)
-  call ISRestoreIndicesF90(is,idx,ierr);CHKERRA(ierr)
-  call ISDestroy(is,ierr);CHKERRA(ierr)
+  PetscCallA(ISCreateGeneral(PETSC_COMM_SELF,n,indices,PETSC_USE_POINTER,is,ierr))
+  PetscCallA(ISGetIndicesF90(is,idx,ierr))
+  PetscCallA(ISRestoreIndicesF90(is,idx,ierr))
+  PetscCallA(ISDestroy(is,ierr))
 
   bs = 2
-  call ISCreateBlock(PETSC_COMM_SELF,bs,n,indices,PETSC_USE_POINTER,is,ierr);CHKERRA(ierr)
-  call ISGetIndicesF90(is,idx,ierr);CHKERRA(ierr)
-  call ISRestoreIndicesF90(is,idx,ierr);CHKERRA(ierr)
-  call ISDestroy(is,ierr);CHKERRA(ierr)
-  call PetscFinalize(ierr)
+  PetscCallA(ISCreateBlock(PETSC_COMM_SELF,bs,n,indices,PETSC_USE_POINTER,is,ierr))
+  PetscCallA(ISGetIndicesF90(is,idx,ierr))
+  PetscCallA(ISRestoreIndicesF90(is,idx,ierr))
+  PetscCallA(ISDestroy(is,ierr))
+  PetscCallA(PetscFinalize(ierr))
 end
 
 !/*TEST

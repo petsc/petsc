@@ -10,11 +10,7 @@
       PetscEnum                                 :: opt=-1
       PetscBool                                 :: set=PETSC_FALSE
 
-      Call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      if (ierr .ne. 0) then
-        print*,'Unable to initialize PETSc'
-        stop
-      endif
+      PetscCallA(PetscInitialize(ierr))
       list1(1) = 'a123'
       list1(2) = 'b456'
       list1(3) = 'c789'
@@ -24,11 +20,11 @@
 
       write(*,20) list1(1)
 20    format(A99)
-      call PetscOptionsGetEnum(PETSC_NULL_OPTIONS,'joe_','-jeff',list1,opt,set,ierr);CHKERRA(ierr)
+      PetscCallA(PetscOptionsGetEnum(PETSC_NULL_OPTIONS,'joe_','-jeff',list1,opt,set,ierr))
       write(*,*) 'opt is ', opt
       write(*,*) 'set is ', set
 
-      Call PetscFinalize(ierr)
+      PetscCallA(PetscFinalize(ierr))
       end
 
 !
