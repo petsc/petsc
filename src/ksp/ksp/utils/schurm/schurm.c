@@ -760,7 +760,7 @@ PetscErrorCode  MatCreateSchurComplementPmat(Mat A00,Mat A01,Mat A10,Mat A11,Mat
     } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown MatSchurComplementAinvType: %d", ainvtype);
     /* Cannot really reuse Sp in MatMatMult() because of MatAYPX() -->
          MatAXPY() --> MatHeaderReplace() --> MatDestroy_XXX_MatMatMult()  */
-    PetscCall(MatDestroy(Sp));
+    if (preuse == MAT_REUSE_MATRIX) PetscCall(MatDestroy(Sp));
     PetscCall(MatMatMult(A10,AdB,MAT_INITIAL_MATRIX,PETSC_DEFAULT,Sp));
     if (!A11) {
       PetscCall(MatScale(*Sp,-1.0));
@@ -826,8 +826,11 @@ PetscErrorCode  MatSchurComplementGetPmat(Mat S,MatReuse preuse,Mat *Sp)
   PetscValidHeaderSpecific(S,MAT_CLASSID,1);
   PetscValidType(S,1);
   PetscValidLogicalCollectiveEnum(S,preuse,2);
-  if (preuse != MAT_IGNORE_MATRIX) PetscValidPointer(Sp,3);
-  if (preuse == MAT_REUSE_MATRIX) PetscValidHeaderSpecific(*Sp,MAT_CLASSID,3);
+  if (preuse != MAT_IGNORE_MATRIX) {
+    PetscValidPointer(Sp,3);
+    if (preuse == MAT_INITIAL_MATRIX) *Sp = NULL;
+    if (preuse == MAT_REUSE_MATRIX)   PetscValidHeaderSpecific(*Sp,MAT_CLASSID,3);
+  }
   PetscCheck(!S->factortype,PetscObjectComm((PetscObject)S),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
 
   PetscCall(PetscObjectQueryFunction((PetscObject)S,"MatSchurComplementGetPmat_C",&f));
