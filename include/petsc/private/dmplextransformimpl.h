@@ -44,8 +44,9 @@ typedef struct {
 
 typedef struct {
   /* Inputs */
-  PetscInt   cdim;          /* The coordinate dimension of the surface */
-  PetscInt   cdimEx;        /* The coordinate dimension of the extruded volume */
+  PetscInt   dimEx;         /* The dimension of the extruded mesh */
+  PetscInt   cdim;          /* The coordinate dimension of the input mesh */
+  PetscInt   cdimEx;        /* The coordinate dimension of the extruded mesh */
   PetscInt   layers;        /* The number of extruded layers */
   PetscReal  thickness;     /* The total thickness of the extruded layers */
   PetscInt   Nth;           /* The number of specified thicknesses */

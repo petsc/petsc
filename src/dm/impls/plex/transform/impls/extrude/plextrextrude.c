@@ -75,11 +75,12 @@ static PetscErrorCode DMPlexTransformExtrudeComputeExtrusionDim(DMPlexTransform 
   DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *) tr->data;
   DM                       dm;
   DMLabel                  active;
-  PetscInt                 dim;
+  PetscInt                 dim, dimOrig;
 
   PetscFunctionBegin;
   PetscCall(DMPlexTransformGetDM(tr, &dm));
   PetscCall(DMGetDimension(dm, &dim));
+  dimOrig = dim;
   PetscCall(DMPlexTransformGetActive(tr, &active));
   if (active) {
     PetscInt pStart, pEnd, p;
@@ -96,6 +97,7 @@ static PetscErrorCode DMPlexTransformExtrudeComputeExtrusionDim(DMPlexTransform 
       break;
     }
   }
+  ex->dimEx  = PetscMax(dimOrig, dim+1);
   ex->cdimEx = ex->cdim == dim ? ex->cdim+1 : ex->cdim;
   PetscFunctionReturn(0);
 }
@@ -107,7 +109,7 @@ static PetscErrorCode DMPlexTransformSetDimensions_Extrude(DMPlexTransform tr, D
 
   PetscFunctionBegin;
   PetscCall(DMGetDimension(dm, &dim));
-  PetscCall(DMSetDimension(tdm, dim+1));
+  PetscCall(DMSetDimension(tdm, ex->dimEx));
   PetscCall(DMSetCoordinateDim(tdm, ex->cdimEx));
   PetscFunctionReturn(0);
 }
