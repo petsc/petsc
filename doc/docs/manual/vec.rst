@@ -29,8 +29,8 @@ in most situations. This chapter is organized as follows:
 
 -  :any:`sec_localglobal`
 
-   *  :any:`sec_dm_localglobal`
-   *  :any:`sec_scatter`
+-  :any:`sec_scatter`
+
    *  :any:`sec_islocaltoglobalmap`
    *  :any:`sec_vecghost`
 
@@ -45,29 +45,8 @@ PETSc provides many ways to create vectors. The most basic, where the user is re
 parallel distribution of the vector entries, and a variety of higher-level approaches, based on ``DM``\, for classes of problems such
 as structured grids, staggered grids, unstructured grids, networks, and particles.
 
-The two basic CPU vector types are sequential and parallel
-(MPI-based). The most basic way to create a sequential vector with ``m`` components, is
-using the command
-
-.. code-block::
-
-   VecCreateSeq(PETSC_COMM_SELF,PetscInt m,Vec *x);
-
-To create a parallel vector one can either specify the number of
-components that will be stored on each process or let PETSc decide. The
-command
-
-.. code-block::
-
-   VecCreateMPI(MPI_Comm comm,PetscInt m,PetscInt M,Vec *x);
-
-creates a vector distributed over all processes in the communicator,
-``comm``, where ``m`` indicates the number of components to store on the
-local process, and ``M`` is the total number of vector components.
-Either the local or global dimension, but not both, can be set to
-``PETSC_DECIDE`` or ``PETSC_DETERMINE``, respectively, to indicate that
-PETSc should decide or determine it. More generally, one can use the
-routines
+The most basic way to create a vector with a local size of ``m`` and a global size of ``M``, is
+using the commands
 
 .. code-block::
 
@@ -76,16 +55,17 @@ routines
    VecSetFromOptions(Vec v);
 
 which automatically generates the appropriate vector type (sequential or
-parallel) over all processes in ``comm``. The option ``-vec_type mpi``
-can be used in conjunction with ``VecCreate()`` and
-``VecSetFromOptions()`` to specify the use of MPI vectors even for the
-uniprocessor case.
+parallel) over all processes in ``comm``. The option ``-vec_type <type>``
+can be used in conjunction with
+``VecSetFromOptions()`` to specify the use of a particular type of vector. For example, for NVIDIA GPU CUDA use ``cuda``.
+The GPU based vectors allow
+one to set values on either the CPU or GPU but do their computations on the GPU.
 
 We emphasize that all processes in ``comm`` *must* call the vector
 creation routines, since these routines are collective over all
 processes in the communicator. If you are not familiar with MPI
 communicators, see the discussion in :any:`sec_writing` on
-page . In addition, if a sequence of ``VecCreateXXX()`` routines is
+page . In addition, if a sequence of creation routines is
 used, they must be called in the same order on each process in the
 communicator.
 
@@ -93,26 +73,27 @@ Instead of, or before calling ``VecSetFromOptions()``, one can call
 
 .. code-block::
 
-   VecSetType(Vec v,VecType <VECSEQ or VECMPI etc>)
+   VecSetType(Vec v,VecType <VECCUDA, VECHIP, VECKOKKOS etc>)
 
-One can create vectors whose entries are stored on GPUs using, for example,
+One can create vectors whose entries are stored on GPUs using, the short-hand helper routine,
 
 .. code-block::
 
    VecCreateMPICUDA(MPI_Comm comm,PetscInt m,PetscInt M,Vec *x);
 
-or call ``VecSetType()`` with a ``VecType`` of ``VECCUDA``, ``VECHIP``, ``VECKOKKOS``. These GPU based vectors allow
-one to set values on either the CPU or GPU but do their computations on the GPU.
+There are short hand creation routines for almost all vector types; we recommend using the more verbose form because it allows
+selecting CPU or GPU simulations at runtime.
 
 For applications running in parallel that involve multi-dimensional structured grids, unstructured grids, networks, etc it is cumbersome and
-complicated to explicitly determine the needed local and global sizes of the vectors. Hence PETSc provides a powerful abstract
+complicated for users to explicitly manage the needed local and global sizes of the vectors. Hence PETSc provides a powerful abstract
 object called the ``DM`` to help manage the vectors and matrices needed for such applications. Parallel vectors can be created easily with
 
 .. code-block::
 
    DMCreateGlobalVector(DM dm,Vec *v)
 
-The ``DM`` object, see :any:`sec_struct` and :any:`chapter_unstructured` for more details on ``DM`` for structured grids and for unstructured grids,
+The ``DM`` object, see :any:`sec_struct`, :any:`sec_stag`, and :any:`chapter_unstructured` for more details on ``DM`` for structured grids, staggered
+structured grids and for unstructured grids,
 manages creating the correctly sized parallel vectors efficiently. One controls the type of vector that ``DM`` creates by calling
 
 .. code-block::
@@ -127,7 +108,7 @@ DMDA - Creating vectors for structured grids
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Each ``DM`` type is suitable for a family of problems. The first of these ``DMDA``
-are intended for use with *logically regular rectangular grids*
+are intended for use with *logically structured rectangular grids*
 when communication of nonlocal data is needed before certain local
 computations can occur. PETSc distributed arrays are designed only for
 the case in which data can be thought of as being stored in a standard
@@ -139,7 +120,7 @@ parallel is that, to evaluate a local function, ``f(x)``, each process
 requires its local portion of the vector ``x`` as well as its ghost
 points (the bordering portions of the vector that are owned by
 neighboring processes). Figure :any:`fig_ghosts` illustrates the
-ghost points for the seventh process of a two-dimensional, regular
+ghost points for the seventh process of a two-dimensional, structured
 parallel grid. Each box represents a process; the ghost points for the
 seventh process’s local part of a parallel array are shown in gray.
 
@@ -150,8 +131,8 @@ seventh process’s local part of a parallel array are shown in gray.
    Ghost Points for Two Stencil Types on the Seventh Process
 
 
-The ``DMDA`` object only
-contains the parallel data layout information and communication
+The ``DMDA`` object
+contains  parallel data layout information and communication
 information and is used to create vectors and matrices with
 the proper layout.
 
@@ -167,7 +148,7 @@ in each direction, while ``m`` and ``n`` denote the process partition in
 each direction; ``m*n`` must equal the number of processes in the MPI
 communicator, ``comm``. Instead of specifying the process layout, one
 may use ``PETSC_DECIDE`` for ``m`` and ``n`` so that PETSc will
-determine the partition using MPI. The type of periodicity of the array
+select the partition. The type of periodicity of the array
 is specified by ``xperiod`` and ``yperiod``, which can be
 ``DM_BOUNDARY_NONE`` (no periodicity), ``DM_BOUNDARY_PERIODIC``
 (periodic in that direction), ``DM_BOUNDARY_TWIST`` (periodic in that
@@ -192,8 +173,8 @@ are ignored, decreasing substantially the number of messages sent. Note
 that the ``DMDA_STENCIL_STAR`` stencils can save interprocess
 communication in two and three dimensions.
 
-These ``DMDA`` stencils have nothing directly to do with any finite
-difference stencils one might chose to use for a discretization; they
+These ``DMDA`` stencils have nothing directly to do with a specific finite
+difference stencil one might chose to use for a discretization; they
 only ensure that the correct values are in place for application of a
 user-defined finite difference stencil (or any other discretization
 technique).
@@ -207,13 +188,16 @@ structures in one and three dimensions are analogous:
    DMDACreate3d(MPI_Comm comm,DMBoundaryType xperiod,DMBoundaryType yperiod,DMBoundaryType zperiod, DMDAStencilType stencil_type,PetscInt M,PetscInt N,PetscInt P,PetscInt m,PetscInt n,PetscInt p,PetscInt w,PetscInt s,PetscInt *lx,PetscInt *ly,PetscInt *lz,DM *inra);
 
 The routines to create distributed arrays are collective, so that all
-processes in the communicator ``comm`` must call ``DACreateXXX()``.
+processes in the communicator ``comm`` must call the same creation routines in the same order.
 
 .. _sec_stag:
 
 DMStag - Creating vectors for staggered grids
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+For structured grids with staggered data (living on elements, faces, edges,
+and/or vertices), the ``DMSTAG`` object is available. It behaves much
+like ``DMDA``.
 See :any:`chapter_stag` for discussion of creating vectors with ``DMSTAG``.
 
 
@@ -247,14 +231,14 @@ variety of viewers are discussed further in
 :any:`sec_viewers`.
 
 To create a new vector of the same format as an existing vector, one
-uses the command
+uses
 
 .. code-block::
 
    VecDuplicate(Vec old,Vec *new);
 
 To create several new vectors of the same format as an existing vector,
-one uses the command
+one uses
 
 .. code-block::
 
@@ -313,7 +297,7 @@ command
 
 Assigning values to individual components of the vector is more
 complicated, in order to make it possible to write efficient parallel
-code. Assigning a set of components is a two-step process: one first
+code. Assigning a set of components on a CPU is a two-step process: one first
 calls
 
 .. code-block::
@@ -343,8 +327,8 @@ to allow the overlap of communication and calculation, the user’s code
 can perform any series of other actions between these two calls while
 the messages are in transition.
 
-Example usage of ``VecSetValues()`` may be found in
-``$PETSC_DIR/src/vec/vec/tutorials/ex2.c`` or ``ex2f.F``.
+Example usage of ``VecSetValues()`` may be found in `src/vec/vec/tutorials/ex2.c <../../src/vec/vec/tutorials/ex2.c.html>`__
+or `src/vec/vec/tutorials/ex2f.F90 <../../src/vec/vec/tutorials/ex2f.F90.html>`__.
 
 Often, rather than inserting elements in a vector, one may wish to add
 values. This process is also done with the command
@@ -367,9 +351,10 @@ does not allow the simultaneous use of ``INSERT_VALUES`` and
 ``ADD_VALUES`` this nondeterministic behavior will not occur in PETSc.)
 
 You can call ``VecGetValues()`` to pull local values from a vector (but
-not off-process values), an alternative method for extracting some
-components of a vector are the vector scatter routines. See
-:any:`sec_scatter` for details.
+not off-process values).
+
+For vectors obtained with ``DMCreateGlobalVector()`` on can use ``VecSetValuesLocal()`` to set values into
+a global vector but using the local (ghosted) vector indexing of the vector entries.
 
 It is also possible to interact directly with the arrays that the vector values are stored
 in. The routine ``VecGetArray()`` returns a pointer to the elements local to
@@ -394,6 +379,13 @@ If the values do not need to be modified, the routines
 
 should be used instead.
 
+.. admonition:: Listing: `SNES Tutorial src/snes/tutorials/ex1.c <../../src/snes/tutorials/ex1.c.html>`__
+
+   .. literalinclude:: /../src/snes/tutorials/ex1.c
+      :name: snesex1
+      :start-at: PetscErrorCode FormFunction1(SNES snes,Vec x,Vec f,void *ctx)
+      :end-at: return 0;
+
 Minor differences exist in the Fortran interface for ``VecGetArray()``
 and ``VecRestoreArray()``, as discussed in
 :any:`sec_fortranarrays`. It is important to note that
@@ -409,6 +401,13 @@ can call, for example,
 
    VecCUDAGetArray(Vec v, PetscScalar **array);
 
+.. admonition:: Listing: `SNES Tutorial src/snes/tutorials/ex47cu.cu <../../src/snes/tutorials/ex47cu.cu.html>`__
+
+   .. literalinclude:: /../src/snes/tutorials/ex47cu.cu
+      :name: snesex47
+      :start-at: PetscCall(VecCUDAGetArrayRead(xlocal,&xarray));
+      :end-at:  }
+
 or
 
 .. code-block::
@@ -417,28 +416,27 @@ or
 
 which, in the first case, returns a GPU memory address and in the second case returns either a CPU or GPU memory
 address depending on the type of the vector. For usage with GPUs one then can launch a GPU kernel function that access the
-vector's memory. In fact when computing on GPUs ``VecSetValues()`` is not used! One always accesses the vector's arrays and passes them
+vector's memory. When computing on GPUs ``VecSetValues()`` is not used! One always accesses the vector's arrays and passes them
 to the GPU code.
 
-It can also be convenient to treat the vectors entries as a Kokkos view. In this one first creates Kokkos vectors and then calls
+It can also be convenient to treat the vectors entries as a Kokkos view. One first creates Kokkos vectors and then calls
 
 .. code-block::
 
    VecGetKokkosView(Vec v, Kokkos::View<const PetscScalar*,MemorySpace> *kv)
 
-to access the vectors entries.
+to set or access the vectors entries.
 
 Of course in order to provide the correct values to a vector one must know what parts of the vector are owned by each MPI rank.
-For standard MPI parallel vectors that are distributed across the processes by
-ranges, it is possible to determine a process’s local range with the
+For parallel vectors, either CPU or GPU based, it is possible to determine a process’s local range with the
 routine
 
 .. code-block::
 
-   VecGetOwnershipRange(Vec vec,PetscInt *low,PetscInt *high);
+   VecGetOwnershipRange(Vec vec,PetscInt *start,PetscInt *end);
 
-The argument ``low`` indicates the first component owned by the local
-process, while ``high`` specifies *one more than* the last owned by the
+The argument ``start`` indicates the first component owned by the local
+process, while ``end`` specifies *one more than* the last owned by the
 local process. This command is useful, for instance, in assembling
 parallel vectors.
 
@@ -499,13 +497,20 @@ for a scalar problem in two dimensions one could use
 
    PetscScalar **f,**u;
    ...
-   DMDAVecGetArray(DM da,Vec local,&u);
+   DMDAVecGetArrayRead(DM da,Vec local,&u);
    DMDAVecGetArray(DM da,Vec global,&f);
    ...
      f[i][j] = u[i][j] - ...
    ...
-   DMDAVecRestoreArray(DM da,Vec local,&u);
+   DMDAVecRestoreArrayRead(DM da,Vec local,&u);
    DMDAVecRestoreArray(DM da,Vec global,&f);
+
+.. admonition:: Listing: `SNES Tutorial src/snes/tutorials/ex3.c <../../src/snes/tutorials/ex3.c.html>`__
+
+   .. literalinclude:: /../src/snes/tutorials/ex3.c
+      :name: snesex3
+      :start-at: PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *ctx)
+      :end-at: PetscFunctionReturn(0);
 
 The recommended approach for multi-component PDEs is to declare a
 ``struct`` representing the fields defined at each node of the grid,
@@ -517,7 +522,7 @@ e.g.
      PetscScalar u,v,omega,temperature;
    } Node;
 
-and write residual evaluation using
+and write the residual evaluation using
 
 .. code-block::
 
@@ -530,12 +535,6 @@ and write residual evaluation using
    DMDAVecRestoreArray(DM da,Vec local,&u);
    DMDAVecRestoreArray(DM da,Vec global,&f);
 
-See
-`SNES Tutorial ex5 <../../src/snes/tutorials/ex5.c.html>`__
-for a complete example and see
-`SNES Tutorial ex19 <../../src/snes/tutorials/ex19.c.html>`__
-for an example for a multi-component PDE.
-
 The ``DMDAVecGetArray`` routines are also provided for GPU access with CUDA, HIP, and Kokkos. For example,
 
 .. code-block::
@@ -545,6 +544,13 @@ The ``DMDAVecGetArray`` routines are also provided for GPU access with CUDA, HIP
 where ``*XX*`` can contain any number of  `*`. This allows one to write very natural Kokkos multi-dimensional parallel for kernels
 that act on the local portion of ``DMDA`` vectors.
 
+.. admonition:: Listing: `SNES Tutorial src/snes/tutorials/ex3k.kokkos.cxx <../../src/snes/tutorials/ex3k.kokkos.cxx.html>`__
+   :name: snes-ex3-kokkos
+
+   .. literalinclude:: /../src/snes/tutorials/ex3k.kokkos.cxx
+      :start-at: PetscErrorCode KokkosFunction(SNES snes,Vec x,Vec r,void *ctx)
+      :end-at: PetscFunctionReturn(0);
+
 The global indices of the lower left corner of the local portion of vectors obtained from ``DMDA``
 as well as the local array size can be obtained with the commands
 
@@ -552,6 +558,8 @@ as well as the local array size can be obtained with the commands
 
    DMDAGetCorners(DM da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p);
    DMDAGetGhostCorners(DM da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p);
+
+These values can then be used as loop bounds for local function evaluations as demonstrated in the function examples above.
 
 The first version excludes any ghost points, while the second version
 includes them. The routine ``DMDAGetGhostCorners()`` deals with the fact
@@ -572,9 +580,16 @@ processes and thus contain undefined values that should *not* be used.
 DMSTAG - Setting vector values
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For regular grids with staggered data (living on elements, faces, edges,
+For structured grids with staggered data (living on elements, faces, edges,
 and/or vertices), the ``DMStag`` object is available. It behaves much
 like ``DMDA``; see the ``DMSTAG`` manual page for more information.
+
+.. admonition:: Listing: `SNES Tutorial src/dm/impls/stag/tutorials/ex6.c <../../src/dm/impls/stag/tutorials/ex6.c.html>`__
+
+   .. literalinclude:: /../src/dm/impls/stag/tutorials/ex6.c
+      :name: stagex6
+      :start-at: static PetscErrorCode UpdateVelocity_2d(const Ctx *ctx,Vec velocity,Vec stress, Vec buoyancy)
+      :end-at:       /* Update x-velocity */
 
 .. _sec_unstruct_set:
 
@@ -595,6 +610,11 @@ See :any:`chapter_network` for discussion on setting vector values with ``DMNETW
 
 Basic Vector Operations
 ~~~~~~~~~~~~~~~~~~~~~~~
+
+..
+   Should make the table more attractive by using for example cloud_sptheme.ext.table_styling and the lines below
+   :column-alignment: left left
+   :widths: 72 28
 
 .. container::
    :name: fig_vectorops
@@ -694,6 +714,9 @@ wrong order, PETSc will generate an error informing you of this. There
 are additional routines ``VecTDotBegin()`` and ``VecTDotEnd()``,
 ``VecMTDotBegin()``, ``VecMTDotEnd()``.
 
+For GPU vectors (like CUDA), the numerical computations will, by default, run on the GPU. Any
+scalar output, like the result of a ``VecDot()`` are placed in CPU memory.
+
 .. _sec_localglobal:
 
 Local/global vectors and communicating between vectors
@@ -704,12 +727,6 @@ of vector values. These values are needed
 in order to perform function evaluation on that rank. The exact structure of the ghost values needed
 depends on the type of grid being used. ``DM`` provides a uniform API for communicating the needed
 values. We introduce the concept in detail for ``DMDA``.
-
-
-.. _sec_dm_localglobal:
-
-DM - Local/global vectors and ghost updates
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Each ``DM`` object defines the layout of two vectors: a distributed
 global vector and a local vector that includes room for the appropriate
@@ -739,7 +756,7 @@ operate on vectors of the appropriate size, as obtained via
 by ``VecDuplicate()``.
 
 At certain stages of many applications, there is a need to work on a
-local portion of the vector, including the ghost points. This may be
+local portion of the vector that includes the ghost points. This may be
 done by scattering a global vector into its local parts by using the
 two-stage commands
 
@@ -755,7 +772,7 @@ generated by ``DMCreateGlobalVector()`` and ``DMCreateLocalVector()``
 (or be duplicates of such a vector obtained via ``VecDuplicate()``). The
 ``InsertMode`` can be either ``ADD_VALUES`` or ``INSERT_VALUES``.
 
-One can scatter the local patches into the distributed vector with the
+One can scatter the local vectors into the distributed global vector with the
 command
 
 .. code-block::
@@ -805,18 +822,19 @@ routines
 
 .. _sec_scatter:
 
-Communication for generic vectors
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Low-level Vector Communication
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Most users of PETSc, who can utilize a ``DM`` will not need to utilize the lower-level routines discussed in the rest of this section
-and can skip ahead to :any:`chapter_matrices`.
+and should skip ahead to :any:`chapter_matrices`.
 
 To facilitate creating general vector scatters and gathers used, for example, in
 updating ghost points for problems for which no ``DM`` currently exists
 PETSc employs the concept of an *index set*, via the ``IS`` class. An
 index set, which is a generalization of a set of integer indices, is
 used to define scatters, gathers, and similar operations on vectors and
-matrices.
+matrices. In fact, much of the underlying code that implements ``DMGlobalToLocal`` communication are built
+on the infrastructure discussed below.
 
 The following command creates an index set based on a list of integers:
 
@@ -953,8 +971,7 @@ the same). Usually, these “different” vectors would have been obtained
 via calls to ``VecDuplicate()`` from the original vectors used in the
 call to ``VecScatterCreate()``.
 
-There is a PETSc routine that is nearly the opposite of
-``VecSetValues()``, that is, ``VecGetValues()``, but it can only get
+``VecGetValues()`` can only access
 local values from the vector. To get off-process values, the user should
 create a new vector where the components are to be stored, and then
 perform the appropriate vector scatter. For example, if one desires to
@@ -1012,10 +1029,10 @@ may be written as
 Local to global mappings
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-In many applications one works with a global representation of a vector
-(usually on a vector obtained with ``VecCreateMPI()``) and a local
+When working with a global representation of a vector
+(usually on a vector obtained with ``DMCreateGlobalVecgtor()``) and a local
 representation of the same vector that includes ghost points required
-for local computation. PETSc provides routines to help map indices from
+for local computation (obtained with ``DMCreateLocalVecgtor()``). PETSc provides routines to help map indices from
 a local numbering scheme to the PETSc global numbering scheme. This is
 done via the following routines
 
@@ -1086,7 +1103,8 @@ and then call
 
 Now the ``indices`` use the local numbering, rather than the global,
 meaning the entries lie in :math:`[0,n)` where :math:`n` is the local
-size of the vector.
+size of the vector. Global vectors obtained from ``DM``s already have the global to local mapping
+provided by the ``DM``.
 
 
 To assemble global stiffness matrices, one can use these global indices
@@ -1121,7 +1139,7 @@ nonlinear solvers.
 Global Vectors with locations for ghost values
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-There are two minor drawbacks to the basic approach described above:
+There are two minor drawbacks to the basic approach described above for unstructured grids:
 
 -  the extra memory requirement for the local work vector, ``localin``,
    which duplicates the memory in ``globalin``, and
@@ -1130,7 +1148,7 @@ There are two minor drawbacks to the basic approach described above:
    ``globalin``.
 
 An alternative approach is to allocate global vectors with space
-preallocated for the ghost values; this may be done with either
+preallocated for the ghost values; at the local level vector interfaces this may be done with either
 
 .. code-block::
 
@@ -1195,9 +1213,11 @@ would be appropriate, for example, when performing a finite element
 assembly of a load vector. One can also use ``MAX_VALUES`` or
 ``MIN_VALUES`` with ``SCATTER_REVERSE``.
 
+``DMPLEX`` does not yet have support for ghosted vectors sharing memory with the global representation.
+This is work in progress, if you have interest in this feature please contact the PETSc community members.
+
 :any:`sec_partitioning` discusses the important topic of
 partitioning an unstructured grid.
-
 
 .. _sec_ao:
 

@@ -91,11 +91,11 @@ PetscErrorCode ComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
   PetscCall(DMGlobalToLocalEnd(da,x,INSERT_VALUES,xlocal));
 
   if (useCUDA) {
-    PetscCall(VecCUDAGetArrayRead(xlocal,&xarray));
-    PetscCall(VecCUDAGetArrayWrite(f,&farray));
     PetscCall(PetscObjectGetComm((PetscObject)da,&comm));
     PetscCallMPI(MPI_Comm_size(comm,&size));
     PetscCallMPI(MPI_Comm_rank(comm,&rank));
+    PetscCall(VecCUDAGetArrayRead(xlocal,&xarray));
+    PetscCall(VecCUDAGetArrayWrite(f,&farray));
     if (rank) xstartshift = 1;
     else xstartshift = 0;
     if (rank != size-1) xendshift = 1;

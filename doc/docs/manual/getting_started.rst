@@ -297,7 +297,7 @@ a linear system with ``KSP``, the interface to the preconditioners,
 Krylov subspace methods, and direct linear solvers of PETSc. Following
 the code we highlight a few of the most important parts of this example.
 
-.. admonition:: Listing: ``src/ksp/ksp/tutorials/ex1.c``
+.. admonition:: Listing: `KSP Tutorial src/ksp/ksp/tutorials/ex1.c <../../src/ksp/ksp/tutorials/ex1..c.html>`__
    :name: ksp-ex1
 
    .. literalinclude:: /../src/ksp/ksp/tutorials/ex1.c
@@ -608,7 +608,7 @@ multiprocessor examples. The primary difference between the examples in
 here is that each processor forms only its
 local part of the matrix and vectors in the parallel case.
 
-.. admonition:: Listing: ``src/ksp/ksp/tutorials/ex2.c``
+.. admonition:: Listing: `KSP Tutorial src/ksp/ksp/tutorials/ex2.c <../../src/ksp/ksp/tutorials/ex2..c.html>`__``
    :name: ksp-ex2
 
    .. literalinclude:: /../src/ksp/ksp/tutorials/ex2.c

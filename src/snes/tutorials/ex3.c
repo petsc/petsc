@@ -344,11 +344,12 @@ PetscErrorCode FormInitialGuess(Vec x)
 */
 PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *ctx)
 {
-  ApplicationCtx *user = (ApplicationCtx*) ctx;
-  DM             da    = user->da;
-  PetscScalar    *xx,*ff,*FF,d;
-  PetscInt       i,M,xs,xm;
-  Vec            xlocal;
+  ApplicationCtx    *user = (ApplicationCtx*) ctx;
+  DM                da    = user->da;
+  PetscScalar       *ff,d;
+  const PetscScalar *xx,*FF;
+  PetscInt          i,M,xs,xm;
+  Vec               xlocal;
 
   PetscFunctionBeginUser;
   PetscCall(DMGetLocalVector(da,&xlocal));
@@ -367,9 +368,9 @@ PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *ctx)
          NOT include ghost points.
        - Using DMDAVecGetArray() allows accessing the values using global ordering
   */
-  PetscCall(DMDAVecGetArray(da,xlocal,&xx));
+  PetscCall(DMDAVecGetArrayRead(da,xlocal,&xx));
   PetscCall(DMDAVecGetArray(da,f,&ff));
-  PetscCall(DMDAVecGetArray(da,user->F,&FF));
+  PetscCall(DMDAVecGetArrayRead(da,user->F,&FF));
 
   /*
      Get local grid boundaries (for 1-dimensional DMDA):
@@ -401,9 +402,9 @@ PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *ctx)
   /*
      Restore vectors
   */
-  PetscCall(DMDAVecRestoreArray(da,xlocal,&xx));
+  PetscCall(DMDAVecRestoreArrayRead(da,xlocal,&xx));
   PetscCall(DMDAVecRestoreArray(da,f,&ff));
-  PetscCall(DMDAVecRestoreArray(da,user->F,&FF));
+  PetscCall(DMDAVecRestoreArrayRead(da,user->F,&FF));
   PetscCall(DMRestoreLocalVector(da,&xlocal));
   PetscFunctionReturn(0);
 }
