@@ -229,7 +229,7 @@ $ PetscLayoutGetSize(PetscLayout,PetscInt *);
   If the local size, global size are already set and range exists then this does nothing.
 
 .seealso: `PetscLayoutSetLocalSize()`, `PetscLayoutSetSize()`, `PetscLayoutGetSize()`, `PetscLayoutGetLocalSize()`, `PetscLayout`, `PetscLayoutDestroy()`,
-          `PetscLayoutGetRange()`, `PetscLayoutGetRanges()`, `PetscLayoutSetBlockSize()`, `PetscLayoutGetBlockSize()`, `PetscLayoutCreate()`
+          `PetscLayoutGetRange()`, `PetscLayoutGetRanges()`, `PetscLayoutSetBlockSize()`, `PetscLayoutGetBlockSize()`, `PetscLayoutCreate()`, `PetscSplitOwnership()`
 @*/
 PetscErrorCode PetscLayoutSetUp(PetscLayout map)
 {

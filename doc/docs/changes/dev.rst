@@ -108,12 +108,13 @@ In addition to the changes above
 - Add ``MatFilter()`` to remove values with an absolute value equal to or below a give threshold
 
 .. rubric:: MatCoarsen:
- - Add ``MISK`` coarsening type. Distance-k maximal independent set
-   (MIS) C-F coarsening with a greedy, MIS based aggregation
-   algorithm.
+
+- Add ``MISK`` coarsening type. Distance-k maximal independent set (MIS) C-F coarsening with a greedy, MIS based aggregation algorithm
 - Add ``MatUpdateMPIAIJWithArray()`` and deprecate ``MatUpdateMPIAIJWithArrays()``
 
 .. rubric:: PC:
+
+- Add PC type of mpi which can be used in conjunction with -mpi_linear_solver_server to use MPI parallelism to solve a system created on a single MPI rank
 
 .. rubric:: KSP:
 

@@ -4117,7 +4117,7 @@ PetscErrorCode MatMPIAIJSetPreallocation(Mat B,PetscInt d_nz,const PetscInt d_nn
 .  N - number of global columns (or PETSC_DETERMINE to have calculated if n is given)
 .   i - row indices; that is i[0] = 0, i[row] = i[row-1] + number of elements in that row of the matrix
 .   j - column indices
--   a - matrix values
+-   a - optional matrix values
 
    Output Parameter:
 .   mat - the matrix

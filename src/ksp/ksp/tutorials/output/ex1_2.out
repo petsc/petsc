@@ -26,3 +26,8 @@ PC Object: 1 MPI process
     total number of mallocs used during MatSetValues calls=0
       not using I-node routines
 Norm of error 4.10316e-07, Iterations 8
+  0 KSP Residual norm 0.377523 
+  1 KSP Residual norm 0.0140399 
+  2 KSP Residual norm 0.000364106 
+  3 KSP Residual norm 7.83047e-06 
+  4 KSP Residual norm 1.33045e-07 

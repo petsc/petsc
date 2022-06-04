@@ -2686,4 +2686,8 @@ PETSC_EXTERN PetscErrorCode  PetscHasExternalPackage(const char[],PetscBool*);
 #define PetscPragmaOMP(...)
 #endif
 
+/* this cannot go here because it may be in a different shared library */
+PETSC_EXTERN PetscErrorCode PCMPIServerBegin(void);
+PETSC_EXTERN PetscErrorCode PCMPIServerEnd(void);
+PETSC_EXTERN PetscErrorCode PCMPICommsDestroy(void);
 #endif
