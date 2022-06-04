@@ -2615,6 +2615,17 @@ if (dlclose(handle)) {
     self.LIBS = oldLibs
     return ret
 
+  def checkAtFileOption(self):
+    '''Check if linker supports @file option'''
+    optfile = os.path.join(self.tmpDir,'optfile')
+    with open(optfile,'w') as fd:
+      fd.write(str(self.getCompilerFlags()))
+    if self.checkLinkerFlag('@'+optfile):
+      self.framework.addMakeMacro('PCC_AT_FILE',1)
+    else:
+      self.logPrint('@file option test failed!')
+    return
+
   def configure(self):
     self.mainLanguage = self.languages.clanguage
     self.executeTest(self.resetEnvCompilers)
@@ -2674,6 +2685,7 @@ if (dlclose(handle)) {
     self.executeTest(self.checkLibC)
     self.executeTest(self.checkDynamicLinker)
     self.executeTest(self.checkPragma)
+    self.executeTest(self.checkAtFileOption)
     self.executeTest(self.output)
     return
 
