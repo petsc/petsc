@@ -57,14 +57,14 @@ PC Object: (stokes_) 4 MPI processes
             matrix ordering: nd
             factor fill ratio given 5., needed 3.27988
               Factored matrix follows:
-                Mat Object: 1 MPI process
+                Mat Object: (stokes_mg_coarse_redundant_) 1 MPI process
                   type: seqaij
                   rows=867, cols=867, bs=3
                   package used to perform factorization: petsc
                   total: nonzeros=70875, allocated nonzeros=70875
                     using I-node routines: found 287 nodes, limit used is 5
           linear system matrix = precond matrix:
-          Mat Object: (stokes_mg_coarse_redundant_) 1 MPI process
+          Mat Object: 1 MPI process
             type: seqaij
             rows=867, cols=867, bs=3
             total: nonzeros=21609, allocated nonzeros=21609

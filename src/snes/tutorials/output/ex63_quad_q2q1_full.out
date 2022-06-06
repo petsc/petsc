@@ -49,7 +49,7 @@ SNES Object: 1 MPI process
             matrix ordering: nd
             factor fill ratio given 5., needed 2.3299
               Factored matrix follows:
-                Mat Object: 1 MPI process
+                Mat Object: (fieldsplit_velocity_) 1 MPI process
                   type: seqaij
                   rows=1058, cols=1058, bs=2
                   package used to perform factorization: petsc
@@ -111,7 +111,7 @@ SNES Object: 1 MPI process
                     matrix ordering: nd
                     factor fill ratio given 5., needed 2.3299
                       Factored matrix follows:
-                        Mat Object: 1 MPI process
+                        Mat Object: (fieldsplit_velocity_) 1 MPI process
                           type: seqaij
                           rows=1058, cols=1058, bs=2
                           package used to perform factorization: petsc

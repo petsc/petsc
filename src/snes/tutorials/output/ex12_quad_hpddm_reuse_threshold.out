@@ -146,7 +146,7 @@ SNES Object: 4 MPI processes
           matrix ordering: nd
           factor fill ratio given 5., needed 1.9272
             Factored matrix follows:
-              Mat Object: 1 MPI process
+              Mat Object: (pc_hpddm_levels_1_sub_) 1 MPI process
                 type: seqaij
                 rows=109, cols=109
                 package used to perform factorization: petsc
@@ -195,14 +195,14 @@ SNES Object: 4 MPI processes
                     matrix ordering: natural
                     factor fill ratio given 5., needed 1.
                       Factored matrix follows:
-                        Mat Object: 1 MPI process
+                        Mat Object: (pc_hpddm_coarse_redundant_) 1 MPI process
                           type: seqsbaij
                           rows=2, cols=2
                           package used to perform factorization: petsc
                           total: nonzeros=2, allocated nonzeros=2
                               block size is 1
                   linear system matrix = precond matrix:
-                  Mat Object: (pc_hpddm_coarse_redundant_) 1 MPI process
+                  Mat Object: 1 MPI process
                     type: seqsbaij
                     rows=2, cols=2
                     total: nonzeros=2, allocated nonzeros=2

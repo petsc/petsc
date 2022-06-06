@@ -24,14 +24,14 @@ PC Object: (elas_) 1 MPI process
     matrix ordering: natural
     factor fill ratio given 1., needed 1.
       Factored matrix follows:
-        Mat Object: 1 MPI process
+        Mat Object: (elas_) 1 MPI process
           type: seqaij
           rows=1178, cols=1178, bs=2
           package used to perform factorization: petsc
           total: nonzeros=20020, allocated nonzeros=20020
             using I-node routines: found 589 nodes, limit used is 5
   linear system matrix = precond matrix:
-  Mat Object: (elas_) 1 MPI process
+  Mat Object: 1 MPI process
     type: seqaij
     rows=1178, cols=1178, bs=2
     total: nonzeros=20020, allocated nonzeros=20020

@@ -382,6 +382,7 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat *C)
   PetscCall(PetscComposedQuantitiesDestroy((PetscObject)A));
 
   /* copy C over to A */
+  PetscCall(PetscFree(A->factorprefix));
   PetscCall(PetscMemcpy(A,*C,sizeof(struct _p_Mat)));
 
   /* return the parts of A we saved */

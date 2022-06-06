@@ -491,6 +491,7 @@ struct _p_Mat {
   Mat_Product            *product;
   PetscBool              form_explicit_transpose; /* hint to generate an explicit mat tranpsose for operations like MatMultTranspose() */
   PetscBool              transupdated;            /* whether or not the explicitly generated transpose is up-to-date */
+  char                   *factorprefix;           /* the prefix to use with factored matrix that is created */
 };
 
 PETSC_INTERN PetscErrorCode MatAXPY_Basic(Mat,PetscScalar,Mat,MatStructure);

@@ -87,7 +87,7 @@ PC Object: 8 MPI processes
           matrix ordering: nd
           factor fill ratio given 5., needed 1.03896
             Factored matrix follows:
-              Mat Object: 1 MPI process
+              Mat Object: (mg_levels_1_sub_) 1 MPI process
                 type: seqaij
                 rows=84, cols=84
                 package used to perform factorization: petsc
@@ -144,7 +144,7 @@ PC Object: 8 MPI processes
           matrix ordering: nd
           factor fill ratio given 5., needed 1.05263
             Factored matrix follows:
-              Mat Object: 1 MPI process
+              Mat Object: (mg_levels_2_sub_) 1 MPI process
                 type: seqaij
                 rows=48, cols=48
                 package used to perform factorization: petsc
@@ -264,7 +264,7 @@ PC Object: 8 MPI processes
           matrix ordering: nd
           factor fill ratio given 5., needed 1.03896
             Factored matrix follows:
-              Mat Object: 1 MPI process
+              Mat Object: (mg_levels_1_sub_) 1 MPI process
                 type: seqaij
                 rows=84, cols=84
                 package used to perform factorization: petsc
@@ -322,7 +322,7 @@ PC Object: 8 MPI processes
           matrix ordering: nd
           factor fill ratio given 5., needed 1.05263
             Factored matrix follows:
-              Mat Object: 1 MPI process
+              Mat Object: (mg_levels_2_sub_) 1 MPI process
                 type: seqaij
                 rows=48, cols=48
                 package used to perform factorization: petsc
@@ -442,7 +442,7 @@ PC Object: 8 MPI processes
           matrix ordering: nd
           factor fill ratio given 5., needed 1.03896
             Factored matrix follows:
-              Mat Object: 1 MPI process
+              Mat Object: (mg_levels_1_sub_) 1 MPI process
                 type: seqaij
                 rows=84, cols=84
                 package used to perform factorization: petsc
@@ -500,7 +500,7 @@ PC Object: 8 MPI processes
           matrix ordering: nd
           factor fill ratio given 5., needed 1.05263
             Factored matrix follows:
-              Mat Object: 1 MPI process
+              Mat Object: (mg_levels_2_sub_) 1 MPI process
                 type: seqaij
                 rows=48, cols=48
                 package used to perform factorization: petsc

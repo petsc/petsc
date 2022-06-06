@@ -322,7 +322,7 @@ PetscErrorCode MatFactorNumeric_PaStiX(Mat F,Mat A,const MatFactorInfo *info)
                 lu->dparm);
     PetscCheck(lu->iparm[IPARM_ERROR_NUMBER] == 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by PaStiX in MatFactorNumeric: iparm(IPARM_ERROR_NUMBER)=%" PetscInt_FMT,lu->iparm[IPARM_ERROR_NUMBER]);
 
-    PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"PaStiX Options","Mat");
+    PetscOptionsBegin(PetscObjectComm((PetscObject)F),((PetscObject)F)->prefix,"PaStiX Options","Mat");
     icntl = -1;
     lu->iparm[IPARM_VERBOSE] = API_VERBOSE_NOT;
     PetscCall(PetscOptionsInt("-mat_pastix_verbose","iparm[IPARM_VERBOSE] : level of printing (0 to 2)","None",lu->iparm[IPARM_VERBOSE],&icntl,&flg));

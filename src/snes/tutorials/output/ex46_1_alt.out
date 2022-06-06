@@ -43,14 +43,14 @@ SNESLineSearch Object: 1 MPI process
           matrix ordering: nd
           factor fill ratio given 5., needed 1.875
             Factored matrix follows:
-              Mat Object: 1 MPI process
+              Mat Object: (mg_coarse_) 1 MPI process
                 type: seqaij
                 rows=16, cols=16
                 package used to perform factorization: petsc
                 total: nonzeros=120, allocated nonzeros=120
                   using I-node routines: found 12 nodes, limit used is 5
         linear system matrix = precond matrix:
-        Mat Object: (mg_coarse_) 1 MPI process
+        Mat Object: 1 MPI process
           type: seqaij
           rows=16, cols=16
           total: nonzeros=64, allocated nonzeros=64

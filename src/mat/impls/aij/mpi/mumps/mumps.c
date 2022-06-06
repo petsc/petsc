@@ -1720,7 +1720,7 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
 }
 
 /* Sets MUMPS options from the options database */
-PetscErrorCode PetscSetMUMPSFromOptions(Mat F, Mat A)
+PetscErrorCode MatSetFromOptions_MUMPS(Mat F, Mat A)
 {
   Mat_MUMPS      *mumps = (Mat_MUMPS*)F->data;
   PetscMUMPSInt  icntl=0;
@@ -1728,7 +1728,7 @@ PetscErrorCode PetscSetMUMPSFromOptions(Mat F, Mat A)
   PetscBool      flg=PETSC_FALSE;
 
   PetscFunctionBegin;
-  PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"MUMPS Options","Mat");
+  PetscOptionsBegin(PetscObjectComm((PetscObject)F),((PetscObject)F)->prefix,"MUMPS Options","Mat");
   PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_1","ICNTL(1): output stream for error messages","None",mumps->id.ICNTL(1),&icntl,&flg));
   if (flg) mumps->id.ICNTL(1) = icntl;
   PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_2","ICNTL(2): output stream for diagnostic printing, statistics, and warning","None",mumps->id.ICNTL(2),&icntl,&flg));
@@ -1832,8 +1832,9 @@ PetscErrorCode PetscSetMUMPSFromOptions(Mat F, Mat A)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscInitializeMUMPS(Mat A,Mat_MUMPS *mumps)
+PetscErrorCode MatSetFromOptions_MUMPS_OpenMP(Mat F,Mat A)
 {
+  Mat_MUMPS      *mumps = (Mat_MUMPS*)F->data;
   PetscInt       nthreads=0;
 
   PetscFunctionBegin;
@@ -1841,9 +1842,9 @@ PetscErrorCode PetscInitializeMUMPS(Mat A,Mat_MUMPS *mumps)
   PetscCallMPI(MPI_Comm_size(mumps->petsc_comm,&mumps->petsc_size));
   PetscCallMPI(MPI_Comm_rank(mumps->petsc_comm,&mumps->myid));/* "if (!myid)" still works even if mumps_comm is different */
 
-  PetscCall(PetscOptionsHasName(NULL,((PetscObject)A)->prefix,"-mat_mumps_use_omp_threads",&mumps->use_petsc_omp_support));
+  PetscCall(PetscOptionsHasName(NULL,((PetscObject)F)->prefix,"-mat_mumps_use_omp_threads",&mumps->use_petsc_omp_support));
   if (mumps->use_petsc_omp_support) nthreads = -1; /* -1 will let PetscOmpCtrlCreate() guess a proper value when user did not supply one */
-  PetscCall(PetscOptionsGetInt(NULL,((PetscObject)A)->prefix,"-mat_mumps_use_omp_threads",&nthreads,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,((PetscObject)F)->prefix,"-mat_mumps_use_omp_threads",&nthreads,NULL));
   if (mumps->use_petsc_omp_support) {
 #if defined(PETSC_HAVE_OPENMP_SUPPORT)
     PetscCall(PetscOmpCtrlCreate(mumps->petsc_comm,nthreads,&mumps->omp_ctrl));
@@ -1871,7 +1872,7 @@ PetscErrorCode PetscInitializeMUMPS(Mat A,Mat_MUMPS *mumps)
   mumps->id.sym = mumps->sym;
 
   PetscMUMPS_c(mumps);
-  PetscCheck(mumps->id.INFOG(1) >= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in PetscInitializeMUMPS: INFOG(1)=%d",mumps->id.INFOG(1));
+  PetscCheck(mumps->id.INFOG(1) >= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS: INFOG(1)=%d",mumps->id.INFOG(1));
 
   /* copy MUMPS default control values from master to slaves. Although slaves do not call MUMPS, they may access these values in code.
      For example, ICNTL(9) is initialized to 1 by MUMPS and slaves check ICNTL(9) in MatSolve_MUMPS.
@@ -1940,7 +1941,7 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFacto
   }
 
   /* Set MUMPS options from the options database */
-  PetscCall(PetscSetMUMPSFromOptions(F,A));
+  PetscCall(MatSetFromOptions_MUMPS(F,A));
 
   PetscCall((*mumps->ConvertToTriples)(A, 1, MAT_INITIAL_MATRIX, mumps));
   PetscCall(MatMumpsGatherNonzerosOnMaster(MAT_INITIAL_MATRIX,mumps));
@@ -2009,7 +2010,7 @@ PetscErrorCode MatLUFactorSymbolic_BAIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFact
   }
 
   /* Set MUMPS options from the options database */
-  PetscCall(PetscSetMUMPSFromOptions(F,A));
+  PetscCall(MatSetFromOptions_MUMPS(F,A));
 
   PetscCall((*mumps->ConvertToTriples)(A, 1, MAT_INITIAL_MATRIX, mumps));
   PetscCall(MatMumpsGatherNonzerosOnMaster(MAT_INITIAL_MATRIX,mumps));
@@ -2068,7 +2069,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_MUMPS(Mat F,Mat A,IS r,const MatFactorI
   }
 
   /* Set MUMPS options from the options database */
-  PetscCall(PetscSetMUMPSFromOptions(F,A));
+  PetscCall(MatSetFromOptions_MUMPS(F,A));
 
   PetscCall((*mumps->ConvertToTriples)(A, 1, MAT_INITIAL_MATRIX, mumps));
   PetscCall(MatMumpsGatherNonzerosOnMaster(MAT_INITIAL_MATRIX,mumps));
@@ -2904,6 +2905,9 @@ PetscErrorCode MatMumpsGetRinfog(Mat F,PetscInt icntl,PetscReal *val)
     Notes:
     MUMPS Cholesky does not handle (complex) Hermitian matrices http://mumps.enseeiht.fr/doc/userguide_5.2.1.pdf so using it will error if the matrix is Hermitian.
 
+    When used within a `KSP`/`PC` solve the options are prefixed with that of the `PC`. Otherwise one can set the options prefix by calling
+    `MatSetOptionsPrefixFactor()` on the matrix from which the factor was obtained or `MatSetOptionsPrefix()` on the factor matrix.
+
     When a MUMPS factorization fails inside a KSP solve, for example with a KSP_DIVERGED_PC_FAILED, one can find the MUMPS information about the failure by calling
 $          KSPGetPC(ksp,&pc);
 $          PCFactorGetMatrix(pc,&mat);
@@ -3038,7 +3042,7 @@ static PetscErrorCode MatGetFactor_aij_mumps(Mat A,MatFactorType ftype,Mat *F)
   B->ops->destroy = MatDestroy_MUMPS;
   B->data         = (void*)mumps;
 
-  PetscCall(PetscInitializeMUMPS(A,mumps));
+  PetscCall(MatSetFromOptions_MUMPS_OpenMP(B,A));
 
   *F = B;
   mumps->matstruc = DIFFERENT_NONZERO_PATTERN;
@@ -3108,7 +3112,7 @@ static PetscErrorCode MatGetFactor_sbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
   B->ops->destroy = MatDestroy_MUMPS;
   B->data         = (void*)mumps;
 
-  PetscCall(PetscInitializeMUMPS(A,mumps));
+  PetscCall(MatSetFromOptions_MUMPS_OpenMP(B,A));
 
   *F = B;
   mumps->matstruc = DIFFERENT_NONZERO_PATTERN;
@@ -3168,7 +3172,7 @@ static PetscErrorCode MatGetFactor_baij_mumps(Mat A,MatFactorType ftype,Mat *F)
   B->ops->destroy = MatDestroy_MUMPS;
   B->data         = (void*)mumps;
 
-  PetscCall(PetscInitializeMUMPS(A,mumps));
+  PetscCall(MatSetFromOptions_MUMPS_OpenMP(B,A));
 
   *F = B;
   mumps->matstruc = DIFFERENT_NONZERO_PATTERN;
@@ -3228,7 +3232,7 @@ static PetscErrorCode MatGetFactor_sell_mumps(Mat A,MatFactorType ftype,Mat *F)
   B->ops->destroy = MatDestroy_MUMPS;
   B->data         = (void*)mumps;
 
-  PetscCall(PetscInitializeMUMPS(A,mumps));
+  PetscCall(MatSetFromOptions_MUMPS_OpenMP(B,A));
 
   *F = B;
   mumps->matstruc = DIFFERENT_NONZERO_PATTERN;

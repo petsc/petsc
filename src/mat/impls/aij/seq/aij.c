@@ -2863,6 +2863,7 @@ PetscErrorCode MatDestroySubMatrices_SeqAIJ(PetscInt n,Mat *mat[])
     submatj = c->submatis1;
     if (submatj) {
       if (--((PetscObject)C)->refct <= 0) {
+        PetscCall(PetscFree(C->factorprefix));
         PetscCall((*submatj->destroy)(C));
         PetscCall(MatDestroySubMatrix_Private(submatj));
         PetscCall(PetscFree(C->defaultvectype));

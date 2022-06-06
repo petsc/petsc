@@ -74,7 +74,7 @@ PC Object: (stokes_) 4 MPI processes
         matrix ordering: natural
         factor fill ratio given 1., needed 1.
           Factored matrix follows:
-            Mat Object: 1 MPI process
+            Mat Object: (stokes_fieldsplit_0_sub_) 1 MPI process
               type: seqaij
               rows=242, cols=242, bs=2
               package used to perform factorization: petsc
@@ -120,7 +120,7 @@ PC Object: (stokes_) 4 MPI processes
         matrix ordering: natural
         factor fill ratio given 1., needed 1.
           Factored matrix follows:
-            Mat Object: 1 MPI process
+            Mat Object: (stokes_fieldsplit_1_sub_) 1 MPI process
               type: seqaij
               rows=121, cols=121
               package used to perform factorization: petsc

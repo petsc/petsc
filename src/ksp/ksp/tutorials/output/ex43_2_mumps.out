@@ -33,7 +33,7 @@ PC Object: (stokes_) 1 MPI process
       matrix ordering: nd
       factor fill ratio given 0., needed 0.
         Factored matrix follows:
-          Mat Object: 1 MPI process
+          Mat Object: (stokes_fieldsplit_u_) 1 MPI process
             type: mumps
             rows=882, cols=882
             package used to perform factorization: mumps

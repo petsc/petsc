@@ -286,6 +286,8 @@ PETSC_EXTERN PetscErrorCode MatViewFromOptions(Mat,PetscObject,const char[]);
 PETSC_EXTERN PetscErrorCode MatRegister(const char[],PetscErrorCode(*)(Mat));
 PETSC_EXTERN PetscErrorCode MatRegisterRootName(const char[],const char[],const char[]);
 PETSC_EXTERN PetscErrorCode MatSetOptionsPrefix(Mat,const char[]);
+PETSC_EXTERN PetscErrorCode MatSetOptionsPrefixFactor(Mat,const char[]);
+PETSC_EXTERN PetscErrorCode MatAppendOptionsPrefixFactor(Mat,const char[]);
 PETSC_EXTERN PetscErrorCode MatAppendOptionsPrefix(Mat,const char[]);
 PETSC_EXTERN PetscErrorCode MatGetOptionsPrefix(Mat,const char*[]);
 PETSC_EXTERN PetscErrorCode MatSetErrorIfFailure(Mat,PetscBool);

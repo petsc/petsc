@@ -17,7 +17,7 @@ PC Object: (beta_) 2 MPI processes
       matrix ordering: external
       factor fill ratio given 0., needed 0.
         Factored matrix follows:
-          Mat Object: 1 MPI process
+          Mat Object: (beta_sub_) 1 MPI process
             type: mumps
             rows=2, cols=2
             package used to perform factorization: mumps
@@ -146,7 +146,7 @@ PC Object: (beta_) 2 MPI processes
       matrix ordering: external
       factor fill ratio given 0., needed 0.
         Factored matrix follows:
-          Mat Object: 1 MPI process
+          Mat Object: (beta_sub_) 1 MPI process
             type: mumps
             rows=2, cols=2
             package used to perform factorization: mumps

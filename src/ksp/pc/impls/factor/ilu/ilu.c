@@ -78,10 +78,6 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
   const char             *prefix;
 
   PetscFunctionBegin;
-  if (!((PetscObject)pc->pmat)->prefix) {
-    PetscCall(PCGetOptionsPrefix(pc,&prefix));
-    PetscCall(MatSetOptionsPrefix(pc->pmat,prefix));
-  }
   pc->failedreason = PC_NOERROR;
   /* ugly hack to change default, since it is not support by some matrix types */
   if (((PC_Factor*)ilu)->info.shifttype == (PetscReal)MAT_SHIFT_NONZERO) {
@@ -94,6 +90,9 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
       }
     }
   }
+
+  PetscCall(PCGetOptionsPrefix(pc,&prefix));
+  PetscCall(MatSetOptionsPrefixFactor(pc->pmat,prefix));
 
   PetscCall(MatSetErrorIfFailure(pc->pmat,pc->erroriffailure));
   if (ilu->hdr.inplace) {

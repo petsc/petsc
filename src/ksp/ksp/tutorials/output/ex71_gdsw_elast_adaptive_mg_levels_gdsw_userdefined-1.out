@@ -38,14 +38,14 @@ PC Object: 8 MPI processes
             matrix ordering: nd
             factor fill ratio given 5., needed 1.30264
               Factored matrix follows:
-                Mat Object: 1 MPI process
+                Mat Object: (mg_coarse_redundant_) 1 MPI process
                   type: seqsbaij
                   rows=105, cols=105
                   package used to perform factorization: petsc
                   total: nonzeros=4244, allocated nonzeros=4244
                       block size is 1
           linear system matrix = precond matrix:
-          Mat Object: (mg_coarse_redundant_) 1 MPI process
+          Mat Object: 1 MPI process
             type: seqaij
             rows=105, cols=105
             total: nonzeros=6411, allocated nonzeros=6411
@@ -98,7 +98,7 @@ PC Object: 8 MPI processes
           matrix ordering: natural
           factor fill ratio given 1., needed 1.00057
             Factored matrix follows:
-              Mat Object: 1 MPI process
+              Mat Object: (mg_levels_1_sub_) 1 MPI process
                 type: seqsbaij
                 rows=540, cols=540, bs=3
                 package used to perform factorization: petsc

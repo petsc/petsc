@@ -701,15 +701,100 @@ PetscErrorCode MatRestoreRowUpperTriangular(Mat mat)
    A hyphen (-) must NOT be given at the beginning of the prefix name.
    The first character of all runtime options is AUTOMATICALLY the hyphen.
 
+   This is NOT used for options for the factorization of the matrix. Normally the
+   prefix is automatically passed in from the PC calling the factorization. To set
+   it directly use  `MatSetOptionsPrefixFactor()`
+
    Level: advanced
 
-.seealso: `MatSetFromOptions()`
+.seealso: `MatSetFromOptions()`, `MatSetOptionsPrefixFactor()`
 @*/
 PetscErrorCode MatSetOptionsPrefix(Mat A,const char prefix[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)A,prefix));
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   MatSetOptionsPrefixFactor - Sets the prefix used for searching for all Mat factor options in the database for
+   for matrices created with `MatGetFactor()`
+
+   Logically Collective on Mat
+
+   Input Parameters:
++  A - the Mat context
+-  prefix - the prefix to prepend to all option names for the factored matrix
+
+   Notes:
+   A hyphen (-) must NOT be given at the beginning of the prefix name.
+   The first character of all runtime options is AUTOMATICALLY the hyphen.
+
+   Normally the prefix is automatically passed in from the PC calling the factorization. To set
+   it directly when not using `KSP`/`PC` use  `MatSetOptionsPrefixFactor()`
+
+   Level: developer
+
+.seealso: `MatSetFromOptions()`, `MatSetOptionsPrefix()`, `MatAppendOptionsPrefixFactor()`
+@*/
+PetscErrorCode MatSetOptionsPrefixFactor(Mat A,const char prefix[])
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  if (prefix) {
+    PetscValidCharPointer(prefix,2);
+    PetscCheck(prefix[0] != '-',PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Options prefix should not begin with a hyphen");
+    if (prefix != A->factorprefix) {
+      PetscCall(PetscFree(A->factorprefix));
+      PetscCall(PetscStrallocpy(prefix,&A->factorprefix));
+    }
+  } else PetscCall(PetscFree(A->factorprefix));
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   MatAppendOptionsPrefixFactor - Appends to the prefix used for searching for all Mat factor options in the database for
+   for matrices created with `MatGetFactor()`
+
+   Logically Collective on Mat
+
+   Input Parameters:
++  A - the Mat context
+-  prefix - the prefix to prepend to all option names for the factored matrix
+
+   Notes:
+   A hyphen (-) must NOT be given at the beginning of the prefix name.
+   The first character of all runtime options is AUTOMATICALLY the hyphen.
+
+   Normally the prefix is automatically passed in from the PC calling the factorization. To set
+   it directly when not using `KSP`/`PC` use  `MatAppendOptionsPrefixFactor()`
+
+   Level: developer
+   .seealso: `PetscOptionsCreate()`, `PetscOptionsDestroy()`, `PetscObjectSetOptionsPrefix()`, `PetscObjectPrependOptionsPrefix()`,
+             `PetscObjectGetOptionsPrefix()`, `TSAppendOptionsPrefix()`, `SNESAppendOptionsPrefix()`, `KSPAppendOptionsPrefix()`, `MatSetOptionsPrefixFactor()`,
+             `MatSetOptionsPrefix()`
+@*/
+PetscErrorCode MatAppendOptionsPrefixFactor(Mat A,const char prefix[])
+{
+  char           *buf = A->factorprefix;
+  size_t         len1,len2;
+
+  PetscFunctionBegin;
+  PetscValidHeader(A,1);
+  if (!prefix) PetscFunctionReturn(0);
+  if (!buf) {
+    PetscCall(MatSetOptionsPrefixFactor(A,prefix));
+    PetscFunctionReturn(0);
+  }
+  PetscCheck(prefix[0] != '-',PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Options prefix should not begin with a hyphen");
+
+  PetscCall(PetscStrlen(prefix,&len1));
+  PetscCall(PetscStrlen(buf,&len2));
+  PetscCall(PetscMalloc1(1+len1+len2,&A->factorprefix));
+  PetscCall(PetscStrcpy(A->factorprefix,buf));
+  PetscCall(PetscStrcat(A->factorprefix,prefix));
+  PetscCall(PetscFree(buf));
   PetscFunctionReturn(0);
 }
 
@@ -1244,6 +1329,7 @@ PetscErrorCode MatDestroy(Mat *A)
   PetscCall(PetscObjectSAWsViewOff((PetscObject)*A));
   if ((*A)->ops->destroy) PetscCall((*(*A)->ops->destroy)(*A));
 
+  PetscCall(PetscFree((*A)->factorprefix));
   PetscCall(PetscFree((*A)->defaultvectype));
   PetscCall(PetscFree((*A)->bsizes));
   PetscCall(PetscFree((*A)->solvertype));
@@ -4630,6 +4716,10 @@ PetscErrorCode MatFactorGetPreferredOrdering(Mat mat, MatFactorType ftype, MatOr
 
       PETSc must have been ./configure to use the external solver, using the option --download-package
 
+      Some of the packages have options for controlling the factorization, these are in the form -prefix_mat_packagename_packageoption
+      where prefix is normally obtained from the calling `KSP`/`PC`. If `MatGetFactor()` is called directly one can set
+      call `MatSetOptionsPrefixFactor()` on the originating matrix or  `MatSetOptionsPrefix()` on the resulting factor matrix.
+
    Developer Notes:
       This should actually be called MatCreateFactor() since it creates a new factor object
 
@@ -4661,6 +4751,7 @@ PetscErrorCode MatGetFactor(Mat mat, MatSolverType type,MatFactorType ftype,Mat 
   PetscCheck(conv,PetscObjectComm((PetscObject)mat),PETSC_ERR_MISSING_FACTOR,"MatSolverType %s does not support factorization type %s for matrix type %s",type,MatFactorTypes[ftype],((PetscObject)mat)->type_name);
 
   PetscCall((*conv)(mat,ftype,f));
+  if (mat->factorprefix) PetscCall(MatSetOptionsPrefix(*f,mat->factorprefix));
   PetscFunctionReturn(0);
 }
 

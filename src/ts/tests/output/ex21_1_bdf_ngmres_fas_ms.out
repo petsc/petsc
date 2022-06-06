@@ -82,14 +82,14 @@ TS Object: 1 MPI process
               matrix ordering: natural
               factor fill ratio given 1., needed 1.
                 Factored matrix follows:
-                  Mat Object: 1 MPI process
+                  Mat Object: (npc_fas_coarse_) 1 MPI process
                     type: seqaij
                     rows=25, cols=25
                     package used to perform factorization: petsc
                     total: nonzeros=105, allocated nonzeros=105
                       not using I-node routines
             linear system matrix = precond matrix:
-            Mat Object: (npc_fas_coarse_) 1 MPI process
+            Mat Object: 1 MPI process
               type: seqaij
               rows=25, cols=25
               total: nonzeros=105, allocated nonzeros=105
@@ -115,14 +115,14 @@ TS Object: 1 MPI process
               matrix ordering: natural
               factor fill ratio given 1., needed 1.
                 Factored matrix follows:
-                  Mat Object: 1 MPI process
+                  Mat Object: (npc_fas_levels_1_) 1 MPI process
                     type: seqaij
                     rows=81, cols=81
                     package used to perform factorization: petsc
                     total: nonzeros=369, allocated nonzeros=369
                       not using I-node routines
             linear system matrix = precond matrix:
-            Mat Object: (npc_fas_levels_1_) 1 MPI process
+            Mat Object: 1 MPI process
               type: seqaij
               rows=81, cols=81
               total: nonzeros=369, allocated nonzeros=369
@@ -149,14 +149,14 @@ TS Object: 1 MPI process
               matrix ordering: natural
               factor fill ratio given 1., needed 1.
                 Factored matrix follows:
-                  Mat Object: 1 MPI process
+                  Mat Object: (npc_fas_levels_2_) 1 MPI process
                     type: seqaij
                     rows=289, cols=289
                     package used to perform factorization: petsc
                     total: nonzeros=1377, allocated nonzeros=1377
                       not using I-node routines
             linear system matrix = precond matrix:
-            Mat Object: (npc_fas_levels_2_) 1 MPI process
+            Mat Object: 1 MPI process
               type: seqaij
               rows=289, cols=289
               total: nonzeros=1377, allocated nonzeros=1377
