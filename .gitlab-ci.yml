@@ -67,7 +67,8 @@ check-ci-settings:
     - nproc
     - lscpu
     - ccache --zero-stats
-    - echo ${CONFIG_OPTS}
+    - printf "CONFIG_OPTS:${CONFIG_OPTS}\n"
+    - printf "PYTHON:${PYTHON}\n"
   script:
     - printf "PATH:$PATH\n"
     - printf "PYTHONPATH:$PYTHONPATH\n"
