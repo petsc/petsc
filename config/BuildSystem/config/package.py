@@ -1839,7 +1839,10 @@ class CMakePackage(Package):
       args.append('-DCMAKE_BUILD_TYPE=Release')
     self.framework.pushLanguage('C')
     args.append('-DCMAKE_C_COMPILER="'+self.framework.getCompiler()+'"')
-    args.append('-DMPI_C_COMPILER="'+self.framework.getCompiler()+'"')
+    # bypass CMake findMPI() bug that can find compilers later in the PATH before the first one in the PATH.
+    # relevent lines of findMPI() begins with if(_MPI_BASE_DIR)
+    self.getExecutable(self.framework.getCompiler(), getFullPath=1, resultName='mpi_C',setMakeMacro=0)
+    args.append('-DMPI_C_COMPILER="'+self.mpi_C+'"')
     args.append('-DCMAKE_AR='+self.setCompilers.AR)
     ranlib = shlex.split(self.setCompilers.RANLIB)[0]
     args.append('-DCMAKE_RANLIB='+ranlib)
@@ -1851,7 +1854,10 @@ class CMakePackage(Package):
     if hasattr(self.compilers, 'CXX'):
       lang = self.framework.pushLanguage('Cxx')
       args.append('-DCMAKE_CXX_COMPILER="'+self.framework.getCompiler()+'"')
-      args.append('-DMPI_CXX_COMPILER="'+self.framework.getCompiler()+'"')
+      # bypass CMake findMPI() bug that can find compilers later in the PATH before the first one in the PATH.
+      # relevent lines of findMPI() begins with if(_MPI_BASE_DIR)
+      self.getExecutable(self.framework.getCompiler(), getFullPath=1, resultName='mpi_CC',setMakeMacro=0)
+      args.append('-DMPI_CXX_COMPILER="'+self.mpi_CC+'"')
       cxxFlags = self.updatePackageCxxFlags(self.framework.getCompilerFlags())
       args.append('-DCMAKE_CXX_FLAGS:STRING="{cxxFlags}"'.format(cxxFlags=cxxFlags))
       args.append('-DCMAKE_CXX_FLAGS_DEBUG:STRING="{cxxFlags}"'.format(cxxFlags=cxxFlags))
@@ -1866,7 +1872,10 @@ class CMakePackage(Package):
     if hasattr(self.compilers, 'FC'):
       self.framework.pushLanguage('FC')
       args.append('-DCMAKE_Fortran_COMPILER="'+self.framework.getCompiler()+'"')
-      args.append('-DMPI_Fortran_COMPILER="'+self.framework.getCompiler()+'"')
+      # bypass CMake findMPI() bug that can find compilers later in the PATH before the first one in the PATH.
+      # relevent lines of findMPI() begins with if(_MPI_BASE_DIR)
+      self.getExecutable(self.framework.getCompiler(), getFullPath=1, resultName='mpi_FC',setMakeMacro=0)
+      args.append('-DMPI_Fortran_COMPILER="'+self.mpi_FC+'"')
       args.append('-DCMAKE_Fortran_FLAGS:STRING="'+self.updatePackageFFlags(self.framework.getCompilerFlags())+'"')
       args.append('-DCMAKE_Fortran_FLAGS_DEBUG:STRING="'+self.updatePackageFFlags(self.framework.getCompilerFlags())+'"')
       args.append('-DCMAKE_Fortran_FLAGS_RELEASE:STRING="'+self.updatePackageFFlags(self.framework.getCompilerFlags())+'"')
