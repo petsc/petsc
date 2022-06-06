@@ -1163,15 +1163,15 @@ PetscErrorCode TaoLineSearchSetVariableBounds(TaoLineSearch ls,Vec xl, Vec xu)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
-  PetscValidHeaderSpecific(xl,VEC_CLASSID,2);
-  PetscValidHeaderSpecific(xu,VEC_CLASSID,3);
+  if (xl) PetscValidHeaderSpecific(xl,VEC_CLASSID,2);
+  if (xu) PetscValidHeaderSpecific(xu,VEC_CLASSID,3);
   PetscCall(PetscObjectReference((PetscObject)xl));
   PetscCall(PetscObjectReference((PetscObject)xu));
   PetscCall(VecDestroy(&ls->lower));
   PetscCall(VecDestroy(&ls->upper));
   ls->lower = xl;
   ls->upper = xu;
-  ls->bounded = 1;
+  ls->bounded = (PetscBool)(xl || xu);
   PetscFunctionReturn(0);
 }
 

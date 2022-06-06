@@ -259,9 +259,7 @@ static PetscErrorCode IPMInitializeBounds(Tao tao)
   ipmP->nslack=0;
 
   PetscCall(VecDuplicate(tao->solution,&xtmp));
-  if (!tao->XL && !tao->XU && tao->ops->computebounds) {
-    PetscCall(TaoComputeVariableBounds(tao));
-  }
+  PetscCall(TaoComputeVariableBounds(tao));
   if (tao->XL) {
     PetscCall(VecSet(xtmp,PETSC_NINFINITY));
     PetscCall(VecWhichGreaterThan(tao->XL,xtmp,&ipmP->isxl));
@@ -662,9 +660,7 @@ PetscErrorCode IPMPushInitialPoint(Tao tao)
 
   PetscFunctionBegin;
   PetscCall(TaoComputeVariableBounds(tao));
-  if (tao->XL && tao->XU) {
-    PetscCall(VecMedian(tao->XL, tao->solution, tao->XU, tao->solution));
-  }
+  PetscCall(VecMedian(tao->XL, tao->solution, tao->XU, tao->solution));
   if (ipmP->nb > 0) {
     PetscCall(VecSet(ipmP->s,ipmP->pushs));
     PetscCall(VecSet(ipmP->lamdai,ipmP->pushnu));

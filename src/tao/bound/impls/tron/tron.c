@@ -58,7 +58,6 @@ static PetscErrorCode TaoSetup_TRON(Tao tao)
   TAO_TRON       *tron = (TAO_TRON *)tao->data;
 
   PetscFunctionBegin;
-
   /* Allocate some arrays */
   PetscCall(VecDuplicate(tao->solution, &tron->diag));
   PetscCall(VecDuplicate(tao->solution, &tron->X_New));
@@ -66,14 +65,6 @@ static PetscErrorCode TaoSetup_TRON(Tao tao)
   PetscCall(VecDuplicate(tao->solution, &tron->Work));
   PetscCall(VecDuplicate(tao->solution, &tao->gradient));
   PetscCall(VecDuplicate(tao->solution, &tao->stepdirection));
-  if (!tao->XL) {
-    PetscCall(VecDuplicate(tao->solution, &tao->XL));
-    PetscCall(VecSet(tao->XL, PETSC_NINFINITY));
-  }
-  if (!tao->XU) {
-    PetscCall(VecDuplicate(tao->solution, &tao->XU));
-    PetscCall(VecSet(tao->XU, PETSC_INFINITY));
-  }
   PetscFunctionReturn(0);
 }
 

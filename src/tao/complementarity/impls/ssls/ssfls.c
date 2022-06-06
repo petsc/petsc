@@ -14,12 +14,6 @@ PetscErrorCode TaoSetUp_SSFLS(Tao tao)
   PetscCall(VecDuplicate(tao->solution,&ssls->db));
   PetscCall(VecDuplicate(tao->solution,&ssls->t1));
   PetscCall(VecDuplicate(tao->solution,&ssls->t2));
-  if (!tao->XL) {
-    PetscCall(VecDuplicate(tao->solution,&tao->XL));
-  }
-  if (!tao->XU) {
-    PetscCall(VecDuplicate(tao->solution,&tao->XU));
-  }
   PetscCall(TaoLineSearchSetVariableBounds(tao->linesearch,tao->XL,tao->XU));
   PetscFunctionReturn(0);
 }
