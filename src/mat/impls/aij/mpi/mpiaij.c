@@ -2582,6 +2582,30 @@ PetscErrorCode MatMPIAIJSetUseScalableIncreaseOverlap_MPIAIJ(Mat A,PetscBool sc)
 }
 
 /*@
+   MatMPIAIJGetNumberNonzeros - gets the number of nonzeros in the matrix on this MPI rank
+
+   Not collective
+
+   Input Parameter:
+.    A - the matrix
+
+   Output Parameter:
+.    nz - the number of nonzeros
+
+ Level: advanced
+
+@*/
+PetscErrorCode MatMPIAIJGetNumberNonzeros(Mat A,PetscCount *nz)
+{
+  Mat_MPIAIJ *maij = (Mat_MPIAIJ*)A->data;
+  Mat_SeqAIJ *aaij = (Mat_SeqAIJ*)maij->A->data, *baij = (Mat_SeqAIJ*)maij->B->data;
+
+  PetscFunctionBegin;
+  *nz = aaij->i[A->rmap->n] + baij->i[A->rmap->n];
+  PetscFunctionReturn(0);
+}
+
+/*@
    MatMPIAIJSetUseScalableIncreaseOverlap - Determine if the matrix uses a scalable algorithm to compute the overlap
 
    Collective on Mat
