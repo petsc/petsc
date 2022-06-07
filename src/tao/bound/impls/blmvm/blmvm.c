@@ -41,6 +41,7 @@ static PetscErrorCode TaoSolve_BLMVM(Tao tao)
     /* Call general purpose update function */
     if (tao->ops->update) {
       PetscCall((*tao->ops->update)(tao, tao->niter, tao->user_update));
+      PetscCall(TaoComputeObjectiveAndGradient(tao, tao->solution, &f, tao->gradient));
     }
     /* Compute direction */
     gnorm2 = gnorm*gnorm;

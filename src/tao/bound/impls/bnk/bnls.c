@@ -107,6 +107,7 @@ PetscErrorCode TaoSolve_BNLS(Tao tao)
     /* Call general purpose update function */
     if (tao->ops->update) {
       PetscCall((*tao->ops->update)(tao, tao->niter, tao->user_update));
+      PetscCall(TaoComputeObjectiveAndGradient(tao, tao->solution, &bnk->f, bnk->unprojected_gradient));
     }
 
     if (needH && bnk->inactive_idx) {
