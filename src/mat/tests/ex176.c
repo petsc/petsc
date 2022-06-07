@@ -38,6 +38,8 @@ int main(int argc,char **argv)
   PetscCall(MatView(A,NULL));
   PetscCall(MatUpdateMPIAIJWithArrays(A,2,2,PETSC_DETERMINE,PETSC_DETERMINE,i[rank],j[rank],a[rank]));
   PetscCall(MatView(A,NULL));
+  PetscCall(MatUpdateMPIAIJWithArray(A,anew[rank]));
+  PetscCall(MatView(A,NULL));
   PetscCall(MatDestroy(&A));
   PetscCall(PetscFinalize());
   return 0;

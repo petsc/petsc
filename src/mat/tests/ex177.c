@@ -170,7 +170,7 @@ int main(int argc,char **args)
 
   test:
     requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
-    output_file: output/ex176.out
+    output_file: output/ex177.out
     nsize: {{1 2 3 4}}
     args: -f ${DATAFILESPATH}/matrices/small -p {{2 3 7}} -q {{3 7}} -viewer_binary_skip_info
 

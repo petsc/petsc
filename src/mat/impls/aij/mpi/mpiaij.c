@@ -3821,10 +3821,11 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_nonscalable(Mat mat,IS isrow,IS iscol,P
 
 PetscErrorCode MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B,const PetscInt Ii[],const PetscInt J[],const PetscScalar v[])
 {
-  PetscInt       m,cstart, cend,j,nnz,i,d;
+  PetscInt       m,cstart, cend,j,nnz,i,d,*ld;
   PetscInt       *d_nnz,*o_nnz,nnz_max = 0,rstart,ii;
   const PetscInt *JJ;
   PetscBool      nooffprocentries;
+  Mat_MPIAIJ     *Aij = (Mat_MPIAIJ*)B->data;
 
   PetscFunctionBegin;
   PetscCheck(Ii[0] == 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Ii[0] must be 0 it is %" PetscInt_FMT,Ii[0]);
@@ -3871,6 +3872,18 @@ PetscErrorCode MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B,const PetscInt Ii[],con
   PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
   B->nooffprocentries = nooffprocentries;
+
+  /* count number of entries below block diagonal */
+  PetscCall(PetscFree(Aij->ld));
+  PetscCall(PetscCalloc1(m,&ld));
+  Aij->ld = ld;
+  for (i=0; i<m; i++) {
+    nnz  = Ii[i+1] - Ii[i];
+    j     = 0;
+    while  (j < nnz && J[j] < cstart) {j++;}
+    ld[i] = j;
+    J     += nnz;
+  }
 
   PetscCall(MatSetOption(B,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE));
   PetscFunctionReturn(0);
@@ -4133,7 +4146,9 @@ PetscErrorCode MatCreateMPIAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pet
 
 /*@
      MatUpdateMPIAIJWithArrays - updates a MPI AIJ matrix using arrays that contain in standard
-         CSR format for the local rows. Only the numerical values are updated the other arrays must be identical
+         CSR format for the local rows. Only the numerical values are updated the other arrays must be identical to what was passed from MatCreateMPIAIJWithArrays()
+
+     Deprecated: Use `MatUpdateMPIAIJWithArray()`
 
    Collective
 
@@ -4152,18 +4167,18 @@ PetscErrorCode MatCreateMPIAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pet
    Level: intermediate
 
 .seealso: `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIAIJSetPreallocation()`, `MatMPIAIJSetPreallocationCSR()`,
-          `MATMPIAIJ`, `MatCreateAIJ()`, `MatCreateMPIAIJWithSplitArrays()`, `MatUpdateMPIAIJWithArrays()`
+          `MATMPIAIJ`, `MatCreateAIJ()`, `MatCreateMPIAIJWithSplitArrays()`, `MatUpdateMPIAIJWithArrays()`, `MatUpdateMPIAIJWithArray()`
 @*/
 PetscErrorCode MatUpdateMPIAIJWithArrays(Mat mat,PetscInt m,PetscInt n,PetscInt M,PetscInt N,const PetscInt Ii[],const PetscInt J[],const PetscScalar v[])
 {
-  PetscInt       cstart,nnz,i,j;
-  PetscInt       *ld;
+  PetscInt       nnz,i;
   PetscBool      nooffprocentries;
   Mat_MPIAIJ     *Aij = (Mat_MPIAIJ*)mat->data;
   Mat_SeqAIJ     *Ad  = (Mat_SeqAIJ*)Aij->A->data;
   PetscScalar    *ad,*ao;
-  const PetscInt *Adi = Ad->i;
   PetscInt       ldi,Iii,md;
+  const PetscInt *Adi = Ad->i;
+  PetscInt       *ld = Aij->ld;
 
   PetscFunctionBegin;
   PetscCheck(Ii[0] == 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"i (row indices) must start with 0");
@@ -4173,21 +4188,6 @@ PetscErrorCode MatUpdateMPIAIJWithArrays(Mat mat,PetscInt m,PetscInt n,PetscInt 
 
   PetscCall(MatSeqAIJGetArrayWrite(Aij->A,&ad));
   PetscCall(MatSeqAIJGetArrayWrite(Aij->B,&ao));
-  cstart = mat->cmap->rstart;
-  if (!Aij->ld) {
-    /* count number of entries below block diagonal */
-    PetscCall(PetscCalloc1(m,&ld));
-    Aij->ld = ld;
-    for (i=0; i<m; i++) {
-      nnz  = Ii[i+1]- Ii[i];
-      j     = 0;
-      while  (J[j] < cstart && j < nnz) {j++;}
-      J    += nnz;
-      ld[i] = j;
-    }
-  } else {
-    ld = Aij->ld;
-  }
 
   for (i=0; i<m; i++) {
     nnz  = Ii[i+1]- Ii[i];
@@ -4199,6 +4199,65 @@ PetscErrorCode MatUpdateMPIAIJWithArrays(Mat mat,PetscInt m,PetscInt n,PetscInt 
     PetscCall(PetscArraycpy(ao + ldi,v + Iii + ldi + md,nnz - ldi - md));
     ad  += md;
     ao  += nnz - md;
+  }
+  nooffprocentries      = mat->nooffprocentries;
+  mat->nooffprocentries = PETSC_TRUE;
+  PetscCall(MatSeqAIJRestoreArrayWrite(Aij->A,&ad));
+  PetscCall(MatSeqAIJRestoreArrayWrite(Aij->B,&ao));
+  PetscCall(PetscObjectStateIncrease((PetscObject)Aij->A));
+  PetscCall(PetscObjectStateIncrease((PetscObject)Aij->B));
+  PetscCall(PetscObjectStateIncrease((PetscObject)mat));
+  PetscCall(MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY));
+  mat->nooffprocentries = nooffprocentries;
+  PetscFunctionReturn(0);
+}
+
+/*@
+     MatUpdateMPIAIJWithArray - updates an MPI AIJ matrix using an array that contains the nonzero values
+
+   Collective
+
+   Input Parameters:
++  mat - the matrix
+-  v - matrix values, stored by row
+
+   Level: intermediate
+
+   Notes:
+   The matrix must have been obtained with `MatCreateMPIAIJWithArrays()` or `MatMPIAIJSetPreallocationCSR()`
+
+.seealso: `MatCreate()`, `MatCreateSeqAIJ()`, `MatSetValues()`, `MatMPIAIJSetPreallocation()`, `MatMPIAIJSetPreallocationCSR()`,
+          `MATMPIAIJ`, `MatCreateAIJ()`, `MatCreateMPIAIJWithSplitArrays()`, `MatUpdateMPIAIJWithArrays()`, `MatUpdateMPIAIJWithArrays()`
+@*/
+PetscErrorCode MatUpdateMPIAIJWithArray(Mat mat,const PetscScalar v[])
+{
+  PetscInt       nnz,i,m;
+  PetscBool      nooffprocentries;
+  Mat_MPIAIJ     *Aij = (Mat_MPIAIJ*)mat->data;
+  Mat_SeqAIJ     *Ad  = (Mat_SeqAIJ*)Aij->A->data;
+  Mat_SeqAIJ     *Ao  = (Mat_SeqAIJ*)Aij->B->data;
+  PetscScalar    *ad,*ao;
+  const PetscInt *Adi = Ad->i,*Adj = Ao->i;
+  PetscInt       ldi,Iii,md;
+  PetscInt       *ld = Aij->ld;
+
+  PetscFunctionBegin;
+  m = mat->rmap->n;
+
+  PetscCall(MatSeqAIJGetArrayWrite(Aij->A,&ad));
+  PetscCall(MatSeqAIJGetArrayWrite(Aij->B,&ao));
+  Iii = 0;
+  for (i=0; i<m; i++) {
+    nnz  = Adi[i+1]-Adi[i] + Adj[i+1]-Adj[i];
+    ldi  = ld[i];
+    md   = Adi[i+1]-Adi[i];
+    PetscCall(PetscArraycpy(ao,v + Iii,ldi));
+    PetscCall(PetscArraycpy(ad,v + Iii + ldi,md));
+    PetscCall(PetscArraycpy(ao + ldi,v + Iii + ldi + md,nnz - ldi - md));
+    ad  += md;
+    ao  += nnz - md;
+    Iii += nnz;
   }
   nooffprocentries      = mat->nooffprocentries;
   mat->nooffprocentries = PETSC_TRUE;
