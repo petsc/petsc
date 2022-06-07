@@ -10575,6 +10575,7 @@ PetscErrorCode MatTransposeColoringCreate(Mat mat,ISColoring iscoloring,MatTrans
 
   Level: intermediate
 
+.seealso: `PetscObjectStateGet()`
 @*/
 PetscErrorCode MatGetNonzeroState(Mat mat,PetscObjectState *state)
 {
