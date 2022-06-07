@@ -129,4 +129,15 @@ int main(int argc, char **argv)
       args: -dm_plex_simplex 0 -dm_plex_box_faces 2,2 -dm_plex_separate_marker -bd 1,3 \
             -dm_plex_transform_extrude_thickness 0.5
 
+    test:
+      suffix: tet_adapt_0
+      requires: ctetgen BROKEN
+      args: -dm_plex_dim 3 -dm_plex_box_faces 2,2,2 -dm_plex_separate_marker -bd 1,3 \
+            -dm_plex_transform_extrude_thickness 0.5
+
+    test:
+      suffix: hex_adapt_0
+      args: -dm_plex_simplex 0 -dm_plex_dim 3 -dm_plex_box_faces 2,2,2 -dm_plex_separate_marker -bd 1,3 \
+            -dm_plex_transform_extrude_thickness 0.5
+
 TEST*/

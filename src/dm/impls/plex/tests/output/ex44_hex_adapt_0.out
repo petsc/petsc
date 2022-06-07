@@ -1,0 +1,24 @@
+DM Object: box 1 MPI process
+  type: plex
+box in 3 dimensions:
+  Number of 0-cells per rank: 27
+  Number of 1-cells per rank: 54
+  Number of 2-cells per rank: 36
+  Number of 3-cells per rank: 8
+Labels:
+  marker: 6 strata with value/size (6 (25), 5 (25), 3 (25), 4 (25), 1 (25), 2 (25))
+  Face Sets: 6 strata with value/size (6 (4), 5 (4), 3 (4), 4 (4), 1 (4), 2 (4))
+  depth: 4 strata with value/size (0 (27), 1 (54), 2 (36), 3 (8))
+  celltype: 4 strata with value/size (7 (8), 0 (27), 4 (36), 1 (54))
+DM Object: Adapted Mesh 1 MPI process
+  type: plex
+Adapted Mesh in 3 dimensions:
+  Number of 0-cells per rank: 42
+  Number of 1-cells per rank: 91 (15)
+  Number of 2-cells per rank: 66 (22)
+  Number of 3-cells per rank: 16 (8)
+Labels:
+  celltype: 7 strata with value/size (7 (8), 0 (42), 2 (15), 4 (44), 10 (8), 1 (76), 5 (22))
+  depth: 4 strata with value/size (0 (42), 1 (91), 2 (66), 3 (16))
+  marker: 6 strata with value/size (6 (43), 5 (43), 3 (75), 4 (35), 1 (75), 2 (35))
+  Face Sets: 6 strata with value/size (6 (4), 5 (4), 3 (12), 4 (4), 1 (12), 2 (4))
