@@ -8,14 +8,14 @@ const char *const DMStagStencilTypes[] = {"NONE","STAR","BOX","DMStagStencilType
 const char * const DMStagStencilLocations[] = {"NONE","BACK_DOWN_LEFT","BACK_DOWN","BACK_DOWN_RIGHT","BACK_LEFT","BACK","BACK_RIGHT","BACK_UP_LEFT","BACK_UP","BACK_UP_RIGHT","DOWN_LEFT","DOWN","DOWN_RIGHT","LEFT","ELEMENT","RIGHT","UP_LEFT","UP","UP_RIGHT","FRONT_DOWN_LEFT","FRONT_DOWN","FRONT_DOWN_RIGHT","FRONT_LEFT","FRONT","FRONT_RIGHT","FRONT_UP_LEFT","FRONT_UP","FRONT_UP_RIGHT","DMStagStencilLocation","",NULL};
 
 /*@C
-  DMStagCreateISFromStencils - Create an IS, using global numberings, for a subset of DOF in a DMStag object
+  DMStagCreateISFromStencils - Create an `IS`, using global numberings, for a subset of DOF in a DMStag object
 
   Collective
 
   Input Parameters:
 + dm - the DMStag object
 . n_stencil - the number of stencils provided
-- stencils - an array of DMStagStencil objects (i, j, and k are ignored)
+- stencils - an array of `DMStagStencil` objects (`i`, `j`, and `k` are ignored)
 
   Output Parameter:
 . is - the global IS
@@ -126,10 +126,10 @@ PetscErrorCode DMStagCreateISFromStencils(DM dm,PetscInt n_stencil,DMStagStencil
 
   Input Parameters:
 + dm - the DMStag object
-- loc - grid point (see DMStagStencilLocation)
+- loc - grid point (see `DMStagStencilLocation`)
 
   Output Parameter:
-. dof - the number of dof (components) living at loc in dm
+. dof - the number of DOF (components) living at `loc` in `dm`
 
   Level: intermediate
 
@@ -319,10 +319,10 @@ PetscErrorCode DMStagMatGetValuesStencil(DM dm,Mat mat,PetscInt nRow,const DMSta
 . nCol - number of columns
 . posCol - grid locations (including components) of columns
 . val - logically two-dimensional array of values
-- insertmode - INSERT_VALUES or ADD_VALUES
+- insertmode - `INSERT_VALUES` or `ADD_VALUES`
 
   Notes:
-  See notes for MatSetValuesStencil()
+  See notes for `MatSetValuesStencil()`
 
   Level: intermediate
 
@@ -351,16 +351,16 @@ PetscErrorCode DMStagMatSetValuesStencil(DM dm,Mat mat,PetscInt nRow,const DMSta
   Input Parameters:
 + dm - the DMStag object
 . dim - the dimension of the DMStag object
-. n - the number of DMStagStencil objects
-- pos - an array of n DMStagStencil objects
+. n - the number of `DMStagStencil` objects
+- pos - an array of `n` `DMStagStencil` objects
 
   Output Parameter:
-. ix - output array of n indices
+. ix - output array of `n` indices
 
   Notes:
-  The DMStagStencil objects in pos use global element indices.
+  The `DMStagStencil` objects in `pos` use global element indices.
 
-  The .c fields in pos must always be set (even if to 0).
+  The `.c` fields in `pos` must always be set (even if to `0`).
 
   Developer Notes:
   This is a "hot" function, and accepts the dimension redundantly to avoid having to perform any error checking inside the function.
@@ -416,7 +416,7 @@ PetscErrorCode DMStagStencilToIndexLocal(DM dm,PetscInt dim,PetscInt n,const DMS
 + dm - the DMStag object
 . vec - the vector object
 . n - the number of values to obtain
-- pos - locations to obtain values from (as an array of DMStagStencil values)
+- pos - locations to obtain values from (as an array of `DMStagStencil` values)
 
   Output Parameter:
 . val - value at the point
@@ -425,7 +425,8 @@ PetscErrorCode DMStagStencilToIndexLocal(DM dm,PetscInt dim,PetscInt n,const DMS
   Accepts stencils which refer to global element numbers, but
   only allows access to entries in the local representation (including ghosts).
 
-  This approach is not as efficient as getting values directly with DMStagVecGetArray(), which is recommended for matrix free operators.
+  This approach is not as efficient as getting values directly with `DMStagVecGetArray()`,
+  which is recommended for matrix free operators.
 
   Level: advanced
 
@@ -461,15 +462,15 @@ PetscErrorCode DMStagVecGetValuesStencil(DM dm, Vec vec,PetscInt n,const DMStagS
 + dm - the DMStag object
 . vec - the Vec
 . n - the number of values to set
-. pos - the locations to set values, as an array of DMStagStencil structs
+. pos - the locations to set values, as an array of `DMStagStencil` structs
 . val - the values to set
-- insertMode - INSERT_VALUES or ADD_VALUES
+- insertMode - `INSERT_VALUES` or `ADD_VALUES`
 
   Notes:
-  The vector is expected to be a global vector compatible with the DM (usually obtained by DMGetGlobalVector() or DMCreateGlobalVector()).
+  The vector is expected to be a global vector compatible with the DM (usually obtained by `DMGetGlobalVector()` or `DMCreateGlobalVector()`).
 
-  This approach is not as efficient as setting values directly with DMStagVecGetArray(), which is recommended for matrix-free operators.
-  For assembling systems, where overhead may be less important than convenience, this routine could be helpful in assembling a righthand side and a matrix (using DMStagMatSetValuesStencil()).
+  This approach is not as efficient as setting values directly with `DMStagVecGetArray()`, which is recommended for matrix-free operators.
+  For assembling systems, where overhead may be less important than convenience, this routine could be helpful in assembling a righthand side and a matrix (using `DMStagMatSetValuesStencil()`).
 
   Level: advanced
 

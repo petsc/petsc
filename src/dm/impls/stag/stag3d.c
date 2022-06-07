@@ -8,14 +8,14 @@
 
   Input Parameters:
 + comm - MPI communicator
-. bndx,bndy,bndz - boundary type: DM_BOUNDARY_NONE, DM_BOUNDARY_PERIODIC, or DM_BOUNDARY_GHOSTED
+. bndx,bndy,bndz - boundary type: `DM_BOUNDARY_NONE`, `DM_BOUNDARY_PERIODIC`, or `DM_BOUNDARY_GHOSTED`
 . M,N,P - global number of elements in x,y,z directions
-. m,n,p - number of ranks in the x,y,z directions (may be PETSC_DECIDE)
+. m,n,p - number of ranks in the x,y,z directions (may be `PETSC_DECIDE`)
 . dof0 - number of degrees of freedom per vertex/0-cell
 . dof1 - number of degrees of freedom per edge/1-cell
 . dof2 - number of degrees of freedom per face/2-cell
 . dof3 - number of degrees of freedom per element/3-cell
-. stencilType - ghost/halo region type: DMSTAG_STENCIL_NONE, DMSTAG_STENCIL_BOX, or DMSTAG_STENCIL_STAR
+. stencilType - ghost/halo region type: `DMSTAG_STENCIL_NONE`, `DMSTAG_STENCIL_BOX`, or `DMSTAG_STENCIL_STAR`
 . stencilWidth - width, in elements, of halo/ghost region
 - lx,ly,lz - arrays of local x,y,z element counts, of length equal to m,n,p, summing to M,N,P
 
@@ -23,7 +23,7 @@
 . dm - the new DMStag object
 
   Options Database Keys:
-+ -dm_view - calls DMViewFromOptions() a the conclusion of DMSetUp()
++ -dm_view - calls `DMViewFromOptions()` at the conclusion of `DMSetUp()`
 . -stag_grid_x <nx> - number of elements in the x direction
 . -stag_grid_y <ny> - number of elements in the y direction
 . -stag_grid_z <nz> - number of elements in the z direction
@@ -31,14 +31,14 @@
 . -stag_ranks_y <ry> - number of ranks in the y direction
 . -stag_ranks_z <rz> - number of ranks in the z direction
 . -stag_ghost_stencil_width - width of ghost region, in elements
-. -stag_boundary_type x <none,ghosted,periodic> - DMBoundaryType value
-. -stag_boundary_type y <none,ghosted,periodic> - DMBoundaryType value
-- -stag_boundary_type z <none,ghosted,periodic> - DMBoundaryType value
+. -stag_boundary_type x <none,ghosted,periodic> - `DMBoundaryType` value
+. -stag_boundary_type y <none,ghosted,periodic> - `DMBoundaryType` value
+- -stag_boundary_type z <none,ghosted,periodic> - `DMBoundaryType` value
 
   Notes:
-  You must call DMSetUp() after this call before using the DM.
+  You must call `DMSetUp()` after this call before using the DM.
   If you wish to use the options database (see the keys above) to change values in the DMStag, you must call
-  DMSetFromOptions() after this function but before DMSetUp().
+  `DMSetFromOptions()` after this function but before `DMSetUp()`.
 
   Level: beginner
 

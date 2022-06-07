@@ -211,12 +211,11 @@ processes in the communicator ``comm`` must call ``DACreateXXX()``.
 
 .. _sec_stag:
 
-DMSTAG - Creating vectors for staggered grids
+DMStag - Creating vectors for staggered grids
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For regular grids with staggered data (living on elements, faces, edges,
-and/or vertices), the ``DMSTAG`` object is available. It behaves much
-like ``DMDA``; see the ``DMSTAG`` manual page for more information.
+See :any:`chapter_stag` for discussion of creating vectors with ``DMSTAG``.
+
 
 .. _sec_unstruct:
 
@@ -737,7 +736,7 @@ information (or, in other words, can share a given ``DM``). The design
 of the ``DM`` object makes this easy, as each ``DM`` operation may
 operate on vectors of the appropriate size, as obtained via
 ``DMCreateLocalVector()`` and ``DMCreateGlobalVector()`` or as produced
-by ``VecDuplicate()``. 
+by ``VecDuplicate()``.
 
 At certain stages of many applications, there is a need to work on a
 local portion of the vector, including the ghost points. This may be

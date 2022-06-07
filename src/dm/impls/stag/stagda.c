@@ -384,7 +384,7 @@ static PetscErrorCode DMStagTransferCoordinatesToDMDA(DM dmstag,DMStagStencilLoc
 }
 
 /*@C
-  DMStagVecSplitToDMDA - create a DMDA and Vec from a DMStag and Vec
+  DMStagVecSplitToDMDA - create a DMDA and `Vec` from a DMStag and `Vec`
 
   Logically Collective
 
@@ -393,20 +393,20 @@ static PetscErrorCode DMStagTransferCoordinatesToDMDA(DM dmstag,DMStagStencilLoc
 
   Input Parameters:
 + dm - the DMStag object
-. vec- Vec object associated with dm
-. loc - which subgrid to extract (see DMStagStencilLocation)
+. vec- Vec object associated with `dm`
+. loc - which subgrid to extract (see `DMStagStencilLocation`)
 - c - which component to extract (see note below)
 
   Output Parameters:
-+ pda - the new DMDA
-- pdavec - the new Vec
++ pda - the new `DMDA`
+- pdavec - the new `Vec`
 
   Notes:
-  If a c value of -k is provided, the first k dof for that position are extracted,
+  If a `c` value of `-k` is provided, the first `k` DOF for that position are extracted,
   padding with zero values if needbe. If a non-negative value is provided, a single
-  dof is extracted.
+  DOF is extracted.
 
-  The caller is responsible for destroying the created DMDA and Vec.
+  The caller is responsible for destroying the created `DMDA` and `Vec`.
 
   Level: advanced
 
