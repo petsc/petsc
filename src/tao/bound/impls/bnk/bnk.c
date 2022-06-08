@@ -311,9 +311,10 @@ PetscErrorCode TaoBNKComputeHessian(Tao tao)
 PetscErrorCode TaoBNKEstimateActiveSet(Tao tao, PetscInt asType)
 {
   TAO_BNK        *bnk = (TAO_BNK *)tao->data;
-  PetscBool      hessComputed, diagExists;
+  PetscBool      hessComputed, diagExists, hadactive;
 
   PetscFunctionBegin;
+  hadactive = bnk->active_idx ? PETSC_TRUE : PETSC_FALSE;
   switch (asType) {
   case BNK_AS_NONE:
     PetscCall(ISDestroy(&bnk->inactive_idx));
@@ -355,6 +356,7 @@ PetscErrorCode TaoBNKEstimateActiveSet(Tao tao, PetscInt asType)
   default:
     break;
   }
+  bnk->resetksp = (PetscBool)(bnk->active_idx || hadactive); /* inactive Hessian size may have changed, need to reset operators */
   PetscFunctionReturn(0);
 }
 
@@ -456,8 +458,11 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
   /* Solve the Newton system of equations */
   tao->ksp_its = 0;
   PetscCall(VecSet(tao->stepdirection, 0.0));
-  PetscCall(KSPReset(tao->ksp));
-  PetscCall(KSPResetFromOptions(tao->ksp));
+  if (bnk->resetksp) {
+    PetscCall(KSPReset(tao->ksp));
+    PetscCall(KSPResetFromOptions(tao->ksp));
+    bnk->resetksp = PETSC_FALSE;
+  }
   PetscCall(KSPSetOperators(tao->ksp,bnk->H_inactive,bnk->Hpre_inactive));
   PetscCall(VecCopy(bnk->unprojected_gradient, bnk->Gwork));
   if (bnk->active_idx) {
@@ -467,13 +472,13 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
     bnk->G_inactive = bnk->unprojected_gradient;
     bnk->X_inactive = tao->stepdirection;
   }
-  PetscCall(PetscObjectQueryFunction((PetscObject)tao->ksp,"KSPCGSetRadius_C",&kspTR));
+  PetscCall(KSPCGSetRadius(tao->ksp,tao->trust));
+  PetscCall(KSPSolve(tao->ksp, bnk->G_inactive, bnk->X_inactive));
+  PetscCall(KSPGetIterationNumber(tao->ksp,&kspits));
+  tao->ksp_its += kspits;
+  tao->ksp_tot_its += kspits;
+  PetscCall(PetscObjectQueryFunction((PetscObject)tao->ksp,"KSPCGGetNormD_C",&kspTR));
   if (kspTR) {
-    PetscCall(KSPCGSetRadius(tao->ksp,tao->trust));
-    PetscCall(KSPSolve(tao->ksp, bnk->G_inactive, bnk->X_inactive));
-    PetscCall(KSPGetIterationNumber(tao->ksp,&kspits));
-    tao->ksp_its += kspits;
-    tao->ksp_tot_its += kspits;
     PetscCall(KSPCGGetNormD(tao->ksp,&bnk->dnorm));
 
     if (0.0 == tao->trust) {
@@ -503,11 +508,6 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
         PetscCheck(bnk->dnorm != 0.0,PetscObjectComm((PetscObject)tao),PETSC_ERR_PLIB, "Initial direction zero");
       }
     }
-  } else {
-    PetscCall(KSPSolve(tao->ksp, bnk->G_inactive, bnk->X_inactive));
-    PetscCall(KSPGetIterationNumber(tao->ksp, &kspits));
-    tao->ksp_its += kspits;
-    tao->ksp_tot_its += kspits;
   }
   /* Restore sub vectors back */
   if (bnk->active_idx) {
@@ -1114,20 +1114,18 @@ PetscErrorCode TaoSetUp_BNK(Tao tao)
 
 PetscErrorCode TaoDestroy_BNK(Tao tao)
 {
-  TAO_BNK        *bnk = (TAO_BNK *)tao->data;
+  TAO_BNK *bnk = (TAO_BNK *)tao->data;
 
   PetscFunctionBegin;
-  if (tao->setupcalled) {
-    PetscCall(VecDestroy(&bnk->W));
-    PetscCall(VecDestroy(&bnk->Xold));
-    PetscCall(VecDestroy(&bnk->Gold));
-    PetscCall(VecDestroy(&bnk->Xwork));
-    PetscCall(VecDestroy(&bnk->Gwork));
-    PetscCall(VecDestroy(&bnk->unprojected_gradient));
-    PetscCall(VecDestroy(&bnk->unprojected_gradient_old));
-    PetscCall(VecDestroy(&bnk->Diag_min));
-    PetscCall(VecDestroy(&bnk->Diag_max));
-  }
+  PetscCall(VecDestroy(&bnk->W));
+  PetscCall(VecDestroy(&bnk->Xold));
+  PetscCall(VecDestroy(&bnk->Gold));
+  PetscCall(VecDestroy(&bnk->Xwork));
+  PetscCall(VecDestroy(&bnk->Gwork));
+  PetscCall(VecDestroy(&bnk->unprojected_gradient));
+  PetscCall(VecDestroy(&bnk->unprojected_gradient_old));
+  PetscCall(VecDestroy(&bnk->Diag_min));
+  PetscCall(VecDestroy(&bnk->Diag_max));
   PetscCall(ISDestroy(&bnk->active_lower));
   PetscCall(ISDestroy(&bnk->active_upper));
   PetscCall(ISDestroy(&bnk->active_fixed));
@@ -1313,9 +1311,8 @@ M*/
 
 PetscErrorCode TaoCreate_BNK(Tao tao)
 {
-  TAO_BNK        *bnk;
-  const char     *morethuente_type = TAOLINESEARCHMT;
-  PC             pc;
+  TAO_BNK *bnk;
+  PC      pc;
 
   PetscFunctionBegin;
   PetscCall(PetscNewLog(tao,&bnk));
@@ -1410,21 +1407,21 @@ PetscErrorCode TaoCreate_BNK(Tao tao)
   bnk->as_type     = BNK_AS_BERTSEKAS;
 
   /* Create the embedded BNCG solver */
-  PetscCall(TaoCreate(PetscObjectComm((PetscObject)tao), &bnk->bncg));
-  PetscCall(PetscObjectIncrementTabLevel((PetscObject)bnk->bncg, (PetscObject)tao, 1));
-  PetscCall(TaoSetType(bnk->bncg, TAOBNCG));
+  PetscCall(TaoCreate(PetscObjectComm((PetscObject)tao),&bnk->bncg));
+  PetscCall(PetscObjectIncrementTabLevel((PetscObject)bnk->bncg,(PetscObject)tao,1));
+  PetscCall(TaoSetType(bnk->bncg,TAOBNCG));
 
   /* Create the line search */
   PetscCall(TaoLineSearchCreate(((PetscObject)tao)->comm,&tao->linesearch));
-  PetscCall(PetscObjectIncrementTabLevel((PetscObject)tao->linesearch, (PetscObject)tao, 1));
-  PetscCall(TaoLineSearchSetType(tao->linesearch,morethuente_type));
+  PetscCall(PetscObjectIncrementTabLevel((PetscObject)tao->linesearch,(PetscObject)tao,1));
+  PetscCall(TaoLineSearchSetType(tao->linesearch,TAOLINESEARCHMT));
   PetscCall(TaoLineSearchUseTaoRoutines(tao->linesearch,tao));
 
   /*  Set linear solver to default for symmetric matrices */
   PetscCall(KSPCreate(((PetscObject)tao)->comm,&tao->ksp));
-  PetscCall(PetscObjectIncrementTabLevel((PetscObject)tao->ksp, (PetscObject)tao, 1));
+  PetscCall(PetscObjectIncrementTabLevel((PetscObject)tao->ksp,(PetscObject)tao,1));
   PetscCall(KSPSetType(tao->ksp,KSPSTCG));
-  PetscCall(KSPGetPC(tao->ksp, &pc));
-  PetscCall(PCSetType(pc, PCLMVM));
+  PetscCall(KSPGetPC(tao->ksp,&pc));
+  PetscCall(PCSetType(pc,PCLMVM));
   PetscFunctionReturn(0);
 }
