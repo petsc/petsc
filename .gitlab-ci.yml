@@ -587,6 +587,7 @@ linux-knl:
   tags:
     - name:isdp001
   variables:
+    MAKE_FFLAGS: -warn errors
     TEST_ARCH: arch-ci-linux-knl
 
 linux-intel-mkl-single:
