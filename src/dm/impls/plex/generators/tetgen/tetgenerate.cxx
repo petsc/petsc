@@ -32,7 +32,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpo
   ::tetgenio             out;
   PetscContainer         modelObj;
   DMUniversalLabel       universal;
-  PetscInt               vStart, vEnd, v, eStart, eEnd, e, fStart, fEnd, f;
+  PetscInt               vStart, vEnd, v, eStart, eEnd, e, fStart, fEnd, f, defVal;
   DMPlexInterpolatedFlag isInterpolated;
   PetscMPIInt            rank;
 
@@ -41,6 +41,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpo
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCall(DMPlexIsInterpolatedCollective(boundary, &isInterpolated));
   PetscCall(DMUniversalLabelCreate(boundary, &universal));
+  PetscCall(DMLabelGetDefaultValue(universal->label, &defVal));
 
   PetscCall(DMPlexGetDepthStratum(boundary, 0, &vStart, &vEnd));
   in.numberofpoints = vEnd - vStart;
@@ -62,7 +63,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpo
       PetscCall(PetscSectionGetOffset(coordSection, v, &off));
       for (d = 0; d < dim; ++d) in.pointlist[idx*dim + d] = PetscRealPart(array[off+d]);
       PetscCall(DMLabelGetValue(universal->label, v, &val));
-      in.pointmarkerlist[idx] = (int) val;
+      if (val != defVal) in.pointmarkerlist[idx] = (int) val;
     }
     PetscCall(VecRestoreArrayRead(coordinates, &array));
   }
@@ -83,7 +84,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpo
       in.edgelist[idx*2 + 1] = cone[1] - vStart;
 
       PetscCall(DMLabelGetValue(universal->label, e, &val));
-      in.edgemarkerlist[idx] = (int) val;
+      if (val != defVal) in.edgemarkerlist[idx] = (int) val;
     }
   }
 
@@ -115,7 +116,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpo
         poly->vertexlist[v] = vIdx;
       }
       PetscCall(DMLabelGetValue(universal->label, f, &val));
-      in.facetmarkerlist[idx] = (int) val;
+      if (val != defVal) in.facetmarkerlist[idx] = (int) val;
       PetscCall(DMPlexRestoreTransitiveClosure(boundary, f, PETSC_TRUE, &numPoints, &points));
     }
   }
@@ -289,7 +290,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *d
   ::tetgenio             out;
   PetscContainer         modelObj;
   DMUniversalLabel       universal;
-  PetscInt               vStart, vEnd, v, eStart, eEnd, e, fStart, fEnd, f, cStart, cEnd, c;
+  PetscInt               vStart, vEnd, v, eStart, eEnd, e, fStart, fEnd, f, cStart, cEnd, c, defVal;
   DMPlexInterpolatedFlag isInterpolated;
   PetscMPIInt            rank;
 
@@ -298,6 +299,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *d
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCall(DMPlexIsInterpolatedCollective(dm, &isInterpolated));
   PetscCall(DMUniversalLabelCreate(dm, &universal));
+  PetscCall(DMLabelGetDefaultValue(universal->label, &defVal));
 
   PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
   in.numberofpoints = vEnd - vStart;
@@ -319,7 +321,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *d
       PetscCall(PetscSectionGetOffset(coordSection, v, &off));
       for (d = 0; d < dim; ++d) in.pointlist[idx*dim + d] = PetscRealPart(array[off+d]);
       PetscCall(DMLabelGetValue(universal->label, v, &val));
-      in.pointmarkerlist[idx] = (int) val;
+      if (val != defVal) in.pointmarkerlist[idx] = (int) val;
     }
     PetscCall(VecRestoreArray(coordinates, &array));
   }
@@ -340,7 +342,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *d
       in.edgelist[idx*2 + 1] = cone[1] - vStart;
 
       PetscCall(DMLabelGetValue(universal->label, e, &val));
-      in.edgemarkerlist[idx] = (int) val;
+      if (val != defVal) in.edgemarkerlist[idx] = (int) val;
     }
   }
 
@@ -373,7 +375,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *d
       }
 
       PetscCall(DMLabelGetValue(universal->label, f, &val));
-      in.facetmarkerlist[idx] = (int) val;
+      if (val != defVal) in.facetmarkerlist[idx] = (int) val;
 
       PetscCall(DMPlexRestoreTransitiveClosure(dm, f, PETSC_TRUE, &numPoints, &points));
     }

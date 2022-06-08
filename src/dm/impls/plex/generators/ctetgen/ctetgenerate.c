@@ -24,7 +24,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interp
   const PetscInt         dim = 3;
   PLC                   *in, *out;
   DMUniversalLabel       universal;
-  PetscInt               vStart, vEnd, v, eStart, eEnd, e, fStart, fEnd, f, verbose = 0;
+  PetscInt               vStart, vEnd, v, eStart, eEnd, e, fStart, fEnd, f, defVal, verbose = 0;
   DMPlexInterpolatedFlag isInterpolated;
   PetscMPIInt            rank;
 
@@ -34,6 +34,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interp
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCall(DMPlexIsInterpolatedCollective(boundary, &isInterpolated));
   PetscCall(DMUniversalLabelCreate(boundary, &universal));
+  PetscCall(DMLabelGetDefaultValue(universal->label, &defVal));
 
   PetscCall(PLCCreate(&in));
   PetscCall(PLCCreate(&out));
@@ -57,7 +58,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interp
       PetscCall(PetscSectionGetOffset(coordSection, v, &off));
       for (d = 0; d < dim; ++d) in->pointlist[idx*dim + d] = PetscRealPart(array[off+d]);
       PetscCall(DMLabelGetValue(universal->label, v, &m));
-      in->pointmarkerlist[idx] = (int) m;
+      if (m != defVal) in->pointmarkerlist[idx] = (int) m;
     }
     PetscCall(VecRestoreArrayRead(coordinates, &array));
   }
@@ -78,7 +79,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interp
       in->edgelist[idx*2 + 1] = cone[1] - vStart;
 
       PetscCall(DMLabelGetValue(universal->label, e, &val));
-      in->edgemarkerlist[idx] = (int) val;
+      if (val != defVal) in->edgemarkerlist[idx] = (int) val;
     }
   }
 
@@ -111,7 +112,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interp
         poly->vertexlist[v] = vIdx;
       }
       PetscCall(DMLabelGetValue(universal->label, f, &m));
-      in->facetmarkerlist[idx] = (int) m;
+      if (m != defVal) in->facetmarkerlist[idx] = (int) m;
       PetscCall(DMPlexRestoreTransitiveClosure(boundary, f, PETSC_TRUE, &numPoints, &points));
     }
   }
@@ -287,7 +288,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_CTetgen(DM dm, PetscReal *maxVolumes, D
   const PetscInt         dim = 3;
   PLC                   *in, *out;
   DMUniversalLabel       universal;
-  PetscInt               vStart, vEnd, v, eStart, eEnd, e, fStart, fEnd, f, cStart, cEnd, c, verbose = 0;
+  PetscInt               vStart, vEnd, v, eStart, eEnd, e, fStart, fEnd, f, cStart, cEnd, c, defVal, verbose = 0;
   DMPlexInterpolatedFlag isInterpolated;
   PetscMPIInt            rank;
 
@@ -297,6 +298,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_CTetgen(DM dm, PetscReal *maxVolumes, D
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCall(DMPlexIsInterpolatedCollective(dm, &isInterpolated));
   PetscCall(DMUniversalLabelCreate(dm, &universal));
+  PetscCall(DMLabelGetDefaultValue(universal->label, &defVal));
 
   PetscCall(PLCCreate(&in));
   PetscCall(PLCCreate(&out));
@@ -320,7 +322,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_CTetgen(DM dm, PetscReal *maxVolumes, D
       PetscCall(PetscSectionGetOffset(coordSection, v, &off));
       for (d = 0; d < dim; ++d) in->pointlist[idx*dim + d] = PetscRealPart(array[off+d]);
       PetscCall(DMLabelGetValue(universal->label, v, &m));
-      in->pointmarkerlist[idx] = (int) m;
+      if (m != defVal) in->pointmarkerlist[idx] = (int) m;
     }
     PetscCall(VecRestoreArray(coordinates, &array));
   }
@@ -341,7 +343,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_CTetgen(DM dm, PetscReal *maxVolumes, D
       in->edgelist[idx*2 + 1] = cone[1] - vStart;
 
       PetscCall(DMLabelGetValue(universal->label, e, &val));
-      in->edgemarkerlist[idx] = (int) val;
+      if (val != defVal) in->edgemarkerlist[idx] = (int) val;
     }
   }
 
@@ -372,7 +374,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_CTetgen(DM dm, PetscReal *maxVolumes, D
       PetscCall(DMPlexRestoreTransitiveClosure(dm, f, PETSC_TRUE, &numPoints, &points));
       PetscCheck(Nv == 3,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %" PetscInt_FMT " has %" PetscInt_FMT " vertices, not 3", f, Nv);
       PetscCall(DMLabelGetValue(universal->label, f, &val));
-      in->trifacemarkerlist[tf] = (int) val;
+      if (val != defVal) in->trifacemarkerlist[tf] = (int) val;
       ++tf;
     }
   }
