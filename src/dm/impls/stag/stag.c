@@ -353,7 +353,9 @@ static PetscErrorCode DMCreateGlobalVector_Stag(DM dm, Vec *vec) {
 
   PetscFunctionBegin;
   PetscCheck(dm->setupcalled, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "This function must be called after DMSetUp()");
-  PetscCall(VecCreateMPI(PetscObjectComm((PetscObject)dm), stag->entries, PETSC_DECIDE, vec));
+  PetscCall(VecCreate(PetscObjectComm((PetscObject)dm), vec));
+  PetscCall(VecSetSizes(*vec, stag->entries, PETSC_DETERMINE));
+  PetscCall(VecSetType(*vec, dm->vectype));
   PetscCall(VecSetDM(*vec, dm));
   /* Could set some ops, as DMDA does */
   PetscCall(VecSetLocalToGlobalMapping(*vec, dm->ltogmap));
@@ -365,7 +367,9 @@ static PetscErrorCode DMCreateLocalVector_Stag(DM dm, Vec *vec) {
 
   PetscFunctionBegin;
   PetscCheck(dm->setupcalled, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "This function must be called after DMSetUp()");
-  PetscCall(VecCreateSeq(PETSC_COMM_SELF, stag->entriesGhost, vec));
+  PetscCall(VecCreate(PETSC_COMM_SELF, vec));
+  PetscCall(VecSetSizes(*vec, stag->entriesGhost, PETSC_DETERMINE));
+  PetscCall(VecSetType(*vec, dm->vectype));
   PetscCall(VecSetBlockSize(*vec, stag->entriesPerElement));
   PetscCall(VecSetDM(*vec, dm));
   PetscFunctionReturn(0);
