@@ -1,4 +1,4 @@
-static const char help[] = "PetscSF Ping-pong test to measure MPI latency\n\n";
+static const char help[] = "Benchmarking PetscSF Ping-pong latency (similar to osu_latency)\n\n";
 
 /*
   This is a simple test to measure the latency of MPI communication.
@@ -9,22 +9,33 @@ static const char help[] = "PetscSF Ping-pong test to measure MPI latency\n\n";
 
   It mimics osu_latency from the OSU microbenchmarks (https://mvapich.cse.ohio-state.edu/benchmarks/).
 
-  Usage: mpirun -n 2 ./ex18 -mtype <type>
+  Usage: mpirun -n 2 ./ex1k -mtype <type>
   Other arguments have a default value that is also used in osu_latency.
 
   Examples:
 
   On Summit at OLCF:
-    jsrun --smpiargs "-gpu" -n 2 -a 1 -c 7 -g 1 -r 2 -l GPU-GPU -d packed -b packed:7 ./ex18  -mtype cuda
+    jsrun --smpiargs "-gpu" -n 2 -a 1 -c 7 -g 1 -r 2 -l GPU-GPU -d packed -b packed:7 ./ex1k  -mtype cuda
 
   On Crusher at OLCF:
-    srun -n2 -c32 --cpu-bind=map_cpu:0,1 --gpus-per-node=8 --gpu-bind=map_gpu:0,1 ./ex18 -mtype hip
+    srun -n2 -c32 --cpu-bind=map_cpu:0,1 --gpus-per-node=8 --gpu-bind=map_gpu:0,1 ./ex1k -mtype hip
 */
 
 #include <petscsf.h>
 #include <petscdevice.h>
 #if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
+#endif
+
+#if defined(PETSC_HAVE_CUDA)
+  #define SyncDevice() PetscCallCUDA(cudaDeviceSynchronize())
+#elif defined(PETSC_HAVE_HIP)
+  #define SyncDevice() PetscCallHIP(hipDeviceSynchronize())
+#elif defined(PETSC_HAVE_KOKKOS)
+  #include <Kokkos_Core.hpp>
+  #define SyncDevice() Kokkos::fence()
+#else
+  #define SyncDevice()
 #endif
 
 /* Same values as OSU microbenchmarks */
@@ -48,6 +59,8 @@ static inline PetscErrorCode PetscMallocWithMemType(PetscMemType mtype,size_t si
   else if (PetscMemTypeCUDA(mtype)) PetscCallCUDA(cudaMalloc(ptr,size));
 #elif defined(PETSC_HAVE_HIP)
   else if (PetscMemTypeHIP(mtype))  PetscCallHIP(hipMalloc(ptr,size));
+#elif defined(PETSC_HAVE_SYCL)
+  else if (PetscMemTypeSYCL(mtype)) PetscCallCXX(*ptr = Kokkos::kokkos_malloc(size));
 #endif
   PetscFunctionReturn(0);
 }
@@ -60,6 +73,8 @@ static inline PetscErrorCode PetscFreeWithMemType_Private(PetscMemType mtype,voi
   else if (PetscMemTypeCUDA(mtype)) PetscCallCUDA(cudaFree(ptr));
 #elif defined(PETSC_HAVE_HIP)
   else if (PetscMemTypeHIP(mtype))  PetscCallHIP(hipFree(ptr));
+#elif defined(PETSC_HAVE_SYCL)
+  else if (PetscMemTypeSYCL(mtype)) PetscCallCXX(Kokkos::kokkos_free(ptr));
 #endif
   PetscFunctionReturn(0);
 }
@@ -75,6 +90,12 @@ static inline PetscErrorCode PetscMemcpyFromHostWithMemType(PetscMemType mtype,v
   else if (PetscMemTypeCUDA(mtype)) PetscCallCUDA(cudaMemcpy(dst,src,n,cudaMemcpyHostToDevice));
 #elif defined(PETSC_HAVE_HIP)
   else if (PetscMemTypeHIP(mtype))  PetscCallHIP(hipMemcpy(dst,src,n,hipMemcpyHostToDevice));
+#elif defined(PETSC_HAVE_SYCL)
+  else if (PetscMemTypeSYCL(mtype)) {
+    Kokkos::View<char*> dstView((char*)dst,n);
+    Kokkos::View<const char*,Kokkos::HostSpace> srcView((const char*)src,n);
+    PetscCallCXX(Kokkos::deep_copy(dstView,srcView));
+  }
 #endif
   PetscFunctionReturn(0);
 }
@@ -91,12 +112,11 @@ int main(int argc,char **argv)
   size_t            msgsize;
   PetscMemType      mtype = PETSC_MEMTYPE_HOST;
   char              mstring[16]={0};
-  PetscBool         isCuda,isHip,isHost,set;
+  PetscBool         isCuda,isHip,isHost,isKokkos,set;
   PetscInt          skipSmall=-1,loopSmall=-1;
   MPI_Op            op = MPI_REPLACE;
 
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
-  /* Must init the device first if one wants to call PetscGetMemType() without creating PETSc device objects */
 #if defined(PETSC_HAVE_CUDA)
   PetscCall(PetscDeviceInitialize(PETSC_DEVICE_CUDA));
 #elif defined(PETSC_HAVE_HIP)
@@ -116,10 +136,15 @@ int main(int argc,char **argv)
     PetscCall(PetscStrcasecmp(mstring,"cuda",&isCuda));
     PetscCall(PetscStrcasecmp(mstring,"hip",&isHip));
     PetscCall(PetscStrcasecmp(mstring,"host",&isHost));
+    PetscCall(PetscStrcasecmp(mstring,"kokkos",&isKokkos));
 
     if (isHost) mtype = PETSC_MEMTYPE_HOST;
     else if (isCuda) mtype = PETSC_MEMTYPE_CUDA;
     else if (isHip) mtype = PETSC_MEMTYPE_HIP;
+    else if (isKokkos) {
+      mtype = PETSC_MEMTYPE_KOKKOS;
+      PetscCall(PetscKokkosInitializeCheck());
+    }
     else SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Unknown memory type: %s",mstring);
   }
 
@@ -171,11 +196,7 @@ int main(int argc,char **argv)
 
     for (i=0; i<niter + nskip; i++) {
       if (i == nskip) {
-       #if defined(PETSC_HAVE_CUDA)
-        PetscCallCUDA(cudaDeviceSynchronize());
-       #elif defined(PETSC_HAVE_HIP)
-        PetscCallHIP(hipDeviceSynchronize());
-       #endif
+        SyncDevice();
         PetscCallMPI(MPI_Barrier(PETSC_COMM_WORLD));
         t_start = MPI_Wtime();
       }
@@ -184,11 +205,7 @@ int main(int argc,char **argv)
       PetscCall(PetscSFReduceWithMemTypeBegin(sf[j],MPIU_SCALAR,mtype,leafdata,mtype,rootdata,op));
       PetscCall(PetscSFReduceEnd(sf[j],MPIU_SCALAR,leafdata,rootdata,op));
     }
-   #if defined(PETSC_HAVE_CUDA)
-    PetscCallCUDA(cudaDeviceSynchronize());
-   #elif defined(PETSC_HAVE_HIP)
-    PetscCallHIP(hipDeviceSynchronize());
-   #endif
+    SyncDevice();
     PetscCallMPI(MPI_Barrier(PETSC_COMM_WORLD));
     t_end   = MPI_Wtime();
     time[j] = (t_end - t_start)*1e6 / (niter*2);
@@ -197,7 +214,7 @@ int main(int argc,char **argv)
   PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\t##  PetscSF Ping-pong test on %s ##\n  Message(Bytes) \t\tLatency(us)\n", mtype==PETSC_MEMTYPE_HOST? "Host" : "Device"));
   for (n=1,j=0; n<=maxn; n*=2,j++) {
     PetscCall(PetscSFDestroy(&sf[j]));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%16" PetscInt_FMT " \t %16.4f\n",sizeof(PetscScalar)*n,time[j]));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%16" PetscInt_FMT " \t %16.4f\n",((PetscInt)sizeof(PetscScalar))*n,time[j]));
   }
 
   PetscCall(PetscFree2(pbuf,ebuf));
@@ -226,4 +243,8 @@ int main(int argc,char **argv)
     test:
       requires: hip
       args: -mtype hip
+
+    test:
+      requires: kokkos
+      args: -mtype kokkos
 TEST**/
