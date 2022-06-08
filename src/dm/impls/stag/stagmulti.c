@@ -7,7 +7,7 @@
     Values on coarse cells are averages of all fine cells that they cover.
     Thus, values on vertices are injected, values on edges are averages
     of the underlying two fine edges, and and values on elements in
-    d dimensions are averages of 2^d underlying elements.
+    d dimensions are averages of $2^d$ underlying elements.
 
     Input Parameters:
 +   dmf - fine DM
