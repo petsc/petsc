@@ -22,6 +22,9 @@ PETSC_EXTERN PetscErrorCode MatSeqAIJRegisterAll(void);
 /* Gets the root type of the input matrix's type (e.g., MATAIJ for MATSEQAIJ) */
 PETSC_EXTERN PetscErrorCode MatGetRootType_Private(Mat, MatType*);
 
+/* Gets the MPI type corresponding to the input matrix's type (e.g., MATMPIAIJ for MATSEQAIJ) */
+PETSC_EXTERN PetscErrorCode MatGetMPIMatType_Private(Mat, MatType*);
+
 /*
   This file defines the parts of the matrix data structure that are
   shared by all matrix types.
