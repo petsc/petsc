@@ -1,6 +1,5 @@
-#define TAO_DLL
-
 #include <petsc/private/taoimpl.h> /*I "petsctao.h" I*/
+#include <petsc/private/snesimpl.h>
 
 PetscBool TaoRegisterAllCalled = PETSC_FALSE;
 PetscFunctionList TaoList = NULL;
@@ -21,6 +20,52 @@ struct _n_TaoMonitorDrawCtx {
   PetscViewer viewer;
   PetscInt    howoften;  /* when > 0 uses iteration % howoften, when negative only final solution plotted */
 };
+
+static PetscErrorCode KSPPreSolve_TAOEW_Private(KSP ksp, Vec b, Vec x, Tao tao)
+{
+  SNES snes_ewdummy = tao->snes_ewdummy;
+
+  PetscFunctionBegin;
+  if (!snes_ewdummy) PetscFunctionReturn(0);
+  /* populate snes_ewdummy struct values used in KSPPreSolve_SNESEW */
+  snes_ewdummy->vec_func = b;
+  snes_ewdummy->rtol = tao->gttol;
+  snes_ewdummy->iter = tao->niter;
+  PetscCall(VecNorm(b,NORM_2,&snes_ewdummy->norm));
+  PetscCall(KSPPreSolve_SNESEW(ksp,b,x,snes_ewdummy));
+  snes_ewdummy->vec_func = NULL;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode KSPPostSolve_TAOEW_Private(KSP ksp, Vec b, Vec x, Tao tao)
+{
+  SNES snes_ewdummy = tao->snes_ewdummy;
+
+  PetscFunctionBegin;
+  if (!snes_ewdummy) PetscFunctionReturn(0);
+  PetscCall(KSPPostSolve_SNESEW(ksp,b,x,snes_ewdummy));
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode TaoSetUpEW_Private(Tao tao)
+{
+  SNESKSPEW  *kctx;
+  const char *ewprefix;
+
+  PetscFunctionBegin;
+  if (!tao->ksp) PetscFunctionReturn(0);
+  if (tao->ksp_ewconv) {
+    if (!tao->snes_ewdummy) PetscCall(SNESCreate(PetscObjectComm((PetscObject)tao),&tao->snes_ewdummy));
+    tao->snes_ewdummy->ksp_ewconv = PETSC_TRUE;
+    PetscCall(KSPSetPreSolve(tao->ksp,(PetscErrorCode (*)(KSP,Vec,Vec,void*))KSPPreSolve_TAOEW_Private,tao));
+    PetscCall(KSPSetPostSolve(tao->ksp,(PetscErrorCode (*)(KSP,Vec,Vec,void*))KSPPostSolve_TAOEW_Private,tao));
+
+    PetscCall(KSPGetOptionsPrefix(tao->ksp,&ewprefix));
+    kctx = (SNESKSPEW*)tao->snes_ewdummy->kspconvctx;
+    PetscCall(SNESEWSetFromOptions_Private(kctx,PetscObjectComm((PetscObject)tao),ewprefix));
+  } else PetscCall(SNESDestroy(&tao->snes_ewdummy));
+  PetscFunctionReturn(0);
+}
 
 /*@
   TaoCreate - Creates a TAO solver
@@ -172,12 +217,11 @@ PetscErrorCode TaoSolve(Tao tao)
 PetscErrorCode TaoSetUp(Tao tao)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(tao, TAO_CLASSID,1);
+  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   if (tao->setupcalled) PetscFunctionReturn(0);
+  PetscCall(TaoSetUpEW_Private(tao));
   PetscCheck(tao->solution,PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSetSolution");
-  if (tao->ops->setup) {
-    PetscCall((*tao->ops->setup)(tao));
-  }
+  if (tao->ops->setup) PetscCall((*tao->ops->setup)(tao));
   tao->setupcalled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -206,6 +250,7 @@ PetscErrorCode TaoDestroy(Tao *tao)
     PetscCall((*((*tao))->ops->destroy)(*tao));
   }
   PetscCall(KSPDestroy(&(*tao)->ksp));
+  PetscCall(SNESDestroy(&(*tao)->snes_ewdummy));
   PetscCall(TaoLineSearchDestroy(&(*tao)->linesearch));
 
   if ((*tao)->ops->convergencedestroy) {
@@ -260,6 +305,36 @@ PetscErrorCode TaoDestroy(Tao *tao)
     PetscCall(PetscFree((*tao)->res_weights_w));
   }
   PetscCall(PetscHeaderDestroy(tao));
+  PetscFunctionReturn(0);
+}
+
+/*@
+   TaoKSPSetUseEW - Sets SNES use Eisenstat-Walker method for
+   computing relative tolerance for linear solvers.
+
+   Logically Collective on TAO
+
+   Input Parameters:
++  tao - Tao context
+-  flag - PETSC_TRUE or PETSC_FALSE
+
+   Notes:
+   See SNESKSPSetUseEW() for customization details.
+
+   Level: advanced
+
+   Reference:
+   S. C. Eisenstat and H. F. Walker, "Choosing the forcing terms in an
+   inexact Newton method", SISC 17 (1), pp.16-32, 1996.
+
+.seealso: `SNESKSPSetUseEW()`
+@*/
+PetscErrorCode  TaoKSPSetUseEW(Tao tao,PetscBool flag)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
+  PetscValidLogicalCollectiveBool(tao,flag,2);
+  tao->ksp_ewconv = flag;
   PetscFunctionReturn(0);
 }
 
@@ -457,6 +532,11 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
       PetscCall(TaoSetRecycleHistory(tao,PETSC_TRUE));
     }
     PetscCall(PetscOptionsEnum("-tao_subset_type","subset type","",TaoSubSetTypes,(PetscEnum)tao->subset_type,(PetscEnum*)&tao->subset_type,NULL));
+
+    if (tao->ksp) {
+      PetscCall(PetscOptionsBool("-tao_ksp_ew","Use Eisentat-Walker linear system convergence test","TaoKSPSetUseEW",tao->ksp_ewconv,&tao->ksp_ewconv,NULL));
+      PetscCall(TaoKSPSetUseEW(tao,tao->ksp_ewconv));
+    }
 
     if (tao->linesearch) {
       PetscCall(TaoLineSearchSetFromOptions(tao->linesearch));

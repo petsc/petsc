@@ -143,6 +143,10 @@ struct _p_Tao {
     PetscReal trust0; /* initial trust region radius */
     PetscReal trust;  /* Current trust region */
 
+    /* EW type forcing term */
+    PetscBool ksp_ewconv;
+    SNES      snes_ewdummy;
+
     PetscReal gatol;
     PetscReal grtol;
     PetscReal gttol;

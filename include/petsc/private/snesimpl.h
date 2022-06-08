@@ -222,7 +222,7 @@ PETSC_EXTERN PetscErrorCode DMGetDMSNESWrite(DM,DMSNES*);
 
 /* Context for Eisenstat-Walker convergence criteria for KSP solvers */
 typedef struct {
-  PetscInt  version;             /* flag indicating version 1 or 2 of test */
+  PetscInt  version;             /* flag indicating version (1,2,3 or 4) */
   PetscReal rtol_0;              /* initial rtol */
   PetscReal rtol_last;           /* last rtol */
   PetscReal rtol_max;            /* maximum rtol */
@@ -233,6 +233,8 @@ typedef struct {
   PetscReal lresid_last;         /* linear residual from last iteration */
   PetscReal norm_last;           /* function norm from last iteration */
   PetscReal norm_first;          /* function norm from the beginning of the first iteration. */
+  PetscReal rtol_last_2, rk_last, rk_last_2;
+  PetscReal v4_p1, v4_p2, v4_p3, v4_m1, v4_m2, v4_m3, v4_m4;
 } SNESKSPEW;
 
 static inline PetscErrorCode SNESLogConvergenceHistory(SNES snes,PetscReal res,PetscInt its)
@@ -275,6 +277,11 @@ PETSC_EXTERN PetscLogEvent SNES_ObjectiveEval;
 
 PETSC_INTERN PetscBool SNEScite;
 PETSC_INTERN const char SNESCitation[];
+
+/* Used by TAOBNK solvers */
+PETSC_EXTERN PetscErrorCode KSPPostSolve_SNESEW(KSP,Vec,Vec,SNES);
+PETSC_EXTERN PetscErrorCode KSPPreSolve_SNESEW(KSP,Vec,Vec,SNES);
+PETSC_EXTERN PetscErrorCode SNESEWSetFromOptions_Private(SNESKSPEW*,MPI_Comm,const char*);
 
 /*
     Either generate an error or mark as diverged when a real from a SNES function norm is Nan or Inf.

@@ -128,7 +128,6 @@ PetscErrorCode TaoSolve_BNTL(Tao tao)
       PetscCall((*tao->ops->update)(tao, tao->niter, tao->user_update));
       PetscCall(TaoComputeObjectiveAndGradient(tao, tao->solution, &bnk->f, bnk->unprojected_gradient));
     }
-    ++tao->niter;
 
     if (needH && bnk->inactive_idx) {
       /* Take BNCG steps (if enabled) to trade-off Hessian evaluations for more gradient evaluations */
@@ -222,6 +221,7 @@ PetscErrorCode TaoSolve_BNTL(Tao tao)
     PetscCall(VecFischer(tao->solution, bnk->unprojected_gradient, tao->XL, tao->XU, bnk->W));
     PetscCall(VecNorm(bnk->W, NORM_2, &resnorm));
     PetscCheck(!PetscIsInfOrNanReal(resnorm),PetscObjectComm((PetscObject)tao),PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
+    ++tao->niter;
     PetscCall(TaoLogConvergenceHistory(tao, bnk->f, resnorm, 0.0, tao->ksp_its));
     PetscCall(TaoMonitor(tao, tao->niter, bnk->f, resnorm, 0.0, steplen));
     PetscCall((*tao->ops->convergencetest)(tao, tao->cnvP));

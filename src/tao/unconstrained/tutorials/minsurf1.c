@@ -600,13 +600,28 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
       requires: !single
 
    test:
+      suffix: 4_ew
+      args: -tao_smonitor -tao_type bntr -tao_ksp_ew -mx 10 -my 8 -tao_gatol 1.e-4
+      requires: !single
+
+   test:
       suffix: 5
       args: -tao_smonitor -tao_type bntl -mx 10 -my 8 -tao_gatol 1.e-4
       requires: !single
 
    test:
+      suffix: 5_ew
+      args: -tao_smonitor -tao_type bntl -tao_ksp_ew -mx 10 -my 8 -tao_gatol 1.e-4
+      requires: !single
+
+   test:
       suffix: 6
       args: -tao_smonitor -tao_type bnls -mx 10 -my 8 -tao_gatol 1.e-4
+      requires: !single
+
+   test:
+      suffix: 6_ew
+      args: -tao_smonitor -tao_type bnls -tao_ksp_ew -tao_bnk_ksp_ew_version 3 -mx 10 -my 8 -tao_gatol 1.e-4
       requires: !single
 
    test:

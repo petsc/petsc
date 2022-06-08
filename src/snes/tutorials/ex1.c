@@ -49,6 +49,8 @@ int main(int argc,char **argv)
      Create nonlinear solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscCall(SNESCreate(PETSC_COMM_WORLD,&snes));
+  PetscCall(SNESSetType(snes,SNESNEWTONLS));
+  PetscCall(SNESSetOptionsPrefix(snes,"mysolver_"));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create matrix and vector data structures; set corresponding routines
@@ -299,42 +301,43 @@ PetscErrorCode FormJacobian2(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
 /*TEST
 
    test:
-      args: -ksp_gmres_cgs_refinement_type refine_always -snes_monitor_short
+      args: -prefix_push mysolver_ -ksp_gmres_cgs_refinement_type refine_always -snes_monitor_short -prefix_pop
       requires: !single
 
+   # test harness puts {{ }} options always at the end, need to specify the prefix explicitly
    test:
       suffix: 2
       requires: !single
-      args:  -snes_monitor_short
+      args:  -prefix_push mysolver_ -snes_monitor_short -prefix_pop -mysolver_snes_ksp_ew {{0 1}}
       output_file: output/ex1_1.out
 
    test:
       suffix: 3
-      args: -ksp_view_solution ascii:ex1_2_sol.tmp:ascii_matlab  -snes_monitor_short
+      args: -prefix_push mysolver_ -ksp_view_solution ascii:ex1_2_sol.tmp:ascii_matlab  -snes_monitor_short -prefix_pop
       requires: !single
       output_file: output/ex1_1.out
 
    test:
       suffix: 4
-      args: -ksp_view_solution ascii:ex1_2_sol.tmp::append  -snes_monitor_short
+      args: -prefix_push mysolver_ -ksp_view_solution ascii:ex1_2_sol.tmp::append  -snes_monitor_short -prefix_pop
       requires: !single
       output_file: output/ex1_1.out
 
    test:
       suffix: 5
-      args: -ksp_view_solution ascii:ex1_2_sol.tmp:ascii_matlab:append  -snes_monitor_short
+      args: -prefix_push mysolver_ -ksp_view_solution ascii:ex1_2_sol.tmp:ascii_matlab:append  -snes_monitor_short -prefix_pop
       requires: !single
       output_file: output/ex1_1.out
 
    test:
       suffix: 6
-      args: -ksp_view_solution ascii:ex1_2_sol.tmp:default:append  -snes_monitor_short
+      args: -prefix_push mysolver_ -ksp_view_solution ascii:ex1_2_sol.tmp:default:append  -snes_monitor_short -prefix_pop
       requires: !single
       output_file: output/ex1_1.out
 
    test:
       suffix: X
-      args: -ksp_monitor_short -ksp_type gmres -ksp_gmres_krylov_monitor -snes_monitor_short -snes_rtol 1.e-4
+      args: -prefix_push mysolver_ -ksp_monitor_short -ksp_type gmres -ksp_gmres_krylov_monitor -snes_monitor_short -snes_rtol 1.e-4 -prefix_pop
       requires: !single x
 
 TEST*/
