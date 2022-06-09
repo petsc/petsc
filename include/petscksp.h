@@ -70,6 +70,7 @@ typedef const char* KSPType;
 #define KSPPIPECR     "pipecr"
 #define KSPLSQR       "lsqr"
 #define KSPPREONLY    "preonly"
+#define KSPNONE       "none"
 #define KSPQCG        "qcg"
 #define KSPBICG       "bicg"
 #define KSPMINRES     "minres"

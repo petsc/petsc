@@ -104,6 +104,7 @@ In addition to the changes above
 .. rubric:: KSP:
 
 - Deprecate ``KSPHPDDMGetDeflationSpace()`` (resp. ``KSPHPDDMSetDeflationSpace()``) in favor of ``KSPHPDDMGetDeflationMat()`` (resp. ``KSPHPDDMSetDeflationMat()``)
+- Add ``KSPNONE`` as alias for ``KSPPREONLY``
 
 .. rubric:: SNES:
 

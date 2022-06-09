@@ -74,7 +74,8 @@ static PetscErrorCode KSPMatSolve_PREONLY(KSP ksp, Mat B, Mat X)
      KSPPREONLY - This implements a method that applies ONLY the preconditioner exactly once.
                   This may be used in inner iterations, where it is desired to
                   allow multiple iterations as well as the "0-iteration" case. It is
-                  commonly used with the direct solver preconditioners like PCLU and PCCHOLESKY
+                  commonly used with the direct solver preconditioners like PCLU and PCCHOLESKY.
+                  There is an alias of KSPNONE.
 
    Options Database Keys:
 .   -ksp_type preonly - use preconditioner only

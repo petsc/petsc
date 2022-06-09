@@ -94,6 +94,7 @@ PetscErrorCode KSPRegisterAll(void)
   PetscCall(KSPRegister(KSPPIPECR,      KSPCreate_PIPECR));
   PetscCall(KSPRegister(KSPLSQR,        KSPCreate_LSQR));
   PetscCall(KSPRegister(KSPPREONLY,     KSPCreate_PREONLY));
+  PetscCall(KSPRegister(KSPNONE,        KSPCreate_PREONLY));
   PetscCall(KSPRegister(KSPQCG,         KSPCreate_QCG));
   PetscCall(KSPRegister(KSPBICG,        KSPCreate_BiCG));
   PetscCall(KSPRegister(KSPFGMRES,      KSPCreate_FGMRES));
