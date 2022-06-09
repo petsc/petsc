@@ -2304,6 +2304,8 @@ typedef struct {
   PetscInt rap_type;
   PetscInt num_pre_relax,num_post_relax;
   PetscInt max_levels;
+  PetscInt skip_relax;
+  PetscBool print_statistics;
 } PC_PFMG;
 
 PetscErrorCode PCDestroy_PFMG(PC pc)
@@ -2335,6 +2337,7 @@ PetscErrorCode PCView_PFMG(PC pc,PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer,"    RAP type %s\n",PFMGRAPType[ex->rap_type]));
     PetscCall(PetscViewerASCIIPrintf(viewer,"    number pre-relax %" PetscInt_FMT " post-relax %" PetscInt_FMT "\n",ex->num_pre_relax,ex->num_post_relax));
     PetscCall(PetscViewerASCIIPrintf(viewer,"    max levels %" PetscInt_FMT "\n",ex->max_levels));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    skip relax %" PetscInt_FMT "\n",ex->skip_relax));
   }
   PetscFunctionReturn(0);
 }
@@ -2342,14 +2345,10 @@ PetscErrorCode PCView_PFMG(PC pc,PetscViewer viewer)
 PetscErrorCode PCSetFromOptions_PFMG(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_PFMG        *ex = (PC_PFMG*) pc->data;
-  PetscBool      flg = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject,"PFMG options");
-  PetscCall(PetscOptionsBool("-pc_pfmg_print_statistics","Print statistics","HYPRE_StructPFMGSetPrintLevel",flg,&flg,NULL));
-  if (flg) {
-    PetscCallExternal(HYPRE_StructPFMGSetPrintLevel,ex->hsolver,3);
-  }
+  PetscCall(PetscOptionsBool("-pc_pfmg_print_statistics","Print statistics","HYPRE_StructPFMGSetPrintLevel",ex->print_statistics,&ex->print_statistics,NULL));
   PetscCall(PetscOptionsInt("-pc_pfmg_its","Number of iterations of PFMG to use as preconditioner","HYPRE_StructPFMGSetMaxIter",ex->its,&ex->its,NULL));
   PetscCallExternal(HYPRE_StructPFMGSetMaxIter,ex->hsolver,ex->its);
   PetscCall(PetscOptionsInt("-pc_pfmg_num_pre_relax","Number of smoothing steps before coarse grid","HYPRE_StructPFMGSetNumPreRelax",ex->num_pre_relax,&ex->num_pre_relax,NULL));
@@ -2366,6 +2365,8 @@ PetscErrorCode PCSetFromOptions_PFMG(PetscOptionItems *PetscOptionsObject,PC pc)
   PetscCallExternal(HYPRE_StructPFMGSetRelaxType,ex->hsolver, ex->relax_type);
   PetscCall(PetscOptionsEList("-pc_pfmg_rap_type","RAP type","HYPRE_StructPFMGSetRAPType",PFMGRAPType,PETSC_STATIC_ARRAY_LENGTH(PFMGRAPType),PFMGRAPType[ex->rap_type],&ex->rap_type,NULL));
   PetscCallExternal(HYPRE_StructPFMGSetRAPType,ex->hsolver, ex->rap_type);
+  PetscCall(PetscOptionsInt("-pc_pfmg_skip_relax","Skip relaxation on certain grids for isotropic problems. This can greatly improve efficiency by eliminating unnecessary relaxations when the underlying problem is isotropic","HYPRE_StructPFMGSetSkipRelax",ex->skip_relax,&ex->skip_relax,NULL));
+  PetscCallExternal(HYPRE_StructPFMGSetSkipRelax,ex->hsolver, ex->skip_relax);
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
@@ -2441,6 +2442,19 @@ PetscErrorCode PCSetUp_PFMG(PC pc)
   /* create the hypre solver object and set its information */
   if (ex->hsolver) PetscCallExternal(HYPRE_StructPFMGDestroy,ex->hsolver);
   PetscCallExternal(HYPRE_StructPFMGCreate,ex->hcomm,&ex->hsolver);
+
+  // Print Hypre statistics about the solve process
+  if (ex->print_statistics) PetscCallExternal(HYPRE_StructPFMGSetPrintLevel,ex->hsolver,3);
+
+  // The hypre options must be repeated here because the StructPFMG was destroyed and recreated
+  PetscCallExternal(HYPRE_StructPFMGSetMaxIter     ,ex->hsolver, ex->its);
+  PetscCallExternal(HYPRE_StructPFMGSetNumPreRelax ,ex->hsolver, ex->num_pre_relax);
+  PetscCallExternal(HYPRE_StructPFMGSetNumPostRelax,ex->hsolver, ex->num_post_relax);
+  PetscCallExternal(HYPRE_StructPFMGSetMaxLevels   ,ex->hsolver, ex->max_levels);
+  PetscCallExternal(HYPRE_StructPFMGSetTol         ,ex->hsolver, ex->tol);
+  PetscCallExternal(HYPRE_StructPFMGSetRelaxType   ,ex->hsolver, ex->relax_type);
+  PetscCallExternal(HYPRE_StructPFMGSetRAPType     ,ex->hsolver, ex->rap_type);
+
   PetscCallExternal(HYPRE_StructPFMGSetup,ex->hsolver,mx->hmat,mx->hb,mx->hx);
   PetscCallExternal(HYPRE_StructPFMGSetZeroGuess,ex->hsolver);
   PetscFunctionReturn(0);
@@ -2457,7 +2471,8 @@ PetscErrorCode PCSetUp_PFMG(PC pc)
 . -pc_pfmg_num_post_relax <steps> - number of smoothing steps after coarse grid solve
 . -pc_pfmg_tol <tol> - tolerance of PFMG
 . -pc_pfmg_relax_type - relaxation type for the up and down cycles, one of Jacobi,Weighted-Jacobi,symmetric-Red/Black-Gauss-Seidel,Red/Black-Gauss-Seidel
-- -pc_pfmg_rap_type - type of coarse matrix generation, one of Galerkin,non-Galerkin
+. -pc_pfmg_rap_type - type of coarse matrix generation, one of Galerkin,non-Galerkin
+- -pc_pfmg_skip_relax - skip relaxation on certain grids for isotropic problems. This can greatly improve efficiency by eliminating unnecessary relaxations when the underlying problem is isotropic, one of 0,1
 
    Notes:
     This is for CELL-centered descretizations
@@ -2483,6 +2498,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_PFMG(PC pc)
   ex->num_pre_relax  = 1;
   ex->num_post_relax = 1;
   ex->max_levels     = 0;
+  ex->skip_relax     = 0;
+  ex->print_statistics = PETSC_FALSE;
 
   pc->ops->setfromoptions  = PCSetFromOptions_PFMG;
   pc->ops->view            = PCView_PFMG;
