@@ -555,7 +555,7 @@ PetscErrorCode SNESLineSearchPreCheckPicard(SNESLineSearch linesearch,Vec X,Vec 
 -  fnorm - The current norm, on output the new function norm
 
    Options Database Keys:
-+ -snes_linesearch_type - basic, bt, l2, cp, nleqerr, shell
++ -snes_linesearch_type - basic (or equivalently none), bt, l2, cp, nleqerr, shell
 . -snes_linesearch_monitor [:filename] - Print progress of line searches
 . -snes_linesearch_damping - The linesearch damping parameter, default is 1.0 (no damping)
 . -snes_linesearch_norms   - Turn on/off the linesearch norms computation (SNESLineSearchSetComputeNorms())
@@ -740,7 +740,7 @@ PetscErrorCode  SNESLineSearchMonitorSetFromOptions(SNESLineSearch ls,const char
 .  linesearch - linesearch context
 
    Options Database Keys:
-+ -snes_linesearch_type <type> - basic, bt, l2, cp, nleqerr, shell
++ -snes_linesearch_type <type> - basic (or equivalently none), bt, l2, cp, nleqerr, shell
 . -snes_linesearch_order <order> - 1, 2, 3.  Most types only support certain orders (bt supports 2 or 3)
 . -snes_linesearch_norms   - Turn on/off the linesearch norms for the basic linesearch typem (SNESLineSearchSetComputeNorms())
 . -snes_linesearch_minlambda - The minimum step length
@@ -909,7 +909,7 @@ PetscErrorCode SNESLineSearchGetType(SNESLineSearch linesearch, SNESLineSearchTy
 -  type - The type of line search to be used
 
    Available Types:
-+  SNESLINESEARCHBASIC - Simple damping line search, defaults to using the full Newton step
++  SNESLINESEARCHBASIC - (or equivalently SNESLINESEARCHNONE) Simple damping line search, defaults to using the full Newton step
 .  SNESLINESEARCHBT - Backtracking line search over the L2 norm of the function
 .  SNESLINESEARCHL2 - Secant line search over the L2 norm of the function
 .  SNESLINESEARCHCP - Critical point secant line search assuming F(x) = grad G(x) for some unknown G(x)
@@ -917,7 +917,7 @@ PetscErrorCode SNESLineSearchGetType(SNESLineSearch linesearch, SNESLineSearchTy
 -  SNESLINESEARCHSHELL - User provided SNESLineSearch implementation
 
    Options Database:
-.  -snes_linesearch_type <type> - basic, bt, l2, cp, nleqerr, shell
+.  -snes_linesearch_type <type> - basic (or equivalently none), bt, l2, cp, nleqerr, shell
 
    Level: intermediate
 
@@ -1215,7 +1215,7 @@ PetscErrorCode  SNESLineSearchGetDamping(SNESLineSearch linesearch,PetscReal *da
    Level: intermediate
 
    Notes:
-   The basic line search merely takes the update step scaled by the damping parameter.
+   The basic (also known as the none) line search merely takes the update step scaled by the damping parameter.
    The use of the damping parameter in the l2 and cp line searches is much more subtle;
    it is used as a starting point in calculating the secant step. However, the eventual
    step may be of greater length than the damping parameter.  In the bt line search it is
@@ -1383,10 +1383,10 @@ PetscErrorCode SNESLineSearchComputeNorms(SNESLineSearch linesearch)
 -  flg  - indicates whether or not to compute norms
 
    Options Database Keys:
-.   -snes_linesearch_norms <true> - Turns on/off computation of the norms for basic linesearch
+.   -snes_linesearch_norms <true> - Turns on/off computation of the norms for basic (none) linesearch
 
    Notes:
-   This is most relevant to the SNESLINESEARCHBASIC line search type since most line searches have a stopping criteria involving the norm.
+   This is most relevant to the SNESLINESEARCHBASIC (or equivalently SNESLINESEARCHNONE) line search type since most line searches have a stopping criteria involving the norm.
 
    Level: intermediate
 

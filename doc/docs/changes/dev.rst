@@ -110,6 +110,7 @@ In addition to the changes above
 
 - Add ``DMDASNESSetFunctionLocalVec()``, ``DMDASNESSetJacobianLocalVec()`` and ``DMDASNESSetObjectiveLocalVec()``, and associate types ``DMDASNESFunctionVec``, ``DMDASNESJacobianVec`` and ``DMDASNESObjectiveVec``,
   which accept Vec parameters instead of void pointers in contrast to versions without the Vec suffix
+- Add ``SNESLINESEARCHNONE`` as alias for ``SNESLINESEARCHBASIC``
 
 .. rubric:: SNESLineSearch:
 

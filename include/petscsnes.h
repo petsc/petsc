@@ -549,6 +549,7 @@ typedef const char* SNESLineSearchType;
 #define SNESLINESEARCHBT                 "bt"
 #define SNESLINESEARCHNLEQERR            "nleqerr"
 #define SNESLINESEARCHBASIC              "basic"
+#define   SNESLINESEARCHNONE               "none"
 #define SNESLINESEARCHL2                 "l2"
 #define SNESLINESEARCHCP                 "cp"
 #define SNESLINESEARCHSHELL              "shell"

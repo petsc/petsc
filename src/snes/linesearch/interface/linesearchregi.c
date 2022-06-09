@@ -24,6 +24,7 @@ PetscErrorCode SNESLineSearchRegisterAll(void)
   SNESLineSearchRegisterAllCalled = PETSC_TRUE;
   PetscCall(SNESLineSearchRegister(SNESLINESEARCHSHELL,     SNESLineSearchCreate_Shell));
   PetscCall(SNESLineSearchRegister(SNESLINESEARCHBASIC,     SNESLineSearchCreate_Basic));
+  PetscCall(SNESLineSearchRegister(SNESLINESEARCHNONE,      SNESLineSearchCreate_Basic));
   PetscCall(SNESLineSearchRegister(SNESLINESEARCHL2,        SNESLineSearchCreate_L2));
   PetscCall(SNESLineSearchRegister(SNESLINESEARCHBT,        SNESLineSearchCreate_BT));
   PetscCall(SNESLineSearchRegister(SNESLINESEARCHNLEQERR,   SNESLineSearchCreate_NLEQERR));

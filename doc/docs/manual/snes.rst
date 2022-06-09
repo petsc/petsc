@@ -346,6 +346,7 @@ listed in Table :any:`tab-linesearches`.
    ==================== ======================= ================
    Backtracking         ``SNESLINESEARCHBT``    ``bt``
    (damped) step        ``SNESLINESEARCHBASIC`` ``basic``
+   identical to above   ``SNESLINESEARCHNONE``  ``none``
    L2-norm Minimization ``SNESLINESEARCHL2``    ``l2``
    Critical point       ``SNESLINESEARCHCP``    ``cp``
    Shell                ``SNESLINESEARCHSHELL`` ``shell``
@@ -478,7 +479,7 @@ This iteration is similar to the line search Newton methods.
    * - “Good” Broyden
      - ``SNES_QN_BROYDEN``
      - ``broyden``
-     - ``SNESLINESEARCHBASIC``
+     - ``SNESLINESEARCHBASIC`` (or equivalently ``SNESLINESEARCHNONE``
    * - “Bad” Broyden
      - ``SNES_QN_BADBROYEN``
      - ``badbroyden``

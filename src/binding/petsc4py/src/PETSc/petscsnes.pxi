@@ -231,6 +231,7 @@ cdef extern from "custom.h" nogil:
     PetscSNESLineSearchType SNESLINESEARCHBT
     PetscSNESLineSearchType SNESLINESEARCHNLEQERR
     PetscSNESLineSearchType SNESLINESEARCHBASIC
+    PetscSNESLineSearchType SNESLINESEARCHNONE
     PetscSNESLineSearchType SNESLINESEARCHL2
     PetscSNESLineSearchType SNESLINESEARCHCP
     PetscSNESLineSearchType SNESLINESEARCHSHELL
