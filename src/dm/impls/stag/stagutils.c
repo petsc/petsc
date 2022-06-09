@@ -1380,6 +1380,9 @@ PetscErrorCode DMStagSetUniformCoordinatesProduct(DM dm, PetscReal xmin, PetscRe
 
     /* Create sub-DMs living on these new communicators (which are destroyed by DMProduct) */
     PetscCall(DMStagCreate1d(subcomm, stag->boundaryType[d], stag->N[d], dof0, dof1, stag->stencilType, stag->stencilWidth, stag->l[d], &subdm));
+    /* Copy vector and matrix type information from parent DM */
+    PetscCall(DMSetVecType(subdm, dm->vectype));
+    PetscCall(DMSetMatType(subdm, dm->mattype));
     PetscCall(DMSetUp(subdm));
     switch (d) {
     case 0: PetscCall(DMStagSetUniformCoordinatesExplicit(subdm, xmin, xmax, 0, 0, 0, 0)); break;
