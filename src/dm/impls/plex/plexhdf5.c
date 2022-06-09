@@ -622,7 +622,7 @@ static PetscErrorCode DMPlexTopologyView_HDF5_XDMF_Private(DM dm, IS globalCellN
   DM              cdm;
   DMLabel         depthLabel, ctLabel;
   IS              cellIS;
-  PetscInt        dim, depth, cellHeight, c;
+  PetscInt        dim, depth, cellHeight, c, n = 0;
   hid_t           fileId, groupId;
 
   PetscFunctionBegin;
@@ -639,7 +639,7 @@ static PetscErrorCode DMPlexTopologyView_HDF5_XDMF_Private(DM dm, IS globalCellN
   PetscCall(DMPlexGetCellTypeLabel(dm, &ctLabel));
   for (c = 0; c < DM_NUM_POLYTOPES; ++c) {
     const DMPolytopeType ict = (DMPolytopeType) c;
-    PetscInt             pStart, pEnd, dep, numCorners, n = 0;
+    PetscInt             pStart, pEnd, dep, numCorners;
     PetscBool            output = PETSC_FALSE, doOutput;
 
     if (ict == DM_POLYTOPE_FV_GHOST) continue;
