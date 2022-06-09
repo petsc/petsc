@@ -46,6 +46,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Mat(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_HYPRE(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_PFMG(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_SysPFMG(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_SMG(PC);
 #endif
 #if !defined(PETSC_USE_COMPLEX)
 PETSC_EXTERN PetscErrorCode PCCreate_TFS(PC);
@@ -132,6 +133,7 @@ PetscErrorCode  PCRegisterAll(void)
   PetscCall(PCRegister(PCHYPRE        ,PCCreate_HYPRE));
   PetscCall(PCRegister(PCPFMG         ,PCCreate_PFMG));
   PetscCall(PCRegister(PCSYSPFMG      ,PCCreate_SysPFMG));
+  PetscCall(PCRegister(PCSMG      ,PCCreate_SMG));
 #endif
 #if !defined(PETSC_USE_COMPLEX)
   PetscCall(PCRegister(PCTFS          ,PCCreate_TFS));
