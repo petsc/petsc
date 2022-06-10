@@ -102,4 +102,3 @@ PETSC_EXTERN PetscErrorCode PCBDDCSubSchursDestroy(PCBDDCSubSchurs*);
 PETSC_EXTERN PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs,Mat,Mat,PetscBool,PetscInt[],PetscInt[],PetscInt,Vec,PetscBool,PetscBool,PetscBool,PetscInt,PetscInt[],IS[],Mat,IS);
 
 #endif
-
