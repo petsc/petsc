@@ -1878,7 +1878,7 @@ PetscErrorCode DMPlexDistributeSetDefault_Plex(DM dm, PetscBool dist)
 
   Level: intermediate
 
-.seealso: `DMDistributeGetDefault()`, `DMPlexDistribute()`
+.seealso: `DMPlexDistributeGetDefault()`, `DMPlexDistribute()`
 @*/
 PetscErrorCode DMPlexDistributeSetDefault(DM dm, PetscBool dist)
 {
@@ -1911,7 +1911,7 @@ PetscErrorCode DMPlexDistributeGetDefault_Plex(DM dm, PetscBool *dist)
 
   Level: intermediate
 
-.seealso: `DMDistributeSetDefault()`, `DMPlexDistribute()`
+.seealso: `DMPlexDistributeSetDefault()`, `DMPlexDistribute()`
 @*/
 PetscErrorCode DMPlexDistributeGetDefault(DM dm, PetscBool *dist)
 {

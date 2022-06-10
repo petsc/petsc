@@ -808,8 +808,6 @@ static PetscErrorCode MatMatSolveTranspose_SeqDense_QR(Mat A, Mat B, Mat X)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatConjugate_SeqDense(Mat);
-
 /* ---------------------------------------------------------------*/
 /* COMMENT: I have chosen to hide row permutation in the pivots,
    rather than put it in the Mat->row slot.*/
@@ -1503,9 +1501,11 @@ static PetscErrorCode MatView_SeqDense_ASCII(Mat A,PetscViewer viewer)
     PetscCall(PetscViewerASCIIUseTabs(viewer,PETSC_FALSE));
 #if defined(PETSC_USE_COMPLEX)
     /* determine if matrix has all real values */
-    v = av;
-    for (i=0; i<A->rmap->n*A->cmap->n; i++) {
-      if (PetscImaginaryPart(v[i])) { allreal = PETSC_FALSE; break;}
+    for (j=0; j<A->cmap->n; j++) {
+      v = av + j*a->lda;
+      for (i=0; i<A->rmap->n; i++) {
+        if (PetscImaginaryPart(v[i])) { allreal = PETSC_FALSE; break;}
+      }
     }
 #endif
     if (format == PETSC_VIEWER_ASCII_MATLAB) {
@@ -2405,13 +2405,15 @@ PetscErrorCode MatSetUp_SeqDense(Mat A)
 static PetscErrorCode MatConjugate_SeqDense(Mat A)
 {
   Mat_SeqDense   *mat = (Mat_SeqDense *) A->data;
-  PetscInt       i,nz = A->rmap->n*A->cmap->n;
+  PetscInt       i,j;
   PetscInt       min = PetscMin(A->rmap->n,A->cmap->n);
   PetscScalar    *aa;
 
   PetscFunctionBegin;
   PetscCall(MatDenseGetArray(A,&aa));
-  for (i=0; i<nz; i++) aa[i] = PetscConj(aa[i]);
+  for (j=0; j<A->cmap->n; j++) {
+    for (i=0; i<A->rmap->n; i++) aa[i+j*mat->lda] = PetscConj(aa[i+j*mat->lda]);
+  }
   PetscCall(MatDenseRestoreArray(A,&aa));
   if (mat->tau) for (i = 0; i < min; i++) mat->tau[i] = PetscConj(mat->tau[i]);
   PetscFunctionReturn(0);
@@ -2419,24 +2421,30 @@ static PetscErrorCode MatConjugate_SeqDense(Mat A)
 
 static PetscErrorCode MatRealPart_SeqDense(Mat A)
 {
-  PetscInt       i,nz = A->rmap->n*A->cmap->n;
+  Mat_SeqDense   *mat = (Mat_SeqDense *) A->data;
+  PetscInt       i,j;
   PetscScalar    *aa;
 
   PetscFunctionBegin;
   PetscCall(MatDenseGetArray(A,&aa));
-  for (i=0; i<nz; i++) aa[i] = PetscRealPart(aa[i]);
+  for (j=0; j<A->cmap->n; j++) {
+    for (i=0; i<A->rmap->n; i++) aa[i+j*mat->lda] = PetscRealPart(aa[i+j*mat->lda]);
+  }
   PetscCall(MatDenseRestoreArray(A,&aa));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode MatImaginaryPart_SeqDense(Mat A)
 {
-  PetscInt       i,nz = A->rmap->n*A->cmap->n;
+  Mat_SeqDense   *mat = (Mat_SeqDense *) A->data;
+  PetscInt       i,j;
   PetscScalar    *aa;
 
   PetscFunctionBegin;
   PetscCall(MatDenseGetArray(A,&aa));
-  for (i=0; i<nz; i++) aa[i] = PetscImaginaryPart(aa[i]);
+  for (j=0; j<A->cmap->n; j++) {
+    for (i=0; i<A->rmap->n; i++) aa[i+j*mat->lda] = PetscImaginaryPart(aa[i+j*mat->lda]);
+  }
   PetscCall(MatDenseRestoreArray(A,&aa));
   PetscFunctionReturn(0);
 }
