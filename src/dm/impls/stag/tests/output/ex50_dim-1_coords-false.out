@@ -1,0 +1,61 @@
+DM Object: 1 MPI process
+  type: da
+Processor [0] M 4 m 1 w 3 s 1
+X range of indices: 0 4
+Vec Object: 1 MPI process
+  type: seq
+1.2345
+0.
+0.
+1.2345
+0.
+0.
+1.2345
+0.
+0.
+1.2345
+0.
+0.
+DM Object: 1 MPI process
+  type: da
+Processor [0] M 4 m 1 w 1 s 1
+X range of indices: 0 4
+Vec Object: 1 MPI process
+  type: seq
+1.2345
+1.2345
+1.2345
+1.2345
+DM Object: 1 MPI process
+  type: da
+Processor [0] M 3 m 1 w 3 s 1
+X range of indices: 0 3
+Vec Object: 1 MPI process
+  type: seq
+1.2345
+1.2345
+0.
+1.2345
+1.2345
+0.
+1.2345
+1.2345
+0.
+DM Object: 1 MPI process
+  type: da
+Processor [0] M 3 m 1 w 1 s 1
+X range of indices: 0 3
+Vec Object: 1 MPI process
+  type: seq
+1.2345
+1.2345
+1.2345
+DM Object: 1 MPI process
+  type: da
+Processor [0] M 3 m 1 w 1 s 1
+X range of indices: 0 3
+Vec Object: 1 MPI process
+  type: seq
+1.2345
+1.2345
+1.2345
