@@ -197,7 +197,6 @@ PetscErrorCode CreateCtx(DM dm, AppCtx* user)
   IS             is;
   const PetscInt* points;
   const PetscInt dim = 2;
-  const PetscInt id  = 1;
   PetscErrorCode (**wtf)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
 
   PetscFunctionBeginUser;
@@ -240,9 +239,7 @@ PetscErrorCode CreateCtx(DM dm, AppCtx* user)
   PetscCall(DMCreateMatrix(dm_laplace, &user->laplace));
   PetscCall(DMPlexSNESComputeJacobianFEM(dm_laplace, user->data, user->laplace, user->laplace, NULL));
 
-  /* Code from Matt to get the indices associated with the boundary dofs */
   PetscCall(DMGetLabel(dm_laplace, "marker", &label));
-  PetscCall(DMAddBoundary(dm_laplace, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) zero, NULL, NULL, NULL));
   PetscCall(DMGetLocalSection(dm_laplace, &section));
   PetscCall(DMLabelGetStratumSize(label, 1, &n));
   PetscCall(DMLabelGetStratumIS(label, 1, &is));

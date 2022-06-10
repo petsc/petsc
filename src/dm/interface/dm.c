@@ -8719,6 +8719,7 @@ PetscErrorCode DMAddBoundary(DM dm, DMBoundaryConditionType type, const char nam
   PetscValidLogicalCollectiveInt(dm, Nv, 5);
   PetscValidLogicalCollectiveInt(dm, field, 7);
   PetscValidLogicalCollectiveInt(dm, Nc, 8);
+  PetscCheck(!dm->localSection,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot add boundary to DM after creating local section");
   PetscCall(DMGetDS(dm, &ds));
   PetscCall(DMCompleteBoundaryLabel_Internal(dm, ds, field, PETSC_MAX_INT, label));
   PetscCall(PetscDSAddBoundary(ds, type, name, label, Nv, values, field, Nc, comps, bcFunc, bcFunc_t, ctx, bd));
