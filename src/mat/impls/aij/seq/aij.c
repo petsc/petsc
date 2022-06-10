@@ -3628,7 +3628,9 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqAIJ,
                                         MatCreateMPIMatConcatenateSeqMat_SeqAIJ,
                                  /*145*/MatDestroySubMatrices_SeqAIJ,
                                         NULL,
-                                        NULL
+                                        NULL,
+                                        MatCreateGraph_Simple_AIJ,
+                                        MatFilter_AIJ
 };
 
 PetscErrorCode  MatSeqAIJSetColumnIndices_SeqAIJ(Mat mat,PetscInt *indices)

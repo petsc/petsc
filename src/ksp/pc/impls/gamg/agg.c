@@ -796,7 +796,7 @@ static PetscErrorCode PCGAMGGraph_AGG(PC pc,Mat Amat,Mat *a_Gmat)
   PC_GAMG                   *pc_gamg     = (PC_GAMG*)mg->innerctx;
   const PetscReal           vfilter      = pc_gamg->threshold[pc_gamg->current_level];
   PC_GAMG_AGG               *pc_gamg_agg = (PC_GAMG_AGG*)pc_gamg->subctx;
-  Mat                       Gmat;
+  Mat                       Gmat,F=NULL;
   MPI_Comm                  comm;
   PetscBool /* set,flg , */ symm;
 
@@ -807,11 +807,15 @@ static PetscErrorCode PCGAMGGraph_AGG(PC pc,Mat Amat,Mat *a_Gmat)
   symm = (PetscBool)(pc_gamg_agg->sym_graph); /* && !pc_gamg_agg->square_graph; */
 
   PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[GAMG_GRAPH],0,0,0,0));
-  PetscCall(PCGAMGCreateGraph(Amat, &Gmat, symm));
+  PetscCall(MatCreateGraph(Amat, symm, PETSC_TRUE, &Gmat));
   PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_GRAPH],0,0,0,0));
 
   PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[GAMG_FILTER],0,0,0,0));
-  PetscCall(PCGAMGFilterGraph(&Gmat, vfilter));
+  PetscCall(MatFilter(Gmat, vfilter,&F));
+  if (F) {
+    PetscCall(MatDestroy(&Gmat));
+    Gmat = F;
+  }
   PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_FILTER],0,0,0,0));
 
   *a_Gmat = Gmat;
