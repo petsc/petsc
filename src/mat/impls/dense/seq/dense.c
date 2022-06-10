@@ -1486,9 +1486,11 @@ static PetscErrorCode MatView_SeqDense_ASCII(Mat A,PetscViewer viewer)
     PetscCall(PetscViewerASCIIUseTabs(viewer,PETSC_FALSE));
 #if defined(PETSC_USE_COMPLEX)
     /* determine if matrix has all real values */
-    v = av;
-    for (i=0; i<A->rmap->n*A->cmap->n; i++) {
-      if (PetscImaginaryPart(v[i])) { allreal = PETSC_FALSE; break;}
+    for (j=0; j<A->cmap->n; j++) {
+      v = av + j*a->lda;
+      for (i=0; i<A->rmap->n; i++) {
+        if (PetscImaginaryPart(v[i])) { allreal = PETSC_FALSE; break;}
+      }
     }
 #endif
     if (format == PETSC_VIEWER_ASCII_MATLAB) {
