@@ -628,10 +628,9 @@ linux-pkgs-cxx-mlib:
     - .stage-3
     - .linux_test
   tags:
-    - gce-nfs
+    - gce-u22-stage3
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-cxx-mlib
-    LOAD_MODULES: gcc/11.1.0-5ikoznk cmake/3.20.5-yjp2hz6
 
 linux-pkgs-valgrind:
   extends:

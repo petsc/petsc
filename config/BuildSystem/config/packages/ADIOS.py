@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.gitcommit         = '6f24c5e' # master may 23, 2019
+    self.gitcommit         = 'de85222e71148d2ae47e6af3f9e48dc98323cffb' # master Aug 4, 2021
     self.download          = ['git://https://github.com/ornladios/ADIOS.git']
     self.downloaddirnames  = ['adios']
     self.functions         = ['adios_open']
