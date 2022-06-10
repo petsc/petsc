@@ -301,8 +301,7 @@ PetscErrorCode Device<T>::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, P
 {
   PetscInt    initTypeCUPM = *defaultInitType,id = *defaultDeviceId;
   PetscBool   view         = PETSC_FALSE,flg;
-  int         ndev;
-  cupmError_t cerr;
+  int         ndev         = 0;
 
   PetscFunctionBegin;
   if (initialized_) PetscFunctionReturn(0);
@@ -320,45 +319,26 @@ PetscErrorCode Device<T>::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, P
     ierr = PetscOptionsEnd();PetscCall(ierr);
   }
 
-  cerr = cupmGetDeviceCount(&ndev);
-  switch (cerr) {
-  case cupmErrorNoDevice: {
-    PetscBool found;
-    PetscBool ignoreCupmError = PETSC_FALSE;
-    char      buf[16];
+  if (initTypeCUPM == PETSC_DEVICE_INIT_NONE) {
+    id = PETSC_CUPM_DEVICE_NONE;
+  } else if (auto cerr = cupmGetDeviceCount(&ndev)) {
+    auto PETSC_UNUSED ignored = cupmGetLastError();
+    // we won't be initializing anything anyways
+    initTypeCUPM = PETSC_DEVICE_INIT_NONE;
+    // save the error code for later
+    id = -static_cast<decltype(id)>(cerr);
 
-    PetscCall(PetscOptionsGetenv(comm,CUPM_VISIBLE_DEVICES<T>(),buf,sizeof(buf),&found));
-    if (found) {
-      size_t len;
-
-      PetscCall(PetscStrlen(buf,&len));
-      if (!len || buf[0] == '-') ignoreCupmError = PETSC_TRUE;
-    }
-    id = PETSC_CUPM_DEVICE_NONE; // there are no devices anyway
-    if (ignoreCupmError) {
-      initTypeCUPM = PETSC_DEVICE_INIT_NONE;
-      auto PETSC_UNUSED ignored = cupmGetLastError();
-      break;
-    }
-    // if we don't outright ignore the error we then drop and check if the user tried to
-    // eagerly initialize the device
-  }
-  case cupmErrorStubLibrary:
     if (PetscUnlikely((initTypeCUPM == PETSC_DEVICE_INIT_EAGER) || (view && flg))) {
       const auto name    = cupmGetErrorName(cerr);
       const auto desc    = cupmGetErrorString(cerr);
       const auto backend = cupmName();
       SETERRQ(comm,PETSC_ERR_USER_INPUT,"Cannot eagerly initialize %s, as doing so results in %s error %d (%s) : %s",backend,backend,static_cast<PetscErrorCode>(cerr),name,desc);
     }
-    initTypeCUPM = PETSC_DEVICE_INIT_NONE;
-    {auto PETSC_UNUSED ignored = cupmGetLastError();}
-    break;
-  default:
-    PetscCallCUPM(cerr);
-    break;
   }
 
+  // check again for init type, since the device count may have changed it
   if (initTypeCUPM == PETSC_DEVICE_INIT_NONE) {
+    // id < 0 (excluding PETSC_DECIDE) indicates an error has occurred during setup
     if ((id > 0) || (id == PETSC_DECIDE)) id = PETSC_CUPM_DEVICE_NONE;
   } else {
     PetscCall(PetscDeviceCheckDeviceCount_Internal(ndev));
@@ -367,7 +347,7 @@ PetscErrorCode Device<T>::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, P
         PetscMPIInt rank;
 
         PetscCallMPI(MPI_Comm_rank(comm,&rank));
-        id   = rank % ndev;
+        id = rank % ndev;
       } else id = 0;
     }
     view = static_cast<decltype(view)>(view && flg);
