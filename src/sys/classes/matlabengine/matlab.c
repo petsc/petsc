@@ -41,14 +41,12 @@ PetscErrorCode  PetscMatlabEngineCreate(MPI_Comm comm,const char host[],PetscMat
   char              buffer[256];
   PetscMatlabEngine e;
   PetscBool         flg = PETSC_FALSE;
-
+  char              lhost[64];
   PetscFunctionBegin;
   if (MATLABENGINE_CLASSID == -1) PetscCall(PetscClassIdRegister("MATLAB Engine",&MATLABENGINE_CLASSID));
   PetscCall(PetscHeaderCreate(e,MATLABENGINE_CLASSID,"MatlabEngine","MATLAB Engine","Sys",comm,PetscMatlabEngineDestroy,NULL));
 
   if (!host) {
-    char lhost[64];
-
     PetscCall(PetscOptionsGetString(NULL,NULL,"-matlab_engine_host",lhost,sizeof(lhost),&flg));
     if (flg) host = lhost;
   }
