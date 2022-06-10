@@ -1,10 +1,10 @@
   0 TAO,  Function value: 0.153666,  Residual: 1.22223 
   0 TAO,  Function value: 0.0316957,  Residual: 0.71596 
-  1 TAO,  Function value: 0.0134764,  Residual: 0.746398 
-  2 TAO,  Function value: 0.000704255,  Residual: 0.146572 
-  3 TAO,  Function value: 2.1634e-06,  Residual: 0.00781609 
-  4 TAO,  Function value: 2.84105e-11,  Residual: 2.82561e-05 
-  5 TAO,  Function value: 4.928e-21,  Residual: 3.72138e-10 
+  1 TAO,  Function value: 0.0134763,  Residual: 0.746393 
+  2 TAO,  Function value: 0.000704249,  Residual: 0.146571 
+  3 TAO,  Function value: 2.16378e-06,  Residual: 0.00781675 
+  4 TAO,  Function value: 2.84204e-11,  Residual: 2.82609e-05 
+  5 TAO,  Function value: 4.93222e-21,  Residual: 3.72296e-10 
 Tao Object: 1 MPI process
   type: bntr
     CG steps: 0
@@ -40,10 +40,9 @@ Tao Object: 1 MPI process
       type: shell
       rows=2, cols=2
   total KSP iterations: 8
-  Active Set subset type: subvec
   convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.
-  Residual in Function/Gradient:=3.72138e-10
-  Objective value=4.928e-21
+  Residual in Function/Gradient:=3.72296e-10
+  Objective value=4.93222e-21
   total number of iterations=5,                          (max: 50)
   total number of function/gradient evaluations=17,      (max: 4000)
   total number of Hessian evaluations=6

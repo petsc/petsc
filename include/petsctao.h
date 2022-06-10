@@ -338,6 +338,7 @@ PETSC_EXTERN PetscErrorCode TaoSetUpdate(Tao,PetscErrorCode(*)(Tao,PetscInt,void
 
 PETSC_EXTERN PetscErrorCode TaoGetKSP(Tao,KSP*);
 PETSC_EXTERN PetscErrorCode TaoGetLinearSolveIterations(Tao,PetscInt*);
+PETSC_EXTERN PetscErrorCode TaoKSPSetUseEW(Tao,PetscBool);
 
 #include <petsctaolinesearch.h>
 

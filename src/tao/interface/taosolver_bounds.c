@@ -109,14 +109,15 @@ PetscErrorCode TaoComputeVariableBounds(Tao tao)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  if (!tao->XL || !tao->XU) {
-    PetscCheck(tao->solution,PetscObjectComm((PetscObject)tao),PETSC_ERR_ORDER,"TaoSetSolution must be called before TaoComputeVariableBounds");
-    PetscCall(VecDuplicate(tao->solution, &tao->XL));
-    PetscCall(VecSet(tao->XL, PETSC_NINFINITY));
-    PetscCall(VecDuplicate(tao->solution, &tao->XU));
-    PetscCall(VecSet(tao->XU, PETSC_INFINITY));
-  }
   if (tao->ops->computebounds) {
+    if (!tao->XL) {
+      PetscCall(VecDuplicate(tao->solution, &tao->XL));
+      PetscCall(VecSet(tao->XL, PETSC_NINFINITY));
+    }
+    if (!tao->XU) {
+      PetscCall(VecDuplicate(tao->solution, &tao->XU));
+      PetscCall(VecSet(tao->XU, PETSC_INFINITY));
+    }
     PetscStackPush("Tao compute variable bounds");
     PetscCall((*tao->ops->computebounds)(tao,tao->XL,tao->XU,tao->user_boundsP));
     PetscStackPop;

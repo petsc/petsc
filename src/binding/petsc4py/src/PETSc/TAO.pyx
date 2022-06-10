@@ -377,10 +377,13 @@ cdef class TAO(Object):
             if kargs is None: kargs = {}
             context = (update, args, kargs)
             self.set_attr('__update__', context)
-            CHKERR( TaoSetUpdate(self.tao, TAO_Update, NULL) )
+            CHKERR( TaoSetUpdate(self.tao, TAO_Update, <void*>context) )
         else:
             self.set_attr('__update__', None)
             CHKERR( TaoSetUpdate(self.tao, NULL, NULL) )
+
+    def getUpdate(self):
+        return self.get_attr('__update__')
 
     # --------------
 

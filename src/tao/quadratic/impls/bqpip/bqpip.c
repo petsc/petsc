@@ -209,14 +209,6 @@ static PetscErrorCode TaoSetup_BQPIP(Tao tao)
   if (!tao->stepdirection) {
     PetscCall(VecDuplicate(tao->solution,&tao->stepdirection));
   }
-  if (!tao->XL) {
-    PetscCall(VecDuplicate(tao->solution,&tao->XL));
-    PetscCall(VecSet(tao->XL,PETSC_NINFINITY));
-  }
-  if (!tao->XU) {
-    PetscCall(VecDuplicate(tao->solution,&tao->XU));
-    PetscCall(VecSet(tao->XU,PETSC_INFINITY));
-  }
 
   PetscCall(VecDuplicate(tao->solution,&qp->Work));
   PetscCall(VecDuplicate(tao->solution,&qp->XU));
@@ -276,8 +268,8 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
   PetscCall(TaoComputeVariableBounds(tao));
   PetscCall(VecSet(qp->XU,1.0e20));
   PetscCall(VecSet(qp->XL,-1.0e20));
-  PetscCall(VecPointwiseMax(qp->XL,qp->XL,tao->XL));
-  PetscCall(VecPointwiseMin(qp->XU,qp->XU,tao->XU));
+  if (tao->XL) PetscCall(VecPointwiseMax(qp->XL,qp->XL,tao->XL));
+  if (tao->XU) PetscCall(VecPointwiseMin(qp->XU,qp->XU,tao->XU));
   PetscCall(VecMedian(qp->XL,tao->solution,qp->XU,tao->solution));
 
   /* Evaluate gradient and Hessian at zero to get the correct values

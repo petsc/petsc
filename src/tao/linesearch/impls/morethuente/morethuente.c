@@ -44,7 +44,7 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
   PetscReal        dgx, dgy, dg, dg2, fx, fy, stx, sty, dgtest;
   PetscReal        ftest1=0.0, ftest2=0.0;
   PetscInt         i, stage1,n1,n2,nn1,nn2;
-  PetscReal        bstepmin1, bstepmin2, bstepmax;
+  PetscReal        bstepmin1, bstepmin2, bstepmax, ostepmin, ostepmax;
   PetscBool        g_computed = PETSC_FALSE; /* to prevent extra gradient computation */
 
   PetscFunctionBegin;
@@ -63,6 +63,9 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
     PetscCall(PetscObjectReference((PetscObject)mt->x));
   }
 
+  ostepmax = ls->stepmax;
+  ostepmin = ls->stepmin;
+
   if (ls->bounded) {
     /* Compute step length needed to make all variables equal a bound */
     /* Compute the smallest steplength that will make one nonbinding variable
@@ -76,7 +79,7 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
     PetscCall(VecBoundGradientProjection(s,x,ls->lower,ls->upper,s));
     PetscCall(VecScale(s,-1.0));
     PetscCall(VecStepBoundInfo(x,s,ls->lower,ls->upper,&bstepmin1,&bstepmin2,&bstepmax));
-    ls->stepmax = PetscMin(bstepmax,1.0e15);
+    ls->stepmax = PetscMin(bstepmax,ls->stepmax);
   }
 
   PetscCall(VecDot(g,s,&dginit));
@@ -252,6 +255,8 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
     PetscCall(PetscInfo(ls,"Number of line search function evals (%" PetscInt_FMT ") > maximum (%" PetscInt_FMT ")\n",ls->nfeval+ls->nfgeval,ls->max_funcs));
     ls->reason = TAOLINESEARCH_HALTED_MAXFCN;
   }
+  ls->stepmax = ostepmax;
+  ls->stepmin = ostepmin;
 
   /* Finish computations */
   PetscCall(PetscInfo(ls,"%" PetscInt_FMT " function evals in line search, step = %g\n",ls->nfeval+ls->nfgeval,(double)ls->step));

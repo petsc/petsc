@@ -863,6 +863,28 @@ PetscErrorCode  SNESMonitorSetFromOptions(SNES snes,const char name[],const char
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode SNESEWSetFromOptions_Private(SNESKSPEW* kctx, MPI_Comm comm, const char* prefix)
+{
+  PetscFunctionBegin;
+  PetscOptionsBegin(comm,prefix,"Eisenstat and Walker type forcing options","KSP");
+  PetscCall(PetscOptionsInt("-ksp_ew_version","Version 1, 2 or 3",NULL,kctx->version,&kctx->version,NULL));
+  PetscCall(PetscOptionsReal("-ksp_ew_rtol0","0 <= rtol0 < 1",NULL,kctx->rtol_0,&kctx->rtol_0,NULL));
+  PetscCall(PetscOptionsReal("-ksp_ew_rtolmax","0 <= rtolmax < 1",NULL,kctx->rtol_max,&kctx->rtol_max,NULL));
+  PetscCall(PetscOptionsReal("-ksp_ew_gamma","0 <= gamma <= 1",NULL,kctx->gamma,&kctx->gamma,NULL));
+  PetscCall(PetscOptionsReal("-ksp_ew_alpha","1 < alpha <= 2",NULL,kctx->alpha,&kctx->alpha,NULL));
+  PetscCall(PetscOptionsReal("-ksp_ew_alpha2","alpha2",NULL,kctx->alpha2,&kctx->alpha2,NULL));
+  PetscCall(PetscOptionsReal("-ksp_ew_threshold","0 < threshold < 1",NULL,kctx->threshold,&kctx->threshold,NULL));
+  PetscCall(PetscOptionsReal("-ksp_ew_v4_p1","p1",NULL,kctx->v4_p1,&kctx->v4_p1,NULL));
+  PetscCall(PetscOptionsReal("-ksp_ew_v4_p2","p2",NULL,kctx->v4_p2,&kctx->v4_p2,NULL));
+  PetscCall(PetscOptionsReal("-ksp_ew_v4_p3","p3",NULL,kctx->v4_p3,&kctx->v4_p3,NULL));
+  PetscCall(PetscOptionsReal("-ksp_ew_v4_m1","Scaling when rk-1 in [p2,p3)",NULL,kctx->v4_m1,&kctx->v4_m1,NULL));
+  PetscCall(PetscOptionsReal("-ksp_ew_v4_m2","Scaling when rk-1 in [p3,+infty)",NULL,kctx->v4_m2,&kctx->v4_m2,NULL));
+  PetscCall(PetscOptionsReal("-ksp_ew_v4_m3","Threshold for successive rtol (0.1 in Eq.7)",NULL,kctx->v4_m3,&kctx->v4_m3,NULL));
+  PetscCall(PetscOptionsReal("-ksp_ew_v4_m4","Adaptation scaling (0.5 in Eq.7)",NULL,kctx->v4_m4,&kctx->v4_m4,NULL));
+  PetscOptionsEnd();
+  PetscFunctionReturn(0);
+}
+
 /*@
    SNESSetFromOptions - Sets various SNES and KSP parameters from user options.
 
@@ -934,7 +956,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   const char     *deft        = SNESNEWTONLS;
   const char     *convtests[] = {"default","skip","correct_pressure"};
   SNESKSPEW      *kctx        = NULL;
-  char           type[256], monfilename[PETSC_MAX_PATH_LEN];
+  char           type[256], monfilename[PETSC_MAX_PATH_LEN], ewprefix[256];
   PCSide         pcside;
   const char     *optionsprefix;
 
@@ -1004,6 +1026,10 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   kctx = (SNESKSPEW*)snes->kspconvctx;
 
   PetscCall(PetscOptionsBool("-snes_ksp_ew","Use Eisentat-Walker linear system convergence test","SNESKSPSetUseEW",snes->ksp_ewconv,&snes->ksp_ewconv,NULL));
+
+  PetscCall(SNESGetOptionsPrefix(snes,&optionsprefix));
+  PetscCall(PetscSNPrintf(ewprefix,sizeof(ewprefix),"%s%s",optionsprefix ? optionsprefix : "","snes_"));
+  PetscCall(SNESEWSetFromOptions_Private(kctx,PetscObjectComm((PetscObject)snes),ewprefix));
 
   PetscCall(PetscOptionsInt("-snes_ksp_ew_version","Version 1, 2 or 3","SNESKSPSetParametersEW",kctx->version,&kctx->version,NULL));
   PetscCall(PetscOptionsReal("-snes_ksp_ew_rtol0","0 <= rtol0 < 1","SNESKSPSetParametersEW",kctx->rtol_0,&kctx->rtol_0,NULL));
@@ -1706,8 +1732,8 @@ PetscErrorCode  SNESSetKSP(SNES snes,KSP ksp)
 @*/
 PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
 {
-  SNES           snes;
-  SNESKSPEW      *kctx;
+  SNES      snes;
+  SNESKSPEW *kctx;
 
   PetscFunctionBegin;
   PetscValidPointer(outsnes,2);
@@ -1797,16 +1823,27 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
 
   snes->kspconvctx  = (void*)kctx;
   kctx->version     = 2;
-  kctx->rtol_0      = .3; /* Eisenstat and Walker suggest rtol_0=.5, but
+  kctx->rtol_0      = 0.3; /* Eisenstat and Walker suggest rtol_0=.5, but
                              this was too large for some test cases */
   kctx->rtol_last   = 0.0;
-  kctx->rtol_max    = .9;
+  kctx->rtol_max    = 0.9;
   kctx->gamma       = 1.0;
-  kctx->alpha       = .5*(1.0 + PetscSqrtReal(5.0));
+  kctx->alpha       = 0.5*(1.0 + PetscSqrtReal(5.0));
   kctx->alpha2      = kctx->alpha;
-  kctx->threshold   = .1;
+  kctx->threshold   = 0.1;
   kctx->lresid_last = 0.0;
   kctx->norm_last   = 0.0;
+
+  kctx->rk_last     = 0.0;
+  kctx->rk_last_2   = 0.0;
+  kctx->rtol_last_2 = 0.0;
+  kctx->v4_p1       = 0.1;
+  kctx->v4_p2       = 0.4;
+  kctx->v4_p3       = 0.7;
+  kctx->v4_m1       = 0.8;
+  kctx->v4_m2       = 0.5;
+  kctx->v4_m3       = 0.1;
+  kctx->v4_m4       = 0.5;
 
   *outsnes = snes;
   PetscFunctionReturn(0);
@@ -5300,7 +5337,7 @@ PetscErrorCode  SNESKSPGetUseEW(SNES snes, PetscBool  *flag)
 
    Input Parameters:
 +    snes - SNES context
-.    version - version 1, 2 (default is 2) or 3
+.    version - version 1, 2 (default is 2), 3 or 4
 .    rtol_0 - initial relative tolerance (0 <= rtol_0 < 1)
 .    rtol_max - maximum relative tolerance (0 <= rtol_max < 1)
 .    gamma - multiplicative factor for version 2 rtol computation
@@ -5347,7 +5384,7 @@ PetscErrorCode  SNESKSPSetParametersEW(SNES snes,PetscInt version,PetscReal rtol
   if (alpha2 != PETSC_DEFAULT)    kctx->alpha2    = alpha2;
   if (threshold != PETSC_DEFAULT) kctx->threshold = threshold;
 
-  PetscCheck(kctx->version >= 1 && kctx->version <= 3,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Only versions 1, 2 and 3 are supported: %" PetscInt_FMT,kctx->version);
+  PetscCheck(kctx->version >= 1 && kctx->version <= 4,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Only versions 1 to 4 are supported: %" PetscInt_FMT,kctx->version);
   PetscCheck(kctx->rtol_0 >= 0.0 && kctx->rtol_0 < 1.0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"0.0 <= rtol_0 < 1.0: %g",(double)kctx->rtol_0);
   PetscCheck(kctx->rtol_max >= 0.0 && kctx->rtol_max < 1.0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"0.0 <= rtol_max (%g) < 1.0",(double)kctx->rtol_max);
   PetscCheck(kctx->gamma >= 0.0 && kctx->gamma <= 1.0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"0.0 <= gamma (%g) <= 1.0",(double)kctx->gamma);
@@ -5367,7 +5404,7 @@ PetscErrorCode  SNESKSPSetParametersEW(SNES snes,PetscInt version,PetscReal rtol
 .    snes - SNES context
 
    Output Parameters:
-+    version - version 1, 2 (default is 2) or 3
++    version - version 1, 2 (default is 2), 3 or 4
 .    rtol_0 - initial relative tolerance (0 <= rtol_0 < 1)
 .    rtol_max - maximum relative tolerance (0 <= rtol_max < 1)
 .    gamma - multiplicative factor for version 2 rtol computation (0 <= gamma2 <= 1)
@@ -5397,21 +5434,19 @@ PetscErrorCode  SNESKSPGetParametersEW(SNES snes,PetscInt *version,PetscReal *rt
   PetscFunctionReturn(0);
 }
 
- PetscErrorCode KSPPreSolve_SNESEW(KSP ksp, Vec b, Vec x, SNES snes)
+PetscErrorCode KSPPreSolve_SNESEW(KSP ksp, Vec b, Vec x, SNES snes)
 {
-  SNESKSPEW      *kctx = (SNESKSPEW*)snes->kspconvctx;
-  PetscReal      rtol  = PETSC_DEFAULT,stol;
+  SNESKSPEW *kctx = (SNESKSPEW*)snes->kspconvctx;
+  PetscReal rtol  = PETSC_DEFAULT,stol;
 
   PetscFunctionBegin;
   if (!snes->ksp_ewconv) PetscFunctionReturn(0);
   if (!snes->iter) {
     rtol = kctx->rtol_0; /* first time in, so use the original user rtol */
     PetscCall(VecNorm(snes->vec_func,NORM_2,&kctx->norm_first));
-  }
-  else {
+  } else {
     if (kctx->version == 1) {
-      rtol = (snes->norm - kctx->lresid_last)/kctx->norm_last;
-      if (rtol < 0.0) rtol = -rtol;
+      rtol = PetscAbsReal(snes->norm - kctx->lresid_last)/kctx->norm_last;
       stol = PetscPowReal(kctx->rtol_last,kctx->alpha2);
       if (stol > kctx->threshold) rtol = PetscMax(rtol,stol);
     } else if (kctx->version == 2) {
@@ -5428,9 +5463,28 @@ PetscErrorCode  SNESKSPGetParametersEW(SNES snes,PetscInt *version,PetscReal *rt
       stol = kctx->gamma*(kctx->norm_first*snes->rtol)/snes->norm;
       stol = PetscMax(rtol,stol);
       rtol = PetscMin(kctx->rtol_0,stol);
-    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Only versions 1, 2 or 3 are supported: %" PetscInt_FMT,kctx->version);
+    } else if (kctx->version == 4) { /* H.-B. An et al. Journal of Computational and Applied Mathematics 200 (2007) 47-60 */
+      PetscReal ared = PetscAbsReal(kctx->norm_last - snes->norm);
+      PetscReal pred = PetscAbsReal(kctx->norm_last - kctx->lresid_last);
+      PetscReal rk = ared / pred;
+      if (rk < kctx->v4_p1) rtol = 1. - 2.*kctx->v4_p1;
+      else if (rk < kctx->v4_p2) rtol = kctx->rtol_last;
+      else if (rk < kctx->v4_p3) rtol = kctx->v4_m1 * kctx->rtol_last;
+      else rtol = kctx->v4_m2 * kctx->rtol_last;
+
+      if (kctx->rtol_last_2 > kctx->v4_m3 && kctx->rtol_last > kctx->v4_m3 &&
+          kctx->rk_last_2 < kctx->v4_p1 && kctx->rk_last < kctx->v4_p1) {
+        rtol = kctx->v4_m4 * kctx->rtol_last;
+        //printf("iter %" PetscInt_FMT ", Eisenstat-Walker (version %" PetscInt_FMT ") KSP rtol=%g (rk %g ps %g %g %g) (AD)\n",snes->iter,kctx->version,(double)rtol,rk,kctx->v4_p1,kctx->v4_p2,kctx->v4_p3);
+      } else {
+        //printf("iter %" PetscInt_FMT ", Eisenstat-Walker (version %" PetscInt_FMT ") KSP rtol=%g (rk %g ps %g %g %g)\n",snes->iter,kctx->version,(double)rtol,rk,kctx->v4_p1,kctx->v4_p2,kctx->v4_p3);
+      }
+      kctx->rtol_last_2 = kctx->rtol_last;
+      kctx->rk_last_2 = kctx->rk_last;
+      kctx->rk_last = rk;
+    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Only versions 1-4 are supported: %" PetscInt_FMT,kctx->version);
   }
-  /* safeguard: avoid rtol greater than one */
+  /* safeguard: avoid rtol greater than rtol_max */
   rtol = PetscMin(rtol,kctx->rtol_max);
   PetscCall(KSPSetTolerances(ksp,rtol,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT));
   PetscCall(PetscInfo(snes,"iter %" PetscInt_FMT ", Eisenstat-Walker (version %" PetscInt_FMT ") KSP rtol=%g\n",snes->iter,kctx->version,(double)rtol));
@@ -5439,29 +5493,36 @@ PetscErrorCode  SNESKSPGetParametersEW(SNES snes,PetscInt *version,PetscReal *rt
 
 PetscErrorCode KSPPostSolve_SNESEW(KSP ksp, Vec b, Vec x, SNES snes)
 {
-  SNESKSPEW      *kctx = (SNESKSPEW*)snes->kspconvctx;
-  PCSide         pcside;
-  Vec            lres;
+  SNESKSPEW *kctx = (SNESKSPEW*)snes->kspconvctx;
+  PCSide    pcside;
+  Vec       lres;
 
   PetscFunctionBegin;
   if (!snes->ksp_ewconv) PetscFunctionReturn(0);
   PetscCall(KSPGetTolerances(ksp,&kctx->rtol_last,NULL,NULL,NULL));
   kctx->norm_last = snes->norm;
-  if (kctx->version == 1) {
+  if (kctx->version == 1 || kctx->version == 4) {
     PC        pc;
-    PetscBool isNone;
+    PetscBool getRes;
 
-    PetscCall(KSPGetPC(ksp, &pc));
-    PetscCall(PetscObjectTypeCompare((PetscObject) pc, PCNONE, &isNone));
+    PetscCall(KSPGetPC(ksp,&pc));
+    PetscCall(PetscObjectTypeCompare((PetscObject)pc,PCNONE,&getRes));
+    if (!getRes) {
+      KSPNormType normtype;
+
+      PetscCall(KSPGetNormType(ksp,&normtype));
+      getRes = (PetscBool)(normtype == KSP_NORM_UNPRECONDITIONED);
+    }
     PetscCall(KSPGetPCSide(ksp,&pcside));
-     if (pcside == PC_RIGHT || isNone) { /* XXX Should we also test KSP_UNPRECONDITIONED_NORM ? */
-      /* KSP residual is true linear residual */
+    if (pcside == PC_RIGHT || getRes) { /* KSP residual is true linear residual */
       PetscCall(KSPGetResidualNorm(ksp,&kctx->lresid_last));
     } else {
       /* KSP residual is preconditioned residual */
       /* compute true linear residual norm */
+      Mat J;
+      PetscCall(KSPGetOperators(ksp,&J,NULL));
       PetscCall(VecDuplicate(b,&lres));
-      PetscCall(MatMult(snes->jacobian,x,lres));
+      PetscCall(MatMult(J,x,lres));
       PetscCall(VecAYPX(lres,-1.0,b));
       PetscCall(VecNorm(lres,NORM_2,&kctx->lresid_last));
       PetscCall(VecDestroy(&lres));

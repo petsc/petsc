@@ -83,18 +83,10 @@ static PetscErrorCode TaoSetup_GPCG(Tao tao)
   PetscFunctionBegin;
   /* Allocate some arrays */
   if (!tao->gradient) {
-      PetscCall(VecDuplicate(tao->solution, &tao->gradient));
+    PetscCall(VecDuplicate(tao->solution, &tao->gradient));
   }
   if (!tao->stepdirection) {
-      PetscCall(VecDuplicate(tao->solution, &tao->stepdirection));
-  }
-  if (!tao->XL) {
-      PetscCall(VecDuplicate(tao->solution,&tao->XL));
-      PetscCall(VecSet(tao->XL,PETSC_NINFINITY));
-  }
-  if (!tao->XU) {
-      PetscCall(VecDuplicate(tao->solution,&tao->XU));
-      PetscCall(VecSet(tao->XU,PETSC_INFINITY));
+    PetscCall(VecDuplicate(tao->solution, &tao->stepdirection));
   }
 
   PetscCall(VecDuplicate(tao->solution,&gpcg->B));

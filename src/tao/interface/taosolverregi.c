@@ -1,5 +1,3 @@
-#define TAO_DLL
-
 #include <petsc/private/taoimpl.h> /*I "petsctao.h" I*/
 
 PETSC_EXTERN PetscErrorCode TaoCreate_LMVM(Tao);

@@ -349,6 +349,11 @@ PetscErrorCode VecWhichInactive(Vec VecLow, Vec V, Vec D, Vec VecHigh, PetscBool
   const PetscScalar *v1,*v2,*v,*d;
 
   PetscFunctionBegin;
+  if (!VecLow && !VecHigh) {
+    PetscCall(VecGetOwnershipRange(V,&low,&high));
+    PetscCall(ISCreateStride(PetscObjectComm((PetscObject)V),high-low,low,1,S));
+    PetscFunctionReturn(0);
+  }
   PetscValidHeaderSpecific(VecLow,VEC_CLASSID,1);
   PetscValidHeaderSpecific(V,VEC_CLASSID,2);
   PetscValidHeaderSpecific(D,VEC_CLASSID,3);
@@ -678,9 +683,13 @@ PetscErrorCode VecBoundGradientProjection(Vec G, Vec X, Vec XL, Vec XU, Vec GP)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(G,VEC_CLASSID,1);
   PetscValidHeaderSpecific(X,VEC_CLASSID,2);
-  PetscValidHeaderSpecific(XL,VEC_CLASSID,3);
-  PetscValidHeaderSpecific(XU,VEC_CLASSID,4);
+  if (XL) PetscValidHeaderSpecific(XL,VEC_CLASSID,3);
+  if (XU) PetscValidHeaderSpecific(XU,VEC_CLASSID,4);
   PetscValidHeaderSpecific(GP,VEC_CLASSID,5);
+  if (!XL && !XU) {
+    PetscCall(VecCopy(G,GP));
+    PetscFunctionReturn(0);
+  }
 
   PetscCall(VecGetLocalSize(X,&n));
 
@@ -690,7 +699,8 @@ PetscErrorCode VecBoundGradientProjection(Vec G, Vec X, Vec XL, Vec XU, Vec GP)
   PetscCall(VecGetArrayPair(G,GP,&gptr,&gpptr));
 
   for (i=0; i<n; ++i) {
-    gpval = gptr[i]; xval = xptr[i];
+    gpval = gptr[i];
+    xval = xptr[i];
     if (gpval>0.0 && xval<=xlptr[i]) {
       gpval = 0.0;
     } else if (gpval<0.0 && xval>=xuptr[i]) {
@@ -973,11 +983,15 @@ PetscErrorCode VecMedian(Vec Vec1, Vec Vec2, Vec Vec3, Vec VMedian)
   PetscScalar       *vmed;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(Vec1,VEC_CLASSID,1);
+  if (Vec1) PetscValidHeaderSpecific(Vec1,VEC_CLASSID,1);
   PetscValidHeaderSpecific(Vec2,VEC_CLASSID,2);
-  PetscValidHeaderSpecific(Vec3,VEC_CLASSID,3);
+  if (Vec3) PetscValidHeaderSpecific(Vec3,VEC_CLASSID,3);
   PetscValidHeaderSpecific(VMedian,VEC_CLASSID,4);
 
+  if (!Vec1 && !Vec3) {
+    PetscCall(VecCopy(Vec2,VMedian));
+    PetscFunctionReturn(0);
+  }
   if (Vec1==Vec2 || Vec1==Vec3) {
     PetscCall(VecCopy(Vec1,VMedian));
     PetscFunctionReturn(0);

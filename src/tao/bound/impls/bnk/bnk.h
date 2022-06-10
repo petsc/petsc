@@ -202,6 +202,7 @@ typedef struct {
   PetscInt ksp_dtol;
   PetscInt ksp_iter;
   PetscInt ksp_othr;
+  PetscBool resetksp;
 
   /* Implementation specific context */
   void* ctx;

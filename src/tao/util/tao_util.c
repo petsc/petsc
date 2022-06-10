@@ -52,9 +52,14 @@ PetscErrorCode VecFischer(Vec X, Vec F, Vec L, Vec U, Vec FB)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(X, VEC_CLASSID,1);
   PetscValidHeaderSpecific(F, VEC_CLASSID,2);
-  PetscValidHeaderSpecific(L, VEC_CLASSID,3);
-  PetscValidHeaderSpecific(U, VEC_CLASSID,4);
+  if (L) PetscValidHeaderSpecific(L, VEC_CLASSID,3);
+  if (U) PetscValidHeaderSpecific(U, VEC_CLASSID,4);
   PetscValidHeaderSpecific(FB, VEC_CLASSID,5);
+
+  if (!L && !U) {
+    PetscCall(VecAXPBY(FB,-1.0,0.0,F));
+    PetscFunctionReturn(0);
+  }
 
   PetscCall(VecGetOwnershipRange(X, low, high));
   PetscCall(VecGetOwnershipRange(F, low + 1, high + 1));
@@ -75,20 +80,22 @@ PetscErrorCode VecFischer(Vec X, Vec F, Vec L, Vec U, Vec FB)
   PetscCall(VecGetLocalSize(X, &n));
 
   for (i = 0; i < n; ++i) {
-    xval = PetscRealPart(x[i]); fval = PetscRealPart(f[i]);
-    lval = PetscRealPart(l[i]); uval = PetscRealPart(u[i]);
+    xval = PetscRealPart(x[i]);
+    fval = PetscRealPart(f[i]);
+    lval = PetscRealPart(l[i]);
+    uval = PetscRealPart(u[i]);
 
-    if ((lval <= -PETSC_INFINITY) && (uval >= PETSC_INFINITY)) {
+    if (lval <= -PETSC_INFINITY && uval >= PETSC_INFINITY) {
       fb[i] = -fval;
     } else if (lval <= -PETSC_INFINITY) {
       fb[i] = -Fischer(uval - xval, -fval);
     } else if (uval >=  PETSC_INFINITY) {
-      fb[i] =  Fischer(xval - lval,  fval);
+      fb[i] = Fischer(xval - lval,  fval);
     } else if (lval == uval) {
       fb[i] = lval - xval;
     } else {
-      fval  =  Fischer(uval - xval, -fval);
-      fb[i] =  Fischer(xval - lval,  fval);
+      fval  = Fischer(uval - xval, -fval);
+      fb[i] = Fischer(xval - lval,  fval);
     }
   }
 

@@ -98,7 +98,6 @@ Tao Object: 1 MPI process
             Number of rejects: 0
             Number of resets: 0
   total KSP iterations: 0
-  Active Set subset type: subvec
   convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.
   Residual in Function/Gradient:=8.34439e-09
   Objective value=1.24426e-09
