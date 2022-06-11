@@ -29,6 +29,10 @@ PetscClassId MATLABENGINE_CLASSID = -1;
 .    -matlab_engine_host - hostname, machine to run the MATLAB engine on
 -    -info - print out all requests to MATLAB and all if its responses (for debugging)
 
+   Notes:
+   If a host string is passed in, any Matlab scripts that need to run in the
+   engine must be available via MATLABPATH on that machine.
+
    Level: advanced
 
 .seealso: `PetscMatlabEngineDestroy()`, `PetscMatlabEnginePut()`, `PetscMatlabEngineGet()`,
@@ -41,51 +45,38 @@ PetscErrorCode  PetscMatlabEngineCreate(MPI_Comm comm,const char host[],PetscMat
   char              buffer[256];
   PetscMatlabEngine e;
   PetscBool         flg = PETSC_FALSE;
-
+  char              lhost[64];
   PetscFunctionBegin;
   if (MATLABENGINE_CLASSID == -1) PetscCall(PetscClassIdRegister("MATLAB Engine",&MATLABENGINE_CLASSID));
   PetscCall(PetscHeaderCreate(e,MATLABENGINE_CLASSID,"MatlabEngine","MATLAB Engine","Sys",comm,PetscMatlabEngineDestroy,NULL));
 
   if (!host) {
-    char lhost[64];
-
     PetscCall(PetscOptionsGetString(NULL,NULL,"-matlab_engine_host",lhost,sizeof(lhost),&flg));
-    if (flg) {host = lhost;}
+    if (flg) host = lhost;
   }
   flg = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-matlab_engine_graphics",&flg,NULL));
 
   if (host) {
     PetscCall(PetscInfo(0,"Starting MATLAB engine on %s\n",host));
-  } else {
-
-  }
-  if (host) {
     PetscCall(PetscStrcpy(buffer,"ssh "));
     PetscCall(PetscStrcat(buffer,host));
     PetscCall(PetscStrcat(buffer," \""));
     PetscCall(PetscStrlcat(buffer,PETSC_MATLAB_COMMAND,sizeof(buffer)));
-    if (!flg) {
-      PetscCall(PetscStrlcat(buffer," -nodisplay ",sizeof(buffer)));
-    }
+    if (!flg) PetscCall(PetscStrlcat(buffer," -nodisplay ",sizeof(buffer)));
     PetscCall(PetscStrlcat(buffer," -nosplash ",sizeof(buffer)));
     PetscCall(PetscStrcat(buffer,"\""));
   } else {
     PetscCall(PetscStrncpy(buffer,PETSC_MATLAB_COMMAND,sizeof(buffer)));
-    if (!flg) {
-      PetscCall(PetscStrlcat(buffer," -nodisplay ",sizeof(buffer)));
-    }
+    if (!flg) PetscCall(PetscStrlcat(buffer," -nodisplay ",sizeof(buffer)));
     PetscCall(PetscStrlcat(buffer," -nosplash ",sizeof(buffer)));
   }
   PetscCall(PetscInfo(0,"Starting MATLAB engine with command %s\n",buffer));
   e->ep = engOpen(buffer);
   PetscCheck(e->ep,PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to start MATLAB engine with %s",buffer);
   engOutputBuffer(e->ep,e->buffer,sizeof(e->buffer));
-  if (host) {
-    PetscCall(PetscInfo(0,"Started MATLAB engine on %s\n",host));
-  } else {
-    PetscCall(PetscInfo(0,"Started MATLAB engine\n"));
-  }
+  if (host) PetscCall(PetscInfo(0,"Started MATLAB engine on %s\n",host));
+  else PetscCall(PetscInfo(0,"Started MATLAB engine\n"));
 
   PetscCallMPI(MPI_Comm_rank(comm,&rank));
   PetscCallMPI(MPI_Comm_size(comm,&size));
