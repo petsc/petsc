@@ -81,6 +81,8 @@ struct Mat_SeqAIJKokkos {
   MatColIdxKokkosDualView    j_dual;
   MatScalarKokkosDualView    a_dual;
 
+  MatRowMapKokkosDualView    diag_dual; /* Diagonal pointer, built on demand */
+
   KokkosCsrMatrix            csrmat; /* The CSR matrix, used to call KK functions */
   PetscObjectState           nonzerostate; /* State of the nonzero pattern (graph) on device */
 
@@ -163,6 +165,13 @@ struct Mat_SeqAIJKokkos {
   void SetUpCOO(const Mat_SeqAIJ *aij) {
     jmap_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(),PetscCountKokkosViewHost(aij->jmap,aij->nz+1));
     perm_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(),PetscCountKokkosViewHost(aij->perm,aij->Atot));
+  }
+
+  void SetDiagonal(const MatRowMapType *diag)
+  {
+    MatRowMapKokkosViewHost diag_h(const_cast<MatRowMapType*>(diag),nrows());
+    auto diag_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(),diag_h);
+    diag_dual = MatRowMapKokkosDualView(diag_d,diag_h);
   }
 
   /* Shared init stuff */
