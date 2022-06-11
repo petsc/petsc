@@ -29,6 +29,10 @@ PetscClassId MATLABENGINE_CLASSID = -1;
 .    -matlab_engine_host - hostname, machine to run the MATLAB engine on
 -    -info - print out all requests to MATLAB and all if its responses (for debugging)
 
+   Notes:
+   If a host string is passed in, any Matlab scripts that need to run in the
+   engine must be available via MATLABPATH on that machine.
+
    Level: advanced
 
 .seealso: `PetscMatlabEngineDestroy()`, `PetscMatlabEnginePut()`, `PetscMatlabEngineGet()`,
