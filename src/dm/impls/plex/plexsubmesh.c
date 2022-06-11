@@ -800,14 +800,12 @@ static PetscErrorCode DMPlexShiftTree_Internal(DM dm, PetscInt depthShift[], DM 
 
 static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, DMLabel label, PetscInt *numGhostCells, DM gdm)
 {
-  PetscSF               sf;
-  IS                    valueIS;
-  const PetscInt       *values, *leaves;
-  PetscInt             *depthShift;
-  PetscInt              d, depth = 0, nleaves, loc, Ng, numFS, fs, fStart, fEnd, ghostCell, cEnd, c;
-  PetscBool             isper;
-  const PetscReal      *maxCell, *L;
-  const DMBoundaryType *bd;
+  PetscSF          sf;
+  IS               valueIS;
+  const PetscInt  *values, *leaves;
+  PetscInt        *depthShift;
+  PetscInt         d, depth = 0, nleaves, loc, Ng, numFS, fs, fStart, fEnd, ghostCell, cEnd, c;
+  const PetscReal *maxCell, *L;
 
   PetscFunctionBegin;
   PetscCall(DMGetPointSF(dm, &sf));
@@ -918,8 +916,8 @@ static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, DMLabel label, P
     PetscCall(DMPlexSetCellType(gdm, c, DM_POLYTOPE_FV_GHOST));
   }
   /* Step 7: Periodicity */
-  PetscCall(DMGetPeriodicity(dm, &isper, &maxCell, &L, &bd));
-  PetscCall(DMSetPeriodicity(gdm, isper, maxCell,  L,  bd));
+  PetscCall(DMGetPeriodicity(dm, &maxCell, &L));
+  PetscCall(DMSetPeriodicity(gdm, maxCell,  L));
   if (numGhostCells) *numGhostCells = Ng;
   PetscFunctionReturn(0);
 }

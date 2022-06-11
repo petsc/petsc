@@ -1871,6 +1871,7 @@ PetscErrorCode DMPlexTreeRefineCell (DM dm, PetscInt cell, DM *ncdm)
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
   PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)dm),&parentSection));
   PetscCall(DMPlexGetReferenceTree(dm,&K));
+  PetscCall(DMGetCoordinatesLocalSetUp(dm));
   if (rank == 0) {
     /* compute the new charts */
     PetscCall(PetscMalloc5(dim+1,&pNewCount,dim+1,&pNewStart,dim+1,&pNewEnd,dim+1,&pOldStart,dim+1,&pOldEnd));

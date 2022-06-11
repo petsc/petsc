@@ -758,7 +758,6 @@ static PetscErrorCode DMPlexCoordinatesView_HDF5_XDMF_Private(DM dm, PetscViewer
   PetscScalar     *coords, *ncoords;
   DMLabel          cutLabel, cutVertexLabel = NULL;
   const PetscReal *L;
-  const DMBoundaryType *bd;
   PetscReal        lengthScale;
   PetscInt         vStart, vEnd, v, bs, N, coordSize, dof, off, d;
   PetscBool        localized, embedded;
@@ -771,7 +770,7 @@ static PetscErrorCode DMPlexCoordinatesView_HDF5_XDMF_Private(DM dm, PetscViewer
   PetscCall(VecGetBlockSize(coordinatesLocal, &bs));
   PetscCall(DMGetCoordinatesLocalized(dm, &localized));
   if (localized == PETSC_FALSE) PetscFunctionReturn(0);
-  PetscCall(DMGetPeriodicity(dm, NULL, NULL, &L, &bd));
+  PetscCall(DMGetPeriodicity(dm, NULL, &L));
   PetscCall(DMGetCoordinateDM(dm, &cdm));
   PetscCall(DMGetLocalSection(cdm, &cSection));
   PetscCall(DMGetGlobalSection(cdm, &cGlobalSection));
@@ -805,7 +804,7 @@ static PetscErrorCode DMPlexCoordinatesView_HDF5_XDMF_Private(DM dm, PetscViewer
     PetscCall(PetscSectionGetOffset(cSection, v, &off));
     if (dof < 0) continue;
     if (embedded) {
-      if ((bd[0] == DM_BOUNDARY_PERIODIC) && (bd[1] == DM_BOUNDARY_PERIODIC)) {
+      if (L && (L[0] > 0.0) && (L[1] > 0.0)) {
         PetscReal theta, phi, r, R;
         /* XY-periodic */
         /* Suppose its an y-z circle, then
@@ -819,16 +818,17 @@ static PetscErrorCode DMPlexCoordinatesView_HDF5_XDMF_Private(DM dm, PetscViewer
         ncoords[coordSize++] =  PetscSinReal(phi) * r;
         ncoords[coordSize++] = -PetscCosReal(theta) * (R + r * PetscCosReal(phi));
         ncoords[coordSize++] =  PetscSinReal(theta) * (R + r * PetscCosReal(phi));
-      } else if ((bd[0] == DM_BOUNDARY_PERIODIC)) {
+      } else if (L && (L[0] > 0.0)) {
         /* X-periodic */
         ncoords[coordSize++] = -PetscCosReal(2.0*PETSC_PI*PetscRealPart(coords[off+0])/L[0])*(L[0]/(2.0*PETSC_PI));
         ncoords[coordSize++] = coords[off+1];
         ncoords[coordSize++] = PetscSinReal(2.0*PETSC_PI*PetscRealPart(coords[off+0])/L[0])*(L[0]/(2.0*PETSC_PI));
-      } else if ((bd[1] == DM_BOUNDARY_PERIODIC)) {
+      } else if (L && (L[1] > 0.0)) {
         /* Y-periodic */
         ncoords[coordSize++] = coords[off+0];
         ncoords[coordSize++] = PetscSinReal(2.0*PETSC_PI*PetscRealPart(coords[off+1])/L[1])*(L[1]/(2.0*PETSC_PI));
         ncoords[coordSize++] = -PetscCosReal(2.0*PETSC_PI*PetscRealPart(coords[off+1])/L[1])*(L[1]/(2.0*PETSC_PI));
+#if 0
       } else if ((bd[0] == DM_BOUNDARY_TWIST)) {
         PetscReal phi, r, R;
         /* Mobius strip */
@@ -842,6 +842,7 @@ static PetscErrorCode DMPlexCoordinatesView_HDF5_XDMF_Private(DM dm, PetscViewer
         ncoords[coordSize++] = -PetscCosReal(phi) * (R + r * PetscCosReal(phi/2.0));
         ncoords[coordSize++] =  PetscSinReal(phi/2.0) * r;
         ncoords[coordSize++] =  PetscSinReal(phi) * (R + r * PetscCosReal(phi/2.0));
+#endif
       } else SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Cannot handle periodicity in this domain");
     } else {
       for (d = 0; d < dof; ++d, ++coordSize) ncoords[coordSize] = coords[off+d];
@@ -859,7 +860,7 @@ static PetscErrorCode DMPlexCoordinatesView_HDF5_XDMF_Private(DM dm, PetscViewer
       for (v = 0; v < n; ++v) {
         PetscCall(PetscSectionGetDof(cSection, verts[v], &dof));
         PetscCall(PetscSectionGetOffset(cSection, verts[v], &off));
-        for (d = 0; d < dof; ++d) ncoords[coordSize++] = coords[off+d] + ((bd[d] == DM_BOUNDARY_PERIODIC) ? L[d] : 0.0);
+        for (d = 0; d < dof; ++d) ncoords[coordSize++] = coords[off+d] + ((L[d] > 0.) ? L[d] : 0.0);
       }
       PetscCall(ISRestoreIndices(vertices, &verts));
       PetscCall(ISDestroy(&vertices));

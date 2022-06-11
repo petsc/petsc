@@ -441,8 +441,8 @@ static PetscErrorCode GLVisCreateFE(PetscFE femIn,char name[32],PetscFE *fem,IS 
 static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
 {
   DMLabel              label;
-  PetscSection         coordSection,parentSection,hoSection = NULL;
-  Vec                  coordinates,hovec;
+  PetscSection         coordSection,coordSectionCell,parentSection,hoSection = NULL;
+  Vec                  coordinates,coordinatesCell,hovec;
   const PetscScalar    *array;
   PetscInt             bf,p,sdim,dim,depth,novl,minl;
   PetscInt             cStart,cEnd,vStart,vEnd,nvert;
@@ -451,7 +451,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   PetscBool            enable_mfem,enable_boundary,enable_ncmesh,view_ovl = PETSC_FALSE;
   PetscBT              pown,vown;
   PetscContainer       glvis_container;
-  PetscBool            cellvertex = PETSC_FALSE, periodic, enabled = PETSC_TRUE;
+  PetscBool            cellvertex = PETSC_FALSE, enabled = PETSC_TRUE;
   PetscBool            enable_emark,enable_bmark;
   const char           *fmt;
   char                 emark[64] = "",bmark[64] = "";
@@ -519,9 +519,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   PetscCall(DMPlexGetGhostCellStratum(dm,&p,NULL));
   if (p >= 0) cEnd = p;
   PetscCall(DMPlexGetDepthStratum(dm,0,&vStart,&vEnd));
-  PetscCall(DMGetPeriodicity(dm,&periodic,NULL,NULL,NULL));
   PetscCall(DMGetCoordinatesLocalized(dm,&localized));
-  PetscCheck(!periodic || localized || hovec,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Coordinates need to be localized");
   PetscCall(DMGetCoordinateSection(dm,&coordSection));
   PetscCall(DMGetCoordinateDim(dm,&sdim));
   PetscCall(DMGetCoordinatesLocal(dm,&coordinates));
@@ -623,7 +621,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   }
 
   if (enable_mfem) {
-    if (periodic && !hovec) { /* we need to generate a vector of L2 coordinates, as this is how MFEM handles periodic meshes */
+    if (localized && !hovec) { /* we need to generate a vector of L2 coordinates, as this is how MFEM handles periodic meshes */
       PetscInt    vpc = 0;
       char        fec[64];
       PetscInt    vids[8] = {0,1,2,3,4,5,6,7};
@@ -765,23 +763,27 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
     PetscCall(DMPlexGetMaxSizes(dm,NULL,&p));
     PetscCall(PetscMalloc1(p,&fcells));
     PetscCall(DMGetLabel(dm,"glvis_periodic_cut",&perLabel));
-    if (!perLabel && periodic) { /* this periodic cut can be moved up to DMPlex setup */
+    if (!perLabel && localized) { /* this periodic cut can be moved up to DMPlex setup */
       PetscCall(DMCreateLabel(dm,"glvis_periodic_cut"));
       PetscCall(DMGetLabel(dm,"glvis_periodic_cut",&perLabel));
       PetscCall(DMLabelSetDefaultValue(perLabel,1));
+      PetscCall(DMGetCellCoordinateSection(dm, &coordSectionCell));
+      PetscCall(DMGetCellCoordinatesLocal(dm, &coordinatesCell));
       for (p=cStart;p<cEnd;p++) {
         DMPolytopeType cellType;
         PetscInt       dof;
 
         PetscCall(DMPlexGetCellType(dm,p,&cellType));
-        PetscCall(PetscSectionGetDof(coordSection,p,&dof));
+        PetscCall(PetscSectionGetDof(coordSectionCell,p,&dof));
         if (dof) {
-          PetscInt    uvpc, v,csize,cellClosureSize,*cellClosure = NULL,*vidxs = NULL;
-          PetscScalar *vals = NULL;
+          PetscInt    uvpc, v,csize,csizeCell,cellClosureSize,*cellClosure = NULL,*vidxs = NULL;
+          PetscScalar *vals = NULL, *valsCell = NULL;
 
           uvpc = DMPolytopeTypeGetNumVertices(cellType);
           PetscCheck(dof%sdim == 0,PETSC_COMM_SELF,PETSC_ERR_USER,"Incompatible number of cell dofs %" PetscInt_FMT " and space dimension %" PetscInt_FMT,dof,sdim);
           PetscCall(DMPlexVecGetClosure(dm,coordSection,coordinates,p,&csize,&vals));
+          PetscCall(DMPlexVecGetClosure(dm,coordSectionCell,coordinatesCell,p,&csizeCell,&valsCell));
+          PetscCheck(csize == csizeCell, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Cell %" PetscInt_FMT " has invalid localized coordinates", p);
           PetscCall(DMPlexGetTransitiveClosure(dm,p,PETSC_TRUE,&cellClosureSize,&cellClosure));
           for (v=0;v<cellClosureSize;v++)
             if (cellClosure[2*v] >= vStart && cellClosure[2*v] < vEnd) {
@@ -793,13 +795,14 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
             PetscInt s;
 
             for (s=0;s<sdim;s++) {
-              if (PetscAbsScalar(vals[v*sdim+s]-vals[v*sdim+s+uvpc*sdim])>PETSC_MACHINE_EPSILON) {
+              if (PetscAbsScalar(vals[v*sdim+s]-valsCell[v*sdim+s])>PETSC_MACHINE_EPSILON) {
                 PetscCall(DMLabelSetValue(perLabel,vidxs[2*v],2));
               }
             }
           }
           PetscCall(DMPlexRestoreTransitiveClosure(dm,p,PETSC_TRUE,&cellClosureSize,&cellClosure));
           PetscCall(DMPlexVecRestoreClosure(dm,coordSection,coordinates,p,&csize,&vals));
+          PetscCall(DMPlexVecRestoreClosure(dm,coordSectionCell,coordinatesCell,p,&csizeCell,&valsCell));
         }
       }
       if (dim > 1) {

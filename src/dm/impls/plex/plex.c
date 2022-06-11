@@ -782,15 +782,18 @@ static PetscErrorCode DMPlexView_Ascii_Coordinates(PetscViewer viewer, CoordSyst
 static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
 {
   DM_Plex          *mesh = (DM_Plex*) dm->data;
-  DM                cdm;
-  PetscSection      coordSection;
-  Vec               coordinates;
+  DM                cdm, cdmCell;
+  PetscSection      coordSection, coordSectionCell;
+  Vec               coordinates, coordinatesCell;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
   PetscCall(DMGetCoordinateDM(dm, &cdm));
-  PetscCall(DMGetLocalSection(cdm, &coordSection));
+  PetscCall(DMGetCoordinateSection(dm, &coordSection));
   PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
+  PetscCall(DMGetCellCoordinateDM(dm, &cdmCell));
+  PetscCall(DMGetCellCoordinateSection(dm, &coordSectionCell));
+  PetscCall(DMGetCellCoordinatesLocal(dm, &coordinatesCell));
   PetscCall(PetscViewerGetFormat(viewer, &format));
   if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
     const char *name;
@@ -836,8 +839,8 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPopSynchronized(viewer));
     if (coordSection && coordinates) {
       CoordSystem        cs = CS_CARTESIAN;
-      const PetscScalar *array;
-      PetscInt           Nf, Nc, pStart, pEnd, p;
+      const PetscScalar *array, *arrayCell = NULL;
+      PetscInt           Nf, Nc, pvStart, pvEnd, pcStart = PETSC_MAX_INT, pcEnd = PETSC_MIN_INT, pStart, pEnd, p;
       PetscMPIInt        rank;
       const char        *name;
 
@@ -846,27 +849,45 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
       PetscCall(PetscSectionGetNumFields(coordSection, &Nf));
       PetscCheck(Nf == 1,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Coordinate section should have 1 field, not %" PetscInt_FMT, Nf);
       PetscCall(PetscSectionGetFieldComponents(coordSection, 0, &Nc));
-      PetscCall(PetscSectionGetChart(coordSection, &pStart, &pEnd));
+      PetscCall(PetscSectionGetChart(coordSection, &pvStart, &pvEnd));
+      if (coordSectionCell) PetscCall(PetscSectionGetChart(coordSectionCell, &pcStart, &pcEnd));
+      pStart =  PetscMin(pvStart, pcStart);
+      pEnd   =  PetscMax(pvEnd,   pcEnd);
       PetscCall(PetscObjectGetName((PetscObject) coordinates, &name));
       PetscCall(PetscViewerASCIIPrintf(viewer, "%s with %" PetscInt_FMT " fields\n", name, Nf));
       PetscCall(PetscViewerASCIIPrintf(viewer, "  field 0 with %" PetscInt_FMT " components\n", Nc));
       if (cs != CS_CARTESIAN) PetscCall(PetscViewerASCIIPrintf(viewer, "  output coordinate system: %s\n", CoordSystems[cs]));
 
       PetscCall(VecGetArrayRead(coordinates, &array));
+      if (coordinatesCell) PetscCall(VecGetArrayRead(coordinatesCell, &arrayCell));
       PetscCall(PetscViewerASCIIPushSynchronized(viewer));
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "Process %d:\n", rank));
       for (p = pStart; p < pEnd; ++p) {
         PetscInt dof, off;
 
-        PetscCall(PetscSectionGetDof(coordSection, p, &dof));
-        PetscCall(PetscSectionGetOffset(coordSection, p, &off));
-        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  (%4" PetscInt_FMT ") dim %2" PetscInt_FMT " offset %3" PetscInt_FMT, p, dof, off));
-        PetscCall(DMPlexView_Ascii_Coordinates(viewer, cs, dof, &array[off]));
-        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "\n"));
+        if (p >= pvStart && p < pvEnd) {
+          PetscCall(PetscSectionGetDof(coordSection, p, &dof));
+          PetscCall(PetscSectionGetOffset(coordSection, p, &off));
+          if (dof) {
+            PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  (%4" PetscInt_FMT ") dim %2" PetscInt_FMT " offset %3" PetscInt_FMT, p, dof, off));
+            PetscCall(DMPlexView_Ascii_Coordinates(viewer, cs, dof, &array[off]));
+            PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "\n"));
+          }
+        }
+        if (cdmCell && p >= pcStart && p < pcEnd) {
+          PetscCall(PetscSectionGetDof(coordSectionCell, p, &dof));
+          PetscCall(PetscSectionGetOffset(coordSectionCell, p, &off));
+          if (dof) {
+            PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  (%4" PetscInt_FMT ") dim %2" PetscInt_FMT " offset %3" PetscInt_FMT, p, dof, off));
+            PetscCall(DMPlexView_Ascii_Coordinates(viewer, cs, dof, &arrayCell[off]));
+            PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "\n"));
+          }
+        }
       }
       PetscCall(PetscViewerFlush(viewer));
       PetscCall(PetscViewerASCIIPopSynchronized(viewer));
       PetscCall(VecRestoreArrayRead(coordinates, &array));
+      if (coordinatesCell) PetscCall(VecRestoreArrayRead(coordinatesCell, &arrayCell));
     }
     PetscCall(DMGetNumLabels(dm, &numLabels));
     if (numLabels) PetscCall(PetscViewerASCIIPrintf(viewer, "Labels:\n"));
@@ -1412,21 +1433,24 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     }
     PetscCall(PetscFree3(sizes, hybsizes, ghostsizes));
     {
-      const PetscReal      *maxCell;
-      const PetscReal      *L;
-      const DMBoundaryType *bd;
-      PetscBool             per, localized;
+      const PetscReal *maxCell;
+      const PetscReal *L;
+      PetscBool        localized;
 
-      PetscCall(DMGetPeriodicity(dm, &per, &maxCell, &L, &bd));
+      PetscCall(DMGetPeriodicity(dm, &maxCell, &L));
       PetscCall(DMGetCoordinatesLocalized(dm, &localized));
-      if (per) {
-        PetscCall(PetscViewerASCIIPrintf(viewer, "Periodic mesh ("));
+      if (L || localized) {
+        PetscCall(PetscViewerASCIIPrintf(viewer, "Periodic mesh"));
         PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_FALSE));
-        for (d = 0; d < dim; ++d) {
-          if (bd && d > 0) PetscCall(PetscViewerASCIIPrintf(viewer, ", "));
-          if (bd)    PetscCall(PetscViewerASCIIPrintf(viewer, "%s", DMBoundaryTypes[bd[d]]));
+        if (L) {
+          PetscCall(PetscViewerASCIIPrintf(viewer, " ("));
+          for (d = 0; d < dim; ++d) {
+            if (d > 0) PetscCall(PetscViewerASCIIPrintf(viewer, ", "));
+            PetscCall(PetscViewerASCIIPrintf(viewer, "%s", L[d] > 0.0 ? "PERIODIC" : "NONE"));
+          }
+          PetscCall(PetscViewerASCIIPrintf(viewer, ")"));
         }
-        PetscCall(PetscViewerASCIIPrintf(viewer, ") coordinates %s\n", localized ? "localized" : "not localized"));
+        PetscCall(PetscViewerASCIIPrintf(viewer, " coordinates %s\n", localized ? "localized" : "not localized"));
         PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_TRUE));
       }
     }
@@ -5023,15 +5047,18 @@ PetscErrorCode DMCreateCoordinateDM_Plex(DM dm, DM *cdm)
 
 PetscErrorCode DMCreateCoordinateField_Plex(DM dm, DMField *field)
 {
-  Vec            coordsLocal;
-  DM             coordsDM;
+  Vec coordsLocal, cellCoordsLocal;
+  DM  coordsDM,    cellCoordsDM;
 
   PetscFunctionBegin;
   *field = NULL;
-  PetscCall(DMGetCoordinatesLocal(dm,&coordsLocal));
-  PetscCall(DMGetCoordinateDM(dm,&coordsDM));
+  PetscCall(DMGetCoordinatesLocal(dm, &coordsLocal));
+  PetscCall(DMGetCoordinateDM(dm, &coordsDM));
+  PetscCall(DMGetCellCoordinatesLocal(dm, &cellCoordsLocal));
+  PetscCall(DMGetCellCoordinateDM(dm, &cellCoordsDM));
   if (coordsLocal && coordsDM) {
-    PetscCall(DMFieldCreateDS(coordsDM, 0, coordsLocal, field));
+    if (cellCoordsLocal && cellCoordsDM) PetscCall(DMFieldCreateDSWithDG(coordsDM, cellCoordsDM, 0, coordsLocal, cellCoordsLocal, field));
+    else                                 PetscCall(DMFieldCreateDS(coordsDM, 0, coordsLocal, field));
   }
   PetscFunctionReturn(0);
 }
@@ -8564,18 +8591,16 @@ PetscErrorCode DMPlexCheckFaces(DM dm, PetscInt cellHeight)
 @*/
 PetscErrorCode DMPlexCheckGeometry(DM dm)
 {
-  Vec            coordinates;
-  PetscReal      detJ, J[9], refVol = 1.0;
-  PetscReal      vol;
-  PetscBool      periodic;
-  PetscInt       dim, depth, dE, d, cStart, cEnd, c;
+  Vec       coordinates;
+  PetscReal detJ, J[9], refVol = 1.0;
+  PetscReal vol;
+  PetscInt  dim, depth, dE, d, cStart, cEnd, c;
 
   PetscFunctionBegin;
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMGetCoordinateDim(dm, &dE));
   if (dim != dE) PetscFunctionReturn(0);
   PetscCall(DMPlexGetDepth(dm, &depth));
-  PetscCall(DMGetPeriodicity(dm, &periodic, NULL, NULL, NULL));
   for (d = 0; d < dim; ++d) refVol *= 2.0;
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
   /* Make sure local coordinates are created, because that step is collective */
@@ -8606,7 +8631,8 @@ PetscErrorCode DMPlexCheckGeometry(DM dm)
     PetscCall(DMPlexComputeCellGeometryFEM(dm, c, NULL, NULL, J, NULL, &detJ));
     PetscCheck(detJ >= -PETSC_SMALL && (detJ > 0.0 || ignoreZeroVol),PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %" PetscInt_FMT " of type %s is inverted, |J| = %g", c, DMPolytopeTypes[ct], (double) detJ);
     PetscCall(PetscInfo(dm, "Cell %" PetscInt_FMT " FEM Volume %g\n", c, (double)(detJ*refVol)));
-    if (depth > 1 && !periodic) {
+    /* This should work with periodicity since DG coordinates should be used */
+    if (depth > 1) {
       PetscCall(DMPlexComputeCellGeometryFVM(dm, c, &vol, NULL, NULL));
       PetscCheck(vol >= -PETSC_SMALL && (vol > 0.0 || ignoreZeroVol),PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %" PetscInt_FMT " of type %s is inverted, vol = %g", c, DMPolytopeTypes[ct], (double) vol);
       PetscCall(PetscInfo(dm, "Cell %" PetscInt_FMT " FVM Volume %g\n", c, (double) vol));

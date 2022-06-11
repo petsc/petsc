@@ -785,6 +785,7 @@ PetscErrorCode DMSwarmComputeLocalSize(DM sw, PetscInt N, PetscProbFunc density)
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
   PetscCall(DMPlexIsSimplex(dm, &simplex));
+  PetscCall(DMGetCoordinatesLocalSetUp(dm));
   if (simplex) PetscCall(PetscDTStroudConicalQuadrature(dim, 1, 5, -1.0, 1.0, &quad));
   else         PetscCall(PetscDTGaussTensorQuadrature(dim, 1, 5, -1.0, 1.0, &quad));
   PetscCall(PetscQuadratureGetData(quad, NULL, NULL, &Nq, &xq, &wq));

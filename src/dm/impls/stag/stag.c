@@ -279,7 +279,7 @@ static PetscErrorCode DMCoarsen_Stag(DM dm,MPI_Comm comm,DM *dmc)
   }
   PetscCall(DMSetUp(*dmc));
 
-  if (dm->coordinateDM) { /* Note that with product coordinates, dm->coordinates = NULL, so we check the DM */
+  if (dm->coordinates[0].dm) { /* Note that with product coordinates, dm->coordinates = NULL, so we check the DM */
     DM        coordinate_dm,coordinate_dmc;
     PetscBool isstag,isprod;
 
@@ -289,7 +289,7 @@ static PetscErrorCode DMCoarsen_Stag(DM dm,MPI_Comm comm,DM *dmc)
     if (isstag) {
       PetscCall(DMStagSetUniformCoordinatesExplicit(*dmc,0.0,0.0,0.0,0.0,0.0,0.0)); /* Coordinates will be overwritten */
       PetscCall(DMGetCoordinateDM(*dmc,&coordinate_dmc));
-      PetscCall(DMStagRestrictSimple(coordinate_dm,dm->coordinates,coordinate_dmc,(*dmc)->coordinates));
+      PetscCall(DMStagRestrictSimple(coordinate_dm,dm->coordinates[0].x,coordinate_dmc,(*dmc)->coordinates[0].x));
     } else if (isprod) {
       PetscCall(DMStagSetUniformCoordinatesProduct(*dmc,0.0,0.0,0.0,0.0,0.0,0.0)); /* Coordinates will be overwritten */
       PetscCall(DMGetCoordinateDM(*dmc,&coordinate_dmc));
@@ -300,7 +300,7 @@ static PetscErrorCode DMCoarsen_Stag(DM dm,MPI_Comm comm,DM *dmc)
         PetscCall(DMGetCoordinateDM(subdm_fine,&subdm_coord_fine));
         PetscCall(DMProductGetDM(coordinate_dmc,d,&subdm_coarse));
         PetscCall(DMGetCoordinateDM(subdm_coarse,&subdm_coord_coarse));
-        PetscCall(DMStagRestrictSimple(subdm_coord_fine,subdm_fine->coordinatesLocal,subdm_coord_coarse,subdm_coarse->coordinatesLocal));
+        PetscCall(DMStagRestrictSimple(subdm_coord_fine,subdm_fine->coordinates[0].xl,subdm_coord_coarse,subdm_coarse->coordinates[0].xl));
       }
     } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unknown coordinate DM type");
   }
@@ -794,7 +794,7 @@ static PetscErrorCode DMView_Stag(DM dm,PetscViewer viewer)
       PetscCall(PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT " DOF per face (%" PetscInt_FMT "D)\n",stag->dof[dim-1],dim-1));
     }
     PetscCall(PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT " DOF per element (%" PetscInt_FMT "D)\n",stag->dof[dim],dim));
-    if (dm->coordinateDM) {
+    if (dm->coordinates[0].dm) {
       PetscCall(PetscViewerASCIIPrintf(viewer,"Has coordinate DM\n"));
     }
     maxRanksToView = 16;

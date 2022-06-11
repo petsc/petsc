@@ -429,7 +429,7 @@ PetscErrorCode DMStagVecSplitToDMDA(DM dm,Vec vec,DMStagStencilLocation loc,Pets
   PetscCall(DMStagCreateCompatibleDMDA(dm,locCanonical,c,pda));
   da = *pda;
   PetscCall(DMSetUp(*pda));
-  if (dm->coordinateDM != NULL) {
+  if (dm->coordinates[0].dm != NULL) {
     PetscCall(DMGetCoordinateDM(dm,&coordDM));
     PetscCall(DMStagTransferCoordinatesToDMDA(dm,locCanonical,da));
   }

@@ -12,6 +12,7 @@ static PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
   PetscMPIInt    rank;
   PetscBool      iascii,isdraw,isglvis,isbinary;
   DM_DA          *dd = (DM_DA*)da->data;
+  Vec            coordinates;
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   PetscBool ismatlab;
 #endif
@@ -56,15 +57,16 @@ static PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"Processor [%d] M %" PetscInt_FMT " N %" PetscInt_FMT " P %" PetscInt_FMT " m %" PetscInt_FMT " n %" PetscInt_FMT " p %" PetscInt_FMT " w %" PetscInt_FMT " s %" PetscInt_FMT "\n",rank,dd->M,dd->N,dd->P,dd->m,dd->n,dd->p,dd->w,dd->s));
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"X range of indices: %" PetscInt_FMT " %" PetscInt_FMT ", Y range of indices: %" PetscInt_FMT " %" PetscInt_FMT ", Z range of indices: %" PetscInt_FMT " %" PetscInt_FMT "\n",
                                                  info.xs,info.xs+info.xm,info.ys,info.ys+info.ym,info.zs,info.zs+info.zm));
+      PetscCall(DMGetCoordinates(da, &coordinates));
 #if !defined(PETSC_USE_COMPLEX)
-      if (da->coordinates) {
+      if (coordinates) {
         PetscInt        last;
         const PetscReal *coors;
-        PetscCall(VecGetArrayRead(da->coordinates,&coors));
-        PetscCall(VecGetLocalSize(da->coordinates,&last));
+        PetscCall(VecGetArrayRead(coordinates,&coors));
+        PetscCall(VecGetLocalSize(coordinates,&last));
         last = last - 3;
         PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"Lower left corner %g %g %g : Upper right %g %g %g\n",(double)coors[0],(double)coors[1],(double)coors[2],(double)coors[last],(double)coors[last+1],(double)coors[last+2]));
-        PetscCall(VecRestoreArrayRead(da->coordinates,&coors));
+        PetscCall(VecRestoreArrayRead(coordinates,&coors));
       }
 #endif
       PetscCall(PetscViewerFlush(viewer));

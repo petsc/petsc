@@ -135,6 +135,8 @@ In addition to the changes above
 .. rubric:: DM/DA:
 
 - Add ``DMDAMapMatStencilToGlobal()`` to map MatStencils to global indices
+- Add ``DMGetCellCoordinateDM()``, ``DMSetCellCoordinateDM()``, ``DMGetCellCoordinateSection()``, ``DMSetCellCoordinateSection()``, ``DMGetCellCoordinates()``, ``DMSetCellCoordinates()``, ``DMGetCellCoordinatesLocalSetup()``, ``DMGetCellCoordinatesLocal()``, ``DMGetCellCoordinatesLocalNoncollective()``, ``DMSetCellCoordinatesLocal()``
+- Add ``DMFieldCreateDSWithDG()`` to allow multiple representations of a given field
 
 .. rubric:: DMSwarm:
 
@@ -161,6 +163,9 @@ In addition to the changes above
     - add ``DMPlexReorderGetDefault()`` and ``DMPlexReorderSetDefault()`` to get and set this flag
 - Add ``DMPlexCreateOverlapLabelFromLabels()`` for more customized overlap
 - Add ``DMPlexSetOverlap()`` to promote an internal interface
+- Add ``DMGetCellCoordinateDM()``, ``DMSetCellCoordinateDM()``, ``DMGetCellCoordinateSection()``, ``DMSetCellCoordinateSection()``, ``DMGetCellCoordinates()``, ``DMSetCellCoordinates()``, ``DMGetCellCoordinatesLocalSetUp()``, ``DMGetCellCoordinatesLocal()``, ``DMGetCellCoordinatesLocalNoncollective()``, and ``DMSetCellCoordinatesLocal()`` to provide an independent discontinuous representation of coordinates
+- Change ``DMGetPeriodicity()`` and ``DMSetPeriodicity()`` to get rid of the flag and boundary type. Since we have an independent representation, we can tell if periodicity was imposed, and boundary types were never used, so they can be inferred from the given L.
+- Add ``DMPlexGetCellCoordinates()`` and ``DMPlexRestoreCellCoordinates()`` for clean interface for periodicity
 
 .. rubric:: FE/FV:
 
