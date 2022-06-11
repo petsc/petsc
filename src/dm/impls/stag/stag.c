@@ -552,15 +552,16 @@ static PetscErrorCode DMCreateMatrix_Stag(DM dm, Mat *mat) {
     PetscCall(MatDestroy(&preallocator));
 
     if (!dm->prealloc_only) {
+      /* Bind to CPU before assembly, to prevent unnecessary copies of zero entries from CPU to GPU */
+      PetscCall(MatBindToCPU(*mat, PETSC_TRUE));
       switch (dim) {
       case 1: PetscCall(DMCreateMatrix_Stag_1D_AIJ_Assemble(dm, *mat)); break;
       case 2: PetscCall(DMCreateMatrix_Stag_2D_AIJ_Assemble(dm, *mat)); break;
       case 3: PetscCall(DMCreateMatrix_Stag_3D_AIJ_Assemble(dm, *mat)); break;
       default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dimension %" PetscInt_FMT, dim);
       }
+      PetscCall(MatBindToCPU(*mat, PETSC_FALSE));
     }
-    /* Note: GPU-related logic, e.g. at the end of DMCreateMatrix_DA_1d_MPIAIJ, is not included here
-       but might be desirable */
   } else if (is_shell) {
     /* nothing more to do */
   } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Not implemented for Mattype %s", mat_type);
