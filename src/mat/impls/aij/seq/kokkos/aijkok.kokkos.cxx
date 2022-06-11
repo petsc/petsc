@@ -882,6 +882,40 @@ static PetscErrorCode MatZeroEntries_SeqAIJKokkos(Mat A)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatGetDiagonal_SeqAIJKokkos(Mat A,Vec x)
+{
+  Mat_SeqAIJ                   *aijseq;
+  Mat_SeqAIJKokkos             *aijkok;
+  PetscInt                     n;
+  PetscScalarKokkosView        xv;
+
+  PetscFunctionBegin;
+  PetscCall(VecGetLocalSize(x,&n));
+  PetscCheck(n == A->rmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
+  PetscCheck(A->factortype == MAT_FACTOR_NONE,PETSC_COMM_SELF,PETSC_ERR_SUP,"MatGetDiagonal_SeqAIJKokkos not supported on factored matrices");
+
+  PetscCall(MatSeqAIJKokkosSyncDevice(A));
+  aijkok = static_cast<Mat_SeqAIJKokkos*>(A->spptr);
+
+  if (A->rmap->n && aijkok->diag_dual.extent(0) == 0) { /* Set the diagonal pointer if not already */
+    PetscCall(MatMarkDiagonal_SeqAIJ(A));
+    aijseq = static_cast<Mat_SeqAIJ*>(A->data);
+    aijkok->SetDiagonal(aijseq->diag);
+  }
+
+  const auto& Aa = aijkok->a_dual.view_device();
+  const auto& Ai = aijkok->i_dual.view_device();
+  const auto& Adiag = aijkok->diag_dual.view_device();
+
+  PetscCall(VecGetKokkosViewWrite(x,&xv));
+  Kokkos::parallel_for(n,KOKKOS_LAMBDA(const PetscInt i) {
+    if (Adiag(i) < Ai(i+1)) xv(i) = Aa(Adiag(i));
+    else xv(i) = 0;
+  });
+  PetscCall(VecRestoreKokkosViewWrite(x,&xv));
+  PetscFunctionReturn(0);
+}
+
 /* Get a Kokkos View from a mat of type MatSeqAIJKokkos */
 PetscErrorCode MatSeqAIJGetKokkosView(Mat A,ConstMatScalarKokkosView* kv)
 {
@@ -1140,6 +1174,7 @@ static PetscErrorCode MatSetOps_SeqAIJKokkos(Mat A)
   A->ops->productnumeric            = MatProductNumeric_SeqAIJKokkos_SeqAIJKokkos;
   A->ops->transpose                 = MatTranspose_SeqAIJKokkos;
   A->ops->setoption                 = MatSetOption_SeqAIJKokkos;
+  A->ops->getdiagonal               = MatGetDiagonal_SeqAIJKokkos;
   a->ops->getarray                  = MatSeqAIJGetArray_SeqAIJKokkos;
   a->ops->restorearray              = MatSeqAIJRestoreArray_SeqAIJKokkos;
   a->ops->getarrayread              = MatSeqAIJGetArrayRead_SeqAIJKokkos;
