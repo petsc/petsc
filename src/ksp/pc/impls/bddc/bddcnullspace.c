@@ -1,5 +1,5 @@
-#include <../src/ksp/pc/impls/bddc/bddc.h>
-#include <../src/ksp/pc/impls/bddc/bddcprivate.h>
+#include <petsc/private/pcbddcimpl.h>
+#include <petsc/private/pcbddcprivateimpl.h>
 #include <../src/mat/impls/dense/seq/dense.h>
 
 /* E + small_solve */
@@ -181,7 +181,7 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
     PetscCall(KSPSetPostSolve(check_ksp,PCBDDCNullSpaceCorrPostSolve,shell_ctx));
     PetscCall(KSPSetTolerances(check_ksp,PETSC_SMALL,PETSC_SMALL,PETSC_DEFAULT,PETSC_DEFAULT));
     PetscCall(KSPSetFromOptions(check_ksp));
-    /* setup with default maxit, then set maxit to min(10,any_set_from_command_line) (bug in computing eigenvalues when chaning the number of iterations */
+    /* setup with default maxit, then set maxit to min(10,any_set_from_command_line) (bug in computing eigenvalues when changing the number of iterations */
     PetscCall(KSPSetUp(check_ksp));
     PetscCall(KSPGetPC(local_ksp,&local_pc));
     PetscCall(KSPSetPC(check_ksp,local_pc));

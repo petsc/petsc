@@ -13,7 +13,7 @@ int main(int argc,char **args)
   PetscRandom    rdm;
   Vec            xx,s1,s2;
   PetscReal      s1norm,s2norm,rnorm,tol = 100*PETSC_SMALL;
-  PetscBool      flg,test_nd0=PETSC_FALSE;
+  PetscBool      flg,test_nd0=PETSC_FALSE, emptynd;
 
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
@@ -73,7 +73,6 @@ int main(int argc,char **args)
     PetscCall(MatSetValues(A,bs,rows,bs,cols,vals,ADD_VALUES));
     PetscCall(MatSetValues(B,bs,rows,bs,cols,vals,ADD_VALUES));
   }
-
   PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
@@ -83,7 +82,8 @@ int main(int argc,char **args)
   PetscCall(PetscMalloc1(nd,&is1));
   PetscCall(PetscMalloc1(nd,&is2));
 
-  if (rank == 0 && test_nd0) nd = 0; /* test case */
+  emptynd = PETSC_FALSE;
+  if (rank == 0 && test_nd0) emptynd = PETSC_TRUE; /* test case */
 
   for (i=0; i<nd; i++) {
     PetscCall(PetscRandomGetValue(rdm,&rval));
@@ -93,8 +93,8 @@ int main(int argc,char **args)
       idx[j*bs] = bs*(int)(PetscRealPart(rval)*Mbs);
       for (k=1; k<bs; k++) idx[j*bs+k] = idx[j*bs]+k;
     }
-    PetscCall(ISCreateGeneral(PETSC_COMM_SELF,sz*bs,idx,PETSC_COPY_VALUES,is1+i));
-    PetscCall(ISCreateGeneral(PETSC_COMM_SELF,sz*bs,idx,PETSC_COPY_VALUES,is2+i));
+    PetscCall(ISCreateGeneral(PETSC_COMM_SELF,emptynd ? 0 : sz*bs,idx,PETSC_COPY_VALUES,is1+i));
+    PetscCall(ISCreateGeneral(PETSC_COMM_SELF,emptynd ? 0 : sz*bs,idx,PETSC_COPY_VALUES,is2+i));
   }
   PetscCall(MatIncreaseOverlap(A,nd,is1,ov));
   PetscCall(MatIncreaseOverlap(B,nd,is2,ov));
@@ -188,7 +188,7 @@ int main(int argc,char **args)
 
    test:
       nsize: {{1 3}}
-      args: -mat_block_size {{1 3 4 6 8}} -ov {{1 3}} -mat_size {{11 13}} -nd {{7}} ; done
+      args: -mat_block_size {{1 3 4 6 8}} -ov {{1 3}} -mat_size {{11 13}} -nd 7
       output_file: output/ex54.out
 
    test:

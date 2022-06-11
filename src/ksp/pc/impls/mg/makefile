@@ -1,6 +1,6 @@
 -include ../../../../../petscdir.mk
 
-SOURCEC   = mg.c fmg.c smg.c mgfunc.c mgadapt.c
+SOURCEC   = mg.c fmg.c smg.c mgfunc.c mgadapt.c gdsw.c
 SOURCEF   =
 SOURCEH   = ../../../../../include/petsc/private/pcmgimpl.h
 LIBBASE   = libpetscksp

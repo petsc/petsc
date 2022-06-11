@@ -176,8 +176,8 @@ PETSC_EXTERN PetscErrorCode PCDeflationGetCoarseKSP(PC,KSP*);
   These are added with PCMGRegisterCoarseSpaceConstructor()
 */
 PETSC_EXTERN PetscFunctionList PCMGCoarseList;
-PETSC_EXTERN PetscErrorCode PCMGRegisterCoarseSpaceConstructor(const char[], PetscErrorCode (*)(PC, PetscInt, DM, KSP, PetscInt, const Vec[], Vec **));
-PETSC_EXTERN PetscErrorCode PCMGGetCoarseSpaceConstructor(const char[], PetscErrorCode (**)(PC, PetscInt, DM, KSP, PetscInt, const Vec[], Vec **));
+PETSC_EXTERN PetscErrorCode PCMGRegisterCoarseSpaceConstructor(const char[], PetscErrorCode (*)(PC, PetscInt, DM, KSP, PetscInt, Mat, Mat*));
+PETSC_EXTERN PetscErrorCode PCMGGetCoarseSpaceConstructor(const char[], PetscErrorCode (**)(PC, PetscInt, DM, KSP, PetscInt, Mat, Mat*));
 
 PETSC_EXTERN PetscErrorCode KSPBuildSolution(KSP,Vec,Vec*);
 PETSC_EXTERN PetscErrorCode KSPBuildResidual(KSP,Vec,Vec,Vec*);
@@ -889,6 +889,6 @@ PETSC_EXTERN PetscErrorCode DMProjectField(DM, PetscReal, Vec,
                                                      const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                      PetscReal, const PetscReal [], PetscInt, const PetscScalar[], PetscScalar []), InsertMode, Vec);
 
-PETSC_EXTERN PetscErrorCode DMAdaptInterpolator(DM, DM, Mat, KSP, PetscInt, Vec[], Vec[], Mat *, void *);
-PETSC_EXTERN PetscErrorCode DMCheckInterpolator(DM, Mat, PetscInt, Vec[], Vec[], PetscReal);
+PETSC_EXTERN PetscErrorCode DMAdaptInterpolator(DM, DM, Mat, KSP, Mat, Mat, Mat *, void *);
+PETSC_EXTERN PetscErrorCode DMCheckInterpolator(DM, Mat, Mat, Mat, PetscReal);
 #endif

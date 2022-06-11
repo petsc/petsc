@@ -177,7 +177,7 @@ PetscErrorCode DMDAGetDof(DM da, PetscInt *dof)
 
   Level: intermediate
 
-.seealso: `DMDACreateDomainDecomposition()`, `DMDASetOverlap()`, `DMDA`
+.seealso: `DMCreateDomainDecomposition()`, `DMDASetOverlap()`, `DMDA`
 @*/
 PetscErrorCode  DMDAGetOverlap(DM da,PetscInt *x,PetscInt *y,PetscInt *z)
 {
@@ -204,7 +204,7 @@ PetscErrorCode  DMDAGetOverlap(DM da,PetscInt *x,PetscInt *y,PetscInt *z)
 
   Level: intermediate
 
-.seealso: `DMDACreateDomainDecomposition()`, `DMDAGetOverlap()`, `DMDA`
+.seealso: `DMCreateDomainDecomposition()`, `DMDAGetOverlap()`, `DMDA`
 @*/
 PetscErrorCode  DMDASetOverlap(DM da,PetscInt x,PetscInt y,PetscInt z)
 {
@@ -234,7 +234,7 @@ PetscErrorCode  DMDASetOverlap(DM da,PetscInt x,PetscInt y,PetscInt z)
 
   Level: intermediate
 
-.seealso: `DMDACreateDomainDecomposition()`, `DMDASetNumLocalSubDomains()`, `DMDA`
+.seealso: `DMCreateDomainDecomposition()`, `DMDASetNumLocalSubDomains()`, `DMDA`
 @*/
 PetscErrorCode  DMDAGetNumLocalSubDomains(DM da,PetscInt *Nsub)
 {
@@ -257,7 +257,7 @@ PetscErrorCode  DMDAGetNumLocalSubDomains(DM da,PetscInt *Nsub)
 
   Level: intermediate
 
-.seealso: `DMDACreateDomainDecomposition()`, `DMDAGetNumLocalSubDomains()`, `DMDA`
+.seealso: `DMCreateDomainDecomposition()`, `DMDAGetNumLocalSubDomains()`, `DMDA`
 @*/
 PetscErrorCode  DMDASetNumLocalSubDomains(DM da,PetscInt Nsub)
 {

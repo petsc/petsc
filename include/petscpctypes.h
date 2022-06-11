@@ -330,7 +330,7 @@ typedef enum {
 
 .seealso: `PCMGSetAdaptCoarseSpaceType()`, `PCMG`
 E*/
-typedef enum { PCMG_POLYNOMIAL, PCMG_HARMONIC, PCMG_EIGENVECTOR, PCMG_GENERALIZED_EIGENVECTOR } PCMGCoarseSpaceType;
+typedef enum { PCMG_ADAPT_NONE, PCMG_ADAPT_POLYNOMIAL, PCMG_ADAPT_HARMONIC, PCMG_ADAPT_EIGENVECTOR, PCMG_ADAPT_GENERALIZED_EIGENVECTOR, PCMG_ADAPT_GDSW } PCMGCoarseSpaceType;
 
 /*E
     PCPatchConstructType - The algorithm used to construct patches for the preconditioner

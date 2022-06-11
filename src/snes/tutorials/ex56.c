@@ -595,6 +595,13 @@ int main(int argc,char **args)
     requires: !single
     args: -cells 2,2,1 -max_conv_its 2 -lx 1. -alpha .01 -petscspace_degree 2 -ksp_type fetidp -fetidp_ksp_type cg -ksp_monitor_short -ksp_rtol 1.e-8 -ksp_converged_reason -petscpartitioner_type simple -ex56_dm_mat_type is -matis_localmat_type sbaij -fetidp_bddc_pc_bddc_monolithic -attach_mat_nearnullspace
 
+  test:
+    suffix: gdsw
+    nsize: 4
+    requires: !single
+    args: -cells 2,2,1 -max_conv_its 2 -lx 1. -alpha .01 -petscspace_degree 2 -ksp_type cg -ksp_monitor_short -ksp_rtol 1.e-8 -ksp_converged_reason -petscpartitioner_type simple -ex56_dm_mat_type is -attach_mat_nearnullspace \
+          -pc_type mg -pc_mg_galerkin -pc_mg_adapt_interp_coarse_space gdsw -pc_mg_levels 2 -mg_levels_pc_type bjacobi -mg_levels_sub_pc_type icc
+
   testset:
     nsize: 4
     requires: !single

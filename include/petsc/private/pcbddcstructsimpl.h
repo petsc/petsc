@@ -64,6 +64,12 @@ struct _PCBDDCGraph {
 };
 typedef struct _PCBDDCGraph *PCBDDCGraph;
 
+struct _PCBDDCGraphCandidates {
+  PetscInt nfc, nec;
+  IS *Faces, *Edges, Vertices;
+};
+typedef struct _PCBDDCGraphCandidates *PCBDDCGraphCandidates;
+
 /* Wrap to MatFactor solver in Schur complement mode. Provides
    - standalone solver for interior variables
    - forward and backward substitutions for correction solver
@@ -109,6 +115,8 @@ struct _PCBDDCSubSchurs {
   /* whether Schur complements are explicitly computed with or not */
   char      mat_solver_type[64];
   PetscBool schur_explicit;
+  /* BDDC or GDSW */
+  PetscBool gdsw;
   /* matrices cointained explicit schur complements cat together */
   /* note that AIJ format is used but the values are inserted as in column major ordering */
   Mat S_Ej_all;

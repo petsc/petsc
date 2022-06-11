@@ -987,6 +987,12 @@ PetscErrorCode elem_3d_elast_v_25(PetscScalar *dd)
       args: -use_mat_nearnullspace -ksp_monitor_short -pc_type telescope -pc_telescope_reduction_factor 2 -telescope_pc_type gamg -telescope_pc_gamg_esteig_ksp_type cg -telescope_pc_gamg_esteig_ksp_max_it 10
 
    test:
+      suffix: nns_gdsw
+      filter: grep -v "variant HERMITIAN"
+      nsize: 8
+      args: -use_mat_nearnullspace -ksp_monitor_short -pc_type mg -pc_mg_levels 2 -pc_mg_adapt_interp_coarse_space gdsw -pc_mg_galerkin -mg_levels_pc_type bjacobi -ne 3 -ksp_view
+
+   test:
       suffix: seqaijmkl
       nsize: 8
       requires: mkl_sparse

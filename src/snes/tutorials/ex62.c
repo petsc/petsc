@@ -490,7 +490,7 @@ int main(int argc, char **argv)
     suffix: 3d_p2_p1_check_parallel
     nsize: {{2 3 5}}
     requires: ctetgen
-    args: -sol quadratic -dm_refine 2 -dm_plex_dim 3 -dm_plex_box_faces 2,2,2 -petscpartitioner_type simple -vel_petscspace_degree 2 -pres_petscspace_degree 1 -dmsnes_check 0.0001
+    args: -sol quadratic -dm_refine 0 -dm_plex_dim 3 -dm_plex_box_faces 2,2,2 -petscpartitioner_type simple -vel_petscspace_degree 2 -pres_petscspace_degree 1 -dmsnes_check 0.0001
 
   test:
     suffix: 2d_p2_p1_conv

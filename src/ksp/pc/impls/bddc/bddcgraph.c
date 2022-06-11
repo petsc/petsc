@@ -1,6 +1,20 @@
 #include <petsc/private/petscimpl.h>
-#include <../src/ksp/pc/impls/bddc/bddcprivate.h>
-#include <../src/ksp/pc/impls/bddc/bddcstructs.h>
+#include <petsc/private/pcbddcprivateimpl.h>
+#include <petsc/private/pcbddcstructsimpl.h>
+
+PetscErrorCode PCBDDCDestroyGraphCandidatesIS(void *ctx)
+{
+  PCBDDCGraphCandidates cand = (PCBDDCGraphCandidates)ctx;
+
+  PetscFunctionBegin;
+  for (PetscInt i=0;i<cand->nfc;i++) PetscCall(ISDestroy(&cand->Faces[i]));
+  for (PetscInt i=0;i<cand->nec;i++) PetscCall(ISDestroy(&cand->Edges[i]));
+  PetscCall(PetscFree(cand->Faces));
+  PetscCall(PetscFree(cand->Edges));
+  PetscCall(ISDestroy(&cand->Vertices));
+  PetscCall(PetscFree(cand));
+  PetscFunctionReturn(0);
+}
 
 PetscErrorCode PCBDDCGraphGetDirichletDofsB(PCBDDCGraph graph, IS* dirdofs)
 {
@@ -160,8 +174,17 @@ PetscErrorCode PCBDDCGraphASCIIView(PCBDDCGraph graph, PetscInt verbosity_level,
 PetscErrorCode PCBDDCGraphRestoreCandidatesIS(PCBDDCGraph graph, PetscInt *n_faces, IS *FacesIS[], PetscInt *n_edges, IS *EdgesIS[], IS *VerticesIS)
 {
   PetscInt       i;
+  PetscContainer gcand;
 
   PetscFunctionBegin;
+  PetscCall(PetscObjectQuery((PetscObject)graph->l2gmap,"_PCBDDCGraphCandidatesIS",(PetscObject*)&gcand));
+  if (gcand) {
+    if (n_faces)    *n_faces = 0;
+    if (n_edges)    *n_edges = 0;
+    if (FacesIS)    *FacesIS = NULL;
+    if (EdgesIS)    *EdgesIS = NULL;
+    if (VerticesIS) *VerticesIS = NULL;
+  }
   if (n_faces) {
     if (FacesIS) {
       for (i=0;i<*n_faces;i++) {
@@ -190,8 +213,21 @@ PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscInt *n_faces, 
 {
   IS             *ISForFaces,*ISForEdges,ISForVertices;
   PetscInt       i,nfc,nec,nvc,*idx,*mark;
+  PetscContainer gcand;
 
   PetscFunctionBegin;
+  PetscCall(PetscObjectQuery((PetscObject)graph->l2gmap,"_PCBDDCGraphCandidatesIS",(PetscObject*)&gcand));
+  if (gcand) {
+    PCBDDCGraphCandidates cand;
+
+    PetscCall(PetscContainerGetPointer(gcand,(void**)&cand));
+    if (n_faces)       *n_faces = cand->nfc;
+    if (FacesIS)       *FacesIS = cand->Faces;
+    if (n_edges)       *n_edges = cand->nec;
+    if (EdgesIS)       *EdgesIS = cand->Edges;
+    if (VerticesIS) *VerticesIS = cand->Vertices;
+    PetscFunctionReturn(0);
+  }
   PetscCall(PetscCalloc1(graph->ncc,&mark));
   /* loop on ccs to evalute number of faces, edges and vertices */
   nfc = 0;

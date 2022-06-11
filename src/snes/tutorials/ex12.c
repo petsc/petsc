@@ -1233,7 +1233,7 @@ int main(int argc, char **argv)
   testset:
     requires: triangle !single
     nsize: 3
-    args: -run_type full -petscspace_degree 1 -dm_mat_type is -pc_type mg -pc_mg_levels 2 -mg_coarse_pc_type bddc -pc_mg_galerkin pmat -ksp_rtol 1.0e-2 -snes_converged_reason -dm_refine_hierarchy 2 -snes_max_it 4
+    args: -run_type full -petscspace_degree 1 -dm_mat_type is -pc_type mg -mg_coarse_pc_type bddc -pc_mg_galerkin pmat -ksp_rtol 1.0e-2 -snes_converged_reason -dm_refine_hierarchy 2 -snes_max_it 4
     test:
       suffix: gmg_bddc
       filter: sed -e "s/CONVERGED_FNORM_RELATIVE iterations 3/CONVERGED_FNORM_RELATIVE iterations 4/g"
@@ -1819,19 +1819,35 @@ int main(int argc, char **argv)
   # 2D serial P1 tests for adaptive MG
   test:
     suffix: 2d_p1_adaptmg_0
-    requires: triangle bamg
-    args: -dm_refine_hierarchy 3 -dm_plex_box_faces 4,4 -bc_type dirichlet -petscspace_degree 1 \
+    requires: triangle
+    args: -petscpartitioner_type simple -dm_refine_hierarchy 3 -dm_plex_box_faces 4,4 -bc_type dirichlet -petscspace_degree 1 \
           -variable_coefficient checkerboard_0 -mat_petscspace_degree 0 -div 16 -k 3 \
           -snes_max_it 1 -ksp_converged_reason \
           -ksp_rtol 1e-8 -pc_type mg
-  # -ksp_monitor_true_residual -ksp_converged_reason -mg_levels_ksp_monitor_true_residual -pc_mg_mesp_monitor -dm_adapt_interp_view_fine draw -dm_adapt_interp_view_coarse draw -draw_pause 1
   test:
     suffix: 2d_p1_adaptmg_1
-    requires: triangle bamg
-    args: -dm_refine_hierarchy 3 -dm_plex_box_faces 4,4 -bc_type dirichlet -petscspace_degree 1 \
+    requires: triangle bamg todo
+    args: -petscpartitioner_type simple -dm_refine_hierarchy 3 -dm_plex_box_faces 4,4 -bc_type dirichlet -petscspace_degree 1 \
           -variable_coefficient checkerboard_0 -mat_petscspace_degree 0 -div 16 -k 3 \
           -snes_max_it 1 -ksp_converged_reason \
-          -ksp_rtol 1e-8 -pc_type mg -pc_mg_galerkin -pc_mg_adapt_interp -pc_mg_adapt_interp_coarse_space eigenvector -pc_mg_adapt_interp_n 1 \
+          -ksp_rtol 1e-8 -pc_type mg -pc_mg_galerkin -pc_mg_adapt_interp_coarse_space eigenvector -pc_mg_adapt_interp_n 1 \
             -pc_mg_mesp_ksp_type richardson -pc_mg_mesp_ksp_richardson_self_scale -pc_mg_mesp_ksp_max_it 100 -pc_mg_mesp_pc_type none
+  test:
+    suffix: 2d_p1_adaptmg_gdsw
+    requires: triangle
+    nsize: 4
+    args: -petscpartitioner_type simple -dm_refine 3 -dm_plex_box_faces 4,4 -bc_type dirichlet -petscspace_degree 1 \
+          -variable_coefficient checkerboard_0 -mat_petscspace_degree 0 -div 16 -k 3 \
+          -snes_max_it 1 -ksp_converged_reason \
+          -ksp_rtol 1e-8 -pc_type mg -pc_mg_galerkin -pc_mg_adapt_interp_coarse_space gdsw -pc_mg_levels 2 -mg_levels_pc_type asm -dm_mat_type {{aij is}}
+
+  test:
+    suffix: 2d_p1_adaptmg_agdsw
+    requires: triangle mumps
+    nsize: 4
+    args: -petscpartitioner_type simple -dm_refine 3 -dm_plex_box_faces 4,4 -bc_type dirichlet -petscspace_degree 1 \
+          -variable_coefficient checkerboard_0 -mat_petscspace_degree 0 -div 16 -k 3 \
+          -snes_max_it 1 -ksp_converged_reason \
+          -ksp_rtol 1e-8 -pc_type mg -pc_mg_galerkin -pc_mg_adapt_interp_coarse_space gdsw -pc_mg_levels 2 -mg_levels_pc_type asm -dm_mat_type is -mg_levels_gdsw_tolerance 0.1 -mg_levels_gdsw_pseudo_pc_type qr
 
 TEST*/

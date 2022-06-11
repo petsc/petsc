@@ -19,8 +19,8 @@
 
 */
 
-#include <../src/ksp/pc/impls/bddc/bddc.h> /*I "petscpc.h" I*/  /* includes for fortran wrappers */
-#include <../src/ksp/pc/impls/bddc/bddcprivate.h>
+#include <petsc/private/pcbddcimpl.h> /*I "petscpc.h" I*/  /* includes for fortran wrappers */
+#include <petsc/private/pcbddcprivateimpl.h>
 #include <petscblaslapack.h>
 
 static PetscBool PCBDDCPackageInitialized = PETSC_FALSE;
@@ -406,6 +406,7 @@ static PetscErrorCode PCBDDCSetChangeOfBasisMat_BDDC(PC pc, Mat change, PetscBoo
   pcbddc->change_interior = interior;
   PetscFunctionReturn(0);
 }
+
 /*@
  PCBDDCSetChangeOfBasisMat - Set user defined change of basis for dofs
 
@@ -2220,6 +2221,8 @@ PetscErrorCode PCDestroy_BDDC(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetChangeOfBasisMat_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetPrimalVerticesLocalIS_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetPrimalVerticesIS_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCBDDCGetPrimalVerticesLocalIS_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCBDDCGetPrimalVerticesIS_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetCoarseningRatio_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetLevel_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetUseExactDirichlet_C",NULL));

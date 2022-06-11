@@ -1,9 +1,5 @@
 
-static char help[] = "Tests the use of interface functions for MATIS matrices.\n\
-This example tests: MatZeroRows(), MatZeroRowsLocal(), MatView(), MatDuplicate(),\n\
-MatCopy(), MatCreateSubMatrix(), MatGetLocalSubMatrix(), MatAXPY(), MatShift()\n\
-MatDiagonalSet(), MatTranspose() and MatPtAP(). It also tests some\n\
-conversion routines.\n";
+static char help[] = "Tests the use of interface functions for MATIS matrices and conversion routines.\n";
 
 #include <petscmat.h>
 
@@ -14,17 +10,20 @@ int main(int argc,char **args)
 {
   Mat                    A,B,A2,B2,T;
   Mat                    Aee,Aeo,Aoe,Aoo;
-  Mat                    *mats;
+  Mat                    *mats,*Asub,*Bsub;
   Vec                    x,y;
   MatInfo                info;
   ISLocalToGlobalMapping cmap,rmap;
   IS                     is,is2,reven,rodd,ceven,codd;
   IS                     *rows,*cols;
+  IS                     irow[2], icol[2];
+  PetscLayout            rlayout, clayout;
+  const PetscInt         *rrange, *crange;
   MatType                lmtype;
   PetscScalar            diag = 2.;
   PetscInt               n,m,i,lm,ln;
   PetscInt               rst,ren,cst,cen,nr,nc;
-  PetscMPIInt            rank,size;
+  PetscMPIInt            rank,size,lrank,rrank;
   PetscBool              testT,squaretest,isaij;
   PetscBool              permute = PETSC_FALSE, negmap = PETSC_FALSE, repmap = PETSC_FALSE;
   PetscBool              diffmap = PETSC_TRUE, symmetric = PETSC_FALSE, issymmetric;
@@ -459,6 +458,32 @@ int main(int argc,char **args)
   PetscCall(ISDestroy(&is));
   PetscCall(ISDestroy(&is2));
 
+  /* test MatCreateSubMatrices */
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Test MatCreateSubMatrices\n"));
+  PetscCall(MatGetLayouts(A,&rlayout,&clayout));
+  PetscCall(PetscLayoutGetRanges(rlayout,&rrange));
+  PetscCall(PetscLayoutGetRanges(clayout,&crange));
+  lrank = (size + rank - 1)%size;
+  rrank = (rank + 1)%size;
+  PetscCall(ISCreateStride(PETSC_COMM_SELF,(rrange[lrank+1] - rrange[lrank]),rrange[lrank],1,&irow[0]));
+  PetscCall(ISCreateStride(PETSC_COMM_SELF,(crange[rrank+1] - crange[rrank]),crange[rrank],1,&icol[0]));
+  PetscCall(ISCreateStride(PETSC_COMM_SELF,(rrange[rrank+1] - rrange[rrank]),rrange[rrank],1,&irow[1]));
+  PetscCall(ISCreateStride(PETSC_COMM_SELF,(crange[lrank+1] - crange[lrank]),crange[lrank],1,&icol[1]));
+  PetscCall(MatCreateSubMatrices(A,2,irow,icol,MAT_INITIAL_MATRIX,&Asub));
+  PetscCall(MatCreateSubMatrices(B,2,irow,icol,MAT_INITIAL_MATRIX,&Bsub));
+  PetscCall(CheckMat(Asub[0],Bsub[0],PETSC_FALSE,"MatCreateSubMatrices[0]"));
+  PetscCall(CheckMat(Asub[1],Bsub[1],PETSC_FALSE,"MatCreateSubMatrices[1]"));
+  PetscCall(MatCreateSubMatrices(A,2,irow,icol,MAT_REUSE_MATRIX,&Asub));
+  PetscCall(MatCreateSubMatrices(B,2,irow,icol,MAT_REUSE_MATRIX,&Bsub));
+  PetscCall(CheckMat(Asub[0],Bsub[0],PETSC_FALSE,"MatCreateSubMatrices[0]"));
+  PetscCall(CheckMat(Asub[1],Bsub[1],PETSC_FALSE,"MatCreateSubMatrices[1]"));
+  PetscCall(MatDestroySubMatrices(2,&Asub));
+  PetscCall(MatDestroySubMatrices(2,&Bsub));
+  PetscCall(ISDestroy(&irow[0]));
+  PetscCall(ISDestroy(&irow[1]));
+  PetscCall(ISDestroy(&icol[0]));
+  PetscCall(ISDestroy(&icol[1]));
+
   /* Create an IS required by MatZeroRows(): just rank zero provides the rows to be eliminated */
   if (size > 1) {
     if (rank == 0) {
@@ -475,6 +500,9 @@ int main(int argc,char **args)
   }
 
   if (squaretest) { /* tests for square matrices only, with same maps for rows and columns */
+    PetscInt *idx0, *idx1, n0, n1;
+    IS       Ais[2], Bis[2];
+
     /* test MatDiagonalSet */
     PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Test MatDiagonalSet\n"));
     PetscCall(MatDuplicate(A,MAT_COPY_VALUES,&A2));
@@ -500,6 +528,42 @@ int main(int argc,char **args)
 
     /* nonzero diag value is supported for square matrices only */
     PetscCall(TestMatZeroRows(A,B,PETSC_TRUE,is,diag));
+
+    /* test MatIncreaseOverlap */
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Test MatIncreaseOverlap\n"));
+    PetscCall(MatGetOwnershipRange(A,&rst,&ren));
+    n0 = (ren - rst)/2;
+    n1 = (ren - rst)/3;
+    PetscCall(PetscMalloc1(n0,&idx0));
+    PetscCall(PetscMalloc1(n1,&idx1));
+    for (i = 0; i < n0; i++) idx0[i] = ren - i - 1;
+    for (i = 0; i < n1; i++) idx1[i] = rst + i;
+    PetscCall(ISCreateGeneral(PETSC_COMM_WORLD,n0,idx0,PETSC_OWN_POINTER,&Ais[0]));
+    PetscCall(ISCreateGeneral(PETSC_COMM_WORLD,n1,idx1,PETSC_OWN_POINTER,&Ais[1]));
+    PetscCall(ISCreateGeneral(PETSC_COMM_WORLD,n0,idx0,PETSC_COPY_VALUES,&Bis[0]));
+    PetscCall(ISCreateGeneral(PETSC_COMM_WORLD,n1,idx1,PETSC_COPY_VALUES,&Bis[1]));
+    PetscCall(MatIncreaseOverlap(A,2,Ais,3));
+    PetscCall(MatIncreaseOverlap(B,2,Bis,3));
+    /* Non deterministic output! */
+    PetscCall(ISSort(Ais[0]));
+    PetscCall(ISSort(Ais[1]));
+    PetscCall(ISSort(Bis[0]));
+    PetscCall(ISSort(Bis[1]));
+    PetscCall(ISView(Ais[0],NULL));
+    PetscCall(ISView(Bis[0],NULL));
+    PetscCall(ISView(Ais[1],NULL));
+    PetscCall(ISView(Bis[1],NULL));
+    PetscCall(MatCreateSubMatrices(A,2,Ais,Ais,MAT_INITIAL_MATRIX,&Asub));
+    PetscCall(MatCreateSubMatrices(B,2,Bis,Ais,MAT_INITIAL_MATRIX,&Bsub));
+    PetscCall(CheckMat(Asub[0],Bsub[0],PETSC_FALSE,"MatIncreaseOverlap[0]"));
+    PetscCall(CheckMat(Asub[1],Bsub[1],PETSC_FALSE,"MatIncreaseOverlap[1]"));
+    PetscCall(MatDestroySubMatrices(2,&Asub));
+    PetscCall(MatDestroySubMatrices(2,&Bsub));
+    PetscCall(ISDestroy(&Ais[0]));
+    PetscCall(ISDestroy(&Ais[1]));
+    PetscCall(ISDestroy(&Bis[0]));
+    PetscCall(ISDestroy(&Bis[1]));
+
   }
   PetscCall(TestMatZeroRows(A,B,squaretest,is,0.0));
   PetscCall(ISDestroy(&is));
@@ -682,6 +746,18 @@ int main(int argc,char **args)
       }
     }
   }
+
+  /* test MatGetDiagonalBlock */
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Test MatGetDiagonalBlock\n"));
+  PetscCall(MatGetDiagonalBlock(A,&A2));
+  PetscCall(MatGetDiagonalBlock(B,&B2));
+  PetscCall(CheckMat(A2,B2,PETSC_FALSE,"MatGetDiagonalBlock"));
+  PetscCall(MatScale(A,2.0));
+  PetscCall(MatScale(B,2.0));
+  PetscCall(MatGetDiagonalBlock(A,&A2));
+  PetscCall(MatGetDiagonalBlock(B,&B2));
+  PetscCall(CheckMat(A2,B2,PETSC_FALSE,"MatGetDiagonalBlock"));
+
   /* free testing matrices */
   PetscCall(ISLocalToGlobalMappingDestroy(&cmap));
   PetscCall(ISLocalToGlobalMappingDestroy(&rmap));
@@ -719,23 +795,23 @@ PetscErrorCode CheckMat(Mat A, Mat B, PetscBool usemult, const char* func)
     if (error > PETSC_SQRT_MACHINE_EPSILON) {
       ISLocalToGlobalMapping rl2g,cl2g;
 
-      PetscCall(PetscObjectSetName((PetscObject)Bcheck,"Assembled Bcheck"));
+      PetscCall(PetscObjectSetName((PetscObject)Bcheck,"Bcheck"));
       PetscCall(MatView(Bcheck,NULL));
       if (B) {
-        PetscCall(PetscObjectSetName((PetscObject)B,"Assembled AIJ"));
+        PetscCall(PetscObjectSetName((PetscObject)B,"B"));
         PetscCall(MatView(B,NULL));
         PetscCall(MatDestroy(&Bcheck));
         PetscCall(MatConvert(A,MATAIJ,MAT_INITIAL_MATRIX,&Bcheck));
-        PetscCall(PetscObjectSetName((PetscObject)Bcheck,"Assembled IS"));
+        PetscCall(PetscObjectSetName((PetscObject)Bcheck,"Assembled A"));
         PetscCall(MatView(Bcheck,NULL));
       }
       PetscCall(MatDestroy(&Bcheck));
-      PetscCall(PetscObjectSetName((PetscObject)A,"MatIS"));
+      PetscCall(PetscObjectSetName((PetscObject)A,"A"));
       PetscCall(MatView(A,NULL));
       PetscCall(MatGetLocalToGlobalMapping(A,&rl2g,&cl2g));
-      PetscCall(ISLocalToGlobalMappingView(rl2g,NULL));
-      PetscCall(ISLocalToGlobalMappingView(cl2g,NULL));
-      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"ERROR ON %s: %g",func,(double)error);
+      if (rl2g) PetscCall(ISLocalToGlobalMappingView(rl2g,NULL));
+      if (cl2g) PetscCall(ISLocalToGlobalMappingView(cl2g,NULL));
+      SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"ERROR ON %s: %g",func,(double)error);
     }
     PetscCall(MatDestroy(&Bcheck));
   } else {

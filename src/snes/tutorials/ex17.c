@@ -925,18 +925,24 @@ int main(int argc, char **argv)
       args: -sol_type mass_quad
 
   testset:
+    filter: grep -v "variant HERMITIAN"
     args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_plex_box_lower -5,-5,-0.25 -dm_plex_box_upper 5,5,0.25 \
           -dm_plex_box_faces 5,5,2 -dm_plex_separate_marker -dm_refine 0 -petscpartitioner_type simple \
-          -sol_type elas_ge \
-          -snes_max_it 2 -snes_rtol 1.e-10 \
-          -ksp_type cg -ksp_rtol 1.e-10 -ksp_max_it 100 -ksp_norm_type unpreconditioned \
-          -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 \
-            -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true \
-            -pc_gamg_square_graph 1 -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 \
-            -mg_levels_ksp_max_it 2 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.1 -mg_levels_pc_type jacobi \
-            -matptap_via scalable
+          -sol_type elas_ge
+
     test:
       suffix: ge_q1_0
-      args: -displacement_petscspace_degree 1
+      args: -displacement_petscspace_degree 1 \
+            -snes_max_it 2 -snes_rtol 1.e-10 \
+            -ksp_type cg -ksp_rtol 1.e-10 -ksp_max_it 100 -ksp_norm_type unpreconditioned \
+            -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 \
+              -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true \
+              -pc_gamg_square_graph 1 -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 \
+              -mg_levels_ksp_max_it 2 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.1 -mg_levels_pc_type jacobi \
+              -matptap_via scalable
+    test:
+      nsize: 5
+      suffix: ge_q1_gdsw
+      args: -snes_max_it 1 -ksp_type cg -ksp_norm_type natural -displacement_petscspace_degree 1 -snes_monitor_short -ksp_monitor_short -pc_type mg -pc_mg_adapt_interp_coarse_space gdsw -pc_mg_levels 2 -pc_mg_galerkin -mg_levels_pc_type bjacobi -mg_levels_esteig_ksp_type cg -mg_levels_sub_pc_type icc -mg_coarse_redundant_pc_type cholesky -ksp_view
 
 TEST*/

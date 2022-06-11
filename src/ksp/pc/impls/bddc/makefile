@@ -2,7 +2,7 @@
 
 SOURCEC   = bddc.c bddcprivate.c bddcgraph.c bddcscalingbasic.c bddcnullspace.c bddcfetidp.c bddcschurs.c
 SOURCEF   =
-SOURCEH   = bddc.h bddcstructs.h bddcprivate.h
+SOURCEH   =
 LIBBASE   = libpetscksp
 DIRS      =
 MANSEC    = KSP

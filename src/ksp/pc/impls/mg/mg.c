@@ -200,7 +200,7 @@ PetscErrorCode PCReset_MG(PC pc)
 {
   PC_MG          *mg        = (PC_MG*)pc->data;
   PC_MG_Levels   **mglevels = mg->levels;
-  PetscInt       i,c,n;
+  PetscInt       i,n;
 
   PetscFunctionBegin;
   if (mglevels) {
@@ -227,9 +227,7 @@ PetscErrorCode PCReset_MG(PC pc)
     PetscCall(MatDestroy(&mglevels[n-1]->B));
 
     for (i=0; i<n; i++) {
-      if (mglevels[i]->coarseSpace) for (c = 0; c < mg->Nc; ++c) PetscCall(VecDestroy(&mglevels[i]->coarseSpace[c]));
-      PetscCall(PetscFree(mglevels[i]->coarseSpace));
-      mglevels[i]->coarseSpace = NULL;
+      PetscCall(MatDestroy(&mglevels[i]->coarseSpace));
       PetscCall(MatDestroy(&mglevels[i]->A));
       if (mglevels[i]->smoothd != mglevels[i]->smoothu) {
         PetscCall(KSPReset(mglevels[i]->smoothd));
@@ -515,6 +513,17 @@ PetscErrorCode PCDestroy_MG(PC pc)
   PetscCall(PetscFree(pc->data));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCGetInterpolations_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCGetCoarseOperators_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCMGSetGalerkin_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCMGGetLevels_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCMGSetLevels_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCGetInterpolations_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCGetCoarseOperators_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCMGSetAdaptInterpolation_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCMGGetAdaptInterpolation_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCMGSetAdaptCR_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCMGGetAdaptCR_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCMGSetAdaptCoarseSpaceType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCMGGetAdaptCoarseSpaceType_C",NULL));
   PetscFunctionReturn(0);
 }
 
@@ -651,13 +660,14 @@ static PetscErrorCode PCMatApply_MG(PC pc,Mat b,Mat x)
 
 PetscErrorCode PCSetFromOptions_MG(PetscOptionItems *PetscOptionsObject,PC pc)
 {
-  PetscInt         levels,cycles;
-  PetscBool        flg, flg2;
-  PC_MG            *mg = (PC_MG*)pc->data;
-  PC_MG_Levels     **mglevels;
-  PCMGType         mgtype;
-  PCMGCycleType    mgctype;
-  PCMGGalerkinType gtype;
+  PetscInt            levels,cycles;
+  PetscBool           flg, flg2;
+  PC_MG               *mg = (PC_MG*)pc->data;
+  PC_MG_Levels        **mglevels;
+  PCMGType            mgtype;
+  PCMGCycleType       mgctype;
+  PCMGGalerkinType    gtype;
+  PCMGCoarseSpaceType coarseSpaceType;
 
   PetscFunctionBegin;
   levels = PetscMax(mg->nlevels,1);
@@ -681,11 +691,10 @@ PetscErrorCode PCSetFromOptions_MG(PetscOptionItems *PetscOptionsObject,PC pc)
   if (flg) {
     PetscCall(PCMGSetGalerkin(pc,gtype));
   }
-  flg2 = PETSC_FALSE;
-  PetscCall(PetscOptionsBool("-pc_mg_adapt_interp","Adapt interpolation using some coarse space","PCMGSetAdaptInterpolation",PETSC_FALSE,&flg2,&flg));
-  if (flg) PetscCall(PCMGSetAdaptInterpolation(pc, flg2));
+  coarseSpaceType = mg->coarseSpaceType;
+  PetscCall(PetscOptionsEnum("-pc_mg_adapt_interp_coarse_space","Type of adaptive coarse space: none, polynomial, harmonic, eigenvector, generalized_eigenvector, gdsw","PCMGSetAdaptCoarseSpaceType",PCMGCoarseSpaceTypes,(PetscEnum)coarseSpaceType,(PetscEnum*)&coarseSpaceType,&flg));
+  if (flg) PetscCall(PCMGSetAdaptCoarseSpaceType(pc,coarseSpaceType));
   PetscCall(PetscOptionsInt("-pc_mg_adapt_interp_n","Size of the coarse space for adaptive interpolation","PCMGSetCoarseSpace",mg->Nc,&mg->Nc,&flg));
-  PetscCall(PetscOptionsEnum("-pc_mg_adapt_interp_coarse_space","Type of coarse space: polynomial, harmonic, eigenvector, generalized_eigenvector","PCMGSetAdaptCoarseSpaceType",PCMGCoarseSpaceTypes,(PetscEnum)mg->coarseSpaceType,(PetscEnum*)&mg->coarseSpaceType,&flg));
   PetscCall(PetscOptionsBool("-pc_mg_mesp_monitor","Monitor the multilevel eigensolver","PCMGSetAdaptInterpolation",PETSC_FALSE,&mg->mespMonitor,&flg));
   flg2 = PETSC_FALSE;
   PetscCall(PetscOptionsBool("-pc_mg_adapt_cr","Monitor coarse space quality using Compatible Relaxation (CR)","PCMGSetAdaptCR",PETSC_FALSE,&flg2,&flg));
@@ -756,7 +765,7 @@ PetscErrorCode PCSetFromOptions_MG(PetscOptionItems *PetscOptionsObject,PC pc)
 const char *const PCMGTypes[] = {"MULTIPLICATIVE","ADDITIVE","FULL","KASKADE","PCMGType","PC_MG",NULL};
 const char *const PCMGCycleTypes[] = {"invalid","v","w","PCMGCycleType","PC_MG_CYCLE",NULL};
 const char *const PCMGGalerkinTypes[] = {"both","pmat","mat","none","external","PCMGGalerkinType","PC_MG_GALERKIN",NULL};
-const char *const PCMGCoarseSpaceTypes[] = {"polynomial","harmonic","eigenvector","generalized_eigenvector","PCMGCoarseSpaceType","PCMG_POLYNOMIAL",NULL};
+const char *const PCMGCoarseSpaceTypes[] = {"none","polynomial","harmonic","eigenvector","generalized_eigenvector","gdsw","PCMGCoarseSpaceType","PCMG_ADAPT_NONE",NULL};
 
 #include <petscdraw.h>
 PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
@@ -856,16 +865,17 @@ PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
 */
 PetscErrorCode PCSetUp_MG(PC pc)
 {
-  PC_MG          *mg        = (PC_MG*)pc->data;
-  PC_MG_Levels   **mglevels = mg->levels;
-  PetscInt       i,n;
-  PC             cpc;
-  PetscBool      dump = PETSC_FALSE,opsset,use_amat,missinginterpolate = PETSC_FALSE;
-  Mat            dA,dB;
-  Vec            tvec;
-  DM             *dms;
-  PetscViewer    viewer = NULL;
-  PetscBool      dAeqdB = PETSC_FALSE, needRestricts = PETSC_FALSE, doCR = PETSC_FALSE;
+  PC_MG        *mg        = (PC_MG*)pc->data;
+  PC_MG_Levels **mglevels = mg->levels;
+  PetscInt     i,n;
+  PC           cpc;
+  PetscBool    dump = PETSC_FALSE,opsset,use_amat,missinginterpolate = PETSC_FALSE;
+  Mat          dA,dB;
+  Vec          tvec;
+  DM           *dms;
+  PetscViewer  viewer = NULL;
+  PetscBool    dAeqdB = PETSC_FALSE, needRestricts = PETSC_FALSE, doCR = PETSC_FALSE;
+  PetscBool    adaptInterpolation = mg->adaptInterpolation;
 
   PetscFunctionBegin;
   PetscCheck(mglevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels with PCMGSetLevels() before setting up");
@@ -943,77 +953,14 @@ PetscErrorCode PCSetUp_MG(PC pc)
   for (i=n-1; i>0; i--) {
     if (!(mglevels[i]->interpolate || mglevels[i]->restrct)) {
       missinginterpolate = PETSC_TRUE;
-      continue;
+      break;
     }
   }
 
   PetscCall(KSPGetOperators(mglevels[n-1]->smoothd,&dA,&dB));
   if (dA == dB) dAeqdB = PETSC_TRUE;
-  if ((mg->galerkin == PC_MG_GALERKIN_NONE) || (((mg->galerkin == PC_MG_GALERKIN_PMAT) || (mg->galerkin == PC_MG_GALERKIN_MAT)) && !dAeqdB)) {
+  if (mg->galerkin == PC_MG_GALERKIN_NONE || ((mg->galerkin == PC_MG_GALERKIN_PMAT || mg->galerkin == PC_MG_GALERKIN_MAT) && !dAeqdB)) {
     needRestricts = PETSC_TRUE;  /* user must compute either mat, pmat, or both so must restrict x to coarser levels */
-  }
-
-  /*
-   Skipping if user has provided all interpolation/restriction needed (since DM might not be able to produce them (when coming from SNES/TS)
-   Skipping for galerkin==2 (externally managed hierarchy such as ML and GAMG). Cleaner logic here would be great. Wrap ML/GAMG as DMs?
-  */
-  if (missinginterpolate && pc->dm && mg->galerkin != PC_MG_GALERKIN_EXTERNAL && !pc->setupcalled) {
-        /* construct the interpolation from the DMs */
-    Mat p;
-    Vec rscale;
-    PetscCall(PetscMalloc1(n,&dms));
-    dms[n-1] = pc->dm;
-    /* Separately create them so we do not get DMKSP interference between levels */
-    for (i=n-2; i>-1; i--) PetscCall(DMCoarsen(dms[i+1],MPI_COMM_NULL,&dms[i]));
-        /*
-           Force the mat type of coarse level operator to be AIJ because usually we want to use LU for coarse level.
-           Notice that it can be overwritten by -mat_type because KSPSetUp() reads command line options.
-           But it is safe to use -dm_mat_type.
-
-           The mat type should not be hardcoded like this, we need to find a better way.
-    PetscCall(DMSetMatType(dms[0],MATAIJ));
-    */
-    for (i=n-2; i>-1; i--) {
-      DMKSP     kdm;
-      PetscBool dmhasrestrict, dmhasinject;
-      PetscCall(KSPSetDM(mglevels[i]->smoothd,dms[i]));
-      if (!needRestricts) PetscCall(KSPSetDMActive(mglevels[i]->smoothd,PETSC_FALSE));
-      if (mglevels[i]->smoothd != mglevels[i]->smoothu) {
-        PetscCall(KSPSetDM(mglevels[i]->smoothu,dms[i]));
-        if (!needRestricts) PetscCall(KSPSetDMActive(mglevels[i]->smoothu,PETSC_FALSE));
-      }
-      if (mglevels[i]->cr) {
-        PetscCall(KSPSetDM(mglevels[i]->cr,dms[i]));
-        if (!needRestricts) PetscCall(KSPSetDMActive(mglevels[i]->cr,PETSC_FALSE));
-      }
-      PetscCall(DMGetDMKSPWrite(dms[i],&kdm));
-      /* Ugly hack so that the next KSPSetUp() will use the RHS that we set. A better fix is to change dmActive to take
-       * a bitwise OR of computing the matrix, RHS, and initial iterate. */
-      kdm->ops->computerhs = NULL;
-      kdm->rhsctx          = NULL;
-      if (!mglevels[i+1]->interpolate) {
-        PetscCall(DMCreateInterpolation(dms[i],dms[i+1],&p,&rscale));
-        PetscCall(PCMGSetInterpolation(pc,i+1,p));
-        if (rscale) PetscCall(PCMGSetRScale(pc,i+1,rscale));
-        PetscCall(VecDestroy(&rscale));
-        PetscCall(MatDestroy(&p));
-      }
-      PetscCall(DMHasCreateRestriction(dms[i],&dmhasrestrict));
-      if (dmhasrestrict && !mglevels[i+1]->restrct) {
-        PetscCall(DMCreateRestriction(dms[i],dms[i+1],&p));
-        PetscCall(PCMGSetRestriction(pc,i+1,p));
-        PetscCall(MatDestroy(&p));
-      }
-      PetscCall(DMHasCreateInjection(dms[i],&dmhasinject));
-      if (dmhasinject && !mglevels[i+1]->inject) {
-        PetscCall(DMCreateInjection(dms[i],dms[i+1],&p));
-        PetscCall(PCMGSetInjection(pc,i+1,p));
-        PetscCall(MatDestroy(&p));
-      }
-    }
-
-    for (i=n-2; i>-1; i--) PetscCall(DMDestroy(&dms[i]));
-    PetscCall(PetscFree(dms));
   }
 
   if (pc->dm && !pc->setupcalled) {
@@ -1030,13 +977,77 @@ PetscErrorCode PCSetUp_MG(PC pc)
     }
   }
 
+  /*
+   Skipping if user has provided all interpolation/restriction needed (since DM might not be able to produce them (when coming from SNES/TS)
+   Skipping for externally managed hierarchy (such as ML and GAMG). Cleaner logic here would be great. Wrap ML/GAMG as DMs?
+  */
+  if (missinginterpolate && mg->galerkin != PC_MG_GALERKIN_EXTERNAL && !pc->setupcalled) {
+    /* first see if we can compute a coarse space */
+    if (mg->coarseSpaceType == PCMG_ADAPT_GDSW) {
+      for (i=n-2; i>-1; i--) {
+        if (!mglevels[i+1]->restrct && !mglevels[i+1]->interpolate) {
+          PetscCall(PCMGComputeCoarseSpace_Internal(pc, i+1, mg->coarseSpaceType, mg->Nc, NULL, &mglevels[i+1]->coarseSpace));
+          PetscCall(PCMGSetInterpolation(pc,i+1,mglevels[i+1]->coarseSpace));
+        }
+      }
+    } else { /* construct the interpolation from the DMs */
+      Mat p;
+      Vec rscale;
+      PetscCall(PetscMalloc1(n,&dms));
+      dms[n-1] = pc->dm;
+      /* Separately create them so we do not get DMKSP interference between levels */
+      for (i=n-2; i>-1; i--) PetscCall(DMCoarsen(dms[i+1],MPI_COMM_NULL,&dms[i]));
+      for (i=n-2; i>-1; i--) {
+        DMKSP     kdm;
+        PetscBool dmhasrestrict, dmhasinject;
+        PetscCall(KSPSetDM(mglevels[i]->smoothd,dms[i]));
+        if (!needRestricts) PetscCall(KSPSetDMActive(mglevels[i]->smoothd,PETSC_FALSE));
+        if (mglevels[i]->smoothd != mglevels[i]->smoothu) {
+          PetscCall(KSPSetDM(mglevels[i]->smoothu,dms[i]));
+          if (!needRestricts) PetscCall(KSPSetDMActive(mglevels[i]->smoothu,PETSC_FALSE));
+        }
+        if (mglevels[i]->cr) {
+          PetscCall(KSPSetDM(mglevels[i]->cr,dms[i]));
+          if (!needRestricts) PetscCall(KSPSetDMActive(mglevels[i]->cr,PETSC_FALSE));
+        }
+        PetscCall(DMGetDMKSPWrite(dms[i],&kdm));
+        /* Ugly hack so that the next KSPSetUp() will use the RHS that we set. A better fix is to change dmActive to take
+         * a bitwise OR of computing the matrix, RHS, and initial iterate. */
+        kdm->ops->computerhs = NULL;
+        kdm->rhsctx          = NULL;
+        if (!mglevels[i+1]->interpolate) {
+          PetscCall(DMCreateInterpolation(dms[i],dms[i+1],&p,&rscale));
+          PetscCall(PCMGSetInterpolation(pc,i+1,p));
+          if (rscale) PetscCall(PCMGSetRScale(pc,i+1,rscale));
+          PetscCall(VecDestroy(&rscale));
+          PetscCall(MatDestroy(&p));
+        }
+        PetscCall(DMHasCreateRestriction(dms[i],&dmhasrestrict));
+        if (dmhasrestrict && !mglevels[i+1]->restrct) {
+          PetscCall(DMCreateRestriction(dms[i],dms[i+1],&p));
+          PetscCall(PCMGSetRestriction(pc,i+1,p));
+          PetscCall(MatDestroy(&p));
+        }
+        PetscCall(DMHasCreateInjection(dms[i],&dmhasinject));
+        if (dmhasinject && !mglevels[i+1]->inject) {
+          PetscCall(DMCreateInjection(dms[i],dms[i+1],&p));
+          PetscCall(PCMGSetInjection(pc,i+1,p));
+          PetscCall(MatDestroy(&p));
+        }
+      }
+
+      for (i=n-2; i>-1; i--) PetscCall(DMDestroy(&dms[i]));
+      PetscCall(PetscFree(dms));
+    }
+  }
+
   if (mg->galerkin < PC_MG_GALERKIN_NONE) {
     Mat       A,B;
     PetscBool doA = PETSC_FALSE,doB = PETSC_FALSE;
     MatReuse  reuse = MAT_INITIAL_MATRIX;
 
-    if ((mg->galerkin == PC_MG_GALERKIN_PMAT) || (mg->galerkin == PC_MG_GALERKIN_BOTH)) doB = PETSC_TRUE;
-    if ((mg->galerkin == PC_MG_GALERKIN_MAT) || ((mg->galerkin == PC_MG_GALERKIN_BOTH) && (dA != dB))) doA = PETSC_TRUE;
+    if (mg->galerkin == PC_MG_GALERKIN_PMAT || mg->galerkin == PC_MG_GALERKIN_BOTH) doB = PETSC_TRUE;
+    if (mg->galerkin == PC_MG_GALERKIN_MAT || (mg->galerkin == PC_MG_GALERKIN_BOTH && dA != dB)) doA = PETSC_TRUE;
     if (pc->setupcalled) reuse = MAT_REUSE_MATRIX;
     for (i=n-2; i>-1; i--) {
       PetscCheck(mglevels[i+1]->restrct || mglevels[i+1]->interpolate,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must provide interpolation or restriction for each MG level except level 0");
@@ -1081,11 +1092,12 @@ PetscErrorCode PCSetUp_MG(PC pc)
   }
 
   /* Adapt interpolation matrices */
-  if (mg->adaptInterpolation) {
-    mg->Nc = mg->Nc < 0 ? 6 : mg->Nc; /* Default to 6 modes */
+  if (adaptInterpolation) {
     for (i = 0; i < n; ++i) {
-      PetscCall(PCMGComputeCoarseSpace_Internal(pc, i, mg->coarseSpaceType, mg->Nc, !i ? NULL : mglevels[i-1]->coarseSpace, &mglevels[i]->coarseSpace));
-      if (i) PetscCall(PCMGAdaptInterpolator_Internal(pc, i, mglevels[i-1]->smoothu, mglevels[i]->smoothu, mg->Nc, mglevels[i-1]->coarseSpace, mglevels[i]->coarseSpace));
+      if (!mglevels[i]->coarseSpace) {
+        PetscCall(PCMGComputeCoarseSpace_Internal(pc, i, mg->coarseSpaceType, mg->Nc, !i ? NULL : mglevels[i-1]->coarseSpace, &mglevels[i]->coarseSpace));
+      }
+      if (i) PetscCall(PCMGAdaptInterpolator_Internal(pc, i, mglevels[i-1]->smoothu, mglevels[i]->smoothu, mglevels[i-1]->coarseSpace, mglevels[i]->coarseSpace));
     }
     for (i = n-2; i > -1; --i) {
       PetscCall(PCMGRecomputeLevelOperators_Internal(pc, i));
@@ -1556,6 +1568,25 @@ PetscErrorCode PCMGGetAdaptInterpolation_MG(PC pc, PetscBool *adapt)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode PCMGSetAdaptCoarseSpaceType_MG(PC pc, PCMGCoarseSpaceType ctype)
+{
+  PC_MG *mg = (PC_MG *) pc->data;
+
+  PetscFunctionBegin;
+  mg->adaptInterpolation = ctype != PCMG_ADAPT_NONE ? PETSC_TRUE : PETSC_FALSE;
+  mg->coarseSpaceType = ctype;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PCMGGetAdaptCoarseSpaceType_MG(PC pc, PCMGCoarseSpaceType *ctype)
+{
+  PC_MG *mg = (PC_MG *) pc->data;
+
+  PetscFunctionBegin;
+  *ctype = mg->coarseSpaceType;
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode PCMGSetAdaptCR_MG(PC pc, PetscBool cr)
 {
   PC_MG *mg = (PC_MG *) pc->data;
@@ -1574,6 +1605,61 @@ PetscErrorCode PCMGGetAdaptCR_MG(PC pc, PetscBool *cr)
   PetscFunctionReturn(0);
 }
 
+/*@C
+  PCMGSetAdaptCoarseSpaceType - Set the type of adaptive coarse space.
+
+  Adapts or creates the interpolator based upon a vector space which should be accurately captured by the next coarser mesh, and thus accurately interpolated.
+
+  Logically Collective on PC
+
+  Input Parameters:
++ pc    - the multigrid context
+- ctype - the type of coarse space
+
+  Options Database Keys:
++ -pc_mg_adapt_interp_n <int>             - The number of modes to use
+- -pc_mg_adapt_interp_coarse_space <type> - The type of coarse space: none, polynomial, harmonic, eigenvector, generalized_eigenvector, gdsw
+
+  Level: intermediate
+
+.keywords: MG, set, Galerkin
+.seealso: `PCMGCoarseSpaceType`, `PCMGGetAdaptCoarseSpaceType()`, `PCMGSetGalerkin()`
+@*/
+PetscErrorCode PCMGSetAdaptCoarseSpaceType(PC pc, PCMGCoarseSpaceType ctype)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidLogicalCollectiveEnum(pc,ctype,2);
+  PetscTryMethod(pc,"PCMGSetAdaptCoarseSpaceType_C",(PC,PCMGCoarseSpaceType),(pc,ctype));
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  PCMGGetAdaptCoarseSpaceType - Get the type of adaptive coarse space.
+
+  Not Collective
+
+  Input Parameter:
+. pc    - the multigrid context
+
+  Output Parameter:
+. ctype - the type of coarse space
+
+  Level: intermediate
+
+.keywords: MG, Get, Galerkin
+.seealso: `PCMGCoarseSpaceType`, `PCMGSetAdaptCoarseSpaceType()`, `PCMGSetGalerkin()`
+@*/
+PetscErrorCode PCMGGetAdaptCoarseSpaceType(PC pc, PCMGCoarseSpaceType *ctype)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidPointer(ctype,2);
+  PetscUseMethod(pc,"PCMGGetAdaptCoarseSpaceType_C",(PC,PCMGCoarseSpaceType*),(pc,ctype));
+  PetscFunctionReturn(0);
+}
+
+/* MATT: REMOVE? */
 /*@
   PCMGSetAdaptInterpolation - Adapt the interpolator based upon a vector space which should be accurately captured by the next coarser mesh, and thus accurately interpolated.
 
@@ -1813,7 +1899,7 @@ PetscErrorCode  PCGetCoarseOperators_MG(PC pc,PetscInt *num_levels,Mat *coarseOp
 
   Notes:
   Calling sequence for the routine:
-$ my_csp(PC pc, PetscInt l, DM dm, KSP smooth, PetscInt Nc, const Vec initGuess[], Vec **coarseSp)
+$ my_csp(PC pc, PetscInt l, DM dm, KSP smooth, PetscInt Nc, Mat initGuess, Mat *coarseSp)
 $   pc        - The PC object
 $   l         - The multigrid level, 0 is the coarse level
 $   dm        - The DM for this level
@@ -1826,7 +1912,7 @@ $   coarseSp  - A basis for the computed coarse space
 
 .seealso: `PCMGGetCoarseSpaceConstructor()`, `PCRegister()`
 @*/
-PetscErrorCode PCMGRegisterCoarseSpaceConstructor(const char name[], PetscErrorCode (*function)(PC, PetscInt, DM, KSP, PetscInt, const Vec[], Vec **))
+PetscErrorCode PCMGRegisterCoarseSpaceConstructor(const char name[], PetscErrorCode (*function)(PC, PetscInt, DM, KSP, PetscInt, Mat, Mat*))
 {
   PetscFunctionBegin;
   PetscCall(PCInitializePackage());
@@ -1847,7 +1933,7 @@ PetscErrorCode PCMGRegisterCoarseSpaceConstructor(const char name[], PetscErrorC
 
   Notes:
   Calling sequence for the routine:
-$ my_csp(PC pc, PetscInt l, DM dm, KSP smooth, PetscInt Nc, const Vec initGuess[], Vec **coarseSp)
+$ my_csp(PC pc, PetscInt l, DM dm, KSP smooth, PetscInt Nc, Mat initGuess, Mat *coarseSp)
 $   pc        - The PC object
 $   l         - The multigrid level, 0 is the coarse level
 $   dm        - The DM for this level
@@ -1860,7 +1946,7 @@ $   coarseSp  - A basis for the computed coarse space
 
 .seealso: `PCMGRegisterCoarseSpaceConstructor()`, `PCRegister()`
 @*/
-PetscErrorCode PCMGGetCoarseSpaceConstructor(const char name[], PetscErrorCode (**function)(PC, PetscInt, DM, KSP, PetscInt, const Vec[], Vec **))
+PetscErrorCode PCMGGetCoarseSpaceConstructor(const char name[], PetscErrorCode (**function)(PC, PetscInt, DM, KSP, PetscInt, Mat, Mat*))
 {
   PetscFunctionBegin;
   PetscCall(PetscFunctionListFind(PCMGCoarseList,name,function));
@@ -1940,5 +2026,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_MG(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCMGGetAdaptInterpolation_C",PCMGGetAdaptInterpolation_MG));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCMGSetAdaptCR_C",PCMGSetAdaptCR_MG));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCMGGetAdaptCR_C",PCMGGetAdaptCR_MG));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCMGSetAdaptCoarseSpaceType_C",PCMGSetAdaptCoarseSpaceType_MG));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCMGGetAdaptCoarseSpaceType_C",PCMGGetAdaptCoarseSpaceType_MG));
   PetscFunctionReturn(0);
 }

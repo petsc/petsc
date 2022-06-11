@@ -1,5 +1,5 @@
 
-#include <../src/ksp/pc/impls/is/pcis.h> /*I "petscpc.h" I*/
+#include <petsc/private/pcisimpl.h> /*I "petscpc.h" I*/
 
 static PetscErrorCode PCISSetUseStiffnessScaling_IS(PC pc, PetscBool use)
 {
@@ -407,9 +407,11 @@ PetscErrorCode  PCISSetUp(PC pc, PetscBool computematrices, PetscBool computesol
 */
 PetscErrorCode  PCISDestroy(PC pc)
 {
-  PC_IS          *pcis = (PC_IS*)(pc->data);
+  PC_IS *pcis;
 
   PetscFunctionBegin;
+  if (!pc) PetscFunctionReturn(0);
+  pcis = (PC_IS*)(pc->data);
   PetscCall(ISDestroy(&pcis->is_B_local));
   PetscCall(ISDestroy(&pcis->is_I_local));
   PetscCall(ISDestroy(&pcis->is_B_global));
@@ -457,6 +459,10 @@ PetscErrorCode  PCISCreate(PC pc)
   PC_IS          *pcis = (PC_IS*)(pc->data);
 
   PetscFunctionBegin;
+  if (!pcis) {
+    PetscCall(PetscNewLog(pc,&pcis));
+    pc->data = pcis;
+  }
   pcis->n_neigh          = -1;
   pcis->scaling_factor   = 1.0;
   pcis->reusesubmatrices = PETSC_TRUE;

@@ -44,6 +44,7 @@ Test MatDiagonalScale
 Test MatGetLocalSubMatrix
 Test MatConvert_Nest_IS
 Test MatCreateSubMatrix
+Test MatCreateSubMatrices
 IS Object: 3 MPI processes
   type: stride
 [0] Number of indices in (stride) set 1
@@ -57,3 +58,4 @@ Test MatMissingDiagonal
 [2] [4,5) Missing 0, row -1 (diag zero)
 Test MatTranspose
 Test MatISFixLocalEmpty
+Test MatGetDiagonalBlock

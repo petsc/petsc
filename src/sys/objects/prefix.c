@@ -95,7 +95,7 @@ PetscErrorCode  PetscObjectSetOptionsPrefix(PetscObject obj,const char prefix[])
 }
 
 /*@C
-   PetscObjectAppendOptionsPrefix - Sets the prefix used for searching for all
+   PetscObjectAppendOptionsPrefix - Appends to the prefix used for searching for all
    options of PetscObjectType in the database.
 
    Input Parameters:

@@ -573,7 +573,6 @@ static PetscErrorCode TaoSetUp_ADMM(Tao tao)
     PetscCall(MatCreateShell(PetscObjectComm((PetscObject)tao),n,n,PETSC_DETERMINE,PETSC_DETERMINE,NULL,&am->JB));
     PetscCall(MatShellSetOperation(am->JB,MATOP_MULT,(void (*)(void))JacobianIdentityB));
     PetscCall(MatShellSetOperation(am->JB,MATOP_MULT_TRANSPOSE,(void (*)(void))JacobianIdentityB));
-    PetscCall(MatShellSetOperation(am->JB,MATOP_TRANSPOSE_MAT_MULT,(void (*)(void))JacobianIdentityB));
     am->JBpre = am->JB;
   }
   if (!am->JA) {
@@ -581,7 +580,6 @@ static PetscErrorCode TaoSetUp_ADMM(Tao tao)
     PetscCall(MatCreateShell(PetscObjectComm((PetscObject)tao),n,n,PETSC_DETERMINE,PETSC_DETERMINE,NULL,&am->JA));
     PetscCall(MatShellSetOperation(am->JA,MATOP_MULT,(void (*)(void))JacobianIdentity));
     PetscCall(MatShellSetOperation(am->JA,MATOP_MULT_TRANSPOSE,(void (*)(void))JacobianIdentity));
-    PetscCall(MatShellSetOperation(am->JA,MATOP_TRANSPOSE_MAT_MULT,(void (*)(void))JacobianIdentity));
     am->JApre = am->JA;
   }
   PetscCall(MatCreateVecs(am->JA,NULL,&am->Ax));

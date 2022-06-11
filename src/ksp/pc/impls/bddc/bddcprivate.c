@@ -1,6 +1,6 @@
 #include <../src/mat/impls/aij/seq/aij.h>
-#include <../src/ksp/pc/impls/bddc/bddc.h>
-#include <../src/ksp/pc/impls/bddc/bddcprivate.h>
+#include <petsc/private/pcbddcimpl.h>
+#include <petsc/private/pcbddcprivateimpl.h>
 #include <../src/mat/impls/dense/seq/dense.h>
 #include <petscdmplex.h>
 #include <petscblaslapack.h>
@@ -3124,18 +3124,20 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
   PetscScalar     *Sarray,*Starray;
   PetscReal       *eigs,thresh,lthresh,uthresh;
   PetscInt        i,nmax,nmin,nv,cum,mss,cum2,cumarray,maxneigs;
-  PetscBool       allocated_S_St;
+  PetscBool       allocated_S_St,upart;
 #if defined(PETSC_USE_COMPLEX)
   PetscReal       *rwork;
 #endif
 
   PetscFunctionBegin;
+  if (!pcbddc->adaptive_selection) PetscFunctionReturn(0);
   PetscCheck(sub_schurs,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Adaptive selection of constraints requires SubSchurs data");
-  PetscCheck(sub_schurs->schur_explicit,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Adaptive selection of constraints requires MUMPS and/or MKL_CPARDISO");
-  PetscCheck(!sub_schurs->n_subs || !(!sub_schurs->is_symmetric),PETSC_COMM_SELF,PETSC_ERR_SUP,"Adaptive selection not yet implemented for this matrix pencil (herm %d, symm %d, posdef %d)",sub_schurs->is_hermitian,sub_schurs->is_symmetric,sub_schurs->is_posdef);
+  PetscCheck(sub_schurs->schur_explicit || !sub_schurs->n_subs,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Adaptive selection of constraints requires MUMPS and/or MKL_CPARDISO");
+  PetscCheck(!sub_schurs->n_subs || sub_schurs->is_symmetric,PETSC_COMM_SELF,PETSC_ERR_SUP,"Adaptive selection not yet implemented for this matrix pencil (herm %d, symm %d, posdef %d)",sub_schurs->is_hermitian,sub_schurs->is_symmetric,sub_schurs->is_posdef);
   PetscCall(PetscLogEventBegin(PC_BDDC_AdaptiveSetUp[pcbddc->current_level],pc,0,0,0));
 
   if (pcbddc->dbg_flag) {
+    if (!pcbddc->dbg_viewer) pcbddc->dbg_viewer = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)pc));
     PetscCall(PetscViewerFlush(pcbddc->dbg_viewer));
     PetscCall(PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"--------------------------------------------------\n"));
     PetscCall(PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Check adaptive selection of constraints\n"));
@@ -3246,12 +3248,18 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
   }
 
   if (mss) { /* multilevel */
-    PetscCall(MatSeqAIJGetArray(sub_schurs->sum_S_Ej_inv_all,&Sarray));
-    PetscCall(MatSeqAIJGetArray(sub_schurs->sum_S_Ej_tilda_all,&Starray));
+    if (sub_schurs->gdsw) {
+      PetscCall(MatSeqAIJGetArray(sub_schurs->sum_S_Ej_all,&Sarray));
+      PetscCall(MatSeqAIJGetArray(sub_schurs->sum_S_Ej_tilda_all,&Starray));
+    } else {
+      PetscCall(MatSeqAIJGetArray(sub_schurs->sum_S_Ej_inv_all,&Sarray));
+      PetscCall(MatSeqAIJGetArray(sub_schurs->sum_S_Ej_tilda_all,&Starray));
+    }
   }
 
   lthresh = pcbddc->adaptive_threshold[0];
   uthresh = pcbddc->adaptive_threshold[1];
+  upart = pcbddc->use_deluxe_scaling;
   for (i=0;i<sub_schurs->n_subs;i++) {
     const PetscInt *idxs;
     PetscReal      upper,lower;
@@ -3260,13 +3268,18 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
     PetscBool      same_data = PETSC_FALSE;
     PetscBool      scal = PETSC_FALSE;
 
-    if (pcbddc->use_deluxe_scaling) {
+    if (upart) {
       upper = PETSC_MAX_REAL;
       lower = uthresh;
     } else {
-      PetscCheck(sub_schurs->is_posdef,PETSC_COMM_SELF,PETSC_ERR_SUP,"Not yet implemented without deluxe scaling");
-      upper = 1./uthresh;
-      lower = 0.;
+      if (sub_schurs->gdsw) {
+        upper = uthresh;
+        lower = PETSC_MIN_REAL;
+      } else {
+        PetscCheck(sub_schurs->is_posdef,PETSC_COMM_SELF,PETSC_ERR_SUP,"Not yet implemented without deluxe scaling");
+        upper = 1./uthresh;
+        lower = 0.;
+      }
     }
     PetscCall(ISGetLocalSize(sub_schurs->is_subs[i],&subset_size));
     PetscCall(ISGetIndices(sub_schurs->is_subs[i],&idxs));
@@ -3554,7 +3567,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
           if (pcbddc->dbg_flag) {
             PetscCall(PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"   found %" PetscBLASInt_FMT " eigs, more than maximum required %" PetscInt_FMT ".\n",B_neigs,nmax));
           }
-          if (pcbddc->use_deluxe_scaling) eigs_start = scal ? 0 : B_neigs-nmax;
+          if (upart) eigs_start = scal ? 0 : B_neigs-nmax;
           B_neigs = nmax;
         }
 
@@ -3562,7 +3575,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
         if (B_neigs < nmin_s) {
           PetscBLASInt B_neigs2 = 0;
 
-          if (pcbddc->use_deluxe_scaling) {
+          if (upart) {
             if (scal) {
               B_IU = nmin_s;
               B_IL = B_neigs + 1;
@@ -3607,14 +3620,20 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
         if (pcbddc->dbg_flag) {
           PetscCall(PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"   -> Got %" PetscBLASInt_FMT " eigs\n",B_neigs));
           for (j=0;j<B_neigs;j++) {
-            if (eigs[j] == 0.0) {
-              PetscCall(PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"     Inf\n"));
-            } else {
-              if (pcbddc->use_deluxe_scaling) {
-                PetscCall(PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"     %1.6e\n",(double)eigs[j+eigs_start]));
+            if (!sub_schurs->gdsw) {
+              if (eigs[j] == 0.0) {
+                PetscCall(PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"     Inf\n"));
               } else {
-                PetscCall(PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"     %1.6e\n",(double)(1./eigs[j+eigs_start])));
+                if (upart) {
+                  PetscCall(PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"     %1.6e\n",(double)eigs[j+eigs_start]));
+                } else {
+                  PetscCall(PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"     %1.6e\n",(double)(1./eigs[j+eigs_start])));
+                }
               }
+            } else {
+              double pg = (double)eigs[j+eigs_start];
+              if (pg < 2*PETSC_SMALL) pg = 0.0;
+              PetscCall(PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"     %1.6e\n",pg));
             }
           }
         }
@@ -3680,11 +3699,16 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
   }
 
   if (mss) {
-    PetscCall(MatSeqAIJRestoreArray(sub_schurs->sum_S_Ej_inv_all,&Sarray));
-    PetscCall(MatSeqAIJRestoreArray(sub_schurs->sum_S_Ej_tilda_all,&Starray));
-    /* destroy matrices (junk) */
-    PetscCall(MatDestroy(&sub_schurs->sum_S_Ej_inv_all));
-    PetscCall(MatDestroy(&sub_schurs->sum_S_Ej_tilda_all));
+    if (sub_schurs->gdsw) {
+      PetscCall(MatSeqAIJGetArray(sub_schurs->sum_S_Ej_all,&Sarray));
+      PetscCall(MatSeqAIJGetArray(sub_schurs->sum_S_Ej_tilda_all,&Starray));
+    } else {
+      PetscCall(MatSeqAIJRestoreArray(sub_schurs->sum_S_Ej_inv_all,&Sarray));
+      PetscCall(MatSeqAIJRestoreArray(sub_schurs->sum_S_Ej_tilda_all,&Starray));
+      /* destroy matrices (junk) */
+      PetscCall(MatDestroy(&sub_schurs->sum_S_Ej_inv_all));
+      PetscCall(MatDestroy(&sub_schurs->sum_S_Ej_tilda_all));
+    }
   }
   if (allocated_S_St) {
     PetscCall(PetscFree2(S,St));
@@ -6069,7 +6093,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     const Vec    *nearnullvecs;
     Vec          *localnearnullsp;
     PetscScalar  *array;
-    PetscInt     n_ISForFaces,n_ISForEdges,nnsp_size;
+    PetscInt     n_ISForFaces,n_ISForEdges,nnsp_size,o_nf,o_ne;
     PetscBool    nnsp_has_cnst;
     /* LAPACK working arrays for SVD or POD */
     PetscBool    skip_lapack,boolforchange;
@@ -6089,39 +6113,27 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
 #endif
     /* Get index sets for faces, edges and vertices from graph */
     PetscCall(PCBDDCGraphGetCandidatesIS(pcbddc->mat_graph,&n_ISForFaces,&ISForFaces,&n_ISForEdges,&ISForEdges,&ISForVertices));
+    o_nf = n_ISForFaces;
+    o_ne = n_ISForEdges;
+    n_vertices = 0;
+    if (ISForVertices) PetscCall(ISGetSize(ISForVertices,&n_vertices));
     /* print some info */
     if (pcbddc->dbg_flag && (!pcbddc->sub_schurs || pcbddc->sub_schurs_rebuild)) {
-      PetscInt nv;
 
+      if (!pcbddc->dbg_viewer) pcbddc->dbg_viewer = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)pc));
       PetscCall(PCBDDCGraphASCIIView(pcbddc->mat_graph,pcbddc->dbg_flag,pcbddc->dbg_viewer));
-      PetscCall(ISGetSize(ISForVertices,&nv));
       PetscCall(PetscViewerASCIIPushSynchronized(pcbddc->dbg_viewer));
       PetscCall(PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"--------------------------------------------------------------\n"));
-      PetscCall(PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d got %02" PetscInt_FMT " local candidate vertices (%d)\n",PetscGlobalRank,nv,pcbddc->use_vertices));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d got %02" PetscInt_FMT " local candidate vertices (%d)\n",PetscGlobalRank,n_vertices,pcbddc->use_vertices));
       PetscCall(PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d got %02" PetscInt_FMT " local candidate edges    (%d)\n",PetscGlobalRank,n_ISForEdges,pcbddc->use_edges));
       PetscCall(PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d got %02" PetscInt_FMT " local candidate faces    (%d)\n",PetscGlobalRank,n_ISForFaces,pcbddc->use_faces));
       PetscCall(PetscViewerFlush(pcbddc->dbg_viewer));
       PetscCall(PetscViewerASCIIPopSynchronized(pcbddc->dbg_viewer));
     }
 
-    /* free unneeded index sets */
-    if (!pcbddc->use_vertices) {
-      PetscCall(ISDestroy(&ISForVertices));
-    }
-    if (!pcbddc->use_edges) {
-      for (i=0;i<n_ISForEdges;i++) {
-        PetscCall(ISDestroy(&ISForEdges[i]));
-      }
-      PetscCall(PetscFree(ISForEdges));
-      n_ISForEdges = 0;
-    }
-    if (!pcbddc->use_faces) {
-      for (i=0;i<n_ISForFaces;i++) {
-        PetscCall(ISDestroy(&ISForFaces[i]));
-      }
-      PetscCall(PetscFree(ISForFaces));
-      n_ISForFaces = 0;
-    }
+    if (!pcbddc->use_vertices) n_vertices = 0;
+    if (!pcbddc->use_edges) n_ISForEdges = 0;
+    if (!pcbddc->use_faces) n_ISForFaces = 0;
 
     /* check if near null space is attached to global mat */
     if (pcbddc->use_nnsp) {
@@ -6154,10 +6166,6 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
          - Values for constraints on connected component i stored at "constraints_data + constraints_data_ptr[i]"
          There can be multiple constraints per connected component
                                                                                                                                                            */
-    n_vertices = 0;
-    if (ISForVertices) {
-      PetscCall(ISGetSize(ISForVertices,&n_vertices));
-    }
     ncc = n_vertices+n_ISForFaces+n_ISForEdges;
     PetscCall(PetscMalloc3(ncc+1,&constraints_idxs_ptr,ncc+1,&constraints_data_ptr,ncc,&constraints_n));
 
@@ -6268,7 +6276,6 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
         total_counts++;
       }
       PetscCall(ISRestoreIndices(ISForVertices,(const PetscInt**)&is_indices));
-      n_vertices = total_counts;
     }
 
     /* edges and faces */
@@ -6287,6 +6294,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       temp_constraints = 0;          /* zero the number of constraints I have on this conn comp */
 
       PetscCall(ISGetSize(used_is,&size_of_constraint));
+      if (!size_of_constraint) continue;
       PetscCall(ISGetIndices(used_is,(const PetscInt**)&is_indices));
       /* change of basis should not be performed on local periodic nodes */
       if (pcbddc->mat_graph->mirrors && pcbddc->mat_graph->mirrors[is_indices[0]]) boolforchange = PETSC_FALSE;
@@ -6447,19 +6455,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     }
     PetscCall(PetscFree(localnearnullsp));
     /* free index sets of faces, edges and vertices */
-    for (i=0;i<n_ISForFaces;i++) {
-      PetscCall(ISDestroy(&ISForFaces[i]));
-    }
-    if (n_ISForFaces) {
-      PetscCall(PetscFree(ISForFaces));
-    }
-    for (i=0;i<n_ISForEdges;i++) {
-      PetscCall(ISDestroy(&ISForEdges[i]));
-    }
-    if (n_ISForEdges) {
-      PetscCall(PetscFree(ISForEdges));
-    }
-    PetscCall(ISDestroy(&ISForVertices));
+    PetscCall(PCBDDCGraphRestoreCandidatesIS(pcbddc->mat_graph,&o_nf,&ISForFaces,&o_ne,&ISForEdges,&ISForVertices));
   } else {
     PCBDDCSubSchurs sub_schurs = pcbddc->sub_schurs;
 
@@ -6505,8 +6501,10 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   PetscCall(PetscMalloc1(pcbddc->local_primal_size+pcbddc->benign_n,&pcbddc->primal_indices_local_idxs));
 
   /* map constraints_idxs in boundary numbering */
-  PetscCall(ISGlobalToLocalMappingApply(pcis->BtoNmap,IS_GTOLM_DROP,constraints_idxs_ptr[total_counts_cc],constraints_idxs,&i,constraints_idxs_B));
-  PetscCheck(i == constraints_idxs_ptr[total_counts_cc],PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in boundary numbering for constraints indices %" PetscInt_FMT " != %" PetscInt_FMT,constraints_idxs_ptr[total_counts_cc],i);
+  if (pcbddc->use_change_of_basis) {
+    PetscCall(ISGlobalToLocalMappingApply(pcis->BtoNmap,IS_GTOLM_DROP,constraints_idxs_ptr[total_counts_cc],constraints_idxs,&i,constraints_idxs_B));
+    PetscCheck(i == constraints_idxs_ptr[total_counts_cc],PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in boundary numbering for constraints indices %" PetscInt_FMT " != %" PetscInt_FMT,constraints_idxs_ptr[total_counts_cc],i);
+  }
 
   /* Create constraint matrix */
   PetscCall(MatCreate(PETSC_COMM_SELF,&pcbddc->ConstraintMatrix));
@@ -6622,7 +6620,6 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     /* extra space for debugging */
     PetscScalar  *dbg_work = NULL;
 
-    /* local temporary change of basis acts on local interfaces -> dimension is n_B x n_B */
     PetscCall(MatCreate(PETSC_COMM_SELF,&localChangeOfBasisMatrix));
     PetscCall(MatSetType(localChangeOfBasisMatrix,MATAIJ));
     PetscCall(MatSetSizes(localChangeOfBasisMatrix,pcis->n,pcis->n,pcis->n,pcis->n));
@@ -6681,9 +6678,9 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
        Change of basis matrix is evaluated similarly to the FIRST APPROACH in
        Klawonn and Widlund, Dual-primal FETI-DP methods for linear elasticity, (see Sect 6.2.1)
 
-       Basic blocks of change of basis matrix T computed by
+       Basic blocks of change of basis matrix T computed:
 
-          - Using the following block transformation if there is only a primal dof on the cc (and -pc_bddc_use_qr_single is not specified)
+          - By using the following block transformation if there is only a primal dof on the cc (and -pc_bddc_use_qr_single is not specified)
 
             | 1        0   ...        0         s_1/S |
             | 0        1   ...        0         s_2/S |
@@ -8745,6 +8742,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
 
     if (CoarseNullSpace) {
       PetscBool isnull;
+
       PetscCall(MatNullSpaceTest(CoarseNullSpace,coarse_mat,&isnull));
       if (isnull) {
         PetscCall(MatSetNullSpace(coarse_mat,CoarseNullSpace));
@@ -9021,6 +9019,63 @@ PetscErrorCode PCBDDCGlobalToLocal(VecScatter g2l_ctx,Vec gwork, Vec lwork, IS g
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode PCBDDCComputeFakeChange(PC pc, PetscBool constraints, PCBDDCGraph graph, PCBDDCSubSchurs schurs, Mat *change, IS *change_primal, IS *change_primal_mult, PetscBool *change_with_qr)
+{
+  PC_IS   *pcis = (PC_IS*)pc->data;
+  PC_BDDC *pcbddc = (PC_BDDC*)pc->data;
+  PC_IS   *pcisf;
+  PC_BDDC *pcbddcf;
+  PC      pcf;
+
+  PetscFunctionBegin;
+  PetscCall(PCCreate(PetscObjectComm((PetscObject)pc),&pcf));
+  PetscCall(PetscLogObjectParent((PetscObject)pc,(PetscObject)pcf));
+  PetscCall(PCSetOperators(pcf,pc->mat,pc->pmat));
+  PetscCall(PCSetType(pcf,PCBDDC));
+
+  pcisf   = (PC_IS*)pcf->data;
+  pcbddcf = (PC_BDDC*)pcf->data;
+
+  pcisf->is_B_local = pcis->is_B_local;
+  pcisf->vec1_N     = pcis->vec1_N;
+  pcisf->BtoNmap    = pcis->BtoNmap;
+  pcisf->n          = pcis->n;
+  pcisf->n_B        = pcis->n_B;
+
+  PetscCall(PetscFree(pcbddcf->mat_graph));
+  PetscCall(PetscFree(pcbddcf->sub_schurs));
+  pcbddcf->mat_graph             = graph ? graph : pcbddc->mat_graph;
+  pcbddcf->sub_schurs            = schurs;
+  pcbddcf->adaptive_selection    = schurs ? PETSC_TRUE : PETSC_FALSE;
+  pcbddcf->adaptive_threshold[0] = pcbddc->adaptive_threshold[0];
+  pcbddcf->adaptive_threshold[1] = pcbddc->adaptive_threshold[1];
+  pcbddcf->adaptive_nmin         = pcbddc->adaptive_nmin;
+  pcbddcf->adaptive_nmax         = pcbddc->adaptive_nmax;
+  pcbddcf->use_faces             = PETSC_TRUE;
+  pcbddcf->use_change_of_basis   = (PetscBool)!constraints;
+  pcbddcf->use_change_on_faces   = (PetscBool)!constraints;
+  pcbddcf->use_qr_single         = (PetscBool)!constraints;
+  pcbddcf->fake_change           = PETSC_TRUE;
+  pcbddcf->dbg_flag              = pcbddc->dbg_flag;
+
+  PetscCall(PCBDDCAdaptiveSelection(pcf));
+  PetscCall(PCBDDCConstraintsSetUp(pcf));
+
+  *change = pcbddcf->ConstraintMatrix;
+  if (change_primal) PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)pc->pmat),pcbddcf->local_primal_size_cc,pcbddcf->local_primal_ref_node,PETSC_COPY_VALUES,change_primal));
+  if (change_primal_mult) PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)pc->pmat),pcbddcf->local_primal_size_cc,pcbddcf->local_primal_ref_mult,PETSC_COPY_VALUES,change_primal_mult));
+  if (change_with_qr) *change_with_qr = pcbddcf->use_qr_single;
+
+  if (schurs) pcbddcf->sub_schurs = NULL;
+  pcbddcf->ConstraintMatrix       = NULL;
+  pcbddcf->mat_graph              = NULL;
+  pcisf->is_B_local               = NULL;
+  pcisf->vec1_N                   = NULL;
+  pcisf->BtoNmap                  = NULL;
+  PetscCall(PCDestroy(&pcf));
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode PCBDDCSetUpSubSchurs(PC pc)
 {
   PC_IS               *pcis=(PC_IS*)pc->data;
@@ -9098,51 +9153,11 @@ PetscErrorCode PCBDDCSetUpSubSchurs(PC pc)
       PetscCall(MPIU_Allreduce(&have_loc_change,&need_change,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)pc)));
       need_change = (PetscBool)(!need_change);
     }
-    /* If the user defines additional constraints, we import them here.
-       We need to compute the change of basis according to the quadrature weights attached to pmat via MatSetNearNullSpace, and this could not be done (at the moment) without some hacking */
+    /* If the user defines additional constraints, we import them here */
     if (need_change) {
-      PC_IS   *pcisf;
-      PC_BDDC *pcbddcf;
-      PC      pcf;
-
       PetscCheck(!pcbddc->sub_schurs_rebuild,PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot compute change of basis with a different graph");
-      PetscCall(PCCreate(PetscObjectComm((PetscObject)pc),&pcf));
-      PetscCall(PCSetOperators(pcf,pc->mat,pc->pmat));
-      PetscCall(PCSetType(pcf,PCBDDC));
+      PetscCall(PCBDDCComputeFakeChange(pc,PETSC_FALSE,NULL,NULL,&change,&change_primal,NULL,&sub_schurs->change_with_qr));
 
-      /* hacks */
-      pcisf                        = (PC_IS*)pcf->data;
-      pcisf->is_B_local            = pcis->is_B_local;
-      pcisf->vec1_N                = pcis->vec1_N;
-      pcisf->BtoNmap               = pcis->BtoNmap;
-      pcisf->n                     = pcis->n;
-      pcisf->n_B                   = pcis->n_B;
-      pcbddcf                      = (PC_BDDC*)pcf->data;
-      PetscCall(PetscFree(pcbddcf->mat_graph));
-      pcbddcf->mat_graph           = pcbddc->mat_graph;
-      pcbddcf->use_faces           = PETSC_TRUE;
-      pcbddcf->use_change_of_basis = PETSC_TRUE;
-      pcbddcf->use_change_on_faces = PETSC_TRUE;
-      pcbddcf->use_qr_single       = PETSC_TRUE;
-      pcbddcf->fake_change         = PETSC_TRUE;
-
-      /* setup constraints so that we can get information on primal vertices and change of basis (in local numbering) */
-      PetscCall(PCBDDCConstraintsSetUp(pcf));
-      sub_schurs->change_with_qr = pcbddcf->use_qr_single;
-      PetscCall(ISCreateGeneral(PETSC_COMM_SELF,pcbddcf->n_vertices,pcbddcf->local_primal_ref_node,PETSC_COPY_VALUES,&change_primal));
-      change = pcbddcf->ConstraintMatrix;
-      pcbddcf->ConstraintMatrix = NULL;
-
-      /* free unneeded memory allocated in PCBDDCConstraintsSetUp */
-      PetscCall(PetscFree(pcbddcf->sub_schurs));
-      PetscCall(MatNullSpaceDestroy(&pcbddcf->onearnullspace));
-      PetscCall(PetscFree2(pcbddcf->local_primal_ref_node,pcbddcf->local_primal_ref_mult));
-      PetscCall(PetscFree(pcbddcf->primal_indices_local_idxs));
-      PetscCall(PetscFree(pcbddcf->onearnullvecs_state));
-      PetscCall(PetscFree(pcf->data));
-      pcf->ops->destroy = NULL;
-      pcf->ops->reset   = NULL;
-      PetscCall(PCDestroy(&pcf));
     }
     if (!pcbddc->use_deluxe_scaling) scaling = pcis->D;
 
@@ -9222,7 +9237,7 @@ PetscErrorCode PCBDDCInitSubSchurs(PC pc)
   if (!pcbddc->sub_schurs) {
     PetscCall(PCBDDCSubSchursCreate(&pcbddc->sub_schurs));
   }
-  PetscCall(PCBDDCSubSchursInit(pcbddc->sub_schurs,((PetscObject)pc)->prefix,pcis->is_I_local,pcis->is_B_local,graph,pcis->BtoNmap,pcbddc->sub_schurs_rebuild));
+  PetscCall(PCBDDCSubSchursInit(pcbddc->sub_schurs,((PetscObject)pc)->prefix,pcis->is_I_local,pcis->is_B_local,graph,pcis->BtoNmap,pcbddc->sub_schurs_rebuild,PETSC_FALSE));
 
   /* free graph struct */
   if (pcbddc->sub_schurs_rebuild) {
