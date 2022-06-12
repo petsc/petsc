@@ -130,7 +130,8 @@ The application programmer can then directly call any of the ``PC`` or
 To solve a linear system with a direct solver (currently supported by
 PETSc for sequential matrices, and by several external solvers through
 PETSc interfaces, see :any:`sec_externalsol`) one may use
-the options ``-ksp_type`` ``preonly`` ``-pc_type`` ``lu`` (see below).
+the options ``-ksp_type`` ``preonly`` (or the equivalent ``-ksp_type`` ``none``)
+``-pc_type`` ``lu`` (see below).
 
 By default, if a direct solver is used, the factorization is *not* done
 in-place. This approach prevents the user from the unexpected surprise
@@ -170,12 +171,12 @@ be used, one calls the command
 
 The type can be one of ``KSPRICHARDSON``, ``KSPCHEBYSHEV``, ``KSPCG``,
 ``KSPGMRES``, ``KSPTCQMR``, ``KSPBCGS``, ``KSPCGS``, ``KSPTFQMR``,
-``KSPCR``, ``KSPLSQR``, ``KSPBICG``, ``KSPPREONLY``, or others; see
+``KSPCR``, ``KSPLSQR``, ``KSPBICG``, ``KSPPREONLY`` (or the equivalent ``KSPNONE``), or others; see
 :any:`tab-kspdefaults` or the ``KSPType`` man page for more.
 The ``KSP`` method can also be set with the options database command
 ``-ksp_type``, followed by one of the options ``richardson``,
 ``chebyshev``, ``cg``, ``gmres``, ``tcqmr``, ``bcgs``, ``cgs``,
-``tfqmr``, ``cr``, ``lsqr``, ``bicg``, ``preonly``, or others (see
+``tfqmr``, ``cr``, ``lsqr``, ``bicg``, ``preonly`` (or the equivalent ``none``), or others (see
 :any:`tab-kspdefaults` or the ``KSPType`` man page). There are
 method-specific options. For instance, for the Richardson, Chebyshev, and
 GMRES methods:
@@ -436,8 +437,8 @@ can be used by the options database command
     - ``KSPPYTHON``
     - ``python``
   * - Shell for no ``KSP`` method
-    - ``KSPPREONLY``
-    - ``preonly``
+    - ``KSPPREONLY`` (or ``KSPNONE``)
+    - ``preonly`` (or ``none``)
 
 
 Note: the bi-conjugate gradient method requires application of both the
@@ -879,7 +880,7 @@ supported in parallel; however, only the uniprocess version of the block
 Gauss-Seidel method is currently in place. By default, the PETSc
 implementations of these methods employ ILU(0) factorization on each
 individual block (that is, the default solver on each subblock is
-``PCType=PCILU``, ``KSPType=KSPPREONLY``); the user can set alternative
+``PCType=PCILU``, ``KSPType=KSPPREONLY`` (or equivalently  ``KSPType=KSPNONE``); the user can set alternative
 linear solvers via the options ``-sub_ksp_type`` and ``-sub_pc_type``.
 In fact, all of the ``KSP`` and ``PC`` options can be applied to the
 subproblems by inserting the prefix ``-sub_`` at the beginning of the
@@ -2112,7 +2113,7 @@ To use these solvers, one may:
 
 #. Build the PETSc libraries.
 
-#. Use the runtime option: ``-ksp_type preonly`` ``-pc_type <pctype>``
+#. Use the runtime option: ``-ksp_type preonly`` (or equivalently ``-ksp_type none``) ``-pc_type <pctype>``
    ``-pc_factor_mat_solver_type <packagename>``. For eg:
    ``-ksp_type preonly`` ``-pc_type lu``
    ``-pc_factor_mat_solver_type superlu_dist``.
@@ -2252,12 +2253,12 @@ be found by specifying ``-help`` at runtime.
 As an alternative to using runtime flags to employ these external
 packages, procedural calls are provided for some packages. For example,
 the following procedural calls are equivalent to runtime options
-``-ksp_type preonly`` ``-pc_type lu``
+``-ksp_type preonly`` (or equivalently ``-ksp_type none``)  ``-pc_type lu``
 ``-pc_factor_mat_solver_type mumps`` ``-mat_mumps_icntl_7 3``:
 
 .. code-block::
 
-   KSPSetType(ksp,KSPPREONLY);
+   KSPSetType(ksp,KSPPREONLY); (or equivalently KSPSetType(ksp,KSPNONE))
    KSPGetPC(ksp,&pc);
    PCSetType(pc,PCLU);
    PCFactorSetMatSolverType(pc,MATSOLVERMUMPS);

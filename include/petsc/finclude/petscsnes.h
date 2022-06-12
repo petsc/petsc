@@ -52,6 +52,7 @@
 !
 
 #define SNESLINESEARCHBASIC     'basic'
+#define   SNESLINESEARCHNONE      'none'
 #define SNESLINESEARCHBT        'bt'
 #define SNESLINESEARCHL2        'l2'
 #define SNESLINESEARCHCP        'cp'

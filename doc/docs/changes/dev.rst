@@ -104,11 +104,13 @@ In addition to the changes above
 .. rubric:: KSP:
 
 - Deprecate ``KSPHPDDMGetDeflationSpace()`` (resp. ``KSPHPDDMSetDeflationSpace()``) in favor of ``KSPHPDDMGetDeflationMat()`` (resp. ``KSPHPDDMSetDeflationMat()``)
+- Add ``KSPNONE`` as alias for ``KSPPREONLY``
 
 .. rubric:: SNES:
 
 - Add ``DMDASNESSetFunctionLocalVec()``, ``DMDASNESSetJacobianLocalVec()`` and ``DMDASNESSetObjectiveLocalVec()``, and associate types ``DMDASNESFunctionVec``, ``DMDASNESJacobianVec`` and ``DMDASNESObjectiveVec``,
   which accept Vec parameters instead of void pointers in contrast to versions without the Vec suffix
+- Add ``SNESLINESEARCHNONE`` as alias for ``SNESLINESEARCHBASIC``
 
 .. rubric:: SNESLineSearch:
 

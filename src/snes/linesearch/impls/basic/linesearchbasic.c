@@ -68,7 +68,7 @@ static PetscErrorCode  SNESLineSearchApply_Basic(SNESLineSearch linesearch)
    SNESLINESEARCHBASIC - This line search implementation is not a line
    search at all; it simply uses the full step.  Thus, this routine is intended
    for methods with well-scaled updates; i.e. Newton's method (SNESNEWTONLS), on
-   well-behaved problems.
+   well-behaved problems. Also named as SNESLINESEARCHNONE
 
    Options Database Keys:
 +   -snes_linesearch_damping <damping> - search vector is scaled by this amount, default is 1.0
