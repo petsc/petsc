@@ -2468,6 +2468,7 @@ PetscErrorCode DMDestroy_Plex(DM dm) {
   PetscCall(PetscFree(mesh->tetgenOpts));
   PetscCall(PetscFree(mesh->triangleOpts));
   PetscCall(PetscFree(mesh->transformType));
+  PetscCall(PetscFree(mesh->distributionName));
   PetscCall(PetscPartitionerDestroy(&mesh->partitioner));
   PetscCall(DMLabelDestroy(&mesh->subpointMap));
   PetscCall(ISDestroy(&mesh->subpointIS));

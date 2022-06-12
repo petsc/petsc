@@ -246,6 +246,8 @@ PETSC_EXTERN PetscErrorCode DMPlexGetAdjacencyUseAnchors(DM, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMPlexGetAdjacency(DM, PetscInt, PetscInt *, PetscInt *[]);
 PETSC_EXTERN PetscErrorCode DMPlexSetMigrationSF(DM, PetscSF);
 PETSC_EXTERN PetscErrorCode DMPlexGetMigrationSF(DM, PetscSF *);
+PETSC_EXTERN PetscErrorCode DMPlexDistributionSetName(DM, const char[]);
+PETSC_EXTERN PetscErrorCode DMPlexDistributionGetName(DM, const char *[]);
 
 /*E
    DMPlexReorderDefaultFlag - Flag indicating whether the `DMPLEX` should be reordered by default

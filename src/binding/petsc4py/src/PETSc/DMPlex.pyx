@@ -547,6 +547,17 @@ cdef class DMPlex(DM):
         CHKERR( DMPlexDistributeSetDefault(self.dm, dist) )
         return
 
+    def distributionSetName(self, name):
+        cdef const char *cname = NULL
+        if name is not None:
+            name = str2bytes(name, &cname)
+        CHKERR( DMPlexDistributionSetName(self.dm, cname) )
+
+    def distributionGetName(self):
+        cdef const char *cname = NULL
+        CHKERR( DMPlexDistributionGetName(self.dm, &cname) )
+        return bytes2str(cname)
+
     def isSimplex(self):
         cdef PetscBool flag = PETSC_FALSE
         CHKERR( DMPlexIsSimplex(self.dm, &flag) )
