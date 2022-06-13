@@ -137,7 +137,7 @@ PetscErrorCode MatSeqDenseCUDACopyFromGPU(Mat A)
 
   PetscFunctionBegin;
   PetscCheckTypeName(A,MATSEQDENSECUDA);
-  PetscCall(PetscInfo(A,"%s matrix %d x %d\n",A->offloadmask == PETSC_OFFLOAD_GPU ? "Copy" : "Reusing",A->rmap->n,A->cmap->n));
+  PetscCall(PetscInfo(A,"%s matrix %" PetscInt_FMT " x %" PetscInt_FMT "\n",A->offloadmask == PETSC_OFFLOAD_GPU ? "Copy" : "Reusing",A->rmap->n,A->cmap->n));
   if (A->offloadmask == PETSC_OFFLOAD_GPU) {
     if (!cA->v) { /* MatCreateSeqDenseCUDA may not allocate CPU memory. Allocate if needed */
       PetscCall(MatSeqDenseSetPreallocation(A,NULL));
@@ -166,7 +166,7 @@ PetscErrorCode MatSeqDenseCUDACopyToGPU(Mat A)
   PetscCheckTypeName(A,MATSEQDENSECUDA);
   if (A->boundtocpu) PetscFunctionReturn(0);
   copy = (PetscBool)(A->offloadmask == PETSC_OFFLOAD_CPU || A->offloadmask == PETSC_OFFLOAD_UNALLOCATED);
-  PetscCall(PetscInfo(A,"%s matrix %d x %d\n",copy ? "Copy" : "Reusing",A->rmap->n,A->cmap->n));
+  PetscCall(PetscInfo(A,"%s matrix %" PetscInt_FMT " x %" PetscInt_FMT "\n",copy ? "Copy" : "Reusing",A->rmap->n,A->cmap->n));
   if (copy) {
     if (!dA->d_v) { /* Allocate GPU memory if not present */
       PetscCall(MatSeqDenseCUDASetPreallocation(A,NULL));
@@ -996,7 +996,7 @@ static PetscErrorCode MatMultAdd_SeqDenseCUDA_Private(Mat A,Vec xx,Vec yy,Vec zz
     if (!yy) PetscCall(VecSet_SeqCUDA(zz,0.0));
     PetscFunctionReturn(0);
   }
-  PetscCall(PetscInfo(A,"Matrix-vector product %d x %d on backend\n",A->rmap->n,A->cmap->n));
+  PetscCall(PetscInfo(A,"Matrix-vector product %" PetscInt_FMT " x %" PetscInt_FMT " on backend\n",A->rmap->n,A->cmap->n));
   PetscCall(PetscCuBLASIntCast(A->rmap->n,&m));
   PetscCall(PetscCuBLASIntCast(A->cmap->n,&n));
   PetscCall(PetscCUBLASGetHandle(&cublasv2handle));
@@ -1089,7 +1089,7 @@ PetscErrorCode MatScale_SeqDenseCUDA(Mat Y,PetscScalar alpha)
   PetscCall(PetscCuBLASIntCast(Y->rmap->n*Y->cmap->n,&N));
   PetscCall(PetscCuBLASIntCast(Y->rmap->n,&m));
   PetscCall(PetscCuBLASIntCast(y->lda,&lday));
-  PetscCall(PetscInfo(Y,"Performing Scale %d x %d on backend\n",Y->rmap->n,Y->cmap->n));
+  PetscCall(PetscInfo(Y,"Performing Scale %" PetscInt_FMT " x %" PetscInt_FMT " on backend\n",Y->rmap->n,Y->cmap->n));
   PetscCall(PetscLogGpuTimeBegin());
   if (lday>m) {
     for (j=0; j<Y->cmap->n; j++) PetscCallCUBLAS(cublasXscal(cublasv2handle,m,&alpha,dy+lday*j,one));
@@ -1166,7 +1166,7 @@ PetscErrorCode MatShift_SeqDenseCUDA(Mat A,PetscScalar alpha)
   PetscFunctionBegin;
   PetscCall(MatDenseCUDAGetArray(A,&da));
   PetscCall(MatDenseGetLDA(A,&lda));
-  PetscCall(PetscInfo(A,"Performing Shift %d x %d on backend\n",m,n));
+  PetscCall(PetscInfo(A,"Performing Shift %" PetscInt_FMT " x %" PetscInt_FMT " on backend\n",m,n));
   PetscCall(MatShift_DenseCUDA_Private(da,alpha,lda,0,m,n));
   PetscCall(MatDenseCUDARestoreArray(A,&da));
   PetscFunctionReturn(0);
@@ -1191,7 +1191,7 @@ PetscErrorCode MatAXPY_SeqDenseCUDA(Mat Y,PetscScalar alpha,Mat X,MatStructure s
   PetscCall(PetscCuBLASIntCast(X->rmap->n,&m));
   PetscCall(PetscCuBLASIntCast(x->lda,&ldax));
   PetscCall(PetscCuBLASIntCast(y->lda,&lday));
-  PetscCall(PetscInfo(Y,"Performing AXPY %d x %d on backend\n",Y->rmap->n,Y->cmap->n));
+  PetscCall(PetscInfo(Y,"Performing AXPY %" PetscInt_FMT " x %" PetscInt_FMT " on backend\n",Y->rmap->n,Y->cmap->n));
   PetscCall(PetscLogGpuTimeBegin());
   if (ldax>m || lday>m) {
     for (j=0; j<X->cmap->n; j++) {

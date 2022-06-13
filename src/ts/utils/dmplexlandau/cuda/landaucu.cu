@@ -737,7 +737,7 @@ PetscErrorCode LandauCUDAJacobian(DM plex[], const PetscInt Nq, const PetscInt b
   PetscCall(DMGetApplicationContext(plex[0], &ctx));
   PetscCheck(ctx,PETSC_COMM_SELF, PETSC_ERR_PLIB, "no context");
   PetscCall(DMGetDimension(plex[0], &dim));
-  PetscCheck(dim==LANDAU_DIM,PETSC_COMM_SELF, PETSC_ERR_PLIB, "LANDAU_DIM %" PetscInt_FMT " != dim %d",LANDAU_DIM,dim);
+  PetscCheck(dim==LANDAU_DIM,PETSC_COMM_SELF, PETSC_ERR_PLIB, "LANDAU_DIM %d != dim %" PetscInt_FMT,LANDAU_DIM,dim);
   if (ctx->gpu_assembly) {
     PetscCall(PetscObjectQuery((PetscObject) JacP, "assembly_maps", (PetscObject *) &container));
     if (container) { // not here first call
@@ -866,7 +866,7 @@ PetscErrorCode LandauCUDAJacobian(DM plex[], const PetscInt Nq, const PetscInt b
     PetscCall(PetscLogEventEnd(events[4],0,0,0,0));
   } else { // mass
     dim3 dimBlock(nnn,Nq);
-    PetscCall(PetscInfo(plex[0], "Mass d_maps = %p. Nq=%d, vector size %d num_cells_batch=%d\n",d_maps,Nq,nnn,num_cells_batch));
+    PetscCall(PetscInfo(plex[0], "Mass d_maps = %p. Nq=%" PetscInt_FMT ", vector size %d num_cells_batch=%" PetscInt_FMT "\n",d_maps,Nq,nnn,num_cells_batch));
     PetscCall(PetscLogEventBegin(events[16],0,0,0,0));
     PetscCall(PetscLogGpuTimeBegin());
     landau_mass<<<dimGrid,dimBlock>>>(dim, Nb, num_grids, d_w, d_BB, d_DD, d_elem_mats,
