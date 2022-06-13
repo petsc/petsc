@@ -1234,8 +1234,8 @@ PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
       }
     } else {
       for (n2 = 0; n2 < N2; n2 += Bbn) {
-        PetscCall(MatDenseGetSubMatrix(B, n2, PetscMin(n2+Bbn, N2), &vB));
-        PetscCall(MatDenseGetSubMatrix(X, n2, PetscMin(n2+Bbn, N2), &vX));
+        PetscCall(MatDenseGetSubMatrix(B, PETSC_DECIDE, PETSC_DECIDE, n2, PetscMin(n2+Bbn, N2), &vB));
+        PetscCall(MatDenseGetSubMatrix(X, PETSC_DECIDE, PETSC_DECIDE, n2, PetscMin(n2+Bbn, N2), &vX));
         PetscCall((*ksp->ops->matsolve)(ksp, vB, vX));
         if (ksp->viewFinalRes) {
           PetscCall(KSPViewFinalMatResidual_Internal(ksp, vB, vX, ksp->viewerFinalRes, ksp->formatFinalRes, n2));

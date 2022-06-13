@@ -622,8 +622,8 @@ static PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat A,Mat B,Mat C)
     PetscCall(MatBoundToCPU(C,&ccpu));
     PetscCall(MatBindToCPU(C,PETSC_TRUE));
     for (i=0; i<BN; i+=n) {
-      PetscCall(MatDenseGetSubMatrix(B,i,PetscMin(i+n,BN),&Bb));
-      PetscCall(MatDenseGetSubMatrix(C,i,PetscMin(i+n,BN),&Cb));
+      PetscCall(MatDenseGetSubMatrix(B,PETSC_DECIDE,PETSC_DECIDE,i,PetscMin(i+n,BN),&Bb));
+      PetscCall(MatDenseGetSubMatrix(C,PETSC_DECIDE,PETSC_DECIDE,i,PetscMin(i+n,BN),&Cb));
 
       /* get off processor parts of B needed to complete C=A*B */
       PetscCall(MatMPIDenseScatter(A,Bb,(i+n)>BN,C,&workB));

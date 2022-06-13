@@ -85,7 +85,7 @@ PETSC_INTERN PetscErrorCode MatDenseGetColumnVecRead_SeqDense(Mat,PetscInt,Vec*)
 PETSC_INTERN PetscErrorCode MatDenseRestoreColumnVecRead_SeqDense(Mat,PetscInt,Vec*);
 PETSC_INTERN PetscErrorCode MatDenseGetColumnVecWrite_SeqDense(Mat,PetscInt,Vec*);
 PETSC_INTERN PetscErrorCode MatDenseRestoreColumnVecWrite_SeqDense(Mat,PetscInt,Vec*);
-PETSC_INTERN PetscErrorCode MatDenseGetSubMatrix_SeqDense(Mat,PetscInt,PetscInt,Mat*);
+PETSC_INTERN PetscErrorCode MatDenseGetSubMatrix_SeqDense(Mat,PetscInt,PetscInt,PetscInt,PetscInt,Mat*);
 PETSC_INTERN PetscErrorCode MatDenseRestoreSubMatrix_SeqDense(Mat,Mat*);
 PETSC_INTERN PetscErrorCode MatDenseSetLDA_SeqDense(Mat,PetscInt);
 PETSC_INTERN PetscErrorCode MatCopy_SeqDense(Mat,Mat,MatStructure);
