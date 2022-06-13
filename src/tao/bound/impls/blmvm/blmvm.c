@@ -161,7 +161,7 @@ static PetscErrorCode TaoDestroy_BLMVM(Tao tao)
 static PetscErrorCode TaoSetFromOptions_BLMVM(PetscOptionItems* PetscOptionsObject,Tao tao)
 {
   TAO_BLMVM      *blmP = (TAO_BLMVM *)tao->data;
-  PetscBool      is_spd;
+  PetscBool      is_spd,is_set;
 
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject,"Limited-memory variable-metric method for bound constrained optimization");
@@ -170,8 +170,8 @@ static PetscErrorCode TaoSetFromOptions_BLMVM(PetscOptionItems* PetscOptionsObje
   PetscCall(MatSetOptionsPrefix(blmP->M, ((PetscObject)tao)->prefix));
   PetscCall(MatAppendOptionsPrefix(blmP->M, "tao_blmvm_"));
   PetscCall(MatSetFromOptions(blmP->M));
-  PetscCall(MatGetOption(blmP->M, MAT_SPD, &is_spd));
-  PetscCheck(is_spd,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM matrix must be symmetric positive-definite");
+  PetscCall(MatIsSPDKnown(blmP->M, &is_set, &is_spd));
+  PetscCheck(is_set && is_spd,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM matrix must be symmetric positive-definite");
   PetscFunctionReturn(0);
 }
 

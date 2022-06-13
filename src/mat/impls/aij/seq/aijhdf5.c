@@ -64,7 +64,7 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
   PetscCall(PetscViewerHDF5ReadSizes(viewer, i_name, NULL, &M));
   --M;  /* i has size M+1 as there is global number of nonzeros stored at the end */
 
-  if (format==PETSC_VIEWER_HDF5_MAT && !mat->symmetric) {
+  if (format==PETSC_VIEWER_HDF5_MAT && mat->symmetric != PETSC_BOOL3_TRUE) {
     /* Swap row and columns layout for unallocated matrix. I want to avoid calling MatTranspose() just to transpose sparsity pattern and layout. */
     if (!mat->preallocated) {
       PetscLayout tmp;
@@ -142,7 +142,7 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
   PetscCall(MatMPIBAIJSetPreallocationCSR(mat,bs,i,j,a));
   */
 
-  if (format==PETSC_VIEWER_HDF5_MAT && !mat->symmetric) {
+  if (format == PETSC_VIEWER_HDF5_MAT && mat->symmetric != PETSC_BOOL3_TRUE) {
     /* Transpose the input matrix back */
     PetscCall(MatTranspose(mat,MAT_INPLACE_MATRIX,&mat));
   }

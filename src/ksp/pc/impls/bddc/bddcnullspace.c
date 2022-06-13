@@ -98,7 +98,7 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
   PetscCall(MatGetSize(dmat,NULL,&basis_size));
   shell_ctx->evapply = PC_BDDC_ApproxApply[pcbddc->current_level];
 
-  PetscCall(MatGetOption(local_mat,MAT_SYMMETRIC,&shell_ctx->symm));
+  PetscCall(MatIsSymmetric(local_mat,0.0,&shell_ctx->symm));
 
   /* explicit construct (Phi^T K Phi)^-1 */
   PetscCall(PetscObjectTypeCompare((PetscObject)local_mat,MATSEQAIJCUSPARSE,&iscusp));
@@ -163,11 +163,13 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
     const char* prefix;
     PetscReal   test_err,lambda_min,lambda_max;
     PetscInt    k,maxit;
+    PetscBool   isspd,isset;
 
     PetscCall(VecDuplicate(shell_ctx->fw[0],&work1));
     PetscCall(VecDuplicate(shell_ctx->fw[0],&work2));
     PetscCall(KSPCreate(PETSC_COMM_SELF,&check_ksp));
-    if (local_mat->spd) PetscCall(KSPSetType(check_ksp,KSPCG));
+    PetscCall(MatIsSPDKnown(local_mat,&isset,&isspd));
+    if (isset && isspd) PetscCall(KSPSetType(check_ksp,KSPCG));
     PetscCall(PetscObjectIncrementTabLevel((PetscObject)check_ksp,(PetscObject)local_ksp,0));
     PetscCall(KSPGetOptionsPrefix(local_ksp,&prefix));
     PetscCall(KSPSetOptionsPrefix(check_ksp,prefix));

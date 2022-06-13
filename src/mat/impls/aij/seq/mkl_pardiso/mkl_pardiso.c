@@ -1117,11 +1117,11 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_mkl_pardiso(Mat A,MatFactorType fty
 
     mat_mkl_pardiso->needsym = PETSC_TRUE;
 #if !defined(PETSC_USE_COMPLEX)
-    if (A->spd_set && A->spd) mat_mkl_pardiso->mtype = 2;
-    else                      mat_mkl_pardiso->mtype = -2;
+    if (A->spd == PETSC_BOOL3_TRUE) mat_mkl_pardiso->mtype = 2;
+    else                            mat_mkl_pardiso->mtype = -2;
 #else
     mat_mkl_pardiso->mtype = 6;
-    PetscCheck(!A->hermitian,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support for PARDISO CHOLESKY with Hermitian matrices! Use MAT_FACTOR_LU instead");
+    PetscCheck(A->hermitian != PETSC_BOOL3_TRUE,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support for PARDISO CHOLESKY with Hermitian matrices! Use MAT_FACTOR_LU instead");
 #endif
   }
   B->ops->destroy = MatDestroy_MKL_PARDISO;

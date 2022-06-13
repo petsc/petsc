@@ -267,8 +267,8 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJCUSPARSEBAND(Mat B,Mat A,IS isrow,IS is
   PetscCall(MatMissingDiagonal(A,&missing,&i));
   PetscCheck(!missing,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %" PetscInt_FMT,i);
   PetscCheck(cusparseTriFactors,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"!cusparseTriFactors");
-  PetscCall(MatGetOption(A,MAT_STRUCTURALLY_SYMMETRIC,&missing));
-  PetscCheck(missing,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"only structrally symmetric matrices supported");
+  PetscCall(MatIsStructurallySymmetric(A,&missing));
+  PetscCheck(missing,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"only structurally symmetric matrices supported");
 
   PetscCall(ISInvertPermutation(iscol,PETSC_DECIDE,&isicol));
   PetscCall(ISGetIndices(isicol,&ic));

@@ -12,7 +12,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newtype,Ma
   PetscInt       bs =A->rmap->bs,bs2=bs*bs,mbs=A->rmap->N/bs,diagcnt=0;
   MatScalar      *av,*bv;
 #if defined(PETSC_USE_COMPLEX)
-  const int      aconj = A->hermitian ? 1 : 0;
+  const int      aconj = A->hermitian == PETSC_BOOL3_TRUE ? 1 : 0;
 #else
   const int      aconj = 0;
 #endif
@@ -126,9 +126,9 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqSBAIJ(Mat A,MatType newtype,Mat
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_COMPLEX)
-  PetscCheck(A->symmetric,PetscObjectComm((PetscObject)A),PETSC_ERR_USER,"Matrix must be symmetric. Call MatSetOption(mat,MAT_SYMMETRIC,PETSC_TRUE)");
+  PetscCheck(A->symmetric == PETSC_BOOL3_TRUE,PetscObjectComm((PetscObject)A),PETSC_ERR_USER,"Matrix must be symmetric. Call MatSetOption(mat,MAT_SYMMETRIC,PETSC_TRUE)");
 #else
-  PetscCheck(A->symmetric || A->hermitian,PetscObjectComm((PetscObject)A),PETSC_ERR_USER,"Matrix must be either symmetric or hermitian. Call MatSetOption(mat,MAT_SYMMETRIC,PETSC_TRUE) and/or MatSetOption(mat,MAT_HERMITIAN,PETSC_TRUE)");
+  PetscCheck(A->symmetric == PETSC_BOOL3_TRUE || A->hermitian == PETSC_BOOL3_TRUE,PetscObjectComm((PetscObject)A),PETSC_ERR_USER,"Matrix must be either symmetric or hermitian. Call MatSetOption(mat,MAT_SYMMETRIC,PETSC_TRUE) and/or MatSetOption(mat,MAT_HERMITIAN,PETSC_TRUE)");
 #endif
   PetscCheck(n == m,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Matrix must be square");
 
@@ -190,7 +190,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType newtype,M
   PetscInt       bs =A->rmap->bs,bs2=bs*bs,mbs=m/bs,col,row;
   MatScalar      *av,*bv;
 #if defined(PETSC_USE_COMPLEX)
-  const int      aconj = A->hermitian ? 1 : 0;
+  const int      aconj = A->hermitian == PETSC_BOOL3_TRUE ? 1 : 0;
 #else
   const int      aconj = 0;
 #endif

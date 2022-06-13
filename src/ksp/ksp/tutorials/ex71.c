@@ -269,6 +269,7 @@ int main(int argc,char **args)
   PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
   PetscCall(MatSetOption(A,MAT_SPD,PETSC_TRUE));
+  PetscCall(MatSetOption(A,MAT_SPD_ETERNAL,PETSC_TRUE));
 
   /* Boundary conditions */
   zero = NULL;

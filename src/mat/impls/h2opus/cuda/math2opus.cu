@@ -878,9 +878,7 @@ static PetscErrorCode MatAssemblyEnd_H2OPUS(Mat A, MatAssemblyType assemblytype)
 #else
     a->dist_hmatrix = NULL;
 #endif
-  } else {
-    a->hmatrix = new HMatrix(A->rmap->n,A->symmetric);
-  }
+  } else a->hmatrix = new HMatrix(A->rmap->n,A->symmetric == PETSC_BOOL3_TRUE);
   PetscCall(MatH2OpusInferCoordinates_Private(A));
   PetscCheck(a->ptcloud,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing pointcloud");
   if (a->kernel) {

@@ -40,7 +40,7 @@ static PetscErrorCode TaoSetFromOptions_BQNLS(PetscOptionItems *PetscOptionsObje
 {
   TAO_BNK        *bnk = (TAO_BNK *)tao->data;
   TAO_BQNK       *bqnk = (TAO_BQNK*)bnk->ctx;
-  PetscBool      is_spd;
+  PetscBool      is_set,is_spd;
 
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject,"Quasi-Newton-Krylov method for bound constrained optimization");
@@ -58,8 +58,8 @@ static PetscErrorCode TaoSetFromOptions_BQNLS(PetscOptionItems *PetscOptionsObje
   PetscCall(MatSetOptionsPrefix(bqnk->B, ((PetscObject)tao)->prefix));
   PetscCall(MatAppendOptionsPrefix(bqnk->B, "tao_bqnls_"));
   PetscCall(MatSetFromOptions(bqnk->B));
-  PetscCall(MatGetOption(bqnk->B, MAT_SPD, &is_spd));
-  PetscCheck(is_spd,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM matrix must be symmetric positive-definite");
+  PetscCall(MatIsSPDKnown(bqnk->B, &is_set, &is_spd));
+  PetscCheck(is_set && is_spd,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM matrix must be symmetric positive-definite");
   PetscFunctionReturn(0);
 }
 

@@ -59,11 +59,12 @@ PetscErrorCode MatCreateCentering(MPI_Comm comm,PetscInt n,PetscInt N,Mat *C)
   PetscCallMPI(MPI_Comm_size(comm,&size));
   PetscCall(PetscObjectChangeTypeName((PetscObject)*C,MATCENTERING));
 
-  (*C)->ops->mult         = MatMult_Centering;
-  (*C)->assembled         = PETSC_TRUE;
-  (*C)->preallocated      = PETSC_TRUE;
-  (*C)->symmetric         = PETSC_TRUE;
-  (*C)->symmetric_eternal = PETSC_TRUE;
+  (*C)->ops->mult                    = MatMult_Centering;
+  (*C)->assembled                    = PETSC_TRUE;
+  (*C)->preallocated                 = PETSC_TRUE;
+  (*C)->symmetric                    = PETSC_BOOL3_TRUE;
+  (*C)->symmetry_eternal             = PETSC_TRUE;
+  (*C)->structural_symmetry_eternal  = PETSC_TRUE;
   PetscCall(MatSetUp(*C));
   PetscFunctionReturn(0);
 }

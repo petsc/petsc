@@ -1009,7 +1009,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_Elemental(Mat A, MatType newtype
     for (j=0; j<ncols; j++) { /* lower triangular part */
       PetscScalar v;
       if (cols[j] == row) continue;
-      v    = A->hermitian ? PetscConj(vals[j]) : vals[j];
+      v    = A->hermitian == PETSC_BOOL3_TRUE ? PetscConj(vals[j]) : vals[j];
       PetscCall(MatSetValues(mat_elemental,1,&cols[j],1,&row,&v,ADD_VALUES));
     }
     PetscCall(MatRestoreRow(A,row,&ncols,&cols,&vals));
@@ -1051,7 +1051,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPISBAIJ_Elemental(Mat A, MatType newtype
     for (j=0; j<ncols; j++) { /* lower triangular part */
       PetscScalar v;
       if (cols[j] == row) continue;
-      v    = A->hermitian ? PetscConj(vals[j]) : vals[j];
+      v    = A->hermitian == PETSC_BOOL3_TRUE ? PetscConj(vals[j]) : vals[j];
       PetscCall(MatSetValues(mat_elemental,1,&cols[j],1,&row,&v,ADD_VALUES));
     }
     PetscCall(MatRestoreRow(A,row,&ncols,&cols,&vals));

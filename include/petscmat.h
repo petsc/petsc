@@ -501,7 +501,9 @@ typedef enum {MAT_OPTION_MIN = -3,
               MAT_STRUCTURE_ONLY = 22,
               MAT_SORTED_FULL = 23,
               MAT_FORM_EXPLICIT_TRANSPOSE = 24,
-              MAT_OPTION_MAX = 25} MatOption;
+              MAT_STRUCTURAL_SYMMETRY_ETERNAL = 25,
+              MAT_SPD_ETERNAL = 26,
+              MAT_OPTION_MAX = 27} MatOption;
 
 PETSC_EXTERN const char *const *MatOptions;
 PETSC_EXTERN PetscErrorCode MatSetOption(Mat,MatOption,PetscBool);
@@ -608,6 +610,8 @@ PETSC_EXTERN PetscErrorCode MatIsStructurallySymmetric(Mat,PetscBool *);
 PETSC_EXTERN PetscErrorCode MatIsHermitian(Mat,PetscReal,PetscBool *);
 PETSC_EXTERN PetscErrorCode MatIsSymmetricKnown(Mat,PetscBool *,PetscBool *);
 PETSC_EXTERN PetscErrorCode MatIsHermitianKnown(Mat,PetscBool *,PetscBool *);
+PETSC_EXTERN PetscErrorCode MatIsStructurallySymmetricKnown(Mat,PetscBool *,PetscBool*);
+PETSC_EXTERN PetscErrorCode MatIsSPDKnown(Mat,PetscBool*,PetscBool*);
 PETSC_EXTERN PetscErrorCode MatMissingDiagonal(Mat,PetscBool  *,PetscInt *);
 PETSC_EXTERN PetscErrorCode MatLoad(Mat, PetscViewer);
 

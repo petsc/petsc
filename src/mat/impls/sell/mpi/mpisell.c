@@ -746,14 +746,7 @@ PetscErrorCode MatSetOption_MPISELL(Mat A,MatOption op,PetscBool flg)
     a->donotstash = flg;
     break;
   case MAT_SPD:
-    A->spd_set = PETSC_TRUE;
-    A->spd     = flg;
-    if (flg) {
-      A->symmetric                  = PETSC_TRUE;
-      A->structurally_symmetric     = PETSC_TRUE;
-      A->symmetric_set              = PETSC_TRUE;
-      A->structurally_symmetric_set = PETSC_TRUE;
-    }
+  case MAT_SPD_ETERNAL:
     break;
   case MAT_SYMMETRIC:
     MatCheckPreallocated(A,1);
@@ -768,6 +761,10 @@ PetscErrorCode MatSetOption_MPISELL(Mat A,MatOption op,PetscBool flg)
     PetscCall(MatSetOption(a->A,op,flg));
     break;
   case MAT_SYMMETRY_ETERNAL:
+    MatCheckPreallocated(A,1);
+    PetscCall(MatSetOption(a->A,op,flg));
+    break;
+  case MAT_STRUCTURAL_SYMMETRY_ETERNAL:
     MatCheckPreallocated(A,1);
     PetscCall(MatSetOption(a->A,op,flg));
     break;

@@ -469,9 +469,8 @@ struct _p_Mat {
   PetscInt               congruentlayouts; /* are the rows and columns layouts congruent? */
   PetscBool              preallocated;
   MatStencilInfo         stencil;          /* information for structured grid */
-  PetscBool              symmetric,hermitian,structurally_symmetric,spd;
-  PetscBool              symmetric_set,hermitian_set,structurally_symmetric_set,spd_set; /* if true, then corresponding flag is correct*/
-  PetscBool              symmetric_eternal;
+  PetscBool3             symmetric,hermitian,structurally_symmetric,spd;
+  PetscBool              symmetry_eternal,structural_symmetry_eternal,spd_eternal;
   PetscBool              nooffprocentries,nooffproczerorows;
   PetscBool              assembly_subset;  /* set by MAT_SUBSET_OFF_PROC_ENTRIES */
   PetscBool              submat_singleis;  /* for efficient PCSetUp_ASM() */

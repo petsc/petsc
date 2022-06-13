@@ -1106,7 +1106,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SBAIJ_ScaLAPACK(Mat A, MatType newtype,Ma
     PetscCall(MatSetValues(mat_scal,1,&row,ncols,cols,vals,ADD_VALUES));
     for (j=0;j<ncols;j++) { /* lower triangular part */
       if (cols[j] == row) continue;
-      v    = A->hermitian ? PetscConj(vals[j]) : vals[j];
+      v    = A->hermitian == PETSC_BOOL3_TRUE ? PetscConj(vals[j]) : vals[j];
       PetscCall(MatSetValues(mat_scal,1,&cols[j],1,&row,&v,ADD_VALUES));
     }
     PetscCall(MatRestoreRow(A,row,&ncols,&cols,&vals));

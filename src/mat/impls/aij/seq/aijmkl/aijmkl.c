@@ -830,7 +830,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJMKL_SeqAIJMKL_SymmetricReal(Mat A,Mat P,Mat 
 
   PetscFunctionBegin;
   PetscCall(MatIsSymmetricKnown(A,&set,&flag));
-  PetscCheck(set && !(set && !flag),PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatPtAPNumeric_SeqAIJMKL_SeqAIJMKL_SymmetricReal() called on matrix A not marked as symmetric");
+  PetscCheck(set && flag,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatPtAPNumeric_SeqAIJMKL_SeqAIJMKL_SymmetricReal() called on matrix A not marked as symmetric");
 
   PetscCall(PetscObjectStateGet((PetscObject)A,&state));
   if (!a->sparse_optimized || a->state != state) PetscCall(MatSeqAIJMKL_create_mkl_handle(A));

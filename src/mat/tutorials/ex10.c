@@ -59,8 +59,6 @@ int main(int argc,char **args)
   PetscCall(PetscFree(norms));
 
   PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)A,PETSC_VIEWER_STDOUT_WORLD));
-  PetscCall(MatGetOption(A,MAT_SYMMETRIC,&flg));
-  PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"MAT_SYMMETRIC: %" PetscInt_FMT "\n",(PetscInt)flg));
   PetscCall(MatViewFromOptions(A,NULL,"-mat_view"));
 
   PetscCall(MatDestroy(&A));

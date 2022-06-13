@@ -69,7 +69,9 @@
       PetscEnum, parameter :: MAT_STRUCTURE_ONLY = 22
       PetscEnum, parameter :: MAT_SORTED_FULL = 23
       PetscEnum, parameter :: MAT_FORM_EXPLICIT_TRANSPOSE = 24
-      PetscEnum, parameter :: MAT_OPTION_MAX = 25
+      PetscEnum, parameter :: MAT_STRUCTURAL_SYMMETRY_ETERNAL = 25
+      PetscEnum, parameter :: MAT_SPD_ETERNAL = 26
+      PetscEnum, parameter :: MAT_OPTION_MAX = 27
 !
 !  MatFactorShiftType
 !

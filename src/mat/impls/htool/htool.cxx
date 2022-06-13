@@ -197,12 +197,12 @@ static PetscErrorCode MatCreateSubMatrices_Htool(Mat A,PetscInt n,const IS irow[
                 if (m) {
                   a->wrapper->copy_submatrix(nrow,m,idxr,idxc,ptr); /* vertical block B from above */
                   /* entry-wise assembly may be costly, so transpose already-computed entries when possible */
-                  if (A->symmetric || A->hermitian) {
+                  if (A->symmetric == PETSC_BOOL3_TRUE || A->hermitian == PETSC_BOOL3_TRUE) {
                     PetscCall(MatCreateDense(PETSC_COMM_SELF,A->rmap->n,m,A->rmap->n,m,ptr+m,&B));
                     PetscCall(MatDenseSetLDA(B,nrow));
                     PetscCall(MatCreateDense(PETSC_COMM_SELF,m,A->rmap->n,m,A->rmap->n,ptr+m*nrow,&BT));
                     PetscCall(MatDenseSetLDA(BT,nrow));
-                    if (A->hermitian && PetscDefined(USE_COMPLEX)) {
+                    if (A->hermitian == PETSC_BOOL3_TRUE && PetscDefined(USE_COMPLEX)) {
                       PetscCall(MatHermitianTranspose(B,MAT_REUSE_MATRIX,&BT));
                     } else {
                       PetscCall(MatTranspose(B,MAT_REUSE_MATRIX,&BT));
@@ -218,12 +218,12 @@ static PetscErrorCode MatCreateSubMatrices_Htool(Mat A,PetscInt n,const IS irow[
                 if (m+A->rmap->n != nrow) {
                   a->wrapper->copy_submatrix(nrow,std::distance(it+A->rmap->n,idxr+nrow),idxr,idxc+m+A->rmap->n,ptr+(m+A->rmap->n)*nrow); /* vertical block E from above */
                   /* entry-wise assembly may be costly, so transpose already-computed entries when possible */
-                  if (A->symmetric || A->hermitian) {
+                  if (A->symmetric == PETSC_BOOL3_TRUE || A->hermitian == PETSC_BOOL3_TRUE) {
                     PetscCall(MatCreateDense(PETSC_COMM_SELF,A->rmap->n,nrow-(m+A->rmap->n),A->rmap->n,nrow-(m+A->rmap->n),ptr+(m+A->rmap->n)*nrow+m,&B));
                     PetscCall(MatDenseSetLDA(B,nrow));
                     PetscCall(MatCreateDense(PETSC_COMM_SELF,nrow-(m+A->rmap->n),A->rmap->n,nrow-(m+A->rmap->n),A->rmap->n,ptr+m*nrow+m+A->rmap->n,&BT));
                     PetscCall(MatDenseSetLDA(BT,nrow));
-                    if (A->hermitian && PetscDefined(USE_COMPLEX)) {
+                    if (A->hermitian == PETSC_BOOL3_TRUE && PetscDefined(USE_COMPLEX)) {
                       PetscCall(MatHermitianTranspose(B,MAT_REUSE_MATRIX,&BT));
                     } else {
                       PetscCall(MatTranspose(B,MAT_REUSE_MATRIX,&BT));
@@ -400,7 +400,7 @@ static PetscErrorCode MatAssemblyEnd_Htool(Mat A,MatAssemblyType type)
   const PetscInt                                               *ranges;
   PetscInt                                                     *offset;
   PetscMPIInt                                                  size;
-  char                                                         S = PetscDefined(USE_COMPLEX) && A->hermitian ? 'H' : (A->symmetric ? 'S' : 'N'),uplo = S == 'N' ? 'N' : 'U';
+  char                                                         S = PetscDefined(USE_COMPLEX) && A->hermitian == PETSC_BOOL3_TRUE ? 'H' : (A->symmetric == PETSC_BOOL3_TRUE ? 'S' : 'N'),uplo = S == 'N' ? 'N' : 'U';
   htool::VirtualGenerator<PetscScalar>                         *generator = nullptr;
   std::shared_ptr<htool::VirtualCluster>                       t,s = nullptr;
   std::shared_ptr<htool::VirtualLowRankGenerator<PetscScalar>> compressor = nullptr;

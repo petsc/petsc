@@ -82,6 +82,13 @@ PetscErrorCode  MatCreate(MPI_Comm comm,Mat *A)
   PetscCall(PetscLayoutCreate(comm,&B->cmap));
   PetscCall(PetscStrallocpy(VECSTANDARD,&B->defaultvectype));
 
+  B->symmetric                   = PETSC_BOOL3_UNKNOWN;
+  B->hermitian                   = PETSC_BOOL3_UNKNOWN;
+  B->structurally_symmetric      = PETSC_BOOL3_UNKNOWN;
+  B->spd                         = PETSC_BOOL3_UNKNOWN;
+  B->symmetry_eternal            = PETSC_FALSE;
+  B->structural_symmetry_eternal = PETSC_FALSE;
+
   B->congruentlayouts = PETSC_DECIDE;
   B->preallocated     = PETSC_FALSE;
 #if defined(PETSC_HAVE_DEVICE)

@@ -803,7 +803,7 @@ static PetscErrorCode MatCholeskyFactor_SeqDenseCUDA(Mat A,IS perm,const MatFact
   PetscCall(PetscCUSOLVERDnGetHandle(&handle));
   PetscCall(PetscCuBLASIntCast(A->rmap->n,&n));
   PetscCall(PetscInfo(A,"Cholesky factor %d x %d on backend\n",n,n));
-  if (A->spd) {
+  if (A->spd == PETSC_BOOL3_TRUE) {
     PetscCall(MatDenseCUDAGetArray(A,&da));
     PetscCall(PetscCuBLASIntCast(a->lda,&lda));
     if (!dA->fact_lwork) {

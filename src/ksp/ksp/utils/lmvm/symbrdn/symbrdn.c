@@ -583,6 +583,7 @@ PetscErrorCode MatCreate_LMVMSymBrdn(Mat B)
   PetscCall(MatCreate_LMVM(B));
   PetscCall(PetscObjectChangeTypeName((PetscObject)B, MATLMVMSYMBROYDEN));
   PetscCall(MatSetOption(B, MAT_SPD, PETSC_TRUE));
+  PetscCall(MatSetOption(B, MAT_SPD_ETERNAL, PETSC_TRUE));
   B->ops->view = MatView_LMVMSymBrdn;
   B->ops->setfromoptions = MatSetFromOptions_LMVMSymBrdn;
   B->ops->setup = MatSetUp_LMVMSymBrdn;

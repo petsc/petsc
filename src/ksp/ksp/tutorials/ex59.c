@@ -740,6 +740,7 @@ static PetscErrorCode ComputeMatrix(DomainData dd, Mat *A)
   /* giving hints to local and global matrices could be useful for the BDDC */
   PetscCall(MatSetOption(local_mat,MAT_SYMMETRIC,PETSC_TRUE));
   PetscCall(MatSetOption(local_mat,MAT_SPD,PETSC_TRUE));
+  PetscCall(MatSetOption(local_mat,MAT_SPD_ETERNAL,PETSC_TRUE));
 #if DEBUG
   {
     Vec       lvec,rvec;

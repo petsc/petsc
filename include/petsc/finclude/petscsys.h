@@ -29,6 +29,7 @@
 #define integer2 integer(kind=selected_int_kind(3))
 #define integer1 integer(kind=selected_int_kind(1))
 #define PetscBool  logical(kind=4)
+#define PetscBool3  integer(kind=selected_int_kind(5))
 
 #if (PETSC_SIZEOF_VOID_P == 8)
 #define PetscOffset integer8

@@ -86,6 +86,7 @@
       PetscCallA(MatSetSizes( Amat,PETSC_DECIDE, PETSC_DECIDE, M, M, ierr))
       PetscCallA(MatSetType( Amat, MATAIJ, ierr))
       PetscCallA(MatSetOption(Amat,MAT_SPD,PETSC_TRUE,ierr))
+      PetscCallA(MatSetOption(Amat,MAT_SPD_ETERNAL,PETSC_TRUE,ierr))
       if (size == 1) then
          PetscCallA(MatSetType( Amat, MATAIJ, ierr))
       else

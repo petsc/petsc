@@ -14,6 +14,9 @@ In addition to the changes above
 
 - Change  ``PetscOptionsHead()`` and ``PetscOptionsTail()`` to  ``PetscOptionsHeadBegin()`` and ``PetscOptionsHeadEnd()``
 - Change ``MatPreallocateInitialize()`` and ``MatPreallocateFinalize()`` to ``MatPreallocateBegin()`` and ``MatPreallocateEnd()``
+- Change uses of `MatGetOption()` with `MAT_SYMMETRIC`, `MAT_STRUCTURALLY_SYMMETRIC`, `MAT_HERMITIAN`,  `MAT_SPD` to calls to `MatIsSymmetric()`, `MatIsSymmetricKnown()` etc.
+- Whenever you call `MatSetOption()` with one of the above options and it is intended to stay with the matrix through calls to `MatSetValues()` etc add a call
+  to `MatSetOption()` with `MAT_SYMMETRY_ETERNAL` etc
 
 ..
    STYLE GUIDELINES:
@@ -105,14 +108,16 @@ In addition to the changes above
 - Add ``MatSetOptionsPrefixFactor()`` and ``MatAppendOptionsPrefixFactor()`` to allow controlling the options prefix used by factors created from this matrix
 - Change ``MatSetOptionsPrefix()`` to no longer affect the options prefix used by factors created from this matrix
 - Change matrix factor options called from within `KSP`/`PC` to always inherit the options prefix from the `KSP`/`PC`, not the options prefix in the originating matrix
+- Add ``MatIsStructurallySymmetricKnown()`` and ``MatIsSPDKnown()``
+- Change ``MatGetOption()`` to no longer produce results for ``MAT_STRUCTURALLY_SYMMETRIC``, ``MAT_SYMMETRIC``, ``MAT_SPD``, and ``MAT_HERMITIAN``
 - Add ``MatCreateGraph()`` to create a scalar matrix for use in graph algorithms
 - Add ``MatFilter()`` to remove values with an absolute value equal to or below a give threshold
 - Add an option -mat_factor_bind_factorization <host, device> to control where to do matrix factorization. Currently only supported with SEQAIJCUSPARSE matrices.
+- Add ``MatUpdateMPIAIJWithArray()`` and deprecate ``MatUpdateMPIAIJWithArrays()``
 
 .. rubric:: MatCoarsen:
 
 - Add ``MISK`` coarsening type. Distance-k maximal independent set (MIS) C-F coarsening with a greedy, MIS based aggregation algorithm
-- Add ``MatUpdateMPIAIJWithArray()`` and deprecate ``MatUpdateMPIAIJWithArrays()``
 
 .. rubric:: PC:
 

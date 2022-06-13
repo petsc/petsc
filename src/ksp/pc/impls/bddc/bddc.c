@@ -1529,6 +1529,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   PetscBool       computesubschurs;
   PetscBool       computeconstraintsmatrix;
   PetscBool       new_nearnullspace_provided,ismatis,rl;
+  PetscBool       isset,issym,isspd;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)pc->pmat,MATIS,&ismatis));
@@ -1622,8 +1623,10 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   }
 
   /* propagate relevant information */
-  if (matis->A->symmetric_set) PetscCall(MatSetOption(pcbddc->local_mat,MAT_SYMMETRIC,matis->A->symmetric));
-  if (matis->A->spd_set) PetscCall(MatSetOption(pcbddc->local_mat,MAT_SPD,matis->A->spd));
+  PetscCall(MatIsSymmetricKnown(matis->A,&isset,&issym));
+  if (isset) PetscCall(MatSetOption(pcbddc->local_mat,MAT_SYMMETRIC,issym));
+  PetscCall(MatIsSPDKnown(matis->A,&isset,&isspd));
+  if (isset) PetscCall(MatSetOption(pcbddc->local_mat,MAT_SPD,isspd));
 
   /* Set up all the "iterative substructuring" common block without computing solvers */
   {
@@ -1764,6 +1767,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     PC_IS*    pcis = (PC_IS*)pc->data;
     Mat       B_BI,B_BB,Bt_BI,Bt_BB;
     PetscBool issym;
+
     PetscCall(MatIsSymmetric(lA,PETSC_SMALL,&issym));
     if (issym) {
       PetscCall(MatCreateSubMatrix(lA,lP,pcis->is_I_local,MAT_INITIAL_MATRIX,&B_BI));
@@ -2581,12 +2585,10 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_re
   /* propagate MatOptions */
   {
     PC_BDDC   *pcbddc = (PC_BDDC*)fetidpmat_ctx->pc->data;
-    PetscBool issym;
+    PetscBool isset,issym;
 
-    PetscCall(MatGetOption(pc->mat,MAT_SYMMETRIC,&issym));
-    if (issym || pcbddc->symmetric_primal) {
-      PetscCall(MatSetOption(newmat,MAT_SYMMETRIC,PETSC_TRUE));
-    }
+    PetscCall(MatIsSymmetricKnown(pc->mat,&isset,&issym));
+    if ((isset && issym) || pcbddc->symmetric_primal) PetscCall(MatSetOption(newmat,MAT_SYMMETRIC,PETSC_TRUE));
   }
   PetscCall(MatSetOptionsPrefix(newmat,prefix));
   PetscCall(MatAppendOptionsPrefix(newmat,"fetidp_"));
@@ -2663,13 +2665,12 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_re
           PetscCall(KSPSetOperators(ksps[1],F,M));
         }
       } else {
-        PetscBool issym;
+        PetscBool issym,isset;
         Mat       S;
 
         PetscCall(PCFieldSplitSchurGetS(newpc,&S));
-
-        PetscCall(MatGetOption(newmat,MAT_SYMMETRIC,&issym));
-        if (issym) PetscCall(MatSetOption(S,MAT_SYMMETRIC,PETSC_TRUE));
+        PetscCall(MatIsSymmetricKnown(newmat,&isset,&issym));
+        if (isset) PetscCall(MatSetOption(S,MAT_SYMMETRIC,issym));
       }
       PetscCall(KSPGetPC(ksps[0],&lagpc));
       PetscCall(PCSetType(lagpc,PCSHELL));

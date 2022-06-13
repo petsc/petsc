@@ -395,19 +395,21 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
     /* 'a_Amat_crs' output */
     {
       Mat       mat;
-      PetscBool flg;
-      PetscCall(MatCreateSubMatrix(Cmat, new_eq_indices, new_eq_indices, MAT_INITIAL_MATRIX, &mat));
-      PetscCall(MatGetOption(Cmat, MAT_SPD, &flg)); // like MatPropagateSymmetryOptions, but should set MAT_STRUCTURALLY_SYMMETRIC ?
-      if (flg) {
-        PetscCall(MatSetOption(mat, MAT_SPD,PETSC_TRUE));
-      } else {
-        PetscCall(MatGetOption(Cmat, MAT_HERMITIAN, &flg));
-        if (flg) {
-          PetscCall(MatSetOption(mat, MAT_HERMITIAN,PETSC_TRUE));
-        } else {
+      PetscBool isset,isspd,isher;
 #if !defined(PETSC_USE_COMPLEX)
-          PetscCall(MatGetOption(Cmat, MAT_SYMMETRIC, &flg));
-          if (flg) PetscCall(MatSetOption(mat, MAT_SYMMETRIC,PETSC_TRUE));
+      PetscBool issym;
+#endif
+
+      PetscCall(MatCreateSubMatrix(Cmat, new_eq_indices, new_eq_indices, MAT_INITIAL_MATRIX, &mat));
+      PetscCall(MatIsSPDKnown(Cmat, &isset, &isspd)); // like MatPropagateSymmetryOptions, but should set MAT_STRUCTURALLY_SYMMETRIC ?
+      if (isset) PetscCall(MatSetOption(mat, MAT_SPD,isspd));
+      else {
+        PetscCall(MatIsHermitianKnown(Cmat,&isset,&isher));
+        if (isset) PetscCall(MatSetOption(mat, MAT_HERMITIAN,isher));
+        else {
+#if !defined(PETSC_USE_COMPLEX)
+          PetscCall(MatIsSymmetricKnown(Cmat,&isset, &issym));
+          if (isset) PetscCall(MatSetOption(mat, MAT_SYMMETRIC,issym));
 #endif
         }
       }
@@ -479,7 +481,7 @@ PetscErrorCode PCGAMGSquareGraph_GAMG(PC a_pc, Mat Gmat1, Mat* Gmat2)
   PetscCall(MatSetOptionsPrefix(*Gmat2,prefix));
   PetscCall(PetscSNPrintf(addp,sizeof(addp),"pc_gamg_square_%" PetscInt_FMT "_",pc_gamg->current_level));
   PetscCall(MatAppendOptionsPrefix(*Gmat2,addp));
-  if ((*Gmat2)->structurally_symmetric) {
+  if ((*Gmat2)->structurally_symmetric == PETSC_BOOL3_TRUE) {
     PetscCall(MatProductSetType(*Gmat2,MATPRODUCT_AB));
   } else {
     PetscCall(MatSetOption(Gmat1,MAT_FORM_EXPLICIT_TRANSPOSE,PETSC_TRUE));

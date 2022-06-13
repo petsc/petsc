@@ -214,7 +214,7 @@ PetscErrorCode MatGetRowIJ_SeqAIJ(Mat A,PetscInt oshift,PetscBool symmetric,Pets
   if (m) *m = A->rmap->n;
   if (!ia) PetscFunctionReturn(0);
   ishift = 0;
-  if (symmetric && !A->structurally_symmetric) {
+  if (symmetric && A->structurally_symmetric != PETSC_BOOL3_TRUE) {
     PetscCall(MatToSymmetricIJ_SeqAIJ(A->rmap->n,a->i,a->j,PETSC_TRUE,ishift,oshift,(PetscInt**)ia,(PetscInt**)ja));
   } else if (oshift == 1) {
     PetscInt *tia;
@@ -240,7 +240,7 @@ PetscErrorCode MatRestoreRowIJ_SeqAIJ(Mat A,PetscInt oshift,PetscBool symmetric,
 {
   PetscFunctionBegin;
   if (!ia) PetscFunctionReturn(0);
-  if ((symmetric && !A->structurally_symmetric) || oshift == 1) {
+  if ((symmetric && A->structurally_symmetric != PETSC_BOOL3_TRUE) || oshift == 1) {
     PetscCall(PetscFree(*ia));
     if (ja) PetscCall(PetscFree(*ja));
   }
@@ -1342,7 +1342,9 @@ PetscErrorCode MatSetOption_SeqAIJ(Mat A,MatOption op,PetscBool flg)
   case MAT_HERMITIAN:
   case MAT_SYMMETRY_ETERNAL:
   case MAT_STRUCTURE_ONLY:
-    /* These options are handled directly by MatSetOption() */
+  case MAT_STRUCTURAL_SYMMETRY_ETERNAL:
+  case MAT_SPD_ETERNAL:
+    /* if the diagonal matrix is square it inherits some of the properties above */
     break;
   case MAT_FORCE_DIAGONAL_ENTRIES:
   case MAT_IGNORE_OFF_PROC_ENTRIES:

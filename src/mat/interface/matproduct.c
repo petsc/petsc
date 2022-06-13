@@ -223,7 +223,7 @@ static PetscErrorCode MatProductSymbolic_Unsafe(Mat mat)
 PetscErrorCode MatProductReplaceMats(Mat A,Mat B,Mat C,Mat D)
 {
   Mat_Product    *product;
-  PetscBool      flgA = PETSC_TRUE,flgB = PETSC_TRUE,flgC = PETSC_TRUE;
+  PetscBool      flgA = PETSC_TRUE,flgB = PETSC_TRUE,flgC = PETSC_TRUE,isset,issym;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(D,MAT_CLASSID,4);
@@ -233,7 +233,8 @@ PetscErrorCode MatProductReplaceMats(Mat A,Mat B,Mat C,Mat D)
     PetscValidHeaderSpecific(A,MAT_CLASSID,1);
     PetscCall(PetscObjectReference((PetscObject)A));
     PetscCall(PetscObjectTypeCompare((PetscObject)product->A,((PetscObject)A)->type_name,&flgA));
-    if (product->symbolic_used_the_fact_A_is_symmetric && !A->symmetric) { /* symbolic was built around a symmetric A, but the new A is not anymore */
+    PetscCall(MatIsSymmetricKnown(A,&isset,&issym));
+    if (product->symbolic_used_the_fact_A_is_symmetric && isset && !issym) { /* symbolic was built around a symmetric A, but the new A is not anymore */
       flgA = PETSC_FALSE;
       product->symbolic_used_the_fact_A_is_symmetric = PETSC_FALSE; /* reinit */
     }
@@ -244,7 +245,8 @@ PetscErrorCode MatProductReplaceMats(Mat A,Mat B,Mat C,Mat D)
     PetscValidHeaderSpecific(B,MAT_CLASSID,2);
     PetscCall(PetscObjectReference((PetscObject)B));
     PetscCall(PetscObjectTypeCompare((PetscObject)product->B,((PetscObject)B)->type_name,&flgB));
-    if (product->symbolic_used_the_fact_B_is_symmetric && !B->symmetric) {
+    PetscCall(MatIsSymmetricKnown(B,&isset,&issym));
+    if (product->symbolic_used_the_fact_B_is_symmetric && isset && !issym) {
       flgB = PETSC_FALSE;
       product->symbolic_used_the_fact_B_is_symmetric = PETSC_FALSE; /* reinit */
     }
@@ -255,7 +257,8 @@ PetscErrorCode MatProductReplaceMats(Mat A,Mat B,Mat C,Mat D)
     PetscValidHeaderSpecific(C,MAT_CLASSID,3);
     PetscCall(PetscObjectReference((PetscObject)C));
     PetscCall(PetscObjectTypeCompare((PetscObject)product->C,((PetscObject)C)->type_name,&flgC));
-    if (product->symbolic_used_the_fact_C_is_symmetric && !C->symmetric) {
+    PetscCall(MatIsSymmetricKnown(C,&isset,&issym));
+    if (product->symbolic_used_the_fact_C_is_symmetric && isset && !issym) {
       flgC = PETSC_FALSE;
       product->symbolic_used_the_fact_C_is_symmetric = PETSC_FALSE; /* reinit */
     }
