@@ -4503,6 +4503,7 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscFormKey key, IS cellIS
   PetscFEGeom     *affineGeom = NULL, **geoms = NULL;
 
   PetscFunctionBegin;
+  if (!cellIS) PetscFunctionReturn(0);
   PetscCall(PetscLogEventBegin(DMPLEX_ResidualFEM,dm,0,0,0));
   /* TODO The places where we have to use isFE are probably the member functions for the PetscDisc class */
   /* TODO The FVM geometry is over-manipulated. Make the precalc functions return exactly what we need */
@@ -5249,9 +5250,10 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscFormKey key, IS cellIS
   const PetscInt *cells;
   PetscInt        Nf, fieldI, fieldJ;
   PetscInt        totDim, totDimAux, cStart, cEnd, numCells, c;
-  PetscBool       hasJac, hasPrec, hasDyn, hasFV = PETSC_FALSE, transform;
+  PetscBool       hasJac = PETSC_FALSE, hasPrec = PETSC_FALSE, hasDyn, hasFV = PETSC_FALSE, transform;
 
   PetscFunctionBegin;
+  if (!cellIS) goto end;
   PetscCall(PetscLogEventBegin(DMPLEX_JacobianFEM,dm,0,0,0));
   PetscCall(ISGetLocalSize(cellIS, &numCells));
   PetscCall(ISGetPointRange(cellIS, &cStart, &cEnd, &cells));
@@ -5425,9 +5427,15 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscFormKey key, IS cellIS
   /* Compute boundary integrals */
   PetscCall(DMPlexComputeBdJacobian_Internal(dm, X, X_t, t, X_tShift, Jac, JacP, user));
   /* Assemble matrix */
-  if (hasJac && hasPrec) {
-    PetscCall(MatAssemblyBegin(Jac, MAT_FINAL_ASSEMBLY));
-    PetscCall(MatAssemblyEnd(Jac, MAT_FINAL_ASSEMBLY));
+end:
+  {
+    PetscBool assOp = hasJac && hasPrec ? PETSC_TRUE : PETSC_FALSE, gassOp;
+
+    PetscCallMPI(MPI_Allreduce(&assOp, &gassOp, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject) dm)));
+    if (hasJac && hasPrec) {
+      PetscCall(MatAssemblyBegin(Jac, MAT_FINAL_ASSEMBLY));
+      PetscCall(MatAssemblyEnd(Jac, MAT_FINAL_ASSEMBLY));
+    }
   }
   PetscCall(MatAssemblyBegin(JacP, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(JacP, MAT_FINAL_ASSEMBLY));

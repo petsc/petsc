@@ -600,6 +600,9 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
       PetscCheck(localA,PETSC_COMM_SELF, PETSC_ERR_USER, "Missing localA vector");
     }
   }
+  if (localU && localU != localX) PetscCall(DMPlexInsertBoundaryValues(plex, PETSC_TRUE, localU, time, NULL, NULL, NULL));
+  PetscCall(DMGetCoordinateField(dm,&coordField));
+  /**** No collective calls below this point ****/
   /* Determine height for iteration of all meshes */
   {
     DMPolytopeType ct, ctIn, ctAux;
@@ -624,6 +627,11 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
           dimAux = DMPolytopeTypeGetDim(ctAux);
         }
       } else dimAux = dim;
+    } else {
+      PetscCall(DMDestroy(&plex));
+      PetscCall(DMDestroy(&plexIn));
+      if (dmAux) PetscCall(DMDestroy(&plexAux));
+      PetscFunctionReturn(0);
     }
     if (dim < 0) {
       DMLabel spmap = NULL, spmapIn = NULL, spmapAux = NULL;
@@ -672,7 +680,6 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
   PetscCall(PetscMalloc3(Nf, &isFE, Nf, &sp, NfIn, &spIn));
   if (maxHeight > 0) PetscCall(PetscMalloc2(Nf, &cellsp, NfIn, &cellspIn));
   else               {cellsp = sp; cellspIn = spIn;}
-  if (localU && localU != localX) PetscCall(DMPlexInsertBoundaryValues(plex, PETSC_TRUE, localU, time, NULL, NULL, NULL));
   /* Get cell dual spaces */
   for (f = 0; f < Nf; ++f) {
     PetscDiscType disctype;
@@ -715,7 +722,6 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
       cellspIn[f] = NULL;
     }
   }
-  PetscCall(DMGetCoordinateField(dm,&coordField));
   for (f = 0; f < Nf; ++f) {
     if (!htInc) {sp[f] = cellsp[f];}
     else        PetscCall(PetscDualSpaceGetHeightSubspace(cellsp[f], htInc, &sp[f]));
