@@ -284,9 +284,6 @@ Cones:
 coordinates with 1 fields
   field 0 with 3 components
 Process 0:
-  (   0) dim  0 offset   0
-  (   1) dim  0 offset   0
-  (   2) dim  0 offset   0
   (   3) dim  3 offset   0 -1.5 -0.5 -0.5
   (   4) dim  3 offset   3 -0.5 -0.5 -0.5
   (   5) dim  3 offset   6 0.5 -0.5 -0.5
@@ -303,50 +300,6 @@ Process 0:
   (  16) dim  3 offset  39 -0.5 0.5 0.5
   (  17) dim  3 offset  42 0.5 0.5 0.5
   (  18) dim  3 offset  45 1.5 0.5 0.5
-  (  19) dim  0 offset  48
-  (  20) dim  0 offset  48
-  (  21) dim  0 offset  48
-  (  22) dim  0 offset  48
-  (  23) dim  0 offset  48
-  (  24) dim  0 offset  48
-  (  25) dim  0 offset  48
-  (  26) dim  0 offset  48
-  (  27) dim  0 offset  48
-  (  28) dim  0 offset  48
-  (  29) dim  0 offset  48
-  (  30) dim  0 offset  48
-  (  31) dim  0 offset  48
-  (  32) dim  0 offset  48
-  (  33) dim  0 offset  48
-  (  34) dim  0 offset  48
-  (  35) dim  0 offset  48
-  (  36) dim  0 offset  48
-  (  37) dim  0 offset  48
-  (  38) dim  0 offset  48
-  (  39) dim  0 offset  48
-  (  40) dim  0 offset  48
-  (  41) dim  0 offset  48
-  (  42) dim  0 offset  48
-  (  43) dim  0 offset  48
-  (  44) dim  0 offset  48
-  (  45) dim  0 offset  48
-  (  46) dim  0 offset  48
-  (  47) dim  0 offset  48
-  (  48) dim  0 offset  48
-  (  49) dim  0 offset  48
-  (  50) dim  0 offset  48
-  (  51) dim  0 offset  48
-  (  52) dim  0 offset  48
-  (  53) dim  0 offset  48
-  (  54) dim  0 offset  48
-  (  55) dim  0 offset  48
-  (  56) dim  0 offset  48
-  (  57) dim  0 offset  48
-  (  58) dim  0 offset  48
-  (  59) dim  0 offset  48
-  (  60) dim  0 offset  48
-  (  61) dim  0 offset  48
-  (  62) dim  0 offset  48
 Labels:
 Label 'marker':
 [0]: 19 (1)

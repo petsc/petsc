@@ -62,6 +62,7 @@ int main(int argc, char **argv) {
     Vec                coordinates;
 
     /* Cell tags */
+    PetscCall(DMGetCoordinatesLocalSetUp(dm));
     PetscCall(DMCreateLabel(dm, "Cell Sets"));
     PetscCall(DMGetLabel(dm, "Cell Sets", &rgLabel));
     PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));

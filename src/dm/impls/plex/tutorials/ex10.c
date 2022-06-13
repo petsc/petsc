@@ -23,6 +23,7 @@ static PetscErrorCode CreateDomainLabel(DM dm)
   PetscInt       cStart, cEnd, c;
 
   PetscFunctionBeginUser;
+  PetscCall(DMGetCoordinatesLocalSetUp(dm));
   PetscCall(DMCreateLabel(dm, "Cell Sets"));
   PetscCall(DMGetLabel(dm, "Cell Sets", &label));
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));

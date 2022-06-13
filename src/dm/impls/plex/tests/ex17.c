@@ -24,6 +24,7 @@ static PetscErrorCode TestLocation(DM dm)
 
   PetscFunctionBeginUser;
   PetscCall(DMGetCoordinateDim(dm, &cdim));
+  PetscCall(DMGetCoordinatesLocalSetUp(dm));
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
   /* Locate all centroids */
   PetscCall(VecCreateSeq(PETSC_COMM_SELF, (cEnd - cStart)*cdim, &points));

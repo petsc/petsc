@@ -42,6 +42,7 @@ int main(int argc, char **argv)
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &ctx));
   PetscCall(CreateMesh(PETSC_COMM_WORLD, &ctx, &dm));
+  PetscCall(DMGetCoordinatesLocalSetUp(dm));
   PetscCall(DMPlexCheckCellShape(dm, ctx.report, ctx.condLimit));
   PetscCall(DMPlexComputeOrthogonalQuality(dm, NULL, ctx.tol, &OQ, &OQLabel));
   PetscCall(VecDestroy(&OQ));

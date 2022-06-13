@@ -322,14 +322,6 @@ Cones:
 coordinates with 1 fields
   field 0 with 2 components
 Process 0:
-  (   0) dim  0 offset   0
-  (   1) dim  0 offset   0
-  (   2) dim  0 offset   0
-  (   3) dim  0 offset   0
-  (   4) dim  0 offset   0
-  (   5) dim  0 offset   0
-  (   6) dim  0 offset   0
-  (   7) dim  0 offset   0
   (   8) dim  2 offset   0 0. 0.
   (   9) dim  2 offset   2 0.25 0.
   (  10) dim  2 offset   4 0.25 0.25
@@ -346,38 +338,7 @@ Process 0:
   (  21) dim  2 offset  26 0.25 1.
   (  22) dim  2 offset  28 0. 1.
   (  23) dim  2 offset  30 0.5 0.75
-  (  24) dim  0 offset  32
-  (  25) dim  0 offset  32
-  (  26) dim  0 offset  32
-  (  27) dim  0 offset  32
-  (  28) dim  0 offset  32
-  (  29) dim  0 offset  32
-  (  30) dim  0 offset  32
-  (  31) dim  0 offset  32
-  (  32) dim  0 offset  32
-  (  33) dim  0 offset  32
-  (  34) dim  0 offset  32
-  (  35) dim  0 offset  32
-  (  36) dim  0 offset  32
-  (  37) dim  0 offset  32
-  (  38) dim  0 offset  32
-  (  39) dim  0 offset  32
-  (  40) dim  0 offset  32
-  (  41) dim  0 offset  32
-  (  42) dim  0 offset  32
-  (  43) dim  0 offset  32
-  (  44) dim  0 offset  32
-  (  45) dim  0 offset  32
-  (  46) dim  0 offset  32
 Process 1:
-  (   0) dim  0 offset   0
-  (   1) dim  0 offset   0
-  (   2) dim  0 offset   0
-  (   3) dim  0 offset   0
-  (   4) dim  0 offset   0
-  (   5) dim  0 offset   0
-  (   6) dim  0 offset   0
-  (   7) dim  0 offset   0
   (   8) dim  2 offset   0 0.5 0.25
   (   9) dim  2 offset   2 0.25 0.75
   (  10) dim  2 offset   4 0.5 0.5
@@ -394,29 +355,6 @@ Process 1:
   (  21) dim  2 offset  26 0.75 1.
   (  22) dim  2 offset  28 1. 0.75
   (  23) dim  2 offset  30 1. 1.
-  (  24) dim  0 offset  32
-  (  25) dim  0 offset  32
-  (  26) dim  0 offset  32
-  (  27) dim  0 offset  32
-  (  28) dim  0 offset  32
-  (  29) dim  0 offset  32
-  (  30) dim  0 offset  32
-  (  31) dim  0 offset  32
-  (  32) dim  0 offset  32
-  (  33) dim  0 offset  32
-  (  34) dim  0 offset  32
-  (  35) dim  0 offset  32
-  (  36) dim  0 offset  32
-  (  37) dim  0 offset  32
-  (  38) dim  0 offset  32
-  (  39) dim  0 offset  32
-  (  40) dim  0 offset  32
-  (  41) dim  0 offset  32
-  (  42) dim  0 offset  32
-  (  43) dim  0 offset  32
-  (  44) dim  0 offset  32
-  (  45) dim  0 offset  32
-  (  46) dim  0 offset  32
 Labels:
 Label 'marker':
 [0]: 8 (1)

@@ -24,19 +24,17 @@ Element #1 coordinates
 Element #2 coordinates
  0:   6.6667e-01
  0:   1.0000e+00
- 0:   6.6667e-01
- 0:   0.0000e+00
 DM box offsets: num_elem 3, size 2, comp 1, dof 3
 0: 0 1
 0: 1 2
 0: 2 0
-DM coords offsets: num_elem 3, size 2, comp 1, dof 5
-0: 2 3
+DM coords offsets: num_elem 3, size 2, comp 1, dof 3
+0: 0 1
  0:   0.0000e+00
  0:   3.3333e-01
-0: 3 4
+0: 1 2
  0:   3.3333e-01
  0:   6.6667e-01
-0: 0 1
+0: 2 0
  0:   6.6667e-01
- 0:   1.0000e+00
+ 0:   0.0000e+00

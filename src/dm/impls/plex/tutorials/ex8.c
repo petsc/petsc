@@ -62,26 +62,28 @@ int main(int argc, char **argv)
     PetscCall(DMPlexRestoreClosureIndices(dm,section,section,c,PETSC_TRUE,&numindices,&indices,NULL,NULL));
   }
   if (view_coord) {
-    DM cdm;
-    Vec X;
+    DM       cdm;
+    Vec      X;
     PetscInt cdim;
-    PetscCall(DMGetCoordinateDM(dm,&cdm));
-    PetscCall(PetscObjectSetName((PetscObject)cdm, "coords"));
-    if (tensor) PetscCall(DMPlexSetClosurePermutationTensor(cdm,PETSC_DETERMINE,NULL));
-    PetscCall(DMGetCoordinatesLocal(dm, &X));
+
     PetscCall(DMGetCoordinateDim(dm, &cdim));
-    for (c=cStart; c<cEnd; c++) {
-      PetscScalar *x = NULL;
-      PetscInt ndof;
-      PetscCall(DMPlexVecGetClosure(cdm, NULL, X, c, &ndof, &x));
+    PetscCall(DMGetCoordinateDM(dm, &cdm));
+    PetscCall(PetscObjectSetName((PetscObject) cdm, "coords"));
+    if (tensor) PetscCall(DMPlexSetClosurePermutationTensor(cdm, PETSC_DETERMINE, NULL));
+    for (c = cStart; c < cEnd; ++c) {
+      const PetscScalar *array;
+      PetscScalar       *x = NULL;
+      PetscInt           ndof;
+      PetscBool          isDG;
+
+      PetscCall(DMPlexGetCellCoordinates(dm, c, &isDG, &ndof, &array, &x));
       PetscCheck(ndof % cdim == 0, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "ndof not divisible by cdim");
-      PetscCall(PetscPrintf(PETSC_COMM_SELF,"Element #%" PetscInt_FMT " coordinates\n",c-cStart));
-      for (PetscInt i=0; i<ndof; i+= cdim) {
-        PetscCall(PetscScalarView(cdim, &x[i], PETSC_VIEWER_STDOUT_SELF));
-      }
-      PetscCall(DMPlexVecRestoreClosure(cdm, NULL, X, c, &ndof, &x));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, "Element #%" PetscInt_FMT " coordinates\n", c-cStart));
+      for (PetscInt i = 0; i < ndof; i+= cdim) PetscCall(PetscScalarView(cdim, &x[i], PETSC_VIEWER_STDOUT_SELF));
+      PetscCall(DMPlexRestoreCellCoordinates(dm, c, &isDG, &ndof, &array, &x));
     }
     PetscCall(ViewOffsets(dm, NULL));
+    PetscCall(DMGetCoordinatesLocal(dm, &X));
     PetscCall(ViewOffsets(cdm, X));
   }
   PetscCall(PetscFEDestroy(&fe));

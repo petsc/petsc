@@ -28,16 +28,12 @@ Cones:
 coordinates with 1 fields
   field 0 with 1 components
 Process 0:
-  (   0) dim  0 offset   0
-  (   1) dim  0 offset   0
-  (   2) dim  0 offset   0
-  (   3) dim  0 offset   0
   (   4) dim  2 offset   0 0.8 1.
-  (   5) dim  1 offset   2 0.
-  (   6) dim  1 offset   3 0.2
-  (   7) dim  1 offset   4 0.4
-  (   8) dim  1 offset   5 0.6
-  (   9) dim  1 offset   6 0.8
+  (   5) dim  1 offset   0 0.
+  (   6) dim  1 offset   1 0.2
+  (   7) dim  1 offset   2 0.4
+  (   8) dim  1 offset   3 0.6
+  (   9) dim  1 offset   4 0.8
 Labels:
 Label 'marker':
 Label 'Face Sets':

@@ -696,30 +696,6 @@ Cones:
 coordinates with 1 fields
   field 0 with 3 components
 Process 0:
-  (   0) dim  0 offset   0
-  (   1) dim  0 offset   0
-  (   2) dim  0 offset   0
-  (   3) dim  0 offset   0
-  (   4) dim  0 offset   0
-  (   5) dim  0 offset   0
-  (   6) dim  0 offset   0
-  (   7) dim  0 offset   0
-  (   8) dim  0 offset   0
-  (   9) dim  0 offset   0
-  (  10) dim  0 offset   0
-  (  11) dim  0 offset   0
-  (  12) dim  0 offset   0
-  (  13) dim  0 offset   0
-  (  14) dim  0 offset   0
-  (  15) dim  0 offset   0
-  (  16) dim  0 offset   0
-  (  17) dim  0 offset   0
-  (  18) dim  0 offset   0
-  (  19) dim  0 offset   0
-  (  20) dim  0 offset   0
-  (  21) dim  0 offset   0
-  (  22) dim  0 offset   0
-  (  23) dim  0 offset   0
   (  24) dim  3 offset   0 0. 0. 0.
   (  25) dim  3 offset   3 1. 0. 0.
   (  26) dim  3 offset   6 0. 1. 0.
@@ -734,103 +710,6 @@ Process 0:
   (  35) dim  3 offset  33 0.5 0.75 0.25
   (  36) dim  3 offset  36 0.25 0.5 0.75
   (  37) dim  3 offset  39 0.25 0.75 0.5
-  (  38) dim  0 offset  42
-  (  39) dim  0 offset  42
-  (  40) dim  0 offset  42
-  (  41) dim  0 offset  42
-  (  42) dim  0 offset  42
-  (  43) dim  0 offset  42
-  (  44) dim  0 offset  42
-  (  45) dim  0 offset  42
-  (  46) dim  0 offset  42
-  (  47) dim  0 offset  42
-  (  48) dim  0 offset  42
-  (  49) dim  0 offset  42
-  (  50) dim  0 offset  42
-  (  51) dim  0 offset  42
-  (  52) dim  0 offset  42
-  (  53) dim  0 offset  42
-  (  54) dim  0 offset  42
-  (  55) dim  0 offset  42
-  (  56) dim  0 offset  42
-  (  57) dim  0 offset  42
-  (  58) dim  0 offset  42
-  (  59) dim  0 offset  42
-  (  60) dim  0 offset  42
-  (  61) dim  0 offset  42
-  (  62) dim  0 offset  42
-  (  63) dim  0 offset  42
-  (  64) dim  0 offset  42
-  (  65) dim  0 offset  42
-  (  66) dim  0 offset  42
-  (  67) dim  0 offset  42
-  (  68) dim  0 offset  42
-  (  69) dim  0 offset  42
-  (  70) dim  0 offset  42
-  (  71) dim  0 offset  42
-  (  72) dim  0 offset  42
-  (  73) dim  0 offset  42
-  (  74) dim  0 offset  42
-  (  75) dim  0 offset  42
-  (  76) dim  0 offset  42
-  (  77) dim  0 offset  42
-  (  78) dim  0 offset  42
-  (  79) dim  0 offset  42
-  (  80) dim  0 offset  42
-  (  81) dim  0 offset  42
-  (  82) dim  0 offset  42
-  (  83) dim  0 offset  42
-  (  84) dim  0 offset  42
-  (  85) dim  0 offset  42
-  (  86) dim  0 offset  42
-  (  87) dim  0 offset  42
-  (  88) dim  0 offset  42
-  (  89) dim  0 offset  42
-  (  90) dim  0 offset  42
-  (  91) dim  0 offset  42
-  (  92) dim  0 offset  42
-  (  93) dim  0 offset  42
-  (  94) dim  0 offset  42
-  (  95) dim  0 offset  42
-  (  96) dim  0 offset  42
-  (  97) dim  0 offset  42
-  (  98) dim  0 offset  42
-  (  99) dim  0 offset  42
-  ( 100) dim  0 offset  42
-  ( 101) dim  0 offset  42
-  ( 102) dim  0 offset  42
-  ( 103) dim  0 offset  42
-  ( 104) dim  0 offset  42
-  ( 105) dim  0 offset  42
-  ( 106) dim  0 offset  42
-  ( 107) dim  0 offset  42
-  ( 108) dim  0 offset  42
-  ( 109) dim  0 offset  42
-  ( 110) dim  0 offset  42
-  ( 111) dim  0 offset  42
-  ( 112) dim  0 offset  42
-  ( 113) dim  0 offset  42
-  ( 114) dim  0 offset  42
-  ( 115) dim  0 offset  42
-  ( 116) dim  0 offset  42
-  ( 117) dim  0 offset  42
-  ( 118) dim  0 offset  42
-  ( 119) dim  0 offset  42
-  ( 120) dim  0 offset  42
-  ( 121) dim  0 offset  42
-  ( 122) dim  0 offset  42
-  ( 123) dim  0 offset  42
-  ( 124) dim  0 offset  42
-  ( 125) dim  0 offset  42
-  ( 126) dim  0 offset  42
-  ( 127) dim  0 offset  42
-  ( 128) dim  0 offset  42
-  ( 129) dim  0 offset  42
-  ( 130) dim  0 offset  42
-  ( 131) dim  0 offset  42
-  ( 132) dim  0 offset  42
-  ( 133) dim  0 offset  42
-  ( 134) dim  0 offset  42
 Labels:
 Label 'Face Sets':
 [0]: 51 (1)
