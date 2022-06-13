@@ -4803,7 +4803,7 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
 
     if (snes->errorifnotconverged) PetscCheck(snes->reason >= 0,PetscObjectComm((PetscObject)snes),PETSC_ERR_NOT_CONVERGED,"SNESSolve has not converged");
     if (snes->reason < 0) break;
-    if (grid <  snes->gridsequence) {
+    if (grid < snes->gridsequence) {
       DM  fine;
       Vec xnew;
       Mat interp;
@@ -4891,10 +4891,7 @@ PetscErrorCode  SNESSetType(SNES snes,SNESType type)
   PetscCall(PetscFunctionListFind(SNESList,type,&r));
   PetscCheck(r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested SNES type %s",type);
   /* Destroy the previous private SNES context */
-  if (snes->ops->destroy) {
-    PetscCall((*(snes)->ops->destroy)(snes));
-    snes->ops->destroy = NULL;
-  }
+  if (snes->ops->destroy) PetscCall((*snes->ops->destroy)(snes));
   /* Reinitialize function pointers in SNESOps structure */
   snes->ops->setup          = NULL;
   snes->ops->solve          = NULL;

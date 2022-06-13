@@ -506,6 +506,7 @@ static PetscErrorCode TaoDestroy_NTR(Tao tao)
   if (tao->setupcalled) {
     PetscCall(VecDestroy(&tr->W));
   }
+  PetscCall(KSPDestroy(&tao->ksp));
   PetscCall(PetscFree(tao->data));
   PetscFunctionReturn(0);
 }

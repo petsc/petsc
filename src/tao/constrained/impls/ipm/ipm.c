@@ -520,6 +520,7 @@ static PetscErrorCode TaoDestroy_IPM(Tao tao)
   PetscCall(MatDestroy(&ipmP->K));
   PetscCall(ISDestroy(&ipmP->isxu));
   PetscCall(ISDestroy(&ipmP->isxl));
+  PetscCall(KSPDestroy(&tao->ksp));
   PetscCall(PetscFree(tao->data));
   PetscFunctionReturn(0);
 }

@@ -19,6 +19,7 @@ static PetscErrorCode TaoDestroy_TRON(Tao tao)
   PetscCall(ISDestroy(&tron->Free_Local));
   PetscCall(MatDestroy(&tron->H_sub));
   PetscCall(MatDestroy(&tron->Hpre_sub));
+  PetscCall(KSPDestroy(&tao->ksp));
   PetscCall(PetscFree(tao->data));
   PetscFunctionReturn(0);
 }

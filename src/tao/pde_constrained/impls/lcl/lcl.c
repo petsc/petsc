@@ -55,6 +55,7 @@ static PetscErrorCode TaoDestroy_LCL(Tao tao)
     PetscCall(VecScatterDestroy(&lclP->design_scatter));
   }
   PetscCall(MatDestroy(&lclP->R));
+  PetscCall(KSPDestroy(&tao->ksp));
   PetscCall(PetscFree(tao->data));
   PetscFunctionReturn(0);
 }

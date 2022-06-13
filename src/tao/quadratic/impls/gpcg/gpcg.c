@@ -21,6 +21,7 @@ static PetscErrorCode TaoDestroy_GPCG(Tao tao)
   PetscCall(MatDestroy(&gpcg->Hsub));
   PetscCall(MatDestroy(&gpcg->Hsub_pre));
   PetscCall(ISDestroy(&gpcg->Free_Local));
+  PetscCall(KSPDestroy(&tao->ksp));
   PetscCall(PetscFree(tao->data));
   PetscFunctionReturn(0);
 }
