@@ -85,7 +85,8 @@ int main(int argc, char *argv[])
 
   PetscCall(PetscInitialize(&argc,&argv,0,help));
   PetscCall(PetscPythonInitialize(PYTHON_EXE,PYTHON_LIB));
-  PetscCall(RunTest();PetscPythonPrintError());
+  PetscCall(RunTest());
+  PetscCall(PetscPythonPrintError());
   PetscCall(PetscFinalize());
   return 0;
 }
