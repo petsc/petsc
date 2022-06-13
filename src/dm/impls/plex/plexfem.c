@@ -3427,7 +3427,6 @@ static PetscErrorCode DMPlexGetHybridAuxFields(DM dm, DM dmAux[], PetscDS dsAux[
 
     PetscCall(DMPlexGetCone(dm, cell, &cone));
     PetscCall(DMPlexGetConeOrientation(dm, cell, &ornt));
-    PetscCheck(!ornt[0],PETSC_COMM_SELF, PETSC_ERR_SUP, "Face %" PetscInt_FMT " in hybrid cell %" PetscInt_FMT " has orientation %" PetscInt_FMT " != 0", cone[0], cell, ornt[0]);
     for (s = 0; s < 2; ++s) {
       const PetscInt *support;
       PetscScalar    *x = NULL, *al = a[s];
