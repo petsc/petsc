@@ -594,10 +594,10 @@ static PetscErrorCode GetEdgelist_Coupling(DM dm,PetscInt *edges,PetscInt *nmerg
 PetscErrorCode DMNetworkLayoutSetUp(DM dm)
 {
   DM_Network     *network = (DM_Network*)dm->data;
-  PetscInt       i,j,ctr,Nsubnet=network->Nsubnet,*eowners,np,*edges,*subnetvtx,*subnetedge,e,v,vfrom,vto,net;
+  PetscInt       i,j,ctr,Nsubnet=network->Nsubnet,np,*edges,*subnetvtx,*subnetedge,e,v,vfrom,vto,net,globaledgeoff;
   const PetscInt *cone;
   MPI_Comm       comm;
-  PetscMPIInt    size,rank;
+  PetscMPIInt    size;
   PetscSection   sectiong;
   PetscInt       nmerged=0;
 
@@ -610,11 +610,10 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
   }
 
   PetscCall(PetscObjectGetComm((PetscObject)dm,&comm));
-  PetscCallMPI(MPI_Comm_rank(comm,&rank));
-  PetscCallMPI(MPI_Comm_size(comm,&size));
+  PetscCall(MPI_Comm_size(comm,&size));
 
   /* Create LOCAL edgelist in global vertex ordering for the network by concatenating local input edgelists of the subnetworks */
-  PetscCall(PetscCalloc2(2*network->nEdges,&edges,size+1,&eowners));
+  PetscCall(PetscCalloc1(2*network->nEdges,&edges));
 
   if (network->Nsvtx) { /* subnetworks are coupled via shared vertices */
     PetscCall(GetEdgelist_Coupling(dm,edges,&nmerged));
@@ -677,9 +676,8 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
 
   /* Get edge ownership */
   np = network->eEnd - network->eStart;
-  PetscCallMPI(MPI_Allgather(&np,1,MPIU_INT,eowners+1,1,MPIU_INT,comm));
-  eowners[0] = 0;
-  for (i=2; i<=size; i++) eowners[i] += eowners[i-1];
+  PetscCallMPI(MPI_Scan(&np,&globaledgeoff,1,MPIU_INT,MPI_SUM,comm));
+  globaledgeoff -= np;
 
   /* Setup local edge and vertex arrays for subnetworks */
   e = 0;
@@ -687,7 +685,7 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
     ctr = 0;
     for (j = 0; j < network->subnet[i].nedge; j++) {
       /* edge e */
-      network->header[e].index    = e + eowners[rank];   /* Global edge index */
+      network->header[e].index    = e + globaledgeoff;   /* Global edge index */
       network->header[e].subnetid = i;
       network->subnet[i].edges[j] = e;
 
@@ -724,7 +722,7 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
       e++; ctr++;
     }
   }
-  PetscCall(PetscFree2(edges,eowners));
+  PetscCall(PetscFree(edges));
 
   /* Set local vertex array for the subnetworks */
   j = 0;
