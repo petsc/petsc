@@ -27,6 +27,7 @@ PetscErrorCode TaoDestroy_SSILS(Tao tao)
   PetscCall(VecDestroy(&ssls->db));
   PetscCall(VecDestroy(&ssls->t1));
   PetscCall(VecDestroy(&ssls->t2));
+  PetscCall(KSPDestroy(&tao->ksp));
   PetscCall(PetscFree(tao->data));
   PetscFunctionReturn(0);
 }

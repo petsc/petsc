@@ -1134,6 +1134,7 @@ PetscErrorCode TaoDestroy_BNK(Tao tao)
   PetscCall(MatDestroy(&bnk->Hpre_inactive));
   PetscCall(MatDestroy(&bnk->H_inactive));
   PetscCall(TaoDestroy(&bnk->bncg));
+  PetscCall(KSPDestroy(&tao->ksp));
   PetscCall(PetscFree(tao->data));
   PetscFunctionReturn(0);
 }

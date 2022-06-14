@@ -635,6 +635,7 @@ static PetscErrorCode TaoDestroy_NTL(Tao tao)
     PetscCall(VecDestroy(&tl->Xold));
     PetscCall(VecDestroy(&tl->Gold));
   }
+  PetscCall(KSPDestroy(&tao->ksp));
   PetscCall(PetscFree(tao->data));
   PetscFunctionReturn(0);
 }

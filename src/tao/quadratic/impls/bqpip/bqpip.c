@@ -501,6 +501,7 @@ static PetscErrorCode TaoDestroy_BQPIP(Tao tao)
     PetscCall(VecDestroy(&qp->RHS2));
     PetscCall(VecDestroy(&qp->C));
   }
+  PetscCall(KSPDestroy(&tao->ksp));
   PetscCall(PetscFree(tao->data));
   PetscFunctionReturn(0);
 }

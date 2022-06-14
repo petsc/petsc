@@ -117,6 +117,7 @@ static PetscErrorCode TaoDestroy_ASILS(Tao tao)
   PetscCall(MatDestroy(&ssls->Jpre_sub));
   PetscCall(ISDestroy(&ssls->fixed));
   PetscCall(ISDestroy(&ssls->free));
+  PetscCall(KSPDestroy(&tao->ksp));
   PetscCall(PetscFree(tao->data));
   PetscFunctionReturn(0);
 }

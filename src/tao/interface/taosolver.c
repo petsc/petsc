@@ -2182,19 +2182,13 @@ PetscErrorCode TaoSetType(Tao tao, TaoType type)
   PetscCheck(create_xxx,PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested Tao type %s",type);
 
   /* Destroy the existing solver information */
-  if (tao->ops->destroy) {
-    PetscCall((*tao->ops->destroy)(tao));
-  }
-  PetscCall(KSPDestroy(&tao->ksp));
+  if (tao->ops->destroy) PetscCall((*tao->ops->destroy)(tao));
   PetscCall(TaoLineSearchDestroy(&tao->linesearch));
-  PetscCall(VecDestroy(&tao->gradient));
-  PetscCall(VecDestroy(&tao->stepdirection));
-
-  tao->ops->setup = NULL;
-  tao->ops->solve = NULL;
-  tao->ops->view  = NULL;
+  tao->ops->setup          = NULL;
+  tao->ops->solve          = NULL;
+  tao->ops->view           = NULL;
   tao->ops->setfromoptions = NULL;
-  tao->ops->destroy = NULL;
+  tao->ops->destroy        = NULL;
 
   tao->setupcalled = PETSC_FALSE;
 
