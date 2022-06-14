@@ -732,7 +732,7 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
     network->header[v].ndata           = 0;
     network->header[v].offset[0]       = 0;
     network->header[v].offsetvarrel[0] = 0;
-    PetscCall(PetscSectionAddDof(network->DataSection,v,network->header[e].hsize));
+    PetscCall(PetscSectionAddDof(network->DataSection,v,network->header[v].hsize));
 
     /* local shared vertex */
     PetscCall(PetscTableFind(network->svtable,network->header[v].index+1,&i));
