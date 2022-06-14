@@ -20,6 +20,6 @@ testex55:
 	   if (${DIFF} output/ex55_1.testout ex55_1.tmp > /dev/null 2>&1) then \
            echo "C/C++ mpi4py python example src/sys/tests/ex55.py run successfully with 2 MPI process"; \
 	   else echo "Possible error running Python src/sys/tests/ex55.py with 2 MPI processes"; \
-           echo "See http://www.mcs.anl.gov/petsc/documentation/faq.html";\
+           echo "See https://petsc.org/release/faq/";\
            cat ex55_1.tmp; fi; \
         ${RM} -f ex55.tmp; fi

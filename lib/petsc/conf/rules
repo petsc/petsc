@@ -373,7 +373,7 @@ getautoconfargs:
 	  egrep -i '(Error|warning|Can|Unresolved)' >> /dev/null;\
 	  if [ "$$?" != 1 ]; then \
           printf ${PETSC_TEXT_HILIGHT}"*******************Error detected during compile or link!*******************\n";\
-          echo "See http://www.mcs.anl.gov/petsc/documentation/faq.html";\
+          echo "See https://petsc.org/release/faq/";\
           echo ${PWD} $* ;\
           printf "*********************************************************************************"${PETSC_TEXT_NORMAL}"\n" ;\
 	  cat trashz ; fi; ${RM} trashz
@@ -421,7 +421,7 @@ getautoconfargs:
 	  egrep -i '(Error|warning|Can|Unresolved)'  >> /dev/null ; \
 	  if [ "$$?" != 1 ]; then \
           printf ${PETSC_TEXT_HILIGHT}"*******************Error detected during compile or link!*******************\n";\
-          echo "See http://www.mcs.anl.gov/petsc/documentation/faq.html";\
+          echo "See https://petsc.org/release/faq/";\
           echo ${PWD} $* ;\
           printf "*********************************************************"${PETSC_TEXT_NORMAL}"\n" ;\
 	  cat trashz ; fi; ${RM} trashz;

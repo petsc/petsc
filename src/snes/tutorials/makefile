@@ -23,7 +23,7 @@ testex5f: ex5f.PETSc
 	   if (${DIFF} output/ex5f_1.testout ex5f_1.tmp > /dev/null 2>&1) then \
            echo "Fortran example src/snes/tutorials/ex5f run successfully with 1 MPI process"; \
 	   else echo "Possible error running Fortran example src/snes/tutorials/ex5f with 1 MPI process"; \
-           echo "See http://www.mcs.anl.gov/petsc/documentation/faq.html";\
+           echo "See https://petsc.org/release/faq/";\
            cat ex5f_1.tmp; fi;  \
          ${RM} -f ex5f_1.tmp ;\
          ${MAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ex5f.rm; fi
@@ -39,14 +39,14 @@ testex19: ex19.PETSc
 	   if (${DIFF} output/ex19_1.testout ex19_1.tmp > /dev/null 2>&1) then \
            echo "C/C++ example src/snes/tutorials/ex19 run successfully with 1 MPI process"; \
 	   else echo "Possible error running C/C++ src/snes/tutorials/ex19 with 1 MPI process"; \
-           echo "See http://www.mcs.anl.gov/petsc/documentation/faq.html";\
+           echo "See https://petsc.org/release/faq/";\
            cat ex19_1.tmp; fi; \
 	if [ ! "${MPI_IS_MPIUNI}" ]; then \
            ${MPIEXEC} -n 2 ./ex19 -da_refine 3 -pc_type mg -ksp_type fgmres  > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_1.testout ex19_1.tmp > /dev/null 2>&1) then \
            echo "C/C++ example src/snes/tutorials/ex19 run successfully with 2 MPI processes"; \
 	   else echo "Possible error running C/C++ src/snes/tutorials/ex19 with 2 MPI processes"; \
-           echo "See http://www.mcs.anl.gov/petsc/documentation/faq.html";\
+           echo "See https://petsc.org/release/faq/";\
            cat ex19_1.tmp; fi; fi; \
         ${RM} -f ex19_1.tmp; fi
 #use unpreconditioned norm because HYPRE device installations use different AMG parameters

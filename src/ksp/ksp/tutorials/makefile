@@ -20,7 +20,7 @@ testex100: ex100.PETSc
 	   if (${DIFF} output/ex100_1.testout ex100_1.tmp > /dev/null 2>&1) then \
            echo "C/C++ Python example src/ksp/ksp/tutorials/ex100 run successfully with 1 MPI process"; \
 	   else echo "Possible error running C/C++ Python src/ksp/ksp/tutorials/ex100 with 1 MPI process"; \
-           echo "See http://www.mcs.anl.gov/petsc/documentation/faq.html";\
+           echo "See https://petsc.org/release/faq/";\
            cat ex100_1.tmp; fi; \
         ${RM} -f ex100_1.tmp; fi
 

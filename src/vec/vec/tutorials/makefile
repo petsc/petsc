@@ -22,7 +22,7 @@ testex31: ex31.PETSc
 	   if (${DIFF} output/ex31_1.testout ex31_1.tmp > /dev/null 2>&1) then \
            echo "C/C++ example src/vec/vec/tutorials/ex31 run successfully with Matlab engine"; \
 	   else echo "Possible error running C/C++ src/vec/vec/tutorials/ex31 with Matlab engine"; \
-           echo "See http://www.mcs.anl.gov/petsc/documentation/faq.html";\
+           echo "See https://petsc.org/release/faq/";\
            cat ex31_1.tmp; fi;\
         fi; \
 
