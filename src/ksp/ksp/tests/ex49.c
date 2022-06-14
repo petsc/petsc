@@ -60,9 +60,7 @@ int main(int argc,char **args)
      - CHOLMOD only supports hermitian matrices
      - SUPERLU_DIST seems supporting both
   */
-  if (test_hermitian) {
-    PetscCall(MatSetOption(A,MAT_HERMITIAN,PETSC_TRUE));
-  }
+  if (test_hermitian) PetscCall(MatSetOption(A,MAT_HERMITIAN,PETSC_TRUE));
 
   {
     Mat M;

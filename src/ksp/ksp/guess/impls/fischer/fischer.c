@@ -43,14 +43,10 @@ static PetscErrorCode KSPGuessReset_Fischer(KSPGuess guess)
     PetscCall(VecDestroy(&itg->guess));
     PetscCall(VecDestroy(&itg->Ax));
   }
-  if (itg->corr) {
-    PetscCall(PetscMemzero(itg->corr,sizeof(*itg->corr)*itg->maxl*itg->maxl));
-  }
+  if (itg->corr) PetscCall(PetscMemzero(itg->corr,sizeof(*itg->corr)*itg->maxl*itg->maxl));
   itg->last_b = NULL;
   itg->last_b_state = 0;
-  if (itg->last_b_coefs) {
-    PetscCall(PetscMemzero(itg->last_b_coefs,sizeof(*itg->last_b_coefs)*itg->maxl));
-  }
+  if (itg->last_b_coefs) PetscCall(PetscMemzero(itg->last_b_coefs,sizeof(*itg->last_b_coefs)*itg->maxl));
   PetscFunctionReturn(0);
 }
 

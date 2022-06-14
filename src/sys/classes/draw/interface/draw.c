@@ -100,9 +100,7 @@ PetscErrorCode  PetscDrawResizeWindow(PetscDraw draw,int w,int h)
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   PetscValidLogicalCollectiveInt(draw,w,2);
   PetscValidLogicalCollectiveInt(draw,h,3);
-  if (draw->ops->resizewindow) {
-    PetscCall((*draw->ops->resizewindow)(draw,w,h));
-  }
+  if (draw->ops->resizewindow) PetscCall((*draw->ops->resizewindow)(draw,w,h));
   PetscFunctionReturn(0);
 }
 
@@ -149,9 +147,7 @@ PetscErrorCode  PetscDrawCheckResizedWindow(PetscDraw draw)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  if (draw->ops->checkresizedwindow) {
-    PetscCall((*draw->ops->checkresizedwindow)(draw));
-  }
+  if (draw->ops->checkresizedwindow) PetscCall((*draw->ops->checkresizedwindow)(draw));
   PetscFunctionReturn(0);
 }
 
@@ -207,9 +203,7 @@ PetscErrorCode  PetscDrawSetTitle(PetscDraw draw,const char title[])
   PetscValidCharPointer(title,2);
   PetscCall(PetscFree(draw->title));
   PetscCall(PetscStrallocpy(title,&draw->title));
-  if (draw->ops->settitle) {
-    PetscCall((*draw->ops->settitle)(draw,draw->title));
-  }
+  if (draw->ops->settitle) PetscCall((*draw->ops->settitle)(draw,draw->title));
   PetscFunctionReturn(0);
 }
 
@@ -250,9 +244,7 @@ PetscErrorCode  PetscDrawAppendTitle(PetscDraw draw,const char title[])
   } else {
     PetscCall(PetscStrallocpy(title,&draw->title));
   }
-  if (draw->ops->settitle) {
-    PetscCall((*draw->ops->settitle)(draw,draw->title));
-  }
+  if (draw->ops->settitle) PetscCall((*draw->ops->settitle)(draw,draw->title));
   PetscFunctionReturn(0);
 }
 
@@ -383,9 +375,7 @@ PetscErrorCode  PetscDrawSetDoubleBuffer(PetscDraw draw)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  if (draw->ops->setdoublebuffer) {
-    PetscCall((*draw->ops->setdoublebuffer)(draw));
-  }
+  if (draw->ops->setdoublebuffer) PetscCall((*draw->ops->setdoublebuffer)(draw));
   PetscFunctionReturn(0);
 }
 

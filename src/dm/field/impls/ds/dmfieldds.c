@@ -113,11 +113,8 @@ static PetscErrorCode DMFieldEvaluateFE_DS(DMField field, IS pointIS, PetscQuadr
   /* TODO: batch */
   PetscCall(PetscObjectTypeCompare((PetscObject)pointIS,ISSTRIDE,&isStride));
   PetscCall(ISGetLocalSize(pointIS,&numCells));
-  if (isStride) {
-    PetscCall(ISStrideGetInfo(pointIS,&sfirst,&stride));
-  } else {
-    PetscCall(ISGetIndices(pointIS,&points));
-  }
+  if (isStride) PetscCall(ISStrideGetInfo(pointIS,&sfirst,&stride));
+  else PetscCall(ISGetIndices(pointIS,&points));
   if (classid == PETSCFE_CLASSID) {
     PetscFE      fe = (PetscFE) disc;
     PetscInt     feDim, i;
@@ -220,11 +217,8 @@ static PetscErrorCode DMFieldEvaluate_DS(DMField field, Vec points, PetscDataTyp
   }
   PetscCall(PetscMalloc3(gatherSize*dim,&cellPoints,gatherMax*dim,&coordsReal,gatherMax*dimR,&coordsRef));
   PetscCall(PetscMalloc4(gatherMax*dimR,&v,gatherMax*dimR*dimR,&J,gatherMax*dimR*dimR,&invJ,gatherMax,&detJ));
-  if (datatype == PETSC_SCALAR) {
-    PetscCall(PetscMalloc3(B ? nc * gatherSize : 0, &cellBs, D ? nc * dim * gatherSize : 0, &cellDs, H ? nc * dim * dim * gatherSize : 0, &cellHs));
-  } else {
-    PetscCall(PetscMalloc3(B ? nc * gatherSize : 0, &cellBr, D ? nc * dim * gatherSize : 0, &cellDr, H ? nc * dim * dim * gatherSize : 0, &cellHr));
-  }
+  if (datatype == PETSC_SCALAR) PetscCall(PetscMalloc3(B ? nc * gatherSize : 0, &cellBs, D ? nc * dim * gatherSize : 0, &cellDs, H ? nc * dim * dim * gatherSize : 0, &cellHs));
+  else PetscCall(PetscMalloc3(B ? nc * gatherSize : 0, &cellBr, D ? nc * dim * gatherSize : 0, &cellDr, H ? nc * dim * dim * gatherSize : 0, &cellHr));
 
   PetscCallMPI(MPI_Type_contiguous(dim,MPIU_SCALAR,&pointType));
   PetscCallMPI(MPI_Type_commit(&pointType));
@@ -696,9 +690,7 @@ PetscErrorCode DMFieldGetFVQuadrature_Internal(DMField field, IS pointIS, PetscQ
       default: PetscCall(PetscDTGaussTensorQuadrature(dim, 1, 1, -1.0, 1.0, quad));
     }
     PetscCall(ISRestoreIndices(pointIS, &points));
-  } else {
-    PetscCall(DMFieldCreateDefaultQuadrature(field, pointIS, quad));
-  }
+  } else PetscCall(DMFieldCreateDefaultQuadrature(field, pointIS, quad));
   PetscFunctionReturn(0);
 }
 
@@ -1113,9 +1105,7 @@ PetscErrorCode DMFieldCreateDS(DM dm, PetscInt fieldNum, Vec vec,DMField *field)
     PetscCall(PetscFECreateLagrangeByCell(PETSC_COMM_SELF, dim, numComponents, ct, 1, PETSC_DETERMINE, &fe));
     PetscCall(PetscFEViewFromOptions(fe, NULL, "-field_fe_view"));
     disc = (PetscObject) fe;
-  } else {
-    PetscCall(PetscObjectReference(disc));
-  }
+  } else PetscCall(PetscObjectReference(disc));
   PetscCall(PetscObjectGetClassId(disc,&id));
   if (id == PETSCFE_CLASSID) {
     PetscFE fe = (PetscFE) disc;

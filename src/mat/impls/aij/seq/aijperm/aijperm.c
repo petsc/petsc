@@ -649,9 +649,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJPERM(Mat A,MatType type,MatR
 
   aijperm->nonzerostate = -1;  /* this will trigger the generation of the permutation information the first time through MatAssembly()*/
   /* If A has already been assembled, compute the permutation. */
-  if (A->assembled) {
-    PetscCall(MatSeqAIJPERM_create_perm(B));
-  }
+  if (A->assembled) PetscCall(MatSeqAIJPERM_create_perm(B));
 
   PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaijperm_seqaij_C",MatConvert_SeqAIJPERM_SeqAIJ));
 

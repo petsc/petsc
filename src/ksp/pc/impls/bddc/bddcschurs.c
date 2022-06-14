@@ -226,13 +226,9 @@ static PetscErrorCode PCBDDCReuseSolvers_View(PC pc, PetscViewer viewer)
   PetscFunctionBegin;
   PetscCall(PCShellGetContext(pc,&ctx));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
-  if (iascii) {
-    PetscCall(PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_INFO));
-  }
+  if (iascii) PetscCall(PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_INFO));
   PetscCall(MatView(ctx->F,viewer));
-  if (iascii) {
-    PetscCall(PetscViewerPopFormat(viewer));
-  }
+  if (iascii) PetscCall(PetscViewerPopFormat(viewer));
   PetscFunctionReturn(0);
 }
 
@@ -826,9 +822,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
         if (!n_internal) { /* UMFPACK gives error with 0 sized problems */
           MatSolverType solver = NULL;
           PetscCall(PCFactorGetMatSolverType(origpc,(MatSolverType*)&solver));
-          if (solver) {
-            PetscCall(PCFactorSetMatSolverType(schurpc,solver));
-          }
+          if (solver) PetscCall(PCFactorSetMatSolverType(schurpc,solver));
         }
         PetscCall(KSPSetUp(schurksp));
       }
@@ -1105,9 +1099,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
 #if defined(PETSC_HAVE_CUDA)
       PetscCall(PetscObjectTypeCompareAny((PetscObject)A,&gpu,MATSEQAIJVIENNACL,MATSEQAIJCUSPARSE,""));
 #endif
-      if (gpu) {
-        PetscCall(PetscStrncpy(stype,MATSEQDENSECUDA,sizeof(stype)));
-      }
+      if (gpu) PetscCall(PetscStrncpy(stype,MATSEQDENSECUDA,sizeof(stype)));
       PetscCall(PetscOptionsGetString(NULL,sub_schurs->prefix,"-sub_schurs_schur_mat_type",stype,sizeof(stype),NULL));
       PetscCall(MatConvert(S_all,stype,MAT_INPLACE_MATRIX,&S_all));
       PetscCall(MatSetOption(S_all,MAT_SPD,sub_schurs->is_posdef));
@@ -1370,9 +1362,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
         msolv_ctx->benign_AIIm1ones = benign_AIIm1_ones_mat;
       }
     } else {
-      if (sub_schurs->reuse_solver) {
-        PetscCall(PCBDDCReuseSolversReset(sub_schurs->reuse_solver));
-      }
+      if (sub_schurs->reuse_solver) PetscCall(PCBDDCReuseSolversReset(sub_schurs->reuse_solver));
       PetscCall(PetscFree(sub_schurs->reuse_solver));
     }
     PetscCall(MatDestroy(&A));
@@ -2096,12 +2086,8 @@ PetscErrorCode PCBDDCSubSchursReset(PCBDDCSubSchurs sub_schurs)
   for (i=0;i<sub_schurs->n_subs;i++) {
     PetscCall(ISDestroy(&sub_schurs->is_subs[i]));
   }
-  if (sub_schurs->n_subs) {
-    PetscCall(PetscFree(sub_schurs->is_subs));
-  }
-  if (sub_schurs->reuse_solver) {
-    PetscCall(PCBDDCReuseSolversReset(sub_schurs->reuse_solver));
-  }
+  if (sub_schurs->n_subs) PetscCall(PetscFree(sub_schurs->is_subs));
+  if (sub_schurs->reuse_solver) PetscCall(PCBDDCReuseSolversReset(sub_schurs->reuse_solver));
   PetscCall(PetscFree(sub_schurs->reuse_solver));
   if (sub_schurs->change) {
     for (i=0;i<sub_schurs->n_subs;i++) {

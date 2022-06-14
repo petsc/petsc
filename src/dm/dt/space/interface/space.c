@@ -212,9 +212,7 @@ PetscErrorCode PetscSpaceSetFromOptions(PetscSpace sp)
   PetscCall(PetscOptionsBoundedInt("-petscspace_degree", "The (maximally included) polynomial degree", "PetscSpaceSetDegree", sp->degree, &sp->degree, NULL,0));
   PetscCall(PetscOptionsBoundedInt("-petscspace_variables", "The number of different variables, e.g. x and y", "PetscSpaceSetNumVariables", sp->Nv, &sp->Nv, NULL,0));
   PetscCall(PetscOptionsBoundedInt("-petscspace_components", "The number of components", "PetscSpaceSetNumComponents", sp->Nc, &sp->Nc, NULL,0));
-  if (sp->ops->setfromoptions) {
-    PetscCall((*sp->ops->setfromoptions)(PetscOptionsObject,sp));
-  }
+  if (sp->ops->setfromoptions) PetscCall((*sp->ops->setfromoptions)(PetscOptionsObject,sp));
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) sp));
   PetscOptionsEnd();
@@ -524,8 +522,6 @@ PetscErrorCode PetscSpaceGetHeightSubspace(PetscSpace sp, PetscInt height, Petsc
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   PetscValidPointer(subsp, 3);
   *subsp = NULL;
-  if (sp->ops->getheightsubspace) {
-    PetscCall((*sp->ops->getheightsubspace)(sp, height, subsp));
-  }
+  if (sp->ops->getheightsubspace) PetscCall((*sp->ops->getheightsubspace)(sp, height, subsp));
   PetscFunctionReturn(0);
 }

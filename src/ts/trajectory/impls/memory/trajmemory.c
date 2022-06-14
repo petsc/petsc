@@ -172,9 +172,7 @@ static PetscErrorCode ElementCreate(TS ts,CheckpointType cptype,Stack *stack,Sta
     (*e)->cptype = cptype;
     PetscFunctionReturn(0);
   }
-  if (stack->use_dram) {
-    PetscCall(PetscMallocSetDRAM());
-  }
+  if (stack->use_dram) PetscCall(PetscMallocSetDRAM());
   PetscCall(PetscNew(e));
   if (HaveSolution(cptype)) {
     PetscCall(TSGetSolution(ts,&X));
@@ -186,9 +184,7 @@ static PetscErrorCode ElementCreate(TS ts,CheckpointType cptype,Stack *stack,Sta
       PetscCall(VecDuplicateVecs(Y[0],stack->numY,&(*e)->Y));
     }
   }
-  if (stack->use_dram) {
-    PetscCall(PetscMallocResetDRAM());
-  }
+  if (stack->use_dram) PetscCall(PetscMallocResetDRAM());
   stack->nallocated++;
   (*e)->cptype = cptype;
   PetscFunctionReturn(0);
@@ -225,17 +221,13 @@ static PetscErrorCode ElementSet(TS ts, Stack *stack, StackElement *e, PetscInt 
 static PetscErrorCode ElementDestroy(Stack *stack,StackElement e)
 {
   PetscFunctionBegin;
-  if (stack->use_dram) {
-    PetscCall(PetscMallocSetDRAM());
-  }
+  if (stack->use_dram) PetscCall(PetscMallocSetDRAM());
   PetscCall(VecDestroy(&e->X));
   if (e->Y) {
     PetscCall(VecDestroyVecs(stack->numY,&e->Y));
   }
   PetscCall(PetscFree(e));
-  if (stack->use_dram) {
-    PetscCall(PetscMallocResetDRAM());
-  }
+  if (stack->use_dram) PetscCall(PetscMallocResetDRAM());
   stack->nallocated--;
   PetscFunctionReturn(0);
 }
@@ -2059,21 +2051,13 @@ static PetscErrorCode TSTrajectorySetFromOptions_Memory(PetscOptionItems *PetscO
   PetscOptionsHeadBegin(PetscOptionsObject,"Memory based TS trajectory options");
   {
     PetscCall(PetscOptionsInt("-ts_trajectory_max_cps_ram","Maximum number of checkpoints in RAM","TSTrajectorySetMaxCpsRAM",tjsch->max_cps_ram,&max_cps_ram,&flg));
-    if (flg) {
-      PetscCall(TSTrajectorySetMaxCpsRAM(tj,max_cps_ram));
-    }
+    if (flg) PetscCall(TSTrajectorySetMaxCpsRAM(tj,max_cps_ram));
     PetscCall(PetscOptionsInt("-ts_trajectory_max_cps_disk","Maximum number of checkpoints on disk","TSTrajectorySetMaxCpsDisk",tjsch->max_cps_disk,&max_cps_disk,&flg));
-    if (flg) {
-      PetscCall(TSTrajectorySetMaxCpsDisk(tj,max_cps_disk));
-    }
+    if (flg) PetscCall(TSTrajectorySetMaxCpsDisk(tj,max_cps_disk));
     PetscCall(PetscOptionsInt("-ts_trajectory_max_units_ram","Maximum number of checkpointing units in RAM","TSTrajectorySetMaxUnitsRAM",tjsch->max_units_ram,&max_units_ram,&flg));
-    if (flg) {
-      PetscCall(TSTrajectorySetMaxUnitsRAM(tj,max_units_ram));
-    }
+    if (flg) PetscCall(TSTrajectorySetMaxUnitsRAM(tj,max_units_ram));
     PetscCall(PetscOptionsInt("-ts_trajectory_max_units_disk","Maximum number of checkpointing units on disk","TSTrajectorySetMaxUnitsDisk",tjsch->max_units_disk,&max_units_disk,&flg));
-    if (flg) {
-      PetscCall(TSTrajectorySetMaxUnitsDisk(tj,max_units_disk));
-    }
+    if (flg) PetscCall(TSTrajectorySetMaxUnitsDisk(tj,max_units_disk));
     PetscCall(PetscOptionsInt("-ts_trajectory_stride","Stride to save checkpoints to file","TSTrajectorySetStride",tjsch->stride,&tjsch->stride,NULL));
 #if defined(PETSC_HAVE_REVOLVE)
     PetscCall(PetscOptionsBool("-ts_trajectory_revolve_online","Trick TS trajectory into using online mode of revolve","TSTrajectorySetRevolveOnline",tjsch->use_online,&tjsch->use_online,NULL));
@@ -2081,9 +2065,7 @@ static PetscErrorCode TSTrajectorySetFromOptions_Memory(PetscOptionItems *PetscO
     PetscCall(PetscOptionsBool("-ts_trajectory_save_stack","Save all stack to disk","TSTrajectorySetSaveStack",tjsch->save_stack,&tjsch->save_stack,NULL));
     PetscCall(PetscOptionsBool("-ts_trajectory_use_dram","Use DRAM for checkpointing","TSTrajectorySetUseDRAM",tjsch->stack.use_dram,&tjsch->stack.use_dram,NULL));
     PetscCall(PetscOptionsEnum("-ts_trajectory_memory_type","Checkpointing scchedule software to use","TSTrajectoryMemorySetType",TSTrajectoryMemoryTypes,(PetscEnum)(int)(tjsch->tj_memory_type),&etmp,&flg));
-    if (flg) {
-      PetscCall(TSTrajectoryMemorySetType(tj,(TSTrajectoryMemoryType)etmp));
-    }
+    if (flg) PetscCall(TSTrajectoryMemorySetType(tj,(TSTrajectoryMemoryType)etmp));
   }
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);

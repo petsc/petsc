@@ -1194,9 +1194,7 @@ static PetscErrorCode TSSetFromOptions_RK(PetscOptionItems *PetscOptionsObject,T
     PetscCall(PetscMalloc1(count,(char***)&namelist));
     for (link=RKTableauList,count=0; link; link=link->next,count++) namelist[count] = link->tab.name;
     PetscCall(PetscOptionsBool("-ts_rk_multirate","Use interpolation-based multirate RK method","TSRKSetMultirate",rk->use_multirate,&use_multirate,&flg));
-    if (flg) {
-      PetscCall(TSRKSetMultirate(ts,use_multirate));
-    }
+    if (flg) PetscCall(TSRKSetMultirate(ts,use_multirate));
     PetscCall(PetscOptionsEList("-ts_rk_type","Family of RK method","TSRKSetType",(const char*const*)namelist,count,rk->tableau->name,&choice,&flg));
     if (flg) PetscCall(TSRKSetType(ts,namelist[choice]));
     PetscCall(PetscFree(namelist));

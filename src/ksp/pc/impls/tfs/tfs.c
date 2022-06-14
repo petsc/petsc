@@ -19,12 +19,8 @@ PetscErrorCode PCDestroy_TFS(PC pc)
 
   PetscFunctionBegin;
   /* free the XXT datastructures */
-  if (tfs->xxt) {
-    PetscCall(XXT_free(tfs->xxt));
-  }
-  if (tfs->xyt) {
-    PetscCall(XYT_free(tfs->xyt));
-  }
+  if (tfs->xxt) PetscCall(XXT_free(tfs->xxt));
+  if (tfs->xyt) PetscCall(XYT_free(tfs->xyt));
   PetscCall(VecDestroy(&tfs->b));
   PetscCall(VecDestroy(&tfs->xd));
   PetscCall(VecDestroy(&tfs->xo));

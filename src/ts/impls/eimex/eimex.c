@@ -360,9 +360,7 @@ static PetscErrorCode TSSetUp_EIMEX(TS ts)
   PetscCall(VecDuplicate(ts->vec_sol,&ext->Y));
   PetscCall(VecDuplicate(ts->vec_sol,&ext->Z));
   PetscCall(TSGetDM(ts,&dm));
-  if (dm) {
-    PetscCall(DMCoarsenHookAdd(dm,DMCoarsenHook_TSEIMEX,DMRestrictHook_TSEIMEX,ts));
-  }
+  if (dm) PetscCall(DMCoarsenHookAdd(dm,DMCoarsenHook_TSEIMEX,DMRestrictHook_TSEIMEX,ts));
   PetscFunctionReturn(0);
 }
 
@@ -379,9 +377,7 @@ static PetscErrorCode TSSetFromOptions_EIMEX(PetscOptionItems *PetscOptionsObjec
   {
     PetscBool flg;
     PetscCall(PetscOptionsInt("-ts_eimex_max_rows","Define the maximum number of rows used","TSEIMEXSetMaxRows",nrows,&nrows,&flg)); /* default value 3 */
-    if (flg) {
-      PetscCall(TSEIMEXSetMaxRows(ts,nrows));
-    }
+    if (flg) PetscCall(TSEIMEXSetMaxRows(ts,nrows));
     PetscCall(PetscOptionsIntArray("-ts_eimex_row_col","Return the specific term in the T table","TSEIMEXSetRowCol",tindex,&np,&flg));
     if (flg) {
       PetscCall(TSEIMEXSetRowCol(ts,tindex[0],tindex[1]));

@@ -1128,9 +1128,7 @@ static PetscErrorCode KSPSetUp_FETIDP(KSP ksp)
   /* propagate settings to the inner solve */
   PetscCall(KSPGetComputeSingularValues(ksp,&flg));
   PetscCall(KSPSetComputeSingularValues(fetidp->innerksp,flg));
-  if (ksp->res_hist) {
-    PetscCall(KSPSetResidualHistory(fetidp->innerksp,ksp->res_hist,ksp->res_hist_max,ksp->res_hist_reset));
-  }
+  if (ksp->res_hist) PetscCall(KSPSetResidualHistory(fetidp->innerksp,ksp->res_hist,ksp->res_hist_max,ksp->res_hist_reset));
   PetscCall(KSPSetErrorIfNotConverged(fetidp->innerksp,ksp->errorifnotconverged));
   PetscCall(KSPSetUp(fetidp->innerksp));
   PetscFunctionReturn(0);
@@ -1177,9 +1175,7 @@ static PetscErrorCode KSPSolve_FETIDP(KSP ksp)
   }
   PetscCall(PCBDDCMatFETIDPGetSolution(F,Xl,X));
   PetscCall(MatGetNullSpace(A,&nsp));
-  if (nsp) {
-    PetscCall(MatNullSpaceRemove(nsp,X));
-  }
+  if (nsp) PetscCall(MatNullSpaceRemove(nsp,X));
   /* update ksp with stats from inner ksp */
   PetscCall(KSPGetConvergedReason(fetidp->innerksp,&ksp->reason));
   PetscCall(KSPGetIterationNumber(fetidp->innerksp,&ksp->its));

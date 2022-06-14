@@ -1628,9 +1628,7 @@ int main(int argc,char *argv[])
     PetscBool flg;
     char      filename[PETSC_MAX_PATH_LEN] = "";
     PetscCall(PetscOptionsGetString(NULL,NULL,"-o",filename,sizeof(filename),&flg));
-    if (flg) {
-      PetscCall(THIDAVecView_VTK_XML(thi,pack,X,filename,NULL));
-    }
+    if (flg) PetscCall(THIDAVecView_VTK_XML(thi,pack,X,filename,NULL));
   }
 
   PetscCall(VecDestroy(&X));

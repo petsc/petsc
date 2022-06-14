@@ -231,9 +231,7 @@ static PetscErrorCode  SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
     }
   }
 
-  if (linesearch->ops->viproject) {
-    PetscCall((*linesearch->ops->viproject)(snes, G));
-  }
+  if (linesearch->ops->viproject) PetscCall((*linesearch->ops->viproject)(snes, G));
 
   /* W currently contains -bar_delta_u. Scale it so that it contains bar_delta_u. */
   PetscCall(VecScale(W, -1.0));

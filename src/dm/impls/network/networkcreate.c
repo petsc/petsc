@@ -33,9 +33,7 @@ static PetscErrorCode VecArrayPrint_private(PetscViewer viewer,PetscInt n,const 
       PetscCall(PetscViewerASCIIPrintf(viewer,"    %g + %g i\n",(double)PetscRealPart(xv[i]),(double)PetscImaginaryPart(xv[i])));
     } else if (PetscImaginaryPart(xv[i]) < 0.0) {
       PetscCall(PetscViewerASCIIPrintf(viewer,"    %g - %g i\n",(double)PetscRealPart(xv[i]),-(double)PetscImaginaryPart(xv[i])));
-    } else {
-      PetscCall(PetscViewerASCIIPrintf(viewer,"    %g\n",(double)PetscRealPart(xv[i])));
-    }
+    } else PetscCall(PetscViewerASCIIPrintf(viewer,"    %g\n",(double)PetscRealPart(xv[i])));
 #else
     PetscCall(PetscViewerASCIIPrintf(viewer,"    %g\n",(double)xv[i]));
 #endif
@@ -214,17 +212,11 @@ PetscErrorCode VecView_Network(Vec v,PetscViewer viewer)
 
   /* Use VecView_Network if the viewer is ASCII; use VecView_Seq/MPI for other viewer formats */
   if (iascii) {
-    if (isseq) {
-      PetscCall(VecView_Network_Seq(dm,v,viewer));
-    } else {
-      PetscCall(VecView_Network_MPI(dm,v,viewer));
-    }
+    if (isseq) PetscCall(VecView_Network_Seq(dm,v,viewer));
+    else PetscCall(VecView_Network_MPI(dm,v,viewer));
   } else {
-    if (isseq) {
-      PetscCall(VecView_Seq(v,viewer));
-    } else {
-      PetscCall(VecView_MPI(v,viewer));
-    }
+    if (isseq) PetscCall(VecView_Seq(v,viewer));
+    else PetscCall(VecView_MPI(v,viewer));
   }
   PetscFunctionReturn(0);
 }

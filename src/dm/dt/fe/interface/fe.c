@@ -248,9 +248,7 @@ PetscErrorCode PetscFESetFromOptions(PetscFE fem)
   }
   PetscCall(PetscOptionsBoundedInt("-petscfe_num_blocks", "The number of cell blocks to integrate concurrently", "PetscSpaceSetTileSizes", fem->numBlocks, &fem->numBlocks, NULL,1));
   PetscCall(PetscOptionsBoundedInt("-petscfe_num_batches", "The number of cell batches to integrate serially", "PetscSpaceSetTileSizes", fem->numBatches, &fem->numBatches, NULL,1));
-  if (fem->ops->setfromoptions) {
-    PetscCall((*fem->ops->setfromoptions)(PetscOptionsObject,fem));
-  }
+  if (fem->ops->setfromoptions) PetscCall((*fem->ops->setfromoptions)(PetscOptionsObject,fem));
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) fem));
   PetscOptionsEnd();
@@ -1091,11 +1089,8 @@ PETSC_EXTERN PetscErrorCode PetscFECreatePointTrace(PetscFE fe, PetscInt refPoin
   PetscCall(PetscFEGetQuadrature(fe,&fullQuad));
   PetscCall(PetscQuadratureGetOrder(fullQuad,&order));
   PetscCall(DMPlexGetConeSize(dm,refPoint,&coneSize));
-  if (coneSize == 2 * depth) {
-    PetscCall(PetscDTGaussTensorQuadrature(depth,1,(order + 1)/2,-1.,1.,&subQuad));
-  } else {
-    PetscCall(PetscDTStroudConicalQuadrature(depth,1,(order + 1)/2,-1.,1.,&subQuad));
-  }
+  if (coneSize == 2 * depth) PetscCall(PetscDTGaussTensorQuadrature(depth,1,(order + 1)/2,-1.,1.,&subQuad));
+  else PetscCall(PetscDTStroudConicalQuadrature(depth,1,(order + 1)/2,-1.,1.,&subQuad));
   PetscCall(PetscFESetQuadrature(*trFE,subQuad));
   PetscCall(PetscFESetUp(*trFE));
   PetscCall(PetscQuadratureDestroy(&subQuad));

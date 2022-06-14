@@ -24,9 +24,7 @@ int main(int argc,char **args)
 
   PetscCall(MatGetOwnershipRange(A,&start,&end));
   PetscCall(PetscOptionsHasName(NULL,NULL,"-column_oriented",&flg));
-  if (flg) {
-    PetscCall(MatSetOption(A,MAT_ROW_ORIENTED,PETSC_FALSE));
-  }
+  if (flg) PetscCall(MatSetOption(A,MAT_ROW_ORIENTED,PETSC_FALSE));
 
   /* inproc assembly */
   for (row=start; row<end; row++) {

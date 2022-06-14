@@ -84,9 +84,7 @@ int main(int argc,char **args)
   PetscCall(VecAssemblyBegin(rhs));
   PetscCall(VecAssemblyEnd(rhs));
   /* set rhs to zero to simplify */
-  if (zerorhs) {
-    PetscCall(VecZeroEntries(rhs));
-  }
+  if (zerorhs) PetscCall(VecZeroEntries(rhs));
 
   if (nonlocalBC) {
     /*version where boundary conditions are set by processes that don't necessarily own the nodes */

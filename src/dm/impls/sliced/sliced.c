@@ -312,8 +312,6 @@ PetscErrorCode  DMSlicedCreate(MPI_Comm comm,PetscInt bs,PetscInt nlocal,PetscIn
   PetscCall(DMCreate(comm,dm));
   PetscCall(DMSetType(*dm,DMSLICED));
   PetscCall(DMSlicedSetGhosts(*dm,bs,nlocal,Nghosts,ghosts));
-  if (d_nnz) {
-    PetscCall(DMSlicedSetPreallocation(*dm,0, d_nnz,0,o_nnz));
-  }
+  if (d_nnz) PetscCall(DMSlicedSetPreallocation(*dm,0, d_nnz,0,o_nnz));
   PetscFunctionReturn(0);
 }

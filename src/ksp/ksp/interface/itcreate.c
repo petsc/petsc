@@ -172,9 +172,7 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
       PetscCall(PetscStrncpy(type,((PetscObject)ksp)->type_name,256));
       PetscCall(PetscViewerBinaryWrite(viewer,type,256,PETSC_CHAR));
     }
-    if (ksp->ops->view) {
-      PetscCall((*ksp->ops->view)(ksp,viewer));
-    }
+    if (ksp->ops->view) PetscCall((*ksp->ops->view)(ksp,viewer));
   } else if (isstring) {
     const char *type;
     PetscCall(KSPGetType(ksp,&type));
@@ -218,12 +216,8 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
       PetscStackCallSAWs(SAWs_Register,(dir,ksp->res_hist,10,SAWs_READ,SAWs_DOUBLE));
     }
 #endif
-  } else if (ksp->ops->view) {
-    PetscCall((*ksp->ops->view)(ksp,viewer));
-  }
-  if (ksp->pc) {
-    PetscCall(PCView(ksp->pc,viewer));
-  }
+  } else if (ksp->ops->view) PetscCall((*ksp->ops->view)(ksp,viewer));
+  if (ksp->pc) PetscCall(PCView(ksp->pc,viewer));
   if (isdraw) {
     PetscDraw draw;
     PetscCall(PetscViewerDrawGetDraw(viewer,0,&draw));

@@ -188,9 +188,7 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
   for (i=0; i<maxits; i++) {
 
     /* Call general purpose update function */
-    if (snes->ops->update) {
-      PetscCall((*snes->ops->update)(snes, snes->iter));
-    }
+    if (snes->ops->update) PetscCall((*snes->ops->update)(snes, snes->iter));
 
     /* apply the nonlinear preconditioner */
     if (snes->npc) {
@@ -224,9 +222,7 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
     PetscCall(KSPGetIterationNumber(snes->ksp,&lits));
     PetscCall(PetscInfo(snes,"iter=%" PetscInt_FMT ", linear solve iterations=%" PetscInt_FMT "\n",snes->iter,lits));
 
-    if (PetscLogPrintInfo) {
-      PetscCall(SNESNEWTONLSCheckResidual_Private(snes,snes->jacobian,F,Y));
-    }
+    if (PetscLogPrintInfo) PetscCall(SNESNEWTONLSCheckResidual_Private(snes,snes->jacobian,F,Y));
 
     /* Compute a (scaled) negative update in the line search routine:
          X <- X - lambda*Y

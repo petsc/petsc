@@ -2102,9 +2102,7 @@ PetscErrorCode PCSetFromOptions_HYPRE(PetscOptionItems *PetscOptionsObject,PC pc
   } else {
     PetscCall(PCHYPRESetType_HYPRE(pc,"boomeramg"));
   }
-  if (pc->ops->setfromoptions) {
-    PetscCall(pc->ops->setfromoptions(PetscOptionsObject,pc));
-  }
+  if (pc->ops->setfromoptions) PetscCall(pc->ops->setfromoptions(PetscOptionsObject,pc));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }

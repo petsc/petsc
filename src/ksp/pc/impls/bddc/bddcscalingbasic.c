@@ -346,9 +346,7 @@ PetscErrorCode PCBDDCScalingDestroy(PC pc)
   PC_BDDC*       pcbddc=(PC_BDDC*)pc->data;
 
   PetscFunctionBegin;
-  if (pcbddc->deluxe_ctx) {
-    PetscCall(PCBDDCScalingDestroy_Deluxe(pc));
-  }
+  if (pcbddc->deluxe_ctx) PetscCall(PCBDDCScalingDestroy_Deluxe(pc));
   PetscCall(VecDestroy(&pcbddc->work_scaling));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCBDDCScalingRestriction_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCBDDCScalingExtension_C",NULL));
@@ -405,9 +403,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc)
 
   PetscFunctionBegin;
   /* reset data structures if the topology has changed */
-  if (pcbddc->recompute_topography) {
-    PetscCall(PCBDDCScalingReset_Deluxe_Solvers(deluxe_ctx));
-  }
+  if (pcbddc->recompute_topography) PetscCall(PCBDDCScalingReset_Deluxe_Solvers(deluxe_ctx));
 
   /* Compute data structures to solve sequential problems */
   PetscCall(PCBDDCScalingSetUp_Deluxe_Private(pc));

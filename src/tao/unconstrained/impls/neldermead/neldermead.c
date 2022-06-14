@@ -164,9 +164,7 @@ static PetscErrorCode TaoSolve_NM(Tao tao)
   tao->reason = TAO_CONTINUE_ITERATING;
   while (1) {
     /* Call general purpose update function */
-    if (tao->ops->update) {
-      PetscCall((*tao->ops->update)(tao, tao->niter, tao->user_update));
-    }
+    if (tao->ops->update) PetscCall((*tao->ops->update)(tao, tao->niter, tao->user_update));
     ++tao->niter;
     shrink = 0;
     PetscCall(VecCopy(nm->simplex[nm->indices[0]],tao->solution));

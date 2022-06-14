@@ -51,9 +51,7 @@ PetscErrorCode PetscSubcommSetFromOptions(PetscSubcomm psubcomm)
   }
 
   PetscCall(PetscOptionsName("-psubcomm_view","Triggers display of PetscSubcomm context","PetscSubcommView",&flg));
-  if (flg) {
-    PetscCall(PetscSubcommView(psubcomm,PETSC_VIEWER_STDOUT_(psubcomm->parent)));
-  }
+  if (flg) PetscCall(PetscSubcommView(psubcomm,PETSC_VIEWER_STDOUT_(psubcomm->parent)));
   PetscOptionsEnd();
   PetscFunctionReturn(0);
 }

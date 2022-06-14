@@ -1437,9 +1437,7 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
 
       /* this is relevant only in debug mode */
       PetscCall(VecLockGet(X,&state));
-      if (state) {
-        PetscCall(VecLockReadPush(Z));
-      }
+      if (state) PetscCall(VecLockReadPush(Z));
       Z->ops->placearray = NULL;
       Z->ops->replacearray = NULL;
     } else { /* Have to create a scatter and do a copy */
@@ -1930,11 +1928,8 @@ PetscErrorCode VecRestoreArrayWrite(Vec x,PetscScalar **a)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
-  if (x->ops->restorearraywrite) {
-    PetscCall((*x->ops->restorearraywrite)(x,a));
-  } else if (x->ops->restorearray) {
-    PetscCall((*x->ops->restorearray)(x,a));
-  }
+  if (x->ops->restorearraywrite) PetscCall((*x->ops->restorearraywrite)(x,a));
+  else if (x->ops->restorearray) PetscCall((*x->ops->restorearray)(x,a));
   if (a) *a = NULL;
   PetscCall(PetscObjectStateIncrease((PetscObject)x));
   PetscFunctionReturn(0);

@@ -205,9 +205,7 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part,IS 
       PetscCall(MatPartitioningSetUseEdgeWeights(hpart->fineMatPart,use_edge_weights));
       PetscCall(MatPartitioningSetAdjacency(hpart->fineMatPart,sadj));
       PetscCall(MatPartitioningSetNParts(hpart->fineMatPart, offsets[rank+1+i]-offsets[rank+i]));
-      if (part->vertex_weights) {
-        PetscCall(MatPartitioningSetVertexWeights(hpart->fineMatPart,fp_vweights));
-      }
+      if (part->vertex_weights) PetscCall(MatPartitioningSetVertexWeights(hpart->fineMatPart,fp_vweights));
       PetscCall(MatPartitioningApply(hpart->fineMatPart,&fineparts_temp));
     } else {
       PetscCall(ISCreateGeneral(scomm,0,NULL,PETSC_OWN_POINTER,&fineparts_temp));

@@ -88,9 +88,7 @@ static PetscErrorCode PCSetUp_LU(PC pc)
       if (canuseordering) {
         PetscCall(PCFactorSetDefaultOrdering_Factor(pc));
         PetscCall(MatGetOrdering(pc->pmat,((PC_Factor*)dir)->ordering,&dir->row,&dir->col));
-        if (dir->nonzerosalongdiagonal) {
-          PetscCall(MatReorderForNonzeroDiagonal(pc->pmat,dir->nonzerosalongdiagonaltol,dir->row,dir->col));
-        }
+        if (dir->nonzerosalongdiagonal) PetscCall(MatReorderForNonzeroDiagonal(pc->pmat,dir->nonzerosalongdiagonaltol,dir->row,dir->col));
         PetscCall(PetscLogObjectParent((PetscObject)pc,(PetscObject)dir->row));
         PetscCall(PetscLogObjectParent((PetscObject)pc,(PetscObject)dir->col));
       }
@@ -109,9 +107,7 @@ static PetscErrorCode PCSetUp_LU(PC pc)
           PetscCall(ISDestroy(&dir->col));
           PetscCall(PCFactorSetDefaultOrdering_Factor(pc));
           PetscCall(MatGetOrdering(pc->pmat,((PC_Factor*)dir)->ordering,&dir->row,&dir->col));
-          if (dir->nonzerosalongdiagonal) {
-            PetscCall(MatReorderForNonzeroDiagonal(pc->pmat,dir->nonzerosalongdiagonaltol,dir->row,dir->col));
-          }
+          if (dir->nonzerosalongdiagonal) PetscCall(MatReorderForNonzeroDiagonal(pc->pmat,dir->nonzerosalongdiagonaltol,dir->row,dir->col));
           PetscCall(PetscLogObjectParent((PetscObject)pc,(PetscObject)dir->row));
           PetscCall(PetscLogObjectParent((PetscObject)pc,(PetscObject)dir->col));
         }

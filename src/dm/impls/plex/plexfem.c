@@ -4203,9 +4203,7 @@ static PetscErrorCode DMConvertPlex_Internal(DM dm, DM *plex, PetscBool copy)
     if (!*plex) {
       PetscCall(DMConvert(dm,DMPLEX,plex));
       PetscCall(PetscObjectCompose((PetscObject) dm, "dm_plex", (PetscObject) *plex));
-      if (copy) {
-        PetscCall(DMCopyAuxiliaryVec(dm, *plex));
-      }
+      if (copy) PetscCall(DMCopyAuxiliaryVec(dm, *plex));
     } else {
       PetscCall(PetscObjectReference((PetscObject) *plex));
     }

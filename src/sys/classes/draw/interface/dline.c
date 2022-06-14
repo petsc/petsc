@@ -194,9 +194,7 @@ PetscErrorCode  PetscDrawLineSetWidth(PetscDraw draw,PetscReal width)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  if (draw->ops->linesetwidth) {
-    PetscCall((*draw->ops->linesetwidth)(draw,width));
-  }
+  if (draw->ops->linesetwidth) PetscCall((*draw->ops->linesetwidth)(draw,width));
   PetscFunctionReturn(0);
 }
 

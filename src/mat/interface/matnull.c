@@ -370,9 +370,7 @@ PetscErrorCode  MatNullSpaceRemove(MatNullSpace sp,Vec vec)
     PetscCall(VecMAXPY(vec,sp->n,sp->alpha,sp->vecs));
   }
 
-  if (sp->remove) {
-    PetscCall((*sp->remove)(sp,vec,sp->rmctx));
-  }
+  if (sp->remove) PetscCall((*sp->remove)(sp,vec,sp->rmctx));
   PetscFunctionReturn(0);
 }
 

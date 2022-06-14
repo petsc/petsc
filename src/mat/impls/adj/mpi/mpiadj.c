@@ -260,9 +260,7 @@ static PetscErrorCode MatView_MPIAdj(Mat A,PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
-  if (iascii) {
-    PetscCall(MatView_MPIAdj_ASCII(A,viewer));
-  }
+  if (iascii) PetscCall(MatView_MPIAdj_ASCII(A,viewer));
   PetscFunctionReturn(0);
 }
 

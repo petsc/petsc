@@ -172,9 +172,7 @@ PetscErrorCode TaoSolve(Tao tao)
   tao->header_printed = PETSC_FALSE;
   PetscCall(TaoSetUp(tao));
   PetscCall(TaoResetStatistics(tao));
-  if (tao->linesearch) {
-    PetscCall(TaoLineSearchReset(tao->linesearch));
-  }
+  if (tao->linesearch) PetscCall(TaoLineSearchReset(tao->linesearch));
 
   PetscCall(PetscLogEventBegin(TAO_Solve,tao,0,0,0));
   if (tao->ops->solve) PetscCall((*tao->ops->solve)(tao));
@@ -490,9 +488,7 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
 
     flg = PETSC_FALSE;
     PetscCall(PetscOptionsBool("-tao_draw_step","plots step direction at each iteration","TaoSetMonitor",flg,&flg,NULL));
-    if (flg) {
-      PetscCall(TaoSetMonitor(tao,TaoDrawStepMonitor,NULL,NULL));
-    }
+    if (flg) PetscCall(TaoSetMonitor(tao,TaoDrawStepMonitor,NULL,NULL));
 
     flg = PETSC_FALSE;
     PetscCall(PetscOptionsBool("-tao_draw_gradient","plots gradient at each iteration","TaoSetMonitor",flg,&flg,NULL));
@@ -504,9 +500,7 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
     }
     flg = PETSC_FALSE;
     PetscCall(PetscOptionsBool("-tao_fd_gradient","compute gradient using finite differences","TaoDefaultComputeGradient",flg,&flg,NULL));
-    if (flg) {
-      PetscCall(TaoSetGradient(tao,NULL,TaoDefaultComputeGradient,NULL));
-    }
+    if (flg) PetscCall(TaoSetGradient(tao,NULL,TaoDefaultComputeGradient,NULL));
     flg = PETSC_FALSE;
     PetscCall(PetscOptionsBool("-tao_fd_hessian","compute hessian using finite differences","TaoDefaultComputeHessian",flg,&flg,NULL));
     if (flg) {
@@ -528,9 +522,7 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
     }
     flg = PETSC_FALSE;
     PetscCall(PetscOptionsBool("-tao_recycle_history","enable recycling/re-using information from the previous TaoSolve() call for some algorithms","TaoSetRecycleHistory",flg,&flg,NULL));
-    if (flg) {
-      PetscCall(TaoSetRecycleHistory(tao,PETSC_TRUE));
-    }
+    if (flg) PetscCall(TaoSetRecycleHistory(tao,PETSC_TRUE));
     PetscCall(PetscOptionsEnum("-tao_subset_type","subset type","",TaoSubSetTypes,(PetscEnum)tao->subset_type,(PetscEnum*)&tao->subset_type,NULL));
 
     if (tao->ksp) {
@@ -538,13 +530,9 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
       PetscCall(TaoKSPSetUseEW(tao,tao->ksp_ewconv));
     }
 
-    if (tao->linesearch) {
-      PetscCall(TaoLineSearchSetFromOptions(tao->linesearch));
-    }
+    if (tao->linesearch) PetscCall(TaoLineSearchSetFromOptions(tao->linesearch));
 
-    if (tao->ops->setfromoptions) {
-      PetscCall((*tao->ops->setfromoptions)(PetscOptionsObject,tao));
-    }
+    if (tao->ops->setfromoptions) PetscCall((*tao->ops->setfromoptions)(PetscOptionsObject,tao));
   }
   PetscOptionsEnd();
   PetscFunctionReturn(0);
@@ -2068,12 +2056,8 @@ PetscErrorCode TaoSetOptionsPrefix(Tao tao, const char p[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)tao,p));
-  if (tao->linesearch) {
-    PetscCall(TaoLineSearchSetOptionsPrefix(tao->linesearch,p));
-  }
-  if (tao->ksp) {
-    PetscCall(KSPSetOptionsPrefix(tao->ksp,p));
-  }
+  if (tao->linesearch) PetscCall(TaoLineSearchSetOptionsPrefix(tao->linesearch,p));
+  if (tao->ksp) PetscCall(KSPSetOptionsPrefix(tao->ksp,p));
   PetscFunctionReturn(0);
 }
 
@@ -2100,12 +2084,8 @@ PetscErrorCode TaoAppendOptionsPrefix(Tao tao, const char p[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscCall(PetscObjectAppendOptionsPrefix((PetscObject)tao,p));
-  if (tao->linesearch) {
-    PetscCall(PetscObjectAppendOptionsPrefix((PetscObject)tao->linesearch,p));
-  }
-  if (tao->ksp) {
-    PetscCall(KSPAppendOptionsPrefix(tao->ksp,p));
-  }
+  if (tao->linesearch) PetscCall(PetscObjectAppendOptionsPrefix((PetscObject)tao->linesearch,p));
+  if (tao->ksp) PetscCall(KSPAppendOptionsPrefix(tao->ksp,p));
   PetscFunctionReturn(0);
 }
 
@@ -2183,6 +2163,7 @@ PetscErrorCode TaoSetType(Tao tao, TaoType type)
 
   /* Destroy the existing solver information */
   if (tao->ops->destroy) PetscCall((*tao->ops->destroy)(tao));
+  PetscCall(KSPDestroy(&tao->ksp));
   PetscCall(TaoLineSearchDestroy(&tao->linesearch));
   tao->ops->setup          = NULL;
   tao->ops->solve          = NULL;

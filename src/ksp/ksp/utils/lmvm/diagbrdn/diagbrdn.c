@@ -318,9 +318,7 @@ static PetscErrorCode MatUpdate_DiagBrdn(Mat B, Vec X, Vec F)
       /* Combine the old diagonal and the new diagonal using a convex limiter */
       if (1.0 == ldb->rho) {
         PetscCall(VecCopy(ldb->invDnew, ldb->invD));
-      } else if (ldb->rho) {
-        PetscCall(VecAXPBY(ldb->invD, 1.0-ldb->rho, ldb->rho, ldb->invDnew));
-      }
+      } else if (ldb->rho) PetscCall(VecAXPBY(ldb->invD, 1.0-ldb->rho, ldb->rho, ldb->invDnew));
     } else {
       PetscCall(MatLMVMReset(B, PETSC_FALSE));
     }

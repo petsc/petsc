@@ -123,9 +123,7 @@ PetscErrorCode PetscWeakFormSetFunction_Private(PetscWeakForm wf, PetscHMapForm 
   if (!func) {
     PetscCall(PetscHMapFormDel(ht, key));
     PetscFunctionReturn(0);
-  } else {
-    PetscCall(PetscHMapFormGet(ht, key, &chunk));
-  }
+  } else PetscCall(PetscHMapFormGet(ht, key, &chunk));
   if (chunk.size < 0) {
     PetscCall(PetscChunkBufferCreateChunk(wf->funcs, n, &chunk));
     PetscCall(PetscHMapFormSet(ht, key, chunk));

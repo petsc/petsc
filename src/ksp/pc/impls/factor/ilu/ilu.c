@@ -138,9 +138,7 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
         PetscCall(PetscLogObjectParent((PetscObject)pc,(PetscObject)ilu->row));
         PetscCall(PetscLogObjectParent((PetscObject)pc,(PetscObject)ilu->col));
         /*  Remove zeros along diagonal?     */
-        if (ilu->nonzerosalongdiagonal) {
-          PetscCall(MatReorderForNonzeroDiagonal(pc->pmat,ilu->nonzerosalongdiagonaltol,ilu->row,ilu->col));
-        }
+        if (ilu->nonzerosalongdiagonal) PetscCall(MatReorderForNonzeroDiagonal(pc->pmat,ilu->nonzerosalongdiagonaltol,ilu->row,ilu->col));
       }
       PetscCall(MatILUFactorSymbolic(((PC_Factor*)ilu)->fact,pc->pmat,ilu->row,ilu->col,&((PC_Factor*)ilu)->info));
       PetscCall(MatGetInfo(((PC_Factor*)ilu)->fact,MAT_LOCAL,&info));
@@ -161,9 +159,7 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
           PetscCall(PetscLogObjectParent((PetscObject)pc,(PetscObject)ilu->row));
           PetscCall(PetscLogObjectParent((PetscObject)pc,(PetscObject)ilu->col));
           /*  Remove zeros along diagonal?     */
-          if (ilu->nonzerosalongdiagonal) {
-            PetscCall(MatReorderForNonzeroDiagonal(pc->pmat,ilu->nonzerosalongdiagonaltol,ilu->row,ilu->col));
-          }
+          if (ilu->nonzerosalongdiagonal) PetscCall(MatReorderForNonzeroDiagonal(pc->pmat,ilu->nonzerosalongdiagonaltol,ilu->row,ilu->col));
         }
       }
       PetscCall(MatILUFactorSymbolic(((PC_Factor*)ilu)->fact,pc->pmat,ilu->row,ilu->col,&((PC_Factor*)ilu)->info));

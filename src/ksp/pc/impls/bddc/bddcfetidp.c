@@ -212,9 +212,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx)
     PetscCall(PetscObjectReference((PetscObject)fetidpmat_ctx->Bt_BB));
 
     PetscCall(PetscObjectQuery((PetscObject)fetidpmat_ctx->pc,"__KSPFETIDP_flip" ,(PetscObject*)&fetidpmat_ctx->rhs_flip));
-    if (fetidpmat_ctx->rhs_flip) {
-      PetscCall(PetscObjectReference((PetscObject)fetidpmat_ctx->rhs_flip));
-    }
+    if (fetidpmat_ctx->rhs_flip) PetscCall(PetscObjectReference((PetscObject)fetidpmat_ctx->rhs_flip));
   }
 
   /* Default type of lagrange multipliers is non-redundant */
@@ -721,9 +719,7 @@ PetscErrorCode PCBDDCSetupFETIDPPCContext(Mat fetimat, FETIDPPC_ctx fetidppc_ctx
     PetscCall(KSPGetPC(pcbddc->ksp_D,&pc));
     PetscCall(PCSetType(mpc,PCLU));
     PetscCall(PCFactorGetMatSolverType(pc,(MatSolverType*)&solver));
-    if (solver) {
-      PetscCall(PCFactorSetMatSolverType(mpc,solver));
-    }
+    if (solver) PetscCall(PCFactorSetMatSolverType(mpc,solver));
     PetscCall(MatGetOptionsPrefix(fetimat,&prefix));
     PetscCall(KSPSetOptionsPrefix(ctx->kBD,prefix));
     PetscCall(KSPAppendOptionsPrefix(ctx->kBD,"bddelta_"));
@@ -805,9 +801,7 @@ PetscErrorCode PCBDDCSetupFETIDPPCContext(Mat fetimat, FETIDPPC_ctx fetidppc_ctx
         PetscCall(PCFactorGetMatSolverType(pc,(MatSolverType*)&solver));
         PetscCall(KSPGetPC(sksp,&pc));
         PetscCall(PCSetType(pc,pctype));
-        if (solver) {
-          PetscCall(PCFactorSetMatSolverType(pc,solver));
-        }
+        if (solver) PetscCall(PCFactorSetMatSolverType(pc,solver));
       } else {
         PetscCall(KSPGetPC(sksp,&pc));
         PetscCall(PCSetType(pc,PCLU));
@@ -874,9 +868,7 @@ PetscErrorCode FETIDPMatMult_Kernel(Mat fetimat, Vec x, Vec y, PetscBool trans)
       PetscCall(MatMultAdd(mat_ctx->Bt_BB,mat_ctx->vP,pcis->vec1_B,pcis->vec1_B));
     }
   } else {
-    if (pcbddc->switch_static) {
-      PetscCall(VecSet(pcis->vec1_D,0.0));
-    }
+    if (pcbddc->switch_static) PetscCall(VecSet(pcis->vec1_D,0.0));
   }
   /* Application of \widetilde{S}^-1 */
   PetscCall(PetscArrayzero(pcbddc->benign_p0,pcbddc->benign_n));

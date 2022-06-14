@@ -308,9 +308,7 @@ PetscErrorCode  DMDASetOffset(DM da, PetscInt xo, PetscInt yo, PetscInt zo, Pets
   dd->No = No;
   dd->Po = Po;
 
-  if (da->coordinateDM) {
-    PetscCall(DMDASetOffset(da->coordinateDM,xo,yo,zo,Mo,No,Po));
-  }
+  if (da->coordinateDM) PetscCall(DMDASetOffset(da->coordinateDM,xo,yo,zo,Mo,No,Po));
   PetscFunctionReturn(0);
 }
 

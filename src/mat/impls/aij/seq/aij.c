@@ -1093,13 +1093,9 @@ PetscErrorCode MatView_SeqAIJ(Mat A,PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw));
-  if (iascii) {
-    PetscCall(MatView_SeqAIJ_ASCII(A,viewer));
-  } else if (isbinary) {
-    PetscCall(MatView_SeqAIJ_Binary(A,viewer));
-  } else if (isdraw) {
-    PetscCall(MatView_SeqAIJ_Draw(A,viewer));
-  }
+  if (iascii) PetscCall(MatView_SeqAIJ_ASCII(A,viewer));
+  else if (isbinary) PetscCall(MatView_SeqAIJ_Binary(A,viewer));
+  else if (isdraw) PetscCall(MatView_SeqAIJ_Draw(A,viewer));
   PetscCall(MatView_SeqAIJ_Inode(A,viewer));
   PetscFunctionReturn(0);
 }
@@ -4069,9 +4065,7 @@ PetscErrorCode  MatSeqAIJSetPreallocation_SeqAIJ(Mat B,PetscInt nz,const PetscIn
   b->nz               = 0;
   b->maxnz            = nz;
   B->info.nz_unneeded = (double)b->maxnz;
-  if (realalloc) {
-    PetscCall(MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE));
-  }
+  if (realalloc) PetscCall(MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE));
   B->was_assembled = PETSC_FALSE;
   B->assembled     = PETSC_FALSE;
   /* We simply deem preallocation has changed nonzero state. Updating the state

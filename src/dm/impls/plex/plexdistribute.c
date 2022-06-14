@@ -1138,9 +1138,7 @@ static PetscErrorCode DMPlexDistributeCones(DM dm, PetscSF migrationSF, ISLocalT
   PetscCall(DMPlexGetCones(dmParallel, &newCones));
   PetscCall(PetscSFBcastBegin(coneSF, MPIU_INT, globCones, newCones,MPI_REPLACE));
   PetscCall(PetscSFBcastEnd(coneSF, MPIU_INT, globCones, newCones,MPI_REPLACE));
-  if (original) {
-    PetscCall(PetscFree(globCones));
-  }
+  if (original) PetscCall(PetscFree(globCones));
   PetscCall(PetscSectionGetStorageSize(newConeSection, &newConesSize));
   PetscCall(ISGlobalToLocalMappingApplyBlock(renumbering, IS_GTOLM_MASK, newConesSize, newCones, NULL, newCones));
   if (PetscDefined(USE_DEBUG)) {
@@ -1341,9 +1339,7 @@ static PetscErrorCode DMPlexDistributeSetupTree(DM dm, PetscSF migrationSF, ISLo
     }
     PetscCall(PetscSFBcastBegin(parentSF, MPIU_INT, globParents, newParents,MPI_REPLACE));
     PetscCall(PetscSFBcastEnd(parentSF, MPIU_INT, globParents, newParents,MPI_REPLACE));
-    if (original) {
-      PetscCall(PetscFree(globParents));
-    }
+    if (original) PetscCall(PetscFree(globParents));
     PetscCall(PetscSFBcastBegin(parentSF, MPIU_INT, origChildIDs, newChildIDs,MPI_REPLACE));
     PetscCall(PetscSFBcastEnd(parentSF, MPIU_INT, origChildIDs, newChildIDs,MPI_REPLACE));
     PetscCall(ISGlobalToLocalMappingApplyBlock(renumbering,IS_GTOLM_MASK, newParentSize, newParents, NULL, newParents));

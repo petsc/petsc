@@ -1173,9 +1173,7 @@ PetscErrorCode MatView_MPIBAIJ(Mat mat,PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary));
   if (iascii || isdraw || issocket) {
     PetscCall(MatView_MPIBAIJ_ASCIIorDraworSocket(mat,viewer));
-  } else if (isbinary) {
-    PetscCall(MatView_MPIBAIJ_Binary(mat,viewer));
-  }
+  } else if (isbinary) PetscCall(MatView_MPIBAIJ_Binary(mat,viewer));
   PetscFunctionReturn(0);
 }
 
@@ -2182,13 +2180,9 @@ PetscErrorCode MatGetSeqNonzeroStructure_MPIBAIJ(Mat A,Mat *newmat)
   PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
   PetscCall(PetscFree(recvcounts));
 
-  if (A->symmetric) {
-    PetscCall(MatSetOption(B,MAT_SYMMETRIC,PETSC_TRUE));
-  } else if (A->hermitian) {
-    PetscCall(MatSetOption(B,MAT_HERMITIAN,PETSC_TRUE));
-  } else if (A->structurally_symmetric) {
-    PetscCall(MatSetOption(B,MAT_STRUCTURALLY_SYMMETRIC,PETSC_TRUE));
-  }
+  if (A->symmetric) PetscCall(MatSetOption(B,MAT_SYMMETRIC,PETSC_TRUE));
+  else if (A->hermitian) PetscCall(MatSetOption(B,MAT_HERMITIAN,PETSC_TRUE));
+  else if (A->structurally_symmetric) PetscCall(MatSetOption(B,MAT_STRUCTURALLY_SYMMETRIC,PETSC_TRUE));
   *newmat = B;
   PetscFunctionReturn(0);
 }

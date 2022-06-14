@@ -455,9 +455,7 @@ SNESSetUseMFFD(SNES snes,PetscBool flag)
     PetscCall(PetscObjectTypeCompare((PetscObject)pc,PCSHELL,&shell));
     PetscCall(PetscObjectTypeCompare((PetscObject)pc,PCPYTHON,&python));
     if (!shell && !python) PetscCall(PCSetType(pc,PCNONE));
-  } else {
-    PetscCall(SNESSetJacobian(snes,J,0,0,0));
-  }
+  } else PetscCall(SNESSetJacobian(snes,J,0,0,0));
   PetscCall(MatDestroy(&J));
 
   PetscFunctionReturn(0);

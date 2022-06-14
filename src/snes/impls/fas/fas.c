@@ -139,9 +139,7 @@ static PetscErrorCode SNESSetUp_FAS(SNES snes)
 
   /*pass the smoother, function, and jacobian up to the next level if it's not user set already */
   if (fas->galerkin) {
-    if (next) {
-      PetscCall(SNESSetFunction(next, NULL, SNESFASGalerkinFunctionDefault, next));
-    }
+    if (next) PetscCall(SNESSetFunction(next, NULL, SNESFASGalerkinFunctionDefault, next));
     if (fas->smoothd && fas->level != fas->levels - 1) {
       PetscCall(SNESSetFunction(fas->smoothd, NULL, SNESFASGalerkinFunctionDefault, snes));
     }
@@ -214,24 +212,16 @@ static PetscErrorCode SNESSetFromOptions_FAS(PetscOptionItems *PetscOptionsObjec
     PetscCall(SNESFASSetLevels(snes, levels, NULL));
     fastype = fas->fastype;
     PetscCall(PetscOptionsEnum("-snes_fas_type","FAS correction type","SNESFASSetType",SNESFASTypes,(PetscEnum)fastype,(PetscEnum*)&fastype,&flg));
-    if (flg) {
-      PetscCall(SNESFASSetType(snes, fastype));
-    }
+    if (flg) PetscCall(SNESFASSetType(snes, fastype));
 
     PetscCall(SNESGetOptionsPrefix(snes, &optionsprefix));
     PetscCall(PetscOptionsInt("-snes_fas_cycles","Number of cycles","SNESFASSetCycles",fas->n_cycles,&m,&flg));
-    if (flg) {
-      PetscCall(SNESFASSetCycles(snes, m));
-    }
+    if (flg) PetscCall(SNESFASSetCycles(snes, m));
     PetscCall(PetscOptionsBool("-snes_fas_continuation","Corrected grid-sequence continuation","SNESFASSetContinuation",fas->continuation,&continuationflg,&flg));
-    if (flg) {
-      PetscCall(SNESFASSetContinuation(snes,continuationflg));
-    }
+    if (flg) PetscCall(SNESFASSetContinuation(snes,continuationflg));
 
     PetscCall(PetscOptionsBool("-snes_fas_galerkin", "Form coarse problems with Galerkin","SNESFASSetGalerkin",fas->galerkin,&galerkinflg,&flg));
-    if (flg) {
-      PetscCall(SNESFASSetGalerkin(snes, galerkinflg));
-    }
+    if (flg) PetscCall(SNESFASSetGalerkin(snes, galerkinflg));
 
     if (fas->fastype == SNES_FAS_FULL) {
       PetscCall(PetscOptionsBool("-snes_fas_full_downsweep","Smooth on the initial down sweep for full FAS cycles","SNESFASFullSetDownSweep",fas->full_downsweep,&fas->full_downsweep,&flg));
@@ -264,12 +254,8 @@ static PetscErrorCode SNESSetFromOptions_FAS(PetscOptionItems *PetscOptionsObjec
   PetscOptionsHeadEnd();
 
   /* setup from the determined types if there is no pointwise procedure or smoother defined */
-  if (upflg) {
-    PetscCall(SNESFASSetNumberSmoothUp(snes,n_up));
-  }
-  if (downflg) {
-    PetscCall(SNESFASSetNumberSmoothDown(snes,n_down));
-  }
+  if (upflg) PetscCall(SNESFASSetNumberSmoothUp(snes,n_up));
+  if (downflg) PetscCall(SNESFASSetNumberSmoothDown(snes,n_down));
 
   /* set up the default line search for coarse grid corrections */
   if (fas->fastype == SNES_FAS_ADDITIVE) {
@@ -781,9 +767,7 @@ static PetscErrorCode SNESFASCycle_Full(SNES snes, Vec X)
   PetscCall(SNESFASCycleIsFine(snes,&isFine));
   PetscCall(SNESFASCycleGetCorrection(snes,&next));
 
-  if (isFine) {
-    PetscCall(SNESFASCycleSetupPhase_Full(snes));
-  }
+  if (isFine) PetscCall(SNESFASCycleSetupPhase_Full(snes));
 
   if (fas->full_stage == 0) {
     /* downsweep */
@@ -899,9 +883,7 @@ static PetscErrorCode SNESSolve_FAS(SNES snes)
 
   for (i = 0; i < snes->max_its; i++) {
     /* Call general purpose update function */
-    if (snes->ops->update) {
-      PetscCall((*snes->ops->update)(snes, snes->iter));
-    }
+    if (snes->ops->update) PetscCall((*snes->ops->update)(snes, snes->iter));
 
     if (fas->fastype == SNES_FAS_MULTIPLICATIVE) {
       PetscCall(SNESFASCycle_Multiplicative(snes, X));

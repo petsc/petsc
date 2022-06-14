@@ -197,9 +197,7 @@ PetscErrorCode TSComputeIJacobianP(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal sh
       }
     }
   } else {
-    if (ts->rhsjacobianp) {
-      PetscCall(TSComputeRHSJacobianP(ts,t,U,ts->Jacprhs));
-    }
+    if (ts->rhsjacobianp) PetscCall(TSComputeRHSJacobianP(ts,t,U,ts->Jacprhs));
     if (ts->Jacprhs == Amat) { /* No IJacobian, so we only have the RHS matrix */
       PetscCall(MatScale(Amat,-1));
     } else if (ts->Jacprhs) { /* Both IJacobian and RHSJacobian */
@@ -1021,9 +1019,7 @@ PetscErrorCode TSAdjointSetUp(TS ts)
     }
   }
 
-  if (ts->ops->adjointsetup) {
-    PetscCall((*ts->ops->adjointsetup)(ts));
-  }
+  if (ts->ops->adjointsetup) PetscCall((*ts->ops->adjointsetup)(ts));
   ts->adjointsetupcalled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -1044,9 +1040,7 @@ PetscErrorCode TSAdjointReset(TS ts)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if (ts->ops->adjointreset) {
-    PetscCall((*ts->ops->adjointreset)(ts));
-  }
+  if (ts->ops->adjointreset) PetscCall((*ts->ops->adjointreset)(ts));
   if (ts->quadraturets) { /* if there is integral in the cost function */
     PetscCall(VecDestroy(&ts->vec_drdu_col));
     if (ts->vecs_sensip) {
@@ -1221,9 +1215,7 @@ PetscErrorCode TSAdjointMonitorSetFromOptions(TS ts,const char name[],const char
     PetscViewerAndFormat *vf;
     PetscCall(PetscViewerAndFormatCreate(viewer,format,&vf));
     PetscCall(PetscObjectDereference((PetscObject)viewer));
-    if (monitorsetup) {
-      PetscCall((*monitorsetup)(ts,vf));
-    }
+    if (monitorsetup) PetscCall((*monitorsetup)(ts,vf));
     PetscCall(TSAdjointMonitorSet(ts,(PetscErrorCode (*)(TS,PetscInt,PetscReal,Vec,PetscInt,Vec*,Vec*,void*))monitor,vf,(PetscErrorCode (*)(void**))PetscViewerAndFormatDestroy));
   }
   PetscFunctionReturn(0);
@@ -1620,9 +1612,7 @@ PetscErrorCode TSForwardSetUp(TS ts)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (ts->forwardsetupcalled) PetscFunctionReturn(0);
-  if (ts->ops->forwardsetup) {
-    PetscCall((*ts->ops->forwardsetup)(ts));
-  }
+  if (ts->ops->forwardsetup) PetscCall((*ts->ops->forwardsetup)(ts));
   PetscCall(VecDuplicate(ts->vec_sol,&ts->vec_sensip_col));
   ts->forwardsetupcalled = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -1646,9 +1636,7 @@ PetscErrorCode TSForwardReset(TS ts)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if (ts->ops->forwardreset) {
-    PetscCall((*ts->ops->forwardreset)(ts));
-  }
+  if (ts->ops->forwardreset) PetscCall((*ts->ops->forwardreset)(ts));
   PetscCall(MatDestroy(&ts->mat_sensip));
   if (quadts) {
     PetscCall(MatDestroy(&quadts->mat_sensip));

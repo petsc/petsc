@@ -118,9 +118,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
     PetscCall(MatLMVMAllocate(nlsP->M, tao->solution, tao->gradient));
     PetscCall(MatIsSymmetricKnown(nlsP->M, &sym_set, &is_symmetric));
     PetscCheck(sym_set && is_symmetric,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM matrix in the LMVM preconditioner must be symmetric.");
-  } else if (is_jacobi) {
-    PetscCall(PCJacobiSetUseAbs(pc,PETSC_TRUE));
-  }
+  } else if (is_jacobi) PetscCall(PCJacobiSetUseAbs(pc,PETSC_TRUE));
 
   /* Initialize trust-region radius.  The initialization is only performed
      when we are using Nash, Steihaug-Toint or the Generalized Lanczos method. */
@@ -254,16 +252,12 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
   /* Have not converged; continue with Newton method */
   while (tao->reason == TAO_CONTINUE_ITERATING) {
     /* Call general purpose update function */
-    if (tao->ops->update) {
-      PetscCall((*tao->ops->update)(tao, tao->niter, tao->user_update));
-    }
+    if (tao->ops->update) PetscCall((*tao->ops->update)(tao, tao->niter, tao->user_update));
     ++tao->niter;
     tao->ksp_its = 0;
 
     /* Compute the Hessian */
-    if (needH) {
-      PetscCall(TaoComputeHessian(tao,tao->solution,tao->hessian,tao->hessian_pre));
-    }
+    if (needH) PetscCall(TaoComputeHessian(tao,tao->solution,tao->hessian,tao->hessian_pre));
 
     /* Shift the Hessian matrix */
     if (pert > 0) {

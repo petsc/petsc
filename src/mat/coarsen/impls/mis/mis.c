@@ -247,9 +247,7 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscCoarsenD
   PetscCall(PetscFree(lid_cprowID));
   PetscCall(PetscFree(lid_gid));
   PetscCall(PetscFree(lid_removed));
-  if (strict_aggs) {
-    PetscCall(PetscFree(lid_parent_gid));
-  }
+  if (strict_aggs) PetscCall(PetscFree(lid_parent_gid));
   PetscCall(PetscFree(lid_state));
   PetscFunctionReturn(0);
 }

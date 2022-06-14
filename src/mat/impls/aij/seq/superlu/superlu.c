@@ -251,9 +251,7 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo
     lu->options.Fact = SamePattern;
     /* Ref: ~SuperLU_3.0/EXAMPLE/dlinsolx2.c */
     Destroy_SuperMatrix_Store(&lu->A);
-    if (lu->A_dup) {
-      PetscCall(MatCopy_SeqAIJ(A,lu->A_dup,SAME_NONZERO_PATTERN));
-    }
+    if (lu->A_dup) PetscCall(MatCopy_SeqAIJ(A,lu->A_dup,SAME_NONZERO_PATTERN));
 
     if (lu->lwork >= 0) {
       PetscStackCall("SuperLU:Destroy_SuperNode_Matrix",Destroy_SuperNode_Matrix(&lu->L));

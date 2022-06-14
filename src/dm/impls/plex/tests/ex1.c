@@ -228,9 +228,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
   PetscCall(PetscObjectSetName((PetscObject) *dm, "Generated Mesh"));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
-  if (user->final_diagnostics) {
-    PetscCall(DMPlexCheck(*dm));
-  }
+  if (user->final_diagnostics) PetscCall(DMPlexCheck(*dm));
   PetscCall(PetscLogEventEnd(user->createMeshEvent,0,0,0,0));
   PetscFunctionReturn(0);
 }

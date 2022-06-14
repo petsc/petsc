@@ -57,9 +57,7 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
   PetscOptionsBegin(comm,NULL,"Options for loading matrix from HDF5","Mat");
   PetscCall(PetscOptionsInt("-matload_block_size","Set the blocksize used to store the matrix","MatLoad",bs,&bs,&flg));
   PetscOptionsEnd();
-  if (flg) {
-    PetscCall(MatSetBlockSize(mat, bs));
-  }
+  if (flg) PetscCall(MatSetBlockSize(mat, bs));
 
   PetscCall(PetscViewerHDF5PushGroup(viewer,mat_name));
   PetscCall(PetscViewerHDF5ReadAttribute(viewer,NULL,c_name,PETSC_INT,NULL,&N));

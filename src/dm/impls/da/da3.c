@@ -69,11 +69,8 @@ static PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
 #endif
       PetscCall(PetscViewerFlush(viewer));
       PetscCall(PetscViewerASCIIPopSynchronized(viewer));
-    } else if (format == PETSC_VIEWER_ASCII_GLVIS) {
-      PetscCall(DMView_DA_GLVis(da,viewer));
-    } else {
-      PetscCall(DMView_DA_VTK(da,viewer));
-    }
+    } else if (format == PETSC_VIEWER_ASCII_GLVIS) PetscCall(DMView_DA_GLVis(da,viewer));
+    else PetscCall(DMView_DA_VTK(da,viewer));
   } else if (isdraw) {
     PetscDraw      draw;
     PetscReal      ymin = -1.0,ymax = (PetscReal)dd->N;

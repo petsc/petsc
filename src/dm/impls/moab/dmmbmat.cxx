@@ -88,8 +88,7 @@ PETSC_EXTERN PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm, PetscInt
     adjs.clear();
     if (dmmoab->hlevel && (dmmoab->pcomm->size() == 1)) {
       merr = dmmoab->hierarchy->get_adjacencies(vtx, dmmoab->dim, adjs); MBERRNM(merr);
-    }
-    else {
+    } else {
       merr = dmmoab->mbiface->get_adjacencies(&vtx, 1, dmmoab->dim, true, adjs, moab::Interface::UNION); MBERRNM(merr);
     }
 
@@ -121,16 +120,14 @@ PETSC_EXTERN PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm, PetscInt
       if (onz) {
         onz[ivtx] = n_onz; /* add ghost non-owned nodes */
       }
-    }
-    else { /* AIJ matrices */
+    } else { /* AIJ matrices */
       if (!isinterlaced) {
         for (f = 0; f < nfields; f++) {
           nnz[f * nloc + ivtx] = n_nnz; /* leave out self to avoid repeats -> node shared by multiple elements */
           if (onz)
             onz[f * nloc + ivtx] = n_onz; /* add ghost non-owned nodes */
         }
-      }
-      else {
+      } else {
         for (f = 0; f < nfields; f++) {
           nnz[nfields * ivtx + f] = n_nnz; /* leave out self to avoid repeats -> node shared by multiple elements */
           if (onz)
@@ -166,8 +163,7 @@ PETSC_EXTERN PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm, PetscInt
           else onz[ibs * nloc + ivtx] *= iobsize;
         }
       }
-    }
-    else {
+    } else {
       /* check if we got overzealous in our nnz and onz computations */
       nnz[ivtx] = (nnz[ivtx] > dmmoab->nloc ? dmmoab->nloc : nnz[ivtx]);
       if (onz) onz[ivtx] = (onz[ivtx] > dmmoab->nloc ? dmmoab->nloc : onz[ivtx]);

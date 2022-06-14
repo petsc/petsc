@@ -310,9 +310,7 @@ PetscErrorCode MatDuplicate_SeqAIJMKL(Mat A, MatDuplicateOption op, Mat *M)
   aijmkl_dest = (Mat_SeqAIJMKL*)(*M)->spptr;
   PetscCall(PetscArraycpy(aijmkl_dest,aijmkl,1));
   aijmkl_dest->sparse_optimized = PETSC_FALSE;
-  if (aijmkl->eager_inspection) {
-    PetscCall(MatSeqAIJMKL_create_mkl_handle(A));
-  }
+  if (aijmkl->eager_inspection) PetscCall(MatSeqAIJMKL_create_mkl_handle(A));
   PetscFunctionReturn(0);
 }
 
@@ -335,9 +333,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJMKL(Mat A, MatAssemblyType mode)
   /* If the user has requested "eager" inspection, create the optimized MKL sparse handle (if needed; the function checks).
    * (The default is to do "lazy" inspection, deferring this until something like MatMult() is called.) */
   aijmkl = (Mat_SeqAIJMKL*)A->spptr;
-  if (aijmkl->eager_inspection) {
-    PetscCall(MatSeqAIJMKL_create_mkl_handle(A));
-  }
+  if (aijmkl->eager_inspection) PetscCall(MatSeqAIJMKL_create_mkl_handle(A));
 
   PetscFunctionReturn(0);
 }

@@ -336,16 +336,12 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,PetscOptions options,const c
             }
             PetscCall(PetscViewerFileSetMode(*viewer,flag?fmode:FILE_MODE_WRITE));
             PetscCall(PetscViewerFileSetName(*viewer,loc1_fname));
-            if (*loc1_fname) {
-              PetscCall(PetscViewerDrawSetDrawType(*viewer,loc1_fname));
-            }
+            if (*loc1_fname) PetscCall(PetscViewerDrawSetDrawType(*viewer,loc1_fname));
             PetscCall(PetscViewerSetFromOptions(*viewer));
           }
         }
       }
-      if (viewer) {
-        PetscCall(PetscViewerSetUp(*viewer));
-      }
+      if (viewer) PetscCall(PetscViewerSetUp(*viewer));
       if (loc2_fmt && *loc2_fmt) {
         PetscViewerFormat tfmt;
 
@@ -502,16 +498,12 @@ PetscErrorCode  PetscViewerSetFromOptions(PetscViewer viewer)
   }
   PetscObjectOptionsBegin((PetscObject)viewer);
   PetscCall(PetscOptionsFList("-viewer_type","Type of PetscViewer","None",PetscViewerList,(char*)(((PetscObject)viewer)->type_name ? ((PetscObject)viewer)->type_name : PETSCVIEWERASCII),vtype,256,&flg));
-  if (flg) {
-    PetscCall(PetscViewerSetType(viewer,vtype));
-  }
+  if (flg) PetscCall(PetscViewerSetType(viewer,vtype));
   /* type has not been set? */
   if (!((PetscObject)viewer)->type_name) {
     PetscCall(PetscViewerSetType(viewer,PETSCVIEWERASCII));
   }
-  if (viewer->ops->setfromoptions) {
-    PetscCall((*viewer->ops->setfromoptions)(PetscOptionsObject,viewer));
-  }
+  if (viewer->ops->setfromoptions) PetscCall((*viewer->ops->setfromoptions)(PetscOptionsObject,viewer));
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)viewer));

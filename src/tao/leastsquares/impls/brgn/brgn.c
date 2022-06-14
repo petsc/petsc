@@ -159,19 +159,13 @@ static PetscErrorCode GNComputeHessian(Tao tao,Vec X,Mat H,Mat Hpre,void *ptr)
   switch (gn->reg_type) {
   case BRGN_REGULARIZATION_USER:
     PetscCall((*gn->regularizerhessian)(tao,X,gn->Hreg,gn->reg_hess_ctx));
-    if (gn->mat_explicit) {
-      PetscCall(MatAXPY(gn->H, 1.0, gn->Hreg, DIFFERENT_NONZERO_PATTERN));
-    }
+    if (gn->mat_explicit) PetscCall(MatAXPY(gn->H, 1.0, gn->Hreg, DIFFERENT_NONZERO_PATTERN));
     break;
   case BRGN_REGULARIZATION_L2PURE:
-    if (gn->mat_explicit) {
-      PetscCall(MatShift(gn->H, gn->lambda));
-    }
+    if (gn->mat_explicit) PetscCall(MatShift(gn->H, gn->lambda));
     break;
   case BRGN_REGULARIZATION_L2PROX:
-    if (gn->mat_explicit) {
-      PetscCall(MatShift(gn->H, gn->lambda));
-    }
+    if (gn->mat_explicit) PetscCall(MatShift(gn->H, gn->lambda));
     break;
   case BRGN_REGULARIZATION_L1DICT:
     /* calculate and store diagonal matrix as a vector: diag = epsilon^2 ./ sqrt(x.^2+epsilon^2).^3* --> diag = epsilon^2 ./ sqrt(y.^2+epsilon^2).^3,where y = D*x */
@@ -187,9 +181,7 @@ static PetscErrorCode GNComputeHessian(Tao tao,Vec X,Mat H,Mat Hpre,void *ptr)
     PetscCall(VecPointwiseMult(gn->diag,gn->y_work,gn->diag));/* gn->diag = sqrt(y.^2+epsilon^2).^3 */
     PetscCall(VecReciprocal(gn->diag));
     PetscCall(VecScale(gn->diag,gn->epsilon*gn->epsilon));
-    if (gn->mat_explicit) {
-      PetscCall(MatDiagonalSet(gn->H, gn->diag, ADD_VALUES));
-    }
+    if (gn->mat_explicit) PetscCall(MatDiagonalSet(gn->H, gn->diag, ADD_VALUES));
     break;
   case BRGN_REGULARIZATION_LM:
     /* compute diagonal of J^T J */
@@ -204,9 +196,7 @@ static PetscErrorCode GNComputeHessian(Tao tao,Vec X,Mat H,Mat Hpre,void *ptr)
     PetscCall(VecRestoreArray(gn->diag,&diag_ary));
     PetscCall(PetscFree(cnorms));
     PetscCall(ComputeDamping(gn));
-    if (gn->mat_explicit) {
-      PetscCall(MatDiagonalSet(gn->H, gn->damping, ADD_VALUES));
-    }
+    if (gn->mat_explicit) PetscCall(MatDiagonalSet(gn->H, gn->damping, ADD_VALUES));
     break;
   }
   PetscFunctionReturn(0);
@@ -251,9 +241,7 @@ static PetscErrorCode GNHookFunction(Tao tao,PetscInt iter, void *ctx)
   }
 
   /* Call general purpose update function */
-  if (gn->parent->ops->update) {
-    PetscCall((*gn->parent->ops->update)(gn->parent,gn->parent->niter,gn->parent->user_update));
-  }
+  if (gn->parent->ops->update) PetscCall((*gn->parent->ops->update)(gn->parent,gn->parent->niter,gn->parent->user_update));
   PetscFunctionReturn(0);
 }
 
@@ -384,9 +372,7 @@ static PetscErrorCode TaoSetUp_BRGN(Tao tao)
     /* Subsolver setup,include initial vector and dictionary D */
     PetscCall(TaoSetUpdate(gn->subsolver,GNHookFunction,gn));
     PetscCall(TaoSetSolution(gn->subsolver,tao->solution));
-    if (tao->bounded) {
-      PetscCall(TaoSetVariableBounds(gn->subsolver,tao->XL,tao->XU));
-    }
+    if (tao->bounded) PetscCall(TaoSetVariableBounds(gn->subsolver,tao->XL,tao->XU));
     PetscCall(TaoSetResidualRoutine(gn->subsolver,tao->ls_res,tao->ops->computeresidual,tao->user_lsresP));
     PetscCall(TaoSetJacobianResidualRoutine(gn->subsolver,tao->ls_jac,tao->ls_jac,tao->ops->computeresidualjacobian,tao->user_lsjacP));
     PetscCall(TaoSetObjectiveAndGradient(gn->subsolver,NULL,GNObjectiveGradientEval,gn));

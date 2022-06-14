@@ -32,9 +32,7 @@ PetscErrorCode  SNESApplyNPC(SNES snes,Vec x,Vec f,Vec y)
   PetscCheckSameComm(snes,1,y,4);
   PetscCall(VecValidValues(x,2,PETSC_TRUE));
   if (snes->npc) {
-    if (f) {
-      PetscCall(SNESSetInitialFunction(snes->npc,f));
-    }
+    if (f) PetscCall(SNESSetInitialFunction(snes->npc,f));
     PetscCall(VecCopy(x,y));
     PetscCall(PetscLogEventBegin(SNES_NPCSolve,snes->npc,x,y,0));
     PetscCall(SNESSolve(snes->npc,snes->vec_rhs,y));

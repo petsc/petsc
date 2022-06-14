@@ -126,9 +126,7 @@ int main(int argc,char **args)
     }
     PetscCall(VecRestoreArray(x, &a));
   }
-  if (view_x) {
-    PetscCall(VecView(x, PETSC_VIEWER_STDOUT_WORLD));
-  }
+  if (view_x) PetscCall(VecView(x, PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(VecCopy(x,xx));
   /* Split xx */
   PetscCall(VecStrideGatherAll(xx,xxsplit, INSERT_VALUES)); /*YES! 'Gather' means 'split' (or maybe 'scatter'?)! */

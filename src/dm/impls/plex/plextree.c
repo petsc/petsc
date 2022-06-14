@@ -402,9 +402,7 @@ PetscErrorCode DMPlexCreateReferenceTree_Union(DM K, DM Kref, const char *labelN
 
     PetscCall(PetscSectionGetDof(unionSection, p - pRefStart + (pEnd - pStart),&uDof));
     PetscCall(PetscSectionGetOffset(unionSection, p - pRefStart + (pEnd - pStart),&uOff));
-    if (uDof) {
-      PetscCall(PetscSectionSetDof(parentSection,uOff,1));
-    }
+    if (uDof) PetscCall(PetscSectionSetDof(parentSection,uOff,1));
   }
   PetscCall(PetscSectionSetUp(parentSection));
   PetscCall(PetscSectionGetStorageSize(parentSection,&parentSize));
@@ -581,9 +579,7 @@ static PetscErrorCode AnchorsFlatten (PetscSection section, IS is, PetscSection 
         if (q >= pStart && q < pEnd) {
           PetscCall(PetscSectionGetDof(section, q, &qDof));
         }
-        if (qDof) {
-          PetscCall(PetscSectionAddDof(secNew, p, qDof));
-        }
+        if (qDof) PetscCall(PetscSectionAddDof(secNew, p, qDof));
         else {
           PetscCall(PetscSectionAddDof(secNew, p, 1));
         }
@@ -1013,9 +1009,7 @@ static PetscErrorCode DMPlexSetTree_Internal(DM dm, PetscSection parentSection, 
       }
     }
   }
-  if (exchangeSupports) {
-    PetscCall(DMPlexTreeExchangeSupports(dm));
-  }
+  if (exchangeSupports) PetscCall(DMPlexTreeExchangeSupports(dm));
   mesh->createanchors = DMPlexCreateAnchors_Tree;
   /* reset anchors */
   PetscCall(DMPlexSetAnchors(dm,NULL,NULL));
@@ -4495,9 +4489,7 @@ PetscErrorCode DMPlexTransferVecTree(DM dmIn, Vec vecIn, DM dmOut, Vec vecOut, P
         }
       }
     }
-    if (useBCs) {
-      PetscCall(DMPlexInsertBoundaryValues(dmIn,PETSC_TRUE,vecInLocal,time,faceGeom,cellGeom,NULL));
-    }
+    if (useBCs) PetscCall(DMPlexInsertBoundaryValues(dmIn,PETSC_TRUE,vecInLocal,time,faceGeom,cellGeom,NULL));
     PetscCall(DMGlobalToLocalBegin(dmIn,vecIn,INSERT_VALUES,vecInLocal));
     PetscCall(DMGlobalToLocalEnd(dmIn,vecIn,INSERT_VALUES,vecInLocal));
     if (dmGrad) {
@@ -4510,9 +4502,7 @@ PetscErrorCode DMPlexTransferVecTree(DM dmIn, Vec vecIn, DM dmOut, Vec vecOut, P
       PetscCall(DMRestoreGlobalVector(dmGrad,&grad));
     }
   }
-  if (sfCoarsen) {
-    PetscCall(DMPlexTransferVecTree_Inject(dmIn,vecIn,dmOut,vecOut,sfCoarsen,cidsCoarsen));
-  }
+  if (sfCoarsen) PetscCall(DMPlexTransferVecTree_Inject(dmIn,vecIn,dmOut,vecOut,sfCoarsen,cidsCoarsen));
   PetscCall(VecAssemblyBegin(vecOut));
   PetscCall(VecAssemblyEnd(vecOut));
   PetscFunctionReturn(0);

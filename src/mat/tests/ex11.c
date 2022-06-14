@@ -33,9 +33,7 @@ int main(int argc,char **args)
   PetscCall(ISCreateStride(PETSC_COMM_SELF,(m*n)/2,0,2,&isrow));
 
   PetscCall(PetscOptionsHasName(NULL,NULL,"-keep_nonzero_pattern",&keepnonzeropattern));
-  if (keepnonzeropattern) {
-    PetscCall(MatSetOption(C,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE));
-  }
+  if (keepnonzeropattern) PetscCall(MatSetOption(C,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE));
 
   PetscCall(MatZeroRowsIS(C,isrow,five,0,0));
 

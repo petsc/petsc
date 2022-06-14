@@ -2062,9 +2062,7 @@ general_assembly:
   PetscCall(MatAssemblyBegin(MT,MAT_FINAL_ASSEMBLY));
   PetscCall(MatDestroy(&local_mat));
   PetscCall(MatAssemblyEnd(MT,MAT_FINAL_ASSEMBLY));
-  if (isseqdense) {
-    PetscCall(MatSetOption(MT,MAT_ROW_ORIENTED,PETSC_TRUE));
-  }
+  if (isseqdense) PetscCall(MatSetOption(MT,MAT_ROW_ORIENTED,PETSC_TRUE));
   if (reuse == MAT_INPLACE_MATRIX) {
     PetscCall(MatHeaderReplace(mat,&MT));
   } else if (reuse == MAT_INITIAL_MATRIX) {
@@ -2905,9 +2903,7 @@ static PetscErrorCode MatISSetLocalMatType_IS(Mat mat,MatType mtype)
   Mat_IS         *is = (Mat_IS*)mat->data;
 
   PetscFunctionBegin;
-  if (is->A) {
-    PetscCall(MatSetType(is->A,mtype));
-  }
+  if (is->A) PetscCall(MatSetType(is->A,mtype));
   PetscCall(PetscFree(is->lmattype));
   PetscCall(PetscStrallocpy(mtype,&is->lmattype));
   PetscFunctionReturn(0);
@@ -3138,12 +3134,8 @@ static PetscErrorCode MatSetFromOptions_IS(PetscOptionItems *PetscOptionsObject,
   PetscCall(PetscOptionsBool("-matis_fixempty","Fix local matrices in case of empty local rows/columns","MatISFixLocalEmpty",a->locempty,&a->locempty,NULL));
   PetscCall(PetscOptionsBool("-matis_storel2l","Store local-to-local matrices generated from PtAP operations","MatISStoreL2L",a->storel2l,&a->storel2l,NULL));
   PetscCall(PetscOptionsFList("-matis_localmat_type","Matrix type","MatISSetLocalMatType",MatList,a->lmattype,type,256,&flg));
-  if (flg) {
-    PetscCall(MatISSetLocalMatType(A,type));
-  }
-  if (a->A) {
-    PetscCall(MatSetFromOptions(a->A));
-  }
+  if (flg) PetscCall(MatISSetLocalMatType(A,type));
+  if (a->A) PetscCall(MatSetFromOptions(a->A));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }

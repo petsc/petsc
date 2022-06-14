@@ -582,9 +582,7 @@ PetscErrorCode KSPReset_FGMRES(KSP ksp)
     }
   }
   PetscCall(PetscFree(fgmres->prevecs_user_work));
-  if (fgmres->modifydestroy) {
-    PetscCall((*fgmres->modifydestroy)(fgmres->modifyctx));
-  }
+  if (fgmres->modifydestroy) PetscCall((*fgmres->modifydestroy)(fgmres->modifyctx));
   PetscCall(KSPReset_GMRES(ksp));
   PetscFunctionReturn(0);
 }

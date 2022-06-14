@@ -410,9 +410,7 @@ static PetscErrorCode SNESSetFromOptions_Multiblock(PetscOptionItems *PetscOptio
   PetscCall(PetscOptionsInt("-snes_multiblock_block_size", "Blocksize that defines number of fields", "PCFieldSplitSetBlockSize", mb->bs, &bs, &flg));
   if (flg) PetscCall(SNESMultiblockSetBlockSize(snes, bs));
   PetscCall(PetscOptionsEnum("-snes_multiblock_type", "Type of composition", "PCFieldSplitSetType", PCCompositeTypes, (PetscEnum) mb->type, (PetscEnum*) &ctype, &flg));
-  if (flg) {
-    PetscCall(SNESMultiblockSetType(snes,ctype));
-  }
+  if (flg) PetscCall(SNESMultiblockSetType(snes,ctype));
   /* Only setup fields once */
   if ((mb->bs > 0) && (mb->numBlocks == 0)) {
     /* only allow user to set fields from command line if bs is already known, otherwise user can set them in SNESMultiblockSetDefaults() */
@@ -523,9 +521,7 @@ PetscErrorCode SNESSolve_Multiblock(SNES snes)
 
   for (i = 0; i < maxits; i++) {
     /* Call general purpose update function */
-    if (snes->ops->update) {
-      PetscCall((*snes->ops->update)(snes, snes->iter));
-    }
+    if (snes->ops->update) PetscCall((*snes->ops->update)(snes, snes->iter));
     /* Compute X^{new} from subsolves */
     if (mb->type == PC_COMPOSITE_ADDITIVE) {
       BlockDesc blocks = mb->blocks;

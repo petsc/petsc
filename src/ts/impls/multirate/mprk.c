@@ -960,14 +960,10 @@ static PetscErrorCode TSMPRKTableauReset(TS ts)
     PetscCall(VecDestroyVecs(tab->s,&mprk->YdotRHS_mediumbuffer));
   } else {
     PetscCall(VecDestroyVecs(tab->s,&mprk->YdotRHS));
-    if (mprk->is_slow) {
-      PetscCall(PetscFree(mprk->YdotRHS_slow));
-    }
+    if (mprk->is_slow) PetscCall(PetscFree(mprk->YdotRHS_slow));
     PetscCall(PetscFree(mprk->YdotRHS_slowbuffer));
     if (tab->np == 3) {
-      if (mprk->is_medium) {
-        PetscCall(PetscFree(mprk->YdotRHS_medium));
-      }
+      if (mprk->is_medium) PetscCall(PetscFree(mprk->YdotRHS_medium));
       PetscCall(PetscFree(mprk->YdotRHS_mediumbuffer));
     }
     PetscCall(PetscFree(mprk->YdotRHS_fast));

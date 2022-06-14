@@ -176,9 +176,7 @@ PetscErrorCode TaoLineSearchSetUp(TaoLineSearch ls)
   if (!((PetscObject)ls)->type_name) {
     PetscCall(TaoLineSearchSetType(ls,default_type));
   }
-  if (ls->ops->setup) {
-    PetscCall((*ls->ops->setup)(ls));
-  }
+  if (ls->ops->setup) PetscCall((*ls->ops->setup)(ls));
   if (ls->usetaoroutines) {
     PetscCall(TaoIsObjectiveDefined(ls->tao,&flg));
     ls->hasobjective = flg;
@@ -225,9 +223,7 @@ PetscErrorCode TaoLineSearchReset(TaoLineSearch ls)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
-  if (ls->ops->reset) {
-    PetscCall((*ls->ops->reset)(ls));
-  }
+  if (ls->ops->reset) PetscCall((*ls->ops->reset)(ls));
   PetscFunctionReturn(0);
 }
 
@@ -419,9 +415,7 @@ PetscErrorCode TaoLineSearchSetType(TaoLineSearch ls, TaoLineSearchType type)
 
   PetscCall(PetscFunctionListFind(TaoLineSearchList,type, (void (**)(void)) &r));
   PetscCheck(r,PetscObjectComm((PetscObject)ls),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested TaoLineSearch type %s",type);
-  if (ls->ops->destroy) {
-    PetscCall((*(ls)->ops->destroy)(ls));
-  }
+  if (ls->ops->destroy) PetscCall((*(ls)->ops->destroy)(ls));
   ls->max_funcs = 30;
   ls->ftol = 0.0001;
   ls->gtol = 0.9;
@@ -541,9 +535,7 @@ PetscErrorCode TaoLineSearchSetFromOptions(TaoLineSearch ls)
     ls->viewer = monviewer;
     ls->usemonitor = PETSC_TRUE;
   }
-  if (ls->ops->setfromoptions) {
-    PetscCall((*ls->ops->setfromoptions)(PetscOptionsObject,ls));
-  }
+  if (ls->ops->setfromoptions) PetscCall((*ls->ops->setfromoptions)(PetscOptionsObject,ls));
   PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -1064,13 +1056,9 @@ PetscErrorCode TaoLineSearchGetSolution(TaoLineSearch ls, Vec x, PetscReal *f, V
   PetscValidRealPointer(f,3);
   PetscValidHeaderSpecific(g,VEC_CLASSID,4);
   PetscValidIntPointer(reason,6);
-  if (ls->new_x) {
-    PetscCall(VecCopy(ls->new_x,x));
-  }
+  if (ls->new_x) PetscCall(VecCopy(ls->new_x,x));
   *f = ls->new_f;
-  if (ls->new_g) {
-    PetscCall(VecCopy(ls->new_g,g));
-  }
+  if (ls->new_g) PetscCall(VecCopy(ls->new_g,g));
   if (steplength) *steplength = ls->step;
   *reason = ls->reason;
   PetscFunctionReturn(0);

@@ -194,9 +194,7 @@ PetscErrorCode  FormJacobian(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
   PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
   PetscCall(VecRestoreArrayRead(x,&xx));
 
-  if (user->variant) {
-    PetscCall(MatMFFDSetBase(jac,x,NULL));
-  }
+  if (user->variant) PetscCall(MatMFFDSetBase(jac,x,NULL));
   PetscCall(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
   return 0;
@@ -206,9 +204,7 @@ PetscErrorCode  FormJacobianNoMatrix(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
 {
   AppCtx            *user = (AppCtx*) dummy;
 
-  if (user->variant) {
-    PetscCall(MatMFFDSetBase(jac,x,NULL));
-  }
+  if (user->variant) PetscCall(MatMFFDSetBase(jac,x,NULL));
   PetscCall(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
   return 0;

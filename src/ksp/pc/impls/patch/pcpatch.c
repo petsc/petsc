@@ -1641,9 +1641,7 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
     if (patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE) {
       PetscCall(PetscArraycpy(asmArrayWithArtificial, dofsArrayWithArtificial, numDofs));
     }
-    if (isNonlinear) {
-      PetscCall(PetscArraycpy(asmArrayWithAll, dofsArrayWithAll, numDofs));
-    }
+    if (isNonlinear) PetscCall(PetscArraycpy(asmArrayWithAll, dofsArrayWithAll, numDofs));
   }
 
   PetscCall(PetscHMapIDestroy(&ht));
@@ -1655,9 +1653,7 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
   if (patch->local_composition_type == PC_COMPOSITE_MULTIPLICATIVE) {
     PetscCall(PetscFree(dofsArrayWithArtificial));
   }
-  if (isNonlinear) {
-    PetscCall(PetscFree(dofsArrayWithAll));
-  }
+  if (isNonlinear) PetscCall(PetscFree(dofsArrayWithAll));
   /* Create placeholder section for map from points to patch dofs */
   PetscCall(PetscSectionCreate(PETSC_COMM_SELF, &patch->patchSection));
   PetscCall(PetscSectionSetNumFields(patch->patchSection, patch->nsubspaces));
@@ -2461,9 +2457,7 @@ static PetscErrorCode PCSetUp_PATCH_Linear(PC pc)
     }
   }
   if (patch->save_operators) {
-    if (patch->precomputeElementTensors) {
-      PetscCall(PCPatchPrecomputePatchTensors_Private(pc));
-    }
+    if (patch->precomputeElementTensors) PetscCall(PCPatchPrecomputePatchTensors_Private(pc));
     for (i = 0; i < patch->npatch; ++i) {
       PetscCall(PCPatchComputeOperator_Internal(pc, NULL, patch->mat[i], i, PETSC_FALSE));
       if (!patch->denseinverse) {
@@ -2895,9 +2889,7 @@ static PetscErrorCode PCApply_PATCH(PC pc, Vec x, Vec y)
   PetscCall(PetscLogEventEnd(PC_Patch_Solve, pc, 0, 0, 0));
   if (patch->user_patches) PetscCall(ISRestoreIndices(patch->iterationSet, &iterationSet));
   /* XXX: should we do this on the global vector? */
-  if (patch->partition_of_unity) {
-    PetscCall(VecPointwiseMult(patch->localUpdate, patch->localUpdate, patch->dof_weights));
-  }
+  if (patch->partition_of_unity) PetscCall(VecPointwiseMult(patch->localUpdate, patch->localUpdate, patch->dof_weights));
   /* Now patch->localUpdate contains the solution of the patch solves, so we need to combine them all. */
   PetscCall(VecSet(y, 0.0));
   PetscCall(VecGetArray(y, &globalUpdate));

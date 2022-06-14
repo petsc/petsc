@@ -1241,9 +1241,7 @@ static PetscErrorCode initializeTS(DM dm, User user, TS *ts)
   PetscCall(TSCreate(PetscObjectComm((PetscObject)dm), ts));
   PetscCall(TSSetType(*ts, TSSSP));
   PetscCall(TSSetDM(*ts, dm));
-  if (user->vtkmon) {
-    PetscCall(TSMonitorSet(*ts,MonitorVTK,user,NULL));
-  }
+  if (user->vtkmon) PetscCall(TSMonitorSet(*ts,MonitorVTK,user,NULL));
   PetscCall(DMTSSetBoundaryLocal(dm, DMPlexTSComputeBoundary, user));
   PetscCall(DMTSSetRHSFunctionLocal(dm, DMPlexTSComputeRHSFunctionFVM, user));
   PetscCall(TSSetMaxTime(*ts,2.0));

@@ -175,9 +175,7 @@ PetscErrorCode MatSeqSELLSetPreallocation_SeqSELL(Mat B,PetscInt maxallocrow,con
   b->rlenmax          = maxallocrow;
   b->maxallocmat      = b->sliidx[totalslices];
   B->info.nz_unneeded = (double)b->maxallocmat;
-  if (realalloc) {
-    PetscCall(MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE));
-  }
+  if (realalloc) PetscCall(MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE));
   PetscFunctionReturn(0);
 }
 
@@ -1377,9 +1375,7 @@ PetscErrorCode MatView_SeqSELL(Mat A,PetscViewer viewer)
     PetscCall(MatView_SeqSELL_ASCII(A,viewer));
   } else if (isbinary) {
     /* PetscCall(MatView_SeqSELL_Binary(A,viewer)); */
-  } else if (isdraw) {
-    PetscCall(MatView_SeqSELL_Draw(A,viewer));
-  }
+  } else if (isdraw) PetscCall(MatView_SeqSELL_Draw(A,viewer));
   PetscFunctionReturn(0);
 }
 

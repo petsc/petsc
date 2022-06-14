@@ -386,9 +386,7 @@ static PetscErrorCode TaoSolve_ADMM(Tao tao)
       /* Soft Threshold. */
       break;
     }
-    if (am->ops->regobjgrad) {
-      PetscCall(TaoSetObjectiveAndGradient(am->subsolverZ, NULL, RegObjGradUpdate, tao));
-    }
+    if (am->ops->regobjgrad) PetscCall(TaoSetObjectiveAndGradient(am->subsolverZ, NULL, RegObjGradUpdate, tao));
     if (am->Hz && am->ops->reghess) {
       PetscCall(TaoSetHessian(am->subsolverZ, am->Hz, am->Hzpre, RegHessianUpdate, tao));
     }
@@ -422,9 +420,7 @@ static PetscErrorCode TaoSolve_ADMM(Tao tao)
   tao->reason = TAO_CONTINUE_ITERATING;
 
   while (tao->reason == TAO_CONTINUE_ITERATING) {
-    if (tao->ops->update) {
-      PetscCall((*tao->ops->update)(tao, tao->niter, tao->user_update));
-    }
+    if (tao->ops->update) PetscCall((*tao->ops->update)(tao, tao->niter, tao->user_update));
     PetscCall(VecCopy(am->Bz, am->Bzold));
 
     /* x update */
@@ -464,9 +460,7 @@ static PetscErrorCode TaoSolve_ADMM(Tao tao)
       if (tao->niter == 0) {
         PetscCall(VecCopy(am->y, am->y0));
         PetscCall(VecWAXPY(am->residual, 1., am->Ax, am->Bzold));
-        if (am->constraint) {
-          PetscCall(VecAXPY(am->residual, -1., am->constraint));
-        }
+        if (am->constraint) PetscCall(VecAXPY(am->residual, -1., am->constraint));
         PetscCall(VecWAXPY(am->yhatold, -am->mu, am->residual, am->yold));
         PetscCall(VecCopy(am->Ax, am->Axold));
         PetscCall(VecCopy(am->Bz, am->Bz0));
@@ -474,9 +468,7 @@ static PetscErrorCode TaoSolve_ADMM(Tao tao)
       } else if (tao->niter % am->T == 1) {
         /* we have compute Bzold in a previous iteration, and we computed Ax above */
         PetscCall(VecWAXPY(am->residual, 1., am->Ax, am->Bzold));
-        if (am->constraint) {
-          PetscCall(VecAXPY(am->residual, -1., am->constraint));
-        }
+        if (am->constraint) PetscCall(VecAXPY(am->residual, -1., am->constraint));
         PetscCall(VecWAXPY(am->yhat, -am->mu, am->residual, am->yold));
         PetscCall(AdaptiveADMMPenaltyUpdate(tao));
         PetscCall(VecCopy(am->Ax, am->Axold));

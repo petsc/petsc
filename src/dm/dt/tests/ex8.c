@@ -33,9 +33,7 @@ int main(int argc, char **argv)
           while (j >= 0 && btup[j] == btupprev[j]) j--;
           PetscCheck(j >= 0,PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscDTIndexToBary, d = %" PetscInt_FMT ", n = %" PetscInt_FMT ", k = %" PetscInt_FMT " equal to previous", d, n, k);
           PetscCheck(btup[j] >= btupprev[j],PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscDTIndexToBary, d = %" PetscInt_FMT ", n = %" PetscInt_FMT ", k = %" PetscInt_FMT " less to previous", d, n, k);
-        } else {
-          PetscCall(PetscArraycpy(btupprev, btup, d + 1));
-        }
+        } else PetscCall(PetscArraycpy(btupprev, btup, d + 1));
         PetscCall(PetscDTIndexToGradedOrder(d, Nk - 1 - k, gtup));
         PetscCall(PetscDTGradedOrderToIndex(d, gtup, &kchk));
         PetscCheck(kchk == Nk - 1 - k,PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscDTGradedOrderToIndex, d = %" PetscInt_FMT ", n = %" PetscInt_FMT ", k = %" PetscInt_FMT " mismatch", d, n, Nk - 1 - k);

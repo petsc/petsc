@@ -1908,9 +1908,7 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
     PetscBool same = PETSC_FALSE;
     PetscCall(KSPGetPC(ksp_S,&pc));
     PetscCall(PetscObjectTypeCompare((PetscObject)pc,PCMG,&same));
-    if (same) {
-      PetscCall(PCMGSetupViaCoarsen(pc,da_Stokes));
-    }
+    if (same) PetscCall(PCMGSetupViaCoarsen(pc,da_Stokes));
   }
 
   {
@@ -1918,17 +1916,13 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
     PetscBool same = PETSC_FALSE;
     PetscCall(KSPGetPC(ksp_S,&pc));
     PetscCall(PetscObjectTypeCompare((PetscObject)pc,PCBDDC,&same));
-    if (same) {
-      PetscCall(KSPSetOperators(ksp_S,A,A));
-    }
+    if (same) PetscCall(KSPSetOperators(ksp_S,A,A));
   }
 
   {
     PetscBool stokes_monitor = PETSC_FALSE;
     PetscCall(PetscOptionsGetBool(NULL,NULL,"-stokes_ksp_monitor_blocks",&stokes_monitor,0));
-    if (stokes_monitor) {
-      PetscCall(KSPMonitorSet(ksp_S,KSPMonitorStokesBlocks,NULL,NULL));
-    }
+    if (stokes_monitor) PetscCall(KSPMonitorSet(ksp_S,KSPMonitorStokesBlocks,NULL,NULL));
   }
 
   if (resolve) {

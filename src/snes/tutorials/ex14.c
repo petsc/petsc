@@ -136,9 +136,7 @@ int main(int argc,char **argv)
         PetscCall(MatFDColoringUseDM(J,matfdcoloring));
         PetscCall(MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))FormFunctionLocal,&user));
       }
-      if (coloring_ds) {
-        PetscCall(MatFDColoringSetType(matfdcoloring,MATMFFD_DS));
-      }
+      if (coloring_ds) PetscCall(MatFDColoringSetType(matfdcoloring,MATMFFD_DS));
       PetscCall(MatFDColoringSetFromOptions(matfdcoloring));
       PetscCall(MatFDColoringSetUp(J,iscoloring,matfdcoloring));
       PetscCall(SNESSetJacobian(snes,J,J,SNESComputeJacobianDefaultColor,matfdcoloring));

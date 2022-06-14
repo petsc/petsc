@@ -127,9 +127,7 @@ PetscErrorCode TaoTestHessian(Tao tao)
     PetscCall(PetscViewerASCIIPrintf(viewer,"    O(1.e-8), the hand-coded Hessian is probably correct.\n"));
     directionsprinted = PETSC_TRUE;
   }
-  if (complete_print) {
-    PetscCall(PetscViewerPushFormat(mviewer,format));
-  }
+  if (complete_print) PetscCall(PetscViewerPushFormat(mviewer,format));
 
   PetscCall(PetscObjectTypeCompare((PetscObject)tao->hessian,MATMFFD,&flg));
   if (!flg) hessian = tao->hessian;

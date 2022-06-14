@@ -206,9 +206,7 @@ static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscRe
     /* Calculate iterate */
     ++its;
     PetscCall(VecWAXPY(armP->work,ls->step,s,x));
-    if (ls->bounded) {
-      PetscCall(VecMedian(ls->lower,armP->work,ls->upper,armP->work));
-    }
+    if (ls->bounded) PetscCall(VecMedian(ls->lower,armP->work,ls->upper,armP->work));
 
     /* Calculate function at new iterate */
     if (ls->hasobjective) {

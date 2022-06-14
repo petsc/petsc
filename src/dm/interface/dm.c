@@ -143,9 +143,7 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
   PetscCall(PetscStrallocpy(dm->mattype,(char**)&(*newdm)->mattype));
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMSetDimension(*newdm, dim));
-  if (dm->ops->clone) {
-    PetscCall((*dm->ops->clone)(dm, newdm));
-  }
+  if (dm->ops->clone) PetscCall((*dm->ops->clone)(dm, newdm));
   (*newdm)->setupcalled = dm->setupcalled;
   PetscCall(DMGetPointSF(dm, &sf));
   PetscCall(DMSetPointSF(*newdm, sf));
@@ -466,12 +464,8 @@ PetscErrorCode  DMSetOptionsPrefix(DM dm,const char prefix[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)dm,prefix));
-  if (dm->sf) {
-    PetscCall(PetscObjectSetOptionsPrefix((PetscObject)dm->sf,prefix));
-  }
-  if (dm->sectionSF) {
-    PetscCall(PetscObjectSetOptionsPrefix((PetscObject)dm->sectionSF,prefix));
-  }
+  if (dm->sf) PetscCall(PetscObjectSetOptionsPrefix((PetscObject)dm->sf,prefix));
+  if (dm->sectionSF) PetscCall(PetscObjectSetOptionsPrefix((PetscObject)dm->sectionSF,prefix));
   PetscFunctionReturn(0);
 }
 
@@ -786,9 +780,7 @@ PetscErrorCode  DMSetUp(DM dm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   if (dm->setupcalled) PetscFunctionReturn(0);
-  if (dm->ops->setup) {
-    PetscCall((*dm->ops->setup)(dm));
-  }
+  if (dm->ops->setup) PetscCall((*dm->ops->setup)(dm));
   dm->setupcalled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -873,18 +865,12 @@ PetscErrorCode DMSetFromOptions(DM dm)
   PetscObjectOptionsBegin((PetscObject)dm);
   PetscCall(PetscOptionsBool("-dm_preallocate_only","only preallocate matrix, but do not set column indices","DMSetMatrixPreallocateOnly",dm->prealloc_only,&dm->prealloc_only,NULL));
   PetscCall(PetscOptionsFList("-dm_vec_type","Vector type used for created vectors","DMSetVecType",VecList,dm->vectype,typeName,256,&flg));
-  if (flg) {
-    PetscCall(DMSetVecType(dm,typeName));
-  }
+  if (flg) PetscCall(DMSetVecType(dm,typeName));
   PetscCall(PetscOptionsFList("-dm_mat_type","Matrix type used for created matrices","DMSetMatType",MatList,dm->mattype ? dm->mattype : typeName,typeName,sizeof(typeName),&flg));
-  if (flg) {
-    PetscCall(DMSetMatType(dm,typeName));
-  }
+  if (flg) PetscCall(DMSetMatType(dm,typeName));
   PetscCall(PetscOptionsEnum("-dm_is_coloring_type","Global or local coloring of Jacobian","DMSetISColoringType",ISColoringTypes,(PetscEnum)dm->coloringtype,(PetscEnum*)&dm->coloringtype,NULL));
   PetscCall(PetscOptionsInt("-dm_bind_below","Set the size threshold (in entries) below which the Vec is bound to the CPU","VecBindToCPU",dm->bind_below,&dm->bind_below,&flg));
-  if (dm->ops->setfromoptions) {
-    PetscCall((*dm->ops->setfromoptions)(PetscOptionsObject,dm));
-  }
+  if (dm->ops->setfromoptions) PetscCall((*dm->ops->setfromoptions)(PetscOptionsObject,dm));
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) dm));
   PetscOptionsEnd();
@@ -966,9 +952,7 @@ PetscErrorCode  DMView(DM dm,PetscViewer v)
     PetscCall(PetscStrncpy(type,((PetscObject)dm)->type_name,256));
     PetscCall(PetscViewerBinaryWrite(v,type,256,PETSC_CHAR));
   }
-  if (dm->ops->view) {
-    PetscCall((*dm->ops->view)(dm,v));
-  }
+  if (dm->ops->view) PetscCall((*dm->ops->view)(dm,v));
   PetscFunctionReturn(0);
 }
 
@@ -1877,9 +1861,7 @@ PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***fieldNames, I
       }
     }
     PetscCall(PetscFree3(fieldSizes,fieldNc,fieldIndices));
-  } else if (dm->ops->createfieldis) {
-    PetscCall((*dm->ops->createfieldis)(dm, numFields, fieldNames, fields));
-  }
+  } else if (dm->ops->createfieldis) PetscCall((*dm->ops->createfieldis)(dm, numFields, fieldNames, fields));
   PetscFunctionReturn(0);
 }
 
@@ -2174,9 +2156,7 @@ PetscErrorCode  DMRefine(DM dm,MPI_Comm comm,DM *dmf)
 
     PetscCall(DMSetMatType(*dmf,dm->mattype));
     for (link=dm->refinehook; link; link=link->next) {
-      if (link->refinehook) {
-        PetscCall((*link->refinehook)(dm,*dmf,link->ctx));
-      }
+      if (link->refinehook) PetscCall((*link->refinehook)(dm,*dmf,link->ctx));
     }
   }
   PetscCall(PetscLogEventEnd(DM_Refine,dm,0,0,0));
@@ -2295,9 +2275,7 @@ PetscErrorCode DMInterpolate(DM coarse,Mat interp,DM fine)
 
   PetscFunctionBegin;
   for (link=fine->refinehook; link; link=link->next) {
-    if (link->interphook) {
-      PetscCall((*link->interphook)(coarse,interp,fine,link->ctx));
-    }
+    if (link->interphook) PetscCall((*link->interphook)(coarse,interp,fine,link->ctx));
   }
   PetscFunctionReturn(0);
 }
@@ -2663,9 +2641,7 @@ PetscErrorCode  DMGlobalToLocalBegin(DM dm,Vec g,InsertMode mode,Vec l)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   for (link=dm->gtolhook; link; link=link->next) {
-    if (link->beginhook) {
-      PetscCall((*link->beginhook)(dm,g,mode,l,link->ctx));
-    }
+    if (link->beginhook) PetscCall((*link->beginhook)(dm,g,mode,l,link->ctx));
   }
   PetscCall(DMGetSectionSF(dm, &sf));
   if (sf) {
@@ -2886,9 +2862,7 @@ PetscErrorCode  DMLocalToGlobalBegin(DM dm,Vec l,InsertMode mode,Vec g)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   for (link=dm->ltoghook; link; link=link->next) {
-    if (link->beginhook) {
-      PetscCall((*link->beginhook)(dm,l,mode,g,link->ctx));
-    }
+    if (link->beginhook) PetscCall((*link->beginhook)(dm,l,mode,g,link->ctx));
   }
   PetscCall(DMLocalToGlobalHook_Constraints(dm,l,mode,g,NULL));
   PetscCall(DMGetSectionSF(dm, &sf));
@@ -3282,9 +3256,7 @@ PetscErrorCode DMRestrict(DM fine,Mat restrct,Vec rscale,Mat inject,DM coarse)
 
   PetscFunctionBegin;
   for (link=fine->coarsenhook; link; link=link->next) {
-    if (link->restricthook) {
-      PetscCall((*link->restricthook)(fine,restrct,rscale,inject,coarse,link->ctx));
-    }
+    if (link->restricthook) PetscCall((*link->restricthook)(fine,restrct,rscale,inject,coarse,link->ctx));
   }
   PetscFunctionReturn(0);
 }
@@ -3405,9 +3377,7 @@ PetscErrorCode DMSubDomainRestrict(DM global,VecScatter oscatter,VecScatter gsca
 
   PetscFunctionBegin;
   for (link=global->subdomainhook; link; link=link->next) {
-    if (link->restricthook) {
-      PetscCall((*link->restricthook)(global,oscatter,gscatter,subdm,link->ctx));
-    }
+    if (link->restricthook) PetscCall((*link->restricthook)(global,oscatter,gscatter,subdm,link->ctx));
   }
   PetscFunctionReturn(0);
 }
@@ -3794,9 +3764,7 @@ PetscErrorCode  DMSetType(DM dm, DMType method)
   PetscCall(PetscFunctionListFind(DMList,method,&r));
   PetscCheck(r,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown DM type: %s", method);
 
-  if (dm->ops->destroy) {
-    PetscCall((*dm->ops->destroy)(dm));
-  }
+  if (dm->ops->destroy) PetscCall((*dm->ops->destroy)(dm));
   PetscCall(PetscMemzero(dm->ops,sizeof(*dm->ops)));
   PetscCall(PetscObjectChangeTypeName((PetscObject)dm,method));
   PetscCall((*r)(dm));

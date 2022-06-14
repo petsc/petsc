@@ -81,9 +81,7 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
     PetscCall(MatLMVMAllocate(tl->M, tao->solution, tao->gradient));
     PetscCall(MatIsSymmetricKnown(tl->M, &sym_set, &is_symmetric));
     PetscCheck(sym_set && is_symmetric,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM matrix in the LMVM preconditioner must be symmetric.");
-  } else if (is_jacobi) {
-    PetscCall(PCJacobiSetUseAbs(pc,PETSC_TRUE));
-  }
+  } else if (is_jacobi) PetscCall(PCJacobiSetUseAbs(pc,PETSC_TRUE));
 
   /* Check convergence criteria */
   PetscCall(TaoComputeObjectiveAndGradient(tao, tao->solution, &f, tao->gradient));
@@ -228,15 +226,11 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
   /* Have not converged; continue with Newton method */
   while (tao->reason == TAO_CONTINUE_ITERATING) {
     /* Call general purpose update function */
-    if (tao->ops->update) {
-      PetscCall((*tao->ops->update)(tao, tao->niter, tao->user_update));
-    }
+    if (tao->ops->update) PetscCall((*tao->ops->update)(tao, tao->niter, tao->user_update));
     ++tao->niter;
     tao->ksp_its=0;
     /* Compute the Hessian */
-    if (needH) {
-      PetscCall(TaoComputeHessian(tao,tao->solution,tao->hessian,tao->hessian_pre));
-    }
+    if (needH) PetscCall(TaoComputeHessian(tao,tao->solution,tao->hessian,tao->hessian_pre));
 
     if (tl->bfgs_pre) {
       /* Update the limited memory preconditioner */

@@ -1096,9 +1096,7 @@ static PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
       {
         PetscBool sflg;
         PetscCall(MatGetOption(Amat, MAT_SPD, &sflg));
-        if (sflg) {
-          PetscCall(KSPSetType(eksp, KSPCG));
-        }
+        if (sflg) PetscCall(KSPSetType(eksp, KSPCG));
       }
       PetscCall(KSPSetErrorIfNotConverged(eksp,pc->erroriffailure));
       PetscCall(KSPSetNormType(eksp, KSP_NORM_NONE));

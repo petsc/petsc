@@ -39,9 +39,7 @@ PetscErrorCode PetscCDDestroy(PetscCoarsenData *ail)
     n    = n->next;
     PetscCall(PetscFree(lstn));
   }
-  if (ail->pool_list.array) {
-    PetscCall(PetscFree(ail->pool_list.array));
-  }
+  if (ail->pool_list.array) PetscCall(PetscFree(ail->pool_list.array));
   PetscCall(PetscFree(ail->array));
   /* delete this (+agg+pool array) */
   PetscCall(PetscFree(ail));

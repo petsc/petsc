@@ -34,9 +34,7 @@ static PetscErrorCode SNESSolve_KSPONLY(SNES snes)
   }
 
   /* Call general purpose update function */
-  if (snes->ops->update) {
-    PetscCall((*snes->ops->update)(snes, 0));
-  }
+  if (snes->ops->update) PetscCall((*snes->ops->update)(snes, 0));
 
   /* Solve J Y = F, where J is Jacobian matrix */
   PetscCall(SNESComputeJacobian(snes,X,snes->jacobian,snes->jacobian_pre));

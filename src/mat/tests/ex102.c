@@ -77,9 +77,7 @@ int main(int argc,char **args)
   PetscCall(MatDiagonalScale(X,c,NULL));
   PetscCall(MatMatMult(U,X,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&LRe));
   PetscCall(MatDestroy(&X));
-  if (A) {
-    PetscCall(MatAYPX(LRe,1.0,A,DIFFERENT_NONZERO_PATTERN));
-  }
+  if (A) PetscCall(MatAYPX(LRe,1.0,A,DIFFERENT_NONZERO_PATTERN));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          Create test vectors

@@ -733,9 +733,7 @@ PetscErrorCode MatView_MPIDense(Mat mat,PetscViewer viewer)
 
   if (iascii || issocket || isdraw) {
     PetscCall(MatView_MPIDense_ASCIIorDraworSocket(mat,viewer));
-  } else if (isbinary) {
-    PetscCall(MatView_Dense_Binary(mat,viewer));
-  }
+  } else if (isbinary) PetscCall(MatView_Dense_Binary(mat,viewer));
   PetscFunctionReturn(0);
 }
 
@@ -1269,9 +1267,7 @@ static PetscErrorCode MatBindToCPU_MPIDenseCUDA(Mat mat,PetscBool bind)
   PetscFunctionBegin;
   PetscCheck(!d->vecinuse,PetscObjectComm((PetscObject)mat),PETSC_ERR_ORDER,"Need to call MatDenseRestoreColumnVec() first");
   PetscCheck(!d->matinuse,PetscObjectComm((PetscObject)mat),PETSC_ERR_ORDER,"Need to call MatDenseRestoreSubMatrix() first");
-  if (d->A) {
-    PetscCall(MatBindToCPU(d->A,bind));
-  }
+  if (d->A) PetscCall(MatBindToCPU(d->A,bind));
   mat->boundtocpu = bind;
   if (!bind) {
     PetscBool iscuda;
@@ -1300,9 +1296,7 @@ static PetscErrorCode MatBindToCPU_MPIDenseCUDA(Mat mat,PetscBool bind)
     PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatDenseRestoreColumnVecWrite_C",MatDenseRestoreColumnVecWrite_MPIDense));
     mat->ops->shift                   = MatShift_MPIDense;
   }
-  if (d->cmat) {
-    PetscCall(MatBindToCPU(d->cmat,bind));
-  }
+  if (d->cmat) PetscCall(MatBindToCPU(d->cmat,bind));
   PetscFunctionReturn(0);
 }
 

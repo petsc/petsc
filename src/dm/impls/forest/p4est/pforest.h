@@ -315,9 +315,7 @@ static PetscErrorCode DMFTopologyCreate_pforest(DM dm, DMForestTopology topology
     (*topo)->refct = 1;
     PetscStackCallP4estReturn((*topo)->conn,p4est_connectivity_new_byname,(name));
     (*topo)->geom = NULL;
-    if (isMoebius) {
-      PetscCall(DMSetCoordinateDim(dm,3));
-    }
+    if (isMoebius) PetscCall(DMSetCoordinateDim(dm,3));
 #if defined(P4_TO_P8)
     if (isShell) {
       PetscReal R2 = 1., R1 = .55;
@@ -632,9 +630,7 @@ static PetscErrorCode DMPforestComputeLocalCellTransferSF(MPI_Comm comm, p4est_t
   if (!ToOffset && (numLeavesTo == numRootsTo)) { /* compress */
     PetscCall(PetscFree(toLeaves));
     PetscCall(PetscSFSetGraph(fromCoarse,numRootsFrom,numLeavesTo,NULL,PETSC_OWN_POINTER,fromRoots,PETSC_OWN_POINTER));
-  } else { /* generic */
-    PetscCall(PetscSFSetGraph(fromCoarse,numRootsFrom,numLeavesTo,toLeaves,PETSC_OWN_POINTER,fromRoots,PETSC_OWN_POINTER));
-  }
+  } else PetscCall(PetscSFSetGraph(fromCoarse,numRootsFrom,numLeavesTo,toLeaves,PETSC_OWN_POINTER,fromRoots,PETSC_OWN_POINTER));
   *fromCoarseToFine = fromCoarse;
   if (toCoarseFromFine) {
     PetscCall(PetscSFSetGraph(toCoarse,numRootsTo,numLeavesFrom,fromLeaves,PETSC_OWN_POINTER,toRoots,PETSC_OWN_POINTER));
@@ -942,11 +938,8 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
         PetscCall(PetscFree(cellFlags));
 
         pforest->forest->user_pointer = (void*) &ctx;
-        if (adaptAny) {
-          PetscStackCallP4est(p4est_coarsen,(pforest->forest,0,pforest_coarsen_flag_any,pforest_init_determine));
-        } else {
-          PetscStackCallP4est(p4est_coarsen,(pforest->forest,0,pforest_coarsen_flag_all,pforest_init_determine));
-        }
+        if (adaptAny) PetscStackCallP4est(p4est_coarsen,(pforest->forest,0,pforest_coarsen_flag_any,pforest_init_determine));
+        else PetscStackCallP4est(p4est_coarsen,(pforest->forest,0,pforest_coarsen_flag_all,pforest_init_determine));
         PetscStackCallP4est(p4est_refine,(pforest->forest,0,pforest_refine_flag,NULL));
         pforest->forest->user_pointer = (void*) dm;
         PetscStackCallP4est(p4est_balance,(pforest->forest,P4EST_CONNECT_FULL,NULL));
@@ -3094,12 +3087,8 @@ static PetscErrorCode DMPforestGetTransferSF(DM dmA, DM dmB, const PetscInt dofP
       PetscFunctionReturn(0);
     }
   }
-  if (sfAtoB) {
-    PetscCall(DMPforestGetTransferSF_Internal(dmA,dmB,dofPerDim,sfAtoB,PETSC_TRUE,NULL));
-  }
-  if (sfBtoA) {
-    PetscCall(DMPforestGetTransferSF_Internal(dmB,dmA,dofPerDim,sfBtoA,(PetscBool) (sfAtoB == NULL),NULL));
-  }
+  if (sfAtoB) PetscCall(DMPforestGetTransferSF_Internal(dmA,dmB,dofPerDim,sfAtoB,PETSC_TRUE,NULL));
+  if (sfBtoA) PetscCall(DMPforestGetTransferSF_Internal(dmB,dmA,dofPerDim,sfBtoA,(PetscBool) (sfAtoB == NULL),NULL));
   PetscFunctionReturn(0);
 }
 
@@ -3633,18 +3622,10 @@ static PetscErrorCode DMPforestLabelsFinalize(DM dm, DM plex)
       }
       for (p = pStart; p < pEnd; p++) values[p] = PETSC_MIN_INT;
 
-      if (transferForward) {
-        PetscCall(PetscSFBcastBegin(transferForward,MPIU_INT,adaptValues,values,MPI_REPLACE));
-      }
-      if (transferBackward) {
-        PetscCall(PetscSFReduceBegin(transferBackward,MPIU_INT,adaptValues,values,MPIU_MAX));
-      }
-      if (transferForward) {
-        PetscCall(PetscSFBcastEnd(transferForward,MPIU_INT,adaptValues,values,MPI_REPLACE));
-      }
-      if (transferBackward) {
-        PetscCall(PetscSFReduceEnd(transferBackward,MPIU_INT,adaptValues,values,MPIU_MAX));
-      }
+      if (transferForward) PetscCall(PetscSFBcastBegin(transferForward,MPIU_INT,adaptValues,values,MPI_REPLACE));
+      if (transferBackward) PetscCall(PetscSFReduceBegin(transferBackward,MPIU_INT,adaptValues,values,MPIU_MAX));
+      if (transferForward) PetscCall(PetscSFBcastEnd(transferForward,MPIU_INT,adaptValues,values,MPI_REPLACE));
+      if (transferBackward) PetscCall(PetscSFReduceEnd(transferBackward,MPIU_INT,adaptValues,values,MPIU_MAX));
       for (p = pStart; p < pEnd; p++) {
         PetscInt q = p, parent;
 

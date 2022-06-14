@@ -650,9 +650,7 @@ PetscErrorCode  PCMGGetSmootherDown(PC pc,PetscInt l,KSP *ksp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   /* make sure smoother up and down are different */
-  if (l) {
-    PetscCall(PCMGGetSmootherUp(pc,l,NULL));
-  }
+  if (l) PetscCall(PCMGGetSmootherUp(pc,l,NULL));
   *ksp = mglevels[l]->smoothd;
   PetscFunctionReturn(0);
 }

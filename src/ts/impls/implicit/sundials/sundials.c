@@ -405,13 +405,9 @@ PetscErrorCode TSSetFromOptions_Sundials(PetscOptionItems *PetscOptionsObject,TS
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject,"SUNDIALS ODE solver options");
   PetscCall(PetscOptionsEList("-ts_sundials_type","Scheme","TSSundialsSetType",TSSundialsLmmTypes,3,TSSundialsLmmTypes[cvode->cvode_type],&indx,&flag));
-  if (flag) {
-    PetscCall(TSSundialsSetType(ts,(TSSundialsLmmType)indx));
-  }
+  if (flag) PetscCall(TSSundialsSetType(ts,(TSSundialsLmmType)indx));
   PetscCall(PetscOptionsEList("-ts_sundials_gramschmidt_type","Type of orthogonalization","TSSundialsSetGramSchmidtType",TSSundialsGramSchmidtTypes,3,TSSundialsGramSchmidtTypes[cvode->gtype],&indx,&flag));
-  if (flag) {
-    PetscCall(TSSundialsSetGramSchmidtType(ts,(TSSundialsGramSchmidtType)indx));
-  }
+  if (flag) PetscCall(TSSundialsSetGramSchmidtType(ts,(TSSundialsGramSchmidtType)indx));
   PetscCall(PetscOptionsReal("-ts_sundials_atol","Absolute tolerance for convergence","TSSundialsSetTolerance",cvode->abstol,&cvode->abstol,NULL));
   PetscCall(PetscOptionsReal("-ts_sundials_rtol","Relative tolerance for convergence","TSSundialsSetTolerance",cvode->reltol,&cvode->reltol,NULL));
   PetscCall(PetscOptionsReal("-ts_sundials_mindt","Minimum step size","TSSundialsSetMinTimeStep",cvode->mindt,&cvode->mindt,NULL));

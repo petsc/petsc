@@ -105,9 +105,7 @@ PetscErrorCode PCTelescopeSetUp_CoarseDM(PC pc,PC_Telescope sred)
   /* attach coarse dm to ksp on sub communicator */
   if (PCTelescope_isActiveRank(sred)) {
     PetscCall(KSPSetDM(sred->ksp,ctx->dm_coarse));
-    if (sred->ignore_kspcomputeoperators) {
-      PetscCall(KSPSetDMActive(sred->ksp,PETSC_FALSE));
-    }
+    if (sred->ignore_kspcomputeoperators) PetscCall(KSPSetDMActive(sred->ksp,PETSC_FALSE));
   }
 
   /* check if there is a method to provide a permutation */
@@ -239,9 +237,7 @@ PetscErrorCode PCApply_Telescope_CoarseDM(PC pc,Vec x,Vec y)
 
   PetscCall(PetscCitationsRegister(citation,&cited));
 
-  if (ctx->fp_dm_state_scatter) {
-    PetscCall(ctx->fp_dm_state_scatter(ctx->dm_fine,SCATTER_FORWARD,ctx->dm_coarse));
-  }
+  if (ctx->fp_dm_state_scatter) PetscCall(ctx->fp_dm_state_scatter(ctx->dm_fine,SCATTER_FORWARD,ctx->dm_coarse));
 
   PetscCall(ctx->fp_dm_field_scatter(ctx->dm_fine,x,SCATTER_FORWARD,ctx->dm_coarse,xred));
 

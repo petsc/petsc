@@ -298,9 +298,7 @@ PetscErrorCode PetscDualSpaceSetFromOptions(PetscDualSpace sp)
   PetscCall(PetscOptionsBoundedInt("-petscdualspace_order", "The approximation order", "PetscDualSpaceSetOrder", sp->order, &sp->order, NULL,0));
   PetscCall(PetscOptionsInt("-petscdualspace_form_degree", "The form degree of the dofs", "PetscDualSpaceSetFormDegree", sp->k, &sp->k, NULL));
   PetscCall(PetscOptionsBoundedInt("-petscdualspace_components", "The number of components", "PetscDualSpaceSetNumComponents", sp->Nc, &sp->Nc, NULL,1));
-  if (sp->ops->setfromoptions) {
-    PetscCall((*sp->ops->setfromoptions)(PetscOptionsObject,sp));
-  }
+  if (sp->ops->setfromoptions) PetscCall((*sp->ops->setfromoptions)(PetscOptionsObject,sp));
   PetscCall(PetscOptionsEnum("-petscdualspace_refcell", "Reference cell shape", "PetscDualSpaceSetReferenceCell", DMPolytopeTypes, (PetscEnum) refCell, (PetscEnum *) &refCell, &flg));
   if (flg) {
     DM K;

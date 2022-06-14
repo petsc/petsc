@@ -151,9 +151,7 @@ static PetscErrorCode PetscDualSpaceRefinedView_Ascii(PetscDualSpace sp, PetscVi
       }
     }
     PetscCall(PetscViewerASCIIPopTab(viewer));
-  } else {
-    PetscCall(PetscViewerASCIIPrintf(viewer, "Refined dual space: (cell spaces not set yet)\n"));
-  }
+  } else PetscCall(PetscViewerASCIIPrintf(viewer, "Refined dual space: (cell spaces not set yet)\n"));
   PetscFunctionReturn(0);
 }
 

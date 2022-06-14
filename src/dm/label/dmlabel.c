@@ -433,9 +433,7 @@ PetscErrorCode DMLabelView(DMLabel label, PetscViewer viewer)
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   if (label) PetscCall(DMLabelMakeAllValid_Private(label));
   PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
-    PetscCall(DMLabelView_Ascii(label, viewer));
-  }
+  if (iascii) PetscCall(DMLabelView_Ascii(label, viewer));
   PetscFunctionReturn(0);
 }
 

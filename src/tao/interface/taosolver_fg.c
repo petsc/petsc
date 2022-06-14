@@ -61,9 +61,7 @@ PetscErrorCode TaoTestGradient(Tao tao,Vec x,Vec g1)
     PetscCall(PetscViewerASCIIPrintf(viewer,"    O(1.e-8), the hand-coded Gradient is probably correct.\n"));
     directionsprinted = PETSC_TRUE;
   }
-  if (complete_print) {
-    PetscCall(PetscViewerPushFormat(mviewer,format));
-  }
+  if (complete_print) PetscCall(PetscViewerPushFormat(mviewer,format));
 
   PetscCall(VecDuplicate(x,&g2));
   PetscCall(VecDuplicate(x,&g3));

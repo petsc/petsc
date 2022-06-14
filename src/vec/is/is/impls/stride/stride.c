@@ -213,9 +213,7 @@ PetscErrorCode ISView_Stride(IS is,PetscViewer viewer)
       PetscCall(PetscViewerFlush(viewer));
       PetscCall(PetscViewerASCIIPopSynchronized(viewer));
     }
-  } else if (ibinary) {
-    PetscCall(ISView_Binary(is,viewer));
-  }
+  } else if (ibinary) PetscCall(ISView_Binary(is,viewer));
   PetscFunctionReturn(0);
 }
 

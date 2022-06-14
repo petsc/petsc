@@ -42,9 +42,7 @@ PETSC_INTERN PetscErrorCode MatConvert_Basic(Mat mat,MatType newtype,MatReuse re
     if (!isSBAIJ) {
       PetscCall(PetscObjectTypeCompare((PetscObject)M,MATMPISBAIJ,&isSBAIJ));
     }
-    if (isSBAIJ) {
-      PetscCall(MatSetOption(M,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE));
-    }
+    if (isSBAIJ) PetscCall(MatSetOption(M,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE));
   }
 
   PetscCall(MatGetOwnershipRange(mat,&rstart,&rend));

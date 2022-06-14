@@ -683,14 +683,10 @@ PetscErrorCode PCSetFromOptions_MG(PetscOptionItems *PetscOptionsObject,PC pc)
 
   mgctype = (PCMGCycleType) mglevels[0]->cycles;
   PetscCall(PetscOptionsEnum("-pc_mg_cycle_type","V cycle or for W-cycle","PCMGSetCycleType",PCMGCycleTypes,(PetscEnum)mgctype,(PetscEnum*)&mgctype,&flg));
-  if (flg) {
-    PetscCall(PCMGSetCycleType(pc,mgctype));
-  }
+  if (flg) PetscCall(PCMGSetCycleType(pc,mgctype));
   gtype = mg->galerkin;
   PetscCall(PetscOptionsEnum("-pc_mg_galerkin","Use Galerkin process to compute coarser operators","PCMGSetGalerkin",PCMGGalerkinTypes,(PetscEnum)gtype,(PetscEnum*)&gtype,&flg));
-  if (flg) {
-    PetscCall(PCMGSetGalerkin(pc,gtype));
-  }
+  if (flg) PetscCall(PCMGSetGalerkin(pc,gtype));
   coarseSpaceType = mg->coarseSpaceType;
   PetscCall(PetscOptionsEnum("-pc_mg_adapt_interp_coarse_space","Type of adaptive coarse space: none, polynomial, harmonic, eigenvector, generalized_eigenvector, gdsw","PCMGSetAdaptCoarseSpaceType",PCMGCoarseSpaceTypes,(PetscEnum)coarseSpaceType,(PetscEnum*)&coarseSpaceType,&flg));
   if (flg) PetscCall(PCMGSetAdaptCoarseSpaceType(pc,coarseSpaceType));
@@ -701,19 +697,13 @@ PetscErrorCode PCSetFromOptions_MG(PetscOptionItems *PetscOptionsObject,PC pc)
   if (flg) PetscCall(PCMGSetAdaptCR(pc, flg2));
   flg = PETSC_FALSE;
   PetscCall(PetscOptionsBool("-pc_mg_distinct_smoothup","Create separate smoothup KSP and append the prefix _up","PCMGSetDistinctSmoothUp",PETSC_FALSE,&flg,NULL));
-  if (flg) {
-    PetscCall(PCMGSetDistinctSmoothUp(pc));
-  }
+  if (flg) PetscCall(PCMGSetDistinctSmoothUp(pc));
   mgtype = mg->am;
   PetscCall(PetscOptionsEnum("-pc_mg_type","Multigrid type","PCMGSetType",PCMGTypes,(PetscEnum)mgtype,(PetscEnum*)&mgtype,&flg));
-  if (flg) {
-    PetscCall(PCMGSetType(pc,mgtype));
-  }
+  if (flg) PetscCall(PCMGSetType(pc,mgtype));
   if (mg->am == PC_MG_MULTIPLICATIVE) {
     PetscCall(PetscOptionsInt("-pc_mg_multiplicative_cycles","Number of cycles for each preconditioner step","PCMGMultiplicativeSetCycles",mg->cyclesperpcapply,&cycles,&flg));
-    if (flg) {
-      PetscCall(PCMGMultiplicativeSetCycles(pc,cycles));
-    }
+    if (flg) PetscCall(PCMGMultiplicativeSetCycles(pc,cycles));
   }
   flg  = PETSC_FALSE;
   PetscCall(PetscOptionsBool("-pc_mg_log","Log times for each multigrid level","None",flg,&flg,NULL));
@@ -796,9 +786,7 @@ PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
     } else {
       PetscCall(PetscViewerASCIIPrintf(viewer,"    Not using Galerkin computed coarse grid matrices\n"));
     }
-    if (mg->view) {
-      PetscCall((*mg->view)(pc,viewer));
-    }
+    if (mg->view) PetscCall((*mg->view)(pc,viewer));
     for (i=0; i<levels; i++) {
       if (i) {
         PetscCall(PetscViewerASCIIPrintf(viewer,"Down solver (pre-smoother) on level %" PetscInt_FMT " -------------------------------\n",i));

@@ -407,9 +407,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
         } else {
 #if !defined(PETSC_USE_COMPLEX)
           PetscCall(MatGetOption(Cmat, MAT_SYMMETRIC, &flg));
-          if (flg) {
-            PetscCall(MatSetOption(mat, MAT_SYMMETRIC,PETSC_TRUE));
-          }
+          if (flg) PetscCall(MatSetOption(mat, MAT_SYMMETRIC,PETSC_TRUE));
 #endif
         }
       }
@@ -842,9 +840,7 @@ PetscErrorCode PCDestroy_GAMG(PC pc)
 
   PetscFunctionBegin;
   PetscCall(PCReset_GAMG(pc));
-  if (pc_gamg->ops->destroy) {
-    PetscCall((*pc_gamg->ops->destroy)(pc));
-  }
+  if (pc_gamg->ops->destroy) PetscCall((*pc_gamg->ops->destroy)(pc));
   PetscCall(PetscFree(pc_gamg->ops));
   PetscCall(PetscFree(pc_gamg->gamg_type_name));
   PetscCall(PetscFree(pc_gamg));
@@ -1495,9 +1491,7 @@ static PetscErrorCode PCView_GAMG(PC pc,PetscViewer viewer)
   /* } else { */
   /*   PetscCall(PetscViewerASCIIPrintf(viewer,"      Put reduced grids on whole machine (ie, 0,1*f,2*f...,np-f)\n")); */
   /* } */
-  if (pc_gamg->ops->view) {
-    PetscCall((*pc_gamg->ops->view)(pc,viewer));
-  }
+  if (pc_gamg->ops->view) PetscCall((*pc_gamg->ops->view)(pc,viewer));
   PetscCall(PCMGGetGridComplexity(pc,&gc,&oc));
   PetscCall(PetscViewerASCIIPrintf(viewer,"      Complexity:    grid = %g    operator = %g\n",(double)gc,(double)oc));
   PetscFunctionReturn(0);
@@ -1517,9 +1511,7 @@ PetscErrorCode PCSetFromOptions_GAMG(PetscOptionItems *PetscOptionsObject,PC pc)
   PetscCall(PetscObjectGetComm((PetscObject)pc,&comm));
   PetscOptionsHeadBegin(PetscOptionsObject,"GAMG options");
   PetscCall(PetscOptionsFList("-pc_gamg_type","Type of AMG method","PCGAMGSetType",GAMGList, pc_gamg->gamg_type_name, tname, sizeof(tname), &flag));
-  if (flag) {
-    PetscCall(PCGAMGSetType(pc,tname));
-  }
+  if (flag) PetscCall(PCGAMGSetType(pc,tname));
   PetscCall(PetscOptionsBool("-pc_gamg_repartition","Repartion coarse grids","PCGAMGSetRepartition",pc_gamg->repart,&pc_gamg->repart,NULL));
   PetscCall(PetscOptionsBool("-pc_gamg_use_sa_esteig","Use eigen estimate from Smoothed aggregation for smoother","PCGAMGSetUseSAEstEig",pc_gamg->use_sa_esteig,&pc_gamg->use_sa_esteig,NULL));
   PetscCall(PetscOptionsBool("-pc_gamg_reuse_interpolation","Reuse prolongation operator","PCGAMGReuseInterpolation",pc_gamg->reuse_prol,&pc_gamg->reuse_prol,NULL));

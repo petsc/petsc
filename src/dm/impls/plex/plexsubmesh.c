@@ -716,9 +716,7 @@ static PetscErrorCode DMPlexCreateVTKLabel_Internal(DM dm, PetscBool createGhost
     if (leafLocal[l] >= cEnd) break;
     if (leafRemote[l].rank == rank) {
       PetscCall(DMLabelSetValue(vtkLabel, c, 1));
-    } else if (ghostLabel) {
-      PetscCall(DMLabelSetValue(ghostLabel, c, 2));
-    }
+    } else if (ghostLabel) PetscCall(DMLabelSetValue(ghostLabel, c, 2));
   }
   for (; c < cEnd; ++c) {
     PetscCall(DMLabelSetValue(vtkLabel, c, 1));

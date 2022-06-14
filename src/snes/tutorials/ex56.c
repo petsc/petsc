@@ -453,9 +453,7 @@ int main(int argc,char **args)
       PetscCall(DMGetField(dm, 0, NULL, &deformation));
       PetscCall(PetscObjectCompose(deformation, "nearnullspace", (PetscObject) nearNullSpace));
       PetscCall(DMDestroy(&subdm));
-      if (attach_nearnullspace) {
-        PetscCall(MatSetNearNullSpace(Amat,nearNullSpace));
-      }
+      if (attach_nearnullspace) PetscCall(MatSetNearNullSpace(Amat,nearNullSpace));
       PetscCall(MatNullSpaceDestroy(&nearNullSpace)); /* created by DM and destroyed by Mat */
     }
     PetscCall(DMPlexSetSNESLocalFEM(dm,NULL,NULL,NULL));

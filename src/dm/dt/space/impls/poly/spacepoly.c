@@ -80,9 +80,7 @@ static PetscErrorCode PetscSpaceSetUp_Polynomial(PetscSpace sp)
       PetscCall(PetscObjectGetName((PetscObject)sp, &name));
       PetscCall(PetscSNPrintf(subname, PETSC_MAX_PATH_LEN-1, "%s sum component", name));
       PetscCall(PetscObjectSetName((PetscObject)subsp, subname));
-    } else {
-      PetscCall(PetscObjectSetName((PetscObject)subsp, "sum component"));
-    }
+    } else PetscCall(PetscObjectSetName((PetscObject)subsp, "sum component"));
     PetscCall(PetscSpaceSetType(subsp, PETSCSPACEPOLYNOMIAL));
     PetscCall(PetscSpaceSetDegree(subsp, degree, PETSC_DETERMINE));
     PetscCall(PetscSpaceSetNumComponents(subsp, 1));

@@ -108,23 +108,15 @@ PetscErrorCode SNESNGMRESNorms_Private(SNES snes,PetscInt l,Vec X,Vec F,Vec XM,V
   PetscInt       i;
 
   PetscFunctionBegin;
-  if (xMnorm) {
-    PetscCall(VecNormBegin(XM,NORM_2,xMnorm));
-  }
-  if (fMnorm) {
-    PetscCall(VecNormBegin(FM,NORM_2,fMnorm));
-  }
+  if (xMnorm) PetscCall(VecNormBegin(XM,NORM_2,xMnorm));
+  if (fMnorm) PetscCall(VecNormBegin(FM,NORM_2,fMnorm));
   if (yMnorm) {
     PetscCall(VecCopy(X,D));
     PetscCall(VecAXPY(D,-1.0,XM));
     PetscCall(VecNormBegin(D,NORM_2,yMnorm));
   }
-  if (xAnorm) {
-    PetscCall(VecNormBegin(XA,NORM_2,xAnorm));
-  }
-  if (fAnorm) {
-    PetscCall(VecNormBegin(FA,NORM_2,fAnorm));
-  }
+  if (xAnorm) PetscCall(VecNormBegin(XA,NORM_2,xAnorm));
+  if (fAnorm) PetscCall(VecNormBegin(FA,NORM_2,fAnorm));
   if (yAnorm) {
     PetscCall(VecCopy(X,D));
     PetscCall(VecAXPY(D,-1.0,XA));

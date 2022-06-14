@@ -6,9 +6,7 @@ static PetscErrorCode KSPReset_Chebyshev(KSP ksp)
   KSP_Chebyshev  *cheb = (KSP_Chebyshev*)ksp->data;
 
   PetscFunctionBegin;
-  if (cheb->kspest) {
-    PetscCall(KSPReset(cheb->kspest));
-  }
+  if (cheb->kspest) PetscCall(KSPReset(cheb->kspest));
   PetscFunctionReturn(0);
 }
 

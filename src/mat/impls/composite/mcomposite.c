@@ -107,9 +107,7 @@ PetscErrorCode MatMult_Composite_Multiplicative(Mat A,Vec x,Vec y)
     next = next->next;
   }
   PetscCall(MatMult(next->mat,in,y));
-  if (shell->left) {
-    PetscCall(VecPointwiseMult(y,shell->left,y));
-  }
+  if (shell->left) PetscCall(VecPointwiseMult(y,shell->left,y));
   scale = shell->scale;
   if (shell->scalings) {for (i=0; i<shell->nmat; i++) scale *= shell->scalings[i];}
   PetscCall(VecScale(y,scale));
@@ -144,9 +142,7 @@ PetscErrorCode MatMultTranspose_Composite_Multiplicative(Mat A,Vec x,Vec y)
     tail = tail->prev;
   }
   PetscCall(MatMultTranspose(tail->mat,in,y));
-  if (shell->right) {
-    PetscCall(VecPointwiseMult(y,shell->right,y));
-  }
+  if (shell->right) PetscCall(VecPointwiseMult(y,shell->right,y));
 
   scale = shell->scale;
   if (shell->scalings) {for (i=0; i<shell->nmat; i++) scale *= shell->scalings[i];}
@@ -337,9 +333,7 @@ PetscErrorCode MatMultTranspose_Composite(Mat A,Vec x,Vec y)
       PetscCall(VecAXPY(y,shell->scalings[i++],y2));
     }
   }
-  if (shell->right) {
-    PetscCall(VecPointwiseMult(y,shell->right,y));
-  }
+  if (shell->right) PetscCall(VecPointwiseMult(y,shell->right,y));
   PetscCall(VecScale(y,shell->scale));
   PetscFunctionReturn(0);
 }
@@ -412,9 +406,7 @@ PetscErrorCode MatAssemblyEnd_Composite(Mat Y,MatAssemblyType t)
   Mat_Composite  *shell = (Mat_Composite*)Y->data;
 
   PetscFunctionBegin;
-  if (shell->merge) {
-    PetscCall(MatCompositeMerge(Y));
-  }
+  if (shell->merge) PetscCall(MatCompositeMerge(Y));
   PetscFunctionReturn(0);
 }
 

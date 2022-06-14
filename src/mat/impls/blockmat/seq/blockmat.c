@@ -341,9 +341,7 @@ static PetscErrorCode MatLoad_BlockMat(Mat newmat, PetscViewer viewer)
     PetscCall(MatSetSizes(newmat,m,n,PETSC_DETERMINE,PETSC_DETERMINE));
   }
   PetscCall(MatBlockMatSetPreallocation(newmat,bs,0,lens));
-  if (flg) {
-    PetscCall(MatSetOption(newmat,MAT_SYMMETRIC,PETSC_TRUE));
-  }
+  if (flg) PetscCall(MatSetOption(newmat,MAT_SYMMETRIC,PETSC_TRUE));
   amat = (Mat_BlockMat*)(newmat)->data;
 
   /* preallocate the submatrices */

@@ -21,17 +21,13 @@ static PetscErrorCode  SNESLineSearchApply_Basic(SNESLineSearch linesearch)
 
   /* update */
   PetscCall(VecWAXPY(W,-lambda,Y,X));
-  if (linesearch->ops->viproject) {
-    PetscCall((*linesearch->ops->viproject)(snes, W));
-  }
+  if (linesearch->ops->viproject) PetscCall((*linesearch->ops->viproject)(snes, W));
 
   /* postcheck */
   PetscCall(SNESLineSearchPostCheck(linesearch,X,Y,W,&changed_y,&changed_w));
   if (changed_y) {
     PetscCall(VecWAXPY(W,-lambda,Y,X));
-    if (linesearch->ops->viproject) {
-      PetscCall((*linesearch->ops->viproject)(snes, W));
-    }
+    if (linesearch->ops->viproject) PetscCall((*linesearch->ops->viproject)(snes, W));
   }
   if (linesearch->norms || snes->iter < snes->max_its-1) {
     PetscCall((*linesearch->ops->snesfunc)(snes,W,F));

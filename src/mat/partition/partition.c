@@ -331,13 +331,9 @@ PetscErrorCode  MatPartitioningApply(MatPartitioning matp,IS *partitioning)
   PetscCall(PetscOptionsBool("-mat_partitioning_improve","Improve the quality of a partition",NULL,PETSC_FALSE,&improve,NULL));
   PetscOptionsEnd();
 
-  if (improve) {
-    PetscCall(MatPartitioningImprove(matp,partitioning));
-  }
+  if (improve) PetscCall(MatPartitioningImprove(matp,partitioning));
 
-  if (viewbalance) {
-    PetscCall(MatPartitioningViewImbalance(matp,*partitioning));
-  }
+  if (viewbalance) PetscCall(MatPartitioningViewImbalance(matp,*partitioning));
   PetscFunctionReturn(0);
 }
 
@@ -791,9 +787,7 @@ PetscErrorCode  MatPartitioningSetFromOptions(MatPartitioning part)
     def = ((PetscObject)part)->type_name;
   }
   PetscCall(PetscOptionsFList("-mat_partitioning_type","Type of partitioner","MatPartitioningSetType",MatPartitioningList,def,type,256,&flag));
-  if (flag) {
-    PetscCall(MatPartitioningSetType(part,type));
-  }
+  if (flag) PetscCall(MatPartitioningSetType(part,type));
 
   PetscCall(PetscOptionsInt("-mat_partitioning_nparts","number of fine parts",NULL,part->n,& part->n,&flag));
 
@@ -806,9 +800,7 @@ PetscErrorCode  MatPartitioningSetFromOptions(MatPartitioning part)
     PetscCall(MatPartitioningSetType(part,def));
   }
 
-  if (part->ops->setfromoptions) {
-    PetscCall((*part->ops->setfromoptions)(PetscOptionsObject,part));
-  }
+  if (part->ops->setfromoptions) PetscCall((*part->ops->setfromoptions)(PetscOptionsObject,part));
   PetscOptionsEnd();
   PetscFunctionReturn(0);
 }

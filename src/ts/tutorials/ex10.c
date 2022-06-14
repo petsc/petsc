@@ -1060,16 +1060,12 @@ int main(int argc, char *argv[])
     break;
   }
 
-  if (rd->test_diff) {
-    PetscCall(RDTestDifferentiation(rd));
-  }
+  if (rd->test_diff) PetscCall(RDTestDifferentiation(rd));
   PetscCall(TSSolve(ts,X));
   PetscCall(TSGetSolveTime(ts,&ftime));
   PetscCall(TSGetStepNumber(ts,&steps));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Steps %" PetscInt_FMT "  final time %g\n",steps,(double)ftime));
-  if (rd->view_draw) {
-    PetscCall(RDView(rd,X,PETSC_VIEWER_DRAW_WORLD));
-  }
+  if (rd->view_draw) PetscCall(RDView(rd,X,PETSC_VIEWER_DRAW_WORLD));
   if (rd->view_binary[0]) {
     PetscViewer viewer;
     PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,rd->view_binary,FILE_MODE_WRITE,&viewer));

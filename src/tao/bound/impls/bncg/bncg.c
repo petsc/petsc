@@ -180,9 +180,7 @@ static PetscErrorCode TaoSetUp_BNCG(Tao tao)
     PetscCall(VecDuplicate(tao->gradient,&cg->unprojected_gradient_old));
   }
   PetscCall(MatLMVMAllocate(cg->B, cg->sk, cg->yk));
-  if (cg->pc) {
-    PetscCall(MatLMVMSetJ0(cg->B, cg->pc));
-  }
+  if (cg->pc) PetscCall(MatLMVMSetJ0(cg->B, cg->pc));
   PetscFunctionReturn(0);
 }
 
@@ -450,9 +448,7 @@ PetscErrorCode TaoBNCGResetUpdate(Tao tao, PetscReal gnormsq)
    }
    PetscCall(VecAXPBY(tao->stepdirection, -scaling, 0.0, tao->gradient));
    /* Also want to reset our diagonal scaling with each restart */
-   if (cg->diag_scaling) {
-     PetscCall(MatLMVMReset(cg->B, PETSC_FALSE));
-   }
+   if (cg->diag_scaling) PetscCall(MatLMVMReset(cg->B, PETSC_FALSE));
    PetscFunctionReturn(0);
  }
 
@@ -510,9 +506,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2
     if (0 == tao->niter % (6*dim)) cg_restart = PETSC_TRUE;
   }
   /* Compute the diagonal scaling vector if applicable */
-  if (cg->diag_scaling) {
-    PetscCall(MatLMVMUpdate(cg->B, tao->solution, tao->gradient));
-  }
+  if (cg->diag_scaling) PetscCall(MatLMVMUpdate(cg->B, tao->solution, tao->gradient));
 
   /* A note on diagonal scaling (to be added to paper):
    For the FR, PR, PRP, and DY methods, the diagonally scaled versions

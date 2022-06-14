@@ -132,9 +132,7 @@ int main(int argc,char **argv)
   PetscCall(TSSetRHSFunction(ts,NULL,FormRHSFunction,&user));
   PetscCall(TSSetRHSJacobian(ts,J,J,FormRHSJacobian,&user));
 
-  if (flg) {
-    PetscCall(TSMonitorSet(ts,MonitorMassConservation,NULL,NULL));
-  }
+  if (flg) PetscCall(TSMonitorSet(ts,MonitorMassConservation,NULL,NULL));
   if (tflg) {
     PetscCall(TSMonitorSet(ts,MonitorTempature,&user,NULL));
   }

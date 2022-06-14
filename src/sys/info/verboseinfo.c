@@ -425,9 +425,7 @@ PetscErrorCode PetscInfoDestroy(void)
   PetscCall(PetscStrNArrayDestroy(PetscInfoNumClasses, &PetscInfoClassnames));
   err  = fflush(PetscInfoFile);
   PetscCheck(!err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
-  if (PetscInfoFilename) {
-    PetscCall(PetscFClose(MPI_COMM_SELF, PetscInfoFile));
-  }
+  if (PetscInfoFilename) PetscCall(PetscFClose(MPI_COMM_SELF, PetscInfoFile));
   PetscCall(PetscFree(PetscInfoFilename));
   for (i=0; i<PETSC_STATIC_ARRAY_LENGTH(PetscInfoFlags); i++) PetscInfoFlags[i] = 1;
   PetscInfoClassesLocked = PETSC_FALSE;

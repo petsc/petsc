@@ -170,9 +170,7 @@ PetscErrorCode  PetscRandomSetFromOptions(PetscRandom rnd)
   PetscCall(PetscRandomSetTypeFromOptions_Private(PetscOptionsObject,rnd));
 
   /* Handle specific random generator's options */
-  if (rnd->ops->setfromoptions) {
-    PetscCall((*rnd->ops->setfromoptions)(PetscOptionsObject,rnd));
-  }
+  if (rnd->ops->setfromoptions) PetscCall((*rnd->ops->setfromoptions)(PetscOptionsObject,rnd));
   PetscCall(PetscOptionsInt("-random_seed","Seed to use to generate random numbers","PetscRandomSetSeed",0,&seed,&set));
   if (set) {
     PetscCall(PetscRandomSetSeed(rnd,(unsigned long int)seed));

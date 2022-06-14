@@ -3045,9 +3045,7 @@ PetscErrorCode PetscSectionSymView(PetscSectionSym sym,PetscViewer viewer)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(sym,1,viewer,2);
   PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)sym,viewer));
-  if (sym->ops->view) {
-    PetscCall((*sym->ops->view)(sym,viewer));
-  }
+  if (sym->ops->view) PetscCall((*sym->ops->view)(sym,viewer));
   PetscFunctionReturn(0);
 }
 

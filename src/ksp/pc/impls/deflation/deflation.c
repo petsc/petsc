@@ -634,9 +634,7 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
       PetscCall(KSPSetType(def->WtAWinv,KSPPREONLY));
       PetscCall(PCSetType(pcinner,PCTELESCOPE));
       /* do not overwrite PCTELESCOPE */
-      if (def->prefix) {
-        PetscCall(KSPSetOptionsPrefix(def->WtAWinv,def->prefix));
-      }
+      if (def->prefix) PetscCall(KSPSetOptionsPrefix(def->WtAWinv,def->prefix));
       PetscCall(KSPAppendOptionsPrefix(def->WtAWinv,"deflation_tel_"));
       PetscCall(PCSetFromOptions(pcinner));
       PetscCall(PetscObjectTypeCompare((PetscObject)pcinner,PCTELESCOPE,&match));
@@ -658,15 +656,11 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
         PetscCall(PCSetType(pcinner,PCLU));
 #if defined(PETSC_HAVE_SUPERLU)
         PetscCall(MatGetFactorAvailable(def->WtAW,MATSOLVERSUPERLU,MAT_FACTOR_LU,&match));
-        if (match) {
-          PetscCall(PCFactorSetMatSolverType(pcinner,MATSOLVERSUPERLU));
-        }
+        if (match) PetscCall(PCFactorSetMatSolverType(pcinner,MATSOLVERSUPERLU));
 #endif
 #if defined(PETSC_HAVE_SUPERLU_DIST)
         PetscCall(MatGetFactorAvailable(def->WtAW,MATSOLVERSUPERLU_DIST,MAT_FACTOR_LU,&match));
-        if (match) {
-          PetscCall(PCFactorSetMatSolverType(pcinner,MATSOLVERSUPERLU_DIST));
-        }
+        if (match) PetscCall(PCFactorSetMatSolverType(pcinner,MATSOLVERSUPERLU_DIST));
 #endif
       }
     }
@@ -691,9 +685,7 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
     PetscCall(PCCreate(comm,&def->pc));
     PetscCall(PCSetOperators(def->pc,Amat,Amat));
     PetscCall(PCSetType(def->pc,PCNONE));
-    if (def->prefix) {
-      PetscCall(PCSetOptionsPrefix(def->pc,def->prefix));
-    }
+    if (def->prefix) PetscCall(PCSetOptionsPrefix(def->pc,def->prefix));
     PetscCall(PCAppendOptionsPrefix(def->pc,"deflation_"));
     PetscCall(PCAppendOptionsPrefix(def->pc,prefix));
     PetscCall(PCAppendOptionsPrefix(def->pc,"pc_"));

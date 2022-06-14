@@ -166,9 +166,7 @@ PetscErrorCode SNESSetFromOptions_NGS(PetscOptionItems *PetscOptionsObject,SNES 
   PetscOptionsHeadBegin(PetscOptionsObject,"SNES GS options");
   /* GS Options */
   PetscCall(PetscOptionsInt("-snes_ngs_sweeps","Number of sweeps of GS to apply","SNESComputeGS",gs->sweeps,&sweeps,&flg));
-  if (flg) {
-    PetscCall(SNESNGSSetSweeps(snes,sweeps));
-  }
+  if (flg) PetscCall(SNESNGSSetSweeps(snes,sweeps));
   PetscCall(PetscOptionsReal("-snes_ngs_atol","Absolute residual tolerance for GS iteration","SNESComputeGS",gs->abstol,&atol,&flg));
   PetscCall(PetscOptionsReal("-snes_ngs_rtol","Relative residual tolerance for GS iteration","SNESComputeGS",gs->rtol,&rtol,&flg1));
   PetscCall(PetscOptionsReal("-snes_ngs_stol","Absolute update tolerance for GS iteration","SNESComputeGS",gs->stol,&stol,&flg2));
@@ -255,9 +253,7 @@ PetscErrorCode SNESSolve_NGS(SNES snes)
   }
 
   /* Call general purpose update function */
-  if (snes->ops->update) {
-    PetscCall((*snes->ops->update)(snes, snes->iter));
-  }
+  if (snes->ops->update) PetscCall((*snes->ops->update)(snes, snes->iter));
 
   for (i = 0; i < snes->max_its; i++) {
     PetscCall(SNESComputeNGS(snes, B, X));
@@ -278,9 +274,7 @@ PetscErrorCode SNESSolve_NGS(SNES snes)
     if (normschedule == SNES_NORM_ALWAYS) PetscCall((*snes->ops->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP));
     if (snes->reason) PetscFunctionReturn(0);
     /* Call general purpose update function */
-    if (snes->ops->update) {
-      PetscCall((*snes->ops->update)(snes, snes->iter));
-    }
+    if (snes->ops->update) PetscCall((*snes->ops->update)(snes, snes->iter));
   }
   if (normschedule == SNES_NORM_ALWAYS) {
     if (i == snes->max_its) {

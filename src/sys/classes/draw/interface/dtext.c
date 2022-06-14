@@ -198,9 +198,7 @@ PetscErrorCode  PetscDrawStringSetSize(PetscDraw draw,PetscReal width,PetscReal 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  if (draw->ops->stringsetsize) {
-    PetscCall((*draw->ops->stringsetsize)(draw,width,height));
-  }
+  if (draw->ops->stringsetsize) PetscCall((*draw->ops->stringsetsize)(draw,width,height));
   PetscFunctionReturn(0);
 }
 

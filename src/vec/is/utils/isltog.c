@@ -527,9 +527,7 @@ PetscErrorCode  ISLocalToGlobalMappingSetBlockSize(ISLocalToGlobalMapping mappin
   }
   mapping->info_cached = PETSC_FALSE;
 
-  if (mapping->ops->destroy) {
-    PetscCall((*mapping->ops->destroy)(mapping));
-  }
+  if (mapping->ops->destroy) PetscCall((*mapping->ops->destroy)(mapping));
   PetscFunctionReturn(0);
 }
 
@@ -640,9 +638,7 @@ PetscErrorCode ISLocalToGlobalMappingSetFromOptions(ISLocalToGlobalMapping mappi
   PetscCall(ISLocalToGlobalMappingRegisterAll());
   PetscObjectOptionsBegin((PetscObject)mapping);
   PetscCall(PetscOptionsFList("-islocaltoglobalmapping_type","ISLocalToGlobalMapping method","ISLocalToGlobalMappingSetType",ISLocalToGlobalMappingList,(char*)(((PetscObject)mapping)->type_name) ? ((PetscObject)mapping)->type_name : defaulttype,type,256,&flg));
-  if (flg) {
-    PetscCall(ISLocalToGlobalMappingSetType(mapping,type));
-  }
+  if (flg) PetscCall(ISLocalToGlobalMappingSetType(mapping,type));
   PetscOptionsEnd();
   PetscFunctionReturn(0);
 }

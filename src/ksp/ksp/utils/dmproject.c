@@ -238,9 +238,7 @@ PetscErrorCode DMProjectField(DM dm, PetscReal time, Vec U,
     Mat cMat;
 
     PetscCall(DMGetDefaultConstraints(dm, NULL, &cMat, NULL));
-    if (cMat) {
-      PetscCall(DMGlobalToLocalSolve(dm, localX, X));
-    }
+    if (cMat) PetscCall(DMGlobalToLocalSolve(dm, localX, X));
   }
   PetscCall(DMRestoreLocalVector(dm, &localX));
   if (U != X) PetscCall(DMRestoreLocalVector(dmIn, &localU));

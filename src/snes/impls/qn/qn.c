@@ -107,9 +107,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
   }
 
   /* general purpose update */
-  if (snes->ops->update) {
-    PetscCall((*snes->ops->update)(snes, snes->iter));
-  }
+  if (snes->ops->update) PetscCall((*snes->ops->update)(snes, snes->iter));
 
   /* scale the initial update */
   if (qn->scale_type == SNES_QN_SCALE_JACOBIAN) {
@@ -179,9 +177,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
     }
 
     /* general purpose update */
-    if (snes->ops->update) {
-      PetscCall((*snes->ops->update)(snes, snes->iter));
-    }
+    if (snes->ops->update) PetscCall((*snes->ops->update)(snes, snes->iter));
 
     /* restart conditions */
     powell = PETSC_FALSE;

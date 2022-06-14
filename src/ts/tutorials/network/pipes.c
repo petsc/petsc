@@ -802,9 +802,7 @@ int main(int argc,char ** argv)
   PetscCall(TSGetStepNumber(ts,&steps));
   PetscCall(TSGetConvergedReason(ts,&reason));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%s at time %g after %" PetscInt_FMT " steps\n",TSConvergedReasons[reason],(double)ftime,steps));
-  if (viewX) {
-    PetscCall(VecView(X,PETSC_VIEWER_STDOUT_WORLD));
-  }
+  if (viewX) PetscCall(VecView(X,PETSC_VIEWER_STDOUT_WORLD));
 
   viewpipes = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL,NULL, "-Jac_view", &viewpipes,NULL));
@@ -820,16 +818,12 @@ int main(int argc,char ** argv)
   /* -------------- */
   viewpipes = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL,NULL, "-pipe_view", &viewpipes,NULL));
-  if (viewpipes) {
-    PetscCall(PipesView(networkdm,KeyPipe,X));
-  }
+  if (viewpipes) PetscCall(PipesView(networkdm,KeyPipe,X));
 
   /* Test IS */
   viewjuncs = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL,NULL, "-isjunc_view", &viewjuncs,NULL));
-  if (viewjuncs) {
-    PetscCall(ISJunctionsView(networkdm,KeyJunction));
-  }
+  if (viewjuncs) PetscCall(ISJunctionsView(networkdm,KeyJunction));
 
   /* Free spaces */
   /* ----------- */
@@ -857,9 +851,7 @@ int main(int argc,char ** argv)
   PetscCall(DMDestroy(&networkdm));
   PetscCall(PetscFree(wash));
 
-  if (rank) {
-    PetscCall(PetscFree2(junctions,pipes));
-  }
+  if (rank) PetscCall(PetscFree2(junctions,pipes));
   PetscCall(PetscFinalize());
   return 0;
 }

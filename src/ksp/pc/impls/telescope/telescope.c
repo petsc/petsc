@@ -571,9 +571,7 @@ static PetscErrorCode PCSetUp_Telescope(PC pc)
     if (sred->pctelescope_matcreate_type) {
       PetscCall(sred->pctelescope_matcreate_type(pc,sred,MAT_INITIAL_MATRIX,&sred->Bred));
     }
-    if (sred->pctelescope_matnullspacecreate_type) {
-      PetscCall(sred->pctelescope_matnullspacecreate_type(pc,sred,sred->Bred));
-    }
+    if (sred->pctelescope_matnullspacecreate_type) PetscCall(sred->pctelescope_matnullspacecreate_type(pc,sred,sred->Bred));
   } else {
     if (sred->pctelescope_matcreate_type) {
       PetscCall(sred->pctelescope_matcreate_type(pc,sred,MAT_REUSE_MATRIX,&sred->Bred));
@@ -710,9 +708,7 @@ static PetscErrorCode PCReset_Telescope(PC pc)
   PetscCall(VecDestroy(&sred->xtmp));
   PetscCall(MatDestroy(&sred->Bred));
   PetscCall(KSPReset(sred->ksp));
-  if (sred->pctelescope_reset_type) {
-    PetscCall(sred->pctelescope_reset_type(pc));
-  }
+  if (sred->pctelescope_reset_type) PetscCall(sred->pctelescope_reset_type(pc));
   PetscFunctionReturn(0);
 }
 
@@ -754,9 +750,7 @@ static PetscErrorCode PCSetFromOptions_Telescope(PetscOptionItems *PetscOptionsO
   PetscCallMPI(MPI_Comm_size(comm,&size));
   PetscOptionsHeadBegin(PetscOptionsObject,"Telescope options");
   PetscCall(PetscOptionsEnum("-pc_telescope_subcomm_type","Subcomm type (interlaced or contiguous)","PCTelescopeSetSubcommType",PetscSubcommTypes,(PetscEnum)sred->subcommtype,(PetscEnum*)&subcommtype,&flg));
-  if (flg) {
-    PetscCall(PCTelescopeSetSubcommType(pc,subcommtype));
-  }
+  if (flg) PetscCall(PCTelescopeSetSubcommType(pc,subcommtype));
   PetscCall(PetscOptionsInt("-pc_telescope_reduction_factor","Factor to reduce comm size by","PCTelescopeSetReductionFactor",sred->redfactor,&sred->redfactor,NULL));
   PetscCheck(sred->redfactor <= size,comm,PETSC_ERR_ARG_WRONG,"-pc_telescope_reduction_factor <= comm size");
   PetscCall(PetscOptionsBool("-pc_telescope_ignore_dm","Ignore any DM attached to the PC","PCTelescopeSetIgnoreDM",sred->ignore_dm,&sred->ignore_dm,NULL));
