@@ -263,21 +263,18 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJCUSPARSE(Mat B,Mat A,const MatFac
   /* determine which version of MatSolve needs to be used. */
   PetscCall(ISIdentity(isrow,&row_identity));
   PetscCall(ISIdentity(iscol,&col_identity));
-  if (row_identity && col_identity) {
-    if (!cusparsestruct->use_cpu_solve) {
+
+  if (!cusparsestruct->use_cpu_solve) {
+    if (row_identity && col_identity) {
       B->ops->solve = MatSolve_SeqAIJCUSPARSE_NaturalOrdering;
       B->ops->solvetranspose = MatSolveTranspose_SeqAIJCUSPARSE_NaturalOrdering;
-    }
-    B->ops->matsolve = NULL;
-    B->ops->matsolvetranspose = NULL;
-  } else {
-    if (!cusparsestruct->use_cpu_solve) {
+    } else {
       B->ops->solve = MatSolve_SeqAIJCUSPARSE;
       B->ops->solvetranspose = MatSolveTranspose_SeqAIJCUSPARSE;
     }
-    B->ops->matsolve = NULL;
-    B->ops->matsolvetranspose = NULL;
   }
+  B->ops->matsolve = NULL;
+  B->ops->matsolvetranspose = NULL;
 
   /* get the triangular factors */
   if (!cusparsestruct->use_cpu_solve) {
