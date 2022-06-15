@@ -505,6 +505,9 @@ PetscErrorCode DMStagGetNumRanks(DM dm,PetscInt *nRanks0,PetscInt *nRanks1,Petsc
 
   Note:
   This is the number of entries on this rank for a global vector associated with `dm`.
+  That is, it is value of `size` returned by `VecGetLocalSize(vec,&size)` when
+  `DMCreateGlobalVector(dm,&vec) is used to create a `Vec`. Users would typically
+  use these functions.
 
   Level: developer
 
@@ -533,6 +536,9 @@ PetscErrorCode DMStagGetEntries(DM dm,PetscInt *entries)
 
   Note:
   This is the number of entries on this rank in the local representation.
+  That is, it is value of `size` returned by `VecGetSize(vec,&size)` or
+  `VecGetLocalSize(vec,&size)` when `DMCreateLocalVector(dm,&vec)` is used to
+  create a `Vec`. Users would typically use these functions.
 
   Level: developer
 
