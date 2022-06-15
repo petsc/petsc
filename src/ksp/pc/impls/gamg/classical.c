@@ -865,7 +865,7 @@ PetscErrorCode PCGAMGOptProlongator_Classical_Jacobi(PC pc,Mat A,Mat *P)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCGAMGProlongator_Classical(PC pc, Mat A, Mat G, PetscCoarsenData *agg_lists,Mat *P)
+static PetscErrorCode PCGAMGProlongator_Classical(PC pc, Mat A, Mat G, PetscCoarsenData *agg_lists,Mat *P)
 {
   PetscErrorCode    (*f)(PC,Mat,Mat,PetscCoarsenData*,Mat*);
   PC_MG             *mg          = (PC_MG*)pc->data;
@@ -879,7 +879,7 @@ PetscErrorCode PCGAMGProlongator_Classical(PC pc, Mat A, Mat G, PetscCoarsenData
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCGAMGDestroy_Classical(PC pc)
+static PetscErrorCode PCGAMGDestroy_Classical(PC pc)
 {
   PC_MG          *mg          = (PC_MG*)pc->data;
   PC_GAMG        *pc_gamg     = (PC_GAMG*)mg->innerctx;
@@ -909,7 +909,7 @@ PetscErrorCode PCGAMGSetFromOptions_Classical(PetscOptionItems *PetscOptionsObje
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCGAMGSetData_Classical(PC pc, Mat A)
+static PetscErrorCode PCGAMGSetData_Classical(PC pc, Mat A)
 {
   PC_MG          *mg      = (PC_MG*)pc->data;
   PC_GAMG        *pc_gamg = (PC_GAMG*)mg->innerctx;

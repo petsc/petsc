@@ -1142,7 +1142,7 @@ will keep zero edges, a positive number will drop small edges. Typical
 finite threshold values are in the range of :math:`0.01 - 0.05`. There
 are additional parameters for changing the weights on coarse grids.
 Note, the parallel algorithm requires symmetric weights/matrix. You must
-use ``-pc_gamg_sym_graph <true>`` to symmetrize the graph if your
+use ``-pc_gamg_symmetrize_graph <true>`` to symmetrize the graph if your
 problem is not symmetric.
 
 **Trouble shooting algebraic multigrid methods:** If *GAMG*, *ML*, or
@@ -1172,8 +1172,8 @@ operator, which can be set using ``PCHYPRESetDiscreteCurl()``.
 coarsening rates and methods; for GAMG use ``-pc_gamg_threshold <x>``
 or ``PCGAMGSetThreshold()`` to regulate coarsening rates, higher values decrease
 coarsening rate. Squaring the graph is the second mechanism for
-increasing coarsening rate. Use ``-pc_gamg_square_graph <N>``, or
-``PCGAMGSetSquareGraph(pc,N)``, to square the graph on the finest N
+increasing coarsening rate. Use ``-pc_gamg_aggressive_coarsening <N>``, or
+``PCGAMGSetAggressiveLevels(pc,N)``, to aggressive ly coarsen (MIS-2) the graph on the finest N
 levels. A high threshold (e.g., :math:`x=0.08`) will result in an
 expensive but potentially powerful preconditioner, and a low threshold
 (e.g., :math:`x=0.0`) will result in faster coarsening, fewer levels,

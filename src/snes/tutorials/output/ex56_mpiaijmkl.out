@@ -50,7 +50,8 @@ Field deformation:
    18 KSP Residual norm 2.59374e-09 
    19 KSP Residual norm 6.644e-10 
    20 KSP Residual norm 1.716e-10 
-  Linear solve converged due to CONVERGED_RTOL iterations 20
+   21 KSP Residual norm 1.716e-10 
+  Linear solve converged due to CONVERGED_RTOL iterations 21
   1 SNES Function norm 1.717e-10 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 DM Object: Mesh (ex56_) 2 MPI processes

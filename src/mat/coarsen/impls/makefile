@@ -1,6 +1,6 @@
 -include ../../../../petscdir.mk
 
-DIRS   = mis hem
+DIRS   = mis hem misk
 LOCDIR = src/mat/coarsen/impls/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

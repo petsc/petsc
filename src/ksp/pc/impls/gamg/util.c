@@ -7,15 +7,18 @@
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCGAMGGetDataWithGhosts - hacks into Mat MPIAIJ so this must have size > 1
+   PCGAMGGetDataWithGhosts - Get array of local + ghost data with local data
+    hacks into Mat MPIAIJ so this must have size > 1
 
    Input Parameter:
-   . Gmat - MPIAIJ matrix for scattters
+   . Gmat - MPIAIJ matrix for scatters
    . data_sz - number of data terms per node (# cols in output)
-   . data_in[nloc*data_sz] - column oriented data
+   . data_in[nloc*data_sz] - column oriented local data
+
    Output Parameter:
-   . a_stride - numbrt of rows of output
+   . a_stride - number of rows of output (locals+ghosts)
    . a_data_out[stride*data_sz] - output data with ghosts
+
 */
 PetscErrorCode PCGAMGGetDataWithGhosts(Mat Gmat,PetscInt data_sz,PetscReal data_in[],PetscInt *a_stride,PetscReal **a_data_out)
 {
@@ -41,13 +44,13 @@ PetscErrorCode PCGAMGGetDataWithGhosts(Mat Gmat,PetscInt data_sz,PetscReal data_
     for (kk=0; kk<nloc; kk++) {
       PetscInt    gid = my0 + kk;
       PetscScalar crd = (PetscScalar)data_in[dir*nloc + kk]; /* col oriented */
-      datas[dir*nnodes + kk] = PetscRealPart(crd);
+      datas[dir*nnodes + kk] = PetscRealPart(crd); // get local part now
 
       PetscCall(VecSetValues(tmp_crds, 1, &gid, &crd, INSERT_VALUES));
     }
     PetscCall(VecAssemblyBegin(tmp_crds));
     PetscCall(VecAssemblyEnd(tmp_crds));
-    /* get ghost datas */
+    /* scatter / gather ghost data and add to end of output data */
     PetscCall(VecScatterBegin(mpimat->Mvctx,tmp_crds,mpimat->lvec,INSERT_VALUES,SCATTER_FORWARD));
     PetscCall(VecScatterEnd(mpimat->Mvctx,tmp_crds,mpimat->lvec,INSERT_VALUES,SCATTER_FORWARD));
     PetscCall(VecGetArray(mpimat->lvec, &data_arr));

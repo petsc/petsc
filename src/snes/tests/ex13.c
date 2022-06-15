@@ -225,7 +225,7 @@ int main(int argc, char **argv)
        -pc_gamg_process_eq_limit 200 \
        -pc_gamg_repartition false \
        -pc_gamg_reuse_interpolation true \
-       -pc_gamg_square_graph 0 \
+       -pc_gamg_aggressive_coarsening 0 \
        -pc_gamg_threshold 0.001 -pc_gamg_threshold_scale .5\
        -pc_gamg_type agg \
        -pc_type gamg \
@@ -291,7 +291,7 @@ int main(int argc, char **argv)
     requires: mkl_sparse
     TODO: broken (INDEFINITE PC)
     args: -dm_plex_dim 3 -dm_plex_box_faces 4,4,4 -dm_refine 1 -petscpartitioner_type simple -potential_petscspace_degree 1 -dm_plex_simplex 0 \
-          -snes_type ksponly -dm_view -pc_type gamg -pc_gamg_sym_graph 0 -pc_gamg_threshold -1 -pc_gamg_square_graph 10 -pc_gamg_process_eq_limit 400 \
+          -snes_type ksponly -dm_view -pc_type gamg -pc_gamg_threshold -1 -pc_gamg_square_graph 10 -pc_gamg_process_eq_limit 400 \
           -pc_gamg_reuse_interpolation -pc_gamg_coarse_eq_limit 10 -pc_gamg_esteig_ksp_type cg -ksp_type cg -ksp_norm_type unpreconditioned \
           -ksp_converged_reason -snes_rtol 1.e-4 -dm_mat_type aijmkl -dm_vec_type standard
 

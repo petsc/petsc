@@ -429,11 +429,21 @@
 !
 !/*TEST
 !
-!   build:
-!
+!  testset:
+!   nsize: 4
+!   args: -ne 39 -theta 30.0 -epsilon 1.e-1 -blob_center 0.,0. -ksp_type cg -pc_type gamg -pc_gamg_type agg -ksp_rtol 1e-4 -pc_gamg_square_graph 0 -ksp_monitor_short -ksp_norm_type unpreconditioned
+!   requires: !single
 !   test:
-!      nsize: 4
-!      args: -ne 39 -theta 30.0 -epsilon 1.e-1 -blob_center 0.,0. -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mat_coarsen_type hem -pc_gamg_square_graph 0 -ksp_monitor_short -pc_gamg_esteig_ksp_max_it 5
-!      requires: !single
+!      suffix: hem
+!      args: -mat_coarsen_type hem -ksp_monitor_short
+!      output_file: output/ex54f_hem.out
+!   test:
+!      suffix: misk
+!      args: -mat_coarsen_type misk -pc_gamg_aggressive_coarsening 0
+!      output_file: output/ex54f_mis.out
+!   test:
+!      suffix: mis
+!      args: -mat_coarsen_type mis
+!      output_file: output/ex54f_mis.out
 !
 !TEST*/

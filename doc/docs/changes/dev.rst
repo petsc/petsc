@@ -105,6 +105,11 @@ In addition to the changes above
 - Add ``MatCreateGraph()`` to create a scalar matrix for use in graph algorithms
 - Add ``MatFilter()`` to remove values with an absolute value equal to or below a give threshold
 
+.. rubric:: MatCoarsen:
+ - Add ``MISK`` coarsening type. Distance-k maximal independent set
+   (MIS) C-F coarsening with a greedy, MIS based aggregation
+   algorithm.
+
 .. rubric:: PC:
 
 .. rubric:: KSP:

@@ -216,17 +216,17 @@ int main(int argc,char **args)
 
    test:
       nsize: 4
-      args: -ne 19 -alpha 1.e-3 -ksp_type cg -pc_type gamg -mg_levels_ksp_max_it 2 -ksp_monitor -ksp_converged_reason -pc_gamg_esteig_ksp_max_it 5 -pc_gamg_esteig_ksp_type cg -mg_levels_ksp_chebyshev_esteig 0,0.25,0,1.1
+      args: -ne 19 -alpha 1.e-3 -ksp_type cg -pc_type gamg -mg_levels_ksp_max_it 2 -ksp_monitor -ksp_converged_reason -pc_gamg_esteig_ksp_max_it 5 -pc_gamg_esteig_ksp_type cg -mg_levels_ksp_chebyshev_esteig 0,0.25,0,1.1 -pc_gamg_aggressive_coarsening 0
 
    test:
       suffix: seqaijmkl
       nsize: 4
       requires: mkl_sparse
-      args: -ne 19 -alpha 1.e-3 -ksp_type cg -pc_type gamg -mg_levels_ksp_max_it 2 -ksp_monitor -ksp_converged_reason -pc_gamg_esteig_ksp_max_it 5 -pc_gamg_esteig_ksp_type cg -mg_levels_ksp_chebyshev_esteig 0,0.25,0,1.1 -mat_seqaij_type seqaijmkl
+      args: -ne 19 -alpha 1.e-3 -ksp_type cg -pc_type gamg -mg_levels_ksp_max_it 2 -ksp_monitor -ksp_converged_reason -pc_gamg_esteig_ksp_max_it 5 -pc_gamg_esteig_ksp_type cg -mg_levels_ksp_chebyshev_esteig 0,0.25,0,1.1 -mat_seqaij_type seqaijmkl -pc_gamg_aggressive_coarsening 0
 
    test:
       suffix: Classical
-      args: -ne 49 -alpha 1.e-3 -ksp_type cg -pc_type gamg -mg_levels_ksp_max_it 2 -pc_gamg_type classical -ksp_monitor -ksp_converged_reason -mg_levels_esteig_ksp_type cg -mg_levels_ksp_chebyshev_esteig 0,0.25,0,1.1
+      args: -ne 49 -alpha 1.e-3 -ksp_type cg -pc_type gamg -mg_levels_ksp_max_it 2 -pc_gamg_type classical -ksp_monitor -ksp_converged_reason -mg_levels_esteig_ksp_type cg -mg_levels_ksp_chebyshev_esteig 0,0.25,0,1.1 -mat_coarsen_type mis
       output_file: output/ex54_classical.out
 
    test:

@@ -2,22 +2,21 @@
     1 KSP Residual norm 52.4579 
     2 KSP Residual norm < 1.e-11
   Linear solve converged due to CONVERGED_RTOL iterations 2
-    0 KSP Residual norm 393.575 
-    1 KSP Residual norm 39.5675 
-    2 KSP Residual norm 8.82573 
-    3 KSP Residual norm 2.28707 
-    4 KSP Residual norm 0.576925 
-    5 KSP Residual norm 0.139174 
-    6 KSP Residual norm 0.0397004 
-    7 KSP Residual norm 0.00889227 
-    8 KSP Residual norm 0.00199201 
-    9 KSP Residual norm 0.000456425 
-   10 KSP Residual norm 0.000113369 
-   11 KSP Residual norm 2.46256e-05 
-   12 KSP Residual norm 4.81374e-06 
-   13 KSP Residual norm 1.23845e-06 
-   14 KSP Residual norm 3.37693e-07 
-   15 KSP Residual norm 7.67513e-08 
-   16 KSP Residual norm 1.27604e-08 
-  Linear solve converged due to CONVERGED_RTOL iterations 16
+    0 KSP Residual norm 423.309 
+    1 KSP Residual norm 31.3199 
+    2 KSP Residual norm 7.2543 
+    3 KSP Residual norm 1.61558 
+    4 KSP Residual norm 0.343234 
+    5 KSP Residual norm 0.0883935 
+    6 KSP Residual norm 0.0291429 
+    7 KSP Residual norm 0.00564032 
+    8 KSP Residual norm 0.00132605 
+    9 KSP Residual norm 0.000272815 
+   10 KSP Residual norm 4.85139e-05 
+   11 KSP Residual norm 9.15086e-06 
+   12 KSP Residual norm 1.47028e-06 
+   13 KSP Residual norm 2.63938e-07 
+   14 KSP Residual norm 5.06696e-08 
+   15 KSP Residual norm 1.24309e-08 
+  Linear solve converged due to CONVERGED_RTOL iterations 15
 [0] 1) N=         441, max displ=5.5560415e+01, disp diff= 1.19e+01, error=4.415e+00, rate=1.9

@@ -574,6 +574,9 @@ struct _p_MatCoarsen {
   PetscCoarsenData *agg_lists;
 };
 
+PETSC_EXTERN PetscErrorCode MatCoarsenMISKSetDistance(MatCoarsen,PetscInt);
+PETSC_EXTERN PetscErrorCode MatCoarsenMISKGetDistance(MatCoarsen,PetscInt*);
+
 /*
     MatFDColoring is used to compute Jacobian matrices efficiently
   via coloring. The data structure is explained below in an example.
