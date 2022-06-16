@@ -3,6 +3,7 @@
 
 typedef struct {
   Mat         A;
+  Mat         D; /* local submatrix for diagonal part */
   Vec         w,left,right,leftwork,rightwork;
   PetscScalar scale;
 } Mat_Normal;
@@ -234,6 +235,7 @@ PetscErrorCode MatDestroy_Normal(Mat N)
 
   PetscFunctionBegin;
   PetscCall(MatDestroy(&Na->A));
+  PetscCall(MatDestroy(&Na->D));
   PetscCall(VecDestroy(&Na->w));
   PetscCall(VecDestroy(&Na->left));
   PetscCall(VecDestroy(&Na->right));
@@ -280,6 +282,18 @@ PetscErrorCode MatGetDiagonal_Normal(Mat N,Vec v)
   PetscCall(VecRestoreArray(v,&values));
   PetscCall(PetscFree2(diag,work));
   PetscCall(VecScale(v,Na->scale));
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatGetDiagonalBlock_Normal(Mat N,Mat *D)
+{
+  Mat_Normal *Na = (Mat_Normal*)N->data;
+  Mat        M,A = Na->A;
+
+  PetscFunctionBegin;
+  PetscCall(MatGetDiagonalBlock(A,&M));
+  PetscCall(MatCreateNormal(M,&Na->D));
+  *D = Na->D;
   PetscFunctionReturn(0);
 }
 
@@ -505,6 +519,7 @@ PetscErrorCode  MatCreateNormal(Mat A,Mat *N)
   (*N)->ops->multtransposeadd  = MatMultTransposeAdd_Normal;
   (*N)->ops->multadd           = MatMultAdd_Normal;
   (*N)->ops->getdiagonal       = MatGetDiagonal_Normal;
+  (*N)->ops->getdiagonalblock  = MatGetDiagonalBlock_Normal;
   (*N)->ops->scale             = MatScale_Normal;
   (*N)->ops->diagonalscale     = MatDiagonalScale_Normal;
   (*N)->ops->increaseoverlap   = MatIncreaseOverlap_Normal;

@@ -3,6 +3,7 @@
 
 typedef struct {
   Mat         A;
+  Mat         D; /* local submatrix for diagonal part */
   Vec         w,left,right,leftwork,rightwork;
   PetscScalar scale;
 } Mat_Normal;
@@ -144,6 +145,7 @@ PetscErrorCode MatDestroyHermitian_Normal(Mat N)
 
   PetscFunctionBegin;
   PetscCall(MatDestroy(&Na->A));
+  PetscCall(MatDestroy(&Na->D));
   PetscCall(VecDestroy(&Na->w));
   PetscCall(VecDestroy(&Na->left));
   PetscCall(VecDestroy(&Na->right));
@@ -185,6 +187,18 @@ PetscErrorCode MatGetDiagonalHermitian_Normal(Mat N,Vec v)
   PetscCall(VecRestoreArray(v,&values));
   PetscCall(PetscFree2(diag,work));
   PetscCall(VecScale(v,Na->scale));
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatGetDiagonalBlockHermitian_Normal(Mat N,Mat *D)
+{
+  Mat_Normal *Na = (Mat_Normal*)N->data;
+  Mat        M,A = Na->A;
+
+  PetscFunctionBegin;
+  PetscCall(MatGetDiagonalBlock(A,&M));
+  PetscCall(MatCreateNormalHermitian(M,&Na->D));
+  *D = Na->D;
   PetscFunctionReturn(0);
 }
 
@@ -269,6 +283,7 @@ PetscErrorCode  MatCreateNormalHermitian(Mat A,Mat *N)
   (*N)->ops->multtransposeadd = MatMultHermitianTransposeAdd_Normal;
   (*N)->ops->multadd          = MatMultHermitianAdd_Normal;
   (*N)->ops->getdiagonal      = MatGetDiagonalHermitian_Normal;
+  (*N)->ops->getdiagonalblock = MatGetDiagonalBlockHermitian_Normal;
   (*N)->ops->scale            = MatScaleHermitian_Normal;
   (*N)->ops->diagonalscale    = MatDiagonalScaleHermitian_Normal;
   (*N)->assembled             = PETSC_TRUE;

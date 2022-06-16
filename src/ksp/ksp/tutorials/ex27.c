@@ -409,4 +409,10 @@ int main(int argc,char **args)
        requires: complex
        args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/nh-complex-int32-float64
 
+   test:
+     suffix: 10
+     requires: !complex double suitesparse !defined(PETSC_USE_64BIT_INDICES)
+     nsize: 2
+     args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -pc_type bjacobi -sub_pc_type qr
+
 TEST*/
