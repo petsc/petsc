@@ -1004,10 +1004,15 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
     }
   } else { /* initial */
     PetscInt initLevel, minLevel;
+#if defined(PETSC_HAVE_MPIUNI)
+    sc_MPI_Comm comm = sc_MPI_COMM_WORLD;
+#else
+    MPI_Comm comm = PetscObjectComm((PetscObject)dm);
+#endif
 
     PetscCall(DMForestGetInitialRefinement(dm,&initLevel));
     PetscCall(DMForestGetMinimumRefinement(dm,&minLevel));
-    PetscStackCallP4estReturn(pforest->forest,p4est_new_ext,(PetscObjectComm((PetscObject)dm),pforest->topo->conn,
+    PetscStackCallP4estReturn(pforest->forest,p4est_new_ext,(comm,pforest->topo->conn,
                                                              0,           /* minimum number of quadrants per processor */
                                                              initLevel,   /* level of refinement */
                                                              1,           /* uniform refinement */
@@ -2064,6 +2069,11 @@ static PetscErrorCode DMCreateReferenceTree_pforest(MPI_Comm comm, DM *dm)
   DM                   dmRoot, dmRefined;
   DM_Plex              *mesh;
   PetscMPIInt          rank;
+#if defined(PETSC_HAVE_MPIUNI)
+  sc_MPI_Comm          comm_self = sc_MPI_COMM_SELF;
+#else
+  MPI_Comm             comm_self = PETSC_COMM_SELF;
+#endif
 
   PetscFunctionBegin;
   PetscStackCallP4estReturn(refcube,p4est_connectivity_new_byname,("unit"));
@@ -2077,8 +2087,8 @@ static PetscErrorCode DMCreateReferenceTree_pforest(MPI_Comm comm, DM *dm)
       }
     }
   }
-  PetscStackCallP4estReturn(root,p4est_new,(PETSC_COMM_SELF,refcube,0,NULL,NULL));
-  PetscStackCallP4estReturn(refined,p4est_new_ext,(PETSC_COMM_SELF,refcube,0,1,1,0,NULL,NULL));
+  PetscStackCallP4estReturn(root,p4est_new,(comm_self,refcube,0,NULL,NULL));
+  PetscStackCallP4estReturn(refined,p4est_new_ext,(comm_self,refcube,0,1,1,0,NULL,NULL));
   PetscCall(P4estToPlex_Local(root,&dmRoot));
   PetscCall(P4estToPlex_Local(refined,&dmRefined));
   {
