@@ -5659,13 +5659,6 @@ PetscErrorCode DMPlexComputeJacobian_Hybrid_Internal(DM dm, PetscFormKey key[], 
   }
   if (dmAux[2]) PetscCall(DMDestroy(&plexA));
   PetscCall(DMDestroy(&plex));
-  /* Assemble matrix */
-  if (hasBdJac && hasBdPrec) {
-    PetscCall(MatAssemblyBegin(Jac, MAT_FINAL_ASSEMBLY));
-    PetscCall(MatAssemblyEnd(Jac, MAT_FINAL_ASSEMBLY));
-  }
-  PetscCall(MatAssemblyBegin(JacP, MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(JacP, MAT_FINAL_ASSEMBLY));
   PetscCall(PetscLogEventEnd(DMPLEX_JacobianFEM,dm,0,0,0));
   PetscFunctionReturn(0);
 }

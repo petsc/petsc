@@ -1215,6 +1215,8 @@ static PetscErrorCode TestAssembly(DM dm, AppCtx *user)
   PetscCall(VecViewFromOptions(locF, NULL, "-local_residual_view"));
   PetscCall(MatZeroEntries(J));
   PetscCall(DMPlexComputeJacobian_Hybrid_Internal(dm, keys, cohesiveCells, 0.0, 0.0, locX, NULL, J, J, user));
+  PetscCall(MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY));
   PetscCall(MatViewFromOptions(J, NULL, "-local_jacobian_view"));
 
   PetscCall(DMRestoreLocalVector(dm, &locX));
