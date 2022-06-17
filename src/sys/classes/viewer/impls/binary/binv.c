@@ -21,6 +21,29 @@ typedef struct  {
   PetscBool     setfromoptionscalled;
 } PetscViewer_Binary;
 
+static PetscErrorCode PetscViewerBinaryClearFunctionList(PetscViewer v)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinaryGetFlowControl_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinarySetFlowControl_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinaryGetSkipHeader_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinarySetSkipHeader_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinaryGetSkipOptions_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinarySetSkipOptions_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinaryGetSkipInfo_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinarySetSkipInfo_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinaryGetInfoPointer_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileGetName_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetName_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileGetMode_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetMode_C",NULL));
+#if defined(PETSC_HAVE_MPIIO)
+  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinaryGetUseMPIIO_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinarySetUseMPIIO_C",NULL));
+#endif
+  PetscFunctionReturn(0);
+}
+
 #if defined(PETSC_HAVE_MPIIO)
 static PetscErrorCode PetscViewerBinarySyncMPIIO(PetscViewer viewer)
 {
@@ -114,6 +137,7 @@ static PetscErrorCode PetscViewerRestoreSubViewer_Binary(PetscViewer viewer,MPI_
     PetscViewer_Binary *obinary = (PetscViewer_Binary*)(*outviewer)->data;
     PetscCheck(obinary->fdes == vbinary->fdes,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Subviewer not obtained from viewer");
     PetscCall(PetscFree((*outviewer)->data));
+    PetscCall(PetscViewerBinaryClearFunctionList(*outviewer));
     PetscCall(PetscHeaderDestroy(outviewer));
   }
 
@@ -813,24 +837,7 @@ static PetscErrorCode PetscViewerDestroy_Binary(PetscViewer v)
   PetscCall(PetscViewerFileClose_Binary(v));
   PetscCall(PetscFree(vbinary->filename));
   PetscCall(PetscFree(vbinary));
-
-  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinaryGetFlowControl_C",NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinarySetFlowControl_C",NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinaryGetSkipHeader_C",NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinarySetSkipHeader_C",NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinaryGetSkipOptions_C",NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinarySetSkipOptions_C",NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinaryGetSkipInfo_C",NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinarySetSkipInfo_C",NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinaryGetInfoPointer_C",NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileGetName_C",NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetName_C",NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileGetMode_C",NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetMode_C",NULL));
-#if defined(PETSC_HAVE_MPIIO)
-  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinaryGetUseMPIIO_C",NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinarySetUseMPIIO_C",NULL));
-#endif
+  PetscCall(PetscViewerBinaryClearFunctionList(v));
   PetscFunctionReturn(0);
 }
 

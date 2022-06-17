@@ -102,6 +102,7 @@ static PetscErrorCode MatDestroy_UMFPACK(Mat A)
     PetscCall(PetscFree(lu->perm_c));
   }
   PetscCall(MatDestroy(&lu->A));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverType_C",NULL));
   PetscCall(PetscFree(A->data));
   PetscFunctionReturn(0);
 }

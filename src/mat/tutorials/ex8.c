@@ -45,6 +45,27 @@ PetscErrorCode RegisterMatScaleUserImpl(Mat mat)
   PetscFunctionReturn(0);
 }
 
+/* This routine deregisters MatScaleUserImpl_SeqAIJ() and
+   MatScaleUserImpl_MPIAIJ() as methods providing MatScaleUserImpl()
+   functionality for SeqAIJ and MPIAIJ matrix-types */
+PetscErrorCode DeRegisterMatScaleUserImpl(Mat mat)
+{
+  PetscMPIInt    size;
+
+  PetscFunctionBegin;
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)mat), &size));
+  if (size == 1) { /* SeqAIJ Matrix */
+    PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatScaleUserImpl_C",NULL));
+  } else { /* MPIAIJ Matrix */
+    Mat AA,AB;
+    PetscCall(MatMPIAIJGetSeqAIJ(mat,&AA,&AB,NULL));
+    PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatScaleUserImpl_C",NULL));
+    PetscCall(PetscObjectComposeFunction((PetscObject)AA,"MatScaleUserImpl_C",NULL));
+    PetscCall(PetscObjectComposeFunction((PetscObject)AB,"MatScaleUserImpl_C",NULL));
+  }
+  PetscFunctionReturn(0);
+}
+
 /* this routines queries the already registered MatScaleUserImp_XXX
    implementations for the given matrix, and calls the correct
    routine. i.e if MatType is SeqAIJ, MatScaleUserImpl_SeqAIJ() gets
@@ -105,6 +126,9 @@ int main(int argc,char **args)
   PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Matrix _after_ MatScaleUserImpl() operation\n"));
   PetscCall(MatView(mat,PETSC_VIEWER_STDOUT_WORLD));
 
+  /* deregister user defined MatScaleUser() operation for both SeqAIJ
+     and MPIAIJ types */
+  PetscCall(DeRegisterMatScaleUserImpl(mat));
   PetscCall(MatDestroy(&mat));
   PetscCall(PetscFinalize());
   return 0;

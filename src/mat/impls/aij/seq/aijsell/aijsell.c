@@ -72,6 +72,7 @@ PetscErrorCode MatDestroy_SeqAIJSELL(Mat A)
   /* Note that I don't call MatSetType().  I believe this is because that
    * is only to be called when *building* a matrix.  I could be wrong, but
    * that is how things work for the SuperLU matrix class. */
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqaijsell_seqaij_C",NULL));
   PetscCall(MatDestroy_SeqAIJ(A));
   PetscFunctionReturn(0);
 }

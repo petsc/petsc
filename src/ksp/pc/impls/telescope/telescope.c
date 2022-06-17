@@ -725,6 +725,18 @@ static PetscErrorCode PCDestroy_Telescope(PC pc)
   PetscCall(KSPDestroy(&sred->ksp));
   PetscCall(PetscSubcommDestroy(&sred->psubcomm));
   PetscCall(PetscFree(sred->dm_ctx));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCTelescopeGetKSP_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCTelescopeGetSubcommType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCTelescopeSetSubcommType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCTelescopeGetReductionFactor_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCTelescopeSetReductionFactor_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCTelescopeGetIgnoreDM_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCTelescopeSetIgnoreDM_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCTelescopeGetIgnoreKSPComputeOperators_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCTelescopeSetIgnoreKSPComputeOperators_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCTelescopeGetDM_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCTelescopeGetUseCoarseDM_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCTelescopeSetUseCoarseDM_C",NULL));
   PetscCall(PetscFree(pc->data));
   PetscFunctionReturn(0);
 }

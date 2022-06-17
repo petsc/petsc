@@ -226,6 +226,8 @@ static PetscErrorCode MatDestroy_MFFD(Mat mat)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatMFFDSetHHistory_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatMFFDSetType_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatMFFDGetH_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatSNESMFSetReuseBase_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatSNESMFGetReuseBase_C",NULL));
   PetscFunctionReturn(0);
 }
 

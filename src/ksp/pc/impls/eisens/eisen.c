@@ -107,6 +107,11 @@ static PetscErrorCode PCDestroy_Eisenstat(PC pc)
 {
   PetscFunctionBegin;
   PetscCall(PCReset_Eisenstat(pc));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCEisenstatSetOmega_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCEisenstatSetNoDiagonalScaling_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCEisenstatGetOmega_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCEisenstatGetNoDiagonalScaling_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCPreSolveChangeRHS_C",NULL));
   PetscCall(PetscFree(pc->data));
   PetscFunctionReturn(0);
 }

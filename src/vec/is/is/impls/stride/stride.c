@@ -105,6 +105,7 @@ PetscErrorCode ISDestroy_Stride(IS is)
 {
   PetscFunctionBegin;
   PetscCall(PetscObjectComposeFunction((PetscObject)is,"ISStrideSetStride_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)is,"ISShift_C",NULL));
   PetscCall(PetscFree(is->data));
   PetscFunctionReturn(0);
 }

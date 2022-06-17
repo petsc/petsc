@@ -372,6 +372,8 @@ PetscErrorCode KSPDestroy_LGMRES(KSP ksp)
   PetscCall(PetscFree(lgmres->augvecs_user_work));
   PetscCall(PetscFree(lgmres->aug_order));
   PetscCall(PetscFree(lgmres->hwork));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPLGMRESSetConstant_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPLGMRESSetAugDim_C",NULL));
   PetscCall(KSPDestroy_GMRES(ksp));
   PetscFunctionReturn(0);
 }

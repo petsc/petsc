@@ -233,6 +233,7 @@ PetscErrorCode PCDestroy_HMG(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCHMGSetUseSubspaceCoarsening_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCHMGSetInnerPCType_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCHMGSetCoarseningComponent_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCHMGUseMatMAIJ_C",NULL));
   PetscFunctionReturn(0);
 }
 

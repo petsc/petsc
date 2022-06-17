@@ -21,6 +21,6 @@ int main(int argc,char **argv)
 
    test:
      localrunfiles: optionsfile
-     filter: egrep -v "(malloc|nox|display|saws_port|vecscatter|options_left|check_pointer_intensity|cuda_initialize|error_output_stdout|use_gpu_aware_mpi|checkstack)"
+     filter: egrep -v "(malloc|nox|display|saws_port|vecscatter|options_left|check_pointer_intensity|cuda_initialize|error_output_stdout|use_gpu_aware_mpi|checkstack|checkfunctionlist)"
 
 TEST*/

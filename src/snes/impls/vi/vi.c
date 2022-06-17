@@ -406,8 +406,8 @@ PetscErrorCode SNESDestroy_VI(SNES snes)
   PetscCall(PetscFree(snes->data));
 
   /* clear composed functions */
-  PetscCall(PetscObjectComposeFunction((PetscObject)snes,"SNESLineSearchSet_C",NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)snes,"SNESLineSearchSetDefaultMonitor_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes,"SNESVISetVariableBounds_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes,"SNESVISetComputeVariableBounds_C",NULL));
   PetscFunctionReturn(0);
 }
 

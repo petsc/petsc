@@ -24,6 +24,8 @@ const char DMSwarmField_rank[] = "DMSwarm_rank";
 const char DMSwarmPICField_coor[] = "DMSwarmPIC_coor";
 const char DMSwarmPICField_cellid[] = "DMSwarm_cellid";
 
+PetscInt SwarmDataFieldId = -1;
+
 #if defined(PETSC_HAVE_HDF5)
 #include <petscviewerhdf5.h>
 
@@ -184,19 +186,18 @@ static PetscErrorCode DMSwarmDestroyVectorFromField_Private(DM dm, const char fi
 {
   DM_Swarm         *swarm = (DM_Swarm *) dm->data;
   DMSwarmDataField gfield;
-  void             (*fptr)(void);
-  PetscInt         bs, nlocal;
-  char             name[PETSC_MAX_PATH_LEN];
+  PetscInt         bs, nlocal, fid = -1, cfid = -2;
+  PetscBool        flg;
 
   PetscFunctionBegin;
+  /* check vector is an inplace array */
+  PetscCall(DMSwarmDataBucketGetDMSwarmDataFieldIdByName(swarm->db, fieldname, &fid));
+  PetscCall(PetscObjectComposedDataGetInt((PetscObject)*vec, SwarmDataFieldId, cfid, flg));
+  PetscCheck(cfid == fid,PetscObjectComm((PetscObject) dm), PETSC_ERR_USER, "Vector being destroyed was not created from DMSwarm field(%s)! %" PetscInt_FMT " != %" PetscInt_FMT "", fieldname,cfid,fid);
   PetscCall(VecGetLocalSize(*vec, &nlocal));
   PetscCall(VecGetBlockSize(*vec, &bs));
   PetscCheck(nlocal/bs == swarm->db->L,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"DMSwarm sizes have changed since vector was created - cannot ensure pointers are valid");
   PetscCall(DMSwarmDataBucketGetDMSwarmDataFieldByName(swarm->db, fieldname, &gfield));
-  /* check vector is an inplace array */
-  PetscCall(PetscSNPrintf(name, PETSC_MAX_PATH_LEN-1, "DMSwarm_VecFieldInPlace_%s", fieldname));
-  PetscCall(PetscObjectQueryFunction((PetscObject) *vec, name, &fptr));
-  PetscCheck(fptr,PetscObjectComm((PetscObject) dm), PETSC_ERR_USER, "Vector being destroyed was not created from DMSwarm field(%s)", fieldname);
   PetscCall(DMSwarmDataFieldRestoreAccess(gfield));
   PetscCall(VecResetArray(*vec));
   PetscCall(VecDestroy(vec));
@@ -208,7 +209,7 @@ static PetscErrorCode DMSwarmCreateVectorFromField_Private(DM dm, const char fie
   DM_Swarm      *swarm = (DM_Swarm *) dm->data;
   PetscDataType  type;
   PetscScalar   *array;
-  PetscInt       bs, n;
+  PetscInt       bs, n, fid;
   char           name[PETSC_MAX_PATH_LEN];
   PetscMPIInt    size;
   PetscBool      iscuda,iskokkos;
@@ -234,8 +235,8 @@ static PetscErrorCode DMSwarmCreateVectorFromField_Private(DM dm, const char fie
   PetscCall(PetscObjectSetName((PetscObject) *vec, name));
 
   /* Set guard */
-  PetscCall(PetscSNPrintf(name, PETSC_MAX_PATH_LEN-1, "DMSwarm_VecFieldInPlace_%s", fieldname));
-  PetscCall(PetscObjectComposeFunction((PetscObject) *vec, name, DMSwarmDestroyVectorFromField_Private));
+  PetscCall(DMSwarmDataBucketGetDMSwarmDataFieldIdByName(swarm->db, fieldname, &fid));
+  PetscCall(PetscObjectComposedDataSetInt((PetscObject)*vec, SwarmDataFieldId, fid));
 
   PetscCall(VecSetDM(*vec, dm));
   PetscCall(VecSetOperation(*vec, VECOP_VIEW, (void (*)(void)) VecView_Swarm));
@@ -1871,5 +1872,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_Swarm(DM dm)
   swarm->collect_view_active            = PETSC_FALSE;
   swarm->collect_view_reset_nlocal      = -1;
   PetscCall(DMInitialize_Swarm(dm));
+  if (SwarmDataFieldId == -1) PetscCall(PetscObjectComposedDataRegister(&SwarmDataFieldId));
   PetscFunctionReturn(0);
 }

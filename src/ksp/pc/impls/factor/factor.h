@@ -42,5 +42,6 @@ PETSC_INTERN PetscErrorCode PCFactorSetColumnPivot_Factor(PC,PetscReal);
 PETSC_INTERN PetscErrorCode PCSetFromOptions_Factor(PetscOptionItems *PetscOptionsObject,PC);
 PETSC_INTERN PetscErrorCode PCView_Factor(PC,PetscViewer);
 PETSC_INTERN PetscErrorCode PCFactorSetDefaultOrdering_Factor(PC);
+PETSC_INTERN PetscErrorCode PCFactorClearComposedFunctions(PC);
 
 #endif

@@ -313,19 +313,38 @@ PetscErrorCode  PetscFunctionListDestroy(PetscFunctionList *fl)
 }
 
 /*
-   Print any PetscFunctionLists that have not be destroyed
+   Print registered PetscFunctionLists
 */
 PetscErrorCode  PetscFunctionListPrintAll(void)
 {
   PetscFunctionList tmp = dlallhead;
 
   PetscFunctionBegin;
-  if (tmp) {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"The following PetscFunctionLists were not destroyed\n"));
-  }
+  if (tmp) PetscCall(PetscPrintf(PETSC_COMM_SELF,"[%d] Registered PetscFunctionLists\n",PetscGlobalRank));
   while (tmp) {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%s \n",tmp->name));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"[%d]   %s\n",PetscGlobalRank,tmp->name));
     tmp = tmp->next_list;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*MC
+    PetscFunctionListNonEmpty - Print composed names for non null function pointers
+
+    Input Parameter:
+.   flist   - pointer to list
+
+    Level: developer
+
+.seealso: `PetscFunctionListAdd()`, `PetscFunctionList`, `PetscObjectQueryFunction()`
+M*/
+PetscErrorCode  PetscFunctionListPrintNonEmpty(PetscFunctionList fl)
+{
+  PetscFunctionBegin;
+  while (fl) {
+    PetscFunctionList next  = fl->next;
+    if (fl->routine) PetscCall(PetscPrintf(PETSC_COMM_SELF,"[%d] function name: %s\n",PetscGlobalRank,fl->name));
+    fl = next;
   }
   PetscFunctionReturn(0);
 }

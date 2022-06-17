@@ -384,6 +384,8 @@ static PetscErrorCode PetscSpaceDestroy_Sum(PetscSpace sp)
   PetscCall(PetscObjectComposeFunction((PetscObject)sp,"PetscSpaceSumGetSubspace_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)sp,"PetscSpaceSumSetNumSubspaces_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)sp,"PetscSpaceSumGetNumSubspaces_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)sp,"PetscSpaceSumGetConcatenate_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)sp,"PetscSpaceSumSetConcatenate_C",NULL));
   PetscCall(PetscFree(sum));
   PetscFunctionReturn(0);
 }

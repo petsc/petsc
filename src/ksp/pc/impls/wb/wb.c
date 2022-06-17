@@ -670,6 +670,7 @@ PetscErrorCode PCDestroy_Exotic(PC pc)
   PetscCall(MatDestroy(&ctx->P));
   PetscCall(KSPDestroy(&ctx->ksp));
   PetscCall(PetscFree(ctx));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCExoticSetType_C",NULL));
   PetscCall(PCDestroy_MG(pc));
   PetscFunctionReturn(0);
 }

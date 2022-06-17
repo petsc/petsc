@@ -156,6 +156,18 @@ PetscErrorCode DMSwarmDataBucketRegisterField(DMSwarmDataBucket db,const char re
  }
  */
 
+PetscErrorCode DMSwarmDataBucketGetDMSwarmDataFieldIdByName(DMSwarmDataBucket db,const char name[],PetscInt *idx)
+{
+  PetscBool found;
+
+  PetscFunctionBegin;
+  *idx = -1;
+  PetscCall(DMSwarmDataFieldStringInList(name,db->nfields,(const DMSwarmDataField*)db->field,&found));
+  PetscCheck(found,PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot find DMSwarmDataField with name %s",name);
+  PetscCall(DMSwarmDataFieldStringFindInList(name,db->nfields,(const DMSwarmDataField*)db->field,idx));
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode DMSwarmDataBucketGetDMSwarmDataFieldByName(DMSwarmDataBucket db,const char name[],DMSwarmDataField *gfield)
 {
   PetscInt       idx;

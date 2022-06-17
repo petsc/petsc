@@ -1740,6 +1740,8 @@ PetscErrorCode MatDestroy_SeqDense(Mat mat)
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)mat,NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatQRFactor_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatQRFactorSymbolic_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatQRFactorNumeric_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatDenseGetLDA_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatDenseSetLDA_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatDenseGetArray_C",NULL));
@@ -1762,6 +1764,7 @@ PetscErrorCode MatDestroy_SeqDense(Mat mat)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatConvert_seqdense_seqdensecuda_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatProductSetFromOptions_seqdensecuda_seqdensecuda_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatProductSetFromOptions_seqdensecuda_seqdense_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatProductSetFromOptions_seqdense_seqdensecuda_C",NULL));
 #endif
   PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatSeqDenseSetPreallocation_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatProductSetFromOptions_seqaij_seqdense_C",NULL));

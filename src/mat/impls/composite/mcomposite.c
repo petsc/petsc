@@ -65,6 +65,16 @@ PetscErrorCode MatDestroy_Composite(Mat mat)
   }
 
   PetscCall(PetscFree(shell->scalings));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatCompositeAddMat_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatCompositeSetType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatCompositeGetType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatCompositeSetMergeType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatCompositeSetMatStructure_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatCompositeGetMatStructure_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatCompositeMerge_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatCompositeGetNumberMat_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatCompositeGetMat_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatCompositeSetScalings_C",NULL));
   PetscCall(PetscFree(mat->data));
   PetscFunctionReturn(0);
 }

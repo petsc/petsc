@@ -290,6 +290,7 @@ static PetscErrorCode MatDestroy_MPIAdj(Mat mat)
   PetscCall(PetscObjectChangeTypeName((PetscObject)mat,NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatMPIAdjSetPreallocation_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatMPIAdjCreateNonemptySubcommMat_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatMPIAdjToSeq_C",NULL));
   PetscFunctionReturn(0);
 }
 

@@ -91,6 +91,7 @@ static PetscErrorCode PCDestroy_QR(PC pc)
   PetscCall(PCReset_QR(pc));
   PetscCall(PetscFree(((PC_Factor*)dir)->ordering));
   PetscCall(PetscFree(((PC_Factor*)dir)->solvertype));
+  PetscCall(PCFactorClearComposedFunctions(pc));
   PetscCall(PetscFree(pc->data));
   PetscFunctionReturn(0);
 }

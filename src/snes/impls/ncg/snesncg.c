@@ -18,6 +18,7 @@ static PetscErrorCode SNESReset_NCG(SNES snes)
 static PetscErrorCode SNESDestroy_NCG(SNES snes)
 {
   PetscFunctionBegin;
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes,"SNESNCGSetType_C",NULL));
   PetscCall(PetscFree(snes->data));
   PetscFunctionReturn(0);
 }

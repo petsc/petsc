@@ -62,6 +62,7 @@ PETSC_INTERN PetscErrorCode DMSwarmDataFieldCopyPoint(const PetscInt,const DMSwa
 PETSC_INTERN PetscErrorCode DMSwarmDataFieldZeroPoint(const DMSwarmDataField,const PetscInt);
 
 PETSC_INTERN PetscErrorCode DMSwarmDataBucketGetDMSwarmDataFieldByName(DMSwarmDataBucket,const char [],DMSwarmDataField *);
+PETSC_INTERN PetscErrorCode DMSwarmDataBucketGetDMSwarmDataFieldIdByName(DMSwarmDataBucket,const char [],PetscInt *);
 PETSC_INTERN PetscErrorCode DMSwarmDataBucketQueryDMSwarmDataFieldByName(DMSwarmDataBucket,const char [],PetscBool *);
 PETSC_INTERN PetscErrorCode DMSwarmDataBucketFinalize(DMSwarmDataBucket);
 PETSC_INTERN PetscErrorCode DMSwarmDataBucketSetInitialSizes(DMSwarmDataBucket,const PetscInt,const PetscInt);

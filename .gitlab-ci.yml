@@ -16,7 +16,7 @@ stages:
 variables:
   GIT_STRATEGY: fetch
   GIT_CLEAN_FLAGS: -ffdxq
-  PETSC_OPTIONS: -checkstack
+  PETSC_OPTIONS: -checkstack -checkfunctionlist
   TIMEOUT: 450
 
 #
@@ -437,7 +437,7 @@ freebsd-cxx-pkgs-opt:
   tags:
     - os:fbsd
   variables:
-    PETSC_OPTIONS: -vecscatter_mpi1 false -options_left false -checkstack
+    PETSC_OPTIONS: -vecscatter_mpi1 false -options_left false -checkstack -checkfunctionlist
     TEST_ARCH: arch-ci-freebsd-cxx-pkgs-opt
 
 freebsd-pkgs-opt:
@@ -669,7 +669,7 @@ linux-cmplx-gcov:
   tags:
     - gce-nfs, linux-gcov
   variables:
-    PETSC_OPTIONS:  -vecscatter_mpi1 false -options_left false -checkstack
+    PETSC_OPTIONS:  -vecscatter_mpi1 false -options_left false -checkstack -checkfunctionlist
     TEST_ARCH: arch-ci-linux-cmplx-gcov
     LOAD_MODULES: gcc/8.3.0-fjpc5ys
     RUN_GCOV: 1
@@ -943,7 +943,7 @@ osx-cxx-pkgs-opt:
   tags:
     - os:macos, opt
   variables:
-    PETSC_OPTIONS: -vecscatter_mpi1 false -options_left false -checkstack
+    PETSC_OPTIONS: -vecscatter_mpi1 false -options_left false -checkstack -checkfunctionlist
     TEST_ARCH: arch-ci-osx-cxx-pkgs-opt
     MAKE_CXXFLAGS: -Werror -Wno-pass-failed
 

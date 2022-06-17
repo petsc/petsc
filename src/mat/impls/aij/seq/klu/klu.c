@@ -103,6 +103,7 @@ static PetscErrorCode MatDestroy_KLU(Mat A)
     klu_K_free_numeric(&lu->Numeric,&lu->Common);
     PetscCall(PetscFree2(lu->perm_r,lu->perm_c));
   }
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverType_C",NULL));
   PetscCall(PetscFree(A->data));
   PetscFunctionReturn(0);
 }

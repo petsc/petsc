@@ -140,6 +140,11 @@ static PetscErrorCode PCDestroy_BJacobi(PC pc)
   PetscFunctionBegin;
   PetscCall(PetscFree(jac->g_lens));
   PetscCall(PetscFree(jac->l_lens));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCBJacobiGetSubKSP_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCBJacobiSetTotalBlocks_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCBJacobiGetTotalBlocks_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCBJacobiSetLocalBlocks_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCBJacobiGetLocalBlocks_C",NULL));
   PetscCall(PetscFree(pc->data));
   PetscFunctionReturn(0);
 }
@@ -584,10 +589,8 @@ static PetscErrorCode PCDestroy_BJacobi_Singleblock(PC pc)
   PetscCall(PCReset_BJacobi_Singleblock(pc));
   PetscCall(KSPDestroy(&jac->ksp[0]));
   PetscCall(PetscFree(jac->ksp));
-  PetscCall(PetscFree(jac->l_lens));
-  PetscCall(PetscFree(jac->g_lens));
   PetscCall(PetscFree(bjac));
-  PetscCall(PetscFree(pc->data));
+  PetscCall(PCDestroy_BJacobi(pc));
   PetscFunctionReturn(0);
 }
 
@@ -852,7 +855,7 @@ static PetscErrorCode PCDestroy_BJacobi_Multiblock(PC pc)
     PetscCall(KSPDestroy(&jac->ksp[i]));
   }
   PetscCall(PetscFree(jac->ksp));
-  PetscCall(PetscFree(pc->data));
+  PetscCall(PCDestroy_BJacobi(pc));
   PetscFunctionReturn(0);
 }
 
@@ -1121,7 +1124,7 @@ static PetscErrorCode PCDestroy_BJacobi_Multiproc(PC pc)
   PetscCall(PetscSubcommDestroy(&mpjac->psubcomm));
 
   PetscCall(PetscFree(mpjac));
-  PetscCall(PetscFree(pc->data));
+  PetscCall(PCDestroy_BJacobi(pc));
   PetscFunctionReturn(0);
 }
 

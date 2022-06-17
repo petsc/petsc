@@ -701,6 +701,10 @@ static PetscErrorCode TaoDestroy_ADMM(Tao tao)
   PetscCall(TaoDestroy(&am->subsolverX));
   PetscCall(TaoDestroy(&am->subsolverZ));
   am->parent = NULL;
+  PetscCall(PetscObjectComposeFunction((PetscObject)tao,"TaoADMMSetRegularizerType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)tao,"TaoADMMGetRegularizerType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)tao,"TaoADMMSetUpdateType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)tao,"TaoADMMGetUpdateType_C",NULL));
   PetscCall(PetscFree(tao->data));
   PetscFunctionReturn(0);
 }

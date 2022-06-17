@@ -727,6 +727,16 @@ static PetscErrorCode PCDestroy_Deflation(PC pc)
 {
   PetscFunctionBegin;
   PetscCall(PCReset_Deflation(pc));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetInitOnly_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetLevels_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetReductionFactor_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetCorrectionFactor_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetSpaceToCompute_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetSpace_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetProjectionNullSpaceMat_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCDeflationSetCoarseMat_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCDeflationGetCoarseKSP_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCDeflationGetPC_C",NULL));
   PetscCall(PetscFree(pc->data));
   PetscFunctionReturn(0);
 }

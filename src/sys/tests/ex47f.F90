@@ -22,7 +22,7 @@ program main
 !/*TEST
 !
 ! testset:
-!   filter: egrep -v "(options_left|malloc_dump|malloc_test|saws_port_auto_select|display|check_pointer_intensity|error_output_stdout|nox|vecscatter_mpi1|checkstack|use_gpu_aware_mpi)"
+!   filter: egrep -v "(options_left|malloc_dump|malloc_test|saws_port_auto_select|display|check_pointer_intensity|error_output_stdout|nox|vecscatter_mpi1|checkstack|use_gpu_aware_mpi|checkfunctionlist)"
 !
 !   test:
 !      suffix: 1

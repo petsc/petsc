@@ -179,6 +179,7 @@ PetscErrorCode MatDestroy_matlab(Mat A)
   PetscFunctionBegin;
   PetscCall(PetscObjectGetName((PetscObject)A,&_A));
   PetscCall(PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_(PetscObjectComm((PetscObject)A)),"delete %s l_%s u_%s;",_A,_A,_A));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverType_C",NULL));
   PetscFunctionReturn(0);
 }
 

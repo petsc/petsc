@@ -188,6 +188,7 @@ PetscErrorCode KSPDestroy_Richardson(KSP ksp)
 {
   PetscFunctionBegin;
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPRichardsonSetScale_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPRichardsonSetSelfScale_C",NULL));
   PetscCall(KSPDestroyDefault(ksp));
   PetscFunctionReturn(0);
 }

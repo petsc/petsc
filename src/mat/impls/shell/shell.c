@@ -835,8 +835,8 @@ static PetscErrorCode MatShellSetMatProductOperation_Private(Mat A,MatProductTyp
     while (entry) {
       PetscCall(PetscStrcmp(composedname,entry->composedname,&flg));
       flg  = (PetscBool)(flg && (entry->ptype == ptype));
-      if (flg) goto set;
       matmat = entry;
+      if (flg) goto set;
       entry = entry->next;
     }
     PetscCall(PetscNew(&matmat->next));

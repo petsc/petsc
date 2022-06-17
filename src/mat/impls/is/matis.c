@@ -2203,6 +2203,7 @@ static PetscErrorCode MatDestroy_IS(Mat A)
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatISSetLocalMatType_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatISGetLocalMat_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatISSetLocalMat_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatISRestoreLocalMat_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatISGetMPIXAIJ_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatISSetPreallocation_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatISStoreL2L_C",NULL));

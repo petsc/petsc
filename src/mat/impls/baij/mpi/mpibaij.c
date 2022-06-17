@@ -1213,7 +1213,8 @@ PetscErrorCode MatDestroy_MPIBAIJ(Mat mat)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatDiagonalScaleLocal_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatSetHashTableFactor_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpibaij_mpisbaij_C",NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpibaij_mpibstrm_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpibaij_mpiadj_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpibaij_mpiaij_C",NULL));
 #if defined(PETSC_HAVE_HYPRE)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpibaij_hypre_C",NULL));
 #endif

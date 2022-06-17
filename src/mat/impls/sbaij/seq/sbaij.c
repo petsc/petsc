@@ -190,6 +190,8 @@ PetscErrorCode MatDestroy_SeqSBAIJ(Mat A)
   PetscCall(PetscFree(A->data));
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)A,NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatSeqSBAIJGetArray_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatSeqSBAIJRestoreArray_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatStoreValues_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatRetrieveValues_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatSeqSBAIJSetColumnIndices_C",NULL));
@@ -203,6 +205,7 @@ PetscErrorCode MatDestroy_SeqSBAIJ(Mat A)
 #if defined(PETSC_HAVE_SCALAPACK)
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqsbaij_scalapack_C",NULL));
 #endif
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverType_C",NULL));
   PetscFunctionReturn(0);
 }
 

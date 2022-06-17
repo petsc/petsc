@@ -599,6 +599,8 @@ PetscErrorCode DMDestroyShellDMDA(DM *_dm)
 
     PetscCall(DMDestroy(&da));
   }
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm,"PCTelescopeFieldScatter",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm,"PCTelescopeStateScatter",NULL));
   PetscCall(DMDestroy(&dm));
   *_dm = NULL;
   PetscFunctionReturn(0);
@@ -973,13 +975,13 @@ int main(int argc,char **argv)
   switch (test_id) {
   case 0:
     PetscCall(test_basic());
-      break;
+    break;
   case 1:
     PetscCall(test_hierarchy());
-      break;
+    break;
   case 2:
     PetscCall(test_mg());
-      break;
+    break;
   default:
     SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"-tid must be 0,1,2");
   }

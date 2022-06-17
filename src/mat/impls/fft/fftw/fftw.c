@@ -372,6 +372,9 @@ PetscErrorCode MatDestroy_FFTW(Mat A)
   }
   PetscCall(PetscFree(fftw->dim_fftw));
   PetscCall(PetscFree(fft->data));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatCreateVecsFFTW_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"VecScatterPetscToFFTW_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A,"VecScatterFFTWToPetsc_C",NULL));
 #if !PetscDefined(HAVE_MPIUNI)
   fftw_mpi_cleanup();
 #endif

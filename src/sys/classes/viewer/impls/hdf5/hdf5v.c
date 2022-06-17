@@ -109,8 +109,11 @@ static PetscErrorCode PetscViewerDestroy_HDF5(PetscViewer viewer)
   PetscCall(PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetName_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileGetName_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetMode_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileGetMode_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerHDF5SetBaseDimension2_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerHDF5SetSPOutput_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerHDF5SetCollective_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerHDF5GetCollective_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerHDF5GetDefaultTimestepping_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerHDF5SetDefaultTimestepping_C",NULL));
   PetscFunctionReturn(0);

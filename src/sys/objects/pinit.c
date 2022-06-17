@@ -37,7 +37,6 @@ PETSC_INTERN FILE *petsc_history;
 
 PETSC_INTERN PetscErrorCode PetscInitialize_DynamicLibraries(void);
 PETSC_INTERN PetscErrorCode PetscFinalize_DynamicLibraries(void);
-PETSC_INTERN PetscErrorCode PetscFunctionListPrintAll(void);
 PETSC_INTERN PetscErrorCode PetscSequentialPhaseBegin_Private(MPI_Comm,int);
 PETSC_INTERN PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm,int);
 PETSC_INTERN PetscErrorCode PetscCloseHistoryFile(FILE**);
@@ -1562,9 +1561,8 @@ PetscErrorCode  PetscFinalize(void)
 
   /*
      Print PetscFunctionLists that have not been properly freed
-
-  PetscCall(PetscFunctionListPrintAll());
   */
+  if (PetscPrintFunctionList) PetscCall(PetscFunctionListPrintAll());
 
   if (petsc_history) {
     PetscCall(PetscCloseHistoryFile(&petsc_history));

@@ -1381,7 +1381,7 @@ static PetscErrorCode TSDestroy_ARKIMEX(TS ts)
   PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSARKIMEXGetType_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSARKIMEXSetType_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSARKIMEXSetFullyImplicit_C",NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSARKIMEXSetFullyImplicit_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts,"TSARKIMEXGetFullyImplicit_C",NULL));
   PetscFunctionReturn(0);
 }
 

@@ -149,6 +149,9 @@ static PetscErrorCode PCDestroy_GAMG_AGG(PC pc)
   PetscFunctionBegin;
   PetscCall(PetscFree(pc_gamg->subctx));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCSetCoordinates_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetNSmooths_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetSymGraph_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetSquareGraph_C",NULL));
   PetscFunctionReturn(0);
 }
 

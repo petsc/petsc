@@ -284,6 +284,11 @@ static PetscErrorCode PCDestroy_Redundant(PC pc)
   PetscCall(PCReset_Redundant(pc));
   PetscCall(KSPDestroy(&red->ksp));
   PetscCall(PetscSubcommDestroy(&red->psubcomm));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCRedundantSetScatter_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCRedundantSetNumber_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCRedundantGetKSP_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCRedundantGetOperators_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetShiftType_C",NULL));
   PetscCall(PetscFree(pc->data));
   PetscFunctionReturn(0);
 }

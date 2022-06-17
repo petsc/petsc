@@ -14,6 +14,12 @@ typedef struct {
 static PetscErrorCode PCDestroy_SOR(PC pc)
 {
   PetscFunctionBegin;
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCSORSetSymmetric_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCSORSetOmega_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCSORSetIterations_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCSORGetSymmetric_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCSORGetOmega_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCSORGetIterations_C",NULL));
   PetscCall(PetscFree(pc->data));
   PetscFunctionReturn(0);
 }

@@ -24,6 +24,8 @@ static PetscErrorCode ISDestroy_General(IS is)
   if (is_general->allocated) PetscCall(PetscFree(is_general->idx));
   PetscCall(PetscObjectComposeFunction((PetscObject)is,"ISGeneralSetIndices_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)is,"ISGeneralFilter_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)is,"ISGeneralSetIndicesFromMask_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)is,"ISShift_C",NULL));
   PetscCall(PetscFree(is->data));
   PetscFunctionReturn(0);
 }

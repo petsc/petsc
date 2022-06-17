@@ -319,7 +319,9 @@ static PetscErrorCode SNESDestroy_QN(SNES snes)
   PetscFunctionBegin;
   PetscCall(SNESReset_QN(snes));
   PetscCall(PetscFree(snes->data));
-  PetscCall(PetscObjectComposeFunction((PetscObject)snes,"",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes,"SNESQNSetScaleType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes,"SNESQNSetRestartType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes,"SNESQNSetType_C",NULL));
   PetscFunctionReturn(0);
 }
 

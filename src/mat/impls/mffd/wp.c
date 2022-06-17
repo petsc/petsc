@@ -143,6 +143,7 @@ static PetscErrorCode MatMFFDSetFromOptions_WP(PetscOptionItems *PetscOptionsObj
 static PetscErrorCode MatMFFDDestroy_WP(MatMFFD ctx)
 {
   PetscFunctionBegin;
+  PetscCall(PetscObjectComposeFunction((PetscObject)ctx->mat,"MatMFFDWPSetComputeNormU_C",NULL));
   PetscCall(PetscFree(ctx->hctx));
   PetscFunctionReturn(0);
 }
