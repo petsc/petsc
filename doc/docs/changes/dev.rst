@@ -149,6 +149,8 @@ In addition to the changes above
 - Add capability to specify whether the DMPlex should be reordered by default:
     - add ``DMPlexReorderDefaultFlag``
     - add ``DMPlexReorderGetDefault()`` and ``DMPlexReorderSetDefault()`` to get and set this flag
+- Add ``DMPlexCreateOverlapLabelFromLabels()`` for more customized overlap
+- Add ``DMPlexSetOverlap()`` to promote an internal interface
 
 .. rubric:: FE/FV:
 
