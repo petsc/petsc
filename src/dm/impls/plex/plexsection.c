@@ -431,77 +431,6 @@ PetscErrorCode DMPlexCreateSection(DM dm, DMLabel label[], const PetscInt numCom
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMCompleteBCLabels_Private(DM dm, const PetscBool isFE[])
-{
-  DMLabel     *labels, *glabels;
-  const char **names;
-  char        *sendNames, *recvNames;
-  PetscInt     Nds, s, maxLabels = 0, maxLen = 0, gmaxLen, Nl = 0, gNl, l, gl, m;
-  size_t       len;
-  MPI_Comm     comm;
-  PetscMPIInt  rank, size, p, *counts, *displs;
-
-  PetscFunctionBegin;
-  PetscCall(PetscObjectGetComm((PetscObject) dm, &comm));
-  PetscCallMPI(MPI_Comm_size(comm, &size));
-  PetscCallMPI(MPI_Comm_rank(comm, &rank));
-  PetscCall(DMGetNumDS(dm, &Nds));
-  for (s = 0; s < Nds; ++s) {
-    PetscDS  dsBC;
-    PetscInt numBd;
-
-    PetscCall(DMGetRegionNumDS(dm, s, NULL, NULL, &dsBC));
-    PetscCall(PetscDSGetNumBoundary(dsBC, &numBd));
-    maxLabels += numBd;
-  }
-  PetscCall(PetscCalloc1(maxLabels, &labels));
-  /* Get list of labels to be completed */
-  for (s = 0; s < Nds; ++s) {
-    PetscDS  dsBC;
-    PetscInt numBd, bd;
-
-    PetscCall(DMGetRegionNumDS(dm, s, NULL, NULL, &dsBC));
-    PetscCall(PetscDSGetNumBoundary(dsBC, &numBd));
-    for (bd = 0; bd < numBd; ++bd) {
-      DMLabel  label;
-      PetscInt field;
-
-      PetscCall(PetscDSGetBoundary(dsBC, bd, NULL, NULL, NULL, &label, NULL, NULL, &field, NULL, NULL, NULL, NULL, NULL));
-      if (!isFE[field] || !label) continue;
-      for (l = 0; l < Nl; ++l) if (labels[l] == label) break;
-      if (l == Nl) labels[Nl++] = label;
-    }
-  }
-  /* Get label names */
-  PetscCall(PetscMalloc1(Nl, &names));
-  for (l = 0; l < Nl; ++l) PetscCall(PetscObjectGetName((PetscObject) labels[l], &names[l]));
-  for (l = 0; l < Nl; ++l) {PetscCall(PetscStrlen(names[l], &len)); maxLen = PetscMax(maxLen, len+2);}
-  PetscCall(PetscFree(labels));
-  PetscCallMPI(MPI_Allreduce(&maxLen, &gmaxLen, 1, MPIU_INT, MPI_MAX, comm));
-  PetscCall(PetscMalloc1(Nl * gmaxLen, &sendNames));
-  for (l = 0; l < Nl; ++l) PetscCall(PetscStrcpy(&sendNames[gmaxLen*l], names[l]));
-  PetscCall(PetscFree(names));
-  /* Put all names on all processes */
-  PetscCall(PetscCalloc2(size, &counts, size+1, &displs));
-  PetscCallMPI(MPI_Allgather(&Nl, 1, MPIU_INT, counts, 1, MPIU_INT, comm));
-  for (p = 0; p < size; ++p) displs[p+1] = displs[p] + counts[p];
-  gNl = displs[size];
-  for (p = 0; p < size; ++p) {counts[p] *= gmaxLen; displs[p] *= gmaxLen;}
-  PetscCall(PetscMalloc2(gNl * gmaxLen, &recvNames, gNl, &glabels));
-  PetscCallMPI(MPI_Allgatherv(sendNames, counts[rank], MPI_CHAR, recvNames, counts, displs, MPI_CHAR, comm));
-  PetscCall(PetscFree2(counts, displs));
-  PetscCall(PetscFree(sendNames));
-  for (l = 0, gl = 0; l < gNl; ++l) {
-    PetscCall(DMGetLabel(dm, &recvNames[l*gmaxLen], &glabels[gl]));
-    PetscCheck(glabels[gl], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Label %s missing on rank %d", &recvNames[l*gmaxLen], rank);
-    for (m = 0; m < gl; ++m) if (glabels[m] == glabels[gl]) continue;
-    PetscCall(DMPlexLabelComplete(dm, glabels[gl]));
-    ++gl;
-  }
-  PetscCall(PetscFree2(recvNames, glabels));
-  PetscFunctionReturn(0);
-}
-
 PetscErrorCode DMCreateLocalSection_Plex(DM dm)
 {
   PetscSection   section;
@@ -561,7 +490,7 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
     PetscCall(ISCreateGeneral(PETSC_COMM_SELF, cEnd-cEndInterior, newidx, PETSC_OWN_POINTER, &bcPoints[bc++]));
   }
   /* Complete labels for boundary conditions */
-  PetscCall(DMCompleteBCLabels_Private(dm, isFE));
+  PetscCall(DMCompleteBCLabels_Internal(dm));
   /* Handle FEM Dirichlet boundaries */
   PetscCall(DMGetNumDS(dm, &Nds));
   for (s = 0; s < Nds; ++s) {
