@@ -14,7 +14,7 @@ PetscInt      PetscMGLevelId;
 PetscErrorCode PCGetDefaultType_Private(PC pc,const char *type[])
 {
   PetscMPIInt    size;
-  PetscBool      hasop,flg1,flg2,set,flg3;
+  PetscBool      hasop,flg1,flg2,set,flg3,isnormal;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size));
@@ -24,10 +24,13 @@ PetscErrorCode PCGetDefaultType_Private(PC pc,const char *type[])
       PetscCall(MatGetFactorAvailable(pc->pmat,"petsc",MAT_FACTOR_ICC,&flg1));
       PetscCall(MatGetFactorAvailable(pc->pmat,"petsc",MAT_FACTOR_ILU,&flg2));
       PetscCall(MatIsSymmetricKnown(pc->pmat,&set,&flg3));
+      PetscCall(PetscObjectTypeCompareAny((PetscObject)pc->pmat,&isnormal,MATNORMAL,MATNORMALHERMITIAN,NULL));
       if (flg1 && (!flg2 || (set && flg3))) {
         *type = PCICC;
       } else if (flg2) {
         *type = PCILU;
+      } else if (isnormal) {
+        *type = PCNONE;
       } else if (hasop) { /* likely is a parallel matrix run on one processor */
         *type = PCBJACOBI;
       } else {
