@@ -53,6 +53,145 @@ PETSC_EXTERN PetscErrorCode DMStagCreate3d(MPI_Comm comm,DMBoundaryType bndx,DMB
   PetscFunctionReturn(0);
 }
 
+PETSC_INTERN PetscErrorCode DMStagRestrictSimple_3d(DM dmf,Vec xf_local,DM dmc,Vec xc_local)
+{
+  PetscScalar  ****LA_xf,****LA_xc;
+  PetscInt     i,j,k,start[3],n[3],nextra[3],N[3];
+  PetscInt     d,dof[4];
+  PetscInt     slot_back_down_left_coarse,slot_back_down_left_fine;
+  PetscInt     slot_down_left_coarse,slot_back_left_coarse,slot_back_down_coarse,slot_down_left_fine,slot_back_left_fine,slot_back_down_fine;
+  PetscInt     slot_left_coarse,slot_down_coarse,slot_back_coarse,slot_left_fine,slot_down_fine,slot_back_fine;
+  PetscInt     slot_element_fine,slot_element_coarse;
+
+  PetscFunctionBegin;
+  PetscCall(DMStagGetDOF(dmc,&dof[0],&dof[1],&dof[2],&dof[3]));
+  PetscCall(DMStagGetCorners(dmc,&start[0],&start[1],&start[2],&n[0],&n[1],&n[2],&nextra[0],&nextra[1],&nextra[2]));
+  PetscCall(DMStagGetGlobalSizes(dmc,&N[0],&N[1],&N[2]));
+  if (PetscDefined(USE_DEBUG)) {
+    PetscInt dof_check[4],n_fine[3],start_fine[3];
+
+    PetscCall(DMStagGetDOF(dmf,&dof_check[0],&dof_check[1],&dof_check[2],&dof_check[3]));
+    PetscCall(DMStagGetCorners(dmf,&start_fine[0],&start_fine[1],&start_fine[2],&n_fine[0],&n_fine[1],&n_fine[2],NULL,NULL,NULL));
+    for (d=0; d<4; ++d) PetscCheck(dof_check[d] == dof[d],PetscObjectComm((PetscObject)dmf),PETSC_ERR_ARG_INCOMP,"Cannot transfer between DMStag objects with different dof on each stratum");
+    for (d=0; d<3; ++d) PetscCheck(n_fine[d] == 2*n[d],PetscObjectComm((PetscObject)dmf),PETSC_ERR_ARG_INCOMP,"Cannot transfer between DMStag objects unless there is a 2-1 coarsening");
+    for (d=0; d<3; ++d) PetscCheck(start_fine[d] == 2*start[d],PetscObjectComm((PetscObject)dmf),PETSC_ERR_ARG_INCOMP,"Cannot transfer between DMStag objects unless there is a 2-1 coarsening");
+    {
+      PetscInt size_local,entries_local;
+
+      PetscCall(DMStagGetEntriesLocal(dmf,&entries_local));
+      PetscCall(VecGetLocalSize(xf_local,&size_local));
+      PetscCheck(entries_local == size_local,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"Fine vector must be a local vector of size %" PetscInt_FMT ", but a vector of size %" PetscInt_FMT " was supplied",entries_local,size_local);
+    }
+    {
+      PetscInt size_local,entries_local;
+
+      PetscCall(DMStagGetEntriesLocal(dmc,&entries_local));
+      PetscCall(VecGetLocalSize(xc_local,&size_local));
+      PetscCheck(entries_local == size_local,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"Coarse vector must be a local vector of size %" PetscInt_FMT ", but a vector of size %" PetscInt_FMT " was supplied",entries_local,size_local);
+    }
+  }
+  PetscCall(VecZeroEntries(xc_local));
+  PetscCall(DMStagVecGetArray(dmf,xf_local,&LA_xf));
+  PetscCall(DMStagVecGetArray(dmc,xc_local,&LA_xc));
+  PetscCall(DMStagGetLocationSlot(dmf,DMSTAG_BACK_DOWN_LEFT,0,&slot_back_down_left_fine));
+  PetscCall(DMStagGetLocationSlot(dmf,DMSTAG_DOWN_LEFT,     0,&slot_down_left_fine));
+  PetscCall(DMStagGetLocationSlot(dmf,DMSTAG_BACK_LEFT,     0,&slot_back_left_fine));
+  PetscCall(DMStagGetLocationSlot(dmf,DMSTAG_BACK_DOWN,     0,&slot_back_down_fine));
+  PetscCall(DMStagGetLocationSlot(dmf,DMSTAG_LEFT,          0,&slot_left_fine));
+  PetscCall(DMStagGetLocationSlot(dmf,DMSTAG_DOWN,          0,&slot_down_fine));
+  PetscCall(DMStagGetLocationSlot(dmf,DMSTAG_BACK,          0,&slot_back_fine));
+  PetscCall(DMStagGetLocationSlot(dmf,DMSTAG_ELEMENT,       0,&slot_element_fine));
+  PetscCall(DMStagGetLocationSlot(dmc,DMSTAG_BACK_DOWN_LEFT,0,&slot_back_down_left_coarse));
+  PetscCall(DMStagGetLocationSlot(dmc,DMSTAG_DOWN_LEFT,     0,&slot_down_left_coarse));
+  PetscCall(DMStagGetLocationSlot(dmc,DMSTAG_BACK_LEFT,     0,&slot_back_left_coarse));
+  PetscCall(DMStagGetLocationSlot(dmc,DMSTAG_BACK_DOWN,     0,&slot_back_down_coarse));
+  PetscCall(DMStagGetLocationSlot(dmc,DMSTAG_LEFT,          0,&slot_left_coarse));
+  PetscCall(DMStagGetLocationSlot(dmc,DMSTAG_DOWN,          0,&slot_down_coarse));
+  PetscCall(DMStagGetLocationSlot(dmc,DMSTAG_BACK,          0,&slot_back_coarse));
+  PetscCall(DMStagGetLocationSlot(dmc,DMSTAG_ELEMENT,       0,&slot_element_coarse));
+  for (k=start[2]; k<start[2]+n[2]+nextra[2]; k++) {
+    for (j=start[1]; j<start[1]+n[1]+nextra[1]; j++) {
+      for (i=start[0]; i<start[0]+n[0]+nextra[0]; i++) {
+
+        // Vertices: inject
+        for (d=0; d<dof[0]; ++d) {
+          LA_xc[k][j][i][slot_back_down_left_coarse + d] = LA_xf[2*k][2*j][2*i][slot_back_down_left_fine + d];
+        }
+
+        // Edges: average 2 fine edges
+        if (i < N[0]) {
+          for (d=0; d<dof[1]; ++d) {
+            LA_xc[k][j][i][slot_back_down_coarse + d] = 0.5 * (
+                                                        LA_xf[2*k  ][2*j  ][2*i  ][slot_back_down_fine + d] +
+                                                        LA_xf[2*k  ][2*j  ][2*i+1][slot_back_down_fine + d]);
+          }
+        }
+        if (j < N[1]) {
+          for (d=0; d<dof[1]; ++d) {
+            LA_xc[k][j][i][slot_back_left_coarse + d] = 0.5 * (
+                                                        LA_xf[2*k  ][2*j  ][2*i  ][slot_back_left_fine + d] +
+                                                        LA_xf[2*k  ][2*j+1][2*i  ][slot_back_left_fine + d]);
+          }
+        }
+        if (k < N[2]) {
+          for (d=0; d<dof[1]; ++d) {
+            LA_xc[k][j][i][slot_down_left_coarse + d] = 0.5 * (
+                                                        LA_xf[2*k  ][2*j  ][2*i  ][slot_down_left_fine + d] +
+                                                        LA_xf[2*k+1][2*j  ][2*i  ][slot_down_left_fine + d]);
+          }
+        }
+
+        // Faces: average 4 fine faces
+        if (i < N[0] && j < N[1]) {
+          for (d=0; d<dof[2]; ++d) {
+            LA_xc[k][j][i][slot_back_coarse + d] = 0.25 * (
+                                                   LA_xf[2*k  ][2*j  ][2*i  ][slot_back_fine + d] +
+                                                   LA_xf[2*k  ][2*j  ][2*i+1][slot_back_fine + d] +
+                                                   LA_xf[2*k  ][2*j+1][2*i  ][slot_back_fine + d] +
+                                                   LA_xf[2*k  ][2*j+1][2*i+1][slot_back_fine + d]);
+          }
+        }
+        if (i < N[0] && k < N[2]) {
+          for (d=0; d<dof[2]; ++d) {
+            LA_xc[k][j][i][slot_down_coarse + d] = 0.25 * (
+                                                   LA_xf[2*k  ][2*j  ][2*i  ][slot_down_fine + d] +
+                                                   LA_xf[2*k  ][2*j  ][2*i+1][slot_down_fine + d] +
+                                                   LA_xf[2*k+1][2*j  ][2*i  ][slot_down_fine + d] +
+                                                   LA_xf[2*k+1][2*j  ][2*i+1][slot_down_fine + d]);
+          }
+        }
+        if (j < N[1] && k < N[2]) {
+          for (d=0; d<dof[2]; ++d) {
+            LA_xc[k][j][i][slot_left_coarse + d] = 0.25 * (
+                                                   LA_xf[2*k  ][2*j  ][2*i  ][slot_left_fine + d] +
+                                                   LA_xf[2*k  ][2*j  ][2*i+1][slot_left_fine + d] +
+                                                   LA_xf[2*k  ][2*j+1][2*i  ][slot_left_fine + d] +
+                                                   LA_xf[2*k  ][2*j+1][2*i+1][slot_left_fine + d]);
+          }
+        }
+
+        // Element: average 8 fine elements
+        if (i < N[0] && j < N[1] && k < N[2]) {
+          for (d=0; d<dof[3]; ++d) {
+            LA_xc[k][j][i][slot_element_coarse + d] = 0.125 * (
+                                                      LA_xf[2*k  ][2*j  ][2*i  ][slot_element_fine + d] +
+                                                      LA_xf[2*k  ][2*j  ][2*i+1][slot_element_fine + d] +
+                                                      LA_xf[2*k  ][2*j+1][2*i  ][slot_element_fine + d] +
+                                                      LA_xf[2*k  ][2*j+1][2*i+1][slot_element_fine + d] +
+                                                      LA_xf[2*k+1][2*j  ][2*i  ][slot_element_fine + d] +
+                                                      LA_xf[2*k+1][2*j  ][2*i+1][slot_element_fine + d] +
+                                                      LA_xf[2*k+1][2*j+1][2*i  ][slot_element_fine + d] +
+                                                      LA_xf[2*k+1][2*j+1][2*i+1][slot_element_fine + d]);
+          }
+        }
+      }
+    }
+  }
+  PetscCall(DMStagVecRestoreArray(dmf,xf_local,&LA_xf));
+  PetscCall(DMStagVecRestoreArray(dmc,xc_local,&LA_xc));
+  PetscFunctionReturn(0);
+}
+
 PETSC_INTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit_3d(DM dm,PetscReal xmin,PetscReal xmax,PetscReal ymin,PetscReal ymax,PetscReal zmin,PetscReal zmax)
 {
   DM_Stag        *stagCoord;

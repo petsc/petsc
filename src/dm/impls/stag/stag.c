@@ -251,6 +251,93 @@ static PetscErrorCode DMClone_Stag(DM dm,DM *newdm)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode DMCoarsen_Stag(DM dm,MPI_Comm comm,DM *dmc)
+{
+  const DM_Stag * const stag = (DM_Stag*)dm->data;
+  PetscInt              d,dim;
+
+  PetscFunctionBegin;
+  PetscCall(DMStagDuplicateWithoutSetup(dm,comm,dmc));
+  PetscCall(DMSetOptionsPrefix(*dmc,((PetscObject)dm)->prefix));
+  PetscCall(DMGetDimension(dm,&dim));
+  for (d=0; d<dim; ++d) {
+    PetscCheck(stag->N[d] % 2 == 0,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"coarsening not supported except for even numbers of elements in each dimension ");
+  }
+  PetscCall(DMStagSetGlobalSizes(*dmc,stag->N[0] / 2,stag->N[1] / 2,stag->N[2] / 2));
+  {
+    PetscInt *l[DMSTAG_MAX_DIM];
+    for (d=0; d<dim; ++d) {
+      PetscInt i;
+      PetscCall(PetscMalloc1(stag->nRanks[d],&l[d]));
+      for (i=0; i<stag->nRanks[d]; ++i) {
+        PetscCheck(stag->l[d][i] % 2 == 0,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"coarsening not supported except for an even number of elements in each direction on each rank");
+        l[d][i] = stag->l[d][i] / 2; /* Just halve everything */
+      }
+    }
+    PetscCall(DMStagSetOwnershipRanges(*dmc,l[0],l[1],l[2]));
+    for (d=0; d<dim; ++d) {
+      PetscCall(PetscFree(l[d]));
+    }
+  }
+  PetscCall(DMSetUp(*dmc));
+
+  if (dm->coordinateDM) { /* Note that with product coordinates, dm->coordinates = NULL, so we check the DM */
+    DM        coordinate_dm,coordinate_dmc;
+    PetscBool isstag,isprod;
+
+    PetscCall(DMGetCoordinateDM(dm,&coordinate_dm));
+    PetscCall(PetscObjectTypeCompare((PetscObject)coordinate_dm,DMSTAG,&isstag));
+    PetscCall(PetscObjectTypeCompare((PetscObject)coordinate_dm,DMPRODUCT,&isprod));
+    if (isstag) {
+      PetscCall(DMStagSetUniformCoordinatesExplicit(*dmc,0.0,0.0,0.0,0.0,0.0,0.0)); /* Coordinates will be overwritten */
+      PetscCall(DMGetCoordinateDM(*dmc,&coordinate_dmc));
+      PetscCall(DMStagRestrictSimple(coordinate_dm,dm->coordinates,coordinate_dmc,(*dmc)->coordinates));
+    } else if (isprod) {
+      PetscCall(DMStagSetUniformCoordinatesProduct(*dmc,0.0,0.0,0.0,0.0,0.0,0.0)); /* Coordinates will be overwritten */
+      PetscCall(DMGetCoordinateDM(*dmc,&coordinate_dmc));
+      for (d=0; d<dim; ++d) {
+        DM subdm_coarse,subdm_coord_coarse,subdm_fine,subdm_coord_fine;
+
+        PetscCall(DMProductGetDM(coordinate_dm,d,&subdm_fine));
+        PetscCall(DMGetCoordinateDM(subdm_fine,&subdm_coord_fine));
+        PetscCall(DMProductGetDM(coordinate_dmc,d,&subdm_coarse));
+        PetscCall(DMGetCoordinateDM(subdm_coarse,&subdm_coord_coarse));
+        PetscCall(DMStagRestrictSimple(subdm_coord_fine,subdm_fine->coordinatesLocal,subdm_coord_coarse,subdm_coarse->coordinatesLocal));
+      }
+    } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unknown coordinate DM type");
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode DMRefine_Stag(DM dm,MPI_Comm comm,DM *dmc)
+{
+  const DM_Stag * const stag = (DM_Stag*)dm->data;
+
+  PetscFunctionBegin;
+  PetscCall(DMStagDuplicateWithoutSetup(dm,comm,dmc));
+  PetscCall(DMSetOptionsPrefix(*dmc,((PetscObject)dm)->prefix));
+  PetscCall(DMStagSetGlobalSizes(*dmc,stag->N[0] * 2,stag->N[1] * 2,stag->N[2] * 2));
+  {
+    PetscInt dim,d;
+    PetscInt *l[DMSTAG_MAX_DIM];
+    PetscCall(DMGetDimension(dm,&dim));
+    for (d=0; d<dim; ++d) {
+      PetscInt i;
+      PetscCall(PetscMalloc1(stag->nRanks[d],&l[d]));
+      for (i=0; i<stag->nRanks[d]; ++i) {
+        l[d][i] = stag->l[d][i] * 2; /* Just double everything */
+      }
+    }
+    PetscCall(DMStagSetOwnershipRanges(*dmc,l[0],l[1],l[2]));
+    for (d=0; d<dim; ++d) {
+      PetscCall(PetscFree(l[d]));
+    }
+  }
+  PetscCall(DMSetUp(*dmc));
+  /* Note: For now, we do not refine coordinates */
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode DMDestroy_Stag(DM dm)
 {
   DM_Stag        *stag;
@@ -292,6 +379,102 @@ static PetscErrorCode DMCreateLocalVector_Stag(DM dm,Vec *vec)
   PetscCall(VecCreateSeq(PETSC_COMM_SELF,stag->entriesGhost,vec));
   PetscCall(VecSetBlockSize(*vec,stag->entriesPerElement));
   PetscCall(VecSetDM(*vec,dm));
+  PetscFunctionReturn(0);
+}
+
+/* Helper function to check for the limited situations for which interpolation
+   and restriction functions are implemented */
+static PetscErrorCode CheckTransferOperatorRequirements_Private(DM dmc, DM dmf)
+{
+  PetscInt dim,stencilWidthc,stencilWidthf,nf[DMSTAG_MAX_DIM],nc[DMSTAG_MAX_DIM],doff[DMSTAG_MAX_STRATA],dofc[DMSTAG_MAX_STRATA];
+
+  PetscFunctionBegin;
+  PetscCall(DMGetDimension(dmc,&dim));
+  PetscCall(DMStagGetStencilWidth(dmc,&stencilWidthc));
+  PetscCheck(stencilWidthc >= 1,PetscObjectComm((PetscObject)dmc),PETSC_ERR_SUP,"DMCreateRestriction not implemented for coarse grid stencil width < 1");
+  PetscCall(DMStagGetStencilWidth(dmf,&stencilWidthf));
+  PetscCheck(stencilWidthf >= 1,PetscObjectComm((PetscObject)dmf),PETSC_ERR_SUP,"DMCreateRestriction not implemented for fine grid stencil width < 1");
+  PetscCall(DMStagGetLocalSizes(dmf,&nf[0],&nf[1],&nf[2]));
+  PetscCall(DMStagGetLocalSizes(dmc,&nc[0],&nc[1],&nc[2]));
+  for (PetscInt d=0; d<dim; ++d) PetscCheck(nf[d] == 2*nc[d],PetscObjectComm((PetscObject)dmc),PETSC_ERR_SUP,"No support for fine to coarse ratio other than 2 (it is %" PetscInt_FMT " to %" PetscInt_FMT " in dimension %" PetscInt_FMT ")",nf[d],nc[d],d);
+  PetscCall(DMStagGetDOF(dmc,&dofc[0],&dofc[1],&dofc[2],&dofc[3]));
+  PetscCall(DMStagGetDOF(dmf,&doff[0],&doff[1],&doff[2],&doff[3]));
+  for (PetscInt d=0; d<dim+1; ++d) PetscCheck(dofc[d] == doff[d],PetscObjectComm((PetscObject)dmc),PETSC_ERR_SUP,"No support for different numbers of dof per stratum between coarse and fine DMStag objects: dof%" PetscInt_FMT " is %" PetscInt_FMT " (fine) but %" PetscInt_FMT "(coarse))",d,doff[d],dofc[d]);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode DMCreateInterpolation_Stag(DM dmc, DM dmf, Mat *A,Vec *vec)
+{
+  PetscInt               dim,entriesf,entriesc,doff[DMSTAG_MAX_STRATA];
+  ISLocalToGlobalMapping ltogmf,ltogmc;
+
+  PetscFunctionBegin;
+  PetscCall(CheckTransferOperatorRequirements_Private(dmc,dmf));
+
+  PetscCall(DMStagGetEntries(dmf,&entriesf));
+  PetscCall(DMStagGetEntries(dmc,&entriesc));
+  PetscCall(DMGetLocalToGlobalMapping(dmf,&ltogmf));
+  PetscCall(DMGetLocalToGlobalMapping(dmc,&ltogmc));
+
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)dmc),A));
+  PetscCall(MatSetSizes(*A,entriesf,entriesc,PETSC_DECIDE,PETSC_DECIDE));
+  PetscCall(MatSetType(*A,MATAIJ));
+  PetscCall(MatSetLocalToGlobalMapping(*A,ltogmf,ltogmc));
+
+  PetscCall(DMGetDimension(dmc,&dim));
+  PetscCall(DMStagGetDOF(dmf,&doff[0],&doff[1],&doff[2],&doff[3]));
+  if (dim == 1) {
+    PetscCall(DMStagPopulateInterpolation1d_a_b_Private(dmc,dmf,*A));
+  } else if (dim == 2) {
+    if (doff[0] == 0) {
+      PetscCall(DMStagPopulateInterpolation2d_0_a_b_Private(dmc,dmf,*A));
+    } else SETERRQ(PetscObjectComm((PetscObject)dmc),PETSC_ERR_SUP,"No default interpolation available between 2d DMStag objects with %" PetscInt_FMT " dof/vertex, %" PetscInt_FMT " dof/face and %" PetscInt_FMT " dof/element",doff[0],doff[1],doff[2]);
+  } else if (dim == 3) {
+    if (doff[0] == 0 && doff[1] == 0) {
+      PetscCall(DMStagPopulateInterpolation3d_0_0_a_b_Private(dmc,dmf,*A));
+    } else SETERRQ(PetscObjectComm((PetscObject)dmc),PETSC_ERR_SUP,"No default interpolation available between 3d DMStag objects with %" PetscInt_FMT " dof/vertex, %" PetscInt_FMT " dof/edge, %" PetscInt_FMT " dof/face and %" PetscInt_FMT " dof/element",doff[0],doff[1],doff[2],doff[3]);
+  } else SETERRQ(PetscObjectComm((PetscObject)dmc),PETSC_ERR_ARG_OUTOFRANGE,"Unsupported dimension %" PetscInt_FMT,dim);
+  PetscCall(MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY));
+
+  if (vec) *vec = NULL;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode DMCreateRestriction_Stag(DM dmc, DM dmf, Mat *A)
+{
+  PetscInt               dim,entriesf,entriesc,doff[DMSTAG_MAX_STRATA];
+  ISLocalToGlobalMapping ltogmf,ltogmc;
+
+  PetscFunctionBegin;
+  PetscCall(CheckTransferOperatorRequirements_Private(dmc,dmf));
+
+  PetscCall(DMStagGetEntries(dmf,&entriesf));
+  PetscCall(DMStagGetEntries(dmc,&entriesc));
+  PetscCall(DMGetLocalToGlobalMapping(dmf,&ltogmf));
+  PetscCall(DMGetLocalToGlobalMapping(dmc,&ltogmc));
+
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)dmc),A));
+  PetscCall(MatSetSizes(*A,entriesc,entriesf,PETSC_DECIDE,PETSC_DECIDE)); /* Note transpose wrt interpolation */
+  PetscCall(MatSetType(*A,MATAIJ));
+  PetscCall(MatSetLocalToGlobalMapping(*A,ltogmc,ltogmf)); /* Note transpose wrt interpolation */
+
+  PetscCall(DMGetDimension(dmc,&dim));
+  PetscCall(DMStagGetDOF(dmf,&doff[0],&doff[1],&doff[2],&doff[3]));
+  if (dim == 1) {
+    PetscCall(DMStagPopulateRestriction1d_a_b_Private(dmc,dmf,*A));
+  } else if (dim == 2) {
+    if (doff[0] == 0) {
+      PetscCall(DMStagPopulateRestriction2d_0_a_b_Private(dmc,dmf,*A));
+    } else SETERRQ(PetscObjectComm((PetscObject)dmc),PETSC_ERR_SUP,"No default restriction available between 2d DMStag objects with %" PetscInt_FMT " dof/vertex, %" PetscInt_FMT " dof/face and %" PetscInt_FMT " dof/element",doff[0],doff[1],doff[2]);
+  } else if (dim == 3) {
+    if (doff[0] == 0 && doff[0] == 0) {
+      PetscCall(DMStagPopulateRestriction3d_0_0_a_b_Private(dmc,dmf,*A));
+    } else SETERRQ(PetscObjectComm((PetscObject)dmc),PETSC_ERR_SUP,"No default restriction available between 3d DMStag objects with %" PetscInt_FMT " dof/vertex, %" PetscInt_FMT " dof/edge, %" PetscInt_FMT " dof/face and %" PetscInt_FMT " dof/element",doff[0],doff[1],doff[2],doff[3]);
+  } else SETERRQ(PetscObjectComm((PetscObject)dmc),PETSC_ERR_ARG_OUTOFRANGE,"Unsupported dimension %" PetscInt_FMT,dim);
+
+  PetscCall(MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 
@@ -444,6 +627,15 @@ static PetscErrorCode DMGetCompatibility_Stag(DM dm,DM dm2,PetscBool *compatible
   }
   *set = PETSC_TRUE;
   *compatible = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode DMHasCreateInjection_Stag(DM dm, PetscBool *flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidBoolPointer(flg,2);
+  *flg = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -715,9 +907,13 @@ PETSC_EXTERN PetscErrorCode DMCreate_Stag(DM dm)
   PetscCall(PetscMemzero(dm->ops,sizeof(*(dm->ops))));
   dm->ops->createcoordinatedm       = DMCreateCoordinateDM_Stag;
   dm->ops->createglobalvector       = DMCreateGlobalVector_Stag;
-  dm->ops->createinterpolation      = NULL;
   dm->ops->createlocalvector        = DMCreateLocalVector_Stag;
   dm->ops->creatematrix             = DMCreateMatrix_Stag;
+  dm->ops->hascreateinjection       = DMHasCreateInjection_Stag;
+  dm->ops->refine                   = DMRefine_Stag;
+  dm->ops->coarsen                  = DMCoarsen_Stag;
+  dm->ops->createinterpolation      = DMCreateInterpolation_Stag;
+  dm->ops->createrestriction        = DMCreateRestriction_Stag;
   dm->ops->destroy                  = DMDestroy_Stag;
   dm->ops->getneighbors             = DMGetNeighbors_Stag;
   dm->ops->globaltolocalbegin       = DMGlobalToLocalBegin_Stag;

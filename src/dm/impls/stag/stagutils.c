@@ -1,6 +1,9 @@
 /* Additional functions in the DMStag API, which are not part of the general DM API. */
 #include <petsc/private/dmstagimpl.h>
 #include <petscdmproduct.h>
+
+PetscErrorCode DMRestrictHook_Coordinates(DM,DM,void*);
+
 /*@C
   DMStagGetBoundaryTypes - get boundary types
 
@@ -502,10 +505,13 @@ PetscErrorCode DMStagGetNumRanks(DM dm,PetscInt *nRanks0,PetscInt *nRanks1,Petsc
 
   Note:
   This is the number of entries on this rank for a global vector associated with `dm`.
+  That is, it is value of `size` returned by `VecGetLocalSize(vec,&size)` when
+  `DMCreateGlobalVector(dm,&vec) is used to create a `Vec`. Users would typically
+  use these functions.
 
   Level: developer
 
-.seealso: `DMSTAG`, `DMStagGetDOF()`, `DMStagGetEntriesPerElement()`, `DMCreateLocalVector()`
+.seealso: `DMSTAG`, `DMStagGetDOF()`, `DMStagGetEntriesLocal()`, `DMStagGetEntriesPerElement()`, `DMCreateLocalVector()`
 @*/
 PetscErrorCode DMStagGetEntries(DM dm,PetscInt *entries)
 {
@@ -514,6 +520,37 @@ PetscErrorCode DMStagGetEntries(DM dm,PetscInt *entries)
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
   if (entries) *entries = stag->entries;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMStagGetEntriesLocal - get number of entries in the local representation
+
+  Not Collective
+
+  Input Parameter:
+. dm - the DMStag object
+
+  Output Parameters:
+. entries - number of entries in the local representation
+
+  Note:
+  This is the number of entries on this rank in the local representation.
+  That is, it is value of `size` returned by `VecGetSize(vec,&size)` or
+  `VecGetLocalSize(vec,&size)` when `DMCreateLocalVector(dm,&vec)` is used to
+  create a `Vec`. Users would typically use these functions.
+
+  Level: developer
+
+.seealso: DMSTAG, DMStagGetDOF(), DMStagGetEntries(), DMStagGetEntriesPerElement(), DMCreateLocalVector()
+@*/
+PetscErrorCode DMStagGetEntriesLocal(DM dm,PetscInt *entries)
+{
+  const DM_Stag * const stag = (DM_Stag*)dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
+  if (entries) *entries = stag->entriesGhost;
   PetscFunctionReturn(0);
 }
 
@@ -1313,6 +1350,7 @@ PetscErrorCode DMStagSetUniformCoordinatesExplicit(DM dm,PetscReal xmin,PetscRea
   case 3: PetscCall(DMStagSetUniformCoordinatesExplicit_3d(dm,xmin,xmax,ymin,ymax,zmin,zmax)); break;
   default: SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Unsupported dimension %" PetscInt_FMT,dim);
   }
+  PetscCall(DMCoarsenHookRemove(dm,DMRestrictHook_Coordinates,NULL,NULL));
   PetscFunctionReturn(0);
 }
 
@@ -1397,6 +1435,7 @@ PetscErrorCode DMStagSetUniformCoordinatesProduct(DM dm,PetscReal xmin,PetscReal
     PetscCall(DMDestroy(&subdm));
     PetscCallMPI(MPI_Comm_free(&subcomm));
   }
+  PetscCall(DMCoarsenHookRemove(dm,DMRestrictHook_Coordinates,NULL,NULL));
   PetscFunctionReturn(0);
 }
 
