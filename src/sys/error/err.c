@@ -32,7 +32,8 @@ PetscErrorCode PetscAbortFindSourceFile_Private(const char* filepath, PetscInt *
   PetscBool       match;
   char            subpath[PETSC_MAX_PATH_LEN];
 
-  ierr = PetscStackView(stderr);if (ierr) return ierr;
+  /* Not sure why the next line is here since the stack would already have been viewed with the initial error message */
+  /* ierr = PetscStackView(stderr);if (ierr) return ierr; */
   *idx = 1;
   for (i=2; i<n; i++) {
     ierr = PetscFixFilename(PetscAbortSourceFiles[i],subpath);if (ierr) return ierr;
