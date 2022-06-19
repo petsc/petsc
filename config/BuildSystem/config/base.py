@@ -218,7 +218,7 @@ class Configure(script.Script):
     # also strip any \ before spaces, braces, so that we can specify paths the way we want them in makefiles.
     prog  = prog.replace('\ ',' ').replace('\(','(').replace('\)',')')
     found = 0
-    self.logWrite('Checking for program '+prog+'...')
+    self.logWrite('    Checking for program '+prog+'...')
     if os.path.isfile(prog) and os.access(prog, os.X_OK):
       found = 1
       self.logWrite('found\n')
