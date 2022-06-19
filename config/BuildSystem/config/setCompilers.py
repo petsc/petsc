@@ -27,6 +27,15 @@ def _picTestIncludes(export=''):
                     'void bar(void){foo();}\n'])
 
 
+isUname_value          = False
+isLinux_value          = False
+isCygwin_value         = False
+isSolaris_value        = False
+isDarwin_value         = False
+isDarwinCatalina_value = False
+isFreeBSD_value        = False
+isARM_value            = -1
+
 class CaseInsensitiveDefaultDict(defaultdict):
   __slots__ = ()
 
@@ -538,6 +547,19 @@ class Configure(config.base.Configure):
       pass
 
   @staticmethod
+  def isWindows(compiler, log):
+    '''Returns true if the compiler is a Windows compiler'''
+    if compiler in ['icl', 'cl', 'bcc32', 'ifl', 'df']:
+      if log: log.write('Detected Windows OS\n')
+      return 1
+    if compiler in ['ifort','f90'] and Configure.isCygwin(log):
+      if log: log.write('Detected Windows OS\n')
+      return 1
+    if compiler in ['lib', 'tlib']:
+      if log: log.write('Detected Windows OS\n')
+      return 1
+
+  @staticmethod
   def isSolarisAR(ar, log):
     '''Returns true AR is solaris'''
     try:
@@ -560,81 +582,91 @@ class Configure(config.base.Configure):
       pass
 
   @staticmethod
+  def isUname(log):
+    global isLinux_value,isCygwin_value,isSolaris_value,isDarwin_value,isDarwinCatalina_value,isFreeBSD_value,isUname_value
+    isUname_value = True
+    (output, error, status) = config.base.Configure.executeShellCommand('uname -s', log = log)
+    if not status:
+      output = output.lower().strip()
+      if output.find('linux') >= 0:
+        if log: log.write('Detected Linux OS')
+        isLinux_value = True
+        return
+      if output.find('cygwin') >= 0:
+        if log: log.write('Detected Cygwin')
+        isCygwin_value = True
+        return
+      if output.find('sunos') >= 0:
+        if log: log.write('Detected Solaris')
+        isSolaris_value = True
+        return
+      if output.find('darwin') >= 0:
+        if log: log.write('Detected Darwin')
+        isDarwin_value = True
+        import platform
+        v = tuple([int(a) for a in platform.mac_ver()[0].split('.')])
+        if v >= (10,15,0):
+          if log: log.write('Detected Darwin/MacOSX Catalina OS\n')
+          isDarwinCatalina_value = True
+      if output.find('freebsd') >= 0:
+        if log: log.write('Detected FreeBSD')
+        isFreeBSD_value = True
+        return
+
+  @staticmethod
   def isLinux(log):
     '''Returns true if system is linux'''
-    (output, error, status) = config.base.Configure.executeShellCommand('uname -s', log = log)
-    if not status and output.lower().strip().find('linux') >= 0:
-      if log: log.write('Detected Linux OS')
-      return 1
+    global isUname_value,isLinux_value
+    if not isUname_value: config.setCompilers.Configure.isUname(log)
+    return isLinux_value
 
   @staticmethod
   def isCygwin(log):
-    '''Returns true if system is cygwin'''
-    (output, error, status) = config.base.Configure.executeShellCommand('uname -s', log = log)
-    if not status and output.lower().strip().find('cygwin') >= 0:
-      if log: log.write('Detected Cygwin\n')
-      return 1
+    '''Returns true if system is Cygwin'''
+    global isUname_value,sCygwin_value
+    if not isUname_value: config.setCompilers.Configure.isUname(log)
+    return isCygwin_value
 
   @staticmethod
   def isSolaris(log):
-    '''Returns true if system is solaris'''
-    (output, error, status) = config.base.Configure.executeShellCommand('uname -s', log = log)
-    if not status and output.lower().strip().find('sunos') >= 0:
-      if log: log.write('Detected Solaris OS\n')
-      return 1
+    '''Returns true if system is Solaris'''
+    global isUname_value,sSolaris_value
+    if not isUname_value: config.setCompilers.Configure.isUname(log)
+    return isSolaris_value
 
   @staticmethod
   def isDarwin(log):
-    '''Returns true if system is Darwin/MacOSX'''
-    (output, error, status) = config.base.Configure.executeShellCommand('uname -s', log = log)
-    if not status:
-      found = (output.lower().strip() == 'darwin')
-      if found:
-        if log: log.write('Detected Darwin/MacOSX OS\n\n')
-      return found
-
-  @staticmethod
-  def isARM(log):
-    '''Returns true if system is processor-type is ARM'''
-    (output, error, status) = config.base.Configure.executeShellCommand('uname -p', log = log)
-    if not status:
-      found = (output.lower().strip() == 'arm')
-      if found:
-        if log: log.write('Detected ARM processor\n\n')
-      return found
+    '''Returns true if system is Dwarwin'''
+    global isUname_value,sDarwin_value
+    if not isUname_value: config.setCompilers.Configure.isUname(log)
+    return isDarwin_value
 
   @staticmethod
   def isDarwinCatalina(log):
-    '''Returns true if system is Darwin/MacOSX Version Catalina or higher'''
-    import platform
-    if platform.system() != 'Darwin': return 0
-    v = tuple([int(a) for a in platform.mac_ver()[0].split('.')])
-    if v < (10,15,0): return 0
-    if log: log.write('Detected Darwin/MacOSX Catalina OS\n')
-    return 1
+    '''Returns true if system is Dwarwin Catalina'''
+    global isUname_value,isDarwinCatalina_value
+    if not isUname_value: config.setCompilers.Configure.isUname(log)
+    return isDarwinCatalina_value
 
   @staticmethod
   def isFreeBSD(log):
     '''Returns true if system is FreeBSD'''
-    (output, error, status) = config.base.Configure.executeShellCommand('uname -s', log = log)
-    if not status:
-      found = output.lower().strip() == 'freebsd'
-      if found:
-        if log: log.write('Detected FreeBSD OS\n')
-      return found
+    global isUname_value,isFreeBSD_value
+    if not isUname_value: config.setCompilers.Configure.isUname(log)
+    return isFreeBSD_value
 
   @staticmethod
-  def isWindows(compiler, log):
-    '''Returns true if the compiler is a Windows compiler'''
-    if compiler in ['icl', 'cl', 'bcc32', 'ifl', 'df']:
-      if log: log.write('Detected Windows OS\n')
-      return 1
-    if compiler in ['ifort','f90'] and Configure.isCygwin(log):
-      if log: log.write('Detected Windows OS\n')
-      return 1
-    if compiler in ['lib', 'tlib']:
-      if log: log.write('Detected Windows OS\n')
-      return 1
+  def isARM(log):
+    '''Returns true if system is processor-type is ARM'''
+    global isARM_value
+    if isARM_value == -1:
+       (output, error, status) = config.base.Configure.executeShellCommand('uname -p', log = log)
+       if not status and (output.lower().strip() == 'arm'):
+         if log: log.write('Detected ARM processor\n\n')
+         isARM_value = True
+       else:
+         isARM_value = False
+    return isARM_value
 
   @staticmethod
   def addLdPath(path):
