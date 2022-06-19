@@ -1028,6 +1028,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     return
 
   def configureExternalPackagesDir(self):
+    '''Set alternative directory external packages are built in'''
     if 'with-packages-build-dir' in self.argDB:
       self.externalPackagesDir = self.argDB['with-packages-build-dir']
     else:

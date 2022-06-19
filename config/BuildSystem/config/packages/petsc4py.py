@@ -129,6 +129,7 @@ class Configure(config.package.Package):
     self.getInstallDir()
 
   def alternateConfigureLibrary(self):
+    '''Adds rules for building petsc4py to PETSc makefiles'''
     self.addMakeRule('petsc4py-build','')
     self.addMakeRule('petsc4py-install','')
     self.addMakeRule('petsc4pytest','')

@@ -105,6 +105,7 @@ class Configure(config.base.Configure):
     return 1
 
   def checkStdC(self):
+    '''Determine if C standard headers support everything PETSc needs'''
     haveStdC = 0
     includes = '''
 #include <stdlib.h>

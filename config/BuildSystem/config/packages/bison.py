@@ -37,6 +37,7 @@ class Configure(config.package.GNUPackage):
     return
 
   def alternateConfigureLibrary(self):
+    '''Check if Bison download option was requested'''
     self.checkDownload()
 
   def configure(self):

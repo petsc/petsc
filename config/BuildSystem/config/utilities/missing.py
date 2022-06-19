@@ -95,6 +95,7 @@ class Configure(config.base.Configure):
 
 
   def configureMissingGetdomainnamePrototype(self):
+    '''Check for missing function prototype for getdomainname()'''
     head = self.featureTestMacros() + '''
 #ifdef PETSC_HAVE_UNISTD_H
 #include <unistd.h>
@@ -120,6 +121,7 @@ if (getdomainname_ptr(test,10)) return 1;
     return
 
   def configureMissingSrandPrototype(self):
+    '''Checks for missing random number generator prototypes'''
     head = self.featureTestMacros() + '''
 #include <stdlib.h>
 '''

@@ -26,7 +26,7 @@ class Configure(config.base.Configure):
     return
 
   def configureMemAlign(self):
-    '''Choose alignment'''
+    '''Choose memory alignment'''
     # Intel/AMD cache lines are 64 bytes, default page sizes are usually 4kB. It would be pretty silly to want that much alignment by default.
     valid = ['4', '8', '16', '32', '64', '128', '256', '512', '1024', '2048', '4096', '8192']
     self.memalign = self.framework.argDB['with-memalign']

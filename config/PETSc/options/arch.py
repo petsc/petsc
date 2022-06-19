@@ -27,6 +27,7 @@ class Configure(config.base.Configure):
     return
 
   def setNativeArchitecture(self):
+    '''Forms the arch as GNU's configure would form it'''
     import sys
     arch = 'arch-' + sys.platform.replace('cygwin','mswin')
     # use opt/debug, c/c++ tags.s
@@ -39,7 +40,7 @@ class Configure(config.base.Configure):
     return
 
   def configureArchitecture(self):
-    '''Checks PETSC_ARCH and sets if not set'''
+    '''Checks if PETSC_ARCH is set and sets it if not set'''
     # Warn if PETSC_ARCH doesn't match env variable
     if 'PETSC_ARCH' in self.framework.argDB and 'PETSC_ARCH' in os.environ and self.framework.argDB['PETSC_ARCH'] != os.environ['PETSC_ARCH']:
       self.logPrintWarning('''\

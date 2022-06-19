@@ -707,8 +707,7 @@ class Configure(config.base.Configure):
     return
 
   def checkCxxDialect(self, language, isGNUish=False):
-    """
-    Determine the CXX dialect supported by the compiler (language) [and correspoding compiler
+    """Determine the CXX dialect supported by the compiler (language) [and correspoding compiler
     option - if any].
 
     isGNUish indicates if the compiler is gnu compliant (i.e. clang).
@@ -1982,7 +1981,7 @@ class Configure(config.base.Configure):
     return
 
   def checkLargeFileIO(self):
-    # check for large file support with 64bit offset
+    '''check for large file support with 64bit offset'''
     if not self.argDB['with-large-file-io']:
       return
     languages = ['C']
@@ -2576,6 +2575,7 @@ if (dlclose(handle)) {
     return
 
   def resetEnvCompilers(self):
+    '''Remove compilers from the shell environment so they do not interfer with testing'''
     ignoreEnvCompilers = ['CC','CXX','FC','F77','F90']
     ignoreEnv = ['CFLAGS','CXXFLAGS','FCFLAGS','FFLAGS','F90FLAGS','CPP','CPPFLAGS','CXXPP','CXXPPFLAGS','LDFLAGS','LIBS','MPI_DIR','RM','MAKEFLAGS','AR','RANLIB']
     for envVal in ignoreEnvCompilers + ignoreEnv:
@@ -2592,6 +2592,7 @@ if (dlclose(handle)) {
     return
 
   def checkEnvCompilers(self):
+    '''Set configure compilers from the environment, from -with-environment-variables'''
     if 'with-environment-variables' in self.framework.clArgDB:
       envVarChecklist = ['CC','CFLAGS','CXX','CXXFLAGS','FC','FCFLAGS','F77','FFLAGS','F90','F90FLAGS','CPP','CPPFLAGS','CXXPP','CXXPPFLAGS','LDFLAGS','LIBS','MPI_DIR','RM','MAKEFLAGS','AR']
       for ev in envVarChecklist:
@@ -2637,10 +2638,7 @@ if (dlclose(handle)) {
     self.executeTest(self.checkCPreprocessor)
 
     def compilerIsDisabledFromOptions(compiler):
-      """
-      Return True if compiler is disabled via configure options (and delete it from the argdb),
-      False otherwise
-      """
+      """Return True if compiler is disabled via configure options (and delete it from the argdb), False otherwise"""
       disabled = self.argDB.get('with-'+compiler.lower()) == '0'
       if disabled:
         COMPILER = compiler.upper()

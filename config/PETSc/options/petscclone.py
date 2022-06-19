@@ -18,6 +18,7 @@ class Configure(config.base.Configure):
     return
 
   def configureInstallationMethod(self):
+    '''Determine if PETSc was obtained via git or a tarball'''
     if os.path.exists(os.path.join(self.petscdir.dir,'lib','petsc','bin','maint')):
       self.logPrint('lib/petsc/bin/maint exists. This appears to be a repository clone')
       self.isClone = 1
