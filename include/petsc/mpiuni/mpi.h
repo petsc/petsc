@@ -222,6 +222,7 @@ typedef int MPI_Datatype;
 #define MPI_LONG               (4 << 20 | 1 << 8 | (int)sizeof(long))
 #define MPI_LONG_LONG          (4 << 20 | 1 << 8 | (int)sizeof(MPIUNI_INT64))
 #define MPI_LONG_LONG_INT      MPI_LONG_LONG
+#define MPI_AINT               (4 << 20 | 1 << 8 | (int)sizeof(void*))
 #define MPI_INTEGER8           MPI_LONG_LONG
 #define MPI_INT8_T             (5 << 20 | 1 << 8 | (int)sizeof(int8_t))
 #define MPI_INT16_T            (5 << 20 | 1 << 8 | (int)sizeof(int16_t))
