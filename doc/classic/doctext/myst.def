@@ -36,6 +36,7 @@ s_caption          <CENTER><B>
 e_caption          </B></CENTER>
 picture            ![%1](%1)
 
+end_par            %n%n
 location           **Location:**<A HREF="PETSC_DOC_OUT_ROOT_PLACEHOLDER/%1#%rq0">%1</A>%n
 
 mantitle           # %1%n
