@@ -523,7 +523,7 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
         PetscInt        n, newn = 0, p, v;
 
         bcFields[bc] = field;
-        if (numComps) PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject) dm), numComps, comps, PETSC_COPY_VALUES, &bcComps[bc]));
+        if (numComps) PetscCall(ISCreateGeneral(PETSC_COMM_SELF, numComps, comps, PETSC_COPY_VALUES, &bcComps[bc]));
         for (v = 0; v < numValues; ++v) {
           IS              tmp;
           const PetscInt *idx;

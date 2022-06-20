@@ -201,7 +201,7 @@ int main(int argc, char **argv)
     PetscCall(DMViewFromOptions(baseFV, NULL, "-fv_dm_view"));
     PetscCall(DMDestroy(&base));
     base = baseFV;
-    PetscCall(PetscFVCreate(comm, &fv));
+    PetscCall(PetscFVCreate(PETSC_COMM_SELF, &fv));
     PetscCall(PetscFVSetSpatialDimension(fv,dim));
     PetscCall(PetscFVSetType(fv,PETSCFVLEASTSQUARES));
     PetscCall(PetscFVSetNumComponents(fv,Nf));
