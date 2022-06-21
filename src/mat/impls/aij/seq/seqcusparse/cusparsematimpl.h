@@ -40,47 +40,49 @@
 #endif
 
 #if PETSC_PKG_CUDA_VERSION_GE(9,0,0)
-  #define cusparse_create_analysis_info  cusparseCreateCsrsv2Info
-  #define cusparse_destroy_analysis_info cusparseDestroyCsrsv2Info
+  #define csrsvInfo_t              csrsv2Info_t
+  #define cusparseCreateCsrsvInfo  cusparseCreateCsrsv2Info
+  #define cusparseDestroyCsrsvInfo cusparseDestroyCsrsv2Info
   #if defined(PETSC_USE_COMPLEX)
     #if defined(PETSC_USE_REAL_SINGLE)
-      #define cusparse_get_svbuffsize(a,b,c,d,e,f,g,h,i,j) cusparseCcsrsv2_bufferSize(a,b,c,d,e,(cuComplex*)(f),g,h,i,j)
-      #define cusparse_analysis(a,b,c,d,e,f,g,h,i,j,k)     cusparseCcsrsv2_analysis(a,b,c,d,e,(const cuComplex*)(f),g,h,i,j,k)
-      #define cusparse_solve(a,b,c,d,e,f,g,h,i,j,k,l,m,n)  cusparseCcsrsv2_solve(a,b,c,d,(const cuComplex*)(e),f,(const cuComplex*)(g),h,i,j,(const cuComplex*)(k),(cuComplex*)(l),m,n)
+      #define cusparseXcsrsv_buffsize(a,b,c,d,e,f,g,h,i,j)       cusparseCcsrsv2_bufferSize(a,b,c,d,e,(cuComplex*)(f),g,h,i,j)
+      #define cusparseXcsrsv_analysis(a,b,c,d,e,f,g,h,i,j,k)     cusparseCcsrsv2_analysis(a,b,c,d,e,(const cuComplex*)(f),g,h,i,j,k)
+      #define cusparseXcsrsv_solve(a,b,c,d,e,f,g,h,i,j,k,l,m,n)  cusparseCcsrsv2_solve(a,b,c,d,(const cuComplex*)(e),f,(const cuComplex*)(g),h,i,j,(const cuComplex*)(k),(cuComplex*)(l),m,n)
     #elif defined(PETSC_USE_REAL_DOUBLE)
-      #define cusparse_get_svbuffsize(a,b,c,d,e,f,g,h,i,j) cusparseZcsrsv2_bufferSize(a,b,c,d,e,(cuDoubleComplex*)(f),g,h,i,j)
-      #define cusparse_analysis(a,b,c,d,e,f,g,h,i,j,k)     cusparseZcsrsv2_analysis(a,b,c,d,e,(const cuDoubleComplex*)(f),g,h,i,j,k)
-      #define cusparse_solve(a,b,c,d,e,f,g,h,i,j,k,l,m,n)  cusparseZcsrsv2_solve(a,b,c,d,(const cuDoubleComplex*)(e),f,(const cuDoubleComplex*)(g),h,i,j,(const cuDoubleComplex*)(k),(cuDoubleComplex*)(l),m,n)
+      #define cusparseXcsrsv_buffsize(a,b,c,d,e,f,g,h,i,j)       cusparseZcsrsv2_bufferSize(a,b,c,d,e,(cuDoubleComplex*)(f),g,h,i,j)
+      #define cusparseXcsrsv_analysis(a,b,c,d,e,f,g,h,i,j,k)     cusparseZcsrsv2_analysis(a,b,c,d,e,(const cuDoubleComplex*)(f),g,h,i,j,k)
+      #define cusparseXcsrsv_solve(a,b,c,d,e,f,g,h,i,j,k,l,m,n)  cusparseZcsrsv2_solve(a,b,c,d,(const cuDoubleComplex*)(e),f,(const cuDoubleComplex*)(g),h,i,j,(const cuDoubleComplex*)(k),(cuDoubleComplex*)(l),m,n)
     #endif
   #else /* not complex */
     #if defined(PETSC_USE_REAL_SINGLE)
-      #define cusparse_get_svbuffsize cusparseScsrsv2_bufferSize
-      #define cusparse_analysis       cusparseScsrsv2_analysis
-      #define cusparse_solve          cusparseScsrsv2_solve
+      #define cusparseXcsrsv_buffsize       cusparseScsrsv2_bufferSize
+      #define cusparseXcsrsv_analysis       cusparseScsrsv2_analysis
+      #define cusparseXcsrsv_solve          cusparseScsrsv2_solve
     #elif defined(PETSC_USE_REAL_DOUBLE)
-      #define cusparse_get_svbuffsize cusparseDcsrsv2_bufferSize
-      #define cusparse_analysis       cusparseDcsrsv2_analysis
-      #define cusparse_solve          cusparseDcsrsv2_solve
+      #define cusparseXcsrsv_buffsize       cusparseDcsrsv2_bufferSize
+      #define cusparseXcsrsv_analysis       cusparseDcsrsv2_analysis
+      #define cusparseXcsrsv_solve          cusparseDcsrsv2_solve
     #endif
   #endif
 #else
-  #define cusparse_create_analysis_info  cusparseCreateSolveAnalysisInfo
-  #define cusparse_destroy_analysis_info cusparseDestroySolveAnalysisInfo
+  #define csrsvInfo_t              cusparseSolveAnalysisInfo_t
+  #define cusparseCreateCsrsvInfo  cusparseCreateSolveAnalysisInfo
+  #define cusparseDestroyCsrsvInfo cusparseDestroySolveAnalysisInfo
   #if defined(PETSC_USE_COMPLEX)
     #if defined(PETSC_USE_REAL_SINGLE)
-      #define cusparse_solve(a,b,c,d,e,f,g,h,i,j,k) cusparseCcsrsv_solve((a),(b),(c),(cuComplex*)(d),(e),(cuComplex*)(f),(g),(h),(i),(cuComplex*)(j),(cuComplex*)(k))
-      #define cusparse_analysis(a,b,c,d,e,f,g,h,i)  cusparseCcsrsv_analysis((a),(b),(c),(d),(e),(cuComplex*)(f),(g),(h),(i))
+      #define cusparseXcsrsv_solve(a,b,c,d,e,f,g,h,i,j,k) cusparseCcsrsv_solve((a),(b),(c),(cuComplex*)(d),(e),(cuComplex*)(f),(g),(h),(i),(cuComplex*)(j),(cuComplex*)(k))
+      #define cusparseXcsrsv_analysis(a,b,c,d,e,f,g,h,i)  cusparseCcsrsv_analysis((a),(b),(c),(d),(e),(cuComplex*)(f),(g),(h),(i))
     #elif defined(PETSC_USE_REAL_DOUBLE)
-      #define cusparse_solve(a,b,c,d,e,f,g,h,i,j,k) cusparseZcsrsv_solve((a),(b),(c),(cuDoubleComplex*)(d),(e),(cuDoubleComplex*)(f),(g),(h),(i),(cuDoubleComplex*)(j),(cuDoubleComplex*)(k))
-      #define cusparse_analysis(a,b,c,d,e,f,g,h,i)  cusparseZcsrsv_analysis((a),(b),(c),(d),(e),(cuDoubleComplex*)(f),(g),(h),(i))
+      #define cusparseXcsrsv_solve(a,b,c,d,e,f,g,h,i,j,k) cusparseZcsrsv_solve((a),(b),(c),(cuDoubleComplex*)(d),(e),(cuDoubleComplex*)(f),(g),(h),(i),(cuDoubleComplex*)(j),(cuDoubleComplex*)(k))
+      #define cusparseXcsrsv_analysis(a,b,c,d,e,f,g,h,i)  cusparseZcsrsv_analysis((a),(b),(c),(d),(e),(cuDoubleComplex*)(f),(g),(h),(i))
     #endif
   #else /* not complex */
     #if defined(PETSC_USE_REAL_SINGLE)
-      #define cusparse_solve    cusparseScsrsv_solve
-      #define cusparse_analysis cusparseScsrsv_analysis
+      #define cusparseXcsrsv_solve    cusparseScsrsv_solve
+      #define cusparseXcsrsv_analysis cusparseScsrsv_analysis
     #elif defined(PETSC_USE_REAL_DOUBLE)
-      #define cusparse_solve    cusparseDcsrsv_solve
-      #define cusparse_analysis cusparseDcsrsv_analysis
+      #define cusparseXcsrsv_solve    cusparseDcsrsv_solve
+      #define cusparseXcsrsv_analysis cusparseDcsrsv_analysis
     #endif
   #endif
 #endif
@@ -172,11 +174,7 @@ struct Mat_SeqAIJCUSPARSETriFactorStruct {
   cusparseMatDescr_t          descr;
   cusparseOperation_t         solveOp;
   CsrMatrix                   *csrMat;
- #if PETSC_PKG_CUDA_VERSION_GE(9,0,0)
-  csrsv2Info_t                solveInfo;
- #else
-  cusparseSolveAnalysisInfo_t solveInfo;
- #endif
+  csrsvInfo_t                 solveInfo;
   cusparseSolvePolicy_t       solvePolicy;     /* whether level information is generated and used */
   int                         solveBufferSize;
   void                        *solveBuffer;
