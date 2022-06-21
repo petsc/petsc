@@ -88,6 +88,60 @@ static inline PetscErrorCode PCHPDDMSetAuxiliaryMat_Private(PC pc, IS is, Mat A,
   PetscFunctionReturn(0);
 }
 
+static inline PetscErrorCode PCHPDDMSetAuxiliaryMatNormal_Private(PC pc, Mat A, Mat N, Mat *B, const char* pcpre)
+{
+  PC_HPDDM  *data = (PC_HPDDM*)pc->data;
+  Mat       *splitting, *sub, aux;
+  IS        is, cols[2], rows;
+  PetscReal norm;
+  PetscBool flg;
+  char      type[256] = { }; /* same size as in src/ksp/pc/interface/pcset.c */
+
+  PetscFunctionBegin;
+  PetscCall(MatConvert(N, MATAIJ, MAT_INITIAL_MATRIX, B));
+  PetscCall(ISCreateStride(PETSC_COMM_SELF, A->cmap->n, A->cmap->rstart, 1, cols));
+  PetscCall(ISCreateStride(PETSC_COMM_SELF, A->rmap->N, 0, 1, &rows));
+  PetscCall(MatSetOption(A, MAT_SUBMAT_SINGLEIS, PETSC_TRUE));
+  PetscCall(MatIncreaseOverlap(*B, 1, cols, 1));
+  PetscCall(MatCreateSubMatrices(A, 1, &rows, cols, MAT_INITIAL_MATRIX, &splitting));
+  PetscCall(ISCreateStride(PETSC_COMM_SELF, A->cmap->n, A->cmap->rstart, 1, &is));
+  PetscCall(ISEmbed(*cols, is, PETSC_TRUE, cols + 1));
+  PetscCall(ISDestroy(&is));
+  PetscCall(MatCreateSubMatrices(*splitting, 1, &rows, cols + 1, MAT_INITIAL_MATRIX, &sub));
+  PetscCall(ISDestroy(cols + 1));
+  PetscCall(MatFindZeroRows(*sub, &is));
+  PetscCall(MatDestroySubMatrices(1, &sub));
+  PetscCall(ISDestroy(&rows));
+  PetscCall(MatSetOption(*splitting, MAT_KEEP_NONZERO_PATTERN, PETSC_TRUE));
+  PetscCall(MatZeroRowsIS(*splitting, is, 0.0, NULL, NULL));
+  PetscCall(ISDestroy(&is));
+  PetscCall(PetscOptionsGetString(NULL, pcpre, "-pc_hpddm_levels_1_sub_pc_type", type, sizeof(type), NULL));
+  PetscCall(PetscStrcmp(type, PCQR, &flg));
+  if (!flg) {
+    Mat conjugate = *splitting;
+    if (PetscDefined(USE_COMPLEX)) {
+      PetscCall(MatDuplicate(*splitting, MAT_COPY_VALUES, &conjugate));
+      PetscCall(MatConjugate(conjugate));
+    }
+    PetscCall(MatTransposeMatMult(conjugate, *splitting, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &aux));
+    if (PetscDefined(USE_COMPLEX)) PetscCall(MatDestroy(&conjugate));
+    PetscCall(MatNorm(aux, NORM_FROBENIUS, &norm));
+    PetscCall(MatSetOption(aux, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE));
+    PetscCall(MatShift(aux, PETSC_SMALL * norm));
+  } else {
+    PetscBool flg;
+    PetscCall(PetscObjectTypeCompare((PetscObject)N, MATNORMAL, &flg));
+    if (flg) PetscCall(MatCreateNormal(*splitting, &aux));
+    else PetscCall(MatCreateNormalHermitian(*splitting, &aux));
+  }
+  PetscCall(MatDestroySubMatrices(1, &splitting));
+  PetscCall(PCHPDDMSetAuxiliaryMat(pc, *cols, aux, NULL, NULL));
+  data->Neumann = PETSC_TRUE;
+  PetscCall(ISDestroy(cols));
+  PetscCall(MatDestroy(&aux));
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PCHPDDMSetAuxiliaryMat_HPDDM(PC pc, IS is, Mat A, PetscErrorCode (*setup)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void*), void* setup_ctx)
 {
   PC_HPDDM *data = (PC_HPDDM*)pc->data;
@@ -1074,16 +1128,24 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
     PetscCall(PCHPDDMSetUpNeumannOverlap_Private(pc));
     if (!data->is && data->N > 1) {
       char type[256] = { }; /* same size as in src/ksp/pc/interface/pcset.c */
-      PetscCall(PetscOptionsGetString(NULL, pcpre, "-pc_hpddm_levels_1_st_pc_type", type, sizeof(type), NULL));
-      PetscCall(PetscStrcmp(type, PCMAT, &algebraic));
-      PetscCall(PetscOptionsGetBool(NULL, pcpre, "-pc_hpddm_block_splitting", &block, NULL));
-      PetscCheck(!algebraic || !block, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "-pc_hpddm_levels_1_st_pc_type mat and -pc_hpddm_block_splitting");
-      if (block) algebraic = PETSC_TRUE;
-      if (algebraic) {
-        PetscCall(ISCreateStride(PETSC_COMM_SELF, P->rmap->n, P->rmap->rstart, 1, &data->is));
-        PetscCall(MatIncreaseOverlap(P, 1, &data->is, 1));
-        PetscCall(ISSort(data->is));
-      } else PetscCall(PetscInfo(pc, "Cannot assemble a fully-algebraic coarse operator with an assembled Pmat and -%spc_hpddm_levels_1_st_pc_type != mat and -%spc_hpddm_block_splitting != true\n", pcpre ? pcpre : "", pcpre ? pcpre : ""));
+      PetscCall(PetscObjectTypeCompareAny((PetscObject)P, &flg, MATNORMAL, MATNORMALHERMITIAN, ""));
+      if (flg || (A->rmap->N != A->cmap->N && P->rmap->N == P->cmap->N && P->rmap->N == A->cmap->N)) {
+        Mat B;
+        PetscCall(PCHPDDMSetAuxiliaryMatNormal_Private(pc, A, P, &B, pcpre));
+        if (data->correction == PC_HPDDM_COARSE_CORRECTION_DEFLATED) data->correction = PC_HPDDM_COARSE_CORRECTION_BALANCED;
+        PetscCall(MatDestroy(&B));
+      } else {
+        PetscCall(PetscOptionsGetString(NULL, pcpre, "-pc_hpddm_levels_1_st_pc_type", type, sizeof(type), NULL));
+        PetscCall(PetscStrcmp(type, PCMAT, &algebraic));
+        PetscCall(PetscOptionsGetBool(NULL, pcpre, "-pc_hpddm_block_splitting", &block, NULL));
+        PetscCheck(!algebraic || !block, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "-pc_hpddm_levels_1_st_pc_type mat and -pc_hpddm_block_splitting");
+        if (block) algebraic = PETSC_TRUE;
+        if (algebraic) {
+          PetscCall(ISCreateStride(PETSC_COMM_SELF, P->rmap->n, P->rmap->rstart, 1, &data->is));
+          PetscCall(MatIncreaseOverlap(P, 1, &data->is, 1));
+          PetscCall(ISSort(data->is));
+        } else PetscCall(PetscInfo(pc, "Cannot assemble a fully-algebraic coarse operator with an assembled Pmat and -%spc_hpddm_levels_1_st_pc_type != mat and -%spc_hpddm_block_splitting != true\n", pcpre ? pcpre : "", pcpre ? pcpre : ""));
+      }
     }
   }
 
@@ -1364,7 +1426,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
       else inner = data->levels[0]->pc;
       if (inner) {
         PetscCall(PCSetType(inner, PCASM)); /* inner is the fine-level PC for which one must ensure                       */
-                                                      /* PCASMSetLocalSubdomains() has been called when -pc_hpddm_define_subdomains */
+                                            /* PCASMSetLocalSubdomains() has been called when -pc_hpddm_define_subdomains */
         if (!inner->setupcalled) { /* evaluates to PETSC_FALSE when -pc_hpddm_block_splitting */
           PetscCall(PCASMSetLocalSubdomains(inner, 1, is, &loc));
           if (!data->Neumann && data->N > 1) { /* subdomain matrices are already created for the eigenproblem, reuse them for the fine-level PC */
