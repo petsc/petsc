@@ -2485,7 +2485,7 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
 {
   PetscSection           sectionGlobal;
   PetscInt               bs = -1, mbs;
-  PetscInt               localSize;
+  PetscInt               localSize, localStart = 0;
   PetscBool              isShell, isBlock, isSeqBlock, isMPIBlock, isSymBlock, isSymSeqBlock, isSymMPIBlock, isMatIS;
   MatType                mtype;
   ISLocalToGlobalMapping ltog;
@@ -2496,6 +2496,7 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
   PetscCall(DMGetGlobalSection(dm, &sectionGlobal));
   /* PetscCall(PetscSectionGetStorageSize(sectionGlobal, &localSize)); */
   PetscCall(PetscSectionGetConstrainedStorageSize(sectionGlobal, &localSize));
+  PetscCallMPI(MPI_Exscan(&localSize, &localStart, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject) dm)));
   PetscCall(MatCreate(PetscObjectComm((PetscObject)dm), J));
   PetscCall(MatSetSizes(*J, localSize, localSize, PETSC_DETERMINE, PETSC_DETERMINE));
   PetscCall(MatSetType(*J, mtype));
@@ -2512,21 +2513,26 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
   PetscCall(PetscStrcmp(mtype, MATIS, &isMatIS));
   if (!isShell) {
     PetscBool fillMatrix = (PetscBool)(!dm->prealloc_only && !isMatIS);
-    PetscInt  *dnz, *onz, *dnzu, *onzu, bsLocal[2], bsMinMax[2];
+    PetscInt  *dnz, *onz, *dnzu, *onzu, bsLocal[2], bsMinMax[2], *pblocks;
     PetscInt  pStart, pEnd, p, dof, cdof;
 
     PetscCall(DMGetLocalToGlobalMapping(dm,&ltog));
+
+    PetscCall(PetscCalloc1(localSize, &pblocks));
     PetscCall(PetscSectionGetChart(sectionGlobal, &pStart, &pEnd));
     for (p = pStart; p < pEnd; ++p) {
-      PetscInt bdof;
+      PetscInt bdof, offset;
 
       PetscCall(PetscSectionGetDof(sectionGlobal, p, &dof));
+      PetscCall(PetscSectionGetOffset(sectionGlobal, p, &offset));
       PetscCall(PetscSectionGetConstraintDof(sectionGlobal, p, &cdof));
+      for (PetscInt i=0; i < dof - cdof; i++)
+        pblocks[offset - localStart + i] = dof - cdof;
       dof  = dof < 0 ? -(dof+1) : dof;
       bdof = cdof && (dof-cdof) ? 1 : dof;
       if (dof) {
         if (bs < 0)          {bs = bdof;}
-        else if (bs != bdof) {bs = 1; break;}
+        else if (bs != bdof) {bs = 1;}
       }
     }
     /* Must have same blocksize on all procs (some might have no points) */
@@ -2545,6 +2551,18 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
       PetscCall(DMPlexPreallocateOperator(dm, bs, dnz, onz, dnzu, onzu, *J, fillMatrix));
       PetscCall(PetscFree4(dnz, onz, dnzu, onzu));
     }
+    { // Consolidate blocks
+      PetscInt nblocks = 0;
+      for (PetscInt i=0; i<localSize; i += PetscMax(1, pblocks[i])) {
+        if (pblocks[i] == 0) continue;
+        pblocks[nblocks++] = pblocks[i]; // nblocks always <= i
+        for (PetscInt j=1; j<pblocks[i]; j++) {
+           PetscCheck(pblocks[i+j] == pblocks[i], PETSC_COMM_SELF, PETSC_ERR_PLIB, "Block of size %" PetscInt_FMT " mismatches entry %" PetscInt_FMT, pblocks[i], pblocks[i+j]);
+        }
+      }
+      PetscCall(MatSetVariableBlockSizes(*J, nblocks, pblocks));
+    }
+    PetscCall(PetscFree(pblocks));
   }
   PetscCall(MatSetDM(*J, dm));
   PetscFunctionReturn(0);
