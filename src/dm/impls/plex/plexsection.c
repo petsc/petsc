@@ -489,6 +489,8 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
     bcFields[bc] = f;
     PetscCall(ISCreateGeneral(PETSC_COMM_SELF, cEnd-cEndInterior, newidx, PETSC_OWN_POINTER, &bcPoints[bc++]));
   }
+  /* Complete labels for boundary conditions */
+  PetscCall(DMCompleteBCLabels_Internal(dm));
   /* Handle FEM Dirichlet boundaries */
   PetscCall(DMGetNumDS(dm, &Nds));
   for (s = 0; s < Nds; ++s) {
@@ -515,17 +517,13 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
         duplicate = l == label ? PETSC_TRUE : PETSC_FALSE;
         if (duplicate) break;
       }
-      if (!duplicate && (isFE[field])) {
-        /* don't complete cells, which are just present to give orientation to the boundary */
-        PetscCall(DMPlexLabelComplete(dm, label));
-      }
       /* Filter out cells, if you actually want to constrain cells you need to do things by hand right now */
       if (type & DM_BC_ESSENTIAL) {
         PetscInt       *newidx;
         PetscInt        n, newn = 0, p, v;
 
         bcFields[bc] = field;
-        if (numComps) PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject) dm), numComps, comps, PETSC_COPY_VALUES, &bcComps[bc]));
+        if (numComps) PetscCall(ISCreateGeneral(PETSC_COMM_SELF, numComps, comps, PETSC_COPY_VALUES, &bcComps[bc]));
         for (v = 0; v < numValues; ++v) {
           IS              tmp;
           const PetscInt *idx;

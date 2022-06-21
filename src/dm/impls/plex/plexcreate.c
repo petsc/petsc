@@ -3427,6 +3427,43 @@ PetscErrorCode DMSetFromOptions_NonRefinement_Plex(PetscOptionItems *PetscOption
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode DMSetFromOptions_Overlap_Plex(PetscOptionItems *PetscOptionsObject, DM dm, PetscInt *overlap)
+{
+  PetscInt  numOvLabels = 16, numOvExLabels = 16;
+  char     *ovLabelNames[16], *ovExLabelNames[16];
+  PetscInt  numOvValues = 16, numOvExValues = 16, l;
+  PetscBool flg;
+
+  PetscFunctionBegin;
+  PetscCall(PetscOptionsBoundedInt("-dm_distribute_overlap", "The size of the overlap halo", "DMPlexDistribute", *overlap, overlap, NULL, 0));
+  PetscCall(PetscOptionsStringArray("-dm_distribute_overlap_labels", "List of overlap label names", "DMPlexDistribute", ovLabelNames, &numOvLabels, &flg));
+  if (!flg) numOvLabels = 0;
+  if (numOvLabels) {
+    ((DM_Plex*) dm->data)->numOvLabels = numOvLabels;
+    for (l = 0; l < numOvLabels; ++l) {
+      PetscCall(DMGetLabel(dm, ovLabelNames[l], &((DM_Plex*) dm->data)->ovLabels[l]));
+      PetscCheck(((DM_Plex*) dm->data)->ovLabels[l], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid label name %s", ovLabelNames[l]);
+      PetscCall(PetscFree(ovLabelNames[l]));
+    }
+    PetscCall(PetscOptionsIntArray("-dm_distribute_overlap_values", "List of overlap label values", "DMPlexDistribute", ((DM_Plex*) dm->data)->ovValues, &numOvValues, &flg));
+    if (!flg) numOvValues = 0;
+    PetscCheck(numOvLabels == numOvValues, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "The number of labels %" PetscInt_FMT " must match the number of values %" PetscInt_FMT, numOvLabels, numOvValues);
+
+    PetscCall(PetscOptionsStringArray("-dm_distribute_overlap_exclude_labels", "List of overlap exclude label names", "DMPlexDistribute", ovExLabelNames, &numOvExLabels, &flg));
+    if (!flg) numOvExLabels = 0;
+    ((DM_Plex*) dm->data)->numOvExLabels = numOvExLabels;
+    for (l = 0; l < numOvExLabels; ++l) {
+      PetscCall(DMGetLabel(dm, ovExLabelNames[l], &((DM_Plex*) dm->data)->ovExLabels[l]));
+      PetscCheck(((DM_Plex*) dm->data)->ovExLabels[l], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid label name %s", ovExLabelNames[l]);
+      PetscCall(PetscFree(ovExLabelNames[l]));
+    }
+    PetscCall(PetscOptionsIntArray("-dm_distribute_overlap_exclude_values", "List of overlap exclude label values", "DMPlexDistribute", ((DM_Plex*) dm->data)->ovExValues, &numOvExValues, &flg));
+    if (!flg) numOvExValues = 0;
+    PetscCheck(numOvExLabels == numOvExValues, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "The number of exclude labels %" PetscInt_FMT " must match the number of values %" PetscInt_FMT, numOvExLabels, numOvExValues);
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode DMSetFromOptions_Plex(PetscOptionItems *PetscOptionsObject,DM dm)
 {
   PetscFunctionList ordlist;
@@ -3520,8 +3557,8 @@ static PetscErrorCode DMSetFromOptions_Plex(PetscOptionItems *PetscOptionsObject
   }
   /* Handle DMPlex distribution */
   PetscCall(DMPlexDistributeGetDefault(dm, &distribute));
-  PetscCall(PetscOptionsBool("-dm_distribute", "Flag to redistribute a mesh among processes", "DMCreate", distribute, &distribute, NULL));
-  PetscCall(PetscOptionsBoundedInt("-dm_distribute_overlap", "The size of the overlap halo", "DMCreate", overlap, &overlap, NULL, 0));
+  PetscCall(PetscOptionsBool("-dm_distribute", "Flag to redistribute a mesh among processes", "DMPlexDistribute", distribute, &distribute, NULL));
+  PetscCall(DMSetFromOptions_Overlap_Plex(PetscOptionsObject, dm, &overlap));
   if (distribute) {
     DM               pdm = NULL;
     PetscPartitioner part;
@@ -3811,6 +3848,8 @@ static PetscErrorCode DMInitialize_Plex(DM dm)
   PetscCall(PetscObjectComposeFunction((PetscObject)dm,"DMPlexReorderGetDefault_C",DMPlexReorderGetDefault_Plex));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm,"DMPlexReorderSetDefault_C",DMPlexReorderSetDefault_Plex));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm,"DMInterpolateSolution_C",DMInterpolateSolution_Plex));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm,"DMPlexGetOverlap_C",DMPlexGetOverlap_Plex));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm,"DMPlexSetOverlap_C",DMPlexSetOverlap_Plex));
   PetscFunctionReturn(0);
 }
 

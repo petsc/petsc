@@ -116,24 +116,36 @@ typedef struct {
    we allow additional segregation of by cell type.
 */
 typedef struct {
-  PetscInt                  refct;
+  PetscInt             refct;
 
-  PetscSection              coneSection;       /* Layout of cones (inedges for DAG) */
-  PetscInt                 *cones;             /* Cone for each point */
-  PetscInt                 *coneOrientations;  /* Orientation of each cone point, means cone traveral should start on point 'o', and if negative start on -(o+1) and go in reverse */
-  PetscSection              supportSection;    /* Layout of cones (inedges for DAG) */
-  PetscInt                 *supports;          /* Cone for each point */
-  PetscBool                 refinementUniform; /* Flag for uniform cell refinement */
-  char                     *transformType;     /* Type of transform for uniform cell refinement */
-  PetscReal                 refinementLimit;   /* Maximum volume for refined cell */
-  PetscErrorCode          (*refinementFunc)(const PetscReal [], PetscReal *); /* Function giving the maximum volume for refined cell */
-  PetscBool                 distDefault;       /* Distribute the DM by default */
-  DMPlexReorderDefaultFlag  reorderDefault;    /* Reorder the DM by default */
-  PetscInt                  overlap;           /* Overlap of the partitions as passed to DMPlexDistribute() or DMPlexDistributeOverlap() */
-  DMPlexInterpolatedFlag    interpolated;
-  DMPlexInterpolatedFlag    interpolatedCollective;
-
+  PetscSection         coneSection;       /* Layout of cones (inedges for DAG) */
+  PetscInt            *cones;             /* Cone for each point */
+  PetscInt            *coneOrientations;  /* Orientation of each cone point, means cone traveral should start on point 'o', and if negative start on -(o+1) and go in reverse */
+  PetscSection         supportSection;    /* Layout of cones (inedges for DAG) */
+  PetscInt            *supports;          /* Cone for each point */
   PetscInt            *facesTmp;          /* Work space for faces operation */
+
+  /* Transformation */
+  PetscBool            refinementUniform; /* Flag for uniform cell refinement */
+  char                *transformType;     /* Type of transform for uniform cell refinement */
+  PetscReal            refinementLimit;   /* Maximum volume for refined cell */
+  PetscErrorCode     (*refinementFunc)(const PetscReal [], PetscReal *); /* Function giving the maximum volume for refined cell */
+
+  /* Interpolation */
+  DMPlexInterpolatedFlag interpolated;
+  DMPlexInterpolatedFlag interpolatedCollective;
+
+  DMPlexReorderDefaultFlag reorderDefault; /* Reorder the DM by default */
+
+  /* Distribution */
+  PetscBool            distDefault;       /* Distribute the DM by default */
+  PetscInt             overlap;           /* Overlap of the partitions as passed to DMPlexDistribute() or DMPlexDistributeOverlap() */
+  PetscInt             numOvLabels;       /* The number of labels used for candidate overlap points */
+  DMLabel              ovLabels[16];      /* Labels used for candidate overlap points */
+  PetscInt             ovValues[16];      /* Label values used for candidate overlap points */
+  PetscInt             numOvExLabels;     /* The number of labels used for exclusion */
+  DMLabel              ovExLabels[16];    /* Labels used to exclude points from the overlap */
+  PetscInt             ovExValues[16];    /* Label values used to exclude points from the overlap */
 
   /* Hierarchy */
   PetscBool            regularRefinement; /* This flag signals that we are a regular refinement of coarseMesh */
@@ -254,6 +266,7 @@ PETSC_INTERN PetscErrorCode VecLoad_Plex_HDF5_Native_Internal(Vec, PetscViewer);
 PETSC_INTERN PetscErrorCode DMPlexVecGetClosureAtDepth_Internal(DM, PetscSection, Vec, PetscInt, PetscInt, PetscInt *, PetscScalar *[]);
 PETSC_INTERN PetscErrorCode DMPlexClosurePoints_Private(DM,PetscInt,const PetscInt[],IS*);
 PETSC_INTERN PetscErrorCode DMSetFromOptions_NonRefinement_Plex(PetscOptionItems *, DM);
+PETSC_INTERN PetscErrorCode DMSetFromOptions_Overlap_Plex(PetscOptionItems *, DM, PetscInt *);
 PETSC_INTERN PetscErrorCode DMCoarsen_Plex(DM, MPI_Comm, DM *);
 PETSC_INTERN PetscErrorCode DMCoarsenHierarchy_Plex(DM, PetscInt, DM []);
 PETSC_INTERN PetscErrorCode DMRefine_Plex(DM, MPI_Comm, DM *);

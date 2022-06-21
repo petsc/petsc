@@ -5180,37 +5180,81 @@ PetscErrorCode DMSetBasicAdjacency(DM dm, PetscBool useCone, PetscBool useClosur
   PetscFunctionReturn(0);
 }
 
-/* Complete labels that are being used for FEM BC */
-static PetscErrorCode DMCompleteBoundaryLabel_Internal(DM dm, PetscDS ds, PetscInt field, PetscInt bdNum, DMLabel label)
+PetscErrorCode DMCompleteBCLabels_Internal(DM dm)
 {
-  PetscObject    obj;
-  PetscClassId   id;
-  PetscInt       Nbd, bd;
-  PetscBool      isFE      = PETSC_FALSE;
-  PetscBool      duplicate = PETSC_FALSE;
+  DM           plex;
+  DMLabel     *labels, *glabels;
+  const char **names;
+  char        *sendNames, *recvNames;
+  PetscInt     Nds, s, maxLabels = 0, maxLen = 0, gmaxLen, Nl = 0, gNl, l, gl, m;
+  size_t       len;
+  MPI_Comm     comm;
+  PetscMPIInt  rank, size, p, *counts, *displs;
 
   PetscFunctionBegin;
-  PetscCall(DMGetField(dm, field, NULL, &obj));
-  PetscCall(PetscObjectGetClassId(obj, &id));
-  if (id == PETSCFE_CLASSID) isFE = PETSC_TRUE;
-  if (isFE && label) {
-    /* Only want to modify label once */
-    PetscCall(PetscDSGetNumBoundary(ds, &Nbd));
-    for (bd = 0; bd < PetscMin(Nbd, bdNum); ++bd) {
-      DMLabel l;
+  PetscCall(PetscObjectGetComm((PetscObject) dm, &comm));
+  PetscCallMPI(MPI_Comm_size(comm, &size));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
+  PetscCall(DMGetNumDS(dm, &Nds));
+  for (s = 0; s < Nds; ++s) {
+    PetscDS  dsBC;
+    PetscInt numBd;
 
-      PetscCall(PetscDSGetBoundary(ds, bd, NULL, NULL, NULL, &l, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
-      duplicate = l == label ? PETSC_TRUE : PETSC_FALSE;
-      if (duplicate) break;
-    }
-    if (!duplicate) {
-      DM plex;
+    PetscCall(DMGetRegionNumDS(dm, s, NULL, NULL, &dsBC));
+    PetscCall(PetscDSGetNumBoundary(dsBC, &numBd));
+    maxLabels += numBd;
+  }
+  PetscCall(PetscCalloc1(maxLabels, &labels));
+  /* Get list of labels to be completed */
+  for (s = 0; s < Nds; ++s) {
+    PetscDS  dsBC;
+    PetscInt numBd, bd;
 
-      PetscCall(DMConvert(dm, DMPLEX, &plex));
-      if (plex) PetscCall(DMPlexLabelComplete(plex, label));
-      PetscCall(DMDestroy(&plex));
+    PetscCall(DMGetRegionNumDS(dm, s, NULL, NULL, &dsBC));
+    PetscCall(PetscDSGetNumBoundary(dsBC, &numBd));
+    for (bd = 0; bd < numBd; ++bd) {
+      DMLabel      label;
+      PetscInt     field;
+      PetscObject  obj;
+      PetscClassId id;
+
+      PetscCall(PetscDSGetBoundary(dsBC, bd, NULL, NULL, NULL, &label, NULL, NULL, &field, NULL, NULL, NULL, NULL, NULL));
+      PetscCall(DMGetField(dm, field, NULL, &obj));
+      PetscCall(PetscObjectGetClassId(obj, &id));
+      if (!(id == PETSCFE_CLASSID) || !label) continue;
+      for (l = 0; l < Nl; ++l) if (labels[l] == label) break;
+      if (l == Nl) labels[Nl++] = label;
     }
   }
+  /* Get label names */
+  PetscCall(PetscMalloc1(Nl, &names));
+  for (l = 0; l < Nl; ++l) PetscCall(PetscObjectGetName((PetscObject) labels[l], &names[l]));
+  for (l = 0; l < Nl; ++l) {PetscCall(PetscStrlen(names[l], &len)); maxLen = PetscMax(maxLen, (PetscInt) len+2);}
+  PetscCall(PetscFree(labels));
+  PetscCallMPI(MPI_Allreduce(&maxLen, &gmaxLen, 1, MPIU_INT, MPI_MAX, comm));
+  PetscCall(PetscCalloc1(Nl * gmaxLen, &sendNames));
+  for (l = 0; l < Nl; ++l) PetscCall(PetscStrcpy(&sendNames[gmaxLen*l], names[l]));
+  PetscCall(PetscFree(names));
+  /* Put all names on all processes */
+  PetscCall(PetscCalloc2(size, &counts, size+1, &displs));
+  PetscCallMPI(MPI_Allgather(&Nl, 1, MPI_INT, counts, 1, MPI_INT, comm));
+  for (p = 0; p < size; ++p) displs[p+1] = displs[p] + counts[p];
+  gNl = displs[size];
+  for (p = 0; p < size; ++p) {counts[p] *= gmaxLen; displs[p] *= gmaxLen;}
+  PetscCall(PetscCalloc2(gNl * gmaxLen, &recvNames, gNl, &glabels));
+  PetscCallMPI(MPI_Allgatherv(sendNames, counts[rank], MPI_CHAR, recvNames, counts, displs, MPI_CHAR, comm));
+  PetscCall(PetscFree2(counts, displs));
+  PetscCall(PetscFree(sendNames));
+  for (l = 0, gl = 0; l < gNl; ++l) {
+    PetscCall(DMGetLabel(dm, &recvNames[l*gmaxLen], &glabels[gl]));
+    PetscCheck(glabels[gl], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Label %s missing on rank %d", &recvNames[l*gmaxLen], rank);
+    for (m = 0; m < gl; ++m) if (glabels[m] == glabels[gl]) continue;
+    PetscCall(DMConvert(dm, DMPLEX, &plex));
+    PetscCall(DMPlexLabelComplete(plex, glabels[gl]));
+    PetscCall(DMDestroy(&plex));
+    ++gl;
+  }
+  PetscCall(PetscFree2(recvNames, glabels));
   PetscFunctionReturn(0);
 }
 
@@ -5959,7 +6003,7 @@ PetscErrorCode DMTransferDS_Internal(DM dm, DMLabel label, IS fields, PetscDS ds
 @*/
 PetscErrorCode DMCopyDS(DM dm, DM newdm)
 {
-  PetscInt       Nds, s;
+  PetscInt Nds, s;
 
   PetscFunctionBegin;
   if (dm == newdm) PetscFunctionReturn(0);
@@ -5983,10 +6027,10 @@ PetscErrorCode DMCopyDS(DM dm, DM newdm)
       PetscInt      field;
 
       PetscCall(PetscDSGetBoundary(newds, bd, &wf, NULL, NULL, &label, NULL, NULL, &field, NULL, NULL, NULL, NULL, NULL));
-      PetscCall(DMCompleteBoundaryLabel_Internal(newdm, newds, field, bd, label));
       PetscCall(PetscWeakFormReplaceLabel(wf, label));
     }
   }
+  PetscCall(DMCompleteBCLabels_Internal(newdm));
   PetscFunctionReturn(0);
 }
 
@@ -8721,7 +8765,21 @@ PetscErrorCode DMAddBoundary(DM dm, DMBoundaryConditionType type, const char nam
   PetscValidLogicalCollectiveInt(dm, Nc, 8);
   PetscCheck(!dm->localSection,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot add boundary to DM after creating local section");
   PetscCall(DMGetDS(dm, &ds));
-  PetscCall(DMCompleteBoundaryLabel_Internal(dm, ds, field, PETSC_MAX_INT, label));
+  /* Complete label */
+  if (label) {
+    PetscObject  obj;
+    PetscClassId id;
+
+    PetscCall(DMGetField(dm, field, NULL, &obj));
+    PetscCall(PetscObjectGetClassId(obj, &id));
+    if (id == PETSCFE_CLASSID) {
+      DM plex;
+
+      PetscCall(DMConvert(dm, DMPLEX, &plex));
+      if (plex) PetscCall(DMPlexLabelComplete(plex, label));
+      PetscCall(DMDestroy(&plex));
+    }
+  }
   PetscCall(PetscDSAddBoundary(ds, type, name, label, Nv, values, field, Nc, comps, bcFunc, bcFunc_t, ctx, bd));
   PetscFunctionReturn(0);
 }
