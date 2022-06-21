@@ -969,12 +969,69 @@ typedef struct {
  * handling macros.  We record the line of the call, which may or may not be the location of the definition.  But is at
  * least more useful than "unknown" because it can distinguish multiple calls from the same function.
  */
+
+/*MC
+   PetscStackPushNoCheck - Pushes a new function name and line number onto the PETSc default stack that tracks where the running program is
+   currently in the source code.
+
+   Not Collective
+
+   Synopsis:
+   #include <petscsys.h>
+   void PetscStackPushNoCheck(char *funct,int petsc_routine,PetscBool hot);
+
+   Input Parameters:
++  funct - the function name
+.  petsc_routine - 2 user function, 1 PETSc function, 0 some other function
+-  hot - indicates that the function may be called often so expensive error checking should be turned off inside the function
+
+   Level: developer
+
+   Notes:
+   In debug mode PETSc maintains a stack of the current function calls that can be used to help to quickly see where a problem has
+   occurred, for example, when a signal is received. It is recommended to use the debugger if extensive information is needed to
+   help debug the problem.
+
+   The default stack is a global variable called `petscstack`.
+
+   In general the line number is at the beginning of the function (where `PetscFunctionBegin` is called) so it is not accurate
+
+.seealso: `PetscAttachDebugger()`, `PetscStackCopy()`, `PetscStackView()`, `PetscStackPopNoCheck()`, `PetscCall()`, `PetscFunctionBegin()`,
+          `PetscFunctionReturn()`, `PetscFunctionBeginHot()`, `PetscFunctionBeginUser()`, `PetscStackPush()`, `PetscStackPop`
+M*/
 #define PetscStackPushNoCheck(funct,petsc_routine,hot) do {                             \
     PetscStackSAWsTakeAccess();                                                         \
     PetscStackPush_Private(petscstack,__FILE__,funct,__LINE__,petsc_routine,hot);       \
     PetscStackSAWsGrantAccess();                                                        \
   } while (0)
 
+/*MC
+   PetscStackPopNoCheck - Pops a function name from the PETSc default stack that tracks where the running program is
+   currently in the source code.
+
+   Not Collective
+
+   Synopsis:
+   #include <petscsys.h>
+   void PetscStackPopNoCheck(char *funct);
+
+   Input Parameter:
+.   funct - the function name
+
+   Level: developer
+
+   Notes:
+   In debug mode PETSc maintains a stack of the current function calls that can be used to help to quickly see where a problem has
+   occurred, for example, when a signal is received. It is recommended to use the debugger if extensive information is needed to
+   help debug the problem.
+
+   The default stack is a global variable called petscstack.
+
+   Developer Note:
+   `PetscStackPopNoCheck()` takes a function argument while  `PetscStackPop` does not, this difference is likely just historical.
+
+.seealso: `PetscAttachDebugger()`, `PetscStackCopy()`, `PetscStackView()`, `PetscStackPushNoCheck()`, `PetscStackPop`
+M*/
 #define PetscStackPopNoCheck(funct)                    do {     \
     PetscStackSAWsTakeAccess();                                 \
     PetscStackPop_Private(petscstack,funct);                    \
@@ -1018,7 +1075,7 @@ typedef struct {
 
    Level: developer
 
-.seealso: `PetscFunctionReturn()`, `PetscFunctionBeginHot()`, `PetscFunctionBeginUser()`
+.seealso: `PetscFunctionReturn()`, `PetscFunctionBeginHot()`, `PetscFunctionBeginUser()`, `PetscStackPushNoCheck()`
 
 M*/
 #define PetscFunctionBegin do {                               \
@@ -1048,7 +1105,7 @@ M*/
 
    Level: developer
 
-.seealso: `PetscFunctionBegin`, `PetscFunctionReturn()`
+.seealso: `PetscFunctionBegin`, `PetscFunctionReturn()`, `PetscStackPushNoCheck()`
 
 M*/
 #define PetscFunctionBeginHot do {                           \
@@ -1082,7 +1139,7 @@ M*/
 
    Level: intermediate
 
-.seealso: `PetscFunctionReturn()`, `PetscFunctionBegin`, `PetscFunctionBeginHot`
+.seealso: `PetscFunctionReturn()`, `PetscFunctionBegin`, `PetscFunctionBeginHot`, `PetscStackPushNoCheck()`
 
 M*/
 #define PetscFunctionBeginUser do {                           \
@@ -1090,12 +1147,60 @@ M*/
     PetscRegister__FUNCT__();                                 \
   } while (0)
 
+/*MC
+   PetscStackPush - Pushes a new function name and line number onto the PETSc default stack that tracks where the running program is
+   currently in the source code and verifies the memory is not corrupted.
+
+   Not Collective
+
+   Synopsis:
+   #include <petscsys.h>
+   void PetscStackPush(char *funct)
+
+   Input Parameter:
+.  funct - the function name
+
+   Level: developer
+
+   Notes:
+   In debug mode PETSc maintains a stack of the current function calls that can be used to help to quickly see where a problem has
+   occurred, for example, when a signal is received. It is recommended to use the debugger if extensive information is needed to
+   help debug the problem.
+
+   The default stack is a global variable called petscstack.
+
+   In general the line number is at the beginning of the function (where `PetscFunctionBegin` is called) so it is not accurate
+
+.seealso: `PetscAttachDebugger()`, `PetscStackCopy()`, `PetscStackView()`, `PetscStackPopNoCheck()`, `PetscCall()`, `PetscFunctionBegin()`,
+          `PetscFunctionReturn()`, `PetscFunctionBeginHot()`, `PetscFunctionBeginUser()`, `PetscStackPushNoCheck()`, `PetscStackPop`
+M*/
 #define PetscStackPush(n)       do {        \
     PetscStackPushNoCheck(n,0,PETSC_FALSE); \
     CHKMEMQ;                                \
   } while (0)
 
-#define PetscStackPop           do {             \
+/*MC
+   PetscStackPop - Pops a function name from the PETSc default stack that tracks where the running program is
+   currently in the source code and verifies the memory is not corrupted.
+
+   Not Collective
+
+   Synopsis:
+   #include <petscsys.h>
+   void PetscStackPop
+
+   Level: developer
+
+   Notes:
+   In debug mode PETSc maintains a stack of the current function calls that can be used to help to quickly see where a problem has
+   occurred, for example, when a signal is received. It is recommended to use the debugger if extensive information is needed to
+   help debug the problem.
+
+   The default stack is a global variable called petscstack.
+
+.seealso: `PetscAttachDebugger()`, `PetscStackCopy()`, `PetscStackView()`, `PetscStackPushNoCheck()`, `PetscStackPopNoCheck()`, `PetscStackPush()`
+M*/
+#define PetscStackPop           do {       \
       CHKMEMQ;                                   \
       PetscStackPopNoCheck(PETSC_FUNCTION_NAME); \
     } while (0)
@@ -1122,7 +1227,7 @@ M*/
 
    Level: developer
 
-.seealso: `PetscFunctionBegin()`
+.seealso: `PetscFunctionBegin()`, `PetscStackPopNoCheck()`
 
 M*/
 #define PetscFunctionReturn(a)    do {          \
@@ -1151,33 +1256,48 @@ M*/
 #define PetscStackCall(name,routine)
 #define PetscStackCallStandard(func,...)
 #else
-/*
+/*MC
     PetscStackCall - Calls an external library routine or user function after pushing the name of the routine on the stack.
 
    Input Parameters:
 +   name - string that gives the name of the function being called
--   routine - actual call to the routine, including ierr = and PetscCall(ierr);
+-   routine - actual call to the routine, for example, functionname(a,b)
 
-   Note: Often one should use PetscStackCallStandard() instead. This routine is intended for external library routines that DO NOT return error codes
+   Level: developer
 
-   Developer Note: this is so that when a user or external library routine results in a crash or corrupts memory, they get blamed instead of PETSc.
+   Note:
+   Often one should use `PetscStackCallStandard()` instead. This routine is intended for external library routines that DO NOT return error codes
 
-*/
+   In debug mode this also checks the memory for corruption at the end of the function call.
+
+   Certain external packages, such as BLAS/LAPACK may have their own macros for managing the call, error checking, etc.
+
+   Developer Note:
+   This is so that when a user or external library routine results in a crash or corrupts memory, they get blamed instead of PETSc.
+
+.seealso: `PetscCall()`, `PetscStackPushNoCheck()`, `PetscStackPush()`, `PetscStackCallStandard()`, `PetscStackCallBLAS()`
+@*/
 #define PetscStackCall(name,routine) do { PetscStackPush(name);routine;PetscStackPop; } while (0)
 
-/*
-    PetscStackCallStandard - Calls an external library routine after pushing the name of the routine on the stack.
+/*MC
+    PetscStackCallStandard - Calls an external library routine that returns an error code after pushing the name of the routine on the stack.
 
    Input Parameters:
 +   func-  name of the routine
--   args - arguments to the routine surrounded by ()
+-   args - arguments to the routine
+
+   Level: developer
 
    Notes:
-    This is intended for external package routines that return error codes. Use PetscStackCall() for those that do not.
+   This is intended for external package routines that return error codes. Use `PetscStackCall()` for those that do not.
 
-   Developer Note: this is so that when an external packge routine results in a crash or corrupts memory, they get blamed instead of PETSc.
+   In debug mode this also checks the memory for corruption at the end of the function call.
 
-*/
+   Developer Note:
+   This is so that when an external packge routine results in a crash or corrupts memory, they get blamed instead of PETSc.
+
+.seealso: `PetscCall()`, `PetscStackPushNoCheck()`, `PetscStackPush()`, `PetscStackCall()`
+M*/
 #define PetscStackCallStandard(func,...) do {                                                  \
     PetscStackPush(PetscStringize(func));                                                      \
     PetscErrorCode __ierr = func(__VA_ARGS__);                                                 \

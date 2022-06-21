@@ -31,7 +31,7 @@ void  PetscStackSAWsGrantAccess(void)
 }
 
 /*@C
-   PetscStackSAWsTakeAccess - Takes access of the PETSc stack frames to the SAWs publisher
+   PetscStackSAWsTakeAccess - Takes access of the PETSc stack frames from the SAWs publisher
 
    Collective on PETSC_COMM_WORLD?
 
@@ -87,6 +87,25 @@ PetscErrorCode PetscStackReset(void)
   return 0;
 }
 
+/*@C
+   PetscStackView - Print the current (default) PETSc stack to an ASCII file
+
+   Not Collective
+
+   Input Parameter:
+.   file - the file pointer, or `NULL` to use `PETSC_STDOUT`
+
+   Level: developer
+
+   Notes:
+   In debug mode PETSc maintains a stack of the current function calls that can be used to help to quickly see where a problem has
+   occurred, for example, when a signal is received. It is recommended to use the debugger if extensive information is needed to
+   help debug the problem.
+
+   The default stack is a global variable called `petscstack`.
+
+.seealso: `PetscAttachDebugger()`, `PetscStackCopy()`, `PetscStackPrint()`, `PetscStackSAWsGrantAccess()`, `PetscStackSAWsTakeAccess()`
+@*/
 PetscErrorCode  PetscStackView(FILE *file)
 {
   if (!file) file = PETSC_STDOUT;
@@ -119,7 +138,26 @@ PetscErrorCode  PetscStackView(FILE *file)
   return 0;
 }
 
-/*  PetscFunctionBegin;  so that make rule checkbadPetscFunctionBegin works */
+/*@C
+   PetscStackCopy - Copy the information from one PETSc stack to another
+
+   Not Collective
+
+   Input Parameter:
+.   sint - the stack to be copied from
+
+   Output Parameter:
+.   sout - the stack to be copied to, this stack must already exist
+
+   Level: developer
+
+   Notes:
+   In debug mode PETSc maintains a stack of the current function calls that can be used to help to quickly see where a problem has
+   occurred, for example, when a signal is received. It is recommended to use the debugger if extensive information is needed to
+   help debug the problem.
+
+.seealso: `PetscAttachDebugger()`, `PetscStackView()`
+@*/
 PetscErrorCode  PetscStackCopy(PetscStack *sint,PetscStack *sout)
 {
   if (sint) {
@@ -136,7 +174,29 @@ PetscErrorCode  PetscStackCopy(PetscStack *sint,PetscStack *sout)
   return 0;
 }
 
-/*  PetscFunctionBegin;  so that make rule checkbadPetscFunctionBegin works */
+/*@C
+   PetscStackPrint - Prints a given PETSc stack to an ASCII file
+
+   Not Collective
+
+   Input Parameters:
++   sint - the PETSc stack to print
+-  file - the file pointer
+
+   Level: developer
+
+   Notes:
+   In debug mode PETSc maintains a stack of the current function calls that can be used to help to quickly see where a problem has
+   occurred, for example, when a signal is received. It is recommended to use the debugger if extensive information is needed to
+   help debug the problem.
+
+   The default stack is a global variable called `petscstack`.
+
+   Developer Note:
+   `PetscStackPrint()` and `PetscStackView()` should be merged into a single API.
+
+.seealso: `PetscAttachDebugger()`, `PetscStackCopy()`, `PetscStackView()`
+@*/
 PetscErrorCode  PetscStackPrint(PetscStack *sint,FILE *fp)
 {
   if (sint) {
