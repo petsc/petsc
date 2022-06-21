@@ -92,67 +92,6 @@ static PetscErrorCode MatSeqAIJCopySubArray_SeqAIJCUSPARSE(Mat,PetscInt,const Pe
 static PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE(Mat,PetscCount,const PetscInt[],const PetscInt[]);
 static PetscErrorCode MatSetValuesCOO_SeqAIJCUSPARSE(Mat,const PetscScalar[],InsertMode);
 
-PetscErrorCode MatFactorGetSolverType_seqaij_cusparse(Mat A,MatSolverType *type)
-{
-  PetscFunctionBegin;
-  *type = MATSOLVERCUSPARSE;
-  PetscFunctionReturn(0);
-}
-
-/*MC
-  MATSOLVERCUSPARSE = "cusparse" - A matrix type providing triangular solvers for seq matrices
-  on a single GPU of type, seqaijcusparse, aijcusparse, or seqaijcusp, aijcusp. Currently supported
-  algorithms are ILU(k) and ICC(k). Typically, deeper factorizations (larger k) results in poorer
-  performance in the triangular solves. Full LU, and Cholesky decompositions can be solved through the
-  CUSPARSE triangular solve algorithm. However, the performance can be quite poor and thus these
-  algorithms are not recommended. This class does NOT support direct solver operations.
-
-  Level: beginner
-
-.seealso: `PCFactorSetMatSolverType()`, `MatSolverType`, `MatCreateSeqAIJCUSPARSE()`, `MATAIJCUSPARSE`, `MatCreateAIJCUSPARSE()`, `MatCUSPARSESetFormat()`, `MatCUSPARSEStorageFormat`, `MatCUSPARSEFormatOperation`
-M*/
-
-PETSC_EXTERN PetscErrorCode MatGetFactor_seqaijcusparse_cusparse(Mat A,MatFactorType ftype,Mat *B)
-{
-  PetscInt       n = A->rmap->n;
-
-  PetscFunctionBegin;
-  PetscCall(MatCreate(PetscObjectComm((PetscObject)A),B));
-  PetscCall(MatSetSizes(*B,n,n,n,n));
-  (*B)->factortype = ftype;
-  PetscCall(MatSetType(*B,MATSEQAIJCUSPARSE));
-
-  if (A->boundtocpu && A->bindingpropagates) PetscCall(MatBindToCPU(*B,PETSC_TRUE));
-  if (ftype == MAT_FACTOR_LU || ftype == MAT_FACTOR_ILU || ftype == MAT_FACTOR_ILUDT) {
-    PetscCall(MatSetBlockSizesFromMats(*B,A,A));
-    if (!A->boundtocpu) {
-      (*B)->ops->ilufactorsymbolic = MatILUFactorSymbolic_SeqAIJCUSPARSE;
-      (*B)->ops->lufactorsymbolic  = MatLUFactorSymbolic_SeqAIJCUSPARSE;
-    } else {
-      (*B)->ops->ilufactorsymbolic = MatILUFactorSymbolic_SeqAIJ;
-      (*B)->ops->lufactorsymbolic  = MatLUFactorSymbolic_SeqAIJ;
-    }
-    PetscCall(PetscStrallocpy(MATORDERINGND,(char**)&(*B)->preferredordering[MAT_FACTOR_LU]));
-    PetscCall(PetscStrallocpy(MATORDERINGNATURAL,(char**)&(*B)->preferredordering[MAT_FACTOR_ILU]));
-    PetscCall(PetscStrallocpy(MATORDERINGNATURAL,(char**)&(*B)->preferredordering[MAT_FACTOR_ILUDT]));
-  } else if (ftype == MAT_FACTOR_CHOLESKY || ftype == MAT_FACTOR_ICC) {
-    if (!A->boundtocpu) {
-      (*B)->ops->iccfactorsymbolic      = MatICCFactorSymbolic_SeqAIJCUSPARSE;
-      (*B)->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqAIJCUSPARSE;
-    } else {
-      (*B)->ops->iccfactorsymbolic      = MatICCFactorSymbolic_SeqAIJ;
-      (*B)->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqAIJ;
-    }
-    PetscCall(PetscStrallocpy(MATORDERINGND,(char**)&(*B)->preferredordering[MAT_FACTOR_CHOLESKY]));
-    PetscCall(PetscStrallocpy(MATORDERINGNATURAL,(char**)&(*B)->preferredordering[MAT_FACTOR_ICC]));
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported for CUSPARSE Matrix Types");
-
-  PetscCall(MatSeqAIJSetPreallocation(*B,MAT_SKIP_ALLOCATION,NULL));
-  (*B)->canuseordering = PETSC_TRUE;
-  PetscCall(PetscObjectComposeFunction((PetscObject)(*B),"MatFactorGetSolverType_C",MatFactorGetSolverType_seqaij_cusparse));
-  PetscFunctionReturn(0);
-}
-
 PETSC_INTERN PetscErrorCode MatCUSPARSESetFormat_SeqAIJCUSPARSE(Mat A,MatCUSPARSEFormatOperation op,MatCUSPARSEStorageFormat format)
 {
   Mat_SeqAIJCUSPARSE *cusparsestruct = (Mat_SeqAIJCUSPARSE*)A->spptr;
@@ -1711,6 +1650,67 @@ static PetscErrorCode MatSolve_SeqAIJCUSPARSE_NaturalOrdering(Mat A,Vec bb,Vec x
   PetscCall(VecCUDARestoreArrayWrite(xx,&xarray));
   PetscCall(PetscLogGpuTimeEnd());
   PetscCall(PetscLogGpuFlops(2.0*cusparseTriFactors->nnz - A->cmap->n));
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatFactorGetSolverType_seqaij_cusparse(Mat A,MatSolverType *type)
+{
+  PetscFunctionBegin;
+  *type = MATSOLVERCUSPARSE;
+  PetscFunctionReturn(0);
+}
+
+/*MC
+  MATSOLVERCUSPARSE = "cusparse" - A matrix type providing triangular solvers for seq matrices
+  on a single GPU of type, seqaijcusparse, aijcusparse, or seqaijcusp, aijcusp. Currently supported
+  algorithms are ILU(k) and ICC(k). Typically, deeper factorizations (larger k) results in poorer
+  performance in the triangular solves. Full LU, and Cholesky decompositions can be solved through the
+  CUSPARSE triangular solve algorithm. However, the performance can be quite poor and thus these
+  algorithms are not recommended. This class does NOT support direct solver operations.
+
+  Level: beginner
+
+.seealso: `PCFactorSetMatSolverType()`, `MatSolverType`, `MatCreateSeqAIJCUSPARSE()`, `MATAIJCUSPARSE`, `MatCreateAIJCUSPARSE()`, `MatCUSPARSESetFormat()`, `MatCUSPARSEStorageFormat`, `MatCUSPARSEFormatOperation`
+M*/
+
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqaijcusparse_cusparse(Mat A,MatFactorType ftype,Mat *B)
+{
+  PetscInt       n = A->rmap->n;
+
+  PetscFunctionBegin;
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)A),B));
+  PetscCall(MatSetSizes(*B,n,n,n,n));
+  (*B)->factortype = ftype;
+  PetscCall(MatSetType(*B,MATSEQAIJCUSPARSE));
+
+  if (A->boundtocpu && A->bindingpropagates) PetscCall(MatBindToCPU(*B,PETSC_TRUE));
+  if (ftype == MAT_FACTOR_LU || ftype == MAT_FACTOR_ILU || ftype == MAT_FACTOR_ILUDT) {
+    PetscCall(MatSetBlockSizesFromMats(*B,A,A));
+    if (!A->boundtocpu) {
+      (*B)->ops->ilufactorsymbolic = MatILUFactorSymbolic_SeqAIJCUSPARSE;
+      (*B)->ops->lufactorsymbolic  = MatLUFactorSymbolic_SeqAIJCUSPARSE;
+    } else {
+      (*B)->ops->ilufactorsymbolic = MatILUFactorSymbolic_SeqAIJ;
+      (*B)->ops->lufactorsymbolic  = MatLUFactorSymbolic_SeqAIJ;
+    }
+    PetscCall(PetscStrallocpy(MATORDERINGND,(char**)&(*B)->preferredordering[MAT_FACTOR_LU]));
+    PetscCall(PetscStrallocpy(MATORDERINGNATURAL,(char**)&(*B)->preferredordering[MAT_FACTOR_ILU]));
+    PetscCall(PetscStrallocpy(MATORDERINGNATURAL,(char**)&(*B)->preferredordering[MAT_FACTOR_ILUDT]));
+  } else if (ftype == MAT_FACTOR_CHOLESKY || ftype == MAT_FACTOR_ICC) {
+    if (!A->boundtocpu) {
+      (*B)->ops->iccfactorsymbolic      = MatICCFactorSymbolic_SeqAIJCUSPARSE;
+      (*B)->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqAIJCUSPARSE;
+    } else {
+      (*B)->ops->iccfactorsymbolic      = MatICCFactorSymbolic_SeqAIJ;
+      (*B)->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqAIJ;
+    }
+    PetscCall(PetscStrallocpy(MATORDERINGND,(char**)&(*B)->preferredordering[MAT_FACTOR_CHOLESKY]));
+    PetscCall(PetscStrallocpy(MATORDERINGNATURAL,(char**)&(*B)->preferredordering[MAT_FACTOR_ICC]));
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported for CUSPARSE Matrix Types");
+
+  PetscCall(MatSeqAIJSetPreallocation(*B,MAT_SKIP_ALLOCATION,NULL));
+  (*B)->canuseordering = PETSC_TRUE;
+  PetscCall(PetscObjectComposeFunction((PetscObject)(*B),"MatFactorGetSolverType_C",MatFactorGetSolverType_seqaij_cusparse));
   PetscFunctionReturn(0);
 }
 
