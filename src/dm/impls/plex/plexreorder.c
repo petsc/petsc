@@ -337,3 +337,66 @@ PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)
   (*pdm)->setupcalled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
+
+PetscErrorCode DMPlexReorderSetDefault_Plex(DM dm, DMPlexReorderDefaultFlag reorder)
+{
+  DM_Plex *mesh = (DM_Plex *) dm->data;
+
+  PetscFunctionBegin;
+  mesh->reorderDefault = reorder;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexReorderSetDefault - Set flag indicating whether the DM should be reordered by default
+
+  Logically collective
+
+  Input Parameters:
++ dm        - The DM
+- reorder   - Flag for reordering
+
+  Level: intermediate
+
+.seealso: `DMPlexReorderGetDefault()`
+@*/
+PetscErrorCode DMPlexReorderSetDefault(DM dm, DMPlexReorderDefaultFlag reorder)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscTryMethod(dm,"DMPlexReorderSetDefault_C",(DM,DMPlexReorderDefaultFlag),(dm,reorder));
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMPlexReorderGetDefault_Plex(DM dm, DMPlexReorderDefaultFlag *reorder)
+{
+  DM_Plex *mesh = (DM_Plex *) dm->data;
+
+  PetscFunctionBegin;
+  *reorder = mesh->reorderDefault;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexReorderGetDefault - Get flag indicating whether the DM should be reordered by default
+
+  Not collective
+
+  Input Parameter:
+. dm      - The DM
+
+  Output Parameter:
+. reorder - Flag for reordering
+
+  Level: intermediate
+
+.seealso: `DMPlexReorderSetDefault()`
+@*/
+PetscErrorCode DMPlexReorderGetDefault(DM dm, DMPlexReorderDefaultFlag *reorder)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(reorder, 2);
+  PetscUseMethod(dm,"DMPlexReorderGetDefault_C",(DM,DMPlexReorderDefaultFlag*),(dm,reorder));
+  PetscFunctionReturn(0);
+}

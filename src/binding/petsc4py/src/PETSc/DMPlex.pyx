@@ -1,6 +1,17 @@
 # --------------------------------------------------------------------
 
+class DMPlexReorderDefaultFlag(object):
+    NOTSET = DMPLEX_REORDER_DEFAULT_NOTSET
+    FALSE  = DMPLEX_REORDER_DEFAULT_FALSE
+    TRUE   = DMPLEX_REORDER_DEFAULT_TRUE
+
+# --------------------------------------------------------------------
+
 cdef class DMPlex(DM):
+
+    ReorderDefaultFlag = DMPlexReorderDefaultFlag
+
+    #
 
     def create(self, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
@@ -669,6 +680,16 @@ cdef class DMPlex(DM):
         CHKERR( DMPlexPermute(self.dm, perm.iset, &dm.dm) )
         return dm
 
+    def reorderGetDefault(self):
+        cdef PetscDMPlexReorderDefaultFlag reorder = DMPLEX_REORDER_DEFAULT_NOTSET
+        CHKERR( DMPlexReorderGetDefault(self.dm, &reorder) )
+        return reorder
+
+    def reorderSetDefault(self, flag):
+        cdef PetscDMPlexReorderDefaultFlag reorder = flag
+        CHKERR( DMPlexReorderSetDefault(self.dm, reorder) )
+        return
+
     #
 
     def computeCellGeometryFVM(self, cell):
@@ -915,3 +936,9 @@ cdef class DMPlex(DM):
 
     def localVectorLoad(self, Viewer viewer, DM sectiondm, SF sf, Vec vec):
         CHKERR( DMPlexLocalVectorLoad(self.dm, viewer.vwr, sectiondm.dm, sf.sf, vec.vec))
+
+# --------------------------------------------------------------------
+
+del DMPlexReorderDefaultFlag
+
+# --------------------------------------------------------------------

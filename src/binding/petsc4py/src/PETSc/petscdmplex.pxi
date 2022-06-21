@@ -2,6 +2,11 @@
 
 cdef extern from * nogil:
 
+    ctypedef enum PetscDMPlexReorderDefaultFlag "DMPlexReorderDefaultFlag":
+        DMPLEX_REORDER_DEFAULT_NOTSET
+        DMPLEX_REORDER_DEFAULT_FALSE
+        DMPLEX_REORDER_DEFAULT_TRUE
+
     int DMPlexCreate(MPI_Comm,PetscDM*)
     int DMPlexCreateCohesiveSubmesh(PetscDM,PetscBool,const char[],PetscInt,PetscDM*)
     int DMPlexCreateFromCellListPetsc(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscBool,PetscInt[],PetscInt,PetscReal[],PetscDM*)
@@ -108,6 +113,8 @@ cdef extern from * nogil:
 
     int DMPlexGetOrdering(PetscDM,PetscMatOrderingType,PetscDMLabel,PetscIS*)
     int DMPlexPermute(PetscDM,PetscIS,PetscDM*)
+    int DMPlexReorderGetDefault(PetscDM,PetscDMPlexReorderDefaultFlag*)
+    int DMPlexReorderSetDefault(PetscDM,PetscDMPlexReorderDefaultFlag)
 
     #int DMPlexCreateSubmesh(PetscDM,PetscDMLabel,PetscInt,PetscDM*)
     #int DMPlexCreateHybridMesh(PetscDM,PetscDMLabel,PetscDMLabel,PetscInt,PetscDMLabel*,PetscDMLabel*,PetscDM *,PetscDM *)

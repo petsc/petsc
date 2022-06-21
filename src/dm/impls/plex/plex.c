@@ -2449,6 +2449,8 @@ PetscErrorCode DMDestroy_Plex(DM dm)
   PetscCall(PetscObjectComposeFunction((PetscObject)dm,"DMPlexDistributeGetDefault_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm,"DMPlexDistributeSetDefault_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm,"MatComputeNeumannOverlap_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm,"DMPlexReorderGetDefault_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm,"DMPlexReorderSetDefault_C", NULL));
   if (--mesh->refct > 0) PetscFunctionReturn(0);
   PetscCall(PetscSectionDestroy(&mesh->coneSection));
   PetscCall(PetscFree(mesh->cones));

@@ -14,9 +14,10 @@ static PetscErrorCode DMInitialize_Plex(DM dm);
 /* This copies internal things in the Plex structure that we generally want when making a new, related Plex */
 PetscErrorCode DMPlexCopy_Internal(DM dmin, PetscBool copyPeriodicity, PetscBool copyOverlap, DM dmout)
 {
-  const DMBoundaryType *bd;
-  const PetscReal      *maxCell, *L;
-  PetscBool             isper, dist;
+  const DMBoundaryType     *bd;
+  const PetscReal          *maxCell, *L;
+  PetscBool                 isper, dist;
+  DMPlexReorderDefaultFlag  reorder;
 
   PetscFunctionBegin;
   if (copyPeriodicity) {
@@ -25,6 +26,8 @@ PetscErrorCode DMPlexCopy_Internal(DM dmin, PetscBool copyPeriodicity, PetscBool
   }
   PetscCall(DMPlexDistributeGetDefault(dmin, &dist));
   PetscCall(DMPlexDistributeSetDefault(dmout, dist));
+  PetscCall(DMPlexReorderGetDefault(dmin, &reorder));
+  PetscCall(DMPlexReorderSetDefault(dmout, reorder));
   ((DM_Plex *) dmout->data)->useHashLocation  = ((DM_Plex *) dmin->data)->useHashLocation;
   if (copyOverlap) {
     PetscCall(DMPlexSetOverlap_Plex(dmout, dmin, 0));
@@ -3427,17 +3430,22 @@ PetscErrorCode DMSetFromOptions_NonRefinement_Plex(PetscOptionItems *PetscOption
 static PetscErrorCode DMSetFromOptions_Plex(PetscOptionItems *PetscOptionsObject,DM dm)
 {
   PetscFunctionList ordlist;
-  char              oname[256];
-  PetscReal         volume = -1.0;
-  PetscInt          prerefine = 0, refine = 0, r, coarsen = 0, overlap = 0, extLayers = 0, dim;
-  PetscBool         uniformOrig, created = PETSC_FALSE, uniform = PETSC_TRUE, distribute, interpolate = PETSC_TRUE, coordSpace = PETSC_TRUE, remap = PETSC_TRUE, ghostCells = PETSC_FALSE, isHierarchy, ignoreModel = PETSC_FALSE, flg;
+  char                      oname[256];
+  PetscReal                 volume = -1.0;
+  PetscInt                  prerefine = 0, refine = 0, r, coarsen = 0, overlap = 0, extLayers = 0, dim;
+  PetscBool                 uniformOrig, created = PETSC_FALSE, uniform = PETSC_TRUE, distribute, interpolate = PETSC_TRUE, coordSpace = PETSC_TRUE, remap = PETSC_TRUE, ghostCells = PETSC_FALSE, isHierarchy, ignoreModel = PETSC_FALSE, flg;
+  DMPlexReorderDefaultFlag  reorder;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
   PetscOptionsHeadBegin(PetscOptionsObject,"DMPlex Options");
   /* Handle automatic creation */
   PetscCall(DMGetDimension(dm, &dim));
-  if (dim < 0) {PetscCall(DMPlexCreateFromOptions_Internal(PetscOptionsObject, &coordSpace, dm));created = PETSC_TRUE;}
+  if (dim < 0) {
+    PetscCall(DMPlexCreateFromOptions_Internal(PetscOptionsObject, &coordSpace, dm));
+    created = PETSC_TRUE;
+  }
+  PetscCall(DMGetDimension(dm, &dim));
   /* Handle interpolation before distribution */
   PetscCall(PetscOptionsBool("-dm_plex_interpolate_pre", "Flag to interpolate mesh before distribution", "", interpolate, &interpolate, &flg));
   if (flg) {
@@ -3496,9 +3504,11 @@ static PetscErrorCode DMSetFromOptions_Plex(PetscOptionItems *PetscOptionsObject
     extLayers = 0;
   }
   /* Handle DMPlex reordering before distribution */
+  PetscCall(DMPlexReorderGetDefault(dm, &reorder));
   PetscCall(MatGetOrderingList(&ordlist));
+  PetscCall(PetscStrncpy(oname, MATORDERINGNATURAL, sizeof(oname)));
   PetscCall(PetscOptionsFList("-dm_plex_reorder", "Set mesh reordering type", "DMPlexGetOrdering", ordlist, MATORDERINGNATURAL, oname, sizeof(oname), &flg));
-  if (flg) {
+  if (reorder == DMPLEX_REORDER_DEFAULT_TRUE || flg) {
     DM pdm;
     IS perm;
 
@@ -3647,16 +3657,15 @@ static PetscErrorCode DMSetFromOptions_Plex(PetscOptionItems *PetscOptionsObject
     PetscCall(DMPlexReplace_Static(dm, &gdm));
   }
   /* Handle 1D order */
-  {
+  if (reorder != DMPLEX_REORDER_DEFAULT_FALSE && dim == 1) {
     DM           cdm, rdm;
     PetscDS      cds;
     PetscObject  obj;
     PetscClassId id = PETSC_OBJECT_CLASSID;
     IS           perm;
-    PetscInt     dim, Nf;
+    PetscInt     Nf;
     PetscBool    distributed;
 
-    PetscCall(DMGetDimension(dm, &dim));
     PetscCall(DMPlexIsDistributed(dm, &distributed));
     PetscCall(DMGetCoordinateDM(dm, &cdm));
     PetscCall(DMGetDS(cdm, &cds));
@@ -3665,7 +3674,7 @@ static PetscErrorCode DMSetFromOptions_Plex(PetscOptionItems *PetscOptionsObject
       PetscCall(PetscDSGetDiscretization(cds, 0, &obj));
       PetscCall(PetscObjectGetClassId(obj, &id));
     }
-    if (dim == 1 && !distributed && id != PETSCFE_CLASSID) {
+    if (!distributed && id != PETSCFE_CLASSID) {
       PetscCall(DMPlexGetOrdering1D(dm, &perm));
       PetscCall(DMPlexPermute(dm, perm, &rdm));
       PetscCall(DMPlexReplace_Static(dm, &rdm));
@@ -3799,6 +3808,8 @@ static PetscErrorCode DMInitialize_Plex(DM dm)
   PetscCall(PetscObjectComposeFunction((PetscObject)dm,"DMPlexGetOverlap_C",DMPlexGetOverlap_Plex));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm,"DMPlexDistributeGetDefault_C",DMPlexDistributeGetDefault_Plex));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm,"DMPlexDistributeSetDefault_C",DMPlexDistributeSetDefault_Plex));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm,"DMPlexReorderGetDefault_C",DMPlexReorderGetDefault_Plex));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm,"DMPlexReorderSetDefault_C",DMPlexReorderSetDefault_Plex));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm,"DMInterpolateSolution_C",DMInterpolateSolution_Plex));
   PetscFunctionReturn(0);
 }
@@ -3864,6 +3875,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
   mesh->refinementUniform = PETSC_TRUE;
   mesh->refinementLimit   = -1.0;
   mesh->distDefault       = PETSC_TRUE;
+  mesh->reorderDefault    = DMPLEX_REORDER_DEFAULT_NOTSET;
   mesh->interpolated      = DMPLEX_INTERPOLATED_INVALID;
   mesh->interpolatedCollective = DMPLEX_INTERPOLATED_INVALID;
 

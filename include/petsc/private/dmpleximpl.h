@@ -116,21 +116,22 @@ typedef struct {
    we allow additional segregation of by cell type.
 */
 typedef struct {
-  PetscInt             refct;
+  PetscInt                  refct;
 
-  PetscSection         coneSection;       /* Layout of cones (inedges for DAG) */
-  PetscInt            *cones;             /* Cone for each point */
-  PetscInt            *coneOrientations;  /* Orientation of each cone point, means cone traveral should start on point 'o', and if negative start on -(o+1) and go in reverse */
-  PetscSection         supportSection;    /* Layout of cones (inedges for DAG) */
-  PetscInt            *supports;          /* Cone for each point */
-  PetscBool            refinementUniform; /* Flag for uniform cell refinement */
-  char                *transformType;     /* Type of transform for uniform cell refinement */
-  PetscReal            refinementLimit;   /* Maximum volume for refined cell */
-  PetscErrorCode     (*refinementFunc)(const PetscReal [], PetscReal *); /* Function giving the maximum volume for refined cell */
-  PetscBool            distDefault;       /* Distribute the DM by default */
-  PetscInt             overlap;           /* Overlap of the partitions as passed to DMPlexDistribute() or DMPlexDistributeOverlap() */
-  DMPlexInterpolatedFlag interpolated;
-  DMPlexInterpolatedFlag interpolatedCollective;
+  PetscSection              coneSection;       /* Layout of cones (inedges for DAG) */
+  PetscInt                 *cones;             /* Cone for each point */
+  PetscInt                 *coneOrientations;  /* Orientation of each cone point, means cone traveral should start on point 'o', and if negative start on -(o+1) and go in reverse */
+  PetscSection              supportSection;    /* Layout of cones (inedges for DAG) */
+  PetscInt                 *supports;          /* Cone for each point */
+  PetscBool                 refinementUniform; /* Flag for uniform cell refinement */
+  char                     *transformType;     /* Type of transform for uniform cell refinement */
+  PetscReal                 refinementLimit;   /* Maximum volume for refined cell */
+  PetscErrorCode          (*refinementFunc)(const PetscReal [], PetscReal *); /* Function giving the maximum volume for refined cell */
+  PetscBool                 distDefault;       /* Distribute the DM by default */
+  DMPlexReorderDefaultFlag  reorderDefault;    /* Reorder the DM by default */
+  PetscInt                  overlap;           /* Overlap of the partitions as passed to DMPlexDistribute() or DMPlexDistributeOverlap() */
+  DMPlexInterpolatedFlag    interpolated;
+  DMPlexInterpolatedFlag    interpolatedCollective;
 
   PetscInt            *facesTmp;          /* Work space for faces operation */
 
@@ -312,6 +313,8 @@ PETSC_INTERN PetscErrorCode DMPlexGetOverlap_Plex(DM, PetscInt *);
 PETSC_INTERN PetscErrorCode DMPlexSetOverlap_Plex(DM, DM, PetscInt);
 PETSC_INTERN PetscErrorCode DMPlexDistributeGetDefault_Plex(DM, PetscBool *);
 PETSC_INTERN PetscErrorCode DMPlexDistributeSetDefault_Plex(DM, PetscBool);
+PETSC_INTERN PetscErrorCode DMPlexReorderGetDefault_Plex(DM, DMPlexReorderDefaultFlag *);
+PETSC_INTERN PetscErrorCode DMPlexReorderSetDefault_Plex(DM, DMPlexReorderDefaultFlag);
 
 #if 1
 static inline PetscInt DihedralInvert(PetscInt N, PetscInt a)

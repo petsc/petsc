@@ -23,3 +23,9 @@
       end type tDMPlexTransform
 
       DMPlexTransform, parameter :: PETSC_NULL_DMPLEXTRANSFORM = tDMPlexTransform(0)
+!
+! DMPlexReorderDefaultFlag
+!
+      PetscEnum, parameter :: DMPLEX_REORDER_DEFAULT_NOTSET = -1
+      PetscEnum, parameter :: DMPLEX_REORDER_DEFAULT_FALSE = 0
+      PetscEnum, parameter :: DMPLEX_REORDER_DEFAULT_TRUE = 1

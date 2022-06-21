@@ -146,6 +146,9 @@ In addition to the changes above
     - pass determinant Vec, rather than its address
 - Change ``DMPlexMetricAverage()``, ``DMPlexMetricAverage2()`` and ``DMPlexMetricAverage3()`` to pass output metric, rather than its address
 - Change ``DMPlexMetricIntersection()``, ``DMPlexMetricIntersection2()`` and ``DMPlexMetricIntersection3()`` to pass output metric, rather than its address
+- Add capability to specify whether the DMPlex should be reordered by default:
+    - add ``DMPlexReorderDefaultFlag``
+    - add ``DMPlexReorderGetDefault()`` and ``DMPlexReorderSetDefault()`` to get and set this flag
 
 .. rubric:: FE/FV:
 
