@@ -7,7 +7,6 @@ int main(int argc,char **argv)
 {
   Mat            mat,tmat = 0;
   PetscInt       m = 4,n,i,j;
-  PetscErrorCode ierr;
   PetscMPIInt    size,rank;
   PetscInt       rstart,rend,rect = 0;
   PetscBool      flg;
@@ -15,75 +14,73 @@ int main(int argc,char **argv)
   PetscReal      normf,normi,norm1;
   MatInfo        info;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   n    = m;
-  ierr = PetscOptionsHasName(NULL,NULL,"-rect1",&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-rect1",&flg));
   if (flg) {n += 2; rect = 1;}
-  ierr = PetscOptionsHasName(NULL,NULL,"-rect2",&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-rect2",&flg));
   if (flg) {n -= 2; rect = 1;}
 
   /* Create and assemble matrix */
-  ierr = MatCreate(PETSC_COMM_WORLD,&mat);CHKERRQ(ierr);
-  ierr = MatSetSizes(mat,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(mat);CHKERRQ(ierr);
-  ierr = MatSetUp(mat);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(mat,&rstart,&rend);CHKERRQ(ierr);
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&mat));
+  PetscCall(MatSetSizes(mat,PETSC_DECIDE,PETSC_DECIDE,m,n));
+  PetscCall(MatSetFromOptions(mat));
+  PetscCall(MatSetUp(mat));
+  PetscCall(MatGetOwnershipRange(mat,&rstart,&rend));
   for (i=rstart; i<rend; i++) {
     for (j=0; j<n; j++) {
       v    = 10*i+j;
-      ierr = MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
+      PetscCall(MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES));
     }
   }
-  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY));
 
   /* Print info about original matrix */
-  ierr = MatGetInfo(mat,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"original matrix nonzeros = %" PetscInt_FMT ", allocated nonzeros = %" PetscInt_FMT "\n",
-                     (PetscInt)info.nz_used,(PetscInt)info.nz_allocated);CHKERRQ(ierr);
-  ierr = MatNorm(mat,NORM_FROBENIUS,&normf);CHKERRQ(ierr);
-  ierr = MatNorm(mat,NORM_1,&norm1);CHKERRQ(ierr);
-  ierr = MatNorm(mat,NORM_INFINITY,&normi);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"original: Frobenious norm = %g, one norm = %g, infinity norm = %g\n",(double)normf,(double)norm1,(double)normi);CHKERRQ(ierr);
-  ierr = MatView(mat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscCall(MatGetInfo(mat,MAT_GLOBAL_SUM,&info));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"original matrix nonzeros = %" PetscInt_FMT ", allocated nonzeros = %" PetscInt_FMT "\n",(PetscInt)info.nz_used,(PetscInt)info.nz_allocated));
+  PetscCall(MatNorm(mat,NORM_FROBENIUS,&normf));
+  PetscCall(MatNorm(mat,NORM_1,&norm1));
+  PetscCall(MatNorm(mat,NORM_INFINITY,&normi));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"original: Frobenious norm = %g, one norm = %g, infinity norm = %g\n",(double)normf,(double)norm1,(double)normi));
+  PetscCall(MatView(mat,PETSC_VIEWER_STDOUT_WORLD));
 
   /* Form matrix transpose */
-  ierr = PetscOptionsHasName(NULL,NULL,"-in_place",&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-in_place",&flg));
   if (flg) {
-    ierr = MatTranspose(mat,MAT_INPLACE_MATRIX,&mat);CHKERRQ(ierr);   /* in-place transpose */
+    PetscCall(MatTranspose(mat,MAT_INPLACE_MATRIX,&mat));   /* in-place transpose */
     tmat = mat; mat = 0;
   } else {      /* out-of-place transpose */
-    ierr = MatTranspose(mat,MAT_INITIAL_MATRIX,&tmat);CHKERRQ(ierr);
+    PetscCall(MatTranspose(mat,MAT_INITIAL_MATRIX,&tmat));
   }
 
   /* Print info about transpose matrix */
-  ierr = MatGetInfo(tmat,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"transpose matrix nonzeros = %" PetscInt_FMT ", allocated nonzeros = %" PetscInt_FMT "\n",
-                     (PetscInt)info.nz_used,(PetscInt)info.nz_allocated);CHKERRQ(ierr);
-  ierr = MatNorm(tmat,NORM_FROBENIUS,&normf);CHKERRQ(ierr);
-  ierr = MatNorm(tmat,NORM_1,&norm1);CHKERRQ(ierr);
-  ierr = MatNorm(tmat,NORM_INFINITY,&normi);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"transpose: Frobenious norm = %g, one norm = %g, infinity norm = %g\n",(double)normf,(double)norm1,(double)normi);CHKERRQ(ierr);
-  ierr = MatView(tmat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscCall(MatGetInfo(tmat,MAT_GLOBAL_SUM,&info));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"transpose matrix nonzeros = %" PetscInt_FMT ", allocated nonzeros = %" PetscInt_FMT "\n",(PetscInt)info.nz_used,(PetscInt)info.nz_allocated));
+  PetscCall(MatNorm(tmat,NORM_FROBENIUS,&normf));
+  PetscCall(MatNorm(tmat,NORM_1,&norm1));
+  PetscCall(MatNorm(tmat,NORM_INFINITY,&normi));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"transpose: Frobenious norm = %g, one norm = %g, infinity norm = %g\n",(double)normf,(double)norm1,(double)normi));
+  PetscCall(MatView(tmat,PETSC_VIEWER_STDOUT_WORLD));
 
   /* Test MatAXPY */
   if (mat && !rect) {
     PetscScalar alpha = 1.0;
-    ierr = PetscOptionsGetScalar(NULL,NULL,"-alpha",&alpha,NULL);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix addition:  B = B + alpha * A\n");CHKERRQ(ierr);
-    ierr = MatAXPY(tmat,alpha,mat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-    ierr = MatView(tmat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    PetscCall(PetscOptionsGetScalar(NULL,NULL,"-alpha",&alpha,NULL));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"matrix addition:  B = B + alpha * A\n"));
+    PetscCall(MatAXPY(tmat,alpha,mat,DIFFERENT_NONZERO_PATTERN));
+    PetscCall(MatView(tmat,PETSC_VIEWER_STDOUT_WORLD));
   }
 
   /* Free data structures */
-  ierr = MatDestroy(&tmat);CHKERRQ(ierr);
-  if (mat) {ierr = MatDestroy(&mat);CHKERRQ(ierr);}
+  PetscCall(MatDestroy(&tmat));
+  if (mat) PetscCall(MatDestroy(&mat));
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

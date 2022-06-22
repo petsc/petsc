@@ -7,60 +7,59 @@ int main(int argc,char **args)
 {
   Mat            A;
   PetscInt       i,j;
-  PetscErrorCode ierr;
   PetscMPIInt    size;
   PetscViewer    fd;
   PetscScalar    values[16],one = 1.0;
   Vec            x;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  PetscCheckFalse(size > 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,m"Can only run on one processor");
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,m"Can only run on one processor");
 
   /*
      Open binary file.  Note that we use FILE_MODE_WRITE to indicate
      writing to this file.
   */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"4by4",FILE_MODE_WRITE,&fd);CHKERRQ(ierr);
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"4by4",FILE_MODE_WRITE,&fd));
 
-  ierr = MatCreateSeqBAIJ(PETSC_COMM_WORLD,4,12,12,0,0,&A);CHKERRQ(ierr);
+  PetscCall(MatCreateSeqBAIJ(PETSC_COMM_WORLD,4,12,12,0,0,&A));
 
   for (i=0; i<16; i++) values[i] = i;
   for (i=0; i<4; i++) values[4*i+i] += 5;
   i    = 0; j = 0;
-  ierr = MatSetValuesBlocked(A,1,&i,1,&j,values,INSERT_VALUES);CHKERRQ(ierr);
+  PetscCall(MatSetValuesBlocked(A,1,&i,1,&j,values,INSERT_VALUES));
 
   for (i=0; i<16; i++) values[i] = i;
   i    = 0; j = 2;
-  ierr = MatSetValuesBlocked(A,1,&i,1,&j,values,INSERT_VALUES);CHKERRQ(ierr);
+  PetscCall(MatSetValuesBlocked(A,1,&i,1,&j,values,INSERT_VALUES));
 
   for (i=0; i<16; i++) values[i] = i;
   i    = 1; j = 0;
-  ierr = MatSetValuesBlocked(A,1,&i,1,&j,values,INSERT_VALUES);CHKERRQ(ierr);
+  PetscCall(MatSetValuesBlocked(A,1,&i,1,&j,values,INSERT_VALUES));
 
   for (i=0; i<16; i++) values[i] = i;for (i=0; i<4; i++) values[4*i+i] += 6;
   i    = 1; j = 1;
-  ierr = MatSetValuesBlocked(A,1,&i,1,&j,values,INSERT_VALUES);CHKERRQ(ierr);
+  PetscCall(MatSetValuesBlocked(A,1,&i,1,&j,values,INSERT_VALUES));
 
   for (i=0; i<16; i++) values[i] = i;
   i    = 2; j = 0;
-  ierr = MatSetValuesBlocked(A,1,&i,1,&j,values,INSERT_VALUES);CHKERRQ(ierr);
+  PetscCall(MatSetValuesBlocked(A,1,&i,1,&j,values,INSERT_VALUES));
 
   for (i=0; i<16; i++) values[i] = i;for (i=0; i<4; i++) values[4*i+i] += 7;
   i    = 2; j = 2;
-  ierr = MatSetValuesBlocked(A,1,&i,1,&j,values,INSERT_VALUES);CHKERRQ(ierr);
+  PetscCall(MatSetValuesBlocked(A,1,&i,1,&j,values,INSERT_VALUES));
 
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatView(A,fd);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatView(A,fd));
+  PetscCall(MatDestroy(&A));
 
-  ierr = VecCreateSeq(PETSC_COMM_WORLD,12,&x);CHKERRQ(ierr);
-  ierr = VecSet(x,one);CHKERRQ(ierr);
-  ierr = VecView(x,fd);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  PetscCall(VecCreateSeq(PETSC_COMM_WORLD,12,&x));
+  PetscCall(VecSet(x,one));
+  PetscCall(VecView(x,fd));
+  PetscCall(VecDestroy(&x));
 
-  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscViewerDestroy(&fd));
+  PetscCall(PetscFinalize());
+  return 0;
 }

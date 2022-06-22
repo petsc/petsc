@@ -3,12 +3,6 @@
 !   Description: Demonstrates how users can augment the PETSc profiling by
 !                inserting their own event logging.
 !
-!/*T
-!   Concepts: PetscLog^user-defined event profiling (basic example);
-!   Concepts: PetscLog^activating/deactivating events for profiling (basic example);
-!   Processors: n
-!T*/
-! -----------------------------------------------------------------------
 
       program SchoolDay
 #include <petsc/finclude/petscsys.h>
@@ -16,9 +10,6 @@
       use petscmpi  ! or mpi or mpi_f08
       use petscsys
       implicit none
-
-!====================================================================
-!     Local Variables
 
       ! Settings:
       integer, parameter        :: verbose=0               ! 0: silent, >=1 : increasing amount of debugging output
@@ -50,15 +41,11 @@
       integer4                  :: role                 ! is this process a BOY, a GIRL or a TEACHER?
       integer4                  :: i, j
       integer4,parameter        :: one=1
-!====================================================================
+
 !     Initializations
-      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      if (ierr .ne. 0) then
-        print*,'Unable to initialize PETSc'
-        stop
-      endif
-      call MPI_Comm_size(PETSC_COMM_WORLD, size,ierr)
-      call MPI_Comm_rank(PETSC_COMM_WORLD, rank,ierr)
+      PetscCallA( PetscInitialize(ierr))
+      PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD, size,ierr))
+      PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD, rank,ierr))
 
       if (rank==0) then
          role = TEACHER
@@ -75,186 +62,170 @@
          end do
       end do
 !
-!====================================================================
 !     Create new user-defined events
       classid = 0
-      call PetscLogEventRegister('Morning',         classid, Morning,   ierr)
-      call PetscLogEventRegister('Afternoon',       classid, Afternoon, ierr)
-      call PetscLogEventRegister('Play Ball',       classid, PlayBall,  ierr)
-      call PetscLogEventRegister('Skip Rope',       classid, SkipRope,  ierr)
-      call PetscLogEventRegister('Tidy Classroom',  classid, TidyClass, ierr)
-      call PetscLogEventRegister('Lessons',         classid, Lessons,   ierr)
-      call PetscLogEventRegister('Correct Homework',classid,CorrectHomework,          &
-     &                                                            ierr)
+      PetscCallA(PetscLogEventRegister('Morning',         classid, Morning,   ierr))
+      PetscCallA(PetscLogEventRegister('Afternoon',       classid, Afternoon, ierr))
+      PetscCallA(PetscLogEventRegister('Play Ball',       classid, PlayBall,  ierr))
+      PetscCallA(PetscLogEventRegister('Skip Rope',       classid, SkipRope,  ierr))
+      PetscCallA(PetscLogEventRegister('Tidy Classroom',  classid, TidyClass, ierr))
+      PetscCallA(PetscLogEventRegister('Lessons',         classid, Lessons,   ierr))
+      PetscCallA(PetscLogEventRegister('Correct Homework',classid,CorrectHomework,ierr))
       if (verbose>=1) then
-      print '(a,i0,a)','[',rank,'] SchoolDay events have been defined'
+        print '(a,i0,a)','[',rank,'] SchoolDay events have been defined'
       endif
 
-!====================================================================
 !     Go through the school day
-      call PetscLogEventBegin(Morning,ierr)
+      PetscCallA(PetscLogEventBegin(Morning,ierr))
 
-         call PetscLogFlops(190000d0,ierr)
-         call PetscSleep(0.5*second,ierr)
+         PetscCallA(PetscLogFlops(190000d0,ierr))
+         PetscCallA(PetscSleep(0.5*second,ierr))
 
-         call PetscLogEventBegin(Lessons,ierr)
-         call PetscLogFlops(23000d0,ierr)
-         call PetscSleep(1*second, ierr)
+         PetscCallA(PetscLogEventBegin(Lessons,ierr))
+         PetscCallA(PetscLogFlops(23000d0,ierr))
+         PetscCallA(PetscSleep(1*second, ierr))
          if (size>1) then
-         call MPI_Isend( message, msgLen, MPI_DOUBLE_PRECISION,                             &
-     &                        mod(rank+1,size),                                             &
-     &                        tagMsg+rank, PETSC_COMM_WORLD, req, ierr)
-         call  MPI_Recv( message, msgLen, MPI_DOUBLE_PRECISION,                             &
-     &                       mod(rank-1+size,size),                                         &
-     &                  tagMsg+mod(rank-1+size,size), PETSC_COMM_WORLD,                     &
-     &        status, ierr)
-         call MPI_Wait(req,MPI_STATUS_IGNORE,ierr)
+           PetscCallMPIA(MPI_Isend( message, msgLen, MPI_DOUBLE_PRECISION,mod(rank+1,size),tagMsg+rank, PETSC_COMM_WORLD, req, ierr))
+           PetscCallMPIA(MPI_Recv( message, msgLen, MPI_DOUBLE_PRECISION,mod(rank-1+size,size),tagMsg+mod(rank-1+size,size), PETSC_COMM_WORLD,status, ierr))
+           PetscCallMPIA(MPI_Wait(req,MPI_STATUS_IGNORE,ierr))
          end if
-         call PetscLogEventEnd(Lessons,ierr)
+         PetscCallA(PetscLogEventEnd(Lessons,ierr))
 
          if (role==TEACHER) then
-            call PetscLogEventBegin(TidyClass,ierr)
-            call PetscLogFlops(600000d0,ierr)
-            call PetscSleep(0.6*second, ierr)
-               call PetscLogEventBegin(CorrectHomework,ierr)
-               call PetscLogFlops(234700d0,ierr)
-               call PetscSleep(0.4*second, ierr)
-               call PetscLogEventEnd(CorrectHomework,ierr)
-            call PetscLogEventEnd(TidyClass,ierr)
+            PetscCallA(PetscLogEventBegin(TidyClass,ierr))
+            PetscCallA(PetscLogFlops(600000d0,ierr))
+            PetscCallA(PetscSleep(0.6*second, ierr))
+               PetscCallA(PetscLogEventBegin(CorrectHomework,ierr))
+               PetscCallA(PetscLogFlops(234700d0,ierr))
+               PetscCallA(PetscSleep(0.4*second, ierr))
+               PetscCallA(PetscLogEventEnd(CorrectHomework,ierr))
+            PetscCallA(PetscLogEventEnd(TidyClass,ierr))
          else if (role==BOY) then
-            call PetscLogEventBegin(SkipRope,ierr)
-            call PetscSleep(0.8*second, ierr)
-            call PetscLogEventEnd(SkipRope,ierr)
+            PetscCallA(PetscLogEventBegin(SkipRope,ierr))
+            PetscCallA(PetscSleep(0.8*second, ierr))
+            PetscCallA(PetscLogEventEnd(SkipRope,ierr))
          else
-            call PetscLogEventBegin(PlayBall,ierr)
-            call PetscSleep(0.9*second, ierr)
-            call PetscLogEventEnd(PlayBall,ierr)
+            PetscCallA(PetscLogEventBegin(PlayBall,ierr))
+            PetscCallA(PetscSleep(0.9*second, ierr))
+            PetscCallA(PetscLogEventEnd(PlayBall,ierr))
          end if
 
-         call PetscLogEventBegin(Lessons,ierr)
-         call PetscLogFlops(120000d0,ierr)
-         call PetscSleep(0.7*second, ierr)
-         call PetscLogEventEnd(Lessons,ierr)
+         PetscCallA(PetscLogEventBegin(Lessons,ierr))
+         PetscCallA(PetscLogFlops(120000d0,ierr))
+         PetscCallA(PetscSleep(0.7*second, ierr))
+         PetscCallA(PetscLogEventEnd(Lessons,ierr))
 
-      call PetscLogEventEnd(Morning,ierr)
+      PetscCallA(PetscLogEventEnd(Morning,ierr))
 
-      call PetscLogEventBegin(Afternoon,ierr)
+      PetscCallA(PetscLogEventBegin(Afternoon,ierr))
 
          item = rank*(3-rank)
-         call MPI_Allreduce(item, maxItem, 1, MPI_INTEGER, MPI_MAX,                    &
-     &                           PETSC_COMM_WORLD, ierr)
+         PetscCallMPIA(MPI_Allreduce(item, maxItem, 1, MPI_INTEGER, MPI_MAX,PETSC_COMM_WORLD, ierr))
 
          item = rank*(10-rank)
-         call MPI_Allreduce(item, maxItem, 1, MPI_INTEGER, MPI_MAX,                    &
-     &                           PETSC_COMM_WORLD, ierr)
+         PetscCallMPIA(MPI_Allreduce(item, maxItem, 1, MPI_INTEGER, MPI_MAX,PETSC_COMM_WORLD, ierr))
 
-         call PetscLogFlops(58988d0,ierr)
-         call PetscSleep(0.6*second,ierr)
+         PetscCallA(PetscLogFlops(58988d0,ierr))
+         PetscCallA(PetscSleep(0.6*second,ierr))
 
-         call PetscLogEventBegin(Lessons,ierr)
-         call PetscLogFlops(123456d0,ierr)
-         call PetscSleep(1*second, ierr)
-         call PetscLogEventEnd(Lessons,ierr)
+         PetscCallA(PetscLogEventBegin(Lessons,ierr))
+         PetscCallA(PetscLogFlops(123456d0,ierr))
+         PetscCallA(PetscSleep(1*second, ierr))
+         PetscCallA(PetscLogEventEnd(Lessons,ierr))
 
          if (role==TEACHER) then
-            call PetscLogEventBegin(TidyClass,ierr)
-            call PetscLogFlops(17800d0,ierr)
-            call PetscSleep(1.1*second, ierr)
-            call PetscLogEventBegin(Lessons,ierr)
-            call PetscLogFlops(72344d0,ierr)
-            call PetscSleep(0.5*second, ierr)
-            call PetscLogEventEnd(Lessons,ierr)
-            call PetscLogEventEnd(TidyClass,ierr)
+            PetscCallA(PetscLogEventBegin(TidyClass,ierr))
+            PetscCallA(PetscLogFlops(17800d0,ierr))
+            PetscCallA(PetscSleep(1.1*second, ierr))
+            PetscCallA(PetscLogEventBegin(Lessons,ierr))
+            PetscCallA(PetscLogFlops(72344d0,ierr))
+            PetscCallA(PetscSleep(0.5*second, ierr))
+            PetscCallA(PetscLogEventEnd(Lessons,ierr))
+            PetscCallA(PetscLogEventEnd(TidyClass,ierr))
          else if (role==GIRL) then
-            call PetscLogEventBegin(SkipRope,ierr)
-            call PetscSleep(0.7*second, ierr)
-            call PetscLogEventEnd(SkipRope,ierr)
+            PetscCallA(PetscLogEventBegin(SkipRope,ierr))
+            PetscCallA(PetscSleep(0.7*second, ierr))
+            PetscCallA(PetscLogEventEnd(SkipRope,ierr))
          else
-            call PetscLogEventBegin(PlayBall,ierr)
-            call PetscSleep(0.8*second, ierr)
-            call PetscLogEventEnd(PlayBall,ierr)
+            PetscCallA(PetscLogEventBegin(PlayBall,ierr))
+            PetscCallA(PetscSleep(0.8*second, ierr))
+            PetscCallA(PetscLogEventEnd(PlayBall,ierr))
          end if
 
-         call PetscLogEventBegin(Lessons,ierr)
-         call PetscLogFlops(72344d0,ierr)
-         call PetscSleep(0.5*second, ierr)
-         call PetscLogEventEnd(Lessons,ierr)
+         PetscCallA(PetscLogEventBegin(Lessons,ierr))
+         PetscCallA(PetscLogFlops(72344d0,ierr))
+         PetscCallA(PetscSleep(0.5*second, ierr))
+         PetscCallA(PetscLogEventEnd(Lessons,ierr))
 
-      call PetscLogEventEnd(Afternoon,ierr)
+      PetscCallA(PetscLogEventEnd(Afternoon,ierr))
 
       if (.false.) then
          continue
       else if (role==TEACHER) then
-         call PetscLogEventBegin(TidyClass,ierr)
-         call PetscLogFlops(612300d0,ierr)
-         call PetscSleep(1.1*second, ierr)
-         call PetscLogEventEnd(TidyClass,ierr)
-         call PetscLogEventBegin(CorrectHomework,ierr)
-         call PetscLogFlops(234700d0,ierr)
-         call PetscSleep(1.1*second, ierr)
-         call PetscLogEventEnd(CorrectHomework,ierr)
+         PetscCallA(PetscLogEventBegin(TidyClass,ierr))
+         PetscCallA(PetscLogFlops(612300d0,ierr))
+         PetscCallA(PetscSleep(1.1*second, ierr))
+         PetscCallA(PetscLogEventEnd(TidyClass,ierr))
+         PetscCallA(PetscLogEventBegin(CorrectHomework,ierr))
+         PetscCallA(PetscLogFlops(234700d0,ierr))
+         PetscCallA(PetscSleep(1.1*second, ierr))
+         PetscCallA(PetscLogEventEnd(CorrectHomework,ierr))
       else
-         call PetscLogEventBegin(SkipRope,ierr)
-         call PetscSleep(0.7*second, ierr)
-         call PetscLogEventEnd(SkipRope,ierr)
-         call PetscLogEventBegin(PlayBall,ierr)
-         call PetscSleep(0.8*second, ierr)
-         call PetscLogEventEnd(PlayBall,ierr)
+         PetscCallA(PetscLogEventBegin(SkipRope,ierr))
+         PetscCallA(PetscSleep(0.7*second, ierr))
+         PetscCallA(PetscLogEventEnd(SkipRope,ierr))
+         PetscCallA(PetscLogEventBegin(PlayBall,ierr))
+         PetscCallA(PetscSleep(0.8*second, ierr))
+         PetscCallA(PetscLogEventEnd(PlayBall,ierr))
       end if
 
-      call PetscLogEventBegin(Lessons,ierr)
-      call PetscLogFlops(120000d0,ierr)
-      call PetscSleep(0.7*second, ierr)
-      call PetscLogEventEnd(Lessons,ierr)
+      PetscCallA(PetscLogEventBegin(Lessons,ierr))
+      PetscCallA(PetscLogFlops(120000d0,ierr))
+      PetscCallA(PetscSleep(0.7*second, ierr))
+      PetscCallA(PetscLogEventEnd(Lessons,ierr))
 
-      call PetscSleep(0.25*second,ierr)
+      PetscCallA(PetscSleep(0.25*second,ierr))
 
-      call PetscLogEventBegin(Morning,ierr)
+      PetscCallA(PetscLogEventBegin(Morning,ierr))
 
-         call PetscLogFlops(190000d0,ierr)
-         call PetscSleep(0.5*second,ierr)
+         PetscCallA(PetscLogFlops(190000d0,ierr))
+         PetscCallA(PetscSleep(0.5*second,ierr))
 
-         call PetscLogEventBegin(Lessons,ierr)
-         call PetscLogFlops(23000d0,ierr)
-         call PetscSleep(1*second, ierr)
+         PetscCallA(PetscLogEventBegin(Lessons,ierr))
+         PetscCallA(PetscLogFlops(23000d0,ierr))
+         PetscCallA(PetscSleep(1*second, ierr))
          if (size>1) then
-         call MPI_Isend( message, msgLen, MPI_DOUBLE_PRECISION,                             &
-     &                        mod(rank+1,size),                                             &
-     &                   tagMsg+rank, PETSC_COMM_WORLD, req, ierr)
-         call MPI_Recv( message, msgLen, MPI_DOUBLE_PRECISION,                              &
-     &                  mod(rank-1+size,size),                                              &
-     &                  tagMsg+mod(rank-1+size,size), PETSC_COMM_WORLD,                     &
-     &                   status, ierr)
-         call MPI_Wait(req,MPI_STATUS_IGNORE,ierr)
+           PetscCallMPIA(MPI_Isend( message, msgLen, MPI_DOUBLE_PRECISION,mod(rank+1,size),tagMsg+rank, PETSC_COMM_WORLD, req, ierr))
+           PetscCallMPIA(MPI_Recv( message, msgLen, MPI_DOUBLE_PRECISION,mod(rank-1+size,size),tagMsg+mod(rank-1+size,size), PETSC_COMM_WORLD,status, ierr))
+           PetscCallMPIA(MPI_Wait(req,MPI_STATUS_IGNORE,ierr))
          end if
-         call PetscLogEventEnd(Lessons,ierr)
+         PetscCallA(PetscLogEventEnd(Lessons,ierr))
 
          if (role==TEACHER) then
-            call PetscLogEventBegin(TidyClass,ierr)
-            call PetscLogFlops(600000d0,ierr)
-            call PetscSleep(1.2*second, ierr)
-            call PetscLogEventEnd(TidyClass,ierr)
+            PetscCallA(PetscLogEventBegin(TidyClass,ierr))
+            PetscCallA(PetscLogFlops(600000d0,ierr))
+            PetscCallA(PetscSleep(1.2*second, ierr))
+            PetscCallA(PetscLogEventEnd(TidyClass,ierr))
          else if (role==BOY) then
-            call PetscLogEventBegin(SkipRope,ierr)
-            call PetscSleep(0.8*second, ierr)
-            call PetscLogEventEnd(SkipRope,ierr)
+            PetscCallA(PetscLogEventBegin(SkipRope,ierr))
+            PetscCallA(PetscSleep(0.8*second, ierr))
+            PetscCallA(PetscLogEventEnd(SkipRope,ierr))
          else
-            call PetscLogEventBegin(PlayBall,ierr)
-            call PetscSleep(0.9*second, ierr)
-            call PetscLogEventEnd(PlayBall,ierr)
+            PetscCallA(PetscLogEventBegin(PlayBall,ierr))
+            PetscCallA(PetscSleep(0.9*second, ierr))
+            PetscCallA(PetscLogEventEnd(PlayBall,ierr))
          end if
 
-         call PetscLogEventBegin(Lessons,ierr)
-         call PetscLogFlops(120000d0,ierr)
-         call PetscSleep(0.7*second, ierr)
-         call PetscLogEventEnd(Lessons,ierr)
+         PetscCallA(PetscLogEventBegin(Lessons,ierr))
+         PetscCallA(PetscLogFlops(120000d0,ierr))
+         PetscCallA(PetscSleep(0.7*second, ierr))
+         PetscCallA(PetscLogEventEnd(Lessons,ierr))
 
-      call PetscLogEventEnd(Morning,ierr)
+      PetscCallA(PetscLogEventEnd(Morning,ierr))
 
       deallocate(message)
 
-      call PetscFinalize(ierr)
-
+      PetscCallA(PetscFinalize(ierr))
       end program SchoolDay
 
 !/*TEST

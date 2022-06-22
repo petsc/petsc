@@ -21,65 +21,66 @@
 
   Level: developer
 
-.seealso: DMPlexGetClosureIndices(), DMPlexSetClosurePermutationTensor(), DMPlexGetCeedRestriction()
+.seealso: `DMPlexGetClosureIndices()`, `DMPlexSetClosurePermutationTensor()`, `DMPlexGetCeedRestriction()`
 @*/
 PetscErrorCode DMPlexGetLocalOffsets(DM dm, DMLabel domain_label, PetscInt label_value, PetscInt height, PetscInt dm_field, PetscInt *num_cells, PetscInt *cell_size, PetscInt *num_comp, PetscInt *l_size, PetscInt **offsets)
 {
-  PetscErrorCode ierr;
+  PetscDS         ds = NULL;
+  PetscFE         fe;
+  PetscSection    section;
+  PetscInt        dim, ds_field = -1;
+  PetscInt       *restr_indices;
+  const PetscInt *iter_indices;
+  IS              iter_is;
 
   PetscFunctionBeginUser;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscDS      ds = NULL;
-  PetscFE      fe;
-  PetscSection section;
-  PetscInt     dim, ds_field = -1;
-  PetscInt    *restr_indices;
-  const PetscInt *iter_indices;
-  IS           iter_is;
-
-  ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  PetscCall(DMGetLocalSection(dm, &section));
+  PetscCall(DMGetDimension(dm, &dim));
   {
-    IS field_is;
+    IS              field_is;
     const PetscInt *fields;
-    PetscInt num_fields;
-    ierr = DMGetRegionDS(dm, domain_label, &field_is, &ds);CHKERRQ(ierr);
+    PetscInt        num_fields;
+
+    PetscCall(DMGetRegionDS(dm, domain_label, &field_is, &ds));
     // Translate dm_field to ds_field
-    ierr = ISGetIndices(field_is, &fields);CHKERRQ(ierr);
-    ierr = ISGetSize(field_is, &num_fields);CHKERRQ(ierr);
+    PetscCall(ISGetIndices(field_is, &fields));
+    PetscCall(ISGetSize(field_is, &num_fields));
     for (PetscInt i=0; i<num_fields; i++) {
       if (dm_field == fields[i]) {
         ds_field = i;
         break;
       }
     }
-    ierr = ISRestoreIndices(field_is, &fields);CHKERRQ(ierr);
+    PetscCall(ISRestoreIndices(field_is, &fields));
   }
-  PetscCheckFalse(ds_field == -1,PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Could not find dm_field %D in DS", dm_field);
+  PetscCheck(ds_field != -1,PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Could not find dm_field %" PetscInt_FMT " in DS", dm_field);
 
   {
     PetscInt depth;
-    DMLabel depth_label;
-    IS depth_is;
-    ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
-    ierr = DMPlexGetDepthLabel(dm, &depth_label);CHKERRQ(ierr);
-    ierr = DMLabelGetStratumIS(depth_label, depth - height, &depth_is);CHKERRQ(ierr);
+    DMLabel  depth_label;
+    IS       depth_is;
+
+    PetscCall(DMPlexGetDepth(dm, &depth));
+    PetscCall(DMPlexGetDepthLabel(dm, &depth_label));
+    PetscCall(DMLabelGetStratumIS(depth_label, depth - height, &depth_is));
     if (domain_label) {
       IS domain_is;
-      ierr = DMLabelGetStratumIS(domain_label, label_value, &domain_is);CHKERRQ(ierr);
+
+      PetscCall(DMLabelGetStratumIS(domain_label, label_value, &domain_is));
       if (domain_is) { // domainIS is non-empty
-        ierr = ISIntersect(depth_is, domain_is, &iter_is);CHKERRQ(ierr);
-        ierr = ISDestroy(&domain_is);CHKERRQ(ierr);
+        PetscCall(ISIntersect(depth_is, domain_is, &iter_is));
+        PetscCall(ISDestroy(&domain_is));
       } else { // domainIS is NULL (empty)
         iter_is = NULL;
       }
-      ierr = ISDestroy(&depth_is);CHKERRQ(ierr);
+      PetscCall(ISDestroy(&depth_is));
     } else {
       iter_is = depth_is;
     }
     if (iter_is) {
-      ierr = ISGetLocalSize(iter_is, num_cells);CHKERRQ(ierr);
-      ierr = ISGetIndices(iter_is, &iter_indices);CHKERRQ(ierr);
+      PetscCall(ISGetLocalSize(iter_is, num_cells));
+      PetscCall(ISGetIndices(iter_is, &iter_indices));
     } else {
       *num_cells = 0;
       iter_indices = NULL;
@@ -88,17 +89,18 @@ PetscErrorCode DMPlexGetLocalOffsets(DM dm, DMLabel domain_label, PetscInt label
 
   {
     PetscDualSpace dual_space;
-    PetscInt num_dual_basis_vectors;
-    ierr = PetscDSGetDiscretization(ds, ds_field, (PetscObject*)&fe);CHKERRQ(ierr);
-    ierr = PetscFEGetHeightSubspace(fe, height, &fe);CHKERRQ(ierr);
-    ierr = PetscFEGetDualSpace(fe, &dual_space);CHKERRQ(ierr);
-    ierr = PetscDualSpaceGetDimension(dual_space, &num_dual_basis_vectors);CHKERRQ(ierr);
-    ierr = PetscDualSpaceGetNumComponents(dual_space, num_comp);CHKERRQ(ierr);
-    PetscCheckFalse(num_dual_basis_vectors % *num_comp != 0,PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for number of dual basis vectors %D not divisible by %D components", num_dual_basis_vectors, *num_comp);
+    PetscInt       num_dual_basis_vectors;
+
+    PetscCall(PetscDSGetDiscretization(ds, ds_field, (PetscObject*)&fe));
+    PetscCall(PetscFEGetHeightSubspace(fe, height, &fe));
+    PetscCall(PetscFEGetDualSpace(fe, &dual_space));
+    PetscCall(PetscDualSpaceGetDimension(dual_space, &num_dual_basis_vectors));
+    PetscCall(PetscDualSpaceGetNumComponents(dual_space, num_comp));
+    PetscCheck(num_dual_basis_vectors % *num_comp == 0,PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for number of dual basis vectors %" PetscInt_FMT " not divisible by %" PetscInt_FMT " components", num_dual_basis_vectors, *num_comp);
     *cell_size = num_dual_basis_vectors / *num_comp;
   }
   PetscInt restr_size = (*num_cells)*(*cell_size);
-  ierr = PetscMalloc1(restr_size, &restr_indices);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(restr_size, &restr_indices));
   PetscInt cell_offset = 0;
 
   PetscInt P = (PetscInt) pow(*cell_size, 1.0 / (dim - height));
@@ -107,18 +109,18 @@ PetscErrorCode DMPlexGetLocalOffsets(DM dm, DMLabel domain_label, PetscInt label
     PetscInt c = iter_indices[p];
     PetscInt num_indices, *indices;
     PetscInt field_offsets[17]; // max number of fields plus 1
-    ierr = DMPlexGetClosureIndices(dm, section, section, c, PETSC_TRUE, &num_indices, &indices, field_offsets, NULL);CHKERRQ(ierr);
+    PetscCall(DMPlexGetClosureIndices(dm, section, section, c, PETSC_TRUE, &num_indices, &indices, field_offsets, NULL));
     if (height > 0) {
       PetscInt num_cells_support, num_faces, start = -1;
       const PetscInt *orients, *faces, *cells;
-      ierr = DMPlexGetSupport(dm, c, &cells);CHKERRQ(ierr);
-      ierr = DMPlexGetSupportSize(dm, c, &num_cells_support);CHKERRQ(ierr);
-      PetscCheckFalse(num_cells_support != 1,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Expected one cell in support of exterior face, but got %D cells", num_cells_support);
-      ierr = DMPlexGetCone(dm, cells[0], &faces);CHKERRQ(ierr);
-      ierr = DMPlexGetConeSize(dm, cells[0], &num_faces);CHKERRQ(ierr);
+      PetscCall(DMPlexGetSupport(dm, c, &cells));
+      PetscCall(DMPlexGetSupportSize(dm, c, &num_cells_support));
+      PetscCheck(num_cells_support == 1,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Expected one cell in support of exterior face, but got %" PetscInt_FMT " cells", num_cells_support);
+      PetscCall(DMPlexGetCone(dm, cells[0], &faces));
+      PetscCall(DMPlexGetConeSize(dm, cells[0], &num_faces));
       for (PetscInt i=0; i<num_faces; i++) {if (faces[i] == c) start = i;}
-      PetscCheckFalse(start < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "Could not find face %D in cone of its support", c);
-      ierr = DMPlexGetConeOrientation(dm, cells[0], &orients);CHKERRQ(ierr);
+      PetscCheck(start >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "Could not find face %" PetscInt_FMT " in cone of its support", c);
+      PetscCall(DMPlexGetConeOrientation(dm, cells[0], &orients));
       if (orients[start] < 0) flip = PETSC_TRUE;
     }
 
@@ -129,20 +131,20 @@ PetscErrorCode DMPlexGetLocalOffsets(DM dm, DMLabel domain_label, PetscInt label
         else if (*cell_size == P*P) {
           PetscInt row = i / P, col = i % P;
           ii = row + col * P;
-        } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for flipping point with cell size %D != P (%D) or P^2", *cell_size, P);
+        } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for flipping point with cell size %" PetscInt_FMT " != P (%" PetscInt_FMT ") or P^2", *cell_size, P);
       }
       // Essential boundary conditions are encoded as -(loc+1), but we don't care so we decode.
       PetscInt loc = indices[field_offsets[dm_field] + ii*(*num_comp)];
       restr_indices[cell_offset++] = loc >= 0 ? loc : -(loc + 1);
     }
-    ierr = DMPlexRestoreClosureIndices(dm, section, section, c, PETSC_TRUE, &num_indices, &indices, field_offsets, NULL);CHKERRQ(ierr);
+    PetscCall(DMPlexRestoreClosureIndices(dm, section, section, c, PETSC_TRUE, &num_indices, &indices, field_offsets, NULL));
   }
-  PetscCheckFalse(cell_offset != restr_size,PETSC_COMM_SELF, PETSC_ERR_SUP, "Shape mismatch, offsets array of shape (%D, %D) initialized for %D nodes", *num_cells, (*cell_size), cell_offset);
-  if (iter_is) { ierr = ISRestoreIndices(iter_is, &iter_indices);CHKERRQ(ierr); }
-  ierr = ISDestroy(&iter_is);CHKERRQ(ierr);
+  PetscCheck(cell_offset == restr_size,PETSC_COMM_SELF, PETSC_ERR_SUP, "Shape mismatch, offsets array of shape (%" PetscInt_FMT ", %" PetscInt_FMT ") initialized for %" PetscInt_FMT " nodes", *num_cells, (*cell_size), cell_offset);
+  if (iter_is) PetscCall(ISRestoreIndices(iter_is, &iter_indices));
+  PetscCall(ISDestroy(&iter_is));
 
   *offsets = restr_indices;
-  ierr = PetscSectionGetStorageSize(section, l_size);CHKERRQ(ierr);
+  PetscCall(PetscSectionGetStorageSize(section, l_size));
   PetscFunctionReturn(0);
 }
 
@@ -166,8 +168,6 @@ PetscErrorCode DMPlexGetLocalOffsets(DM dm, DMLabel domain_label, PetscInt label
 @*/
 PetscErrorCode DMPlexGetCeedRestriction(DM dm, DMLabel domain_label, PetscInt label_value, PetscInt height, PetscInt dm_field, CeedElemRestriction *ERestrict)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(ERestrict, 2);
@@ -176,10 +176,10 @@ PetscErrorCode DMPlexGetCeedRestriction(DM dm, DMLabel domain_label, PetscInt la
     CeedElemRestriction elem_restr;
     Ceed         ceed;
 
-    ierr = DMPlexGetLocalOffsets(dm, domain_label, label_value, height, dm_field, &num_cells, &cell_size, &num_comp, &lvec_size, &restr_indices);CHKERRQ(ierr);
-    ierr = DMGetCeed(dm, &ceed);CHKERRQ(ierr);
-    ierr = CeedElemRestrictionCreate(ceed, num_cells, cell_size, num_comp, 1, lvec_size, CEED_MEM_HOST, CEED_COPY_VALUES, restr_indices, &elem_restr);CHKERRQ_CEED(ierr);
-    ierr = PetscFree(restr_indices);CHKERRQ(ierr);
+    PetscCall(DMPlexGetLocalOffsets(dm, domain_label, label_value, height, dm_field, &num_cells, &cell_size, &num_comp, &lvec_size, &restr_indices));
+    PetscCall(DMGetCeed(dm, &ceed));
+    PetscCallCEED(CeedElemRestrictionCreate(ceed, num_cells, cell_size, num_comp, 1, lvec_size, CEED_MEM_HOST, CEED_COPY_VALUES, restr_indices, &elem_restr));
+    PetscCall(PetscFree(restr_indices));
     dm->ceedERestrict = elem_restr;
   }
   *ERestrict = dm->ceedERestrict;

@@ -17,5 +17,5 @@ project.
   D. May, L. Curfman McInnes, R. Mills, L. Mitchell, T. Munson,
   J. Roman, K. Rupp, P. Sanan, J Sarich, B. Smith,
   S. Zampini, H. Zhang, and H. Zhang, J. Zhang,
-  *PETSc Users Manual*, ANL-21/39 - Revision 3.16, 2021.
+  *PETSc Users Manual*, ANL-21/39 - Revision 3.17, 2022.
   https://petsc.org/release/docs/manual/manual.pdf

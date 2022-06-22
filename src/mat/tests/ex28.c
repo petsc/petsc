@@ -7,7 +7,6 @@ int main(int argc,char **args)
   PetscInt       i,rstart,rend,N=10,num_numfac=5,col[3],k;
   Mat            A[5],F;
   Vec            u,x,b;
-  PetscErrorCode ierr;
   PetscMPIInt    rank;
   PetscScalar    value[3];
   PetscReal      norm,tol=100*PETSC_MACHINE_EPSILON;
@@ -17,16 +16,16 @@ int main(int argc,char **args)
   char           solvertype[64];
   char           factortype[64];
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRMPI(ierr);
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
   /* Create and assemble matrices, all have same data structure */
   for (k=0; k<num_numfac; k++) {
-    ierr = MatCreate(PETSC_COMM_WORLD,&A[k]);CHKERRQ(ierr);
-    ierr = MatSetSizes(A[k],PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
-    ierr = MatSetFromOptions(A[k]);CHKERRQ(ierr);
-    ierr = MatSetUp(A[k]);CHKERRQ(ierr);
-    ierr = MatGetOwnershipRange(A[k],&rstart,&rend);CHKERRQ(ierr);
+    PetscCall(MatCreate(PETSC_COMM_WORLD,&A[k]));
+    PetscCall(MatSetSizes(A[k],PETSC_DECIDE,PETSC_DECIDE,N,N));
+    PetscCall(MatSetFromOptions(A[k]));
+    PetscCall(MatSetUp(A[k]));
+    PetscCall(MatGetOwnershipRange(A[k],&rstart,&rend));
 
     value[0] = -1.0*(k+1);
     value[1] =  2.0*(k+1);
@@ -34,55 +33,55 @@ int main(int argc,char **args)
     for (i=rstart; i<rend; i++) {
       col[0] = i-1; col[1] = i; col[2] = i+1;
       if (i == 0) {
-        ierr = MatSetValues(A[k],1,&i,2,col+1,value+1,INSERT_VALUES);CHKERRQ(ierr);
+        PetscCall(MatSetValues(A[k],1,&i,2,col+1,value+1,INSERT_VALUES));
       } else if (i == N-1) {
-        ierr = MatSetValues(A[k],1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
+        PetscCall(MatSetValues(A[k],1,&i,2,col,value,INSERT_VALUES));
       } else {
-        ierr = MatSetValues(A[k],1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
+        PetscCall(MatSetValues(A[k],1,&i,3,col,value,INSERT_VALUES));
       }
     }
-    ierr = MatAssemblyBegin(A[k],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(A[k],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatSetOption(A[k],MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+    PetscCall(MatAssemblyBegin(A[k],MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(A[k],MAT_FINAL_ASSEMBLY));
+    PetscCall(MatSetOption(A[k],MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE));
   }
 
   /* Create vectors */
-  ierr = MatCreateVecs(A[0],&x,&b);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&u);CHKERRQ(ierr);
+  PetscCall(MatCreateVecs(A[0],&x,&b));
+  PetscCall(VecDuplicate(x,&u));
 
   /* Set rhs vector b */
-  ierr = VecSet(b,1.0);CHKERRQ(ierr);
+  PetscCall(VecSet(b,1.0));
 
   /* Get a symbolic factor F from A[0] */
-  ierr = PetscStrncpy(solvertype,"petsc",sizeof(solvertype));CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL, NULL, "-mat_solver_type",solvertype,sizeof(solvertype),NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetEnum(NULL,NULL,"-mat_factor_type",MatFactorTypes,(PetscEnum*)&facttype,NULL);CHKERRQ(ierr);
+  PetscCall(PetscStrncpy(solvertype,"petsc",sizeof(solvertype)));
+  PetscCall(PetscOptionsGetString(NULL, NULL, "-mat_solver_type",solvertype,sizeof(solvertype),NULL));
+  PetscCall(PetscOptionsGetEnum(NULL,NULL,"-mat_factor_type",MatFactorTypes,(PetscEnum*)&facttype,NULL));
 
-  ierr = MatGetFactor(A[0],solvertype,facttype,&F);CHKERRQ(ierr);
+  PetscCall(MatGetFactor(A[0],solvertype,facttype,&F));
   /* test mumps options */
 #if defined(PETSC_HAVE_MUMPS)
-  ierr = MatMumpsSetIcntl(F,7,5);CHKERRQ(ierr);
+  PetscCall(MatMumpsSetIcntl(F,7,5));
 #endif
-  ierr = PetscStrncpy(factortype,MatFactorTypes[facttype],sizeof(factortype));CHKERRQ(ierr);
-  ierr = PetscStrtoupper(solvertype);CHKERRQ(ierr);
-  ierr = PetscStrtoupper(factortype);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD," %s %s:\n",solvertype,factortype);CHKERRQ(ierr);
+  PetscCall(PetscStrncpy(factortype,MatFactorTypes[facttype],sizeof(factortype)));
+  PetscCall(PetscStrtoupper(solvertype));
+  PetscCall(PetscStrtoupper(factortype));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD," %s %s:\n",solvertype,factortype));
 
-  ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
+  PetscCall(MatFactorInfoInitialize(&info));
   info.fill = 5.0;
-  ierr = MatGetOrdering(A[0],MATORDERINGNATURAL,&perm,&iperm);CHKERRQ(ierr);
+  PetscCall(MatGetOrdering(A[0],MATORDERINGNATURAL,&perm,&iperm));
   switch (facttype) {
   case MAT_FACTOR_LU:
-    ierr = MatLUFactorSymbolic(F,A[0],perm,iperm,&info);CHKERRQ(ierr);
+    PetscCall(MatLUFactorSymbolic(F,A[0],perm,iperm,&info));
     break;
   case MAT_FACTOR_ILU:
-    ierr = MatILUFactorSymbolic(F,A[0],perm,iperm,&info);CHKERRQ(ierr);
+    PetscCall(MatILUFactorSymbolic(F,A[0],perm,iperm,&info));
     break;
   case MAT_FACTOR_ICC:
-    ierr = MatICCFactorSymbolic(F,A[0],perm,&info);CHKERRQ(ierr);
+    PetscCall(MatICCFactorSymbolic(F,A[0],perm,&info));
     break;
   case MAT_FACTOR_CHOLESKY:
-    ierr = MatCholeskyFactorSymbolic(F,A[0],perm,&info);CHKERRQ(ierr);
+    PetscCall(MatCholeskyFactorSymbolic(F,A[0],perm,&info));
     break;
   default:
     SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not for factor type %s",factortype);
@@ -93,40 +92,40 @@ int main(int argc,char **args)
     switch (facttype) {
     case MAT_FACTOR_LU:
     case MAT_FACTOR_ILU:
-      ierr = MatLUFactorNumeric(F,A[k],&info);CHKERRQ(ierr);
+      PetscCall(MatLUFactorNumeric(F,A[k],&info));
       break;
     case MAT_FACTOR_ICC:
     case MAT_FACTOR_CHOLESKY:
-      ierr = MatCholeskyFactorNumeric(F,A[k],&info);CHKERRQ(ierr);
+      PetscCall(MatCholeskyFactorNumeric(F,A[k],&info));
       break;
     default:
       SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not for factor type %s",factortype);
     }
 
     /* Solve A[k] * x = b */
-    ierr = MatSolve(F,b,x);CHKERRQ(ierr);
+    PetscCall(MatSolve(F,b,x));
 
     /* Check the residual */
-    ierr = MatMult(A[k],x,u);CHKERRQ(ierr);
-    ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);
-    ierr = VecNorm(u,NORM_INFINITY,&norm);CHKERRQ(ierr);
+    PetscCall(MatMult(A[k],x,u));
+    PetscCall(VecAXPY(u,-1.0,b));
+    PetscCall(VecNorm(u,NORM_INFINITY,&norm));
     if (norm > tol) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"%" PetscInt_FMT "-the %s numfact and solve: residual %g\n",k,factortype,(double)norm);CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%" PetscInt_FMT "-the %s numfact and solve: residual %g\n",k,factortype,(double)norm));
     }
   }
 
   /* Free data structures */
   for (k=0; k<num_numfac; k++) {
-    ierr = MatDestroy(&A[k]);CHKERRQ(ierr);
+    PetscCall(MatDestroy(&A[k]));
   }
-  ierr = MatDestroy(&F);CHKERRQ(ierr);
-  ierr = ISDestroy(&perm);CHKERRQ(ierr);
-  ierr = ISDestroy(&iperm);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(MatDestroy(&F));
+  PetscCall(ISDestroy(&perm));
+  PetscCall(ISDestroy(&iperm));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&b));
+  PetscCall(VecDestroy(&u));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

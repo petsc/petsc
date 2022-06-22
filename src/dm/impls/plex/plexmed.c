@@ -19,7 +19,7 @@
 
   Level: beginner
 
-.seealso: DMPlexCreateFromFile(), DMPlexCreateGmsh(), DMPlexCreate()
+.seealso: `DMPlexCreateFromFile()`, `DMPlexCreateGmsh()`, `DMPlexCreate()`
 @*/
 PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm)
 {
@@ -47,59 +47,56 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
   med_err         mederr;
   med_int         major, minor, release;
 #endif
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
+  PetscCallMPI(MPI_Comm_size(comm, &size));
 #if defined(PETSC_HAVE_MED)
   mederr = MEDfileCompatibility(filename, &hdfok, &medok);
-  PetscCheckFalse(mederr,comm, PETSC_ERR_ARG_WRONG, "Cannot determine MED file compatibility: %s", filename);
-  PetscCheckFalse(!hdfok,comm, PETSC_ERR_ARG_WRONG, "Not a compatible HDF format: %s", filename);
-  PetscCheckFalse(!medok,comm, PETSC_ERR_ARG_WRONG, "Not a compatible MED format: %s", filename);
+  PetscCheck(!mederr,comm, PETSC_ERR_ARG_WRONG, "Cannot determine MED file compatibility: %s", filename);
+  PetscCheck(hdfok,comm, PETSC_ERR_ARG_WRONG, "Not a compatible HDF format: %s", filename);
+  PetscCheck(medok,comm, PETSC_ERR_ARG_WRONG, "Not a compatible MED format: %s", filename);
 
   fileID = MEDfileOpen(filename, MED_ACC_RDONLY);
-  PetscCheckFalse(fileID < 0,comm, PETSC_ERR_ARG_WRONG, "Unable to open .med mesh file: %s", filename);
+  PetscCheck(fileID >= 0,comm, PETSC_ERR_ARG_WRONG, "Unable to open .med mesh file: %s", filename);
   mederr = MEDfileNumVersionRd(fileID, &major, &minor, &release);
-  PetscCheckFalse(MEDnMesh (fileID) < 1,comm, PETSC_ERR_ARG_WRONG, "No meshes found in .med v%d.%d.%d mesh file: %s", major, minor, release, filename);
+  PetscCheck(MEDnMesh (fileID) >= 1,comm, PETSC_ERR_ARG_WRONG, "No meshes found in .med v%d.%d.%d mesh file: %s", major, minor, release, filename);
   spaceDim = MEDmeshnAxis(fileID, 1);
-  PetscCheckFalse(spaceDim < 1,comm, PETSC_ERR_ARG_WRONG, "Mesh of unknown space dimension found in .med v%d.%d.%d mesh file: %s", major, minor, release, filename);
+  PetscCheck(spaceDim >= 1,comm, PETSC_ERR_ARG_WRONG, "Mesh of unknown space dimension found in .med v%d.%d.%d mesh file: %s", major, minor, release, filename);
   /* Read general mesh information */
-  ierr = PetscMalloc1(MED_SNAME_SIZE*spaceDim+1, &axisname);CHKERRQ(ierr);
-  ierr = PetscMalloc1(MED_SNAME_SIZE*spaceDim+1, &unitname);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(MED_SNAME_SIZE*spaceDim+1, &axisname));
+  PetscCall(PetscMalloc1(MED_SNAME_SIZE*spaceDim+1, &unitname));
   {
     med_int medMeshDim, medNstep;
     med_int medSpaceDim = spaceDim;
 
-    ierr = MEDmeshInfo(fileID, 1, meshname, &medSpaceDim, &medMeshDim, &meshtype, meshdescription,
-                       dtunit, &sortingtype, &medNstep, &axistype, axisname, unitname);CHKERRQ(ierr);
+    PetscStackCallStandard(MEDmeshInfo,fileID, 1, meshname, &medSpaceDim, &medMeshDim, &meshtype, meshdescription,dtunit, &sortingtype, &medNstep, &axistype, axisname, unitname);
     spaceDim = medSpaceDim;
     meshDim  = medMeshDim;
   }
-  ierr = PetscFree(axisname);CHKERRQ(ierr);
-  ierr = PetscFree(unitname);CHKERRQ(ierr);
+  PetscCall(PetscFree(axisname));
+  PetscCall(PetscFree(unitname));
   /* Partition mesh coordinates */
   numVertices = MEDmeshnEntity(fileID, meshname, MED_NO_DT, MED_NO_IT, MED_NODE, MED_NO_GEOTYPE,
                                MED_COORDINATE, MED_NO_CMODE,&coordinatechangement, &geotransformation);
-  ierr = PetscLayoutCreate(comm, &vLayout);CHKERRQ(ierr);
-  ierr = PetscLayoutSetSize(vLayout, numVertices);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(vLayout, 1);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(vLayout);CHKERRQ(ierr);
-  ierr = PetscLayoutGetRanges(vLayout, &vrange);CHKERRQ(ierr);
+  PetscCall(PetscLayoutCreate(comm, &vLayout));
+  PetscCall(PetscLayoutSetSize(vLayout, numVertices));
+  PetscCall(PetscLayoutSetBlockSize(vLayout, 1));
+  PetscCall(PetscLayoutSetUp(vLayout));
+  PetscCall(PetscLayoutGetRanges(vLayout, &vrange));
   numVerticesLocal = vrange[rank+1]-vrange[rank];
-  ierr = MEDfilterBlockOfEntityCr(fileID, numVertices, 1, spaceDim, MED_ALL_CONSTITUENT, MED_FULL_INTERLACE, MED_COMPACT_STMODE,
-                                  MED_NO_PROFILE, vrange[rank]+1, 1, numVerticesLocal, 1, 1, &vfilter);CHKERRQ(ierr);
+  PetscStackCallStandard(MEDfilterBlockOfEntityCr,fileID, numVertices, 1, spaceDim, MED_ALL_CONSTITUENT, MED_FULL_INTERLACE, MED_COMPACT_STMODE,MED_NO_PROFILE, vrange[rank]+1, 1, numVerticesLocal, 1, 1, &vfilter);
   /* Read mesh coordinates */
-  PetscCheckFalse(numVertices < 0,comm, PETSC_ERR_ARG_WRONG, "No nodes found in .med v%d.%d.%d mesh file: %s", major, minor, release, filename);
-  ierr = PetscMalloc1(numVerticesLocal*spaceDim, &coordinates);CHKERRQ(ierr);
-  ierr = MEDmeshNodeCoordinateAdvancedRd(fileID, meshname, MED_NO_DT, MED_NO_IT, &vfilter, coordinates);CHKERRQ(ierr);
+  PetscCheck(numVertices >= 0,comm, PETSC_ERR_ARG_WRONG, "No nodes found in .med v%d.%d.%d mesh file: %s", major, minor, release, filename);
+  PetscCall(PetscMalloc1(numVerticesLocal*spaceDim, &coordinates));
+  PetscStackCallStandard(MEDmeshNodeCoordinateAdvancedRd,fileID, meshname, MED_NO_DT, MED_NO_IT, &vfilter, coordinates);
   /* Read the types of entity sets in the mesh */
   ngeo = MEDmeshnEntity(fileID, meshname, MED_NO_DT, MED_NO_IT, MED_CELL,MED_GEO_ALL, MED_CONNECTIVITY,
                         MED_NODAL, &coordinatechangement, &geotransformation);
-  PetscCheckFalse(ngeo < 1,comm, PETSC_ERR_ARG_WRONG, "No cells found in .med v%d.%d.%d mesh file: %s", major, minor, release, filename);
-  PetscCheckFalse(ngeo > 2,comm, PETSC_ERR_ARG_WRONG, "Currently no support for hybrid meshes in .med v%d.%d.%d mesh file: %s", major, minor, release, filename);
-  ierr = MEDmeshEntityInfo(fileID, meshname, MED_NO_DT, MED_NO_IT, MED_CELL, 1, geotypename, &(geotype[0]));CHKERRQ(ierr);
-  if (ngeo > 1) {ierr = MEDmeshEntityInfo(fileID, meshname, MED_NO_DT, MED_NO_IT, MED_CELL, 2, geotypename, &(geotype[1]));CHKERRQ(ierr);}
+  PetscCheck(ngeo >= 1,comm, PETSC_ERR_ARG_WRONG, "No cells found in .med v%d.%d.%d mesh file: %s", major, minor, release, filename);
+  PetscCheck(ngeo <= 2,comm, PETSC_ERR_ARG_WRONG, "Currently no support for hybrid meshes in .med v%d.%d.%d mesh file: %s", major, minor, release, filename);
+  PetscStackCallStandard(MEDmeshEntityInfo,fileID, meshname, MED_NO_DT, MED_NO_IT, MED_CELL, 1, geotypename, &(geotype[0]));
+  if (ngeo > 1) PetscStackCallStandard(MEDmeshEntityInfo,fileID, meshname, MED_NO_DT, MED_NO_IT, MED_CELL, 2, geotypename, &(geotype[1]));
   else geotype[1] = 0;
   /* Determine topological dim and set ID for cells */
   cellID = geotype[0]/100 > geotype[1]/100 ? 0 : 1;
@@ -109,30 +106,28 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
   /* Partition cells */
   numCells = MEDmeshnEntity(fileID, meshname, MED_NO_DT, MED_NO_IT, MED_CELL, geotype[cellID],
                             MED_CONNECTIVITY, MED_NODAL,&coordinatechangement, &geotransformation);
-  ierr = PetscLayoutCreate(comm, &cLayout);CHKERRQ(ierr);
-  ierr = PetscLayoutSetSize(cLayout, numCells);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(cLayout, 1);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(cLayout);CHKERRQ(ierr);
-  ierr = PetscLayoutGetRanges(cLayout, &crange);CHKERRQ(ierr);
+  PetscCall(PetscLayoutCreate(comm, &cLayout));
+  PetscCall(PetscLayoutSetSize(cLayout, numCells));
+  PetscCall(PetscLayoutSetBlockSize(cLayout, 1));
+  PetscCall(PetscLayoutSetUp(cLayout));
+  PetscCall(PetscLayoutGetRanges(cLayout, &crange));
   numCellsLocal = crange[rank+1]-crange[rank];
-  ierr = MEDfilterBlockOfEntityCr(fileID, numCells, 1, numCorners, MED_ALL_CONSTITUENT, MED_FULL_INTERLACE, MED_COMPACT_STMODE,
-                                  MED_NO_PROFILE, crange[rank]+1, 1, numCellsLocal, 1, 1, &cfilter);CHKERRQ(ierr);
+  PetscStackCallStandard(MEDfilterBlockOfEntityCr,fileID, numCells, 1, numCorners, MED_ALL_CONSTITUENT, MED_FULL_INTERLACE, MED_COMPACT_STMODE,MED_NO_PROFILE, crange[rank]+1, 1, numCellsLocal, 1, 1, &cfilter);
   /* Read cell connectivity */
-  PetscCheckFalse(numCells < 0,comm, PETSC_ERR_ARG_WRONG, "No cells found in .med v%d.%d.%d mesh file: %s", major, minor, release, filename);
-  ierr = PetscMalloc1(numCellsLocal*numCorners, &medCellList);CHKERRQ(ierr);
-  ierr = MEDmeshElementConnectivityAdvancedRd(fileID, meshname, MED_NO_DT, MED_NO_IT, MED_CELL, geotype[cellID],
-                                              MED_NODAL, &cfilter, medCellList);CHKERRQ(ierr);
-  PetscCheckFalse(sizeof(med_int) > sizeof(PetscInt),comm, PETSC_ERR_ARG_SIZ, "Size of PetscInt %zd less than  size of med_int %zd. Reconfigure PETSc --with-64-bit-indices=1", sizeof(PetscInt), sizeof(med_int));
-  ierr = PetscMalloc1(numCellsLocal*numCorners, &cellList);CHKERRQ(ierr);
+  PetscCheck(numCells >= 0,comm, PETSC_ERR_ARG_WRONG, "No cells found in .med v%d.%d.%d mesh file: %s", major, minor, release, filename);
+  PetscCall(PetscMalloc1(numCellsLocal*numCorners, &medCellList));
+  PetscStackCallStandard(MEDmeshElementConnectivityAdvancedRd,fileID, meshname, MED_NO_DT, MED_NO_IT, MED_CELL, geotype[cellID],MED_NODAL, &cfilter, medCellList);
+  PetscCheck(sizeof(med_int) <= sizeof(PetscInt),comm, PETSC_ERR_ARG_SIZ, "Size of PetscInt %zd less than  size of med_int %zd. Reconfigure PETSc --with-64-bit-indices=1", sizeof(PetscInt), sizeof(med_int));
+  PetscCall(PetscMalloc1(numCellsLocal*numCorners, &cellList));
   for (i = 0; i < numCellsLocal*numCorners; i++) {
     cellList[i] = ((PetscInt) medCellList[i]) - 1; /* Correct entity counting */
   }
-  ierr = PetscFree(medCellList);CHKERRQ(ierr);
+  PetscCall(PetscFree(medCellList));
   /* Generate the DM */
   if (sizeof(med_float) == sizeof(PetscReal)) {
     vertcoords = (PetscReal *) coordinates;
   } else {
-    ierr = PetscMalloc1(numVerticesLocal*spaceDim, &vertcoords);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(numVerticesLocal*spaceDim, &vertcoords));
     for (i = 0; i < numVerticesLocal*spaceDim; i++) vertcoords[i] = (PetscReal) coordinates[i];
   }
   /* Account for cell inversion */
@@ -148,11 +143,11 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
       }
     }
   }
-  ierr = DMPlexCreateFromCellListParallelPetsc(comm, meshDim, numCellsLocal, numVerticesLocal, numVertices, numCorners, interpolate, cellList, spaceDim, vertcoords, &sfVertices, NULL, dm);CHKERRQ(ierr);
+  PetscCall(DMPlexCreateFromCellListParallelPetsc(comm, meshDim, numCellsLocal, numVerticesLocal, numVertices, numCorners, interpolate, cellList, spaceDim, vertcoords, &sfVertices, NULL, dm));
   if (sizeof(med_float) == sizeof(PetscReal)) {
     vertcoords = NULL;
   } else {
-    ierr = PetscFree(vertcoords);CHKERRQ(ierr);
+    PetscCall(PetscFree(vertcoords));
   }
   if (ngeo > 1) {
     PetscInt        numFacets = 0, numFacetsLocal, numFacetCorners, numFacetsRendezvous;
@@ -166,42 +161,40 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
     numFacets = MEDmeshnEntity(fileID, meshname, MED_NO_DT, MED_NO_IT, MED_CELL, geotype[facetID],
                                MED_CONNECTIVITY, MED_NODAL,&coordinatechangement, &geotransformation);
     numFacetCorners = geotype[facetID] % 100;
-    ierr = PetscLayoutCreate(comm, &fLayout);CHKERRQ(ierr);
-    ierr = PetscLayoutSetSize(fLayout, numFacets);CHKERRQ(ierr);
-    ierr = PetscLayoutSetBlockSize(fLayout, 1);CHKERRQ(ierr);
-    ierr = PetscLayoutSetUp(fLayout);CHKERRQ(ierr);
-    ierr = PetscLayoutGetRanges(fLayout, &frange);CHKERRQ(ierr);
+    PetscCall(PetscLayoutCreate(comm, &fLayout));
+    PetscCall(PetscLayoutSetSize(fLayout, numFacets));
+    PetscCall(PetscLayoutSetBlockSize(fLayout, 1));
+    PetscCall(PetscLayoutSetUp(fLayout));
+    PetscCall(PetscLayoutGetRanges(fLayout, &frange));
     numFacetsLocal = frange[rank+1]-frange[rank];
-    ierr = MEDfilterBlockOfEntityCr(fileID, numFacets, 1, numFacetCorners, MED_ALL_CONSTITUENT, MED_FULL_INTERLACE, MED_COMPACT_STMODE,
-                                    MED_NO_PROFILE, frange[rank]+1, 1, numFacetsLocal, 1, 1, &ffilter);CHKERRQ(ierr);
-    ierr = MEDfilterBlockOfEntityCr(fileID, numFacets, 1, 1, MED_ALL_CONSTITUENT, MED_FULL_INTERLACE, MED_COMPACT_STMODE,
-                                    MED_NO_PROFILE, frange[rank]+1, 1, numFacetsLocal, 1, 1, &fidfilter);CHKERRQ(ierr);
-    ierr = DMPlexGetDepthStratum(*dm, 0, &vStart, NULL);CHKERRQ(ierr);
-    ierr = PetscMalloc1(numFacetsLocal, &facetIDs);CHKERRQ(ierr);
-    ierr = PetscMalloc1(numFacetsLocal*numFacetCorners, &facetList);CHKERRQ(ierr);
+    PetscStackCallStandard(MEDfilterBlockOfEntityCr,fileID, numFacets, 1, numFacetCorners, MED_ALL_CONSTITUENT, MED_FULL_INTERLACE, MED_COMPACT_STMODE,MED_NO_PROFILE, frange[rank]+1, 1, numFacetsLocal, 1, 1, &ffilter);
+    PetscStackCallStandard(MEDfilterBlockOfEntityCr,fileID, numFacets, 1, 1, MED_ALL_CONSTITUENT, MED_FULL_INTERLACE, MED_COMPACT_STMODE,MED_NO_PROFILE, frange[rank]+1, 1, numFacetsLocal, 1, 1, &fidfilter);
+    PetscCall(DMPlexGetDepthStratum(*dm, 0, &vStart, NULL));
+    PetscCall(PetscMalloc1(numFacetsLocal, &facetIDs));
+    PetscCall(PetscMalloc1(numFacetsLocal*numFacetCorners, &facetList));
 
     /* Read facet connectivity */
     {
       med_int *medFacetList;
 
-      ierr = PetscMalloc1(numFacetsLocal*numFacetCorners, &medFacetList);CHKERRQ(ierr);
-      ierr = MEDmeshElementConnectivityAdvancedRd(fileID, meshname, MED_NO_DT, MED_NO_IT, MED_CELL, geotype[facetID], MED_NODAL, &ffilter, medFacetList);CHKERRQ(ierr);
+      PetscCall(PetscMalloc1(numFacetsLocal*numFacetCorners, &medFacetList));
+      PetscStackCallStandard(MEDmeshElementConnectivityAdvancedRd,fileID, meshname, MED_NO_DT, MED_NO_IT, MED_CELL, geotype[facetID], MED_NODAL, &ffilter, medFacetList);
       for (i = 0; i < numFacetsLocal*numFacetCorners; i++) {
         facetList[i] = ((PetscInt) medFacetList[i]) - 1 ; /* Correct entity counting */
       }
-      ierr = PetscFree(medFacetList);CHKERRQ(ierr);
+      PetscCall(PetscFree(medFacetList));
     }
 
     /* Read facet IDs */
     {
       med_int *medFacetIDs;
 
-      ierr = PetscMalloc1(numFacetsLocal, &medFacetIDs);CHKERRQ(ierr);
-      ierr = MEDmeshEntityAttributeAdvancedRd(fileID, meshname, MED_FAMILY_NUMBER, MED_NO_DT, MED_NO_IT, MED_CELL, geotype[facetID], &fidfilter, medFacetIDs);CHKERRQ(ierr);
+      PetscCall(PetscMalloc1(numFacetsLocal, &medFacetIDs));
+      PetscStackCallStandard(MEDmeshEntityAttributeAdvancedRd,fileID, meshname, MED_FAMILY_NUMBER, MED_NO_DT, MED_NO_IT, MED_CELL, geotype[facetID], &fidfilter, medFacetIDs);
       for (i = 0; i < numFacetsLocal; i++) {
         facetIDs[i] = (PetscInt) medFacetIDs[i];
       }
-      ierr = PetscFree(medFacetIDs);CHKERRQ(ierr);
+      PetscCall(PetscFree(medFacetIDs));
     }
 
     /* Send facets and IDs to a rendezvous partition that is based on the initial vertex partitioning. */
@@ -211,43 +204,43 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
       PetscSection       facetSection, facetSectionRendezvous;
       PetscSF            sfProcess, sfFacetMigration;
       const PetscSFNode *remoteVertices;
-      ierr = DMLabelCreate(PETSC_COMM_SELF, "Facet Rendezvous", &lblFacetRendezvous);CHKERRQ(ierr);
-      ierr = DMLabelCreate(PETSC_COMM_SELF, "Facet Migration", &lblFacetMigration);CHKERRQ(ierr);
-      ierr = PetscSFGetGraph(sfVertices, NULL, NULL, NULL, &remoteVertices);CHKERRQ(ierr);
+      PetscCall(DMLabelCreate(PETSC_COMM_SELF, "Facet Rendezvous", &lblFacetRendezvous));
+      PetscCall(DMLabelCreate(PETSC_COMM_SELF, "Facet Migration", &lblFacetMigration));
+      PetscCall(PetscSFGetGraph(sfVertices, NULL, NULL, NULL, &remoteVertices));
       for (f = 0; f < numFacetsLocal; f++) {
         for (v = 0; v < numFacetCorners; v++) {
           /* Find vertex owner on rendezvous partition and mark in label */
           const PetscInt vertex = facetList[f*numFacetCorners+v];
           r = rank; while (vrange[r] > vertex) r--; while (vrange[r + 1] < vertex) r++;
-          ierr = DMLabelSetValue(lblFacetRendezvous, f, r);CHKERRQ(ierr);
+          PetscCall(DMLabelSetValue(lblFacetRendezvous, f, r));
         }
       }
       /* Build a global process SF */
-      ierr = PetscSFCreate(comm,&sfProcess);CHKERRQ(ierr);
-      ierr = PetscSFSetGraphWithPattern(sfProcess,NULL,PETSCSF_PATTERN_ALLTOALL);CHKERRQ(ierr);
-      ierr = PetscObjectSetName((PetscObject) sfProcess, "Process SF");CHKERRQ(ierr);
+      PetscCall(PetscSFCreate(comm,&sfProcess));
+      PetscCall(PetscSFSetGraphWithPattern(sfProcess,NULL,PETSCSF_PATTERN_ALLTOALL));
+      PetscCall(PetscObjectSetName((PetscObject) sfProcess, "Process SF"));
       /* Convert facet rendezvous label into SF for migration */
-      ierr = DMPlexPartitionLabelInvert(*dm, lblFacetRendezvous, sfProcess, lblFacetMigration);CHKERRQ(ierr);
-      ierr = DMPlexPartitionLabelCreateSF(*dm, lblFacetMigration, &sfFacetMigration);CHKERRQ(ierr);
+      PetscCall(DMPlexPartitionLabelInvert(*dm, lblFacetRendezvous, sfProcess, lblFacetMigration));
+      PetscCall(DMPlexPartitionLabelCreateSF(*dm, lblFacetMigration, &sfFacetMigration));
       /* Migrate facet connectivity data */
-      ierr = PetscSectionCreate(comm, &facetSection);CHKERRQ(ierr);
-      ierr = PetscSectionSetChart(facetSection, 0, numFacetsLocal);CHKERRQ(ierr);
-      for (f = 0; f < numFacetsLocal; f++) {ierr = PetscSectionSetDof(facetSection, f, numFacetCorners);CHKERRQ(ierr);}
-      ierr = PetscSectionSetUp(facetSection);CHKERRQ(ierr);
-      ierr = PetscSectionCreate(comm, &facetSectionRendezvous);CHKERRQ(ierr);
-      ierr = DMPlexDistributeData(*dm, sfFacetMigration, facetSection, MPIU_INT, facetList, facetSectionRendezvous, (void**) &facetListRendezvous);CHKERRQ(ierr);
+      PetscCall(PetscSectionCreate(comm, &facetSection));
+      PetscCall(PetscSectionSetChart(facetSection, 0, numFacetsLocal));
+      for (f = 0; f < numFacetsLocal; f++) PetscCall(PetscSectionSetDof(facetSection, f, numFacetCorners));
+      PetscCall(PetscSectionSetUp(facetSection));
+      PetscCall(PetscSectionCreate(comm, &facetSectionRendezvous));
+      PetscCall(DMPlexDistributeData(*dm, sfFacetMigration, facetSection, MPIU_INT, facetList, facetSectionRendezvous, (void**) &facetListRendezvous));
       /* Migrate facet IDs */
-      ierr = PetscSFGetGraph(sfFacetMigration, NULL, &numFacetsRendezvous, NULL, NULL);CHKERRQ(ierr);
-      ierr = PetscMalloc1(numFacetsRendezvous, &facetIDsRendezvous);CHKERRQ(ierr);
-      ierr = PetscSFBcastBegin(sfFacetMigration, MPIU_INT, facetIDs, facetIDsRendezvous,MPI_REPLACE);CHKERRQ(ierr);
-      ierr = PetscSFBcastEnd(sfFacetMigration, MPIU_INT, facetIDs, facetIDsRendezvous,MPI_REPLACE);CHKERRQ(ierr);
+      PetscCall(PetscSFGetGraph(sfFacetMigration, NULL, &numFacetsRendezvous, NULL, NULL));
+      PetscCall(PetscMalloc1(numFacetsRendezvous, &facetIDsRendezvous));
+      PetscCall(PetscSFBcastBegin(sfFacetMigration, MPIU_INT, facetIDs, facetIDsRendezvous,MPI_REPLACE));
+      PetscCall(PetscSFBcastEnd(sfFacetMigration, MPIU_INT, facetIDs, facetIDsRendezvous,MPI_REPLACE));
       /* Clean up */
-      ierr = DMLabelDestroy(&lblFacetRendezvous);CHKERRQ(ierr);
-      ierr = DMLabelDestroy(&lblFacetMigration);CHKERRQ(ierr);
-      ierr = PetscSFDestroy(&sfProcess);CHKERRQ(ierr);
-      ierr = PetscSFDestroy(&sfFacetMigration);CHKERRQ(ierr);
-      ierr = PetscSectionDestroy(&facetSection);CHKERRQ(ierr);
-      ierr = PetscSectionDestroy(&facetSectionRendezvous);CHKERRQ(ierr);
+      PetscCall(DMLabelDestroy(&lblFacetRendezvous));
+      PetscCall(DMLabelDestroy(&lblFacetMigration));
+      PetscCall(PetscSFDestroy(&sfProcess));
+      PetscCall(PetscSFDestroy(&sfFacetMigration));
+      PetscCall(PetscSectionDestroy(&facetSection));
+      PetscCall(PetscSectionDestroy(&facetSectionRendezvous));
     }
 
     /* On the rendevouz partition we build a vertex-wise section/array of facets and IDs. */
@@ -256,33 +249,33 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
       PetscInt              *vertexFacets, *vertexIdx, *vertexFacetIDs;
       PetscSection           facetSectionVertices, facetSectionIDs;
       ISLocalToGlobalMapping ltogVertexNumbering;
-      ierr = PetscSectionCreate(comm, &facetSectionVertices);CHKERRQ(ierr);
-      ierr = PetscSectionSetChart(facetSectionVertices, 0, numVerticesLocal);CHKERRQ(ierr);
-      ierr = PetscSectionCreate(comm, &facetSectionIDs);CHKERRQ(ierr);
-      ierr = PetscSectionSetChart(facetSectionIDs, 0, numVerticesLocal);CHKERRQ(ierr);
+      PetscCall(PetscSectionCreate(comm, &facetSectionVertices));
+      PetscCall(PetscSectionSetChart(facetSectionVertices, 0, numVerticesLocal));
+      PetscCall(PetscSectionCreate(comm, &facetSectionIDs));
+      PetscCall(PetscSectionSetChart(facetSectionIDs, 0, numVerticesLocal));
       for (f = 0; f < numFacetsRendezvous*numFacetCorners; f++) {
         const PetscInt vertex = facetListRendezvous[f];
         if (vrange[rank] <= vertex && vertex < vrange[rank+1]) {
-          ierr = PetscSectionAddDof(facetSectionIDs, vertex-vrange[rank], 1);CHKERRQ(ierr);
-          ierr = PetscSectionAddDof(facetSectionVertices, vertex-vrange[rank], numFacetCorners);CHKERRQ(ierr);
+          PetscCall(PetscSectionAddDof(facetSectionIDs, vertex-vrange[rank], 1));
+          PetscCall(PetscSectionAddDof(facetSectionVertices, vertex-vrange[rank], numFacetCorners));
         }
       }
-      ierr = PetscSectionSetUp(facetSectionVertices);CHKERRQ(ierr);
-      ierr = PetscSectionSetUp(facetSectionIDs);CHKERRQ(ierr);
-      ierr = PetscSectionGetStorageSize(facetSectionVertices, &sizeVertexFacets);CHKERRQ(ierr);
-      ierr = PetscSectionGetStorageSize(facetSectionVertices, &sizeFacetIDsRemote);CHKERRQ(ierr);
-      ierr = PetscMalloc1(sizeVertexFacets, &vertexFacets);CHKERRQ(ierr);
-      ierr = PetscMalloc1(sizeFacetIDsRemote, &vertexFacetIDs);CHKERRQ(ierr);
-      ierr = PetscCalloc1(numVerticesLocal, &vertexIdx);CHKERRQ(ierr);
+      PetscCall(PetscSectionSetUp(facetSectionVertices));
+      PetscCall(PetscSectionSetUp(facetSectionIDs));
+      PetscCall(PetscSectionGetStorageSize(facetSectionVertices, &sizeVertexFacets));
+      PetscCall(PetscSectionGetStorageSize(facetSectionVertices, &sizeFacetIDsRemote));
+      PetscCall(PetscMalloc1(sizeVertexFacets, &vertexFacets));
+      PetscCall(PetscMalloc1(sizeFacetIDsRemote, &vertexFacetIDs));
+      PetscCall(PetscCalloc1(numVerticesLocal, &vertexIdx));
       for (f = 0; f < numFacetsRendezvous; f++) {
         for (c = 0; c < numFacetCorners; c++) {
           const PetscInt vertex = facetListRendezvous[f*numFacetCorners+c];
           if (vrange[rank] <= vertex && vertex < vrange[rank+1]) {
             /* Flip facet connectivities and IDs to a vertex-wise layout */
-            ierr = PetscSectionGetOffset(facetSectionVertices, vertex-vrange[rank], &offset);CHKERRQ(ierr);
+            PetscCall(PetscSectionGetOffset(facetSectionVertices, vertex-vrange[rank], &offset));
             offset += vertexIdx[vertex-vrange[rank]] * numFacetCorners;
-            ierr = PetscArraycpy(&(vertexFacets[offset]), &(facetListRendezvous[f*numFacetCorners]), numFacetCorners);CHKERRQ(ierr);
-            ierr = PetscSectionGetOffset(facetSectionIDs, vertex-vrange[rank], &offset);CHKERRQ(ierr);
+            PetscCall(PetscArraycpy(&(vertexFacets[offset]), &(facetListRendezvous[f*numFacetCorners]), numFacetCorners));
+            PetscCall(PetscSectionGetOffset(facetSectionIDs, vertex-vrange[rank], &offset));
             offset += vertexIdx[vertex-vrange[rank]];
             vertexFacetIDs[offset] = facetIDsRendezvous[f];
             vertexIdx[vertex-vrange[rank]]++;
@@ -290,65 +283,65 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
         }
       }
       /* Distribute the vertex-wise facet connectivities over the vertexSF */
-      ierr = PetscSectionCreate(comm, &facetSectionRemote);CHKERRQ(ierr);
-      ierr = DMPlexDistributeData(*dm, sfVertices, facetSectionVertices, MPIU_INT, vertexFacets, facetSectionRemote, (void**) &facetListRemote);CHKERRQ(ierr);
-      ierr = PetscSectionCreate(comm, &facetSectionIDsRemote);CHKERRQ(ierr);
-      ierr = DMPlexDistributeData(*dm, sfVertices, facetSectionIDs, MPIU_INT, vertexFacetIDs, facetSectionIDsRemote, (void**) &facetIDsRemote);CHKERRQ(ierr);
+      PetscCall(PetscSectionCreate(comm, &facetSectionRemote));
+      PetscCall(DMPlexDistributeData(*dm, sfVertices, facetSectionVertices, MPIU_INT, vertexFacets, facetSectionRemote, (void**) &facetListRemote));
+      PetscCall(PetscSectionCreate(comm, &facetSectionIDsRemote));
+      PetscCall(DMPlexDistributeData(*dm, sfVertices, facetSectionIDs, MPIU_INT, vertexFacetIDs, facetSectionIDsRemote, (void**) &facetIDsRemote));
       /* Convert facet connectivities to local vertex numbering */
-      ierr = PetscSectionGetStorageSize(facetSectionRemote, &sizeVertexFacets);CHKERRQ(ierr);
-      ierr = ISLocalToGlobalMappingCreateSF(sfVertices, vrange[rank], &ltogVertexNumbering);CHKERRQ(ierr);
-      ierr = ISGlobalToLocalMappingApplyBlock(ltogVertexNumbering, IS_GTOLM_MASK, sizeVertexFacets, facetListRemote, NULL, facetListRemote);CHKERRQ(ierr);
+      PetscCall(PetscSectionGetStorageSize(facetSectionRemote, &sizeVertexFacets));
+      PetscCall(ISLocalToGlobalMappingCreateSF(sfVertices, vrange[rank], &ltogVertexNumbering));
+      PetscCall(ISGlobalToLocalMappingApplyBlock(ltogVertexNumbering, IS_GTOLM_MASK, sizeVertexFacets, facetListRemote, NULL, facetListRemote));
       /* Clean up */
-      ierr = PetscFree(vertexFacets);CHKERRQ(ierr);
-      ierr = PetscFree(vertexIdx);CHKERRQ(ierr);
-      ierr = PetscFree(vertexFacetIDs);CHKERRQ(ierr);
-      ierr = PetscSectionDestroy(&facetSectionVertices);CHKERRQ(ierr);
-      ierr = PetscSectionDestroy(&facetSectionIDs);CHKERRQ(ierr);
-      ierr = ISLocalToGlobalMappingDestroy(&ltogVertexNumbering);CHKERRQ(ierr);
+      PetscCall(PetscFree(vertexFacets));
+      PetscCall(PetscFree(vertexIdx));
+      PetscCall(PetscFree(vertexFacetIDs));
+      PetscCall(PetscSectionDestroy(&facetSectionVertices));
+      PetscCall(PetscSectionDestroy(&facetSectionIDs));
+      PetscCall(ISLocalToGlobalMappingDestroy(&ltogVertexNumbering));
     }
     {
       PetscInt offset, dof;
       DMLabel lblFaceSets;
       PetscBool verticesLocal;
       /* Identify and mark facets locally with facet joins */
-      ierr = DMCreateLabel(*dm, "Face Sets");CHKERRQ(ierr);
-      ierr = DMGetLabel(*dm, "Face Sets", &lblFaceSets);CHKERRQ(ierr);
+      PetscCall(DMCreateLabel(*dm, "Face Sets"));
+      PetscCall(DMGetLabel(*dm, "Face Sets", &lblFaceSets));
       /* We need to set a new default value here, since -1 is a legitimate facet ID */
-      ierr = DMLabelSetDefaultValue(lblFaceSets, -666666666);CHKERRQ(ierr);
+      PetscCall(DMLabelSetDefaultValue(lblFaceSets, -666666666));
       for (v = 0; v < numVerticesLocal; v++) {
-        ierr = PetscSectionGetOffset(facetSectionRemote, v, &offset);CHKERRQ(ierr);
-        ierr = PetscSectionGetDof(facetSectionRemote, v, &dof);CHKERRQ(ierr);
+        PetscCall(PetscSectionGetOffset(facetSectionRemote, v, &offset));
+        PetscCall(PetscSectionGetDof(facetSectionRemote, v, &dof));
         for (f = 0; f < dof; f += numFacetCorners) {
           for (verticesLocal = PETSC_TRUE, c = 0; c < numFacetCorners; ++c) {
             if (facetListRemote[offset+f+c] < 0) {verticesLocal = PETSC_FALSE; break;}
             vertices[c] = vStart + facetListRemote[offset+f+c];
           }
           if (verticesLocal) {
-            ierr = DMPlexGetFullJoin(*dm, numFacetCorners, (const PetscInt*)vertices, &joinSize, &join);CHKERRQ(ierr);
+            PetscCall(DMPlexGetFullJoin(*dm, numFacetCorners, (const PetscInt*)vertices, &joinSize, &join));
             if (joinSize == 1) {
-              ierr = DMLabelSetValue(lblFaceSets, join[0], facetIDsRemote[(offset+f) / numFacetCorners]);CHKERRQ(ierr);
+              PetscCall(DMLabelSetValue(lblFaceSets, join[0], facetIDsRemote[(offset+f) / numFacetCorners]));
             }
-            ierr = DMPlexRestoreJoin(*dm, numFacetCorners, (const PetscInt*)vertices, &joinSize, &join);CHKERRQ(ierr);
+            PetscCall(DMPlexRestoreJoin(*dm, numFacetCorners, (const PetscInt*)vertices, &joinSize, &join));
           }
         }
       }
     }
-    ierr = PetscFree(facetList);CHKERRQ(ierr);
-    ierr = PetscFree(facetListRendezvous);CHKERRQ(ierr);
-    ierr = PetscFree(facetListRemote);CHKERRQ(ierr);
-    ierr = PetscFree(facetIDs);CHKERRQ(ierr);
-    ierr = PetscFree(facetIDsRendezvous);CHKERRQ(ierr);
-    ierr = PetscFree(facetIDsRemote);CHKERRQ(ierr);
-    ierr = PetscLayoutDestroy(&fLayout);CHKERRQ(ierr);
-    ierr = PetscSectionDestroy(&facetSectionRemote);CHKERRQ(ierr);
-    ierr = PetscSectionDestroy(&facetSectionIDsRemote);CHKERRQ(ierr);
+    PetscCall(PetscFree(facetList));
+    PetscCall(PetscFree(facetListRendezvous));
+    PetscCall(PetscFree(facetListRemote));
+    PetscCall(PetscFree(facetIDs));
+    PetscCall(PetscFree(facetIDsRendezvous));
+    PetscCall(PetscFree(facetIDsRemote));
+    PetscCall(PetscLayoutDestroy(&fLayout));
+    PetscCall(PetscSectionDestroy(&facetSectionRemote));
+    PetscCall(PetscSectionDestroy(&facetSectionIDsRemote));
   }
-  ierr = MEDfileClose(fileID);CHKERRQ(ierr);
-  ierr = PetscFree(coordinates);CHKERRQ(ierr);
-  ierr = PetscFree(cellList);CHKERRQ(ierr);
-  ierr = PetscLayoutDestroy(&vLayout);CHKERRQ(ierr);
-  ierr = PetscLayoutDestroy(&cLayout);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&sfVertices);CHKERRQ(ierr);
+  PetscCall(MEDfileClose(fileID));
+  PetscCall(PetscFree(coordinates));
+  PetscCall(PetscFree(cellList));
+  PetscCall(PetscLayoutDestroy(&vLayout));
+  PetscCall(PetscLayoutDestroy(&cLayout));
+  PetscCall(PetscSFDestroy(&sfVertices));
   PetscFunctionReturn(0);
 #else
   SETERRQ(comm, PETSC_ERR_SUP, "This method requires Med mesh reader support. Reconfigure using --download-med");

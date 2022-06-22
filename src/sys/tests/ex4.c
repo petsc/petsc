@@ -4,9 +4,8 @@ static char help[] = "Test PetscComplex binary operators.\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   {
     int          i = 2;
     float        f = 2;
@@ -27,8 +26,8 @@ int main(int argc,char **argv)
     TestOps(*,*=);
     TestOps(/,/=);
   }
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

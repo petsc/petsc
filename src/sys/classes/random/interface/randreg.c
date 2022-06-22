@@ -22,32 +22,31 @@ PetscBool         PetscRandomRegisterAllCalled = PETSC_FALSE;
 
   Level: intermediate
 
-.seealso: PetscRandomGetType(), PetscRandomCreate()
+.seealso: `PetscRandomGetType()`, `PetscRandomCreate()`
 @*/
 
 PetscErrorCode  PetscRandomSetType(PetscRandom rnd, PetscRandomType type)
 {
   PetscErrorCode (*r)(PetscRandom);
   PetscBool      match;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(rnd, PETSC_RANDOM_CLASSID,1);
-  ierr = PetscObjectTypeCompare((PetscObject)rnd, type, &match);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)rnd, type, &match));
   if (match) PetscFunctionReturn(0);
 
-  ierr = PetscFunctionListFind(PetscRandomList,type,&r);CHKERRQ(ierr);
-  PetscCheckFalse(!r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown random type: %s", type);
+  PetscCall(PetscFunctionListFind(PetscRandomList,type,&r));
+  PetscCheck(r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown random type: %s", type);
 
   if (rnd->ops->destroy) {
-    ierr = (*rnd->ops->destroy)(rnd);CHKERRQ(ierr);
+    PetscCall((*rnd->ops->destroy)(rnd));
 
     rnd->ops->destroy = NULL;
   }
-  ierr = (*r)(rnd);CHKERRQ(ierr);
-  ierr = PetscRandomSeed(rnd);CHKERRQ(ierr);
+  PetscCall((*r)(rnd));
+  PetscCall(PetscRandomSeed(rnd));
 
-  ierr = PetscObjectChangeTypeName((PetscObject)rnd, type);CHKERRQ(ierr);
+  PetscCall(PetscObjectChangeTypeName((PetscObject)rnd, type));
   PetscFunctionReturn(0);
 }
 
@@ -64,7 +63,7 @@ PetscErrorCode  PetscRandomSetType(PetscRandom rnd, PetscRandomType type)
 
   Level: intermediate
 
-.seealso: PetscRandomSetType(), PetscRandomCreate()
+.seealso: `PetscRandomSetType()`, `PetscRandomCreate()`
 @*/
 PetscErrorCode  PetscRandomGetType(PetscRandom rnd, PetscRandomType *type)
 {
@@ -108,15 +107,13 @@ PetscErrorCode  PetscRandomGetType(PetscRandom rnd, PetscRandomType *type)
 
   Level: advanced
 
-.seealso: PetscRandomRegisterAll(), PetscRandomRegisterDestroy(), PetscRandomRegister()
+.seealso: `PetscRandomRegisterAll()`, `PetscRandomRegisterDestroy()`, `PetscRandomRegister()`
 @*/
 PetscErrorCode  PetscRandomRegister(const char sname[], PetscErrorCode (*function)(PetscRandom))
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscRandomInitializePackage();CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(&PetscRandomList,sname,function);CHKERRQ(ierr);
+  PetscCall(PetscRandomInitializePackage());
+  PetscCall(PetscFunctionListAdd(&PetscRandomList,sname,function));
   PetscFunctionReturn(0);
 }
 
@@ -144,31 +141,28 @@ PETSC_EXTERN PetscErrorCode PetscRandomCreate_CURAND(PetscRandom);
 
   Level: advanced
 
-.seealso:  PetscRandomRegister(), PetscRandomRegisterDestroy()
+.seealso: `PetscRandomRegister()`, `PetscRandomRegisterDestroy()`
 @*/
 PetscErrorCode  PetscRandomRegisterAll(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (PetscRandomRegisterAllCalled) PetscFunctionReturn(0);
   PetscRandomRegisterAllCalled = PETSC_TRUE;
 #if defined(PETSC_HAVE_RAND)
-  ierr = PetscRandomRegister(PETSCRAND,PetscRandomCreate_Rand);CHKERRQ(ierr);
+  PetscCall(PetscRandomRegister(PETSCRAND,PetscRandomCreate_Rand));
 #endif
 #if defined(PETSC_HAVE_DRAND48)
-  ierr = PetscRandomRegister(PETSCRAND48,PetscRandomCreate_Rand48);CHKERRQ(ierr);
+  PetscCall(PetscRandomRegister(PETSCRAND48,PetscRandomCreate_Rand48));
 #endif
 #if defined(PETSC_HAVE_SPRNG)
-  ierr = PetscRandomRegister(PETSCSPRNG,PetscRandomCreate_Sprng);CHKERRQ(ierr);
+  PetscCall(PetscRandomRegister(PETSCSPRNG,PetscRandomCreate_Sprng));
 #endif
-  ierr = PetscRandomRegister(PETSCRANDER48,PetscRandomCreate_Rander48);CHKERRQ(ierr);
+  PetscCall(PetscRandomRegister(PETSCRANDER48,PetscRandomCreate_Rander48));
 #if defined(PETSC_HAVE_RANDOM123)
-  ierr = PetscRandomRegister(PETSCRANDOM123,PetscRandomCreate_Random123);CHKERRQ(ierr);
+  PetscCall(PetscRandomRegister(PETSCRANDOM123,PetscRandomCreate_Random123));
 #endif
 #if defined(PETSC_HAVE_CUDA)
-  ierr = PetscRandomRegister(PETSCCURAND,PetscRandomCreate_CURAND);CHKERRQ(ierr);
+  PetscCall(PetscRandomRegister(PETSCCURAND,PetscRandomCreate_CURAND));
 #endif
   PetscFunctionReturn(0);
 }
-

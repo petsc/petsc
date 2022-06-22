@@ -8,12 +8,11 @@
 */
 static PetscErrorCode Fsnes(SNES snes,Vec X,Vec G,void* ctx)
 {
-  PetscErrorCode ierr;
   Tao            tao = (Tao)ctx;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,4);
-  ierr = TaoComputeGradient(tao,X,G);CHKERRQ(ierr);
+  PetscCall(TaoComputeGradient(tao,X,G));
   PetscFunctionReturn(0);
 }
 
@@ -45,44 +44,43 @@ static PetscErrorCode Fsnes(SNES snes,Vec X,Vec G,void* ctx)
   to get an indication of whether your gradient is correct.
   This finite difference gradient evaluation can be set using the routine TaoSetGradient() or by using the command line option -tao_fd_gradient
 
-.seealso: TaoSetGradient()
+.seealso: `TaoSetGradient()`
 @*/
 PetscErrorCode TaoDefaultComputeGradient(Tao tao,Vec Xin,Vec G,void *dummy)
 {
   Vec            X;
   PetscScalar    *g;
   PetscReal      f, f2;
-  PetscErrorCode ierr;
   PetscInt       low,high,N,i;
   PetscBool      flg;
   PetscReal      h=.5*PETSC_SQRT_MACHINE_EPSILON;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetReal(((PetscObject)tao)->options,((PetscObject)tao)->prefix,"-tao_fd_delta",&h,&flg);CHKERRQ(ierr);
-  ierr = VecDuplicate(Xin,&X);CHKERRQ(ierr);
-  ierr = VecCopy(Xin,X);CHKERRQ(ierr);
-  ierr = VecGetSize(X,&N);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(X,&low,&high);CHKERRQ(ierr);
-  ierr = VecSetOption(X,VEC_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = VecGetArray(G,&g);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetReal(((PetscObject)tao)->options,((PetscObject)tao)->prefix,"-tao_fd_delta",&h,&flg));
+  PetscCall(VecDuplicate(Xin,&X));
+  PetscCall(VecCopy(Xin,X));
+  PetscCall(VecGetSize(X,&N));
+  PetscCall(VecGetOwnershipRange(X,&low,&high));
+  PetscCall(VecSetOption(X,VEC_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE));
+  PetscCall(VecGetArray(G,&g));
   for (i=0;i<N;i++) {
-    ierr = VecSetValue(X,i,-h,ADD_VALUES);CHKERRQ(ierr);
-    ierr = VecAssemblyBegin(X);CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(X);CHKERRQ(ierr);
-    ierr = TaoComputeObjective(tao,X,&f);CHKERRQ(ierr);
-    ierr = VecSetValue(X,i,2.0*h,ADD_VALUES);CHKERRQ(ierr);
-    ierr = VecAssemblyBegin(X);CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(X);CHKERRQ(ierr);
-    ierr = TaoComputeObjective(tao,X,&f2);CHKERRQ(ierr);
-    ierr = VecSetValue(X,i,-h,ADD_VALUES);CHKERRQ(ierr);
-    ierr = VecAssemblyBegin(X);CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(X);CHKERRQ(ierr);
+    PetscCall(VecSetValue(X,i,-h,ADD_VALUES));
+    PetscCall(VecAssemblyBegin(X));
+    PetscCall(VecAssemblyEnd(X));
+    PetscCall(TaoComputeObjective(tao,X,&f));
+    PetscCall(VecSetValue(X,i,2.0*h,ADD_VALUES));
+    PetscCall(VecAssemblyBegin(X));
+    PetscCall(VecAssemblyEnd(X));
+    PetscCall(TaoComputeObjective(tao,X,&f2));
+    PetscCall(VecSetValue(X,i,-h,ADD_VALUES));
+    PetscCall(VecAssemblyBegin(X));
+    PetscCall(VecAssemblyEnd(X));
     if (i>=low && i<high) {
       g[i-low]=(f2-f)/(2.0*h);
     }
   }
-  ierr = VecRestoreArray(G,&g);CHKERRQ(ierr);
-  ierr = VecDestroy(&X);CHKERRQ(ierr);
+  PetscCall(VecRestoreArray(G,&g));
+  PetscCall(VecDestroy(&X));
   PetscFunctionReturn(0);
 }
 
@@ -112,39 +110,38 @@ PetscErrorCode TaoDefaultComputeGradient(Tao tao,Vec Xin,Vec G,void *dummy)
    in large-scale applications, It can be useful in checking the
    correctness of a user-provided Hessian.
 
-.seealso: TaoSetHessian(), TaoDefaultComputeHessianColor(), SNESComputeJacobianDefault(), TaoSetGradient(), TaoDefaultComputeGradient()
+.seealso: `TaoSetHessian()`, `TaoDefaultComputeHessianColor()`, `SNESComputeJacobianDefault()`, `TaoSetGradient()`, `TaoDefaultComputeGradient()`
 @*/
 PetscErrorCode TaoDefaultComputeHessian(Tao tao,Vec V,Mat H,Mat B,void *dummy)
 {
-  PetscErrorCode ierr;
   SNES           snes;
   DM             dm;
 
   PetscFunctionBegin;
-  ierr = PetscInfo(tao,"TAO Using finite differences w/o coloring to compute Hessian matrix\n");CHKERRQ(ierr);
-  ierr = SNESCreate(PetscObjectComm((PetscObject)H),&snes);CHKERRQ(ierr);
-  ierr = SNESSetFunction(snes,NULL,Fsnes,tao);CHKERRQ(ierr);
-  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = DMShellSetGlobalVector(dm,V);CHKERRQ(ierr);
-  ierr = SNESSetUp(snes);CHKERRQ(ierr);
+  PetscCall(PetscInfo(tao,"TAO Using finite differences w/o coloring to compute Hessian matrix\n"));
+  PetscCall(SNESCreate(PetscObjectComm((PetscObject)H),&snes));
+  PetscCall(SNESSetFunction(snes,NULL,Fsnes,tao));
+  PetscCall(SNESGetDM(snes,&dm));
+  PetscCall(DMShellSetGlobalVector(dm,V));
+  PetscCall(SNESSetUp(snes));
   if (H) {
     PetscInt n,N;
 
-    ierr = VecGetSize(V,&N);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(V,&n);CHKERRQ(ierr);
-    ierr = MatSetSizes(H,n,n,N,N);CHKERRQ(ierr);
-    ierr = MatSetUp(H);CHKERRQ(ierr);
+    PetscCall(VecGetSize(V,&N));
+    PetscCall(VecGetLocalSize(V,&n));
+    PetscCall(MatSetSizes(H,n,n,N,N));
+    PetscCall(MatSetUp(H));
   }
   if (B && B != H) {
     PetscInt n,N;
 
-    ierr = VecGetSize(V,&N);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(V,&n);CHKERRQ(ierr);
-    ierr = MatSetSizes(B,n,n,N,N);CHKERRQ(ierr);
-    ierr = MatSetUp(B);CHKERRQ(ierr);
+    PetscCall(VecGetSize(V,&N));
+    PetscCall(VecGetLocalSize(V,&n));
+    PetscCall(MatSetSizes(B,n,n,N,N));
+    PetscCall(MatSetUp(B));
   }
-  ierr = SNESComputeJacobianDefault(snes,V,H,B,NULL);CHKERRQ(ierr);
-  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
+  PetscCall(SNESComputeJacobianDefault(snes,V,H,B,NULL));
+  PetscCall(SNESDestroy(&snes));
   PetscFunctionReturn(0);
 }
 
@@ -164,20 +161,19 @@ PetscErrorCode TaoDefaultComputeHessian(Tao tao,Vec V,Mat H,Mat B,void *dummy)
 
    Level: advanced
 
-.seealso: TaoSetHessian(), TaoDefaultComputeHessian(),SNESComputeJacobianDefaultColor(), TaoSetGradient()
+.seealso: `TaoSetHessian()`, `TaoDefaultComputeHessian()`, `SNESComputeJacobianDefaultColor()`, `TaoSetGradient()`
 @*/
 PetscErrorCode TaoDefaultComputeHessianColor(Tao tao,Vec V,Mat H,Mat B,void *ctx)
 {
-  PetscErrorCode      ierr;
   MatFDColoring       coloring = (MatFDColoring)ctx;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(coloring,MAT_FDCOLORING_CLASSID,5);
-  ierr = PetscInfo(tao,"TAO computing matrix using finite differences Hessian and coloring\n");CHKERRQ(ierr);
-  ierr = MatFDColoringApply(B,coloring,V,ctx);CHKERRQ(ierr);
+  PetscCall(PetscInfo(tao,"TAO computing matrix using finite differences Hessian and coloring\n"));
+  PetscCall(MatFDColoringApply(B,coloring,V,ctx));
   if (H != B) {
-    ierr = MatAssemblyBegin(H, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(H, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    PetscCall(MatAssemblyBegin(H, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(H, MAT_FINAL_ASSEMBLY));
   }
   PetscFunctionReturn(0);
 }
@@ -186,21 +182,20 @@ PetscErrorCode TaoDefaultComputeHessianMFFD(Tao tao,Vec X,Mat H,Mat B,void *ctx)
 {
   PetscInt       n,N;
   PetscBool      assembled;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscCheckFalse(B && B != H,PetscObjectComm((PetscObject)tao),PETSC_ERR_SUP,"Preconditioning Hessian matrix");
-  ierr = MatAssembled(H, &assembled);CHKERRQ(ierr);
+  PetscCheck(!B || B == H,PetscObjectComm((PetscObject)tao),PETSC_ERR_SUP,"Preconditioning Hessian matrix");
+  PetscCall(MatAssembled(H, &assembled));
   if (!assembled) {
-    ierr = VecGetSize(X,&N);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
-    ierr = MatSetSizes(H,n,n,N,N);CHKERRQ(ierr);
-    ierr = MatSetType(H,MATMFFD);CHKERRQ(ierr);
-    ierr = MatSetUp(H);CHKERRQ(ierr);
-    ierr = MatMFFDSetFunction(H,(PetscErrorCode (*)(void*,Vec,Vec))TaoComputeGradient,tao);CHKERRQ(ierr);
+    PetscCall(VecGetSize(X,&N));
+    PetscCall(VecGetLocalSize(X,&n));
+    PetscCall(MatSetSizes(H,n,n,N,N));
+    PetscCall(MatSetType(H,MATMFFD));
+    PetscCall(MatSetUp(H));
+    PetscCall(MatMFFDSetFunction(H,(PetscErrorCode (*)(void*,Vec,Vec))TaoComputeGradient,tao));
   }
-  ierr = MatMFFDSetBase(H,X,NULL);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(H,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(H,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatMFFDSetBase(H,X,NULL));
+  PetscCall(MatAssemblyBegin(H,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(H,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }

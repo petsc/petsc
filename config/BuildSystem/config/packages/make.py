@@ -14,8 +14,8 @@ class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
     self.minversion        = '3.81'
-    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/make-4.2.1-6.fc28.tar.gz']
-    self.complex           = 1
+    self.download          = ['https://ftp.gnu.org/gnu/make/make-4.3.tar.gz',
+                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/make-4.3.tar.gz']
     self.downloadonWindows = 1
     self.useddirectly      = 0
     self.linkedbypetsc     = 0
@@ -111,10 +111,10 @@ class Configure(config.package.GNUPackage):
         self.getExecutable(self.make,getFullPath = 0,resultName = 'make_user')
 
       if not self.haveGNUMake4:
-        self.logPrintBox('***** WARNING: You have a version of GNU make older than 4.0. It will work,\n\
-but may not support all the parallel testing options. You can install the \n\
-latest GNU make with your package manager, such as brew or macports, or use\n\
-the --download-make option to get the latest GNU make *****')
+        self.logPrintWarning('You have a version of GNU make older than 4.0. It will work, \
+but may not support all the parallel testing options. You can install the \
+latest GNU make with your package manager, such as Brew or MacPorts, or use \
+the --download-make option to get the latest GNU make')
       return
 
     if os.path.exists('/usr/bin/cygcheck.exe'):

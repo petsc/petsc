@@ -7,11 +7,6 @@
 !       problem SFI:  <parameter> = Bratu parameter (0 <= par <= 6.81)
 !
 !
-!!/*T
-!  Concepts: SNES^parallel Bratu example
-!  Concepts: DMDA^using distributed arrays;
-!  Processors: n
-!T*/
 
 !
 !  --------------------------------------------------------------------------
@@ -74,13 +69,9 @@
 !  Initialize program
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      if (ierr .ne. 0) then
-        print*,'Unable to initialize PETSc'
-        stop
-      endif
-      call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
-      call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
+      PetscCallA(PetscInitialize(ierr))
+      PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD,size,ierr))
+      PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr))
 
 !  Initialize problem parameters
 
@@ -89,7 +80,7 @@
       lambda_max = 6.81
       lambda_min = 0.0
       lambda     = 6.0
-      call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-par',lambda,PETSC_NULL_BOOL,ierr)
+      PetscCallA(PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-par',lambda,PETSC_NULL_BOOL,ierr))
 ! this statement is split into multiple-lines to keep lines under 132 char limit - required by 'make check'
       if (lambda .ge. lambda_max .or. lambda .le. lambda_min) then
         ierr = PETSC_ERR_ARG_OUTOFRANGE; SETERRA(PETSC_COMM_WORLD,ierr,'Lambda')
@@ -99,13 +90,13 @@
 !  Create nonlinear solver context
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      call SNESCreate(PETSC_COMM_WORLD,snes,ierr)
+      PetscCallA(SNESCreate(PETSC_COMM_WORLD,snes,ierr))
 
 !  Set convergence test routine if desired
 
-      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-my_snes_convergence',flg,ierr)
+      PetscCallA(PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-my_snes_convergence',flg,ierr))
       if (flg) then
-        call SNESSetConvergenceTest(snes,MySNESConverged,0,PETSC_NULL_FUNCTION,ierr)
+        PetscCallA(SNESSetConvergenceTest(snes,MySNESConverged,0,PETSC_NULL_FUNCTION,ierr))
       endif
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -116,28 +107,21 @@
 
 ! This really needs only the star-type stencil, but we use the box
 ! stencil temporarily.
-      call DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,      &
-     &     DMDA_STENCIL_STAR,i4,i4,PETSC_DECIDE,PETSC_DECIDE,i1,i1,                &
-     &     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr)
-      call DMSetFromOptions(da,ierr)
-      call DMSetUp(da,ierr)
+      PetscCallA(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,i4,i4,PETSC_DECIDE,PETSC_DECIDE,i1,i1,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr))
+      PetscCallA(DMSetFromOptions(da,ierr))
+      PetscCallA(DMSetUp(da,ierr))
 
 !  Extract global and local vectors from DMDA; then duplicate for remaining
 !  vectors that are the same types
 
-      call DMCreateGlobalVector(da,x,ierr)
-      call VecDuplicate(x,r,ierr)
+      PetscCallA(DMCreateGlobalVector(da,x,ierr))
+      PetscCallA(VecDuplicate(x,r,ierr))
 
 !  Get local grid boundaries (for 2-dimensional DMDA)
 
-      call DMDAGetInfo(da,PETSC_NULL_INTEGER,mx,my,PETSC_NULL_INTEGER,            &
-     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                     &
-     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                     &
-     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                     &
-     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                     &
-     &               PETSC_NULL_INTEGER,ierr)
-      call DMDAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,PETSC_NULL_INTEGER,ierr)
-      call DMDAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,PETSC_NULL_INTEGER,ierr)
+      PetscCallA(DMDAGetInfo(da,PETSC_NULL_INTEGER,mx,my,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr))
+      PetscCallA(DMDAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,PETSC_NULL_INTEGER,ierr))
+      PetscCallA(DMDAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,PETSC_NULL_INTEGER,ierr))
 
 !  Here we shift the starting indices up by one so that we can easily
 !  use the Fortran convention of 1-based indices (rather 0-based indices).
@@ -154,9 +138,9 @@
 
 !  Set function evaluation routine and vector
 
-      call DMDASNESSetFunctionLocal(da,INSERT_VALUES,FormFunctionLocal,da,ierr)
-      call DMDASNESSetJacobianLocal(da,FormJacobianLocal,da,ierr)
-      call SNESSetDM(snes,da,ierr)
+      PetscCallA(DMDASNESSetFunctionLocal(da,INSERT_VALUES,FormFunctionLocal,da,ierr))
+      PetscCallA(DMDASNESSetJacobianLocal(da,FormJacobianLocal,da,ierr))
+      PetscCallA(SNESSetDM(snes,da,ierr))
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Customize nonlinear solver; set runtime options
@@ -164,7 +148,7 @@
 
 !  Set runtime options (e.g., -snes_monitor -snes_rtol <rtol> -ksp_type <type>)
 
-          call SNESSetFromOptions(snes,ierr)
+          PetscCallA(SNESSetFromOptions(snes,ierr))
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Evaluate initial guess; then solve nonlinear system.
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -174,9 +158,9 @@
 !  to employ an initial guess of zero, the user should explicitly set
 !  this vector to zero by calling VecSet().
 
-      call FormInitialGuess(x,ierr)
-      call SNESSolve(snes,PETSC_NULL_VEC,x,ierr)
-      call SNESGetIterationNumber(snes,its,ierr)
+      PetscCallA(FormInitialGuess(x,ierr))
+      PetscCallA(SNESSolve(snes,PETSC_NULL_VEC,x,ierr))
+      PetscCallA(SNESGetIterationNumber(snes,its,ierr))
       if (rank .eq. 0) then
          write(6,100) its
       endif
@@ -187,11 +171,11 @@
 !  are no longer needed.
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      call VecDestroy(x,ierr)
-      call VecDestroy(r,ierr)
-      call SNESDestroy(snes,ierr)
-      call DMDestroy(da,ierr)
-      call PetscFinalize(ierr)
+      PetscCallA(VecDestroy(x,ierr))
+      PetscCallA(VecDestroy(r,ierr))
+      PetscCallA(SNESDestroy(snes,ierr))
+      PetscCallA(DMDestroy(da,ierr))
+      PetscCallA(PetscFinalize(ierr))
       end
 
 ! ---------------------------------------------------------------------
@@ -236,15 +220,15 @@
 !    - Note that the Fortran interface to VecGetArray() differs from the
 !      C version.  See the users manual for details.
 
-      call VecGetArray(X,lx_v,lx_i,ierr)
+      PetscCall(VecGetArray(X,lx_v,lx_i,ierr))
 
 !  Compute initial guess over the locally owned part of the grid
 
-      call InitialGuessLocal(lx_v(lx_i),ierr)
+      PetscCall(InitialGuessLocal(lx_v(lx_i),ierr))
 
 !  Restore vector
 
-      call VecRestoreArray(X,lx_v,lx_i,ierr)
+      PetscCall(VecRestoreArray(X,lx_v,lx_i,ierr))
 
       return
       end
@@ -366,7 +350,7 @@
  10      continue
  20   continue
 
-      call PetscLogFlops(11.0d0*ym*xm,ierr)
+      PetscCall(PetscLogFlops(11.0d0*ym*xm,ierr))
 
       return
       end
@@ -458,7 +442,7 @@
 !       Some f90 compilers need 4th arg to be of same type in both calls
                col(1) = row
                v(1)   = one
-               call MatSetValuesLocal(jac,i1,row,i1,col,v,INSERT_VALUES,ierr)
+               PetscCall(MatSetValuesLocal(jac,i1,row,i1,col,v,INSERT_VALUES,ierr))
 !           interior grid points
             else
                v(1) = -hxdhy
@@ -471,15 +455,15 @@
                col(3) = row
                col(4) = row + 1
                col(5) = row + gxm
-               call MatSetValuesLocal(jac,i1,row,i5,col,v, INSERT_VALUES,ierr)
+               PetscCall(MatSetValuesLocal(jac,i1,row,i5,col,v, INSERT_VALUES,ierr))
             endif
  10      continue
  20   continue
-      call MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr)
-      call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr)
+      PetscCall(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr))
+      PetscCall(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr))
       if (A .ne. jac) then
-         call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
-         call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
+         PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr))
+         PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr))
       endif
       return
       end
@@ -498,8 +482,8 @@
       Vec f
       PetscErrorCode ierr
 
-      call SNESGetFunction(snes,f,PETSC_NULL_FUNCTION,dummy,ierr)
-      call VecNorm(f,NORM_INFINITY,nrm,ierr)
+      PetscCall(SNESGetFunction(snes,f,PETSC_NULL_FUNCTION,dummy,ierr))
+      PetscCall(VecNorm(f,NORM_INFINITY,nrm,ierr))
       if (nrm .le. 1.e-5) reason = SNES_CONVERGED_FNORM_ABS
 
       end

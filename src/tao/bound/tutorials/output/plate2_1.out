@@ -5,10 +5,10 @@ iter =   0, Function value 1.67039, Residual: 0.47529
 iter =   1, Function value 1.506, Residual: 0.0373927 
 iter =   2, Function value 1.50566, Residual: 1.78454e-05 
 iter =   3, Function value 1.50566, Residual: < 1.0e-6 
-Tao Object: 1 MPI processes
+Tao Object: 1 MPI process
   type: tron
   Total PG its: 9,  PG tolerance: 0.001 
-  TaoLineSearch Object: 1 MPI processes
+  TaoLineSearch Object: 1 MPI process
     type: more-thuente
     maximum function evaluations=30
     tolerances: ftol=0.0001, rtol=1e-10, gtol=0.9
@@ -17,13 +17,13 @@ Tao Object: 1 MPI processes
     total number of function/gradient evaluations=1
     using variable bounds
     Termination reason: 1
-  KSP Object: 1 MPI processes
+  KSP Object: 1 MPI process
     type: stcg
     maximum iterations=10000, initial guess is zero
     tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
     left preconditioning
     using UNPRECONDITIONED norm type for convergence test
-  PC Object: 1 MPI processes
+  PC Object: 1 MPI process
     type: ilu
       out-of-place factorization
       0 levels of fill
@@ -31,14 +31,14 @@ Tao Object: 1 MPI processes
       matrix ordering: natural
       factor fill ratio given 1., needed 1.
         Factored matrix follows:
-          Mat Object: 1 MPI processes
+          Mat Object: 1 MPI process
             type: seqaij
             rows=40, cols=40
             package used to perform factorization: petsc
             total: nonzeros=190, allocated nonzeros=190
               not using I-node routines
     linear system matrix = precond matrix:
-    Mat Object: 1 MPI processes
+    Mat Object: 1 MPI process
       type: seqaij
       rows=40, cols=40
       total: nonzeros=190, allocated nonzeros=190

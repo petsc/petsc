@@ -1,7 +1,5 @@
-ALL: lib
+-include ../../../../../petsckdir.mk
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = pounders.c gqt.c
 SOURCEF  =
 SOURCEH  = pounders.h

@@ -1,18 +1,18 @@
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seqviennacl
 0.
 1.
 2.
 3.
 4.
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seqviennacl
 42.
 42.
 42.
 42.
 42.
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 42.
 42.

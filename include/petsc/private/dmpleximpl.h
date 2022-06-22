@@ -86,19 +86,21 @@ struct _PetscGridHash {
 };
 
 typedef struct {
-  PetscBool isotropic;                    /* Is the metric isotropic? */
-  PetscBool uniform;                      /* Is the metric uniform? */
-  PetscBool restrictAnisotropyFirst;      /* Should anisotropy or normalization come first? */
-  PetscBool noInsert;                     /* Should node insertion/deletion be turned off? */
-  PetscBool noSwap;                       /* Should facet swapping be turned off? */
-  PetscBool noMove;                       /* Should node movement be turned off? */
-  PetscReal h_min, h_max;                 /* Minimum/maximum tolerated metric magnitudes */
-  PetscReal a_max;                        /* Maximum tolerated anisotropy */
-  PetscReal targetComplexity;             /* Target metric complexity */
-  PetscReal p;                            /* Degree for L-p normalization methods */
-  PetscReal gradationFactor;              /* Maximum tolerated length ratio for adjacent edges */
-  PetscInt  numIter;                      /* Number of ParMmg mesh adaptation iterations */
-  PetscInt  verbosity;                    /* Level of verbosity for remesher (-1 = no output, 10 = maximum) */
+  PetscBool isotropic;               /* Is the metric isotropic? */
+  PetscBool uniform;                 /* Is the metric uniform? */
+  PetscBool restrictAnisotropyFirst; /* Should anisotropy or normalization come first? */
+  PetscBool noInsert;                /* Should node insertion/deletion be turned off? */
+  PetscBool noSwap;                  /* Should facet swapping be turned off? */
+  PetscBool noMove;                  /* Should node movement be turned off? */
+  PetscBool noSurf;                  /* Should surface modification be turned off? */
+  PetscReal h_min, h_max;            /* Minimum/maximum tolerated metric magnitudes */
+  PetscReal a_max;                   /* Maximum tolerated anisotropy */
+  PetscReal targetComplexity;        /* Target metric complexity */
+  PetscReal p;                       /* Degree for L-p normalization methods */
+  PetscReal gradationFactor;         /* Maximum tolerated length ratio for adjacent edges */
+  PetscReal hausdorffNumber;         /* Max. distance between piecewise linear representation of boundary and reconstructed ideal boundary */
+  PetscInt  numIter;                 /* Number of ParMmg mesh adaptation iterations */
+  PetscInt  verbosity;               /* Level of verbosity for remesher (-1 = no output, 10 = maximum) */
 } DMPlexMetricCtx;
 
 /* Point Numbering in Plex:
@@ -117,22 +119,33 @@ typedef struct {
   PetscInt             refct;
 
   PetscSection         coneSection;       /* Layout of cones (inedges for DAG) */
-  PetscInt             maxConeSize;       /* Cached for fast lookup */
   PetscInt            *cones;             /* Cone for each point */
   PetscInt            *coneOrientations;  /* Orientation of each cone point, means cone traveral should start on point 'o', and if negative start on -(o+1) and go in reverse */
   PetscSection         supportSection;    /* Layout of cones (inedges for DAG) */
-  PetscInt             maxSupportSize;    /* Cached for fast lookup */
   PetscInt            *supports;          /* Cone for each point */
+  PetscInt            *facesTmp;          /* Work space for faces operation */
+
+  /* Transformation */
   PetscBool            refinementUniform; /* Flag for uniform cell refinement */
   char                *transformType;     /* Type of transform for uniform cell refinement */
   PetscReal            refinementLimit;   /* Maximum volume for refined cell */
   PetscErrorCode     (*refinementFunc)(const PetscReal [], PetscReal *); /* Function giving the maximum volume for refined cell */
-  PetscBool            distDefault;       /* Distribute the DM by default */
-  PetscInt             overlap;           /* Overlap of the partitions as passed to DMPlexDistribute() or DMPlexDistributeOverlap() */
+
+  /* Interpolation */
   DMPlexInterpolatedFlag interpolated;
   DMPlexInterpolatedFlag interpolatedCollective;
 
-  PetscInt            *facesTmp;          /* Work space for faces operation */
+  DMPlexReorderDefaultFlag reorderDefault; /* Reorder the DM by default */
+
+  /* Distribution */
+  PetscBool            distDefault;       /* Distribute the DM by default */
+  PetscInt             overlap;           /* Overlap of the partitions as passed to DMPlexDistribute() or DMPlexDistributeOverlap() */
+  PetscInt             numOvLabels;       /* The number of labels used for candidate overlap points */
+  DMLabel              ovLabels[16];      /* Labels used for candidate overlap points */
+  PetscInt             ovValues[16];      /* Label values used for candidate overlap points */
+  PetscInt             numOvExLabels;     /* The number of labels used for exclusion */
+  DMLabel              ovExLabels[16];    /* Labels used to exclude points from the overlap */
+  PetscInt             ovExValues[16];    /* Label values used to exclude points from the overlap */
 
   /* Hierarchy */
   PetscBool            regularRefinement; /* This flag signals that we are a regular refinement of coarseMesh */
@@ -209,7 +222,7 @@ typedef struct {
   PetscReal            printTol;
 } DM_Plex;
 
-PETSC_INTERN PetscErrorCode DMPlexCopy_Internal(DM, PetscBool, DM);
+PETSC_INTERN PetscErrorCode DMPlexCopy_Internal(DM, PetscBool, PetscBool, DM);
 
 PETSC_EXTERN PetscErrorCode DMPlexVTKWriteAll_VTU(DM,PetscViewer);
 PETSC_EXTERN PetscErrorCode VecView_Plex_Local(Vec,PetscViewer);
@@ -253,6 +266,7 @@ PETSC_INTERN PetscErrorCode VecLoad_Plex_HDF5_Native_Internal(Vec, PetscViewer);
 PETSC_INTERN PetscErrorCode DMPlexVecGetClosureAtDepth_Internal(DM, PetscSection, Vec, PetscInt, PetscInt, PetscInt *, PetscScalar *[]);
 PETSC_INTERN PetscErrorCode DMPlexClosurePoints_Private(DM,PetscInt,const PetscInt[],IS*);
 PETSC_INTERN PetscErrorCode DMSetFromOptions_NonRefinement_Plex(PetscOptionItems *, DM);
+PETSC_INTERN PetscErrorCode DMSetFromOptions_Overlap_Plex(PetscOptionItems *, DM, PetscInt *);
 PETSC_INTERN PetscErrorCode DMCoarsen_Plex(DM, MPI_Comm, DM *);
 PETSC_INTERN PetscErrorCode DMCoarsenHierarchy_Plex(DM, PetscInt, DM []);
 PETSC_INTERN PetscErrorCode DMRefine_Plex(DM, MPI_Comm, DM *);
@@ -309,8 +323,11 @@ PETSC_INTERN PetscErrorCode DMPlexCoarsen_Internal(DM, Vec, DMLabel, DMLabel, DM
 PETSC_INTERN PetscErrorCode DMCreateMatrix_Plex(DM, Mat*);
 
 PETSC_INTERN PetscErrorCode DMPlexGetOverlap_Plex(DM, PetscInt *);
+PETSC_INTERN PetscErrorCode DMPlexSetOverlap_Plex(DM, DM, PetscInt);
 PETSC_INTERN PetscErrorCode DMPlexDistributeGetDefault_Plex(DM, PetscBool *);
 PETSC_INTERN PetscErrorCode DMPlexDistributeSetDefault_Plex(DM, PetscBool);
+PETSC_INTERN PetscErrorCode DMPlexReorderGetDefault_Plex(DM, DMPlexReorderDefaultFlag *);
+PETSC_INTERN PetscErrorCode DMPlexReorderSetDefault_Plex(DM, DMPlexReorderDefaultFlag);
 
 #if 1
 static inline PetscInt DihedralInvert(PetscInt N, PetscInt a)

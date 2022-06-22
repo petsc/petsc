@@ -6,37 +6,36 @@ int main(int argc,char **argv)
 {
   Mat            A,F;
   MatFactorInfo  info;
-  PetscErrorCode ierr;
   PetscInt       m = 10;
   IS             perm;
   PetscMPIInt    size;
   PetscBool      issbaij;
 
-  ierr = PetscInitialize(&argc,&argv,(char*) 0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*) 0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m,m);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatSetUp(A);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m,m));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatSetUp(A));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
-  ierr = MatShift(A,1.0);CHKERRQ(ierr);
+  PetscCall(MatShift(A,1.0));
 
-  ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQSBAIJ,&issbaij);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)A,MATSEQSBAIJ,&issbaij));
   if (size == 1 && !issbaij) {
-    ierr = MatGetFactor(A,MATSOLVERPETSC,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
-    ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
-    ierr = ISCreateStride(PETSC_COMM_SELF,m,0,1,&perm);CHKERRQ(ierr);
-    ierr = MatLUFactorSymbolic(F,A,perm,perm,&info);CHKERRQ(ierr);
-    ierr = MatLUFactorNumeric(F,A,&info);CHKERRQ(ierr);
-    ierr = MatDestroy(&F);CHKERRQ(ierr);
-    ierr = ISDestroy(&perm);CHKERRQ(ierr);
+    PetscCall(MatGetFactor(A,MATSOLVERPETSC,MAT_FACTOR_LU,&F));
+    PetscCall(MatFactorInfoInitialize(&info));
+    PetscCall(ISCreateStride(PETSC_COMM_SELF,m,0,1,&perm));
+    PetscCall(MatLUFactorSymbolic(F,A,perm,perm,&info));
+    PetscCall(MatLUFactorNumeric(F,A,&info));
+    PetscCall(MatDestroy(&F));
+    PetscCall(ISDestroy(&perm));
   }
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(MatDestroy(&A));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

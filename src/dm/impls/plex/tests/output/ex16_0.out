@@ -1,4 +1,4 @@
-DM Object: box 1 MPI processes
+DM Object: box 1 MPI process
   type: plex
 box in 2 dimensions:
 Supports:
@@ -190,7 +190,7 @@ Label 'Face Sets':
 [0]: 29 (1)
 [0]: 30 (1)
 [0]: 32 (1)
-DM Object: Submesh 1 MPI processes
+DM Object: Submesh 1 MPI process
   type: plex
 Submesh in 2 dimensions:
 Supports:
@@ -337,7 +337,7 @@ Label 'subpoint_map':
 [0]: 12 (0)
 [0]: 13 (0)
 [0]: 14 (0)
-DM Object: Submesh 1 MPI processes
+DM Object: Submesh 1 MPI process
   type: plex
 Submesh in 2 dimensions:
 Supports:

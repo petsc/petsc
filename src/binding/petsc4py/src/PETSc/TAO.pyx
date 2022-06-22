@@ -377,10 +377,13 @@ cdef class TAO(Object):
             if kargs is None: kargs = {}
             context = (update, args, kargs)
             self.set_attr('__update__', context)
-            CHKERR( TaoSetUpdate(self.tao, TAO_Update, NULL) )
+            CHKERR( TaoSetUpdate(self.tao, TAO_Update, <void*>context) )
         else:
             self.set_attr('__update__', None)
             CHKERR( TaoSetUpdate(self.tao, NULL, NULL) )
+
+    def getUpdate(self):
+        return self.get_attr('__update__')
 
     # --------------
 
@@ -545,10 +548,10 @@ cdef class TAO(Object):
         """
         if monitor is None: return
         cdef object monitorlist = self.get_attr('__monitor__')
+        if args  is None: args  = ()
+        if kargs is None: kargs = {}
         if monitorlist is None:
             CHKERR( TaoSetMonitor(self.tao, TAO_Monitor, NULL, NULL) )
-            if args  is None: args  = ()
-            if kargs is None: kargs = {}
             self.set_attr('__monitor__',  [(monitor, args, kargs)])
         else:
             monitorlist.append((monitor, args, kargs))
@@ -623,11 +626,17 @@ cdef class TAO(Object):
         PetscINCREF(xl.obj); PetscINCREF(xu.obj)
         return (xl, xu)
 
+    def setIterationNumber(self, its):
+        """
+        """
+        cdef PetscInt ival = asInt(its)
+        CHKERR( TaoSetIterationNumber(self.tao, ival) )
+
     def getIterationNumber(self):
         """
         """
         cdef PetscInt its=0
-        CHKERR( TaoGetSolutionStatus(self.tao, &its, NULL, NULL, NULL, NULL, NULL) )
+        CHKERR( TaoGetIterationNumber(self.tao, &its) )
         return toInt(its)
 
     def getObjectiveValue(self):

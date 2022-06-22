@@ -9,7 +9,6 @@
       integer line
 
       call PetscError(PETSC_COMM_SELF,1,PETSC_ERROR_INITIAL,'Error message')
-
       return
       end
 
@@ -31,30 +30,18 @@
       PetscErrorCode ierr
       external       MyErrHandler
 
-      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      if (ierr .ne. 0) then
-        write(6,*) 'Unable to initialize PETSc'
-        call flush(6)
-        stop
-      endif
-
-      call PetscPushErrorHandler(PetscTraceBackErrorHandler,PETSC_NULL_INTEGER,ierr)
-
-      call GenerateErr(__LINE__,ierr)
-
-      call PetscPushErrorHandler(MyErrHandler,PETSC_NULL_INTEGER,ierr)
-
-      call GenerateErr(__LINE__,ierr)
-
-      call PetscPushErrorHandler(PetscAbortErrorHandler,PETSC_NULL_INTEGER,ierr)
-
-      call GenerateErr(__LINE__,ierr)
-
-      call PetscFinalize(ierr)
+      PetscCallA(PetscInitialize(ierr))
+      PetscCallA(PetscPushErrorHandler(PetscTraceBackErrorHandler,PETSC_NULL_INTEGER,ierr))
+      PetscCallA(GenerateErr(__LINE__,ierr))
+      PetscCallA(PetscPushErrorHandler(MyErrHandler,PETSC_NULL_INTEGER,ierr))
+      PetscCallA(GenerateErr(__LINE__,ierr))
+      PetscCallA(PetscPushErrorHandler(PetscAbortErrorHandler,PETSC_NULL_INTEGER,ierr))
+      PetscCallA(GenerateErr(__LINE__,ierr))
+      PetscCallA(PetscFinalize(ierr))
       end
 
 !
-!     These test fails on some systems randomly due to the Fortran and C output becoming mixxed up,
+!     These test fails on some systems randomly due to the Fortran and C output becoming mixed up,
 !     using a Fortran flush after the Fortran print* does not resolve the issue
 !
 !/*TEST

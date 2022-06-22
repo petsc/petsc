@@ -10,15 +10,14 @@
    scalar-valued fields as opposed to a single vector-valued field */
 static PetscErrorCode DMDAGetFieldsNamed(DM da,PetscBool *fieldsnamed)
 {
-  PetscErrorCode ierr;
   PetscInt       f,bs;
 
   PetscFunctionBegin;
   *fieldsnamed = PETSC_FALSE;
-  ierr = DMDAGetDof(da,&bs);CHKERRQ(ierr);
+  PetscCall(DMDAGetDof(da,&bs));
   for (f=0; f<bs; ++f) {
     const char * fieldname;
-    ierr = DMDAGetFieldName(da,f,&fieldname);CHKERRQ(ierr);
+    PetscCall(DMDAGetFieldName(da,f,&fieldname));
     if (fieldname) {
       *fieldsnamed = PETSC_TRUE;
       break;
@@ -47,39 +46,38 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
   PetscInt                 dim,mx,my,mz,cdim,bs,boffset,maxnnodes,maxbs,i,j,k,r;
   PetscInt                 rloc[6],(*grloc)[6] = NULL;
   PetscScalar              *array,*array2;
-  PetscErrorCode           ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
-  PetscCheckFalse(PetscDefined(USE_COMPLEX),PETSC_COMM_SELF,PETSC_ERR_SUP,"Complex values not supported");
-  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  ierr = DMDAGetInfo(da,&dim,&mx,&my,&mz,NULL,NULL,NULL,&bs,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
-  ierr = DMGetCoordinates(da,&Coords);CHKERRQ(ierr);
+  PetscCall(PetscObjectGetComm((PetscObject)da,&comm));
+  PetscCheck(!PetscDefined(USE_COMPLEX),PETSC_COMM_SELF,PETSC_ERR_SUP,"Complex values not supported");
+  PetscCallMPI(MPI_Comm_size(comm,&size));
+  PetscCallMPI(MPI_Comm_rank(comm,&rank));
+  PetscCall(DMDAGetInfo(da,&dim,&mx,&my,&mz,NULL,NULL,NULL,&bs,NULL,NULL,NULL,NULL,NULL));
+  PetscCall(DMDAGetLocalInfo(da,&info));
+  PetscCall(DMGetCoordinates(da,&Coords));
   if (Coords) {
     PetscInt csize;
-    ierr = VecGetSize(Coords,&csize);CHKERRQ(ierr);
-    PetscCheckFalse(csize % (mx*my*mz),PETSC_COMM_SELF,PETSC_ERR_PLIB,"Coordinate vector size mismatch");
+    PetscCall(VecGetSize(Coords,&csize));
+    PetscCheck(csize % (mx*my*mz) == 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Coordinate vector size mismatch");
     cdim = csize/(mx*my*mz);
-    PetscCheckFalse(cdim < dim || cdim > 3,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Coordinate vector size mismatch");
+    PetscCheck(cdim >= dim && cdim <= 3,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Coordinate vector size mismatch");
   } else {
     cdim = dim;
   }
 
-  ierr = PetscFOpen(comm,vtk->filename,"wb",&fp);CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,fp,"<?xml version=\"1.0\"?>\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,fp,"<VTKFile type=\"StructuredGrid\" version=\"0.1\" byte_order=\"%s\">\n",byte_order);CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,fp,"  <StructuredGrid WholeExtent=\"%D %D %D %D %D %D\">\n",0,mx-1,0,my-1,0,mz-1);CHKERRQ(ierr);
+  PetscCall(PetscFOpen(comm,vtk->filename,"wb",&fp));
+  PetscCall(PetscFPrintf(comm,fp,"<?xml version=\"1.0\"?>\n"));
+  PetscCall(PetscFPrintf(comm,fp,"<VTKFile type=\"StructuredGrid\" version=\"0.1\" byte_order=\"%s\">\n",byte_order));
+  PetscCall(PetscFPrintf(comm,fp,"  <StructuredGrid WholeExtent=\"%d %" PetscInt_FMT " %d %" PetscInt_FMT " %d %" PetscInt_FMT "\">\n",0,mx-1,0,my-1,0,mz-1));
 
-  if (rank == 0) {ierr = PetscMalloc1(size*6,&grloc);CHKERRQ(ierr);}
+  if (rank == 0) PetscCall(PetscMalloc1(size*6,&grloc));
   rloc[0] = info.xs;
   rloc[1] = info.xm;
   rloc[2] = info.ys;
   rloc[3] = info.ym;
   rloc[4] = info.zs;
   rloc[5] = info.zm;
-  ierr    = MPI_Gather(rloc,6,MPIU_INT,&grloc[0][0],6,MPIU_INT,0,comm);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Gather(rloc,6,MPIU_INT,&grloc[0][0],6,MPIU_INT,0,comm));
 
   /* Write XML header */
   maxnnodes = 0;                /* Used for the temporary array size on rank 0 */
@@ -97,13 +95,13 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
       nnodes = xm*ym*zm;
     }
     maxnnodes = PetscMax(maxnnodes,nnodes);
-    ierr     = PetscFPrintf(comm,fp,"    <Piece Extent=\"%D %D %D %D %D %D\">\n",xs,xs+xm-1,ys,ys+ym-1,zs,zs+zm-1);CHKERRQ(ierr);
-    ierr     = PetscFPrintf(comm,fp,"      <Points>\n");CHKERRQ(ierr);
-    ierr     = PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"Position\" NumberOfComponents=\"3\" format=\"appended\" offset=\"%D\" />\n",precision,boffset);CHKERRQ(ierr);
+    PetscCall(PetscFPrintf(comm,fp,"    <Piece Extent=\"%" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\">\n",xs,xs+xm-1,ys,ys+ym-1,zs,zs+zm-1));
+    PetscCall(PetscFPrintf(comm,fp,"      <Points>\n"));
+    PetscCall(PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"Position\" NumberOfComponents=\"3\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n",precision,boffset));
     boffset += 3*nnodes*sizeof(PetscScalar) + sizeof(int);
-    ierr     = PetscFPrintf(comm,fp,"      </Points>\n");CHKERRQ(ierr);
+    PetscCall(PetscFPrintf(comm,fp,"      </Points>\n"));
 
-    ierr = PetscFPrintf(comm,fp,"      <PointData Scalars=\"ScalarPointData\">\n");CHKERRQ(ierr);
+    PetscCall(PetscFPrintf(comm,fp,"      <PointData Scalars=\"ScalarPointData\">\n"));
     for (link=vtk->link; link; link=link->next) {
       Vec        X = (Vec)link->vec;
       PetscInt   bs,f;
@@ -111,43 +109,43 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
       PetscBool  fieldsnamed;
       const char *vecname = "Unnamed";
 
-      ierr = VecGetDM(X,&daCurr);CHKERRQ(ierr);
-      ierr = DMDAGetInfo(daCurr,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&bs,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+      PetscCall(VecGetDM(X,&daCurr));
+      PetscCall(DMDAGetInfo(daCurr,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&bs,NULL,NULL,NULL,NULL,NULL));
       maxbs = PetscMax(maxbs,bs);
 
       if (((PetscObject)X)->name || link != vtk->link) {
-        ierr = PetscObjectGetName((PetscObject)X,&vecname);CHKERRQ(ierr);
+        PetscCall(PetscObjectGetName((PetscObject)X,&vecname));
       }
 
       /* If any fields are named, add scalar fields. Otherwise, add a vector field */
-      ierr = DMDAGetFieldsNamed(daCurr,&fieldsnamed);CHKERRQ(ierr);
+      PetscCall(DMDAGetFieldsNamed(daCurr,&fieldsnamed));
       if (fieldsnamed) {
         for (f=0; f<bs; f++) {
           char       buf[256];
           const char *fieldname;
-          ierr = DMDAGetFieldName(daCurr,f,&fieldname);CHKERRQ(ierr);
+          PetscCall(DMDAGetFieldName(daCurr,f,&fieldname));
           if (!fieldname) {
-            ierr      = PetscSNPrintf(buf,sizeof(buf),"%D",f);CHKERRQ(ierr);
+            PetscCall(PetscSNPrintf(buf,sizeof(buf),"%" PetscInt_FMT,f));
             fieldname = buf;
           }
-          ierr     = PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"%s.%s\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%D\" />\n",precision,vecname,fieldname,boffset);CHKERRQ(ierr);
+          PetscCall(PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"%s.%s\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n",precision,vecname,fieldname,boffset));
           boffset += nnodes*sizeof(PetscScalar) + sizeof(int);
         }
       } else {
-        ierr     = PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"%s\" NumberOfComponents=\"%D\" format=\"appended\" offset=\"%D\" />\n",precision,vecname,bs,boffset);CHKERRQ(ierr);
+        PetscCall(PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"%s\" NumberOfComponents=\"%" PetscInt_FMT "\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n",precision,vecname,bs,boffset));
         boffset += bs*nnodes*sizeof(PetscScalar) + sizeof(int);
       }
     }
-    ierr = PetscFPrintf(comm,fp,"      </PointData>\n");CHKERRQ(ierr);
-    ierr = PetscFPrintf(comm,fp,"    </Piece>\n");CHKERRQ(ierr);
+    PetscCall(PetscFPrintf(comm,fp,"      </PointData>\n"));
+    PetscCall(PetscFPrintf(comm,fp,"    </Piece>\n"));
   }
-  ierr = PetscFPrintf(comm,fp,"  </StructuredGrid>\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,fp,"  <AppendedData encoding=\"raw\">\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,fp,"_");CHKERRQ(ierr);
+  PetscCall(PetscFPrintf(comm,fp,"  </StructuredGrid>\n"));
+  PetscCall(PetscFPrintf(comm,fp,"  <AppendedData encoding=\"raw\">\n"));
+  PetscCall(PetscFPrintf(comm,fp,"_"));
 
   /* Now write the arrays. */
   tag  = ((PetscObject)viewer)->tag;
-  ierr = PetscMalloc2(maxnnodes*PetscMax(3,maxbs),&array,maxnnodes*PetscMax(3,maxbs),&array2);CHKERRQ(ierr);
+  PetscCall(PetscMalloc2(maxnnodes*PetscMax(3,maxbs),&array,maxnnodes*PetscMax(3,maxbs),&array2));
   for (r=0; r<size; r++) {
     MPI_Status status;
     PetscInt   xs=-1,xm=-1,ys=-1,ym=-1,zs=-1,zm=-1,nnodes = 0;
@@ -166,15 +164,15 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
     /* Write the coordinates */
     if (Coords) {
       const PetscScalar *coords;
-      ierr = VecGetArrayRead(Coords,&coords);CHKERRQ(ierr);
+      PetscCall(VecGetArrayRead(Coords,&coords));
       if (rank == 0) {
         if (r) {
           PetscMPIInt nn;
-          ierr = MPI_Recv(array,nnodes*cdim,MPIU_SCALAR,r,tag,comm,&status);CHKERRMPI(ierr);
-          ierr = MPI_Get_count(&status,MPIU_SCALAR,&nn);CHKERRMPI(ierr);
-          PetscCheckFalse(nn != nnodes*cdim,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Array size mismatch");
+          PetscCallMPI(MPI_Recv(array,nnodes*cdim,MPIU_SCALAR,r,tag,comm,&status));
+          PetscCallMPI(MPI_Get_count(&status,MPIU_SCALAR,&nn));
+          PetscCheck(nn == nnodes*cdim,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Array size mismatch");
         } else {
-          ierr = PetscArraycpy(array,coords,nnodes*cdim);CHKERRQ(ierr);
+          PetscCall(PetscArraycpy(array,coords,nnodes*cdim));
         }
         /* Transpose coordinates to VTK (C-style) ordering */
         for (k=0; k<zm; k++) {
@@ -188,9 +186,9 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
           }
         }
       } else if (r == rank) {
-        ierr = MPI_Send((void*)coords,nnodes*cdim,MPIU_SCALAR,0,tag,comm);CHKERRMPI(ierr);
+        PetscCallMPI(MPI_Send((void*)coords,nnodes*cdim,MPIU_SCALAR,0,tag,comm));
       }
-      ierr = VecRestoreArrayRead(Coords,&coords);CHKERRQ(ierr);
+      PetscCall(VecRestoreArrayRead(Coords,&coords));
     } else {       /* Fabricate some coordinates using grid index */
       for (k=0; k<zm; k++) {
         for (j=0; j<ym; j++) {
@@ -203,7 +201,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
         }
       }
     }
-    ierr = PetscViewerVTKFWrite(viewer,fp,array2,nnodes*3,MPIU_SCALAR);CHKERRQ(ierr);
+    PetscCall(PetscViewerVTKFWrite(viewer,fp,array2,nnodes*3,MPIU_SCALAR));
 
     /* Write each of the objects queued up for this file */
     for (link=vtk->link; link; link=link->next) {
@@ -212,21 +210,21 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
       PetscInt          bs,f;
       DM                daCurr;
       PetscBool         fieldsnamed;
-      ierr = VecGetDM(X,&daCurr);CHKERRQ(ierr);
-      ierr = DMDAGetInfo(daCurr,NULL,NULL,NULL,NULL, NULL,NULL,NULL,&bs,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
-      ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
+      PetscCall(VecGetDM(X,&daCurr));
+      PetscCall(DMDAGetInfo(daCurr,NULL,NULL,NULL,NULL, NULL,NULL,NULL,&bs,NULL,NULL,NULL,NULL,NULL));
+      PetscCall(VecGetArrayRead(X,&x));
       if (rank == 0) {
         if (r) {
           PetscMPIInt nn;
-          ierr = MPI_Recv(array,nnodes*bs,MPIU_SCALAR,r,tag,comm,&status);CHKERRMPI(ierr);
-          ierr = MPI_Get_count(&status,MPIU_SCALAR,&nn);CHKERRMPI(ierr);
-          PetscCheckFalse(nn != nnodes*bs,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Array size mismatch receiving from rank %D",r);
+          PetscCallMPI(MPI_Recv(array,nnodes*bs,MPIU_SCALAR,r,tag,comm,&status));
+          PetscCallMPI(MPI_Get_count(&status,MPIU_SCALAR,&nn));
+          PetscCheck(nn == nnodes*bs,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Array size mismatch receiving from rank %" PetscInt_FMT,r);
         } else {
-          ierr = PetscArraycpy(array,x,nnodes*bs);CHKERRQ(ierr);
+          PetscCall(PetscArraycpy(array,x,nnodes*bs));
         }
 
         /* If any fields are named, add scalar fields. Otherwise, add a vector field */
-        ierr = DMDAGetFieldsNamed(daCurr,&fieldsnamed);CHKERRQ(ierr);
+        PetscCall(DMDAGetFieldsNamed(daCurr,&fieldsnamed));
         if (fieldsnamed) {
           for (f=0; f<bs; f++) {
             /* Extract and transpose the f'th field */
@@ -238,23 +236,23 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
                 }
               }
             }
-            ierr = PetscViewerVTKFWrite(viewer,fp,array2,nnodes,MPIU_SCALAR);CHKERRQ(ierr);
+            PetscCall(PetscViewerVTKFWrite(viewer,fp,array2,nnodes,MPIU_SCALAR));
           }
         } else {
-          ierr = PetscViewerVTKFWrite(viewer,fp,array,bs*nnodes,MPIU_SCALAR);CHKERRQ(ierr);
+          PetscCall(PetscViewerVTKFWrite(viewer,fp,array,bs*nnodes,MPIU_SCALAR));
         }
       } else if (r == rank) {
-        ierr = MPI_Send((void*)x,nnodes*bs,MPIU_SCALAR,0,tag,comm);CHKERRMPI(ierr);
+        PetscCallMPI(MPI_Send((void*)x,nnodes*bs,MPIU_SCALAR,0,tag,comm));
       }
-      ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
+      PetscCall(VecRestoreArrayRead(X,&x));
     }
   }
-  ierr = PetscFree2(array,array2);CHKERRQ(ierr);
-  ierr = PetscFree(grloc);CHKERRQ(ierr);
+  PetscCall(PetscFree2(array,array2));
+  PetscCall(PetscFree(grloc));
 
-  ierr = PetscFPrintf(comm,fp,"\n </AppendedData>\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,fp,"</VTKFile>\n");CHKERRQ(ierr);
-  ierr = PetscFClose(comm,fp);CHKERRQ(ierr);
+  PetscCall(PetscFPrintf(comm,fp,"\n </AppendedData>\n"));
+  PetscCall(PetscFPrintf(comm,fp,"</VTKFile>\n"));
+  PetscCall(PetscFClose(comm,fp));
   PetscFunctionReturn(0);
 }
 
@@ -277,28 +275,27 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
   PetscInt                 dim,mx,my,mz,boffset,maxnnodes,maxbs,i,j,k,r;
   PetscInt                 rloc[6],(*grloc)[6] = NULL;
   PetscScalar              *array,*array2;
-  PetscErrorCode           ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
-  PetscCheckFalse(PetscDefined(USE_COMPLEX),PETSC_COMM_SELF,PETSC_ERR_SUP,"Complex values not supported");
-  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  ierr = DMDAGetInfo(da,&dim,&mx,&my,&mz,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
-  ierr = PetscFOpen(comm,vtk->filename,"wb",&fp);CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,fp,"<?xml version=\"1.0\"?>\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,fp,"<VTKFile type=\"RectilinearGrid\" version=\"0.1\" byte_order=\"%s\">\n",byte_order);CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,fp,"  <RectilinearGrid WholeExtent=\"%D %D %D %D %D %D\">\n",0,mx-1,0,my-1,0,mz-1);CHKERRQ(ierr);
+  PetscCall(PetscObjectGetComm((PetscObject)da,&comm));
+  PetscCheck(!PetscDefined(USE_COMPLEX),PETSC_COMM_SELF,PETSC_ERR_SUP,"Complex values not supported");
+  PetscCallMPI(MPI_Comm_size(comm,&size));
+  PetscCallMPI(MPI_Comm_rank(comm,&rank));
+  PetscCall(DMDAGetInfo(da,&dim,&mx,&my,&mz,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL));
+  PetscCall(DMDAGetLocalInfo(da,&info));
+  PetscCall(PetscFOpen(comm,vtk->filename,"wb",&fp));
+  PetscCall(PetscFPrintf(comm,fp,"<?xml version=\"1.0\"?>\n"));
+  PetscCall(PetscFPrintf(comm,fp,"<VTKFile type=\"RectilinearGrid\" version=\"0.1\" byte_order=\"%s\">\n",byte_order));
+  PetscCall(PetscFPrintf(comm,fp,"  <RectilinearGrid WholeExtent=\"%d %" PetscInt_FMT " %d %" PetscInt_FMT " %d %" PetscInt_FMT "\">\n",0,mx-1,0,my-1,0,mz-1));
 
-  if (rank == 0) {ierr = PetscMalloc1(size*6,&grloc);CHKERRQ(ierr);}
+  if (rank == 0) PetscCall(PetscMalloc1(size*6,&grloc));
   rloc[0] = info.xs;
   rloc[1] = info.xm;
   rloc[2] = info.ys;
   rloc[3] = info.ym;
   rloc[4] = info.zs;
   rloc[5] = info.zm;
-  ierr    = MPI_Gather(rloc,6,MPIU_INT,&grloc[0][0],6,MPIU_INT,0,comm);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Gather(rloc,6,MPIU_INT,&grloc[0][0],6,MPIU_INT,0,comm));
 
   /* Write XML header */
   maxnnodes = 0;                /* Used for the temporary array size on rank 0 */
@@ -316,16 +313,16 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
       nnodes = xm*ym*zm;
     }
     maxnnodes = PetscMax(maxnnodes,nnodes);
-    ierr     = PetscFPrintf(comm,fp,"    <Piece Extent=\"%D %D %D %D %D %D\">\n",xs,xs+xm-1,ys,ys+ym-1,zs,zs+zm-1);CHKERRQ(ierr);
-    ierr     = PetscFPrintf(comm,fp,"      <Coordinates>\n");CHKERRQ(ierr);
-    ierr     = PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"Xcoord\"  format=\"appended\"  offset=\"%D\" />\n",precision,boffset);CHKERRQ(ierr);
+    PetscCall(PetscFPrintf(comm,fp,"    <Piece Extent=\"%" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\">\n",xs,xs+xm-1,ys,ys+ym-1,zs,zs+zm-1));
+    PetscCall(PetscFPrintf(comm,fp,"      <Coordinates>\n"));
+    PetscCall(PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"Xcoord\"  format=\"appended\"  offset=\"%" PetscInt_FMT "\" />\n",precision,boffset));
     boffset += xm*sizeof(PetscScalar) + sizeof(int);
-    ierr     = PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"Ycoord\"  format=\"appended\"  offset=\"%D\" />\n",precision,boffset);CHKERRQ(ierr);
+    PetscCall(PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"Ycoord\"  format=\"appended\"  offset=\"%" PetscInt_FMT "\" />\n",precision,boffset));
     boffset += ym*sizeof(PetscScalar) + sizeof(int);
-    ierr     = PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"Zcoord\"  format=\"appended\"  offset=\"%D\" />\n",precision,boffset);CHKERRQ(ierr);
+    PetscCall(PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"Zcoord\"  format=\"appended\"  offset=\"%" PetscInt_FMT "\" />\n",precision,boffset));
     boffset += zm*sizeof(PetscScalar) + sizeof(int);
-    ierr     = PetscFPrintf(comm,fp,"      </Coordinates>\n");CHKERRQ(ierr);
-    ierr = PetscFPrintf(comm,fp,"      <PointData Scalars=\"ScalarPointData\">\n");CHKERRQ(ierr);
+    PetscCall(PetscFPrintf(comm,fp,"      </Coordinates>\n"));
+    PetscCall(PetscFPrintf(comm,fp,"      <PointData Scalars=\"ScalarPointData\">\n"));
     for (link=vtk->link; link; link=link->next) {
       Vec        X = (Vec)link->vec;
       PetscInt   bs,f;
@@ -333,42 +330,42 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
       PetscBool  fieldsnamed;
       const char *vecname = "Unnamed";
 
-      ierr = VecGetDM(X,&daCurr);CHKERRQ(ierr);
-      ierr = DMDAGetInfo(daCurr,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&bs,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+      PetscCall(VecGetDM(X,&daCurr));
+      PetscCall(DMDAGetInfo(daCurr,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&bs,NULL,NULL,NULL,NULL,NULL));
       maxbs = PetscMax(maxbs,bs);
       if (((PetscObject)X)->name || link != vtk->link) {
-        ierr = PetscObjectGetName((PetscObject)X,&vecname);CHKERRQ(ierr);
+        PetscCall(PetscObjectGetName((PetscObject)X,&vecname));
       }
 
       /* If any fields are named, add scalar fields. Otherwise, add a vector field */
-      ierr = DMDAGetFieldsNamed(daCurr,&fieldsnamed);CHKERRQ(ierr);
+      PetscCall(DMDAGetFieldsNamed(daCurr,&fieldsnamed));
       if (fieldsnamed) {
         for (f=0; f<bs; f++) {
           char       buf[256];
           const char *fieldname;
-          ierr = DMDAGetFieldName(daCurr,f,&fieldname);CHKERRQ(ierr);
+          PetscCall(DMDAGetFieldName(daCurr,f,&fieldname));
           if (!fieldname) {
-            ierr      = PetscSNPrintf(buf,sizeof(buf),"%D",f);CHKERRQ(ierr);
+            PetscCall(PetscSNPrintf(buf,sizeof(buf),"%" PetscInt_FMT,f));
             fieldname = buf;
           }
-          ierr     = PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"%s.%s\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%D\" />\n",precision,vecname,fieldname,boffset);CHKERRQ(ierr);
+          PetscCall(PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"%s.%s\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n",precision,vecname,fieldname,boffset));
           boffset += nnodes*sizeof(PetscScalar) + sizeof(int);
         }
       } else {
-        ierr     = PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"%s\" NumberOfComponents=\"%D\" format=\"appended\" offset=\"%D\" />\n",precision,vecname,bs,boffset);CHKERRQ(ierr);
+        PetscCall(PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"%s\" NumberOfComponents=\"%" PetscInt_FMT "\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n",precision,vecname,bs,boffset));
         boffset += bs*nnodes*sizeof(PetscScalar) + sizeof(int);
       }
     }
-    ierr = PetscFPrintf(comm,fp,"      </PointData>\n");CHKERRQ(ierr);
-    ierr = PetscFPrintf(comm,fp,"    </Piece>\n");CHKERRQ(ierr);
+    PetscCall(PetscFPrintf(comm,fp,"      </PointData>\n"));
+    PetscCall(PetscFPrintf(comm,fp,"    </Piece>\n"));
   }
-  ierr = PetscFPrintf(comm,fp,"  </RectilinearGrid>\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,fp,"  <AppendedData encoding=\"raw\">\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,fp,"_");CHKERRQ(ierr);
+  PetscCall(PetscFPrintf(comm,fp,"  </RectilinearGrid>\n"));
+  PetscCall(PetscFPrintf(comm,fp,"  <AppendedData encoding=\"raw\">\n"));
+  PetscCall(PetscFPrintf(comm,fp,"_"));
 
   /* Now write the arrays. */
   tag  = ((PetscObject)viewer)->tag;
-  ierr = PetscMalloc2(PetscMax(maxnnodes*maxbs,info.xm+info.ym+info.zm),&array,PetscMax(maxnnodes*maxbs,info.xm+info.ym+info.zm),&array2);CHKERRQ(ierr);
+  PetscCall(PetscMalloc2(PetscMax(maxnnodes*maxbs,info.xm+info.ym+info.zm),&array,PetscMax(maxnnodes*maxbs,info.xm+info.ym+info.zm),&array2));
   for (r=0; r<size; r++) {
     MPI_Status status;
     PetscInt   xs=-1,xm=-1,ys=-1,ym=-1,zs=-1,zm=-1,nnodes = 0;
@@ -386,16 +383,16 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
     {                           /* Write the coordinates */
       Vec Coords;
 
-      ierr = DMGetCoordinates(da,&Coords);CHKERRQ(ierr);
+      PetscCall(DMGetCoordinates(da,&Coords));
       if (Coords) {
         const PetscScalar *coords;
-        ierr = VecGetArrayRead(Coords,&coords);CHKERRQ(ierr);
+        PetscCall(VecGetArrayRead(Coords,&coords));
         if (rank == 0) {
           if (r) {
             PetscMPIInt nn;
-            ierr = MPI_Recv(array,xm+ym+zm,MPIU_SCALAR,r,tag,comm,&status);CHKERRMPI(ierr);
-            ierr = MPI_Get_count(&status,MPIU_SCALAR,&nn);CHKERRMPI(ierr);
-            PetscCheckFalse(nn != xm+ym+zm,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Array size mismatch");
+            PetscCallMPI(MPI_Recv(array,xm+ym+zm,MPIU_SCALAR,r,tag,comm,&status));
+            PetscCallMPI(MPI_Get_count(&status,MPIU_SCALAR,&nn));
+            PetscCheck(nn == xm+ym+zm,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Array size mismatch");
           } else {
             /* x coordinates */
             for (j=0, k=0, i=0; i<xm; i++) {
@@ -429,9 +426,9 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
             PetscInt Iloc = i+xm*(j+ym*k);
             array2[k+xm+ym] = dim > 2 ? coords[Iloc*dim + 2] : 0;
           }
-          ierr = MPI_Send((void*)array2,xm+ym+zm,MPIU_SCALAR,0,tag,comm);CHKERRMPI(ierr);
+          PetscCallMPI(MPI_Send((void*)array2,xm+ym+zm,MPIU_SCALAR,0,tag,comm));
         }
-        ierr = VecRestoreArrayRead(Coords,&coords);CHKERRQ(ierr);
+        PetscCall(VecRestoreArrayRead(Coords,&coords));
       } else {       /* Fabricate some coordinates using grid index */
         for (i=0; i<xm; i++) {
           array[i] = xs+i;
@@ -444,9 +441,9 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
         }
       }
       if (rank == 0) {
-        ierr = PetscViewerVTKFWrite(viewer,fp,&(array[0]),xm,MPIU_SCALAR);CHKERRQ(ierr);
-        ierr = PetscViewerVTKFWrite(viewer,fp,&(array[xm]),ym,MPIU_SCALAR);CHKERRQ(ierr);
-        ierr = PetscViewerVTKFWrite(viewer,fp,&(array[xm+ym]),zm,MPIU_SCALAR);CHKERRQ(ierr);
+        PetscCall(PetscViewerVTKFWrite(viewer,fp,&(array[0]),xm,MPIU_SCALAR));
+        PetscCall(PetscViewerVTKFWrite(viewer,fp,&(array[xm]),ym,MPIU_SCALAR));
+        PetscCall(PetscViewerVTKFWrite(viewer,fp,&(array[xm+ym]),zm,MPIU_SCALAR));
       }
     }
 
@@ -457,21 +454,21 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
       PetscInt          bs,f;
       DM                daCurr;
       PetscBool         fieldsnamed;
-      ierr = VecGetDM(X,&daCurr);CHKERRQ(ierr);
-      ierr = DMDAGetInfo(daCurr,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&bs,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+      PetscCall(VecGetDM(X,&daCurr));
+      PetscCall(DMDAGetInfo(daCurr,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&bs,NULL,NULL,NULL,NULL,NULL));
 
-      ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
+      PetscCall(VecGetArrayRead(X,&x));
       if (rank == 0) {
         if (r) {
           PetscMPIInt nn;
-          ierr = MPI_Recv(array,nnodes*bs,MPIU_SCALAR,r,tag,comm,&status);CHKERRMPI(ierr);
-          ierr = MPI_Get_count(&status,MPIU_SCALAR,&nn);CHKERRMPI(ierr);
-          PetscCheckFalse(nn != nnodes*bs,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Array size mismatch receiving from rank %D",r);
+          PetscCallMPI(MPI_Recv(array,nnodes*bs,MPIU_SCALAR,r,tag,comm,&status));
+          PetscCallMPI(MPI_Get_count(&status,MPIU_SCALAR,&nn));
+          PetscCheck(nn == nnodes*bs,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Array size mismatch receiving from rank %" PetscInt_FMT,r);
         } else {
-          ierr = PetscArraycpy(array,x,nnodes*bs);CHKERRQ(ierr);
+          PetscCall(PetscArraycpy(array,x,nnodes*bs));
         }
         /* If any fields are named, add scalar fields. Otherwise, add a vector field */
-        ierr = DMDAGetFieldsNamed(daCurr,&fieldsnamed);CHKERRQ(ierr);
+        PetscCall(DMDAGetFieldsNamed(daCurr,&fieldsnamed));
         if (fieldsnamed) {
           for (f=0; f<bs; f++) {
             /* Extract and transpose the f'th field */
@@ -483,23 +480,23 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
                 }
               }
             }
-            ierr = PetscViewerVTKFWrite(viewer,fp,array2,nnodes,MPIU_SCALAR);CHKERRQ(ierr);
+            PetscCall(PetscViewerVTKFWrite(viewer,fp,array2,nnodes,MPIU_SCALAR));
           }
         }
-        ierr = PetscViewerVTKFWrite(viewer,fp,array,nnodes*bs,MPIU_SCALAR);CHKERRQ(ierr);
+        PetscCall(PetscViewerVTKFWrite(viewer,fp,array,nnodes*bs,MPIU_SCALAR));
 
       } else if (r == rank) {
-        ierr = MPI_Send((void*)x,nnodes*bs,MPIU_SCALAR,0,tag,comm);CHKERRMPI(ierr);
+        PetscCallMPI(MPI_Send((void*)x,nnodes*bs,MPIU_SCALAR,0,tag,comm));
       }
-      ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
+      PetscCall(VecRestoreArrayRead(X,&x));
     }
   }
-  ierr = PetscFree2(array,array2);CHKERRQ(ierr);
-  ierr = PetscFree(grloc);CHKERRQ(ierr);
+  PetscCall(PetscFree2(array,array2));
+  PetscCall(PetscFree(grloc));
 
-  ierr = PetscFPrintf(comm,fp,"\n </AppendedData>\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,fp,"</VTKFile>\n");CHKERRQ(ierr);
-  ierr = PetscFClose(comm,fp);CHKERRQ(ierr);
+  PetscCall(PetscFPrintf(comm,fp,"\n </AppendedData>\n"));
+  PetscCall(PetscFPrintf(comm,fp,"</VTKFile>\n"));
+  PetscCall(PetscFClose(comm,fp));
   PetscFunctionReturn(0);
 }
 
@@ -522,25 +519,24 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
    If any fields have been named (see e.g. DMDASetFieldName()), then individual scalar
    fields are written. Otherwise, a single multi-dof (vector) field is written.
 
-.seealso: PETSCVIEWERVTK
+.seealso: `PETSCVIEWERVTK`
 @*/
 PetscErrorCode DMDAVTKWriteAll(PetscObject odm,PetscViewer viewer)
 {
   DM             dm = (DM)odm;
   PetscBool      isvtk;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERVTK,&isvtk);CHKERRQ(ierr);
-  PetscCheckFalse(!isvtk,PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_INCOMP,"Cannot use viewer type %s",((PetscObject)viewer)->type_name);
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERVTK,&isvtk));
+  PetscCheck(isvtk,PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_INCOMP,"Cannot use viewer type %s",((PetscObject)viewer)->type_name);
   switch (viewer->format) {
   case PETSC_VIEWER_VTK_VTS:
-    ierr = DMDAVTKWriteAll_VTS(dm,viewer);CHKERRQ(ierr);
+    PetscCall(DMDAVTKWriteAll_VTS(dm,viewer));
     break;
   case PETSC_VIEWER_VTK_VTR:
-    ierr = DMDAVTKWriteAll_VTR(dm,viewer);CHKERRQ(ierr);
+    PetscCall(DMDAVTKWriteAll_VTR(dm,viewer));
     break;
   default: SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"No support for format '%s'",PetscViewerFormats[viewer->format]);
   }

@@ -1,7 +1,12 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 import os
 petsc_hash_pkgs=os.path.join(os.getenv('HOME'),'petsc-hash-pkgs')
+
+mpiexecf='"/cygdrive/c/Program Files/Microsoft MPI/Bin/mpiexec"'
+mpidirf='"/cygdrive/c/Program Files (x86)/Microsoft SDKs/MPI"'
+mpiexec=os.popen('cygpath -u '+os.popen('cygpath -ms '+mpiexecf).read()).read().strip()
+mpidir=os.popen('cygpath -u '+os.popen('cygpath -ms '+mpidirf).read()).read().strip()
 
 if __name__ == '__main__':
   import sys
@@ -16,9 +21,9 @@ if __name__ == '__main__':
     '--with-fc=win32fe ifort',
     '--with-clanguage=cxx',
     '--with-scalar-type=complex',
-    '--with-mpi-include=[/cygdrive/c/PROGRA~2/MICROS~2/MPI/Include/,/cygdrive/c/PROGRA~2/MICROS~2/MPI/Include/x64]',
-    '--with-mpi-lib=[/cygdrive/c/PROGRA~2/MICROS~2/MPI/lib/x64/msmpifec.lib,/cygdrive/c/PROGRA~2/MICROS~2/MPI/lib/x64/msmpi.lib]',
-    '--with-mpiexec=/cygdrive/c/PROGRA~1/MICROS~2/Bin/mpiexec',
+    '--with-mpi-include=['+mpidir+'/Include,'+mpidir+'/Include/x64]',
+    '--with-mpi-lib=['+mpidir+'/lib/x64/msmpifec.lib,'+mpidir+'/lib/x64/msmpi.lib]',
+    '--with-mpiexec='+mpiexec,
     '--with-shared-libraries=0',
     '--with-mpi-f90module-visibility=0',
   ]

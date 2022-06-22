@@ -9,7 +9,6 @@ int main(int argc,char **argv)
   PetscDraw         draw;
   PetscDrawBar      bar;
   PetscDrawAxis     axis;
-  PetscErrorCode    ierr;
   int               color = PETSC_DRAW_ROTATE;
   const char        *xlabel,*ylabel,*toplabel;
   const PetscReal   values[] = {.3, .5, .05, .11};
@@ -19,30 +18,30 @@ int main(int argc,char **argv)
 
   xlabel = "X-axis Label"; toplabel = "Top Label"; ylabel = "Y-axis Label";
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
-  ierr = PetscOptionsHasName(NULL,NULL,"-nolabels",&nolabels);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-nolabels",&nolabels));
   if (nolabels) { xlabel = NULL; ylabel = NULL; toplabel = NULL; }
-  ierr = PetscOptionsGetRealArray(NULL,NULL,"-limits",limits,&nlimits,&setlimits);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetRealArray(NULL,NULL,"-limits",limits,&nlimits,&setlimits));
 
-  ierr = PetscDrawCreate(PETSC_COMM_WORLD,NULL,"Title",PETSC_DECIDE,PETSC_DECIDE,400,300,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
-  ierr = PetscDrawBarCreate(draw,&bar);CHKERRQ(ierr);
+  PetscCall(PetscDrawCreate(PETSC_COMM_WORLD,NULL,"Title",PETSC_DECIDE,PETSC_DECIDE,400,300,&draw));
+  PetscCall(PetscDrawSetFromOptions(draw));
+  PetscCall(PetscDrawBarCreate(draw,&bar));
 
-  ierr = PetscDrawBarGetAxis(bar,&axis);CHKERRQ(ierr);
-  ierr = PetscDrawAxisSetColors(axis,PETSC_DRAW_BLACK,PETSC_DRAW_RED,PETSC_DRAW_BLUE);CHKERRQ(ierr);
-  ierr = PetscDrawAxisSetLabels(axis,toplabel,xlabel,ylabel);CHKERRQ(ierr);
-  ierr = PetscDrawBarSetColor(bar,color);CHKERRQ(ierr);
-  ierr = PetscDrawBarSetFromOptions(bar);CHKERRQ(ierr);
+  PetscCall(PetscDrawBarGetAxis(bar,&axis));
+  PetscCall(PetscDrawAxisSetColors(axis,PETSC_DRAW_BLACK,PETSC_DRAW_RED,PETSC_DRAW_BLUE));
+  PetscCall(PetscDrawAxisSetLabels(axis,toplabel,xlabel,ylabel));
+  PetscCall(PetscDrawBarSetColor(bar,color));
+  PetscCall(PetscDrawBarSetFromOptions(bar));
 
-  if (setlimits) {ierr = PetscDrawBarSetLimits(bar,limits[0],limits[1]);CHKERRQ(ierr);}
-  ierr = PetscDrawBarSetData(bar,4,values,labels);CHKERRQ(ierr);
-  ierr = PetscDrawBarDraw(bar);CHKERRQ(ierr);
-  ierr = PetscDrawBarSave(bar);CHKERRQ(ierr);
+  if (setlimits) PetscCall(PetscDrawBarSetLimits(bar,limits[0],limits[1]));
+  PetscCall(PetscDrawBarSetData(bar,4,values,labels));
+  PetscCall(PetscDrawBarDraw(bar));
+  PetscCall(PetscDrawBarSave(bar));
 
-  ierr = PetscDrawBarDestroy(&bar);CHKERRQ(ierr);
-  ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscDrawBarDestroy(&bar));
+  PetscCall(PetscDrawDestroy(&draw));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

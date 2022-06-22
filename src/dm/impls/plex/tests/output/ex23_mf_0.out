@@ -1,4 +1,4 @@
-Vec Object: Local MultiField Input Volumetric Primary 1 MPI processes
+Vec Object: Local MultiField Input Volumetric Primary 1 MPI process
   type: seq
 0.
 0.
@@ -17,7 +17,7 @@ Vec Object: Local MultiField Input Volumetric Primary 1 MPI processes
 1.
 1.5
 1.5
-Vec Object: Local MultiField Volumetric Primary 1 MPI processes
+Vec Object: Local MultiField Volumetric Primary 1 MPI process
   type: seq
 2.
 6.07716e-64

@@ -1,10 +1,6 @@
 -include ../../../../petscdir.mk
 #requiresdefine   'PETSC_HAVE_ATTRIBUTEALIGNED'
-CFLAGS	         =
-FFLAGS	         =
-CPPFLAGS         =
-FPPFLAGS         =
-EXAMPLESC        = ex1.c
+
 LOCDIR           = src/snes/tutorials/network/
 DIRS		 = power water
 MANSEC           = SNES

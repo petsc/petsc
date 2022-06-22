@@ -13,7 +13,8 @@ def make_links_relative(root, placeholder=PETSC_DOC_OUT_ROOT_PLACEHOLDER):
         Exclude a specific set of subdirectories.
     """
     excludes = ["_static", "_sources", "_images"]
-    excludes.extend(classic_docs_subdirs())
+    excludes.extend(classic_docs_subdirs("pre"))
+    excludes.extend(classic_docs_subdirs("post"))
     root_level = root.count(os.path.sep)
     for dirpath, dirnames, filenames in os.walk(root, topdown=True):
         dirnames[:] = [dirname for dirname in dirnames if dirname not in excludes]

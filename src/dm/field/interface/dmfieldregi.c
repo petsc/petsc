@@ -13,18 +13,16 @@ PetscFunctionList DMFieldList;
 
    Level: advanced
 
-.seealso:  DMFieldRegisterDestroy()
+.seealso: `DMFieldRegisterDestroy()`
 @*/
 PetscErrorCode  DMFieldRegisterAll(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (DMFieldRegisterAllCalled) PetscFunctionReturn(0);
   DMFieldRegisterAllCalled = PETSC_TRUE;
-  ierr = DMFieldRegister(DMFIELDDA,    DMFieldCreate_DA);CHKERRQ(ierr);
-  ierr = DMFieldRegister(DMFIELDDS,    DMFieldCreate_DS);CHKERRQ(ierr);
-  ierr = DMFieldRegister(DMFIELDSHELL, DMFieldCreate_Shell);CHKERRQ(ierr);
+  PetscCall(DMFieldRegister(DMFIELDDA,    DMFieldCreate_DA));
+  PetscCall(DMFieldRegister(DMFIELDDS,    DMFieldCreate_DS));
+  PetscCall(DMFieldRegister(DMFIELDSHELL, DMFieldCreate_Shell));
   PetscFunctionReturn(0);
 }
 
@@ -50,14 +48,11 @@ $     DMFieldSetType(tagger,"my_impl")
 
    Level: advanced
 
-.seealso: DMFieldRegisterAll(), DMFieldRegisterDestroy()
+.seealso: `DMFieldRegisterAll()`, `DMFieldRegisterDestroy()`
 @*/
 PetscErrorCode  DMFieldRegister(const char sname[],PetscErrorCode (*function)(DMField))
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&DMFieldList,sname,function);CHKERRQ(ierr);
+  PetscCall(PetscFunctionListAdd(&DMFieldList,sname,function));
   PetscFunctionReturn(0);
 }
-

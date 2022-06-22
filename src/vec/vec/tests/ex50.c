@@ -13,7 +13,6 @@ static char help[] = "Test if VecLoad_HDF5 can correctly handle FFTW vectors\n\n
 
 int main(int argc,char **args)
 {
-  PetscErrorCode ierr;
   PetscInt       i,low,high,ldim,iglobal;
   PetscInt       m=64,dim[2]={8,8},DIM=2; /* FFT parameters */
   Vec            u,u_,H;    /* wave, work and transfer function vectors */
@@ -22,47 +21,47 @@ int main(int argc,char **args)
   PetscViewer    viewer;    /* Load refractive index */
   PetscScalar    v;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
 
   /* Generate vector */
-  ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)u, "ref_index");CHKERRQ(ierr);
-  ierr = VecSetSizes(u,PETSC_DECIDE,m);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(u);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(u,&low,&high);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(u,&ldim);CHKERRQ(ierr);
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&u));
+  PetscCall(PetscObjectSetName((PetscObject)u, "ref_index"));
+  PetscCall(VecSetSizes(u,PETSC_DECIDE,m));
+  PetscCall(VecSetFromOptions(u));
+  PetscCall(VecGetOwnershipRange(u,&low,&high));
+  PetscCall(VecGetLocalSize(u,&ldim));
 
   for (i=0; i<ldim; i++) {
     iglobal = i + low;
     v       = (PetscScalar)(i + low);
-    ierr    = VecSetValues(u,1,&iglobal,&v,INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(VecSetValues(u,1,&iglobal,&v,INSERT_VALUES));
   }
-  ierr = VecAssemblyBegin(u);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(u);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,"ex50tmp.h5",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
-  ierr = VecView(u,viewer);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  PetscCall(VecAssemblyBegin(u));
+  PetscCall(VecAssemblyEnd(u));
+  PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD,"ex50tmp.h5",FILE_MODE_WRITE,&viewer));
+  PetscCall(VecView(u,viewer));
+  PetscCall(VecDestroy(&u));
+  PetscCall(PetscViewerDestroy(&viewer));
 
   /* Make FFT matrix (via interface) and create vecs aligned to it. */
-  ierr   = MatCreateFFT(PETSC_COMM_WORLD,DIM,dim,MATFFTW,&A);CHKERRQ(ierr);
+  PetscCall(MatCreateFFT(PETSC_COMM_WORLD,DIM,dim,MATFFTW,&A));
 
   /* Create vectors that are compatible with parallel layout of A - must call MatCreateVecs()! */
-  ierr = MatCreateVecsFFTW(A,&u,&u_,&H);CHKERRQ(ierr);
-  ierr = VecDuplicate(u,&slice_rid);CHKERRQ(ierr);
+  PetscCall(MatCreateVecsFFTW(A,&u,&u_,&H));
+  PetscCall(VecDuplicate(u,&slice_rid));
 
   /* Load refractive index from file */
-  ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,"ex50tmp.h5",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)slice_rid,"ref_index");CHKERRQ(ierr);
-  ierr = VecLoad(slice_rid,viewer);CHKERRQ(ierr); /* Test if VecLoad_HDF5 can correctly handle FFTW vectors */
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD,"ex50tmp.h5",FILE_MODE_READ,&viewer));
+  PetscCall(PetscObjectSetName((PetscObject)slice_rid,"ref_index"));
+  PetscCall(VecLoad(slice_rid,viewer)); /* Test if VecLoad_HDF5 can correctly handle FFTW vectors */
+  PetscCall(PetscViewerDestroy(&viewer));
 
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = VecDestroy(&slice_rid);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr);
-  ierr = VecDestroy(&u_);CHKERRQ(ierr);
-  ierr = VecDestroy(&H);CHKERRQ(ierr);
-  ierr = PetscFinalize();
+  PetscCall(MatDestroy(&A));
+  PetscCall(VecDestroy(&slice_rid));
+  PetscCall(VecDestroy(&u));
+  PetscCall(VecDestroy(&u_));
+  PetscCall(VecDestroy(&H));
+  PetscCall(PetscFinalize());
   return 0;
 }
 

@@ -9,7 +9,7 @@ Upcoming tutorials
 
 Previous tutorials
 ------------------
-
+-  "PETSc with GPUs" at the `2022 CIG Developer's Workshop <https://geodynamics.hubzero.org/events/details/259>`__ (`slides and source <https://gitlab.com/psanan/petsc-gpu-cig-2022-02-28>`__).
 -  PETSc Tutorial at NASA Langley Research Center, March 2019 (Oana,
    Barry)
 -  PETSc Tutorial at the `ECP Annual

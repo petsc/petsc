@@ -1,5 +1,5 @@
 Local function:
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.
 0.25
@@ -27,7 +27,7 @@ Vec Object: 1 MPI processes
 0.8125
 1.0625
 Initial guess
-Vec Object: potential 1 MPI processes
+Vec Object: potential 1 MPI process
   type: seq
 -5.20417e-18
 0.25
@@ -56,7 +56,7 @@ Vec Object: potential 1 MPI processes
 1.0625
 L_2 Error: 0.021072
 Residual:
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 -0.0208333
 0.
@@ -84,7 +84,7 @@ Vec Object: 1 MPI processes
 0.
 0.
 Initial Residual
-Vec Object: Residual, Iterate 0 1 MPI processes
+Vec Object: Residual, Iterate 0 1 MPI process
   type: seq
 -0.0208333
 0.
@@ -113,7 +113,7 @@ Vec Object: Residual, Iterate 0 1 MPI processes
 0.
 L_2 Residual: 0.0416667
 Residual:
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.0416667
 0.125
@@ -141,7 +141,7 @@ Vec Object: 1 MPI processes
 0.25
 -0.375
 Au - b = Au + F(0)
-Vec Object: Residual, Iterate 0 1 MPI processes
+Vec Object: Residual, Iterate 0 1 MPI process
   type: seq
 -0.0208333
 0.

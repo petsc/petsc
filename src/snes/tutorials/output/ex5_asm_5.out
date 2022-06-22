@@ -83,27 +83,27 @@ SNES Object: 2 MPI processes
       restriction/interpolation type - RESTRICT
       Local solver information for first block is in the following KSP and PC objects on rank 0:
       Use -ksp_view ::ascii_info_detail to display information for all blocks
-    KSP Object: (sub_) 1 MPI processes
+    KSP Object: (sub_) 1 MPI process
       type: preonly
       maximum iterations=10000, initial guess is zero
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
-    PC Object: (sub_) 1 MPI processes
+    PC Object: (sub_) 1 MPI process
       type: lu
         out-of-place factorization
         tolerance for zero pivot 2.22045e-14
         matrix ordering: nd
         factor fill ratio given 5., needed 1.35714
           Factored matrix follows:
-            Mat Object: 1 MPI processes
+            Mat Object: (sub_) 1 MPI process
               type: seqaij
               rows=8, cols=8
               package used to perform factorization: petsc
               total: nonzeros=38, allocated nonzeros=38
                 not using I-node routines
       linear system matrix = precond matrix:
-      Mat Object: (sub_) 1 MPI processes
+      Mat Object: (sub_) 1 MPI process
         type: seqaij
         rows=8, cols=8
         total: nonzeros=28, allocated nonzeros=28

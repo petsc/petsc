@@ -53,23 +53,23 @@
   3 SNES Function norm 5.49441e+07 
 L_2 Error: 24.908
 Nonlinear solve did not converge due to DIVERGED_DTOL iterations 3
-SNES Object: 1 MPI processes
+SNES Object: 1 MPI process
   type: fas
     type is MULTIPLICATIVE, levels=2, cycles=1
     Not using Galerkin computed coarse grid function evaluation
     Coarse grid solver -- level 0 -------------------------------
-    SNES Object: (fas_coarse_) 1 MPI processes
+    SNES Object: (fas_coarse_) 1 MPI process
       type: newtonls
       maximum iterations=50, maximum function evaluations=10000
       tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
       total number of linear solver iterations=10
       total number of function evaluations=10
-      SNESLineSearch Object: (fas_coarse_) 1 MPI processes
+      SNESLineSearch Object: (fas_coarse_) 1 MPI process
         type: basic
         maxstep=1.000000e+08, minlambda=1.000000e-12
         tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
         maximum iterations=40
-      KSP Object: (fas_coarse_) 1 MPI processes
+      KSP Object: (fas_coarse_) 1 MPI process
         type: gmres
           restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
           happy breakdown tolerance 1e-30
@@ -77,33 +77,33 @@ SNES Object: 1 MPI processes
         tolerances:  relative=1e-10, absolute=1e-50, divergence=10000.
         left preconditioning
         using PRECONDITIONED norm type for convergence test
-      PC Object: (fas_coarse_) 1 MPI processes
+      PC Object: (fas_coarse_) 1 MPI process
         type: svd
           All singular values smaller than 1e-12 treated as zero
           Provided essential rank of the matrix 0 (all other eigenvalues are zeroed)
         linear system matrix = precond matrix:
-        Mat Object: 1 MPI processes
+        Mat Object: 1 MPI process
           type: seqaij
           rows=12, cols=12
           total: nonzeros=56, allocated nonzeros=56
           total number of mallocs used during MatSetValues calls=0
             not using I-node routines
     Down solver (pre-smoother) on level 1 -------------------------------
-    SNES Object: (fas_levels_1_) 1 MPI processes
+    SNES Object: (fas_levels_1_) 1 MPI process
       type: newtonls
       maximum iterations=1, maximum function evaluations=30000
       tolerances: relative=0., absolute=0., solution=0.
       total number of linear solver iterations=1
       total number of function evaluations=2
       norm schedule FINALONLY
-      SNESLineSearch Object: (fas_levels_1_) 1 MPI processes
+      SNESLineSearch Object: (fas_levels_1_) 1 MPI process
         type: bt
           interpolation: cubic
           alpha=1.000000e-04
         maxstep=1.000000e+08, minlambda=1.000000e-12
         tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
         maximum iterations=40
-      KSP Object: (fas_levels_1_) 1 MPI processes
+      KSP Object: (fas_levels_1_) 1 MPI process
         type: gmres
           restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
           happy breakdown tolerance 1e-30
@@ -111,12 +111,12 @@ SNES Object: 1 MPI processes
         tolerances:  relative=1e-10, absolute=1e-50, divergence=10000.
         left preconditioning
         using PRECONDITIONED norm type for convergence test
-      PC Object: (fas_levels_1_) 1 MPI processes
+      PC Object: (fas_levels_1_) 1 MPI process
         type: svd
           All singular values smaller than 1e-12 treated as zero
           Provided essential rank of the matrix 0 (all other eigenvalues are zeroed)
         linear system matrix = precond matrix:
-        Mat Object: 1 MPI processes
+        Mat Object: 1 MPI process
           type: seqaij
           rows=49, cols=49
           total: nonzeros=289, allocated nonzeros=289

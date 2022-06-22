@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 from __future__ import generators
 import config.base
 
@@ -59,7 +58,7 @@ class Configure(config.base.Configure):
     return
 
   def configureMissingFunctions(self):
-    '''Checks for SOCKETS'''
+    '''Checks for SOCKETS and getline'''
     if not self.functions.haveFunction('socket'):
       # solaris requires these two libraries for socket()
       if self.libraries.haveLib('socket') and self.libraries.haveLib('nsl'):
@@ -74,6 +73,8 @@ class Configure(config.base.Configure):
           self.addDefine('HAVE_CLOSESOCKET',1)
         if self.checkLink('#include <Winsock2.h>','WSAGetLastError()'):
           self.addDefine('HAVE_WSAGETLASTERROR',1)
+    if not self.checkLink('#include <stdio.h>\nchar *lineptr;\nsize_t n;\nFILE *stream;\n', 'getline(&lineptr, &n, stream);\n'):
+      self.addDefine('MISSING_GETLINE', 1)
     return
 
   def configureMissingSignals(self):

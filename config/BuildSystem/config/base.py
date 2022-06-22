@@ -279,7 +279,7 @@ class Configure(script.Script):
         if found: break
     if not found:
       dirs = self.argDB['with-executables-search-path']
-      if not isinstance(dirs, list): dirs = [dirs]
+      if not isinstance(dirs, list): dirs = dirs.split(os.path.pathsep)
       for d in dirs:
         for name in names:
           name, options, varName = getNames(name, resultName)
@@ -518,8 +518,8 @@ class Configure(script.Script):
     '''Return the name of the argument which holds the preprocessor flags for the current language'''
     return self.getPreprocessorFlagsName(self.language[-1])
 
-  def filterCompileOutput(self, output):
-    return self.framework.filterCompileOutput(output)
+  def filterCompileOutput(self, output,flag=''):
+    return self.framework.filterCompileOutput(output,flag=flag)
 
   def outputCompile(self, includes = '', body = '', cleanup = 1, codeBegin = None, codeEnd = None):
     '''Return the error output from this compile and the return code'''
@@ -544,11 +544,11 @@ class Configure(script.Script):
         if os.path.isfile(filename): os.remove(filename)
     return (out, err, ret)
 
-  def checkCompile(self, includes = '', body = '', cleanup = 1, codeBegin = None, codeEnd = None):
+  def checkCompile(self, includes = '', body = '', cleanup = 1, codeBegin = None, codeEnd = None, flag = ''):
     '''Returns True if the compile was successful'''
     self.logWrite('===== Checking compiler\n')
     (output, error, returnCode) = self.outputCompile(includes, body, cleanup, codeBegin, codeEnd)
-    output = self.filterCompileOutput(output+'\n'+error)
+    output = self.filterCompileOutput(output+'\n'+error,flag=flag)
     return not (returnCode or len(output))
 
   def getCompilerFlagsName(language, compilerOnly = 0):
@@ -579,12 +579,12 @@ class Configure(script.Script):
   def filterLinkOutput(self, output):
     return self.framework.filterLinkOutput(output)
 
-  def outputLink(self, includes, body, cleanup = 1, codeBegin = None, codeEnd = None, shared = 0, linkLanguage=None, examineOutput=lambda ret,out,err:None):
+  def outputLink(self, includes, body, cleanup = 1, codeBegin = None, codeEnd = None, shared = 0, linkLanguage=None, examineOutput=lambda ret,out,err:None,flag=''):
     import sys
 
     (out, err, ret) = self.outputCompile(includes, body, cleanup = 0, codeBegin = codeBegin, codeEnd = codeEnd)
     examineOutput(ret, out, err)
-    out = self.filterCompileOutput(out+'\n'+err)
+    out = self.filterCompileOutput(out+'\n'+err,flag=flag)
     if ret or len(out):
       self.logPrint('Compile failed inside link\n'+out)
       self.linkerObj = ''

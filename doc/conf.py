@@ -15,9 +15,11 @@ import datetime
 sys.path.append(os.getcwd())
 sys.path.append(os.path.abspath('./ext'))
 
-import add_version_header
+import add_man_page_redirects
 import build_classic_docs
+import fix_man_page_edit_links
 import make_links_relative
+import update_htmlmap_links
 
 
 if not os.path.isdir("images"):
@@ -58,7 +60,7 @@ needs_sphinx='3.5'
 nitpicky = True  # checks internal links. For external links, use "make linkcheck"
 master_doc = 'index'
 templates_path = ['_templates']
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ['_build*', 'images', 'Thumbs.db', '.DS_Store']
 highlight_language = 'c'
 numfig = True
 
@@ -70,12 +72,18 @@ extensions = [
     'sphinxcontrib.bibtex',
     'sphinxcontrib.katex',
     'sphinxcontrib.rsvgconverter',
+    'myst_parser',
     'html5_petsc',
+    'sphinx_remove_toctrees',
 ]
 
 copybutton_prompt_text = '$ '
 
 bibtex_bibfiles = ['petsc.bib']
+
+myst_enable_extensions = ["dollarmath", "amsmath", "deflist"]
+
+remove_from_toctrees = ['docs/manualpages/*']
 
 # -- Options for HTML output ---------------------------------------------------
 
@@ -93,11 +101,19 @@ html_theme_options = {
     "footer_items": ["copyright", "sphinx-version", "last-updated"],
 }
 
+try:
+  git_ref = subprocess.check_output(["git", "rev-parse", "HEAD"]).rstrip()
+  git_ref_release = subprocess.check_output(["git", "rev-parse", "origin/release"]).rstrip()
+  edit_branch = "release" if git_ref == git_ref_release else "main"
+except subprocess.CalledProcessError:
+  print("WARNING: determining branch for page edit links failed")
+  edit_branch = "main"
+
 html_context = {
     "github_url": "https://gitlab.com",
     "github_user": "petsc",
     "github_repo": "petsc",
-    "github_version": "release",
+    "github_version": edit_branch,
     "doc_path": "doc",
 }
 
@@ -142,50 +158,68 @@ r'''
 
 # -- Setup and event callbacks -------------------------------------------------
 
-# Trigger a build of the "classic" docs
-def _build_classic_docs(app):
-    build_classic_docs.main()
+def setup(app):
+        app.connect('builder-inited', builder_init_handler)
+        app.connect('build-finished', build_finished_handler)
 
 
 def builder_init_handler(app):
-    _build_classic_docs(app)
+    if app.builder.name.endswith('html'):
+        _build_classic_docs(app, 'pre')
+        _copy_classic_docs(app, None, '.', 'pre')
+        _update_htmlmap_links(app)
 
 
-def _add_version_header(app, exception):
-    if exception is None and app.builder.name.endswith('html'):
+def build_finished_handler(app, exception):
+    if app.builder.name.endswith('html'):
+        _build_classic_docs(app, 'post')
+        _copy_classic_docs(app, exception, app.outdir, 'post')
+        _fix_links(app, exception)
+        _fix_man_page_edit_links(app, exception)
+        if app.builder.name == 'dirhtml':
+            _add_man_page_redirects(app, exception)
+        if app.builder.name == 'html':
+            print("==========================================================================")
+            print("    open %s/index.html in your browser to view the documentation " % app.outdir)
+            print("==========================================================================")
+
+def _add_man_page_redirects(app, exception):
+    if exception is None:
         print("============================================")
-        print("    Adding version to classic man pages, from conf.py")
+        print("    Adding man pages redirects")
         print("============================================")
-        add_version_header.add_version_header(os.path.join(app.outdir, "docs", "manualpages"), release)
+        add_man_page_redirects.add_man_page_redirects(app.outdir)
+
+def _build_classic_docs(app, stage):
+    build_classic_docs.main(stage)
 
 
-def _copy_classic_docs(app, exception):
-    if exception is None and app.builder.name.endswith('html'):
+def _copy_classic_docs(app, exception, destination, stage):
+    if exception is None:
         print("============================================")
-        print("    Copying classic docs from conf.py       ")
+        print("    Copying classic docs (%s)" % stage)
         print("============================================")
-        build_classic_docs.copy_classic_docs(app.outdir)
+        build_classic_docs.copy_classic_docs(destination, stage)
 
 
 def _fix_links(app, exception):
-    if exception is None and app.builder.name.endswith('html'):
+    if exception is None:
         print("============================================")
-        print("    Fixing relative links from conf.py      ")
+        print("    Fixing relative links")
         print("============================================")
         make_links_relative.make_links_relative(app.outdir)
 
 
-def build_finished_handler(app, exception):
-    _copy_classic_docs(app, exception)
-    _fix_links(app, exception)
-    _add_version_header(app, exception)
-    if app.builder.name == 'html':
-        print("==========================================================================")
-        print("    open %s/index.html in your browser to view the documentation " % app.outdir)
-        print("==========================================================================")
+def _fix_man_page_edit_links(app, exception):
+    if exception is None:
+        print("============================================")
+        print("    Fixing man page edit links")
+        print("============================================")
+        fix_man_page_edit_links.fix_man_page_edit_links(app.outdir)
 
 
-def setup(app):
-    app.connect('builder-inited', builder_init_handler)
-    app.connect('build-finished', build_finished_handler)
-    app.add_css_file('css/pop-up.css')
+def _update_htmlmap_links(app):
+    print("============================================")
+    print("    Updating htmlmap")
+    print("============================================")
+    update_htmlmap_links.update_htmlmap_links(app.builder)

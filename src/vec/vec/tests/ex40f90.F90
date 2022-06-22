@@ -8,22 +8,19 @@
       PetscErrorCode ierr
 
       three = 3
-      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      if (ierr .ne. 0) then
-        print*,'Unable to initialize PETSc'
-        stop
-      endif
-      call PetscSectionCreate(PETSC_COMM_WORLD, section, ierr);CHKERRA(ierr)
+      PetscCallA(PetscInitialize(ierr))
+
+      PetscCallA(PetscSectionCreate(PETSC_COMM_WORLD, section, ierr))
       pStart = 0
       pEnd   = 5
-      call PetscSectionSetChart(section, pStart, pEnd, ierr);CHKERRA(ierr)
+      PetscCallA(PetscSectionSetChart(section, pStart, pEnd, ierr))
       do p=pStart,pEnd-1
-         call PetscSectionSetDof(section, p, three, ierr);CHKERRA(ierr)
+         PetscCallA(PetscSectionSetDof(section, p, three, ierr))
       end do
-      call PetscSectionSetUp(section, ierr);CHKERRA(ierr)
-      call PetscSectionView(section, PETSC_VIEWER_STDOUT_WORLD, ierr);CHKERRA(ierr)
-      call PetscSectionDestroy(section, ierr);CHKERRA(ierr)
-      call PetscFinalize(ierr)
+      PetscCallA(PetscSectionSetUp(section, ierr))
+      PetscCallA(PetscSectionView(section, PETSC_VIEWER_STDOUT_WORLD, ierr))
+      PetscCallA(PetscSectionDestroy(section, ierr))
+      PetscCallA(PetscFinalize(ierr))
       end
 
 !/*TEST

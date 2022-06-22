@@ -74,13 +74,13 @@ SNES Object: 3 MPI processes
         number of blocks = 3
         Local solver information for first block is in the following KSP and PC objects on rank 0:
         Use -fieldsplit_x_velocity_ksp_view ::ascii_info_detail to display information for all blocks
-      KSP Object: (fieldsplit_x_velocity_sub_) 1 MPI processes
+      KSP Object: (fieldsplit_x_velocity_sub_) 1 MPI process
         type: preonly
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
-      PC Object: (fieldsplit_x_velocity_sub_) 1 MPI processes
+      PC Object: (fieldsplit_x_velocity_sub_) 1 MPI process
         type: ilu
           out-of-place factorization
           0 levels of fill
@@ -88,14 +88,14 @@ SNES Object: 3 MPI processes
           matrix ordering: natural
           factor fill ratio given 1., needed 1.
             Factored matrix follows:
-              Mat Object: 1 MPI processes
+              Mat Object: (fieldsplit_x_velocity_sub_) 1 MPI process
                 type: seqaij
                 rows=21, cols=21
                 package used to perform factorization: petsc
                 total: nonzeros=85, allocated nonzeros=85
                   not using I-node routines
         linear system matrix = precond matrix:
-        Mat Object: (fieldsplit_x_velocity_sub_) 1 MPI processes
+        Mat Object: (fieldsplit_x_velocity_sub_) 1 MPI process
           type: seqaij
           rows=21, cols=21
           total: nonzeros=85, allocated nonzeros=85
@@ -120,13 +120,13 @@ SNES Object: 3 MPI processes
         number of blocks = 3
         Local solver information for first block is in the following KSP and PC objects on rank 0:
         Use -fieldsplit_y_velocity_ksp_view ::ascii_info_detail to display information for all blocks
-      KSP Object: (fieldsplit_y_velocity_sub_) 1 MPI processes
+      KSP Object: (fieldsplit_y_velocity_sub_) 1 MPI process
         type: preonly
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
-      PC Object: (fieldsplit_y_velocity_sub_) 1 MPI processes
+      PC Object: (fieldsplit_y_velocity_sub_) 1 MPI process
         type: ilu
           out-of-place factorization
           0 levels of fill
@@ -134,14 +134,14 @@ SNES Object: 3 MPI processes
           matrix ordering: natural
           factor fill ratio given 1., needed 1.
             Factored matrix follows:
-              Mat Object: 1 MPI processes
+              Mat Object: (fieldsplit_y_velocity_sub_) 1 MPI process
                 type: seqaij
                 rows=21, cols=21
                 package used to perform factorization: petsc
                 total: nonzeros=85, allocated nonzeros=85
                   not using I-node routines
         linear system matrix = precond matrix:
-        Mat Object: (fieldsplit_y_velocity_sub_) 1 MPI processes
+        Mat Object: (fieldsplit_y_velocity_sub_) 1 MPI process
           type: seqaij
           rows=21, cols=21
           total: nonzeros=85, allocated nonzeros=85
@@ -166,13 +166,13 @@ SNES Object: 3 MPI processes
         number of blocks = 3
         Local solver information for first block is in the following KSP and PC objects on rank 0:
         Use -fieldsplit_Omega_ksp_view ::ascii_info_detail to display information for all blocks
-      KSP Object: (fieldsplit_Omega_sub_) 1 MPI processes
+      KSP Object: (fieldsplit_Omega_sub_) 1 MPI process
         type: preonly
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
-      PC Object: (fieldsplit_Omega_sub_) 1 MPI processes
+      PC Object: (fieldsplit_Omega_sub_) 1 MPI process
         type: ilu
           out-of-place factorization
           0 levels of fill
@@ -180,14 +180,14 @@ SNES Object: 3 MPI processes
           matrix ordering: natural
           factor fill ratio given 1., needed 1.
             Factored matrix follows:
-              Mat Object: 1 MPI processes
+              Mat Object: (fieldsplit_Omega_sub_) 1 MPI process
                 type: seqaij
                 rows=21, cols=21
                 package used to perform factorization: petsc
                 total: nonzeros=85, allocated nonzeros=85
                   not using I-node routines
         linear system matrix = precond matrix:
-        Mat Object: (fieldsplit_Omega_sub_) 1 MPI processes
+        Mat Object: (fieldsplit_Omega_sub_) 1 MPI process
           type: seqaij
           rows=21, cols=21
           total: nonzeros=85, allocated nonzeros=85
@@ -212,13 +212,13 @@ SNES Object: 3 MPI processes
         number of blocks = 3
         Local solver information for first block is in the following KSP and PC objects on rank 0:
         Use -fieldsplit_temperature_ksp_view ::ascii_info_detail to display information for all blocks
-      KSP Object: (fieldsplit_temperature_sub_) 1 MPI processes
+      KSP Object: (fieldsplit_temperature_sub_) 1 MPI process
         type: preonly
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
-      PC Object: (fieldsplit_temperature_sub_) 1 MPI processes
+      PC Object: (fieldsplit_temperature_sub_) 1 MPI process
         type: ilu
           out-of-place factorization
           0 levels of fill
@@ -226,14 +226,14 @@ SNES Object: 3 MPI processes
           matrix ordering: natural
           factor fill ratio given 1., needed 1.
             Factored matrix follows:
-              Mat Object: 1 MPI processes
+              Mat Object: (fieldsplit_temperature_sub_) 1 MPI process
                 type: seqaij
                 rows=21, cols=21
                 package used to perform factorization: petsc
                 total: nonzeros=85, allocated nonzeros=85
                   not using I-node routines
         linear system matrix = precond matrix:
-        Mat Object: (fieldsplit_temperature_sub_) 1 MPI processes
+        Mat Object: (fieldsplit_temperature_sub_) 1 MPI process
           type: seqaij
           rows=21, cols=21
           total: nonzeros=85, allocated nonzeros=85

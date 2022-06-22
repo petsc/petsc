@@ -1,8 +1,7 @@
+-include ../../../petsckdir.mk
 #requiresdefine   'PETSC_HAVE_FORTRAN'
 #
 
-CFLAGS	   =
-FFLAGS	   =
 SOURCEC	   =
 SOURCEF90  = petsckspdefmod.F90 petscpcmod.F90 petsckspmod.F90
 SOURCEH	   = petscksp.h petscksp.h90 petscpc.h petscpc.h90

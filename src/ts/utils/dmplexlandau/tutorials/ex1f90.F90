@@ -1,8 +1,5 @@
 ! test phase space (Maxwellian) mesh construction (serial)
 !
-!run:
-!       -${MPIEXEC} ....
-!       -@${PETSC_DIR}/lib/petsc/bin/petsc_gen_xdmf.py *.h5
 !
 !
 ! Contributed by Mark Adams
@@ -12,8 +9,8 @@ program DMPlexTestLandauInterface
 #include <petsc/finclude/petscts.h>
 #include <petsc/finclude/petscdmplex.h>
   implicit none
-  external LandauIFunction
-  external LandauIJacobian
+  external DMPlexLandauIFunction
+  external DMPlexLandauIJacobian
   DM             dm
   PetscInt       dim
   PetscInt       ii
@@ -27,70 +24,68 @@ program DMPlexTestLandauInterface
   SNESLineSearch linesearch
   PetscReal      mone
   PetscScalar    scalar
-  call PetscInitialize(PETSC_NULL_CHARACTER, ierr)
-  if (ierr .ne. 0) then
-     print*,'Unable to initialize PETSc'
-     stop
-  endif
+
+  PetscCallA(PetscInitialize(ierr))
+
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !  Create mesh (DM), read in parameters, create and add f_0 (X)
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   dim = 2
-  call LandauCreateVelocitySpace(PETSC_COMM_WORLD, dim, '', X, J, dm, ierr);CHKERRA(ierr)
-  call DMSetUp(dm,ierr);CHKERRA(ierr)
-  call VecDuplicate(X,X_0,ierr);CHKERRA(ierr)
-  call VecCopy(X,X_0,ierr)
+  PetscCallA(DMPlexLandauCreateVelocitySpace(PETSC_COMM_WORLD, dim, '', X, J, dm, ierr))
+  PetscCallA(DMSetUp(dm,ierr))
+  PetscCallA(VecDuplicate(X,X_0,ierr))
+  PetscCallA(VecCopy(X,X_0,ierr))
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !  View
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ii = 0
-  call LandauPrintNorms(X,ii,ierr);CHKERRA(ierr)
+  PetscCallA(DMPlexLandauPrintNorms(X,ii,ierr))
   mone = 0;
-  call DMSetOutputSequenceNumber(dm, ii, mone, ierr);CHKERRA(ierr);
+  PetscCallA(DMSetOutputSequenceNumber(dm, ii, mone, ierr))
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !    Create timestepping solver context
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  call TSCreate(PETSC_COMM_SELF,ts,ierr);CHKERRA(ierr)
-  call TSSetOptionsPrefix(ts, 'ex1_', ierr);CHKERRA(ierr) ! should get this from the dm or give it to the dm
-  call TSSetDM(ts,dm,ierr);CHKERRA(ierr)
-  call TSGetSNES(ts,snes,ierr);CHKERRA(ierr)
-  call SNESSetOptionsPrefix(snes, 'ex1_', ierr);CHKERRA(ierr) ! should get this from the dm or give it to the dm
-  call SNESGetLineSearch(snes,linesearch,ierr);CHKERRA(ierr)
-  call SNESLineSearchSetType(linesearch,SNESLINESEARCHBASIC,ierr);CHKERRA(ierr)
-  call TSSetIFunction(ts,PETSC_NULL_VEC,LandauIFunction,PETSC_NULL_VEC,ierr);CHKERRA(ierr)
-  call TSSetIJacobian(ts,J,J,LandauIJacobian,PETSC_NULL_VEC,ierr);CHKERRA(ierr)
-  call TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER,ierr);CHKERRA(ierr)
+  PetscCallA(TSCreate(PETSC_COMM_SELF,ts,ierr))
+  PetscCallA(TSSetOptionsPrefix(ts, 'ex1_', ierr)) ! should get this from the dm or give it to the dm
+  PetscCallA(TSSetDM(ts,dm,ierr))
+  PetscCallA(TSGetSNES(ts,snes,ierr))
+  PetscCallA(SNESSetOptionsPrefix(snes, 'ex1_', ierr)) ! should get this from the dm or give it to the dm
+  PetscCallA(SNESGetLineSearch(snes,linesearch,ierr))
+  PetscCallA(SNESLineSearchSetType(linesearch,SNESLINESEARCHBASIC,ierr))
+  PetscCallA(TSSetIFunction(ts,PETSC_NULL_VEC,DMPlexLandauIFunction,PETSC_NULL_VEC,ierr))
+  PetscCallA(TSSetIJacobian(ts,J,J,DMPlexLandauIJacobian,PETSC_NULL_VEC,ierr))
+  PetscCallA(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER,ierr))
 
-  call SNESGetKSP(snes,ksp,ierr);CHKERRA(ierr)
-  call KSPSetOptionsPrefix(ksp, 'ex1_', ierr);CHKERRA(ierr) ! should get this from the dm or give it to the dm
-  call KSPGetPC(ksp,pc,ierr);CHKERRA(ierr)
-  call PCSetOptionsPrefix(pc, 'ex1_', ierr);CHKERRA(ierr) ! should get this from the dm or give it to the dm
+  PetscCallA(SNESGetKSP(snes,ksp,ierr))
+  PetscCallA(KSPSetOptionsPrefix(ksp, 'ex1_', ierr)) ! should get this from the dm or give it to the dm
+  PetscCallA(KSPGetPC(ksp,pc,ierr))
+  PetscCallA(PCSetOptionsPrefix(pc, 'ex1_', ierr)) ! should get this from the dm or give it to the dm
 
-  call TSSetFromOptions(ts,ierr);CHKERRA(ierr)
-  call TSSetSolution(ts,X,ierr);CHKERRA(ierr)
+  PetscCallA(TSSetFromOptions(ts,ierr))
+  PetscCallA(TSSetSolution(ts,X,ierr))
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !  Solve nonlinear system
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  call TSSolve(ts,X,ierr);CHKERRA(ierr)
+  PetscCallA(TSSolve(ts,X,ierr))
   ii = 1
-  call LandauPrintNorms(X,ii,ierr);CHKERRA(ierr)
-  call TSGetTime(ts, mone, ierr);CHKERRA(ierr);
-  call DMSetOutputSequenceNumber(dm, ii, mone, ierr);CHKERRA(ierr);
+  PetscCallA(DMPlexLandauPrintNorms(X,ii,ierr))
+  PetscCallA(TSGetTime(ts, mone, ierr))
+  PetscCallA(DMSetOutputSequenceNumber(dm, ii, mone, ierr))
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !  remove f_0
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   scalar = -1.
-  call VecAXPY(X,scalar,X_0,ierr);CHKERRA(ierr)
-  call LandauDestroyVelocitySpace(dm, ierr);CHKERRA(ierr)
-  call TSDestroy(ts, ierr);CHKERRA(ierr)
-  call VecDestroy(X, ierr);CHKERRA(ierr)
-  call VecDestroy(X_0, ierr);CHKERRA(ierr)
-  call PetscFinalize(ierr)
+  PetscCallA(VecAXPY(X,scalar,X_0,ierr))
+  PetscCallA(DMPlexLandauDestroyVelocitySpace(dm, ierr))
+  PetscCallA(TSDestroy(ts, ierr))
+  PetscCallA(VecDestroy(X, ierr))
+  PetscCallA(VecDestroy(X_0, ierr))
+  PetscCallA(PetscFinalize(ierr))
 end program DMPlexTestLandauInterface
 
 !/*TEST
 !  build:
-!    requires: defined(PETSC_USING_F90FREEFORM)
+!    requires: defined(PETSC_USING_F90FREEFORM) defined(PETSC_USE_DMLANDAU_2D)
 !
 !  test:
 !    suffix: 0

@@ -14,16 +14,14 @@
 
    Level: beginner
 
-.seealso: PetscDrawSetPause(), PetscDrawGetPause()
+.seealso: `PetscDrawSetPause()`, `PetscDrawGetPause()`
 @*/
 PetscErrorCode  PetscDrawPause(PetscDraw draw)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   if (draw->ops->pause) {
-    ierr = (*draw->ops->pause)(draw);CHKERRQ(ierr);
+    PetscCall((*draw->ops->pause)(draw));
   }
   PetscFunctionReturn(0);
 }
@@ -44,7 +42,7 @@ PetscErrorCode  PetscDrawPause(PetscDraw draw)
    By default the pause time is zero unless the -draw_pause option is given
    during PetscDrawCreate().
 
-.seealso: PetscDrawGetPause(), PetscDrawPause()
+.seealso: `PetscDrawGetPause()`, `PetscDrawPause()`
 @*/
 PetscErrorCode  PetscDrawSetPause(PetscDraw draw,PetscReal lpause)
 {
@@ -70,13 +68,13 @@ PetscErrorCode  PetscDrawSetPause(PetscDraw draw,PetscReal lpause)
    Note:
    By default the pause time is zero unless the -draw_pause option is given
 
-.seealso: PetscDrawSetPause(), PetscDrawPause()
+.seealso: `PetscDrawSetPause()`, `PetscDrawPause()`
 @*/
 PetscErrorCode  PetscDrawGetPause(PetscDraw draw,PetscReal *lpause)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  PetscValidPointer(lpause,2);
+  PetscValidRealPointer(lpause,2);
   *lpause = draw->pause;
   PetscFunctionReturn(0);
 }

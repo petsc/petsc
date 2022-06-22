@@ -7,7 +7,6 @@ static char help[] = "Time vector operations on GPU\n";
 
 int main(int argc, char **argv)
 {
-  PetscErrorCode ierr;
   Vec            v,w,x;
   PetscInt       n=15;
   PetscScalar    val;
@@ -17,52 +16,52 @@ int main(int argc, char **argv)
   PetscLogStage  stage;
 #endif
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,&v);CHKERRQ(ierr);
-  ierr = VecSetSizes(v,PETSC_DECIDE,n);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(v);CHKERRQ(ierr);
-  ierr = VecDuplicate(v,&w);CHKERRQ(ierr);
-  ierr = VecSetRandom(v,rctx);CHKERRQ(ierr);
-  ierr = VecSetRandom(w,rctx);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCall(PetscRandomCreate(PETSC_COMM_WORLD,&rctx));
+  PetscCall(PetscRandomSetFromOptions(rctx));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&v));
+  PetscCall(VecSetSizes(v,PETSC_DECIDE,n));
+  PetscCall(VecSetFromOptions(v));
+  PetscCall(VecDuplicate(v,&w));
+  PetscCall(VecSetRandom(v,rctx));
+  PetscCall(VecSetRandom(w,rctx));
 
   /* create dummy vector to clear cache */
-  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,PETSC_DECIDE,10000000);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-  ierr = VecSetRandom(x,rctx);CHKERRQ(ierr);
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
+  PetscCall(VecSetSizes(x,PETSC_DECIDE,10000000));
+  PetscCall(VecSetFromOptions(x));
+  PetscCall(VecSetRandom(x,rctx));
 
   /* send v to GPU */
-  ierr = PetscBarrier(NULL);CHKERRQ(ierr);
-  ierr = VecNorm(v,NORM_1,&norm1);CHKERRQ(ierr);
+  PetscCall(PetscBarrier(NULL));
+  PetscCall(VecNorm(v,NORM_1,&norm1));
 
   /* register a stage work on GPU */
-  ierr = PetscLogStageRegister("Work on GPU", &stage);CHKERRQ(ierr);
-  ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
-  ierr = VecNorm(w,NORM_1,&norm1);CHKERRQ(ierr); /* send w to GPU */
-  ierr = VecNorm(x,NORM_1,&norm1);CHKERRQ(ierr); /* clear cache */
-  ierr = PetscBarrier(NULL);CHKERRQ(ierr);
-  ierr = VecAXPY(w,1.0,v);CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_INFINITY,&norm1);CHKERRQ(ierr);
-  ierr = PetscBarrier(NULL);CHKERRQ(ierr);
-  ierr = VecDot(w,v,&val);CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_1,&norm1);CHKERRQ(ierr);
-  ierr = PetscBarrier(NULL);CHKERRQ(ierr);
-  ierr = VecSet(v,0.0);CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_2,&norm2);CHKERRQ(ierr);
-  ierr = PetscBarrier(NULL);CHKERRQ(ierr);
-  ierr = VecCopy(v,w);CHKERRQ(ierr);
-  ierr = PetscLogStagePop();CHKERRQ(ierr);
+  PetscCall(PetscLogStageRegister("Work on GPU", &stage));
+  PetscCall(PetscLogStagePush(stage));
+  PetscCall(VecNorm(w,NORM_1,&norm1)); /* send w to GPU */
+  PetscCall(VecNorm(x,NORM_1,&norm1)); /* clear cache */
+  PetscCall(PetscBarrier(NULL));
+  PetscCall(VecAXPY(w,1.0,v));
+  PetscCall(VecNorm(x,NORM_INFINITY,&norm1));
+  PetscCall(PetscBarrier(NULL));
+  PetscCall(VecDot(w,v,&val));
+  PetscCall(VecNorm(x,NORM_1,&norm1));
+  PetscCall(PetscBarrier(NULL));
+  PetscCall(VecSet(v,0.0));
+  PetscCall(VecNorm(x,NORM_2,&norm2));
+  PetscCall(PetscBarrier(NULL));
+  PetscCall(VecCopy(v,w));
+  PetscCall(PetscLogStagePop());
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Test completed successfully!\n");CHKERRQ(ierr);
-  ierr = VecDestroy(&v);CHKERRQ(ierr);
-  ierr = VecDestroy(&w);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Test completed successfully!\n"));
+  PetscCall(VecDestroy(&v));
+  PetscCall(VecDestroy(&w));
+  PetscCall(VecDestroy(&x));
+  PetscCall(PetscRandomDestroy(&rctx));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

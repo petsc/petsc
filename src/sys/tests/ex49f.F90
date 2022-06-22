@@ -44,7 +44,7 @@ program main
   PetscInt                i
   PetscSizeT              sizeofentry
 
-  call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+  PetscCallA(PetscInitialize(ierr))
 
   x  = [3, 2, 1]
   x1 = [3, 2, 1]
@@ -60,26 +60,26 @@ program main
   sizeofentry = 4;
 #endif
   ctx%myint = 1
-  call PetscSortInt(N,x,ierr)
-  call PetscTimSort(N,x1,sizeofentry,CompareIntegers,ctx,ierr)
+  PetscCallA(PetscSortInt(N,x,ierr))
+  PetscCallA(PetscTimSort(N,x1,sizeofentry,CompareIntegers,ctx,ierr))
   do i = 1,N
      if (x1(i) .ne. x(i)) then
         SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PetscTimSort and PetscSortInt arrays did not match")
      end if
   end do
-  call PetscSortIntWithArray(N,y,x,ierr)
-  call PetscSortIntWithArrayPair(N,x,y,z,ierr)
+  PetscCallA(PetscSortIntWithArray(N,y,x,ierr))
+  PetscCallA(PetscSortIntWithArrayPair(N,x,y,z,ierr))
 
-  call PetscSortMPIInt(N,mx,ierr)
-  call PetscSortMPIIntWithArray(mN,mx,my,ierr)
-  call PetscSortMPIIntWithIntArray(mN,mx,y,ierr)
+  PetscCallA(PetscSortMPIInt(N,mx,ierr))
+  PetscCallA(PetscSortMPIIntWithArray(mN,mx,my,ierr))
+  PetscCallA(PetscSortMPIIntWithIntArray(mN,mx,y,ierr))
 
-  call PetscSortIntWithScalarArray(N,x,s,ierr)
+  PetscCallA(PetscSortIntWithScalarArray(N,x,s,ierr))
 
-  call PetscSortReal(N,r,ierr)
-  call PetscSortRealWithArrayInt(N,r,x,ierr)
+  PetscCallA(PetscSortReal(N,r,ierr))
+  PetscCallA(PetscSortRealWithArrayInt(N,r,x,ierr))
 
-  call PetscFinalize(ierr)
+  PetscCallA(PetscFinalize(ierr))
 end program main
 
 !/*TEST

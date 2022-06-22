@@ -4,13 +4,6 @@ Also, this example illustrates the repeated\n\
 solution of linear systems, while reusing matrix, vector, and solver data\n\
 structures throughout the process.  Note the various stages of event logging.\n\n";
 
-/*T
-   Concepts: KSP^repeatedly solving linear systems;
-   Concepts: PetscLog^profiling multiple stages of code;
-   Concepts: PetscLog^user-defined event profiling;
-   Processors: n
-T*/
-
 /*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
@@ -37,7 +30,6 @@ int main(int argc,char **args)
   PetscLogEvent  CHECK_ERROR;    /* event number for error checking */
   PetscInt       ldim,low,high,iglobal,Istart,Iend,Istart2,Iend2;
   PetscInt       Ii,J,i,j,m = 3,n = 2,its,t;
-  PetscErrorCode ierr;
   PetscBool      flg = PETSC_FALSE, unsym = PETSC_TRUE;
   PetscScalar    v;
   PetscMPIInt    rank,size;
@@ -45,32 +37,32 @@ int main(int argc,char **args)
   PetscLogStage stages[3];
 #endif
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-t",&ntimes,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-unsym",&unsym,NULL);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-t",&ntimes,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-unsym",&unsym,NULL));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   n    = 2*size;
 
   /*
      Register various stages for profiling
   */
-  ierr = PetscLogStageRegister("Prelim setup",&stages[0]);CHKERRQ(ierr);
-  ierr = PetscLogStageRegister("Linear System 1",&stages[1]);CHKERRQ(ierr);
-  ierr = PetscLogStageRegister("Linear System 2",&stages[2]);CHKERRQ(ierr);
+  PetscCall(PetscLogStageRegister("Prelim setup",&stages[0]));
+  PetscCall(PetscLogStageRegister("Linear System 1",&stages[1]));
+  PetscCall(PetscLogStageRegister("Linear System 2",&stages[2]));
 
   /*
      Register a user-defined event for profiling (error checking).
   */
   CHECK_ERROR = 0;
-  ierr        = PetscLogEventRegister("Check Error",KSP_CLASSID,&CHECK_ERROR);CHKERRQ(ierr);
+  PetscCall(PetscLogEventRegister("Check Error",KSP_CLASSID,&CHECK_ERROR));
 
   /* - - - - - - - - - - - - Stage 0: - - - - - - - - - - - - - -
                         Preliminary Setup
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = PetscLogStagePush(stages[0]);CHKERRQ(ierr);
+  PetscCall(PetscLogStagePush(stages[0]));
 
   /*
      Create data structures for first linear system.
@@ -83,16 +75,16 @@ int main(int argc,char **args)
           dimension; the parallel partitioning is determined at runtime.
         - Note: We form 1 vector from scratch and then duplicate as needed.
   */
-  ierr = MatCreate(PETSC_COMM_WORLD,&C1);CHKERRQ(ierr);
-  ierr = MatSetSizes(C1,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(C1);CHKERRQ(ierr);
-  ierr = MatSetUp(C1);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(C1,&Istart,&Iend);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
-  ierr = VecSetSizes(u,PETSC_DECIDE,m*n);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(u);CHKERRQ(ierr);
-  ierr = VecDuplicate(u,&b1);CHKERRQ(ierr);
-  ierr = VecDuplicate(u,&x1);CHKERRQ(ierr);
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&C1));
+  PetscCall(MatSetSizes(C1,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n));
+  PetscCall(MatSetFromOptions(C1));
+  PetscCall(MatSetUp(C1));
+  PetscCall(MatGetOwnershipRange(C1,&Istart,&Iend));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&u));
+  PetscCall(VecSetSizes(u,PETSC_DECIDE,m*n));
+  PetscCall(VecSetFromOptions(u));
+  PetscCall(VecDuplicate(u,&b1));
+  PetscCall(VecDuplicate(u,&x1));
 
   /*
      Create first linear solver context.
@@ -101,61 +93,61 @@ int main(int argc,char **args)
      names, while the second linear system uses a different
      options prefix.
   */
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp1);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(ksp1);CHKERRQ(ierr);
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp1));
+  PetscCall(KSPSetFromOptions(ksp1));
 
   /*
      Set user-defined monitoring routine for first linear system.
   */
-  ierr = PetscOptionsGetBool(NULL,NULL,"-my_ksp_monitor",&flg,NULL);CHKERRQ(ierr);
-  if (flg) {ierr = KSPMonitorSet(ksp1,MyKSPMonitor,NULL,0);CHKERRQ(ierr);}
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-my_ksp_monitor",&flg,NULL));
+  if (flg) PetscCall(KSPMonitorSet(ksp1,MyKSPMonitor,NULL,0));
 
   /*
      Create data structures for second linear system.
   */
-  ierr = MatCreate(PETSC_COMM_WORLD,&C2);CHKERRQ(ierr);
-  ierr = MatSetSizes(C2,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(C2);CHKERRQ(ierr);
-  ierr = MatSetUp(C2);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(C2,&Istart2,&Iend2);CHKERRQ(ierr);
-  ierr = VecDuplicate(u,&b2);CHKERRQ(ierr);
-  ierr = VecDuplicate(u,&x2);CHKERRQ(ierr);
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&C2));
+  PetscCall(MatSetSizes(C2,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n));
+  PetscCall(MatSetFromOptions(C2));
+  PetscCall(MatSetUp(C2));
+  PetscCall(MatGetOwnershipRange(C2,&Istart2,&Iend2));
+  PetscCall(VecDuplicate(u,&b2));
+  PetscCall(VecDuplicate(u,&x2));
 
   /*
      Create second linear solver context
   */
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp2);CHKERRQ(ierr);
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp2));
 
   /*
      Set different options prefix for second linear system.
      Set runtime options (e.g., -s2_pc_type <type>)
   */
-  ierr = KSPAppendOptionsPrefix(ksp2,"s2_");CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(ksp2);CHKERRQ(ierr);
+  PetscCall(KSPAppendOptionsPrefix(ksp2,"s2_"));
+  PetscCall(KSPSetFromOptions(ksp2));
 
   /*
      Assemble exact solution vector in parallel.  Note that each
      processor needs to set only its local part of the vector.
   */
-  ierr = VecGetLocalSize(u,&ldim);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(u,&low,&high);CHKERRQ(ierr);
+  PetscCall(VecGetLocalSize(u,&ldim));
+  PetscCall(VecGetOwnershipRange(u,&low,&high));
   for (i=0; i<ldim; i++) {
     iglobal = i + low;
     v       = (PetscScalar)(i + 100*rank);
-    ierr    = VecSetValues(u,1,&iglobal,&v,ADD_VALUES);CHKERRQ(ierr);
+    PetscCall(VecSetValues(u,1,&iglobal,&v,ADD_VALUES));
   }
-  ierr = VecAssemblyBegin(u);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(u);CHKERRQ(ierr);
+  PetscCall(VecAssemblyBegin(u));
+  PetscCall(VecAssemblyEnd(u));
 
   /*
      Log the number of flops for computing vector entries
   */
-  ierr = PetscLogFlops(2.0*ldim);CHKERRQ(ierr);
+  PetscCall(PetscLogFlops(2.0*ldim));
 
   /*
      End curent profiling stage
   */
-  ierr = PetscLogStagePop();CHKERRQ(ierr);
+  PetscCall(PetscLogStagePop());
 
   /* --------------------------------------------------------------
                         Linear solver loop:
@@ -171,13 +163,13 @@ int main(int argc,char **args)
     /*
        Begin profiling stage #1
     */
-    ierr = PetscLogStagePush(stages[1]);CHKERRQ(ierr);
+    PetscCall(PetscLogStagePush(stages[1]));
 
     /*
        Initialize all matrix entries to zero.  MatZeroEntries() retains
        the nonzero structure of the matrix for sparse formats.
     */
-    if (t > 0) {ierr = MatZeroEntries(C1);CHKERRQ(ierr);}
+    if (t > 0) PetscCall(MatZeroEntries(C1));
 
     /*
        Set matrix entries in parallel.  Also, log the number of flops
@@ -189,18 +181,18 @@ int main(int argc,char **args)
     */
     for (Ii=Istart; Ii<Iend; Ii++) {
       v = -1.0; i = Ii/n; j = Ii - i*n;
-      if (i>0)   {J = Ii - n; ierr = MatSetValues(C1,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
-      if (i<m-1) {J = Ii + n; ierr = MatSetValues(C1,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
-      if (j>0)   {J = Ii - 1; ierr = MatSetValues(C1,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
-      if (j<n-1) {J = Ii + 1; ierr = MatSetValues(C1,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
-      v = 4.0; ierr = MatSetValues(C1,1,&Ii,1,&Ii,&v,ADD_VALUES);CHKERRQ(ierr);
+      if (i>0)   {J = Ii - n; PetscCall(MatSetValues(C1,1,&Ii,1,&J,&v,ADD_VALUES));}
+      if (i<m-1) {J = Ii + n; PetscCall(MatSetValues(C1,1,&Ii,1,&J,&v,ADD_VALUES));}
+      if (j>0)   {J = Ii - 1; PetscCall(MatSetValues(C1,1,&Ii,1,&J,&v,ADD_VALUES));}
+      if (j<n-1) {J = Ii + 1; PetscCall(MatSetValues(C1,1,&Ii,1,&J,&v,ADD_VALUES));}
+      v = 4.0; PetscCall(MatSetValues(C1,1,&Ii,1,&Ii,&v,ADD_VALUES));
     }
     if (unsym) {
       for (Ii=Istart; Ii<Iend; Ii++) { /* Make matrix nonsymmetric */
         v = -1.0*(t+0.5); i = Ii/n;
-        if (i>0)   {J = Ii - n; ierr = MatSetValues(C1,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+        if (i>0)   {J = Ii - n; PetscCall(MatSetValues(C1,1,&Ii,1,&J,&v,ADD_VALUES));}
       }
-      ierr = PetscLogFlops(2.0*(Iend-Istart));CHKERRQ(ierr);
+      PetscCall(PetscLogFlops(2.0*(Iend-Istart)));
     }
 
     /*
@@ -209,24 +201,24 @@ int main(int argc,char **args)
        Computations can be done while messages are in transition
        by placing code between these two statements.
     */
-    ierr = MatAssemblyBegin(C1,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(C1,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    PetscCall(MatAssemblyBegin(C1,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(C1,MAT_FINAL_ASSEMBLY));
 
     /*
        Indicate same nonzero structure of successive linear system matrices
     */
-    ierr = MatSetOption(C1,MAT_NEW_NONZERO_LOCATIONS,PETSC_TRUE);CHKERRQ(ierr);
+    PetscCall(MatSetOption(C1,MAT_NEW_NONZERO_LOCATIONS,PETSC_TRUE));
 
     /*
        Compute right-hand-side vector
     */
-    ierr = MatMult(C1,u,b1);CHKERRQ(ierr);
+    PetscCall(MatMult(C1,u,b1));
 
     /*
        Set operators. Here the matrix that defines the linear system
        also serves as the preconditioning matrix.
     */
-    ierr = KSPSetOperators(ksp1,C1,C1);CHKERRQ(ierr);
+    PetscCall(KSPSetOperators(ksp1,C1,C1));
 
     /*
        Use the previous solution of linear system #1 as the initial
@@ -235,7 +227,7 @@ int main(int argc,char **args)
        guess vector; otherwise, an initial guess of zero is used.
     */
     if (t>0) {
-      ierr = KSPSetInitialGuessNonzero(ksp1,PETSC_TRUE);CHKERRQ(ierr);
+      PetscCall(KSPSetInitialGuessNonzero(ksp1,PETSC_TRUE));
     }
 
     /*
@@ -245,14 +237,14 @@ int main(int argc,char **args)
        is optional, ase KSPSetUp() will automatically be called
        within KSPSolve() if it hasn't been called already.
     */
-    ierr = KSPSetUp(ksp1);CHKERRQ(ierr);
-    ierr = KSPSolve(ksp1,b1,x1);CHKERRQ(ierr);
-    ierr = KSPGetIterationNumber(ksp1,&its);CHKERRQ(ierr);
+    PetscCall(KSPSetUp(ksp1));
+    PetscCall(KSPSolve(ksp1,b1,x1));
+    PetscCall(KSPGetIterationNumber(ksp1,&its));
 
     /*
        Check error of solution to first linear system
     */
-    ierr = CheckError(u,x1,b1,its,1.e-4,CHECK_ERROR);CHKERRQ(ierr);
+    PetscCall(CheckError(u,x1,b1,its,1.e-4,CHECK_ERROR));
 
     /* - - - - - - - - - - - - Stage 2: - - - - - - - - - - - - - -
                  Assemble and solve second linear system
@@ -261,13 +253,13 @@ int main(int argc,char **args)
     /*
        Conclude profiling stage #1; begin profiling stage #2
     */
-    ierr = PetscLogStagePop();CHKERRQ(ierr);
-    ierr = PetscLogStagePush(stages[2]);CHKERRQ(ierr);
+    PetscCall(PetscLogStagePop());
+    PetscCall(PetscLogStagePush(stages[2]));
 
     /*
        Initialize all matrix entries to zero
     */
-    if (t > 0) {ierr = MatZeroEntries(C2);CHKERRQ(ierr);}
+    if (t > 0) PetscCall(MatZeroEntries(C2));
 
     /*
        Assemble matrix in parallel. Also, log the number of flops
@@ -283,32 +275,32 @@ int main(int argc,char **args)
     for (i=0; i<m; i++) {
       for (j=2*rank; j<2*rank+2; j++) {
         v = -1.0;  Ii = j + n*i;
-        if (i>0)   {J = Ii - n; ierr = MatSetValues(C2,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
-        if (i<m-1) {J = Ii + n; ierr = MatSetValues(C2,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
-        if (j>0)   {J = Ii - 1; ierr = MatSetValues(C2,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
-        if (j<n-1) {J = Ii + 1; ierr = MatSetValues(C2,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
-        v = 6.0 + t*0.5; ierr = MatSetValues(C2,1,&Ii,1,&Ii,&v,ADD_VALUES);CHKERRQ(ierr);
+        if (i>0)   {J = Ii - n; PetscCall(MatSetValues(C2,1,&Ii,1,&J,&v,ADD_VALUES));}
+        if (i<m-1) {J = Ii + n; PetscCall(MatSetValues(C2,1,&Ii,1,&J,&v,ADD_VALUES));}
+        if (j>0)   {J = Ii - 1; PetscCall(MatSetValues(C2,1,&Ii,1,&J,&v,ADD_VALUES));}
+        if (j<n-1) {J = Ii + 1; PetscCall(MatSetValues(C2,1,&Ii,1,&J,&v,ADD_VALUES));}
+        v = 6.0 + t*0.5; PetscCall(MatSetValues(C2,1,&Ii,1,&Ii,&v,ADD_VALUES));
       }
     }
     if (unsym) {
       for (Ii=Istart2; Ii<Iend2; Ii++) { /* Make matrix nonsymmetric */
         v = -1.0*(t+0.5); i = Ii/n;
-        if (i>0)   {J = Ii - n; ierr = MatSetValues(C2,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+        if (i>0)   {J = Ii - n; PetscCall(MatSetValues(C2,1,&Ii,1,&J,&v,ADD_VALUES));}
       }
     }
-    ierr = MatAssemblyBegin(C2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(C2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = PetscLogFlops(2.0*(Iend-Istart));CHKERRQ(ierr);
+    PetscCall(MatAssemblyBegin(C2,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(C2,MAT_FINAL_ASSEMBLY));
+    PetscCall(PetscLogFlops(2.0*(Iend-Istart)));
 
     /*
        Indicate same nonzero structure of successive linear system matrices
     */
-    ierr = MatSetOption(C2,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);CHKERRQ(ierr);
+    PetscCall(MatSetOption(C2,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE));
 
     /*
        Compute right-hand-side vector
     */
-    ierr = MatMult(C2,u,b2);CHKERRQ(ierr);
+    PetscCall(MatMult(C2,u,b2));
 
     /*
        Set operators. Here the matrix that defines the linear system
@@ -316,24 +308,24 @@ int main(int argc,char **args)
        structure of successive preconditioner matrices by setting flag
        SAME_NONZERO_PATTERN.
     */
-    ierr = KSPSetOperators(ksp2,C2,C2);CHKERRQ(ierr);
+    PetscCall(KSPSetOperators(ksp2,C2,C2));
 
     /*
        Solve the second linear system
     */
-    ierr = KSPSetUp(ksp2);CHKERRQ(ierr);
-    ierr = KSPSolve(ksp2,b2,x2);CHKERRQ(ierr);
-    ierr = KSPGetIterationNumber(ksp2,&its);CHKERRQ(ierr);
+    PetscCall(KSPSetUp(ksp2));
+    PetscCall(KSPSolve(ksp2,b2,x2));
+    PetscCall(KSPGetIterationNumber(ksp2,&its));
 
     /*
        Check error of solution to second linear system
     */
-    ierr = CheckError(u,x2,b2,its,1.e-4,CHECK_ERROR);CHKERRQ(ierr);
+    PetscCall(CheckError(u,x2,b2,its,1.e-4,CHECK_ERROR));
 
     /*
        Conclude profiling stage #2
     */
-    ierr = PetscLogStagePop();CHKERRQ(ierr);
+    PetscCall(PetscLogStagePop());
   }
   /* --------------------------------------------------------------
                        End of linear solver loop
@@ -343,14 +335,14 @@ int main(int argc,char **args)
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  ierr = KSPDestroy(&ksp1);CHKERRQ(ierr); ierr = KSPDestroy(&ksp2);CHKERRQ(ierr);
-  ierr = VecDestroy(&x1);CHKERRQ(ierr);   ierr = VecDestroy(&x2);CHKERRQ(ierr);
-  ierr = VecDestroy(&b1);CHKERRQ(ierr);   ierr = VecDestroy(&b2);CHKERRQ(ierr);
-  ierr = MatDestroy(&C1);CHKERRQ(ierr);   ierr = MatDestroy(&C2);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr);
+  PetscCall(KSPDestroy(&ksp1)); PetscCall(KSPDestroy(&ksp2));
+  PetscCall(VecDestroy(&x1));   PetscCall(VecDestroy(&x2));
+  PetscCall(VecDestroy(&b1));   PetscCall(VecDestroy(&b2));
+  PetscCall(MatDestroy(&C1));   PetscCall(MatDestroy(&C2));
+  PetscCall(VecDestroy(&u));
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 /* ------------------------------------------------------------- */
 /*
@@ -380,20 +372,19 @@ PetscErrorCode CheckError(Vec u,Vec x,Vec b,PetscInt its,PetscReal tol,PetscLogE
 {
   PetscScalar    none = -1.0;
   PetscReal      norm;
-  PetscErrorCode ierr;
 
-  ierr = PetscLogEventBegin(CHECK_ERROR,u,x,b,0);CHKERRQ(ierr);
+  PetscCall(PetscLogEventBegin(CHECK_ERROR,u,x,b,0));
 
   /*
      Compute error of the solution, using b as a work vector.
   */
-  ierr = VecCopy(x,b);CHKERRQ(ierr);
-  ierr = VecAXPY(b,none,u);CHKERRQ(ierr);
-  ierr = VecNorm(b,NORM_2,&norm);CHKERRQ(ierr);
+  PetscCall(VecCopy(x,b));
+  PetscCall(VecAXPY(b,none,u));
+  PetscCall(VecNorm(b,NORM_2,&norm));
   if (norm > tol) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %D\n",(double)norm,its);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %" PetscInt_FMT "\n",(double)norm,its));
   }
-  ierr = PetscLogEventEnd(CHECK_ERROR,u,x,b,0);CHKERRQ(ierr);
+  PetscCall(PetscLogEventEnd(CHECK_ERROR,u,x,b,0));
   return 0;
 }
 /* ------------------------------------------------------------- */
@@ -410,12 +401,11 @@ PetscErrorCode CheckError(Vec u,Vec x,Vec b,PetscInt its,PetscReal tol,PetscLogE
 PetscErrorCode MyKSPMonitor(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
 {
   Vec            x;
-  PetscErrorCode ierr;
 
   /*
      Build the solution vector
   */
-  ierr = KSPBuildSolution(ksp,NULL,&x);CHKERRQ(ierr);
+  PetscCall(KSPBuildSolution(ksp,NULL,&x));
 
   /*
      Write the solution vector and residual norm to stdout.
@@ -425,9 +415,9 @@ PetscErrorCode MyKSPMonitor(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
         data from multiple processors so that the output
         is not jumbled.
   */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"iteration %D solution vector:\n",n);CHKERRQ(ierr);
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"iteration %D KSP Residual norm %14.12e \n",n,rnorm);CHKERRQ(ierr);
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"iteration %" PetscInt_FMT " solution vector:\n",n));
+  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"iteration %" PetscInt_FMT " KSP Residual norm %14.12e \n",n,(double)rnorm));
   return 0;
 }
 

@@ -1,4 +1,4 @@
-AO Object: 1 MPI processes
+AO Object: 1 MPI process
   type: basic
 Number of elements in ordering 2
 PETSc->App  App->PETSc

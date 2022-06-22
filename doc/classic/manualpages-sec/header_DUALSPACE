@@ -1,11 +1,6 @@
-<HTML>
-<HEAD>
-<TITLE>PetscDualSpace Manual Pages</TITLE>
-</HEAD>
-<BODY BGCOLOR="FFFFFF">
+# PetscDualSpace Manual Pages
 
-<H2> PetscDualSpace <A HREF="PETSC_DIRsrc/dm/dt/dualspace/tutorials/index.html">Examples</A></H2>
+<A HREF="PETSC_DIRsrc/dm/dt/dualspace/tutorials/index.html">Examples</A></BR>
 
 The PetscDualSpace class encapsulates a function space.
 
-<P>

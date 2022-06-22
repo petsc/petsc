@@ -13,6 +13,7 @@ typedef struct {
   PetscErrorCode (*restorearrayread)(Mat,const PetscScalar **);
   PetscErrorCode (*getarraywrite)(Mat,PetscScalar **);
   PetscErrorCode (*restorearraywrite)(Mat,PetscScalar **);
+  PetscErrorCode (*getcsrandmemtype)(Mat,const PetscInt**,const PetscInt**,PetscScalar**,PetscMemType*);
 } Mat_SeqAIJOps;
 
 /*
@@ -146,14 +147,13 @@ typedef struct {
 */
 static inline PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA,MatScalar **a,PetscInt **j,PetscInt **i)
 {
-  PetscErrorCode ierr;
   Mat_SeqAIJ     *A = (Mat_SeqAIJ*) AA->data;
   if (A->singlemalloc) {
-    ierr = PetscFree3(*a,*j,*i);CHKERRQ(ierr);
+    PetscCall(PetscFree3(*a,*j,*i));
   } else {
-    if (A->free_a)  {ierr = PetscFree(*a);CHKERRQ(ierr);}
-    if (A->free_ij) {ierr = PetscFree(*j);CHKERRQ(ierr);}
-    if (A->free_ij) {ierr = PetscFree(*i);CHKERRQ(ierr);}
+    if (A->free_a)  PetscCall(PetscFree(*a));
+    if (A->free_ij) PetscCall(PetscFree(*j));
+    if (A->free_ij) PetscCall(PetscFree(*i));
   }
   return 0;
 }
@@ -168,21 +168,21 @@ static inline PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA,MatScalar **a,PetscInt **j
     PetscInt CHUNKSIZE = 15,new_nz = AI[AM] + CHUNKSIZE,len,*new_i=NULL,*new_j=NULL; \
     datatype *new_a; \
  \
-    PetscCheckFalse(NONEW == -2,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"New nonzero at (%" PetscInt_FMT ",%" PetscInt_FMT ") caused a malloc\nUse MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE) to turn off this check",ROW,COL); \
+    PetscCheck(NONEW != -2,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"New nonzero at (%" PetscInt_FMT ",%" PetscInt_FMT ") caused a malloc\nUse MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE) to turn off this check",ROW,COL); \
     /* malloc new storage space */ \
-    ierr = PetscMalloc3(BS2*new_nz,&new_a,new_nz,&new_j,AM+1,&new_i);CHKERRQ(ierr); \
+    PetscCall(PetscMalloc3(BS2*new_nz,&new_a,new_nz,&new_j,AM+1,&new_i)); \
  \
     /* copy over old data into new slots */ \
     for (ii=0; ii<ROW+1; ii++) {new_i[ii] = AI[ii];} \
     for (ii=ROW+1; ii<AM+1; ii++) {new_i[ii] = AI[ii]+CHUNKSIZE;} \
-    ierr = PetscArraycpy(new_j,AJ,AI[ROW]+NROW);CHKERRQ(ierr); \
+    PetscCall(PetscArraycpy(new_j,AJ,AI[ROW]+NROW)); \
     len  = (new_nz - CHUNKSIZE - AI[ROW] - NROW); \
-    ierr = PetscArraycpy(new_j+AI[ROW]+NROW+CHUNKSIZE,AJ+AI[ROW]+NROW,len);CHKERRQ(ierr); \
-    ierr = PetscArraycpy(new_a,AA,BS2*(AI[ROW]+NROW));CHKERRQ(ierr);    \
-    ierr = PetscArrayzero(new_a+BS2*(AI[ROW]+NROW),BS2*CHUNKSIZE);CHKERRQ(ierr); \
-    ierr = PetscArraycpy(new_a+BS2*(AI[ROW]+NROW+CHUNKSIZE),AA+BS2*(AI[ROW]+NROW),BS2*len);CHKERRQ(ierr);  \
+    PetscCall(PetscArraycpy(new_j+AI[ROW]+NROW+CHUNKSIZE,AJ+AI[ROW]+NROW,len)); \
+    PetscCall(PetscArraycpy(new_a,AA,BS2*(AI[ROW]+NROW)));    \
+    PetscCall(PetscArrayzero(new_a+BS2*(AI[ROW]+NROW),BS2*CHUNKSIZE)); \
+    PetscCall(PetscArraycpy(new_a+BS2*(AI[ROW]+NROW+CHUNKSIZE),AA+BS2*(AI[ROW]+NROW),BS2*len));  \
     /* free up old matrix storage */ \
-    ierr              = MatSeqXAIJFreeAIJ(A,&Ain->a,&Ain->j,&Ain->i);CHKERRQ(ierr); \
+    PetscCall(MatSeqXAIJFreeAIJ(A,&Ain->a,&Ain->j,&Ain->i)); \
     AA                = new_a; \
     Ain->a            = (MatScalar*) new_a;                   \
     AI                = Ain->i = new_i; AJ = Ain->j = new_j;  \
@@ -200,20 +200,20 @@ static inline PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA,MatScalar **a,PetscInt **j
     /* there is no extra room in row, therefore enlarge */ \
     PetscInt CHUNKSIZE = 15,new_nz = AI[AM] + CHUNKSIZE,len,*new_i=NULL,*new_j=NULL; \
  \
-    PetscCheckFalse(NONEW == -2,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"New nonzero at (%" PetscInt_FMT ",%" PetscInt_FMT ") caused a malloc\nUse MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE) to turn off this check",ROW,COL); \
+    PetscCheck(NONEW != -2,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"New nonzero at (%" PetscInt_FMT ",%" PetscInt_FMT ") caused a malloc\nUse MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE) to turn off this check",ROW,COL); \
     /* malloc new storage space */ \
-    ierr = PetscMalloc1(new_nz,&new_j);CHKERRQ(ierr); \
-    ierr = PetscMalloc1(AM+1,&new_i);CHKERRQ(ierr);\
+    PetscCall(PetscMalloc1(new_nz,&new_j)); \
+    PetscCall(PetscMalloc1(AM+1,&new_i));\
  \
     /* copy over old data into new slots */ \
     for (ii=0; ii<ROW+1; ii++) {new_i[ii] = AI[ii];} \
     for (ii=ROW+1; ii<AM+1; ii++) {new_i[ii] = AI[ii]+CHUNKSIZE;} \
-    ierr = PetscArraycpy(new_j,AJ,AI[ROW]+NROW);CHKERRQ(ierr); \
+    PetscCall(PetscArraycpy(new_j,AJ,AI[ROW]+NROW)); \
     len  = (new_nz - CHUNKSIZE - AI[ROW] - NROW); \
-    ierr = PetscArraycpy(new_j+AI[ROW]+NROW+CHUNKSIZE,AJ+AI[ROW]+NROW,len);CHKERRQ(ierr); \
+    PetscCall(PetscArraycpy(new_j+AI[ROW]+NROW+CHUNKSIZE,AJ+AI[ROW]+NROW,len)); \
  \
     /* free up old matrix storage */ \
-    ierr              = MatSeqXAIJFreeAIJ(A,&Ain->a,&Ain->j,&Ain->i);CHKERRQ(ierr); \
+    PetscCall(MatSeqXAIJFreeAIJ(A,&Ain->a,&Ain->j,&Ain->i)); \
     Ain->a            = NULL;                   \
     AI                = Ain->i = new_i; AJ = Ain->j = new_j;  \
     Ain->singlemalloc = PETSC_FALSE; \
@@ -227,6 +227,8 @@ static inline PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA,MatScalar **a,PetscInt **j
 
 PETSC_INTERN PetscErrorCode MatSeqAIJSetPreallocation_SeqAIJ(Mat,PetscInt,const PetscInt*);
 PETSC_INTERN PetscErrorCode MatSetPreallocationCOO_SeqAIJ(Mat,PetscCount,const PetscInt[],const PetscInt[]);
+PETSC_INTERN PetscErrorCode MatResetPreallocationCOO_SeqAIJ(Mat);
+
 PETSC_INTERN PetscErrorCode MatILUFactorSymbolic_SeqAIJ_inplace(Mat,Mat,IS,IS,const MatFactorInfo*);
 PETSC_INTERN PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat,Mat,IS,IS,const MatFactorInfo*);
 PETSC_INTERN PetscErrorCode MatILUFactorSymbolic_SeqAIJ_ilu0(Mat,Mat,IS,IS,const MatFactorInfo*);
@@ -423,7 +425,7 @@ PETSC_INTERN PetscErrorCode MatSetSeqAIJWithArrays_private(MPI_Comm,PetscInt,Pet
   Developer Notes:
     The macro changes sum but not other parameters
 
-.seealso: PetscSparseDensePlusDot()
+.seealso: `PetscSparseDensePlusDot()`
 
 */
 #if defined(PETSC_KERNEL_USE_UNROLL_4)
@@ -476,7 +478,7 @@ PETSC_INTERN PetscErrorCode MatSetSeqAIJWithArrays_private(MPI_Comm,PetscInt,Pet
   Developer Notes:
     The macro changes sum but not other parameters
 
-.seealso: PetscSparseDenseMinusDot()
+.seealso: `PetscSparseDenseMinusDot()`
 
 */
 #if defined(PETSC_KERNEL_USE_UNROLL_4)
@@ -566,7 +568,7 @@ static inline void PetscSparseDensePlusDot_AVX512_Private(PetscScalar *sum,const
   Output Parameter:
 .  max - the max of results
 
-.seealso: PetscSparseDensePlusDot(), PetscSparseDenseMinusDot()
+.seealso: `PetscSparseDensePlusDot()`, `PetscSparseDenseMinusDot()`
 
 */
 #define PetscSparseDenseMaxDot(max,r,xv,xi,nnz) { \

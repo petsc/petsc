@@ -1,18 +1,18 @@
 test_solve 
 x1 
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
   length=3
 x2 
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
   length=2
 test_solve_matgetvecs 
 x1 
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
   length=3
 x2 
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
   length=2

@@ -57,40 +57,40 @@ PC Object: 8 MPI processes
     Local     dofs   :	300	450	371
     Local     subs   :	1	1
   --- Interior solver (rank 0)
-    KSP Object: (pc_bddc_dirichlet_) 1 MPI processes
+    KSP Object: (pc_bddc_dirichlet_) 1 MPI process
       type: preonly
       maximum iterations=10000, initial guess is zero
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
-    PC Object: (pc_bddc_dirichlet_) 1 MPI processes
+    PC Object: (pc_bddc_dirichlet_) 1 MPI process
       type: lu
         out-of-place factorization
         tolerance for zero pivot 2.22045e-14
         matrix ordering: nd
         factor fill ratio given 5., needed 1.55143
           Factored matrix follows:
-            Mat Object: 1 MPI processes
+            Mat Object: (pc_bddc_dirichlet_) 1 MPI process
               type: seqaij
               rows=144, cols=144, bs=3
               package used to perform factorization: petsc
               total: nonzeros=9774, allocated nonzeros=9774
                 using I-node routines: found 45 nodes, limit used is 5
       linear system matrix = precond matrix:
-      Mat Object: (pc_bddc_dirichlet_) 1 MPI processes
+      Mat Object: (pc_bddc_dirichlet_) 1 MPI process
         type: seqaij
         rows=144, cols=144, bs=3
         total: nonzeros=6300, allocated nonzeros=6300
         total number of mallocs used during MatSetValues calls=0
           using I-node routines: found 48 nodes, limit used is 5
   --- Correction solver (rank 0)
-    KSP Object: (pc_bddc_neumann_) 1 MPI processes
+    KSP Object: (pc_bddc_neumann_) 1 MPI process
       type: preonly
       maximum iterations=10000, initial guess is zero
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
-    PC Object: (pc_bddc_neumann_) 1 MPI processes
+    PC Object: (pc_bddc_neumann_) 1 MPI process
       type: gamg
         type is MULTIPLICATIVE, levels=2 cycles=v
           Cycles per PCApply=1
@@ -102,26 +102,26 @@ PC Object: 8 MPI processes
               Symmetric graph false
               Number of levels to square graph 1
               Number smoothing steps 1
-            Complexity:    grid = 1.02271
-      Coarse grid solver -- level -------------------------------
-        KSP Object: (pc_bddc_neumann_mg_coarse_) 1 MPI processes
+            Complexity:    grid = 1.06452    operator = 1.02271
+      Coarse grid solver -- level 0 -------------------------------
+        KSP Object: (pc_bddc_neumann_mg_coarse_) 1 MPI process
           type: preonly
           maximum iterations=10000, initial guess is zero
           tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning
           using NONE norm type for convergence test
-        PC Object: (pc_bddc_neumann_mg_coarse_) 1 MPI processes
+        PC Object: (pc_bddc_neumann_mg_coarse_) 1 MPI process
           type: bjacobi
             number of blocks = 1
             Local solver information for first block is in the following KSP and PC objects on rank 0:
             Use -pc_bddc_neumann_mg_coarse_ksp_view ::ascii_info_detail to display information for all blocks
-            KSP Object:   (pc_bddc_neumann_mg_coarse_sub_)   1 MPI processes
+            KSP Object: (pc_bddc_neumann_mg_coarse_sub_) 1 MPI process
               type: preonly
               maximum iterations=1, initial guess is zero
               tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
               left preconditioning
               using NONE norm type for convergence test
-            PC Object: (pc_bddc_neumann_mg_coarse_sub_) 1 MPI processes
+            PC Object: (pc_bddc_neumann_mg_coarse_sub_) 1 MPI process
               type: lu
                 out-of-place factorization
                 tolerance for zero pivot 2.22045e-14
@@ -129,48 +129,40 @@ PC Object: 8 MPI processes
                 matrix ordering: nd
                 factor fill ratio given 5., needed 1.
                   Factored matrix follows:
-                    Mat Object: 1 MPI processes
+                    Mat Object: (pc_bddc_neumann_mg_coarse_sub_) 1 MPI process
                       type: seqaij
                       rows=18, cols=18, bs=6
                       package used to perform factorization: petsc
                       total: nonzeros=324, allocated nonzeros=324
                         using I-node routines: found 4 nodes, limit used is 5
               linear system matrix = precond matrix:
-              Mat Object:   (pc_bddc_neumann_mg_coarse_sub_)   1 MPI processes
+              Mat Object: (pc_bddc_neumann_mg_coarse_sub_) 1 MPI process
                 type: seqaij
                 rows=18, cols=18, bs=6
                 total: nonzeros=324, allocated nonzeros=324
                 total number of mallocs used during MatSetValues calls=0
                   using I-node routines: found 4 nodes, limit used is 5
           linear system matrix = precond matrix:
-          Mat Object: (pc_bddc_neumann_mg_coarse_sub_) 1 MPI processes
+          Mat Object: (pc_bddc_neumann_mg_coarse_sub_) 1 MPI process
             type: seqaij
             rows=18, cols=18, bs=6
             total: nonzeros=324, allocated nonzeros=324
             total number of mallocs used during MatSetValues calls=0
               using I-node routines: found 4 nodes, limit used is 5
       Down solver (pre-smoother) on level 1 -------------------------------
-        KSP Object: (pc_bddc_neumann_mg_levels_1_) 1 MPI processes
+        KSP Object: (pc_bddc_neumann_mg_levels_1_) 1 MPI process
           type: chebyshev
-            eigenvalue estimates used:  min = 0.0999428, max = 1.09937
-            eigenvalues estimate via cg min 0.133777, max 0.999428
-            eigenvalues estimated using cg with translations  [0. 0.1; 0. 1.1]
-            KSP Object: (pc_bddc_neumann_mg_levels_1_esteig_) 1 MPI processes
-              type: cg
-              maximum iterations=10, initial guess is zero
-              tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
-              left preconditioning
-              using PRECONDITIONED norm type for convergence test
-            estimating eigenvalues using noisy right hand side
+            eigenvalue targets used: min 0.262061, max 2.88267
+            eigenvalues provided (min 0.100732, max 2.62061) with transform: [0. 0.1; 0. 1.1]
           maximum iterations=2, nonzero initial guess
           tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning
           using NONE norm type for convergence test
-        PC Object: (pc_bddc_neumann_mg_levels_1_) 1 MPI processes
-          type: sor
-            type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
+        PC Object: (pc_bddc_neumann_mg_levels_1_) 1 MPI process
+          type: jacobi
+            type DIAGONAL
           linear system matrix = precond matrix:
-          Mat Object: (pc_bddc_neumann_) 1 MPI processes
+          Mat Object: (pc_bddc_neumann_) 1 MPI process
             type: seqaij
             rows=279, cols=279, bs=3
             total: nonzeros=14265, allocated nonzeros=14265
@@ -179,7 +171,7 @@ PC Object: 8 MPI processes
               using I-node routines: found 93 nodes, limit used is 5
       Up solver (post-smoother) same as down solver (pre-smoother)
       linear system matrix = precond matrix:
-      Mat Object: (pc_bddc_neumann_) 1 MPI processes
+      Mat Object: (pc_bddc_neumann_) 1 MPI process
         type: seqaij
         rows=279, cols=279, bs=3
         total: nonzeros=14265, allocated nonzeros=14265
@@ -203,18 +195,18 @@ PC Object: 8 MPI processes
         total: nonzeros=5277, allocated nonzeros=6796
         total number of mallocs used during MatSetValues calls=0
           using I-node (on process 0) routines: found 3 nodes, limit used is 5
-          KSP Object:   (pc_bddc_coarse_redundant_)   1 MPI processes
+          KSP Object: (pc_bddc_coarse_redundant_) 1 MPI process
             type: preonly
             maximum iterations=10000, initial guess is zero
             tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
             left preconditioning
             using NONE norm type for convergence test
-          PC Object:   (pc_bddc_coarse_redundant_)   1 MPI processes
+          PC Object: (pc_bddc_coarse_redundant_) 1 MPI process
             type: svd
               All singular values smaller than 1e-12 treated as zero
               Provided essential rank of the matrix 0 (all other eigenvalues are zeroed)
             linear system matrix = precond matrix:
-            Mat Object:   1 MPI processes
+            Mat Object: 1 MPI process
               type: seqaij
               rows=87, cols=87
               total: nonzeros=5277, allocated nonzeros=5277
@@ -224,6 +216,6 @@ PC Object: 8 MPI processes
   Mat Object: 8 MPI processes
     type: is
     rows=2160, cols=2160, bs=3
-    total: nonzeros=156078, allocated nonzeros=195300
+    total: nonzeros=156078, allocated nonzeros=156078
     total number of mallocs used during MatSetValues calls=0
       has attached near null space

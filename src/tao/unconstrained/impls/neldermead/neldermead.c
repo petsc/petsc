@@ -25,39 +25,36 @@ static PetscErrorCode NelderMeadSort(TAO_NelderMead *nm)
 /*------------------------------------------------------------*/
 static PetscErrorCode NelderMeadReplace(TAO_NelderMead *nm, PetscInt index, Vec Xmu, PetscReal f)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   /*  Add new vector's fraction of average */
-  ierr = VecAXPY(nm->Xbar,nm->oneOverN,Xmu);CHKERRQ(ierr);
-  ierr = VecCopy(Xmu,nm->simplex[index]);CHKERRQ(ierr);
+  PetscCall(VecAXPY(nm->Xbar,nm->oneOverN,Xmu));
+  PetscCall(VecCopy(Xmu,nm->simplex[index]));
   nm->f_values[index] = f;
 
-  ierr = NelderMeadSort(nm);CHKERRQ(ierr);
+  PetscCall(NelderMeadSort(nm));
 
   /*  Subtract last vector from average */
-  ierr = VecAXPY(nm->Xbar,-nm->oneOverN,nm->simplex[nm->indices[nm->N]]);CHKERRQ(ierr);
+  PetscCall(VecAXPY(nm->Xbar,-nm->oneOverN,nm->simplex[nm->indices[nm->N]]));
   PetscFunctionReturn(0);
 }
 
 /* ---------------------------------------------------------- */
 static PetscErrorCode TaoSetUp_NM(Tao tao)
 {
-  PetscErrorCode ierr;
   TAO_NelderMead *nm = (TAO_NelderMead *)tao->data;
   PetscInt       n;
 
   PetscFunctionBegin;
-  ierr = VecGetSize(tao->solution,&n);CHKERRQ(ierr);
+  PetscCall(VecGetSize(tao->solution,&n));
   nm->N = n;
   nm->oneOverN = 1.0/n;
-  ierr = VecDuplicateVecs(tao->solution,nm->N+1,&nm->simplex);CHKERRQ(ierr);
-  ierr = PetscMalloc1(nm->N+1,&nm->f_values);CHKERRQ(ierr);
-  ierr = PetscMalloc1(nm->N+1,&nm->indices);CHKERRQ(ierr);
-  ierr = VecDuplicate(tao->solution,&nm->Xbar);CHKERRQ(ierr);
-  ierr = VecDuplicate(tao->solution,&nm->Xmur);CHKERRQ(ierr);
-  ierr = VecDuplicate(tao->solution,&nm->Xmue);CHKERRQ(ierr);
-  ierr = VecDuplicate(tao->solution,&nm->Xmuc);CHKERRQ(ierr);
+  PetscCall(VecDuplicateVecs(tao->solution,nm->N+1,&nm->simplex));
+  PetscCall(PetscMalloc1(nm->N+1,&nm->f_values));
+  PetscCall(PetscMalloc1(nm->N+1,&nm->indices));
+  PetscCall(VecDuplicate(tao->solution,&nm->Xbar));
+  PetscCall(VecDuplicate(tao->solution,&nm->Xmur));
+  PetscCall(VecDuplicate(tao->solution,&nm->Xmue));
+  PetscCall(VecDuplicate(tao->solution,&nm->Xmuc));
 
   tao->gradient=NULL;
   tao->step=0;
@@ -68,19 +65,18 @@ static PetscErrorCode TaoSetUp_NM(Tao tao)
 static PetscErrorCode TaoDestroy_NM(Tao tao)
 {
   TAO_NelderMead *nm = (TAO_NelderMead*)tao->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (tao->setupcalled) {
-    ierr = VecDestroyVecs(nm->N+1,&nm->simplex);CHKERRQ(ierr);
-    ierr = VecDestroy(&nm->Xmuc);CHKERRQ(ierr);
-    ierr = VecDestroy(&nm->Xmue);CHKERRQ(ierr);
-    ierr = VecDestroy(&nm->Xmur);CHKERRQ(ierr);
-    ierr = VecDestroy(&nm->Xbar);CHKERRQ(ierr);
+    PetscCall(VecDestroyVecs(nm->N+1,&nm->simplex));
+    PetscCall(VecDestroy(&nm->Xmuc));
+    PetscCall(VecDestroy(&nm->Xmue));
+    PetscCall(VecDestroy(&nm->Xmur));
+    PetscCall(VecDestroy(&nm->Xbar));
   }
-  ierr = PetscFree(nm->indices);CHKERRQ(ierr);
-  ierr = PetscFree(nm->f_values);CHKERRQ(ierr);
-  ierr = PetscFree(tao->data);CHKERRQ(ierr);
+  PetscCall(PetscFree(nm->indices));
+  PetscCall(PetscFree(nm->f_values));
+  PetscCall(PetscFree(tao->data));
   PetscFunctionReturn(0);
 }
 
@@ -88,16 +84,15 @@ static PetscErrorCode TaoDestroy_NM(Tao tao)
 static PetscErrorCode TaoSetFromOptions_NM(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
   TAO_NelderMead *nm = (TAO_NelderMead*)tao->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead(PetscOptionsObject,"Nelder-Mead options");CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nm_lamda","initial step length","",nm->lamda,&nm->lamda,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nm_mu","mu","",nm->mu_oc,&nm->mu_oc,NULL);CHKERRQ(ierr);
+  PetscOptionsHeadBegin(PetscOptionsObject,"Nelder-Mead options");
+  PetscCall(PetscOptionsReal("-tao_nm_lamda","initial step length","",nm->lamda,&nm->lamda,NULL));
+  PetscCall(PetscOptionsReal("-tao_nm_mu","mu","",nm->mu_oc,&nm->mu_oc,NULL));
   nm->mu_ic = -nm->mu_oc;
   nm->mu_r = nm->mu_oc*2.0;
   nm->mu_e = nm->mu_oc*4.0;
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 
@@ -106,18 +101,17 @@ static PetscErrorCode TaoView_NM(Tao tao,PetscViewer viewer)
 {
   TAO_NelderMead *nm = (TAO_NelderMead*)tao->data;
   PetscBool      isascii;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii));
   if (isascii) {
-    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"expansions: %D\n",nm->nexpand);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"reflections: %D\n",nm->nreflect);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"inside contractions: %D\n",nm->nincontract);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"outside contractionss: %D\n",nm->noutcontract);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"Shrink steps: %D\n",nm->nshrink);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPushTab(viewer));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"expansions: %" PetscInt_FMT "\n",nm->nexpand));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"reflections: %" PetscInt_FMT "\n",nm->nreflect));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"inside contractions: %" PetscInt_FMT "\n",nm->nincontract));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"outside contractionss: %" PetscInt_FMT "\n",nm->noutcontract));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"Shrink steps: %" PetscInt_FMT "\n",nm->nshrink));
+    PetscCall(PetscViewerASCIIPopTab(viewer));
   }
   PetscFunctionReturn(0);
 }
@@ -125,7 +119,6 @@ static PetscErrorCode TaoView_NM(Tao tao,PetscViewer viewer)
 /*------------------------------------------------------------*/
 static PetscErrorCode TaoSolve_NM(Tao tao)
 {
-  PetscErrorCode     ierr;
   TAO_NelderMead     *nm = (TAO_NelderMead*)tao->data;
   PetscReal          *x;
   PetscInt           i;
@@ -142,102 +135,102 @@ static PetscErrorCode TaoSolve_NM(Tao tao)
   nm->nexpand =      0;
 
   if (tao->XL || tao->XU || tao->ops->computebounds) {
-    ierr = PetscInfo(tao,"WARNING: Variable bounds have been set but will be ignored by NelderMead algorithm\n");CHKERRQ(ierr);
+    PetscCall(PetscInfo(tao,"WARNING: Variable bounds have been set but will be ignored by NelderMead algorithm\n"));
   }
 
-  ierr = VecCopy(tao->solution,nm->simplex[0]);CHKERRQ(ierr);
-  ierr = TaoComputeObjective(tao,nm->simplex[0],&nm->f_values[0]);CHKERRQ(ierr);
+  PetscCall(VecCopy(tao->solution,nm->simplex[0]));
+  PetscCall(TaoComputeObjective(tao,nm->simplex[0],&nm->f_values[0]));
   nm->indices[0]=0;
   for (i=1;i<nm->N+1;i++) {
-    ierr = VecCopy(tao->solution,nm->simplex[i]);CHKERRQ(ierr);
-    ierr = VecGetOwnershipRange(nm->simplex[i],&low,&high);CHKERRQ(ierr);
+    PetscCall(VecCopy(tao->solution,nm->simplex[i]));
+    PetscCall(VecGetOwnershipRange(nm->simplex[i],&low,&high));
     if (i-1 >= low && i-1 < high) {
-      ierr = VecGetArray(nm->simplex[i],&x);CHKERRQ(ierr);
+      PetscCall(VecGetArray(nm->simplex[i],&x));
       x[i-1-low] += nm->lamda;
-      ierr = VecRestoreArray(nm->simplex[i],&x);CHKERRQ(ierr);
+      PetscCall(VecRestoreArray(nm->simplex[i],&x));
     }
 
-    ierr = TaoComputeObjective(tao,nm->simplex[i],&nm->f_values[i]);CHKERRQ(ierr);
+    PetscCall(TaoComputeObjective(tao,nm->simplex[i],&nm->f_values[i]));
     nm->indices[i] = i;
   }
 
   /*  Xbar  = (Sum of all simplex vectors - worst vector)/N */
-  ierr = NelderMeadSort(nm);CHKERRQ(ierr);
-  ierr = VecSet(Xbar,0.0);CHKERRQ(ierr);
+  PetscCall(NelderMeadSort(nm));
+  PetscCall(VecSet(Xbar,0.0));
   for (i=0;i<nm->N;i++) {
-    ierr = VecAXPY(Xbar,1.0,nm->simplex[nm->indices[i]]);CHKERRQ(ierr);
+    PetscCall(VecAXPY(Xbar,1.0,nm->simplex[nm->indices[i]]));
   }
-  ierr = VecScale(Xbar,nm->oneOverN);CHKERRQ(ierr);
+  PetscCall(VecScale(Xbar,nm->oneOverN));
   tao->reason = TAO_CONTINUE_ITERATING;
   while (1) {
     /* Call general purpose update function */
     if (tao->ops->update) {
-      ierr = (*tao->ops->update)(tao, tao->niter, tao->user_update);CHKERRQ(ierr);
+      PetscCall((*tao->ops->update)(tao, tao->niter, tao->user_update));
     }
     ++tao->niter;
     shrink = 0;
-    ierr = VecCopy(nm->simplex[nm->indices[0]],tao->solution);CHKERRQ(ierr);
-    ierr = TaoLogConvergenceHistory(tao, nm->f_values[nm->indices[0]], nm->f_values[nm->indices[nm->N]]-nm->f_values[nm->indices[0]], 0.0, tao->ksp_its);CHKERRQ(ierr);
-    ierr = TaoMonitor(tao,tao->niter, nm->f_values[nm->indices[0]], nm->f_values[nm->indices[nm->N]]-nm->f_values[nm->indices[0]], 0.0, 1.0);CHKERRQ(ierr);
-    ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
+    PetscCall(VecCopy(nm->simplex[nm->indices[0]],tao->solution));
+    PetscCall(TaoLogConvergenceHistory(tao, nm->f_values[nm->indices[0]], nm->f_values[nm->indices[nm->N]]-nm->f_values[nm->indices[0]], 0.0, tao->ksp_its));
+    PetscCall(TaoMonitor(tao,tao->niter, nm->f_values[nm->indices[0]], nm->f_values[nm->indices[nm->N]]-nm->f_values[nm->indices[0]], 0.0, 1.0));
+    PetscCall((*tao->ops->convergencetest)(tao,tao->cnvP));
     if (tao->reason != TAO_CONTINUE_ITERATING) break;
 
     /* x(mu) = (1 + mu)Xbar - mu*X_N+1 */
-    ierr = VecAXPBYPCZ(Xmur,1+nm->mu_r,-nm->mu_r,0,Xbar,nm->simplex[nm->indices[nm->N]]);CHKERRQ(ierr);
-    ierr = TaoComputeObjective(tao,Xmur,&fr);CHKERRQ(ierr);
+    PetscCall(VecAXPBYPCZ(Xmur,1+nm->mu_r,-nm->mu_r,0,Xbar,nm->simplex[nm->indices[nm->N]]));
+    PetscCall(TaoComputeObjective(tao,Xmur,&fr));
 
     if (nm->f_values[nm->indices[0]] <= fr && fr < nm->f_values[nm->indices[nm->N-1]]) {
       /*  reflect */
       nm->nreflect++;
-      ierr = PetscInfo(0,"Reflect\n");CHKERRQ(ierr);
-      ierr = NelderMeadReplace(nm,nm->indices[nm->N],Xmur,fr);CHKERRQ(ierr);
+      PetscCall(PetscInfo(0,"Reflect\n"));
+      PetscCall(NelderMeadReplace(nm,nm->indices[nm->N],Xmur,fr));
     } else if (fr < nm->f_values[nm->indices[0]]) {
       /*  expand */
       nm->nexpand++;
-      ierr = PetscInfo(0,"Expand\n");CHKERRQ(ierr);
-      ierr = VecAXPBYPCZ(Xmue,1+nm->mu_e,-nm->mu_e,0,Xbar,nm->simplex[nm->indices[nm->N]]);CHKERRQ(ierr);
-      ierr = TaoComputeObjective(tao,Xmue,&fe);CHKERRQ(ierr);
+      PetscCall(PetscInfo(0,"Expand\n"));
+      PetscCall(VecAXPBYPCZ(Xmue,1+nm->mu_e,-nm->mu_e,0,Xbar,nm->simplex[nm->indices[nm->N]]));
+      PetscCall(TaoComputeObjective(tao,Xmue,&fe));
       if (fe < fr) {
-        ierr = NelderMeadReplace(nm,nm->indices[nm->N],Xmue,fe);CHKERRQ(ierr);
+        PetscCall(NelderMeadReplace(nm,nm->indices[nm->N],Xmue,fe));
       } else {
-        ierr = NelderMeadReplace(nm,nm->indices[nm->N],Xmur,fr);CHKERRQ(ierr);
+        PetscCall(NelderMeadReplace(nm,nm->indices[nm->N],Xmur,fr));
       }
     } else if (nm->f_values[nm->indices[nm->N-1]] <= fr && fr < nm->f_values[nm->indices[nm->N]]) {
       /* outside contraction */
       nm->noutcontract++;
-      ierr = PetscInfo(0,"Outside Contraction\n");CHKERRQ(ierr);
-      ierr = VecAXPBYPCZ(Xmuc,1+nm->mu_oc,-nm->mu_oc,0,Xbar,nm->simplex[nm->indices[nm->N]]);CHKERRQ(ierr);
+      PetscCall(PetscInfo(0,"Outside Contraction\n"));
+      PetscCall(VecAXPBYPCZ(Xmuc,1+nm->mu_oc,-nm->mu_oc,0,Xbar,nm->simplex[nm->indices[nm->N]]));
 
-      ierr = TaoComputeObjective(tao,Xmuc,&fc);CHKERRQ(ierr);
+      PetscCall(TaoComputeObjective(tao,Xmuc,&fc));
       if (fc <= fr) {
-        ierr = NelderMeadReplace(nm,nm->indices[nm->N],Xmuc,fc);CHKERRQ(ierr);
+        PetscCall(NelderMeadReplace(nm,nm->indices[nm->N],Xmuc,fc));
       } else shrink=1;
     } else {
       /* inside contraction */
       nm->nincontract++;
-      ierr = PetscInfo(0,"Inside Contraction\n");CHKERRQ(ierr);
-      ierr = VecAXPBYPCZ(Xmuc,1+nm->mu_ic,-nm->mu_ic,0,Xbar,nm->simplex[nm->indices[nm->N]]);CHKERRQ(ierr);
-      ierr = TaoComputeObjective(tao,Xmuc,&fc);CHKERRQ(ierr);
+      PetscCall(PetscInfo(0,"Inside Contraction\n"));
+      PetscCall(VecAXPBYPCZ(Xmuc,1+nm->mu_ic,-nm->mu_ic,0,Xbar,nm->simplex[nm->indices[nm->N]]));
+      PetscCall(TaoComputeObjective(tao,Xmuc,&fc));
       if (fc < nm->f_values[nm->indices[nm->N]]) {
-        ierr = NelderMeadReplace(nm,nm->indices[nm->N],Xmuc,fc);CHKERRQ(ierr);
+        PetscCall(NelderMeadReplace(nm,nm->indices[nm->N],Xmuc,fc));
       } else shrink = 1;
     }
 
     if (shrink) {
       nm->nshrink++;
-      ierr = PetscInfo(0,"Shrink\n");CHKERRQ(ierr);
+      PetscCall(PetscInfo(0,"Shrink\n"));
 
       for (i=1;i<nm->N+1;i++) {
-        ierr = VecAXPBY(nm->simplex[nm->indices[i]],1.5,-0.5,nm->simplex[nm->indices[0]]);CHKERRQ(ierr);
-        ierr = TaoComputeObjective(tao,nm->simplex[nm->indices[i]], &nm->f_values[nm->indices[i]]);CHKERRQ(ierr);
+        PetscCall(VecAXPBY(nm->simplex[nm->indices[i]],1.5,-0.5,nm->simplex[nm->indices[0]]));
+        PetscCall(TaoComputeObjective(tao,nm->simplex[nm->indices[i]], &nm->f_values[nm->indices[i]]));
       }
-      ierr = VecAXPBY(Xbar,1.5*nm->oneOverN,-0.5,nm->simplex[nm->indices[0]]);CHKERRQ(ierr);
+      PetscCall(VecAXPBY(Xbar,1.5*nm->oneOverN,-0.5,nm->simplex[nm->indices[0]]));
 
       /*  Add last vector's fraction of average */
-      ierr = VecAXPY(Xbar,nm->oneOverN,nm->simplex[nm->indices[nm->N]]);CHKERRQ(ierr);
-      ierr = NelderMeadSort(nm);CHKERRQ(ierr);
+      PetscCall(VecAXPY(Xbar,nm->oneOverN,nm->simplex[nm->indices[nm->N]]));
+      PetscCall(NelderMeadSort(nm));
       /*  Subtract new last vector from average */
-      ierr = VecAXPY(Xbar,-nm->oneOverN,nm->simplex[nm->indices[nm->N]]);CHKERRQ(ierr);
+      PetscCall(VecAXPY(Xbar,-nm->oneOverN,nm->simplex[nm->indices[nm->N]]));
     }
   }
   PetscFunctionReturn(0);
@@ -257,10 +250,9 @@ M*/
 PETSC_EXTERN PetscErrorCode TaoCreate_NM(Tao tao)
 {
   TAO_NelderMead *nm;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(tao,&nm);CHKERRQ(ierr);
+  PetscCall(PetscNewLog(tao,&nm));
   tao->data = (void*)nm;
 
   tao->ops->setup = TaoSetUp_NM;
@@ -283,4 +275,3 @@ PETSC_EXTERN PetscErrorCode TaoCreate_NM(Tao tao)
 
   PetscFunctionReturn(0);
 }
-

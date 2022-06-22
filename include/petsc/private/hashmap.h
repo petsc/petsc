@@ -3,6 +3,8 @@
 
 #include <petsc/private/hashtable.h>
 
+/* SUBMANSEC = Sys */
+
 /*MC
   PETSC_HASH_MAP - Instantiate a PETSc hash table map type
 
@@ -20,7 +22,7 @@
 
   Level: developer
 
-.seealso: PetscHMapT, PetscHMapTCreate()
+.seealso: `PetscHMapT`, `PetscHMapTCreate()`
 M*/
 
 /*S
@@ -31,7 +33,7 @@ M*/
 
   Level: developer
 
-.seealso:  PETSC_HASH_MAP(), PetscHMapTCreate()
+.seealso: `PETSC_HASH_MAP()`, `PetscHMapTCreate()`
 S*/
 
 /*MC
@@ -46,7 +48,7 @@ S*/
 
   Level: developer
 
-.seealso: PetscHMapTDestroy()
+.seealso: `PetscHMapTDestroy()`
 M*/
 
 /*MC
@@ -61,7 +63,7 @@ M*/
 
   Level: developer
 
-.seealso: PetscHMapTCreate()
+.seealso: `PetscHMapTCreate()`
 M*/
 
 /*MC
@@ -76,7 +78,7 @@ M*/
 
   Level: developer
 
-.seealso: PetscHMapTClear()
+.seealso: `PetscHMapTClear()`
 M*/
 
 /*MC
@@ -94,7 +96,7 @@ M*/
 
   Level: developer
 
-.seealso: PetscHMapTCreate()
+.seealso: `PetscHMapTCreate()`
 M*/
 
 /*MC
@@ -109,7 +111,7 @@ M*/
 
   Level: developer
 
-.seealso: PetscHMapTReset()
+.seealso: `PetscHMapTReset()`
 M*/
 
 /*MC
@@ -125,7 +127,7 @@ M*/
 
   Level: developer
 
-.seealso: PetscHMapTCreate()
+.seealso: `PetscHMapTCreate()`
 M*/
 
 /*MC
@@ -143,7 +145,7 @@ M*/
 
   Level: developer
 
-.seealso: PetscHMapTResize()
+.seealso: `PetscHMapTResize()`
 M*/
 
 /*MC
@@ -161,7 +163,7 @@ M*/
 
   Level: developer
 
-.seealso: PetscHMapTResize(), PetscHMapTGetSize()
+.seealso: `PetscHMapTResize()`, `PetscHMapTGetSize()`
 M*/
 
 /*MC
@@ -180,7 +182,7 @@ M*/
 
   Level: developer
 
-.seealso:  PetscHMapTGet(), PetscHMapTSet(), PetscHMapTFind()
+.seealso: `PetscHMapTGet()`, `PetscHMapTSet()`, `PetscHMapTFind()`
 M*/
 
 /*MC
@@ -199,7 +201,7 @@ M*/
 
   Level: developer
 
-.seealso:  PetscHMapTSet(), PetscHMapTIterGet()
+.seealso: `PetscHMapTSet()`, `PetscHMapTIterGet()`
 M*/
 
 /*MC
@@ -216,7 +218,7 @@ M*/
 
   Level: developer
 
-.seealso: PetscHMapTGet(), PetscHMapTIterSet()
+.seealso: `PetscHMapTGet()`, `PetscHMapTIterSet()`
 M*/
 
 /*MC
@@ -232,7 +234,7 @@ M*/
 
   Level: developer
 
-.seealso: PetscHMapTHas(), PetscHMapTIterDel()
+.seealso: `PetscHMapTHas()`, `PetscHMapTIterDel()`
 M*/
 
 /*MC
@@ -252,7 +254,7 @@ M*/
 
   Level: developer
 
-.seealso: PetscHMapTQueryDel(), PetscHMapTSet()
+.seealso: `PetscHMapTQueryDel()`, `PetscHMapTSet()`
 M*/
 
 /*MC
@@ -271,7 +273,7 @@ M*/
 
   Level: developer
 
-.seealso: PetscHMapTQuerySet(), PetscHMapTDel()
+.seealso: `PetscHMapTQuerySet()`, `PetscHMapTDel()`
 M*/
 
 /*MC
@@ -291,7 +293,7 @@ M*/
 
   Level: developer
 
-.seealso: PetscHMapTIterGet(), PetscHMapTIterDel()
+.seealso: `PetscHMapTIterGet()`, `PetscHMapTIterDel()`
 M*/
 
 /*MC
@@ -311,7 +313,7 @@ M*/
 
   Level: developer
 
-.seealso: PetscHMapTIterSet(), PetscHMapTQuerySet(), PetscHMapTSet()
+.seealso: `PetscHMapTIterSet()`, `PetscHMapTQuerySet()`, `PetscHMapTSet()`
 M*/
 
 /*MC
@@ -330,7 +332,7 @@ M*/
 
   Level: developer
 
-.seealso: PetscHMapTFind(), PetscHMapTGet()
+.seealso: `PetscHMapTFind()`, `PetscHMapTGet()`
 M*/
 
 /*MC
@@ -347,7 +349,7 @@ M*/
 
   Level: developer
 
-.seealso: PetscHMapTPut(), PetscHMapTQuerySet(), PetscHMapTSet()
+.seealso: `PetscHMapTPut()`, `PetscHMapTQuerySet()`, `PetscHMapTSet()`
 M*/
 
 /*MC
@@ -363,7 +365,7 @@ M*/
 
   Level: developer
 
-.seealso: PetscHMapTFind(), PetscHMapTQueryDel(), PetscHMapTDel()
+.seealso: `PetscHMapTFind()`, `PetscHMapTQueryDel()`, `PetscHMapTDel()`
 M*/
 
 /*MC
@@ -384,7 +386,7 @@ M*/
 
   Level: developer
 
-.seealso: PetscHSetTGetSize(), PetscHMapTGetVals()
+.seealso: `PetscHSetTGetSize()`, `PetscHMapTGetVals()`
 M*/
 
 /*MC
@@ -405,7 +407,7 @@ M*/
 
   Level: developer
 
-.seealso: PetscHSetTGetSize(), PetscHMapTGetKeys()
+.seealso: `PetscHSetTGetSize()`, `PetscHMapTGetKeys()`
 M*/
 
 /*MC
@@ -428,7 +430,7 @@ M*/
 
   Level: developer
 
-.seealso: PetscHSetTGetSize(), PetscHMapTGetKeys(), PetscHMapTGetVals()
+.seealso: `PetscHSetTGetSize()`, `PetscHMapTGetKeys()`, `PetscHMapTGetVals()`
 M*/
 
 #define PETSC_HASH_MAP(HashT, KeyType, ValType, HashFunc, EqualFunc, DefaultValue)                   \

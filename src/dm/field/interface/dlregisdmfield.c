@@ -13,19 +13,17 @@ PetscBool DMFieldRegisterAllCalled;
 
    Level: developer
 
-.seealso: DMFieldFinalizePackage()
+.seealso: `DMFieldFinalizePackage()`
 @*/
 PetscErrorCode DMFieldInitializePackage(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (DMFieldPackageInitialized) PetscFunctionReturn(0);
   DMFieldPackageInitialized = PETSC_TRUE;
 
-  ierr = PetscClassIdRegister("Field over DM",&DMFIELD_CLASSID);CHKERRQ(ierr);
-  ierr = DMFieldRegisterAll();CHKERRQ(ierr);
-  ierr = PetscRegisterFinalize(DMFieldFinalizePackage);CHKERRQ(ierr);
+  PetscCall(PetscClassIdRegister("Field over DM",&DMFIELD_CLASSID));
+  PetscCall(DMFieldRegisterAll());
+  PetscCall(PetscRegisterFinalize(DMFieldFinalizePackage));
   PetscFunctionReturn(0);
 }
 
@@ -36,14 +34,12 @@ PetscErrorCode DMFieldInitializePackage(void)
 
    Level: developer
 
-.seealso: DMFieldInitializePackage()
+.seealso: `DMFieldInitializePackage()`
 @*/
 PetscErrorCode DMFieldFinalizePackage(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscFunctionListDestroy(&DMFieldList);CHKERRQ(ierr);
+  PetscCall(PetscFunctionListDestroy(&DMFieldList));
   DMFieldPackageInitialized = PETSC_FALSE;
   DMFieldRegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);

@@ -20,121 +20,120 @@ int main(int argc, char * argv[]) {
   VecScatter     vscatSStoSS,vscatSStoSG,vscatSGtoSS,vscatSGtoSG;
   ScatterMode    mode;
   InsertMode     addv;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,&flg);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,&flg));
   if (!flg) m = 100;
 
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,&flg));
   if (!flg) n = 30;
 
-  ierr = PetscOptionsGetInt(NULL,NULL,"-toFirst",&toFirst,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-toFirst",&toFirst,&flg));
   if (!flg) toFirst = 3;
 
-  ierr = PetscOptionsGetInt(NULL,NULL,"-toStep",&toStep,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-toStep",&toStep,&flg));
   if (!flg) toStep = 3;
 
-  ierr = PetscOptionsGetInt(NULL,NULL,"-fromFirst",&fromFirst,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-fromFirst",&fromFirst,&flg));
   if (!flg) fromFirst = 2;
 
-  ierr = PetscOptionsGetInt(NULL,NULL,"-fromStep",&fromStep,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-fromStep",&fromStep,&flg));
   if (!flg) fromStep = 2;
 
   if (n>m) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"The vector sizes are %" PetscInt_FMT ". The number of elements being scattered is %" PetscInt_FMT "\n",m,n);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Adjust the parameters such that m>=n\n");CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"The vector sizes are %" PetscInt_FMT ". The number of elements being scattered is %" PetscInt_FMT "\n",m,n));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Adjust the parameters such that m>=n\n"));
   } else if (toFirst+(n-1)*toStep >=m) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"The vector sizes are %" PetscInt_FMT ". The number of elements being scattered is %" PetscInt_FMT "\n",m,n);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"For the Strided Scatter, toFirst=%" PetscInt_FMT " and toStep=%" PetscInt_FMT ".\n",toFirst,toStep);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"This produces an index (toFirst+(n-1)*toStep)>=m\n");CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Adjust the parameterrs accordingly with -m, -n, -toFirst, or -toStep\n");CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"The vector sizes are %" PetscInt_FMT ". The number of elements being scattered is %" PetscInt_FMT "\n",m,n));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"For the Strided Scatter, toFirst=%" PetscInt_FMT " and toStep=%" PetscInt_FMT ".\n",toFirst,toStep));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"This produces an index (toFirst+(n-1)*toStep)>=m\n"));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Adjust the parameterrs accordingly with -m, -n, -toFirst, or -toStep\n"));
   } else if (fromFirst+(n-1)*fromStep>=m) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"The vector sizes are %" PetscInt_FMT ". The number of elements being scattered is %" PetscInt_FMT "\n",m,n);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"For the Strided Scatter, fromFirst=%" PetscInt_FMT " and fromStep=%" PetscInt_FMT ".\n",fromFirst,toStep);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"This produces an index (fromFirst+(n-1)*fromStep)>=m\n");CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Adjust the parameterrs accordingly with -m, -n, -fromFirst, or -fromStep\n");CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"The vector sizes are %" PetscInt_FMT ". The number of elements being scattered is %" PetscInt_FMT "\n",m,n));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"For the Strided Scatter, fromFirst=%" PetscInt_FMT " and fromStep=%" PetscInt_FMT ".\n",fromFirst,toStep));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"This produces an index (fromFirst+(n-1)*fromStep)>=m\n"));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Adjust the parameterrs accordingly with -m, -n, -fromFirst, or -fromStep\n"));
   } else {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"m=%" PetscInt_FMT "\tn=%" PetscInt_FMT "\tfromFirst=%" PetscInt_FMT "\tfromStep=%" PetscInt_FMT "\ttoFirst=%" PetscInt_FMT "\ttoStep=%" PetscInt_FMT "\n",m,n,fromFirst,fromStep,toFirst,toStep);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"fromFirst+(n-1)*fromStep=%" PetscInt_FMT "\ttoFirst+(n-1)*toStep=%" PetscInt_FMT "\n",fromFirst+(n-1)*fromStep,toFirst+(n-1)*toStep);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"m=%" PetscInt_FMT "\tn=%" PetscInt_FMT "\tfromFirst=%" PetscInt_FMT "\tfromStep=%" PetscInt_FMT "\ttoFirst=%" PetscInt_FMT "\ttoStep=%" PetscInt_FMT "\n",m,n,fromFirst,fromStep,toFirst,toStep));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"fromFirst+(n-1)*fromStep=%" PetscInt_FMT "\ttoFirst+(n-1)*toStep=%" PetscInt_FMT "\n",fromFirst+(n-1)*fromStep,toFirst+(n-1)*toStep));
 
     /* Build the vectors */
-    ierr = VecCreate(PETSC_COMM_WORLD,&Y);CHKERRQ(ierr);
-    ierr = VecSetSizes(Y,m,PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = VecCreate(PETSC_COMM_WORLD,&X);CHKERRQ(ierr);
-    ierr = VecSetSizes(X,m,PETSC_DECIDE);CHKERRQ(ierr);
+    PetscCall(VecCreate(PETSC_COMM_WORLD,&Y));
+    PetscCall(VecSetSizes(Y,m,PETSC_DECIDE));
+    PetscCall(VecCreate(PETSC_COMM_WORLD,&X));
+    PetscCall(VecSetSizes(X,m,PETSC_DECIDE));
 
-    ierr = VecSetFromOptions(Y);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(X);CHKERRQ(ierr);
-    ierr = VecSet(X,2.0);CHKERRQ(ierr);
-    ierr = VecSet(Y,1.0);CHKERRQ(ierr);
+    PetscCall(VecSetFromOptions(Y));
+    PetscCall(VecSetFromOptions(X));
+    PetscCall(VecSet(X,2.0));
+    PetscCall(VecSet(Y,1.0));
 
     /* Build the strided index sets */
-    ierr = ISCreate(PETSC_COMM_WORLD,&toISStrided);CHKERRQ(ierr);
-    ierr = ISCreate(PETSC_COMM_WORLD,&fromISStrided);CHKERRQ(ierr);
-    ierr = ISSetType(toISStrided, ISSTRIDE);CHKERRQ(ierr);
-    ierr = ISSetType(fromISStrided, ISSTRIDE);CHKERRQ(ierr);
-    ierr = ISStrideSetStride(fromISStrided,n,fromFirst,fromStep);CHKERRQ(ierr);
-    ierr = ISStrideSetStride(toISStrided,n,toFirst,toStep);CHKERRQ(ierr);
+    PetscCall(ISCreate(PETSC_COMM_WORLD,&toISStrided));
+    PetscCall(ISCreate(PETSC_COMM_WORLD,&fromISStrided));
+    PetscCall(ISSetType(toISStrided, ISSTRIDE));
+    PetscCall(ISSetType(fromISStrided, ISSTRIDE));
+    PetscCall(ISStrideSetStride(fromISStrided,n,fromFirst,fromStep));
+    PetscCall(ISStrideSetStride(toISStrided,n,toFirst,toStep));
 
     /* Build the general index sets */
-    ierr = PetscMalloc1(n,&idx);CHKERRQ(ierr);
-    ierr = PetscMalloc1(n,&idy);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(n,&idx));
+    PetscCall(PetscMalloc1(n,&idy));
     for (i=0; i<n; i++) {
       idx[i] = i % m;
       idy[i] = (i+m) % m;
     }
     n1 = n;
     n2 = n;
-    ierr = PetscSortRemoveDupsInt(&n1,idx);CHKERRQ(ierr);
-    ierr = PetscSortRemoveDupsInt(&n2,idy);CHKERRQ(ierr);
+    PetscCall(PetscSortRemoveDupsInt(&n1,idx));
+    PetscCall(PetscSortRemoveDupsInt(&n2,idy));
 
-    ierr = ISCreateGeneral(PETSC_COMM_WORLD,n1,idx,PETSC_COPY_VALUES,&toISGeneral);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_WORLD,n2,idy,PETSC_COPY_VALUES,&fromISGeneral);CHKERRQ(ierr);
+    PetscCall(ISCreateGeneral(PETSC_COMM_WORLD,n1,idx,PETSC_COPY_VALUES,&toISGeneral));
+    PetscCall(ISCreateGeneral(PETSC_COMM_WORLD,n2,idy,PETSC_COPY_VALUES,&fromISGeneral));
 
     /* set the mode and the insert/add parameter */
     mode = SCATTER_FORWARD;
     addv = ADD_VALUES;
 
     /* VecScatter : Seq Strided to Seq Strided */
-    ierr = VecScatterCreate(X,fromISStrided,Y,toISStrided,&vscatSStoSS);CHKERRQ(ierr);
-    ierr = VecScatterBegin(vscatSStoSS,X,Y,addv,mode);CHKERRQ(ierr);
-    ierr = VecScatterEnd(vscatSStoSS,X,Y,addv,mode);CHKERRQ(ierr);
-    ierr = VecScatterDestroy(&vscatSStoSS);CHKERRQ(ierr);
+    PetscCall(VecScatterCreate(X,fromISStrided,Y,toISStrided,&vscatSStoSS));
+    PetscCall(VecScatterBegin(vscatSStoSS,X,Y,addv,mode));
+    PetscCall(VecScatterEnd(vscatSStoSS,X,Y,addv,mode));
+    PetscCall(VecScatterDestroy(&vscatSStoSS));
 
     /* VecScatter : Seq General to Seq Strided */
-    ierr = VecScatterCreate(Y,fromISGeneral,X,toISStrided,&vscatSGtoSS);CHKERRQ(ierr);
-    ierr = VecScatterBegin(vscatSGtoSS,Y,X,addv,mode);CHKERRQ(ierr);
-    ierr = VecScatterEnd(vscatSGtoSS,Y,X,addv,mode);CHKERRQ(ierr);
-    ierr = VecScatterDestroy(&vscatSGtoSS);CHKERRQ(ierr);
+    PetscCall(VecScatterCreate(Y,fromISGeneral,X,toISStrided,&vscatSGtoSS));
+    PetscCall(VecScatterBegin(vscatSGtoSS,Y,X,addv,mode));
+    PetscCall(VecScatterEnd(vscatSGtoSS,Y,X,addv,mode));
+    PetscCall(VecScatterDestroy(&vscatSGtoSS));
 
     /* VecScatter : Seq General to Seq General */
-    ierr = VecScatterCreate(X,fromISGeneral,Y,toISGeneral,&vscatSGtoSG);CHKERRQ(ierr);
-    ierr = VecScatterBegin(vscatSGtoSG,X,Y,addv,mode);CHKERRQ(ierr);
-    ierr = VecScatterEnd(vscatSGtoSG,X,Y,addv,mode);CHKERRQ(ierr);
-    ierr = VecScatterDestroy(&vscatSGtoSG);CHKERRQ(ierr);
+    PetscCall(VecScatterCreate(X,fromISGeneral,Y,toISGeneral,&vscatSGtoSG));
+    PetscCall(VecScatterBegin(vscatSGtoSG,X,Y,addv,mode));
+    PetscCall(VecScatterEnd(vscatSGtoSG,X,Y,addv,mode));
+    PetscCall(VecScatterDestroy(&vscatSGtoSG));
 
     /* VecScatter : Seq Strided to Seq General */
-    ierr = VecScatterCreate(Y,fromISStrided,X,toISGeneral,&vscatSStoSG);CHKERRQ(ierr);
-    ierr = VecScatterBegin(vscatSStoSG,Y,X,addv,mode);CHKERRQ(ierr);
-    ierr = VecScatterEnd(vscatSStoSG,Y,X,addv,mode);CHKERRQ(ierr);
-    ierr = VecScatterDestroy(&vscatSStoSG);CHKERRQ(ierr);
+    PetscCall(VecScatterCreate(Y,fromISStrided,X,toISGeneral,&vscatSStoSG));
+    PetscCall(VecScatterBegin(vscatSStoSG,Y,X,addv,mode));
+    PetscCall(VecScatterEnd(vscatSStoSG,Y,X,addv,mode));
+    PetscCall(VecScatterDestroy(&vscatSStoSG));
 
     /* view the results */
-    ierr = VecView(Y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    PetscCall(VecView(Y,PETSC_VIEWER_STDOUT_WORLD));
 
     /* Cleanup */
-    ierr = VecDestroy(&X);CHKERRQ(ierr);
-    ierr = VecDestroy(&Y);CHKERRQ(ierr);
-    ierr = ISDestroy(&toISStrided);CHKERRQ(ierr);
-    ierr = ISDestroy(&fromISStrided);CHKERRQ(ierr);
-    ierr = ISDestroy(&toISGeneral);CHKERRQ(ierr);
-    ierr = ISDestroy(&fromISGeneral);CHKERRQ(ierr);
-    ierr = PetscFree(idx);CHKERRQ(ierr);
-    ierr = PetscFree(idy);CHKERRQ(ierr);
+    PetscCall(VecDestroy(&X));
+    PetscCall(VecDestroy(&Y));
+    PetscCall(ISDestroy(&toISStrided));
+    PetscCall(ISDestroy(&fromISStrided));
+    PetscCall(ISDestroy(&toISGeneral));
+    PetscCall(ISDestroy(&fromISGeneral));
+    PetscCall(PetscFree(idx));
+    PetscCall(PetscFree(idy));
   }
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

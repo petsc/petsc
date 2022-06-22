@@ -1,10 +1,6 @@
 -include ../../../../../petscdir.mk
 #requiresdefine   'PETSC_HAVE_ATTRIBUTEALIGNED'
-CFLAGS	         =
-FFLAGS	         =
-CPPFLAGS         =
-FPPFLAGS         =
-EXAMPLESC        = power.c power2.c
+
 LOCDIR           = src/snes/tutorials/network/power/
 OBJECTS_PF       = PFReadData.o pffunctions.o
 

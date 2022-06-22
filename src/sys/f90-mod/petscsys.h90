@@ -146,9 +146,27 @@
        PetscErrorCode ierr
        end subroutine
 
+#if defined(PETSC_HAVE_FORTRAN_FREE_LINE_LENGTH_NONE)
+      subroutine PetscErrorf(ierr,line,file)
+       PetscErrorCode, intent(in) :: ierr
+       integer, intent(in) ::  line
+       character(*) file
+      end Subroutine PetscErrorf
+
+      subroutine PetscErrorMPI(ierr,line,file)
+       PetscErrorCode, intent(inout) :: ierr
+       integer, intent(in) ::  line
+       character(*) file
+      end Subroutine PetscErrorMPI
+#else
       subroutine PetscErrorf(ierr)
        PetscErrorCode, intent(in) :: ierr
       end Subroutine PetscErrorf
+
+      subroutine PetscErrorMPI(ierr)
+       PetscErrorCode, intent(inout) :: ierr
+      end Subroutine PetscErrorMPI
+#endif
 
       subroutine PetscFinalize(ierr)
        PetscErrorCode, intent(out) :: ierr
@@ -160,6 +178,12 @@
        PetscViewer b
        PetscErrorCode ierr
        end subroutine
+
+      subroutine PetscRandomDestroy(a,z)
+       import tPetscRandom
+       PetscRandom a
+       PetscErrorCode z
+      end subroutine
 
       subroutine PetscSubcommView(a,b,z)
        import tPetscSubComm,tPetscViewer

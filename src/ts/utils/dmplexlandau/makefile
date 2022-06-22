@@ -1,9 +1,5 @@
 -include ../../../../petscdir.mk
-ALL: lib
 
-CPPFLAGS =
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = plexland.c
 SOURCECU =
 SOURCEF  =

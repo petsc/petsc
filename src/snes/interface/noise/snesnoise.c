@@ -28,12 +28,11 @@ PetscErrorCode SNESDiffParameterCreate_More(SNES snes,Vec x,void **outneP)
   DIFFPAR_MORE   *neP;
   Vec            w;
   PetscRandom    rctx;  /* random number generator context */
-  PetscErrorCode ierr;
   PetscBool      flg;
   char           noise_file[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(snes,&neP);CHKERRQ(ierr);
+  PetscCall(PetscNewLog(snes,&neP));
 
   neP->function_count = 0;
   neP->fnoise_min     = 1.0e-20;
@@ -43,21 +42,21 @@ PetscErrorCode SNESDiffParameterCreate_More(SNES snes,Vec x,void **outneP)
   neP->hopt_resets    = 0;
 
   /* Create work vectors */
-  ierr = VecDuplicateVecs(x,3,&neP->workv);CHKERRQ(ierr);
+  PetscCall(VecDuplicateVecs(x,3,&neP->workv));
   w    = neP->workv[0];
 
   /* Set components of vector w to random numbers */
-  ierr = PetscRandomCreate(PetscObjectComm((PetscObject)snes),&rctx);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
-  ierr = VecSetRandom(w,rctx);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
+  PetscCall(PetscRandomCreate(PetscObjectComm((PetscObject)snes),&rctx));
+  PetscCall(PetscRandomSetFromOptions(rctx));
+  PetscCall(VecSetRandom(w,rctx));
+  PetscCall(PetscRandomDestroy(&rctx));
 
   /* Open output file */
-  ierr = PetscOptionsGetString(((PetscObject)snes)->options,((PetscObject)snes)->prefix,"-snes_mf_noise_file",noise_file,sizeof(noise_file),&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetString(((PetscObject)snes)->options,((PetscObject)snes)->prefix,"-snes_mf_noise_file",noise_file,sizeof(noise_file),&flg));
   if (flg) neP->fp = fopen(noise_file,"w");
   else     neP->fp = fopen("noise.out","w");
-  PetscCheckFalse(!neP->fp,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file");
-  ierr = PetscInfo(snes,"Creating Jorge's differencing parameter context\n");CHKERRQ(ierr);
+  PetscCheck(neP->fp,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file");
+  PetscCall(PetscInfo(snes,"Creating Jorge's differencing parameter context\n"));
 
   *outneP = neP;
   PetscFunctionReturn(0);
@@ -66,15 +65,14 @@ PetscErrorCode SNESDiffParameterCreate_More(SNES snes,Vec x,void **outneP)
 PetscErrorCode SNESDiffParameterDestroy_More(void *nePv)
 {
   DIFFPAR_MORE   *neP = (DIFFPAR_MORE*)nePv;
-  PetscErrorCode ierr;
   int            err;
 
   PetscFunctionBegin;
   /* Destroy work vectors and close output file */
-  ierr = VecDestroyVecs(3,&neP->workv);CHKERRQ(ierr);
+  PetscCall(VecDestroyVecs(3,&neP->workv));
   err  = fclose(neP->fp);
-  PetscCheckFalse(err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
-  ierr = PetscFree(neP);CHKERRQ(ierr);
+  PetscCheck(!err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
+  PetscCall(PetscFree(neP));
   PetscFunctionReturn(0);
 }
 
@@ -86,7 +84,6 @@ PetscErrorCode SNESDiffParameterCompute_More(SNES snes,void *nePv,Vec x,Vec p,do
   PetscScalar    alpha;
   PetscScalar    fval[7], tab[7][7], eps[7], f = -1;
   double         rerrf = -1., fder2;
-  PetscErrorCode ierr;
   PetscInt       iter, k, i, j,  info;
   PetscInt       nf = 7;         /* number of function evaluations */
   PetscInt       fcount;
@@ -95,9 +92,9 @@ PetscErrorCode SNESDiffParameterCompute_More(SNES snes,void *nePv,Vec x,Vec p,do
   PetscBool      noise_test = PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)snes,&comm);CHKERRQ(ierr);
+  PetscCall(PetscObjectGetComm((PetscObject)snes,&comm));
   /* Call to SNESSetUp() just to set data structures in SNES context */
-  if (!snes->setupcalled) {ierr = SNESSetUp(snes);CHKERRQ(ierr);}
+  if (!snes->setupcalled) PetscCall(SNESSetUp(snes));
 
   w    = neP->workv[0];
   xp   = neP->workv[1];
@@ -113,8 +110,8 @@ PetscErrorCode SNESDiffParameterCompute_More(SNES snes,void *nePv,Vec x,Vec p,do
   fcount   = neP->function_count;
 
   /* We have 5 tries to attempt to compute a good hopt value */
-  ierr = SNESGetIterationNumber(snes,&i);CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,fp,"\n ------- SNES iteration %D ---------\n",i);CHKERRQ(ierr);
+  PetscCall(SNESGetIterationNumber(snes,&i));
+  PetscCall(PetscFPrintf(comm,fp,"\n ------- SNES iteration %" PetscInt_FMT " ---------\n",i));
   for (iter=0; iter<5; iter++) {
     neP->h_first_try = h;
 
@@ -122,10 +119,10 @@ PetscErrorCode SNESDiffParameterCompute_More(SNES snes,void *nePv,Vec x,Vec p,do
        the difference table */
     for (k=0; k<nf; k++) {
       alpha = h * (k+1 - (nf+1)/2);
-      ierr  = VecWAXPY(xp,alpha,p,x);CHKERRQ(ierr);
-      ierr  = SNESComputeFunction(snes,xp,fvec);CHKERRQ(ierr);
+      PetscCall(VecWAXPY(xp,alpha,p,x));
+      PetscCall(SNESComputeFunction(snes,xp,fvec));
       neP->function_count++;
-      ierr = VecDot(fvec,w,&fval[k]);CHKERRQ(ierr);
+      PetscCall(VecDot(fvec,w,&fval[k]));
     }
     f = fval[(nf+1)/2 - 1];
 
@@ -139,25 +136,25 @@ PetscErrorCode SNESDiffParameterCompute_More(SNES snes,void *nePv,Vec x,Vec p,do
     }
 
     /* Print the difference table */
-    ierr = PetscFPrintf(comm,fp,"Difference Table: iter = %D\n",iter);CHKERRQ(ierr);
+    PetscCall(PetscFPrintf(comm,fp,"Difference Table: iter = %" PetscInt_FMT "\n",iter));
     for (i=0; i<nf; i++) {
       for (j=0; j<nf-i; j++) {
-        ierr = PetscFPrintf(comm,fp," %10.2e ",tab[i][j]);CHKERRQ(ierr);
+        PetscCall(PetscFPrintf(comm,fp," %10.2e ",tab[i][j]));
       }
-      ierr = PetscFPrintf(comm,fp,"\n");CHKERRQ(ierr);
+      PetscCall(PetscFPrintf(comm,fp,"\n"));
     }
 
     /* Call the noise estimator */
-    ierr = SNESNoise_dnest_(&nf,fval,&h,fnoise,&fder2,hopt,&info,eps);CHKERRQ(ierr);
+    PetscCall(SNESNoise_dnest_(&nf,fval,&h,fnoise,&fder2,hopt,&info,eps));
 
     /* Output statements */
     rerrf = *fnoise/PetscAbsScalar(f);
-    if (info == 1) {ierr = PetscFPrintf(comm,fp,"%s\n","Noise detected");CHKERRQ(ierr);}
-    if (info == 2) {ierr = PetscFPrintf(comm,fp,"%s\n","Noise not detected; h is too small");CHKERRQ(ierr);}
-    if (info == 3) {ierr = PetscFPrintf(comm,fp,"%s\n","Noise not detected; h is too large");CHKERRQ(ierr);}
-    if (info == 4) {ierr = PetscFPrintf(comm,fp,"%s\n","Noise detected, but unreliable hopt");CHKERRQ(ierr);}
-    ierr = PetscFPrintf(comm,fp,"Approximate epsfcn %g  %g  %g  %g  %g  %g\n",(double)eps[0],(double)eps[1],(double)eps[2],(double)eps[3],(double)eps[4],(double)eps[5]);CHKERRQ(ierr);
-    ierr = PetscFPrintf(comm,fp,"h = %g, fnoise = %g, fder2 = %g, rerrf = %g, hopt = %g\n\n",(double)h, (double)*fnoise, (double)fder2, (double)rerrf, (double)*hopt);CHKERRQ(ierr);
+    if (info == 1) PetscCall(PetscFPrintf(comm,fp,"%s\n","Noise detected"));
+    if (info == 2) {PetscCall(PetscFPrintf(comm,fp,"%s\n","Noise not detected; h is too small"));}
+    if (info == 3) {PetscCall(PetscFPrintf(comm,fp,"%s\n","Noise not detected; h is too large"));}
+    if (info == 4) PetscCall(PetscFPrintf(comm,fp,"%s\n","Noise detected, but unreliable hopt"));
+    PetscCall(PetscFPrintf(comm,fp,"Approximate epsfcn %g  %g  %g  %g  %g  %g\n",(double)eps[0],(double)eps[1],(double)eps[2],(double)eps[3],(double)eps[4],(double)eps[5]));
+    PetscCall(PetscFPrintf(comm,fp,"h = %g, fnoise = %g, fder2 = %g, rerrf = %g, hopt = %g\n\n",(double)h, (double)*fnoise, (double)fder2, (double)rerrf, (double)*hopt));
 
     /* Save fnoise and fder2. */
     if (*fnoise) fnoise_s = *fnoise;
@@ -185,34 +182,34 @@ PetscErrorCode SNESDiffParameterCompute_More(SNES snes,void *nePv,Vec x,Vec p,do
 theend:
 
   if (*fnoise < neP->fnoise_min) {
-    ierr    = PetscFPrintf(comm,fp,"Resetting fnoise: fnoise1 = %g, fnoise_min = %g\n",(double)*fnoise,(double)neP->fnoise_min);CHKERRQ(ierr);
+    PetscCall(PetscFPrintf(comm,fp,"Resetting fnoise: fnoise1 = %g, fnoise_min = %g\n",(double)*fnoise,(double)neP->fnoise_min));
     *fnoise = neP->fnoise_min;
     neP->fnoise_resets++;
   }
   if (*hopt < neP->hopt_min) {
-    ierr  = PetscFPrintf(comm,fp,"Resetting hopt: hopt1 = %g, hopt_min = %g\n",(double)*hopt,(double)neP->hopt_min);CHKERRQ(ierr);
+    PetscCall(PetscFPrintf(comm,fp,"Resetting hopt: hopt1 = %g, hopt_min = %g\n",(double)*hopt,(double)neP->hopt_min));
     *hopt = neP->hopt_min;
     neP->hopt_resets++;
   }
 
-  ierr = PetscFPrintf(comm,fp,"Errors in derivative:\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,fp,"f = %g, fnoise = %g, fder2 = %g, hopt = %g\n",(double)f,(double)*fnoise,(double)fder2,(double)*hopt);CHKERRQ(ierr);
+  PetscCall(PetscFPrintf(comm,fp,"Errors in derivative:\n"));
+  PetscCall(PetscFPrintf(comm,fp,"f = %g, fnoise = %g, fder2 = %g, hopt = %g\n",(double)f,(double)*fnoise,(double)fder2,(double)*hopt));
 
   /* For now, compute h **each** MV Mult!! */
   /*
-  ierr = PetscOptionsHasName(NULL,"-matrix_free_jorge_each_mvp",&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsHasName(NULL,"-matrix_free_jorge_each_mvp",&flg));
   if (!flg) {
     Mat mat;
-    ierr = SNESGetJacobian(snes,&mat,NULL,NULL);CHKERRQ(ierr);
-    ierr = SNESDefaultMatrixFreeSetParameters2(mat,PETSC_DEFAULT,PETSC_DEFAULT,*hopt);CHKERRQ(ierr);
+    PetscCall(SNESGetJacobian(snes,&mat,NULL,NULL));
+    PetscCall(SNESDefaultMatrixFreeSetParameters2(mat,PETSC_DEFAULT,PETSC_DEFAULT,*hopt));
   }
   */
   fcount = neP->function_count - fcount;
-  ierr   = PetscInfo(snes,"fct_now = %D, fct_cum = %D, rerrf=%g, sqrt(noise)=%g, h_more=%g\n",fcount,neP->function_count,(double)rerrf,(double)PetscSqrtReal(*fnoise),(double)*hopt);CHKERRQ(ierr);
+  PetscCall(PetscInfo(snes,"fct_now = %" PetscInt_FMT ", fct_cum = %" PetscInt_FMT ", rerrf=%g, sqrt(noise)=%g, h_more=%g\n",fcount,neP->function_count,(double)rerrf,(double)PetscSqrtReal(*fnoise),(double)*hopt));
 
-  ierr = PetscOptionsGetBool(NULL,NULL,"-noise_test",&noise_test,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-noise_test",&noise_test,NULL));
   if (noise_test) {
-    ierr = JacMatMultCompare(snes,x,p,*hopt);CHKERRQ(ierr);
+    PetscCall(JacMatMultCompare(snes,x,p,*hopt));
   }
   PetscFunctionReturn(0);
 }
@@ -227,36 +224,35 @@ PetscErrorCode JacMatMultCompare(SNES snes,Vec x,Vec p,double hopt)
   Vec            f;
   PetscScalar    alpha;
   PetscReal      yy1n,yy2n,enorm;
-  PetscErrorCode ierr;
   PetscInt       i;
   PetscBool      printv = PETSC_FALSE;
   char           filename[32];
   MPI_Comm       comm;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)snes,&comm);CHKERRQ(ierr);
+  PetscCall(PetscObjectGetComm((PetscObject)snes,&comm));
   /* Compute function and analytic Jacobian at x */
-  ierr = SNESGetJacobian(snes,&Jmf,&J,NULL,NULL);CHKERRQ(ierr);
-  ierr = SNESComputeJacobian(snes,x,Jmf,J);CHKERRQ(ierr);
-  ierr = SNESGetFunction(snes,&f,NULL,NULL);CHKERRQ(ierr);
-  ierr = SNESComputeFunction(snes,x,f);CHKERRQ(ierr);
+  PetscCall(SNESGetJacobian(snes,&Jmf,&J,NULL,NULL));
+  PetscCall(SNESComputeJacobian(snes,x,Jmf,J));
+  PetscCall(SNESGetFunction(snes,&f,NULL,NULL));
+  PetscCall(SNESComputeFunction(snes,x,f));
 
   /* Duplicate work vectors */
-  ierr = VecDuplicate(x,&yy2);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&yy1);CHKERRQ(ierr);
+  PetscCall(VecDuplicate(x,&yy2));
+  PetscCall(VecDuplicate(x,&yy1));
 
   /* Compute true matrix-vector product */
-  ierr = MatMult(J,p,yy1);CHKERRQ(ierr);
-  ierr = VecNorm(yy1,NORM_2,&yy1n);CHKERRQ(ierr);
+  PetscCall(MatMult(J,p,yy1));
+  PetscCall(VecNorm(yy1,NORM_2,&yy1n));
 
   /* View product vector if desired */
-  ierr = PetscOptionsGetBool(NULL,NULL,"-print_vecs",&printv,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-print_vecs",&printv,NULL));
   if (printv) {
-    ierr = PetscViewerASCIIOpen(comm,"y1.out",&view2);CHKERRQ(ierr);
-    ierr = PetscViewerPushFormat(view2,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
-    ierr = VecView(yy1,view2);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(view2);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&view2);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIOpen(comm,"y1.out",&view2));
+    PetscCall(PetscViewerPushFormat(view2,PETSC_VIEWER_ASCII_COMMON));
+    PetscCall(VecView(yy1,view2));
+    PetscCall(PetscViewerPopFormat(view2));
+    PetscCall(PetscViewerDestroy(&view2));
   }
 
   /* Test Jacobian-vector product computation */
@@ -264,27 +260,27 @@ PetscErrorCode JacMatMultCompare(SNES snes,Vec x,Vec p,double hopt)
   h     = 0.01 * hopt;
   for (i=0; i<5; i++) {
     /* Set differencing parameter for matrix-free multiplication */
-    ierr = SNESDefaultMatrixFreeSetParameters2(Jmf,PETSC_DEFAULT,PETSC_DEFAULT,h);CHKERRQ(ierr);
+    PetscCall(SNESDefaultMatrixFreeSetParameters2(Jmf,PETSC_DEFAULT,PETSC_DEFAULT,h));
 
     /* Compute matrix-vector product via differencing approximation */
-    ierr = MatMult(Jmf,p,yy2);CHKERRQ(ierr);
-    ierr = VecNorm(yy2,NORM_2,&yy2n);CHKERRQ(ierr);
+    PetscCall(MatMult(Jmf,p,yy2));
+    PetscCall(VecNorm(yy2,NORM_2,&yy2n));
 
     /* View product vector if desired */
     if (printv) {
       sprintf(filename,"y2.%d.out",(int)i);
-      ierr = PetscViewerASCIIOpen(comm,filename,&view2);CHKERRQ(ierr);
-      ierr = PetscViewerPushFormat(view2,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
-      ierr = VecView(yy2,view2);CHKERRQ(ierr);
-      ierr = PetscViewerPopFormat(view2);CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(&view2);CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIIOpen(comm,filename,&view2));
+      PetscCall(PetscViewerPushFormat(view2,PETSC_VIEWER_ASCII_COMMON));
+      PetscCall(VecView(yy2,view2));
+      PetscCall(PetscViewerPopFormat(view2));
+      PetscCall(PetscViewerDestroy(&view2));
     }
 
     /* Compute relative error */
-    ierr  = VecAXPY(yy2,alpha,yy1);CHKERRQ(ierr);
-    ierr  = VecNorm(yy2,NORM_2,&enorm);CHKERRQ(ierr);
+    PetscCall(VecAXPY(yy2,alpha,yy1));
+    PetscCall(VecNorm(yy2,NORM_2,&enorm));
     enorm = enorm/yy1n;
-    ierr  = PetscFPrintf(comm,stdout,"h = %g: relative error = %g\n",(double)h,(double)enorm);CHKERRQ(ierr);
+    PetscCall(PetscFPrintf(comm,stdout,"h = %g: relative error = %g\n",(double)h,(double)enorm));
     h    *= 10.0;
   }
   PetscFunctionReturn(0);
@@ -294,14 +290,13 @@ static PetscInt lin_its_total = 0;
 
 PetscErrorCode SNESNoiseMonitor(SNES snes,PetscInt its,double fnorm,void *dummy)
 {
-  PetscErrorCode ierr;
   PetscInt       lin_its;
 
   PetscFunctionBegin;
-  ierr           = SNESGetLinearSolveIterations(snes,&lin_its);CHKERRQ(ierr);
+  PetscCall(SNESGetLinearSolveIterations(snes,&lin_its));
   lin_its_total += lin_its;
-  ierr           = PetscPrintf(PetscObjectComm((PetscObject)snes), "iter = %D, SNES Function norm = %g, lin_its = %D, total_lin_its = %D\n",its,(double)fnorm,lin_its,lin_its_total);CHKERRQ(ierr);
+  PetscCall(PetscPrintf(PetscObjectComm((PetscObject)snes), "iter = %" PetscInt_FMT ", SNES Function norm = %g, lin_its = %" PetscInt_FMT ", total_lin_its = %" PetscInt_FMT "\n",its,(double)fnorm,lin_its,lin_its_total));
 
-  ierr = SNESUnSetMatrixFreeParameter(snes);CHKERRQ(ierr);
+  PetscCall(SNESUnSetMatrixFreeParameter(snes));
   PetscFunctionReturn(0);
 }

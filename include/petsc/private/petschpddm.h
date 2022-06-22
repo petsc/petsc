@@ -3,7 +3,11 @@
 
 #include <petsc/private/kspimpl.h>
 
-#define PETSC_HPDDM_MAXLEVELS 9
+#define PETSC_KSPHPDDM_DEFAULT_PRECISION (PetscDefined(USE_REAL_SINGLE) ? KSP_HPDDM_PRECISION_SINGLE : \
+                                          (PetscDefined(USE_REAL_DOUBLE) ? KSP_HPDDM_PRECISION_DOUBLE : \
+                                           (PetscDefined(USE_REAL___FLOAT128) ? KSP_HPDDM_PRECISION_QUADRUPLE : \
+                                            KSP_HPDDM_PRECISION_HALF)))
+#define PETSC_PCHPDDM_MAXLEVELS 9
 PETSC_EXTERN PetscLogEvent PC_HPDDM_PtAP;
 PETSC_EXTERN PetscLogEvent PC_HPDDM_PtBP;
 PETSC_EXTERN PetscLogEvent PC_HPDDM_Next;
@@ -38,6 +42,7 @@ struct PC_HPDDM {
   PetscBool                   Neumann;    /* aux is the local Neumann matrix? */
   PetscBool                   log_separate; /* separate events for each level? */
   PetscBool                   share;      /* shared subdomain KSP between SLEPc and PETSc? */
+  PetscBool                   deflation;  /* aux is the local deflation space? */
   PetscErrorCode              (*setup)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void*); /* setup function for the auxiliary matrix */
   void*                       setup_ctx;  /* context for setup */
 };
@@ -48,6 +53,7 @@ struct KSP_HPDDM {
   int                  icntl[2];
   unsigned short       scntl[2];
   char                 cntl [5];
+  KSPHPDDMPrecision    precision;
 };
 
 PETSC_INTERN const char HPDDMCitation[];

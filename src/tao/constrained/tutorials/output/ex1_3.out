@@ -1,6 +1,6 @@
 ---- Constrained Problem -----
 TAO solve converged due to CONVERGED_GRTOL iterations 9
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1.73205
 2.

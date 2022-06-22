@@ -25,11 +25,10 @@ static PetscInt petsc_checkpointer_intensity = 1;
 
    Level: advanced
 
-.seealso: PetscCheckPointer(), PetscFunctionBeginHot()
+.seealso: `PetscCheckPointer()`, `PetscFunctionBeginHot()`
 @*/
 PetscErrorCode PetscCheckPointerSetIntensity(PetscInt intensity)
 {
-
   PetscFunctionBegin;
   switch (intensity) {
   case 0:
@@ -58,7 +57,7 @@ static PetscBool PetscSegvJumpBuf_set;
 
    Level: developer
 
-.seealso: PetscPushSignalHandler()
+.seealso: `PetscPushSignalHandler()`
 @*/
 void PetscSignalSegvCheckPointerOrMpi(void)
 {
@@ -76,7 +75,7 @@ void PetscSignalSegvCheckPointerOrMpi(void)
 
    Level: developer
 
-.seealso: PetscCheckPointerSetIntensity()
+.seealso: `PetscCheckPointerSetIntensity()`
 @*/
 PetscBool PetscCheckPointer(const void *ptr,PetscDataType dtype)
 {

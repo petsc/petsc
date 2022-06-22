@@ -24,6 +24,7 @@ PetscErrorCode  PetscObjectGetClassId(PetscObject obj,PetscClassId *classid)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
+  PetscValidIntPointer(classid,2);
   *classid = obj->classid;
   PetscFunctionReturn(0);
 }

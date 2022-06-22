@@ -37,13 +37,11 @@ private:
 
   PETSC_NODISCARD static PetscErrorCode initialize_(PetscInt id, DeviceContext *dci) noexcept
   {
-    PetscErrorCode ierr;
-
     PetscFunctionBegin;
-    ierr = PetscDeviceCheckDeviceCount_Internal(id);CHKERRQ(ierr);
+    PetscCall(PetscDeviceCheckDeviceCount_Internal(id));
     if (!initialized_) {
       initialized_ = true;
-      ierr = PetscRegisterFinalize(finalize_);CHKERRQ(ierr);
+      PetscCall(PetscRegisterFinalize(finalize_));
     }
     PetscFunctionReturn(0);
   }
@@ -99,11 +97,10 @@ PetscErrorCode PetscDeviceContextCreate_SYCL(PetscDeviceContext dctx)
 {
   using namespace Petsc::Device::SYCL::Impl;
 
-  PetscErrorCode             ierr;
   static const DeviceContext syclctx;
 
   PetscFunctionBegin;
   dctx->data = new DeviceContext::PetscDeviceContext_IMPLS();
-  ierr = PetscMemcpy(dctx->ops,&syclctx.ops,sizeof(syclctx.ops));CHKERRQ(ierr);
+  PetscCall(PetscMemcpy(dctx->ops,&syclctx.ops,sizeof(syclctx.ops)));
   PetscFunctionReturn(0);
 }

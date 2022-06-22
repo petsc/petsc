@@ -28,62 +28,61 @@ static PetscErrorCode PetscParseLayerYAML(PetscOptions options, yaml_document_t 
 {
   MPI_Comm         comm = PetscYAMLGetComm();
   char             name[PETSC_MAX_OPTION_NAME] = "", prefix[PETSC_MAX_OPTION_NAME] = "";
-  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   if (node->type == YAML_SCALAR_NODE && !STR(node)[0]) PetscFunctionReturn(0); /* empty */
-  PetscCheckFalse(node->type != YAML_MAPPING_NODE,comm, PETSC_ERR_SUP, "Unsupported YAML node type: expected mapping");
+  PetscCheck(node->type == YAML_MAPPING_NODE,comm, PETSC_ERR_SUP, "Unsupported YAML node type: expected mapping");
   for (yaml_node_pair_t *pair = MAP(node).start; pair < MAP(node).top; pair++) {
     yaml_node_t *keynode = yaml_document_get_node(doc, pair->key);
     yaml_node_t *valnode = yaml_document_get_node(doc, pair->value);
     PetscBool   isMergeKey,isDummyKey,isIncludeTag;
 
-    PetscCheckFalse(!keynode,comm, PETSC_ERR_LIB, "Corrupt YAML document");
-    PetscCheckFalse(!valnode,comm, PETSC_ERR_LIB, "Corrupt YAML document");
-    PetscCheckFalse(keynode->type != YAML_SCALAR_NODE,comm, PETSC_ERR_SUP, "Unsupported YAML node type: expected scalar");
+    PetscCheck(keynode,comm, PETSC_ERR_LIB, "Corrupt YAML document");
+    PetscCheck(valnode,comm, PETSC_ERR_LIB, "Corrupt YAML document");
+    PetscCheck(keynode->type == YAML_SCALAR_NODE,comm, PETSC_ERR_SUP, "Unsupported YAML node type: expected scalar");
 
     /* "<<" is the merge key: don't increment the prefix */
-    ierr = PetscStrcmp(STR(keynode), "<<", &isMergeKey);CHKERRQ(ierr);
+    PetscCall(PetscStrcmp(STR(keynode), "<<", &isMergeKey));
     if (isMergeKey) {
       if (valnode->type == YAML_SEQUENCE_NODE) {
         for (yaml_node_item_t *item = SEQ(valnode).start; item < SEQ(valnode).top; item++) {
           yaml_node_t *itemnode = yaml_document_get_node(doc, *item);
-          PetscCheckFalse(!itemnode,comm, PETSC_ERR_LIB, "Corrupt YAML document");
-          PetscCheckFalse(itemnode->type != YAML_MAPPING_NODE,comm, PETSC_ERR_SUP, "Unsupported YAML node type: expected mapping");
-          ierr = PetscParseLayerYAML(options, doc, itemnode);CHKERRQ(ierr);
+          PetscCheck(itemnode,comm, PETSC_ERR_LIB, "Corrupt YAML document");
+          PetscCheck(itemnode->type == YAML_MAPPING_NODE,comm, PETSC_ERR_SUP, "Unsupported YAML node type: expected mapping");
+          PetscCall(PetscParseLayerYAML(options, doc, itemnode));
         }
       } else if (valnode->type == YAML_MAPPING_NODE) {
-        ierr = PetscParseLayerYAML(options, doc, valnode);CHKERRQ(ierr);
+        PetscCall(PetscParseLayerYAML(options, doc, valnode));
       } else SETERRQ(comm, PETSC_ERR_SUP, "Unsupported YAML node type: expected sequence or mapping");
       continue; /* to next pair */
     }
 
     /* "$$*" are treated as dummy keys, we use them for !include tags and to define anchors */
-    ierr = PetscStrbeginswith(STR(keynode), "$$", &isDummyKey);CHKERRQ(ierr);
+    PetscCall(PetscStrbeginswith(STR(keynode), "$$", &isDummyKey));
     if (isDummyKey) {
-      ierr = PetscStrendswith(TAG(valnode), "!include", &isIncludeTag);CHKERRQ(ierr);CHKERRQ(ierr);
+      PetscCall(PetscStrendswith(TAG(valnode), "!include", &isIncludeTag));
       if (isIncludeTag) { /* TODO: add proper support relative paths */
-        ierr = PetscOptionsInsertFileYAML(comm, options, STR(valnode), PETSC_TRUE);CHKERRQ(ierr);
+        PetscCall(PetscOptionsInsertFileYAML(comm, options, STR(valnode), PETSC_TRUE));
       }
       continue; /* to next pair */
     }
 
     if (valnode->type == YAML_SCALAR_NODE) {
-      ierr = PetscSNPrintf(name, sizeof(name), "-%s", STR(keynode));CHKERRQ(ierr);
-      ierr = PetscOptionsSetValue(options, name, STR(valnode));CHKERRQ(ierr);
+      PetscCall(PetscSNPrintf(name, sizeof(name), "-%s", STR(keynode)));
+      PetscCall(PetscOptionsSetValue(options, name, STR(valnode)));
 
     } else if (valnode->type == YAML_SEQUENCE_NODE) {
       PetscSegBuffer seg;
       char           *buf, *strlist;
       PetscBool      addSep = PETSC_FALSE;
 
-      ierr = PetscSegBufferCreate(sizeof(char), PETSC_MAX_PATH_LEN, &seg);CHKERRQ(ierr);
+      PetscCall(PetscSegBufferCreate(sizeof(char), PETSC_MAX_PATH_LEN, &seg));
       for (yaml_node_item_t *item = SEQ(valnode).start; item < SEQ(valnode).top; item++) {
         yaml_node_t *itemnode = yaml_document_get_node(doc, *item);
         const char  *itemstr = NULL;
         size_t       itemlen;
 
-        PetscCheckFalse(!itemnode,comm, PETSC_ERR_LIB, "Corrupt YAML document");
+        PetscCheck(itemnode,comm, PETSC_ERR_LIB, "Corrupt YAML document");
 
         if (itemnode->type == YAML_SCALAR_NODE) {
           itemstr = STR(itemnode);
@@ -92,55 +91,55 @@ static PetscErrorCode PetscParseLayerYAML(PetscOptions options, yaml_document_t 
           yaml_node_pair_t *kvn = itemnode->data.mapping.pairs.start;
           yaml_node_pair_t *top = itemnode->data.mapping.pairs.top;
 
-          PetscCheckFalse(top - kvn > 1,comm, PETSC_ERR_SUP, "Unsupported YAML node value: expected a single key:value pair");
+          PetscCheck(top - kvn <= 1,comm, PETSC_ERR_SUP, "Unsupported YAML node value: expected a single key:value pair");
           if (top - kvn > 0) {
             yaml_node_t *kn = yaml_document_get_node(doc, kvn->key);
             yaml_node_t *vn = yaml_document_get_node(doc, kvn->value);
 
-            PetscCheckFalse(!kn,comm, PETSC_ERR_LIB, "Corrupt YAML document");
-            PetscCheckFalse(!vn,comm, PETSC_ERR_LIB, "Corrupt YAML document");
-            PetscCheckFalse(kn->type != YAML_SCALAR_NODE,comm, PETSC_ERR_SUP, "Unsupported YAML node type: expected scalar");
+            PetscCheck(kn,comm, PETSC_ERR_LIB, "Corrupt YAML document");
+            PetscCheck(vn,comm, PETSC_ERR_LIB, "Corrupt YAML document");
+            PetscCheck(kn->type == YAML_SCALAR_NODE,comm, PETSC_ERR_SUP, "Unsupported YAML node type: expected scalar");
 
-            ierr = PetscStrcmp(STR(kn), "<<", &isMergeKey);CHKERRQ(ierr);
-            PetscCheckFalse(isMergeKey,comm, PETSC_ERR_SUP, "Unsupported YAML node value: merge key '<<' not supported here");
+            PetscCall(PetscStrcmp(STR(kn), "<<", &isMergeKey));
+            PetscCheck(!isMergeKey,comm, PETSC_ERR_SUP, "Unsupported YAML node value: merge key '<<' not supported here");
 
-            ierr = PetscStrbeginswith(STR(kn), "$$", &isDummyKey);CHKERRQ(ierr);
+            PetscCall(PetscStrbeginswith(STR(kn), "$$", &isDummyKey));
             if (isDummyKey) continue;
             itemstr = STR(kn);
           }
 
-          ierr = PetscSNPrintf(prefix,sizeof(prefix), "%s_", STR(keynode));CHKERRQ(ierr);
-          ierr = PetscOptionsPrefixPush(options, prefix);CHKERRQ(ierr);
-          ierr = PetscParseLayerYAML(options, doc, itemnode);CHKERRQ(ierr);
-          ierr = PetscOptionsPrefixPop(options);CHKERRQ(ierr);
+          PetscCall(PetscSNPrintf(prefix,sizeof(prefix), "%s_", STR(keynode)));
+          PetscCall(PetscOptionsPrefixPush(options, prefix));
+          PetscCall(PetscParseLayerYAML(options, doc, itemnode));
+          PetscCall(PetscOptionsPrefixPop(options));
 
         } else SETERRQ(comm, PETSC_ERR_SUP, "Unsupported YAML node type: expected scalar or mapping");
 
-        ierr = PetscStrlen(itemstr, &itemlen);CHKERRQ(ierr);
+        PetscCall(PetscStrlen(itemstr, &itemlen));
         if (itemlen) {
           if (addSep) {
-            ierr = PetscSegBufferGet(seg, 1, &buf);CHKERRQ(ierr);
-            ierr = PetscArraycpy(buf, ",", 1);CHKERRQ(ierr);
+            PetscCall(PetscSegBufferGet(seg, 1, &buf));
+            PetscCall(PetscArraycpy(buf, ",", 1));
           }
-          ierr = PetscSegBufferGet(seg, itemlen, &buf);CHKERRQ(ierr);
-          ierr = PetscArraycpy(buf, itemstr, itemlen);CHKERRQ(ierr);
+          PetscCall(PetscSegBufferGet(seg, itemlen, &buf));
+          PetscCall(PetscArraycpy(buf, itemstr, itemlen));
           addSep = PETSC_TRUE;
         }
       }
-      ierr = PetscSegBufferGet(seg, 1, &buf);CHKERRQ(ierr);
-      ierr = PetscArrayzero(buf, 1);CHKERRQ(ierr);
-      ierr = PetscSegBufferExtractAlloc(seg, &strlist);CHKERRQ(ierr);
-      ierr = PetscSegBufferDestroy(&seg);CHKERRQ(ierr);
+      PetscCall(PetscSegBufferGet(seg, 1, &buf));
+      PetscCall(PetscArrayzero(buf, 1));
+      PetscCall(PetscSegBufferExtractAlloc(seg, &strlist));
+      PetscCall(PetscSegBufferDestroy(&seg));
 
-      ierr = PetscSNPrintf(name, sizeof(name), "-%s", STR(keynode));CHKERRQ(ierr);
-      ierr = PetscOptionsSetValue(options, name, strlist);CHKERRQ(ierr);
-      ierr = PetscFree(strlist);CHKERRQ(ierr);
+      PetscCall(PetscSNPrintf(name, sizeof(name), "-%s", STR(keynode)));
+      PetscCall(PetscOptionsSetValue(options, name, strlist));
+      PetscCall(PetscFree(strlist));
 
     } else if (valnode->type == YAML_MAPPING_NODE) {
-      ierr = PetscSNPrintf(prefix,sizeof(prefix), "%s_", STR(keynode));CHKERRQ(ierr);
-      ierr = PetscOptionsPrefixPush(options, prefix);CHKERRQ(ierr);
-      ierr = PetscParseLayerYAML(options, doc, valnode);CHKERRQ(ierr);
-      ierr = PetscOptionsPrefixPop(options);CHKERRQ(ierr);
+      PetscCall(PetscSNPrintf(prefix,sizeof(prefix), "%s_", STR(keynode)));
+      PetscCall(PetscOptionsPrefixPush(options, prefix));
+      PetscCall(PetscParseLayerYAML(options, doc, valnode));
+      PetscCall(PetscOptionsPrefixPop(options));
 
     } else SETERRQ(comm, PETSC_ERR_SUP, "Unsupported YAML node type: expected scalar, sequence or mapping");
   }
@@ -158,12 +157,12 @@ static PetscErrorCode PetscParseLayerYAML(PetscOptions options, yaml_document_t 
 
    Level: intermediate
 
-.seealso: PetscOptionsSetValue(), PetscOptionsView(), PetscOptionsHasName(), PetscOptionsGetInt(),
-          PetscOptionsGetReal(), PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
-          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsFList(), PetscOptionsEList(), PetscOptionsInsertFile(), PetscOptionsInsertFileYAML()
+.seealso: `PetscOptionsSetValue()`, `PetscOptionsView()`, `PetscOptionsHasName()`, `PetscOptionsGetInt()`,
+          `PetscOptionsGetReal()`, `PetscOptionsGetString()`, `PetscOptionsGetIntArray()`, `PetscOptionsBool()`,
+          `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
+          `PetscOptionsStringArray()`, `PetscOptionsRealArray()`, `PetscOptionsScalar()`,
+          `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
+          `PetscOptionsFList()`, `PetscOptionsEList()`, `PetscOptionsInsertFile()`, `PetscOptionsInsertFileYAML()`
 @*/
 PetscErrorCode PetscOptionsInsertStringYAML(PetscOptions options,const char in_str[])
 {
@@ -171,17 +170,17 @@ PetscErrorCode PetscOptionsInsertStringYAML(PetscOptions options,const char in_s
   yaml_parser_t   parser;
   yaml_document_t doc;
   yaml_node_t     *root;
-  PetscErrorCode  ierr;
+  int             err;
 
   PetscFunctionBegin;
   if (!in_str) in_str = "";
-  ierr = !yaml_parser_initialize(&parser); PetscCheckFalse(ierr,comm, PETSC_ERR_LIB, "YAML parser initialization error");
+  err = !yaml_parser_initialize(&parser); PetscCheck(!err,comm, PETSC_ERR_LIB, "YAML parser initialization error");
   yaml_parser_set_input_string(&parser, (const unsigned char *)in_str, strlen(in_str));
   do {
-    ierr = !yaml_parser_load(&parser, &doc); PetscCheckFalse(ierr,comm, PETSC_ERR_LIB, "YAML parser loading error");
+    err = !yaml_parser_load(&parser, &doc); PetscCheck(!err,comm, PETSC_ERR_LIB, "YAML parser loading error");
     root = yaml_document_get_root_node(&doc);
     if (root) {
-      ierr = PetscParseLayerYAML(options, &doc, root);CHKERRQ(ierr);
+      PetscCall(PetscParseLayerYAML(options, &doc, root));
     }
     yaml_document_delete(&doc);
   } while (root);
@@ -208,12 +207,12 @@ PetscErrorCode PetscOptionsInsertStringYAML(PetscOptions options,const char in_s
 
   Level: intermediate
 
-.seealso: PetscOptionsSetValue(), PetscOptionsView(), PetscOptionsHasName(), PetscOptionsGetInt(),
-          PetscOptionsGetReal(), PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
-          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsFList(), PetscOptionsEList(), PetscOptionsInsertFile(), PetscOptionsInsertStringYAML()
+.seealso: `PetscOptionsSetValue()`, `PetscOptionsView()`, `PetscOptionsHasName()`, `PetscOptionsGetInt()`,
+          `PetscOptionsGetReal()`, `PetscOptionsGetString()`, `PetscOptionsGetIntArray()`, `PetscOptionsBool()`,
+          `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
+          `PetscOptionsStringArray()`, `PetscOptionsRealArray()`, `PetscOptionsScalar()`,
+          `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
+          `PetscOptionsFList()`, `PetscOptionsEList()`, `PetscOptionsInsertFile()`, `PetscOptionsInsertStringYAML()`
 @*/
 PetscErrorCode PetscOptionsInsertFileYAML(MPI_Comm comm,PetscOptions options,const char file[],PetscBool require)
 {
@@ -221,45 +220,44 @@ PetscErrorCode PetscOptionsInsertFileYAML(MPI_Comm comm,PetscOptions options,con
   char          *yamlString = NULL;
   MPI_Comm       prev;
   PetscMPIInt    rank;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
   if (rank == 0) {
     char   fpath[PETSC_MAX_PATH_LEN];
     char   fname[PETSC_MAX_PATH_LEN];
     FILE  *fd;
     size_t rd;
 
-    ierr = PetscStrreplace(PETSC_COMM_SELF, file, fpath, sizeof(fpath));CHKERRQ(ierr);
-    ierr = PetscFixFilename(fpath, fname);CHKERRQ(ierr);
+    PetscCall(PetscStrreplace(PETSC_COMM_SELF, file, fpath, sizeof(fpath)));
+    PetscCall(PetscFixFilename(fpath, fname));
 
     fd = fopen(fname, "r");
     if (fd) {
       fseek(fd, 0, SEEK_END);
       yamlLength = (int)ftell(fd);
       fseek(fd, 0, SEEK_SET);
-      PetscCheckFalse(yamlLength < 0,PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to query size of YAML file: %s", fname);
-      ierr = PetscMalloc1(yamlLength+1, &yamlString);CHKERRQ(ierr);
+      PetscCheck(yamlLength >= 0,PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to query size of YAML file: %s", fname);
+      PetscCall(PetscMalloc1(yamlLength+1, &yamlString));
       rd = fread(yamlString, 1, (size_t)yamlLength, fd);
-      PetscCheckFalse(rd != (size_t)yamlLength,PETSC_COMM_SELF, PETSC_ERR_FILE_READ, "Unable to read entire YAML file: %s", fname);
+      PetscCheck(rd == (size_t)yamlLength,PETSC_COMM_SELF, PETSC_ERR_FILE_READ, "Unable to read entire YAML file: %s", fname);
       yamlString[yamlLength] = 0;
       fclose(fd);
     }
   }
 
-  ierr = MPI_Bcast(&yamlLength, 1, MPI_INT, 0, comm);CHKERRMPI(ierr);
-  PetscCheckFalse(require && yamlLength < 0,comm, PETSC_ERR_FILE_OPEN, "Unable to open YAML option file: %s", file);
+  PetscCallMPI(MPI_Bcast(&yamlLength, 1, MPI_INT, 0, comm));
+  PetscCheck(!require || yamlLength >= 0,comm, PETSC_ERR_FILE_OPEN, "Unable to open YAML option file: %s", file);
   if (yamlLength < 0) PetscFunctionReturn(0);
 
-  if (rank) {ierr = PetscMalloc1(yamlLength+1, &yamlString);CHKERRQ(ierr);}
-  ierr = MPI_Bcast(yamlString, yamlLength+1, MPI_CHAR, 0, comm);CHKERRMPI(ierr);
+  if (rank) PetscCall(PetscMalloc1(yamlLength+1, &yamlString));
+  PetscCallMPI(MPI_Bcast(yamlString, yamlLength+1, MPI_CHAR, 0, comm));
 
   prev = PetscYAMLSetComm(comm);
-  ierr = PetscOptionsInsertStringYAML(options, yamlString);CHKERRQ(ierr);
+  PetscCall(PetscOptionsInsertStringYAML(options, yamlString));
   (void) PetscYAMLSetComm(prev);
 
-  ierr = PetscFree(yamlString);CHKERRQ(ierr);
+  PetscCall(PetscFree(yamlString));
   PetscFunctionReturn(0);
 }
 

@@ -5,6 +5,8 @@ native DMDAStencilType
 native DMDADirection
 native DMDAInterpolationType
 native DMDAElementType
+native DMPlexShape
+native DMPlexTPSType
 native DMBoundaryType
 native DMAdaptationStrategy
 native DMCopyLabelsMode

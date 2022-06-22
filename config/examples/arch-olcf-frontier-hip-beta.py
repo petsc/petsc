@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 # Example configure script for Cray systems with AMD Epyc CPU's  and AMD GPGPU's
 # as for example Frontier.  Since Frontier does not exist yet, this is a beta

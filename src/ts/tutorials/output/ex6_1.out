@@ -1,6 +1,6 @@
 Solving a linear TS problem on 1 processor
 avg. error (2 norm) = 0.00135504, avg. error (max norm) = 0.00195424
-TS Object: 1 MPI processes
+TS Object: 1 MPI process
   type: euler
   maximum steps=4
   maximum time=100.
@@ -8,5 +8,5 @@ TS Object: 1 MPI processes
   total number of RHS Jacobian evaluations=4
   total number of rejected steps=0
   using relative error tolerance of 0.0001,   using absolute error tolerance of 0.0001
-  TSAdapt Object: 1 MPI processes
+  TSAdapt Object: 1 MPI process
     type: none

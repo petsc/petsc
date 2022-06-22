@@ -1,10 +1,6 @@
 #requirespackage 'PETSC_HAVE_KOKKOS_KERNELS'
 -include ../../../../../petscdir.mk
-ALL: lib
 
-CPPFLAGS =
-CFLAGS   =
-FFLAGS   =
 SOURCEKOKKOS = landau.kokkos.cxx
 SOURCECU =
 SOURCEF  =

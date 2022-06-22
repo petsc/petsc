@@ -343,9 +343,7 @@ You now have a working PETSc installation and are ready to start using the libra
 
 .. rubric:: Footnotes
 
-.. [#] It is possible to configure PETSc using python2, however support for python2 will be
-   discontinued in the future and so we recommend that users do not configure their PETSc
-   installations using it.
+.. [#] python2 is no longer supported.
 
 .. [#] Should you be missing any of these dependencies or would like to update them, either
    download and install the latest versions from their respective websites, or use your

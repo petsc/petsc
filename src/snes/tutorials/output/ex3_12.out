@@ -1,11 +1,11 @@
 atol=1e-50, rtol=1e-08, stol=1e-08, maxit=50, maxf=10000
-Vec Object: Exact Solution 1 MPI processes
+Vec Object: Exact Solution 1 MPI process
 0.
 0.015625
 0.125
 0.421875
 1.
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
 1e-72
 1.50024
 3.01563

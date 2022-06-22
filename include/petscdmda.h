@@ -7,6 +7,8 @@
 #include <petscao.h>
 #include <petscfe.h>
 
+/* SUBMANSEC = DMDA */
+
 /*MC
      DMDA_STENCIL_STAR - "Star"-type stencil. In logical grid coordinates, only (i,j,k), (i+s,j,k), (i,j+s,k),
                        (i,j,k+s) are in the stencil  NOT, for example, (i+s,j+s,k)
@@ -16,7 +18,7 @@
      Determines what ghost point values are brought over to each process; in this case the "corner" values are not
      brought over and hence should not be accessed locally
 
-.seealso: DMDA_STENCIL_BOX, DMDAStencilType, DMDASetStencilType()
+.seealso: `DMDA_STENCIL_BOX`, `DMDAStencilType`, `DMDASetStencilType()`
 M*/
 
 /*MC
@@ -25,7 +27,7 @@ M*/
 
      Level: beginner
 
-.seealso: DMDA_STENCIL_STAR, DMDAStencilType, DMDASetStencilType()
+.seealso: `DMDA_STENCIL_STAR`, `DMDAStencilType`, `DMDASetStencilType()`
 M*/
 
 PETSC_EXTERN PetscErrorCode DMDASetInterpolationType(DM,DMDAInterpolationType);
@@ -104,6 +106,7 @@ PETSC_EXTERN PetscErrorCode DMDAGetNonOverlappingRegion(DM,PetscInt*,PetscInt*,P
 PETSC_EXTERN PetscErrorCode DMDASetNonOverlappingRegion(DM,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode DMDASetStencilWidth(DM, PetscInt);
 PETSC_EXTERN PetscErrorCode DMDAGetStencilWidth(DM, PetscInt*);
+PETSC_EXTERN PetscErrorCode DMDAMapMatStencilToGlobal(DM,PetscInt,const MatStencil[],PetscInt[]);
 PETSC_EXTERN PetscErrorCode DMDASetOwnershipRanges(DM,const PetscInt[],const PetscInt[],const PetscInt[]);
 PETSC_EXTERN PetscErrorCode DMDAGetOwnershipRanges(DM,const PetscInt**,const PetscInt**,const PetscInt**);
 PETSC_EXTERN PetscErrorCode DMDASetNumProcs(DM, PetscInt, PetscInt, PetscInt);
@@ -151,7 +154,7 @@ PETSC_EXTERN PetscErrorCode DMDACreatePatchIS(DM,MatStencil*,MatStencil*,IS*,Pet
       }
       DMDAVecRestoreArray(dac,vcoors,&coors);
 
-.seealso: DMDACoor3d, DMGetCoordinateDM(), DMGetCoordinates()
+.seealso: `DMDACoor3d`, `DMGetCoordinateDM()`, `DMGetCoordinates()`
 M*/
 typedef struct {PetscScalar x,y;} DMDACoor2d;
 
@@ -179,7 +182,7 @@ typedef struct {PetscScalar x,y;} DMDACoor2d;
       }
       DMDAVecRestoreArray(dac,vcoors,&coors);
 
-.seealso: DMDACoor2d, DMGetCoordinateDM(), DMGetCoordinates()
+.seealso: `DMDACoor2d`, `DMGetCoordinateDM()`, `DMGetCoordinates()`
 M*/
 typedef struct {PetscScalar x,y,z;} DMDACoor3d;
 

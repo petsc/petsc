@@ -1,14 +1,13 @@
 
 static char help[] = "Creates a matrix from quadrilateral finite elements in 2D, Laplacian \n\
   -ne <size>       : problem size in number of elements (eg, -ne 31 gives 32^2 grid)\n\
-  -alpha <v>      : scaling of material coeficient in embedded circle\n\n";
+  -alpha <v>      : scaling of material coefficient in embedded circle\n\n";
 
 #include <petscksp.h>
 
 int main(int argc,char **args)
 {
   Mat            Amat,Pmat;
-  PetscErrorCode ierr;
   PetscInt       i,m,M,its,Istart,Iend,j,Ii,ix,ne=4;
   PetscReal      x,y,h;
   Vec            xx,bb;
@@ -26,35 +25,35 @@ int main(int argc,char **args)
                             {-1.0, -2.0, 5.0+DIAG_S, -2.0},
                             {-2.0, -1.0, -2.0, 5.0+DIAG_S} };
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   comm = PETSC_COMM_WORLD;
-  ierr  = MPI_Comm_rank(comm, &mype);CHKERRMPI(ierr);
-  ierr  = MPI_Comm_size(comm, &npe);CHKERRMPI(ierr);
-  ierr  = PetscOptionsGetInt(NULL,NULL,"-ne",&ne,NULL);CHKERRQ(ierr);
+  PetscCallMPI(MPI_Comm_rank(comm, &mype));
+  PetscCallMPI(MPI_Comm_size(comm, &npe));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-ne",&ne,NULL));
   h     = 1./ne;
   /* ne*ne; number of global elements */
-  ierr = PetscOptionsGetReal(NULL,NULL,"-alpha",&soft_alpha,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-alpha",&soft_alpha,NULL));
   M    = (ne+1)*(ne+1); /* global number of nodes */
 
   /* create stiffness matrix (2) */
-  ierr = MatCreate(comm,&Amat);CHKERRQ(ierr);
-  ierr = MatSetSizes(Amat,PETSC_DECIDE,PETSC_DECIDE,M,M);CHKERRQ(ierr);
-  ierr = MatSetType(Amat,MATAIJ);CHKERRQ(ierr);
-  ierr = MatSetOption(Amat,MAT_SPD,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(Amat);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(Amat,81,NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(Amat,81,NULL,57,NULL);CHKERRQ(ierr);
+  PetscCall(MatCreate(comm,&Amat));
+  PetscCall(MatSetSizes(Amat,PETSC_DECIDE,PETSC_DECIDE,M,M));
+  PetscCall(MatSetType(Amat,MATAIJ));
+  PetscCall(MatSetOption(Amat,MAT_SPD,PETSC_TRUE));
+  PetscCall(MatSetFromOptions(Amat));
+  PetscCall(MatSeqAIJSetPreallocation(Amat,81,NULL));
+  PetscCall(MatMPIAIJSetPreallocation(Amat,81,NULL,57,NULL));
 
-  ierr = MatCreate(comm,&Pmat);CHKERRQ(ierr);
-  ierr = MatSetSizes(Pmat,PETSC_DECIDE,PETSC_DECIDE,M,M);CHKERRQ(ierr);
-  ierr = MatSetType(Pmat,MATMPIAIJ);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(Pmat);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(Pmat,81,NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(Pmat,81,NULL,57,NULL);CHKERRQ(ierr);
+  PetscCall(MatCreate(comm,&Pmat));
+  PetscCall(MatSetSizes(Pmat,PETSC_DECIDE,PETSC_DECIDE,M,M));
+  PetscCall(MatSetType(Pmat,MATMPIAIJ));
+  PetscCall(MatSetFromOptions(Pmat));
+  PetscCall(MatSeqAIJSetPreallocation(Pmat,81,NULL));
+  PetscCall(MatMPIAIJSetPreallocation(Pmat,81,NULL,57,NULL));
 
   /* vectors */
-  ierr = MatCreateVecs(Amat,&bb,&xx);CHKERRQ(ierr);
-  ierr = VecSet(bb,.0);CHKERRQ(ierr);
+  PetscCall(MatCreateVecs(Amat,&bb,&xx));
+  PetscCall(VecSet(bb,.0));
   /* generate element matrices -- see ex56.c on how to use different data set */
   {
     DD1[0][0] =  0.66666666666666663;
@@ -88,9 +87,9 @@ int main(int argc,char **args)
     PetscReal *coords;
     PC             pc;
     /* forms the element stiffness for the Laplacian and coordinates */
-    ierr = MatGetOwnershipRange(Amat,&Istart,&Iend);CHKERRQ(ierr);
+    PetscCall(MatGetOwnershipRange(Amat,&Istart,&Iend));
     m    = Iend-Istart;
-    ierr = PetscMalloc1(2*m,&coords);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(2*m,&coords));
     for (Ii=Istart,ix=0; Ii<Iend; Ii++,ix++) {
       j = Ii/(ne+1); i = Ii%(ne+1);
       /* coords */
@@ -106,108 +105,108 @@ int main(int argc,char **args)
         for (ii=0; ii<4; ii++) {
           for (jj=0; jj<4; jj++) DD[ii][jj] = alpha*DD1[ii][jj];
         }
-        ierr = MatSetValues(Pmat,4,idx,4,idx,(const PetscScalar*)DD,ADD_VALUES);CHKERRQ(ierr);
+        PetscCall(MatSetValues(Pmat,4,idx,4,idx,(const PetscScalar*)DD,ADD_VALUES));
         if (j>0) {
-          ierr = MatSetValues(Amat,4,idx,4,idx,(const PetscScalar*)DD,ADD_VALUES);CHKERRQ(ierr);
+          PetscCall(MatSetValues(Amat,4,idx,4,idx,(const PetscScalar*)DD,ADD_VALUES));
         } else {
           /* a BC */
           for (ii=0;ii<4;ii++) {
             for (jj=0;jj<4;jj++) DD[ii][jj] = alpha*DD2[ii][jj];
           }
-          ierr = MatSetValues(Amat,4,idx,4,idx,(const PetscScalar*)DD,ADD_VALUES);CHKERRQ(ierr);
+          PetscCall(MatSetValues(Amat,4,idx,4,idx,(const PetscScalar*)DD,ADD_VALUES));
         }
       }
       if (j>0) {
         PetscScalar v  = h*h;
         PetscInt    jj = Ii;
-        ierr = VecSetValues(bb,1,&jj,&v,INSERT_VALUES);CHKERRQ(ierr);
+        PetscCall(VecSetValues(bb,1,&jj,&v,INSERT_VALUES));
       }
     }
-    ierr = MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyBegin(Pmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(Pmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = VecAssemblyBegin(bb);CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(bb);CHKERRQ(ierr);
+    PetscCall(MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyBegin(Pmat,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(Pmat,MAT_FINAL_ASSEMBLY));
+    PetscCall(VecAssemblyBegin(bb));
+    PetscCall(VecAssemblyEnd(bb));
 
     /* Setup solver */
-    ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-    ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+    PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+    PetscCall(KSPSetFromOptions(ksp));
 
     /* finish KSP/PC setup */
-    ierr = KSPSetOperators(ksp, Amat, Amat);CHKERRQ(ierr);
+    PetscCall(KSPSetOperators(ksp, Amat, Amat));
 
-    ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-    ierr = PCSetCoordinates(pc, 2, m, coords);CHKERRQ(ierr);
-    ierr = PetscFree(coords);CHKERRQ(ierr);
+    PetscCall(KSPGetPC(ksp,&pc));
+    PetscCall(PCSetCoordinates(pc, 2, m, coords));
+    PetscCall(PetscFree(coords));
   }
 
   if (!PETSC_TRUE) {
     PetscViewer viewer;
-    ierr = PetscViewerASCIIOpen(comm, "Amat.m", &viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
-    ierr = MatView(Amat,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIOpen(comm, "Amat.m", &viewer));
+    PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_MATLAB));
+    PetscCall(MatView(Amat,viewer));
+    PetscCall(PetscViewerPopFormat(viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
   }
 
   /* solve */
 #if defined(PETSC_USE_LOG)
-  ierr = PetscLogStageRegister("Solve", &stage);CHKERRQ(ierr);
-  ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
+  PetscCall(PetscLogStageRegister("Solve", &stage));
+  PetscCall(PetscLogStagePush(stage));
 #endif
-  ierr = VecSet(xx,.0);CHKERRQ(ierr);
+  PetscCall(VecSet(xx,.0));
 
-  ierr = KSPSetUp(ksp);CHKERRQ(ierr);
+  PetscCall(KSPSetUp(ksp));
 
-  ierr = KSPSolve(ksp,bb,xx);CHKERRQ(ierr);
+  PetscCall(KSPSolve(ksp,bb,xx));
 
 #if defined(PETSC_USE_LOG)
-  ierr = PetscLogStagePop();CHKERRQ(ierr);
+  PetscCall(PetscLogStagePop());
 #endif
 
-  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
+  PetscCall(KSPGetIterationNumber(ksp,&its));
 
   if (!PETSC_TRUE) {
     PetscReal   norm,norm2;
     PetscViewer viewer;
     Vec         res;
-    ierr = PetscViewerASCIIOpen(comm, "rhs.m", &viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
-    ierr = VecView(bb,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-    ierr = VecNorm(bb, NORM_2, &norm2);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIOpen(comm, "rhs.m", &viewer));
+    PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_MATLAB));
+    PetscCall(VecView(bb,viewer));
+    PetscCall(PetscViewerPopFormat(viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
+    PetscCall(VecNorm(bb, NORM_2, &norm2));
 
-    ierr = PetscViewerASCIIOpen(comm, "solution.m", &viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
-    ierr = VecView(xx,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIOpen(comm, "solution.m", &viewer));
+    PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_MATLAB));
+    PetscCall(VecView(xx,viewer));
+    PetscCall(PetscViewerPopFormat(viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
 
-    ierr = VecDuplicate(xx, &res);CHKERRQ(ierr);
-    ierr = MatMult(Amat, xx, res);CHKERRQ(ierr);
-    ierr = VecAXPY(bb, -1.0, res);CHKERRQ(ierr);
-    ierr = VecDestroy(&res);CHKERRQ(ierr);
-    ierr = VecNorm(bb,NORM_2,&norm);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"[%d]%s |b-Ax|/|b|=%e, |b|=%e\n",0,PETSC_FUNCTION_NAME,norm/norm2,norm2);CHKERRQ(ierr);
+    PetscCall(VecDuplicate(xx, &res));
+    PetscCall(MatMult(Amat, xx, res));
+    PetscCall(VecAXPY(bb, -1.0, res));
+    PetscCall(VecDestroy(&res));
+    PetscCall(VecNorm(bb,NORM_2,&norm));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"[%d]%s |b-Ax|/|b|=%e, |b|=%e\n",0,PETSC_FUNCTION_NAME,(double)(norm/norm2),(double)norm2));
 
-    ierr = PetscViewerASCIIOpen(comm, "residual.m", &viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
-    ierr = VecView(bb,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIOpen(comm, "residual.m", &viewer));
+    PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_MATLAB));
+    PetscCall(VecView(bb,viewer));
+    PetscCall(PetscViewerPopFormat(viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
   }
 
   /* Free work space */
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = VecDestroy(&xx);CHKERRQ(ierr);
-  ierr = VecDestroy(&bb);CHKERRQ(ierr);
-  ierr = MatDestroy(&Amat);CHKERRQ(ierr);
-  ierr = MatDestroy(&Pmat);CHKERRQ(ierr);
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(VecDestroy(&xx));
+  PetscCall(VecDestroy(&bb));
+  PetscCall(MatDestroy(&Amat));
+  PetscCall(MatDestroy(&Pmat));
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST
@@ -217,23 +216,23 @@ int main(int argc,char **args)
 
    test:
       nsize: 4
-      args: -ne 19 -alpha 1.e-3 -pc_type gamg -pc_gamg_agg_nsmooths 1  -mg_levels_ksp_max_it 3 -ksp_monitor -ksp_converged_reason -ksp_type cg
+      args: -ne 19 -alpha 1.e-3 -ksp_type cg -pc_type gamg -mg_levels_ksp_max_it 2 -ksp_monitor -ksp_converged_reason -pc_gamg_esteig_ksp_max_it 5 -pc_gamg_esteig_ksp_type cg -mg_levels_ksp_chebyshev_esteig 0,0.25,0,1.1
 
    test:
       suffix: seqaijmkl
       nsize: 4
       requires: mkl_sparse
-      args: -ne 19 -alpha 1.e-3 -pc_type gamg -pc_gamg_agg_nsmooths 1  -mg_levels_ksp_max_it 3 -ksp_monitor -ksp_converged_reason -ksp_type cg -mat_seqaij_type seqaijmkl
+      args: -ne 19 -alpha 1.e-3 -ksp_type cg -pc_type gamg -mg_levels_ksp_max_it 2 -ksp_monitor -ksp_converged_reason -pc_gamg_esteig_ksp_max_it 5 -pc_gamg_esteig_ksp_type cg -mg_levels_ksp_chebyshev_esteig 0,0.25,0,1.1 -mat_seqaij_type seqaijmkl
 
    test:
       suffix: Classical
-      args: -ne 49 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type classical -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -ksp_converged_reason
+      args: -ne 49 -alpha 1.e-3 -ksp_type cg -pc_type gamg -mg_levels_ksp_max_it 2 -pc_gamg_type classical -ksp_monitor -ksp_converged_reason -mg_levels_esteig_ksp_type cg -mg_levels_ksp_chebyshev_esteig 0,0.25,0,1.1
       output_file: output/ex54_classical.out
 
    test:
       suffix: geo
       nsize: 4
-      args: -ne 49 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type geo -pc_gamg_coarse_eq_limit 200 -mg_levels_pc_type jacobi -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -ksp_monitor_short -mg_levels_ksp_max_it 3
+      args: -ne 49 -alpha 1.e-3 -ksp_type cg -pc_type gamg -mg_levels_ksp_max_it 4 -pc_gamg_type geo -pc_gamg_coarse_eq_limit 200 -mg_levels_esteig_ksp_type cg -mg_levels_esteig_ksp_max_it 10 -mg_levels_ksp_chebyshev_esteig 0,0.1,0,1.05 -ksp_monitor_short -ksp_converged_reason -ksp_rtol 1e-3 -ksp_norm_type unpreconditioned
       requires: triangle
       output_file: output/ex54_0.out
 

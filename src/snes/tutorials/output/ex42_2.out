@@ -301,7 +301,7 @@
 300 SNES Function norm 0.0112952 
 301 SNES Function norm 5.08868e-06 
 302 SNES Function norm 1.597e-10 
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1.
 1.

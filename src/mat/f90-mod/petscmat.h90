@@ -21,6 +21,44 @@
         End Subroutine
       End Interface
 
+      Interface  MatSetPreallocationCOO
+        subroutine MatSetPreallocationCOO32(a,b,c,d,z)
+         import tMat
+         Mat a ! Mat
+         integer4 b
+         PetscInt c (*) ! PetscInt
+         PetscInt d (*) ! PetscInt
+         PetscErrorCode z
+        end subroutine MatSetPreallocationCOO32
+        subroutine MatSetPreallocationCOO64(a,b,c,d,z)
+         import tMat
+         Mat a ! Mat
+         integer8 b
+         PetscInt c (*) ! PetscInt
+         PetscInt d (*) ! PetscInt
+         PetscErrorCode z
+        end subroutine MatSetPreallocationCOO64
+      End Interface
+
+      Interface MatSetPreallocationCOOLocal
+        subroutine MatSetPreallocationCOOLocal32(a,b,c,d,z)
+          import tMat
+          Mat a ! Mat
+          integer4 b
+          PetscInt c (*) ! PetscInt
+          PetscInt d (*) ! PetscInt
+          PetscErrorCode z
+        end subroutine MatSetPreallocationCOOLocal32
+        subroutine MatSetPreallocationCOOLocal64(a,b,c,d,z)
+          import tMat
+          Mat a ! Mat
+          integer8 b
+          PetscInt c (*) ! PetscInt
+          PetscInt d (*) ! PetscInt
+          PetscErrorCode z
+        end subroutine MatSetPreallocationCOOLocal64
+      End Interface
+
       Interface
       subroutine MatCreateMPIAIJWithSplitArrays(a,b,c,d,e,f,g,h,i,j,k,l,&
      &z)
@@ -897,6 +935,12 @@
        IS, intent(out) :: b
        PetscErrorCode :: ierr
       end subroutine
+
+      subroutine MatDestroy(m,ierr)
+       import tMat
+       Mat m
+       PetscErrorCode :: ierr
+      end subroutine MatDestroy
 
       end interface
 

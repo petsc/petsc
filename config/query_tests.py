@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import fnmatch
 import glob
 import inspect
@@ -59,7 +59,7 @@ def pathToLabel(path):
     label=prefix+"-"+suffix+'_*'
   else:
     path=path.rstrip('/')
-    label=path.replace("/","_")+"-*"
+    label=path.replace("/","_").replace('tests_','tests-').replace('tutorials_','tutorials-')
   return label
 
 def get_value(varset):
@@ -107,8 +107,9 @@ def query(invDict,fields,labels):
             continue
 
         foundLabel=False   # easy to do if you misspell argument search
+        label=label.lower()
         for key in invDict[field]:
-            if fnmatch.filter([key],label):
+            if fnmatch.filter([key.lower()],label):
               foundLabel=True
               # Do not return values with not unless label itself has not
               if label.startswith('!') and not key.startswith('!'): continue
@@ -271,6 +272,22 @@ def do_query(use_source, startdir, srcdir, testdir, petsc_dir, petsc_arch,
 
     return
 
+def expand_path_like(petscdir,petscarch,pathlike):
+    def remove_prefix(text,prefix):
+        return text[text.startswith(prefix) and len(prefix):]
+
+    # expand user second, as expandvars may insert a '~'
+    string = os.path.expanduser(os.path.expandvars(pathlike))
+    # if the dirname check succeeds then likely we have a glob expression
+    pardir = os.path.dirname(string)
+    if os.path.exists(pardir):
+        suffix   = string.replace(pardir,'') # get whatever is left over
+        pathlike = remove_prefix(os.path.relpath(os.path.abspath(pardir),petscdir),'.'+os.path.sep)
+        if petscarch == '':
+            pathlike = pathlike.replace(os.path.sep.join(('share','petsc','examples'))+'/','')
+        pathlike += suffix
+    return pathlike
+
 def main():
     parser = optparse.OptionParser(usage="%prog [options] field match_pattern")
     parser.add_option('-s', '--startdir', dest='startdir',
@@ -347,6 +364,8 @@ def main():
         if not os.path.isdir(petsc_full_src):
             print("Source directory must be a directory"+petsc_full_src)
             return
+
+    match = expand_path_like(petsc_dir,petsc_arch,match)
 
     # Do the actual query
     do_query(opts.use_source, startdir, petsc_full_src, petsc_full_test,

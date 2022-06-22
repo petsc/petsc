@@ -1,8 +1,5 @@
 -include ../../../../../../petscdir.mk
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = basfactor.c spbas.c
 SOURCEF  =
 SOURCEH  = spbas.h spbas_cholesky.h

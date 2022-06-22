@@ -1,10 +1,4 @@
-<HTML>
-<HEAD>
-<TITLE>DT Manual Pages</TITLE>
-</HEAD>
-<BODY BGCOLOR="FFFFFF">
-
-<H2> DT</H2>
+# DT Manual Pages
 
 DT objects are discretization technology, for instance quadrature, finite element, or finite volume support.
-<P>
+

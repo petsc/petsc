@@ -6,7 +6,6 @@ static const char help[] = "Test freeing of MPI types in PetscSF\n\n";
 
 int main(int argc, char **argv)
 {
-  PetscInt    ierr;
   PetscSF     sf;
   Vec         A,Aout;
   PetscScalar *bufA;
@@ -19,72 +18,72 @@ int main(int argc, char **argv)
   PetscBool   test_dupped_type;
   MPI_Datatype contig;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
-  PetscCheckFalse(size != 1,PETSC_COMM_WORLD, PETSC_ERR_USER, "Only coded for one MPI process");
+  PetscCheck(size == 1,PETSC_COMM_WORLD, PETSC_ERR_USER, "Only coded for one MPI process");
 
-  ierr             = PetscOptionsBegin(PETSC_COMM_WORLD,"","PetscSF type freeing options","none");CHKERRQ(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,"","PetscSF type freeing options","none");
   test_dupped_type = PETSC_FALSE;
-  ierr             = PetscOptionsBool("-test_dupped_type", "Test dupped input type","",test_dupped_type,&test_dupped_type,NULL);CHKERRQ(ierr);
-  ierr             = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscCall(PetscOptionsBool("-test_dupped_type", "Test dupped input type","",test_dupped_type,&test_dupped_type,NULL));
+  PetscOptionsEnd();
 
-  ierr = PetscSFCreate(PETSC_COMM_WORLD,&sf);CHKERRQ(ierr);
-  ierr = PetscSFSetFromOptions(sf);CHKERRQ(ierr);
+  PetscCall(PetscSFCreate(PETSC_COMM_WORLD,&sf));
+  PetscCall(PetscSFSetFromOptions(sf));
 
   nleaves = 1;
   nroots = 1;
-  ierr = PetscMalloc1(nleaves,&ilocal);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(nleaves,&ilocal));
 
   for (i = 0; i<nleaves; i++) {
     ilocal[i] = i;
   }
 
-  ierr = PetscMalloc1(nleaves,&iremote);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(nleaves,&iremote));
   iremote[0].rank = 0;
   iremote[0].index = 0;
-  ierr = PetscSFSetGraph(sf,nroots,nleaves,ilocal,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
-  ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
-  ierr = PetscSFView(sf,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = VecSetSizes(A,4,PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(A);CHKERRQ(ierr);
-  ierr = VecSetUp(A);CHKERRQ(ierr);
+  PetscCall(PetscSFSetGraph(sf,nroots,nleaves,ilocal,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER));
+  PetscCall(PetscSFSetUp(sf));
+  PetscCall(PetscSFView(sf,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(VecSetSizes(A,4,PETSC_DETERMINE));
+  PetscCall(VecSetFromOptions(A));
+  PetscCall(VecSetUp(A));
 
-  ierr = VecDuplicate(A,&Aout);CHKERRQ(ierr);
-  ierr = VecGetArray(A,&bufA);CHKERRQ(ierr);
+  PetscCall(VecDuplicate(A,&Aout));
+  PetscCall(VecGetArray(A,&bufA));
   for (i=0; i<4; i++) {
     bufA[i] = (PetscScalar)i;
   }
-  ierr = VecRestoreArray(A,&bufA);CHKERRQ(ierr);
+  PetscCall(VecRestoreArray(A,&bufA));
 
-  ierr = VecGetArrayRead(A,(const PetscScalar**)&bufA);CHKERRQ(ierr);
-  ierr = VecGetArray(Aout,&bufAout);CHKERRQ(ierr);
+  PetscCall(VecGetArrayRead(A,(const PetscScalar**)&bufA));
+  PetscCall(VecGetArray(Aout,&bufAout));
 
-  ierr = MPI_Type_contiguous(4, MPIU_SCALAR, &contig);CHKERRMPI(ierr);
-  ierr = MPI_Type_commit(&contig);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Type_contiguous(4, MPIU_SCALAR, &contig));
+  PetscCallMPI(MPI_Type_commit(&contig));
 
   if (test_dupped_type) {
     MPI_Datatype tmp;
-    ierr = MPI_Type_dup(contig, &tmp);CHKERRMPI(ierr);
-    ierr = MPI_Type_free(&contig);CHKERRMPI(ierr);
+    PetscCallMPI(MPI_Type_dup(contig, &tmp));
+    PetscCallMPI(MPI_Type_free(&contig));
     contig = tmp;
   }
   for (i=0;i<10000;i++) {
-    ierr = PetscSFBcastBegin(sf,contig,bufA,bufAout,MPI_REPLACE);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(sf,contig,bufA,bufAout,MPI_REPLACE);CHKERRQ(ierr);
+    PetscCall(PetscSFBcastBegin(sf,contig,bufA,bufAout,MPI_REPLACE));
+    PetscCall(PetscSFBcastEnd(sf,contig,bufA,bufAout,MPI_REPLACE));
   }
-  ierr = VecRestoreArrayRead(A,(const PetscScalar**)&bufA);CHKERRQ(ierr);
-  ierr = VecRestoreArray(Aout,&bufAout);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayRead(A,(const PetscScalar**)&bufA));
+  PetscCall(VecRestoreArray(Aout,&bufAout));
 
-  ierr = VecView(Aout,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecDestroy(&A);CHKERRQ(ierr);
-  ierr = VecDestroy(&Aout);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
-  ierr = MPI_Type_free(&contig);CHKERRMPI(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(VecView(Aout,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecDestroy(&A));
+  PetscCall(VecDestroy(&Aout));
+  PetscCall(PetscSFDestroy(&sf));
+  PetscCallMPI(MPI_Type_free(&contig));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

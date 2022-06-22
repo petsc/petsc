@@ -36,6 +36,7 @@ class KSPType(object):
     PIPECR     = S_(KSPPIPECR)
     LSQR       = S_(KSPLSQR)
     PREONLY    = S_(KSPPREONLY)
+    NONE       = S_(KSPNONE)
     QCG        = S_(KSPQCG)
     BICG       = S_(KSPBICG)
     MINRES     = S_(KSPMINRES)

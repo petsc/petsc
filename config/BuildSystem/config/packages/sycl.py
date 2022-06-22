@@ -16,9 +16,6 @@ class Configure(config.package.Package):
                              ['sycl.lib'],]
     self.precisions       = ['single','double']
     self.buildLanguages   = ['SYCL']
-    self.complex          = 1
-    self.hastests         = 0
-    self.hastestsdatafiles= 0
     self.minCxxVersion    = 'c++17'
 
     return
@@ -83,9 +80,12 @@ class Configure(config.package.Package):
       self.syclArch = self.argDB['with-sycl-arch'].lower()
       if self.syclArch == 'x86_64':
         flags += ' -fsycl-targets=spir64_x86_64 '
-      elif self.syclArch in ['gen','gen9','gen11','gen12lp','dg1','xehp']:
+      elif self.syclArch in ['gen','gen9','gen11','gen12lp','dg1','xehp','pvc']:
+        # https://en.wikipedia.org/wiki/List_of_Intel_graphics_processing_units
         if self.syclArch == 'gen':
           devArg = 'gen9-' # compile for all targets of gen9 and up
+        elif self.syclArch == 'pvc':
+          devArg = '12.1.0,12.4.0' # compile for both ATS and PVC to make testing easier
         else:
           devArg = self.syclArch
         flags += ' -fsycl-targets=spir64_gen -Xsycl-target-backend "-device '+ devArg + '" '

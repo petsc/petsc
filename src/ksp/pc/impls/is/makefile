@@ -1,12 +1,10 @@
 -include ../../../../../petscdir.mk
-ALL: lib
-CFLAGS    =
-FFLAGS    =
+
 LIBBASE   = libpetscksp
 DIRS      = nn
 LOCDIR    = src/ksp/pc/impls/is/
 SOURCEC   = pcis.c
-SOURCEH   = pcis.h
+SOURCEH   =
 MANSEC    = KSP
 SUBMANSEC = PC
 

@@ -1,7 +1,5 @@
+-include ../../../../../../petsckdir.mk
 #requiresdefine 'PETSC_HAVE_MPI_WIN_CREATE'
-#requiresdefine 'PETSC_HAVE_MPI_TYPE_DUP'
-
-ALL: lib
 
 SOURCEH	  =
 SOURCEC   = sfwindow.c

@@ -1,12 +1,14 @@
 #if !defined(PETSCFETYPES_H)
 #define PETSCFETYPES_H
 
+/* SUBMANSEC = FE */
+
 /*S
   PetscSpace - PETSc object that manages a linear space, e.g. the space of d-dimensional polynomials of given degree
 
   Level: beginner
 
-.seealso: PetscSpaceCreate(), PetscDualSpaceCreate(), PetscSpaceSetType(), PetscSpaceType
+.seealso: `PetscSpaceCreate()`, `PetscDualSpaceCreate()`, `PetscSpaceSetType()`, `PetscSpaceType`
 S*/
 typedef struct _p_PetscSpace *PetscSpace;
 
@@ -15,7 +17,7 @@ typedef struct _p_PetscSpace *PetscSpace;
 
   Level: beginner
 
-.seealso: PetscDualSpaceCreate(), PetscSpaceCreate(), PetscDualSpaceSetType(), PetscDualSpaceType
+.seealso: `PetscDualSpaceCreate()`, `PetscSpaceCreate()`, `PetscDualSpaceSetType()`, `PetscDualSpaceType`
 S*/
 typedef struct _p_PetscDualSpace *PetscDualSpace;
 
@@ -26,7 +28,7 @@ typedef struct _p_PetscDualSpace *PetscDualSpace;
 
   Level: beginner
 
-.seealso: PetscSpace
+.seealso: `PetscSpace`
 M*/
 typedef enum { PETSCDUALSPACE_REFCELL_SIMPLEX, PETSCDUALSPACE_REFCELL_TENSOR } PetscDualSpaceReferenceCell;
 PETSC_EXTERN const char * const PetscDualSpaceReferenceCells[];
@@ -43,7 +45,7 @@ $ Contravariant Piola: $\sigma^*(F) = 1/|J| J F \circ \phi^{-1)$
 
   Level: beginner
 
-.seealso: PetscDualSpaceGetDeRahm()
+.seealso: `PetscDualSpaceGetDeRahm()`
 M*/
 typedef enum {IDENTITY_TRANSFORM, COVARIANT_PIOLA_TRANSFORM, CONTRAVARIANT_PIOLA_TRANSFORM} PetscDualSpaceTransformType;
 
@@ -52,7 +54,7 @@ typedef enum {IDENTITY_TRANSFORM, COVARIANT_PIOLA_TRANSFORM, CONTRAVARIANT_PIOLA
 
   Level: beginner
 
-.seealso: PetscFECreate(), PetscSpaceCreate(), PetscDualSpaceCreate(), PetscFESetType(), PetscFEType
+.seealso: `PetscFECreate()`, `PetscSpaceCreate()`, `PetscDualSpaceCreate()`, `PetscFESetType()`, `PetscFEType`
 S*/
 typedef struct _p_PetscFE *PetscFE;
 
@@ -61,7 +63,7 @@ typedef struct _p_PetscFE *PetscFE;
 
   Level: beginner
 
-.seealso: PetscFEIntegrateJacobian()
+.seealso: `PetscFEIntegrateJacobian()`
 M*/
 typedef enum { PETSCFE_JACOBIAN, PETSCFE_JACOBIAN_PRE, PETSCFE_JACOBIAN_DYN } PetscFEJacobianType;
 

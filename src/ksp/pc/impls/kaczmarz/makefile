@@ -1,8 +1,6 @@
 -include ../../../../../petscdir.mk
-ALL: lib
 
 CFLAGS    = ${GAMG_INCLUDE}
-FFLAGS    =
 SOURCEC   = kaczmarz.c
 SOURCEF   =
 SOURCEH   =

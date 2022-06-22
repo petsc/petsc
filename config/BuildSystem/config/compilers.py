@@ -35,7 +35,7 @@ class Configure(config.base.Configure):
     if len(self.skipdefaultpaths):
       return self.skipdefaultpaths
     else:
-      self.skipdefaultpaths = ['/usr/lib','/lib','/usr/lib64','/lib64','/usr/lib/x86_64-linux-gnu','/lib/x86_64-linux-gnu']
+      self.skipdefaultpaths = ['/usr/lib','/lib','/usr/lib64','/lib64','/usr/lib/x86_64-linux-gnu','/lib/x86_64-linux-gnu','/usr/lib/i386-linux-gnu']
       conda_sysrt = os.getenv('CONDA_BUILD_SYSROOT')
       if conda_sysrt:
         conda_sysrt = os.path.abspath(conda_sysrt)
@@ -869,14 +869,27 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
     else:
       fbody = "      subroutine asub()\n      print*,'testing'\n      return\n      end\n"
     self.popLanguage()
+    iscray = config.setCompilers.Configure.isCray(self.getCompiler('FC'), self.log)
     try:
       if self.checkCrossLink(fbody,cbody,language1='FC',language2='C'):
         self.logWrite(self.setCompilers.restoreLog())
         self.logPrint('Fortran libraries are not needed when using C linker')
       else:
-        self.logWrite(self.setCompilers.restoreLog())
-        self.logPrint('Fortran code cannot directly be linked with C linker, therefore will determine needed Fortran libraries')
         skipfortranlibraries = 0
+        self.logWrite(self.setCompilers.restoreLog())
+        if iscray:
+          oldLibs = self.setCompilers.LIBS
+          self.setCompilers.LIBS = '-lmpifort_cray '+self.setCompilers.LIBS
+          self.setCompilers.saveLog()
+          if self.checkCrossLink(fbody,cbody,language1='FC',language2='C'):
+            self.logWrite(self.setCompilers.restoreLog())
+            self.logPrint('Fortran requires -lmpifort_cray to link with C compiler', 3, 'compilers')
+            skipfortranlibraries = 1
+          else:
+            self.logWrite(self.setCompilers.restoreLog())
+            self.setCompilers.LIBS = oldLibs
+            self.logPrint('Fortran code cannot directly be linked with C linker, therefore will determine needed Fortran libraries')
+            skipfortranlibraries = 0
     except RuntimeError as e:
       self.logWrite(self.setCompilers.restoreLog())
       self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
@@ -908,9 +921,6 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
     output = self.filterLinkOutput(output)
     self.setCompilers.LDFLAGS = oldFlags
     self.popLanguage()
-
-    # Cray: remove libsci link
-    iscray = config.setCompilers.Configure.isCray(self.getCompiler('FC'), self.log)
 
     output = remove_xcode_verbose(output)
     # replace \CR that ifc puts in each line of output

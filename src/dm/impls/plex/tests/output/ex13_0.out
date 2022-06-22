@@ -1,4 +1,4 @@
-DM Object: Simplicial Mesh 1 MPI processes
+DM Object: Simplicial Mesh 1 MPI process
   type: plex
 Simplicial Mesh in 2 dimensions:
 Supports:
@@ -208,7 +208,7 @@ Label 'Face Sets':
 5 32
 6 0
 7 -128
-DM Object: Simplicial Mesh 1 MPI processes
+DM Object: Simplicial Mesh 1 MPI process
   type: plex
 Simplicial Mesh in 2 dimensions:
 Supports:

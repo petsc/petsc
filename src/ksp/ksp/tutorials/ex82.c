@@ -30,64 +30,63 @@ int main(int argc,char **argv)
   MatHtoolKernel kernel = GenEntries;
   PetscBool      flg,sym = PETSC_FALSE;
   PetscRandom    rdm;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)NULL,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-m_local",&m,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-symmetric",&sym,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-overlap",&overlap,NULL);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)NULL,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-m_local",&m,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-symmetric",&sym,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-overlap",&overlap,NULL));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   M = size*m;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL);CHKERRQ(ierr);
-  ierr = PetscMalloc1(m*dim,&coords);CHKERRQ(ierr);
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rdm);CHKERRQ(ierr);
-  ierr = PetscRandomGetValuesReal(rdm,m*dim,coords);CHKERRQ(ierr);
-  ierr = PetscCalloc1(M*dim,&gcoords);CHKERRQ(ierr);
-  ierr = MPI_Exscan(&m,&begin,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRMPI(ierr);
-  ierr = PetscArraycpy(gcoords+begin*dim,coords,m*dim);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(MPI_IN_PLACE,gcoords,M*dim,MPIU_REAL,MPI_SUM,PETSC_COMM_WORLD);CHKERRMPI(ierr);
-  ierr = MatCreateHtoolFromKernel(PETSC_COMM_WORLD,m,m,M,M,dim,coords,coords,kernel,gcoords,&A);CHKERRQ(ierr);
-  ierr = MatSetOption(A,MAT_SYMMETRIC,sym);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatCreateVecs(A,&b,&x);CHKERRQ(ierr);
-  ierr = VecSetRandom(b,rdm);CHKERRQ(ierr);
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)pc,PCHPDDM,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
+  PetscCall(PetscMalloc1(m*dim,&coords));
+  PetscCall(PetscRandomCreate(PETSC_COMM_WORLD,&rdm));
+  PetscCall(PetscRandomGetValuesReal(rdm,m*dim,coords));
+  PetscCall(PetscCalloc1(M*dim,&gcoords));
+  PetscCallMPI(MPI_Exscan(&m,&begin,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD));
+  PetscCall(PetscArraycpy(gcoords+begin*dim,coords,m*dim));
+  PetscCall(MPIU_Allreduce(MPI_IN_PLACE,gcoords,M*dim,MPIU_REAL,MPI_SUM,PETSC_COMM_WORLD));
+  PetscCall(MatCreateHtoolFromKernel(PETSC_COMM_WORLD,m,m,M,M,dim,coords,coords,kernel,gcoords,&A));
+  PetscCall(MatSetOption(A,MAT_SYMMETRIC,sym));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatCreateVecs(A,&b,&x));
+  PetscCall(VecSetRandom(b,rdm));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPSetOperators(ksp,A,A));
+  PetscCall(KSPSetFromOptions(ksp));
+  PetscCall(KSPGetPC(ksp,&pc));
+  PetscCall(PetscObjectTypeCompare((PetscObject)pc,PCHPDDM,&flg));
   if (flg) {
 #if defined(PETSC_HAVE_HPDDM) && defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
     Mat aux;
     IS  is;
-    ierr = MatGetOwnershipRange(A,&begin,&n);CHKERRQ(ierr);
+    PetscCall(MatGetOwnershipRange(A,&begin,&n));
     n -= begin;
-    ierr = ISCreateStride(PETSC_COMM_SELF,n,begin,1,&is);CHKERRQ(ierr);
-    ierr = MatIncreaseOverlap(A,1,&is,overlap);CHKERRQ(ierr);
-    ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
-    ierr = MatCreateDense(PETSC_COMM_SELF,n,n,n,n,NULL,&aux);CHKERRQ(ierr);
-    ierr = MatSetOption(aux,MAT_SYMMETRIC,sym);CHKERRQ(ierr);
-    ierr = MatAssemblyBegin(aux,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(aux,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatShift(aux,1.0);CHKERRQ(ierr); /* just the local identity matrix, not very meaningful numerically, but just testing that the necessary plumbing is there */
-    ierr = PCHPDDMSetAuxiliaryMat(pc,is,aux,NULL,NULL);CHKERRQ(ierr);
-    ierr = ISDestroy(&is);CHKERRQ(ierr);
-    ierr = MatDestroy(&aux);CHKERRQ(ierr);
+    PetscCall(ISCreateStride(PETSC_COMM_SELF,n,begin,1,&is));
+    PetscCall(MatIncreaseOverlap(A,1,&is,overlap));
+    PetscCall(ISGetLocalSize(is,&n));
+    PetscCall(MatCreateDense(PETSC_COMM_SELF,n,n,n,n,NULL,&aux));
+    PetscCall(MatSetOption(aux,MAT_SYMMETRIC,sym));
+    PetscCall(MatAssemblyBegin(aux,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(aux,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatShift(aux,1.0)); /* just the local identity matrix, not very meaningful numerically, but just testing that the necessary plumbing is there */
+    PetscCall(PCHPDDMSetAuxiliaryMat(pc,is,aux,NULL,NULL));
+    PetscCall(ISDestroy(&is));
+    PetscCall(MatDestroy(&aux));
 #endif
   }
-  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = PetscFree(gcoords);CHKERRQ(ierr);
-  ierr = PetscFree(coords);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(KSPSolve(ksp,b,x));
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(PetscRandomDestroy(&rdm));
+  PetscCall(VecDestroy(&b));
+  PetscCall(VecDestroy(&x));
+  PetscCall(MatDestroy(&A));
+  PetscCall(PetscFree(gcoords));
+  PetscCall(PetscFree(coords));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

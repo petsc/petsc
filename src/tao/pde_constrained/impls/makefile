@@ -1,7 +1,6 @@
-ALL: lib
+-include ../../pde_../../petsckdir.mk
 
 DIRS     = lcl
-
 LOCDIR   = src/tao/pde_constrained/impls/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

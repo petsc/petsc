@@ -2,7 +2,7 @@
 [32;1mTotal number of loaded entities 140.
 [0m
  EGADS Info: Import Model has 2 C0 Edges & 0 C0 Faces!
-DM Object: CAD Surface (sur_) 1 MPI processes
+DM Object: CAD Surface (sur_) 1 MPI process
   type: plex
 CAD Surface in 2 dimensions:
   Number of 0-cells per rank: 202

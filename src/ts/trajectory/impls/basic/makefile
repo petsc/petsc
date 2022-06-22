@@ -1,5 +1,4 @@
-
-ALL: lib
+-include ../../../../../petsckdir.mk
 
 SOURCEC  = trajbasic.c
 SOURCEH  =

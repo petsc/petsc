@@ -1,5 +1,4 @@
-
-ALL: lib
+-include ../../../../petsckdir.mk
 
 LOCDIR   = src/ts/impls/implicit/
 DIRS     = sundials theta alpha glle radau5 discgrad irk

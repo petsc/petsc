@@ -26,15 +26,13 @@
 @*/
 PetscErrorCode  PetscDrawSetViewPort(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   PetscCheck(xl >= 0.0 && xr <= 1.0 && yl >= 0.0 && yr <= 1.0 && xr > xl && yr > yl,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"ViewPort values must be >= 0 and <= 1: Instead %g %g %g %g",(double)xl,(double)yl,(double)xr,(double)yr);
   draw->port_xl = xl; draw->port_yl = yl;
   draw->port_xr = xr; draw->port_yr = yr;
   if (draw->ops->setviewport) {
-    ierr = (*draw->ops->setviewport)(draw,xl,yl,xr,yr);CHKERRQ(ierr);
+    PetscCall((*draw->ops->setviewport)(draw,xl,yl,xr,yr));
   }
   PetscFunctionReturn(0);
 }
@@ -87,12 +85,11 @@ PetscErrorCode  PetscDrawGetViewPort(PetscDraw draw,PetscReal *xl,PetscReal *yl,
 
    Level: advanced
 
-.seealso: PetscDrawDivideViewPort(), PetscDrawSetViewPort()
+.seealso: `PetscDrawDivideViewPort()`, `PetscDrawSetViewPort()`
 
 @*/
 PetscErrorCode  PetscDrawSplitViewPort(PetscDraw draw)
 {
-  PetscErrorCode ierr;
   PetscMPIInt    rank,size;
   PetscInt       n;
   PetscBool      isnull;
@@ -100,10 +97,10 @@ PetscErrorCode  PetscDrawSplitViewPort(PetscDraw draw)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
+  PetscCall(PetscDrawIsNull(draw,&isnull));
   if (isnull) PetscFunctionReturn(0);
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)draw),&size);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)draw),&size));
 
   n = (PetscInt)(.1 + PetscSqrtReal((PetscReal)size));
   while (n*n < size) n++;
@@ -114,22 +111,20 @@ PetscErrorCode  PetscDrawSplitViewPort(PetscDraw draw)
   yl = (rank / n)*h;
   yr = yl + h;
 
-  ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
-  ierr = PetscDrawLine(draw,xl,yl,xl,yr,PETSC_DRAW_BLACK);CHKERRQ(ierr);
-  ierr = PetscDrawLine(draw,xl,yr,xr,yr,PETSC_DRAW_BLACK);CHKERRQ(ierr);
-  ierr = PetscDrawLine(draw,xr,yr,xr,yl,PETSC_DRAW_BLACK);CHKERRQ(ierr);
-  ierr = PetscDrawLine(draw,xr,yl,xl,yl,PETSC_DRAW_BLACK);CHKERRQ(ierr);
-  ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
-  ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
+  PetscDrawCollectiveBegin(draw);
+  PetscCall(PetscDrawLine(draw,xl,yl,xl,yr,PETSC_DRAW_BLACK));
+  PetscCall(PetscDrawLine(draw,xl,yr,xr,yr,PETSC_DRAW_BLACK));
+  PetscCall(PetscDrawLine(draw,xr,yr,xr,yl,PETSC_DRAW_BLACK));
+  PetscCall(PetscDrawLine(draw,xr,yl,xl,yl,PETSC_DRAW_BLACK));
+  PetscDrawCollectiveEnd(draw);
+  PetscCall(PetscDrawFlush(draw));
 
   draw->port_xl = xl + .05*h;
   draw->port_xr = xr - .05*h;
   draw->port_yl = yl + .05*h;
   draw->port_yr = yr - .05*h;
 
-  if (draw->ops->setviewport) {
-    ierr =  (*draw->ops->setviewport)(draw,xl,yl,xr,yr);CHKERRQ(ierr);
-  }
+  if (draw->ops->setviewport) PetscCall((*draw->ops->setviewport)(draw,xl,yl,xr,yr));
   PetscFunctionReturn(0);
 }
 
@@ -150,7 +145,7 @@ PetscErrorCode  PetscDrawSplitViewPort(PetscDraw draw)
 
    Level: advanced
 
-.seealso: PetscDrawSplitViewPort(), PetscDrawSetViewPort(), PetscDrawViewPortsSet(), PetscDrawViewPortsDestroy()
+.seealso: `PetscDrawSplitViewPort()`, `PetscDrawSetViewPort()`, `PetscDrawViewPortsSet()`, `PetscDrawViewPortsDestroy()`
 
 @*/
 PetscErrorCode  PetscDrawViewPortsCreate(PetscDraw draw,PetscInt nports,PetscDrawViewPorts **newports)
@@ -160,35 +155,34 @@ PetscErrorCode  PetscDrawViewPortsCreate(PetscDraw draw,PetscInt nports,PetscDra
   PetscBool          isnull;
   PetscMPIInt        rank;
   PetscReal          *xl,*xr,*yl,*yr,h;
-  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   PetscCheck(nports >= 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Number of divisions must be positive: %" PetscInt_FMT, nports);
   PetscValidPointer(newports,3);
-  ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
+  PetscCall(PetscDrawIsNull(draw,&isnull));
   if (isnull) {*newports = NULL; PetscFunctionReturn(0);}
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank));
 
-  ierr = PetscNew(&ports);CHKERRQ(ierr); *newports = ports;
+  PetscCall(PetscNew(&ports)); *newports = ports;
   ports->draw = draw;
   ports->nports = nports;
-  ierr = PetscObjectReference((PetscObject)draw);CHKERRQ(ierr);
+  PetscCall(PetscObjectReference((PetscObject)draw));
   /* save previous drawport of window */
-  ierr = PetscDrawGetViewPort(draw,&ports->port_xl,&ports->port_yl,&ports->port_xr,&ports->port_yr);CHKERRQ(ierr);
+  PetscCall(PetscDrawGetViewPort(draw,&ports->port_xl,&ports->port_yl,&ports->port_xr,&ports->port_yr));
 
   n = (PetscInt)(.1 + PetscSqrtReal((PetscReal)nports));
   while (n*n < nports) n++;
   h = 1.0/n;
 
-  ierr = PetscMalloc4(n*n,&xl,n*n,&xr,n*n,&yl,n*n,&yr);CHKERRQ(ierr);
+  PetscCall(PetscMalloc4(n*n,&xl,n*n,&xr,n*n,&yl,n*n,&yr));
   ports->xl = xl;
   ports->xr = xr;
   ports->yl = yl;
   ports->yr = yr;
 
-  ierr = PetscDrawSetCoordinates(draw,0.0,0.0,1.0,1.0);CHKERRQ(ierr);
-  ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
+  PetscCall(PetscDrawSetCoordinates(draw,0.0,0.0,1.0,1.0));
+  PetscDrawCollectiveBegin(draw);
   for (i=0; i<n*n; i++) {
     xl[i] = (i % n)*h;
     xr[i] = xl[i] + h;
@@ -196,10 +190,10 @@ PetscErrorCode  PetscDrawViewPortsCreate(PetscDraw draw,PetscInt nports,PetscDra
     yr[i] = yl[i] + h;
 
     if (rank == 0) {
-      ierr = PetscDrawLine(draw,xl[i],yl[i],xl[i],yr[i],PETSC_DRAW_BLACK);CHKERRQ(ierr);
-      ierr = PetscDrawLine(draw,xl[i],yr[i],xr[i],yr[i],PETSC_DRAW_BLACK);CHKERRQ(ierr);
-      ierr = PetscDrawLine(draw,xr[i],yr[i],xr[i],yl[i],PETSC_DRAW_BLACK);CHKERRQ(ierr);
-      ierr = PetscDrawLine(draw,xr[i],yl[i],xl[i],yl[i],PETSC_DRAW_BLACK);CHKERRQ(ierr);
+      PetscCall(PetscDrawLine(draw,xl[i],yl[i],xl[i],yr[i],PETSC_DRAW_BLACK));
+      PetscCall(PetscDrawLine(draw,xl[i],yr[i],xr[i],yr[i],PETSC_DRAW_BLACK));
+      PetscCall(PetscDrawLine(draw,xr[i],yr[i],xr[i],yl[i],PETSC_DRAW_BLACK));
+      PetscCall(PetscDrawLine(draw,xr[i],yl[i],xl[i],yl[i],PETSC_DRAW_BLACK));
     }
 
     xl[i] += .05*h;
@@ -207,8 +201,8 @@ PetscErrorCode  PetscDrawViewPortsCreate(PetscDraw draw,PetscInt nports,PetscDra
     yl[i] += .05*h;
     yr[i] -= .05*h;
   }
-  ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
-  ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
+  PetscDrawCollectiveEnd(draw);
+  PetscCall(PetscDrawFlush(draw));
   PetscFunctionReturn(0);
 }
 
@@ -229,7 +223,7 @@ PetscErrorCode  PetscDrawViewPortsCreate(PetscDraw draw,PetscInt nports,PetscDra
 
    Level: advanced
 
-.seealso: PetscDrawSplitViewPort(), PetscDrawSetViewPort(), PetscDrawViewPortsSet(), PetscDrawViewPortsDestroy()
+.seealso: `PetscDrawSplitViewPort()`, `PetscDrawSetViewPort()`, `PetscDrawViewPortsSet()`, `PetscDrawViewPortsDestroy()`
 
 @*/
 PetscErrorCode  PetscDrawViewPortsCreateRect(PetscDraw draw,PetscInt nx,PetscInt ny,PetscDrawViewPorts **newports)
@@ -239,34 +233,33 @@ PetscErrorCode  PetscDrawViewPortsCreateRect(PetscDraw draw,PetscInt nx,PetscInt
   PetscInt           i,j,k,n;
   PetscBool          isnull;
   PetscMPIInt        rank;
-  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   PetscCheck(nx >= 1 && ny >= 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Number of divisions must be positive: %" PetscInt_FMT " x %" PetscInt_FMT, nx, ny);
   PetscValidPointer(newports,4);
-  ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
+  PetscCall(PetscDrawIsNull(draw,&isnull));
   if (isnull) {*newports = NULL; PetscFunctionReturn(0);}
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank));
 
   n  = nx*ny;
   hx = 1.0/nx;
   hy = 1.0/ny;
-  ierr = PetscNew(&ports);CHKERRQ(ierr); *newports = ports;
+  PetscCall(PetscNew(&ports)); *newports = ports;
   ports->draw = draw;
   ports->nports = n;
-  ierr = PetscObjectReference((PetscObject) draw);CHKERRQ(ierr);
+  PetscCall(PetscObjectReference((PetscObject) draw));
   /* save previous drawport of window */
-  ierr = PetscDrawGetViewPort(draw,&ports->port_xl,&ports->port_yl,&ports->port_xr,&ports->port_yr);CHKERRQ(ierr);
+  PetscCall(PetscDrawGetViewPort(draw,&ports->port_xl,&ports->port_yl,&ports->port_xr,&ports->port_yr));
 
-  ierr = PetscMalloc4(n,&xl,n,&xr,n,&yl,n,&yr);CHKERRQ(ierr);
+  PetscCall(PetscMalloc4(n,&xl,n,&xr,n,&yl,n,&yr));
   ports->xr = xr;
   ports->xl = xl;
   ports->yl = yl;
   ports->yr = yr;
 
-  ierr = PetscDrawSetCoordinates(draw,0.0,0.0,1.0,1.0);CHKERRQ(ierr);
-  ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
+  PetscCall(PetscDrawSetCoordinates(draw,0.0,0.0,1.0,1.0));
+  PetscDrawCollectiveBegin(draw);
   for (i = 0; i < nx; i++) {
     for (j = 0; j < ny; j++) {
       k = j*nx+i;
@@ -277,10 +270,10 @@ PetscErrorCode  PetscDrawViewPortsCreateRect(PetscDraw draw,PetscInt nx,PetscInt
       yr[k] = yl[k] + hy;
 
       if (rank == 0) {
-        ierr = PetscDrawLine(draw,xl[k],yl[k],xl[k],yr[k],PETSC_DRAW_BLACK);CHKERRQ(ierr);
-        ierr = PetscDrawLine(draw,xl[k],yr[k],xr[k],yr[k],PETSC_DRAW_BLACK);CHKERRQ(ierr);
-        ierr = PetscDrawLine(draw,xr[k],yr[k],xr[k],yl[k],PETSC_DRAW_BLACK);CHKERRQ(ierr);
-        ierr = PetscDrawLine(draw,xr[k],yl[k],xl[k],yl[k],PETSC_DRAW_BLACK);CHKERRQ(ierr);
+        PetscCall(PetscDrawLine(draw,xl[k],yl[k],xl[k],yr[k],PETSC_DRAW_BLACK));
+        PetscCall(PetscDrawLine(draw,xl[k],yr[k],xr[k],yr[k],PETSC_DRAW_BLACK));
+        PetscCall(PetscDrawLine(draw,xr[k],yr[k],xr[k],yl[k],PETSC_DRAW_BLACK));
+        PetscCall(PetscDrawLine(draw,xr[k],yl[k],xl[k],yl[k],PETSC_DRAW_BLACK));
       }
 
       xl[k] += .05*hx;
@@ -289,8 +282,8 @@ PetscErrorCode  PetscDrawViewPortsCreateRect(PetscDraw draw,PetscInt nx,PetscInt
       yr[k] -= .05*hy;
     }
   }
-  ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
-  ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
+  PetscDrawCollectiveEnd(draw);
+  PetscCall(PetscDrawFlush(draw));
   PetscFunctionReturn(0);
 }
 
@@ -304,21 +297,19 @@ PetscErrorCode  PetscDrawViewPortsCreateRect(PetscDraw draw,PetscInt nx,PetscInt
 
    Level: advanced
 
-.seealso: PetscDrawSplitViewPort(), PetscDrawSetViewPort(), PetscDrawViewPortsSet(), PetscDrawViewPortsCreate()
+.seealso: `PetscDrawSplitViewPort()`, `PetscDrawSetViewPort()`, `PetscDrawViewPortsSet()`, `PetscDrawViewPortsCreate()`
 
 @*/
 PetscErrorCode  PetscDrawViewPortsDestroy(PetscDrawViewPorts *ports)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (!ports) PetscFunctionReturn(0);
   PetscValidPointer(ports,1);
   /* reset Drawport of Window back to previous value */
-  ierr = PetscDrawSetViewPort(ports->draw,ports->port_xl,ports->port_yl,ports->port_xr,ports->port_yr);CHKERRQ(ierr);
-  ierr = PetscDrawDestroy(&ports->draw);CHKERRQ(ierr);
-  ierr = PetscFree4(ports->xl,ports->xr,ports->yl,ports->yr);CHKERRQ(ierr);
-  ierr = PetscFree(ports);CHKERRQ(ierr);
+  PetscCall(PetscDrawSetViewPort(ports->draw,ports->port_xl,ports->port_yl,ports->port_xr,ports->port_yr));
+  PetscCall(PetscDrawDestroy(&ports->draw));
+  PetscCall(PetscFree4(ports->xl,ports->xr,ports->yl,ports->yr));
+  PetscCall(PetscFree(ports));
   PetscFunctionReturn(0);
 }
 
@@ -333,17 +324,15 @@ PetscErrorCode  PetscDrawViewPortsDestroy(PetscDrawViewPorts *ports)
 
    Level: advanced
 
-.seealso: PetscDrawSplitViewPort(), PetscDrawSetViewPort(), PetscDrawViewPortsDestroy(), PetscDrawViewPortsCreate()
+.seealso: `PetscDrawSplitViewPort()`, `PetscDrawSetViewPort()`, `PetscDrawViewPortsDestroy()`, `PetscDrawViewPortsCreate()`
 
 @*/
 PetscErrorCode  PetscDrawViewPortsSet(PetscDrawViewPorts *ports,PetscInt port)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (!ports) PetscFunctionReturn(0);
   PetscValidPointer(ports,1);
   PetscCheck(port >= 0 && (port <= ports->nports-1),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Port is out of range requested %" PetscInt_FMT " from 0 to %" PetscInt_FMT,port,ports->nports-1);
-  ierr = PetscDrawSetViewPort(ports->draw,ports->xl[port],ports->yl[port],ports->xr[port],ports->yr[port]);CHKERRQ(ierr);
+  PetscCall(PetscDrawSetViewPort(ports->draw,ports->xl[port],ports->yl[port],ports->xr[port],ports->yr[port]));
   PetscFunctionReturn(0);
 }

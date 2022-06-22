@@ -14,8 +14,6 @@ F*/
 
 #include <petsc/private/dmpleximpl.h> /* For DotD */
 
-#define ALEN(a) (sizeof(a)/sizeof((a)[0]))
-
 typedef enum {VEL_ZERO, VEL_CONSTANT, VEL_HARMONIC, VEL_SHEAR} VelocityDistribution;
 
 typedef enum {ZERO, CONSTANT, GAUSSIAN, TILTED, DELTA} PorosityDistribution;
@@ -70,7 +68,6 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   const char    *porosityDist[5]  = {"zero", "constant", "gaussian", "tilted", "delta"};
   PetscInt       vd, pd, d;
   PetscBool      flg;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   options->useFV        = PETSC_FALSE;
@@ -82,19 +79,19 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->source[1]    = 0.5;
   options->source[2]    = 0.5;
 
-  ierr = PetscOptionsBegin(comm, "", "Magma Dynamics Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-use_fv", "Use the finite volume method for advection", "ex18.c", options->useFV, &options->useFV, NULL);CHKERRQ(ierr);
+  PetscOptionsBegin(comm, "", "Magma Dynamics Options", "DMPLEX");
+  PetscCall(PetscOptionsBool("-use_fv", "Use the finite volume method for advection", "ex18.c", options->useFV, &options->useFV, NULL));
   vd   = options->velocityDist;
-  ierr = PetscOptionsEList("-velocity_dist","Velocity distribution type","ex18.c",velocityDist,4,velocityDist[options->velocityDist],&vd,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsEList("-velocity_dist","Velocity distribution type","ex18.c",velocityDist,4,velocityDist[options->velocityDist],&vd,NULL));
   options->velocityDist = (VelocityDistribution) vd;
   pd   = options->porosityDist;
-  ierr = PetscOptionsEList("-porosity_dist","Initial porosity distribution type","ex18.c",porosityDist,5,porosityDist[options->porosityDist],&pd,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsEList("-porosity_dist","Initial porosity distribution type","ex18.c",porosityDist,5,porosityDist[options->porosityDist],&pd,NULL));
   options->porosityDist = (PorosityDistribution) pd;
-  ierr = PetscOptionsReal("-inflow_state", "The inflow state", "ex18.c", options->inflowState, &options->inflowState, NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsReal("-inflow_state", "The inflow state", "ex18.c", options->inflowState, &options->inflowState, NULL));
   d    = 2;
-  ierr = PetscOptionsRealArray("-source_loc", "The source location", "ex18.c", options->source, &d, &flg);CHKERRQ(ierr);
-  PetscCheckFalse(flg && d != 2,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Must give dim coordinates for the source location, not %d", d);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscCall(PetscOptionsRealArray("-source_loc", "The source location", "ex18.c", options->source, &d, &flg));
+  PetscCheck(!flg || d == 2,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Must give dim coordinates for the source location, not %" PetscInt_FMT, d);
+  PetscOptionsEnd();
 
   PetscFunctionReturn(0);
 }
@@ -104,24 +101,23 @@ static PetscErrorCode ProcessMonitorOptions(MPI_Comm comm, AppCtx *options)
   Functional     func;
   char          *names[256];
   PetscInt       f;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscOptionsBegin(comm, "", "Simulation Monitor Options", "DMPLEX");CHKERRQ(ierr);
-  options->numMonitorFuncs = ALEN(names);
-  ierr = PetscOptionsStringArray("-monitor", "List of functionals to monitor", "", names, &options->numMonitorFuncs, NULL);CHKERRQ(ierr);
-  ierr = PetscMalloc1(options->numMonitorFuncs, &options->monitorFuncs);CHKERRQ(ierr);
+  PetscOptionsBegin(comm, "", "Simulation Monitor Options", "DMPLEX");
+  options->numMonitorFuncs = PETSC_STATIC_ARRAY_LENGTH(names);
+  PetscCall(PetscOptionsStringArray("-monitor", "List of functionals to monitor", "", names, &options->numMonitorFuncs, NULL));
+  PetscCall(PetscMalloc1(options->numMonitorFuncs, &options->monitorFuncs));
   for (f = 0; f < options->numMonitorFuncs; ++f) {
     for (func = options->functionalRegistry; func; func = func->next) {
       PetscBool match;
 
-      ierr = PetscStrcasecmp(names[f], func->name, &match);CHKERRQ(ierr);
+      PetscCall(PetscStrcasecmp(names[f], func->name, &match));
       if (match) break;
     }
-    PetscCheckFalse(!func,comm, PETSC_ERR_USER, "No known functional '%s'", names[f]);
+    PetscCheck(func,comm, PETSC_ERR_USER, "No known functional '%s'", names[f]);
     options->monitorFuncs[f] = func;
     /* Jed inserts a de-duplication of functionals here */
-    ierr = PetscFree(names[f]);CHKERRQ(ierr);
+    PetscCall(PetscFree(names[f]));
   }
   /* Find out the maximum index of any functional computed by a function we will be calling (even if we are not using it) */
   options->maxMonitorFunc = -1;
@@ -132,7 +128,7 @@ static PetscErrorCode ProcessMonitorOptions(MPI_Comm comm, AppCtx *options)
       if (func->func == call->func && func->ctx == call->ctx) options->maxMonitorFunc = PetscMax(options->maxMonitorFunc, func->offset);
     }
   }
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 
@@ -140,12 +136,11 @@ static PetscErrorCode FunctionalRegister(Functional *functionalRegistry, const c
 {
   Functional    *ptr, f;
   PetscInt       lastoffset = -1;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   for (ptr = functionalRegistry; *ptr; ptr = &(*ptr)->next) lastoffset = (*ptr)->offset;
-  ierr = PetscNew(&f);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(name, &f->name);CHKERRQ(ierr);
+  PetscCall(PetscNew(&f));
+  PetscCall(PetscStrallocpy(name, &f->name));
   f->offset = lastoffset + 1;
   f->func   = func;
   f->ctx    = ctx;
@@ -158,7 +153,6 @@ static PetscErrorCode FunctionalRegister(Functional *functionalRegistry, const c
 static PetscErrorCode FunctionalDestroy(Functional *link)
 {
   Functional     next, l;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   if (!link) PetscFunctionReturn(0);
@@ -166,8 +160,8 @@ static PetscErrorCode FunctionalDestroy(Functional *link)
   *link = NULL;
   for (; l; l=next) {
     next = l->next;
-    ierr = PetscFree(l->name);CHKERRQ(ierr);
-    ierr = PetscFree(l);CHKERRQ(ierr);
+    PetscCall(PetscFree(l->name));
+    PetscCall(PetscFree(l));
   }
   PetscFunctionReturn(0);
 }
@@ -373,8 +367,7 @@ static PetscErrorCode constant_x_2d(PetscInt dim, PetscReal time, const PetscRea
   u[0] = x[0];
   u[1] = x[1] + t;
 #if 0
-  PetscErrorCode  ierr;
-  ierr = DMLocalizeCoordinate(globalUser->dm, u, PETSC_FALSE, u);CHKERRQ(ierr);
+  PetscCall(DMLocalizeCoordinate(globalUser->dm, u, PETSC_FALSE, u));
 #else
   u[1] = u[1] - (int) PetscRealPart(u[1]);
 #endif
@@ -587,10 +580,9 @@ static PetscErrorCode ExactSolution(DM dm, PetscReal time, const PetscReal *x, P
 {
   AppCtx        *user = (AppCtx *) ctx;
   PetscInt       dim;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  PetscCall(DMGetDimension(dm, &dim));
   switch (user->porosityDist) {
   case TILTED:
     if (user->velocityDist == VEL_ZERO) tilted_phi_2d(dim, time, x, 2, u, (void *) &time);
@@ -611,31 +603,28 @@ static PetscErrorCode Functional_Error(DM dm, PetscReal time, const PetscReal *x
 {
   AppCtx        *user = (AppCtx *) ctx;
   PetscScalar    yexact[3]={0,0,0};
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = ExactSolution(dm, time, x, yexact, ctx);CHKERRQ(ierr);
+  PetscCall(ExactSolution(dm, time, x, yexact, ctx));
   f[user->errorFunctional] = PetscAbsScalar(y[0] - yexact[0]);
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
-  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
-  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
+  PetscCall(DMCreate(comm, dm));
+  PetscCall(DMSetType(*dm, DMPLEX));
 #if 0
   PetscBool       periodic = user->bd[0] == DM_BOUNDARY_PERIODIC || user->bd[0] == DM_BOUNDARY_TWIST || user->bd[1] == DM_BOUNDARY_PERIODIC || user->bd[1] == DM_BOUNDARY_TWIST ? PETSC_TRUE : PETSC_FALSE;
   const PetscReal L[3]     = {1.0, 1.0, 1.0};
   PetscReal       maxCell[3];
   PetscInt        d;
 
-  if (periodic) {for (d = 0; d < 3; ++d) maxCell[d] = 1.1*(L[d]/cells[d]); ierr = DMSetPeriodicity(*dm, PETSC_TRUE, maxCell, L, user->bd);CHKERRQ(ierr);}
+  if (periodic) {for (d = 0; d < 3; ++d) maxCell[d] = 1.1*(L[d]/cells[d]); PetscCall(DMSetPeriodicity(*dm, PETSC_TRUE, maxCell, L, user->bd));}
 #endif
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(*dm, NULL, "-orig_dm_view");CHKERRQ(ierr);
+  PetscCall(DMSetFromOptions(*dm));
+  PetscCall(DMViewFromOptions(*dm, NULL, "-orig_dm_view"));
   PetscFunctionReturn(0);
 }
 
@@ -648,12 +637,11 @@ static PetscErrorCode SetupBC(DM dm, AppCtx *user)
   PetscBool      check;
   PetscInt       dim, n = 3;
   const char    *prefix;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscObjectGetOptionsPrefix((PetscObject) dm, &prefix);CHKERRQ(ierr);
-  ierr = PetscOptionsGetEnumArray(NULL, prefix, "-dm_plex_box_bd", DMBoundaryTypes, (PetscEnum *) bdt, &n, NULL);CHKERRQ(ierr);
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  PetscCall(PetscObjectGetOptionsPrefix((PetscObject) dm, &prefix));
+  PetscCall(PetscOptionsGetEnumArray(NULL, prefix, "-dm_plex_box_bd", DMBoundaryTypes, (PetscEnum *) bdt, &n, NULL));
+  PetscCall(DMGetDimension(dm, &dim));
   /* Set initial guesses and exact solutions */
   switch (dim) {
     case 2:
@@ -669,7 +657,7 @@ static PetscErrorCode SetupBC(DM dm, AppCtx *user)
         break;
       }
       break;
-    default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Dimension %D not supported", dim);
+    default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Dimension %" PetscInt_FMT " not supported", dim);
   }
   exactFuncs[0] = user->initialGuess[0];
   exactFuncs[1] = user->initialGuess[1];
@@ -696,38 +684,38 @@ static PetscErrorCode SetupBC(DM dm, AppCtx *user)
           break;
         case VEL_SHEAR:
           exactFuncs[0] = shear_bc; break;
-        default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", dim);
+        default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %" PetscInt_FMT, dim);
       }
       break;
-    default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Dimension %D not supported", dim);
+    default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Dimension %" PetscInt_FMT " not supported", dim);
   }
   {
     PetscBool isImplicit = PETSC_FALSE;
 
-    ierr = PetscOptionsHasName(NULL,"", "-use_implicit", &isImplicit);CHKERRQ(ierr);
+    PetscCall(PetscOptionsHasName(NULL,"", "-use_implicit", &isImplicit));
     if (user->velocityDist == VEL_CONSTANT && !isImplicit) user->initialGuess[0] = exactFuncs[0];
   }
-  ierr = PetscOptionsHasName(NULL,NULL, "-dmts_check", &check);CHKERRQ(ierr);
+  PetscCall(PetscOptionsHasName(NULL,NULL, "-dmts_check", &check));
   if (check) {
     user->initialGuess[0] = exactFuncs[0];
     user->initialGuess[1] = exactFuncs[1];
   }
   /* Set BC */
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = DMGetLabel(dm, "marker", &label);CHKERRQ(ierr);
-  ierr = PetscDSSetExactSolution(prob, 0, exactFuncs[0], user);CHKERRQ(ierr);
-  ierr = PetscDSSetExactSolution(prob, 1, exactFuncs[1], user);CHKERRQ(ierr);
+  PetscCall(DMGetDS(dm, &prob));
+  PetscCall(DMGetLabel(dm, "marker", &label));
+  PetscCall(PetscDSSetExactSolution(prob, 0, exactFuncs[0], user));
+  PetscCall(PetscDSSetExactSolution(prob, 1, exactFuncs[1], user));
   if (label) {
     const PetscInt id = 1;
 
-    ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) exactFuncs[0], NULL, user, NULL);CHKERRQ(ierr);
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) exactFuncs[0], NULL, user, NULL));
   }
-  ierr = DMGetLabel(dm, "Face Sets", &label);CHKERRQ(ierr);
+  PetscCall(DMGetLabel(dm, "Face Sets", &label));
   if (label && user->useFV) {
     const PetscInt inflowids[] = {100,200,300}, outflowids[] = {101};
 
-    ierr = DMAddBoundary(dm, DM_BC_NATURAL_RIEMANN, "inflow",  label,  ALEN(inflowids),  inflowids, 1, 0, NULL, (void (*)(void)) advect_inflow, NULL, user, NULL);CHKERRQ(ierr);
-    ierr = DMAddBoundary(dm, DM_BC_NATURAL_RIEMANN, "outflow", label, ALEN(outflowids), outflowids, 1, 0, NULL, (void (*)(void)) advect_outflow, NULL, user, NULL);CHKERRQ(ierr);
+    PetscCall(DMAddBoundary(dm, DM_BC_NATURAL_RIEMANN, "inflow",  label,  PETSC_STATIC_ARRAY_LENGTH(inflowids),  inflowids, 1, 0, NULL, (void (*)(void)) advect_inflow, NULL, user, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_NATURAL_RIEMANN, "outflow", label, PETSC_STATIC_ARRAY_LENGTH(outflowids), outflowids, 1, 0, NULL, (void (*)(void)) advect_outflow, NULL, user, NULL));
   }
   PetscFunctionReturn(0);
 }
@@ -738,51 +726,50 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
   PetscDS        prob;
   PetscInt       n = 3;
   const char    *prefix;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscObjectGetOptionsPrefix((PetscObject) dm, &prefix);CHKERRQ(ierr);
-  ierr = PetscOptionsGetEnumArray(NULL, prefix, "-dm_plex_box_bd", DMBoundaryTypes, (PetscEnum *) bdt, &n, NULL);CHKERRQ(ierr);
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  PetscCall(PetscObjectGetOptionsPrefix((PetscObject) dm, &prefix));
+  PetscCall(PetscOptionsGetEnumArray(NULL, prefix, "-dm_plex_box_bd", DMBoundaryTypes, (PetscEnum *) bdt, &n, NULL));
+  PetscCall(DMGetDS(dm, &prob));
   switch (user->velocityDist) {
   case VEL_ZERO:
-    ierr = PetscDSSetResidual(prob, 0, f0_zero_u, f1_constant_u);CHKERRQ(ierr);
+    PetscCall(PetscDSSetResidual(prob, 0, f0_zero_u, f1_constant_u));
     break;
   case VEL_CONSTANT:
-    ierr = PetscDSSetResidual(prob, 0, f0_constant_u, f1_constant_u);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 0, 0, g0_constant_uu, NULL, NULL, NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 1, 1, g0_constant_pp, NULL, NULL, NULL);CHKERRQ(ierr);
+    PetscCall(PetscDSSetResidual(prob, 0, f0_constant_u, f1_constant_u));
+    PetscCall(PetscDSSetJacobian(prob, 0, 0, g0_constant_uu, NULL, NULL, NULL));
+    PetscCall(PetscDSSetJacobian(prob, 1, 1, g0_constant_pp, NULL, NULL, NULL));
     break;
   case VEL_HARMONIC:
     switch (bdt[0]) {
     case DM_BOUNDARY_PERIODIC:
       switch (bdt[1]) {
       case DM_BOUNDARY_PERIODIC:
-        ierr = PetscDSSetResidual(prob, 0, f0_lap_doubly_periodic_u, f1_lap_u);CHKERRQ(ierr);
+        PetscCall(PetscDSSetResidual(prob, 0, f0_lap_doubly_periodic_u, f1_lap_u));
         break;
       default:
-        ierr = PetscDSSetResidual(prob, 0, f0_lap_periodic_u, f1_lap_u);CHKERRQ(ierr);
+        PetscCall(PetscDSSetResidual(prob, 0, f0_lap_periodic_u, f1_lap_u));
         break;
       }
       break;
     default:
-      ierr = PetscDSSetResidual(prob, 0, f0_lap_u, f1_lap_u);CHKERRQ(ierr);
+      PetscCall(PetscDSSetResidual(prob, 0, f0_lap_u, f1_lap_u));
       break;
     }
-    ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_uu);CHKERRQ(ierr);
+    PetscCall(PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_uu));
     break;
   case VEL_SHEAR:
-    ierr = PetscDSSetResidual(prob, 0, f0_zero_u, f1_lap_u);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_uu);CHKERRQ(ierr);
+    PetscCall(PetscDSSetResidual(prob, 0, f0_zero_u, f1_lap_u));
+    PetscCall(PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_uu));
     break;
   }
-  ierr = PetscDSSetResidual(prob, 1, f0_advection, f1_advection);CHKERRQ(ierr);
-  ierr = PetscDSSetJacobian(prob, 1, 1, g0_adv_pp, g1_adv_pp, NULL, NULL);CHKERRQ(ierr);
-  ierr = PetscDSSetJacobian(prob, 1, 0, g0_adv_pu, g1_adv_pu, NULL, NULL);CHKERRQ(ierr);
-  if (user->velocityDist == VEL_ZERO) {ierr = PetscDSSetRiemannSolver(prob, 1, riemann_advection);CHKERRQ(ierr);}
-  else                                {ierr = PetscDSSetRiemannSolver(prob, 1, riemann_coupled_advection);CHKERRQ(ierr);}
+  PetscCall(PetscDSSetResidual(prob, 1, f0_advection, f1_advection));
+  PetscCall(PetscDSSetJacobian(prob, 1, 1, g0_adv_pp, g1_adv_pp, NULL, NULL));
+  PetscCall(PetscDSSetJacobian(prob, 1, 0, g0_adv_pu, g1_adv_pu, NULL, NULL));
+  if (user->velocityDist == VEL_ZERO) PetscCall(PetscDSSetRiemannSolver(prob, 1, riemann_advection));
+  else                                PetscCall(PetscDSSetRiemannSolver(prob, 1, riemann_coupled_advection));
 
-  ierr = FunctionalRegister(&user->functionalRegistry, "Error", &user->errorFunctional, Functional_Error, user);CHKERRQ(ierr);
+  PetscCall(FunctionalRegister(&user->functionalRegistry, "Error", &user->errorFunctional, Functional_Error, user));
   PetscFunctionReturn(0);
 }
 
@@ -794,69 +781,66 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   PetscFV         fv;
   MPI_Comm        comm;
   PetscInt        dim;
-  PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
   /* Create finite element */
-  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(comm, dim, dim, PETSC_FALSE, "velocity_", PETSC_DEFAULT, &fe[0]);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) fe[0], "velocity");CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(comm, dim, 1, PETSC_FALSE, "porosity_", PETSC_DEFAULT, &fe[1]);CHKERRQ(ierr);
-  ierr = PetscFECopyQuadrature(fe[0], fe[1]);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) fe[1], "porosity");CHKERRQ(ierr);
+  PetscCall(PetscObjectGetComm((PetscObject) dm, &comm));
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(PetscFECreateDefault(comm, dim, dim, PETSC_FALSE, "velocity_", PETSC_DEFAULT, &fe[0]));
+  PetscCall(PetscObjectSetName((PetscObject) fe[0], "velocity"));
+  PetscCall(PetscFECreateDefault(comm, dim, 1, PETSC_FALSE, "porosity_", PETSC_DEFAULT, &fe[1]));
+  PetscCall(PetscFECopyQuadrature(fe[0], fe[1]));
+  PetscCall(PetscObjectSetName((PetscObject) fe[1], "porosity"));
 
-  ierr = PetscFVCreate(PetscObjectComm((PetscObject) dm), &fv);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) fv, "porosity");CHKERRQ(ierr);
-  ierr = PetscFVSetFromOptions(fv);CHKERRQ(ierr);
-  ierr = PetscFVSetNumComponents(fv, 1);CHKERRQ(ierr);
-  ierr = PetscFVSetSpatialDimension(fv, dim);CHKERRQ(ierr);
-  ierr = PetscFEGetQuadrature(fe[0], &q);CHKERRQ(ierr);
-  ierr = PetscFVSetQuadrature(fv, q);CHKERRQ(ierr);
+  PetscCall(PetscFVCreate(PetscObjectComm((PetscObject) dm), &fv));
+  PetscCall(PetscObjectSetName((PetscObject) fv, "porosity"));
+  PetscCall(PetscFVSetFromOptions(fv));
+  PetscCall(PetscFVSetNumComponents(fv, 1));
+  PetscCall(PetscFVSetSpatialDimension(fv, dim));
+  PetscCall(PetscFEGetQuadrature(fe[0], &q));
+  PetscCall(PetscFVSetQuadrature(fv, q));
 
-  ierr = DMSetField(dm, 0, NULL, (PetscObject) fe[0]);CHKERRQ(ierr);
-  if (user->useFV) {ierr = DMSetField(dm, 1, NULL, (PetscObject) fv);CHKERRQ(ierr);}
-  else             {ierr = DMSetField(dm, 1, NULL, (PetscObject) fe[1]);CHKERRQ(ierr);}
-  ierr = DMCreateDS(dm);CHKERRQ(ierr);
-  ierr = SetupProblem(dm, user);CHKERRQ(ierr);
+  PetscCall(DMSetField(dm, 0, NULL, (PetscObject) fe[0]));
+  if (user->useFV) PetscCall(DMSetField(dm, 1, NULL, (PetscObject) fv));
+  else             PetscCall(DMSetField(dm, 1, NULL, (PetscObject) fe[1]));
+  PetscCall(DMCreateDS(dm));
+  PetscCall(SetupProblem(dm, user));
 
   /* Set discretization and boundary conditions for each mesh */
   while (cdm) {
-    ierr = DMCopyDisc(dm, cdm);CHKERRQ(ierr);
-    ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
+    PetscCall(DMCopyDisc(dm, cdm));
+    PetscCall(DMGetCoarseDM(cdm, &cdm));
     /* Coordinates were never localized for coarse meshes */
-    if (cdm) {ierr = DMLocalizeCoordinates(cdm);CHKERRQ(ierr);}
+    if (cdm) PetscCall(DMLocalizeCoordinates(cdm));
   }
-  ierr = PetscFEDestroy(&fe[0]);CHKERRQ(ierr);
-  ierr = PetscFEDestroy(&fe[1]);CHKERRQ(ierr);
-  ierr = PetscFVDestroy(&fv);CHKERRQ(ierr);
+  PetscCall(PetscFEDestroy(&fe[0]));
+  PetscCall(PetscFEDestroy(&fe[1]));
+  PetscCall(PetscFVDestroy(&fv));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode CreateDM(MPI_Comm comm, AppCtx *user, DM *dm)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
-  ierr = CreateMesh(comm, user, dm);CHKERRQ(ierr);
+  PetscCall(CreateMesh(comm, user, dm));
   /* Handle refinement, etc. */
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
+  PetscCall(DMSetFromOptions(*dm));
   /* Construct ghost cells */
   if (user->useFV) {
     DM gdm;
 
-    ierr = DMPlexConstructGhostCells(*dm, NULL, NULL, &gdm);CHKERRQ(ierr);
-    ierr = DMDestroy(dm);CHKERRQ(ierr);
+    PetscCall(DMPlexConstructGhostCells(*dm, NULL, NULL, &gdm));
+    PetscCall(DMDestroy(dm));
     *dm  = gdm;
   }
   /* Localize coordinates */
-  ierr = DMLocalizeCoordinates(*dm);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)(*dm),"Mesh");CHKERRQ(ierr);
-  ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
+  PetscCall(DMLocalizeCoordinates(*dm));
+  PetscCall(PetscObjectSetName((PetscObject)(*dm),"Mesh"));
+  PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
   /* Setup problem */
-  ierr = SetupDiscretization(*dm, user);CHKERRQ(ierr);
+  PetscCall(SetupDiscretization(*dm, user));
   /* Setup BC */
-  ierr = SetupBC(*dm, user);CHKERRQ(ierr);
+  PetscCall(SetupBC(*dm, user));
   PetscFunctionReturn(0);
 }
 
@@ -868,27 +852,26 @@ static PetscErrorCode SetInitialConditionFVM(DM dm, Vec X, PetscInt field, Petsc
   const PetscScalar *cgeom;
   PetscScalar       *x;
   PetscInt           dim, Nf, cStart, cEnd, c;
-  PetscErrorCode     ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
-  ierr = DMPlexGetGeometryFVM(dm, NULL, &cellgeom, NULL);CHKERRQ(ierr);
-  ierr = VecGetDM(cellgeom, &dmCell);CHKERRQ(ierr);
-  ierr = DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(cellgeom, &cgeom);CHKERRQ(ierr);
-  ierr = VecGetArray(X, &x);CHKERRQ(ierr);
+  PetscCall(DMGetDS(dm, &prob));
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(PetscDSGetNumFields(prob, &Nf));
+  PetscCall(DMPlexGetGeometryFVM(dm, NULL, &cellgeom, NULL));
+  PetscCall(VecGetDM(cellgeom, &dmCell));
+  PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd));
+  PetscCall(VecGetArrayRead(cellgeom, &cgeom));
+  PetscCall(VecGetArray(X, &x));
   for (c = cStart; c < cEnd; ++c) {
     PetscFVCellGeom       *cg;
     PetscScalar           *xc;
 
-    ierr = DMPlexPointLocalRead(dmCell, c, cgeom, &cg);CHKERRQ(ierr);
-    ierr = DMPlexPointGlobalFieldRef(dm, c, field, x, &xc);CHKERRQ(ierr);
-    if (xc) {ierr = (*func)(dim, 0.0, cg->centroid, Nf, xc, ctx);CHKERRQ(ierr);}
+    PetscCall(DMPlexPointLocalRead(dmCell, c, cgeom, &cg));
+    PetscCall(DMPlexPointGlobalFieldRef(dm, c, field, x, &xc));
+    if (xc) PetscCall((*func)(dim, 0.0, cg->centroid, Nf, xc, ctx));
   }
-  ierr = VecRestoreArrayRead(cellgeom, &cgeom);CHKERRQ(ierr);
-  ierr = VecRestoreArray(X, &x);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayRead(cellgeom, &cgeom));
+  PetscCall(VecRestoreArray(X, &x));
   PetscFunctionReturn(0);
 }
 
@@ -903,30 +886,29 @@ static PetscErrorCode MonitorFunctionals(TS ts, PetscInt stepnum, PetscReal time
   PetscScalar       *a;
   PetscReal         *xnorms;
   PetscInt           pStart, pEnd, p, Nf, f;
-  PetscErrorCode     ierr;
 
   PetscFunctionBeginUser;
-  ierr = VecViewFromOptions(X, (PetscObject) ts, "-view_solution");CHKERRQ(ierr);
-  ierr = VecGetDM(X, &dm);CHKERRQ(ierr);
-  ierr = DMPlexGetGeometryFVM(dm, NULL, &cellgeom, NULL);CHKERRQ(ierr);
-  ierr = DMGetLocalSection(dm, &s);CHKERRQ(ierr);
-  ierr = PetscSectionGetNumFields(s, &Nf);CHKERRQ(ierr);
-  ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
-  ierr = PetscCalloc1(Nf*2, &xnorms);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(X, &x);CHKERRQ(ierr);
+  PetscCall(VecViewFromOptions(X, (PetscObject) ts, "-view_solution"));
+  PetscCall(VecGetDM(X, &dm));
+  PetscCall(DMPlexGetGeometryFVM(dm, NULL, &cellgeom, NULL));
+  PetscCall(DMGetLocalSection(dm, &s));
+  PetscCall(PetscSectionGetNumFields(s, &Nf));
+  PetscCall(PetscSectionGetChart(s, &pStart, &pEnd));
+  PetscCall(PetscCalloc1(Nf*2, &xnorms));
+  PetscCall(VecGetArrayRead(X, &x));
   for (p = pStart; p < pEnd; ++p) {
     for (f = 0; f < Nf; ++f) {
       PetscInt dof, cdof, d;
 
-      ierr = PetscSectionGetFieldDof(s, p, f, &dof);CHKERRQ(ierr);
-      ierr = PetscSectionGetFieldConstraintDof(s, p, f, &cdof);CHKERRQ(ierr);
-      ierr = DMPlexPointGlobalFieldRead(dm, p, f, x, &a);CHKERRQ(ierr);
+      PetscCall(PetscSectionGetFieldDof(s, p, f, &dof));
+      PetscCall(PetscSectionGetFieldConstraintDof(s, p, f, &cdof));
+      PetscCall(DMPlexPointGlobalFieldRead(dm, p, f, x, &a));
       /* TODO Use constrained indices here */
       for (d = 0; d < dof-cdof; ++d) xnorms[f*2+0]  = PetscMax(xnorms[f*2+0], PetscAbsScalar(a[d]));
       for (d = 0; d < dof-cdof; ++d) xnorms[f*2+1] += PetscAbsScalar(a[d]);
     }
   }
-  ierr = VecRestoreArrayRead(X, &x);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayRead(X, &x));
   if (stepnum >= 0) { /* No summary for final time */
     DM                 dmCell, *fdm;
     Vec               *fv;
@@ -939,8 +921,8 @@ static PetscErrorCode MonitorFunctionals(TS ts, PetscInt stepnum, PetscReal time
 
     /* Functionals have indices after registering, this is an upper bound */
     fcount = user->numMonitorFuncs;
-    ierr   = PetscMalloc4(fcount,&fmin,fcount,&fmax,fcount,&fint,fcount,&ftmp);CHKERRQ(ierr);
-    ierr   = PetscMalloc3(fcount,&fdm,fcount,&fv,fcount,&fx);CHKERRQ(ierr);
+    PetscCall(PetscMalloc4(fcount,&fmin,fcount,&fmax,fcount,&fint,fcount,&ftmp));
+    PetscCall(PetscMalloc3(fcount,&fdm,fcount,&fv,fcount,&fx));
     for (f = 0; f < fcount; ++f) {
       PetscSection fs;
       const char  *name = user->monitorFuncs[f]->name;
@@ -949,36 +931,36 @@ static PetscErrorCode MonitorFunctionals(TS ts, PetscInt stepnum, PetscReal time
       fmax[f] = PETSC_MIN_REAL;
       fint[f] = 0;
       /* Make monitor vecs */
-      ierr = DMClone(dm, &fdm[f]);CHKERRQ(ierr);
-      ierr = DMGetOutputSequenceNumber(dm, &num, &t);CHKERRQ(ierr);
-      ierr = DMSetOutputSequenceNumber(fdm[f], num, t);CHKERRQ(ierr);
-      ierr = PetscSectionClone(s, &fs);CHKERRQ(ierr);
-      ierr = PetscSectionSetFieldName(fs, 0, NULL);CHKERRQ(ierr);
-      ierr = PetscSectionSetFieldName(fs, 1, name);CHKERRQ(ierr);
-      ierr = DMSetLocalSection(fdm[f], fs);CHKERRQ(ierr);
-      ierr = PetscSectionDestroy(&fs);CHKERRQ(ierr);
-      ierr = DMGetGlobalVector(fdm[f], &fv[f]);CHKERRQ(ierr);
-      ierr = PetscObjectSetName((PetscObject) fv[f], name);CHKERRQ(ierr);
-      ierr = VecGetArray(fv[f], &fx[f]);CHKERRQ(ierr);
+      PetscCall(DMClone(dm, &fdm[f]));
+      PetscCall(DMGetOutputSequenceNumber(dm, &num, &t));
+      PetscCall(DMSetOutputSequenceNumber(fdm[f], num, t));
+      PetscCall(PetscSectionClone(s, &fs));
+      PetscCall(PetscSectionSetFieldName(fs, 0, NULL));
+      PetscCall(PetscSectionSetFieldName(fs, 1, name));
+      PetscCall(DMSetLocalSection(fdm[f], fs));
+      PetscCall(PetscSectionDestroy(&fs));
+      PetscCall(DMGetGlobalVector(fdm[f], &fv[f]));
+      PetscCall(PetscObjectSetName((PetscObject) fv[f], name));
+      PetscCall(VecGetArray(fv[f], &fx[f]));
     }
-    ierr = DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-    ierr = VecGetDM(cellgeom, &dmCell);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(cellgeom, &cgeom);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(X, &x);CHKERRQ(ierr);
+    PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd));
+    PetscCall(VecGetDM(cellgeom, &dmCell));
+    PetscCall(VecGetArrayRead(cellgeom, &cgeom));
+    PetscCall(VecGetArrayRead(X, &x));
     for (c = cStart; c < cEnd; ++c) {
       PetscFVCellGeom *cg;
       PetscScalar     *cx;
 
-      ierr = DMPlexPointLocalRead(dmCell, c, cgeom, &cg);CHKERRQ(ierr);
-      ierr = DMPlexPointGlobalFieldRead(dm, c, 1, x, &cx);CHKERRQ(ierr);
+      PetscCall(DMPlexPointLocalRead(dmCell, c, cgeom, &cg));
+      PetscCall(DMPlexPointGlobalFieldRead(dm, c, 1, x, &cx));
       if (!cx) continue;        /* not a global cell */
       for (f = 0;  f < user->numMonitorFuncs; ++f) {
         Functional   func = user->monitorFuncs[f];
         PetscScalar *fxc;
 
-        ierr = DMPlexPointGlobalFieldRef(dm, c, 1, fx[f], &fxc);CHKERRQ(ierr);
+        PetscCall(DMPlexPointGlobalFieldRef(dm, c, 1, fx[f], &fxc));
         /* I need to make it easier to get interpolated values here */
-        ierr = (*func->func)(dm, time, cg->centroid, cx, ftmp, func->ctx);CHKERRQ(ierr);
+        PetscCall((*func->func)(dm, time, cg->centroid, cx, ftmp, func->ctx));
         fxc[0] = ftmp[user->monitorFuncs[f]->offset];
       }
       for (f = 0; f < fcount; ++f) {
@@ -987,15 +969,15 @@ static PetscErrorCode MonitorFunctionals(TS ts, PetscInt stepnum, PetscReal time
         fint[f] += cg->volume * ftmp[f];
       }
     }
-    ierr = VecRestoreArrayRead(cellgeom, &cgeom);CHKERRQ(ierr);
-    ierr = VecRestoreArrayRead(X, &x);CHKERRQ(ierr);
-    ierr = MPI_Allreduce(MPI_IN_PLACE, fmin, fcount, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)ts));CHKERRMPI(ierr);
-    ierr = MPI_Allreduce(MPI_IN_PLACE, fmax, fcount, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)ts));CHKERRMPI(ierr);
-    ierr = MPI_Allreduce(MPI_IN_PLACE, fint, fcount, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)ts));CHKERRMPI(ierr);
+    PetscCall(VecRestoreArrayRead(cellgeom, &cgeom));
+    PetscCall(VecRestoreArrayRead(X, &x));
+    PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, fmin, fcount, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)ts)));
+    PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, fmax, fcount, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)ts)));
+    PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, fint, fcount, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)ts)));
     /* Output functional data */
     ftablealloc = fcount * 100;
     ftableused  = 0;
-    ierr = PetscCalloc1(ftablealloc, &ftable);CHKERRQ(ierr);
+    PetscCall(PetscCalloc1(ftablealloc, &ftable));
     for (f = 0; f < user->numMonitorFuncs; ++f) {
       Functional func      = user->monitorFuncs[f];
       PetscInt   id        = func->offset;
@@ -1005,57 +987,57 @@ static PetscErrorCode MonitorFunctionals(TS ts, PetscInt stepnum, PetscReal time
 
       /* Create string with functional outputs */
       if (f % 3) {
-        ierr = PetscArraycpy(buffer, "  ", 2);CHKERRQ(ierr);
+        PetscCall(PetscArraycpy(buffer, "  ", 2));
         p    = buffer + 2;
       } else if (f) {
-        ierr = PetscArraycpy(buffer, newline, sizeof(newline)-1);CHKERRQ(ierr);
+        PetscCall(PetscArraycpy(buffer, newline, sizeof(newline)-1));
         p    = buffer + sizeof(newline) - 1;
       } else {
         p = buffer;
       }
-      ierr = PetscSNPrintfCount(p, sizeof buffer-(p-buffer), "%12s [%12.6g,%12.6g] int %12.6g", &countused, func->name, (double) fmin[id], (double) fmax[id], (double) fint[id]);CHKERRQ(ierr);
+      PetscCall(PetscSNPrintfCount(p, sizeof buffer-(p-buffer), "%12s [%12.6g,%12.6g] int %12.6g", &countused, func->name, (double) fmin[id], (double) fmax[id], (double) fint[id]));
       countused += p - buffer;
       /* reallocate */
       if (countused > ftablealloc-ftableused-1) {
         char *ftablenew;
 
         ftablealloc = 2*ftablealloc + countused;
-        ierr = PetscMalloc1(ftablealloc, &ftablenew);CHKERRQ(ierr);
-        ierr = PetscArraycpy(ftablenew, ftable, ftableused);CHKERRQ(ierr);
-        ierr = PetscFree(ftable);CHKERRQ(ierr);
+        PetscCall(PetscMalloc1(ftablealloc, &ftablenew));
+        PetscCall(PetscArraycpy(ftablenew, ftable, ftableused));
+        PetscCall(PetscFree(ftable));
         ftable = ftablenew;
       }
-      ierr = PetscArraycpy(ftable+ftableused, buffer, countused);CHKERRQ(ierr);
+      PetscCall(PetscArraycpy(ftable+ftableused, buffer, countused));
       ftableused += countused;
       ftable[ftableused] = 0;
       /* Output vecs */
-      ierr = VecRestoreArray(fv[f], &fx[f]);CHKERRQ(ierr);
-      ierr = PetscStrlen(func->name, &len);CHKERRQ(ierr);
-      ierr = PetscMalloc1(len+2,&prefix);CHKERRQ(ierr);
-      ierr = PetscStrcpy(prefix, func->name);CHKERRQ(ierr);
-      ierr = PetscStrcat(prefix, "_");CHKERRQ(ierr);
-      ierr = PetscObjectSetOptionsPrefix((PetscObject)fv[f], prefix);CHKERRQ(ierr);
-      ierr = VecViewFromOptions(fv[f], NULL, "-vec_view");CHKERRQ(ierr);
-      ierr = PetscFree(prefix);CHKERRQ(ierr);
-      ierr = DMRestoreGlobalVector(fdm[f], &fv[f]);CHKERRQ(ierr);
-      ierr = DMDestroy(&fdm[f]);CHKERRQ(ierr);
+      PetscCall(VecRestoreArray(fv[f], &fx[f]));
+      PetscCall(PetscStrlen(func->name, &len));
+      PetscCall(PetscMalloc1(len+2,&prefix));
+      PetscCall(PetscStrcpy(prefix, func->name));
+      PetscCall(PetscStrcat(prefix, "_"));
+      PetscCall(PetscObjectSetOptionsPrefix((PetscObject)fv[f], prefix));
+      PetscCall(VecViewFromOptions(fv[f], NULL, "-vec_view"));
+      PetscCall(PetscFree(prefix));
+      PetscCall(DMRestoreGlobalVector(fdm[f], &fv[f]));
+      PetscCall(DMDestroy(&fdm[f]));
     }
-    ierr = PetscFree4(fmin, fmax, fint, ftmp);CHKERRQ(ierr);
-    ierr = PetscFree3(fdm, fv, fx);CHKERRQ(ierr);
-    ierr = PetscPrintf(PetscObjectComm((PetscObject) ts), "% 3D  time %8.4g  |x| (", stepnum, (double) time);CHKERRQ(ierr);
+    PetscCall(PetscFree4(fmin, fmax, fint, ftmp));
+    PetscCall(PetscFree3(fdm, fv, fx));
+    PetscCall(PetscPrintf(PetscObjectComm((PetscObject) ts), "% 3" PetscInt_FMT "  time %8.4g  |x| (", stepnum, (double) time));
     for (f = 0; f < Nf; ++f) {
-      if (f > 0) {ierr = PetscPrintf(PetscObjectComm((PetscObject) ts), ", ");CHKERRQ(ierr);}
-      ierr = PetscPrintf(PetscObjectComm((PetscObject) ts), "%8.4g", (double) xnorms[f*2+0]);CHKERRQ(ierr);
+      if (f > 0) PetscCall(PetscPrintf(PetscObjectComm((PetscObject) ts), ", "));
+      PetscCall(PetscPrintf(PetscObjectComm((PetscObject) ts), "%8.4g", (double) xnorms[f*2+0]));
     }
-    ierr = PetscPrintf(PetscObjectComm((PetscObject) ts), ") |x|_1 (");CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PetscObjectComm((PetscObject) ts), ") |x|_1 ("));
     for (f = 0; f < Nf; ++f) {
-      if (f > 0) {ierr = PetscPrintf(PetscObjectComm((PetscObject) ts), ", ");CHKERRQ(ierr);}
-      ierr = PetscPrintf(PetscObjectComm((PetscObject) ts), "%8.4g", (double) xnorms[f*2+1]);CHKERRQ(ierr);
+      if (f > 0) PetscCall(PetscPrintf(PetscObjectComm((PetscObject) ts), ", "));
+      PetscCall(PetscPrintf(PetscObjectComm((PetscObject) ts), "%8.4g", (double) xnorms[f*2+1]));
     }
-    ierr = PetscPrintf(PetscObjectComm((PetscObject) ts), ")  %s\n", ftable ? ftable : "");CHKERRQ(ierr);
-    ierr = PetscFree(ftable);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PetscObjectComm((PetscObject) ts), ")  %s\n", ftable ? ftable : ""));
+    PetscCall(PetscFree(ftable));
   }
-  ierr = PetscFree(xnorms);CHKERRQ(ierr);
+  PetscCall(PetscFree(xnorms));
   PetscFunctionReturn(0);
 }
 
@@ -1068,73 +1050,72 @@ int main(int argc, char **argv)
   AppCtx         user;
   PetscReal      t0, t = 0.0;
   void          *ctxs[2];
-  PetscErrorCode ierr;
 
   ctxs[0] = &t;
   ctxs[1] = &t;
-  ierr = PetscInitialize(&argc, &argv, (char*) 0, help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc, &argv, (char*) 0, help));
   comm = PETSC_COMM_WORLD;
   user.functionalRegistry = NULL;
   globalUser = &user;
-  ierr = ProcessOptions(comm, &user);CHKERRQ(ierr);
-  ierr = TSCreate(comm, &ts);CHKERRQ(ierr);
-  ierr = TSSetType(ts, TSBEULER);CHKERRQ(ierr);
-  ierr = CreateDM(comm, &user, &dm);CHKERRQ(ierr);
-  ierr = TSSetDM(ts, dm);CHKERRQ(ierr);
-  ierr = ProcessMonitorOptions(comm, &user);CHKERRQ(ierr);
+  PetscCall(ProcessOptions(comm, &user));
+  PetscCall(TSCreate(comm, &ts));
+  PetscCall(TSSetType(ts, TSBEULER));
+  PetscCall(CreateDM(comm, &user, &dm));
+  PetscCall(TSSetDM(ts, dm));
+  PetscCall(ProcessMonitorOptions(comm, &user));
 
-  ierr = DMCreateGlobalVector(dm, &u);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) u, "solution");CHKERRQ(ierr);
+  PetscCall(DMCreateGlobalVector(dm, &u));
+  PetscCall(PetscObjectSetName((PetscObject) u, "solution"));
   if (user.useFV) {
     PetscBool isImplicit = PETSC_FALSE;
 
-    ierr = PetscOptionsHasName(NULL,"", "-use_implicit", &isImplicit);CHKERRQ(ierr);
+    PetscCall(PetscOptionsHasName(NULL,"", "-use_implicit", &isImplicit));
     if (isImplicit) {
-      ierr = DMTSSetIFunctionLocal(dm, DMPlexTSComputeIFunctionFEM, &user);CHKERRQ(ierr);
-      ierr = DMTSSetIJacobianLocal(dm, DMPlexTSComputeIJacobianFEM, &user);CHKERRQ(ierr);
+      PetscCall(DMTSSetIFunctionLocal(dm, DMPlexTSComputeIFunctionFEM, &user));
+      PetscCall(DMTSSetIJacobianLocal(dm, DMPlexTSComputeIJacobianFEM, &user));
     }
-    ierr = DMTSSetBoundaryLocal(dm, DMPlexTSComputeBoundary, &user);CHKERRQ(ierr);
-    ierr = DMTSSetRHSFunctionLocal(dm, DMPlexTSComputeRHSFunctionFVM, &user);CHKERRQ(ierr);
+    PetscCall(DMTSSetBoundaryLocal(dm, DMPlexTSComputeBoundary, &user));
+    PetscCall(DMTSSetRHSFunctionLocal(dm, DMPlexTSComputeRHSFunctionFVM, &user));
   } else {
-    ierr = DMTSSetBoundaryLocal(dm, DMPlexTSComputeBoundary, &user);CHKERRQ(ierr);
-    ierr = DMTSSetIFunctionLocal(dm, DMPlexTSComputeIFunctionFEM, &user);CHKERRQ(ierr);
-    ierr = DMTSSetIJacobianLocal(dm, DMPlexTSComputeIJacobianFEM, &user);CHKERRQ(ierr);
+    PetscCall(DMTSSetBoundaryLocal(dm, DMPlexTSComputeBoundary, &user));
+    PetscCall(DMTSSetIFunctionLocal(dm, DMPlexTSComputeIFunctionFEM, &user));
+    PetscCall(DMTSSetIJacobianLocal(dm, DMPlexTSComputeIJacobianFEM, &user));
   }
-  if (user.useFV) {ierr = TSMonitorSet(ts, MonitorFunctionals, &user, NULL);CHKERRQ(ierr);}
-  ierr = TSSetMaxSteps(ts, 1);CHKERRQ(ierr);
-  ierr = TSSetMaxTime(ts, 2.0);CHKERRQ(ierr);
-  ierr = TSSetTimeStep(ts,0.01);CHKERRQ(ierr);
-  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
-  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
+  if (user.useFV) PetscCall(TSMonitorSet(ts, MonitorFunctionals, &user, NULL));
+  PetscCall(TSSetMaxSteps(ts, 1));
+  PetscCall(TSSetMaxTime(ts, 2.0));
+  PetscCall(TSSetTimeStep(ts,0.01));
+  PetscCall(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
+  PetscCall(TSSetFromOptions(ts));
 
-  ierr = DMProjectFunction(dm, 0.0, user.initialGuess, ctxs, INSERT_VALUES, u);CHKERRQ(ierr);
-  if (user.useFV) {ierr = SetInitialConditionFVM(dm, u, 1, user.initialGuess[1], ctxs[1]);CHKERRQ(ierr);}
-  ierr = VecViewFromOptions(u, NULL, "-init_vec_view");CHKERRQ(ierr);
-  ierr = TSGetTime(ts, &t);CHKERRQ(ierr);
+  PetscCall(DMProjectFunction(dm, 0.0, user.initialGuess, ctxs, INSERT_VALUES, u));
+  if (user.useFV) PetscCall(SetInitialConditionFVM(dm, u, 1, user.initialGuess[1], ctxs[1]));
+  PetscCall(VecViewFromOptions(u, NULL, "-init_vec_view"));
+  PetscCall(TSGetTime(ts, &t));
   t0   = t;
-  ierr = DMTSCheckFromOptions(ts, u);CHKERRQ(ierr);
-  ierr = TSSolve(ts, u);CHKERRQ(ierr);
-  ierr = TSGetTime(ts, &t);CHKERRQ(ierr);
-  if (t > t0) {ierr = DMTSCheckFromOptions(ts, u);CHKERRQ(ierr);}
-  ierr = VecViewFromOptions(u, NULL, "-sol_vec_view");CHKERRQ(ierr);
+  PetscCall(DMTSCheckFromOptions(ts, u));
+  PetscCall(TSSolve(ts, u));
+  PetscCall(TSGetTime(ts, &t));
+  if (t > t0) PetscCall(DMTSCheckFromOptions(ts, u));
+  PetscCall(VecViewFromOptions(u, NULL, "-sol_vec_view"));
   {
     PetscReal ftime;
     PetscInt  nsteps;
     TSConvergedReason reason;
 
-    ierr = TSGetSolveTime(ts, &ftime);CHKERRQ(ierr);
-    ierr = TSGetStepNumber(ts, &nsteps);CHKERRQ(ierr);
-    ierr = TSGetConvergedReason(ts, &reason);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "%s at time %g after %D steps\n", TSConvergedReasons[reason], (double) ftime, nsteps);CHKERRQ(ierr);
+    PetscCall(TSGetSolveTime(ts, &ftime));
+    PetscCall(TSGetStepNumber(ts, &nsteps));
+    PetscCall(TSGetConvergedReason(ts, &reason));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%s at time %g after %" PetscInt_FMT " steps\n", TSConvergedReasons[reason], (double) ftime, nsteps));
   }
 
-  ierr = VecDestroy(&u);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
-  ierr = TSDestroy(&ts);CHKERRQ(ierr);
-  ierr = PetscFree(user.monitorFuncs);CHKERRQ(ierr);
-  ierr = FunctionalDestroy(&user.functionalRegistry);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(VecDestroy(&u));
+  PetscCall(DMDestroy(&dm));
+  PetscCall(TSDestroy(&ts));
+  PetscCall(PetscFree(user.monitorFuncs));
+  PetscCall(FunctionalDestroy(&user.functionalRegistry));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST
@@ -1192,7 +1173,7 @@ int main(int argc, char **argv)
     test:
       suffix: adv_3_ex
       requires: !complex
-      args: -dm_plex_box_bd periodic,none -use_fv -velocity_dist zero -porosity_dist tilted -ts_type ssp -ts_max_time 2.0 -ts_max_steps 1000 -ts_dt   0.1 -bc_inflow 3 -bc_outflow 1 -snes_fd_color -ksp_max_it 100 -ts_view -dm_view
+      args: -dm_plex_box_bd periodic,none -use_fv -velocity_dist zero -porosity_dist tilted -ts_type ssp -ts_max_time 2.0 -ts_max_steps 1000 -ts_dt 0.1 -bc_inflow 3 -bc_outflow 1 -snes_fd_color -ksp_max_it 100 -ts_view -dm_view
 
     test:
       suffix: adv_4

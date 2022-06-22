@@ -22,53 +22,52 @@ int main(int argc,char **argv)
   char               file[PETSC_MAX_PATH_LEN];
   PetscBool          flg;
   PetscViewer        fd;
-  PetscErrorCode     ierr;
 
-  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,0,help));
   /* Load the data from a file */
-  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg);CHKERRQ(ierr);
-  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Must indicate binary file with the -f option");
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
+  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Must indicate binary file with the -f option");
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd));
 
   /* Build the matrix */
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatLoad(A,fd);CHKERRQ(ierr);
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatLoad(A,fd));
 
   /* Build the vectors */
-  ierr = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
-  ierr = VecSetSizes(B,m,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,&X);CHKERRQ(ierr);
-  ierr = VecSetSizes(X,m,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(B);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(X);CHKERRQ(ierr);
-  ierr = VecSet(B,1.0);CHKERRQ(ierr);
+  PetscCall(MatGetLocalSize(A,&m,NULL));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&B));
+  PetscCall(VecSetSizes(B,m,PETSC_DECIDE));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&X));
+  PetscCall(VecSetSizes(X,m,PETSC_DECIDE));
+  PetscCall(VecSetFromOptions(B));
+  PetscCall(VecSetFromOptions(X));
+  PetscCall(VecSet(B,1.0));
 
   /* Build the KSP */
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
-  ierr = KSPSetType(ksp,KSPGMRES);CHKERRQ(ierr);
-  ierr = KSPSetTolerances(ksp,1.0e-12,PETSC_DEFAULT,PETSC_DEFAULT,100);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPSetOperators(ksp,A,A));
+  PetscCall(KSPSetType(ksp,KSPGMRES));
+  PetscCall(KSPSetTolerances(ksp,1.0e-12,PETSC_DEFAULT,PETSC_DEFAULT,100));
+  PetscCall(KSPSetFromOptions(ksp));
 
   /* Solve */
-  ierr = KSPSolve(ksp,B,X);CHKERRQ(ierr);
+  PetscCall(KSPSolve(ksp,B,X));
 
   /* print out norm and the number of iterations */
-  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = KSPGetResidualNorm(ksp,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %1.5g\n",norm);CHKERRQ(ierr);
+  PetscCall(KSPGetIterationNumber(ksp,&its));
+  PetscCall(KSPGetResidualNorm(ksp,&norm));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3" PetscInt_FMT "\n",its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Residual norm %1.5g\n",(double)norm));
 
   /* Cleanup */
-  ierr = VecDestroy(&X);CHKERRQ(ierr);
-  ierr = VecDestroy(&B);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(VecDestroy(&X));
+  PetscCall(VecDestroy(&B));
+  PetscCall(MatDestroy(&A));
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(PetscViewerDestroy(&fd));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

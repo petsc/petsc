@@ -6,6 +6,12 @@ CHANGES: PETSc for Python
 :Contact: dalcinl@gmail.com
 
 
+Release 3.17.0
+==============
+
+- Update to PETSc 3.17 release.
+
+
 Release 3.16.0
 ==============
 

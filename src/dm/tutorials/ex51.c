@@ -15,53 +15,52 @@ int main(int argc, char *argv[])
   PetscInt       numGP = 3;
   PetscInt       dof   = 2*(p+1)*numGP;
   PetscMPIInt    rank, subsize, subrank;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRMPI(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,0,help));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   /* Create 2D DMDA */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
   /* Create 1D DMDAs along two directions. */
-  ierr = DMDAGetOwnershipRanges(da, &lx, &ly, NULL);CHKERRQ(ierr);
-  ierr = DMDAGetLocalInfo(da, &info);CHKERRQ(ierr);
+  PetscCall(DMDAGetOwnershipRanges(da, &lx, &ly, NULL));
+  PetscCall(DMDAGetLocalInfo(da, &info));
   /* Partitioning in the X direction makes a subcomm extending in the Y direction and vice-versa. */
-  ierr = DMDAGetProcessorSubsets(da, DM_X, &commY);CHKERRQ(ierr);
-  ierr = DMDAGetProcessorSubsets(da, DM_Y, &commX);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(commX, &subsize);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(commX, &subrank);CHKERRMPI(ierr);
-  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d]X subrank: %d subsize: %d\n", rank, subrank, subsize);CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(commY, &subsize);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(commY, &subrank);CHKERRMPI(ierr);
-  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d]Y subrank: %d subsize: %d\n", rank, subrank, subsize);CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
-  ierr = DMDACreate1d(commX, DM_BOUNDARY_NONE, info.mx, dof, 1, lx, &daX);CHKERRQ(ierr);
-  ierr = DMSetUp(daX);CHKERRQ(ierr);
-  ierr = DMDACreate1d(commY, DM_BOUNDARY_NONE, info.my, dof, 1, ly, &daY);CHKERRQ(ierr);
-  ierr = DMSetUp(daY);CHKERRQ(ierr);
+  PetscCall(DMDAGetProcessorSubsets(da, DM_X, &commY));
+  PetscCall(DMDAGetProcessorSubsets(da, DM_Y, &commX));
+  PetscCallMPI(MPI_Comm_size(commX, &subsize));
+  PetscCallMPI(MPI_Comm_rank(commX, &subrank));
+  PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d]X subrank: %d subsize: %d\n", rank, subrank, subsize));
+  PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
+  PetscCallMPI(MPI_Comm_size(commY, &subsize));
+  PetscCallMPI(MPI_Comm_rank(commY, &subrank));
+  PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d]Y subrank: %d subsize: %d\n", rank, subrank, subsize));
+  PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
+  PetscCall(DMDACreate1d(commX, DM_BOUNDARY_NONE, info.mx, dof, 1, lx, &daX));
+  PetscCall(DMSetUp(daX));
+  PetscCall(DMDACreate1d(commY, DM_BOUNDARY_NONE, info.my, dof, 1, ly, &daY));
+  PetscCall(DMSetUp(daY));
   /* Create 1D vectors for basis functions */
-  ierr = DMGetGlobalVector(daX, &basisX);CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(daY, &basisY);CHKERRQ(ierr);
+  PetscCall(DMGetGlobalVector(daX, &basisX));
+  PetscCall(DMGetGlobalVector(daY, &basisY));
   /* Extract basis functions */
-  ierr = DMDAVecGetArrayDOF(daX, basisX, &arrayX);CHKERRQ(ierr);
-  ierr = DMDAVecGetArrayDOF(daY, basisY, &arrayY);CHKERRQ(ierr);
+  PetscCall(DMDAVecGetArrayDOF(daX, basisX, &arrayX));
+  PetscCall(DMDAVecGetArrayDOF(daY, basisY, &arrayY));
   /*arrayX[i][ndof]; */
   /*arrayY[j][ndof]; */
-  ierr = DMDAVecRestoreArrayDOF(daX, basisX, &arrayX);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArrayDOF(daY, basisY, &arrayY);CHKERRQ(ierr);
+  PetscCall(DMDAVecRestoreArrayDOF(daX, basisX, &arrayX));
+  PetscCall(DMDAVecRestoreArrayDOF(daY, basisY, &arrayY));
   /* Return basis vectors */
-  ierr = DMRestoreGlobalVector(daX, &basisX);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(daY, &basisY);CHKERRQ(ierr);
+  PetscCall(DMRestoreGlobalVector(daX, &basisX));
+  PetscCall(DMRestoreGlobalVector(daY, &basisY));
   /* Cleanup */
-  ierr = MPI_Comm_free(&commX);CHKERRMPI(ierr);
-  ierr = MPI_Comm_free(&commY);CHKERRMPI(ierr);
-  ierr = DMDestroy(&daX);CHKERRQ(ierr);
-  ierr = DMDestroy(&daY);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCallMPI(MPI_Comm_free(&commX));
+  PetscCallMPI(MPI_Comm_free(&commY));
+  PetscCall(DMDestroy(&daX));
+  PetscCall(DMDestroy(&daY));
+  PetscCall(DMDestroy(&da));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

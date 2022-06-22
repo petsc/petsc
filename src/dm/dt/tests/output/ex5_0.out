@@ -1,7 +1,7 @@
-PetscFE Object: solution 1 MPI processes
+PetscFE Object: solution 1 MPI process
   type: basic
   Basic Finite Element in 1 dimensions with 3 components
-  PetscSpace Object: solution 1 MPI processes
+  PetscSpace Object: solution 1 MPI process
     type: subspace
     Space in 1 variables with 3 components, size 6
     Subspace-to-space domain shift:
@@ -13,15 +13,15 @@ PetscFE Object: solution 1 MPI processes
      1.
      0.
     Original space:
-      PetscSpace Object: solution 1 MPI processes
+      PetscSpace Object: solution 1 MPI process
         type: sum
         Space in 2 variables with 3 components, size 9
         Sum space of 3 concatenated subspaces (all identical)
-          PetscSpace Object: sum component (sumcomp_) 1 MPI processes
+          PetscSpace Object: sum component (sumcomp_) 1 MPI process
             type: poly
             Space in 2 variables with 1 components, size 3
             Polynomial space of degree 1
-  PetscDualSpace Object: solution 1 MPI processes
+  PetscDualSpace Object: solution 1 MPI process
     type: lagrange
     Dual space with 3 components, size 6
     Continuous Lagrange dual space

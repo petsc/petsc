@@ -1,52 +1,52 @@
-PetscViewer Object: 1 MPI processes
+PetscViewer Object: 1 MPI process
   type: binary
   Filename: binary.dat
   Mode: WRITE (stdio)
-PetscViewer Object: 1 MPI processes
+PetscViewer Object: 1 MPI process
   type: binary
   Filename: binary.dat
   Mode: READ (stdio)
-PetscViewer Object: 1 MPI processes
+PetscViewer Object: 1 MPI process
   type: binary
   Filename: binary.dat
   Mode: APPEND (stdio)
-PetscViewer Object: 1 MPI processes
+PetscViewer Object: 1 MPI process
   type: binary
   Filename: binary.dat
   Mode: READ (stdio)
-PetscViewer Object: 1 MPI processes
+PetscViewer Object: 1 MPI process
   type: binary
   Filename: binary.dat
   Mode: APPEND (stdio)
-PetscViewer Object: 1 MPI processes
+PetscViewer Object: 1 MPI process
   type: binary
   Filename: binary.dat
   Mode: READ (stdio)
-PetscViewer Object: 1 MPI processes
+PetscViewer Object: 1 MPI process
   type: binary
   Filename: binary.dat
   Mode: WRITE (stdio)
-PetscViewer Object: 1 MPI processes
+PetscViewer Object: 1 MPI process
   type: binary
   Filename: binary.dat
   Mode: READ (stdio)
-PetscViewer Object: 1 MPI processes
+PetscViewer Object: 1 MPI process
   type: binary
   Filename: binary.dat
   Mode: WRITE (stdio)
-PetscViewer Object: 1 MPI processes
+PetscViewer Object: 1 MPI process
   type: binary
   Filename: binary.dat
   Mode: READ (stdio)
-PetscViewer Object: 1 MPI processes
+PetscViewer Object: 1 MPI process
   type: binary
   Filename: binary.dat
   Mode: APPEND (stdio)
-PetscViewer Object: 1 MPI processes
+PetscViewer Object: 1 MPI process
   type: binary
   Filename: binary.dat
   Mode: READ (stdio)
-PetscViewer Object: 1 MPI processes
+PetscViewer Object: 1 MPI process
   type: binary
   Filename: binary.dat
   Mode: WRITE (stdio)

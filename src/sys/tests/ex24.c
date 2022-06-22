@@ -3,15 +3,14 @@ static char help[] = "Tests %d and %g formatting\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"A string followed by integer %d\n",22);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"A string followed by double %5g another %g\n",23.2,11.3);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"and then an int %d\n",30);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"A string followed by integer %d\n",22));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"A string followed by double %5g another %g\n",23.2,11.3));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"and then an int %d\n",30));
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

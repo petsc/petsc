@@ -1,8 +1,5 @@
 -include ../../../../petscdir.mk
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = fas.c fasgalerkin.c fasfunc.c
 SOURCEF  =
 SOURCEH  =

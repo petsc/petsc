@@ -142,6 +142,14 @@ struct _TS_RHSSplitLink {
   PetscLogEvent   event;
 };
 
+typedef struct _TS_TimeSpan *TSTimeSpan;
+struct _TS_TimeSpan {
+    PetscInt  num_span_times; /* number of time points */
+    PetscReal *span_times;    /* array of the time span */
+    PetscInt  spanctr;        /* counter of the time points that have been reached */
+    Vec       *vecs_sol;      /* array of the solutions at the specified time points */
+};
+
 struct _p_TS {
   PETSCHEADER(struct _TSOps);
   TSProblemType  problem_type;
@@ -307,6 +315,9 @@ struct _p_TS {
 
   /* ---------------------- Quadrature integration support ---------------------------------*/
   TS quadraturets;
+
+  /* ---------------------- Time span support ---------------------------------*/
+  TSTimeSpan tspan;
 };
 
 struct _TSAdaptOps {
@@ -495,13 +506,12 @@ struct _n_TSMonitorEnvelopeCtx {
 */
 static inline PetscErrorCode TSCheckImplicitTerm(TS ts)
 {
-  TSIFunction      ifunction;
-  DM               dm;
-  PetscErrorCode   ierr;
+  TSIFunction ifunction;
+  DM          dm;
 
   PetscFunctionBegin;
-  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
-  ierr = DMTSGetIFunction(dm,&ifunction,NULL);CHKERRQ(ierr);
+  PetscCall(TSGetDM(ts,&dm));
+  PetscCall(DMTSGetIFunction(dm,&ifunction,NULL));
   PetscCheck(!ifunction,PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_INCOMP,"You are attempting to use an explicit ODE integrator but provided an implicit function definition with TSSetIFunction()");
   PetscFunctionReturn(0);
 }

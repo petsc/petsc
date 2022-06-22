@@ -1,0 +1,10 @@
+DM Object: TPS 1 MPI process
+  type: plex
+TPS in 2 dimensions:
+  Number of 0-cells per rank: 164
+  Number of 1-cells per rank: 332
+  Number of 2-cells per rank: 144
+Labels:
+  celltype: 3 strata with value/size (0 (164), 4 (144), 1 (332))
+  depth: 3 strata with value/size (0 (164), 1 (332), 2 (144))
+  Face Sets: 6 strata with value/size (1 (48), 2 (48), 3 (24), 5 (16), 6 (16), 4 (24))

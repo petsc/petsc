@@ -1,17 +1,11 @@
 static char help[] = "Example use of PetscInfo() as a configurable informative logging or warning tool\n";
 
-/*T
-   Concepts: introduction to logging techniques and introspection in PETSc;
-   Processors: n
-T*/
-
 # include <petscsys.h>
 # include <petscmat.h>
 # include <petscvec.h>
 
 int main(int argc, char **argv)
 {
-  PetscErrorCode  ierr;
   Mat             A, Aself;
   Vec             b, bself;
 #if defined(PETSC_USE_INFO)
@@ -25,74 +19,74 @@ int main(int argc, char **argv)
   char            **testClassesStrArr;
   FILE            *infoFile;
 
-  ierr = PetscInitialize(&argc, &argv,(char *) 0, help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc, &argv,(char *) 0, help));
 
   /*
      Examples on how to call PetscInfo() using different objects with or without arguments, and different communicators.
       - Until PetscInfoDestroy() is called all PetscInfo() behaviour is goverened by command line options, which
         are processed during PetscInitialize().
   */
-  ierr = MatCreate(PETSC_COMM_WORLD, &A);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD, &b);CHKERRQ(ierr);
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
+  PetscCall(VecCreate(PETSC_COMM_WORLD, &b));
 
-  ierr = PetscInfo(A, "Mat info on PETSC_COMM_WORLD with no arguments\n");CHKERRQ(ierr);
-  ierr = PetscInfo(A, "Mat info on PETSC_COMM_WORLD with 1 argument equal to 1234: %" PetscInt_FMT "\n", testarg);CHKERRQ(ierr);
-  ierr = PetscInfo(b, "Vec info on PETSC_COMM_WORLD with no arguments\n");CHKERRQ(ierr);
-  ierr = PetscInfo(b, "Vec info on PETSC_COMM_WORLD with 1 argument equal to 1234: %" PetscInt_FMT "\n", testarg);CHKERRQ(ierr);
-  ierr = PetscInfo(NULL, "Sys info on PETSC_COMM_WORLD with no arguments\n");CHKERRQ(ierr);
-  ierr = PetscInfo(NULL, "Sys info on PETSC_COMM_WORLD with 1 argument equal to 1234: %" PetscInt_FMT "\n", testarg);CHKERRQ(ierr);
+  PetscCall(PetscInfo(A, "Mat info on PETSC_COMM_WORLD with no arguments\n"));
+  PetscCall(PetscInfo(A, "Mat info on PETSC_COMM_WORLD with 1 argument equal to 1234: %" PetscInt_FMT "\n", testarg));
+  PetscCall(PetscInfo(b, "Vec info on PETSC_COMM_WORLD with no arguments\n"));
+  PetscCall(PetscInfo(b, "Vec info on PETSC_COMM_WORLD with 1 argument equal to 1234: %" PetscInt_FMT "\n", testarg));
+  PetscCall(PetscInfo(NULL, "Sys info on PETSC_COMM_WORLD with no arguments\n"));
+  PetscCall(PetscInfo(NULL, "Sys info on PETSC_COMM_WORLD with 1 argument equal to 1234: %" PetscInt_FMT "\n", testarg));
 
-  ierr = MatCreate(PETSC_COMM_SELF, &Aself);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_SELF, &bself);CHKERRQ(ierr);
+  PetscCall(MatCreate(PETSC_COMM_SELF, &Aself));
+  PetscCall(VecCreate(PETSC_COMM_SELF, &bself));
 
-  ierr = PetscInfo(Aself, "Mat info on PETSC_COMM_SELF with no arguments\n");CHKERRQ(ierr);
-  ierr = PetscInfo(Aself, "Mat info on PETSC_COMM_SELF with 1 argument equal to 1234: %" PetscInt_FMT "\n", testarg);CHKERRQ(ierr);
-  ierr = PetscInfo(bself, "Vec info on PETSC_COMM_SELF with no arguments\n");CHKERRQ(ierr);
-  ierr = PetscInfo(bself, "Vec info on PETSC_COMM_SELF with 1 argument equal to 1234: %" PetscInt_FMT "\n", testarg);CHKERRQ(ierr);
-  ierr = PetscInfo(NULL, "Sys info on PETSC_COMM_SELF with no arguments\n");CHKERRQ(ierr);
-  ierr = PetscInfo(NULL, "Sys info on PETSC_COMM_SELF with 1 argument equal to 1234: %" PetscInt_FMT "\n", testarg);CHKERRQ(ierr);
+  PetscCall(PetscInfo(Aself, "Mat info on PETSC_COMM_SELF with no arguments\n"));
+  PetscCall(PetscInfo(Aself, "Mat info on PETSC_COMM_SELF with 1 argument equal to 1234: %" PetscInt_FMT "\n", testarg));
+  PetscCall(PetscInfo(bself, "Vec info on PETSC_COMM_SELF with no arguments\n"));
+  PetscCall(PetscInfo(bself, "Vec info on PETSC_COMM_SELF with 1 argument equal to 1234: %" PetscInt_FMT "\n", testarg));
+  PetscCall(PetscInfo(NULL, "Sys info on PETSC_COMM_SELF with no arguments\n"));
+  PetscCall(PetscInfo(NULL, "Sys info on PETSC_COMM_SELF with 1 argument equal to 1234: %" PetscInt_FMT "\n", testarg));
 
-  ierr = MatDestroy(&Aself);CHKERRQ(ierr);
-  ierr = VecDestroy(&bself);CHKERRQ(ierr);
+  PetscCall(MatDestroy(&Aself));
+  PetscCall(VecDestroy(&bself));
   /*
      First retrieve some basic information regarding the classes for which we want to filter
   */
-  ierr = PetscObjectGetClassId((PetscObject) A, &testMatClassid);CHKERRQ(ierr);
-  ierr = PetscObjectGetClassId((PetscObject) b, &testVecClassid);CHKERRQ(ierr);
+  PetscCall(PetscObjectGetClassId((PetscObject) A, &testMatClassid));
+  PetscCall(PetscObjectGetClassId((PetscObject) b, &testVecClassid));
   /* Sys class has PetscClassId = PETSC_SMALLEST_CLASSID */
   testSysClassid = PETSC_SMALLEST_CLASSID;
-  ierr = PetscObjectGetClassName((PetscObject) A, &testMatClassname);CHKERRQ(ierr);
-  ierr = PetscObjectGetClassName((PetscObject) b, &testVecClassname);CHKERRQ(ierr);
+  PetscCall(PetscObjectGetClassName((PetscObject) A, &testMatClassname));
+  PetscCall(PetscObjectGetClassName((PetscObject) b, &testVecClassname));
 
   /*
      Examples on how to use individual PetscInfo() commands.
   */
-  ierr = PetscInfoEnabled(testMatClassid, &isEnabled);CHKERRQ(ierr);
-  if (isEnabled) { ierr = PetscInfo(A, "Mat info is enabled\n");CHKERRQ(ierr);}
-  ierr = PetscInfoEnabled(testVecClassid, &isEnabled);CHKERRQ(ierr);
-  if (isEnabled) { ierr = PetscInfo(b, "Vec info is enabled\n");CHKERRQ(ierr);}
-  ierr = PetscInfoEnabled(testSysClassid, &isEnabled);CHKERRQ(ierr);
-  if (isEnabled) { ierr = PetscInfo(NULL, "Sys info is enabled\n");CHKERRQ(ierr);}
+  PetscCall(PetscInfoEnabled(testMatClassid, &isEnabled));
+  if (isEnabled) PetscCall(PetscInfo(A, "Mat info is enabled\n"));
+  PetscCall(PetscInfoEnabled(testVecClassid, &isEnabled));
+  if (isEnabled) PetscCall(PetscInfo(b, "Vec info is enabled\n"));
+  PetscCall(PetscInfoEnabled(testSysClassid, &isEnabled));
+  if (isEnabled) PetscCall(PetscInfo(NULL, "Sys info is enabled\n"));
 
   /* Retrieve filename to append later entries to */
-  ierr = PetscInfoGetFile(&filename, &infoFile);CHKERRQ(ierr);
+  PetscCall(PetscInfoGetFile(&filename, &infoFile));
 
   /*
      Destroy existing PetscInfo() configuration and reset all internal flags to default values. This allows the user to change filters
      midway through a program.
   */
-  ierr = PetscInfoDestroy();CHKERRQ(ierr);
+  PetscCall(PetscInfoDestroy());
 
   /*
      Test if existing filters are reset.
       - Note these should NEVER print.
   */
-  ierr = PetscInfoEnabled(testMatClassid, &isEnabled);CHKERRQ(ierr);
-  if (isEnabled) { ierr = PetscInfo(A, "Mat info is enabled after PetscInfoDestroy\n");CHKERRQ(ierr);}
-  ierr = PetscInfoEnabled(testVecClassid, &isEnabled);CHKERRQ(ierr);
-  if (isEnabled) { ierr = PetscInfo(b, "Vec info is enabled after PetscInfoDestroy\n");CHKERRQ(ierr);}
-  ierr = PetscInfoEnabled(testSysClassid, &isEnabled);CHKERRQ(ierr);
-  if (isEnabled) { ierr = PetscInfo(NULL, "Sys info is enabled after PetscInfoDestroy\n");CHKERRQ(ierr);}
+  PetscCall(PetscInfoEnabled(testMatClassid, &isEnabled));
+  if (isEnabled) PetscCall(PetscInfo(A, "Mat info is enabled after PetscInfoDestroy\n"));
+  PetscCall(PetscInfoEnabled(testVecClassid, &isEnabled));
+  if (isEnabled) PetscCall(PetscInfo(b, "Vec info is enabled after PetscInfoDestroy\n"));
+  PetscCall(PetscInfoEnabled(testSysClassid, &isEnabled));
+  if (isEnabled) PetscCall(PetscInfo(NULL, "Sys info is enabled after PetscInfoDestroy\n"));
 
   /*
      Reactivate PetscInfo() printing in one of two ways.
@@ -100,72 +94,72 @@ int main(int argc, char **argv)
       - Keep in mind that by default ALL classes are allowed to print if PetscInfo() is enabled, so we deactivate
         relevant classes first to demonstrate activation functionality.
   */
-  ierr = PetscInfoAllow(PETSC_TRUE);CHKERRQ(ierr);
-  ierr = PetscInfoSetFile(filename, "a");CHKERRQ(ierr);
-  ierr = PetscInfoDeactivateClass(testMatClassid);CHKERRQ(ierr);
-  ierr = PetscInfoDeactivateClass(testVecClassid);CHKERRQ(ierr);
-  ierr = PetscInfoDeactivateClass(testSysClassid);CHKERRQ(ierr);
+  PetscCall(PetscInfoAllow(PETSC_TRUE));
+  PetscCall(PetscInfoSetFile(filename, "a"));
+  PetscCall(PetscInfoDeactivateClass(testMatClassid));
+  PetscCall(PetscInfoDeactivateClass(testVecClassid));
+  PetscCall(PetscInfoDeactivateClass(testSysClassid));
 
   /*
      Activate PetscInfo() on a per-class basis
   */
-  ierr = PetscInfoActivateClass(testMatClassid);CHKERRQ(ierr);
-  ierr = PetscInfo(A, "Mat info is enabled again through PetscInfoActivateClass\n");CHKERRQ(ierr);
-  ierr = PetscInfoDeactivateClass(testMatClassid);CHKERRQ(ierr);
-  ierr = PetscInfoActivateClass(testVecClassid);CHKERRQ(ierr);
-  ierr = PetscInfo(b, "Vec info is enabled again through PetscInfoActivateClass\n");CHKERRQ(ierr);
-  ierr = PetscInfoDeactivateClass(testVecClassid);CHKERRQ(ierr);
-  ierr = PetscInfoActivateClass(testSysClassid);CHKERRQ(ierr);
-  ierr = PetscInfo(NULL, "Sys info is enabled again through PetscInfoActivateClass\n");CHKERRQ(ierr);
-  ierr = PetscInfoDeactivateClass(testVecClassid);CHKERRQ(ierr);
+  PetscCall(PetscInfoActivateClass(testMatClassid));
+  PetscCall(PetscInfo(A, "Mat info is enabled again through PetscInfoActivateClass\n"));
+  PetscCall(PetscInfoDeactivateClass(testMatClassid));
+  PetscCall(PetscInfoActivateClass(testVecClassid));
+  PetscCall(PetscInfo(b, "Vec info is enabled again through PetscInfoActivateClass\n"));
+  PetscCall(PetscInfoDeactivateClass(testVecClassid));
+  PetscCall(PetscInfoActivateClass(testSysClassid));
+  PetscCall(PetscInfo(NULL, "Sys info is enabled again through PetscInfoActivateClass\n"));
+  PetscCall(PetscInfoDeactivateClass(testVecClassid));
 
   /*
      Activate PetscInfo() by specifying specific classnames to activate
   */
-  ierr = PetscStrallocpy("mat,vec,sys", &testClassesStr);CHKERRQ(ierr);
-  ierr = PetscStrToArray((const char *)testClassesStr, ',', &numClasses, &testClassesStrArr);CHKERRQ(ierr);
-  ierr = PetscInfoSetClasses(invert, (PetscInt) numClasses, (const char *const *) testClassesStrArr);CHKERRQ(ierr);
-  ierr = PetscInfoProcessClass(testMatClassname, 1, &testMatClassid);CHKERRQ(ierr);
-  ierr = PetscInfoProcessClass(testVecClassname, 1, &testVecClassid);CHKERRQ(ierr);
-  ierr = PetscInfoProcessClass("sys", 1, &testSysClassid);CHKERRQ(ierr);
+  PetscCall(PetscStrallocpy("mat,vec,sys", &testClassesStr));
+  PetscCall(PetscStrToArray((const char *)testClassesStr, ',', &numClasses, &testClassesStrArr));
+  PetscCall(PetscInfoSetClasses(invert, (PetscInt) numClasses, (const char *const *) testClassesStrArr));
+  PetscCall(PetscInfoProcessClass(testMatClassname, 1, &testMatClassid));
+  PetscCall(PetscInfoProcessClass(testVecClassname, 1, &testVecClassid));
+  PetscCall(PetscInfoProcessClass("sys", 1, &testSysClassid));
 
-  ierr = PetscInfo(A, "Mat info is enabled again through PetscInfoSetClasses\n");CHKERRQ(ierr);
-  ierr = PetscInfo(b, "Vec info is enabled again through PetscInfoSetClasses\n");CHKERRQ(ierr);
-  ierr = PetscInfo(NULL, "Sys info is enabled again through PetscInfoSetClasses\n");CHKERRQ(ierr);
+  PetscCall(PetscInfo(A, "Mat info is enabled again through PetscInfoSetClasses\n"));
+  PetscCall(PetscInfo(b, "Vec info is enabled again through PetscInfoSetClasses\n"));
+  PetscCall(PetscInfo(NULL, "Sys info is enabled again through PetscInfoSetClasses\n"));
 
-  ierr = PetscStrToArrayDestroy(numClasses, testClassesStrArr);CHKERRQ(ierr);
-  ierr = PetscFree(testClassesStr);CHKERRQ(ierr);
+  PetscCall(PetscStrToArrayDestroy(numClasses, testClassesStrArr));
+  PetscCall(PetscFree(testClassesStr));
 
   /*
      Activate PetscInfo() with an inverted filter selection.
       - Inverting our selection of filters enables PetscInfo() for all classes EXCEPT those specified.
       - Note we must reset PetscInfo() internal flags with PetscInfoDestroy() as invoking PetscInfoProcessClass() locks filters in place.
   */
-  ierr = PetscInfoDestroy();CHKERRQ(ierr);
-  ierr = PetscInfoAllow(PETSC_TRUE);CHKERRQ(ierr);
-  ierr = PetscInfoSetFile(filename, "a");CHKERRQ(ierr);
-  ierr = PetscStrallocpy("vec,sys", &testClassesStr);CHKERRQ(ierr);
-  ierr = PetscStrToArray((const char *)testClassesStr, ',', &numClasses, &testClassesStrArr);CHKERRQ(ierr);
+  PetscCall(PetscInfoDestroy());
+  PetscCall(PetscInfoAllow(PETSC_TRUE));
+  PetscCall(PetscInfoSetFile(filename, "a"));
+  PetscCall(PetscStrallocpy("vec,sys", &testClassesStr));
+  PetscCall(PetscStrToArray((const char *)testClassesStr, ',', &numClasses, &testClassesStrArr));
   invert = PETSC_TRUE;
-  ierr = PetscInfoSetClasses(invert, (PetscInt) numClasses, (const char *const *) testClassesStrArr);CHKERRQ(ierr);
-  ierr = PetscInfoProcessClass(testMatClassname, 1, &testMatClassid);CHKERRQ(ierr);
-  ierr = PetscInfoProcessClass(testVecClassname, 1, &testVecClassid);CHKERRQ(ierr);
-  ierr = PetscInfoProcessClass("sys", 1, &testSysClassid);CHKERRQ(ierr);
+  PetscCall(PetscInfoSetClasses(invert, (PetscInt) numClasses, (const char *const *) testClassesStrArr));
+  PetscCall(PetscInfoProcessClass(testMatClassname, 1, &testMatClassid));
+  PetscCall(PetscInfoProcessClass(testVecClassname, 1, &testVecClassid));
+  PetscCall(PetscInfoProcessClass("sys", 1, &testSysClassid));
 
   /*
      Here only the Mat() call will successfully print.
   */
-  ierr = PetscInfo(A, "Mat info is enabled again through inverted PetscInfoSetClasses\n");CHKERRQ(ierr);
-  ierr = PetscInfo(b, "Vec info is enabled again through PetscInfoSetClasses\n");CHKERRQ(ierr);
-  ierr = PetscInfo(NULL, "Sys info is enabled again through PetscInfoSetClasses\n");CHKERRQ(ierr);
+  PetscCall(PetscInfo(A, "Mat info is enabled again through inverted PetscInfoSetClasses\n"));
+  PetscCall(PetscInfo(b, "Vec info is enabled again through PetscInfoSetClasses\n"));
+  PetscCall(PetscInfo(NULL, "Sys info is enabled again through PetscInfoSetClasses\n"));
 
-  ierr = PetscStrToArrayDestroy(numClasses, testClassesStrArr);CHKERRQ(ierr);
-  ierr = PetscFree(testClassesStr);CHKERRQ(ierr);
-  ierr = PetscFree(filename);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
-  return ierr;
+  PetscCall(PetscStrToArrayDestroy(numClasses, testClassesStrArr));
+  PetscCall(PetscFree(testClassesStr));
+  PetscCall(PetscFree(filename));
+  PetscCall(MatDestroy(&A));
+  PetscCall(VecDestroy(&b));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

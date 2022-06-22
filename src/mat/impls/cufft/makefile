@@ -2,10 +2,7 @@
 #requirespackage 'PETSC_HAVE_CUDA'
 #requiresprecision single
 #requiresscalar    complex
-ALL: lib
 
-CFLAGS    =
-FFLAGS    =
 SOURCECU  = cufft.cu
 SOURCEF   =
 SOURCEH   =

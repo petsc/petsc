@@ -3,23 +3,22 @@
 
 int main(int argc,char **argv)
 {
-   PetscErrorCode ierr;
    Mat            A, B;
    const char     *pfx;
 
-   ierr = PetscInitialize(&argc, &argv, NULL, NULL);if (ierr) return ierr;
-   ierr = MatCreate(PETSC_COMM_WORLD, &A);CHKERRQ(ierr);
-   ierr = MatSetSizes(A, 1, 1, PETSC_DECIDE, PETSC_DECIDE);CHKERRQ(ierr);
-   ierr = MatSetUp(A);CHKERRQ(ierr);
-   ierr = MatSetOptionsPrefix(A, "foo_");CHKERRQ(ierr);
-   ierr = MatGetDiagonalBlock(A, &B);CHKERRQ(ierr);
+   PetscCall(PetscInitialize(&argc, &argv, NULL, NULL));
+   PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
+   PetscCall(MatSetSizes(A, 1, 1, PETSC_DECIDE, PETSC_DECIDE));
+   PetscCall(MatSetUp(A));
+   PetscCall(MatSetOptionsPrefix(A, "foo_"));
+   PetscCall(MatGetDiagonalBlock(A, &B));
    /* Test set options prefix with the string obtained from get options prefix */
-   ierr = PetscObjectGetOptionsPrefix((PetscObject)A,&pfx);CHKERRQ(ierr);
-   ierr = MatSetOptionsPrefix(B, pfx);CHKERRQ(ierr);
-   ierr = MatDestroy(&A);CHKERRQ(ierr);
+   PetscCall(PetscObjectGetOptionsPrefix((PetscObject)A,&pfx));
+   PetscCall(MatSetOptionsPrefix(B, pfx));
+   PetscCall(MatDestroy(&A));
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

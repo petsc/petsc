@@ -1,27 +1,7 @@
-DM Object: 1 MPI processes
+DM Object: Particles 1 MPI process
   type: swarm
-DMSwarmDataBucketView: 
-  L                  = 711 
-  buffer             = 4 
-  allocated          = 715 
-  nfields registered = 5 
-    [  0]     DMSwarm_pid : Mem. usage       = 5.72e-03 (MB) [rank0]
-                            blocksize        = 1 
-                            atomic size      = 8 
-    [  1]    DMSwarm_rank : Mem. usage       = 2.86e-03 (MB) [rank0]
-                            blocksize        = 1 
-                            atomic size      = 4 
-    [  2] DMSwarmPIC_coor : Mem. usage       = 1.14e-02 (MB) [rank0]
-                            blocksize        = 2 
-                            atomic size      = 16 [full block, bs=2]
-                            atomic size/item = 8 
-    [  3]  DMSwarm_cellid : Mem. usage       = 2.86e-03 (MB) [rank0]
-                            blocksize        = 1 
-                            atomic size      = 4 
-    [  4]            itag : Mem. usage       = 2.86e-03 (MB) [rank0]
-                            blocksize        = 1 
-                            atomic size      = 4 
-  Total mem. usage                           = 2.57e-02 (MB) (collective)
+Particles in 2 dimensions:
+  Number of particles per rank: 711
 Step 1 
 Step 2 
 Step 3 

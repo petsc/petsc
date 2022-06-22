@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 import os
 petsc_hash_pkgs=os.path.join(os.getenv('HOME'),'petsc-hash-pkgs')
@@ -10,14 +10,12 @@ if __name__ == '__main__':
   import configure
   configure_options = [
     '--package-prefix-hash='+petsc_hash_pkgs,
-    '--with-make-test-np=4',
+    '--with-make-test-np=15',
     'COPTFLAGS=-g -O',
     'FOPTFLAGS=-g -O',
     'CXXOPTFLAGS=-g -O',
     '--with-cuda=1',
     '--with-precision=single',
-    '--download-openblas', # default ATLAS blas on Ubuntu 14.04 breaks runex76 in src/mat/tests
-    '--download-openblas-make-options=TARGET=GENERIC',
     '--with-clanguage=cxx',
     '--with-single-library=0',
     '--with-visibility=1',

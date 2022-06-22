@@ -7,7 +7,6 @@ class Configure(config.package.Package):
     self.functions         = ['pthread_create']
     self.includes          = ['pthread.h']
     self.liblist           = [['libpthread.a']]
-    self.complex           = 1   # 0 means cannot use complex
     self.lookforbydefault  = 1
     self.pthread_barrier   = 0
     return

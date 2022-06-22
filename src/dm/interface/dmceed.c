@@ -16,12 +16,10 @@
 
   Level: intermediate
 
-.seealso: DMCreate()
+.seealso: `DMCreate()`
 @*/
 PetscErrorCode DMGetCeed(DM dm, Ceed *ceed)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(ceed, 2);
@@ -29,10 +27,10 @@ PetscErrorCode DMGetCeed(DM dm, Ceed *ceed)
     char        ceedresource[PETSC_MAX_PATH_LEN]; /* libCEED resource specifier */
     const char *prefix;
 
-    ierr = PetscStrcpy(ceedresource, "/cpu/self");CHKERRQ(ierr);
-    ierr = PetscObjectGetOptionsPrefix((PetscObject) dm, &prefix);CHKERRQ(ierr);
-    ierr = PetscOptionsGetString(NULL, prefix, "-dm_ceed", ceedresource, sizeof(ceedresource), NULL);CHKERRQ(ierr);
-    ierr = CeedInit(ceedresource, &dm->ceed);CHKERRQ_CEED(ierr);
+    PetscCall(PetscStrcpy(ceedresource, "/cpu/self"));
+    PetscCall(PetscObjectGetOptionsPrefix((PetscObject) dm, &prefix));
+    PetscCall(PetscOptionsGetString(NULL, prefix, "-dm_ceed", ceedresource, sizeof(ceedresource), NULL));
+    PetscCallCEED(CeedInit(ceedresource, &dm->ceed));
   }
   *ceed = dm->ceed;
   PetscFunctionReturn(0);

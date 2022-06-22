@@ -17,15 +17,13 @@
 
   Level: beginner
 
-.seealso: PetscDrawRectangle(), PetscDrawTriangle(), PetscDrawMarker(), PetscDrawPoint(), PetscDrawString(), PetscDrawArrow()
+.seealso: `PetscDrawRectangle()`, `PetscDrawTriangle()`, `PetscDrawMarker()`, `PetscDrawPoint()`, `PetscDrawString()`, `PetscDrawArrow()`
 @*/
 PetscErrorCode  PetscDrawEllipse(PetscDraw draw, PetscReal x, PetscReal y, PetscReal a, PetscReal b, int c)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID,1);
-  PetscCheckFalse(!draw->ops->ellipse,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for drawing ellipses");
-  ierr = (*draw->ops->ellipse)(draw, x, y, a, b, c);CHKERRQ(ierr);
+  PetscCheck(draw->ops->ellipse,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for drawing ellipses");
+  PetscCall((*draw->ops->ellipse)(draw, x, y, a, b, c));
   PetscFunctionReturn(0);
 }

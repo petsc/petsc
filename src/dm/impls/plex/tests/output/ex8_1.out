@@ -1,4 +1,4 @@
-DM Object: triangle 1 MPI processes
+DM Object: triangle 1 MPI process
   type: plex
 triangle in 2 dimensions:
 Supports:
@@ -38,7 +38,7 @@ Label 'celltype':
 [0]: 4 (1)
 [0]: 5 (1)
 [0]: 6 (1)
-DM Object: triangle 1 MPI processes
+DM Object: triangle 1 MPI process
   type: plex
 triangle in 2 dimensions:
 Supports:
@@ -78,7 +78,7 @@ Label 'celltype':
 [0]: 4 (1)
 [0]: 5 (1)
 [0]: 6 (1)
-DM Object: quadrilateral 1 MPI processes
+DM Object: quadrilateral 1 MPI process
   type: plex
 quadrilateral in 2 dimensions:
 Supports:
@@ -127,7 +127,7 @@ Label 'celltype':
 [0]: 6 (1)
 [0]: 7 (1)
 [0]: 8 (1)
-DM Object: quadrilateral 1 MPI processes
+DM Object: quadrilateral 1 MPI process
   type: plex
 quadrilateral in 2 dimensions:
 Supports:
@@ -176,7 +176,7 @@ Label 'celltype':
 [0]: 6 (1)
 [0]: 7 (1)
 [0]: 8 (1)
-DM Object: tetrahedron 1 MPI processes
+DM Object: tetrahedron 1 MPI process
   type: plex
 tetrahedron in 3 dimensions:
 Supports:
@@ -263,7 +263,7 @@ Label 'celltype':
 [0]: 12 (1)
 [0]: 13 (1)
 [0]: 14 (1)
-DM Object: hexahedron 1 MPI processes
+DM Object: hexahedron 1 MPI process
   type: plex
 hexahedron in 3 dimensions:
 Supports:
@@ -418,7 +418,7 @@ Label 'celltype':
 [0]: 24 (1)
 [0]: 25 (1)
 [0]: 26 (1)
-DM Object: tensor_triangular_prism 1 MPI processes
+DM Object: tensor_triangular_prism 1 MPI process
   type: plex
 tensor_triangular_prism in 3 dimensions:
 Supports:

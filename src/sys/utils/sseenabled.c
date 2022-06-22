@@ -8,7 +8,6 @@
 
 PetscErrorCode  PetscSSEHardwareTest(PetscBool  *flag)
 {
-  PetscErrorCode ierr;
   char           vendor[13];
   char           Intel[13]="GenuineIntel";
   char           AMD[13]  ="AuthenticAMD";
@@ -16,11 +15,11 @@ PetscErrorCode  PetscSSEHardwareTest(PetscBool  *flag)
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscStrncpy(vendor,"************",sizeof(vendor));CHKERRQ(ierr);
+  PetscCall(PetscStrncpy(vendor,"************",sizeof(vendor)));
   CPUID_GET_VENDOR(vendor);
-  ierr = PetscStrcmp(vendor,Intel,&flg);CHKERRQ(ierr);
-  if (!flg) {ierr = PetscStrcmp(vendor,AMD,&flg);CHKERRQ(ierr);}
-  if (!flg) {ierr = PetscStrcmp(vendor,Hygon,&flg);CHKERRQ(ierr);
+  PetscCall(PetscStrcmp(vendor,Intel,&flg));
+  if (!flg) PetscCall(PetscStrcmp(vendor,AMD,&flg));
+  if (!flg) {PetscCall(PetscStrcmp(vendor,Hygon,&flg));
     if (flg) {
     /* Intel, AMD, and Hygon use bit 25 of CPUID_FEATURES */
     /* to denote availability of SSE Support */
@@ -124,14 +123,13 @@ static PetscBool petsc_sse_global_is_untested = PETSC_TRUE;
 static PetscBool petsc_sse_enabled_global     = PETSC_FALSE;
 PetscErrorCode  PetscSSEIsEnabled(MPI_Comm comm,PetscBool  *lflag,PetscBool  *gflag)
 {
-  PetscErrorCode ierr;
   PetscBool      disabled_option;
 
   PetscFunctionBegin;
   if (petsc_sse_local_is_untested && petsc_sse_global_is_untested) {
     disabled_option = PETSC_FALSE;
 
-    ierr = PetscOptionsGetBool(NULL,NULL,"-disable_sse",&disabled_option,NULL);CHKERRQ(ierr);
+    PetscCall(PetscOptionsGetBool(NULL,NULL,"-disable_sse",&disabled_option,NULL));
     if (disabled_option) {
       petsc_sse_local_is_untested  = PETSC_FALSE;
       petsc_sse_enabled_local      = PETSC_FALSE;
@@ -140,15 +138,15 @@ PetscErrorCode  PetscSSEIsEnabled(MPI_Comm comm,PetscBool  *lflag,PetscBool  *gf
     }
 
     if (petsc_sse_local_is_untested) {
-      ierr = PetscSSEHardwareTest(&petsc_sse_enabled_local);CHKERRQ(ierr);
+      PetscCall(PetscSSEHardwareTest(&petsc_sse_enabled_local));
       if (petsc_sse_enabled_local) {
-        ierr = PetscSSEOSEnabledTest(&petsc_sse_enabled_local);CHKERRQ(ierr);
+        PetscCall(PetscSSEOSEnabledTest(&petsc_sse_enabled_local));
       }
       petsc_sse_local_is_untested = PETSC_FALSE;
     }
 
     if (gflag && petsc_sse_global_is_untested) {
-      ierr = MPIU_Allreduce(&petsc_sse_enabled_local,&petsc_sse_enabled_global,1,MPIU_BOOL,MPI_LAND,comm);CHKERRMPI(ierr);
+      PetscCall(MPIU_Allreduce(&petsc_sse_enabled_local,&petsc_sse_enabled_global,1,MPIU_BOOL,MPI_LAND,comm));
 
       petsc_sse_global_is_untested = PETSC_FALSE;
     }
@@ -158,4 +156,3 @@ PetscErrorCode  PetscSSEIsEnabled(MPI_Comm comm,PetscBool  *lflag,PetscBool  *gf
   if (gflag) *gflag = petsc_sse_enabled_global;
   PetscFunctionReturn(0);
 }
-

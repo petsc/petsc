@@ -9,7 +9,6 @@
 PetscErrorCode PetscADefLabel(PetscReal val,PetscReal sep,char **p)
 {
   static char    buf[40];
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* Find the string */
@@ -17,11 +16,11 @@ PetscErrorCode PetscADefLabel(PetscReal val,PetscReal sep,char **p)
     buf[0] = '0'; buf[1] = 0;
   } else {
     sprintf(buf,"%0.1e",(double)val);
-    ierr = PetscStripZerosPlus(buf);CHKERRQ(ierr);
-    ierr = PetscStripe0(buf);CHKERRQ(ierr);
-    ierr = PetscStripInitialZero(buf);CHKERRQ(ierr);
-    ierr = PetscStripAllZeros(buf);CHKERRQ(ierr);
-    ierr = PetscStripTrailingZeros(buf);CHKERRQ(ierr);
+    PetscCall(PetscStripZerosPlus(buf));
+    PetscCall(PetscStripe0(buf));
+    PetscCall(PetscStripInitialZero(buf));
+    PetscCall(PetscStripAllZeros(buf));
+    PetscCall(PetscStripTrailingZeros(buf));
   }
   *p = buf;
   PetscFunctionReturn(0);
@@ -30,13 +29,12 @@ PetscErrorCode PetscADefLabel(PetscReal val,PetscReal sep,char **p)
 /* Finds "nice" locations for the ticks */
 PetscErrorCode PetscADefTicks(PetscReal low,PetscReal high,int num,int *ntick,PetscReal *tickloc,int maxtick)
 {
-  PetscErrorCode ierr;
   int            i,power;
   PetscReal      x = 0.0,base=0.0,eps;
 
   PetscFunctionBegin;
-  ierr = PetscAGetBase(low,high,num,&base,&power);CHKERRQ(ierr);
-  ierr = PetscAGetNice(low,base,-1,&x);CHKERRQ(ierr);
+  PetscCall(PetscAGetBase(low,high,num,&base,&power));
+  PetscCall(PetscAGetNice(low,base,-1,&x));
 
   /* Values are of the form j * base */
   /* Find the starting value */
@@ -50,7 +48,7 @@ PetscErrorCode PetscADefTicks(PetscReal low,PetscReal high,int num,int *ntick,Pe
   tickloc[i-1] = PetscMin(tickloc[i-1],high);
 
   if (i < 2 && num < 10) {
-    ierr = PetscADefTicks(low,high,num+1,ntick,tickloc,maxtick);CHKERRQ(ierr);
+    PetscCall(PetscADefTicks(low,high,num+1,ntick,tickloc,maxtick));
   }
   PetscFunctionReturn(0);
 }
@@ -95,15 +93,14 @@ PetscErrorCode PetscCopysign(PetscReal a,PetscReal b,PetscReal *result)
 PetscErrorCode PetscAGetNice(PetscReal in,PetscReal base,int sign,PetscReal *result)
 {
   PetscReal      etmp,s,s2,m;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr    = PetscCopysign (0.5,(double)sign,&s);CHKERRQ(ierr);
+  PetscCall(PetscCopysign (0.5,(double)sign,&s));
   etmp    = in / base + 0.5 + s;
-  ierr    = PetscCopysign (0.5,etmp,&s);CHKERRQ(ierr);
-  ierr    = PetscCopysign (EPS * etmp,(double)sign,&s2);CHKERRQ(ierr);
+  PetscCall(PetscCopysign (0.5,etmp,&s));
+  PetscCall(PetscCopysign (EPS * etmp,(double)sign,&s2));
   etmp    = etmp - 0.5 + s - s2;
-  ierr    = PetscMod(etmp,1.0,&m);CHKERRQ(ierr);
+  PetscCall(PetscMod(etmp,1.0,&m));
   etmp    = base * (etmp -  m);
   *result = etmp;
   PetscFunctionReturn(0);
@@ -113,7 +110,6 @@ PetscErrorCode PetscAGetBase(PetscReal vmin,PetscReal vmax,int num,PetscReal *Ba
 {
   PetscReal        base,ftemp,e10;
   static PetscReal base_try[5] = {10.0,5.0,2.0,1.0,0.5};
-  PetscErrorCode   ierr;
   int              i;
 
   PetscFunctionBegin;
@@ -129,13 +125,13 @@ PetscErrorCode PetscAGetBase(PetscReal vmin,PetscReal vmax,int num,PetscReal *Ba
   ftemp = PetscLog10Real((1.0 + EPS) * base);
   if (ftemp < 0.0) ftemp -= 1.0;
   *power = (int)ftemp;
-  ierr   = PetscExp10((double)-*power,&e10);CHKERRQ(ierr);
+  PetscCall(PetscExp10((double)-*power,&e10));
   base   = base * e10;
   if (base < 1.0) base = 1.0;
   /* now reduce it to one of 1, 2, or 5 */
   for (i=1; i<5; i++) {
     if (base >= base_try[i]) {
-      ierr = PetscExp10((double)*power,&e10);CHKERRQ(ierr);
+      PetscCall(PetscExp10((double)*power,&e10));
       base = base_try[i-1] * e10;
       if (i == 1) *power = *power + 1;
       break;

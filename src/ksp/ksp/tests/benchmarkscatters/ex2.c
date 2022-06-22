@@ -10,7 +10,6 @@ static char help[] = "Tests shared memory subcommunicators\n\n";
 
 int main(int argc,char **args)
 {
-  PetscErrorCode  ierr;
   PetscCommShared scomm;
   MPI_Comm        comm;
   PetscMPIInt     lrank,rank,size,i;
@@ -21,44 +20,44 @@ int main(int argc,char **args)
   PetscInt        indices[] = {0,1,2};
 
   PetscInitialize(&argc,&args,(char*)0,help);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  PetscCheckFalse(size != 3,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This example only works for 3 processes");
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCheck(size == 3,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This example only works for 3 processes");
 
-  ierr = PetscCommDuplicate(PETSC_COMM_WORLD,&comm,NULL);CHKERRQ(ierr);
-  ierr = PetscCommSharedGet(comm,&scomm);CHKERRQ(ierr);
+  PetscCall(PetscCommDuplicate(PETSC_COMM_WORLD,&comm,NULL));
+  PetscCall(PetscCommSharedGet(comm,&scomm));
 
   for (i=0; i<size; i++) {
-    ierr = PetscCommSharedGlobalToLocal(scomm,i,&lrank);CHKERRQ(ierr);
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] Global rank %d shared memory comm rank %d\n",rank,i,lrank);CHKERRQ(ierr);
+    PetscCall(PetscCommSharedGlobalToLocal(scomm,i,&lrank));
+    PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] Global rank %d shared memory comm rank %d\n",rank,i,lrank));
   }
-  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,stdout);CHKERRQ(ierr);
-  ierr = PetscCommDestroy(&comm);CHKERRQ(ierr);
+  PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD,stdout));
+  PetscCall(PetscCommDestroy(&comm));
 
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,2,PETSC_DETERMINE,&x);CHKERRQ(ierr);
-  ierr = VecSetBlockSize(x,2);CHKERRQ(ierr);
-  ierr = VecSetValue(x,2*rank,(PetscScalar)(2*rank+10),INSERT_VALUES);CHKERRQ(ierr);
-  ierr = VecSetValue(x,2*rank+1,(PetscScalar)(2*rank+1+10),INSERT_VALUES);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscCall(VecCreateMPI(PETSC_COMM_WORLD,2,PETSC_DETERMINE,&x));
+  PetscCall(VecSetBlockSize(x,2));
+  PetscCall(VecSetValue(x,2*rank,(PetscScalar)(2*rank+10),INSERT_VALUES));
+  PetscCall(VecSetValue(x,2*rank+1,(PetscScalar)(2*rank+1+10),INSERT_VALUES));
+  PetscCall(VecAssemblyBegin(x));
+  PetscCall(VecAssemblyEnd(x));
+  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = VecCreateSeq(PETSC_COMM_SELF,6,&y);CHKERRQ(ierr);
-  ierr = VecSetBlockSize(y,2);CHKERRQ(ierr);
-  ierr = ISCreateStride(PETSC_COMM_SELF,6,0,1,&isstride);CHKERRQ(ierr);
-  ierr = ISCreateBlock(PETSC_COMM_SELF,2,3,indices,PETSC_COPY_VALUES,&isblock);CHKERRQ(ierr);
-  ierr = VecScatterCreate(x,isblock,y,isstride,&vscat);CHKERRQ(ierr);
-  ierr = VecScatterBegin(vscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(vscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&vscat);CHKERRQ(ierr);
-  ierr = PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&singleton);CHKERRQ(ierr);
-  ierr = VecView(y,singleton);CHKERRQ(ierr);
-  ierr = PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&singleton);CHKERRQ(ierr);
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF,6,&y));
+  PetscCall(VecSetBlockSize(y,2));
+  PetscCall(ISCreateStride(PETSC_COMM_SELF,6,0,1,&isstride));
+  PetscCall(ISCreateBlock(PETSC_COMM_SELF,2,3,indices,PETSC_COPY_VALUES,&isblock));
+  PetscCall(VecScatterCreate(x,isblock,y,isstride,&vscat));
+  PetscCall(VecScatterBegin(vscat,x,y,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(vscat,x,y,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterDestroy(&vscat));
+  PetscCall(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&singleton));
+  PetscCall(VecView(y,singleton));
+  PetscCall(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&singleton));
 
-  ierr = ISDestroy(&isstride);CHKERRQ(ierr);
-  ierr = ISDestroy(&isblock);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&y);CHKERRQ(ierr);
+  PetscCall(ISDestroy(&isstride));
+  PetscCall(ISDestroy(&isblock));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&y));
   PetscFinalize();
   return 0;
 }

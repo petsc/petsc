@@ -1,15 +1,16 @@
 Test MatGetInfo
-Process   0: 36 36 0 2 0
-Process   1: 36 36 0 1 0
-Process   2: 36 36 0 1 0
-Process   3: 36 36 0 1 0
-Process   4: 36 36 0 1 0
-GlobalMax  : 36 36 0 2 0
-GlobalSum  : 180 180 0 1 0
+Process   0: 36 72 36 1 0
+Process   1: 36 72 36 1 0
+Process   2: 36 72 36 1 0
+Process   3: 36 72 36 1 0
+Process   4: 36 72 36 1 0
+GlobalMax  : 36 72 36 1 0
+GlobalSum  : 180 360 180 1 0
+Test MatIsSymmetric: 0
 Test MatView
 Mat Object: 5 MPI processes
   type: is
-  Mat Object: (is_) 1 MPI processes
+  Mat Object: (is_) 1 MPI process
     type: seqaij
 row 0: (0, 2.)  (1, -1.)  (16, -1.) 
 row 1: (0, -2.)  (1, 4.)  (2, -2.) 
@@ -23,7 +24,7 @@ row 8: (7, -9.)  (8, 18.)  (9, -9.)
 row 9: (8, -10.)  (9, 20.)  (10, -10.) 
 row 10: (9, -11.)  (10, 22.)  (11, -11.) 
 row 11: (10, -12.)  (11, 24.)  (12, -12.) 
-  Mat Object: (is_) 1 MPI processes
+  Mat Object: (is_) 1 MPI process
     type: seqaij
 row 0: (0, 2.)  (1, -1.)  (16, -1.) 
 row 1: (0, -2.)  (1, 4.)  (2, -2.) 
@@ -37,7 +38,7 @@ row 8: (7, -9.)  (8, 18.)  (9, -9.)
 row 9: (8, -10.)  (9, 20.)  (10, -10.) 
 row 10: (9, -11.)  (10, 22.)  (11, -11.) 
 row 11: (10, -12.)  (11, 24.)  (12, -12.) 
-  Mat Object: (is_) 1 MPI processes
+  Mat Object: (is_) 1 MPI process
     type: seqaij
 row 0: (0, 2.)  (1, -1.)  (16, -1.) 
 row 1: (0, -2.)  (1, 4.)  (2, -2.) 
@@ -51,7 +52,7 @@ row 8: (7, -9.)  (8, 18.)  (9, -9.)
 row 9: (8, -10.)  (9, 20.)  (10, -10.) 
 row 10: (9, -11.)  (10, 22.)  (11, -11.) 
 row 11: (10, -12.)  (11, 24.)  (12, -12.) 
-  Mat Object: (is_) 1 MPI processes
+  Mat Object: (is_) 1 MPI process
     type: seqaij
 row 0: (0, 2.)  (1, -1.)  (16, -1.) 
 row 1: (0, -2.)  (1, 4.)  (2, -2.) 
@@ -65,7 +66,7 @@ row 8: (7, -9.)  (8, 18.)  (9, -9.)
 row 9: (8, -10.)  (9, 20.)  (10, -10.) 
 row 10: (9, -11.)  (10, 22.)  (11, -11.) 
 row 11: (10, -12.)  (11, 24.)  (12, -12.) 
-  Mat Object: (is_) 1 MPI processes
+  Mat Object: (is_) 1 MPI process
     type: seqaij
 row 0: (0, 2.)  (1, -1.)  (16, -1.) 
 row 1: (0, -2.)  (1, 4.)  (2, -2.) 
@@ -79,6 +80,20 @@ row 8: (7, -9.)  (8, 18.)  (9, -9.)
 row 9: (8, -10.)  (9, 20.)  (10, -10.) 
 row 10: (9, -11.)  (10, 22.)  (11, -11.) 
 row 11: (10, -12.)  (11, 24.)  (12, -12.) 
+Mat Object: 5 MPI processes
+  type: mpiaij
+row 0: (10, -60.)  (11, 120.)  (12, -60.) 
+row 1: (9, -55.)  (10, 110.)  (11, -55.) 
+row 2: (8, -50.)  (9, 100.)  (10, -50.) 
+row 3: (7, -45.)  (8, 90.)  (9, -45.) 
+row 4: (6, -40.)  (7, 80.)  (8, -40.) 
+row 5: (5, -35.)  (6, 70.)  (7, -35.) 
+row 6: (4, -30.)  (5, 60.)  (6, -30.) 
+row 7: (3, -25.)  (4, 50.)  (5, -25.) 
+row 8: (2, -20.)  (3, 40.)  (4, -20.) 
+row 9: (1, -15.)  (2, 30.)  (3, -15.) 
+row 10: (0, -10.)  (1, 20.)  (2, -10.) 
+row 11: (0, 10.)  (1, -5.)  (16, -5.) 
 Test CheckMat
 Test MatDuplicate and MatAXPY
 Test MatConvert_IS_XAIJ
@@ -87,6 +102,7 @@ Test MatDiagonalScale
 Test MatGetLocalSubMatrix
 Test MatConvert_Nest_IS
 Test MatCreateSubMatrix
+Test MatCreateSubMatrices
 IS Object: 5 MPI processes
   type: stride
 [0] Number of indices in (stride) set 5
@@ -108,3 +124,4 @@ Test MatMissingDiagonal
 [4] [10,12) Missing 1, row 10 (diag zero)
 Test MatTranspose
 Test MatISFixLocalEmpty
+Test MatGetDiagonalBlock

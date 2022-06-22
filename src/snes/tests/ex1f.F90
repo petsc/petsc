@@ -7,10 +7,6 @@
 !    -mx <xg>, where <xg> = number of grid points in the x-direction
 !    -my <yg>, where <yg> = number of grid points in the y-direction
 !
-!!/*T
-!  Concepts: SNES^sequential Bratu example
-!  Processors: 1
-!T*/
 
 !
 !  --------------------------------------------------------------------------
@@ -43,11 +39,11 @@
       PetscInt       ctx
       PetscScalar    mone
 
-      call VecDuplicate(x,tmp,ierr)
+      PetscCallA(VecDuplicate(x,tmp,ierr))
       mone = -1.0
-      call VecWAXPY(tmp,mone,x,w,ierr)
-      call VecNorm(tmp,NORM_2,norm,ierr)
-      call VecDestroy(tmp,ierr)
+      PetscCallA(VecWAXPY(tmp,mone,x,w,ierr))
+      PetscCallA(VecNorm(tmp,NORM_2,norm,ierr))
+      PetscCallA(VecDestroy(tmp,ierr))
       print*, 'Norm of search step ',norm
       changed_y = PETSC_FALSE
       changed_w = PETSC_FALSE
@@ -123,13 +119,9 @@
 !  Initialize program
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      if (ierr .ne. 0) then
-        print*,'Unable to initialize PETSc'
-        stop
-      endif
-      call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
-      call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
+      PetscCallA(PetscInitialize(ierr))
+      PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD,size,ierr))
+      PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr))
 
       if (size .ne. 1) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_WRONG_MPI_SIZE,'This is a uniprocessor example only'); endif
 
@@ -140,33 +132,33 @@
       lambda     = 6.0
       mx         = 4
       my         = 4
-      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-mx',mx,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-my',my,flg,ierr)
-      call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-par',lambda,flg,ierr)
+      PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-mx',mx,flg,ierr))
+      PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-my',my,flg,ierr))
+      PetscCallA(PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-par',lambda,flg,ierr))
       if (lambda .ge. lambda_max .or. lambda .le. lambda_min) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_USER,'Lambda out of range '); endif
       N  = mx*my
       pc = PETSC_FALSE
-      call PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-pc',pc,PETSC_NULL_BOOL,ierr);
+      PetscCallA(PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-pc',pc,PETSC_NULL_BOOL,ierr))
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create nonlinear solver context
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      call SNESCreate(PETSC_COMM_WORLD,snes,ierr)
+      PetscCallA(SNESCreate(PETSC_COMM_WORLD,snes,ierr))
 
       if (pc .eqv. PETSC_TRUE) then
-        call SNESSetType(snes,SNESNEWTONTR,ierr)
-        call SNESNewtonTRSetPostCheck(snes, postcheck,snes,ierr)
+        PetscCallA(SNESSetType(snes,SNESNEWTONTR,ierr))
+        PetscCallA(SNESNewtonTRSetPostCheck(snes, postcheck,snes,ierr))
       endif
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create vector data structures; set function evaluation routine
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      call VecCreate(PETSC_COMM_WORLD,x,ierr)
-      call VecSetSizes(x,PETSC_DECIDE,N,ierr)
-      call VecSetFromOptions(x,ierr)
-      call VecDuplicate(x,r,ierr)
+      PetscCallA(VecCreate(PETSC_COMM_WORLD,x,ierr))
+      PetscCallA(VecSetSizes(x,PETSC_DECIDE,N,ierr))
+      PetscCallA(VecSetFromOptions(x,ierr))
+      PetscCallA(VecDuplicate(x,r,ierr))
 
 !  Set function evaluation routine and vector.  Whenever the nonlinear
 !  solver needs to evaluate the nonlinear function, it will call this
@@ -175,7 +167,7 @@
 !     context that provides application-specific data for the
 !     function evaluation routine.
 
-      call SNESSetFunction(snes,r,FormFunction,fdcoloring,ierr)
+      PetscCallA(SNESSetFunction(snes,r,FormFunction,fdcoloring,ierr))
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create matrix data structure; set Jacobian evaluation routine
@@ -185,9 +177,9 @@
 !  for the Jacobian.  See the users manual for a discussion of better
 !  techniques for preallocating matrix memory.
 
-      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-snes_mf',matrix_free,ierr)
+      PetscCallA(PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-snes_mf',matrix_free,ierr))
       if (.not. matrix_free) then
-        call MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,i5,PETSC_NULL_INTEGER,J,ierr)
+        PetscCallA(MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,i5,PETSC_NULL_INTEGER,J,ierr))
       endif
 
 !
@@ -195,7 +187,7 @@
 !    efficiently using a coloring of the columns of the matrix.
 !
       fd_coloring = .false.
-      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-snes_fd_coloring',fd_coloring,ierr)
+      PetscCallA(PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-snes_fd_coloring',fd_coloring,ierr))
       if (fd_coloring) then
 
 !
@@ -203,30 +195,30 @@
 !      because clearly if we had a routine to compute the Jacobian we won't need
 !      to use finite differences.
 !
-        call FormJacobian(snes,x,J,J,0,ierr)
+        PetscCallA(FormJacobian(snes,x,J,J,0,ierr))
 !
 !       Color the matrix, i.e. determine groups of columns that share no common
 !      rows. These columns in the Jacobian can all be computed simultaneously.
 !
-        call MatColoringCreate(J,mc,ierr)
-        call MatColoringSetType(mc,MATCOLORINGNATURAL,ierr)
-        call MatColoringSetFromOptions(mc,ierr)
-        call MatColoringApply(mc,iscoloring,ierr)
-        call MatColoringDestroy(mc,ierr)
+        PetscCallA(MatColoringCreate(J,mc,ierr))
+        PetscCallA(MatColoringSetType(mc,MATCOLORINGNATURAL,ierr))
+        PetscCallA(MatColoringSetFromOptions(mc,ierr))
+        PetscCallA(MatColoringApply(mc,iscoloring,ierr))
+        PetscCallA(MatColoringDestroy(mc,ierr))
 !
 !       Create the data structure that SNESComputeJacobianDefaultColor() uses
 !       to compute the actual Jacobians via finite differences.
 !
-        call MatFDColoringCreate(J,iscoloring,fdcoloring,ierr)
-        call MatFDColoringSetFunction(fdcoloring,FormFunction,fdcoloring,ierr)
-        call MatFDColoringSetFromOptions(fdcoloring,ierr)
-        call MatFDColoringSetUp(J,iscoloring,fdcoloring,ierr)
+        PetscCallA(MatFDColoringCreate(J,iscoloring,fdcoloring,ierr))
+        PetscCallA(MatFDColoringSetFunction(fdcoloring,FormFunction,fdcoloring,ierr))
+        PetscCallA(MatFDColoringSetFromOptions(fdcoloring,ierr))
+        PetscCallA(MatFDColoringSetUp(J,iscoloring,fdcoloring,ierr))
 !
 !        Tell SNES to use the routine SNESComputeJacobianDefaultColor()
 !      to compute Jacobians.
 !
-        call SNESSetJacobian(snes,J,J,SNESComputeJacobianDefaultColor,fdcoloring,ierr)
-        call ISColoringDestroy(iscoloring,ierr)
+        PetscCallA(SNESSetJacobian(snes,J,J,SNESComputeJacobianDefaultColor,fdcoloring,ierr))
+        PetscCallA(ISColoringDestroy(iscoloring,ierr))
 
       else if (.not. matrix_free) then
 
@@ -244,7 +236,7 @@
 !                          but use matrix-free approx for Jacobian-vector
 !                          products within Newton-Krylov method
 !
-        call SNESSetJacobian(snes,J,J,FormJacobian,0,ierr)
+        PetscCallA(SNESSetJacobian(snes,J,J,FormJacobian,0,ierr))
       endif
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -253,7 +245,7 @@
 
 !  Set runtime options (e.g., -snes_monitor -snes_rtol <rtol> -ksp_type <type>)
 
-      call SNESSetFromOptions(snes,ierr)
+      PetscCallA(SNESSetFromOptions(snes,ierr))
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Evaluate initial guess; then solve nonlinear system.
@@ -264,9 +256,9 @@
 !  to employ an initial guess of zero, the user should explicitly set
 !  this vector to zero by calling VecSet().
 
-      call FormInitialGuess(x,ierr)
-      call SNESSolve(snes,PETSC_NULL_VEC,x,ierr)
-      call SNESGetIterationNumber(snes,its,ierr);
+      PetscCallA(FormInitialGuess(x,ierr))
+      PetscCallA(SNESSolve(snes,PETSC_NULL_VEC,x,ierr))
+      PetscCallA(SNESGetIterationNumber(snes,its,ierr))
       if (rank .eq. 0) then
          write(6,100) its
       endif
@@ -274,26 +266,26 @@
 
 !  PetscDraw contour plot of solution
 
-      call PetscDrawCreate(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,'Solution',300,0,300,300,draw,ierr)
-      call PetscDrawSetFromOptions(draw,ierr)
+      PetscCallA(PetscDrawCreate(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,'Solution',300,0,300,300,draw,ierr))
+      PetscCallA(PetscDrawSetFromOptions(draw,ierr))
 
-      call VecGetArrayRead(x,lx_v,lx_i,ierr)
-      call PetscDrawTensorContour(draw,mx,my,PETSC_NULL_REAL,PETSC_NULL_REAL,lx_v(lx_i+1),ierr)
-      call VecRestoreArrayRead(x,lx_v,lx_i,ierr)
+      PetscCallA(VecGetArrayRead(x,lx_v,lx_i,ierr))
+      PetscCallA(PetscDrawTensorContour(draw,mx,my,PETSC_NULL_REAL,PETSC_NULL_REAL,lx_v(lx_i+1),ierr))
+      PetscCallA(VecRestoreArrayRead(x,lx_v,lx_i,ierr))
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Free work space.  All PETSc objects should be destroyed when they
 !  are no longer needed.
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      if (.not. matrix_free) call MatDestroy(J,ierr)
-      if (fd_coloring) call MatFDColoringDestroy(fdcoloring,ierr)
+      if (.not. matrix_free) PetscCallA(MatDestroy(J,ierr))
+      if (fd_coloring) PetscCallA(MatFDColoringDestroy(fdcoloring,ierr))
 
-      call VecDestroy(x,ierr)
-      call VecDestroy(r,ierr)
-      call SNESDestroy(snes,ierr)
-      call PetscDrawDestroy(draw,ierr)
-      call PetscFinalize(ierr)
+      PetscCallA(VecDestroy(x,ierr))
+      PetscCallA(VecDestroy(r,ierr))
+      PetscCallA(SNESDestroy(snes,ierr))
+      PetscCallA(PetscDrawDestroy(draw,ierr))
+      PetscCallA(PetscFinalize(ierr))
       end
 
 ! ---------------------------------------------------------------------
@@ -337,15 +329,15 @@
 !    - Note that the Fortran interface to VecGetArray() differs from the
 !      C version.  See the users manual for details.
 
-      call VecGetArray(X,lx_v,lx_i,ierr)
+      PetscCallA(VecGetArray(X,lx_v,lx_i,ierr))
 
 !  Compute initial guess
 
-      call ApplicationInitialGuess(lx_v(lx_i),ierr)
+      PetscCallA(ApplicationInitialGuess(lx_v(lx_i),ierr))
 
 !  Restore vector
 
-      call VecRestoreArray(X,lx_v,lx_i,ierr)
+      PetscCallA(VecRestoreArray(X,lx_v,lx_i,ierr))
 
       return
       end
@@ -456,29 +448,29 @@
 !    - Note that the Fortran interface to VecGetArray() differs from the
 !      C version.  See the Fortran chapter of the users manual for details.
 
-      call VecGetArrayRead(X,lx_v,lx_i,ierr)
-      call VecGetArray(F,lf_v,lf_i,ierr)
+      PetscCallA(VecGetArrayRead(X,lx_v,lx_i,ierr))
+      PetscCallA(VecGetArray(F,lf_v,lf_i,ierr))
 
 !  Compute function
 
-      call ApplicationFunction(lx_v(lx_i),lf_v(lf_i),ierr)
+      PetscCallA(ApplicationFunction(lx_v(lx_i),lf_v(lf_i),ierr))
 
 !  Restore vectors
 
-      call VecRestoreArrayRead(X,lx_v,lx_i,ierr)
-      call VecRestoreArray(F,lf_v,lf_i,ierr)
+      PetscCallA(VecRestoreArrayRead(X,lx_v,lx_i,ierr))
+      PetscCallA(VecRestoreArray(F,lf_v,lf_i,ierr))
 
-      call PetscLogFlops(11.0d0*mx*my,ierr)
+      PetscCallA(PetscLogFlops(11.0d0*mx*my,ierr))
 !
 !     fdcoloring is in the common block and used here ONLY to test the
 !     calls to MatFDColoringGetPerturbedColumnsF90() and  MatFDColoringRestorePerturbedColumnsF90()
 !
       if (fd_coloring) then
-         call MatFDColoringGetPerturbedColumnsF90(fdcoloring,indices,ierr)
+         PetscCallA(MatFDColoringGetPerturbedColumnsF90(fdcoloring,indices,ierr))
          print*,'Indices from GetPerturbedColumnsF90'
          write(*,1000) indices
  1000    format(50i4)
-         call MatFDColoringRestorePerturbedColumnsF90(fdcoloring,indices,ierr)
+         PetscCallA(MatFDColoringRestorePerturbedColumnsF90(fdcoloring,indices,ierr))
       endif
       return
       end
@@ -591,20 +583,20 @@
 
 !  Get a pointer to vector data
 
-      call VecGetArrayRead(X,lx_v,lx_i,ierr)
+      PetscCallA(VecGetArrayRead(X,lx_v,lx_i,ierr))
 
 !  Compute Jacobian entries
 
-      call ApplicationJacobian(lx_v(lx_i),jac,jac_prec,ierr)
+      PetscCallA(ApplicationJacobian(lx_v(lx_i),jac,jac_prec,ierr))
 
 !  Restore vector
 
-      call VecRestoreArrayRead(X,lx_v,lx_i,ierr)
+      PetscCallA(VecRestoreArrayRead(X,lx_v,lx_i,ierr))
 
 !  Assemble matrix
 
-      call MatAssemblyBegin(jac_prec,MAT_FINAL_ASSEMBLY,ierr)
-      call MatAssemblyEnd(jac_prec,MAT_FINAL_ASSEMBLY,ierr)
+      PetscCallA(MatAssemblyBegin(jac_prec,MAT_FINAL_ASSEMBLY,ierr))
+      PetscCallA(MatAssemblyEnd(jac_prec,MAT_FINAL_ASSEMBLY,ierr))
 
       return
       end
@@ -668,7 +660,7 @@
             row(1) = row(1) + 1
 !           boundary points
             if (i .eq. 1 .or. j .eq. 1 .or. i .eq. mx .or. j .eq. my) then
-               call MatSetValues(jac_prec,i1,row,i1,row,one,INSERT_VALUES,ierr)
+               PetscCallA(MatSetValues(jac_prec,i1,row,i1,row,one,INSERT_VALUES,ierr))
 !           interior grid points
             else
                v(1) = -hxdhy
@@ -681,7 +673,7 @@
                col(3) = row(1)
                col(4) = row(1) + 1
                col(5) = row(1) + mx
-               call MatSetValues(jac_prec,i1,row,i5,col,v,INSERT_VALUES,ierr)
+               PetscCallA(MatSetValues(jac_prec,i1,row,i5,col,v,INSERT_VALUES,ierr))
             endif
  10      continue
  20   continue

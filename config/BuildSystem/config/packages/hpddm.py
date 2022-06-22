@@ -3,9 +3,9 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self,framework):
     config.package.Package.__init__(self,framework)
-    self.gitcommit              = '9b1020a1fabb6c989c5f9b16edcc03bb77259521' # main feb-14-2022
+    self.gitcommit              = 'fe691753f275b6f6a27dc73393e3de17c350e4f2' # main may-27-2022
     self.download               = ['git://https://github.com/hpddm/hpddm','https://github.com/hpddm/hpddm/archive/'+self.gitcommit+'.tar.gz']
-    self.minversion             = '2.2.0'
+    self.minversion             = '2.2.1'
     self.versionname            = 'HPDDM_VERSION'
     self.versioninclude         = 'HPDDM_define.hpp'
     self.buildLanguages         = ['Cxx']
@@ -97,11 +97,10 @@ class Configure(config.package.Package):
           self.addMakeRule('hpddm-install','')
           return self.installDir
       else:
-        self.logPrintBox('***** WARNING: Skipping PCHPDDM installation,\n\
-remove --with-shared-libraries=0 *****')
+        self.logPrintWarning('Skipping PCHPDDM installation, remove --with-shared-libraries=0')
     else:
-      self.logPrintBox('***** WARNING: Compiling HPDDM without SLEPc,\n\
-PCHPDDM won\'t be available, unless reconfiguring with --download-slepc *****')
+      self.logPrintWarning('Compiling HPDDM without SLEPc, \
+PCHPDDM won\'t be available, unless reconfiguring with --download-slepc')
     self.addMakeRule('hpddm-build','')
     self.addMakeRule('hpddm-install','')
     return self.installDir

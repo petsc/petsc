@@ -100,7 +100,7 @@ Failed to load initial guess, so use a vector of all zeros.
  98 KSP Residual norm 0.00968839 
  99 KSP Residual norm 0.00948532 
 100 KSP Residual norm 0.00920493 
-KSP Object: 1 MPI processes
+KSP Object: 1 MPI process
   type: gmres
     restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
     happy breakdown tolerance 1e-30
@@ -108,10 +108,10 @@ KSP Object: 1 MPI processes
   tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
   left preconditioning
   using PRECONDITIONED norm type for convergence test
-PC Object: 1 MPI processes
+PC Object: 1 MPI process
   type: none
   linear system matrix = precond matrix:
-  Mat Object: 1 MPI processes
+  Mat Object: 1 MPI process
     type: normalh
     rows=181, cols=181
 KSP type: gmres

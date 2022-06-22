@@ -86,7 +86,7 @@ PetscErrorCode XXT_factor(xxt_ADT xxt_handle,     /* prev. allocated xxt  handle
   check_handle(xxt_handle);
 
   /* only 2^k for now and all nodes participating */
-  PetscCheckFalse((1<<(xxt_handle->level=PCTFS_i_log2_num_nodes))!=PCTFS_num_nodes,PETSC_COMM_SELF,PETSC_ERR_PLIB,"only 2^k for now and MPI_COMM_WORLD!!! %D != %D",1<<PCTFS_i_log2_num_nodes,PCTFS_num_nodes);
+  PetscCheck((1<<(xxt_handle->level=PCTFS_i_log2_num_nodes))==PCTFS_num_nodes,PETSC_COMM_SELF,PETSC_ERR_PLIB,"only 2^k for now and MPI_COMM_WORLD!!! %d != %d",1<<PCTFS_i_log2_num_nodes,PCTFS_num_nodes);
 
   /* space for X info */
   xxt_handle->info = (xxt_info*)malloc(sizeof(xxt_info));
@@ -153,45 +153,44 @@ PetscErrorCode XXT_stats(xxt_ADT xxt_handle)
   PetscInt       fop[] = {NON_UNIFORM,GL_MIN,GL_MAX,GL_ADD};
   PetscInt       vals[9],  work[9];
   PetscScalar    fvals[3], fwork[3];
-  PetscErrorCode ierr;
 
-  PCTFS_comm_init();
-  check_handle(xxt_handle);
+  PetscFunctionBegin;
+  PetscCall(PCTFS_comm_init());
+  PetscCall(check_handle(xxt_handle));
 
   /* if factorization not done there are no stats */
   if (!xxt_handle->info||!xxt_handle->mvi) {
-    if (!PCTFS_my_id) { ierr = PetscPrintf(PETSC_COMM_WORLD,"XXT_stats() :: no stats available!\n");CHKERRQ(ierr); }
-    return 1;
+    if (!PCTFS_my_id) PetscCall(PetscPrintf(PETSC_COMM_WORLD,"XXT_stats() :: no stats available!\n"));
+    PetscFunctionReturn(1);
   }
 
   vals[0]=vals[1]=vals[2]=xxt_handle->info->nnz;
   vals[3]=vals[4]=vals[5]=xxt_handle->mvi->n;
   vals[6]=vals[7]=vals[8]=xxt_handle->info->msg_buf_sz;
-  PCTFS_giop(vals,work,sizeof(op)/sizeof(op[0])-1,op);
+  PCTFS_giop(vals,work,PETSC_STATIC_ARRAY_LENGTH(op)-1,op);
 
   fvals[0]=fvals[1]=fvals[2] =xxt_handle->info->tot_solve_time/xxt_handle->info->nsolves++;
-  PCTFS_grop(fvals,fwork,sizeof(fop)/sizeof(fop[0])-1,fop);
+  PCTFS_grop(fvals,fwork,PETSC_STATIC_ARRAY_LENGTH(fop)-1,fop);
 
   if (!PCTFS_my_id) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: min   xxt_nnz=%D\n",PCTFS_my_id,vals[0]);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: max   xxt_nnz=%D\n",PCTFS_my_id,vals[1]);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: avg   xxt_nnz=%g\n",PCTFS_my_id,1.0*vals[2]/PCTFS_num_nodes);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: tot   xxt_nnz=%D\n",PCTFS_my_id,vals[2]);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: xxt   C(2d)  =%g\n",PCTFS_my_id,vals[2]/(PetscPowReal(1.0*vals[5],1.5)));CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: xxt   C(3d)  =%g\n",PCTFS_my_id,vals[2]/(PetscPowReal(1.0*vals[5],1.6667)));CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: min   xxt_n  =%D\n",PCTFS_my_id,vals[3]);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: max   xxt_n  =%D\n",PCTFS_my_id,vals[4]);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: avg   xxt_n  =%g\n",PCTFS_my_id,1.0*vals[5]/PCTFS_num_nodes);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: tot   xxt_n  =%D\n",PCTFS_my_id,vals[5]);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: min   xxt_buf=%D\n",PCTFS_my_id,vals[6]);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: max   xxt_buf=%D\n",PCTFS_my_id,vals[7]);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: avg   xxt_buf=%g\n",PCTFS_my_id,1.0*vals[8]/PCTFS_num_nodes);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: min   xxt_slv=%g\n",PCTFS_my_id,fvals[0]);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: max   xxt_slv=%g\n",PCTFS_my_id,fvals[1]);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: avg   xxt_slv=%g\n",PCTFS_my_id,fvals[2]/PCTFS_num_nodes);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%d :: min   xxt_nnz=%" PetscInt_FMT "\n",PCTFS_my_id,vals[0]));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%d :: max   xxt_nnz=%" PetscInt_FMT "\n",PCTFS_my_id,vals[1]));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%d :: avg   xxt_nnz=%g\n",PCTFS_my_id,(double)(1.0*vals[2]/PCTFS_num_nodes)));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%d :: tot   xxt_nnz=%" PetscInt_FMT "\n",PCTFS_my_id,vals[2]));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%d :: xxt   C(2d)  =%g\n",PCTFS_my_id,(double)(vals[2]/(PetscPowReal(1.0*vals[5],1.5)))));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%d :: xxt   C(3d)  =%g\n",PCTFS_my_id,(double)(vals[2]/(PetscPowReal(1.0*vals[5],1.6667)))));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%d :: min   xxt_n  =%" PetscInt_FMT "\n",PCTFS_my_id,vals[3]));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%d :: max   xxt_n  =%" PetscInt_FMT "\n",PCTFS_my_id,vals[4]));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%d :: avg   xxt_n  =%g\n",PCTFS_my_id,(double)(1.0*vals[5]/PCTFS_num_nodes)));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%d :: tot   xxt_n  =%" PetscInt_FMT "\n",PCTFS_my_id,vals[5]));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%d :: min   xxt_buf=%" PetscInt_FMT "\n",PCTFS_my_id,vals[6]));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%d :: max   xxt_buf=%" PetscInt_FMT "\n",PCTFS_my_id,vals[7]));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%d :: avg   xxt_buf=%g\n",PCTFS_my_id,(double)(1.0*vals[8]/PCTFS_num_nodes)));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%d :: min   xxt_slv=%g\n",PCTFS_my_id,(double)PetscRealPart(fvals[0])));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%d :: max   xxt_slv=%g\n",PCTFS_my_id,(double)PetscRealPart(fvals[1])));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%d :: avg   xxt_slv=%g\n",PCTFS_my_id,(double)PetscRealPart(fvals[2]/PCTFS_num_nodes)));
   }
-
-  return(0);
+  PetscFunctionReturn(0);
 }
 
 /*************************************xxt.c************************************
@@ -240,7 +239,6 @@ static PetscErrorCode xxt_generate(xxt_ADT xxt_handle)
   PetscInt       xxt_zero_nnz_0=0;
   PetscBLASInt   i1            = 1,dlen;
   PetscScalar    dm1           = -1.0;
-  PetscErrorCode ierr;
 
   n               = xxt_handle->mvi->n;
   nsep            = xxt_handle->info->nsep;
@@ -256,7 +254,7 @@ static PetscErrorCode xxt_generate(xxt_ADT xxt_handle)
 
   m = j-xxt_handle->ns;
   if (m!=j) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"xxt_generate() :: null space exists %D %D %D\n",m,j,xxt_handle->ns);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"xxt_generate() :: null space exists %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\n",m,j,xxt_handle->ns));
   }
 
   /* get and initialize storage for x local         */
@@ -300,7 +298,7 @@ static PetscErrorCode xxt_generate(xxt_ADT xxt_handle)
   for (dim=i=j=0; i<m; i++) {
     /* time to move to the next level? */
     while (i==segs[dim]) {
-      PetscCheckFalse(dim==level,PETSC_COMM_SELF,PETSC_ERR_PLIB,"dim about to exceed level");
+      PetscCheck(dim!=level,PETSC_COMM_SELF,PETSC_ERR_PLIB,"dim about to exceed level");
       stages[dim++]=i;
       end         +=lnsep[dim];
     }
@@ -314,7 +312,7 @@ static PetscErrorCode xxt_generate(xxt_ADT xxt_handle)
 
     /* shouldn't need this */
     if (col==INT_MAX) {
-      ierr = PetscInfo(0,"hey ... col==INT_MAX??\n");CHKERRQ(ierr);
+      PetscCall(PetscInfo(0,"hey ... col==INT_MAX??\n"));
       continue;
     }
 
@@ -344,13 +342,13 @@ static PetscErrorCode xxt_generate(xxt_ADT xxt_handle)
     for (k=0; k<i; k++) {
       off   = *iptr++;
       len   = *iptr++;
-      ierr  = PetscBLASIntCast(len,&dlen);CHKERRQ(ierr);
+      PetscCall(PetscBLASIntCast(len,&dlen));
       PetscStackCallBLAS("BLASdot",uu[k] = BLASdot_(&dlen,u+off,&i1,x_ptr,&i1));
       x_ptr+=len;
     }
 
     /* uu = X^T.u_l (comm portion) */
-    ierr = PCTFS_ssgl_radd  (uu, w, dim, stages);CHKERRQ(ierr);
+    PetscCall(PCTFS_ssgl_radd  (uu, w, dim, stages));
 
     /* z = X.uu */
     PCTFS_rvec_zero(z,n);
@@ -359,14 +357,14 @@ static PetscErrorCode xxt_generate(xxt_ADT xxt_handle)
     for (k=0; k<i; k++) {
       off  = *iptr++;
       len  = *iptr++;
-      ierr = PetscBLASIntCast(len,&dlen);CHKERRQ(ierr);
+      PetscCall(PetscBLASIntCast(len,&dlen));
       PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&dlen,&uu[k],x_ptr,&i1,z+off,&i1));
       x_ptr+=len;
     }
 
     /* compute v_l = v_l - z */
     PCTFS_rvec_zero(v+a_n,a_m-a_n);
-    ierr = PetscBLASIntCast(n,&dlen);CHKERRQ(ierr);
+    PetscCall(PetscBLASIntCast(n,&dlen));
     PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&dlen,&dm1,z,&i1,v,&i1));
 
     /* compute u_l = A.v_l */
@@ -375,7 +373,7 @@ static PetscErrorCode xxt_generate(xxt_ADT xxt_handle)
     do_matvec(xxt_handle->mvi,v,u);
 
     /* compute sqrt(alpha) = sqrt(v_l^T.u_l) - local portion */
-    ierr  = PetscBLASIntCast(n,&dlen);CHKERRQ(ierr);
+    PetscCall(PetscBLASIntCast(n,&dlen));
     PetscStackCallBLAS("BLASdot",alpha = BLASdot_(&dlen,u,&i1,v,&i1));
     /* compute sqrt(alpha) = sqrt(v_l^T.u_l) - comm portion */
     PCTFS_grop_hc(&alpha, &alpha_w, 1, op, dim);
@@ -384,7 +382,7 @@ static PetscErrorCode xxt_generate(xxt_ADT xxt_handle)
 
     /* check for small alpha                             */
     /* LATER use this to detect and determine null space */
-    PetscCheckFalse(PetscAbsScalar(alpha)<1.0e-14,PETSC_COMM_SELF,PETSC_ERR_PLIB,"bad alpha! %g",alpha);
+    PetscCheck(PetscAbsScalar(alpha)>=1.0e-14,PETSC_COMM_SELF,PETSC_ERR_PLIB,"bad alpha! %g",(double)PetscAbsScalar(alpha));
 
     /* compute v_l = v_l/sqrt(alpha) */
     PCTFS_rvec_scale(v,1.0/alpha,n);
@@ -403,7 +401,7 @@ static PetscErrorCode xxt_generate(xxt_ADT xxt_handle)
 
     if (len>0) {
       if ((xxt_nnz+len)>xxt_max_nnz) {
-        ierr         = PetscInfo(0,"increasing space for X by 2x!\n");CHKERRQ(ierr);
+        PetscCall(PetscInfo(0,"increasing space for X by 2x!\n"));
         xxt_max_nnz *= 2;
         x_ptr        = (PetscScalar*) malloc(xxt_max_nnz*sizeof(PetscScalar));
         PCTFS_rvec_copy(x_ptr,x,xxt_nnz);
@@ -438,7 +436,7 @@ static PetscErrorCode xxt_generate(xxt_ADT xxt_handle)
   /* close off stages for execution phase */
   while (dim!=level) {
     stages[dim++] = i;
-    ierr          = PetscInfo(0,"disconnected!!! dim(%D)!=level(%D)\n",dim,level);CHKERRQ(ierr);
+    PetscCall(PetscInfo(0,"disconnected!!! dim(%" PetscInt_FMT ")!=level(%" PetscInt_FMT ")\n",dim,level));
   }
   stages[dim]=i;
 
@@ -481,7 +479,6 @@ static PetscErrorCode do_xxt_solve(xxt_ADT xxt_handle,  PetscScalar *uc)
   PetscScalar    *solve_w  = xxt_handle->info->solve_w;
   PetscScalar    *x        = xxt_handle->info->x;
   PetscBLASInt   i1        = 1,dlen;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   uu_ptr=solve_uu;
@@ -492,13 +489,13 @@ static PetscErrorCode do_xxt_solve(xxt_ADT xxt_handle,  PetscScalar *uc)
   for (x_ptr=x,iptr=col_indices; *iptr!=-1; x_ptr+=len) {
     off       =*iptr++;
     len       =*iptr++;
-    ierr      = PetscBLASIntCast(len,&dlen);CHKERRQ(ierr);
+    PetscCall(PetscBLASIntCast(len,&dlen));
     PetscStackCallBLAS("BLASdot",*uu_ptr++ = BLASdot_(&dlen,uc+off,&i1,x_ptr,&i1));
   }
 
   /* comunication of beta */
   uu_ptr=solve_uu;
-  if (level) {ierr = PCTFS_ssgl_radd(uu_ptr, solve_w, level, stages);CHKERRQ(ierr);}
+  if (level) PetscCall(PCTFS_ssgl_radd(uu_ptr, solve_w, level, stages));
 
   PCTFS_rvec_zero(uc,n);
 
@@ -506,7 +503,7 @@ static PetscErrorCode do_xxt_solve(xxt_ADT xxt_handle,  PetscScalar *uc)
   for (x_ptr=x,iptr=col_indices; *iptr!=-1; x_ptr+=len) {
     off  =*iptr++;
     len  =*iptr++;
-    ierr = PetscBLASIntCast(len,&dlen);CHKERRQ(ierr);
+    PetscCall(PetscBLASIntCast(len,&dlen));
     PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&dlen,uu_ptr++,x_ptr,&i1,uc+off,&i1));
   }
   PetscFunctionReturn(0);
@@ -518,11 +515,11 @@ static PetscErrorCode check_handle(xxt_ADT xxt_handle)
   PetscInt vals[2], work[2], op[] = {NON_UNIFORM,GL_MIN,GL_MAX};
 
   PetscFunctionBegin;
-  PetscCheckFalse(!xxt_handle,PETSC_COMM_SELF,PETSC_ERR_PLIB,"check_handle() :: bad handle :: NULL %D",xxt_handle);
+  PetscCheck(xxt_handle,PETSC_COMM_SELF,PETSC_ERR_PLIB,"check_handle() :: bad handle :: NULL %p",xxt_handle);
 
   vals[0]=vals[1]=xxt_handle->id;
-  PCTFS_giop(vals,work,sizeof(op)/sizeof(op[0])-1,op);
-  PetscCheckFalse((vals[0]!=vals[1])||(xxt_handle->id<=0),PETSC_COMM_SELF,PETSC_ERR_PLIB,"check_handle() :: bad handle :: id mismatch min/max %D/%D %D",vals[0],vals[1], xxt_handle->id);
+  PCTFS_giop(vals,work,PETSC_STATIC_ARRAY_LENGTH(op)-1,op);
+  PetscCheck(!(vals[0]!=vals[1])&&!(xxt_handle->id<=0),PETSC_COMM_SELF,PETSC_ERR_PLIB,"check_handle() :: bad handle :: id mismatch min/max %" PetscInt_FMT "/%" PetscInt_FMT " %" PetscInt_FMT,vals[0],vals[1], xxt_handle->id);
   PetscFunctionReturn(0);
 }
 
@@ -633,7 +630,7 @@ static PetscErrorCode det_separators(xxt_ADT xxt_handle)
           if ((!used[i])&&(lhs[i]!=0.0)) {
             ct++; nfo++;
 
-            PetscCheckFalse(nfo>n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"nfo about to exceed n");
+            PetscCheck(nfo<=n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"nfo about to exceed n");
 
             *--iptr = local2global[i];
             used[i] = edge;
@@ -652,7 +649,7 @@ static PetscErrorCode det_separators(xxt_ADT xxt_handle)
           if ((!used[i])&&(rhs[i]!=0.0)) {
             ct++; nfo++;
 
-            PetscCheckFalse(nfo>n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"nfo about to exceed n");
+            PetscCheck(nfo<=n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"nfo about to exceed n");
 
             *--iptr = local2global[i];
             used[i] = edge;

@@ -1,8 +1,5 @@
 -include ../../../../../petscdir.mk
-ALL: lib
 
-CFLAGS    =
-FFLAGS    =
 SOURCEC   = color.c degr.c dsm.c ido.c numsrt.c seq.c setr.c slo.c
 SOURCEF   =
 SOURCEH   = color.h

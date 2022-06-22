@@ -5,60 +5,59 @@ static char help[] = "Test DMStag IS computation\n\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode  ierr;
   DM              dm;
   PetscInt        dim,dof0,dof1,dof2,dof3;
   PetscBool       flg;
 
   /* Create a DMStag object */
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-dim",&dim,&flg);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,&flg));
   if (!flg) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Supply -dim option\n");CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Supply -dim option\n"));
     return 1;
   }
   if (dim == 1) {
-    ierr = DMStagCreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,8,1,1,DMSTAG_STENCIL_BOX,1,NULL,&dm);CHKERRQ(ierr);
+    PetscCall(DMStagCreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,8,1,1,DMSTAG_STENCIL_BOX,1,NULL,&dm));
   } else if (dim == 2) {
-    ierr = DMStagCreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,4,6,PETSC_DECIDE,PETSC_DECIDE,0,1,1,DMSTAG_STENCIL_BOX,1,NULL,NULL,&dm);CHKERRQ(ierr);
+    PetscCall(DMStagCreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,4,6,PETSC_DECIDE,PETSC_DECIDE,0,1,1,DMSTAG_STENCIL_BOX,1,NULL,NULL,&dm));
   } else if (dim == 3) {
-    ierr = DMStagCreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,2,3,3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,1,1,DMSTAG_STENCIL_BOX,1,NULL,NULL,NULL,&dm);CHKERRQ(ierr);
+    PetscCall(DMStagCreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,2,3,3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,1,1,DMSTAG_STENCIL_BOX,1,NULL,NULL,NULL,&dm));
   } else {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Supply -dim option with value 1, 2, or 3\n");CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Supply -dim option with value 1, 2, or 3\n"));
     return 1;
   }
-  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);CHKERRQ(ierr);
-  ierr = DMSetUp(dm);CHKERRQ(ierr);CHKERRQ(ierr);
-  ierr = DMView(dm,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = DMStagGetDOF(dm,&dof0,&dof1,&dof2,&dof3);CHKERRQ(ierr);
+  PetscCall(DMSetFromOptions(dm));
+  PetscCall(DMSetUp(dm));
+  PetscCall(DMView(dm,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(DMStagGetDOF(dm,&dof0,&dof1,&dof2,&dof3));
 
   {
     IS is;
     DMStagStencil s;
     s.c = 0; s.loc = DMSTAG_ELEMENT;
-    ierr = DMStagCreateISFromStencils(dm,1,&s,&is);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Test 1\n");CHKERRQ(ierr);
-    ierr = ISView(is,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = ISDestroy(&is);CHKERRQ(ierr);
+    PetscCall(DMStagCreateISFromStencils(dm,1,&s,&is));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Test 1\n"));
+    PetscCall(ISView(is,PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(ISDestroy(&is));
   }
   {
     IS is;
     DMStagStencil s;
     s.c = 0; s.loc = DMSTAG_RIGHT;
-    ierr = DMStagCreateISFromStencils(dm,1,&s,&is);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Test 2\n");CHKERRQ(ierr);
-    ierr = ISView(is,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = ISDestroy(&is);CHKERRQ(ierr);
+    PetscCall(DMStagCreateISFromStencils(dm,1,&s,&is));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Test 2\n"));
+    PetscCall(ISView(is,PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(ISDestroy(&is));
   }
   if (dim > 1) {
     IS is;
     DMStagStencil s[2];
     s[0].c = 0; s[0].loc = DMSTAG_DOWN;
     s[1].c = 0; s[1].loc = DMSTAG_LEFT;
-    ierr = DMStagCreateISFromStencils(dm,2,s,&is);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Test 3\n");CHKERRQ(ierr);
-    ierr = ISView(is,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = ISDestroy(&is);CHKERRQ(ierr);
+    PetscCall(DMStagCreateISFromStencils(dm,2,s,&is));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Test 3\n"));
+    PetscCall(ISView(is,PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(ISDestroy(&is));
   }
   if (dim == 2 && dof1 > 1) {
     IS is;
@@ -68,10 +67,10 @@ int main(int argc,char **argv)
     s[2].c = 0; s[2].loc = DMSTAG_LEFT;
     s[3].c = 0; s[3].loc = DMSTAG_RIGHT; /* redundant, should be ignored */
     s[4].c = 1; s[4].loc = DMSTAG_RIGHT;
-    ierr = DMStagCreateISFromStencils(dm,5,s,&is);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Test 4\n");CHKERRQ(ierr);
-    ierr = ISView(is,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = ISDestroy(&is);CHKERRQ(ierr);
+    PetscCall(DMStagCreateISFromStencils(dm,5,s,&is));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Test 4\n"));
+    PetscCall(ISView(is,PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(ISDestroy(&is));
   }
   if (dim == 3 && dof0 > 1) {
     IS is;
@@ -79,15 +78,28 @@ int main(int argc,char **argv)
     s[0].c = 0; s[0].loc = DMSTAG_BACK_DOWN_LEFT;
     s[1].c = 0; s[1].loc = DMSTAG_FRONT_UP_RIGHT; /* redundant, should be ignored */
     s[2].c = 1; s[2].loc = DMSTAG_FRONT_DOWN_RIGHT;
-    ierr = DMStagCreateISFromStencils(dm,3,s,&is);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Test 5\n");CHKERRQ(ierr);
-    ierr = ISView(is,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = ISDestroy(&is);CHKERRQ(ierr);
+    PetscCall(DMStagCreateISFromStencils(dm,3,s,&is));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Test 5\n"));
+    PetscCall(ISView(is,PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(ISDestroy(&is));
+  }
+  if (dim == 3) {
+    IS is;
+    DMStagStencil s[4];
+
+    s[0].c = 0; s[0].loc = DMSTAG_ELEMENT;
+    s[1].c = 0; s[1].loc = DMSTAG_BACK_LEFT;
+    s[2].c = 0; s[2].loc = DMSTAG_BACK_DOWN_LEFT;
+    s[3].c = 0; s[3].loc = DMSTAG_DOWN;
+    PetscCall(DMStagCreateISFromStencils(dm,4,s,&is));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Test 6\n"));
+    PetscCall(ISView(is,PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(ISDestroy(&is));
   }
 
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(DMDestroy(&dm));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

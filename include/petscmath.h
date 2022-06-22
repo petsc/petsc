@@ -7,11 +7,13 @@
     This file is included by petscsys.h and should not be used directly.
 
 */
-
 #if !defined(PETSCMATH_H)
 #define PETSCMATH_H
+
 #include <math.h>
 #include <petscsystypes.h>
+
+/* SUBMANSEC = Sys */
 
 /*
 
@@ -46,6 +48,7 @@
 #define PetscAsinhReal(a)      asinhf(a)
 #define PetscAcoshReal(a)      acoshf(a)
 #define PetscAtanhReal(a)      atanhf(a)
+#define PetscErfReal(a)        erff(a)
 #define PetscCeilReal(a)       ceilf(a)
 #define PetscFloorReal(a)      floorf(a)
 #define PetscFmodReal(a,b)     fmodf(a,b)
@@ -79,6 +82,7 @@
 #define PetscAsinhReal(a)      asinh(a)
 #define PetscAcoshReal(a)      acosh(a)
 #define PetscAtanhReal(a)      atanh(a)
+#define PetscErfReal(a)        erf(a)
 #define PetscCeilReal(a)       ceil(a)
 #define PetscFloorReal(a)      floor(a)
 #define PetscFmodReal(a,b)     fmod(a,b)
@@ -112,6 +116,7 @@
 #define PetscAsinhReal(a)      asinhq(a)
 #define PetscAcoshReal(a)      acoshq(a)
 #define PetscAtanhReal(a)      atanhq(a)
+#define PetscErfReal(a)        erfq(a)
 #define PetscCeilReal(a)       ceilq(a)
 #define PetscFloorReal(a)      floorq(a)
 #define PetscFmodReal(a,b)     fmodq(a,b)
@@ -145,6 +150,7 @@
 #define PetscAsinhReal(a)      asinhf(a)
 #define PetscAcoshReal(a)      acoshf(a)
 #define PetscAtanhReal(a)      atanhf(a)
+#define PetscErfReal(a)        erff(a)
 #define PetscCeilReal(a)       ceilf(a)
 #define PetscFloorReal(a)      floorf(a)
 #define PetscFmodReal(a,b)     fmodf(a,b)
@@ -186,7 +192,7 @@ PETSC_EXTERN MPI_Datatype MPIU___FP16 PetscAttrMPITypeTag(__fp16);
 
    Level: beginner
 
-.seealso: PetscReal, PetscScalar, PetscComplex, PetscInt, MPIU_SCALAR, MPIU_COMPLEX, MPIU_INT
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscInt`, `MPIU_SCALAR`, `MPIU_COMPLEX`, `MPIU_INT`
 M*/
 #if defined(PETSC_USE_REAL_SINGLE)
 #  define MPIU_REAL MPI_FLOAT
@@ -420,7 +426,7 @@ PETSC_EXTERN MPI_Datatype MPIU___COMPLEX128 PetscAttrMPITypeTag(__complex128);
 
    Level: beginner
 
-.seealso: PetscReal, PetscScalar, PetscComplex, PetscInt, MPIU_REAL, MPIU_SCALAR, MPIU_COMPLEX, MPIU_INT, PETSC_i
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscInt`, `MPIU_REAL`, `MPIU_SCALAR`, `MPIU_COMPLEX`, `MPIU_INT`, `PETSC_i`
 M*/
 #if defined(PETSC_USE_REAL_SINGLE)
 #  define MPIU_COMPLEX MPI_C_COMPLEX
@@ -446,7 +452,7 @@ M*/
 
    Level: beginner
 
-.seealso: PetscReal, PetscScalar, PetscComplex, PetscInt, MPIU_REAL, MPIU_COMPLEX, MPIU_INT
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscInt`, `MPIU_REAL`, `MPIU_COMPLEX`, `MPIU_INT`
 M*/
 #define MPIU_SCALAR MPIU_COMPLEX
 
@@ -464,7 +470,7 @@ M*/
 
    Level: beginner
 
-.seealso: PetscScalar, PetscImaginaryPart(), PetscMax(), PetscClipInterval(), PetscAbsInt(), PetscAbsReal(), PetscSqr()
+.seealso: `PetscScalar`, `PetscImaginaryPart()`, `PetscMax()`, `PetscClipInterval()`, `PetscAbsInt()`, `PetscAbsReal()`, `PetscSqr()`
 
 M*/
 #define PetscRealPart(a)      PetscRealPartComplex(a)
@@ -486,7 +492,7 @@ M*/
    Notes:
        If PETSc was configured for real numbers then this always returns the value 0
 
-.seealso: PetscScalar, PetscRealPart(), PetscMax(), PetscClipInterval(), PetscAbsInt(), PetscAbsReal(), PetscSqr()
+.seealso: `PetscScalar`, `PetscRealPart()`, `PetscMax()`, `PetscClipInterval()`, `PetscAbsInt()`, `PetscAbsReal()`, `PetscSqr()`
 
 M*/
 #define PetscImaginaryPart(a) PetscImaginaryPartComplex(a)
@@ -562,7 +568,7 @@ typedef enum { PETSC_SCALAR_DOUBLE, PETSC_SCALAR_SINGLE, PETSC_SCALAR_LONG_DOUBL
 
    Level: beginner
 
-.seealso: PetscAbsInt(), PetscAbsReal(), PetscAbsScalar()
+.seealso: `PetscAbsInt()`, `PetscAbsReal()`, `PetscAbsScalar()`
 
 M*/
 #define PetscAbs(a)  (((a) >= 0) ? (a) : (-(a)))
@@ -605,7 +611,7 @@ M*/
 
    Level: beginner
 
-.seealso: PetscMax(), PetscClipInterval(), PetscAbsInt(), PetscAbsReal(), PetscSqr()
+.seealso: `PetscMax()`, `PetscClipInterval()`, `PetscAbsInt()`, `PetscAbsReal()`, `PetscSqr()`
 
 M*/
 #define PetscMin(a,b)   (((a)<(b)) ?  (a) : (b))
@@ -628,7 +634,7 @@ M*/
 
    Level: beginner
 
-.seealso: PetscMin(), PetscClipInterval(), PetscAbsInt(), PetscAbsReal(), PetscSqr()
+.seealso: `PetscMin()`, `PetscClipInterval()`, `PetscAbsInt()`, `PetscAbsReal()`, `PetscSqr()`
 
 M*/
 #define PetscMax(a,b)   (((a)<(b)) ?  (b) : (a))
@@ -652,7 +658,7 @@ M*/
 
    Level: beginner
 
-.seealso: PetscMin(), PetscMax(), PetscAbsInt(), PetscAbsReal(), PetscSqr()
+.seealso: `PetscMin()`, `PetscMax()`, `PetscAbsInt()`, `PetscAbsReal()`, `PetscSqr()`
 
 M*/
 #define PetscClipInterval(x,a,b)   (PetscMax((a),PetscMin((x),(b))))
@@ -671,7 +677,7 @@ M*/
 
    Level: beginner
 
-.seealso: PetscMax(), PetscMin(), PetscAbsReal(), PetscSqr()
+.seealso: `PetscMax()`, `PetscMin()`, `PetscAbsReal()`, `PetscSqr()`
 
 M*/
 #define PetscAbsInt(a)  (((a)<0)   ? (-(a)) : (a))
@@ -690,7 +696,7 @@ M*/
 
    Level: beginner
 
-.seealso: PetscMax(), PetscMin(), PetscAbsInt(), PetscSqr()
+.seealso: `PetscMax()`, `PetscMin()`, `PetscAbsInt()`, `PetscSqr()`
 
 M*/
 #if defined(PETSC_USE_REAL_SINGLE)
@@ -720,7 +726,7 @@ M*/
 
    Level: beginner
 
-.seealso: PetscMax(), PetscMin(), PetscAbsInt(), PetscAbsReal()
+.seealso: `PetscMax()`, `PetscMin()`, `PetscAbsInt()`, `PetscAbsReal()`
 
 M*/
 #define PetscSqr(a)     ((a)*(a))
@@ -904,7 +910,7 @@ static inline PetscScalar PetscPowScalarReal(PetscScalar base,PetscReal power)
 
    Level: advanced
 
-.seealso: PetscMax(), PetscMin(), PetscAbsInt(), PetscAbsReal(), PetscApproximateGTE()
+.seealso: `PetscMax()`, `PetscMin()`, `PetscAbsInt()`, `PetscAbsReal()`, `PetscApproximateGTE()`
 
 M*/
 #define PetscApproximateLTE(x,b)  ((x) <= (PetscRealConstant(b)+PETSC_SMALL))
@@ -932,7 +938,7 @@ M*/
 
    Level: advanced
 
-.seealso: PetscMax(), PetscMin(), PetscAbsInt(), PetscAbsReal(), PetscApproximateLTE()
+.seealso: `PetscMax()`, `PetscMin()`, `PetscAbsInt()`, `PetscAbsReal()`, `PetscApproximateLTE()`
 
 M*/
 #define PetscApproximateGTE(x,b)  ((x) >= (PetscRealConstant(b)-PETSC_SMALL))
@@ -952,7 +958,7 @@ M*/
 
    Level: advanced
 
-.seealso: PetscMax(), PetscMin(), PetscAbsInt(), PetscAbsReal(), PetscApproximateLTE()
+.seealso: `PetscMax()`, `PetscMin()`, `PetscAbsInt()`, `PetscAbsReal()`, `PetscApproximateLTE()`
 
 M*/
 #define PetscCeilInt(x,y)  ((((PetscInt)(x))/((PetscInt)(y))) +  ((((PetscInt)(x)) % ((PetscInt)(y))) ? 1 : 0))

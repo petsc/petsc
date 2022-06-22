@@ -24,17 +24,15 @@
 
    Level: intermediate
 
-.seealso: VecCreateSeq(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost(),
-          VecCreateMPIWithArray(), VecCreateGhostWithArray(), VecMPISetGhost()
+.seealso: `VecCreateSeq()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateGhost()`,
+          `VecCreateMPIWithArray()`, `VecCreateGhostWithArray()`, `VecMPISetGhost()`
 
 @*/
 PetscErrorCode  VecCreateMPI(MPI_Comm comm,PetscInt n,PetscInt N,Vec *v)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = VecCreate(comm,v);CHKERRQ(ierr);
-  ierr = VecSetSizes(*v,n,N);CHKERRQ(ierr);
-  ierr = VecSetType(*v,VECMPI);CHKERRQ(ierr);
+  PetscCall(VecCreate(comm,v));
+  PetscCall(VecSetSizes(*v,n,N));
+  PetscCall(VecSetType(*v,VECMPI));
   PetscFunctionReturn(0);
 }

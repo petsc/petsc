@@ -1,4 +1,4 @@
-DM Object: box 1 MPI processes
+DM Object: box 1 MPI process
   type: plex
 box in 2 dimensions:
 Supports:
@@ -315,7 +315,7 @@ Label 'boundary':
 [0]: 51 (1)
 [0]: 56 (1)
 Local function:
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.
 0.25
@@ -359,7 +359,7 @@ Vec Object: 1 MPI processes
 1.15625
 1.5625
 Initial guess
-Vec Object: potential 1 MPI processes
+Vec Object: potential 1 MPI process
   type: seq
 0.
 0.25
@@ -404,7 +404,7 @@ Vec Object: potential 1 MPI processes
 1.5625
 L_2 Error: < 1.0e-11
 Residual:
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.
 0.
@@ -448,7 +448,7 @@ Vec Object: 1 MPI processes
 0.
 0.
 Initial Residual
-Vec Object: Residual, Iterate 0 1 MPI processes
+Vec Object: Residual, Iterate 0 1 MPI process
   type: seq
 0.
 0.
@@ -493,7 +493,7 @@ Vec Object: Residual, Iterate 0 1 MPI processes
 0.
 L_2 Residual: 0.
 Residual:
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.
 0.
@@ -537,7 +537,7 @@ Vec Object: 1 MPI processes
 0.166667
 -0.583333
 Au - b = Au + F(0)
-Vec Object: Residual, Iterate 0 1 MPI processes
+Vec Object: Residual, Iterate 0 1 MPI process
   type: seq
 0.
 0.

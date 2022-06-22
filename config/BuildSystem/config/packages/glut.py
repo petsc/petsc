@@ -7,8 +7,6 @@ class Configure(config.package.Package):
     self.functions         = ['glutSetWindow']
     self.includes          = ['GLUT/glut.h']
     self.liblist           = [['-framework glut']]
-    self.complex           = 1   # 0 means cannot use complex
-    self.lookforbydefault  = 0
     return
 
   def setupDependencies(self, framework):

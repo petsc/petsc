@@ -5,40 +5,39 @@ static char help[] = "Tests MatCreateHermitianTranspose().\n\n";
 
 int main(int argc,char **args)
 {
-  Mat            C,C_htransposed,Cht,C_empty;
-  PetscInt       i,j,m = 10,n = 10;
-  PetscErrorCode ierr;
-  PetscScalar    v;
+  Mat         C,C_htransposed,Cht,C_empty;
+  PetscInt    i,j,m = 10,n = 10;
+  PetscScalar v;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   /* Create a complex non-hermitian matrix */
-  ierr = MatCreate(PETSC_COMM_SELF,&C);CHKERRQ(ierr);
-  ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(C);CHKERRQ(ierr);
-  ierr = MatSetUp(C);CHKERRQ(ierr);
+  PetscCall(MatCreate(PETSC_COMM_SELF,&C));
+  PetscCall(MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,m,n));
+  PetscCall(MatSetFromOptions(C));
+  PetscCall(MatSetUp(C));
   for (i=0; i<m; i++) {
     for (j=0; j<n; j++) {
       v = 0.0 - 1.0*PETSC_i;
-      if (i>j && i-j<2)   {ierr = MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);}
+      if (i>j && i-j<2)   PetscCall(MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES));
     }
   }
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY));
 
-  ierr = MatCreateHermitianTranspose(C, &C_htransposed);CHKERRQ(ierr);
+  PetscCall(MatCreateHermitianTranspose(C, &C_htransposed));
 
-  ierr = MatView(C,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  ierr = MatDuplicate(C_htransposed,MAT_COPY_VALUES,&Cht);CHKERRQ(ierr);
-  ierr = MatView(Cht,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  ierr = MatDuplicate(C_htransposed,MAT_DO_NOT_COPY_VALUES,&C_empty);CHKERRQ(ierr);
-  ierr = MatView(C_empty,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  PetscCall(MatView(C,PETSC_VIEWER_STDOUT_SELF));
+  PetscCall(MatDuplicate(C_htransposed,MAT_COPY_VALUES,&Cht));
+  PetscCall(MatView(Cht,PETSC_VIEWER_STDOUT_SELF));
+  PetscCall(MatDuplicate(C_htransposed,MAT_DO_NOT_COPY_VALUES,&C_empty));
+  PetscCall(MatView(C_empty,PETSC_VIEWER_STDOUT_SELF));
 
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
-  ierr = MatDestroy(&C_htransposed);CHKERRQ(ierr);
-  ierr = MatDestroy(&Cht);CHKERRQ(ierr);
-  ierr = MatDestroy(&C_empty);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(MatDestroy(&C));
+  PetscCall(MatDestroy(&C_htransposed));
+  PetscCall(MatDestroy(&Cht));
+  PetscCall(MatDestroy(&C_empty));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

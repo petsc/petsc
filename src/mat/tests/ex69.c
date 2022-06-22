@@ -4,12 +4,11 @@ static char help[] = "Tests MatCreateDenseCUDA(), MatDenseCUDAPlaceArray(), MatD
 
 static PetscErrorCode MatMult_S(Mat S,Vec x,Vec y)
 {
-  PetscErrorCode ierr;
-  Mat            A;
+  Mat A;
 
   PetscFunctionBeginUser;
-  ierr = MatShellGetContext(S,&A);CHKERRQ(ierr);
-  ierr = MatMult(A,x,y);CHKERRQ(ierr);
+  PetscCall(MatShellGetContext(S,&A));
+  PetscCall(MatMult(A,x,y));
   PetscFunctionReturn(0);
 }
 
@@ -17,15 +16,14 @@ static PetscBool test_cusparse_transgen = PETSC_FALSE;
 
 static PetscErrorCode MatMultTranspose_S(Mat S,Vec x,Vec y)
 {
-  PetscErrorCode ierr;
-  Mat            A;
+  Mat A;
 
   PetscFunctionBeginUser;
-  ierr = MatShellGetContext(S,&A);CHKERRQ(ierr);
-  ierr = MatMultTranspose(A,x,y);CHKERRQ(ierr);
+  PetscCall(MatShellGetContext(S,&A));
+  PetscCall(MatMultTranspose(A,x,y));
 
   /* alternate transgen true and false to test code logic */
-  ierr = MatSetOption(A,MAT_FORM_EXPLICIT_TRANSPOSE,test_cusparse_transgen);CHKERRQ(ierr);
+  PetscCall(MatSetOption(A,MAT_FORM_EXPLICIT_TRANSPOSE,test_cusparse_transgen));
   test_cusparse_transgen = (PetscBool)!test_cusparse_transgen;
   PetscFunctionReturn(0);
 }
@@ -37,138 +35,133 @@ int main(int argc,char **argv)
   PetscScalar    *vv,*aa;
   PetscInt       n=30,k=6,l=0,i,Istart,Iend,nloc,bs,test=1;
   PetscBool      flg,reset,use_shell = PETSC_FALSE;
-  PetscErrorCode ierr;
   VecType        vtype;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-k",&k,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-l",&l,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-test",&test,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-use_shell",&use_shell,NULL);CHKERRQ(ierr);
-  PetscCheckFalse(k < 0,PETSC_COMM_WORLD,PETSC_ERR_USER,"k %" PetscInt_FMT " must be positive",k);
-  PetscCheckFalse(l < 0,PETSC_COMM_WORLD,PETSC_ERR_USER,"l %" PetscInt_FMT " must be positive",l);
-  PetscCheckFalse(l > k,PETSC_COMM_WORLD,PETSC_ERR_USER,"l %" PetscInt_FMT " must be smaller or equal than k %" PetscInt_FMT,l,k);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-k",&k,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-l",&l,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-test",&test,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-use_shell",&use_shell,NULL));
+  PetscCheck(k >= 0,PETSC_COMM_WORLD,PETSC_ERR_USER,"k %" PetscInt_FMT " must be positive",k);
+  PetscCheck(l >= 0,PETSC_COMM_WORLD,PETSC_ERR_USER,"l %" PetscInt_FMT " must be positive",l);
+  PetscCheck(l <= k,PETSC_COMM_WORLD,PETSC_ERR_USER,"l %" PetscInt_FMT " must be smaller or equal than k %" PetscInt_FMT,l,k);
 
   /* sparse matrix */
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,n,n);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATAIJCUSPARSE);CHKERRQ(ierr);
-  ierr = MatSetOptionsPrefix(A,"A_");CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatSetUp(A);CHKERRQ(ierr);
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,n,n));
+  PetscCall(MatSetType(A,MATAIJCUSPARSE));
+  PetscCall(MatSetOptionsPrefix(A,"A_"));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatSetUp(A));
 
   /* test special case for SeqAIJCUSPARSE to generate explicit transpose (not default) */
-  ierr = MatSetOption(A,MAT_FORM_EXPLICIT_TRANSPOSE,PETSC_TRUE);CHKERRQ(ierr);
+  PetscCall(MatSetOption(A,MAT_FORM_EXPLICIT_TRANSPOSE,PETSC_TRUE));
 
-  ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
+  PetscCall(MatGetOwnershipRange(A,&Istart,&Iend));
   for (i=Istart;i<Iend;i++) {
-    if (i>0) { ierr = MatSetValue(A,i,i-1,-1.0,INSERT_VALUES);CHKERRQ(ierr); }
-    if (i<n-1) { ierr = MatSetValue(A,i,i+1,-1.0,INSERT_VALUES);CHKERRQ(ierr); }
-    ierr = MatSetValue(A,i,i,2.0,INSERT_VALUES);CHKERRQ(ierr);
+    if (i>0) PetscCall(MatSetValue(A,i,i-1,-1.0,INSERT_VALUES));
+    if (i<n-1) PetscCall(MatSetValue(A,i,i+1,-1.0,INSERT_VALUES));
+    PetscCall(MatSetValue(A,i,i,2.0,INSERT_VALUES));
   }
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
   /* template vector */
-  ierr = MatCreateVecs(A,NULL,&t);CHKERRQ(ierr);
-  ierr = VecGetType(t,&vtype);CHKERRQ(ierr);
+  PetscCall(MatCreateVecs(A,NULL,&t));
+  PetscCall(VecGetType(t,&vtype));
 
   /* long vector, contains the stacked columns of an nxk dense matrix */
-  ierr = VecGetLocalSize(t,&nloc);CHKERRQ(ierr);
-  ierr = VecGetBlockSize(t,&bs);CHKERRQ(ierr);
-  ierr = VecCreate(PetscObjectComm((PetscObject)t),&v);CHKERRQ(ierr);
-  ierr = VecSetType(v,vtype);CHKERRQ(ierr);
-  ierr = VecSetSizes(v,k*nloc,k*n);CHKERRQ(ierr);
-  ierr = VecSetBlockSize(v,bs);CHKERRQ(ierr);
-  ierr = VecSetRandom(v,NULL);CHKERRQ(ierr);
+  PetscCall(VecGetLocalSize(t,&nloc));
+  PetscCall(VecGetBlockSize(t,&bs));
+  PetscCall(VecCreate(PetscObjectComm((PetscObject)t),&v));
+  PetscCall(VecSetType(v,vtype));
+  PetscCall(VecSetSizes(v,k*nloc,k*n));
+  PetscCall(VecSetBlockSize(v,bs));
+  PetscCall(VecSetRandom(v,NULL));
 
   /* dense matrix that contains the columns of v */
-  ierr = VecCUDAGetArray(v,&vv);CHKERRQ(ierr);
+  PetscCall(VecCUDAGetArray(v,&vv));
 
   /* test few cases for MatDenseCUDA handling pointers */
   switch (test) {
   case 1:
-    ierr = MatCreateDenseCUDA(PetscObjectComm((PetscObject)v),nloc,PETSC_DECIDE,n,k-l,vv,&B);CHKERRQ(ierr); /* pass a pointer to avoid allocation of storage */
-    ierr = MatDenseCUDAReplaceArray(B,NULL);CHKERRQ(ierr);  /* replace with a null pointer, the value after BVRestoreMat */
-    ierr = MatDenseCUDAPlaceArray(B,vv+l*nloc);CHKERRQ(ierr);  /* set the actual pointer */
+    PetscCall(MatCreateDenseCUDA(PetscObjectComm((PetscObject)v),nloc,PETSC_DECIDE,n,k-l,vv,&B)); /* pass a pointer to avoid allocation of storage */
+    PetscCall(MatDenseCUDAReplaceArray(B,NULL));  /* replace with a null pointer, the value after BVRestoreMat */
+    PetscCall(MatDenseCUDAPlaceArray(B,vv+l*nloc));  /* set the actual pointer */
     reset = PETSC_TRUE;
     break;
   case 2:
-    ierr = MatCreateDenseCUDA(PetscObjectComm((PetscObject)v),nloc,PETSC_DECIDE,n,k-l,NULL,&B);CHKERRQ(ierr);
-    ierr = MatDenseCUDAPlaceArray(B,vv+l*nloc);CHKERRQ(ierr);  /* set the actual pointer */
+    PetscCall(MatCreateDenseCUDA(PetscObjectComm((PetscObject)v),nloc,PETSC_DECIDE,n,k-l,NULL,&B));
+    PetscCall(MatDenseCUDAPlaceArray(B,vv+l*nloc));  /* set the actual pointer */
     reset = PETSC_TRUE;
     break;
   default:
-    ierr = MatCreateDenseCUDA(PetscObjectComm((PetscObject)v),nloc,PETSC_DECIDE,n,k-l,vv+l*nloc,&B);CHKERRQ(ierr);
+    PetscCall(MatCreateDenseCUDA(PetscObjectComm((PetscObject)v),nloc,PETSC_DECIDE,n,k-l,vv+l*nloc,&B));
     reset = PETSC_FALSE;
     break;
   }
-  ierr = VecCUDARestoreArray(v,&vv);CHKERRQ(ierr);
+  PetscCall(VecCUDARestoreArray(v,&vv));
 
   /* Test MatMatMult */
   if (use_shell) {
     /* we could have called the general convertor below, but we explicit set the operations
        ourselves to test MatProductSymbolic_X_Dense, MatProductNumeric_X_Dense code */
-    /* ierr = MatConvert(A,MATSHELL,MAT_INITIAL_MATRIX,&S);CHKERRQ(ierr); */
-    ierr = MatCreateShell(PetscObjectComm((PetscObject)v),nloc,nloc,n,n,A,&S);CHKERRQ(ierr);
-    ierr = MatShellSetOperation(S,MATOP_MULT,(void(*)(void))MatMult_S);CHKERRQ(ierr);
-    ierr = MatShellSetOperation(S,MATOP_MULT_TRANSPOSE,(void(*)(void))MatMultTranspose_S);CHKERRQ(ierr);
-    ierr = MatShellSetVecType(S,vtype);CHKERRQ(ierr);
+    /* PetscCall(MatConvert(A,MATSHELL,MAT_INITIAL_MATRIX,&S)); */
+    PetscCall(MatCreateShell(PetscObjectComm((PetscObject)v),nloc,nloc,n,n,A,&S));
+    PetscCall(MatShellSetOperation(S,MATOP_MULT,(void(*)(void))MatMult_S));
+    PetscCall(MatShellSetOperation(S,MATOP_MULT_TRANSPOSE,(void(*)(void))MatMultTranspose_S));
+    PetscCall(MatShellSetVecType(S,vtype));
   } else {
-    ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
+    PetscCall(PetscObjectReference((PetscObject)A));
     S    = A;
   }
 
-  ierr = MatCreateDenseCUDA(PetscObjectComm((PetscObject)v),nloc,PETSC_DECIDE,n,k-l,NULL,&C);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatCreateDenseCUDA(PetscObjectComm((PetscObject)v),nloc,PETSC_DECIDE,n,k-l,NULL,&C));
 
   /* test MatMatMult */
-  ierr = MatProductCreateWithMat(S,B,NULL,C);CHKERRQ(ierr);
-  ierr = MatProductSetType(C,MATPRODUCT_AB);CHKERRQ(ierr);
-  ierr = MatProductSetFromOptions(C);CHKERRQ(ierr);
-  ierr = MatProductSymbolic(C);CHKERRQ(ierr);
-  ierr = MatProductNumeric(C);CHKERRQ(ierr);
-  ierr = MatMatMultEqual(S,B,C,10,&flg);CHKERRQ(ierr);
-  if (!flg) { ierr = PetscPrintf(PETSC_COMM_WORLD,"Error MatMatMult\n");CHKERRQ(ierr); }
+  PetscCall(MatProductCreateWithMat(S,B,NULL,C));
+  PetscCall(MatProductSetType(C,MATPRODUCT_AB));
+  PetscCall(MatProductSetFromOptions(C));
+  PetscCall(MatProductSymbolic(C));
+  PetscCall(MatProductNumeric(C));
+  PetscCall(MatMatMultEqual(S,B,C,10,&flg));
+  if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error MatMatMult\n"));
 
   /* test MatTransposeMatMult */
-  ierr = MatProductCreateWithMat(S,B,NULL,C);CHKERRQ(ierr);
-  ierr = MatProductSetType(C,MATPRODUCT_AtB);CHKERRQ(ierr);
-  ierr = MatProductSetFromOptions(C);CHKERRQ(ierr);
-  ierr = MatProductSymbolic(C);CHKERRQ(ierr);
-  ierr = MatProductNumeric(C);CHKERRQ(ierr);
-  ierr = MatTransposeMatMultEqual(S,B,C,10,&flg);CHKERRQ(ierr);
-  if (!flg) { ierr = PetscPrintf(PETSC_COMM_WORLD,"Error MatTransposeMatMult\n");CHKERRQ(ierr); }
+  PetscCall(MatProductCreateWithMat(S,B,NULL,C));
+  PetscCall(MatProductSetType(C,MATPRODUCT_AtB));
+  PetscCall(MatProductSetFromOptions(C));
+  PetscCall(MatProductSymbolic(C));
+  PetscCall(MatProductNumeric(C));
+  PetscCall(MatTransposeMatMultEqual(S,B,C,10,&flg));
+  if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error MatTransposeMatMult\n"));
 
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
-  ierr = MatDestroy(&S);CHKERRQ(ierr);
+  PetscCall(MatDestroy(&C));
+  PetscCall(MatDestroy(&S));
 
   /* finished using B */
-  ierr = MatDenseCUDAGetArray(B,&aa);CHKERRQ(ierr);
-  PetscCheckFalse(vv != aa-l*nloc,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong array");
-  ierr = MatDenseCUDARestoreArray(B,&aa);CHKERRQ(ierr);
+  PetscCall(MatDenseCUDAGetArray(B,&aa));
+  PetscCheck(vv == aa-l*nloc,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong array");
+  PetscCall(MatDenseCUDARestoreArray(B,&aa));
   if (reset) {
-    ierr = MatDenseCUDAResetArray(B);CHKERRQ(ierr);
+    PetscCall(MatDenseCUDAResetArray(B));
   }
-  ierr = VecCUDARestoreArray(v,&vv);CHKERRQ(ierr);
+  PetscCall(VecCUDARestoreArray(v,&vv));
 
   if (test == 1) {
-    ierr = MatDenseCUDAGetArray(B,&aa);CHKERRQ(ierr);
-    PetscCheckFalse(aa,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Expected a null pointer");
-    ierr = MatDenseCUDARestoreArray(B,&aa);CHKERRQ(ierr);
+    PetscCall(MatDenseCUDAGetArray(B,&aa));
+    PetscCheck(!aa,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Expected a null pointer");
+    PetscCall(MatDenseCUDARestoreArray(B,&aa));
   }
 
   /* free work space */
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = VecDestroy(&t);CHKERRQ(ierr);
-  ierr = VecDestroy(&v);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(MatDestroy(&B));
+  PetscCall(MatDestroy(&A));
+  PetscCall(VecDestroy(&t));
+  PetscCall(VecDestroy(&v));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

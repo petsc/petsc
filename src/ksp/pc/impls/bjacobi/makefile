@@ -1,13 +1,10 @@
 -include ../../../../../petscdir.mk
-ALL: lib
 
-CFLAGS    =
-FFLAGS    =
 SOURCEC   = bjacobi.c
 SOURCEF   =
 SOURCEH   = bjacobi.h
 LIBBASE   = libpetscksp
-DIRS      =
+DIRS      = bjkokkos
 MANSEC    = KSP
 SUBMANSEC = PC
 LOCDIR    = src/ksp/pc/impls/bjacobi/

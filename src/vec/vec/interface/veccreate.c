@@ -18,22 +18,21 @@
 
   Level: beginner
 
-.seealso: VecSetType(), VecSetSizes(), VecCreateMPIWithArray(), VecCreateMPI(), VecDuplicate(),
-          VecDuplicateVecs(), VecCreateGhost(), VecCreateSeq(), VecPlaceArray()
+.seealso: `VecSetType()`, `VecSetSizes()`, `VecCreateMPIWithArray()`, `VecCreateMPI()`, `VecDuplicate()`,
+          `VecDuplicateVecs()`, `VecCreateGhost()`, `VecCreateSeq()`, `VecPlaceArray()`
 @*/
 PetscErrorCode  VecCreate(MPI_Comm comm, Vec *vec)
 {
   Vec            v;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidPointer(vec,2);
   *vec = NULL;
-  ierr = VecInitializePackage();CHKERRQ(ierr);
+  PetscCall(VecInitializePackage());
 
-  ierr = PetscHeaderCreate(v, VEC_CLASSID, "Vec", "Vector", "Vec", comm, VecDestroy, VecView);CHKERRQ(ierr);
+  PetscCall(PetscHeaderCreate(v, VEC_CLASSID, "Vec", "Vector", "Vec", comm, VecDestroy, VecView));
 
-  ierr            = PetscLayoutCreate(comm,&v->map);CHKERRQ(ierr);
+  PetscCall(PetscLayoutCreate(comm,&v->map));
   v->array_gotten = PETSC_FALSE;
   v->petscnative  = PETSC_FALSE;
   v->offloadmask  = PETSC_OFFLOAD_UNALLOCATED;
@@ -44,8 +43,7 @@ PetscErrorCode  VecCreate(MPI_Comm comm, Vec *vec)
 #if defined(PETSC_HAVE_DEVICE)
   v->boundtocpu = PETSC_TRUE;
 #endif
-  ierr = PetscStrallocpy(PETSCRANDER48,&v->defaultrandtype);CHKERRQ(ierr);
+  PetscCall(PetscStrallocpy(PETSCRANDER48,&v->defaultrandtype));
   *vec = v;
   PetscFunctionReturn(0);
 }
-

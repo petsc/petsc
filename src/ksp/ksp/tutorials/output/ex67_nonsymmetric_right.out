@@ -5,7 +5,7 @@
   4 KSP unpreconditioned resid norm 2.889729861189e-02 true resid norm 2.889729861189e-02 ||r(i)||/||b|| 1.179727275733e-02
   5 KSP unpreconditioned resid norm 8.660248077380e-16 true resid norm 1.451804990740e-15 ||r(i)||/||b|| 5.926969055565e-16
 Linear solve converged due to CONVERGED_RTOL iterations 5
-KSP Object: 1 MPI processes
+KSP Object: 1 MPI process
   type: gmres
     restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
     happy breakdown tolerance 1e-30
@@ -13,11 +13,11 @@ KSP Object: 1 MPI processes
   tolerances:  relative=1e-14, absolute=1e-50, divergence=10000.
   right preconditioning
   using UNPRECONDITIONED norm type for convergence test
-PC Object: 1 MPI processes
+PC Object: 1 MPI process
   type: jacobi
     type DIAGONAL
   linear system matrix = precond matrix:
-  Mat Object: 1 MPI processes
+  Mat Object: 1 MPI process
     type: seqaij
     rows=10, cols=10
     total: nonzeros=55, allocated nonzeros=65
@@ -31,7 +31,7 @@ PC Object: 1 MPI processes
   3 KSP unpreconditioned resid norm 1.237405378827e-01 true resid norm 1.237405378827e-01 ||r(i)||/||b|| 5.533845085562e-02
   4 KSP unpreconditioned resid norm 2.338277083833e-16 true resid norm 1.687392909130e-15 ||r(i)||/||b|| 7.546250499131e-16
 Linear solve converged due to CONVERGED_RTOL iterations 4
-KSP Object: 1 MPI processes
+KSP Object: 1 MPI process
   type: gmres
     restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
     happy breakdown tolerance 1e-30
@@ -39,11 +39,11 @@ KSP Object: 1 MPI processes
   tolerances:  relative=1e-14, absolute=1e-50, divergence=10000.
   right preconditioning
   using UNPRECONDITIONED norm type for convergence test
-PC Object: 1 MPI processes
+PC Object: 1 MPI process
   type: jacobi
     type DIAGONAL
   linear system matrix = precond matrix:
-  Mat Object: 1 MPI processes
+  Mat Object: 1 MPI process
     type: seqaij
     rows=10, cols=10
     total: nonzeros=55, allocated nonzeros=65

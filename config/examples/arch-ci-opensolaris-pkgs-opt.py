@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/export/home/glci/soft/python-3.7.13/bin/python3
 
 import os
 petsc_hash_pkgs=os.path.join(os.getenv('HOME'),'petsc-hash-pkgs')
@@ -12,7 +12,7 @@ configure_options = [
   '--with-debugging=0',
   'FFLAGS=-ftrap=%none',
 
-  '--download-mpich=1',
+  '--download-mpich=https://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich-3.4.2.tar.gz', # workaround for mat_tests-ex16_mpiio_4 failure with MPICH 4.0.1 and above
   '--download-mpich-device=ch3:sock',
 
   '--with-c2html=0',

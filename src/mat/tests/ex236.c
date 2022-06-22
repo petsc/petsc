@@ -4,25 +4,24 @@ static char help[] = "Test CPU/GPU memory leaks, MatMult and MatMultTransposeAdd
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
-  PetscMPIInt    rank,size;
-  Mat            A;
-  PetscInt       i,j,k,n=3,vstart,rstart,rend,margin;
-  Vec            x,y;
+  PetscMPIInt rank,size;
+  Mat         A;
+  PetscInt    i,j,k,n = 3,vstart,rstart,rend,margin;
+  Vec         x,y;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,n,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetSizes(A,n,n,PETSC_DECIDE,PETSC_DECIDE));
+  PetscCall(MatSetFromOptions(A));
 
-  ierr = MatMPIAIJSetPreallocation(A,n,NULL,0,NULL);CHKERRQ(ierr);
-  ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
-  ierr = MatCreateVecs(A,&x,&y);CHKERRQ(ierr);
-  ierr = VecSet(x,1.0);CHKERRQ(ierr);
+  PetscCall(MatMPIAIJSetPreallocation(A,n,NULL,0,NULL));
+  PetscCall(MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE));
+  PetscCall(MatGetOwnershipRange(A,&rstart,&rend));
+  PetscCall(MatCreateVecs(A,&x,&y));
+  PetscCall(VecSet(x,1.0));
 
   /*
     Matrix A only has nonzeros in the diagonal block, which is of size 3x3.
@@ -40,25 +39,25 @@ int main(int argc,char **argv)
     margin = (k == 2)? 0 : 2; /* Create two zero-rows in the first two assemblies */
     for (i=rstart; i<rend-margin; i++) {
       for (j=rstart; j<rend; j++) {
-        ierr = MatSetValue(A,i,j,(PetscScalar)vstart,INSERT_VALUES);CHKERRQ(ierr);
+        PetscCall(MatSetValue(A,i,j,(PetscScalar)vstart,INSERT_VALUES));
         vstart++;
       }
     }
-    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatMult(A,x,y);CHKERRQ(ierr);
-    ierr = MatMultTransposeAdd(A,x,y,y);CHKERRQ(ierr); /* y[i] = sum of row i and column i of A */
-    ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatMult(A,x,y));
+    PetscCall(MatMultTransposeAdd(A,x,y,y)); /* y[i] = sum of row i and column i of A */
+    PetscCall(VecView(y,PETSC_VIEWER_STDOUT_WORLD));
   }
 
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&y);CHKERRQ(ierr);
-  ierr = PetscFinalize();
+  PetscCall(MatDestroy(&A));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&y));
+  PetscCall(PetscFinalize());
 
   /* Uncomment this line if you want to use "cuda-memcheck --leaf-check full" to check this program */
   /*cudaDeviceReset();*/
-  return ierr;
+  return 0;
 }
 
 /*TEST

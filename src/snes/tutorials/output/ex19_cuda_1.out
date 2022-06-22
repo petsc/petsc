@@ -1,15 +1,17 @@
 lid velocity = 0.0625, prandtl # = 1., grashof # = 1.
   0 SNES Function norm 2.391552133017e-01 
-    0 KSP Residual norm 2.325621076120e-01 
-    1 KSP Residual norm 1.654206318674e-02 
-    2 KSP Residual norm 7.202836119880e-04 
-    3 KSP Residual norm 1.796861424199e-05 
-    4 KSP Residual norm 2.461332992052e-07 
-  1 SNES Function norm 6.826585648929e-05 
-    0 KSP Residual norm 2.347339172985e-05 
-    1 KSP Residual norm 8.356798075993e-07 
-    2 KSP Residual norm 1.844045309619e-08 
-    3 KSP Residual norm 5.336386977405e-10 
-    4 KSP Residual norm 2.662608472862e-11 
-  2 SNES Function norm 6.549682264799e-11 
+    0 KSP Residual norm 2.928487269734e-01 
+    1 KSP Residual norm 1.876489580142e-02 
+    2 KSP Residual norm 3.291394847944e-03 
+    3 KSP Residual norm 2.456493072124e-04 
+    4 KSP Residual norm 1.161647147715e-05 
+    5 KSP Residual norm 1.285648407621e-06 
+  1 SNES Function norm 6.846805706142e-05 
+    0 KSP Residual norm 2.292783790384e-05 
+    1 KSP Residual norm 2.100673631699e-06 
+    2 KSP Residual norm 2.121341386147e-07 
+    3 KSP Residual norm 2.455932678957e-08 
+    4 KSP Residual norm 1.753095730744e-09 
+    5 KSP Residual norm 7.489214418904e-11 
+  2 SNES Function norm 2.103908447865e-10 
 Number of SNES iterations = 2

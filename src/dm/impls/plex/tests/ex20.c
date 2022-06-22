@@ -8,27 +8,26 @@ int main(int argc, char **argv)
   DM             dm, dmAdapt;
   DMLabel        adaptLabel;
   PetscInt       cStart, cEnd;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
-  ierr = DMCreate(PETSC_COMM_WORLD, &dm);CHKERRQ(ierr);
-  ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) dm, "Pre Adaptation Mesh");CHKERRQ(ierr);
-  ierr = DMViewFromOptions(dm, NULL, "-pre_adapt_dm_view");CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCall(DMCreate(PETSC_COMM_WORLD, &dm));
+  PetscCall(DMSetType(dm, DMPLEX));
+  PetscCall(DMSetFromOptions(dm));
+  PetscCall(PetscObjectSetName((PetscObject) dm, "Pre Adaptation Mesh"));
+  PetscCall(DMViewFromOptions(dm, NULL, "-pre_adapt_dm_view"));
 
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMLabelCreate(PETSC_COMM_SELF, "adapt", &adaptLabel);CHKERRQ(ierr);
-  ierr = DMLabelSetDefaultValue(adaptLabel, DM_ADAPT_COARSEN);CHKERRQ(ierr);
-  if (cEnd > cStart) {ierr = DMLabelSetValue(adaptLabel, cStart, DM_ADAPT_REFINE);CHKERRQ(ierr);}
-  ierr = DMAdaptLabel(dm, adaptLabel, &dmAdapt);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) dmAdapt, "Post Adaptation Mesh");CHKERRQ(ierr);
-  ierr = DMViewFromOptions(dmAdapt, NULL, "-post_adapt_dm_view");CHKERRQ(ierr);
-  ierr = DMDestroy(&dmAdapt);CHKERRQ(ierr);
-  ierr = DMLabelDestroy(&adaptLabel);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+  PetscCall(DMLabelCreate(PETSC_COMM_SELF, "adapt", &adaptLabel));
+  PetscCall(DMLabelSetDefaultValue(adaptLabel, DM_ADAPT_COARSEN));
+  if (cEnd > cStart) PetscCall(DMLabelSetValue(adaptLabel, cStart, DM_ADAPT_REFINE));
+  PetscCall(DMAdaptLabel(dm, adaptLabel, &dmAdapt));
+  PetscCall(PetscObjectSetName((PetscObject) dmAdapt, "Post Adaptation Mesh"));
+  PetscCall(DMViewFromOptions(dmAdapt, NULL, "-post_adapt_dm_view"));
+  PetscCall(DMDestroy(&dmAdapt));
+  PetscCall(DMLabelDestroy(&adaptLabel));
+  PetscCall(DMDestroy(&dm));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

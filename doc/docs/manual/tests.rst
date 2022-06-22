@@ -23,7 +23,7 @@ For a full list of options, use
 
 .. code-block:: console
 
-   $ make -f gmakefile help
+   $ make -f gmakefile help-test
 
 Understanding test output and more information
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -133,7 +133,7 @@ For testing of installed PETSc, use
 
 .. code-block:: console
 
-   make -f ${PETSC_DIR}/share/petsc/examples/gmakefile.test test
+   $ make -f ${PETSC_DIR}/share/petsc/examples/gmakefile.test test
 
 which will create/use ``tests/*`` in the current directory for generated test files.
 You may pass an additional argument ``TESTDIR=mytests`` to place these generated files somewhere else.

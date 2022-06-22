@@ -15,19 +15,17 @@
 
     For doing runtime checking off supported versions we recommend using PetscGetVersionNumber() instead of this routine.
 
-.seealso: PetscGetProgramName(), PetscGetVersionNumber()
+.seealso: `PetscGetProgramName()`, `PetscGetVersionNumber()`
 
 @*/
 
 PetscErrorCode PetscGetVersion(char version[], size_t len)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
 #if (PETSC_VERSION_RELEASE == 1)
-  ierr = PetscSNPrintf(version,len,"Petsc Release Version %d.%d.%d, %s ",PETSC_VERSION_MAJOR,PETSC_VERSION_MINOR, PETSC_VERSION_SUBMINOR,PETSC_VERSION_DATE);CHKERRQ(ierr);
+  PetscCall(PetscSNPrintf(version,len,"Petsc Release Version %d.%d.%d, %s ",PETSC_VERSION_MAJOR,PETSC_VERSION_MINOR, PETSC_VERSION_SUBMINOR,PETSC_VERSION_DATE));
 #else
-  ierr = PetscSNPrintf(version,len,"Petsc Development GIT revision: %s  GIT Date: %s",PETSC_VERSION_GIT, PETSC_VERSION_DATE_GIT);CHKERRQ(ierr);
+  PetscCall(PetscSNPrintf(version,len,"Petsc Development GIT revision: %s  GIT Date: %s",PETSC_VERSION_GIT, PETSC_VERSION_DATE_GIT));
 #endif
   PetscFunctionReturn(0);
 }
@@ -51,7 +49,7 @@ PetscErrorCode PetscGetVersion(char version[], size_t len)
 
        This function can be called before PetscInitialize()
 
-.seealso: PetscGetProgramName(), PetscGetVersion(), PetscInitialize()
+.seealso: `PetscGetProgramName()`, `PetscGetVersion()`, `PetscInitialize()`
 
 @*/
 PetscErrorCode PetscGetVersionNumber(PetscInt *major, PetscInt *minor, PetscInt *subminor,PetscInt *release)

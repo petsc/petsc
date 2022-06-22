@@ -13,74 +13,72 @@
 */
 PetscErrorCode  TSMonitorLGCtxNetworkDestroy(TSMonitorLGCtxNetwork *ctx)
 {
-  PetscErrorCode ierr;
   PetscInt       i;
 
   PetscFunctionBegin;
   for (i=0; i<(*ctx)->nlg; i++) {
-    ierr = PetscDrawLGDestroy(&(*ctx)->lg[i]);CHKERRQ(ierr);
+    PetscCall(PetscDrawLGDestroy(&(*ctx)->lg[i]));
   }
-  ierr = PetscFree((*ctx)->lg);CHKERRQ(ierr);
-  ierr = PetscFree(*ctx);CHKERRQ(ierr);
+  PetscCall(PetscFree((*ctx)->lg));
+  PetscCall(PetscFree(*ctx));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode  TSMonitorLGCtxNetworkCreate(TS ts,const char host[],const char label[],int x,int y,int m,int n,PetscInt howoften,TSMonitorLGCtxNetwork *ctx)
 {
   PetscDraw      draw;
-  PetscErrorCode ierr;
   MPI_Comm       comm;
   DM             dm;
   PetscInt       i,Start,End,e,nvar;
 
   PetscFunctionBegin;
-  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
-  ierr = PetscObjectGetComm((PetscObject)ts,&comm);CHKERRQ(ierr);
-  ierr = PetscNew(ctx);CHKERRQ(ierr);
+  PetscCall(TSGetDM(ts,&dm));
+  PetscCall(PetscObjectGetComm((PetscObject)ts,&comm));
+  PetscCall(PetscNew(ctx));
   i = 0;
   /* loop over edges counting number of line graphs needed */
-  ierr = DMNetworkGetEdgeRange(dm,&Start,&End);CHKERRQ(ierr);
+  PetscCall(DMNetworkGetEdgeRange(dm,&Start,&End));
   for (e=Start; e<End; e++) {
-    ierr = DMNetworkGetComponent(dm,e,ALL_COMPONENTS,NULL,NULL,&nvar);CHKERRQ(ierr);
+    PetscCall(DMNetworkGetComponent(dm,e,ALL_COMPONENTS,NULL,NULL,&nvar));
     if (!nvar) continue;
     i++;
   }
   /* loop over vertices */
-  ierr = DMNetworkGetVertexRange(dm,&Start,&End);CHKERRQ(ierr);
+  PetscCall(DMNetworkGetVertexRange(dm,&Start,&End));
   for (e=Start; e<End; e++) {
-    ierr = DMNetworkGetComponent(dm,e,ALL_COMPONENTS,NULL,NULL,&nvar);CHKERRQ(ierr);
+    PetscCall(DMNetworkGetComponent(dm,e,ALL_COMPONENTS,NULL,NULL,&nvar));
     if (!nvar) continue;
     i++;
   }
   (*ctx)->nlg = i;
-  ierr = PetscMalloc1(i,&(*ctx)->lg);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(i,&(*ctx)->lg));
 
   i = 0;
   /* loop over edges creating all needed line graphs*/
-  ierr = DMNetworkGetEdgeRange(dm,&Start,&End);CHKERRQ(ierr);
+  PetscCall(DMNetworkGetEdgeRange(dm,&Start,&End));
   for (e=Start; e<End; e++) {
-    ierr = DMNetworkGetComponent(dm,e,ALL_COMPONENTS,NULL,NULL,&nvar);CHKERRQ(ierr);
+    PetscCall(DMNetworkGetComponent(dm,e,ALL_COMPONENTS,NULL,NULL,&nvar));
     if (!nvar) continue;
-    ierr = PetscDrawCreate(comm,host,label,x,y,m,n,&draw);CHKERRQ(ierr);
-    ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
-    ierr = PetscDrawLGCreate(draw,nvar,&(*ctx)->lg[i]);CHKERRQ(ierr);
-    ierr = PetscDrawLGSetFromOptions((*ctx)->lg[i]);CHKERRQ(ierr);
-    ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
+    PetscCall(PetscDrawCreate(comm,host,label,x,y,m,n,&draw));
+    PetscCall(PetscDrawSetFromOptions(draw));
+    PetscCall(PetscDrawLGCreate(draw,nvar,&(*ctx)->lg[i]));
+    PetscCall(PetscDrawLGSetFromOptions((*ctx)->lg[i]));
+    PetscCall(PetscDrawDestroy(&draw));
     i++;
   }
   /* loop over vertices */
-  ierr = DMNetworkGetVertexRange(dm,&Start,&End);CHKERRQ(ierr);
+  PetscCall(DMNetworkGetVertexRange(dm,&Start,&End));
   for (e=Start; e<End; e++) {
-    ierr = DMNetworkGetComponent(dm,e,ALL_COMPONENTS,NULL,NULL,&nvar);CHKERRQ(ierr);
+    PetscCall(DMNetworkGetComponent(dm,e,ALL_COMPONENTS,NULL,NULL,&nvar));
     if (!nvar) continue;
-    ierr = PetscDrawCreate(comm,host,label,x,y,m,n,&draw);CHKERRQ(ierr);
-    ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
-    ierr = PetscDrawLGCreate(draw,nvar,&(*ctx)->lg[i]);CHKERRQ(ierr);
-    ierr = PetscDrawLGSetFromOptions((*ctx)->lg[i]);CHKERRQ(ierr);
-    ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
+    PetscCall(PetscDrawCreate(comm,host,label,x,y,m,n,&draw));
+    PetscCall(PetscDrawSetFromOptions(draw));
+    PetscCall(PetscDrawLGCreate(draw,nvar,&(*ctx)->lg[i]));
+    PetscCall(PetscDrawLGSetFromOptions((*ctx)->lg[i]));
+    PetscCall(PetscDrawDestroy(&draw));
     i++;
   }
-  ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
+  PetscCall(PetscDrawDestroy(&draw));
   (*ctx)->howoften = howoften;
   PetscFunctionReturn(0);
 }
@@ -108,7 +106,6 @@ PetscErrorCode  TSMonitorLGCtxNetworkCreate(TS ts,const char host[],const char l
 */
 PetscErrorCode  TSMonitorLGCtxNetworkSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,void *dctx)
 {
-  PetscErrorCode        ierr;
   TSMonitorLGCtxNetwork ctx = (TSMonitorLGCtxNetwork)dctx;
   const PetscScalar     *xv;
   PetscScalar           *yv;
@@ -123,62 +120,62 @@ PetscErrorCode  TSMonitorLGCtxNetworkSolution(TS ts,PetscInt step,PetscReal ptim
     PetscDrawAxis axis;
 
     for (i=0; i<ctx->nlg; i++) {
-      ierr = PetscDrawLGGetAxis(ctx->lg[i],&axis);CHKERRQ(ierr);
-      ierr = PetscDrawAxisSetLabels(axis,"Solution as function of time","Time","Solution");CHKERRQ(ierr);
-      ierr = PetscDrawLGReset(ctx->lg[i]);CHKERRQ(ierr);
+      PetscCall(PetscDrawLGGetAxis(ctx->lg[i],&axis));
+      PetscCall(PetscDrawAxisSetLabels(axis,"Solution as function of time","Time","Solution"));
+      PetscCall(PetscDrawLGReset(ctx->lg[i]));
     }
   }
 
   if (ctx->semilogy) {
     PetscInt n,j;
 
-    ierr = VecDuplicate(u,&uv);CHKERRQ(ierr);
-    ierr = VecCopy(u,uv);CHKERRQ(ierr);
-    ierr = VecGetArray(uv,&yv);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(uv,&n);CHKERRQ(ierr);
+    PetscCall(VecDuplicate(u,&uv));
+    PetscCall(VecCopy(u,uv));
+    PetscCall(VecGetArray(uv,&yv));
+    PetscCall(VecGetLocalSize(uv,&n));
     for (j=0; j<n; j++) {
       if (PetscRealPart(yv[j]) <= 0.0) yv[j] = -12;
       else yv[j] = PetscLog10Real(PetscRealPart(yv[j]));
     }
     xv = yv;
   } else {
-    ierr = VecGetArrayRead(u,&xv);CHKERRQ(ierr);
+    PetscCall(VecGetArrayRead(u,&xv));
   }
   /* iterate over edges */
-  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+  PetscCall(TSGetDM(ts,&dm));
   i = 0;
-  ierr = DMNetworkGetEdgeRange(dm,&Start,&End);CHKERRQ(ierr);
+  PetscCall(DMNetworkGetEdgeRange(dm,&Start,&End));
   for (e=Start; e<End; e++) {
-    ierr = DMNetworkGetComponent(dm,e,ALL_COMPONENTS,NULL,NULL,&nvar);CHKERRQ(ierr);
+    PetscCall(DMNetworkGetComponent(dm,e,ALL_COMPONENTS,NULL,NULL,&nvar));
     if (!nvar) continue;
 
-    ierr = DMNetworkGetLocalVecOffset(dm,e,ALL_COMPONENTS,&offset);CHKERRQ(ierr);
-    ierr = PetscDrawLGAddCommonPoint(ctx->lg[i],ptime,(const PetscReal*)(xv+offset));CHKERRQ(ierr);
+    PetscCall(DMNetworkGetLocalVecOffset(dm,e,ALL_COMPONENTS,&offset));
+    PetscCall(PetscDrawLGAddCommonPoint(ctx->lg[i],ptime,(const PetscReal*)(xv+offset)));
     i++;
   }
 
   /* iterate over vertices */
-  ierr = DMNetworkGetVertexRange(dm,&Start,&End);CHKERRQ(ierr);
+  PetscCall(DMNetworkGetVertexRange(dm,&Start,&End));
   for (v=Start; v<End; v++) {
-    ierr = DMNetworkGetComponent(dm,v,ALL_COMPONENTS,NULL,NULL,&nvar);CHKERRQ(ierr);
+    PetscCall(DMNetworkGetComponent(dm,v,ALL_COMPONENTS,NULL,NULL,&nvar));
     if (!nvar) continue;
 
-    ierr = DMNetworkGetLocalVecOffset(dm,v,ALL_COMPONENTS,&offset);CHKERRQ(ierr);
-    ierr = PetscDrawLGAddCommonPoint(ctx->lg[i],ptime,(const PetscReal*)(xv+offset));CHKERRQ(ierr);
+    PetscCall(DMNetworkGetLocalVecOffset(dm,v,ALL_COMPONENTS,&offset));
+    PetscCall(PetscDrawLGAddCommonPoint(ctx->lg[i],ptime,(const PetscReal*)(xv+offset)));
     i++;
   }
   if (ctx->semilogy) {
-    ierr = VecRestoreArray(uv,&yv);CHKERRQ(ierr);
-    ierr = VecDestroy(&uv);CHKERRQ(ierr);
+    PetscCall(VecRestoreArray(uv,&yv));
+    PetscCall(VecDestroy(&uv));
   } else {
-    ierr = VecRestoreArrayRead(u,&xv);CHKERRQ(ierr);
+    PetscCall(VecRestoreArrayRead(u,&xv));
   }
 
-  ierr = TSGetConvergedReason(ts,&reason);CHKERRQ(ierr);
+  PetscCall(TSGetConvergedReason(ts,&reason));
   if (((ctx->howoften > 0) && (!(step % ctx->howoften))) || ((ctx->howoften == -1) && reason)) {
     for (i=0; i<ctx->nlg; i++) {
-      ierr = PetscDrawLGDraw(ctx->lg[i]);CHKERRQ(ierr);
-      ierr = PetscDrawLGSave(ctx->lg[i]);CHKERRQ(ierr);
+      PetscCall(PetscDrawLGDraw(ctx->lg[i]));
+      PetscCall(PetscDrawLGSave(ctx->lg[i]));
     }
   }
   PetscFunctionReturn(0);

@@ -1,8 +1,5 @@
--include ../petscdir.mk
-CFLAGS	        =
-FFLAGS	        =
-CPPFLAGS        =
-FPPFLAGS        =
+-include ../../../../../petscdir.mk
+
 LOCDIR          = src/dm/impls/swarm/tutorials/
 MANSEC          = DM
 

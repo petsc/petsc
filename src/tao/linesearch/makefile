@@ -1,7 +1,6 @@
+-include ../../../petsckdir.mk
 
-ALL: lib
-
-SOURCEH  = 
+SOURCEH  =
 DIRS     = impls  interface
 LOCDIR   = src/tao/linesearch/
 

@@ -5,7 +5,6 @@ static char help[]="This program illustrates the use of PETSc-fftw interface for
 
 int main(int argc,char **args)
 {
-  PetscErrorCode ierr;
   PetscMPIInt    rank,size;
   PetscInt       N0=50,N1=50,N=N0*N1;
   PetscRandom    rdm;
@@ -15,64 +14,64 @@ int main(int argc,char **args)
   PetscInt       DIM,dim[2];
   PetscReal      fac;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires real numbers");
 #endif
 
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
   /* Create and set PETSc vectors 'input' and 'output' */
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD, &rdm);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
+  PetscCall(PetscRandomCreate(PETSC_COMM_WORLD, &rdm));
+  PetscCall(PetscRandomSetFromOptions(rdm));
 
-  ierr = VecCreate(PETSC_COMM_WORLD,&input);CHKERRQ(ierr);
-  ierr = VecSetSizes(input,PETSC_DECIDE,N0*N1);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(input);CHKERRQ(ierr);
-  ierr = VecSetRandom(input,rdm);CHKERRQ(ierr);
-  ierr = VecDuplicate(input,&output);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)input, "Real space vector");CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)output, "Reconstructed vector");CHKERRQ(ierr);
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&input));
+  PetscCall(VecSetSizes(input,PETSC_DECIDE,N0*N1));
+  PetscCall(VecSetFromOptions(input));
+  PetscCall(VecSetRandom(input,rdm));
+  PetscCall(VecDuplicate(input,&output));
+  PetscCall(PetscObjectSetName((PetscObject)input, "Real space vector"));
+  PetscCall(PetscObjectSetName((PetscObject)output, "Reconstructed vector"));
 
   /* Get FFTW vectors 'x', 'y' and 'z' */
   DIM    = 2;
   dim[0] = N0; dim[1] = N1;
-  ierr   = MatCreateFFT(PETSC_COMM_WORLD,DIM,dim,MATFFTW,&A);CHKERRQ(ierr);
-  ierr   = MatCreateVecsFFTW(A,&x,&y,&z);CHKERRQ(ierr);
+  PetscCall(MatCreateFFT(PETSC_COMM_WORLD,DIM,dim,MATFFTW,&A));
+  PetscCall(MatCreateVecsFFTW(A,&x,&y,&z));
 
   /* Scatter PETSc vector 'input' to FFTW vector 'x' */
-  ierr = VecScatterPetscToFFTW(A,input,x);CHKERRQ(ierr);
+  PetscCall(VecScatterPetscToFFTW(A,input,x));
 
   /* Apply forward FFT */
-  ierr = MatMult(A,x,y);CHKERRQ(ierr);
+  PetscCall(MatMult(A,x,y));
 
   /* Apply backward FFT */
-  ierr = MatMultTranspose(A,y,z);CHKERRQ(ierr);
+  PetscCall(MatMultTranspose(A,y,z));
 
   /* Scatter FFTW vector 'z' to PETSc vector 'output' */
-  ierr = VecScatterFFTWToPetsc(A,z,output);CHKERRQ(ierr);
+  PetscCall(VecScatterFFTWToPetsc(A,z,output));
 
   /* Check accuracy */
   fac  = 1.0/(PetscReal)N;
-  ierr = VecScale(output,fac);CHKERRQ(ierr);
-  ierr = VecAXPY(output,-1.0,input);CHKERRQ(ierr);
-  ierr = VecNorm(output,NORM_1,&enorm);CHKERRQ(ierr);
+  PetscCall(VecScale(output,fac));
+  PetscCall(VecAXPY(output,-1.0,input));
+  PetscCall(VecNorm(output,NORM_1,&enorm));
   if (enorm > 1.e-11 && rank == 0) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %e\n",enorm);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %e\n",enorm));
   }
 
   /* Free spaces */
-  ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
-  ierr = VecDestroy(&input);CHKERRQ(ierr);
-  ierr = VecDestroy(&output);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&y);CHKERRQ(ierr);
-  ierr = VecDestroy(&z);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  PetscCall(PetscRandomDestroy(&rdm));
+  PetscCall(VecDestroy(&input));
+  PetscCall(VecDestroy(&output));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&y));
+  PetscCall(VecDestroy(&z));
+  PetscCall(MatDestroy(&A));
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

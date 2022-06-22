@@ -10,7 +10,6 @@ Labels:
   depth: 4 strata with value/size (0 (8), 1 (12), 2 (8), 3 (2))
   fault: 1 strata with value/size (1 (6))
   vtk: 1 strata with value/size (1 (2))
-  ghost: 1 strata with value/size (1 (6))
 DM Object: Hybrid Mesh 2 MPI processes
   type: plex
 Hybrid Mesh in 3 dimensions:
@@ -23,4 +22,3 @@ Labels:
   depth: 4 strata with value/size (0 (20), 1 (50), 2 (48), 3 (16))
   fault: 1 strata with value/size (1 (6))
   vtk: 1 strata with value/size (1 (34))
-  ghost: 1 strata with value/size (1 (42))

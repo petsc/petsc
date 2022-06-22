@@ -11,6 +11,11 @@
       PetscEnum, parameter :: DMPLEX_INTERPOLATED_PARTIAL = 1
       PetscEnum, parameter :: DMPLEX_INTERPOLATED_MIXED = 2
       PetscEnum, parameter :: DMPLEX_INTERPOLATED_FULL = 3
+!
+! DMPlexTPSType
+!
+      PetscEnum, parameter :: DMPLEX_TPS_SCHWARZ_P = 0
+      PetscEnum, parameter :: DMPLEX_TPS_GYROID = 1
 
       type tDMPlexTransform
         sequence
@@ -18,3 +23,9 @@
       end type tDMPlexTransform
 
       DMPlexTransform, parameter :: PETSC_NULL_DMPLEXTRANSFORM = tDMPlexTransform(0)
+!
+! DMPlexReorderDefaultFlag
+!
+      PetscEnum, parameter :: DMPLEX_REORDER_DEFAULT_NOTSET = -1
+      PetscEnum, parameter :: DMPLEX_REORDER_DEFAULT_FALSE = 0
+      PetscEnum, parameter :: DMPLEX_REORDER_DEFAULT_TRUE = 1

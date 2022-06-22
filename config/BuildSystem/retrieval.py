@@ -2,14 +2,8 @@ from __future__ import absolute_import
 import logger
 
 import os
-try:
-  from urllib import urlretrieve
-except ImportError:
-  from urllib.request import urlretrieve
-try:
-  import urlparse as urlparse_local # novermin
-except ImportError:
-  from urllib import parse as urlparse_local
+from urllib.request import urlretrieve
+from urllib import parse as urlparse_local
 import config.base
 import socket
 import shutil
@@ -21,10 +15,50 @@ class Retriever(logger.Logger):
   def __init__(self, sourceControl, clArgs = None, argDB = None):
     logger.Logger.__init__(self, clArgs, argDB)
     self.sourceControl = sourceControl
+    self.gitsubmodules = []
+    self.gitprereq = 1
+    self.git_urls = []
+    self.hg_urls = []
+    self.dir_urls = []
+    self.link_urls = []
+    self.tarball_urls = []
     self.stamp = None
     return
 
+  def isGitURL(self, url):
+    parsed = urlparse_local.urlparse(url)
+    if (parsed[0] == 'git') or (parsed[0] == 'ssh' and parsed[2].endswith('.git')) or (parsed[0] == 'https' and parsed[2].endswith('.git')):
+      return True
+    elif os.path.isdir(url) and self.isDirectoryGitRepo(url):
+      return True
+    return False
+
+  def setupURLs(self,packagename,urls,gitsubmodules,gitprereq):
+    self.packagename = packagename
+    self.gitsubmodules = gitsubmodules
+    self.gitprereq = gitprereq
+    for url in urls:
+      parsed = urlparse_local.urlparse(url)
+      if self.isGitURL(url):
+        self.git_urls.append(self.removePrefix(url,'git://'))
+      elif parsed[0] == 'hg'or (parsed[0] == 'ssh' and parsed[1].startswith('hg@')):
+        self.hg_urls.append(self.removePrefix(url,'hg://'))
+      elif parsed[0] == 'dir' or os.path.isdir(url):
+        self.dir_urls.append(self.removePrefix(url,'dir://'))
+      elif parsed[0] == 'link':
+        self.link_urls.append(self.removePrefix(url,'link://'))
+      else:
+        # check for ftp.mcs.anl.gov - and use https://,www.mcs.anl.gov,ftp://
+        if url.find('ftp.mcs.anl.gov') != -1:
+          https_url = url.replace('http://','https://').replace('ftp://','http://')
+          self.tarball_urls.extend([https_url,https_url.replace('ftp.mcs.anl.gov/pub/petsc/','www.mcs.anl.gov/petsc/mirror/'),https_url.replace('https://','ftp')])
+        else:
+          self.tarball_urls.extend([url])
+
   def isDirectoryGitRepo(self, directory):
+    if not hasattr(self.sourceControl, 'git'):
+      self.logPrint('git not found in self.sourceControl - cannot evaluate isDirectoryGitRepo(): '+directory)
+      return False
     from config.base import Configure
     for loc in ['.git','']:
       cmd = '%s rev-parse --resolve-git-dir  %s'  % (self.sourceControl.git, os.path.join(directory,loc))
@@ -61,90 +95,90 @@ Unable to download package %s from: %s
       return url[len(prefix):]
     return url
 
-  def genericRetrieve(self, url, root, package, submodules):
-    '''Fetch package from version control repository or tarfile indicated by URL and extract it into root'''
-
-    parsed = urlparse_local.urlparse(url)
-    if parsed[0] == 'dir':
-      f = self.dirRetrieve
-    elif parsed[0] == 'link':
-      f = self.linkRetrieve
-    elif parsed[0] == 'git':
-      f = self.gitRetrieve
-    elif parsed[0] == 'ssh'   and parsed[2].endswith('.git'):
-      f = self.gitRetrieve
-    elif parsed[0] == 'https' and parsed[2].endswith('.git'):
-      f = self.gitRetrieve
-    elif parsed[0] == 'hg':
-      f = self.hgRetrieve
-    elif parsed[0] == 'ssh' and parsed[1].startswith('hg@'):
-      f = self.hgRetrieve
-    elif os.path.isdir(url):
-      if self.isDirectoryGitRepo(url):
-        f = self.gitRetrieve
-      else:
-        f = self.dirRetrieve
+  def generateURLs(self):
+    if hasattr(self.sourceControl, 'git') and self.gitprereq:
+      for url in self.git_urls:
+        yield('git',url)
     else:
-      f = self.tarballRetrieve
-    return f(url, root, package, submodules)
+      self.logPrint('Git not found or gitprereq check failed! skipping giturls: '+str(self.git_urls)+'\n')
+    if hasattr(self.sourceControl, 'hg'):
+      for url in self.hg_urls:
+        yield('hg',url)
+    else:
+      self.logPrint('Hg not found - skipping hgurls: '+str(self.hg_urls)+'\n')
+    for url in self.dir_urls:
+      yield('dir',url)
+    for url in self.link_urls:
+      yield('link',url)
+    for url in self.tarball_urls:
+      yield('tarball',url)
 
-  def dirRetrieve(self, url, root, package, submodules):
+  def genericRetrieve(self,proto,url,root):
+    '''Fetch package from version control repository or tarfile indicated by URL and extract it into root'''
+    if proto == 'git':
+      return self.gitRetrieve(url,root)
+    elif proto == 'hg':
+      return self.hgRetrieve(url,root)
+    elif proto == 'dir':
+      return self.dirRetrieve(url,root)
+    elif proto == 'link':
+      self.linkRetrieve(url,root)
+    elif proto == 'tarball':
+      self.tarballRetrieve(url,root)
+
+  def dirRetrieve(self, url, root):
     self.logPrint('Retrieving %s as directory' % url, 3, 'install')
-    d = self.removePrefix(url, 'dir://')
-    if not os.path.isdir(d): raise RuntimeError('URL %s is not a directory' % url)
+    if not os.path.isdir(url): raise RuntimeError('URL %s is not a directory' % url)
 
-    t = os.path.join(root,os.path.basename(d))
+    t = os.path.join(root,os.path.basename(url))
     self.removeTarget(t)
-    shutil.copytree(d,t)
+    shutil.copytree(url,t)
 
-  def linkRetrieve(self, url, root, package, submodules):
+  def linkRetrieve(self, url, root):
     self.logPrint('Retrieving %s as link' % url, 3, 'install')
-    d = self.removePrefix(url, 'link://')
-    if not os.path.isdir(d): raise RuntimeError('URL %s is not pointing to a directory' % url)
+    if not os.path.isdir(url): raise RuntimeError('URL %s is not pointing to a directory' % url)
 
-    t = os.path.join(root,os.path.basename(d))
+    t = os.path.join(root,os.path.basename(url))
     self.removeTarget(t)
-    os.symlink(os.path.abspath(d),t)
+    os.symlink(os.path.abspath(url),t)
 
-  def gitRetrieve(self, url, root, package, submodules):
+  def gitRetrieve(self, url, root):
     self.logPrint('Retrieving %s as git repo' % url, 3, 'install')
     if not hasattr(self.sourceControl, 'git'):
       raise RuntimeError('self.sourceControl.git not set')
-    d = self.removePrefix(url, 'git://')
-    if os.path.isdir(d) and not self.isDirectoryGitRepo(d):
+    if os.path.isdir(url) and not self.isDirectoryGitRepo(url):
       raise RuntimeError('URL %s is a directory but not a git repository' % url)
 
-    newgitrepo = os.path.join(root,'git.'+package)
+    newgitrepo = os.path.join(root,'git.'+self.packagename)
     self.removeTarget(newgitrepo)
 
     try:
       submodopt =''
-      for itm in submodules:
+      for itm in self.gitsubmodules:
         submodopt += ' --recurse-submodules='+itm
-      config.base.Configure.executeShellCommand('%s clone %s %s %s' % (self.sourceControl.git, submodopt, d, newgitrepo), log = self.log, timeout = 120.0)
+      config.base.Configure.executeShellCommand('%s clone %s %s %s' % (self.sourceControl.git, submodopt, url, newgitrepo), log = self.log, timeout = 120.0)
     except  RuntimeError as e:
       self.logPrint('ERROR: '+str(e))
       err = str(e)
-      failureMessage = self.getDownloadFailureMessage(package, url)
-      raise RuntimeError('Unable to clone '+package+'\n'+err+failureMessage)
+      failureMessage = self.getDownloadFailureMessage(self.packagename, url)
+      raise RuntimeError('Unable to clone '+self.packagename+'\n'+err+failureMessage)
 
-  def hgRetrieve(self, url, root, package, submodules):
+  def hgRetrieve(self, url, root):
     self.logPrint('Retrieving %s as hg repo' % url, 3, 'install')
     if not hasattr(self.sourceControl, 'hg'):
       raise RuntimeError('self.sourceControl.hg not set')
-    d = self.removePrefix(url, 'hg://')
 
-    newgitrepo = os.path.join(root,'hg.'+package)
+    newgitrepo = os.path.join(root,'hg.'+self.packagename)
     self.removeTarget(newgitrepo)
     try:
-      config.base.Configure.executeShellCommand('%s clone %s %s' % (self.sourceControl.hg, d, newgitrepo), log = self.log, timeout = 120.0)
+      config.base.Configure.executeShellCommand('%s clone %s %s' % (self.sourceControl.hg, url, newgitrepo), log = self.log, timeout = 120.0)
     except  RuntimeError as e:
       self.logPrint('ERROR: '+str(e))
       err = str(e)
-      failureMessage = self.getDownloadFailureMessage(package, url)
-      raise RuntimeError('Unable to clone '+package+'\n'+err+failureMessage)
+      failureMessage = self.getDownloadFailureMessage(self.packagename, url)
+      raise RuntimeError('Unable to clone '+self.packagename+'\n'+err+failureMessage)
 
-  def tarballRetrieve(self, url, root, package, submodules):
+  def tarballRetrieve(self, url, root):
     parsed = urlparse_local.urlparse(url)
     filename = os.path.basename(parsed[2])
     localFile = os.path.join(root,'_d_'+filename)
@@ -171,7 +205,7 @@ Unable to download package %s from: %s
         socket.setdefaulttimeout(sav_timeout)
       except Exception as e:
         socket.setdefaulttimeout(sav_timeout)
-        failureMessage = self.getDownloadFailureMessage(package, url, filename)
+        failureMessage = self.getDownloadFailureMessage(self.packagename, url, filename)
         raise RuntimeError(failureMessage)
 
     self.logPrint('Extracting '+localFile)
@@ -189,7 +223,7 @@ Downloaded package %s from: %s is not a tarball.
 * or you can download the above URL manually, to /yourselectedlocation/%s
   and use the configure option:
   --download-%s=/yourselectedlocation/%s
-''' % (package.upper(), url, filename, package, filename)
+''' % (self.packagename.upper(), url, filename, self.packagename, filename)
       import tarfile
       try:
         tf  = tarfile.open(os.path.join(root, localFile))

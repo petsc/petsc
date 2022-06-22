@@ -33,17 +33,17 @@
  algorithm framework.
 
  References:
-   Billups, "Algorithms for Complementarity Problems and Generalized
++ * - Billups, "Algorithms for Complementarity Problems and Generalized
      Equations," Ph.D thesis, University of Wisconsin - Madison, 1995.
-   De Luca, Facchinei, Kanzow, "A Semismooth Equation Approach to the
+. * - De Luca, Facchinei, Kanzow, "A Semismooth Equation Approach to the
      Solution of Nonlinear Complementarity Problems," Mathematical
      Programming, 75, pages 407-439, 1996.
-   Ferris, Kanzow, Munson, "Feasible Descent Algorithms for Mixed
+. * - Ferris, Kanzow, Munson, "Feasible Descent Algorithms for Mixed
      Complementarity Problems," Mathematical Programming, 86,
      pages 475-497, 1999.
-   Fischer, "A Special Newton-type Optimization Method," Optimization,
+. * - Fischer, "A Special Newton-type Optimization Method," Optimization,
      24, pages 269-284, 1992
-   Munson, Facchinei, Ferris, Fischer, Kanzow, "The Semismooth Algorithm
+- * - Munson, Facchinei, Ferris, Fischer, Kanzow, "The Semismooth Algorithm
      for Large Scale Complementarity Problems," Technical Report 99-06,
      University of Wisconsin - Madison, 1999.
 */

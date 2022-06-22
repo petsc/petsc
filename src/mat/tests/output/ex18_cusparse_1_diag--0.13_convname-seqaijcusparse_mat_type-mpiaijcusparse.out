@@ -3,7 +3,7 @@
 0 2 2.000000
 0 4 4.000000
 *** Matrix A and vector x:
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqaijcusparse
 row 0: (0, 4.)  (1, -1.)  (2, -1.) 
 row 1: (0, -1.)  (1, 4.)  (3, -1.) 
@@ -11,7 +11,7 @@ row 2: (0, -1.)  (2, 4.)  (3, -1.)  (4, -1.)
 row 3: (1, -1.)  (2, -1.)  (3, 4.)  (5, -1.) 
 row 4: (2, -1.)  (4, 4.)  (5, -1.) 
 row 5: (3, -1.)  (4, -1.)  (5, 4.) 
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seqcuda
 0.
 1.
@@ -20,7 +20,7 @@ Vec Object: 1 MPI processes
 4.
 0.
 *** Vector rhs returned by MatZeroRowsColumns
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seqcuda
 -0.
 -0.13

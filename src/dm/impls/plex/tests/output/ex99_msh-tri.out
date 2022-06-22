@@ -1,4 +1,4 @@
-DM Object: mesh-tri 1 MPI processes
+DM Object: mesh-tri 1 MPI process
   type: plex
 mesh-tri in 2 dimensions:
 Supports:

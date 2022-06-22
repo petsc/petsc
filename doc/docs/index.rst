@@ -6,9 +6,8 @@ PETSc/TAO Documentation
    :maxdepth: 1
 
    manual/index
-   manualpages/index
    changes/index
+   manualpages/index
+   manualpages/singleindex
 
 * `PETSc/TAO Users Manual in PDF <manual/manual.pdf>`__
-* `Function Index <../docs/manualpages/singleindex.html>`__
-* `Examples Index <../docs/manualpages/help.html>`__

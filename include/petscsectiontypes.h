@@ -1,6 +1,8 @@
 #if !defined(PETSCSECTIONTYPES_H)
 #define PETSCSECTIONTYPES_H
 
+/* SUBMANSEC = PetscSection */
+
 /*S
   PetscSection - Mapping from integers in a designated range to contiguous sets of integers.
 
@@ -13,7 +15,7 @@
 
   Level: beginner
 
-.seealso:  PetscSectionCreate(), PetscSectionDestroy(), PetscSectionSym
+.seealso: `PetscSectionCreate()`, `PetscSectionDestroy()`, `PetscSectionSym`
 S*/
 typedef struct _p_PetscSection *PetscSection;
 
@@ -27,8 +29,8 @@ typedef struct _p_PetscSection *PetscSection;
 
   Level: developer
 
-.seealso: PetscSection, PetscSectionSymCreate(), PetscSectionSymDestroy(), PetscSectionSetSym(), PetscSectionGetSym(), PetscSectionSetFieldSym(),
-          PetscSectionGetFieldSym(), PetscSectionGetSymPoints(), PetscSectionSymType, PetscSectionSymSetType(), PetscSectionSymGetType()
+.seealso: `PetscSection`, `PetscSectionSymCreate()`, `PetscSectionSymDestroy()`, `PetscSectionSetSym()`, `PetscSectionGetSym()`, `PetscSectionSetFieldSym()`,
+          `PetscSectionGetFieldSym()`, `PetscSectionGetSymPoints()`, `PetscSectionSymType`, `PetscSectionSymSetType()`, `PetscSectionSymGetType()`
 S*/
 typedef struct _p_PetscSectionSym *PetscSectionSym;
 
@@ -40,7 +42,7 @@ typedef struct _p_PetscSectionSym *PetscSectionSym;
   Notes:
     PetscSectionSym has no default implementation, but is used by DM in PetscSectionSymCreateLabel().
 
-.seealso: PetscSectionSymSetType(), PetscSectionSymGetType(), PetscSectionSym, PetscSectionSymCreate(), PetscSectionSymRegister()
+.seealso: `PetscSectionSymSetType()`, `PetscSectionSymGetType()`, `PetscSectionSym`, `PetscSectionSymCreate()`, `PetscSectionSymRegister()`
 J*/
 typedef const char *PetscSectionSymType;
 

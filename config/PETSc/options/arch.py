@@ -12,9 +12,7 @@ class Configure(config.base.Configure):
   def __str1__(self):
     if not hasattr(self, 'arch'):
       return ''
-    desc = ['PETSc:']
-    desc.append('  PETSC_ARCH: '+str(self.arch))
-    return '\n'.join(desc)+'\n'
+    return '  PETSC_ARCH: '+str(self.arch)+'\n'
 
   def setupHelp(self, help):
     import nargs
@@ -44,9 +42,8 @@ class Configure(config.base.Configure):
     '''Checks PETSC_ARCH and sets if not set'''
     # Warn if PETSC_ARCH doesn't match env variable
     if 'PETSC_ARCH' in self.framework.argDB and 'PETSC_ARCH' in os.environ and self.framework.argDB['PETSC_ARCH'] != os.environ['PETSC_ARCH']:
-      self.logPrintBox('''\
-Warning: PETSC_ARCH from environment does not match command-line or name of script.
-Warning: Using from command-line or name of script: %s, ignoring environment: %s''' % (str(self.framework.argDB['PETSC_ARCH']), str(os.environ['PETSC_ARCH'])))
+      self.logPrintWarning('''\
+PETSC_ARCH from environment does not match command-line or name of script. Using from command-line or name of script: %s, ignoring environment: %s''' % (str(self.framework.argDB['PETSC_ARCH']), str(os.environ['PETSC_ARCH'])))
       os.environ['PETSC_ARCH'] = self.framework.argDB['PETSC_ARCH']
     if 'with-petsc-arch' in self.framework.argDB:
       self.arch = self.framework.argDB['with-petsc-arch']
@@ -106,10 +103,7 @@ Warning: Using from command-line or name of script: %s, ignoring environment: %s
     import sys
     import hashlib
     import platform
-    if sys.version_info < (3,):
-      hash = 'Uname: '+platform.uname()[0]+' '+platform.uname()[4]+'\n'
-    else:
-      hash = 'Uname: '+platform.uname().system+' '+platform.uname().processor+'\n'
+    hash = 'Uname: '+platform.uname().system+' '+platform.uname().processor+'\n'
     hash += 'PATH=' + os.environ.get('PATH', '') + '\n'
     args = sorted(set(filter(lambda x: not (x.startswith('PETSC_ARCH') or x == '--force'),sys.argv[1:])))
     hash += 'args:\n' + '\n'.join('    '+a for a in args) + '\n'
@@ -149,12 +143,12 @@ Warning: Using from command-line or name of script: %s, ignoring environment: %s
         self.arch = 'arch-'+hprefix[0:6]
       else:
         if not os.path.isdir(self.argDB['package-prefix-hash']):
-          self.logPrintBox('Specified package-prefix-hash location %s not found! Attemping to create this dir!' % self.argDB['package-prefix-hash'])
+          self.logPrint('Specified package-prefix-hash location %s not found! Attemping to create this dir!' % self.argDB['package-prefix-hash'])
           try:
             os.makedirs(self.argDB['package-prefix-hash'])
           except Exception as e:
             self.logPrint('Error creating package-prefix-hash directory '+self.argDB['package-prefix-hash']+': '+str(e))
-            raise RuntimeError('You must have write permission to create this directory!')
+            raise RuntimeError('You must have write permission to create prefix directory '+self.argDB['package-prefix-hash'])
         status = False
         for idx in range(6,len(hprefix)):
           hashdirpackages = os.path.join(self.argDB['package-prefix-hash'],hprefix[0:idx])

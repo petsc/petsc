@@ -31,7 +31,7 @@
 
   Complexity of this function is currently O(mn) with m number of vertices to find and n number of vertices in the local mesh. This could probably be improved if needed.
 
-.seealso: DMPlexCreate(), DMGetCoordinatesLocal()
+.seealso: `DMPlexCreate()`, `DMGetCoordinatesLocal()`
 @*/
 PetscErrorCode DMPlexFindVertices(DM dm, Vec coordinates, PetscReal eps, IS *points)
 {
@@ -41,34 +41,33 @@ PetscErrorCode DMPlexFindVertices(DM dm, Vec coordinates, PetscReal eps, IS *poi
   Vec               allCoordsVec;
   const PetscScalar *allCoords;
   PetscInt          *dagPoints;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   if (eps < 0) eps = PETSC_SQRT_MACHINE_EPSILON;
-  ierr = DMGetCoordinateDim(dm, &cdim);CHKERRQ(ierr);
+  PetscCall(DMGetCoordinateDim(dm, &cdim));
   {
     PetscInt n;
 
-    ierr = VecGetLocalSize(coordinates, &n);CHKERRQ(ierr);
-    PetscCheckFalse(n % cdim,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Given coordinates Vec has local length %D not divisible by coordinate dimension %D of given DM", n, cdim);
+    PetscCall(VecGetLocalSize(coordinates, &n));
+    PetscCheck(n % cdim == 0,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Given coordinates Vec has local length %" PetscInt_FMT " not divisible by coordinate dimension %" PetscInt_FMT " of given DM", n, cdim);
     npoints = n / cdim;
   }
-  ierr = DMGetCoordinatesLocal(dm, &allCoordsVec);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(allCoordsVec, &allCoords);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(coordinates, &coord);CHKERRQ(ierr);
-  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  PetscCall(DMGetCoordinatesLocal(dm, &allCoordsVec));
+  PetscCall(VecGetArrayRead(allCoordsVec, &allCoords));
+  PetscCall(VecGetArrayRead(coordinates, &coord));
+  PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
   if (PetscDefined(USE_DEBUG)) {
     /* check coordinate section is consistent with DM dimension */
     PetscSection      cs;
     PetscInt          ndof;
 
-    ierr = DMGetCoordinateSection(dm, &cs);CHKERRQ(ierr);
+    PetscCall(DMGetCoordinateSection(dm, &cs));
     for (p = vStart; p < vEnd; p++) {
-      ierr = PetscSectionGetDof(cs, p, &ndof);CHKERRQ(ierr);
-      PetscCheckFalse(ndof != cdim,PETSC_COMM_SELF, PETSC_ERR_PLIB, "point %D: ndof = %D != %D = cdim", p, ndof, cdim);
+      PetscCall(PetscSectionGetDof(cs, p, &ndof));
+      PetscCheck(ndof == cdim,PETSC_COMM_SELF, PETSC_ERR_PLIB, "point %" PetscInt_FMT ": ndof = %" PetscInt_FMT " != %" PetscInt_FMT " = cdim", p, ndof, cdim);
     }
   }
-  ierr = PetscMalloc1(npoints, &dagPoints);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(npoints, &dagPoints));
   if (eps == 0.0) {
     for (i=0,j=0; i < npoints; i++,j+=cdim) {
       dagPoints[i] = -1;
@@ -100,9 +99,9 @@ PetscErrorCode DMPlexFindVertices(DM dm, Vec coordinates, PetscReal eps, IS *poi
       }
     }
   }
-  ierr = VecRestoreArrayRead(allCoordsVec, &allCoords);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(coordinates, &coord);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF, npoints, dagPoints, PETSC_OWN_POINTER, points);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayRead(allCoordsVec, &allCoords));
+  PetscCall(VecRestoreArrayRead(coordinates, &coord));
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF, npoints, dagPoints, PETSC_OWN_POINTER, points));
   PetscFunctionReturn(0);
 }
 
@@ -207,10 +206,9 @@ static PetscErrorCode DMPlexLocatePoint_Simplex_1D_Internal(DM dm, const PetscSc
   const PetscReal x   = PetscRealPart(point[0]);
   PetscReal       v0, J, invJ, detJ;
   PetscReal       xi;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexComputeCellGeometryFEM(dm, c, NULL, &v0, &J, &invJ, &detJ);CHKERRQ(ierr);
+  PetscCall(DMPlexComputeCellGeometryFEM(dm, c, NULL, &v0, &J, &invJ, &detJ));
   xi   = invJ*(x - v0);
 
   if ((xi >= -eps) && (xi <= 2.+eps)) *cell = c;
@@ -226,10 +224,9 @@ static PetscErrorCode DMPlexLocatePoint_Simplex_2D_Internal(DM dm, const PetscSc
   PetscReal       y        = PetscRealPart(point[1]);
   PetscReal       v0[2], J[4], invJ[4], detJ;
   PetscReal       xi, eta;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexComputeCellGeometryFEM(dm, c, NULL, v0, J, invJ, &detJ);CHKERRQ(ierr);
+  PetscCall(DMPlexComputeCellGeometryFEM(dm, c, NULL, v0, J, invJ, &detJ));
   xi  = invJ[0*embedDim+0]*(x - v0[0]) + invJ[0*embedDim+1]*(y - v0[1]);
   eta = invJ[1*embedDim+0]*(x - v0[0]) + invJ[1*embedDim+1]*(y - v0[1]);
 
@@ -245,10 +242,9 @@ static PetscErrorCode DMPlexClosestPoint_Simplex_2D_Internal(DM dm, const PetscS
   PetscReal       y        = PetscRealPart(point[1]);
   PetscReal       v0[2], J[4], invJ[4], detJ;
   PetscReal       xi, eta, r;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexComputeCellGeometryFEM(dm, c, NULL, v0, J, invJ, &detJ);CHKERRQ(ierr);
+  PetscCall(DMPlexComputeCellGeometryFEM(dm, c, NULL, v0, J, invJ, &detJ));
   xi  = invJ[0*embedDim+0]*(x - v0[0]) + invJ[0*embedDim+1]*(y - v0[1]);
   eta = invJ[1*embedDim+0]*(x - v0[0]) + invJ[1*embedDim+1]*(y - v0[1]);
 
@@ -273,12 +269,11 @@ static PetscErrorCode DMPlexLocatePoint_Quad_2D_Internal(DM dm, const PetscScala
   PetscReal       x         = PetscRealPart(point[0]);
   PetscReal       y         = PetscRealPart(point[1]);
   PetscInt        crossings = 0, f;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetCoordinatesLocal(dm, &coordsLocal);CHKERRQ(ierr);
-  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
-  ierr = DMPlexVecGetClosure(dm, coordSection, coordsLocal, c, NULL, &coords);CHKERRQ(ierr);
+  PetscCall(DMGetCoordinatesLocal(dm, &coordsLocal));
+  PetscCall(DMGetCoordinateSection(dm, &coordSection));
+  PetscCall(DMPlexVecGetClosure(dm, coordSection, coordsLocal, c, NULL, &coords));
   for (f = 0; f < 4; ++f) {
     PetscReal x_i   = PetscRealPart(coords[faces[2*f+0]*2+0]);
     PetscReal y_i   = PetscRealPart(coords[faces[2*f+0]*2+1]);
@@ -292,7 +287,7 @@ static PetscErrorCode DMPlexLocatePoint_Quad_2D_Internal(DM dm, const PetscScala
   }
   if (crossings % 2) *cell = c;
   else *cell = DMLOCATEPOINT_POINT_NOT_FOUND;
-  ierr = DMPlexVecRestoreClosure(dm, coordSection, coordsLocal, c, NULL, &coords);CHKERRQ(ierr);
+  PetscCall(DMPlexVecRestoreClosure(dm, coordSection, coordsLocal, c, NULL, &coords));
   PetscFunctionReturn(0);
 }
 
@@ -305,10 +300,9 @@ static PetscErrorCode DMPlexLocatePoint_Simplex_3D_Internal(DM dm, const PetscSc
   PetscReal       y = PetscRealPart(point[1]);
   PetscReal       z = PetscRealPart(point[2]);
   PetscReal       xi, eta, zeta;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexComputeCellGeometryFEM(dm, c, NULL, v0, J, invJ, &detJ);CHKERRQ(ierr);
+  PetscCall(DMPlexComputeCellGeometryFEM(dm, c, NULL, v0, J, invJ, &detJ));
   xi   = invJ[0*embedDim+0]*(x - v0[0]) + invJ[0*embedDim+1]*(y - v0[1]) + invJ[0*embedDim+2]*(z - v0[2]);
   eta  = invJ[1*embedDim+0]*(x - v0[0]) + invJ[1*embedDim+1]*(y - v0[1]) + invJ[1*embedDim+2]*(z - v0[2]);
   zeta = invJ[2*embedDim+0]*(x - v0[0]) + invJ[2*embedDim+1]*(y - v0[1]) + invJ[2*embedDim+2]*(z - v0[2]);
@@ -327,12 +321,11 @@ static PetscErrorCode DMPlexLocatePoint_General_3D_Internal(DM dm, const PetscSc
                               1, 2, 6, 7,  3, 5, 6, 2,  0, 1, 7, 4};
   PetscBool      found = PETSC_TRUE;
   PetscInt       f;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetCoordinatesLocal(dm, &coordsLocal);CHKERRQ(ierr);
-  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
-  ierr = DMPlexVecGetClosure(dm, coordSection, coordsLocal, c, NULL, &coords);CHKERRQ(ierr);
+  PetscCall(DMGetCoordinatesLocal(dm, &coordsLocal));
+  PetscCall(DMGetCoordinateSection(dm, &coordSection));
+  PetscCall(DMPlexVecGetClosure(dm, coordSection, coordsLocal, c, NULL, &coords));
   for (f = 0; f < 6; ++f) {
     /* Check the point is under plane */
     /*   Get face normal */
@@ -364,7 +357,7 @@ static PetscErrorCode DMPlexLocatePoint_General_3D_Internal(DM dm, const PetscSc
   }
   if (found) *cell = c;
   else *cell = DMLOCATEPOINT_POINT_NOT_FOUND;
-  ierr = DMPlexVecRestoreClosure(dm, coordSection, coordsLocal, c, NULL, &coords);CHKERRQ(ierr);
+  PetscCall(DMPlexVecRestoreClosure(dm, coordSection, coordsLocal, c, NULL, &coords));
   PetscFunctionReturn(0);
 }
 
@@ -380,11 +373,9 @@ static PetscErrorCode PetscGridHashInitialize_Internal(PetscGridHash box, PetscI
 
 PetscErrorCode PetscGridHashCreate(MPI_Comm comm, PetscInt dim, const PetscScalar point[], PetscGridHash *box)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscMalloc1(1, box);CHKERRQ(ierr);
-  ierr = PetscGridHashInitialize_Internal(*box, dim, point);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(1, box));
+  PetscCall(PetscGridHashInitialize_Internal(*box, dim, point));
   PetscFunctionReturn(0);
 }
 
@@ -412,7 +403,7 @@ PetscErrorCode PetscGridHashEnlarge(PetscGridHash box, const PetscScalar point[]
 
   Level: developer
 
-.seealso: PetscGridHashCreate()
+.seealso: `PetscGridHashCreate()`
 */
 PetscErrorCode PetscGridHashSetGrid(PetscGridHash box, const PetscInt n[], const PetscReal h[])
 {
@@ -448,7 +439,7 @@ PetscErrorCode PetscGridHashSetGrid(PetscGridHash box, const PetscInt n[], const
 
   Level: developer
 
-.seealso: PetscGridHashCreate()
+.seealso: `PetscGridHashCreate()`
 */
 PetscErrorCode PetscGridHashGetEnclosingBox(PetscGridHash box, PetscInt numPoints, const PetscScalar points[], PetscInt dboxes[], PetscInt boxes[])
 {
@@ -466,7 +457,7 @@ PetscErrorCode PetscGridHashGetEnclosingBox(PetscGridHash box, PetscInt numPoint
 
       if (dbox == n[d] && PetscAbsReal(PetscRealPart(points[p*dim+d]) - upper[d]) < 1.0e-9) dbox = n[d]-1;
       if (dbox == -1   && PetscAbsReal(PetscRealPart(points[p*dim+d]) - lower[d]) < 1.0e-9) dbox = 0;
-      PetscCheckFalse(dbox < 0 || dbox >= n[d],PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Input point %d (%g, %g, %g) is outside of our bounding box",
+      PetscCheck(dbox >= 0 && dbox < n[d],PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Input point %" PetscInt_FMT " (%g, %g, %g) is outside of our bounding box",
                                              p, (double) PetscRealPart(points[p*dim+0]), dim > 1 ? (double) PetscRealPart(points[p*dim+1]) : 0.0, dim > 2 ? (double) PetscRealPart(points[p*dim+2]) : 0.0);
       dboxes[p*dim+d] = dbox;
     }
@@ -492,7 +483,7 @@ PetscErrorCode PetscGridHashGetEnclosingBox(PetscGridHash box, PetscInt numPoint
 
   Level: developer
 
-.seealso: PetscGridHashGetEnclosingBox()
+.seealso: `PetscGridHashGetEnclosingBox()`
 */
 PetscErrorCode PetscGridHashGetEnclosingBoxQuery(PetscGridHash box, PetscInt numPoints, const PetscScalar points[], PetscInt dboxes[], PetscInt boxes[],PetscBool *found)
 {
@@ -523,37 +514,34 @@ PetscErrorCode PetscGridHashGetEnclosingBoxQuery(PetscGridHash box, PetscInt num
 
 PetscErrorCode PetscGridHashDestroy(PetscGridHash *box)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (*box) {
-    ierr = PetscSectionDestroy(&(*box)->cellSection);CHKERRQ(ierr);
-    ierr = ISDestroy(&(*box)->cells);CHKERRQ(ierr);
-    ierr = DMLabelDestroy(&(*box)->cellsSparse);CHKERRQ(ierr);
+    PetscCall(PetscSectionDestroy(&(*box)->cellSection));
+    PetscCall(ISDestroy(&(*box)->cells));
+    PetscCall(DMLabelDestroy(&(*box)->cellsSparse));
   }
-  ierr = PetscFree(*box);CHKERRQ(ierr);
+  PetscCall(PetscFree(*box));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode DMPlexLocatePoint_Internal(DM dm, PetscInt dim, const PetscScalar point[], PetscInt cellStart, PetscInt *cell)
 {
   DMPolytopeType ct;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexGetCellType(dm, cellStart, &ct);CHKERRQ(ierr);
+  PetscCall(DMPlexGetCellType(dm, cellStart, &ct));
   switch (ct) {
     case DM_POLYTOPE_SEGMENT:
-    ierr = DMPlexLocatePoint_Simplex_1D_Internal(dm, point, cellStart, cell);CHKERRQ(ierr);break;
+    PetscCall(DMPlexLocatePoint_Simplex_1D_Internal(dm, point, cellStart, cell));break;
     case DM_POLYTOPE_TRIANGLE:
-    ierr = DMPlexLocatePoint_Simplex_2D_Internal(dm, point, cellStart, cell);CHKERRQ(ierr);break;
+    PetscCall(DMPlexLocatePoint_Simplex_2D_Internal(dm, point, cellStart, cell));break;
     case DM_POLYTOPE_QUADRILATERAL:
-    ierr = DMPlexLocatePoint_Quad_2D_Internal(dm, point, cellStart, cell);CHKERRQ(ierr);break;
+    PetscCall(DMPlexLocatePoint_Quad_2D_Internal(dm, point, cellStart, cell));break;
     case DM_POLYTOPE_TETRAHEDRON:
-    ierr = DMPlexLocatePoint_Simplex_3D_Internal(dm, point, cellStart, cell);CHKERRQ(ierr);break;
+    PetscCall(DMPlexLocatePoint_Simplex_3D_Internal(dm, point, cellStart, cell));break;
     case DM_POLYTOPE_HEXAHEDRON:
-    ierr = DMPlexLocatePoint_General_3D_Internal(dm, point, cellStart, cell);CHKERRQ(ierr);break;
-    default: SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "No point location for cell %D with type %s", cellStart, DMPolytopeTypes[ct]);
+    PetscCall(DMPlexLocatePoint_General_3D_Internal(dm, point, cellStart, cell));break;
+    default: SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "No point location for cell %" PetscInt_FMT " with type %s", cellStart, DMPolytopeTypes[ct]);
   }
   PetscFunctionReturn(0);
 }
@@ -564,22 +552,21 @@ PetscErrorCode DMPlexLocatePoint_Internal(DM dm, PetscInt dim, const PetscScalar
 PetscErrorCode DMPlexClosestPoint_Internal(DM dm, PetscInt dim, const PetscScalar point[], PetscInt cell, PetscReal cpoint[])
 {
   DMPolytopeType ct;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexGetCellType(dm, cell, &ct);CHKERRQ(ierr);
+  PetscCall(DMPlexGetCellType(dm, cell, &ct));
   switch (ct) {
     case DM_POLYTOPE_TRIANGLE:
-    ierr = DMPlexClosestPoint_Simplex_2D_Internal(dm, point, cell, cpoint);CHKERRQ(ierr);break;
+    PetscCall(DMPlexClosestPoint_Simplex_2D_Internal(dm, point, cell, cpoint));break;
 #if 0
     case DM_POLYTOPE_QUADRILATERAL:
-    ierr = DMPlexClosestPoint_General_2D_Internal(dm, point, cell, cpoint);CHKERRQ(ierr);break;
+    PetscCall(DMPlexClosestPoint_General_2D_Internal(dm, point, cell, cpoint));break;
     case DM_POLYTOPE_TETRAHEDRON:
-    ierr = DMPlexClosestPoint_Simplex_3D_Internal(dm, point, cell, cpoint);CHKERRQ(ierr);break;
+    PetscCall(DMPlexClosestPoint_Simplex_3D_Internal(dm, point, cell, cpoint));break;
     case DM_POLYTOPE_HEXAHEDRON:
-    ierr = DMPlexClosestPoint_General_3D_Internal(dm, point, cell, cpoint);CHKERRQ(ierr);break;
+    PetscCall(DMPlexClosestPoint_General_3D_Internal(dm, point, cell, cpoint));break;
 #endif
-    default: SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "No closest point location for cell %D with type %s", cell, DMPolytopeTypes[ct]);
+    default: SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "No closest point location for cell %" PetscInt_FMT " with type %s", cell, DMPolytopeTypes[ct]);
   }
   PetscFunctionReturn(0);
 }
@@ -597,7 +584,7 @@ PetscErrorCode DMPlexClosestPoint_Internal(DM dm, PetscInt dim, const PetscScala
 
   Level: developer
 
-.seealso: PetscGridHashCreate(), PetscGridHashGetEnclosingBox()
+.seealso: `PetscGridHashCreate()`, `PetscGridHashGetEnclosingBox()`
 */
 PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
 {
@@ -613,40 +600,39 @@ PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
   PetscInt           n[3] = {2, 2, 2};
   PetscInt           dim, N, maxConeSize, cStart, cEnd, c, eStart, eEnd, i;
   PetscBool          flg;
-  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
-  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-  ierr = DMGetCoordinateDim(dm, &dim);CHKERRQ(ierr);
-  ierr = DMPlexGetMaxSizes(dm, &maxConeSize, NULL);CHKERRQ(ierr);
-  ierr = DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(coordinates, &N);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(coordinates, &coords);CHKERRQ(ierr);
-  ierr = PetscGridHashCreate(comm, dim, coords, &lbox);CHKERRQ(ierr);
-  for (i = 0; i < N; i += dim) {ierr = PetscGridHashEnlarge(lbox, &coords[i]);CHKERRQ(ierr);}
-  ierr = VecRestoreArrayRead(coordinates, &coords);CHKERRQ(ierr);
+  PetscCall(PetscObjectGetComm((PetscObject) dm, &comm));
+  PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
+  PetscCall(DMGetCoordinateDim(dm, &dim));
+  PetscCall(DMPlexGetMaxSizes(dm, &maxConeSize, NULL));
+  PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd));
+  PetscCall(VecGetLocalSize(coordinates, &N));
+  PetscCall(VecGetArrayRead(coordinates, &coords));
+  PetscCall(PetscGridHashCreate(comm, dim, coords, &lbox));
+  for (i = 0; i < N; i += dim) PetscCall(PetscGridHashEnlarge(lbox, &coords[i]));
+  PetscCall(VecRestoreArrayRead(coordinates, &coords));
   c    = dim;
-  ierr = PetscOptionsGetIntArray(NULL, ((PetscObject) dm)->prefix, "-dm_plex_hash_box_faces", n, &c, &flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetIntArray(NULL, ((PetscObject) dm)->prefix, "-dm_plex_hash_box_faces", n, &c, &flg));
   if (flg) {for (i = c; i < dim; ++i) n[i] = n[c-1];}
   else     {for (i = 0; i < dim; ++i) n[i] = PetscMax(2, PetscFloorReal(PetscPowReal((PetscReal) (cEnd - cStart), 1.0/dim) * 0.8));}
-  ierr = PetscGridHashSetGrid(lbox, n, NULL);CHKERRQ(ierr);
+  PetscCall(PetscGridHashSetGrid(lbox, n, NULL));
 #if 0
   /* Could define a custom reduction to merge these */
-  ierr = MPIU_Allreduce(lbox->lower, gbox->lower, 3, MPIU_REAL, MPI_MIN, comm);CHKERRMPI(ierr);
-  ierr = MPIU_Allreduce(lbox->upper, gbox->upper, 3, MPIU_REAL, MPI_MAX, comm);CHKERRMPI(ierr);
+  PetscCall(MPIU_Allreduce(lbox->lower, gbox->lower, 3, MPIU_REAL, MPI_MIN, comm));
+  PetscCall(MPIU_Allreduce(lbox->upper, gbox->upper, 3, MPIU_REAL, MPI_MAX, comm));
 #endif
   /* Is there a reason to snap the local bounding box to a division of the global box? */
   /* Should we compute all overlaps of local boxes? We could do this with a rendevouz scheme partitioning the global box */
   /* Create label */
-  ierr = DMPlexGetDepthStratum(dm, 1, &eStart, &eEnd);CHKERRQ(ierr);
+  PetscCall(DMPlexGetDepthStratum(dm, 1, &eStart, &eEnd));
   if (dim < 2) eStart = eEnd = -1;
-  ierr = DMLabelCreate(PETSC_COMM_SELF, "cells", &lbox->cellsSparse);CHKERRQ(ierr);
-  ierr = DMLabelCreateIndex(lbox->cellsSparse, cStart, cEnd);CHKERRQ(ierr);
+  PetscCall(DMLabelCreate(PETSC_COMM_SELF, "cells", &lbox->cellsSparse));
+  PetscCall(DMLabelCreateIndex(lbox->cellsSparse, cStart, cEnd));
   /* Compute boxes which overlap each cell: https://stackoverflow.com/questions/13790208/triangle-square-intersection-test-in-2d */
-  ierr = DMGetCoordinatesLocal(dm, &coordsLocal);CHKERRQ(ierr);
-  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
-  ierr = PetscCalloc3(16 * dim, &dboxes, 16, &boxes, PetscPowInt(maxConeSize, dim) * dim, &edgeCoords);CHKERRQ(ierr);
+  PetscCall(DMGetCoordinatesLocal(dm, &coordsLocal));
+  PetscCall(DMGetCoordinateSection(dm, &coordSection));
+  PetscCall(PetscCalloc3(16 * dim, &dboxes, 16, &boxes, PetscPowInt(maxConeSize, dim) * dim, &edgeCoords));
   for (c = cStart; c < cEnd; ++c) {
     const PetscReal *h       = lbox->h;
     PetscScalar     *ccoords = NULL;
@@ -657,25 +643,25 @@ PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
     PetscInt         dlim[6], d, e, i, j, k;
 
     /* Get all edges in cell */
-    ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &Ncl, &closure);CHKERRQ(ierr);
+    PetscCall(DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &Ncl, &closure));
     for (cl = 0; cl < Ncl*2; ++cl) {
       if ((closure[cl] >= eStart) && (closure[cl] < eEnd)) {
         PetscScalar *ecoords = &edgeCoords[Ne*dim*2];
         PetscInt     ecsize  = dim*2;
 
-        ierr = DMPlexVecGetClosure(dm, coordSection, coordsLocal, closure[cl], &ecsize, &ecoords);CHKERRQ(ierr);
-        PetscCheckFalse(ecsize != dim*2,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Got %D coords for edge, instead of %D", ecsize, dim*2);
+        PetscCall(DMPlexVecGetClosure(dm, coordSection, coordsLocal, closure[cl], &ecsize, &ecoords));
+        PetscCheck(ecsize == dim*2,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Got %" PetscInt_FMT " coords for edge, instead of %" PetscInt_FMT, ecsize, dim*2);
         ++Ne;
       }
     }
-    ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &Ncl, &closure);CHKERRQ(ierr);
+    PetscCall(DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &Ncl, &closure));
     /* Find boxes enclosing each vertex */
-    ierr = DMPlexVecGetClosure(dm, coordSection, coordsLocal, c, &csize, &ccoords);CHKERRQ(ierr);
-    ierr = PetscGridHashGetEnclosingBox(lbox, csize/dim, ccoords, dboxes, boxes);CHKERRQ(ierr);
+    PetscCall(DMPlexVecGetClosure(dm, coordSection, coordsLocal, c, &csize, &ccoords));
+    PetscCall(PetscGridHashGetEnclosingBox(lbox, csize/dim, ccoords, dboxes, boxes));
     /* Mark cells containing the vertices */
     for (e = 0; e < csize/dim; ++e) {
-      if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "Cell %D has vertex in box %D (%D, %D, %D)\n", c, boxes[e], dboxes[e*dim+0], dim > 1 ? dboxes[e*dim+1] : -1, dim > 2 ? dboxes[e*dim+2] : -1);CHKERRQ(ierr);}
-      ierr = DMLabelSetValue(lbox->cellsSparse, c, boxes[e]);CHKERRQ(ierr);
+      if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Cell %" PetscInt_FMT " has vertex in box %" PetscInt_FMT " (%" PetscInt_FMT ", %" PetscInt_FMT ", %" PetscInt_FMT ")\n", c, boxes[e], dboxes[e*dim+0], dim > 1 ? dboxes[e*dim+1] : -1, dim > 2 ? dboxes[e*dim+2] : -1));
+      PetscCall(DMLabelSetValue(lbox->cellsSparse, c, boxes[e]));
     }
     /* Get grid of boxes containing these */
     for (d = 0;   d < dim; ++d) {dlim[d*2+0] = dlim[d*2+1] = dboxes[d];}
@@ -694,16 +680,16 @@ PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
           PetscScalar    cpoint[3];
           PetscInt       cell, edge, ii, jj, kk;
 
-          if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "Box %D: (%.2g, %.2g, %.2g) -- (%.2g, %.2g, %.2g)\n", box, point[0], point[1], point[2], point[0] + h[0], point[1] + h[1], point[2] + h[2]);CHKERRQ(ierr);}
+          if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Box %" PetscInt_FMT ": (%.2g, %.2g, %.2g) -- (%.2g, %.2g, %.2g)\n", box, (double)PetscRealPart(point[0]), (double)PetscRealPart(point[1]), (double)PetscRealPart(point[2]), (double)PetscRealPart(point[0] + h[0]), (double)PetscRealPart(point[1] + h[1]), (double)PetscRealPart(point[2] + h[2])));
           /* Check whether cell contains any vertex of this subbox TODO vectorize this */
           for (kk = 0, cpoint[2] = point[2]; kk < (dim > 2 ? 2 : 1); ++kk, cpoint[2] += h[2]) {
             for (jj = 0, cpoint[1] = point[1]; jj < (dim > 1 ? 2 : 1); ++jj, cpoint[1] += h[1]) {
               for (ii = 0, cpoint[0] = point[0]; ii < 2; ++ii, cpoint[0] += h[0]) {
 
-                ierr = DMPlexLocatePoint_Internal(dm, dim, cpoint, c, &cell);CHKERRQ(ierr);
+                PetscCall(DMPlexLocatePoint_Internal(dm, dim, cpoint, c, &cell));
                 if (cell >= 0) {
-                  if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  Cell %D contains vertex (%.2g, %.2g, %.2g) of box %D\n", c, cpoint[0], cpoint[1], cpoint[2], box);CHKERRQ(ierr);}
-                  ierr = DMLabelSetValue(lbox->cellsSparse, c, box);CHKERRQ(ierr);
+                  if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Cell %" PetscInt_FMT " contains vertex (%.2g, %.2g, %.2g) of box %" PetscInt_FMT "\n", c, (double)PetscRealPart(cpoint[0]), (double)PetscRealPart(cpoint[1]), (double)PetscRealPart(cpoint[2]), box));
+                  PetscCall(DMLabelSetValue(lbox->cellsSparse, c, box));
                   jj = kk = 2;
                   break;
                 }
@@ -716,7 +702,7 @@ PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
             PetscReal segB[6] = {0.,0.,0.,0.,0.,0.};
             PetscReal segC[6] = {0.,0.,0.,0.,0.,0.};
 
-            PetscCheckFalse(dim > 3,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected dim %d > 3",dim);
+            PetscCheck(dim <= 3,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected dim %" PetscInt_FMT " > 3",dim);
             for (d = 0; d < dim*2; ++d) segA[d] = PetscRealPart(edgeCoords[edge*dim*2+d]);
             /* 1D: (x) -- (x+h)               0 -- 1
                2D: (x,   y)   -- (x,   y+h)   (0, 0) -- (0, 1)
@@ -755,13 +741,13 @@ PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
                   segC[dim+f] = PetscRealPart(point[f] + 1*h[f]);
                 }
                 if (dim == 2) {
-                  ierr = DMPlexGetLineIntersection_2D_Internal(segA, segB, NULL, &intersects);CHKERRQ(ierr);
+                  PetscCall(DMPlexGetLineIntersection_2D_Internal(segA, segB, NULL, &intersects));
                 } else if (dim == 3) {
-                  ierr = DMPlexGetLinePlaneIntersection_3D_Internal(segA, segB, segC, NULL, &intersects);CHKERRQ(ierr);
+                  PetscCall(DMPlexGetLinePlaneIntersection_3D_Internal(segA, segB, segC, NULL, &intersects));
                 }
                 if (intersects) {
-                  if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  Cell %D edge %D (%.2g, %.2g, %.2g)--(%.2g, %.2g, %.2g) intersects box %D, face (%.2g, %.2g, %.2g)--(%.2g, %.2g, %.2g) (%.2g, %.2g, %.2g)--(%.2g, %.2g, %.2g)\n", c, edge, segA[0], segA[1], segA[2], segA[3], segA[4], segA[5], box, segB[0], segB[1], segB[2], segB[3], segB[4], segB[5], segC[0], segC[1], segC[2], segC[3], segC[4], segC[5]);CHKERRQ(ierr);}
-                  ierr = DMLabelSetValue(lbox->cellsSparse, c, box);CHKERRQ(ierr); edge = Ne; break;
+                  if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Cell %" PetscInt_FMT " edge %" PetscInt_FMT " (%.2g, %.2g, %.2g)--(%.2g, %.2g, %.2g) intersects box %" PetscInt_FMT ", face (%.2g, %.2g, %.2g)--(%.2g, %.2g, %.2g) (%.2g, %.2g, %.2g)--(%.2g, %.2g, %.2g)\n", c, edge, (double)segA[0], (double)segA[1], (double)segA[2], (double)segA[3], (double)segA[4], (double)segA[5], box, (double)segB[0], (double)segB[1], (double)segB[2], (double)segB[3], (double)segB[4], (double)segB[5], (double)segC[0], (double)segC[1], (double)segC[2], (double)segC[3], (double)segC[4], (double)segC[5]));
+                  PetscCall(DMLabelSetValue(lbox->cellsSparse, c, box)); edge = Ne; break;
                 }
               }
             }
@@ -769,12 +755,12 @@ PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
         }
       }
     }
-    ierr = DMPlexVecRestoreClosure(dm, coordSection, coordsLocal, c, NULL, &ccoords);CHKERRQ(ierr);
+    PetscCall(DMPlexVecRestoreClosure(dm, coordSection, coordsLocal, c, NULL, &ccoords));
   }
-  ierr = PetscFree3(dboxes, boxes, edgeCoords);CHKERRQ(ierr);
-  if (debug) {ierr = DMLabelView(lbox->cellsSparse, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
-  ierr = DMLabelConvertToSection(lbox->cellsSparse, &lbox->cellSection, &lbox->cells);CHKERRQ(ierr);
-  ierr = DMLabelDestroy(&lbox->cellsSparse);CHKERRQ(ierr);
+  PetscCall(PetscFree3(dboxes, boxes, edgeCoords));
+  if (debug) PetscCall(DMLabelView(lbox->cellsSparse, PETSC_VIEWER_STDOUT_SELF));
+  PetscCall(DMLabelConvertToSection(lbox->cellsSparse, &lbox->cellSection, &lbox->cells));
+  PetscCall(DMLabelDestroy(&lbox->cellsSparse));
   *localBox = lbox;
   PetscFunctionReturn(0);
 }
@@ -793,32 +779,31 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
   PetscLogDouble  t0,t1;
   PetscReal       gmin[3],gmax[3];
   PetscInt        terminating_query_type[] = { 0, 0, 0 };
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = PetscLogEventBegin(DMPLEX_LocatePoints,0,0,0,0);CHKERRQ(ierr);
-  ierr = PetscTime(&t0);CHKERRQ(ierr);
-  PetscCheckFalse(ltype == DM_POINTLOCATION_NEAREST && !hash,PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Nearest point location only supported with grid hashing. Use -dm_plex_hash_location to enable it.");
-  ierr = DMGetCoordinateDim(dm, &dim);CHKERRQ(ierr);
-  ierr = VecGetBlockSize(v, &bs);CHKERRQ(ierr);
-  ierr = MPI_Comm_compare(PetscObjectComm((PetscObject)cellSF),PETSC_COMM_SELF,&result);CHKERRMPI(ierr);
-  PetscCheckFalse(result != MPI_IDENT && result != MPI_CONGRUENT,PetscObjectComm((PetscObject)cellSF),PETSC_ERR_SUP, "Trying parallel point location: only local point location supported");
-  PetscCheckFalse(bs != dim,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Block size for point vector %D must be the mesh coordinate dimension %D", bs, dim);
-  ierr = DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(v, &numPoints);CHKERRQ(ierr);
-  ierr = VecGetArray(v, &a);CHKERRQ(ierr);
+  PetscCall(PetscLogEventBegin(DMPLEX_LocatePoints,0,0,0,0));
+  PetscCall(PetscTime(&t0));
+  PetscCheck(ltype != DM_POINTLOCATION_NEAREST || hash,PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Nearest point location only supported with grid hashing. Use -dm_plex_hash_location to enable it.");
+  PetscCall(DMGetCoordinateDim(dm, &dim));
+  PetscCall(VecGetBlockSize(v, &bs));
+  PetscCallMPI(MPI_Comm_compare(PetscObjectComm((PetscObject)cellSF),PETSC_COMM_SELF,&result));
+  PetscCheck(result == MPI_IDENT || result == MPI_CONGRUENT,PetscObjectComm((PetscObject)cellSF),PETSC_ERR_SUP, "Trying parallel point location: only local point location supported");
+  PetscCheck(bs == dim,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Block size for point vector %" PetscInt_FMT " must be the mesh coordinate dimension %" PetscInt_FMT, bs, dim);
+  PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd));
+  PetscCall(VecGetLocalSize(v, &numPoints));
+  PetscCall(VecGetArray(v, &a));
   numPoints /= bs;
   {
     const PetscSFNode *sf_cells;
 
-    ierr = PetscSFGetGraph(cellSF,NULL,NULL,NULL,&sf_cells);CHKERRQ(ierr);
+    PetscCall(PetscSFGetGraph(cellSF,NULL,NULL,NULL,&sf_cells));
     if (sf_cells) {
-      ierr = PetscInfo(dm,"[DMLocatePoints_Plex] Re-using existing StarForest node list\n");CHKERRQ(ierr);
+      PetscCall(PetscInfo(dm,"[DMLocatePoints_Plex] Re-using existing StarForest node list\n"));
       cells = (PetscSFNode*)sf_cells;
       reuse = PETSC_TRUE;
     } else {
-      ierr = PetscInfo(dm,"[DMLocatePoints_Plex] Creating and initializing new StarForest node list\n");CHKERRQ(ierr);
-      ierr = PetscMalloc1(numPoints, &cells);CHKERRQ(ierr);
+      PetscCall(PetscInfo(dm,"[DMLocatePoints_Plex] Creating and initializing new StarForest node list\n"));
+      PetscCall(PetscMalloc1(numPoints, &cells));
       /* initialize cells if created */
       for (p=0; p<numPoints; p++) {
         cells[p].rank  = 0;
@@ -830,17 +815,17 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
   {
     Vec coorglobal;
 
-    ierr = DMGetCoordinates(dm,&coorglobal);CHKERRQ(ierr);
-    ierr = VecStrideMaxAll(coorglobal,NULL,gmax);CHKERRQ(ierr);
-    ierr = VecStrideMinAll(coorglobal,NULL,gmin);CHKERRQ(ierr);
+    PetscCall(DMGetCoordinates(dm,&coorglobal));
+    PetscCall(VecStrideMaxAll(coorglobal,NULL,gmax));
+    PetscCall(VecStrideMinAll(coorglobal,NULL,gmin));
   }
   if (hash) {
-    if (!mesh->lbox) {ierr = PetscInfo(dm, "Initializing grid hashing");CHKERRQ(ierr);ierr = DMPlexComputeGridHash_Internal(dm, &mesh->lbox);CHKERRQ(ierr);}
+    if (!mesh->lbox) {PetscCall(PetscInfo(dm, "Initializing grid hashing"));PetscCall(DMPlexComputeGridHash_Internal(dm, &mesh->lbox));}
     /* Designate the local box for each point */
     /* Send points to correct process */
     /* Search cells that lie in each subbox */
     /*   Should we bin points before doing search? */
-    ierr = ISGetIndices(mesh->lbox->cells, &boxCells);CHKERRQ(ierr);
+    PetscCall(ISGetIndices(mesh->lbox->cells, &boxCells));
   }
   for (p = 0, numFound = 0; p < numPoints; ++p) {
     const PetscScalar *point = &a[p*bs];
@@ -863,7 +848,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
     if (cells[p].index != DMLOCATEPOINT_POINT_NOT_FOUND) {
       c = cells[p].index;
       cells[p].index = DMLOCATEPOINT_POINT_NOT_FOUND;
-      ierr = DMPlexLocatePoint_Internal(dm, dim, point, c, &cell);CHKERRQ(ierr);
+      PetscCall(DMPlexLocatePoint_Internal(dm, dim, point, c, &cell));
       if (cell >= 0) {
         cells[p].rank = 0;
         cells[p].index = cell;
@@ -878,19 +863,19 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
     if (hash) {
       PetscBool found_box;
 
-      if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "Checking point %D (%.2g, %.2g, %.2g)\n", p, point[0], point[1], point[2]);CHKERRQ(ierr);}
+      if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Checking point %" PetscInt_FMT " (%.2g, %.2g, %.2g)\n", p, (double)PetscRealPart(point[0]), (double)PetscRealPart(point[1]), (double)PetscRealPart(point[2])));
       /* allow for case that point is outside box - abort early */
-      ierr = PetscGridHashGetEnclosingBoxQuery(mesh->lbox, 1, point, dbin, &bin,&found_box);CHKERRQ(ierr);
+      PetscCall(PetscGridHashGetEnclosingBoxQuery(mesh->lbox, 1, point, dbin, &bin,&found_box));
       if (found_box) {
-        if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  Found point in box %D (%D, %D, %D)\n", bin, dbin[0], dbin[1], dbin[2]);CHKERRQ(ierr);}
+        if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Found point in box %" PetscInt_FMT " (%" PetscInt_FMT ", %" PetscInt_FMT ", %" PetscInt_FMT ")\n", bin, dbin[0], dbin[1], dbin[2]));
         /* TODO Lay an interface over this so we can switch between Section (dense) and Label (sparse) */
-        ierr = PetscSectionGetDof(mesh->lbox->cellSection, bin, &numCells);CHKERRQ(ierr);
-        ierr = PetscSectionGetOffset(mesh->lbox->cellSection, bin, &cellOffset);CHKERRQ(ierr);
+        PetscCall(PetscSectionGetDof(mesh->lbox->cellSection, bin, &numCells));
+        PetscCall(PetscSectionGetOffset(mesh->lbox->cellSection, bin, &cellOffset));
         for (c = cellOffset; c < cellOffset + numCells; ++c) {
-          if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "    Checking for point in cell %D\n", boxCells[c]);CHKERRQ(ierr);}
-          ierr = DMPlexLocatePoint_Internal(dm, dim, point, boxCells[c], &cell);CHKERRQ(ierr);
+          if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "    Checking for point in cell %" PetscInt_FMT "\n", boxCells[c]));
+          PetscCall(DMPlexLocatePoint_Internal(dm, dim, point, boxCells[c], &cell));
           if (cell >= 0) {
-            if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "      FOUND in cell %D\n", cell);CHKERRQ(ierr);}
+            if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "      FOUND in cell %" PetscInt_FMT "\n", cell));
             cells[p].rank = 0;
             cells[p].index = cell;
             numFound++;
@@ -901,7 +886,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
       }
     } else {
       for (c = cStart; c < cEnd; ++c) {
-        ierr = DMPlexLocatePoint_Internal(dm, dim, point, c, &cell);CHKERRQ(ierr);
+        PetscCall(DMPlexLocatePoint_Internal(dm, dim, point, c, &cell));
         if (cell >= 0) {
           cells[p].rank = 0;
           cells[p].index = cell;
@@ -912,7 +897,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
       }
     }
   }
-  if (hash) {ierr = ISRestoreIndices(mesh->lbox->cells, &boxCells);CHKERRQ(ierr);}
+  if (hash) PetscCall(ISRestoreIndices(mesh->lbox->cells, &boxCells));
   if (ltype == DM_POINTLOCATION_NEAREST && hash && numFound < numPoints) {
     for (p = 0; p < numPoints; p++) {
       const PetscScalar *point = &a[p*bs];
@@ -920,11 +905,11 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
       PetscInt           dbin[3] = {-1,-1,-1}, bin, cellOffset, d, bestc = -1;
 
       if (cells[p].index < 0) {
-        ierr = PetscGridHashGetEnclosingBox(mesh->lbox, 1, point, dbin, &bin);CHKERRQ(ierr);
-        ierr = PetscSectionGetDof(mesh->lbox->cellSection, bin, &numCells);CHKERRQ(ierr);
-        ierr = PetscSectionGetOffset(mesh->lbox->cellSection, bin, &cellOffset);CHKERRQ(ierr);
+        PetscCall(PetscGridHashGetEnclosingBox(mesh->lbox, 1, point, dbin, &bin));
+        PetscCall(PetscSectionGetDof(mesh->lbox->cellSection, bin, &numCells));
+        PetscCall(PetscSectionGetOffset(mesh->lbox->cellSection, bin, &cellOffset));
         for (c = cellOffset; c < cellOffset + numCells; ++c) {
-          ierr = DMPlexClosestPoint_Internal(dm, dim, point, boxCells[c], cpoint);CHKERRQ(ierr);
+          PetscCall(DMPlexClosestPoint_Internal(dm, dim, point, boxCells[c], cpoint));
           for (d = 0; d < dim; ++d) diff[d] = cpoint[d] - PetscRealPart(point[d]);
           dist = DMPlex_NormD_Internal(dim, diff);
           if (dist < distMax) {
@@ -945,7 +930,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
   /* This code is only be relevant when interfaced to parallel point location */
   /* Check for highest numbered proc that claims a point (do we care?) */
   if (ltype == DM_POINTLOCATION_REMOVE && numFound < numPoints) {
-    ierr = PetscMalloc1(numFound,&found);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(numFound,&found));
     for (p = 0, numFound = 0; p < numPoints; p++) {
       if (cells[p].rank >= 0 && cells[p].index >= 0) {
         if (numFound < p) {
@@ -955,18 +940,18 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
       }
     }
   }
-  ierr = VecRestoreArray(v, &a);CHKERRQ(ierr);
+  PetscCall(VecRestoreArray(v, &a));
   if (!reuse) {
-    ierr = PetscSFSetGraph(cellSF, cEnd - cStart, numFound, found, PETSC_OWN_POINTER, cells, PETSC_OWN_POINTER);CHKERRQ(ierr);
+    PetscCall(PetscSFSetGraph(cellSF, cEnd - cStart, numFound, found, PETSC_OWN_POINTER, cells, PETSC_OWN_POINTER));
   }
-  ierr = PetscTime(&t1);CHKERRQ(ierr);
+  PetscCall(PetscTime(&t1));
   if (hash) {
-    ierr = PetscInfo(dm,"[DMLocatePoints_Plex] terminating_query_type : %D [outside domain] : %D [inside initial cell] : %D [hash]\n",terminating_query_type[0],terminating_query_type[1],terminating_query_type[2]);CHKERRQ(ierr);
+    PetscCall(PetscInfo(dm,"[DMLocatePoints_Plex] terminating_query_type : %" PetscInt_FMT " [outside domain] : %" PetscInt_FMT " [inside initial cell] : %" PetscInt_FMT " [hash]\n",terminating_query_type[0],terminating_query_type[1],terminating_query_type[2]));
   } else {
-    ierr = PetscInfo(dm,"[DMLocatePoints_Plex] terminating_query_type : %D [outside domain] : %D [inside initial cell] : %D [brute-force]\n",terminating_query_type[0],terminating_query_type[1],terminating_query_type[2]);CHKERRQ(ierr);
+    PetscCall(PetscInfo(dm,"[DMLocatePoints_Plex] terminating_query_type : %" PetscInt_FMT " [outside domain] : %" PetscInt_FMT " [inside initial cell] : %" PetscInt_FMT " [brute-force]\n",terminating_query_type[0],terminating_query_type[1],terminating_query_type[2]));
   }
-  ierr = PetscInfo(dm,"[DMLocatePoints_Plex] npoints %D : time(rank0) %1.2e (sec): points/sec %1.4e\n",numPoints,t1-t0,(double)((double)numPoints/(t1-t0)));CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(DMPLEX_LocatePoints,0,0,0,0);CHKERRQ(ierr);
+  PetscCall(PetscInfo(dm,"[DMLocatePoints_Plex] npoints %" PetscInt_FMT " : time(rank0) %1.2e (sec): points/sec %1.4e\n",numPoints,t1-t0,(double)((double)numPoints/(t1-t0))));
+  PetscCall(PetscLogEventEnd(DMPLEX_LocatePoints,0,0,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -983,7 +968,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
 
   Level: developer
 
-.seealso: DMPlexComputeProjection3Dto1D(), DMPlexComputeProjection3Dto2D()
+.seealso: `DMPlexComputeProjection3Dto1D()`, `DMPlexComputeProjection3Dto2D()`
 @*/
 PetscErrorCode DMPlexComputeProjection2Dto1D(PetscScalar coords[], PetscReal R[])
 {
@@ -1014,7 +999,7 @@ PetscErrorCode DMPlexComputeProjection2Dto1D(PetscScalar coords[], PetscReal R[]
 
   Level: developer
 
-.seealso: DMPlexComputeProjection2Dto1D(), DMPlexComputeProjection3Dto2D()
+.seealso: `DMPlexComputeProjection2Dto1D()`, `DMPlexComputeProjection3Dto2D()`
 @*/
 PetscErrorCode DMPlexComputeProjection3Dto1D(PetscScalar coords[], PetscReal R[])
 {
@@ -1063,7 +1048,7 @@ PetscErrorCode DMPlexComputeProjection3Dto1D(PetscScalar coords[], PetscReal R[]
 
   Level: developer
 
-.seealso: DMPlexComputeProjection2Dto1D(), DMPlexComputeProjection3Dto1D()
+.seealso: `DMPlexComputeProjection2Dto1D()`, `DMPlexComputeProjection3Dto1D()`
 @*/
 PetscErrorCode DMPlexComputeProjection3Dto2D(PetscInt coordSize, PetscScalar coords[], PetscReal R[])
 {
@@ -1169,17 +1154,16 @@ static PetscErrorCode DMPlexComputePointGeometry_Internal(DM dm, PetscInt e, Pet
   Vec            coordinates;
   const PetscScalar *coords;
   PetscInt       dim, d, off;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
-  ierr = PetscSectionGetDof(coordSection,e,&dim);CHKERRQ(ierr);
+  PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
+  PetscCall(DMGetCoordinateSection(dm, &coordSection));
+  PetscCall(PetscSectionGetDof(coordSection,e,&dim));
   if (!dim) PetscFunctionReturn(0);
-  ierr = PetscSectionGetOffset(coordSection,e,&off);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(coordinates,&coords);CHKERRQ(ierr);
+  PetscCall(PetscSectionGetOffset(coordSection,e,&off));
+  PetscCall(VecGetArrayRead(coordinates,&coords));
   if (v0) {for (d = 0; d < dim; d++) v0[d] = PetscRealPart(coords[off + d]);}
-  ierr = VecRestoreArrayRead(coordinates,&coords);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayRead(coordinates,&coords));
   *detJ = 1.;
   if (J) {
     for (d = 0; d < dim * dim; d++) J[d] = 0.;
@@ -1198,23 +1182,22 @@ static PetscErrorCode DMPlexComputeLineGeometry_Internal(DM dm, PetscInt e, Pets
   Vec            coordinates;
   PetscScalar   *coords = NULL;
   PetscInt       numCoords, d, pStart, pEnd, numSelfCoords = 0;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
-  ierr = PetscSectionGetChart(coordSection,&pStart,&pEnd);CHKERRQ(ierr);
-  if (e >= pStart && e < pEnd) {ierr = PetscSectionGetDof(coordSection,e,&numSelfCoords);CHKERRQ(ierr);}
-  ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, e, &numCoords, &coords);CHKERRQ(ierr);
+  PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
+  PetscCall(DMGetCoordinateSection(dm, &coordSection));
+  PetscCall(PetscSectionGetChart(coordSection,&pStart,&pEnd));
+  if (e >= pStart && e < pEnd) PetscCall(PetscSectionGetDof(coordSection,e,&numSelfCoords));
+  PetscCall(DMPlexVecGetClosure(dm, coordSection, coordinates, e, &numCoords, &coords));
   numCoords = numSelfCoords ? numSelfCoords : numCoords;
-  PetscCheckFalse(invJ && !J,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "In order to compute invJ, J must not be NULL");
+  PetscCheck(!invJ || J,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "In order to compute invJ, J must not be NULL");
   *detJ = 0.0;
   if (numCoords == 6) {
     const PetscInt dim = 3;
     PetscReal      R[9], J0;
 
     if (v0)   {for (d = 0; d < dim; d++) v0[d] = PetscRealPart(coords[d]);}
-    ierr = DMPlexComputeProjection3Dto1D(coords, R);CHKERRQ(ierr);
+    PetscCall(DMPlexComputeProjection3Dto1D(coords, R));
     if (J)    {
       J0   = 0.5*PetscRealPart(coords[1]);
       J[0] = R[0]*J0; J[1] = R[1]; J[2] = R[2];
@@ -1228,7 +1211,7 @@ static PetscErrorCode DMPlexComputeLineGeometry_Internal(DM dm, PetscInt e, Pets
     PetscReal      R[4], J0;
 
     if (v0)   {for (d = 0; d < dim; d++) v0[d] = PetscRealPart(coords[d]);}
-    ierr = DMPlexComputeProjection2Dto1D(coords, R);CHKERRQ(ierr);
+    PetscCall(DMPlexComputeProjection2Dto1D(coords, R));
     if (J)    {
       J0   = 0.5*PetscRealPart(coords[1]);
       J[0] = R[0]*J0; J[1] = R[1];
@@ -1243,11 +1226,11 @@ static PetscErrorCode DMPlexComputeLineGeometry_Internal(DM dm, PetscInt e, Pets
     if (J)    {
       J[0]  = 0.5*(PetscRealPart(coords[1]) - PetscRealPart(coords[0]));
       *detJ = J[0];
-      ierr = PetscLogFlops(2.0);CHKERRQ(ierr);
-      if (invJ) {invJ[0] = 1.0/J[0]; ierr = PetscLogFlops(1.0);CHKERRQ(ierr);}
+      PetscCall(PetscLogFlops(2.0));
+      if (invJ) {invJ[0] = 1.0/J[0]; PetscCall(PetscLogFlops(1.0));}
     }
-  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The number of coordinates for this segment is %D != 2", numCoords);
-  ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, e, &numCoords, &coords);CHKERRQ(ierr);
+  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The number of coordinates for this segment is %" PetscInt_FMT " != 2", numCoords);
+  PetscCall(DMPlexVecRestoreClosure(dm, coordSection, coordinates, e, &numCoords, &coords));
   PetscFunctionReturn(0);
 }
 
@@ -1257,14 +1240,13 @@ static PetscErrorCode DMPlexComputeTriangleGeometry_Internal(DM dm, PetscInt e, 
   Vec            coordinates;
   PetscScalar   *coords = NULL;
   PetscInt       numCoords, numSelfCoords = 0, d, f, g, pStart, pEnd;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
-  ierr = PetscSectionGetChart(coordSection,&pStart,&pEnd);CHKERRQ(ierr);
-  if (e >= pStart && e < pEnd) {ierr = PetscSectionGetDof(coordSection,e,&numSelfCoords);CHKERRQ(ierr);}
-  ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, e, &numCoords, &coords);CHKERRQ(ierr);
+  PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
+  PetscCall(DMGetCoordinateSection(dm, &coordSection));
+  PetscCall(PetscSectionGetChart(coordSection,&pStart,&pEnd));
+  if (e >= pStart && e < pEnd) PetscCall(PetscSectionGetDof(coordSection,e,&numSelfCoords));
+  PetscCall(DMPlexVecGetClosure(dm, coordSection, coordinates, e, &numCoords, &coords));
   numCoords = numSelfCoords ? numSelfCoords : numCoords;
   *detJ = 0.0;
   if (numCoords == 9) {
@@ -1272,7 +1254,7 @@ static PetscErrorCode DMPlexComputeTriangleGeometry_Internal(DM dm, PetscInt e, 
     PetscReal      R[9], J0[9] = {1.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0};
 
     if (v0)   {for (d = 0; d < dim; d++) v0[d] = PetscRealPart(coords[d]);}
-    ierr = DMPlexComputeProjection3Dto2D(numCoords, coords, R);CHKERRQ(ierr);
+    PetscCall(DMPlexComputeProjection3Dto2D(numCoords, coords, R));
     if (J)    {
       const PetscInt pdim = 2;
 
@@ -1281,7 +1263,7 @@ static PetscErrorCode DMPlexComputeTriangleGeometry_Internal(DM dm, PetscInt e, 
           J0[d*dim+f] = 0.5*(PetscRealPart(coords[(f+1)*pdim+d]) - PetscRealPart(coords[0*pdim+d]));
         }
       }
-      ierr = PetscLogFlops(8.0);CHKERRQ(ierr);
+      PetscCall(PetscLogFlops(8.0));
       DMPlex_Det3D_Internal(detJ, J0);
       for (d = 0; d < dim; d++) {
         for (f = 0; f < dim; f++) {
@@ -1291,7 +1273,7 @@ static PetscErrorCode DMPlexComputeTriangleGeometry_Internal(DM dm, PetscInt e, 
           }
         }
       }
-      ierr = PetscLogFlops(18.0);CHKERRQ(ierr);
+      PetscCall(PetscLogFlops(18.0));
     }
     if (invJ) {DMPlex_Invert3D_Internal(invJ, J, *detJ);}
   } else if (numCoords == 6) {
@@ -1304,12 +1286,12 @@ static PetscErrorCode DMPlexComputeTriangleGeometry_Internal(DM dm, PetscInt e, 
           J[d*dim+f] = 0.5*(PetscRealPart(coords[(f+1)*dim+d]) - PetscRealPart(coords[0*dim+d]));
         }
       }
-      ierr = PetscLogFlops(8.0);CHKERRQ(ierr);
+      PetscCall(PetscLogFlops(8.0));
       DMPlex_Det2D_Internal(detJ, J);
     }
     if (invJ) {DMPlex_Invert2D_Internal(invJ, J, *detJ);}
-  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The number of coordinates for this triangle is %D != 6 or 9", numCoords);
-  ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, e, &numCoords, &coords);CHKERRQ(ierr);
+  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The number of coordinates for this triangle is %" PetscInt_FMT " != 6 or 9", numCoords);
+  PetscCall(DMPlexVecRestoreClosure(dm, coordSection, coordinates, e, &numCoords, &coords));
   PetscFunctionReturn(0);
 }
 
@@ -1319,14 +1301,13 @@ static PetscErrorCode DMPlexComputeRectangleGeometry_Internal(DM dm, PetscInt e,
   Vec            coordinates;
   PetscScalar   *coords = NULL;
   PetscInt       numCoords, numSelfCoords = 0, d, f, g, pStart, pEnd;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
-  ierr = PetscSectionGetChart(coordSection,&pStart,&pEnd);CHKERRQ(ierr);
-  if (e >= pStart && e < pEnd) {ierr = PetscSectionGetDof(coordSection,e,&numSelfCoords);CHKERRQ(ierr);}
-  ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, e, &numCoords, &coords);CHKERRQ(ierr);
+  PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
+  PetscCall(DMGetCoordinateSection(dm, &coordSection));
+  PetscCall(PetscSectionGetChart(coordSection,&pStart,&pEnd));
+  if (e >= pStart && e < pEnd) PetscCall(PetscSectionGetDof(coordSection,e,&numSelfCoords));
+  PetscCall(DMPlexVecGetClosure(dm, coordSection, coordinates, e, &numCoords, &coords));
   numCoords = numSelfCoords ? numSelfCoords : numCoords;
   if (!Nq) {
     PetscInt vorder[4] = {0, 1, 2, 3};
@@ -1338,7 +1319,7 @@ static PetscErrorCode DMPlexComputeRectangleGeometry_Internal(DM dm, PetscInt e,
       PetscReal      R[9], J0[9] = {1.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0};
 
       if (v)   {for (d = 0; d < dim; d++) v[d] = PetscRealPart(coords[d]);}
-      ierr = DMPlexComputeProjection3Dto2D(numCoords, coords, R);CHKERRQ(ierr);
+      PetscCall(DMPlexComputeProjection3Dto2D(numCoords, coords, R));
       if (J)    {
         const PetscInt pdim = 2;
 
@@ -1346,7 +1327,7 @@ static PetscErrorCode DMPlexComputeRectangleGeometry_Internal(DM dm, PetscInt e,
           J0[d*dim+0] = 0.5*(PetscRealPart(coords[vorder[1]*pdim+d]) - PetscRealPart(coords[vorder[0]*pdim+d]));
           J0[d*dim+1] = 0.5*(PetscRealPart(coords[vorder[2]*pdim+d]) - PetscRealPart(coords[vorder[1]*pdim+d]));
         }
-        ierr = PetscLogFlops(8.0);CHKERRQ(ierr);
+        PetscCall(PetscLogFlops(8.0));
         DMPlex_Det3D_Internal(detJ, J0);
         for (d = 0; d < dim; d++) {
           for (f = 0; f < dim; f++) {
@@ -1356,7 +1337,7 @@ static PetscErrorCode DMPlexComputeRectangleGeometry_Internal(DM dm, PetscInt e,
             }
           }
         }
-        ierr = PetscLogFlops(18.0);CHKERRQ(ierr);
+        PetscCall(PetscLogFlops(18.0));
       }
       if (invJ) {DMPlex_Invert3D_Internal(invJ, J, *detJ);}
     } else if (numCoords == 8) {
@@ -1368,11 +1349,11 @@ static PetscErrorCode DMPlexComputeRectangleGeometry_Internal(DM dm, PetscInt e,
           J[d*dim+0] = 0.5*(PetscRealPart(coords[vorder[1]*dim+d]) - PetscRealPart(coords[vorder[0]*dim+d]));
           J[d*dim+1] = 0.5*(PetscRealPart(coords[vorder[3]*dim+d]) - PetscRealPart(coords[vorder[0]*dim+d]));
         }
-        ierr = PetscLogFlops(8.0);CHKERRQ(ierr);
+        PetscCall(PetscLogFlops(8.0));
         DMPlex_Det2D_Internal(detJ, J);
       }
       if (invJ) {DMPlex_Invert2D_Internal(invJ, J, *detJ);}
-    } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The number of coordinates for this quadrilateral is %D != 8 or 12", numCoords);
+    } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The number of coordinates for this quadrilateral is %" PetscInt_FMT " != 8 or 12", numCoords);
   } else {
     const PetscInt Nv = 4;
     const PetscInt dimR = 2;
@@ -1386,7 +1367,7 @@ static PetscErrorCode DMPlexComputeRectangleGeometry_Internal(DM dm, PetscInt e,
       dim = 3;
     } else if (numCoords == 8) {
       dim = 2;
-    } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The number of coordinates for this quadrilateral is %D != 8 or 12", numCoords);
+    } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The number of coordinates for this quadrilateral is %" PetscInt_FMT " != 8 or 12", numCoords);
     for (i = 0; i < Nv; i++) {
       PetscInt zi = zToPlex[i];
 
@@ -1395,6 +1376,12 @@ static PetscErrorCode DMPlexComputeRectangleGeometry_Internal(DM dm, PetscInt e,
       }
     }
     for (j = 0; j < dim; j++) {
+      /* Nodal basis for evaluation at the vertices: (1 \mp xi) (1 \mp eta):
+           \phi^0 = (1 - xi - eta + xi eta) --> 1      = 1/4 ( \phi^0 + \phi^1 + \phi^2 + \phi^3)
+           \phi^1 = (1 + xi - eta - xi eta) --> xi     = 1/4 (-\phi^0 + \phi^1 - \phi^2 + \phi^3)
+           \phi^2 = (1 - xi + eta - xi eta) --> eta    = 1/4 (-\phi^0 - \phi^1 + \phi^2 + \phi^3)
+           \phi^3 = (1 + xi + eta + xi eta) --> xi eta = 1/4 ( \phi^0 - \phi^1 - \phi^2 + \phi^3)
+      */
       zCoeff[dim * 0 + j] = 0.25 * (  zOrder[dim * 0 + j] + zOrder[dim * 1 + j] + zOrder[dim * 2 + j] + zOrder[dim * 3 + j]);
       zCoeff[dim * 1 + j] = 0.25 * (- zOrder[dim * 0 + j] + zOrder[dim * 1 + j] - zOrder[dim * 2 + j] + zOrder[dim * 3 + j]);
       zCoeff[dim * 2 + j] = 0.25 * (- zOrder[dim * 0 + j] - zOrder[dim * 1 + j] + zOrder[dim * 2 + j] + zOrder[dim * 3 + j]);
@@ -1461,7 +1448,7 @@ static PetscErrorCode DMPlexComputeRectangleGeometry_Internal(DM dm, PetscInt e,
       }
     }
   }
-  ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, e, &numCoords, &coords);CHKERRQ(ierr);
+  PetscCall(DMPlexVecRestoreClosure(dm, coordSection, coordinates, e, &numCoords, &coords));
   PetscFunctionReturn(0);
 }
 
@@ -1472,12 +1459,11 @@ static PetscErrorCode DMPlexComputeTetrahedronGeometry_Internal(DM dm, PetscInt 
   PetscScalar   *coords = NULL;
   const PetscInt dim = 3;
   PetscInt       d;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
-  ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, e, NULL, &coords);CHKERRQ(ierr);
+  PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
+  PetscCall(DMGetCoordinateSection(dm, &coordSection));
+  PetscCall(DMPlexVecGetClosure(dm, coordSection, coordinates, e, NULL, &coords));
   *detJ = 0.0;
   if (v0)   {for (d = 0; d < dim; d++) v0[d] = PetscRealPart(coords[d]);}
   if (J)    {
@@ -1487,11 +1473,11 @@ static PetscErrorCode DMPlexComputeTetrahedronGeometry_Internal(DM dm, PetscInt 
       J[d*dim+1] = 0.5*(PetscRealPart(coords[1*dim+d]) - PetscRealPart(coords[0*dim+d]));
       J[d*dim+2] = 0.5*(PetscRealPart(coords[3*dim+d]) - PetscRealPart(coords[0*dim+d]));
     }
-    ierr = PetscLogFlops(18.0);CHKERRQ(ierr);
+    PetscCall(PetscLogFlops(18.0));
     DMPlex_Det3D_Internal(detJ, J);
   }
   if (invJ) {DMPlex_Invert3D_Internal(invJ, J, *detJ);}
-  ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, e, NULL, &coords);CHKERRQ(ierr);
+  PetscCall(DMPlexVecRestoreClosure(dm, coordSection, coordinates, e, NULL, &coords));
   PetscFunctionReturn(0);
 }
 
@@ -1502,12 +1488,11 @@ static PetscErrorCode DMPlexComputeHexahedronGeometry_Internal(DM dm, PetscInt e
   PetscScalar   *coords = NULL;
   const PetscInt dim = 3;
   PetscInt       d;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
-  ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, e, NULL, &coords);CHKERRQ(ierr);
+  PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
+  PetscCall(DMGetCoordinateSection(dm, &coordSection));
+  PetscCall(DMPlexVecGetClosure(dm, coordSection, coordinates, e, NULL, &coords));
   if (!Nq) {
     *detJ = 0.0;
     if (v)   {for (d = 0; d < dim; d++) v[d] = PetscRealPart(coords[d]);}
@@ -1517,7 +1502,7 @@ static PetscErrorCode DMPlexComputeHexahedronGeometry_Internal(DM dm, PetscInt e
         J[d*dim+1] = 0.5*(PetscRealPart(coords[1*dim+d]) - PetscRealPart(coords[0*dim+d]));
         J[d*dim+2] = 0.5*(PetscRealPart(coords[4*dim+d]) - PetscRealPart(coords[0*dim+d]));
       }
-      ierr = PetscLogFlops(18.0);CHKERRQ(ierr);
+      PetscCall(PetscLogFlops(18.0));
       DMPlex_Det3D_Internal(detJ, J);
     }
     if (invJ) {DMPlex_Invert3D_Internal(invJ, J, *detJ);}
@@ -1597,7 +1582,138 @@ static PetscErrorCode DMPlexComputeHexahedronGeometry_Internal(DM dm, PetscInt e
       }
     }
   }
-  ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, e, NULL, &coords);CHKERRQ(ierr);
+  PetscCall(DMPlexVecRestoreClosure(dm, coordSection, coordinates, e, NULL, &coords));
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode DMPlexComputeTriangularPrismGeometry_Internal(DM dm, PetscInt e, PetscInt Nq, const PetscReal points[], PetscReal v[], PetscReal J[], PetscReal invJ[], PetscReal *detJ)
+{
+  PetscSection   coordSection;
+  Vec            coordinates;
+  PetscScalar   *coords = NULL;
+  const PetscInt dim = 3;
+  PetscInt       d;
+
+  PetscFunctionBegin;
+  PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
+  PetscCall(DMGetCoordinateSection(dm, &coordSection));
+  PetscCall(DMPlexVecGetClosure(dm, coordSection, coordinates, e, NULL, &coords));
+  if (!Nq) {
+    /* Assume that the map to the reference is affine */
+    *detJ = 0.0;
+    if (v)   {for (d = 0; d < dim; d++) v[d] = PetscRealPart(coords[d]);}
+    if (J)    {
+      for (d = 0; d < dim; d++) {
+        J[d*dim+0] = 0.5*(PetscRealPart(coords[2*dim+d]) - PetscRealPart(coords[0*dim+d]));
+        J[d*dim+1] = 0.5*(PetscRealPart(coords[1*dim+d]) - PetscRealPart(coords[0*dim+d]));
+        J[d*dim+2] = 0.5*(PetscRealPart(coords[4*dim+d]) - PetscRealPart(coords[0*dim+d]));
+      }
+      PetscCall(PetscLogFlops(18.0));
+      DMPlex_Det3D_Internal(detJ, J);
+    }
+    if (invJ) {DMPlex_Invert3D_Internal(invJ, J, *detJ);}
+  } else {
+    const PetscInt dim  = 3;
+    const PetscInt dimR = 3;
+    const PetscInt Nv   = 6;
+    PetscReal verts[18];
+    PetscReal coeff[18];
+    PetscInt  i, j, k, l;
+
+    for (i = 0; i < Nv; ++i) for (j = 0; j < dim; ++j) verts[dim * i + j] = PetscRealPart(coords[dim * i + j]);
+    for (j = 0; j < dim; ++j) {
+      /* Check for triangle,
+           phi^0 = -1/2 (xi + eta)  chi^0 = delta(-1, -1)   x(xi) = \sum_k x_k phi^k(xi) = \sum_k chi^k(x) phi^k(xi)
+           phi^1 =  1/2 (1 + xi)    chi^1 = delta( 1, -1)   y(xi) = \sum_k y_k phi^k(xi) = \sum_k chi^k(y) phi^k(xi)
+           phi^2 =  1/2 (1 + eta)   chi^2 = delta(-1,  1)
+
+           phi^0 + phi^1 + phi^2 = 1    coef_1   = 1/2 (         chi^1 + chi^2)
+          -phi^0 + phi^1 - phi^2 = xi   coef_xi  = 1/2 (-chi^0 + chi^1)
+          -phi^0 - phi^1 + phi^2 = eta  coef_eta = 1/2 (-chi^0         + chi^2)
+
+          < chi_0 chi_1 chi_2> A /  1  1  1 \ / phi_0 \   <chi> I <phi>^T  so we need the inverse transpose
+                                 | -1  1 -1 | | phi_1 | =
+                                 \ -1 -1  1 / \ phi_2 /
+
+          Check phi^0: 1/2 (phi^0 chi^1 + phi^0 chi^2 + phi^0 chi^0 - phi^0 chi^1 + phi^0 chi^0 - phi^0 chi^2) = phi^0 chi^0
+      */
+      /* Nodal basis for evaluation at the vertices: {-xi - eta, 1 + xi, 1 + eta} (1 \mp zeta):
+           \phi^0 = 1/4 (   -xi - eta        + xi zeta + eta zeta) --> /  1  1  1  1  1  1 \ 1
+           \phi^1 = 1/4 (1      + eta - zeta           - eta zeta) --> | -1  1 -1 -1 -1  1 | eta
+           \phi^2 = 1/4 (1 + xi       - zeta - xi zeta)            --> | -1 -1  1 -1  1 -1 | xi
+           \phi^3 = 1/4 (   -xi - eta        - xi zeta - eta zeta) --> | -1 -1 -1  1  1  1 | zeta
+           \phi^4 = 1/4 (1 + xi       + zeta + xi zeta)            --> |  1  1 -1 -1  1 -1 | xi zeta
+           \phi^5 = 1/4 (1      + eta + zeta           + eta zeta) --> \  1 -1  1 -1 -1  1 / eta zeta
+           1/4 /  0  1  1  0  1  1 \
+               | -1  1  0 -1  0  1 |
+               | -1  0  1 -1  1  0 |
+               |  0 -1 -1  0  1  1 |
+               |  1  0 -1 -1  1  0 |
+               \  1 -1  0 -1  0  1 /
+      */
+      coeff[dim * 0 + j] = (1./4.) * (                      verts[dim * 1 + j] + verts[dim * 2 + j]                      + verts[dim * 4 + j] + verts[dim * 5 + j]);
+      coeff[dim * 1 + j] = (1./4.) * (-verts[dim * 0 + j] + verts[dim * 1 + j]                      - verts[dim * 3 + j]                      + verts[dim * 5 + j]);
+      coeff[dim * 2 + j] = (1./4.) * (-verts[dim * 0 + j]                      + verts[dim * 2 + j] - verts[dim * 3 + j] + verts[dim * 4 + j]);
+      coeff[dim * 3 + j] = (1./4.) * (                    - verts[dim * 1 + j] - verts[dim * 2 + j]                      + verts[dim * 4 + j] + verts[dim * 5 + j]);
+      coeff[dim * 4 + j] = (1./4.) * ( verts[dim * 0 + j]                      - verts[dim * 2 + j] - verts[dim * 3 + j] + verts[dim * 4 + j]);
+      coeff[dim * 5 + j] = (1./4.) * ( verts[dim * 0 + j] - verts[dim * 1 + j]                      - verts[dim * 3 + j]                      + verts[dim * 5 + j]);
+      /* For reference prism:
+      {0, 0, 0}
+      {0, 1, 0}
+      {1, 0, 0}
+      {0, 0, 1}
+      {0, 0, 0}
+      {0, 0, 0}
+      */
+    }
+    for (i = 0; i < Nq; ++i) {
+      const PetscReal xi = points[dimR * i], eta = points[dimR * i + 1], zeta = points[dimR * i + 2];
+
+      if (v) {
+        PetscReal extPoint[6];
+        PetscInt  c;
+
+        extPoint[0] = 1.;
+        extPoint[1] = eta;
+        extPoint[2] = xi;
+        extPoint[3] = zeta;
+        extPoint[4] = xi * zeta;
+        extPoint[5] = eta * zeta;
+        for (c = 0; c < dim; ++c) {
+          PetscReal val = 0.;
+
+          for (k = 0; k < Nv; ++k) {
+            val += extPoint[k] * coeff[k*dim + c];
+          }
+          v[i*dim + c] = val;
+        }
+      }
+      if (J) {
+        PetscReal extJ[18];
+
+        extJ[0]  = 0.  ; extJ[1]  = 0.  ; extJ[2]  = 0. ;
+        extJ[3]  = 0.  ; extJ[4]  = 1.  ; extJ[5]  = 0. ;
+        extJ[6]  = 1.  ; extJ[7]  = 0.  ; extJ[8]  = 0. ;
+        extJ[9]  = 0.  ; extJ[10] = 0.  ; extJ[11] = 1. ;
+        extJ[12] = zeta; extJ[13] = 0.  ; extJ[14] = xi ;
+        extJ[15] = 0.  ; extJ[16] = zeta; extJ[17] = eta;
+
+        for (j = 0; j < dim; j++) {
+          for (k = 0; k < dimR; k++) {
+            PetscReal val = 0.;
+
+            for (l = 0; l < Nv; l++) {
+              val += coeff[dim * l + j] * extJ[dimR * l + k];
+            }
+            J[i * dim * dim + dim * j + k] = val;
+          }
+        }
+        DMPlex_Det3D_Internal(&detJ[i], &J[i * dim * dim]);
+        if (invJ) {DMPlex_Invert3D_Internal(&invJ[i * dim * dim], &J[i * dim * dim], detJ[i]);}
+      }
+    }
+  }
+  PetscCall(DMPlexVecRestoreClosure(dm, coordSection, coordinates, e, NULL, &coords));
   PetscFunctionReturn(0);
 }
 
@@ -1610,51 +1726,54 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_Implicit(DM dm, PetscInt cell
   DMLabel         depthLabel;
   PetscReal       xi0[3] = {-1.,-1.,-1.}, v0[3], J0[9], detJ0;
   PetscBool       isAffine = PETSC_TRUE;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
-  ierr = DMPlexGetConeSize(dm, cell, &coneSize);CHKERRQ(ierr);
-  ierr = DMPlexGetDepthLabel(dm, &depthLabel);CHKERRQ(ierr);
-  ierr = DMLabelGetValue(depthLabel, cell, &dim);CHKERRQ(ierr);
+  PetscCall(DMPlexGetDepth(dm, &depth));
+  PetscCall(DMPlexGetConeSize(dm, cell, &coneSize));
+  PetscCall(DMPlexGetDepthLabel(dm, &depthLabel));
+  PetscCall(DMLabelGetValue(depthLabel, cell, &dim));
   if (depth == 1 && dim == 1) {
-    ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+    PetscCall(DMGetDimension(dm, &dim));
   }
-  ierr = DMGetCoordinateDim(dm, &coordDim);CHKERRQ(ierr);
-  PetscCheckFalse(coordDim > 3,PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported coordinate dimension %D > 3", coordDim);
-  if (quad) {ierr = PetscQuadratureGetData(quad, NULL, NULL, &Nq, &points, NULL);CHKERRQ(ierr);}
-  ierr = DMPlexGetCellType(dm, cell, &ct);CHKERRQ(ierr);
+  PetscCall(DMGetCoordinateDim(dm, &coordDim));
+  PetscCheck(coordDim <= 3,PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported coordinate dimension %" PetscInt_FMT " > 3", coordDim);
+  if (quad) PetscCall(PetscQuadratureGetData(quad, NULL, NULL, &Nq, &points, NULL));
+  PetscCall(DMPlexGetCellType(dm, cell, &ct));
   switch (ct) {
     case DM_POLYTOPE_POINT:
-    ierr = DMPlexComputePointGeometry_Internal(dm, cell, v, J, invJ, detJ);CHKERRQ(ierr);
+    PetscCall(DMPlexComputePointGeometry_Internal(dm, cell, v, J, invJ, detJ));
     isAffine = PETSC_FALSE;
     break;
     case DM_POLYTOPE_SEGMENT:
     case DM_POLYTOPE_POINT_PRISM_TENSOR:
-    if (Nq) {ierr = DMPlexComputeLineGeometry_Internal(dm, cell, v0, J0, NULL, &detJ0);CHKERRQ(ierr);}
-    else    {ierr = DMPlexComputeLineGeometry_Internal(dm, cell, v,  J,  invJ,  detJ);CHKERRQ(ierr);}
+    if (Nq) PetscCall(DMPlexComputeLineGeometry_Internal(dm, cell, v0, J0, NULL, &detJ0));
+    else    PetscCall(DMPlexComputeLineGeometry_Internal(dm, cell, v,  J,  invJ,  detJ));
     break;
     case DM_POLYTOPE_TRIANGLE:
-    if (Nq) {ierr = DMPlexComputeTriangleGeometry_Internal(dm, cell, v0, J0, NULL, &detJ0);CHKERRQ(ierr);}
-    else    {ierr = DMPlexComputeTriangleGeometry_Internal(dm, cell, v,  J,  invJ,  detJ);CHKERRQ(ierr);}
+    if (Nq) PetscCall(DMPlexComputeTriangleGeometry_Internal(dm, cell, v0, J0, NULL, &detJ0));
+    else    PetscCall(DMPlexComputeTriangleGeometry_Internal(dm, cell, v,  J,  invJ,  detJ));
     break;
     case DM_POLYTOPE_QUADRILATERAL:
-    ierr = DMPlexComputeRectangleGeometry_Internal(dm, cell, PETSC_FALSE, Nq, points, v, J, invJ, detJ);CHKERRQ(ierr);
+    PetscCall(DMPlexComputeRectangleGeometry_Internal(dm, cell, PETSC_FALSE, Nq, points, v, J, invJ, detJ));
     isAffine = PETSC_FALSE;
     break;
     case DM_POLYTOPE_SEG_PRISM_TENSOR:
-    ierr = DMPlexComputeRectangleGeometry_Internal(dm, cell, PETSC_TRUE, Nq, points, v, J, invJ, detJ);CHKERRQ(ierr);
+    PetscCall(DMPlexComputeRectangleGeometry_Internal(dm, cell, PETSC_TRUE, Nq, points, v, J, invJ, detJ));
     isAffine = PETSC_FALSE;
     break;
     case DM_POLYTOPE_TETRAHEDRON:
-    if (Nq) {ierr = DMPlexComputeTetrahedronGeometry_Internal(dm, cell, v0, J0, NULL, &detJ0);CHKERRQ(ierr);}
-    else    {ierr = DMPlexComputeTetrahedronGeometry_Internal(dm, cell, v,  J,  invJ,  detJ);CHKERRQ(ierr);}
+    if (Nq) PetscCall(DMPlexComputeTetrahedronGeometry_Internal(dm, cell, v0, J0, NULL, &detJ0));
+    else    PetscCall(DMPlexComputeTetrahedronGeometry_Internal(dm, cell, v,  J,  invJ,  detJ));
     break;
     case DM_POLYTOPE_HEXAHEDRON:
-    ierr = DMPlexComputeHexahedronGeometry_Internal(dm, cell, Nq, points, v, J, invJ, detJ);CHKERRQ(ierr);
+    PetscCall(DMPlexComputeHexahedronGeometry_Internal(dm, cell, Nq, points, v, J, invJ, detJ));
     isAffine = PETSC_FALSE;
     break;
-    default: SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "No element geometry for cell %D with type %s", cell, DMPolytopeTypes[ct]);
+    case DM_POLYTOPE_TRI_PRISM:
+    PetscCall(DMPlexComputeTriangularPrismGeometry_Internal(dm, cell, Nq, points, v, J, invJ, detJ));
+    isAffine = PETSC_FALSE;
+    break;
+    default: SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "No element geometry for cell %" PetscInt_FMT " with type %s", cell, DMPolytopeTypes[PetscMax(0, PetscMin(ct, DM_NUM_POLYTOPES))]);
   }
   if (isAffine && Nq) {
     if (v) {
@@ -1715,7 +1834,7 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_Implicit(DM dm, PetscInt cell
 - cell - the cell
 
   Output Parameters:
-+ v0   - the translation part of this affine transform
++ v0   - the translation part of this affine transform, meaning the translation to the origin (not the first vertex of the reference cell)
 . J    - the Jacobian of the transform from the reference element
 . invJ - the inverse of the Jacobian
 - detJ - the Jacobian determinant
@@ -1726,14 +1845,12 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_Implicit(DM dm, PetscInt cell
   Since it returns arrays, this routine is only available in Fortran 90, and you must
   include petsc.h90 in your code.
 
-.seealso: DMPlexComputeCellGeometryFEM(), DMGetCoordinateSection(), DMGetCoordinates()
+.seealso: `DMPlexComputeCellGeometryFEM()`, `DMGetCoordinateSection()`, `DMGetCoordinates()`
 @*/
 PetscErrorCode DMPlexComputeCellGeometryAffineFEM(DM dm, PetscInt cell, PetscReal *v0, PetscReal *J, PetscReal *invJ, PetscReal *detJ)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = DMPlexComputeCellGeometryFEM_Implicit(dm,cell,NULL,v0,J,invJ,detJ);CHKERRQ(ierr);
+  PetscCall(DMPlexComputeCellGeometryFEM_Implicit(dm,cell,NULL,v0,J,invJ,detJ));
   PetscFunctionReturn(0);
 }
 
@@ -1746,46 +1863,45 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_FE(DM dm, PetscFE fe, PetscIn
   const PetscReal  *quadPoints;
   PetscTabulation T;
   PetscInt          dim, cdim, pdim, qdim, Nq, numCoords, q;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
-  ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, point, &numCoords, &coords);CHKERRQ(ierr);
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMGetCoordinateDim(dm, &cdim);CHKERRQ(ierr);
+  PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
+  PetscCall(DMGetCoordinateSection(dm, &coordSection));
+  PetscCall(DMPlexVecGetClosure(dm, coordSection, coordinates, point, &numCoords, &coords));
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMGetCoordinateDim(dm, &cdim));
   if (!quad) { /* use the first point of the first functional of the dual space */
     PetscDualSpace dsp;
 
-    ierr = PetscFEGetDualSpace(fe, &dsp);CHKERRQ(ierr);
-    ierr = PetscDualSpaceGetFunctional(dsp, 0, &quad);CHKERRQ(ierr);
-    ierr = PetscQuadratureGetData(quad, &qdim, NULL, &Nq, &quadPoints, NULL);CHKERRQ(ierr);
+    PetscCall(PetscFEGetDualSpace(fe, &dsp));
+    PetscCall(PetscDualSpaceGetFunctional(dsp, 0, &quad));
+    PetscCall(PetscQuadratureGetData(quad, &qdim, NULL, &Nq, &quadPoints, NULL));
     Nq = 1;
   } else {
-    ierr = PetscQuadratureGetData(quad, &qdim, NULL, &Nq, &quadPoints, NULL);CHKERRQ(ierr);
+    PetscCall(PetscQuadratureGetData(quad, &qdim, NULL, &Nq, &quadPoints, NULL));
   }
-  ierr = PetscFEGetDimension(fe, &pdim);CHKERRQ(ierr);
-  ierr = PetscFEGetQuadrature(fe, &feQuad);CHKERRQ(ierr);
+  PetscCall(PetscFEGetDimension(fe, &pdim));
+  PetscCall(PetscFEGetQuadrature(fe, &feQuad));
   if (feQuad == quad) {
-    ierr = PetscFEGetCellTabulation(fe, J ? 1 : 0, &T);CHKERRQ(ierr);
-    PetscCheckFalse(numCoords != pdim*cdim,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "There are %d coordinates for point %d != %d*%d", numCoords, point, pdim, cdim);
+    PetscCall(PetscFEGetCellTabulation(fe, J ? 1 : 0, &T));
+    PetscCheck(numCoords == pdim*cdim,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "There are %" PetscInt_FMT " coordinates for point %" PetscInt_FMT " != %" PetscInt_FMT "*%" PetscInt_FMT, numCoords, point, pdim, cdim);
   } else {
-    ierr = PetscFECreateTabulation(fe, 1, Nq, quadPoints, J ? 1 : 0, &T);CHKERRQ(ierr);
+    PetscCall(PetscFECreateTabulation(fe, 1, Nq, quadPoints, J ? 1 : 0, &T));
   }
-  PetscCheckFalse(qdim != dim,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Point dimension %d != quadrature dimension %d", dim, qdim);
+  PetscCheck(qdim == dim,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Point dimension %" PetscInt_FMT " != quadrature dimension %" PetscInt_FMT, dim, qdim);
   {
     const PetscReal *basis    = T->T[0];
     const PetscReal *basisDer = T->T[1];
     PetscReal        detJt;
 
 #if defined(PETSC_USE_DEBUG)
-    PetscCheckFalse(Nq != T->Np,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Np %D != %D", Nq, T->Np);
-    PetscCheckFalse(pdim != T->Nb,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Nb %D != %D", pdim, T->Nb);
-    PetscCheckFalse(dim != T->Nc,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Nc %D != %D", dim, T->Nc);
-    PetscCheckFalse(cdim != T->cdim,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "cdim %D != %D", cdim, T->cdim);
+    PetscCheck(Nq == T->Np,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Np %" PetscInt_FMT " != %" PetscInt_FMT, Nq, T->Np);
+    PetscCheck(pdim == T->Nb,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Nb %" PetscInt_FMT " != %" PetscInt_FMT, pdim, T->Nb);
+    PetscCheck(dim == T->Nc,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Nc %" PetscInt_FMT " != %" PetscInt_FMT, dim, T->Nc);
+    PetscCheck(cdim == T->cdim,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "cdim %" PetscInt_FMT " != %" PetscInt_FMT, cdim, T->cdim);
 #endif
     if (v) {
-      ierr = PetscArrayzero(v, Nq*cdim);CHKERRQ(ierr);
+      PetscCall(PetscArrayzero(v, Nq*cdim));
       for (q = 0; q < Nq; ++q) {
         PetscInt i, k;
 
@@ -1795,11 +1911,11 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_FE(DM dm, PetscFE fe, PetscIn
             v[q*cdim + i] += basis[(q*pdim + k)*cdim + i] * PetscRealPart(coords[vertex*cdim + i]);
           }
         }
-        ierr = PetscLogFlops(2.0*pdim*cdim);CHKERRQ(ierr);
+        PetscCall(PetscLogFlops(2.0*pdim*cdim));
       }
     }
     if (J) {
-      ierr = PetscArrayzero(J, Nq*cdim*cdim);CHKERRQ(ierr);
+      PetscCall(PetscArrayzero(J, Nq*cdim*cdim));
       for (q = 0; q < Nq; ++q) {
         PetscInt i, j, k, c, r;
 
@@ -1812,7 +1928,7 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_FE(DM dm, PetscFE fe, PetscIn
             }
           }
         }
-        ierr = PetscLogFlops(2.0*pdim*dim*cdim);CHKERRQ(ierr);
+        PetscCall(PetscLogFlops(2.0*pdim*dim*cdim));
         if (cdim > dim) {
           for (c = dim; c < cdim; ++c)
             for (r = 0; r < cdim; ++r)
@@ -1835,10 +1951,10 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_FE(DM dm, PetscFE fe, PetscIn
         }
         if (detJ) detJ[q] = detJt;
       }
-    } else PetscCheckFalse(detJ || invJ,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Need J to compute invJ or detJ");
+    } else PetscCheck(!detJ && !invJ,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Need J to compute invJ or detJ");
   }
-  if (feQuad != quad) {ierr = PetscTabulationDestroy(&T);CHKERRQ(ierr);}
-  ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, point, &numCoords, &coords);CHKERRQ(ierr);
+  if (feQuad != quad) PetscCall(PetscTabulationDestroy(&T));
+  PetscCall(DMPlexVecRestoreClosure(dm, coordSection, coordinates, point, &numCoords, &coords));
   PetscFunctionReturn(0);
 }
 
@@ -1865,35 +1981,34 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_FE(DM dm, PetscFE fe, PetscIn
   Since it returns arrays, this routine is only available in Fortran 90, and you must
   include petsc.h90 in your code.
 
-.seealso: DMGetCoordinateSection(), DMGetCoordinates()
+.seealso: `DMGetCoordinateSection()`, `DMGetCoordinates()`
 @*/
 PetscErrorCode DMPlexComputeCellGeometryFEM(DM dm, PetscInt cell, PetscQuadrature quad, PetscReal *v, PetscReal *J, PetscReal *invJ, PetscReal *detJ)
 {
   DM             cdm;
   PetscFE        fe = NULL;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidPointer(detJ, 7);
-  ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
+  PetscValidRealPointer(detJ, 7);
+  PetscCall(DMGetCoordinateDM(dm, &cdm));
   if (cdm) {
     PetscClassId id;
     PetscInt     numFields;
     PetscDS      prob;
     PetscObject  disc;
 
-    ierr = DMGetNumFields(cdm, &numFields);CHKERRQ(ierr);
+    PetscCall(DMGetNumFields(cdm, &numFields));
     if (numFields) {
-      ierr = DMGetDS(cdm, &prob);CHKERRQ(ierr);
-      ierr = PetscDSGetDiscretization(prob,0,&disc);CHKERRQ(ierr);
-      ierr = PetscObjectGetClassId(disc,&id);CHKERRQ(ierr);
+      PetscCall(DMGetDS(cdm, &prob));
+      PetscCall(PetscDSGetDiscretization(prob,0,&disc));
+      PetscCall(PetscObjectGetClassId(disc,&id));
       if (id == PETSCFE_CLASSID) {
         fe = (PetscFE) disc;
       }
     }
   }
-  if (!fe) {ierr = DMPlexComputeCellGeometryFEM_Implicit(dm, cell, quad, v, J, invJ, detJ);CHKERRQ(ierr);}
-  else     {ierr = DMPlexComputeCellGeometryFEM_FE(dm, fe, cell, quad, v, J, invJ, detJ);CHKERRQ(ierr);}
+  if (!fe) PetscCall(DMPlexComputeCellGeometryFEM_Implicit(dm, cell, quad, v, J, invJ, detJ));
+  else     PetscCall(DMPlexComputeCellGeometryFEM_FE(dm, fe, cell, quad, v, J, invJ, detJ));
   PetscFunctionReturn(0);
 }
 
@@ -1903,17 +2018,16 @@ static PetscErrorCode DMPlexComputeGeometryFVM_0D_Internal(DM dm, PetscInt dim, 
   Vec                 coordinates;
   const PetscScalar  *coords = NULL;
   PetscInt            d, dof, off;
-  PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(coordinates, &coords);CHKERRQ(ierr);
+  PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
+  PetscCall(DMGetCoordinateSection(dm, &coordSection));
+  PetscCall(VecGetArrayRead(coordinates, &coords));
 
   /* for a point the centroid is just the coord */
   if (centroid) {
-    ierr = PetscSectionGetDof(coordSection, cell, &dof);CHKERRQ(ierr);
-    ierr = PetscSectionGetOffset(coordSection, cell, &off);CHKERRQ(ierr);
+    PetscCall(PetscSectionGetDof(coordSection, cell, &dof));
+    PetscCall(PetscSectionGetOffset(coordSection, cell, &off));
     for (d = 0; d < dof; d++){
       centroid[d] = PetscRealPart(coords[off + d]);
     }
@@ -1924,19 +2038,19 @@ static PetscErrorCode DMPlexComputeGeometryFVM_0D_Internal(DM dm, PetscInt dim, 
     PetscReal       norm, sign;
 
     /* compute the norm based upon the support centroids */
-    ierr = DMPlexGetSupportSize(dm, cell, &supportSize);CHKERRQ(ierr);
-    ierr = DMPlexGetSupport(dm, cell, &support);CHKERRQ(ierr);
-    ierr = DMPlexComputeCellGeometryFVM(dm, support[0], NULL, normal, NULL);CHKERRQ(ierr);
+    PetscCall(DMPlexGetSupportSize(dm, cell, &supportSize));
+    PetscCall(DMPlexGetSupport(dm, cell, &support));
+    PetscCall(DMPlexComputeCellGeometryFVM(dm, support[0], NULL, normal, NULL));
 
     /* Take the normal from the centroid of the support to the vertex*/
-    ierr = PetscSectionGetDof(coordSection, cell, &dof);CHKERRQ(ierr);
-    ierr = PetscSectionGetOffset(coordSection, cell, &off);CHKERRQ(ierr);
+    PetscCall(PetscSectionGetDof(coordSection, cell, &dof));
+    PetscCall(PetscSectionGetOffset(coordSection, cell, &off));
     for (d = 0; d < dof; d++){
       normal[d] -= PetscRealPart(coords[off + d]);
     }
 
     /* Determine the sign of the normal based upon its location in the support */
-    ierr = DMPlexGetCone(dm, support[0], &cones);CHKERRQ(ierr);
+    PetscCall(DMPlexGetCone(dm, support[0], &cones));
     sign = cones[0] == cell ? 1.0 : -1.0;
 
     norm = DMPlex_NormD_Internal(dim, normal);
@@ -1945,7 +2059,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_0D_Internal(DM dm, PetscInt dim, 
   if (vol) {
     *vol = 1.0;
   }
-  ierr = VecRestoreArrayRead(coordinates, &coords);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayRead(coordinates, &coords));
   PetscFunctionReturn(0);
 }
 
@@ -1956,20 +2070,19 @@ static PetscErrorCode DMPlexComputeGeometryFVM_1D_Internal(DM dm, PetscInt dim, 
   PetscScalar   *coords = NULL;
   PetscScalar    tmp[2];
   PetscInt       coordSize, d;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
-  ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, cell, &coordSize, &coords);CHKERRQ(ierr);
-  ierr = DMLocalizeCoordinate_Internal(dm, dim, coords, &coords[dim], tmp);CHKERRQ(ierr);
+  PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
+  PetscCall(DMGetCoordinateSection(dm, &coordSection));
+  PetscCall(DMPlexVecGetClosure(dm, coordSection, coordinates, cell, &coordSize, &coords));
+  PetscCall(DMLocalizeCoordinate_Internal(dm, dim, coords, &coords[dim], tmp));
   if (centroid) {
     for (d = 0; d < dim; ++d) centroid[d] = 0.5*PetscRealPart(coords[d] + tmp[d]);
   }
   if (normal) {
     PetscReal norm;
 
-    PetscCheckFalse(dim != 2,PETSC_COMM_SELF, PETSC_ERR_SUP, "We only support 2D edges right now");
+    PetscCheck(dim == 2,PETSC_COMM_SELF, PETSC_ERR_SUP, "We only support 2D edges right now");
     normal[0]  = -PetscRealPart(coords[1] - tmp[1]);
     normal[1]  =  PetscRealPart(coords[0] - tmp[0]);
     norm       = DMPlex_NormD_Internal(dim, normal);
@@ -1980,7 +2093,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_1D_Internal(DM dm, PetscInt dim, 
     for (d = 0; d < dim; ++d) *vol += PetscSqr(PetscRealPart(coords[d] - tmp[d]));
     *vol = PetscSqrtReal(*vol);
   }
-  ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, cell, &coordSize, &coords);CHKERRQ(ierr);
+  PetscCall(DMPlexVecRestoreClosure(dm, coordSection, coordinates, cell, &coordSize, &coords));
   PetscFunctionReturn(0);
 }
 
@@ -1993,20 +2106,19 @@ static PetscErrorCode DMPlexComputeGeometryFVM_2D_Internal(DM dm, PetscInt dim, 
   PetscScalar   *coords = NULL;
   PetscInt       fv[4] = {0, 1, 2, 3};
   PetscInt       cdim, coordSize, numCorners, p, d;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* Must check for hybrid cells because prisms have a different orientation scheme */
-  ierr = DMPlexGetCellType(dm, cell, &ct);CHKERRQ(ierr);
+  PetscCall(DMPlexGetCellType(dm, cell, &ct));
   switch (ct) {
     case DM_POLYTOPE_SEG_PRISM_TENSOR: fv[2] = 3; fv[3] = 2;break;
     default: break;
   }
-  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-  ierr = DMPlexGetConeSize(dm, cell, &numCorners);CHKERRQ(ierr);
-  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
-  ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, cell, &coordSize, &coords);CHKERRQ(ierr);
-  ierr = DMGetCoordinateDim(dm, &cdim);CHKERRQ(ierr);
+  PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
+  PetscCall(DMPlexGetConeSize(dm, cell, &numCorners));
+  PetscCall(DMGetCoordinateSection(dm, &coordSection));
+  PetscCall(DMPlexVecGetClosure(dm, coordSection, coordinates, cell, &coordSize, &coords));
+  PetscCall(DMGetCoordinateDim(dm, &cdim));
   {
     PetscReal c[3] = {0., 0., 0.}, n[3] = {0., 0., 0.}, origin[3] = {0., 0., 0.}, norm;
 
@@ -2040,7 +2152,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_2D_Internal(DM dm, PetscInt dim, 
     if (centroid) for (d = 0; d < cdim; ++d) centroid[d] = c[d];
     if (normal) for (d = 0; d < cdim; ++d) normal[d] = n[d];
   }
-  ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, cell, &coordSize, &coords);CHKERRQ(ierr);
+  PetscCall(DMPlexVecRestoreClosure(dm, coordSection, coordinates, cell, &coordSize, &coords));
   PetscFunctionReturn(0);
 }
 
@@ -2055,12 +2167,11 @@ static PetscErrorCode DMPlexComputeGeometryFVM_3D_Internal(DM dm, PetscInt dim, 
   const PetscInt *faces, *facesO;
   PetscBool       isHybrid = PETSC_FALSE;
   PetscInt        numFaces, f, coordSize, p, d;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  PetscCheckFalse(dim > 3,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"No support for dim %D > 3",dim);
+  PetscCheck(dim <= 3,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"No support for dim %" PetscInt_FMT " > 3",dim);
   /* Must check for hybrid cells because prisms have a different orientation scheme */
-  ierr = DMPlexGetCellType(dm, cell, &ct);CHKERRQ(ierr);
+  PetscCall(DMPlexGetCellType(dm, cell, &ct));
   switch (ct) {
     case DM_POLYTOPE_POINT_PRISM_TENSOR:
     case DM_POLYTOPE_SEG_PRISM_TENSOR:
@@ -2070,23 +2181,23 @@ static PetscErrorCode DMPlexComputeGeometryFVM_3D_Internal(DM dm, PetscInt dim, 
     default: break;
   }
 
-  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
+  PetscCall(DMGetCoordinateSection(dm, &coordSection));
 
   if (centroid) for (d = 0; d < dim; ++d) centroid[d] = 0.0;
-  ierr = DMPlexGetConeSize(dm, cell, &numFaces);CHKERRQ(ierr);
-  ierr = DMPlexGetCone(dm, cell, &faces);CHKERRQ(ierr);
-  ierr = DMPlexGetConeOrientation(dm, cell, &facesO);CHKERRQ(ierr);
+  PetscCall(DMPlexGetConeSize(dm, cell, &numFaces));
+  PetscCall(DMPlexGetCone(dm, cell, &faces));
+  PetscCall(DMPlexGetConeOrientation(dm, cell, &facesO));
   for (f = 0; f < numFaces; ++f) {
     PetscBool      flip = isHybrid && f == 0 ? PETSC_TRUE : PETSC_FALSE; /* The first hybrid face is reversed */
     DMPolytopeType ct;
 
-    ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, faces[f], &coordSize, &coords);CHKERRQ(ierr);
+    PetscCall(DMPlexVecGetClosure(dm, coordSection, coordinates, faces[f], &coordSize, &coords));
     // If using zero as the origin vertex for each tetrahedron, an element far from the origin will have positive and
     // negative volumes that nearly cancel, thus incurring rounding error. Here we define origin[] as the first vertex
     // so that all tetrahedra have positive volume.
     if (f == 0) for (d = 0; d < dim; d++) origin[d] = PetscRealPart(coords[d]);
-    ierr = DMPlexGetCellType(dm, faces[f], &ct);CHKERRQ(ierr);
+    PetscCall(DMPlexGetCellType(dm, faces[f], &ct));
     switch (ct) {
     case DM_POLYTOPE_TRIANGLE:
       for (d = 0; d < dim; ++d) {
@@ -2142,9 +2253,9 @@ static PetscErrorCode DMPlexComputeGeometryFVM_3D_Internal(DM dm, PetscInt dim, 
       break;
     }
     default:
-      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle face %D of type %s", faces[f], DMPolytopeTypes[ct]);
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle face %" PetscInt_FMT " of type %s", faces[f], DMPolytopeTypes[ct]);
     }
-    ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, faces[f], &coordSize, &coords);CHKERRQ(ierr);
+    PetscCall(DMPlexVecRestoreClosure(dm, coordSection, coordinates, faces[f], &coordSize, &coords));
   }
   if (vol)     *vol = PetscAbsReal(vsum);
   if (normal)   for (d = 0; d < dim; ++d) normal[d]    = 0.0;
@@ -2173,33 +2284,32 @@ static PetscErrorCode DMPlexComputeGeometryFVM_3D_Internal(DM dm, PetscInt dim, 
   Since it returns arrays, this routine is only available in Fortran 90, and you must
   include petsc.h90 in your code.
 
-.seealso: DMGetCoordinateSection(), DMGetCoordinates()
+.seealso: `DMGetCoordinateSection()`, `DMGetCoordinates()`
 @*/
 PetscErrorCode DMPlexComputeCellGeometryFVM(DM dm, PetscInt cell, PetscReal *vol, PetscReal centroid[], PetscReal normal[])
 {
   PetscInt       depth, dim;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  PetscCheckFalse(depth != dim,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh must be interpolated");
-  ierr = DMPlexGetPointDepth(dm, cell, &depth);CHKERRQ(ierr);
+  PetscCall(DMPlexGetDepth(dm, &depth));
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCheck(depth == dim,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh must be interpolated");
+  PetscCall(DMPlexGetPointDepth(dm, cell, &depth));
   switch (depth) {
   case 0:
-    ierr = DMPlexComputeGeometryFVM_0D_Internal(dm, dim, cell, vol, centroid, normal);CHKERRQ(ierr);
+    PetscCall(DMPlexComputeGeometryFVM_0D_Internal(dm, dim, cell, vol, centroid, normal));
     break;
   case 1:
-    ierr = DMPlexComputeGeometryFVM_1D_Internal(dm, dim, cell, vol, centroid, normal);CHKERRQ(ierr);
+    PetscCall(DMPlexComputeGeometryFVM_1D_Internal(dm, dim, cell, vol, centroid, normal));
     break;
   case 2:
-    ierr = DMPlexComputeGeometryFVM_2D_Internal(dm, dim, cell, vol, centroid, normal);CHKERRQ(ierr);
+    PetscCall(DMPlexComputeGeometryFVM_2D_Internal(dm, dim, cell, vol, centroid, normal));
     break;
   case 3:
-    ierr = DMPlexComputeGeometryFVM_3D_Internal(dm, dim, cell, vol, centroid, normal);CHKERRQ(ierr);
+    PetscCall(DMPlexComputeGeometryFVM_3D_Internal(dm, dim, cell, vol, centroid, normal));
     break;
   default:
-    SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported dimension %D (depth %D) for element geometry computation", dim, depth);
+    SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported dimension %" PetscInt_FMT " (depth %" PetscInt_FMT ") for element geometry computation", dim, depth);
   }
   PetscFunctionReturn(0);
 }
@@ -2225,31 +2335,30 @@ PetscErrorCode DMPlexComputeGeometryFEM(DM dm, Vec *cellgeom)
   PetscSection   coordSection, sectionCell;
   PetscScalar   *cgeom;
   PetscInt       cStart, cEnd, c;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMClone(dm, &dmCell);CHKERRQ(ierr);
-  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
-  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-  ierr = DMSetCoordinateSection(dmCell, PETSC_DETERMINE, coordSection);CHKERRQ(ierr);
-  ierr = DMSetCoordinatesLocal(dmCell, coordinates);CHKERRQ(ierr);
-  ierr = PetscSectionCreate(PetscObjectComm((PetscObject) dm), &sectionCell);CHKERRQ(ierr);
-  ierr = DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = PetscSectionSetChart(sectionCell, cStart, cEnd);CHKERRQ(ierr);
+  PetscCall(DMClone(dm, &dmCell));
+  PetscCall(DMGetCoordinateSection(dm, &coordSection));
+  PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
+  PetscCall(DMSetCoordinateSection(dmCell, PETSC_DETERMINE, coordSection));
+  PetscCall(DMSetCoordinatesLocal(dmCell, coordinates));
+  PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject) dm), &sectionCell));
+  PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd));
+  PetscCall(PetscSectionSetChart(sectionCell, cStart, cEnd));
   /* TODO This needs to be multiplied by Nq for non-affine */
-  for (c = cStart; c < cEnd; ++c) {ierr = PetscSectionSetDof(sectionCell, c, (PetscInt) PetscCeilReal(((PetscReal) sizeof(PetscFEGeom))/sizeof(PetscScalar)));CHKERRQ(ierr);}
-  ierr = PetscSectionSetUp(sectionCell);CHKERRQ(ierr);
-  ierr = DMSetLocalSection(dmCell, sectionCell);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&sectionCell);CHKERRQ(ierr);
-  ierr = DMCreateLocalVector(dmCell, cellgeom);CHKERRQ(ierr);
-  ierr = VecGetArray(*cellgeom, &cgeom);CHKERRQ(ierr);
+  for (c = cStart; c < cEnd; ++c) PetscCall(PetscSectionSetDof(sectionCell, c, (PetscInt) PetscCeilReal(((PetscReal) sizeof(PetscFEGeom))/sizeof(PetscScalar))));
+  PetscCall(PetscSectionSetUp(sectionCell));
+  PetscCall(DMSetLocalSection(dmCell, sectionCell));
+  PetscCall(PetscSectionDestroy(&sectionCell));
+  PetscCall(DMCreateLocalVector(dmCell, cellgeom));
+  PetscCall(VecGetArray(*cellgeom, &cgeom));
   for (c = cStart; c < cEnd; ++c) {
     PetscFEGeom *cg;
 
-    ierr = DMPlexPointLocalRef(dmCell, c, cgeom, &cg);CHKERRQ(ierr);
-    ierr = PetscArrayzero(cg, 1);CHKERRQ(ierr);
-    ierr = DMPlexComputeCellGeometryFEM(dmCell, c, NULL, cg->v, cg->J, cg->invJ, cg->detJ);CHKERRQ(ierr);
-    PetscCheckFalse(*cg->detJ <= 0.0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %D", (double) *cg->detJ, c);
+    PetscCall(DMPlexPointLocalRef(dmCell, c, cgeom, &cg));
+    PetscCall(PetscArrayzero(cg, 1));
+    PetscCall(DMPlexComputeCellGeometryFEM(dmCell, c, NULL, cg->v, cg->J, cg->invJ, cg->detJ));
+    PetscCheck(*cg->detJ > 0.0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %" PetscInt_FMT, (double) *cg->detJ, c);
   }
   PetscFunctionReturn(0);
 }
@@ -2266,7 +2375,7 @@ PetscErrorCode DMPlexComputeGeometryFEM(DM dm, Vec *cellgeom)
 
   Level: developer
 
-.seealso: PetscFVFaceGeom, PetscFVCellGeom, DMPlexComputeGeometryFEM()
+.seealso: `PetscFVFaceGeom`, `PetscFVCellGeom`, `DMPlexComputeGeometryFEM()`
 @*/
 PetscErrorCode DMPlexComputeGeometryFVM(DM dm, Vec *cellgeom, Vec *facegeom)
 {
@@ -2278,46 +2387,45 @@ PetscErrorCode DMPlexComputeGeometryFVM(DM dm, Vec *cellgeom, Vec *facegeom)
   PetscScalar   *fgeom, *cgeom;
   PetscReal      minradius, gminradius;
   PetscInt       dim, cStart, cEnd, cEndInterior, c, fStart, fEnd, f;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
-  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMGetCoordinateSection(dm, &coordSection));
+  PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
   /* Make cell centroids and volumes */
-  ierr = DMClone(dm, &dmCell);CHKERRQ(ierr);
-  ierr = DMSetCoordinateSection(dmCell, PETSC_DETERMINE, coordSection);CHKERRQ(ierr);
-  ierr = DMSetCoordinatesLocal(dmCell, coordinates);CHKERRQ(ierr);
-  ierr = PetscSectionCreate(PetscObjectComm((PetscObject) dm), &sectionCell);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetGhostCellStratum(dm, &cEndInterior, NULL);CHKERRQ(ierr);
-  ierr = PetscSectionSetChart(sectionCell, cStart, cEnd);CHKERRQ(ierr);
-  for (c = cStart; c < cEnd; ++c) {ierr = PetscSectionSetDof(sectionCell, c, (PetscInt) PetscCeilReal(((PetscReal) sizeof(PetscFVCellGeom))/sizeof(PetscScalar)));CHKERRQ(ierr);}
-  ierr = PetscSectionSetUp(sectionCell);CHKERRQ(ierr);
-  ierr = DMSetLocalSection(dmCell, sectionCell);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&sectionCell);CHKERRQ(ierr);
-  ierr = DMCreateLocalVector(dmCell, cellgeom);CHKERRQ(ierr);
+  PetscCall(DMClone(dm, &dmCell));
+  PetscCall(DMSetCoordinateSection(dmCell, PETSC_DETERMINE, coordSection));
+  PetscCall(DMSetCoordinatesLocal(dmCell, coordinates));
+  PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject) dm), &sectionCell));
+  PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+  PetscCall(DMPlexGetGhostCellStratum(dm, &cEndInterior, NULL));
+  PetscCall(PetscSectionSetChart(sectionCell, cStart, cEnd));
+  for (c = cStart; c < cEnd; ++c) PetscCall(PetscSectionSetDof(sectionCell, c, (PetscInt) PetscCeilReal(((PetscReal) sizeof(PetscFVCellGeom))/sizeof(PetscScalar))));
+  PetscCall(PetscSectionSetUp(sectionCell));
+  PetscCall(DMSetLocalSection(dmCell, sectionCell));
+  PetscCall(PetscSectionDestroy(&sectionCell));
+  PetscCall(DMCreateLocalVector(dmCell, cellgeom));
   if (cEndInterior < 0) cEndInterior = cEnd;
-  ierr = VecGetArray(*cellgeom, &cgeom);CHKERRQ(ierr);
+  PetscCall(VecGetArray(*cellgeom, &cgeom));
   for (c = cStart; c < cEndInterior; ++c) {
     PetscFVCellGeom *cg;
 
-    ierr = DMPlexPointLocalRef(dmCell, c, cgeom, &cg);CHKERRQ(ierr);
-    ierr = PetscArrayzero(cg, 1);CHKERRQ(ierr);
-    ierr = DMPlexComputeCellGeometryFVM(dmCell, c, &cg->volume, cg->centroid, NULL);CHKERRQ(ierr);
+    PetscCall(DMPlexPointLocalRef(dmCell, c, cgeom, &cg));
+    PetscCall(PetscArrayzero(cg, 1));
+    PetscCall(DMPlexComputeCellGeometryFVM(dmCell, c, &cg->volume, cg->centroid, NULL));
   }
   /* Compute face normals and minimum cell radius */
-  ierr = DMClone(dm, &dmFace);CHKERRQ(ierr);
-  ierr = PetscSectionCreate(PetscObjectComm((PetscObject) dm), &sectionFace);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
-  ierr = PetscSectionSetChart(sectionFace, fStart, fEnd);CHKERRQ(ierr);
-  for (f = fStart; f < fEnd; ++f) {ierr = PetscSectionSetDof(sectionFace, f, (PetscInt) PetscCeilReal(((PetscReal) sizeof(PetscFVFaceGeom))/sizeof(PetscScalar)));CHKERRQ(ierr);}
-  ierr = PetscSectionSetUp(sectionFace);CHKERRQ(ierr);
-  ierr = DMSetLocalSection(dmFace, sectionFace);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&sectionFace);CHKERRQ(ierr);
-  ierr = DMCreateLocalVector(dmFace, facegeom);CHKERRQ(ierr);
-  ierr = VecGetArray(*facegeom, &fgeom);CHKERRQ(ierr);
-  ierr = DMGetLabel(dm, "ghost", &ghostLabel);CHKERRQ(ierr);
+  PetscCall(DMClone(dm, &dmFace));
+  PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject) dm), &sectionFace));
+  PetscCall(DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd));
+  PetscCall(PetscSectionSetChart(sectionFace, fStart, fEnd));
+  for (f = fStart; f < fEnd; ++f) PetscCall(PetscSectionSetDof(sectionFace, f, (PetscInt) PetscCeilReal(((PetscReal) sizeof(PetscFVFaceGeom))/sizeof(PetscScalar))));
+  PetscCall(PetscSectionSetUp(sectionFace));
+  PetscCall(DMSetLocalSection(dmFace, sectionFace));
+  PetscCall(PetscSectionDestroy(&sectionFace));
+  PetscCall(DMCreateLocalVector(dmFace, facegeom));
+  PetscCall(VecGetArray(*facegeom, &fgeom));
+  PetscCall(DMGetLabel(dm, "ghost", &ghostLabel));
   minradius = PETSC_MAX_REAL;
   for (f = fStart; f < fEnd; ++f) {
     PetscFVFaceGeom *fg;
@@ -2325,14 +2433,14 @@ PetscErrorCode DMPlexComputeGeometryFVM(DM dm, Vec *cellgeom, Vec *facegeom)
     const PetscInt  *cells;
     PetscInt         ncells, ghost = -1, d, numChildren;
 
-    if (ghostLabel) {ierr = DMLabelGetValue(ghostLabel, f, &ghost);CHKERRQ(ierr);}
-    ierr = DMPlexGetTreeChildren(dm,f,&numChildren,NULL);CHKERRQ(ierr);
-    ierr = DMPlexGetSupport(dm, f, &cells);CHKERRQ(ierr);
-    ierr = DMPlexGetSupportSize(dm, f, &ncells);CHKERRQ(ierr);
+    if (ghostLabel) PetscCall(DMLabelGetValue(ghostLabel, f, &ghost));
+    PetscCall(DMPlexGetTreeChildren(dm,f,&numChildren,NULL));
+    PetscCall(DMPlexGetSupport(dm, f, &cells));
+    PetscCall(DMPlexGetSupportSize(dm, f, &ncells));
     /* It is possible to get a face with no support when using partition overlap */
     if (!ncells || ghost >= 0 || numChildren) continue;
-    ierr = DMPlexPointLocalRef(dmFace, f, fgeom, &fg);CHKERRQ(ierr);
-    ierr = DMPlexComputeCellGeometryFVM(dm, f, &area, fg->centroid, fg->normal);CHKERRQ(ierr);
+    PetscCall(DMPlexPointLocalRef(dmFace, f, fgeom, &fg));
+    PetscCall(DMPlexComputeCellGeometryFVM(dm, f, &area, fg->centroid, fg->normal));
     for (d = 0; d < dim; ++d) fg->normal[d] *= area;
     /* Flip face orientation if necessary to match ordering in support, and Update minimum radius */
     {
@@ -2340,25 +2448,25 @@ PetscErrorCode DMPlexComputeGeometryFVM(DM dm, Vec *cellgeom, Vec *facegeom)
       PetscReal       *lcentroid, *rcentroid;
       PetscReal        l[3], r[3], v[3];
 
-      ierr = DMPlexPointLocalRead(dmCell, cells[0], cgeom, &cL);CHKERRQ(ierr);
+      PetscCall(DMPlexPointLocalRead(dmCell, cells[0], cgeom, &cL));
       lcentroid = cells[0] >= cEndInterior ? fg->centroid : cL->centroid;
       if (ncells > 1) {
-        ierr = DMPlexPointLocalRead(dmCell, cells[1], cgeom, &cR);CHKERRQ(ierr);
+        PetscCall(DMPlexPointLocalRead(dmCell, cells[1], cgeom, &cR));
         rcentroid = cells[1] >= cEndInterior ? fg->centroid : cR->centroid;
       }
       else {
         rcentroid = fg->centroid;
       }
-      ierr = DMLocalizeCoordinateReal_Internal(dm, dim, fg->centroid, lcentroid, l);CHKERRQ(ierr);
-      ierr = DMLocalizeCoordinateReal_Internal(dm, dim, fg->centroid, rcentroid, r);CHKERRQ(ierr);
+      PetscCall(DMLocalizeCoordinateReal_Internal(dm, dim, fg->centroid, lcentroid, l));
+      PetscCall(DMLocalizeCoordinateReal_Internal(dm, dim, fg->centroid, rcentroid, r));
       DMPlex_WaxpyD_Internal(dim, -1, l, r, v);
       if (DMPlex_DotRealD_Internal(dim, fg->normal, v) < 0) {
         for (d = 0; d < dim; ++d) fg->normal[d] = -fg->normal[d];
       }
       if (DMPlex_DotRealD_Internal(dim, fg->normal, v) <= 0) {
-        PetscCheckFalse(dim == 2,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Direction for face %d could not be fixed, normal (%g,%g) v (%g,%g)", f, (double) fg->normal[0], (double) fg->normal[1], (double) v[0], (double) v[1]);
-        PetscCheckFalse(dim == 3,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Direction for face %d could not be fixed, normal (%g,%g,%g) v (%g,%g,%g)", f, (double) fg->normal[0], (double) fg->normal[1], (double) fg->normal[2], (double) v[0], (double) v[1], (double) v[2]);
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Direction for face %d could not be fixed", f);
+        PetscCheck(dim != 2,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Direction for face %" PetscInt_FMT " could not be fixed, normal (%g,%g) v (%g,%g)", f, (double) fg->normal[0], (double) fg->normal[1], (double) v[0], (double) v[1]);
+        PetscCheck(dim != 3,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Direction for face %" PetscInt_FMT " could not be fixed, normal (%g,%g,%g) v (%g,%g,%g)", f, (double) fg->normal[0], (double) fg->normal[1], (double) fg->normal[2], (double) v[0], (double) v[1], (double) v[2]);
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Direction for face %" PetscInt_FMT " could not be fixed", f);
       }
       if (cells[0] < cEndInterior) {
         DMPlex_WaxpyD_Internal(dim, -1, fg->centroid, cL->centroid, v);
@@ -2370,21 +2478,21 @@ PetscErrorCode DMPlexComputeGeometryFVM(DM dm, Vec *cellgeom, Vec *facegeom)
       }
     }
   }
-  ierr = MPIU_Allreduce(&minradius, &gminradius, 1, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)dm));CHKERRMPI(ierr);
-  ierr = DMPlexSetMinRadius(dm, gminradius);CHKERRQ(ierr);
+  PetscCall(MPIU_Allreduce(&minradius, &gminradius, 1, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)dm)));
+  PetscCall(DMPlexSetMinRadius(dm, gminradius));
   /* Compute centroids of ghost cells */
   for (c = cEndInterior; c < cEnd; ++c) {
     PetscFVFaceGeom *fg;
     const PetscInt  *cone,    *support;
     PetscInt         coneSize, supportSize, s;
 
-    ierr = DMPlexGetConeSize(dmCell, c, &coneSize);CHKERRQ(ierr);
-    PetscCheckFalse(coneSize != 1,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Ghost cell %d has cone size %d != 1", c, coneSize);
-    ierr = DMPlexGetCone(dmCell, c, &cone);CHKERRQ(ierr);
-    ierr = DMPlexGetSupportSize(dmCell, cone[0], &supportSize);CHKERRQ(ierr);
-    PetscCheckFalse(supportSize != 2,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %d has support size %d != 2", cone[0], supportSize);
-    ierr = DMPlexGetSupport(dmCell, cone[0], &support);CHKERRQ(ierr);
-    ierr = DMPlexPointLocalRef(dmFace, cone[0], fgeom, &fg);CHKERRQ(ierr);
+    PetscCall(DMPlexGetConeSize(dmCell, c, &coneSize));
+    PetscCheck(coneSize == 1,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Ghost cell %" PetscInt_FMT " has cone size %" PetscInt_FMT " != 1", c, coneSize);
+    PetscCall(DMPlexGetCone(dmCell, c, &cone));
+    PetscCall(DMPlexGetSupportSize(dmCell, cone[0], &supportSize));
+    PetscCheck(supportSize == 2,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %" PetscInt_FMT " has support size %" PetscInt_FMT " != 2", cone[0], supportSize);
+    PetscCall(DMPlexGetSupport(dmCell, cone[0], &support));
+    PetscCall(DMPlexPointLocalRef(dmFace, cone[0], fgeom, &fg));
     for (s = 0; s < 2; ++s) {
       /* Reflect ghost centroid across plane of face */
       if (support[s] == c) {
@@ -2392,19 +2500,19 @@ PetscErrorCode DMPlexComputeGeometryFVM(DM dm, Vec *cellgeom, Vec *facegeom)
         PetscFVCellGeom       *cg;
         PetscReal              c2f[3], a;
 
-        ierr = DMPlexPointLocalRead(dmCell, support[(s+1)%2], cgeom, &ci);CHKERRQ(ierr);
+        PetscCall(DMPlexPointLocalRead(dmCell, support[(s+1)%2], cgeom, &ci));
         DMPlex_WaxpyD_Internal(dim, -1, ci->centroid, fg->centroid, c2f); /* cell to face centroid */
         a    = DMPlex_DotRealD_Internal(dim, c2f, fg->normal)/DMPlex_DotRealD_Internal(dim, fg->normal, fg->normal);
-        ierr = DMPlexPointLocalRef(dmCell, support[s], cgeom, &cg);CHKERRQ(ierr);
+        PetscCall(DMPlexPointLocalRef(dmCell, support[s], cgeom, &cg));
         DMPlex_WaxpyD_Internal(dim, 2*a, fg->normal, ci->centroid, cg->centroid);
         cg->volume = ci->volume;
       }
     }
   }
-  ierr = VecRestoreArray(*facegeom, &fgeom);CHKERRQ(ierr);
-  ierr = VecRestoreArray(*cellgeom, &cgeom);CHKERRQ(ierr);
-  ierr = DMDestroy(&dmCell);CHKERRQ(ierr);
-  ierr = DMDestroy(&dmFace);CHKERRQ(ierr);
+  PetscCall(VecRestoreArray(*facegeom, &fgeom));
+  PetscCall(VecRestoreArray(*cellgeom, &cgeom));
+  PetscCall(DMDestroy(&dmCell));
+  PetscCall(DMDestroy(&dmFace));
   PetscFunctionReturn(0);
 }
 
@@ -2421,13 +2529,13 @@ PetscErrorCode DMPlexComputeGeometryFVM(DM dm, Vec *cellgeom, Vec *facegeom)
 
   Level: developer
 
-.seealso: DMGetCoordinates()
+.seealso: `DMGetCoordinates()`
 @*/
 PetscErrorCode DMPlexGetMinRadius(DM dm, PetscReal *minradius)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidPointer(minradius,2);
+  PetscValidRealPointer(minradius,2);
   *minradius = ((DM_Plex*) dm->data)->minradius;
   PetscFunctionReturn(0);
 }
@@ -2443,7 +2551,7 @@ PetscErrorCode DMPlexGetMinRadius(DM dm, PetscReal *minradius)
 
   Level: developer
 
-.seealso: DMSetCoordinates()
+.seealso: `DMSetCoordinates()`
 @*/
 PetscErrorCode DMPlexSetMinRadius(DM dm, PetscReal minradius)
 {
@@ -2458,17 +2566,16 @@ static PetscErrorCode BuildGradientReconstruction_Internal(DM dm, PetscFV fvm, D
   DMLabel        ghostLabel;
   PetscScalar   *dx, *grad, **gref;
   PetscInt       dim, cStart, cEnd, c, cEndInterior, maxNumFaces;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetGhostCellStratum(dm, &cEndInterior, NULL);CHKERRQ(ierr);
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+  PetscCall(DMPlexGetGhostCellStratum(dm, &cEndInterior, NULL));
   cEndInterior = cEndInterior < 0 ? cEnd : cEndInterior;
-  ierr = DMPlexGetMaxSizes(dm, &maxNumFaces, NULL);CHKERRQ(ierr);
-  ierr = PetscFVLeastSquaresSetMaxFaces(fvm, maxNumFaces);CHKERRQ(ierr);
-  ierr = DMGetLabel(dm, "ghost", &ghostLabel);CHKERRQ(ierr);
-  ierr = PetscMalloc3(maxNumFaces*dim, &dx, maxNumFaces*dim, &grad, maxNumFaces, &gref);CHKERRQ(ierr);
+  PetscCall(DMPlexGetMaxSizes(dm, &maxNumFaces, NULL));
+  PetscCall(PetscFVLeastSquaresSetMaxFaces(fvm, maxNumFaces));
+  PetscCall(DMGetLabel(dm, "ghost", &ghostLabel));
+  PetscCall(PetscMalloc3(maxNumFaces*dim, &dx, maxNumFaces*dim, &grad, maxNumFaces, &gref));
   for (c = cStart; c < cEndInterior; c++) {
     const PetscInt        *faces;
     PetscInt               numFaces, usedFaces, f, d;
@@ -2476,38 +2583,42 @@ static PetscErrorCode BuildGradientReconstruction_Internal(DM dm, PetscFV fvm, D
     PetscBool              boundary;
     PetscInt               ghost;
 
-    ierr = DMPlexPointLocalRead(dmCell, c, cgeom, &cg);CHKERRQ(ierr);
-    ierr = DMPlexGetConeSize(dm, c, &numFaces);CHKERRQ(ierr);
-    ierr = DMPlexGetCone(dm, c, &faces);CHKERRQ(ierr);
-    PetscCheckFalse(numFaces < dim,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cell %D has only %D faces, not enough for gradient reconstruction", c, numFaces);
+    // do not attempt to compute a gradient reconstruction stencil in a ghost cell.  It will never be used
+    PetscCall(DMLabelGetValue(ghostLabel, c, &ghost));
+    if (ghost >= 0) continue;
+
+    PetscCall(DMPlexPointLocalRead(dmCell, c, cgeom, &cg));
+    PetscCall(DMPlexGetConeSize(dm, c, &numFaces));
+    PetscCall(DMPlexGetCone(dm, c, &faces));
+    PetscCheck(numFaces >= dim,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cell %" PetscInt_FMT " has only %" PetscInt_FMT " faces, not enough for gradient reconstruction", c, numFaces);
     for (f = 0, usedFaces = 0; f < numFaces; ++f) {
       PetscFVCellGeom       *cg1;
       PetscFVFaceGeom       *fg;
       const PetscInt        *fcells;
       PetscInt               ncell, side;
 
-      ierr = DMLabelGetValue(ghostLabel, faces[f], &ghost);CHKERRQ(ierr);
-      ierr = DMIsBoundaryPoint(dm, faces[f], &boundary);CHKERRQ(ierr);
+      PetscCall(DMLabelGetValue(ghostLabel, faces[f], &ghost));
+      PetscCall(DMIsBoundaryPoint(dm, faces[f], &boundary));
       if ((ghost >= 0) || boundary) continue;
-      ierr  = DMPlexGetSupport(dm, faces[f], &fcells);CHKERRQ(ierr);
+      PetscCall(DMPlexGetSupport(dm, faces[f], &fcells));
       side  = (c != fcells[0]); /* c is on left=0 or right=1 of face */
       ncell = fcells[!side];    /* the neighbor */
-      ierr  = DMPlexPointLocalRef(dmFace, faces[f], fgeom, &fg);CHKERRQ(ierr);
-      ierr  = DMPlexPointLocalRead(dmCell, ncell, cgeom, &cg1);CHKERRQ(ierr);
+      PetscCall(DMPlexPointLocalRef(dmFace, faces[f], fgeom, &fg));
+      PetscCall(DMPlexPointLocalRead(dmCell, ncell, cgeom, &cg1));
       for (d = 0; d < dim; ++d) dx[usedFaces*dim+d] = cg1->centroid[d] - cg->centroid[d];
       gref[usedFaces++] = fg->grad[side];  /* Gradient reconstruction term will go here */
     }
-    PetscCheckFalse(!usedFaces,PETSC_COMM_SELF, PETSC_ERR_USER, "Mesh contains isolated cell (no neighbors). Is it intentional?");
-    ierr = PetscFVComputeGradient(fvm, usedFaces, dx, grad);CHKERRQ(ierr);
+    PetscCheck(usedFaces,PETSC_COMM_SELF, PETSC_ERR_USER, "Mesh contains isolated cell (no neighbors). Is it intentional?");
+    PetscCall(PetscFVComputeGradient(fvm, usedFaces, dx, grad));
     for (f = 0, usedFaces = 0; f < numFaces; ++f) {
-      ierr = DMLabelGetValue(ghostLabel, faces[f], &ghost);CHKERRQ(ierr);
-      ierr = DMIsBoundaryPoint(dm, faces[f], &boundary);CHKERRQ(ierr);
+      PetscCall(DMLabelGetValue(ghostLabel, faces[f], &ghost));
+      PetscCall(DMIsBoundaryPoint(dm, faces[f], &boundary));
       if ((ghost >= 0) || boundary) continue;
       for (d = 0; d < dim; ++d) gref[usedFaces][d] = grad[usedFaces*dim+d];
       ++usedFaces;
     }
   }
-  ierr = PetscFree3(dx, grad, gref);CHKERRQ(ierr);
+  PetscCall(PetscFree3(dx, grad, gref));
   PetscFunctionReturn(0);
 }
 
@@ -2519,64 +2630,63 @@ static PetscErrorCode BuildGradientReconstruction_Internal_Tree(DM dm, PetscFV f
   PetscSection   neighSec;
   PetscInt     (*neighbors)[2];
   PetscInt      *counter;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetGhostCellStratum(dm, &cEndInterior, NULL);CHKERRQ(ierr);
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+  PetscCall(DMPlexGetGhostCellStratum(dm, &cEndInterior, NULL));
   if (cEndInterior < 0) cEndInterior = cEnd;
-  ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm),&neighSec);CHKERRQ(ierr);
-  ierr = PetscSectionSetChart(neighSec,cStart,cEndInterior);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
-  ierr = DMGetLabel(dm, "ghost", &ghostLabel);CHKERRQ(ierr);
+  PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)dm),&neighSec));
+  PetscCall(PetscSectionSetChart(neighSec,cStart,cEndInterior));
+  PetscCall(DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd));
+  PetscCall(DMGetLabel(dm, "ghost", &ghostLabel));
   for (f = fStart; f < fEnd; f++) {
     const PetscInt        *fcells;
     PetscBool              boundary;
     PetscInt               ghost = -1;
     PetscInt               numChildren, numCells, c;
 
-    if (ghostLabel) {ierr = DMLabelGetValue(ghostLabel, f, &ghost);CHKERRQ(ierr);}
-    ierr = DMIsBoundaryPoint(dm, f, &boundary);CHKERRQ(ierr);
-    ierr = DMPlexGetTreeChildren(dm, f, &numChildren, NULL);CHKERRQ(ierr);
+    if (ghostLabel) PetscCall(DMLabelGetValue(ghostLabel, f, &ghost));
+    PetscCall(DMIsBoundaryPoint(dm, f, &boundary));
+    PetscCall(DMPlexGetTreeChildren(dm, f, &numChildren, NULL));
     if ((ghost >= 0) || boundary || numChildren) continue;
-    ierr = DMPlexGetSupportSize(dm, f, &numCells);CHKERRQ(ierr);
+    PetscCall(DMPlexGetSupportSize(dm, f, &numCells));
     if (numCells == 2) {
-      ierr = DMPlexGetSupport(dm, f, &fcells);CHKERRQ(ierr);
+      PetscCall(DMPlexGetSupport(dm, f, &fcells));
       for (c = 0; c < 2; c++) {
         PetscInt cell = fcells[c];
 
         if (cell >= cStart && cell < cEndInterior) {
-          ierr = PetscSectionAddDof(neighSec,cell,1);CHKERRQ(ierr);
+          PetscCall(PetscSectionAddDof(neighSec,cell,1));
         }
       }
     }
   }
-  ierr = PetscSectionSetUp(neighSec);CHKERRQ(ierr);
-  ierr = PetscSectionGetMaxDof(neighSec,&maxNumFaces);CHKERRQ(ierr);
-  ierr = PetscFVLeastSquaresSetMaxFaces(fvm, maxNumFaces);CHKERRQ(ierr);
+  PetscCall(PetscSectionSetUp(neighSec));
+  PetscCall(PetscSectionGetMaxDof(neighSec,&maxNumFaces));
+  PetscCall(PetscFVLeastSquaresSetMaxFaces(fvm, maxNumFaces));
   nStart = 0;
-  ierr = PetscSectionGetStorageSize(neighSec,&nEnd);CHKERRQ(ierr);
-  ierr = PetscMalloc1((nEnd-nStart),&neighbors);CHKERRQ(ierr);
-  ierr = PetscCalloc1((cEndInterior-cStart),&counter);CHKERRQ(ierr);
+  PetscCall(PetscSectionGetStorageSize(neighSec,&nEnd));
+  PetscCall(PetscMalloc1((nEnd-nStart),&neighbors));
+  PetscCall(PetscCalloc1((cEndInterior-cStart),&counter));
   for (f = fStart; f < fEnd; f++) {
     const PetscInt        *fcells;
     PetscBool              boundary;
     PetscInt               ghost = -1;
     PetscInt               numChildren, numCells, c;
 
-    if (ghostLabel) {ierr = DMLabelGetValue(ghostLabel, f, &ghost);CHKERRQ(ierr);}
-    ierr = DMIsBoundaryPoint(dm, f, &boundary);CHKERRQ(ierr);
-    ierr = DMPlexGetTreeChildren(dm, f, &numChildren, NULL);CHKERRQ(ierr);
+    if (ghostLabel) PetscCall(DMLabelGetValue(ghostLabel, f, &ghost));
+    PetscCall(DMIsBoundaryPoint(dm, f, &boundary));
+    PetscCall(DMPlexGetTreeChildren(dm, f, &numChildren, NULL));
     if ((ghost >= 0) || boundary || numChildren) continue;
-    ierr = DMPlexGetSupportSize(dm, f, &numCells);CHKERRQ(ierr);
+    PetscCall(DMPlexGetSupportSize(dm, f, &numCells));
     if (numCells == 2) {
-      ierr  = DMPlexGetSupport(dm, f, &fcells);CHKERRQ(ierr);
+      PetscCall(DMPlexGetSupport(dm, f, &fcells));
       for (c = 0; c < 2; c++) {
         PetscInt cell = fcells[c], off;
 
         if (cell >= cStart && cell < cEndInterior) {
-          ierr = PetscSectionGetOffset(neighSec,cell,&off);CHKERRQ(ierr);
+          PetscCall(PetscSectionGetOffset(neighSec,cell,&off));
           off += counter[cell - cStart]++;
           neighbors[off][0] = f;
           neighbors[off][1] = fcells[1 - c];
@@ -2584,17 +2694,21 @@ static PetscErrorCode BuildGradientReconstruction_Internal_Tree(DM dm, PetscFV f
       }
     }
   }
-  ierr = PetscFree(counter);CHKERRQ(ierr);
-  ierr = PetscMalloc3(maxNumFaces*dim, &dx, maxNumFaces*dim, &grad, maxNumFaces, &gref);CHKERRQ(ierr);
+  PetscCall(PetscFree(counter));
+  PetscCall(PetscMalloc3(maxNumFaces*dim, &dx, maxNumFaces*dim, &grad, maxNumFaces, &gref));
   for (c = cStart; c < cEndInterior; c++) {
     PetscInt               numFaces, f, d, off, ghost = -1;
     PetscFVCellGeom        *cg;
 
-    ierr = DMPlexPointLocalRead(dmCell, c, cgeom, &cg);CHKERRQ(ierr);
-    ierr = PetscSectionGetDof(neighSec, c, &numFaces);CHKERRQ(ierr);
-    ierr = PetscSectionGetOffset(neighSec, c, &off);CHKERRQ(ierr);
-    if (ghostLabel) {ierr = DMLabelGetValue(ghostLabel, c, &ghost);CHKERRQ(ierr);}
-    PetscCheckFalse(ghost < 0 && numFaces < dim,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cell %D has only %D faces, not enough for gradient reconstruction", c, numFaces);
+    PetscCall(DMPlexPointLocalRead(dmCell, c, cgeom, &cg));
+    PetscCall(PetscSectionGetDof(neighSec, c, &numFaces));
+    PetscCall(PetscSectionGetOffset(neighSec, c, &off));
+
+    // do not attempt to compute a gradient reconstruction stencil in a ghost cell.  It will never be used
+    if (ghostLabel) PetscCall(DMLabelGetValue(ghostLabel, c, &ghost));
+    if (ghost >= 0) continue;
+
+    PetscCheck(numFaces >= dim,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cell %" PetscInt_FMT " has only %" PetscInt_FMT " faces, not enough for gradient reconstruction", c, numFaces);
     for (f = 0; f < numFaces; ++f) {
       PetscFVCellGeom       *cg1;
       PetscFVFaceGeom       *fg;
@@ -2603,21 +2717,21 @@ static PetscErrorCode BuildGradientReconstruction_Internal_Tree(DM dm, PetscFV f
 
       nface = neighbors[off + f][0];
       ncell = neighbors[off + f][1];
-      ierr  = DMPlexGetSupport(dm,nface,&fcells);CHKERRQ(ierr);
+      PetscCall(DMPlexGetSupport(dm,nface,&fcells));
       side  = (c != fcells[0]);
-      ierr  = DMPlexPointLocalRef(dmFace, nface, fgeom, &fg);CHKERRQ(ierr);
-      ierr  = DMPlexPointLocalRead(dmCell, ncell, cgeom, &cg1);CHKERRQ(ierr);
+      PetscCall(DMPlexPointLocalRef(dmFace, nface, fgeom, &fg));
+      PetscCall(DMPlexPointLocalRead(dmCell, ncell, cgeom, &cg1));
       for (d = 0; d < dim; ++d) dx[f*dim+d] = cg1->centroid[d] - cg->centroid[d];
       gref[f] = fg->grad[side];  /* Gradient reconstruction term will go here */
     }
-    ierr = PetscFVComputeGradient(fvm, numFaces, dx, grad);CHKERRQ(ierr);
+    PetscCall(PetscFVComputeGradient(fvm, numFaces, dx, grad));
     for (f = 0; f < numFaces; ++f) {
       for (d = 0; d < dim; ++d) gref[f][d] = grad[f*dim+d];
     }
   }
-  ierr = PetscFree3(dx, grad, gref);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&neighSec);CHKERRQ(ierr);
-  ierr = PetscFree(neighbors);CHKERRQ(ierr);
+  PetscCall(PetscFree3(dx, grad, gref));
+  PetscCall(PetscSectionDestroy(&neighSec));
+  PetscCall(PetscFree(neighbors));
   PetscFunctionReturn(0);
 }
 
@@ -2640,7 +2754,7 @@ static PetscErrorCode BuildGradientReconstruction_Internal_Tree(DM dm, PetscFV f
 
   Level: developer
 
-.seealso: DMPlexGetFaceGeometryFVM(), DMPlexGetCellGeometryFVM()
+.seealso: `DMPlexGetFaceGeometryFVM()`, `DMPlexGetCellGeometryFVM()`
 @*/
 PetscErrorCode DMPlexComputeGradientFVM(DM dm, PetscFV fvm, Vec faceGeometry, Vec cellGeometry, DM *dmGrad)
 {
@@ -2648,34 +2762,33 @@ PetscErrorCode DMPlexComputeGradientFVM(DM dm, PetscFV fvm, Vec faceGeometry, Ve
   PetscScalar   *fgeom, *cgeom;
   PetscSection   sectionGrad, parentSection;
   PetscInt       dim, pdim, cStart, cEnd, cEndInterior, c;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = PetscFVGetNumComponents(fvm, &pdim);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetGhostCellStratum(dm, &cEndInterior, NULL);CHKERRQ(ierr);
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(PetscFVGetNumComponents(fvm, &pdim));
+  PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+  PetscCall(DMPlexGetGhostCellStratum(dm, &cEndInterior, NULL));
   /* Construct the interpolant corresponding to each face from the least-square solution over the cell neighborhood */
-  ierr = VecGetDM(faceGeometry, &dmFace);CHKERRQ(ierr);
-  ierr = VecGetDM(cellGeometry, &dmCell);CHKERRQ(ierr);
-  ierr = VecGetArray(faceGeometry, &fgeom);CHKERRQ(ierr);
-  ierr = VecGetArray(cellGeometry, &cgeom);CHKERRQ(ierr);
-  ierr = DMPlexGetTree(dm,&parentSection,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+  PetscCall(VecGetDM(faceGeometry, &dmFace));
+  PetscCall(VecGetDM(cellGeometry, &dmCell));
+  PetscCall(VecGetArray(faceGeometry, &fgeom));
+  PetscCall(VecGetArray(cellGeometry, &cgeom));
+  PetscCall(DMPlexGetTree(dm,&parentSection,NULL,NULL,NULL,NULL));
   if (!parentSection) {
-    ierr = BuildGradientReconstruction_Internal(dm, fvm, dmFace, fgeom, dmCell, cgeom);CHKERRQ(ierr);
+    PetscCall(BuildGradientReconstruction_Internal(dm, fvm, dmFace, fgeom, dmCell, cgeom));
   } else {
-    ierr = BuildGradientReconstruction_Internal_Tree(dm, fvm, dmFace, fgeom, dmCell, cgeom);CHKERRQ(ierr);
+    PetscCall(BuildGradientReconstruction_Internal_Tree(dm, fvm, dmFace, fgeom, dmCell, cgeom));
   }
-  ierr = VecRestoreArray(faceGeometry, &fgeom);CHKERRQ(ierr);
-  ierr = VecRestoreArray(cellGeometry, &cgeom);CHKERRQ(ierr);
+  PetscCall(VecRestoreArray(faceGeometry, &fgeom));
+  PetscCall(VecRestoreArray(cellGeometry, &cgeom));
   /* Create storage for gradients */
-  ierr = DMClone(dm, dmGrad);CHKERRQ(ierr);
-  ierr = PetscSectionCreate(PetscObjectComm((PetscObject) dm), &sectionGrad);CHKERRQ(ierr);
-  ierr = PetscSectionSetChart(sectionGrad, cStart, cEnd);CHKERRQ(ierr);
-  for (c = cStart; c < cEnd; ++c) {ierr = PetscSectionSetDof(sectionGrad, c, pdim*dim);CHKERRQ(ierr);}
-  ierr = PetscSectionSetUp(sectionGrad);CHKERRQ(ierr);
-  ierr = DMSetLocalSection(*dmGrad, sectionGrad);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&sectionGrad);CHKERRQ(ierr);
+  PetscCall(DMClone(dm, dmGrad));
+  PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject) dm), &sectionGrad));
+  PetscCall(PetscSectionSetChart(sectionGrad, cStart, cEnd));
+  for (c = cStart; c < cEnd; ++c) PetscCall(PetscSectionSetDof(sectionGrad, c, pdim*dim));
+  PetscCall(PetscSectionSetUp(sectionGrad));
+  PetscCall(DMSetLocalSection(*dmGrad, sectionGrad));
+  PetscCall(PetscSectionDestroy(&sectionGrad));
   PetscFunctionReturn(0);
 }
 
@@ -2695,45 +2808,44 @@ PetscErrorCode DMPlexComputeGradientFVM(DM dm, PetscFV fvm, Vec faceGeometry, Ve
 
   Level: developer
 
-.seealso: DMPlexComputeGeometryFVM()
+.seealso: `DMPlexComputeGeometryFVM()`
 @*/
 PetscErrorCode DMPlexGetDataFVM(DM dm, PetscFV fv, Vec *cellgeom, Vec *facegeom, DM *gradDM)
 {
   PetscObject    cellgeomobj, facegeomobj;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject) dm, "DMPlex_cellgeom_fvm", &cellgeomobj);CHKERRQ(ierr);
+  PetscCall(PetscObjectQuery((PetscObject) dm, "DMPlex_cellgeom_fvm", &cellgeomobj));
   if (!cellgeomobj) {
     Vec cellgeomInt, facegeomInt;
 
-    ierr = DMPlexComputeGeometryFVM(dm, &cellgeomInt, &facegeomInt);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject) dm, "DMPlex_cellgeom_fvm",(PetscObject)cellgeomInt);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject) dm, "DMPlex_facegeom_fvm",(PetscObject)facegeomInt);CHKERRQ(ierr);
-    ierr = VecDestroy(&cellgeomInt);CHKERRQ(ierr);
-    ierr = VecDestroy(&facegeomInt);CHKERRQ(ierr);
-    ierr = PetscObjectQuery((PetscObject) dm, "DMPlex_cellgeom_fvm", &cellgeomobj);CHKERRQ(ierr);
+    PetscCall(DMPlexComputeGeometryFVM(dm, &cellgeomInt, &facegeomInt));
+    PetscCall(PetscObjectCompose((PetscObject) dm, "DMPlex_cellgeom_fvm",(PetscObject)cellgeomInt));
+    PetscCall(PetscObjectCompose((PetscObject) dm, "DMPlex_facegeom_fvm",(PetscObject)facegeomInt));
+    PetscCall(VecDestroy(&cellgeomInt));
+    PetscCall(VecDestroy(&facegeomInt));
+    PetscCall(PetscObjectQuery((PetscObject) dm, "DMPlex_cellgeom_fvm", &cellgeomobj));
   }
-  ierr = PetscObjectQuery((PetscObject) dm, "DMPlex_facegeom_fvm", &facegeomobj);CHKERRQ(ierr);
+  PetscCall(PetscObjectQuery((PetscObject) dm, "DMPlex_facegeom_fvm", &facegeomobj));
   if (cellgeom) *cellgeom = (Vec) cellgeomobj;
   if (facegeom) *facegeom = (Vec) facegeomobj;
   if (gradDM) {
     PetscObject gradobj;
     PetscBool   computeGradients;
 
-    ierr = PetscFVGetComputeGradients(fv,&computeGradients);CHKERRQ(ierr);
+    PetscCall(PetscFVGetComputeGradients(fv,&computeGradients));
     if (!computeGradients) {
       *gradDM = NULL;
       PetscFunctionReturn(0);
     }
-    ierr = PetscObjectQuery((PetscObject) dm, "DMPlex_dmgrad_fvm", &gradobj);CHKERRQ(ierr);
+    PetscCall(PetscObjectQuery((PetscObject) dm, "DMPlex_dmgrad_fvm", &gradobj));
     if (!gradobj) {
       DM dmGradInt;
 
-      ierr = DMPlexComputeGradientFVM(dm,fv,(Vec) facegeomobj,(Vec) cellgeomobj,&dmGradInt);CHKERRQ(ierr);
-      ierr = PetscObjectCompose((PetscObject) dm, "DMPlex_dmgrad_fvm", (PetscObject)dmGradInt);CHKERRQ(ierr);
-      ierr = DMDestroy(&dmGradInt);CHKERRQ(ierr);
-      ierr = PetscObjectQuery((PetscObject) dm, "DMPlex_dmgrad_fvm", &gradobj);CHKERRQ(ierr);
+      PetscCall(DMPlexComputeGradientFVM(dm,fv,(Vec) facegeomobj,(Vec) cellgeomobj,&dmGradInt));
+      PetscCall(PetscObjectCompose((PetscObject) dm, "DMPlex_dmgrad_fvm", (PetscObject)dmGradInt));
+      PetscCall(DMDestroy(&dmGradInt));
+      PetscCall(PetscObjectQuery((PetscObject) dm, "DMPlex_dmgrad_fvm", &gradobj));
     }
     *gradDM = (DM) gradobj;
   }
@@ -2799,7 +2911,7 @@ static PetscErrorCode DMPlexCoordinatesToReference_NewtonUpdate(PetscInt dimC, P
     for (l = 0; l < dimC; l++) {invJ[l] = resNeg[l];}
 
     PetscStackCallBLAS("LAPACKgels",LAPACKgels_(&transpose,&m,&n,&one,J,&m,invJ,&n,work,&worksize, &info));
-    PetscCheckFalse(info != 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Bad argument to GELS");
+    PetscCheck(info == 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Bad argument to GELS");
 
     for (l = 0; l < dimR; l++) {guess[l] += PetscRealPart(invJ[l]);}
   }
@@ -2812,14 +2924,13 @@ static PetscErrorCode DMPlexCoordinatesToReference_Tensor(DM dm, PetscInt cell, 
   PetscScalar    *coordsScalar = NULL;
   PetscReal      *cellData, *cellCoords, *cellCoeffs, *extJ, *resNeg;
   PetscScalar    *J, *invJ, *work;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMPlexVecGetClosure(dm, NULL, coords, cell, &coordSize, &coordsScalar);CHKERRQ(ierr);
-  PetscCheckFalse(coordSize < dimC * numV,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Expecting at least %D coordinates, got %D",dimC * (1 << dimR), coordSize);
-  ierr = DMGetWorkArray(dm, 2 * coordSize + dimR + dimC, MPIU_REAL, &cellData);CHKERRQ(ierr);
-  ierr = DMGetWorkArray(dm, 3 * dimR * dimC, MPIU_SCALAR, &J);CHKERRQ(ierr);
+  PetscCall(DMPlexVecGetClosure(dm, NULL, coords, cell, &coordSize, &coordsScalar));
+  PetscCheck(coordSize >= dimC * numV,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Expecting at least %" PetscInt_FMT " coordinates, got %" PetscInt_FMT,dimC * (1 << dimR), coordSize);
+  PetscCall(DMGetWorkArray(dm, 2 * coordSize + dimR + dimC, MPIU_REAL, &cellData));
+  PetscCall(DMGetWorkArray(dm, 3 * dimR * dimC, MPIU_SCALAR, &J));
   cellCoords = &cellData[0];
   cellCoeffs = &cellData[coordSize];
   extJ       = &cellData[2 * coordSize];
@@ -2866,7 +2977,7 @@ static PetscErrorCode DMPlexCoordinatesToReference_Tensor(DM dm, PetscInt cell, 
       cellCoords = swap;
     }
   }
-  ierr = PetscArrayzero(refCoords,numPoints * dimR);CHKERRQ(ierr);
+  PetscCall(PetscArrayzero(refCoords,numPoints * dimR));
   for (j = 0; j < numPoints; j++) {
     for (i = 0; i < maxIts; i++) {
       PetscReal *guess = &refCoords[dimR * j];
@@ -2906,15 +3017,15 @@ static PetscErrorCode DMPlexCoordinatesToReference_Tensor(DM dm, PetscInt cell, 
         for (l = 0; l < dimC; l++) {
           maxAbs = PetscMax(maxAbs,PetscAbsReal(resNeg[l]));
         }
-        ierr = PetscInfo(dm,"cell %D, point %D, iter %D: res %g\n",cell,j,i,(double) maxAbs);CHKERRQ(ierr);
+        PetscCall(PetscInfo(dm,"cell %" PetscInt_FMT ", point %" PetscInt_FMT ", iter %" PetscInt_FMT ": res %g\n",cell,j,i,(double) maxAbs));
       }
 
-      ierr = DMPlexCoordinatesToReference_NewtonUpdate(dimC,dimR,J,invJ,work,resNeg,guess);CHKERRQ(ierr);
+      PetscCall(DMPlexCoordinatesToReference_NewtonUpdate(dimC,dimR,J,invJ,work,resNeg,guess));
     }
   }
-  ierr = DMRestoreWorkArray(dm, 3 * dimR * dimC, MPIU_SCALAR, &J);CHKERRQ(ierr);
-  ierr = DMRestoreWorkArray(dm, 2 * coordSize + dimR + dimC, MPIU_REAL, &cellData);CHKERRQ(ierr);
-  ierr = DMPlexVecRestoreClosure(dm, NULL, coords, cell, &coordSize, &coordsScalar);CHKERRQ(ierr);
+  PetscCall(DMRestoreWorkArray(dm, 3 * dimR * dimC, MPIU_SCALAR, &J));
+  PetscCall(DMRestoreWorkArray(dm, 2 * coordSize + dimR + dimC, MPIU_REAL, &cellData));
+  PetscCall(DMPlexVecRestoreClosure(dm, NULL, coords, cell, &coordSize, &coordsScalar));
   PetscFunctionReturn(0);
 }
 
@@ -2923,13 +3034,12 @@ static PetscErrorCode DMPlexReferenceToCoordinates_Tensor(DM dm, PetscInt cell, 
   PetscInt       coordSize, i, j, k, l, numV = (1 << dimR);
   PetscScalar    *coordsScalar = NULL;
   PetscReal      *cellData, *cellCoords, *cellCoeffs;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMPlexVecGetClosure(dm, NULL, coords, cell, &coordSize, &coordsScalar);CHKERRQ(ierr);
-  PetscCheckFalse(coordSize < dimC * numV,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Expecting at least %D coordinates, got %D",dimC * (1 << dimR), coordSize);
-  ierr = DMGetWorkArray(dm, 2 * coordSize, MPIU_REAL, &cellData);CHKERRQ(ierr);
+  PetscCall(DMPlexVecGetClosure(dm, NULL, coords, cell, &coordSize, &coordsScalar));
+  PetscCheck(coordSize >= dimC * numV,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Expecting at least %" PetscInt_FMT " coordinates, got %" PetscInt_FMT,dimC * (1 << dimR), coordSize);
+  PetscCall(DMGetWorkArray(dm, 2 * coordSize, MPIU_REAL, &cellData));
   cellCoords = &cellData[0];
   cellCoeffs = &cellData[coordSize];
   if (dimR == 2) {
@@ -2972,7 +3082,7 @@ static PetscErrorCode DMPlexReferenceToCoordinates_Tensor(DM dm, PetscInt cell, 
       cellCoords = swap;
     }
   }
-  ierr = PetscArrayzero(realCoords,numPoints * dimC);CHKERRQ(ierr);
+  PetscCall(PetscArrayzero(realCoords,numPoints * dimC));
   for (j = 0; j < numPoints; j++) {
     const PetscReal *guess  = &refCoords[dimR * j];
     PetscReal       *mapped = &realCoords[dimC * j];
@@ -2992,8 +3102,8 @@ static PetscErrorCode DMPlexReferenceToCoordinates_Tensor(DM dm, PetscInt cell, 
       }
     }
   }
-  ierr = DMRestoreWorkArray(dm, 2 * coordSize, MPIU_REAL, &cellData);CHKERRQ(ierr);
-  ierr = DMPlexVecRestoreClosure(dm, NULL, coords, cell, &coordSize, &coordsScalar);CHKERRQ(ierr);
+  PetscCall(DMRestoreWorkArray(dm, 2 * coordSize, MPIU_REAL, &cellData));
+  PetscCall(DMPlexVecRestoreClosure(dm, NULL, coords, cell, &coordSize, &coordsScalar));
   PetscFunctionReturn(0);
 }
 
@@ -3005,15 +3115,14 @@ static PetscErrorCode DMPlexCoordinatesToReference_FE(DM dm, PetscFE fe, PetscIn
   PetscReal      *invV, *modes;
   PetscReal      *B, *D, *resNeg;
   PetscScalar    *J, *invJ, *work;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFEGetDimension(fe, &pdim);CHKERRQ(ierr);
-  ierr = PetscFEGetNumComponents(fe, &numComp);CHKERRQ(ierr);
-  PetscCheckFalse(numComp != Nc,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"coordinate discretization must have as many components (%D) as embedding dimension (!= %D)",numComp,Nc);
-  ierr = DMPlexVecGetClosure(dm, NULL, coords, cell, &coordSize, &nodes);CHKERRQ(ierr);
+  PetscCall(PetscFEGetDimension(fe, &pdim));
+  PetscCall(PetscFEGetNumComponents(fe, &numComp));
+  PetscCheck(numComp == Nc,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"coordinate discretization must have as many components (%" PetscInt_FMT ") as embedding dimension (!= %" PetscInt_FMT ")",numComp,Nc);
+  PetscCall(DMPlexVecGetClosure(dm, NULL, coords, cell, &coordSize, &nodes));
   /* convert nodes to values in the stable evaluation basis */
-  ierr = DMGetWorkArray(dm,pdim,MPIU_REAL,&modes);CHKERRQ(ierr);
+  PetscCall(DMGetWorkArray(dm,pdim,MPIU_REAL,&modes));
   invV = fe->invV;
   for (i = 0; i < pdim; ++i) {
     modes[i] = 0.;
@@ -3021,17 +3130,17 @@ static PetscErrorCode DMPlexCoordinatesToReference_FE(DM dm, PetscFE fe, PetscIn
       modes[i] += invV[i * pdim + j] * PetscRealPart(nodes[j]);
     }
   }
-  ierr   = DMGetWorkArray(dm,pdim * Nc + pdim * Nc * dimR + Nc,MPIU_REAL,&B);CHKERRQ(ierr);
+  PetscCall(DMGetWorkArray(dm,pdim * Nc + pdim * Nc * dimR + Nc,MPIU_REAL,&B));
   D      = &B[pdim*Nc];
   resNeg = &D[pdim*Nc * dimR];
-  ierr = DMGetWorkArray(dm,3 * Nc * dimR,MPIU_SCALAR,&J);CHKERRQ(ierr);
+  PetscCall(DMGetWorkArray(dm,3 * Nc * dimR,MPIU_SCALAR,&J));
   invJ = &J[Nc * dimR];
   work = &invJ[Nc * dimR];
   for (i = 0; i < numPoints * dimR; i++) {refCoords[i] = 0.;}
   for (j = 0; j < numPoints; j++) {
       for (i = 0; i < maxIter; i++) { /* we could batch this so that we're not making big B and D arrays all the time */
       PetscReal *guess = &refCoords[j * dimR];
-      ierr = PetscSpaceEvaluate(fe->basisSpace, 1, guess, B, D, NULL);CHKERRQ(ierr);
+      PetscCall(PetscSpaceEvaluate(fe->basisSpace, 1, guess, B, D, NULL));
       for (k = 0; k < Nc; k++) {resNeg[k] = realCoords[j * Nc + k];}
       for (k = 0; k < Nc * dimR; k++) {J[k] = 0.;}
       for (k = 0; k < pdim; k++) {
@@ -3048,15 +3157,15 @@ static PetscErrorCode DMPlexCoordinatesToReference_FE(DM dm, PetscFE fe, PetscIn
         for (l = 0; l < Nc; l++) {
           maxAbs = PetscMax(maxAbs,PetscAbsReal(resNeg[l]));
         }
-        ierr = PetscInfo(dm,"cell %D, point %D, iter %D: res %g\n",cell,j,i,(double) maxAbs);CHKERRQ(ierr);
+        PetscCall(PetscInfo(dm,"cell %" PetscInt_FMT ", point %" PetscInt_FMT ", iter %" PetscInt_FMT ": res %g\n",cell,j,i,(double) maxAbs));
       }
-      ierr = DMPlexCoordinatesToReference_NewtonUpdate(Nc,dimR,J,invJ,work,resNeg,guess);CHKERRQ(ierr);
+      PetscCall(DMPlexCoordinatesToReference_NewtonUpdate(Nc,dimR,J,invJ,work,resNeg,guess));
     }
   }
-  ierr = DMRestoreWorkArray(dm,3 * Nc * dimR,MPIU_SCALAR,&J);CHKERRQ(ierr);
-  ierr = DMRestoreWorkArray(dm,pdim * Nc + pdim * Nc * dimR + Nc,MPIU_REAL,&B);CHKERRQ(ierr);
-  ierr = DMRestoreWorkArray(dm,pdim,MPIU_REAL,&modes);CHKERRQ(ierr);
-  ierr = DMPlexVecRestoreClosure(dm, NULL, coords, cell, &coordSize, &nodes);CHKERRQ(ierr);
+  PetscCall(DMRestoreWorkArray(dm,3 * Nc * dimR,MPIU_SCALAR,&J));
+  PetscCall(DMRestoreWorkArray(dm,pdim * Nc + pdim * Nc * dimR + Nc,MPIU_REAL,&B));
+  PetscCall(DMRestoreWorkArray(dm,pdim,MPIU_REAL,&modes));
+  PetscCall(DMPlexVecRestoreClosure(dm, NULL, coords, cell, &coordSize, &nodes));
   PetscFunctionReturn(0);
 }
 
@@ -3067,15 +3176,14 @@ static PetscErrorCode DMPlexReferenceToCoordinates_FE(DM dm, PetscFE fe, PetscIn
   PetscScalar    *nodes = NULL;
   PetscReal      *invV, *modes;
   PetscReal      *B;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFEGetDimension(fe, &pdim);CHKERRQ(ierr);
-  ierr = PetscFEGetNumComponents(fe, &numComp);CHKERRQ(ierr);
-  PetscCheckFalse(numComp != Nc,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"coordinate discretization must have as many components (%D) as embedding dimension (!= %D)",numComp,Nc);
-  ierr = DMPlexVecGetClosure(dm, NULL, coords, cell, &coordSize, &nodes);CHKERRQ(ierr);
+  PetscCall(PetscFEGetDimension(fe, &pdim));
+  PetscCall(PetscFEGetNumComponents(fe, &numComp));
+  PetscCheck(numComp == Nc,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"coordinate discretization must have as many components (%" PetscInt_FMT ") as embedding dimension (!= %" PetscInt_FMT ")",numComp,Nc);
+  PetscCall(DMPlexVecGetClosure(dm, NULL, coords, cell, &coordSize, &nodes));
   /* convert nodes to values in the stable evaluation basis */
-  ierr = DMGetWorkArray(dm,pdim,MPIU_REAL,&modes);CHKERRQ(ierr);
+  PetscCall(DMGetWorkArray(dm,pdim,MPIU_REAL,&modes));
   invV = fe->invV;
   for (i = 0; i < pdim; ++i) {
     modes[i] = 0.;
@@ -3083,8 +3191,8 @@ static PetscErrorCode DMPlexReferenceToCoordinates_FE(DM dm, PetscFE fe, PetscIn
       modes[i] += invV[i * pdim + j] * PetscRealPart(nodes[j]);
     }
   }
-  ierr = DMGetWorkArray(dm,numPoints * pdim * Nc,MPIU_REAL,&B);CHKERRQ(ierr);
-  ierr = PetscSpaceEvaluate(fe->basisSpace, numPoints, refCoords, B, NULL, NULL);CHKERRQ(ierr);
+  PetscCall(DMGetWorkArray(dm,numPoints * pdim * Nc,MPIU_REAL,&B));
+  PetscCall(PetscSpaceEvaluate(fe->basisSpace, numPoints, refCoords, B, NULL, NULL));
   for (i = 0; i < numPoints * Nc; i++) {realCoords[i] = 0.;}
   for (j = 0; j < numPoints; j++) {
     PetscReal *mapped = &realCoords[j * Nc];
@@ -3095,9 +3203,9 @@ static PetscErrorCode DMPlexReferenceToCoordinates_FE(DM dm, PetscFE fe, PetscIn
       }
     }
   }
-  ierr = DMRestoreWorkArray(dm,numPoints * pdim * Nc,MPIU_REAL,&B);CHKERRQ(ierr);
-  ierr = DMRestoreWorkArray(dm,pdim,MPIU_REAL,&modes);CHKERRQ(ierr);
-  ierr = DMPlexVecRestoreClosure(dm, NULL, coords, cell, &coordSize, &nodes);CHKERRQ(ierr);
+  PetscCall(DMRestoreWorkArray(dm,numPoints * pdim * Nc,MPIU_REAL,&B));
+  PetscCall(DMRestoreWorkArray(dm,pdim,MPIU_REAL,&modes));
+  PetscCall(DMPlexVecRestoreClosure(dm, NULL, coords, cell, &coordSize, &nodes));
   PetscFunctionReturn(0);
 }
 
@@ -3121,7 +3229,7 @@ static PetscErrorCode DMPlexReferenceToCoordinates_FE(DM dm, PetscFE fe, PetscIn
 
   Level: intermediate
 
-.seealso: DMPlexReferenceToCoordinates()
+.seealso: `DMPlexReferenceToCoordinates()`
 @*/
 PetscErrorCode DMPlexCoordinatesToReference(DM dm, PetscInt cell, PetscInt numPoints, const PetscReal realCoords[], PetscReal refCoords[])
 {
@@ -3129,58 +3237,57 @@ PetscErrorCode DMPlexCoordinatesToReference(DM dm, PetscInt cell, PetscInt numPo
   DM             coordDM = NULL;
   Vec            coords;
   PetscFE        fe = NULL;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMGetDimension(dm,&dimR);CHKERRQ(ierr);
-  ierr = DMGetCoordinateDim(dm,&dimC);CHKERRQ(ierr);
+  PetscCall(DMGetDimension(dm,&dimR));
+  PetscCall(DMGetCoordinateDim(dm,&dimC));
   if (dimR <= 0 || dimC <= 0 || numPoints <= 0) PetscFunctionReturn(0);
-  ierr = DMPlexGetDepth(dm,&depth);CHKERRQ(ierr);
-  ierr = DMGetCoordinatesLocal(dm,&coords);CHKERRQ(ierr);
-  ierr = DMGetCoordinateDM(dm,&coordDM);CHKERRQ(ierr);
+  PetscCall(DMPlexGetDepth(dm,&depth));
+  PetscCall(DMGetCoordinatesLocal(dm,&coords));
+  PetscCall(DMGetCoordinateDM(dm,&coordDM));
   if (coordDM) {
     PetscInt coordFields;
 
-    ierr = DMGetNumFields(coordDM,&coordFields);CHKERRQ(ierr);
+    PetscCall(DMGetNumFields(coordDM,&coordFields));
     if (coordFields) {
       PetscClassId id;
       PetscObject  disc;
 
-      ierr = DMGetField(coordDM,0,NULL,&disc);CHKERRQ(ierr);
-      ierr = PetscObjectGetClassId(disc,&id);CHKERRQ(ierr);
+      PetscCall(DMGetField(coordDM,0,NULL,&disc));
+      PetscCall(PetscObjectGetClassId(disc,&id));
       if (id == PETSCFE_CLASSID) {
         fe = (PetscFE) disc;
       }
     }
   }
-  ierr = DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  PetscCheckFalse(cell < cStart || cell >= cEnd,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"point %D not in cell range [%D,%D)",cell,cStart,cEnd);
+  PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd));
+  PetscCheck(cell >= cStart && cell < cEnd,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"point %" PetscInt_FMT " not in cell range [%" PetscInt_FMT ",%" PetscInt_FMT ")",cell,cStart,cEnd);
   if (!fe) { /* implicit discretization: affine or multilinear */
     PetscInt  coneSize;
     PetscBool isSimplex, isTensor;
 
-    ierr = DMPlexGetConeSize(dm,cell,&coneSize);CHKERRQ(ierr);
+    PetscCall(DMPlexGetConeSize(dm,cell,&coneSize));
     isSimplex = (coneSize == (dimR + 1)) ? PETSC_TRUE : PETSC_FALSE;
     isTensor  = (coneSize == ((depth == 1) ? (1 << dimR) : (2 * dimR))) ? PETSC_TRUE : PETSC_FALSE;
     if (isSimplex) {
       PetscReal detJ, *v0, *J, *invJ;
 
-      ierr = DMGetWorkArray(dm,dimC + 2 * dimC * dimC, MPIU_REAL, &v0);CHKERRQ(ierr);
+      PetscCall(DMGetWorkArray(dm,dimC + 2 * dimC * dimC, MPIU_REAL, &v0));
       J    = &v0[dimC];
       invJ = &J[dimC * dimC];
-      ierr = DMPlexComputeCellGeometryAffineFEM(dm, cell, v0, J, invJ, &detJ);CHKERRQ(ierr);
+      PetscCall(DMPlexComputeCellGeometryAffineFEM(dm, cell, v0, J, invJ, &detJ));
       for (i = 0; i < numPoints; i++) { /* Apply the inverse affine transformation for each point */
         const PetscReal x0[3] = {-1.,-1.,-1.};
 
         CoordinatesRealToRef(dimC, dimR, x0, v0, invJ, &realCoords[dimC * i], &refCoords[dimR * i]);
       }
-      ierr = DMRestoreWorkArray(dm,dimC + 2 * dimC * dimC, MPIU_REAL, &v0);CHKERRQ(ierr);
+      PetscCall(DMRestoreWorkArray(dm,dimC + 2 * dimC * dimC, MPIU_REAL, &v0));
     } else if (isTensor) {
-      ierr = DMPlexCoordinatesToReference_Tensor(coordDM, cell, numPoints, realCoords, refCoords, coords, dimC, dimR);CHKERRQ(ierr);
-    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unrecognized cone size %D",coneSize);
+      PetscCall(DMPlexCoordinatesToReference_Tensor(coordDM, cell, numPoints, realCoords, refCoords, coords, dimC, dimR));
+    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unrecognized cone size %" PetscInt_FMT,coneSize);
   } else {
-    ierr = DMPlexCoordinatesToReference_FE(coordDM, fe, cell, numPoints, realCoords, refCoords, coords, dimC, dimR);CHKERRQ(ierr);
+    PetscCall(DMPlexCoordinatesToReference_FE(coordDM, fe, cell, numPoints, realCoords, refCoords, coords, dimC, dimR));
   }
   PetscFunctionReturn(0);
 }
@@ -3203,7 +3310,7 @@ PetscErrorCode DMPlexCoordinatesToReference(DM dm, PetscInt cell, PetscInt numPo
 
    Level: intermediate
 
-.seealso: DMPlexCoordinatesToReference()
+.seealso: `DMPlexCoordinatesToReference()`
 @*/
 PetscErrorCode DMPlexReferenceToCoordinates(DM dm, PetscInt cell, PetscInt numPoints, const PetscReal refCoords[], PetscReal realCoords[])
 {
@@ -3211,57 +3318,56 @@ PetscErrorCode DMPlexReferenceToCoordinates(DM dm, PetscInt cell, PetscInt numPo
   DM             coordDM = NULL;
   Vec            coords;
   PetscFE        fe = NULL;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMGetDimension(dm,&dimR);CHKERRQ(ierr);
-  ierr = DMGetCoordinateDim(dm,&dimC);CHKERRQ(ierr);
+  PetscCall(DMGetDimension(dm,&dimR));
+  PetscCall(DMGetCoordinateDim(dm,&dimC));
   if (dimR <= 0 || dimC <= 0 || numPoints <= 0) PetscFunctionReturn(0);
-  ierr = DMPlexGetDepth(dm,&depth);CHKERRQ(ierr);
-  ierr = DMGetCoordinatesLocal(dm,&coords);CHKERRQ(ierr);
-  ierr = DMGetCoordinateDM(dm,&coordDM);CHKERRQ(ierr);
+  PetscCall(DMPlexGetDepth(dm,&depth));
+  PetscCall(DMGetCoordinatesLocal(dm,&coords));
+  PetscCall(DMGetCoordinateDM(dm,&coordDM));
   if (coordDM) {
     PetscInt coordFields;
 
-    ierr = DMGetNumFields(coordDM,&coordFields);CHKERRQ(ierr);
+    PetscCall(DMGetNumFields(coordDM,&coordFields));
     if (coordFields) {
       PetscClassId id;
       PetscObject  disc;
 
-      ierr = DMGetField(coordDM,0,NULL,&disc);CHKERRQ(ierr);
-      ierr = PetscObjectGetClassId(disc,&id);CHKERRQ(ierr);
+      PetscCall(DMGetField(coordDM,0,NULL,&disc));
+      PetscCall(PetscObjectGetClassId(disc,&id));
       if (id == PETSCFE_CLASSID) {
         fe = (PetscFE) disc;
       }
     }
   }
-  ierr = DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  PetscCheckFalse(cell < cStart || cell >= cEnd,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"point %D not in cell range [%D,%D)",cell,cStart,cEnd);
+  PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd));
+  PetscCheck(cell >= cStart && cell < cEnd,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"point %" PetscInt_FMT " not in cell range [%" PetscInt_FMT ",%" PetscInt_FMT ")",cell,cStart,cEnd);
   if (!fe) { /* implicit discretization: affine or multilinear */
     PetscInt  coneSize;
     PetscBool isSimplex, isTensor;
 
-    ierr = DMPlexGetConeSize(dm,cell,&coneSize);CHKERRQ(ierr);
+    PetscCall(DMPlexGetConeSize(dm,cell,&coneSize));
     isSimplex = (coneSize == (dimR + 1)) ? PETSC_TRUE : PETSC_FALSE;
     isTensor  = (coneSize == ((depth == 1) ? (1 << dimR) : (2 * dimR))) ? PETSC_TRUE : PETSC_FALSE;
     if (isSimplex) {
       PetscReal detJ, *v0, *J;
 
-      ierr = DMGetWorkArray(dm,dimC + 2 * dimC * dimC, MPIU_REAL, &v0);CHKERRQ(ierr);
+      PetscCall(DMGetWorkArray(dm,dimC + 2 * dimC * dimC, MPIU_REAL, &v0));
       J    = &v0[dimC];
-      ierr = DMPlexComputeCellGeometryAffineFEM(dm, cell, v0, J, NULL, &detJ);CHKERRQ(ierr);
+      PetscCall(DMPlexComputeCellGeometryAffineFEM(dm, cell, v0, J, NULL, &detJ));
       for (i = 0; i < numPoints; i++) { /* Apply the affine transformation for each point */
         const PetscReal xi0[3] = {-1.,-1.,-1.};
 
         CoordinatesRefToReal(dimC, dimR, xi0, v0, J, &refCoords[dimR * i], &realCoords[dimC * i]);
       }
-      ierr = DMRestoreWorkArray(dm,dimC + 2 * dimC * dimC, MPIU_REAL, &v0);CHKERRQ(ierr);
+      PetscCall(DMRestoreWorkArray(dm,dimC + 2 * dimC * dimC, MPIU_REAL, &v0));
     } else if (isTensor) {
-      ierr = DMPlexReferenceToCoordinates_Tensor(coordDM, cell, numPoints, refCoords, realCoords, coords, dimC, dimR);CHKERRQ(ierr);
-    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unrecognized cone size %D",coneSize);
+      PetscCall(DMPlexReferenceToCoordinates_Tensor(coordDM, cell, numPoints, refCoords, realCoords, coords, dimC, dimR));
+    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unrecognized cone size %" PetscInt_FMT,coneSize);
   } else {
-    ierr = DMPlexReferenceToCoordinates_FE(coordDM, fe, cell, numPoints, refCoords, realCoords, coords, dimC, dimR);CHKERRQ(ierr);
+    PetscCall(DMPlexReferenceToCoordinates_FE(coordDM, fe, cell, numPoints, refCoords, realCoords, coords, dimC, dimR));
   }
   PetscFunctionReturn(0);
 }
@@ -3303,7 +3409,7 @@ $         PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscSc
 
   Level: intermediate
 
-.seealso: DMGetCoordinates(), DMGetCoordinatesLocal(), DMGetCoordinateDM(), DMProjectFieldLocal(), DMProjectFieldLabelLocal()
+.seealso: `DMGetCoordinates()`, `DMGetCoordinatesLocal()`, `DMGetCoordinateDM()`, `DMProjectFieldLocal()`, `DMProjectFieldLabelLocal()`
 @*/
 PetscErrorCode DMPlexRemapGeometry(DM dm, PetscReal time,
                                    void (*func)(PetscInt, PetscInt, PetscInt,
@@ -3314,20 +3420,19 @@ PetscErrorCode DMPlexRemapGeometry(DM dm, PetscReal time,
   DM             cdm;
   DMField        cf;
   Vec            lCoords, tmpCoords;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
-  ierr = DMGetCoordinatesLocal(dm, &lCoords);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(cdm, &tmpCoords);CHKERRQ(ierr);
-  ierr = VecCopy(lCoords, tmpCoords);CHKERRQ(ierr);
+  PetscCall(DMGetCoordinateDM(dm, &cdm));
+  PetscCall(DMGetCoordinatesLocal(dm, &lCoords));
+  PetscCall(DMGetLocalVector(cdm, &tmpCoords));
+  PetscCall(VecCopy(lCoords, tmpCoords));
   /* We have to do the coordinate field manually right now since the coordinate DM will not have its own */
-  ierr = DMGetCoordinateField(dm, &cf);CHKERRQ(ierr);
+  PetscCall(DMGetCoordinateField(dm, &cf));
   cdm->coordinateField = cf;
-  ierr = DMProjectFieldLocal(cdm, time, tmpCoords, &func, INSERT_VALUES, lCoords);CHKERRQ(ierr);
+  PetscCall(DMProjectFieldLocal(cdm, time, tmpCoords, &func, INSERT_VALUES, lCoords));
   cdm->coordinateField = NULL;
-  ierr = DMRestoreLocalVector(cdm, &tmpCoords);CHKERRQ(ierr);
-  ierr = DMSetCoordinatesLocal(dm, lCoords);CHKERRQ(ierr);
+  PetscCall(DMRestoreLocalVector(cdm, &tmpCoords));
+  PetscCall(DMSetCoordinatesLocal(dm, lCoords));
   PetscFunctionReturn(0);
 }
 
@@ -3362,7 +3467,7 @@ static void f0_shear(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 
   Level: intermediate
 
-.seealso: DMPlexRemapGeometry()
+.seealso: `DMPlexRemapGeometry()`
 @*/
 PetscErrorCode DMPlexShearGeometry(DM dm, DMDirection direction, PetscReal multipliers[])
 {
@@ -3373,40 +3478,39 @@ PetscErrorCode DMPlexShearGeometry(DM dm, DMDirection direction, PetscReal multi
   PetscScalar   *moduli;
   const PetscInt dir = (PetscInt) direction;
   PetscInt       dE, d, e;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
-  ierr = DMGetCoordinateDim(dm, &dE);CHKERRQ(ierr);
-  ierr = PetscMalloc1(dE+1, &moduli);CHKERRQ(ierr);
+  PetscCall(DMGetCoordinateDM(dm, &cdm));
+  PetscCall(DMGetCoordinateDim(dm, &dE));
+  PetscCall(PetscMalloc1(dE+1, &moduli));
   moduli[0] = dir;
   for (d = 0, e = 0; d < dE; ++d) moduli[d+1] = d == dir ? 0.0 : (multipliers ? multipliers[e++] : 1.0);
-  ierr = DMGetDS(cdm, &cds);CHKERRQ(ierr);
-  ierr = PetscDSGetDiscretization(cds, 0, &obj);CHKERRQ(ierr);
-  ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+  PetscCall(DMGetDS(cdm, &cds));
+  PetscCall(PetscDSGetDiscretization(cds, 0, &obj));
+  PetscCall(PetscObjectGetClassId(obj, &id));
   if (id != PETSCFE_CLASSID) {
     Vec           lCoords;
     PetscSection  cSection;
     PetscScalar  *coords;
     PetscInt      vStart, vEnd, v;
 
-    ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-    ierr = DMGetCoordinateSection(dm, &cSection);CHKERRQ(ierr);
-    ierr = DMGetCoordinatesLocal(dm, &lCoords);CHKERRQ(ierr);
-    ierr = VecGetArray(lCoords, &coords);CHKERRQ(ierr);
+    PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
+    PetscCall(DMGetCoordinateSection(dm, &cSection));
+    PetscCall(DMGetCoordinatesLocal(dm, &lCoords));
+    PetscCall(VecGetArray(lCoords, &coords));
     for (v = vStart; v < vEnd; ++v) {
       PetscReal ds;
       PetscInt  off, c;
 
-      ierr = PetscSectionGetOffset(cSection, v, &off);CHKERRQ(ierr);
+      PetscCall(PetscSectionGetOffset(cSection, v, &off));
       ds   = PetscRealPart(coords[off+dir]);
       for (c = 0; c < dE; ++c) coords[off+c] += moduli[c]*ds;
     }
-    ierr = VecRestoreArray(lCoords, &coords);CHKERRQ(ierr);
+    PetscCall(VecRestoreArray(lCoords, &coords));
   } else {
-    ierr = PetscDSSetConstants(cds, dE+1, moduli);CHKERRQ(ierr);
-    ierr = DMPlexRemapGeometry(dm, 0.0, f0_shear);CHKERRQ(ierr);
+    PetscCall(PetscDSSetConstants(cds, dE+1, moduli));
+    PetscCall(DMPlexRemapGeometry(dm, 0.0, f0_shear));
   }
-  ierr = PetscFree(moduli);CHKERRQ(ierr);
+  PetscCall(PetscFree(moduli));
   PetscFunctionReturn(0);
 }

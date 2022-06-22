@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import os
 petsc_hash_pkgs=os.path.join(os.getenv('HOME'),'petsc-hash-pkgs')
@@ -10,6 +10,10 @@ configure_options = [
   '--with-debugging=0',
   '--download-mpich',
   '--download-mpich-device=ch3:sock',
+  '--download-superlu_dist',
+  '--download-metis',
+  '--download-parmetis',
+  '--download-cmake'  # needed by metis/parmetis
   ]
 
 if __name__ == '__main__':

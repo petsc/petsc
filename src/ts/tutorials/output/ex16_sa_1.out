@@ -1,14 +1,14 @@
 mu 1, steps 0, ftime 0.5
 mu 1, steps 9, ftime 0.5
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 2.00704
 -0.377173
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1
 0
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1.03485
 0.26116

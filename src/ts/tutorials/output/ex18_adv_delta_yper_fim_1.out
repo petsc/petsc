@@ -1,4 +1,4 @@
-DM Object: 1 MPI processes
+DM Object: 1 MPI process
   type: plex
 Mesh in 2 dimensions:
   Number of 0-cells per rank: 12
@@ -43,7 +43,7 @@ Labels:
  15  time        5  |x| (       1,        1) |x|_1 (       6,        1)         Error [           0, 1.50027e-05] int  3.33337e-06
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
  16  time    5.333  |x| (       1,        1) |x|_1 (       6,        1)         Error [           0, 1.60008e-05] int  3.55518e-06
-TS Object: 1 MPI processes
+TS Object: 1 MPI process
   type: mimex
   maximum steps=20
   maximum time=5.
@@ -53,19 +53,19 @@ TS Object: 1 MPI processes
   total number of rejected steps=0
   using relative error tolerance of 0.0001,   using absolute error tolerance of 0.0001
     Version = 1
-  SNES Object: 1 MPI processes
+  SNES Object: 1 MPI process
     type: newtonls
     maximum iterations=50, maximum function evaluations=10000
     tolerances: relative=1e-07, absolute=1e-50, solution=1e-08
     total number of linear solver iterations=1
     total number of function evaluations=20
     norm schedule ALWAYS
-    SNESLineSearch Object: 1 MPI processes
+    SNESLineSearch Object: 1 MPI process
       type: basic
       maxstep=1.000000e+08, minlambda=1.000000e-12
       tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
       maximum iterations=40
-    KSP Object: 1 MPI processes
+    KSP Object: 1 MPI process
       type: gmres
         restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
         happy breakdown tolerance 1e-30
@@ -73,14 +73,14 @@ TS Object: 1 MPI processes
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using PRECONDITIONED norm type for convergence test
-    PC Object: 1 MPI processes
+    PC Object: 1 MPI process
       type: lu
         out-of-place factorization
         tolerance for zero pivot 2.22045e-14
         matrix ordering: nd
         factor fill ratio given 5., needed 1.22511
           Factored matrix follows:
-            Mat Object: 1 MPI processes
+            Mat Object: 1 MPI process
               type: seqaij
               rows=21, cols=21
               package used to perform factorization: petsc
@@ -88,7 +88,7 @@ TS Object: 1 MPI processes
               total number of mallocs used during MatSetValues calls=0
                 using I-node routines: found 14 nodes, limit used is 5
       linear system matrix = precond matrix:
-      Mat Object: 1 MPI processes
+      Mat Object: 1 MPI process
         type: seqaij
         rows=21, cols=21
         total: nonzeros=231, allocated nonzeros=231

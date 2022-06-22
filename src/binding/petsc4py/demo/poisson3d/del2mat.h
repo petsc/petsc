@@ -27,26 +27,24 @@ PetscErrorCode Del2Mat_mult(Mat A, Vec x, Vec y)
   Del2Mat *ctx;
   const PetscScalar *xx;
   PetscScalar *yy;
-  PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = MatShellGetContext(A,&ctx);CHKERRQ(ierr);
+  PetscCall(MatShellGetContext(A,&ctx));
   /* get raw vector arrays */
-  ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
-  ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
+  PetscCall(VecGetArrayRead(x,&xx));
+  PetscCall(VecGetArray(y,&yy));
   /* call external Fortran subroutine */
   Del2Apply(&ctx->N,ctx->F,xx,yy);
   /* restore raw vector arrays */
-  ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
-  ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayRead(x,&xx));
+  PetscCall(VecRestoreArray(y,&yy));
   PetscFunctionReturn(0);
 }
 
 /*D_i <- A_ii */
 PetscErrorCode Del2Mat_diag(Mat A, Vec D)
 {
-  PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = VecSet(D,6.0);CHKERRQ(ierr);
+  PetscCall(VecSet(D,6.0));
   PetscFunctionReturn(0);
 }
 

@@ -10,7 +10,7 @@
   9 TAO,  Function value: 2.8188e-08,  Residual: 1.95297e-06 
  10 TAO,  Function value: 1.12133e-10,  Residual: 1.22269e-07 
  11 TAO,  Function value: 1.55922e-14,  Residual: 1.44107e-09 
-Tao Object: 1 MPI processes
+Tao Object: 1 MPI process
   type: bqnls
     Rejected BFGS updates: 0
     CG steps: 0
@@ -26,7 +26,7 @@ Tao Object: 1 MPI processes
       dtol: 0
       iter: 0
       othr: 0
-  Mat Object: (tao_bqnls_) 1 MPI processes
+  Mat Object: (tao_bqnls_) 1 MPI process
     type: lmvmbfgs
     rows=1, cols=1
       Scale type: DIAGONAL
@@ -38,7 +38,7 @@ Tao Object: 1 MPI processes
       Number of updates: 10
       Number of rejects: 0
       Number of resets: 0
-      Mat Object: (J0_) 1 MPI processes
+      Mat Object: (J0_) 1 MPI process
         type: lmvmdiagbroyden
         rows=1, cols=1
           Scale history: 1
@@ -49,7 +49,7 @@ Tao Object: 1 MPI processes
           Number of updates: 10
           Number of rejects: 0
           Number of resets: 0
-  TaoLineSearch Object: 1 MPI processes
+  TaoLineSearch Object: 1 MPI process
     type: more-thuente
     maximum function evaluations=30
     tolerances: ftol=0.0001, rtol=1e-10, gtol=0.9
@@ -57,16 +57,16 @@ Tao Object: 1 MPI processes
     total number of gradient evaluations=0
     total number of function/gradient evaluations=1
     Termination reason: 1
-  KSP Object: 1 MPI processes
+  KSP Object: 1 MPI process
     type: stcg
     maximum iterations=10000, initial guess is zero
     tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
     left preconditioning
     using DEFAULT norm type for convergence test
-  PC Object: 1 MPI processes
+  PC Object: 1 MPI process
     type: lmvm
     PC has not been set up so information may be incomplete
-    Mat Object: (tao_bqnls_) 1 MPI processes
+    Mat Object: (tao_bqnls_) 1 MPI process
       type: lmvmbfgs
       rows=1, cols=1
         Scale type: DIAGONAL
@@ -78,7 +78,7 @@ Tao Object: 1 MPI processes
         Number of updates: 10
         Number of rejects: 0
         Number of resets: 0
-        Mat Object: (J0_) 1 MPI processes
+        Mat Object: (J0_) 1 MPI process
           type: lmvmdiagbroyden
           rows=1, cols=1
             Scale history: 1
@@ -90,13 +90,12 @@ Tao Object: 1 MPI processes
             Number of rejects: 0
             Number of resets: 0
   total KSP iterations: 0
-  Active Set subset type: subvec
   convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.
   Residual in Function/Gradient:=1.44107e-09
   Objective value=1.55922e-14
   total number of iterations=11,                          (max: 50)
   total number of function/gradient evaluations=12,      (max: -1)
   Solution converged:    ||g(X)|| <= gatol
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 9.99998

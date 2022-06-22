@@ -1,7 +1,5 @@
-ALL: lib
+-include ../../../../../../petsckdir.mk
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  =
 SOURCEF90= bagenum.F90
 SOURCEH  =

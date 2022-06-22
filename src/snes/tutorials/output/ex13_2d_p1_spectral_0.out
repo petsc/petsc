@@ -1,4 +1,4 @@
-Vec Object: spectral_plane_0 1 MPI processes
+Vec Object: spectral_plane_0 1 MPI process
   type: seq
 0.
 0.
@@ -130,7 +130,7 @@ Vec Object: spectral_plane_0 1 MPI processes
 0.
 0.
 0.
-Vec Object: spectral_plane_1 1 MPI processes
+Vec Object: spectral_plane_1 1 MPI process
   type: seq
 0.
 0.

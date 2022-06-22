@@ -7,17 +7,6 @@
 !
 !  The C version of this code is rosenbrock1.c
 !
-!!/*T
-!  Concepts: TAO^Solving an unconstrained minimization problem
-!  Routines: TaoCreate();
-!  Routines: TaoSetType(); TaoSetObjectiveAndGradient();
-!  Routines: TaoSetHessian();
-!  Routines: TaoSetSolution();
-!  Routines: TaoSetFromOptions();
-!  Routines: TaoSolve();
-!  Routines: TaoDestroy();
-!  Processors: 1
-!T*/
 
 !
 
@@ -50,13 +39,9 @@
       i1 = 1
 
 !  Initialize TAO and PETSc
-      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      if (ierr .ne. 0) then
-         print*,'Unable to initialize PETSc'
-         stop
-      endif
+      PetscCallA(PetscInitialize(ierr))
 
-      call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
+      PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD,size,ierr))
       if (size .ne. 1) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_WRONG_MPI_SIZE,'This is a uniprocessor example only'); endif
 
 !  Initialize problem parameters
@@ -64,61 +49,50 @@
       alpha = 99.0d0
 
 ! Check for command line arguments to override defaults
-      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,    &
-     &                        '-n',n,flg,ierr)
-      call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,   &
-     &                         '-alpha',alpha,flg,ierr)
+      PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-n',n,flg,ierr))
+      PetscCallA(PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-alpha',alpha,flg,ierr))
 
 !  Allocate vectors for the solution and gradient
-      call VecCreateSeq(PETSC_COMM_SELF,n,x,ierr)
+      PetscCallA(VecCreateSeq(PETSC_COMM_SELF,n,x,ierr))
 
 !  Allocate storage space for Hessian;
-      call MatCreateSeqBAIJ(PETSC_COMM_SELF,i2,n,n,i1,                   &
-     &     PETSC_NULL_INTEGER, H,ierr)
+      PetscCallA(MatCreateSeqBAIJ(PETSC_COMM_SELF,i2,n,n,i1,PETSC_NULL_INTEGER, H,ierr))
 
-      call MatSetOption(H,MAT_SYMMETRIC,PETSC_TRUE,ierr)
+      PetscCallA(MatSetOption(H,MAT_SYMMETRIC,PETSC_TRUE,ierr))
 
 !  The TAO code begins here
 
 !  Create TAO solver
-      call TaoCreate(PETSC_COMM_SELF,tao,ierr)
-      CHKERRA(ierr)
-      call TaoSetType(tao,TAOLMVM,ierr)
-      CHKERRA(ierr)
+      PetscCallA(TaoCreate(PETSC_COMM_SELF,tao,ierr))
+      PetscCallA(TaoSetType(tao,TAOLMVM,ierr))
 
 !  Set routines for function, gradient, and hessian evaluation
-      call TaoSetObjectiveAndGradient(tao,PETSC_NULL_VEC,                 &
-     &      FormFunctionGradient,0,ierr)
-      CHKERRA(ierr)
-      call TaoSetHessian(tao,H,H,FormHessian,                             &
-     &     0,ierr)
-      CHKERRA(ierr)
+      PetscCallA(TaoSetObjectiveAndGradient(tao,PETSC_NULL_VEC,FormFunctionGradient,0,ierr))
+      PetscCallA(TaoSetHessian(tao,H,H,FormHessian,0,ierr))
 
 !  Optional: Set initial guess
-      call VecSet(x, zero, ierr)
-      call TaoSetSolution(tao, x, ierr)
-      CHKERRA(ierr)
+      PetscCallA(VecSet(x, zero, ierr))
+      PetscCallA(TaoSetSolution(tao, x, ierr))
 
 !  Check for TAO command line options
-      call TaoSetFromOptions(tao,ierr)
-      CHKERRA(ierr)
+      PetscCallA(TaoSetFromOptions(tao,ierr))
 
 !  SOLVE THE APPLICATION
-      call TaoSolve(tao,ierr)
+      PetscCallA(TaoSolve(tao,ierr))
 
 !  TaoView() prints ierr about the TAO solver; the option
 !      -tao_view
 !  can alternatively be used to activate this at runtime.
-!      call TaoView(tao,PETSC_VIEWER_STDOUT_SELF,ierr)
+!      PetscCallA(TaoView(tao,PETSC_VIEWER_STDOUT_SELF,ierr))
 
 !  Free TAO data structures
-      call TaoDestroy(tao,ierr)
+      PetscCallA(TaoDestroy(tao,ierr))
 
 !  Free PETSc data structures
-      call VecDestroy(x,ierr)
-      call MatDestroy(H,ierr)
+      PetscCallA(VecDestroy(x,ierr))
+      PetscCallA(MatDestroy(H,ierr))
 
-      call PetscFinalize(ierr)
+      PetscCallA(PetscFinalize(ierr))
       end
 
 ! --------------------------------------------------------------------
@@ -158,8 +132,8 @@
       ff = 0
 
 !     Get pointers to vector data
-      call VecGetArrayRead(X,x_v,x_i,ierr)
-      call VecGetArray(G,g_v,g_i,ierr)
+      PetscCall(VecGetArrayRead(X,x_v,x_i,ierr))
+      PetscCall(VecGetArray(G,g_v,g_i,ierr))
 
 !     Compute G(X)
       do i=0,nn-1
@@ -171,11 +145,11 @@
       enddo
 
 !     Restore vectors
-      call VecRestoreArrayRead(X,x_v,x_i,ierr)
-      call VecRestoreArray(G,g_v,g_i,ierr)
+      PetscCall(VecRestoreArrayRead(X,x_v,x_i,ierr))
+      PetscCall(VecRestoreArray(G,g_v,g_i,ierr))
 
       f = ff
-      call PetscLogFlops(15.0d0*nn,ierr)
+      PetscCall(PetscLogFlops(15.0d0*nn,ierr))
 
       return
       end
@@ -227,36 +201,35 @@
       i2 = 2
 
 !  Zero existing matrix entries
-      call MatAssembled(H,assembled,ierr)
-      if (assembled .eqv. PETSC_TRUE) call MatZeroEntries(H,ierr)
+      PetscCall(MatAssembled(H,assembled,ierr))
+      if (assembled .eqv. PETSC_TRUE) PetscCall(MatZeroEntries(H,ierr))
 
 !  Get a pointer to vector data
 
-      call VecGetArrayRead(X,x_v,x_i,ierr)
+      PetscCall(VecGetArrayRead(X,x_v,x_i,ierr))
 
 !  Compute Hessian entries
 
       do i=0,nn-1
          v(1,1) = 2.0*alpha
-         v(0,0) = -4.0*alpha*(x_v(x_i+2*i+1) -                          &
-     &                3*x_v(x_i+2*i)*x_v(x_i+2*i))+2
+         v(0,0) = -4.0*alpha*(x_v(x_i+2*i+1) - 3*x_v(x_i+2*i)*x_v(x_i+2*i))+2
          v(1,0) = -4.0*alpha*x_v(x_i+2*i)
          v(0,1) = v(1,0)
          ind(0) = 2*i
          ind(1) = 2*i + 1
-         call MatSetValues(H,i2,ind,i2,ind,v,INSERT_VALUES,ierr)
+         PetscCall(MatSetValues(H,i2,ind,i2,ind,v,INSERT_VALUES,ierr))
       enddo
 
 !  Restore vector
 
-      call VecRestoreArrayRead(X,x_v,x_i,ierr)
+      PetscCall(VecRestoreArrayRead(X,x_v,x_i,ierr))
 
 !  Assemble matrix
 
-      call MatAssemblyBegin(H,MAT_FINAL_ASSEMBLY,ierr)
-      call MatAssemblyEnd(H,MAT_FINAL_ASSEMBLY,ierr)
+      PetscCall(MatAssemblyBegin(H,MAT_FINAL_ASSEMBLY,ierr))
+      PetscCall(MatAssemblyEnd(H,MAT_FINAL_ASSEMBLY,ierr))
 
-      call PetscLogFlops(9.0d0*nn,ierr)
+      PetscCall(PetscLogFlops(9.0d0*nn,ierr))
 
       return
       end

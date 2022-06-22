@@ -1,4 +1,4 @@
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: nest
   Matrix object: 
     type=nest, rows=2, cols=3 
@@ -9,34 +9,34 @@ Mat Object: 1 MPI processes
     (1,0) : type=seqdense, rows=3, cols=3 
     (1,1) : type=seqdense, rows=3, cols=2 
     (1,2) : type=seqdense, rows=3, cols=4 
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqdense
 7.2003197397953400e-01 1.0022337819588500e-02 3.9777780919128602e-01 
 6.1793966542126100e-02 1.4463931936456476e-01 7.3036588248200474e-02 
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqdense
 1.0386628927366459e-01 9.8405227390177075e-01 
 2.5078039364333193e-01 7.3851607000756303e-01 
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqdense
 4.0114727059134836e-01 1.4405427480322786e-01 1.0677308875937896e-01 7.3131275919223881e-01 
 5.2764865382548720e-01 9.9650445216117589e-01 9.8905332488367748e-01 3.0846024921541471e-01 
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqdense
 1.8055644102282642e-01 5.7781947665039013e-01 1.0407558402241435e-01 
 9.8604536855510361e-01 1.1081210783563833e-01 2.3083813191470881e-01 
 9.1979058000460512e-01 9.1586330251825387e-01 6.0915389969168743e-01 
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqdense
 3.9175442643094271e-01 1.6479554370362948e-01 
 5.1566579161572079e-01 4.3679158155389786e-01 
 8.7414396079869050e-01 6.3600400439884552e-01 
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqdense
 7.4413522929407350e-01 7.5268332098012891e-01 1.2848833216340694e-01 1.0519212227010755e-01 
 9.0482696264258422e-01 4.4242077012050629e-01 9.5588667306404673e-01 8.6607770513510474e-01 
 5.4370953186577964e-01 4.7371062302860523e-01 8.5073034482763887e-01 6.3752342702592912e-01 
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: nest
   Matrix object: 
     type=nest, rows=3, cols=2 
@@ -47,31 +47,31 @@ Mat Object: 1 MPI processes
     (1,1) : type=seqdense, rows=2, cols=3 
     (2,0) : type=seqdense, rows=4, cols=2 
     (2,1) : type=seqdense, rows=4, cols=3 
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqdense
 7.2003197397953400e-01 6.1793966542126100e-02 
 1.0022337819588500e-02 1.4463931936456476e-01 
 3.9777780919128602e-01 7.3036588248200474e-02 
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqdense
 1.8055644102282642e-01 9.8604536855510361e-01 9.1979058000460512e-01 
 5.7781947665039013e-01 1.1081210783563833e-01 9.1586330251825387e-01 
 1.0407558402241435e-01 2.3083813191470881e-01 6.0915389969168743e-01 
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqdense
 1.0386628927366459e-01 2.5078039364333193e-01 
 9.8405227390177075e-01 7.3851607000756303e-01 
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqdense
 3.9175442643094271e-01 5.1566579161572079e-01 8.7414396079869050e-01 
 1.6479554370362948e-01 4.3679158155389786e-01 6.3600400439884552e-01 
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqdense
 4.0114727059134836e-01 5.2764865382548720e-01 
 1.4405427480322786e-01 9.9650445216117589e-01 
 1.0677308875937896e-01 9.8905332488367748e-01 
 7.3131275919223881e-01 3.0846024921541471e-01 
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqdense
 7.4413522929407350e-01 9.0482696264258422e-01 5.4370953186577964e-01 
 7.5268332098012891e-01 4.4242077012050629e-01 4.7371062302860523e-01 
@@ -97,7 +97,7 @@ Mat Object: 1 MPI processes
 <x, A^Ty> = 5.0697
 <Ax, y> = 3.59347
 <x, A^Ty> = 3.59347
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: nest
   Matrix object: 
     type=nest, rows=2, cols=2 
@@ -106,23 +106,23 @@ Mat Object: 1 MPI processes
     (0,1) : type=seqdense, rows=2, cols=2 
     (1,0) : type=seqdense, rows=2, cols=2 
     (1,1) : type=seqdense, rows=2, cols=2 
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqdense
 7.2003197397953400e-01 1.0022337819588500e-02 
 6.1793966542126100e-02 1.4463931936456476e-01 
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqdense
 3.9777780919128602e-01 1.0386628927366459e-01 
 7.3036588248200474e-02 2.5078039364333193e-01 
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqdense
 9.8405227390177075e-01 4.0114727059134836e-01 
 7.3851607000756303e-01 5.2764865382548720e-01 
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqdense
 1.4405427480322786e-01 1.0677308875937896e-01 
 9.9650445216117589e-01 9.8905332488367748e-01 
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: nest
   Matrix object: 
     type=nest, rows=2, cols=2 
@@ -131,19 +131,19 @@ Mat Object: 1 MPI processes
     (0,1) : type=seqdense, rows=2, cols=2 
     (1,0) : type=seqdense, rows=2, cols=2 
     (1,1) : type=seqdense, rows=2, cols=2 
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqdense
 7.2003197397953400e-01 6.1793966542126100e-02 
 1.0022337819588500e-02 1.4463931936456476e-01 
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqdense
 9.8405227390177075e-01 7.3851607000756303e-01 
 4.0114727059134836e-01 5.2764865382548720e-01 
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqdense
 3.9777780919128602e-01 7.3036588248200474e-02 
 1.0386628927366459e-01 2.5078039364333193e-01 
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqdense
 1.4405427480322786e-01 9.9650445216117589e-01 
 1.0677308875937896e-01 9.8905332488367748e-01 

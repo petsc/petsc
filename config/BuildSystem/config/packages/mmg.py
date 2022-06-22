@@ -4,7 +4,7 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit        = '6644a02f6f118c0c81d5705cf7a2f556ce06ac8d' # jolivet/feature-mmg-install-3.17.0-bis feb-12-2022
+    self.gitcommit        = 'e01905479683d27866306312424bb41fdc817f5e' # jolivet/feature-mmg-install-3.18.0 apr-10-2022
     self.download         = ['git://https://github.com/prj-/mmg.git','https://github.com/prj-/mmg/archive/'+self.gitcommit+'.tar.gz']
     self.versionname      = 'MMG_VERSION_RELEASE'
     self.includes         = ['mmg/libmmg.h']

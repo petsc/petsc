@@ -335,8 +335,6 @@ PetscErrorCode trigDer(PetscInt dim, PetscReal time, const PetscReal coords[], c
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
   options->qorder          = 0;
   options->Nc              = PETSC_DEFAULT;
@@ -346,25 +344,23 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->K               = 0;
   options->usePoly         = PETSC_TRUE;
 
-  ierr = PetscOptionsBegin(comm, "", "Projection Test Options", "DMPlex");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-qorder", "The quadrature order", "ex8.c", options->qorder, &options->qorder, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-num_comp", "The number of field components", "ex8.c", options->Nc, &options->Nc, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-porder", "The order of polynomials to test", "ex8.c", options->porder, &options->porder, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-K", "The number of coarse modes used in optimization", "ex8.c", options->K, &options->K, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-use_poly", "Use polynomials (or harmonics) to adapt interpolator", "ex8.c", options->usePoly, &options->usePoly, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscOptionsBegin(comm, "", "Projection Test Options", "DMPlex");
+  PetscCall(PetscOptionsInt("-qorder", "The quadrature order", "ex8.c", options->qorder, &options->qorder, NULL));
+  PetscCall(PetscOptionsInt("-num_comp", "The number of field components", "ex8.c", options->Nc, &options->Nc, NULL));
+  PetscCall(PetscOptionsInt("-porder", "The order of polynomials to test", "ex8.c", options->porder, &options->porder, NULL));
+  PetscCall(PetscOptionsInt("-K", "The number of coarse modes used in optimization", "ex8.c", options->K, &options->K, NULL));
+  PetscCall(PetscOptionsBool("-use_poly", "Use polynomials (or harmonics) to adapt interpolator", "ex8.c", options->usePoly, &options->usePoly, NULL));
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
-  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
-  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
+  PetscCall(DMCreate(comm, dm));
+  PetscCall(DMSetType(*dm, DMPLEX));
+  PetscCall(DMSetFromOptions(*dm));
+  PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
   PetscFunctionReturn(0);
 }
 
@@ -373,7 +369,6 @@ static PetscErrorCode SetupFunctions(DM dm, PetscBool usePoly, PetscInt order, P
                                      PetscErrorCode (**exactFuncDers)(PetscInt, PetscReal, const PetscReal[], const PetscReal[], PetscInt, PetscScalar *, void *), AppCtx *user)
 {
   PetscInt       dim;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   user->dir = dir;
@@ -400,8 +395,8 @@ static PetscErrorCode SetupFunctions(DM dm, PetscBool usePoly, PetscInt order, P
       exactFuncDers[0] = quarticDer;
       break;
     default:
-      ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-      SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "Could not determine functions to test for dimension %d order %d", dim, order);
+      PetscCall(DMGetDimension(dm, &dim));
+      SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "Could not determine functions to test for dimension %" PetscInt_FMT " order %" PetscInt_FMT, dim, order);
     }
   } else {
     user->m          = order;
@@ -417,17 +412,16 @@ static PetscErrorCode ComputeError(DM dm, PetscErrorCode (**exactFuncs)(PetscInt
 {
   Vec            u;
   PetscReal      n[3] = {1.0, 1.0, 1.0};
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMGetGlobalVector(dm, &u);CHKERRQ(ierr);
+  PetscCall(DMGetGlobalVector(dm, &u));
   /* Project function into FE function space */
-  ierr = DMProjectFunction(dm, 0.0, exactFuncs, exactCtxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
-  ierr = VecViewFromOptions(u, NULL, "-projection_view");CHKERRQ(ierr);
+  PetscCall(DMProjectFunction(dm, 0.0, exactFuncs, exactCtxs, INSERT_ALL_VALUES, u));
+  PetscCall(VecViewFromOptions(u, NULL, "-projection_view"));
   /* Compare approximation to exact in L_2 */
-  ierr = DMComputeL2Diff(dm, 0.0, exactFuncs, exactCtxs, u, error);CHKERRQ(ierr);
-  ierr = DMComputeL2GradientDiff(dm, 0.0, exactFuncDers, exactCtxs, u, n, errorDer);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(dm, &u);CHKERRQ(ierr);
+  PetscCall(DMComputeL2Diff(dm, 0.0, exactFuncs, exactCtxs, u, error));
+  PetscCall(DMComputeL2GradientDiff(dm, 0.0, exactFuncDers, exactCtxs, u, n, errorDer));
+  PetscCall(DMRestoreGlobalVector(dm, &u));
   PetscFunctionReturn(0);
 }
 
@@ -438,7 +432,6 @@ static PetscErrorCode CheckFunctions(DM dm, PetscInt order, AppCtx *user)
   void            *exactCtxs[3];
   MPI_Comm         comm;
   PetscReal        error, errorDer, tol = PETSC_SMALL;
-  PetscErrorCode   ierr;
 
   PetscFunctionBeginUser;
   exactCtxs[0]       = user;
@@ -447,14 +440,14 @@ static PetscErrorCode CheckFunctions(DM dm, PetscInt order, AppCtx *user)
   user->constants[0] = 1.0;
   user->constants[1] = 2.0;
   user->constants[2] = 3.0;
-  ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
-  ierr = SetupFunctions(dm, PETSC_TRUE, order, 0, exactFuncs, exactFuncDers, user);CHKERRQ(ierr);
-  ierr = ComputeError(dm, exactFuncs, exactFuncDers, exactCtxs, &error, &errorDer, user);CHKERRQ(ierr);
+  PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
+  PetscCall(SetupFunctions(dm, PETSC_TRUE, order, 0, exactFuncs, exactFuncDers, user));
+  PetscCall(ComputeError(dm, exactFuncs, exactFuncDers, exactCtxs, &error, &errorDer, user));
   /* Report result */
-  if (error > tol)    {ierr = PetscPrintf(comm, "Function tests FAIL for order %D at tolerance %g error %g\n", order, (double)tol,(double) error);CHKERRQ(ierr);}
-  else                {ierr = PetscPrintf(comm, "Function tests pass for order %D at tolerance %g\n", order, (double)tol);CHKERRQ(ierr);}
-  if (errorDer > tol) {ierr = PetscPrintf(comm, "Function tests FAIL for order %D derivatives at tolerance %g error %g\n", order, (double)tol, (double)errorDer);CHKERRQ(ierr);}
-  else                {ierr = PetscPrintf(comm, "Function tests pass for order %D derivatives at tolerance %g\n", order, (double)tol);CHKERRQ(ierr);}
+  if (error > tol)    PetscCall(PetscPrintf(comm, "Function tests FAIL for order %" PetscInt_FMT " at tolerance %g error %g\n", order, (double)tol,(double) error));
+  else                PetscCall(PetscPrintf(comm, "Function tests pass for order %" PetscInt_FMT " at tolerance %g\n", order, (double)tol));
+  if (errorDer > tol) PetscCall(PetscPrintf(comm, "Function tests FAIL for order %" PetscInt_FMT " derivatives at tolerance %g error %g\n", order, (double)tol, (double)errorDer));
+  else                PetscCall(PetscPrintf(comm, "Function tests pass for order %" PetscInt_FMT " derivatives at tolerance %g\n", order, (double)tol));
   PetscFunctionReturn(0);
 }
 
@@ -467,7 +460,6 @@ static PetscErrorCode CheckTransferError(DM fdm, PetscBool usePoly, PetscInt ord
   void            *exactCtxs[3];
   MPI_Comm         comm;
   PetscReal        error, errorDer, tol = PETSC_SMALL;
-  PetscErrorCode   ierr;
 
   PetscFunctionBeginUser;
   exactCtxs[0]       = user;
@@ -476,15 +468,15 @@ static PetscErrorCode CheckTransferError(DM fdm, PetscBool usePoly, PetscInt ord
   user->constants[0] = 1.0;
   user->constants[1] = 2.0;
   user->constants[2] = 3.0;
-  ierr = PetscObjectGetComm((PetscObject) fdm, &comm);CHKERRQ(ierr);
-  ierr = SetupFunctions(fdm, usePoly, order, dir, exactFuncs, exactFuncDers, user);CHKERRQ(ierr);
-  ierr = DMComputeL2Diff(fdm, 0.0, exactFuncs, exactCtxs, fu, &error);CHKERRQ(ierr);
-  ierr = DMComputeL2GradientDiff(fdm, 0.0, exactFuncDers, exactCtxs, fu, n, &errorDer);CHKERRQ(ierr);
+  PetscCall(PetscObjectGetComm((PetscObject) fdm, &comm));
+  PetscCall(SetupFunctions(fdm, usePoly, order, dir, exactFuncs, exactFuncDers, user));
+  PetscCall(DMComputeL2Diff(fdm, 0.0, exactFuncs, exactCtxs, fu, &error));
+  PetscCall(DMComputeL2GradientDiff(fdm, 0.0, exactFuncDers, exactCtxs, fu, n, &errorDer));
   /* Report result */
-  if (error > tol)    {ierr = PetscPrintf(comm, "%s tests FAIL for order %D at tolerance %g error %g\n", testname, order, (double)tol, (double)error);CHKERRQ(ierr);}
-  else                {ierr = PetscPrintf(comm, "%s tests pass for order %D at tolerance %g\n", testname, order, (double)tol);CHKERRQ(ierr);}
-  if (errorDer > tol) {ierr = PetscPrintf(comm, "%s tests FAIL for order %D derivatives at tolerance %g error %g\n", testname, order, (double)tol, (double)errorDer);CHKERRQ(ierr);}
-  else                {ierr = PetscPrintf(comm, "%s tests pass for order %D derivatives at tolerance %g\n", testname, order, (double)tol);CHKERRQ(ierr);}
+  if (error > tol)    PetscCall(PetscPrintf(comm, "%s tests FAIL for order %" PetscInt_FMT " at tolerance %g error %g\n", testname, order, (double)tol, (double)error));
+  else                PetscCall(PetscPrintf(comm, "%s tests pass for order %" PetscInt_FMT " at tolerance %g\n", testname, order, (double)tol));
+  if (errorDer > tol) PetscCall(PetscPrintf(comm, "%s tests FAIL for order %" PetscInt_FMT " derivatives at tolerance %g error %g\n", testname, order, (double)tol, (double)errorDer));
+  else                PetscCall(PetscPrintf(comm, "%s tests pass for order %" PetscInt_FMT " derivatives at tolerance %g\n", testname, order, (double)tol));
   PetscFunctionReturn(0);
 }
 
@@ -499,15 +491,14 @@ static PetscErrorCode CheckTransfer(DM dm, InterpType inType, PetscInt order, Ap
   MPI_Comm        comm;
   const char     *testname = "Unknown";
   char            checkname[PETSC_MAX_PATH_LEN];
-  PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
   exactCtxs[0] = exactCtxs[1] = exactCtxs[2] = user;
-  ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
-  ierr = DMRefine(dm, comm, &rdm);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(rdm, NULL, "-ref_dm_view");CHKERRQ(ierr);
-  ierr = DMSetCoarseDM(rdm, dm);CHKERRQ(ierr);
-  ierr = DMCopyDisc(dm, rdm);CHKERRQ(ierr);
+  PetscCall(PetscObjectGetComm((PetscObject)dm,&comm));
+  PetscCall(DMRefine(dm, comm, &rdm));
+  PetscCall(DMViewFromOptions(rdm, NULL, "-ref_dm_view"));
+  PetscCall(DMSetCoarseDM(rdm, dm));
+  PetscCall(DMCopyDisc(dm, rdm));
   switch (inType) {
   case INTERPOLATION:
     testname = "Interpolation";
@@ -525,84 +516,93 @@ static PetscErrorCode CheckTransfer(DM dm, InterpType inType, PetscInt order, Ap
     fdm = dm;
     break;
   }
-  ierr = DMGetGlobalVector(idm, &iu);CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(fdm, &fu);CHKERRQ(ierr);
-  ierr = DMSetApplicationContext(dm, user);CHKERRQ(ierr);
-  ierr = DMSetApplicationContext(rdm, user);CHKERRQ(ierr);
+  PetscCall(DMGetGlobalVector(idm, &iu));
+  PetscCall(DMGetGlobalVector(fdm, &fu));
+  PetscCall(DMSetApplicationContext(dm, user));
+  PetscCall(DMSetApplicationContext(rdm, user));
   /* Project function into initial FE function space */
-  ierr = SetupFunctions(dm, PETSC_TRUE, order, 0, exactFuncs, exactFuncDers, user);CHKERRQ(ierr);
-  ierr = DMProjectFunction(idm, 0.0, exactFuncs, exactCtxs, INSERT_ALL_VALUES, iu);CHKERRQ(ierr);
+  PetscCall(SetupFunctions(dm, PETSC_TRUE, order, 0, exactFuncs, exactFuncDers, user));
+  PetscCall(DMProjectFunction(idm, 0.0, exactFuncs, exactCtxs, INSERT_ALL_VALUES, iu));
   /* Interpolate function into final FE function space */
   switch (inType) {
   case INTERPOLATION:
-    ierr = DMCreateInterpolation(dm, rdm, &Interp, &scaling);CHKERRQ(ierr);
-    ierr = MatInterpolate(Interp, iu, fu);CHKERRQ(ierr);
+    PetscCall(DMCreateInterpolation(dm, rdm, &Interp, &scaling));
+    PetscCall(MatInterpolate(Interp, iu, fu));
     break;
   case RESTRICTION:
-    ierr = DMCreateInterpolation(dm, rdm, &Interp, &scaling);CHKERRQ(ierr);
-    ierr = MatRestrict(Interp, iu, fu);CHKERRQ(ierr);
-    ierr = VecPointwiseMult(fu, scaling, fu);CHKERRQ(ierr);
+    PetscCall(DMCreateInterpolation(dm, rdm, &Interp, &scaling));
+    PetscCall(MatRestrict(Interp, iu, fu));
+    PetscCall(VecPointwiseMult(fu, scaling, fu));
     break;
   case INJECTION:
-    ierr = DMCreateInjection(dm, rdm, &Interp);CHKERRQ(ierr);
-    ierr = MatRestrict(Interp, iu, fu);CHKERRQ(ierr);
+    PetscCall(DMCreateInjection(dm, rdm, &Interp));
+    PetscCall(MatRestrict(Interp, iu, fu));
     break;
   }
-  ierr = CheckTransferError(fdm, PETSC_TRUE, order, 0, testname, fu, user);CHKERRQ(ierr);
+  PetscCall(CheckTransferError(fdm, PETSC_TRUE, order, 0, testname, fu, user));
   if (user->K && (inType == INTERPOLATION)) {
     KSP      smoother;
-    Mat      A;
-    Vec     *iV, *fV;
-    PetscInt k, dim, d;
+    Mat      A, iVM, fVM;
+    Vec      iV, fV;
+    PetscInt k, dim, d, im, fm;
 
-    ierr = PetscPrintf(comm, " Adapting interpolator using %s\n", user->usePoly ? "polynomials" : "harmonics");CHKERRQ(ierr);
-    ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-    ierr = PetscMalloc2(user->K*dim, &iV, user->K*dim, &fV);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(comm, " Adapting interpolator using %s\n", user->usePoly ? "polynomials" : "harmonics"));
+    PetscCall(DMGetDimension(dm, &dim));
     /* Project coarse modes into initial and final FE function space */
+    PetscCall(DMGetGlobalVector(idm, &iV));
+    PetscCall(DMGetGlobalVector(fdm, &fV));
+    PetscCall(VecGetLocalSize(iV,&im));
+    PetscCall(VecGetLocalSize(fV,&fm));
+    PetscCall(MatCreateDense(PetscObjectComm((PetscObject)dm),im,PETSC_DECIDE,PETSC_DECIDE,user->K*dim,NULL,&iVM));
+    PetscCall(MatCreateDense(PetscObjectComm((PetscObject)dm),fm,PETSC_DECIDE,PETSC_DECIDE,user->K*dim,NULL,&fVM));
+    PetscCall(DMRestoreGlobalVector(idm, &iV));
+    PetscCall(DMRestoreGlobalVector(fdm, &fV));
     for (k = 0; k < user->K; ++k) {
       for (d = 0; d < dim; ++d) {
-        ierr = DMGetGlobalVector(idm, &iV[k*dim+d]);CHKERRQ(ierr);
-        ierr = DMGetGlobalVector(fdm, &fV[k*dim+d]);CHKERRQ(ierr);
-        ierr = SetupFunctions(idm, user->usePoly, user->usePoly ? k : k+1, d, exactFuncs, exactFuncDers, user);CHKERRQ(ierr);
-        ierr = DMProjectFunction(idm, 0.0, exactFuncs, exactCtxs, INSERT_ALL_VALUES, iV[k*dim+d]);CHKERRQ(ierr);
-        ierr = DMProjectFunction(fdm, 0.0, exactFuncs, exactCtxs, INSERT_ALL_VALUES, fV[k*dim+d]);CHKERRQ(ierr);
+        PetscCall(MatDenseGetColumnVecWrite(iVM,k*dim+d,&iV));
+        PetscCall(MatDenseGetColumnVecWrite(fVM,k*dim+d,&fV));
+        PetscCall(SetupFunctions(idm, user->usePoly, user->usePoly ? k : k+1, d, exactFuncs, exactFuncDers, user));
+        PetscCall(DMProjectFunction(idm, 0.0, exactFuncs, exactCtxs, INSERT_ALL_VALUES, iV));
+        PetscCall(DMProjectFunction(fdm, 0.0, exactFuncs, exactCtxs, INSERT_ALL_VALUES, fV));
+        PetscCall(MatDenseRestoreColumnVecWrite(iVM,k*dim+d,&iV));
+        PetscCall(MatDenseRestoreColumnVecWrite(fVM,k*dim+d,&fV));
       }
     }
+
     /* Adapt interpolator */
-    ierr = DMCreateMatrix(rdm, &A);CHKERRQ(ierr);
-    ierr = MatShift(A, 1.0);CHKERRQ(ierr);
-    ierr = KSPCreate(comm, &smoother);CHKERRQ(ierr);
-    ierr = KSPSetFromOptions(smoother);CHKERRQ(ierr);
-    ierr = KSPSetOperators(smoother, A, A);CHKERRQ(ierr);
-    ierr = DMAdaptInterpolator(dm, rdm, Interp, smoother, user->K*dim, fV, iV, &InterpAdapt, user);CHKERRQ(ierr);
+    PetscCall(DMCreateMatrix(rdm, &A));
+    PetscCall(MatShift(A, 1.0));
+    PetscCall(KSPCreate(comm, &smoother));
+    PetscCall(KSPSetFromOptions(smoother));
+    PetscCall(KSPSetOperators(smoother, A, A));
+    PetscCall(DMAdaptInterpolator(dm, rdm, Interp, smoother, fVM, iVM, &InterpAdapt, user));
     /* Interpolate function into final FE function space */
-    ierr = PetscSNPrintf(checkname, PETSC_MAX_PATH_LEN, "  %s poly", testname);CHKERRQ(ierr);
-    ierr = MatInterpolate(InterpAdapt, iu, fu);CHKERRQ(ierr);
-    ierr = CheckTransferError(fdm, PETSC_TRUE, order, 0, checkname, fu, user);CHKERRQ(ierr);
+    PetscCall(PetscSNPrintf(checkname, PETSC_MAX_PATH_LEN, "  %s poly", testname));
+    PetscCall(MatInterpolate(InterpAdapt, iu, fu));
+    PetscCall(CheckTransferError(fdm, PETSC_TRUE, order, 0, checkname, fu, user));
     for (k = 0; k < user->K; ++k) {
       for (d = 0; d < dim; ++d) {
-        ierr = PetscSNPrintf(checkname, PETSC_MAX_PATH_LEN, "  %s trig (%D, %D)", testname, k, d);CHKERRQ(ierr);
-        ierr = MatInterpolate(InterpAdapt, iV[k*dim+d], fV[k*dim+d]);CHKERRQ(ierr);
-        ierr = CheckTransferError(fdm, PETSC_FALSE, k+1, d, checkname, fV[k*dim+d], user);CHKERRQ(ierr);
+        PetscCall(PetscSNPrintf(checkname, PETSC_MAX_PATH_LEN, "  %s trig (%" PetscInt_FMT ", %" PetscInt_FMT ")", testname, k, d));
+        PetscCall(MatDenseGetColumnVecRead(iVM,k*dim+d,&iV));
+        PetscCall(MatDenseGetColumnVecWrite(fVM,k*dim+d,&fV));
+        PetscCall(MatInterpolate(InterpAdapt, iV, fV));
+        PetscCall(CheckTransferError(fdm, PETSC_FALSE, k+1, d, checkname, fV, user));
+        PetscCall(MatDenseRestoreColumnVecRead(iVM,k*dim+d,&iV));
+        PetscCall(MatDenseRestoreColumnVecWrite(fVM,k*dim+d,&fV));
       }
     }
     /* Cleanup */
-    ierr = KSPDestroy(&smoother);CHKERRQ(ierr);
-    ierr = MatDestroy(&A);CHKERRQ(ierr);
-    for (k = 0; k < user->K; ++k) {
-      for (d = 0; d < dim; ++d) {
-        ierr = DMRestoreGlobalVector(idm, &iV[k*dim+d]);CHKERRQ(ierr);
-        ierr = DMRestoreGlobalVector(fdm, &fV[k*dim+d]);CHKERRQ(ierr);
-      }
-    }
-    ierr = PetscFree2(iV, fV);CHKERRQ(ierr);
-    ierr = MatDestroy(&InterpAdapt);CHKERRQ(ierr);
+    PetscCall(KSPDestroy(&smoother));
+    PetscCall(MatDestroy(&A));
+    PetscCall(MatDestroy(&InterpAdapt));
+    PetscCall(MatDestroy(&iVM));
+    PetscCall(MatDestroy(&fVM));
   }
-  ierr = DMRestoreGlobalVector(idm, &iu);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(fdm, &fu);CHKERRQ(ierr);
-  ierr = MatDestroy(&Interp);CHKERRQ(ierr);
-  ierr = VecDestroy(&scaling);CHKERRQ(ierr);
-  ierr = DMDestroy(&rdm);CHKERRQ(ierr);
+  PetscCall(DMRestoreGlobalVector(idm, &iu));
+  PetscCall(DMRestoreGlobalVector(fdm, &fu));
+  PetscCall(MatDestroy(&Interp));
+  PetscCall(VecDestroy(&scaling));
+  PetscCall(DMDestroy(&rdm));
   PetscFunctionReturn(0);
 }
 
@@ -613,25 +613,24 @@ int main(int argc, char **argv)
   AppCtx         user;
   PetscInt       dim;
   PetscBool      simplex;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
-  ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
-  ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
+  PetscCall(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
 
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMPlexIsSimplex(dm, &simplex);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(PETSC_COMM_WORLD, dim, user.Nc < 0 ? dim : user.Nc, simplex, NULL, user.qorder, &fe);CHKERRQ(ierr);
-  ierr = DMSetField(dm, 0, NULL, (PetscObject) fe);CHKERRQ(ierr);
-  ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
-  ierr = DMCreateDS(dm);CHKERRQ(ierr);
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMPlexIsSimplex(dm, &simplex));
+  PetscCall(PetscFECreateDefault(PETSC_COMM_WORLD, dim, user.Nc < 0 ? dim : user.Nc, simplex, NULL, user.qorder, &fe));
+  PetscCall(DMSetField(dm, 0, NULL, (PetscObject) fe));
+  PetscCall(PetscFEDestroy(&fe));
+  PetscCall(DMCreateDS(dm));
 
-  ierr = CheckFunctions(dm, user.porder, &user);CHKERRQ(ierr);
-  ierr = CheckTransfer(dm, INTERPOLATION, user.porder, &user);CHKERRQ(ierr);
-  ierr = CheckTransfer(dm, INJECTION,  user.porder, &user);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(CheckFunctions(dm, user.porder, &user));
+  PetscCall(CheckTransfer(dm, INTERPOLATION, user.porder, &user));
+  PetscCall(CheckTransfer(dm, INJECTION,  user.porder, &user));
+  PetscCall(DMDestroy(&dm));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST
@@ -679,20 +678,19 @@ int main(int argc, char **argv)
   # 2D/3D Q_1 on a tensor cell
   test:
     suffix: q1
-    requires: mpi_type_get_envelope
     args: -dm_plex_dim {{2 3}separate output} -dm_plex_box_faces 2,2,2 -dm_plex_simplex 0 -petscspace_degree 1 -qorder 1 -porder {{1 2}separate output}
 
   # 2D/3D Q_2 on a tensor cell
   test:
     suffix: q2
-    requires: mpi_type_get_envelope !single
+    requires: !single
     args: -dm_plex_dim {{2 3}separate output} -dm_plex_box_faces 2,2,2 -dm_plex_simplex 0 -petscspace_degree 2 -qorder 2 -porder {{1 2 3}separate output}
 
   # 2D/3D Q_3 on a tensor cell
   test:
     TODO: gll Lagrange nodes break this
     suffix: q3
-    requires: mpi_type_get_envelope !single
+    requires: !single
     args: -dm_plex_dim {{2 3}separate output} -dm_plex_box_faces 2,2,2 -dm_plex_simplex 0 -petscspace_degree 3 -qorder 3 -porder {{1 2 3 4}separate output}
 
   # 2D/3D P_1disc on a triangle/quadrilateral

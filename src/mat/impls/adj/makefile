@@ -1,5 +1,4 @@
 -include ../../../../petscdir.mk
-ALL: lib
 
 DIRS     = mpi
 LOCDIR   = src/mat/impls/adj/

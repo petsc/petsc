@@ -6,46 +6,44 @@ PetscErrorCode Assemble(MPI_Comm comm,PetscInt n,MatType mtype)
 {
   Mat            A;
   PetscInt       first,last,i;
-  PetscErrorCode ierr;
   PetscMPIInt    rank,size;
 
   PetscFunctionBegin;
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A, PETSC_DECIDE,PETSC_DECIDE,n,n);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATMPISBAIJ);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetSizes(A, PETSC_DECIDE,PETSC_DECIDE,n,n));
+  PetscCall(MatSetType(A,MATMPISBAIJ));
+  PetscCall(MatSetFromOptions(A));
+  PetscCallMPI(MPI_Comm_size(comm,&size));
+  PetscCallMPI(MPI_Comm_rank(comm,&rank));
   if (rank < size-1) {
-    ierr = MatMPISBAIJSetPreallocation(A,1,1,NULL,1,NULL);CHKERRQ(ierr);
+    PetscCall(MatMPISBAIJSetPreallocation(A,1,1,NULL,1,NULL));
   } else {
-    ierr = MatMPISBAIJSetPreallocation(A,1,2,NULL,0,NULL);CHKERRQ(ierr);
+    PetscCall(MatMPISBAIJSetPreallocation(A,1,2,NULL,0,NULL));
   }
-  ierr = MatGetOwnershipRange(A,&first,&last);CHKERRQ(ierr);
-  ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+  PetscCall(MatGetOwnershipRange(A,&first,&last));
+  PetscCall(MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE));
   last--;
   for (i=first; i<=last; i++) {
-    ierr = MatSetValue(A,i,i,2.,INSERT_VALUES);CHKERRQ(ierr);
-    if (i != n-1) {ierr = MatSetValue(A,i,n-1,-1.,INSERT_VALUES);CHKERRQ(ierr);}
+    PetscCall(MatSetValue(A,i,i,2.,INSERT_VALUES));
+    if (i != n-1) PetscCall(MatSetValue(A,i,n-1,-1.,INSERT_VALUES));
   }
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatDestroy(&A));
   PetscFunctionReturn(0);
 }
 
 int main(int argc,char *argv[])
 {
-  PetscErrorCode ierr;
   MPI_Comm       comm;
   PetscInt       n = 6;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   comm = PETSC_COMM_WORLD;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
-  ierr = Assemble(comm,n,MATMPISBAIJ);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCall(Assemble(comm,n,MATMPISBAIJ));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

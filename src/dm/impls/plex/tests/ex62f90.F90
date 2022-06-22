@@ -77,60 +77,56 @@ program ex62f90
     PetscReal                           :: norm
     PetscReal                           :: time = 1.234_kPR
 
-    call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-    if (ierr /= 0) then
-      print*,'Unable to initialize PETSc'
-      stop
-    endif
+    PetscCallA(PetscInitialize(ierr))
 
-    call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
-    call MPI_Comm_size(PETSC_COMM_WORLD,numProc,ierr)
-    call PetscOptionsGetString(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-i",ifilename,flg,ierr);CHKERRA(ierr)
+    PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr))
+    PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD,numProc,ierr))
+    PetscCallA(PetscOptionsGetString(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-i",ifilename,flg,ierr))
     if (.not. flg) then
         SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"missing input file name -i <input file name>")
     end if
-    call PetscOptionsGetString(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-o",ofilename,flg,ierr);CHKERRA(ierr)
+    PetscCallA(PetscOptionsGetString(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-o",ofilename,flg,ierr))
     if (.not. flg) then
         SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"missing output file name -o <output file name>")
     end if
-    call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-order",order,flg,ierr);CHKERRA(ierr)
+    PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-order",order,flg,ierr))
     if ((order > 2) .or. (order < 1)) then
         write(IOBuffer,'("Unsupported polynomial order ", I2, " not in [1,2]")') order
         SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,IOBuffer)
     end if
 
     ! Read the mesh in any supported format
-    call DMPlexCreateFromFile(PETSC_COMM_WORLD, ifilename,PETSC_NULL_CHARACTER,PETSC_TRUE,dm,ierr);CHKERRA(ierr)
-    call DMPlexDistributeSetDefault(dm,PETSC_FALSE,ierr);CHKERRA(ierr);
-    call DMSetFromOptions(dm,ierr);CHKERRA(ierr);
-    call DMGetDimension(dm, sdim,ierr);CHKERRA(ierr)
-    call DMViewFromOptions(dm, PETSC_NULL_OPTIONS,"-dm_view",ierr);CHKERRA(ierr);
+    PetscCallA(DMPlexCreateFromFile(PETSC_COMM_WORLD, ifilename,PETSC_NULL_CHARACTER,PETSC_TRUE,dm,ierr))
+    PetscCallA(DMPlexDistributeSetDefault(dm,PETSC_FALSE,ierr))
+    PetscCallA(DMSetFromOptions(dm,ierr))
+    PetscCallA(DMGetDimension(dm, sdim,ierr))
+    PetscCallA(DMViewFromOptions(dm, PETSC_NULL_OPTIONS,"-dm_view",ierr))
 
     ! Create the exodus result file
 
     ! enable exodus debugging information
-    call exopts(EXVRBS+EXDEBG,ierr)
+    PetscCallA(exopts(EXVRBS+EXDEBG,ierr))
     ! Create the exodus file
-    call PetscViewerExodusIIOpen(PETSC_COMM_WORLD,ofilename,FILE_MODE_WRITE,viewer,ierr);CHKERRA(ierr)
+    PetscCallA(PetscViewerExodusIIOpen(PETSC_COMM_WORLD,ofilename,FILE_MODE_WRITE,viewer,ierr))
     ! The long way would be
     !
-    ! call PetscViewerCreate(PETSC_COMM_WORLD,viewer,ierr);CHKERRA(ierr)
-    ! call PetscViewerSetType(viewer,PETSCVIEWEREXODUSII,ierr);CHKERRA(ierr)
-    ! call PetscViewerFileSetMode(viewer,FILE_MODE_WRITE,ierr);CHKERRA(ierr)
-    ! call PetscViewerFileSetName(viewer,ofilename,ierr);CHKERRA(ierr)
+    ! PetscCallA(PetscViewerCreate(PETSC_COMM_WORLD,viewer,ierr))
+    ! PetscCallA(PetscViewerSetType(viewer,PETSCVIEWEREXODUSII,ierr))
+    ! PetscCallA(PetscViewerFileSetMode(viewer,FILE_MODE_WRITE,ierr))
+    ! PetscCallA(PetscViewerFileSetName(viewer,ofilename,ierr))
 
     ! set the mesh order
-    call PetscViewerExodusIISetOrder(viewer,order,ierr);CHKERRA(ierr)
-    call PetscViewerView(viewer,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)
+    PetscCallA(PetscViewerExodusIISetOrder(viewer,order,ierr))
+    PetscCallA(PetscViewerView(viewer,PETSC_VIEWER_STDOUT_WORLD,ierr))
     !
     !    Notice how the exodus file is actually NOT open at this point (exoid is -1)
-    !    Since we are overwritting the file (mode is FILE_MODE_WRITE), we are going to have to
+    !    Since we are overwriting the file (mode is FILE_MODE_WRITE), we are going to have to
     !    write the geometry (the DM), which can only be done on a brand new file.
     !
 
     ! Save the geometry to the file, erasing all previous content
-    call DMView(dm,viewer,ierr);CHKERRA(ierr)
-    call PetscViewerView(viewer,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)
+    PetscCallA(DMView(dm,viewer,ierr))
+    PetscCallA(PetscViewerView(viewer,PETSC_VIEWER_STDOUT_WORLD,ierr))
     !
     !    Note how the exodus file is now open
     !
@@ -149,65 +145,65 @@ program ex62f90
     case default
         write(IOBuffer,'("No layout for dimension ",I2)') sdim
     end select
-    call PetscViewerExodusIIGetId(viewer,exoid,ierr);CHKERRA(ierr)
-    call expvp(exoid, "E", numZonalVar,ierr)
-    call expvan(exoid, "E", numZonalVar, zonalVarName,ierr)
-    call expvp(exoid, "N", numNodalVar,ierr)
-    call expvan(exoid, "N", numNodalVar, nodalVarName,ierr)
-    call exinq(exoid, EX_INQ_ELEM_BLK,numCS,PETSC_NULL_REAL,sjunk,ierr)
+    PetscCallA(PetscViewerExodusIIGetId(viewer,exoid,ierr))
+    PetscCallA(expvp(exoid, "E", numZonalVar,ierr))
+    PetscCallA(expvan(exoid, "E", numZonalVar, zonalVarName,ierr))
+    PetscCallA(expvp(exoid, "N", numNodalVar,ierr))
+    PetscCallA(expvan(exoid, "N", numNodalVar, nodalVarName,ierr))
+    PetscCallA(exinq(exoid, EX_INQ_ELEM_BLK,numCS,PETSC_NULL_REAL,sjunk,ierr))
 
     !    An exodusII truth table specifies which fields are saved at which time step
     !    It speeds up I/O but reserving space for fields in the file ahead of time.
     allocate(truthtable(numCS,numZonalVar))
     truthtable = .true.
-    call expvtt(exoid, numCS, numZonalVar, truthtable, ierr)
+    PetscCallA(expvtt(exoid, numCS, numZonalVar, truthtable, ierr))
     deallocate(truthtable)
 
     !   Writing time step information in the file. Note that this is currently broken in the exodus library for netcdf4 (HDF5-based) files */
     do step = 1,numstep
-        call exptim(exoid,step,Real(step,kind=kPR),ierr)
+        PetscCallA(exptim(exoid,step,Real(step,kind=kPR),ierr))
     end do
 
-    call DMSetUseNatural(dm,PETSC_TRUE,ierr);CHKERRA(ierr)
-    call DMPlexGetPartitioner(dm,part,ierr);CHKERRA(ierr)
-    call PetscPartitionerSetFromOptions(part,ierr);CHKERRA(ierr)
-    call DMPlexDistribute(dm,0_kPI,migrationSF,pdm,ierr);CHKERRA(ierr)
+    PetscCallA(DMSetUseNatural(dm,PETSC_TRUE,ierr))
+    PetscCallA(DMPlexGetPartitioner(dm,part,ierr))
+    PetscCallA(PetscPartitionerSetFromOptions(part,ierr))
+    PetscCallA(DMPlexDistribute(dm,0_kPI,migrationSF,pdm,ierr))
 
     if (numProc > 1) then
-        call DMPlexSetMigrationSF(pdm,migrationSF,ierr);CHKERRA(ierr)
-        call PetscSFDestroy(migrationSF,ierr);CHKERRA(ierr)
-        call DMDestroy(dm,ierr);CHKERRA(ierr)
+        PetscCallA(DMPlexSetMigrationSF(pdm,migrationSF,ierr))
+        PetscCallA(PetscSFDestroy(migrationSF,ierr))
+        PetscCallA(DMDestroy(dm,ierr))
         dm = pdm
     end if
-    call DMViewFromOptions(dm,PETSC_NULL_OPTIONS,"-dm_view",ierr);CHKERRA(ierr)
+    PetscCallA(DMViewFromOptions(dm,PETSC_NULL_OPTIONS,"-dm_view",ierr))
 
-    call PetscObjectGetComm(dm,comm,ierr);CHKERRA(ierr)
-    call PetscSectionCreate(comm, section,ierr);CHKERRA(ierr)
-    call PetscSectionSetNumFields(section, 3_kPI,ierr);CHKERRA(ierr)
-    call PetscSectionSetFieldName(section, fieldU, "U",ierr);CHKERRA(ierr)
-    call PetscSectionSetFieldName(section, fieldA, "Alpha",ierr);CHKERRA(ierr)
-    call PetscSectionSetFieldName(section, fieldS, "Sigma",ierr);CHKERRA(ierr)
-    call DMPlexGetChart(dm, pStart, pEnd,ierr);CHKERRA(ierr)
-    call PetscSectionSetChart(section, pStart, pEnd,ierr);CHKERRA(ierr)
+    PetscCallA(PetscObjectGetComm(dm,comm,ierr))
+    PetscCallA(PetscSectionCreate(comm, section,ierr))
+    PetscCallA(PetscSectionSetNumFields(section, 3_kPI,ierr))
+    PetscCallA(PetscSectionSetFieldName(section, fieldU, "U",ierr))
+    PetscCallA(PetscSectionSetFieldName(section, fieldA, "Alpha",ierr))
+    PetscCallA(PetscSectionSetFieldName(section, fieldS, "Sigma",ierr))
+    PetscCallA(DMPlexGetChart(dm, pStart, pEnd,ierr))
+    PetscCallA(PetscSectionSetChart(section, pStart, pEnd,ierr))
 
     allocate(pStartDepth(sdim+1))
     allocate(pEndDepth(sdim+1))
     do d = 1, sdim+1
-        call DMPlexGetDepthStratum(dm, d-1, pStartDepth(d), pEndDepth(d),ierr);CHKERRA(ierr)
+        PetscCallA(DMPlexGetDepthStratum(dm, d-1, pStartDepth(d), pEndDepth(d),ierr))
     end do
 
     ! Vector field U, Scalar field Alpha, Tensor field Sigma
-    call PetscSectionSetFieldComponents(section, fieldU, sdim,ierr);CHKERRA(ierr);
-    call PetscSectionSetFieldComponents(section, fieldA, 1_kPI,ierr);CHKERRA(ierr);
-    call PetscSectionSetFieldComponents(section, fieldS, sdim*(sdim+1)/2,ierr);CHKERRA(ierr);
+    PetscCallA(PetscSectionSetFieldComponents(section, fieldU, sdim,ierr))
+    PetscCallA(PetscSectionSetFieldComponents(section, fieldA, 1_kPI,ierr))
+    PetscCallA(PetscSectionSetFieldComponents(section, fieldS, sdim*(sdim+1)/2,ierr))
 
     ! Going through cell sets then cells, and setting up storage for the sections
-    call DMGetLabelSize(dm, "Cell Sets", numCS, ierr);CHKERRA(ierr)
-    call DMGetLabelIdIS(dm, "Cell Sets", csIS, ierr);CHKERRA(ierr)
-    call ISGetIndicesF90(csIS, csID, ierr);CHKERRA(ierr)
+    PetscCallA(DMGetLabelSize(dm, "Cell Sets", numCS, ierr))
+    PetscCallA(DMGetLabelIdIS(dm, "Cell Sets", csIS, ierr))
+    PetscCallA(ISGetIndicesF90(csIS, csID, ierr))
     do set = 1,numCS
-        call DMGetStratumSize(dm, "Cell Sets", csID(set), numCells,ierr);CHKERRA(ierr)
-        call DMGetStratumIS(dm, "Cell Sets", csID(set), cellIS,ierr);CHKERRA(ierr)
+        PetscCallA(DMGetStratumSize(dm, "Cell Sets", csID(set), numCells,ierr))
+        PetscCallA(DMGetStratumIS(dm, "Cell Sets", csID(set), cellIS,ierr))
         if (numCells > 0) then
             select case(sdim)
             case(2)
@@ -221,9 +217,9 @@ program ex62f90
 
             ! Identify cell type based on closure size only. This works for Tri/Tet/Quad/Hex meshes
             ! It will not be enough to identify more exotic elements like pyramid or prisms...  */
-            call ISGetIndicesF90(cellIS, cellID,ierr);CHKERRA(ierr)
+            PetscCallA(ISGetIndicesF90(cellIS, cellID,ierr))
             nullify(closureA)
-            call DMPlexGetTransitiveClosure(dm,cellID(1), PETSC_TRUE, closureA,ierr);CHKERRA(ierr)
+            PetscCallA(DMPlexGetTransitiveClosure(dm,cellID(1), PETSC_TRUE, closureA,ierr))
             select case(size(closureA)/2)
             case(7) ! Tri
                 if (order == 1) then
@@ -261,74 +257,74 @@ program ex62f90
                 write(IOBuffer,'("Unknown element with closure size ",I2)') size(closureA)/2
                 SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP,IOBuffer)
             end select
-            call DMPlexRestoreTransitiveClosure(dm, cellID(1), PETSC_TRUE,closureA,ierr);CHKERRA(ierr)
+            PetscCallA(DMPlexRestoreTransitiveClosure(dm, cellID(1), PETSC_TRUE,closureA,ierr))
             do cell = 1,numCells!
                 nullify(closure)
-                call DMPlexGetTransitiveClosure(dm, cellID(cell), PETSC_TRUE, closure,ierr);CHKERRA(ierr)
+                PetscCallA(DMPlexGetTransitiveClosure(dm, cellID(cell), PETSC_TRUE, closure,ierr))
                 do p = 1,size(closure),2
                     ! find the depth of p
                     do d = 1,sdim+1
                         if ((closure(p) >= pStartDepth(d)) .and. (closure(p) < pEndDepth(d))) then
-                            call PetscSectionSetDof(section, closure(p), dofU(d)+dofA(d)+dofS(d),ierr);CHKERRA(ierr)
-                            call PetscSectionSetFieldDof(section, closure(p), fieldU, dofU(d),ierr);CHKERRA(ierr)
-                            call PetscSectionSetFieldDof(section, closure(p), fieldA, dofA(d),ierr);CHKERRA(ierr)
-                            call PetscSectionSetFieldDof(section, closure(p), fieldS, dofS(d),ierr);CHKERRA(ierr)
+                            PetscCallA(PetscSectionSetDof(section, closure(p), dofU(d)+dofA(d)+dofS(d),ierr))
+                            PetscCallA(PetscSectionSetFieldDof(section, closure(p), fieldU, dofU(d),ierr))
+                            PetscCallA(PetscSectionSetFieldDof(section, closure(p), fieldA, dofA(d),ierr))
+                            PetscCallA(PetscSectionSetFieldDof(section, closure(p), fieldS, dofS(d),ierr))
                         end if ! closure(p)
                     end do ! d
                 end do ! p
-                call DMPlexRestoreTransitiveClosure(dm, cellID(cell), PETSC_TRUE, closure,ierr);CHKERRA(ierr)
+                PetscCallA(DMPlexRestoreTransitiveClosure(dm, cellID(cell), PETSC_TRUE, closure,ierr))
             end do ! cell
-            call ISRestoreIndicesF90(cellIS, cellID,ierr);CHKERRA(ierr)
-            call ISDestroy(cellIS,ierr);CHKERRA(ierr)
+            PetscCallA(ISRestoreIndicesF90(cellIS, cellID,ierr))
+            PetscCallA(ISDestroy(cellIS,ierr))
         end if ! numCells
     end do ! set
-    call ISRestoreIndicesF90(csIS, csID,ierr);CHKERRA(ierr)
-    call ISDestroy(csIS,ierr);CHKERRA(ierr)
-    call PetscSectionSetUp(section,ierr);CHKERRA(ierr)
-    call DMSetLocalSection(dm, section,ierr);CHKERRA(ierr)
-    call PetscObjectViewFromOptions(section, PETSC_NULL_SECTION, "-dm_section_view",ierr);CHKERRQ(ierr)
-    call PetscSectionDestroy(section,ierr);CHKERRA(ierr)
+    PetscCallA(ISRestoreIndicesF90(csIS, csID,ierr))
+    PetscCallA(ISDestroy(csIS,ierr))
+    PetscCallA(PetscSectionSetUp(section,ierr))
+    PetscCallA(DMSetLocalSection(dm, section,ierr))
+    PetscCallA(PetscObjectViewFromOptions(section, PETSC_NULL_SECTION, "-dm_section_view",ierr))
+    PetscCallA(PetscSectionDestroy(section,ierr))
 
     ! Get DM and IS for each field of dm
-    call DMCreateSubDM(dm, 1_kPI, fieldU,  isU,  dmU,ierr);CHKERRA(ierr)
-    call DMCreateSubDM(dm, 1_kPI, fieldA,  isA,  dmA,ierr);CHKERRA(ierr)
-    call DMCreateSubDM(dm, 1_kPI, fieldS,  isS,  dmS,ierr);CHKERRA(ierr)
-    call DMCreateSubDM(dm, 2_kPI, fieldUA, isUA, dmUA,ierr);CHKERRA(ierr)
+    PetscCallA(DMCreateSubDM(dm, 1_kPI, fieldU,  isU,  dmU,ierr))
+    PetscCallA(DMCreateSubDM(dm, 1_kPI, fieldA,  isA,  dmA,ierr))
+    PetscCallA(DMCreateSubDM(dm, 1_kPI, fieldS,  isS,  dmS,ierr))
+    PetscCallA(DMCreateSubDM(dm, 2_kPI, fieldUA, isUA, dmUA,ierr))
 
     !Create the exodus result file
     allocate(dmList(2))
     dmList(1) = dmU;
     dmList(2) = dmA;
-    call DMCreateSuperDM(dmList,2_kPI,PETSC_NULL_IS,dmUA2,ierr);CHKERRA(ierr)
+    PetscCallA(DMCreateSuperDM(dmList,2_kPI,PETSC_NULL_IS,dmUA2,ierr))
     deallocate(dmList)
 
-    call DMGetGlobalVector(dm,   X,ierr);CHKERRA(ierr)
-    call DMGetGlobalVector(dmU,  U,ierr);CHKERRA(ierr)
-    call DMGetGlobalVector(dmA,  A,ierr);CHKERRA(ierr)
-    call DMGetGlobalVector(dmS,  S,ierr);CHKERRA(ierr)
-    call DMGetGlobalVector(dmUA, UA,ierr);CHKERRA(ierr)
-    call DMGetGlobalVector(dmUA2, UA2,ierr);CHKERRA(ierr)
+    PetscCallA(DMGetGlobalVector(dm,   X,ierr))
+    PetscCallA(DMGetGlobalVector(dmU,  U,ierr))
+    PetscCallA(DMGetGlobalVector(dmA,  A,ierr))
+    PetscCallA(DMGetGlobalVector(dmS,  S,ierr))
+    PetscCallA(DMGetGlobalVector(dmUA, UA,ierr))
+    PetscCallA(DMGetGlobalVector(dmUA2, UA2,ierr))
 
-    call PetscObjectSetName(U,  "U",ierr);CHKERRA(ierr)
-    call PetscObjectSetName(A,  "Alpha",ierr);CHKERRA(ierr)
-    call PetscObjectSetName(S,  "Sigma",ierr);CHKERRA(ierr)
-    call PetscObjectSetName(UA, "UAlpha",ierr);CHKERRA(ierr)
-    call PetscObjectSetName(UA2, "UAlpha2",ierr);CHKERRA(ierr)
-    call VecSet(X, -111.0_kPR,ierr);CHKERRA(ierr)
+    PetscCallA(PetscObjectSetName(U,  "U",ierr))
+    PetscCallA(PetscObjectSetName(A,  "Alpha",ierr))
+    PetscCallA(PetscObjectSetName(S,  "Sigma",ierr))
+    PetscCallA(PetscObjectSetName(UA, "UAlpha",ierr))
+    PetscCallA(PetscObjectSetName(UA2, "UAlpha2",ierr))
+    PetscCallA(VecSet(X, -111.0_kPR,ierr))
 
     ! Setting u to [x,y,z]  and alpha to x^2+y^2+z^2 by writing in UAlpha then restricting to U and Alpha */
-    call DMGetLocalSection(dmUA, sectionUA,ierr);CHKERRA(ierr)
-    call DMGetLocalVector(dmUA, UALoc,ierr);CHKERRA(ierr)
-    call VecGetArrayF90(UALoc, cval,ierr);CHKERRA(ierr)
-    call DMGetCoordinateSection(dmUA, coordSection,ierr);CHKERRA(ierr)
-    call DMGetCoordinatesLocal(dmUA, coord,ierr);CHKERRA(ierr)
-    call DMPlexGetChart(dmUA, pStart, pEnd,ierr);CHKERRA(ierr)
+    PetscCallA(DMGetLocalSection(dmUA, sectionUA,ierr))
+    PetscCallA(DMGetLocalVector(dmUA, UALoc,ierr))
+    PetscCallA(VecGetArrayF90(UALoc, cval,ierr))
+    PetscCallA(DMGetCoordinateSection(dmUA, coordSection,ierr))
+    PetscCallA(DMGetCoordinatesLocal(dmUA, coord,ierr))
+    PetscCallA(DMPlexGetChart(dmUA, pStart, pEnd,ierr))
 
     do p = pStart,pEnd-1
-        call PetscSectionGetDof(sectionUA, p, dofUA,ierr);CHKERRA(ierr)
+        PetscCallA(PetscSectionGetDof(sectionUA, p, dofUA,ierr))
         if (dofUA > 0) then
-            call PetscSectionGetOffset(sectionUA, p, offUA,ierr);CHKERRA(ierr)
-            call DMPlexVecGetClosure(dmUA, coordSection, coord, p, xyz,ierr);CHKERRA(ierr)
+            PetscCallA(PetscSectionGetOffset(sectionUA, p, offUA,ierr))
+            PetscCallA(DMPlexVecGetClosure(dmUA, coordSection, coord, p, xyz,ierr))
             closureSize = size(xyz)
             do i = 1,sdim
                 do j = 0, closureSize-1,sdim
@@ -337,87 +333,87 @@ program ex62f90
                 cval(offUA+i) = cval(offUA+i) * sdim / closureSize;
                 cval(offUA+sdim+1) = cval(offUA+sdim+1) + cval(offUA+i)**2
             end do
-            call DMPlexVecRestoreClosure(dmUA, coordSection, coord, p, xyz,ierr);CHKERRA(ierr)
+            PetscCallA(DMPlexVecRestoreClosure(dmUA, coordSection, coord, p, xyz,ierr))
         end if
     end do
 
-    call VecRestoreArrayF90(UALoc, cval,ierr);CHKERRA(ierr)
-    call DMLocalToGlobalBegin(dmUA, UALoc, INSERT_VALUES, UA,ierr);CHKERRA(ierr)
-    call DMLocalToGlobalEnd(dmUA, UALoc, INSERT_VALUES, UA,ierr);CHKERRA(ierr)
-    call DMRestoreLocalVector(dmUA, UALoc,ierr);CHKERRA(ierr)
+    PetscCallA(VecRestoreArrayF90(UALoc, cval,ierr))
+    PetscCallA(DMLocalToGlobalBegin(dmUA, UALoc, INSERT_VALUES, UA,ierr))
+    PetscCallA(DMLocalToGlobalEnd(dmUA, UALoc, INSERT_VALUES, UA,ierr))
+    PetscCallA(DMRestoreLocalVector(dmUA, UALoc,ierr))
 
     !Update X
-    call VecISCopy(X, isUA, SCATTER_FORWARD, UA,ierr);CHKERRA(ierr)
+    PetscCallA(VecISCopy(X, isUA, SCATTER_FORWARD, UA,ierr))
     ! Restrict to U and Alpha
-    call VecISCopy(X, isU, SCATTER_REVERSE, U,ierr);CHKERRA(ierr)
-    call VecISCopy(X, isA, SCATTER_REVERSE, A,ierr);CHKERRA(ierr)
-    call VecViewFromOptions(UA, PETSC_NULL_OPTIONS, "-ua_vec_view",ierr);CHKERRA(ierr)
-    call VecViewFromOptions(U, PETSC_NULL_OPTIONS, "-u_vec_view",ierr);CHKERRA(ierr)
-    call VecViewFromOptions(A, PETSC_NULL_OPTIONS, "-a_vec_view",ierr);CHKERRA(ierr)
+    PetscCallA(VecISCopy(X, isU, SCATTER_REVERSE, U,ierr))
+    PetscCallA(VecISCopy(X, isA, SCATTER_REVERSE, A,ierr))
+    PetscCallA(VecViewFromOptions(UA, PETSC_NULL_OPTIONS, "-ua_vec_view",ierr))
+    PetscCallA(VecViewFromOptions(U, PETSC_NULL_OPTIONS, "-u_vec_view",ierr))
+    PetscCallA(VecViewFromOptions(A, PETSC_NULL_OPTIONS, "-a_vec_view",ierr))
     ! restrict to UA2
-    call VecISCopy(X, isUA, SCATTER_REVERSE, UA2,ierr);CHKERRA(ierr)
-    call VecViewFromOptions(UA2, PETSC_NULL_OPTIONS, "-ua2_vec_view",ierr);CHKERRA(ierr)
+    PetscCallA(VecISCopy(X, isUA, SCATTER_REVERSE, UA2,ierr))
+    PetscCallA(VecViewFromOptions(UA2, PETSC_NULL_OPTIONS, "-ua2_vec_view",ierr))
 
     ! Writing nodal variables to ExodusII file
-    call DMSetOutputSequenceNumber(dmU,0_kPI,time,ierr);CHKERRA(ierr)
-    call DMSetOutputSequenceNumber(dmA,0_kPI,time,ierr);CHKERRA(ierr)
+    PetscCallA(DMSetOutputSequenceNumber(dmU,0_kPI,time,ierr))
+    PetscCallA(DMSetOutputSequenceNumber(dmA,0_kPI,time,ierr))
 
-    call VecView(U, viewer,ierr);CHKERRA(ierr)
-    call VecView(A, viewer,ierr);CHKERRA(ierr)
+    PetscCallA(VecView(U, viewer,ierr))
+    PetscCallA(VecView(A, viewer,ierr))
 
     ! Saving U and Alpha in one shot.
     ! For this, we need to cheat and change the Vec's name
     ! Note that in the end we write variables one component at a time,
     ! so that there is no real value in doing this
 
-    call DMSetOutputSequenceNumber(dmUA,1_kPI,time,ierr);CHKERRA(ierr)
-    call DMGetGlobalVector(dmUA, tmpVec,ierr);CHKERRA(ierr)
-    call VecCopy(UA, tmpVec,ierr);CHKERRA(ierr)
-    call PetscObjectSetName(tmpVec, "U",ierr);CHKERRA(ierr)
-    call VecView(tmpVec, viewer,ierr);CHKERRA(ierr)
+    PetscCallA(DMSetOutputSequenceNumber(dmUA,1_kPI,time,ierr))
+    PetscCallA(DMGetGlobalVector(dmUA, tmpVec,ierr))
+    PetscCallA(VecCopy(UA, tmpVec,ierr))
+    PetscCallA(PetscObjectSetName(tmpVec, "U",ierr))
+    PetscCallA(VecView(tmpVec, viewer,ierr))
     ! Reading nodal variables in Exodus file
-    call VecSet(tmpVec, -1000.0_kPR,ierr);CHKERRA(ierr)
-    call VecLoad(tmpVec, viewer,ierr);CHKERRA(ierr)
-    call VecAXPY(UA, -1.0_kPR, tmpVec,ierr);CHKERRA(ierr)
-    call VecNorm(UA, NORM_INFINITY, norm,ierr);CHKERRA(ierr)
+    PetscCallA(VecSet(tmpVec, -1000.0_kPR,ierr))
+    PetscCallA(VecLoad(tmpVec, viewer,ierr))
+    PetscCallA(VecAXPY(UA, -1.0_kPR, tmpVec,ierr))
+    PetscCallA(VecNorm(UA, NORM_INFINITY, norm,ierr))
     if (norm > PETSC_SQRT_MACHINE_EPSILON) then
         write(IOBuffer,'("UAlpha ||Vin - Vout|| = ",ES12.5)') norm
     end if
-    call DMRestoreGlobalVector(dmUA, tmpVec,ierr);CHKERRA(ierr)
+    PetscCallA(DMRestoreGlobalVector(dmUA, tmpVec,ierr))
 
     ! ! same thing with the UA2 Vec obtained from the superDM
-    call DMGetGlobalVector(dmUA2, tmpVec,ierr);CHKERRA(ierr)
-    call VecCopy(UA2, tmpVec,ierr);CHKERRA(ierr)
-    call PetscObjectSetName(tmpVec, "U",ierr);CHKERRA(ierr)
-    call DMSetOutputSequenceNumber(dmUA2,2_kPI,time,ierr);CHKERRA(ierr)
-    call VecView(tmpVec, viewer,ierr);CHKERRA(ierr)
+    PetscCallA(DMGetGlobalVector(dmUA2, tmpVec,ierr))
+    PetscCallA(VecCopy(UA2, tmpVec,ierr))
+    PetscCallA(PetscObjectSetName(tmpVec, "U",ierr))
+    PetscCallA(DMSetOutputSequenceNumber(dmUA2,2_kPI,time,ierr))
+    PetscCallA(VecView(tmpVec, viewer,ierr))
     ! Reading nodal variables in Exodus file
-    call VecSet(tmpVec, -1000.0_kPR,ierr);CHKERRA(ierr)
-    call VecLoad(tmpVec,viewer,ierr);CHKERRA(ierr)
-    call VecAXPY(UA2, -1.0_kPR, tmpVec,ierr);CHKERRA(ierr)
-    call VecNorm(UA2, NORM_INFINITY, norm,ierr);CHKERRA(ierr)
+    PetscCallA(VecSet(tmpVec, -1000.0_kPR,ierr))
+    PetscCallA(VecLoad(tmpVec,viewer,ierr))
+    PetscCallA(VecAXPY(UA2, -1.0_kPR, tmpVec,ierr))
+    PetscCallA(VecNorm(UA2, NORM_INFINITY, norm,ierr))
     if (norm > PETSC_SQRT_MACHINE_EPSILON) then
         write(IOBuffer,'("UAlpha2 ||Vin - Vout|| = ",ES12.5)') norm
     end if
-    call DMRestoreGlobalVector(dmUA2, tmpVec,ierr);CHKERRA(ierr)
+    PetscCallA(DMRestoreGlobalVector(dmUA2, tmpVec,ierr))
 
     ! Building and saving Sigma
     !   We set sigma_0 = rank (to see partitioning)
     !          sigma_1 = cell set ID
     !          sigma_2 = x_coordinate of the cell center of mass
-    call DMGetCoordinateSection(dmS, coordSection,ierr);CHKERRA(ierr)
-    call DMGetCoordinatesLocal(dmS, coord,ierr);CHKERRA(ierr)
-    call DMGetLabelIdIS(dmS, "Cell Sets", csIS,ierr);CHKERRA(ierr)
-    call DMGetLabelSize(dmS, "Cell Sets",numCS,ierr);CHKERRA(ierr)
-    call ISGetIndicesF90(csIS, csID,ierr);CHKERRA(ierr)
+    PetscCallA(DMGetCoordinateSection(dmS, coordSection,ierr))
+    PetscCallA(DMGetCoordinatesLocal(dmS, coord,ierr))
+    PetscCallA(DMGetLabelIdIS(dmS, "Cell Sets", csIS,ierr))
+    PetscCallA(DMGetLabelSize(dmS, "Cell Sets",numCS,ierr))
+    PetscCallA(ISGetIndicesF90(csIS, csID,ierr))
 
     do set = 1, numCS
-        call DMGetStratumIS(dmS, "Cell Sets", csID(set), cellIS,ierr);CHKERRA(ierr)
-        call ISGetIndicesF90(cellIS, cellID,ierr);CHKERRA(ierr)
-        call ISGetSize(cellIS, numCells,ierr);CHKERRA(ierr)
+        PetscCallA(DMGetStratumIS(dmS, "Cell Sets", csID(set), cellIS,ierr))
+        PetscCallA(ISGetIndicesF90(cellIS, cellID,ierr))
+        PetscCallA(ISGetSize(cellIS, numCells,ierr))
         do cell = 1,numCells
-            call DMPlexVecGetClosure(dmS, PETSC_NULL_SECTION, S, cellID(cell), cval,ierr);CHKERRA(ierr)
-            call DMPlexVecGetClosure(dmS, coordSection, coord, cellID(cell), xyz,ierr);CHKERRA(ierr)
+            PetscCallA(DMPlexVecGetClosure(dmS, PETSC_NULL_SECTION, S, cellID(cell), cval,ierr))
+            PetscCallA(DMPlexVecGetClosure(dmS, coordSection, coord, cellID(cell), xyz,ierr))
             cval(1) = rank
             cval(2) = csID(set)
             cval(3) = 0.0_kPR
@@ -425,55 +421,55 @@ program ex62f90
                 cval(3) = cval(3) + xyz(c)
             end do
             cval(3) = cval(3) * sdim / size(xyz)
-            call DMPlexVecSetClosure(dmS, PETSC_NULL_SECTION, S, cellID(cell), cval, INSERT_ALL_VALUES,ierr);CHKERRA(ierr)
-            call DMPlexVecRestoreClosure(dmS, PETSC_NULL_SECTION, S, cellID(cell), cval,ierr);CHKERRA(ierr)
-            call DMPlexVecRestoreClosure(dmS, coordSection, coord, cellID(cell), xyz,ierr);CHKERRA(ierr)
+            PetscCallA(DMPlexVecSetClosure(dmS, PETSC_NULL_SECTION, S, cellID(cell), cval, INSERT_ALL_VALUES,ierr))
+            PetscCallA(DMPlexVecRestoreClosure(dmS, PETSC_NULL_SECTION, S, cellID(cell), cval,ierr))
+            PetscCallA(DMPlexVecRestoreClosure(dmS, coordSection, coord, cellID(cell), xyz,ierr))
         end do
-        call ISRestoreIndicesF90(cellIS, cellID,ierr);CHKERRA(ierr)
-        call ISDestroy(cellIS,ierr);CHKERRA(ierr)
+        PetscCallA(ISRestoreIndicesF90(cellIS, cellID,ierr))
+        PetscCallA(ISDestroy(cellIS,ierr))
     end do
-    call ISRestoreIndicesF90(csIS, csID,ierr);CHKERRA(ierr)
-    call ISDestroy(csIS,ierr);CHKERRA(ierr)
-    call VecViewFromOptions(S, PETSC_NULL_OPTIONS, "-s_vec_view",ierr);CHKERRA(ierr)
+    PetscCallA(ISRestoreIndicesF90(csIS, csID,ierr))
+    PetscCallA(ISDestroy(csIS,ierr))
+    PetscCallA(VecViewFromOptions(S, PETSC_NULL_OPTIONS, "-s_vec_view",ierr))
 
     ! Writing zonal variables in Exodus file
-    call DMSetOutputSequenceNumber(dmS,0_kPI,time,ierr);CHKERRA(ierr)
-    call VecView(S,viewer,ierr);CHKERRA(ierr)
+    PetscCallA(DMSetOutputSequenceNumber(dmS,0_kPI,time,ierr))
+    PetscCallA(VecView(S,viewer,ierr))
 
     ! Reading zonal variables in Exodus file */
-    call DMGetGlobalVector(dmS, tmpVec,ierr);CHKERRA(ierr)
-    call VecSet(tmpVec, -1000.0_kPR,ierr);CHKERRA(ierr)
-    call PetscObjectSetName(tmpVec, "Sigma",ierr);CHKERRA(ierr)
-    call VecLoad(tmpVec,viewer,ierr);CHKERRA(ierr)
-    call VecAXPY(S, -1.0_kPR, tmpVec,ierr);CHKERRA(ierr)
-    call VecNorm(S, NORM_INFINITY,norm,ierr);CHKERRQ(ierr)
+    PetscCallA(DMGetGlobalVector(dmS, tmpVec,ierr))
+    PetscCallA(VecSet(tmpVec, -1000.0_kPR,ierr))
+    PetscCallA(PetscObjectSetName(tmpVec, "Sigma",ierr))
+    PetscCallA(VecLoad(tmpVec,viewer,ierr))
+    PetscCallA(VecAXPY(S, -1.0_kPR, tmpVec,ierr))
+    PetscCallA(VecNorm(S, NORM_INFINITY,norm,ierr))
     if (norm > PETSC_SQRT_MACHINE_EPSILON) then
        write(IOBuffer,'("Sigma ||Vin - Vout|| = ",ES12.5)') norm
     end if
-    call DMRestoreGlobalVector(dmS, tmpVec,ierr);CHKERRA(ierr)
+    PetscCallA(DMRestoreGlobalVector(dmS, tmpVec,ierr))
 
-    call DMRestoreGlobalVector(dmUA2, UA2,ierr);CHKERRA(ierr)
-    call DMRestoreGlobalVector(dmUA, UA,ierr);CHKERRA(ierr)
-    call DMRestoreGlobalVector(dmS,  S,ierr);CHKERRA(ierr)
-    call DMRestoreGlobalVector(dmA,  A,ierr);CHKERRA(ierr)
-    call DMRestoreGlobalVector(dmU,  U,ierr);CHKERRA(ierr)
-    call DMRestoreGlobalVector(dm,   X,ierr);CHKERRA(ierr)
-    call DMDestroy(dmU,ierr);CHKERRA(ierr);
-    call ISDestroy(isU,ierr);CHKERRA(ierr)
-    call DMDestroy(dmA,ierr);CHKERRA(ierr);
-    call ISDestroy(isA,ierr);CHKERRA(ierr)
-    call DMDestroy(dmS,ierr);CHKERRA(ierr);
-    call ISDestroy(isS,ierr);CHKERRA(ierr)
-    call DMDestroy(dmUA,ierr);CHKERRA(ierr)
-    call ISDestroy(isUA,ierr);CHKERRA(ierr)
-    call DMDestroy(dmUA2,ierr);CHKERRA(ierr)
-    call DMDestroy(dm,ierr);CHKERRA(ierr)
+    PetscCallA(DMRestoreGlobalVector(dmUA2, UA2,ierr))
+    PetscCallA(DMRestoreGlobalVector(dmUA, UA,ierr))
+    PetscCallA(DMRestoreGlobalVector(dmS,  S,ierr))
+    PetscCallA(DMRestoreGlobalVector(dmA,  A,ierr))
+    PetscCallA(DMRestoreGlobalVector(dmU,  U,ierr))
+    PetscCallA(DMRestoreGlobalVector(dm,   X,ierr))
+    PetscCallA(DMDestroy(dmU,ierr))
+    PetscCallA(ISDestroy(isU,ierr))
+    PetscCallA(DMDestroy(dmA,ierr))
+    PetscCallA(ISDestroy(isA,ierr))
+    PetscCallA(DMDestroy(dmS,ierr))
+    PetscCallA(ISDestroy(isS,ierr))
+    PetscCallA(DMDestroy(dmUA,ierr))
+    PetscCallA(ISDestroy(isUA,ierr))
+    PetscCallA(DMDestroy(dmUA2,ierr))
+    PetscCallA(DMDestroy(dm,ierr))
 
     deallocate(pStartDepth)
     deallocate(pEndDepth)
 
-    call PetscViewerDestroy(viewer,ierr);CHKERRA(ierr)
-    call PetscFinalize(ierr)
+    PetscCallA(PetscViewerDestroy(viewer,ierr))
+    PetscCallA(PetscFinalize(ierr))
 end program ex62f90
 
 ! /*TEST

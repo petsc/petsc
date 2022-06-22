@@ -1,12 +1,4 @@
-<HTML>
-<HEAD>
-<TITLE>AO Manual Pages</TITLE>
-</HEAD>
-<BODY BGCOLOR="FFFFFF">
+# AO Manual Pages
 
-<H2> AO Manual Pages 
-</H2>
+AO (Application Orderings) are objects that manage mappings between different global orderings.
 
-AO (Application Orderings) are objects that manage mappings between different global orderings.<br><br>
-
-<P>

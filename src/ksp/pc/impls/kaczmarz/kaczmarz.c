@@ -7,10 +7,8 @@ typedef struct {
 
 static PetscErrorCode PCDestroy_Kaczmarz(PC pc)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscFree(pc->data);CHKERRQ(ierr);
+  PetscCall(PetscFree(pc->data));
   PetscFunctionReturn(0);
 }
 
@@ -20,21 +18,20 @@ static PetscErrorCode PCApply_Kaczmarz(PC pc,Vec x,Vec y)
   PetscInt          xs,xe,ys,ye,ncols,i,j;
   const PetscInt    *cols;
   const PetscScalar *vals,*xarray;
-  PetscErrorCode    ierr;
   PetscScalar       r;
   PetscReal         anrm;
   PetscScalar       *yarray;
   PetscReal         lambda=jac->lambda;
 
   PetscFunctionBegin;
-  ierr = MatGetOwnershipRange(pc->pmat,&xs,&xe);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRangeColumn(pc->pmat,&ys,&ye);CHKERRQ(ierr);
-  ierr = VecSet(y,0.);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(x,&xarray);CHKERRQ(ierr);
-  ierr = VecGetArray(y,&yarray);CHKERRQ(ierr);
+  PetscCall(MatGetOwnershipRange(pc->pmat,&xs,&xe));
+  PetscCall(MatGetOwnershipRangeColumn(pc->pmat,&ys,&ye));
+  PetscCall(VecSet(y,0.));
+  PetscCall(VecGetArrayRead(x,&xarray));
+  PetscCall(VecGetArray(y,&yarray));
   for (i=xs;i<xe;i++) {
     /* get the maximum row width and row norms */
-    ierr = MatGetRow(pc->pmat,i,&ncols,&cols,&vals);CHKERRQ(ierr);
+    PetscCall(MatGetRow(pc->pmat,i,&ncols,&cols,&vals));
     r = xarray[i-xs];
     anrm = 0.;
     for (j=0;j<ncols;j++) {
@@ -50,11 +47,11 @@ static PetscErrorCode PCApply_Kaczmarz(PC pc,Vec x,Vec y)
         }
       }
     }
-    ierr = MatRestoreRow(pc->pmat,i,&ncols,&cols,&vals);CHKERRQ(ierr);
+    PetscCall(MatRestoreRow(pc->pmat,i,&ncols,&cols,&vals));
   }
   if (jac->symmetric) {
     for (i=xe-1;i>=xs;i--) {
-      ierr = MatGetRow(pc->pmat,i,&ncols,&cols,&vals);CHKERRQ(ierr);
+      PetscCall(MatGetRow(pc->pmat,i,&ncols,&cols,&vals));
       r = xarray[i-xs];
       anrm = 0.;
       for (j=0;j<ncols;j++) {
@@ -70,37 +67,35 @@ static PetscErrorCode PCApply_Kaczmarz(PC pc,Vec x,Vec y)
           }
         }
       }
-      ierr = MatRestoreRow(pc->pmat,i,&ncols,&cols,&vals);CHKERRQ(ierr);
+      PetscCall(MatRestoreRow(pc->pmat,i,&ncols,&cols,&vals));
     }
   }
-  ierr = VecRestoreArray(y,&yarray);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(x,&xarray);CHKERRQ(ierr);
+  PetscCall(VecRestoreArray(y,&yarray));
+  PetscCall(VecRestoreArrayRead(x,&xarray));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode PCSetFromOptions_Kaczmarz(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_Kaczmarz    *jac = (PC_Kaczmarz*)pc->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead(PetscOptionsObject,"Kaczmarz options");CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-pc_kaczmarz_lambda","relaxation factor (0 < lambda)","",jac->lambda,&jac->lambda,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-pc_kaczmarz_symmetric","apply row projections symmetrically","",jac->symmetric,&jac->symmetric,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscOptionsHeadBegin(PetscOptionsObject,"Kaczmarz options");
+  PetscCall(PetscOptionsReal("-pc_kaczmarz_lambda","relaxation factor (0 < lambda)","",jac->lambda,&jac->lambda,NULL));
+  PetscCall(PetscOptionsBool("-pc_kaczmarz_symmetric","apply row projections symmetrically","",jac->symmetric,&jac->symmetric,NULL));
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode PCView_Kaczmarz(PC pc,PetscViewer viewer)
 {
   PC_Kaczmarz    *jac = (PC_Kaczmarz*)pc->data;
-  PetscErrorCode ierr;
   PetscBool      iascii;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  lambda = %g\n",(double)jac->lambda);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  lambda = %g\n",(double)jac->lambda));
   }
   PetscFunctionReturn(0);
 }
@@ -117,20 +112,19 @@ PetscErrorCode PCView_Kaczmarz(PC pc,PetscViewer viewer)
     In parallel this is block-Jacobi with Kaczmarz inner solve.
 
    References:
-.  1. - S. Kaczmarz, "Angenaherte Auflosing von Systemen Linearer Gleichungen",
+.  * - S. Kaczmarz, "Angenaherte Auflosing von Systemen Linearer Gleichungen",
    Bull. Internat. Acad. Polon. Sci. C1. A, 1937.
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`
 
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_Kaczmarz(PC pc)
 {
-  PetscErrorCode ierr;
   PC_Kaczmarz    *jac;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(pc,&jac);CHKERRQ(ierr);
+  PetscCall(PetscNewLog(pc,&jac));
 
   pc->ops->apply           = PCApply_Kaczmarz;
   pc->ops->setfromoptions  = PCSetFromOptions_Kaczmarz;

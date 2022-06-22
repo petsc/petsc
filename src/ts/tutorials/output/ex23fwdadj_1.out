@@ -6,11 +6,11 @@
  analytical derivative w.r.t. c -3.37215
 
  forward sensitivity:
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqdense
 -3.3721514045562722e+00 
 
  adjoint sensitivity:
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 -3.37215

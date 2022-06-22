@@ -22,21 +22,19 @@ PETSC_EXTERN PetscErrorCode MatColoringCreate_LF(MatColoring);
   modify it to incorporate a call to MatColoringRegister() for
   the new method, after the current list.
 
- .seealso: MatColoringRegister(), MatColoringRegisterDestroy()
+ .seealso: `MatColoringRegister()`, `MatColoringRegisterDestroy()`
  @*/
 PetscErrorCode  MatColoringRegisterAll(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (MatColoringRegisterAllCalled) PetscFunctionReturn(0);
   MatColoringRegisterAllCalled = PETSC_TRUE;
-  ierr = MatColoringRegister(MATCOLORINGJP,MatColoringCreate_JP);CHKERRQ(ierr);
-  ierr = MatColoringRegister(MATCOLORINGGREEDY,MatColoringCreate_Greedy);CHKERRQ(ierr);
-  ierr = MatColoringRegister(MATCOLORINGPOWER,MatColoringCreate_Power);CHKERRQ(ierr);
-  ierr = MatColoringRegister(MATCOLORINGNATURAL,MatColoringCreate_Natural);CHKERRQ(ierr);
-  ierr = MatColoringRegister(MATCOLORINGSL,MatColoringCreate_SL);CHKERRQ(ierr);
-  ierr = MatColoringRegister(MATCOLORINGID,MatColoringCreate_ID);CHKERRQ(ierr);
-  ierr = MatColoringRegister(MATCOLORINGLF,MatColoringCreate_LF);CHKERRQ(ierr);
+  PetscCall(MatColoringRegister(MATCOLORINGJP,MatColoringCreate_JP));
+  PetscCall(MatColoringRegister(MATCOLORINGGREEDY,MatColoringCreate_Greedy));
+  PetscCall(MatColoringRegister(MATCOLORINGPOWER,MatColoringCreate_Power));
+  PetscCall(MatColoringRegister(MATCOLORINGNATURAL,MatColoringCreate_Natural));
+  PetscCall(MatColoringRegister(MATCOLORINGSL,MatColoringCreate_SL));
+  PetscCall(MatColoringRegister(MATCOLORINGID,MatColoringCreate_ID));
+  PetscCall(MatColoringRegister(MATCOLORINGLF,MatColoringCreate_LF));
   PetscFunctionReturn(0);
 }

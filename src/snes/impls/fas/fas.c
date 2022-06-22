@@ -6,31 +6,29 @@ const char *const SNESFASTypes[] = {"MULTIPLICATIVE","ADDITIVE","FULL","KASKADE"
 static PetscErrorCode SNESReset_FAS(SNES snes)
 {
   SNES_FAS       *fas = (SNES_FAS*)snes->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = SNESDestroy(&fas->smoothu);CHKERRQ(ierr);
-  ierr = SNESDestroy(&fas->smoothd);CHKERRQ(ierr);
-  ierr = MatDestroy(&fas->inject);CHKERRQ(ierr);
-  ierr = MatDestroy(&fas->interpolate);CHKERRQ(ierr);
-  ierr = MatDestroy(&fas->restrct);CHKERRQ(ierr);
-  ierr = VecDestroy(&fas->rscale);CHKERRQ(ierr);
-  ierr = VecDestroy(&fas->Xg);CHKERRQ(ierr);
-  ierr = VecDestroy(&fas->Fg);CHKERRQ(ierr);
-  if (fas->next) {ierr = SNESReset(fas->next);CHKERRQ(ierr);}
+  PetscCall(SNESDestroy(&fas->smoothu));
+  PetscCall(SNESDestroy(&fas->smoothd));
+  PetscCall(MatDestroy(&fas->inject));
+  PetscCall(MatDestroy(&fas->interpolate));
+  PetscCall(MatDestroy(&fas->restrct));
+  PetscCall(VecDestroy(&fas->rscale));
+  PetscCall(VecDestroy(&fas->Xg));
+  PetscCall(VecDestroy(&fas->Fg));
+  if (fas->next) PetscCall(SNESReset(fas->next));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode SNESDestroy_FAS(SNES snes)
 {
   SNES_FAS       *fas = (SNES_FAS*)snes->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* recursively resets and then destroys */
-  ierr = SNESReset_FAS(snes);CHKERRQ(ierr);
-  ierr = SNESDestroy(&fas->next);CHKERRQ(ierr);
-  ierr = PetscFree(fas);CHKERRQ(ierr);
+  PetscCall(SNESReset_FAS(snes));
+  PetscCall(SNESDestroy(&fas->next));
+  PetscCall(PetscFree(fas));
   PetscFunctionReturn(0);
 }
 
@@ -41,102 +39,99 @@ static PetscErrorCode SNESFASSetUpLineSearch_Private(SNES snes, SNES smooth)
   void           *lsprectx,*lspostctx;
   PetscErrorCode (*precheck)(SNESLineSearch,Vec,Vec,PetscBool*,void*);
   PetscErrorCode (*postcheck)(SNESLineSearch,Vec,Vec,Vec,PetscBool*,PetscBool*,void*);
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!snes->linesearch) PetscFunctionReturn(0);
-  ierr = SNESGetLineSearch(snes,&linesearch);CHKERRQ(ierr);
-  ierr = SNESGetLineSearch(smooth,&slinesearch);CHKERRQ(ierr);
-  ierr = SNESLineSearchGetPreCheck(linesearch,&precheck,&lsprectx);CHKERRQ(ierr);
-  ierr = SNESLineSearchGetPostCheck(linesearch,&postcheck,&lspostctx);CHKERRQ(ierr);
-  ierr = SNESLineSearchSetPreCheck(slinesearch,precheck,lsprectx);CHKERRQ(ierr);
-  ierr = SNESLineSearchSetPostCheck(slinesearch,postcheck,lspostctx);CHKERRQ(ierr);
-  ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)linesearch, (PetscObject)slinesearch);CHKERRQ(ierr);
+  PetscCall(SNESGetLineSearch(snes,&linesearch));
+  PetscCall(SNESGetLineSearch(smooth,&slinesearch));
+  PetscCall(SNESLineSearchGetPreCheck(linesearch,&precheck,&lsprectx));
+  PetscCall(SNESLineSearchGetPostCheck(linesearch,&postcheck,&lspostctx));
+  PetscCall(SNESLineSearchSetPreCheck(slinesearch,precheck,lsprectx));
+  PetscCall(SNESLineSearchSetPostCheck(slinesearch,postcheck,lspostctx));
+  PetscCall(PetscObjectCopyFortranFunctionPointers((PetscObject)linesearch, (PetscObject)slinesearch));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode SNESFASCycleSetUpSmoother_Private(SNES snes, SNES smooth)
 {
   SNES_FAS       *fas = (SNES_FAS*) snes->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)snes, (PetscObject)smooth);CHKERRQ(ierr);
-  ierr = SNESSetFromOptions(smooth);CHKERRQ(ierr);
-  ierr = SNESFASSetUpLineSearch_Private(snes, smooth);CHKERRQ(ierr);
+  PetscCall(PetscObjectCopyFortranFunctionPointers((PetscObject)snes, (PetscObject)smooth));
+  PetscCall(SNESSetFromOptions(smooth));
+  PetscCall(SNESFASSetUpLineSearch_Private(snes, smooth));
 
-  ierr = PetscObjectReference((PetscObject)snes->vec_sol);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject)snes->vec_sol_update);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject)snes->vec_func);CHKERRQ(ierr);
+  PetscCall(PetscObjectReference((PetscObject)snes->vec_sol));
+  PetscCall(PetscObjectReference((PetscObject)snes->vec_sol_update));
+  PetscCall(PetscObjectReference((PetscObject)snes->vec_func));
   smooth->vec_sol        = snes->vec_sol;
   smooth->vec_sol_update = snes->vec_sol_update;
   smooth->vec_func       = snes->vec_func;
 
-  if (fas->eventsmoothsetup) {ierr = PetscLogEventBegin(fas->eventsmoothsetup,smooth,0,0,0);CHKERRQ(ierr);}
-  ierr = SNESSetUp(smooth);CHKERRQ(ierr);
-  if (fas->eventsmoothsetup) {ierr = PetscLogEventEnd(fas->eventsmoothsetup,smooth,0,0,0);CHKERRQ(ierr);}
+  if (fas->eventsmoothsetup) PetscCall(PetscLogEventBegin(fas->eventsmoothsetup,smooth,0,0,0));
+  PetscCall(SNESSetUp(smooth));
+  if (fas->eventsmoothsetup) PetscCall(PetscLogEventEnd(fas->eventsmoothsetup,smooth,0,0,0));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode SNESSetUp_FAS(SNES snes)
 {
   SNES_FAS       *fas = (SNES_FAS*) snes->data;
-  PetscErrorCode ierr;
   PetscInt       dm_levels;
   SNES           next;
   PetscBool      isFine, hasCreateRestriction, hasCreateInjection;
 
   PetscFunctionBegin;
-  ierr = SNESFASCycleIsFine(snes, &isFine);CHKERRQ(ierr);
+  PetscCall(SNESFASCycleIsFine(snes, &isFine));
   if (fas->usedmfornumberoflevels && isFine) {
-    ierr = DMGetRefineLevel(snes->dm,&dm_levels);CHKERRQ(ierr);
+    PetscCall(DMGetRefineLevel(snes->dm,&dm_levels));
     dm_levels++;
     if (dm_levels > fas->levels) {
       /* reset the number of levels */
-      ierr = SNESFASSetLevels(snes,dm_levels,NULL);CHKERRQ(ierr);
-      ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
+      PetscCall(SNESFASSetLevels(snes,dm_levels,NULL));
+      PetscCall(SNESSetFromOptions(snes));
     }
   }
-  ierr = SNESFASCycleGetCorrection(snes, &next);CHKERRQ(ierr);
+  PetscCall(SNESFASCycleGetCorrection(snes, &next));
   if (!isFine) snes->gridsequence = 0; /* no grid sequencing inside the multigrid hierarchy! */
 
-  ierr = SNESSetWorkVecs(snes, 2);CHKERRQ(ierr); /* work vectors used for intergrid transfers */
+  PetscCall(SNESSetWorkVecs(snes, 2)); /* work vectors used for intergrid transfers */
 
   /* set up the smoothers if they haven't already been set up */
   if (!fas->smoothd) {
-    ierr = SNESFASCycleCreateSmoother_Private(snes, &fas->smoothd);CHKERRQ(ierr);
+    PetscCall(SNESFASCycleCreateSmoother_Private(snes, &fas->smoothd));
   }
 
   if (snes->dm) {
     /* set the smoother DMs properly */
-    if (fas->smoothu) {ierr = SNESSetDM(fas->smoothu, snes->dm);CHKERRQ(ierr);}
-    ierr = SNESSetDM(fas->smoothd, snes->dm);CHKERRQ(ierr);
+    if (fas->smoothu) PetscCall(SNESSetDM(fas->smoothu, snes->dm));
+    PetscCall(SNESSetDM(fas->smoothd, snes->dm));
     /* construct EVERYTHING from the DM -- including the progressive set of smoothers */
     if (next) {
       /* for now -- assume the DM and the evaluation functions have been set externally */
       if (!next->dm) {
-        ierr = DMCoarsen(snes->dm, PetscObjectComm((PetscObject)next), &next->dm);CHKERRQ(ierr);
-        ierr = SNESSetDM(next, next->dm);CHKERRQ(ierr);
+        PetscCall(DMCoarsen(snes->dm, PetscObjectComm((PetscObject)next), &next->dm));
+        PetscCall(SNESSetDM(next, next->dm));
       }
       /* set the interpolation and restriction from the DM */
       if (!fas->interpolate) {
-        ierr = DMCreateInterpolation(next->dm, snes->dm, &fas->interpolate, &fas->rscale);CHKERRQ(ierr);
+        PetscCall(DMCreateInterpolation(next->dm, snes->dm, &fas->interpolate, &fas->rscale));
         if (!fas->restrct) {
-          ierr = DMHasCreateRestriction(next->dm, &hasCreateRestriction);CHKERRQ(ierr);
+          PetscCall(DMHasCreateRestriction(next->dm, &hasCreateRestriction));
           /* DM can create restrictions, use that */
           if (hasCreateRestriction) {
-            ierr = DMCreateRestriction(next->dm, snes->dm, &fas->restrct);CHKERRQ(ierr);
+            PetscCall(DMCreateRestriction(next->dm, snes->dm, &fas->restrct));
           } else {
-            ierr         = PetscObjectReference((PetscObject)fas->interpolate);CHKERRQ(ierr);
+            PetscCall(PetscObjectReference((PetscObject)fas->interpolate));
             fas->restrct = fas->interpolate;
           }
         }
       }
       /* set the injection from the DM */
       if (!fas->inject) {
-        ierr = DMHasCreateInjection(next->dm, &hasCreateInjection);CHKERRQ(ierr);
+        PetscCall(DMHasCreateInjection(next->dm, &hasCreateInjection));
         if (hasCreateInjection) {
-          ierr = DMCreateInjection(next->dm, snes->dm, &fas->inject);CHKERRQ(ierr);
+          PetscCall(DMCreateInjection(next->dm, snes->dm, &fas->inject));
         }
       }
     }
@@ -145,49 +140,49 @@ static PetscErrorCode SNESSetUp_FAS(SNES snes)
   /*pass the smoother, function, and jacobian up to the next level if it's not user set already */
   if (fas->galerkin) {
     if (next) {
-      ierr = SNESSetFunction(next, NULL, SNESFASGalerkinFunctionDefault, next);CHKERRQ(ierr);
+      PetscCall(SNESSetFunction(next, NULL, SNESFASGalerkinFunctionDefault, next));
     }
     if (fas->smoothd && fas->level != fas->levels - 1) {
-      ierr = SNESSetFunction(fas->smoothd, NULL, SNESFASGalerkinFunctionDefault, snes);CHKERRQ(ierr);
+      PetscCall(SNESSetFunction(fas->smoothd, NULL, SNESFASGalerkinFunctionDefault, snes));
     }
     if (fas->smoothu && fas->level != fas->levels - 1) {
-      ierr = SNESSetFunction(fas->smoothu, NULL, SNESFASGalerkinFunctionDefault, snes);CHKERRQ(ierr);
+      PetscCall(SNESSetFunction(fas->smoothu, NULL, SNESFASGalerkinFunctionDefault, snes));
     }
   }
 
   /* sets the down (pre) smoother's default norm and sets it from options */
   if (fas->smoothd) {
     if (fas->level == 0 && fas->levels != 1) {
-      ierr = SNESSetNormSchedule(fas->smoothd, SNES_NORM_NONE);CHKERRQ(ierr);
+      PetscCall(SNESSetNormSchedule(fas->smoothd, SNES_NORM_NONE));
     } else {
-      ierr = SNESSetNormSchedule(fas->smoothd, SNES_NORM_FINAL_ONLY);CHKERRQ(ierr);
+      PetscCall(SNESSetNormSchedule(fas->smoothd, SNES_NORM_FINAL_ONLY));
     }
-    ierr = SNESFASCycleSetUpSmoother_Private(snes, fas->smoothd);CHKERRQ(ierr);
+    PetscCall(SNESFASCycleSetUpSmoother_Private(snes, fas->smoothd));
   }
 
   /* sets the up (post) smoother's default norm and sets it from options */
   if (fas->smoothu) {
     if (fas->level != fas->levels - 1) {
-      ierr = SNESSetNormSchedule(fas->smoothu, SNES_NORM_NONE);CHKERRQ(ierr);
+      PetscCall(SNESSetNormSchedule(fas->smoothu, SNES_NORM_NONE));
     } else {
-      ierr = SNESSetNormSchedule(fas->smoothu, SNES_NORM_FINAL_ONLY);CHKERRQ(ierr);
+      PetscCall(SNESSetNormSchedule(fas->smoothu, SNES_NORM_FINAL_ONLY));
     }
-    ierr = SNESFASCycleSetUpSmoother_Private(snes, fas->smoothu);CHKERRQ(ierr);
+    PetscCall(SNESFASCycleSetUpSmoother_Private(snes, fas->smoothu));
   }
 
   if (next) {
     /* gotta set up the solution vector for this to work */
-    if (!next->vec_sol) {ierr = SNESFASCreateCoarseVec(snes,&next->vec_sol);CHKERRQ(ierr);}
-    if (!next->vec_rhs) {ierr = SNESFASCreateCoarseVec(snes,&next->vec_rhs);CHKERRQ(ierr);}
-    ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)snes, (PetscObject)next);CHKERRQ(ierr);
-    ierr = SNESFASSetUpLineSearch_Private(snes, next);CHKERRQ(ierr);
-    ierr = SNESSetUp(next);CHKERRQ(ierr);
+    if (!next->vec_sol) PetscCall(SNESFASCreateCoarseVec(snes,&next->vec_sol));
+    if (!next->vec_rhs) PetscCall(SNESFASCreateCoarseVec(snes,&next->vec_rhs));
+    PetscCall(PetscObjectCopyFortranFunctionPointers((PetscObject)snes, (PetscObject)next));
+    PetscCall(SNESFASSetUpLineSearch_Private(snes, next));
+    PetscCall(SNESSetUp(next));
   }
 
   /* setup FAS work vectors */
   if (fas->galerkin) {
-    ierr = VecDuplicate(snes->vec_sol, &fas->Xg);CHKERRQ(ierr);
-    ierr = VecDuplicate(snes->vec_sol, &fas->Fg);CHKERRQ(ierr);
+    PetscCall(VecDuplicate(snes->vec_sol, &fas->Xg));
+    PetscCall(VecDuplicate(snes->vec_sol, &fas->Fg));
   }
   PetscFunctionReturn(0);
 }
@@ -197,7 +192,6 @@ static PetscErrorCode SNESSetFromOptions_FAS(PetscOptionItems *PetscOptionsObjec
   SNES_FAS       *fas   = (SNES_FAS*) snes->data;
   PetscInt       levels = 1;
   PetscBool      flg    = PETSC_FALSE, upflg = PETSC_FALSE, downflg = PETSC_FALSE, monflg = PETSC_FALSE, galerkinflg = PETSC_FALSE,continuationflg = PETSC_FALSE;
-  PetscErrorCode ierr;
   SNESFASType    fastype;
   const char     *optionsprefix;
   SNESLineSearch linesearch;
@@ -206,88 +200,88 @@ static PetscErrorCode SNESSetFromOptions_FAS(PetscOptionItems *PetscOptionsObjec
   PetscBool      isFine;
 
   PetscFunctionBegin;
-  ierr = SNESFASCycleIsFine(snes, &isFine);CHKERRQ(ierr);
-  ierr = PetscOptionsHead(PetscOptionsObject,"SNESFAS Options-----------------------------------");CHKERRQ(ierr);
+  PetscCall(SNESFASCycleIsFine(snes, &isFine));
+  PetscOptionsHeadBegin(PetscOptionsObject,"SNESFAS Options-----------------------------------");
 
   /* number of levels -- only process most options on the finest level */
   if (isFine) {
-    ierr = PetscOptionsInt("-snes_fas_levels", "Number of Levels", "SNESFASSetLevels", levels, &levels, &flg);CHKERRQ(ierr);
+    PetscCall(PetscOptionsInt("-snes_fas_levels", "Number of Levels", "SNESFASSetLevels", levels, &levels, &flg));
     if (!flg && snes->dm) {
-      ierr = DMGetRefineLevel(snes->dm,&levels);CHKERRQ(ierr);
+      PetscCall(DMGetRefineLevel(snes->dm,&levels));
       levels++;
       fas->usedmfornumberoflevels = PETSC_TRUE;
     }
-    ierr    = SNESFASSetLevels(snes, levels, NULL);CHKERRQ(ierr);
+    PetscCall(SNESFASSetLevels(snes, levels, NULL));
     fastype = fas->fastype;
-    ierr    = PetscOptionsEnum("-snes_fas_type","FAS correction type","SNESFASSetType",SNESFASTypes,(PetscEnum)fastype,(PetscEnum*)&fastype,&flg);CHKERRQ(ierr);
+    PetscCall(PetscOptionsEnum("-snes_fas_type","FAS correction type","SNESFASSetType",SNESFASTypes,(PetscEnum)fastype,(PetscEnum*)&fastype,&flg));
     if (flg) {
-      ierr = SNESFASSetType(snes, fastype);CHKERRQ(ierr);
+      PetscCall(SNESFASSetType(snes, fastype));
     }
 
-    ierr = SNESGetOptionsPrefix(snes, &optionsprefix);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-snes_fas_cycles","Number of cycles","SNESFASSetCycles",fas->n_cycles,&m,&flg);CHKERRQ(ierr);
+    PetscCall(SNESGetOptionsPrefix(snes, &optionsprefix));
+    PetscCall(PetscOptionsInt("-snes_fas_cycles","Number of cycles","SNESFASSetCycles",fas->n_cycles,&m,&flg));
     if (flg) {
-      ierr = SNESFASSetCycles(snes, m);CHKERRQ(ierr);
+      PetscCall(SNESFASSetCycles(snes, m));
     }
-    ierr = PetscOptionsBool("-snes_fas_continuation","Corrected grid-sequence continuation","SNESFASSetContinuation",fas->continuation,&continuationflg,&flg);CHKERRQ(ierr);
+    PetscCall(PetscOptionsBool("-snes_fas_continuation","Corrected grid-sequence continuation","SNESFASSetContinuation",fas->continuation,&continuationflg,&flg));
     if (flg) {
-      ierr = SNESFASSetContinuation(snes,continuationflg);CHKERRQ(ierr);
+      PetscCall(SNESFASSetContinuation(snes,continuationflg));
     }
 
-    ierr = PetscOptionsBool("-snes_fas_galerkin", "Form coarse problems with Galerkin","SNESFASSetGalerkin",fas->galerkin,&galerkinflg,&flg);CHKERRQ(ierr);
+    PetscCall(PetscOptionsBool("-snes_fas_galerkin", "Form coarse problems with Galerkin","SNESFASSetGalerkin",fas->galerkin,&galerkinflg,&flg));
     if (flg) {
-      ierr = SNESFASSetGalerkin(snes, galerkinflg);CHKERRQ(ierr);
+      PetscCall(SNESFASSetGalerkin(snes, galerkinflg));
     }
 
     if (fas->fastype == SNES_FAS_FULL) {
-      ierr   = PetscOptionsBool("-snes_fas_full_downsweep","Smooth on the initial down sweep for full FAS cycles","SNESFASFullSetDownSweep",fas->full_downsweep,&fas->full_downsweep,&flg);CHKERRQ(ierr);
-      if (flg) {ierr = SNESFASFullSetDownSweep(snes,fas->full_downsweep);CHKERRQ(ierr);}
-      ierr   = PetscOptionsBool("-snes_fas_full_total","Use total restriction and interpolaton on the indial down and up sweeps for the full FAS cycle","SNESFASFullSetUseTotal",fas->full_total,&fas->full_total,&flg);CHKERRQ(ierr);
-      if (flg) {ierr = SNESFASFullSetTotal(snes,fas->full_total);CHKERRQ(ierr);}
+      PetscCall(PetscOptionsBool("-snes_fas_full_downsweep","Smooth on the initial down sweep for full FAS cycles","SNESFASFullSetDownSweep",fas->full_downsweep,&fas->full_downsweep,&flg));
+      if (flg) PetscCall(SNESFASFullSetDownSweep(snes,fas->full_downsweep));
+      PetscCall(PetscOptionsBool("-snes_fas_full_total","Use total restriction and interpolaton on the indial down and up sweeps for the full FAS cycle","SNESFASFullSetUseTotal",fas->full_total,&fas->full_total,&flg));
+      if (flg) PetscCall(SNESFASFullSetTotal(snes,fas->full_total));
     }
 
-    ierr = PetscOptionsInt("-snes_fas_smoothup","Number of post-smoothing steps","SNESFASSetNumberSmoothUp",fas->max_up_it,&n_up,&upflg);CHKERRQ(ierr);
+    PetscCall(PetscOptionsInt("-snes_fas_smoothup","Number of post-smoothing steps","SNESFASSetNumberSmoothUp",fas->max_up_it,&n_up,&upflg));
 
-    ierr = PetscOptionsInt("-snes_fas_smoothdown","Number of pre-smoothing steps","SNESFASSetNumberSmoothDown",fas->max_down_it,&n_down,&downflg);CHKERRQ(ierr);
+    PetscCall(PetscOptionsInt("-snes_fas_smoothdown","Number of pre-smoothing steps","SNESFASSetNumberSmoothDown",fas->max_down_it,&n_down,&downflg));
 
     {
       PetscViewer viewer;
       PetscViewerFormat format;
-      ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)snes),((PetscObject) snes)->options,((PetscObject)snes)->prefix,"-snes_fas_monitor",&viewer,&format,&monflg);CHKERRQ(ierr);
+      PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)snes),((PetscObject) snes)->options,((PetscObject)snes)->prefix,"-snes_fas_monitor",&viewer,&format,&monflg));
       if (monflg) {
         PetscViewerAndFormat *vf;
-        ierr = PetscViewerAndFormatCreate(viewer,format,&vf);CHKERRQ(ierr);
-        ierr = PetscObjectDereference((PetscObject)viewer);CHKERRQ(ierr);
-        ierr = SNESFASSetMonitor(snes,vf,PETSC_TRUE);CHKERRQ(ierr);
+        PetscCall(PetscViewerAndFormatCreate(viewer,format,&vf));
+        PetscCall(PetscObjectDereference((PetscObject)viewer));
+        PetscCall(SNESFASSetMonitor(snes,vf,PETSC_TRUE));
       }
     }
     flg    = PETSC_FALSE;
     monflg = PETSC_TRUE;
-    ierr   = PetscOptionsBool("-snes_fas_log","Log times for each FAS level","SNESFASSetLog",monflg,&monflg,&flg);CHKERRQ(ierr);
-    if (flg) {ierr = SNESFASSetLog(snes,monflg);CHKERRQ(ierr);}
+    PetscCall(PetscOptionsBool("-snes_fas_log","Log times for each FAS level","SNESFASSetLog",monflg,&monflg,&flg));
+    if (flg) PetscCall(SNESFASSetLog(snes,monflg));
   }
 
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscOptionsHeadEnd();
 
   /* setup from the determined types if there is no pointwise procedure or smoother defined */
   if (upflg) {
-    ierr = SNESFASSetNumberSmoothUp(snes,n_up);CHKERRQ(ierr);
+    PetscCall(SNESFASSetNumberSmoothUp(snes,n_up));
   }
   if (downflg) {
-    ierr = SNESFASSetNumberSmoothDown(snes,n_down);CHKERRQ(ierr);
+    PetscCall(SNESFASSetNumberSmoothDown(snes,n_down));
   }
 
   /* set up the default line search for coarse grid corrections */
   if (fas->fastype == SNES_FAS_ADDITIVE) {
     if (!snes->linesearch) {
-      ierr = SNESGetLineSearch(snes, &linesearch);CHKERRQ(ierr);
-      ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHL2);CHKERRQ(ierr);
+      PetscCall(SNESGetLineSearch(snes, &linesearch));
+      PetscCall(SNESLineSearchSetType(linesearch, SNESLINESEARCHL2));
     }
   }
 
   /* recursive option setting for the smoothers */
-  ierr = SNESFASCycleGetCorrection(snes, &next);CHKERRQ(ierr);
-  if (next) {ierr = SNESSetFromOptions(next);CHKERRQ(ierr);}
+  PetscCall(SNESFASCycleGetCorrection(snes, &next));
+  if (next) PetscCall(SNESSetFromOptions(next));
   PetscFunctionReturn(0);
 }
 
@@ -297,71 +291,70 @@ static PetscErrorCode SNESView_FAS(SNES snes, PetscViewer viewer)
   SNES_FAS       *fas = (SNES_FAS*) snes->data;
   PetscBool      isFine,iascii,isdraw;
   PetscInt       i;
-  PetscErrorCode ierr;
   SNES           smoothu, smoothd, levelsnes;
 
   PetscFunctionBegin;
-  ierr = SNESFASCycleIsFine(snes, &isFine);CHKERRQ(ierr);
+  PetscCall(SNESFASCycleIsFine(snes, &isFine));
   if (isFine) {
-    ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
-    ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
+    PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+    PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw));
     if (iascii) {
-      ierr = PetscViewerASCIIPrintf(viewer, "  type is %s, levels=%D, cycles=%D\n",  SNESFASTypes[fas->fastype], fas->levels, fas->n_cycles);CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIIPrintf(viewer, "  type is %s, levels=%" PetscInt_FMT ", cycles=%" PetscInt_FMT "\n",  SNESFASTypes[fas->fastype], fas->levels, fas->n_cycles));
       if (fas->galerkin) {
-        ierr = PetscViewerASCIIPrintf(viewer,"  Using Galerkin computed coarse grid function evaluation\n");CHKERRQ(ierr);
+        PetscCall(PetscViewerASCIIPrintf(viewer,"  Using Galerkin computed coarse grid function evaluation\n"));
       } else {
-        ierr = PetscViewerASCIIPrintf(viewer,"  Not using Galerkin computed coarse grid function evaluation\n");CHKERRQ(ierr);
+        PetscCall(PetscViewerASCIIPrintf(viewer,"  Not using Galerkin computed coarse grid function evaluation\n"));
       }
       for (i=0; i<fas->levels; i++) {
-        ierr = SNESFASGetCycleSNES(snes, i, &levelsnes);CHKERRQ(ierr);
-        ierr = SNESFASCycleGetSmootherUp(levelsnes, &smoothu);CHKERRQ(ierr);
-        ierr = SNESFASCycleGetSmootherDown(levelsnes, &smoothd);CHKERRQ(ierr);
+        PetscCall(SNESFASGetCycleSNES(snes, i, &levelsnes));
+        PetscCall(SNESFASCycleGetSmootherUp(levelsnes, &smoothu));
+        PetscCall(SNESFASCycleGetSmootherDown(levelsnes, &smoothd));
         if (!i) {
-          ierr = PetscViewerASCIIPrintf(viewer,"  Coarse grid solver -- level %D -------------------------------\n",i);CHKERRQ(ierr);
+          PetscCall(PetscViewerASCIIPrintf(viewer,"  Coarse grid solver -- level %" PetscInt_FMT " -------------------------------\n",i));
         } else {
-          ierr = PetscViewerASCIIPrintf(viewer,"  Down solver (pre-smoother) on level %D -------------------------------\n",i);CHKERRQ(ierr);
+          PetscCall(PetscViewerASCIIPrintf(viewer,"  Down solver (pre-smoother) on level %" PetscInt_FMT " -------------------------------\n",i));
         }
-        ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+        PetscCall(PetscViewerASCIIPushTab(viewer));
         if (smoothd) {
-          ierr = SNESView(smoothd,viewer);CHKERRQ(ierr);
+          PetscCall(SNESView(smoothd,viewer));
         } else {
-          ierr = PetscViewerASCIIPrintf(viewer,"Not yet available\n");CHKERRQ(ierr);
+          PetscCall(PetscViewerASCIIPrintf(viewer,"Not yet available\n"));
         }
-        ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+        PetscCall(PetscViewerASCIIPopTab(viewer));
         if (i && (smoothd == smoothu)) {
-          ierr = PetscViewerASCIIPrintf(viewer,"  Up solver (post-smoother) same as down solver (pre-smoother)\n");CHKERRQ(ierr);
+          PetscCall(PetscViewerASCIIPrintf(viewer,"  Up solver (post-smoother) same as down solver (pre-smoother)\n"));
         } else if (i) {
-          ierr = PetscViewerASCIIPrintf(viewer,"  Up solver (post-smoother) on level %D -------------------------------\n",i);CHKERRQ(ierr);
-          ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+          PetscCall(PetscViewerASCIIPrintf(viewer,"  Up solver (post-smoother) on level %" PetscInt_FMT " -------------------------------\n",i));
+          PetscCall(PetscViewerASCIIPushTab(viewer));
           if (smoothu) {
-            ierr = SNESView(smoothu,viewer);CHKERRQ(ierr);
+            PetscCall(SNESView(smoothu,viewer));
           } else {
-            ierr = PetscViewerASCIIPrintf(viewer,"Not yet available\n");CHKERRQ(ierr);
+            PetscCall(PetscViewerASCIIPrintf(viewer,"Not yet available\n"));
           }
-          ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+          PetscCall(PetscViewerASCIIPopTab(viewer));
         }
       }
     } else if (isdraw) {
       PetscDraw draw;
       PetscReal x,w,y,bottom,th,wth;
       SNES_FAS  *curfas = fas;
-      ierr   = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
-      ierr   = PetscDrawGetCurrentPoint(draw,&x,&y);CHKERRQ(ierr);
-      ierr   = PetscDrawStringGetSize(draw,&wth,&th);CHKERRQ(ierr);
+      PetscCall(PetscViewerDrawGetDraw(viewer,0,&draw));
+      PetscCall(PetscDrawGetCurrentPoint(draw,&x,&y));
+      PetscCall(PetscDrawStringGetSize(draw,&wth,&th));
       bottom = y - th;
       while (curfas) {
         if (!curfas->smoothu) {
-          ierr = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);
-          if (curfas->smoothd) {ierr = SNESView(curfas->smoothd,viewer);CHKERRQ(ierr);}
-          ierr = PetscDrawPopCurrentPoint(draw);CHKERRQ(ierr);
+          PetscCall(PetscDrawPushCurrentPoint(draw,x,bottom));
+          if (curfas->smoothd) PetscCall(SNESView(curfas->smoothd,viewer));
+          PetscCall(PetscDrawPopCurrentPoint(draw));
         } else {
           w    = 0.5*PetscMin(1.0-x,x);
-          ierr = PetscDrawPushCurrentPoint(draw,x-w,bottom);CHKERRQ(ierr);
-          if (curfas->smoothd) {ierr = SNESView(curfas->smoothd,viewer);CHKERRQ(ierr);}
-          ierr = PetscDrawPopCurrentPoint(draw);CHKERRQ(ierr);
-          ierr = PetscDrawPushCurrentPoint(draw,x+w,bottom);CHKERRQ(ierr);
-          if (curfas->smoothu) {ierr = SNESView(curfas->smoothu,viewer);CHKERRQ(ierr);}
-          ierr = PetscDrawPopCurrentPoint(draw);CHKERRQ(ierr);
+          PetscCall(PetscDrawPushCurrentPoint(draw,x-w,bottom));
+          if (curfas->smoothd) PetscCall(SNESView(curfas->smoothd,viewer));
+          PetscCall(PetscDrawPopCurrentPoint(draw));
+          PetscCall(PetscDrawPushCurrentPoint(draw,x+w,bottom));
+          if (curfas->smoothu) PetscCall(SNESView(curfas->smoothu,viewer));
+          PetscCall(PetscDrawPopCurrentPoint(draw));
         }
         /* this is totally bogus but we have no way of knowing how low the previous one was draw to */
         bottom -= 5*th;
@@ -378,7 +371,6 @@ Defines the action of the downsmoother
  */
 static PetscErrorCode SNESFASDownSmooth_Private(SNES snes, Vec B, Vec X, Vec F, PetscReal *fnorm)
 {
-  PetscErrorCode      ierr;
   SNESConvergedReason reason;
   Vec                 FPC;
   SNES                smoothd;
@@ -386,25 +378,25 @@ static PetscErrorCode SNESFASDownSmooth_Private(SNES snes, Vec B, Vec X, Vec F, 
   SNES_FAS            *fas = (SNES_FAS*) snes->data;
 
   PetscFunctionBegin;
-  ierr = SNESFASCycleGetSmootherDown(snes, &smoothd);CHKERRQ(ierr);
-  ierr = SNESSetInitialFunction(smoothd, F);CHKERRQ(ierr);
-  if (fas->eventsmoothsolve) {ierr = PetscLogEventBegin(fas->eventsmoothsolve,smoothd,B,X,0);CHKERRQ(ierr);}
-  ierr = SNESSolve(smoothd, B, X);CHKERRQ(ierr);
-  if (fas->eventsmoothsolve) {ierr = PetscLogEventEnd(fas->eventsmoothsolve,smoothd,B,X,0);CHKERRQ(ierr);}
+  PetscCall(SNESFASCycleGetSmootherDown(snes, &smoothd));
+  PetscCall(SNESSetInitialFunction(smoothd, F));
+  if (fas->eventsmoothsolve) PetscCall(PetscLogEventBegin(fas->eventsmoothsolve,smoothd,B,X,0));
+  PetscCall(SNESSolve(smoothd, B, X));
+  if (fas->eventsmoothsolve) PetscCall(PetscLogEventEnd(fas->eventsmoothsolve,smoothd,B,X,0));
   /* check convergence reason for the smoother */
-  ierr = SNESGetConvergedReason(smoothd,&reason);CHKERRQ(ierr);
+  PetscCall(SNESGetConvergedReason(smoothd,&reason));
   if (reason < 0 && !(reason == SNES_DIVERGED_MAX_IT || reason == SNES_DIVERGED_LOCAL_MIN || reason == SNES_DIVERGED_LINE_SEARCH)) {
     snes->reason = SNES_DIVERGED_INNER;
     PetscFunctionReturn(0);
   }
 
-  ierr = SNESGetFunction(smoothd, &FPC, NULL, NULL);CHKERRQ(ierr);
-  ierr = SNESGetAlwaysComputesFinalResidual(smoothd, &flg);CHKERRQ(ierr);
+  PetscCall(SNESGetFunction(smoothd, &FPC, NULL, NULL));
+  PetscCall(SNESGetAlwaysComputesFinalResidual(smoothd, &flg));
   if (!flg) {
-    ierr = SNESComputeFunction(smoothd, X, FPC);CHKERRQ(ierr);
+    PetscCall(SNESComputeFunction(smoothd, X, FPC));
   }
-  ierr = VecCopy(FPC, F);CHKERRQ(ierr);
-  if (fnorm) {ierr = VecNorm(F,NORM_2,fnorm);CHKERRQ(ierr);}
+  PetscCall(VecCopy(FPC, F));
+  if (fnorm) PetscCall(VecNorm(F,NORM_2,fnorm));
   PetscFunctionReturn(0);
 }
 
@@ -413,7 +405,6 @@ Defines the action of the upsmoother
  */
 static PetscErrorCode SNESFASUpSmooth_Private(SNES snes, Vec B, Vec X, Vec F, PetscReal *fnorm)
 {
-  PetscErrorCode      ierr;
   SNESConvergedReason reason;
   Vec                 FPC;
   SNES                smoothu;
@@ -421,23 +412,23 @@ static PetscErrorCode SNESFASUpSmooth_Private(SNES snes, Vec B, Vec X, Vec F, Pe
   SNES_FAS            *fas = (SNES_FAS*) snes->data;
 
   PetscFunctionBegin;
-  ierr = SNESFASCycleGetSmootherUp(snes, &smoothu);CHKERRQ(ierr);
-  if (fas->eventsmoothsolve) {ierr = PetscLogEventBegin(fas->eventsmoothsolve,smoothu,0,0,0);CHKERRQ(ierr);}
-  ierr = SNESSolve(smoothu, B, X);CHKERRQ(ierr);
-  if (fas->eventsmoothsolve) {ierr = PetscLogEventEnd(fas->eventsmoothsolve,smoothu,0,0,0);CHKERRQ(ierr);}
+  PetscCall(SNESFASCycleGetSmootherUp(snes, &smoothu));
+  if (fas->eventsmoothsolve) PetscCall(PetscLogEventBegin(fas->eventsmoothsolve,smoothu,0,0,0));
+  PetscCall(SNESSolve(smoothu, B, X));
+  if (fas->eventsmoothsolve) PetscCall(PetscLogEventEnd(fas->eventsmoothsolve,smoothu,0,0,0));
   /* check convergence reason for the smoother */
-  ierr = SNESGetConvergedReason(smoothu,&reason);CHKERRQ(ierr);
+  PetscCall(SNESGetConvergedReason(smoothu,&reason));
   if (reason < 0 && !(reason == SNES_DIVERGED_MAX_IT || reason == SNES_DIVERGED_LOCAL_MIN || reason == SNES_DIVERGED_LINE_SEARCH)) {
     snes->reason = SNES_DIVERGED_INNER;
     PetscFunctionReturn(0);
   }
-  ierr = SNESGetFunction(smoothu, &FPC, NULL, NULL);CHKERRQ(ierr);
-  ierr = SNESGetAlwaysComputesFinalResidual(smoothu, &flg);CHKERRQ(ierr);
+  PetscCall(SNESGetFunction(smoothu, &FPC, NULL, NULL));
+  PetscCall(SNESGetAlwaysComputesFinalResidual(smoothu, &flg));
   if (!flg) {
-    ierr = SNESComputeFunction(smoothu, X, FPC);CHKERRQ(ierr);
+    PetscCall(SNESComputeFunction(smoothu, X, FPC));
   }
-  ierr = VecCopy(FPC, F);CHKERRQ(ierr);
-  if (fnorm) {ierr = VecNorm(F,NORM_2,fnorm);CHKERRQ(ierr);}
+  PetscCall(VecCopy(FPC, F));
+  if (fnorm) PetscCall(VecNorm(F,NORM_2,fnorm));
   PetscFunctionReturn(0);
 }
 
@@ -454,11 +445,10 @@ static PetscErrorCode SNESFASUpSmooth_Private(SNES snes, Vec B, Vec X, Vec F, Pe
 
    Level: developer
 
-.seealso: SNESFASSetRestriction(), SNESFASRestrict()
+.seealso: `SNESFASSetRestriction()`, `SNESFASRestrict()`
 @*/
 PetscErrorCode SNESFASCreateCoarseVec(SNES snes,Vec *Xcoarse)
 {
-  PetscErrorCode ierr;
   SNES_FAS       *fas;
 
   PetscFunctionBegin;
@@ -466,9 +456,9 @@ PetscErrorCode SNESFASCreateCoarseVec(SNES snes,Vec *Xcoarse)
   PetscValidPointer(Xcoarse,2);
   fas = (SNES_FAS*)snes->data;
   if (fas->rscale) {
-    ierr = VecDuplicate(fas->rscale,Xcoarse);CHKERRQ(ierr);
+    PetscCall(VecDuplicate(fas->rscale,Xcoarse));
   } else if (fas->inject) {
-    ierr = MatCreateVecs(fas->inject,Xcoarse,NULL);CHKERRQ(ierr);
+    PetscCall(MatCreateVecs(fas->inject,Xcoarse,NULL));
   } else SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"Must set restriction or injection");
   PetscFunctionReturn(0);
 }
@@ -487,11 +477,10 @@ PetscErrorCode SNESFASCreateCoarseVec(SNES snes,Vec *Xcoarse)
 
    Level: developer
 
-.seealso: SNESFASSetRestriction(), SNESFASSetInjection()
+.seealso: `SNESFASSetRestriction()`, `SNESFASSetInjection()`
 @*/
 PetscErrorCode SNESFASRestrict(SNES fine,Vec Xfine,Vec Xcoarse)
 {
-  PetscErrorCode ierr;
   SNES_FAS       *fas;
 
   PetscFunctionBegin;
@@ -500,10 +489,10 @@ PetscErrorCode SNESFASRestrict(SNES fine,Vec Xfine,Vec Xcoarse)
   PetscValidHeaderSpecific(Xcoarse,VEC_CLASSID,3);
   fas = (SNES_FAS*)fine->data;
   if (fas->inject) {
-    ierr = MatRestrict(fas->inject,Xfine,Xcoarse);CHKERRQ(ierr);
+    PetscCall(MatRestrict(fas->inject,Xfine,Xcoarse));
   } else {
-    ierr = MatRestrict(fas->restrct,Xfine,Xcoarse);CHKERRQ(ierr);
-    ierr = VecPointwiseMult(Xcoarse,fas->rscale,Xcoarse);CHKERRQ(ierr);
+    PetscCall(MatRestrict(fas->restrct,Xfine,Xcoarse));
+    PetscCall(VecPointwiseMult(Xcoarse,fas->rscale,Xcoarse));
   }
   PetscFunctionReturn(0);
 }
@@ -519,7 +508,6 @@ interpolated solution: x^f = I x^c (total solution interpolation
  */
 static PetscErrorCode SNESFASInterpolatedCoarseSolution(SNES snes, Vec X, Vec X_new)
 {
-  PetscErrorCode      ierr;
   Vec                 X_c, B_c;
   SNESConvergedReason reason;
   SNES                next;
@@ -527,29 +515,29 @@ static PetscErrorCode SNESFASInterpolatedCoarseSolution(SNES snes, Vec X, Vec X_
   SNES_FAS            *fasc;
 
   PetscFunctionBegin;
-  ierr = SNESFASCycleGetCorrection(snes, &next);CHKERRQ(ierr);
+  PetscCall(SNESFASCycleGetCorrection(snes, &next));
   if (next) {
     fasc = (SNES_FAS*)next->data;
 
-    ierr = SNESFASCycleGetRestriction(snes, &restrct);CHKERRQ(ierr);
-    ierr = SNESFASCycleGetInterpolation(snes, &interpolate);CHKERRQ(ierr);
+    PetscCall(SNESFASCycleGetRestriction(snes, &restrct));
+    PetscCall(SNESFASCycleGetInterpolation(snes, &interpolate));
 
     X_c  = next->vec_sol;
 
-    if (fasc->eventinterprestrict) {ierr = PetscLogEventBegin(fasc->eventinterprestrict,snes,0,0,0);CHKERRQ(ierr);}
+    if (fasc->eventinterprestrict) PetscCall(PetscLogEventBegin(fasc->eventinterprestrict,snes,0,0,0));
     /* restrict the total solution: Rb */
-    ierr = SNESFASRestrict(snes, X, X_c);CHKERRQ(ierr);
+    PetscCall(SNESFASRestrict(snes, X, X_c));
     B_c = next->vec_rhs;
     if (snes->vec_rhs) {
       /* restrict the total rhs defect: Rb */
-      ierr = MatRestrict(restrct, snes->vec_rhs, B_c);CHKERRQ(ierr);
+      PetscCall(MatRestrict(restrct, snes->vec_rhs, B_c));
     } else {
-      ierr = VecSet(B_c, 0.);CHKERRQ(ierr);
+      PetscCall(VecSet(B_c, 0.));
     }
-    if (fasc->eventinterprestrict) {ierr = PetscLogEventEnd(fasc->eventinterprestrict,snes,0,0,0);CHKERRQ(ierr);}
+    if (fasc->eventinterprestrict) PetscCall(PetscLogEventEnd(fasc->eventinterprestrict,snes,0,0,0));
 
-    ierr = SNESSolve(next, B_c, X_c);CHKERRQ(ierr);
-    ierr = SNESGetConvergedReason(next,&reason);CHKERRQ(ierr);
+    PetscCall(SNESSolve(next, B_c, X_c));
+    PetscCall(SNESGetConvergedReason(next,&reason));
     if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
       snes->reason = SNES_DIVERGED_INNER;
       PetscFunctionReturn(0);
@@ -557,15 +545,15 @@ static PetscErrorCode SNESFASInterpolatedCoarseSolution(SNES snes, Vec X, Vec X_
     /* x^f <- Ix^c*/
     DM dmc,dmf;
 
-    ierr = SNESGetDM(next, &dmc);CHKERRQ(ierr);
-    ierr = SNESGetDM(snes, &dmf);CHKERRQ(ierr);
-    if (fasc->eventinterprestrict) {ierr = PetscLogEventBegin(fasc->eventinterprestrict,snes,0,0,0);CHKERRQ(ierr);}
-    ierr = DMInterpolateSolution(dmc, dmf, interpolate, X_c, X_new);CHKERRQ(ierr);
-    if (fasc->eventinterprestrict) {ierr = PetscLogEventEnd(fasc->eventinterprestrict,snes,0,0,0);CHKERRQ(ierr);}
-    ierr = PetscObjectSetName((PetscObject) X_c, "Coarse solution");CHKERRQ(ierr);
-    ierr = VecViewFromOptions(X_c, NULL, "-fas_coarse_solution_view");CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) X_new, "Updated Fine solution");CHKERRQ(ierr);
-    ierr = VecViewFromOptions(X_new, NULL, "-fas_levels_1_solution_view");CHKERRQ(ierr);
+    PetscCall(SNESGetDM(next, &dmc));
+    PetscCall(SNESGetDM(snes, &dmf));
+    if (fasc->eventinterprestrict) PetscCall(PetscLogEventBegin(fasc->eventinterprestrict,snes,0,0,0));
+    PetscCall(DMInterpolateSolution(dmc, dmf, interpolate, X_c, X_new));
+    if (fasc->eventinterprestrict) PetscCall(PetscLogEventEnd(fasc->eventinterprestrict,snes,0,0,0));
+    PetscCall(PetscObjectSetName((PetscObject) X_c, "Coarse solution"));
+    PetscCall(VecViewFromOptions(X_c, NULL, "-fas_coarse_solution_view"));
+    PetscCall(PetscObjectSetName((PetscObject) X_new, "Updated Fine solution"));
+    PetscCall(VecViewFromOptions(X_new, NULL, "-fas_levels_1_solution_view"));
   }
   PetscFunctionReturn(0);
 }
@@ -582,7 +570,6 @@ b^c = F^c(Rx) - R(F(x) - b)
  */
 PetscErrorCode SNESFASCoarseCorrection(SNES snes, Vec X, Vec F, Vec X_new)
 {
-  PetscErrorCode      ierr;
   Vec                 X_c, Xo_c, F_c, B_c;
   SNESConvergedReason reason;
   SNES                next;
@@ -590,54 +577,54 @@ PetscErrorCode SNESFASCoarseCorrection(SNES snes, Vec X, Vec F, Vec X_new)
   SNES_FAS            *fasc;
 
   PetscFunctionBegin;
-  ierr = SNESFASCycleGetCorrection(snes, &next);CHKERRQ(ierr);
+  PetscCall(SNESFASCycleGetCorrection(snes, &next));
   if (next) {
     fasc = (SNES_FAS*)next->data;
 
-    ierr = SNESFASCycleGetRestriction(snes, &restrct);CHKERRQ(ierr);
-    ierr = SNESFASCycleGetInterpolation(snes, &interpolate);CHKERRQ(ierr);
+    PetscCall(SNESFASCycleGetRestriction(snes, &restrct));
+    PetscCall(SNESFASCycleGetInterpolation(snes, &interpolate));
 
     X_c  = next->vec_sol;
     Xo_c = next->work[0];
     F_c  = next->vec_func;
     B_c  = next->vec_rhs;
 
-    if (fasc->eventinterprestrict) {ierr = PetscLogEventBegin(fasc->eventinterprestrict,snes,0,0,0);CHKERRQ(ierr);}
-    ierr = SNESFASRestrict(snes, X, Xo_c);CHKERRQ(ierr);
+    if (fasc->eventinterprestrict) PetscCall(PetscLogEventBegin(fasc->eventinterprestrict,snes,0,0,0));
+    PetscCall(SNESFASRestrict(snes, X, Xo_c));
     /* restrict the defect: R(F(x) - b) */
-    ierr = MatRestrict(restrct, F, B_c);CHKERRQ(ierr);
-    if (fasc->eventinterprestrict) {ierr = PetscLogEventEnd(fasc->eventinterprestrict,snes,0,0,0);CHKERRQ(ierr);}
+    PetscCall(MatRestrict(restrct, F, B_c));
+    if (fasc->eventinterprestrict) PetscCall(PetscLogEventEnd(fasc->eventinterprestrict,snes,0,0,0));
 
-    if (fasc->eventresidual) {ierr = PetscLogEventBegin(fasc->eventresidual,next,0,0,0);CHKERRQ(ierr);}
+    if (fasc->eventresidual) PetscCall(PetscLogEventBegin(fasc->eventresidual,next,0,0,0));
     /* F_c = F^c(Rx) - R(F(x) - b) since the second term was sitting in next->vec_rhs */
-    ierr = SNESComputeFunction(next, Xo_c, F_c);CHKERRQ(ierr);
-    if (fasc->eventresidual) {ierr = PetscLogEventEnd(fasc->eventresidual,next,0,0,0);CHKERRQ(ierr);}
+    PetscCall(SNESComputeFunction(next, Xo_c, F_c));
+    if (fasc->eventresidual) PetscCall(PetscLogEventEnd(fasc->eventresidual,next,0,0,0));
 
     /* solve the coarse problem corresponding to F^c(x^c) = b^c = F^c(Rx) - R(F(x) - b) */
-    ierr = VecCopy(B_c, X_c);CHKERRQ(ierr);
-    ierr = VecCopy(F_c, B_c);CHKERRQ(ierr);
-    ierr = VecCopy(X_c, F_c);CHKERRQ(ierr);
+    PetscCall(VecCopy(B_c, X_c));
+    PetscCall(VecCopy(F_c, B_c));
+    PetscCall(VecCopy(X_c, F_c));
     /* set initial guess of the coarse problem to the projected fine solution */
-    ierr = VecCopy(Xo_c, X_c);CHKERRQ(ierr);
+    PetscCall(VecCopy(Xo_c, X_c));
 
     /* recurse to the next level */
-    ierr = SNESSetInitialFunction(next, F_c);CHKERRQ(ierr);
-    ierr = SNESSolve(next, B_c, X_c);CHKERRQ(ierr);
-    ierr = SNESGetConvergedReason(next,&reason);CHKERRQ(ierr);
+    PetscCall(SNESSetInitialFunction(next, F_c));
+    PetscCall(SNESSolve(next, B_c, X_c));
+    PetscCall(SNESGetConvergedReason(next,&reason));
     if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
       snes->reason = SNES_DIVERGED_INNER;
       PetscFunctionReturn(0);
     }
     /* correct as x <- x + I(x^c - Rx)*/
-    ierr = VecAXPY(X_c, -1.0, Xo_c);CHKERRQ(ierr);
+    PetscCall(VecAXPY(X_c, -1.0, Xo_c));
 
-    if (fasc->eventinterprestrict) {ierr = PetscLogEventBegin(fasc->eventinterprestrict,snes,0,0,0);CHKERRQ(ierr);}
-    ierr = MatInterpolateAdd(interpolate, X_c, X, X_new);CHKERRQ(ierr);
-    if (fasc->eventinterprestrict) {ierr = PetscLogEventEnd(fasc->eventinterprestrict,snes,0,0,0);CHKERRQ(ierr);}
-    ierr = PetscObjectSetName((PetscObject) X_c, "Coarse correction");CHKERRQ(ierr);
-    ierr = VecViewFromOptions(X_c, NULL, "-fas_coarse_solution_view");CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) X_new, "Updated Fine solution");CHKERRQ(ierr);
-    ierr = VecViewFromOptions(X_new, NULL, "-fas_levels_1_solution_view");CHKERRQ(ierr);
+    if (fasc->eventinterprestrict) PetscCall(PetscLogEventBegin(fasc->eventinterprestrict,snes,0,0,0));
+    PetscCall(MatInterpolateAdd(interpolate, X_c, X, X_new));
+    if (fasc->eventinterprestrict) PetscCall(PetscLogEventEnd(fasc->eventinterprestrict,snes,0,0,0));
+    PetscCall(PetscObjectSetName((PetscObject) X_c, "Coarse correction"));
+    PetscCall(VecViewFromOptions(X_c, NULL, "-fas_coarse_solution_view"));
+    PetscCall(PetscObjectSetName((PetscObject) X_new, "Updated Fine solution"));
+    PetscCall(VecViewFromOptions(X_new, NULL, "-fas_levels_1_solution_view"));
   }
   PetscFunctionReturn(0);
 }
@@ -659,7 +646,6 @@ static PetscErrorCode SNESFASCycle_Additive(SNES snes, Vec X)
 {
   Vec                  F, B, Xhat;
   Vec                  X_c, Xo_c, F_c, B_c;
-  PetscErrorCode       ierr;
   SNESConvergedReason  reason;
   PetscReal            xnorm, fnorm, ynorm;
   SNESLineSearchReason lsresult;
@@ -668,60 +654,60 @@ static PetscErrorCode SNESFASCycle_Additive(SNES snes, Vec X)
   SNES_FAS             *fas = (SNES_FAS*)snes->data,*fasc;
 
   PetscFunctionBegin;
-  ierr = SNESFASCycleGetCorrection(snes, &next);CHKERRQ(ierr);
+  PetscCall(SNESFASCycleGetCorrection(snes, &next));
   F    = snes->vec_func;
   B    = snes->vec_rhs;
   Xhat = snes->work[1];
-  ierr = VecCopy(X, Xhat);CHKERRQ(ierr);
+  PetscCall(VecCopy(X, Xhat));
   /* recurse first */
   if (next) {
     fasc = (SNES_FAS*)next->data;
-    ierr = SNESFASCycleGetRestriction(snes, &restrct);CHKERRQ(ierr);
-    ierr = SNESFASCycleGetInterpolation(snes, &interpolate);CHKERRQ(ierr);
-    if (fas->eventresidual) {ierr = PetscLogEventBegin(fas->eventresidual,snes,0,0,0);CHKERRQ(ierr);}
-    ierr = SNESComputeFunction(snes, Xhat, F);CHKERRQ(ierr);
-    if (fas->eventresidual) {ierr = PetscLogEventEnd(fas->eventresidual,snes,0,0,0);CHKERRQ(ierr);}
-    ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
+    PetscCall(SNESFASCycleGetRestriction(snes, &restrct));
+    PetscCall(SNESFASCycleGetInterpolation(snes, &interpolate));
+    if (fas->eventresidual) PetscCall(PetscLogEventBegin(fas->eventresidual,snes,0,0,0));
+    PetscCall(SNESComputeFunction(snes, Xhat, F));
+    if (fas->eventresidual) PetscCall(PetscLogEventEnd(fas->eventresidual,snes,0,0,0));
+    PetscCall(VecNorm(F, NORM_2, &fnorm));
     X_c  = next->vec_sol;
     Xo_c = next->work[0];
     F_c  = next->vec_func;
     B_c  = next->vec_rhs;
 
-    ierr = SNESFASRestrict(snes,Xhat,Xo_c);CHKERRQ(ierr);
+    PetscCall(SNESFASRestrict(snes,Xhat,Xo_c));
     /* restrict the defect */
-    ierr = MatRestrict(restrct, F, B_c);CHKERRQ(ierr);
+    PetscCall(MatRestrict(restrct, F, B_c));
 
     /* solve the coarse problem corresponding to F^c(x^c) = b^c = Rb + F^c(Rx) - RF(x) */
-    if (fasc->eventresidual) {ierr = PetscLogEventBegin(fasc->eventresidual,next,0,0,0);CHKERRQ(ierr);}
-    ierr = SNESComputeFunction(next, Xo_c, F_c);CHKERRQ(ierr);
-    if (fasc->eventresidual) {ierr = PetscLogEventEnd(fasc->eventresidual,next,0,0,0);CHKERRQ(ierr);}
-    ierr = VecCopy(B_c, X_c);CHKERRQ(ierr);
-    ierr = VecCopy(F_c, B_c);CHKERRQ(ierr);
-    ierr = VecCopy(X_c, F_c);CHKERRQ(ierr);
+    if (fasc->eventresidual) PetscCall(PetscLogEventBegin(fasc->eventresidual,next,0,0,0));
+    PetscCall(SNESComputeFunction(next, Xo_c, F_c));
+    if (fasc->eventresidual) PetscCall(PetscLogEventEnd(fasc->eventresidual,next,0,0,0));
+    PetscCall(VecCopy(B_c, X_c));
+    PetscCall(VecCopy(F_c, B_c));
+    PetscCall(VecCopy(X_c, F_c));
     /* set initial guess of the coarse problem to the projected fine solution */
-    ierr = VecCopy(Xo_c, X_c);CHKERRQ(ierr);
+    PetscCall(VecCopy(Xo_c, X_c));
 
     /* recurse */
-    ierr = SNESSetInitialFunction(next, F_c);CHKERRQ(ierr);
-    ierr = SNESSolve(next, B_c, X_c);CHKERRQ(ierr);
+    PetscCall(SNESSetInitialFunction(next, F_c));
+    PetscCall(SNESSolve(next, B_c, X_c));
 
     /* smooth on this level */
-    ierr = SNESFASDownSmooth_Private(snes, B, X, F, &fnorm);CHKERRQ(ierr);
+    PetscCall(SNESFASDownSmooth_Private(snes, B, X, F, &fnorm));
 
-    ierr = SNESGetConvergedReason(next,&reason);CHKERRQ(ierr);
+    PetscCall(SNESGetConvergedReason(next,&reason));
     if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
       snes->reason = SNES_DIVERGED_INNER;
       PetscFunctionReturn(0);
     }
 
     /* correct as x <- x + I(x^c - Rx)*/
-    ierr = VecAYPX(X_c, -1.0, Xo_c);CHKERRQ(ierr);
-    ierr = MatInterpolate(interpolate, X_c, Xhat);CHKERRQ(ierr);
+    PetscCall(VecAYPX(X_c, -1.0, Xo_c));
+    PetscCall(MatInterpolate(interpolate, X_c, Xhat));
 
     /* additive correction of the coarse direction*/
-    ierr = SNESLineSearchApply(snes->linesearch, X, F, &fnorm, Xhat);CHKERRQ(ierr);
-    ierr = SNESLineSearchGetReason(snes->linesearch, &lsresult);CHKERRQ(ierr);
-    ierr = SNESLineSearchGetNorms(snes->linesearch, &xnorm, &snes->norm, &ynorm);CHKERRQ(ierr);
+    PetscCall(SNESLineSearchApply(snes->linesearch, X, F, &fnorm, Xhat));
+    PetscCall(SNESLineSearchGetReason(snes->linesearch, &lsresult));
+    PetscCall(SNESLineSearchGetNorms(snes->linesearch, &xnorm, &snes->norm, &ynorm));
     if (lsresult) {
       if (++snes->numFailures >= snes->maxFailures) {
         snes->reason = SNES_DIVERGED_LINE_SEARCH;
@@ -729,7 +715,7 @@ static PetscErrorCode SNESFASCycle_Additive(SNES snes, Vec X)
       }
     }
   } else {
-    ierr = SNESFASDownSmooth_Private(snes, B, X, F, &snes->norm);CHKERRQ(ierr);
+    PetscCall(SNESFASDownSmooth_Private(snes, B, X, F, &snes->norm));
   }
   PetscFunctionReturn(0);
 }
@@ -751,7 +737,6 @@ x = x + I(x^c - Rx)
 static PetscErrorCode SNESFASCycle_Multiplicative(SNES snes, Vec X)
 {
 
-  PetscErrorCode ierr;
   Vec            F,B;
   SNES           next;
 
@@ -759,11 +744,11 @@ static PetscErrorCode SNESFASCycle_Multiplicative(SNES snes, Vec X)
   F = snes->vec_func;
   B = snes->vec_rhs;
   /* pre-smooth -- just update using the pre-smoother */
-  ierr = SNESFASCycleGetCorrection(snes, &next);CHKERRQ(ierr);
-  ierr = SNESFASDownSmooth_Private(snes, B, X, F, &snes->norm);CHKERRQ(ierr);
+  PetscCall(SNESFASCycleGetCorrection(snes, &next));
+  PetscCall(SNESFASDownSmooth_Private(snes, B, X, F, &snes->norm));
   if (next) {
-    ierr = SNESFASCoarseCorrection(snes, X, F, X);CHKERRQ(ierr);
-    ierr = SNESFASUpSmooth_Private(snes, B, X, F, &snes->norm);CHKERRQ(ierr);
+    PetscCall(SNESFASCoarseCorrection(snes, X, F, X));
+    PetscCall(SNESFASUpSmooth_Private(snes, B, X, F, &snes->norm));
   }
   PetscFunctionReturn(0);
 }
@@ -773,20 +758,18 @@ static PetscErrorCode SNESFASCycleSetupPhase_Full(SNES snes)
   SNES           next;
   SNES_FAS       *fas = (SNES_FAS*)snes->data;
   PetscBool      isFine;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* pre-smooth -- just update using the pre-smoother */
-  ierr = SNESFASCycleIsFine(snes,&isFine);CHKERRQ(ierr);
-  ierr = SNESFASCycleGetCorrection(snes,&next);CHKERRQ(ierr);
+  PetscCall(SNESFASCycleIsFine(snes,&isFine));
+  PetscCall(SNESFASCycleGetCorrection(snes,&next));
   fas->full_stage = 0;
-  if (next) {ierr = SNESFASCycleSetupPhase_Full(next);CHKERRQ(ierr);}
+  if (next) PetscCall(SNESFASCycleSetupPhase_Full(next));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode SNESFASCycle_Full(SNES snes, Vec X)
 {
-  PetscErrorCode ierr;
   Vec            F,B;
   SNES_FAS       *fas = (SNES_FAS*)snes->data;
   PetscBool      isFine;
@@ -795,41 +778,41 @@ static PetscErrorCode SNESFASCycle_Full(SNES snes, Vec X)
   PetscFunctionBegin;
   F = snes->vec_func;
   B = snes->vec_rhs;
-  ierr = SNESFASCycleIsFine(snes,&isFine);CHKERRQ(ierr);
-  ierr = SNESFASCycleGetCorrection(snes,&next);CHKERRQ(ierr);
+  PetscCall(SNESFASCycleIsFine(snes,&isFine));
+  PetscCall(SNESFASCycleGetCorrection(snes,&next));
 
   if (isFine) {
-    ierr = SNESFASCycleSetupPhase_Full(snes);CHKERRQ(ierr);
+    PetscCall(SNESFASCycleSetupPhase_Full(snes));
   }
 
   if (fas->full_stage == 0) {
     /* downsweep */
     if (next) {
       if (fas->level != 1) next->max_its += 1;
-      if (fas->full_downsweep) {ierr = SNESFASDownSmooth_Private(snes,B,X,F,&snes->norm);CHKERRQ(ierr);}
+      if (fas->full_downsweep) PetscCall(SNESFASDownSmooth_Private(snes,B,X,F,&snes->norm));
       fas->full_downsweep = PETSC_TRUE;
-      if (fas->full_total) {ierr = SNESFASInterpolatedCoarseSolution(snes,X,X);CHKERRQ(ierr);}
-      else                 {ierr = SNESFASCoarseCorrection(snes,X,F,X);CHKERRQ(ierr);}
+      if (fas->full_total) PetscCall(SNESFASInterpolatedCoarseSolution(snes,X,X));
+      else                 PetscCall(SNESFASCoarseCorrection(snes,X,F,X));
       fas->full_total = PETSC_FALSE;
-      ierr = SNESFASUpSmooth_Private(snes,B,X,F,&snes->norm);CHKERRQ(ierr);
+      PetscCall(SNESFASUpSmooth_Private(snes,B,X,F,&snes->norm));
       if (fas->level != 1) next->max_its -= 1;
     } else {
       /* The smoother on the coarse level is the coarse solver */
-      ierr = SNESFASDownSmooth_Private(snes,B,X,F,&snes->norm);CHKERRQ(ierr);
+      PetscCall(SNESFASDownSmooth_Private(snes,B,X,F,&snes->norm));
     }
     fas->full_stage = 1;
   } else if (fas->full_stage == 1) {
-    if (snes->iter == 0) {ierr = SNESFASDownSmooth_Private(snes,B,X,F,&snes->norm);CHKERRQ(ierr);}
+    if (snes->iter == 0) PetscCall(SNESFASDownSmooth_Private(snes,B,X,F,&snes->norm));
     if (next) {
-      ierr = SNESFASCoarseCorrection(snes,X,F,X);CHKERRQ(ierr);
-      ierr = SNESFASUpSmooth_Private(snes,B,X,F,&snes->norm);CHKERRQ(ierr);
+      PetscCall(SNESFASCoarseCorrection(snes,X,F,X));
+      PetscCall(SNESFASUpSmooth_Private(snes,B,X,F,&snes->norm));
     }
   }
   /* final v-cycle */
   if (isFine) {
     if (next) {
-      ierr = SNESFASCoarseCorrection(snes,X,F,X);CHKERRQ(ierr);
-      ierr = SNESFASUpSmooth_Private(snes,B,X,F,&snes->norm);CHKERRQ(ierr);
+      PetscCall(SNESFASCoarseCorrection(snes,X,F,X));
+      PetscCall(SNESFASUpSmooth_Private(snes,B,X,F,&snes->norm));
     }
   }
   PetscFunctionReturn(0);
@@ -837,19 +820,18 @@ static PetscErrorCode SNESFASCycle_Full(SNES snes, Vec X)
 
 static PetscErrorCode SNESFASCycle_Kaskade(SNES snes, Vec X)
 {
-  PetscErrorCode ierr;
   Vec            F,B;
   SNES           next;
 
   PetscFunctionBegin;
   F = snes->vec_func;
   B = snes->vec_rhs;
-  ierr = SNESFASCycleGetCorrection(snes,&next);CHKERRQ(ierr);
+  PetscCall(SNESFASCycleGetCorrection(snes,&next));
   if (next) {
-    ierr = SNESFASCoarseCorrection(snes,X,F,X);CHKERRQ(ierr);
-    ierr = SNESFASUpSmooth_Private(snes,B,X,F,&snes->norm);CHKERRQ(ierr);
+    PetscCall(SNESFASCoarseCorrection(snes,X,F,X));
+    PetscCall(SNESFASUpSmooth_Private(snes,B,X,F,&snes->norm));
   } else {
-    ierr = SNESFASDownSmooth_Private(snes,B,X,F,&snes->norm);CHKERRQ(ierr);
+    PetscCall(SNESFASDownSmooth_Private(snes,B,X,F,&snes->norm));
   }
   PetscFunctionReturn(0);
 }
@@ -865,7 +847,6 @@ const char SNESCitation[] = "@techreport{pbmkbsxt2012,\n"
 
 static PetscErrorCode SNESSolve_FAS(SNES snes)
 {
-  PetscErrorCode ierr;
   PetscInt       i;
   Vec            X, F;
   PetscReal      fnorm;
@@ -874,44 +855,44 @@ static PetscErrorCode SNESSolve_FAS(SNES snes)
   PetscBool      isFine;
 
   PetscFunctionBegin;
-  PetscCheckFalse(snes->xl || snes->xu || snes->ops->computevariablebounds,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
+  PetscCheck(!snes->xl && !snes->xu && !snes->ops->computevariablebounds,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
 
-  ierr = PetscCitationsRegister(SNESCitation,&SNEScite);CHKERRQ(ierr);
+  PetscCall(PetscCitationsRegister(SNESCitation,&SNEScite));
   snes->reason = SNES_CONVERGED_ITERATING;
   X            = snes->vec_sol;
   F            = snes->vec_func;
 
-  ierr = SNESFASCycleIsFine(snes, &isFine);CHKERRQ(ierr);
+  PetscCall(SNESFASCycleIsFine(snes, &isFine));
   /* norm setup */
-  ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+  PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
   snes->iter = 0;
   snes->norm = 0;
-  ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+  PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
   if (!snes->vec_func_init_set) {
-    if (fas->eventresidual) {ierr = PetscLogEventBegin(fas->eventresidual,snes,0,0,0);CHKERRQ(ierr);}
-    ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
-    if (fas->eventresidual) {ierr = PetscLogEventEnd(fas->eventresidual,snes,0,0,0);CHKERRQ(ierr);}
+    if (fas->eventresidual) PetscCall(PetscLogEventBegin(fas->eventresidual,snes,0,0,0));
+    PetscCall(SNESComputeFunction(snes,X,F));
+    if (fas->eventresidual) PetscCall(PetscLogEventEnd(fas->eventresidual,snes,0,0,0));
   } else snes->vec_func_init_set = PETSC_FALSE;
 
-  ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
+  PetscCall(VecNorm(F, NORM_2, &fnorm)); /* fnorm <- ||F||  */
   SNESCheckFunctionNorm(snes,fnorm);
-  ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+  PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
   snes->norm = fnorm;
-  ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
-  ierr       = SNESLogConvergenceHistory(snes,fnorm,0);CHKERRQ(ierr);
-  ierr       = SNESMonitor(snes,snes->iter,fnorm);CHKERRQ(ierr);
+  PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
+  PetscCall(SNESLogConvergenceHistory(snes,fnorm,0));
+  PetscCall(SNESMonitor(snes,snes->iter,fnorm));
 
   /* test convergence */
-  ierr = (*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
+  PetscCall((*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP));
   if (snes->reason) PetscFunctionReturn(0);
 
   if (isFine) {
     /* propagate scale-dependent data up the hierarchy */
-    ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+    PetscCall(SNESGetDM(snes,&dm));
     for (ffas=fas; ffas->next; ffas=(SNES_FAS*)ffas->next->data) {
       DM dmcoarse;
-      ierr = SNESGetDM(ffas->next,&dmcoarse);CHKERRQ(ierr);
-      ierr = DMRestrict(dm,ffas->restrct,ffas->rscale,ffas->inject,dmcoarse);CHKERRQ(ierr);
+      PetscCall(SNESGetDM(ffas->next,&dmcoarse));
+      PetscCall(DMRestrict(dm,ffas->restrct,ffas->rscale,ffas->inject,dmcoarse));
       dm   = dmcoarse;
     }
   }
@@ -919,36 +900,36 @@ static PetscErrorCode SNESSolve_FAS(SNES snes)
   for (i = 0; i < snes->max_its; i++) {
     /* Call general purpose update function */
     if (snes->ops->update) {
-      ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
+      PetscCall((*snes->ops->update)(snes, snes->iter));
     }
 
     if (fas->fastype == SNES_FAS_MULTIPLICATIVE) {
-      ierr = SNESFASCycle_Multiplicative(snes, X);CHKERRQ(ierr);
+      PetscCall(SNESFASCycle_Multiplicative(snes, X));
     } else if (fas->fastype == SNES_FAS_ADDITIVE) {
-      ierr = SNESFASCycle_Additive(snes, X);CHKERRQ(ierr);
+      PetscCall(SNESFASCycle_Additive(snes, X));
     } else if (fas->fastype == SNES_FAS_FULL) {
-      ierr = SNESFASCycle_Full(snes, X);CHKERRQ(ierr);
+      PetscCall(SNESFASCycle_Full(snes, X));
     } else if (fas->fastype == SNES_FAS_KASKADE) {
-      ierr = SNESFASCycle_Kaskade(snes, X);CHKERRQ(ierr);
+      PetscCall(SNESFASCycle_Kaskade(snes, X));
     } else SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"Unsupported FAS type");
 
     /* check for FAS cycle divergence */
     if (snes->reason != SNES_CONVERGED_ITERATING) PetscFunctionReturn(0);
 
     /* Monitor convergence */
-    ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+    PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
     snes->iter = i+1;
-    ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
-    ierr       = SNESLogConvergenceHistory(snes,snes->norm,0);CHKERRQ(ierr);
-    ierr       = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
+    PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
+    PetscCall(SNESLogConvergenceHistory(snes,snes->norm,0));
+    PetscCall(SNESMonitor(snes,snes->iter,snes->norm));
     /* Test for convergence */
     if (isFine) {
-      ierr = (*snes->ops->converged)(snes,snes->iter,0.0,0.0,snes->norm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
+      PetscCall((*snes->ops->converged)(snes,snes->iter,0.0,0.0,snes->norm,&snes->reason,snes->cnvP));
       if (snes->reason) break;
     }
   }
   if (i == snes->max_its) {
-    ierr = PetscInfo(snes, "Maximum number of iterations has been reached: %D\n", i);CHKERRQ(ierr);
+    PetscCall(PetscInfo(snes, "Maximum number of iterations has been reached: %" PetscInt_FMT "\n", i));
     if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
   }
   PetscFunctionReturn(0);
@@ -985,16 +966,15 @@ Notes:
 Level: beginner
 
    References:
-. 1. -  Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers",
+.  * - Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers",
    SIAM Review, 57(4), 2015
 
-.seealso: PCMG, SNESCreate(), SNES, SNESSetType(), SNESType (for list of available types)
+.seealso: `PCMG`, `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESType`
 M*/
 
 PETSC_EXTERN PetscErrorCode SNESCreate_FAS(SNES snes)
 {
   SNES_FAS       *fas;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   snes->ops->destroy        = SNESDestroy_FAS;
@@ -1014,7 +994,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_FAS(SNES snes)
 
   snes->alwayscomputesfinalresidual = PETSC_TRUE;
 
-  ierr = PetscNewLog(snes,&fas);CHKERRQ(ierr);
+  PetscCall(PetscNewLog(snes,&fas));
 
   snes->data                  = (void*) fas;
   fas->level                  = 0;

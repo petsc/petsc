@@ -18,6 +18,7 @@ class Configure(config.base.Configure):
     self.setCompilers = framework.require('config.setCompilers', self)
     self.compilers    = framework.require('config.compilers',    self)
     self.headers      = framework.require('config.headers',      self)
+    self.types        = framework.require('config.types',        self)
     return
 
   def getLibArgumentList(self, library, with_rpath=True):
@@ -301,14 +302,16 @@ extern "C" {
                   '#include <stdio.h>\ndouble floor(double);',
                   '#include <stdio.h>\ndouble log10(double);',
                   '#include <stdio.h>\ndouble pow(double, double);']
-    calls = ['double x,y; scanf("%lf",&x); y = sin(x); printf("%f",y);\n',
-             'double x,y; scanf("%lf",&x); y = floor(x); printf("%f",y);\n',
-             'double x,y; scanf("%lf",&x); y = log10(x); printf("%f",y);\n',
-             'double x,y; scanf("%lf",&x); y = pow(x,x); printf("%f",y);\n']
+    calls = ['double x,y; int s = scanf("%lf",&x); y = sin(x); printf("%f %d",y,s);\n',
+             'double x,y; int s = scanf("%lf",&x); y = floor(x); printf("%f %d",y,s);\n',
+             'double x,y; int s = scanf("%lf",&x); y = log10(x); printf("%f %d",y,s);\n',
+             'double x,y; int s = scanf("%lf",&x); y = pow(x,x); printf("%f %d",y,s);\n']
     if self.check('', funcs, prototype = prototypes, call = calls):
       self.math = []
     elif self.check('m', funcs, prototype = prototypes, call = calls):
       self.math = ['libm.a']
+    if self.math == None:
+      raise RuntimeError('Cannot find basic math functions')
     self.logPrint('CheckMath: using math library '+str(self.math))
     return
 
@@ -318,7 +321,7 @@ extern "C" {
       self.logPrint('erf() found')
       self.addDefine('HAVE_ERF', 1)
     else:
-      self.logPrint('Warning: erf() not found')
+      self.logPrint('erf() not found')
     return
 
   def checkMathTgamma(self):
@@ -327,7 +330,7 @@ extern "C" {
       self.logPrint('tgamma() found')
       self.addDefine('HAVE_TGAMMA', 1)
     else:
-      self.logPrint('Warning: tgamma() not found')
+      self.logPrint('tgamma() not found')
     return
 
   def checkMathLgamma(self):
@@ -340,7 +343,7 @@ extern "C" {
       self.addDefine('HAVE_LGAMMA', 1)
       self.addDefine('HAVE_LGAMMA_IS_GAMMA', 1)
     else:
-      self.logPrint('Warning: lgamma() and gamma() not found')
+      self.logPrint('lgamma() and gamma() not found')
     return
 
   def checkMathFenv(self):
@@ -348,7 +351,7 @@ extern "C" {
     if not self.math is None and self.check(self.math, ['fesetenv'], prototype = ['#include <fenv.h>'], call = ['fesetenv(FE_DFL_ENV);']):
       self.addDefine('HAVE_FENV_H', 1)
     else:
-      self.logPrint('Warning: <fenv.h> with FE_DFL_ENV not found')
+      self.logPrint('<fenv.h> with FE_DFL_ENV not found')
     return
 
   def checkMathLog2(self):
@@ -357,7 +360,7 @@ extern "C" {
       self.logPrint('log2() found')
       self.addDefine('HAVE_LOG2', 1)
     else:
-      self.logPrint('Warning: log2() not found')
+      self.logPrint('log2() not found')
     return
 
   def checkRealtime(self):
@@ -373,7 +376,7 @@ extern "C" {
       self.logPrint('Using librt for the realtime library')
       self.rt = ['librt.a']
     else:
-      self.logPrint('Warning: No realtime library found')
+      self.logPrint('No realtime library found')
     return
 
   def checkDynamic(self):
@@ -527,6 +530,69 @@ int checkInit(void) {
       self.logPrint('Library was not shared')
     return isShared
 
+  def checkExportedSymbols(self, flags, checkLink = None, libraries = [], defaultArg = '', executor = None, timeout = 60):
+    '''Determine whether an executable exports shared symbols
+       - checkLink may be given as an alternative to the one in base.Configure'''
+    exports = False
+
+    if 'USE_VISIBILITY_C' in self.types.defines:
+      visibility = '__attribute__((visibility ("default")))'
+    else:
+      visibility = ''
+
+    # Make an executable that dynamically loads a symbol it contains
+    guard = self.headers.getDefineName('dlfcn.h')
+    if self.headers.headerPrefix:
+      guard = self.headers.headerPrefix+'_'+guard
+    defaultIncludes = '''
+#include <stdio.h>
+#include <stdlib.h>
+#ifdef %s
+#include <dlfcn.h>
+#endif
+
+#define PETSC_DLLEXPORT %s
+
+extern PETSC_DLLEXPORT int foo() {
+  return 42;
+}
+    ''' % (guard, visibility)
+    body = '''
+  void *lib;
+  int (*foo)();
+
+  lib = dlopen(NULL, RTLD_LAZY);
+  if (!lib) {
+    fprintf(stderr, "Could not open executable: %s\\n", dlerror());
+    exit(1);
+  }
+  foo = (int (*)(void)) dlsym(lib, "foo");
+  if (!foo) {
+    fprintf(stderr, "Could not find function in executable\\n");
+    exit(1);
+  }
+  if ((*foo)() != 42) {
+    fprintf(stderr, "Could not run function\\n");
+    exit(1);
+  }
+  '''
+    oldFlags = self.setCompilers.CFLAGS
+    oldLibs  = self.setCompilers.LIBS
+    self.setCompilers.CFLAGS += ' '+flags
+    if self.haveLib('dl'):
+      self.setCompilers.LIBS += ' -ldl'
+    try:
+      exports = self.checkRun(defaultIncludes, body, defaultArg = defaultArg, executor = executor, timeout = timeout)
+    except RuntimeError as e:
+      self.logPrint('FAIL: '+str(e))
+    self.setCompilers.CFLAGS = oldFlags
+    self.setCompilers.LIBS   = oldLibs
+    if exports:
+      self.logPrint('Executable exports symbols for dlopen()')
+    else:
+      self.logPrint('Executable does not export symbols for dlopen()')
+    return exports
+
   def isBGL(self):
     '''Returns true if compiler is IBM cross compiler for BGL'''
     if not hasattr(self, '_isBGL'):
@@ -539,6 +605,17 @@ int checkInit(void) {
         self._isBGL = 0
     return self._isBGL
 
+  def checkExecutableExportFlag(self):
+    '''Checks for the flag that allows executables to export symbols to dlsym()'''
+    # Right now, we just check some compilers, but we should make a test trying to load a symbol from the executable
+    # Discussion: https://stackoverflow.com/questions/6292473/how-to-call-function-in-executable-from-my-library/6298434#6298434
+    for flag in ['', '-Wl,-export_dynamic', '-export-dynamic']:
+      if self.checkExportedSymbols(flag):
+        self.addDefine('HAVE_EXECUTABLE_EXPORT', 1)
+        self.addMakeMacro('EXEFLAGS', flag)
+        break
+    return
+
   def configure(self):
     list(map(lambda args: self.executeTest(self.check, list(args)), self.libraries))
     self.executeTest(self.checkMath)
@@ -549,4 +626,6 @@ int checkInit(void) {
     self.executeTest(self.checkMathLog2)
     self.executeTest(self.checkRealtime)
     self.executeTest(self.checkDynamic)
+    if not self.argDB['with-batch']:
+      self.executeTest(self.checkExecutableExportFlag)
     return

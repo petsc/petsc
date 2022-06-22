@@ -1,11 +1,6 @@
 
 static char help[] = "Demonstrates VecStrideScatter() and VecStrideGather().\n\n";
 
-/*T
-   Concepts: vectors^sub-vectors;
-   Processors: n
-T*/
-
 /*
   Include "petscvec.h" so that we can use vectors.  Note that this file
   automatically includes:
@@ -17,56 +12,55 @@ T*/
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   Vec            v,s;               /* vectors */
   PetscInt       n   = 20;
   PetscScalar    one = 1.0;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
   /*
       Create multi-component vector with 2 components
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,&v);CHKERRQ(ierr);
-  ierr = VecSetSizes(v,PETSC_DECIDE,n);CHKERRQ(ierr);
-  ierr = VecSetBlockSize(v,2);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(v);CHKERRQ(ierr);
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&v));
+  PetscCall(VecSetSizes(v,PETSC_DECIDE,n));
+  PetscCall(VecSetBlockSize(v,2));
+  PetscCall(VecSetFromOptions(v));
 
   /*
       Create single-component vector
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,&s);CHKERRQ(ierr);
-  ierr = VecSetSizes(s,PETSC_DECIDE,n/2);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(s);CHKERRQ(ierr);
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&s));
+  PetscCall(VecSetSizes(s,PETSC_DECIDE,n/2));
+  PetscCall(VecSetFromOptions(s));
 
   /*
      Set the vectors to entries to a constant value.
   */
-  ierr = VecSet(v,one);CHKERRQ(ierr);
+  PetscCall(VecSet(v,one));
 
   /*
      Get the first component from the multi-component vector to the single vector
   */
-  ierr = VecStrideGather(v,0,s,INSERT_VALUES);CHKERRQ(ierr);
+  PetscCall(VecStrideGather(v,0,s,INSERT_VALUES));
 
-  ierr = VecView(s,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscCall(VecView(s,PETSC_VIEWER_STDOUT_WORLD));
 
   /*
      Put the values back into the second component
   */
-  ierr = VecStrideScatter(s,1,v,ADD_VALUES);CHKERRQ(ierr);
+  PetscCall(VecStrideScatter(s,1,v,ADD_VALUES));
 
-  ierr = VecView(v,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscCall(VecView(v,PETSC_VIEWER_STDOUT_WORLD));
 
   /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  ierr = VecDestroy(&v);CHKERRQ(ierr);
-  ierr = VecDestroy(&s);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(VecDestroy(&v));
+  PetscCall(VecDestroy(&s));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

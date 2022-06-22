@@ -1,6 +1,6 @@
 
 /*
-     Code for some of the parallel vector primatives.
+     Code for some of the parallel vector primitives.
 */
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>
 #include <petscblaslapack.h>
@@ -8,16 +8,15 @@
 PetscErrorCode VecMDot_MPI(Vec xin,PetscInt nv,const Vec y[],PetscScalar *z)
 {
   PetscScalar    awork[128],*work = awork;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (nv > 128) {
-    ierr = PetscMalloc1(nv,&work);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(nv,&work));
   }
-  ierr = VecMDot_Seq(xin,nv,y,work);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(work,z,nv,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)xin));CHKERRMPI(ierr);
+  PetscCall(VecMDot_Seq(xin,nv,y,work));
+  PetscCall(MPIU_Allreduce(work,z,nv,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)xin)));
   if (nv > 128) {
-    ierr = PetscFree(work);CHKERRQ(ierr);
+    PetscCall(PetscFree(work));
   }
   PetscFunctionReturn(0);
 }
@@ -25,16 +24,15 @@ PetscErrorCode VecMDot_MPI(Vec xin,PetscInt nv,const Vec y[],PetscScalar *z)
 PetscErrorCode VecMTDot_MPI(Vec xin,PetscInt nv,const Vec y[],PetscScalar *z)
 {
   PetscScalar    awork[128],*work = awork;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (nv > 128) {
-    ierr = PetscMalloc1(nv,&work);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(nv,&work));
   }
-  ierr = VecMTDot_Seq(xin,nv,y,work);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(work,z,nv,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)xin));CHKERRMPI(ierr);
+  PetscCall(VecMTDot_Seq(xin,nv,y,work));
+  PetscCall(MPIU_Allreduce(work,z,nv,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)xin)));
   if (nv > 128) {
-    ierr = PetscFree(work);CHKERRQ(ierr);
+    PetscCall(PetscFree(work));
   }
   PetscFunctionReturn(0);
 }
@@ -44,35 +42,34 @@ PetscErrorCode VecNorm_MPI(Vec xin,NormType type,PetscReal *z)
 {
   PetscReal         sum,work = 0.0;
   const PetscScalar *xx;
-  PetscErrorCode    ierr;
   PetscInt          n   = xin->map->n;
   PetscBLASInt      one = 1,bn = 0;
 
   PetscFunctionBegin;
-  ierr = PetscBLASIntCast(n,&bn);CHKERRQ(ierr);
+  PetscCall(PetscBLASIntCast(n,&bn));
   if (type == NORM_2 || type == NORM_FROBENIUS) {
-    ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
+    PetscCall(VecGetArrayRead(xin,&xx));
     work = PetscRealPart(BLASdot_(&bn,xx,&one,xx,&one));
-    ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);
-    ierr = MPIU_Allreduce(&work,&sum,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)xin));CHKERRMPI(ierr);
+    PetscCall(VecRestoreArrayRead(xin,&xx));
+    PetscCall(MPIU_Allreduce(&work,&sum,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)xin)));
     *z   = PetscSqrtReal(sum);
-    ierr = PetscLogFlops(2.0*xin->map->n);CHKERRQ(ierr);
+    PetscCall(PetscLogFlops(2.0*xin->map->n));
   } else if (type == NORM_1) {
     /* Find the local part */
-    ierr = VecNorm_Seq(xin,NORM_1,&work);CHKERRQ(ierr);
+    PetscCall(VecNorm_Seq(xin,NORM_1,&work));
     /* Find the global max */
-    ierr = MPIU_Allreduce(&work,z,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)xin));CHKERRMPI(ierr);
+    PetscCall(MPIU_Allreduce(&work,z,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)xin)));
   } else if (type == NORM_INFINITY) {
     /* Find the local max */
-    ierr = VecNorm_Seq(xin,NORM_INFINITY,&work);CHKERRQ(ierr);
+    PetscCall(VecNorm_Seq(xin,NORM_INFINITY,&work));
     /* Find the global max */
-    ierr = MPIU_Allreduce(&work,z,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)xin));CHKERRMPI(ierr);
+    PetscCall(MPIU_Allreduce(&work,z,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)xin)));
   } else if (type == NORM_1_AND_2) {
     PetscReal temp[2];
-    ierr = VecNorm_Seq(xin,NORM_1,temp);CHKERRQ(ierr);
-    ierr = VecNorm_Seq(xin,NORM_2,temp+1);CHKERRQ(ierr);
+    PetscCall(VecNorm_Seq(xin,NORM_1,temp));
+    PetscCall(VecNorm_Seq(xin,NORM_2,temp+1));
     temp[1] = temp[1]*temp[1];
-    ierr = MPIU_Allreduce(temp,z,2,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)xin));CHKERRMPI(ierr);
+    PetscCall(MPIU_Allreduce(temp,z,2,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)xin)));
     z[1] = PetscSqrtReal(z[1]);
   }
   PetscFunctionReturn(0);
@@ -80,24 +77,23 @@ PetscErrorCode VecNorm_MPI(Vec xin,NormType type,PetscReal *z)
 
 PetscErrorCode VecMax_MPI(Vec xin,PetscInt *idx,PetscReal *z)
 {
-  PetscErrorCode ierr;
   PetscReal      work;
 
   PetscFunctionBegin;
   /* Find the local max */
-  ierr = VecMax_Seq(xin,idx,&work);CHKERRQ(ierr);
+  PetscCall(VecMax_Seq(xin,idx,&work));
 #if defined(PETSC_HAVE_MPIUNI)
   *z = work;
 #else
   /* Find the global max */
   if (!idx) {
-    ierr = MPIU_Allreduce(&work,z,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)xin));CHKERRMPI(ierr);
+    PetscCall(MPIU_Allreduce(&work,z,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)xin)));
   } else {
     struct { PetscReal v; PetscInt i; } in,out;
 
     in.v  = work;
     in.i  = *idx + xin->map->rstart;
-    ierr  = MPIU_Allreduce(&in,&out,1,MPIU_REAL_INT,MPIU_MAXLOC,PetscObjectComm((PetscObject)xin));CHKERRMPI(ierr);
+    PetscCall(MPIU_Allreduce(&in,&out,1,MPIU_REAL_INT,MPIU_MAXLOC,PetscObjectComm((PetscObject)xin)));
     *z    = out.v;
     *idx  = out.i;
   }
@@ -107,24 +103,23 @@ PetscErrorCode VecMax_MPI(Vec xin,PetscInt *idx,PetscReal *z)
 
 PetscErrorCode VecMin_MPI(Vec xin,PetscInt *idx,PetscReal *z)
 {
-  PetscErrorCode ierr;
   PetscReal      work;
 
   PetscFunctionBegin;
   /* Find the local Min */
-  ierr = VecMin_Seq(xin,idx,&work);CHKERRQ(ierr);
+  PetscCall(VecMin_Seq(xin,idx,&work));
 #if defined(PETSC_HAVE_MPIUNI)
   *z = work;
 #else
   /* Find the global Min */
   if (!idx) {
-    ierr = MPIU_Allreduce(&work,z,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)xin));CHKERRMPI(ierr);
+    PetscCall(MPIU_Allreduce(&work,z,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)xin)));
   } else {
     struct { PetscReal v; PetscInt i; } in,out;
 
     in.v  = work;
     in.i  = *idx + xin->map->rstart;
-    ierr  = MPIU_Allreduce(&in,&out,1,MPIU_REAL_INT,MPIU_MINLOC,PetscObjectComm((PetscObject)xin));CHKERRMPI(ierr);
+    PetscCall(MPIU_Allreduce(&in,&out,1,MPIU_REAL_INT,MPIU_MINLOC,PetscObjectComm((PetscObject)xin)));
     *z    = out.v;
     *idx  = out.i;
   }

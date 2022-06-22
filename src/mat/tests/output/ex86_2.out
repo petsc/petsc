@@ -1,5 +1,5 @@
 [0] seqmat:
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqbaij
 row 0: (0, 2.)  (1, -1.) 
 row 1: (0, -1.)  (1, 2.)  (2, -1.) 

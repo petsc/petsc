@@ -1,4 +1,4 @@
-ALL: lib
+-include ../../../../petsckdir.mk
 
 SOURCEH	  = ../../../../include/petsc/private/sectionimpl.h ../../../../include/petscsection.h ../../../../include/petscsectiontypes.h
 SOURCEC   =

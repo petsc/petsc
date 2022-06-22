@@ -3,11 +3,7 @@
 #requiresdefine  'PETSC_HAVE_DYNAMIC_LIBRARIES'
 #requiresdefine  'PETSC_USE_SHARED_LIBRARIES'
 
-ALL: lib
-
 CXXFLAGS  = ${HPDDM_INCLUDE}
-CFLAGS    =
-FFLAGS    =
 SOURCECXX = hpddm.cxx
 SOURCEF   =
 SOURCEH   =

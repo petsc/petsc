@@ -1,11 +1,9 @@
-!
-!
 
     module mymoduleex43f
 #include <petsc/finclude/petscvec.h>
       use,intrinsic :: iso_c_binding
       interface
-        subroutine fillupvector(vaddr,ierr) bind ( C, name = "fillupvector")
+        subroutine fillupvector(vaddr,err) bind ( C, name = "fillupvector")
 !
 !     We need to use iso_c_binding variables or otherwise we get compiler warnings
 !     Warning: Variable 'vaddr' at (1) is a dummy argument of the BIND(C)
@@ -13,7 +11,7 @@
 !
           use,intrinsic :: iso_c_binding
           integer(c_long_long) vaddr
-          integer(c_int) ierr
+          integer(c_int) err
         end subroutine fillupvector
       end interface
     end module
@@ -35,21 +33,21 @@
        integer(c_long_long) vaddr
        integer(c_int) err
 
-       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-       call VecCreate(PETSC_COMM_WORLD,v,ierr);CHKERRA(ierr)
+       PetscCallA(PetscInitialize(ierr))
+       PetscCallA(VecCreate(PETSC_COMM_WORLD,v,ierr))
        five = 5
-       call VecSetSizes(v,PETSC_DECIDE,five,ierr);CHKERRA(ierr)
-       call VecSetFromOptions(v,ierr);CHKERRA(ierr)
+       PetscCallA(VecSetSizes(v,PETSC_DECIDE,five,ierr))
+       PetscCallA(VecSetFromOptions(v,ierr))
 !
 !     Now Call a Petsc Routine from Fortran
 !
 !
        vaddr = v%v
-       call fillupvector(vaddr,err);CHKERRA(ierr)
+       call fillupvector(vaddr,err)
 
-       call VecView(v,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)
-       call VecDestroy(v,ierr);CHKERRA(ierr)
-       call PetscFinalize(ierr)
+       PetscCallA(VecView(v,PETSC_VIEWER_STDOUT_WORLD,ierr))
+       PetscCallA(VecDestroy(v,ierr))
+       PetscCallA(PetscFinalize(ierr))
        end
 
 !/*TEST

@@ -31,7 +31,6 @@ int main(int Argc,char **Args)
 {
   PetscInt       x_mesh = 15,levels = 3,cycles = 1,use_jacobi = 0;
   PetscInt       i,smooths = 1,*N,its;
-  PetscErrorCode ierr;
   PCMGType       am = PC_MG_MULTIPLICATIVE;
   Mat            cmat,mat[20],fmat;
   KSP            cksp,ksp[20],kspmg;
@@ -41,184 +40,182 @@ int main(int Argc,char **Args)
   PC             pcmg,pc;
   PetscBool      flg;
 
-  ierr = PetscInitialize(&Argc,&Args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-x",&x_mesh,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-l",&levels,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-c",&cycles,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-smooths",&smooths,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,NULL,"-a",&flg);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&Argc,&Args,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-x",&x_mesh,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-l",&levels,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-c",&cycles,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-smooths",&smooths,NULL));
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-a",&flg));
 
   if (flg) am = PC_MG_ADDITIVE;
-  ierr = PetscOptionsHasName(NULL,NULL,"-f",&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-f",&flg));
   if (flg) am = PC_MG_FULL;
-  ierr = PetscOptionsHasName(NULL,NULL,"-j",&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-j",&flg));
   if (flg) use_jacobi = 1;
 
-  ierr = PetscMalloc1(levels,&N);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(levels,&N));
   N[0] = x_mesh;
   for (i=1; i<levels; i++) {
     N[i] = N[i-1]/2;
-    PetscCheckFalse(N[i] < 1,PETSC_COMM_WORLD,PETSC_ERR_USER,"Too many levels or N is not large enough");
+    PetscCheck(N[i] >= 1,PETSC_COMM_WORLD,PETSC_ERR_USER,"Too many levels or N is not large enough");
   }
 
-  ierr = Create1dLaplacian(N[levels-1],&cmat);CHKERRQ(ierr);
+  PetscCall(Create1dLaplacian(N[levels-1],&cmat));
 
-  ierr = KSPCreate(PETSC_COMM_WORLD,&kspmg);CHKERRQ(ierr);
-  ierr = KSPGetPC(kspmg,&pcmg);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(kspmg);CHKERRQ(ierr);
-  ierr = PCSetType(pcmg,PCMG);CHKERRQ(ierr);
-  ierr = PCMGSetLevels(pcmg,levels,NULL);CHKERRQ(ierr);
-  ierr = PCMGSetType(pcmg,am);CHKERRQ(ierr);
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&kspmg));
+  PetscCall(KSPGetPC(kspmg,&pcmg));
+  PetscCall(KSPSetFromOptions(kspmg));
+  PetscCall(PCSetType(pcmg,PCMG));
+  PetscCall(PCMGSetLevels(pcmg,levels,NULL));
+  PetscCall(PCMGSetType(pcmg,am));
 
-  ierr = PCMGGetCoarseSolve(pcmg,&cksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(cksp,cmat,cmat);CHKERRQ(ierr);
-  ierr = KSPGetPC(cksp,&pc);CHKERRQ(ierr);
-  ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
-  ierr = KSPSetType(cksp,KSPPREONLY);CHKERRQ(ierr);
+  PetscCall(PCMGGetCoarseSolve(pcmg,&cksp));
+  PetscCall(KSPSetOperators(cksp,cmat,cmat));
+  PetscCall(KSPGetPC(cksp,&pc));
+  PetscCall(PCSetType(pc,PCLU));
+  PetscCall(KSPSetType(cksp,KSPPREONLY));
 
   /* zero is finest level */
   for (i=0; i<levels-1; i++) {
     Mat dummy;
 
-    ierr = PCMGSetResidual(pcmg,levels - 1 - i,residual,NULL);CHKERRQ(ierr);
-    ierr = MatCreateShell(PETSC_COMM_WORLD,N[i+1],N[i],N[i+1],N[i],NULL,&mat[i]);CHKERRQ(ierr);
-    ierr = MatShellSetOperation(mat[i],MATOP_MULT,(void (*)(void))restrct);CHKERRQ(ierr);
-    ierr = MatShellSetOperation(mat[i],MATOP_MULT_TRANSPOSE_ADD,(void (*)(void))interpolate);CHKERRQ(ierr);
-    ierr = PCMGSetInterpolation(pcmg,levels - 1 - i,mat[i]);CHKERRQ(ierr);
-    ierr = PCMGSetRestriction(pcmg,levels - 1 - i,mat[i]);CHKERRQ(ierr);
-    ierr = PCMGSetCycleTypeOnLevel(pcmg,levels - 1 - i,(PCMGCycleType)cycles);CHKERRQ(ierr);
+    PetscCall(PCMGSetResidual(pcmg,levels - 1 - i,residual,NULL));
+    PetscCall(MatCreateShell(PETSC_COMM_WORLD,N[i+1],N[i],N[i+1],N[i],NULL,&mat[i]));
+    PetscCall(MatShellSetOperation(mat[i],MATOP_MULT,(void (*)(void))restrct));
+    PetscCall(MatShellSetOperation(mat[i],MATOP_MULT_TRANSPOSE_ADD,(void (*)(void))interpolate));
+    PetscCall(PCMGSetInterpolation(pcmg,levels - 1 - i,mat[i]));
+    PetscCall(PCMGSetRestriction(pcmg,levels - 1 - i,mat[i]));
+    PetscCall(PCMGSetCycleTypeOnLevel(pcmg,levels - 1 - i,(PCMGCycleType)cycles));
 
     /* set smoother */
-    ierr = PCMGGetSmoother(pcmg,levels - 1 - i,&ksp[i]);CHKERRQ(ierr);
-    ierr = KSPGetPC(ksp[i],&pc);CHKERRQ(ierr);
-    ierr = PCSetType(pc,PCSHELL);CHKERRQ(ierr);
-    ierr = PCShellSetName(pc,"user_precond");CHKERRQ(ierr);
-    ierr = PCShellGetName(pc,&shellname);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"level=%D, PCShell name is %s\n",i,shellname);CHKERRQ(ierr);
+    PetscCall(PCMGGetSmoother(pcmg,levels - 1 - i,&ksp[i]));
+    PetscCall(KSPGetPC(ksp[i],&pc));
+    PetscCall(PCSetType(pc,PCSHELL));
+    PetscCall(PCShellSetName(pc,"user_precond"));
+    PetscCall(PCShellGetName(pc,&shellname));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"level=%" PetscInt_FMT ", PCShell name is %s\n",i,shellname));
 
     /* this is not used unless different options are passed to the solver */
-    ierr = MatCreateShell(PETSC_COMM_WORLD,N[i],N[i],N[i],N[i],NULL,&dummy);CHKERRQ(ierr);
-    ierr = MatShellSetOperation(dummy,MATOP_MULT,(void (*)(void))amult);CHKERRQ(ierr);
-    ierr = KSPSetOperators(ksp[i],dummy,dummy);CHKERRQ(ierr);
-    ierr = MatDestroy(&dummy);CHKERRQ(ierr);
+    PetscCall(MatCreateShell(PETSC_COMM_WORLD,N[i],N[i],N[i],N[i],NULL,&dummy));
+    PetscCall(MatShellSetOperation(dummy,MATOP_MULT,(void (*)(void))amult));
+    PetscCall(KSPSetOperators(ksp[i],dummy,dummy));
+    PetscCall(MatDestroy(&dummy));
 
     /*
         We override the matrix passed in by forcing it to use Richardson with
         a user provided application. This is non-standard and this practice
         should be avoided.
     */
-    ierr = PCShellSetApply(pc,apply_pc);CHKERRQ(ierr);
-    ierr = PCShellSetApplyRichardson(pc,gauss_seidel);CHKERRQ(ierr);
+    PetscCall(PCShellSetApply(pc,apply_pc));
+    PetscCall(PCShellSetApplyRichardson(pc,gauss_seidel));
     if (use_jacobi) {
-      ierr = PCShellSetApplyRichardson(pc,jacobi_smoother);CHKERRQ(ierr);
+      PetscCall(PCShellSetApplyRichardson(pc,jacobi_smoother));
     }
-    ierr = KSPSetType(ksp[i],KSPRICHARDSON);CHKERRQ(ierr);
-    ierr = KSPSetInitialGuessNonzero(ksp[i],PETSC_TRUE);CHKERRQ(ierr);
-    ierr = KSPSetTolerances(ksp[i],PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,smooths);CHKERRQ(ierr);
+    PetscCall(KSPSetType(ksp[i],KSPRICHARDSON));
+    PetscCall(KSPSetInitialGuessNonzero(ksp[i],PETSC_TRUE));
+    PetscCall(KSPSetTolerances(ksp[i],PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,smooths));
 
-    ierr = VecCreateSeq(PETSC_COMM_SELF,N[i],&x);CHKERRQ(ierr);
+    PetscCall(VecCreateSeq(PETSC_COMM_SELF,N[i],&x));
 
     X[levels - 1 - i] = x;
     if (i > 0) {
-      ierr = PCMGSetX(pcmg,levels - 1 - i,x);CHKERRQ(ierr);
+      PetscCall(PCMGSetX(pcmg,levels - 1 - i,x));
     }
-    ierr = VecCreateSeq(PETSC_COMM_SELF,N[i],&x);CHKERRQ(ierr);
+    PetscCall(VecCreateSeq(PETSC_COMM_SELF,N[i],&x));
 
     B[levels -1 - i] = x;
     if (i > 0) {
-      ierr = PCMGSetRhs(pcmg,levels - 1 - i,x);CHKERRQ(ierr);
+      PetscCall(PCMGSetRhs(pcmg,levels - 1 - i,x));
     }
-    ierr = VecCreateSeq(PETSC_COMM_SELF,N[i],&x);CHKERRQ(ierr);
+    PetscCall(VecCreateSeq(PETSC_COMM_SELF,N[i],&x));
 
     R[levels - 1 - i] = x;
 
-    ierr = PCMGSetR(pcmg,levels - 1 - i,x);CHKERRQ(ierr);
+    PetscCall(PCMGSetR(pcmg,levels - 1 - i,x));
   }
   /* create coarse level vectors */
-  ierr = VecCreateSeq(PETSC_COMM_SELF,N[levels-1],&x);CHKERRQ(ierr);
-  ierr = PCMGSetX(pcmg,0,x);CHKERRQ(ierr); X[0] = x;
-  ierr = VecCreateSeq(PETSC_COMM_SELF,N[levels-1],&x);CHKERRQ(ierr);
-  ierr = PCMGSetRhs(pcmg,0,x);CHKERRQ(ierr); B[0] = x;
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF,N[levels-1],&x));
+  PetscCall(PCMGSetX(pcmg,0,x)); X[0] = x;
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF,N[levels-1],&x));
+  PetscCall(PCMGSetRhs(pcmg,0,x)); B[0] = x;
 
   /* create matrix multiply for finest level */
-  ierr = MatCreateShell(PETSC_COMM_WORLD,N[0],N[0],N[0],N[0],NULL,&fmat);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(fmat,MATOP_MULT,(void (*)(void))amult);CHKERRQ(ierr);
-  ierr = KSPSetOperators(kspmg,fmat,fmat);CHKERRQ(ierr);
+  PetscCall(MatCreateShell(PETSC_COMM_WORLD,N[0],N[0],N[0],N[0],NULL,&fmat));
+  PetscCall(MatShellSetOperation(fmat,MATOP_MULT,(void (*)(void))amult));
+  PetscCall(KSPSetOperators(kspmg,fmat,fmat));
 
-  ierr = CalculateSolution(N[0],&solution);CHKERRQ(ierr);
-  ierr = CalculateRhs(B[levels-1]);CHKERRQ(ierr);
-  ierr = VecSet(X[levels-1],0.0);CHKERRQ(ierr);
+  PetscCall(CalculateSolution(N[0],&solution));
+  PetscCall(CalculateRhs(B[levels-1]));
+  PetscCall(VecSet(X[levels-1],0.0));
 
-  ierr = residual((Mat)0,B[levels-1],X[levels-1],R[levels-1]);CHKERRQ(ierr);
-  ierr = CalculateError(solution,X[levels-1],R[levels-1],e);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"l_2 error %g max error %g resi %g\n",(double)e[0],(double)e[1],(double)e[2]);CHKERRQ(ierr);
+  PetscCall(residual((Mat)0,B[levels-1],X[levels-1],R[levels-1]));
+  PetscCall(CalculateError(solution,X[levels-1],R[levels-1],e));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF,"l_2 error %g max error %g resi %g\n",(double)e[0],(double)e[1],(double)e[2]));
 
-  ierr = KSPSolve(kspmg,B[levels-1],X[levels-1]);CHKERRQ(ierr);
-  ierr = KSPGetIterationNumber(kspmg,&its);CHKERRQ(ierr);
-  ierr = residual((Mat)0,B[levels-1],X[levels-1],R[levels-1]);CHKERRQ(ierr);
-  ierr = CalculateError(solution,X[levels-1],R[levels-1],e);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"its %D l_2 error %g max error %g resi %g\n",its,(double)e[0],(double)e[1],(double)e[2]);CHKERRQ(ierr);
+  PetscCall(KSPSolve(kspmg,B[levels-1],X[levels-1]));
+  PetscCall(KSPGetIterationNumber(kspmg,&its));
+  PetscCall(residual((Mat)0,B[levels-1],X[levels-1],R[levels-1]));
+  PetscCall(CalculateError(solution,X[levels-1],R[levels-1],e));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF,"its %" PetscInt_FMT " l_2 error %g max error %g resi %g\n",its,(double)e[0],(double)e[1],(double)e[2]));
 
-  ierr = PetscFree(N);CHKERRQ(ierr);
-  ierr = VecDestroy(&solution);CHKERRQ(ierr);
+  PetscCall(PetscFree(N));
+  PetscCall(VecDestroy(&solution));
 
   /* note we have to keep a list of all vectors allocated, this is
      not ideal, but putting it in MGDestroy is not so good either*/
   for (i=0; i<levels; i++) {
-    ierr = VecDestroy(&X[i]);CHKERRQ(ierr);
-    ierr = VecDestroy(&B[i]);CHKERRQ(ierr);
-    if (i) {ierr = VecDestroy(&R[i]);CHKERRQ(ierr);}
+    PetscCall(VecDestroy(&X[i]));
+    PetscCall(VecDestroy(&B[i]));
+    if (i) PetscCall(VecDestroy(&R[i]));
   }
   for (i=0; i<levels-1; i++) {
-    ierr = MatDestroy(&mat[i]);CHKERRQ(ierr);
+    PetscCall(MatDestroy(&mat[i]));
   }
-  ierr = MatDestroy(&cmat);CHKERRQ(ierr);
-  ierr = MatDestroy(&fmat);CHKERRQ(ierr);
-  ierr = KSPDestroy(&kspmg);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(MatDestroy(&cmat));
+  PetscCall(MatDestroy(&fmat));
+  PetscCall(KSPDestroy(&kspmg));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /* --------------------------------------------------------------------- */
 PetscErrorCode residual(Mat mat,Vec bb,Vec xx,Vec rr)
 {
   PetscInt          i,n1;
-  PetscErrorCode    ierr;
   PetscScalar       *x,*r;
   const PetscScalar *b;
 
   PetscFunctionBegin;
-  ierr = VecGetSize(bb,&n1);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(rr,&r);CHKERRQ(ierr);
+  PetscCall(VecGetSize(bb,&n1));
+  PetscCall(VecGetArrayRead(bb,&b));
+  PetscCall(VecGetArray(xx,&x));
+  PetscCall(VecGetArray(rr,&r));
   n1--;
   r[0]  = b[0] + x[1] - 2.0*x[0];
   r[n1] = b[n1] + x[n1-1] - 2.0*x[n1];
   for (i=1; i<n1; i++) r[i] = b[i] + x[i+1] + x[i-1] - 2.0*x[i];
-  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(rr,&r);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayRead(bb,&b));
+  PetscCall(VecRestoreArray(xx,&x));
+  PetscCall(VecRestoreArray(rr,&r));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode amult(Mat mat,Vec xx,Vec yy)
 {
   PetscInt          i,n1;
-  PetscErrorCode    ierr;
   PetscScalar       *y;
   const PetscScalar *x;
 
   PetscFunctionBegin;
-  ierr = VecGetSize(xx,&n1);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
+  PetscCall(VecGetSize(xx,&n1));
+  PetscCall(VecGetArrayRead(xx,&x));
+  PetscCall(VecGetArray(yy,&y));
   n1--;
   y[0] =  -x[1] + 2.0*x[0];
   y[n1] = -x[n1-1] + 2.0*x[n1];
   for (i=1; i<n1; i++) y[i] = -x[i+1] - x[i-1] + 2.0*x[i];
-  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayRead(xx,&x));
+  PetscCall(VecRestoreArray(yy,&y));
   PetscFunctionReturn(0);
 }
 
@@ -232,16 +229,15 @@ PetscErrorCode apply_pc(PC pc,Vec bb,Vec xx)
 PetscErrorCode gauss_seidel(PC pc,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal abstol,PetscReal dtol,PetscInt m,PetscBool guesszero,PetscInt *its,PCRichardsonConvergedReason *reason)
 {
   PetscInt          i,n1;
-  PetscErrorCode    ierr;
   PetscScalar       *x;
   const PetscScalar *b;
 
   PetscFunctionBegin;
   *its    = m;
   *reason = PCRICHARDSON_CONVERGED_ITS;
-  ierr    = VecGetSize(bb,&n1);CHKERRQ(ierr); n1--;
-  ierr    = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
-  ierr    = VecGetArray(xx,&x);CHKERRQ(ierr);
+  PetscCall(VecGetSize(bb,&n1)); n1--;
+  PetscCall(VecGetArrayRead(bb,&b));
+  PetscCall(VecGetArray(xx,&x));
   while (m--) {
     x[0] =  .5*(x[1] + b[0]);
     for (i=1; i<n1; i++) x[i] = .5*(x[i+1] + x[i-1] + b[i]);
@@ -249,25 +245,24 @@ PetscErrorCode gauss_seidel(PC pc,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal a
     for (i=n1-1; i>0; i--) x[i] = .5*(x[i+1] + x[i-1] + b[i]);
     x[0] =  .5*(x[1] + b[0]);
   }
-  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayRead(bb,&b));
+  PetscCall(VecRestoreArray(xx,&x));
   PetscFunctionReturn(0);
 }
 /* --------------------------------------------------------------------- */
 PetscErrorCode jacobi_smoother(PC pc,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal abstol,PetscReal dtol,PetscInt m,PetscBool guesszero,PetscInt *its,PCRichardsonConvergedReason *reason)
 {
   PetscInt          i,n,n1;
-  PetscErrorCode    ierr;
   PetscScalar       *r,*x;
   const PetscScalar *b;
 
   PetscFunctionBegin;
   *its    = m;
   *reason = PCRICHARDSON_CONVERGED_ITS;
-  ierr    = VecGetSize(bb,&n);CHKERRQ(ierr); n1 = n - 1;
-  ierr    = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
-  ierr    = VecGetArray(xx,&x);CHKERRQ(ierr);
-  ierr    = VecGetArray(w,&r);CHKERRQ(ierr);
+  PetscCall(VecGetSize(bb,&n)); n1 = n - 1;
+  PetscCall(VecGetArrayRead(bb,&b));
+  PetscCall(VecGetArray(xx,&x));
+  PetscCall(VecGetArray(w,&r));
 
   while (m--) {
     r[0] = .5*(x[1] + b[0]);
@@ -275,9 +270,9 @@ PetscErrorCode jacobi_smoother(PC pc,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscRea
     r[n1] = .5*(x[n1-1] + b[n1]);
     for (i=0; i<n; i++) x[i] = (2.0*r[i] + x[i])/3.0;
   }
-  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(w,&r);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayRead(bb,&b));
+  PetscCall(VecRestoreArray(xx,&x));
+  PetscCall(VecRestoreArray(w,&r));
   PetscFunctionReturn(0);
 }
 /*
@@ -287,14 +282,13 @@ PetscErrorCode jacobi_smoother(PC pc,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscRea
 PetscErrorCode interpolate(Mat mat,Vec xx,Vec yy,Vec zz)
 {
   PetscInt          i,n,N,i2;
-  PetscErrorCode    ierr;
   PetscScalar       *y;
   const PetscScalar *x;
 
   PetscFunctionBegin;
-  ierr = VecGetSize(yy,&N);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
+  PetscCall(VecGetSize(yy,&N));
+  PetscCall(VecGetArrayRead(xx,&x));
+  PetscCall(VecGetArray(yy,&y));
   n    = N/2;
   for (i=0; i<n; i++) {
     i2       = 2*i;
@@ -302,30 +296,29 @@ PetscErrorCode interpolate(Mat mat,Vec xx,Vec yy,Vec zz)
     y[i2+1] +=    x[i];
     y[i2+2] += .5*x[i];
   }
-  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayRead(xx,&x));
+  PetscCall(VecRestoreArray(yy,&y));
   PetscFunctionReturn(0);
 }
 /* --------------------------------------------------------------------- */
 PetscErrorCode restrct(Mat mat,Vec rr,Vec bb)
 {
   PetscInt          i,n,N,i2;
-  PetscErrorCode    ierr;
   PetscScalar       *b;
   const PetscScalar *r;
 
   PetscFunctionBegin;
-  ierr = VecGetSize(rr,&N);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(rr,&r);CHKERRQ(ierr);
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  PetscCall(VecGetSize(rr,&N));
+  PetscCall(VecGetArrayRead(rr,&r));
+  PetscCall(VecGetArray(bb,&b));
   n    = N/2;
 
   for (i=0; i<n; i++) {
     i2   = 2*i;
     b[i] = (r[i2] + 2.0*r[i2+1] + r[i2+2]);
   }
-  ierr = VecRestoreArrayRead(rr,&r);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayRead(rr,&r));
+  PetscCall(VecRestoreArray(bb,&b));
   PetscFunctionReturn(0);
 }
 /* --------------------------------------------------------------------- */
@@ -333,67 +326,62 @@ PetscErrorCode Create1dLaplacian(PetscInt n,Mat *mat)
 {
   PetscScalar    mone = -1.0,two = 2.0;
   PetscInt       i,idx;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,NULL,mat);CHKERRQ(ierr);
+  PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,NULL,mat));
 
   idx  = n-1;
-  ierr = MatSetValues(*mat,1,&idx,1,&idx,&two,INSERT_VALUES);CHKERRQ(ierr);
+  PetscCall(MatSetValues(*mat,1,&idx,1,&idx,&two,INSERT_VALUES));
   for (i=0; i<n-1; i++) {
-    ierr = MatSetValues(*mat,1,&i,1,&i,&two,INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(MatSetValues(*mat,1,&i,1,&i,&two,INSERT_VALUES));
     idx  = i+1;
-    ierr = MatSetValues(*mat,1,&idx,1,&i,&mone,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = MatSetValues(*mat,1,&i,1,&idx,&mone,INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(MatSetValues(*mat,1,&idx,1,&i,&mone,INSERT_VALUES));
+    PetscCall(MatSetValues(*mat,1,&i,1,&idx,&mone,INSERT_VALUES));
   }
-  ierr = MatAssemblyBegin(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(*mat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(*mat,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 /* --------------------------------------------------------------------- */
 PetscErrorCode CalculateRhs(Vec u)
 {
-  PetscErrorCode ierr;
-  PetscInt       i,n;
-  PetscReal      h,x = 0.0;
-  PetscScalar    uu;
+  PetscInt    i,n;
+  PetscReal   h;
+  PetscScalar uu;
 
   PetscFunctionBegin;
-  ierr = VecGetSize(u,&n);CHKERRQ(ierr);
+  PetscCall(VecGetSize(u,&n));
   h    = 1.0/((PetscReal)(n+1));
   for (i=0; i<n; i++) {
-    x   += h; uu = 2.0*h*h;
-    ierr = VecSetValues(u,1,&i,&uu,INSERT_VALUES);CHKERRQ(ierr);
+    uu = 2.0*h*h;
+    PetscCall(VecSetValues(u,1,&i,&uu,INSERT_VALUES));
   }
   PetscFunctionReturn(0);
 }
 /* --------------------------------------------------------------------- */
 PetscErrorCode CalculateSolution(PetscInt n,Vec *solution)
 {
-  PetscErrorCode ierr;
   PetscInt       i;
   PetscReal      h,x = 0.0;
   PetscScalar    uu;
 
   PetscFunctionBegin;
-  ierr = VecCreateSeq(PETSC_COMM_SELF,n,solution);CHKERRQ(ierr);
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF,n,solution));
   h    = 1.0/((PetscReal)(n+1));
   for (i=0; i<n; i++) {
     x   += h; uu = x*(1.-x);
-    ierr = VecSetValues(*solution,1,&i,&uu,INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(VecSetValues(*solution,1,&i,&uu,INSERT_VALUES));
   }
   PetscFunctionReturn(0);
 }
 /* --------------------------------------------------------------------- */
 PetscErrorCode CalculateError(Vec solution,Vec u,Vec r,PetscReal *e)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = VecNorm(r,NORM_2,e+2);CHKERRQ(ierr);
-  ierr = VecWAXPY(r,-1.0,u,solution);CHKERRQ(ierr);
-  ierr = VecNorm(r,NORM_2,e);CHKERRQ(ierr);
-  ierr = VecNorm(r,NORM_1,e+1);CHKERRQ(ierr);
+  PetscCall(VecNorm(r,NORM_2,e+2));
+  PetscCall(VecWAXPY(r,-1.0,u,solution));
+  PetscCall(VecNorm(r,NORM_2,e));
+  PetscCall(VecNorm(r,NORM_1,e+1));
   PetscFunctionReturn(0);
 }
 

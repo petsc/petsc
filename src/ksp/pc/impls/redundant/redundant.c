@@ -22,13 +22,12 @@ typedef struct {
 PetscErrorCode  PCFactorSetShiftType_Redundant(PC pc,MatFactorShiftType shifttype)
 {
   PC_Redundant   *red = (PC_Redundant*)pc->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (red->ksp) {
     PC pc;
-    ierr = KSPGetPC(red->ksp,&pc);CHKERRQ(ierr);
-    ierr = PCFactorSetShiftType(pc,shifttype);CHKERRQ(ierr);
+    PetscCall(KSPGetPC(red->ksp,&pc));
+    PetscCall(PCFactorSetShiftType(pc,shifttype));
   } else {
     red->shifttypeset = PETSC_TRUE;
     red->shifttype    = shifttype;
@@ -39,28 +38,27 @@ PetscErrorCode  PCFactorSetShiftType_Redundant(PC pc,MatFactorShiftType shifttyp
 static PetscErrorCode PCView_Redundant(PC pc,PetscViewer viewer)
 {
   PC_Redundant   *red = (PC_Redundant*)pc->data;
-  PetscErrorCode ierr;
   PetscBool      iascii,isstring;
   PetscViewer    subviewer;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring));
   if (iascii) {
     if (!red->psubcomm) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  Not yet setup\n");CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  Not yet setup\n"));
     } else {
-      ierr = PetscViewerASCIIPrintf(viewer,"  First (color=0) of %D PCs follows\n",red->nsubcomm);CHKERRQ(ierr);
-      ierr = PetscViewerGetSubViewer(viewer,((PetscObject)red->pc)->comm,&subviewer);CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIIPrintf(viewer,"  First (color=0) of %" PetscInt_FMT " PCs follows\n",red->nsubcomm));
+      PetscCall(PetscViewerGetSubViewer(viewer,((PetscObject)red->pc)->comm,&subviewer));
       if (!red->psubcomm->color) { /* only view first redundant pc */
-        ierr = PetscViewerASCIIPushTab(subviewer);CHKERRQ(ierr);
-        ierr = KSPView(red->ksp,subviewer);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPopTab(subviewer);CHKERRQ(ierr);
+        PetscCall(PetscViewerASCIIPushTab(subviewer));
+        PetscCall(KSPView(red->ksp,subviewer));
+        PetscCall(PetscViewerASCIIPopTab(subviewer));
       }
-      ierr = PetscViewerRestoreSubViewer(viewer,((PetscObject)red->pc)->comm,&subviewer);CHKERRQ(ierr);
+      PetscCall(PetscViewerRestoreSubViewer(viewer,((PetscObject)red->pc)->comm,&subviewer));
     }
   } else if (isstring) {
-    ierr = PetscViewerStringSPrintf(viewer," Redundant solver preconditioner");CHKERRQ(ierr);
+    PetscCall(PetscViewerStringSPrintf(viewer," Redundant solver preconditioner"));
   }
   PetscFunctionReturn(0);
 }
@@ -69,71 +67,70 @@ static PetscErrorCode PCView_Redundant(PC pc,PetscViewer viewer)
 static PetscErrorCode PCSetUp_Redundant(PC pc)
 {
   PC_Redundant   *red = (PC_Redundant*)pc->data;
-  PetscErrorCode ierr;
   PetscInt       mstart,mend,mlocal,M;
   PetscMPIInt    size;
   MPI_Comm       comm,subcomm;
   Vec            x;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
+  PetscCall(PetscObjectGetComm((PetscObject)pc,&comm));
 
   /* if pmatrix set by user is sequential then we do not need to gather the parallel matrix */
-  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_size(comm,&size));
   if (size == 1) red->useparallelmat = PETSC_FALSE;
 
   if (!pc->setupcalled) {
     PetscInt mloc_sub;
     if (!red->psubcomm) { /* create red->psubcomm, new ksp and pc over subcomm */
       KSP ksp;
-      ierr = PCRedundantGetKSP(pc,&ksp);CHKERRQ(ierr);
+      PetscCall(PCRedundantGetKSP(pc,&ksp));
     }
     subcomm = PetscSubcommChild(red->psubcomm);
 
     if (red->useparallelmat) {
       /* grab the parallel matrix and put it into processors of a subcomminicator */
-      ierr = MatCreateRedundantMatrix(pc->pmat,red->psubcomm->n,subcomm,MAT_INITIAL_MATRIX,&red->pmats);CHKERRQ(ierr);
+      PetscCall(MatCreateRedundantMatrix(pc->pmat,red->psubcomm->n,subcomm,MAT_INITIAL_MATRIX,&red->pmats));
 
-      ierr = MPI_Comm_size(subcomm,&size);CHKERRMPI(ierr);
+      PetscCallMPI(MPI_Comm_size(subcomm,&size));
       if (size > 1) {
         PetscBool foundpack,issbaij;
-        ierr = PetscObjectTypeCompare((PetscObject)red->pmats,MATMPISBAIJ,&issbaij);CHKERRQ(ierr);
+        PetscCall(PetscObjectTypeCompare((PetscObject)red->pmats,MATMPISBAIJ,&issbaij));
         if (!issbaij) {
-          ierr = MatGetFactorAvailable(red->pmats,NULL,MAT_FACTOR_LU,&foundpack);CHKERRQ(ierr);
+          PetscCall(MatGetFactorAvailable(red->pmats,NULL,MAT_FACTOR_LU,&foundpack));
         } else {
-          ierr = MatGetFactorAvailable(red->pmats,NULL,MAT_FACTOR_CHOLESKY,&foundpack);CHKERRQ(ierr);
+          PetscCall(MatGetFactorAvailable(red->pmats,NULL,MAT_FACTOR_CHOLESKY,&foundpack));
         }
         if (!foundpack) { /* reset default ksp and pc */
-          ierr = KSPSetType(red->ksp,KSPGMRES);CHKERRQ(ierr);
-          ierr = PCSetType(red->pc,PCBJACOBI);CHKERRQ(ierr);
+          PetscCall(KSPSetType(red->ksp,KSPGMRES));
+          PetscCall(PCSetType(red->pc,PCBJACOBI));
         } else {
-          ierr = PCFactorSetMatSolverType(red->pc,NULL);CHKERRQ(ierr);
+          PetscCall(PCFactorSetMatSolverType(red->pc,NULL));
         }
       }
 
-      ierr = KSPSetOperators(red->ksp,red->pmats,red->pmats);CHKERRQ(ierr);
+      PetscCall(KSPSetOperators(red->ksp,red->pmats,red->pmats));
 
       /* get working vectors xsub and ysub */
-      ierr = MatCreateVecs(red->pmats,&red->xsub,&red->ysub);CHKERRQ(ierr);
+      PetscCall(MatCreateVecs(red->pmats,&red->xsub,&red->ysub));
 
       /* create working vectors xdup and ydup.
        xdup concatenates all xsub's contigously to form a mpi vector over dupcomm  (see PetscSubcommCreate_interlaced())
        ydup concatenates all ysub and has empty local arrays because ysub's arrays will be place into it.
        Note: we use communicator dupcomm, not PetscObjectComm((PetscObject)pc)! */
-      ierr = MatGetLocalSize(red->pmats,&mloc_sub,NULL);CHKERRQ(ierr);
-      ierr = VecCreateMPI(PetscSubcommContiguousParent(red->psubcomm),mloc_sub,PETSC_DECIDE,&red->xdup);CHKERRQ(ierr);
-      ierr = VecCreateMPIWithArray(PetscSubcommContiguousParent(red->psubcomm),1,mloc_sub,PETSC_DECIDE,NULL,&red->ydup);CHKERRQ(ierr);
+      PetscCall(MatGetLocalSize(red->pmats,&mloc_sub,NULL));
+      PetscCall(VecCreateMPI(PetscSubcommContiguousParent(red->psubcomm),mloc_sub,PETSC_DECIDE,&red->xdup));
+      PetscCall(VecCreateMPIWithArray(PetscSubcommContiguousParent(red->psubcomm),1,mloc_sub,PETSC_DECIDE,NULL,&red->ydup));
 
       /* create vecscatters */
       if (!red->scatterin) { /* efficiency of scatterin is independent from psubcomm_type! */
         IS       is1,is2;
         PetscInt *idx1,*idx2,i,j,k;
 
-        ierr = MatCreateVecs(pc->pmat,&x,NULL);CHKERRQ(ierr);
-        ierr = VecGetSize(x,&M);CHKERRQ(ierr);
-        ierr = VecGetOwnershipRange(x,&mstart,&mend);CHKERRQ(ierr);
+        PetscCall(MatCreateVecs(pc->pmat,&x,NULL));
+        PetscCall(VecGetSize(x,&M));
+        PetscCall(VecGetOwnershipRange(x,&mstart,&mend));
         mlocal = mend - mstart;
-        ierr = PetscMalloc2(red->psubcomm->n*mlocal,&idx1,red->psubcomm->n*mlocal,&idx2);CHKERRQ(ierr);
+        PetscCall(PetscMalloc2(red->psubcomm->n*mlocal,&idx1,red->psubcomm->n*mlocal,&idx2));
         j    = 0;
         for (k=0; k<red->psubcomm->n; k++) {
           for (i=mstart; i<mend; i++) {
@@ -141,23 +138,23 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
             idx2[j++] = i + M*k;
           }
         }
-        ierr = ISCreateGeneral(comm,red->psubcomm->n*mlocal,idx1,PETSC_COPY_VALUES,&is1);CHKERRQ(ierr);
-        ierr = ISCreateGeneral(comm,red->psubcomm->n*mlocal,idx2,PETSC_COPY_VALUES,&is2);CHKERRQ(ierr);
-        ierr = VecScatterCreate(x,is1,red->xdup,is2,&red->scatterin);CHKERRQ(ierr);
-        ierr = ISDestroy(&is1);CHKERRQ(ierr);
-        ierr = ISDestroy(&is2);CHKERRQ(ierr);
+        PetscCall(ISCreateGeneral(comm,red->psubcomm->n*mlocal,idx1,PETSC_COPY_VALUES,&is1));
+        PetscCall(ISCreateGeneral(comm,red->psubcomm->n*mlocal,idx2,PETSC_COPY_VALUES,&is2));
+        PetscCall(VecScatterCreate(x,is1,red->xdup,is2,&red->scatterin));
+        PetscCall(ISDestroy(&is1));
+        PetscCall(ISDestroy(&is2));
 
         /* Impl below is good for PETSC_SUBCOMM_INTERLACED (no inter-process communication) and PETSC_SUBCOMM_CONTIGUOUS (communication within subcomm) */
-        ierr = ISCreateStride(comm,mlocal,mstart+ red->psubcomm->color*M,1,&is1);CHKERRQ(ierr);
-        ierr = ISCreateStride(comm,mlocal,mstart,1,&is2);CHKERRQ(ierr);
-        ierr = VecScatterCreate(red->xdup,is1,x,is2,&red->scatterout);CHKERRQ(ierr);
-        ierr = ISDestroy(&is1);CHKERRQ(ierr);
-        ierr = ISDestroy(&is2);CHKERRQ(ierr);
-        ierr = PetscFree2(idx1,idx2);CHKERRQ(ierr);
-        ierr = VecDestroy(&x);CHKERRQ(ierr);
+        PetscCall(ISCreateStride(comm,mlocal,mstart+ red->psubcomm->color*M,1,&is1));
+        PetscCall(ISCreateStride(comm,mlocal,mstart,1,&is2));
+        PetscCall(VecScatterCreate(red->xdup,is1,x,is2,&red->scatterout));
+        PetscCall(ISDestroy(&is1));
+        PetscCall(ISDestroy(&is2));
+        PetscCall(PetscFree2(idx1,idx2));
+        PetscCall(VecDestroy(&x));
       }
     } else { /* !red->useparallelmat */
-      ierr = KSPSetOperators(red->ksp,pc->mat,pc->pmat);CHKERRQ(ierr);
+      PetscCall(KSPSetOperators(red->ksp,pc->mat,pc->pmat));
     }
   } else { /* pc->setupcalled */
     if (red->useparallelmat) {
@@ -166,144 +163,144 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
       /*--------------------------------------------------------------------------*/
       if (pc->flag == DIFFERENT_NONZERO_PATTERN) {
         /* destroy old matrices */
-        ierr  = MatDestroy(&red->pmats);CHKERRQ(ierr);
+        PetscCall(MatDestroy(&red->pmats));
         reuse = MAT_INITIAL_MATRIX;
       } else {
         reuse = MAT_REUSE_MATRIX;
       }
-      ierr = MatCreateRedundantMatrix(pc->pmat,red->psubcomm->n,PetscSubcommChild(red->psubcomm),reuse,&red->pmats);CHKERRQ(ierr);
-      ierr = KSPSetOperators(red->ksp,red->pmats,red->pmats);CHKERRQ(ierr);
+      PetscCall(MatCreateRedundantMatrix(pc->pmat,red->psubcomm->n,PetscSubcommChild(red->psubcomm),reuse,&red->pmats));
+      PetscCall(KSPSetOperators(red->ksp,red->pmats,red->pmats));
     } else { /* !red->useparallelmat */
-      ierr = KSPSetOperators(red->ksp,pc->mat,pc->pmat);CHKERRQ(ierr);
+      PetscCall(KSPSetOperators(red->ksp,pc->mat,pc->pmat));
     }
   }
 
   if (pc->setfromoptionscalled) {
-    ierr = KSPSetFromOptions(red->ksp);CHKERRQ(ierr);
+    PetscCall(KSPSetFromOptions(red->ksp));
   }
-  ierr = KSPSetUp(red->ksp);CHKERRQ(ierr);
+  PetscCall(KSPSetUp(red->ksp));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCApply_Redundant(PC pc,Vec x,Vec y)
 {
   PC_Redundant   *red = (PC_Redundant*)pc->data;
-  PetscErrorCode ierr;
   PetscScalar    *array;
 
   PetscFunctionBegin;
   if (!red->useparallelmat) {
-    ierr = KSPSolve(red->ksp,x,y);CHKERRQ(ierr);
-    ierr = KSPCheckSolve(red->ksp,pc,y);CHKERRQ(ierr);
+    PetscCall(KSPSolve(red->ksp,x,y));
+    PetscCall(KSPCheckSolve(red->ksp,pc,y));
     PetscFunctionReturn(0);
   }
 
   /* scatter x to xdup */
-  ierr = VecScatterBegin(red->scatterin,x,red->xdup,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(red->scatterin,x,red->xdup,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  PetscCall(VecScatterBegin(red->scatterin,x,red->xdup,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(red->scatterin,x,red->xdup,INSERT_VALUES,SCATTER_FORWARD));
 
   /* place xdup's local array into xsub */
-  ierr = VecGetArray(red->xdup,&array);CHKERRQ(ierr);
-  ierr = VecPlaceArray(red->xsub,(const PetscScalar*)array);CHKERRQ(ierr);
+  PetscCall(VecGetArray(red->xdup,&array));
+  PetscCall(VecPlaceArray(red->xsub,(const PetscScalar*)array));
 
   /* apply preconditioner on each processor */
-  ierr = KSPSolve(red->ksp,red->xsub,red->ysub);CHKERRQ(ierr);
-  ierr = KSPCheckSolve(red->ksp,pc,red->ysub);CHKERRQ(ierr);
-  ierr = VecResetArray(red->xsub);CHKERRQ(ierr);
-  ierr = VecRestoreArray(red->xdup,&array);CHKERRQ(ierr);
+  PetscCall(KSPSolve(red->ksp,red->xsub,red->ysub));
+  PetscCall(KSPCheckSolve(red->ksp,pc,red->ysub));
+  PetscCall(VecResetArray(red->xsub));
+  PetscCall(VecRestoreArray(red->xdup,&array));
 
   /* place ysub's local array into ydup */
-  ierr = VecGetArray(red->ysub,&array);CHKERRQ(ierr);
-  ierr = VecPlaceArray(red->ydup,(const PetscScalar*)array);CHKERRQ(ierr);
+  PetscCall(VecGetArray(red->ysub,&array));
+  PetscCall(VecPlaceArray(red->ydup,(const PetscScalar*)array));
 
   /* scatter ydup to y */
-  ierr = VecScatterBegin(red->scatterout,red->ydup,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(red->scatterout,red->ydup,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecResetArray(red->ydup);CHKERRQ(ierr);
-  ierr = VecRestoreArray(red->ysub,&array);CHKERRQ(ierr);
+  PetscCall(VecScatterBegin(red->scatterout,red->ydup,y,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(red->scatterout,red->ydup,y,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecResetArray(red->ydup));
+  PetscCall(VecRestoreArray(red->ysub,&array));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCApplyTranspose_Redundant(PC pc,Vec x,Vec y)
 {
   PC_Redundant   *red = (PC_Redundant*)pc->data;
-  PetscErrorCode ierr;
   PetscScalar    *array;
 
   PetscFunctionBegin;
   if (!red->useparallelmat) {
-    ierr = KSPSolveTranspose(red->ksp,x,y);CHKERRQ(ierr);
-    ierr = KSPCheckSolve(red->ksp,pc,y);CHKERRQ(ierr);
+    PetscCall(KSPSolveTranspose(red->ksp,x,y));
+    PetscCall(KSPCheckSolve(red->ksp,pc,y));
     PetscFunctionReturn(0);
   }
 
   /* scatter x to xdup */
-  ierr = VecScatterBegin(red->scatterin,x,red->xdup,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(red->scatterin,x,red->xdup,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  PetscCall(VecScatterBegin(red->scatterin,x,red->xdup,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(red->scatterin,x,red->xdup,INSERT_VALUES,SCATTER_FORWARD));
 
   /* place xdup's local array into xsub */
-  ierr = VecGetArray(red->xdup,&array);CHKERRQ(ierr);
-  ierr = VecPlaceArray(red->xsub,(const PetscScalar*)array);CHKERRQ(ierr);
+  PetscCall(VecGetArray(red->xdup,&array));
+  PetscCall(VecPlaceArray(red->xsub,(const PetscScalar*)array));
 
   /* apply preconditioner on each processor */
-  ierr = KSPSolveTranspose(red->ksp,red->xsub,red->ysub);CHKERRQ(ierr);
-  ierr = KSPCheckSolve(red->ksp,pc,red->ysub);CHKERRQ(ierr);
-  ierr = VecResetArray(red->xsub);CHKERRQ(ierr);
-  ierr = VecRestoreArray(red->xdup,&array);CHKERRQ(ierr);
+  PetscCall(KSPSolveTranspose(red->ksp,red->xsub,red->ysub));
+  PetscCall(KSPCheckSolve(red->ksp,pc,red->ysub));
+  PetscCall(VecResetArray(red->xsub));
+  PetscCall(VecRestoreArray(red->xdup,&array));
 
   /* place ysub's local array into ydup */
-  ierr = VecGetArray(red->ysub,&array);CHKERRQ(ierr);
-  ierr = VecPlaceArray(red->ydup,(const PetscScalar*)array);CHKERRQ(ierr);
+  PetscCall(VecGetArray(red->ysub,&array));
+  PetscCall(VecPlaceArray(red->ydup,(const PetscScalar*)array));
 
   /* scatter ydup to y */
-  ierr = VecScatterBegin(red->scatterout,red->ydup,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(red->scatterout,red->ydup,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecResetArray(red->ydup);CHKERRQ(ierr);
-  ierr = VecRestoreArray(red->ysub,&array);CHKERRQ(ierr);
+  PetscCall(VecScatterBegin(red->scatterout,red->ydup,y,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(red->scatterout,red->ydup,y,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecResetArray(red->ydup));
+  PetscCall(VecRestoreArray(red->ysub,&array));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCReset_Redundant(PC pc)
 {
   PC_Redundant   *red = (PC_Redundant*)pc->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (red->useparallelmat) {
-    ierr = VecScatterDestroy(&red->scatterin);CHKERRQ(ierr);
-    ierr = VecScatterDestroy(&red->scatterout);CHKERRQ(ierr);
-    ierr = VecDestroy(&red->ysub);CHKERRQ(ierr);
-    ierr = VecDestroy(&red->xsub);CHKERRQ(ierr);
-    ierr = VecDestroy(&red->xdup);CHKERRQ(ierr);
-    ierr = VecDestroy(&red->ydup);CHKERRQ(ierr);
+    PetscCall(VecScatterDestroy(&red->scatterin));
+    PetscCall(VecScatterDestroy(&red->scatterout));
+    PetscCall(VecDestroy(&red->ysub));
+    PetscCall(VecDestroy(&red->xsub));
+    PetscCall(VecDestroy(&red->xdup));
+    PetscCall(VecDestroy(&red->ydup));
   }
-  ierr = MatDestroy(&red->pmats);CHKERRQ(ierr);
-  ierr = KSPReset(red->ksp);CHKERRQ(ierr);
+  PetscCall(MatDestroy(&red->pmats));
+  PetscCall(KSPReset(red->ksp));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCDestroy_Redundant(PC pc)
 {
   PC_Redundant   *red = (PC_Redundant*)pc->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PCReset_Redundant(pc);CHKERRQ(ierr);
-  ierr = KSPDestroy(&red->ksp);CHKERRQ(ierr);
-  ierr = PetscSubcommDestroy(&red->psubcomm);CHKERRQ(ierr);
-  ierr = PetscFree(pc->data);CHKERRQ(ierr);
+  PetscCall(PCReset_Redundant(pc));
+  PetscCall(KSPDestroy(&red->ksp));
+  PetscCall(PetscSubcommDestroy(&red->psubcomm));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCRedundantSetScatter_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCRedundantSetNumber_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCRedundantGetKSP_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCRedundantGetOperators_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetShiftType_C",NULL));
+  PetscCall(PetscFree(pc->data));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCSetFromOptions_Redundant(PetscOptionItems *PetscOptionsObject,PC pc)
 {
-  PetscErrorCode ierr;
   PC_Redundant   *red = (PC_Redundant*)pc->data;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead(PetscOptionsObject,"Redundant options");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-pc_redundant_number","Number of redundant pc","PCRedundantSetNumber",red->nsubcomm,&red->nsubcomm,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscOptionsHeadBegin(PetscOptionsObject,"Redundant options");
+  PetscCall(PetscOptionsInt("-pc_redundant_number","Number of redundant pc","PCRedundantSetNumber",red->nsubcomm,&red->nsubcomm,NULL));
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 
@@ -331,28 +328,25 @@ static PetscErrorCode PCRedundantSetNumber_Redundant(PC pc,PetscInt nreds)
 @*/
 PetscErrorCode PCRedundantSetNumber(PC pc,PetscInt nredundant)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCheckFalse(nredundant <= 0,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG, "num of redundant pc %D must be positive",nredundant);
-  ierr = PetscTryMethod(pc,"PCRedundantSetNumber_C",(PC,PetscInt),(pc,nredundant));CHKERRQ(ierr);
+  PetscCheck(nredundant > 0,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG, "num of redundant pc %" PetscInt_FMT " must be positive",nredundant);
+  PetscTryMethod(pc,"PCRedundantSetNumber_C",(PC,PetscInt),(pc,nredundant));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCRedundantSetScatter_Redundant(PC pc,VecScatter in,VecScatter out)
 {
   PC_Redundant   *red = (PC_Redundant*)pc->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectReference((PetscObject)in);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&red->scatterin);CHKERRQ(ierr);
+  PetscCall(PetscObjectReference((PetscObject)in));
+  PetscCall(VecScatterDestroy(&red->scatterin));
 
   red->scatterin  = in;
 
-  ierr = PetscObjectReference((PetscObject)out);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&red->scatterout);CHKERRQ(ierr);
+  PetscCall(PetscObjectReference((PetscObject)out));
+  PetscCall(VecScatterDestroy(&red->scatterout));
   red->scatterout = out;
   PetscFunctionReturn(0);
 }
@@ -374,19 +368,16 @@ static PetscErrorCode PCRedundantSetScatter_Redundant(PC pc,VecScatter in,VecSca
 @*/
 PetscErrorCode PCRedundantSetScatter(PC pc,VecScatter in,VecScatter out)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(in,PETSCSF_CLASSID,2);
   PetscValidHeaderSpecific(out,PETSCSF_CLASSID,3);
-  ierr = PetscTryMethod(pc,"PCRedundantSetScatter_C",(PC,VecScatter,VecScatter),(pc,in,out));CHKERRQ(ierr);
+  PetscTryMethod(pc,"PCRedundantSetScatter_C",(PC,VecScatter,VecScatter),(pc,in,out));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCRedundantGetKSP_Redundant(PC pc,KSP *innerksp)
 {
-  PetscErrorCode ierr;
   PC_Redundant   *red = (PC_Redundant*)pc->data;
   MPI_Comm       comm,subcomm;
   const char     *prefix;
@@ -394,41 +385,41 @@ static PetscErrorCode PCRedundantGetKSP_Redundant(PC pc,KSP *innerksp)
 
   PetscFunctionBegin;
   if (!red->psubcomm) {
-    ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
+    PetscCall(PCGetOptionsPrefix(pc,&prefix));
 
-    ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
-    ierr = PetscSubcommCreate(comm,&red->psubcomm);CHKERRQ(ierr);
-    ierr = PetscSubcommSetNumber(red->psubcomm,red->nsubcomm);CHKERRQ(ierr);
-    ierr = PetscSubcommSetType(red->psubcomm,PETSC_SUBCOMM_CONTIGUOUS);CHKERRQ(ierr);
+    PetscCall(PetscObjectGetComm((PetscObject)pc,&comm));
+    PetscCall(PetscSubcommCreate(comm,&red->psubcomm));
+    PetscCall(PetscSubcommSetNumber(red->psubcomm,red->nsubcomm));
+    PetscCall(PetscSubcommSetType(red->psubcomm,PETSC_SUBCOMM_CONTIGUOUS));
 
-    ierr = PetscSubcommSetOptionsPrefix(red->psubcomm,prefix);CHKERRQ(ierr);
-    ierr = PetscSubcommSetFromOptions(red->psubcomm);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory((PetscObject)pc,sizeof(PetscSubcomm));CHKERRQ(ierr);
+    PetscCall(PetscSubcommSetOptionsPrefix(red->psubcomm,prefix));
+    PetscCall(PetscSubcommSetFromOptions(red->psubcomm));
+    PetscCall(PetscLogObjectMemory((PetscObject)pc,sizeof(PetscSubcomm)));
 
     /* create a new PC that processors in each subcomm have copy of */
     subcomm = PetscSubcommChild(red->psubcomm);
 
-    ierr = KSPCreate(subcomm,&red->ksp);CHKERRQ(ierr);
-    ierr = KSPSetErrorIfNotConverged(red->ksp,pc->erroriffailure);CHKERRQ(ierr);
-    ierr = PetscObjectIncrementTabLevel((PetscObject)red->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)red->ksp);CHKERRQ(ierr);
-    ierr = KSPSetType(red->ksp,KSPPREONLY);CHKERRQ(ierr);
-    ierr = KSPGetPC(red->ksp,&red->pc);CHKERRQ(ierr);
-    ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATSEQSBAIJ,&issbaij);CHKERRQ(ierr);
+    PetscCall(KSPCreate(subcomm,&red->ksp));
+    PetscCall(KSPSetErrorIfNotConverged(red->ksp,pc->erroriffailure));
+    PetscCall(PetscObjectIncrementTabLevel((PetscObject)red->ksp,(PetscObject)pc,1));
+    PetscCall(PetscLogObjectParent((PetscObject)pc,(PetscObject)red->ksp));
+    PetscCall(KSPSetType(red->ksp,KSPPREONLY));
+    PetscCall(KSPGetPC(red->ksp,&red->pc));
+    PetscCall(PetscObjectTypeCompare((PetscObject)pc->pmat,MATSEQSBAIJ,&issbaij));
     if (!issbaij) {
-      ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATMPISBAIJ,&issbaij);CHKERRQ(ierr);
+      PetscCall(PetscObjectTypeCompare((PetscObject)pc->pmat,MATMPISBAIJ,&issbaij));
     }
     if (!issbaij) {
-      ierr = PCSetType(red->pc,PCLU);CHKERRQ(ierr);
+      PetscCall(PCSetType(red->pc,PCLU));
     } else {
-      ierr = PCSetType(red->pc,PCCHOLESKY);CHKERRQ(ierr);
+      PetscCall(PCSetType(red->pc,PCCHOLESKY));
     }
     if (red->shifttypeset) {
-      ierr = PCFactorSetShiftType(red->pc,red->shifttype);CHKERRQ(ierr);
+      PetscCall(PCFactorSetShiftType(red->pc,red->shifttype));
       red->shifttypeset = PETSC_FALSE;
     }
-    ierr = KSPSetOptionsPrefix(red->ksp,prefix);CHKERRQ(ierr);
-    ierr = KSPAppendOptionsPrefix(red->ksp,"redundant_");CHKERRQ(ierr);
+    PetscCall(KSPSetOptionsPrefix(red->ksp,prefix));
+    PetscCall(KSPAppendOptionsPrefix(red->ksp,"redundant_"));
   }
   *innerksp = red->ksp;
   PetscFunctionReturn(0);
@@ -450,12 +441,10 @@ static PetscErrorCode PCRedundantGetKSP_Redundant(PC pc,KSP *innerksp)
 @*/
 PetscErrorCode PCRedundantGetKSP(PC pc,KSP *innerksp)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidPointer(innerksp,2);
-  ierr = PetscUseMethod(pc,"PCRedundantGetKSP_C",(PC,KSP*),(pc,innerksp));CHKERRQ(ierr);
+  PetscUseMethod(pc,"PCRedundantGetKSP_C",(PC,KSP*),(pc,innerksp));
   PetscFunctionReturn(0);
 }
 
@@ -486,13 +475,11 @@ static PetscErrorCode PCRedundantGetOperators_Redundant(PC pc,Mat *mat,Mat *pmat
 @*/
 PetscErrorCode PCRedundantGetOperators(PC pc,Mat *mat,Mat *pmat)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (mat)  PetscValidPointer(mat,2);
   if (pmat) PetscValidPointer(pmat,3);
-  ierr = PetscUseMethod(pc,"PCRedundantGetOperators_C",(PC,Mat*,Mat*),(pc,mat,pmat));CHKERRQ(ierr);
+  PetscUseMethod(pc,"PCRedundantGetOperators_C",(PC,Mat*,Mat*),(pc,mat,pmat));
   PetscFunctionReturn(0);
 }
 
@@ -516,19 +503,18 @@ PetscErrorCode PCRedundantGetOperators(PC pc,Mat *mat,Mat *pmat)
    Developer Notes:
     Note that PCSetInitialGuessNonzero()  is not used by this class but likely should be.
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PCRedundantSetScatter(),
-           PCRedundantGetKSP(), PCRedundantGetOperators(), PCRedundantSetNumber()
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PCRedundantSetScatter()`,
+          `PCRedundantGetKSP()`, `PCRedundantGetOperators()`, `PCRedundantSetNumber()`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_Redundant(PC pc)
 {
-  PetscErrorCode ierr;
   PC_Redundant   *red;
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(pc,&red);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRMPI(ierr);
+  PetscCall(PetscNewLog(pc,&red));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size));
 
   red->nsubcomm       = size;
   red->useparallelmat = PETSC_TRUE;
@@ -542,11 +528,10 @@ PETSC_EXTERN PetscErrorCode PCCreate_Redundant(PC pc)
   pc->ops->setfromoptions = PCSetFromOptions_Redundant;
   pc->ops->view           = PCView_Redundant;
 
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCRedundantSetScatter_C",PCRedundantSetScatter_Redundant);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCRedundantSetNumber_C",PCRedundantSetNumber_Redundant);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCRedundantGetKSP_C",PCRedundantGetKSP_Redundant);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCRedundantGetOperators_C",PCRedundantGetOperators_Redundant);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetShiftType_C",PCFactorSetShiftType_Redundant);CHKERRQ(ierr);
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCRedundantSetScatter_C",PCRedundantSetScatter_Redundant));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCRedundantSetNumber_C",PCRedundantSetNumber_Redundant));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCRedundantGetKSP_C",PCRedundantGetKSP_Redundant));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCRedundantGetOperators_C",PCRedundantGetOperators_Redundant));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetShiftType_C",PCFactorSetShiftType_Redundant));
   PetscFunctionReturn(0);
 }
-

@@ -1,11 +1,6 @@
 
 static char help[] = "Tests MatMPIBAIJSetPreallocationCSR()\n\n";
 
-/*T
-   Concepts: partitioning
-   Processors: 4
-T*/
-
 /*
   Include "petscmat.h" so that we can use matrices.  Note that this file
   automatically includes:
@@ -23,23 +18,22 @@ int main(int argc,char **args)
   PetscInt       N = 9, n;
   PetscInt       rstart, rend, row, col;
   PetscInt       i;
-  PetscErrorCode ierr;
   PetscMPIInt    rank,size;
   Vec            v;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  PetscCheckFalse(size > 4,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Can only use at most 4 processors.");
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCheck(size < 5,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Can only use at most 4 processors.");
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   /* Get a partition range based on the vector size */
-  ierr = VecCreateMPI(PETSC_COMM_WORLD, PETSC_DECIDE, N, &v);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(v, &n);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(v, &rstart, &rend);CHKERRQ(ierr);
-  ierr = VecDestroy(&v);CHKERRQ(ierr);
+  PetscCall(VecCreateMPI(PETSC_COMM_WORLD, PETSC_DECIDE, N, &v));
+  PetscCall(VecGetLocalSize(v, &n));
+  PetscCall(VecGetOwnershipRange(v, &rstart, &rend));
+  PetscCall(VecDestroy(&v));
 
-  ierr = PetscMalloc1(n+1,&ia);CHKERRQ(ierr);
-  ierr = PetscMalloc1(3*n,&ja);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(n+1,&ia));
+  PetscCall(PetscMalloc1(3*n,&ja));
 
   /* Construct a tri-diagonal CSR indexing */
   i = 1;
@@ -73,24 +67,24 @@ int main(int argc,char **args)
     i++;
   }
 
-  ierr = MatCreate(PETSC_COMM_WORLD, &A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A, n, n, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocationCSR(A, ia, ja, NULL);CHKERRQ(ierr);
-  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
+  PetscCall(MatSetSizes(A, n, n, PETSC_DETERMINE, PETSC_DETERMINE));
+  PetscCall(MatSetType(A,MATMPIAIJ));
+  PetscCall(MatMPIAIJSetPreallocationCSR(A, ia, ja, NULL));
+  PetscCall(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatDestroy(&A));
 
-  ierr = MatCreate(PETSC_COMM_WORLD, &A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A, bs*n, bs*n, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATMPIBAIJ);CHKERRQ(ierr);
-  ierr = MatMPIBAIJSetPreallocationCSR(A, bs, ia, ja, NULL);CHKERRQ(ierr);
-  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
+  PetscCall(MatSetSizes(A, bs*n, bs*n, PETSC_DETERMINE, PETSC_DETERMINE));
+  PetscCall(MatSetType(A,MATMPIBAIJ));
+  PetscCall(MatMPIBAIJSetPreallocationCSR(A, bs, ia, ja, NULL));
+  PetscCall(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatDestroy(&A));
 
-  ierr = PetscFree(ia);CHKERRQ(ierr);
-  ierr = PetscFree(ja);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFree(ia));
+  PetscCall(PetscFree(ja));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST
@@ -99,4 +93,3 @@ int main(int argc,char **args)
       nsize: 4
 
 TEST*/
-

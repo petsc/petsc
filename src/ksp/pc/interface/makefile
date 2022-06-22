@@ -1,8 +1,5 @@
 -include ../../../../petscdir.mk
-ALL: lib
 
-CFLAGS    =
-FFLAGS    =
 SOURCEC   = precon.c pcset.c pcregis.c
 SOURCEF   =
 SOURCEH   =

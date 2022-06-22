@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 import os
 petsc_hash_pkgs=os.path.join(os.getenv('HOME'),'petsc-hash-pkgs')
@@ -21,5 +21,8 @@ if __name__ == '__main__':
     '--with-blaslapack-dir='+os.environ['MKLROOT'],
     '--with-mkl_pardiso-dir='+os.environ['MKLROOT'],
     '--with-mkl_cpardiso-dir='+os.environ['MKLROOT'],
+    '--download-superlu_dist',
+    '--download-metis',
+    '--download-parmetis',
   ]
   configure.petsc_configure(configure_options)

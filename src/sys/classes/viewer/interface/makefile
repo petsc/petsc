@@ -1,8 +1,6 @@
-
-ALL: lib
+-include ../../../../../petsckdir.mk
 
 CFLAGS    = -Dhello=hello2
-FFLAGS    =
 SOURCEC   = view.c flush.c viewregall.c viewreg.c viewa.c dlregispetsc.c viewers.c dupl.c
 SOURCEF   =
 SOURCEH   =

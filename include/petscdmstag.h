@@ -4,6 +4,8 @@
 #include <petscdm.h>
 #include <petscdmproduct.h>
 
+/* SUBMANSEC = DMStag */
+
 /*E
   DMStagStencilLocation - enumerated type denoted a location relative to an element in a DMStag grid
 
@@ -11,8 +13,11 @@
 
   Level: beginner
 
-.seealso: DMSTAG, DMStagStencil, DMStagGetLocationSlot()
+.seealso: `DMSTAG`, `DMStagStencil`, `DMStagGetLocationSlot()`
 E*/
+
+/* The order of these entries is significant, as it corresponds to the canonical numbering
+   of DOFs, and the fact the the numbering starts at 0 may also be used by the implementation */
 typedef enum {
 DMSTAG_NULL_LOCATION=0,
 DMSTAG_BACK_DOWN_LEFT,
@@ -57,7 +62,7 @@ PETSC_EXTERN const char *const DMStagStencilLocations[]; /* Corresponding string
 
 Level: beginner
 
-.seealso: DMSTAG, DMStagMatSetValuesStencil(), DMStagVecSetValuesStencil(), DMStagStencilLocation, DMStagSetStencilWidth(), DMStagSetStencilType(), DMStagVecGetValuesStencil()
+.seealso: `DMSTAG`, `DMStagMatSetValuesStencil()`, `DMStagVecSetValuesStencil()`, `DMStagStencilLocation`, `DMStagSetStencilWidth()`, `DMStagSetStencilType()`, `DMStagVecGetValuesStencil()`
 S*/
 typedef struct {
   DMStagStencilLocation loc;
@@ -69,7 +74,7 @@ typedef struct {
 
   Level: beginner
 
-.seealso: DMSTAG, DMStagCreate1d(), DMStagCreate2d(), DMStagCreate3d(), DMStagStencil
+.seealso: `DMSTAG`, `DMStagCreate1d()`, `DMStagCreate2d()`, `DMStagCreate3d()`, `DMStagStencil`
 E*/
 
 typedef enum{DMSTAG_STENCIL_NONE=0,DMSTAG_STENCIL_STAR,DMSTAG_STENCIL_BOX} DMStagStencilType;
@@ -85,6 +90,7 @@ PETSC_EXTERN PetscErrorCode DMStagGetBoundaryTypes(DM,DMBoundaryType*,DMBoundary
 PETSC_EXTERN PetscErrorCode DMStagGetCorners(DM,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMStagGetDOF(DM,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMStagGetEntries(DM,PetscInt*);
+PETSC_EXTERN PetscErrorCode DMStagGetEntriesLocal(DM,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMStagGetEntriesPerElement(DM,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMStagGetGhostCorners(DM,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMStagGetGlobalSizes(DM,PetscInt*,PetscInt*,PetscInt*);
@@ -106,6 +112,7 @@ PETSC_EXTERN PetscErrorCode DMStagMigrateVec(DM,Vec,DM,Vec);
 PETSC_EXTERN PetscErrorCode DMStagPopulateLocalToGlobalInjective(DM);
 PETSC_EXTERN PetscErrorCode DMStagRestoreProductCoordinateArrays(DM,void*,void*,void*);
 PETSC_EXTERN PetscErrorCode DMStagRestoreProductCoordinateArraysRead(DM,void*,void*,void*);
+PETSC_EXTERN PetscErrorCode DMStagRestrictSimple(DM,Vec,DM,Vec);
 PETSC_EXTERN PetscErrorCode DMStagSetBoundaryTypes(DM,DMBoundaryType,DMBoundaryType,DMBoundaryType);
 PETSC_EXTERN PetscErrorCode DMStagSetCoordinateDMType(DM,DMType);
 PETSC_EXTERN PetscErrorCode DMStagSetDOF(DM,PetscInt,PetscInt,PetscInt,PetscInt);

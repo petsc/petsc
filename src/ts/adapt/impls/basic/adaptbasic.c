@@ -10,7 +10,6 @@ static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt,TS ts,PetscReal h,PetscI
   PetscReal      enorma,enormr;
   PetscReal      safety = adapt->safety;
   PetscReal      hfac_lte,h_lte;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   *next_sc = 0;   /* Reuse the same order scheme */
@@ -18,17 +17,17 @@ static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt,TS ts,PetscReal h,PetscI
   *wlter   = -1;  /* Weighted relative local truncation error is not used */
 
   if (ts->ops->evaluatewlte) {
-    ierr = TSEvaluateWLTE(ts,adapt->wnormtype,&order,&enorm);CHKERRQ(ierr);
-    PetscCheckFalse(enorm >= 0 && order < 1,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_OUTOFRANGE,"Computed error order %D must be positive",order);
+    PetscCall(TSEvaluateWLTE(ts,adapt->wnormtype,&order,&enorm));
+    PetscCheck(enorm < 0 || order >= 1,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_OUTOFRANGE,"Computed error order %" PetscInt_FMT " must be positive",order);
   } else if (ts->ops->evaluatestep) {
-    PetscCheckFalse(adapt->candidates.n < 1,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONGSTATE,"No candidate has been registered");
-    PetscCheckFalse(!adapt->candidates.inuse_set,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONGSTATE,"The current in-use scheme is not among the %D candidates",adapt->candidates.n);
+    PetscCheck(adapt->candidates.n >= 1,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONGSTATE,"No candidate has been registered");
+    PetscCheck(adapt->candidates.inuse_set,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONGSTATE,"The current in-use scheme is not among the %" PetscInt_FMT " candidates",adapt->candidates.n);
     order = adapt->candidates.order[0];
-    ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
-    ierr = DMGetGlobalVector(dm,&Y);CHKERRQ(ierr);
-    ierr = TSEvaluateStep(ts,order-1,Y,NULL);CHKERRQ(ierr);
-    ierr = TSErrorWeightedNorm(ts,ts->vec_sol,Y,adapt->wnormtype,&enorm,&enorma,&enormr);CHKERRQ(ierr);
-    ierr = DMRestoreGlobalVector(dm,&Y);CHKERRQ(ierr);
+    PetscCall(TSGetDM(ts,&dm));
+    PetscCall(DMGetGlobalVector(dm,&Y));
+    PetscCall(TSEvaluateStep(ts,order-1,Y,NULL));
+    PetscCall(TSErrorWeightedNorm(ts,ts->vec_sol,Y,adapt->wnormtype,&enorm,&enorma,&enormr));
+    PetscCall(DMRestoreGlobalVector(dm,&Y));
   }
 
   if (enorm < 0) {
@@ -42,17 +41,17 @@ static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt,TS ts,PetscReal h,PetscI
   if (enorm > 1) {
     if (!*accept) safety *= adapt->reject_safety; /* The last attempt also failed, shorten more aggressively */
     if (h < (1 + PETSC_SQRT_MACHINE_EPSILON)*adapt->dt_min) {
-      ierr = PetscInfo(adapt,"Estimated scaled local truncation error %g, accepting because step size %g is at minimum\n",(double)enorm,(double)h);CHKERRQ(ierr);
+      PetscCall(PetscInfo(adapt,"Estimated scaled local truncation error %g, accepting because step size %g is at minimum\n",(double)enorm,(double)h));
       *accept = PETSC_TRUE;
     } else if (adapt->always_accept) {
-      ierr = PetscInfo(adapt,"Estimated scaled local truncation error %g, accepting step of size %g because always_accept is set\n",(double)enorm,(double)h);CHKERRQ(ierr);
+      PetscCall(PetscInfo(adapt,"Estimated scaled local truncation error %g, accepting step of size %g because always_accept is set\n",(double)enorm,(double)h));
       *accept = PETSC_TRUE;
     } else {
-      ierr = PetscInfo(adapt,"Estimated scaled local truncation error %g, rejecting step of size %g\n",(double)enorm,(double)h);CHKERRQ(ierr);
+      PetscCall(PetscInfo(adapt,"Estimated scaled local truncation error %g, rejecting step of size %g\n",(double)enorm,(double)h));
       *accept = PETSC_FALSE;
     }
   } else {
-    ierr = PetscInfo(adapt,"Estimated scaled local truncation error %g, accepting step of size %g\n",(double)enorm,(double)h);CHKERRQ(ierr);
+    PetscCall(PetscInfo(adapt,"Estimated scaled local truncation error %g, accepting step of size %g\n",(double)enorm,(double)h));
     *accept = PETSC_TRUE;
   }
 
@@ -77,7 +76,7 @@ static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt,TS ts,PetscReal h,PetscI
 
    Level: intermediate
 
-.seealso: TS, TSAdapt, TSGetAdapt()
+.seealso: `TS`, `TSAdapt`, `TSGetAdapt()`
 M*/
 PETSC_EXTERN PetscErrorCode TSAdaptCreate_Basic(TSAdapt adapt)
 {

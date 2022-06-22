@@ -8,62 +8,61 @@ int main(int argc, char *argv[])
   const PetscInt n = 10;
   PetscDevice    device = NULL;
   PetscDevice    devices[n];
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
 
   /* normal create and destroy */
-  ierr = PetscDeviceCreate(PETSC_DEVICE_DEFAULT,PETSC_DECIDE,&device);CHKERRQ(ierr);
-  ierr = AssertDeviceExists(device);CHKERRQ(ierr);
-  ierr = PetscDeviceDestroy(&device);CHKERRQ(ierr);
-  ierr = AssertDeviceDoesNotExist(device);CHKERRQ(ierr);
+  PetscCall(PetscDeviceCreate(PETSC_DEVICE_DEFAULT,PETSC_DECIDE,&device));
+  PetscCall(AssertDeviceExists(device));
+  PetscCall(PetscDeviceDestroy(&device));
+  PetscCall(AssertDeviceDoesNotExist(device));
   /* should not destroy twice */
-  ierr = PetscDeviceDestroy(&device);CHKERRQ(ierr);
-  ierr = AssertDeviceDoesNotExist(device);CHKERRQ(ierr);
+  PetscCall(PetscDeviceDestroy(&device));
+  PetscCall(AssertDeviceDoesNotExist(device));
 
   /* test reference counting */
   device = NULL;
-  ierr = PetscArrayzero(devices,n);CHKERRQ(ierr);
-  ierr = PetscDeviceCreate(PETSC_DEVICE_DEFAULT,PETSC_DECIDE,&device);CHKERRQ(ierr);
-  ierr = AssertDeviceExists(device);CHKERRQ(ierr);
+  PetscCall(PetscArrayzero(devices,n));
+  PetscCall(PetscDeviceCreate(PETSC_DEVICE_DEFAULT,PETSC_DECIDE,&device));
+  PetscCall(AssertDeviceExists(device));
   for (int i = 0; i < n; ++i) {
-    ierr = PetscDeviceReference_Internal(device);CHKERRQ(ierr);
+    PetscCall(PetscDeviceReference_Internal(device));
     devices[i] = device;
   }
-  ierr = AssertDeviceExists(device);CHKERRQ(ierr);
+  PetscCall(AssertDeviceExists(device));
   for (int i = 0; i < n; ++i) {
-    ierr = PetscDeviceDestroy(&devices[i]);CHKERRQ(ierr);
-    ierr = AssertDeviceExists(device);CHKERRQ(ierr);
-    ierr = AssertDeviceDoesNotExist(devices[i]);CHKERRQ(ierr);
+    PetscCall(PetscDeviceDestroy(&devices[i]));
+    PetscCall(AssertDeviceExists(device));
+    PetscCall(AssertDeviceDoesNotExist(devices[i]));
   }
-  ierr = PetscDeviceDestroy(&device);CHKERRQ(ierr);
-  ierr = AssertDeviceDoesNotExist(device);CHKERRQ(ierr);
+  PetscCall(PetscDeviceDestroy(&device));
+  PetscCall(AssertDeviceDoesNotExist(device));
 
   /* test the default devices exist */
   device = NULL;
-  ierr = PetscArrayzero(devices,n);CHKERRQ(ierr);
+  PetscCall(PetscArrayzero(devices,n));
   {
     PetscDeviceContext dctx;
     /* global context will have the default device */
-    ierr = PetscDeviceContextGetCurrentContext(&dctx);CHKERRQ(ierr);
-    ierr = PetscDeviceContextGetDevice(dctx,&device);CHKERRQ(ierr);
+    PetscCall(PetscDeviceContextGetCurrentContext(&dctx));
+    PetscCall(PetscDeviceContextGetDevice(dctx,&device));
   }
-  ierr = AssertDeviceExists(device);CHKERRQ(ierr);
+  PetscCall(AssertDeviceExists(device));
   /* test reference counting for default device */
   for (int i = 0; i < n; ++i) {
-    ierr = PetscDeviceReference_Internal(device);CHKERRQ(ierr);
+    PetscCall(PetscDeviceReference_Internal(device));
     devices[i] = device;
   }
-  ierr = AssertDeviceExists(device);CHKERRQ(ierr);
+  PetscCall(AssertDeviceExists(device));
   for (int i = 0; i < n; ++i) {
-    ierr = PetscDeviceDestroy(&devices[i]);CHKERRQ(ierr);
-    ierr = AssertDeviceExists(device);CHKERRQ(ierr);
-    ierr = AssertDeviceDoesNotExist(devices[i]);CHKERRQ(ierr);
+    PetscCall(PetscDeviceDestroy(&devices[i]));
+    PetscCall(AssertDeviceExists(device));
+    PetscCall(AssertDeviceDoesNotExist(devices[i]));
   }
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"EXIT_SUCCESS\n");CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"EXIT_SUCCESS\n"));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST
@@ -72,6 +71,7 @@ int main(int argc, char *argv[])
    requires: defined(PETSC_HAVE_CXX)
 
  testset:
+   TODO: broken in ci
    requires: !device
    suffix: no_device
    filter: Error: grep -E -o -e ".*No support for this operation for this object type" -e ".*PETSc is not configured with device support.*" -e "^\[0\]PETSC ERROR:.*[0-9]{1} [A-z]+\(\)"

@@ -1,4 +1,4 @@
-DM Object: Mesh 1 MPI processes
+DM Object: Mesh 1 MPI process
   type: plex
 Mesh in 2 dimensions:
   Number of 0-cells per rank: 16
@@ -15,7 +15,7 @@ Labels:
   1  time   0.9934  |x| (       0,    1.464) |x|_1 (       0,    9.842)  
   2  time    1.987  |x| (       0,    1.892) |x|_1 (       0,    16.17)  
   3  time     2.98  |x| (       0,    1.978) |x|_1 (       0,     17.6)  
-TS Object: 1 MPI processes
+TS Object: 1 MPI process
   type: ssp
     Scheme: rks2
   maximum steps=1000
@@ -23,6 +23,6 @@ TS Object: 1 MPI processes
   total number of RHS function evaluations=15
   total number of rejected steps=0
   using relative error tolerance of 0.0001,   using absolute error tolerance of 0.0001
-  TSAdapt Object: 1 MPI processes
+  TSAdapt Object: 1 MPI process
     type: none
 CONVERGED_TIME at time 2.98018 after 3 steps

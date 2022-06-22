@@ -6,26 +6,25 @@ static char help[] = "Demonstrates use of color map\n";
 
 int main(int argc,char **argv)
 {
-  PetscDraw      draw;
-  PetscMPIInt    size,rank;
-  PetscErrorCode ierr;
-  int            x = 0,y = 0,width = 256,height = 256,i;
+  PetscDraw   draw;
+  PetscMPIInt size,rank;
+  int         x = 0,y = 0,width = 256,height = 256,i;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
-  ierr = PetscDrawCreate(PETSC_COMM_WORLD,0,"Title",x,y,width,height,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCall(PetscDrawCreate(PETSC_COMM_WORLD,0,"Title",x,y,width,height,&draw));
+  PetscCall(PetscDrawSetFromOptions(draw));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   for (i=rank; i<height; i+=size) {
     PetscReal y = ((PetscReal)i)/(height-1);
-    ierr = PetscDrawLine(draw,0.0,y,1.0,y,i%256);CHKERRQ(ierr);
+    PetscCall(PetscDrawLine(draw,0.0,y,1.0,y,i%256));
   }
-  ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
-  ierr = PetscDrawPause(draw);CHKERRQ(ierr);
-  ierr = PetscDrawSave(draw);CHKERRQ(ierr);
-  ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscDrawFlush(draw));
+  PetscCall(PetscDrawPause(draw));
+  PetscCall(PetscDrawSave(draw));
+  PetscCall(PetscDrawDestroy(&draw));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -264,14 +264,14 @@ PETSC_INTERN PetscErrorCode PetscSFLinkNvshmemCheck(PetscSF,PetscMemType,const v
 static inline PetscErrorCode PetscSFLinkStartCommunication(PetscSF sf,PetscSFLink link,PetscSFDirection direction)
 {
   PetscFunctionBegin;
-  if (link->StartCommunication) {PetscErrorCode ierr = (*link->StartCommunication)(sf,link,direction);CHKERRQ(ierr);}
+  if (link->StartCommunication) PetscCall((*link->StartCommunication)(sf,link,direction));
   PetscFunctionReturn(0);
 }
 
 static inline PetscErrorCode PetscSFLinkFinishCommunication(PetscSF sf,PetscSFLink link,PetscSFDirection direction)
 {
   PetscFunctionBegin;
-  if (link->FinishCommunication) {PetscErrorCode ierr = (*link->FinishCommunication)(sf,link,direction);CHKERRQ(ierr);}
+  if (link->FinishCommunication) PetscCall((*link->FinishCommunication)(sf,link,direction));
   PetscFunctionReturn(0);
 }
 
@@ -282,7 +282,6 @@ static inline PetscErrorCode PetscSFLinkFinishCommunication(PetscSF sf,PetscSFLi
 */
 static inline PetscErrorCode PetscSFLinkCopyRootBufferInCaseNotUseGpuAwareMPI(PetscSF sf,PetscSFLink link,PetscBool device2host)
 {
-  PetscErrorCode ierr;
   PetscSF_Basic  *bas = (PetscSF_Basic*)sf->data;
 
   PetscFunctionBegin;
@@ -292,11 +291,11 @@ static inline PetscErrorCode PetscSFLinkCopyRootBufferInCaseNotUseGpuAwareMPI(Pe
     void  *d_buf = link->rootbuf[PETSCSF_REMOTE][PETSC_MEMTYPE_DEVICE];
     size_t count = bas->rootbuflen[PETSCSF_REMOTE]*link->unitbytes;
     if (device2host) {
-      ierr = (*link->Memcpy)(link,PETSC_MEMTYPE_HOST,h_buf,PETSC_MEMTYPE_DEVICE,d_buf,count);CHKERRQ(ierr);
-      ierr = PetscLogGpuToCpu(count);CHKERRQ(ierr);
+      PetscCall((*link->Memcpy)(link,PETSC_MEMTYPE_HOST,h_buf,PETSC_MEMTYPE_DEVICE,d_buf,count));
+      PetscCall(PetscLogGpuToCpu(count));
     } else {
-      ierr = (*link->Memcpy)(link,PETSC_MEMTYPE_DEVICE,d_buf,PETSC_MEMTYPE_HOST,h_buf,count);CHKERRQ(ierr);
-      ierr = PetscLogCpuToGpu(count);CHKERRQ(ierr);
+      PetscCall((*link->Memcpy)(link,PETSC_MEMTYPE_DEVICE,d_buf,PETSC_MEMTYPE_HOST,h_buf,count));
+      PetscCall(PetscLogCpuToGpu(count));
     }
   }
   PetscFunctionReturn(0);
@@ -304,19 +303,17 @@ static inline PetscErrorCode PetscSFLinkCopyRootBufferInCaseNotUseGpuAwareMPI(Pe
 
 static inline PetscErrorCode PetscSFLinkCopyLeafBufferInCaseNotUseGpuAwareMPI(PetscSF sf,PetscSFLink link,PetscBool device2host)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (PetscMemTypeDevice(link->leafmtype) && PetscMemTypeHost(link->leafmtype_mpi) && sf->leafbuflen[PETSCSF_REMOTE]) {
     void  *h_buf = link->leafbuf[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST];
     void  *d_buf = link->leafbuf[PETSCSF_REMOTE][PETSC_MEMTYPE_DEVICE];
     size_t count = sf->leafbuflen[PETSCSF_REMOTE]*link->unitbytes;
     if (device2host) {
-      ierr = (*link->Memcpy)(link,PETSC_MEMTYPE_HOST,h_buf,PETSC_MEMTYPE_DEVICE,d_buf,count);CHKERRQ(ierr);
-      ierr = PetscLogGpuToCpu(count);CHKERRQ(ierr);
+      PetscCall((*link->Memcpy)(link,PETSC_MEMTYPE_HOST,h_buf,PETSC_MEMTYPE_DEVICE,d_buf,count));
+      PetscCall(PetscLogGpuToCpu(count));
     } else {
-      ierr = (*link->Memcpy)(link,PETSC_MEMTYPE_DEVICE,d_buf,PETSC_MEMTYPE_HOST,h_buf,count);CHKERRQ(ierr);
-      ierr = PetscLogCpuToGpu(count);CHKERRQ(ierr);
+      PetscCall((*link->Memcpy)(link,PETSC_MEMTYPE_DEVICE,d_buf,PETSC_MEMTYPE_HOST,h_buf,count));
+      PetscCall(PetscLogCpuToGpu(count));
     }
   }
   PetscFunctionReturn(0);
@@ -325,7 +322,6 @@ static inline PetscErrorCode PetscSFLinkCopyLeafBufferInCaseNotUseGpuAwareMPI(Pe
 /* Make sure root/leafbuf for the remote is ready for MPI */
 static inline PetscErrorCode PetscSFLinkSyncStreamBeforeCallMPI(PetscSF sf,PetscSFLink link,PetscSFDirection direction)
 {
-  PetscErrorCode ierr;
   PetscSF_Basic  *bas;
   PetscInt       buflen;
   PetscMemType   mtype;
@@ -341,7 +337,7 @@ static inline PetscErrorCode PetscSFLinkSyncStreamBeforeCallMPI(PetscSF sf,Petsc
   }
 
   if (PetscMemTypeDevice(mtype) && buflen) {
-    ierr = (*link->SyncStream)(link);CHKERRQ(ierr);
+    PetscCall((*link->SyncStream)(link));
   }
   PetscFunctionReturn(0);
 }
@@ -385,22 +381,21 @@ static inline PetscErrorCode PetscSFLinkGetRootPackOptAndIndices(PetscSF sf,Pets
     offset = (scope == PETSCSF_LOCAL)? 0 : bas->ioffset[bas->ndiranks];
     if (PetscMemTypeHost(mtype)) {*opt = bas->rootpackopt[scope]; *indices = bas->irootloc + offset;}
     else {
-      PetscErrorCode ierr;
       size_t         size;
       if (bas->rootpackopt[scope]) {
         if (!bas->rootpackopt_d[scope]) {
-          ierr = PetscMalloc1(1,&bas->rootpackopt_d[scope]);CHKERRQ(ierr);
-          ierr = PetscArraycpy(bas->rootpackopt_d[scope],bas->rootpackopt[scope],1);CHKERRQ(ierr); /* Make pointers in bas->rootpackopt_d[] still work on host */
+          PetscCall(PetscMalloc1(1,&bas->rootpackopt_d[scope]));
+          PetscCall(PetscArraycpy(bas->rootpackopt_d[scope],bas->rootpackopt[scope],1)); /* Make pointers in bas->rootpackopt_d[] still work on host */
           size = (bas->rootpackopt[scope]->n*7+2)*sizeof(PetscInt); /* See comments at struct _n_PetscSFPackOpt*/
-          ierr = PetscSFMalloc(sf,PETSC_MEMTYPE_DEVICE,size,(void **)&bas->rootpackopt_d[scope]->array);CHKERRQ(ierr);
-          ierr = (*link->Memcpy)(link,PETSC_MEMTYPE_DEVICE,bas->rootpackopt_d[scope]->array,PETSC_MEMTYPE_HOST,bas->rootpackopt[scope]->array,size);CHKERRQ(ierr);
+          PetscCall(PetscSFMalloc(sf,PETSC_MEMTYPE_DEVICE,size,(void **)&bas->rootpackopt_d[scope]->array));
+          PetscCall((*link->Memcpy)(link,PETSC_MEMTYPE_DEVICE,bas->rootpackopt_d[scope]->array,PETSC_MEMTYPE_HOST,bas->rootpackopt[scope]->array,size));
         }
         *opt = bas->rootpackopt_d[scope];
       } else { /* On device, we only provide indices when there is no optimization. We're reluctant to copy indices to device. */
         if (!bas->irootloc_d[scope]) {
           size = bas->rootbuflen[scope]*sizeof(PetscInt);
-          ierr = PetscSFMalloc(sf,PETSC_MEMTYPE_DEVICE,size,(void **)&bas->irootloc_d[scope]);CHKERRQ(ierr);
-          ierr = (*link->Memcpy)(link,PETSC_MEMTYPE_DEVICE,bas->irootloc_d[scope],PETSC_MEMTYPE_HOST,bas->irootloc+offset,size);CHKERRQ(ierr);
+          PetscCall(PetscSFMalloc(sf,PETSC_MEMTYPE_DEVICE,size,(void **)&bas->irootloc_d[scope]));
+          PetscCall((*link->Memcpy)(link,PETSC_MEMTYPE_DEVICE,bas->irootloc_d[scope],PETSC_MEMTYPE_HOST,bas->irootloc+offset,size));
         }
         *indices = bas->irootloc_d[scope];
       }
@@ -426,22 +421,21 @@ static inline PetscErrorCode PetscSFLinkGetLeafPackOptAndIndices(PetscSF sf,Pets
     offset = (scope == PETSCSF_LOCAL)? 0 : sf->roffset[sf->ndranks];
     if (PetscMemTypeHost(mtype)) {*opt = sf->leafpackopt[scope]; *indices = sf->rmine + offset;}
     else {
-      PetscErrorCode ierr;
       size_t         size;
       if (sf->leafpackopt[scope]) {
         if (!sf->leafpackopt_d[scope]) {
-          ierr = PetscMalloc1(1,&sf->leafpackopt_d[scope]);CHKERRQ(ierr);
-          ierr = PetscArraycpy(sf->leafpackopt_d[scope],sf->leafpackopt[scope],1);CHKERRQ(ierr);
+          PetscCall(PetscMalloc1(1,&sf->leafpackopt_d[scope]));
+          PetscCall(PetscArraycpy(sf->leafpackopt_d[scope],sf->leafpackopt[scope],1));
           size = (sf->leafpackopt[scope]->n*7+2)*sizeof(PetscInt); /* See comments at struct _n_PetscSFPackOpt*/
-          ierr = PetscSFMalloc(sf,PETSC_MEMTYPE_DEVICE,size,(void **)&sf->leafpackopt_d[scope]->array);CHKERRQ(ierr); /* Change ->array to a device pointer */
-          ierr = (*link->Memcpy)(link,PETSC_MEMTYPE_DEVICE,sf->leafpackopt_d[scope]->array,PETSC_MEMTYPE_HOST,sf->leafpackopt[scope]->array,size);CHKERRQ(ierr);
+          PetscCall(PetscSFMalloc(sf,PETSC_MEMTYPE_DEVICE,size,(void **)&sf->leafpackopt_d[scope]->array)); /* Change ->array to a device pointer */
+          PetscCall((*link->Memcpy)(link,PETSC_MEMTYPE_DEVICE,sf->leafpackopt_d[scope]->array,PETSC_MEMTYPE_HOST,sf->leafpackopt[scope]->array,size));
         }
         *opt = sf->leafpackopt_d[scope];
       } else {
         if (!sf->rmine_d[scope]) {
           size = sf->leafbuflen[scope]*sizeof(PetscInt);
-          ierr = PetscSFMalloc(sf,PETSC_MEMTYPE_DEVICE,size,(void **)&sf->rmine_d[scope]);CHKERRQ(ierr);
-          ierr = (*link->Memcpy)(link,PETSC_MEMTYPE_DEVICE,sf->rmine_d[scope],PETSC_MEMTYPE_HOST,sf->rmine+offset,size);CHKERRQ(ierr);
+          PetscCall(PetscSFMalloc(sf,PETSC_MEMTYPE_DEVICE,size,(void **)&sf->rmine_d[scope]));
+          PetscCall((*link->Memcpy)(link,PETSC_MEMTYPE_DEVICE,sf->rmine_d[scope],PETSC_MEMTYPE_HOST,sf->rmine+offset,size));
         }
         *indices = sf->rmine_d[scope];
       }

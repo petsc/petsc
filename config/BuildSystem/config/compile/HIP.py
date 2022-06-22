@@ -25,7 +25,7 @@ class Preprocessor(config.compile.processor.Processor):
 
 class Compiler(config.compile.processor.Processor):
   '''The HIP compiler'''
-  def __init__(self, argDB, usePreprocessorFlags = False):
+  def __init__(self, argDB, usePreprocessorFlags = True):
     config.compile.processor.Processor.__init__(self, argDB, 'HIPC', 'HIPFLAGS', '.hip.cpp', '.o')
     self.language        = 'HIP'
     self.requiredFlags[-1]  = '-c'

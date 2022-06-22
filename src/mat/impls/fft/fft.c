@@ -6,16 +6,13 @@
 
 PetscErrorCode MatDestroy_FFT(Mat A)
 {
-  PetscErrorCode ierr;
-  Mat_FFT        *fft = (Mat_FFT*)A->data;
+  Mat_FFT *fft = (Mat_FFT*)A->data;
 
   PetscFunctionBegin;
-  if (fft->matdestroy) {
-    ierr = (fft->matdestroy)(A);CHKERRQ(ierr);
-  }
-  ierr = PetscFree(fft->dim);CHKERRQ(ierr);
-  ierr = PetscFree(A->data);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)A,NULL);CHKERRQ(ierr);
+  if (fft->matdestroy) PetscCall((fft->matdestroy)(A));
+  PetscCall(PetscFree(fft->dim));
+  PetscCall(PetscFree(A->data));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)A,NULL));
   PetscFunctionReturn(0);
 }
 
@@ -40,11 +37,10 @@ PetscErrorCode MatDestroy_FFT(Mat A)
 
    Level: intermediate
 
-.seealso: MatCreateVecsFFTW()
+.seealso: `MatCreateVecsFFTW()`
 @*/
 PetscErrorCode MatCreateFFT(MPI_Comm comm,PetscInt ndim,const PetscInt dim[],MatType mattype,Mat *A)
 {
-  PetscErrorCode ierr;
   PetscMPIInt    size;
   Mat            FFT;
   PetscInt       N,i;
@@ -53,32 +49,32 @@ PetscErrorCode MatCreateFFT(MPI_Comm comm,PetscInt ndim,const PetscInt dim[],Mat
   PetscFunctionBegin;
   PetscValidIntPointer(dim,3);
   PetscValidPointer(A,5);
-  PetscCheckFalse(ndim < 1,comm,PETSC_ERR_USER,"ndim %" PetscInt_FMT " must be > 0",ndim);
-  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
+  PetscCheck(ndim >= 1,comm,PETSC_ERR_USER,"ndim %" PetscInt_FMT " must be > 0",ndim);
+  PetscCallMPI(MPI_Comm_size(comm, &size));
 
-  ierr      = MatCreate(comm,&FFT);CHKERRQ(ierr);
-  ierr      = PetscNewLog(FFT,&fft);CHKERRQ(ierr);
+  PetscCall(MatCreate(comm,&FFT));
+  PetscCall(PetscNewLog(FFT,&fft));
   FFT->data = (void*)fft;
   N         = 1;
   for (i=0; i<ndim; i++) {
-    PetscCheckFalse(dim[i] < 1,PETSC_COMM_SELF,PETSC_ERR_USER,"dim[%" PetscInt_FMT "]=%" PetscInt_FMT " must be > 0",i,dim[i]);
+    PetscCheck(dim[i] >= 1,PETSC_COMM_SELF,PETSC_ERR_USER,"dim[%" PetscInt_FMT "]=%" PetscInt_FMT " must be > 0",i,dim[i]);
     N *= dim[i];
   }
 
-  ierr = PetscMalloc1(ndim,&fft->dim);CHKERRQ(ierr);
-  ierr = PetscArraycpy(fft->dim,dim,ndim);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(ndim,&fft->dim));
+  PetscCall(PetscArraycpy(fft->dim,dim,ndim));
 
   fft->ndim = ndim;
   fft->n    = PETSC_DECIDE;
   fft->N    = N;
   fft->data = NULL;
 
-  ierr = MatSetType(FFT,mattype);CHKERRQ(ierr);
+  PetscCall(MatSetType(FFT,mattype));
 
   FFT->ops->destroy = MatDestroy_FFT;
 
-  /* get runtime options */
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)FFT),((PetscObject)FFT)->prefix,"FFT Options","Mat");CHKERRQ(ierr);
+  /* get runtime options... what options? */
+  PetscObjectOptionsBegin((PetscObject)FFT);
   PetscOptionsEnd();
 
   *A = FFT;

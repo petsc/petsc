@@ -12,60 +12,79 @@ PETSC_EXTERN PetscErrorCode PetscGatherMessageLengths_Private(MPI_Comm,PetscMPII
   */
   static inline PetscMPIInt PetscMPIIntCast_Internal(PetscInt a,PetscMPIInt *b)
   {
-   #if defined(PETSC_USE_64BIT_INDICES)
-    if (a > PETSC_MPI_INT_MAX) return MPI_ERR_COUNT;
-   #endif
     *b = (PetscMPIInt)(a);
+    if (PetscDefined(USE_64BIT_INDICIES) && PetscUnlikely(a > PETSC_MPI_INT_MAX)) return MPI_ERR_COUNT;
     return MPI_SUCCESS;
   }
 
   static inline PetscMPIInt MPIU_Send(const void *buf,PetscInt count,MPI_Datatype datatype,PetscMPIInt dest,PetscMPIInt tag,MPI_Comm comm)
   {
-    PetscMPIInt  ierr,count2;
-    ierr = PetscMPIIntCast_Internal(count,&count2); if (ierr) return ierr;
-    ierr = MPI_Send(buf,count2,datatype,dest,tag,comm); return ierr;
+    PetscMPIInt count2;
+
+    PetscFunctionBegin;
+    PetscCallMPI(PetscMPIIntCast_Internal(count,&count2));
+    PetscCallMPI(MPI_Send(buf,count2,datatype,dest,tag,comm));
+    PetscFunctionReturn(MPI_SUCCESS);
   }
 
   static inline PetscMPIInt MPIU_Send_init(const void *buf,PetscInt count,MPI_Datatype datatype,PetscMPIInt dest,PetscMPIInt tag,MPI_Comm comm,MPI_Request *request)
   {
-    PetscMPIInt  ierr,count2;
-    ierr = PetscMPIIntCast_Internal(count,&count2); if (ierr) return ierr;
-    ierr = MPI_Send_init(buf,count2,datatype,dest,tag,comm,request); return ierr;
+    PetscMPIInt count2;
+
+    PetscFunctionBegin;
+    PetscCallMPI(PetscMPIIntCast_Internal(count,&count2));
+    PetscCallMPI(MPI_Send_init(buf,count2,datatype,dest,tag,comm,request));
+    PetscFunctionReturn(MPI_SUCCESS);
   }
 
   static inline PetscMPIInt MPIU_Isend(const void *buf,PetscInt count,MPI_Datatype datatype,PetscMPIInt dest,PetscMPIInt tag,MPI_Comm comm,MPI_Request *request)
   {
-    PetscMPIInt  ierr,count2;
-    ierr = PetscMPIIntCast_Internal(count,&count2); if (ierr) return ierr;
-    ierr = MPI_Isend(buf,count2,datatype,dest,tag,comm,request); return ierr;
+    PetscMPIInt count2;
+
+    PetscFunctionBegin;
+    PetscCallMPI(PetscMPIIntCast_Internal(count,&count2));
+    PetscCallMPI(MPI_Isend(buf,count2,datatype,dest,tag,comm,request));
+    PetscFunctionReturn(MPI_SUCCESS);
   }
 
   static inline PetscMPIInt MPIU_Recv(void *buf,PetscInt count,MPI_Datatype datatype,PetscMPIInt source,PetscMPIInt tag,MPI_Comm comm,MPI_Status *status)
   {
-    PetscMPIInt  ierr,count2;
-    ierr = PetscMPIIntCast_Internal(count,&count2); if (ierr) return ierr;
-    ierr = MPI_Recv(buf,count2,datatype,source,tag,comm,status); return ierr;
+    PetscMPIInt count2;
+
+    PetscFunctionBegin;
+    PetscCallMPI(PetscMPIIntCast_Internal(count,&count2));
+    PetscCallMPI(MPI_Recv(buf,count2,datatype,source,tag,comm,status));
+    PetscFunctionReturn(MPI_SUCCESS);
   }
 
   static inline PetscMPIInt MPIU_Recv_init(void *buf,PetscInt count,MPI_Datatype datatype,PetscMPIInt source,PetscMPIInt tag,MPI_Comm comm,MPI_Request* request)
   {
-    PetscMPIInt  ierr,count2;
-    ierr = PetscMPIIntCast_Internal(count,&count2); if (ierr) return ierr;
-    ierr = MPI_Recv_init(buf,count2,datatype,source,tag,comm,request); return ierr;
+    PetscMPIInt count2;
+
+    PetscFunctionBegin;
+    PetscCallMPI(PetscMPIIntCast_Internal(count,&count2));
+    PetscCallMPI(MPI_Recv_init(buf,count2,datatype,source,tag,comm,request));
+    PetscFunctionReturn(MPI_SUCCESS);
   }
 
   static inline PetscMPIInt MPIU_Irecv(void *buf,PetscInt count,MPI_Datatype datatype,PetscMPIInt source,PetscMPIInt tag,MPI_Comm comm,MPI_Request* request)
   {
-    PetscMPIInt  ierr,count2;
-    ierr = PetscMPIIntCast_Internal(count,&count2); if (ierr) return ierr;
-    ierr = MPI_Irecv(buf,count2,datatype,source,tag,comm,request); return ierr;
+    PetscMPIInt count2;
+
+    PetscFunctionBegin;
+    PetscCallMPI(PetscMPIIntCast_Internal(count,&count2));
+    PetscCallMPI(MPI_Irecv(buf,count2,datatype,source,tag,comm,request));
+    PetscFunctionReturn(MPI_SUCCESS);
   }
  #if defined(PETSC_HAVE_MPI_REDUCE_LOCAL)
   static inline PetscMPIInt MPIU_Reduce_local(const void *inbuf,void *inoutbuf,PetscInt count,MPI_Datatype datatype,MPI_Op op)
   {
-    PetscMPIInt  ierr,count2;
-    ierr = PetscMPIIntCast_Internal(count,&count2); if (ierr) return ierr;
-    ierr = MPI_Reduce_local(inbuf,inoutbuf,count,datatype,op); return ierr;
+    PetscMPIInt count2;
+
+    PetscFunctionBegin;
+    PetscCallMPI(PetscMPIIntCast_Internal(count,&count2));
+    PetscCallMPI(MPI_Reduce_local(inbuf,inoutbuf,count,datatype,op));
+    PetscFunctionReturn(MPI_SUCCESS);
   }
  #endif
 

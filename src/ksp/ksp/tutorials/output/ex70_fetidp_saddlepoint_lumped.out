@@ -1,23 +1,7 @@
-DM Object: 4 MPI processes
+DM Object: Material Point Swarm 4 MPI processes
   type: swarm
-DMSwarmDataBucketView: 
-  L                  = 141829 
-  buffer             = 100 
-  allocated          = 141929 
-  nfields registered = 6 
-    [  0]     DMSwarm_pid : Mem. usage       = 1.14e+00 (MB) [rank0]
-                            blocksize        = 1 
-    [  1]    DMSwarm_rank : Mem. usage       = 5.68e-01 (MB) [rank0]
-                            blocksize        = 1 
-    [  2] DMSwarmPIC_coor : Mem. usage       = 2.27e+00 (MB) [rank0]
-                            blocksize        = 2 
-    [  3]  DMSwarm_cellid : Mem. usage       = 5.68e-01 (MB) [rank0]
-                            blocksize        = 1 
-    [  4]             eta : Mem. usage       = 1.14e+00 (MB) [rank0]
-                            blocksize        = 1 
-    [  5]             rho : Mem. usage       = 1.14e+00 (MB) [rank0]
-                            blocksize        = 1 
-  Total mem. usage                           = 1.63e+01 (MB) (collective)
+Material Point Swarm in 2 dimensions:
+  Number of particles per rank: 141829 141829 27352 27352
 .... assemble
 .... bc imposition
 .... solve

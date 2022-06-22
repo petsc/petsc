@@ -7,19 +7,17 @@ int main(int argc,char **args)
 {
   Vec            b;
   PetscViewer    fd;               /* viewer */
-  PetscErrorCode ierr;
   PetscInt       i;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   fd = PETSC_VIEWER_SOCKET_WORLD;
 
   for (i=0; i<1000; i++) {
-    ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
-    ierr = VecLoad(b,fd);CHKERRQ(ierr);
-    ierr = VecView(b,fd);CHKERRQ(ierr);
-    ierr = VecDestroy(&b);CHKERRQ(ierr);
+    PetscCall(VecCreate(PETSC_COMM_WORLD,&b));
+    PetscCall(VecLoad(b,fd));
+    PetscCall(VecView(b,fd));
+    PetscCall(VecDestroy(&b));
   }
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
-

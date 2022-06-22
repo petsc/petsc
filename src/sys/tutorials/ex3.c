@@ -6,14 +6,6 @@ following options to generate logging information:  -log, -log_view,\n\
 so this monitoring is intended solely for users to employ in application\n\
 codes.\n\n";
 
-/*T
-   Concepts: PetscLog^user-defined event profiling
-   Concepts: profiling^user-defined event
-   Concepts: PetscLog^activating/deactivating events for profiling
-   Concepts: profiling^activating/deactivating events
-   Processors: n
-T*/
-
 /*
   Include "petscsys.h" so that we can use PETSc profiling routines.
 */
@@ -22,12 +14,11 @@ T*/
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscMPIInt    rank;
   int            i,imax=10000,icount;
   PetscLogEvent  USER_EVENT,check_USER_EVENT;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
 
   /*
      Create a new user-defined event.
@@ -37,47 +28,47 @@ int main(int argc,char **argv)
       - The user can also optionally log floating point operations
         with the routine PetscLogFlops().
   */
-  ierr = PetscLogEventRegister("User event",PETSC_VIEWER_CLASSID,&USER_EVENT);CHKERRQ(ierr);
-  ierr = PetscLogEventGetId("User event",&check_USER_EVENT);CHKERRQ(ierr);
-  PetscCheckFalse(USER_EVENT != check_USER_EVENT,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Event Ids do not match");
+  PetscCall(PetscLogEventRegister("User event",PETSC_VIEWER_CLASSID,&USER_EVENT));
+  PetscCall(PetscLogEventGetId("User event",&check_USER_EVENT));
+  PetscCheck(USER_EVENT == check_USER_EVENT,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Event Ids do not match");
 
-  ierr = PetscLogEventBegin(USER_EVENT,0,0,0,0);CHKERRQ(ierr);
+  PetscCall(PetscLogEventBegin(USER_EVENT,0,0,0,0));
   icount = 0;
   for (i=0; i<imax; i++) icount++;
-  ierr = PetscLogFlops(imax);CHKERRQ(ierr);
-  ierr = PetscSleep(0.5);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(USER_EVENT,0,0,0,0);CHKERRQ(ierr);
+  PetscCall(PetscLogFlops(imax));
+  PetscCall(PetscSleep(0.5));
+  PetscCall(PetscLogEventEnd(USER_EVENT,0,0,0,0));
 
   /*
      We disable the logging of an event.
 
   */
-  ierr = PetscLogEventDeactivate(USER_EVENT);CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(USER_EVENT,0,0,0,0);CHKERRQ(ierr);
-  ierr = PetscSleep(0.5);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(USER_EVENT,0,0,0,0);CHKERRQ(ierr);
+  PetscCall(PetscLogEventDeactivate(USER_EVENT));
+  PetscCall(PetscLogEventBegin(USER_EVENT,0,0,0,0));
+  PetscCall(PetscSleep(0.5));
+  PetscCall(PetscLogEventEnd(USER_EVENT,0,0,0,0));
 
   /*
      We next enable the logging of an event
   */
-  ierr = PetscLogEventActivate(USER_EVENT);CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(USER_EVENT,0,0,0,0);CHKERRQ(ierr);
-  ierr = PetscSleep(0.5);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(USER_EVENT,0,0,0,0);CHKERRQ(ierr);
+  PetscCall(PetscLogEventActivate(USER_EVENT));
+  PetscCall(PetscLogEventBegin(USER_EVENT,0,0,0,0));
+  PetscCall(PetscSleep(0.5));
+  PetscCall(PetscLogEventEnd(USER_EVENT,0,0,0,0));
 
   /*
      We test event logging imbalance
   */
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  if (rank == 0) {ierr = PetscSleep(0.5);CHKERRQ(ierr);}
-  ierr = PetscLogEventSync(USER_EVENT,PETSC_COMM_WORLD);CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(USER_EVENT,0,0,0,0);CHKERRQ(ierr);
-  ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRMPI(ierr);
-  ierr = PetscSleep(0.5);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(USER_EVENT,0,0,0,0);CHKERRQ(ierr);
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  if (rank == 0) PetscCall(PetscSleep(0.5));
+  PetscCall(PetscLogEventSync(USER_EVENT,PETSC_COMM_WORLD));
+  PetscCall(PetscLogEventBegin(USER_EVENT,0,0,0,0));
+  PetscCallMPI(MPI_Barrier(PETSC_COMM_WORLD));
+  PetscCall(PetscSleep(0.5));
+  PetscCall(PetscLogEventEnd(USER_EVENT,0,0,0,0));
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -15,28 +15,24 @@
       character*(PETSC_MAX_PATH_LEN) f
       PetscBool                      flg
 
-      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      if (ierr .ne. 0) then
-        print*,'Unable to initialize PETSc'
-        stop
-      endif
+      PetscCallA(PetscInitialize(ierr))
 
-      call PetscOptionsGetString(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-f',f,flg,ierr);CHKERRA(ierr)
-      call PetscViewerBinaryOpen(PETSC_COMM_WORLD,f,FILE_MODE_READ,v,ierr);CHKERRA(ierr)
+      PetscCallA(PetscOptionsGetString(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-f',f,flg,ierr))
+      PetscCallA(PetscViewerBinaryOpen(PETSC_COMM_WORLD,f,FILE_MODE_READ,v,ierr))
 
-      call MatCreate(PETSC_COMM_WORLD,A,ierr);CHKERRA(ierr)
-      call MatSetType(A, MATSEQAIJ,ierr);CHKERRA(ierr)
-      call MatLoad(A,v,ierr);CHKERRA(ierr)
+      PetscCallA(MatCreate(PETSC_COMM_WORLD,A,ierr))
+      PetscCallA(MatSetType(A, MATSEQAIJ,ierr))
+      PetscCallA(MatLoad(A,v,ierr))
 
-      call MatView(A,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)
+      PetscCallA(MatView(A,PETSC_VIEWER_STDOUT_WORLD,ierr))
 
-      call MatSeqAIJGetArrayF90(A,aa,ierr);CHKERRA(ierr)
+      PetscCallA(MatSeqAIJGetArrayF90(A,aa,ierr))
       print*,aa(3)
 
-      call MatDestroy(A,ierr);CHKERRA(ierr)
-      call PetscViewerDestroy(v,ierr);CHKERRA(ierr)
+      PetscCallA(MatDestroy(A,ierr))
+      PetscCallA(PetscViewerDestroy(v,ierr))
 
-      call PetscFinalize(ierr)
+      PetscCallA(PetscFinalize(ierr))
       end
 
 !/*TEST

@@ -10,7 +10,6 @@ static char help[] = "Test memory scalable AO.\n\n";
 
 int main(int argc, char *argv[])
 {
-  PetscInt              ierr;
   PetscInt              n_global = 16;
   MPI_Comm              comm;
   PetscLayout           layout;
@@ -23,19 +22,19 @@ int main(int argc, char *argv[])
   IS                    app_is, petsc_is;
   const PetscInt        n_loc = 8;
 
-  ierr = PetscInitialize(&argc, &argv, (char *) 0, help); if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc, &argv, (char *) 0, help));
   comm = PETSC_COMM_WORLD;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
 
-  ierr = PetscLayoutCreate(comm, &layout);CHKERRQ(ierr);
-  ierr = PetscLayoutSetSize(layout, n_global);CHKERRQ(ierr);
-  ierr = PetscLayoutSetLocalSize(layout, PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(layout);CHKERRQ(ierr);
-  ierr = PetscLayoutGetLocalSize(layout, &local_size);CHKERRQ(ierr);
-  ierr = PetscLayoutGetRange(layout, &start, &end);CHKERRQ(ierr);
+  PetscCall(PetscLayoutCreate(comm, &layout));
+  PetscCall(PetscLayoutSetSize(layout, n_global));
+  PetscCall(PetscLayoutSetLocalSize(layout, PETSC_DECIDE));
+  PetscCall(PetscLayoutSetUp(layout));
+  PetscCall(PetscLayoutGetLocalSize(layout, &local_size));
+  PetscCall(PetscLayoutGetRange(layout, &start, &end));
 
-  ierr = PetscMalloc1(local_size,&app_indices);CHKERRQ(ierr);
-  ierr = PetscMalloc1(local_size,&petsc_indices);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(local_size,&app_indices));
+  PetscCall(PetscMalloc1(local_size,&petsc_indices));
   /*  Add values for local indices for usual states */
   for (i = 0; i < local_size; ++i) {
     app_indices[i] = start + i;
@@ -43,19 +42,19 @@ int main(int argc, char *argv[])
   }
 
   /* Create the AO object that maps from lexicographic ordering to Petsc Vec ordering */
-  ierr = ISCreateGeneral(comm, local_size, &app_indices[0], PETSC_COPY_VALUES, &app_is);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(comm, local_size, &petsc_indices[0], PETSC_COPY_VALUES, &petsc_is);CHKERRQ(ierr);
-  ierr = AOCreate(comm, &app2petsc);CHKERRQ(ierr);
-  ierr = AOSetIS(app2petsc, app_is, petsc_is);CHKERRQ(ierr);
-  ierr = AOSetType(app2petsc, AOMEMORYSCALABLE);CHKERRQ(ierr);
-  ierr = AOSetFromOptions(app2petsc);CHKERRQ(ierr);
-  ierr = ISDestroy(&app_is);CHKERRQ(ierr);
-  ierr = ISDestroy(&petsc_is);CHKERRQ(ierr);
-  ierr = AOView(app2petsc, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscCall(ISCreateGeneral(comm, local_size, &app_indices[0], PETSC_COPY_VALUES, &app_is));
+  PetscCall(ISCreateGeneral(comm, local_size, &petsc_indices[0], PETSC_COPY_VALUES, &petsc_is));
+  PetscCall(AOCreate(comm, &app2petsc));
+  PetscCall(AOSetIS(app2petsc, app_is, petsc_is));
+  PetscCall(AOSetType(app2petsc, AOMEMORYSCALABLE));
+  PetscCall(AOSetFromOptions(app2petsc));
+  PetscCall(ISDestroy(&app_is));
+  PetscCall(ISDestroy(&petsc_is));
+  PetscCall(AOView(app2petsc, PETSC_VIEWER_STDOUT_WORLD));
 
   /* Test AOApplicationToPetsc */
-  ierr = PetscMalloc1(n_loc,&ia);CHKERRQ(ierr);
-  ierr = PetscMalloc1(n_loc,&ia0);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(n_loc,&ia));
+  PetscCall(PetscMalloc1(n_loc,&ia0));
   if (rank == 0) {
     ia[0] = 0;
     ia[1] = -1;
@@ -75,22 +74,22 @@ int main(int argc, char *argv[])
     ia[6] = 13;
     ia[7] = 14;
   }
-  ierr = PetscArraycpy(ia0,ia,n_loc);CHKERRQ(ierr);
+  PetscCall(PetscArraycpy(ia0,ia,n_loc));
 
-  ierr = AOApplicationToPetsc(app2petsc, n_loc, ia);CHKERRQ(ierr);
+  PetscCall(AOApplicationToPetsc(app2petsc, n_loc, ia));
 
   for (i=0; i<n_loc; ++i) {
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"proc = %d : %" PetscInt_FMT " -> %" PetscInt_FMT " \n", rank, ia0[i], ia[i]);CHKERRQ(ierr);
+    PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"proc = %d : %" PetscInt_FMT " -> %" PetscInt_FMT " \n", rank, ia0[i], ia[i]));
   }
-  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
-  ierr = AODestroy(&app2petsc);CHKERRQ(ierr);
-  ierr = PetscLayoutDestroy(&layout);CHKERRQ(ierr);
-  ierr = PetscFree(app_indices);CHKERRQ(ierr);
-  ierr = PetscFree(petsc_indices);CHKERRQ(ierr);
-  ierr = PetscFree(ia);CHKERRQ(ierr);
-  ierr = PetscFree(ia0);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
+  PetscCall(AODestroy(&app2petsc));
+  PetscCall(PetscLayoutDestroy(&layout));
+  PetscCall(PetscFree(app_indices));
+  PetscCall(PetscFree(petsc_indices));
+  PetscCall(PetscFree(ia));
+  PetscCall(PetscFree(ia0));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

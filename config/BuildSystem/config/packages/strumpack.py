@@ -14,6 +14,7 @@ class Configure(config.package.CMakePackage):
     self.liblist          = [['libstrumpack.a']]
     self.buildLanguages   = ['Cxx','FC']
     self.hastests         = 1
+    self.minCmakeVersion  = (3,2,0)
     return
 
   def setupDependencies(self, framework):

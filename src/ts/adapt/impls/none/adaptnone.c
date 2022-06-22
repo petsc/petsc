@@ -2,7 +2,6 @@
 
 static PetscErrorCode TSAdaptChoose_None(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,PetscReal *next_h,PetscBool *accept,PetscReal *wlte,PetscReal *wltea,PetscReal *wlter)
 {
-
   PetscFunctionBegin;
   *accept  = PETSC_TRUE;
   *next_sc = 0;                 /* Reuse the same order scheme */
@@ -18,11 +17,10 @@ static PetscErrorCode TSAdaptChoose_None(TSAdapt adapt,TS ts,PetscReal h,PetscIn
 
    Level: intermediate
 
-.seealso: TS, TSAdapt, TSAdaptChoose()
+.seealso: `TS`, `TSAdapt`, `TSAdaptChoose()`
 M*/
 PETSC_EXTERN PetscErrorCode TSAdaptCreate_None(TSAdapt adapt)
 {
-
   PetscFunctionBegin;
   adapt->ops->choose = TSAdaptChoose_None;
   PetscFunctionReturn(0);

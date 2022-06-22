@@ -1,5 +1,4 @@
 -include ../../../petscdir.mk
-ALL: lib
 
 SOURCEH   =
 DIRS      = is sf ao section utils tests

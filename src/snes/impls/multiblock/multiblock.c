@@ -27,16 +27,15 @@ PetscErrorCode SNESReset_Multiblock(SNES snes)
 {
   SNES_Multiblock *mb    = (SNES_Multiblock*) snes->data;
   BlockDesc       blocks = mb->blocks, next;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   while (blocks) {
-    ierr = SNESReset(blocks->snes);CHKERRQ(ierr);
+    PetscCall(SNESReset(blocks->snes));
 #if 0
-    ierr = VecDestroy(&blocks->x);CHKERRQ(ierr);
+    PetscCall(VecDestroy(&blocks->x));
 #endif
-    ierr   = VecScatterDestroy(&blocks->sctx);CHKERRQ(ierr);
-    ierr   = ISDestroy(&blocks->is);CHKERRQ(ierr);
+    PetscCall(VecScatterDestroy(&blocks->sctx));
+    PetscCall(ISDestroy(&blocks->is));
     next   = blocks->next;
     blocks = next;
   }
@@ -55,19 +54,18 @@ PetscErrorCode SNESDestroy_Multiblock(SNES snes)
 {
   SNES_Multiblock *mb    = (SNES_Multiblock*) snes->data;
   BlockDesc       blocks = mb->blocks, next;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = SNESReset_Multiblock(snes);CHKERRQ(ierr);
+  PetscCall(SNESReset_Multiblock(snes));
   while (blocks) {
     next   = blocks->next;
-    ierr   = SNESDestroy(&blocks->snes);CHKERRQ(ierr);
-    ierr   = PetscFree(blocks->name);CHKERRQ(ierr);
-    ierr   = PetscFree(blocks->fields);CHKERRQ(ierr);
-    ierr   = PetscFree(blocks);CHKERRQ(ierr);
+    PetscCall(SNESDestroy(&blocks->snes));
+    PetscCall(PetscFree(blocks->name));
+    PetscCall(PetscFree(blocks->fields));
+    PetscCall(PetscFree(blocks));
     blocks = next;
   }
-  ierr = PetscFree(snes->data);CHKERRQ(ierr);
+  PetscCall(PetscFree(snes->data));
   PetscFunctionReturn(0);
 }
 
@@ -79,18 +77,17 @@ static PetscErrorCode SNESMultiblockSetFieldsRuntime_Private(SNES snes)
   PetscInt        i, nfields;
   PetscBool       flg = PETSC_TRUE;
   char            optionname[128], name[8];
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc1(mb->bs, &ifields);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(mb->bs, &ifields));
   for (i = 0;; ++i) {
-    ierr    = PetscSNPrintf(name, sizeof(name), "%D", i);CHKERRQ(ierr);
-    ierr    = PetscSNPrintf(optionname, sizeof(optionname), "-snes_multiblock_%D_fields", i);CHKERRQ(ierr);
+    PetscCall(PetscSNPrintf(name, sizeof(name), "%" PetscInt_FMT, i));
+    PetscCall(PetscSNPrintf(optionname, sizeof(optionname), "-snes_multiblock_%" PetscInt_FMT "_fields", i));
     nfields = mb->bs;
-    ierr    = PetscOptionsGetIntArray(NULL,((PetscObject) snes)->prefix, optionname, ifields, &nfields, &flg);CHKERRQ(ierr);
+    PetscCall(PetscOptionsGetIntArray(NULL,((PetscObject) snes)->prefix, optionname, ifields, &nfields, &flg));
     if (!flg) break;
-    PetscCheckFalse(!nfields,PETSC_COMM_SELF, PETSC_ERR_USER, "Cannot list zero fields");
-    ierr = SNESMultiblockSetFields(snes, name, nfields, ifields);CHKERRQ(ierr);
+    PetscCheck(nfields,PETSC_COMM_SELF, PETSC_ERR_USER, "Cannot list zero fields");
+    PetscCall(SNESMultiblockSetFields(snes, name, nfields, ifields));
   }
   if (i > 0) {
     /* Makes command-line setting of blocks take precedence over setting them in code.
@@ -98,7 +95,7 @@ static PetscErrorCode SNESMultiblockSetFieldsRuntime_Private(SNES snes)
        create new blocks, which would probably not be what the user wanted. */
     mb->defined = PETSC_TRUE;
   }
-  ierr = PetscFree(ifields);CHKERRQ(ierr);
+  PetscCall(PetscFree(ifields));
   PetscFunctionReturn(0);
 }
 
@@ -107,29 +104,28 @@ static PetscErrorCode SNESMultiblockSetDefaults(SNES snes)
   SNES_Multiblock *mb    = (SNES_Multiblock*) snes->data;
   BlockDesc       blocks = mb->blocks;
   PetscInt        i;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   if (!blocks) {
     if (snes->dm) {
       PetscBool dmcomposite;
 
-      ierr = PetscObjectTypeCompare((PetscObject) snes->dm, DMCOMPOSITE, &dmcomposite);CHKERRQ(ierr);
+      PetscCall(PetscObjectTypeCompare((PetscObject) snes->dm, DMCOMPOSITE, &dmcomposite));
       if (dmcomposite) {
         PetscInt nDM;
         IS       *fields;
 
-        ierr = PetscInfo(snes,"Setting up physics based multiblock solver using the embedded DM\n");CHKERRQ(ierr);
-        ierr = DMCompositeGetNumberDM(snes->dm, &nDM);CHKERRQ(ierr);
-        ierr = DMCompositeGetGlobalISs(snes->dm, &fields);CHKERRQ(ierr);
+        PetscCall(PetscInfo(snes,"Setting up physics based multiblock solver using the embedded DM\n"));
+        PetscCall(DMCompositeGetNumberDM(snes->dm, &nDM));
+        PetscCall(DMCompositeGetGlobalISs(snes->dm, &fields));
         for (i = 0; i < nDM; ++i) {
           char name[8];
 
-          ierr = PetscSNPrintf(name, sizeof(name), "%D", i);CHKERRQ(ierr);
-          ierr = SNESMultiblockSetIS(snes, name, fields[i]);CHKERRQ(ierr);
-          ierr = ISDestroy(&fields[i]);CHKERRQ(ierr);
+          PetscCall(PetscSNPrintf(name, sizeof(name), "%" PetscInt_FMT, i));
+          PetscCall(SNESMultiblockSetIS(snes, name, fields[i]));
+          PetscCall(ISDestroy(&fields[i]));
         }
-        ierr = PetscFree(fields);CHKERRQ(ierr);
+        PetscCall(PetscFree(fields));
       }
     } else {
       PetscBool flg    = PETSC_FALSE;
@@ -137,37 +133,37 @@ static PetscErrorCode SNESMultiblockSetDefaults(SNES snes)
 
       if (mb->bs <= 0) {
         if (snes->jacobian_pre) {
-          ierr = MatGetBlockSize(snes->jacobian_pre, &mb->bs);CHKERRQ(ierr);
+          PetscCall(MatGetBlockSize(snes->jacobian_pre, &mb->bs));
         } else mb->bs = 1;
       }
 
-      ierr = PetscOptionsGetBool(NULL,((PetscObject) snes)->prefix, "-snes_multiblock_default", &flg, NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsGetBool(NULL,((PetscObject) snes)->prefix, "-snes_multiblock_detect_saddle_point", &stokes, NULL);CHKERRQ(ierr);
+      PetscCall(PetscOptionsGetBool(NULL,((PetscObject) snes)->prefix, "-snes_multiblock_default", &flg, NULL));
+      PetscCall(PetscOptionsGetBool(NULL,((PetscObject) snes)->prefix, "-snes_multiblock_detect_saddle_point", &stokes, NULL));
       if (stokes) {
         IS       zerodiags, rest;
         PetscInt nmin, nmax;
 
-        ierr = MatGetOwnershipRange(snes->jacobian_pre, &nmin, &nmax);CHKERRQ(ierr);
-        ierr = MatFindZeroDiagonals(snes->jacobian_pre, &zerodiags);CHKERRQ(ierr);
-        ierr = ISComplement(zerodiags, nmin, nmax, &rest);CHKERRQ(ierr);
-        ierr = SNESMultiblockSetIS(snes, "0", rest);CHKERRQ(ierr);
-        ierr = SNESMultiblockSetIS(snes, "1", zerodiags);CHKERRQ(ierr);
-        ierr = ISDestroy(&zerodiags);CHKERRQ(ierr);
-        ierr = ISDestroy(&rest);CHKERRQ(ierr);
+        PetscCall(MatGetOwnershipRange(snes->jacobian_pre, &nmin, &nmax));
+        PetscCall(MatFindZeroDiagonals(snes->jacobian_pre, &zerodiags));
+        PetscCall(ISComplement(zerodiags, nmin, nmax, &rest));
+        PetscCall(SNESMultiblockSetIS(snes, "0", rest));
+        PetscCall(SNESMultiblockSetIS(snes, "1", zerodiags));
+        PetscCall(ISDestroy(&zerodiags));
+        PetscCall(ISDestroy(&rest));
       } else {
         if (!flg) {
           /* Allow user to set fields from command line, if bs was known at the time of SNESSetFromOptions_Multiblock()
            then it is set there. This is not ideal because we should only have options set in XXSetFromOptions(). */
-          ierr = SNESMultiblockSetFieldsRuntime_Private(snes);CHKERRQ(ierr);
-          if (mb->defined) {ierr = PetscInfo(snes, "Blocks defined using the options database\n");CHKERRQ(ierr);}
+          PetscCall(SNESMultiblockSetFieldsRuntime_Private(snes));
+          if (mb->defined) PetscCall(PetscInfo(snes, "Blocks defined using the options database\n"));
         }
         if (flg || !mb->defined) {
-          ierr = PetscInfo(snes, "Using default splitting of fields\n");CHKERRQ(ierr);
+          PetscCall(PetscInfo(snes, "Using default splitting of fields\n"));
           for (i = 0; i < mb->bs; ++i) {
             char name[8];
 
-            ierr = PetscSNPrintf(name, sizeof(name), "%D", i);CHKERRQ(ierr);
-            ierr = SNESMultiblockSetFields(snes, name, 1, &i);CHKERRQ(ierr);
+            PetscCall(PetscSNPrintf(name, sizeof(name), "%" PetscInt_FMT, i));
+            PetscCall(SNESMultiblockSetFields(snes, name, 1, &i));
           }
           mb->defaultblocks = PETSC_TRUE;
         }
@@ -178,13 +174,13 @@ static PetscErrorCode SNESMultiblockSetDefaults(SNES snes)
       IS       is2;
       PetscInt nmin, nmax;
 
-      ierr = MatGetOwnershipRange(snes->jacobian_pre, &nmin, &nmax);CHKERRQ(ierr);
-      ierr = ISComplement(blocks->is, nmin, nmax, &is2);CHKERRQ(ierr);
-      ierr = SNESMultiblockSetIS(snes, "1", is2);CHKERRQ(ierr);
-      ierr = ISDestroy(&is2);CHKERRQ(ierr);
+      PetscCall(MatGetOwnershipRange(snes->jacobian_pre, &nmin, &nmax));
+      PetscCall(ISComplement(blocks->is, nmin, nmax, &is2));
+      PetscCall(SNESMultiblockSetIS(snes, "1", is2));
+      PetscCall(ISDestroy(&is2));
     } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must provide at least two sets of fields to SNES multiblock");
   }
-  PetscCheckFalse(mb->numBlocks < 2,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unhandled case, must have at least two blocks");
+  PetscCheck(mb->numBlocks >= 2,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unhandled case, must have at least two blocks");
   PetscFunctionReturn(0);
 }
 
@@ -203,10 +199,9 @@ PetscErrorCode SNESSetUp_Multiblock(SNES snes)
   SNES_Multiblock *mb = (SNES_Multiblock*) snes->data;
   BlockDesc       blocks;
   PetscInt        i, numBlocks;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr      = SNESMultiblockSetDefaults(snes);CHKERRQ(ierr);
+  PetscCall(SNESMultiblockSetDefaults(snes));
   numBlocks = mb->numBlocks;
   blocks    = mb->blocks;
 
@@ -217,29 +212,29 @@ PetscErrorCode SNESSetUp_Multiblock(SNES snes)
 
     mb->issetup = PETSC_TRUE;
     bs          = mb->bs;
-    ierr        = MatGetOwnershipRange(snes->jacobian_pre, &rstart, &rend);CHKERRQ(ierr);
-    ierr        = MatGetLocalSize(snes->jacobian_pre, NULL, &ccsize);CHKERRQ(ierr);
+    PetscCall(MatGetOwnershipRange(snes->jacobian_pre, &rstart, &rend));
+    PetscCall(MatGetLocalSize(snes->jacobian_pre, NULL, &ccsize));
     nslots      = (rend - rstart)/bs;
     for (i = 0; i < numBlocks; ++i) {
       if (mb->defaultblocks) {
-        ierr = ISCreateStride(PetscObjectComm((PetscObject)snes), nslots, rstart+i, numBlocks, &blocks->is);CHKERRQ(ierr);
+        PetscCall(ISCreateStride(PetscObjectComm((PetscObject)snes), nslots, rstart+i, numBlocks, &blocks->is));
       } else if (!blocks->is) {
         if (blocks->nfields > 1) {
           PetscInt *ii, j, k, nfields = blocks->nfields, *fields = blocks->fields;
 
-          ierr = PetscMalloc1(nfields*nslots, &ii);CHKERRQ(ierr);
+          PetscCall(PetscMalloc1(nfields*nslots, &ii));
           for (j = 0; j < nslots; ++j) {
             for (k = 0; k < nfields; ++k) {
               ii[nfields*j + k] = rstart + bs*j + fields[k];
             }
           }
-          ierr = ISCreateGeneral(PetscObjectComm((PetscObject)snes), nslots*nfields, ii, PETSC_OWN_POINTER, &blocks->is);CHKERRQ(ierr);
+          PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)snes), nslots*nfields, ii, PETSC_OWN_POINTER, &blocks->is));
         } else {
-          ierr = ISCreateStride(PetscObjectComm((PetscObject)snes), nslots, rstart+blocks->fields[0], bs, &blocks->is);CHKERRQ(ierr);
+          PetscCall(ISCreateStride(PetscObjectComm((PetscObject)snes), nslots, rstart+blocks->fields[0], bs, &blocks->is));
         }
       }
-      ierr = ISSorted(blocks->is, &sorted);CHKERRQ(ierr);
-      PetscCheckFalse(!sorted,PETSC_COMM_SELF, PETSC_ERR_USER, "Fields must be sorted when creating split");
+      PetscCall(ISSorted(blocks->is, &sorted));
+      PetscCheck(sorted,PETSC_COMM_SELF, PETSC_ERR_USER, "Fields must be sorted when creating split");
       blocks = blocks->next;
     }
   }
@@ -248,28 +243,28 @@ PetscErrorCode SNESSetUp_Multiblock(SNES snes)
   /* Create matrices */
   ilink = jac->head;
   if (!jac->pmat) {
-    ierr = PetscMalloc1(nsplit,&jac->pmat);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(nsplit,&jac->pmat));
     for (i=0; i<nsplit; i++) {
-      ierr  = MatCreateSubMatrix(pc->pmat,ilink->is,ilink->is,MAT_INITIAL_MATRIX,&jac->pmat[i]);CHKERRQ(ierr);
+      PetscCall(MatCreateSubMatrix(pc->pmat,ilink->is,ilink->is,MAT_INITIAL_MATRIX,&jac->pmat[i]));
       ilink = ilink->next;
     }
   } else {
     for (i=0; i<nsplit; i++) {
-      ierr  = MatCreateSubMatrix(pc->pmat,ilink->is,ilink->is,MAT_REUSE_MATRIX,&jac->pmat[i]);CHKERRQ(ierr);
+      PetscCall(MatCreateSubMatrix(pc->pmat,ilink->is,ilink->is,MAT_REUSE_MATRIX,&jac->pmat[i]));
       ilink = ilink->next;
     }
   }
   if (jac->realdiagonal) {
     ilink = jac->head;
     if (!jac->mat) {
-      ierr = PetscMalloc1(nsplit,&jac->mat);CHKERRQ(ierr);
+      PetscCall(PetscMalloc1(nsplit,&jac->mat));
       for (i=0; i<nsplit; i++) {
-        ierr  = MatCreateSubMatrix(pc->mat,ilink->is,ilink->is,MAT_INITIAL_MATRIX,&jac->mat[i]);CHKERRQ(ierr);
+        PetscCall(MatCreateSubMatrix(pc->mat,ilink->is,ilink->is,MAT_INITIAL_MATRIX,&jac->mat[i]));
         ilink = ilink->next;
       }
     } else {
       for (i=0; i<nsplit; i++) {
-        if (jac->mat[i]) {ierr = MatCreateSubMatrix(pc->mat,ilink->is,ilink->is,MAT_REUSE_MATRIX,&jac->mat[i]);CHKERRQ(ierr);}
+        if (jac->mat[i]) PetscCall(MatCreateSubMatrix(pc->mat,ilink->is,ilink->is,MAT_REUSE_MATRIX,&jac->mat[i]));
         ilink = ilink->next;
       }
     }
@@ -281,14 +276,14 @@ PetscErrorCode SNESSetUp_Multiblock(SNES snes)
     /* extract the rows of the matrix associated with each field: used for efficient computation of residual inside algorithm */
     ilink = jac->head;
     if (!jac->Afield) {
-      ierr = PetscMalloc1(nsplit,&jac->Afield);CHKERRQ(ierr);
+      PetscCall(PetscMalloc1(nsplit,&jac->Afield));
       for (i=0; i<nsplit; i++) {
-        ierr  = MatCreateSubMatrix(pc->mat,ilink->is,NULL,MAT_INITIAL_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
+        PetscCall(MatCreateSubMatrix(pc->mat,ilink->is,NULL,MAT_INITIAL_MATRIX,&jac->Afield[i]));
         ilink = ilink->next;
       }
     } else {
       for (i=0; i<nsplit; i++) {
-        ierr  = MatCreateSubMatrix(pc->mat,ilink->is,NULL,MAT_REUSE_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
+        PetscCall(MatCreateSubMatrix(pc->mat,ilink->is,NULL,MAT_REUSE_MATRIX,&jac->Afield[i]));
         ilink = ilink->next;
       }
     }
@@ -299,23 +294,23 @@ PetscErrorCode SNESSetUp_Multiblock(SNES snes)
 #if 0
     IS       ccis;
     PetscInt rstart,rend;
-    PetscCheckFalse(nsplit != 2,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_INCOMP,"To use Schur complement preconditioner you must have exactly 2 fields");
+    PetscCheck(nsplit == 2,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_INCOMP,"To use Schur complement preconditioner you must have exactly 2 fields");
 
     /* When extracting off-diagonal submatrices, we take complements from this range */
-    ierr = MatGetOwnershipRangeColumn(pc->mat,&rstart,&rend);CHKERRQ(ierr);
+    PetscCall(MatGetOwnershipRangeColumn(pc->mat,&rstart,&rend));
 
     /* need to handle case when one is resetting up the preconditioner */
     if (jac->schur) {
       ilink = jac->head;
-      ierr  = ISComplement(ilink->is,rstart,rend,&ccis);CHKERRQ(ierr);
-      ierr  = MatCreateSubMatrix(pc->mat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->B);CHKERRQ(ierr);
-      ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
+      PetscCall(ISComplement(ilink->is,rstart,rend,&ccis));
+      PetscCall(MatCreateSubMatrix(pc->mat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->B));
+      PetscCall(ISDestroy(&ccis));
       ilink = ilink->next;
-      ierr  = ISComplement(ilink->is,rstart,rend,&ccis);CHKERRQ(ierr);
-      ierr  = MatCreateSubMatrix(pc->mat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->C);CHKERRQ(ierr);
-      ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
-      ierr  = MatSchurComplementUpdateSubMatrices(jac->schur,jac->mat[0],jac->pmat[0],jac->B,jac->C,jac->pmat[1]);CHKERRQ(ierr);
-      ierr  = KSPSetOperators(jac->kspschur,jac->schur,FieldSplitSchurPre(jac),pc->flag);CHKERRQ(ierr);
+      PetscCall(ISComplement(ilink->is,rstart,rend,&ccis));
+      PetscCall(MatCreateSubMatrix(pc->mat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->C));
+      PetscCall(ISDestroy(&ccis));
+      PetscCall(MatSchurComplementUpdateSubMatrices(jac->schur,jac->mat[0],jac->pmat[0],jac->B,jac->C,jac->pmat[1]));
+      PetscCall(KSPSetOperators(jac->kspschur,jac->schur,FieldSplitSchurPre(jac),pc->flag));
 
     } else {
       KSP  ksp;
@@ -323,40 +318,40 @@ PetscErrorCode SNESSetUp_Multiblock(SNES snes)
 
       /* extract the A01 and A10 matrices */
       ilink = jac->head;
-      ierr  = ISComplement(ilink->is,rstart,rend,&ccis);CHKERRQ(ierr);
-      ierr  = MatCreateSubMatrix(pc->mat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->B);CHKERRQ(ierr);
-      ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
+      PetscCall(ISComplement(ilink->is,rstart,rend,&ccis));
+      PetscCall(MatCreateSubMatrix(pc->mat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->B));
+      PetscCall(ISDestroy(&ccis));
       ilink = ilink->next;
-      ierr  = ISComplement(ilink->is,rstart,rend,&ccis);CHKERRQ(ierr);
-      ierr  = MatCreateSubMatrix(pc->mat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->C);CHKERRQ(ierr);
-      ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
+      PetscCall(ISComplement(ilink->is,rstart,rend,&ccis));
+      PetscCall(MatCreateSubMatrix(pc->mat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->C));
+      PetscCall(ISDestroy(&ccis));
       /* Use mat[0] (diagonal block of the real matrix) preconditioned by pmat[0] */
-      ierr = MatCreateSchurComplement(jac->mat[0],jac->pmat[0],jac->B,jac->C,jac->mat[1],&jac->schur);CHKERRQ(ierr);
+      PetscCall(MatCreateSchurComplement(jac->mat[0],jac->pmat[0],jac->B,jac->C,jac->mat[1],&jac->schur));
       /* set tabbing and options prefix of KSP inside the MatSchur */
-      ierr = MatSchurComplementGetKSP(jac->schur,&ksp);CHKERRQ(ierr);
-      ierr = PetscObjectIncrementTabLevel((PetscObject)ksp,(PetscObject)pc,2);CHKERRQ(ierr);
-      ierr = PetscSNPrintf(schurprefix,sizeof(schurprefix),"%sfieldsplit_%s_",((PetscObject)pc)->prefix ? ((PetscObject)pc)->prefix : "",jac->head->splitname);CHKERRQ(ierr);
-      ierr = KSPSetOptionsPrefix(ksp,schurprefix);CHKERRQ(ierr);
-      ierr = MatSetFromOptions(jac->schur);CHKERRQ(ierr);
+      PetscCall(MatSchurComplementGetKSP(jac->schur,&ksp));
+      PetscCall(PetscObjectIncrementTabLevel((PetscObject)ksp,(PetscObject)pc,2));
+      PetscCall(PetscSNPrintf(schurprefix,sizeof(schurprefix),"%sfieldsplit_%s_",((PetscObject)pc)->prefix ? ((PetscObject)pc)->prefix : "",jac->head->splitname));
+      PetscCall(KSPSetOptionsPrefix(ksp,schurprefix));
+      PetscCall(MatSetFromOptions(jac->schur));
 
-      ierr = KSPCreate(PetscObjectComm((PetscObject)pc),&jac->kspschur);CHKERRQ(ierr);
-      ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)jac->kspschur);CHKERRQ(ierr);
-      ierr = PetscObjectIncrementTabLevel((PetscObject)jac->kspschur,(PetscObject)pc,1);CHKERRQ(ierr);
-      ierr = KSPSetOperators(jac->kspschur,jac->schur,FieldSplitSchurPre(jac));CHKERRQ(ierr);
+      PetscCall(KSPCreate(PetscObjectComm((PetscObject)pc),&jac->kspschur));
+      PetscCall(PetscLogObjectParent((PetscObject)pc,(PetscObject)jac->kspschur));
+      PetscCall(PetscObjectIncrementTabLevel((PetscObject)jac->kspschur,(PetscObject)pc,1));
+      PetscCall(KSPSetOperators(jac->kspschur,jac->schur,FieldSplitSchurPre(jac)));
       if (jac->schurpre == PC_FIELDSPLIT_SCHUR_PRE_SELF) {
         PC pc;
-        ierr = KSPGetPC(jac->kspschur,&pc);CHKERRQ(ierr);
-        ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
+        PetscCall(KSPGetPC(jac->kspschur,&pc));
+        PetscCall(PCSetType(pc,PCNONE));
         /* Note: This is bad if there exist preconditioners for MATSCHURCOMPLEMENT */
       }
-      ierr = PetscSNPrintf(schurprefix,sizeof(schurprefix),"%sfieldsplit_%s_",((PetscObject)pc)->prefix ? ((PetscObject)pc)->prefix : "",ilink->splitname);CHKERRQ(ierr);
-      ierr = KSPSetOptionsPrefix(jac->kspschur,schurprefix);CHKERRQ(ierr);
+      PetscCall(PetscSNPrintf(schurprefix,sizeof(schurprefix),"%sfieldsplit_%s_",((PetscObject)pc)->prefix ? ((PetscObject)pc)->prefix : "",ilink->splitname));
+      PetscCall(KSPSetOptionsPrefix(jac->kspschur,schurprefix));
       /* really want setfromoptions called in PCSetFromOptions_FieldSplit(), but it is not ready yet */
-      ierr = KSPSetFromOptions(jac->kspschur);CHKERRQ(ierr);
+      PetscCall(KSPSetFromOptions(jac->kspschur));
 
-      ierr     = PetscMalloc2(2,&jac->x,2,&jac->y);CHKERRQ(ierr);
-      ierr     = MatCreateVecs(jac->pmat[0],&jac->x[0],&jac->y[0]);CHKERRQ(ierr);
-      ierr     = MatCreateVecs(jac->pmat[1],&jac->x[1],&jac->y[1]);CHKERRQ(ierr);
+      PetscCall(PetscMalloc2(2,&jac->x,2,&jac->y));
+      PetscCall(MatCreateVecs(jac->pmat[0],&jac->x[0],&jac->y[0]));
+      PetscCall(MatCreateVecs(jac->pmat[1],&jac->x[1],&jac->y[1]));
       ilink    = jac->head;
       ilink->x = jac->x[0]; ilink->y = jac->y[0];
       ilink    = ilink->next;
@@ -369,12 +364,12 @@ PetscErrorCode SNESSetUp_Multiblock(SNES snes)
     i      = 0;
     while (blocks) {
       /*TODO: Set these correctly */
-      /*ierr = SNESSetFunction(blocks->snes, blocks->x, func);CHKERRQ(ierr);*/
-      /*ierr = SNESSetJacobian(blocks->snes, blocks->x, jac);CHKERRQ(ierr);*/
-      ierr = VecDuplicate(blocks->snes->vec_sol, &blocks->x);CHKERRQ(ierr);
+      /* PetscCall(SNESSetFunction(blocks->snes, blocks->x, func)); */
+      /* PetscCall(SNESSetJacobian(blocks->snes, blocks->x, jac)); */
+      PetscCall(VecDuplicate(blocks->snes->vec_sol, &blocks->x));
       /* really want setfromoptions called in SNESSetFromOptions_Multiblock(), but it is not ready yet */
-      ierr   = SNESSetFromOptions(blocks->snes);CHKERRQ(ierr);
-      ierr   = SNESSetUp(blocks->snes);CHKERRQ(ierr);
+      PetscCall(SNESSetFromOptions(blocks->snes));
+      PetscCall(SNESSetUp(blocks->snes));
       blocks = blocks->next;
       i++;
     }
@@ -385,12 +380,12 @@ PetscErrorCode SNESSetUp_Multiblock(SNES snes)
     Vec xtmp;
 
     blocks = mb->blocks;
-    ierr   = MatCreateVecs(snes->jacobian_pre, &xtmp, NULL);CHKERRQ(ierr);
+    PetscCall(MatCreateVecs(snes->jacobian_pre, &xtmp, NULL));
     while (blocks) {
-      ierr   = VecScatterCreate(xtmp, blocks->is, blocks->x, NULL, &blocks->sctx);CHKERRQ(ierr);
+      PetscCall(VecScatterCreate(xtmp, blocks->is, blocks->x, NULL, &blocks->sctx));
       blocks = blocks->next;
     }
-    ierr = VecDestroy(&xtmp);CHKERRQ(ierr);
+    PetscCall(VecDestroy(&xtmp));
   }
   PetscFunctionReturn(0);
 }
@@ -409,23 +404,22 @@ static PetscErrorCode SNESSetFromOptions_Multiblock(PetscOptionItems *PetscOptio
   PCCompositeType ctype;
   PetscInt        bs;
   PetscBool       flg;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead(PetscOptionsObject,"SNES Multiblock options");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-snes_multiblock_block_size", "Blocksize that defines number of fields", "PCFieldSplitSetBlockSize", mb->bs, &bs, &flg);CHKERRQ(ierr);
-  if (flg) {ierr = SNESMultiblockSetBlockSize(snes, bs);CHKERRQ(ierr);}
-  ierr = PetscOptionsEnum("-snes_multiblock_type", "Type of composition", "PCFieldSplitSetType", PCCompositeTypes, (PetscEnum) mb->type, (PetscEnum*) &ctype, &flg);CHKERRQ(ierr);
+  PetscOptionsHeadBegin(PetscOptionsObject,"SNES Multiblock options");
+  PetscCall(PetscOptionsInt("-snes_multiblock_block_size", "Blocksize that defines number of fields", "PCFieldSplitSetBlockSize", mb->bs, &bs, &flg));
+  if (flg) PetscCall(SNESMultiblockSetBlockSize(snes, bs));
+  PetscCall(PetscOptionsEnum("-snes_multiblock_type", "Type of composition", "PCFieldSplitSetType", PCCompositeTypes, (PetscEnum) mb->type, (PetscEnum*) &ctype, &flg));
   if (flg) {
-    ierr = SNESMultiblockSetType(snes,ctype);CHKERRQ(ierr);
+    PetscCall(SNESMultiblockSetType(snes,ctype));
   }
   /* Only setup fields once */
   if ((mb->bs > 0) && (mb->numBlocks == 0)) {
     /* only allow user to set fields from command line if bs is already known, otherwise user can set them in SNESMultiblockSetDefaults() */
-    ierr = SNESMultiblockSetFieldsRuntime_Private(snes);CHKERRQ(ierr);
-    if (mb->defined) {ierr = PetscInfo(snes, "Blocks defined using the options database\n");CHKERRQ(ierr);}
+    PetscCall(SNESMultiblockSetFieldsRuntime_Private(snes));
+    if (mb->defined) PetscCall(PetscInfo(snes, "Blocks defined using the options database\n"));
   }
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 
@@ -443,35 +437,34 @@ static PetscErrorCode SNESView_Multiblock(SNES snes, PetscViewer viewer)
   SNES_Multiblock *mb    = (SNES_Multiblock*) snes->data;
   BlockDesc       blocks = mb->blocks;
   PetscBool       iascii;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  Multiblock with %s composition: total blocks = %D, blocksize = %D\n", PCCompositeTypes[mb->type], mb->numBlocks, mb->bs);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Solver info for each split is in the following SNES objects:\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Multiblock with %s composition: total blocks = %" PetscInt_FMT ", blocksize = %" PetscInt_FMT "\n", PCCompositeTypes[mb->type], mb->numBlocks, mb->bs));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  Solver info for each split is in the following SNES objects:\n"));
+    PetscCall(PetscViewerASCIIPushTab(viewer));
     while (blocks) {
       if (blocks->fields) {
         PetscInt j;
 
-        ierr = PetscViewerASCIIPrintf(viewer, "  Block %s Fields ", blocks->name);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIUseTabs(viewer, PETSC_FALSE);CHKERRQ(ierr);
+        PetscCall(PetscViewerASCIIPrintf(viewer, "  Block %s Fields ", blocks->name));
+        PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_FALSE));
         for (j = 0; j < blocks->nfields; ++j) {
           if (j > 0) {
-            ierr = PetscViewerASCIIPrintf(viewer, ",");CHKERRQ(ierr);
+            PetscCall(PetscViewerASCIIPrintf(viewer, ","));
           }
-          ierr = PetscViewerASCIIPrintf(viewer, " %D", blocks->fields[j]);CHKERRQ(ierr);
+          PetscCall(PetscViewerASCIIPrintf(viewer, " %" PetscInt_FMT, blocks->fields[j]));
         }
-        ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
-        ierr = PetscViewerASCIIUseTabs(viewer, PETSC_TRUE);CHKERRQ(ierr);
+        PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
+        PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_TRUE));
       } else {
-        ierr = PetscViewerASCIIPrintf(viewer, "  Block %s Defined by IS\n", blocks->name);CHKERRQ(ierr);
+        PetscCall(PetscViewerASCIIPrintf(viewer, "  Block %s Defined by IS\n", blocks->name));
       }
-      ierr   = SNESView(blocks->snes, viewer);CHKERRQ(ierr);
+      PetscCall(SNESView(blocks->snes, viewer));
       blocks = blocks->next;
     }
-    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPopTab(viewer));
   }
   PetscFunctionReturn(0);
 }
@@ -493,10 +486,9 @@ PetscErrorCode SNESSolve_Multiblock(SNES snes)
   Vec             X, Y, F;
   PetscReal       fnorm;
   PetscInt        maxits, i;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  PetscCheckFalse(snes->xl || snes->xu || snes->ops->computevariablebounds,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
+  PetscCheck(!snes->xl && !snes->xu && !snes->ops->computevariablebounds,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
 
   snes->reason = SNES_CONVERGED_ITERATING;
 
@@ -505,34 +497,34 @@ PetscErrorCode SNESSolve_Multiblock(SNES snes)
   Y      = snes->vec_sol_update; /* \tilde X */
   F      = snes->vec_func;       /* residual vector */
 
-  ierr       = VecSetBlockSize(X, mb->bs);CHKERRQ(ierr);
-  ierr       = VecSetBlockSize(Y, mb->bs);CHKERRQ(ierr);
-  ierr       = VecSetBlockSize(F, mb->bs);CHKERRQ(ierr);
-  ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+  PetscCall(VecSetBlockSize(X, mb->bs));
+  PetscCall(VecSetBlockSize(Y, mb->bs));
+  PetscCall(VecSetBlockSize(F, mb->bs));
+  PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
   snes->iter = 0;
   snes->norm = 0.;
-  ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+  PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
 
   if (!snes->vec_func_init_set) {
-    ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
+    PetscCall(SNESComputeFunction(snes, X, F));
   } else snes->vec_func_init_set = PETSC_FALSE;
 
-  ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
+  PetscCall(VecNorm(F, NORM_2, &fnorm)); /* fnorm <- ||F||  */
   SNESCheckFunctionNorm(snes,fnorm);
-  ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+  PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
   snes->norm = fnorm;
-  ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
-  ierr       = SNESLogConvergenceHistory(snes,fnorm,0);CHKERRQ(ierr);
-  ierr       = SNESMonitor(snes,0,fnorm);CHKERRQ(ierr);
+  PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
+  PetscCall(SNESLogConvergenceHistory(snes,fnorm,0));
+  PetscCall(SNESMonitor(snes,0,fnorm));
 
   /* test convergence */
-  ierr = (*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
+  PetscCall((*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP));
   if (snes->reason) PetscFunctionReturn(0);
 
   for (i = 0; i < maxits; i++) {
     /* Call general purpose update function */
     if (snes->ops->update) {
-      ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
+      PetscCall((*snes->ops->update)(snes, snes->iter));
     }
     /* Compute X^{new} from subsolves */
     if (mb->type == PC_COMPOSITE_ADDITIVE) {
@@ -540,26 +532,26 @@ PetscErrorCode SNESSolve_Multiblock(SNES snes)
 
       if (mb->defaultblocks) {
         /*TODO: Make an array of Vecs for this */
-        /*ierr = VecStrideGatherAll(X, mb->x, INSERT_VALUES);CHKERRQ(ierr);*/
+        /* PetscCall(VecStrideGatherAll(X, mb->x, INSERT_VALUES)); */
         while (blocks) {
-          ierr   = SNESSolve(blocks->snes, NULL, blocks->x);CHKERRQ(ierr);
+          PetscCall(SNESSolve(blocks->snes, NULL, blocks->x));
           blocks = blocks->next;
         }
-        /*ierr = VecStrideScatterAll(mb->x, X, INSERT_VALUES);CHKERRQ(ierr);*/
+        /* PetscCall(VecStrideScatterAll(mb->x, X, INSERT_VALUES)); */
       } else {
         while (blocks) {
-          ierr   = VecScatterBegin(blocks->sctx, X, blocks->x, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
-          ierr   = VecScatterEnd(blocks->sctx, X, blocks->x, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
-          ierr   = SNESSolve(blocks->snes, NULL, blocks->x);CHKERRQ(ierr);
-          ierr   = VecScatterBegin(blocks->sctx, blocks->x, X, INSERT_VALUES, SCATTER_REVERSE);CHKERRQ(ierr);
-          ierr   = VecScatterEnd(blocks->sctx, blocks->x, X, INSERT_VALUES, SCATTER_REVERSE);CHKERRQ(ierr);
+          PetscCall(VecScatterBegin(blocks->sctx, X, blocks->x, INSERT_VALUES, SCATTER_FORWARD));
+          PetscCall(VecScatterEnd(blocks->sctx, X, blocks->x, INSERT_VALUES, SCATTER_FORWARD));
+          PetscCall(SNESSolve(blocks->snes, NULL, blocks->x));
+          PetscCall(VecScatterBegin(blocks->sctx, blocks->x, X, INSERT_VALUES, SCATTER_REVERSE));
+          PetscCall(VecScatterEnd(blocks->sctx, blocks->x, X, INSERT_VALUES, SCATTER_REVERSE));
           blocks = blocks->next;
         }
       }
-    } else SETERRQ(PetscObjectComm((PetscObject)snes), PETSC_ERR_SUP, "Unsupported or unknown composition", (int) mb->type);
+    } else SETERRQ(PetscObjectComm((PetscObject)snes), PETSC_ERR_SUP, "Unsupported or unknown composition %d", (int) mb->type);
     /* Compute F(X^{new}) */
-    ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
-    ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
+    PetscCall(SNESComputeFunction(snes, X, F));
+    PetscCall(VecNorm(F, NORM_2, &fnorm));
     SNESCheckFunctionNorm(snes,fnorm);
 
     if (snes->nfuncs >= snes->max_funcs && snes->max_funcs >=0) {
@@ -568,18 +560,18 @@ PetscErrorCode SNESSolve_Multiblock(SNES snes)
     }
 
     /* Monitor convergence */
-    ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+    PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
     snes->iter = i+1;
     snes->norm = fnorm;
-    ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
-    ierr       = SNESLogConvergenceHistory(snes,snes->norm,0);CHKERRQ(ierr);
-    ierr       = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
+    PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
+    PetscCall(SNESLogConvergenceHistory(snes,snes->norm,0));
+    PetscCall(SNESMonitor(snes,snes->iter,snes->norm));
     /* Test for convergence */
-    ierr = (*snes->ops->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
+    PetscCall((*snes->ops->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP));
     if (snes->reason) break;
   }
   if (i == maxits) {
-    ierr = PetscInfo(snes, "Maximum number of iterations has been reached: %D\n", maxits);CHKERRQ(ierr);
+    PetscCall(PetscInfo(snes, "Maximum number of iterations has been reached: %" PetscInt_FMT "\n", maxits));
     if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
   }
   PetscFunctionReturn(0);
@@ -591,39 +583,38 @@ PetscErrorCode SNESMultiblockSetFields_Default(SNES snes, const char name[], Pet
   BlockDesc       newblock, next = mb->blocks;
   char            prefix[128];
   PetscInt        i;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   if (mb->defined) {
-    ierr = PetscInfo(snes, "Ignoring new block \"%s\" because the blocks have already been defined\n", name);CHKERRQ(ierr);
+    PetscCall(PetscInfo(snes, "Ignoring new block \"%s\" because the blocks have already been defined\n", name));
     PetscFunctionReturn(0);
   }
   for (i = 0; i < n; ++i) {
-    PetscCheckFalse(fields[i] >= mb->bs,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field %D requested but only %D exist", fields[i], mb->bs);
-    PetscCheckFalse(fields[i] < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative field %D requested", fields[i]);
+    PetscCheck(fields[i] < mb->bs,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field %" PetscInt_FMT " requested but only %" PetscInt_FMT " exist", fields[i], mb->bs);
+    PetscCheck(fields[i] >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative field %" PetscInt_FMT " requested", fields[i]);
   }
-  ierr = PetscNew(&newblock);CHKERRQ(ierr);
+  PetscCall(PetscNew(&newblock));
   if (name) {
-    ierr = PetscStrallocpy(name, &newblock->name);CHKERRQ(ierr);
+    PetscCall(PetscStrallocpy(name, &newblock->name));
   } else {
     PetscInt len = floor(log10(mb->numBlocks))+1;
 
-    ierr = PetscMalloc1(len+1, &newblock->name);CHKERRQ(ierr);
-    ierr = PetscSNPrintf(newblock->name, len, "%s", mb->numBlocks);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(len+1, &newblock->name));
+    PetscCall(PetscSNPrintf(newblock->name, len, "%" PetscInt_FMT, mb->numBlocks));
   }
   newblock->nfields = n;
 
-  ierr = PetscMalloc1(n, &newblock->fields);CHKERRQ(ierr);
-  ierr = PetscArraycpy(newblock->fields, fields, n);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(n, &newblock->fields));
+  PetscCall(PetscArraycpy(newblock->fields, fields, n));
 
   newblock->next = NULL;
 
-  ierr = SNESCreate(PetscObjectComm((PetscObject)snes), &newblock->snes);CHKERRQ(ierr);
-  ierr = PetscObjectIncrementTabLevel((PetscObject) newblock->snes, (PetscObject) snes, 1);CHKERRQ(ierr);
-  ierr = SNESSetType(newblock->snes, SNESNRICHARDSON);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject) snes, (PetscObject) newblock->snes);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(prefix, sizeof(prefix), "%smultiblock_%s_", ((PetscObject) snes)->prefix ? ((PetscObject) snes)->prefix : "", newblock->name);CHKERRQ(ierr);
-  ierr = SNESSetOptionsPrefix(newblock->snes, prefix);CHKERRQ(ierr);
+  PetscCall(SNESCreate(PetscObjectComm((PetscObject)snes), &newblock->snes));
+  PetscCall(PetscObjectIncrementTabLevel((PetscObject) newblock->snes, (PetscObject) snes, 1));
+  PetscCall(SNESSetType(newblock->snes, SNESNRICHARDSON));
+  PetscCall(PetscLogObjectParent((PetscObject) snes, (PetscObject) newblock->snes));
+  PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "%smultiblock_%s_", ((PetscObject) snes)->prefix ? ((PetscObject) snes)->prefix : "", newblock->name));
+  PetscCall(SNESSetOptionsPrefix(newblock->snes, prefix));
 
   if (!next) {
     mb->blocks         = newblock;
@@ -644,34 +635,33 @@ PetscErrorCode SNESMultiblockSetIS_Default(SNES snes, const char name[], IS is)
   SNES_Multiblock *mb = (SNES_Multiblock*) snes->data;
   BlockDesc       newblock, next = mb->blocks;
   char            prefix[128];
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   if (mb->defined) {
-    ierr = PetscInfo(snes, "Ignoring new block \"%s\" because the blocks have already been defined\n", name);CHKERRQ(ierr);
+    PetscCall(PetscInfo(snes, "Ignoring new block \"%s\" because the blocks have already been defined\n", name));
     PetscFunctionReturn(0);
   }
-  ierr = PetscNew(&newblock);CHKERRQ(ierr);
+  PetscCall(PetscNew(&newblock));
   if (name) {
-    ierr = PetscStrallocpy(name, &newblock->name);CHKERRQ(ierr);
+    PetscCall(PetscStrallocpy(name, &newblock->name));
   } else {
     PetscInt len = floor(log10(mb->numBlocks))+1;
 
-    ierr = PetscMalloc1(len+1, &newblock->name);CHKERRQ(ierr);
-    ierr = PetscSNPrintf(newblock->name, len, "%s", mb->numBlocks);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(len+1, &newblock->name));
+    PetscCall(PetscSNPrintf(newblock->name, len, "%" PetscInt_FMT, mb->numBlocks));
   }
   newblock->is = is;
 
-  ierr = PetscObjectReference((PetscObject) is);CHKERRQ(ierr);
+  PetscCall(PetscObjectReference((PetscObject) is));
 
   newblock->next = NULL;
 
-  ierr = SNESCreate(PetscObjectComm((PetscObject)snes), &newblock->snes);CHKERRQ(ierr);
-  ierr = PetscObjectIncrementTabLevel((PetscObject) newblock->snes, (PetscObject) snes, 1);CHKERRQ(ierr);
-  ierr = SNESSetType(newblock->snes, SNESNRICHARDSON);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject) snes, (PetscObject) newblock->snes);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(prefix, sizeof(prefix), "%smultiblock_%s_", ((PetscObject) snes)->prefix ? ((PetscObject) snes)->prefix : "", newblock->name);CHKERRQ(ierr);
-  ierr = SNESSetOptionsPrefix(newblock->snes, prefix);CHKERRQ(ierr);
+  PetscCall(SNESCreate(PetscObjectComm((PetscObject)snes), &newblock->snes));
+  PetscCall(PetscObjectIncrementTabLevel((PetscObject) newblock->snes, (PetscObject) snes, 1));
+  PetscCall(SNESSetType(newblock->snes, SNESNRICHARDSON));
+  PetscCall(PetscLogObjectParent((PetscObject) snes, (PetscObject) newblock->snes));
+  PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "%smultiblock_%s_", ((PetscObject) snes)->prefix ? ((PetscObject) snes)->prefix : "", newblock->name));
+  PetscCall(SNESSetOptionsPrefix(newblock->snes, prefix));
 
   if (!next) {
     mb->blocks         = newblock;
@@ -692,8 +682,8 @@ PetscErrorCode  SNESMultiblockSetBlockSize_Default(SNES snes, PetscInt bs)
   SNES_Multiblock *mb = (SNES_Multiblock*) snes->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(bs < 1,PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_OUTOFRANGE, "Blocksize must be positive, you gave %D", bs);
-  PetscCheckFalse(mb->bs > 0 && mb->bs != bs,PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_WRONGSTATE, "Cannot change blocksize from %D to %D after it has been set", mb->bs, bs);
+  PetscCheck(bs >= 1,PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_OUTOFRANGE, "Blocksize must be positive, you gave %" PetscInt_FMT, bs);
+  PetscCheck(mb->bs <= 0 || mb->bs == bs,PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_WRONGSTATE, "Cannot change blocksize from %" PetscInt_FMT " to %" PetscInt_FMT " after it has been set", mb->bs, bs);
   mb->bs = bs;
   PetscFunctionReturn(0);
 }
@@ -703,15 +693,14 @@ PetscErrorCode SNESMultiblockGetSubSNES_Default(SNES snes, PetscInt *n, SNES **s
   SNES_Multiblock *mb    = (SNES_Multiblock*) snes->data;
   BlockDesc       blocks = mb->blocks;
   PetscInt        cnt    = 0;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc1(mb->numBlocks, subsnes);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(mb->numBlocks, subsnes));
   while (blocks) {
     (*subsnes)[cnt++] = blocks->snes;
     blocks            = blocks->next;
   }
-  PetscCheckFalse(cnt != mb->numBlocks,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Corrupt SNESMULTIBLOCK object: number of blocks in linked list %D does not match number in object %D", cnt, mb->numBlocks);
+  PetscCheck(cnt == mb->numBlocks,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Corrupt SNESMULTIBLOCK object: number of blocks in linked list %" PetscInt_FMT " does not match number in object %" PetscInt_FMT, cnt, mb->numBlocks);
 
   if (n) *n = mb->numBlocks;
   PetscFunctionReturn(0);
@@ -720,7 +709,6 @@ PetscErrorCode SNESMultiblockGetSubSNES_Default(SNES snes, PetscInt *n, SNES **s
 PetscErrorCode  SNESMultiblockSetType_Default(SNES snes, PCCompositeType type)
 {
   SNES_Multiblock *mb = (SNES_Multiblock*) snes->data;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   mb->type = type;
@@ -731,15 +719,15 @@ PetscErrorCode  SNESMultiblockSetType_Default(SNES snes, PCCompositeType type)
     snes->ops->solve = SNESSolve_Multiblock_Schur;
     snes->ops->view  = SNESView_Multiblock_Schur;
 
-    ierr = PetscObjectComposeFunction((PetscObject) snes, "SNESMultiblockGetSubSNES_C", SNESMultiblockGetSubSNES_Schur);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunction((PetscObject) snes, "SNESMultiblockSchurPrecondition_C", SNESMultiblockSchurPrecondition_Default);CHKERRQ(ierr);
+    PetscCall(PetscObjectComposeFunction((PetscObject) snes, "SNESMultiblockGetSubSNES_C", SNESMultiblockGetSubSNES_Schur));
+    PetscCall(PetscObjectComposeFunction((PetscObject) snes, "SNESMultiblockSchurPrecondition_C", SNESMultiblockSchurPrecondition_Default));
 #endif
   } else {
     snes->ops->solve = SNESSolve_Multiblock;
     snes->ops->view  = SNESView_Multiblock;
 
-    ierr = PetscObjectComposeFunction((PetscObject) snes, "SNESMultiblockGetSubSNES_C", SNESMultiblockGetSubSNES_Default);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunction((PetscObject) snes, "SNESMultiblockSchurPrecondition_C", 0);CHKERRQ(ierr);
+    PetscCall(PetscObjectComposeFunction((PetscObject) snes, "SNESMultiblockGetSubSNES_C", SNESMultiblockGetSubSNES_Default));
+    PetscCall(PetscObjectComposeFunction((PetscObject) snes, "SNESMultiblockSchurPrecondition_C", 0));
   }
   PetscFunctionReturn(0);
 }
@@ -769,18 +757,16 @@ PetscErrorCode  SNESMultiblockSetType_Default(SNES snes, PCCompositeType type)
   This function is called once per block (it creates a new block each time). Solve options
   for this block will be available under the prefix -multiblock_BLOCKNAME_.
 
-.seealso: SNESMultiblockGetSubSNES(), SNESMULTIBLOCK, SNESMultiblockSetBlockSize(), SNESMultiblockSetIS()
+.seealso: `SNESMultiblockGetSubSNES()`, `SNESMULTIBLOCK`, `SNESMultiblockSetBlockSize()`, `SNESMultiblockSetIS()`
 @*/
 PetscErrorCode SNESMultiblockSetFields(SNES snes, const char name[], PetscInt n, const PetscInt *fields)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidCharPointer(name, 2);
-  PetscCheckFalse(n < 1,PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_OUTOFRANGE, "Provided number of fields %D in split \"%s\" not positive", n, name);
+  PetscCheck(n >= 1,PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_OUTOFRANGE, "Provided number of fields %" PetscInt_FMT " in split \"%s\" not positive", n, name);
   PetscValidIntPointer(fields, 4);
-  ierr = PetscTryMethod(snes, "SNESMultiblockSetFields_C", (SNES, const char[], PetscInt, const PetscInt*), (snes, name, n, fields));CHKERRQ(ierr);
+  PetscTryMethod(snes, "SNESMultiblockSetFields_C", (SNES, const char[], PetscInt, const PetscInt*), (snes, name, n, fields));
   PetscFunctionReturn(0);
 }
 
@@ -802,17 +788,15 @@ PetscErrorCode SNESMultiblockSetFields(SNES snes, const char name[], PetscInt n,
 
   Level: intermediate
 
-.seealso: SNESMultiblockGetSubSNES(), SNESMULTIBLOCK, SNESMultiblockSetBlockSize()
+.seealso: `SNESMultiblockGetSubSNES()`, `SNESMULTIBLOCK`, `SNESMultiblockSetBlockSize()`
 @*/
 PetscErrorCode SNESMultiblockSetIS(SNES snes, const char name[], IS is)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidCharPointer(name, 2);
   PetscValidHeaderSpecific(is, IS_CLASSID, 3);
-  ierr = PetscTryMethod(snes, "SNESMultiblockSetIS_C", (SNES, const char[], IS), (snes, name, is));CHKERRQ(ierr);
+  PetscTryMethod(snes, "SNESMultiblockSetIS_C", (SNES, const char[], IS), (snes, name, is));
   PetscFunctionReturn(0);
 }
 
@@ -830,15 +814,13 @@ PetscErrorCode SNESMultiblockSetIS(SNES snes, const char name[], IS is)
 
   Level: Developer
 
-.seealso: PCCompositeSetType()
+.seealso: `PCCompositeSetType()`
 @*/
 PetscErrorCode SNESMultiblockSetType(SNES snes, PCCompositeType type)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  ierr = PetscTryMethod(snes, "SNESMultiblockSetType_C", (SNES, PCCompositeType), (snes, type));CHKERRQ(ierr);
+  PetscTryMethod(snes, "SNESMultiblockSetType_C", (SNES, PCCompositeType), (snes, type));
   PetscFunctionReturn(0);
 }
 
@@ -853,16 +835,14 @@ PetscErrorCode SNESMultiblockSetType(SNES snes, PCCompositeType type)
 
   Level: intermediate
 
-.seealso: SNESMultiblockGetSubSNES(), SNESMULTIBLOCK, SNESMultiblockSetFields()
+.seealso: `SNESMultiblockGetSubSNES()`, `SNESMULTIBLOCK`, `SNESMultiblockSetFields()`
 @*/
 PetscErrorCode SNESMultiblockSetBlockSize(SNES snes, PetscInt bs)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidLogicalCollectiveInt(snes, bs, 2);
-  ierr = PetscTryMethod(snes, "SNESMultiblockSetBlockSize_C", (SNES, PetscInt), (snes,bs));CHKERRQ(ierr);
+  PetscTryMethod(snes, "SNESMultiblockSetBlockSize_C", (SNES, PetscInt), (snes,bs));
   PetscFunctionReturn(0);
 }
 
@@ -886,16 +866,14 @@ PetscErrorCode SNESMultiblockSetBlockSize(SNES snes, PetscInt bs)
 
   Level: advanced
 
-.seealso: SNESMULTIBLOCK
+.seealso: `SNESMULTIBLOCK`
 @*/
 PetscErrorCode SNESMultiblockGetSubSNES(SNES snes, PetscInt *n, SNES *subsnes[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   if (n) PetscValidIntPointer(n, 2);
-  ierr = PetscUseMethod(snes, "SNESMultiblockGetSubSNES_C", (SNES, PetscInt*, SNES **), (snes, n, subsnes));CHKERRQ(ierr);
+  PetscUseMethod(snes, "SNESMultiblockGetSubSNES_C", (SNES, PetscInt*, SNES **), (snes, n, subsnes));
   PetscFunctionReturn(0);
 }
 
@@ -905,12 +883,11 @@ PetscErrorCode SNESMultiblockGetSubSNES(SNES snes, PetscInt *n, SNES *subsnes[])
 
   Level: beginner
 
-.seealso:  SNESCreate(), SNES, SNESSetType(), SNESNEWTONLS, SNESNEWTONTR, SNESNRICHARDSON
+.seealso: `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONLS`, `SNESNEWTONTR`, `SNESNRICHARDSON`
 M*/
 PETSC_EXTERN PetscErrorCode SNESCreate_Multiblock(SNES snes)
 {
   SNES_Multiblock *mb;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   snes->ops->destroy        = SNESDestroy_Multiblock;
@@ -925,7 +902,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Multiblock(SNES snes)
 
   snes->alwayscomputesfinalresidual = PETSC_TRUE;
 
-  ierr          = PetscNewLog(snes,&mb);CHKERRQ(ierr);
+  PetscCall(PetscNewLog(snes,&mb));
   snes->data    = (void*) mb;
   mb->defined   = PETSC_FALSE;
   mb->numBlocks = 0;
@@ -933,10 +910,10 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Multiblock(SNES snes)
   mb->type      = PC_COMPOSITE_MULTIPLICATIVE;
 
   /* We attach functions so that they can be called on another PC without crashing the program */
-  ierr = PetscObjectComposeFunction((PetscObject) snes, "SNESMultiblockSetFields_C",    SNESMultiblockSetFields_Default);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject) snes, "SNESMultiblockSetIS_C",        SNESMultiblockSetIS_Default);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject) snes, "SNESMultiblockSetType_C",      SNESMultiblockSetType_Default);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject) snes, "SNESMultiblockSetBlockSize_C", SNESMultiblockSetBlockSize_Default);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject) snes, "SNESMultiblockGetSubSNES_C",   SNESMultiblockGetSubSNES_Default);CHKERRQ(ierr);
+  PetscCall(PetscObjectComposeFunction((PetscObject) snes, "SNESMultiblockSetFields_C",    SNESMultiblockSetFields_Default));
+  PetscCall(PetscObjectComposeFunction((PetscObject) snes, "SNESMultiblockSetIS_C",        SNESMultiblockSetIS_Default));
+  PetscCall(PetscObjectComposeFunction((PetscObject) snes, "SNESMultiblockSetType_C",      SNESMultiblockSetType_Default));
+  PetscCall(PetscObjectComposeFunction((PetscObject) snes, "SNESMultiblockSetBlockSize_C", SNESMultiblockSetBlockSize_Default));
+  PetscCall(PetscObjectComposeFunction((PetscObject) snes, "SNESMultiblockGetSubSNES_C",   SNESMultiblockGetSubSNES_Default));
   PetscFunctionReturn(0);
 }

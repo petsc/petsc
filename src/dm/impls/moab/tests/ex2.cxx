@@ -20,7 +20,6 @@ typedef struct {
 
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  PetscErrorCode ierr;
   PetscBool      flg;
 
   PetscFunctionBegin;
@@ -32,26 +31,26 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->write_output      = PETSC_FALSE;
   options->interlace         = PETSC_FALSE;
   options->input_file[0]     = '\0';
-  ierr = PetscStrcpy(options->output_file,"ex2.h5m");CHKERRQ(ierr);
+  PetscCall(PetscStrcpy(options->output_file,"ex2.h5m"));
 
-  ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMMOAB");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-debug", "Enable debug messages", "ex2.cxx", options->debug, &options->debug, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-interlace", "Use interlaced arrangement for the field data", "ex2.cxx", options->interlace, &options->interlace, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-simplex", "Create simplices instead of tensor product elements", "ex2.cxx", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex2.cxx", options->dim, &options->dim, NULL,1,3);CHKERRQ(ierr);
-  ierr = PetscOptionsBoundedInt("-n", "The number of elements in each dimension", "ex2.cxx", options->nele, &options->nele, NULL,1);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-meshfile", "The input mesh file", "ex2.cxx", options->input_file, options->input_file, sizeof(options->input_file), NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-io", "Write out the mesh and solution that is defined on it (Default H5M format)", "ex2.cxx", options->output_file, options->output_file, sizeof(options->output_file), &options->write_output);CHKERRQ(ierr);
-  ierr = PetscOptionsStringArray("-fields", "The list of names of the field variables", "ex2.cxx", options->fieldnames,&options->nfields, &flg);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMMOAB");
+  PetscCall(PetscOptionsBool("-debug", "Enable debug messages", "ex2.cxx", options->debug, &options->debug, NULL));
+  PetscCall(PetscOptionsBool("-interlace", "Use interlaced arrangement for the field data", "ex2.cxx", options->interlace, &options->interlace, NULL));
+  PetscCall(PetscOptionsBool("-simplex", "Create simplices instead of tensor product elements", "ex2.cxx", options->simplex, &options->simplex, NULL));
+  PetscCall(PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex2.cxx", options->dim, &options->dim, NULL,1,3));
+  PetscCall(PetscOptionsBoundedInt("-n", "The number of elements in each dimension", "ex2.cxx", options->nele, &options->nele, NULL,1));
+  PetscCall(PetscOptionsString("-meshfile", "The input mesh file", "ex2.cxx", options->input_file, options->input_file, sizeof(options->input_file), NULL));
+  PetscCall(PetscOptionsString("-io", "Write out the mesh and solution that is defined on it (Default H5M format)", "ex2.cxx", options->output_file, options->output_file, sizeof(options->output_file), &options->write_output));
+  PetscCall(PetscOptionsStringArray("-fields", "The list of names of the field variables", "ex2.cxx", options->fieldnames,&options->nfields, &flg));
+  PetscOptionsEnd();
 
-  if (options->debug) PetscPrintf(comm, "Total number of fields: %D.\n",options->nfields);
+  if (options->debug) PetscCall(PetscPrintf(comm, "Total number of fields: %" PetscInt_FMT ".\n",options->nfields));
   if (!flg) { /* if no field names were given by user, assign a default */
     options->nfields = 1;
-    ierr = PetscStrallocpy("TestEX2Var",&options->fieldnames[0]);CHKERRQ(ierr);
+    PetscCall(PetscStrallocpy("TestEX2Var",&options->fieldnames[0]));
   }
 
-  ierr = PetscLogEventRegister("CreateMesh",          DM_CLASSID,   &options->createMeshEvent);CHKERRQ(ierr);
+  PetscCall(PetscLogEventRegister("CreateMesh",          DM_CLASSID,   &options->createMeshEvent));
   PetscFunctionReturn(0);
 }
 
@@ -60,31 +59,30 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user)
   PetscInt       i;
   size_t         len;
   PetscMPIInt    rank;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscLogEventBegin(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
-  ierr = PetscStrlen(user->input_file, &len);CHKERRQ(ierr);
+  PetscCall(PetscLogEventBegin(user->createMeshEvent,0,0,0,0));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
+  PetscCall(PetscStrlen(user->input_file, &len));
   if (len) {
-    if (user->debug) PetscPrintf(comm, "Loading mesh from file: %s and creating a DM object.\n",user->input_file);
-    ierr = DMMoabLoadFromFile(comm, user->dim, 1, user->input_file, "", &user->dm);CHKERRQ(ierr);
+    if (user->debug) PetscCall(PetscPrintf(comm, "Loading mesh from file: %s and creating a DM object.\n",user->input_file));
+    PetscCall(DMMoabLoadFromFile(comm, user->dim, 1, user->input_file, "", &user->dm));
   }
   else {
     if (user->debug) {
-      PetscPrintf(comm, "Creating a %D-dimensional structured %s mesh of %Dx%Dx%D in memory and creating a DM object.\n",user->dim,(user->simplex?"simplex":"regular"),user->nele,user->nele,user->nele);
+      PetscCall(PetscPrintf(comm, "Creating a %" PetscInt_FMT "-dimensional structured %s mesh of %" PetscInt_FMT "x%" PetscInt_FMT "x%" PetscInt_FMT " in memory and creating a DM object.\n",user->dim,(user->simplex?"simplex":"regular"),user->nele,user->nele,user->nele));
     }
-    ierr = DMMoabCreateBoxMesh(comm, user->dim, user->simplex, NULL, user->nele, 1, &user->dm);CHKERRQ(ierr);
+    PetscCall(DMMoabCreateBoxMesh(comm, user->dim, user->simplex, NULL, user->nele, 1, &user->dm));
   }
 
   if (user->debug) {
     PetscPrintf(comm, "Setting field names to DM: \n");
     for (i=0; i<user->nfields; i++)
-      PetscPrintf(comm, "\t Field{%D} = %s.\n",i,user->fieldnames[i]);
+      PetscPrintf(comm, "\t Field{%" PetscInt_FMT "} = %s.\n",i,user->fieldnames[i]);
   }
-  ierr     = DMMoabSetFieldNames(user->dm, user->nfields, (const char**)user->fieldnames);CHKERRQ(ierr);
-  ierr     = PetscObjectSetName((PetscObject)user->dm, "Structured Mesh");CHKERRQ(ierr);
-  ierr     = PetscLogEventEnd(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
+  PetscCall(DMMoabSetFieldNames(user->dm, user->nfields, (const char**)user->fieldnames));
+  PetscCall(PetscObjectSetName((PetscObject)user->dm, "Structured Mesh"));
+  PetscCall(PetscLogEventEnd(user->createMeshEvent,0,0,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -96,48 +94,45 @@ int main(int argc, char **argv)
   Mat            system;
   MPI_Comm       comm;
   PetscInt       i;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   comm = PETSC_COMM_WORLD;
-  ierr = ProcessOptions(comm, &user);CHKERRQ(ierr);
-  ierr = CreateMesh(comm, &user);CHKERRQ(ierr);
+  PetscCall(ProcessOptions(comm, &user));
+  PetscCall(CreateMesh(comm, &user));
 
   /* set block size */
-  ierr = DMMoabSetBlockSize(user.dm, (user.interlace?user.nfields:1));CHKERRQ(ierr);
-  ierr = DMSetMatType(user.dm,MATAIJ);CHKERRQ(ierr);
+  PetscCall(DMMoabSetBlockSize(user.dm, (user.interlace?user.nfields:1)));
+  PetscCall(DMSetMatType(user.dm,MATAIJ));
 
-  ierr = DMSetFromOptions(user.dm);CHKERRQ(ierr);
+  PetscCall(DMSetFromOptions(user.dm));
 
   /* SetUp the data structures for DMMOAB */
-  ierr = DMSetUp(user.dm);CHKERRQ(ierr);
+  PetscCall(DMSetUp(user.dm));
 
-  if (user.debug) PetscPrintf(comm, "Creating a global vector defined on DM and setting random data.\n");
-  ierr = DMCreateGlobalVector(user.dm,&solution);CHKERRQ(ierr);
-  ierr = PetscRandomCreate(comm,&rctx);CHKERRQ(ierr);
-  ierr = VecSetRandom(solution,rctx);CHKERRQ(ierr);
+  if (user.debug) PetscCall(PetscPrintf(comm, "Creating a global vector defined on DM and setting random data.\n"));
+  PetscCall(DMCreateGlobalVector(user.dm,&solution));
+  PetscCall(PetscRandomCreate(comm,&rctx));
+  PetscCall(VecSetRandom(solution,rctx));
 
   /* test if matrix allocation for the prescribed matrix type is done correctly */
-  if (user.debug) PetscPrintf(comm, "Creating a global matrix defined on DM with the right block structure.\n");
-  ierr = DMCreateMatrix(user.dm,&system);CHKERRQ(ierr);
+  if (user.debug) PetscCall(PetscPrintf(comm, "Creating a global matrix defined on DM with the right block structure.\n"));
+  PetscCall(DMCreateMatrix(user.dm,&system));
 
   if (user.write_output) {
-    ierr = DMMoabSetGlobalFieldVector(user.dm, solution);CHKERRQ(ierr);
+    PetscCall(DMMoabSetGlobalFieldVector(user.dm, solution));
     if (user.debug) PetscPrintf(comm, "Output mesh and associated field data to file: %s.\n",user.output_file);
-    ierr = DMMoabOutput(user.dm,(const char*)user.output_file,"");CHKERRQ(ierr);
+    PetscCall(DMMoabOutput(user.dm,(const char*)user.output_file,""));
   }
 
   if (user.nfields) {
-    for (i=0; i<user.nfields; i++) {
-      ierr = PetscFree(user.fieldnames[i]);CHKERRQ(ierr);
-    }
+    for (i=0; i<user.nfields; i++) PetscCall(PetscFree(user.fieldnames[i]));
   }
-  ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
-  ierr = VecDestroy(&solution);CHKERRQ(ierr);
-  ierr = MatDestroy(&system);CHKERRQ(ierr);
-  ierr = DMDestroy(&user.dm);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscRandomDestroy(&rctx));
+  PetscCall(VecDestroy(&solution));
+  PetscCall(MatDestroy(&system));
+  PetscCall(DMDestroy(&user.dm));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

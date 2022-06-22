@@ -11,18 +11,13 @@ program main
       PetscBool               has,flg
       PetscErrorCode          ierr
 
-      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      if (ierr .ne. 0) then
-         print*, 'Unable to begin PETSc program'
-      endif
-
+      PetscCallA(PetscInitialize(ierr))
       pkg = "hdf5"
-      call PetscOptionsGetString(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-pkg",pkg,flg,ierr);CHKERRA(ierr)
-      call PetscHasExternalPackage(pkg,has,ierr);CHKERRA(ierr)
+      PetscCallA(PetscOptionsGetString(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-pkg",pkg,flg,ierr))
+      PetscCallA(PetscHasExternalPackage(pkg,has,ierr))
       write (outputString,*) 'PETSc has '//trim(pkg)//'?',has,'\n'
-      call PetscPrintf(PETSC_COMM_WORLD,outputString,ierr);CHKERRA(ierr)
-      call PetscFinalize(ierr)
-
+      PetscCallA(PetscPrintf(PETSC_COMM_WORLD,outputString,ierr))
+      PetscCallA(PetscFinalize(ierr))
 end program main
 
 !/*TEST

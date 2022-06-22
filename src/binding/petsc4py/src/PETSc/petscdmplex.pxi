@@ -2,6 +2,11 @@
 
 cdef extern from * nogil:
 
+    ctypedef enum PetscDMPlexReorderDefaultFlag "DMPlexReorderDefaultFlag":
+        DMPLEX_REORDER_DEFAULT_NOTSET
+        DMPLEX_REORDER_DEFAULT_FALSE
+        DMPLEX_REORDER_DEFAULT_TRUE
+
     int DMPlexCreate(MPI_Comm,PetscDM*)
     int DMPlexCreateCohesiveSubmesh(PetscDM,PetscBool,const char[],PetscInt,PetscDM*)
     int DMPlexCreateFromCellListPetsc(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscBool,PetscInt[],PetscInt,PetscReal[],PetscDM*)
@@ -108,9 +113,11 @@ cdef extern from * nogil:
 
     int DMPlexGetOrdering(PetscDM,PetscMatOrderingType,PetscDMLabel,PetscIS*)
     int DMPlexPermute(PetscDM,PetscIS,PetscDM*)
+    int DMPlexReorderGetDefault(PetscDM,PetscDMPlexReorderDefaultFlag*)
+    int DMPlexReorderSetDefault(PetscDM,PetscDMPlexReorderDefaultFlag)
 
     #int DMPlexCreateSubmesh(PetscDM,PetscDMLabel,PetscInt,PetscDM*)
-    #int DMPlexCreateHybridMesh(PetscDM,PetscDMLabel,PetscDMLabel*,PetscDM*)
+    #int DMPlexCreateHybridMesh(PetscDM,PetscDMLabel,PetscDMLabel,PetscInt,PetscDMLabel*,PetscDMLabel*,PetscDM *,PetscDM *)
     #int DMPlexGetSubpointMap(PetscDM,PetscDMLabel*)
     #int DMPlexSetSubpointMap(PetscDM,PetscDMLabel)
     #int DMPlexCreateSubpointIS(PetscDM,PetscIS*)
@@ -118,13 +125,14 @@ cdef extern from * nogil:
     int DMPlexCreateCoarsePointIS(PetscDM,PetscIS*)
     int DMPlexMarkBoundaryFaces(PetscDM,PetscInt,PetscDMLabel)
     int DMPlexLabelComplete(PetscDM,PetscDMLabel)
-    int DMPlexLabelCohesiveComplete(PetscDM,PetscDMLabel,PetscDMLabel,PetscBool,PetscDM)
+    int DMPlexLabelCohesiveComplete(PetscDM,PetscDMLabel,PetscDMLabel,PetscInt,PetscBool,PetscDM)
 
     int DMPlexGetRefinementLimit(PetscDM,PetscReal*)
     int DMPlexSetRefinementLimit(PetscDM,PetscReal)
     int DMPlexGetRefinementUniform(PetscDM,PetscBool*)
     int DMPlexSetRefinementUniform(PetscDM,PetscBool)
 
+    int DMPlexGetMinRadius(PetscDM, PetscReal*)
     #int DMPlexGetNumFaceVertices(PetscDM,PetscInt,PetscInt,PetscInt*)
     #int DMPlexGetOrientedFace(PetscDM,PetscInt,PetscInt,const PetscInt[],PetscInt,PetscInt[],PetscInt[],PetscInt[],PetscBool*)
 
@@ -134,6 +142,8 @@ cdef extern from * nogil:
     int DMPlexConstructGhostCells(PetscDM,const char[],PetscInt*,PetscDM*)
 
     int DMPlexMetricSetFromOptions(PetscDM)
+    int DMPlexMetricSetUniform(PetscDM,PetscBool)
+    int DMPlexMetricIsUniform(PetscDM,PetscBool*)
     int DMPlexMetricSetIsotropic(PetscDM,PetscBool)
     int DMPlexMetricIsIsotropic(PetscDM,PetscBool*)
     int DMPlexMetricSetRestrictAnisotropyFirst(PetscDM,PetscBool)
@@ -144,6 +154,8 @@ cdef extern from * nogil:
     int DMPlexMetricNoSwapping(PetscDM,PetscBool*)
     int DMPlexMetricSetNoMovement(PetscDM,PetscBool)
     int DMPlexMetricNoMovement(PetscDM,PetscBool*)
+    int DMPlexMetricSetNoSurf(PetscDM,PetscBool)
+    int DMPlexMetricNoSurf(PetscDM,PetscBool*)
     int DMPlexMetricSetVerbosity(PetscDM,PetscInt)
     int DMPlexMetricGetVerbosity(PetscDM,PetscInt*)
     int DMPlexMetricSetNumIterations(PetscDM,PetscInt)
@@ -160,15 +172,18 @@ cdef extern from * nogil:
     int DMPlexMetricGetNormalizationOrder(PetscDM,PetscReal*)
     int DMPlexMetricSetGradationFactor(PetscDM,PetscReal)
     int DMPlexMetricGetGradationFactor(PetscDM,PetscReal*)
+    int DMPlexMetricSetHausdorffNumber(PetscDM,PetscReal)
+    int DMPlexMetricGetHausdorffNumber(PetscDM,PetscReal*)
     int DMPlexMetricCreate(PetscDM,PetscInt,PetscVec*)
     int DMPlexMetricCreateUniform(PetscDM,PetscInt,PetscReal,PetscVec*)
     int DMPlexMetricCreateIsotropic(PetscDM,PetscInt,PetscVec,PetscVec*)
-    int DMPlexMetricEnforceSPD(PetscDM,PetscVec,PetscBool,PetscBool,PetscVec*,PetscVec*)
-    int DMPlexMetricNormalize(PetscDM,PetscVec,PetscBool,PetscBool,PetscVec*)
-    int DMPlexMetricAverage2(PetscDM,PetscVec,PetscVec,PetscVec*)
-    int DMPlexMetricAverage3(PetscDM,PetscVec,PetscVec,PetscVec,PetscVec*)
-    int DMPlexMetricIntersection2(PetscDM,PetscVec,PetscVec,PetscVec*)
-    int DMPlexMetricIntersection3(PetscDM,PetscVec,PetscVec,PetscVec,PetscVec*)
+    int DMPlexMetricDeterminantCreate(PetscDM,PetscInt,PetscVec*,PetscDM*)
+    int DMPlexMetricEnforceSPD(PetscDM,PetscVec,PetscBool,PetscBool,PetscVec,PetscVec)
+    int DMPlexMetricNormalize(PetscDM,PetscVec,PetscBool,PetscBool,PetscVec,PetscVec)
+    int DMPlexMetricAverage2(PetscDM,PetscVec,PetscVec,PetscVec)
+    int DMPlexMetricAverage3(PetscDM,PetscVec,PetscVec,PetscVec,PetscVec)
+    int DMPlexMetricIntersection2(PetscDM,PetscVec,PetscVec,PetscVec)
+    int DMPlexMetricIntersection3(PetscDM,PetscVec,PetscVec,PetscVec,PetscVec)
 
     int DMPlexComputeGradientClementInterpolant(PetscDM,PetscVec,PetscVec)
 

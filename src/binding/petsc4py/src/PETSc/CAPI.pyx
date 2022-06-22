@@ -339,4 +339,31 @@ cdef api PetscDMLabel PyPetscDMLabel_Get(object arg) except ? NULL:
     return retv
 
 
+# -- SPACE --
+
+cdef api object PyPetscSpace_New(PetscSpace arg):
+    cdef Space retv = Space()
+    setref(&retv.space, arg)
+    return retv
+
+cdef api PetscSpace PyPetscSpace_Get(object arg) except ? NULL:
+    cdef PetscSpace retv = NULL
+    cdef Space ob = <Space?> arg
+    retv = ob.space
+    return retv
+
+# -- DUALSPACE --
+
+cdef api object PyPetscDualSpace_New(PetscDualSpace arg):
+    cdef DualSpace retv = DualSpace()
+    setref(&retv.dualspace, arg)
+    return retv
+
+cdef api PetscDualSpace PyPetscDualSpace_Get(object arg) except ? NULL:
+    cdef PetscDualSpace retv = NULL
+    cdef DualSpace ob = <DualSpace?> arg
+    retv = ob.dualspace
+    return retv
+
+
 #---------------------------------------------------------------------

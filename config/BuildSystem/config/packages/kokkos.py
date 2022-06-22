@@ -4,7 +4,7 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit        = '1ec0d1ee961cd86d69b950ff8525729cc9a3a60f' # develop of 2022-01-26
+    self.gitcommit        = '3.6.00'
     self.minversion       = '3.5.00'
     self.versionname      = 'KOKKOS_VERSION'
     self.download         = ['git://https://github.com/kokkos/kokkos.git']
@@ -16,11 +16,11 @@ class Configure(config.package.CMakePackage):
     self.functionsCxx     = [1,'namespace Kokkos {void initialize(int&,char*[]);}','int one = 1;char* args[1];Kokkos::initialize(one,args);']
     self.minCxxVersion    = 'c++14'
     self.buildLanguages   = ['Cxx'] # Depending on if cuda, hip or sycl is avaiable, it will be modified.
-    self.downloadonWindows= 0
     self.hastests         = 1
     self.requiresrpath    = 1
     self.precisions       = ['single','double']
     self.devicePackage    = 1
+    self.minCmakeVersion  = (3,16,0)
     return
 
   def __str__(self):
@@ -72,6 +72,11 @@ class Configure(config.package.CMakePackage):
   def formCMakeConfigureArgs(self):
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
     args.append('-DUSE_XSDK_DEFAULTS=YES')
+
+    # always use C/C++'s alignment (i.e., sizeof(RealType)) for complex,
+    # instead of Kokkos's default "alignas(2 * sizeof(RealType))"
+    args.append('-DKokkos_ENABLE_COMPLEX_ALIGN=OFF')
+
     if not self.compilerFlags.debugging:
       args.append('-DXSDK_ENABLE_DEBUG=NO')
 
@@ -91,9 +96,6 @@ class Configure(config.package.CMakePackage):
     if not 'with-pthread' in self.framework.clArgDB:
       pthreadfound = 0
 
-    if self.openmp.found + pthreadfound + self.cuda.found > 1:
-      raise RuntimeError("Kokkos only supports a single parallel system during its configuration")
-
     args.append('-DKokkos_ENABLE_SERIAL=ON')
     if self.openmp.found:
       args.append('-DKokkos_ENABLE_OPENMP=ON')
@@ -105,6 +107,7 @@ class Configure(config.package.CMakePackage):
     lang = 'cxx'
     deviceArchName = ''
     if self.cuda.found:
+      args.append('-DKokkos_ENABLE_LIBDL=OFF') # See MR !4890
       # lang is used below to get nvcc C++ dialect. In a case with nvhpc-21.7 and "nvcc -ccbin nvc++ -std=c++17",
       # nvcc complains the host compiler does not support c++17, even though it does. So we have to respect
       # what nvcc thinks, instead of taking the c++ dialect directly from the host compiler.
@@ -162,9 +165,12 @@ class Configure(config.package.CMakePackage):
       args.append('-DKokkos_ENABLE_SYCL=ON')
       with self.Language('SYCL'):
         petscSyclc = self.getCompiler()
+        syclFlags = self.updatePackageCxxFlags(self.getCompilerFlags())
       self.getExecutable(petscSyclc,getFullPath=1,resultName='systemSyclc')
       if not hasattr(self,'systemSyclc'):
         raise RuntimeError('SYCL error: could not find path of the sycl compiler')
+      args = self.rmArgsStartsWith(args, '-DCMAKE_CXX_FLAGS')
+      args.append('-DCMAKE_CXX_FLAGS="' + syclFlags.replace('"','\\"') + '"')
       args = self.rmArgsStartsWith(args,'-DCMAKE_CXX_COMPILER=')
       args.append('-DCMAKE_CXX_COMPILER='+self.systemSyclc)
       args.append('-DCMAKE_CXX_EXTENSIONS=OFF')

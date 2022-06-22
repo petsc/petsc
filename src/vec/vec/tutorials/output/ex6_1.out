@@ -1,5 +1,5 @@
 reading data in binary from input.dat, sz =10 ...
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.
 10.

@@ -13,10 +13,12 @@ template <typename T> void PetscValidDeviceContext(T,int);
 template <typename T> void PetscCheckCompatibleDeviceContexts(T,int,T,int);
 #elif PetscDefined(USE_DEBUG)
 /* note any changes to these macros must be mirrored in
- * src/sys/objects/device/test/petscdevicecommon.h! */
+ * src/sys/objects/device/test/petscdevicetestcommon.h! */
+/* enums may be handled as unsigned by some compilers, NVHPC for example, the int cast
+ * below is to prevent NVHPC from warning about meaningless comparison of unsigned with zero */
 #define PetscValidDeviceType(_p_dev_type__,_p_arg__) do {                                      \
     PetscCheck(                                                                               \
-      ((_p_dev_type__) >= PETSC_DEVICE_INVALID) && ((_p_dev_type__) <= PETSC_DEVICE_MAX),      \
+      ((int)(_p_dev_type__) >= (int)PETSC_DEVICE_INVALID) && ((_p_dev_type__) <= PETSC_DEVICE_MAX), \
       PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown PetscDeviceType '%d': Argument #%d", \
       (_p_dev_type__),(_p_arg__)                                                               \
     );                                                                                         \
@@ -67,9 +69,11 @@ template <typename T> void PetscCheckCompatibleDeviceContexts(T,int,T,int);
     );                                                                                  \
   } while (0)
 
+/* enums may be handled as unsigned by some compilers, NVHPC for example, the int cast
+ * below is to prevent NVHPC from warning about meaningless comparison of unsigned with zero */
 #define PetscValidStreamType(_p_strm_type__,_p_arg__)  do {                                    \
     PetscCheck(                                                                               \
-      ((_p_strm_type__) >= 0) && ((_p_strm_type__) <= PETSC_STREAM_MAX),                       \
+      ((int)(_p_strm_type__) >= 0) && ((_p_strm_type__) <= PETSC_STREAM_MAX), \
       PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown PetscStreamType '%d': Argument #%d", \
       (_p_strm_type__),(_p_arg__)                                                              \
     );                                                                                         \
@@ -231,12 +235,11 @@ PETSC_INTERN PetscErrorCode PetscDeviceContextSetRootDeviceType_Internal(PetscDe
 
 static inline PetscErrorCode PetscDeviceContextSetDefaultDeviceForType_Internal(PetscDeviceContext dctx, PetscDeviceType type)
 {
-  PetscDevice    device;
-  PetscErrorCode ierr;
+  PetscDevice device;
 
   PetscFunctionBegin;
-  ierr = PetscDeviceGetDefaultForType_Internal(type,&device);CHKERRQ(ierr);
-  ierr = PetscDeviceContextSetDevice(dctx,device);CHKERRQ(ierr);
+  PetscCall(PetscDeviceGetDefaultForType_Internal(type,&device));
+  PetscCall(PetscDeviceContextSetDevice(dctx,device));
   PetscFunctionReturn(0);
 }
 
@@ -246,72 +249,60 @@ static inline PetscErrorCode PetscDeviceContextSetDefaultDeviceForType_Internal(
 /* note, only does assertion checking in debug mode */
 static inline PetscErrorCode PetscDeviceContextGetCurrentContextAssertType_Internal(PetscDeviceContext *dctx, PetscDeviceType type)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidPointer(dctx,1);
   PetscValidDeviceType(type,2);
-  ierr = PetscDeviceContextGetCurrentContext(dctx);CHKERRQ(ierr);
+  PetscCall(PetscDeviceContextGetCurrentContext(dctx));
   PetscAssert((*dctx)->device->type == type,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Expected current global PetscDeviceContext (id %" PetscInt_FMT ") to have PetscDeviceType '%s' but has '%s' instead",(*dctx)->id,PetscDeviceTypes[type],PetscDeviceTypes[(*dctx)->device->type]);
   PetscFunctionReturn(0);
 }
 
 static inline PetscErrorCode PetscDeviceContextGetBLASHandle_Internal(PetscDeviceContext dctx, void *handle)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   /* we do error checking here as this routine is an entry-point */
   PetscValidDeviceContext(dctx,1);
   PetscValidPointer(handle,2);
-  ierr = (*dctx->ops->getblashandle)(dctx,handle);CHKERRQ(ierr);
+  PetscCall((*dctx->ops->getblashandle)(dctx,handle));
   PetscFunctionReturn(0);
 }
 
 static inline PetscErrorCode PetscDeviceContextGetSOLVERHandle_Internal(PetscDeviceContext dctx, void *handle)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   /* we do error checking here as this routine is an entry-point */
   PetscValidDeviceContext(dctx,1);
   PetscValidPointer(handle,2);
-  ierr = (*dctx->ops->getsolverhandle)(dctx,handle);CHKERRQ(ierr);
+  PetscCall((*dctx->ops->getsolverhandle)(dctx,handle));
   PetscFunctionReturn(0);
 }
 
 static inline PetscErrorCode PetscDeviceContextGetStreamHandle_Internal(PetscDeviceContext dctx, void *handle)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   /* we do error checking here as this routine is an entry-point */
   PetscValidDeviceContext(dctx,1);
   PetscValidPointer(handle,2);
-  ierr = (*dctx->ops->getstreamhandle)(dctx,handle);CHKERRQ(ierr);
+  PetscCall((*dctx->ops->getstreamhandle)(dctx,handle));
   PetscFunctionReturn(0);
 }
 
 static inline PetscErrorCode PetscDeviceContextBeginTimer_Internal(PetscDeviceContext dctx)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   /* we do error checking here as this routine is an entry-point */
   PetscValidDeviceContext(dctx,1);
-  ierr = (*dctx->ops->begintimer)(dctx);CHKERRQ(ierr);
+  PetscCall((*dctx->ops->begintimer)(dctx));
   PetscFunctionReturn(0);
 }
 
 static inline PetscErrorCode PetscDeviceContextEndTimer_Internal(PetscDeviceContext dctx, PetscLogDouble *elapsed)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   /* we do error checking here as this routine is an entry-point */
   PetscValidDeviceContext(dctx,1);
   PetscValidRealPointer(elapsed,2);
-  ierr = (*dctx->ops->endtimer)(dctx,elapsed);CHKERRQ(ierr);
+  PetscCall((*dctx->ops->endtimer)(dctx,elapsed));
   PetscFunctionReturn(0);
 }
 #else /* PETSC_HAVE_CXX for PetscDeviceContext Internal Functions */

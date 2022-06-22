@@ -3,17 +3,16 @@
 static PetscErrorCode DMPlexTransformView_Alfeld(DMPlexTransform tr, PetscViewer viewer)
 {
   PetscBool      isascii;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
-  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isascii);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isascii));
   if (isascii) {
     const char *name;
 
-    ierr = PetscObjectGetName((PetscObject) tr, &name);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "Alfeld refinement %s\n", name ? name : "");CHKERRQ(ierr);
+    PetscCall(PetscObjectGetName((PetscObject) tr, &name));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "Alfeld refinement %s\n", name ? name : ""));
   } else {
     SETERRQ(PetscObjectComm((PetscObject) tr), PETSC_ERR_SUP, "Viewer type %s not yet supported for DMPlexTransform writing", ((PetscObject) viewer)->type_name);
   }
@@ -29,10 +28,9 @@ static PetscErrorCode DMPlexTransformSetUp_Alfeld(DMPlexTransform tr)
 static PetscErrorCode DMPlexTransformDestroy_Alfeld(DMPlexTransform tr)
 {
   DMPlexRefine_Alfeld *f = (DMPlexRefine_Alfeld *) tr->data;
-  PetscErrorCode       ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFree(f);CHKERRQ(ierr);
+  PetscCall(PetscFree(f));
   PetscFunctionReturn(0);
 }
 
@@ -40,7 +38,6 @@ static PetscErrorCode DMPlexTransformGetSubcellOrientation_Alfeld(DMPlexTransfor
 {
   DM             dm;
   PetscInt       dim;
-  PetscErrorCode ierr;
   static PetscInt tri_seg[]  = {1, 0, 0, 0, 2, 0,
                                 0, 0, 2, 0, 1, 0,
                                 2, 0, 1, 0, 0, 0,
@@ -129,8 +126,8 @@ static PetscErrorCode DMPlexTransformGetSubcellOrientation_Alfeld(DMPlexTransfor
   PetscFunctionBeginHot;
   *rnew = r; *onew = o;
   if (!so) PetscFunctionReturn(0);
-  ierr = DMPlexTransformGetDM(tr, &dm);CHKERRQ(ierr);
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  PetscCall(DMPlexTransformGetDM(tr, &dm));
+  PetscCall(DMGetDimension(dm, &dim));
   if (dim == 2 && sct == DM_POLYTOPE_TRIANGLE) {
     switch (tct) {
       case DM_POLYTOPE_POINT: break;
@@ -162,7 +159,7 @@ static PetscErrorCode DMPlexTransformGetSubcellOrientation_Alfeld(DMPlexTransfor
       default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s is not produced by %s", DMPolytopeTypes[tct], DMPolytopeTypes[sct]);
     }
   } else {
-    ierr = DMPlexTransformGetSubcellOrientationIdentity(tr, sct, sp, so, tct, r, o, rnew, onew);CHKERRQ(ierr);
+    PetscCall(DMPlexTransformGetSubcellOrientationIdentity(tr, sct, sp, so, tct, r, o, rnew, onew));
   }
   PetscFunctionReturn(0);
 }
@@ -171,7 +168,6 @@ static PetscErrorCode DMPlexTransformCellRefine_Alfeld(DMPlexTransform tr, DMPol
 {
   DM             dm;
   PetscInt       dim;
-  PetscErrorCode ierr;
   /* Add 1 vertex, 3 edges inside every triangle, making 3 new triangles.
    2
    |\
@@ -256,14 +252,14 @@ static PetscErrorCode DMPlexTransformCellRefine_Alfeld(DMPlexTransform tr, DMPol
 
   PetscFunctionBeginHot;
   if (rt) *rt = 0;
-  ierr = DMPlexTransformGetDM(tr, &dm);CHKERRQ(ierr);
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  PetscCall(DMPlexTransformGetDM(tr, &dm));
+  PetscCall(DMGetDimension(dm, &dim));
   if (dim == 2 && source == DM_POLYTOPE_TRIANGLE) {
     *Nt = 3; *target = triT; *size = triS; *cone = triC; *ornt = triO;
   } else if (dim == 3 && source == DM_POLYTOPE_TETRAHEDRON) {
     *Nt = 4; *target = tetT; *size = tetS; *cone = tetC; *ornt = tetO;
   } else {
-    ierr = DMPlexTransformCellTransformIdentity(tr, source, p, rt, Nt, target, size, cone, ornt);CHKERRQ(ierr);
+    PetscCall(DMPlexTransformCellTransformIdentity(tr, source, p, rt, Nt, target, size, cone, ornt));
   }
   PetscFunctionReturn(0);
 }
@@ -283,13 +279,12 @@ static PetscErrorCode DMPlexTransformInitialize_Alfeld(DMPlexTransform tr)
 PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_Alfeld(DMPlexTransform tr)
 {
   DMPlexRefine_Alfeld *f;
-  PetscErrorCode       ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
-  ierr = PetscNewLog(tr, &f);CHKERRQ(ierr);
+  PetscCall(PetscNewLog(tr, &f));
   tr->data = f;
 
-  ierr = DMPlexTransformInitialize_Alfeld(tr);CHKERRQ(ierr);
+  PetscCall(DMPlexTransformInitialize_Alfeld(tr));
   PetscFunctionReturn(0);
 }

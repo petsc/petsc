@@ -1,7 +1,5 @@
-ALL: lib
+-include ../../../../../petsckdir.mk
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = almm.c almmutils.c
 SOURCEF  =
 SOURCEH  = almm.h

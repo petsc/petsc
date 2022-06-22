@@ -1,9 +1,6 @@
-
-ALL: lib
+-include ../../../../petsckdir.mk
 #requiresdefine   'PETSC_USE_FORTRAN_KERNELS'
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  =
 SOURCEF90= fcopy.F90
 SOURCEH  =

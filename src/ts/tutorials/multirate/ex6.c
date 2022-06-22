@@ -1,6 +1,6 @@
 /*
   Note:
-    -hratio is the ratio between mesh size of corse grids and fine grids
+    -hratio is the ratio between mesh size of coarse grids and fine grids
     -ts_rk_dtratio is the ratio between the large stepsize and the small stepsize
 */
 
@@ -81,41 +81,39 @@ static PetscErrorCode PhysicsSample_Advect(void *vctx,PetscInt initial,FVBCType 
 
 static PetscErrorCode PhysicsCreate_Advect(FVCtx *ctx)
 {
-  PetscErrorCode ierr;
   AdvectCtx      *user;
 
   PetscFunctionBeginUser;
-  ierr = PetscNew(&user);CHKERRQ(ierr);
+  PetscCall(PetscNew(&user));
   ctx->physics2.sample2         = PhysicsSample_Advect;
   ctx->physics2.riemann2        = PhysicsRiemann_Advect;
   ctx->physics2.characteristic2 = PhysicsCharacteristic_Advect;
   ctx->physics2.destroy         = PhysicsDestroy_SimpleFree;
   ctx->physics2.user            = user;
   ctx->physics2.dof             = 1;
-  ierr = PetscStrallocpy("u",&ctx->physics2.fieldname[0]);CHKERRQ(ierr);
+  PetscCall(PetscStrallocpy("u",&ctx->physics2.fieldname[0]));
   user->a = 1;
-  ierr = PetscOptionsBegin(ctx->comm,ctx->prefix,"Options for advection","");CHKERRQ(ierr);
+  PetscOptionsBegin(ctx->comm,ctx->prefix,"Options for advection","");
   {
-    ierr = PetscOptionsReal("-physics_advect_a","Speed","",user->a,&user->a,NULL);CHKERRQ(ierr);
+    PetscCall(PetscOptionsReal("-physics_advect_a","Speed","",user->a,&user->a,NULL));
   }
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode FVSample_2WaySplit(FVCtx *ctx,DM da,PetscReal time,Vec U)
 {
-  PetscErrorCode  ierr;
   PetscScalar     *u,*uj,xj,xi;
   PetscInt        i,j,k,dof,xs,xm,Mx;
   const PetscInt  N = 200;
   PetscReal       hs,hf;
 
   PetscFunctionBeginUser;
-  PetscCheckFalse(!ctx->physics2.sample2,PETSC_COMM_SELF,PETSC_ERR_SUP,"Physics has not provided a sampling function");
-  ierr = DMDAGetInfo(da,0, &Mx,0,0, 0,0,0, &dof,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,U,&u);CHKERRQ(ierr);
-  ierr = PetscMalloc1(dof,&uj);CHKERRQ(ierr);
+  PetscCheck(ctx->physics2.sample2,PETSC_COMM_SELF,PETSC_ERR_SUP,"Physics has not provided a sampling function");
+  PetscCall(DMDAGetInfo(da,0, &Mx,0,0, 0,0,0, &dof,0,0,0,0,0));
+  PetscCall(DMDAGetCorners(da,&xs,0,0,&xm,0,0));
+  PetscCall(DMDAVecGetArray(da,U,&u));
+  PetscCall(PetscMalloc1(dof,&uj));
   hs   = (ctx->xmax-ctx->xmin)*3.0/8.0/ctx->sf;
   hf   = (ctx->xmax-ctx->xmin)/4.0/(ctx->fs-ctx->sf);
   for (i=xs; i<xs+xm; i++) {
@@ -125,7 +123,7 @@ PetscErrorCode FVSample_2WaySplit(FVCtx *ctx,DM da,PetscReal time,Vec U)
       for (k=0; k<dof; k++) u[i*dof+k] = 0;
       for (j=0; j<N+1; j++) {
         xj = xi+hs*(j-N/2)/(PetscReal)N;
-        ierr = (*ctx->physics2.sample2)(ctx->physics2.user,ctx->initial,ctx->bctype,ctx->xmin,ctx->xmax,time,xj,uj);CHKERRQ(ierr);
+        PetscCall((*ctx->physics2.sample2)(ctx->physics2.user,ctx->initial,ctx->bctype,ctx->xmin,ctx->xmax,time,xj,uj));
         for (k=0; k<dof; k++) u[i*dof+k] += ((j==0 || j==N) ? 0.5 : 1.0)*uj[k]/N;
       }
     } else if (i < ctx->fs) {
@@ -134,7 +132,7 @@ PetscErrorCode FVSample_2WaySplit(FVCtx *ctx,DM da,PetscReal time,Vec U)
       for (k=0; k<dof; k++) u[i*dof+k] = 0;
       for (j=0; j<N+1; j++) {
         xj = xi+hf*(j-N/2)/(PetscReal)N;
-        ierr = (*ctx->physics2.sample2)(ctx->physics2.user,ctx->initial,ctx->bctype,ctx->xmin,ctx->xmax,time,xj,uj);CHKERRQ(ierr);
+        PetscCall((*ctx->physics2.sample2)(ctx->physics2.user,ctx->initial,ctx->bctype,ctx->xmin,ctx->xmax,time,xj,uj));
         for (k=0; k<dof; k++) u[i*dof+k] += ((j==0 || j==N) ? 0.5 : 1.0)*uj[k]/N;
       }
     } else {
@@ -143,46 +141,44 @@ PetscErrorCode FVSample_2WaySplit(FVCtx *ctx,DM da,PetscReal time,Vec U)
       for (k=0; k<dof; k++) u[i*dof+k] = 0;
       for (j=0; j<N+1; j++) {
         xj = xi+hs*(j-N/2)/(PetscReal)N;
-        ierr = (*ctx->physics2.sample2)(ctx->physics2.user,ctx->initial,ctx->bctype,ctx->xmin,ctx->xmax,time,xj,uj);CHKERRQ(ierr);
+        PetscCall((*ctx->physics2.sample2)(ctx->physics2.user,ctx->initial,ctx->bctype,ctx->xmin,ctx->xmax,time,xj,uj));
         for (k=0; k<dof; k++) u[i*dof+k] += ((j==0 || j==N) ? 0.5 : 1.0)*uj[k]/N;
       }
     }
   }
-  ierr = DMDAVecRestoreArray(da,U,&u);CHKERRQ(ierr);
-  ierr = PetscFree(uj);CHKERRQ(ierr);
+  PetscCall(DMDAVecRestoreArray(da,U,&u));
+  PetscCall(PetscFree(uj));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode SolutionErrorNorms_2WaySplit(FVCtx *ctx,DM da,PetscReal t,Vec X,PetscReal *nrm1)
 {
-  PetscErrorCode    ierr;
   Vec               Y;
   PetscInt          i,Mx;
   const PetscScalar *ptr_X,*ptr_Y;
   PetscReal         hs,hf;
 
   PetscFunctionBeginUser;
-  ierr = VecGetSize(X,&Mx);CHKERRQ(ierr);
-  ierr = VecDuplicate(X,&Y);CHKERRQ(ierr);
-  ierr = FVSample_2WaySplit(ctx,da,t,Y);CHKERRQ(ierr);
+  PetscCall(VecGetSize(X,&Mx));
+  PetscCall(VecDuplicate(X,&Y));
+  PetscCall(FVSample_2WaySplit(ctx,da,t,Y));
   hs   = (ctx->xmax-ctx->xmin)*3.0/8.0/ctx->sf;
   hf   = (ctx->xmax-ctx->xmin)/4.0/(ctx->fs-ctx->sf);
-  ierr = VecGetArrayRead(X,&ptr_X);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(Y,&ptr_Y);CHKERRQ(ierr);
+  PetscCall(VecGetArrayRead(X,&ptr_X));
+  PetscCall(VecGetArrayRead(Y,&ptr_Y));
   for (i=0; i<Mx; i++) {
     if (i < ctx->sf || i > ctx->fs -1) *nrm1 +=  hs*PetscAbs(ptr_X[i]-ptr_Y[i]);
     else *nrm1 += hf*PetscAbs(ptr_X[i]-ptr_Y[i]);
   }
-  ierr = VecRestoreArrayRead(X,&ptr_X);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(Y,&ptr_Y);CHKERRQ(ierr);
-  ierr = VecDestroy(&Y);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayRead(X,&ptr_X));
+  PetscCall(VecRestoreArrayRead(Y,&ptr_Y));
+  PetscCall(VecDestroy(&Y));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode FVRHSFunction_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
 {
   FVCtx          *ctx = (FVCtx*)vctx;
-  PetscErrorCode ierr;
   PetscInt       i,j,k,Mx,dof,xs,xm,sf = ctx->sf,fs = ctx->fs;
   PetscReal      hxf,hxs,cfl_idt = 0;
   PetscScalar    *x,*f,*slope;
@@ -190,21 +186,21 @@ PetscErrorCode FVRHSFunction_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void *vc
   DM             da;
 
   PetscFunctionBeginUser;
-  ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(da,&Xloc);CHKERRQ(ierr);                          /* Xloc contains ghost points                                     */
-  ierr = DMDAGetInfo(da,0, &Mx,0,0, 0,0,0, &dof,0,0,0,0,0);CHKERRQ(ierr);   /* Mx is the number of center points                              */
+  PetscCall(TSGetDM(ts,&da));
+  PetscCall(DMGetLocalVector(da,&Xloc));                          /* Xloc contains ghost points                                     */
+  PetscCall(DMDAGetInfo(da,0, &Mx,0,0, 0,0,0, &dof,0,0,0,0,0));   /* Mx is the number of center points                              */
   hxs  = (ctx->xmax-ctx->xmin)*3.0/8.0/ctx->sf;
   hxf  = (ctx->xmax-ctx->xmin)/4.0/(ctx->fs-ctx->sf);
-  ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);       /* X is solution vector which does not contain ghost points       */
-  ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
+  PetscCall(DMGlobalToLocalBegin(da,X,INSERT_VALUES,Xloc));       /* X is solution vector which does not contain ghost points       */
+  PetscCall(DMGlobalToLocalEnd(da,X,INSERT_VALUES,Xloc));
 
-  ierr = VecZeroEntries(F);CHKERRQ(ierr);                                   /* F is the right hand side function corresponds to center points */
+  PetscCall(VecZeroEntries(F));                                   /* F is the right hand side function corresponds to center points */
 
-  ierr = DMDAVecGetArray(da,Xloc,&x);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,F,&f);CHKERRQ(ierr);
-  ierr = DMDAGetArray(da,PETSC_TRUE,&slope);CHKERRQ(ierr);                  /* contains ghost points                                           */
+  PetscCall(DMDAVecGetArray(da,Xloc,&x));
+  PetscCall(DMDAVecGetArray(da,F,&f));
+  PetscCall(DMDAGetArray(da,PETSC_TRUE,&slope));                  /* contains ghost points                                           */
 
-  ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
+  PetscCall(DMDAGetCorners(da,&xs,0,0,&xm,0,0));
 
   if (ctx->bctype == FVBC_OUTFLOW) {
     for (i=xs-2; i<0; i++) {
@@ -218,9 +214,9 @@ PetscErrorCode FVRHSFunction_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void *vc
     struct _LimitInfo info;
     PetscScalar       *cjmpL,*cjmpR;
     /* Determine the right eigenvectors R, where A = R \Lambda R^{-1} */
-    ierr = (*ctx->physics2.characteristic2)(ctx->physics2.user,dof,&x[i*dof],ctx->R,ctx->Rinv,ctx->speeds);CHKERRQ(ierr);
+    PetscCall((*ctx->physics2.characteristic2)(ctx->physics2.user,dof,&x[i*dof],ctx->R,ctx->Rinv,ctx->speeds));
     /* Evaluate jumps across interfaces (i-1, i) and (i, i+1), put in characteristic basis */
-    ierr  = PetscArrayzero(ctx->cjmpLR,2*dof);CHKERRQ(ierr);
+    PetscCall(PetscArrayzero(ctx->cjmpLR,2*dof));
     cjmpL = &ctx->cjmpLR[0];
     cjmpR = &ctx->cjmpLR[dof];
     for (j=0; j<dof; j++) {
@@ -254,7 +250,7 @@ PetscErrorCode FVRHSFunction_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void *vc
         uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxs/2;
         uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxs/2;
       }
-      ierr    = (*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      PetscCall((*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed));
       if (i > xs) {
         for (j=0; j<dof; j++) f[(i-1)*dof+j] -= ctx->flux[j]/hxs;
       }
@@ -266,7 +262,7 @@ PetscErrorCode FVRHSFunction_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void *vc
         uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxs/2;
         uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxf/2;
       }
-      ierr    = (*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      PetscCall((*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed));
       if (i > xs) {
         for (j=0; j<dof; j++) f[(i-1)*dof+j] -= ctx->flux[j]/hxs;
       }
@@ -278,7 +274,7 @@ PetscErrorCode FVRHSFunction_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void *vc
         uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxf/2;
         uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxf/2;
       }
-      ierr    = (*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      PetscCall((*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed));
       if (i > xs) {
         for (j=0; j<dof; j++) f[(i-1)*dof+j] -= ctx->flux[j]/hxf;
       }
@@ -290,7 +286,7 @@ PetscErrorCode FVRHSFunction_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void *vc
         uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxf/2;
         uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxs/2;
       }
-      ierr    = (*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      PetscCall((*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed));
       if (i > xs) {
         for (j=0; j<dof; j++) f[(i-1)*dof+j] -= ctx->flux[j]/hxf;
       }
@@ -302,7 +298,7 @@ PetscErrorCode FVRHSFunction_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void *vc
         uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxs/2;
         uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxs/2;
       }
-      ierr    = (*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      PetscCall((*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed));
       cfl_idt = PetscMax(cfl_idt,PetscAbsScalar(maxspeed/hxs)); /* Max allowable value of 1/Delta t */
       if (i > xs) {
         for (j=0; j<dof; j++) f[(i-1)*dof+j] -= ctx->flux[j]/hxs;
@@ -312,19 +308,19 @@ PetscErrorCode FVRHSFunction_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void *vc
       }
     }
   }
-  ierr = DMDAVecRestoreArray(da,Xloc,&x);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
-  ierr = DMDARestoreArray(da,PETSC_TRUE,&slope);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(da,&Xloc);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&cfl_idt,&ctx->cfl_idt,1,MPIU_SCALAR,MPIU_MAX,PetscObjectComm((PetscObject)da));CHKERRMPI(ierr);
+  PetscCall(DMDAVecRestoreArray(da,Xloc,&x));
+  PetscCall(DMDAVecRestoreArray(da,F,&f));
+  PetscCall(DMDARestoreArray(da,PETSC_TRUE,&slope));
+  PetscCall(DMRestoreLocalVector(da,&Xloc));
+  PetscCallMPI(MPI_Allreduce(&cfl_idt,&ctx->cfl_idt,1,MPIU_SCALAR,MPIU_MAX,PetscObjectComm((PetscObject)da)));
   if (0) {
     /* We need to a way to inform the TS of a CFL constraint, this is a debugging fragment */
     PetscReal dt,tnow;
-    ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
-    ierr = TSGetTime(ts,&tnow);CHKERRQ(ierr);
+    PetscCall(TSGetTimeStep(ts,&dt));
+    PetscCall(TSGetTime(ts,&tnow));
     if (dt > 0.5/ctx->cfl_idt) {
       if (1) {
-        ierr = PetscPrintf(ctx->comm,"Stability constraint exceeded at t=%g, dt %g > %g\n",(double)tnow,(double)dt,(double)(0.5/ctx->cfl_idt));CHKERRQ(ierr);
+        PetscCall(PetscPrintf(ctx->comm,"Stability constraint exceeded at t=%g, dt %g > %g\n",(double)tnow,(double)dt,(double)(0.5/ctx->cfl_idt)));
       } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Stability constraint exceeded, %g > %g",(double)dt,(double)(ctx->cfl/ctx->cfl_idt));
     }
   }
@@ -335,7 +331,6 @@ PetscErrorCode FVRHSFunction_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void *vc
 PetscErrorCode FVRHSFunctionslow_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
 {
   FVCtx          *ctx = (FVCtx*)vctx;
-  PetscErrorCode ierr;
   PetscInt       i,j,k,Mx,dof,xs,xm,islow = 0,sf = ctx->sf,fs = ctx->fs,lsbwidth = ctx->lsbwidth,rsbwidth = ctx->rsbwidth;
   PetscReal      hxs,hxf,cfl_idt = 0;
   PetscScalar    *x,*f,*slope;
@@ -343,18 +338,18 @@ PetscErrorCode FVRHSFunctionslow_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void
   DM             da;
 
   PetscFunctionBeginUser;
-  ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(da,&Xloc);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,0, &Mx,0,0, 0,0,0, &dof,0,0,0,0,0);CHKERRQ(ierr);
+  PetscCall(TSGetDM(ts,&da));
+  PetscCall(DMGetLocalVector(da,&Xloc));
+  PetscCall(DMDAGetInfo(da,0, &Mx,0,0, 0,0,0, &dof,0,0,0,0,0));
   hxs  = (ctx->xmax-ctx->xmin)*3.0/8.0/ctx->sf;
   hxf  = (ctx->xmax-ctx->xmin)/4.0/(ctx->fs-ctx->sf);
-  ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
-  ierr = VecZeroEntries(F);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,Xloc,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-  ierr = DMDAGetArray(da,PETSC_TRUE,&slope);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
+  PetscCall(DMGlobalToLocalBegin(da,X,INSERT_VALUES,Xloc));
+  PetscCall(DMGlobalToLocalEnd(da,X,INSERT_VALUES,Xloc));
+  PetscCall(VecZeroEntries(F));
+  PetscCall(DMDAVecGetArray(da,Xloc,&x));
+  PetscCall(VecGetArray(F,&f));
+  PetscCall(DMDAGetArray(da,PETSC_TRUE,&slope));
+  PetscCall(DMDAGetCorners(da,&xs,0,0,&xm,0,0));
 
   if (ctx->bctype == FVBC_OUTFLOW) {
     for (i=xs-2; i<0; i++) {
@@ -369,9 +364,9 @@ PetscErrorCode FVRHSFunctionslow_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void
     PetscScalar       *cjmpL,*cjmpR;
     if (i < sf-lsbwidth+1 || i > fs+rsbwidth-2) { /* slow components and the first and last fast components */
       /* Determine the right eigenvectors R, where A = R \Lambda R^{-1} */
-      ierr = (*ctx->physics2.characteristic2)(ctx->physics2.user,dof,&x[i*dof],ctx->R,ctx->Rinv,ctx->speeds);CHKERRQ(ierr);
+      PetscCall((*ctx->physics2.characteristic2)(ctx->physics2.user,dof,&x[i*dof],ctx->R,ctx->Rinv,ctx->speeds));
       /* Evaluate jumps across interfaces (i-1, i) and (i, i+1), put in characteristic basis */
-      ierr  = PetscArrayzero(ctx->cjmpLR,2*dof);CHKERRQ(ierr);
+      PetscCall(PetscArrayzero(ctx->cjmpLR,2*dof));
       cjmpL = &ctx->cjmpLR[0];
       cjmpR = &ctx->cjmpLR[dof];
       for (j=0; j<dof; j++) {
@@ -406,7 +401,7 @@ PetscErrorCode FVRHSFunctionslow_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void
         uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxs/2;
         uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxs/2;
       }
-      ierr    = (*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      PetscCall((*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed));
       cfl_idt = PetscMax(cfl_idt,PetscAbsScalar(maxspeed/hxs)); /* Max allowable value of 1/Delta t */
       if (i > xs) {
         for (j=0; j<dof; j++) f[(islow-1)*dof+j] -= ctx->flux[j]/hxs;
@@ -421,7 +416,7 @@ PetscErrorCode FVRHSFunctionslow_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void
         uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxs/2;
         uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxs/2;
       }
-      ierr = (*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      PetscCall((*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed));
       if (i > xs) {
         for (j=0; j<dof; j++) f[(islow-1)*dof+j] -= ctx->flux[j]/hxs;
       }
@@ -431,7 +426,7 @@ PetscErrorCode FVRHSFunctionslow_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void
         uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxs/2;
         uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxs/2;
       }
-      ierr = (*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      PetscCall((*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed));
       if (i < xs+xm) {
         for (j=0; j<dof; j++) f[islow*dof+j] += ctx->flux[j]/hxs;
         islow++;
@@ -442,7 +437,7 @@ PetscErrorCode FVRHSFunctionslow_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void
         uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxs/2;
         uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxs/2;
       }
-      ierr = (*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      PetscCall((*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed));
       if (i > xs) {
         for (j=0; j<dof; j++) f[(islow-1)*dof+j] -= ctx->flux[j]/hxs;
       }
@@ -452,18 +447,17 @@ PetscErrorCode FVRHSFunctionslow_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void
       }
     }
   }
-  ierr = DMDAVecRestoreArray(da,Xloc,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
-  ierr = DMDARestoreArray(da,PETSC_TRUE,&slope);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(da,&Xloc);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&cfl_idt,&ctx->cfl_idt,1,MPIU_SCALAR,MPIU_MAX,PetscObjectComm((PetscObject)da));CHKERRMPI(ierr);
+  PetscCall(DMDAVecRestoreArray(da,Xloc,&x));
+  PetscCall(VecRestoreArray(F,&f));
+  PetscCall(DMDARestoreArray(da,PETSC_TRUE,&slope));
+  PetscCall(DMRestoreLocalVector(da,&Xloc));
+  PetscCallMPI(MPI_Allreduce(&cfl_idt,&ctx->cfl_idt,1,MPIU_SCALAR,MPIU_MAX,PetscObjectComm((PetscObject)da)));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode FVRHSFunctionslowbuffer_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
 {
   FVCtx          *ctx = (FVCtx*)vctx;
-  PetscErrorCode ierr;
   PetscInt       i,j,k,Mx,dof,xs,xm,islow = 0,sf = ctx->sf,fs = ctx->fs,lsbwidth = ctx->lsbwidth,rsbwidth = ctx->rsbwidth;
   PetscReal      hxs,hxf;
   PetscScalar    *x,*f,*slope;
@@ -471,18 +465,18 @@ PetscErrorCode FVRHSFunctionslowbuffer_2WaySplit(TS ts,PetscReal time,Vec X,Vec 
   DM             da;
 
   PetscFunctionBeginUser;
-  ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(da,&Xloc);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,0, &Mx,0,0, 0,0,0, &dof,0,0,0,0,0);CHKERRQ(ierr);
+  PetscCall(TSGetDM(ts,&da));
+  PetscCall(DMGetLocalVector(da,&Xloc));
+  PetscCall(DMDAGetInfo(da,0, &Mx,0,0, 0,0,0, &dof,0,0,0,0,0));
   hxs  = (ctx->xmax-ctx->xmin)*3.0/8.0/ctx->sf;
   hxf  = (ctx->xmax-ctx->xmin)/4.0/(ctx->fs-ctx->sf);
-  ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
-  ierr = VecZeroEntries(F);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,Xloc,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-  ierr = DMDAGetArray(da,PETSC_TRUE,&slope);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
+  PetscCall(DMGlobalToLocalBegin(da,X,INSERT_VALUES,Xloc));
+  PetscCall(DMGlobalToLocalEnd(da,X,INSERT_VALUES,Xloc));
+  PetscCall(VecZeroEntries(F));
+  PetscCall(DMDAVecGetArray(da,Xloc,&x));
+  PetscCall(VecGetArray(F,&f));
+  PetscCall(DMDAGetArray(da,PETSC_TRUE,&slope));
+  PetscCall(DMDAGetCorners(da,&xs,0,0,&xm,0,0));
 
   if (ctx->bctype == FVBC_OUTFLOW) {
     for (i=xs-2; i<0; i++) {
@@ -497,9 +491,9 @@ PetscErrorCode FVRHSFunctionslowbuffer_2WaySplit(TS ts,PetscReal time,Vec X,Vec 
     PetscScalar       *cjmpL,*cjmpR;
     if ((i > sf-lsbwidth-2 && i < sf+1) || (i > fs-2 && i < fs+rsbwidth+1)) {
       /* Determine the right eigenvectors R, where A = R \Lambda R^{-1} */
-      ierr = (*ctx->physics2.characteristic2)(ctx->physics2.user,dof,&x[i*dof],ctx->R,ctx->Rinv,ctx->speeds);CHKERRQ(ierr);
+      PetscCall((*ctx->physics2.characteristic2)(ctx->physics2.user,dof,&x[i*dof],ctx->R,ctx->Rinv,ctx->speeds));
       /* Evaluate jumps across interfaces (i-1, i) and (i, i+1), put in characteristic basis */
-      ierr  = PetscArrayzero(ctx->cjmpLR,2*dof);CHKERRQ(ierr);
+      PetscCall(PetscArrayzero(ctx->cjmpLR,2*dof));
       cjmpL = &ctx->cjmpLR[0];
       cjmpR = &ctx->cjmpLR[dof];
       for (j=0; j<dof; j++) {
@@ -534,7 +528,7 @@ PetscErrorCode FVRHSFunctionslowbuffer_2WaySplit(TS ts,PetscReal time,Vec X,Vec 
         uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxs/2;
         uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxs/2;
       }
-      ierr    = (*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      PetscCall((*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed));
       if (i < xs+xm) {
         for (j=0; j<dof; j++) f[islow*dof+j] += ctx->flux[j]/hxs;
         islow++;
@@ -545,7 +539,7 @@ PetscErrorCode FVRHSFunctionslowbuffer_2WaySplit(TS ts,PetscReal time,Vec X,Vec 
         uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxs/2;
         uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxs/2;
       }
-      ierr    = (*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      PetscCall((*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed));
       if (i > xs) {
         for (j=0; j<dof; j++) f[(islow-1)*dof+j] -= ctx->flux[j]/hxs;
       }
@@ -559,7 +553,7 @@ PetscErrorCode FVRHSFunctionslowbuffer_2WaySplit(TS ts,PetscReal time,Vec X,Vec 
         uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxs/2;
         uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxf/2;
       }
-      ierr = (*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      PetscCall((*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed));
       if (i > xs) {
         for (j=0; j<dof; j++) f[(islow-1)*dof+j] -= ctx->flux[j]/hxs;
       }
@@ -569,7 +563,7 @@ PetscErrorCode FVRHSFunctionslowbuffer_2WaySplit(TS ts,PetscReal time,Vec X,Vec 
         uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxf/2;
         uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxs/2;
       }
-      ierr = (*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      PetscCall((*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed));
       if (i < xs+xm) {
         for (j=0; j<dof; j++) f[islow*dof+j] += ctx->flux[j]/hxs;
         islow++;
@@ -580,7 +574,7 @@ PetscErrorCode FVRHSFunctionslowbuffer_2WaySplit(TS ts,PetscReal time,Vec X,Vec 
         uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxs/2;
         uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxs/2;
       }
-      ierr = (*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      PetscCall((*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed));
       if (i > xs) {
         for (j=0; j<dof; j++) f[(islow-1)*dof+j] -= ctx->flux[j]/hxs;
       }
@@ -594,16 +588,16 @@ PetscErrorCode FVRHSFunctionslowbuffer_2WaySplit(TS ts,PetscReal time,Vec X,Vec 
         uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxs/2;
         uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxs/2;
       }
-      ierr = (*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      PetscCall((*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed));
       if (i > xs) {
         for (j=0; j<dof; j++) f[(islow-1)*dof+j] -= ctx->flux[j]/hxs;
       }
     }
   }
-  ierr = DMDAVecRestoreArray(da,Xloc,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
-  ierr = DMDARestoreArray(da,PETSC_TRUE,&slope);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(da,&Xloc);CHKERRQ(ierr);
+  PetscCall(DMDAVecRestoreArray(da,Xloc,&x));
+  PetscCall(VecRestoreArray(F,&f));
+  PetscCall(DMDARestoreArray(da,PETSC_TRUE,&slope));
+  PetscCall(DMRestoreLocalVector(da,&Xloc));
   PetscFunctionReturn(0);
 }
 
@@ -611,7 +605,6 @@ PetscErrorCode FVRHSFunctionslowbuffer_2WaySplit(TS ts,PetscReal time,Vec X,Vec 
 PetscErrorCode FVRHSFunctionfast_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
 {
   FVCtx          *ctx = (FVCtx*)vctx;
-  PetscErrorCode ierr;
   PetscInt       i,j,k,Mx,dof,xs,xm,ifast = 0,sf = ctx->sf,fs = ctx->fs;
   PetscReal      hxs,hxf;
   PetscScalar    *x,*f,*slope;
@@ -619,18 +612,18 @@ PetscErrorCode FVRHSFunctionfast_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void
   DM             da;
 
   PetscFunctionBeginUser;
-  ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(da,&Xloc);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,0, &Mx,0,0, 0,0,0, &dof,0,0,0,0,0);CHKERRQ(ierr);
+  PetscCall(TSGetDM(ts,&da));
+  PetscCall(DMGetLocalVector(da,&Xloc));
+  PetscCall(DMDAGetInfo(da,0, &Mx,0,0, 0,0,0, &dof,0,0,0,0,0));
   hxs  = (ctx->xmax-ctx->xmin)*3.0/8.0/ctx->sf;
   hxf  = (ctx->xmax-ctx->xmin)/4.0/(ctx->fs-ctx->sf);
-  ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
-  ierr = VecZeroEntries(F);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,Xloc,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-  ierr = DMDAGetArray(da,PETSC_TRUE,&slope);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
+  PetscCall(DMGlobalToLocalBegin(da,X,INSERT_VALUES,Xloc));
+  PetscCall(DMGlobalToLocalEnd(da,X,INSERT_VALUES,Xloc));
+  PetscCall(VecZeroEntries(F));
+  PetscCall(DMDAVecGetArray(da,Xloc,&x));
+  PetscCall(VecGetArray(F,&f));
+  PetscCall(DMDAGetArray(da,PETSC_TRUE,&slope));
+  PetscCall(DMDAGetCorners(da,&xs,0,0,&xm,0,0));
 
   if (ctx->bctype == FVBC_OUTFLOW) {
     for (i=xs-2; i<0; i++) {
@@ -644,8 +637,8 @@ PetscErrorCode FVRHSFunctionfast_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void
     struct _LimitInfo info;
     PetscScalar       *cjmpL,*cjmpR;
     if (i > sf-2 && i < fs+1) {
-      ierr = (*ctx->physics2.characteristic2)(ctx->physics2.user,dof,&x[i*dof],ctx->R,ctx->Rinv,ctx->speeds);CHKERRQ(ierr);
-      ierr  = PetscArrayzero(ctx->cjmpLR,2*dof);CHKERRQ(ierr);
+      PetscCall((*ctx->physics2.characteristic2)(ctx->physics2.user,dof,&x[i*dof],ctx->R,ctx->Rinv,ctx->speeds));
+      PetscCall(PetscArrayzero(ctx->cjmpLR,2*dof));
       cjmpL = &ctx->cjmpLR[0];
       cjmpR = &ctx->cjmpLR[dof];
       for (j=0; j<dof; j++) {
@@ -680,7 +673,7 @@ PetscErrorCode FVRHSFunctionfast_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void
         uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxs/2;
         uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxf/2;
       }
-      ierr    = (*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      PetscCall((*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed));
       if (i < xs+xm) {
         for (j=0; j<dof; j++) f[ifast*dof+j] += ctx->flux[j]/hxf;
         ifast++;
@@ -691,7 +684,7 @@ PetscErrorCode FVRHSFunctionfast_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void
         uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxf/2;
         uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxf/2;
       }
-      ierr    = (*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      PetscCall((*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed));
       if (i > xs) {
         for (j=0; j<dof; j++) f[(ifast-1)*dof+j] -= ctx->flux[j]/hxf;
       }
@@ -705,16 +698,16 @@ PetscErrorCode FVRHSFunctionfast_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void
         uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hxf/2;
         uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hxs/2;
       }
-      ierr    = (*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      PetscCall((*ctx->physics2.riemann2)(ctx->physics2.user,dof,uL,uR,ctx->flux,&maxspeed));
       if (i > xs) {
         for (j=0; j<dof; j++) f[(ifast-1)*dof+j] -= ctx->flux[j]/hxf;
       }
     }
   }
-  ierr = DMDAVecRestoreArray(da,Xloc,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
-  ierr = DMDARestoreArray(da,PETSC_TRUE,&slope);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(da,&Xloc);CHKERRQ(ierr);
+  PetscCall(DMDAVecRestoreArray(da,Xloc,&x));
+  PetscCall(VecRestoreArray(F,&f));
+  PetscCall(DMDARestoreArray(da,PETSC_TRUE,&slope));
+  PetscCall(DMRestoreLocalVector(da,&Xloc));
   PetscFunctionReturn(0);
 }
 
@@ -730,91 +723,90 @@ int main(int argc,char *argv[])
   PetscInt          i,k,dof,xs,xm,Mx,draw = 0,count_slow,count_fast,islow = 0,ifast =0,islowbuffer = 0,*index_slow,*index_fast,*index_slowbuffer;
   PetscBool         view_final = PETSC_FALSE;
   PetscReal         ptime;
-  PetscErrorCode    ierr;
 
-  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,0,help));
   comm = PETSC_COMM_WORLD;
-  ierr = PetscMemzero(&ctx,sizeof(ctx));CHKERRQ(ierr);
+  PetscCall(PetscMemzero(&ctx,sizeof(ctx)));
 
   /* Register limiters to be available on the command line */
-  ierr = PetscFunctionListAdd(&limiters,"upwind"              ,Limit2_Upwind);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(&limiters,"lax-wendroff"        ,Limit2_LaxWendroff);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(&limiters,"beam-warming"        ,Limit2_BeamWarming);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(&limiters,"fromm"               ,Limit2_Fromm);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(&limiters,"minmod"              ,Limit2_Minmod);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(&limiters,"superbee"            ,Limit2_Superbee);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(&limiters,"mc"                  ,Limit2_MC);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(&limiters,"koren3"              ,Limit2_Koren3);CHKERRQ(ierr);
+  PetscCall(PetscFunctionListAdd(&limiters,"upwind"              ,Limit2_Upwind));
+  PetscCall(PetscFunctionListAdd(&limiters,"lax-wendroff"        ,Limit2_LaxWendroff));
+  PetscCall(PetscFunctionListAdd(&limiters,"beam-warming"        ,Limit2_BeamWarming));
+  PetscCall(PetscFunctionListAdd(&limiters,"fromm"               ,Limit2_Fromm));
+  PetscCall(PetscFunctionListAdd(&limiters,"minmod"              ,Limit2_Minmod));
+  PetscCall(PetscFunctionListAdd(&limiters,"superbee"            ,Limit2_Superbee));
+  PetscCall(PetscFunctionListAdd(&limiters,"mc"                  ,Limit2_MC));
+  PetscCall(PetscFunctionListAdd(&limiters,"koren3"              ,Limit2_Koren3));
 
   /* Register physical models to be available on the command line */
-  ierr = PetscFunctionListAdd(&physics,"advect"          ,PhysicsCreate_Advect);CHKERRQ(ierr);
+  PetscCall(PetscFunctionListAdd(&physics,"advect"          ,PhysicsCreate_Advect));
 
   ctx.comm = comm;
   ctx.cfl  = 0.9;
   ctx.bctype = FVBC_PERIODIC;
   ctx.xmin = -1.0;
   ctx.xmax = 1.0;
-  ierr = PetscOptionsBegin(comm,NULL,"Finite Volume solver options","");CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-xmin","X min","",ctx.xmin,&ctx.xmin,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-xmax","X max","",ctx.xmax,&ctx.xmax,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsFList("-limit","Name of flux imiter to use","",limiters,lname,lname,sizeof(lname),NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-draw","Draw solution vector, bitwise OR of (1=initial,2=final,4=final error)","",draw,&draw,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-view_final","Write final solution in ASCII MATLAB format to given file name","",final_fname,final_fname,sizeof(final_fname),&view_final);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-initial","Initial condition (depends on the physics)","",ctx.initial,&ctx.initial,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-exact","Compare errors with exact solution","",ctx.exact,&ctx.exact,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-simulation","Compare errors with reference solution","",ctx.simulation,&ctx.simulation,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-cfl","CFL number to time step at","",ctx.cfl,&ctx.cfl,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnum("-bc_type","Boundary condition","",FVBCTypes,(PetscEnum)ctx.bctype,(PetscEnum*)&ctx.bctype,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-hratio","Spacing ratio","",ctx.hratio,&ctx.hratio,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscOptionsBegin(comm,NULL,"Finite Volume solver options","");
+  PetscCall(PetscOptionsReal("-xmin","X min","",ctx.xmin,&ctx.xmin,NULL));
+  PetscCall(PetscOptionsReal("-xmax","X max","",ctx.xmax,&ctx.xmax,NULL));
+  PetscCall(PetscOptionsFList("-limit","Name of flux imiter to use","",limiters,lname,lname,sizeof(lname),NULL));
+  PetscCall(PetscOptionsInt("-draw","Draw solution vector, bitwise OR of (1=initial,2=final,4=final error)","",draw,&draw,NULL));
+  PetscCall(PetscOptionsString("-view_final","Write final solution in ASCII MATLAB format to given file name","",final_fname,final_fname,sizeof(final_fname),&view_final));
+  PetscCall(PetscOptionsInt("-initial","Initial condition (depends on the physics)","",ctx.initial,&ctx.initial,NULL));
+  PetscCall(PetscOptionsBool("-exact","Compare errors with exact solution","",ctx.exact,&ctx.exact,NULL));
+  PetscCall(PetscOptionsBool("-simulation","Compare errors with reference solution","",ctx.simulation,&ctx.simulation,NULL));
+  PetscCall(PetscOptionsReal("-cfl","CFL number to time step at","",ctx.cfl,&ctx.cfl,NULL));
+  PetscCall(PetscOptionsEnum("-bc_type","Boundary condition","",FVBCTypes,(PetscEnum)ctx.bctype,(PetscEnum*)&ctx.bctype,NULL));
+  PetscCall(PetscOptionsInt("-hratio","Spacing ratio","",ctx.hratio,&ctx.hratio,NULL));
+  PetscOptionsEnd();
 
   /* Choose the limiter from the list of registered limiters */
-  ierr = PetscFunctionListFind(limiters,lname,&ctx.limit2);CHKERRQ(ierr);
-  PetscCheckFalse(!ctx.limit2,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Limiter '%s' not found",lname);
+  PetscCall(PetscFunctionListFind(limiters,lname,&ctx.limit2));
+  PetscCheck(ctx.limit2,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Limiter '%s' not found",lname);
 
   /* Choose the physics from the list of registered models */
   {
     PetscErrorCode (*r)(FVCtx*);
-    ierr = PetscFunctionListFind(physics,physname,&r);CHKERRQ(ierr);
-    PetscCheckFalse(!r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Physics '%s' not found",physname);
+    PetscCall(PetscFunctionListFind(physics,physname,&r));
+    PetscCheck(r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Physics '%s' not found",physname);
     /* Create the physics, will set the number of fields and their names */
-    ierr = (*r)(&ctx);CHKERRQ(ierr);
+    PetscCall((*r)(&ctx));
   }
 
   /* Create a DMDA to manage the parallel grid */
-  ierr = DMDACreate1d(comm,DM_BOUNDARY_PERIODIC,50,ctx.physics2.dof,2,NULL,&da);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
+  PetscCall(DMDACreate1d(comm,DM_BOUNDARY_PERIODIC,50,ctx.physics2.dof,2,NULL,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
   /* Inform the DMDA of the field names provided by the physics. */
   /* The names will be shown in the title bars when run with -ts_monitor_draw_solution */
   for (i=0; i<ctx.physics2.dof; i++) {
-    ierr = DMDASetFieldName(da,i,ctx.physics2.fieldname[i]);CHKERRQ(ierr);
+    PetscCall(DMDASetFieldName(da,i,ctx.physics2.fieldname[i]));
   }
-  ierr = DMDAGetInfo(da,0, &Mx,0,0, 0,0,0, &dof,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
+  PetscCall(DMDAGetInfo(da,0, &Mx,0,0, 0,0,0, &dof,0,0,0,0,0));
+  PetscCall(DMDAGetCorners(da,&xs,0,0,&xm,0,0));
 
   /* Set coordinates of cell centers */
-  ierr = DMDASetUniformCoordinates(da,ctx.xmin+0.5*(ctx.xmax-ctx.xmin)/Mx,ctx.xmax+0.5*(ctx.xmax-ctx.xmin)/Mx,0,0,0,0);CHKERRQ(ierr);
+  PetscCall(DMDASetUniformCoordinates(da,ctx.xmin+0.5*(ctx.xmax-ctx.xmin)/Mx,ctx.xmax+0.5*(ctx.xmax-ctx.xmin)/Mx,0,0,0,0));
 
   /* Allocate work space for the Finite Volume solver (so it doesn't have to be reallocated on each function evaluation) */
-  ierr = PetscMalloc4(dof*dof,&ctx.R,dof*dof,&ctx.Rinv,2*dof,&ctx.cjmpLR,1*dof,&ctx.cslope);CHKERRQ(ierr);
-  ierr = PetscMalloc3(2*dof,&ctx.uLR,dof,&ctx.flux,dof,&ctx.speeds);CHKERRQ(ierr);
+  PetscCall(PetscMalloc4(dof*dof,&ctx.R,dof*dof,&ctx.Rinv,2*dof,&ctx.cjmpLR,1*dof,&ctx.cslope));
+  PetscCall(PetscMalloc3(2*dof,&ctx.uLR,dof,&ctx.flux,dof,&ctx.speeds));
 
   /* Create a vector to store the solution and to save the initial state */
-  ierr = DMCreateGlobalVector(da,&X);CHKERRQ(ierr);
-  ierr = VecDuplicate(X,&X0);CHKERRQ(ierr);
-  ierr = VecDuplicate(X,&R);CHKERRQ(ierr);
+  PetscCall(DMCreateGlobalVector(da,&X));
+  PetscCall(VecDuplicate(X,&X0));
+  PetscCall(VecDuplicate(X,&R));
 
   /* create index for slow parts and fast parts,
      count_slow + count_fast = Mx, counts_slow*hs = 0.5, counts_fast*hf = 0.5 */
   count_slow = Mx/(1.0+ctx.hratio/3.0);
-  PetscCheckFalse(count_slow%2,PETSC_COMM_WORLD,PETSC_ERR_USER,"Please adjust grid size Mx (-da_grid_x) and hratio (-hratio) so that Mx/(1+hartio/3) is even");
+  PetscCheck(count_slow%2 == 0,PETSC_COMM_WORLD,PETSC_ERR_USER,"Please adjust grid size Mx (-da_grid_x) and hratio (-hratio) so that Mx/(1+hartio/3) is even");
   count_fast = Mx-count_slow;
   ctx.sf = count_slow/2;
   ctx.fs = ctx.sf+count_fast;
-  ierr = PetscMalloc1(xm*dof,&index_slow);CHKERRQ(ierr);
-  ierr = PetscMalloc1(xm*dof,&index_fast);CHKERRQ(ierr);
-  ierr = PetscMalloc1(6*dof,&index_slowbuffer);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(xm*dof,&index_slow));
+  PetscCall(PetscMalloc1(xm*dof,&index_fast));
+  PetscCall(PetscMalloc1(6*dof,&index_slowbuffer));
   if (((AdvectCtx*)ctx.physics2.user)->a > 0) {
     ctx.lsbwidth = 2;
     ctx.rsbwidth = 4;
@@ -830,33 +822,33 @@ int main(int argc,char *argv[])
     else
       for (k=0; k<dof; k++) index_fast[ifast++] = i*dof+k;
   }
-  ierr = ISCreateGeneral(PETSC_COMM_WORLD,islow,index_slow,PETSC_COPY_VALUES,&ctx.iss);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_WORLD,ifast,index_fast,PETSC_COPY_VALUES,&ctx.isf);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_WORLD,islowbuffer,index_slowbuffer,PETSC_COPY_VALUES,&ctx.issb);CHKERRQ(ierr);
+  PetscCall(ISCreateGeneral(PETSC_COMM_WORLD,islow,index_slow,PETSC_COPY_VALUES,&ctx.iss));
+  PetscCall(ISCreateGeneral(PETSC_COMM_WORLD,ifast,index_fast,PETSC_COPY_VALUES,&ctx.isf));
+  PetscCall(ISCreateGeneral(PETSC_COMM_WORLD,islowbuffer,index_slowbuffer,PETSC_COPY_VALUES,&ctx.issb));
 
   /* Create a time-stepping object */
-  ierr = TSCreate(comm,&ts);CHKERRQ(ierr);
-  ierr = TSSetDM(ts,da);CHKERRQ(ierr);
-  ierr = TSSetRHSFunction(ts,R,FVRHSFunction_2WaySplit,&ctx);CHKERRQ(ierr);
-  ierr = TSRHSSplitSetIS(ts,"slow",ctx.iss);CHKERRQ(ierr);
-  ierr = TSRHSSplitSetIS(ts,"slowbuffer",ctx.issb);CHKERRQ(ierr);
-  ierr = TSRHSSplitSetIS(ts,"fast",ctx.isf);CHKERRQ(ierr);
-  ierr = TSRHSSplitSetRHSFunction(ts,"slow",NULL,FVRHSFunctionslow_2WaySplit,&ctx);CHKERRQ(ierr);
-  ierr = TSRHSSplitSetRHSFunction(ts,"fast",NULL,FVRHSFunctionfast_2WaySplit,&ctx);CHKERRQ(ierr);
-  ierr = TSRHSSplitSetRHSFunction(ts,"slowbuffer",NULL,FVRHSFunctionslowbuffer_2WaySplit,&ctx);CHKERRQ(ierr);
+  PetscCall(TSCreate(comm,&ts));
+  PetscCall(TSSetDM(ts,da));
+  PetscCall(TSSetRHSFunction(ts,R,FVRHSFunction_2WaySplit,&ctx));
+  PetscCall(TSRHSSplitSetIS(ts,"slow",ctx.iss));
+  PetscCall(TSRHSSplitSetIS(ts,"slowbuffer",ctx.issb));
+  PetscCall(TSRHSSplitSetIS(ts,"fast",ctx.isf));
+  PetscCall(TSRHSSplitSetRHSFunction(ts,"slow",NULL,FVRHSFunctionslow_2WaySplit,&ctx));
+  PetscCall(TSRHSSplitSetRHSFunction(ts,"fast",NULL,FVRHSFunctionfast_2WaySplit,&ctx));
+  PetscCall(TSRHSSplitSetRHSFunction(ts,"slowbuffer",NULL,FVRHSFunctionslowbuffer_2WaySplit,&ctx));
 
-  ierr = TSSetType(ts,TSSSP);CHKERRQ(ierr);
-  /*ierr = TSSetType(ts,TSMPRK);CHKERRQ(ierr);*/
-  ierr = TSSetMaxTime(ts,10);CHKERRQ(ierr);
-  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
+  PetscCall(TSSetType(ts,TSSSP));
+  /*PetscCall(TSSetType(ts,TSMPRK));*/
+  PetscCall(TSSetMaxTime(ts,10));
+  PetscCall(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
 
   /* Compute initial conditions and starting time step */
-  ierr = FVSample_2WaySplit(&ctx,da,0,X0);CHKERRQ(ierr);
-  ierr = FVRHSFunction_2WaySplit(ts,0,X0,X,(void*)&ctx);CHKERRQ(ierr); /* Initial function evaluation, only used to determine max speed */
-  ierr = VecCopy(X0,X);CHKERRQ(ierr);                        /* The function value was not used so we set X=X0 again */
-  ierr = TSSetTimeStep(ts,ctx.cfl/ctx.cfl_idt);CHKERRQ(ierr);
-  ierr = TSSetFromOptions(ts);CHKERRQ(ierr); /* Take runtime options */
-  ierr = SolutionStatsView(da,X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscCall(FVSample_2WaySplit(&ctx,da,0,X0));
+  PetscCall(FVRHSFunction_2WaySplit(ts,0,X0,X,(void*)&ctx)); /* Initial function evaluation, only used to determine max speed */
+  PetscCall(VecCopy(X0,X));                        /* The function value was not used so we set X=X0 again */
+  PetscCall(TSSetTimeStep(ts,ctx.cfl/ctx.cfl_idt));
+  PetscCall(TSSetFromOptions(ts)); /* Take runtime options */
+  PetscCall(SolutionStatsView(da,X,PETSC_VIEWER_STDOUT_WORLD));
   {
     PetscInt          steps;
     PetscScalar       mass_initial,mass_final,mass_difference,mass_differenceg;
@@ -864,14 +856,14 @@ int main(int argc,char *argv[])
     const PetscReal   hs = (ctx.xmax-ctx.xmin)*3.0/4.0/count_slow;
     const PetscReal   hf = (ctx.xmax-ctx.xmin)/4.0/count_fast;
 
-    ierr = TSSolve(ts,X);CHKERRQ(ierr);
-    ierr = TSGetSolveTime(ts,&ptime);CHKERRQ(ierr);
-    ierr = TSGetStepNumber(ts,&steps);CHKERRQ(ierr);
+    PetscCall(TSSolve(ts,X));
+    PetscCall(TSGetSolveTime(ts,&ptime));
+    PetscCall(TSGetStepNumber(ts,&steps));
     /* calculate the total mass at initial time and final time */
     mass_initial = 0.0;
     mass_final   = 0.0;
-    ierr = DMDAVecGetArrayRead(da,X0,(void*)&ptr_X0);CHKERRQ(ierr);
-    ierr = DMDAVecGetArrayRead(da,X,(void*)&ptr_X);CHKERRQ(ierr);
+    PetscCall(DMDAVecGetArrayRead(da,X0,(void*)&ptr_X0));
+    PetscCall(DMDAVecGetArrayRead(da,X,(void*)&ptr_X));
     for (i=xs;i<xs+xm;i++) {
       if (i < ctx.sf || i > ctx.fs-1) {
         for (k=0; k<dof; k++) {
@@ -885,17 +877,17 @@ int main(int argc,char *argv[])
         }
       }
     }
-    ierr = DMDAVecRestoreArrayRead(da,X0,(void*)&ptr_X0);CHKERRQ(ierr);
-    ierr = DMDAVecRestoreArrayRead(da,X,(void*)&ptr_X);CHKERRQ(ierr);
+    PetscCall(DMDAVecRestoreArrayRead(da,X0,(void*)&ptr_X0));
+    PetscCall(DMDAVecRestoreArrayRead(da,X,(void*)&ptr_X));
     mass_difference = mass_final - mass_initial;
-    ierr = MPI_Allreduce(&mass_difference,&mass_differenceg,1,MPIU_SCALAR,MPIU_SUM,comm);CHKERRMPI(ierr);
-    ierr = PetscPrintf(comm,"Mass difference %g\n",(double)mass_differenceg);CHKERRQ(ierr);
-    ierr = PetscPrintf(comm,"Final time %g, steps %D\n",(double)ptime,steps);CHKERRQ(ierr);
-    ierr = PetscPrintf(comm,"Maximum allowable stepsize according to CFL %g\n",(double)(1.0/ctx.cfl_idt));CHKERRQ(ierr);
+    PetscCallMPI(MPI_Allreduce(&mass_difference,&mass_differenceg,1,MPIU_SCALAR,MPIU_SUM,comm));
+    PetscCall(PetscPrintf(comm,"Mass difference %g\n",(double)mass_differenceg));
+    PetscCall(PetscPrintf(comm,"Final time %g, steps %" PetscInt_FMT "\n",(double)ptime,steps));
+    PetscCall(PetscPrintf(comm,"Maximum allowable stepsize according to CFL %g\n",(double)(1.0/ctx.cfl_idt)));
     if (ctx.exact) {
       PetscReal nrm1=0;
-      ierr = SolutionErrorNorms_2WaySplit(&ctx,da,ptime,X,&nrm1);CHKERRQ(ierr);
-      ierr = PetscPrintf(comm,"Error ||x-x_e||_1 %g\n",(double)nrm1);CHKERRQ(ierr);
+      PetscCall(SolutionErrorNorms_2WaySplit(&ctx,da,ptime,X,&nrm1));
+      PetscCall(PetscPrintf(comm,"Error ||x-x_e||_1 %g\n",(double)nrm1));
     }
     if (ctx.simulation) {
       PetscReal    nrm1=0;
@@ -904,68 +896,68 @@ int main(int argc,char *argv[])
       Vec          XR;
       PetscBool    flg;
       const PetscScalar  *ptr_XR;
-      ierr = PetscOptionsGetString(NULL,NULL,"-f",filename,sizeof(filename),&flg);CHKERRQ(ierr);
-      PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f option");
-      ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&fd);CHKERRQ(ierr);
-      ierr = VecDuplicate(X0,&XR);CHKERRQ(ierr);
-      ierr = VecLoad(XR,fd);CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
-      ierr = VecGetArrayRead(X,&ptr_X);CHKERRQ(ierr);
-      ierr = VecGetArrayRead(XR,&ptr_XR);CHKERRQ(ierr);
+      PetscCall(PetscOptionsGetString(NULL,NULL,"-f",filename,sizeof(filename),&flg));
+      PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f option");
+      PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&fd));
+      PetscCall(VecDuplicate(X0,&XR));
+      PetscCall(VecLoad(XR,fd));
+      PetscCall(PetscViewerDestroy(&fd));
+      PetscCall(VecGetArrayRead(X,&ptr_X));
+      PetscCall(VecGetArrayRead(XR,&ptr_XR));
       for (i=xs;i<xs+xm;i++) {
         if (i < ctx.sf || i > ctx.fs-1)
           for (k=0; k<dof; k++) nrm1 = nrm1 + hs*PetscAbs(ptr_X[i*dof+k]-ptr_XR[i*dof+k]);
         else
           for (k=0; k<dof; k++) nrm1 = nrm1 + hf*PetscAbs(ptr_X[i*dof+k]-ptr_XR[i*dof+k]);
       }
-      ierr = VecRestoreArrayRead(X,&ptr_X);CHKERRQ(ierr);
-      ierr = VecRestoreArrayRead(XR,&ptr_XR);CHKERRQ(ierr);
-      ierr = PetscPrintf(comm,"Error ||x-x_e||_1 %g\n",(double)nrm1);CHKERRQ(ierr);
-      ierr = VecDestroy(&XR);CHKERRQ(ierr);
+      PetscCall(VecRestoreArrayRead(X,&ptr_X));
+      PetscCall(VecRestoreArrayRead(XR,&ptr_XR));
+      PetscCall(PetscPrintf(comm,"Error ||x-x_e||_1 %g\n",(double)nrm1));
+      PetscCall(VecDestroy(&XR));
     }
   }
 
-  ierr = SolutionStatsView(da,X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  if (draw & 0x1) {ierr = VecView(X0,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
-  if (draw & 0x2) {ierr = VecView(X,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
+  PetscCall(SolutionStatsView(da,X,PETSC_VIEWER_STDOUT_WORLD));
+  if (draw & 0x1) PetscCall(VecView(X0,PETSC_VIEWER_DRAW_WORLD));
+  if (draw & 0x2) PetscCall(VecView(X,PETSC_VIEWER_DRAW_WORLD));
   if (draw & 0x4) {
     Vec Y;
-    ierr = VecDuplicate(X,&Y);CHKERRQ(ierr);
-    ierr = FVSample_2WaySplit(&ctx,da,ptime,Y);CHKERRQ(ierr);
-    ierr = VecAYPX(Y,-1,X);CHKERRQ(ierr);
-    ierr = VecView(Y,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
-    ierr = VecDestroy(&Y);CHKERRQ(ierr);
+    PetscCall(VecDuplicate(X,&Y));
+    PetscCall(FVSample_2WaySplit(&ctx,da,ptime,Y));
+    PetscCall(VecAYPX(Y,-1,X));
+    PetscCall(VecView(Y,PETSC_VIEWER_DRAW_WORLD));
+    PetscCall(VecDestroy(&Y));
   }
 
   if (view_final) {
     PetscViewer viewer;
-    ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,final_fname,&viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
-    ierr = VecView(X,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIOpen(PETSC_COMM_WORLD,final_fname,&viewer));
+    PetscCall(PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_MATLAB));
+    PetscCall(VecView(X,viewer));
+    PetscCall(PetscViewerPopFormat(viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
   }
 
   /* Clean up */
-  ierr = (*ctx.physics2.destroy)(ctx.physics2.user);CHKERRQ(ierr);
-  for (i=0; i<ctx.physics2.dof; i++) {ierr = PetscFree(ctx.physics2.fieldname[i]);CHKERRQ(ierr);}
-  ierr = PetscFree4(ctx.R,ctx.Rinv,ctx.cjmpLR,ctx.cslope);CHKERRQ(ierr);
-  ierr = PetscFree3(ctx.uLR,ctx.flux,ctx.speeds);CHKERRQ(ierr);
-  ierr = VecDestroy(&X);CHKERRQ(ierr);
-  ierr = VecDestroy(&X0);CHKERRQ(ierr);
-  ierr = VecDestroy(&R);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
-  ierr = TSDestroy(&ts);CHKERRQ(ierr);
-  ierr = ISDestroy(&ctx.iss);CHKERRQ(ierr);
-  ierr = ISDestroy(&ctx.isf);CHKERRQ(ierr);
-  ierr = ISDestroy(&ctx.issb);CHKERRQ(ierr);
-  ierr = PetscFree(index_slow);CHKERRQ(ierr);
-  ierr = PetscFree(index_fast);CHKERRQ(ierr);
-  ierr = PetscFree(index_slowbuffer);CHKERRQ(ierr);
-  ierr = PetscFunctionListDestroy(&limiters);CHKERRQ(ierr);
-  ierr = PetscFunctionListDestroy(&physics);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall((*ctx.physics2.destroy)(ctx.physics2.user));
+  for (i=0; i<ctx.physics2.dof; i++) PetscCall(PetscFree(ctx.physics2.fieldname[i]));
+  PetscCall(PetscFree4(ctx.R,ctx.Rinv,ctx.cjmpLR,ctx.cslope));
+  PetscCall(PetscFree3(ctx.uLR,ctx.flux,ctx.speeds));
+  PetscCall(VecDestroy(&X));
+  PetscCall(VecDestroy(&X0));
+  PetscCall(VecDestroy(&R));
+  PetscCall(DMDestroy(&da));
+  PetscCall(TSDestroy(&ts));
+  PetscCall(ISDestroy(&ctx.iss));
+  PetscCall(ISDestroy(&ctx.isf));
+  PetscCall(ISDestroy(&ctx.issb));
+  PetscCall(PetscFree(index_slow));
+  PetscCall(PetscFree(index_fast));
+  PetscCall(PetscFree(index_slowbuffer));
+  PetscCall(PetscFunctionListDestroy(&limiters));
+  PetscCall(PetscFunctionListDestroy(&physics));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

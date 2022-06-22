@@ -28,35 +28,34 @@
     Fortran Note:
     This routine is not supported in Fortran.
 
-.seealso: PetscFClose(), PetscSynchronizedFGets(), PetscSynchronizedPrintf(), PetscSynchronizedFlush(),
-          PetscFPrintf()
+.seealso: `PetscFClose()`, `PetscSynchronizedFGets()`, `PetscSynchronizedPrintf()`, `PetscSynchronizedFlush()`,
+          `PetscFPrintf()`
 @*/
 PetscErrorCode  PetscFOpen(MPI_Comm comm,const char name[],const char mode[],FILE **fp)
 {
-  PetscErrorCode ierr;
   PetscMPIInt    rank;
   FILE           *fd;
   char           fname[PETSC_MAX_PATH_LEN],tname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_rank(comm,&rank));
   if (rank == 0) {
     PetscBool isstdout,isstderr;
-    ierr = PetscStrcmp(name,"stdout",&isstdout);CHKERRQ(ierr);
-    ierr = PetscStrcmp(name,"stderr",&isstderr);CHKERRQ(ierr);
+    PetscCall(PetscStrcmp(name,"stdout",&isstdout));
+    PetscCall(PetscStrcmp(name,"stderr",&isstderr));
     if (isstdout || !name) fd = PETSC_STDOUT;
     else if (isstderr) fd = PETSC_STDERR;
     else {
       PetscBool devnull;
-      ierr = PetscStrreplace(PETSC_COMM_SELF,name,tname,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
-      ierr = PetscFixFilename(tname,fname);CHKERRQ(ierr);
-      ierr = PetscStrbeginswith(fname,"/dev/null",&devnull);CHKERRQ(ierr);
+      PetscCall(PetscStrreplace(PETSC_COMM_SELF,name,tname,PETSC_MAX_PATH_LEN));
+      PetscCall(PetscFixFilename(tname,fname));
+      PetscCall(PetscStrbeginswith(fname,"/dev/null",&devnull));
       if (devnull) {
-        ierr = PetscStrcpy(fname,"/dev/null");CHKERRQ(ierr);
+        PetscCall(PetscStrcpy(fname,"/dev/null"));
       }
-      ierr = PetscInfo(0,"Opening file %s\n",fname);CHKERRQ(ierr);
+      PetscCall(PetscInfo(0,"Opening file %s\n",fname));
       fd   = fopen(fname,mode);
-      PetscCheckFalse(!fd,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open file %s",fname);
+      PetscCheck(fd,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open file %s",fname);
     }
   } else fd = NULL;
   *fp = fd;
@@ -78,19 +77,18 @@ PetscErrorCode  PetscFOpen(MPI_Comm comm,const char name[],const char mode[],FIL
     Fortran Note:
     This routine is not supported in Fortran.
 
-.seealso: PetscFOpen()
+.seealso: `PetscFOpen()`
 @*/
 PetscErrorCode  PetscFClose(MPI_Comm comm,FILE *fd)
 {
-  PetscErrorCode ierr;
   PetscMPIInt    rank;
   int            err;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_rank(comm,&rank));
   if (rank == 0 && fd != PETSC_STDOUT && fd != PETSC_STDERR) {
     err = fclose(fd);
-    PetscCheckFalse(err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
+    PetscCheck(!err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
   }
   PetscFunctionReturn(0);
 }
@@ -112,16 +110,15 @@ static char PetscPOpenMachine[128] = "";
    Notes:
        Does not work under Windows
 
-.seealso: PetscFOpen(), PetscFClose(), PetscPOpen()
+.seealso: `PetscFOpen()`, `PetscFClose()`, `PetscPOpen()`
 
 @*/
 PetscErrorCode PetscPClose(MPI_Comm comm,FILE *fd)
 {
-  PetscErrorCode ierr;
   PetscMPIInt    rank;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_rank(comm,&rank));
   if (rank == 0) {
     char buf[1024];
     while (fgets(buf,1024,fd)) ; /* wait till it prints everything */
@@ -157,12 +154,11 @@ PetscErrorCode PetscPClose(MPI_Comm comm,FILE *fd)
        The program string may contain ${DISPLAY}, ${HOMEDIRECTORY} or ${WORKINGDIRECTORY}; these
     will be replaced with relevant values.
 
-.seealso: PetscFOpen(), PetscFClose(), PetscPClose(), PetscPOpenSetMachine()
+.seealso: `PetscFOpen()`, `PetscFClose()`, `PetscPClose()`, `PetscPOpenSetMachine()`
 
 @*/
 PetscErrorCode  PetscPOpen(MPI_Comm comm,const char machine[],const char program[],const char mode[],FILE **fp)
 {
-  PetscErrorCode ierr;
   PetscMPIInt    rank;
   size_t         i,len,cnt;
   char           commandt[PETSC_MAX_PATH_LEN],command[PETSC_MAX_PATH_LEN];
@@ -171,35 +167,35 @@ PetscErrorCode  PetscPOpen(MPI_Comm comm,const char machine[],const char program
   PetscFunctionBegin;
   /* all processors have to do the string manipulation because PetscStrreplace() is a collective operation */
   if (PetscPOpenMachine[0] || (machine && machine[0])) {
-    ierr = PetscStrcpy(command,"ssh ");CHKERRQ(ierr);
+    PetscCall(PetscStrcpy(command,"ssh "));
     if (PetscPOpenMachine[0]) {
-      ierr = PetscStrcat(command,PetscPOpenMachine);CHKERRQ(ierr);
+      PetscCall(PetscStrcat(command,PetscPOpenMachine));
     } else {
-      ierr = PetscStrcat(command,machine);CHKERRQ(ierr);
+      PetscCall(PetscStrcat(command,machine));
     }
-    ierr = PetscStrcat(command," \" export DISPLAY=${DISPLAY}; ");CHKERRQ(ierr);
+    PetscCall(PetscStrcat(command," \" export DISPLAY=${DISPLAY}; "));
     /*
         Copy program into command but protect the " with a \ in front of it
     */
-    ierr = PetscStrlen(command,&cnt);CHKERRQ(ierr);
-    ierr = PetscStrlen(program,&len);CHKERRQ(ierr);
+    PetscCall(PetscStrlen(command,&cnt));
+    PetscCall(PetscStrlen(program,&len));
     for (i=0; i<len; i++) {
       if (program[i] == '\"') command[cnt++] = '\\';
       command[cnt++] = program[i];
     }
     command[cnt] = 0;
 
-    ierr = PetscStrcat(command,"\"");CHKERRQ(ierr);
+    PetscCall(PetscStrcat(command,"\""));
   } else {
-    ierr = PetscStrcpy(command,program);CHKERRQ(ierr);
+    PetscCall(PetscStrcpy(command,program));
   }
 
-  ierr = PetscStrreplace(comm,command,commandt,1024);CHKERRQ(ierr);
+  PetscCall(PetscStrreplace(comm,command,commandt,1024));
 
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_rank(comm,&rank));
   if (rank == 0) {
-    ierr = PetscInfo(NULL,"Running command :%s\n",commandt);CHKERRQ(ierr);
-    PetscCheckFalse(!(fd = popen(commandt,mode)),PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot run command %s",commandt);
+    PetscCall(PetscInfo(NULL,"Running command :%s\n",commandt));
+    PetscCheck((fd = popen(commandt,mode)),PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot run command %s",commandt);
     if (fp) *fp = fd;
   }
   PetscFunctionReturn(0);
@@ -218,15 +214,13 @@ PetscErrorCode  PetscPOpen(MPI_Comm comm,const char machine[],const char program
 
    Level: intermediate
 
-.seealso: PetscFOpen(), PetscFClose(), PetscPClose(), PetscPOpen()
+.seealso: `PetscFOpen()`, `PetscFClose()`, `PetscPClose()`, `PetscPOpen()`
 @*/
 PetscErrorCode  PetscPOpenSetMachine(const char machine[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (machine) {
-    ierr = PetscStrcpy(PetscPOpenMachine,machine);CHKERRQ(ierr);
+    PetscCall(PetscStrcpy(PetscPOpenMachine,machine));
   } else {
     PetscPOpenMachine[0] = 0;
   }

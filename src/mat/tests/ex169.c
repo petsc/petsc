@@ -15,48 +15,47 @@ int main(int argc,char **args)
   Mat            A,Ar,C;
   PetscViewer    fd;                        /* viewer */
   char           file[PETSC_MAX_PATH_LEN];  /* input file name */
-  PetscErrorCode ierr;
   PetscInt       ns=2;
   PetscMPIInt    size;
   PetscSubcomm   subc;
   PetscBool      flg;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   /*
      Determine files from which we read the two linear systems
      (matrix and right-hand-side vector).
   */
-  ierr = PetscOptionsGetString(NULL,NULL,"-f0",file,sizeof(file),&flg);CHKERRQ(ierr);
-  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f0 option");
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Reading matrix with %d processors\n",size);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatLoad(A,fd);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-f0",file,sizeof(file),&flg));
+  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f0 option");
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Reading matrix with %d processors\n",size));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatLoad(A,fd));
+  PetscCall(PetscViewerDestroy(&fd));
   /*
      Determines amount of subcomunicators
   */
-  ierr = PetscOptionsGetInt(NULL,NULL,"-nsub",&ns,NULL);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Splitting in %" PetscInt_FMT " subcommunicators\n",ns);CHKERRQ(ierr);
-  ierr = PetscSubcommCreate(PetscObjectComm((PetscObject)A),&subc);CHKERRQ(ierr);
-  ierr = PetscSubcommSetNumber(subc,ns);CHKERRQ(ierr);
-  ierr = PetscSubcommSetType(subc,PETSC_SUBCOMM_CONTIGUOUS);CHKERRQ(ierr);
-  ierr = PetscSubcommSetFromOptions(subc);CHKERRQ(ierr);
-  ierr = MatCreateRedundantMatrix(A,0,PetscSubcommChild(subc),MAT_INITIAL_MATRIX,&Ar);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Copying matrix\n");CHKERRQ(ierr);
-  ierr = MatDuplicate(Ar,MAT_COPY_VALUES,&C);CHKERRQ(ierr);
-  ierr = MatAXPY(Ar,0.1,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = PetscSubcommDestroy(&subc);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-nsub",&ns,NULL));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Splitting in %" PetscInt_FMT " subcommunicators\n",ns));
+  PetscCall(PetscSubcommCreate(PetscObjectComm((PetscObject)A),&subc));
+  PetscCall(PetscSubcommSetNumber(subc,ns));
+  PetscCall(PetscSubcommSetType(subc,PETSC_SUBCOMM_CONTIGUOUS));
+  PetscCall(PetscSubcommSetFromOptions(subc));
+  PetscCall(MatCreateRedundantMatrix(A,0,PetscSubcommChild(subc),MAT_INITIAL_MATRIX,&Ar));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Copying matrix\n"));
+  PetscCall(MatDuplicate(Ar,MAT_COPY_VALUES,&C));
+  PetscCall(MatAXPY(Ar,0.1,C,DIFFERENT_NONZERO_PATTERN));
+  PetscCall(PetscSubcommDestroy(&subc));
 
   /*
      Free memory
   */
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = MatDestroy(&Ar);CHKERRQ(ierr);
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(MatDestroy(&A));
+  PetscCall(MatDestroy(&Ar));
+  PetscCall(MatDestroy(&C));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

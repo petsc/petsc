@@ -9,7 +9,7 @@ At t[70] =      7.00e-01 u=       7.15e-03 at the center
 At t[80] =      8.00e-01 u=       3.74e-03 at the center 
 At t[90] =      9.00e-01 u=       1.98e-03 at the center 
 At t[100] =      1.00e+00 u=       1.05e-03 at the center 
-TS Object: 1 MPI processes
+TS Object: 1 MPI process
   type: rk
     RK type 5dp
     Order: 5
@@ -20,5 +20,5 @@ TS Object: 1 MPI processes
   total number of RHS function evaluations=601
   total number of rejected steps=0
   using relative error tolerance of 0.0001,   using absolute error tolerance of 0.0001
-  TSAdapt Object: 1 MPI processes
+  TSAdapt Object: 1 MPI process
     type: none

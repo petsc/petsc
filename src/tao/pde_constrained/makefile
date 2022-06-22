@@ -1,7 +1,7 @@
+-include ../../pde_../petsckdir.mk
 #requiresscalar    real
-ALL: lib
 
-SOURCEH  = 
+SOURCEH  =
 DIRS     = impls  tutorials
 LOCDIR   = src/tao/pde_constrained/
 

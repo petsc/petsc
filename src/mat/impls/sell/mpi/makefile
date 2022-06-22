@@ -1,8 +1,5 @@
 -include ../../../../../petscdir.mk
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC	 = mpisell.c mmsell.c
 SOURCEF	 =
 SOURCEH	 = mpisell.h

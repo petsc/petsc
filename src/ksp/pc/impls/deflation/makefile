@@ -1,8 +1,5 @@
 -include ../../../../../petscdir.mk
-ALL: lib
 
-CFLAGS    =
-FFLAGS    =
 SOURCEC   = deflation.c deflationspace.c
 SOURCEF   =
 SOURCEH   = deflation.h

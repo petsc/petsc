@@ -134,7 +134,8 @@ class Configure(config.base.Configure):
                  'readlink','realpath','usleep','sleep','_sleep',
                  'uname','snprintf','_snprintf','lseek','_lseek','time','fork','stricmp',
                  'strcasecmp','bzero','dlopen','dlsym','dlclose','dlerror',
-                 '_set_output_format','_mkdir','socket','gethostbyname','_pipe','fpresetsticky','fpsetsticky']
+                 '_set_output_format','_mkdir','socket','gethostbyname','_pipe','fpresetsticky',
+                 'fpsetsticky','__gcov_dump','fstatat']
     libraries = [(['fpe'],'handle_sigfpes')]
     librariessock = [(['socket','nsl'],'socket')]
     self.headers.headers.extend(headersC)
@@ -264,7 +265,8 @@ prepend-path PATH "%s"
 
     # Sometimes we need C compiler, even if built with C++
     self.setCompilers.pushLanguage('C')
-    self.addMakeMacro('CC_FLAGS',self.setCompilers.getCompilerFlags())
+    # do not use getCompilerFlags() because that automatically includes the CPPFLAGS so one ends up with duplication flags in makefile usage
+    self.addMakeMacro('CC_FLAGS',self.setCompilers.CFLAGS)
     self.setCompilers.popLanguage()
 
     # And sometimes we need a C++ compiler even when PETSc is built with C
@@ -272,7 +274,8 @@ prepend-path PATH "%s"
       self.setCompilers.pushLanguage('Cxx')
       self.addDefine('HAVE_CXX','1')
       self.addMakeMacro('CXXPP_FLAGS',self.setCompilers.CXXPPFLAGS)
-      self.addMakeMacro('CXX_FLAGS',self.setCompilers.getCompilerFlags())
+      # do not use getCompilerFlags() because that automatically includes the CXXPPFLAGS so one ends up with duplication flags in makefile usage
+      self.addMakeMacro('CXX_FLAGS',self.setCompilers.CXXFLAGS+' '+self.setCompilers.CXX_CXXFLAGS)
       cxx_linker = self.setCompilers.getLinker()
       self.addMakeMacro('CXX_LINKER',cxx_linker)
       self.addMakeMacro('CXX_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
@@ -284,7 +287,11 @@ prepend-path PATH "%s"
     # compiler values
     self.setCompilers.pushLanguage(self.languages.clanguage)
     self.addMakeMacro('PCC',self.setCompilers.getCompiler())
-    self.addMakeMacro('PCC_FLAGS',self.setCompilers.getCompilerFlags())
+    # do not use getCompilerFlags() because that automatically includes the preprocessor flags so one ends up with duplication flags in makefile usage
+    if self.languages.clanguage == 'C':
+      self.addMakeMacro('PCC_FLAGS','$(CC_FLAGS)')
+    else:
+      self.addMakeMacro('PCC_FLAGS','$(CXX_FLAGS)')
     self.setCompilers.popLanguage()
     # .o or .obj
     self.addMakeMacro('CC_SUFFIX','o')

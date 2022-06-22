@@ -8,18 +8,17 @@ static PetscErrorCode ISGetBlockGlobalIS(IS is, Vec vec, PetscInt bs, IS *isBloc
   const PetscInt *idxin;
   PetscInt       *idxout, i, n, rstart;
   PetscLayout    map;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
 
-  ierr = VecGetLayout(vec,&map);CHKERRQ(ierr);
+  PetscCall(VecGetLayout(vec,&map));
   rstart = map->rstart / bs;
-  ierr = ISGetLocalSize(is, &n);CHKERRQ(ierr);
-  ierr = PetscMalloc1(n, &idxout);CHKERRQ(ierr);
-  ierr = ISGetIndices(is, &idxin);CHKERRQ(ierr);
+  PetscCall(ISGetLocalSize(is, &n));
+  PetscCall(PetscMalloc1(n, &idxout));
+  PetscCall(ISGetIndices(is, &idxin));
   for (i = 0; i < n; i++) idxout[i] = rstart + idxin[i];
-  ierr = ISRestoreIndices(is, &idxin);CHKERRQ(ierr);
-  ierr = ISCreateBlock(PetscObjectComm((PetscObject)vec),bs,n,idxout,PETSC_OWN_POINTER,isBlockGlobal);CHKERRQ(ierr);
+  PetscCall(ISRestoreIndices(is, &idxin));
+  PetscCall(ISCreateBlock(PetscObjectComm((PetscObject)vec),bs,n,idxout,PETSC_OWN_POINTER,isBlockGlobal));
   PetscFunctionReturn(0);
 }
 
@@ -36,42 +35,41 @@ int main(int argc, char **argv)
   VecTaggerBox   *defaultBox;
   VecTaggerBox   *boxes;
   IS             is, isBlockGlobal, isComp;
-  PetscErrorCode ierr;
   PetscBool      listed;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   n    = 10.;
   bs   = 1;
   comm = PETSC_COMM_WORLD;
-  ierr = PetscOptionsBegin(comm, "" , "VecTagger Test Options", "Vec");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-bs","The block size of the vector","ex1.c",bs,&bs,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-n","The size of the vector (in blocks)","ex1.c",n,&n,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscOptionsBegin(comm, "" , "VecTagger Test Options", "Vec");
+  PetscCall(PetscOptionsInt("-bs","The block size of the vector","ex1.c",bs,&bs,NULL));
+  PetscCall(PetscOptionsInt("-n","The size of the vector (in blocks)","ex1.c",n,&n,NULL));
+  PetscOptionsEnd();
 
-  ierr = PetscRandomCreate(comm,&rand);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
+  PetscCall(PetscRandomCreate(comm,&rand));
+  PetscCall(PetscRandomSetFromOptions(rand));
 
-  ierr = VecCreate(comm,&vec);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)vec,"Vec to Tag");CHKERRQ(ierr);
-  ierr = VecSetBlockSize(vec,bs);CHKERRQ(ierr);
-  ierr = VecSetSizes(vec,PETSC_DECIDE,n);CHKERRQ(ierr);
-  ierr = VecSetUp(vec);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(vec,&nloc);CHKERRQ(ierr);
-  ierr = VecGetArray(vec,&array);CHKERRQ(ierr);
+  PetscCall(VecCreate(comm,&vec));
+  PetscCall(PetscObjectSetName((PetscObject)vec,"Vec to Tag"));
+  PetscCall(VecSetBlockSize(vec,bs));
+  PetscCall(VecSetSizes(vec,PETSC_DECIDE,n));
+  PetscCall(VecSetUp(vec));
+  PetscCall(VecGetLocalSize(vec,&nloc));
+  PetscCall(VecGetArray(vec,&array));
   for (i = 0; i < nloc; i++) {
     PetscScalar val;
 
-    ierr = PetscRandomGetValue(rand,&val);CHKERRQ(ierr);
+    PetscCall(PetscRandomGetValue(rand,&val));
     array[i] = val;
   }
-  ierr = VecRestoreArray(vec,&array);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
-  ierr = VecViewFromOptions(vec,NULL,"-vec_view");CHKERRQ(ierr);
+  PetscCall(VecRestoreArray(vec,&array));
+  PetscCall(PetscRandomDestroy(&rand));
+  PetscCall(VecViewFromOptions(vec,NULL,"-vec_view"));
 
-  ierr = VecTaggerCreate(comm,&tagger);CHKERRQ(ierr);
-  ierr = VecTaggerSetBlockSize(tagger,bs);CHKERRQ(ierr);
-  ierr = VecTaggerSetType(tagger,VECTAGGERABSOLUTE);CHKERRQ(ierr);
-  ierr = PetscMalloc1(bs,&defaultBox);CHKERRQ(ierr);
+  PetscCall(VecTaggerCreate(comm,&tagger));
+  PetscCall(VecTaggerSetBlockSize(tagger,bs));
+  PetscCall(VecTaggerSetType(tagger,VECTAGGERABSOLUTE));
+  PetscCall(PetscMalloc1(bs,&defaultBox));
   for (i = 0; i < bs; i++) {
 #if !defined(PETSC_USE_COMPLEX)
     defaultBox[i].min = 0.1;
@@ -81,91 +79,91 @@ int main(int argc, char **argv)
     defaultBox[i].max = PetscCMPLX(1.5,1.5);
 #endif
   }
-  ierr = VecTaggerAbsoluteSetBox(tagger,defaultBox);CHKERRQ(ierr);
-  ierr = PetscFree(defaultBox);CHKERRQ(ierr);
-  ierr = VecTaggerSetFromOptions(tagger);CHKERRQ(ierr);
-  ierr = VecTaggerSetUp(tagger);CHKERRQ(ierr);
-  ierr = PetscObjectViewFromOptions((PetscObject)tagger,NULL,"-vec_tagger_view");CHKERRQ(ierr);
-  ierr = VecTaggerGetBlockSize(tagger,&bs);CHKERRQ(ierr);
+  PetscCall(VecTaggerAbsoluteSetBox(tagger,defaultBox));
+  PetscCall(PetscFree(defaultBox));
+  PetscCall(VecTaggerSetFromOptions(tagger));
+  PetscCall(VecTaggerSetUp(tagger));
+  PetscCall(PetscObjectViewFromOptions((PetscObject)tagger,NULL,"-vec_tagger_view"));
+  PetscCall(VecTaggerGetBlockSize(tagger,&bs));
 
-  ierr = VecTaggerComputeBoxes(tagger,vec,&nint,&boxes,&listed);CHKERRQ(ierr);
+  PetscCall(VecTaggerComputeBoxes(tagger,vec,&nint,&boxes,&listed));
   if (listed) {
     PetscViewer viewer = NULL;
 
-    ierr = PetscOptionsGetViewer(comm,NULL,NULL,"-vec_tagger_boxes_view",&viewer,NULL,NULL);CHKERRQ(ierr);
+    PetscCall(PetscOptionsGetViewer(comm,NULL,NULL,"-vec_tagger_boxes_view",&viewer,NULL,NULL));
     if (viewer) {
       PetscBool iascii;
 
-      ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+      PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
       if (iascii) {
-        ierr = PetscViewerASCIIPrintf(viewer,"Num boxes: %" PetscInt_FMT "\n",nint);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+        PetscCall(PetscViewerASCIIPrintf(viewer,"Num boxes: %" PetscInt_FMT "\n",nint));
+        PetscCall(PetscViewerASCIIPushTab(viewer));
         for (i = 0, k = 0; i < nint; i++) {
-          ierr = PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT ": ",i);CHKERRQ(ierr);
+          PetscCall(PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT ": ",i));
           for (j = 0; j < bs; j++, k++) {
-            if (j) {ierr = PetscViewerASCIIPrintf(viewer," x ");CHKERRQ(ierr);}
+            if (j) PetscCall(PetscViewerASCIIPrintf(viewer," x "));
 #if !defined(PETSC_USE_COMPLEX)
-            ierr = PetscViewerASCIIPrintf(viewer,"[%g,%g]",(double)boxes[k].min,(double)boxes[k].max);CHKERRQ(ierr);
+            PetscCall(PetscViewerASCIIPrintf(viewer,"[%g,%g]",(double)boxes[k].min,(double)boxes[k].max));
 #else
-            ierr = PetscViewerASCIIPrintf(viewer,"[%g+%gi,%g+%gi]",(double)PetscRealPart(boxes[k].min),(double)PetscImaginaryPart(boxes[k].min),(double)PetscRealPart(boxes[k].max),(double)PetscImaginaryPart(boxes[k].max));CHKERRQ(ierr);
+            PetscCall(PetscViewerASCIIPrintf(viewer,"[%g+%gi,%g+%gi]",(double)PetscRealPart(boxes[k].min),(double)PetscImaginaryPart(boxes[k].min),(double)PetscRealPart(boxes[k].max),(double)PetscImaginaryPart(boxes[k].max)));
 #endif
           }
-          ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
+          PetscCall(PetscViewerASCIIPrintf(viewer,"\n"));
         }
-        ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+        PetscCall(PetscViewerASCIIPopTab(viewer));
       }
     }
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-    ierr = PetscFree(boxes);CHKERRQ(ierr);
+    PetscCall(PetscViewerDestroy(&viewer));
+    PetscCall(PetscFree(boxes));
   }
 
-  ierr = VecTaggerComputeIS(tagger,vec,&is,&listed);CHKERRQ(ierr);
-  ierr = ISGetBlockGlobalIS(is,vec,bs,&isBlockGlobal);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)isBlockGlobal,"Tagged IS (block global)");CHKERRQ(ierr);
-  ierr = ISViewFromOptions(isBlockGlobal,NULL,"-tagged_is_view");CHKERRQ(ierr);
+  PetscCall(VecTaggerComputeIS(tagger,vec,&is,&listed));
+  PetscCall(ISGetBlockGlobalIS(is,vec,bs,&isBlockGlobal));
+  PetscCall(PetscObjectSetName((PetscObject)isBlockGlobal,"Tagged IS (block global)"));
+  PetscCall(ISViewFromOptions(isBlockGlobal,NULL,"-tagged_is_view"));
 
-  ierr = VecGetOwnershipRange(vec,&localStart,&localEnd);CHKERRQ(ierr);
-  ierr = ISComplement(isBlockGlobal,localStart,localEnd,&isComp);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)isComp,"Untagged IS (global)");CHKERRQ(ierr);
-  ierr = ISViewFromOptions(isComp,NULL,"-untagged_is_view");CHKERRQ(ierr);
+  PetscCall(VecGetOwnershipRange(vec,&localStart,&localEnd));
+  PetscCall(ISComplement(isBlockGlobal,localStart,localEnd,&isComp));
+  PetscCall(PetscObjectSetName((PetscObject)isComp,"Untagged IS (global)"));
+  PetscCall(ISViewFromOptions(isComp,NULL,"-untagged_is_view"));
 
-  ierr = ISGetLocalSize(isBlockGlobal,&ntagged);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(isComp,&nuntagged);CHKERRQ(ierr);
+  PetscCall(ISGetLocalSize(isBlockGlobal,&ntagged));
+  PetscCall(ISGetLocalSize(isComp,&nuntagged));
 
-  ierr = VecCreate(comm,&tagged);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)tagged,"Tagged selection");CHKERRQ(ierr);
-  ierr = VecSetSizes(tagged,ntagged,PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = VecSetUp(tagged);CHKERRQ(ierr);
+  PetscCall(VecCreate(comm,&tagged));
+  PetscCall(PetscObjectSetName((PetscObject)tagged,"Tagged selection"));
+  PetscCall(VecSetSizes(tagged,ntagged,PETSC_DETERMINE));
+  PetscCall(VecSetUp(tagged));
 
-  ierr = VecCreate(comm,&untagged);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)untagged,"Untagged selection");CHKERRQ(ierr);
-  ierr = VecSetSizes(untagged,nuntagged,PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = VecSetUp(untagged);CHKERRQ(ierr);
+  PetscCall(VecCreate(comm,&untagged));
+  PetscCall(PetscObjectSetName((PetscObject)untagged,"Untagged selection"));
+  PetscCall(VecSetSizes(untagged,nuntagged,PETSC_DETERMINE));
+  PetscCall(VecSetUp(untagged));
 
-  ierr = VecScatterCreate(vec,isBlockGlobal,tagged,NULL,&taggedScatter);CHKERRQ(ierr);
-  ierr = VecScatterCreate(vec,isComp,untagged,NULL,&untaggedScatter);CHKERRQ(ierr);
+  PetscCall(VecScatterCreate(vec,isBlockGlobal,tagged,NULL,&taggedScatter));
+  PetscCall(VecScatterCreate(vec,isComp,untagged,NULL,&untaggedScatter));
 
-  ierr = VecScatterBegin(taggedScatter,vec,tagged,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(taggedScatter,vec,tagged,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterBegin(untaggedScatter,vec,untagged,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(untaggedScatter,vec,untagged,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  PetscCall(VecScatterBegin(taggedScatter,vec,tagged,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(taggedScatter,vec,tagged,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterBegin(untaggedScatter,vec,untagged,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(untaggedScatter,vec,untagged,INSERT_VALUES,SCATTER_FORWARD));
 
-  ierr = VecViewFromOptions(tagged,NULL,"-tagged_vec_view");CHKERRQ(ierr);
-  ierr = VecViewFromOptions(untagged,NULL,"-untagged_vec_view");CHKERRQ(ierr);
+  PetscCall(VecViewFromOptions(tagged,NULL,"-tagged_vec_view"));
+  PetscCall(VecViewFromOptions(untagged,NULL,"-untagged_vec_view"));
 
-  ierr = VecScatterDestroy(&untaggedScatter);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&taggedScatter);CHKERRQ(ierr);
+  PetscCall(VecScatterDestroy(&untaggedScatter));
+  PetscCall(VecScatterDestroy(&taggedScatter));
 
-  ierr = VecDestroy(&untagged);CHKERRQ(ierr);
-  ierr = VecDestroy(&tagged);CHKERRQ(ierr);
-  ierr = ISDestroy(&isComp);CHKERRQ(ierr);
-  ierr = ISDestroy(&isBlockGlobal);CHKERRQ(ierr);
-  ierr = ISDestroy(&is);CHKERRQ(ierr);
+  PetscCall(VecDestroy(&untagged));
+  PetscCall(VecDestroy(&tagged));
+  PetscCall(ISDestroy(&isComp));
+  PetscCall(ISDestroy(&isBlockGlobal));
+  PetscCall(ISDestroy(&is));
 
-  ierr = VecTaggerDestroy(&tagger);CHKERRQ(ierr);
-  ierr = VecDestroy(&vec);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(VecTaggerDestroy(&tagger));
+  PetscCall(VecDestroy(&vec));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

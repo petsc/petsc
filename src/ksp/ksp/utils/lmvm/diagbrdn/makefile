@@ -1,9 +1,5 @@
 -include ../../../../../../petscdir.mk
 
-ALL: lib
-
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = diagbrdn.c
 SOURCEF  =
 SOURCEH  = diagbrdn.h

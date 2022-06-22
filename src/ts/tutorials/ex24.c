@@ -16,53 +16,52 @@ int main(int argc,char **argv)
   TS             ts;            /* time integration context */
   Vec            X;             /* solution, residual vectors */
   Mat            J;             /* Jacobian matrix */
-  PetscErrorCode ierr;
   PetscScalar    *x;
   PetscReal      ftime;
   PetscInt       i,steps,nits,lits;
   PetscBool      view_final;
   Ctx            ctx;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   ctx.n = 3;
-  ierr  = PetscOptionsGetInt(NULL,NULL,"-n",&ctx.n,NULL);CHKERRQ(ierr);
-  PetscCheckFalse(ctx.n < 2,PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"The dimension specified with -n must be at least 2");
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&ctx.n,NULL));
+  PetscCheck(ctx.n >= 2,PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"The dimension specified with -n must be at least 2");
 
   view_final = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-view_final",&view_final,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-view_final",&view_final,NULL));
 
   ctx.monitor_short = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-monitor_short",&ctx.monitor_short,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-monitor_short",&ctx.monitor_short,NULL));
 
   /*
      Create Jacobian matrix data structure and state vector
   */
-  ierr = MatCreate(PETSC_COMM_WORLD,&J);CHKERRQ(ierr);
-  ierr = MatSetSizes(J,PETSC_DECIDE,PETSC_DECIDE,ctx.n,ctx.n);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(J);CHKERRQ(ierr);
-  ierr = MatSetUp(J);CHKERRQ(ierr);
-  ierr = MatCreateVecs(J,&X,NULL);CHKERRQ(ierr);
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&J));
+  PetscCall(MatSetSizes(J,PETSC_DECIDE,PETSC_DECIDE,ctx.n,ctx.n));
+  PetscCall(MatSetFromOptions(J));
+  PetscCall(MatSetUp(J));
+  PetscCall(MatCreateVecs(J,&X,NULL));
 
   /* Create time integration context */
-  ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
-  ierr = TSSetType(ts,TSPSEUDO);CHKERRQ(ierr);
-  ierr = TSSetIFunction(ts,NULL,FormIFunction,&ctx);CHKERRQ(ierr);
-  ierr = TSSetIJacobian(ts,J,J,FormIJacobian,&ctx);CHKERRQ(ierr);
-  ierr = TSSetMaxSteps(ts,1000);CHKERRQ(ierr);
-  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
-  ierr = TSSetTimeStep(ts,1e-3);CHKERRQ(ierr);
-  ierr = TSMonitorSet(ts,MonitorObjective,&ctx,NULL);CHKERRQ(ierr);
+  PetscCall(TSCreate(PETSC_COMM_WORLD,&ts));
+  PetscCall(TSSetType(ts,TSPSEUDO));
+  PetscCall(TSSetIFunction(ts,NULL,FormIFunction,&ctx));
+  PetscCall(TSSetIJacobian(ts,J,J,FormIJacobian,&ctx));
+  PetscCall(TSSetMaxSteps(ts,1000));
+  PetscCall(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
+  PetscCall(TSSetTimeStep(ts,1e-3));
+  PetscCall(TSMonitorSet(ts,MonitorObjective,&ctx,NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize time integrator; set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
+  PetscCall(TSSetFromOptions(ts));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Evaluate initial guess; then solve nonlinear system
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = VecSet(X,0.0);CHKERRQ(ierr);
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  PetscCall(VecSet(X,0.0));
+  PetscCall(VecGetArray(X,&x));
 #if 1
   x[0] = 5.;
   x[1] = -5.;
@@ -72,16 +71,16 @@ int main(int argc,char **argv)
   x[1] = 15.0;
   for (i=2; i<ctx.n; i++) x[i] = 10.0;
 #endif
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  PetscCall(VecRestoreArray(X,&x));
 
-  ierr = TSSolve(ts,X);CHKERRQ(ierr);
-  ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
-  ierr = TSGetStepNumber(ts,&steps);CHKERRQ(ierr);
-  ierr = TSGetSNESIterations(ts,&nits);CHKERRQ(ierr);
-  ierr = TSGetKSPIterations(ts,&lits);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Time integrator took (%D,%D,%D) iterations to reach final time %g\n",steps,nits,lits,(double)ftime);CHKERRQ(ierr);
+  PetscCall(TSSolve(ts,X));
+  PetscCall(TSGetSolveTime(ts,&ftime));
+  PetscCall(TSGetStepNumber(ts,&steps));
+  PetscCall(TSGetSNESIterations(ts,&nits));
+  PetscCall(TSGetKSPIterations(ts,&lits));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Time integrator took (%" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ") iterations to reach final time %g\n",steps,nits,lits,(double)ftime));
   if (view_final) {
-    ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    PetscCall(VecView(X,PETSC_VIEWER_STDOUT_WORLD));
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -89,17 +88,16 @@ int main(int argc,char **argv)
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = VecDestroy(&X);CHKERRQ(ierr);
-  ierr = MatDestroy(&J);CHKERRQ(ierr);
-  ierr = TSDestroy(&ts);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(VecDestroy(&X));
+  PetscCall(MatDestroy(&J));
+  PetscCall(TSDestroy(&ts));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 static PetscErrorCode MonitorObjective(TS ts,PetscInt step,PetscReal t,Vec X,void *ictx)
 {
   Ctx               *ctx = (Ctx*)ictx;
-  PetscErrorCode    ierr;
   const PetscScalar *x;
   PetscScalar       f;
   PetscReal         dt,gnorm;
@@ -109,29 +107,27 @@ static PetscErrorCode MonitorObjective(TS ts,PetscInt step,PetscReal t,Vec X,voi
 
   PetscFunctionBeginUser;
   /* Compute objective functional */
-  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
+  PetscCall(VecGetArrayRead(X,&x));
   f    = 0;
   for (i=0; i<ctx->n-1; i++) f += PetscSqr(1. - x[i]) + 100. * PetscSqr(x[i+1] - PetscSqr(x[i]));
-  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayRead(X,&x));
 
   /* Compute norm of gradient */
-  ierr = VecDuplicate(X,&Xdot);CHKERRQ(ierr);
-  ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
-  ierr = VecZeroEntries(Xdot);CHKERRQ(ierr);
-  ierr = FormIFunction(ts,t,X,Xdot,F,ictx);CHKERRQ(ierr);
-  ierr = VecNorm(F,NORM_2,&gnorm);CHKERRQ(ierr);
-  ierr = VecDestroy(&Xdot);CHKERRQ(ierr);
-  ierr = VecDestroy(&F);CHKERRQ(ierr);
+  PetscCall(VecDuplicate(X,&Xdot));
+  PetscCall(VecDuplicate(X,&F));
+  PetscCall(VecZeroEntries(Xdot));
+  PetscCall(FormIFunction(ts,t,X,Xdot,F,ictx));
+  PetscCall(VecNorm(F,NORM_2,&gnorm));
+  PetscCall(VecDestroy(&Xdot));
+  PetscCall(VecDestroy(&F));
 
-  ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
-  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-  ierr = SNESGetIterationNumber(snes,&snesit);CHKERRQ(ierr);
-  ierr = SNESGetLinearSolveIterations(snes,&linit);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,
-                     (ctx->monitor_short
-                      ? "%3D t=%10.1e  dt=%10.1e  f=%10.1e  df=%10.1e  it=(%2D,%3D)\n"
-                      : "%3D t=%10.4e  dt=%10.4e  f=%10.4e  df=%10.4e  it=(%2D,%3D)\n"),
-                     step,(double)t,(double)dt,(double)PetscRealPart(f),(double)gnorm,snesit,linit);CHKERRQ(ierr);
+  PetscCall(TSGetTimeStep(ts,&dt));
+  PetscCall(TSGetSNES(ts,&snes));
+  PetscCall(SNESGetIterationNumber(snes,&snesit));
+  PetscCall(SNESGetLinearSolveIterations(snes,&linit));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,(ctx->monitor_short ? "%3" PetscInt_FMT " t=%10.1e  dt=%10.1e  f=%10.1e  df=%10.1e  it=(%2" PetscInt_FMT ",%3" PetscInt_FMT ")\n"
+                                                             : "%3" PetscInt_FMT " t=%10.4e  dt=%10.4e  f=%10.4e  df=%10.4e  it=(%2" PetscInt_FMT ",%3" PetscInt_FMT ")\n"),
+                        step,(double)t,(double)dt,(double)PetscRealPart(f),(double)gnorm,snesit,linit));
   PetscFunctionReturn(0);
 }
 
@@ -151,7 +147,6 @@ static PetscErrorCode MonitorObjective(TS ts,PetscInt step,PetscReal t,Vec X,voi
  */
 static PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ictx)
 {
-  PetscErrorCode    ierr;
   const PetscScalar *x;
   PetscScalar       *f;
   PetscInt          i;
@@ -165,9 +160,9 @@ static PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void 
     - You MUST call VecRestoreArray() when you no longer need access to
     the array.
   */
-  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
-  ierr = VecZeroEntries(F);CHKERRQ(ierr);
-  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
+  PetscCall(VecGetArrayRead(X,&x));
+  PetscCall(VecZeroEntries(F));
+  PetscCall(VecGetArray(F,&f));
 
   /* Compute gradient of objective */
   for (i=0; i<ctx->n-1; i++) {
@@ -179,9 +174,9 @@ static PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void 
     f[i+1] += 200.*a*a1;
   }
   /* Restore vectors */
-  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
-  ierr = VecAXPY(F,1.0,Xdot);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayRead(X,&x));
+  PetscCall(VecRestoreArray(F,&f));
+  PetscCall(VecAXPY(F,1.0,Xdot));
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------- */
@@ -204,16 +199,15 @@ static PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void 
 static PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal shift,Mat J,Mat B,void *ictx)
 {
   const PetscScalar *x;
-  PetscErrorCode    ierr;
   PetscInt          i;
   Ctx               *ctx = (Ctx*)ictx;
 
   PetscFunctionBeginUser;
-  ierr = MatZeroEntries(B);CHKERRQ(ierr);
+  PetscCall(MatZeroEntries(B));
   /*
      Get pointer to vector data
   */
-  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
+  PetscCall(VecGetArrayRead(X,&x));
 
   /*
      Compute Jacobian entries and insert into matrix.
@@ -234,22 +228,22 @@ static PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal s
     v[0][1]   = 200.*(a*a01 + a1*a0);
     v[1][0]   = 200.*(a*a10 + a0*a1);
     v[1][1]   = 200.*(a*a11 + a1*a1);
-    ierr      = MatSetValues(B,2,rowcol,2,rowcol,&v[0][0],ADD_VALUES);CHKERRQ(ierr);
+    PetscCall(MatSetValues(B,2,rowcol,2,rowcol,&v[0][0],ADD_VALUES));
   }
   for (i=0; i<ctx->n; i++) {
-    ierr = MatSetValue(B,i,i,(PetscScalar)shift,ADD_VALUES);CHKERRQ(ierr);
+    PetscCall(MatSetValue(B,i,i,(PetscScalar)shift,ADD_VALUES));
   }
 
-  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayRead(X,&x));
 
   /*
      Assemble matrix
   */
-  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
   if (J != B) {
-    ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    PetscCall(MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY));
   }
   PetscFunctionReturn(0);
 }

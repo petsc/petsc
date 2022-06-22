@@ -1,12 +1,4 @@
-<HTML>
-<HEAD>
-<TITLE>Profiling Manual Pages</TITLE>
-</HEAD>
-<BODY BGCOLOR="FFFFFF">
-
-<H2> Profiling Manual Pages 
-</H2>
+# Profiling Manual Pages
 
 PETSc provides a variety of methods for profiling applications that use the PETSc libraries.
 
-<P>

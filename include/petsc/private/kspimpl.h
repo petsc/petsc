@@ -6,6 +6,8 @@
 #include <petscds.h>
 #include <petsc/private/petscimpl.h>
 
+/* SUBMANSEC = KSP */
+
 PETSC_EXTERN PetscBool KSPRegisterAllCalled;
 PETSC_EXTERN PetscBool KSPMonitorRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode KSPRegisterAll(void);
@@ -199,25 +201,22 @@ typedef struct {
 
 static inline PetscErrorCode KSPLogResidualHistory(KSP ksp,PetscReal norm)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+  PetscCall(PetscObjectSAWsTakeAccess((PetscObject)ksp));
   if (ksp->res_hist && ksp->res_hist_max > ksp->res_hist_len) {
     ksp->res_hist[ksp->res_hist_len++] = norm;
   }
-  ierr = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+  PetscCall(PetscObjectSAWsGrantAccess((PetscObject)ksp));
   PetscFunctionReturn(0);
 }
 
 static inline PetscErrorCode KSPLogErrorHistory(KSP ksp)
 {
-  DM             dm;
-  PetscErrorCode ierr;
+  DM dm;
 
   PetscFunctionBegin;
-  ierr = PetscObjectSAWsTakeAccess((PetscObject) ksp);CHKERRQ(ierr);
-  ierr = KSPGetDM(ksp, &dm);CHKERRQ(ierr);
+  PetscCall(PetscObjectSAWsTakeAccess((PetscObject) ksp));
+  PetscCall(KSPGetDM(ksp, &dm));
   if (dm && ksp->err_hist && ksp->err_hist_max > ksp->err_hist_len) {
     PetscSimplePointFunc exactSol;
     void                *exactCtx;
@@ -226,23 +225,23 @@ static inline PetscErrorCode KSPLogErrorHistory(KSP ksp)
     PetscReal            error;
     PetscInt             Nf;
 
-    ierr = KSPBuildSolution(ksp, NULL, &u);CHKERRQ(ierr);
+    PetscCall(KSPBuildSolution(ksp, NULL, &u));
     /* TODO Was needed to correct for Newton solution, but I just need to set a solution */
-    //ierr = VecScale(u, -1.0);CHKERRQ(ierr);
+    //PetscCall(VecScale(u, -1.0));
     /* TODO Case when I have a solution */
     if (0) {
-      ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
-      ierr = PetscDSGetNumFields(ds, &Nf);CHKERRQ(ierr);
-      PetscCheck(Nf <= 1,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle number of fields %D > 1 right now", Nf);
-      ierr = PetscDSGetExactSolution(ds, 0, &exactSol, &exactCtx);CHKERRQ(ierr);
-      ierr = DMComputeL2FieldDiff(dm, 0.0, &exactSol, &exactCtx, u, &error);CHKERRQ(ierr);
+      PetscCall(DMGetDS(dm, &ds));
+      PetscCall(PetscDSGetNumFields(ds, &Nf));
+      PetscCheck(Nf <= 1,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle number of fields %" PetscInt_FMT " > 1 right now", Nf);
+      PetscCall(PetscDSGetExactSolution(ds, 0, &exactSol, &exactCtx));
+      PetscCall(DMComputeL2FieldDiff(dm, 0.0, &exactSol, &exactCtx, u, &error));
     } else {
       /* The null solution A 0 = 0 */
-      ierr = VecNorm(u, NORM_2, &error);CHKERRQ(ierr);
+      PetscCall(VecNorm(u, NORM_2, &error));
     }
     ksp->err_hist[ksp->err_hist_len++] = error;
   }
-  ierr = PetscObjectSAWsGrantAccess((PetscObject) ksp);CHKERRQ(ierr);
+  PetscCall(PetscObjectSAWsGrantAccess((PetscObject) ksp));
   PetscFunctionReturn(0);
 }
 
@@ -257,16 +256,16 @@ static inline PetscScalar KSPNoisyHash_Private(PetscInt xx)
 
 static inline PetscErrorCode KSPSetNoisy_Private(Vec v)
 {
-  PetscScalar   *a;
-  PetscInt       n, istart, i;
-  PetscErrorCode ierr;
+  PetscScalar *a;
+  PetscInt     n, istart;
 
-  ierr = VecGetOwnershipRange(v, &istart, NULL);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(v, &n);CHKERRQ(ierr);
-  ierr = VecGetArrayWrite(v, &a);CHKERRQ(ierr);
-  for (i = 0; i < n; ++i) a[i] = KSPNoisyHash_Private(i+istart);
-  ierr = VecRestoreArrayWrite(v, &a);CHKERRQ(ierr);
-  return(0);
+  PetscFunctionBegin;
+  PetscCall(VecGetOwnershipRange(v, &istart, NULL));
+  PetscCall(VecGetLocalSize(v, &n));
+  PetscCall(VecGetArrayWrite(v, &a));
+  for (PetscInt i = 0; i < n; ++i) a[i] = KSPNoisyHash_Private(i+istart);
+  PetscCall(VecRestoreArrayWrite(v, &a));
+  PetscFunctionReturn(0);
 }
 
 PETSC_INTERN PetscErrorCode KSPSetUpNorms_Private(KSP,PetscBool,KSPNormType*,PCSide*);
@@ -310,133 +309,119 @@ PETSC_EXTERN PetscErrorCode DMCopyDMKSP(DM,DM);
 */
 static inline PetscErrorCode KSP_RemoveNullSpace(KSP ksp,Vec y)
 {
-  PetscErrorCode ierr;
   PetscFunctionBegin;
   if (ksp->pc_side == PC_LEFT) {
     Mat          A;
     MatNullSpace nullsp;
-    ierr = PCGetOperators(ksp->pc,&A,NULL);CHKERRQ(ierr);
-    ierr = MatGetNullSpace(A,&nullsp);CHKERRQ(ierr);
-    if (nullsp) {
-      ierr = MatNullSpaceRemove(nullsp,y);CHKERRQ(ierr);
-    }
+
+    PetscCall(PCGetOperators(ksp->pc,&A,NULL));
+    PetscCall(MatGetNullSpace(A,&nullsp));
+    if (nullsp) PetscCall(MatNullSpaceRemove(nullsp,y));
   }
   PetscFunctionReturn(0);
 }
 
 static inline PetscErrorCode KSP_RemoveNullSpaceTranspose(KSP ksp,Vec y)
 {
-  PetscErrorCode ierr;
   PetscFunctionBegin;
   if (ksp->pc_side == PC_LEFT) {
     Mat          A;
     MatNullSpace nullsp;
-    ierr = PCGetOperators(ksp->pc,&A,NULL);CHKERRQ(ierr);
-    ierr = MatGetTransposeNullSpace(A,&nullsp);CHKERRQ(ierr);
-    if (nullsp) {
-      ierr = MatNullSpaceRemove(nullsp,y);CHKERRQ(ierr);
-    }
+
+    PetscCall(PCGetOperators(ksp->pc,&A,NULL));
+    PetscCall(MatGetTransposeNullSpace(A,&nullsp));
+    if (nullsp) PetscCall(MatNullSpaceRemove(nullsp,y));
   }
   PetscFunctionReturn(0);
 }
 
 static inline PetscErrorCode KSP_MatMult(KSP ksp,Mat A,Vec x,Vec y)
 {
-  PetscErrorCode ierr;
   PetscFunctionBegin;
-  if (!ksp->transpose_solve) {ierr = MatMult(A,x,y);CHKERRQ(ierr);}
-  else                       {ierr = MatMultTranspose(A,x,y);CHKERRQ(ierr);}
+  if (ksp->transpose_solve) PetscCall(MatMultTranspose(A,x,y));
+  else                      PetscCall(MatMult(A,x,y));
   PetscFunctionReturn(0);
 }
 
 static inline PetscErrorCode KSP_MatMultTranspose(KSP ksp,Mat A,Vec x,Vec y)
 {
-  PetscErrorCode ierr;
   PetscFunctionBegin;
-  if (!ksp->transpose_solve) {ierr = MatMultTranspose(A,x,y);CHKERRQ(ierr);}
-  else                       {ierr = MatMult(A,x,y);CHKERRQ(ierr);}
+  if (ksp->transpose_solve) PetscCall(MatMult(A,x,y));
+  else                      PetscCall(MatMultTranspose(A,x,y));
   PetscFunctionReturn(0);
 }
 
 static inline PetscErrorCode KSP_MatMultHermitianTranspose(KSP ksp,Mat A,Vec x,Vec y)
 {
-  PetscErrorCode ierr;
   PetscFunctionBegin;
-  if (!ksp->transpose_solve) {ierr = MatMultHermitianTranspose(A,x,y);CHKERRQ(ierr);}
-  else                       {
+  if (!ksp->transpose_solve) PetscCall(MatMultHermitianTranspose(A,x,y));
+  else {
     Vec w;
-    ierr = VecDuplicate(x,&w);CHKERRQ(ierr);
-    ierr = VecCopy(x,w);CHKERRQ(ierr);
-    ierr = VecConjugate(w);CHKERRQ(ierr);
-    ierr = MatMult(A,w,y);CHKERRQ(ierr);
-    ierr = VecDestroy(&w);CHKERRQ(ierr);
-    ierr = VecConjugate(y);CHKERRQ(ierr);
+
+    PetscCall(VecDuplicate(x,&w));
+    PetscCall(VecCopy(x,w));
+    PetscCall(VecConjugate(w));
+    PetscCall(MatMult(A,w,y));
+    PetscCall(VecDestroy(&w));
+    PetscCall(VecConjugate(y));
   }
   PetscFunctionReturn(0);
 }
 
 static inline PetscErrorCode KSP_PCApply(KSP ksp,Vec x,Vec y)
 {
-  PetscErrorCode ierr;
   PetscFunctionBegin;
-  if (!ksp->transpose_solve) {
-    ierr = PCApply(ksp->pc,x,y);CHKERRQ(ierr);
-    ierr = KSP_RemoveNullSpace(ksp,y);CHKERRQ(ierr);
+  if (ksp->transpose_solve) {
+    PetscCall(PCApplyTranspose(ksp->pc,x,y));
+    PetscCall(KSP_RemoveNullSpaceTranspose(ksp,y));
   } else {
-    ierr = PCApplyTranspose(ksp->pc,x,y);CHKERRQ(ierr);
-    ierr = KSP_RemoveNullSpaceTranspose(ksp,y);CHKERRQ(ierr);
+    PetscCall(PCApply(ksp->pc,x,y));
+    PetscCall(KSP_RemoveNullSpace(ksp,y));
   }
   PetscFunctionReturn(0);
 }
 
 static inline PetscErrorCode KSP_PCApplyTranspose(KSP ksp,Vec x,Vec y)
 {
-  PetscErrorCode ierr;
   PetscFunctionBegin;
-  if (!ksp->transpose_solve) {
-    ierr = PCApplyTranspose(ksp->pc,x,y);CHKERRQ(ierr);
-    ierr = KSP_RemoveNullSpaceTranspose(ksp,y);CHKERRQ(ierr);
+  if (ksp->transpose_solve) {
+    PetscCall(PCApply(ksp->pc,x,y));
+    PetscCall(KSP_RemoveNullSpace(ksp,y));
   } else {
-    ierr = PCApply(ksp->pc,x,y);CHKERRQ(ierr);
-    ierr = KSP_RemoveNullSpace(ksp,y);CHKERRQ(ierr);
+    PetscCall(PCApplyTranspose(ksp->pc,x,y));
+    PetscCall(KSP_RemoveNullSpaceTranspose(ksp,y));
   }
   PetscFunctionReturn(0);
 }
 
 static inline PetscErrorCode KSP_PCApplyHermitianTranspose(KSP ksp,Vec x,Vec y)
 {
-  PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = VecConjugate(x);CHKERRQ(ierr);
-  ierr = KSP_PCApplyTranspose(ksp,x,y);CHKERRQ(ierr);
-  ierr = VecConjugate(x);CHKERRQ(ierr);
-  ierr = VecConjugate(y);CHKERRQ(ierr);
+  PetscCall(VecConjugate(x));
+  PetscCall(KSP_PCApplyTranspose(ksp,x,y));
+  PetscCall(VecConjugate(x));
+  PetscCall(VecConjugate(y));
   PetscFunctionReturn(0);
 }
 
 static inline PetscErrorCode KSP_PCApplyBAorAB(KSP ksp,Vec x,Vec y,Vec w)
 {
-  PetscErrorCode ierr;
   PetscFunctionBegin;
-  if (!ksp->transpose_solve) {
-    ierr = PCApplyBAorAB(ksp->pc,ksp->pc_side,x,y,w);CHKERRQ(ierr);
-    ierr = KSP_RemoveNullSpace(ksp,y);CHKERRQ(ierr);
+  if (ksp->transpose_solve) {
+    PetscCall(PCApplyBAorABTranspose(ksp->pc,ksp->pc_side,x,y,w));
+    PetscCall(KSP_RemoveNullSpaceTranspose(ksp,y));
   } else {
-    ierr = PCApplyBAorABTranspose(ksp->pc,ksp->pc_side,x,y,w);CHKERRQ(ierr);
-    ierr = KSP_RemoveNullSpaceTranspose(ksp,y);CHKERRQ(ierr);
+    PetscCall(PCApplyBAorAB(ksp->pc,ksp->pc_side,x,y,w));
+    PetscCall(KSP_RemoveNullSpace(ksp,y));
   }
   PetscFunctionReturn(0);
 }
 
 static inline PetscErrorCode KSP_PCApplyBAorABTranspose(KSP ksp,Vec x,Vec y,Vec w)
 {
-  PetscErrorCode ierr;
   PetscFunctionBegin;
-  if (!ksp->transpose_solve) {
-    ierr = PCApplyBAorABTranspose(ksp->pc,ksp->pc_side,x,y,w);CHKERRQ(ierr);
-  } else {
-    ierr = PCApplyBAorAB(ksp->pc,ksp->pc_side,x,y,w);CHKERRQ(ierr);
-  }
+  if (ksp->transpose_solve) PetscCall(PCApplyBAorAB(ksp->pc,ksp->pc_side,x,y,w));
+  else                      PetscCall(PCApplyBAorABTranspose(ksp->pc,ksp->pc_side,x,y,w));
   PetscFunctionReturn(0);
 }
 
@@ -474,22 +459,21 @@ PETSC_INTERN PetscErrorCode PCPreSolveChangeRHS(PC,PetscBool*);
    Developer Note:
    this is used to manage returning from KSP solvers whose preconditioners have failed in some way
 
-.seealso: KSPCreate(), KSPSetType(), KSP, KSPCheckNorm(), KSPCheckSolve()
+.seealso: `KSPCreate()`, `KSPSetType()`, `KSP`, `KSPCheckNorm()`, `KSPCheckSolve()`
 M*/
 #define KSPCheckDot(ksp,beta) do { \
   if (PetscIsInfOrNanScalar(beta)) { \
     PetscCheck(!ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to Nan or Inf inner product");\
     else {\
-      PetscErrorCode ierr;\
       PCFailedReason pcreason;\
       PetscInt       sendbuf,recvbuf; \
-      ierr = PCGetFailedReasonRank(ksp->pc,&pcreason);CHKERRQ(ierr);\
+      PetscCall(PCGetFailedReasonRank(ksp->pc,&pcreason));\
       sendbuf = (PetscInt)pcreason; \
-      ierr = MPI_Allreduce(&sendbuf,&recvbuf,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)ksp));CHKERRMPI(ierr);\
+      PetscCallMPI(MPI_Allreduce(&sendbuf,&recvbuf,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)ksp)));\
       if (recvbuf) {                                                           \
-        ierr = PCSetFailedReason(ksp->pc,(PCFailedReason)recvbuf);CHKERRQ(ierr); \
+        PetscCall(PCSetFailedReason(ksp->pc,(PCFailedReason)recvbuf)); \
         ksp->reason = KSP_DIVERGED_PC_FAILED;\
-        ierr        = VecSetInf(ksp->vec_sol);CHKERRQ(ierr);\
+        PetscCall(VecSetInf(ksp->vec_sol));\
       } else {\
         ksp->reason = KSP_DIVERGED_NANORINF;\
       }\
@@ -514,26 +498,27 @@ M*/
    Developer Note:
    this is used to manage returning from KSP solvers whose preconditioners have failed in some way
 
-.seealso: KSPCreate(), KSPSetType(), KSP, KSPCheckDot(), KSPCheckSolve()
+.seealso: `KSPCreate()`, `KSPSetType()`, `KSP`, `KSPCheckDot()`, `KSPCheckSolve()`
 M*/
 #define KSPCheckNorm(ksp,beta) do { \
   if (PetscIsInfOrNanReal(beta)) { \
     PetscCheck(!ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to Nan or Inf norm");\
     else {\
-      PetscErrorCode ierr;\
       PCFailedReason pcreason;\
       PetscInt       sendbuf,recvbuf; \
-      ierr = PCGetFailedReasonRank(ksp->pc,&pcreason);CHKERRQ(ierr);\
+      PetscCall(PCGetFailedReasonRank(ksp->pc,&pcreason));\
       sendbuf = (PetscInt)pcreason; \
-      ierr = MPI_Allreduce(&sendbuf,&recvbuf,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)ksp));CHKERRMPI(ierr);\
+      PetscCallMPI(MPI_Allreduce(&sendbuf,&recvbuf,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)ksp)));\
       if (recvbuf) {                                                           \
-        ierr = PCSetFailedReason(ksp->pc,(PCFailedReason)recvbuf);CHKERRQ(ierr); \
+        PetscCall(PCSetFailedReason(ksp->pc,(PCFailedReason)recvbuf)); \
         ksp->reason = KSP_DIVERGED_PC_FAILED;                         \
-        ierr        = VecSetInf(ksp->vec_sol);CHKERRQ(ierr);\
+        PetscCall(VecSetInf(ksp->vec_sol));\
+        ksp->rnorm  = beta; \
       } else {\
-        ierr = PCSetFailedReason(ksp->pc,PC_NOERROR);CHKERRQ(ierr); \
+        PetscCall(PCSetFailedReason(ksp->pc,PC_NOERROR)); \
         ksp->reason = KSP_DIVERGED_NANORINF;\
-      }\
+        ksp->rnorm  = beta; \
+      }                                       \
       PetscFunctionReturn(0);\
     }\
   } } while (0)

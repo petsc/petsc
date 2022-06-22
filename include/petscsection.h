@@ -1,8 +1,11 @@
 #if !defined(PETSCSECTION_H)
 #define PETSCSECTION_H
+
 #include <petscsys.h>
 #include <petscis.h>
 #include <petscsectiontypes.h>
+
+/* SUBMANSEC = PetscSection */
 
 PETSC_EXTERN PetscClassId PETSC_SECTION_CLASSID;
 
@@ -65,6 +68,7 @@ PETSC_EXTERN PetscErrorCode PetscSectionCreateGlobalSectionCensored(PetscSection
 PETSC_EXTERN PetscErrorCode PetscSectionCreateSubsection(PetscSection, PetscInt, const PetscInt [], PetscSection *);
 PETSC_EXTERN PetscErrorCode PetscSectionCreateSupersection(PetscSection[], PetscInt, PetscSection *);
 PETSC_EXTERN PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection, IS, PetscSection *);
+PETSC_EXTERN PetscErrorCode PetscSectionCreateSubdomainSection(PetscSection, IS, PetscSection *);
 PETSC_EXTERN PetscErrorCode PetscSectionGetPointLayout(MPI_Comm, PetscSection, PetscLayout *);
 PETSC_EXTERN PetscErrorCode PetscSectionGetValueLayout(MPI_Comm, PetscSection, PetscLayout *);
 PETSC_EXTERN PetscErrorCode PetscSectionPermute(PetscSection, IS, PetscSection *);
@@ -88,7 +92,9 @@ PETSC_EXTERN PetscErrorCode PetscSectionSymRegister(const char[],PetscErrorCode 
 
 PETSC_EXTERN PetscErrorCode PetscSectionSymCreate(MPI_Comm, PetscSectionSym*);
 PETSC_EXTERN PetscErrorCode PetscSectionSymDestroy(PetscSectionSym*);
-PETSC_EXTERN PetscErrorCode PetscSectionSymView(PetscSectionSym,PetscViewer);
+PETSC_EXTERN PetscErrorCode PetscSectionSymView(PetscSectionSym, PetscViewer);
+PETSC_EXTERN PetscErrorCode PetscSectionSymCopy(PetscSectionSym, PetscSectionSym);
+PETSC_EXTERN PetscErrorCode PetscSectionSymDistribute(PetscSectionSym, PetscSF, PetscSectionSym*);
 
 PETSC_EXTERN PetscErrorCode PetscSectionSetSym(PetscSection, PetscSectionSym);
 PETSC_EXTERN PetscErrorCode PetscSectionGetSym(PetscSection, PetscSectionSym*);

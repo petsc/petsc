@@ -440,6 +440,30 @@ cdef class TS(Object):
         PetscINCREF(v.obj)
         return (u, v)
 
+    # --- time span ---
+
+    def setTimeSpan(self, tspan):
+        cdef PetscInt  nt = 0
+        cdef PetscReal *rtspan = NULL
+        cdef object tmp = oarray_r(tspan, &nt, &rtspan)
+        CHKERR( TSSetTimeSpan(self.ts, nt, rtspan) )
+
+    def getTimeSpan(self):
+        cdef const PetscReal *rtspan = NULL
+        cdef PetscInt   nt = 0
+        CHKERR( TSGetTimeSpan(self.ts, &nt, &rtspan) )
+        cdef object tspan = array_r(nt, rtspan)
+        return tspan
+
+    def getTimeSpanSolutions(self):
+        cdef PetscInt nt = 0
+        cdef PetscVec *sols = NULL
+        CHKERR( TSGetTimeSpanSolutions(self.ts, &nt, &sols) )
+        cdef object sollist = None
+        if sols != NULL:
+            sollist = [ref_Vec(sols[i]) for i from 0 <= i < nt]
+        return sollist
+
     # --- inner solver ---
 
     def getSNES(self):

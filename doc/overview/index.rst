@@ -26,5 +26,4 @@ parallel distributed arrays useful for finite difference methods.
 *   :doc:`/docs/manual/index`
 *   :doc:`/docs/manualpages/index`
 *   :doc:`/docs/changes/index`
-* `Function Index <../docs/manualpages/singleindex.html>`__
-* `Examples Index <../docs/manualpages/help.html>`__
+*   :doc:`/docs/manualpages/singleindex`

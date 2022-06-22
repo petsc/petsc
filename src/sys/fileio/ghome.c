@@ -25,13 +25,12 @@
 @*/
 PetscErrorCode  PetscGetHomeDirectory(char dir[],size_t maxlen)
 {
-  PetscErrorCode ierr;
   const char     *d1;
 
   PetscFunctionBegin;
   d1 = getenv("HOME");
   if (d1) {
-    ierr = PetscStrncpy(dir,d1,maxlen);CHKERRQ(ierr);
+    PetscCall(PetscStrncpy(dir,d1,maxlen));
   } else if (maxlen > 0) dir[0] = 0;
   PetscFunctionReturn(0);
 }
@@ -55,13 +54,12 @@ PetscErrorCode  PetscGetHomeDirectory(char dir[],size_t maxlen)
 @*/
 PetscErrorCode  PetscFixFilename(const char filein[],char fileout[])
 {
-  PetscErrorCode ierr;
   size_t         i,n;
 
   PetscFunctionBegin;
   if (!filein || !fileout) PetscFunctionReturn(0);
 
-  ierr = PetscStrlen(filein,&n);CHKERRQ(ierr);
+  PetscCall(PetscStrlen(filein,&n));
   for (i=0; i<n; i++) {
     if (filein[i] == PETSC_REPLACE_DIR_SEPARATOR) fileout[i] = PETSC_DIR_SEPARATOR;
     else fileout[i] = filein[i];

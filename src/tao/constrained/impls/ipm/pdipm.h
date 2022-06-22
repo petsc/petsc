@@ -30,8 +30,8 @@ typedef struct {
   Vec      z;               /* R^nci - vector, shares local arrays with X */
 
   /* Work vectors */
-  Vec      lambdae_xfixed; /* Equality constraints lagrangian multipler vector for fixed variables */
-  Vec      lambdai_xb;     /* User inequality constraints lagrangian multipler vector */
+  Vec      lambdae_xfixed; /* Equality constraints lagrangian multiplier vector for fixed variables */
+  Vec      lambdai_xb;     /* User inequality constraints lagrangian multiplier vector */
 
   /* Lagrangian equality and inequality Vec */
   Vec      ce,ci; /* equality and inequality constraints */

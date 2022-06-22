@@ -1,5 +1,5 @@
 [0] Local Coordinates
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 -2.
 -1.5
@@ -10,7 +10,7 @@ Vec Object: 1 MPI processes
 1.
 1.5
 Global Coordinates:
-Vec Object: coordinates 1 MPI processes
+Vec Object: coordinates 1 MPI process
   type: mpi
 Process [0]
 -1.

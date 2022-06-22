@@ -41,6 +41,7 @@ const char *const PetscViewerFormats[] = {
   "NOFORMAT",
   "LOAD_BALANCE",
   "FAILED",
+  "ALL",
   "PetscViewerFormat",
   "PETSC_VIEWER_",
   NULL
@@ -92,8 +93,8 @@ const char *const PetscViewerFormats[] = {
 
     Note: This supports passing in a NULL for the viewer for use in the debugger, but it should never be called in the code with a NULL viewer
 
-.seealso: PetscViewerGetFormat(), PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), MatView(), VecView(), PetscViewerType,
-          PetscViewerPushFormat(), PetscViewerPopFormat(), PetscViewerDrawOpen(),PetscViewerSocketOpen()
+.seealso: `PetscViewerGetFormat()`, `PetscViewerASCIIOpen()`, `PetscViewerBinaryOpen()`, `MatView()`, `VecView()`, `PetscViewerType`,
+          `PetscViewerPushFormat()`, `PetscViewerPopFormat()`, `PetscViewerDrawOpen()`, `PetscViewerSocketOpen()`
 @*/
 PetscErrorCode  PetscViewerSetFormat(PetscViewer viewer,PetscViewerFormat format)
 {
@@ -140,15 +141,15 @@ PetscErrorCode  PetscViewerSetFormat(PetscViewer viewer,PetscViewerFormat format
    These formats are most often used for viewing matrices and vectors.
    Currently, the object name is used only in the MATLAB format.
 
-.seealso: PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), MatView(), VecView(),
-          PetscViewerSetFormat(), PetscViewerPopFormat()
+.seealso: `PetscViewerASCIIOpen()`, `PetscViewerBinaryOpen()`, `MatView()`, `VecView()`,
+          `PetscViewerSetFormat()`, `PetscViewerPopFormat()`
 @*/
 PetscErrorCode  PetscViewerPushFormat(PetscViewer viewer,PetscViewerFormat format)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidLogicalCollectiveEnum(viewer,format,2);
-  PetscCheckFalse(viewer->iformat > PETSCVIEWERFORMATPUSHESMAX-1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many PetscViewerPushFormat(), perhaps you forgot PetscViewerPopFormat()?");
+  PetscCheck(viewer->iformat <= PETSCVIEWERFORMATPUSHESMAX-1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many PetscViewerPushFormat(), perhaps you forgot PetscViewerPopFormat()?");
 
   viewer->formats[viewer->iformat++] = viewer->format;
   viewer->format                     = format;
@@ -165,8 +166,8 @@ PetscErrorCode  PetscViewerPushFormat(PetscViewer viewer,PetscViewerFormat forma
 
    Level: intermediate
 
-.seealso: PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), MatView(), VecView(),
-          PetscViewerSetFormat(), PetscViewerPushFormat()
+.seealso: `PetscViewerASCIIOpen()`, `PetscViewerBinaryOpen()`, `MatView()`, `VecView()`,
+          `PetscViewerSetFormat()`, `PetscViewerPushFormat()`
 @*/
 PetscErrorCode  PetscViewerPopFormat(PetscViewer viewer)
 {
@@ -222,8 +223,8 @@ PetscErrorCode  PetscViewerPopFormat(PetscViewer viewer)
   where it didn't apply (PETSC_VIEWER_STDOUT_WORLD) it cause the default behavior
   for that viewer to be used.
 
-.seealso: PetscViewerSetFormat(), PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), MatView(), VecView(), PetscViewerType,
-          PetscViewerPushFormat(), PetscViewerPopFormat(), PetscViewerDrawOpen(),PetscViewerSocketOpen()
+.seealso: `PetscViewerSetFormat()`, `PetscViewerASCIIOpen()`, `PetscViewerBinaryOpen()`, `MatView()`, `VecView()`, `PetscViewerType`,
+          `PetscViewerPushFormat()`, `PetscViewerPopFormat()`, `PetscViewerDrawOpen()`, `PetscViewerSocketOpen()`
 @*/
 PetscErrorCode PetscViewerGetFormat(PetscViewer viewer,PetscViewerFormat *format)
 {

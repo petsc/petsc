@@ -4,10 +4,9 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.download         = ['https://www.mpich.org/static/downloads/4.0/mpich-4.0.tar.gz',
-                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich-4.0.tar.gz']
-    self.download_solaris = ['https://www.mpich.org/static/downloads/3.4.2/mpich-3.4.2.tar.gz',
-                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich-3.4.2.tar.gz']
+    self.version          = '4.0.2'
+    self.download         = ['https://github.com/pmodels/mpich/releases/download/v'+self.version+'/mpich-'+self.version+'.tar.gz',
+                             'https://www.mpich.org/static/downloads/'+self.version+'/mpich-'+self.version+'.tar.gz']
     self.downloaddirnames = ['mpich']
     self.skippackagewithoptions = 1
     self.isMPI = 1
@@ -39,8 +38,6 @@ class Configure(config.package.GNUPackage):
       self.installDir = self.defaultInstallDir
       self.updateCompilers(self.installDir,'mpicc','mpicxx','mpif77','mpif90')
       return self.installDir
-    if self.cuda.found:
-      self.logPrintBox('***** WARNING: CUDA enabled! Its best to use --download-openmpi instead of --download-mpich as it provides CUDA enabled MPI! ****')
     if self.argDB['download-'+self.downloadname.lower()]:
       return self.getInstallDir()
     return ''
@@ -53,6 +50,10 @@ class Configure(config.package.GNUPackage):
     if self.hwloc.found:
       args.append('--with-hwloc="'+self.hwloc.directory+'"')
       args.append('--with-hwloc-prefix="'+self.hwloc.directory+'"')
+    elif 'with-hwloc' in self.framework.clArgDB and not self.argDB['with-hwloc'] :
+      args.append('--without-hwloc')
+    else:
+      args.append('--with-hwloc=embedded')
     # make sure MPICH does not build with optimization for debug version of PETSc, so we can debug through MPICH
     if self.compilerFlags.debugging:
       args.append("--enable-fast=no")
@@ -60,6 +61,9 @@ class Configure(config.package.GNUPackage):
       mpich_device = 'ch3:sock'
     else:
       mpich_device = 'ch3:nemesis'
+    if self.cuda.found:
+      args.append('--with-cuda='+self.cuda.cudaDir)
+      mpich_device = 'ch4:ucx'
     if 'download-mpich-device' in self.argDB:
       mpich_device = self.argDB['download-mpich-device']
     args.append('--with-device='+mpich_device)

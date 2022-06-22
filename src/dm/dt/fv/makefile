@@ -1,5 +1,4 @@
 -include ../../../../petscdir.mk
-ALL: lib
 
 SOURCEH   = ../../../../include/petscfv.h ../../../../include/petscfvtypes.h
 DIRS      = interface

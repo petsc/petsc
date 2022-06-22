@@ -9,7 +9,6 @@ class Configure(config.package.CMakePackage):
     self.functions         = ['ex_close']
     self.includes          = ['exodusII.h']
     self.liblist           = [['libexodus.a'], ]
-    self.hastests          = 0
     return
 
   def setupDependencies(self, framework):

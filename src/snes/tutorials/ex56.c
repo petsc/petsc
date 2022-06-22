@@ -1,4 +1,4 @@
-static char help[] = "3D, tri-quadratic hexahedra (Q1), displacement finite element formulation\n\
+static char help[] = "3D, tensor hexahedra (Q1-K), displacement finite element formulation\n\
 of linear elasticity.  E=1.0, nu=1/3.\n\
 Unit cube domain with Dirichlet boundary\n\n";
 
@@ -203,7 +203,6 @@ PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt 
 int main(int argc,char **args)
 {
   Mat                Amat;
-  PetscErrorCode     ierr;
   SNES               snes;
   KSP                ksp;
   MPI_Comm           comm;
@@ -229,45 +228,45 @@ int main(int argc,char **args)
                                     "-ex56_dm_refine 8",
                                     "-ex56_dm_refine 9"};
   PetscFunctionBeginUser;
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   comm = PETSC_COMM_WORLD;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
   /* options */
-  ierr = PetscOptionsBegin(comm,NULL,"3D bilinear Q1 elasticity options","");CHKERRQ(ierr);
+  PetscOptionsBegin(comm,NULL,"3D bilinear Q1 elasticity options","");
   {
     i = 3;
-    ierr = PetscOptionsIntArray("-cells", "Number of (flux tube) processor in each dimension", "ex56.c", cells, &i, NULL);CHKERRQ(ierr);
+    PetscCall(PetscOptionsIntArray("-cells", "Number of (flux tube) processor in each dimension", "ex56.c", cells, &i, NULL));
 
     Lx = 1.; /* or ne for rod */
     max_conv_its = 3;
-    ierr = PetscOptionsInt("-max_conv_its","Number of iterations in convergence study","",max_conv_its,&max_conv_its,NULL);CHKERRQ(ierr);
-    PetscCheckFalse(max_conv_its<=0 || max_conv_its>7,PETSC_COMM_WORLD, PETSC_ERR_USER, "Bad number of iterations for convergence test (%D)",max_conv_its);
-    ierr = PetscOptionsReal("-lx","Length of domain","",Lx,&Lx,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-alpha","material coefficient inside circle","",s_soft_alpha,&s_soft_alpha,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-test_nonzero_cols","nonzero test","",test_nonzero_cols,&test_nonzero_cols,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-use_mat_nearnullspace","MatNearNullSpace API test","",use_nearnullspace,&use_nearnullspace,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-attach_mat_nearnullspace","MatNearNullSpace API test (via MatSetNearNullSpace)","",attach_nearnullspace,&attach_nearnullspace,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-run_type","0: twisting load on cantalever, 1: 3rd order accurate convergence test","",run_type,&run_type,NULL);CHKERRQ(ierr);
+    PetscCall(PetscOptionsInt("-max_conv_its","Number of iterations in convergence study","",max_conv_its,&max_conv_its,NULL));
+    PetscCheck(max_conv_its > 0 && max_conv_its < 7,PETSC_COMM_WORLD, PETSC_ERR_USER, "Bad number of iterations for convergence test (%" PetscInt_FMT ")",max_conv_its);
+    PetscCall(PetscOptionsReal("-lx","Length of domain","",Lx,&Lx,NULL));
+    PetscCall(PetscOptionsReal("-alpha","material coefficient inside circle","",s_soft_alpha,&s_soft_alpha,NULL));
+    PetscCall(PetscOptionsBool("-test_nonzero_cols","nonzero test","",test_nonzero_cols,&test_nonzero_cols,NULL));
+    PetscCall(PetscOptionsBool("-use_mat_nearnullspace","MatNearNullSpace API test","",use_nearnullspace,&use_nearnullspace,NULL));
+    PetscCall(PetscOptionsBool("-attach_mat_nearnullspace","MatNearNullSpace API test (via MatSetNearNullSpace)","",attach_nearnullspace,&attach_nearnullspace,NULL));
+    PetscCall(PetscOptionsInt("-run_type","0: twisting load on cantalever, 1: 3rd order accurate convergence test","",run_type,&run_type,NULL));
   }
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  ierr = PetscLogStageRegister("Mesh Setup", &stage[16]);CHKERRQ(ierr);
+  PetscOptionsEnd();
+  PetscCall(PetscLogStageRegister("Mesh Setup", &stage[16]));
   for (iter=0 ; iter<max_conv_its ; iter++) {
     char str[] = "Solve 0";
     str[6] += iter;
-    ierr = PetscLogStageRegister(str, &stage[iter]);CHKERRQ(ierr);
+    PetscCall(PetscLogStageRegister(str, &stage[iter]));
   }
   /* create DM, Plex calls DMSetup */
-  ierr = PetscLogStagePush(stage[16]);CHKERRQ(ierr);
-  ierr = DMPlexCreateBoxMesh(comm, dim, PETSC_FALSE, cells, NULL, NULL, NULL, PETSC_TRUE, &dm);CHKERRQ(ierr);
+  PetscCall(PetscLogStagePush(stage[16]));
+  PetscCall(DMPlexCreateBoxMesh(comm, dim, PETSC_FALSE, cells, NULL, NULL, NULL, PETSC_TRUE, &dm));
   {
     DMLabel         label;
     IS              is;
-    ierr = DMCreateLabel(dm, "boundary");CHKERRQ(ierr);
-    ierr = DMGetLabel(dm, "boundary", &label);CHKERRQ(ierr);
-    ierr = DMPlexMarkBoundaryFaces(dm, 1, label);CHKERRQ(ierr);
-    if (!run_type) {
-      ierr = DMGetStratumIS(dm, "boundary", 1,  &is);CHKERRQ(ierr);
-      ierr = DMCreateLabel(dm,"Faces");CHKERRQ(ierr);
+    PetscCall(DMCreateLabel(dm, "boundary"));
+    PetscCall(DMGetLabel(dm, "boundary", &label));
+    PetscCall(DMPlexMarkBoundaryFaces(dm, 1, label));
+    if (run_type == 0) {
+      PetscCall(DMGetStratumIS(dm, "boundary", 1,  &is));
+      PetscCall(DMCreateLabel(dm,"Faces"));
       if (is) {
         PetscInt        d, f, Nf;
         const PetscInt *faces;
@@ -275,18 +274,18 @@ int main(int argc,char **args)
         PetscSection    cs;
         Vec             coordinates ;
         DM              cdm;
-        ierr = ISGetLocalSize(is, &Nf);CHKERRQ(ierr);
-        ierr = ISGetIndices(is, &faces);CHKERRQ(ierr);
-        ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-        ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
-        ierr = DMGetLocalSection(cdm, &cs);CHKERRQ(ierr);
+        PetscCall(ISGetLocalSize(is, &Nf));
+        PetscCall(ISGetIndices(is, &faces));
+        PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
+        PetscCall(DMGetCoordinateDM(dm, &cdm));
+        PetscCall(DMGetLocalSection(cdm, &cs));
         /* Check for each boundary face if any component of its centroid is either 0.0 or 1.0 */
         for (f = 0; f < Nf; ++f) {
           PetscReal   faceCoord;
           PetscInt    b,v;
           PetscScalar *coords = NULL;
           PetscInt    Nv;
-          ierr = DMPlexVecGetClosure(cdm, cs, coordinates, faces[f], &csize, &coords);CHKERRQ(ierr);
+          PetscCall(DMPlexVecGetClosure(cdm, cs, coordinates, faces[f], &csize, &coords));
           Nv   = csize/dim; /* Calculate mean coordinate vector */
           for (d = 0; d < dim; ++d) {
             faceCoord = 0.0;
@@ -294,17 +293,17 @@ int main(int argc,char **args)
             faceCoord /= Nv;
             for (b = 0; b < 2; ++b) {
               if (PetscAbs(faceCoord - b) < PETSC_SMALL) { /* domain have not been set yet, still [0,1]^3 */
-                ierr = DMSetLabelValue(dm, "Faces", faces[f], d*2+b+1);CHKERRQ(ierr);
+                PetscCall(DMSetLabelValue(dm, "Faces", faces[f], d*2+b+1));
               }
             }
           }
-          ierr = DMPlexVecRestoreClosure(cdm, cs, coordinates, faces[f], &csize, &coords);CHKERRQ(ierr);
+          PetscCall(DMPlexVecRestoreClosure(cdm, cs, coordinates, faces[f], &csize, &coords));
         }
-        ierr = ISRestoreIndices(is, &faces);CHKERRQ(ierr);
+        PetscCall(ISRestoreIndices(is, &faces));
       }
-      ierr = ISDestroy(&is);CHKERRQ(ierr);
-      ierr = DMGetLabel(dm, "Faces", &label);CHKERRQ(ierr);
-      ierr = DMPlexLabelComplete(dm, label);CHKERRQ(ierr);
+      PetscCall(ISDestroy(&is));
+      PetscCall(DMGetLabel(dm, "Faces", &label));
+      PetscCall(DMPlexLabelComplete(dm, label));
     }
   }
   {
@@ -316,12 +315,12 @@ int main(int argc,char **args)
     if (run_type==1) {
       for (i = 0; i < 2*dim; i++) bounds[i] = (i%2) ? 1 : 0;
     }
-    ierr = DMGetCoordinatesLocal(dm,&coordinates);CHKERRQ(ierr);
-    ierr = DMGetCoordinateDim(dm,&dimEmbed);CHKERRQ(ierr);
-    PetscCheckFalse(dimEmbed != dim,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"dimEmbed != dim %D",dimEmbed);
-    ierr = VecGetLocalSize(coordinates,&nCoords);CHKERRQ(ierr);
-    PetscCheckFalse(nCoords % dimEmbed,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Coordinate vector the wrong size");
-    ierr = VecGetArray(coordinates,&coords);CHKERRQ(ierr);
+    PetscCall(DMGetCoordinatesLocal(dm,&coordinates));
+    PetscCall(DMGetCoordinateDim(dm,&dimEmbed));
+    PetscCheck(dimEmbed == dim,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"dimEmbed != dim %" PetscInt_FMT,dimEmbed);
+    PetscCall(VecGetLocalSize(coordinates,&nCoords));
+    PetscCheck((nCoords % dimEmbed) == 0,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Coordinate vector the wrong size");
+    PetscCall(VecGetArray(coordinates,&coords));
     for (i = 0; i < nCoords; i += dimEmbed) {
       PetscInt    j;
       PetscScalar *coord = &coords[i];
@@ -329,59 +328,58 @@ int main(int argc,char **args)
         coord[j] = bounds[2 * j] + coord[j] * (bounds[2 * j + 1] - bounds[2 * j]);
       }
     }
-    ierr = VecRestoreArray(coordinates,&coords);CHKERRQ(ierr);
-    ierr = DMSetCoordinatesLocal(dm,coordinates);CHKERRQ(ierr);
+    PetscCall(VecRestoreArray(coordinates,&coords));
+    PetscCall(DMSetCoordinatesLocal(dm,coordinates));
   }
 
   /* convert to p4est, and distribute */
-
-  ierr = PetscOptionsBegin(comm, "", "Mesh conversion options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsFList("-dm_type","Convert DMPlex to another format (should not be Plex!)","ex56.c",DMList,DMPLEX,convType,256,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscOptionsBegin(comm, "", "Mesh conversion options", "DMPLEX");
+  PetscCall(PetscOptionsFList("-dm_type","Convert DMPlex to another format (should not be Plex!)","ex56.c",DMList,DMPLEX,convType,256,&flg));
+  PetscOptionsEnd();
   if (flg) {
     DM newdm;
-    ierr = DMConvert(dm,convType,&newdm);CHKERRQ(ierr);
+    PetscCall(DMConvert(dm,convType,&newdm));
     if (newdm) {
       const char *prefix;
       PetscBool isForest;
-      ierr = PetscObjectGetOptionsPrefix((PetscObject)dm,&prefix);CHKERRQ(ierr);
-      ierr = PetscObjectSetOptionsPrefix((PetscObject)newdm,prefix);CHKERRQ(ierr);
-      ierr = DMIsForest(newdm,&isForest);CHKERRQ(ierr);
-      PetscCheckFalse(!isForest,PETSC_COMM_WORLD, PETSC_ERR_USER, "Converted to non Forest?");
-      ierr = DMDestroy(&dm);CHKERRQ(ierr);
+      PetscCall(PetscObjectGetOptionsPrefix((PetscObject)dm,&prefix));
+      PetscCall(PetscObjectSetOptionsPrefix((PetscObject)newdm,prefix));
+      PetscCall(DMIsForest(newdm,&isForest));
+      PetscCheck(isForest,PETSC_COMM_WORLD, PETSC_ERR_USER, "Converted to non Forest?");
+      PetscCall(DMDestroy(&dm));
       dm   = newdm;
     } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_USER, "Convert failed?");
   } else {
     PetscPartitioner part;
     /* Plex Distribute mesh over processes */
-    ierr = DMPlexGetPartitioner(dm,&part);CHKERRQ(ierr);
-    ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
-    ierr = DMPlexDistribute(dm, 0, NULL, &distdm);CHKERRQ(ierr);
+    PetscCall(DMPlexGetPartitioner(dm,&part));
+    PetscCall(PetscPartitionerSetFromOptions(part));
+    PetscCall(DMPlexDistribute(dm, 0, NULL, &distdm));
     if (distdm) {
       const char *prefix;
-      ierr = PetscObjectGetOptionsPrefix((PetscObject)dm,&prefix);CHKERRQ(ierr);
-      ierr = PetscObjectSetOptionsPrefix((PetscObject)distdm,prefix);CHKERRQ(ierr);
-      ierr = DMDestroy(&dm);CHKERRQ(ierr);
+      PetscCall(PetscObjectGetOptionsPrefix((PetscObject)dm,&prefix));
+      PetscCall(PetscObjectSetOptionsPrefix((PetscObject)distdm,prefix));
+      PetscCall(DMDestroy(&dm));
       dm   = distdm;
     }
   }
-  ierr = PetscLogStagePop();CHKERRQ(ierr);
+  PetscCall(PetscLogStagePop());
   basedm = dm; dm = NULL;
 
   for (iter=0 ; iter<max_conv_its ; iter++) {
-    ierr = PetscLogStagePush(stage[16]);CHKERRQ(ierr);
+    PetscCall(PetscLogStagePush(stage[16]));
     /* make new DM */
-    ierr = DMClone(basedm, &dm);CHKERRQ(ierr);
-    ierr = PetscObjectSetOptionsPrefix((PetscObject) dm, "ex56_");CHKERRQ(ierr);
-    ierr = PetscObjectSetName( (PetscObject)dm,"Mesh");CHKERRQ(ierr);
+    PetscCall(DMClone(basedm, &dm));
+    PetscCall(PetscObjectSetOptionsPrefix((PetscObject) dm, "ex56_"));
+    PetscCall(PetscObjectSetName( (PetscObject)dm,"Mesh"));
     if (max_conv_its > 1) {
       /* If max_conv_its == 1, then we are not doing a convergence study. */
-      ierr = PetscOptionsInsertString(NULL,options[iter]);CHKERRQ(ierr);
+      PetscCall(PetscOptionsInsertString(NULL,options[iter]));
     }
-    ierr = DMSetFromOptions(dm);CHKERRQ(ierr); /* refinement done here in Plex, p4est */
+    PetscCall(DMSetFromOptions(dm)); /* refinement done here in Plex, p4est */
     /* snes */
-    ierr = SNESCreate(comm, &snes);CHKERRQ(ierr);
-    ierr = SNESSetDM(snes, dm);CHKERRQ(ierr);
+    PetscCall(SNESCreate(comm, &snes));
+    PetscCall(SNESSetDM(snes, dm));
     /* fem */
     {
       const PetscInt Ncomp = dim;
@@ -394,132 +392,132 @@ int main(int argc,char **args)
       DMLabel        label;
       DM             cdm = dm;
 
-      ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm), dim, dim, PETSC_FALSE, NULL, PETSC_DECIDE, &fe);CHKERRQ(ierr); /* elasticity */
-      ierr = PetscObjectSetName((PetscObject) fe, "deformation");CHKERRQ(ierr);
+      PetscCall(PetscFECreateDefault(PetscObjectComm((PetscObject) dm), dim, dim, PETSC_FALSE, NULL, PETSC_DECIDE, &fe)); /* elasticity */
+      PetscCall(PetscObjectSetName((PetscObject) fe, "deformation"));
       /* FEM prob */
-      ierr = DMSetField(dm, 0, NULL, (PetscObject) fe);CHKERRQ(ierr);
-      ierr = DMCreateDS(dm);CHKERRQ(ierr);
-      ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+      PetscCall(DMSetField(dm, 0, NULL, (PetscObject) fe));
+      PetscCall(DMCreateDS(dm));
+      PetscCall(DMGetDS(dm, &prob));
       /* setup problem */
       if (run_type==1) {
-        ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_uu_3d);CHKERRQ(ierr);
-        ierr = PetscDSSetResidual(prob, 0, f0_u_x4, f1_u_3d);CHKERRQ(ierr);
+        PetscCall(PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_uu_3d));
+        PetscCall(PetscDSSetResidual(prob, 0, f0_u_x4, f1_u_3d));
       } else {
         PetscWeakForm wf;
         PetscInt      bd, i;
 
-        ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_uu_3d_alpha);CHKERRQ(ierr);
-        ierr = PetscDSSetResidual(prob, 0, f0_u, f1_u_3d_alpha);CHKERRQ(ierr);
+        PetscCall(PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_uu_3d_alpha));
+        PetscCall(PetscDSSetResidual(prob, 0, f0_u, f1_u_3d_alpha));
 
-        ierr = DMGetLabel(dm, "Faces", &label);CHKERRQ(ierr);
-        ierr = DMAddBoundary(dm, DM_BC_NATURAL, "traction", label, Npid, pid, 0, Ncomp, components, NULL, NULL, NULL, &bd);CHKERRQ(ierr);
-        ierr = PetscDSGetBoundary(prob, bd, &wf, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
-        for (i = 0; i < Npid; ++i) {ierr = PetscWeakFormSetIndexBdResidual(wf, label, pid[i], 0, 0, 0, f0_bd_u_3d, 0, f1_bd_u);CHKERRQ(ierr);}
+        PetscCall(DMGetLabel(dm, "Faces", &label));
+        PetscCall(DMAddBoundary(dm, DM_BC_NATURAL, "traction", label, Npid, pid, 0, Ncomp, components, NULL, NULL, NULL, &bd));
+        PetscCall(PetscDSGetBoundary(prob, bd, &wf, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
+        for (i = 0; i < Npid; ++i) PetscCall(PetscWeakFormSetIndexBdResidual(wf, label, pid[i], 0, 0, 0, f0_bd_u_3d, 0, f1_bd_u));
       }
       /* bcs */
       if (run_type==1) {
         PetscInt id = 1;
-        ierr = DMGetLabel(dm, "boundary", &label);CHKERRQ(ierr);
-        ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) zero, NULL, NULL, NULL);CHKERRQ(ierr);
+        PetscCall(DMGetLabel(dm, "boundary", &label));
+        PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) zero, NULL, NULL, NULL));
       } else {
-        ierr = DMGetLabel(dm, "Faces", &label);CHKERRQ(ierr);
-        ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "fixed", label, Nfid, fid, 0, Ncomp, components, (void (*)(void)) zero, NULL, NULL, NULL);CHKERRQ(ierr);
+        PetscCall(DMGetLabel(dm, "Faces", &label));
+        PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "fixed", label, Nfid, fid, 0, Ncomp, components, (void (*)(void)) zero, NULL, NULL, NULL));
       }
       while (cdm) {
-        ierr = DMCopyDisc(dm, cdm);CHKERRQ(ierr);
-        ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
+        PetscCall(DMCopyDisc(dm, cdm));
+        PetscCall(DMGetCoarseDM(cdm, &cdm));
       }
-      ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
+      PetscCall(PetscFEDestroy(&fe));
     }
     /* vecs & mat */
-    ierr = DMCreateGlobalVector(dm,&xx);CHKERRQ(ierr);
-    ierr = VecDuplicate(xx, &bb);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) bb, "b");CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) xx, "u");CHKERRQ(ierr);
-    ierr = DMCreateMatrix(dm, &Amat);CHKERRQ(ierr);
-    ierr = MatSetOption(Amat,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);        /* Some matrix kernels can take advantage of symmetry if we set this. */
-    ierr = MatSetOption(Amat,MAT_SYMMETRY_ETERNAL,PETSC_TRUE);CHKERRQ(ierr); /* Inform PETSc that Amat is always symmetric, so info set above isn't lost. */
-    ierr = MatSetBlockSize(Amat,3);CHKERRQ(ierr);
-    ierr = MatSetOption(Amat,MAT_SPD,PETSC_TRUE);CHKERRQ(ierr);
-    ierr = VecGetSize(bb,&N);CHKERRQ(ierr);
+    PetscCall(DMCreateGlobalVector(dm,&xx));
+    PetscCall(VecDuplicate(xx, &bb));
+    PetscCall(PetscObjectSetName((PetscObject) bb, "b"));
+    PetscCall(PetscObjectSetName((PetscObject) xx, "u"));
+    PetscCall(DMCreateMatrix(dm, &Amat));
+    PetscCall(MatSetOption(Amat,MAT_SYMMETRIC,PETSC_TRUE));        /* Some matrix kernels can take advantage of symmetry if we set this. */
+    PetscCall(MatSetOption(Amat,MAT_SYMMETRY_ETERNAL,PETSC_TRUE)); /* Inform PETSc that Amat is always symmetric, so info set above isn't lost. */
+    PetscCall(MatSetBlockSize(Amat,3));
+    PetscCall(MatSetOption(Amat,MAT_SPD,PETSC_TRUE));
+    PetscCall(VecGetSize(bb,&N));
     local_sizes[iter] = N;
-    ierr = PetscInfo(snes,"%D global equations, %D vertices\n",N,N/dim);CHKERRQ(ierr);
+    PetscCall(PetscInfo(snes,"%" PetscInt_FMT " global equations, %" PetscInt_FMT " vertices\n",N,N/dim));
     if ((use_nearnullspace || attach_nearnullspace) && N/dim > 1) {
       /* Set up the near null space (a.k.a. rigid body modes) that will be used by the multigrid preconditioner */
       DM           subdm;
       MatNullSpace nearNullSpace;
       PetscInt     fields = 0;
       PetscObject  deformation;
-      ierr = DMCreateSubDM(dm, 1, &fields, NULL, &subdm);CHKERRQ(ierr);
-      ierr = DMPlexCreateRigidBody(subdm, 0, &nearNullSpace);CHKERRQ(ierr);
-      ierr = DMGetField(dm, 0, NULL, &deformation);CHKERRQ(ierr);
-      ierr = PetscObjectCompose(deformation, "nearnullspace", (PetscObject) nearNullSpace);CHKERRQ(ierr);
-      ierr = DMDestroy(&subdm);CHKERRQ(ierr);
+      PetscCall(DMCreateSubDM(dm, 1, &fields, NULL, &subdm));
+      PetscCall(DMPlexCreateRigidBody(subdm, 0, &nearNullSpace));
+      PetscCall(DMGetField(dm, 0, NULL, &deformation));
+      PetscCall(PetscObjectCompose(deformation, "nearnullspace", (PetscObject) nearNullSpace));
+      PetscCall(DMDestroy(&subdm));
       if (attach_nearnullspace) {
-        ierr = MatSetNearNullSpace(Amat,nearNullSpace);CHKERRQ(ierr);
+        PetscCall(MatSetNearNullSpace(Amat,nearNullSpace));
       }
-      ierr = MatNullSpaceDestroy(&nearNullSpace);CHKERRQ(ierr); /* created by DM and destroyed by Mat */
+      PetscCall(MatNullSpaceDestroy(&nearNullSpace)); /* created by DM and destroyed by Mat */
     }
-    ierr = DMPlexSetSNESLocalFEM(dm,NULL,NULL,NULL);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes, Amat, Amat, NULL, NULL);CHKERRQ(ierr);
-    ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
-    ierr = DMSetUp(dm);CHKERRQ(ierr);
-    ierr = PetscLogStagePop();CHKERRQ(ierr);
-    ierr = PetscLogStagePush(stage[16]);CHKERRQ(ierr);
+    PetscCall(DMPlexSetSNESLocalFEM(dm,NULL,NULL,NULL));
+    PetscCall(SNESSetJacobian(snes, Amat, Amat, NULL, NULL));
+    PetscCall(SNESSetFromOptions(snes));
+    PetscCall(DMSetUp(dm));
+    PetscCall(PetscLogStagePop());
+    PetscCall(PetscLogStagePush(stage[16]));
     /* ksp */
-    ierr = SNESGetKSP(snes, &ksp);CHKERRQ(ierr);
-    ierr = KSPSetComputeSingularValues(ksp,PETSC_TRUE);CHKERRQ(ierr);
+    PetscCall(SNESGetKSP(snes, &ksp));
+    PetscCall(KSPSetComputeSingularValues(ksp,PETSC_TRUE));
     /* test BCs */
-    ierr = VecZeroEntries(xx);CHKERRQ(ierr);
+    PetscCall(VecZeroEntries(xx));
     if (test_nonzero_cols) {
       if (rank == 0) {
-        ierr = VecSetValue(xx,0,1.0,INSERT_VALUES);CHKERRQ(ierr);
+        PetscCall(VecSetValue(xx,0,1.0,INSERT_VALUES));
       }
-      ierr = VecAssemblyBegin(xx);CHKERRQ(ierr);
-      ierr = VecAssemblyEnd(xx);CHKERRQ(ierr);
+      PetscCall(VecAssemblyBegin(xx));
+      PetscCall(VecAssemblyEnd(xx));
     }
-    ierr = VecZeroEntries(bb);CHKERRQ(ierr);
-    ierr = VecGetSize(bb,&i);CHKERRQ(ierr);
+    PetscCall(VecZeroEntries(bb));
+    PetscCall(VecGetSize(bb,&i));
     local_sizes[iter] = i;
-    ierr = PetscInfo(snes,"%D equations in vector, %D vertices\n",i,i/dim);CHKERRQ(ierr);
-    ierr = PetscLogStagePop();CHKERRQ(ierr);
+    PetscCall(PetscInfo(snes,"%" PetscInt_FMT " equations in vector, %" PetscInt_FMT " vertices\n",i,i/dim));
+    PetscCall(PetscLogStagePop());
     /* solve */
-    ierr = PetscLogStagePush(stage[iter]);CHKERRQ(ierr);
-    ierr = SNESSolve(snes, bb, xx);CHKERRQ(ierr);
-    ierr = PetscLogStagePop();CHKERRQ(ierr);
-    ierr = VecNorm(xx,NORM_INFINITY,&mdisp[iter]);CHKERRQ(ierr);
-    ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
+    PetscCall(PetscLogStagePush(stage[iter]));
+    PetscCall(SNESSolve(snes, bb, xx));
+    PetscCall(PetscLogStagePop());
+    PetscCall(VecNorm(xx,NORM_INFINITY,&mdisp[iter]));
+    PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
     {
       PetscViewer       viewer = NULL;
       PetscViewerFormat fmt;
-      ierr = PetscOptionsGetViewer(comm,NULL,"ex56_","-vec_view",&viewer,&fmt,&flg);CHKERRQ(ierr);
+      PetscCall(PetscOptionsGetViewer(comm,NULL,"ex56_","-vec_view",&viewer,&fmt,&flg));
       if (flg) {
-        ierr = PetscViewerPushFormat(viewer,fmt);CHKERRQ(ierr);
-        ierr = VecView(xx,viewer);CHKERRQ(ierr);
-        ierr = VecView(bb,viewer);CHKERRQ(ierr);
-        ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+        PetscCall(PetscViewerPushFormat(viewer,fmt));
+        PetscCall(VecView(xx,viewer));
+        PetscCall(VecView(bb,viewer));
+        PetscCall(PetscViewerPopFormat(viewer));
       }
-      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+      PetscCall(PetscViewerDestroy(&viewer));
     }
     /* Free work space */
-    ierr = DMDestroy(&dm);CHKERRQ(ierr);
-    ierr = SNESDestroy(&snes);CHKERRQ(ierr);
-    ierr = VecDestroy(&xx);CHKERRQ(ierr);
-    ierr = VecDestroy(&bb);CHKERRQ(ierr);
-    ierr = MatDestroy(&Amat);CHKERRQ(ierr);
+    PetscCall(DMDestroy(&dm));
+    PetscCall(SNESDestroy(&snes));
+    PetscCall(VecDestroy(&xx));
+    PetscCall(VecDestroy(&bb));
+    PetscCall(MatDestroy(&Amat));
   }
-  ierr = DMDestroy(&basedm);CHKERRQ(ierr);
+  PetscCall(DMDestroy(&basedm));
   if (run_type==1) err[0] = 59.975208 - mdisp[0]; /* error with what I think is the exact solution */
   else             err[0] = 171.038 - mdisp[0];
   for (iter=1 ; iter<max_conv_its ; iter++) {
     if (run_type==1) err[iter] = 59.975208 - mdisp[iter];
     else             err[iter] = 171.038 - mdisp[iter];
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"[%d] %D) N=%12D, max displ=%9.7e, disp diff=%9.2e, error=%4.3e, rate=%3.2g\n",rank,iter,local_sizes[iter],(double)mdisp[iter],
-                       (double)(mdisp[iter]-mdisp[iter-1]),(double)err[iter],(double)(PetscLogReal(err[iter-1]/err[iter])/PetscLogReal(2.)));CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"[%d] %" PetscInt_FMT ") N=%12" PetscInt_FMT ", max displ=%9.7e, disp diff=%9.2e, error=%4.3e, rate=%3.2g\n",rank,iter,local_sizes[iter],(double)mdisp[iter],
+                          (double)(mdisp[iter]-mdisp[iter-1]),(double)err[iter],(double)(PetscLogReal(err[iter-1]/err[iter])/PetscLogReal(2.))));
   }
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST
@@ -528,7 +526,7 @@ int main(int argc,char **args)
     suffix: 0
     nsize: 4
     requires: !single
-    args: -cells 2,2,1 -max_conv_its 2 -petscspace_degree 2 -snes_max_it 2 -ksp_max_it 100 -ksp_type cg -ksp_rtol 1.e-10 -ksp_norm_type unpreconditioned -snes_rtol 1.e-10 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -pc_gamg_square_graph 1 -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 -ksp_converged_reason -snes_monitor_short -ksp_monitor_short -snes_converged_reason -use_mat_nearnullspace true -mg_levels_ksp_max_it 2 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.1 -mg_levels_pc_type jacobi -petscpartitioner_type simple -matptap_via scalable -ex56_dm_view
+    args: -cells 2,2,1 -max_conv_its 2 -petscspace_degree 3 -snes_max_it 1 -ksp_max_it 100 -ksp_type cg -ksp_rtol 1.e-10 -ksp_norm_type unpreconditioned -pc_type gamg -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -pc_gamg_square_graph 0 -pc_gamg_threshold 0.001 -ksp_converged_reason -snes_converged_reason -use_mat_nearnullspace true -mg_levels_ksp_max_it 2 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.2,0,1.1 -mg_levels_pc_type jacobi -petscpartitioner_type simple -ex56_dm_view -snes_lag_jacobian -2 -snes_type ksponly -use_gpu_aware_mpi true
     timeoutfactor: 2
 
   # HYPRE PtAP broken with complex numbers
@@ -554,7 +552,7 @@ int main(int argc,char **args)
     suffix: repart
     nsize: 4
     requires: parmetis !single
-    args: -cells 8,2,2 -max_conv_its 1 -petscspace_degree 2 -snes_max_it 4 -ksp_max_it 100 -ksp_type cg -ksp_rtol 1.e-2 -ksp_norm_type unpreconditioned -snes_rtol 1.e-3 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_square_graph 1 -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 -use_mat_nearnullspace true -mg_levels_ksp_max_it 2 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type jacobi -pc_gamg_mat_partitioning_type parmetis -pc_gamg_repartition true -snes_converged_reason -pc_gamg_process_eq_limit 20 -pc_gamg_coarse_eq_limit 10 -ksp_converged_reason -snes_converged_reason -pc_gamg_reuse_interpolation true
+    args: -cells 8,2,2 -max_conv_its 1 -petscspace_degree 2 -snes_max_it 4 -ksp_max_it 100 -ksp_type cg -ksp_rtol 1.e-2 -ksp_norm_type unpreconditioned -snes_rtol 1.e-3 -pc_type gamg -pc_gamg_esteig_ksp_max_it 10 -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_square_graph 1 -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 -use_mat_nearnullspace true -mg_levels_ksp_max_it 2 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type jacobi -pc_gamg_mat_partitioning_type parmetis -pc_gamg_repartition true -snes_converged_reason -pc_gamg_process_eq_limit 20 -pc_gamg_coarse_eq_limit 10 -ksp_converged_reason -snes_converged_reason -pc_gamg_reuse_interpolation true
 
   test:
     suffix: bddc
@@ -568,7 +566,7 @@ int main(int argc,char **args)
     args: -cells 2,2,1 -max_conv_its 2 -lx 1. -alpha .01 -petscspace_degree 2 -ksp_type cg -ksp_monitor_short -ksp_rtol 1.e-10 -ksp_converged_reason -petscpartitioner_type simple -ex56_dm_mat_type is -matis_localmat_type aij -pc_type bddc -attach_mat_nearnullspace {{0 1}separate output}
     test:
       suffix: bddc_approx_gamg
-      args: -pc_bddc_switch_static -prefix_push pc_bddc_dirichlet_ -approximate -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_reuse_interpolation true -pc_gamg_square_graph 1 -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 -mg_levels_ksp_max_it 1 -mg_levels_ksp_type chebyshev -prefix_pop -prefix_push pc_bddc_neumann_ -approximate -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -pc_gamg_square_graph 1 -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 -mg_levels_ksp_max_it 1 -mg_levels_ksp_type chebyshev -prefix_pop
+      args: -pc_bddc_switch_static -prefix_push pc_bddc_dirichlet_ -approximate -pc_type gamg -pc_gamg_esteig_ksp_max_it 10 -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_reuse_interpolation true -pc_gamg_square_graph 1 -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 -mg_levels_ksp_max_it 1 -mg_levels_ksp_type chebyshev -prefix_pop -prefix_push pc_bddc_neumann_ -approximate -pc_type gamg -pc_gamg_esteig_ksp_max_it 10 -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -pc_gamg_square_graph 1 -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 -mg_levels_ksp_max_it 1 -mg_levels_ksp_type chebyshev -prefix_pop
     # HYPRE PtAP broken with complex numbers
     test:
       requires: hypre !complex !defined(PETSC_HAVE_HYPRE_DEVICE)
@@ -597,10 +595,17 @@ int main(int argc,char **args)
     requires: !single
     args: -cells 2,2,1 -max_conv_its 2 -lx 1. -alpha .01 -petscspace_degree 2 -ksp_type fetidp -fetidp_ksp_type cg -ksp_monitor_short -ksp_rtol 1.e-8 -ksp_converged_reason -petscpartitioner_type simple -ex56_dm_mat_type is -matis_localmat_type sbaij -fetidp_bddc_pc_bddc_monolithic -attach_mat_nearnullspace
 
+  test:
+    suffix: gdsw
+    nsize: 4
+    requires: !single
+    args: -cells 2,2,1 -max_conv_its 2 -lx 1. -alpha .01 -petscspace_degree 2 -ksp_type cg -ksp_monitor_short -ksp_rtol 1.e-8 -ksp_converged_reason -petscpartitioner_type simple -ex56_dm_mat_type is -attach_mat_nearnullspace \
+          -pc_type mg -pc_mg_galerkin -pc_mg_adapt_interp_coarse_space gdsw -pc_mg_levels 2 -mg_levels_pc_type bjacobi -mg_levels_sub_pc_type icc
+
   testset:
     nsize: 4
     requires: !single
-    args: -cells 2,2,1 -max_conv_its 2 -petscspace_degree 2 -snes_max_it 2 -ksp_max_it 100 -ksp_type cg -ksp_rtol 1.e-10 -ksp_norm_type unpreconditioned -snes_rtol 1.e-10 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -pc_gamg_square_graph 1 -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 -use_mat_nearnullspace true -mg_levels_ksp_max_it 2 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type jacobi -ksp_monitor_short -ksp_converged_reason -snes_converged_reason -snes_monitor_short -ex56_dm_view -petscpartitioner_type simple -pc_gamg_process_eq_limit 20
+    args: -cells 2,2,1 -max_conv_its 2 -petscspace_degree 2 -snes_max_it 2 -ksp_max_it 100 -ksp_type cg -ksp_rtol 1.e-10 -ksp_norm_type unpreconditioned -snes_rtol 1.e-10 -pc_type gamg -pc_gamg_esteig_ksp_max_it 10 -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -pc_gamg_square_graph 1 -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 -use_mat_nearnullspace true -mg_levels_ksp_max_it 2 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type jacobi -ksp_monitor_short -ksp_converged_reason -snes_converged_reason -snes_monitor_short -ex56_dm_view -petscpartitioner_type simple -pc_gamg_process_eq_limit 20
     output_file: output/ex56_cuda.out
 
     test:

@@ -7,36 +7,34 @@
 PetscErrorCode MatDestroy_SeqAIJ_MatMatMatMult(void* data)
 {
   Mat_MatMatMatMult *matmatmatmult = (Mat_MatMatMatMult*)data;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = MatDestroy(&matmatmatmult->BC);CHKERRQ(ierr);
-  ierr = PetscFree(matmatmatmult);CHKERRQ(ierr);
+  PetscCall(MatDestroy(&matmatmatmult->BC));
+  PetscCall(PetscFree(matmatmatmult));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatMatMatMultSymbolic_SeqAIJ_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C,PetscReal fill,Mat D)
 {
-  PetscErrorCode    ierr;
   Mat               BC;
   Mat_MatMatMatMult *matmatmatmult;
   char              *alg;
 
   PetscFunctionBegin;
   MatCheckProduct(D,5);
-  PetscCheckFalse(D->product->data,PetscObjectComm((PetscObject)D),PETSC_ERR_PLIB,"Product data not empty");
-  ierr = MatCreate(PETSC_COMM_SELF,&BC);CHKERRQ(ierr);
-  ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(B,C,fill,BC);CHKERRQ(ierr);
+  PetscCheck(!D->product->data,PetscObjectComm((PetscObject)D),PETSC_ERR_PLIB,"Product data not empty");
+  PetscCall(MatCreate(PETSC_COMM_SELF,&BC));
+  PetscCall(MatMatMultSymbolic_SeqAIJ_SeqAIJ(B,C,fill,BC));
 
-  ierr = PetscStrallocpy(D->product->alg,&alg);CHKERRQ(ierr);
-  ierr = MatProductSetAlgorithm(D,"sorted");CHKERRQ(ierr); /* set alg for D = A*BC */
-  ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(A,BC,fill,D);CHKERRQ(ierr);
-  ierr = MatProductSetAlgorithm(D,alg);CHKERRQ(ierr); /* resume original algorithm */
-  ierr = PetscFree(alg);CHKERRQ(ierr);
+  PetscCall(PetscStrallocpy(D->product->alg,&alg));
+  PetscCall(MatProductSetAlgorithm(D,"sorted")); /* set alg for D = A*BC */
+  PetscCall(MatMatMultSymbolic_SeqAIJ_SeqAIJ(A,BC,fill,D));
+  PetscCall(MatProductSetAlgorithm(D,alg)); /* resume original algorithm */
+  PetscCall(PetscFree(alg));
 
   /* create struct Mat_MatMatMatMult and attached it to D */
-  PetscCheckFalse(D->product->data,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Not yet coded");
-  ierr = PetscNew(&matmatmatmult);CHKERRQ(ierr);
+  PetscCheck(!D->product->data,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Not yet coded");
+  PetscCall(PetscNew(&matmatmatmult));
   matmatmatmult->BC   = BC;
   D->product->data    = matmatmatmult;
   D->product->destroy = MatDestroy_SeqAIJ_MatMatMatMult;
@@ -47,19 +45,18 @@ PetscErrorCode MatMatMatMultSymbolic_SeqAIJ_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C,Pets
 
 PetscErrorCode MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C,Mat D)
 {
-  PetscErrorCode    ierr;
   Mat_MatMatMatMult *matmatmatmult;
   Mat               BC;
 
   PetscFunctionBegin;
   MatCheckProduct(D,4);
-  PetscCheckFalse(!D->product->data,PetscObjectComm((PetscObject)D),PETSC_ERR_PLIB,"Product data empty");
+  PetscCheck(D->product->data,PetscObjectComm((PetscObject)D),PETSC_ERR_PLIB,"Product data empty");
   matmatmatmult = (Mat_MatMatMatMult*)D->product->data;
   BC = matmatmatmult->BC;
-  PetscCheckFalse(!BC,PetscObjectComm((PetscObject)D),PETSC_ERR_PLIB,"Missing BC mat");
-  PetscCheckFalse(!BC->ops->matmultnumeric,PetscObjectComm((PetscObject)BC),PETSC_ERR_PLIB,"Missing numeric operation");
-  ierr = (*BC->ops->matmultnumeric)(B,C,BC);CHKERRQ(ierr);
-  PetscCheckFalse(!D->ops->matmultnumeric,PetscObjectComm((PetscObject)D),PETSC_ERR_PLIB,"Missing numeric operation");
-  ierr = (*D->ops->matmultnumeric)(A,BC,D);CHKERRQ(ierr);
+  PetscCheck(BC,PetscObjectComm((PetscObject)D),PETSC_ERR_PLIB,"Missing BC mat");
+  PetscCheck(BC->ops->matmultnumeric,PetscObjectComm((PetscObject)BC),PETSC_ERR_PLIB,"Missing numeric operation");
+  PetscCall((*BC->ops->matmultnumeric)(B,C,BC));
+  PetscCheck(D->ops->matmultnumeric,PetscObjectComm((PetscObject)D),PETSC_ERR_PLIB,"Missing numeric operation");
+  PetscCall((*D->ops->matmultnumeric)(A,BC,D));
   PetscFunctionReturn(0);
 }

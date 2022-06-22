@@ -11,7 +11,7 @@ SNES Object: 4 MPI processes
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
   total number of linear solver iterations=4
   total number of function evaluations=5
-  KSP Object: 4 MPI processes  
+  KSP Object: 4 MPI processes
     type: gmres
       restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with one step of iterative refinement
       happy breakdown tolerance 1e-30
@@ -19,18 +19,18 @@ SNES Object: 4 MPI processes
     tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
     left preconditioning
     using PRECONDITIONED norm type for convergence test
-  PC Object: 4 MPI processes  
+  PC Object: 4 MPI processes
     type: bjacobi
       number of blocks = 4
       Local solver information for first block is in the following KSP and PC objects on rank 0:
       Use -ksp_view ::ascii_info_detail to display information for all blocks
-    KSP Object: (sub_) 1 MPI processes    
+    KSP Object: (sub_) 1 MPI process
       type: preonly
       maximum iterations=10000, initial guess is zero
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using PRECONDITIONED norm type for convergence test
-    PC Object: (sub_) 1 MPI processes    
+    PC Object: (sub_) 1 MPI process
       type: ilu
         out-of-place factorization
         0 levels of fill
@@ -39,26 +39,26 @@ SNES Object: 4 MPI processes
         matrix ordering: natural
         factor fill ratio given 1., needed 1.
           Factored matrix follows:
-            Mat Object: 1 MPI processes            
+            Mat Object: (sub_) 1 MPI process
               type: seqaij
               rows=4, cols=4
               package used to perform factorization: petsc
               total: nonzeros=12, allocated nonzeros=12
                 not using I-node routines
       linear system matrix = precond matrix:
-      Mat Object: (sub_) 1 MPI processes      
+      Mat Object: (sub_) 1 MPI process
         type: seqaij
         rows=4, cols=4
         total: nonzeros=12, allocated nonzeros=12
         total number of mallocs used during MatSetValues calls=0
           not using I-node routines
     linear system matrix = precond matrix:
-    Mat Object: 4 MPI processes    
+    Mat Object: 4 MPI processes
       type: mpiaij
       rows=16, cols=16
       total: nonzeros=64, allocated nonzeros=64
       total number of mallocs used during MatSetValues calls=0
-        Mat Object: 4 MPI processes        
+        Mat Object: 4 MPI processes
           type: mpiaij
           rows=16, cols=16
           total: nonzeros=64, allocated nonzeros=64

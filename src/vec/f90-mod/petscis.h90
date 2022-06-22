@@ -142,3 +142,12 @@
        PetscErrorCode z
        end subroutine
       end Interface
+
+      Interface
+        subroutine ISDestroy(a,z)
+          import tIS
+          IS a
+          PetscErrorCode z
+        end subroutine
+      end Interface
+

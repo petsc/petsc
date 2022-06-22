@@ -3,14 +3,17 @@
 */
 #if !defined(PETSCDMPATCH_H)
 #define PETSCDMPATCH_H
+
 #include <petscdm.h>
+
+/* SUBMANSEC = DMPatch */
 
 /*S
   DMPATCH - DM object that encapsulates a domain divided into many patches
 
   Level: intermediate
 
-.seealso:  DM, DMPatchCreate()
+.seealso: `DM`, `DMPatchCreate()`
 S*/
 PETSC_EXTERN PetscErrorCode DMPatchCreate(MPI_Comm, DM*);
 

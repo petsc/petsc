@@ -1,4 +1,4 @@
-DM Object: 1 MPI processes
+DM Object: 1 MPI process
   type: plex
 Mesh in 2 dimensions:
   Number of 0-cells per rank: 14
@@ -14,7 +14,7 @@ Labels:
   1  time   0.9934  |x| (       1,    4.265)  
   2  time    1.987  |x| (       1,    1.646)  
   3  time     2.98  |x| (       1,     1.62)  
-TS Object: 1 MPI processes
+TS Object: 1 MPI process
   type: beuler
   maximum steps=1000
   maximum time=2
@@ -22,21 +22,21 @@ TS Object: 1 MPI processes
   total number of nonlinear solve failures=0
   total number of linear solver iterations=12
   total number of rejected steps=0
-  SNES Object: 1 MPI processes
+  SNES Object: 1 MPI process
     type: newtonls
     maximum iterations=50, maximum function evaluations=10000
     tolerances: relative=1e-07, absolute=1e-50, solution=1e-08
     total number of linear solver iterations=4
     total number of function evaluations=5
     norm schedule ALWAYS
-    SNESLineSearch Object: 1 MPI processes
+    SNESLineSearch Object: 1 MPI process
       type: bt
         interpolation: cubic
         alpha=1.000000e-04
       maxstep=1.000000e+08, minlambda=1.000000e-12
       tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
       maximum iterations=40
-    KSP Object: 1 MPI processes
+    KSP Object: 1 MPI process
       type: gmres
         restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
         happy breakdown tolerance 1e-30
@@ -44,10 +44,10 @@ TS Object: 1 MPI processes
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
       left preconditioning
       using PRECONDITIONED norm type for convergence test
-    PC Object: 1 MPI processes
+    PC Object: 1 MPI process
       type: svd
       linear system matrix = precond matrix:
-      Mat Object: 1 MPI processes
+      Mat Object: 1 MPI process
         type: seqaij
         rows=89, cols=89
         total: nonzeros=2247, allocated nonzeros=2247

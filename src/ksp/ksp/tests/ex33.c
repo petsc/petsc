@@ -10,7 +10,6 @@ static char help[] = "Test MatGetInertia().\n\n";
 int main(int argc,char **args)
 {
   Mat            A,B,F;
-  PetscErrorCode ierr;
   KSP            ksp;
   PC             pc;
   PetscInt       N, n=10, m, Istart, Iend, II, J, i,j;
@@ -21,103 +20,103 @@ int main(int argc,char **args)
   PetscViewer    viewer;
   PetscMPIInt    rank;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Compute the matrices that define the eigensystem, Ax=kBx
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscOptionsGetString(NULL,NULL,"-fA",file[0],sizeof(file[0]),&loadA);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-fA",file[0],sizeof(file[0]),&loadA));
   if (loadA) {
-    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[0],FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-    ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-    ierr = MatLoad(A,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[0],FILE_MODE_READ,&viewer));
+    PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+    PetscCall(MatLoad(A,viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
 
-    ierr = PetscOptionsGetString(NULL,NULL,"-fB",file[1],sizeof(file[1]),&loadB);CHKERRQ(ierr);
+    PetscCall(PetscOptionsGetString(NULL,NULL,"-fB",file[1],sizeof(file[1]),&loadB));
     if (loadB) {
       /* load B to get A = A + sigma*B */
-      ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[1],FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-      ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
-      ierr = MatLoad(B,viewer);CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+      PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[1],FILE_MODE_READ,&viewer));
+      PetscCall(MatCreate(PETSC_COMM_WORLD,&B));
+      PetscCall(MatLoad(B,viewer));
+      PetscCall(PetscViewerDestroy(&viewer));
     }
   }
 
   if (!loadA) { /* Matrix A is copied from slepc-3.0.0-p6/src/examples/ex13.c. */
-    ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,&flag);CHKERRQ(ierr);
+    PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+    PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,&flag));
     if (!flag) m=n;
     N    = n*m;
-    ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-    ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
-    ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-    ierr = MatSetUp(A);CHKERRQ(ierr);
+    PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+    PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,N,N));
+    PetscCall(MatSetFromOptions(A));
+    PetscCall(MatSetUp(A));
 
-    ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
+    PetscCall(MatGetOwnershipRange(A,&Istart,&Iend));
     for (II=Istart; II<Iend; II++) {
       v = -1.0; i = II/n; j = II-i*n;
-      if (i>0) { J=II-n; ierr = MatSetValues(A,1,&II,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr); }
-      if (i<m-1) { J=II+n; ierr = MatSetValues(A,1,&II,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr); }
-      if (j>0) { J=II-1; ierr = MatSetValues(A,1,&II,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr); }
-      if (j<n-1) { J=II+1; ierr = MatSetValues(A,1,&II,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr); }
-      v=4.0; ierr = MatSetValues(A,1,&II,1,&II,&v,INSERT_VALUES);CHKERRQ(ierr);
+      if (i>0) { J=II-n; PetscCall(MatSetValues(A,1,&II,1,&J,&v,INSERT_VALUES)); }
+      if (i<m-1) { J=II+n; PetscCall(MatSetValues(A,1,&II,1,&J,&v,INSERT_VALUES)); }
+      if (j>0) { J=II-1; PetscCall(MatSetValues(A,1,&II,1,&J,&v,INSERT_VALUES)); }
+      if (j<n-1) { J=II+1; PetscCall(MatSetValues(A,1,&II,1,&J,&v,INSERT_VALUES)); }
+      v=4.0; PetscCall(MatSetValues(A,1,&II,1,&II,&v,INSERT_VALUES));
 
     }
-    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
   }
-  /* ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
+  /* PetscCall(MatView(A,PETSC_VIEWER_STDOUT_WORLD)); */
 
   if (!loadB) {
-    ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
-    ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
-    ierr = MatSetSizes(B,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = MatSetFromOptions(B);CHKERRQ(ierr);
-    ierr = MatSetUp(B);CHKERRQ(ierr);
-    ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
+    PetscCall(MatGetLocalSize(A,&m,&n));
+    PetscCall(MatCreate(PETSC_COMM_WORLD,&B));
+    PetscCall(MatSetSizes(B,m,n,PETSC_DECIDE,PETSC_DECIDE));
+    PetscCall(MatSetFromOptions(B));
+    PetscCall(MatSetUp(B));
+    PetscCall(MatGetOwnershipRange(A,&Istart,&Iend));
 
     for (II=Istart; II<Iend; II++) {
-      v=1.0; ierr = MatSetValues(B,1,&II,1,&II,&v,INSERT_VALUES);CHKERRQ(ierr);
+      v=1.0; PetscCall(MatSetValues(B,1,&II,1,&II,&v,INSERT_VALUES));
     }
-    ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
   }
-  /* ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
+  /* PetscCall(MatView(B,PETSC_VIEWER_STDOUT_WORLD)); */
 
   /* Set a shift: A = A - sigma*B */
-  ierr = PetscOptionsGetScalar(NULL,NULL,"-sigma",&sigma,&flag);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetScalar(NULL,NULL,"-sigma",&sigma,&flag));
   if (flag) {
     sigma = -1.0 * sigma;
-    ierr  = MatAXPY(A,sigma,B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); /* A <- A - sigma*B */
-    /* ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
+    PetscCall(MatAXPY(A,sigma,B,DIFFERENT_NONZERO_PATTERN)); /* A <- A - sigma*B */
+    /* PetscCall(MatView(A,PETSC_VIEWER_STDOUT_WORLD)); */
   }
 
   /* Test MatGetInertia() */
   /* if A is symmetric, set its flag -- required by MatGetInertia() */
-  ierr = MatIsSymmetric(A,0.0,&flag);CHKERRQ(ierr);
+  PetscCall(MatIsSymmetric(A,0.0,&flag));
 
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPSetType(ksp,KSPPREONLY));
+  PetscCall(KSPSetOperators(ksp,A,A));
 
-  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = PCSetType(pc,PCCHOLESKY);CHKERRQ(ierr);
-  ierr = PCSetFromOptions(pc);CHKERRQ(ierr);
+  PetscCall(KSPGetPC(ksp,&pc));
+  PetscCall(PCSetType(pc,PCCHOLESKY));
+  PetscCall(PCSetFromOptions(pc));
 
-  ierr = PCSetUp(pc);CHKERRQ(ierr);
-  ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
-  ierr = MatGetInertia(F,&nneg,&nzero,&npos);CHKERRQ(ierr);
+  PetscCall(PCSetUp(pc));
+  PetscCall(PCFactorGetMatrix(pc,&F));
+  PetscCall(MatGetInertia(F,&nneg,&nzero,&npos));
 
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   if (rank == 0) {
-    ierr = PetscPrintf(PETSC_COMM_SELF," MatInertia: nneg: %D, nzero: %D, npos: %D\n",nneg,nzero,npos);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_SELF," MatInertia: nneg: %" PetscInt_FMT ", nzero: %" PetscInt_FMT ", npos: %" PetscInt_FMT "\n",nneg,nzero,npos));
   }
 
   /* Destroy */
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(MatDestroy(&A));
+  PetscCall(MatDestroy(&B));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

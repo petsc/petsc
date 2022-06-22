@@ -169,11 +169,22 @@
 !
 #define SETERRQ(c,ierr,s)  call PetscError(c,ierr,0,s); return
 #define SETERRA(c,ierr,s)  call PetscError(c,ierr,0,s); call MPIU_Abort(c,ierr)
-#define SETERRABORT(c,ierr,s)  call PetscError(c,ierr,0,s); call MPI_Abort(c,ierr)
+#if defined(PETSC_HAVE_FORTRAN_FREE_LINE_LENGTH_NONE)
+#define CHKERRQ(ierr) if (ierr .ne. 0) then;call PetscErrorF(ierr,__LINE__,__FILE__);return;endif
+#define CHKERRA(ierr) if (ierr .ne. 0) then;call PetscErrorF(ierr,__LINE__,__FILE__);call MPIU_Abort(PETSC_COMM_SELF,ierr);endif
+#define CHKERRMPI(ierr) if (ierr .ne. 0) then;call PetscErrorMPI(ierr,__LINE__,__FILE__);return;endif
+#define CHKERRMPIA(ierr) if (ierr .ne. 0) then;call PetscErrorMPI(ierr,__LINE__,__FILE__);call MPIU_Abort(PETSC_COMM_SELF,ierr);endif
+#else
 #define CHKERRQ(ierr) if (ierr .ne. 0) then;call PetscErrorF(ierr);return;endif
 #define CHKERRA(ierr) if (ierr .ne. 0) then;call PetscErrorF(ierr);call MPIU_Abort(PETSC_COMM_SELF,ierr);endif
-#define CHKERRABORT(c,ierr) if (ierr .ne. 0) then;call PetscErrorF(ierr);call MPI_Abort(c,ierr);endif
+#define CHKERRMPI(ierr) if (ierr .ne. 0) then;call PetscErrorMPI(ierr);return;endif
+#define CHKERRMPIA(ierr) if (ierr .ne. 0) then;call PetscErrorMPI(ierr);call MPIU_Abort(PETSC_COMM_SELF,ierr);endif
+#endif
 #define CHKMEMQ call chkmemfortran(__LINE__,__FILE__,ierr)
+#define PetscCall(func) call func; CHKERRQ(ierr)
+#define PetscCallMPI(func) call func; CHKERRMPI(ierr)
+#define PetscCallA(func) call func; CHKERRA(ierr)
+#define PetscCallMPIA(func) call func; CHKERRMPIA(ierr)
 
 #define PetscMatlabEngine PetscFortranAddr
 

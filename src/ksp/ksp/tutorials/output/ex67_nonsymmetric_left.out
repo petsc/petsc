@@ -5,7 +5,7 @@
   4 KSP preconditioned resid norm 1.496355718273e-04 true resid norm 2.992708421213e-02 ||r(i)||/||b|| 1.221768096817e-02
   5 KSP preconditioned resid norm 3.138304686706e-17 true resid norm 5.750698067284e-15 ||r(i)||/||b|| 2.347712654942e-15
 Linear solve converged due to CONVERGED_RTOL iterations 5
-KSP Object: 1 MPI processes
+KSP Object: 1 MPI process
   type: gmres
     restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
     happy breakdown tolerance 1e-30
@@ -13,11 +13,11 @@ KSP Object: 1 MPI processes
   tolerances:  relative=1e-14, absolute=1e-50, divergence=10000.
   left preconditioning
   using PRECONDITIONED norm type for convergence test
-PC Object: 1 MPI processes
+PC Object: 1 MPI process
   type: jacobi
     type DIAGONAL
   linear system matrix = precond matrix:
-  Mat Object: 1 MPI processes
+  Mat Object: 1 MPI process
     type: seqaij
     rows=10, cols=10
     total: nonzeros=55, allocated nonzeros=65
@@ -31,7 +31,7 @@ PC Object: 1 MPI processes
   3 KSP preconditioned resid norm 6.187026894135e-04 true resid norm 1.237405378827e-01 ||r(i)||/||b|| 5.533845085562e-02
   4 KSP preconditioned resid norm 1.016487153337e-18 true resid norm 8.308148362110e-16 ||r(i)||/||b|| 3.715516900966e-16
 Linear solve converged due to CONVERGED_RTOL iterations 4
-KSP Object: 1 MPI processes
+KSP Object: 1 MPI process
   type: gmres
     restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
     happy breakdown tolerance 1e-30
@@ -39,11 +39,11 @@ KSP Object: 1 MPI processes
   tolerances:  relative=1e-14, absolute=1e-50, divergence=10000.
   left preconditioning
   using PRECONDITIONED norm type for convergence test
-PC Object: 1 MPI processes
+PC Object: 1 MPI process
   type: jacobi
     type DIAGONAL
   linear system matrix = precond matrix:
-  Mat Object: 1 MPI processes
+  Mat Object: 1 MPI process
     type: seqaij
     rows=10, cols=10
     total: nonzeros=55, allocated nonzeros=65

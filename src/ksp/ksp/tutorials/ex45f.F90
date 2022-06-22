@@ -14,27 +14,22 @@
        one = 1
        three = 3
 
-       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-       if (ierr .ne. 0) then
-         print*,'Unable to initialize PETSc'
-         stop
-       endif
-       call KSPCreate(PETSC_COMM_WORLD,ksp,ierr)
-       call DMDACreate2D(PETSC_COMM_WORLD, DM_BOUNDARY_NONE,DM_BOUNDARY_NONE, DMDA_STENCIL_STAR,three,three,              &
-     &                   PETSC_DECIDE,PETSC_DECIDE,one,one, PETSC_NULL_INTEGER,PETSC_NULL_INTEGER, dm, ierr)
-       call DMSetFromOptions(dm,ierr)
-       call DMSetUp(dm,ierr)
-       call KSPSetDM(ksp,dm,ierr)
-       call KSPSetComputeInitialGuess(ksp,ComputeInitialGuess,0,ierr)
-       call KSPSetComputeRHS(ksp,ComputeRHS,0,ierr)
-       call KSPSetComputeOperators(ksp,ComputeMatrix,0,ierr)
-       call DMDAGetCorners(dm,is,js,PETSC_NULL_INTEGER,iw,jw,PETSC_NULL_INTEGER,ierr)
-       call KSPSetFromOptions(ksp,ierr)
-       call KSPSetUp(ksp,ierr)
-       call KSPSolve(ksp,PETSC_NULL_VEC,PETSC_NULL_VEC,ierr)
-       call KSPDestroy(ksp,ierr)
-       call DMDestroy(dm,ierr)
-       call PetscFinalize(ierr)
+       PetscCallA(PetscInitialize(ierr))
+       PetscCallA(KSPCreate(PETSC_COMM_WORLD,ksp,ierr))
+       PetscCallA(DMDACreate2D(PETSC_COMM_WORLD, DM_BOUNDARY_NONE,DM_BOUNDARY_NONE, DMDA_STENCIL_STAR,three,three,PETSC_DECIDE,PETSC_DECIDE,one,one, PETSC_NULL_INTEGER,PETSC_NULL_INTEGER, dm, ierr))
+       PetscCallA(DMSetFromOptions(dm,ierr))
+       PetscCallA(DMSetUp(dm,ierr))
+       PetscCallA(KSPSetDM(ksp,dm,ierr))
+       PetscCallA(KSPSetComputeInitialGuess(ksp,ComputeInitialGuess,0,ierr))
+       PetscCallA(KSPSetComputeRHS(ksp,ComputeRHS,0,ierr))
+       PetscCallA(KSPSetComputeOperators(ksp,ComputeMatrix,0,ierr))
+       PetscCallA(DMDAGetCorners(dm,is,js,PETSC_NULL_INTEGER,iw,jw,PETSC_NULL_INTEGER,ierr))
+       PetscCallA(KSPSetFromOptions(ksp,ierr))
+       PetscCallA(KSPSetUp(ksp,ierr))
+       PetscCallA(KSPSolve(ksp,PETSC_NULL_VEC,PETSC_NULL_VEC,ierr))
+       PetscCallA(KSPDestroy(ksp,ierr))
+       PetscCallA(DMDestroy(dm,ierr))
+       PetscCallA(PetscFinalize(ierr))
        end
 
        subroutine ComputeInitialGuess(ksp,b,ctx,ierr)
@@ -47,7 +42,7 @@
        PetscScalar  h
 
        h=0.0
-       call VecSet(b,h,ierr)
+       PetscCall(VecSet(b,h,ierr))
        end subroutine
 
        subroutine ComputeRHS(ksp,b,dummy,ierr)
@@ -62,15 +57,13 @@
        PetscInt  mx,my
        DM dm
 
-       call KSPGetDM(ksp,dm,ierr)
-       call DMDAGetInfo(dm,PETSC_NULL_INTEGER,mx,my,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
-     &                     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
-     &                     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
+       PetscCall(KSPGetDM(ksp,dm,ierr))
+       PetscCall(DMDAGetInfo(dm,PETSC_NULL_INTEGER,mx,my,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr))
 
        Hx = 1.0 / real(mx-1)
        Hy = 1.0 / real(my-1)
        h = Hx*Hy
-       call VecSet(b,h,ierr)
+       PetscCall(VecSet(b,h,ierr))
        end subroutine
 
       subroutine ComputeMatrix(ksp,A,B,dummy,ierr)
@@ -90,23 +83,21 @@
 
       i1 = 1
       i5 = 5
-      call KSPGetDM(ksp,dm,ierr)
-      call DMDAGetInfo(dm,PETSC_NULL_INTEGER,mx,my,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
-     &                 PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
-     &                 PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
+      PetscCall(KSPGetDM(ksp,dm,ierr))
+      PetscCall(DMDAGetInfo(dm,PETSC_NULL_INTEGER,mx,my,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr))
 
       Hx = 1.0 / real(mx-1)
       Hy = 1.0 / real(my-1)
       HxdHy = Hx/Hy
       HydHx = Hy/Hx
-      call DMDAGetCorners(dm,xs,ys,PETSC_NULL_INTEGER,xm,ym,PETSC_NULL_INTEGER,ierr)
+      PetscCall(DMDAGetCorners(dm,xs,ys,PETSC_NULL_INTEGER,xm,ym,PETSC_NULL_INTEGER,ierr))
       do 10,j=ys,ys+ym-1
         do 20,i=xs,xs+xm-1
           row(MatStencil_i) = i
           row(MatStencil_j) = j
           if (i.eq.0 .or. j.eq.0 .or. i.eq.mx-1 .or. j.eq.my-1) then
             v(1) = 2.0*(HxdHy + HydHx)
-            call MatSetValuesStencil(B,i1,row,i1,row,v,INSERT_VALUES,ierr)
+            PetscCall(MatSetValuesStencil(B,i1,row,i1,row,v,INSERT_VALUES,ierr))
           else
             v(1) = -HxdHy
             col(MatStencil_i,1) = i
@@ -123,15 +114,15 @@
             v(5) = -HxdHy
             col(MatStencil_i,5) = i
             col(MatStencil_j,5) = j+1
-            call MatSetValuesStencil(B,i1,row,i5,col,v,INSERT_VALUES,ierr)
+            PetscCall(MatSetValuesStencil(B,i1,row,i5,col,v,INSERT_VALUES,ierr))
             endif
  20      continue
  10   continue
-       call MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY,ierr)
-       call MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY,ierr)
+       PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY,ierr))
+       PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY,ierr))
        if (A .ne. B) then
-         call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
-         call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
+         PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr))
+         PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr))
        endif
        end subroutine
 

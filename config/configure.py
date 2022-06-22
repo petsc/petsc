@@ -1,10 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 from __future__ import print_function
 import os, sys
 
-extraLogs     = []
-petsc_arch    = ''
-banner_length = 93
+extraLogs  = []
+petsc_arch = ''
 
 # Use en_US as language so that BuildSystem parses compiler messages in english
 def fixLang(lang):
@@ -92,10 +91,6 @@ def chkenable():
   #Would it mean --with-fc=
   en_dash = u'\N{EN DASH}'
   no_break_space = u'\N{NO-BREAK SPACE}'
-  if sys.version_info < (3, 0):
-    en_dash = en_dash.encode('utf-8')
-    no_break_space = no_break_space.encode('utf-8')
-
   for l in range(0,len(sys.argv)):
     name = sys.argv[l]
     if name.find(no_break_space) >= 0:
@@ -392,10 +387,6 @@ def petsc_configure(configure_options):
       petscnagupgrade.currentversion(petscdir)
   except:
     pass
-  banner_line = banner_length*'='
-  print(banner_line)
-  print('Configuring PETSc to compile on your system'.center(banner_length))
-  print(banner_line)
 
   try:
     # Command line arguments take precedence (but don't destroy argv[0])
@@ -465,6 +456,7 @@ def petsc_configure(configure_options):
   try:
     framework = config.framework.Framework(['--configModules=PETSc.Configure','--optionsModule=config.compilerOptions']+sys.argv[1:], loadArgDB = 0)
     framework.setup()
+    framework.logPrintBox('Configuring PETSc to compile on your system')
     framework.logPrint('\n'.join(extraLogs))
     framework.configure(out = sys.stdout)
     framework.storeSubstitutions(framework.argDB)

@@ -1,4 +1,4 @@
-IS Object: 1 MPI processes
+IS Object: 1 MPI process
   type: general
 Index set is permutation
 Number of indices in set 25
@@ -27,7 +27,7 @@ Number of indices in set 25
 22 12
 23 8
 24 4
-IS Object: 1 MPI processes
+IS Object: 1 MPI process
   type: general
 Index set is permutation
 Number of indices in set 25
@@ -56,7 +56,7 @@ Number of indices in set 25
 22 12
 23 8
 24 4
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqaij
 row 0: (0, 4.)  (1, -1.)  (5, -1.) 
 row 1: (0, -1.)  (1, 4.)  (2, -1.)  (6, -1.) 

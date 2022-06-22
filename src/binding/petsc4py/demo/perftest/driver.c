@@ -16,13 +16,12 @@ PetscErrorCode FormInitial(PetscReal t, Vec X, void *ctx)
 {
   PetscScalar    *x;
   AppCtx         *app = (AppCtx*) ctx;
-  PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  PetscCall(VecGetArray(X,&x));
   /**/
   formInitial(&app->nx,&app->ny,&app->nz,app->h,&t,x);
   /**/
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  PetscCall(VecRestoreArray(X,&x));
   PetscFunctionReturn(0);
 }
 
@@ -32,17 +31,16 @@ PetscErrorCode FormFunction(TS ts, PetscReal t, Vec X, Vec Xdot,Vec F, void *ctx
   const PetscScalar    *xdot;
   PetscScalar    *f;
   AppCtx         *app = (AppCtx*) ctx;
-  PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(Xdot,&xdot);CHKERRQ(ierr);
-  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
+  PetscCall(VecGetArrayRead(X,&x));
+  PetscCall(VecGetArrayRead(Xdot,&xdot));
+  PetscCall(VecGetArray(F,&f));
   /**/
   formFunction(&app->nx,&app->ny,&app->nz,app->h,&t,x,xdot,f);
   /**/
-  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(Xdot,&xdot);CHKERRQ(ierr);
-  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayRead(X,&x));
+  PetscCall(VecRestoreArrayRead(Xdot,&xdot));
+  PetscCall(VecRestoreArray(F,&f));
   PetscFunctionReturn(0);
 }
 
@@ -52,63 +50,61 @@ PetscErrorCode RunTest(int nx, int ny, int nz, int loops, double *wt)
   TS             ts;
   AppCtx         _app,*app=&_app;
   double         t1,t2;
-  PetscErrorCode ierr;
   PetscFunctionBegin;
 
   app->nx = nx; app->h[0] = 1./(nx-1);
   app->ny = ny; app->h[1] = 1./(ny-1);
   app->nz = nz; app->h[2] = 1./(nz-1);
 
-  ierr = VecCreate(PETSC_COMM_SELF,&x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,nx*ny*nz,nx*ny*nz);CHKERRQ(ierr);
-  ierr = VecSetUp(x);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&f);CHKERRQ(ierr);
+  PetscCall(VecCreate(PETSC_COMM_SELF,&x));
+  PetscCall(VecSetSizes(x,nx*ny*nz,nx*ny*nz));
+  PetscCall(VecSetUp(x));
+  PetscCall(VecDuplicate(x,&f));
 
-  ierr = TSCreate(PETSC_COMM_SELF,&ts);CHKERRQ(ierr);
-  ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetType(ts,TSTHETA);CHKERRQ(ierr);
-  ierr = TSThetaSetTheta(ts,1.0);CHKERRQ(ierr);
-  ierr = TSSetTimeStep(ts,0.01);CHKERRQ(ierr);
-  ierr = TSSetTime(ts,0.0);CHKERRQ(ierr);
-  ierr = TSSetMaxTime(ts,1.0);CHKERRQ(ierr);
-  ierr = TSSetMaxSteps(ts,10);CHKERRQ(ierr);
-  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
+  PetscCall(TSCreate(PETSC_COMM_SELF,&ts));
+  PetscCall(TSSetProblemType(ts,TS_NONLINEAR));
+  PetscCall(TSSetType(ts,TSTHETA));
+  PetscCall(TSThetaSetTheta(ts,1.0));
+  PetscCall(TSSetTimeStep(ts,0.01));
+  PetscCall(TSSetTime(ts,0.0));
+  PetscCall(TSSetMaxTime(ts,1.0));
+  PetscCall(TSSetMaxSteps(ts,10));
+  PetscCall(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
 
-  ierr = TSSetSolution(ts,x);CHKERRQ(ierr);
-  ierr = TSSetIFunction(ts,f,FormFunction,app);CHKERRQ(ierr);
-  ierr = PetscOptionsSetValue(NULL,"-snes_mf","1");CHKERRQ(ierr);
+  PetscCall(TSSetSolution(ts,x));
+  PetscCall(TSSetIFunction(ts,f,FormFunction,app));
+  PetscCall(PetscOptionsSetValue(NULL,"-snes_mf","1"));
   {
     SNES snes;
     KSP  ksp;
-    ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-    ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
-    ierr = KSPSetType(ksp,KSPCG);CHKERRQ(ierr);
+    PetscCall(TSGetSNES(ts,&snes));
+    PetscCall(SNESGetKSP(snes,&ksp));
+    PetscCall(KSPSetType(ksp,KSPCG));
   }
-  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
-  ierr = TSSetUp(ts);CHKERRQ(ierr);
+  PetscCall(TSSetFromOptions(ts));
+  PetscCall(TSSetUp(ts));
 
   *wt = 1e300;
   while (loops-- > 0) {
-    ierr = FormInitial(0.0,x,app);CHKERRQ(ierr);
-    ierr = PetscTime(&t1);CHKERRQ(ierr);
-    ierr = TSSolve(ts,x);CHKERRQ(ierr);
-    ierr = PetscTime(&t2);CHKERRQ(ierr);
+    PetscCall(FormInitial(0.0,x,app));
+    PetscCall(PetscTime(&t1));
+    PetscCall(TSSolve(ts,x));
+    PetscCall(PetscTime(&t2));
     *wt = PetscMin(*wt,t2-t1);
   }
 
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&f);CHKERRQ(ierr);
-  ierr = TSDestroy(&ts);CHKERRQ(ierr);
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&f));
+  PetscCall(TSDestroy(&ts));
 
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode GetInt(const char* name, PetscInt *v, PetscInt defv)
 {
-  PetscErrorCode ierr;
   PetscFunctionBegin;
   *v = defv;
-  ierr = PetscOptionsGetInt(NULL,NULL,name,v,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetInt(NULL,NULL,name,v,NULL));
   PetscFunctionReturn(0);
 }
 
@@ -116,23 +112,19 @@ int main(int argc, char *argv[])
 {
   double         wt;
   PetscInt       n,start,step,stop,samples;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,NULL);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,NULL,NULL));
 
-  ierr = GetInt("-start",   &start,   12);CHKERRQ(ierr);
-  ierr = GetInt("-step",    &step,    4);CHKERRQ(ierr);
-  ierr = GetInt("-stop",    &stop,    start);CHKERRQ(ierr);
-  ierr = GetInt("-samples", &samples, 1);CHKERRQ(ierr);
+  PetscCall(GetInt("-start",   &start,   12));
+  PetscCall(GetInt("-step",    &step,    4));
+  PetscCall(GetInt("-stop",    &stop,    start));
+  PetscCall(GetInt("-samples", &samples, 1));
 
   for (n=start; n<=stop; n+=step) {
     int nx=n+1, ny=n+1, nz=n+1;
-    ierr = RunTest(nx,ny,nz,samples,&wt);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF,
-                       "Grid  %3d x %3d x %3d -> %f seconds (%2d samples)\n",
-                       nx,ny,nz,wt,samples);CHKERRQ(ierr);
+    PetscCall(RunTest(nx,ny,nz,samples,&wt));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"Grid  %3d x %3d x %3d -> %f seconds (%2d samples)\n",nx,ny,nz,wt,samples));
   }
-
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  PetscCall(PetscFinalize());
   return 0;
 }

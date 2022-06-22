@@ -55,6 +55,8 @@ struct _p_PetscSection {
 
 struct _PetscSectionSymOps {
   PetscErrorCode (*getpoints)(PetscSectionSym,PetscSection,PetscInt,const PetscInt *,const PetscInt **,const PetscScalar **);
+  PetscErrorCode (*distribute)(PetscSectionSym,PetscSF,PetscSectionSym*);
+  PetscErrorCode (*copy)(PetscSectionSym,PetscSectionSym);
   PetscErrorCode (*destroy)(PetscSectionSym);
   PetscErrorCode (*view)(PetscSectionSym,PetscViewer);
 };
@@ -85,9 +87,27 @@ PETSC_INTERN PetscErrorCode PetscSectionView_HDF5_Internal(PetscSection, PetscVi
 PETSC_INTERN PetscErrorCode PetscSectionLoad_HDF5_Internal(PetscSection, PetscViewer);
 #endif
 
+static inline PetscErrorCode PetscSectionCheckConstraints_Private(PetscSection s)
+{
+  PetscFunctionBegin;
+  if (!s->bc) {
+    PetscCall(PetscSectionCreate(PETSC_COMM_SELF, &s->bc));
+    PetscCall(PetscSectionSetChart(s->bc, s->pStart, s->pEnd));
+  }
+  PetscFunctionReturn(0);
+}
+
+/* Call this if you directly modify atlasDof so that maxDof gets recalculated on next PetscSectionGetMaxDof() */
+static inline PetscErrorCode PetscSectionInvalidateMaxDof_Internal(PetscSection s)
+{
+  PetscFunctionBegin;
+  s->maxDof = PETSC_MIN_INT;
+  PetscFunctionReturn(0);
+}
+
 #if defined(PETSC_CLANG_STATIC_ANALYZER)
-#  define PetscSectionCheckValidField(x,y)
-#  define PetscSectionCheckValidFieldComponent(x,y)
+void PetscSectionCheckValidField(PetscInt,PetscInt);
+void PetscSectionCheckValidFieldComponent(PetscInt,PetscInt);
 #else
 #  define PetscSectionCheckValid_(description,item,nitems) do {         \
     PetscCheck(((item) >= 0) && ((item) < (nitems)),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE,"Invalid " description " %" PetscInt_FMT "; not in [0, %" PetscInt_FMT ")", (item), (nitems)); \
@@ -96,7 +116,6 @@ PETSC_INTERN PetscErrorCode PetscSectionLoad_HDF5_Internal(PetscSection, PetscVi
 #  define PetscSectionCheckValidFieldComponent(comp,nfieldcomp) PetscSectionCheckValid_("section field component",comp,nfieldcomp)
 
 #  define PetscSectionCheckValidField(field,nfields)            PetscSectionCheckValid_("field number",field,nfields)
-
 #endif /* PETSC_CLANG_STATIC_ANALYZER */
 
 #endif /* PETSCSECTIONIMPL_H */

@@ -2,12 +2,14 @@
 #define PETSCDMLABEL_H
 #include <petscis.h>
 
+/* SUBMANSEC = DMLabel */
+
 /*S
   DMLabel - Object which encapsulates a subset of the mesh from this DM
 
   Level: developer
 
-.seealso:  DM, DMPlexCreate(), DMPlexCreateLabel()
+.seealso: `DM`, `DMPlexCreate()`, `DMPlexCreateLabel()`
 S*/
 typedef struct _p_DMLabel *DMLabel;
 PETSC_EXTERN PetscErrorCode DMLabelCreate(MPI_Comm, const char [], DMLabel *);
@@ -51,11 +53,16 @@ PETSC_EXTERN PetscErrorCode DMLabelDistribute(DMLabel, PetscSF, DMLabel *);
 PETSC_EXTERN PetscErrorCode DMLabelGather(DMLabel, PetscSF, DMLabel *);
 PETSC_EXTERN PetscErrorCode DMLabelConvertToSection(DMLabel, PetscSection *, IS *);
 
+PETSC_EXTERN PetscErrorCode DMLabelPropagateBegin(DMLabel, PetscSF);
+PETSC_EXTERN PetscErrorCode DMLabelPropagatePush(DMLabel, PetscSF, PetscErrorCode (*)(DMLabel, PetscInt, PetscInt, void *), void *);
+PETSC_EXTERN PetscErrorCode DMLabelPropagateEnd(DMLabel, PetscSF);
+
 PETSC_EXTERN PetscErrorCode PetscSectionCreateGlobalSectionLabel(PetscSection, PetscSF, PetscBool, DMLabel, PetscInt, PetscSection *);
 
 #define PETSCSECTIONSYMLABEL "label"
 PETSC_EXTERN PetscErrorCode PetscSectionSymCreateLabel(MPI_Comm,DMLabel,PetscSectionSym *);
 PETSC_EXTERN PetscErrorCode PetscSectionSymLabelSetLabel(PetscSectionSym,DMLabel);
-PETSC_EXTERN PetscErrorCode PetscSectionSymLabelSetStratum(PetscSectionSym,PetscInt,PetscInt,PetscInt,PetscInt,PetscCopyMode,const PetscInt **,const PetscScalar **);
+PETSC_EXTERN PetscErrorCode PetscSectionSymLabelGetStratum(PetscSectionSym, PetscInt, PetscInt*, PetscInt*, PetscInt*, const PetscInt ***, const PetscScalar ***);
+PETSC_EXTERN PetscErrorCode PetscSectionSymLabelSetStratum(PetscSectionSym, PetscInt, PetscInt, PetscInt, PetscInt, PetscCopyMode, const PetscInt **, const PetscScalar **);
 
 #endif

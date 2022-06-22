@@ -27,14 +27,16 @@
 
       MPI_Comm::PETSC_COMM_WORLD=0
       MPI_Comm::PETSC_COMM_SELF=0
-      end module
 
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
 !DEC$ ATTRIBUTES DLLEXPORT::MPIU_REAL
 !DEC$ ATTRIBUTES DLLEXPORT::MPIU_SUM
 !DEC$ ATTRIBUTES DLLEXPORT::MPIU_SCALAR
 !DEC$ ATTRIBUTES DLLEXPORT::MPIU_INTEGER
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_COMM_SELF
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_COMM_WORLD
 #endif
+      end module
 
         module petscsysdefdummy
 #if defined(PETSC_HAVE_MPI_F90MODULE_VISIBILITY)
@@ -314,18 +316,7 @@
         PetscReal PETSC_INFINITY
         PetscReal PETSC_NINFINITY
 
-!
-#include <../src/sys/f90-mod/petscsys.h90>
-        interface
-#include <../src/sys/f90-mod/ftn-auto-interfaces/petscsys.h90>
-        end interface
-        interface PetscInitialize
-          module procedure PetscInitializeWithHelp, PetscInitializeNoHelp, PetscInitializeNoArguments
-        end interface
-
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
-!DEC$ ATTRIBUTES DLLEXPORT::PETSC_COMM_SELF
-!DEC$ ATTRIBUTES DLLEXPORT::PETSC_COMM_WORLD
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_CHARACTER
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_INTEGER
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_DOUBLE
@@ -333,10 +324,6 @@
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_REAL
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_BOOL
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_MPI_COMM
-!DEC$ ATTRIBUTES DLLEXPORT::MPIU_REAL
-!DEC$ ATTRIBUTES DLLEXPORT::MPIU_SCALAR
-!DEC$ ATTRIBUTES DLLEXPORT::MPIU_SUM
-!DEC$ ATTRIBUTES DLLEXPORT::MPIU_INTEGER
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_PI
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_MAX_REAL
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_MIN_REAL
@@ -347,34 +334,51 @@
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_NINFINITY
 #endif
 
+#include <../src/sys/f90-mod/petscsys.h90>
+        interface
+#include <../src/sys/f90-mod/ftn-auto-interfaces/petscsys.h90>
+        end interface
+        interface PetscInitialize
+          module procedure PetscInitializeWithHelp, PetscInitializeNoHelp, PetscInitializeNoArguments
+        end interface
+
       contains
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PetscInitializeWithHelp
+#endif
       subroutine PetscInitializeWithHelp(filename,help,ierr)
           character(len=*)           :: filename
           character(len=*)           :: help
           PetscErrorCode             :: ierr
 
           if (filename .ne. PETSC_NULL_CHARACTER) then
-             call PetscInitializeF(trim(filename),help,PETSC_TRUE,ierr)
+             PetscCall(PetscInitializeF(trim(filename),help,PETSC_TRUE,ierr))
           else
-             call PetscInitializeF(filename,help,PETSC_TRUE,ierr)
+             PetscCall(PetscInitializeF(filename,help,PETSC_TRUE,ierr))
           endif
         end subroutine PetscInitializeWithHelp
 
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PetscInitializeNoHelp
+#endif
         subroutine PetscInitializeNoHelp(filename,ierr)
           character(len=*)           :: filename
           PetscErrorCode             :: ierr
 
           if (filename .ne. PETSC_NULL_CHARACTER) then
-             call PetscInitializeF(trim(filename),PETSC_NULL_CHARACTER,PETSC_TRUE,ierr)
+             PetscCall(PetscInitializeF(trim(filename),PETSC_NULL_CHARACTER,PETSC_TRUE,ierr))
           else
-             call PetscInitializeF(filename,PETSC_NULL_CHARACTER,PETSC_TRUE,ierr)
+             PetscCall(PetscInitializeF(filename,PETSC_NULL_CHARACTER,PETSC_TRUE,ierr))
           endif
         end subroutine PetscInitializeNoHelp
 
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PetscInitializeNoArguments
+#endif
         subroutine PetscInitializeNoArguments(ierr)
           PetscErrorCode             :: ierr
 
-          call PetscInitializeF(PETSC_NULL_CHARACTER,PETSC_NULL_CHARACTER,PETSC_FALSE,ierr)
+          PetscCall(PetscInitializeF(PETSC_NULL_CHARACTER,PETSC_NULL_CHARACTER,PETSC_TRUE,ierr))
         end subroutine PetscInitializeNoArguments
         end module
 

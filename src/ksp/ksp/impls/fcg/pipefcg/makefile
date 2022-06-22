@@ -1,13 +1,10 @@
 -include ../../../../../../petscdir.mk
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = pipefcg.c
 SOURCEF  =
 SOURCEH  = pipefcgimpl.h
 LIBBASE  = libpetscksp
-DIRS     = 
+DIRS     =
 MANSEC   = KSP
 LOCDIR   = src/ksp/ksp/impls/fcg/pipefcg/
 

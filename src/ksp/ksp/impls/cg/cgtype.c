@@ -25,15 +25,13 @@
     Note:
     By default, the matrix is assumed to be complex, Hermitian.
 
-.seealso: KSP, KSPCG
+.seealso: `KSP`, `KSPCG`
 @*/
 PetscErrorCode  KSPCGSetType(KSP ksp,KSPCGType type)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  ierr = PetscTryMethod(ksp,"KSPCGSetType_C",(KSP,KSPCGType),(ksp,type));CHKERRQ(ierr);
+  PetscTryMethod(ksp,"KSPCGSetType_C",(KSP,KSPCGType),(ksp,type));
   PetscFunctionReturn(0);
 }
 
@@ -47,7 +45,7 @@ PetscErrorCode  KSPCGSetType(KSP ksp,KSPCGType type)
 -   flg - turn on or off the single reduction
 
     Options Database:
-.   -ksp_cg_single_reduction
+.   -ksp_cg_single_reduction <bool> - Merge inner products into single MPI_Allreduce
 
     Level: intermediate
 
@@ -59,16 +57,14 @@ PetscErrorCode  KSPCGSetType(KSP ksp,KSPCGType type)
 
      See also KSPPIPECG, KSPPIPECR, and KSPGROPPCG that use non-blocking reductions.
 
-.seealso: KSP, KSPCG, KSPGMRES
+.seealso: `KSP`, `KSPCG`, `KSPGMRES`
 @*/
 PetscErrorCode  KSPCGUseSingleReduction(KSP ksp,PetscBool flg)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidLogicalCollectiveBool(ksp,flg,2);
-  ierr = PetscTryMethod(ksp,"KSPCGUseSingleReduction_C",(KSP,PetscBool),(ksp,flg));CHKERRQ(ierr);
+  PetscTryMethod(ksp,"KSPCGUseSingleReduction_C",(KSP,PetscBool),(ksp,flg));
   PetscFunctionReturn(0);
 }
 
@@ -83,16 +79,14 @@ PetscErrorCode  KSPCGUseSingleReduction(KSP ksp,PetscBool flg)
 
     Level: advanced
 
-.seealso: KSP, KSPCG, KSPNASH, KSPSTCG, KSPGLTR
+.seealso: `KSP`, `KSPCG`, `KSPNASH`, `KSPSTCG`, `KSPGLTR`
 @*/
 PetscErrorCode  KSPCGSetRadius(KSP ksp, PetscReal radius)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidLogicalCollectiveReal(ksp,radius,2);
-  ierr = PetscTryMethod(ksp,"KSPCGSetRadius_C",(KSP,PetscReal),(ksp,radius));CHKERRQ(ierr);
+  PetscTryMethod(ksp,"KSPCGSetRadius_C",(KSP,PetscReal),(ksp,radius));
   PetscFunctionReturn(0);
 }
 
@@ -107,15 +101,13 @@ PetscErrorCode  KSPCGSetRadius(KSP ksp, PetscReal radius)
 
     Level: advanced
 
-.seealso: KSP, KSPCG, KSPNASH, KSPSTCG, KSPGLTR
+.seealso: `KSP`, `KSPCG`, `KSPNASH`, `KSPSTCG`, `KSPGLTR`
 @*/
 PetscErrorCode  KSPCGGetNormD(KSP ksp, PetscReal *norm_d)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  ierr = PetscUseMethod(ksp,"KSPCGGetNormD_C",(KSP,PetscReal*),(ksp,norm_d));CHKERRQ(ierr);
+  PetscUseMethod(ksp,"KSPCGGetNormD_C",(KSP,PetscReal*),(ksp,norm_d));
   PetscFunctionReturn(0);
 }
 
@@ -130,15 +122,12 @@ PetscErrorCode  KSPCGGetNormD(KSP ksp, PetscReal *norm_d)
 
     Level: advanced
 
-.seealso: KSP, KSPCG, KSPNASH, KSPSTCG, KSPGLTR
+.seealso: `KSP`, `KSPCG`, `KSPNASH`, `KSPSTCG`, `KSPGLTR`
 @*/
 PetscErrorCode  KSPCGGetObjFcn(KSP ksp, PetscReal *o_fcn)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  ierr = PetscUseMethod(ksp,"KSPCGGetObjFcn_C",(KSP,PetscReal*),(ksp,o_fcn));CHKERRQ(ierr);
+  PetscUseMethod(ksp,"KSPCGGetObjFcn_C",(KSP,PetscReal*),(ksp,o_fcn));
   PetscFunctionReturn(0);
 }
-

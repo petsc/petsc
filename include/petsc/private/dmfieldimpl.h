@@ -30,4 +30,5 @@ struct _p_DMField {
 };
 
 PETSC_INTERN PetscErrorCode DMFieldCreate(DM,PetscInt,DMFieldContinuity,DMField*);
+PETSC_INTERN PetscErrorCode DMFieldGetFVQuadrature_Internal(DMField,IS,PetscQuadrature*);
 #endif

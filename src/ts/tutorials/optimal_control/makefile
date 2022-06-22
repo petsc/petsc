@@ -1,12 +1,6 @@
 -include ../../../../petscdir.mk
-CFLAGS          =
-FFLAGS          =
-CPPFLAGS        =
-FPPFLAGS        =
+
 LOCDIR          = src/ts/tutorials/optimal_control/
-EXAMPLESC       = ex1.c
-EXAMPLESF       =
-EXAMPLESFH      =
 MANSEC          = TS
 DIRS            =
 CLEANFILES      = TS-data-*

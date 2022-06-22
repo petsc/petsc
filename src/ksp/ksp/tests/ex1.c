@@ -5,17 +5,15 @@ static char help[] = "Tests solving linear system on 0 by 0 matrix, and KSPLSQR 
 
 static PetscErrorCode GetConvergenceTestName(PetscErrorCode (*converged)(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*),char name[],size_t n)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (converged == KSPConvergedDefault) {
-    ierr = PetscStrncpy(name,"default",n);CHKERRQ(ierr);
+    PetscCall(PetscStrncpy(name,"default",n));
   } else if (converged == KSPConvergedSkip) {
-    ierr = PetscStrncpy(name,"skip",n);CHKERRQ(ierr);
+    PetscCall(PetscStrncpy(name,"skip",n));
   } else if (converged == KSPLSQRConvergedDefault) {
-    ierr = PetscStrncpy(name,"lsqr",n);CHKERRQ(ierr);
+    PetscCall(PetscStrncpy(name,"lsqr",n));
   } else {
-    ierr = PetscStrncpy(name,"other",n);CHKERRQ(ierr);
+    PetscCall(PetscStrncpy(name,"other",n));
   }
   PetscFunctionReturn(0);
 }
@@ -23,43 +21,42 @@ static PetscErrorCode GetConvergenceTestName(PetscErrorCode (*converged)(KSP,Pet
 int main(int argc,char **args)
 {
   Mat            C;
-  PetscErrorCode ierr;
   PetscInt       N = 0;
   Vec            u,b,x;
   KSP            ksp;
   PetscReal      norm;
   PetscBool      flg=PETSC_FALSE;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
 
   /* create stiffness matrix */
-  ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
-  ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(C);CHKERRQ(ierr);
-  ierr = MatSetUp(C);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&C));
+  PetscCall(MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,N,N));
+  PetscCall(MatSetFromOptions(C));
+  PetscCall(MatSetUp(C));
+  PetscCall(MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY));
 
   /* create right hand side and solution */
-  ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
-  ierr = VecSetSizes(u,PETSC_DECIDE,N);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(u);CHKERRQ(ierr);
-  ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
-  ierr = VecDuplicate(u,&x);CHKERRQ(ierr);
-  ierr = VecSet(u,0.0);CHKERRQ(ierr);
-  ierr = VecSet(b,0.0);CHKERRQ(ierr);
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&u));
+  PetscCall(VecSetSizes(u,PETSC_DECIDE,N));
+  PetscCall(VecSetFromOptions(u));
+  PetscCall(VecDuplicate(u,&b));
+  PetscCall(VecDuplicate(u,&x));
+  PetscCall(VecSet(u,0.0));
+  PetscCall(VecSet(b,0.0));
 
-  ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
+  PetscCall(VecAssemblyBegin(b));
+  PetscCall(VecAssemblyEnd(b));
 
   /* solve linear system */
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,C,C);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp,b,u);CHKERRQ(ierr);
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPSetOperators(ksp,C,C));
+  PetscCall(KSPSetFromOptions(ksp));
+  PetscCall(KSPSolve(ksp,b,u));
 
   /* test proper handling of convergence test by KSPLSQR */
-  ierr = PetscOptionsGetBool(NULL,NULL,"-test_lsqr",&flg,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-test_lsqr",&flg,NULL));
   if (flg) {
     char                  *type;
     char                  convtestname[16];
@@ -71,47 +68,47 @@ int main(int argc,char **args)
 
     {
       const char *typeP;
-      ierr = KSPGetType(ksp,&typeP);CHKERRQ(ierr);
-      ierr = PetscStrallocpy(typeP,&type);CHKERRQ(ierr);
+      PetscCall(KSPGetType(ksp,&typeP));
+      PetscCall(PetscStrallocpy(typeP,&type));
     }
-    ierr = PetscStrcmp(type,KSPLSQR,&islsqr);CHKERRQ(ierr);
-    ierr = KSPGetConvergenceTest(ksp,&converged,&ctx,&destroy);CHKERRQ(ierr);
-    ierr = GetConvergenceTestName(converged,convtestname,16);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"convergence test: %s\n",convtestname);CHKERRQ(ierr);
-    ierr = KSPSetType(ksp,KSPLSQR);CHKERRQ(ierr);
-    ierr = KSPGetConvergenceTest(ksp,&converged1,&ctx1,&destroy1);CHKERRQ(ierr);
-    PetscCheckFalse(converged1 != KSPLSQRConvergedDefault,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"convergence test should be KSPLSQRConvergedDefault");
-    PetscCheckFalse(destroy1 != KSPConvergedDefaultDestroy,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"convergence test destroy function should be KSPConvergedDefaultDestroy");
+    PetscCall(PetscStrcmp(type,KSPLSQR,&islsqr));
+    PetscCall(KSPGetConvergenceTest(ksp,&converged,&ctx,&destroy));
+    PetscCall(GetConvergenceTestName(converged,convtestname,16));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"convergence test: %s\n",convtestname));
+    PetscCall(KSPSetType(ksp,KSPLSQR));
+    PetscCall(KSPGetConvergenceTest(ksp,&converged1,&ctx1,&destroy1));
+    PetscCheck(converged1 == KSPLSQRConvergedDefault,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"convergence test should be KSPLSQRConvergedDefault");
+    PetscCheck(destroy1 == KSPConvergedDefaultDestroy,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"convergence test destroy function should be KSPConvergedDefaultDestroy");
     if (islsqr) {
-      PetscCheckFalse(converged1 != converged,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"convergence test should be kept");
-      PetscCheckFalse(destroy1 != destroy,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"convergence test destroy function should be kept");
-      PetscCheckFalse(ctx1 != ctx,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"convergence test context should be kept");
+      PetscCheck(converged1 == converged,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"convergence test should be kept");
+      PetscCheck(destroy1 == destroy,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"convergence test destroy function should be kept");
+      PetscCheck(ctx1 == ctx,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"convergence test context should be kept");
     }
-    ierr = GetConvergenceTestName(converged1,convtestname,16);CHKERRQ(ierr);
-    ierr = KSPViewFromOptions(ksp,NULL,"-ksp1_view");CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"convergence test: %s\n",convtestname);CHKERRQ(ierr);
-    ierr = KSPSetType(ksp,type);CHKERRQ(ierr);
-    ierr = KSPGetConvergenceTest(ksp,&converged1,&ctx1,&destroy1);CHKERRQ(ierr);
-    PetscCheckFalse(converged1 != converged,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"convergence test not reverted properly");
-    PetscCheckFalse(destroy1 != destroy,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"convergence test destroy function not reverted properly");
-    PetscCheckFalse(ctx1 != ctx,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"convergence test context not reverted properly");
-    ierr = GetConvergenceTestName(converged1,convtestname,16);CHKERRQ(ierr);
-    ierr = KSPViewFromOptions(ksp,NULL,"-ksp2_view");CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"convergence test: %s\n",convtestname);CHKERRQ(ierr);
-    ierr = PetscFree(type);CHKERRQ(ierr);
+    PetscCall(GetConvergenceTestName(converged1,convtestname,16));
+    PetscCall(KSPViewFromOptions(ksp,NULL,"-ksp1_view"));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"convergence test: %s\n",convtestname));
+    PetscCall(KSPSetType(ksp,type));
+    PetscCall(KSPGetConvergenceTest(ksp,&converged1,&ctx1,&destroy1));
+    PetscCheck(converged1 == converged,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"convergence test not reverted properly");
+    PetscCheck(destroy1 == destroy,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"convergence test destroy function not reverted properly");
+    PetscCheck(ctx1 == ctx,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"convergence test context not reverted properly");
+    PetscCall(GetConvergenceTestName(converged1,convtestname,16));
+    PetscCall(KSPViewFromOptions(ksp,NULL,"-ksp2_view"));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"convergence test: %s\n",convtestname));
+    PetscCall(PetscFree(type));
   }
 
-  ierr = MatMult(C,u,x);CHKERRQ(ierr);
-  ierr = VecAXPY(x,-1.0,b);CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
+  PetscCall(MatMult(C,u,x));
+  PetscCall(VecAXPY(x,-1.0,b));
+  PetscCall(VecNorm(x,NORM_2,&norm));
 
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(VecDestroy(&u));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&b));
+  PetscCall(MatDestroy(&C));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

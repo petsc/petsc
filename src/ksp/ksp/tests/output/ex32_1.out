@@ -1,6 +1,6 @@
   0 KSP Residual norm 0.513097 
   1 KSP Residual norm < 1.e-11
-KSP Object: 1 MPI processes
+KSP Object: 1 MPI process
   type: gmres
     restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
     happy breakdown tolerance 1e-30
@@ -8,21 +8,21 @@ KSP Object: 1 MPI processes
   tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
   left preconditioning
   using PRECONDITIONED norm type for convergence test
-PC Object: 1 MPI processes
+PC Object: 1 MPI process
   type: cholesky
     out-of-place factorization
     tolerance for zero pivot 2.22045e-14
     matrix ordering: natural
     factor fill ratio given 5., needed 15.9693
       Factored matrix follows:
-        Mat Object: 1 MPI processes
+        Mat Object: 1 MPI process
           type: seqsbaij
           rows=512, cols=512
           package used to perform factorization: petsc
           total: nonzeros=29639, allocated nonzeros=29639
               block size is 1
   linear system matrix = precond matrix:
-  Mat Object: 1 MPI processes
+  Mat Object: 1 MPI process
     type: seqsbaij
     rows=512, cols=512
     total: nonzeros=1856, allocated nonzeros=1856

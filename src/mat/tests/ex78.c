@@ -40,7 +40,6 @@ int main(int argc,char **args)
   Mat            A = NULL;
   Vec            b,u = NULL,u_tmp;
   char           Ain[PETSC_MAX_PATH_LEN],rhs[PETSC_MAX_PATH_LEN],solu[PETSC_MAX_PATH_LEN];
-  PetscErrorCode ierr;
   int            m,n = 0,nz,dummy; /* these are fscaned so kept as int */
   PetscInt       i,col,row,shift = 1,sizes[3],nsizes;
   PetscScalar    val;
@@ -50,107 +49,107 @@ int main(int argc,char **args)
   PetscBool      flg_A,flg_b,flg_u,flg;
   PetscMPIInt    size;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
 
   /* Read in matrix, rhs and exact solution from ascii files */
-  ierr = PetscOptionsGetString(NULL,NULL,"-Ain",Ain,sizeof(Ain),&flg_A);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,NULL,"-noshift",&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-Ain",Ain,sizeof(Ain),&flg_A));
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-noshift",&flg));
   if (flg) shift = 0;
   if (flg_A) {
-    ierr   = PetscPrintf(PETSC_COMM_SELF,"\n Read matrix in ascii format ...\n");CHKERRQ(ierr);
-    ierr   = PetscFOpen(PETSC_COMM_SELF,Ain,"r",&Afile);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"\n Read matrix in ascii format ...\n"));
+    PetscCall(PetscFOpen(PETSC_COMM_SELF,Ain,"r",&Afile));
     nsizes = 3;
-    ierr   = PetscOptionsGetIntArray(NULL,NULL,"-nosizesinfile",sizes,&nsizes,&flg);CHKERRQ(ierr);
+    PetscCall(PetscOptionsGetIntArray(NULL,NULL,"-nosizesinfile",sizes,&nsizes,&flg));
     if (flg) {
-      PetscCheckFalse(nsizes != 3,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must pass in three m,n,nz as arguments for -nosizesinfile");
+      PetscCheck(nsizes == 3,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must pass in three m,n,nz as arguments for -nosizesinfile");
       m  = sizes[0];
       n  = sizes[1];
       nz = sizes[2];
     } else {
-      PetscCheckFalse(fscanf(Afile,"%d %d %d\n",&m,&n,&nz) != 3,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Badly formatted input file");
+      PetscCheck(fscanf(Afile,"%d %d %d\n",&m,&n,&nz) == 3,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Badly formatted input file");
     }
-    ierr = PetscPrintf(PETSC_COMM_SELF,"m: %d, n: %d, nz: %d \n", m,n,nz);CHKERRQ(ierr);
-    PetscCheckFalse(m != n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Number of rows, cols must be same for this example");
-    ierr = MatCreate(PETSC_COMM_SELF,&A);CHKERRQ(ierr);
-    ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);
-    ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-    ierr = MatSeqAIJSetPreallocation(A,nz/m,NULL);CHKERRQ(ierr);
-    ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"m: %d, n: %d, nz: %d \n", m,n,nz));
+    PetscCheck(m == n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Number of rows, cols must be same for this example");
+    PetscCall(MatCreate(PETSC_COMM_SELF,&A));
+    PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m,n));
+    PetscCall(MatSetFromOptions(A));
+    PetscCall(MatSeqAIJSetPreallocation(A,nz/m,NULL));
+    PetscCall(MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE));
 
     for (i=0; i<nz; i++) {
-      PetscCheckFalse(fscanf(Afile,"%d %d %le\n",&row,&col,(double*)&val) != 3,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Badly formatted input file");
+      PetscCheck(fscanf(Afile,"%d %d %le\n",&row,&col,(double*)&val) == 3,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Badly formatted input file");
       row -= shift; col -= shift;  /* set index set starts at 0 */
-      ierr = MatSetValues(A,1,&row,1,&col,&val,INSERT_VALUES);CHKERRQ(ierr);
+      PetscCall(MatSetValues(A,1,&row,1,&col,&val,INSERT_VALUES));
     }
-    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
     fclose(Afile);
   }
 
-  ierr = PetscOptionsGetString(NULL,NULL,"-rhs",rhs,sizeof(rhs),&flg_b);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-rhs",rhs,sizeof(rhs),&flg_b));
   if (flg_b) {
-    ierr = VecCreate(PETSC_COMM_SELF,&b);CHKERRQ(ierr);
-    ierr = VecSetSizes(b,PETSC_DECIDE,n);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(b);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"\n Read rhs in ascii format ...\n");CHKERRQ(ierr);
-    ierr = PetscFOpen(PETSC_COMM_SELF,rhs,"r",&bfile);CHKERRQ(ierr);
+    PetscCall(VecCreate(PETSC_COMM_SELF,&b));
+    PetscCall(VecSetSizes(b,PETSC_DECIDE,n));
+    PetscCall(VecSetFromOptions(b));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"\n Read rhs in ascii format ...\n"));
+    PetscCall(PetscFOpen(PETSC_COMM_SELF,rhs,"r",&bfile));
     for (i=0; i<n; i++) {
-      PetscCheckFalse(fscanf(bfile,"%d %le\n",&dummy,(double*)&val) != 2,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Badly formatted input file");
-      ierr = VecSetValues(b,1,&i,&val,INSERT_VALUES);CHKERRQ(ierr);
+      PetscCheck(fscanf(bfile,"%d %le\n",&dummy,(double*)&val) == 2,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Badly formatted input file");
+      PetscCall(VecSetValues(b,1,&i,&val,INSERT_VALUES));
     }
-    ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
+    PetscCall(VecAssemblyBegin(b));
+    PetscCall(VecAssemblyEnd(b));
     fclose(bfile);
   }
 
-  ierr = PetscOptionsGetString(NULL,NULL,"-solu",solu,sizeof(solu),&flg_u);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-solu",solu,sizeof(solu),&flg_u));
   if (flg_u) {
-    ierr = VecCreate(PETSC_COMM_SELF,&u);CHKERRQ(ierr);
-    ierr = VecSetSizes(u,PETSC_DECIDE,n);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(u);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"\n Read exact solution in ascii format ...\n");CHKERRQ(ierr);
-    ierr = PetscFOpen(PETSC_COMM_SELF,solu,"r",&ufile);CHKERRQ(ierr);
+    PetscCall(VecCreate(PETSC_COMM_SELF,&u));
+    PetscCall(VecSetSizes(u,PETSC_DECIDE,n));
+    PetscCall(VecSetFromOptions(u));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"\n Read exact solution in ascii format ...\n"));
+    PetscCall(PetscFOpen(PETSC_COMM_SELF,solu,"r",&ufile));
     for (i=0; i<n; i++) {
-      PetscCheckFalse(fscanf(ufile,"%d  %le\n",&dummy,(double*)&val) != 2,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Badly formatted input file");
-      ierr = VecSetValues(u,1,&i,&val,INSERT_VALUES);CHKERRQ(ierr);
+      PetscCheck(fscanf(ufile,"%d  %le\n",&dummy,(double*)&val) == 2,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Badly formatted input file");
+      PetscCall(VecSetValues(u,1,&i,&val,INSERT_VALUES));
     }
-    ierr = VecAssemblyBegin(u);CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(u);CHKERRQ(ierr);
+    PetscCall(VecAssemblyBegin(u));
+    PetscCall(VecAssemblyEnd(u));
     fclose(ufile);
   }
 
   /* Write matrix, rhs and exact solution in Petsc binary file */
-  ierr = PetscPrintf(PETSC_COMM_SELF,"\n Write matrix in binary to 'matrix.dat' ...\n");CHKERRQ(ierr);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"matrix.dat",FILE_MODE_WRITE,&view);CHKERRQ(ierr);
-  ierr = MatView(A,view);CHKERRQ(ierr);
+  PetscCall(PetscPrintf(PETSC_COMM_SELF,"\n Write matrix in binary to 'matrix.dat' ...\n"));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_SELF,"matrix.dat",FILE_MODE_WRITE,&view));
+  PetscCall(MatView(A,view));
 
   if (flg_b) { /* Write rhs in Petsc binary file */
-    ierr = PetscPrintf(PETSC_COMM_SELF,"\n Write rhs in binary to 'matrix.dat' ...\n");CHKERRQ(ierr);
-    ierr = VecView(b,view);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"\n Write rhs in binary to 'matrix.dat' ...\n"));
+    PetscCall(VecView(b,view));
   }
   if (flg_u) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"\n Write exact solution in binary to 'matrix.dat' ...\n");CHKERRQ(ierr);
-    ierr = VecView(u,view);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"\n Write exact solution in binary to 'matrix.dat' ...\n"));
+    PetscCall(VecView(u,view));
   }
 
   /* Check accuracy of the data */
   if (flg_A & flg_b & flg_u) {
-    ierr = VecDuplicate(u,&u_tmp);CHKERRQ(ierr);
-    ierr = MatMult(A,u,u_tmp);CHKERRQ(ierr);
-    ierr = VecAXPY(u_tmp,-1.0,b);CHKERRQ(ierr);
-    ierr = VecNorm(u_tmp,NORM_2,&res_norm);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"\n Accuracy of the reading data: | b - A*u |_2 : %g \n",res_norm);CHKERRQ(ierr);
-    ierr = VecDestroy(&u_tmp);CHKERRQ(ierr);
+    PetscCall(VecDuplicate(u,&u_tmp));
+    PetscCall(MatMult(A,u,u_tmp));
+    PetscCall(VecAXPY(u_tmp,-1.0,b));
+    PetscCall(VecNorm(u_tmp,NORM_2,&res_norm));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"\n Accuracy of the reading data: | b - A*u |_2 : %g \n",res_norm));
+    PetscCall(VecDestroy(&u_tmp));
   }
 
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  if (flg_b) {ierr = VecDestroy(&b);CHKERRQ(ierr);}
-  if (flg_u) {ierr = VecDestroy(&u);CHKERRQ(ierr);}
-  ierr = PetscViewerDestroy(&view);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(MatDestroy(&A));
+  if (flg_b) PetscCall(VecDestroy(&b));
+  if (flg_u) PetscCall(VecDestroy(&u));
+  PetscCall(PetscViewerDestroy(&view));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -7,6 +7,8 @@
 #include <petscvec.h>
 #include <petscdmdatypes.h>
 
+/* SUBMANSEC = Characteristic */
+
 PETSC_EXTERN PetscErrorCode CharacteristicInitializePackage(void);
 
 /*S
@@ -14,7 +16,7 @@ PETSC_EXTERN PetscErrorCode CharacteristicInitializePackage(void);
 
    Level: beginner
 
-.seealso:  CharacteristicCreate(), CharacteristicSetType(), CharacteristicType, SNES, TS, PC, KSP
+.seealso: `CharacteristicCreate()`, `CharacteristicSetType()`, `CharacteristicType`, `SNES`, `TS`, `PC`, `KSP`
 S*/
 typedef struct _p_Characteristic *Characteristic;
 
@@ -23,7 +25,7 @@ typedef struct _p_Characteristic *Characteristic;
 
    Level: beginner
 
-.seealso: CharacteristicSetType(), Characteristic
+.seealso: `CharacteristicSetType()`, `Characteristic`
 J*/
 #define CHARACTERISTICDA "da"
 typedef const char* CharacteristicType;

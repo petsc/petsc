@@ -1,10 +1,6 @@
 -include ../../../../../../petscdir.mk
 #requirespackage 'PETSC_HAVE_OPENCL'
 
-ALL: lib
-
-CFLAGS    =
-FFLAGS    =
 SOURCEC   = feopencl.c
 SOURCEF   =
 LIBBASE   = libpetscdm

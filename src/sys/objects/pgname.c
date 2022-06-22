@@ -17,17 +17,14 @@
 
    Level: intermediate
 
-.seealso: PetscObjectSetName(), PetscObjectName()
+.seealso: `PetscObjectSetName()`, `PetscObjectName()`
 @*/
 PetscErrorCode  PetscObjectGetName(PetscObject obj,const char *name[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
   PetscValidPointer(name,2);
-  ierr  = PetscObjectName(obj);CHKERRQ(ierr);
+  PetscCall(PetscObjectName(obj));
   *name = obj->name;
   PetscFunctionReturn(0);
 }
-

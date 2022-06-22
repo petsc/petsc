@@ -84,11 +84,11 @@ uses a different memory bus:
 
      $ mpiexec.hydra -n 4 --binding cpu:sockets
 
-- `Open MPI binding <http://www.open-mpi.org/doc/v1.5/man1/mpiexec.1.php#sect8>`__
+- `Open MPI binding <https://www.open-mpi.org/faq/?category=tuning#using-paffinity>`__
 
   .. code-block:: console
 
-     $ mpiexec -n 4 --bysocket --bind-to-socket --report-bindings
+     $ mpiexec -n 4 --map-by socket --bind-to socket --report-bindings
 
 - ``taskset``, part of the `util-linux <https://github.com/karelzak/util-linux>`__ package
 
@@ -609,16 +609,14 @@ following function:
 
    PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp)
    {
-     PetscErrorCode ierr;
-
      PetscFunctionBegin;
      if (fd != stdout && fd != stderr) { /* handle regular files */
-       ierr = PetscVFPrintfDefault(fd, format, Argp);CHKERRQ(ierr);
+       PetscCall(PetscVFPrintfDefault(fd, format, Argp));
      } else {
        char buff[1024]; /* Make sure to assign a large enough buffer */
        int  length;
 
-       ierr = PetscVSNPrintf(buff, 1024, format, &length, Argp);CHKERRQ(ierr);
+       PetscCall(PetscVSNPrintf(buff, 1024, format, &length, Argp));
 
        /* now send buff to whatever stream or whatever you want */
      }
@@ -704,41 +702,40 @@ first :math:`n` (also assume :math:`n \leq m`) values from it's immediately supe
    PetscInt       N, firstGlobalIndex;
    MPI_Comm       comm;
    PetscMPIInt    r, R;
-   PetscErrorCode ierr;
 
    /* Create sequential local vector, big enough to hold local portion */
-   ierr = VecCreateSeq(PETSC_COMM_SELF, n, &vecLocal);CHKERRQ(ierr);
+   PetscCall(VecCreateSeq(PETSC_COMM_SELF, n, &vecLocal));
 
    /* Create IS to describe where we want to scatter to */
-   ierr = ISCreateStride(PETSC_COMM_SELF, n, 0, 1, &isLocal);CHKERRQ(ierr);
+   PetscCall(ISCreateStride(PETSC_COMM_SELF, n, 0, 1, &isLocal));
 
    /* Compute the global indices */
-   ierr = VecGetSize(vecGlobal, &N);CHKERRQ(ierr);
-   ierr = PetscObjectGetComm((PetscObject) vecGlobal, &comm);CHKERRQ(ierr);
-   ierr = MPI_Comm_rank(comm, &r);CHKERRMPI(ierr);
-   ierr = MPI_Comm_size(comm, &R);CHKERRMPI(ierr);
+   PetscCall(VecGetSize(vecGlobal, &N));
+   PetscCall(PetscObjectGetComm((PetscObject) vecGlobal, &comm));
+   CHKERRMPI(MPI_Comm_rank(comm, &r));
+   CHKERRMPI(MPI_Comm_size(comm, &R));
    firstGlobalIndex = r == R-1 ? 0 : (N/R)*(r+1);
 
    /* Create IS that describes where we want to scatter from */
-   ierr = ISCreateStride(comm, n, firstGlobalIndex, 1, &isGlobal);CHKERRQ(ierr);
+   PetscCall(ISCreateStride(comm, n, firstGlobalIndex, 1, &isGlobal));
 
    /* Create the VecScatter context */
-   ierr = VecScatterCreate(vecGlobal, isGlobal, vecLocal, isLocal, &ctx);CHKERRQ(ierr);
+   PetscCall(VecScatterCreate(vecGlobal, isGlobal, vecLocal, isLocal, &ctx));
 
    /* Gather the values */
-   ierr = VecScatterBegin(ctx, vecGlobal, vecLocal, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
-   ierr = VecScatterEnd(ctx, vecGlobal, vecLocal, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
+   PetscCall(VecScatterBegin(ctx, vecGlobal, vecLocal, INSERT_VALUES, SCATTER_FORWARD));
+   PetscCall(VecScatterEnd(ctx, vecGlobal, vecLocal, INSERT_VALUES, SCATTER_FORWARD));
 
    /* Retrieve and do work */
-   ierr = VecGetArray(vecLocal, &arr);CHKERRQ(ierr);
+   PetscCall(VecGetArray(vecLocal, &arr));
    /* Work */
-   ierr = VecRestoreArray(vecLocal, &arr);CHKERRQ(ierr);
+   PetscCall(VecRestoreArray(vecLocal, &arr));
 
    /* Don't forget to clean up */
-   ierr = ISDestroy(&isLocal);CHKERRQ(ierr);
-   ierr = ISDestroy(&isGlobal);CHKERRQ(ierr);
-   ierr = VecScatterDestroy(&ctx);CHKERRQ(ierr);
-   ierr = VecDestroy(&vecLocal);CHKERRQ(ierr);
+   PetscCall(ISDestroy(&isLocal));
+   PetscCall(ISDestroy(&isGlobal));
+   PetscCall(VecScatterDestroy(&ctx));
+   PetscCall(VecDestroy(&vecLocal));
 
 .. _doc_faq_usage_alltoone:
 
@@ -749,20 +746,19 @@ How do I collect to a single processor all the values from a parallel PETSc Vec?
 
    ::
 
-      Vec            in_par, out_seq;
-      VecScatter     ctx;
-      PetscErrorCode ierr;
+      Vec        in_par,out_seq;
+      VecScatter ctx;
 
-      ierr = VecScatterCreateToAll(in_par, &ctx, &out_seq);CHKERRQ(ierr);
+      PetscCall(VecScatterCreateToAll(in_par, &ctx, &out_seq));
 
 #. Initiate the communication (this may be repeated if you wish):
 
    ::
 
-      ierr = VecScatterBegin(ctx, in_par, out_seq, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecScatterEnd(ctx, in_par, out_seq, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
+      PetscCall(VecScatterBegin(ctx, in_par, out_seq, INSERT_VALUES, SCATTER_FORWARD));
+      PetscCall(VecScatterEnd(ctx, in_par, out_seq, INSERT_VALUES, SCATTER_FORWARD));
       /* May destroy context now if no additional scatters are needed, otherwise reuse it */
-      ierr = VecScatterDestroy(&ctx);CHKERRQ(ierr);
+      PetscCall(VecScatterDestroy(&ctx));
 
 Note that this simply concatenates in the parallel ordering of the vector (computed by the
 ``MPI_Comm_rank`` of the owning process). If you are using a ``Vec`` from
@@ -779,13 +775,13 @@ replace
 
 .. code-block::
 
-   ierr = VecScatterCreateToAll(in_par, &ctx, &out_seq);CHKERRQ(ierr);
+   PetscCall(VecScatterCreateToAll(in_par, &ctx, &out_seq));
 
 with
 
 .. code-block::
 
-   ierr = VecScatterCreateToZero(in_par, &ctx, &out_seq);CHKERRQ(ierr);
+   PetscCall(VecScatterCreateToZero(in_par, &ctx, &out_seq));
 
 .. note::
 
@@ -837,11 +833,10 @@ with
 
 .. code-block::
 
-   KSP            ksp;
-   PetscErrorCode ierr;
+   KSP ksp;
 
-   ierr = KSPCreate(PETSC_COMM_WORLD, &ksp);CHKERRQ(ierr);
-   ierr = KSPGMRESSetRestart(ksp, 10);CHKERRQ(ierr);
+   PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
+   PetscCall(KSPGMRESSetRestart(ksp, 10));
 
 the restart will be ignored since the type has not yet been set to ``KSPGMRES``. To have
 those values take effect you should do one of the following:
@@ -1160,13 +1155,12 @@ provided by Rolf Kuiper:
    // the numbers of processors per direction are (int) x_procs, y_procs, z_procs respectively
    // (no parallelization in direction 'dir' means dir_procs = 1)
 
-   MPI_Comm       NewComm;
-   int            x, y, z;
-   PetscMPIInt    MPI_Rank, NewRank;
-   PetscErrorCode ierr;
+   MPI_Comm    NewComm;
+   int         x, y, z;
+   PetscMPIInt MPI_Rank, NewRank;
 
    // get rank from MPI ordering:
-   ierr = MPI_Comm_rank(MPI_COMM_WORLD, &MPI_Rank);CHKERRMPI(ierr);
+   CHKERRMPI(MPI_Comm_rank(MPI_COMM_WORLD, &MPI_Rank));
 
    // calculate coordinates of cpus in MPI ordering:
    x = MPI_rank / (z_procs*y_procs);
@@ -1177,7 +1171,7 @@ provided by Rolf Kuiper:
    NewRank = z*y_procs*x_procs + y*x_procs + x;
 
    // create communicator with new ranks according to PETSc ordering
-   ierr = MPI_Comm_split(PETSC_COMM_WORLD, 1, NewRank, &NewComm);CHKERRMPI(ierr);
+   CHKERRMPI(MPI_Comm_split(PETSC_COMM_WORLD, 1, NewRank, &NewComm));
 
    // override the default communicator (was MPI_COMM_WORLD as default)
    PETSC_COMM_WORLD = NewComm;
@@ -1357,30 +1351,29 @@ Assuming you have an existing matrix :math:`A` whose nullspace :math:`V` you wan
 
 .. code-block::
 
-   Mat            F, work, V;
-   PetscInt       N, rows;
-   PetscErrorCode ierr;
+   Mat      F, work, V;
+   PetscInt N, rows;
 
    /* Determine factorability */
-   ierr = MatGetFactor(A, MATSOLVERMUMPS, MAT_FACTOR_LU, &F);CHKERRQ(ierr);
-   ierr = MatGetLocalSize(A, &rows, NULL);CHKERRQ(ierr);
+   PetscCall(MatGetFactor(A, MATSOLVERMUMPS, MAT_FACTOR_LU, &F));
+   PetscCall(MatGetLocalSize(A, &rows, NULL));
 
    /* Set MUMPS options, see MUMPS documentation for more information */
-   ierr = MatMumpsSetIcntl(F, 24, 1);CHKERRQ(ierr);
-   ierr = MatMumpsSetIcntl(F, 25, 1);CHKERRQ(ierr);
+   PetscCall(MatMumpsSetIcntl(F, 24, 1));
+   PetscCall(MatMumpsSetIcntl(F, 25, 1));
 
    /* Perform factorization */
-   ierr = MatLUFactorSymbolic(F, A, NULL, NULL, NULL);CHKERRQ(ierr);
-   ierr = MatLUFactorNumeric(F, A, NULL);CHKERRQ(ierr);
+   PetscCall(MatLUFactorSymbolic(F, A, NULL, NULL, NULL));
+   PetscCall(MatLUFactorNumeric(F, A, NULL));
 
    /* This is the dimension of the null space */
-   ierr = MatMumpsGetInfog(F, 28, &N);CHKERRQ(ierr);
+   PetscCall(MatMumpsGetInfog(F, 28, &N));
 
    /* This will contain the null space in the columns */
-   ierr = MatCreateDense(comm, rows, N, PETSC_DETERMINE, PETSC_DETERMINE, NULL, &V);CHKERRQ(ierr);
+   PetscCall(MatCreateDense(comm, rows, N, PETSC_DETERMINE, PETSC_DETERMINE, NULL, &V));
 
-   ierr = MatDuplicate(V, MAT_DO_NOT_COPY_VALUES, &work);CHKERRQ(ierr);
-   ierr = MatMatSolve(F, work, V);CHKERRQ(ierr);
+   PetscCall(MatDuplicate(V, MAT_DO_NOT_COPY_VALUES, &work));
+   PetscCall(MatMatSolve(F, work, V));
 
 --------------------------------------------------
 
@@ -1954,26 +1947,24 @@ Many operations on PETSc objects require that the specific type of the object be
 
 .. code-block::
 
-   Mat            A;
-   PetscErrorCode ierr;
+   Mat A;
 
-   ierr = MatCreate(PETSC_COMM_WORLD, &A);CHKERRQ(ierr);
-   ierr = MatSetValues(A,....);CHKERRQ(ierr);
+   PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
+   PetscCall(MatSetValues(A,....));
 
 will not work. You must add ``MatSetType()`` or ``MatSetFromOptions()`` before the call to ``MatSetValues()``. I.e.
 
 .. code-block::
 
-   Mat            A;
-   PetscErrorCode ierr;
+   Mat A;
 
-   ierr = MatCreate(PETSC_COMM_WORLD, &A);CHKERRQ(ierr);
+   PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
 
-   ierr = MatSetType(A, MATAIJ);CHKERRQ(ierr);
+   PetscCall(MatSetType(A, MATAIJ));
    /* Will override MatSetType() */
-   ierr = MatSetFromOptions();CHKERRQ(ierr);
+   PetscCall(MatSetFromOptions());
 
-   ierr = MatSetValues(A,....);CHKERRQ(ierr);
+   PetscCall(MatSetValues(A,....));
 
 .. _split-ownership:
 

@@ -79,6 +79,10 @@ typedef struct {
   PetscQuadrature quad;         /* The points defining the space */
 } PetscSpace_Point;
 
+typedef struct {
+  PetscBool setupCalled;
+} PetscSpace_WXY;
+
 typedef struct _PetscDualSpaceOps *PetscDualSpaceOps;
 struct _PetscDualSpaceOps {
   PetscErrorCode (*setfromoptions)(PetscOptionItems*,PetscDualSpace);
@@ -271,23 +275,19 @@ static inline void CoordinatesRealToRef(PetscInt dimReal, PetscInt dimRef, const
 static inline PetscErrorCode PetscFEInterpolate_Static(PetscFE fe, const PetscScalar x[], PetscFEGeom *fegeom, PetscInt q, PetscScalar interpolant[])
 {
   PetscTabulation T;
-  PetscInt        fc, f;
-  PetscErrorCode  ierr;
 
   PetscFunctionBeginHot;
-  ierr = PetscFEGetCellTabulation(fe, 0, &T);CHKERRQ(ierr);
+  PetscCall(PetscFEGetCellTabulation(fe, 0, &T));
   {
     const PetscReal *basis = T->T[0];
     const PetscInt   Nb    = T->Nb;
     const PetscInt   Nc    = T->Nc;
-    for (fc = 0; fc < Nc; ++fc) {
+    for (PetscInt fc = 0; fc < Nc; ++fc) {
       interpolant[fc] = 0.0;
-      for (f = 0; f < Nb; ++f) {
-        interpolant[fc] += x[f]*basis[(q*Nb + f)*Nc + fc];
-      }
+      for (PetscInt f = 0; f < Nb; ++f) interpolant[fc] += x[f]*basis[(q*Nb + f)*Nc + fc];
     }
   }
-  ierr = PetscFEPushforward(fe, fegeom, 1, interpolant);CHKERRQ(ierr);
+  PetscCall(PetscFEPushforward(fe, fegeom, 1, interpolant));
   PetscFunctionReturn(0);
 }
 
@@ -295,10 +295,9 @@ static inline PetscErrorCode PetscFEInterpolateGradient_Static(PetscFE fe, Petsc
 {
   PetscTabulation T;
   PetscInt        fc, f, d;
-  PetscErrorCode  ierr;
 
   PetscFunctionBeginHot;
-  ierr = PetscFEGetCellTabulation(fe, k, &T);CHKERRQ(ierr);
+  PetscCall(PetscFEGetCellTabulation(fe, k, &T));
   {
     const PetscReal *basisDer = T->T[1];
     const PetscReal *basisHes = k > 1 ? T->T[2] : NULL;
@@ -326,7 +325,7 @@ static inline PetscErrorCode PetscFEInterpolateGradient_Static(PetscFE fe, Petsc
       }
     }
   }
-  ierr = PetscFEPushforwardGradient(fe, fegeom, 1, interpolant);CHKERRQ(ierr);
+  PetscCall(PetscFEPushforwardGradient(fe, fegeom, 1, interpolant));
   PetscFunctionReturn(0);
 }
 
@@ -335,11 +334,10 @@ static inline PetscErrorCode PetscFEFreeInterpolateGradient_Static(PetscFE fe, c
  PetscReal      realSpaceDer[3];
  PetscScalar    compGradient[3];
  PetscInt       Nb, Nc, fc, f=0, d, g;
- PetscErrorCode ierr;
 
  PetscFunctionBeginHot;
- ierr = PetscFEGetDimension(fe, &Nb);CHKERRQ(ierr);
- ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
+ PetscCall(PetscFEGetDimension(fe, &Nb));
+ PetscCall(PetscFEGetNumComponents(fe, &Nc));
 
  for (fc = 0; fc < Nc; ++fc) {
    interpolant[fc] = 0.0;
@@ -366,10 +364,9 @@ static inline PetscErrorCode PetscFEInterpolateFieldAndGradient_Static(PetscFE f
 {
   PetscTabulation T;
   PetscInt        fc, f, d;
-  PetscErrorCode  ierr;
 
   PetscFunctionBeginHot;
-  ierr = PetscFEGetCellTabulation(fe, k, &T);CHKERRQ(ierr);
+  PetscCall(PetscFEGetCellTabulation(fe, k, &T));
   {
     const PetscReal *basis    = T->T[0];
     const PetscReal *basisDer = T->T[1];
@@ -396,11 +393,11 @@ static inline PetscErrorCode PetscFEInterpolateFieldAndGradient_Static(PetscFE f
           for (d = 0; d < cdim*cdim; ++d) interpolantGrad[off+fc*cdim+d] += x[f]*basisHes[((q*Nb + f)*Nc + fc)*cdim*cdim + d];
         }
       }
-      ierr = PetscFEPushforwardHessian(fe, fegeom, 1, &interpolantGrad[off]);CHKERRQ(ierr);
+      PetscCall(PetscFEPushforwardHessian(fe, fegeom, 1, &interpolantGrad[off]));
     }
   }
-  ierr = PetscFEPushforward(fe, fegeom, 1, interpolant);CHKERRQ(ierr);
-  ierr = PetscFEPushforwardGradient(fe, fegeom, 1, interpolantGrad);CHKERRQ(ierr);
+  PetscCall(PetscFEPushforward(fe, fegeom, 1, interpolant));
+  PetscCall(PetscFEPushforwardGradient(fe, fegeom, 1, interpolantGrad));
   PetscFunctionReturn(0);
 }
 

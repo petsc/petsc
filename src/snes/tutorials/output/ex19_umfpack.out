@@ -6,7 +6,7 @@ lid velocity = 0.00591716, prandtl # = 1., grashof # = 1.
     0 KSP Residual norm 1.66117e-05 
     1 KSP Residual norm < 1.e-11
   2 SNES Function norm 1.155e-11 
-SNES Object: 1 MPI processes
+SNES Object: 1 MPI process
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
@@ -14,14 +14,14 @@ SNES Object: 1 MPI processes
   total number of function evaluations=3
   norm schedule ALWAYS
   Jacobian is built using colored finite differences on a DMDA
-  SNESLineSearch Object: 1 MPI processes
+  SNESLineSearch Object: 1 MPI process
     type: bt
       interpolation: cubic
       alpha=1.000000e-04
     maxstep=1.000000e+08, minlambda=1.000000e-12
     tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
     maximum iterations=40
-  KSP Object: 1 MPI processes
+  KSP Object: 1 MPI process
     type: gmres
       restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
       happy breakdown tolerance 1e-30
@@ -29,14 +29,14 @@ SNES Object: 1 MPI processes
     tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
     left preconditioning
     using PRECONDITIONED norm type for convergence test
-  PC Object: 1 MPI processes
+  PC Object: 1 MPI process
     type: lu
       out-of-place factorization
       tolerance for zero pivot 2.22045e-14
       matrix ordering: external
       factor fill ratio given 0., needed 0.
         Factored matrix follows:
-          Mat Object: 1 MPI processes
+          Mat Object: 1 MPI process
             type: umfpack
             rows=676, cols=676
             package used to perform factorization: umfpack
@@ -58,7 +58,7 @@ SNES Object: 1 MPI processes
                 Control[UMFPACK_IRSTEP]: 0.
                 Control[UMFPACK_ORDERING]: AMD (not using the PETSc ordering)
     linear system matrix = precond matrix:
-    Mat Object: 1 MPI processes
+    Mat Object: 1 MPI process
       type: seqaij
       rows=676, cols=676, bs=4
       total: nonzeros=12688, allocated nonzeros=12688

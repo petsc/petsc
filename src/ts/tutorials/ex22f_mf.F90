@@ -64,109 +64,105 @@ program main
   one = 1.0
   pone = one / 10
 
-  call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-  if (ierr .ne. 0) then
-    print*,'PetscInitialize failed'
-    stop
-  endif
+  PetscCallA(PetscInitialize(ierr))
 
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !  Create distributed array (DMDA) to manage parallel grid and vectors
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  call DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,im11,i2,i2,PETSC_NULL_INTEGER,da,ierr);CHKERRA(ierr)
-  call DMSetFromOptions(da,ierr);CHKERRA(ierr)
-  call DMSetUp(da,ierr);CHKERRA(ierr)
+  PetscCallA(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,im11,i2,i2,PETSC_NULL_INTEGER,da,ierr))
+  PetscCallA(DMSetFromOptions(da,ierr))
+  PetscCallA(DMSetUp(da,ierr))
 
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !    Extract global vectors from DMDA;
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  call DMCreateGlobalVector(da,X,ierr);CHKERRA(ierr)
+  PetscCallA(DMCreateGlobalVector(da,X,ierr))
 
   ! Initialize user application context
   ! Use zero-based indexing for command line parameters to match ex22.c
   user(user_a+1) = 1.0
-  call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-a0',user(user_a+1),flg,ierr);CHKERRA(ierr)
+  PetscCallA(PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-a0',user(user_a+1),flg,ierr))
   user(user_a+2) = 0.0
-  call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-a1',user(user_a+2),flg,ierr);CHKERRA(ierr)
+  PetscCallA(PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-a1',user(user_a+2),flg,ierr))
   user(user_k+1) = 1000000.0
-  call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-k0', user(user_k+1),flg,ierr);CHKERRA(ierr)
+  PetscCallA(PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-k0', user(user_k+1),flg,ierr))
   user(user_k+2) = 2*user(user_k+1)
-  call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-k1', user(user_k+2),flg,ierr);CHKERRA(ierr)
+  PetscCallA(PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-k1', user(user_k+2),flg,ierr))
   user(user_s+1) = 0.0
-  call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-s0',user(user_s+1),flg,ierr);CHKERRA(ierr)
+  PetscCallA(PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-s0',user(user_s+1),flg,ierr))
   user(user_s+2) = 1.0
-  call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-s1',user(user_s+2),flg,ierr);CHKERRA(ierr)
+  PetscCallA(PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-s1',user(user_s+2),flg,ierr))
 
   OptionSaveToDisk=.FALSE.
-      call PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-sdisk',OptionSaveToDisk,flg,ierr);CHKERRA(ierr)
+      PetscCallA(PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-sdisk',OptionSaveToDisk,flg,ierr))
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !    Create timestepping solver context
   !     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  call TSCreate(PETSC_COMM_WORLD,ts,ierr);CHKERRA(ierr)
+  PetscCallA(TSCreate(PETSC_COMM_WORLD,ts,ierr))
   tscontext=ts
-  call TSSetDM(ts,da,ierr);CHKERRA(ierr)
-  call TSSetType(ts,TSARKIMEX,ierr);CHKERRA(ierr)
-  call TSSetRHSFunction(ts,PETSC_NULL_VEC,FormRHSFunction,user,ierr);CHKERRA(ierr)
+  PetscCallA(TSSetDM(ts,da,ierr))
+  PetscCallA(TSSetType(ts,TSARKIMEX,ierr))
+  PetscCallA(TSSetRHSFunction(ts,PETSC_NULL_VEC,FormRHSFunction,user,ierr))
 
   ! - - - - - - - - -- - - - -
   !   Matrix free setup
-  call GetLayout(da,mx,xs,xe,gxs,gxe,ierr);CHKERRA(ierr)
+  PetscCallA(GetLayout(da,mx,xs,xe,gxs,gxe,ierr))
   dof=i2*(xe-xs+1)
   gdof=i2*(gxe-gxs+1)
-  call MatCreateShell(PETSC_COMM_WORLD,dof,dof,gdof,gdof,shell_shift,A,ierr);CHKERRA(ierr)
+  PetscCallA(MatCreateShell(PETSC_COMM_WORLD,dof,dof,gdof,gdof,shell_shift,A,ierr))
 
-  call MatShellSetOperation(A,MATOP_MULT,MyMult,ierr);CHKERRA(ierr)
+  PetscCallA(MatShellSetOperation(A,MATOP_MULT,MyMult,ierr))
   ! - - - - - - - - - - - -
 
-  call TSSetIFunction(ts,PETSC_NULL_VEC,FormIFunction,user,ierr);CHKERRA(ierr)
-  call DMSetMatType(da,MATAIJ,ierr);CHKERRA(ierr)
-  call DMCreateMatrix(da,J,ierr);CHKERRA(ierr)
+  PetscCallA(TSSetIFunction(ts,PETSC_NULL_VEC,FormIFunction,user,ierr))
+  PetscCallA(DMSetMatType(da,MATAIJ,ierr))
+  PetscCallA(DMCreateMatrix(da,J,ierr))
 
   Jmat=J
 
-  call TSSetIJacobian(ts,J,J,FormIJacobian,user,ierr);CHKERRA(ierr)
-  call TSSetIJacobian(ts,A,A,FormIJacobianMF,user,ierr);CHKERRA(ierr)
+  PetscCallA(TSSetIJacobian(ts,J,J,FormIJacobian,user,ierr))
+  PetscCallA(TSSetIJacobian(ts,A,A,FormIJacobianMF,user,ierr))
 
   ftime = 1.0
-  call TSSetMaxTime(ts,ftime,ierr);CHKERRA(ierr)
-  call TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER,ierr);CHKERRA(ierr)
+  PetscCallA(TSSetMaxTime(ts,ftime,ierr))
+  PetscCallA(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER,ierr))
 
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !  Set initial conditions
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  call FormInitialSolution(ts,X,user,ierr);CHKERRA(ierr)
-  call TSSetSolution(ts,X,ierr);CHKERRA(ierr)
-  call VecGetSize(X,mx,ierr);CHKERRA(ierr)
+  PetscCallA(FormInitialSolution(ts,X,user,ierr))
+  PetscCallA(TSSetSolution(ts,X,ierr))
+  PetscCallA(VecGetSize(X,mx,ierr))
   !  Advective CFL, I don't know why it needs so much safety factor.
   dt = pone * max(user(user_a+1),user(user_a+2)) / mx;
-  call TSSetTimeStep(ts,dt,ierr);CHKERRA(ierr)
+  PetscCallA(TSSetTimeStep(ts,dt,ierr))
 
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !   Set runtime options
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  call TSSetFromOptions(ts,ierr);CHKERRA(ierr)
+  PetscCallA(TSSetFromOptions(ts,ierr))
 
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !  Solve nonlinear system
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  call TSSolve(ts,X,ierr);CHKERRA(ierr)
+  PetscCallA(TSSolve(ts,X,ierr))
 
   if (OptionSaveToDisk) then
-     call GetLayout(da,mx,xs,xe,gxs,gxe,ierr);CHKERRA(ierr)
+     PetscCallA(GetLayout(da,mx,xs,xe,gxs,gxe,ierr))
      dof=i2*(xe-xs+1)
      gdof=i2*(gxe-gxs+1)
-     call SaveSolutionToDisk(da,X,gdof,xs,xe);CHKERRA(ierr)
+     call SaveSolutionToDisk(da,X,gdof,xs,xe)
   end if
 
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !  Free work space.
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  call MatDestroy(A,ierr);CHKERRA(ierr)
-  call MatDestroy(J,ierr);CHKERRA(ierr)
-  call VecDestroy(X,ierr);CHKERRA(ierr)
-  call TSDestroy(ts,ierr);CHKERRA(ierr)
-  call DMDestroy(da,ierr);CHKERRA(ierr)
-  call PetscFinalize(ierr)
+  PetscCallA(MatDestroy(A,ierr))
+  PetscCallA(MatDestroy(J,ierr))
+  PetscCallA(VecDestroy(X,ierr))
+  PetscCallA(TSDestroy(ts,ierr))
+  PetscCallA(DMDestroy(da,ierr))
+  PetscCallA(PetscFinalize(ierr))
 end program main
 
 ! Small helper to extract the layout, result uses 1-based indexing.
@@ -178,10 +174,9 @@ end program main
   PetscInt mx,xs,xe,gxs,gxe
   PetscErrorCode ierr
   PetscInt xm,gxm
-  call DMDAGetInfo(da,PETSC_NULL_INTEGER,mx,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,    &
-       PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr);CHKERRQ(ierr)
-  call DMDAGetCorners(da,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,xm,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr);CHKERRQ(ierr)
-  call DMDAGetGhostCorners(da,gxs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,gxm,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr);CHKERRQ(ierr)
+  PetscCall(DMDAGetInfo(da,PETSC_NULL_INTEGER,mx,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr))
+  PetscCall(DMDAGetCorners(da,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,xm,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr))
+  PetscCall(DMDAGetGhostCorners(da,gxs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,gxm,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr))
   xs = xs + 1
   gxs = gxs + 1
   xe = xs + xm - 1
@@ -221,19 +216,19 @@ subroutine FormIFunction(ts,t,X,Xdot,F,user,ierr)
   PetscOffset    ixx,ixxdot,iff
   PetscScalar    xx(0:1),xxdot(0:1),ff(0:1)
 
-  call TSGetDM(ts,da,ierr);CHKERRQ(ierr)
-  call GetLayout(da,mx,xs,xe,gxs,gxe,ierr);CHKERRQ(ierr)
+  PetscCall(TSGetDM(ts,da,ierr))
+  PetscCall(GetLayout(da,mx,xs,xe,gxs,gxe,ierr))
 
   ! Get access to vector data
-  call VecGetArrayRead(X,xx,ixx,ierr);CHKERRQ(ierr)
-  call VecGetArrayRead(Xdot,xxdot,ixxdot,ierr);CHKERRQ(ierr)
-  call VecGetArray(F,ff,iff,ierr);CHKERRQ(ierr)
+  PetscCall(VecGetArrayRead(X,xx,ixx,ierr))
+  PetscCall(VecGetArrayRead(Xdot,xxdot,ixxdot,ierr))
+  PetscCall(VecGetArray(F,ff,iff,ierr))
 
-  call FormIFunctionLocal(mx,xs,xe,gxs,gxe,xx(ixx),xxdot(ixxdot),ff(iff),user(user_a),user(user_k),user(user_s),ierr);CHKERRQ(ierr)
+  PetscCall(FormIFunctionLocal(mx,xs,xe,gxs,gxe,xx(ixx),xxdot(ixxdot),ff(iff),user(user_a),user(user_k),user(user_s),ierr))
 
-  call VecRestoreArrayRead(X,xx,ixx,ierr);CHKERRQ(ierr)
-  call VecRestoreArrayRead(Xdot,xxdot,ixxdot,ierr);CHKERRQ(ierr)
-  call VecRestoreArray(F,ff,iff,ierr);CHKERRQ(ierr)
+  PetscCall(VecRestoreArrayRead(X,xx,ixx,ierr))
+  PetscCall(VecRestoreArrayRead(Xdot,xxdot,ixxdot,ierr))
+  PetscCall(VecRestoreArray(F,ff,iff,ierr))
 end subroutine FormIFunction
 
 subroutine FormRHSFunctionLocal(mx,xs,xe,gxs,gxe,t,x,f,a,k,s,ierr)
@@ -306,26 +301,26 @@ subroutine FormRHSFunction(ts,t,X,F,user,ierr)
   PetscOffset    ixx,iff
   PetscScalar    xx(0:1),ff(0:1)
 
-  call TSGetDM(ts,da,ierr);CHKERRQ(ierr)
-  call GetLayout(da,mx,xs,xe,gxs,gxe,ierr);CHKERRQ(ierr)
+  PetscCall(TSGetDM(ts,da,ierr))
+  PetscCall(GetLayout(da,mx,xs,xe,gxs,gxe,ierr))
 
   !     Scatter ghost points to local vector,using the 2-step process
   !        DMGlobalToLocalBegin(),DMGlobalToLocalEnd().
   !     By placing code between these two statements, computations can be
   !     done while messages are in transition.
-  call DMGetLocalVector(da,Xloc,ierr);CHKERRQ(ierr)
-  call DMGlobalToLocalBegin(da,X,INSERT_VALUES,Xloc,ierr);CHKERRQ(ierr)
-  call DMGlobalToLocalEnd(da,X,INSERT_VALUES,Xloc,ierr);CHKERRQ(ierr)
+  PetscCall(DMGetLocalVector(da,Xloc,ierr))
+  PetscCall(DMGlobalToLocalBegin(da,X,INSERT_VALUES,Xloc,ierr))
+  PetscCall(DMGlobalToLocalEnd(da,X,INSERT_VALUES,Xloc,ierr))
 
   ! Get access to vector data
-  call VecGetArrayRead(Xloc,xx,ixx,ierr);CHKERRQ(ierr)
-  call VecGetArray(F,ff,iff,ierr);CHKERRQ(ierr)
+  PetscCall(VecGetArrayRead(Xloc,xx,ixx,ierr))
+  PetscCall(VecGetArray(F,ff,iff,ierr))
 
-  call FormRHSFunctionLocal(mx,xs,xe,gxs,gxe,t,xx(ixx),ff(iff),user(user_a),user(user_k),user(user_s),ierr);CHKERRQ(ierr)
+  PetscCall(FormRHSFunctionLocal(mx,xs,xe,gxs,gxe,t,xx(ixx),ff(iff),user(user_a),user(user_k),user(user_s),ierr))
 
-  call VecRestoreArrayRead(Xloc,xx,ixx,ierr);CHKERRQ(ierr)
-  call VecRestoreArray(F,ff,iff,ierr);CHKERRQ(ierr)
-  call DMRestoreLocalVector(da,Xloc,ierr);CHKERRQ(ierr)
+  PetscCall(VecRestoreArrayRead(Xloc,xx,ixx,ierr))
+  PetscCall(VecRestoreArray(F,ff,iff,ierr))
+  PetscCall(DMRestoreLocalVector(da,Xloc,ierr))
 end subroutine FormRHSFunction
 
 ! ---------------------------------------------------------------------
@@ -352,8 +347,8 @@ subroutine FormIJacobian(ts,t,X,Xdot,shift,J,Jpre,user,ierr)
   PetscReal      k1,k2;
   PetscScalar    val(4)
 
-  call TSGetDM(ts,da,ierr);CHKERRQ(ierr)
-  call GetLayout(da,mx,xs,xe,gxs,gxe,ierr);CHKERRQ(ierr)
+  PetscCall(TSGetDM(ts,da,ierr))
+  PetscCall(GetLayout(da,mx,xs,xe,gxs,gxe,ierr))
 
   i1 = 1
   k1 = user(user_k+1)
@@ -365,13 +360,13 @@ subroutine FormIJacobian(ts,t,X,Xdot,shift,J,Jpre,user,ierr)
      val(2) = -k2
      val(3) = -k1
      val(4) = shift + k2
-     call MatSetValuesBlockedLocal(Jpre,i1,row,i1,col,val,INSERT_VALUES,ierr);CHKERRQ(ierr)
+     PetscCall(MatSetValuesBlockedLocal(Jpre,i1,row,i1,col,val,INSERT_VALUES,ierr))
   end do
-  call MatAssemblyBegin(Jpre,MAT_FINAL_ASSEMBLY,ierr);CHKERRQ(ierr)
-  call MatAssemblyEnd(Jpre,MAT_FINAL_ASSEMBLY,ierr);CHKERRQ(ierr)
+  PetscCall(MatAssemblyBegin(Jpre,MAT_FINAL_ASSEMBLY,ierr))
+  PetscCall(MatAssemblyEnd(Jpre,MAT_FINAL_ASSEMBLY,ierr))
   if (J /= Jpre) then
-     call MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY,ierr);CHKERRQ(ierr)
-     call MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY,ierr);CHKERRQ(ierr)
+     PetscCall(MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY,ierr))
+     PetscCall(MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY,ierr))
   end if
 end subroutine FormIJacobian
 
@@ -415,15 +410,15 @@ subroutine FormInitialSolution(ts,X,user,ierr)
   PetscOffset    ixx
   PetscScalar    xx(0:1)
 
-  call TSGetDM(ts,da,ierr);CHKERRQ(ierr)
-  call GetLayout(da,mx,xs,xe,gxs,gxe,ierr);CHKERRQ(ierr)
+  PetscCall(TSGetDM(ts,da,ierr))
+  PetscCall(GetLayout(da,mx,xs,xe,gxs,gxe,ierr))
 
   ! Get access to vector data
-  call VecGetArray(X,xx,ixx,ierr);CHKERRQ(ierr)
+  PetscCall(VecGetArray(X,xx,ixx,ierr))
 
-  call FormInitialSolutionLocal(mx,xs,xe,gxs,gxe,xx(ixx),user(user_a),user(user_k),user(user_s),ierr);CHKERRQ(ierr)
+  PetscCall(FormInitialSolutionLocal(mx,xs,xe,gxs,gxe,xx(ixx),user(user_a),user(user_k),user(user_s),ierr))
 
-  call VecRestoreArray(X,xx,ixx,ierr);CHKERRQ(ierr)
+  PetscCall(VecRestoreArray(X,xx,ixx,ierr))
 end subroutine FormInitialSolution
 
 ! ---------------------------------------------------------------------
@@ -440,7 +435,6 @@ subroutine FormIJacobianMF(ts,t,X,Xdot,shift,J,Jpre,user,ierr)
   PetscReal user(6)
   PetscErrorCode ierr
 
-  !  call MatShellSetContext(J,shift,ierr)
   PETSC_SHIFT=shift
   MFuser=user
 
@@ -479,12 +473,11 @@ subroutine  MyMult(A,X,F,ierr)
   PetscReal      k1,k2;
   PetscScalar    val(4)
 
-  !call MatShellGetContext(A,shift,ierr)
   shift=PETSC_SHIFT
   user=MFuser
 
-  call TSGetDM(tscontext,da,ierr)
-  call GetLayout(da,mx,xs,xe,gxs,gxe,ierr)
+  PetscCall(TSGetDM(tscontext,da,ierr))
+  PetscCall(GetLayout(da,mx,xs,xe,gxs,gxe,ierr))
 
   i1 = 1
   k1 = user(user_k+1)
@@ -497,17 +490,17 @@ subroutine  MyMult(A,X,F,ierr)
      val(2) = -k2
      val(3) = -k1
      val(4) = shift + k2
-     call MatSetValuesBlockedLocal(Jmat,i1,row,i1,col,val,INSERT_VALUES,ierr)
+     PetscCall(MatSetValuesBlockedLocal(Jmat,i1,row,i1,col,val,INSERT_VALUES,ierr))
   end do
 
-!  call MatAssemblyBegin(Jpre,MAT_FINAL_ASSEMBLY,ierr)
-!  call MatAssemblyEnd(Jpre,MAT_FINAL_ASSEMBLY,ierr)
+!  PetscCall(MatAssemblyBegin(Jpre,MAT_FINAL_ASSEMBLY,ierr))
+!  PetscCall(MatAssemblyEnd(Jpre,MAT_FINAL_ASSEMBLY,ierr))
 !  if (J /= Jpre) then
-     call MatAssemblyBegin(Jmat,MAT_FINAL_ASSEMBLY,ierr)
-     call MatAssemblyEnd(Jmat,MAT_FINAL_ASSEMBLY,ierr)
+     PetscCall(MatAssemblyBegin(Jmat,MAT_FINAL_ASSEMBLY,ierr))
+     PetscCall(MatAssemblyEnd(Jmat,MAT_FINAL_ASSEMBLY,ierr))
 !  end if
 
-  call MatMult(Jmat,X,F,ierr)
+  PetscCall(MatMult(Jmat,X,F,ierr))
 
   return
 end subroutine MyMult
@@ -526,7 +519,7 @@ subroutine SaveSolutionToDisk(da,X,gdof,xs,xe)
   PetscScalar data2(2,xs:xe),data(gdof)
   PetscScalar    xx(0:1)
 
-  call VecGetArrayRead(X,xx,ixx,ierr)
+  PetscCall(VecGetArrayRead(X,xx,ixx,ierr))
 
   two = 2
   data2=reshape(xx(ixx:ixx+gdof),(/two,xe-xs+1/))
@@ -537,7 +530,7 @@ subroutine SaveSolutionToDisk(da,X,gdof,xs,xe)
   end do
   close(1020)
 
-  call VecRestoreArrayRead(X,xx,ixx,ierr)
+  PetscCall(VecRestoreArrayRead(X,xx,ixx,ierr))
 end subroutine SaveSolutionToDisk
 
 !/*TEST

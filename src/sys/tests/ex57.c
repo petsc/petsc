@@ -5,29 +5,28 @@ static char help[] = "Tests PetscCommGetComm().\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   MPI_Comm       comms[10],comm;
   PetscInt       i;
   PetscRandom    rand;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
-  ierr = PetscObjectGetComm((PetscObject)rand,&comm);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscRandomCreate(PETSC_COMM_WORLD,&rand));
+  PetscCall(PetscObjectGetComm((PetscObject)rand,&comm));
   for (i=0; i<10; i++) {
-    ierr = PetscCommGetComm(comm,&comms[i]);CHKERRQ(ierr);
+    PetscCall(PetscCommGetComm(comm,&comms[i]));
   }
   for (i=0; i<5; i++) {
-    ierr = PetscCommRestoreComm(comm,&comms[i]);CHKERRQ(ierr);
+    PetscCall(PetscCommRestoreComm(comm,&comms[i]));
   }
   for (i=0; i<5; i++) {
-    ierr = PetscCommGetComm(comm,&comms[i]);CHKERRQ(ierr);
+    PetscCall(PetscCommGetComm(comm,&comms[i]));
   }
   for (i=0; i<10; i++) {
-    ierr = PetscCommRestoreComm(comm,&comms[i]);CHKERRQ(ierr);
+    PetscCall(PetscCommRestoreComm(comm,&comms[i]));
   }
-  ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscRandomDestroy(&rand));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -4,8 +4,9 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.download               = ['https://download.open-mpi.org/release/open-mpi/v4.1/openmpi-4.1.2.tar.gz',
-                                   'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/openmpi-4.1.2.tar.gz']
+    self.version                = '4.1.4'
+    self.download               = ['https://download.open-mpi.org/release/open-mpi/v4.1/openmpi-'+self.version+'.tar.gz',
+                                   'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/openmpi-'+self.version+'.tar.gz']
     self.downloaddirnames       = ['openmpi','ompi']
     self.skippackagewithoptions = 1
     self.isMPI                  = 1
@@ -14,6 +15,8 @@ class Configure(config.package.GNUPackage):
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
     self.cuda           = framework.require('config.packages.cuda',self)
+    self.hwloc          = framework.require('config.packages.hwloc',self)
+    self.odeps          = [self.hwloc]
     return
 
   def formGNUConfigureArgs(self):
@@ -41,8 +44,10 @@ class Configure(config.package.GNUPackage):
     args.append('--disable-vt')
     if self.cuda.found:
       args.append('--with-cuda='+self.cuda.cudaDir)
-    # have OpenMPI build its own private copy of hwloc to prevent possible conflict with one used by PETSc
-    args.append('--with-hwloc=internal')
+    if self.hwloc.found:
+      args.append('--with-hwloc="'+self.hwloc.directory+'"')
+    else:
+      args.append('--with-hwloc=internal')
     # https://www.open-mpi.org/faq/?category=building#libevent-or-hwloc-errors-when-linking-fortran
     args.append('--with-libevent=internal')
     return args
@@ -68,18 +73,7 @@ class Configure(config.package.GNUPackage):
     return
 
   def preInstall(self):
-    '''check for configure script - and run bootstrap - if needed'''
-    import os
-    if not os.path.isfile(os.path.join(self.packageDir,'configure')):
-      if not self.programs.libtoolize:
-        raise RuntimeError('Could not bootstrap OpenMPI using autotools: libtoolize not found')
-      if not self.programs.autoreconf:
-        raise RuntimeError('Could not bootstrap OpenMPI using autotools: autoreconf not found')
-      self.logPrintBox('Trying to bootstrap OpenMPI using autotools; this may take several minutes')
-      try:
-        self.executeShellCommand('AUTOMAKE_JOBS=%d ./autogen.pl' % self.make.make_np,cwd=self.packageDir,log=self.log)
-      except RuntimeError as e:
-        raise RuntimeError('Could not autogen.pl with OpenMPI: maybe autotools (or recent enough autotools) could not be found?\nError: '+str(e))
+    self.Bootstrap('AUTOMAKE_JOBS=%d ./autogen.pl' % self.make.make_np)
 
   def checkDownload(self):
     if config.setCompilers.Configure.isCygwin(self.log):

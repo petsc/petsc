@@ -12,111 +12,15 @@ const char SBRCitation[] = "@article{PlazaCarey2000,\n"
                           "  doi     = {10.1016/S0168-9274(99)00022-7},\n"
                           "  year    = {2000}\n}\n";
 
-typedef struct _p_PointQueue *PointQueue;
-struct _p_PointQueue {
-  PetscInt  size;   /* Size of the storage array */
-  PetscInt *points; /* Array of mesh points */
-  PetscInt  front;  /* Index of the front of the queue */
-  PetscInt  back;   /* Index of the back of the queue */
-  PetscInt  num;    /* Number of enqueued points */
-};
-
-static PetscErrorCode PointQueueCreate(PetscInt size, PointQueue *queue)
-{
-  PointQueue     q;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscCheckFalse(size < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Queue size %D must be non-negative", size);
-  ierr = PetscCalloc1(1, &q);CHKERRQ(ierr);
-  q->size = size;
-  ierr = PetscMalloc1(q->size, &q->points);CHKERRQ(ierr);
-  q->num   = 0;
-  q->front = 0;
-  q->back  = q->size-1;
-  *queue = q;
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode PointQueueDestroy(PointQueue *queue)
-{
-  PointQueue     q = *queue;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscFree(q->points);CHKERRQ(ierr);
-  ierr = PetscFree(q);CHKERRQ(ierr);
-  *queue = NULL;
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode PointQueueEnsureSize(PointQueue queue)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (queue->num < queue->size) PetscFunctionReturn(0);
-  queue->size *= 2;
-  ierr = PetscRealloc(queue->size * sizeof(PetscInt), &queue->points);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode PointQueueEnqueue(PointQueue queue, PetscInt p)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PointQueueEnsureSize(queue);CHKERRQ(ierr);
-  queue->back = (queue->back + 1) % queue->size;
-  queue->points[queue->back] = p;
-  ++queue->num;
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode PointQueueDequeue(PointQueue queue, PetscInt *p)
-{
-  PetscFunctionBegin;
-  PetscCheckFalse(!queue->num,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cannot dequeue from an empty queue");
-  *p = queue->points[queue->front];
-  queue->front = (queue->front + 1) % queue->size;
-  --queue->num;
-  PetscFunctionReturn(0);
-}
-
-#if 0
-static PetscErrorCode PointQueueFront(PointQueue queue, PetscInt *p)
-{
-  PetscFunctionBegin;
-  PetscCheckFalse(!queue->num,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cannot get the front of an empty queue");
-  *p = queue->points[queue->front];
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode PointQueueBack(PointQueue queue, PetscInt *p)
-{
-  PetscFunctionBegin;
-  PetscCheckFalse(!queue->num,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cannot get the back of an empty queue");
-  *p = queue->points[queue->back];
-  PetscFunctionReturn(0);
-}
-#endif
-
-static inline PetscBool PointQueueEmpty(PointQueue queue)
-{
-  if (!queue->num) return PETSC_TRUE;
-  return PETSC_FALSE;
-}
-
 static PetscErrorCode SBRGetEdgeLen_Private(DMPlexTransform tr, PetscInt edge, PetscReal *len)
 {
   DMPlexRefine_SBR *sbr = (DMPlexRefine_SBR *) tr->data;
   DM                dm;
   PetscInt          off;
-  PetscErrorCode    ierr;
 
   PetscFunctionBeginHot;
-  ierr = DMPlexTransformGetDM(tr, &dm);CHKERRQ(ierr);
-  ierr = PetscSectionGetOffset(sbr->secEdgeLen, edge, &off);CHKERRQ(ierr);
+  PetscCall(DMPlexTransformGetDM(tr, &dm));
+  PetscCall(PetscSectionGetOffset(sbr->secEdgeLen, edge, &off));
   if (sbr->edgeLen[off] <= 0.0) {
     DM                 cdm;
     Vec                coordsLocal;
@@ -125,17 +29,17 @@ static PetscErrorCode SBRGetEdgeLen_Private(DMPlexTransform tr, PetscInt edge, P
     PetscScalar       *cA, *cB;
     PetscInt           coneSize, cdim;
 
-    ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
-    ierr = DMPlexGetCone(dm, edge, &cone);CHKERRQ(ierr);
-    ierr = DMPlexGetConeSize(dm, edge, &coneSize);CHKERRQ(ierr);
-    PetscCheckFalse(coneSize != 2,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Edge %D cone size must be 2, not %D", edge, coneSize);
-    ierr = DMGetCoordinateDim(dm, &cdim);CHKERRQ(ierr);
-    ierr = DMGetCoordinatesLocal(dm, &coordsLocal);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(coordsLocal, &coords);CHKERRQ(ierr);
-    ierr = DMPlexPointLocalRead(cdm, cone[0], coords, &cA);CHKERRQ(ierr);
-    ierr = DMPlexPointLocalRead(cdm, cone[1], coords, &cB);CHKERRQ(ierr);
+    PetscCall(DMGetCoordinateDM(dm, &cdm));
+    PetscCall(DMPlexGetCone(dm, edge, &cone));
+    PetscCall(DMPlexGetConeSize(dm, edge, &coneSize));
+    PetscCheck(coneSize == 2,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Edge %" PetscInt_FMT " cone size must be 2, not %" PetscInt_FMT, edge, coneSize);
+    PetscCall(DMGetCoordinateDim(dm, &cdim));
+    PetscCall(DMGetCoordinatesLocal(dm, &coordsLocal));
+    PetscCall(VecGetArrayRead(coordsLocal, &coords));
+    PetscCall(DMPlexPointLocalRead(cdm, cone[0], coords, &cA));
+    PetscCall(DMPlexPointLocalRead(cdm, cone[1], coords, &cB));
     sbr->edgeLen[off] = DMPlex_DistD_Internal(cdim, cA, cB);
-    ierr = VecRestoreArrayRead(coordsLocal, &coords);CHKERRQ(ierr);
+    PetscCall(VecRestoreArrayRead(coordsLocal, &coords));
   }
   *len = sbr->edgeLen[off];
   PetscFunctionReturn(0);
@@ -143,22 +47,21 @@ static PetscErrorCode SBRGetEdgeLen_Private(DMPlexTransform tr, PetscInt edge, P
 
 /* Mark local edges that should be split */
 /* TODO This will not work in 3D */
-static PetscErrorCode SBRSplitLocalEdges_Private(DMPlexTransform tr, PointQueue queue)
+static PetscErrorCode SBRSplitLocalEdges_Private(DMPlexTransform tr, DMPlexPointQueue queue)
 {
   DMPlexRefine_SBR *sbr = (DMPlexRefine_SBR *) tr->data;
   DM                dm;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexTransformGetDM(tr, &dm);CHKERRQ(ierr);
-  while (!PointQueueEmpty(queue)) {
+  PetscCall(DMPlexTransformGetDM(tr, &dm));
+  while (!DMPlexPointQueueEmpty(queue)) {
     PetscInt        p = -1;
     const PetscInt *support;
     PetscInt        supportSize, s;
 
-    ierr = PointQueueDequeue(queue, &p);CHKERRQ(ierr);
-    ierr = DMPlexGetSupport(dm, p, &support);CHKERRQ(ierr);
-    ierr = DMPlexGetSupportSize(dm, p, &supportSize);CHKERRQ(ierr);
+    PetscCall(DMPlexPointQueueDequeue(queue, &p));
+    PetscCall(DMPlexGetSupport(dm, p, &support));
+    PetscCall(DMPlexGetSupportSize(dm, p, &supportSize));
     for (s = 0; s < supportSize; ++s) {
       const PetscInt  cell = support[s];
       const PetscInt *cone;
@@ -166,103 +69,33 @@ static PetscErrorCode SBRSplitLocalEdges_Private(DMPlexTransform tr, PointQueue 
       PetscInt        cval, eval, maxedge;
       PetscReal       len, maxlen;
 
-      ierr = DMLabelGetValue(sbr->splitPoints, cell, &cval);CHKERRQ(ierr);
+      PetscCall(DMLabelGetValue(sbr->splitPoints, cell, &cval));
       if (cval == 2) continue;
-      ierr = DMPlexGetCone(dm, cell, &cone);CHKERRQ(ierr);
-      ierr = DMPlexGetConeSize(dm, cell, &coneSize);CHKERRQ(ierr);
-      ierr = SBRGetEdgeLen_Private(tr, cone[0], &maxlen);CHKERRQ(ierr);
+      PetscCall(DMPlexGetCone(dm, cell, &cone));
+      PetscCall(DMPlexGetConeSize(dm, cell, &coneSize));
+      PetscCall(SBRGetEdgeLen_Private(tr, cone[0], &maxlen));
       maxedge = cone[0];
       for (c = 1; c < coneSize; ++c) {
-        ierr = SBRGetEdgeLen_Private(tr, cone[c], &len);CHKERRQ(ierr);
+        PetscCall(SBRGetEdgeLen_Private(tr, cone[c], &len));
         if (len > maxlen) {maxlen = len; maxedge = cone[c];}
       }
-      ierr = DMLabelGetValue(sbr->splitPoints, maxedge, &eval);CHKERRQ(ierr);
+      PetscCall(DMLabelGetValue(sbr->splitPoints, maxedge, &eval));
       if (eval != 1) {
-        ierr = DMLabelSetValue(sbr->splitPoints, maxedge, 1);CHKERRQ(ierr);
-        ierr = PointQueueEnqueue(queue, maxedge);CHKERRQ(ierr);
+        PetscCall(DMLabelSetValue(sbr->splitPoints, maxedge, 1));
+        PetscCall(DMPlexPointQueueEnqueue(queue, maxedge));
       }
-      ierr = DMLabelSetValue(sbr->splitPoints, cell, 2);CHKERRQ(ierr);
+      PetscCall(DMLabelSetValue(sbr->splitPoints, cell, 2));
     }
   }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SBRInitializeComm(DMPlexTransform tr, PetscSF pointSF)
+static PetscErrorCode splitPoint(PETSC_UNUSED DMLabel label, PetscInt p, PETSC_UNUSED PetscInt val, void *ctx)
 {
-  DMPlexRefine_SBR *sbr = (DMPlexRefine_SBR *) tr->data;
-  DM                dm;
-  DMLabel           splitPoints = sbr->splitPoints;
-  PetscInt         *splitArray  = sbr->splitArray;
-  const PetscInt   *degree;
-  const PetscInt   *points;
-  PetscInt          Nl, l, pStart, pEnd, p, val;
-  PetscErrorCode    ierr;
+  DMPlexPointQueue queue = (DMPlexPointQueue) ctx;
 
   PetscFunctionBegin;
-  ierr = DMPlexTransformGetDM(tr, &dm);CHKERRQ(ierr);
-  /* Add in leaves */
-  ierr = PetscSFGetGraph(pointSF, NULL, &Nl, &points, NULL);CHKERRQ(ierr);
-  for (l = 0; l < Nl; ++l) {
-    ierr = DMLabelGetValue(splitPoints, points[l], &val);CHKERRQ(ierr);
-    if (val > 0) splitArray[points[l]] = val;
-  }
-  /* Add in shared roots */
-  ierr = PetscSFComputeDegreeBegin(pointSF, &degree);CHKERRQ(ierr);
-  ierr = PetscSFComputeDegreeEnd(pointSF, &degree);CHKERRQ(ierr);
-  ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
-  for (p = pStart; p < pEnd; ++p) {
-    if (degree[p]) {
-      ierr = DMLabelGetValue(splitPoints, p, &val);CHKERRQ(ierr);
-      if (val > 0) splitArray[p] = val;
-    }
-  }
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode SBRFinalizeComm(DMPlexTransform tr, PetscSF pointSF, PointQueue queue)
-{
-  DMPlexRefine_SBR *sbr = (DMPlexRefine_SBR *) tr->data;
-  DM                dm;
-  DMLabel           splitPoints = sbr->splitPoints;
-  PetscInt         *splitArray  = sbr->splitArray;
-  const PetscInt   *degree;
-  const PetscInt   *points;
-  PetscInt          Nl, l, pStart, pEnd, p, val;
-  PetscErrorCode    ierr;
-
-  PetscFunctionBegin;
-  ierr = DMPlexTransformGetDM(tr, &dm);CHKERRQ(ierr);
-  /* Read out leaves */
-  ierr = PetscSFGetGraph(pointSF, NULL, &Nl, &points, NULL);CHKERRQ(ierr);
-  for (l = 0; l < Nl; ++l) {
-    const PetscInt p    = points[l];
-    const PetscInt cval = splitArray[p];
-
-    if (cval) {
-      ierr = DMLabelGetValue(splitPoints, p, &val);CHKERRQ(ierr);
-      if (val <= 0) {
-        ierr = DMLabelSetValue(splitPoints, p, cval);CHKERRQ(ierr);
-        ierr = PointQueueEnqueue(queue, p);CHKERRQ(ierr);
-      }
-    }
-  }
-  /* Read out shared roots */
-  ierr = PetscSFComputeDegreeBegin(pointSF, &degree);CHKERRQ(ierr);
-  ierr = PetscSFComputeDegreeEnd(pointSF, &degree);CHKERRQ(ierr);
-  ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
-  for (p = pStart; p < pEnd; ++p) {
-    if (degree[p]) {
-      const PetscInt cval = splitArray[p];
-
-      if (cval) {
-        ierr = DMLabelGetValue(splitPoints, p, &val);CHKERRQ(ierr);
-        if (val <= 0) {
-          ierr = DMLabelSetValue(splitPoints, p, cval);CHKERRQ(ierr);
-          ierr = PointQueueEnqueue(queue, p);CHKERRQ(ierr);
-        }
-      }
-    }
-  }
+  PetscCall(DMPlexPointQueueEnqueue(queue, p));
   PetscFunctionReturn(0);
 }
 
@@ -293,75 +126,66 @@ static PetscErrorCode DMPlexTransformSetUp_SBR(DMPlexTransform tr)
   DM                dm;
   DMLabel           active;
   PetscSF           pointSF;
-  PointQueue        queue = NULL;
+  DMPlexPointQueue  queue = NULL;
   IS                refineIS;
   const PetscInt   *refineCells;
-  PetscMPIInt       size;
   PetscInt          pStart, pEnd, p, eStart, eEnd, e, edgeLenSize, Nc, c;
   PetscBool         empty;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexTransformGetDM(tr, &dm);CHKERRQ(ierr);
-  ierr = DMLabelCreate(PETSC_COMM_SELF, "Split Points", &sbr->splitPoints);CHKERRQ(ierr);
+  PetscCall(DMPlexTransformGetDM(tr, &dm));
+  PetscCall(DMLabelCreate(PETSC_COMM_SELF, "Split Points", &sbr->splitPoints));
   /* Create edge lengths */
-  ierr = DMPlexGetDepthStratum(dm, 1, &eStart, &eEnd);CHKERRQ(ierr);
-  ierr = PetscSectionCreate(PETSC_COMM_SELF, &sbr->secEdgeLen);CHKERRQ(ierr);
-  ierr = PetscSectionSetChart(sbr->secEdgeLen, eStart, eEnd);CHKERRQ(ierr);
+  PetscCall(DMPlexGetDepthStratum(dm, 1, &eStart, &eEnd));
+  PetscCall(PetscSectionCreate(PETSC_COMM_SELF, &sbr->secEdgeLen));
+  PetscCall(PetscSectionSetChart(sbr->secEdgeLen, eStart, eEnd));
   for (e = eStart; e < eEnd; ++e) {
-    ierr = PetscSectionSetDof(sbr->secEdgeLen, e, 1);CHKERRQ(ierr);
+    PetscCall(PetscSectionSetDof(sbr->secEdgeLen, e, 1));
   }
-  ierr = PetscSectionSetUp(sbr->secEdgeLen);CHKERRQ(ierr);
-  ierr = PetscSectionGetStorageSize(sbr->secEdgeLen, &edgeLenSize);CHKERRQ(ierr);
-  ierr = PetscCalloc1(edgeLenSize, &sbr->edgeLen);CHKERRQ(ierr);
+  PetscCall(PetscSectionSetUp(sbr->secEdgeLen));
+  PetscCall(PetscSectionGetStorageSize(sbr->secEdgeLen, &edgeLenSize));
+  PetscCall(PetscCalloc1(edgeLenSize, &sbr->edgeLen));
   /* Add edges of cells that are marked for refinement to edge queue */
-  ierr = DMPlexTransformGetActive(tr, &active);CHKERRQ(ierr);
-  PetscCheckFalse(!active,PetscObjectComm((PetscObject) tr), PETSC_ERR_ARG_WRONGSTATE, "DMPlexTransform must have an adaptation label in order to use SBR algorithm");
-  ierr = PointQueueCreate(1024, &queue);CHKERRQ(ierr);
-  ierr = DMLabelGetStratumIS(active, DM_ADAPT_REFINE, &refineIS);CHKERRQ(ierr);
-  ierr = DMLabelGetStratumSize(active, DM_ADAPT_REFINE, &Nc);CHKERRQ(ierr);
-  if (refineIS) {ierr = ISGetIndices(refineIS, &refineCells);CHKERRQ(ierr);}
+  PetscCall(DMPlexTransformGetActive(tr, &active));
+  PetscCheck(active, PetscObjectComm((PetscObject) tr), PETSC_ERR_ARG_WRONGSTATE, "DMPlexTransform must have an adaptation label in order to use SBR algorithm");
+  PetscCall(DMPlexPointQueueCreate(1024, &queue));
+  PetscCall(DMLabelGetStratumIS(active, DM_ADAPT_REFINE, &refineIS));
+  PetscCall(DMLabelGetStratumSize(active, DM_ADAPT_REFINE, &Nc));
+  if (refineIS) PetscCall(ISGetIndices(refineIS, &refineCells));
   for (c = 0; c < Nc; ++c) {
     const PetscInt cell = refineCells[c];
     PetscInt       depth;
 
-    ierr = DMPlexGetPointDepth(dm, cell, &depth);CHKERRQ(ierr);
+    PetscCall(DMPlexGetPointDepth(dm, cell, &depth));
     if (depth == 1) {
-      ierr = DMLabelSetValue(sbr->splitPoints, cell, 1);CHKERRQ(ierr);
-      ierr = PointQueueEnqueue(queue, cell);CHKERRQ(ierr);
+      PetscCall(DMLabelSetValue(sbr->splitPoints, cell, 1));
+      PetscCall(DMPlexPointQueueEnqueue(queue, cell));
     } else {
       PetscInt *closure = NULL;
       PetscInt  Ncl, cl;
 
-      ierr = DMLabelSetValue(sbr->splitPoints, cell, depth);CHKERRQ(ierr);
-      ierr = DMPlexGetTransitiveClosure(dm, cell, PETSC_TRUE, &Ncl, &closure);CHKERRQ(ierr);
+      PetscCall(DMLabelSetValue(sbr->splitPoints, cell, depth));
+      PetscCall(DMPlexGetTransitiveClosure(dm, cell, PETSC_TRUE, &Ncl, &closure));
       for (cl = 0; cl < Ncl; cl += 2) {
         const PetscInt edge = closure[cl];
 
         if (edge >= eStart && edge < eEnd) {
-          ierr = DMLabelSetValue(sbr->splitPoints, edge, 1);CHKERRQ(ierr);
-          ierr = PointQueueEnqueue(queue, edge);CHKERRQ(ierr);
+          PetscCall(DMLabelSetValue(sbr->splitPoints, edge, 1));
+          PetscCall(DMPlexPointQueueEnqueue(queue, edge));
         }
       }
-      ierr = DMPlexRestoreTransitiveClosure(dm, cell, PETSC_TRUE, &Ncl, &closure);CHKERRQ(ierr);
+      PetscCall(DMPlexRestoreTransitiveClosure(dm, cell, PETSC_TRUE, &Ncl, &closure));
     }
   }
-  if (refineIS) {ierr = ISRestoreIndices(refineIS, &refineCells);CHKERRQ(ierr);}
-  ierr = ISDestroy(&refineIS);CHKERRQ(ierr);
+  if (refineIS) PetscCall(ISRestoreIndices(refineIS, &refineCells));
+  PetscCall(ISDestroy(&refineIS));
   /* Setup communication */
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size);CHKERRMPI(ierr);
-  ierr = DMGetPointSF(dm, &pointSF);CHKERRQ(ierr);
-  if (size > 1) {
-    PetscInt pStart, pEnd;
-
-    ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
-    ierr = PetscCalloc1(pEnd-pStart, &sbr->splitArray);CHKERRQ(ierr);
-  }
+  PetscCall(DMGetPointSF(dm, &pointSF));
+  PetscCall(DMLabelPropagateBegin(sbr->splitPoints, pointSF));
   /* While edge queue is not empty: */
-  empty = PointQueueEmpty(queue);
-  ierr = MPI_Allreduce(MPI_IN_PLACE, &empty, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject) dm));CHKERRMPI(ierr);
+  PetscCall(DMPlexPointQueueEmptyCollective((PetscObject) dm, queue, &empty));
   while (!empty) {
-    ierr = SBRSplitLocalEdges_Private(tr, queue);CHKERRQ(ierr);
+    PetscCall(SBRSplitLocalEdges_Private(tr, queue));
     /* Communicate marked edges
          An easy implementation is to allocate an array the size of the number of points. We put the splitPoints marks into the
          array, and then call PetscSFReduce()+PetscSFBcast() to make the marks consistent.
@@ -374,74 +198,65 @@ static PetscErrorCode DMPlexTransformSetUp_SBR(DMPlexTransform tr)
            values will have 1+0=1 and old values will have 1+1=2. Loop over these, resetting the values to 1, and adding any new
            edge to the queue.
     */
-    if (size > 1) {
-      ierr = SBRInitializeComm(tr, pointSF);CHKERRQ(ierr);
-      ierr = PetscSFReduceBegin(pointSF, MPIU_INT, sbr->splitArray, sbr->splitArray, MPI_MAX);CHKERRQ(ierr);
-      ierr = PetscSFReduceEnd(pointSF, MPIU_INT, sbr->splitArray, sbr->splitArray, MPI_MAX);CHKERRQ(ierr);
-      ierr = PetscSFBcastBegin(pointSF, MPIU_INT, sbr->splitArray, sbr->splitArray,MPI_REPLACE);CHKERRQ(ierr);
-      ierr = PetscSFBcastEnd(pointSF, MPIU_INT, sbr->splitArray, sbr->splitArray,MPI_REPLACE);CHKERRQ(ierr);
-      ierr = SBRFinalizeComm(tr, pointSF, queue);CHKERRQ(ierr);
-    }
-    empty = PointQueueEmpty(queue);
-    ierr = MPI_Allreduce(MPI_IN_PLACE, &empty, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject) dm));CHKERRMPI(ierr);
+    PetscCall(DMLabelPropagatePush(sbr->splitPoints, pointSF, splitPoint, queue));
+    PetscCall(DMPlexPointQueueEmptyCollective((PetscObject) dm, queue, &empty));
   }
-  ierr = PetscFree(sbr->splitArray);CHKERRQ(ierr);
+  PetscCall(DMLabelPropagateEnd(sbr->splitPoints, pointSF));
   /* Calculate refineType for each cell */
-  ierr = DMLabelCreate(PETSC_COMM_SELF, "Refine Type", &tr->trType);CHKERRQ(ierr);
-  ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+  PetscCall(DMLabelCreate(PETSC_COMM_SELF, "Refine Type", &tr->trType));
+  PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
   for (p = pStart; p < pEnd; ++p) {
     DMLabel        trType = tr->trType;
     DMPolytopeType ct;
     PetscInt       val;
 
-    ierr = DMPlexGetCellType(dm, p, &ct);CHKERRQ(ierr);
+    PetscCall(DMPlexGetCellType(dm, p, &ct));
     switch (ct) {
       case DM_POLYTOPE_POINT:
-        ierr = DMLabelSetValue(trType, p, RT_VERTEX);CHKERRQ(ierr);break;
+        PetscCall(DMLabelSetValue(trType, p, RT_VERTEX));break;
       case DM_POLYTOPE_SEGMENT:
-        ierr = DMLabelGetValue(sbr->splitPoints, p, &val);CHKERRQ(ierr);
-        if (val == 1) {ierr = DMLabelSetValue(trType, p, RT_EDGE_SPLIT);CHKERRQ(ierr);}
-        else          {ierr = DMLabelSetValue(trType, p, RT_EDGE);CHKERRQ(ierr);}
+        PetscCall(DMLabelGetValue(sbr->splitPoints, p, &val));
+        if (val == 1) PetscCall(DMLabelSetValue(trType, p, RT_EDGE_SPLIT));
+        else          PetscCall(DMLabelSetValue(trType, p, RT_EDGE));
         break;
       case DM_POLYTOPE_TRIANGLE:
-        ierr = DMLabelGetValue(sbr->splitPoints, p, &val);CHKERRQ(ierr);
+        PetscCall(DMLabelGetValue(sbr->splitPoints, p, &val));
         if (val == 2) {
           const PetscInt *cone;
           PetscReal       lens[3];
           PetscInt        vals[3], i;
 
-          ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
+          PetscCall(DMPlexGetCone(dm, p, &cone));
           for (i = 0; i < 3; ++i) {
-            ierr = DMLabelGetValue(sbr->splitPoints, cone[i], &vals[i]);CHKERRQ(ierr);
+            PetscCall(DMLabelGetValue(sbr->splitPoints, cone[i], &vals[i]));
             vals[i] = vals[i] < 0 ? 0 : vals[i];
-            ierr = SBRGetEdgeLen_Private(tr, cone[i], &lens[i]);CHKERRQ(ierr);
+            PetscCall(SBRGetEdgeLen_Private(tr, cone[i], &lens[i]));
           }
-          if (vals[0] && vals[1] && vals[2]) {ierr = DMLabelSetValue(trType, p, RT_TRIANGLE_SPLIT);CHKERRQ(ierr);}
-          else if (vals[0] && vals[1])       {ierr = DMLabelSetValue(trType, p, lens[0] > lens[1] ? RT_TRIANGLE_SPLIT_01 : RT_TRIANGLE_SPLIT_10);CHKERRQ(ierr);}
-          else if (vals[1] && vals[2])       {ierr = DMLabelSetValue(trType, p, lens[1] > lens[2] ? RT_TRIANGLE_SPLIT_12 : RT_TRIANGLE_SPLIT_21);CHKERRQ(ierr);}
-          else if (vals[2] && vals[0])       {ierr = DMLabelSetValue(trType, p, lens[2] > lens[0] ? RT_TRIANGLE_SPLIT_20 : RT_TRIANGLE_SPLIT_02);CHKERRQ(ierr);}
-          else if (vals[0])                  {ierr = DMLabelSetValue(trType, p, RT_TRIANGLE_SPLIT_0);CHKERRQ(ierr);}
-          else if (vals[1])                  {ierr = DMLabelSetValue(trType, p, RT_TRIANGLE_SPLIT_1);CHKERRQ(ierr);}
-          else if (vals[2])                  {ierr = DMLabelSetValue(trType, p, RT_TRIANGLE_SPLIT_2);CHKERRQ(ierr);}
-          else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cell %D does not fit any refinement type (%D, %D, %D)", p, vals[0], vals[1], vals[2]);
-        } else {ierr = DMLabelSetValue(trType, p, RT_TRIANGLE);CHKERRQ(ierr);}
+          if (vals[0] && vals[1] && vals[2]) PetscCall(DMLabelSetValue(trType, p, RT_TRIANGLE_SPLIT));
+          else if (vals[0] && vals[1])       PetscCall(DMLabelSetValue(trType, p, lens[0] > lens[1] ? RT_TRIANGLE_SPLIT_01 : RT_TRIANGLE_SPLIT_10));
+          else if (vals[1] && vals[2])       PetscCall(DMLabelSetValue(trType, p, lens[1] > lens[2] ? RT_TRIANGLE_SPLIT_12 : RT_TRIANGLE_SPLIT_21));
+          else if (vals[2] && vals[0])       PetscCall(DMLabelSetValue(trType, p, lens[2] > lens[0] ? RT_TRIANGLE_SPLIT_20 : RT_TRIANGLE_SPLIT_02));
+          else if (vals[0])                  PetscCall(DMLabelSetValue(trType, p, RT_TRIANGLE_SPLIT_0));
+          else if (vals[1])                  PetscCall(DMLabelSetValue(trType, p, RT_TRIANGLE_SPLIT_1));
+          else if (vals[2])                  PetscCall(DMLabelSetValue(trType, p, RT_TRIANGLE_SPLIT_2));
+          else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cell %" PetscInt_FMT " does not fit any refinement type (%" PetscInt_FMT ", %" PetscInt_FMT ", %" PetscInt_FMT ")", p, vals[0], vals[1], vals[2]);
+        } else PetscCall(DMLabelSetValue(trType, p, RT_TRIANGLE));
         break;
       default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot handle points of type %s", DMPolytopeTypes[ct]);
     }
-    ierr = DMLabelGetValue(sbr->splitPoints, p, &val);CHKERRQ(ierr);
+    PetscCall(DMLabelGetValue(sbr->splitPoints, p, &val));
   }
   /* Cleanup */
-  ierr = PointQueueDestroy(&queue);CHKERRQ(ierr);
+  PetscCall(DMPlexPointQueueDestroy(&queue));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode DMPlexTransformGetSubcellOrientation_SBR(DMPlexTransform tr, DMPolytopeType sct, PetscInt sp, PetscInt so, DMPolytopeType tct, PetscInt r, PetscInt o, PetscInt *rnew, PetscInt *onew)
 {
   PetscInt         rt;
-  PetscErrorCode   ierr;
 
   PetscFunctionBeginHot;
-  ierr = DMLabelGetValue(tr->trType, sp, &rt);CHKERRQ(ierr);
+  PetscCall(DMLabelGetValue(tr->trType, sp, &rt));
   *rnew = r;
   *onew = o;
   switch (rt) {
@@ -472,9 +287,9 @@ static PetscErrorCode DMPlexTransformGetSubcellOrientation_SBR(DMPlexTransform t
       break;
     case RT_EDGE_SPLIT:
     case RT_TRIANGLE_SPLIT:
-      ierr = DMPlexTransformGetSubcellOrientation_Regular(tr, sct, sp, so, tct, r, o, rnew, onew);CHKERRQ(ierr);
+      PetscCall(DMPlexTransformGetSubcellOrientation_Regular(tr, sct, sp, so, tct, r, o, rnew, onew));
       break;
-    default: ierr = DMPlexTransformGetSubcellOrientationIdentity(tr, sct, sp, so, tct, r, o, rnew, onew);CHKERRQ(ierr);
+    default: PetscCall(DMPlexTransformGetSubcellOrientationIdentity(tr, sct, sp, so, tct, r, o, rnew, onew));
   }
   PetscFunctionReturn(0);
 }
@@ -653,11 +468,10 @@ static PetscErrorCode DMPlexTransformCellTransform_SBR(DMPlexTransform tr, DMPol
 {
   DMLabel        trType = tr->trType;
   PetscInt       val;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginHot;
-  PetscCheckFalse(p < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point argument is invalid");
-  ierr = DMLabelGetValue(trType, p, &val);CHKERRQ(ierr);
+  PetscCheck(p >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point argument is invalid");
+  PetscCall(DMLabelGetValue(trType, p, &val));
   if (rt) *rt = val;
   switch (source) {
     case DM_POLYTOPE_POINT:
@@ -670,25 +484,25 @@ static PetscErrorCode DMPlexTransformCellTransform_SBR(DMPlexTransform tr, DMPol
     case DM_POLYTOPE_TRI_PRISM_TENSOR:
     case DM_POLYTOPE_QUAD_PRISM_TENSOR:
     case DM_POLYTOPE_PYRAMID:
-      ierr = DMPlexTransformCellTransformIdentity(tr, source, p, NULL, Nt, target, size, cone, ornt);CHKERRQ(ierr);
+      PetscCall(DMPlexTransformCellTransformIdentity(tr, source, p, NULL, Nt, target, size, cone, ornt));
       break;
     case DM_POLYTOPE_SEGMENT:
-      if (val == RT_EDGE) {ierr = DMPlexTransformCellTransformIdentity(tr, source, p, NULL, Nt, target, size, cone, ornt);CHKERRQ(ierr);}
-      else                {ierr = DMPlexTransformCellRefine_Regular(tr, source, p, NULL, Nt, target, size, cone, ornt);CHKERRQ(ierr);}
+      if (val == RT_EDGE) PetscCall(DMPlexTransformCellTransformIdentity(tr, source, p, NULL, Nt, target, size, cone, ornt));
+      else                PetscCall(DMPlexTransformCellRefine_Regular(tr, source, p, NULL, Nt, target, size, cone, ornt));
       break;
     case DM_POLYTOPE_TRIANGLE:
       switch (val) {
-        case RT_TRIANGLE_SPLIT_0: ierr = SBRGetTriangleSplitSingle(2, Nt, target, size, cone, ornt);CHKERRQ(ierr);break;
-        case RT_TRIANGLE_SPLIT_1: ierr = SBRGetTriangleSplitSingle(0, Nt, target, size, cone, ornt);CHKERRQ(ierr);break;
-        case RT_TRIANGLE_SPLIT_2: ierr = SBRGetTriangleSplitSingle(1, Nt, target, size, cone, ornt);CHKERRQ(ierr);break;
-        case RT_TRIANGLE_SPLIT_21: ierr = SBRGetTriangleSplitDouble(-3, Nt, target, size, cone, ornt);CHKERRQ(ierr);break;
-        case RT_TRIANGLE_SPLIT_10: ierr = SBRGetTriangleSplitDouble(-2, Nt, target, size, cone, ornt);CHKERRQ(ierr);break;
-        case RT_TRIANGLE_SPLIT_02: ierr = SBRGetTriangleSplitDouble(-1, Nt, target, size, cone, ornt);CHKERRQ(ierr);break;
-        case RT_TRIANGLE_SPLIT_12: ierr = SBRGetTriangleSplitDouble( 0, Nt, target, size, cone, ornt);CHKERRQ(ierr);break;
-        case RT_TRIANGLE_SPLIT_20: ierr = SBRGetTriangleSplitDouble( 1, Nt, target, size, cone, ornt);CHKERRQ(ierr);break;
-        case RT_TRIANGLE_SPLIT_01: ierr = SBRGetTriangleSplitDouble( 2, Nt, target, size, cone, ornt);CHKERRQ(ierr);break;
-        case RT_TRIANGLE_SPLIT: ierr = DMPlexTransformCellRefine_Regular(tr, source, p, NULL, Nt, target, size, cone, ornt);CHKERRQ(ierr); break;
-        default: ierr = DMPlexTransformCellTransformIdentity(tr, source, p, NULL, Nt, target, size, cone, ornt);CHKERRQ(ierr);
+        case RT_TRIANGLE_SPLIT_0: PetscCall(SBRGetTriangleSplitSingle(2, Nt, target, size, cone, ornt));break;
+        case RT_TRIANGLE_SPLIT_1: PetscCall(SBRGetTriangleSplitSingle(0, Nt, target, size, cone, ornt));break;
+        case RT_TRIANGLE_SPLIT_2: PetscCall(SBRGetTriangleSplitSingle(1, Nt, target, size, cone, ornt));break;
+        case RT_TRIANGLE_SPLIT_21: PetscCall(SBRGetTriangleSplitDouble(-3, Nt, target, size, cone, ornt));break;
+        case RT_TRIANGLE_SPLIT_10: PetscCall(SBRGetTriangleSplitDouble(-2, Nt, target, size, cone, ornt));break;
+        case RT_TRIANGLE_SPLIT_02: PetscCall(SBRGetTriangleSplitDouble(-1, Nt, target, size, cone, ornt));break;
+        case RT_TRIANGLE_SPLIT_12: PetscCall(SBRGetTriangleSplitDouble( 0, Nt, target, size, cone, ornt));break;
+        case RT_TRIANGLE_SPLIT_20: PetscCall(SBRGetTriangleSplitDouble( 1, Nt, target, size, cone, ornt));break;
+        case RT_TRIANGLE_SPLIT_01: PetscCall(SBRGetTriangleSplitDouble( 2, Nt, target, size, cone, ornt));break;
+        case RT_TRIANGLE_SPLIT: PetscCall(DMPlexTransformCellRefine_Regular(tr, source, p, NULL, Nt, target, size, cone, ornt)); break;
+        default: PetscCall(DMPlexTransformCellTransformIdentity(tr, source, p, NULL, Nt, target, size, cone, ornt));
       }
       break;
     default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No refinement strategy for %s", DMPolytopeTypes[source]);
@@ -700,42 +514,40 @@ static PetscErrorCode DMPlexTransformSetFromOptions_SBR(PetscOptionItems *PetscO
 {
   PetscInt       cells[256], n = 256, i;
   PetscBool      flg;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 2);
-  ierr = PetscOptionsHead(PetscOptionsObject,"DMPlex Options");CHKERRQ(ierr);
-  ierr = PetscOptionsIntArray("-dm_plex_transform_sbr_ref_cell", "Mark cells for refinement", "", cells, &n, &flg);CHKERRQ(ierr);
+  PetscOptionsHeadBegin(PetscOptionsObject,"DMPlex Options");
+  PetscCall(PetscOptionsIntArray("-dm_plex_transform_sbr_ref_cell", "Mark cells for refinement", "", cells, &n, &flg));
   if (flg) {
     DMLabel active;
 
-    ierr = DMLabelCreate(PETSC_COMM_SELF, "Adaptation Label", &active);CHKERRQ(ierr);
-    for (i = 0; i < n; ++i) {ierr = DMLabelSetValue(active, cells[i], DM_ADAPT_REFINE);CHKERRQ(ierr);}
-    ierr = DMPlexTransformSetActive(tr, active);CHKERRQ(ierr);
-    ierr = DMLabelDestroy(&active);CHKERRQ(ierr);
+    PetscCall(DMLabelCreate(PETSC_COMM_SELF, "Adaptation Label", &active));
+    for (i = 0; i < n; ++i) PetscCall(DMLabelSetValue(active, cells[i], DM_ADAPT_REFINE));
+    PetscCall(DMPlexTransformSetActive(tr, active));
+    PetscCall(DMLabelDestroy(&active));
   }
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode DMPlexTransformView_SBR(DMPlexTransform tr, PetscViewer viewer)
 {
   PetscBool      isascii;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
-  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isascii);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isascii));
   if (isascii) {
     PetscViewerFormat format;
     const char       *name;
 
-    ierr = PetscObjectGetName((PetscObject) tr, &name);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "SBR refinement %s\n", name ? name : "");CHKERRQ(ierr);
-    ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
+    PetscCall(PetscObjectGetName((PetscObject) tr, &name));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "SBR refinement %s\n", name ? name : ""));
+    PetscCall(PetscViewerGetFormat(viewer, &format));
     if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
-      ierr = DMLabelView(tr->trType, viewer);CHKERRQ(ierr);
+      PetscCall(DMLabelView(tr->trType, viewer));
     }
   } else {
     SETERRQ(PetscObjectComm((PetscObject) tr), PETSC_ERR_SUP, "Viewer type %s not yet supported for DMPlexTransform writing", ((PetscObject) viewer)->type_name);
@@ -746,13 +558,12 @@ static PetscErrorCode DMPlexTransformView_SBR(DMPlexTransform tr, PetscViewer vi
 static PetscErrorCode DMPlexTransformDestroy_SBR(DMPlexTransform tr)
 {
   DMPlexRefine_SBR *sbr = (DMPlexRefine_SBR *) tr->data;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFree(sbr->edgeLen);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&sbr->secEdgeLen);CHKERRQ(ierr);
-  ierr = DMLabelDestroy(&sbr->splitPoints);CHKERRQ(ierr);
-  ierr = PetscFree(tr->data);CHKERRQ(ierr);
+  PetscCall(PetscFree(sbr->edgeLen));
+  PetscCall(PetscSectionDestroy(&sbr->secEdgeLen));
+  PetscCall(DMLabelDestroy(&sbr->splitPoints));
+  PetscCall(PetscFree(tr->data));
   PetscFunctionReturn(0);
 }
 
@@ -772,14 +583,13 @@ static PetscErrorCode DMPlexTransformInitialize_SBR(DMPlexTransform tr)
 PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_SBR(DMPlexTransform tr)
 {
   DMPlexRefine_SBR *f;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
-  ierr = PetscNewLog(tr, &f);CHKERRQ(ierr);
+  PetscCall(PetscNewLog(tr, &f));
   tr->data = f;
 
-  ierr = DMPlexTransformInitialize_SBR(tr);CHKERRQ(ierr);
-  ierr = PetscCitationsRegister(SBRCitation, &SBRcite);CHKERRQ(ierr);
+  PetscCall(DMPlexTransformInitialize_SBR(tr));
+  PetscCall(PetscCitationsRegister(SBRCitation, &SBRcite));
   PetscFunctionReturn(0);
 }

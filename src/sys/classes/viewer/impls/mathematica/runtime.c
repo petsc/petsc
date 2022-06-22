@@ -20,7 +20,7 @@ static int setupConnection(MLENV *env, MLINK *link, const char *linkhost, LinkMo
   /* Link host */
   argv[2] = "-linkhost";
   if (!linkhost) {
-    ierr    = PetscGetHostName(hostname, sizeof(hostname));CHKERRQ(ierr);
+    PetscCall(PetscGetHostName(hostname, sizeof(hostname)));
     argv[3] = hostname;
   } else argv[3] = (char*) linkhost;
 
@@ -60,7 +60,7 @@ static int processPacket(MLINK link, int indent)
   int        ierr;
 
   PetscFunctionBegin;
-  ierr = printIndent(indent);CHKERRQ(ierr);
+  PetscCall(printIndent(indent));
   switch (tokenType) {
   case MLTKFUNC:
   {
@@ -78,7 +78,7 @@ static int processPacket(MLINK link, int indent)
     /* Process arguments */
     printf("  Arguments:\n");
     for (arg = 0; arg < numArguments; arg++) {
-      ierr = processPacket(link, indent+4);CHKERRQ(ierr);
+      PetscCall(processPacket(link, indent+4));
     }
   }
     break;
@@ -211,7 +211,7 @@ static int processPackets(MLINK link)
       errors++;
     } else if (packetType == RETURNPKT) {
       err = processPacket(link, 0);
-      PetscCheckFalse(err == 1,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from Mathematica");
+      PetscCheck(err != 1,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from Mathematica");
       if (err == 2) loop = 0;
     } else {
       fprintf(stderr, "Invalid packet type %d\n", packetType);
@@ -236,10 +236,10 @@ int main(int argc, char *argv[])
   MLINK link;
   int   ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
-  ierr = setupConnection(&env, &link, "192.168.119.1", MATHEMATICA_LINK_CONNECT);CHKERRQ(ierr);
-  ierr = processPackets(link);CHKERRQ(ierr);
-  ierr = cleanupConnection(env, link);CHKERRQ(ierr);
-  ierr = PetscFinalize();
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCall(setupConnection(&env, &link, "192.168.119.1", MATHEMATICA_LINK_CONNECT));
+  PetscCall(processPackets(link));
+  PetscCall(cleanupConnection(env, link));
+  PetscCall(PetscFinalize());
   return(ierr);
 }

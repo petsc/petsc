@@ -9,11 +9,6 @@
 
 ! Recall: The block Jacobi method is equivalent to the ASM preconditioner with zero overlap.
 
-!/*T
-!   Concepts: KSP^customizing the block Jacobi preconditioner
-!   Processors: n
-!T*/
-
 program main
 #include <petsc/finclude/petscksp.h>
       use petscksp
@@ -41,19 +36,11 @@ program main
       character(len=PETSC_MAX_PATH_LEN) :: outputString
       PetscInt,parameter :: one = 1, five = 5
 
-      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      if (ierr /= 0) then
-        write(6,*)'Unable to initialize PETSc'
-        stop
-      endif
-
+      PetscCallA(PetscInitialize(ierr))
       m = 4
-      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-m',m,flg,ierr)
-      CHKERRA(ierr)
-      call MPI_Comm_rank(PETSC_COMM_WORLD,myRank,ierr)
-      CHKERRA(ierr)
-      call MPI_Comm_size(PETSC_COMM_WORLD,mySize,ierr)
-      CHKERRA(ierr)
+      PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-m',m,flg,ierr))
+      PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD,myRank,ierr))
+      PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD,mySize,ierr))
       n=m+2
 
       !-------------------------------------------------------------------
@@ -63,80 +50,71 @@ program main
 
       ! Create and assemble parallel matrix
 
-      call  MatCreate(PETSC_COMM_WORLD,A,ierr)
-      call  MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,ierr)
-      call  MatSetFromOptions(A,ierr)
-      call  MatMPIAIJSetPreallocation(A,five,PETSC_NULL_INTEGER,five,PETSC_NULL_INTEGER,ierr)
-      call  MatSeqAIJSetPreallocation(A,five,PETSC_NULL_INTEGER,ierr)
-      call  MatGetOwnershipRange(A,Istart,Iend,ierr)
+      PetscCallA( MatCreate(PETSC_COMM_WORLD,A,ierr))
+      PetscCallA( MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,ierr))
+      PetscCallA( MatSetFromOptions(A,ierr))
+      PetscCallA( MatMPIAIJSetPreallocation(A,five,PETSC_NULL_INTEGER,five,PETSC_NULL_INTEGER,ierr))
+      PetscCallA( MatSeqAIJSetPreallocation(A,five,PETSC_NULL_INTEGER,ierr))
+      PetscCallA( MatGetOwnershipRange(A,Istart,Iend,ierr))
 
       do Ii=Istart,Iend-1
           v =-1.0; i = Ii/n; j = Ii - i*n
           if (i>0) then
             JJ = Ii - n
-            call MatSetValues(A,one,Ii,one,JJ,v,ADD_VALUES,ierr);CHKERRA(ierr)
+            PetscCallA(MatSetValues(A,one,Ii,one,JJ,v,ADD_VALUES,ierr))
           endif
 
           if (i<m-1) then
             JJ = Ii + n
-            call MatSetValues(A,one,Ii,one,JJ,v,ADD_VALUES,ierr);CHKERRA(ierr)
+            PetscCallA(MatSetValues(A,one,Ii,one,JJ,v,ADD_VALUES,ierr))
           endif
 
           if (j>0) then
             JJ = Ii - 1
-            call MatSetValues(A,one,Ii,one,JJ,v,ADD_VALUES,ierr);CHKERRA(ierr)
+            PetscCallA(MatSetValues(A,one,Ii,one,JJ,v,ADD_VALUES,ierr))
           endif
 
           if (j<n-1) then
             JJ = Ii + 1
-            call MatSetValues(A,one,Ii,one,JJ,v,ADD_VALUES,ierr);CHKERRA(ierr)
+            PetscCallA(MatSetValues(A,one,Ii,one,JJ,v,ADD_VALUES,ierr))
           endif
 
           v=4.0
-          call MatSetValues(A,one,Ii,one,Ii,v,ADD_VALUES,ierr);CHKERRA(ierr)
+          PetscCallA(MatSetValues(A,one,Ii,one,Ii,v,ADD_VALUES,ierr))
 
         enddo
 
-      call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr);CHKERRA(ierr)
-      call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr);CHKERRA(ierr)
+      PetscCallA(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr))
+      PetscCallA(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr))
 
       ! Create parallel vectors
 
-      call  VecCreate(PETSC_COMM_WORLD,u,ierr)
-      CHKERRA(ierr)
-      call  VecSetSizes(u,PETSC_DECIDE,m*n,ierr)
-      CHKERRA(ierr)
-      call  VecSetFromOptions(u,ierr)
-      CHKERRA(ierr)
-      call  VecDuplicate(u,b,ierr)
-      call  VecDuplicate(b,x,ierr)
+      PetscCallA( VecCreate(PETSC_COMM_WORLD,u,ierr))
+      PetscCallA( VecSetSizes(u,PETSC_DECIDE,m*n,ierr))
+      PetscCallA( VecSetFromOptions(u,ierr))
+      PetscCallA( VecDuplicate(u,b,ierr))
+      PetscCallA( VecDuplicate(b,x,ierr))
 
       ! Set exact solution; then compute right-hand-side vector.
 
-      call Vecset(u,sone,ierr)
-      CHKERRA(ierr)
-      call MatMult(A,u,b,ierr)
-      CHKERRA(ierr)
+      PetscCallA(Vecset(u,sone,ierr))
+      PetscCallA(MatMult(A,u,b,ierr))
 
       ! Create linear solver context
 
-      call KSPCreate(PETSC_COMM_WORLD,ksp,ierr)
-      CHKERRA(ierr)
+      PetscCallA(KSPCreate(PETSC_COMM_WORLD,ksp,ierr))
 
       ! Set operators. Here the matrix that defines the linear system
       ! also serves as the preconditioning matrix.
 
-      call KSPSetOperators(ksp,A,A,ierr)
-      CHKERRA(ierr)
+      PetscCallA(KSPSetOperators(ksp,A,A,ierr))
 
       ! Set default preconditioner for this program to be block Jacobi.
       ! This choice can be overridden at runtime with the option
       ! -pc_type <type>
 
-      call KSPGetPC(ksp,myPc,ierr)
-      CHKERRA(ierr)
-      call PCSetType(myPc,PCBJACOBI,ierr)
-      CHKERRA(ierr)
+      PetscCallA(KSPGetPC(ksp,myPc,ierr))
+      PetscCallA(PCSetType(myPc,PCBJACOBI,ierr))
 
       ! -----------------------------------------------------------------
       !            Define the problem decomposition
@@ -152,8 +130,7 @@ program main
 
       allocate(blks(m),source = n)
 
-      call PCBJacobiSetTotalBlocks(myPc,m,blks,ierr)
-      CHKERRA(ierr)
+      PetscCallA(PCBJacobiSetTotalBlocks(myPc,m,blks,ierr))
       deallocate(blks)
 
       !-------------------------------------------------------------------
@@ -179,7 +156,7 @@ program main
       ! the individual blocks.  These choices are obviously not recommended
       ! for solving this particular problem.
 
-      call PetscObjectTypeCompare(myPc,PCBJACOBI,isbjacobi,ierr)
+      PetscCallA(PetscObjectTypeCompare(myPc,PCBJACOBI,isbjacobi,ierr))
 
       if (isbjacobi) then
 
@@ -187,36 +164,34 @@ program main
         ! creation of an internal KSP context for each block).
         ! Note: KSPSetUp() MUST be called before PCBJacobiGetSubKSP()
 
-        call KSPSetUp(ksp,ierr)
+        PetscCallA(KSPSetUp(ksp,ierr))
 
         ! Extract the array of KSP contexts for the local blocks
-        call PCBJacobiGetSubKSP(myPc,nlocal,first,PETSC_NULL_KSP,ierr)
+        PetscCallA(PCBJacobiGetSubKSP(myPc,nlocal,first,PETSC_NULL_KSP,ierr))
         allocate(subksp(nlocal))
-        call PCBJacobiGetSubKSP(myPc,nlocal,first,subksp,ierr)
+        PetscCallA(PCBJacobiGetSubKSP(myPc,nlocal,first,subksp,ierr))
 
         ! Loop over the local blocks, setting various KSP options for each block
 
         do i=0,nlocal-1
 
-          call KSPGetPC(subksp(i+1),subpc,ierr)
+          PetscCallA(KSPGetPC(subksp(i+1),subpc,ierr))
 
           if (myRank>0) then
 
             if (mod(i,2)==1) then
-              call PCSetType(subpc,PCILU,ierr); CHKERRA(ierr)
+              PetscCallA(PCSetType(subpc,PCILU,ierr))
 
             else
-              call PCSetType(subpc,PCNONE,ierr); CHKERRA(ierr)
-              call KSPSetType(subksp(i+1),KSPBCGS,ierr); CHKERRA(ierr)
-              call KSPSetTolerances(subksp(i+1),tol,PETSC_DEFAULT_REAL,PETSC_DEFAULT_REAL,PETSC_DEFAULT_INTEGER,ierr)
-              CHKERRA(ierr)
+              PetscCallA(PCSetType(subpc,PCNONE,ierr))
+              PetscCallA(KSPSetType(subksp(i+1),KSPBCGS,ierr))
+              PetscCallA(KSPSetTolerances(subksp(i+1),tol,PETSC_DEFAULT_REAL,PETSC_DEFAULT_REAL,PETSC_DEFAULT_INTEGER,ierr))
             endif
 
           else
-            call PCSetType(subpc,PCJACOBI,ierr); CHKERRA(ierr)
-            call KSPSetType(subksp(i+1),KSPGMRES,ierr); CHKERRA(ierr)
-            call KSPSetTolerances(subksp(i+1),tol,PETSC_DEFAULT_REAL,PETSC_DEFAULT_REAL,PETSC_DEFAULT_INTEGER,ierr)
-            CHKERRA(ierr)
+            PetscCallA(PCSetType(subpc,PCJACOBI,ierr))
+            PetscCallA(KSPSetType(subksp(i+1),KSPGMRES,ierr))
+            PetscCallA(KSPSetTolerances(subksp(i+1),tol,PETSC_DEFAULT_REAL,PETSC_DEFAULT_REAL,PETSC_DEFAULT_INTEGER,ierr))
           endif
 
         end do
@@ -229,11 +204,11 @@ program main
 
       ! Set runtime options
 
-      call KSPSetFromOptions(ksp,ierr); CHKERRA(ierr)
+      PetscCallA(KSPSetFromOptions(ksp,ierr))
 
       ! Solve the linear system
 
-      call KSPSolve(ksp,b,x,ierr); CHKERRA(ierr)
+      PetscCallA(KSPSolve(ksp,b,x,ierr))
 
       !  -----------------------------------------------------------------
       !               Check solution and clean up
@@ -243,26 +218,26 @@ program main
       ! Check the error
       !  -----------------------------------------------------------------
 
-      !call VecView(x,PETSC_VIEWER_STDOUT_WORLD,ierr)
+      !PetscCallA(VecView(x,PETSC_VIEWER_STDOUT_WORLD,ierr))
 
-      call VecAXPY(x,myNone,u,ierr)
+      PetscCallA(VecAXPY(x,myNone,u,ierr))
 
-      !call VecView(x,PETSC_VIEWER_STDOUT_WORLD,ierr)
+      !PetscCallA(VecView(x,PETSC_VIEWER_STDOUT_WORLD,ierr))
 
-      call VecNorm(x,NORM_2,norm,ierr); CHKERRA(ierr)
-      call KSPGetIterationNumber(ksp,its,ierr); CHKERRA(ierr)
+      PetscCallA(VecNorm(x,NORM_2,norm,ierr))
+      PetscCallA(KSPGetIterationNumber(ksp,its,ierr))
       write(outputString,*)'Norm of error',real(norm),'Iterations',its,'\n'         ! PETScScalar might be of complex type
-      call PetscPrintf(PETSC_COMM_WORLD,outputString,ierr); CHKERRA(ierr)
+      PetscCallA(PetscPrintf(PETSC_COMM_WORLD,outputString,ierr))
 
       ! Free work space.  All PETSc objects should be destroyed when they
       ! are no longer needed.
       deallocate(subksp)
-      call KSPDestroy(ksp,ierr);CHKERRA(ierr)
-      call VecDestroy(u,ierr); CHKERRA(ierr)
-      call VecDestroy(b,ierr); CHKERRA(ierr)
-      call MatDestroy(A,ierr); CHKERRA(ierr)
-      call VecDestroy(x,ierr); CHKERRA(ierr)
-      call PetscFinalize(ierr); CHKERRA(ierr)
+      PetscCallA(KSPDestroy(ksp,ierr))
+      PetscCallA(VecDestroy(u,ierr))
+      PetscCallA(VecDestroy(b,ierr))
+      PetscCallA(MatDestroy(A,ierr))
+      PetscCallA(VecDestroy(x,ierr))
+      PetscCallA(PetscFinalize(ierr))
 
 end program main
 

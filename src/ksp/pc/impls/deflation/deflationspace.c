@@ -43,40 +43,39 @@ static PetscErrorCode PCDeflationCreateSpaceWave(MPI_Comm comm,PetscInt m,PetscI
 {
   Mat            defl;
   PetscInt       i,j,k,ilo,ihi,*Iidx;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc1(ncoeffs,&Iidx);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(ncoeffs,&Iidx));
 
-  ierr = MatCreate(comm,&defl);CHKERRQ(ierr);
-  ierr = MatSetSizes(defl,m,n,M,N);CHKERRQ(ierr);
-  ierr = MatSetUp(defl);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(defl,ncoeffs,NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(defl,ncoeffs,NULL,ncoeffs,NULL);CHKERRQ(ierr);
-  ierr = MatSetOption(defl,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = MatSetOption(defl,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
+  PetscCall(MatCreate(comm,&defl));
+  PetscCall(MatSetSizes(defl,m,n,M,N));
+  PetscCall(MatSetUp(defl));
+  PetscCall(MatSeqAIJSetPreallocation(defl,ncoeffs,NULL));
+  PetscCall(MatMPIAIJSetPreallocation(defl,ncoeffs,NULL,ncoeffs,NULL));
+  PetscCall(MatSetOption(defl,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE));
+  PetscCall(MatSetOption(defl,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE));
 
   /* Alg 735 Taswell: fvecmat */
   k = ncoeffs -2;
   if (trunc) k = k/2;
 
-  ierr = MatGetOwnershipRange(defl,&ilo,&ihi);CHKERRQ(ierr);
+  PetscCall(MatGetOwnershipRange(defl,&ilo,&ihi));
   for (i=0; i<ncoeffs; i++) {
     Iidx[i] = i+ilo*2 -k;
     if (Iidx[i] >= N) Iidx[i] = PETSC_MIN_INT;
   }
   for (i=ilo; i<ihi; i++) {
-    ierr = MatSetValues(defl,1,&i,ncoeffs,Iidx,coeffs,INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(MatSetValues(defl,1,&i,ncoeffs,Iidx,coeffs,INSERT_VALUES));
     for (j=0; j<ncoeffs; j++) {
       Iidx[j] += 2;
       if (Iidx[j] >= N) Iidx[j] = PETSC_MIN_INT;
     }
   }
 
-  ierr = MatAssemblyBegin(defl,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(defl,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(defl,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(defl,MAT_FINAL_ASSEMBLY));
 
-  ierr = PetscFree(Iidx);CHKERRQ(ierr);
+  PetscCall(PetscFree(Iidx));
   *H = defl;
   PetscFunctionReturn(0);
 }
@@ -86,43 +85,42 @@ PetscErrorCode PCDeflationGetSpaceHaar(PC pc,Mat *W,PetscInt size)
   Mat            A,defl;
   PetscInt       i,j,len,ilo,ihi,*Iidx,m,M;
   PetscScalar    *col,val;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* Haar basis wavelet, level=size */
   len = pow(2,size);
-  ierr = PetscMalloc2(len,&col,len,&Iidx);CHKERRQ(ierr);
+  PetscCall(PetscMalloc2(len,&col,len,&Iidx));
   val = 1./pow(2,size/2.);
   for (i=0; i<len; i++) col[i] = val;
 
-  ierr = PCGetOperators(pc,NULL,&A);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
-  ierr = MatGetSize(A,&M,NULL);CHKERRQ(ierr);
-  ierr = MatCreate(PetscObjectComm((PetscObject)A),&defl);CHKERRQ(ierr);
-  ierr = MatSetSizes(defl,m,PETSC_DECIDE,M,PetscCeilInt(M,len));CHKERRQ(ierr);
-  ierr = MatSetUp(defl);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(defl,size,NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(defl,size,NULL,size,NULL);CHKERRQ(ierr);
-  ierr = MatSetOption(defl,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+  PetscCall(PCGetOperators(pc,NULL,&A));
+  PetscCall(MatGetLocalSize(A,&m,NULL));
+  PetscCall(MatGetSize(A,&M,NULL));
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)A),&defl));
+  PetscCall(MatSetSizes(defl,m,PETSC_DECIDE,M,PetscCeilInt(M,len)));
+  PetscCall(MatSetUp(defl));
+  PetscCall(MatSeqAIJSetPreallocation(defl,size,NULL));
+  PetscCall(MatMPIAIJSetPreallocation(defl,size,NULL,size,NULL));
+  PetscCall(MatSetOption(defl,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE));
 
-  ierr = MatGetOwnershipRangeColumn(defl,&ilo,&ihi);CHKERRQ(ierr);
+  PetscCall(MatGetOwnershipRangeColumn(defl,&ilo,&ihi));
   for (i=0; i<len; i++) Iidx[i] = i+ilo*len;
   if (M%len && ihi == PetscCeilInt(M,len)) ihi -= 1;
   for (i=ilo; i<ihi; i++) {
-    ierr = MatSetValues(defl,len,Iidx,1,&i,col,INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(MatSetValues(defl,len,Iidx,1,&i,col,INSERT_VALUES));
     for (j=0; j<len; j++) Iidx[j] += len;
   }
   if (M%len && ihi+1 == PetscCeilInt(M,len)) {
     len = M%len;
     val = 1./pow(pow(2,len),0.5);
     for (i=0; i<len; i++) col[i] = val;
-    ierr = MatSetValues(defl,len,Iidx,1,&ihi,col,INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(MatSetValues(defl,len,Iidx,1,&ihi,col,INSERT_VALUES));
   }
 
-  ierr = MatAssemblyBegin(defl,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(defl,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(defl,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(defl,MAT_FINAL_ASSEMBLY));
 
-  ierr = PetscFree2(col,Iidx);CHKERRQ(ierr);
+  PetscCall(PetscFree2(col,Iidx));
   *W = defl;
   PetscFunctionReturn(0);
 }
@@ -132,14 +130,13 @@ PetscErrorCode PCDeflationGetSpaceWave(PC pc,Mat *W,PetscInt size,PetscInt ncoef
   Mat            A,*H,defl;
   PetscInt       i,m,M,Mdefl,Ndefl;
   MPI_Comm       comm;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
-  ierr = PetscMalloc1(size,&H);CHKERRQ(ierr);
-  ierr = PCGetOperators(pc,&A,NULL);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
-  ierr = MatGetSize(A,&M,NULL);CHKERRQ(ierr);
+  PetscCall(PetscObjectGetComm((PetscObject)pc,&comm));
+  PetscCall(PetscMalloc1(size,&H));
+  PetscCall(PCGetOperators(pc,&A,NULL));
+  PetscCall(MatGetLocalSize(A,&m,NULL));
+  PetscCall(MatGetSize(A,&M,NULL));
   Mdefl = M;
   Ndefl = M;
   for (i=0; i<size; i++) {
@@ -147,18 +144,18 @@ PetscErrorCode PCDeflationGetSpaceWave(PC pc,Mat *W,PetscInt size,PetscInt ncoef
       if (trunc) Mdefl = (PetscInt)PetscCeilReal(Mdefl/2.);
       else       Mdefl = (PetscInt)PetscFloorReal((ncoeffs+Mdefl-1)/2.);
     } else       Mdefl = Mdefl/2;
-    ierr = PCDeflationCreateSpaceWave(comm,PETSC_DECIDE,m,Mdefl,Ndefl,ncoeffs,coeffs,trunc,&H[i]);CHKERRQ(ierr);
-    ierr = MatGetLocalSize(H[i],&m,NULL);CHKERRQ(ierr);
+    PetscCall(PCDeflationCreateSpaceWave(comm,PETSC_DECIDE,m,Mdefl,Ndefl,ncoeffs,coeffs,trunc,&H[i]));
+    PetscCall(MatGetLocalSize(H[i],&m,NULL));
     Ndefl = Mdefl;
   }
-  ierr = MatCreateComposite(comm,size,H,&defl);CHKERRQ(ierr);
-  ierr = MatCompositeSetType(defl,MAT_COMPOSITE_MULTIPLICATIVE);CHKERRQ(ierr);
+  PetscCall(MatCreateComposite(comm,size,H,&defl));
+  PetscCall(MatCompositeSetType(defl,MAT_COMPOSITE_MULTIPLICATIVE));
   *W = defl;
 
   for (i=0; i<size; i++) {
-    ierr = MatDestroy(&H[i]);CHKERRQ(ierr);
+    PetscCall(MatDestroy(&H[i]));
   }
-  ierr = PetscFree(H);CHKERRQ(ierr);
+  PetscCall(PetscFree(H));
   PetscFunctionReturn(0);
 }
 
@@ -169,35 +166,34 @@ PetscErrorCode PCDeflationGetSpaceAggregation(PC pc,Mat *W)
   PetscMPIInt    m;
   PetscScalar    *col;
   MPI_Comm       comm;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PCGetOperators(pc,&A,NULL);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRangeColumn(A,&ilo,&ihi);CHKERRQ(ierr);
-  ierr = MatGetSize(A,&M,NULL);CHKERRQ(ierr);
-  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&m);CHKERRMPI(ierr);
-  ierr = MatCreate(comm,&defl);CHKERRQ(ierr);
-  ierr = MatSetSizes(defl,ihi-ilo,1,M,m);CHKERRQ(ierr);
-  ierr = MatSetUp(defl);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(defl,1,NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(defl,1,NULL,0,NULL);CHKERRQ(ierr);
-  ierr = MatSetOption(defl,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = MatSetOption(defl,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
+  PetscCall(PCGetOperators(pc,&A,NULL));
+  PetscCall(MatGetOwnershipRangeColumn(A,&ilo,&ihi));
+  PetscCall(MatGetSize(A,&M,NULL));
+  PetscCall(PetscObjectGetComm((PetscObject)A,&comm));
+  PetscCallMPI(MPI_Comm_size(comm,&m));
+  PetscCall(MatCreate(comm,&defl));
+  PetscCall(MatSetSizes(defl,ihi-ilo,1,M,m));
+  PetscCall(MatSetUp(defl));
+  PetscCall(MatSeqAIJSetPreallocation(defl,1,NULL));
+  PetscCall(MatMPIAIJSetPreallocation(defl,1,NULL,0,NULL));
+  PetscCall(MatSetOption(defl,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE));
+  PetscCall(MatSetOption(defl,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE));
 
-  ierr = PetscMalloc2(ihi-ilo,&col,ihi-ilo,&Iidx);CHKERRQ(ierr);
+  PetscCall(PetscMalloc2(ihi-ilo,&col,ihi-ilo,&Iidx));
   for (i=ilo; i<ihi; i++) {
     Iidx[i-ilo] = i;
     col[i-ilo] = 1;
   }
-  ierr = MPI_Comm_rank(comm,&m);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_rank(comm,&m));
   i = m;
-  ierr = MatSetValues(defl,ihi-ilo,Iidx,1,&i,col,INSERT_VALUES);CHKERRQ(ierr);
+  PetscCall(MatSetValues(defl,ihi-ilo,Iidx,1,&i,col,INSERT_VALUES));
 
-  ierr = MatAssemblyBegin(defl,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(defl,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(defl,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(defl,MAT_FINAL_ASSEMBLY));
 
-  ierr = PetscFree2(col,Iidx);CHKERRQ(ierr);
+  PetscCall(PetscFree2(col,Iidx));
   *W = defl;
   PetscFunctionReturn(0);
 }
@@ -207,35 +203,33 @@ PetscErrorCode PCDeflationComputeSpace(PC pc)
   Mat            defl;
   PetscBool      transp=PETSC_TRUE;
   PC_Deflation   *def = (PC_Deflation*)pc->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCheckFalse(def->spacesize < 1,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Wrong PCDeflation space size specified: %D",def->spacesize);
+  PetscCheck(def->spacesize >= 1,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Wrong PCDeflation space size specified: %" PetscInt_FMT,def->spacesize);
   switch (def->spacetype) {
     case PC_DEFLATION_SPACE_HAAR:
       transp = PETSC_FALSE;
-      ierr = PCDeflationGetSpaceHaar(pc,&defl,def->spacesize);CHKERRQ(ierr);break;
+      PetscCall(PCDeflationGetSpaceHaar(pc,&defl,def->spacesize));break;
     case PC_DEFLATION_SPACE_DB2:
-      ierr = PCDeflationGetSpaceWave(pc,&defl,def->spacesize,2,db2,PetscNot(def->extendsp));CHKERRQ(ierr);break;
+      PetscCall(PCDeflationGetSpaceWave(pc,&defl,def->spacesize,2,db2,PetscNot(def->extendsp)));break;
     case PC_DEFLATION_SPACE_DB4:
-      ierr = PCDeflationGetSpaceWave(pc,&defl,def->spacesize,4,db4,PetscNot(def->extendsp));CHKERRQ(ierr);break;
+      PetscCall(PCDeflationGetSpaceWave(pc,&defl,def->spacesize,4,db4,PetscNot(def->extendsp)));break;
     case PC_DEFLATION_SPACE_DB8:
-      ierr = PCDeflationGetSpaceWave(pc,&defl,def->spacesize,8,db8,PetscNot(def->extendsp));CHKERRQ(ierr);break;
+      PetscCall(PCDeflationGetSpaceWave(pc,&defl,def->spacesize,8,db8,PetscNot(def->extendsp)));break;
     case PC_DEFLATION_SPACE_DB16:
-      ierr = PCDeflationGetSpaceWave(pc,&defl,def->spacesize,16,db16,PetscNot(def->extendsp));CHKERRQ(ierr);break;
+      PetscCall(PCDeflationGetSpaceWave(pc,&defl,def->spacesize,16,db16,PetscNot(def->extendsp)));break;
     case PC_DEFLATION_SPACE_BIORTH22:
-      ierr = PCDeflationGetSpaceWave(pc,&defl,def->spacesize,6,biorth22,PetscNot(def->extendsp));CHKERRQ(ierr);break;
+      PetscCall(PCDeflationGetSpaceWave(pc,&defl,def->spacesize,6,biorth22,PetscNot(def->extendsp)));break;
     case PC_DEFLATION_SPACE_MEYER:
-      ierr = PCDeflationGetSpaceWave(pc,&defl,def->spacesize,62,meyer,PetscNot(def->extendsp));CHKERRQ(ierr);break;
+      PetscCall(PCDeflationGetSpaceWave(pc,&defl,def->spacesize,62,meyer,PetscNot(def->extendsp)));break;
     case PC_DEFLATION_SPACE_AGGREGATION:
       transp = PETSC_FALSE;
-      ierr = PCDeflationGetSpaceAggregation(pc,&defl);CHKERRQ(ierr);break;
+      PetscCall(PCDeflationGetSpaceAggregation(pc,&defl));break;
     default: SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Wrong PCDeflationSpaceType specified");
   }
 
-  ierr = PCDeflationSetSpace(pc,defl,transp);CHKERRQ(ierr);
-  ierr = MatDestroy(&defl);CHKERRQ(ierr);
+  PetscCall(PCDeflationSetSpace(pc,defl,transp));
+  PetscCall(MatDestroy(&defl));
   PetscFunctionReturn(0);
 }
-

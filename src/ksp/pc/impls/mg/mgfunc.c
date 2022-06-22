@@ -17,14 +17,12 @@
 
    Level: developer
 
-.seealso: PCMGSetResidual()
+.seealso: `PCMGSetResidual()`
 @*/
 PetscErrorCode  PCMGResidualDefault(Mat mat,Vec b,Vec x,Vec r)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = MatResidual(mat,b,x,r);CHKERRQ(ierr);
+  PetscCall(MatResidual(mat,b,x,r));
   PetscFunctionReturn(0);
 }
 
@@ -43,15 +41,13 @@ PetscErrorCode  PCMGResidualDefault(Mat mat,Vec b,Vec x,Vec r)
 
    Level: developer
 
-.seealso: PCMGSetResidualTranspose()
+.seealso: `PCMGSetResidualTranspose()`
 @*/
 PetscErrorCode PCMGResidualTransposeDefault(Mat mat,Vec b,Vec x,Vec r)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = MatMultTranspose(mat,x,r);CHKERRQ(ierr);
-  ierr = VecAYPX(r,-1.0,b);CHKERRQ(ierr);
+  PetscCall(MatMultTranspose(mat,x,r));
+  PetscCall(VecAYPX(r,-1.0,b));
   PetscFunctionReturn(0);
 }
 
@@ -70,15 +66,13 @@ PetscErrorCode PCMGResidualTransposeDefault(Mat mat,Vec b,Vec x,Vec r)
 
    Level: developer
 
-.seealso: PCMGSetMatResidual()
+.seealso: `PCMGSetMatResidual()`
 @*/
 PetscErrorCode  PCMGMatResidualDefault(Mat mat,Mat b,Mat x,Mat r)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = MatMatMult(mat,x,MAT_REUSE_MATRIX,PETSC_DEFAULT,&r);CHKERRQ(ierr);
-  ierr = MatAYPX(r,-1.0,b,UNKNOWN_NONZERO_PATTERN);CHKERRQ(ierr);
+  PetscCall(MatMatMult(mat,x,MAT_REUSE_MATRIX,PETSC_DEFAULT,&r));
+  PetscCall(MatAYPX(r,-1.0,b,UNKNOWN_NONZERO_PATTERN));
   PetscFunctionReturn(0);
 }
 
@@ -97,15 +91,13 @@ PetscErrorCode  PCMGMatResidualDefault(Mat mat,Mat b,Mat x,Mat r)
 
    Level: developer
 
-.seealso: PCMGSetMatResidualTranspose()
+.seealso: `PCMGSetMatResidualTranspose()`
 @*/
 PetscErrorCode PCMGMatResidualTransposeDefault(Mat mat,Mat b,Mat x,Mat r)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = MatTransposeMatMult(mat,x,MAT_REUSE_MATRIX,PETSC_DEFAULT,&r);CHKERRQ(ierr);
-  ierr = MatAYPX(r,-1.0,b,UNKNOWN_NONZERO_PATTERN);CHKERRQ(ierr);
+  PetscCall(MatTransposeMatMult(mat,x,MAT_REUSE_MATRIX,PETSC_DEFAULT,&r));
+  PetscCall(MatAYPX(r,-1.0,b,UNKNOWN_NONZERO_PATTERN));
   PetscFunctionReturn(0);
 }
 /*@
@@ -121,7 +113,7 @@ PetscErrorCode PCMGMatResidualTransposeDefault(Mat mat,Mat b,Mat x,Mat r)
 
    Level: advanced
 
-.seealso: PCMGGetSmootherUp(), PCMGGetSmootherDown(), PCMGGetSmoother()
+.seealso: `PCMGGetSmootherUp()`, `PCMGGetSmootherDown()`, `PCMGGetSmoother()`
 @*/
 PetscErrorCode  PCMGGetCoarseSolve(PC pc,KSP *ksp)
 {
@@ -149,22 +141,21 @@ PetscErrorCode  PCMGGetCoarseSolve(PC pc,KSP *ksp)
 
    Level: advanced
 
-.seealso: PCMGResidualDefault()
+.seealso: `PCMGResidualDefault()`
 @*/
 PetscErrorCode  PCMGSetResidual(PC pc,PetscInt l,PetscErrorCode (*residual)(Mat,Vec,Vec,Vec),Mat mat)
 {
   PC_MG          *mg        = (PC_MG*)pc->data;
   PC_MG_Levels   **mglevels = mg->levels;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCheckFalse(!mglevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  PetscCheck(mglevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   if (residual) mglevels[l]->residual = residual;
   if (!mglevels[l]->residual) mglevels[l]->residual = PCMGResidualDefault;
   mglevels[l]->matresidual = PCMGMatResidualDefault;
-  if (mat) {ierr = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);}
-  ierr = MatDestroy(&mglevels[l]->A);CHKERRQ(ierr);
+  if (mat) PetscCall(PetscObjectReference((PetscObject)mat));
+  PetscCall(MatDestroy(&mglevels[l]->A));
   mglevels[l]->A = mat;
   PetscFunctionReturn(0);
 }
@@ -184,22 +175,21 @@ PetscErrorCode  PCMGSetResidual(PC pc,PetscInt l,PetscErrorCode (*residual)(Mat,
 
    Level: advanced
 
-.seealso: PCMGResidualTransposeDefault()
+.seealso: `PCMGResidualTransposeDefault()`
 @*/
 PetscErrorCode  PCMGSetResidualTranspose(PC pc,PetscInt l,PetscErrorCode (*residualt)(Mat,Vec,Vec,Vec),Mat mat)
 {
   PC_MG          *mg        = (PC_MG*)pc->data;
   PC_MG_Levels   **mglevels = mg->levels;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCheckFalse(!mglevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  PetscCheck(mglevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   if (residualt) mglevels[l]->residualtranspose = residualt;
   if (!mglevels[l]->residualtranspose) mglevels[l]->residualtranspose = PCMGResidualTransposeDefault;
   mglevels[l]->matresidualtranspose = PCMGMatResidualTransposeDefault;
-  if (mat) {ierr = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);}
-  ierr = MatDestroy(&mglevels[l]->A);CHKERRQ(ierr);
+  if (mat) PetscCall(PetscObjectReference((PetscObject)mat));
+  PetscCall(MatDestroy(&mglevels[l]->A));
   mglevels[l]->A = mat;
   PetscFunctionReturn(0);
 }
@@ -224,20 +214,19 @@ PetscErrorCode  PCMGSetResidualTranspose(PC pc,PetscInt l,PetscErrorCode (*resid
           One can pass in the interpolation matrix or its transpose; PETSc figures
     out from the matrix size which one it is.
 
-.seealso: PCMGSetRestriction()
+.seealso: `PCMGSetRestriction()`
 @*/
 PetscErrorCode  PCMGSetInterpolation(PC pc,PetscInt l,Mat mat)
 {
   PC_MG          *mg        = (PC_MG*)pc->data;
   PC_MG_Levels   **mglevels = mg->levels;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCheckFalse(!mglevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
-  PetscCheckFalse(!l,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Do not set interpolation routine for coarsest level");
-  ierr = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
-  ierr = MatDestroy(&mglevels[l]->interpolate);CHKERRQ(ierr);
+  PetscCheck(mglevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  PetscCheck(l,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Do not set interpolation routine for coarsest level");
+  PetscCall(PetscObjectReference((PetscObject)mat));
+  PetscCall(MatDestroy(&mglevels[l]->interpolate));
 
   mglevels[l]->interpolate = mat;
   PetscFunctionReturn(0);
@@ -258,20 +247,19 @@ PetscErrorCode  PCMGSetInterpolation(PC pc,PetscInt l,Mat mat)
 
 .keywords:  multigrid, set, interpolate, level
 
-.seealso: PCMGSetRestriction(), PCMGSetInterpolation()
+.seealso: `PCMGSetRestriction()`, `PCMGSetInterpolation()`
 @*/
 PetscErrorCode  PCMGSetOperators(PC pc,PetscInt l,Mat Amat,Mat Pmat)
 {
   PC_MG          *mg        = (PC_MG*)pc->data;
   PC_MG_Levels   **mglevels = mg->levels;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(Amat,MAT_CLASSID,3);
   PetscValidHeaderSpecific(Pmat,MAT_CLASSID,4);
-  PetscCheckFalse(!mglevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
-  ierr = KSPSetOperators(mglevels[l]->smoothd,Amat,Pmat);CHKERRQ(ierr);
+  PetscCheck(mglevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  PetscCall(KSPSetOperators(mglevels[l]->smoothd,Amat,Pmat));
   PetscFunctionReturn(0);
 }
 
@@ -290,22 +278,20 @@ PetscErrorCode  PCMGSetOperators(PC pc,PetscInt l,Mat Amat,Mat Pmat)
 
    Level: advanced
 
-.seealso: PCMGGetRestriction(), PCMGSetInterpolation(), PCMGGetRScale()
+.seealso: `PCMGGetRestriction()`, `PCMGSetInterpolation()`, `PCMGGetRScale()`
 @*/
 PetscErrorCode  PCMGGetInterpolation(PC pc,PetscInt l,Mat *mat)
 {
   PC_MG          *mg        = (PC_MG*)pc->data;
   PC_MG_Levels   **mglevels = mg->levels;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (mat) PetscValidPointer(mat,3);
-  PetscCheckFalse(!mglevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
-  PetscCheckFalse(l <= 0 || mg->nlevels <= l,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Level %D must be in range {1,...,%D}",l,mg->nlevels-1);
-  if (!mglevels[l]->interpolate) {
-    PetscCheckFalse(!mglevels[l]->restrct,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must call PCMGSetInterpolation() or PCMGSetRestriction()");
-    ierr = PCMGSetInterpolation(pc,l,mglevels[l]->restrct);CHKERRQ(ierr);
+  PetscCheck(mglevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  PetscCheck(l > 0 && l < mg->nlevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Level %" PetscInt_FMT " must be in range {1,...,%" PetscInt_FMT "}",l,mg->nlevels-1);
+  if (!mglevels[l]->interpolate && mglevels[l]->restrct) {
+    PetscCall(PCMGSetInterpolation(pc,l,mglevels[l]->restrct));
   }
   if (mat) *mat = mglevels[l]->interpolate;
   PetscFunctionReturn(0);
@@ -334,21 +320,20 @@ PetscErrorCode  PCMGGetInterpolation(PC pc,PetscInt l,Mat *mat)
          If you do not set this, the transpose of the Mat set with PCMGSetInterpolation()
     is used.
 
-.seealso: PCMGSetInterpolation()
+.seealso: `PCMGSetInterpolation()`
 @*/
 PetscErrorCode  PCMGSetRestriction(PC pc,PetscInt l,Mat mat)
 {
-  PetscErrorCode ierr;
   PC_MG          *mg        = (PC_MG*)pc->data;
   PC_MG_Levels   **mglevels = mg->levels;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(mat,MAT_CLASSID,3);
-  PetscCheckFalse(!mglevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
-  PetscCheckFalse(!l,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Do not set restriction routine for coarsest level");
-  ierr = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
-  ierr = MatDestroy(&mglevels[l]->restrct);CHKERRQ(ierr);
+  PetscCheck(mglevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  PetscCheck(l,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Do not set restriction routine for coarsest level");
+  PetscCall(PetscObjectReference((PetscObject)mat));
+  PetscCall(MatDestroy(&mglevels[l]->restrct));
 
   mglevels[l]->restrct = mat;
   PetscFunctionReturn(0);
@@ -369,22 +354,20 @@ PetscErrorCode  PCMGSetRestriction(PC pc,PetscInt l,Mat mat)
 
    Level: advanced
 
-.seealso: PCMGGetInterpolation(), PCMGSetRestriction(), PCMGGetRScale(), PCMGGetInjection()
+.seealso: `PCMGGetInterpolation()`, `PCMGSetRestriction()`, `PCMGGetRScale()`, `PCMGGetInjection()`
 @*/
 PetscErrorCode  PCMGGetRestriction(PC pc,PetscInt l,Mat *mat)
 {
   PC_MG          *mg        = (PC_MG*)pc->data;
   PC_MG_Levels   **mglevels = mg->levels;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (mat) PetscValidPointer(mat,3);
-  PetscCheckFalse(!mglevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
-  PetscCheckFalse(l <= 0 || mg->nlevels <= l,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Level %D must be in range {1,...,%D}",l,mg->nlevels-1);
-  if (!mglevels[l]->restrct) {
-    PetscCheckFalse(!mglevels[l]->interpolate,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must call PCMGSetRestriction() or PCMGSetInterpolation()");
-    ierr = PCMGSetRestriction(pc,l,mglevels[l]->interpolate);CHKERRQ(ierr);
+  PetscCheck(mglevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  PetscCheck(l > 0 && l < mg->nlevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Level %" PetscInt_FMT " must be in range {1,...,%" PetscInt_FMT "}",l,mg->nlevels-1);
+  if (!mglevels[l]->restrct && mglevels[l]->interpolate) {
+    PetscCall(PCMGSetRestriction(pc,l,mglevels[l]->interpolate));
   }
   if (mat) *mat = mglevels[l]->restrct;
   PetscFunctionReturn(0);
@@ -405,20 +388,19 @@ PetscErrorCode  PCMGGetRestriction(PC pc,PetscInt l,Mat *mat)
    Notes:
        When evaluating a function on a coarse level one does not want to do F(R * x) one does F(rscale * R * x) where rscale is 1 over the row sums of R.  It is preferable to use PCMGSetInjection() to control moving primal vectors.
 
-.seealso: PCMGSetInterpolation(), PCMGSetRestriction(), PCMGGetRScale(), PCMGSetInjection()
+.seealso: `PCMGSetInterpolation()`, `PCMGSetRestriction()`, `PCMGGetRScale()`, `PCMGSetInjection()`
 @*/
 PetscErrorCode  PCMGSetRScale(PC pc,PetscInt l,Vec rscale)
 {
-  PetscErrorCode ierr;
   PC_MG          *mg        = (PC_MG*)pc->data;
   PC_MG_Levels   **mglevels = mg->levels;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCheckFalse(!mglevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
-  PetscCheckFalse(l <= 0 || mg->nlevels <= l,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Level %D must be in range {1,...,%D}",l,mg->nlevels-1);
-  ierr = PetscObjectReference((PetscObject)rscale);CHKERRQ(ierr);
-  ierr = VecDestroy(&mglevels[l]->rscale);CHKERRQ(ierr);
+  PetscCheck(mglevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  PetscCheck(l > 0 && l < mg->nlevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Level %" PetscInt_FMT " must be in range {1,...,%" PetscInt_FMT "}",l,mg->nlevels-1);
+  PetscCall(PetscObjectReference((PetscObject)rscale));
+  PetscCall(VecDestroy(&mglevels[l]->rscale));
 
   mglevels[l]->rscale = rscale;
   PetscFunctionReturn(0);
@@ -439,35 +421,34 @@ PetscErrorCode  PCMGSetRScale(PC pc,PetscInt l,Vec rscale)
    Notes:
        When evaluating a function on a coarse level one does not want to do F(R * x) one does F(rscale * R * x) where rscale is 1 over the row sums of R.  It is preferable to use PCMGGetInjection() to control moving primal vectors.
 
-.seealso: PCMGSetInterpolation(), PCMGGetRestriction(), PCMGGetInjection()
+.seealso: `PCMGSetInterpolation()`, `PCMGGetRestriction()`, `PCMGGetInjection()`
 @*/
 PetscErrorCode PCMGGetRScale(PC pc,PetscInt l,Vec *rscale)
 {
-  PetscErrorCode ierr;
   PC_MG          *mg        = (PC_MG*)pc->data;
   PC_MG_Levels   **mglevels = mg->levels;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCheckFalse(!mglevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
-  PetscCheckFalse(l <= 0 || mg->nlevels <= l,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Level %D must be in range {1,...,%D}",l,mg->nlevels-1);
+  PetscCheck(mglevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  PetscCheck(l > 0 && l < mg->nlevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Level %" PetscInt_FMT " must be in range {1,...,%" PetscInt_FMT "}",l,mg->nlevels-1);
   if (!mglevels[l]->rscale) {
     Mat      R;
     Vec      X,Y,coarse,fine;
     PetscInt M,N;
-    ierr = PCMGGetRestriction(pc,l,&R);CHKERRQ(ierr);
-    ierr = MatCreateVecs(R,&X,&Y);CHKERRQ(ierr);
-    ierr = MatGetSize(R,&M,&N);CHKERRQ(ierr);
+    PetscCall(PCMGGetRestriction(pc,l,&R));
+    PetscCall(MatCreateVecs(R,&X,&Y));
+    PetscCall(MatGetSize(R,&M,&N));
     if (M < N) {
       fine = X;
       coarse = Y;
     } else if (N < M) {
       fine = Y; coarse = X;
     } else SETERRQ(PetscObjectComm((PetscObject)R),PETSC_ERR_SUP,"Restriction matrix is square, cannot determine which Vec is coarser");
-    ierr = VecSet(fine,1.);CHKERRQ(ierr);
-    ierr = MatRestrict(R,fine,coarse);CHKERRQ(ierr);
-    ierr = VecDestroy(&fine);CHKERRQ(ierr);
-    ierr = VecReciprocal(coarse);CHKERRQ(ierr);
+    PetscCall(VecSet(fine,1.));
+    PetscCall(MatRestrict(R,fine,coarse));
+    PetscCall(VecDestroy(&fine));
+    PetscCall(VecReciprocal(coarse));
     mglevels[l]->rscale = coarse;
   }
   *rscale = mglevels[l]->rscale;
@@ -487,21 +468,20 @@ PetscErrorCode PCMGGetRScale(PC pc,PetscInt l,Vec *rscale)
 
    Level: advanced
 
-.seealso: PCMGSetRestriction()
+.seealso: `PCMGSetRestriction()`
 @*/
 PetscErrorCode  PCMGSetInjection(PC pc,PetscInt l,Mat mat)
 {
-  PetscErrorCode ierr;
   PC_MG          *mg        = (PC_MG*)pc->data;
   PC_MG_Levels   **mglevels = mg->levels;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(mat,MAT_CLASSID,3);
-  PetscCheckFalse(!mglevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
-  PetscCheckFalse(!l,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Do not set restriction routine for coarsest level");
-  ierr = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
-  ierr = MatDestroy(&mglevels[l]->inject);CHKERRQ(ierr);
+  PetscCheck(mglevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  PetscCheck(l,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Do not set restriction routine for coarsest level");
+  PetscCall(PetscObjectReference((PetscObject)mat));
+  PetscCall(MatDestroy(&mglevels[l]->inject));
 
   mglevels[l]->inject = mat;
   PetscFunctionReturn(0);
@@ -522,7 +502,7 @@ PetscErrorCode  PCMGSetInjection(PC pc,PetscInt l,Mat mat)
 
    Level: advanced
 
-.seealso: PCMGSetInjection(), PCMGetGetRestriction()
+.seealso: `PCMGSetInjection()`, `PCMGetGetRestriction()`
 @*/
 PetscErrorCode  PCMGGetInjection(PC pc,PetscInt l,Mat *mat)
 {
@@ -532,8 +512,8 @@ PetscErrorCode  PCMGGetInjection(PC pc,PetscInt l,Mat *mat)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (mat) PetscValidPointer(mat,3);
-  PetscCheckFalse(!mglevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
-  PetscCheckFalse(l <= 0 || mg->nlevels <= l,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Level %D must be in range {1,...,%D}",l,mg->nlevels-1);
+  PetscCheck(mglevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  PetscCheck(l > 0 && l < mg->nlevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Level %" PetscInt_FMT " must be in range {1,...,%" PetscInt_FMT "}",l,mg->nlevels-1);
   if (mat) *mat = mglevels[l]->inject;
   PetscFunctionReturn(0);
 }
@@ -560,7 +540,7 @@ PetscErrorCode  PCMGGetInjection(PC pc,PetscInt l,Mat *mat)
 
    Level: advanced
 
-.seealso: PCMGGetSmootherUp(), PCMGGetSmootherDown(), PCMGGetCoarseSolve()
+.seealso: `PCMGGetSmootherUp()`, `PCMGGetSmootherDown()`, `PCMGGetCoarseSolve()`
 @*/
 PetscErrorCode  PCMGGetSmoother(PC pc,PetscInt l,KSP *ksp)
 {
@@ -592,13 +572,12 @@ PetscErrorCode  PCMGGetSmoother(PC pc,PetscInt l,KSP *ksp)
     calling this will result in a different pre and post smoother so you may need to
          set options on the pre smoother also
 
-.seealso: PCMGGetSmootherUp(), PCMGGetSmootherDown()
+.seealso: `PCMGGetSmootherUp()`, `PCMGGetSmootherDown()`
 @*/
 PetscErrorCode  PCMGGetSmootherUp(PC pc,PetscInt l,KSP *ksp)
 {
   PC_MG          *mg        = (PC_MG*)pc->data;
   PC_MG_Levels   **mglevels = mg->levels;
-  PetscErrorCode ierr;
   const char     *prefix;
   MPI_Comm       comm;
 
@@ -609,7 +588,7 @@ PetscErrorCode  PCMGGetSmootherUp(PC pc,PetscInt l,KSP *ksp)
      Thus we check if a different one has already been allocated,
      if not we allocate it.
   */
-  PetscCheckFalse(!l,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"There is no such thing as a up smoother on the coarse grid");
+  PetscCheck(l,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"There is no such thing as a up smoother on the coarse grid");
   if (mglevels[l]->smoothu == mglevels[l]->smoothd) {
     KSPType     ksptype;
     PCType      pctype;
@@ -617,26 +596,26 @@ PetscErrorCode  PCMGGetSmootherUp(PC pc,PetscInt l,KSP *ksp)
     PetscReal   rtol,abstol,dtol;
     PetscInt    maxits;
     KSPNormType normtype;
-    ierr = PetscObjectGetComm((PetscObject)mglevels[l]->smoothd,&comm);CHKERRQ(ierr);
-    ierr = KSPGetOptionsPrefix(mglevels[l]->smoothd,&prefix);CHKERRQ(ierr);
-    ierr = KSPGetTolerances(mglevels[l]->smoothd,&rtol,&abstol,&dtol,&maxits);CHKERRQ(ierr);
-    ierr = KSPGetType(mglevels[l]->smoothd,&ksptype);CHKERRQ(ierr);
-    ierr = KSPGetNormType(mglevels[l]->smoothd,&normtype);CHKERRQ(ierr);
-    ierr = KSPGetPC(mglevels[l]->smoothd,&ipc);CHKERRQ(ierr);
-    ierr = PCGetType(ipc,&pctype);CHKERRQ(ierr);
+    PetscCall(PetscObjectGetComm((PetscObject)mglevels[l]->smoothd,&comm));
+    PetscCall(KSPGetOptionsPrefix(mglevels[l]->smoothd,&prefix));
+    PetscCall(KSPGetTolerances(mglevels[l]->smoothd,&rtol,&abstol,&dtol,&maxits));
+    PetscCall(KSPGetType(mglevels[l]->smoothd,&ksptype));
+    PetscCall(KSPGetNormType(mglevels[l]->smoothd,&normtype));
+    PetscCall(KSPGetPC(mglevels[l]->smoothd,&ipc));
+    PetscCall(PCGetType(ipc,&pctype));
 
-    ierr = KSPCreate(comm,&mglevels[l]->smoothu);CHKERRQ(ierr);
-    ierr = KSPSetErrorIfNotConverged(mglevels[l]->smoothu,pc->erroriffailure);CHKERRQ(ierr);
-    ierr = PetscObjectIncrementTabLevel((PetscObject)mglevels[l]->smoothu,(PetscObject)pc,mglevels[0]->levels-l);CHKERRQ(ierr);
-    ierr = KSPSetOptionsPrefix(mglevels[l]->smoothu,prefix);CHKERRQ(ierr);
-    ierr = KSPSetTolerances(mglevels[l]->smoothu,rtol,abstol,dtol,maxits);CHKERRQ(ierr);
-    ierr = KSPSetType(mglevels[l]->smoothu,ksptype);CHKERRQ(ierr);
-    ierr = KSPSetNormType(mglevels[l]->smoothu,normtype);CHKERRQ(ierr);
-    ierr = KSPSetConvergenceTest(mglevels[l]->smoothu,KSPConvergedSkip,NULL,NULL);CHKERRQ(ierr);
-    ierr = KSPGetPC(mglevels[l]->smoothu,&ipc);CHKERRQ(ierr);
-    ierr = PCSetType(ipc,pctype);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)mglevels[l]->smoothu);CHKERRQ(ierr);
-    ierr = PetscObjectComposedDataSetInt((PetscObject) mglevels[l]->smoothu, PetscMGLevelId, mglevels[l]->level);CHKERRQ(ierr);
+    PetscCall(KSPCreate(comm,&mglevels[l]->smoothu));
+    PetscCall(KSPSetErrorIfNotConverged(mglevels[l]->smoothu,pc->erroriffailure));
+    PetscCall(PetscObjectIncrementTabLevel((PetscObject)mglevels[l]->smoothu,(PetscObject)pc,mglevels[0]->levels-l));
+    PetscCall(KSPSetOptionsPrefix(mglevels[l]->smoothu,prefix));
+    PetscCall(KSPSetTolerances(mglevels[l]->smoothu,rtol,abstol,dtol,maxits));
+    PetscCall(KSPSetType(mglevels[l]->smoothu,ksptype));
+    PetscCall(KSPSetNormType(mglevels[l]->smoothu,normtype));
+    PetscCall(KSPSetConvergenceTest(mglevels[l]->smoothu,KSPConvergedSkip,NULL,NULL));
+    PetscCall(KSPGetPC(mglevels[l]->smoothu,&ipc));
+    PetscCall(PCSetType(ipc,pctype));
+    PetscCall(PetscLogObjectParent((PetscObject)pc,(PetscObject)mglevels[l]->smoothu));
+    PetscCall(PetscObjectComposedDataSetInt((PetscObject) mglevels[l]->smoothu, PetscMGLevelId, mglevels[l]->level));
   }
   if (ksp) *ksp = mglevels[l]->smoothu;
   PetscFunctionReturn(0);
@@ -661,11 +640,10 @@ PetscErrorCode  PCMGGetSmootherUp(PC pc,PetscInt l,KSP *ksp)
     calling this will result in a different pre and post smoother so you may need to
          set options on the post smoother also
 
-.seealso: PCMGGetSmootherUp(), PCMGGetSmoother()
+.seealso: `PCMGGetSmootherUp()`, `PCMGGetSmoother()`
 @*/
 PetscErrorCode  PCMGGetSmootherDown(PC pc,PetscInt l,KSP *ksp)
 {
-  PetscErrorCode ierr;
   PC_MG          *mg        = (PC_MG*)pc->data;
   PC_MG_Levels   **mglevels = mg->levels;
 
@@ -673,7 +651,7 @@ PetscErrorCode  PCMGGetSmootherDown(PC pc,PetscInt l,KSP *ksp)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   /* make sure smoother up and down are different */
   if (l) {
-    ierr = PCMGGetSmootherUp(pc,l,NULL);CHKERRQ(ierr);
+    PetscCall(PCMGGetSmootherUp(pc,l,NULL));
   }
   *ksp = mglevels[l]->smoothd;
   PetscFunctionReturn(0);
@@ -691,7 +669,7 @@ PetscErrorCode  PCMGGetSmootherDown(PC pc,PetscInt l,KSP *ksp)
 
    Level: advanced
 
-.seealso: PCMGSetCycleType()
+.seealso: `PCMGSetCycleType()`
 @*/
 PetscErrorCode  PCMGSetCycleTypeOnLevel(PC pc,PetscInt l,PCMGCycleType c)
 {
@@ -700,7 +678,7 @@ PetscErrorCode  PCMGSetCycleTypeOnLevel(PC pc,PetscInt l,PCMGCycleType c)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCheckFalse(!mglevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  PetscCheck(mglevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   PetscValidLogicalCollectiveInt(pc,l,2);
   PetscValidLogicalCollectiveEnum(pc,c,3);
   mglevels[l]->cycles = c;
@@ -723,20 +701,19 @@ PetscErrorCode  PCMGSetCycleTypeOnLevel(PC pc,PetscInt l,PCMGCycleType c)
   If this is not provided PETSc will automatically generate one. You do not need to keep a reference to this vector if you do not need it. PCDestroy() will properly free it.
 
 .keywords: MG, multigrid, set, right-hand-side, rhs, level
-.seealso: PCMGSetX(), PCMGSetR()
+.seealso: `PCMGSetX()`, `PCMGSetR()`
 @*/
 PetscErrorCode  PCMGSetRhs(PC pc,PetscInt l,Vec c)
 {
-  PetscErrorCode ierr;
   PC_MG          *mg        = (PC_MG*)pc->data;
   PC_MG_Levels   **mglevels = mg->levels;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCheckFalse(!mglevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
-  PetscCheckFalse(l == mglevels[0]->levels-1,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_INCOMP,"Do not set rhs for finest level");
-  ierr = PetscObjectReference((PetscObject)c);CHKERRQ(ierr);
-  ierr = VecDestroy(&mglevels[l]->b);CHKERRQ(ierr);
+  PetscCheck(mglevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  PetscCheck(l != mglevels[0]->levels-1,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_INCOMP,"Do not set rhs for finest level");
+  PetscCall(PetscObjectReference((PetscObject)c));
+  PetscCall(VecDestroy(&mglevels[l]->b));
 
   mglevels[l]->b = c;
   PetscFunctionReturn(0);
@@ -758,20 +735,19 @@ PetscErrorCode  PCMGSetRhs(PC pc,PetscInt l,Vec c)
   If this is not provided PETSc will automatically generate one. You do not need to keep a reference to this vector if you do not need it. PCDestroy() will properly free it.
 
 .keywords: MG, multigrid, set, solution, level
-.seealso: PCMGSetRhs(), PCMGSetR()
+.seealso: `PCMGSetRhs()`, `PCMGSetR()`
 @*/
 PetscErrorCode  PCMGSetX(PC pc,PetscInt l,Vec c)
 {
-  PetscErrorCode ierr;
   PC_MG          *mg        = (PC_MG*)pc->data;
   PC_MG_Levels   **mglevels = mg->levels;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCheckFalse(!mglevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
-  PetscCheckFalse(l == mglevels[0]->levels-1,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_INCOMP,"Do not set x for finest level");
-  ierr = PetscObjectReference((PetscObject)c);CHKERRQ(ierr);
-  ierr = VecDestroy(&mglevels[l]->x);CHKERRQ(ierr);
+  PetscCheck(mglevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  PetscCheck(l != mglevels[0]->levels-1,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_INCOMP,"Do not set x for finest level");
+  PetscCall(PetscObjectReference((PetscObject)c));
+  PetscCall(VecDestroy(&mglevels[l]->x));
 
   mglevels[l]->x = c;
   PetscFunctionReturn(0);
@@ -793,20 +769,19 @@ PetscErrorCode  PCMGSetX(PC pc,PetscInt l,Vec c)
   If this is not provided PETSc will automatically generate one. You do not need to keep a reference to this vector if you do not need it. PCDestroy() will properly free it.
 
 .keywords: MG, multigrid, set, residual, level
-.seealso: PCMGSetRhs(), PCMGSetX()
+.seealso: `PCMGSetRhs()`, `PCMGSetX()`
 @*/
 PetscErrorCode  PCMGSetR(PC pc,PetscInt l,Vec c)
 {
-  PetscErrorCode ierr;
   PC_MG          *mg        = (PC_MG*)pc->data;
   PC_MG_Levels   **mglevels = mg->levels;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCheckFalse(!mglevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
-  PetscCheckFalse(!l,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Need not set residual vector for coarse grid");
-  ierr = PetscObjectReference((PetscObject)c);CHKERRQ(ierr);
-  ierr = VecDestroy(&mglevels[l]->r);CHKERRQ(ierr);
+  PetscCheck(mglevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  PetscCheck(l,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Need not set residual vector for coarse grid");
+  PetscCall(PetscObjectReference((PetscObject)c));
+  PetscCall(VecDestroy(&mglevels[l]->r));
 
   mglevels[l]->r = c;
   PetscFunctionReturn(0);

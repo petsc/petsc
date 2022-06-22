@@ -18,7 +18,7 @@
 
   Level: beginner
 
-.seealso: DMSetCoordinates(), DMGetCoordinates(), DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMStagSetUniformCoordinates()
+.seealso: `DMSetCoordinates()`, `DMGetCoordinates()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMStagSetUniformCoordinates()`
 
 @*/
 PetscErrorCode  DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,PetscReal ymin,PetscReal ymax,PetscReal zmin,PetscReal zmax)
@@ -31,33 +31,32 @@ PetscErrorCode  DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,Pe
   PetscScalar      *coors;
   PetscReal        hx,hy,hz_;
   PetscInt         i,j,k,M,N,P,istart,isize,jstart,jsize,kstart,ksize,dim,cnt;
-  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
-  PetscCheckFalse(!dd->gtol,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONGSTATE,"Cannot set coordinates until after DMDA has been setup");
-  ierr = DMDAGetInfo(da,&dim,&M,&N,&P,NULL,NULL,NULL,NULL,NULL,&bx,&by,&bz,NULL);CHKERRQ(ierr);
-  PetscCheckFalse(xmax < xmin,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_INCOMP,"xmax must be larger than xmin %g %g",(double)xmin,(double)xmax);
-  PetscCheckFalse((dim > 1) && (ymax < ymin),PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_INCOMP,"ymax must be larger than ymin %g %g",(double)ymin,(double)ymax);
-  PetscCheckFalse((dim > 2) && (zmax < zmin),PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_INCOMP,"zmax must be larger than zmin %g %g",(double)zmin,(double)zmax);
-  ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(da,&istart,&jstart,&kstart,&isize,&jsize,&ksize);CHKERRQ(ierr);
-  ierr = DMGetCoordinateDM(da, &cda);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(cda, &xcoor);CHKERRQ(ierr);
+  PetscCheck(dd->gtol,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONGSTATE,"Cannot set coordinates until after DMDA has been setup");
+  PetscCall(DMDAGetInfo(da,&dim,&M,&N,&P,NULL,NULL,NULL,NULL,NULL,&bx,&by,&bz,NULL));
+  PetscCheck(xmax >= xmin,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_INCOMP,"xmax must be larger than xmin %g %g",(double)xmin,(double)xmax);
+  PetscCheck(!(dim > 1) || !(ymax < ymin),PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_INCOMP,"ymax must be larger than ymin %g %g",(double)ymin,(double)ymax);
+  PetscCheck(!(dim > 2) || !(zmax < zmin),PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_INCOMP,"zmax must be larger than zmin %g %g",(double)zmin,(double)zmax);
+  PetscCall(PetscObjectGetComm((PetscObject)da,&comm));
+  PetscCall(DMDAGetCorners(da,&istart,&jstart,&kstart,&isize,&jsize,&ksize));
+  PetscCall(DMGetCoordinateDM(da, &cda));
+  PetscCall(DMCreateGlobalVector(cda, &xcoor));
   if (dim == 1) {
     if (bx == DM_BOUNDARY_PERIODIC) hx = (xmax-xmin)/M;
     else hx = (xmax-xmin)/(M-1);
-    ierr = VecGetArray(xcoor,&coors);CHKERRQ(ierr);
+    PetscCall(VecGetArray(xcoor,&coors));
     for (i=0; i<isize; i++) {
       coors[i] = xmin + hx*(i+istart);
     }
-    ierr = VecRestoreArray(xcoor,&coors);CHKERRQ(ierr);
+    PetscCall(VecRestoreArray(xcoor,&coors));
   } else if (dim == 2) {
     if (bx == DM_BOUNDARY_PERIODIC) hx = (xmax-xmin)/(M);
     else hx = (xmax-xmin)/(M-1);
     if (by == DM_BOUNDARY_PERIODIC) hy = (ymax-ymin)/(N);
     else hy = (ymax-ymin)/(N-1);
-    ierr = VecGetArray(xcoor,&coors);CHKERRQ(ierr);
+    PetscCall(VecGetArray(xcoor,&coors));
     cnt  = 0;
     for (j=0; j<jsize; j++) {
       for (i=0; i<isize; i++) {
@@ -65,7 +64,7 @@ PetscErrorCode  DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,Pe
         coors[cnt++] = ymin + hy*(j+jstart);
       }
     }
-    ierr = VecRestoreArray(xcoor,&coors);CHKERRQ(ierr);
+    PetscCall(VecRestoreArray(xcoor,&coors));
   } else if (dim == 3) {
     if (bx == DM_BOUNDARY_PERIODIC) hx = (xmax-xmin)/(M);
     else hx = (xmax-xmin)/(M-1);
@@ -73,7 +72,7 @@ PetscErrorCode  DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,Pe
     else hy = (ymax-ymin)/(N-1);
     if (bz == DM_BOUNDARY_PERIODIC) hz_ = (zmax-zmin)/(P);
     else hz_ = (zmax-zmin)/(P-1);
-    ierr = VecGetArray(xcoor,&coors);CHKERRQ(ierr);
+    PetscCall(VecGetArray(xcoor,&coors));
     cnt  = 0;
     for (k=0; k<ksize; k++) {
       for (j=0; j<jsize; j++) {
@@ -84,11 +83,11 @@ PetscErrorCode  DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,Pe
         }
       }
     }
-    ierr = VecRestoreArray(xcoor,&coors);CHKERRQ(ierr);
-  } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Cannot create uniform coordinates for this dimension %D",dim);
-  ierr = DMSetCoordinates(da,xcoor);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)xcoor);CHKERRQ(ierr);
-  ierr = VecDestroy(&xcoor);CHKERRQ(ierr);
+    PetscCall(VecRestoreArray(xcoor,&coors));
+  } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Cannot create uniform coordinates for this dimension %" PetscInt_FMT,dim);
+  PetscCall(DMSetCoordinates(da,xcoor));
+  PetscCall(PetscLogObjectParent((PetscObject)da,(PetscObject)xcoor));
+  PetscCall(VecDestroy(&xcoor));
   PetscFunctionReturn(0);
 }
 
@@ -97,29 +96,28 @@ PetscErrorCode  DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,Pe
 */
 PetscErrorCode DMDASelectFields(DM da,PetscInt *outfields,PetscInt **fields)
 {
-  PetscErrorCode ierr;
   PetscInt       step,ndisplayfields,*displayfields,k,j;
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(da,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&step,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
-  ierr = PetscMalloc1(step,&displayfields);CHKERRQ(ierr);
+  PetscCall(DMDAGetInfo(da,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&step,NULL,NULL,NULL,NULL,NULL));
+  PetscCall(PetscMalloc1(step,&displayfields));
   for (k=0; k<step; k++) displayfields[k] = k;
   ndisplayfields = step;
-  ierr           = PetscOptionsGetIntArray(NULL,NULL,"-draw_fields",displayfields,&ndisplayfields,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetIntArray(NULL,NULL,"-draw_fields",displayfields,&ndisplayfields,&flg));
   if (!ndisplayfields) ndisplayfields = step;
   if (!flg) {
     char       **fields;
     const char *fieldname;
     PetscInt   nfields = step;
-    ierr = PetscMalloc1(step,&fields);CHKERRQ(ierr);
-    ierr = PetscOptionsGetStringArray(NULL,NULL,"-draw_fields_by_name",fields,&nfields,&flg);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(step,&fields));
+    PetscCall(PetscOptionsGetStringArray(NULL,NULL,"-draw_fields_by_name",fields,&nfields,&flg));
     if (flg) {
       ndisplayfields = 0;
       for (k=0; k<nfields;k++) {
         for (j=0; j<step; j++) {
-          ierr = DMDAGetFieldName(da,j,&fieldname);CHKERRQ(ierr);
-          ierr = PetscStrcmp(fieldname,fields[k],&flg);CHKERRQ(ierr);
+          PetscCall(DMDAGetFieldName(da,j,&fieldname));
+          PetscCall(PetscStrcmp(fieldname,fields[k],&flg));
           if (flg) {
             goto found;
           }
@@ -129,9 +127,9 @@ found:  displayfields[ndisplayfields++] = j;
       }
     }
     for (k=0; k<nfields; k++) {
-      ierr = PetscFree(fields[k]);CHKERRQ(ierr);
+      PetscCall(PetscFree(fields[k]));
     }
-    ierr = PetscFree(fields);CHKERRQ(ierr);
+    PetscCall(PetscFree(fields));
   }
   *fields    = displayfields;
   *outfields = ndisplayfields;
@@ -143,7 +141,6 @@ found:  displayfields[ndisplayfields++] = j;
 PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
 {
   DM                da;
-  PetscErrorCode    ierr;
   PetscMPIInt       rank,size,tag;
   PetscInt          i,n,N,dof,istart,isize,j,nbounds;
   MPI_Status        status;
@@ -164,50 +161,50 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
   PetscViewerFormat  format;
 
   PetscFunctionBegin;
-  ierr = PetscViewerDrawGetDraw(v,0,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
+  PetscCall(PetscViewerDrawGetDraw(v,0,&draw));
+  PetscCall(PetscDrawIsNull(draw,&isnull));
   if (isnull) PetscFunctionReturn(0);
-  ierr = PetscViewerDrawGetBounds(v,&nbounds,&bounds);CHKERRQ(ierr);
+  PetscCall(PetscViewerDrawGetBounds(v,&nbounds,&bounds));
 
-  ierr = VecGetDM(xin,&da);CHKERRQ(ierr);
-  PetscCheckFalse(!da,PetscObjectComm((PetscObject)xin),PETSC_ERR_ARG_WRONG,"Vector not generated from a DMDA");
-  ierr = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+  PetscCall(VecGetDM(xin,&da));
+  PetscCheck(da,PetscObjectComm((PetscObject)xin),PETSC_ERR_ARG_WRONG,"Vector not generated from a DMDA");
+  PetscCall(PetscObjectGetComm((PetscObject)xin,&comm));
+  PetscCallMPI(MPI_Comm_size(comm,&size));
+  PetscCallMPI(MPI_Comm_rank(comm,&rank));
 
-  ierr = PetscOptionsGetBool(NULL,NULL,"-draw_vec_use_markers",&showmarkers,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-draw_vec_use_markers",&showmarkers,NULL));
 
-  ierr = DMDAGetInfo(da,NULL,&N,NULL,NULL,NULL,NULL,NULL,&dof,NULL,&bx,NULL,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(da,&istart,NULL,NULL,&isize,NULL,NULL);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(xin,&array);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(xin,&n);CHKERRQ(ierr);
+  PetscCall(DMDAGetInfo(da,NULL,&N,NULL,NULL,NULL,NULL,NULL,&dof,NULL,&bx,NULL,NULL,NULL));
+  PetscCall(DMDAGetCorners(da,&istart,NULL,NULL,&isize,NULL,NULL));
+  PetscCall(VecGetArrayRead(xin,&array));
+  PetscCall(VecGetLocalSize(xin,&n));
   n    = n/dof;
 
   /* Get coordinates of nodes */
-  ierr = DMGetCoordinates(da,&xcoor);CHKERRQ(ierr);
+  PetscCall(DMGetCoordinates(da,&xcoor));
   if (!xcoor) {
-    ierr = DMDASetUniformCoordinates(da,0.0,1.0,0.0,0.0,0.0,0.0);CHKERRQ(ierr);
-    ierr = DMGetCoordinates(da,&xcoor);CHKERRQ(ierr);
+    PetscCall(DMDASetUniformCoordinates(da,0.0,1.0,0.0,0.0,0.0,0.0));
+    PetscCall(DMGetCoordinates(da,&xcoor));
   }
-  ierr = VecGetArrayRead(xcoor,&xg);CHKERRQ(ierr);
-  ierr = DMDAGetCoordinateName(da,0,&xlabel);CHKERRQ(ierr);
+  PetscCall(VecGetArrayRead(xcoor,&xg));
+  PetscCall(DMDAGetCoordinateName(da,0,&xlabel));
 
   /* Determine the min and max coordinate in plot */
   if (rank == 0) xmin = PetscRealPart(xg[0]);
   if (rank == size-1) xmax = PetscRealPart(xg[n-1]);
-  ierr = MPI_Bcast(&xmin,1,MPIU_REAL,0,comm);CHKERRMPI(ierr);
-  ierr = MPI_Bcast(&xmax,1,MPIU_REAL,size-1,comm);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Bcast(&xmin,1,MPIU_REAL,0,comm));
+  PetscCallMPI(MPI_Bcast(&xmax,1,MPIU_REAL,size-1,comm));
 
-  ierr = DMDASelectFields(da,&ndisplayfields,&displayfields);CHKERRQ(ierr);
-  ierr = PetscViewerGetFormat(v,&format);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-draw_ports",&useports,NULL);CHKERRQ(ierr);
+  PetscCall(DMDASelectFields(da,&ndisplayfields,&displayfields));
+  PetscCall(PetscViewerGetFormat(v,&format));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-draw_ports",&useports,NULL));
   if (format == PETSC_VIEWER_DRAW_PORTS) useports = PETSC_TRUE;
   if (useports) {
-    ierr = PetscViewerDrawGetDraw(v,0,&draw);CHKERRQ(ierr);
-    ierr = PetscViewerDrawGetDrawAxis(v,0,&axis);CHKERRQ(ierr);
-    ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
-    ierr = PetscDrawClear(draw);CHKERRQ(ierr);
-    ierr = PetscDrawViewPortsCreate(draw,ndisplayfields,&ports);CHKERRQ(ierr);
+    PetscCall(PetscViewerDrawGetDraw(v,0,&draw));
+    PetscCall(PetscViewerDrawGetDrawAxis(v,0,&axis));
+    PetscCall(PetscDrawCheckResizedWindow(draw));
+    PetscCall(PetscDrawClear(draw));
+    PetscCall(PetscDrawViewPortsCreate(draw,ndisplayfields,&ports));
   }
 
   /* Loop over each field; drawing each in a different window */
@@ -215,8 +212,8 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
     j = displayfields[k];
 
     /* determine the min and max value in plot */
-    ierr = VecStrideMin(xin,j,NULL,&min);CHKERRQ(ierr);
-    ierr = VecStrideMax(xin,j,NULL,&max);CHKERRQ(ierr);
+    PetscCall(VecStrideMin(xin,j,NULL,&min));
+    PetscCall(VecStrideMax(xin,j,NULL,&max));
     if (j < nbounds) {
       min = PetscMin(min,bounds[2*j]);
       max = PetscMax(max,bounds[2*j+1]);
@@ -227,58 +224,57 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
     }
 
     if (useports) {
-      ierr = PetscDrawViewPortsSet(ports,k);CHKERRQ(ierr);
-      ierr = DMDAGetFieldName(da,j,&tlabel);CHKERRQ(ierr);
+      PetscCall(PetscDrawViewPortsSet(ports,k));
+      PetscCall(DMDAGetFieldName(da,j,&tlabel));
     } else {
       const char *title;
-      ierr = PetscViewerDrawGetHold(v,&hold);CHKERRQ(ierr);
-      ierr = PetscViewerDrawGetDraw(v,k,&draw);CHKERRQ(ierr);
-      ierr = PetscViewerDrawGetDrawAxis(v,k,&axis);CHKERRQ(ierr);
-      ierr = DMDAGetFieldName(da,j,&title);CHKERRQ(ierr);
-      if (title) {ierr = PetscDrawSetTitle(draw,title);CHKERRQ(ierr);}
-      ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
-      if (!hold) {ierr = PetscDrawClear(draw);CHKERRQ(ierr);}
+      PetscCall(PetscViewerDrawGetHold(v,&hold));
+      PetscCall(PetscViewerDrawGetDraw(v,k,&draw));
+      PetscCall(PetscViewerDrawGetDrawAxis(v,k,&axis));
+      PetscCall(DMDAGetFieldName(da,j,&title));
+      if (title) PetscCall(PetscDrawSetTitle(draw,title));
+      PetscCall(PetscDrawCheckResizedWindow(draw));
+      if (!hold) PetscCall(PetscDrawClear(draw));
     }
-    ierr = PetscDrawAxisSetLabels(axis,tlabel,xlabel,NULL);CHKERRQ(ierr);
-    ierr = PetscDrawAxisSetLimits(axis,xmin,xmax,min,max);CHKERRQ(ierr);
-    ierr = PetscDrawAxisDraw(axis);CHKERRQ(ierr);
+    PetscCall(PetscDrawAxisSetLabels(axis,tlabel,xlabel,NULL));
+    PetscCall(PetscDrawAxisSetLimits(axis,xmin,xmax,min,max));
+    PetscCall(PetscDrawAxisDraw(axis));
 
     /* draw local part of vector */
-    ierr = PetscObjectGetNewTag((PetscObject)xin,&tag);CHKERRQ(ierr);
+    PetscCall(PetscObjectGetNewTag((PetscObject)xin,&tag));
     if (rank < size-1) { /*send value to right */
-      ierr = MPI_Send((void*)&xg[n-1],1,MPIU_REAL,rank+1,tag,comm);CHKERRMPI(ierr);
-      ierr = MPI_Send((void*)&array[j+(n-1)*dof],1,MPIU_REAL,rank+1,tag,comm);CHKERRMPI(ierr);
+      PetscCallMPI(MPI_Send((void*)&xg[n-1],1,MPIU_REAL,rank+1,tag,comm));
+      PetscCallMPI(MPI_Send((void*)&array[j+(n-1)*dof],1,MPIU_REAL,rank+1,tag,comm));
     }
     if (rank) { /* receive value from left */
-      ierr = MPI_Recv(&xgtmp,1,MPIU_REAL,rank-1,tag,comm,&status);CHKERRMPI(ierr);
-      ierr = MPI_Recv(&tmp,1,MPIU_REAL,rank-1,tag,comm,&status);CHKERRMPI(ierr);
+      PetscCallMPI(MPI_Recv(&xgtmp,1,MPIU_REAL,rank-1,tag,comm,&status));
+      PetscCallMPI(MPI_Recv(&tmp,1,MPIU_REAL,rank-1,tag,comm,&status));
     }
-    ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
+    PetscDrawCollectiveBegin(draw);
     if (rank) {
-      ierr = PetscDrawLine(draw,xgtmp,tmp,PetscRealPart(xg[0]),PetscRealPart(array[j]),PETSC_DRAW_RED);CHKERRQ(ierr);
-      if (showmarkers) {ierr = PetscDrawPoint(draw,xgtmp,tmp,PETSC_DRAW_BLACK);CHKERRQ(ierr);}
+      PetscCall(PetscDrawLine(draw,xgtmp,tmp,PetscRealPart(xg[0]),PetscRealPart(array[j]),PETSC_DRAW_RED));
+      if (showmarkers) PetscCall(PetscDrawPoint(draw,xgtmp,tmp,PETSC_DRAW_BLACK));
     }
     for (i=1; i<n; i++) {
-      ierr = PetscDrawLine(draw,PetscRealPart(xg[i-1]),PetscRealPart(array[j+dof*(i-1)]),PetscRealPart(xg[i]),PetscRealPart(array[j+dof*i]),PETSC_DRAW_RED);CHKERRQ(ierr);
-      if (showmarkers) {ierr = PetscDrawMarker(draw,PetscRealPart(xg[i-1]),PetscRealPart(array[j+dof*(i-1)]),PETSC_DRAW_BLACK);CHKERRQ(ierr);}
+      PetscCall(PetscDrawLine(draw,PetscRealPart(xg[i-1]),PetscRealPart(array[j+dof*(i-1)]),PetscRealPart(xg[i]),PetscRealPart(array[j+dof*i]),PETSC_DRAW_RED));
+      if (showmarkers) PetscCall(PetscDrawMarker(draw,PetscRealPart(xg[i-1]),PetscRealPart(array[j+dof*(i-1)]),PETSC_DRAW_BLACK));
     }
     if (rank == size-1) {
-      if (showmarkers) {ierr = PetscDrawMarker(draw,PetscRealPart(xg[n-1]),PetscRealPart(array[j+dof*(n-1)]),PETSC_DRAW_BLACK);CHKERRQ(ierr);}
+      if (showmarkers) PetscCall(PetscDrawMarker(draw,PetscRealPart(xg[n-1]),PetscRealPart(array[j+dof*(n-1)]),PETSC_DRAW_BLACK));
     }
-    ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
-    ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
-    ierr = PetscDrawPause(draw);CHKERRQ(ierr);
-    if (!useports) {ierr = PetscDrawSave(draw);CHKERRQ(ierr);}
+    PetscDrawCollectiveEnd(draw);
+    PetscCall(PetscDrawFlush(draw));
+    PetscCall(PetscDrawPause(draw));
+    if (!useports) PetscCall(PetscDrawSave(draw));
   }
   if (useports) {
-    ierr = PetscViewerDrawGetDraw(v,0,&draw);CHKERRQ(ierr);
-    ierr = PetscDrawSave(draw);CHKERRQ(ierr);
+    PetscCall(PetscViewerDrawGetDraw(v,0,&draw));
+    PetscCall(PetscDrawSave(draw));
   }
 
-  ierr = PetscDrawViewPortsDestroy(ports);CHKERRQ(ierr);
-  ierr = PetscFree(displayfields);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(xcoor,&xg);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(xin,&array);CHKERRQ(ierr);
+  PetscCall(PetscDrawViewPortsDestroy(ports));
+  PetscCall(PetscFree(displayfields));
+  PetscCall(VecRestoreArrayRead(xcoor,&xg));
+  PetscCall(VecRestoreArrayRead(xin,&array));
   PetscFunctionReturn(0);
 }
-

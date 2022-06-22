@@ -5,24 +5,23 @@ const char help[] = "Test memory allocation in DMPlex refinement.\n\n";
 int main(int argc, char **argv)
 {
   DM             dm;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
-  ierr = DMCreate(PETSC_COMM_WORLD, &dm);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) dm, "BaryDM");CHKERRQ(ierr);
-  ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
-  //ierr = DMPlexSetRefinementUniform(dm, PETSC_TRUE);CHKERRQ(ierr);
-  //ierr = DMRefine(dm, comm, &rdm);CHKERRQ(ierr);
-  //ierr = DMPlexConvertOldOrientations_Internal(dm);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) dm, "RefinedDM");CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject) dm, "ref_");CHKERRQ(ierr);
-  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCall(DMCreate(PETSC_COMM_WORLD, &dm));
+  PetscCall(PetscObjectSetName((PetscObject) dm, "BaryDM"));
+  PetscCall(DMSetType(dm, DMPLEX));
+  PetscCall(DMSetFromOptions(dm));
+  PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
+  //PetscCall(DMPlexSetRefinementUniform(dm, PETSC_TRUE));
+  //PetscCall(DMRefine(dm, comm, &rdm));
+  //PetscCall(DMPlexConvertOldOrientations_Internal(dm));
+  PetscCall(PetscObjectSetName((PetscObject) dm, "RefinedDM"));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject) dm, "ref_"));
+  PetscCall(DMSetFromOptions(dm));
+  PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
+  PetscCall(DMDestroy(&dm));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

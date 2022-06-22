@@ -7,62 +7,61 @@ static char help[] = "Tests PetscViewerHDF5 VecView()/VecLoad() function.\n\n";
 
 int main(int argc,char **args)
 {
-  PetscErrorCode ierr;
   Vec            x,y;
   PetscReal      norm,dnorm;
   PetscViewer    H5viewer;
   char           filename[PETSC_MAX_PATH_LEN];
   PetscBool      flg;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetString(NULL,NULL,"-filename",filename,sizeof(filename),&flg);CHKERRQ(ierr);
-  if (!flg) { ierr = PetscStrcpy(filename,"x.h5");CHKERRQ(ierr); }
-  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,11,PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = VecSet(x,22.3);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-filename",filename,sizeof(filename),&flg));
+  if (!flg) PetscCall(PetscStrcpy(filename,"x.h5"));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
+  PetscCall(VecSetFromOptions(x));
+  PetscCall(VecSetSizes(x,11,PETSC_DETERMINE));
+  PetscCall(VecSet(x,22.3));
 
-  ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,filename,FILE_MODE_WRITE,&H5viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetFromOptions(H5viewer);CHKERRQ(ierr);
+  PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD,filename,FILE_MODE_WRITE,&H5viewer));
+  PetscCall(PetscViewerSetFromOptions(H5viewer));
 
   /* Write the Vec without one extra dimension for BS */
-  ierr = PetscViewerHDF5SetBaseDimension2(H5viewer, PETSC_FALSE);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) x, "noBsDim");CHKERRQ(ierr);
-  ierr = VecView(x,H5viewer);CHKERRQ(ierr);
+  PetscCall(PetscViewerHDF5SetBaseDimension2(H5viewer, PETSC_FALSE));
+  PetscCall(PetscObjectSetName((PetscObject) x, "noBsDim"));
+  PetscCall(VecView(x,H5viewer));
 
   /* Write the Vec with one extra, 1-sized, dimension for BS */
-  ierr = PetscViewerHDF5SetBaseDimension2(H5viewer, PETSC_TRUE);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) x, "bsDim");CHKERRQ(ierr);
-  ierr = VecView(x,H5viewer);CHKERRQ(ierr);
+  PetscCall(PetscViewerHDF5SetBaseDimension2(H5viewer, PETSC_TRUE));
+  PetscCall(PetscObjectSetName((PetscObject) x, "bsDim"));
+  PetscCall(VecView(x,H5viewer));
 
-  ierr = PetscViewerDestroy(&H5viewer);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
+  PetscCall(PetscViewerDestroy(&H5viewer));
+  PetscCall(VecDuplicate(x,&y));
 
   /* Create the HDF5 viewer for reading */
-  ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&H5viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetFromOptions(H5viewer);CHKERRQ(ierr);
+  PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&H5viewer));
+  PetscCall(PetscViewerSetFromOptions(H5viewer));
 
   /* Load the Vec without the BS dim and compare */
-  ierr = PetscObjectSetName((PetscObject) y, "noBsDim");CHKERRQ(ierr);
-  ierr = VecLoad(y,H5viewer);CHKERRQ(ierr);
-  ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
-  ierr = VecNorm(y,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_2,&dnorm);CHKERRQ(ierr);
-  PetscCheckFalse(norm/dnorm > 1.e-6,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Vec read in 'noBsDim' does not match vector written out %g",(double)(norm/dnorm));
+  PetscCall(PetscObjectSetName((PetscObject) y, "noBsDim"));
+  PetscCall(VecLoad(y,H5viewer));
+  PetscCall(VecAXPY(y,-1.0,x));
+  PetscCall(VecNorm(y,NORM_2,&norm));
+  PetscCall(VecNorm(x,NORM_2,&dnorm));
+  PetscCheck(norm/dnorm <= 1.e-6,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Vec read in 'noBsDim' does not match vector written out %g",(double)(norm/dnorm));
 
   /* Load the Vec with one extra, 1-sized, BS dim and compare */
-  ierr = PetscObjectSetName((PetscObject) y, "bsDim");CHKERRQ(ierr);
-  ierr = VecLoad(y,H5viewer);CHKERRQ(ierr);
-  ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
-  ierr = VecNorm(y,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_2,&dnorm);CHKERRQ(ierr);
-  PetscCheckFalse(norm/dnorm > 1.e-6,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Vec read in 'bsDim' does not match vector written out %g",(double)(norm/dnorm));
+  PetscCall(PetscObjectSetName((PetscObject) y, "bsDim"));
+  PetscCall(VecLoad(y,H5viewer));
+  PetscCall(VecAXPY(y,-1.0,x));
+  PetscCall(VecNorm(y,NORM_2,&norm));
+  PetscCall(VecNorm(x,NORM_2,&dnorm));
+  PetscCheck(norm/dnorm <= 1.e-6,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Vec read in 'bsDim' does not match vector written out %g",(double)(norm/dnorm));
 
-  ierr = PetscViewerDestroy(&H5viewer);CHKERRQ(ierr);
-  ierr = VecDestroy(&y);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscViewerDestroy(&H5viewer));
+  PetscCall(VecDestroy(&y));
+  PetscCall(VecDestroy(&x));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

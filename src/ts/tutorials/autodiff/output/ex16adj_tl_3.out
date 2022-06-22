@@ -19,21 +19,21 @@ t 0.443267 (tprev = 0.386535)
 [0.0] 9 TS 0.500000 (dt = 0.086591) X  2.007036e+00 -3.771526e-01
 t 0.500000 (tprev = 0.443267) 
 mu 1., steps 9, ftime 0.5
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 2.00704
 -0.377153
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.880902
 0.241101
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 -0.138016
 0.193436
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 -0.0319515
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.0871734

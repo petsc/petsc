@@ -2,17 +2,23 @@
 #define PETSCDMSWARM_H
 
 #include <petscdm.h>
+#include <petscdt.h>
+
+/* SUBMANSEC = DMSwarm */
 
 /*E
    DMSwarmType - Defines the type of swarm
 
    DMSWARM_BASIC defines N entries of varied data-types which the user may register.
 
-   DMSWARM_PIC is suitable for particle-in-cell methods. Configured as DMSWARM_PIC, the swarm will be aware of, another DM which serves as the background mesh. Fields specific to particle-in-cell methods are registered by default. These include spatial coordinates, a unique identifier, a cell index and an index for the owning rank. The background mesh will (by default) define the spatial decomposition of the points defined in the swarm. DMSWARM_PIC provides support for particle-in-cell operations such as defining initial point coordinates, communicating particles between sub-domains, projecting particle data fields on to the mesh.
+   DMSWARM_PIC is suitable for particle-in-cell methods. Configured as DMSWARM_PIC, the swarm will be aware of, another DM which serves as the background mesh.
+   Fields specific to particle-in-cell methods are registered by default. These include spatial coordinates, a unique identifier, a cell index and an index for
+   the owning rank. The background mesh will (by default) define the spatial decomposition of the points defined in the swarm. DMSWARM_PIC provides support
+   for particle-in-cell operations such as defining initial point coordinates, communicating particles between sub-domains, projecting particle data fields on to the mesh.
 
    Level: beginner
 
-.seealso: DMSwarmSetType()
+.seealso: `DMSwarmSetType()`
 E*/
 typedef enum {
   DMSWARM_BASIC=0,
@@ -47,7 +53,7 @@ typedef enum {
 
    Level: beginner
 
-.seealso DMSwarmInsertPointsUsingCellDM()
+.seealso `DMSwarmInsertPointsUsingCellDM()`
 E*/
 typedef enum {
   DMSWARMPIC_LAYOUT_REGULAR=0,
@@ -115,7 +121,18 @@ PETSC_EXTERN PetscErrorCode DMSwarmSortGetSizes(DM,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMSwarmProjectFields(DM,PetscInt,const char**,Vec**,PetscBool);
 PETSC_EXTERN PetscErrorCode DMSwarmCreateMassMatrixSquare(DM,DM,Mat*);
 
-PETSC_EXTERN PetscErrorCode DMSwarmGetCellSwarm(DM sw, PetscInt cellID, DM cellswarm);
-PETSC_EXTERN PetscErrorCode DMSwarmRestoreCellSwarm(DM sw, PetscInt cellID, DM cellswarm);
+PETSC_EXTERN PetscErrorCode DMSwarmGetCellSwarm(DM, PetscInt, DM);
+PETSC_EXTERN PetscErrorCode DMSwarmRestoreCellSwarm(DM, PetscInt, DM);
+PETSC_EXTERN PetscErrorCode DMSwarmGetNumSpecies(DM, PetscInt*);
+PETSC_EXTERN PetscErrorCode DMSwarmSetNumSpecies(DM, PetscInt);
+PETSC_EXTERN PetscErrorCode DMSwarmGetCoordinateFunction(DM, PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *));
+PETSC_EXTERN PetscErrorCode DMSwarmSetCoordinateFunction(DM, PetscErrorCode (*)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *));
+PETSC_EXTERN PetscErrorCode DMSwarmGetVelocityFunction(DM, PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *));
+PETSC_EXTERN PetscErrorCode DMSwarmSetVelocityFunction(DM, PetscErrorCode (*)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *));
+PETSC_EXTERN PetscErrorCode DMSwarmComputeLocalSize(DM, PetscInt, PetscProbFunc);
+PETSC_EXTERN PetscErrorCode DMSwarmComputeLocalSizeFromOptions(DM);
+PETSC_EXTERN PetscErrorCode DMSwarmInitializeCoordinates(DM);
+PETSC_EXTERN PetscErrorCode DMSwarmInitializeVelocities(DM, PetscProbFunc, const PetscReal[]);
+PETSC_EXTERN PetscErrorCode DMSwarmInitializeVelocitiesFromOptions(DM, const PetscReal[]);
 
 #endif

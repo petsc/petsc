@@ -68,7 +68,7 @@ Much of the power of ``KSP`` can be accessed through the single routine
 
 This routine accepts the option ``-help`` as well as any of
 the ``KSP`` and ``PC`` options discussed below. To solve a linear
-system, one sets the rhs and solution vectors using and executes the
+system, one sets the right hand size and solution vectors using the
 command
 
 .. code-block::
@@ -129,8 +129,9 @@ The application programmer can then directly call any of the ``PC`` or
 
 To solve a linear system with a direct solver (currently supported by
 PETSc for sequential matrices, and by several external solvers through
-PETSc interfaces (see :any:`sec_externalsol`)) one may use
-the options ``-ksp_type`` ``preonly`` ``-pc_type`` ``lu`` (see below).
+PETSc interfaces, see :any:`sec_externalsol`) one may use
+the options ``-ksp_type`` ``preonly`` (or the equivalent ``-ksp_type`` ``none``)
+``-pc_type`` ``lu`` (see below).
 
 By default, if a direct solver is used, the factorization is *not* done
 in-place. This approach prevents the user from the unexpected surprise
@@ -145,7 +146,7 @@ When solving multiple linear systems of the same size with the same
 method, several options are available. To solve successive linear
 systems having the *same* preconditioner matrix (i.e., the same data
 structure with exactly the same matrix elements) but different
-right-hand-side vectors, the user should simply call ``KSPSolve()``,
+right-hand-side vectors, the user should simply call ``KSPSolve()``
 multiple times. The preconditioner setup operations (e.g., factorization
 for ILU) will be done during the first call to ``KSPSolve()`` only; such
 operations will *not* be repeated for successive solves.
@@ -153,9 +154,7 @@ operations will *not* be repeated for successive solves.
 To solve successive linear systems that have *different* preconditioner
 matrices (i.e., the matrix elements and/or the matrix data structure
 change), the user *must* call ``KSPSetOperators()`` and ``KSPSolve()``
-for each solve. See :any:`sec_usingksp` for a description
-of various flags for ``KSPSetOperators()`` that can save work for such
-cases.
+for each solve.
 
 .. _sec_ksp:
 
@@ -172,13 +171,13 @@ be used, one calls the command
 
 The type can be one of ``KSPRICHARDSON``, ``KSPCHEBYSHEV``, ``KSPCG``,
 ``KSPGMRES``, ``KSPTCQMR``, ``KSPBCGS``, ``KSPCGS``, ``KSPTFQMR``,
-``KSPCR``, ``KSPLSQR``, ``KSPBICG``, ``KSPPREONLY``. or others; see
+``KSPCR``, ``KSPLSQR``, ``KSPBICG``, ``KSPPREONLY`` (or the equivalent ``KSPNONE``), or others; see
 :any:`tab-kspdefaults` or the ``KSPType`` man page for more.
 The ``KSP`` method can also be set with the options database command
 ``-ksp_type``, followed by one of the options ``richardson``,
 ``chebyshev``, ``cg``, ``gmres``, ``tcqmr``, ``bcgs``, ``cgs``,
-``tfqmr``, ``cr``, ``lsqr``, ``bicg``, ``preonly.``, or others (see
-:any:`tab-kspdefaults` or the ``KSPType`` man page) There are
+``tfqmr``, ``cr``, ``lsqr``, ``bicg``, ``preonly`` (or the equivalent ``none``), or others (see
+:any:`tab-kspdefaults` or the ``KSPType`` man page). There are
 method-specific options. For instance, for the Richardson, Chebyshev, and
 GMRES methods:
 
@@ -189,12 +188,12 @@ GMRES methods:
    KSPGMRESSetRestart(KSP ksp,PetscInt max_steps);
 
 The default parameter values are
-``damping_factor=1.0, emax=0.01, emin=100.0``, and ``max_steps=30``. The
+``scale=1.0, emax=0.01, emin=100.0``, and ``max_steps=30``. The
 GMRES restart and Richardson damping factor can also be set with the
 options ``-ksp_gmres_restart <n>`` and
 ``-ksp_richardson_scale <factor>``.
 
-The default technique for orthogonalization of the Hessenberg matrix in
+The default technique for orthogonalization of the Krylov vectors in
 GMRES is the unmodified (classical) Gram-Schmidt method, which can be
 set with
 
@@ -214,11 +213,11 @@ or via the options database with
 
 :: 
 
-   -ksp_gmres_cgs_refinement_type none,ifneeded,always
+   -ksp_gmres_cgs_refinement_type <refine_never,refine_ifneeded,refine_always>
 
 The values for ``KSPGMRESCGSRefinementType()`` are
-``KSP_GMRES_CGS_REFINEMENT_NONE``, ``KSP_GMRES_CGS_REFINEMENT_IFNEEDED``
-and ``KSP_GMRES_CGS_REFINEMENT_ALWAYS``.
+``KSP_GMRES_CGS_REFINE_NEVER``, ``KSP_GMRES_CGS_REFINE_IFNEEDED``
+and ``KSP_GMRES_CGS_REFINE_ALWAYS``.
 
 One can also use modified Gram-Schmidt, by using the orthogonalization
 routine ``KSPGMRESModifiedGramSchmidtOrthogonalization()`` or by using
@@ -232,12 +231,13 @@ command
 
 .. code-block::
 
-   KSPCGSetType(KSP ksp,KSPCGType KSP_CG_SYMMETRIC);
+   KSPCGSetType(ksp,KSP_CG_SYMMETRIC);
 
 Note that this option is not valid for all matrices.
 
-The LSQR algorithm does not involve a preconditioner; any preconditioner
-set to work with the ``KSP`` object is ignored if ``KSPLSQR`` was
+Some ``KSP`` types do not support preconditioning. For instance,
+the CGLS algorithm does not involve a preconditioner; any preconditioner
+set to work with the ``KSP`` object is ignored if ``KSPCGLS`` was
 selected.
 
 By default, ``KSP`` assumes an initial guess of zero by zeroing the
@@ -286,7 +286,7 @@ some methods by using the options database command
 
 .. code-block::
 
-   KSPSetPCSide(KSP ksp,PCSide PC_RIGHT);
+   KSPSetPCSide(ksp,PC_RIGHT);
 
 Attempting to use right preconditioning for a method that does not
 currently support it results in an error message of the form
@@ -302,11 +302,11 @@ following sections. The preconditioned residual is used by default for
 convergence testing of all left-preconditioned ``KSP`` methods. For the
 conjugate gradient, Richardson, and Chebyshev methods the true residual
 can be used by the options database command
-``ksp_norm_type unpreconditioned`` or by calling the routine
+``-ksp_norm_type unpreconditioned`` or by calling the routine
 
 .. code-block::
 
-   KSPSetNormType(KSP ksp,KSP_NORM_UNPRECONDITIONED);
+   KSPSetNormType(ksp,KSP_NORM_UNPRECONDITIONED);
 
 
 .. list-table:: KSP Objects
@@ -437,8 +437,8 @@ can be used by the options database command
     - ``KSPPYTHON``
     - ``python``
   * - Shell for no ``KSP`` method
-    - ``KSPPREONLY``
-    - ``preonly``
+    - ``KSPPREONLY`` (or ``KSPNONE``)
+    - ``preonly`` (or ``none``)
 
 
 Note: the bi-conjugate gradient method requires application of both the
@@ -448,7 +448,7 @@ thus the ``KSPBICG`` cannot always be used.
 
 Note: PETSc implements the FETI-DP (Finite Element Tearing and
 Interconnecting Dual-Primal) method as an implementation of ``KSP`` since it recasts the
-original problem into a contstrained minimization one with Lagrange
+original problem into a constrained minimization one with Lagrange
 multipliers. The only matrix type supported is ``MATIS``. Support for
 saddle point problems is provided. See the man page for ``KSPFETIDP`` for
 further details.
@@ -500,8 +500,8 @@ routine arguments are the iteration number, ``it``, and the residual’s
 :math:`l_2` norm, ``rnorm``. The routine for detecting convergence,
 ``test``, should set ``reason`` to positive for convergence, 0 for no
 convergence, and negative for failure to converge. A full list of
-possible values for ``KSPConvergedReason`` is given in
-``include/petscksp.h``. You can use ``KSPGetConvergedReason()`` after
+possible values is given in the ``KSPConvergedReason`` manual page.
+You can use ``KSPGetConvergedReason()`` after
 ``KSPSolve()`` to see why convergence/divergence was detected.
 
 .. _sec_kspmonitor:
@@ -544,7 +544,7 @@ the residual at each iteration. The routine
 ``KSPMonitorSingularValue()`` is appropriate only for use with the
 conjugate gradient method or GMRES, since it prints estimates of the
 extreme singular values of the preconditioned operator at each
-iteration. Since ``KSPMonitorTrueResidualNorm()`` prints the true
+iteration. Since ``KSPMonitorTrueResidual()`` prints the true
 residual at each iteration by actually computing the residual using the
 formula :math:`r = b - Ax`, the routine is slow and should be used only
 for testing or convergence studies, not for timing. These monitors may
@@ -577,7 +577,7 @@ Lanczos iteration. First, before the linear solve one must call
 
 .. code-block::
 
-   KSPSetComputeEigenvalues(KSP ksp,PETSC_TRUE);
+   KSPSetComputeEigenvalues(ksp,PETSC_TRUE);
 
 Then after the ``KSP`` solve one calls
 
@@ -603,9 +603,9 @@ drawing scatter plots of the eigenvalues.
 
 The eigenvalues may also be computed and displayed graphically with the
 options data base commands ``-ksp_view_eigenvalues draw`` and
-``-ksp_view_eigenvalues_explicitly draw``. Or they can be dumped to the
+``-ksp_view_eigenvalues_explicit draw``. Or they can be dumped to the
 screen in ASCII text via ``-ksp_view_eigenvalues`` and
-``-ksp_view_eigenvalues_explicitly``.
+``-ksp_view_eigenvalues_explicit``.
 
 Other KSP Options
 ^^^^^^^^^^^^^^^^^
@@ -629,9 +629,9 @@ approximate solution during the iterative process, one uses the command
 where the solution is returned in ``v``. The user can optionally provide
 a vector in ``w`` as the location to store the vector; however, if ``w``
 is ``NULL``, space allocated by PETSc in the ``KSP`` context is used.
-One should not destroy this vector. For certain ``KSP`` methods, (e.g.,
+One should not destroy this vector. For certain ``KSP`` methods (e.g.,
 GMRES), the construction of the solution is expensive, while for many
-others it doesn’t evenrequire a vector copy.
+others it doesn’t even require a vector copy.
 
 Access to the residual is done in a similar way with the command
 
@@ -739,9 +739,9 @@ Some of the options for ILU preconditioner are
 .. code-block::
 
    PCFactorSetLevels(PC pc,PetscInt levels);
-   PCFactorSetReuseOrdering(PC pc,PetscBool  flag);
+   PCFactorSetReuseOrdering(PC pc,PetscBool flag);
    PCFactorSetDropTolerance(PC pc,PetscReal dt,PetscReal dtcol,PetscInt dtcount);
-   PCFactorSetReuseFill(PC pc,PetscBool  flag);
+   PCFactorSetReuseFill(PC pc,PetscBool flag);
    PCFactorSetUseInPlace(PC pc,PetscBool flg);
    PCFactorSetAllowDiagonalFill(PC pc,PetscBool flg);
 
@@ -781,7 +781,7 @@ for several matrix types for sequential matrices (for example
 SOR and SSOR Preconditioners
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-PETSc only provides only a sequential SOR preconditioner; it can only be
+PETSc provides only a sequential SOR preconditioner; it can only be
 used with sequential matrices or as the subblock preconditioner when
 using block Jacobi or ASM preconditioning (see below).
 
@@ -816,7 +816,7 @@ preconditioning can be employed with the method ``PCEISENSTAT``
 (``-pc_type`` ``eisenstat``). By using both left and right
 preconditioning of the linear system, this variant of SSOR requires
 about half of the floating-point operations for conventional SSOR. The
-option ``-pc_eisenstat_no_diagonal_scaling``) (or the routine
+option ``-pc_eisenstat_no_diagonal_scaling`` (or the routine
 ``PCEisenstatSetNoDiagonalScaling()``) turns off diagonal scaling in
 conjunction with Eisenstat SSOR method, while the option
 ``-pc_eisenstat_omega <omega>`` (or the routine
@@ -858,7 +858,7 @@ see ``MatGetOrdering()``, discussed in :any:`sec_matfactor`.
 
 The sparse LU factorization provided in PETSc does not perform pivoting
 for numerical stability (since they are designed to preserve nonzero
-structure), and thus occasionally a LU factorization will fail with a
+structure), and thus occasionally an LU factorization will fail with a
 zero pivot when, in fact, the matrix is non-singular. The option
 ``-pc_factor_nonzeros_along_diagonal <tol>`` will often help eliminate
 the zero pivot, by preprocessing the column ordering to remove small
@@ -880,7 +880,7 @@ supported in parallel; however, only the uniprocess version of the block
 Gauss-Seidel method is currently in place. By default, the PETSc
 implementations of these methods employ ILU(0) factorization on each
 individual block (that is, the default solver on each subblock is
-``PCType=PCILU``, ``KSPType=KSPPREONLY``); the user can set alternative
+``PCType=PCILU``, ``KSPType=KSPPREONLY`` (or equivalently  ``KSPType=KSPNONE``); the user can set alternative
 linear solvers via the options ``-sub_ksp_type`` and ``-sub_pc_type``.
 In fact, all of the ``KSP`` and ``PC`` options can be applied to the
 subproblems by inserting the prefix ``-sub_`` at the beginning of the
@@ -904,9 +904,9 @@ the various blocks. To set the appropriate data structures, the user
 *must* explicitly call ``KSPSetUp()`` before calling
 ``PCBJacobiGetSubKSP()`` or ``PCASMGetSubKSP(``). For further details,
 see
-`KSP Tutorial ex7 <../../src/ksp/ksp/tutorials/ex7.c.html>`__
+`KSP Tutorial ex7 <../../../src/ksp/ksp/tutorials/ex7.c.html>`__
 or
-`KSP Tutorial ex8 <../../src/ksp/ksp/tutorials/ex8.c.html>`__.
+`KSP Tutorial ex8 <../../../src/ksp/ksp/tutorials/ex8.c.html>`__.
 
 The block Jacobi, block Gauss-Seidel, and additive Schwarz
 preconditioners allow the user to set the number of blocks into which
@@ -928,7 +928,7 @@ blocks are shared among processes. The ``is`` argument contains the
 index sets that define the subdomains.
 
 The object ``PCASMType`` is one of ``PC_ASM_BASIC``,
-``PC_ASM_INTERPOLATE``, ``PC_ASM_RESTRICT``, or\ ``PC_ASM_NONE`` and may
+``PC_ASM_INTERPOLATE``, ``PC_ASM_RESTRICT``, or ``PC_ASM_NONE`` and may
 also be set with the options database ``-pc_asm_type`` ``[basic``,
 ``interpolate``, ``restrict``, ``none]``. The type ``PC_ASM_BASIC`` (or
 ``-pc_asm_type`` ``basic``) corresponds to the standard additive Schwarz
@@ -993,7 +993,7 @@ subdomains that span multiple MPI ranks. The simplest way to do this is
 using a call to ``PCGASMSetTotalSubdomains(PC pc,PetscPetscInt N)`` with
 the total number of subdomains ``N`` that is smaller than the MPI
 communicator ``size``. In this case ``PCGASM`` will coalesce ``size/N``
-concecutive single-rank subdomains into a single multi-rank subdomain.
+consecutive single-rank subdomains into a single multi-rank subdomain.
 The single-rank subdomains contain the degrees of freedom corresponding
 to the locally-owned rows of the ``PCGASM`` preconditioning matrix –
 these are the subdomains ``PCASM`` and ``PCGASM`` use by default.
@@ -1007,14 +1007,14 @@ partitioner that generates well-connected coarse subdomains first before
 subpartitioning them into the single-rank subdomains.
 
 In the meantime the user can provide his or her own multi-rank
-subdomains by calling\ ``PCGASMSetSubdomains(PC,IS[],IS[])`` where each
+subdomains by calling ``PCGASMSetSubdomains(PC,IS[],IS[])`` where each
 of the ``IS`` objects on the list defines the inner (without the
 overlap) or the outer (including the overlap) subdomain on the
 subcommunicator of the ``IS`` object. A helper subroutine
 ``PCGASMCreateSubdomains2D()`` is similar to PCASM’s but is capable of
 constructing multi-rank subdomains that can be then used with
 ``PCGASMSetSubdomains()``. An alternative way of creating multi-rank
-subdomains is by using the underlying DM object, if it is capable of
+subdomains is by using the underlying ``DM`` object, if it is capable of
 generating such decompositions via ``DMCreateDomainDecomposition()``.
 Ordinarily the decomposition specified by the user via
 ``PCGASMSetSubdomains()`` takes precedence, unless
@@ -1022,12 +1022,12 @@ Ordinarily the decomposition specified by the user via
 ``DM``-created decompositions.
 
 Currently there is no support for increasing the overlap of multi-rank
-subdomains via\ ``PCGASMSetOverlap()`` – this functionality works only
+subdomains via ``PCGASMSetOverlap()`` – this functionality works only
 for subdomains that fit within a single MPI rank, exactly as in
 ``PCASM``.
 
-Examples of the described PCGASM usage can be found in
-`KSP Tutorial ex62 <../../src/ksp/ksp/tutorials/ex62.c.html>`__.
+Examples of the described ``PCGASM`` usage can be found in
+`KSP Tutorial ex62 <../../../src/ksp/ksp/tutorials/ex62.c.html>`__.
 In particular, ``runex62_superlu_dist`` illustrates the use of
 ``SuperLU_DIST`` as the subdomain solver on coalesced multi-rank
 subdomains. The ``runex62_2D_*`` examples illustrate the use of
@@ -1040,7 +1040,7 @@ Algebraic Multigrid (AMG) Preconditioners
 
 PETSc has a native algebraic multigrid preconditioner ``PCGAMG`` –
 *gamg* – and interfaces to two external AMG packages: *hypre* and *ML*.
-*Hypre* is relatively monolithic in that a PETSc matrix is into a hypre
+*Hypre* is relatively monolithic in that a PETSc matrix is converted into a hypre
 matrix and then *hypre* is called to do the entire solve. *ML* is more
 modular in that PETSc only has *ML* generate the coarse grid spaces
 (columns of the prolongation operator), which is core of an AMG method,
@@ -1068,7 +1068,7 @@ estimates are problematic. If poor convergence rates are observed using
 the smoothed version one can test unsmoothed aggregation.
 
 **Eigenvalue estimates:** The parameters for the KSP eigen estimator,
-use for SA, can be set with ``-pc_gamg_esteig_ksp_max_it`` and
+used for SA, can be set with ``-pc_gamg_esteig_ksp_max_it`` and
 ``-pc_gamg_esteig_ksp_type``. For example CG generally converges to the
 highest eigenvalue fast than GMRES (the default for KSP) if your problem
 is symmetric positive definite. One can specify CG with
@@ -1114,9 +1114,9 @@ number of equation per process (set with
 each level. If :math:`P_i < P` processors are desired on a level
 :math:`i` then the first :math:`P_i` ranks are populated with the grid
 and the remaining are empty on that grid. One can, and probably should,
-repartition the coarse grids with ``-pc_gamg_repartition <true>,``,
+repartition the coarse grids with ``-pc_gamg_repartition <true>``,
 otherwise an integer process reduction factor (:math:`q`) is selected
-and the equations on the first :math:`q` processes are move to process
+and the equations on the first :math:`q` processes are moved to process
 0, and so on. As mentioned multigrid generally coarsens the problem
 until it is small enough to be solved with an exact solver (eg, LU or
 SVD) in a relatively small time. GAMG will stop coarsening when the
@@ -1127,7 +1127,7 @@ number of equation on a grid falls below at threshold give by
 parameters to the coarsening algorithm and parallel data layout. Run a
 code that uses GAMG with ``-help`` to get full listing of GAMG
 parameters with short parameter descriptions. The rate of coarsening is
-critical in AMG performance – too slow of coarsening will result in an
+critical in AMG performance – too slow coarsening will result in an
 overly expensive solver per iteration and too fast coarsening will
 result in decrease in the convergence rate. ``-pc_gamg_threshold <0>``
 and ``-pc_gamg_square_graph <1>,`` are the primary parameters that
@@ -1169,10 +1169,10 @@ discrete gradient, ADS also needs the specification of the discrete curl
 operator, which can be set using ``PCHYPRESetDiscreteCurl()``.
 
 **I am converging slowly, what do I do?** AMG methods are sensitive to
-coarsening rates and methods; for GAMG use ``-pc_gamg_threshold <x>`` to
-regulate coarsening rates and PCGAMGSetThreshold, higher values decrease
+coarsening rates and methods; for GAMG use ``-pc_gamg_threshold <x>``
+or ``PCGAMGSetThreshold()`` to regulate coarsening rates, higher values decrease
 coarsening rate. Squaring the graph is the second mechanism for
-increasing coarsening rate. Use ``-pc_gamg_square_graph <N>,``, or
+increasing coarsening rate. Use ``-pc_gamg_square_graph <N>``, or
 ``PCGAMGSetSquareGraph(pc,N)``, to square the graph on the finest N
 levels. A high threshold (e.g., :math:`x=0.08`) will result in an
 expensive but potentially powerful preconditioner, and a low threshold
@@ -1186,7 +1186,7 @@ at about a rate of 3:1 in each dimension. Coarsening too slow will
 result in large numbers of non-zeros per row on coarse grids (this is
 reported). The number of non-zeros can go up very high, say about 300
 (times the degrees-of-freedom per vertex) on a 3D hex mesh. One can also
-look at the grid complexity, which is also reported (the ration of the
+look at the grid complexity, which is also reported (the ratio of the
 total number of matrix entries for all levels to the number of matrix
 entries on the fine level). Grid complexity should be well under 2.0 and
 preferably around :math:`1.3` or lower. If convergence is poor and the
@@ -1215,7 +1215,7 @@ smoothers can provide an alternative to Chebyshev and *hypre* has
 alternative smoothers.
 
 **Now am I solving alright, can I expect better?** If you find that you
-are getting nearly on digit in reduction of the residual per iteration
+are getting nearly one digit in reduction of the residual per iteration
 and are using a modest number of point smoothing steps (e.g., 1-4
 iterations of SOR), then you may be fairly close to textbook multigrid
 efficiency. Although you also need to check the setup costs. This can be
@@ -1243,7 +1243,7 @@ domain decomposition method which can be easily adapted to different
 problems and discretizations by means of few user customizations. The
 application of the preconditioner to a vector consists in the static
 condensation of the residual at the interior of the subdomains by means
-of local Dirichet solves, followed by an additive combination of Neumann
+of local Dirichlet solves, followed by an additive combination of Neumann
 local corrections and the solution of a global coupled coarse problem.
 Command line options for the underlying ``KSP`` objects are prefixed by
 ``-pc_bddc_dirichlet``, ``-pc_bddc_neumann``, and ``-pc_bddc_coarse``
@@ -1343,7 +1343,7 @@ the number of subdomains that will be generated at the next level; the
 larger the coarsening ratio, the lower the number of coarser subdomains.
 
 For further details, see the example
-`KSP Tutorial ex59 <../../src/ksp/ksp/tutorials/ex59.c>`__
+`KSP Tutorial ex59 <../../../src/ksp/ksp/tutorials/ex59.c>`__
 and the online documentation for ``PCBDDC``.
 
 Shell Preconditioners
@@ -1419,7 +1419,7 @@ behavior. An alternative can be set with the option
 
 .. code-block::
 
-   PCCompositeSetType(PC pc,PCCompositeType PC_COMPOSITE_MULTIPLICATIVE);
+   PCCompositeSetType(pc,PC_COMPOSITE_MULTIPLICATIVE);
 
 In this form the new residual is updated after the application of each
 preconditioner and the next preconditioner applied to the next residual.
@@ -1467,7 +1467,7 @@ For example, to set the first sub preconditioners to use ILU(1)
    PCFactorSetFill(subpc,1);
 
 One can also change the operator that is used to construct a particular
-PC in the composite PC call PCSetOperators() on the obtained PC.
+PC in the composite PC call ``PCSetOperators()`` on the obtained PC.
 
 These various options can also be set via the options database. For
 example, ``-pc_type`` ``composite`` ``-pc_composite_pcs`` ``jacobi,ilu``
@@ -1519,7 +1519,7 @@ A large suite of routines is available for using geometric multigrid as
 a preconditioner [2]_. In the ``PC`` framework, the user is required to
 provide the coarse grid solver, smoothers, restriction and interpolation
 operators, and code to calculate residuals. The ``PC`` package allows
-these components to be encapuslated within a PETSc-compliant
+these components to be encapsulated within a PETSc-compliant
 preconditioner. We fully support both matrix-free and matrix-based
 multigrid solvers.
 
@@ -2051,11 +2051,12 @@ Sometimes one is required to solver singular linear systems. In this
 case, the system matrix has a nontrivial null space. For example, the
 discretization of the Laplacian operator with Neumann boundary
 conditions has a null space of the constant functions. PETSc has tools
-to help solve these systems.
+to help solve these systems. This approach is only guaranteed to work for left preconditioning (see ``KSPSetPCSide()``); for example it
+may not work in some situations with ``KSPFGMRES``.
 
 First, one must know what the null space is and store it using an
 orthonormal basis in an array of PETSc Vecs. The constant functions can
-be handled separately, since they are such a common case). Create a
+be handled separately, since they are such a common case. Create a
 ``MatNullSpace`` object with the command
 
 .. code-block::
@@ -2073,18 +2074,28 @@ with the call
 .. code-block::
 
    MatSetNullSpace(Mat Amat,MatNullSpace nsp);
-   MatSetTransposeNullSpace(Mat Amat,MatNullSpace nsp);
 
 The ``Amat`` should be the *first* matrix argument used with
 ``KSPSetOperators()``, ``SNESSetJacobian()``, or ``TSSetIJacobian()``.
-You can also use ``KSPSetNullspace()``. The PETSc solvers will now
+The PETSc solvers will now
 handle the null space during the solution process.
+
+If the right hand side of linear system is not in the range of ``Amat``, that is it is not
+orthogonal to the null space of ``Amat`` transpose, then the residual
+norm of the Krylov iteration will not converge to zero; it will converge to a non-zero value while the
+solution is converging to the least squares solution of the linear system. One can, if one desires,
+apply ``MatNullSpaceRemove()`` with the null space of ``Amat`` transpose to the right hand side before calling
+``KSPSolve()``. Then the residual norm will converge to zero.
+
 
 If one chooses a direct solver (or an incomplete factorization) it may
 still detect a zero pivot. You can run with the additional options or
 ``-pc_factor_shift_type NONZERO``
 ``-pc_factor_shift_amount  <dampingfactor>`` to prevent the zero pivot.
 A good choice for the ``dampingfactor`` is 1.e-10.
+
+If the matrix is non-symmetric and you wish to solve the transposed linear system
+you must provide the null space of the transposed matrix with ``MatSetTransposeNullSpace()``.
 
 .. _sec_externalsol:
 
@@ -2102,7 +2113,7 @@ To use these solvers, one may:
 
 #. Build the PETSc libraries.
 
-#. Use the runtime option: ``-ksp_type preonly`` ``-pc_type <pctype>``
+#. Use the runtime option: ``-ksp_type preonly`` (or equivalently ``-ksp_type none``) ``-pc_type <pctype>``
    ``-pc_factor_mat_solver_type <packagename>``. For eg:
    ``-ksp_type preonly`` ``-pc_type lu``
    ``-pc_factor_mat_solver_type superlu_dist``.
@@ -2157,8 +2168,8 @@ To use these solvers, one may:
      - ``cholmod``
    * - ``aij``
      - ``lu``
-     - ``MATSOLVERCLIQUE``
-     -  ``clique``
+     - ``MATSOLVERSPARSEELEMENTAL``
+     - ``sparseelemental``
    * - ``seqaij``
      - ``lu``
      - ``MATSOLVERKLU``
@@ -2242,15 +2253,16 @@ be found by specifying ``-help`` at runtime.
 As an alternative to using runtime flags to employ these external
 packages, procedural calls are provided for some packages. For example,
 the following procedural calls are equivalent to runtime options
-``-ksp_type preonly`` ``-pc_type lu``
+``-ksp_type preonly`` (or equivalently ``-ksp_type none``)  ``-pc_type lu``
 ``-pc_factor_mat_solver_type mumps`` ``-mat_mumps_icntl_7 3``:
 
 .. code-block::
 
-   KSPSetType(ksp,KSPPREONLY);
+   KSPSetType(ksp,KSPPREONLY); (or equivalently KSPSetType(ksp,KSPNONE))
    KSPGetPC(ksp,&pc);
    PCSetType(pc,PCLU);
    PCFactorSetMatSolverType(pc,MATSOLVERMUMPS);
+   PCFactorSetUpMatSolverType(pc);
    PCFactorGetMatrix(pc,&F);
    icntl=7; ival = 3;
    MatMumpsSetIcntl(F,icntl,ival);

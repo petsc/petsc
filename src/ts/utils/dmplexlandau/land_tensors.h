@@ -216,7 +216,7 @@ PETSC_DEVICE_FUNC_DECL void LandauTensor3D(const PetscReal x1[], const PetscReal
 #define GAMMA3(_x,_c02) PetscSqrtReal(1.0 + ((_x[0]*_x[0]) + (_x[1]*_x[1]) + (_x[2]*_x[2]))/(_c02))
 PETSC_DEVICE_FUNC_DECL void LandauTensor3DRelativistic(const PetscReal a_x1[], const PetscReal xp, const PetscReal yp, const PetscReal zp, PetscReal U[][3], PetscReal mask, PetscReal c0)
 {
-  const PetscReal x2[3] = {xp,yp,zp}, x1[3] = {a_x1[0],a_x1[1],a_x1[2]}, c02 = c0*c0, g1 = GAMMA3(x1,c02), g2 = GAMMA3(x2,c02), g1_eps = g1 - 1., g2_eps = g2 - 1., gg_eps = g1_eps + g2_eps + g1_eps*g2_eps;
+  const PetscReal x2[3] = {xp,yp,zp}, x1[3] = {a_x1[0],a_x1[1],a_x1[2]}, c02 = c0*c0, g1 = GAMMA3(x1,c02), g2 = GAMMA3(x2,c02);
   PetscReal       fact, u1u2, diff[3], udiff2,u12,u22,wsq,rsq, tt;
   PetscInt        i,j;
 
@@ -245,26 +245,6 @@ PETSC_DEVICE_FUNC_DECL void LandauTensor3DRelativistic(const PetscReal a_x1[], c
       }
       U[i][i] += fact;
     }
-#if defined(PETSC_USE_DEBUG)
-    {
-      PetscReal diff_g[3], udiff = sqrt(udiff2), err, err2;
-      for (i = 0; i < 3; ++i) diff_g[i] = x1[i]/g1 - x2[i]/g2;
-      for (i = 0, err = 0; i < 3; ++i) {
-        double tmp=0;
-        for (j = 0; j < 3; ++j) {
-          tmp += U[i][j]*diff_g[j];
-        }
-        err += tmp * tmp;
-      }
-      err = sqrt(err);
-      err2 = udiff2*(err)/(g1*g2);
-#if defined(PETSC_USE_REAL_SINGLE)
-      if (err>1.e-6 || err!=err) exit(11);
-#else
-      if (err>1.e-13 || err!=err) exit(12);
-#endif
-    }
-#endif
   }
 }
 

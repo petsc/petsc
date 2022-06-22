@@ -3,11 +3,7 @@ import config.base
 
 import os
 import re
-
-try:
-  from hashlib import md5 as new_md5
-except ImportError:
-  from md5 import new as new_md5 # novermin
+from hashlib import md5 as new_md5
 
 class FakePETScDir:
   def __init__(self):
@@ -87,7 +83,7 @@ class Package(config.base.Configure):
     self.requires32bitintblas   = 1  # 1 means that the package will not work with 64 bit integer BLAS/LAPACK
     self.skippackagewithoptions = 0  # packages like fblaslapack and MPICH do not support --with-package* options so do not print them in help
     self.alternativedownload    = [] # Used by, for example mpi.py to print useful error messages, which does not support --download-mpi but one can use --download-mpich
-    self.usesopenmp             = 'no'  # yes, no, unknowm package is built to use OpenMP
+    self.usesopenmp             = 'no'  # yes, no, unknown package is built to use OpenMP
     self.usespthreads           = 'no'  # yes, no, unknown package is built to use Pthreads
     self.cmakelistsdir          = '' # Location of CMakeLists.txt - if not located at the top level of the package dir
 
@@ -117,12 +113,12 @@ class Package(config.base.Configure):
         if hasattr(self,'versiontitle'):
           output += '  '+self.versiontitle+':  '+self.foundversion+'\n'
         else:
-          output += '  Version:  '+self.foundversion+'\n'
+          output += '  Version:    '+self.foundversion+'\n'
       else:
-        if self.version: output += '  Version:  '+self.version+'\n'
-      if self.include: output += '  Includes: '+self.headers.toStringNoDupes(self.include)+'\n'
-      if self.lib:     output += '  Library:  '+self.libraries.toStringNoDupes(self.lib)+'\n'
-      if self.executablename: output += '  '+getattr(self,self.executablename)+'\n'
+        if self.version:      output += '  Version:    '+self.version+'\n'
+      if self.include:        output += '  Includes:   '+self.headers.toStringNoDupes(self.include)+'\n'
+      if self.lib:            output += '  Libraries:  '+self.libraries.toStringNoDupes(self.lib)+'\n'
+      if self.executablename: output += '  Executable: '+getattr(self,self.executablename)+'\n'
       if self.usesopenmp == 'yes': output += '  uses OpenMP; use export OMP_NUM_THREADS=<p> or -omp_num_threads <p> to control the number of threads\n'
       if self.usesopenmp == 'unknown': output += '  Unknown if this uses OpenMP (try export OMP_NUM_THREADS=<1-4> yourprogram -log_view) \n'
       if self.usespthreads == 'yes': output += '  uses PTHREADS; please consult the documentation on how to control the number of threads\n'
@@ -150,7 +146,7 @@ class Package(config.base.Configure):
       self.petscdir        = FakePETScDir()
     # All packages depend on make
     self.make          = framework.require('config.packages.make',self)
-    if not self.isMPI and not self.package in ['make','cuda','hip','sycl','thrust','hwloc','x']:
+    if not self.isMPI and not self.package in ['make','cuda','hip','sycl','thrust','hwloc','x','bison']:
       # force MPI to be the first package (except for those listed above) configured since all other packages
       # may depend on its compilers defined here
       self.mpi         = framework.require('config.packages.MPI',self)
@@ -289,9 +285,9 @@ class Package(config.base.Configure):
               # The worst behaved, we have a pure "set". we shouldn't rely on
               # CMAKE_CXX_STANDARD, since the package overrides it unconditionally. Thus
               # we leave the std flag in the compiler flags.
-              self.logPrint('removeStdCxxFlag: Cmake Package {pkg} had an overriding \'set\' command in their CmakeLists.txt:\n\t{cmd}\nLeaving std flags in'.format(pkg=self.name,cmd=line.strip()),indent=1)
+              self.logPrint('removeStdCxxFlag: CMake Package {pkg} had an overriding \'set\' command in their CMakeLists.txt:\n\t{cmd}\nLeaving std flags in'.format(pkg=self.name,cmd=line.strip()),indent=1)
               return flags
-            self.logPrint('removeStdCxxFlag: Cmake Package {pkg} did NOT have an overriding \'set\' command in their CmakeLists.txt:\n\t{cmd}\nRemoving std flags'.format(pkg=self.name,cmd=line.strip()),indent=1)
+            self.logPrint('removeStdCxxFlag: CMake Package {pkg} did NOT have an overriding \'set\' command in their CMakeLists.txt:\n\t{cmd}\nRemoving std flags'.format(pkg=self.name,cmd=line.strip()),indent=1)
             # CACHE was found in the set command, meaning we can override it from the
             # command line. So we continue on to remove the std flags.
             break
@@ -393,6 +389,7 @@ class Package(config.base.Configure):
     '''Special case if --package-prefix-hash then even self.publicInstall == 0 are installed in the prefix location'''
     self.confDir    = self.installDirProvider.confDir  # private install location; $PETSC_DIR/$PETSC_ARCH for PETSc
     self.packageDir = self.getDir()
+    self.setupDownload()
     if not self.packageDir: self.packageDir = self.downLoad()
     self.updateGitDir()
     self.updatehgDir()
@@ -733,31 +730,45 @@ If the problem persists, please send your configure.log to petsc-maint@mcs.anl.g
 
       prefetch = 0
       if self.gitcommit.startswith('origin/'):
-        prefetch = 1
+        prefetch = self.gitcommit.replace('origin/','')
       else:
         try:
           config.base.Configure.executeShellCommand([self.sourceControl.git, 'cat-file', '-e', self.gitcommit+'^{commit}'], cwd=self.packageDir, log = self.log)
+          gitcommit_hash,err,ret = config.base.Configure.executeShellCommand([self.sourceControl.git, 'rev-parse', self.gitcommit], cwd=self.packageDir, log = self.log)
+          if self.gitcommit != 'HEAD':
+            # check if origin/branch exists - if so warn user that we are using the remote branch
+            try:
+              rbranch = 'origin/'+self.gitcommit
+              config.base.Configure.executeShellCommand([self.sourceControl.git, 'cat-file', '-e', rbranch+'^{commit}'], cwd=self.packageDir, log = self.log)
+              gitcommit_hash,err,ret = config.base.Configure.executeShellCommand([self.sourceControl.git, 'rev-parse', self.gitcommit], cwd=self.packageDir, log = self.log)
+              self.logPrintWarning('Branch "%s" is specified, however remote branch "%s" also exists! Proceeding with using the remote branch. \
+To use the local branch (manually checkout local branch and) - rerun configure with option --download-%s-commit=HEAD)' % (self.gitcommit, rbranch, self.name))
+              prefetch = self.gitcommit
+            except:
+              pass
         except:
-          prefetch = 1
+          prefetch = self.gitcommit
       if prefetch:
-        try:
-          config.base.Configure.executeShellCommand([self.sourceControl.git, 'fetch'], cwd=self.packageDir, log = self.log)
-        except:
-          raise RuntimeError('Unable to fetch '+self.gitcommit+' in repository '+self.packageDir+
-                             '.\nTo use previous git snapshot - use: --download-'+self.package+'-commit=HEAD')
-      try:
-        gitcommit_hash,err,ret = config.base.Configure.executeShellCommand([self.sourceControl.git, 'rev-parse', self.gitcommit], cwd=self.packageDir, log = self.log)
-      except:
-        raise RuntimeError('Unable to locate commit: '+self.gitcommit+' in repository: '+self.packageDir+'.\n\
-If its a commit/tag that is not found - perhaps the repo URL changed. If so, delete '+self.packageDir+' and rerun configure.\n\
-If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
+        fetched = 0
+        self.logPrintBox('Attempting a "git fetch" commit/branch/tag: %s from Git repositor%s: %s' % (str(self.gitcommit), str('ies' if len(self.retriever.git_urls) > 1 else 'y'), str(self.retriever.git_urls)))
+        for git_url in self.retriever.git_urls:
+          try:
+            config.base.Configure.executeShellCommand([self.sourceControl.git, 'fetch', '--tags', git_url, prefetch], cwd=self.packageDir, log = self.log)
+            gitcommit_hash,err,ret = config.base.Configure.executeShellCommand([self.sourceControl.git, 'rev-parse', 'FETCH_HEAD'], cwd=self.packageDir, log = self.log)
+            fetched = 1
+            break
+          except:
+            continue
+        if not fetched:
+          raise RuntimeError('The above "git fetch" failed! Check if the specified "commit/branch/tag" is present in the remote git repo.\n\
+To use currently downloaded (local) git snapshot - use: --download-'+self.package+'-commit=HEAD')
       if self.gitcommit != 'HEAD':
         try:
           config.base.Configure.executeShellCommand([self.sourceControl.git, '-c', 'user.name=petsc-configure', '-c', 'user.email=petsc@configure', 'stash'], cwd=self.packageDir, log = self.log)
           config.base.Configure.executeShellCommand([self.sourceControl.git, 'clean', '-f', '-d', '-x'], cwd=self.packageDir, log = self.log)
         except RuntimeError as e:
           if str(e).find("Unknown option: -c") >= 0:
-            self.logPrintBox('***** WARNING: Unable to "git stash". Likely due to antique git version (<1.8). Proceeding without stashing!')
+            self.logPrintWarning('Unable to "git stash". Likely due to antique Git version (<1.8). Proceeding without stashing!')
           else:
             raise RuntimeError('Unable to run git stash/clean in repository: '+self.packageDir+'.\nPerhaps its a git error!')
         try:
@@ -804,50 +815,23 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
       self.logPrint('  '+str(pkgdirs))
       return
 
+  def setupDownload(self):
+    import retrieval
+    self.retriever = retrieval.Retriever(self.sourceControl, argDB = self.argDB)
+    self.retriever.setup()
+    self.retriever.setupURLs(self.package,self.download,self.gitsubmodules,self.gitPreReqCheck())
+
   def downLoad(self):
     '''Downloads a package; using hg or ftp; opens it in the with-packages-build-dir directory'''
-    import retrieval
-
-    if self.havePETSc:
-      isClone = self.petscclone.isClone
-    else:
-      isClone = True
-
-    retriever = retrieval.Retriever(self.sourceControl, argDB = self.argDB)
-    retriever.setup()
+    retriever = self.retriever
     retriever.saveLog()
     self.logPrint('Downloading '+self.name)
-    # check if its http://ftp.mcs - and add ftp://ftp.mcs as fallback
-    download_urls = []
-    git_urls      = []
-    for url in self.download:
-      if url.startswith("git://"):
-        git_urls.append(url)
-      else:
-        download_urls.append(url)
-      if url.find('http://ftp.mcs.anl.gov') >=0:
-        download_urls.append(url.replace('http://','ftp://'))
-        download_urls.append(url.replace('http://ftp.mcs.anl.gov/pub/petsc/','https://www.mcs.anl.gov/petsc/mirror/'))
-      # prefer giturl from a petsc gitclone, and tarball urls from a petsc tarball.
-      if git_urls:
-        if not hasattr(self.sourceControl, 'git'):
-          self.logPrint('Git not found - skipping giturls: '+str(git_urls)+'\n')
-        elif isClone or 'with-git' in self.framework.clArgDB:
-          download_urls = git_urls+download_urls
-        else:
-          download_urls = download_urls+git_urls
     # now attempt to download each url until any one succeeds.
     err =''
-    for url in download_urls:
-      if url.startswith('git://'):
-        if not self.gitcommit: raise RuntimeError(self.PACKAGE+': giturl specified but commit not set')
-        if not self.gitPreReqCheck():
-          err += 'Git prerequisite check failed for url: '+url+'\n'
-          self.logPrint('Git prerequisite check failed - required for url: '+url+'\n')
-          continue
+    for proto, url in retriever.generateURLs():
       self.logPrintBox('Trying to download '+url+' for '+self.PACKAGE)
       try:
-        retriever.genericRetrieve(url, self.externalPackagesDir, self.package, self.gitsubmodules)
+        retriever.genericRetrieve(proto, url, self.externalPackagesDir)
         self.logWrite(retriever.restoreLog())
         retriever.saveLog()
         pkgdir = self.getDir()
@@ -986,7 +970,9 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
             self.include = testedincl
           self.found     = 1
           self.dlib      = self.lib+self.dlib
-          self.dinclude  = list(set(incl+self.dinclude))
+          dinc = []
+          [dinc.append(inc) for inc in incl+self.dinclude if inc not in dinc]
+          self.dinclude = dinc
           if not hasattr(self.framework, 'packages'):
             self.framework.packages = []
           self.directory = directory
@@ -1103,7 +1089,7 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
       extraFlags = ' -o -' # Force 'hipcc -E' to output to stdout, instead of *.cui files (as of hip-4.0. hip-4.1+ does not need it, but does not get hurt either).
     else:
       extraFlags = ''
-    setattr(self.compilers, flagsArg, oldFlags+extraFlags+' '+self.headers.toString(self.include))
+    setattr(self.compilers, flagsArg, oldFlags+extraFlags+' '+self.headers.toString(self.dinclude))
     self.compilers.saveLog()
 
     # X.py uses a weird list of two headers.
@@ -1184,19 +1170,19 @@ char     *ver = "petscpkgver(" PetscXstr_({y}) ")";
       return
 
     suggest = ''
-    if self.download: suggest = '\nSuggest using --download-'+self.package+' for a compatible '+self.name
+    if self.download: suggest = '. Suggest using --download-'+self.package+' for a compatible '+self.name
     if self.minversion:
       if self.versionToTuple(self.minversion) > self.version_tuple:
-        raise RuntimeError(self.package+' version is '+self.foundversion+' this version of PETSc needs at least '+self.minversion+suggest+'\n')
+        raise RuntimeError(self.PACKAGE+' version is '+self.foundversion+', this version of PETSc needs at least '+self.minversion+suggest+'\n')
     elif self.version:
       if self.versionToTuple(zeroPatch(self.version)) > self.version_tuple:
-        self.logPrintBox('Warning: Using version '+self.foundversion+' of package '+self.package+' PETSc is tested with '+dropPatch(self.version)+suggest)
+        self.logPrintWarning('Using version '+self.foundversion+' of package '+self.PACKAGE+', PETSc is tested with '+dropPatch(self.version)+suggest)
     if self.maxversion:
       if self.versionToTuple(self.maxversion) < self.version_tuple:
-        raise RuntimeError(self.package+' version is '+self.foundversion+' this version of PETSc needs at most '+self.maxversion+suggest+'\n')
+        raise RuntimeError(self.PACKAGE+' version is '+self.foundversion+', this version of PETSc needs at most '+self.maxversion+suggest+'\n')
     elif self.version:
       if self.versionToTuple(infinitePatch(self.version)) < self.version_tuple:
-        self.logPrintBox('Warning: Using version '+self.foundversion+' of package '+self.package+' PETSc is tested with '+dropPatch(self.version)+suggest)
+        self.logPrintWarning('Using version '+self.foundversion+' of package '+self.PACKAGE+', PETSc is tested with '+dropPatch(self.version)+suggest)
     return
 
   def configure(self):
@@ -1204,6 +1190,8 @@ char     *ver = "petscpkgver(" PetscXstr_({y}) ")";
       self.download = self.download_solaris
     if hasattr(self, 'download_darwin') and config.setCompilers.Configure.isDarwin(self.log):
       self.download = self.download_darwin
+    if hasattr(self, 'download_mingw') and config.setCompilers.Configure.isMINGW(self.framework.getCompiler(), self.log):
+      self.download = self.download_mingw
     if self.download and self.argDB['download-'+self.downloadname.lower()] and (not self.framework.batchBodies or self.installwithbatch):
       self.argDB['with-'+self.package] = 1
       downloadPackageVal = self.argDB['download-'+self.downloadname.lower()]
@@ -1799,9 +1787,24 @@ class GNUPackage(Package):
     self.postInstall(output1+err1+output2+err2+output3+err3+output4+err4, conffile)
     return self.installDir
 
+  def Bootstrap(self,command):
+    '''check for configure script - and run bootstrap - if needed'''
+    import os
+    if not os.path.isfile(os.path.join(self.packageDir,'configure')):
+      if not self.programs.libtoolize:
+        raise RuntimeError('Could not bootstrap '+self.PACKAGE+' using autotools: libtoolize not found')
+      if not self.programs.autoreconf:
+        raise RuntimeError('Could not bootstrap '+self.PACKAGE+' using autotools: autoreconf not found')
+      self.logPrintBox('Bootstrapping '+self.PACKAGE+' using autotools; this may take several minutes')
+      try:
+        self.executeShellCommand(command,cwd=self.packageDir,log=self.log)
+      except RuntimeError as e:
+        raise RuntimeError('Could not boostrap '+self.PACKAGE+': maybe autotools (or recent enough autotools) could not be found?\nError: '+str(e))
+
 class CMakePackage(Package):
   def __init__(self, framework):
     Package.__init__(self, framework)
+    self.minCmakeVersion = (2,0,0)
     return
 
   def setupHelp(self, help):
@@ -1809,14 +1812,22 @@ class CMakePackage(Package):
     import nargs
     help.addArgument(self.PACKAGE, '-download-'+self.package+'-shared=<bool>',     nargs.ArgBool(None, 0, 'Install '+self.PACKAGE+' with shared libraries'))
     help.addArgument(self.PACKAGE, '-download-'+self.package+'-cmake-arguments=string', nargs.ArgString(None, 0, 'Additional CMake arguments for the build of '+self.name))
+
   def setupDependencies(self, framework):
     Package.setupDependencies(self, framework)
     self.cmake = framework.require('config.packages.cmake',self)
+    if self.argDB['download-'+self.downloadname.lower()]:
+      self.cmake.maxminCmakeVersion = max(self.minCmakeVersion,self.cmake.maxminCmakeVersion)
     return
 
   def formCMakeConfigureArgs(self):
     import os
     import shlex
+    #  If user has set, for example, CMAKE_GENERATOR Ninja then CMake calls from configure will generate the wrong external package tools for building
+    try:
+      del os.environ['CMAKE_GENERATOR']
+    except:
+      pass
 
     args = ['-DCMAKE_INSTALL_PREFIX='+self.installDir]
     args.append('-DCMAKE_INSTALL_NAME_DIR:STRING="'+os.path.join(self.installDir,self.libdir)+'"')
@@ -1828,7 +1839,10 @@ class CMakePackage(Package):
       args.append('-DCMAKE_BUILD_TYPE=Release')
     self.framework.pushLanguage('C')
     args.append('-DCMAKE_C_COMPILER="'+self.framework.getCompiler()+'"')
-    args.append('-DMPI_C_COMPILER="'+self.framework.getCompiler()+'"')
+    # bypass CMake findMPI() bug that can find compilers later in the PATH before the first one in the PATH.
+    # relevent lines of findMPI() begins with if(_MPI_BASE_DIR)
+    self.getExecutable(self.framework.getCompiler(), getFullPath=1, resultName='mpi_C',setMakeMacro=0)
+    args.append('-DMPI_C_COMPILER="'+self.mpi_C+'"')
     args.append('-DCMAKE_AR='+self.setCompilers.AR)
     ranlib = shlex.split(self.setCompilers.RANLIB)[0]
     args.append('-DCMAKE_RANLIB='+ranlib)
@@ -1840,7 +1854,10 @@ class CMakePackage(Package):
     if hasattr(self.compilers, 'CXX'):
       lang = self.framework.pushLanguage('Cxx')
       args.append('-DCMAKE_CXX_COMPILER="'+self.framework.getCompiler()+'"')
-      args.append('-DMPI_CXX_COMPILER="'+self.framework.getCompiler()+'"')
+      # bypass CMake findMPI() bug that can find compilers later in the PATH before the first one in the PATH.
+      # relevent lines of findMPI() begins with if(_MPI_BASE_DIR)
+      self.getExecutable(self.framework.getCompiler(), getFullPath=1, resultName='mpi_CC',setMakeMacro=0)
+      args.append('-DMPI_CXX_COMPILER="'+self.mpi_CC+'"')
       cxxFlags = self.updatePackageCxxFlags(self.framework.getCompilerFlags())
       args.append('-DCMAKE_CXX_FLAGS:STRING="{cxxFlags}"'.format(cxxFlags=cxxFlags))
       args.append('-DCMAKE_CXX_FLAGS_DEBUG:STRING="{cxxFlags}"'.format(cxxFlags=cxxFlags))
@@ -1855,14 +1872,18 @@ class CMakePackage(Package):
     if hasattr(self.compilers, 'FC'):
       self.framework.pushLanguage('FC')
       args.append('-DCMAKE_Fortran_COMPILER="'+self.framework.getCompiler()+'"')
-      args.append('-DMPI_Fortran_COMPILER="'+self.framework.getCompiler()+'"')
+      # bypass CMake findMPI() bug that can find compilers later in the PATH before the first one in the PATH.
+      # relevent lines of findMPI() begins with if(_MPI_BASE_DIR)
+      self.getExecutable(self.framework.getCompiler(), getFullPath=1, resultName='mpi_FC',setMakeMacro=0)
+      args.append('-DMPI_Fortran_COMPILER="'+self.mpi_FC+'"')
       args.append('-DCMAKE_Fortran_FLAGS:STRING="'+self.updatePackageFFlags(self.framework.getCompilerFlags())+'"')
       args.append('-DCMAKE_Fortran_FLAGS_DEBUG:STRING="'+self.updatePackageFFlags(self.framework.getCompilerFlags())+'"')
       args.append('-DCMAKE_Fortran_FLAGS_RELEASE:STRING="'+self.updatePackageFFlags(self.framework.getCompilerFlags())+'"')
       self.framework.popLanguage()
 
     if self.setCompilers.LDFLAGS:
-      args.append('-DCMAKE_EXE_LINKER_FLAGS:STRING="'+self.setCompilers.LDFLAGS+'"')
+      ldflags = self.setCompilers.LDFLAGS.replace('"','\\"') # escape double quotes (") in LDFLAGS
+      args.append('-DCMAKE_EXE_LINKER_FLAGS:STRING="'+ldflags+'"')
 
     if self.checkSharedLibrariesEnabled():
       args.append('-DBUILD_SHARED_LIBS:BOOL=ON')
@@ -1900,11 +1921,11 @@ class CMakePackage(Package):
       os.mkdir(folder)
 
       try:
-        self.logPrintBox('Configuring '+self.PACKAGE+' with cmake; this may take several minutes')
+        self.logPrintBox('Configuring '+self.PACKAGE+' with CMake; this may take several minutes')
         output1,err1,ret1  = config.package.Package.executeShellCommand(self.cmake.cmake+' .. '+args, cwd=folder, timeout=900, log = self.log)
       except RuntimeError as e:
-        self.logPrint('Error configuring '+self.PACKAGE+' with cmake '+str(e))
-        raise RuntimeError('Error configuring '+self.PACKAGE+' with cmake')
+        self.logPrint('Error configuring '+self.PACKAGE+' with CMake '+str(e))
+        raise RuntimeError('Error configuring '+self.PACKAGE+' with CMake')
       try:
         self.logPrintBox('Compiling and installing '+self.PACKAGE+'; this may take several minutes')
         output2,err2,ret2  = config.package.Package.executeShellCommand(self.make.make_jnp+' '+self.makerulename, cwd=folder, timeout=3000, log = self.log)

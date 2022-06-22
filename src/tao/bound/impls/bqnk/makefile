@@ -1,7 +1,5 @@
-ALL: lib
+-include ../../../../../petsckdir.mk
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = bqnk.c bqnkls.c bqnktr.c bqnktl.c
 SOURCEF  =
 SOURCEH  = bqnk.h

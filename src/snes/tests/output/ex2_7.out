@@ -52,7 +52,7 @@
 [0]Point 24 is in Cell 256
 [0]Point 25 is in Cell 258
 [0]Point 26 is in Cell 0
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.
 0.
@@ -136,7 +136,7 @@ Vec Object: 1 MPI processes
 1.
 1.
 [0]solution
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.
 0.
@@ -514,7 +514,7 @@ Vec Object: 1 MPI processes
 1.5
 1.5
 [0]Field values
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.
 0.

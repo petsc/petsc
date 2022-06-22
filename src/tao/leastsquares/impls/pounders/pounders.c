@@ -10,54 +10,51 @@ static PetscErrorCode  pounders_fg(Tao subtao, Vec x, PetscReal *f, Vec g, void 
 {
   TAO_POUNDERS   *mfqP = (TAO_POUNDERS*)ctx;
   PetscReal      d1,d2;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* g = A*x  (add b later)*/
-  ierr = MatMult(mfqP->subH,x,g);CHKERRQ(ierr);
+  PetscCall(MatMult(mfqP->subH,x,g));
 
   /* f = 1/2 * x'*(Ax) + b'*x  */
-  ierr = VecDot(x,g,&d1);CHKERRQ(ierr);
-  ierr = VecDot(mfqP->subb,x,&d2);CHKERRQ(ierr);
+  PetscCall(VecDot(x,g,&d1));
+  PetscCall(VecDot(mfqP->subb,x,&d2));
   *f = 0.5 *d1 + d2;
 
   /* now  g = g + b */
-  ierr = VecAXPY(g, 1.0, mfqP->subb);CHKERRQ(ierr);
+  PetscCall(VecAXPY(g, 1.0, mfqP->subb));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode pounders_feval(Tao tao, Vec x, Vec F, PetscReal *fsum)
 {
-  PetscErrorCode ierr;
   TAO_POUNDERS   *mfqP = (TAO_POUNDERS*)tao->data;
   PetscInt       i,row,col;
   PetscReal      fr,fc;
 
   PetscFunctionBegin;
-  ierr = TaoComputeResidual(tao,x,F);CHKERRQ(ierr);
+  PetscCall(TaoComputeResidual(tao,x,F));
   if (tao->res_weights_v) {
-    ierr = VecPointwiseMult(mfqP->workfvec,tao->res_weights_v,F);CHKERRQ(ierr);
-    ierr = VecDot(mfqP->workfvec,mfqP->workfvec,fsum);CHKERRQ(ierr);
+    PetscCall(VecPointwiseMult(mfqP->workfvec,tao->res_weights_v,F));
+    PetscCall(VecDot(mfqP->workfvec,mfqP->workfvec,fsum));
   } else if (tao->res_weights_w) {
     *fsum=0;
     for (i=0;i<tao->res_weights_n;i++) {
       row=tao->res_weights_rows[i];
       col=tao->res_weights_cols[i];
-      ierr = VecGetValues(F,1,&row,&fr);CHKERRQ(ierr);
-      ierr = VecGetValues(F,1,&col,&fc);CHKERRQ(ierr);
+      PetscCall(VecGetValues(F,1,&row,&fr));
+      PetscCall(VecGetValues(F,1,&col,&fc));
       *fsum += tao->res_weights_w[i]*fc*fr;
     }
   } else {
-    ierr = VecDot(F,F,fsum);CHKERRQ(ierr);
+    PetscCall(VecDot(F,F,fsum));
   }
-  ierr = PetscInfo(tao,"Least-squares residual norm: %20.19e\n",(double)*fsum);CHKERRQ(ierr);
-  PetscCheckFalse(PetscIsInfOrNanReal(*fsum),PETSC_COMM_SELF,PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
+  PetscCall(PetscInfo(tao,"Least-squares residual norm: %20.19e\n",(double)*fsum));
+  PetscCheck(!PetscIsInfOrNanReal(*fsum),PETSC_COMM_SELF,PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode gqtwrap(Tao tao,PetscReal *gnorm, PetscReal *qmin)
 {
-  PetscErrorCode ierr;
 #if defined(PETSC_USE_REAL_SINGLE)
   PetscReal      atol=1.0e-5;
 #else
@@ -71,14 +68,14 @@ static PetscErrorCode gqtwrap(Tao tao,PetscReal *gnorm, PetscReal *qmin)
     PetscReal maxval;
     PetscInt  i,j;
 
-    ierr = VecSetValues(mfqP->subb,mfqP->n,mfqP->indices,mfqP->Gres,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = VecAssemblyBegin(mfqP->subb);CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(mfqP->subb);CHKERRQ(ierr);
+    PetscCall(VecSetValues(mfqP->subb,mfqP->n,mfqP->indices,mfqP->Gres,INSERT_VALUES));
+    PetscCall(VecAssemblyBegin(mfqP->subb));
+    PetscCall(VecAssemblyEnd(mfqP->subb));
 
-    ierr = VecSet(mfqP->subx,0.0);CHKERRQ(ierr);
+    PetscCall(VecSet(mfqP->subx,0.0));
 
-    ierr = VecSet(mfqP->subndel,-1.0);CHKERRQ(ierr);
-    ierr = VecSet(mfqP->subpdel,+1.0);CHKERRQ(ierr);
+    PetscCall(VecSet(mfqP->subndel,-1.0));
+    PetscCall(VecSet(mfqP->subpdel,+1.0));
 
     /* Complete the lower triangle of the Hessian matrix */
     for (i=0;i<mfqP->n;i++) {
@@ -86,60 +83,60 @@ static PetscErrorCode gqtwrap(Tao tao,PetscReal *gnorm, PetscReal *qmin)
         mfqP->Hres[j+mfqP->n*i] = mfqP->Hres[mfqP->n*j+i];
       }
     }
-    ierr = MatSetValues(mfqP->subH,mfqP->n,mfqP->indices,mfqP->n,mfqP->indices,mfqP->Hres,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = MatAssemblyBegin(mfqP->subH,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(mfqP->subH,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    PetscCall(MatSetValues(mfqP->subH,mfqP->n,mfqP->indices,mfqP->n,mfqP->indices,mfqP->Hres,INSERT_VALUES));
+    PetscCall(MatAssemblyBegin(mfqP->subH,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(mfqP->subH,MAT_FINAL_ASSEMBLY));
 
-    ierr = TaoResetStatistics(mfqP->subtao);CHKERRQ(ierr);
-    /* ierr = TaoSetTolerances(mfqP->subtao,*gnorm,*gnorm,PETSC_DEFAULT);CHKERRQ(ierr); */
+    PetscCall(TaoResetStatistics(mfqP->subtao));
+    /* PetscCall(TaoSetTolerances(mfqP->subtao,*gnorm,*gnorm,PETSC_DEFAULT)); */
     /* enforce bound constraints -- experimental */
     if (tao->XU && tao->XL) {
-      ierr = VecCopy(tao->XU,mfqP->subxu);CHKERRQ(ierr);
-      ierr = VecAXPY(mfqP->subxu,-1.0,tao->solution);CHKERRQ(ierr);
-      ierr = VecScale(mfqP->subxu,1.0/mfqP->delta);CHKERRQ(ierr);
-      ierr = VecCopy(tao->XL,mfqP->subxl);CHKERRQ(ierr);
-      ierr = VecAXPY(mfqP->subxl,-1.0,tao->solution);CHKERRQ(ierr);
-      ierr = VecScale(mfqP->subxl,1.0/mfqP->delta);CHKERRQ(ierr);
+      PetscCall(VecCopy(tao->XU,mfqP->subxu));
+      PetscCall(VecAXPY(mfqP->subxu,-1.0,tao->solution));
+      PetscCall(VecScale(mfqP->subxu,1.0/mfqP->delta));
+      PetscCall(VecCopy(tao->XL,mfqP->subxl));
+      PetscCall(VecAXPY(mfqP->subxl,-1.0,tao->solution));
+      PetscCall(VecScale(mfqP->subxl,1.0/mfqP->delta));
 
-      ierr = VecPointwiseMin(mfqP->subxu,mfqP->subxu,mfqP->subpdel);CHKERRQ(ierr);
-      ierr = VecPointwiseMax(mfqP->subxl,mfqP->subxl,mfqP->subndel);CHKERRQ(ierr);
+      PetscCall(VecPointwiseMin(mfqP->subxu,mfqP->subxu,mfqP->subpdel));
+      PetscCall(VecPointwiseMax(mfqP->subxl,mfqP->subxl,mfqP->subndel));
     } else {
-      ierr = VecCopy(mfqP->subpdel,mfqP->subxu);CHKERRQ(ierr);
-      ierr = VecCopy(mfqP->subndel,mfqP->subxl);CHKERRQ(ierr);
+      PetscCall(VecCopy(mfqP->subpdel,mfqP->subxu));
+      PetscCall(VecCopy(mfqP->subndel,mfqP->subxl));
     }
     /* Make sure xu > xl */
-    ierr = VecCopy(mfqP->subxl,mfqP->subpdel);CHKERRQ(ierr);
-    ierr = VecAXPY(mfqP->subpdel,-1.0,mfqP->subxu);CHKERRQ(ierr);
-    ierr = VecMax(mfqP->subpdel,NULL,&maxval);CHKERRQ(ierr);
-    PetscCheckFalse(maxval > 1e-10,PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_OUTOFRANGE,"upper bound < lower bound in subproblem");
+    PetscCall(VecCopy(mfqP->subxl,mfqP->subpdel));
+    PetscCall(VecAXPY(mfqP->subpdel,-1.0,mfqP->subxu));
+    PetscCall(VecMax(mfqP->subpdel,NULL,&maxval));
+    PetscCheck(maxval <= 1e-10,PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_OUTOFRANGE,"upper bound < lower bound in subproblem");
     /* Make sure xu > tao->solution > xl */
-    ierr = VecCopy(mfqP->subxl,mfqP->subpdel);CHKERRQ(ierr);
-    ierr = VecAXPY(mfqP->subpdel,-1.0,mfqP->subx);CHKERRQ(ierr);
-    ierr = VecMax(mfqP->subpdel,NULL,&maxval);CHKERRQ(ierr);
-    PetscCheckFalse(maxval > 1e-10,PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_OUTOFRANGE,"initial guess < lower bound in subproblem");
+    PetscCall(VecCopy(mfqP->subxl,mfqP->subpdel));
+    PetscCall(VecAXPY(mfqP->subpdel,-1.0,mfqP->subx));
+    PetscCall(VecMax(mfqP->subpdel,NULL,&maxval));
+    PetscCheck(maxval <= 1e-10,PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_OUTOFRANGE,"initial guess < lower bound in subproblem");
 
-    ierr = VecCopy(mfqP->subx,mfqP->subpdel);CHKERRQ(ierr);
-    ierr = VecAXPY(mfqP->subpdel,-1.0,mfqP->subxu);CHKERRQ(ierr);
-    ierr = VecMax(mfqP->subpdel,NULL,&maxval);CHKERRQ(ierr);
-    PetscCheckFalse(maxval > 1e-10,PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_OUTOFRANGE,"initial guess > upper bound in subproblem");
+    PetscCall(VecCopy(mfqP->subx,mfqP->subpdel));
+    PetscCall(VecAXPY(mfqP->subpdel,-1.0,mfqP->subxu));
+    PetscCall(VecMax(mfqP->subpdel,NULL,&maxval));
+    PetscCheck(maxval <= 1e-10,PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_OUTOFRANGE,"initial guess > upper bound in subproblem");
 
-    ierr = TaoSolve(mfqP->subtao);CHKERRQ(ierr);
-    ierr = TaoGetSolutionStatus(mfqP->subtao,NULL,qmin,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+    PetscCall(TaoSolve(mfqP->subtao));
+    PetscCall(TaoGetSolutionStatus(mfqP->subtao,NULL,qmin,NULL,NULL,NULL,NULL));
 
     /* test bounds post-solution*/
-    ierr = VecCopy(mfqP->subxl,mfqP->subpdel);CHKERRQ(ierr);
-    ierr = VecAXPY(mfqP->subpdel,-1.0,mfqP->subx);CHKERRQ(ierr);
-    ierr = VecMax(mfqP->subpdel,NULL,&maxval);CHKERRQ(ierr);
+    PetscCall(VecCopy(mfqP->subxl,mfqP->subpdel));
+    PetscCall(VecAXPY(mfqP->subpdel,-1.0,mfqP->subx));
+    PetscCall(VecMax(mfqP->subpdel,NULL,&maxval));
     if (maxval > 1e-5) {
-      ierr = PetscInfo(tao,"subproblem solution < lower bound\n");CHKERRQ(ierr);
+      PetscCall(PetscInfo(tao,"subproblem solution < lower bound\n"));
       tao->reason = TAO_DIVERGED_TR_REDUCTION;
     }
 
-    ierr = VecCopy(mfqP->subx,mfqP->subpdel);CHKERRQ(ierr);
-    ierr = VecAXPY(mfqP->subpdel,-1.0,mfqP->subxu);CHKERRQ(ierr);
-    ierr = VecMax(mfqP->subpdel,NULL,&maxval);CHKERRQ(ierr);
+    PetscCall(VecCopy(mfqP->subx,mfqP->subpdel));
+    PetscCall(VecAXPY(mfqP->subpdel,-1.0,mfqP->subxu));
+    PetscCall(VecMax(mfqP->subpdel,NULL,&maxval));
     if (maxval > 1e-5) {
-      ierr = PetscInfo(tao,"subproblem solution > upper bound\n");CHKERRQ(ierr);
+      PetscCall(PetscInfo(tao,"subproblem solution > upper bound\n"));
       tao->reason = TAO_DIVERGED_TR_REDUCTION;
     }
   } else {
@@ -155,7 +152,6 @@ static PetscErrorCode pounders_update_res(Tao tao)
   PetscInt       i,row,col;
   PetscBLASInt   blasn=mfqP->n,blasn2=blasn*blasn,blasm=mfqP->m,ione=1;
   PetscReal      zero=0.0,one=1.0,wii,factor;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   for (i=0;i<mfqP->n;i++) {
@@ -169,7 +165,7 @@ static PetscErrorCode pounders_update_res(Tao tao)
   if (tao->res_weights_v) {
     /* Vector(diagonal) weights: gres = sum_i(wii*ci*gi) */
     for (i=0;i<mfqP->m;i++) {
-      ierr = VecGetValues(tao->res_weights_v,1,&i,&factor);CHKERRQ(ierr);
+      PetscCall(VecGetValues(tao->res_weights_v,1,&i,&factor));
       factor=factor*mfqP->C[i];
       PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&blasn,&factor,&mfqP->Fdiff[blasn*i],&ione,mfqP->Gres,&ione));
     }
@@ -177,7 +173,7 @@ static PetscErrorCode pounders_update_res(Tao tao)
     /* compute Hres = sum_ij [wij * (*ci*Hj + cj*Hi + gi gj' + gj gi') ] */
     /* vector(diagonal weights) Hres = sum_i(wii*(ci*Hi + gi * gi')*/
     for (i=0;i<mfqP->m;i++) {
-      ierr = VecGetValues(tao->res_weights_v,1,&i,&wii);CHKERRQ(ierr);
+      PetscCall(VecGetValues(tao->res_weights_v,1,&i,&wii));
       if (tao->niter>1) {
         factor=wii*mfqP->C[i];
         /* add wii * ci * Hi */
@@ -224,7 +220,7 @@ static PetscErrorCode pounders_update_res(Tao tao)
     }
   } else {
     /* Default: Gres= sum_i[cigi] = G*c' */
-    ierr = PetscInfo(tao,"Identity weights\n");CHKERRQ(ierr);
+    PetscCall(PetscInfo(tao,"Identity weights\n"));
     PetscStackCallBLAS("BLASgemv",BLASgemv_("N",&blasn,&blasm,&one,mfqP->Fdiff,&blasn,mfqP->C,&ione,&zero,mfqP->Gres,&ione));
 
     /* compute Hres = sum_ij [wij * (*ci*Hj + cj*Hi + gi gj' + gj gi') ] */
@@ -288,7 +284,7 @@ static PetscErrorCode getquadpounders(TAO_POUNDERS *mfqP)
 
     /* factor M */
   PetscStackCallBLAS("LAPACKgetrf",LAPACKgetrf_(&blasnplus1,&blasnp,mfqP->M,&blasnplus1,mfqP->npmaxiwork,&info));
-  PetscCheckFalse(info != 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"LAPACK routine getrf returned with value %d",info);
+  PetscCheck(info == 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"LAPACK routine getrf returned with value %" PetscBLASInt_FMT,info);
 
   if (np == mfqP->n+1) {
     for (i=0;i<mfqP->npmax-mfqP->n-1;i++) {
@@ -303,7 +299,7 @@ static PetscErrorCode getquadpounders(TAO_POUNDERS *mfqP)
 
     /* factor Ltmp */
     PetscStackCallBLAS("LAPACKpotrf",LAPACKpotrf_("L",&blasint2,mfqP->L_tmp,&blasint,&info));
-    PetscCheckFalse(info != 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"LAPACK routine potrf returned with value %d",info);
+    PetscCheck(info == 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"LAPACK routine potrf returned with value %" PetscBLASInt_FMT,info);
   }
 
   for (k=0;k<mfqP->m;k++) {
@@ -311,7 +307,7 @@ static PetscErrorCode getquadpounders(TAO_POUNDERS *mfqP)
       /* Solve L'*L*Omega = Z' * RESk*/
       PetscStackCallBLAS("BLASgemv",BLASgemv_("T",&blasnp,&blasint2,&one,mfqP->Z,&blasnpmax,&mfqP->RES[mfqP->npmax*k],&ione,&zero,mfqP->omega,&ione));
       PetscStackCallBLAS("LAPACKpotrs",LAPACKpotrs_("L",&blasint2,&ione,mfqP->L_tmp,&blasint,mfqP->omega,&blasint2,&info));
-      PetscCheckFalse(info != 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"LAPACK routine potrs returned with value %d",info);
+      PetscCheck(info == 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"LAPACK routine potrs returned with value %" PetscBLASInt_FMT,info);
 
       /* Beta = L*Omega */
       PetscStackCallBLAS("BLASgemv",BLASgemv_("N",&blasint,&blasint2,&one,&mfqP->L[(mfqP->n+1)*blasint],&blasint,mfqP->omega,&ione,&zero,mfqP->beta,&ione));
@@ -320,7 +316,7 @@ static PetscErrorCode getquadpounders(TAO_POUNDERS *mfqP)
     /* solve M'*Alpha = RESk - N'*Beta */
     PetscStackCallBLAS("BLASgemv",BLASgemv_("T",&blasint,&blasnp,&negone,mfqP->N,&blasint,mfqP->beta,&ione,&one,&mfqP->RES[mfqP->npmax*k],&ione));
     PetscStackCallBLAS("LAPACKgetrs",LAPACKgetrs_("T",&blasnplus1,&ione,mfqP->M,&blasnplus1,mfqP->npmaxiwork,&mfqP->RES[mfqP->npmax*k],&blasnplus1,&info));
-    PetscCheckFalse(info != 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"LAPACK routine getrs returned with value %d",info);
+    PetscCheck(info == 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"LAPACK routine getrs returned with value %" PetscBLASInt_FMT,info);
 
     /* Gdel(:,k) = Alpha(2:n+1) */
     for (i=0;i<mfqP->n;i++) {
@@ -355,18 +351,17 @@ static PetscErrorCode morepoints(TAO_POUNDERS *mfqP)
   PetscBLASInt    blasn=mfqP->n,blasnpmax=mfqP->npmax,blasnplus1=mfqP->n+1,info,blasnmax=mfqP->nmax,blasint,blasint2,blasnp,blasmaxmn;
   const PetscReal *x;
   PetscReal       normd;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   /* Initialize M,N */
   for (i=0;i<mfqP->n+1;i++) {
-    ierr = VecGetArrayRead(mfqP->Xhist[mfqP->model_indices[i]],&x);CHKERRQ(ierr);
+    PetscCall(VecGetArrayRead(mfqP->Xhist[mfqP->model_indices[i]],&x));
     mfqP->M[(mfqP->n+1)*i] = 1.0;
     for (j=0;j<mfqP->n;j++) {
       mfqP->M[j+1+((mfqP->n+1)*i)] = (x[j]  - mfqP->xmin[j]) / mfqP->delta;
     }
-    ierr = VecRestoreArrayRead(mfqP->Xhist[mfqP->model_indices[i]],&x);CHKERRQ(ierr);
-    ierr = phi2eval(&mfqP->M[1+((mfqP->n+1)*i)],mfqP->n,&mfqP->N[mfqP->n*(mfqP->n+1)/2 * i]);CHKERRQ(ierr);
+    PetscCall(VecRestoreArrayRead(mfqP->Xhist[mfqP->model_indices[i]],&x));
+    PetscCall(phi2eval(&mfqP->M[1+((mfqP->n+1)*i)],mfqP->n,&mfqP->N[mfqP->n*(mfqP->n+1)/2 * i]));
   }
 
   /* Now we add points until we have npmax starting with the most recent ones */
@@ -384,9 +379,9 @@ static PetscErrorCode morepoints(TAO_POUNDERS *mfqP)
 
     /* Reject if norm(d) >c2 */
     if (!reject) {
-      ierr = VecCopy(mfqP->Xhist[point],mfqP->workxvec);CHKERRQ(ierr);
-      ierr = VecAXPY(mfqP->workxvec,-1.0,mfqP->Xhist[mfqP->minindex]);CHKERRQ(ierr);
-      ierr = VecNorm(mfqP->workxvec,NORM_2,&normd);CHKERRQ(ierr);
+      PetscCall(VecCopy(mfqP->Xhist[point],mfqP->workxvec));
+      PetscCall(VecAXPY(mfqP->workxvec,-1.0,mfqP->Xhist[mfqP->minindex]));
+      PetscCall(VecNorm(mfqP->workxvec,NORM_2,&normd));
       normd /= mfqP->delta;
       if (normd > mfqP->c2) {
         reject =1;
@@ -397,13 +392,13 @@ static PetscErrorCode morepoints(TAO_POUNDERS *mfqP)
       continue;
     }
 
-    ierr = VecGetArrayRead(mfqP->Xhist[point],&x);CHKERRQ(ierr);
+    PetscCall(VecGetArrayRead(mfqP->Xhist[point],&x));
     mfqP->M[(mfqP->n+1)*mfqP->nmodelpoints] = 1.0;
     for (j=0;j<mfqP->n;j++) {
       mfqP->M[j+1+((mfqP->n+1)*mfqP->nmodelpoints)] = (x[j]  - mfqP->xmin[j]) / mfqP->delta;
     }
-    ierr = VecRestoreArrayRead(mfqP->Xhist[point],&x);CHKERRQ(ierr);
-    ierr = phi2eval(&mfqP->M[1+(mfqP->n+1)*mfqP->nmodelpoints],mfqP->n,&mfqP->N[mfqP->n*(mfqP->n+1)/2 * (mfqP->nmodelpoints)]);CHKERRQ(ierr);
+    PetscCall(VecRestoreArrayRead(mfqP->Xhist[point],&x));
+    PetscCall(phi2eval(&mfqP->M[1+(mfqP->n+1)*mfqP->nmodelpoints],mfqP->n,&mfqP->N[mfqP->n*(mfqP->n+1)/2 * (mfqP->nmodelpoints)]));
 
     /* Update QR factorization */
     /* Copy M' to Q_tmp */
@@ -416,7 +411,7 @@ static PetscErrorCode morepoints(TAO_POUNDERS *mfqP)
     /* Q_tmp,R = qr(M') */
     blasmaxmn=PetscMax(mfqP->m,mfqP->n+1);
     PetscStackCallBLAS("LAPACKgeqrf",LAPACKgeqrf_(&blasnp,&blasnplus1,mfqP->Q_tmp,&blasnpmax,mfqP->tau_tmp,mfqP->mwork,&blasmaxmn,&info));
-    PetscCheckFalse(info != 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"LAPACK routine geqrf returned with value %d",info);
+    PetscCheck(info == 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"LAPACK routine geqrf returned with value %" PetscBLASInt_FMT,info);
 
     /* Reject if min(svd(N*Q(:,n+2:np+1)) <= theta2 */
     /* L = N*Qtmp */
@@ -429,7 +424,7 @@ static PetscErrorCode morepoints(TAO_POUNDERS *mfqP)
 
     /* L_tmp = N*Qtmp' */
     PetscStackCallBLAS("LAPACKormqr",LAPACKormqr_("R","N",&blasint2,&blasnp,&blasnplus1,mfqP->Q_tmp,&blasnpmax,mfqP->tau_tmp,mfqP->L_tmp,&blasint2,mfqP->npmaxwork,&blasnmax,&info));
-    PetscCheckFalse(info != 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"LAPACK routine ormqr returned with value %d",info);
+    PetscCheck(info == 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"LAPACK routine ormqr returned with value %" PetscBLASInt_FMT,info);
 
     /* Copy L_tmp to L_save */
     for (i=0;i<mfqP->npmax * mfqP->n*(mfqP->n+1)/2;i++) {
@@ -438,10 +433,10 @@ static PetscErrorCode morepoints(TAO_POUNDERS *mfqP)
 
     /* Get svd for L_tmp(:,n+2:np+1) (L_tmp is modified in process) */
     blasint = mfqP->nmodelpoints - mfqP->n;
-    ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
+    PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
     PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("N","N",&blasint2,&blasint,&mfqP->L_tmp[(mfqP->n+1)*blasint2],&blasint2,mfqP->beta,mfqP->work,&blasn,mfqP->work,&blasn,mfqP->npmaxwork,&blasnmax,&info));
-    ierr = PetscFPTrapPop();CHKERRQ(ierr);
-    PetscCheckFalse(info != 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"LAPACK routine gesvd returned with value %d",info);
+    PetscCall(PetscFPTrapPop());
+    PetscCheck(info == 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"LAPACK routine gesvd returned with value %" PetscBLASInt_FMT,info);
 
     if (mfqP->beta[PetscMin(blasint,blasint2)-1] > mfqP->theta2) {
       /* accept point */
@@ -476,7 +471,7 @@ static PetscErrorCode morepoints(TAO_POUNDERS *mfqP)
 
   /* Q_tmp = I * Q */
   PetscStackCallBLAS("LAPACKormqr",LAPACKormqr_("R","N",&blasnp,&blasnp,&blasnplus1,mfqP->Q,&blasnpmax,mfqP->tau,mfqP->Q_tmp,&blasnpmax,mfqP->npmaxwork,&blasnmax,&info));
-  PetscCheckFalse(info != 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"LAPACK routine ormqr returned with value %d",info);
+  PetscCheck(info == 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"LAPACK routine ormqr returned with value %" PetscBLASInt_FMT,info);
 
   /* Copy Q_tmp(:,n+2:np) to Z) */
   offset = mfqP->npmax * (mfqP->n+1);
@@ -499,25 +494,23 @@ static PetscErrorCode morepoints(TAO_POUNDERS *mfqP)
 /* Only call from modelimprove, addpoint() needs ->Q_tmp and ->work to be set */
 static PetscErrorCode addpoint(Tao tao, TAO_POUNDERS *mfqP, PetscInt index)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   /* Create new vector in history: X[newidx] = X[mfqP->index] + delta*X[index]*/
-  ierr = VecDuplicate(mfqP->Xhist[0],&mfqP->Xhist[mfqP->nHist]);CHKERRQ(ierr);
-  ierr = VecSetValues(mfqP->Xhist[mfqP->nHist],mfqP->n,mfqP->indices,&mfqP->Q_tmp[index*mfqP->npmax],INSERT_VALUES);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(mfqP->Xhist[mfqP->nHist]);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(mfqP->Xhist[mfqP->nHist]);CHKERRQ(ierr);
-  ierr = VecAYPX(mfqP->Xhist[mfqP->nHist],mfqP->delta,mfqP->Xhist[mfqP->minindex]);CHKERRQ(ierr);
+  PetscCall(VecDuplicate(mfqP->Xhist[0],&mfqP->Xhist[mfqP->nHist]));
+  PetscCall(VecSetValues(mfqP->Xhist[mfqP->nHist],mfqP->n,mfqP->indices,&mfqP->Q_tmp[index*mfqP->npmax],INSERT_VALUES));
+  PetscCall(VecAssemblyBegin(mfqP->Xhist[mfqP->nHist]));
+  PetscCall(VecAssemblyEnd(mfqP->Xhist[mfqP->nHist]));
+  PetscCall(VecAYPX(mfqP->Xhist[mfqP->nHist],mfqP->delta,mfqP->Xhist[mfqP->minindex]));
 
   /* Project into feasible region */
   if (tao->XU && tao->XL) {
-    ierr = VecMedian(mfqP->Xhist[mfqP->nHist], tao->XL, tao->XU, mfqP->Xhist[mfqP->nHist]);CHKERRQ(ierr);
+    PetscCall(VecMedian(mfqP->Xhist[mfqP->nHist], tao->XL, tao->XU, mfqP->Xhist[mfqP->nHist]));
   }
 
   /* Compute value of new vector */
-  ierr = VecDuplicate(mfqP->Fhist[0],&mfqP->Fhist[mfqP->nHist]);CHKERRQ(ierr);
+  PetscCall(VecDuplicate(mfqP->Fhist[0],&mfqP->Fhist[mfqP->nHist]));
   CHKMEMQ;
-  ierr = pounders_feval(tao,mfqP->Xhist[mfqP->nHist],mfqP->Fhist[mfqP->nHist],&mfqP->Fres[mfqP->nHist]);CHKERRQ(ierr);
+  PetscCall(pounders_feval(tao,mfqP->Xhist[mfqP->nHist],mfqP->Fhist[mfqP->nHist],&mfqP->Fres[mfqP->nHist]));
 
   /* Add new vector to model */
   mfqP->model_indices[mfqP->nmodelpoints] = mfqP->nHist;
@@ -529,7 +522,6 @@ static PetscErrorCode addpoint(Tao tao, TAO_POUNDERS *mfqP, PetscInt index)
 static PetscErrorCode modelimprove(Tao tao, TAO_POUNDERS *mfqP, PetscInt addallpoints)
 {
   /* modeld = Q(:,np+1:n)' */
-  PetscErrorCode ierr;
   PetscInt       i,j,minindex=0;
   PetscReal      dp,half=0.5,one=1.0,minvalue=PETSC_INFINITY;
   PetscBLASInt   blasn=mfqP->n,  blasnpmax = mfqP->npmax, blask,info;
@@ -568,11 +560,11 @@ static PetscErrorCode modelimprove(Tao tao, TAO_POUNDERS *mfqP, PetscInt addallp
       minvalue = mfqP->work[i];
     }
     if (addallpoints != 0) {
-      ierr = addpoint(tao,mfqP,i);CHKERRQ(ierr);
+      PetscCall(addpoint(tao,mfqP,i));
     }
   }
   if (!addallpoints) {
-    ierr = addpoint(tao,mfqP,minindex);CHKERRQ(ierr);
+    PetscCall(addpoint(tao,mfqP,minindex));
   }
   PetscFunctionReturn(0);
 }
@@ -584,15 +576,14 @@ static PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin,PetscReal c)
   PetscBLASInt    blasnpmax = mfqP->npmax,blasmaxmn;
   PetscReal       proj,normd;
   const PetscReal *x;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   for (i=mfqP->nHist-1;i>=0;i--) {
-    ierr = VecGetArrayRead(mfqP->Xhist[i],&x);CHKERRQ(ierr);
+    PetscCall(VecGetArrayRead(mfqP->Xhist[i],&x));
     for (j=0;j<mfqP->n;j++) {
       mfqP->work[j] = (x[j] - xmin[j])/mfqP->delta;
     }
-    ierr = VecRestoreArrayRead(mfqP->Xhist[i],&x);CHKERRQ(ierr);
+    PetscCall(VecRestoreArrayRead(mfqP->Xhist[i],&x));
     PetscStackCallBLAS("BLAScopy",BLAScopy_(&blasn,mfqP->work,&ione,mfqP->work2,&ione));
     PetscStackCallBLAS("BLASnrm2",normd = BLASnrm2_(&blasn,mfqP->work,&ione));
     if (normd <= c) {
@@ -601,7 +592,7 @@ static PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin,PetscReal c)
         /* project D onto null */
         blask=(mfqP->nmodelpoints);
         PetscStackCallBLAS("LAPACKormqr",LAPACKormqr_("R","N",&ione,&blasn,&blask,mfqP->Q,&blasnpmax,mfqP->tau,mfqP->work2,&ione,mfqP->mwork,&blasm,&info));
-        PetscCheckFalse(info < 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"ormqr returned value %d",info);
+        PetscCheck(info >= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"ormqr returned value %" PetscBLASInt_FMT,info);
       }
       PetscStackCallBLAS("BLASnrm2",proj = BLASnrm2_(&blasj,&mfqP->work2[mfqP->nmodelpoints],&ione));
 
@@ -614,7 +605,7 @@ static PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin,PetscReal c)
         blask = mfqP->nmodelpoints;
         blasmaxmn = PetscMax(mfqP->m,mfqP->n);
         PetscStackCallBLAS("LAPACKgeqrf",LAPACKgeqrf_(&blasn,&blask,mfqP->Q,&blasnpmax,mfqP->tau,mfqP->mwork,&blasmaxmn,&info));
-        PetscCheckFalse(info < 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"geqrf returned value %d",info);
+        PetscCheck(info >= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"geqrf returned value %" PetscBLASInt_FMT,info);
         mfqP->q_is_I = 0;
       }
       if (mfqP->nmodelpoints == mfqP->n)  {
@@ -642,14 +633,13 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
   PetscReal          mdec, rho, normxsp;
   PetscReal          one=1.0,zero=0.0,ratio;
   PetscBLASInt       blasm,blasn,blasncopy,blasnpmax;
-  PetscErrorCode     ierr;
   static PetscBool   set = PETSC_FALSE;
 
   /* n = # of parameters
      m = dimension (components) of function  */
   PetscFunctionBegin;
-  ierr = PetscCitationsRegister("@article{UNEDF0,\n"
-                                "title = {Nuclear energy density optimization},\n"
+  PetscCall(PetscCitationsRegister("@article{UNEDF0,\n"
+                                 "title = {Nuclear energy density optimization},\n"
                                 "author = {Kortelainen, M.  and Lesinski, T.  and Mor\'e, J.  and Nazarewicz, W.\n"
                                 "          and Sarich, J.  and Schunck, N.  and Stoitsov, M. V. and Wild, S. },\n"
                                 "journal = {Phys. Rev. C},\n"
@@ -659,64 +649,64 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
                                 "numpages = {18},\n"
                                 "year = {2010},\n"
                                 "month = {Aug},\n"
-                                "doi = {10.1103/PhysRevC.82.024313}\n}\n",&set);CHKERRQ(ierr);
+                                 "doi = {10.1103/PhysRevC.82.024313}\n}\n",&set));
   tao->niter=0;
   if (tao->XL && tao->XU) {
     /* Check x0 <= XU */
     PetscReal val;
 
-    ierr = VecCopy(tao->solution,mfqP->Xhist[0]);CHKERRQ(ierr);
-    ierr = VecAXPY(mfqP->Xhist[0],-1.0,tao->XU);CHKERRQ(ierr);
-    ierr = VecMax(mfqP->Xhist[0],NULL,&val);CHKERRQ(ierr);
-    PetscCheckFalse(val > 1e-10,PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_OUTOFRANGE,"X0 > upper bound");
+    PetscCall(VecCopy(tao->solution,mfqP->Xhist[0]));
+    PetscCall(VecAXPY(mfqP->Xhist[0],-1.0,tao->XU));
+    PetscCall(VecMax(mfqP->Xhist[0],NULL,&val));
+    PetscCheck(val <= 1e-10,PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_OUTOFRANGE,"X0 > upper bound");
 
     /* Check x0 >= xl */
-    ierr = VecCopy(tao->XL,mfqP->Xhist[0]);CHKERRQ(ierr);
-    ierr = VecAXPY(mfqP->Xhist[0],-1.0,tao->solution);CHKERRQ(ierr);
-    ierr = VecMax(mfqP->Xhist[0],NULL,&val);CHKERRQ(ierr);
-    PetscCheckFalse(val > 1e-10,PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_OUTOFRANGE,"X0 < lower bound");
+    PetscCall(VecCopy(tao->XL,mfqP->Xhist[0]));
+    PetscCall(VecAXPY(mfqP->Xhist[0],-1.0,tao->solution));
+    PetscCall(VecMax(mfqP->Xhist[0],NULL,&val));
+    PetscCheck(val <= 1e-10,PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_OUTOFRANGE,"X0 < lower bound");
 
     /* Check x0 + delta < XU  -- should be able to get around this eventually */
 
-    ierr = VecSet(mfqP->Xhist[0],mfqP->delta);CHKERRQ(ierr);
-    ierr = VecAXPY(mfqP->Xhist[0],1.0,tao->solution);CHKERRQ(ierr);
-    ierr = VecAXPY(mfqP->Xhist[0],-1.0,tao->XU);CHKERRQ(ierr);
-    ierr = VecMax(mfqP->Xhist[0],NULL,&val);CHKERRQ(ierr);
-    PetscCheckFalse(val > 1e-10,PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_OUTOFRANGE,"X0 + delta > upper bound");
+    PetscCall(VecSet(mfqP->Xhist[0],mfqP->delta));
+    PetscCall(VecAXPY(mfqP->Xhist[0],1.0,tao->solution));
+    PetscCall(VecAXPY(mfqP->Xhist[0],-1.0,tao->XU));
+    PetscCall(VecMax(mfqP->Xhist[0],NULL,&val));
+    PetscCheck(val <= 1e-10,PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_OUTOFRANGE,"X0 + delta > upper bound");
   }
 
   blasm = mfqP->m; blasn=mfqP->n; blasnpmax = mfqP->npmax;
   for (i=0;i<mfqP->n*mfqP->n*mfqP->m;++i) mfqP->H[i]=0;
 
-  ierr = VecCopy(tao->solution,mfqP->Xhist[0]);CHKERRQ(ierr);
+  PetscCall(VecCopy(tao->solution,mfqP->Xhist[0]));
 
   /* This provides enough information to approximate the gradient of the objective */
   /* using a forward difference scheme. */
 
-  ierr = PetscInfo(tao,"Initialize simplex; delta = %10.9e\n",(double)mfqP->delta);CHKERRQ(ierr);
-  ierr = pounders_feval(tao,mfqP->Xhist[0],mfqP->Fhist[0],&mfqP->Fres[0]);CHKERRQ(ierr);
+  PetscCall(PetscInfo(tao,"Initialize simplex; delta = %10.9e\n",(double)mfqP->delta));
+  PetscCall(pounders_feval(tao,mfqP->Xhist[0],mfqP->Fhist[0],&mfqP->Fres[0]));
   mfqP->minindex = 0;
   minnorm = mfqP->Fres[0];
 
-  ierr = VecGetOwnershipRange(mfqP->Xhist[0],&low,&high);CHKERRQ(ierr);
+  PetscCall(VecGetOwnershipRange(mfqP->Xhist[0],&low,&high));
   for (i=1;i<mfqP->n+1;++i) {
-    ierr = VecCopy(mfqP->Xhist[0],mfqP->Xhist[i]);CHKERRQ(ierr);
+    PetscCall(VecCopy(mfqP->Xhist[0],mfqP->Xhist[i]));
 
     if (i-1 >= low && i-1 < high) {
-      ierr = VecGetArray(mfqP->Xhist[i],&x);CHKERRQ(ierr);
+      PetscCall(VecGetArray(mfqP->Xhist[i],&x));
       x[i-1-low] += mfqP->delta;
-      ierr = VecRestoreArray(mfqP->Xhist[i],&x);CHKERRQ(ierr);
+      PetscCall(VecRestoreArray(mfqP->Xhist[i],&x));
     }
     CHKMEMQ;
-    ierr = pounders_feval(tao,mfqP->Xhist[i],mfqP->Fhist[i],&mfqP->Fres[i]);CHKERRQ(ierr);
+    PetscCall(pounders_feval(tao,mfqP->Xhist[i],mfqP->Fhist[i],&mfqP->Fres[i]));
     if (mfqP->Fres[i] < minnorm) {
       mfqP->minindex = i;
       minnorm = mfqP->Fres[i];
     }
   }
-  ierr = VecCopy(mfqP->Xhist[mfqP->minindex],tao->solution);CHKERRQ(ierr);
-  ierr = VecCopy(mfqP->Fhist[mfqP->minindex],tao->ls_res);CHKERRQ(ierr);
-  ierr = PetscInfo(tao,"Finalize simplex; minnorm = %10.9e\n",(double)minnorm);CHKERRQ(ierr);
+  PetscCall(VecCopy(mfqP->Xhist[mfqP->minindex],tao->solution));
+  PetscCall(VecCopy(mfqP->Fhist[mfqP->minindex],tao->ls_res));
+  PetscCall(PetscInfo(tao,"Finalize simplex; minnorm = %10.9e\n",(double)minnorm));
 
   /* Gather mpi vecs to one big local vec */
 
@@ -727,70 +717,70 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
   /* (Column oriented for blas calls) */
   ii=0;
 
-  ierr = PetscInfo(tao,"Build matrix: %D\n",(PetscInt)mfqP->size);CHKERRQ(ierr);
+  PetscCall(PetscInfo(tao,"Build matrix: %" PetscInt_FMT "\n",(PetscInt)mfqP->size));
   if (1 == mfqP->size) {
-    ierr = VecGetArrayRead(mfqP->Xhist[mfqP->minindex],&xmint);CHKERRQ(ierr);
+    PetscCall(VecGetArrayRead(mfqP->Xhist[mfqP->minindex],&xmint));
     for (i=0;i<mfqP->n;i++) mfqP->xmin[i] = xmint[i];
-    ierr = VecRestoreArrayRead(mfqP->Xhist[mfqP->minindex],&xmint);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(mfqP->Fhist[mfqP->minindex],&fmin);CHKERRQ(ierr);
+    PetscCall(VecRestoreArrayRead(mfqP->Xhist[mfqP->minindex],&xmint));
+    PetscCall(VecGetArrayRead(mfqP->Fhist[mfqP->minindex],&fmin));
     for (i=0;i<mfqP->n+1;i++) {
       if (i == mfqP->minindex) continue;
 
-      ierr = VecGetArray(mfqP->Xhist[i],&x);CHKERRQ(ierr);
+      PetscCall(VecGetArray(mfqP->Xhist[i],&x));
       for (j=0;j<mfqP->n;j++) {
         mfqP->Disp[ii+mfqP->npmax*j] = (x[j] - mfqP->xmin[j])/mfqP->delta;
       }
-      ierr = VecRestoreArray(mfqP->Xhist[i],&x);CHKERRQ(ierr);
+      PetscCall(VecRestoreArray(mfqP->Xhist[i],&x));
 
-      ierr = VecGetArray(mfqP->Fhist[i],&f);CHKERRQ(ierr);
+      PetscCall(VecGetArray(mfqP->Fhist[i],&f));
       for (j=0;j<mfqP->m;j++) {
         mfqP->Fdiff[ii+mfqP->n*j] = f[j] - fmin[j];
       }
-      ierr = VecRestoreArray(mfqP->Fhist[i],&f);CHKERRQ(ierr);
+      PetscCall(VecRestoreArray(mfqP->Fhist[i],&f));
 
       mfqP->model_indices[ii++] = i;
     }
     for (j=0;j<mfqP->m;j++) {
       mfqP->C[j] = fmin[j];
     }
-    ierr = VecRestoreArrayRead(mfqP->Fhist[mfqP->minindex],&fmin);CHKERRQ(ierr);
+    PetscCall(VecRestoreArrayRead(mfqP->Fhist[mfqP->minindex],&fmin));
   } else {
-    ierr = VecSet(mfqP->localxmin,0);CHKERRQ(ierr);
-    ierr = VecScatterBegin(mfqP->scatterx,mfqP->Xhist[mfqP->minindex],mfqP->localxmin,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(mfqP->scatterx,mfqP->Xhist[mfqP->minindex],mfqP->localxmin,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    PetscCall(VecSet(mfqP->localxmin,0));
+    PetscCall(VecScatterBegin(mfqP->scatterx,mfqP->Xhist[mfqP->minindex],mfqP->localxmin,INSERT_VALUES,SCATTER_FORWARD));
+    PetscCall(VecScatterEnd(mfqP->scatterx,mfqP->Xhist[mfqP->minindex],mfqP->localxmin,INSERT_VALUES,SCATTER_FORWARD));
 
-    ierr = VecGetArrayRead(mfqP->localxmin,&xmint);CHKERRQ(ierr);
+    PetscCall(VecGetArrayRead(mfqP->localxmin,&xmint));
     for (i=0;i<mfqP->n;i++) mfqP->xmin[i] = xmint[i];
-    ierr = VecRestoreArrayRead(mfqP->localxmin,&xmint);CHKERRQ(ierr);
+    PetscCall(VecRestoreArrayRead(mfqP->localxmin,&xmint));
 
-    ierr = VecScatterBegin(mfqP->scatterf,mfqP->Fhist[mfqP->minindex],mfqP->localfmin,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(mfqP->scatterf,mfqP->Fhist[mfqP->minindex],mfqP->localfmin,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(mfqP->localfmin,&fmin);CHKERRQ(ierr);
+    PetscCall(VecScatterBegin(mfqP->scatterf,mfqP->Fhist[mfqP->minindex],mfqP->localfmin,INSERT_VALUES,SCATTER_FORWARD));
+    PetscCall(VecScatterEnd(mfqP->scatterf,mfqP->Fhist[mfqP->minindex],mfqP->localfmin,INSERT_VALUES,SCATTER_FORWARD));
+    PetscCall(VecGetArrayRead(mfqP->localfmin,&fmin));
     for (i=0;i<mfqP->n+1;i++) {
       if (i == mfqP->minindex) continue;
 
-      ierr = VecScatterBegin(mfqP->scatterx,mfqP->Xhist[ii],mfqP->localx,INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecScatterEnd(mfqP->scatterx,mfqP->Xhist[ii],mfqP->localx,INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecGetArray(mfqP->localx,&x);CHKERRQ(ierr);
+      PetscCall(VecScatterBegin(mfqP->scatterx,mfqP->Xhist[ii],mfqP->localx,INSERT_VALUES, SCATTER_FORWARD));
+      PetscCall(VecScatterEnd(mfqP->scatterx,mfqP->Xhist[ii],mfqP->localx,INSERT_VALUES, SCATTER_FORWARD));
+      PetscCall(VecGetArray(mfqP->localx,&x));
       for (j=0;j<mfqP->n;j++) {
         mfqP->Disp[ii+mfqP->npmax*j] = (x[j] - mfqP->xmin[j])/mfqP->delta;
       }
-      ierr = VecRestoreArray(mfqP->localx,&x);CHKERRQ(ierr);
+      PetscCall(VecRestoreArray(mfqP->localx,&x));
 
-      ierr = VecScatterBegin(mfqP->scatterf,mfqP->Fhist[ii],mfqP->localf,INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecScatterEnd(mfqP->scatterf,mfqP->Fhist[ii],mfqP->localf,INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecGetArray(mfqP->localf,&f);CHKERRQ(ierr);
+      PetscCall(VecScatterBegin(mfqP->scatterf,mfqP->Fhist[ii],mfqP->localf,INSERT_VALUES, SCATTER_FORWARD));
+      PetscCall(VecScatterEnd(mfqP->scatterf,mfqP->Fhist[ii],mfqP->localf,INSERT_VALUES, SCATTER_FORWARD));
+      PetscCall(VecGetArray(mfqP->localf,&f));
       for (j=0;j<mfqP->m;j++) {
         mfqP->Fdiff[ii+mfqP->n*j] = f[j] - fmin[j];
       }
-      ierr = VecRestoreArray(mfqP->localf,&f);CHKERRQ(ierr);
+      PetscCall(VecRestoreArray(mfqP->localf,&f));
 
       mfqP->model_indices[ii++] = i;
     }
     for (j=0;j<mfqP->m;j++) {
       mfqP->C[j] = fmin[j];
     }
-    ierr = VecRestoreArrayRead(mfqP->localfmin,&fmin);CHKERRQ(ierr);
+    PetscCall(VecRestoreArrayRead(mfqP->localfmin,&fmin));
   }
 
   /* Determine the initial quadratic models */
@@ -798,49 +788,49 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
   /* D (nxn) Fdiff (nxm)  => G (nxm) */
   blasncopy = blasn;
   PetscStackCallBLAS("LAPACKgesv",LAPACKgesv_(&blasn,&blasm,mfqP->Disp,&blasnpmax,mfqP->iwork,mfqP->Fdiff,&blasncopy,&info));
-  ierr = PetscInfo(tao,"Linear solve return: %D\n",(PetscInt)info);CHKERRQ(ierr);
+  PetscCall(PetscInfo(tao,"Linear solve return: %" PetscInt_FMT "\n",(PetscInt)info));
 
-  ierr = pounders_update_res(tao);CHKERRQ(ierr);
+  PetscCall(pounders_update_res(tao));
 
   valid = PETSC_TRUE;
 
-  ierr = VecSetValues(tao->gradient,mfqP->n,mfqP->indices,mfqP->Gres,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(tao->gradient);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(tao->gradient);CHKERRQ(ierr);
-  ierr = VecNorm(tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
+  PetscCall(VecSetValues(tao->gradient,mfqP->n,mfqP->indices,mfqP->Gres,INSERT_VALUES));
+  PetscCall(VecAssemblyBegin(tao->gradient));
+  PetscCall(VecAssemblyEnd(tao->gradient));
+  PetscCall(VecNorm(tao->gradient,NORM_2,&gnorm));
   gnorm *= mfqP->delta;
-  ierr = VecCopy(mfqP->Xhist[mfqP->minindex],tao->solution);CHKERRQ(ierr);
+  PetscCall(VecCopy(mfqP->Xhist[mfqP->minindex],tao->solution));
 
   tao->reason = TAO_CONTINUE_ITERATING;
-  ierr = TaoLogConvergenceHistory(tao,minnorm,gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
-  ierr = TaoMonitor(tao,tao->niter,minnorm,gnorm,0.0,step);CHKERRQ(ierr);
-  ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
+  PetscCall(TaoLogConvergenceHistory(tao,minnorm,gnorm,0.0,tao->ksp_its));
+  PetscCall(TaoMonitor(tao,tao->niter,minnorm,gnorm,0.0,step));
+  PetscCall((*tao->ops->convergencetest)(tao,tao->cnvP));
 
   mfqP->nHist = mfqP->n+1;
   mfqP->nmodelpoints = mfqP->n+1;
-  ierr = PetscInfo(tao,"Initial gradient: %20.19e\n",(double)gnorm);CHKERRQ(ierr);
+  PetscCall(PetscInfo(tao,"Initial gradient: %20.19e\n",(double)gnorm));
 
   while (tao->reason == TAO_CONTINUE_ITERATING) {
     PetscReal gnm = 1e-4;
     /* Call general purpose update function */
     if (tao->ops->update) {
-      ierr = (*tao->ops->update)(tao, tao->niter, tao->user_update);CHKERRQ(ierr);
+      PetscCall((*tao->ops->update)(tao, tao->niter, tao->user_update));
     }
     tao->niter++;
     /* Solve the subproblem min{Q(s): ||s|| <= 1.0} */
-    ierr = gqtwrap(tao,&gnm,&mdec);CHKERRQ(ierr);
+    PetscCall(gqtwrap(tao,&gnm,&mdec));
     /* Evaluate the function at the new point */
 
     for (i=0;i<mfqP->n;i++) {
         mfqP->work[i] = mfqP->Xsubproblem[i]*mfqP->delta + mfqP->xmin[i];
     }
-    ierr = VecDuplicate(tao->solution,&mfqP->Xhist[mfqP->nHist]);CHKERRQ(ierr);
-    ierr = VecDuplicate(tao->ls_res,&mfqP->Fhist[mfqP->nHist]);CHKERRQ(ierr);
-    ierr = VecSetValues(mfqP->Xhist[mfqP->nHist],mfqP->n,mfqP->indices,mfqP->work,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = VecAssemblyBegin(mfqP->Xhist[mfqP->nHist]);CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(mfqP->Xhist[mfqP->nHist]);CHKERRQ(ierr);
+    PetscCall(VecDuplicate(tao->solution,&mfqP->Xhist[mfqP->nHist]));
+    PetscCall(VecDuplicate(tao->ls_res,&mfqP->Fhist[mfqP->nHist]));
+    PetscCall(VecSetValues(mfqP->Xhist[mfqP->nHist],mfqP->n,mfqP->indices,mfqP->work,INSERT_VALUES));
+    PetscCall(VecAssemblyBegin(mfqP->Xhist[mfqP->nHist]));
+    PetscCall(VecAssemblyEnd(mfqP->Xhist[mfqP->nHist]));
 
-    ierr = pounders_feval(tao,mfqP->Xhist[mfqP->nHist],mfqP->Fhist[mfqP->nHist],&mfqP->Fres[mfqP->nHist]);CHKERRQ(ierr);
+    PetscCall(pounders_feval(tao,mfqP->Xhist[mfqP->nHist],mfqP->Fhist[mfqP->nHist],&mfqP->Fres[mfqP->nHist]));
 
     rho = (mfqP->Fres[mfqP->minindex] - mfqP->Fres[mfqP->nHist]) / mdec;
     mfqP->nHist++;
@@ -874,23 +864,23 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
       }
       mfqP->minindex = mfqP->nHist-1;
       minnorm = mfqP->Fres[mfqP->minindex];
-      ierr = VecCopy(mfqP->Fhist[mfqP->minindex],tao->ls_res);CHKERRQ(ierr);
+      PetscCall(VecCopy(mfqP->Fhist[mfqP->minindex],tao->ls_res));
       /* Change current center */
-      ierr = VecGetArrayRead(mfqP->Xhist[mfqP->minindex],&xmint);CHKERRQ(ierr);
+      PetscCall(VecGetArrayRead(mfqP->Xhist[mfqP->minindex],&xmint));
       for (i=0;i<mfqP->n;i++) {
         mfqP->xmin[i] = xmint[i];
       }
-      ierr = VecRestoreArrayRead(mfqP->Xhist[mfqP->minindex],&xmint);CHKERRQ(ierr);
+      PetscCall(VecRestoreArrayRead(mfqP->Xhist[mfqP->minindex],&xmint));
     }
 
     /* Evaluate at a model-improving point if necessary */
     if (valid == PETSC_FALSE) {
       mfqP->q_is_I = 1;
       mfqP->nmodelpoints = 0;
-      ierr = affpoints(mfqP,mfqP->xmin,mfqP->c1);CHKERRQ(ierr);
+      PetscCall(affpoints(mfqP,mfqP->xmin,mfqP->c1));
       if (mfqP->nmodelpoints < mfqP->n) {
-        ierr = PetscInfo(tao,"Model not valid -- model-improving\n");CHKERRQ(ierr);
-        ierr = modelimprove(tao,mfqP,1);CHKERRQ(ierr);
+        PetscCall(PetscInfo(tao,"Model not valid -- model-improving\n"));
+        PetscCall(modelimprove(tao,mfqP,1));
       }
     }
 
@@ -910,17 +900,17 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
     /* Compute the next interpolation set */
     mfqP->q_is_I = 1;
     mfqP->nmodelpoints=0;
-    ierr = PetscInfo(tao,"Affine Points: xmin = %20.19e, c1 = %20.19e\n",(double)*mfqP->xmin,(double)mfqP->c1);CHKERRQ(ierr);
-    ierr = affpoints(mfqP,mfqP->xmin,mfqP->c1);CHKERRQ(ierr);
+    PetscCall(PetscInfo(tao,"Affine Points: xmin = %20.19e, c1 = %20.19e\n",(double)*mfqP->xmin,(double)mfqP->c1));
+    PetscCall(affpoints(mfqP,mfqP->xmin,mfqP->c1));
     if (mfqP->nmodelpoints == mfqP->n) {
       valid = PETSC_TRUE;
     } else {
       valid = PETSC_FALSE;
-      ierr = PetscInfo(tao,"Affine Points: xmin = %20.19e, c2 = %20.19e\n",(double)*mfqP->xmin,(double)mfqP->c2);CHKERRQ(ierr);
-      ierr = affpoints(mfqP,mfqP->xmin,mfqP->c2);CHKERRQ(ierr);
+      PetscCall(PetscInfo(tao,"Affine Points: xmin = %20.19e, c2 = %20.19e\n",(double)*mfqP->xmin,(double)mfqP->c2));
+      PetscCall(affpoints(mfqP,mfqP->xmin,mfqP->c2));
       if (mfqP->n > mfqP->nmodelpoints) {
-        ierr = PetscInfo(tao,"Model not valid -- adding geometry points\n");CHKERRQ(ierr);
-        ierr = modelimprove(tao,mfqP,mfqP->n - mfqP->nmodelpoints);CHKERRQ(ierr);
+        PetscCall(PetscInfo(tao,"Model not valid -- adding geometry points\n"));
+        PetscCall(modelimprove(tao,mfqP,mfqP->n - mfqP->nmodelpoints));
       }
     }
     for (i=mfqP->nmodelpoints;i>0;i--) {
@@ -928,14 +918,14 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
     }
     mfqP->nmodelpoints++;
     mfqP->model_indices[0] = mfqP->minindex;
-    ierr = morepoints(mfqP);CHKERRQ(ierr);
+    PetscCall(morepoints(mfqP));
     for (i=0;i<mfqP->nmodelpoints;i++) {
-      ierr = VecGetArray(mfqP->Xhist[mfqP->model_indices[i]],&x);CHKERRQ(ierr);
+      PetscCall(VecGetArray(mfqP->Xhist[mfqP->model_indices[i]],&x));
       for (j=0;j<mfqP->n;j++) {
         mfqP->Disp[i + mfqP->npmax*j] = (x[j]  - mfqP->xmin[j]) / deltaold;
       }
-      ierr = VecRestoreArray(mfqP->Xhist[mfqP->model_indices[i]],&x);CHKERRQ(ierr);
-      ierr = VecGetArray(mfqP->Fhist[mfqP->model_indices[i]],&f);CHKERRQ(ierr);
+      PetscCall(VecRestoreArray(mfqP->Xhist[mfqP->model_indices[i]],&x));
+      PetscCall(VecGetArray(mfqP->Fhist[mfqP->model_indices[i]],&f));
       for (j=0;j<mfqP->m;j++) {
         for (k=0;k<mfqP->n;k++)  {
           mfqP->work[k]=0.0;
@@ -945,13 +935,13 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
         }
         PetscStackCallBLAS("BLASdot",mfqP->RES[j*mfqP->npmax + i] = -mfqP->C[j] - BLASdot_(&blasn,&mfqP->Fdiff[j*mfqP->n],&ione,&mfqP->Disp[i],&blasnpmax) - 0.5*BLASdot_(&blasn,mfqP->work,&ione,&mfqP->Disp[i],&blasnpmax) + f[j]);
       }
-      ierr = VecRestoreArray(mfqP->Fhist[mfqP->model_indices[i]],&f);CHKERRQ(ierr);
+      PetscCall(VecRestoreArray(mfqP->Fhist[mfqP->model_indices[i]],&f));
     }
 
     /* Update the quadratic model */
-    ierr = PetscInfo(tao,"Get Quad, size: %D, points: %D\n",mfqP->n,mfqP->nmodelpoints);CHKERRQ(ierr);
-    ierr = getquadpounders(mfqP);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(mfqP->Fhist[mfqP->minindex],&fmin);CHKERRQ(ierr);
+    PetscCall(PetscInfo(tao,"Get Quad, size: %" PetscInt_FMT ", points: %" PetscInt_FMT "\n",mfqP->n,mfqP->nmodelpoints));
+    PetscCall(getquadpounders(mfqP));
+    PetscCall(VecGetArrayRead(mfqP->Fhist[mfqP->minindex],&fmin));
     PetscStackCallBLAS("BLAScopy",BLAScopy_(&blasm,fmin,&ione,mfqP->C,&ione));
     /* G = G*(delta/deltaold) + Gdel */
     ratio = mfqP->delta/deltaold;
@@ -965,19 +955,19 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
     PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&iblas,&one,mfqP->Hdel,&ione,mfqP->H,&ione));
 
     /* Get residuals */
-    ierr = pounders_update_res(tao);CHKERRQ(ierr);
+    PetscCall(pounders_update_res(tao));
 
     /* Export solution and gradient residual to TAO */
-    ierr = VecCopy(mfqP->Xhist[mfqP->minindex],tao->solution);CHKERRQ(ierr);
-    ierr = VecSetValues(tao->gradient,mfqP->n,mfqP->indices,mfqP->Gres,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = VecAssemblyBegin(tao->gradient);CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(tao->gradient);CHKERRQ(ierr);
-    ierr = VecNorm(tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
+    PetscCall(VecCopy(mfqP->Xhist[mfqP->minindex],tao->solution));
+    PetscCall(VecSetValues(tao->gradient,mfqP->n,mfqP->indices,mfqP->Gres,INSERT_VALUES));
+    PetscCall(VecAssemblyBegin(tao->gradient));
+    PetscCall(VecAssemblyEnd(tao->gradient));
+    PetscCall(VecNorm(tao->gradient,NORM_2,&gnorm));
     gnorm *= mfqP->delta;
     /*  final criticality test */
-    ierr = TaoLogConvergenceHistory(tao,minnorm,gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
-    ierr = TaoMonitor(tao,tao->niter,minnorm,gnorm,0.0,step);CHKERRQ(ierr);
-    ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
+    PetscCall(TaoLogConvergenceHistory(tao,minnorm,gnorm,0.0,tao->ksp_its));
+    PetscCall(TaoMonitor(tao,tao->niter,minnorm,gnorm,0.0,step));
+    PetscCall((*tao->ops->convergencetest)(tao,tao->cnvP));
     /* test for repeated model */
     if (mfqP->nmodelpoints==mfqP->last_nmodelpoints) {
       same = PETSC_TRUE;
@@ -996,7 +986,7 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
     }
     mfqP->last_nmodelpoints = mfqP->nmodelpoints;
     if (same && mfqP->delta == deltaold) {
-      ierr = PetscInfo(tao,"Identical model used in successive iterations\n");CHKERRQ(ierr);
+      PetscCall(PetscInfo(tao,"Identical model used in successive iterations\n"));
       tao->reason = TAO_CONVERGED_STEPTOL;
     }
   }
@@ -1008,13 +998,12 @@ static PetscErrorCode TaoSetUp_POUNDERS(Tao tao)
   TAO_POUNDERS   *mfqP = (TAO_POUNDERS*)tao->data;
   PetscInt       i,j;
   IS             isfloc,isfglob,isxloc,isxglob;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!tao->gradient) {ierr = VecDuplicate(tao->solution,&tao->gradient);CHKERRQ(ierr);  }
-  if (!tao->stepdirection) {ierr = VecDuplicate(tao->solution,&tao->stepdirection);CHKERRQ(ierr);  }
-  ierr = VecGetSize(tao->solution,&mfqP->n);CHKERRQ(ierr);
-  ierr = VecGetSize(tao->ls_res,&mfqP->m);CHKERRQ(ierr);
+  if (!tao->gradient) PetscCall(VecDuplicate(tao->solution,&tao->gradient));
+  if (!tao->stepdirection) PetscCall(VecDuplicate(tao->solution,&tao->stepdirection));
+  PetscCall(VecGetSize(tao->solution,&mfqP->n));
+  PetscCall(VecGetSize(tao->ls_res,&mfqP->m));
   mfqP->c1 = PetscSqrtReal((PetscReal)mfqP->n);
   if (mfqP->npmax == PETSC_DEFAULT) {
     mfqP->npmax = 2*mfqP->n + 1;
@@ -1022,55 +1011,55 @@ static PetscErrorCode TaoSetUp_POUNDERS(Tao tao)
   mfqP->npmax = PetscMin((mfqP->n+1)*(mfqP->n+2)/2,mfqP->npmax);
   mfqP->npmax = PetscMax(mfqP->npmax, mfqP->n+2);
 
-  ierr = PetscMalloc1(tao->max_funcs+100,&mfqP->Xhist);CHKERRQ(ierr);
-  ierr = PetscMalloc1(tao->max_funcs+100,&mfqP->Fhist);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(tao->max_funcs+100,&mfqP->Xhist));
+  PetscCall(PetscMalloc1(tao->max_funcs+100,&mfqP->Fhist));
   for (i=0;i<mfqP->n+1;i++) {
-    ierr = VecDuplicate(tao->solution,&mfqP->Xhist[i]);CHKERRQ(ierr);
-    ierr = VecDuplicate(tao->ls_res,&mfqP->Fhist[i]);CHKERRQ(ierr);
+    PetscCall(VecDuplicate(tao->solution,&mfqP->Xhist[i]));
+    PetscCall(VecDuplicate(tao->ls_res,&mfqP->Fhist[i]));
   }
-  ierr = VecDuplicate(tao->solution,&mfqP->workxvec);CHKERRQ(ierr);
-  ierr = VecDuplicate(tao->ls_res,&mfqP->workfvec);CHKERRQ(ierr);
+  PetscCall(VecDuplicate(tao->solution,&mfqP->workxvec));
+  PetscCall(VecDuplicate(tao->ls_res,&mfqP->workfvec));
   mfqP->nHist = 0;
 
-  ierr = PetscMalloc1(tao->max_funcs+100,&mfqP->Fres);CHKERRQ(ierr);
-  ierr = PetscMalloc1(mfqP->npmax*mfqP->m,&mfqP->RES);CHKERRQ(ierr);
-  ierr = PetscMalloc1(mfqP->n,&mfqP->work);CHKERRQ(ierr);
-  ierr = PetscMalloc1(mfqP->n,&mfqP->work2);CHKERRQ(ierr);
-  ierr = PetscMalloc1(mfqP->n,&mfqP->work3);CHKERRQ(ierr);
-  ierr = PetscMalloc1(PetscMax(mfqP->m,mfqP->n+1),&mfqP->mwork);CHKERRQ(ierr);
-  ierr = PetscMalloc1(mfqP->npmax - mfqP->n - 1,&mfqP->omega);CHKERRQ(ierr);
-  ierr = PetscMalloc1(mfqP->n * (mfqP->n+1) / 2,&mfqP->beta);CHKERRQ(ierr);
-  ierr = PetscMalloc1(mfqP->n + 1 ,&mfqP->alpha);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(tao->max_funcs+100,&mfqP->Fres));
+  PetscCall(PetscMalloc1(mfqP->npmax*mfqP->m,&mfqP->RES));
+  PetscCall(PetscMalloc1(mfqP->n,&mfqP->work));
+  PetscCall(PetscMalloc1(mfqP->n,&mfqP->work2));
+  PetscCall(PetscMalloc1(mfqP->n,&mfqP->work3));
+  PetscCall(PetscMalloc1(PetscMax(mfqP->m,mfqP->n+1),&mfqP->mwork));
+  PetscCall(PetscMalloc1(mfqP->npmax - mfqP->n - 1,&mfqP->omega));
+  PetscCall(PetscMalloc1(mfqP->n * (mfqP->n+1) / 2,&mfqP->beta));
+  PetscCall(PetscMalloc1(mfqP->n + 1 ,&mfqP->alpha));
 
-  ierr = PetscMalloc1(mfqP->n*mfqP->n*mfqP->m,&mfqP->H);CHKERRQ(ierr);
-  ierr = PetscMalloc1(mfqP->npmax*mfqP->npmax,&mfqP->Q);CHKERRQ(ierr);
-  ierr = PetscMalloc1(mfqP->npmax*mfqP->npmax,&mfqP->Q_tmp);CHKERRQ(ierr);
-  ierr = PetscMalloc1(mfqP->n*(mfqP->n+1)/2*(mfqP->npmax),&mfqP->L);CHKERRQ(ierr);
-  ierr = PetscMalloc1(mfqP->n*(mfqP->n+1)/2*(mfqP->npmax),&mfqP->L_tmp);CHKERRQ(ierr);
-  ierr = PetscMalloc1(mfqP->n*(mfqP->n+1)/2*(mfqP->npmax),&mfqP->L_save);CHKERRQ(ierr);
-  ierr = PetscMalloc1(mfqP->n*(mfqP->n+1)/2*(mfqP->npmax),&mfqP->N);CHKERRQ(ierr);
-  ierr = PetscMalloc1(mfqP->npmax * (mfqP->n+1) ,&mfqP->M);CHKERRQ(ierr);
-  ierr = PetscMalloc1(mfqP->npmax * (mfqP->npmax - mfqP->n - 1) , &mfqP->Z);CHKERRQ(ierr);
-  ierr = PetscMalloc1(mfqP->npmax,&mfqP->tau);CHKERRQ(ierr);
-  ierr = PetscMalloc1(mfqP->npmax,&mfqP->tau_tmp);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(mfqP->n*mfqP->n*mfqP->m,&mfqP->H));
+  PetscCall(PetscMalloc1(mfqP->npmax*mfqP->npmax,&mfqP->Q));
+  PetscCall(PetscMalloc1(mfqP->npmax*mfqP->npmax,&mfqP->Q_tmp));
+  PetscCall(PetscMalloc1(mfqP->n*(mfqP->n+1)/2*(mfqP->npmax),&mfqP->L));
+  PetscCall(PetscMalloc1(mfqP->n*(mfqP->n+1)/2*(mfqP->npmax),&mfqP->L_tmp));
+  PetscCall(PetscMalloc1(mfqP->n*(mfqP->n+1)/2*(mfqP->npmax),&mfqP->L_save));
+  PetscCall(PetscMalloc1(mfqP->n*(mfqP->n+1)/2*(mfqP->npmax),&mfqP->N));
+  PetscCall(PetscMalloc1(mfqP->npmax * (mfqP->n+1) ,&mfqP->M));
+  PetscCall(PetscMalloc1(mfqP->npmax * (mfqP->npmax - mfqP->n - 1) , &mfqP->Z));
+  PetscCall(PetscMalloc1(mfqP->npmax,&mfqP->tau));
+  PetscCall(PetscMalloc1(mfqP->npmax,&mfqP->tau_tmp));
   mfqP->nmax = PetscMax(5*mfqP->npmax,mfqP->n*(mfqP->n+1)/2);
-  ierr = PetscMalloc1(mfqP->nmax,&mfqP->npmaxwork);CHKERRQ(ierr);
-  ierr = PetscMalloc1(mfqP->nmax,&mfqP->npmaxiwork);CHKERRQ(ierr);
-  ierr = PetscMalloc1(mfqP->n,&mfqP->xmin);CHKERRQ(ierr);
-  ierr = PetscMalloc1(mfqP->m,&mfqP->C);CHKERRQ(ierr);
-  ierr = PetscMalloc1(mfqP->m*mfqP->n,&mfqP->Fdiff);CHKERRQ(ierr);
-  ierr = PetscMalloc1(mfqP->npmax*mfqP->n,&mfqP->Disp);CHKERRQ(ierr);
-  ierr = PetscMalloc1(mfqP->n,&mfqP->Gres);CHKERRQ(ierr);
-  ierr = PetscMalloc1(mfqP->n*mfqP->n,&mfqP->Hres);CHKERRQ(ierr);
-  ierr = PetscMalloc1(mfqP->n*mfqP->n,&mfqP->Gpoints);CHKERRQ(ierr);
-  ierr = PetscMalloc1(mfqP->npmax,&mfqP->model_indices);CHKERRQ(ierr);
-  ierr = PetscMalloc1(mfqP->npmax,&mfqP->last_model_indices);CHKERRQ(ierr);
-  ierr = PetscMalloc1(mfqP->n,&mfqP->Xsubproblem);CHKERRQ(ierr);
-  ierr = PetscMalloc1(mfqP->m*mfqP->n,&mfqP->Gdel);CHKERRQ(ierr);
-  ierr = PetscMalloc1(mfqP->n*mfqP->n*mfqP->m, &mfqP->Hdel);CHKERRQ(ierr);
-  ierr = PetscMalloc1(PetscMax(mfqP->m,mfqP->n),&mfqP->indices);CHKERRQ(ierr);
-  ierr = PetscMalloc1(mfqP->n,&mfqP->iwork);CHKERRQ(ierr);
-  ierr = PetscMalloc1(mfqP->m*mfqP->m,&mfqP->w);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(mfqP->nmax,&mfqP->npmaxwork));
+  PetscCall(PetscMalloc1(mfqP->nmax,&mfqP->npmaxiwork));
+  PetscCall(PetscMalloc1(mfqP->n,&mfqP->xmin));
+  PetscCall(PetscMalloc1(mfqP->m,&mfqP->C));
+  PetscCall(PetscMalloc1(mfqP->m*mfqP->n,&mfqP->Fdiff));
+  PetscCall(PetscMalloc1(mfqP->npmax*mfqP->n,&mfqP->Disp));
+  PetscCall(PetscMalloc1(mfqP->n,&mfqP->Gres));
+  PetscCall(PetscMalloc1(mfqP->n*mfqP->n,&mfqP->Hres));
+  PetscCall(PetscMalloc1(mfqP->n*mfqP->n,&mfqP->Gpoints));
+  PetscCall(PetscMalloc1(mfqP->npmax,&mfqP->model_indices));
+  PetscCall(PetscMalloc1(mfqP->npmax,&mfqP->last_model_indices));
+  PetscCall(PetscMalloc1(mfqP->n,&mfqP->Xsubproblem));
+  PetscCall(PetscMalloc1(mfqP->m*mfqP->n,&mfqP->Gdel));
+  PetscCall(PetscMalloc1(mfqP->n*mfqP->n*mfqP->m, &mfqP->Hdel));
+  PetscCall(PetscMalloc1(PetscMax(mfqP->m,mfqP->n),&mfqP->indices));
+  PetscCall(PetscMalloc1(mfqP->n,&mfqP->iwork));
+  PetscCall(PetscMalloc1(mfqP->m*mfqP->m,&mfqP->w));
   for (i=0;i<mfqP->m;i++) {
     for (j=0;j<mfqP->m;j++) {
       if (i==j) {
@@ -1083,51 +1072,51 @@ static PetscErrorCode TaoSetUp_POUNDERS(Tao tao)
   for (i=0;i<PetscMax(mfqP->m,mfqP->n);i++) {
     mfqP->indices[i] = i;
   }
-  ierr = MPI_Comm_size(((PetscObject)tao)->comm,&mfqP->size);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_size(((PetscObject)tao)->comm,&mfqP->size));
   if (mfqP->size > 1) {
-    ierr = VecCreateSeq(PETSC_COMM_SELF,mfqP->n,&mfqP->localx);CHKERRQ(ierr);
-    ierr = VecCreateSeq(PETSC_COMM_SELF,mfqP->n,&mfqP->localxmin);CHKERRQ(ierr);
-    ierr = VecCreateSeq(PETSC_COMM_SELF,mfqP->m,&mfqP->localf);CHKERRQ(ierr);
-    ierr = VecCreateSeq(PETSC_COMM_SELF,mfqP->m,&mfqP->localfmin);CHKERRQ(ierr);
-    ierr = ISCreateStride(MPI_COMM_SELF,mfqP->n,0,1,&isxloc);CHKERRQ(ierr);
-    ierr = ISCreateStride(MPI_COMM_SELF,mfqP->n,0,1,&isxglob);CHKERRQ(ierr);
-    ierr = ISCreateStride(MPI_COMM_SELF,mfqP->m,0,1,&isfloc);CHKERRQ(ierr);
-    ierr = ISCreateStride(MPI_COMM_SELF,mfqP->m,0,1,&isfglob);CHKERRQ(ierr);
+    PetscCall(VecCreateSeq(PETSC_COMM_SELF,mfqP->n,&mfqP->localx));
+    PetscCall(VecCreateSeq(PETSC_COMM_SELF,mfqP->n,&mfqP->localxmin));
+    PetscCall(VecCreateSeq(PETSC_COMM_SELF,mfqP->m,&mfqP->localf));
+    PetscCall(VecCreateSeq(PETSC_COMM_SELF,mfqP->m,&mfqP->localfmin));
+    PetscCall(ISCreateStride(MPI_COMM_SELF,mfqP->n,0,1,&isxloc));
+    PetscCall(ISCreateStride(MPI_COMM_SELF,mfqP->n,0,1,&isxglob));
+    PetscCall(ISCreateStride(MPI_COMM_SELF,mfqP->m,0,1,&isfloc));
+    PetscCall(ISCreateStride(MPI_COMM_SELF,mfqP->m,0,1,&isfglob));
 
-    ierr = VecScatterCreate(tao->solution,isxglob,mfqP->localx,isxloc,&mfqP->scatterx);CHKERRQ(ierr);
-    ierr = VecScatterCreate(tao->ls_res,isfglob,mfqP->localf,isfloc,&mfqP->scatterf);CHKERRQ(ierr);
+    PetscCall(VecScatterCreate(tao->solution,isxglob,mfqP->localx,isxloc,&mfqP->scatterx));
+    PetscCall(VecScatterCreate(tao->ls_res,isfglob,mfqP->localf,isfloc,&mfqP->scatterf));
 
-    ierr = ISDestroy(&isxloc);CHKERRQ(ierr);
-    ierr = ISDestroy(&isxglob);CHKERRQ(ierr);
-    ierr = ISDestroy(&isfloc);CHKERRQ(ierr);
-    ierr = ISDestroy(&isfglob);CHKERRQ(ierr);
+    PetscCall(ISDestroy(&isxloc));
+    PetscCall(ISDestroy(&isxglob));
+    PetscCall(ISDestroy(&isfloc));
+    PetscCall(ISDestroy(&isfglob));
   }
 
   if (!mfqP->usegqt) {
     KSP       ksp;
     PC        pc;
-    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,mfqP->n,mfqP->n,mfqP->Xsubproblem,&mfqP->subx);CHKERRQ(ierr);
-    ierr = VecCreateSeq(PETSC_COMM_SELF,mfqP->n,&mfqP->subxl);CHKERRQ(ierr);
-    ierr = VecDuplicate(mfqP->subxl,&mfqP->subb);CHKERRQ(ierr);
-    ierr = VecDuplicate(mfqP->subxl,&mfqP->subxu);CHKERRQ(ierr);
-    ierr = VecDuplicate(mfqP->subxl,&mfqP->subpdel);CHKERRQ(ierr);
-    ierr = VecDuplicate(mfqP->subxl,&mfqP->subndel);CHKERRQ(ierr);
-    ierr = TaoCreate(PETSC_COMM_SELF,&mfqP->subtao);CHKERRQ(ierr);
-    ierr = PetscObjectIncrementTabLevel((PetscObject)mfqP->subtao, (PetscObject)tao, 1);CHKERRQ(ierr);
-    ierr = TaoSetType(mfqP->subtao,TAOBNTR);CHKERRQ(ierr);
-    ierr = TaoSetOptionsPrefix(mfqP->subtao,"pounders_subsolver_");CHKERRQ(ierr);
-    ierr = TaoSetSolution(mfqP->subtao,mfqP->subx);CHKERRQ(ierr);
-    ierr = TaoSetObjectiveAndGradient(mfqP->subtao,NULL,pounders_fg,(void*)mfqP);CHKERRQ(ierr);
-    ierr = TaoSetMaximumIterations(mfqP->subtao,mfqP->gqt_maxits);CHKERRQ(ierr);
-    ierr = TaoSetFromOptions(mfqP->subtao);CHKERRQ(ierr);
-    ierr = TaoGetKSP(mfqP->subtao,&ksp);CHKERRQ(ierr);
+    PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,mfqP->n,mfqP->n,mfqP->Xsubproblem,&mfqP->subx));
+    PetscCall(VecCreateSeq(PETSC_COMM_SELF,mfqP->n,&mfqP->subxl));
+    PetscCall(VecDuplicate(mfqP->subxl,&mfqP->subb));
+    PetscCall(VecDuplicate(mfqP->subxl,&mfqP->subxu));
+    PetscCall(VecDuplicate(mfqP->subxl,&mfqP->subpdel));
+    PetscCall(VecDuplicate(mfqP->subxl,&mfqP->subndel));
+    PetscCall(TaoCreate(PETSC_COMM_SELF,&mfqP->subtao));
+    PetscCall(PetscObjectIncrementTabLevel((PetscObject)mfqP->subtao, (PetscObject)tao, 1));
+    PetscCall(TaoSetType(mfqP->subtao,TAOBNTR));
+    PetscCall(TaoSetOptionsPrefix(mfqP->subtao,"pounders_subsolver_"));
+    PetscCall(TaoSetSolution(mfqP->subtao,mfqP->subx));
+    PetscCall(TaoSetObjectiveAndGradient(mfqP->subtao,NULL,pounders_fg,(void*)mfqP));
+    PetscCall(TaoSetMaximumIterations(mfqP->subtao,mfqP->gqt_maxits));
+    PetscCall(TaoSetFromOptions(mfqP->subtao));
+    PetscCall(TaoGetKSP(mfqP->subtao,&ksp));
     if (ksp) {
-      ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-      ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
+      PetscCall(KSPGetPC(ksp,&pc));
+      PetscCall(PCSetType(pc,PCNONE));
     }
-    ierr = TaoSetVariableBounds(mfqP->subtao,mfqP->subxl,mfqP->subxu);CHKERRQ(ierr);
-    ierr = MatCreateSeqDense(PETSC_COMM_SELF,mfqP->n,mfqP->n,mfqP->Hres,&mfqP->subH);CHKERRQ(ierr);
-    ierr = TaoSetHessian(mfqP->subtao,mfqP->subH,mfqP->subH,pounders_h,(void*)mfqP);CHKERRQ(ierr);
+    PetscCall(TaoSetVariableBounds(mfqP->subtao,mfqP->subxl,mfqP->subxu));
+    PetscCall(MatCreateSeqDense(PETSC_COMM_SELF,mfqP->n,mfqP->n,mfqP->Hres,&mfqP->subH));
+    PetscCall(TaoSetHessian(mfqP->subtao,mfqP->subH,mfqP->subH,pounders_h,(void*)mfqP));
   }
   PetscFunctionReturn(0);
 }
@@ -1136,87 +1125,85 @@ static PetscErrorCode TaoDestroy_POUNDERS(Tao tao)
 {
   TAO_POUNDERS   *mfqP = (TAO_POUNDERS*)tao->data;
   PetscInt       i;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!mfqP->usegqt) {
-    ierr = TaoDestroy(&mfqP->subtao);CHKERRQ(ierr);
-    ierr = VecDestroy(&mfqP->subx);CHKERRQ(ierr);
-    ierr = VecDestroy(&mfqP->subxl);CHKERRQ(ierr);
-    ierr = VecDestroy(&mfqP->subxu);CHKERRQ(ierr);
-    ierr = VecDestroy(&mfqP->subb);CHKERRQ(ierr);
-    ierr = VecDestroy(&mfqP->subpdel);CHKERRQ(ierr);
-    ierr = VecDestroy(&mfqP->subndel);CHKERRQ(ierr);
-    ierr = MatDestroy(&mfqP->subH);CHKERRQ(ierr);
+    PetscCall(TaoDestroy(&mfqP->subtao));
+    PetscCall(VecDestroy(&mfqP->subx));
+    PetscCall(VecDestroy(&mfqP->subxl));
+    PetscCall(VecDestroy(&mfqP->subxu));
+    PetscCall(VecDestroy(&mfqP->subb));
+    PetscCall(VecDestroy(&mfqP->subpdel));
+    PetscCall(VecDestroy(&mfqP->subndel));
+    PetscCall(MatDestroy(&mfqP->subH));
   }
-  ierr = PetscFree(mfqP->Fres);CHKERRQ(ierr);
-  ierr = PetscFree(mfqP->RES);CHKERRQ(ierr);
-  ierr = PetscFree(mfqP->work);CHKERRQ(ierr);
-  ierr = PetscFree(mfqP->work2);CHKERRQ(ierr);
-  ierr = PetscFree(mfqP->work3);CHKERRQ(ierr);
-  ierr = PetscFree(mfqP->mwork);CHKERRQ(ierr);
-  ierr = PetscFree(mfqP->omega);CHKERRQ(ierr);
-  ierr = PetscFree(mfqP->beta);CHKERRQ(ierr);
-  ierr = PetscFree(mfqP->alpha);CHKERRQ(ierr);
-  ierr = PetscFree(mfqP->H);CHKERRQ(ierr);
-  ierr = PetscFree(mfqP->Q);CHKERRQ(ierr);
-  ierr = PetscFree(mfqP->Q_tmp);CHKERRQ(ierr);
-  ierr = PetscFree(mfqP->L);CHKERRQ(ierr);
-  ierr = PetscFree(mfqP->L_tmp);CHKERRQ(ierr);
-  ierr = PetscFree(mfqP->L_save);CHKERRQ(ierr);
-  ierr = PetscFree(mfqP->N);CHKERRQ(ierr);
-  ierr = PetscFree(mfqP->M);CHKERRQ(ierr);
-  ierr = PetscFree(mfqP->Z);CHKERRQ(ierr);
-  ierr = PetscFree(mfqP->tau);CHKERRQ(ierr);
-  ierr = PetscFree(mfqP->tau_tmp);CHKERRQ(ierr);
-  ierr = PetscFree(mfqP->npmaxwork);CHKERRQ(ierr);
-  ierr = PetscFree(mfqP->npmaxiwork);CHKERRQ(ierr);
-  ierr = PetscFree(mfqP->xmin);CHKERRQ(ierr);
-  ierr = PetscFree(mfqP->C);CHKERRQ(ierr);
-  ierr = PetscFree(mfqP->Fdiff);CHKERRQ(ierr);
-  ierr = PetscFree(mfqP->Disp);CHKERRQ(ierr);
-  ierr = PetscFree(mfqP->Gres);CHKERRQ(ierr);
-  ierr = PetscFree(mfqP->Hres);CHKERRQ(ierr);
-  ierr = PetscFree(mfqP->Gpoints);CHKERRQ(ierr);
-  ierr = PetscFree(mfqP->model_indices);CHKERRQ(ierr);
-  ierr = PetscFree(mfqP->last_model_indices);CHKERRQ(ierr);
-  ierr = PetscFree(mfqP->Xsubproblem);CHKERRQ(ierr);
-  ierr = PetscFree(mfqP->Gdel);CHKERRQ(ierr);
-  ierr = PetscFree(mfqP->Hdel);CHKERRQ(ierr);
-  ierr = PetscFree(mfqP->indices);CHKERRQ(ierr);
-  ierr = PetscFree(mfqP->iwork);CHKERRQ(ierr);
-  ierr = PetscFree(mfqP->w);CHKERRQ(ierr);
+  PetscCall(PetscFree(mfqP->Fres));
+  PetscCall(PetscFree(mfqP->RES));
+  PetscCall(PetscFree(mfqP->work));
+  PetscCall(PetscFree(mfqP->work2));
+  PetscCall(PetscFree(mfqP->work3));
+  PetscCall(PetscFree(mfqP->mwork));
+  PetscCall(PetscFree(mfqP->omega));
+  PetscCall(PetscFree(mfqP->beta));
+  PetscCall(PetscFree(mfqP->alpha));
+  PetscCall(PetscFree(mfqP->H));
+  PetscCall(PetscFree(mfqP->Q));
+  PetscCall(PetscFree(mfqP->Q_tmp));
+  PetscCall(PetscFree(mfqP->L));
+  PetscCall(PetscFree(mfqP->L_tmp));
+  PetscCall(PetscFree(mfqP->L_save));
+  PetscCall(PetscFree(mfqP->N));
+  PetscCall(PetscFree(mfqP->M));
+  PetscCall(PetscFree(mfqP->Z));
+  PetscCall(PetscFree(mfqP->tau));
+  PetscCall(PetscFree(mfqP->tau_tmp));
+  PetscCall(PetscFree(mfqP->npmaxwork));
+  PetscCall(PetscFree(mfqP->npmaxiwork));
+  PetscCall(PetscFree(mfqP->xmin));
+  PetscCall(PetscFree(mfqP->C));
+  PetscCall(PetscFree(mfqP->Fdiff));
+  PetscCall(PetscFree(mfqP->Disp));
+  PetscCall(PetscFree(mfqP->Gres));
+  PetscCall(PetscFree(mfqP->Hres));
+  PetscCall(PetscFree(mfqP->Gpoints));
+  PetscCall(PetscFree(mfqP->model_indices));
+  PetscCall(PetscFree(mfqP->last_model_indices));
+  PetscCall(PetscFree(mfqP->Xsubproblem));
+  PetscCall(PetscFree(mfqP->Gdel));
+  PetscCall(PetscFree(mfqP->Hdel));
+  PetscCall(PetscFree(mfqP->indices));
+  PetscCall(PetscFree(mfqP->iwork));
+  PetscCall(PetscFree(mfqP->w));
   for (i=0;i<mfqP->nHist;i++) {
-    ierr = VecDestroy(&mfqP->Xhist[i]);CHKERRQ(ierr);
-    ierr = VecDestroy(&mfqP->Fhist[i]);CHKERRQ(ierr);
+    PetscCall(VecDestroy(&mfqP->Xhist[i]));
+    PetscCall(VecDestroy(&mfqP->Fhist[i]));
   }
-  ierr = VecDestroy(&mfqP->workxvec);CHKERRQ(ierr);
-  ierr = VecDestroy(&mfqP->workfvec);CHKERRQ(ierr);
-  ierr = PetscFree(mfqP->Xhist);CHKERRQ(ierr);
-  ierr = PetscFree(mfqP->Fhist);CHKERRQ(ierr);
+  PetscCall(VecDestroy(&mfqP->workxvec));
+  PetscCall(VecDestroy(&mfqP->workfvec));
+  PetscCall(PetscFree(mfqP->Xhist));
+  PetscCall(PetscFree(mfqP->Fhist));
 
   if (mfqP->size > 1) {
-    ierr = VecDestroy(&mfqP->localx);CHKERRQ(ierr);
-    ierr = VecDestroy(&mfqP->localxmin);CHKERRQ(ierr);
-    ierr = VecDestroy(&mfqP->localf);CHKERRQ(ierr);
-    ierr = VecDestroy(&mfqP->localfmin);CHKERRQ(ierr);
+    PetscCall(VecDestroy(&mfqP->localx));
+    PetscCall(VecDestroy(&mfqP->localxmin));
+    PetscCall(VecDestroy(&mfqP->localf));
+    PetscCall(VecDestroy(&mfqP->localfmin));
   }
-  ierr = PetscFree(tao->data);CHKERRQ(ierr);
+  PetscCall(PetscFree(tao->data));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode TaoSetFromOptions_POUNDERS(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
   TAO_POUNDERS   *mfqP = (TAO_POUNDERS*)tao->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead(PetscOptionsObject,"POUNDERS method for least-squares optimization");CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_pounders_delta","initial delta","",mfqP->delta,&mfqP->delta0,NULL);CHKERRQ(ierr);
+  PetscOptionsHeadBegin(PetscOptionsObject,"POUNDERS method for least-squares optimization");
+  PetscCall(PetscOptionsReal("-tao_pounders_delta","initial delta","",mfqP->delta,&mfqP->delta0,NULL));
   mfqP->delta = mfqP->delta0;
-  ierr = PetscOptionsInt("-tao_pounders_npmax","max number of points in model","",mfqP->npmax,&mfqP->npmax,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-tao_pounders_gqt","use gqt algorithm for subproblem","",mfqP->usegqt,&mfqP->usegqt,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-tao_pounders_npmax","max number of points in model","",mfqP->npmax,&mfqP->npmax,NULL));
+  PetscCall(PetscOptionsBool("-tao_pounders_gqt","use gqt algorithm for subproblem","",mfqP->usegqt,&mfqP->usegqt,NULL));
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 
@@ -1224,18 +1211,17 @@ static PetscErrorCode TaoView_POUNDERS(Tao tao, PetscViewer viewer)
 {
   TAO_POUNDERS   *mfqP = (TAO_POUNDERS *)tao->data;
   PetscBool      isascii;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii));
   if (isascii) {
-    ierr = PetscViewerASCIIPrintf(viewer, "initial delta: %g\n",(double)mfqP->delta0);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "final delta: %g\n",(double)mfqP->delta);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "model points: %D\n",mfqP->nmodelpoints);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer, "initial delta: %g\n",(double)mfqP->delta0));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "final delta: %g\n",(double)mfqP->delta));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "model points: %" PetscInt_FMT "\n",mfqP->nmodelpoints));
     if (mfqP->usegqt) {
-      ierr = PetscViewerASCIIPrintf(viewer, "subproblem solver: gqt\n");CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIIPrintf(viewer, "subproblem solver: gqt\n"));
     } else {
-      ierr = TaoView(mfqP->subtao, viewer);CHKERRQ(ierr);
+      PetscCall(TaoView(mfqP->subtao, viewer));
     }
   }
   PetscFunctionReturn(0);
@@ -1255,7 +1241,6 @@ M*/
 PETSC_EXTERN PetscErrorCode TaoCreate_POUNDERS(Tao tao)
 {
   TAO_POUNDERS   *mfqP = (TAO_POUNDERS*)tao->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   tao->ops->setup = TaoSetUp_POUNDERS;
@@ -1264,7 +1249,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_POUNDERS(Tao tao)
   tao->ops->setfromoptions = TaoSetFromOptions_POUNDERS;
   tao->ops->destroy = TaoDestroy_POUNDERS;
 
-  ierr = PetscNewLog(tao,&mfqP);CHKERRQ(ierr);
+  PetscCall(PetscNewLog(tao,&mfqP));
   tao->data = (void*)mfqP;
   /* Override default settings (unless already changed) */
   if (!tao->max_it_changed) tao->max_it = 2000;

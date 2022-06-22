@@ -1,13 +1,6 @@
 
 static char help[] = "Parallel vector layout.\n\n";
 
-/*T
-   Concepts: vectors^setting values
-   Concepts: vectors^local access to
-   Concepts: vectors^drawing vectors;
-   Processors: n
-T*/
-
 /*
   Include "petscvec.h" so that we can use vectors.  Note that this file
   automatically includes:
@@ -18,17 +11,16 @@ T*/
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscMPIInt    rank;
   PetscInt       i,istart,iend,n = 6,nlocal;
   PetscScalar    v,*array;
   Vec            x;
   PetscViewer    viewer;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
   /*
      Create a vector, specifying only its global dimension.
@@ -37,16 +29,16 @@ int main(int argc,char **argv)
      determined at runtime.  Also, the parallel partitioning of
      the vector is determined by PETSc at runtime.
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,PETSC_DECIDE,n);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
+  PetscCall(VecSetSizes(x,PETSC_DECIDE,n));
+  PetscCall(VecSetFromOptions(x));
 
   /*
      PETSc parallel vectors are partitioned by
      contiguous chunks of rows across the processors.  Determine
      which vector are locally owned.
   */
-  ierr = VecGetOwnershipRange(x,&istart,&iend);CHKERRQ(ierr);
+  PetscCall(VecGetOwnershipRange(x,&istart,&iend));
 
   /* --------------------------------------------------------------------
      Set the vector elements.
@@ -57,7 +49,7 @@ int main(int argc,char **argv)
    */
   for (i=0; i<n; i++) {
     v    = (PetscReal)(rank*i);
-    ierr = VecSetValues(x,1,&i,&v,ADD_VALUES);CHKERRQ(ierr);
+    PetscCall(VecSetValues(x,1,&i,&v,ADD_VALUES));
   }
 
   /*
@@ -66,8 +58,8 @@ int main(int argc,char **argv)
      Computations can be done while messages are in transition
      by placing code between these two statements.
   */
-  ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
+  PetscCall(VecAssemblyBegin(x));
+  PetscCall(VecAssemblyEnd(x));
 
   /*
      Open an X-window viewer.  Note that we specify the same communicator
@@ -78,39 +70,39 @@ int main(int argc,char **argv)
                   (0 is default, -1 implies until user input).
 
   */
-  ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,NULL,NULL,0,0,300,300,&viewer);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)viewer,"Line graph Plot");CHKERRQ(ierr);
-  ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_DRAW_LG);CHKERRQ(ierr);
+  PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD,NULL,NULL,0,0,300,300,&viewer));
+  PetscCall(PetscObjectSetName((PetscObject)viewer,"Line graph Plot"));
+  PetscCall(PetscViewerPushFormat(viewer,PETSC_VIEWER_DRAW_LG));
   /*
      View the vector
   */
-  ierr = VecView(x,viewer);CHKERRQ(ierr);
+  PetscCall(VecView(x,viewer));
 
   /* --------------------------------------------------------------------
        Access the vector values directly. Each processor has access only
     to its portion of the vector. For default PETSc vectors VecGetArray()
     does NOT involve a copy
   */
-  ierr = VecGetLocalSize(x,&nlocal);CHKERRQ(ierr);
-  ierr = VecGetArray(x,&array);CHKERRQ(ierr);
+  PetscCall(VecGetLocalSize(x,&nlocal));
+  PetscCall(VecGetArray(x,&array));
   for (i=0; i<nlocal; i++) array[i] = rank + 1;
-  ierr = VecRestoreArray(x,&array);CHKERRQ(ierr);
+  PetscCall(VecRestoreArray(x,&array));
 
   /*
      View the vector
   */
-  ierr = VecView(x,viewer);CHKERRQ(ierr);
+  PetscCall(VecView(x,viewer));
 
   /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  PetscCall(PetscViewerPopFormat(viewer));
+  PetscCall(PetscViewerDestroy(&viewer));
+  PetscCall(VecDestroy(&x));
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

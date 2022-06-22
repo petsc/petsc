@@ -5,7 +5,6 @@ static char help[] = "Tests ISSortGlobal().\n\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   IS             is;
   PetscInt       n, i, first, last, nmax=100;
   PetscMPIInt    rank;
@@ -16,71 +15,71 @@ int main(int argc,char **argv)
   PetscBool      sorted;
   MPI_Comm       comm;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   comm = MPI_COMM_WORLD;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
-  ierr = PetscOptionsBegin(comm, "", "Parallel Sort Test Options", "IS");CHKERRQ(ierr);
-  ierr = PetscOptionsBoundedInt("-nmax", "Maximum number of keys per process", "ex11.c", nmax, &nmax, NULL,0);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
+  PetscOptionsBegin(comm, "", "Parallel Sort Test Options", "IS");
+  PetscCall(PetscOptionsBoundedInt("-nmax", "Maximum number of keys per process", "ex11.c", nmax, &nmax, NULL,0));
+  PetscOptionsEnd();
 
-  ierr = PetscRandomCreate(comm, &randsizes);CHKERRQ(ierr);
-  ierr = PetscRandomSetInterval(randsizes, 0., PetscMax(nmax, 1));CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject)randsizes,"sizes_");CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(randsizes);CHKERRQ(ierr);
+  PetscCall(PetscRandomCreate(comm, &randsizes));
+  PetscCall(PetscRandomSetInterval(randsizes, 0., PetscMax(nmax, 1)));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)randsizes,"sizes_"));
+  PetscCall(PetscRandomSetFromOptions(randsizes));
 
-  ierr = PetscRandomCreate(comm, &randvalues);CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject)randvalues,"values_");CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(randvalues);CHKERRQ(ierr);
+  PetscCall(PetscRandomCreate(comm, &randvalues));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)randvalues,"values_"));
+  PetscCall(PetscRandomSetFromOptions(randvalues));
 
-  ierr = PetscRandomGetValueReal(randsizes, &r);CHKERRQ(ierr);
+  PetscCall(PetscRandomGetValueReal(randsizes, &r));
   n    = (PetscInt) PetscMin(r, nmax);
-  ierr = PetscRandomSetInterval(randsizes, 0., 1.);CHKERRQ(ierr);
-  ierr = PetscRandomGetValueReal(randsizes, &r);CHKERRQ(ierr);
+  PetscCall(PetscRandomSetInterval(randsizes, 0., 1.));
+  PetscCall(PetscRandomGetValueReal(randsizes, &r));
   first = PETSC_MIN_INT + 1 + (PetscInt) ((PETSC_MAX_INT - 1) * r);
-  ierr = PetscRandomGetValueReal(randsizes, &r);CHKERRQ(ierr);
+  PetscCall(PetscRandomGetValueReal(randsizes, &r));
   last = first + (PetscInt) ((PETSC_MAX_INT - 1) * r);
 
-  ierr = PetscRandomSetInterval(randvalues, first, last);CHKERRQ(ierr);
-  ierr = PetscMalloc3(n, &keys, n, &keyscopy, n, &keyssorted);CHKERRQ(ierr);
+  PetscCall(PetscRandomSetInterval(randvalues, first, last));
+  PetscCall(PetscMalloc3(n, &keys, n, &keyscopy, n, &keyssorted));
   for (i = 0; i < n; i++) {
-    ierr = PetscRandomGetValueReal(randvalues, &r);CHKERRQ(ierr);
+    PetscCall(PetscRandomGetValueReal(randvalues, &r));
     keys[i] = keyscopy[i] = (PetscInt) r;
   }
-  ierr = ISCreateGeneral(comm, n, keys, PETSC_USE_POINTER, &is);CHKERRQ(ierr);
-  ierr = ISViewFromOptions(is, NULL, "-keys_view");CHKERRQ(ierr);
+  PetscCall(ISCreateGeneral(comm, n, keys, PETSC_USE_POINTER, &is));
+  PetscCall(ISViewFromOptions(is, NULL, "-keys_view"));
 
-  ierr = ISGetLayout(is, &map);CHKERRQ(ierr);
-  ierr = PetscLayoutCreateFromSizes(map->comm, PETSC_DECIDE, map->N, 1, &mapeven);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(mapeven);CHKERRQ(ierr);
-  ierr = PetscMalloc1(mapeven->n, &keyseven);CHKERRQ(ierr);
+  PetscCall(ISGetLayout(is, &map));
+  PetscCall(PetscLayoutCreateFromSizes(map->comm, PETSC_DECIDE, map->N, 1, &mapeven));
+  PetscCall(PetscLayoutSetUp(mapeven));
+  PetscCall(PetscMalloc1(mapeven->n, &keyseven));
 
-  ierr = PetscParallelSortInt(map, mapeven, keys, keyseven);CHKERRQ(ierr);
-  ierr = PetscParallelSortedInt(mapeven->comm, mapeven->n, keyseven, &sorted);CHKERRQ(ierr);
-  PetscCheckFalse(!sorted,mapeven->comm, PETSC_ERR_PLIB, "PetscParallelSortInt() failed to sort");
-  for (i = 0; i < n; i++) PetscCheckFalse(keys[i] != keyscopy[i],PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscParallelSortInt() modified input array");
+  PetscCall(PetscParallelSortInt(map, mapeven, keys, keyseven));
+  PetscCall(PetscParallelSortedInt(mapeven->comm, mapeven->n, keyseven, &sorted));
+  PetscCheck(sorted,mapeven->comm, PETSC_ERR_PLIB, "PetscParallelSortInt() failed to sort");
+  for (i = 0; i < n; i++) PetscCheck(keys[i] == keyscopy[i],PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscParallelSortInt() modified input array");
 
-  ierr = PetscParallelSortInt(map, map, keys, keyssorted);CHKERRQ(ierr);
-  ierr = PetscParallelSortedInt(map->comm, map->n, keyssorted, &sorted);CHKERRQ(ierr);
-  PetscCheckFalse(!sorted,mapeven->comm, PETSC_ERR_PLIB, "PetscParallelSortInt() failed to sort");
-  for (i = 0; i < n; i++) PetscCheckFalse(keys[i] != keyscopy[i],PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscParallelSortInt() modified input array");
+  PetscCall(PetscParallelSortInt(map, map, keys, keyssorted));
+  PetscCall(PetscParallelSortedInt(map->comm, map->n, keyssorted, &sorted));
+  PetscCheck(sorted,mapeven->comm, PETSC_ERR_PLIB, "PetscParallelSortInt() failed to sort");
+  for (i = 0; i < n; i++) PetscCheck(keys[i] == keyscopy[i],PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscParallelSortInt() modified input array");
 
-  ierr = PetscParallelSortInt(map, map, keys, keys);CHKERRQ(ierr);
-  ierr = PetscParallelSortedInt(map->comm, map->n, keys, &sorted);CHKERRQ(ierr);
-  PetscCheckFalse(!sorted,mapeven->comm, PETSC_ERR_PLIB, "PetscParallelSortInt() failed to sort");
+  PetscCall(PetscParallelSortInt(map, map, keys, keys));
+  PetscCall(PetscParallelSortedInt(map->comm, map->n, keys, &sorted));
+  PetscCheck(sorted,mapeven->comm, PETSC_ERR_PLIB, "PetscParallelSortInt() failed to sort");
   /* TODO */
 #if 0
-  ierr = ISSortGlobal(is);CHKERRQ(ierr);
+  PetscCall(ISSortGlobal(is));
 #endif
 
-  ierr = PetscFree(keyseven);CHKERRQ(ierr);
-  ierr = PetscLayoutDestroy(&mapeven);CHKERRQ(ierr);
-  ierr = ISDestroy(&is);CHKERRQ(ierr);
-  ierr = PetscFree3(keys,keyscopy,keyssorted);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(&randvalues);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(&randsizes);CHKERRQ(ierr);
+  PetscCall(PetscFree(keyseven));
+  PetscCall(PetscLayoutDestroy(&mapeven));
+  PetscCall(ISDestroy(&is));
+  PetscCall(PetscFree3(keys,keyscopy,keyssorted));
+  PetscCall(PetscRandomDestroy(&randvalues));
+  PetscCall(PetscRandomDestroy(&randsizes));
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -2,10 +2,6 @@
 !
 !    Demonstrates how one may access entries of a PETSc Vec as if it was an array of Fortran derived types
 !
-!/*T
-!   Concepts: vectors^basic routines;
-!   Processors: n
-!T*/
 !
 ! -----------------------------------------------------------------------
 
@@ -107,37 +103,33 @@
 !                 Beginning of program
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      if (ierr .ne. 0) then
-        print*,'PetscInitialize failed'
-        stop
-      endif
+      PetscCallA(PetscInitialize(ierr))
       n     = 30
 
-      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-n',n,flg,ierr);CHKERRA(ierr)
-      call VecCreate(PETSC_COMM_WORLD,x,ierr);CHKERRA(ierr)
-      call VecSetSizes(x,PETSC_DECIDE,n,ierr);CHKERRA(ierr)
-      call VecSetFromOptions(x,ierr);CHKERRA(ierr)
-      call VecDuplicate(x,y,ierr);CHKERRA(ierr)
+      PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-n',n,flg,ierr))
+      PetscCallA(VecCreate(PETSC_COMM_WORLD,x,ierr))
+      PetscCallA(VecSetSizes(x,PETSC_DECIDE,n,ierr))
+      PetscCallA(VecSetFromOptions(x,ierr))
+      PetscCallA(VecDuplicate(x,y,ierr))
 
-      call VecGetArrayMyStruct(x,xarray,ierr);CHKERRA(ierr)
+      PetscCallA(VecGetArrayMyStruct(x,xarray,ierr))
       do i=1,10
       xarray(i)%a = i
       xarray(i)%b = 100*i
       xarray(i)%c = 10000*i
       enddo
 
-      call VecRestoreArrayMyStruct(x,xarray,ierr);CHKERRA(ierr)
-      call VecView(x,PETSC_VIEWER_STDOUT_SELF,ierr);CHKERRA(ierr)
-      call VecGetArrayMyStruct(x,xarray,ierr);CHKERRA(ierr)
+      PetscCallA(VecRestoreArrayMyStruct(x,xarray,ierr))
+      PetscCallA(VecView(x,PETSC_VIEWER_STDOUT_SELF,ierr))
+      PetscCallA(VecGetArrayMyStruct(x,xarray,ierr))
       do i = 1 , 10
         write(*,*) abs(xarray(i)%a),abs(xarray(i)%b),abs(xarray(i)%c)
       end do
-      call VecRestoreArrayMyStruct(x,xarray,ierr);CHKERRA(ierr)
+      PetscCallA(VecRestoreArrayMyStruct(x,xarray,ierr))
 
-      call VecDestroy(x,ierr);CHKERRA(ierr)
-      call VecDestroy(y,ierr);CHKERRA(ierr)
-      call PetscFinalize(ierr)
+      PetscCallA(VecDestroy(x,ierr))
+      PetscCallA(VecDestroy(y,ierr))
+      PetscCallA(PetscFinalize(ierr))
 
       end
 

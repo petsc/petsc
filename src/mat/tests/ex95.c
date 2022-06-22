@@ -8,57 +8,56 @@ int main(int argc,char **argv)
   MatScalar      a[1],alpha;
   PetscMPIInt    size,rank;
   PetscInt       m,n,i,col, prid;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   prid = size;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-prid",&prid,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-prid",&prid,NULL));
 
   m    = n = 10*size;
-  ierr = MatCreate(PETSC_COMM_SELF,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,PETSC_DETERMINE,PETSC_DETERMINE,m,n);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
-  ierr = MatSetUp(A);CHKERRQ(ierr);
+  PetscCall(MatCreate(PETSC_COMM_SELF,&A));
+  PetscCall(MatSetSizes(A,PETSC_DETERMINE,PETSC_DETERMINE,m,n));
+  PetscCall(MatSetType(A,MATSEQAIJ));
+  PetscCall(MatSetUp(A));
 
   a[0] = rank+1;
   for (i=0; i<m-rank; i++) {
     col  = i+rank;
-    ierr = MatSetValues(A,1,&i,1,&col,a,INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(MatSetValues(A,1,&i,1,&col,a,INSERT_VALUES));
   }
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
   if (rank == prid) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] A: \n",rank);CHKERRQ(ierr);
-    ierr = MatView(A,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"[%d] A: \n",rank));
+    PetscCall(MatView(A,PETSC_VIEWER_STDOUT_SELF));
   }
 
   /* Test MatCreateMPIAIJSumSeqAIJ */
-  ierr = MatCreateMPIAIJSumSeqAIJ(PETSC_COMM_WORLD,A,PETSC_DECIDE,PETSC_DECIDE,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+  PetscCall(MatCreateMPIAIJSumSeqAIJ(PETSC_COMM_WORLD,A,PETSC_DECIDE,PETSC_DECIDE,MAT_INITIAL_MATRIX,&B));
 
   /* Test MAT_REUSE_MATRIX */
   alpha = 0.1;
   for (i=0; i<3; i++) {
-    ierr = MatScale(A,alpha);CHKERRQ(ierr);
-    ierr = MatCreateMPIAIJSumSeqAIJ(PETSC_COMM_WORLD,A,PETSC_DECIDE,PETSC_DECIDE,MAT_REUSE_MATRIX,&B);CHKERRQ(ierr);
+    PetscCall(MatScale(A,alpha));
+    PetscCall(MatCreateMPIAIJSumSeqAIJ(PETSC_COMM_WORLD,A,PETSC_DECIDE,PETSC_DECIDE,MAT_REUSE_MATRIX,&B));
   }
-  ierr = MatView(B, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(MatView(B, PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatDestroy(&B));
+  PetscCall(MatDestroy(&A));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST
 
    test:
       nsize: 3
-      filter: grep -v "MPI processes"
+      filter: grep -v " MPI process"
 
    test:
       suffix: 2
-      filter: grep -v "MPI processes"
+      filter: grep -v " MPI process"
 
 TEST*/

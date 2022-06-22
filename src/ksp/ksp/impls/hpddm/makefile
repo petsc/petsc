@@ -1,11 +1,7 @@
 -include ../../../../../petscdir.mk
 #requirespackage 'PETSC_HAVE_HPDDM'
 
-ALL: lib
-
 CXXFLAGS  = ${HPDDM_INCLUDE}
-CFLAGS    =
-FFLAGS    =
 SOURCECXX = hpddm.cxx
 SOURCEF   =
 SOURCEH   =

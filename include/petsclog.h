@@ -1,11 +1,13 @@
 /*
     Defines profile/logging in PETSc.
 */
-
 #if !defined(PETSCLOG_H)
 #define PETSCLOG_H
+
 #include <petscsys.h>
 #include <petsctime.h>
+
+/* SUBMANSEC = Sys */
 
 /* General logging of information; different from event logging */
 PETSC_EXTERN PetscErrorCode PetscInfo_Private(const char[],PetscObject,const char[],...) PETSC_ATTRIBUTE_FORMAT(3,4);
@@ -37,7 +39,7 @@ $   PETSC_INFO_COMM_ONLY_SELF - PetscInfo will ONLY print for communicators with
 
     Level: intermediate
 
-.seealso: PetscInfo(), PetscInfoSetFromOptions(), PetscInfoSetFilterCommSelf()
+.seealso: `PetscInfo()`, `PetscInfoSetFromOptions()`, `PetscInfoSetFilterCommSelf()`
 E*/
 typedef enum {
   PETSC_INFO_COMM_ALL = -1,
@@ -67,7 +69,7 @@ PETSC_EXTERN PetscBool      PetscLogPrintInfo;  /* if true, indicates PetscInfo(
 
     Level: intermediate
 
-.seealso: PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd(), PetscLogStage
+.seealso: `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscLogStage`
 M*/
 typedef int PetscLogEvent;
 
@@ -76,7 +78,7 @@ typedef int PetscLogEvent;
 
     Level: intermediate
 
-.seealso: PetscLogStageRegister(), PetscLogStagePush(), PetscLogStagePop(), PetscLogEvent
+.seealso: `PetscLogStageRegister()`, `PetscLogStagePush()`, `PetscLogStagePop()`, `PetscLogEvent`
 M*/
 typedef int PetscLogStage;
 
@@ -256,7 +258,7 @@ PETSC_EXTERN PetscErrorCode PetscStageLogGetEventPerfLog(PetscStageLog,int,Petsc
 
    Level: intermediate
 
-.seealso: PetscLogView(), PetscLogGpuFlops()
+.seealso: `PetscLogView()`, `PetscLogGpuFlops()`
 @*/
 
 static inline PetscErrorCode PetscLogFlops(PetscLogDouble n)
@@ -281,7 +283,7 @@ PETSC_EXTERN PetscErrorCode (*PetscLogPLE)(PetscLogEvent,int,PetscObject,PetscOb
 PETSC_EXTERN PetscErrorCode (*PetscLogPHC)(PetscObject);
 PETSC_EXTERN PetscErrorCode (*PetscLogPHD)(PetscObject);
 
-#define PetscLogObjectParents(p,n,d)  0;do{int _i; for (_i=0; _i<(n); _i++) {ierr = PetscLogObjectParent((PetscObject)(p),(PetscObject)(d)[_i]);CHKERRQ(ierr);}}while (0)
+#define PetscLogObjectParents(p,n,d)  PetscMacroReturnStandard(for (int _i=0; _i<(n); ++_i) PetscCall(PetscLogObjectParent((PetscObject)(p),(PetscObject)(d)[_i]));)
 #define PetscLogObjectCreate(h)      ((PetscLogPHC) ? (*PetscLogPHC)((PetscObject)(h)) : 0)
 #define PetscLogObjectDestroy(h)     ((PetscLogPHD) ? (*PetscLogPHD)((PetscObject)(h)) : 0)
 PETSC_EXTERN PetscErrorCode PetscLogObjectState(PetscObject, const char[], ...) PETSC_ATTRIBUTE_FORMAT(2,3);
@@ -388,10 +390,10 @@ PETSC_EXTERN PetscErrorCode PetscLogEventZeroFlops(PetscLogEvent);
 */
 static inline PetscErrorCode PetscMPITypeSize(PetscInt count,MPI_Datatype type,PetscLogDouble *length)
 {
-  PetscMPIInt    typesize;
-  PetscErrorCode ierr;
+  PetscMPIInt typesize;
+
   if (type == MPI_DATATYPE_NULL) return 0;
-  ierr     = MPI_Type_size(type,&typesize);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Type_size(type,&typesize));
   *length += (PetscLogDouble) (count*typesize);
   return 0;
 }
@@ -399,27 +401,21 @@ static inline PetscErrorCode PetscMPITypeSize(PetscInt count,MPI_Datatype type,P
 static inline PetscErrorCode PetscMPITypeSizeComm(MPI_Comm comm,const PetscMPIInt *counts,MPI_Datatype type,PetscLogDouble *length)
 {
   PetscMPIInt    typesize,size,p;
-  PetscErrorCode ierr;
 
   if (type == MPI_DATATYPE_NULL) return 0;
-  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
-  ierr = MPI_Type_size(type,&typesize);CHKERRMPI(ierr);
-  for (p=0; p<size; ++p) {
-    *length += (PetscLogDouble) (counts[p]*typesize);
-  }
+  PetscCallMPI(MPI_Comm_size(comm,&size));
+  PetscCallMPI(MPI_Type_size(type,&typesize));
+  for (p=0; p<size; ++p) *length += (PetscLogDouble)(counts[p]*typesize);
   return 0;
 }
 
 static inline PetscErrorCode PetscMPITypeSizeCount(PetscInt n,const PetscMPIInt *counts,MPI_Datatype type,PetscLogDouble *length)
 {
-  PetscMPIInt    typesize,p;
-  PetscErrorCode ierr;
+  PetscMPIInt typesize,p;
 
   if (type == MPI_DATATYPE_NULL) return 0;
-  ierr = MPI_Type_size(type,&typesize);CHKERRMPI(ierr);
-  for (p=0; p<n; ++p) {
-    *length += (PetscLogDouble) (counts[p]*typesize);
-  }
+  PetscCallMPI(MPI_Type_size(type,&typesize));
+  for (p=0; p<n; ++p) *length += (PetscLogDouble)(counts[p]*typesize);
   return 0;
 }
 
@@ -593,7 +589,7 @@ PETSC_EXTERN PetscErrorCode PetscLogObjectState(PetscObject,const char[],...) PE
 #define PetscLogObjects(a)                 0
 #define PetscLogSetThreshold(a,b)          0
 #define PetscLogSet(lb,le)                 0
-#define PetscLogIsActive(flag)             0
+#define PetscLogIsActive(flag)             (*(flag) = PETSC_FALSE,0)
 
 #define PetscLogView(viewer)               0
 #define PetscLogViewFromOptions()          0
@@ -668,7 +664,7 @@ static inline PetscErrorCode PetscLogGpuToCpuScalar(PetscLogDouble size)
 
    Level: intermediate
 
-.seealso: PetscLogView(), PetscLogFlops(), PetscLogGpuTimeBegin(), PetscLogGpuTimeEnd()
+.seealso: `PetscLogView()`, `PetscLogFlops()`, `PetscLogGpuTimeBegin()`, `PetscLogGpuTimeEnd()`
 @*/
 static inline PetscErrorCode PetscLogGpuFlops(PetscLogDouble n)
 {
@@ -686,6 +682,7 @@ static inline PetscErrorCode PetscLogGpuTimeAdd(PetscLogDouble t)
   PetscFunctionReturn(0);
 }
 
+PETSC_EXTERN PetscErrorCode PetscLogGpuTime(void);
 PETSC_EXTERN PetscErrorCode PetscLogGpuTimeBegin(void);
 PETSC_EXTERN PetscErrorCode PetscLogGpuTimeEnd(void);
 
@@ -707,36 +704,29 @@ do {\
   PetscBool      PetscPreLoading = flag;\
   int            PetscPreLoadMax,PetscPreLoadIt;\
   PetscLogStage  _stageNum;\
-  PetscErrorCode _3_ierr; \
-  _3_ierr = PetscOptionsGetBool(NULL,NULL,"-preload",&PetscPreLoading,NULL);CHKERRQ(_3_ierr); \
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-preload",&PetscPreLoading,NULL));     \
   PetscPreLoadMax = (int)(PetscPreLoading);\
   PetscPreLoadingUsed = PetscPreLoading ? PETSC_TRUE : PetscPreLoadingUsed;\
   for (PetscPreLoadIt=0; PetscPreLoadIt<=PetscPreLoadMax; PetscPreLoadIt++) {\
     PetscPreLoadingOn = PetscPreLoading;\
-    _3_ierr = PetscBarrier(NULL);CHKERRQ(_3_ierr);\
-    if (PetscPreLoadIt>0) {\
-      _3_ierr = PetscLogStageGetId(name,&_stageNum);CHKERRQ(_3_ierr);\
-    } else {\
-      _3_ierr = PetscLogStageRegister(name,&_stageNum);CHKERRQ(_3_ierr); \
-    }\
-    _3_ierr = PetscLogStageSetActive(_stageNum,(PetscBool)(!PetscPreLoadMax || PetscPreLoadIt));\
-    _3_ierr = PetscLogStagePush(_stageNum);CHKERRQ(_3_ierr);
+    PetscCall(PetscBarrier(NULL));\
+    if (PetscPreLoadIt>0) PetscCall(PetscLogStageGetId(name,&_stageNum));\
+    else PetscCall(PetscLogStageRegister(name,&_stageNum));\
+    PetscCall(PetscLogStageSetActive(_stageNum,(PetscBool)(!PetscPreLoadMax || PetscPreLoadIt)));\
+    PetscCall(PetscLogStagePush(_stageNum));
 
 #define PetscPreLoadEnd() \
-    _3_ierr = PetscLogStagePop();CHKERRQ(_3_ierr);\
+    PetscCall(PetscLogStagePop());\
     PetscPreLoading = PETSC_FALSE;\
   }\
 } while (0)
 
-#define PetscPreLoadStage(name) do {                                         \
-    _3_ierr = PetscLogStagePop();CHKERRQ(_3_ierr);                      \
-    if (PetscPreLoadIt>0) {                                                  \
-      _3_ierr = PetscLogStageGetId(name,&_stageNum);CHKERRQ(_3_ierr);   \
-    } else {                                                            \
-      _3_ierr = PetscLogStageRegister(name,&_stageNum);CHKERRQ(_3_ierr); \
-    }                                                                   \
-    _3_ierr = PetscLogStageSetActive(_stageNum,(PetscBool)(!PetscPreLoadMax || PetscPreLoadIt)); \
-    _3_ierr = PetscLogStagePush(_stageNum);CHKERRQ(_3_ierr);            \
+#define PetscPreLoadStage(name) do {                                                           \
+    PetscCall(PetscLogStagePop());                                                               \
+    if (PetscPreLoadIt>0)   PetscCall(PetscLogStageGetId(name,&_stageNum));                      \
+    else PetscCall(PetscLogStageRegister(name,&_stageNum));                                      \
+    PetscCall(PetscLogStageSetActive(_stageNum,(PetscBool)(!PetscPreLoadMax || PetscPreLoadIt))); \
+    PetscCall(PetscLogStagePush(_stageNum));                                                     \
   } while (0)
 
 /* some vars for logging */

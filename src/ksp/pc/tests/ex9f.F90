@@ -23,12 +23,8 @@
 !                 Beginning of program
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      if (ierr .ne. 0) then
-        print*,'Unable to initialize PETSc'
-        stop
-      endif
-      call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
+      PetscCallA(PetscInitialize(ierr))
+      PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD,size,ierr))
       if (size .ne. 1) then; SETERRA(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,'This is a uniprocessor example only'); endif
       none = -1.0
       one  = 1.0
@@ -36,7 +32,7 @@
       i1 = 1
       i2 = 2
       i3 = 3
-      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
+      PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-n',n,flg,ierr))
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !         Compute the matrix and right-hand-side vector that define
@@ -46,10 +42,10 @@
 !  Create matrix.  When using MatCreate(), the matrix format can
 !  be specified at runtime.
 
-      call MatCreate(PETSC_COMM_WORLD,A,ierr)
-      call MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,n,n,ierr)
-      call MatSetFromOptions(A,ierr)
-      call MatSetUp(A,ierr)
+      PetscCallA(MatCreate(PETSC_COMM_WORLD,A,ierr))
+      PetscCallA(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,n,n,ierr))
+      PetscCallA(MatSetFromOptions(A,ierr))
+      PetscCallA(MatSetUp(A,ierr))
 
 !  Assemble matrix.
 !   - Note that MatSetValues() uses 0-based row and column numbers
@@ -62,34 +58,34 @@
          col(1) = i-1
          col(2) = i
          col(3) = i+1
-         call MatSetValues(A,i1,i,i3,col,value,INSERT_VALUES,ierr)
+         PetscCallA(MatSetValues(A,i1,i,i3,col,value,INSERT_VALUES,ierr))
   50  continue
       i = n - 1
       col(1) = n - 2
       col(2) = n - 1
-      call MatSetValues(A,i1,i,i2,col,value,INSERT_VALUES,ierr)
+      PetscCallA(MatSetValues(A,i1,i,i2,col,value,INSERT_VALUES,ierr))
       i = 0
       col(1) = 0
       col(2) = 1
       value(1) = 2.0
       value(2) = -1.0
-      call MatSetValues(A,i1,i,i2,col,value,INSERT_VALUES,ierr)
-      call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
-      call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
+      PetscCallA(MatSetValues(A,i1,i,i2,col,value,INSERT_VALUES,ierr))
+      PetscCallA(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr))
+      PetscCallA(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr))
 
 !  Create vectors.  Note that we form 1 vector from scratch and
 !  then duplicate as needed.
 
-      call VecCreate(PETSC_COMM_WORLD,x,ierr)
-      call VecSetSizes(x,PETSC_DECIDE,n,ierr)
-      call VecSetFromOptions(x,ierr)
-      call VecDuplicate(x,b,ierr)
-      call VecDuplicate(x,u,ierr)
+      PetscCallA(VecCreate(PETSC_COMM_WORLD,x,ierr))
+      PetscCallA(VecSetSizes(x,PETSC_DECIDE,n,ierr))
+      PetscCallA(VecSetFromOptions(x,ierr))
+      PetscCallA(VecDuplicate(x,b,ierr))
+      PetscCallA(VecDuplicate(x,u,ierr))
 
 !  Set exact solution; then compute right-hand-side vector.
 
-      call VecSet(u,one,ierr)
-      call MatMult(A,u,b,ierr)
+      PetscCallA(VecSet(u,one,ierr))
+      PetscCallA(MatMult(A,u,b,ierr))
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !          Create the linear solver and set various options
@@ -97,28 +93,28 @@
 
 !  Create linear solver context
 
-      call KSPCreate(PETSC_COMM_WORLD,ksp,ierr)
+      PetscCallA(KSPCreate(PETSC_COMM_WORLD,ksp,ierr))
 
 !  Set operators. Here the matrix that defines the linear system
 !  also serves as the preconditioning matrix.
 
-      call KSPSetOperators(ksp,A,A,ierr)
+      PetscCallA(KSPSetOperators(ksp,A,A,ierr))
 
 !  Set linear solver defaults for this problem (optional).
 !   - By extracting the KSP and PC contexts from the KSP context,
-!     we can then directly directly call any KSP and PC routines
+!     we can then directly call any KSP and PC routines
 !     to set various options.
 !   - The following four statements are optional; all of these
 !     parameters could alternatively be specified at runtime via
 !     KSPSetFromOptions();
 
-      call KSPGetPC(ksp,pc,ierr)
-      call PCSetType(pc,PCFIELDSPLIT,ierr)
+      PetscCallA(KSPGetPC(ksp,pc,ierr))
+      PetscCallA(PCSetType(pc,PCFIELDSPLIT,ierr))
       izero = 0
       ione  = 1
-      call ISCreateStride(PETSC_COMM_SELF,n,izero,ione,isin,ierr)
-      call PCFieldSplitSetIS(pc,"splitname",isin,ierr)
-      call PCFieldSplitGetIS(pc,"splitname",isout,ierr)
+      PetscCallA(ISCreateStride(PETSC_COMM_SELF,n,izero,ione,isin,ierr))
+      PetscCallA(PCFieldSplitSetIS(pc,"splitname",isin,ierr))
+      PetscCallA(PCFieldSplitGetIS(pc,"splitname",isout,ierr))
       if (isin .ne. isout) then ; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCFieldSplitGetIS() failed"); endif
 
 !  Set runtime options, e.g.,
@@ -127,18 +123,18 @@
 !  KSPSetFromOptions() is called _after_ any other customization
 !  routines.
 
-      call KSPSetFromOptions(ksp,ierr)
+      PetscCallA(KSPSetFromOptions(ksp,ierr))
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                      Solve the linear system
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      call KSPSolve(ksp,b,x,ierr)
-      call PetscLogStagePop(ierr)
+      PetscCallA(KSPSolve(ksp,b,x,ierr))
+      PetscCallA(PetscLogStagePop(ierr))
 
 !  View solver info; we could instead use the option -ksp_view
 
-      call KSPView(ksp,PETSC_VIEWER_STDOUT_WORLD,ierr)
+      PetscCallA(KSPView(ksp,PETSC_VIEWER_STDOUT_WORLD,ierr))
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                      Check solution and clean up
@@ -146,9 +142,9 @@
 
 !  Check the error
 
-      call VecAXPY(x,none,u,ierr)
-      call VecNorm(x,NORM_2,norm,ierr)
-      call KSPGetIterationNumber(ksp,its,ierr)
+      PetscCallA(VecAXPY(x,none,u,ierr))
+      PetscCallA(VecNorm(x,NORM_2,norm,ierr))
+      PetscCallA(KSPGetIterationNumber(ksp,its,ierr))
       if (norm .gt. 1.e-12) then
         write(6,100) norm,its
       else
@@ -160,13 +156,13 @@
 !  Free work space.  All PETSc objects should be destroyed when they
 !  are no longer needed.
 
-      call ISDestroy(isin,ierr)
-      call VecDestroy(x,ierr)
-      call VecDestroy(u,ierr)
-      call VecDestroy(b,ierr)
-      call MatDestroy(A,ierr)
-      call KSPDestroy(ksp,ierr)
-      call PetscFinalize(ierr)
+      PetscCallA(ISDestroy(isin,ierr))
+      PetscCallA(VecDestroy(x,ierr))
+      PetscCallA(VecDestroy(u,ierr))
+      PetscCallA(VecDestroy(b,ierr))
+      PetscCallA(MatDestroy(A,ierr))
+      PetscCallA(KSPDestroy(ksp,ierr))
+      PetscCallA(PetscFinalize(ierr))
 
       end
 

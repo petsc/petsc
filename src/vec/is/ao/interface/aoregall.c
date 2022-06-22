@@ -10,17 +10,15 @@ PETSC_EXTERN PetscErrorCode AOCreate_MemoryScalable(AO ao);
 
   Level: advanced
 
-.seealso:  AORegister(), AORegisterDestroy()
+.seealso: `AORegister()`, `AORegisterDestroy()`
 @*/
 PetscErrorCode  AORegisterAll(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (AORegisterAllCalled) PetscFunctionReturn(0);
   AORegisterAllCalled = PETSC_TRUE;
 
-  ierr = AORegister(AOBASIC,          AOCreate_Basic);CHKERRQ(ierr);
-  ierr = AORegister(AOMEMORYSCALABLE, AOCreate_MemoryScalable);CHKERRQ(ierr);
+  PetscCall(AORegister(AOBASIC,          AOCreate_Basic));
+  PetscCall(AORegister(AOMEMORYSCALABLE, AOCreate_MemoryScalable));
   PetscFunctionReturn(0);
 }

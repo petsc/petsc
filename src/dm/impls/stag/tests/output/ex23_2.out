@@ -14,7 +14,7 @@ Process [1]
 -0.445
 -0.395
 Coordinates dim 1:
-Vec Object: coordinates 1 MPI processes
+Vec Object: coordinates 1 MPI process
   type: mpi
 Process [0]
 -2.2
@@ -25,7 +25,7 @@ Process [0]
 -2.381
 -2.331
 Coordinates dim 2:
-Vec Object: coordinates 1 MPI processes
+Vec Object: coordinates 1 MPI process
   type: mpi
 Process [0]
 -3.3
@@ -48,7 +48,7 @@ Process [1]
 2.
 2.
 Coordinates dim 1:
-Vec Object: coordinates 1 MPI processes
+Vec Object: coordinates 1 MPI process
   type: mpi
 Process [0]
 2.
@@ -59,7 +59,7 @@ Process [0]
 2.
 2.
 Coordinates dim 2:
-Vec Object: coordinates 1 MPI processes
+Vec Object: coordinates 1 MPI process
   type: mpi
 Process [0]
 2.

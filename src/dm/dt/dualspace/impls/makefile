@@ -1,5 +1,4 @@
 -include ../../../../../petscdir.mk
-ALL: lib
 
 LIBBASE  = libpetscdm
 DIRS     = lagrange simple refined

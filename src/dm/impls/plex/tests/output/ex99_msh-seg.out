@@ -1,4 +1,4 @@
-DM Object: mesh-seg 1 MPI processes
+DM Object: mesh-seg 1 MPI process
   type: plex
 mesh-seg in 1 dimension:
 Supports:

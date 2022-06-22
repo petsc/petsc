@@ -1,8 +1,8 @@
-VecTagger Object: (refine_) 1 MPI processes
+VecTagger Object: (refine_) 1 MPI process
   type: absolute
   Block size: 1
    absolute box=[  0.5,inf.  ]
-VecTagger Object: (coarsen_) 1 MPI processes
+VecTagger Object: (coarsen_) 1 MPI process
   type: absolute
   Block size: 1
    absolute box=[  0.,0.01  ]

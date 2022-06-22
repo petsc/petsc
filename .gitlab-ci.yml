@@ -16,7 +16,7 @@ stages:
 variables:
   GIT_STRATEGY: fetch
   GIT_CLEAN_FLAGS: -ffdxq
-  PETSC_OPTIONS: -checkstack
+  PETSC_OPTIONS: -checkstack -checkfunctionlist
   TIMEOUT: 450
 
 #
@@ -47,7 +47,7 @@ check-ci-settings:
   extends: .test-basic
   stage: .pre
   tags:
-    - check-ci-settings
+    - gce-stage1
   script:
     - lib/petsc/bin/maint/check-ci-settings.sh
 #
@@ -59,7 +59,7 @@ check-ci-settings:
   extends: .test
   stage: stage-1
   tags:
-    - stage1
+    - gce-stage1
   before_script:
     - date
     - hostname
@@ -67,7 +67,8 @@ check-ci-settings:
     - nproc
     - lscpu
     - ccache --zero-stats
-    - echo ${CONFIG_OPTS}
+    - printf "CONFIG_OPTS:${CONFIG_OPTS}\n"
+    - printf "PYTHON:${PYTHON}\n"
   script:
     - printf "PATH:$PATH\n"
     - printf "PYTHONPATH:$PYTHONPATH\n"
@@ -77,6 +78,7 @@ check-ci-settings:
     - make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}"
     - make CFLAGS="${MAKE_TEST_CFLAGS}" CXXFLAGS="${MAKE_TEST_CXXFLAGS}" FFLAGS="${MAKE_TEST_FFLAGS}" allgtests-tap gmakesearch="${TEST_SEARCH}" TIMEOUT=${TIMEOUT}
   variables:
+    PYTHON: python3
     MAKE_CFLAGS: -Werror
     MAKE_CXXFLAGS: -Werror -Wzero-as-null-pointer-constant
     MAKE_FFLAGS: -Werror
@@ -106,45 +108,35 @@ check-ci-settings:
 ompi-cuda:
   extends: .stage-1
   tags:
-  - stage1, name:p1
+  - cuda-stage1
   variables:
-    PYTHON: python3
-    CONFIG_OPTS: --with-mpi-dir=/home/petsc/soft/openmpi-4.0.2-cuda --with-cuda=1 --with-fc=0
+    CONFIG_OPTS: --with-mpi-dir=/nfs/gce/software/custom/linux-ubuntu22.04-x86_64/spack/opt/spack/linux-ubuntu22.04-x86_64/gcc-11.3.0/openmpi-4.1.3-qrpnszy --with-cuda=1 --with-fc=0
     TEST_SEARCH: snes_tutorials-ex19_cuda%
     MAKE_CXXFLAGS: -Werror
 
 mpich-cxx-py3:
   extends: .stage-1
-  tags:
-  - stage1, fedora
   variables:
-    PYTHON: python3
-    CONFIG_OPTS: --with-mpi-dir=/home/glci/soft/mpich-3.3.2 --with-clanguage=cxx --with-fc=0 CXXFLAGS=-std=c++11
+    CONFIG_OPTS: --with-clanguage=cxx --with-fc=0 CXXFLAGS=-std=c++11
     TEST_SEARCH: snes_tutorials-ex48%
 
 uni-complex-float-int64:
   extends: .stage-1
-  tags:
-  - stage1, name:pj02
   variables:
-    PYTHON: python3
     CONFIG_OPTS: --with-mpi=0 --with-scalar-type=complex --with-precision=single --with-64-bit-indices
     TEST_SEARCH: ts_tutorials-ex11_adv_2d_quad_%
 
-c99-mlib-static-py2:
+c99-mlib-static-py:
   extends: .stage-1
-  tags:
-  - stage1, fedora
   variables:
-    PYTHON: python2
-    CONFIG_OPTS: --with-mpi-dir=/home/glci/soft/mpich-3.3.2 --with-single-library=0 --with-shared-libraries=0 CFLAGS=-std=c99
+    CONFIG_OPTS: --with-single-library=0 --with-shared-libraries=0 CFLAGS=-std=c99
     TEST_SEARCH: snes_tutorials-ex19% snes_tutorials-ex5f90t%
     MAKE_TEST_FFLAGS: -Werror -std=f2008
 
 petsc4py-install:
   extends: .stage-2
   tags:
-    - linux-stage2
+    - gce-stage2
   variables:
     PYTHON: python3
     T_PREFIX: petsc-install
@@ -155,7 +147,7 @@ petsc4py-install:
     - printf "PATH:$PATH\n"
     - mkdir hide
     - if [ ! -z ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME+x} ]; then printf "CI_MERGE_REQUEST_SOURCE_BRANCH_NAME:$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME\n" ;fi
-    - ${PYTHON} ./configure --prefix="${PWD}/${T_PREFIX}" --with-petsc4py=1 --with-debugging=0 --with-mpi-dir=/home/glci/soft/mpich-3.3.2
+    - ${PYTHON} ./configure --prefix="${PWD}/${T_PREFIX}" --with-petsc4py=1 --with-debugging=0
     - make CFLAGS=-Werror CXXFLAGS="-Werror -Wzero-as-null-pointer-constant" FFLAGS=-Werror
     - printf "====== Test A. Install into staging directory then into prefix directory (mimics distro package recipe) =====\n"
     - make install DESTDIR="${PWD}/${T_DESTDIR}"
@@ -179,11 +171,26 @@ petsc4py-install:
     - (cd "${PWD}/${T_DESTDIR}" && find * -exec install -v -D "{}" "/{}" \; )
     - mv arch-* hide/ && PETSC_DIR="${PWD}/${T_PREFIX}" ${T_VALIDATE_CMD} && mv hide/arch-* ./
 
+petsc4py-pip:
+  extends: .stage-2
+  tags:
+    - gce-stage2
+  variables:
+    PETSC_CONFIGURE_OPTIONS: --with-mpi=0 --with-fc=0
+    CFLAGS: -O0
+  script:
+    - python3 -m venv pip-builds
+    - source pip-builds/bin/activate
+    - python3 -m pip install --upgrade pip
+    - python3 -m pip install .
+    - python3 -m pip install src/binding/petsc4py
+    - python3 -m petsc4py
+
 checksource:
   extends: .test-basic
   stage: .pre
   tags:
-    - stage1
+    - gce-stage1
   script:
     - python3 ./configure --with-mpi=0 --with-fc=0 --with-cxx=0
     - vermin --version
@@ -196,7 +203,7 @@ pause-for-approval:
   extends: .test
   stage: .pre
   tags:
-    - stage1
+    - gce-stage1
   only:
     refs:
       - merge_requests
@@ -312,6 +319,7 @@ pause-for-approval:
     - sw_vers -productVersion
     - echo $(sysctl -n hw.ncpu)
     - ccache --zero-stats
+    - if [ ! -z ${INIT_SCRIPT+x} ]; then echo "sourcing ${INIT_SCRIPT}"; source ${INIT_SCRIPT}; fi
   after_script:
     - date
     - ccache --show-stats
@@ -346,13 +354,14 @@ pause-for-approval:
 
 osx-m1:
   extends:
-    - .stage-2
+    - .stage-3
     - .osx_test
   tags:
     - os:macos-m1
   variables:
     TEST_ARCH: arch-ci-osx-m1
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
+    INIT_SCRIPT: /Volumes/Scratch/svcpetsc/soft/py3venv/cython3setup.sh
 
 freebsd-cxx-cmplx-64idx-dbg:
   extends:
@@ -372,21 +381,22 @@ freebsd-c-single-opt:
   variables:
     TEST_ARCH: arch-ci-freebsd-c-single-opt
 
-linux-cuda-double:
+mswin-opt-impi:
   extends:
-    - .stage-3
-    - .linux_test
+    - .stage-2
+    - .mswin_test
   tags:
-    - gpu:nvidia, os:linux, name:p1
+    - mswin-stage2
   variables:
-    TEST_ARCH: arch-ci-linux-cuda-double
+    TEST_ARCH: arch-ci-mswin-opt-impi
+    TEST_OPTS: search='ksp_ksp_tests*'
 
 linux-gcc-quad-64idx-dbg:
   extends:
     - .stage-2
     - .linux_test
   tags:
-    - linux-stage2
+    - gce-stage2
   variables:
     TEST_ARCH: arch-ci-linux-gcc-quad-64idx-dbg
 
@@ -395,7 +405,7 @@ linux-gcc-pkgs-opt:
     - .stage-2
     - .linux_test
   tags:
-    - linux-stage2
+    - gce-stage2
   variables:
     TEST_ARCH: arch-ci-linux-gcc-pkgs-opt
 
@@ -404,38 +414,9 @@ linux-gcc-complex-opt-32bit:
     - .stage-2
     - .linux_test
   tags:
-    - linux-stage2
+    - gce-stage2
   variables:
     TEST_ARCH: arch-ci-linux-gcc-complex-opt-32bit
-
-#do not run checkstack on MSWIN-UNI
-mswin-uni:
-  extends:
-    - .stage-3
-    - .mswin_test
-  tags:
-    - win-stage2
-  variables:
-    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
-    TEST_ARCH: arch-ci-mswin-uni
-
-mswin-gnu:
-  extends:
-    - .stage-3
-    - .mswin_test
-  tags:
-    - win-stage2
-  variables:
-    TEST_ARCH: arch-ci-mswin-gnu
-    MAKE_CFLAGS: -Werror
-    MAKE_CXXFLAGS: -Werror
-    MAKE_FFLAGS: -Werror
-    DISABLE_TESTS: 1
-  artifacts:
-    reports:
-    paths:
-    - arch-*/lib/petsc/conf/*.log
-    expire_in: 4 days
 
 #
 # The following tests run as part of stage-3.
@@ -457,7 +438,7 @@ freebsd-cxx-pkgs-opt:
   tags:
     - os:fbsd
   variables:
-    PETSC_OPTIONS: -vecscatter_mpi1 false -options_left false -checkstack
+    PETSC_OPTIONS: -vecscatter_mpi1 false -options_left false -checkstack -checkfunctionlist
     TEST_ARCH: arch-ci-freebsd-cxx-pkgs-opt
 
 freebsd-pkgs-opt:
@@ -471,10 +452,10 @@ freebsd-pkgs-opt:
 
 linux-hip-double:
   extends:
-    - .stage-2
+    - .stage-3
     - .linux_test_noflags
   tags:
-    - gpu:amd, os:linux, name:hip-txcorp
+    - gpu:amd, os:linux
   variables:
     TEST_ARCH: arch-ci-linux-hip-double
 
@@ -486,80 +467,82 @@ linux-sycl-double:
     - gce-nfs, linux-fast
   variables:
     TEST_ARCH: arch-ci-linux-sycl-double
-    LOAD_MODULES: compiler/latest mpi/latest
+    LOAD_MODULES: compiler/latest mpi/latest cmake/3.20.5-yjp2hz6
     TEST_OPTS: query=requires queryval=kokkos_kernels
 
-linux-c-exodus-dbg:
+linux-cuda-pkgs:
   extends:
     - .stage-3
     - .linux_test
   tags:
-    - gpu:nvidia, os:linux, name:frog
+    - cuda-stage3
   variables:
-    TEST_ARCH: arch-ci-linux-c-exodus-dbg
-    RUN_GCOV: 1
-    TEST_OPTS: -j1 query=requires queryval=cuda
+    TEST_ARCH: arch-ci-linux-cuda-pkgs
+    TEST_OPTS: -j3 query=requires queryval=cuda
 
-linux-cuda11-double:
+linux-cuda112-omp:
   extends:
     - .stage-3
     - .linux_test
   tags:
-    - gpu:nvidia, os:linux, name:frog
+    - cuda-stage3
   variables:
-    TEST_ARCH: arch-ci-linux-cuda11-double
-    TEST_OPTS: -j1 query=requires queryval=cuda
+    TEST_ARCH: arch-ci-linux-cuda112-omp
+    TEST_OPTS: -j4 query=requires queryval=kokkos_kernels
+    LOAD_MODULES: cuda/11.2.2 u-gcc-9/9.4.0
+    OMP_PROC_BIND: "false"
+    OMP_NUM_THREADS: 1
 
-linux-cuda11-complex:
+linux-cuda-cmplx:
   extends:
     - .stage-3
     - .linux_test
   tags:
-    - gpu:nvidia, os:linux, name:frog
+    - cuda-stage3
   variables:
-    TEST_ARCH: arch-ci-linux-cuda11-complex
-    TEST_OPTS: -j1 query=requires queryval=cuda
+    TEST_ARCH: arch-ci-linux-cuda-cmplx
 
 linux-cuda-double-64idx:
   extends:
     - .stage-3
     - .linux_test
   tags:
-    - gpu:nvidia, os:linux, name:p1
+    - cuda-stage3
   variables:
     TEST_ARCH: arch-ci-linux-cuda-double-64idx
-    TEST_OPTS: -j1 query=requires queryval=cuda
+    TEST_OPTS: -j15 query=requires queryval=cuda
 
 linux-cuda-single-cxx:
   extends:
     - .stage-3
-    - .linux_test
+    - .linux_test_noflags
   tags:
-    - gpu:nvidia, os:linux
+    - cuda-stage3
   variables:
     TEST_ARCH: arch-ci-linux-cuda-single-cxx
-    TEST_OPTS: -j1 query=requires queryval=cuda
+    LOAD_MODULES: nvhpc/22.3
+    TEST_OPTS: -j15 query=requires queryval=cuda
 
 linux-cuda-uni-pkgs:
   extends:
     - .stage-3
     - .linux_test
   tags:
-    - gpu:nvidia, os:linux
+    - cuda-stage3
   variables:
     TEST_ARCH: arch-ci-linux-cuda-uni-pkgs
-    TEST_OPTS: -j4 query=requires queryval=cuda
+    TEST_OPTS: -j20 query=requires queryval=cuda
 
 linux-viennacl:
   extends:
     - .stage-3
     - .linux_test
   tags:
-    - gpu:nvidia, os:linux
+    - cuda-stage3
   variables:
     TEST_ARCH: arch-ci-linux-viennacl
     MAKE_CXXFLAGS: -Werror -Wno-ignored-attributes
-    TEST_OPTS: -j1 query=requires queryval=viennacl
+    TEST_OPTS: -j20 query=requires queryval=viennacl
 
 linux-without-fc:
   extends:
@@ -577,6 +560,7 @@ linux-cmplx-single:
   tags:
     - name:si
   variables:
+    FLEXIBLAS: netlib
     TEST_ARCH: arch-ci-linux-cmplx-single
 
 linux-gcc-cxx-avx2:
@@ -604,6 +588,7 @@ linux-knl:
   tags:
     - name:isdp001
   variables:
+    MAKE_FFLAGS: -warn errors
     TEST_ARCH: arch-ci-linux-knl
 
 linux-intel-mkl-single:
@@ -653,11 +638,10 @@ linux-pkgs-valgrind:
     - .stage-3
     - .linux_test
   tags:
-    - gce-nfs, linux-fast
+    - gce-valgrind
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-valgrind
     TIMEOUT: 7200
-    LOAD_MODULES: valgrind/3.17.0
 
 linux-pkgs-opt:
   extends:
@@ -686,7 +670,7 @@ linux-cmplx-gcov:
   tags:
     - gce-nfs, linux-gcov
   variables:
-    PETSC_OPTIONS:  -vecscatter_mpi1 false -options_left false -checkstack
+    PETSC_OPTIONS:  -vecscatter_mpi1 false -options_left false -checkstack -checkfunctionlist
     TEST_ARCH: arch-ci-linux-cmplx-gcov
     LOAD_MODULES: gcc/8.3.0-fjpc5ys
     RUN_GCOV: 1
@@ -723,15 +707,30 @@ linux-pgi:
     TEST_ARCH: arch-ci-linux-pgi
     LOAD_MODULES: hpc_sdk/20.9
 
+# If the Nag license server fails then ${PETSC_DIR}/naglicenseproblem is created and the job is marked as failed but allow_failure
 linux-nagfor:
   extends:
     - .stage-3
     - .linux_test_nofflags
   tags:
     - gce-nfs, linux-mcpu
+  script:
+    - rm -f naglicenseproblem
+    - printf "PATH:$PATH\n"
+    - printf "PETSC_OPTIONS:$PETSC_OPTIONS\n"
+    - if [ ! -z ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME+x} ]; then printf "CI_MERGE_REQUEST_SOURCE_BRANCH_NAME:$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME\n" ;fi
+    - printf "./config/examples/${TEST_ARCH}.py\n"
+    - cat ./config/examples/${TEST_ARCH}.py
+    - ./config/examples/${TEST_ARCH}.py || if [ -f naglicenseproblem ]; then exit 126; else exit 1; fi
+    - make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}" || if [ -f naglicenseproblem ]; then exit 126; else exit 1; fi
+    - make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}" check || if [ -f naglicenseproblem ]; then exit 126; else exit 1; fi
+    - make updatedatafiles
+    - make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}" cleantest allgtests-tap TIMEOUT=${TIMEOUT}  ${TEST_OPTS} || if [ -f naglicenseproblem ]; then exit 126; else exit 1; fi
   variables:
     LOAD_MODULES: nag/6.1
     TEST_ARCH: arch-ci-linux-nagfor
+  allow_failure:
+    exit_codes: 126
 
 linux-intel-cmplx:
   extends:
@@ -759,7 +758,7 @@ linux-analyzer:
     - .stage-2
     - .linux_test
   tags:
-    - gce-nfs-short
+    - gce-u22-stage2
   script:
     - printf "PATH:$PATH\n"
     - printf "PYTHONPATH:$PYTHONPATH\n"
@@ -772,8 +771,7 @@ linux-analyzer:
     - make LINTER_OPTIONS="${LINTER_OPTIONS}" lint
   variables:
     TEST_ARCH: arch-ci-linux-analyzer
-    LOAD_MODULES: llvm/11.0.0-snbtima cmake/3.20.0-vov726r
-    LINTER_OPTIONS: "--PETSC_ARCH=${TEST_ARCH} --clang_lib=`llvm-config --libdir`/libclang.so.11 --verbose --werror"
+    LINTER_OPTIONS: "--PETSC_ARCH=${TEST_ARCH} --clang_lib=`llvm-config-14 --libdir`/libclang.so.1 --verbose --werror"
   artifacts:
     paths:
     - ${TEST_ARCH}/lib/petsc/conf/*.log
@@ -861,9 +859,38 @@ mswin-intel-cxx-cmplx:
     - .stage-3
     - .mswin_test
   tags:
-    - os:win
+    - mswin-stage3
   variables:
     TEST_ARCH: arch-ci-mswin-intel-cxx-cmplx
+
+#do not run checkstack on MSWIN-UNI
+mswin-uni:
+  extends:
+    - .stage-3
+    - .mswin_test
+  tags:
+    - mswin-stage3
+  variables:
+    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
+    TEST_ARCH: arch-ci-mswin-uni
+
+mswin-gnu:
+  extends:
+    - .stage-3
+    - .mswin_test
+  tags:
+    - mswin-stage3
+  variables:
+    TEST_ARCH: arch-ci-mswin-gnu
+    MAKE_CFLAGS: -Werror
+    MAKE_CXXFLAGS: -Werror
+    MAKE_FFLAGS: -Werror
+    DISABLE_TESTS: 1
+  artifacts:
+    reports:
+    paths:
+    - arch-*/lib/petsc/conf/*.log
+    expire_in: 4 days
 
 #mswin-intel:
 #  extends:
@@ -873,16 +900,6 @@ mswin-intel-cxx-cmplx:
 #    - os:win
 #  variables:
 #    TEST_ARCH: arch-ci-mswin-intel
-
-#mswin-opt-impi:
-#  extends:
-#    - .stage-3
-#    - .mswin_test
-#  tags:
-#    - os:win
-#  variables:
-#    TEST_ARCH: arch-ci-mswin-opt-impi
-#    DISABLE_TESTS: 1
 
 opensolaris-pkgs-opt:
   extends:
@@ -927,7 +944,7 @@ osx-cxx-pkgs-opt:
   tags:
     - os:macos, opt
   variables:
-    PETSC_OPTIONS: -vecscatter_mpi1 false -options_left false -checkstack
+    PETSC_OPTIONS: -vecscatter_mpi1 false -options_left false -checkstack -checkfunctionlist
     TEST_ARCH: arch-ci-osx-cxx-pkgs-opt
     MAKE_CXXFLAGS: -Werror -Wno-pass-failed
 
@@ -956,7 +973,6 @@ analyze-pipeline:
   tags:
     - gce-nfs-short
   dependencies:
-    - linux-c-exodus-dbg
     - linux-pkgs-gcov
     - linux-cmplx-gcov
     - linux-matlab-ilp64-gcov
@@ -984,7 +1000,7 @@ analyze-pipeline:
 .docs:
   stage: stage-2
   tags:
-    - name:pj02
+    - gce-stage2
   before_script:
     - VENV=venv-petsc-docs &&
       python3 -m venv $VENV &&
@@ -1022,9 +1038,9 @@ pages:  # this job name has special meaning to GitLab
   script:
     - mkdir -p ../public/ && cp public/* ../public/
     - git fetch --unshallow --no-tags origin +release:remotes/origin/release +main:remotes/origin/main
-    - git checkout origin/main && make website-deploy BUILDDIR="../public/main" && make latexpdf && mkdir -p ../public/main/docs/manual && cp _build/latex/manual.pdf ../public/main/docs/manual/
+    - git checkout origin/main && pip install -r requirements.txt && make website-deploy BUILDDIR="../public/main" && make latexpdf && mkdir -p ../public/main/docs/manual && cp _build/latex/manual.pdf ../public/main/docs/manual/
     - make clean BUILDDIR="../public/release"
-    - git checkout origin/release && make website-deploy BUILDDIR="../public/release" && make latexpdf && mkdir -p ../public/release/docs/manual && cp _build/latex/manual.pdf ../public/release/docs/manual/
+    - git checkout origin/release && pip install -r requirements.txt && make website-deploy BUILDDIR="../public/release" && make latexpdf && mkdir -p ../public/release/docs/manual && cp _build/latex/manual.pdf ../public/release/docs/manual/
   only:
     variables:
       - $PETSC_CI_SCHEDULED == "yes"

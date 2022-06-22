@@ -17,17 +17,15 @@
 
    Not supported from Fortran
 
-.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMDestroy(), DMCreateGlobalVector()
+.seealso: `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMDestroy()`, `DMCreateGlobalVector()`
 @*/
 PetscErrorCode  DMDACreatePF(DM da,PF *pf)
 {
-  PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidPointer(pf,2);
-  ierr = PFCreate(PetscObjectComm((PetscObject)da),da->dim,dd->w,pf);CHKERRQ(ierr);
+  PetscCall(PFCreate(PetscObjectComm((PetscObject)da),da->dim,dd->w,pf));
   PetscFunctionReturn(0);
 }
-

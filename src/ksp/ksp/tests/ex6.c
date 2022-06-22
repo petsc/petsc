@@ -9,23 +9,21 @@ static PetscErrorCode KSPTestResidualMonitor(KSP ksp, PetscInt i, PetscReal r, v
 {
   Vec            *t,*v;
   PetscReal      err;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = KSPCreateVecs(ksp,2,&t,2,&v);CHKERRQ(ierr);
-  ierr = KSPBuildResidualDefault(ksp,t[0],v[0],&v[0]);CHKERRQ(ierr);
-  ierr = KSPBuildResidual(ksp,t[1],v[1],&v[1]);CHKERRQ(ierr);
-  ierr = VecAXPY(v[1],-1.0,v[0]);CHKERRQ(ierr);
-  ierr = VecNorm(v[1],NORM_INFINITY,&err);CHKERRQ(ierr);
-  PetscCheckFalse(err > PETSC_SMALL,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Inconsistent residual computed at step %D: %g (KSP %g)",i,(double)err,(double)r);
-  ierr = VecDestroyVecs(2,&t);CHKERRQ(ierr);
-  ierr = VecDestroyVecs(2,&v);CHKERRQ(ierr);
+  PetscCall(KSPCreateVecs(ksp,2,&t,2,&v));
+  PetscCall(KSPBuildResidualDefault(ksp,t[0],v[0],&v[0]));
+  PetscCall(KSPBuildResidual(ksp,t[1],v[1],&v[1]));
+  PetscCall(VecAXPY(v[1],-1.0,v[0]));
+  PetscCall(VecNorm(v[1],NORM_INFINITY,&err));
+  PetscCheck(err <= PETSC_SMALL,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Inconsistent residual computed at step %" PetscInt_FMT ": %g (KSP %g)",i,(double)err,(double)r);
+  PetscCall(VecDestroyVecs(2,&t));
+  PetscCall(VecDestroyVecs(2,&v));
   PetscFunctionReturn(0);
 }
 
 int main(int argc,char **args)
 {
-  PetscErrorCode ierr;
   PetscInt       its;
 #if defined(PETSC_USE_LOG)
   PetscLogStage  stage1,stage2;
@@ -38,25 +36,25 @@ int main(int argc,char **args)
   PetscBool      table = PETSC_FALSE,flg,test_residual = PETSC_FALSE,b_in_f = PETSC_TRUE;
   KSP            ksp;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-table",&table,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-test_residual",&test_residual,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-b_in_f",&b_in_f,NULL);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-table",&table,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-test_residual",&test_residual,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-b_in_f",&b_in_f,NULL));
 
   /* Read matrix and RHS */
-  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg);CHKERRQ(ierr);
-  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Must indicate binary file with the -f option");
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatLoad(A,fd);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
+  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Must indicate binary file with the -f option");
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatLoad(A,fd));
   if (b_in_f) {
-    ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
-    ierr = VecLoad(b,fd);CHKERRQ(ierr);
+    PetscCall(VecCreate(PETSC_COMM_WORLD,&b));
+    PetscCall(VecLoad(b,fd));
   } else {
-    ierr = MatCreateVecs(A,NULL,&b);CHKERRQ(ierr);
-    ierr = VecSetRandom(b,NULL);CHKERRQ(ierr);
+    PetscCall(MatCreateVecs(A,NULL,&b));
+    PetscCall(VecSetRandom(b,NULL));
   }
-  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
+  PetscCall(PetscViewerDestroy(&fd));
 
   /*
    If the load matrix is larger then the vector, due to being padded
@@ -67,74 +65,74 @@ int main(int argc,char **args)
     Vec         tmp;
     PetscScalar *bold;
 
-    ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
-    ierr = VecCreate(PETSC_COMM_WORLD,&tmp);CHKERRQ(ierr);
-    ierr = VecSetSizes(tmp,m,PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(tmp);CHKERRQ(ierr);
-    ierr = VecGetOwnershipRange(b,&start,&end);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(b,&mvec);CHKERRQ(ierr);
-    ierr = VecGetArray(b,&bold);CHKERRQ(ierr);
+    PetscCall(MatGetLocalSize(A,&m,&n));
+    PetscCall(VecCreate(PETSC_COMM_WORLD,&tmp));
+    PetscCall(VecSetSizes(tmp,m,PETSC_DECIDE));
+    PetscCall(VecSetFromOptions(tmp));
+    PetscCall(VecGetOwnershipRange(b,&start,&end));
+    PetscCall(VecGetLocalSize(b,&mvec));
+    PetscCall(VecGetArray(b,&bold));
     for (j=0; j<mvec; j++) {
       indx = start+j;
-      ierr = VecSetValues(tmp,1,&indx,bold+j,INSERT_VALUES);CHKERRQ(ierr);
+      PetscCall(VecSetValues(tmp,1,&indx,bold+j,INSERT_VALUES));
     }
-    ierr = VecRestoreArray(b,&bold);CHKERRQ(ierr);
-    ierr = VecDestroy(&b);CHKERRQ(ierr);
-    ierr = VecAssemblyBegin(tmp);CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(tmp);CHKERRQ(ierr);
+    PetscCall(VecRestoreArray(b,&bold));
+    PetscCall(VecDestroy(&b));
+    PetscCall(VecAssemblyBegin(tmp));
+    PetscCall(VecAssemblyEnd(tmp));
     b    = tmp;
   }
-  ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
-  ierr = VecDuplicate(b,&u);CHKERRQ(ierr);
+  PetscCall(VecDuplicate(b,&x));
+  PetscCall(VecDuplicate(b,&u));
 
-  ierr = VecSet(x,0.0);CHKERRQ(ierr);
-  ierr = PetscBarrier((PetscObject)A);CHKERRQ(ierr);
+  PetscCall(VecSet(x,0.0));
+  PetscCall(PetscBarrier((PetscObject)A));
 
-  ierr = PetscLogStageRegister("mystage 1",&stage1);CHKERRQ(ierr);
-  ierr = PetscLogStagePush(stage1);CHKERRQ(ierr);
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  PetscCall(PetscLogStageRegister("mystage 1",&stage1));
+  PetscCall(PetscLogStagePush(stage1));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPSetOperators(ksp,A,A));
+  PetscCall(KSPSetFromOptions(ksp));
   if (test_residual) {
-    ierr = KSPMonitorSet(ksp,KSPTestResidualMonitor,NULL,NULL);CHKERRQ(ierr);
+    PetscCall(KSPMonitorSet(ksp,KSPTestResidualMonitor,NULL,NULL));
   }
-  ierr = KSPSetUp(ksp);CHKERRQ(ierr);
-  ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
-  ierr = PetscLogStagePop();CHKERRQ(ierr);
-  ierr = PetscBarrier((PetscObject)A);CHKERRQ(ierr);
+  PetscCall(KSPSetUp(ksp));
+  PetscCall(KSPSetUpOnBlocks(ksp));
+  PetscCall(PetscLogStagePop());
+  PetscCall(PetscBarrier((PetscObject)A));
 
-  ierr = PetscLogStageRegister("mystage 2",&stage2);CHKERRQ(ierr);
-  ierr = PetscLogStagePush(stage2);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-  ierr = PetscLogStagePop();CHKERRQ(ierr);
+  PetscCall(PetscLogStageRegister("mystage 2",&stage2));
+  PetscCall(PetscLogStagePush(stage2));
+  PetscCall(KSPSolve(ksp,b,x));
+  PetscCall(PetscLogStagePop());
 
   /* Show result */
-  ierr = MatMult(A,x,u);CHKERRQ(ierr);
-  ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);
-  ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
+  PetscCall(MatMult(A,x,u));
+  PetscCall(VecAXPY(u,-1.0,b));
+  PetscCall(VecNorm(u,NORM_2,&norm));
+  PetscCall(KSPGetIterationNumber(ksp,&its));
   /*  matrix PC   KSP   Options       its    residual  */
   if (table) {
     char        *matrixname,kspinfo[120];
     PetscViewer viewer;
-    ierr = PetscViewerStringOpen(PETSC_COMM_WORLD,kspinfo,sizeof(kspinfo),&viewer);CHKERRQ(ierr);
-    ierr = KSPView(ksp,viewer);CHKERRQ(ierr);
-    ierr = PetscStrrchr(file,'/',&matrixname);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"%-8.8s %3D %2.0e %s \n",matrixname,its,norm,kspinfo);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    PetscCall(PetscViewerStringOpen(PETSC_COMM_WORLD,kspinfo,sizeof(kspinfo),&viewer));
+    PetscCall(KSPView(ksp,viewer));
+    PetscCall(PetscStrrchr(file,'/',&matrixname));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%-8.8s %3" PetscInt_FMT " %2.0e %s \n",matrixname,its,(double)norm,kspinfo));
+    PetscCall(PetscViewerDestroy(&viewer));
   } else {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm = %g\n",(double)norm);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3" PetscInt_FMT "\n",its));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Residual norm = %g\n",(double)norm));
   }
 
   /* Cleanup */
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&b));
+  PetscCall(VecDestroy(&u));
+  PetscCall(MatDestroy(&A));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

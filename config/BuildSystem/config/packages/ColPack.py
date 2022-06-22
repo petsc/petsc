@@ -3,15 +3,16 @@ import config.package
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit     = '043e3cd'
-    self.download      = ['git://https://github.com/caidao22/ColPack.git']
-    self.includes      = ['ColPack/ColPackHeaders.h']
-    self.liblist       = [['libColPack.a']]
-    self.functionsCxx  = [1,'void current_time();','current_time()']
-    self.buildLanguages= ['Cxx']
-    self.precisions    = ['double']
-    self.complex       = 0
-    self.cmakelistsdir = 'build/cmake'
+    self.gitcommit       = '043e3cd'
+    self.download        = ['git://https://github.com/caidao22/ColPack.git']
+    self.includes        = ['ColPack/ColPackHeaders.h']
+    self.liblist         = [['libColPack.a']]
+    self.functionsCxx    = [1,'void current_time();','current_time()']
+    self.buildLanguages  = ['Cxx']
+    self.precisions      = ['double']
+    self.complex         = 0
+    self.cmakelistsdir   = 'build/cmake'
+    self.minCmakeVersion = (3,4,0)
     return
 
   def setupDependencies(self, framework):
@@ -22,7 +23,6 @@ class Configure(config.package.CMakePackage):
 
   def formCMakeConfigureArgs(self):
     import os
-    if self.versionToTuple(self.cmake.foundversion) < (3,4,0): raise RuntimeError("Requires cmake version 3.4 or higher: use --download-cmake")
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
     # args.append('--enable-examples=no')  #  this option doesn't work to prevent processing examples
     if self.openmp.found:

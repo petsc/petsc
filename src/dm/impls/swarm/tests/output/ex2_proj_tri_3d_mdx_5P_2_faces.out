@@ -1,4 +1,4 @@
-DM Object: box 1 MPI processes
+DM Object: box 1 MPI process
   type: plex
 box in 3 dimensions:
   Number of 0-cells per rank: 27
@@ -8,18 +8,10 @@ box in 3 dimensions:
 Labels:
   celltype: 4 strata with value/size (0 (27), 6 (48), 3 (120), 1 (98))
   depth: 4 strata with value/size (0 (27), 1 (98), 2 (120), 3 (48))
-DM Object: Particles 1 MPI processes
+DM Object: Particles 1 MPI process
   type: swarm
-DMSwarmDataBucketView: 
-  L                  = 240 
-  buffer             = 0 
-  allocated          = 240 
-  nfields registered = 5 
-                            blocksize        = 1 
-                            blocksize        = 1 
-                            blocksize        = 3 
-                            blocksize        = 1 
-                            blocksize        = 1 
+Particles in 3 dimensions:
+  Number of particles per rank: 240
 L2 projection mass:     6.8948038039e+01, x-momentum:     4.0796067007e+01, energy:     1.0016659817e+02.
 L2 projection mass:     6.8948038039e+01, x-momentum:     4.0796067007e+01, energy:     1.0016659817e+02.
 L2 projection mass:     6.8948038039e+01, x-momentum:     4.0796067007e+01, energy:     1.0016659817e+02.

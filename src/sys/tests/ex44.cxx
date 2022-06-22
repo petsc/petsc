@@ -1,17 +1,11 @@
 
 static char help[] = "Demonstrates call PETSc and Chombo in the same program.\n\n";
 
-/*T
-   Concepts: introduction to PETSc^Chombo
-   Processors: n
-T*/
-
 #include <petscsys.h>
 #include "Box.H"
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
 
   /*
     Every PETSc routine should begin with the PetscInitialize() routine.
@@ -22,12 +16,12 @@ int main(int argc,char **argv)
                  runtime.  The user can use the "help" variable place
                  additional help messages in this printout.
   */
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   Box::Box *nb = new Box::Box();
   delete nb;
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

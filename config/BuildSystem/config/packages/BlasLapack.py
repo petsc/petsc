@@ -237,9 +237,11 @@ class Configure(config.package.Package):
         self.checkingMKLROOTautomatically = 1
 
     if self.argDB['with-64-bit-blas-indices']:
+      flexiblas = 'libflexiblas64.a'
       ILP64 = '_ilp64'
       known = '64'
     else:
+      flexiblas = 'libflexiblas.a'
       ILP64 = '_lp64'
       known = '32'
 
@@ -387,6 +389,10 @@ class Configure(config.package.Package):
       # NEC
       yield ('User specified NEC lib dir', os.path.join(dir, 'lib', 'libblas_sequential.a'), [os.path.join(dir, 'lib', 'liblapack.a'), os.path.join(dir, 'lib', 'libasl_sequential.a')], 'unknown', 'unknown')
       yield ('User specified NEC lib dir', os.path.join(dir, 'lib', 'libblas_sequential.a'), os.path.join(dir, 'lib', 'liblapack.a'), 'unknown', 'unknown')
+      # Search for FlexiBLAS
+      for libdir in ['lib64', 'lib', '']:
+        if os.path.exists(os.path.join(dir,libdir)):
+            yield ('User specified FlexiBLAS',None,os.path.join(dir,libdir,flexiblas),known,'unknown')
       # Search for OpenBLAS
       for libdir in ['lib','']:
         if os.path.exists(os.path.join(dir,libdir)):
@@ -418,6 +424,7 @@ class Configure(config.package.Package):
     yield ('Default compiler libraries', '', '','unknown','unknown')
     yield ('Default NEC', 'libblas_sequential.a', ['liblapack.a','libasl_sequential.a'],'unknown','unknown')
     yield ('Default NEC', 'libblas_sequential.a', 'liblapack.a','unknown','unknown')
+    yield ('Default FlexiBLAS', None, flexiblas, known, 'unknown')
     for lib in blislib:
       for lapack in ['libflame.a','liblapack.a']:
         yield ('Default BLIS/AMD-AOCL', lib, lapack,'unknown','unknown')
@@ -559,7 +566,7 @@ class Configure(config.package.Package):
   def checkMKL(self):
     '''Check for Intel MKL library'''
     self.libraries.saveLog()
-    if self.libraries.check(self.dlib, 'mkl_set_num_threads'):
+    if self.libraries.check(self.dlib, 'mkl_set_num_threads') and not self.libraries.check(self.dlib, 'flexiblas_avail'):
       self.mkl = 1
       self.addDefine('HAVE_MKL_LIBS',1)
       '''Set include directory for mkl.h and friends'''
@@ -737,10 +744,10 @@ class Configure(config.package.Package):
       else:
         self.has64bitindices = 0
     elif self.argDB['with-batch']:
-      self.logPrintBox('***** WARNING: Cannot determine if BLAS/LAPACK uses 32 bit or 64 bit integers\n\
-in batch-mode! Assuming 32 bit integers. Run with --known-64-bit-blas-indices\n\
-if you know they are 64 bit. Run with --known-64-bit-blas-indices=0 to remove\n\
-this warning message *****')
+      self.logPrintWarning('Cannot determine if BLAS/LAPACK uses 32 bit or 64 bit integers \
+in batch-mode! Assuming 32 bit integers. Run with --known-64-bit-blas-indices \
+if you know they are 64 bit. Run with --known-64-bit-blas-indices=0 to remove \
+this warning message')
       self.has64bitindices = 0
       self.log.write('In batch mode with unknown size of BLAS/LAPACK defaulting to 32 bit\n')
     else:
@@ -781,10 +788,10 @@ this warning message *****')
       if self.argDB['known-sdot-returns-double']:
         self.addDefine('BLASLAPACK_SDOT_RETURNS_DOUBLE', 1)
     elif self.argDB['with-batch']:
-      self.logPrintBox('***** WARNING: Cannot determine if BLAS sdot() returns a float or a double\n\
-in batch-mode! Assuming float. Run with --known-sdot-returns-double=1\n\
-if you know it returns a double (very unlikely). Run with\n\
---known-sdor-returns-double=0 to remove this warning message *****')
+      self.logPrintWarning('Cannot determine if BLAS sdot() returns a float or a double \
+in batch-mode! Assuming float. Run with --known-sdot-returns-double=1 \
+if you know it returns a double (very unlikely). Run with \
+--known-sdor-returns-double=0 to remove this warning message')
     else:
       includes = '''#include <sys/types.h>\n#include <stdlib.h>\n#include <stdio.h>\n#include <stddef.h>\n'''
       body     = '''extern float '''+self.mangleBlasNoPrefix('sdot')+'''(const int*,const float*,const int *,const float*,const int*);
@@ -813,10 +820,10 @@ if you know it returns a double (very unlikely). Run with\n\
       if self.argDB['known-snrm2-returns-double']:
         self.addDefine('BLASLAPACK_SNRM2_RETURNS_DOUBLE', 1)
     elif self.argDB['with-batch']:
-      self.logPrintBox('***** WARNING: Cannot determine if BLAS snrm2() returns a float or a double\n\
-in batch-mode! Assuming float. Run with --known-snrm2-returns-double=1\n\
-if you know it returns a double (very unlikely). Run with\n\
---known-snrm2-returns-double=0 to remove this warning message *****')
+      self.logPrintWarning('Cannot determine if BLAS snrm2() returns a float or a double \
+in batch-mode! Assuming float. Run with --known-snrm2-returns-double=1 \
+if you know it returns a double (very unlikely). Run with \
+--known-snrm2-returns-double=0 to remove this warning message')
     else:
       includes = '''#include <sys/types.h>\n#include <stdlib.h>\n#include <stdio.h>\n#include <stddef.h>\n'''
       body     = '''extern float '''+self.mangleBlasNoPrefix('snrm2')+'''(const int*,const float*,const int*);

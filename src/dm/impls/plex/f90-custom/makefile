@@ -1,9 +1,6 @@
 -include ../../../../../petscdir.mk
 #requiresdefine   'PETSC_HAVE_FORTRAN'
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = zplexf90.c zplexgeometryf90.c zplexsectionf90.c zplexfemf90.c
 SOURCEF  =
 SOURCEH  =

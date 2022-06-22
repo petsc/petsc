@@ -16,36 +16,34 @@ typedef struct {
 */
 PetscErrorCode AOView_Basic(AO ao,PetscViewer viewer)
 {
-  PetscErrorCode ierr;
   PetscMPIInt    rank;
   PetscInt       i;
   AO_Basic       *aobasic = (AO_Basic*)ao->data;
   PetscBool      iascii;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)ao),&rank);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)ao),&rank));
   if (rank == 0) {
-    ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+    PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
     if (iascii) {
-      ierr = PetscViewerASCIIPrintf(viewer,"Number of elements in ordering %" PetscInt_FMT "\n",ao->N);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,  "PETSc->App  App->PETSc\n");CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIIPrintf(viewer,"Number of elements in ordering %" PetscInt_FMT "\n",ao->N));
+      PetscCall(PetscViewerASCIIPrintf(viewer,  "PETSc->App  App->PETSc\n"));
       for (i=0; i<ao->N; i++) {
-        ierr = PetscViewerASCIIPrintf(viewer,"%3" PetscInt_FMT "  %3" PetscInt_FMT "    %3" PetscInt_FMT "  %3" PetscInt_FMT "\n",i,aobasic->app[i],i,aobasic->petsc[i]);CHKERRQ(ierr);
+        PetscCall(PetscViewerASCIIPrintf(viewer,"%3" PetscInt_FMT "  %3" PetscInt_FMT "    %3" PetscInt_FMT "  %3" PetscInt_FMT "\n",i,aobasic->app[i],i,aobasic->petsc[i]));
       }
     }
   }
-  ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+  PetscCall(PetscViewerFlush(viewer));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode AODestroy_Basic(AO ao)
 {
   AO_Basic       *aobasic = (AO_Basic*)ao->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFree2(aobasic->app,aobasic->petsc);CHKERRQ(ierr);
-  ierr = PetscFree(aobasic);CHKERRQ(ierr);
+  PetscCall(PetscFree2(aobasic->app,aobasic->petsc));
+  PetscCall(PetscFree(aobasic));
   PetscFunctionReturn(0);
 }
 
@@ -96,15 +94,14 @@ PetscErrorCode AOPetscToApplicationPermuteInt_Basic(AO ao, PetscInt block, Petsc
   AO_Basic       *aobasic = (AO_Basic*) ao->data;
   PetscInt       *temp;
   PetscInt       i, j;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc1(ao->N*block, &temp);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(ao->N*block, &temp));
   for (i = 0; i < ao->N; i++) {
     for (j = 0; j < block; j++) temp[i*block+j] = array[aobasic->petsc[i]*block+j];
   }
-  ierr = PetscArraycpy(array, temp, ao->N*block);CHKERRQ(ierr);
-  ierr = PetscFree(temp);CHKERRQ(ierr);
+  PetscCall(PetscArraycpy(array, temp, ao->N*block));
+  PetscCall(PetscFree(temp));
   PetscFunctionReturn(0);
 }
 
@@ -113,15 +110,14 @@ PetscErrorCode AOApplicationToPetscPermuteInt_Basic(AO ao, PetscInt block, Petsc
   AO_Basic       *aobasic = (AO_Basic*) ao->data;
   PetscInt       *temp;
   PetscInt       i, j;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc1(ao->N*block, &temp);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(ao->N*block, &temp));
   for (i = 0; i < ao->N; i++) {
     for (j = 0; j < block; j++) temp[i*block+j] = array[aobasic->app[i]*block+j];
   }
-  ierr = PetscArraycpy(array, temp, ao->N*block);CHKERRQ(ierr);
-  ierr = PetscFree(temp);CHKERRQ(ierr);
+  PetscCall(PetscArraycpy(array, temp, ao->N*block));
+  PetscCall(PetscFree(temp));
   PetscFunctionReturn(0);
 }
 
@@ -130,15 +126,14 @@ PetscErrorCode AOPetscToApplicationPermuteReal_Basic(AO ao, PetscInt block, Pets
   AO_Basic       *aobasic = (AO_Basic*) ao->data;
   PetscReal      *temp;
   PetscInt       i, j;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc1(ao->N*block, &temp);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(ao->N*block, &temp));
   for (i = 0; i < ao->N; i++) {
     for (j = 0; j < block; j++) temp[i*block+j] = array[aobasic->petsc[i]*block+j];
   }
-  ierr = PetscArraycpy(array, temp, ao->N*block);CHKERRQ(ierr);
-  ierr = PetscFree(temp);CHKERRQ(ierr);
+  PetscCall(PetscArraycpy(array, temp, ao->N*block));
+  PetscCall(PetscFree(temp));
   PetscFunctionReturn(0);
 }
 
@@ -147,15 +142,14 @@ PetscErrorCode AOApplicationToPetscPermuteReal_Basic(AO ao, PetscInt block, Pets
   AO_Basic       *aobasic = (AO_Basic*) ao->data;
   PetscReal      *temp;
   PetscInt       i, j;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc1(ao->N*block, &temp);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(ao->N*block, &temp));
   for (i = 0; i < ao->N; i++) {
     for (j = 0; j < block; j++) temp[i*block+j] = array[aobasic->app[i]*block+j];
   }
-  ierr = PetscArraycpy(array, temp, ao->N*block);CHKERRQ(ierr);
-  ierr = PetscFree(temp);CHKERRQ(ierr);
+  PetscCall(PetscArraycpy(array, temp, ao->N*block));
+  PetscCall(PetscFree(temp));
   PetscFunctionReturn(0);
 }
 
@@ -175,32 +169,31 @@ PETSC_EXTERN PetscErrorCode AOCreate_Basic(AO ao)
   AO_Basic       *aobasic;
   PetscMPIInt    size,rank,count,*lens,*disp;
   PetscInt       napp,*allpetsc,*allapp,ip,ia,N,i,*petsc=NULL,start;
-  PetscErrorCode ierr;
   IS             isapp=ao->isapp,ispetsc=ao->ispetsc;
   MPI_Comm       comm;
   const PetscInt *myapp,*mypetsc=NULL;
 
   PetscFunctionBegin;
   /* create special struct aobasic */
-  ierr     = PetscNewLog(ao,&aobasic);CHKERRQ(ierr);
+  PetscCall(PetscNewLog(ao,&aobasic));
   ao->data = (void*) aobasic;
-  ierr     = PetscMemcpy(ao->ops,&AOOps_Basic,sizeof(struct _AOOps));CHKERRQ(ierr);
-  ierr     = PetscObjectChangeTypeName((PetscObject)ao,AOBASIC);CHKERRQ(ierr);
+  PetscCall(PetscMemcpy(ao->ops,&AOOps_Basic,sizeof(struct _AOOps)));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)ao,AOBASIC));
 
-  ierr = ISGetLocalSize(isapp,&napp);CHKERRQ(ierr);
-  ierr = ISGetIndices(isapp,&myapp);CHKERRQ(ierr);
+  PetscCall(ISGetLocalSize(isapp,&napp));
+  PetscCall(ISGetIndices(isapp,&myapp));
 
-  ierr = PetscMPIIntCast(napp,&count);CHKERRQ(ierr);
+  PetscCall(PetscMPIIntCast(napp,&count));
 
   /* transmit all lengths to all processors */
-  ierr = PetscObjectGetComm((PetscObject)isapp,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
-  ierr = PetscMalloc2(size, &lens,size,&disp);CHKERRQ(ierr);
-  ierr = MPI_Allgather(&count, 1, MPI_INT, lens, 1, MPI_INT, comm);CHKERRMPI(ierr);
+  PetscCall(PetscObjectGetComm((PetscObject)isapp,&comm));
+  PetscCallMPI(MPI_Comm_size(comm, &size));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
+  PetscCall(PetscMalloc2(size, &lens,size,&disp));
+  PetscCallMPI(MPI_Allgather(&count, 1, MPI_INT, lens, 1, MPI_INT, comm));
   N    =  0;
   for (i = 0; i < size; i++) {
-    ierr = PetscMPIIntCast(N,disp+i);CHKERRQ(ierr); /* = sum(lens[j]), j< i */
+    PetscCall(PetscMPIIntCast(N,disp+i)); /* = sum(lens[j]), j< i */
     N   += lens[i];
   }
   ao->N = N;
@@ -210,67 +203,67 @@ PETSC_EXTERN PetscErrorCode AOCreate_Basic(AO ao)
   if (napp) {
     if (!ispetsc) {
       start = disp[rank];
-      ierr  = PetscMalloc1(napp+1, &petsc);CHKERRQ(ierr);
+      PetscCall(PetscMalloc1(napp+1, &petsc));
       for (i=0; i<napp; i++) petsc[i] = start + i;
     } else {
-      ierr  = ISGetIndices(ispetsc,&mypetsc);CHKERRQ(ierr);
+      PetscCall(ISGetIndices(ispetsc,&mypetsc));
       petsc = (PetscInt*)mypetsc;
     }
   }
 
   /* get all indices on all processors */
-  ierr = PetscMalloc2(N,&allpetsc,N,&allapp);CHKERRQ(ierr);
-  ierr = MPI_Allgatherv(petsc, count, MPIU_INT, allpetsc, lens, disp, MPIU_INT, comm);CHKERRMPI(ierr);
-  ierr = MPI_Allgatherv((void*)myapp, count, MPIU_INT, allapp, lens, disp, MPIU_INT, comm);CHKERRMPI(ierr);
-  ierr = PetscFree2(lens,disp);CHKERRQ(ierr);
+  PetscCall(PetscMalloc2(N,&allpetsc,N,&allapp));
+  PetscCallMPI(MPI_Allgatherv(petsc, count, MPIU_INT, allpetsc, lens, disp, MPIU_INT, comm));
+  PetscCallMPI(MPI_Allgatherv((void*)myapp, count, MPIU_INT, allapp, lens, disp, MPIU_INT, comm));
+  PetscCall(PetscFree2(lens,disp));
 
   if (PetscDefined(USE_DEBUG)) {
     PetscInt *sorted;
-    ierr = PetscMalloc1(N,&sorted);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(N,&sorted));
 
-    ierr = PetscArraycpy(sorted,allpetsc,N);CHKERRQ(ierr);
-    ierr = PetscSortInt(N,sorted);CHKERRQ(ierr);
+    PetscCall(PetscArraycpy(sorted,allpetsc,N));
+    PetscCall(PetscSortInt(N,sorted));
     for (i=0; i<N; i++) {
-      PetscCheckFalse(sorted[i] != i,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"PETSc ordering requires a permutation of numbers 0 to N-1\n it is missing %" PetscInt_FMT " has %" PetscInt_FMT,i,sorted[i]);
+      PetscCheck(sorted[i] == i,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"PETSc ordering requires a permutation of numbers 0 to N-1\n it is missing %" PetscInt_FMT " has %" PetscInt_FMT,i,sorted[i]);
     }
 
-    ierr = PetscArraycpy(sorted,allapp,N);CHKERRQ(ierr);
-    ierr = PetscSortInt(N,sorted);CHKERRQ(ierr);
+    PetscCall(PetscArraycpy(sorted,allapp,N));
+    PetscCall(PetscSortInt(N,sorted));
     for (i=0; i<N; i++) {
-      PetscCheckFalse(sorted[i] != i,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Application ordering requires a permutation of numbers 0 to N-1\n it is missing %" PetscInt_FMT " has %" PetscInt_FMT,i,sorted[i]);
+      PetscCheck(sorted[i] == i,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Application ordering requires a permutation of numbers 0 to N-1\n it is missing %" PetscInt_FMT " has %" PetscInt_FMT,i,sorted[i]);
     }
 
-    ierr = PetscFree(sorted);CHKERRQ(ierr);
+    PetscCall(PetscFree(sorted));
   }
 
   /* generate a list of application and PETSc node numbers */
-  ierr = PetscCalloc2(N, &aobasic->app,N,&aobasic->petsc);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory((PetscObject)ao,2*N*sizeof(PetscInt));CHKERRQ(ierr);
+  PetscCall(PetscCalloc2(N, &aobasic->app,N,&aobasic->petsc));
+  PetscCall(PetscLogObjectMemory((PetscObject)ao,2*N*sizeof(PetscInt)));
   for (i = 0; i < N; i++) {
     ip = allpetsc[i];
     ia = allapp[i];
     /* check there are no duplicates */
-    PetscCheckFalse(aobasic->app[ip],PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Duplicate in PETSc ordering at position %" PetscInt_FMT ". Already mapped to %" PetscInt_FMT ", not %" PetscInt_FMT ".", i, aobasic->app[ip]-1, ia);
+    PetscCheck(!aobasic->app[ip],PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Duplicate in PETSc ordering at position %" PetscInt_FMT ". Already mapped to %" PetscInt_FMT ", not %" PetscInt_FMT ".", i, aobasic->app[ip]-1, ia);
     aobasic->app[ip] = ia + 1;
-    PetscCheckFalse(aobasic->petsc[ia],PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Duplicate in Application ordering at position %" PetscInt_FMT ". Already mapped to %" PetscInt_FMT ", not %" PetscInt_FMT ".", i, aobasic->petsc[ia]-1, ip);
+    PetscCheck(!aobasic->petsc[ia],PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Duplicate in Application ordering at position %" PetscInt_FMT ". Already mapped to %" PetscInt_FMT ", not %" PetscInt_FMT ".", i, aobasic->petsc[ia]-1, ip);
     aobasic->petsc[ia] = ip + 1;
   }
   if (napp && !mypetsc) {
-    ierr = PetscFree(petsc);CHKERRQ(ierr);
+    PetscCall(PetscFree(petsc));
   }
-  ierr = PetscFree2(allpetsc,allapp);CHKERRQ(ierr);
+  PetscCall(PetscFree2(allpetsc,allapp));
   /* shift indices down by one */
   for (i = 0; i < N; i++) {
     aobasic->app[i]--;
     aobasic->petsc[i]--;
   }
 
-  ierr = ISRestoreIndices(isapp,&myapp);CHKERRQ(ierr);
+  PetscCall(ISRestoreIndices(isapp,&myapp));
   if (napp) {
     if (ispetsc) {
-      ierr = ISRestoreIndices(ispetsc,&mypetsc);CHKERRQ(ierr);
+      PetscCall(ISRestoreIndices(ispetsc,&mypetsc));
     } else {
-      ierr = PetscFree(petsc);CHKERRQ(ierr);
+      PetscCall(PetscFree(petsc));
     }
   }
   PetscFunctionReturn(0);
@@ -297,25 +290,24 @@ PETSC_EXTERN PetscErrorCode AOCreate_Basic(AO ao)
     the arrays myapp and mypetsc must contain the all the integers 0 to napp-1 with no duplicates; that is there cannot be any "holes"
            in the indices. Use AOCreateMapping() or AOCreateMappingIS() if you wish to have "holes" in the indices.
 
-.seealso: AOCreateBasicIS(), AODestroy(), AOPetscToApplication(), AOApplicationToPetsc()
+.seealso: `AOCreateBasicIS()`, `AODestroy()`, `AOPetscToApplication()`, `AOApplicationToPetsc()`
 @*/
 PetscErrorCode  AOCreateBasic(MPI_Comm comm,PetscInt napp,const PetscInt myapp[],const PetscInt mypetsc[],AO *aoout)
 {
-  PetscErrorCode ierr;
   IS             isapp,ispetsc;
   const PetscInt *app=myapp,*petsc=mypetsc;
 
   PetscFunctionBegin;
-  ierr = ISCreateGeneral(comm,napp,app,PETSC_USE_POINTER,&isapp);CHKERRQ(ierr);
+  PetscCall(ISCreateGeneral(comm,napp,app,PETSC_USE_POINTER,&isapp));
   if (mypetsc) {
-    ierr = ISCreateGeneral(comm,napp,petsc,PETSC_USE_POINTER,&ispetsc);CHKERRQ(ierr);
+    PetscCall(ISCreateGeneral(comm,napp,petsc,PETSC_USE_POINTER,&ispetsc));
   } else {
     ispetsc = NULL;
   }
-  ierr = AOCreateBasicIS(isapp,ispetsc,aoout);CHKERRQ(ierr);
-  ierr = ISDestroy(&isapp);CHKERRQ(ierr);
+  PetscCall(AOCreateBasicIS(isapp,ispetsc,aoout));
+  PetscCall(ISDestroy(&isapp));
   if (mypetsc) {
-    ierr = ISDestroy(&ispetsc);CHKERRQ(ierr);
+    PetscCall(ISDestroy(&ispetsc));
   }
   PetscFunctionReturn(0);
 }
@@ -339,21 +331,19 @@ PetscErrorCode  AOCreateBasic(MPI_Comm comm,PetscInt napp,const PetscInt myapp[]
     the index sets isapp and ispetsc must contain the all the integers 0 to napp-1 (where napp is the length of the index sets) with no duplicates;
            that is there cannot be any "holes"
 
-.seealso: AOCreateBasic(),  AODestroy()
+.seealso: `AOCreateBasic()`, `AODestroy()`
 @*/
 PetscErrorCode AOCreateBasicIS(IS isapp,IS ispetsc,AO *aoout)
 {
-  PetscErrorCode ierr;
   MPI_Comm       comm;
   AO             ao;
 
   PetscFunctionBegin;
-  ierr   = PetscObjectGetComm((PetscObject)isapp,&comm);CHKERRQ(ierr);
-  ierr   = AOCreate(comm,&ao);CHKERRQ(ierr);
-  ierr   = AOSetIS(ao,isapp,ispetsc);CHKERRQ(ierr);
-  ierr   = AOSetType(ao,AOBASIC);CHKERRQ(ierr);
-  ierr   = AOViewFromOptions(ao,NULL,"-ao_view");CHKERRQ(ierr);
+  PetscCall(PetscObjectGetComm((PetscObject)isapp,&comm));
+  PetscCall(AOCreate(comm,&ao));
+  PetscCall(AOSetIS(ao,isapp,ispetsc));
+  PetscCall(AOSetType(ao,AOBASIC));
+  PetscCall(AOViewFromOptions(ao,NULL,"-ao_view"));
   *aoout = ao;
   PetscFunctionReturn(0);
 }
-

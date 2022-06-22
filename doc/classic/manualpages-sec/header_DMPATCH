@@ -1,10 +1,5 @@
-<HTML>
-<HEAD>
-<TITLE>DMPATCH Manual Pages</TITLE>
-</HEAD>
-<BODY BGCOLOR="FFFFFF">
-
-<H2> DMPATCH</H2>
+# DMPATCH Manual Pages
 
 The DMPATCH class is intended to handle adaptive refinement calculated in serial using patches that fill the local machine. It is currently not working.
-<P>
+
+

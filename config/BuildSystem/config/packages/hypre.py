@@ -4,7 +4,7 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.version         = '2.24.0'
+    self.version         = '2.25.0'
     self.minversion      = '2.14'
     self.versionname     = 'HYPRE_RELEASE_VERSION'
     self.versioninclude  = 'HYPRE_config.h'
@@ -16,7 +16,6 @@ class Configure(config.package.GNUPackage):
     self.liblist         = [['libHYPRE.a']]
     self.license         = 'https://computation.llnl.gov/casc/linear_solvers/sls_hypre.html'
     # Per hypre users guide section 7.5 - install manually on windows for MS compilers.
-    self.downloadonWindows = 0
     self.precisions        = ['double']
     # HYPRE is supposed to work with complex number
     #self.complex           = 0
@@ -54,7 +53,7 @@ class Configure(config.package.GNUPackage):
     if not hasattr(self.compilers, 'FC'):
       args.append('--disable-fortran')
     if self.mpi.include:
-      # just use the first dir - and assume the subsequent one isn't necessary [relavant only on AIX?]
+      # just use the first dir - and assume the subsequent one isn't necessary [relevant only on AIX?]
       args.append('--with-MPI-include="'+self.mpi.include[0]+'"')
     libdirs = []
     for l in self.mpi.lib:

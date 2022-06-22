@@ -1,12 +1,12 @@
 
  lambda: d[Psi(tf)]/d[phi0]  d[Psi(tf)]/d[omega0]
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 -184.254
 14670.
 
  mu: d[Psi(tf)]/d[pm]
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 443.598
 

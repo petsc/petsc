@@ -6,9 +6,7 @@ class Configure(config.package.Package):
     self.gitcommit        = '2469eee'
     self.download         = ['git://https://bitbucket.org/petsc/pkg-chombo-3.2.git','https://bitbucket.org/petsc/pkg-chombo-3.2/get/'+self.gitcommit+'.tar.gz']
     self.functionsCxx     = [1,'namespace Box {class Box{public: Box();};}','Box::Box *nb = new Box::Box()'] 
-    self.includedir       = 'include'
     self.includes         = ['CH_config.H']
-    self.downloadonWindows= 0
     self.hastestsdatafiles= 1
     self.downloaddirnames  = ['petsc-pkg-chombo-3.2']
     return
@@ -121,8 +119,6 @@ class Configure(config.package.Package):
       except RuntimeError as e:
         raise RuntimeError('Error running make on Chombo: '+str(e))
 
-
-      self.libdir = 'lib'
       self.liblist = [['libbasetools%s.a' % config_value,'libamrelliptic%s.a' % config_value,'libamrtimedependent%s.a' % config_value,'libamrtools%s.a' % config_value,'libboxtools%s.a' % config_value]]
       self.postInstall(output+err,os.path.join('lib','mk','Make.defs.local'))
     return self.installDir

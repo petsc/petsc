@@ -3,9 +3,12 @@
 */
 #if !defined(PETSCPC_H)
 #define PETSCPC_H
+
 #include <petscmat.h>
 #include <petscdmtypes.h>
 #include <petscpctypes.h>
+
+/* SUBMANSEC = PC */
 
 PETSC_EXTERN PetscErrorCode PCInitializePackage(void);
 
@@ -229,7 +232,7 @@ PETSC_EXTERN PetscErrorCode PCRedundantSetNumber(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCRedundantSetScatter(PC,VecScatter,VecScatter);
 PETSC_EXTERN PetscErrorCode PCRedundantGetOperators(PC,Mat*,Mat*);
 
-PETSC_EXTERN PetscErrorCode PCSPAISetEpsilon(PC,double);
+PETSC_EXTERN PetscErrorCode PCSPAISetEpsilon(PC,PetscReal);
 PETSC_EXTERN PetscErrorCode PCSPAISetNBSteps(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCSPAISetMax(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCSPAISetMaxNew(PC,PetscInt);
@@ -296,8 +299,6 @@ PETSC_EXTERN PetscErrorCode PCGAMGSetProcEqLim(PC,PetscInt);
 
 PETSC_EXTERN PetscErrorCode PCGAMGSetRepartition(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGSetUseSAEstEig(PC,PetscBool);
-PETSC_EXTERN PetscErrorCode PCGAMGSetEstEigKSPMaxIt(PC,PetscInt);
-PETSC_EXTERN PetscErrorCode PCGAMGSetEstEigKSPType(PC,char[]);
 PETSC_EXTERN PetscErrorCode PCGAMGSetEigenvalues(PC,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode PCGAMGASMSetUseAggs(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGSetUseParallelCoarseGridSolve(PC,PetscBool);
@@ -364,10 +365,13 @@ PETSC_DEPRECATED_FUNCTION("Use PCMGSetCycleTypeOnLevel() (since version 3.5)") s
 PETSC_EXTERN PetscErrorCode PCMGMultiplicativeSetCycles(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCMGSetGalerkin(PC,PCMGGalerkinType);
 PETSC_EXTERN PetscErrorCode PCMGGetGalerkin(PC,PCMGGalerkinType*);
-PETSC_EXTERN PetscErrorCode PCMGSetAdaptInterpolation(PC,PetscBool);
-PETSC_EXTERN PetscErrorCode PCMGGetAdaptInterpolation(PC,PetscBool*);
+PETSC_EXTERN PetscErrorCode PCMGSetAdaptCoarseSpaceType(PC,PCMGCoarseSpaceType);
+PETSC_EXTERN PetscErrorCode PCMGGetAdaptCoarseSpaceType(PC,PCMGCoarseSpaceType*);
 PETSC_EXTERN PetscErrorCode PCMGSetAdaptCR(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCMGGetAdaptCR(PC,PetscBool*);
+/* MATT: Remove? */
+PETSC_EXTERN PetscErrorCode PCMGSetAdaptInterpolation(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCMGGetAdaptInterpolation(PC,PetscBool*);
 
 PETSC_EXTERN PetscErrorCode PCMGSetRhs(PC,PetscInt,Vec);
 PETSC_EXTERN PetscErrorCode PCMGSetX(PC,PetscInt,Vec);
@@ -390,6 +394,7 @@ PETSC_EXTERN PetscErrorCode PCMGMatResidualDefault(Mat,Mat,Mat,Mat);
 PETSC_EXTERN PetscErrorCode PCMGMatResidualTransposeDefault(Mat,Mat,Mat,Mat);
 PETSC_EXTERN PetscErrorCode PCMGGalerkinSetMatProductAlgorithm(PC,const char[]);
 PETSC_EXTERN PetscErrorCode PCMGGalerkinGetMatProductAlgorithm(PC,const char*[]);
+PETSC_EXTERN PetscErrorCode PCMGGetGridComplexity(PC,PetscReal*,PetscReal*);
 
 PETSC_EXTERN PetscErrorCode PCHMGSetReuseInterpolation(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCHMGSetUseSubspaceCoarsening(PC,PetscBool);
@@ -450,6 +455,7 @@ PETSC_EXTERN PetscErrorCode PCHPDDMHasNeumannMat(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCHPDDMSetCoarseCorrectionType(PC,PCHPDDMCoarseCorrectionType);
 PETSC_EXTERN PetscErrorCode PCHPDDMGetCoarseCorrectionType(PC,PCHPDDMCoarseCorrectionType*);
 PETSC_EXTERN PetscErrorCode PCHPDDMGetSTShareSubKSP(PC,PetscBool*);
+PETSC_EXTERN PetscErrorCode PCHPDDMSetDeflationMat(PC,IS,Mat);
 PETSC_EXTERN PetscErrorCode PCHPDDMFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode PCHPDDMInitializePackage(void);
 

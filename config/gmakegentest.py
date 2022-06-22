@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from __future__ import print_function
 import pickle
@@ -188,7 +188,8 @@ class generateExamples(Petsc):
     if srcext in ".F".split(): langReq="F"
     if srcext in ".cxx".split(): langReq="cxx"
     if srcext in ".kokkos.cxx".split(): langReq="kokkos_cxx"
-    if srcext in ".raja.cxx".split(): langReq="raja_cxx"    
+    if srcext in ".hip.cpp".split(): langReq="hip_cpp"
+    if srcext in ".raja.cxx".split(): langReq="raja_cxx"
     if srcext in ".cpp".split(): langReq="cpp"
     if srcext == ".cu": langReq="cu"
     if srcext == ".c": langReq="c"
@@ -385,10 +386,6 @@ class generateExamples(Petsc):
     subst['petsc_index_size']=str(self.conf['PETSC_INDEX_SIZE'])
     subst['petsc_scalar_size']=str(self.conf['PETSC_SCALAR_SIZE'])
 
-    if 'PETSC_OPTIONS' in os.environ:
-      subst['petsc_options']=os.environ['PETSC_OPTIONS']
-    else:
-      subst['petsc_options']=''
     subst['petsc_test_options']=self.conf['PETSC_TEST_OPTIONS']
 
     #Conf vars

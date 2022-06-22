@@ -367,8 +367,23 @@ and for loading.
 Saving
 ^^^^^^
 
-To save data to "example.h5" file, we first create a ``PetscViewer``
-of type ``PETSCVIEWERHDF5`` in ``FILE_MODE_WRITE`` mode as:
+The simplest way to save DM data is to use options for configuration.
+This requires only the code
+
+.. code-block::
+
+  DMViewFromOptions(dm, NULL, "-dm_view");
+  VecViewFromOptions(vec, NULL, "-vec_view")
+
+along with the command line options
+
+.. code-block:: console
+
+  $ ./myprog -dm_view hdf5:myprog.h5 -vec_view hdf5:myprog.h5::append
+
+Options prefixes can be used to separately control the saving and loading of various fields.
+However, the user can have finer grained control by explicitly creating the PETSc objects involved.
+To save data to "example.h5" file, we can first create a ``PetscViewer`` of type ``PETSCVIEWERHDF5`` in ``FILE_MODE_WRITE`` mode as:
 
 .. code-block::
 
@@ -376,28 +391,30 @@ of type ``PETSCVIEWERHDF5`` in ``FILE_MODE_WRITE`` mode as:
 
    PetscViewerHDF5Open(PETSC_COMM_WORLD, "example.h5", FILE_MODE_WRITE, &viewer);
 
-As ``dm`` is a DMPlex object representing a mesh, we first
-give it a *mesh name*, "plexA", and save it as:
+As ``dm`` is a DMPlex object representing a mesh, we first give it a *mesh name*, "plexA", and save it as:
 
 .. code-block::
 
    PetscObjectSetName((PetscObject)dm, "plexA");
    PetscViewerPushFormat(viewer, PETSC_VIEWER_HDF5_PETSC);
-   DMPlexTopologyView(dm, viewer);
+   DMView(dm, viewer);
    PetscViewerPopFormat(viewer);
 
-If the *mesh name* is not explicitly set, the default name
-is to be used.
-In the above ``PETSC_VIEWER_HDF5_PETSC`` format was used to
-save the entire representation of the mesh. This format also
-saves global point numbers attached to the mesh points.
-In this example the set of all global point numbers is
-:math:`X = [0, 11)`.
+The load call is shorthand for the following sequence
 
-The data layout, ``s``, needs to be wrapped in a ``DM`` object
-for it to be saved. Here, we create the wrapping ``DM``, ``sdm``,
-with ``DMClone()``, give it a *dm name*, "dmA", attach ``s`` to
-``sdm``, and save it as:
+.. code-block::
+
+   DMPlexTopologyView(dm, viewer);
+   DMPlexCoordinatesView(dm, viewer);
+   DMPlexLabelsView(dm, viewer);
+
+If the *mesh name* is not explicitly set, the default name is used.
+In the above ``PETSC_VIEWER_HDF5_PETSC`` format was used to save the entire representation of the mesh.
+This format also saves global point numbers attached to the mesh points.
+In this example the set of all global point numbers is :math:`X = [0, 11)`.
+
+The data layout, ``s``, needs to be wrapped in a ``DM`` object for it to be saved.
+Here, we create the wrapping ``DM``, ``sdm``, with ``DMClone()``, give it a *dm name*, "dmA", attach ``s`` to ``sdm``, and save it as:
 
 .. code-block::
 
@@ -406,22 +423,12 @@ with ``DMClone()``, give it a *dm name*, "dmA", attach ``s`` to
    DMSetLocalSection(sdm, s);
    DMPlexSectionView(dm, viewer, sdm);
 
-If the *dm name* is not explicitly set, the default name
-is to be used. In the above, instead of using ``DMClone()``, one
-could also create a new ``DMSHELL`` object to attach ``s`` to.
-The first argument of ``DMPlexSectionView()`` is a ``DMPLEX`` object
-that represents the mesh, and the third argument is a ``DM``
-object that carries the data layout that we would like to save.
-They are, in general, two different objects, and the former carries
-a *mesh name*, while the latter carries a *dm name*. These names are
-used to construct a group structure in the HDF5 file.
-Note that the data layout points are associated with the
-mesh points, so each of them can also be tagged with a
-global point number in :math:`X`; ``DMPlexSectionView()``
-saves these tags along with the data layout itself, so that, when
-the mesh and the data layout are loaded separately later, one can
-associate the points in the former with those in the latter by
-comparing their global point numbers.
+If the *dm name* is not explicitly set, the default name is to be used.
+In the above, instead of using ``DMClone()``, one could also create a new ``DMSHELL`` object to attach ``s`` to.
+The first argument of ``DMPlexSectionView()`` is a ``DMPLEX`` object that represents the mesh, and the third argument is a ``DM`` object that carries the data layout that we would like to save.
+They are, in general, two different objects, and the former carries a *mesh name*, while the latter carries a *dm name*.
+These names are used to construct a group structure in the HDF5 file.
+Note that the data layout points are associated with the mesh points, so each of them can also be tagged with a global point number in :math:`X`; ``DMPlexSectionView()`` saves these tags along with the data layout itself, so that, when the mesh and the data layout are loaded separately later, one can associate the points in the former with those in the latter by comparing their global point numbers.
 
 We now create a local vector assiciated with ``sdm``, e.g., as:
 
@@ -438,8 +445,7 @@ After setting values of ``vec``, we name it "vecA" and save it as:
    PetscObjectSetName((PetscObject)vec, "vecA");
    DMPlexLocalVectorView(dm, viewer, sdm, vec);
 
-A global vector can be saved in the exact same way with trivial
-changes.
+A global vector can be saved in the exact same way with trivial changes.
 
 After saving, we destroy the ``PetscViewer`` with:
 
@@ -488,6 +494,17 @@ the mesh as:
 
 .. code-block::
 
+   DMCreate(PETSC_COMM_WORLD, &dm);
+   DMSetType(dm, DMPLEX);
+   PetscObjectSetName((PetscObject)dm, "plexA");
+   PetscViewerPushFormat(viewer, PETSC_VIEWER_HDF5_PETSC);
+   DMLoad(dm, viewer);
+   PetscViewerPopFormat(viewer);
+
+where ``PETSC_VIEWER_HDF5_PETSC`` format was again used. The user can have more control by replace the single load call with
+
+.. code-block::
+
    PetscSF  sfO;
 
    DMCreate(PETSC_COMM_WORLD, &dm);
@@ -495,9 +512,9 @@ the mesh as:
    PetscObjectSetName((PetscObject)dm, "plexA");
    PetscViewerPushFormat(viewer, PETSC_VIEWER_HDF5_PETSC);
    DMPlexTopologyLoad(dm, viewer, &sfO);
+   DMPlexCoordinatesLoad(dm, viewer, sfO);
    PetscViewerPopFormat(viewer);
 
-where ``PETSC_VIEWER_HDF5_PETSC`` format was again used.
 The object returned by ``DMPlexTopologyLoad()``, ``sfO``, is a
 ``PetscSF`` that pushes forward :math:`X` to the loaded mesh,
 ``dm``; this ``PetscSF`` is constructed with the global point
@@ -519,7 +536,7 @@ it is common to redistribute the mesh for a better distribution using
       dm = distributedDM;
       PetscObjectSetName((PetscObject)dm, "plexA");
     }
-    PetscSFCompose(sfO, sfDist, &sf);CHKERRQ(ierr);
+    PetscSFCompose(sfO, sfDist, &sf);
     PetscSFDestroy(&sfO);
     PetscSFDestroy(&sfDist);
 
@@ -830,7 +847,7 @@ defined. This can be checked using
 
 .. code-block::
 
-   DMPlexMetricEnforceSPD(DM dm, Vec metricIn, PetscBool restrictSizes, PetscBool restrictAnisotropy, Vec *metricOut, Vec *determinant);
+   DMPlexMetricEnforceSPD(DM dm, Vec metricIn, PetscBool restrictSizes, PetscBool restrictAnisotropy, Vec metricOut, Vec determinant);
 
 This routine may also be used to enforce minimum and maximum tolerated metric
 magnitudes (i.e. cell sizes), as well as maximum anisotropy. These quantities
@@ -857,8 +874,8 @@ the routines
 
 .. code-block::
 
-   DMPlexMetricAverage(DM dm, PetscInt numMetrics, PetscReal weights[], Vec metrics[], Vec *metricAvg);
-   DMPlexMetricIntersection(DM dm, PetscInt numMetrics, Vec metrics[], Vec *metricInt);
+   DMPlexMetricAverage(DM dm, PetscInt numMetrics, PetscReal weights[], Vec metrics[], Vec metricAvg);
+   DMPlexMetricIntersection(DM dm, PetscInt numMetrics, Vec metrics[], Vec metricInt);
 
 However, before combining metrics, it is important that they are scaled in the same
 way. Scaling also allows the user to control the number of vertices in the adapted
@@ -867,7 +884,7 @@ framework, with the routine
 
 .. code-block::
 
-   DMPlexMetricNormalize(DM dm, Vec metricIn, PetscBool restrictSizes, PetscBool restrictAnisotropy, Vec *metricOut);
+   DMPlexMetricNormalize(DM dm, Vec metricIn, PetscBool restrictSizes, PetscBool restrictAnisotropy, Vec metricOut, Vec determinant);
 
 There are two important parameters for the normalization: the normalization order
 :math:`p` and the target metric complexity, which is analogous to the vertex count.

@@ -3,14 +3,17 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.version          = '6.1.2'
+    self.version          = '7.0.1'
     self.versionname      = 'SCOTCH_VERSION.SCOTCH_RELEASE.SCOTCH_PATCHLEVEL'
     self.gitcommit        = 'v'+self.version
     self.download         = ['git://https://gitlab.inria.fr/scotch/scotch.git',
                              'https://gitlab.inria.fr/scotch/scotch/-/archive/'+self.gitcommit+'/scotch-'+self.gitcommit+'.tar.gz',
                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/scotch-'+self.gitcommit+'.tar.gz']
+    self.download_mingw   = ['https://gitlab.inria.fr/scotch/scotch/-/archive/v6.1.2/scotch-v6.1.2.tar.gz',
+                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/scotch-v6.1.2.tar.gz']
     self.downloaddirnames = ['scotch','petsc-pkg-scotch']
-    self.liblist          = [['libptesmumps.a','libptscotchparmetis.a','libptscotch.a','libptscotcherr.a','libesmumps.a','libscotch.a','libscotcherr.a']]
+    self.liblist          = [['libptesmumps.a','libptscotchparmetisv3.a','libptscotch.a','libptscotcherr.a','libesmumps.a','libscotch.a','libscotcherr.a'],['libptesmumps.a','libptscotchparmetis.a','libptscotch.a','libptscotcherr.a','libesmumps.a','libscotch.a','libscotcherr.a'],
+                             ['libptesmumps.a','libptscotchparmetis.a','libptscotch.a','libptscotcherr.a','libesmumps.a','libscotch.a','libscotcherr.a']]
     self.functions        = ['SCOTCH_archBuild']
     self.functionsDefine  = ['SCOTCH_ParMETIS_V3_NodeND']
     self.includes         = ['ptscotch.h']
@@ -24,35 +27,35 @@ class Configure(config.package.Package):
     self.pthread        = framework.require('config.packages.pthread',self)
     self.zlib           = framework.require('config.packages.zlib',self)
     self.regex          = framework.require('config.packages.regex',self)
-    self.deps           = [self.mpi,self.mathlib,self.regex]
+    self.bison          = framework.require('config.packages.bison',self)
+    self.deps           = [self.mpi,self.mathlib,self.regex,self.bison]
     self.odeps          = [self.pthread,self.zlib]
     return
 
   def Install(self):
     import os
 
-    self.log.write('Creating PTScotch '+os.path.join(os.path.join(self.packageDir,'src'),'Makefile.inc')+'\n')
-
-    self.programs.getExecutable('bison',   getFullPath = 1)
-    if not hasattr(self.programs, 'bison'): raise RuntimeError('PTScotch needs bison installed')
-    self.programs.getExecutable('flex',   getFullPath = 1)
+    self.programs.getExecutable('flex', getFullPath = 1)
     if not hasattr(self.programs, 'flex'): raise RuntimeError('PTScotch needs flex installed')
+    if not self.bison.haveBison3plus: raise RuntimeError('PTScotch needs Bison version 3.0 or above, use --download-bison')
+
+    self.log.write('Creating PTScotch '+os.path.join(os.path.join(self.packageDir,'src'),'Makefile.inc')+'\n')
 
     g = open(os.path.join(self.packageDir,'src','Makefile.inc'),'w')
 
-    g.write('EXE	=\n')
-    g.write('LIB        = .'+self.setCompilers.AR_LIB_SUFFIX+'\n')
-    g.write('OBJ	= .o\n')
+    g.write('EXE      =\n')
+    g.write('LIB      = .'+self.setCompilers.AR_LIB_SUFFIX+'\n')
+    g.write('OBJ      = .o\n')
     g.write('\n')
-    g.write('MAKE	= make\n')
+    g.write('MAKE     = make\n')
 
-    g.write('AR	        = '+self.setCompilers.AR+'\n')
-    g.write('ARFLAGS	= '+self.setCompilers.AR_FLAGS+'\n')
-    g.write('CAT	= cat\n')
+    g.write('AR       = '+self.setCompilers.AR+'\n')
+    g.write('ARFLAGS  = '+self.setCompilers.AR_FLAGS+'\n')
+    g.write('CAT      = cat\n')
     self.pushLanguage('C')
-    g.write('CCS        = '+self.getCompiler()+'\n')
-    g.write('CCP        = '+self.getCompiler()+'\n')
-    g.write('CCD        = '+self.getCompiler()+'\n')
+    g.write('CCS      = '+self.getCompiler()+'\n')
+    g.write('CCP      = '+self.getCompiler()+'\n')
+    g.write('CCD      = '+self.getCompiler()+'\n')
 
     # Building cflags/ldflags
     self.cflags = self.updatePackageCFlags(self.getCompilerFlags())+' '+self.headers.toString(self.dinclude)
@@ -82,17 +85,21 @@ class Configure(config.package.Package):
     # Prepend SCOTCH_ for the compatibility layer with ParMETIS
     self.cflags = self.cflags + ' -DSCOTCH_METIS_PREFIX'
 
-    g.write('CFLAGS	= '+self.cflags+'\n')
+    g.write('CFLAGS   = '+self.cflags+'\n')
     if self.argDB['with-batch']:
       g.write('CCDFLAGS = '+self.cflags+' '+self.checkNoOptFlag()+'\n')
-    g.write('LDFLAGS	= '+ldflags+'\n')
-    g.write('CP         = '+self.programs.cp+'\n')
-    g.write('LEX	= '+self.programs.flex+'\n')
-    g.write('LN	        = ln\n')
-    g.write('MKDIR      = '+self.programs.mkdir+'\n')
-    g.write('MV         = '+self.programs.mv+'\n')
-    g.write('RANLIB	= '+self.setCompilers.RANLIB+'\n')
-    g.write('YACC	= '+self.programs.bison+' -y\n')
+    g.write('LDFLAGS  = '+ldflags+'\n')
+    g.write('CP       = '+self.programs.cp+'\n')
+    g.write('LN       = ln\n')
+    g.write('MKDIR    = '+self.programs.mkdir+'\n')
+    g.write('MV       = '+self.programs.mv+'\n')
+    g.write('RANLIB   = '+self.setCompilers.RANLIB+'\n')
+    if self.setCompilers.isMINGW(self.framework.getCompiler(), self.log):
+      g.write('LEX      = '+self.programs.flex+'\n')
+      g.write('YACC     = '+getattr(self.bison,self.bison.executablename)+' -y\n')
+    else:
+      g.write('FLEX     = '+self.programs.flex+'\n')
+      g.write('BISON    = '+getattr(self.bison,self.bison.executablename)+' -y\n')
     g.close()
 
     self.popLanguage()
@@ -118,9 +125,3 @@ class Configure(config.package.Package):
       output,err,ret = config.package.Package.executeShellCommand('mkdir -p '+os.path.join(self.installDir,includeDir)+' && mkdir -p '+os.path.join(self.installDir,self.libdir)+' && cd '+self.packageDir+' && cp -f lib/*.a '+libDir+'/. && cp -f include/*.h '+includeDir+'/.', timeout=60, log = self.log)
       self.postInstall(output+err,os.path.join('src','Makefile.inc'))
     return self.installDir
-
-#  def consistencyChecks(self):
-#    config.package.Package.consistencyChecks(self)
-#    if self.argDB['with-'+self.package]:
-#     if self.libraries.rt is None:
-#        raise RuntimeError('Scotch requires a realtime library (librt) with clock_gettime()')

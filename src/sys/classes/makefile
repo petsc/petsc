@@ -1,5 +1,5 @@
+-include ../../../petsckdir.mk
 
-ALL: lib
 SOURCEH   =
 DIRS      = viewer draw matlabengine random bag
 LOCDIR    = src/sys/classes/

@@ -1,11 +1,6 @@
 
 static char help[] = "Partition a tiny grid using hierarchical partitioning.\n\n";
 
-/*T
-   Concepts: partitioning
-   Processors: 4
-T*/
-
 /*
   Include "petscmat.h" so that we can use matrices.  Note that this file
   automatically includes:
@@ -19,7 +14,6 @@ T*/
 int main(int argc,char **args)
 {
   Mat             A;
-  PetscErrorCode  ierr;
   PetscMPIInt     rank,size;
   PetscInt        *ia,*ja;
   MatPartitioning part;
@@ -27,14 +21,14 @@ int main(int argc,char **args)
   IS              coarseparts,fineparts;
   MPI_Comm        comm;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   comm = PETSC_COMM_WORLD;
-  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
-  PetscCheckFalse(size != 4,comm,PETSC_ERR_WRONG_MPI_SIZE,"Must run with 4 processors");
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_size(comm,&size));
+  PetscCheck(size == 4,comm,PETSC_ERR_WRONG_MPI_SIZE,"Must run with 4 processors");
+  PetscCallMPI(MPI_Comm_rank(comm,&rank));
 
-  ierr = PetscMalloc1(5,&ia);CHKERRQ(ierr);
-  ierr = PetscMalloc1(16,&ja);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(5,&ia));
+  PetscCall(PetscMalloc1(16,&ja));
   if (rank == 0) {
     ja[0] = 1; ja[1] = 4; ja[2] = 0; ja[3] = 2; ja[4] = 5; ja[5] = 1; ja[6] = 3; ja[7] = 6;
     ja[8] = 2; ja[9] = 7;
@@ -52,45 +46,45 @@ int main(int argc,char **args)
     ja[8] = 11; ja[9] = 14;
     ia[0] = 0; ia[1] = 2; ia[2] = 5; ia[3] = 8; ia[4] = 10;
   }
-  ierr = MatCreateMPIAdj(comm,4,16,ia,ja,NULL,&A);CHKERRQ(ierr);
-  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscCall(MatCreateMPIAdj(comm,4,16,ia,ja,NULL,&A));
+  PetscCall(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
   /*
    Partition the graph of the matrix
   */
-  ierr = MatPartitioningCreate(comm,&part);CHKERRQ(ierr);
-  ierr = MatPartitioningSetAdjacency(part,A);CHKERRQ(ierr);
-  ierr = MatPartitioningSetType(part,MATPARTITIONINGHIERARCH);CHKERRQ(ierr);
-  ierr = MatPartitioningHierarchicalSetNcoarseparts(part,2);CHKERRQ(ierr);
-  ierr = MatPartitioningHierarchicalSetNfineparts(part,2);CHKERRQ(ierr);
-  ierr = MatPartitioningSetFromOptions(part);CHKERRQ(ierr);
+  PetscCall(MatPartitioningCreate(comm,&part));
+  PetscCall(MatPartitioningSetAdjacency(part,A));
+  PetscCall(MatPartitioningSetType(part,MATPARTITIONINGHIERARCH));
+  PetscCall(MatPartitioningHierarchicalSetNcoarseparts(part,2));
+  PetscCall(MatPartitioningHierarchicalSetNfineparts(part,2));
+  PetscCall(MatPartitioningSetFromOptions(part));
   /* get new processor owner number of each vertex */
-  ierr = MatPartitioningApply(part,&is);CHKERRQ(ierr);
+  PetscCall(MatPartitioningApply(part,&is));
   /* coarse parts */
-  ierr = MatPartitioningHierarchicalGetCoarseparts(part,&coarseparts);CHKERRQ(ierr);
-  ierr = ISView(coarseparts,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscCall(MatPartitioningHierarchicalGetCoarseparts(part,&coarseparts));
+  PetscCall(ISView(coarseparts,PETSC_VIEWER_STDOUT_WORLD));
   /* fine parts */
-  ierr = MatPartitioningHierarchicalGetFineparts(part,&fineparts);CHKERRQ(ierr);
-  ierr = ISView(fineparts,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscCall(MatPartitioningHierarchicalGetFineparts(part,&fineparts));
+  PetscCall(ISView(fineparts,PETSC_VIEWER_STDOUT_WORLD));
   /* partitioning */
-  ierr = ISView(is,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscCall(ISView(is,PETSC_VIEWER_STDOUT_WORLD));
   /* get new global number of each old global number */
-  ierr = ISPartitioningToNumbering(is,&isn);CHKERRQ(ierr);
-  ierr = ISView(isn,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = ISBuildTwoSided(is,NULL,&isrows);CHKERRQ(ierr);
-  ierr = ISView(isrows,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = ISDestroy(&is);CHKERRQ(ierr);
-  ierr = ISDestroy(&coarseparts);CHKERRQ(ierr);
-  ierr = ISDestroy(&fineparts);CHKERRQ(ierr);
-  ierr = ISDestroy(&isrows);CHKERRQ(ierr);
-  ierr = ISDestroy(&isn);CHKERRQ(ierr);
-  ierr = MatPartitioningDestroy(&part);CHKERRQ(ierr);
+  PetscCall(ISPartitioningToNumbering(is,&isn));
+  PetscCall(ISView(isn,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(ISBuildTwoSided(is,NULL,&isrows));
+  PetscCall(ISView(isrows,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(ISDestroy(&is));
+  PetscCall(ISDestroy(&coarseparts));
+  PetscCall(ISDestroy(&fineparts));
+  PetscCall(ISDestroy(&isrows));
+  PetscCall(ISDestroy(&isn));
+  PetscCall(MatPartitioningDestroy(&part));
   /*
     Free work space.  All PETSc objects should be destroyed when they
     are no longer needed.
   */
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(MatDestroy(&A));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

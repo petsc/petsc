@@ -7,7 +7,7 @@ class Configure(config.package.CMakePackage):
     self.version           = '13.2.0'
     self.gitcommit         = 'v{0}'.format(self.version)
     self.versionname       = 'PACKAGE_VERSION'
-    self.download          = ['https://gitlab.com/petsc/pkg-trilinos-ml',
+    self.download          = ['git://https://gitlab.com/petsc/pkg-trilinos-ml',
                               'https://gitlab.com/petsc/pkg-trilinos-ml/-/archive/{0}/pkg-trilinos-ml-{0}.tar.gz'.format(self.gitcommit)]
     self.functions         = ['ML_Set_PrintLevel']
     self.includes          = ['ml_include.h']
@@ -37,7 +37,11 @@ class Configure(config.package.CMakePackage):
     args.append('-DTrilinos_ENABLE_ALL_OPTIONAL_PACKAGES=OFF')
     args.append('-DTrilinos_ENABLE_ALL_PACKAGES=OFF')
     args.append('-DTrilinos_ENABLE_ML=ON')
+    args.append('-DTPL_BLAS_LIBRARIES="'+self.libraries.toString(self.blasLapack.dlib)+'"')
+    args.append('-DTPL_LAPACK_LIBRARIES="'+self.libraries.toString(self.blasLapack.dlib)+'"')
     args.append('-DBUILD_SHARED_LIBS=ON')
     args.append('-DTPL_ENABLE_MPI=ON')
+    if not hasattr(self.compilers, 'FC'):
+      args.append('-DTrilinos_ENABLE_Fortran=OFF')
 
     return args

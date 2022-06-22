@@ -69,13 +69,12 @@ int main(int argc, char **argv)
   PetscInt        nB=-1, *B, offsetB=-1;
   PetscMPIInt     size, rank;
   PetscInt        testnum;
-  PetscErrorCode  ierr;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL, "-testnum", &testnum, NULL);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  PetscCheckFalse(size != 3,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Must run with 3 MPI processes");
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL, "-testnum", &testnum, NULL));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCheck(size == 3,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Must run with 3 MPI processes");
 
   switch (testnum) {
   case 0:
@@ -87,8 +86,8 @@ int main(int argc, char **argv)
     case 2: nA = 1; offsetA = 300; nB = 2; offsetB = 600; break;
     default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Must run with 3 MPI processes");
     }
-    ierr = PetscMalloc1(nA, &A);CHKERRQ(ierr);
-    ierr = PetscMalloc1(nB, &B);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(nA, &A));
+    PetscCall(PetscMalloc1(nB, &B));
     switch (rank) {
     case 0:
       A[0] = 1; A[1] = 0; A[2] = 2;
@@ -114,7 +113,7 @@ int main(int argc, char **argv)
     case 2: nA = 1; offsetA = 300; break;
     default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Must run with 3 MPI processes");
     }
-    ierr = PetscMalloc1(nA, &A);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(nA, &A));
     switch (rank) {
     case 0:
       A[0] = 1; A[1] = 0; A[2] = 2;
@@ -140,8 +139,8 @@ int main(int argc, char **argv)
     case 2: nA = 1; offsetA = 300; nB = 2; offsetB = 600; break;
     default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Must run with 3 MPI processes");
     }
-    ierr = PetscMalloc1(nA, &A);CHKERRQ(ierr);
-    ierr = PetscMalloc1(nB, &B);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(nA, &A));
+    PetscCall(PetscMalloc1(nB, &B));
     switch (rank) {
     case 0:
       A[0] = 0; A[1] = 2;
@@ -159,20 +158,20 @@ int main(int argc, char **argv)
     }
     break;
   }
-  ierr = PetscLayoutCreate(PETSC_COMM_WORLD, &layout);CHKERRQ(ierr);
-  ierr = PetscLayoutSetSize(layout, N);CHKERRQ(ierr);
-  ierr = PetscLayoutSetLocalSize(layout, n);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(layout, 1);CHKERRQ(ierr);
-  ierr = PetscSFCreateByMatchingIndices(layout, nA, A, NULL, offsetA, nB, B, NULL, offsetB, NULL, &sf);CHKERRQ(ierr);
-  ierr = PetscLayoutDestroy(&layout);CHKERRQ(ierr);
-  ierr = PetscFree(A);CHKERRQ(ierr);
-  if (testnum != 1) {ierr = PetscFree(B);CHKERRQ(ierr);}
-  ierr = PetscObjectSetName((PetscObject)sf, "sf");CHKERRQ(ierr);
-  ierr = PetscSFView(sf, NULL);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
+  PetscCall(PetscLayoutCreate(PETSC_COMM_WORLD, &layout));
+  PetscCall(PetscLayoutSetSize(layout, N));
+  PetscCall(PetscLayoutSetLocalSize(layout, n));
+  PetscCall(PetscLayoutSetBlockSize(layout, 1));
+  PetscCall(PetscSFCreateByMatchingIndices(layout, nA, A, NULL, offsetA, nB, B, NULL, offsetB, NULL, &sf));
+  PetscCall(PetscLayoutDestroy(&layout));
+  PetscCall(PetscFree(A));
+  if (testnum != 1) PetscCall(PetscFree(B));
+  PetscCall(PetscObjectSetName((PetscObject)sf, "sf"));
+  PetscCall(PetscSFView(sf, NULL));
+  PetscCall(PetscSFDestroy(&sf));
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

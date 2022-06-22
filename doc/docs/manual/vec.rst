@@ -211,12 +211,11 @@ processes in the communicator ``comm`` must call ``DACreateXXX()``.
 
 .. _sec_stag:
 
-DMSTAG - Creating vectors for staggered grids
+DMStag - Creating vectors for staggered grids
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For regular grids with staggered data (living on elements, faces, edges,
-and/or vertices), the ``DMSTAG`` object is available. It behaves much
-like ``DMDA``; see the ``DMSTAG`` manual page for more information.
+See :any:`chapter_stag` for discussion of creating vectors with ``DMSTAG``.
+
 
 .. _sec_unstruct:
 
@@ -476,20 +475,20 @@ routines
    ... depending on the dimension of the DMDA ...
    DMDAVecRestoreArrayRead(DM da,Vec l,void *array);
 
-and
+where ``array`` is a multidimensional C array with the same dimension as ``da``, and
 
 .. code-block::
 
    DMDAVecGetArrayDOF(DM da,Vec l,void *array);
-   ... use the array indexing it with 1 or 2 or 3 dimensions ...
+   ... use the array indexing it with 2 or 3 or 4 dimensions ...
    ... depending on the dimension of the DMDA ...
    DMDAVecRestoreArrayDOF(DM da,Vec l,void *array);
    DMDAVecGetArrayDOFRead(DM da,Vec l,void *array);
-   ... use the array indexing it with 1 or 2 or 3 dimensions ...
+   ... use the array indexing it with 2 or 3 or 4 dimensions ...
    ... depending on the dimension of the DMDA ...
    DMDAVecRestoreArrayDOFRead(DM da,Vec l,void *array);
 
-where ``array`` is a multidimensional C array with the same dimension as
+where ``array`` is a multidimensional C array with one more dimension than
 ``da``. The vector ``l`` can be either a global vector or a local
 vector. The ``array`` is accessed using the usual *global* indexing on
 the entire grid, but the user may *only* refer to the local and ghost
@@ -737,7 +736,7 @@ information (or, in other words, can share a given ``DM``). The design
 of the ``DM`` object makes this easy, as each ``DM`` operation may
 operate on vectors of the appropriate size, as obtained via
 ``DMCreateLocalVector()`` and ``DMCreateGlobalVector()`` or as produced
-by ``VecDuplicate()``. 
+by ``VecDuplicate()``.
 
 At certain stages of many applications, there is a need to work on a
 local portion of the vector, including the ghost points. This may be

@@ -1,10 +1,11 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 if __name__ == '__main__':
   import sys
   import os
   sys.path.insert(0, os.path.abspath('config'))
   import configure
   configure_options = [
+    '--with-make-test-np=20',
     'COPTFLAGS=-g -O',
     'FOPTFLAGS=-g -O',
     'CXXOPTFLAGS=-g -O',

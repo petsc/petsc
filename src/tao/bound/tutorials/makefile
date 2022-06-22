@@ -1,13 +1,5 @@
 -include ../../../../petscdir.mk
-CFLAGS		 =
-FFLAGS		 =
-CPPFLAGS         =
-FPPFLAGS         =
-TUTORIALS        = plate2.c jbearing2.c plate2f.F90
-EXAMPLESC        = plate2.c jbearing2.c
-EXAMPLECH        =
-EXAMPLESF        = plate2f.F90
-EXAMPLESFH       = plate2f.h
+
 LOCDIR		 = src/tao/bound/tutorials/
 MANSEC		 =
 DOCS		 =

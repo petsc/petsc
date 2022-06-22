@@ -17,19 +17,17 @@
 
    Level: advanced
 
-.seealso: PetscDrawGetCoordinates()
+.seealso: `PetscDrawGetCoordinates()`
 
 @*/
 PetscErrorCode  PetscDrawSetCoordinates(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   draw->coor_xl = xl; draw->coor_yl = yl;
   draw->coor_xr = xr; draw->coor_yr = yr;
   if (draw->ops->setcoordinates) {
-    ierr = (*draw->ops->setcoordinates)(draw,xl,yl,xr,yr);CHKERRQ(ierr);
+    PetscCall((*draw->ops->setcoordinates)(draw,xl,yl,xr,yr));
   }
   PetscFunctionReturn(0);
 }
@@ -51,7 +49,7 @@ PetscErrorCode  PetscDrawSetCoordinates(PetscDraw draw,PetscReal xl,PetscReal yl
 .  xr - the horizontal coordinate of the upper right corner of the drawing region.
 -  yr - the vertical coordinate of the upper right corner of the drawing region.
 
-.seealso: PetscDrawSetCoordinates()
+.seealso: `PetscDrawSetCoordinates()`
 
 @*/
 PetscErrorCode  PetscDrawGetCoordinates(PetscDraw draw,PetscReal *xl,PetscReal *yl,PetscReal *xr,PetscReal *yr)

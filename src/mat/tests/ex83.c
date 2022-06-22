@@ -1,11 +1,6 @@
 
 static char help[] = "Partition tiny grid using hierarchical partitioning and increase overlap using MatIncreaseOverlapSplit.\n\n";
 
-/*T
-   Concepts: partitioning
-   Processors: 4
-T*/
-
 /*
   Include "petscmat.h" so that we can use matrices.  Note that this file
   automatically includes:
@@ -19,7 +14,6 @@ T*/
 int main(int argc,char **args)
 {
   Mat             A,B;
-  PetscErrorCode  ierr;
   PetscMPIInt     rank,size,membershipKey;
   PetscInt        *ia,*ja,*indices_sc,isrows_localsize;
   const PetscInt  *indices;
@@ -28,14 +22,14 @@ int main(int argc,char **args)
   IS              coarseparts,fineparts;
   MPI_Comm        comm,scomm;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   comm = PETSC_COMM_WORLD;
-  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
-  PetscCheckFalse(size != 4,comm,PETSC_ERR_WRONG_MPI_SIZE,"Must run with 4 processors ");
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_size(comm,&size));
+  PetscCheck(size == 4,comm,PETSC_ERR_WRONG_MPI_SIZE,"Must run with 4 processors ");
+  PetscCallMPI(MPI_Comm_rank(comm,&rank));
   /*set a small matrix */
-  ierr = PetscMalloc1(5,&ia);CHKERRQ(ierr);
-  ierr = PetscMalloc1(16,&ja);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(5,&ia));
+  PetscCall(PetscMalloc1(16,&ja));
   if (rank == 0) {
     ja[0] = 1; ja[1] = 4; ja[2] = 0; ja[3] = 2; ja[4] = 5; ja[5] = 1; ja[6] = 3; ja[7] = 6;
     ja[8] = 2; ja[9] = 7;
@@ -57,59 +51,58 @@ int main(int argc,char **args)
     ia[0] = 0; ia[1] = 2; ia[2] = 5; ia[3] = 8; ia[4] = 10;
     membershipKey = 1;
   }
-  ierr = MatCreateMPIAdj(comm,4,16,ia,ja,NULL,&A);CHKERRQ(ierr);
-  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscCall(MatCreateMPIAdj(comm,4,16,ia,ja,NULL,&A));
+  PetscCall(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
   /*
    Partition the graph of the matrix
   */
-  ierr = MatPartitioningCreate(comm,&part);CHKERRQ(ierr);
-  ierr = MatPartitioningSetAdjacency(part,A);CHKERRQ(ierr);
-  ierr = MatPartitioningSetType(part,MATPARTITIONINGHIERARCH);CHKERRQ(ierr);
-  ierr = MatPartitioningHierarchicalSetNcoarseparts(part,2);CHKERRQ(ierr);
-  ierr = MatPartitioningHierarchicalSetNfineparts(part,2);CHKERRQ(ierr);
-  ierr = MatPartitioningSetFromOptions(part);CHKERRQ(ierr);
+  PetscCall(MatPartitioningCreate(comm,&part));
+  PetscCall(MatPartitioningSetAdjacency(part,A));
+  PetscCall(MatPartitioningSetType(part,MATPARTITIONINGHIERARCH));
+  PetscCall(MatPartitioningHierarchicalSetNcoarseparts(part,2));
+  PetscCall(MatPartitioningHierarchicalSetNfineparts(part,2));
+  PetscCall(MatPartitioningSetFromOptions(part));
   /* get new processor owner number of each vertex */
-  ierr = MatPartitioningApply(part,&is);CHKERRQ(ierr);
+  PetscCall(MatPartitioningApply(part,&is));
   /* coarse parts */
-  ierr = MatPartitioningHierarchicalGetCoarseparts(part,&coarseparts);CHKERRQ(ierr);
-  ierr = ISView(coarseparts,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscCall(MatPartitioningHierarchicalGetCoarseparts(part,&coarseparts));
+  PetscCall(ISView(coarseparts,PETSC_VIEWER_STDOUT_WORLD));
   /* fine parts */
-  ierr = MatPartitioningHierarchicalGetFineparts(part,&fineparts);CHKERRQ(ierr);
-  ierr = ISView(fineparts,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscCall(MatPartitioningHierarchicalGetFineparts(part,&fineparts));
+  PetscCall(ISView(fineparts,PETSC_VIEWER_STDOUT_WORLD));
   /* partitioning */
-  ierr = ISView(is,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscCall(ISView(is,PETSC_VIEWER_STDOUT_WORLD));
   /* compute coming rows */
-  ierr = ISBuildTwoSided(is,NULL,&isrows);CHKERRQ(ierr);
-  ierr = ISView(isrows,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscCall(ISBuildTwoSided(is,NULL,&isrows));
+  PetscCall(ISView(isrows,PETSC_VIEWER_STDOUT_WORLD));
   /*create a sub-communicator */
-  ierr = MPI_Comm_split(comm, membershipKey,rank,&scomm);CHKERRMPI(ierr);
-  ierr = ISGetLocalSize(isrows,&isrows_localsize);CHKERRQ(ierr);
-  ierr = PetscMalloc1(isrows_localsize,&indices_sc);CHKERRQ(ierr);
-  ierr = ISGetIndices(isrows,&indices);CHKERRQ(ierr);
-  ierr = PetscArraycpy(indices_sc,indices,isrows_localsize);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(isrows,&indices);CHKERRQ(ierr);
-  ierr = ISDestroy(&is);CHKERRQ(ierr);
-  ierr = ISDestroy(&coarseparts);CHKERRQ(ierr);
-  ierr = ISDestroy(&fineparts);CHKERRQ(ierr);
-  ierr = ISDestroy(&isrows);CHKERRQ(ierr);
-  ierr = MatPartitioningDestroy(&part);CHKERRQ(ierr);
+  PetscCallMPI(MPI_Comm_split(comm, membershipKey,rank,&scomm));
+  PetscCall(ISGetLocalSize(isrows,&isrows_localsize));
+  PetscCall(PetscMalloc1(isrows_localsize,&indices_sc));
+  PetscCall(ISGetIndices(isrows,&indices));
+  PetscCall(PetscArraycpy(indices_sc,indices,isrows_localsize));
+  PetscCall(ISRestoreIndices(isrows,&indices));
+  PetscCall(ISDestroy(&is));
+  PetscCall(ISDestroy(&coarseparts));
+  PetscCall(ISDestroy(&fineparts));
+  PetscCall(ISDestroy(&isrows));
+  PetscCall(MatPartitioningDestroy(&part));
   /*create a sub-IS on the sub communicator  */
-  ierr = ISCreateGeneral(scomm,isrows_localsize,indices_sc,PETSC_OWN_POINTER,&isrows_sc);CHKERRQ(ierr);
-  ierr = MatConvert(A,MATMPIAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+  PetscCall(ISCreateGeneral(scomm,isrows_localsize,indices_sc,PETSC_OWN_POINTER,&isrows_sc));
+  PetscCall(MatConvert(A,MATMPIAIJ,MAT_INITIAL_MATRIX,&B));
 #if 1
-  ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscCall(MatView(B,PETSC_VIEWER_STDOUT_WORLD));
 #endif
   /*increase overlap */
-  ierr = MatIncreaseOverlapSplit(B,1,&isrows_sc,1);CHKERRQ(ierr);
-  ierr = ISView(isrows_sc,NULL);CHKERRQ(ierr);
-  ierr = ISDestroy(&isrows_sc);CHKERRQ(ierr);
+  PetscCall(MatIncreaseOverlapSplit(B,1,&isrows_sc,1));
+  PetscCall(ISView(isrows_sc,NULL));
+  PetscCall(ISDestroy(&isrows_sc));
   /*
     Free work space.  All PETSc objects should be destroyed when they
     are no longer needed.
   */
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(MatDestroy(&A));
+  PetscCall(MatDestroy(&B));
+  PetscCall(PetscFinalize());
+  return 0;
 }
-

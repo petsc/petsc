@@ -13,15 +13,14 @@ int main(int argc, char **argv)
   PetscInt       numDof[12];
   PetscInt       bcField[1];
   IS             bcPointIS[1];
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   /* Create a mesh */
-  ierr = DMCreate(PETSC_COMM_WORLD, &dm);CHKERRQ(ierr);
-  ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  PetscCall(DMCreate(PETSC_COMM_WORLD, &dm));
+  PetscCall(DMSetType(dm, DMPLEX));
+  PetscCall(DMSetFromOptions(dm));
+  PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
+  PetscCall(DMGetDimension(dm, &dim));
   /* Create a scalar field u, a vector field v, and a surface vector field w */
   numFields  = 3;
   numComp[0] = 1;
@@ -39,31 +38,31 @@ int main(int argc, char **argv)
   /* Prescribe a Dirichlet condition on u on the boundary
        Label "marker" is made by the mesh creation routine */
   bcField[0] = 0;
-  ierr = DMGetStratumIS(dm, "marker", 1, &bcPointIS[0]);CHKERRQ(ierr);
+  PetscCall(DMGetStratumIS(dm, "marker", 1, &bcPointIS[0]));
   /* Create a PetscSection with this data layout */
-  ierr = DMSetNumFields(dm, numFields);CHKERRQ(ierr);
-  ierr = DMPlexCreateSection(dm, NULL, numComp, numDof, numBC, bcField, NULL, bcPointIS, NULL, &section);CHKERRQ(ierr);
-  ierr = ISDestroy(&bcPointIS[0]);CHKERRQ(ierr);
+  PetscCall(DMSetNumFields(dm, numFields));
+  PetscCall(DMPlexCreateSection(dm, NULL, numComp, numDof, numBC, bcField, NULL, bcPointIS, NULL, &section));
+  PetscCall(ISDestroy(&bcPointIS[0]));
   /* Name the Field variables */
-  ierr = PetscSectionSetFieldName(section, 0, "u");CHKERRQ(ierr);
-  ierr = PetscSectionSetFieldName(section, 1, "v");CHKERRQ(ierr);
-  ierr = PetscSectionSetFieldName(section, 2, "w");CHKERRQ(ierr);
-  ierr = PetscSectionView(section, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscCall(PetscSectionSetFieldName(section, 0, "u"));
+  PetscCall(PetscSectionSetFieldName(section, 1, "v"));
+  PetscCall(PetscSectionSetFieldName(section, 2, "w"));
+  PetscCall(PetscSectionView(section, PETSC_VIEWER_STDOUT_WORLD));
   /* Tell the DM to use this data layout */
-  ierr = DMSetLocalSection(dm, section);CHKERRQ(ierr);
+  PetscCall(DMSetLocalSection(dm, section));
   /* Create a Vec with this layout and view it */
-  ierr = DMGetGlobalVector(dm, &u);CHKERRQ(ierr);
-  ierr = PetscViewerCreate(PETSC_COMM_WORLD, &viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(viewer, PETSCVIEWERVTK);CHKERRQ(ierr);
-  ierr = PetscViewerFileSetName(viewer, "sol.vtu");CHKERRQ(ierr);
-  ierr = VecView(u, viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(dm, &u);CHKERRQ(ierr);
+  PetscCall(DMGetGlobalVector(dm, &u));
+  PetscCall(PetscViewerCreate(PETSC_COMM_WORLD, &viewer));
+  PetscCall(PetscViewerSetType(viewer, PETSCVIEWERVTK));
+  PetscCall(PetscViewerFileSetName(viewer, "sol.vtu"));
+  PetscCall(VecView(u, viewer));
+  PetscCall(PetscViewerDestroy(&viewer));
+  PetscCall(DMRestoreGlobalVector(dm, &u));
   /* Cleanup */
-  ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscSectionDestroy(&section));
+  PetscCall(DMDestroy(&dm));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

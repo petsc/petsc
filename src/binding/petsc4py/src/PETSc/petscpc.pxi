@@ -185,6 +185,7 @@ cdef extern from * nogil:
     int PCHYPRESetAlphaPoissonMatrix(PetscPC,PetscMat);
     int PCHYPRESetBetaPoissonMatrix(PetscPC,PetscMat);
     int PCHYPRESetEdgeConstantVectors(PetscPC,PetscVec,PetscVec,PetscVec);
+    int PCHYPRESetInterpolations(PetscPC, PetscInt, PetscMat, PetscMat[], PetscMat, PetscMat[]);
 
     int PCFactorGetMatrix(PetscPC,PetscMat*)
     int PCFactorSetZeroPivot(PetscPC,PetscReal)
@@ -303,6 +304,17 @@ cdef extern from * nogil:
     int PCHPDDMSetCoarseCorrectionType(PetscPC,PetscPCHPDDMCoarseCorrectionType)
     int PCHPDDMGetCoarseCorrectionType(PetscPC,PetscPCHPDDMCoarseCorrectionType*)
     int PCHPDDMGetSTShareSubKSP(PetscPC,PetscBool*)
+    int PCHPDDMSetDeflationMat(PetscPC,PetscIS,PetscMat)
+
+    # --- SPAI ---
+    int PCSPAISetEpsilon(PetscPC,PetscReal)
+    int PCSPAISetNBSteps(PetscPC,PetscInt)
+    int PCSPAISetMax(PetscPC,PetscInt)
+    int PCSPAISetMaxNew(PetscPC,PetscInt)
+    int PCSPAISetBlockSize(PetscPC,PetscInt)
+    int PCSPAISetCacheSize(PetscPC,PetscInt)
+    int PCSPAISetVerbose(PetscPC,PetscInt)
+    int PCSPAISetSp(PetscPC,PetscInt)
 
 # --------------------------------------------------------------------
 

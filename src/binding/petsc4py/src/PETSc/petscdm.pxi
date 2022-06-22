@@ -80,6 +80,7 @@ cdef extern from * nogil:
     int DMRestoreGlobalVector(PetscDM,PetscVec*)
     int DMSetMatType(PetscDM,PetscMatType)
     int DMCreateMatrix(PetscDM,PetscMat*)
+    int DMCreateMassMatrix(PetscDM,PetscDM,PetscMat*)
 
     int DMGetCoordinateDM(PetscDM,PetscDM*)
     int DMGetCoordinateSection(PetscDM,PetscSection*)
@@ -90,6 +91,7 @@ cdef extern from * nogil:
     int DMGetCoordinateDim(PetscDM,PetscInt*)
     int DMSetCoordinateDim(PetscDM,PetscInt)
     int DMLocalizeCoordinates(PetscDM)
+    int DMProjectCoordinates(PetscDM, PetscFE)
 
     int DMCreateInterpolation(PetscDM,PetscDM,PetscMat*,PetscVec*)
     int DMCreateInjection(PetscDM,PetscDM,PetscMat*)
@@ -125,6 +127,10 @@ cdef extern from * nogil:
     int DMSetSectionSF(PetscDM,PetscSF)
     int DMGetPointSF(PetscDM,PetscSF*)
     int DMSetPointSF(PetscDM,PetscSF)
+
+    int DMCreateSubDM(PetscDM, PetscInt, const PetscInt[], PetscIS*, PetscDM*)
+    int DMSetAuxiliaryVec(PetscDM, PetscDMLabel, PetscInt, PetscInt, PetscVec)
+    int DMGetAuxiliaryVec(PetscDM, PetscDMLabel, PetscInt, PetscInt, PetscVec*)
 
     int DMCreateLabel(PetscDM,const char[])
     int DMGetLabelValue(PetscDM,const char[],PetscInt,PetscInt*)

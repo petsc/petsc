@@ -10,32 +10,31 @@ int main(int argc, char **argv)
   char           typeString[256] = {'\0'};
   PetscViewer    viewer          = NULL;
   PetscBool      conv = PETSC_FALSE;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
-  ierr = DMCreate(PETSC_COMM_WORLD, &dm);CHKERRQ(ierr);
-  ierr = PetscStrncpy(typeString,DMFOREST,256);CHKERRQ(ierr);
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"DM Forest example options",NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-dm_type","The type of the dm",NULL,DMFOREST,typeString,sizeof(typeString),NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-test_convert","Test conversion to DMPLEX",NULL,conv,&conv,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  ierr = DMSetType(dm,(DMType) typeString);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
-  ierr = DMSetUp(dm);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(dm,NULL,"-dm_view");CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc, &argv, NULL,help));
+  PetscCall(DMCreate(PETSC_COMM_WORLD, &dm));
+  PetscCall(PetscStrncpy(typeString,DMFOREST,256));
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"DM Forest example options",NULL);
+  PetscCall(PetscOptionsString("-dm_type","The type of the dm",NULL,DMFOREST,typeString,sizeof(typeString),NULL));
+  PetscCall(PetscOptionsBool("-test_convert","Test conversion to DMPLEX",NULL,conv,&conv,NULL));
+  PetscOptionsEnd();
+  PetscCall(DMSetType(dm,(DMType) typeString));
+  PetscCall(DMSetFromOptions(dm));
+  PetscCall(DMSetUp(dm));
+  PetscCall(DMViewFromOptions(dm,NULL,"-dm_view"));
+  PetscCall(PetscViewerDestroy(&viewer));
   if (conv) {
     DM dmConv;
 
-    ierr = DMConvert(dm,DMPLEX,&dmConv);CHKERRQ(ierr);
-    ierr = DMLocalizeCoordinates(dmConv);CHKERRQ(ierr);
-    ierr = DMViewFromOptions(dmConv,NULL,"-dm_conv_view");CHKERRQ(ierr);
-    ierr = DMPlexCheckCellShape(dmConv,PETSC_FALSE,PETSC_DETERMINE);CHKERRQ(ierr);
-    ierr = DMDestroy(&dmConv);CHKERRQ(ierr);
+    PetscCall(DMConvert(dm,DMPLEX,&dmConv));
+    PetscCall(DMLocalizeCoordinates(dmConv));
+    PetscCall(DMViewFromOptions(dmConv,NULL,"-dm_conv_view"));
+    PetscCall(DMPlexCheckCellShape(dmConv,PETSC_FALSE,PETSC_DETERMINE));
+    PetscCall(DMDestroy(&dmConv));
   }
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(DMDestroy(&dm));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

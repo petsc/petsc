@@ -1,9 +1,5 @@
+-include ../../../../petsckdir.mk
 
-ALL: lib
-
-CFLAGS    =
-FFLAGS    =
-CPPFLAGS  =
 SOURCEC	  = bag.c
 SOURCEF	  =
 SOURCEH	  = ../../../../include/petscbag.h ../../../../include/petsc/private/bagimpl.h

@@ -26,7 +26,7 @@ iter =  24, Function value 2384.48, Residual: 0.0125533
 iter =  25, Function value 2384.48, Residual: 0.00062701 
 iter =  26, Function value 2384.48, Residual: 4.42226e-05 
 iter =  27, Function value 2384.48, Residual: 2.28259e-05 
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.190261
 0.00613116

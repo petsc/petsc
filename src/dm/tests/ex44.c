@@ -7,80 +7,78 @@ static char help[] = "Tests various DMComposite routines.\n\n";
 
 int main(int argc,char **argv)
 {
-  PetscMPIInt            rank;
-  PetscErrorCode         ierr;
-  DM                     da1,da2,packer;
-  Vec                    local,global,globals[2],buffer;
-  PetscScalar            value;
-  PetscViewer            viewer;
+  PetscMPIInt rank;
+  DM          da1,da2,packer;
+  Vec         local,global,globals[2],buffer;
+  PetscScalar value;
+  PetscViewer viewer;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
-  ierr = DMCompositeCreate(PETSC_COMM_WORLD,&packer);CHKERRQ(ierr);
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,8,1,1,NULL,&da1);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(da1);CHKERRQ(ierr);
-  ierr = DMSetUp(da1);CHKERRQ(ierr);
-  ierr = DMCompositeAddDM(packer,da1);CHKERRQ(ierr);
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,6,1,1,NULL,&da2);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(da2);CHKERRQ(ierr);
-  ierr = DMSetUp(da2);CHKERRQ(ierr);
-  ierr = DMCompositeAddDM(packer,da2);CHKERRQ(ierr);
+  PetscCall(DMCompositeCreate(PETSC_COMM_WORLD,&packer));
+  PetscCall(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,8,1,1,NULL,&da1));
+  PetscCall(DMSetFromOptions(da1));
+  PetscCall(DMSetUp(da1));
+  PetscCall(DMCompositeAddDM(packer,da1));
+  PetscCall(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,6,1,1,NULL,&da2));
+  PetscCall(DMSetFromOptions(da2));
+  PetscCall(DMSetUp(da2));
+  PetscCall(DMCompositeAddDM(packer,da2));
 
-  ierr = DMCreateGlobalVector(packer,&global);CHKERRQ(ierr);
-  ierr = DMCreateLocalVector(packer,&local);CHKERRQ(ierr);
-  ierr = DMCreateLocalVector(packer,&buffer);CHKERRQ(ierr);
+  PetscCall(DMCreateGlobalVector(packer,&global));
+  PetscCall(DMCreateLocalVector(packer,&local));
+  PetscCall(DMCreateLocalVector(packer,&buffer));
 
-  ierr = DMCompositeGetAccessArray(packer,global,2,NULL,globals);CHKERRQ(ierr);
+  PetscCall(DMCompositeGetAccessArray(packer,global,2,NULL,globals));
   value = 1;
-  ierr = VecSet(globals[0], value);CHKERRQ(ierr);
+  PetscCall(VecSet(globals[0], value));
   value = -1;
-  ierr = VecSet(globals[1], value);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  PetscCall(VecSet(globals[1], value));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   value = rank + 1;
-  ierr = VecScale(globals[0], value);CHKERRQ(ierr);
-  ierr = VecScale(globals[1], value);CHKERRQ(ierr);
-  ierr = DMCompositeRestoreAccessArray(packer,global,2,NULL,globals);CHKERRQ(ierr);
+  PetscCall(VecScale(globals[0], value));
+  PetscCall(VecScale(globals[1], value));
+  PetscCall(DMCompositeRestoreAccessArray(packer,global,2,NULL,globals));
 
   /* Test GlobalToLocal in insert mode */
-  ierr = DMGlobalToLocalBegin(packer,global,INSERT_VALUES,local);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(packer,global,INSERT_VALUES,local);CHKERRQ(ierr);
+  PetscCall(DMGlobalToLocalBegin(packer,global,INSERT_VALUES,local));
+  PetscCall(DMGlobalToLocalEnd(packer,global,INSERT_VALUES,local));
 
-  ierr = PetscViewerASCIIPushSynchronized(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"\nLocal Vector: processor %d\n",rank);CHKERRQ(ierr);
-  ierr = PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&viewer);CHKERRQ(ierr);
-  ierr = VecView(local,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&viewer);CHKERRQ(ierr);
-  ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPopSynchronized(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscCall(PetscViewerASCIIPushSynchronized(PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"\nLocal Vector: processor %d\n",rank));
+  PetscCall(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&viewer));
+  PetscCall(VecView(local,viewer));
+  PetscCall(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&viewer));
+  PetscCall(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscViewerASCIIPopSynchronized(PETSC_VIEWER_STDOUT_WORLD));
 
   /* Test LocalToGlobal in insert mode */
-  ierr = DMLocalToGlobalBegin(packer,local,INSERT_VALUES,global);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(packer,local,INSERT_VALUES,global);CHKERRQ(ierr);
+  PetscCall(DMLocalToGlobalBegin(packer,local,INSERT_VALUES,global));
+  PetscCall(DMLocalToGlobalEnd(packer,local,INSERT_VALUES,global));
 
-  ierr = VecView(global,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscCall(VecView(global,PETSC_VIEWER_STDOUT_WORLD));
 
   /* Test LocalToLocal in insert mode */
-  ierr = DMLocalToLocalBegin(packer,local,INSERT_VALUES,buffer);CHKERRQ(ierr);
-  ierr = DMLocalToLocalEnd(packer,local,INSERT_VALUES,buffer);CHKERRQ(ierr);
+  PetscCall(DMLocalToLocalBegin(packer,local,INSERT_VALUES,buffer));
+  PetscCall(DMLocalToLocalEnd(packer,local,INSERT_VALUES,buffer));
 
-  ierr = PetscViewerASCIIPushSynchronized(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"\nLocal Vector: processor %d\n",rank);CHKERRQ(ierr);
-  ierr = PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&viewer);CHKERRQ(ierr);
-  ierr = VecView(buffer,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&viewer);CHKERRQ(ierr);
-  ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPopSynchronized(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscCall(PetscViewerASCIIPushSynchronized(PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"\nLocal Vector: processor %d\n",rank));
+  PetscCall(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&viewer));
+  PetscCall(VecView(buffer,viewer));
+  PetscCall(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&viewer));
+  PetscCall(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscViewerASCIIPopSynchronized(PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = VecDestroy(&buffer);CHKERRQ(ierr);
-  ierr = VecDestroy(&local);CHKERRQ(ierr);
-  ierr = VecDestroy(&global);CHKERRQ(ierr);
-  ierr = DMDestroy(&packer);CHKERRQ(ierr);
-  ierr = DMDestroy(&da2);CHKERRQ(ierr);
-  ierr = DMDestroy(&da1);CHKERRQ(ierr);
+  PetscCall(VecDestroy(&buffer));
+  PetscCall(VecDestroy(&local));
+  PetscCall(VecDestroy(&global));
+  PetscCall(DMDestroy(&packer));
+  PetscCall(DMDestroy(&da2));
+  PetscCall(DMDestroy(&da1));
 
-  ierr = PetscFinalize();
-
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

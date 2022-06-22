@@ -3,18 +3,15 @@
 
 static PetscErrorCode KSPSetUp_CR(KSP ksp)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  PetscCheckFalse(ksp->pc_side == PC_RIGHT,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"no right preconditioning for KSPCR");
-  else PetscCheckFalse(ksp->pc_side == PC_SYMMETRIC,PETSC_COMM_SELF,PETSC_ERR_SUP,"no symmetric preconditioning for KSPCR");
-  ierr = KSPSetWorkVecs(ksp,6);CHKERRQ(ierr);
+  PetscCheck(ksp->pc_side != PC_RIGHT,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"no right preconditioning for KSPCR");
+  else PetscCheck(ksp->pc_side != PC_SYMMETRIC,PETSC_COMM_SELF,PETSC_ERR_SUP,"no symmetric preconditioning for KSPCR");
+  PetscCall(KSPSetWorkVecs(ksp,6));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode  KSPSolve_CR(KSP ksp)
 {
-  PetscErrorCode ierr;
   PetscInt       i = 0;
   PetscReal      dp;
   PetscScalar    ai, bi;
@@ -33,107 +30,111 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
   Q   = ksp->work[5];
 
   /* R is the true residual norm, RT is the preconditioned residual norm */
-  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
+  PetscCall(PCGetOperators(ksp->pc,&Amat,&Pmat));
   if (!ksp->guess_zero) {
-    ierr = KSP_MatMult(ksp,Amat,X,R);CHKERRQ(ierr);     /*   R <- A*X           */
-    ierr = VecAYPX(R,-1.0,B);CHKERRQ(ierr);            /*   R <- B-R == B-A*X  */
+    PetscCall(KSP_MatMult(ksp,Amat,X,R));     /*   R <- A*X           */
+    PetscCall(VecAYPX(R,-1.0,B));            /*   R <- B-R == B-A*X  */
   } else {
-    ierr = VecCopy(B,R);CHKERRQ(ierr);                  /*   R <- B (X is 0)    */
+    PetscCall(VecCopy(B,R));                  /*   R <- B (X is 0)    */
   }
-  ierr = KSP_PCApply(ksp,R,P);CHKERRQ(ierr);     /*   P   <- B*R         */
-  ierr = KSP_MatMult(ksp,Amat,P,AP);CHKERRQ(ierr);      /*   AP  <- A*P         */
-  ierr = VecCopy(P,RT);CHKERRQ(ierr);                   /*   RT  <- P           */
-  ierr = VecCopy(AP,ART);CHKERRQ(ierr);                 /*   ART <- AP          */
-  ierr = VecDotBegin(RT,ART,&btop);CHKERRQ(ierr);          /*   (RT,ART)           */
+  /* This may be true only on a subset of MPI ranks; setting it here so it will be detected by the first norm computation below */
+  if (ksp->reason == KSP_DIVERGED_PC_FAILED) {
+    PetscCall(VecSetInf(R));
+  }
+  PetscCall(KSP_PCApply(ksp,R,P));     /*   P   <- B*R         */
+  PetscCall(KSP_MatMult(ksp,Amat,P,AP));      /*   AP  <- A*P         */
+  PetscCall(VecCopy(P,RT));                   /*   RT  <- P           */
+  PetscCall(VecCopy(AP,ART));                 /*   ART <- AP          */
+  PetscCall(VecDotBegin(RT,ART,&btop));          /*   (RT,ART)           */
 
   if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
-    ierr = VecNormBegin(RT,NORM_2,&dp);CHKERRQ(ierr);        /*   dp <- RT'*RT       */
-    ierr = VecDotEnd   (RT,ART,&btop);CHKERRQ(ierr);           /*   (RT,ART)           */
-    ierr = VecNormEnd  (RT,NORM_2,&dp);CHKERRQ(ierr);        /*   dp <- RT'*RT       */
+    PetscCall(VecNormBegin(RT,NORM_2,&dp));        /*   dp <- RT'*RT       */
+    PetscCall(VecDotEnd   (RT,ART,&btop));           /*   (RT,ART)           */
+    PetscCall(VecNormEnd  (RT,NORM_2,&dp));        /*   dp <- RT'*RT       */
     KSPCheckNorm(ksp,dp);
   } else if (ksp->normtype == KSP_NORM_NONE) {
     dp   = 0.0; /* meaningless value that is passed to monitor and convergence test */
-    ierr = VecDotEnd   (RT,ART,&btop);CHKERRQ(ierr);           /*   (RT,ART)           */
+    PetscCall(VecDotEnd   (RT,ART,&btop));           /*   (RT,ART)           */
   } else if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
-    ierr = VecNormBegin(R,NORM_2,&dp);CHKERRQ(ierr);         /*   dp <- R'*R         */
-    ierr = VecDotEnd   (RT,ART,&btop);CHKERRQ(ierr);          /*   (RT,ART)           */
-    ierr = VecNormEnd  (R,NORM_2,&dp);CHKERRQ(ierr);        /*   dp <- RT'*RT       */
+    PetscCall(VecNormBegin(R,NORM_2,&dp));         /*   dp <- R'*R         */
+    PetscCall(VecDotEnd   (RT,ART,&btop));          /*   (RT,ART)           */
+    PetscCall(VecNormEnd  (R,NORM_2,&dp));        /*   dp <- RT'*RT       */
     KSPCheckNorm(ksp,dp);
   } else if (ksp->normtype == KSP_NORM_NATURAL) {
-    ierr = VecDotEnd   (RT,ART,&btop);CHKERRQ(ierr);           /*   (RT,ART)           */
+    PetscCall(VecDotEnd   (RT,ART,&btop));           /*   (RT,ART)           */
     dp   = PetscSqrtReal(PetscAbsScalar(btop));                  /* dp = sqrt(R,AR)      */
   } else SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"KSPNormType of %d not supported",(int)ksp->normtype);
   if (PetscAbsScalar(btop) < 0.0) {
     ksp->reason = KSP_DIVERGED_INDEFINITE_MAT;
-    ierr        = PetscInfo(ksp,"diverging due to indefinite or negative definite matrix\n");CHKERRQ(ierr);
+    PetscCall(PetscInfo(ksp,"diverging due to indefinite or negative definite matrix\n"));
     PetscFunctionReturn(0);
   }
 
   ksp->its   = 0;
-  ierr       = KSPMonitor(ksp,0,dp);CHKERRQ(ierr);
-  ierr       = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+  PetscCall(KSPMonitor(ksp,0,dp));
+  PetscCall(PetscObjectSAWsTakeAccess((PetscObject)ksp));
   ksp->rnorm = dp;
-  ierr = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
-  ierr = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
-  ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+  PetscCall(PetscObjectSAWsGrantAccess((PetscObject)ksp));
+  PetscCall(KSPLogResidualHistory(ksp,dp));
+  PetscCall((*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP));
   if (ksp->reason) PetscFunctionReturn(0);
 
   i = 0;
   do {
-    ierr = KSP_PCApply(ksp,AP,Q);CHKERRQ(ierr);  /*   Q <- B* AP          */
+    PetscCall(KSP_PCApply(ksp,AP,Q));  /*   Q <- B* AP          */
 
-    ierr = VecDot(AP,Q,&apq);CHKERRQ(ierr);
+    PetscCall(VecDot(AP,Q,&apq));
     KSPCheckDot(ksp,apq);
     if (PetscRealPart(apq) <= 0.0) {
       ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
-      ierr        = PetscInfo(ksp,"KSPSolve_CR:diverging due to indefinite or negative definite PC\n");CHKERRQ(ierr);
+      PetscCall(PetscInfo(ksp,"KSPSolve_CR:diverging due to indefinite or negative definite PC\n"));
       break;
     }
     ai = btop/apq;                                      /* ai = (RT,ART)/(AP,Q)  */
 
-    ierr = VecAXPY(X,ai,P);CHKERRQ(ierr);              /*   X   <- X + ai*P     */
-    ierr = VecAXPY(RT,-ai,Q);CHKERRQ(ierr);             /*   RT  <- RT - ai*Q    */
-    ierr = KSP_MatMult(ksp,Amat,RT,ART);CHKERRQ(ierr);  /*   ART <-   A*RT       */
+    PetscCall(VecAXPY(X,ai,P));              /*   X   <- X + ai*P     */
+    PetscCall(VecAXPY(RT,-ai,Q));             /*   RT  <- RT - ai*Q    */
+    PetscCall(KSP_MatMult(ksp,Amat,RT,ART));  /*   ART <-   A*RT       */
     bbot = btop;
-    ierr = VecDotBegin(RT,ART,&btop);CHKERRQ(ierr);
+    PetscCall(VecDotBegin(RT,ART,&btop));
 
     if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
-      ierr = VecNormBegin(RT,NORM_2,&dp);CHKERRQ(ierr);      /*   dp <- || RT ||      */
-      ierr = VecDotEnd   (RT,ART,&btop);CHKERRQ(ierr);
-      ierr = VecNormEnd  (RT,NORM_2,&dp);CHKERRQ(ierr);      /*   dp <- || RT ||      */
+      PetscCall(VecNormBegin(RT,NORM_2,&dp));      /*   dp <- || RT ||      */
+      PetscCall(VecDotEnd   (RT,ART,&btop));
+      PetscCall(VecNormEnd  (RT,NORM_2,&dp));      /*   dp <- || RT ||      */
       KSPCheckNorm(ksp,dp);
     } else if (ksp->normtype == KSP_NORM_NATURAL) {
-      ierr = VecDotEnd(RT,ART,&btop);CHKERRQ(ierr);
+      PetscCall(VecDotEnd(RT,ART,&btop));
       dp   = PetscSqrtReal(PetscAbsScalar(btop));                /* dp = sqrt(R,AR)       */
     } else if (ksp->normtype == KSP_NORM_NONE) {
-      ierr = VecDotEnd(RT,ART,&btop);CHKERRQ(ierr);
+      PetscCall(VecDotEnd(RT,ART,&btop));
       dp   = 0.0; /* meaningless value that is passed to monitor and convergence test */
     } else if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
-      ierr = VecAXPY(R,ai,AP);CHKERRQ(ierr);           /*   R   <- R - ai*AP    */
-      ierr = VecNormBegin(R,NORM_2,&dp);CHKERRQ(ierr);       /*   dp <- R'*R          */
-      ierr = VecDotEnd   (RT,ART,&btop);CHKERRQ(ierr);
-      ierr = VecNormEnd  (R,NORM_2,&dp);CHKERRQ(ierr);       /*   dp <- R'*R          */
+      PetscCall(VecAXPY(R,ai,AP));           /*   R   <- R - ai*AP    */
+      PetscCall(VecNormBegin(R,NORM_2,&dp));       /*   dp <- R'*R          */
+      PetscCall(VecDotEnd   (RT,ART,&btop));
+      PetscCall(VecNormEnd  (R,NORM_2,&dp));       /*   dp <- R'*R          */
       KSPCheckNorm(ksp,dp);
     } else SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"KSPNormType of %d not supported",(int)ksp->normtype);
     if (PetscAbsScalar(btop) < 0.0) {
       ksp->reason = KSP_DIVERGED_INDEFINITE_MAT;
-      ierr        = PetscInfo(ksp,"diverging due to indefinite or negative definite PC\n");CHKERRQ(ierr);
+      PetscCall(PetscInfo(ksp,"diverging due to indefinite or negative definite PC\n"));
       break;
     }
 
-    ierr = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+    PetscCall(PetscObjectSAWsTakeAccess((PetscObject)ksp));
     ksp->its++;
     ksp->rnorm = dp;
-    ierr       = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+    PetscCall(PetscObjectSAWsGrantAccess((PetscObject)ksp));
 
-    ierr = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
-    ierr = KSPMonitor(ksp,i+1,dp);CHKERRQ(ierr);
-    ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+    PetscCall(KSPLogResidualHistory(ksp,dp));
+    PetscCall(KSPMonitor(ksp,i+1,dp));
+    PetscCall((*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP));
     if (ksp->reason) break;
 
     bi   = btop/bbot;
-    ierr = VecAYPX(P,bi,RT);CHKERRQ(ierr);              /*   P <- RT + Bi P     */
-    ierr = VecAYPX(AP,bi,ART);CHKERRQ(ierr);            /*   AP <- ART + Bi AP  */
+    PetscCall(VecAYPX(P,bi,RT));              /*   P <- RT + Bi P     */
+    PetscCall(VecAYPX(AP,bi,ART));            /*   AP <- ART + Bi AP  */
     i++;
   } while (i<ksp->max_it);
   if (i >= ksp->max_it) ksp->reason =  KSP_DIVERGED_ITS;
@@ -144,7 +145,7 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
      KSPCR - This code implements the (preconditioned) conjugate residuals method
 
    Options Database Keys:
-.   see KSPSolve()
+    see KSPSolve()
 
    Level: beginner
 
@@ -154,20 +155,18 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
           Support only for left preconditioning.
 
    References:
-.   1. - Magnus R. Hestenes and Eduard Stiefel, Methods of Conjugate Gradients for Solving Linear Systems,
+.  * - Magnus R. Hestenes and Eduard Stiefel, Methods of Conjugate Gradients for Solving Linear Systems,
    Journal of Research of the National Bureau of Standards Vol. 49, No. 6, December 1952 Research Paper 2379
 
-.seealso: KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPCG
+.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPCG`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_CR(KSP ksp)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,2);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,2));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,2));
+  PetscCall(KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1));
 
   ksp->ops->setup          = KSPSetUp_CR;
   ksp->ops->solve          = KSPSolve_CR;

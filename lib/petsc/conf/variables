@@ -46,12 +46,15 @@ PETSC_SYCLCOMPILE_SINGLE = ${SYCLC} -o $*.o $(MPICXX_INCLUDES) -c $(SYCLC_FLAGS)
 # LIBNAME    - library name
 # SOURCE     - source files
 # SOURCEALL  - sources and includes
-# SOURCED    - sources/includes [but not fortran - for doc parsing?]
+# SOURCED    - sources/includes [but not fortran - for doc parsing]
 #
-LIBNAME    = ${INSTALL_LIB_DIR}/${LIBBASE}.${AR_LIB_SUFFIX}
-SOURCE     = ${SOURCESYCL} ${SOURCEHIP} ${SOURCECU} ${SOURCEC} ${SOURCECXX} ${SOURCEF}
-SOURCEALL  = ${SOURCESYCL} ${SOURCEHIP} ${SOURCECU} ${SOURCEC} ${SOURCECXX} ${SOURCEF} ${SOURCEH}
-SOURCED    = ${SOURCESYCL} ${SOURCEHIP} ${SOURCECU} ${SOURCEC} ${SOURCECXX} ${SOURCEH}
+# Note that EXAMPLESALL is only used in the tutorial directories and SOURCED only in the non-tutorials and tests directories
+#
+LIBNAME     = ${INSTALL_LIB_DIR}/${LIBBASE}.${AR_LIB_SUFFIX}
+SOURCE      = `ls *.c *.cxx *.F *.F90 *.cu *.cpp           2> /dev/null`
+SOURCEALL   = `ls *.c *.cxx *.F *.F90 *.cu *.cpp *.h *.hpp 2> /dev/null`
+SOURCED     = `ls *.c *.cxx           *.cu *.cpp *.h *.hpp 2> /dev/null`
+EXAMPLESALL = `ls *.c *.cxx *.F *.F90 *.cu *.cpp           2> /dev/null`
 
 CLINKER = ${PCC_LINKER} ${PCC_LINKER_FLAGS} ${${CLANGUAGE}FLAGS}
 FLINKER = ${FC_LINKER} ${FC_LINKER_FLAGS} ${FFLAGS}

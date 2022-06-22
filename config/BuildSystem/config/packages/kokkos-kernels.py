@@ -4,18 +4,19 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit        = '6fff4fffe0b531a8d5f93bc61bd22000c729ad0f' # develop of 2022-02-14 (fixes Ampere CSR bug)
+    self.gitcommit        = '3.6.00'
     self.versionname      = 'KOKKOSKERNELS_VERSION'
     self.download         = ['git://https://github.com/kokkos/kokkos-kernels.git']
     self.includes         = ['KokkosBlas.hpp','KokkosSparse_CrsMatrix.hpp']
     self.liblist          = [['libkokkoskernels.a']]
     self.functions        = ['']
-    # I don't know how to make it work since all KK routines are templated and always need Kokkos::View. So I cheat here and use functionCxx from Kokkos.
-    self.functionsCxx     = [1,'namespace Kokkos {void initialize(int&,char*[]);}','int one = 1;char* args[1];Kokkos::initialize(one,args);']
+    # use one of the only non-templated functions in all of KK to check this library
+    # exists
+    self.functionsCxx     = [1,'namespace KokkosBatched { void print_compiler_info(); }','KokkosBatched::print_compiler_info();']
     self.buildLanguages   = ['Cxx']
-    self.downloadonWindows= 0
     self.hastests         = 1
     self.requiresrpath    = 1
+    self.minCmakeVersion  = (3,10,0)
     return
 
   def __str__(self):

@@ -12,107 +12,104 @@ int main(int argc,char **args)
   Mat            A;
   PetscInt       i,j,m = 3,n,Ii,J,Imax;
   PetscMPIInt    rank,size;
-  PetscErrorCode ierr;
   PetscScalar    v,diag=-4.0;
   IS             is;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   n    = 2*size;
 
   /* create A Square matrix for the five point stencil,YET AGAIN*/
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatSetUp(A);CHKERRQ(ierr);
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatSetUp(A));
   for (i=0; i<m; i++) {
     for (j=2*rank; j<2*rank+2; j++) {
       v = -1.0;  Ii = j + n*i;
-      if (i>0)   {J = Ii - n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-      if (i<m-1) {J = Ii + n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-      if (j>0)   {J = Ii - 1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-      if (j<n-1) {J = Ii + 1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-      v = 4.0; ierr = MatSetValues(A,1,&Ii,1,&Ii,&v,INSERT_VALUES);CHKERRQ(ierr);
+      if (i>0)   {J = Ii - n; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
+      if (i<m-1) {J = Ii + n; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
+      if (j>0)   {J = Ii - 1; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
+      if (j<n-1) {J = Ii + 1; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
+      v = 4.0; PetscCall(MatSetValues(A,1,&Ii,1,&Ii,&v,INSERT_VALUES));
     }
   }
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
   /* Create AN IS required by MatZeroRows() */
   Imax = n*rank; if (Imax>= n*m -m - 1) Imax = m*n - m - 1;
-  ierr = ISCreateStride(PETSC_COMM_SELF,m,Imax,1,&is);CHKERRQ(ierr);
+  PetscCall(ISCreateStride(PETSC_COMM_SELF,m,Imax,1,&is));
 
-  ierr = TestMatZeroRows_Basic(A,is,0.0);CHKERRQ(ierr);
-  ierr = TestMatZeroRows_Basic(A,is,diag);CHKERRQ(ierr);
+  PetscCall(TestMatZeroRows_Basic(A,is,0.0));
+  PetscCall(TestMatZeroRows_Basic(A,is,diag));
 
-  ierr = TestMatZeroRows_with_no_allocation(A,is,0.0);CHKERRQ(ierr);
-  ierr = TestMatZeroRows_with_no_allocation(A,is,diag);CHKERRQ(ierr);
+  PetscCall(TestMatZeroRows_with_no_allocation(A,is,0.0));
+  PetscCall(TestMatZeroRows_with_no_allocation(A,is,diag));
 
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  PetscCall(MatDestroy(&A));
 
   /* Now Create a rectangular matrix with five point stencil (app)
    n+size is used so that this dimension is always divisible by size.
    This way, we can always use bs = size for any number of procs */
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*(n+size));CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatSetUp(A);CHKERRQ(ierr);
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*(n+size)));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatSetUp(A));
   for (i=0; i<m; i++) {
     for (j=2*rank; j<2*rank+2; j++) {
       v = -1.0;  Ii = j + n*i;
-      if (i>0)   {J = Ii - n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-      if (i<m-1) {J = Ii + n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-      if (j>0)   {J = Ii - 1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-      if (j<n+size-1) {J = Ii + 1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-      v = 4.0; ierr = MatSetValues(A,1,&Ii,1,&Ii,&v,INSERT_VALUES);CHKERRQ(ierr);
+      if (i>0)   {J = Ii - n; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
+      if (i<m-1) {J = Ii + n; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
+      if (j>0)   {J = Ii - 1; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
+      if (j<n+size-1) {J = Ii + 1; PetscCall(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
+      v = 4.0; PetscCall(MatSetValues(A,1,&Ii,1,&Ii,&v,INSERT_VALUES));
     }
   }
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
-  ierr = TestMatZeroRows_Basic(A,is,0.0);CHKERRQ(ierr);
-  ierr = TestMatZeroRows_Basic(A,is,diag);CHKERRQ(ierr);
+  PetscCall(TestMatZeroRows_Basic(A,is,0.0));
+  PetscCall(TestMatZeroRows_Basic(A,is,diag));
 
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = ISDestroy(&is);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(MatDestroy(&A));
+  PetscCall(ISDestroy(&is));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 PetscErrorCode TestMatZeroRows_Basic(Mat A,IS is,PetscScalar diag)
 {
   Mat            B;
-  PetscErrorCode ierr;
   PetscBool      keepnonzeropattern;
 
   /* Now copy A into B, and test it with MatZeroRows() */
-  ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
+  PetscCall(MatDuplicate(A,MAT_COPY_VALUES,&B));
 
-  ierr = PetscOptionsHasName(NULL,NULL,"-keep_nonzero_pattern",&keepnonzeropattern);CHKERRQ(ierr);
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-keep_nonzero_pattern",&keepnonzeropattern));
   if (keepnonzeropattern) {
-    ierr = MatSetOption(B,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE);CHKERRQ(ierr);
+    PetscCall(MatSetOption(B,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE));
   }
 
-  ierr = MatZeroRowsIS(B,is,diag,0,0);CHKERRQ(ierr);
-  ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  PetscCall(MatZeroRowsIS(B,is,diag,0,0));
+  PetscCall(MatView(B,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatDestroy(&B));
   return 0;
 }
 
 PetscErrorCode TestMatZeroRows_with_no_allocation(Mat A,IS is,PetscScalar diag)
 {
   Mat            B;
-  PetscErrorCode ierr;
 
   /* Now copy A into B, and test it with MatZeroRows() */
-  ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
+  PetscCall(MatDuplicate(A,MAT_COPY_VALUES,&B));
   /* Set this flag after assembly. This way, it affects only MatZeroRows() */
-  ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+  PetscCall(MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE));
 
-  ierr = MatZeroRowsIS(B,is,diag,0,0);CHKERRQ(ierr);
-  ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  PetscCall(MatZeroRowsIS(B,is,diag,0,0));
+  PetscCall(MatView(B,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatDestroy(&B));
   return 0;
 }
 
@@ -120,24 +117,24 @@ PetscErrorCode TestMatZeroRows_with_no_allocation(Mat A,IS is,PetscScalar diag)
 
    test:
       nsize: 2
-      filter: grep -v "MPI processes"
+      filter: grep -v " MPI process"
 
    test:
       suffix: 2
       nsize: 3
       args: -mat_type mpibaij -mat_block_size 3
-      filter: grep -v "MPI processes"
+      filter: grep -v " MPI process"
 
    test:
       suffix: 3
       nsize: 3
       args: -mat_type mpiaij -keep_nonzero_pattern
-      filter: grep -v "MPI processes"
+      filter: grep -v " MPI process"
 
    test:
       suffix: 4
       nsize: 3
       args: -keep_nonzero_pattern -mat_type mpibaij -mat_block_size 3
-      filter: grep -v "MPI processes"
+      filter: grep -v " MPI process"
 
 TEST*/

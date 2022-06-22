@@ -105,6 +105,8 @@ struct _VecOps {
   PetscErrorCode (*restorearraywriteandmemtype)(Vec,PetscScalar**,PetscMemType*);
   PetscErrorCode (*concatenate)(PetscInt,const Vec[],Vec*,IS*[]);
   PetscErrorCode (*sum)(Vec,PetscScalar*);
+  PetscErrorCode (*setpreallocationcoo)(Vec,PetscCount,const PetscInt[]);
+  PetscErrorCode (*setvaluescoo)(Vec,const PetscScalar[],InsertMode);
 };
 
 /*
@@ -148,7 +150,10 @@ struct _p_Vec {
   PetscBool              array_gotten;
   VecStash               stash,bstash; /* used for storing off-proc values during assembly */
   PetscBool              petscnative;  /* means the ->data starts with VECHEADER and can use VecGetArrayFast()*/
+#if PetscDefined(USE_DEBUG)
+  PetscStack             lockstack;    /* the file,func,line of where locks are added */
   PetscInt               lock;         /* lock state. vector can be free (=0), locked for read (>0) or locked for write(<0) */
+#endif
   PetscOffloadMask       offloadmask;  /* a mask which indicates where the valid vector data is (GPU, CPU or both) */
 #if defined(PETSC_HAVE_DEVICE)
   void                   *spptr; /* this is the special pointer to the array on the GPU */
@@ -180,6 +185,8 @@ PETSC_EXTERN PetscLogEvent VEC_MAXPY;
 PETSC_EXTERN PetscLogEvent VEC_AssemblyEnd;
 PETSC_EXTERN PetscLogEvent VEC_PointwiseMult;
 PETSC_EXTERN PetscLogEvent VEC_SetValues;
+PETSC_EXTERN PetscLogEvent VEC_SetPreallocateCOO;
+PETSC_EXTERN PetscLogEvent VEC_SetValuesCOO;
 PETSC_EXTERN PetscLogEvent VEC_Load;
 PETSC_EXTERN PetscLogEvent VEC_ScatterBegin;
 PETSC_EXTERN PetscLogEvent VEC_ScatterEnd;
@@ -266,11 +273,8 @@ PETSC_INTERN PetscErrorCode VecStashGetOwnerList_Private(VecStash*,PetscLayout,P
 */
 static inline PetscErrorCode VecStashValue_Private(VecStash *stash,PetscInt row,PetscScalar value)
 {
-  PetscErrorCode ierr;
   /* Check and see if we have sufficient memory */
-  if (((stash)->n + 1) > (stash)->nmax) {
-    ierr = VecStashExpand_Private(stash,1);CHKERRQ(ierr);
-  }
+  if (((stash)->n + 1) > (stash)->nmax) PetscCall(VecStashExpand_Private(stash,1));
   (stash)->idx[(stash)->n]   = row;
   (stash)->array[(stash)->n] = value;
   (stash)->n++;
@@ -287,15 +291,13 @@ static inline PetscErrorCode VecStashValue_Private(VecStash *stash,PetscInt row,
 */
 static inline PetscErrorCode VecStashValuesBlocked_Private(VecStash *stash,PetscInt row,PetscScalar *values)
 {
-  PetscInt       jj,stash_bs=(stash)->bs;
-  PetscScalar    *array;
-  PetscErrorCode ierr;
-  if (((stash)->n+1) > (stash)->nmax) {
-    ierr = VecStashExpand_Private(stash,1);CHKERRQ(ierr);
-  }
+  PetscInt     stash_bs = (stash)->bs;
+  PetscScalar *array;
+
+  if (((stash)->n+1) > (stash)->nmax) PetscCall(VecStashExpand_Private(stash,1));
   array = (stash)->array + stash_bs*(stash)->n;
-  (stash)->idx[(stash)->n]   = row;
-  for (jj=0; jj<stash_bs; jj++) { array[jj] = values[jj];}
+  (stash)->idx[(stash)->n] = row;
+  PetscCall(PetscArraycpy(array,values,stash_bs));
   (stash)->n++;
   return 0;
 }
@@ -363,5 +365,26 @@ PETSC_INTERN PetscErrorCode VecGetSubVectorThroughVecScatter_Private(Vec,IS,Pets
 PETSC_INTERN PetscErrorCode VecCreateSeqKokkosWithArrays_Private(MPI_Comm,PetscInt,PetscInt,const PetscScalar*,const PetscScalar*,Vec*);
 PETSC_INTERN PetscErrorCode VecCreateMPIKokkosWithArrays_Private(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscScalar*,const PetscScalar*,Vec*);
 #endif
+
+/* std::upper_bound(): Given a sorted array, return index of the first element in range [first,last) whose value
+   is greater than value, or last if there is no such element.
+*/
+static inline PetscErrorCode PetscSortedIntUpperBound(PetscInt *array,PetscCount first,PetscCount last,PetscInt value,PetscCount *upper)
+{
+  PetscCount  it,step,count = last - first;
+
+  PetscFunctionBegin;
+  while (count > 0) {
+    it   = first;
+    step = count / 2;
+    it  += step;
+    if (!(value < array[it])) {
+      first  = ++it;
+      count -= step + 1;
+    } else count = step;
+  }
+  *upper = first;
+  PetscFunctionReturn(0);
+}
 
 #endif /* __VECIMPL_H */

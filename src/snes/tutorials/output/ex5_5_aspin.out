@@ -59,7 +59,7 @@ SNES Object: 4 MPI processes
       total subdomain blocks = 4
       Local solver information for first block on rank 0:
       Use -npc_snes_view ::ascii_info_detail to display information for all blocks
-      SNES Object: (npc_sub_) 1 MPI processes
+      SNES Object: (npc_sub_) 1 MPI process
         type: newtonls
         maximum iterations=50, maximum function evaluations=10000
         tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
@@ -67,34 +67,34 @@ SNES Object: 4 MPI processes
         total number of function evaluations=3
         norm schedule ALWAYS
         Jacobian is built using a DMDA local Jacobian
-        SNESLineSearch Object: (npc_sub_) 1 MPI processes
+        SNESLineSearch Object: (npc_sub_) 1 MPI process
           type: bt
             interpolation: cubic
             alpha=1.000000e-04
           maxstep=1.000000e+08, minlambda=1.000000e-12
           tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
           maximum iterations=40
-        KSP Object: (npc_sub_) 1 MPI processes
+        KSP Object: (npc_sub_) 1 MPI process
           type: preonly
           maximum iterations=10000, initial guess is zero
           tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning
           using NONE norm type for convergence test
-        PC Object: (npc_sub_) 1 MPI processes
+        PC Object: (npc_sub_) 1 MPI process
           type: lu
             out-of-place factorization
             tolerance for zero pivot 2.22045e-14
             matrix ordering: nd
             factor fill ratio given 5., needed 4.91439
               Factored matrix follows:
-                Mat Object: 1 MPI processes
+                Mat Object: (npc_sub_) 1 MPI process
                   type: seqaij
                   rows=784, cols=784
                   package used to perform factorization: petsc
                   total: nonzeros=18714, allocated nonzeros=18714
                     not using I-node routines
           linear system matrix = precond matrix:
-          Mat Object: 1 MPI processes
+          Mat Object: 1 MPI process
             type: seqaij
             rows=784, cols=784
             total: nonzeros=3808, allocated nonzeros=3808

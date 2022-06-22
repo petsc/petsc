@@ -36,7 +36,7 @@ Process [4]
 0.5
 0.75
 [0]solution
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.
 0.
@@ -57,7 +57,7 @@ Vec Object: 1 MPI processes
 3.
 3.
 [1]solution
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.
 0.
@@ -72,7 +72,7 @@ Vec Object: 1 MPI processes
 3.
 3.
 [2]solution
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.
 0.
@@ -87,7 +87,7 @@ Vec Object: 1 MPI processes
 3.
 3.
 [3]solution
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.
 0.
@@ -102,7 +102,7 @@ Vec Object: 1 MPI processes
 3.
 3.
 [4]solution
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.
 0.
@@ -117,7 +117,7 @@ Vec Object: 1 MPI processes
 3.
 3.
 [0]Field values
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1.5
 1.5
@@ -126,25 +126,25 @@ Vec Object: 1 MPI processes
 1.5
 1.5
 [1]Field values
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1.5
 1.5
 1.5
 [2]Field values
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1.5
 1.5
 1.5
 [3]Field values
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1.5
 1.5
 1.5
 [4]Field values
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1.5
 1.5

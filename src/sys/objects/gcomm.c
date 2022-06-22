@@ -24,12 +24,11 @@
 $       comm = PetscObjectComm((PetscObject)obj);
         instead use PetscObjectGetComm()
 
-.seealso: PetscObjectGetComm()
+.seealso: `PetscObjectGetComm()`
 @*/
 MPI_Comm  PetscObjectComm(PetscObject obj)
 {
-  if (!obj) return MPI_COMM_NULL;
-  return obj->comm;
+  return obj ? obj->comm : MPI_COMM_NULL;
 }
 
 /*@C
@@ -48,18 +47,15 @@ MPI_Comm  PetscObjectComm(PetscObject obj)
 
    Level: advanced
 
-.seealso: PetscObjectComm()
+.seealso: `PetscObjectComm()`
 @*/
 PetscErrorCode  PetscObjectGetComm(PetscObject obj,MPI_Comm *comm)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
   PetscValidPointer(comm,2);
-  if (obj->bops->getcomm) {
-    ierr = obj->bops->getcomm(obj,comm);CHKERRQ(ierr);
-  } else *comm = obj->comm;
+  if (obj->bops->getcomm) PetscCall(obj->bops->getcomm(obj,comm));
+  else *comm = obj->comm;
   PetscFunctionReturn(0);
 }
 
@@ -79,17 +75,18 @@ PetscErrorCode  PetscObjectGetComm(PetscObject obj,MPI_Comm *comm)
    Level: developer
 
     Notes:
-    this is used to manage the output from options that are imbedded in other objects. For example
+    this is used to manage the output from options that are embedded in other objects. For example
       the KSP object inside a SNES object. By indenting each lower level further the hierarchy of objects
       is very clear.
 
-.seealso:  PetscObjectIncrementTabLevel()
+.seealso: `PetscObjectIncrementTabLevel()`
 
 @*/
 PetscErrorCode  PetscObjectGetTabLevel(PetscObject obj,PetscInt *tab)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
+  PetscValidIntPointer(tab,2);
   *tab = obj->tablevel;
   PetscFunctionReturn(0);
 }
@@ -108,11 +105,11 @@ PetscErrorCode  PetscObjectGetTabLevel(PetscObject obj,PetscInt *tab)
    Level: developer
 
     Notes:
-    this is used to manage the output from options that are imbedded in other objects. For example
+    this is used to manage the output from options that are embedded in other objects. For example
       the KSP object inside a SNES object. By indenting each lower level further the hierarchy of objects
       is very clear.
 
-.seealso:  PetscObjectIncrementTabLevel()
+.seealso: `PetscObjectIncrementTabLevel()`
 @*/
 PetscErrorCode  PetscObjectSetTabLevel(PetscObject obj,PetscInt tab)
 {
@@ -136,19 +133,18 @@ PetscErrorCode  PetscObjectSetTabLevel(PetscObject obj,PetscInt tab)
    Level: developer
 
     Notes:
-    this is used to manage the output from options that are imbedded in other objects. For example
+    this is used to manage the output from options that are embedded in other objects. For example
       the KSP object inside a SNES object. By indenting each lower level further the hierarchy of objects
       is very clear.
 
-.seealso:   PetscObjectSetTabLevel(),  PetscObjectGetTabLevel()
+.seealso: `PetscObjectSetTabLevel()`, `PetscObjectGetTabLevel()`
 
 @*/
 PetscErrorCode  PetscObjectIncrementTabLevel(PetscObject obj,PetscObject oldobj,PetscInt tab)
 {
-
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
-  if (oldobj) obj->tablevel = oldobj->tablevel + tab;
-  else obj->tablevel = tab;
+  if (oldobj) PetscValidHeader(oldobj,2);
+  obj->tablevel = (oldobj ? oldobj->tablevel : 0)+tab;
   PetscFunctionReturn(0);
 }

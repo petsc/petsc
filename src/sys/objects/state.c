@@ -102,14 +102,13 @@ PetscErrorCode PetscObjectComposedDataIncreaseInt(PetscObject obj)
 {
   PetscInt         *ar = obj->intcomposeddata,*new_ar,n = obj->int_idmax,new_n;
   PetscObjectState *ir = obj->intcomposedstate,*new_ir;
-  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   new_n = PetscObjectComposedDataMax;
-  ierr  = PetscCalloc2(new_n,&new_ar,new_n,&new_ir);CHKERRQ(ierr);
-  ierr  = PetscMemcpy(new_ar,ar,n*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr  = PetscMemcpy(new_ir,ir,n*sizeof(PetscObjectState));CHKERRQ(ierr);
-  ierr  = PetscFree2(ar,ir);CHKERRQ(ierr);
+  PetscCall(PetscCalloc2(new_n,&new_ar,new_n,&new_ir));
+  PetscCall(PetscMemcpy(new_ar,ar,n*sizeof(PetscInt)));
+  PetscCall(PetscMemcpy(new_ir,ir,n*sizeof(PetscObjectState)));
+  PetscCall(PetscFree2(ar,ir));
   obj->int_idmax       = new_n;
   obj->intcomposeddata = new_ar; obj->intcomposedstate = new_ir;
   PetscFunctionReturn(0);
@@ -119,14 +118,13 @@ PetscErrorCode PetscObjectComposedDataIncreaseIntstar(PetscObject obj)
 {
   PetscInt         **ar = obj->intstarcomposeddata,**new_ar,n = obj->intstar_idmax,new_n;
   PetscObjectState *ir  = obj->intstarcomposedstate,*new_ir;
-  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   new_n = PetscObjectComposedDataMax;
-  ierr  = PetscCalloc2(new_n,&new_ar,new_n,&new_ir);CHKERRQ(ierr);
-  ierr  = PetscMemcpy(new_ar,ar,n*sizeof(PetscInt*));CHKERRQ(ierr);
-  ierr  = PetscMemcpy(new_ir,ir,n*sizeof(PetscObjectState));CHKERRQ(ierr);
-  ierr  = PetscFree2(ar,ir);CHKERRQ(ierr);
+  PetscCall(PetscCalloc2(new_n,&new_ar,new_n,&new_ir));
+  PetscCall(PetscMemcpy(new_ar,ar,n*sizeof(PetscInt*)));
+  PetscCall(PetscMemcpy(new_ir,ir,n*sizeof(PetscObjectState)));
+  PetscCall(PetscFree2(ar,ir));
   obj->intstar_idmax        = new_n;
   obj->intstarcomposeddata  = new_ar;
   obj->intstarcomposedstate = new_ir;
@@ -138,14 +136,13 @@ PetscErrorCode PetscObjectComposedDataIncreaseReal(PetscObject obj)
   PetscReal        *ar = obj->realcomposeddata,*new_ar;
   PetscObjectState *ir = obj->realcomposedstate,*new_ir;
   PetscInt         n   = obj->real_idmax,new_n;
-  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   new_n = PetscObjectComposedDataMax;
-  ierr  = PetscCalloc2(new_n,&new_ar,new_n,&new_ir);CHKERRQ(ierr);
-  ierr  = PetscMemcpy(new_ar,ar,n*sizeof(PetscReal));CHKERRQ(ierr);
-  ierr  = PetscMemcpy(new_ir,ir,n*sizeof(PetscObjectState));CHKERRQ(ierr);
-  ierr  = PetscFree2(ar,ir);CHKERRQ(ierr);
+  PetscCall(PetscCalloc2(new_n,&new_ar,new_n,&new_ir));
+  PetscCall(PetscMemcpy(new_ar,ar,n*sizeof(PetscReal)));
+  PetscCall(PetscMemcpy(new_ir,ir,n*sizeof(PetscObjectState)));
+  PetscCall(PetscFree2(ar,ir));
   obj->real_idmax       = new_n;
   obj->realcomposeddata = new_ar; obj->realcomposedstate = new_ir;
   PetscFunctionReturn(0);
@@ -156,14 +153,13 @@ PetscErrorCode PetscObjectComposedDataIncreaseRealstar(PetscObject obj)
   PetscReal        **ar = obj->realstarcomposeddata,**new_ar;
   PetscObjectState *ir  = obj->realstarcomposedstate,*new_ir;
   PetscInt         n    = obj->realstar_idmax,new_n;
-  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   new_n = PetscObjectComposedDataMax;
-  ierr  = PetscCalloc2(new_n,&new_ar,new_n,&new_ir);CHKERRQ(ierr);
-  ierr  = PetscMemcpy(new_ar,ar,n*sizeof(PetscReal*));CHKERRQ(ierr);
-  ierr  = PetscMemcpy(new_ir,ir,n*sizeof(PetscObjectState));CHKERRQ(ierr);
-  ierr  = PetscFree2(ar,ir);CHKERRQ(ierr);
+  PetscCall(PetscCalloc2(new_n,&new_ar,new_n,&new_ir));
+  PetscCall(PetscMemcpy(new_ar,ar,n*sizeof(PetscReal*)));
+  PetscCall(PetscMemcpy(new_ir,ir,n*sizeof(PetscObjectState)));
+  PetscCall(PetscFree2(ar,ir));
   obj->realstar_idmax       = new_n;
   obj->realstarcomposeddata = new_ar; obj->realstarcomposedstate = new_ir;
   PetscFunctionReturn(0);
@@ -174,14 +170,13 @@ PetscErrorCode PetscObjectComposedDataIncreaseScalar(PetscObject obj)
   PetscScalar      *ar = obj->scalarcomposeddata,*new_ar;
   PetscObjectState *ir = obj->scalarcomposedstate,*new_ir;
   PetscInt         n   = obj->scalar_idmax,new_n;
-  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   new_n = PetscObjectComposedDataMax;
-  ierr  = PetscCalloc2(new_n,&new_ar,new_n,&new_ir);CHKERRQ(ierr);
-  ierr  = PetscMemcpy(new_ar,ar,n*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr  = PetscMemcpy(new_ir,ir,n*sizeof(PetscObjectState));CHKERRQ(ierr);
-  ierr  = PetscFree2(ar,ir);CHKERRQ(ierr);
+  PetscCall(PetscCalloc2(new_n,&new_ar,new_n,&new_ir));
+  PetscCall(PetscMemcpy(new_ar,ar,n*sizeof(PetscScalar)));
+  PetscCall(PetscMemcpy(new_ir,ir,n*sizeof(PetscObjectState)));
+  PetscCall(PetscFree2(ar,ir));
   obj->scalar_idmax       = new_n;
   obj->scalarcomposeddata = new_ar; obj->scalarcomposedstate = new_ir;
   PetscFunctionReturn(0);
@@ -192,14 +187,13 @@ PetscErrorCode PetscObjectComposedDataIncreaseScalarstar(PetscObject obj)
   PetscScalar      **ar = obj->scalarstarcomposeddata,**new_ar;
   PetscObjectState *ir  = obj->scalarstarcomposedstate,*new_ir;
   PetscInt         n    = obj->scalarstar_idmax,new_n;
-  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   new_n = PetscObjectComposedDataMax;
-  ierr  = PetscCalloc2(new_n,&new_ar,new_n,&new_ir);CHKERRQ(ierr);
-  ierr  = PetscMemcpy(new_ar,ar,n*sizeof(PetscScalar*));CHKERRQ(ierr);
-  ierr  = PetscMemcpy(new_ir,ir,n*sizeof(PetscObjectState));CHKERRQ(ierr);
-  ierr  = PetscFree2(ar,ir);CHKERRQ(ierr);
+  PetscCall(PetscCalloc2(new_n,&new_ar,new_n,&new_ir));
+  PetscCall(PetscMemcpy(new_ar,ar,n*sizeof(PetscScalar*)));
+  PetscCall(PetscMemcpy(new_ir,ir,n*sizeof(PetscObjectState)));
+  PetscCall(PetscFree2(ar,ir));
   obj->scalarstar_idmax       = new_n;
   obj->scalarstarcomposeddata = new_ar; obj->scalarstarcomposedstate = new_ir;
   PetscFunctionReturn(0);
@@ -221,7 +215,7 @@ PetscErrorCode PetscObjectComposedDataIncreaseScalarstar(PetscObject obj)
    Notes:
    The object ID may be different on different processes, but object IDs are never reused so local equality implies global equality.
 
-.seealso: PetscObjectStateGet(), PetscObjectCompareId()
+.seealso: `PetscObjectStateGet()`, `PetscObjectCompareId()`
 @*/
 PetscErrorCode PetscObjectGetId(PetscObject obj,PetscObjectId *id)
 {
@@ -247,7 +241,7 @@ PetscErrorCode PetscObjectGetId(PetscObject obj,PetscObjectId *id)
    Notes:
    The object ID may be different on different processes, but object IDs are never reused so local equality implies global equality.
 
-.seealso: PetscObjectStateGet(), PetscObjectGetId()
+.seealso: `PetscObjectStateGet()`, `PetscObjectGetId()`
 @*/
 PetscErrorCode PetscObjectCompareId(PetscObject obj,PetscObjectId id,PetscBool *eq)
 {

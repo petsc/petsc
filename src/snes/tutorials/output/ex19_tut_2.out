@@ -40,7 +40,7 @@ SNES Object: 4 MPI processes
   total number of function evaluations=4
   norm schedule ALWAYS
   Jacobian is built using colored finite differences on a DMDA
-SNESLineSearch Object: 4 MPI processes
+  SNESLineSearch Object: 4 MPI processes
     type: bt
       interpolation: cubic
       alpha=1.000000e-04
@@ -60,7 +60,7 @@ SNESLineSearch Object: 4 MPI processes
       type is MULTIPLICATIVE, levels=6 cycles=v
         Cycles per PCApply=1
         Not using Galerkin computed coarse grid matrices
-    Coarse grid solver -- level -------------------------------
+    Coarse grid solver -- level 0 -------------------------------
       KSP Object: (mg_coarse_) 4 MPI processes
         type: preonly
         maximum iterations=10000, initial guess is zero
@@ -70,13 +70,13 @@ SNESLineSearch Object: 4 MPI processes
       PC Object: (mg_coarse_) 4 MPI processes
         type: redundant
           First (color=0) of 4 PCs follows
-          KSP Object: (mg_coarse_redundant_) 1 MPI processes
+          KSP Object: (mg_coarse_redundant_) 1 MPI process
             type: preonly
             maximum iterations=10000, initial guess is zero
             tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
             left preconditioning
             using NONE norm type for convergence test
-          PC Object: (mg_coarse_redundant_) 1 MPI processes
+          PC Object: (mg_coarse_redundant_) 1 MPI process
             type: lu
               out-of-place factorization
               tolerance for zero pivot 2.22045e-14
@@ -84,14 +84,14 @@ SNESLineSearch Object: 4 MPI processes
               matrix ordering: nd
               factor fill ratio given 5., needed 1.875
                 Factored matrix follows:
-                  Mat Object: 1 MPI processes
+                  Mat Object: (mg_coarse_redundant_) 1 MPI process
                     type: seqaij
                     rows=64, cols=64, bs=4
                     package used to perform factorization: petsc
                     total: nonzeros=1920, allocated nonzeros=1920
                       using I-node routines: found 16 nodes, limit used is 5
             linear system matrix = precond matrix:
-            Mat Object: 1 MPI processes
+            Mat Object: 1 MPI process
               type: seqaij
               rows=64, cols=64, bs=4
               total: nonzeros=1024, allocated nonzeros=1024
@@ -106,9 +106,9 @@ SNESLineSearch Object: 4 MPI processes
     Down solver (pre-smoother) on level 1 -------------------------------
       KSP Object: (mg_levels_1_) 4 MPI processes
         type: chebyshev
-          eigenvalue estimates used:  min = 0.148269, max = 1.63095
-          eigenvalues estimate via gmres min 0.144902, max 1.48269
-          eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
+          eigenvalue targets used: min 0.148269, max 1.63095
+          eigenvalues estimated via gmres: min 0.144902, max 1.48269
+          eigenvalues estimated using gmres with transform: [0. 0.1; 0. 1.1]
           KSP Object: (mg_levels_1_esteig_) 4 MPI processes
             type: gmres
               restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -135,9 +135,9 @@ SNESLineSearch Object: 4 MPI processes
     Down solver (pre-smoother) on level 2 -------------------------------
       KSP Object: (mg_levels_2_) 4 MPI processes
         type: chebyshev
-          eigenvalue estimates used:  min = 0.149178, max = 1.64096
-          eigenvalues estimate via gmres min 0.0843938, max 1.49178
-          eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
+          eigenvalue targets used: min 0.149178, max 1.64096
+          eigenvalues estimated via gmres: min 0.0843938, max 1.49178
+          eigenvalues estimated using gmres with transform: [0. 0.1; 0. 1.1]
           KSP Object: (mg_levels_2_esteig_) 4 MPI processes
             type: gmres
               restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -164,9 +164,9 @@ SNESLineSearch Object: 4 MPI processes
     Down solver (pre-smoother) on level 3 -------------------------------
       KSP Object: (mg_levels_3_) 4 MPI processes
         type: chebyshev
-          eigenvalue estimates used:  min = 0.146454, max = 1.61099
-          eigenvalues estimate via gmres min 0.0659153, max 1.46454
-          eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
+          eigenvalue targets used: min 0.146454, max 1.61099
+          eigenvalues estimated via gmres: min 0.0659153, max 1.46454
+          eigenvalues estimated using gmres with transform: [0. 0.1; 0. 1.1]
           KSP Object: (mg_levels_3_esteig_) 4 MPI processes
             type: gmres
               restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -193,9 +193,9 @@ SNESLineSearch Object: 4 MPI processes
     Down solver (pre-smoother) on level 4 -------------------------------
       KSP Object: (mg_levels_4_) 4 MPI processes
         type: chebyshev
-          eigenvalue estimates used:  min = 0.141089, max = 1.55197
-          eigenvalues estimate via gmres min 0.044097, max 1.41089
-          eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
+          eigenvalue targets used: min 0.141089, max 1.55197
+          eigenvalues estimated via gmres: min 0.044097, max 1.41089
+          eigenvalues estimated using gmres with transform: [0. 0.1; 0. 1.1]
           KSP Object: (mg_levels_4_esteig_) 4 MPI processes
             type: gmres
               restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -222,9 +222,9 @@ SNESLineSearch Object: 4 MPI processes
     Down solver (pre-smoother) on level 5 -------------------------------
       KSP Object: (mg_levels_5_) 4 MPI processes
         type: chebyshev
-          eigenvalue estimates used:  min = 0.127956, max = 1.40751
-          eigenvalues estimate via gmres min 0.0380398, max 1.27956
-          eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
+          eigenvalue targets used: min 0.127956, max 1.40751
+          eigenvalues estimated via gmres: min 0.0380398, max 1.27956
+          eigenvalues estimated using gmres with transform: [0. 0.1; 0. 1.1]
           KSP Object: (mg_levels_5_esteig_) 4 MPI processes
             type: gmres
               restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement

@@ -1,5 +1,5 @@
+-include ../../../../../../../petsckdir.mk
 #requirespackage 'PETSC_HAVE_CUDA'
-ALL: lib
 
 SOURCEH       =
 SOURCEC       =

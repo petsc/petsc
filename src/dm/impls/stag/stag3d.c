@@ -8,14 +8,14 @@
 
   Input Parameters:
 + comm - MPI communicator
-. bndx,bndy,bndz - boundary type: DM_BOUNDARY_NONE, DM_BOUNDARY_PERIODIC, or DM_BOUNDARY_GHOSTED
-. M,N,P - global number of grid points in x,y directions
-. m,n,p - number of ranks in the x,y directions (may be PETSC_DECIDE)
+. bndx,bndy,bndz - boundary type: `DM_BOUNDARY_NONE`, `DM_BOUNDARY_PERIODIC`, or `DM_BOUNDARY_GHOSTED`
+. M,N,P - global number of elements in x,y,z directions
+. m,n,p - number of ranks in the x,y,z directions (may be `PETSC_DECIDE`)
 . dof0 - number of degrees of freedom per vertex/0-cell
 . dof1 - number of degrees of freedom per edge/1-cell
 . dof2 - number of degrees of freedom per face/2-cell
 . dof3 - number of degrees of freedom per element/3-cell
-. stencilType - ghost/halo region type: DMSTAG_STENCIL_NONE, DMSTAG_STENCIL_BOX, or DMSTAG_STENCIL_STAR
+. stencilType - ghost/halo region type: `DMSTAG_STENCIL_NONE`, `DMSTAG_STENCIL_BOX`, or `DMSTAG_STENCIL_STAR`
 . stencilWidth - width, in elements, of halo/ghost region
 - lx,ly,lz - arrays of local x,y,z element counts, of length equal to m,n,p, summing to M,N,P
 
@@ -23,7 +23,7 @@
 . dm - the new DMStag object
 
   Options Database Keys:
-+ -dm_view - calls DMViewFromOptions() a the conclusion of DMSetUp()
++ -dm_view - calls `DMViewFromOptions()` at the conclusion of `DMSetUp()`
 . -stag_grid_x <nx> - number of elements in the x direction
 . -stag_grid_y <ny> - number of elements in the y direction
 . -stag_grid_z <nz> - number of elements in the z direction
@@ -31,33 +31,169 @@
 . -stag_ranks_y <ry> - number of ranks in the y direction
 . -stag_ranks_z <rz> - number of ranks in the z direction
 . -stag_ghost_stencil_width - width of ghost region, in elements
-. -stag_boundary_type x <none,ghosted,periodic> - DMBoundaryType value
-. -stag_boundary_type y <none,ghosted,periodic> - DMBoundaryType value
-- -stag_boundary_type z <none,ghosted,periodic> - DMBoundaryType value
+. -stag_boundary_type x <none,ghosted,periodic> - `DMBoundaryType` value
+. -stag_boundary_type y <none,ghosted,periodic> - `DMBoundaryType` value
+- -stag_boundary_type z <none,ghosted,periodic> - `DMBoundaryType` value
 
   Notes:
-  You must call DMSetUp() after this call before using the DM.
+  You must call `DMSetUp()` after this call before using the DM.
   If you wish to use the options database (see the keys above) to change values in the DMStag, you must call
-  DMSetFromOptions() after this function but before DMSetUp().
+  `DMSetFromOptions()` after this function but before `DMSetUp()`.
 
   Level: beginner
 
-.seealso: DMSTAG, DMStagCreate1d(), DMStagCreate2d(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateLocalVector(), DMLocalToGlobalBegin(), DMDACreate3d()
+.seealso: `DMSTAG`, `DMStagCreate1d()`, `DMStagCreate2d()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateLocalVector()`, `DMLocalToGlobalBegin()`, `DMDACreate3d()`
 @*/
 PETSC_EXTERN PetscErrorCode DMStagCreate3d(MPI_Comm comm,DMBoundaryType bndx,DMBoundaryType bndy,DMBoundaryType bndz,PetscInt M,PetscInt N,PetscInt P,PetscInt m,PetscInt n,PetscInt p,PetscInt dof0,PetscInt dof1,PetscInt dof2,PetscInt dof3,DMStagStencilType stencilType,PetscInt stencilWidth,const PetscInt lx[],const PetscInt ly[],const PetscInt lz[],DM* dm)
 {
-  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscCall(DMCreate(comm,dm));
+  PetscCall(DMSetDimension(*dm,3));
+  PetscCall(DMStagInitialize(bndx,bndy,bndz,M,N,P,m,n,p,dof0,dof1,dof2,dof3,stencilType,stencilWidth,lx,ly,lz,*dm));
+  PetscFunctionReturn(0);
+}
+
+PETSC_INTERN PetscErrorCode DMStagRestrictSimple_3d(DM dmf,Vec xf_local,DM dmc,Vec xc_local)
+{
+  PetscScalar  ****LA_xf,****LA_xc;
+  PetscInt     i,j,k,start[3],n[3],nextra[3],N[3];
+  PetscInt     d,dof[4];
+  PetscInt     slot_back_down_left_coarse,slot_back_down_left_fine;
+  PetscInt     slot_down_left_coarse,slot_back_left_coarse,slot_back_down_coarse,slot_down_left_fine,slot_back_left_fine,slot_back_down_fine;
+  PetscInt     slot_left_coarse,slot_down_coarse,slot_back_coarse,slot_left_fine,slot_down_fine,slot_back_fine;
+  PetscInt     slot_element_fine,slot_element_coarse;
 
   PetscFunctionBegin;
-  ierr = DMCreate(comm,dm);CHKERRQ(ierr);
-  ierr = DMSetDimension(*dm,3);CHKERRQ(ierr);
-  ierr = DMStagInitialize(bndx,bndy,bndz,M,N,P,m,n,p,dof0,dof1,dof2,dof3,stencilType,stencilWidth,lx,ly,lz,*dm);CHKERRQ(ierr);
+  PetscCall(DMStagGetDOF(dmc,&dof[0],&dof[1],&dof[2],&dof[3]));
+  PetscCall(DMStagGetCorners(dmc,&start[0],&start[1],&start[2],&n[0],&n[1],&n[2],&nextra[0],&nextra[1],&nextra[2]));
+  PetscCall(DMStagGetGlobalSizes(dmc,&N[0],&N[1],&N[2]));
+  if (PetscDefined(USE_DEBUG)) {
+    PetscInt dof_check[4],n_fine[3],start_fine[3];
+
+    PetscCall(DMStagGetDOF(dmf,&dof_check[0],&dof_check[1],&dof_check[2],&dof_check[3]));
+    PetscCall(DMStagGetCorners(dmf,&start_fine[0],&start_fine[1],&start_fine[2],&n_fine[0],&n_fine[1],&n_fine[2],NULL,NULL,NULL));
+    for (d=0; d<4; ++d) PetscCheck(dof_check[d] == dof[d],PetscObjectComm((PetscObject)dmf),PETSC_ERR_ARG_INCOMP,"Cannot transfer between DMStag objects with different dof on each stratum");
+    for (d=0; d<3; ++d) PetscCheck(n_fine[d] == 2*n[d],PetscObjectComm((PetscObject)dmf),PETSC_ERR_ARG_INCOMP,"Cannot transfer between DMStag objects unless there is a 2-1 coarsening");
+    for (d=0; d<3; ++d) PetscCheck(start_fine[d] == 2*start[d],PetscObjectComm((PetscObject)dmf),PETSC_ERR_ARG_INCOMP,"Cannot transfer between DMStag objects unless there is a 2-1 coarsening");
+    {
+      PetscInt size_local,entries_local;
+
+      PetscCall(DMStagGetEntriesLocal(dmf,&entries_local));
+      PetscCall(VecGetLocalSize(xf_local,&size_local));
+      PetscCheck(entries_local == size_local,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"Fine vector must be a local vector of size %" PetscInt_FMT ", but a vector of size %" PetscInt_FMT " was supplied",entries_local,size_local);
+    }
+    {
+      PetscInt size_local,entries_local;
+
+      PetscCall(DMStagGetEntriesLocal(dmc,&entries_local));
+      PetscCall(VecGetLocalSize(xc_local,&size_local));
+      PetscCheck(entries_local == size_local,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"Coarse vector must be a local vector of size %" PetscInt_FMT ", but a vector of size %" PetscInt_FMT " was supplied",entries_local,size_local);
+    }
+  }
+  PetscCall(VecZeroEntries(xc_local));
+  PetscCall(DMStagVecGetArray(dmf,xf_local,&LA_xf));
+  PetscCall(DMStagVecGetArray(dmc,xc_local,&LA_xc));
+  PetscCall(DMStagGetLocationSlot(dmf,DMSTAG_BACK_DOWN_LEFT,0,&slot_back_down_left_fine));
+  PetscCall(DMStagGetLocationSlot(dmf,DMSTAG_DOWN_LEFT,     0,&slot_down_left_fine));
+  PetscCall(DMStagGetLocationSlot(dmf,DMSTAG_BACK_LEFT,     0,&slot_back_left_fine));
+  PetscCall(DMStagGetLocationSlot(dmf,DMSTAG_BACK_DOWN,     0,&slot_back_down_fine));
+  PetscCall(DMStagGetLocationSlot(dmf,DMSTAG_LEFT,          0,&slot_left_fine));
+  PetscCall(DMStagGetLocationSlot(dmf,DMSTAG_DOWN,          0,&slot_down_fine));
+  PetscCall(DMStagGetLocationSlot(dmf,DMSTAG_BACK,          0,&slot_back_fine));
+  PetscCall(DMStagGetLocationSlot(dmf,DMSTAG_ELEMENT,       0,&slot_element_fine));
+  PetscCall(DMStagGetLocationSlot(dmc,DMSTAG_BACK_DOWN_LEFT,0,&slot_back_down_left_coarse));
+  PetscCall(DMStagGetLocationSlot(dmc,DMSTAG_DOWN_LEFT,     0,&slot_down_left_coarse));
+  PetscCall(DMStagGetLocationSlot(dmc,DMSTAG_BACK_LEFT,     0,&slot_back_left_coarse));
+  PetscCall(DMStagGetLocationSlot(dmc,DMSTAG_BACK_DOWN,     0,&slot_back_down_coarse));
+  PetscCall(DMStagGetLocationSlot(dmc,DMSTAG_LEFT,          0,&slot_left_coarse));
+  PetscCall(DMStagGetLocationSlot(dmc,DMSTAG_DOWN,          0,&slot_down_coarse));
+  PetscCall(DMStagGetLocationSlot(dmc,DMSTAG_BACK,          0,&slot_back_coarse));
+  PetscCall(DMStagGetLocationSlot(dmc,DMSTAG_ELEMENT,       0,&slot_element_coarse));
+  for (k=start[2]; k<start[2]+n[2]+nextra[2]; k++) {
+    for (j=start[1]; j<start[1]+n[1]+nextra[1]; j++) {
+      for (i=start[0]; i<start[0]+n[0]+nextra[0]; i++) {
+
+        // Vertices: inject
+        for (d=0; d<dof[0]; ++d) {
+          LA_xc[k][j][i][slot_back_down_left_coarse + d] = LA_xf[2*k][2*j][2*i][slot_back_down_left_fine + d];
+        }
+
+        // Edges: average 2 fine edges
+        if (i < N[0]) {
+          for (d=0; d<dof[1]; ++d) {
+            LA_xc[k][j][i][slot_back_down_coarse + d] = 0.5 * (
+                                                        LA_xf[2*k  ][2*j  ][2*i  ][slot_back_down_fine + d] +
+                                                        LA_xf[2*k  ][2*j  ][2*i+1][slot_back_down_fine + d]);
+          }
+        }
+        if (j < N[1]) {
+          for (d=0; d<dof[1]; ++d) {
+            LA_xc[k][j][i][slot_back_left_coarse + d] = 0.5 * (
+                                                        LA_xf[2*k  ][2*j  ][2*i  ][slot_back_left_fine + d] +
+                                                        LA_xf[2*k  ][2*j+1][2*i  ][slot_back_left_fine + d]);
+          }
+        }
+        if (k < N[2]) {
+          for (d=0; d<dof[1]; ++d) {
+            LA_xc[k][j][i][slot_down_left_coarse + d] = 0.5 * (
+                                                        LA_xf[2*k  ][2*j  ][2*i  ][slot_down_left_fine + d] +
+                                                        LA_xf[2*k+1][2*j  ][2*i  ][slot_down_left_fine + d]);
+          }
+        }
+
+        // Faces: average 4 fine faces
+        if (i < N[0] && j < N[1]) {
+          for (d=0; d<dof[2]; ++d) {
+            LA_xc[k][j][i][slot_back_coarse + d] = 0.25 * (
+                                                   LA_xf[2*k  ][2*j  ][2*i  ][slot_back_fine + d] +
+                                                   LA_xf[2*k  ][2*j  ][2*i+1][slot_back_fine + d] +
+                                                   LA_xf[2*k  ][2*j+1][2*i  ][slot_back_fine + d] +
+                                                   LA_xf[2*k  ][2*j+1][2*i+1][slot_back_fine + d]);
+          }
+        }
+        if (i < N[0] && k < N[2]) {
+          for (d=0; d<dof[2]; ++d) {
+            LA_xc[k][j][i][slot_down_coarse + d] = 0.25 * (
+                                                   LA_xf[2*k  ][2*j  ][2*i  ][slot_down_fine + d] +
+                                                   LA_xf[2*k  ][2*j  ][2*i+1][slot_down_fine + d] +
+                                                   LA_xf[2*k+1][2*j  ][2*i  ][slot_down_fine + d] +
+                                                   LA_xf[2*k+1][2*j  ][2*i+1][slot_down_fine + d]);
+          }
+        }
+        if (j < N[1] && k < N[2]) {
+          for (d=0; d<dof[2]; ++d) {
+            LA_xc[k][j][i][slot_left_coarse + d] = 0.25 * (
+                                                   LA_xf[2*k  ][2*j  ][2*i  ][slot_left_fine + d] +
+                                                   LA_xf[2*k  ][2*j  ][2*i+1][slot_left_fine + d] +
+                                                   LA_xf[2*k  ][2*j+1][2*i  ][slot_left_fine + d] +
+                                                   LA_xf[2*k  ][2*j+1][2*i+1][slot_left_fine + d]);
+          }
+        }
+
+        // Element: average 8 fine elements
+        if (i < N[0] && j < N[1] && k < N[2]) {
+          for (d=0; d<dof[3]; ++d) {
+            LA_xc[k][j][i][slot_element_coarse + d] = 0.125 * (
+                                                      LA_xf[2*k  ][2*j  ][2*i  ][slot_element_fine + d] +
+                                                      LA_xf[2*k  ][2*j  ][2*i+1][slot_element_fine + d] +
+                                                      LA_xf[2*k  ][2*j+1][2*i  ][slot_element_fine + d] +
+                                                      LA_xf[2*k  ][2*j+1][2*i+1][slot_element_fine + d] +
+                                                      LA_xf[2*k+1][2*j  ][2*i  ][slot_element_fine + d] +
+                                                      LA_xf[2*k+1][2*j  ][2*i+1][slot_element_fine + d] +
+                                                      LA_xf[2*k+1][2*j+1][2*i  ][slot_element_fine + d] +
+                                                      LA_xf[2*k+1][2*j+1][2*i+1][slot_element_fine + d]);
+          }
+        }
+      }
+    }
+  }
+  PetscCall(DMStagVecRestoreArray(dmf,xf_local,&LA_xf));
+  PetscCall(DMStagVecRestoreArray(dmc,xc_local,&LA_xc));
   PetscFunctionReturn(0);
 }
 
 PETSC_INTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit_3d(DM dm,PetscReal xmin,PetscReal xmax,PetscReal ymin,PetscReal ymax,PetscReal zmin,PetscReal zmax)
 {
-  PetscErrorCode ierr;
   DM_Stag        *stagCoord;
   DM             dmCoord;
   Vec            coordLocal;
@@ -67,30 +203,30 @@ PETSC_INTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit_3d(DM dm,PetscRe
   PetscInt       ibackdownleft,ibackdown,ibackleft,iback,idownleft,idown,ileft,ielement;
 
   PetscFunctionBegin;
-  ierr = DMGetCoordinateDM(dm,&dmCoord);CHKERRQ(ierr);
+  PetscCall(DMGetCoordinateDM(dm,&dmCoord));
   stagCoord = (DM_Stag*) dmCoord->data;
   for (s=0; s<4; ++s) {
-    PetscCheckFalse(stagCoord->dof[s] !=0 && stagCoord->dof[s] != 3,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Coordinate DM in 3 dimensions must have 0 or 3 dof on each stratum, but stratum %d has %d dof",s,stagCoord->dof[s]);
+    PetscCheck(stagCoord->dof[s] ==0 || stagCoord->dof[s] == 3,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Coordinate DM in 3 dimensions must have 0 or 3 dof on each stratum, but stratum %" PetscInt_FMT " has %" PetscInt_FMT " dof",s,stagCoord->dof[s]);
   }
-  ierr = DMCreateLocalVector(dmCoord,&coordLocal);CHKERRQ(ierr);
-  ierr = DMStagVecGetArray(dmCoord,coordLocal,&arr);CHKERRQ(ierr);
+  PetscCall(DMCreateLocalVector(dmCoord,&coordLocal));
+  PetscCall(DMStagVecGetArray(dmCoord,coordLocal,&arr));
   if (stagCoord->dof[0]) {
-    ierr = DMStagGetLocationSlot(dmCoord,DMSTAG_BACK_DOWN_LEFT,0,&ibackdownleft);CHKERRQ(ierr);
+    PetscCall(DMStagGetLocationSlot(dmCoord,DMSTAG_BACK_DOWN_LEFT,0,&ibackdownleft));
   }
   if (stagCoord->dof[1]) {
-    ierr = DMStagGetLocationSlot(dmCoord,DMSTAG_BACK_DOWN     ,0,&ibackdown);CHKERRQ(ierr);
-    ierr = DMStagGetLocationSlot(dmCoord,DMSTAG_BACK_LEFT     ,0,&ibackleft);CHKERRQ(ierr);
-    ierr = DMStagGetLocationSlot(dmCoord,DMSTAG_DOWN_LEFT     ,0,&idownleft);CHKERRQ(ierr);
+    PetscCall(DMStagGetLocationSlot(dmCoord,DMSTAG_BACK_DOWN     ,0,&ibackdown));
+    PetscCall(DMStagGetLocationSlot(dmCoord,DMSTAG_BACK_LEFT     ,0,&ibackleft));
+    PetscCall(DMStagGetLocationSlot(dmCoord,DMSTAG_DOWN_LEFT     ,0,&idownleft));
   }
   if (stagCoord->dof[2]) {
-    ierr = DMStagGetLocationSlot(dmCoord,DMSTAG_BACK          ,0,&iback);CHKERRQ(ierr);
-    ierr = DMStagGetLocationSlot(dmCoord,DMSTAG_DOWN          ,0,&idown);CHKERRQ(ierr);
-    ierr = DMStagGetLocationSlot(dmCoord,DMSTAG_LEFT          ,0,&ileft);CHKERRQ(ierr);
+    PetscCall(DMStagGetLocationSlot(dmCoord,DMSTAG_BACK          ,0,&iback));
+    PetscCall(DMStagGetLocationSlot(dmCoord,DMSTAG_DOWN          ,0,&idown));
+    PetscCall(DMStagGetLocationSlot(dmCoord,DMSTAG_LEFT          ,0,&ileft));
   }
   if (stagCoord->dof[3]) {
-    ierr = DMStagGetLocationSlot(dmCoord,DMSTAG_ELEMENT       ,0,&ielement);CHKERRQ(ierr);
+    PetscCall(DMStagGetLocationSlot(dmCoord,DMSTAG_ELEMENT       ,0,&ielement));
   }
-  ierr = DMStagGetGhostCorners(dmCoord,&start_ghost[0],&start_ghost[1],&start_ghost[2],&n_ghost[0],&n_ghost[1],&n_ghost[2]);CHKERRQ(ierr);
+  PetscCall(DMStagGetGhostCorners(dmCoord,&start_ghost[0],&start_ghost[1],&start_ghost[2],&n_ghost[0],&n_ghost[1],&n_ghost[2]));
   min[0] = xmin; min[1]= ymin; min[2] = zmin;
   h[0] = (xmax-xmin)/stagCoord->N[0];
   h[1] = (ymax-ymin)/stagCoord->N[1];
@@ -150,10 +286,10 @@ PETSC_INTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit_3d(DM dm,PetscRe
       }
     }
   }
-  ierr = DMStagVecRestoreArray(dmCoord,coordLocal,&arr);CHKERRQ(ierr);
-  ierr = DMSetCoordinatesLocal(dm,coordLocal);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject)dm,(PetscObject)coordLocal);CHKERRQ(ierr);
-  ierr = VecDestroy(&coordLocal);CHKERRQ(ierr);
+  PetscCall(DMStagVecRestoreArray(dmCoord,coordLocal,&arr));
+  PetscCall(DMSetCoordinatesLocal(dm,coordLocal));
+  PetscCall(PetscLogObjectParent((PetscObject)dm,(PetscObject)coordLocal));
+  PetscCall(VecDestroy(&coordLocal));
   PetscFunctionReturn(0);
 }
 
@@ -167,7 +303,6 @@ static PetscErrorCode DMStagComputeLocationOffsets_3d(DM);
 
 PETSC_INTERN PetscErrorCode DMSetUp_Stag_3d(DM dm)
 {
-  PetscErrorCode  ierr;
   DM_Stag * const stag = (DM_Stag*)dm->data;
   PetscMPIInt     rank;
   PetscInt        i,j,d;
@@ -175,10 +310,10 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_3d(DM dm)
   const PetscInt  dim = 3;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank));
 
   /* Rank grid sizes (populates stag->nRanks) */
-  ierr = DMStagSetUpBuildRankGrid_3d(dm);CHKERRQ(ierr);
+  PetscCall(DMStagSetUpBuildRankGrid_3d(dm));
 
   /* Determine location of rank in grid */
     stag->rank[0] = rank % stag->nRanks[0];
@@ -196,7 +331,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_3d(DM dm)
   for (i=0; i<dim; ++i) {
     if (!stag->l[i]) {
       const PetscInt Ni = stag->N[i], nRanksi = stag->nRanks[i];
-      ierr = PetscMalloc1(stag->nRanks[i],&stag->l[i]);CHKERRQ(ierr);
+      PetscCall(PetscMalloc1(stag->nRanks[i],&stag->l[i]));
       for (j=0; j<stag->nRanks[i]; ++j) {
         stag->l[i][j] = Ni/nRanksi + ((Ni % nRanksi) > j);
       }
@@ -210,7 +345,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_3d(DM dm)
       PetscInt Ncheck,j;
       Ncheck = 0;
       for (j=0; j<stag->nRanks[i]; ++j) Ncheck += stag->l[i][j];
-      PetscCheckFalse(Ncheck != stag->N[i],PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local sizes in dimension %d don't add up. %d != %d",i,Ncheck,stag->N[i]);
+      PetscCheck(Ncheck == stag->N[i],PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local sizes in dimension %" PetscInt_FMT " don't add up. %" PetscInt_FMT " != %" PetscInt_FMT,i,Ncheck,stag->N[i]);
     }
   }
 
@@ -223,7 +358,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_3d(DM dm)
   }
 
   /* Determine ranks of neighbors */
-  ierr = DMStagSetUpBuildNeighbors_3d(dm);CHKERRQ(ierr);
+  PetscCall(DMStagSetUpBuildNeighbors_3d(dm));
 
   /* Define useful sizes */
   {
@@ -248,7 +383,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_3d(DM dm)
 
   /* Check that we will not overflow 32 bit indices (slightly overconservative) */
   if (!PetscDefined(USE_64BIT_INDICES)) {
-    PetscCheckFalse(((PetscInt64) stag->n[0])*((PetscInt64) stag->n[1])*((PetscInt64) stag->n[2])*((PetscInt64) stag->entriesPerElement) > (PetscInt64) PETSC_MPI_INT_MAX,PetscObjectComm((PetscObject)dm),PETSC_ERR_INT_OVERFLOW,"Mesh of %D x %D x %D with %D entries per (interior) element is likely too large for 32 bit indices",stag->n[0],stag->n[1],stag->n[2],stag->entriesPerElement);
+    PetscCheck(((PetscInt64) stag->n[0])*((PetscInt64) stag->n[1])*((PetscInt64) stag->n[2])*((PetscInt64) stag->entriesPerElement) <= (PetscInt64) PETSC_MPI_INT_MAX,PetscObjectComm((PetscObject)dm),PETSC_ERR_INT_OVERFLOW,"Mesh of %" PetscInt_FMT " x %" PetscInt_FMT " x %" PetscInt_FMT " with %" PetscInt_FMT " entries per (interior) element is likely too large for 32 bit indices",stag->n[0],stag->n[1],stag->n[2],stag->entriesPerElement);
   }
 
   /* Compute offsets for each rank into global vectors
@@ -256,9 +391,9 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_3d(DM dm)
     This again requires O(P) storage, which could be replaced with some global
     communication.
   */
-  ierr = DMStagSetUpBuildGlobalOffsets_3d(dm,&globalOffsets);CHKERRQ(ierr);
+  PetscCall(DMStagSetUpBuildGlobalOffsets_3d(dm,&globalOffsets));
 
-  for (d=0; d<dim; ++d) PetscCheckFalse(stag->boundaryType[d] != DM_BOUNDARY_NONE && stag->boundaryType[d] != DM_BOUNDARY_PERIODIC && stag->boundaryType[d] != DM_BOUNDARY_GHOSTED,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported boundary type");
+  for (d=0; d<dim; ++d) PetscCheck(stag->boundaryType[d] == DM_BOUNDARY_NONE || stag->boundaryType[d] == DM_BOUNDARY_PERIODIC || stag->boundaryType[d] == DM_BOUNDARY_GHOSTED,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported boundary type");
 
   /* Define ghosted/local sizes */
   for (d=0; d<dim; ++d) {
@@ -319,30 +454,30 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_3d(DM dm)
             SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unrecognized ghost stencil type %d",stag->stencilType);
         }
         break;
-      default: SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported boundary type in dimension %D",d);
+      default: SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported boundary type in dimension %" PetscInt_FMT,d);
     }
   }
   stag->entriesGhost = stag->nGhost[0]*stag->nGhost[1]*stag->nGhost[2]*stag->entriesPerElement;
 
   /* Create global-->local VecScatter and local->global ISLocalToGlobalMapping */
-  ierr = DMStagSetUpBuildScatter_3d(dm,globalOffsets);CHKERRQ(ierr);
-  ierr = DMStagSetUpBuildL2G_3d(dm,globalOffsets);CHKERRQ(ierr);
+  PetscCall(DMStagSetUpBuildScatter_3d(dm,globalOffsets));
+  PetscCall(DMStagSetUpBuildL2G_3d(dm,globalOffsets));
 
   /* In special cases, create a dedicated injective local-to-global map */
   if ((stag->boundaryType[0] == DM_BOUNDARY_PERIODIC && stag->nRanks[0] == 1) ||
       (stag->boundaryType[1] == DM_BOUNDARY_PERIODIC && stag->nRanks[1] == 1) ||
       (stag->boundaryType[2] == DM_BOUNDARY_PERIODIC && stag->nRanks[2] == 1)) {
-    ierr = DMStagPopulateLocalToGlobalInjective(dm);CHKERRQ(ierr);
+    PetscCall(DMStagPopulateLocalToGlobalInjective(dm));
   }
 
   /* Free global offsets */
-  ierr = PetscFree(globalOffsets);CHKERRQ(ierr);
+  PetscCall(PetscFree(globalOffsets));
 
   /* Precompute location offsets */
-  ierr = DMStagComputeLocationOffsets_3d(dm);CHKERRQ(ierr);
+  PetscCall(DMStagComputeLocationOffsets_3d(dm));
 
   /* View from Options */
-  ierr = DMViewFromOptions(dm,NULL,"-dm_view");CHKERRQ(ierr);
+  PetscCall(DMViewFromOptions(dm,NULL,"-dm_view"));
 
   PetscFunctionReturn(0);
 }
@@ -350,7 +485,6 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_3d(DM dm)
 /* adapted from da3.c */
 static PetscErrorCode DMStagSetUpBuildRankGrid_3d(DM dm)
 {
-  PetscErrorCode  ierr;
   PetscMPIInt     rank,size;
   PetscInt        m,n,p,pm;
   DM_Stag * const stag = (DM_Stag*)dm->data;
@@ -359,26 +493,26 @@ static PetscErrorCode DMStagSetUpBuildRankGrid_3d(DM dm)
   const PetscInt P = stag->N[2];
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)dm),&size));
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank));
 
   m = stag->nRanks[0];
   n = stag->nRanks[1];
   p = stag->nRanks[2];
 
   if (m != PETSC_DECIDE) {
-    PetscCheckFalse(m < 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in X direction: %D",m);
-    else PetscCheckFalse(m > size,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in X direction: %D %d",m,size);
+    PetscCheck(m >= 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in X direction: %" PetscInt_FMT,m);
+    else PetscCheck(m <= size,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in X direction: %" PetscInt_FMT " %d",m,size);
   }
   if (n != PETSC_DECIDE) {
-    PetscCheckFalse(n < 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in Y direction: %D",n);
-    else PetscCheckFalse(n > size,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in Y direction: %D %d",n,size);
+    PetscCheck(n >= 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in Y direction: %" PetscInt_FMT,n);
+    else PetscCheck(n <= size,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in Y direction: %" PetscInt_FMT " %d",n,size);
   }
   if (p != PETSC_DECIDE) {
-    PetscCheckFalse(p < 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in Z direction: %D",p);
-    else PetscCheckFalse(p > size,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in Z direction: %D %d",p,size);
+    PetscCheck(p >= 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in Z direction: %" PetscInt_FMT,p);
+    else PetscCheck(p <= size,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in Z direction: %" PetscInt_FMT " %d",p,size);
   }
-  PetscCheckFalse((m > 0) && (n > 0) && (p > 0) && (m*n*p != size),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"m %D * n %D * p %D != size %d",m,n,p,size);
+  PetscCheck(m <= 0 || n <= 0 || p <= 0 || m*n*p == size,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"m %" PetscInt_FMT " * n %" PetscInt_FMT " * p %" PetscInt_FMT " != size %d",m,n,p,size);
 
   /* Partition the array among the processors */
   if (m == PETSC_DECIDE && n != PETSC_DECIDE && p != PETSC_DECIDE) {
@@ -396,7 +530,7 @@ static PetscErrorCode DMStagSetUpBuildRankGrid_3d(DM dm)
       if (m*n*p == size) break;
       m--;
     }
-    PetscCheckFalse(!m,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"bad p value: p = %D",p);
+    PetscCheck(m,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"bad p value: p = %" PetscInt_FMT,p);
     if (M > N && m < n) {PetscInt _m = m; m = n; n = _m;}
   } else if (m == PETSC_DECIDE && n != PETSC_DECIDE && p == PETSC_DECIDE) {
     /* try for squarish distribution */
@@ -407,7 +541,7 @@ static PetscErrorCode DMStagSetUpBuildRankGrid_3d(DM dm)
       if (m*n*p == size) break;
       m--;
     }
-    PetscCheckFalse(!m,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"bad n value: n = %D",n);
+    PetscCheck(m,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"bad n value: n = %" PetscInt_FMT,n);
     if (M > P && m < p) {PetscInt _m = m; m = p; p = _m;}
   } else if (m != PETSC_DECIDE && n == PETSC_DECIDE && p == PETSC_DECIDE) {
     /* try for squarish distribution */
@@ -418,7 +552,7 @@ static PetscErrorCode DMStagSetUpBuildRankGrid_3d(DM dm)
       if (m*n*p == size) break;
       n--;
     }
-    PetscCheckFalse(!n,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"bad m value: m = %D",n);
+    PetscCheck(n,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"bad m value: m = %" PetscInt_FMT,n);
     if (N > P && n < p) {PetscInt _n = n; n = p; p = _n;}
   } else if (m == PETSC_DECIDE && n == PETSC_DECIDE && p == PETSC_DECIDE) {
     /* try for squarish distribution */
@@ -438,12 +572,12 @@ static PetscErrorCode DMStagSetUpBuildRankGrid_3d(DM dm)
       m--;
     }
     if (M > P && m < p) {PetscInt _m = m; m = p; p = _m;}
-  } else PetscCheckFalse(m*n*p != size,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Given Bad partition");
+  } else PetscCheck(m*n*p == size,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Given Bad partition");
 
-  PetscCheckFalse(m*n*p != size,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Could not find good partition");
-  PetscCheckFalse(M < m,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Partition in x direction is too fine! %D %D",M,m);
-  PetscCheckFalse(N < n,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Partition in y direction is too fine! %D %D",N,n);
-  PetscCheckFalse(P < p,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Partition in z direction is too fine! %D %D",P,p);
+  PetscCheck(m*n*p == size,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Could not find good partition");
+  PetscCheck(M >= m,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Partition in x direction is too fine! %" PetscInt_FMT " %" PetscInt_FMT,M,m);
+  PetscCheck(N >= n,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Partition in y direction is too fine! %" PetscInt_FMT " %" PetscInt_FMT,N,n);
+  PetscCheck(P >= p,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Partition in z direction is too fine! %" PetscInt_FMT " %" PetscInt_FMT,P,p);
 
   stag->nRanks[0] = m;
   stag->nRanks[1] = n;
@@ -466,7 +600,6 @@ static PetscErrorCode DMStagSetUpBuildRankGrid_3d(DM dm)
         n0  n1  n2 (Back, smaller z) */
 static PetscErrorCode DMStagSetUpBuildNeighbors_3d(DM dm)
 {
-  PetscErrorCode  ierr;
   DM_Stag * const stag = (DM_Stag*)dm->data;
   PetscInt        d,i;
   PetscBool       per[3],first[3],last[3];
@@ -474,7 +607,7 @@ static PetscErrorCode DMStagSetUpBuildNeighbors_3d(DM dm)
   const PetscInt  dim = 3;
 
   PetscFunctionBegin;
-  for (d=0; d<dim; ++d) PetscCheckFalse(stag->boundaryType[d] != DM_BOUNDARY_NONE && stag->boundaryType[d] != DM_BOUNDARY_PERIODIC && stag->boundaryType[d] != DM_BOUNDARY_GHOSTED,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Neighbor determination not implemented for %s",DMBoundaryTypes[stag->boundaryType[d]]);
+  for (d=0; d<dim; ++d) PetscCheck(stag->boundaryType[d] == DM_BOUNDARY_NONE || stag->boundaryType[d] == DM_BOUNDARY_PERIODIC || stag->boundaryType[d] == DM_BOUNDARY_GHOSTED,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Neighbor determination not implemented for %s",DMBoundaryTypes[stag->boundaryType[d]]);
 
   /* Assemble some convenience variables */
   for (d=0; d<dim; ++d) {
@@ -596,7 +729,7 @@ static PetscErrorCode DMStagSetUpBuildNeighbors_3d(DM dm)
   neighborRank[26][2] = last[2]  ? (per[2] ?  0      : -1) : r[2] + 1;
 
   /* Then, compute the rank of each in the linear ordering */
-  ierr = PetscMalloc1(27,&stag->neighbors);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(27,&stag->neighbors));
   for (i=0; i<27; ++i) {
     if  (neighborRank[i][0] >= 0 && neighborRank[i][1] >=0 && neighborRank[i][2] >=0) {
       stag->neighbors[i] = neighborRank[i][0] + n[0]*neighborRank[i][1] + n[0]*n[1]*neighborRank[i][2];
@@ -610,7 +743,6 @@ static PetscErrorCode DMStagSetUpBuildNeighbors_3d(DM dm)
 
 static PetscErrorCode DMStagSetUpBuildGlobalOffsets_3d(DM dm,PetscInt **pGlobalOffsets)
 {
-  PetscErrorCode        ierr;
   const DM_Stag * const stag = (DM_Stag*)dm->data;
   PetscInt              *globalOffsets;
   PetscInt              i,j,k,d,entriesPerEdge,entriesPerFace,count;
@@ -621,8 +753,8 @@ static PetscErrorCode DMStagSetUpBuildGlobalOffsets_3d(DM dm,PetscInt **pGlobalO
   for (d=0; d<3; ++d) extra[d] = (PetscBool)(stag->boundaryType[d] != DM_BOUNDARY_PERIODIC); /* Extra points in global rep */
   entriesPerFace               = stag->dof[0] + 2*stag->dof[1] + stag->dof[2];
   entriesPerEdge               = stag->dof[0] + stag->dof[1];
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&size);CHKERRMPI(ierr);
-  ierr = PetscMalloc1(size,pGlobalOffsets);CHKERRQ(ierr);
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)dm),&size));
+  PetscCall(PetscMalloc1(size,pGlobalOffsets));
   globalOffsets = *pGlobalOffsets;
   globalOffsets[0] = 0;
   count = 1; /* note the count is offset by 1 here. We add the size of the previous rank */
@@ -849,7 +981,6 @@ static PetscErrorCode DMStagSetUpBuildScatterPopulateIdx_3d(DM_Stag *stag,PetscI
 
 static PetscErrorCode DMStagSetUpBuildScatter_3d(DM dm,const PetscInt *globalOffsets)
 {
-  PetscErrorCode ierr;
   DM_Stag * const stag = (DM_Stag*)dm->data;
   PetscInt       d,ghostOffsetStart[3],ghostOffsetEnd[3],entriesPerCorner,entriesPerEdge,entriesPerFace,entriesToTransferTotal,count,eprGhost,eplGhost;
   PetscInt       *idxLocal,*idxGlobal;
@@ -858,13 +989,13 @@ static PetscErrorCode DMStagSetUpBuildScatter_3d(DM dm,const PetscInt *globalOff
   PetscBool      star,nextToDummyEnd[3],dummyStart[3],dummyEnd[3];
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank));
   if (stag->stencilType != DMSTAG_STENCIL_NONE && (stag->n[0] < stag->stencilWidth || stag->n[1] < stag->stencilWidth || stag->n[2] < stag->stencilWidth)) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"DMStag 3d setup does not support local sizes (%D x %D x %D) smaller than the elementwise stencil width (%D)",stag->n[0],stag->n[1],stag->n[2],stag->stencilWidth);
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"DMStag 3d setup does not support local sizes (%" PetscInt_FMT " x %" PetscInt_FMT " x %" PetscInt_FMT ") smaller than the elementwise stencil width (%" PetscInt_FMT ")",stag->n[0],stag->n[1],stag->n[2],stag->stencilWidth);
   }
 
   /* Check stencil type */
-  PetscCheckFalse(stag->stencilType != DMSTAG_STENCIL_NONE && stag->stencilType != DMSTAG_STENCIL_BOX && stag->stencilType != DMSTAG_STENCIL_STAR,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported stencil type %s",DMStagStencilTypes[stag->stencilType]);
+  PetscCheck(stag->stencilType == DMSTAG_STENCIL_NONE || stag->stencilType == DMSTAG_STENCIL_BOX || stag->stencilType == DMSTAG_STENCIL_STAR,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported stencil type %s",DMStagStencilTypes[stag->stencilType]);
   star = (PetscBool)(stag->stencilType == DMSTAG_STENCIL_STAR || stag->stencilType == DMSTAG_STENCIL_NONE);
 
   /* Compute numbers of elements on each neighbor */
@@ -937,8 +1068,8 @@ static PetscErrorCode DMStagSetUpBuildScatter_3d(DM dm,const PetscInt *globalOff
   }
 
   /* Allocate arrays to populate */
-  ierr = PetscMalloc1(entriesToTransferTotal,&idxLocal);CHKERRQ(ierr);
-  ierr = PetscMalloc1(entriesToTransferTotal,&idxGlobal);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(entriesToTransferTotal,&idxLocal));
+  PetscCall(PetscMalloc1(entriesToTransferTotal,&idxGlobal));
 
   /* Counts into idxLocal/idxGlobal */
   count = 0;
@@ -979,7 +1110,7 @@ static PetscErrorCode DMStagSetUpBuildScatter_3d(DM dm,const PetscInt *globalOff
     const PetscBool extra0       = PETSC_FALSE;
     const PetscBool extra1       = PETSC_FALSE;
     const PetscBool extra2       = PETSC_FALSE;
-    ierr = DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2);CHKERRQ(ierr);
+    PetscCall(DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2));
   }
 
   /* DOWN BACK */
@@ -1000,7 +1131,7 @@ static PetscErrorCode DMStagSetUpBuildScatter_3d(DM dm,const PetscInt *globalOff
     const PetscBool extra0       = dummyEnd[0];
     const PetscBool extra1       = PETSC_FALSE;
     const PetscBool extra2       = PETSC_FALSE;
-    ierr = DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2);CHKERRQ(ierr);
+    PetscCall(DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2));
   }
 
   /* RIGHT DOWN BACK */
@@ -1021,7 +1152,7 @@ static PetscErrorCode DMStagSetUpBuildScatter_3d(DM dm,const PetscInt *globalOff
     const PetscBool extra0       = PETSC_FALSE;
     const PetscBool extra1       = PETSC_FALSE;
     const PetscBool extra2       = PETSC_FALSE;
-    ierr = DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2);CHKERRQ(ierr);
+    PetscCall(DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2));
   }
 
   /* LEFT BACK */
@@ -1042,7 +1173,7 @@ static PetscErrorCode DMStagSetUpBuildScatter_3d(DM dm,const PetscInt *globalOff
     const PetscBool extra0       = PETSC_FALSE;
     const PetscBool extra1       = dummyEnd[1];
     const PetscBool extra2       = PETSC_FALSE;
-    ierr = DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2);CHKERRQ(ierr);
+    PetscCall(DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2));
   }
 
   /* BACK */
@@ -1063,7 +1194,7 @@ static PetscErrorCode DMStagSetUpBuildScatter_3d(DM dm,const PetscInt *globalOff
     const PetscBool extra0       = dummyEnd[0];
     const PetscBool extra1       = dummyEnd[1];
     const PetscBool extra2       = PETSC_FALSE;
-    ierr = DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2);CHKERRQ(ierr);
+    PetscCall(DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2));
   }
 
   /* RIGHT BACK */
@@ -1084,7 +1215,7 @@ static PetscErrorCode DMStagSetUpBuildScatter_3d(DM dm,const PetscInt *globalOff
     const PetscBool extra0       = PETSC_FALSE;
     const PetscBool extra1       = dummyEnd[1];
     const PetscBool extra2       = PETSC_FALSE;
-    ierr = DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2);CHKERRQ(ierr);
+    PetscCall(DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2));
   }
 
   /* LEFT UP BACK */
@@ -1105,7 +1236,7 @@ static PetscErrorCode DMStagSetUpBuildScatter_3d(DM dm,const PetscInt *globalOff
     const PetscBool extra0       = PETSC_FALSE;
     const PetscBool extra1       = PETSC_FALSE;
     const PetscBool extra2       = PETSC_FALSE;
-    ierr = DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2);CHKERRQ(ierr);
+    PetscCall(DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2));
   }
 
   /* UP BACK */
@@ -1126,7 +1257,7 @@ static PetscErrorCode DMStagSetUpBuildScatter_3d(DM dm,const PetscInt *globalOff
     const PetscBool extra0       = dummyEnd[0];
     const PetscBool extra1       = PETSC_FALSE;
     const PetscBool extra2       = PETSC_FALSE;
-    ierr = DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2);CHKERRQ(ierr);
+    PetscCall(DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2));
   }
 
   /* RIGHT UP BACK */
@@ -1147,7 +1278,7 @@ static PetscErrorCode DMStagSetUpBuildScatter_3d(DM dm,const PetscInt *globalOff
     const PetscBool extra0       = PETSC_FALSE;
     const PetscBool extra1       = PETSC_FALSE;
     const PetscBool extra2       = PETSC_FALSE;
-    ierr = DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2);CHKERRQ(ierr);
+    PetscCall(DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2));
   }
 
   /* LEFT DOWN */
@@ -1168,7 +1299,7 @@ static PetscErrorCode DMStagSetUpBuildScatter_3d(DM dm,const PetscInt *globalOff
     const PetscBool extra0       = PETSC_FALSE;
     const PetscBool extra1       = PETSC_FALSE;
     const PetscBool extra2       = dummyEnd[2];
-    ierr = DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2);CHKERRQ(ierr);
+    PetscCall(DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2));
   }
 
   /* DOWN */
@@ -1189,7 +1320,7 @@ static PetscErrorCode DMStagSetUpBuildScatter_3d(DM dm,const PetscInt *globalOff
     const PetscBool extra0       = dummyEnd[0];
     const PetscBool extra1       = PETSC_FALSE;
     const PetscBool extra2       = dummyEnd[2];
-    ierr = DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2);CHKERRQ(ierr);
+    PetscCall(DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2));
   }
 
   /* RIGHT DOWN */
@@ -1210,7 +1341,7 @@ static PetscErrorCode DMStagSetUpBuildScatter_3d(DM dm,const PetscInt *globalOff
     const PetscBool extra0       = PETSC_FALSE;
     const PetscBool extra1       = PETSC_FALSE;
     const PetscBool extra2       = dummyEnd[2];
-    ierr = DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2);CHKERRQ(ierr);
+    PetscCall(DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2));
   }
 
   /* LEFT */
@@ -1231,7 +1362,7 @@ static PetscErrorCode DMStagSetUpBuildScatter_3d(DM dm,const PetscInt *globalOff
     const PetscBool extra0       = PETSC_FALSE;
     const PetscBool extra1       = dummyEnd[1];
     const PetscBool extra2       = dummyEnd[2];
-    ierr = DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2);CHKERRQ(ierr);
+    PetscCall(DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2));
   }
 
   /* (HERE) */
@@ -1252,7 +1383,7 @@ static PetscErrorCode DMStagSetUpBuildScatter_3d(DM dm,const PetscInt *globalOff
     const PetscBool extra0       = dummyEnd[0];
     const PetscBool extra1       = dummyEnd[1];
     const PetscBool extra2       = dummyEnd[2];
-    ierr = DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2);CHKERRQ(ierr);
+    PetscCall(DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2));
   }
 
   /* RIGHT */
@@ -1273,7 +1404,7 @@ static PetscErrorCode DMStagSetUpBuildScatter_3d(DM dm,const PetscInt *globalOff
     const PetscBool extra0       = PETSC_FALSE;
     const PetscBool extra1       = dummyEnd[1];
     const PetscBool extra2       = dummyEnd[2];
-    ierr = DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2);CHKERRQ(ierr);
+    PetscCall(DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2));
   }
 
   /* LEFT UP */
@@ -1294,7 +1425,7 @@ static PetscErrorCode DMStagSetUpBuildScatter_3d(DM dm,const PetscInt *globalOff
     const PetscBool extra0       = PETSC_FALSE;
     const PetscBool extra1       = PETSC_FALSE;
     const PetscBool extra2       = dummyEnd[2];
-    ierr = DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2);CHKERRQ(ierr);
+    PetscCall(DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2));
   }
 
   /* UP */
@@ -1315,7 +1446,7 @@ static PetscErrorCode DMStagSetUpBuildScatter_3d(DM dm,const PetscInt *globalOff
     const PetscBool extra0       = dummyEnd[0];
     const PetscBool extra1       = PETSC_FALSE;
     const PetscBool extra2       = dummyEnd[2];
-    ierr = DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2);CHKERRQ(ierr);
+    PetscCall(DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2));
   }
 
   /* RIGHT UP */
@@ -1336,7 +1467,7 @@ static PetscErrorCode DMStagSetUpBuildScatter_3d(DM dm,const PetscInt *globalOff
     const PetscBool extra0       = PETSC_FALSE;
     const PetscBool extra1       = PETSC_FALSE;
     const PetscBool extra2       = dummyEnd[2];
-    ierr = DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2);CHKERRQ(ierr);
+    PetscCall(DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2));
   }
 
   /* LEFT DOWN FRONT */
@@ -1357,7 +1488,7 @@ static PetscErrorCode DMStagSetUpBuildScatter_3d(DM dm,const PetscInt *globalOff
     const PetscBool extra0       = PETSC_FALSE;
     const PetscBool extra1       = PETSC_FALSE;
     const PetscBool extra2       = PETSC_FALSE;
-    ierr = DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2);CHKERRQ(ierr);
+    PetscCall(DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2));
   }
 
   /* DOWN FRONT */
@@ -1378,7 +1509,7 @@ static PetscErrorCode DMStagSetUpBuildScatter_3d(DM dm,const PetscInt *globalOff
     const PetscBool extra0       = dummyEnd[0];
     const PetscBool extra1       = PETSC_FALSE;
     const PetscBool extra2       = PETSC_FALSE;
-    ierr = DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2);CHKERRQ(ierr);
+    PetscCall(DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2));
   }
 
   /* RIGHT DOWN FRONT */
@@ -1399,7 +1530,7 @@ static PetscErrorCode DMStagSetUpBuildScatter_3d(DM dm,const PetscInt *globalOff
     const PetscBool extra0       = PETSC_FALSE;
     const PetscBool extra1       = PETSC_FALSE;
     const PetscBool extra2       = PETSC_FALSE;
-    ierr = DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2);CHKERRQ(ierr);
+    PetscCall(DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2));
   }
 
   /* LEFT FRONT */
@@ -1420,7 +1551,7 @@ static PetscErrorCode DMStagSetUpBuildScatter_3d(DM dm,const PetscInt *globalOff
     const PetscBool extra0       = PETSC_FALSE;
     const PetscBool extra1       = dummyEnd[1];
     const PetscBool extra2       = PETSC_FALSE;
-    ierr = DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2);CHKERRQ(ierr);
+    PetscCall(DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2));
   }
 
   /* FRONT */
@@ -1441,7 +1572,7 @@ static PetscErrorCode DMStagSetUpBuildScatter_3d(DM dm,const PetscInt *globalOff
     const PetscBool extra0       = dummyEnd[0];
     const PetscBool extra1       = dummyEnd[1];
     const PetscBool extra2       = PETSC_FALSE;
-    ierr = DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2);CHKERRQ(ierr);
+    PetscCall(DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2));
   }
 
   /* RIGHT FRONT */
@@ -1462,7 +1593,7 @@ static PetscErrorCode DMStagSetUpBuildScatter_3d(DM dm,const PetscInt *globalOff
     const PetscBool extra0       = PETSC_FALSE;
     const PetscBool extra1       = dummyEnd[1];
     const PetscBool extra2       = PETSC_FALSE;
-    ierr = DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2);CHKERRQ(ierr);
+    PetscCall(DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2));
   }
 
   /* LEFT UP FRONT */
@@ -1483,7 +1614,7 @@ static PetscErrorCode DMStagSetUpBuildScatter_3d(DM dm,const PetscInt *globalOff
     const PetscBool extra0       = PETSC_FALSE;
     const PetscBool extra1       = PETSC_FALSE;
     const PetscBool extra2       = PETSC_FALSE;
-    ierr = DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2);CHKERRQ(ierr);
+    PetscCall(DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2));
   }
 
   /* UP FRONT */
@@ -1504,7 +1635,7 @@ static PetscErrorCode DMStagSetUpBuildScatter_3d(DM dm,const PetscInt *globalOff
     const PetscBool extra0       = dummyEnd[0];
     const PetscBool extra1       = PETSC_FALSE;
     const PetscBool extra2       = PETSC_FALSE;
-    ierr = DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2);CHKERRQ(ierr);
+    PetscCall(DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2));
   }
 
   /* RIGHT UP FRONT */
@@ -1525,24 +1656,24 @@ static PetscErrorCode DMStagSetUpBuildScatter_3d(DM dm,const PetscInt *globalOff
     const PetscBool extra0       = PETSC_FALSE;
     const PetscBool extra1       = PETSC_FALSE;
     const PetscBool extra2       = PETSC_FALSE;
-    ierr = DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2);CHKERRQ(ierr);
+    PetscCall(DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,eprNeighbor,eplNeighbor,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2));
   }
 
-  PetscCheckFalse(count != entriesToTransferTotal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of entries computed in gtol (%d) is not as expected (%d)",count,entriesToTransferTotal);
+  PetscCheck(count == entriesToTransferTotal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of entries computed in gtol (%" PetscInt_FMT ") is not as expected (%" PetscInt_FMT ")",count,entriesToTransferTotal);
 
   /* Create stag->gtol. The order is computed as PETSc ordering, and doesn't include dummy entries */
   {
     Vec local,global;
     IS isLocal,isGlobal;
-    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm),entriesToTransferTotal,idxLocal,PETSC_OWN_POINTER,&isLocal);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm),entriesToTransferTotal,idxGlobal,PETSC_OWN_POINTER,&isGlobal);CHKERRQ(ierr);
-    ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)dm),1,stag->entries,PETSC_DECIDE,NULL,&global);CHKERRQ(ierr);
-    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,stag->entriesPerElement,stag->entriesGhost,NULL,&local);CHKERRQ(ierr);
-    ierr = VecScatterCreate(global,isGlobal,local,isLocal,&stag->gtol);CHKERRQ(ierr);
-    ierr = VecDestroy(&global);CHKERRQ(ierr);
-    ierr = VecDestroy(&local);CHKERRQ(ierr);
-    ierr = ISDestroy(&isLocal);CHKERRQ(ierr);  /* frees idxLocal */
-    ierr = ISDestroy(&isGlobal);CHKERRQ(ierr); /* free idxGlobal */
+    PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)dm),entriesToTransferTotal,idxLocal,PETSC_OWN_POINTER,&isLocal));
+    PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)dm),entriesToTransferTotal,idxGlobal,PETSC_OWN_POINTER,&isGlobal));
+    PetscCall(VecCreateMPIWithArray(PetscObjectComm((PetscObject)dm),1,stag->entries,PETSC_DECIDE,NULL,&global));
+    PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,stag->entriesPerElement,stag->entriesGhost,NULL,&local));
+    PetscCall(VecScatterCreate(global,isGlobal,local,isLocal,&stag->gtol));
+    PetscCall(VecDestroy(&global));
+    PetscCall(VecDestroy(&local));
+    PetscCall(ISDestroy(&isLocal));  /* frees idxLocal */
+    PetscCall(ISDestroy(&isGlobal)); /* free idxGlobal */
   }
 
   PetscFunctionReturn(0);
@@ -1552,7 +1683,6 @@ static PetscErrorCode DMStagSetUpBuildScatter_3d(DM dm,const PetscInt *globalOff
 Adding support for others should be done very carefully.  */
 static PetscErrorCode DMStagSetUpBuildL2G_3d(DM dm,const PetscInt *globalOffsets)
 {
-  PetscErrorCode        ierr;
   const DM_Stag * const stag = (DM_Stag*)dm->data;
   PetscInt              *idxGlobalAll;
   PetscInt              d,count,ighost,jghost,kghost,ghostOffsetStart[3],ghostOffsetEnd[3],entriesPerFace,entriesPerEdge;
@@ -1562,7 +1692,7 @@ static PetscErrorCode DMStagSetUpBuildL2G_3d(DM dm,const PetscInt *globalOffsets
   PetscFunctionBegin;
 
   /* Check stencil type */
-  PetscCheckFalse(stag->stencilType != DMSTAG_STENCIL_NONE && stag->stencilType != DMSTAG_STENCIL_BOX && stag->stencilType != DMSTAG_STENCIL_STAR,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported stencil type %s",DMStagStencilTypes[stag->stencilType]);
+  PetscCheck(stag->stencilType == DMSTAG_STENCIL_NONE || stag->stencilType == DMSTAG_STENCIL_BOX || stag->stencilType == DMSTAG_STENCIL_STAR,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported stencil type %s",DMStagStencilTypes[stag->stencilType]);
   star = (PetscBool)(stag->stencilType == DMSTAG_STENCIL_STAR || stag->stencilType == DMSTAG_STENCIL_NONE);
 
   /* Convenience variables */
@@ -1593,8 +1723,8 @@ static PetscErrorCode DMStagSetUpBuildL2G_3d(DM dm,const PetscInt *globalOffsets
   }
 
   /* Precompute elements per row and layer on neighbor (zero unused) */
-  ierr = PetscMemzero(eprNeighbor,sizeof(eprNeighbor));CHKERRQ(ierr);
-  ierr = PetscMemzero(eplNeighbor,sizeof(eplNeighbor));CHKERRQ(ierr);
+  PetscCall(PetscMemzero(eprNeighbor,sizeof(eprNeighbor)));
+  PetscCall(PetscMemzero(eplNeighbor,sizeof(eplNeighbor)));
   if (stag->neighbors[0] >= 0) {
     eprNeighbor[0] = stag->entriesPerElement * nNeighbors[0][0];
     eplNeighbor[0] = eprNeighbor[0] * nNeighbors[0][1];
@@ -1705,7 +1835,7 @@ static PetscErrorCode DMStagSetUpBuildL2G_3d(DM dm,const PetscInt *globalOffsets
   }
 
   /* Populate idxGlobalAll */
-  ierr = PetscMalloc1(stag->entriesGhost,&idxGlobalAll);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(stag->entriesGhost,&idxGlobalAll));
   count = 0;
 
   /* Loop over layers 1/3 : Back */
@@ -3251,21 +3381,20 @@ static PetscErrorCode DMStagSetUpBuildL2G_3d(DM dm,const PetscInt *globalOffsets
   }
 
   /* Create local-to-global map (in local ordering, includes maps to -1 for dummy points) */
-  ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)dm),1,stag->entriesGhost,idxGlobalAll,PETSC_OWN_POINTER,&dm->ltogmap);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject)dm,(PetscObject)dm->ltogmap);CHKERRQ(ierr);
+  PetscCall(ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)dm),1,stag->entriesGhost,idxGlobalAll,PETSC_OWN_POINTER,&dm->ltogmap));
+  PetscCall(PetscLogObjectParent((PetscObject)dm,(PetscObject)dm->ltogmap));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode DMStagComputeLocationOffsets_3d(DM dm)
 {
-  PetscErrorCode  ierr;
   DM_Stag * const stag = (DM_Stag*)dm->data;
   const PetscInt epe = stag->entriesPerElement;
   const PetscInt epr = stag->nGhost[0]*epe;
   const PetscInt epl = stag->nGhost[1]*epr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc1(DMSTAG_NUMBER_LOCATIONS,&stag->locationOffsets);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(DMSTAG_NUMBER_LOCATIONS,&stag->locationOffsets));
   stag->locationOffsets[DMSTAG_BACK_DOWN_LEFT]   = 0;
   stag->locationOffsets[DMSTAG_BACK_DOWN]        = stag->locationOffsets[DMSTAG_BACK_DOWN_LEFT]  + stag->dof[0];
   stag->locationOffsets[DMSTAG_BACK_DOWN_RIGHT]  = stag->locationOffsets[DMSTAG_BACK_DOWN_LEFT]  + epe;
@@ -3298,7 +3427,6 @@ static PetscErrorCode DMStagComputeLocationOffsets_3d(DM dm)
 
 PETSC_INTERN PetscErrorCode DMStagPopulateLocalToGlobalInjective_3d(DM dm)
 {
-  PetscErrorCode  ierr;
   DM_Stag * const stag = (DM_Stag*)dm->data;
   PetscInt        *idxLocal,*idxGlobal,*globalOffsetsRecomputed;
   const PetscInt  *globalOffsets;
@@ -3307,10 +3435,10 @@ PETSC_INTERN PetscErrorCode DMStagPopulateLocalToGlobalInjective_3d(DM dm)
   PetscBool       dummyEnd[3];
 
   PetscFunctionBegin;
-  ierr = DMStagSetUpBuildGlobalOffsets_3d(dm,&globalOffsetsRecomputed);CHKERRQ(ierr); /* note that we don't actually use all of these. An available optimization is to pass them, when available */
+  PetscCall(DMStagSetUpBuildGlobalOffsets_3d(dm,&globalOffsetsRecomputed)); /* note that we don't actually use all of these. An available optimization is to pass them, when available */
   globalOffsets = globalOffsetsRecomputed;
-  ierr = PetscMalloc1(stag->entries,&idxLocal);CHKERRQ(ierr);
-  ierr = PetscMalloc1(stag->entries,&idxGlobal);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(stag->entries,&idxLocal));
+  PetscCall(PetscMalloc1(stag->entries,&idxGlobal));
   for (d=0; d<3; ++d) dummyEnd[d]   = (PetscBool)(stag->lastRank[d] && stag->boundaryType[d] != DM_BOUNDARY_PERIODIC);
   entriesPerFace                      = stag->dof[0] + 2*stag->dof[1] + stag->dof[2];
   entriesPerEdge                      = stag->dof[0] + stag->dof[1];
@@ -3336,29 +3464,28 @@ PETSC_INTERN PetscErrorCode DMStagPopulateLocalToGlobalInjective_3d(DM dm)
     const PetscBool extra0       = dummyEnd[0];
     const PetscBool extra1       = dummyEnd[1];
     const PetscBool extra2       = dummyEnd[2];
-    ierr = DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,epr,epl,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2);CHKERRQ(ierr);
+    PetscCall(DMStagSetUpBuildScatterPopulateIdx_3d(stag,&count,idxLocal,idxGlobal,entriesPerEdge,entriesPerFace,epr,epl,eprGhost,eplGhost,epFaceRow,globalOffsets[stag->neighbors[neighbor]],start0,start1,start2,startGhost0,startGhost1,startGhost2,endGhost0,endGhost1,endGhost2,extra0,extra1,extra2));
   }
-  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm),stag->entries,idxLocal,PETSC_OWN_POINTER,&isLocal);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm),stag->entries,idxGlobal,PETSC_OWN_POINTER,&isGlobal);CHKERRQ(ierr);
+  PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)dm),stag->entries,idxLocal,PETSC_OWN_POINTER,&isLocal));
+  PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)dm),stag->entries,idxGlobal,PETSC_OWN_POINTER,&isGlobal));
   {
     Vec local,global;
-    ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)dm),1,stag->entries,PETSC_DECIDE,NULL,&global);CHKERRQ(ierr);
-    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,stag->entriesPerElement,stag->entriesGhost,NULL,&local);CHKERRQ(ierr);
-    ierr = VecScatterCreate(local,isLocal,global,isGlobal,&stag->ltog_injective);CHKERRQ(ierr);
-    ierr = VecDestroy(&global);CHKERRQ(ierr);
-    ierr = VecDestroy(&local);CHKERRQ(ierr);
+    PetscCall(VecCreateMPIWithArray(PetscObjectComm((PetscObject)dm),1,stag->entries,PETSC_DECIDE,NULL,&global));
+    PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,stag->entriesPerElement,stag->entriesGhost,NULL,&local));
+    PetscCall(VecScatterCreate(local,isLocal,global,isGlobal,&stag->ltog_injective));
+    PetscCall(VecDestroy(&global));
+    PetscCall(VecDestroy(&local));
   }
-  ierr = ISDestroy(&isLocal);CHKERRQ(ierr);
-  ierr = ISDestroy(&isGlobal);CHKERRQ(ierr);
+  PetscCall(ISDestroy(&isLocal));
+  PetscCall(ISDestroy(&isGlobal));
   if (globalOffsetsRecomputed) {
-    ierr = PetscFree(globalOffsetsRecomputed);CHKERRQ(ierr);
+    PetscCall(PetscFree(globalOffsetsRecomputed));
   }
   PetscFunctionReturn(0);
 }
 
 PETSC_INTERN PetscErrorCode DMCreateMatrix_Stag_3D_AIJ_Assemble(DM dm,Mat A)
 {
-  PetscErrorCode    ierr;
   PetscInt          dof[DMSTAG_MAX_STRATA],epe,stencil_width,N[3],start[3],n[3],n_extra[3];
   DMStagStencilType stencil_type;
   DMBoundaryType    boundary_type[3];
@@ -3366,61 +3493,61 @@ PETSC_INTERN PetscErrorCode DMCreateMatrix_Stag_3D_AIJ_Assemble(DM dm,Mat A)
   /* This implementation gives a very dense stencil, which is likely unsuitable for
      (typical) applications which have fewer couplings */
   PetscFunctionBegin;
-  ierr = DMStagGetDOF(dm,&dof[0],&dof[1],&dof[2],&dof[3]);CHKERRQ(ierr);
-  ierr = DMStagGetStencilType(dm,&stencil_type);CHKERRQ(ierr);
-  ierr = DMStagGetStencilWidth(dm,&stencil_width);CHKERRQ(ierr);
-  ierr = DMStagGetEntriesPerElement(dm,&epe);CHKERRQ(ierr);
-  ierr = DMStagGetCorners(dm,&start[0],&start[1],&start[2],&n[0],&n[1],&n[2],&n_extra[0],&n_extra[1],&n_extra[2]);CHKERRQ(ierr);
-  ierr = DMStagGetGlobalSizes(dm,&N[0],&N[1],&N[2]);CHKERRQ(ierr);
-  ierr = DMStagGetBoundaryTypes(dm,&boundary_type[0],&boundary_type[1],&boundary_type[2]);CHKERRQ(ierr);
+  PetscCall(DMStagGetDOF(dm,&dof[0],&dof[1],&dof[2],&dof[3]));
+  PetscCall(DMStagGetStencilType(dm,&stencil_type));
+  PetscCall(DMStagGetStencilWidth(dm,&stencil_width));
+  PetscCall(DMStagGetEntriesPerElement(dm,&epe));
+  PetscCall(DMStagGetCorners(dm,&start[0],&start[1],&start[2],&n[0],&n[1],&n[2],&n_extra[0],&n_extra[1],&n_extra[2]));
+  PetscCall(DMStagGetGlobalSizes(dm,&N[0],&N[1],&N[2]));
+  PetscCall(DMStagGetBoundaryTypes(dm,&boundary_type[0],&boundary_type[1],&boundary_type[2]));
 
   if (stencil_type == DMSTAG_STENCIL_NONE) {
     /* Couple all DOF at each location to each other */
     DMStagStencil *row_vertex,*row_edge_down_left,*row_edge_back_down,*row_edge_back_left,*row_face_down,*row_face_left,*row_face_back,*row_element;
 
-    ierr = PetscMalloc1(dof[0],&row_vertex);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(dof[0],&row_vertex));
     for (PetscInt c=0; c<dof[0]; ++c) {
       row_vertex[c].loc = DMSTAG_BACK_DOWN_LEFT;
       row_vertex[c].c = c;
     }
 
-    ierr = PetscMalloc1(dof[1],&row_edge_down_left);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(dof[1],&row_edge_down_left));
     for (PetscInt c=0; c<dof[1]; ++c) {
       row_edge_down_left[c].loc = DMSTAG_DOWN_LEFT;
       row_edge_down_left[c].c = c;
     }
 
-    ierr = PetscMalloc1(dof[1],&row_edge_back_left);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(dof[1],&row_edge_back_left));
     for (PetscInt c=0; c<dof[1]; ++c) {
       row_edge_back_left[c].loc = DMSTAG_BACK_LEFT;
       row_edge_back_left[c].c = c;
     }
 
-    ierr = PetscMalloc1(dof[1],&row_edge_back_down);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(dof[1],&row_edge_back_down));
     for (PetscInt c=0; c<dof[1]; ++c) {
       row_edge_back_down[c].loc = DMSTAG_BACK_DOWN;
       row_edge_back_down[c].c = c;
     }
 
-    ierr = PetscMalloc1(dof[2],&row_face_left);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(dof[2],&row_face_left));
     for (PetscInt c=0; c<dof[2]; ++c) {
       row_face_left[c].loc = DMSTAG_LEFT;
       row_face_left[c].c = c;
     }
 
-    ierr = PetscMalloc1(dof[2],&row_face_down);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(dof[2],&row_face_down));
     for (PetscInt c=0; c<dof[2]; ++c) {
       row_face_down[c].loc = DMSTAG_DOWN;
       row_face_down[c].c = c;
     }
 
-    ierr = PetscMalloc1(dof[2],&row_face_back);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(dof[2],&row_face_back));
     for (PetscInt c=0; c<dof[2]; ++c) {
       row_face_back[c].loc = DMSTAG_BACK;
       row_face_back[c].c = c;
     }
 
-    ierr = PetscMalloc1(dof[3],&row_element);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(dof[3],&row_element));
     for (PetscInt c=0; c<dof[3]; ++c) {
       row_element[c].loc = DMSTAG_ELEMENT;
       row_element[c].c = c;
@@ -3434,7 +3561,7 @@ PETSC_INTERN PetscErrorCode DMCreateMatrix_Stag_3D_AIJ_Assemble(DM dm,Mat A)
             row_vertex[c].j = ey;
             row_vertex[c].k = ez;
           }
-          ierr = DMStagMatSetValuesStencil(dm,A,dof[0],row_vertex,dof[0],row_vertex,NULL,INSERT_VALUES);CHKERRQ(ierr);
+          PetscCall(DMStagMatSetValuesStencil(dm,A,dof[0],row_vertex,dof[0],row_vertex,NULL,INSERT_VALUES));
 
           if (ez < N[2]) {
             for (PetscInt c=0; c<dof[1]; ++c) {
@@ -3442,7 +3569,7 @@ PETSC_INTERN PetscErrorCode DMCreateMatrix_Stag_3D_AIJ_Assemble(DM dm,Mat A)
               row_edge_down_left[c].j = ey;
               row_edge_down_left[c].k = ez;
             }
-            ierr = DMStagMatSetValuesStencil(dm,A,dof[1],row_edge_down_left,dof[1],row_edge_down_left,NULL,INSERT_VALUES);CHKERRQ(ierr);
+            PetscCall(DMStagMatSetValuesStencil(dm,A,dof[1],row_edge_down_left,dof[1],row_edge_down_left,NULL,INSERT_VALUES));
           }
 
           if (ey < N[1]) {
@@ -3451,7 +3578,7 @@ PETSC_INTERN PetscErrorCode DMCreateMatrix_Stag_3D_AIJ_Assemble(DM dm,Mat A)
               row_edge_back_left[c].j = ey;
               row_edge_back_left[c].k = ez;
             }
-            ierr = DMStagMatSetValuesStencil(dm,A,dof[1],row_edge_back_left,dof[1],row_edge_back_left,NULL,INSERT_VALUES);CHKERRQ(ierr);
+            PetscCall(DMStagMatSetValuesStencil(dm,A,dof[1],row_edge_back_left,dof[1],row_edge_back_left,NULL,INSERT_VALUES));
           }
 
           if (ey < N[0]) {
@@ -3460,7 +3587,7 @@ PETSC_INTERN PetscErrorCode DMCreateMatrix_Stag_3D_AIJ_Assemble(DM dm,Mat A)
               row_edge_back_down[c].j = ey;
               row_edge_back_down[c].k = ez;
             }
-            ierr = DMStagMatSetValuesStencil(dm,A,dof[1],row_edge_back_down,dof[1],row_edge_back_down,NULL,INSERT_VALUES);CHKERRQ(ierr);
+            PetscCall(DMStagMatSetValuesStencil(dm,A,dof[1],row_edge_back_down,dof[1],row_edge_back_down,NULL,INSERT_VALUES));
           }
 
           if (ey < N[1] && ez < N[2]) {
@@ -3469,7 +3596,7 @@ PETSC_INTERN PetscErrorCode DMCreateMatrix_Stag_3D_AIJ_Assemble(DM dm,Mat A)
               row_face_left[c].j = ey;
               row_face_left[c].k = ez;
             }
-            ierr = DMStagMatSetValuesStencil(dm,A,dof[2],row_face_left,dof[2],row_face_left,NULL,INSERT_VALUES);CHKERRQ(ierr);
+            PetscCall(DMStagMatSetValuesStencil(dm,A,dof[2],row_face_left,dof[2],row_face_left,NULL,INSERT_VALUES));
           }
 
           if (ex < N[0] && ez < N[2]) {
@@ -3478,7 +3605,7 @@ PETSC_INTERN PetscErrorCode DMCreateMatrix_Stag_3D_AIJ_Assemble(DM dm,Mat A)
               row_face_down[c].j = ey;
               row_face_down[c].k = ez;
             }
-            ierr = DMStagMatSetValuesStencil(dm,A,dof[2],row_face_down,dof[2],row_face_down,NULL,INSERT_VALUES);CHKERRQ(ierr);
+            PetscCall(DMStagMatSetValuesStencil(dm,A,dof[2],row_face_down,dof[2],row_face_down,NULL,INSERT_VALUES));
           }
 
           if (ex < N[0] && ey < N[1]) {
@@ -3487,7 +3614,7 @@ PETSC_INTERN PetscErrorCode DMCreateMatrix_Stag_3D_AIJ_Assemble(DM dm,Mat A)
               row_face_back[c].j = ey;
               row_face_back[c].k = ez;
             }
-            ierr = DMStagMatSetValuesStencil(dm,A,dof[2],row_face_back,dof[2],row_face_back,NULL,INSERT_VALUES);CHKERRQ(ierr);
+            PetscCall(DMStagMatSetValuesStencil(dm,A,dof[2],row_face_back,dof[2],row_face_back,NULL,INSERT_VALUES));
           }
 
           if (ex < N[0] && ey < N[1] && ez < N[2]) {
@@ -3496,23 +3623,23 @@ PETSC_INTERN PetscErrorCode DMCreateMatrix_Stag_3D_AIJ_Assemble(DM dm,Mat A)
               row_element[c].j = ey;
               row_element[c].k = ez;
             }
-            ierr = DMStagMatSetValuesStencil(dm,A,dof[3],row_element,dof[3],row_element,NULL,INSERT_VALUES);CHKERRQ(ierr);
+            PetscCall(DMStagMatSetValuesStencil(dm,A,dof[3],row_element,dof[3],row_element,NULL,INSERT_VALUES));
           }
         }
       }
     }
-    ierr = PetscFree(row_vertex);CHKERRQ(ierr);
-    ierr = PetscFree(row_edge_back_left);CHKERRQ(ierr);
-    ierr = PetscFree(row_edge_back_down);CHKERRQ(ierr);
-    ierr = PetscFree(row_edge_down_left);CHKERRQ(ierr);
-    ierr = PetscFree(row_face_left);CHKERRQ(ierr);
-    ierr = PetscFree(row_face_back);CHKERRQ(ierr);
-    ierr = PetscFree(row_face_down);CHKERRQ(ierr);
-    ierr = PetscFree(row_element);CHKERRQ(ierr);
+    PetscCall(PetscFree(row_vertex));
+    PetscCall(PetscFree(row_edge_back_left));
+    PetscCall(PetscFree(row_edge_back_down));
+    PetscCall(PetscFree(row_edge_down_left));
+    PetscCall(PetscFree(row_face_left));
+    PetscCall(PetscFree(row_face_back));
+    PetscCall(PetscFree(row_face_down));
+    PetscCall(PetscFree(row_element));
   } else if (stencil_type == DMSTAG_STENCIL_STAR || stencil_type == DMSTAG_STENCIL_BOX) {
     DMStagStencil *col,*row;
 
-    ierr = PetscMalloc1(epe,&row);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(epe,&row));
     {
       PetscInt nrows = 0;
 
@@ -3558,7 +3685,7 @@ PETSC_INTERN PetscErrorCode DMCreateMatrix_Stag_3D_AIJ_Assemble(DM dm,Mat A)
       }
     }
 
-    ierr = PetscMalloc1(epe,&col);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(epe,&col));
     {
       PetscInt ncols = 0;
 
@@ -3634,7 +3761,7 @@ PETSC_INTERN PetscErrorCode DMCreateMatrix_Stag_3D_AIJ_Assemble(DM dm,Mat A)
                     col[i].j = ey_offset;
                     col[i].k = ez_offset;
                   }
-                  ierr = DMStagMatSetValuesStencil(dm,A,epe,row,epe,col,NULL,INSERT_VALUES);CHKERRQ(ierr);
+                  PetscCall(DMStagMatSetValuesStencil(dm,A,epe,row,epe,col,NULL,INSERT_VALUES));
                 }
               }
             }
@@ -3642,10 +3769,10 @@ PETSC_INTERN PetscErrorCode DMCreateMatrix_Stag_3D_AIJ_Assemble(DM dm,Mat A)
         }
       }
     }
-    ierr = PetscFree(row);CHKERRQ(ierr);
-    ierr = PetscFree(col);CHKERRQ(ierr);
+    PetscCall(PetscFree(row));
+    PetscCall(PetscFree(col));
   } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Unsupported stencil type %s",DMStagStencilTypes[stencil_type]);
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }

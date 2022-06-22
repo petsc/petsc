@@ -21,7 +21,6 @@
 */
 static PetscErrorCode ConvertToAIJ(MatType intype,MatType *outtype)
 {
-  PetscErrorCode ierr;
   PetscInt       i;
   char           const *types[3] = {MATAIJ,MATSEQAIJ,MATMPIAIJ};
   PetscBool      flg;
@@ -29,7 +28,7 @@ static PetscErrorCode ConvertToAIJ(MatType intype,MatType *outtype)
   PetscFunctionBegin;
   *outtype = MATAIJ;
   for (i=0; i<3; i++) {
-    ierr = PetscStrbeginswith(intype,types[i],&flg);CHKERRQ(ierr);
+    PetscCall(PetscStrbeginswith(intype,types[i],&flg));
     if (flg) {
       *outtype = intype;
       PetscFunctionReturn(0);
@@ -40,7 +39,6 @@ static PetscErrorCode ConvertToAIJ(MatType intype,MatType *outtype)
 
 PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
 {
-  PetscErrorCode         ierr;
   PetscInt               i,i_start,m_f,Mx;
   const PetscInt         *idx_f,*idx_c;
   PetscInt               m_ghost,m_ghost_c;
@@ -53,42 +51,42 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
   MatType                mattype;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(dac,NULL,&Mx,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&bx,NULL,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(daf,NULL,&mx,NULL,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+  PetscCall(DMDAGetInfo(dac,NULL,&Mx,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&bx,NULL,NULL,NULL));
+  PetscCall(DMDAGetInfo(daf,NULL,&mx,NULL,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL));
   if (bx == DM_BOUNDARY_PERIODIC) {
     ratio = mx/Mx;
-    PetscCheckFalse(ratio*Mx != mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %D Mx %D",mx,Mx);
+    PetscCheck(ratio*Mx == mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %" PetscInt_FMT " Mx %" PetscInt_FMT,mx,Mx);
   } else {
     ratio = (mx-1)/(Mx-1);
-    PetscCheckFalse(ratio*(Mx-1) != mx-1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %D Mx %D",mx,Mx);
+    PetscCheck(ratio*(Mx-1) == mx-1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %" PetscInt_FMT " Mx %" PetscInt_FMT,mx,Mx);
   }
 
-  ierr = DMDAGetCorners(daf,&i_start,NULL,NULL,&m_f,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(daf,&i_start_ghost,NULL,NULL,&m_ghost,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMGetLocalToGlobalMapping(daf,&ltog_f);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetBlockIndices(ltog_f,&idx_f);CHKERRQ(ierr);
+  PetscCall(DMDAGetCorners(daf,&i_start,NULL,NULL,&m_f,NULL,NULL));
+  PetscCall(DMDAGetGhostCorners(daf,&i_start_ghost,NULL,NULL,&m_ghost,NULL,NULL));
+  PetscCall(DMGetLocalToGlobalMapping(daf,&ltog_f));
+  PetscCall(ISLocalToGlobalMappingGetBlockIndices(ltog_f,&idx_f));
 
-  ierr = DMDAGetCorners(dac,&i_start_c,NULL,NULL,&m_c,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(dac,&i_start_ghost_c,NULL,NULL,&m_ghost_c,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMGetLocalToGlobalMapping(dac,&ltog_c);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetBlockIndices(ltog_c,&idx_c);CHKERRQ(ierr);
+  PetscCall(DMDAGetCorners(dac,&i_start_c,NULL,NULL,&m_c,NULL,NULL));
+  PetscCall(DMDAGetGhostCorners(dac,&i_start_ghost_c,NULL,NULL,&m_ghost_c,NULL,NULL));
+  PetscCall(DMGetLocalToGlobalMapping(dac,&ltog_c));
+  PetscCall(ISLocalToGlobalMappingGetBlockIndices(ltog_c,&idx_c));
 
   /* create interpolation matrix */
-  ierr = MatCreate(PetscObjectComm((PetscObject)dac),&mat);CHKERRQ(ierr);
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)dac),&mat));
 #if defined(PETSC_HAVE_CUDA)
   /*
      Temporary hack: Since the MAIJ matrix must be converted to AIJ before being used by the GPU
      we don't want the original unconverted matrix copied to the GPU
    */
   if (dof > 1) {
-    ierr = MatBindToCPU(mat,PETSC_TRUE);CHKERRQ(ierr);
+    PetscCall(MatBindToCPU(mat,PETSC_TRUE));
   }
   #endif
-  ierr = MatSetSizes(mat,m_f,m_c,mx,Mx);CHKERRQ(ierr);
-  ierr = ConvertToAIJ(dac->mattype,&mattype);CHKERRQ(ierr);
-  ierr = MatSetType(mat,mattype);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(mat,2,NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(mat,2,NULL,1,NULL);CHKERRQ(ierr);
+  PetscCall(MatSetSizes(mat,m_f,m_c,mx,Mx));
+  PetscCall(ConvertToAIJ(dac->mattype,&mattype));
+  PetscCall(MatSetType(mat,mattype));
+  PetscCall(MatSeqAIJSetPreallocation(mat,2,NULL));
+  PetscCall(MatMPIAIJSetPreallocation(mat,2,NULL,1,NULL));
 
   /* loop over local fine grid nodes setting interpolation for those*/
   if (!NEWVERSION) {
@@ -98,8 +96,8 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
       row = idx_f[i-i_start_ghost];
 
       i_c = (i/ratio);    /* coarse grid node to left of fine grid node */
-      PetscCheckFalse(i_c < i_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
-                                          i_start %D i_c %D i_start_ghost_c %D",i_start,i_c,i_start_ghost_c);
+      PetscCheck(i_c >= i_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
+                                          i_start %" PetscInt_FMT " i_c %" PetscInt_FMT " i_start_ghost_c %" PetscInt_FMT,i_start,i_c,i_start_ghost_c);
 
       /*
        Only include those interpolation points that are truly
@@ -117,7 +115,7 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
         cols[nc] = idx_c[col+1];
         v[nc++]  = x;
       }
-      ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr);
+      PetscCall(MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES));
     }
 
   } else {
@@ -127,7 +125,7 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
 
     /* compute local coordinate arrays */
     nxi  = ratio + 1;
-    ierr = PetscMalloc1(nxi,&xi);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(nxi,&xi));
     for (li=0; li<nxi; li++) {
       xi[li] = -1.0 + (PetscScalar)li*(2.0/(PetscScalar)(nxi-1));
     }
@@ -137,8 +135,8 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
       row = idx_f[(i-i_start_ghost)];
 
       i_c = (i/ratio);    /* coarse grid node to left of fine grid node */
-      PetscCheckFalse(i_c < i_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
-                                          i_start %D i_c %D i_start_ghost_c %D",i_start,i_c,i_start_ghost_c);
+      PetscCheck(i_c >= i_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
+                                          i_start %" PetscInt_FMT " i_c %" PetscInt_FMT " i_start_ghost_c %" PetscInt_FMT,i_start,i_c,i_start_ghost_c);
 
       /* remainders */
       li = i - ratio * (i/ratio);
@@ -149,7 +147,7 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
       cols[0] = idx_c[col];
       Ni[0]   = 1.0;
       if ((li==0) || (li==nxi-1)) {
-        ierr = MatSetValue(mat,row,cols[0],Ni[0],INSERT_VALUES);CHKERRQ(ierr);
+        PetscCall(MatSetValue(mat,row,cols[0],Ni[0],INSERT_VALUES));
         continue;
       }
 
@@ -166,22 +164,21 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
       for (n=0; n<2; n++) {
         if (PetscAbsScalar(Ni[n])<1.0e-32) cols[n]=-1;
       }
-      ierr = MatSetValues(mat,1,&row,2,cols,Ni,INSERT_VALUES);CHKERRQ(ierr);
+      PetscCall(MatSetValues(mat,1,&row,2,cols,Ni,INSERT_VALUES));
     }
-    ierr = PetscFree(xi);CHKERRQ(ierr);
+    PetscCall(PetscFree(xi));
   }
-  ierr = ISLocalToGlobalMappingRestoreBlockIndices(ltog_f,&idx_f);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingRestoreBlockIndices(ltog_c,&idx_c);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatCreateMAIJ(mat,dof,A);CHKERRQ(ierr);
-  ierr = MatDestroy(&mat);CHKERRQ(ierr);
+  PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(ltog_f,&idx_f));
+  PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(ltog_c,&idx_c));
+  PetscCall(MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatCreateMAIJ(mat,dof,A));
+  PetscCall(MatDestroy(&mat));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode DMCreateInterpolation_DA_1D_Q0(DM dac,DM daf,Mat *A)
 {
-  PetscErrorCode         ierr;
   PetscInt               i,i_start,m_f,Mx;
   const PetscInt         *idx_f,*idx_c;
   ISLocalToGlobalMapping ltog_f,ltog_c;
@@ -194,44 +191,44 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q0(DM dac,DM daf,Mat *A)
   MatType                mattype;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(dac,NULL,&Mx,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&bx,NULL,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(daf,NULL,&mx,NULL,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+  PetscCall(DMDAGetInfo(dac,NULL,&Mx,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&bx,NULL,NULL,NULL));
+  PetscCall(DMDAGetInfo(daf,NULL,&mx,NULL,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL));
   if (bx == DM_BOUNDARY_PERIODIC) {
-    PetscCheckFalse(!Mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of x coarse grid points %D must be positive",Mx);
+    PetscCheck(Mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of x coarse grid points %" PetscInt_FMT " must be positive",Mx);
     ratio = mx/Mx;
-    PetscCheckFalse(ratio*Mx != mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %D Mx %D",mx,Mx);
+    PetscCheck(ratio*Mx == mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %" PetscInt_FMT " Mx %" PetscInt_FMT,mx,Mx);
   } else {
-    PetscCheckFalse(Mx < 2,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of x coarse grid points %D must be greater than 1",Mx);
+    PetscCheck(Mx >= 2,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of x coarse grid points %" PetscInt_FMT " must be greater than 1",Mx);
     ratio = (mx-1)/(Mx-1);
-    PetscCheckFalse(ratio*(Mx-1) != mx-1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %D Mx %D",mx,Mx);
+    PetscCheck(ratio*(Mx-1) == mx-1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %" PetscInt_FMT " Mx %" PetscInt_FMT,mx,Mx);
   }
 
-  ierr = DMDAGetCorners(daf,&i_start,NULL,NULL,&m_f,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(daf,&i_start_ghost,NULL,NULL,&m_ghost,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMGetLocalToGlobalMapping(daf,&ltog_f);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetBlockIndices(ltog_f,&idx_f);CHKERRQ(ierr);
+  PetscCall(DMDAGetCorners(daf,&i_start,NULL,NULL,&m_f,NULL,NULL));
+  PetscCall(DMDAGetGhostCorners(daf,&i_start_ghost,NULL,NULL,&m_ghost,NULL,NULL));
+  PetscCall(DMGetLocalToGlobalMapping(daf,&ltog_f));
+  PetscCall(ISLocalToGlobalMappingGetBlockIndices(ltog_f,&idx_f));
 
-  ierr = DMDAGetCorners(dac,&i_start_c,NULL,NULL,&m_c,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(dac,&i_start_ghost_c,NULL,NULL,&m_ghost_c,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMGetLocalToGlobalMapping(dac,&ltog_c);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetBlockIndices(ltog_c,&idx_c);CHKERRQ(ierr);
+  PetscCall(DMDAGetCorners(dac,&i_start_c,NULL,NULL,&m_c,NULL,NULL));
+  PetscCall(DMDAGetGhostCorners(dac,&i_start_ghost_c,NULL,NULL,&m_ghost_c,NULL,NULL));
+  PetscCall(DMGetLocalToGlobalMapping(dac,&ltog_c));
+  PetscCall(ISLocalToGlobalMappingGetBlockIndices(ltog_c,&idx_c));
 
   /* create interpolation matrix */
-  ierr = MatCreate(PetscObjectComm((PetscObject)dac),&mat);CHKERRQ(ierr);
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)dac),&mat));
 #if defined(PETSC_HAVE_CUDA)
   /*
      Temporary hack: Since the MAIJ matrix must be converted to AIJ before being used by the GPU
      we don't want the original unconverted matrix copied to the GPU
    */
   if (dof > 1) {
-    ierr = MatBindToCPU(mat,PETSC_TRUE);CHKERRQ(ierr);
+    PetscCall(MatBindToCPU(mat,PETSC_TRUE));
   }
   #endif
-  ierr = MatSetSizes(mat,m_f,m_c,mx,Mx);CHKERRQ(ierr);
-  ierr = ConvertToAIJ(dac->mattype,&mattype);CHKERRQ(ierr);
-  ierr = MatSetType(mat,mattype);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(mat,2,NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(mat,2,NULL,0,NULL);CHKERRQ(ierr);
+  PetscCall(MatSetSizes(mat,m_f,m_c,mx,Mx));
+  PetscCall(ConvertToAIJ(dac->mattype,&mattype));
+  PetscCall(MatSetType(mat,mattype));
+  PetscCall(MatSeqAIJSetPreallocation(mat,2,NULL));
+  PetscCall(MatMPIAIJSetPreallocation(mat,2,NULL,0,NULL));
 
   /* loop over local fine grid nodes setting interpolation for those*/
   for (i=i_start; i<i_start+m_f; i++) {
@@ -256,21 +253,20 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q0(DM dac,DM daf,Mat *A)
       cols[nc] = idx_c[col+1];
       v[nc++]  = x;
     }
-    ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES));
   }
-  ierr = ISLocalToGlobalMappingRestoreBlockIndices(ltog_f,&idx_f);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingRestoreBlockIndices(ltog_c,&idx_c);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatCreateMAIJ(mat,dof,A);CHKERRQ(ierr);
-  ierr = MatDestroy(&mat);CHKERRQ(ierr);
-  ierr = PetscLogFlops(5.0*m_f);CHKERRQ(ierr);
+  PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(ltog_f,&idx_f));
+  PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(ltog_c,&idx_c));
+  PetscCall(MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatCreateMAIJ(mat,dof,A));
+  PetscCall(MatDestroy(&mat));
+  PetscCall(PetscLogFlops(5.0*m_f));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
 {
-  PetscErrorCode         ierr;
   PetscInt               i,j,i_start,j_start,m_f,n_f,Mx,My,dof;
   const PetscInt         *idx_c,*idx_f;
   ISLocalToGlobalMapping ltog_f,ltog_c;
@@ -284,36 +280,36 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
   MatType                mattype;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(dac,NULL,&Mx,&My,NULL,NULL,NULL,NULL,NULL,NULL,&bx,&by,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(daf,NULL,&mx,&my,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+  PetscCall(DMDAGetInfo(dac,NULL,&Mx,&My,NULL,NULL,NULL,NULL,NULL,NULL,&bx,&by,NULL,NULL));
+  PetscCall(DMDAGetInfo(daf,NULL,&mx,&my,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL));
   if (bx == DM_BOUNDARY_PERIODIC) {
-    PetscCheckFalse(!Mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of x coarse grid points %D must be positive",Mx);
+    PetscCheck(Mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of x coarse grid points %" PetscInt_FMT " must be positive",Mx);
     ratioi = mx/Mx;
-    PetscCheckFalse(ratioi*Mx != mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %D Mx %D",mx,Mx);
+    PetscCheck(ratioi*Mx == mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %" PetscInt_FMT " Mx %" PetscInt_FMT,mx,Mx);
   } else {
-    PetscCheckFalse(Mx < 2,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of x coarse grid points %D must be greater than 1",Mx);
+    PetscCheck(Mx >= 2,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of x coarse grid points %" PetscInt_FMT " must be greater than 1",Mx);
     ratioi = (mx-1)/(Mx-1);
-    PetscCheckFalse(ratioi*(Mx-1) != mx-1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %D Mx %D",mx,Mx);
+    PetscCheck(ratioi*(Mx-1) == mx-1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %" PetscInt_FMT " Mx %" PetscInt_FMT,mx,Mx);
   }
   if (by == DM_BOUNDARY_PERIODIC) {
-    PetscCheckFalse(!My,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of y coarse grid points %D must be positive",My);
+    PetscCheck(My,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of y coarse grid points %" PetscInt_FMT " must be positive",My);
     ratioj = my/My;
-    PetscCheckFalse(ratioj*My != my,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: my/My  must be integer: my %D My %D",my,My);
+    PetscCheck(ratioj*My == my,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: my/My  must be integer: my %" PetscInt_FMT " My %" PetscInt_FMT,my,My);
   } else {
-    PetscCheckFalse(My < 2,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of y coarse grid points %D must be greater than 1",My);
+    PetscCheck(My >= 2,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of y coarse grid points %" PetscInt_FMT " must be greater than 1",My);
     ratioj = (my-1)/(My-1);
-    PetscCheckFalse(ratioj*(My-1) != my-1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (my - 1)/(My - 1) must be integer: my %D My %D",my,My);
+    PetscCheck(ratioj*(My-1) == my-1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (my - 1)/(My - 1) must be integer: my %" PetscInt_FMT " My %" PetscInt_FMT,my,My);
   }
 
-  ierr = DMDAGetCorners(daf,&i_start,&j_start,NULL,&m_f,&n_f,NULL);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,NULL,&m_ghost,&n_ghost,NULL);CHKERRQ(ierr);
-  ierr = DMGetLocalToGlobalMapping(daf,&ltog_f);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetBlockIndices(ltog_f,&idx_f);CHKERRQ(ierr);
+  PetscCall(DMDAGetCorners(daf,&i_start,&j_start,NULL,&m_f,&n_f,NULL));
+  PetscCall(DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,NULL,&m_ghost,&n_ghost,NULL));
+  PetscCall(DMGetLocalToGlobalMapping(daf,&ltog_f));
+  PetscCall(ISLocalToGlobalMappingGetBlockIndices(ltog_f,&idx_f));
 
-  ierr = DMDAGetCorners(dac,&i_start_c,&j_start_c,NULL,&m_c,&n_c,NULL);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,NULL,&m_ghost_c,&n_ghost_c,NULL);CHKERRQ(ierr);
-  ierr = DMGetLocalToGlobalMapping(dac,&ltog_c);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetBlockIndices(ltog_c,&idx_c);CHKERRQ(ierr);
+  PetscCall(DMDAGetCorners(dac,&i_start_c,&j_start_c,NULL,&m_c,&n_c,NULL));
+  PetscCall(DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,NULL,&m_ghost_c,&n_ghost_c,NULL));
+  PetscCall(DMGetLocalToGlobalMapping(dac,&ltog_c));
+  PetscCall(ISLocalToGlobalMappingGetBlockIndices(ltog_c,&idx_c));
 
   /*
    Used for handling a coarse DMDA that lives on 1/4 the processors of the fine DMDA.
@@ -325,13 +321,13 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
 
    In the standard case when size_f == size_c col_scale == 1 and col_shift == 0
    */
-  ierr      = MPI_Comm_size(PetscObjectComm((PetscObject)dac),&size_c);CHKERRMPI(ierr);
-  ierr      = MPI_Comm_size(PetscObjectComm((PetscObject)daf),&size_f);CHKERRMPI(ierr);
-  ierr      = MPI_Comm_rank(PetscObjectComm((PetscObject)daf),&rank_f);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)dac),&size_c));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)daf),&size_f));
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)daf),&rank_f));
   col_scale = size_f/size_c;
   col_shift = Mx*My*(rank_f/size_c);
 
-  ierr = MatPreallocateInitialize(PetscObjectComm((PetscObject)daf),m_f*n_f,col_scale*m_c*n_c,dnz,onz);CHKERRQ(ierr);
+  MatPreallocateBegin(PetscObjectComm((PetscObject)daf),m_f*n_f,col_scale*m_c*n_c,dnz,onz);
   for (j=j_start; j<j_start+n_f; j++) {
     for (i=i_start; i<i_start+m_f; i++) {
       /* convert to local "natural" numbering and then to PETSc global numbering */
@@ -340,10 +336,10 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
       i_c = (i/ratioi);    /* coarse grid node to left of fine grid node */
       j_c = (j/ratioj);    /* coarse grid node below fine grid node */
 
-      PetscCheckFalse(j_c < j_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
-                                          j_start %D j_c %D j_start_ghost_c %D",j_start,j_c,j_start_ghost_c);
-      PetscCheckFalse(i_c < i_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
-                                          i_start %D i_c %D i_start_ghost_c %D",i_start,i_c,i_start_ghost_c);
+      PetscCheck(j_c >= j_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
+                                          j_start %" PetscInt_FMT " j_c %" PetscInt_FMT " j_start_ghost_c %" PetscInt_FMT,j_start,j_c,j_start_ghost_c);
+      PetscCheck(i_c >= i_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
+                                          i_start %" PetscInt_FMT " i_c %" PetscInt_FMT " i_start_ghost_c %" PetscInt_FMT,i_start,i_c,i_start_ghost_c);
 
       /*
        Only include those interpolation points that are truly
@@ -360,25 +356,25 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
       if (j_c*ratioj != j) cols[nc++] = col_shift + idx_c[col+m_ghost_c];
       /* one right and above */
       if (i_c*ratioi != i && j_c*ratioj != j) cols[nc++] = col_shift + idx_c[col+(m_ghost_c+1)];
-      ierr = MatPreallocateSet(row,nc,cols,dnz,onz);CHKERRQ(ierr);
+      PetscCall(MatPreallocateSet(row,nc,cols,dnz,onz));
     }
   }
-  ierr = MatCreate(PetscObjectComm((PetscObject)daf),&mat);CHKERRQ(ierr);
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)daf),&mat));
 #if defined(PETSC_HAVE_CUDA)
   /*
      Temporary hack: Since the MAIJ matrix must be converted to AIJ before being used by the GPU
      we don't want the original unconverted matrix copied to the GPU
   */
   if (dof > 1) {
-    ierr = MatBindToCPU(mat,PETSC_TRUE);CHKERRQ(ierr);
+    PetscCall(MatBindToCPU(mat,PETSC_TRUE));
   }
 #endif
-  ierr = MatSetSizes(mat,m_f*n_f,col_scale*m_c*n_c,mx*my,col_scale*Mx*My);CHKERRQ(ierr);
-  ierr = ConvertToAIJ(dac->mattype,&mattype);CHKERRQ(ierr);
-  ierr = MatSetType(mat,mattype);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(mat,0,dnz);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(mat,0,dnz,0,onz);CHKERRQ(ierr);
-  ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
+  PetscCall(MatSetSizes(mat,m_f*n_f,col_scale*m_c*n_c,mx*my,col_scale*Mx*My));
+  PetscCall(ConvertToAIJ(dac->mattype,&mattype));
+  PetscCall(MatSetType(mat,mattype));
+  PetscCall(MatSeqAIJSetPreallocation(mat,0,dnz));
+  PetscCall(MatMPIAIJSetPreallocation(mat,0,dnz,0,onz));
+  MatPreallocateEnd(dnz,onz);
 
   /* loop over local fine grid nodes setting interpolation for those*/
   if (!NEWVERSION) {
@@ -419,7 +415,7 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
           cols[nc] = col_shift + idx_c[col+(m_ghost_c+1)];
           v[nc++]  = x*y;
         }
-        ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr);
+        PetscCall(MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES));
       }
     }
 
@@ -431,8 +427,8 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
     /* compute local coordinate arrays */
     nxi  = ratioi + 1;
     neta = ratioj + 1;
-    ierr = PetscMalloc1(nxi,&xi);CHKERRQ(ierr);
-    ierr = PetscMalloc1(neta,&eta);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(nxi,&xi));
+    PetscCall(PetscMalloc1(neta,&eta));
     for (li=0; li<nxi; li++) {
       xi[li] = -1.0 + (PetscScalar)li*(2.0/(PetscScalar)(nxi-1));
     }
@@ -461,7 +457,7 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
         Ni[0]   = 1.0;
         if ((li==0) || (li==nxi-1)) {
           if ((lj==0) || (lj==neta-1)) {
-            ierr = MatSetValue(mat,row,cols[0],Ni[0],INSERT_VALUES);CHKERRQ(ierr);
+            PetscCall(MatSetValue(mat,row,cols[0],Ni[0],INSERT_VALUES));
             continue;
           }
         }
@@ -488,18 +484,18 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
         if (PetscAbsScalar(Ni[2])<1.0e-32) cols[2]=-1;
         if (PetscAbsScalar(Ni[3])<1.0e-32) cols[3]=-1;
 
-        ierr = MatSetValues(mat,1,&row,4,cols,Ni,INSERT_VALUES);CHKERRQ(ierr);
+        PetscCall(MatSetValues(mat,1,&row,4,cols,Ni,INSERT_VALUES));
       }
     }
-    ierr = PetscFree(xi);CHKERRQ(ierr);
-    ierr = PetscFree(eta);CHKERRQ(ierr);
+    PetscCall(PetscFree(xi));
+    PetscCall(PetscFree(eta));
   }
-  ierr = ISLocalToGlobalMappingRestoreBlockIndices(ltog_f,&idx_f);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingRestoreBlockIndices(ltog_c,&idx_c);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatCreateMAIJ(mat,dof,A);CHKERRQ(ierr);
-  ierr = MatDestroy(&mat);CHKERRQ(ierr);
+  PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(ltog_f,&idx_f));
+  PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(ltog_c,&idx_c));
+  PetscCall(MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatCreateMAIJ(mat,dof,A));
+  PetscCall(MatDestroy(&mat));
   PetscFunctionReturn(0);
 }
 
@@ -508,7 +504,6 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
 */
 PetscErrorCode DMCreateInterpolation_DA_2D_Q0(DM dac,DM daf,Mat *A)
 {
-  PetscErrorCode         ierr;
   PetscInt               i,j,i_start,j_start,m_f,n_f,Mx,My,dof;
   const PetscInt         *idx_c,*idx_f;
   ISLocalToGlobalMapping ltog_f,ltog_c;
@@ -522,26 +517,26 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q0(DM dac,DM daf,Mat *A)
   MatType                mattype;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(dac,NULL,&Mx,&My,NULL,NULL,NULL,NULL,NULL,NULL,&bx,&by,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(daf,NULL,&mx,&my,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
-  PetscCheckFalse(!Mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of x coarse grid points %D must be positive",Mx);
-  PetscCheckFalse(!My,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of y coarse grid points %D must be positive",My);
+  PetscCall(DMDAGetInfo(dac,NULL,&Mx,&My,NULL,NULL,NULL,NULL,NULL,NULL,&bx,&by,NULL,NULL));
+  PetscCall(DMDAGetInfo(daf,NULL,&mx,&my,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL));
+  PetscCheck(Mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of x coarse grid points %" PetscInt_FMT " must be positive",Mx);
+  PetscCheck(My,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of y coarse grid points %" PetscInt_FMT " must be positive",My);
   ratioi = mx/Mx;
   ratioj = my/My;
-  PetscCheckFalse(ratioi*Mx != mx,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in x");
-  PetscCheckFalse(ratioj*My != my,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in y");
-  PetscCheckFalse(ratioi != 2,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Coarsening factor in x must be 2");
-  PetscCheckFalse(ratioj != 2,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Coarsening factor in y must be 2");
+  PetscCheck(ratioi*Mx == mx,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in x");
+  PetscCheck(ratioj*My == my,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in y");
+  PetscCheck(ratioi == 2,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Coarsening factor in x must be 2");
+  PetscCheck(ratioj == 2,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Coarsening factor in y must be 2");
 
-  ierr = DMDAGetCorners(daf,&i_start,&j_start,NULL,&m_f,&n_f,NULL);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,NULL,&m_ghost,&n_ghost,NULL);CHKERRQ(ierr);
-  ierr = DMGetLocalToGlobalMapping(daf,&ltog_f);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetBlockIndices(ltog_f,&idx_f);CHKERRQ(ierr);
+  PetscCall(DMDAGetCorners(daf,&i_start,&j_start,NULL,&m_f,&n_f,NULL));
+  PetscCall(DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,NULL,&m_ghost,&n_ghost,NULL));
+  PetscCall(DMGetLocalToGlobalMapping(daf,&ltog_f));
+  PetscCall(ISLocalToGlobalMappingGetBlockIndices(ltog_f,&idx_f));
 
-  ierr = DMDAGetCorners(dac,&i_start_c,&j_start_c,NULL,&m_c,&n_c,NULL);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,NULL,&m_ghost_c,&n_ghost_c,NULL);CHKERRQ(ierr);
-  ierr = DMGetLocalToGlobalMapping(dac,&ltog_c);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetBlockIndices(ltog_c,&idx_c);CHKERRQ(ierr);
+  PetscCall(DMDAGetCorners(dac,&i_start_c,&j_start_c,NULL,&m_c,&n_c,NULL));
+  PetscCall(DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,NULL,&m_ghost_c,&n_ghost_c,NULL));
+  PetscCall(DMGetLocalToGlobalMapping(dac,&ltog_c));
+  PetscCall(ISLocalToGlobalMappingGetBlockIndices(ltog_c,&idx_c));
 
   /*
      Used for handling a coarse DMDA that lives on 1/4 the processors of the fine DMDA.
@@ -553,13 +548,13 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q0(DM dac,DM daf,Mat *A)
 
      In the standard case when size_f == size_c col_scale == 1 and col_shift == 0
   */
-  ierr      = MPI_Comm_size(PetscObjectComm((PetscObject)dac),&size_c);CHKERRMPI(ierr);
-  ierr      = MPI_Comm_size(PetscObjectComm((PetscObject)daf),&size_f);CHKERRMPI(ierr);
-  ierr      = MPI_Comm_rank(PetscObjectComm((PetscObject)daf),&rank_f);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)dac),&size_c));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)daf),&size_f));
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)daf),&rank_f));
   col_scale = size_f/size_c;
   col_shift = Mx*My*(rank_f/size_c);
 
-  ierr = MatPreallocateInitialize(PetscObjectComm((PetscObject)daf),m_f*n_f,col_scale*m_c*n_c,dnz,onz);CHKERRQ(ierr);
+  MatPreallocateBegin(PetscObjectComm((PetscObject)daf),m_f*n_f,col_scale*m_c*n_c,dnz,onz);
   for (j=j_start; j<j_start+n_f; j++) {
     for (i=i_start; i<i_start+m_f; i++) {
       /* convert to local "natural" numbering and then to PETSc global numbering */
@@ -568,10 +563,10 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q0(DM dac,DM daf,Mat *A)
       i_c = (i/ratioi);    /* coarse grid node to left of fine grid node */
       j_c = (j/ratioj);    /* coarse grid node below fine grid node */
 
-      PetscCheckFalse(j_c < j_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
-    j_start %D j_c %D j_start_ghost_c %D",j_start,j_c,j_start_ghost_c);
-      PetscCheckFalse(i_c < i_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
-    i_start %D i_c %D i_start_ghost_c %D",i_start,i_c,i_start_ghost_c);
+      PetscCheck(j_c >= j_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
+    j_start %" PetscInt_FMT " j_c %" PetscInt_FMT " j_start_ghost_c %" PetscInt_FMT,j_start,j_c,j_start_ghost_c);
+      PetscCheck(i_c >= i_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
+    i_start %" PetscInt_FMT " i_c %" PetscInt_FMT " i_start_ghost_c %" PetscInt_FMT,i_start,i_c,i_start_ghost_c);
 
       /*
          Only include those interpolation points that are truly
@@ -582,25 +577,25 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q0(DM dac,DM daf,Mat *A)
       /* one left and below; or we are right on it */
       col        = (m_ghost_c*(j_c-j_start_ghost_c) + (i_c-i_start_ghost_c));
       cols[nc++] = col_shift + idx_c[col];
-      ierr       = MatPreallocateSet(row,nc,cols,dnz,onz);CHKERRQ(ierr);
+      PetscCall(MatPreallocateSet(row,nc,cols,dnz,onz));
     }
   }
-  ierr = MatCreate(PetscObjectComm((PetscObject)daf),&mat);CHKERRQ(ierr);
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)daf),&mat));
 #if defined(PETSC_HAVE_CUDA)
   /*
      Temporary hack: Since the MAIJ matrix must be converted to AIJ before being used by the GPU
      we don't want the original unconverted matrix copied to the GPU
   */
   if (dof > 1) {
-    ierr = MatBindToCPU(mat,PETSC_TRUE);CHKERRQ(ierr);
+    PetscCall(MatBindToCPU(mat,PETSC_TRUE));
   }
   #endif
-  ierr = MatSetSizes(mat,m_f*n_f,col_scale*m_c*n_c,mx*my,col_scale*Mx*My);CHKERRQ(ierr);
-  ierr = ConvertToAIJ(dac->mattype,&mattype);CHKERRQ(ierr);
-  ierr = MatSetType(mat,mattype);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(mat,0,dnz);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(mat,0,dnz,0,onz);CHKERRQ(ierr);
-  ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
+  PetscCall(MatSetSizes(mat,m_f*n_f,col_scale*m_c*n_c,mx*my,col_scale*Mx*My));
+  PetscCall(ConvertToAIJ(dac->mattype,&mattype));
+  PetscCall(MatSetType(mat,mattype));
+  PetscCall(MatSeqAIJSetPreallocation(mat,0,dnz));
+  PetscCall(MatMPIAIJSetPreallocation(mat,0,dnz,0,onz));
+  MatPreallocateEnd(dnz,onz);
 
   /* loop over local fine grid nodes setting interpolation for those*/
   for (j=j_start; j<j_start+n_f; j++) {
@@ -616,16 +611,16 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q0(DM dac,DM daf,Mat *A)
       cols[nc] = col_shift + idx_c[col];
       v[nc++]  = 1.0;
 
-      ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr);
+      PetscCall(MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES));
     }
   }
-  ierr = ISLocalToGlobalMappingRestoreBlockIndices(ltog_f,&idx_f);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingRestoreBlockIndices(ltog_c,&idx_c);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatCreateMAIJ(mat,dof,A);CHKERRQ(ierr);
-  ierr = MatDestroy(&mat);CHKERRQ(ierr);
-  ierr = PetscLogFlops(13.0*m_f*n_f);CHKERRQ(ierr);
+  PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(ltog_f,&idx_f));
+  PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(ltog_c,&idx_c));
+  PetscCall(MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatCreateMAIJ(mat,dof,A));
+  PetscCall(MatDestroy(&mat));
+  PetscCall(PetscLogFlops(13.0*m_f*n_f));
   PetscFunctionReturn(0);
 }
 
@@ -634,7 +629,6 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q0(DM dac,DM daf,Mat *A)
 */
 PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
 {
-  PetscErrorCode         ierr;
   PetscInt               i,j,l,i_start,j_start,l_start,m_f,n_f,p_f,Mx,My,Mz,dof;
   const PetscInt         *idx_c,*idx_f;
   ISLocalToGlobalMapping ltog_f,ltog_c;
@@ -648,30 +642,30 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
   MatType                mattype;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(dac,NULL,&Mx,&My,&Mz,NULL,NULL,NULL,NULL,NULL,&bx,&by,&bz,NULL);CHKERRQ(ierr);
-  PetscCheckFalse(!Mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of x coarse grid points %D must be positive",Mx);
-  PetscCheckFalse(!My,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of y coarse grid points %D must be positive",My);
-  PetscCheckFalse(!Mz,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of z coarse grid points %D must be positive",Mz);
-  ierr = DMDAGetInfo(daf,NULL,&mx,&my,&mz,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+  PetscCall(DMDAGetInfo(dac,NULL,&Mx,&My,&Mz,NULL,NULL,NULL,NULL,NULL,&bx,&by,&bz,NULL));
+  PetscCheck(Mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of x coarse grid points %" PetscInt_FMT " must be positive",Mx);
+  PetscCheck(My,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of y coarse grid points %" PetscInt_FMT " must be positive",My);
+  PetscCheck(Mz,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of z coarse grid points %" PetscInt_FMT " must be positive",Mz);
+  PetscCall(DMDAGetInfo(daf,NULL,&mx,&my,&mz,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL));
   ratioi = mx/Mx;
   ratioj = my/My;
   ratiol = mz/Mz;
-  PetscCheckFalse(ratioi*Mx != mx,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in x");
-  PetscCheckFalse(ratioj*My != my,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in y");
-  PetscCheckFalse(ratiol*Mz != mz,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in z");
-  PetscCheckFalse(ratioi != 2 && ratioi != 1,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Coarsening factor in x must be 1 or 2");
-  PetscCheckFalse(ratioj != 2 && ratioj != 1,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Coarsening factor in y must be 1 or 2");
-  PetscCheckFalse(ratiol != 2 && ratiol != 1,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Coarsening factor in z must be 1 or 2");
+  PetscCheck(ratioi*Mx == mx,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in x");
+  PetscCheck(ratioj*My == my,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in y");
+  PetscCheck(ratiol*Mz == mz,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in z");
+  PetscCheck(ratioi == 2 || ratioi == 1,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Coarsening factor in x must be 1 or 2");
+  PetscCheck(ratioj == 2 || ratioj == 1,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Coarsening factor in y must be 1 or 2");
+  PetscCheck(ratiol == 2 || ratiol == 1,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Coarsening factor in z must be 1 or 2");
 
-  ierr = DMDAGetCorners(daf,&i_start,&j_start,&l_start,&m_f,&n_f,&p_f);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,&l_start_ghost,&m_ghost,&n_ghost,&p_ghost);CHKERRQ(ierr);
-  ierr = DMGetLocalToGlobalMapping(daf,&ltog_f);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetBlockIndices(ltog_f,&idx_f);CHKERRQ(ierr);
+  PetscCall(DMDAGetCorners(daf,&i_start,&j_start,&l_start,&m_f,&n_f,&p_f));
+  PetscCall(DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,&l_start_ghost,&m_ghost,&n_ghost,&p_ghost));
+  PetscCall(DMGetLocalToGlobalMapping(daf,&ltog_f));
+  PetscCall(ISLocalToGlobalMappingGetBlockIndices(ltog_f,&idx_f));
 
-  ierr = DMDAGetCorners(dac,&i_start_c,&j_start_c,&l_start_c,&m_c,&n_c,&p_c);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,&l_start_ghost_c,&m_ghost_c,&n_ghost_c,&p_ghost_c);CHKERRQ(ierr);
-  ierr = DMGetLocalToGlobalMapping(dac,&ltog_c);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetBlockIndices(ltog_c,&idx_c);CHKERRQ(ierr);
+  PetscCall(DMDAGetCorners(dac,&i_start_c,&j_start_c,&l_start_c,&m_c,&n_c,&p_c));
+  PetscCall(DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,&l_start_ghost_c,&m_ghost_c,&n_ghost_c,&p_ghost_c));
+  PetscCall(DMGetLocalToGlobalMapping(dac,&ltog_c));
+  PetscCall(ISLocalToGlobalMappingGetBlockIndices(ltog_c,&idx_c));
 
   /*
      Used for handling a coarse DMDA that lives on 1/4 the processors of the fine DMDA.
@@ -683,13 +677,13 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
 
      In the standard case when size_f == size_c col_scale == 1 and col_shift == 0
   */
-  ierr      = MPI_Comm_size(PetscObjectComm((PetscObject)dac),&size_c);CHKERRMPI(ierr);
-  ierr      = MPI_Comm_size(PetscObjectComm((PetscObject)daf),&size_f);CHKERRMPI(ierr);
-  ierr      = MPI_Comm_rank(PetscObjectComm((PetscObject)daf),&rank_f);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)dac),&size_c));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)daf),&size_f));
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)daf),&rank_f));
   col_scale = size_f/size_c;
   col_shift = Mx*My*Mz*(rank_f/size_c);
 
-  ierr = MatPreallocateInitialize(PetscObjectComm((PetscObject)daf),m_f*n_f*p_f,col_scale*m_c*n_c*p_c,dnz,onz);CHKERRQ(ierr);
+  MatPreallocateBegin(PetscObjectComm((PetscObject)daf),m_f*n_f*p_f,col_scale*m_c*n_c*p_c,dnz,onz);
   for (l=l_start; l<l_start+p_f; l++) {
     for (j=j_start; j<j_start+n_f; j++) {
       for (i=i_start; i<i_start+m_f; i++) {
@@ -700,12 +694,12 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
         j_c = (j/ratioj);    /* coarse grid node below fine grid node */
         l_c = (l/ratiol);
 
-        PetscCheckFalse(l_c < l_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
-    l_start %D l_c %D l_start_ghost_c %D",l_start,l_c,l_start_ghost_c);
-        PetscCheckFalse(j_c < j_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
-    j_start %D j_c %D j_start_ghost_c %D",j_start,j_c,j_start_ghost_c);
-        PetscCheckFalse(i_c < i_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
-    i_start %D i_c %D i_start_ghost_c %D",i_start,i_c,i_start_ghost_c);
+        PetscCheck(l_c >= l_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
+    l_start %" PetscInt_FMT " l_c %" PetscInt_FMT " l_start_ghost_c %" PetscInt_FMT,l_start,l_c,l_start_ghost_c);
+        PetscCheck(j_c >= j_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
+    j_start %" PetscInt_FMT " j_c %" PetscInt_FMT " j_start_ghost_c %" PetscInt_FMT,j_start,j_c,j_start_ghost_c);
+        PetscCheck(i_c >= i_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
+    i_start %" PetscInt_FMT " i_c %" PetscInt_FMT " i_start_ghost_c %" PetscInt_FMT,i_start,i_c,i_start_ghost_c);
 
         /*
            Only include those interpolation points that are truly
@@ -716,26 +710,26 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
         /* one left and below; or we are right on it */
         col        = (m_ghost_c*n_ghost_c*(l_c-l_start_ghost_c) + m_ghost_c*(j_c-j_start_ghost_c) + (i_c-i_start_ghost_c));
         cols[nc++] = col_shift + idx_c[col];
-        ierr       = MatPreallocateSet(row,nc,cols,dnz,onz);CHKERRQ(ierr);
+        PetscCall(MatPreallocateSet(row,nc,cols,dnz,onz));
       }
     }
   }
-  ierr = MatCreate(PetscObjectComm((PetscObject)daf),&mat);CHKERRQ(ierr);
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)daf),&mat));
 #if defined(PETSC_HAVE_CUDA)
   /*
      Temporary hack: Since the MAIJ matrix must be converted to AIJ before being used by the GPU
      we don't want the original unconverted matrix copied to the GPU
   */
   if (dof > 1) {
-    ierr = MatBindToCPU(mat,PETSC_TRUE);CHKERRQ(ierr);
+    PetscCall(MatBindToCPU(mat,PETSC_TRUE));
   }
   #endif
-  ierr = MatSetSizes(mat,m_f*n_f*p_f,col_scale*m_c*n_c*p_c,mx*my*mz,col_scale*Mx*My*Mz);CHKERRQ(ierr);
-  ierr = ConvertToAIJ(dac->mattype,&mattype);CHKERRQ(ierr);
-  ierr = MatSetType(mat,mattype);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(mat,0,dnz);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(mat,0,dnz,0,onz);CHKERRQ(ierr);
-  ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
+  PetscCall(MatSetSizes(mat,m_f*n_f*p_f,col_scale*m_c*n_c*p_c,mx*my*mz,col_scale*Mx*My*Mz));
+  PetscCall(ConvertToAIJ(dac->mattype,&mattype));
+  PetscCall(MatSetType(mat,mattype));
+  PetscCall(MatSeqAIJSetPreallocation(mat,0,dnz));
+  PetscCall(MatMPIAIJSetPreallocation(mat,0,dnz,0,onz));
+  MatPreallocateEnd(dnz,onz);
 
   /* loop over local fine grid nodes setting interpolation for those*/
   for (l=l_start; l<l_start+p_f; l++) {
@@ -753,23 +747,22 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
         cols[nc] = col_shift + idx_c[col];
         v[nc++]  = 1.0;
 
-        ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr);
+        PetscCall(MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES));
       }
     }
   }
-  ierr = ISLocalToGlobalMappingRestoreBlockIndices(ltog_f,&idx_f);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingRestoreBlockIndices(ltog_c,&idx_c);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatCreateMAIJ(mat,dof,A);CHKERRQ(ierr);
-  ierr = MatDestroy(&mat);CHKERRQ(ierr);
-  ierr = PetscLogFlops(13.0*m_f*n_f*p_f);CHKERRQ(ierr);
+  PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(ltog_f,&idx_f));
+  PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(ltog_c,&idx_c));
+  PetscCall(MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatCreateMAIJ(mat,dof,A));
+  PetscCall(MatDestroy(&mat));
+  PetscCall(PetscLogFlops(13.0*m_f*n_f*p_f));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
 {
-  PetscErrorCode         ierr;
   PetscInt               i,j,i_start,j_start,m_f,n_f,Mx,My,dof,l;
   const PetscInt         *idx_c,*idx_f;
   ISLocalToGlobalMapping ltog_f,ltog_c;
@@ -784,54 +777,54 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
   MatType                mattype;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(dac,NULL,&Mx,&My,&Mz,NULL,NULL,NULL,NULL,NULL,&bx,&by,&bz,NULL);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(daf,NULL,&mx,&my,&mz,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+  PetscCall(DMDAGetInfo(dac,NULL,&Mx,&My,&Mz,NULL,NULL,NULL,NULL,NULL,&bx,&by,&bz,NULL));
+  PetscCall(DMDAGetInfo(daf,NULL,&mx,&my,&mz,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL));
   if (mx == Mx) {
     ratioi = 1;
   } else if (bx == DM_BOUNDARY_PERIODIC) {
-    PetscCheckFalse(!Mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of x coarse grid points %D must be positive",Mx);
+    PetscCheck(Mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of x coarse grid points %" PetscInt_FMT " must be positive",Mx);
     ratioi = mx/Mx;
-    PetscCheckFalse(ratioi*Mx != mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %D Mx %D",mx,Mx);
+    PetscCheck(ratioi*Mx == mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %" PetscInt_FMT " Mx %" PetscInt_FMT,mx,Mx);
   } else {
-    PetscCheckFalse(Mx < 2,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of x coarse grid points %D must be greater than 1",Mx);
+    PetscCheck(Mx >= 2,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of x coarse grid points %" PetscInt_FMT " must be greater than 1",Mx);
     ratioi = (mx-1)/(Mx-1);
-    PetscCheckFalse(ratioi*(Mx-1) != mx-1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %D Mx %D",mx,Mx);
+    PetscCheck(ratioi*(Mx-1) == mx-1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %" PetscInt_FMT " Mx %" PetscInt_FMT,mx,Mx);
   }
   if (my == My) {
     ratioj = 1;
   } else if (by == DM_BOUNDARY_PERIODIC) {
-    PetscCheckFalse(!My,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of y coarse grid points %D must be positive",My);
+    PetscCheck(My,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of y coarse grid points %" PetscInt_FMT " must be positive",My);
     ratioj = my/My;
-    PetscCheckFalse(ratioj*My != my,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: my/My  must be integer: my %D My %D",my,My);
+    PetscCheck(ratioj*My == my,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: my/My  must be integer: my %" PetscInt_FMT " My %" PetscInt_FMT,my,My);
   } else {
-    PetscCheckFalse(My < 2,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of y coarse grid points %D must be greater than 1",My);
+    PetscCheck(My >= 2,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of y coarse grid points %" PetscInt_FMT " must be greater than 1",My);
     ratioj = (my-1)/(My-1);
-    PetscCheckFalse(ratioj*(My-1) != my-1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (my - 1)/(My - 1) must be integer: my %D My %D",my,My);
+    PetscCheck(ratioj*(My-1) == my-1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (my - 1)/(My - 1) must be integer: my %" PetscInt_FMT " My %" PetscInt_FMT,my,My);
   }
   if (mz == Mz) {
     ratiok = 1;
   } else if (bz == DM_BOUNDARY_PERIODIC) {
-    PetscCheckFalse(!Mz,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of z coarse grid points %D must be positive",Mz);
+    PetscCheck(Mz,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of z coarse grid points %" PetscInt_FMT " must be positive",Mz);
     ratiok = mz/Mz;
-    PetscCheckFalse(ratiok*Mz != mz,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mz/Mz  must be integer: mz %D Mz %D",mz,Mz);
+    PetscCheck(ratiok*Mz == mz,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mz/Mz  must be integer: mz %" PetscInt_FMT " Mz %" PetscInt_FMT,mz,Mz);
   } else {
-    PetscCheckFalse(Mz < 2,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of z coarse grid points %D must be greater than 1",Mz);
+    PetscCheck(Mz >= 2,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of z coarse grid points %" PetscInt_FMT " must be greater than 1",Mz);
     ratiok = (mz-1)/(Mz-1);
-    PetscCheckFalse(ratiok*(Mz-1) != mz-1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mz - 1)/(Mz - 1) must be integer: mz %D Mz %D",mz,Mz);
+    PetscCheck(ratiok*(Mz-1) == mz-1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mz - 1)/(Mz - 1) must be integer: mz %" PetscInt_FMT " Mz %" PetscInt_FMT,mz,Mz);
   }
 
-  ierr = DMDAGetCorners(daf,&i_start,&j_start,&l_start,&m_f,&n_f,&p_f);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,&l_start_ghost,&m_ghost,&n_ghost,&p_ghost);CHKERRQ(ierr);
-  ierr = DMGetLocalToGlobalMapping(daf,&ltog_f);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetBlockIndices(ltog_f,&idx_f);CHKERRQ(ierr);
+  PetscCall(DMDAGetCorners(daf,&i_start,&j_start,&l_start,&m_f,&n_f,&p_f));
+  PetscCall(DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,&l_start_ghost,&m_ghost,&n_ghost,&p_ghost));
+  PetscCall(DMGetLocalToGlobalMapping(daf,&ltog_f));
+  PetscCall(ISLocalToGlobalMappingGetBlockIndices(ltog_f,&idx_f));
 
-  ierr = DMDAGetCorners(dac,&i_start_c,&j_start_c,&l_start_c,&m_c,&n_c,&p_c);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,&l_start_ghost_c,&m_ghost_c,&n_ghost_c,&p_ghost_c);CHKERRQ(ierr);
-  ierr = DMGetLocalToGlobalMapping(dac,&ltog_c);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetBlockIndices(ltog_c,&idx_c);CHKERRQ(ierr);
+  PetscCall(DMDAGetCorners(dac,&i_start_c,&j_start_c,&l_start_c,&m_c,&n_c,&p_c));
+  PetscCall(DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,&l_start_ghost_c,&m_ghost_c,&n_ghost_c,&p_ghost_c));
+  PetscCall(DMGetLocalToGlobalMapping(dac,&ltog_c));
+  PetscCall(ISLocalToGlobalMappingGetBlockIndices(ltog_c,&idx_c));
 
   /* create interpolation matrix, determining exact preallocation */
-  ierr = MatPreallocateInitialize(PetscObjectComm((PetscObject)dac),m_f*n_f*p_f,m_c*n_c*p_c,dnz,onz);CHKERRQ(ierr);
+  MatPreallocateBegin(PetscObjectComm((PetscObject)dac),m_f*n_f*p_f,m_c*n_c*p_c,dnz,onz);
   /* loop over local fine grid nodes counting interpolating points */
   for (l=l_start; l<l_start+p_f; l++) {
     for (j=j_start; j<j_start+n_f; j++) {
@@ -841,12 +834,12 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
         i_c = (i/ratioi);
         j_c = (j/ratioj);
         l_c = (l/ratiok);
-        PetscCheckFalse(l_c < l_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
-                                            l_start %D l_c %D l_start_ghost_c %D",l_start,l_c,l_start_ghost_c);
-        PetscCheckFalse(j_c < j_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
-                                            j_start %D j_c %D j_start_ghost_c %D",j_start,j_c,j_start_ghost_c);
-        PetscCheckFalse(i_c < i_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
-                                            i_start %D i_c %D i_start_ghost_c %D",i_start,i_c,i_start_ghost_c);
+        PetscCheck(l_c >= l_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
+                                            l_start %" PetscInt_FMT " l_c %" PetscInt_FMT " l_start_ghost_c %" PetscInt_FMT,l_start,l_c,l_start_ghost_c);
+        PetscCheck(j_c >= j_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
+                                            j_start %" PetscInt_FMT " j_c %" PetscInt_FMT " j_start_ghost_c %" PetscInt_FMT,j_start,j_c,j_start_ghost_c);
+        PetscCheck(i_c >= i_start_ghost_c,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
+                                            i_start %" PetscInt_FMT " i_c %" PetscInt_FMT " i_start_ghost_c %" PetscInt_FMT,i_start,i_c,i_start_ghost_c);
 
         /*
          Only include those interpolation points that are truly
@@ -877,26 +870,26 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
         if (i_c*ratioi != i && l_c*ratiok != l && j_c*ratioj != j) {
           cols[nc++] = idx_c[col+(m_ghost_c*n_ghost_c+m_ghost_c+1)];
         }
-        ierr = MatPreallocateSet(row,nc,cols,dnz,onz);CHKERRQ(ierr);
+        PetscCall(MatPreallocateSet(row,nc,cols,dnz,onz));
       }
     }
   }
-  ierr = MatCreate(PetscObjectComm((PetscObject)dac),&mat);CHKERRQ(ierr);
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)dac),&mat));
 #if defined(PETSC_HAVE_CUDA)
   /*
      Temporary hack: Since the MAIJ matrix must be converted to AIJ before being used by the GPU
      we don't want the original unconverted matrix copied to the GPU
   */
   if (dof > 1) {
-    ierr = MatBindToCPU(mat,PETSC_TRUE);CHKERRQ(ierr);
+    PetscCall(MatBindToCPU(mat,PETSC_TRUE));
   }
   #endif
-  ierr = MatSetSizes(mat,m_f*n_f*p_f,m_c*n_c*p_c,mx*my*mz,Mx*My*Mz);CHKERRQ(ierr);
-  ierr = ConvertToAIJ(dac->mattype,&mattype);CHKERRQ(ierr);
-  ierr = MatSetType(mat,mattype);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(mat,0,dnz);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(mat,0,dnz,0,onz);CHKERRQ(ierr);
-  ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
+  PetscCall(MatSetSizes(mat,m_f*n_f*p_f,m_c*n_c*p_c,mx*my*mz,Mx*My*Mz));
+  PetscCall(ConvertToAIJ(dac->mattype,&mattype));
+  PetscCall(MatSetType(mat,mattype));
+  PetscCall(MatSeqAIJSetPreallocation(mat,0,dnz));
+  PetscCall(MatMPIAIJSetPreallocation(mat,0,dnz,0,onz));
+  MatPreallocateEnd(dnz,onz);
 
   /* loop over local fine grid nodes setting interpolation for those*/
   if (!NEWVERSION) {
@@ -961,7 +954,7 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
             cols[nc] = idx_c[col+(m_ghost_c*n_ghost_c+m_ghost_c+1)];
             v[nc++]  = .125*(1. + (2.0*x-1.))*(1. + (2.0*y-1.))*(1. + (2.0*z-1.));
           }
-          ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr);
+          PetscCall(MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES));
         }
       }
     }
@@ -975,9 +968,9 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
     nxi   = ratioi + 1;
     neta  = ratioj + 1;
     nzeta = ratiok + 1;
-    ierr  = PetscMalloc1(nxi,&xi);CHKERRQ(ierr);
-    ierr  = PetscMalloc1(neta,&eta);CHKERRQ(ierr);
-    ierr  = PetscMalloc1(nzeta,&zeta);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(nxi,&xi));
+    PetscCall(PetscMalloc1(neta,&eta));
+    PetscCall(PetscMalloc1(nzeta,&zeta));
     for (li=0; li<nxi; li++) xi[li] = -1.0 + (PetscScalar)li*(2.0/(PetscScalar)(nxi-1));
     for (lj=0; lj<neta; lj++) eta[lj] = -1.0 + (PetscScalar)lj*(2.0/(PetscScalar)(neta-1));
     for (lk=0; lk<nzeta; lk++) zeta[lk] = -1.0 + (PetscScalar)lk*(2.0/(PetscScalar)(nzeta-1));
@@ -1007,7 +1000,7 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
           if ((li==0) || (li==nxi-1)) {
             if ((lj==0) || (lj==neta-1)) {
               if ((lk==0) || (lk==nzeta-1)) {
-                ierr = MatSetValue(mat,row,cols[0],Ni[0],INSERT_VALUES);CHKERRQ(ierr);
+                PetscCall(MatSetValue(mat,row,cols[0],Ni[0],INSERT_VALUES));
                 continue;
               }
             }
@@ -1043,28 +1036,27 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
           for (n=0; n<8; n++) {
             if (PetscAbsScalar(Ni[n])<1.0e-32) cols[n]=-1;
           }
-          ierr = MatSetValues(mat,1,&row,8,cols,Ni,INSERT_VALUES);CHKERRQ(ierr);
+          PetscCall(MatSetValues(mat,1,&row,8,cols,Ni,INSERT_VALUES));
 
         }
       }
     }
-    ierr = PetscFree(xi);CHKERRQ(ierr);
-    ierr = PetscFree(eta);CHKERRQ(ierr);
-    ierr = PetscFree(zeta);CHKERRQ(ierr);
+    PetscCall(PetscFree(xi));
+    PetscCall(PetscFree(eta));
+    PetscCall(PetscFree(zeta));
   }
-  ierr = ISLocalToGlobalMappingRestoreBlockIndices(ltog_f,&idx_f);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingRestoreBlockIndices(ltog_c,&idx_c);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(ltog_f,&idx_f));
+  PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(ltog_c,&idx_c));
+  PetscCall(MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY));
 
-  ierr = MatCreateMAIJ(mat,dof,A);CHKERRQ(ierr);
-  ierr = MatDestroy(&mat);CHKERRQ(ierr);
+  PetscCall(MatCreateMAIJ(mat,dof,A));
+  PetscCall(MatDestroy(&mat));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode  DMCreateInterpolation_DA(DM dac,DM daf,Mat *A,Vec *scale)
 {
-  PetscErrorCode   ierr;
   PetscInt         dimc,Mc,Nc,Pc,mc,nc,pc,dofc,sc,dimf,Mf,Nf,Pf,mf,nf,pf,doff,sf;
   DMBoundaryType   bxc,byc,bzc,bxf,byf,bzf;
   DMDAStencilType  stc,stf;
@@ -1076,43 +1068,42 @@ PetscErrorCode  DMCreateInterpolation_DA(DM dac,DM daf,Mat *A,Vec *scale)
   PetscValidPointer(A,3);
   if (scale) PetscValidPointer(scale,4);
 
-  ierr = DMDAGetInfo(dac,&dimc,&Mc,&Nc,&Pc,&mc,&nc,&pc,&dofc,&sc,&bxc,&byc,&bzc,&stc);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(daf,&dimf,&Mf,&Nf,&Pf,&mf,&nf,&pf,&doff,&sf,&bxf,&byf,&bzf,&stf);CHKERRQ(ierr);
-  PetscCheckFalse(dimc != dimf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Dimensions of DMDA do not match %D %D",dimc,dimf);
-  PetscCheckFalse(dofc != doff,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"DOF of DMDA do not match %D %D",dofc,doff);
-  PetscCheckFalse(sc != sf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Stencil width of DMDA do not match %D %D",sc,sf);
-  PetscCheckFalse(bxc != bxf || byc != byf || bzc != bzf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Boundary type different in two DMDAs");
-  PetscCheckFalse(stc != stf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Stencil type different in two DMDAs");
-  PetscCheckFalse(Mc < 2 && Mf > 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in x direction");
-  PetscCheckFalse(dimc > 1 && Nc < 2 && Nf > 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in y direction");
-  PetscCheckFalse(dimc > 2 && Pc < 2 && Pf > 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in z direction");
+  PetscCall(DMDAGetInfo(dac,&dimc,&Mc,&Nc,&Pc,&mc,&nc,&pc,&dofc,&sc,&bxc,&byc,&bzc,&stc));
+  PetscCall(DMDAGetInfo(daf,&dimf,&Mf,&Nf,&Pf,&mf,&nf,&pf,&doff,&sf,&bxf,&byf,&bzf,&stf));
+  PetscCheck(dimc == dimf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Dimensions of DMDA do not match %" PetscInt_FMT " %" PetscInt_FMT,dimc,dimf);
+  PetscCheck(dofc == doff,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"DOF of DMDA do not match %" PetscInt_FMT " %" PetscInt_FMT,dofc,doff);
+  PetscCheck(sc == sf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Stencil width of DMDA do not match %" PetscInt_FMT " %" PetscInt_FMT,sc,sf);
+  PetscCheck(bxc == bxf && byc == byf && bzc == bzf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Boundary type different in two DMDAs");
+  PetscCheck(stc == stf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Stencil type different in two DMDAs");
+  PetscCheck(Mc >= 2 || Mf <= 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in x direction");
+  PetscCheck(dimc <= 1 || Nc >= 2 || Nf <= 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in y direction");
+  PetscCheck(dimc <= 2 || Pc >= 2 || Pf <= 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in z direction");
 
   if (ddc->interptype == DMDA_Q1) {
     if (dimc == 1) {
-      ierr = DMCreateInterpolation_DA_1D_Q1(dac,daf,A);CHKERRQ(ierr);
+      PetscCall(DMCreateInterpolation_DA_1D_Q1(dac,daf,A));
     } else if (dimc == 2) {
-      ierr = DMCreateInterpolation_DA_2D_Q1(dac,daf,A);CHKERRQ(ierr);
+      PetscCall(DMCreateInterpolation_DA_2D_Q1(dac,daf,A));
     } else if (dimc == 3) {
-      ierr = DMCreateInterpolation_DA_3D_Q1(dac,daf,A);CHKERRQ(ierr);
-    } else SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_SUP,"No support for this DMDA dimension %D for interpolation type %d",dimc,(int)ddc->interptype);
+      PetscCall(DMCreateInterpolation_DA_3D_Q1(dac,daf,A));
+    } else SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_SUP,"No support for this DMDA dimension %" PetscInt_FMT " for interpolation type %d",dimc,(int)ddc->interptype);
   } else if (ddc->interptype == DMDA_Q0) {
     if (dimc == 1) {
-      ierr = DMCreateInterpolation_DA_1D_Q0(dac,daf,A);CHKERRQ(ierr);
+      PetscCall(DMCreateInterpolation_DA_1D_Q0(dac,daf,A));
     } else if (dimc == 2) {
-      ierr = DMCreateInterpolation_DA_2D_Q0(dac,daf,A);CHKERRQ(ierr);
+      PetscCall(DMCreateInterpolation_DA_2D_Q0(dac,daf,A));
     } else if (dimc == 3) {
-      ierr = DMCreateInterpolation_DA_3D_Q0(dac,daf,A);CHKERRQ(ierr);
-    } else SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_SUP,"No support for this DMDA dimension %D for interpolation type %d",dimc,(int)ddc->interptype);
+      PetscCall(DMCreateInterpolation_DA_3D_Q0(dac,daf,A));
+    } else SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_SUP,"No support for this DMDA dimension %" PetscInt_FMT " for interpolation type %d",dimc,(int)ddc->interptype);
   }
   if (scale) {
-    ierr = DMCreateInterpolationScale((DM)dac,(DM)daf,*A,scale);CHKERRQ(ierr);
+    PetscCall(DMCreateInterpolationScale((DM)dac,(DM)daf,*A,scale));
   }
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode DMCreateInjection_DA_1D(DM dac,DM daf,VecScatter *inject)
 {
-  PetscErrorCode         ierr;
   PetscInt               i,i_start,m_f,Mx,dof;
   const PetscInt         *idx_f;
   ISLocalToGlobalMapping ltog_f;
@@ -1125,51 +1116,50 @@ PetscErrorCode DMCreateInjection_DA_1D(DM dac,DM daf,VecScatter *inject)
   IS                     isf;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(dac,NULL,&Mx,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&bx,NULL,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(daf,NULL,&mx,NULL,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+  PetscCall(DMDAGetInfo(dac,NULL,&Mx,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&bx,NULL,NULL,NULL));
+  PetscCall(DMDAGetInfo(daf,NULL,&mx,NULL,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL));
   if (bx == DM_BOUNDARY_PERIODIC) {
     ratioi = mx/Mx;
-    PetscCheckFalse(ratioi*Mx != mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %D Mx %D",mx,Mx);
+    PetscCheck(ratioi*Mx == mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %" PetscInt_FMT " Mx %" PetscInt_FMT,mx,Mx);
   } else {
     ratioi = (mx-1)/(Mx-1);
-    PetscCheckFalse(ratioi*(Mx-1) != mx-1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %D Mx %D",mx,Mx);
+    PetscCheck(ratioi*(Mx-1) == mx-1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %" PetscInt_FMT " Mx %" PetscInt_FMT,mx,Mx);
   }
 
-  ierr = DMDAGetCorners(daf,&i_start,NULL,NULL,&m_f,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(daf,&i_start_ghost,NULL,NULL,&m_ghost,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMGetLocalToGlobalMapping(daf,&ltog_f);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetBlockIndices(ltog_f,&idx_f);CHKERRQ(ierr);
+  PetscCall(DMDAGetCorners(daf,&i_start,NULL,NULL,&m_f,NULL,NULL));
+  PetscCall(DMDAGetGhostCorners(daf,&i_start_ghost,NULL,NULL,&m_ghost,NULL,NULL));
+  PetscCall(DMGetLocalToGlobalMapping(daf,&ltog_f));
+  PetscCall(ISLocalToGlobalMappingGetBlockIndices(ltog_f,&idx_f));
 
-  ierr = DMDAGetCorners(dac,&i_start_c,NULL,NULL,&m_c,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(dac,&i_start_ghost_c,NULL,NULL,&m_ghost_c,NULL,NULL);CHKERRQ(ierr);
+  PetscCall(DMDAGetCorners(dac,&i_start_c,NULL,NULL,&m_c,NULL,NULL));
+  PetscCall(DMDAGetGhostCorners(dac,&i_start_ghost_c,NULL,NULL,&m_ghost_c,NULL,NULL));
 
   /* loop over local fine grid nodes setting interpolation for those*/
   nc   = 0;
-  ierr = PetscMalloc1(m_f,&cols);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(m_f,&cols));
 
   for (i=i_start_c; i<i_start_c+m_c; i++) {
     PetscInt i_f = i*ratioi;
 
-    PetscCheckFalse(i_f < i_start_ghost || i_f >= i_start_ghost+m_ghost,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\ni_c %D i_f %D fine ghost range [%D,%D]",i,i_f,i_start_ghost,i_start_ghost+m_ghost);
+    PetscCheck(i_f >= i_start_ghost && i_f < i_start_ghost+m_ghost,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\ni_c %" PetscInt_FMT " i_f %" PetscInt_FMT " fine ghost range [%" PetscInt_FMT ",%" PetscInt_FMT "]",i,i_f,i_start_ghost,i_start_ghost+m_ghost);
 
     row        = idx_f[(i_f-i_start_ghost)];
     cols[nc++] = row;
   }
 
-  ierr = ISLocalToGlobalMappingRestoreBlockIndices(ltog_f,&idx_f);CHKERRQ(ierr);
-  ierr = ISCreateBlock(PetscObjectComm((PetscObject)daf),dof,nc,cols,PETSC_OWN_POINTER,&isf);CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(dac,&vecc);CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(daf,&vecf);CHKERRQ(ierr);
-  ierr = VecScatterCreate(vecf,isf,vecc,NULL,inject);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(dac,&vecc);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(daf,&vecf);CHKERRQ(ierr);
-  ierr = ISDestroy(&isf);CHKERRQ(ierr);
+  PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(ltog_f,&idx_f));
+  PetscCall(ISCreateBlock(PetscObjectComm((PetscObject)daf),dof,nc,cols,PETSC_OWN_POINTER,&isf));
+  PetscCall(DMGetGlobalVector(dac,&vecc));
+  PetscCall(DMGetGlobalVector(daf,&vecf));
+  PetscCall(VecScatterCreate(vecf,isf,vecc,NULL,inject));
+  PetscCall(DMRestoreGlobalVector(dac,&vecc));
+  PetscCall(DMRestoreGlobalVector(daf,&vecf));
+  PetscCall(ISDestroy(&isf));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode DMCreateInjection_DA_2D(DM dac,DM daf,VecScatter *inject)
 {
-  PetscErrorCode         ierr;
   PetscInt               i,j,i_start,j_start,m_f,n_f,Mx,My,dof;
   const PetscInt         *idx_c,*idx_f;
   ISLocalToGlobalMapping ltog_f,ltog_c;
@@ -1182,63 +1172,62 @@ PetscErrorCode DMCreateInjection_DA_2D(DM dac,DM daf,VecScatter *inject)
   IS                     isf;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(dac,NULL,&Mx,&My,NULL,NULL,NULL,NULL,NULL,NULL,&bx,&by,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(daf,NULL,&mx,&my,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+  PetscCall(DMDAGetInfo(dac,NULL,&Mx,&My,NULL,NULL,NULL,NULL,NULL,NULL,&bx,&by,NULL,NULL));
+  PetscCall(DMDAGetInfo(daf,NULL,&mx,&my,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL));
   if (bx == DM_BOUNDARY_PERIODIC) {
     ratioi = mx/Mx;
-    PetscCheckFalse(ratioi*Mx != mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %D Mx %D",mx,Mx);
+    PetscCheck(ratioi*Mx == mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %" PetscInt_FMT " Mx %" PetscInt_FMT,mx,Mx);
   } else {
     ratioi = (mx-1)/(Mx-1);
-    PetscCheckFalse(ratioi*(Mx-1) != mx-1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %D Mx %D",mx,Mx);
+    PetscCheck(ratioi*(Mx-1) == mx-1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %" PetscInt_FMT " Mx %" PetscInt_FMT,mx,Mx);
   }
   if (by == DM_BOUNDARY_PERIODIC) {
     ratioj = my/My;
-    PetscCheckFalse(ratioj*My != my,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: my/My  must be integer: my %D My %D",my,My);
+    PetscCheck(ratioj*My == my,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: my/My  must be integer: my %" PetscInt_FMT " My %" PetscInt_FMT,my,My);
   } else {
     ratioj = (my-1)/(My-1);
-    PetscCheckFalse(ratioj*(My-1) != my-1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (my - 1)/(My - 1) must be integer: my %D My %D",my,My);
+    PetscCheck(ratioj*(My-1) == my-1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (my - 1)/(My - 1) must be integer: my %" PetscInt_FMT " My %" PetscInt_FMT,my,My);
   }
 
-  ierr = DMDAGetCorners(daf,&i_start,&j_start,NULL,&m_f,&n_f,NULL);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,NULL,&m_ghost,&n_ghost,NULL);CHKERRQ(ierr);
-  ierr = DMGetLocalToGlobalMapping(daf,&ltog_f);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetBlockIndices(ltog_f,&idx_f);CHKERRQ(ierr);
+  PetscCall(DMDAGetCorners(daf,&i_start,&j_start,NULL,&m_f,&n_f,NULL));
+  PetscCall(DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,NULL,&m_ghost,&n_ghost,NULL));
+  PetscCall(DMGetLocalToGlobalMapping(daf,&ltog_f));
+  PetscCall(ISLocalToGlobalMappingGetBlockIndices(ltog_f,&idx_f));
 
-  ierr = DMDAGetCorners(dac,&i_start_c,&j_start_c,NULL,&m_c,&n_c,NULL);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,NULL,&m_ghost_c,&n_ghost_c,NULL);CHKERRQ(ierr);
-  ierr = DMGetLocalToGlobalMapping(dac,&ltog_c);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetBlockIndices(ltog_c,&idx_c);CHKERRQ(ierr);
+  PetscCall(DMDAGetCorners(dac,&i_start_c,&j_start_c,NULL,&m_c,&n_c,NULL));
+  PetscCall(DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,NULL,&m_ghost_c,&n_ghost_c,NULL));
+  PetscCall(DMGetLocalToGlobalMapping(dac,&ltog_c));
+  PetscCall(ISLocalToGlobalMappingGetBlockIndices(ltog_c,&idx_c));
 
   /* loop over local fine grid nodes setting interpolation for those*/
   nc   = 0;
-  ierr = PetscMalloc1(n_f*m_f,&cols);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(n_f*m_f,&cols));
   for (j=j_start_c; j<j_start_c+n_c; j++) {
     for (i=i_start_c; i<i_start_c+m_c; i++) {
       PetscInt i_f = i*ratioi,j_f = j*ratioj;
-      PetscCheckFalse(j_f < j_start_ghost || j_f >= j_start_ghost+n_ghost,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
-    j_c %D j_f %D fine ghost range [%D,%D]",j,j_f,j_start_ghost,j_start_ghost+n_ghost);
-      PetscCheckFalse(i_f < i_start_ghost || i_f >= i_start_ghost+m_ghost,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
-    i_c %D i_f %D fine ghost range [%D,%D]",i,i_f,i_start_ghost,i_start_ghost+m_ghost);
+      PetscCheck(j_f >= j_start_ghost && j_f < j_start_ghost+n_ghost,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
+    j_c %" PetscInt_FMT " j_f %" PetscInt_FMT " fine ghost range [%" PetscInt_FMT ",%" PetscInt_FMT "]",j,j_f,j_start_ghost,j_start_ghost+n_ghost);
+      PetscCheck(i_f >= i_start_ghost && i_f < i_start_ghost+m_ghost,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
+    i_c %" PetscInt_FMT " i_f %" PetscInt_FMT " fine ghost range [%" PetscInt_FMT ",%" PetscInt_FMT "]",i,i_f,i_start_ghost,i_start_ghost+m_ghost);
       row        = idx_f[(m_ghost*(j_f-j_start_ghost) + (i_f-i_start_ghost))];
       cols[nc++] = row;
     }
   }
-  ierr = ISLocalToGlobalMappingRestoreBlockIndices(ltog_f,&idx_f);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingRestoreBlockIndices(ltog_c,&idx_c);CHKERRQ(ierr);
+  PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(ltog_f,&idx_f));
+  PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(ltog_c,&idx_c));
 
-  ierr = ISCreateBlock(PetscObjectComm((PetscObject)daf),dof,nc,cols,PETSC_OWN_POINTER,&isf);CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(dac,&vecc);CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(daf,&vecf);CHKERRQ(ierr);
-  ierr = VecScatterCreate(vecf,isf,vecc,NULL,inject);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(dac,&vecc);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(daf,&vecf);CHKERRQ(ierr);
-  ierr = ISDestroy(&isf);CHKERRQ(ierr);
+  PetscCall(ISCreateBlock(PetscObjectComm((PetscObject)daf),dof,nc,cols,PETSC_OWN_POINTER,&isf));
+  PetscCall(DMGetGlobalVector(dac,&vecc));
+  PetscCall(DMGetGlobalVector(daf,&vecf));
+  PetscCall(VecScatterCreate(vecf,isf,vecc,NULL,inject));
+  PetscCall(DMRestoreGlobalVector(dac,&vecc));
+  PetscCall(DMRestoreGlobalVector(daf,&vecf));
+  PetscCall(ISDestroy(&isf));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode DMCreateInjection_DA_3D(DM dac,DM daf,VecScatter *inject)
 {
-  PetscErrorCode         ierr;
   PetscInt               i,j,k,i_start,j_start,k_start,m_f,n_f,p_f,Mx,My,Mz;
   PetscInt               m_ghost,n_ghost,p_ghost,m_ghost_c,n_ghost_c,p_ghost_c;
   PetscInt               i_start_ghost,j_start_ghost,k_start_ghost;
@@ -1255,75 +1244,74 @@ PetscErrorCode DMCreateInjection_DA_3D(DM dac,DM daf,VecScatter *inject)
   IS                     isf;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(dac,NULL,&Mx,&My,&Mz,NULL,NULL,NULL,NULL,NULL,&bx,&by,&bz,NULL);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(daf,NULL,&mx,&my,&mz,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+  PetscCall(DMDAGetInfo(dac,NULL,&Mx,&My,&Mz,NULL,NULL,NULL,NULL,NULL,&bx,&by,&bz,NULL));
+  PetscCall(DMDAGetInfo(daf,NULL,&mx,&my,&mz,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL));
 
   if (bx == DM_BOUNDARY_PERIODIC) {
     ratioi = mx/Mx;
-    PetscCheckFalse(ratioi*Mx != mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %D Mx %D",mx,Mx);
+    PetscCheck(ratioi*Mx == mx,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %" PetscInt_FMT " Mx %" PetscInt_FMT,mx,Mx);
   } else {
     ratioi = (mx-1)/(Mx-1);
-    PetscCheckFalse(ratioi*(Mx-1) != mx-1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %D Mx %D",mx,Mx);
+    PetscCheck(ratioi*(Mx-1) == mx-1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %" PetscInt_FMT " Mx %" PetscInt_FMT,mx,Mx);
   }
   if (by == DM_BOUNDARY_PERIODIC) {
     ratioj = my/My;
-    PetscCheckFalse(ratioj*My != my,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: my/My  must be integer: my %D My %D",my,My);
+    PetscCheck(ratioj*My == my,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: my/My  must be integer: my %" PetscInt_FMT " My %" PetscInt_FMT,my,My);
   } else {
     ratioj = (my-1)/(My-1);
-    PetscCheckFalse(ratioj*(My-1) != my-1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (my - 1)/(My - 1) must be integer: my %D My %D",my,My);
+    PetscCheck(ratioj*(My-1) == my-1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (my - 1)/(My - 1) must be integer: my %" PetscInt_FMT " My %" PetscInt_FMT,my,My);
   }
   if (bz == DM_BOUNDARY_PERIODIC) {
     ratiok = mz/Mz;
-    PetscCheckFalse(ratiok*Mz != mz,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mz/Mz  must be integer: mz %D My %D",mz,Mz);
+    PetscCheck(ratiok*Mz == mz,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mz/Mz  must be integer: mz %" PetscInt_FMT " My %" PetscInt_FMT,mz,Mz);
   } else {
     ratiok = (mz-1)/(Mz-1);
-    PetscCheckFalse(ratiok*(Mz-1) != mz-1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mz - 1)/(Mz - 1) must be integer: mz %D Mz %D",mz,Mz);
+    PetscCheck(ratiok*(Mz-1) == mz-1,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mz - 1)/(Mz - 1) must be integer: mz %" PetscInt_FMT " Mz %" PetscInt_FMT,mz,Mz);
   }
 
-  ierr = DMDAGetCorners(daf,&i_start,&j_start,&k_start,&m_f,&n_f,&p_f);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,&k_start_ghost,&m_ghost,&n_ghost,&p_ghost);CHKERRQ(ierr);
-  ierr = DMGetLocalToGlobalMapping(daf,&ltog_f);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetBlockIndices(ltog_f,&idx_f);CHKERRQ(ierr);
+  PetscCall(DMDAGetCorners(daf,&i_start,&j_start,&k_start,&m_f,&n_f,&p_f));
+  PetscCall(DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,&k_start_ghost,&m_ghost,&n_ghost,&p_ghost));
+  PetscCall(DMGetLocalToGlobalMapping(daf,&ltog_f));
+  PetscCall(ISLocalToGlobalMappingGetBlockIndices(ltog_f,&idx_f));
 
-  ierr = DMDAGetCorners(dac,&i_start_c,&j_start_c,&k_start_c,&m_c,&n_c,&p_c);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,&k_start_ghost_c,&m_ghost_c,&n_ghost_c,&p_ghost_c);CHKERRQ(ierr);
-  ierr = DMGetLocalToGlobalMapping(dac,&ltog_c);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetBlockIndices(ltog_c,&idx_c);CHKERRQ(ierr);
+  PetscCall(DMDAGetCorners(dac,&i_start_c,&j_start_c,&k_start_c,&m_c,&n_c,&p_c));
+  PetscCall(DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,&k_start_ghost_c,&m_ghost_c,&n_ghost_c,&p_ghost_c));
+  PetscCall(DMGetLocalToGlobalMapping(dac,&ltog_c));
+  PetscCall(ISLocalToGlobalMappingGetBlockIndices(ltog_c,&idx_c));
 
   /* loop over local fine grid nodes setting interpolation for those*/
   nc   = 0;
-  ierr = PetscMalloc1(n_f*m_f*p_f,&cols);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(n_f*m_f*p_f,&cols));
   for (k=k_start_c; k<k_start_c+p_c; k++) {
     for (j=j_start_c; j<j_start_c+n_c; j++) {
       for (i=i_start_c; i<i_start_c+m_c; i++) {
         PetscInt i_f = i*ratioi,j_f = j*ratioj,k_f = k*ratiok;
-        PetscCheckFalse(k_f < k_start_ghost || k_f >= k_start_ghost+p_ghost,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA  "
-                                                                          "k_c %D k_f %D fine ghost range [%D,%D]",k,k_f,k_start_ghost,k_start_ghost+p_ghost);
-        PetscCheckFalse(j_f < j_start_ghost || j_f >= j_start_ghost+n_ghost,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA  "
-                                                                          "j_c %D j_f %D fine ghost range [%D,%D]",j,j_f,j_start_ghost,j_start_ghost+n_ghost);
-        PetscCheckFalse(i_f < i_start_ghost || i_f >= i_start_ghost+m_ghost,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA  "
-                                                                          "i_c %D i_f %D fine ghost range [%D,%D]",i,i_f,i_start_ghost,i_start_ghost+m_ghost);
+        PetscCheck(k_f >= k_start_ghost && k_f < k_start_ghost+p_ghost,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA  "
+                                                                          "k_c %" PetscInt_FMT " k_f %" PetscInt_FMT " fine ghost range [%" PetscInt_FMT ",%" PetscInt_FMT "]",k,k_f,k_start_ghost,k_start_ghost+p_ghost);
+        PetscCheck(j_f >= j_start_ghost && j_f < j_start_ghost+n_ghost,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA  "
+                                                                          "j_c %" PetscInt_FMT " j_f %" PetscInt_FMT " fine ghost range [%" PetscInt_FMT ",%" PetscInt_FMT "]",j,j_f,j_start_ghost,j_start_ghost+n_ghost);
+        PetscCheck(i_f >= i_start_ghost && i_f < i_start_ghost+m_ghost,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA  "
+                                                                          "i_c %" PetscInt_FMT " i_f %" PetscInt_FMT " fine ghost range [%" PetscInt_FMT ",%" PetscInt_FMT "]",i,i_f,i_start_ghost,i_start_ghost+m_ghost);
         row        = idx_f[(m_ghost*n_ghost*(k_f-k_start_ghost) + m_ghost*(j_f-j_start_ghost) + (i_f-i_start_ghost))];
         cols[nc++] = row;
       }
     }
   }
-  ierr = ISLocalToGlobalMappingRestoreBlockIndices(ltog_f,&idx_f);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingRestoreBlockIndices(ltog_c,&idx_c);CHKERRQ(ierr);
+  PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(ltog_f,&idx_f));
+  PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(ltog_c,&idx_c));
 
-  ierr = ISCreateBlock(PetscObjectComm((PetscObject)daf),dof,nc,cols,PETSC_OWN_POINTER,&isf);CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(dac,&vecc);CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(daf,&vecf);CHKERRQ(ierr);
-  ierr = VecScatterCreate(vecf,isf,vecc,NULL,inject);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(dac,&vecc);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(daf,&vecf);CHKERRQ(ierr);
-  ierr = ISDestroy(&isf);CHKERRQ(ierr);
+  PetscCall(ISCreateBlock(PetscObjectComm((PetscObject)daf),dof,nc,cols,PETSC_OWN_POINTER,&isf));
+  PetscCall(DMGetGlobalVector(dac,&vecc));
+  PetscCall(DMGetGlobalVector(daf,&vecf));
+  PetscCall(VecScatterCreate(vecf,isf,vecc,NULL,inject));
+  PetscCall(DMRestoreGlobalVector(dac,&vecc));
+  PetscCall(DMRestoreGlobalVector(daf,&vecf));
+  PetscCall(ISDestroy(&isf));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode  DMCreateInjection_DA(DM dac,DM daf,Mat *mat)
 {
-  PetscErrorCode  ierr;
   PetscInt        dimc,Mc,Nc,Pc,mc,nc,pc,dofc,sc,dimf,Mf,Nf,Pf,mf,nf,pf,doff,sf;
   DMBoundaryType  bxc,byc,bzc,bxf,byf,bzf;
   DMDAStencilType stc,stf;
@@ -1334,26 +1322,26 @@ PetscErrorCode  DMCreateInjection_DA(DM dac,DM daf,Mat *mat)
   PetscValidHeaderSpecific(daf,DM_CLASSID,2);
   PetscValidPointer(mat,3);
 
-  ierr = DMDAGetInfo(dac,&dimc,&Mc,&Nc,&Pc,&mc,&nc,&pc,&dofc,&sc,&bxc,&byc,&bzc,&stc);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(daf,&dimf,&Mf,&Nf,&Pf,&mf,&nf,&pf,&doff,&sf,&bxf,&byf,&bzf,&stf);CHKERRQ(ierr);
-  PetscCheckFalse(dimc != dimf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Dimensions of DMDA do not match %D %D",dimc,dimf);
-  PetscCheckFalse(dofc != doff,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"DOF of DMDA do not match %D %D",dofc,doff);
-  PetscCheckFalse(sc != sf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Stencil width of DMDA do not match %D %D",sc,sf);
-  PetscCheckFalse(bxc != bxf || byc != byf || bzc != bzf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Boundary type different in two DMDAs");
-  PetscCheckFalse(stc != stf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Stencil type different in two DMDAs");
-  PetscCheckFalse(Mc < 2,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in x direction");
-  PetscCheckFalse(dimc > 1 && Nc < 2,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in y direction");
-  PetscCheckFalse(dimc > 2 && Pc < 2,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in z direction");
+  PetscCall(DMDAGetInfo(dac,&dimc,&Mc,&Nc,&Pc,&mc,&nc,&pc,&dofc,&sc,&bxc,&byc,&bzc,&stc));
+  PetscCall(DMDAGetInfo(daf,&dimf,&Mf,&Nf,&Pf,&mf,&nf,&pf,&doff,&sf,&bxf,&byf,&bzf,&stf));
+  PetscCheck(dimc == dimf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Dimensions of DMDA do not match %" PetscInt_FMT " %" PetscInt_FMT,dimc,dimf);
+  PetscCheck(dofc == doff,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"DOF of DMDA do not match %" PetscInt_FMT " %" PetscInt_FMT,dofc,doff);
+  PetscCheck(sc == sf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Stencil width of DMDA do not match %" PetscInt_FMT " %" PetscInt_FMT,sc,sf);
+  PetscCheck(bxc == bxf && byc == byf && bzc == bzf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Boundary type different in two DMDAs");
+  PetscCheck(stc == stf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Stencil type different in two DMDAs");
+  PetscCheck(Mc >= 2,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in x direction");
+  PetscCheck(dimc <= 1 || Nc >= 2,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in y direction");
+  PetscCheck(dimc <= 2 || Pc >= 2,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in z direction");
 
   if (dimc == 1) {
-    ierr = DMCreateInjection_DA_1D(dac,daf,&inject);CHKERRQ(ierr);
+    PetscCall(DMCreateInjection_DA_1D(dac,daf,&inject));
   } else if (dimc == 2) {
-    ierr = DMCreateInjection_DA_2D(dac,daf,&inject);CHKERRQ(ierr);
+    PetscCall(DMCreateInjection_DA_2D(dac,daf,&inject));
   } else if (dimc == 3) {
-    ierr = DMCreateInjection_DA_3D(dac,daf,&inject);CHKERRQ(ierr);
+    PetscCall(DMCreateInjection_DA_3D(dac,daf,&inject));
   }
-  ierr = MatCreateScatter(PetscObjectComm((PetscObject)inject), inject, mat);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&inject);CHKERRQ(ierr);
+  PetscCall(MatCreateScatter(PetscObjectComm((PetscObject)inject), inject, mat));
+  PetscCall(VecScatterDestroy(&inject));
   PetscFunctionReturn(0);
 }
 
@@ -1386,11 +1374,10 @@ PetscErrorCode DMCreateAggregates(DM dac,DM daf,Mat *mat)
    It is not clear what its use case is and it may be removed in a future release.
    Users should contact petsc-maint@mcs.anl.gov if they plan to use it.
 
-.seealso: DMRefine(), DMCreateInjection(), DMCreateInterpolation()
+.seealso: `DMRefine()`, `DMCreateInjection()`, `DMCreateInterpolation()`
 @*/
 PetscErrorCode DMDACreateAggregates(DM dac,DM daf,Mat *rest)
 {
-  PetscErrorCode         ierr;
   PetscInt               dimc,Mc,Nc,Pc,mc,nc,pc,dofc,sc;
   PetscInt               dimf,Mf,Nf,Pf,mf,nf,pf,doff,sf;
   DMBoundaryType         bxc,byc,bzc,bxf,byf,bzf;
@@ -1416,34 +1403,34 @@ PetscErrorCode DMDACreateAggregates(DM dac,DM daf,Mat *rest)
   PetscValidHeaderSpecificType(daf,DM_CLASSID,2,DMDA);
   PetscValidPointer(rest,3);
 
-  ierr = DMDAGetInfo(dac,&dimc,&Mc,&Nc,&Pc,&mc,&nc,&pc,&dofc,&sc,&bxc,&byc,&bzc,&stc);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(daf,&dimf,&Mf,&Nf,&Pf,&mf,&nf,&pf,&doff,&sf,&bxf,&byf,&bzf,&stf);CHKERRQ(ierr);
-  PetscCheckFalse(dimc != dimf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Dimensions of DMDA do not match %D %D",dimc,dimf);
-  PetscCheckFalse(dofc != doff,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"DOF of DMDA do not match %D %D",dofc,doff);
-  PetscCheckFalse(sc != sf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Stencil width of DMDA do not match %D %D",sc,sf);
-  PetscCheckFalse(bxc != bxf || byc != byf || bzc != bzf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Boundary type different in two DMDAs");
-  PetscCheckFalse(stc != stf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Stencil type different in two DMDAs");
+  PetscCall(DMDAGetInfo(dac,&dimc,&Mc,&Nc,&Pc,&mc,&nc,&pc,&dofc,&sc,&bxc,&byc,&bzc,&stc));
+  PetscCall(DMDAGetInfo(daf,&dimf,&Mf,&Nf,&Pf,&mf,&nf,&pf,&doff,&sf,&bxf,&byf,&bzf,&stf));
+  PetscCheck(dimc == dimf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Dimensions of DMDA do not match %" PetscInt_FMT " %" PetscInt_FMT,dimc,dimf);
+  PetscCheck(dofc == doff,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"DOF of DMDA do not match %" PetscInt_FMT " %" PetscInt_FMT,dofc,doff);
+  PetscCheck(sc == sf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Stencil width of DMDA do not match %" PetscInt_FMT " %" PetscInt_FMT,sc,sf);
+  PetscCheck(bxc == bxf && byc == byf && bzc == bzf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Boundary type different in two DMDAs");
+  PetscCheck(stc == stf,PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Stencil type different in two DMDAs");
 
-  PetscCheckFalse(Mf < Mc,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Coarse grid has more points than fine grid, Mc %D, Mf %D", Mc, Mf);
-  PetscCheckFalse(Nf < Nc,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Coarse grid has more points than fine grid, Nc %D, Nf %D", Nc, Nf);
-  PetscCheckFalse(Pf < Pc,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Coarse grid has more points than fine grid, Pc %D, Pf %D", Pc, Pf);
+  PetscCheck(Mf >= Mc,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Coarse grid has more points than fine grid, Mc %" PetscInt_FMT ", Mf %" PetscInt_FMT, Mc, Mf);
+  PetscCheck(Nf >= Nc,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Coarse grid has more points than fine grid, Nc %" PetscInt_FMT ", Nf %" PetscInt_FMT, Nc, Nf);
+  PetscCheck(Pf >= Pc,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Coarse grid has more points than fine grid, Pc %" PetscInt_FMT ", Pf %" PetscInt_FMT, Pc, Pf);
 
   if (Pc < 0) Pc = 1;
   if (Pf < 0) Pf = 1;
   if (Nc < 0) Nc = 1;
   if (Nf < 0) Nf = 1;
 
-  ierr = DMDAGetCorners(daf,&i_start,&j_start,&l_start,&m_f,&n_f,&p_f);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,&l_start_ghost,&m_ghost,&n_ghost,&p_ghost);CHKERRQ(ierr);
+  PetscCall(DMDAGetCorners(daf,&i_start,&j_start,&l_start,&m_f,&n_f,&p_f));
+  PetscCall(DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,&l_start_ghost,&m_ghost,&n_ghost,&p_ghost));
 
-  ierr = DMGetLocalToGlobalMapping(daf,&ltogmf);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetIndices(ltogmf,&idx_f);CHKERRQ(ierr);
+  PetscCall(DMGetLocalToGlobalMapping(daf,&ltogmf));
+  PetscCall(ISLocalToGlobalMappingGetIndices(ltogmf,&idx_f));
 
-  ierr = DMDAGetCorners(dac,&i_start_c,&j_start_c,&l_start_c,&m_c,&n_c,&p_c);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,&l_start_ghost_c,&m_ghost_c,&n_ghost_c,&p_ghost_c);CHKERRQ(ierr);
+  PetscCall(DMDAGetCorners(dac,&i_start_c,&j_start_c,&l_start_c,&m_c,&n_c,&p_c));
+  PetscCall(DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,&l_start_ghost_c,&m_ghost_c,&n_ghost_c,&p_ghost_c));
 
-  ierr = DMGetLocalToGlobalMapping(dac,&ltogmc);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetIndices(ltogmc,&idx_c);CHKERRQ(ierr);
+  PetscCall(DMGetLocalToGlobalMapping(dac,&ltogmc));
+  PetscCall(ISLocalToGlobalMappingGetIndices(ltogmc,&idx_c));
 
   /*
      Basic idea is as follows. Here's a 2D example, suppose r_x, r_y are the ratios
@@ -1456,11 +1443,11 @@ PetscErrorCode DMDACreateAggregates(DM dac,DM daf,Mat *rest)
   max_agg_size = (Mf/Mc+1)*(Nf/Nc+1)*(Pf/Pc+1);
 
   /* create the matrix that will contain the restriction operator */
-  ierr = MatCreateAIJ(PetscObjectComm((PetscObject)daf), m_c*n_c*p_c*dofc, m_f*n_f*p_f*doff, Mc*Nc*Pc*dofc, Mf*Nf*Pf*doff,
-                      max_agg_size, NULL, max_agg_size, NULL, rest);CHKERRQ(ierr);
+  PetscCall(MatCreateAIJ(PetscObjectComm((PetscObject)daf), m_c*n_c*p_c*dofc, m_f*n_f*p_f*doff, Mc*Nc*Pc*dofc, Mf*Nf*Pf*doff,
+                         max_agg_size, NULL, max_agg_size, NULL, rest));
 
   /* store nodes in the fine grid here */
-  ierr = PetscMalloc2(max_agg_size, &one_vec,max_agg_size, &fine_nodes);CHKERRQ(ierr);
+  PetscCall(PetscMalloc2(max_agg_size, &one_vec,max_agg_size, &fine_nodes));
   for (i=0; i<max_agg_size; i++) one_vec[i] = 1.0;
 
   /* loop over all coarse nodes */
@@ -1485,15 +1472,15 @@ PetscErrorCode DMDACreateAggregates(DM dac,DM daf,Mat *rest)
             }
           }
           /* add all these points to one aggregate */
-          ierr = MatSetValues(*rest, 1, &a, fn_idx, fine_nodes, one_vec, INSERT_VALUES);CHKERRQ(ierr);
+          PetscCall(MatSetValues(*rest, 1, &a, fn_idx, fine_nodes, one_vec, INSERT_VALUES));
         }
       }
     }
   }
-  ierr = ISLocalToGlobalMappingRestoreIndices(ltogmf,&idx_f);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingRestoreIndices(ltogmc,&idx_c);CHKERRQ(ierr);
-  ierr = PetscFree2(one_vec,fine_nodes);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*rest, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*rest, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(ISLocalToGlobalMappingRestoreIndices(ltogmf,&idx_f));
+  PetscCall(ISLocalToGlobalMappingRestoreIndices(ltogmc,&idx_c));
+  PetscCall(PetscFree2(one_vec,fine_nodes));
+  PetscCall(MatAssemblyBegin(*rest, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(*rest, MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }

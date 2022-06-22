@@ -63,21 +63,17 @@
 !                 Beginning of program
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      if (ierr .ne. 0) then
-        print*,'Unable to initialize PETSc'
-        stop
-      endif
+      PetscCallA(PetscInitialize(ierr))
       m = 3
       n = 3
       one  = 1.0
       neg_one = -1.0
       ione    = 1
       zero    = 0.0
-      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-m',m,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
-      call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
-      call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
+      PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-m',m,flg,ierr))
+      PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-n',n,flg,ierr))
+      PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr))
+      PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD,size,ierr))
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !      Compute the matrix and right-hand-side vector that define
@@ -89,16 +85,16 @@
 !  runtime. Also, the parallel partitioning of the matrix is
 !  determined by PETSc at runtime.
 
-      call MatCreate(PETSC_COMM_WORLD,A,ierr)
-      call MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,ierr)
-      call MatSetFromOptions(A,ierr)
-      call MatSetUp(A,ierr)
+      PetscCallA(MatCreate(PETSC_COMM_WORLD,A,ierr))
+      PetscCallA(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,ierr))
+      PetscCallA(MatSetFromOptions(A,ierr))
+      PetscCallA(MatSetUp(A,ierr))
 
 !  Currently, all PETSc parallel matrix formats are partitioned by
 !  contiguous chunks of rows across the processors.  Determine which
 !  rows of the matrix are locally owned.
 
-      call MatGetOwnershipRange(A,Istart,Iend,ierr)
+      PetscCallA(MatGetOwnershipRange(A,Istart,Iend,ierr))
 
 !  Set matrix elements for the 2-D, five-point stencil in parallel.
 !   - Each processor needs to insert only elements that it owns
@@ -119,29 +115,29 @@
         j = II - i*n
         if (i.gt.0) then
           JJ = II - n
-          call MatSetValues(A,ione,II,ione,JJ,v,INSERT_VALUES,ierr)
+          PetscCallA(MatSetValues(A,ione,II,ione,JJ,v,INSERT_VALUES,ierr))
         endif
         if (i.lt.m-1) then
           JJ = II + n
-          call MatSetValues(A,ione,II,ione,JJ,v,INSERT_VALUES,ierr)
+          PetscCallA(MatSetValues(A,ione,II,ione,JJ,v,INSERT_VALUES,ierr))
         endif
         if (j.gt.0) then
           JJ = II - 1
-          call MatSetValues(A,ione,II,ione,JJ,v,INSERT_VALUES,ierr)
+          PetscCallA(MatSetValues(A,ione,II,ione,JJ,v,INSERT_VALUES,ierr))
         endif
         if (j.lt.n-1) then
           JJ = II + 1
-          call MatSetValues(A,ione,II,ione,JJ,v,INSERT_VALUES,ierr)
+          PetscCallA(MatSetValues(A,ione,II,ione,JJ,v,INSERT_VALUES,ierr))
         endif
         v = 4.0
-        call  MatSetValues(A,ione,II,ione,II,v,INSERT_VALUES,ierr)
+        PetscCallA( MatSetValues(A,ione,II,ione,II,v,INSERT_VALUES,ierr))
  10   continue
-      call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
-      call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
+      PetscCallA(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr))
+      PetscCallA(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr))
 
 !   Check if A is symmetric
       if (size == 1) then
-        call MatIsSymmetric(A,zero,flg,ierr)
+        PetscCallA(MatIsSymmetric(A,zero,flg,ierr))
         if (flg .eqv. PETSC_FALSE) then
           write(6,120)
         endif
@@ -157,32 +153,32 @@
 !     and VecCreate() are used with the same communicator.
 !   - Note: We form 1 vector from scratch and then duplicate as needed.
 
-      call VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,u,ierr)
-      call VecSetFromOptions(u,ierr)
-      call VecDuplicate(u,b,ierr)
-      call VecDuplicate(b,x,ierr)
+      PetscCallA(VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,u,ierr))
+      PetscCallA(VecSetFromOptions(u,ierr))
+      PetscCallA(VecDuplicate(u,b,ierr))
+      PetscCallA(VecDuplicate(b,x,ierr))
 
 !  Set exact solution; then compute right-hand-side vector.
 !  By default we use an exact solution of a vector with all
 !  elements of 1.0;  Alternatively, using the runtime option
 !  -random_sol forms a solution vector with random components.
 
-      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-random_exact_sol',flg,ierr)
+      PetscCallA(PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-random_exact_sol',flg,ierr))
       if (flg) then
-         call PetscRandomCreate(PETSC_COMM_WORLD,rctx,ierr)
-         call PetscRandomSetFromOptions(rctx,ierr)
-         call VecSetRandom(u,rctx,ierr)
-         call PetscRandomDestroy(rctx,ierr)
+         PetscCallA(PetscRandomCreate(PETSC_COMM_WORLD,rctx,ierr))
+         PetscCallA(PetscRandomSetFromOptions(rctx,ierr))
+         PetscCallA(VecSetRandom(u,rctx,ierr))
+         PetscCallA(PetscRandomDestroy(rctx,ierr))
       else
-         call VecSet(u,one,ierr)
+         PetscCallA(VecSet(u,one,ierr))
       endif
-      call MatMult(A,u,b,ierr)
+      PetscCallA(MatMult(A,u,b,ierr))
 
 !  View the exact solution vector if desired
 
-      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-view_exact_sol',flg,ierr)
+      PetscCallA(PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-view_exact_sol',flg,ierr))
       if (flg) then
-         call VecView(u,PETSC_VIEWER_STDOUT_WORLD,ierr)
+         PetscCallA(VecView(u,PETSC_VIEWER_STDOUT_WORLD,ierr))
       endif
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -191,23 +187,23 @@
 
 !  Create linear solver context
 
-      call KSPCreate(PETSC_COMM_WORLD,ksp,ierr)
+      PetscCallA(KSPCreate(PETSC_COMM_WORLD,ksp,ierr))
 
 !  Set operators. Here the matrix that defines the linear system
 !  also serves as the preconditioning matrix.
 
-      call KSPSetOperators(ksp,A,A,ierr)
+      PetscCallA(KSPSetOperators(ksp,A,A,ierr))
 
-      call KSPSetType(ksp,KSPPREONLY,ierr);
-      call KSPGetPC(ksp,pc,ierr);
-      call PCSetType(pc,PCCHOLESKY,ierr);
+      PetscCallA(KSPSetType(ksp,KSPPREONLY,ierr))
+      PetscCallA(KSPGetPC(ksp,pc,ierr))
+      PetscCallA(PCSetType(pc,PCCHOLESKY,ierr))
 #ifdef PETSC_HAVE_MUMPS
-      call PCFactorSetMatSolverType(pc,MATSOLVERMUMPS,ierr);
-      call PCFactorSetUpMatSolverType(pc,ierr);
-      call PCFactorGetMatrix(pc,F,ierr);
-      call KSPSetFromOptions(ksp,ierr);
+      PetscCallA(PCFactorSetMatSolverType(pc,MATSOLVERMUMPS,ierr))
+      PetscCallA(PCFactorSetUpMatSolverType(pc,ierr))
+      PetscCallA(PCFactorGetMatrix(pc,F,ierr))
+      PetscCallA(KSPSetFromOptions(ksp,ierr))
       icntl = 7; ival = 2;
-      call MatMumpsSetIcntl(F,icntl,ival,ierr);
+      PetscCallA(MatMumpsSetIcntl(F,icntl,ival,ierr))
 #endif
 
 !  Set runtime options, e.g.,
@@ -216,29 +212,29 @@
 !  KSPSetFromOptions() is called _after_ any other customization
 !  routines.
 
-      call KSPSetFromOptions(ksp,ierr)
+      PetscCallA(KSPSetFromOptions(ksp,ierr))
 
 !  Set convergence test routine if desired
 
-      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-my_ksp_convergence',flg,ierr)
+      PetscCallA(PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-my_ksp_convergence',flg,ierr))
       if (flg) then
-        call KSPSetConvergenceTest(ksp,MyKSPConverged,0,PETSC_NULL_FUNCTION,ierr)
+        PetscCallA(KSPSetConvergenceTest(ksp,MyKSPConverged,0,PETSC_NULL_FUNCTION,ierr))
       endif
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                      Solve the linear system
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      call KSPSolve(ksp,b,x,ierr)
+      PetscCallA(KSPSolve(ksp,b,x,ierr))
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                     Check solution and clean up
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 !  Check the error
-      call VecAXPY(x,neg_one,u,ierr)
-      call VecNorm(x,NORM_2,norm,ierr)
-      call KSPGetIterationNumber(ksp,its,ierr)
+      PetscCallA(VecAXPY(x,neg_one,u,ierr))
+      PetscCallA(VecNorm(x,NORM_2,norm,ierr))
+      PetscCallA(KSPGetIterationNumber(ksp,its,ierr))
       if (rank .eq. 0) then
          write(6,100) norm,its
       endif
@@ -248,11 +244,11 @@
 !  Free work space.  All PETSc objects should be destroyed when they
 !  are no longer needed.
 
-      call KSPDestroy(ksp,ierr)
-      call VecDestroy(u,ierr)
-      call VecDestroy(x,ierr)
-      call VecDestroy(b,ierr)
-      call MatDestroy(A,ierr)
+      PetscCallA(KSPDestroy(ksp,ierr))
+      PetscCallA(VecDestroy(u,ierr))
+      PetscCallA(VecDestroy(x,ierr))
+      PetscCallA(VecDestroy(b,ierr))
+      PetscCallA(MatDestroy(A,ierr))
 
 !  Always call PetscFinalize() before exiting a program.  This routine
 !    - finalizes the PETSc libraries as well as MPI
@@ -260,7 +256,7 @@
 !      options are chosen (e.g., -log_view).  See PetscFinalize()
 !      manpage for more information.
 
-      call PetscFinalize(ierr)
+      PetscCallA(PetscFinalize(ierr))
       end
 
 ! --------------------------------------------------------------
@@ -287,16 +283,16 @@
 
 !  Build the solution vector
 
-      call KSPBuildSolution(ksp,PETSC_NULL_VEC,x,ierr)
+      PetscCallA(KSPBuildSolution(ksp,PETSC_NULL_VEC,x,ierr))
 
 !  Write the solution vector and residual norm to stdout
 !   - Note that the parallel viewer PETSC_VIEWER_STDOUT_WORLD
 !     handles data from multiple processors so that the
 !     output is not jumbled.
 
-      call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
+      PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr))
       if (rank .eq. 0) write(6,100) n
-      call VecView(x,PETSC_VIEWER_STDOUT_WORLD,ierr)
+      PetscCallA(VecView(x,PETSC_VIEWER_STDOUT_WORLD,ierr))
       if (rank .eq. 0) write(6,200) n,rnorm
 
  100  format('iteration ',i5,' solution vector:')

@@ -18,7 +18,7 @@ Process [2]
 13.
 14.
 ----
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
 0.
 1.
 2.
@@ -27,7 +27,7 @@ Vec Object: 1 MPI processes
 5.
 6.
 ----
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
 5.
 6.
 7.
@@ -36,7 +36,7 @@ Vec Object: 1 MPI processes
 10.
 11.
 ----
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
 10.
 11.
 12.

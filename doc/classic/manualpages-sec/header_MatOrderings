@@ -1,14 +1,6 @@
-<HTML>
-<HEAD>
-<TITLE>Manual Pages for Matrix Orders, Colorings, and Partitionings</TITLE>
-</HEAD>
-<BODY BGCOLOR="FFFFFF">
-
-<H2> Orders, Colorings, and Partitionings Manual Pages 
-</H2>
+# Manual Pages for Matrix Orders, Colorings, and Partitionings
 
 These tools compute reorderings (for sparse matrix factorizations), colorings
 (for computing Jacobians via finite differences) and partitionings (for parallel 
 decomposition of data).
 
-<P>

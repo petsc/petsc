@@ -12,9 +12,7 @@ typedef struct { double x; double y; double z; } Point;
 static Point origin = {0.0, 0.0, 0.0};
 PETSC_HASH_MAP(HMapIS, PetscInt, Point, PetscHashInt, PetscHashEqual, origin)
 
-#define PetscTestCheck(expr) do {            \
-PetscCheck(expr,PETSC_COMM_SELF,PETSC_ERR_LIB, "Assertion: `%s' failed.", PetscStringize(expr)); \
-} while (0)
+#define PetscTestCheck(expr) PetscCheck(expr,PETSC_COMM_SELF,PETSC_ERR_LIB, "Assertion: `%s' failed.", PetscStringize(expr))
 
 int main(int argc,char **argv)
 {
@@ -23,144 +21,141 @@ int main(int argc,char **argv)
   PetscInt       n, v, koff, keys[4], voff, vals[4],na,nb,i,size,*karray,off;
   PetscScalar    *varray,*vwork;
   PetscBool      has, flag;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
 
-  ierr = PetscHMapICreate(&ht);CHKERRQ(ierr);
+  PetscCall(PetscHMapICreate(&ht));
   PetscTestCheck(ht != NULL);
-  ierr = PetscHMapIGetSize(ht,&n);CHKERRQ(ierr);
+  PetscCall(PetscHMapIGetSize(ht,&n));
   PetscTestCheck(n == 0);
 
-  ierr = PetscHMapIResize(ht,0);CHKERRQ(ierr);
-  ierr = PetscHMapIGetSize(ht,&n);CHKERRQ(ierr);
+  PetscCall(PetscHMapIResize(ht,0));
+  PetscCall(PetscHMapIGetSize(ht,&n));
   PetscTestCheck(n == 0);
 
-  ierr = PetscHMapIHas(ht,123,&has);CHKERRQ(ierr);
+  PetscCall(PetscHMapIHas(ht,123,&has));
   PetscTestCheck(has == PETSC_FALSE);
-  ierr = PetscHMapIGet(ht,123,&v);CHKERRQ(ierr);
+  PetscCall(PetscHMapIGet(ht,123,&v));
   PetscTestCheck(v == -1);
 
-  ierr = PetscHMapISet(ht,123,42);CHKERRQ(ierr);
-  ierr = PetscHMapIGetSize(ht,&n);CHKERRQ(ierr);
+  PetscCall(PetscHMapISet(ht,123,42));
+  PetscCall(PetscHMapIGetSize(ht,&n));
   PetscTestCheck(n == 1);
-  ierr = PetscHMapIHas(ht,123,&has);CHKERRQ(ierr);
+  PetscCall(PetscHMapIHas(ht,123,&has));
   PetscTestCheck(has == PETSC_TRUE);
-  ierr = PetscHMapIGet(ht,123,&v);CHKERRQ(ierr);
+  PetscCall(PetscHMapIGet(ht,123,&v));
   PetscTestCheck(v == 42);
 
-  ierr = PetscHMapIDel(ht,123);CHKERRQ(ierr);
-  ierr = PetscHMapIGetSize(ht,&n);CHKERRQ(ierr);
+  PetscCall(PetscHMapIDel(ht,123));
+  PetscCall(PetscHMapIGetSize(ht,&n));
   PetscTestCheck(n == 0);
-  ierr = PetscHMapIHas(ht,123,&has);CHKERRQ(ierr);
+  PetscCall(PetscHMapIHas(ht,123,&has));
   PetscTestCheck(has == PETSC_FALSE);
-  ierr = PetscHMapIGet(ht,123,&v);CHKERRQ(ierr);
+  PetscCall(PetscHMapIGet(ht,123,&v));
   PetscTestCheck(v == -1);
 
-  ierr = PetscHMapIQuerySet(ht,123,1,&flag);CHKERRQ(ierr);
+  PetscCall(PetscHMapIQuerySet(ht,123,1,&flag));
   PetscTestCheck(flag == PETSC_TRUE);
-  ierr = PetscHMapIQuerySet(ht,123,1,&flag);CHKERRQ(ierr);
+  PetscCall(PetscHMapIQuerySet(ht,123,1,&flag));
   PetscTestCheck(flag == PETSC_FALSE);
-  ierr = PetscHMapIQueryDel(ht,123,&flag);CHKERRQ(ierr);
+  PetscCall(PetscHMapIQueryDel(ht,123,&flag));
   PetscTestCheck(flag == PETSC_TRUE);
-  ierr = PetscHMapIQueryDel(ht,123,&flag);CHKERRQ(ierr);
+  PetscCall(PetscHMapIQueryDel(ht,123,&flag));
   PetscTestCheck(flag == PETSC_FALSE);
 
-  ierr = PetscHMapIResize(ht,13);CHKERRQ(ierr);
-  ierr = PetscHMapIGetSize(ht,&n);CHKERRQ(ierr);
+  PetscCall(PetscHMapIResize(ht,13));
+  PetscCall(PetscHMapIGetSize(ht,&n));
   PetscTestCheck(n == 0);
 
-  ierr = PetscHMapIClear(ht);CHKERRQ(ierr);
-  ierr = PetscHMapIGetSize(ht,&n);CHKERRQ(ierr);
+  PetscCall(PetscHMapIClear(ht));
+  PetscCall(PetscHMapIGetSize(ht,&n));
   PetscTestCheck(n == 0);
 
-  ierr = PetscHMapISet(ht,321,24);CHKERRQ(ierr);
-  ierr = PetscHMapISet(ht,123,42);CHKERRQ(ierr);
-  ierr = PetscHMapIGetSize(ht,&n);CHKERRQ(ierr);
+  PetscCall(PetscHMapISet(ht,321,24));
+  PetscCall(PetscHMapISet(ht,123,42));
+  PetscCall(PetscHMapIGetSize(ht,&n));
   PetscTestCheck(n == 2);
 
   koff = 0; keys[0] = keys[1] = 0;
-  ierr = PetscHMapIGetKeys(ht,&koff,keys);CHKERRQ(ierr);
-  ierr = PetscSortInt(koff,keys);CHKERRQ(ierr);
+  PetscCall(PetscHMapIGetKeys(ht,&koff,keys));
+  PetscCall(PetscSortInt(koff,keys));
   PetscTestCheck(koff == 2);
   PetscTestCheck(keys[0] == 123);
   PetscTestCheck(keys[1] == 321);
 
   voff = 0; vals[0] = vals[1] = 0;
-  ierr = PetscHMapIGetVals(ht,&voff,vals);CHKERRQ(ierr);
-  ierr = PetscSortInt(voff,vals);CHKERRQ(ierr);
+  PetscCall(PetscHMapIGetVals(ht,&voff,vals));
+  PetscCall(PetscSortInt(voff,vals));
   PetscTestCheck(voff == 2);
   PetscTestCheck(vals[0] == 24);
   PetscTestCheck(vals[1] == 42);
 
   koff = 0; keys[0] = keys[1] = 0;
   voff = 0; vals[0] = vals[1] = 0;
-  ierr = PetscHMapIDuplicate(ht,&hd);CHKERRQ(ierr);
-  ierr = PetscHMapIGetKeys(ht,&koff,keys);CHKERRQ(ierr);
-  ierr = PetscHMapIGetVals(ht,&voff,vals);CHKERRQ(ierr);
-  ierr = PetscSortInt(koff,keys);CHKERRQ(ierr);
-  ierr = PetscSortInt(voff,vals);CHKERRQ(ierr);
+  PetscCall(PetscHMapIDuplicate(ht,&hd));
+  PetscCall(PetscHMapIGetKeys(ht,&koff,keys));
+  PetscCall(PetscHMapIGetVals(ht,&voff,vals));
+  PetscCall(PetscSortInt(koff,keys));
+  PetscCall(PetscSortInt(voff,vals));
   PetscTestCheck(koff == 2);
   PetscTestCheck(voff == 2);
   PetscTestCheck(keys[0] == 123);
   PetscTestCheck(keys[1] == 321);
   PetscTestCheck(vals[0] == 24);
   PetscTestCheck(vals[1] == 42);
-  ierr = PetscHMapIDestroy(&hd);CHKERRQ(ierr);
+  PetscCall(PetscHMapIDestroy(&hd));
 
-  ierr = PetscHMapISet(ht,0,0);CHKERRQ(ierr);
-  ierr = PetscHMapIGetSize(ht,&n);CHKERRQ(ierr);
+  PetscCall(PetscHMapISet(ht,0,0));
+  PetscCall(PetscHMapIGetSize(ht,&n));
   PetscTestCheck(n != 0);
-  ierr = PetscHMapIReset(ht);CHKERRQ(ierr);
-  ierr = PetscHMapIGetSize(ht,&n);CHKERRQ(ierr);
+  PetscCall(PetscHMapIReset(ht));
+  PetscCall(PetscHMapIGetSize(ht,&n));
   PetscTestCheck(n == 0);
-  ierr = PetscHMapIReset(ht);CHKERRQ(ierr);
-  ierr = PetscHMapIGetSize(ht,&n);CHKERRQ(ierr);
+  PetscCall(PetscHMapIReset(ht));
+  PetscCall(PetscHMapIGetSize(ht,&n));
   PetscTestCheck(n == 0);
-  ierr = PetscHMapISet(ht,0,0);CHKERRQ(ierr);
-  ierr = PetscHMapIGetSize(ht,&n);CHKERRQ(ierr);
+  PetscCall(PetscHMapISet(ht,0,0));
+  PetscCall(PetscHMapIGetSize(ht,&n));
   PetscTestCheck(n != 0);
 
-  ierr = PetscHMapIDestroy(&ht);CHKERRQ(ierr);
+  PetscCall(PetscHMapIDestroy(&ht));
   PetscTestCheck(ht == NULL);
 
-  ierr = PetscHMapICreate(&ht);CHKERRQ(ierr);
-  ierr = PetscHMapIReset(ht);CHKERRQ(ierr);
-  ierr = PetscHMapIGetSize(ht,&n);CHKERRQ(ierr);
+  PetscCall(PetscHMapICreate(&ht));
+  PetscCall(PetscHMapIReset(ht));
+  PetscCall(PetscHMapIGetSize(ht,&n));
   PetscTestCheck(n == 0);
-  ierr = PetscHMapIDestroy(&ht);CHKERRQ(ierr);
+  PetscCall(PetscHMapIDestroy(&ht));
 
-  ierr = PetscHMapIVCreate(&htv);CHKERRQ(ierr);
+  PetscCall(PetscHMapIVCreate(&htv));
   n = 10;
-  ierr = PetscHMapIVResize(htv,n);CHKERRQ(ierr);
-  ierr = PetscHMapIVGetCapacity(htv,&na);CHKERRQ(ierr);
+  PetscCall(PetscHMapIVResize(htv,n));
+  PetscCall(PetscHMapIVGetCapacity(htv,&na));
   PetscTestCheck(na>=n);
-  for (i=0; i<n; i++) {
-    ierr = PetscHMapIVSet(htv,i+100,10.);CHKERRQ(ierr);
-  }
-  ierr = PetscHMapIVGetCapacity(htv,&nb);CHKERRQ(ierr);
+  for (i=0; i<n; i++) PetscCall(PetscHMapIVSet(htv,i+100,10.));
+
+  PetscCall(PetscHMapIVGetCapacity(htv,&nb));
   PetscTestCheck(nb>=na);
-  for (i=0; i<(2*n); i++) {
-    ierr = PetscHMapIVAddValue(htv,i+100,5.);CHKERRQ(ierr);
-  }
-  ierr = PetscHMapIVGetSize(htv,&size);CHKERRQ(ierr);
+  for (i=0; i<(2*n); i++) PetscCall(PetscHMapIVAddValue(htv,i+100,5.));
+
+  PetscCall(PetscHMapIVGetSize(htv,&size));
   PetscTestCheck(size==(2*n));
-  ierr = PetscMalloc3(size,&karray,size,&varray,size,&vwork);CHKERRQ(ierr);
+  PetscCall(PetscMalloc3(size,&karray,size,&varray,size,&vwork));
   off = 0;
-  ierr = PetscHMapIVGetPairs(htv,&off,karray,varray);CHKERRQ(ierr);
+  PetscCall(PetscHMapIVGetPairs(htv,&off,karray,varray));
   PetscTestCheck(off==(2*n));
-  ierr = PetscSortIntWithDataArray(off,karray,varray,sizeof(PetscScalar),vwork);CHKERRQ(ierr);
+  PetscCall(PetscSortIntWithDataArray(off,karray,varray,sizeof(PetscScalar),vwork));
   for (i=0; i<n; i++) {
     PetscTestCheck(karray[i]==(i+100));
     PetscTestCheck(karray[n+i]==(n+i+100));
     PetscTestCheck(varray[i]==15.);
     PetscTestCheck(varray[n+i]==5.);
   }
-  ierr = PetscFree3(karray,varray,vwork);CHKERRQ(ierr);
-  ierr = PetscHMapIVDestroy(&htv);CHKERRQ(ierr);
+  PetscCall(PetscFree3(karray,varray,vwork));
+  PetscCall(PetscHMapIVDestroy(&htv));
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

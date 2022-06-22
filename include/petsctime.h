@@ -2,10 +2,12 @@
        Low cost access to system time. This, in general, should not
      be included in user programs.
 */
-
 #if !defined(PETSCTIME_H)
 #define PETSCTIME_H
+
 #include <petscsys.h>
+
+/* SUBMANSEC = Sys */
 
 PETSC_EXTERN PetscErrorCode PetscGetCPUTime(PetscLogDouble*);
 
@@ -38,7 +40,7 @@ PETSC_EXTERN PetscLogDouble petsc_BaseTime;
    The options database command  -log_view activate
    PETSc library timing. See Users-Manual: ch_profiling for more details.
 
-.seealso:  PetscTimeSubtract(), PetscTimeAdd(), PetscLogStageRegister(), PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd()
+.seealso: `PetscTimeSubtract()`, `PetscTimeAdd()`, `PetscLogStageRegister()`, `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`
 
 M*/
 
@@ -68,7 +70,7 @@ M*/
    see PetscLogStageRegister(), PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd() for how to register
    stages and events in application codes.
 
-.seealso:  PetscTime(), PetscTimeAdd(), PetscLogStageRegister(), PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd()
+.seealso: `PetscTime()`, `PetscTimeAdd()`, `PetscLogStageRegister()`, `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`
 
 M*/
 
@@ -95,7 +97,7 @@ M*/
    The options database command -log_view activate
    PETSc library timing. See Users-Manual: ch_profiling for more details.
 
-.seealso:  PetscTime(), PetscTimeSubtract(), PetscLogStageRegister(), PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd()
+.seealso: `PetscTime()`, `PetscTimeSubtract()`, `PetscLogStageRegister()`, `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`
 
 M*/
 

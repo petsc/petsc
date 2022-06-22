@@ -2,6 +2,7 @@ from __future__ import absolute_import
 import args
 import sys
 import os
+import textwrap
 
 # Ugly stuff to have curses called ONLY once, instead of for each
 # new Configure object created (and flashing the screen)
@@ -25,6 +26,7 @@ class Logger(args.ArgumentProcessor):
     self.debugLevel    = debugLevel
     self.debugSections = debugSections
     self.debugIndent   = debugIndent
+    self.dividerLength = 93
     self.getRoot()
     return
 
@@ -133,10 +135,7 @@ class Logger(args.ArgumentProcessor):
     if self.debugLevel <= 3: return
     import io
     self.logBkp = self.log
-    if sys.version_info < (3,):
-      self.log = io.BytesIO()
-    else:
-      self.log = io.StringIO()
+    self.log = io.StringIO()
 
   def restoreLog(self):
     if self.debugLevel <= 3: return
@@ -187,6 +186,33 @@ class Logger(args.ArgumentProcessor):
       return True
     return False
 
+  def checkANSIEscapeSequences(self, ostream):
+    """
+    Return True if the stream supports ANSI escape sequences, False otherwise
+    """
+    try:
+      # _io.TextIoWrapper use 'name' attribute to store the file name
+      key = ostream.name
+    except AttributeError:
+      return False
+
+    try:
+      return self._ansi_esc_seq_cache[key]
+    except KeyError:
+      pass # have not processed this stream before
+    except AttributeError:
+      # have never done this before
+      self._ansi_esc_seq_cache = {}
+
+    is_a_tty = hasattr(ostream,'isatty') and ostream.isatty()
+    return self._ansi_esc_seq_cache.setdefault(key,is_a_tty and (
+      sys.platform != 'win32' or os.environ.get('TERM','').startswith(('xterm','ANSI')) or
+      # Windows Terminal supports VT codes.
+      'WT_SESSION' in os.environ or
+      # Microsoft Visual Studio Code's built-in terminal supports colors.
+      os.environ.get('TERM_PROGRAM') == 'vscode'
+    ))
+
   def logIndent(self, debugLevel = -1, debugSection = None, comm = None):
     '''Write the proper indentation to the log streams'''
     import traceback
@@ -204,32 +230,74 @@ class Logger(args.ArgumentProcessor):
 
   def logBack(self):
     '''Backup the current line if we are not scrolling output'''
-    if not self.out is None and self.linewidth > 0:
+    if self.out is not None and self.linewidth > 0:
       self.out.write('\r')
     return
 
   def logClear(self):
     '''Clear the current line if we are not scrolling output'''
-    if not self.out is None and self.linewidth > 0:
-      self.out.write('\r')
-      self.out.write(''.join([' '] * self.linewidth))
-      self.out.write('\r')
+    out,lw = self.out,self.linewidth
+    if out is not None and lw > 0:
+      out.write('\r\033[K' if self.checkANSIEscapeSequences(out) else ' '*lw)
+      try:
+        out.flush()
+      except AttributeError:
+        pass
     return
 
-  def logPrintDivider(self, debugLevel = -1, debugSection = None, single = 0):
-    if single:
-      self.logPrint('---------------------------------------------------------------------------------------------', debugLevel = debugLevel, debugSection = debugSection)
-    else:
-      self.logPrint('=============================================================================================', debugLevel = debugLevel, debugSection = debugSection)
-    return
+  def logPrintDivider(self, single = False, length = None, **kwargs):
+    if length is None:
+      length = self.dividerLength
+    kwargs.setdefault('rmDir',False)
+    kwargs.setdefault('indent',False)
+    kwargs.setdefault('forceScroll',False)
+    kwargs.setdefault('forceNewLine',True)
+    divider = ('-' if single else '=')*length
+    return self.logPrint(divider, **kwargs)
 
-  def logPrintBox(self,msg, debugLevel = -1, debugSection = 'screen', indent = 1, comm = None, rmDir = 1):
+  def logPrintWarning(self, msg, title = None, **kwargs):
+    if title is None:
+      title = 'WARNING'
+    return self.logPrintBox(msg,title='***** {} *****'.format(title),**kwargs)
+
+  def logPrintBox(self, msg, debugLevel = -1, debugSection = 'screen', indent = 1, comm = None, rmDir = 1, prefix = None, title = None):
+    def center_wrap(banner,text,length = None,**kwargs):
+      def center_line(line):
+        return line.center(length).rstrip()
+
+      if length is None:
+        length = self.dividerLength
+      kwargs.setdefault('break_on_hyphens',False)
+      kwargs.setdefault('break_long_words',False)
+      kwargs.setdefault('width',length-2)
+      kwargs.setdefault('initial_indent',prefix)
+      kwargs.setdefault('subsequent_indent',prefix)
+      wrapped = [
+        line for para in text.splitlines() for line in textwrap.wrap(textwrap.dedent(para),**kwargs)
+      ]
+      if len(wrapped) == 1:
+        # center-justify single lines, and remove the bogus prefix
+        wrapped[0] = center_line(wrapped[0].lstrip())
+      if banner:
+        # add the banner
+        wrapped.insert(0,center_line(banner))
+      return '\n'.join(wrapped)
+
+
+    if prefix is None:
+      prefix = ' '*2
+
+    if rmDir:
+      rmDir = center_wrap(title,self.logStripDirectory(msg))
+    msg = center_wrap(title,msg)
     self.logClear()
     self.logPrintDivider(debugLevel = debugLevel, debugSection = debugSection)
-    [self.logPrint('      '+line, debugLevel = debugLevel, debugSection = debugSection, rmDir = rmDir) for line in msg.split('\n')]
+    self.logPrint(msg, debugLevel = debugLevel, debugSection = debugSection, rmDir = rmDir, forceNewLine = True, forceScroll = True, indent = 0)
     self.logPrintDivider(debugLevel = debugLevel, debugSection = debugSection)
-    self.logPrint('', debugLevel = debugLevel, debugSection = debugSection)
     return
+
+  def logStripDirectory(self,msg):
+    return msg.replace(RemoveDirectory,'')
 
   def logClearRemoveDirectory(self):
     global RemoveDirectory
@@ -249,23 +317,27 @@ class Logger(args.ArgumentProcessor):
     if not msg: return
     for writeAll, f in enumerate([self.out, self.log]):
       if self.checkWrite(f, debugLevel, debugSection, writeAll):
+        if rmDir:
+          if isinstance(rmDir,str):
+            clean_msg = rmDir
+          else:
+            clean_msg = self.logStripDirectory(msg)
+        else:
+          clean_msg = msg
         if not forceScroll and not writeAll and self.linewidth > 0:
-          global RemoveDirectory
-          self.logBack()
-          if rmDir: msg = msg.replace(RemoveDirectory,'')
-          for ms in msg.split('\n'):
-            f.write(ms[0:self.linewidth])
-            f.write(''.join([' '] * (self.linewidth - len(ms))))
+          self.logClear()
+          for ms in clean_msg.splitlines():
+            f.write(ms[:self.linewidth])
         else:
           if not debugSection is None and not debugSection == 'screen' and len(msg):
             f.write(str(debugSection))
             f.write(': ')
-          f.write(msg)
+          f.write(msg if writeAll else clean_msg)
         if hasattr(f, 'flush'):
           f.flush()
     return
 
-  def logPrint(self, msg, debugLevel = -1, debugSection = None, indent = 1, comm = None, forceScroll = 0, rmDir = 1):
+  def logPrint(self, msg, debugLevel = -1, debugSection = None, indent = 1, comm = None, forceScroll = 0, rmDir = 1, forceNewLine = False):
     '''Write the message to the log streams with proper indentation and a newline'''
     '''Generally goes to the file and the screen'''
     if indent:
@@ -273,7 +345,7 @@ class Logger(args.ArgumentProcessor):
     self.logWrite(msg, debugLevel, debugSection, forceScroll = forceScroll, rmDir = rmDir)
     for writeAll, f in enumerate([self.out, self.log]):
       if self.checkWrite(f, debugLevel, debugSection, writeAll):
-        if writeAll or self.linewidth < 0:
+        if forceNewLine or writeAll or self.linewidth < 0:
           f.write('\n')
     return
 

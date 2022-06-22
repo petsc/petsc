@@ -8,7 +8,6 @@
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   Mat            A;
   Mat            subA[9];
   IS             isg[3];
@@ -20,151 +19,151 @@ int main(int argc,char **argv)
   KSP           ksp;
   PC            pc;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,PETSC_NULL);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,PETSC_NULL));
 
-  ierr = MatCreateAIJ(PETSC_COMM_WORLD,5,5,PETSC_DETERMINE,PETSC_DETERMINE,3,NULL,0,NULL,&subA[0]);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(subA[0],&mstart,&mend);CHKERRQ(ierr);
+  PetscCall(MatCreateAIJ(PETSC_COMM_WORLD,5,5,PETSC_DETERMINE,PETSC_DETERMINE,3,NULL,0,NULL,&subA[0]));
+  PetscCall(MatGetOwnershipRange(subA[0],&mstart,&mend));
   for (row = mstart; row < mend; ++row) {
     val = 1.0; col = row;
-    ierr = MatSetValues(subA[0],1,&row,1,&col,&val,INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(MatSetValues(subA[0],1,&row,1,&col,&val,INSERT_VALUES));
   }
-  ierr = MatAssemblyBegin(subA[0],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(subA[0],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(subA[0],MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(subA[0],MAT_FINAL_ASSEMBLY));
 
-  ierr = MatCreateAIJ( PETSC_COMM_WORLD,5,3,PETSC_DETERMINE,PETSC_DETERMINE,1,NULL,1,NULL,&subA[1]);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(subA[1],&mstart,&mend);CHKERRQ(ierr);
+  PetscCall(MatCreateAIJ( PETSC_COMM_WORLD,5,3,PETSC_DETERMINE,PETSC_DETERMINE,1,NULL,1,NULL,&subA[1]));
+  PetscCall(MatGetOwnershipRange(subA[1],&mstart,&mend));
   for (row = mstart; row < mend; ++row) {
     col = 1;
     val = 0.0;
-    ierr = MatSetValues(subA[1],1,&row,1,&col,&val,INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(MatSetValues(subA[1],1,&row,1,&col,&val,INSERT_VALUES));
   }
-  ierr = MatAssemblyBegin(subA[1],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(subA[1],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(subA[1],MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(subA[1],MAT_FINAL_ASSEMBLY));
 
-  ierr = MatCreateAIJ( PETSC_COMM_WORLD,5,4,PETSC_DETERMINE,PETSC_DETERMINE,1,NULL,1,NULL,&subA[2]);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(subA[2],&mstart,&mend);CHKERRQ(ierr);
+  PetscCall(MatCreateAIJ( PETSC_COMM_WORLD,5,4,PETSC_DETERMINE,PETSC_DETERMINE,1,NULL,1,NULL,&subA[2]));
+  PetscCall(MatGetOwnershipRange(subA[2],&mstart,&mend));
   for (row = mstart; row < mend; ++row) {
     col = 1;
     val = 0.0;
-    ierr = MatSetValues(subA[2],1,&row,1,&col,&val,INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(MatSetValues(subA[2],1,&row,1,&col,&val,INSERT_VALUES));
   }
-  ierr = MatAssemblyBegin(subA[2],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(subA[2],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(subA[2],MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(subA[2],MAT_FINAL_ASSEMBLY));
 
-  ierr = MatCreateAIJ( PETSC_COMM_WORLD,3,5,PETSC_DETERMINE,PETSC_DETERMINE,1,NULL,1,NULL,&subA[3]);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(subA[3],&mstart,&mend);CHKERRQ(ierr);
+  PetscCall(MatCreateAIJ( PETSC_COMM_WORLD,3,5,PETSC_DETERMINE,PETSC_DETERMINE,1,NULL,1,NULL,&subA[3]));
+  PetscCall(MatGetOwnershipRange(subA[3],&mstart,&mend));
   for (row = mstart; row < mend; ++row) {
     col = row;
     val = 0.0;
-    ierr = MatSetValues(subA[3],1,&row,1,&col,&val,INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(MatSetValues(subA[3],1,&row,1,&col,&val,INSERT_VALUES));
   }
-  ierr = MatAssemblyBegin(subA[3],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(subA[3],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(subA[3],MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(subA[3],MAT_FINAL_ASSEMBLY));
 
-  ierr = MatCreateAIJ( PETSC_COMM_WORLD,3,3,PETSC_DETERMINE,PETSC_DETERMINE,1,NULL,1,NULL,&subA[4]);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(subA[4],&mstart,&mend);CHKERRQ(ierr);
+  PetscCall(MatCreateAIJ( PETSC_COMM_WORLD,3,3,PETSC_DETERMINE,PETSC_DETERMINE,1,NULL,1,NULL,&subA[4]));
+  PetscCall(MatGetOwnershipRange(subA[4],&mstart,&mend));
   for (row = mstart; row < mend; ++row) {
     col = row;
     val = 4.0;
-    ierr = MatSetValues(subA[4],1,&row,1,&col,&val,INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(MatSetValues(subA[4],1,&row,1,&col,&val,INSERT_VALUES));
   }
-  ierr = MatAssemblyBegin(subA[4],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(subA[4],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(subA[4],MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(subA[4],MAT_FINAL_ASSEMBLY));
 
-  ierr = MatCreateAIJ( PETSC_COMM_WORLD,3,4,PETSC_DETERMINE,PETSC_DETERMINE,1,NULL,1,NULL,&subA[5]);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(subA[5],&mstart,&mend);CHKERRQ(ierr);
+  PetscCall(MatCreateAIJ( PETSC_COMM_WORLD,3,4,PETSC_DETERMINE,PETSC_DETERMINE,1,NULL,1,NULL,&subA[5]));
+  PetscCall(MatGetOwnershipRange(subA[5],&mstart,&mend));
   for (row = mstart; row < mend; ++row) {
     col = row;
     val = 0.0;
-    ierr = MatSetValues(subA[5],1,&row,1,&col,&val,INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(MatSetValues(subA[5],1,&row,1,&col,&val,INSERT_VALUES));
   }
-  ierr = MatAssemblyBegin(subA[5],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(subA[5],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(subA[5],MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(subA[5],MAT_FINAL_ASSEMBLY));
 
-  ierr = MatCreateAIJ( PETSC_COMM_WORLD,4,5,PETSC_DETERMINE,PETSC_DETERMINE,1,NULL,1,NULL,&subA[6]);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(subA[6],&mstart,&mend);CHKERRQ(ierr);
+  PetscCall(MatCreateAIJ( PETSC_COMM_WORLD,4,5,PETSC_DETERMINE,PETSC_DETERMINE,1,NULL,1,NULL,&subA[6]));
+  PetscCall(MatGetOwnershipRange(subA[6],&mstart,&mend));
   for (row = mstart; row < mend; ++row) {
     col = 2;
     val = 0.0;
-    ierr = MatSetValues(subA[6],1,&row,1,&col,&val,INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(MatSetValues(subA[6],1,&row,1,&col,&val,INSERT_VALUES));
   }
-  ierr = MatAssemblyBegin(subA[6],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(subA[6],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(subA[6],MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(subA[6],MAT_FINAL_ASSEMBLY));
 
-  ierr = MatCreateAIJ( PETSC_COMM_WORLD,4,3,PETSC_DETERMINE,PETSC_DETERMINE,1,NULL,1,NULL,&subA[7]);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(subA[7],&mstart,&mend);CHKERRQ(ierr);
+  PetscCall(MatCreateAIJ( PETSC_COMM_WORLD,4,3,PETSC_DETERMINE,PETSC_DETERMINE,1,NULL,1,NULL,&subA[7]));
+  PetscCall(MatGetOwnershipRange(subA[7],&mstart,&mend));
   for (row = mstart; row < mend; ++row) {
     col = 1;
     val = 0.0;
-    ierr = MatSetValues(subA[7],1,&row,1,&col,&val,INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(MatSetValues(subA[7],1,&row,1,&col,&val,INSERT_VALUES));
   }
-  ierr = MatAssemblyBegin(subA[7],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(subA[7],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(subA[7],MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(subA[7],MAT_FINAL_ASSEMBLY));
 
-  ierr = MatCreateAIJ( PETSC_COMM_WORLD,4,4,PETSC_DETERMINE,PETSC_DETERMINE,1,NULL,1,NULL,&subA[8]);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(subA[8],&mstart,&mend);CHKERRQ(ierr);
+  PetscCall(MatCreateAIJ( PETSC_COMM_WORLD,4,4,PETSC_DETERMINE,PETSC_DETERMINE,1,NULL,1,NULL,&subA[8]));
+  PetscCall(MatGetOwnershipRange(subA[8],&mstart,&mend));
   for (row = mstart; row < mend; ++row) {
     col = row;
     val = 8.0;
-    ierr = MatSetValues(subA[8],1,&row,1,&col,&val,INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(MatSetValues(subA[8],1,&row,1,&col,&val,INSERT_VALUES));
   }
-  ierr = MatAssemblyBegin(subA[8],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(subA[8],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(subA[8],MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(subA[8],MAT_FINAL_ASSEMBLY));
 
-  ierr = MatCreateNest(PETSC_COMM_WORLD,3,NULL,3,NULL,subA,&A);CHKERRQ(ierr);
-  ierr = MatNestGetISs(A,isg,NULL);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,&subb[0]);CHKERRQ(ierr);
-  ierr = VecSetSizes(subb[0],5,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(subb[0]);CHKERRQ(ierr);
-  ierr = VecSet(subb[0],1.0);CHKERRQ(ierr);
+  PetscCall(MatCreateNest(PETSC_COMM_WORLD,3,NULL,3,NULL,subA,&A));
+  PetscCall(MatNestGetISs(A,isg,NULL));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&subb[0]));
+  PetscCall(VecSetSizes(subb[0],5,PETSC_DECIDE));
+  PetscCall(VecSetFromOptions(subb[0]));
+  PetscCall(VecSet(subb[0],1.0));
 
-  ierr = VecCreate(PETSC_COMM_WORLD,&subb[1]);CHKERRQ(ierr);
-  ierr = VecSetSizes(subb[1],3,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(subb[1]);CHKERRQ(ierr);
-  ierr = VecSet(subb[1],2.0);CHKERRQ(ierr);
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&subb[1]));
+  PetscCall(VecSetSizes(subb[1],3,PETSC_DECIDE));
+  PetscCall(VecSetFromOptions(subb[1]));
+  PetscCall(VecSet(subb[1],2.0));
 
-  ierr = VecCreate(PETSC_COMM_WORLD,&subb[2]);CHKERRQ(ierr);
-  ierr = VecSetSizes(subb[2],4,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(subb[2]);CHKERRQ(ierr);
-  ierr = VecSet(subb[2],3.0);CHKERRQ(ierr);
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&subb[2]));
+  PetscCall(VecSetSizes(subb[2],4,PETSC_DECIDE));
+  PetscCall(VecSetFromOptions(subb[2]));
+  PetscCall(VecSet(subb[2],3.0));
 
-  ierr = VecCreateNest(PETSC_COMM_WORLD,3,NULL,subb,&b);CHKERRQ(ierr);
-  ierr = VecDuplicate(b,&r);CHKERRQ(ierr);
-  ierr = VecCopy(b,r);CHKERRQ(ierr);
+  PetscCall(VecCreateNest(PETSC_COMM_WORLD,3,NULL,subb,&b));
+  PetscCall(VecDuplicate(b,&r));
+  PetscCall(VecCopy(b,r));
 
-  ierr = MatMult(A,b,r);CHKERRQ(ierr);
-  ierr = VecSet(b,0.0);CHKERRQ(ierr);
+  PetscCall(MatMult(A,b,r));
+  PetscCall(VecSet(b,0.0));
 
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = PCFieldSplitSetIS(pc,"a",isg[0]);CHKERRQ(ierr);
-  ierr = PCFieldSplitSetIS(pc,"b",isg[1]);CHKERRQ(ierr);
-  ierr = PCFieldSplitSetIS(pc,"c",isg[2]);CHKERRQ(ierr);
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPSetOperators(ksp,A,A));
+  PetscCall(KSPSetFromOptions(ksp));
+  PetscCall(KSPGetPC(ksp,&pc));
+  PetscCall(PCFieldSplitSetIS(pc,"a",isg[0]));
+  PetscCall(PCFieldSplitSetIS(pc,"b",isg[1]));
+  PetscCall(PCFieldSplitSetIS(pc,"c",isg[2]));
 
-  ierr = KSPSolve(ksp,r,b);CHKERRQ(ierr);
-  ierr = KSPView(ksp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscCall(KSPSolve(ksp,r,b));
+  PetscCall(KSPView(ksp,PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = MatDestroy(&subA[0]);CHKERRQ(ierr);
-  ierr = MatDestroy(&subA[1]);CHKERRQ(ierr);
-  ierr = MatDestroy(&subA[2]);CHKERRQ(ierr);
-  ierr = MatDestroy(&subA[3]);CHKERRQ(ierr);
-  ierr = MatDestroy(&subA[4]);CHKERRQ(ierr);
-  ierr = MatDestroy(&subA[5]);CHKERRQ(ierr);
-  ierr = MatDestroy(&subA[6]);CHKERRQ(ierr);
-  ierr = MatDestroy(&subA[7]);CHKERRQ(ierr);
-  ierr = MatDestroy(&subA[8]);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = VecDestroy(&subb[0]);CHKERRQ(ierr);
-  ierr = VecDestroy(&subb[1]);CHKERRQ(ierr);
-  ierr = VecDestroy(&subb[2]);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = VecDestroy(&r);CHKERRQ(ierr);
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+  PetscCall(MatDestroy(&subA[0]));
+  PetscCall(MatDestroy(&subA[1]));
+  PetscCall(MatDestroy(&subA[2]));
+  PetscCall(MatDestroy(&subA[3]));
+  PetscCall(MatDestroy(&subA[4]));
+  PetscCall(MatDestroy(&subA[5]));
+  PetscCall(MatDestroy(&subA[6]));
+  PetscCall(MatDestroy(&subA[7]));
+  PetscCall(MatDestroy(&subA[8]));
+  PetscCall(MatDestroy(&A));
+  PetscCall(VecDestroy(&subb[0]));
+  PetscCall(VecDestroy(&subb[1]));
+  PetscCall(VecDestroy(&subb[2]));
+  PetscCall(VecDestroy(&b));
+  PetscCall(VecDestroy(&r));
+  PetscCall(KSPDestroy(&ksp));
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

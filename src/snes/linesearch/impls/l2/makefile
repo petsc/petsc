@@ -1,10 +1,8 @@
-ALL: lib
+-include ../../../../../petsckdir.mk
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = linesearchl2.c
 SOURCEF  =
-SOURCEH  = l2impls.h
+SOURCEH  =
 LIBBASE  = libpetscsnes
 MANSEC   = SNES
 LOCDIR   = src/snes/linesearch/impls/l2/

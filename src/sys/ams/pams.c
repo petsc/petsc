@@ -15,7 +15,7 @@
 
    Level: advanced
 
-.seealso: PetscObjectSetName(), PetscObjectSAWsViewOff(), PetscObjectSAWsGrantAccess()
+.seealso: `PetscObjectSetName()`, `PetscObjectSAWsViewOff()`, `PetscObjectSAWsGrantAccess()`
 
 @*/
 PetscErrorCode  PetscObjectSAWsTakeAccess(PetscObject obj)
@@ -39,7 +39,7 @@ PetscErrorCode  PetscObjectSAWsTakeAccess(PetscObject obj)
 
    Level: advanced
 
-.seealso: PetscObjectSetName(), PetscObjectSAWsViewOff(), PetscObjectSAWsTakeAccess()
+.seealso: `PetscObjectSetName()`, `PetscObjectSAWsViewOff()`, `PetscObjectSAWsTakeAccess()`
 
 @*/
 PetscErrorCode  PetscObjectSAWsGrantAccess(PetscObject obj)
@@ -58,12 +58,11 @@ PetscErrorCode  PetscObjectSAWsGrantAccess(PetscObject obj)
 
    Level: advanced
 
-.seealso: PetscObjectSetName(), PetscObjectSAWsViewOff(), PetscObjectSAWsSetBlock(), PetscObjectSAWsBlock()
+.seealso: `PetscObjectSetName()`, `PetscObjectSAWsViewOff()`, `PetscObjectSAWsSetBlock()`, `PetscObjectSAWsBlock()`
 
 @*/
 PetscErrorCode  PetscSAWsBlock(void)
 {
-  PetscErrorCode     ierr;
   volatile PetscBool block = PETSC_TRUE;
 
   PetscFunctionBegin;
@@ -71,13 +70,13 @@ PetscErrorCode  PetscSAWsBlock(void)
   SAWs_Lock();
   while (block) {
     SAWs_Unlock();
-    ierr = PetscInfo(NULL,"Blocking on SAWs\n");
-    ierr = PetscSleep(.3);CHKERRQ(ierr);
+    PetscCall(PetscInfo(NULL,"Blocking on SAWs\n"));
+    PetscCall(PetscSleep(.3));
     SAWs_Lock();
   }
   SAWs_Unlock();
   PetscStackCallSAWs(SAWs_Delete,("__Block"));
-  ierr = PetscInfo(NULL,"Out of SAWs block\n");
+  PetscCall(PetscInfo(NULL,"Out of SAWs block\n"));
   PetscFunctionReturn(0);
 }
 
@@ -93,18 +92,16 @@ PetscErrorCode  PetscSAWsBlock(void)
 
    Level: advanced
 
-.seealso: PetscObjectSetName(), PetscObjectSAWsViewOff(), PetscObjectSAWsSetBlock()
+.seealso: `PetscObjectSetName()`, `PetscObjectSAWsViewOff()`, `PetscObjectSAWsSetBlock()`
 
 @*/
 PetscErrorCode  PetscObjectSAWsBlock(PetscObject obj)
 {
-  PetscErrorCode     ierr;
-
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
 
   if (!obj->amspublishblock || !obj->amsmem) PetscFunctionReturn(0);
-  ierr = PetscSAWsBlock();CHKERRQ(ierr);
+  PetscCall(PetscSAWsBlock());
   PetscFunctionReturn(0);
 }
 
@@ -121,7 +118,7 @@ PetscErrorCode  PetscObjectSAWsBlock(PetscObject obj)
 
    Level: advanced
 
-.seealso: PetscObjectSetName(), PetscObjectSAWsViewOff(), PetscObjectSAWsBlock()
+.seealso: `PetscObjectSetName()`, `PetscObjectSAWsViewOff()`, `PetscObjectSAWsBlock()`
 
 @*/
 PetscErrorCode  PetscObjectSAWsSetBlock(PetscObject obj,PetscBool flg)
@@ -134,14 +131,12 @@ PetscErrorCode  PetscObjectSAWsSetBlock(PetscObject obj,PetscBool flg)
 
 PetscErrorCode PetscObjectSAWsViewOff(PetscObject obj)
 {
-  char           dir[1024];
-  PetscErrorCode ierr;
+  char dir[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
   if (obj->classid == PETSC_VIEWER_CLASSID) PetscFunctionReturn(0);
   if (!obj->amsmem) PetscFunctionReturn(0);
-  ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s",obj->name);CHKERRQ(ierr);
+  PetscCall(PetscSNPrintf(dir,sizeof(dir),"/PETSc/Objects/%s",obj->name));
   PetscStackCallSAWs(SAWs_Delete,(dir));
   PetscFunctionReturn(0);
 }
-

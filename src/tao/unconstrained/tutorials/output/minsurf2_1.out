@@ -10,10 +10,10 @@ iter =   4, Function value 1.41781, Residual: 0.0161113
 iter =   5, Function value 1.41776, Residual: 0.00313094 
 iter =   6, Function value 1.41776, Residual: 0.00280956 
 iter =   7, Function value 1.41776, Residual: 0.000935101 
-Tao Object: 1 MPI processes
+Tao Object: 1 MPI process
   type: lmvm
     Gradient steps: 1
-  TaoLineSearch Object: 1 MPI processes
+  TaoLineSearch Object: 1 MPI process
     type: more-thuente
     maximum function evaluations=30
     tolerances: ftol=0.0001, rtol=1e-10, gtol=0.9

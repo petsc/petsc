@@ -9,7 +9,7 @@ At time 0.070000, Energy =  81.8041, Modified Energy =    81.92
 At time 0.080000, Energy =  82.1122, Modified Energy =    81.92
 At time 0.090000, Energy =  82.1473, Modified Energy =    81.92
 At time 0.100000, Energy =  81.8593, Modified Energy =    81.92
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.198562
 -1.49198

@@ -1,4 +1,4 @@
-DM Object: Mesh 1 MPI processes
+DM Object: Mesh 1 MPI process
   type: plex
 Mesh in 2 dimensions:
   Number of 0-cells per rank: 4
@@ -8,7 +8,7 @@ Labels:
   Face Sets: 1 strata with value/size (1 (4))
   marker: 1 strata with value/size (1 (8))
   depth: 3 strata with value/size (0 (4), 1 (5), 2 (2))
-DM Object: Particles 1 MPI processes
+DM Object: Particles 1 MPI process
   type: swarm
 DMSwarmDataBucketView: 
   L                  = 2 

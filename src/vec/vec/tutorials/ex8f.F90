@@ -1,10 +1,6 @@
 !
 ! Description: Demonstrates using a local ordering to set values into a parallel vector
 !
-!
-!   Concepts: vectors^assembling vectors with local ordering;
-!   Processors: n
-!
 
   program main
 #include <petsc/finclude/petscvec.h>
@@ -21,12 +17,8 @@
   ISLocalToGlobalMapping :: ltog
   PetscInt,parameter :: one = 1
 
-  call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-  if (ierr /= 0) then
-    print*,'PetscInitialize failed'
-    stop
-  endif
-  call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
+  PetscCallA(PetscInitialize(ierr))
+  PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr))
 
 !
 !     Create a parallel vector.
@@ -35,11 +27,11 @@
 !        PETSc could determine the vector's distribution if we specify
 !        just the global size.
 !
-  call VecCreate(PETSC_COMM_WORLD,x,ierr);CHKERRA(ierr)
-  call VecSetSizes(x,rank+one,PETSC_DECIDE,ierr);CHKERRA(ierr)
-  call VecSetFromOptions(x,ierr);CHKERRA(ierr)
+  PetscCallA(VecCreate(PETSC_COMM_WORLD,x,ierr))
+  PetscCallA(VecSetSizes(x,rank+one,PETSC_DECIDE,ierr))
+  PetscCallA(VecSetFromOptions(x,ierr))
 
-  call VecSet(x,sone,ierr);CHKERRA(ierr)
+  PetscCallA(VecSet(x,sone,ierr))
 
 !
 !     Set the local to global ordering for the vector. Each processor
@@ -49,8 +41,8 @@
 !     have one ghost point on each end of the blocks owned by each processor.
 !
 
-  call VecGetSize(x,M,ierr);CHKERRA(ierr)
-  call VecGetOwnershipRange(x,rstart,rend,ierr);CHKERRA(ierr)
+  PetscCallA(VecGetSize(x,M,ierr))
+  PetscCallA(VecGetOwnershipRange(x,rstart,rend,ierr))
   ng = rend - rstart + 2
   allocate(gindices(0:ng-1))
   gindices(0) = rstart -1
@@ -65,9 +57,9 @@
 
   if (gindices(ng-1) == M) gindices(ng-1) = 0
 
-  call ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,one,ng,gindices,PETSC_COPY_VALUES,ltog,ierr);CHKERRA(ierr)
-  call VecSetLocalToGlobalMapping(x,ltog,ierr);CHKERRA(ierr)
-  call ISLocalToGlobalMappingDestroy(ltog,ierr);CHKERRA(ierr)
+  PetscCallA(ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,one,ng,gindices,PETSC_COPY_VALUES,ltog,ierr))
+  PetscCallA(VecSetLocalToGlobalMapping(x,ltog,ierr))
+  PetscCallA(ISLocalToGlobalMappingDestroy(ltog,ierr))
   deallocate(gindices)
 
      ! Set the vector elements.
@@ -80,7 +72,7 @@
      !   contributions will be added together.
 
   do i=0,ng-1
-   call VecSetValuesLocal(x,one,i,sone,ADD_VALUES,ierr);CHKERRA(ierr)
+   PetscCallA(VecSetValuesLocal(x,one,i,sone,ADD_VALUES,ierr))
   end do
 
   !
@@ -89,14 +81,14 @@
   ! Computations can be done while messages are in transition
   ! by placing code between these two statements.
   !
-  call VecAssemblyBegin(x,ierr);CHKERRA(ierr)
-  call VecAssemblyEnd(x,ierr);CHKERRA(ierr)
+  PetscCallA(VecAssemblyBegin(x,ierr))
+  PetscCallA(VecAssemblyEnd(x,ierr))
   !
   ! View the vector; then destroy it.
   !
-  call VecView(x,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)
-  call VecDestroy(x,ierr);CHKERRA(ierr)
-  call PetscFinalize(ierr);CHKERRA(ierr)
+  PetscCallA(VecView(x,PETSC_VIEWER_STDOUT_WORLD,ierr))
+  PetscCallA(VecDestroy(x,ierr))
+  PetscCallA(PetscFinalize(ierr))
 
 end program
 

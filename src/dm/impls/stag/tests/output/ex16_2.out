@@ -1,0 +1,42 @@
+DM Object: 1 MPI process
+  type: stag
+Dimension: 2
+Global sizes: 6 x 4
+Parallel decomposition: 1 x 1 ranks
+Boundary ghosting: NONE NONE
+Elementwise ghost stencil: BOX, width 1
+2 DOF per vertex (0D)
+1 DOF per face (1D)
+1 DOF per element (2D)
+[0] Rank coordinates (0,0)
+[0] Local elements : 6 x 4 (7 x 5 with ghosts)
+[0] Local native entries: 152
+[0] Local entries total : 175
+DM Object: 1 MPI process
+  type: stag
+Dimension: 2
+Global sizes: 12 x 8
+Parallel decomposition: 1 x 1 ranks
+Boundary ghosting: NONE NONE
+Elementwise ghost stencil: BOX, width 1
+2 DOF per vertex (0D)
+1 DOF per face (1D)
+1 DOF per element (2D)
+[0] Rank coordinates (0,0)
+[0] Local elements : 12 x 8 (13 x 9 with ghosts)
+[0] Local native entries: 542
+[0] Local entries total : 585
+DM Object: 1 MPI process
+  type: stag
+Dimension: 2
+Global sizes: 3 x 2
+Parallel decomposition: 1 x 1 ranks
+Boundary ghosting: NONE NONE
+Elementwise ghost stencil: BOX, width 1
+2 DOF per vertex (0D)
+1 DOF per face (1D)
+1 DOF per element (2D)
+[0] Rank coordinates (0,0)
+[0] Local elements : 3 x 2 (4 x 3 with ghosts)
+[0] Local native entries: 47
+[0] Local entries total : 60

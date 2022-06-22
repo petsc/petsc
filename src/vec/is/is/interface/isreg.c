@@ -23,18 +23,16 @@ PetscBool         ISRegisterAllCalled = PETSC_FALSE;
 
    Level: beginner
 
-.seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock(), ISAllGather()
+.seealso: `ISCreateGeneral()`, `ISCreateStride()`, `ISCreateBlock()`, `ISAllGather()`
 @*/
 PetscErrorCode  ISCreate(MPI_Comm comm,IS *is)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidPointer(is,2);
-  ierr = ISInitializePackage();CHKERRQ(ierr);
+  PetscCall(ISInitializePackage());
 
-  ierr = PetscHeaderCreate(*is,IS_CLASSID,"IS","Index Set","IS",comm,ISDestroy,ISView);CHKERRQ(ierr);
-  ierr = PetscLayoutCreate(comm, &(*is)->map);CHKERRQ(ierr);
+  PetscCall(PetscHeaderCreate(*is,IS_CLASSID,"IS","Index Set","IS",comm,ISDestroy,ISView));
+  PetscCall(PetscLayoutCreate(comm, &(*is)->map));
   PetscFunctionReturn(0);
 }
 
@@ -57,28 +55,27 @@ PetscErrorCode  ISCreate(MPI_Comm comm,IS *is)
 
   Level: intermediate
 
-.seealso: ISGetType(), ISCreate()
+.seealso: `ISGetType()`, `ISCreate()`
 @*/
 PetscErrorCode  ISSetType(IS is, ISType method)
 {
   PetscErrorCode (*r)(IS);
   PetscBool      match;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID,1);
-  ierr = PetscObjectTypeCompare((PetscObject) is, method, &match);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject) is, method, &match));
   if (match) PetscFunctionReturn(0);
 
-  ierr = ISRegisterAll();CHKERRQ(ierr);
-  ierr = PetscFunctionListFind(ISList,method,&r);CHKERRQ(ierr);
-  PetscCheckFalse(!r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown IS type: %s", method);
+  PetscCall(ISRegisterAll());
+  PetscCall(PetscFunctionListFind(ISList,method,&r));
+  PetscCheck(r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown IS type: %s", method);
   if (is->ops->destroy) {
-    ierr = (*is->ops->destroy)(is);CHKERRQ(ierr);
+    PetscCall((*is->ops->destroy)(is));
     is->ops->destroy = NULL;
   }
-  ierr = (*r)(is);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)is,method);CHKERRQ(ierr);
+  PetscCall((*r)(is));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)is,method));
   PetscFunctionReturn(0);
 }
 
@@ -95,17 +92,15 @@ PetscErrorCode  ISSetType(IS is, ISType method)
 
   Level: intermediate
 
-.seealso: ISSetType(), ISCreate()
+.seealso: `ISSetType()`, `ISCreate()`
 @*/
 PetscErrorCode  ISGetType(IS is, ISType *type)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID,1);
-  PetscValidCharPointer(type,2);
+  PetscValidPointer(type,2);
   if (!ISRegisterAllCalled) {
-    ierr = ISRegisterAll();CHKERRQ(ierr);
+    PetscCall(ISRegisterAll());
   }
   *type = ((PetscObject)is)->type_name;
   PetscFunctionReturn(0);
@@ -145,17 +140,14 @@ PetscErrorCode  ISGetType(IS is, ISType *type)
 
   Level: developer
 
-.seealso: ISRegisterAll(), ISRegisterDestroy(), ISRegister()
+.seealso: `ISRegisterAll()`, `ISRegisterDestroy()`, `ISRegister()`
 
   Level: advanced
 @*/
 PetscErrorCode  ISRegister(const char sname[], PetscErrorCode (*function)(IS))
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = ISInitializePackage();CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(&ISList,sname,function);CHKERRQ(ierr);
+  PetscCall(ISInitializePackage());
+  PetscCall(PetscFunctionListAdd(&ISList,sname,function));
   PetscFunctionReturn(0);
 }
-

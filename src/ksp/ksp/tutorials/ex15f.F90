@@ -4,11 +4,6 @@
 !      -user_defined_pc : Activate a user-defined preconditioner
 !
 !
-!!/*T
-!   Concepts: KSP^basic parallel example
-!   Concepts: PC^setting a user-defined shell preconditioner
-!   Processors: n
-!T*/
 
 !
 !     -------------------------------------------------------------------------
@@ -59,20 +54,16 @@
 !                 Beginning of program
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      if (ierr .ne. 0) then
-        print*,'Unable to initialize PETSc'
-        stop
-      endif
+      PetscCallA(PetscInitialize(ierr))
       one     = 1.0
       neg_one = -1.0
       i1 = 1
       m       = 8
       n       = 7
       five    = 5
-      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-m',m,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
-      call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
+      PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-m',m,flg,ierr))
+      PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-n',n,flg,ierr))
+      PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr))
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !      Compute the matrix and right-hand-side vector that define
@@ -84,18 +75,18 @@
 !  runtime. Also, the parallel partitioning of the matrix is
 !  determined by PETSc at runtime.
 
-      call MatCreate(PETSC_COMM_WORLD,A,ierr)
-      call MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,ierr)
-      call MatSetType(A, MATAIJ,ierr)
-      call MatSetFromOptions(A,ierr)
-      call MatMPIAIJSetPreallocation(A,five,PETSC_NULL_INTEGER,five,PETSC_NULL_INTEGER,ierr)
-      call MatSeqAIJSetPreallocation(A,five,PETSC_NULL_INTEGER,ierr)
+      PetscCallA(MatCreate(PETSC_COMM_WORLD,A,ierr))
+      PetscCallA(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,ierr))
+      PetscCallA(MatSetType(A, MATAIJ,ierr))
+      PetscCallA(MatSetFromOptions(A,ierr))
+      PetscCallA(MatMPIAIJSetPreallocation(A,five,PETSC_NULL_INTEGER,five,PETSC_NULL_INTEGER,ierr))
+      PetscCallA(MatSeqAIJSetPreallocation(A,five,PETSC_NULL_INTEGER,ierr))
 
 !  Currently, all PETSc parallel matrix formats are partitioned by
 !  contiguous chunks of rows across the processors.  Determine which
 !  rows of the matrix are locally owned.
 
-      call MatGetOwnershipRange(A,Istart,Iend,ierr)
+      PetscCallA(MatGetOwnershipRange(A,Istart,Iend,ierr))
 
 !  Set matrix elements for the 2-D, five-point stencil in parallel.
 !   - Each processor needs to insert only elements that it owns
@@ -111,22 +102,22 @@
         j = II - i*n
         if (i.gt.0) then
           JJ = II - n
-          call MatSetValues(A,i1,II,i1,JJ,v,ADD_VALUES,ierr)
+          PetscCallA(MatSetValues(A,i1,II,i1,JJ,v,ADD_VALUES,ierr))
         endif
         if (i.lt.m-1) then
           JJ = II + n
-          call MatSetValues(A,i1,II,i1,JJ,v,ADD_VALUES,ierr)
+          PetscCallA(MatSetValues(A,i1,II,i1,JJ,v,ADD_VALUES,ierr))
         endif
         if (j.gt.0) then
           JJ = II - 1
-          call MatSetValues(A,i1,II,i1,JJ,v,ADD_VALUES,ierr)
+          PetscCallA(MatSetValues(A,i1,II,i1,JJ,v,ADD_VALUES,ierr))
         endif
         if (j.lt.n-1) then
           JJ = II + 1
-          call MatSetValues(A,i1,II,i1,JJ,v,ADD_VALUES,ierr)
+          PetscCallA(MatSetValues(A,i1,II,i1,JJ,v,ADD_VALUES,ierr))
         endif
         v = 4.0
-        call  MatSetValues(A,i1,II,i1,II,v,ADD_VALUES,ierr)
+        PetscCallA( MatSetValues(A,i1,II,i1,II,v,ADD_VALUES,ierr))
  10   continue
 
 !  Assemble matrix, using the 2-step process:
@@ -134,8 +125,8 @@
 !  Computations can be done while messages are in transition,
 !  by placing code between these two statements.
 
-      call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
-      call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
+      PetscCallA(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr))
+      PetscCallA(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr))
 
 !  Create parallel vectors.
 !   - Here, the parallel partitioning of the vector is determined by
@@ -147,14 +138,14 @@
 !     and VecCreate() are used with the same communicator.
 !   - Note: We form 1 vector from scratch and then duplicate as needed.
 
-      call VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,u,ierr)
-      call VecDuplicate(u,b,ierr)
-      call VecDuplicate(b,x,ierr)
+      PetscCallA(VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,u,ierr))
+      PetscCallA(VecDuplicate(u,b,ierr))
+      PetscCallA(VecDuplicate(b,x,ierr))
 
 !  Set exact solution; then compute right-hand-side vector.
 
-      call VecSet(u,one,ierr)
-      call MatMult(A,u,b,ierr)
+      PetscCallA(VecSet(u,one,ierr))
+      PetscCallA(MatMult(A,u,b,ierr))
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !         Create the linear solver and set various options
@@ -162,43 +153,43 @@
 
 !  Create linear solver context
 
-      call KSPCreate(PETSC_COMM_WORLD,ksp,ierr)
+      PetscCallA(KSPCreate(PETSC_COMM_WORLD,ksp,ierr))
 
 !  Set operators. Here the matrix that defines the linear system
 !  also serves as the preconditioning matrix.
 
-      call KSPSetOperators(ksp,A,A,ierr)
+      PetscCallA(KSPSetOperators(ksp,A,A,ierr))
 
 !  Set linear solver defaults for this problem (optional).
 !   - By extracting the KSP and PC contexts from the KSP context,
-!     we can then directly directly call any KSP and PC routines
+!     we can then directly call any KSP and PC routines
 !     to set various options.
 
-      call KSPGetPC(ksp,pc,ierr)
+      PetscCallA(KSPGetPC(ksp,pc,ierr))
       tol = 1.e-7
-      call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_REAL,PETSC_DEFAULT_REAL,PETSC_DEFAULT_INTEGER,ierr)
+      PetscCallA(KSPSetTolerances(ksp,tol,PETSC_DEFAULT_REAL,PETSC_DEFAULT_REAL,PETSC_DEFAULT_INTEGER,ierr))
 
 !
 !  Set a user-defined shell preconditioner if desired
 !
-      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-user_defined_pc',user_defined_pc,ierr)
+      PetscCallA(PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-user_defined_pc',user_defined_pc,ierr))
 
       if (user_defined_pc) then
 
 !  (Required) Indicate to PETSc that we are using a shell preconditioner
-         call PCSetType(pc,PCSHELL,ierr)
+         PetscCallA(PCSetType(pc,PCSHELL,ierr))
 
 !  (Required) Set the user-defined routine for applying the preconditioner
-         call PCShellSetApply(pc,SampleShellPCApply,ierr)
+         PetscCallA(PCShellSetApply(pc,SampleShellPCApply,ierr))
 
 !  (Optional) Do any setup required for the preconditioner
-         call PCShellSetSetUp(pc,SampleShellPCSetUp,ierr)
+         PetscCallA(PCShellSetSetUp(pc,SampleShellPCSetUp,ierr))
 
 !  (Optional) Frees any objects we created for the preconditioner
-         call PCShellSetDestroy(pc,SampleShellPCDestroy,ierr)
+         PetscCallA(PCShellSetDestroy(pc,SampleShellPCDestroy,ierr))
 
       else
-         call PCSetType(pc,PCJACOBI,ierr)
+         PetscCallA(PCSetType(pc,PCJACOBI,ierr))
       endif
 
 !  Set runtime options, e.g.,
@@ -207,13 +198,13 @@
 !  KSPSetFromOptions() is called _after_ any other customization
 !  routines.
 
-      call KSPSetFromOptions(ksp,ierr)
+      PetscCallA(KSPSetFromOptions(ksp,ierr))
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                      Solve the linear system
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      call KSPSolve(ksp,b,x,ierr)
+      PetscCallA(KSPSolve(ksp,b,x,ierr))
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                     Check solution and clean up
@@ -221,9 +212,9 @@
 
 !  Check the error
 
-      call VecAXPY(x,neg_one,u,ierr)
-      call VecNorm(x,NORM_2,norm,ierr)
-      call KSPGetIterationNumber(ksp,its,ierr)
+      PetscCallA(VecAXPY(x,neg_one,u,ierr))
+      PetscCallA(VecNorm(x,NORM_2,norm,ierr))
+      PetscCallA(KSPGetIterationNumber(ksp,its,ierr))
 
       if (rank .eq. 0) then
         if (norm .gt. 1.e-12) then
@@ -238,15 +229,15 @@
 !  Free work space.  All PETSc objects should be destroyed when they
 !  are no longer needed.
 
-      call KSPDestroy(ksp,ierr)
-      call VecDestroy(u,ierr)
-      call VecDestroy(x,ierr)
-      call VecDestroy(b,ierr)
-      call MatDestroy(A,ierr)
+      PetscCallA(KSPDestroy(ksp,ierr))
+      PetscCallA(VecDestroy(u,ierr))
+      PetscCallA(VecDestroy(x,ierr))
+      PetscCallA(VecDestroy(b,ierr))
+      PetscCallA(MatDestroy(A,ierr))
 
 !  Always call PetscFinalize() before exiting a program.
 
-      call PetscFinalize(ierr)
+      PetscCallA(PetscFinalize(ierr))
       end
 
 !/***********************************************************************/
@@ -278,10 +269,10 @@
       Mat     pmat
       PetscErrorCode ierr
 
-      call PCGetOperators(pc,PETSC_NULL_MAT,pmat,ierr)
-      call MatCreateVecs(pmat,diag,PETSC_NULL_VEC,ierr)
-      call MatGetDiagonal(pmat,diag,ierr)
-      call VecReciprocal(diag,ierr)
+      PetscCallA(PCGetOperators(pc,PETSC_NULL_MAT,pmat,ierr))
+      PetscCallA(MatCreateVecs(pmat,diag,PETSC_NULL_VEC,ierr))
+      PetscCallA(MatGetDiagonal(pmat,diag,ierr))
+      PetscCallA(VecReciprocal(diag,ierr))
 
       end
 
@@ -311,7 +302,7 @@
       Vec     x,y
       PetscErrorCode ierr
 
-      call VecPointwiseMult(y,x,diag,ierr)
+      PetscCallA(VecPointwiseMult(y,x,diag,ierr))
 
       end
 
@@ -340,7 +331,7 @@
 !  Normally we would recommend storing all the work data (like diag) in
 !  the context set with PCShellSetContext()
 
-      call VecDestroy(diag,ierr)
+      PetscCallA(VecDestroy(diag,ierr))
 
       end
 

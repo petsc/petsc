@@ -1,8 +1,5 @@
 -include ../../../../../../petscdir.mk
-ALL: lib
 
-CFLAGS    =
-FFLAGS    =
 SOURCEC   = spacesubspace.c
 SOURCEF   =
 LIBBASE   = libpetscdm

@@ -11,50 +11,49 @@ int main(int argc,char **args)
   PetscRandom    rctx;
   PetscReal      norm;
   PetscInt       i,j,k,l,n = 27,its,bs = 2,Ii,J;
-  PetscErrorCode ierr;
   PetscBool      test_hermitian = PETSC_FALSE, convert = PETSC_FALSE;
   PetscScalar    v;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-herm",&test_hermitian,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-conv",&convert,NULL);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-herm",&test_hermitian,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-conv",&convert,NULL));
 
-  ierr = MatCreate(PETSC_COMM_SELF,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,n*bs,n*bs,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSetBlockSize(A,bs);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATSEQSBAIJ);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatSeqSBAIJSetPreallocation(A,bs,n,NULL);CHKERRQ(ierr);
-  ierr = MatSeqBAIJSetPreallocation(A,bs,n,NULL);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(A,n*bs,NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(A,n*bs,NULL,n*bs,NULL);CHKERRQ(ierr);
+  PetscCall(MatCreate(PETSC_COMM_SELF,&A));
+  PetscCall(MatSetSizes(A,n*bs,n*bs,PETSC_DETERMINE,PETSC_DETERMINE));
+  PetscCall(MatSetBlockSize(A,bs));
+  PetscCall(MatSetType(A,MATSEQSBAIJ));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatSeqSBAIJSetPreallocation(A,bs,n,NULL));
+  PetscCall(MatSeqBAIJSetPreallocation(A,bs,n,NULL));
+  PetscCall(MatSeqAIJSetPreallocation(A,n*bs,NULL));
+  PetscCall(MatMPIAIJSetPreallocation(A,n*bs,NULL,n*bs,NULL));
 
-  ierr = PetscRandomCreate(PETSC_COMM_SELF,&rctx);CHKERRQ(ierr);
+  PetscCall(PetscRandomCreate(PETSC_COMM_SELF,&rctx));
   for (i=0; i<n; i++) {
     for (j=i; j<n; j++) {
-      ierr = PetscRandomGetValue(rctx,&v);CHKERRQ(ierr);
+      PetscCall(PetscRandomGetValue(rctx,&v));
       if (PetscRealPart(v) < .1 || i == j) {
         for (k=0; k<bs; k++) {
           for (l=0; l<bs; l++) {
             Ii = i*bs + k;
             J = j*bs + l;
-            ierr = PetscRandomGetValue(rctx,&v);CHKERRQ(ierr);
+            PetscCall(PetscRandomGetValue(rctx,&v));
             if (Ii == J) v = PetscRealPart(v+3*n*bs);
-            ierr = MatSetValue(A,Ii,J,v,INSERT_VALUES);CHKERRQ(ierr);
+            PetscCall(MatSetValue(A,Ii,J,v,INSERT_VALUES));
             if (test_hermitian) {
-              ierr = MatSetValue(A,J,Ii,PetscConj(v),INSERT_VALUES);CHKERRQ(ierr);
+              PetscCall(MatSetValue(A,J,Ii,PetscConj(v),INSERT_VALUES));
             } else {
-              ierr = MatSetValue(A,J,Ii,v,INSERT_VALUES);CHKERRQ(ierr);
+              PetscCall(MatSetValue(A,J,Ii,v,INSERT_VALUES));
             }
           }
         }
       }
     }
   }
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
   /* With complex numbers:
      - PETSc cholesky does not support hermitian matrices
@@ -62,29 +61,29 @@ int main(int argc,char **args)
      - SUPERLU_DIST seems supporting both
   */
   if (test_hermitian) {
-    ierr = MatSetOption(A,MAT_HERMITIAN,PETSC_TRUE);CHKERRQ(ierr);
+    PetscCall(MatSetOption(A,MAT_HERMITIAN,PETSC_TRUE));
   }
 
   {
     Mat M;
-    ierr = MatComputeOperator(A,MATAIJ,&M);CHKERRQ(ierr);
-    ierr = MatViewFromOptions(M,NULL,"-expl_view");CHKERRQ(ierr);
-    ierr = MatDestroy(&M);CHKERRQ(ierr);
+    PetscCall(MatComputeOperator(A,MATAIJ,&M));
+    PetscCall(MatViewFromOptions(M,NULL,"-expl_view"));
+    PetscCall(MatDestroy(&M));
   }
 
   A2 = NULL;
   if (convert) {
-    ierr = MatConvert(A,MATAIJ,MAT_INITIAL_MATRIX,&A2);CHKERRQ(ierr);
+    PetscCall(MatConvert(A,MATAIJ,MAT_INITIAL_MATRIX,&A2));
   }
 
-  ierr = VecCreate(PETSC_COMM_SELF,&u);CHKERRQ(ierr);
-  ierr = VecSetSizes(u,PETSC_DECIDE,n*bs);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(u);CHKERRQ(ierr);
-  ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
-  ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
+  PetscCall(VecCreate(PETSC_COMM_SELF,&u));
+  PetscCall(VecSetSizes(u,PETSC_DECIDE,n*bs));
+  PetscCall(VecSetFromOptions(u));
+  PetscCall(VecDuplicate(u,&b));
+  PetscCall(VecDuplicate(b,&x));
 
-  ierr = VecSet(u,1.0);CHKERRQ(ierr);
-  ierr = MatMult(A,u,b);CHKERRQ(ierr);
+  PetscCall(VecSet(u,1.0));
+  PetscCall(MatMult(A,u,b));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                 Create the linear solver and set various options
@@ -93,20 +92,20 @@ int main(int argc,char **args)
   /*
      Create linear solver context
   */
-  ierr = KSPCreate(PETSC_COMM_SELF,&ksp);CHKERRQ(ierr);
+  PetscCall(KSPCreate(PETSC_COMM_SELF,&ksp));
 
   /*
      Set operators.
   */
-  ierr = KSPSetOperators(ksp,A2 ? A2 : A,A);CHKERRQ(ierr);
+  PetscCall(KSPSetOperators(ksp,A2 ? A2 : A,A));
 
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  PetscCall(KSPSetFromOptions(ksp));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                       Solve the linear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+  PetscCall(KSPSolve(ksp,b,x));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                       Check solution and clean up
@@ -115,9 +114,9 @@ int main(int argc,char **args)
   /*
      Check the error
   */
-  ierr = VecAXPY(x,-1.0,u);CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
+  PetscCall(VecAXPY(x,-1.0,u));
+  PetscCall(VecNorm(x,NORM_2,&norm));
+  PetscCall(KSPGetIterationNumber(ksp,&its));
 
   /*
      Print convergence information.  PetscPrintf() produces a single
@@ -125,20 +124,20 @@ int main(int argc,char **args)
      An alternative is PetscFPrintf(), which prints to a file.
   */
   if (norm > 100*PETSC_SMALL) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Norm of residual %g iterations %D bs %D\n",(double)norm,its,bs);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"Norm of residual %g iterations %" PetscInt_FMT " bs %" PetscInt_FMT "\n",(double)norm,its,bs));
   }
 
   /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = MatDestroy(&A2);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(VecDestroy(&u));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&b));
+  PetscCall(MatDestroy(&A));
+  PetscCall(MatDestroy(&A2));
+  PetscCall(PetscRandomDestroy(&rctx));
 
   /*
      Always call PetscFinalize() before exiting a program.  This routine
@@ -146,8 +145,8 @@ int main(int argc,char **args)
        - provides summary and diagnostic information if certain runtime
          options are chosen (e.g., -log_view).
   */
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

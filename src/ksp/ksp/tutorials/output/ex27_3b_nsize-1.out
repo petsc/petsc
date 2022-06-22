@@ -1,21 +1,21 @@
   0 KSP Residual norm < 1.e-11
 Linear solve converged due to CONVERGED_ATOL iterations 0
-KSP Object: 1 MPI processes
+KSP Object: 1 MPI process
   type: cg
   maximum iterations=10, nonzero initial guess
   tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
   left preconditioning
   using PRECONDITIONED norm type for convergence test
-PC Object: 1 MPI processes
+PC Object: 1 MPI process
   type: none
   linear system matrix followed by preconditioner matrix:
-  Mat Object: A 1 MPI processes
+  Mat Object: A 1 MPI process
     type: seqaij
     rows=4, cols=4
     total: nonzeros=10, allocated nonzeros=10
     total number of mallocs used during MatSetValues calls=0
       not using I-node routines
-  Mat Object: 1 MPI processes
+  Mat Object: 1 MPI process
     type: normalh
     rows=4, cols=4
 KSP type: cg

@@ -4,38 +4,34 @@
 #include <petscdmplex.h> /*I      "petscdmplex.h"    I*/
 #include <petscts.h>
 
-PETSC_EXTERN PetscErrorCode LandauPrintNorms(Vec, PetscInt);
-PETSC_EXTERN PetscErrorCode LandauCreateVelocitySpace(MPI_Comm,PetscInt,const char[],Vec*,Mat*,DM*);
-PETSC_EXTERN PetscErrorCode LandauDestroyVelocitySpace(DM*);
-PETSC_EXTERN PetscErrorCode LandauAddMaxwellians(DM, Vec, PetscReal, PetscReal[], PetscReal[], PetscInt, PetscInt, void *);
-PETSC_EXTERN PetscErrorCode LandauCreateMassMatrix(DM dm, Mat *Amat);
-PETSC_EXTERN PetscErrorCode LandauIFunction(TS, PetscReal,Vec,Vec,Vec,void *);
-PETSC_EXTERN PetscErrorCode LandauIJacobian(TS, PetscReal,Vec,Vec,PetscReal,Mat,Mat,void *);
+PETSC_EXTERN PetscErrorCode DMPlexLandauPrintNorms(Vec, PetscInt);
+PETSC_EXTERN PetscErrorCode DMPlexLandauCreateVelocitySpace(MPI_Comm,PetscInt,const char[],Vec*,Mat*,DM*);
+PETSC_EXTERN PetscErrorCode DMPlexLandauDestroyVelocitySpace(DM*);
+PETSC_EXTERN PetscErrorCode DMPlexLandauAddMaxwellians(DM, Vec, PetscReal, PetscReal[], PetscReal[], PetscInt, PetscInt, void *);
+PETSC_EXTERN PetscErrorCode DMPlexLandauCreateMassMatrix(DM dm, Mat *Amat);
+PETSC_EXTERN PetscErrorCode DMPlexLandauIFunction(TS, PetscReal,Vec,Vec,Vec,void *);
+PETSC_EXTERN PetscErrorCode DMPlexLandauIJacobian(TS, PetscReal,Vec,Vec,PetscReal,Mat,Mat,void *);
+
+typedef int LandauIdx;
 
 /* the Fokker-Planck-Landau context */
-#if !defined(LANDAU_DIM)
-#define LANDAU_DIM 2
-#endif
-
 #if !defined(LANDAU_MAX_SPECIES)
-#if LANDAU_DIM==2
+#if defined(PETSC_USE_DMLANDAU_2D)
 #define LANDAU_MAX_SPECIES 10
 #define LANDAU_MAX_GRIDS 3
 #else
 #define LANDAU_MAX_SPECIES 3
-#define LANDAU_MAX_GRIDS 2
+#define LANDAU_MAX_GRIDS 3
 #endif
 #else
 #define LANDAU_MAX_GRIDS 3
 #endif
-
-#define LANDAU_MAX_BATCH_SZ 320
 
 #if !defined(LANDAU_MAX_Q)
 #if defined(LANDAU_MAX_NQ)
 #error"LANDAU_MAX_NQ but not LANDAU_MAX_Q. Use -DLANDAU_MAX_Q=4 for Q3 elements"
 #endif
-#if LANDAU_DIM==2
+#if defined(PETSC_USE_DMLANDAU_2D)
 #define LANDAU_MAX_Q 5
 #else
 #define LANDAU_MAX_Q 3
@@ -44,12 +40,16 @@ PETSC_EXTERN PetscErrorCode LandauIJacobian(TS, PetscReal,Vec,Vec,PetscReal,Mat,
 #undef LANDAU_MAX_NQ
 #endif
 
-#if LANDAU_DIM==2
+#if defined(PETSC_USE_DMLANDAU_2D)
 #define LANDAU_MAX_Q_FACE LANDAU_MAX_Q
 #define LANDAU_MAX_NQ (LANDAU_MAX_Q*LANDAU_MAX_Q)
+#define LANDAU_MAX_BATCH_SZ 320
+#define LANDAU_DIM 2
 #else
 #define LANDAU_MAX_Q_FACE (LANDAU_MAX_Q*LANDAU_MAX_Q)
 #define LANDAU_MAX_NQ (LANDAU_MAX_Q*LANDAU_MAX_Q*LANDAU_MAX_Q)
+#define LANDAU_MAX_BATCH_SZ 32
+#define LANDAU_DIM 3
 #endif
 
 typedef enum {LANDAU_CUDA, LANDAU_KOKKOS, LANDAU_CPU} LandauDeviceType;
@@ -80,6 +80,13 @@ typedef struct {
   void  *ipf_offset; // for each grid, but same for all batched vertices
   void  *ipfdf_data; // for each grid, but same for all batched vertices
   void  *maps; // for each grid, but same for all batched vertices
+  // COO
+  void             *coo_elem_offsets;
+  void             *coo_elem_point_offsets;
+  void             *coo_elem_fullNb;
+  LandauIdx        coo_n_cellsTot;
+  LandauIdx        coo_size;
+  LandauIdx        coo_max_fullnb;
 } LandauStaticData;
 
 typedef enum {LANDAU_EX2_TSSOLVE, LANDAU_MATRIX_TOTAL, LANDAU_OPERATOR, LANDAU_JACOBIAN_COUNT, LANDAU_JACOBIAN, LANDAU_MASS, LANDAU_F_DF, LANDAU_KERNEL, KSP_FACTOR, KSP_SOLVE, LANDAU_NUM_TIMERS} LandauOMPTimers;
@@ -139,7 +146,8 @@ typedef struct {
   PetscErrorCode (*seqaij_multtranspose)(Mat,Vec,Vec);
   PetscErrorCode (*seqaij_solve)(Mat,Vec,Vec);
   PetscErrorCode (*seqaij_getdiagonal)(Mat,Vec);
-  //
+  /* COO */
+  PetscBool        coo_assembly;
   /* cache */
   Mat              J;
   Mat              M;
@@ -148,7 +156,6 @@ typedef struct {
   void             *data;
   /* computing */
   LandauDeviceType deviceType;
-  PetscInt         subThreadBlockSize;
   DM               pack;
   DM               plex[LANDAU_MAX_GRIDS];
   LandauStaticData SData_d; /* static geometric data on device */
@@ -156,7 +163,7 @@ typedef struct {
   PetscInt         verbose;
   PetscLogEvent    events[20];
   PetscLogStage    stage;
-  PetscBool        aux_bool;  /* helper */
+  PetscObjectState norm_state;
   PetscInt         batch_sz;
   PetscInt         batch_view_idx;
 } LandauCtx;
@@ -170,10 +177,9 @@ typedef struct {
 #define LAND_MOFFSET(_b,_g,_nbch,_ngrid,_mat_off) (_nbch*_mat_off[_g] + _b*(_mat_off[_g+1] - _mat_off[_g]))
 #endif
 
-typedef int LandauIdx;
 typedef struct {
   PetscReal scale;
-  LandauIdx gid;   // Lanadu matrix index (<10,000)
+  LandauIdx gid;   // Landau matrix index (<10,000)
 } pointInterpolationP4est;
 typedef struct _lP4estVertexMaps {
   LandauIdx                (*gIdx)[LANDAU_MAX_SPECIES][LANDAU_MAX_NQ]; // #elems *  LANDAU_MAX_NQ (spoof for max , Nb) on device,
@@ -182,7 +188,6 @@ typedef struct _lP4estVertexMaps {
   LandauIdx                num_face;  // (Q or Q^2 for 3D)
   LandauDeviceType         deviceType;
   PetscInt                 Nf;
-  PetscInt                 Nq;
   pointInterpolationP4est (*c_maps)[LANDAU_MAX_Q_FACE];
   struct _lP4estVertexMaps*d_self;
   void                    *vp1,*vp2,*vp3;
@@ -192,7 +197,7 @@ typedef struct _lP4estVertexMaps {
 PETSC_EXTERN PetscErrorCode LandauCreateColoring(Mat, DM, PetscContainer *);
 #if defined(PETSC_HAVE_CUDA)
 PETSC_EXTERN PetscErrorCode LandauCUDAJacobian(DM[], const PetscInt, const PetscInt, const PetscInt, const PetscInt[], PetscReal[], PetscScalar[], const PetscScalar[],
-                                               const LandauStaticData *, const PetscInt, const PetscReal, const PetscLogEvent[],const PetscInt[], const PetscInt[], Mat[], Mat);
+                                               const LandauStaticData *, const PetscReal, const PetscLogEvent[],const PetscInt[], const PetscInt[], Mat[], Mat);
 PETSC_EXTERN PetscErrorCode LandauCUDACreateMatMaps(P4estVertexMaps *, pointInterpolationP4est (*)[LANDAU_MAX_Q_FACE], PetscInt[], PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode LandauCUDADestroyMatMaps(P4estVertexMaps *, PetscInt);
 PETSC_EXTERN PetscErrorCode LandauCUDAStaticDataSet(DM, const PetscInt, const PetscInt, const PetscInt, PetscInt[], PetscInt[], PetscInt[], PetscReal [], PetscReal [], PetscReal[], PetscReal[], PetscReal[], PetscReal[], PetscReal[],
@@ -201,7 +206,7 @@ PETSC_EXTERN PetscErrorCode LandauCUDAStaticDataClear(LandauStaticData *);
 #endif
 #if defined(PETSC_HAVE_KOKKOS)
 PETSC_EXTERN PetscErrorCode LandauKokkosJacobian(DM[], const PetscInt, const PetscInt, const PetscInt, const PetscInt[], PetscReal[], PetscScalar[],  const PetscScalar[],
-                                                 const LandauStaticData *, const PetscInt, const PetscReal, const PetscLogEvent[], const PetscInt[], const PetscInt[], Mat[], Mat);
+                                                 const LandauStaticData *, const PetscReal, const PetscLogEvent[], const PetscInt[], const PetscInt[], Mat[], Mat);
 PETSC_EXTERN PetscErrorCode LandauKokkosCreateMatMaps(P4estVertexMaps *, pointInterpolationP4est (*)[LANDAU_MAX_Q_FACE], PetscInt[], PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode LandauKokkosDestroyMatMaps(P4estVertexMaps *, PetscInt);
 PETSC_EXTERN PetscErrorCode LandauKokkosStaticDataSet(DM, const PetscInt, const PetscInt, const PetscInt, PetscInt[], PetscInt[], PetscInt[], PetscReal [], PetscReal [], PetscReal[], PetscReal[], PetscReal[], PetscReal[], PetscReal[],

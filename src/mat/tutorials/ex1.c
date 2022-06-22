@@ -3,14 +3,6 @@ static char help[] = "Reads a PETSc matrix and vector from a file and reorders i
   -f0 <input_file> : first file to load (small system)\n\
   -f1 <input_file> : second file to load (larger system)\n\n";
 
-/*T
-   Concepts: Mat^ordering a matrix - loading a binary matrix and vector;
-   Concepts: Mat^loading a binary matrix and vector;
-   Concepts: Vectors^loading a binary vector;
-   Concepts: PetscLog^preloading executable
-   Processors: 1
-T*/
-
 /*
   Include "petscmat.h" so that we can use matrices.
   automatically includes:
@@ -26,17 +18,16 @@ int main(int argc,char **args)
   PetscViewer     fd;                     /* viewer */
   char            file[PETSC_MAX_PATH_LEN];           /* input file name */
   IS              isrow,iscol;            /* row and column permutations */
-  PetscErrorCode  ierr;
   MatOrderingType rtype = MATORDERINGRCM;
   PetscBool       flg;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   /*
      Determine files from which we read the two linear systems
      (matrix and right-hand-side vector).
   */
-  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg);CHKERRQ(ierr);
-  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f option");
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
+  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f option");
 
   /* -----------------------------------------------------------
                   Beginning of loop
@@ -59,29 +50,29 @@ int main(int argc,char **args)
      Open binary file.  Note that we use FILE_MODE_READ to indicate
      reading from this file.
   */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd));
 
   /*
      Load the matrix; then destroy the viewer.
   */
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
-  ierr = MatLoad(A,fd);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetType(A,MATSEQAIJ));
+  PetscCall(MatLoad(A,fd));
+  PetscCall(PetscViewerDestroy(&fd));
 
-  ierr = MatGetOrdering(A,rtype,&isrow,&iscol);CHKERRQ(ierr);
-  ierr = ISView(isrow,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscCall(MatGetOrdering(A,rtype,&isrow,&iscol));
+  PetscCall(ISView(isrow,PETSC_VIEWER_STDOUT_WORLD));
 
   /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = ISDestroy(&isrow);CHKERRQ(ierr);
-  ierr = ISDestroy(&iscol);CHKERRQ(ierr);
+  PetscCall(MatDestroy(&A));
+  PetscCall(ISDestroy(&isrow));
+  PetscCall(ISDestroy(&iscol));
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -2,31 +2,31 @@
 -5.9920090150357294e-09
 3.1073484590513650e-08
 ];
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 -0.5
 -3.5
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 -0.5734
 -1.40028
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.14137
 0.401015
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.00917948
 0.0390686
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1.83164e-05
 0.000369613
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 -5.99201e-09
 3.10735e-08
-%Vec Object: 1 MPI processes
+%Vec Object: 1 MPI process
 %  type: seq
 -4.9999999999999967e-01
 -3.5000000000000000e+00
@@ -51,27 +51,27 @@ Vec Object: 1 MPI processes
 -5.9920090150357294e-09
 3.1073484590513650e-08
 ];
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 -0.5
 -3.5
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 -0.5734
 -1.40028
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.14137
 0.401015
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.00917948
 0.0390686
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1.83164e-05
 0.000369613
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 -5.99201e-09
 3.10735e-08

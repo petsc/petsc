@@ -3,6 +3,8 @@
 
 #include <petscmat.h>
 
+/* SUBMANSEC = Mat */
+
 #define CSRDataStructure(datatype)  \
   PetscInt    *i; \
   PetscInt    *j; \
@@ -107,7 +109,7 @@ struct _n_SplitCSRMat {
 }
 
 #if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_SYCL)
-#define SETERR return(printf("[%d] ERROR in %s() at %s:%d: Location (%ld,%ld) not found!\n",d_mat->rank,__func__,__FILE__,__LINE__,(long int)im[i],(long int)in[j]),PETSC_ERR_ARG_OUTOFRANGE)
+#define SETERR return(printf("[%d] ERROR in %s() at %s:%d: Location (%ld,%ld) not found! v=%g\n",d_mat->rank,__func__,__FILE__,__LINE__,(long int)im[i],(long int)in[j],PetscRealPart(value)),PETSC_ERR_ARG_OUTOFRANGE)
 #else
 #define SETERR return PETSC_ERR_ARG_OUTOFRANGE
 #endif
@@ -130,13 +132,15 @@ static
 .   n - number of columns to insert or add to
 .   in - the columns to insert or add to
 .   v - the values to insert or add to the matrix (treated as a  by n row oriented dense array
-+   is - either INSERT_VALUES or ADD_VALUES
+-   is - either INSERT_VALUES or ADD_VALUES
 
     Notes:
       Any row or column indices that are outside the bounds of the matrix on the rank are discarded
 
-.seealso: MatSetValues(), MatCreate(), MatCreateDenseCUDA(), MatCreateAIJCUSPARSE(), MatKokkosGetDeviceMatWrite(),
-          MatCUSPARSEGetDeviceMatWrite()
+   Level: advanced
+
+.seealso: `MatSetValues()`, `MatCreate()`, `MatCreateDenseCUDA()`, `MatCreateAIJCUSPARSE()`, `MatKokkosGetDeviceMatWrite()`,
+          `MatCUSPARSEGetDeviceMatWrite()`
 @*/
 PetscErrorCode MatSetValuesDevice(PetscSplitCSRDataStructure d_mat, PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const PetscScalar v[],InsertMode is)
 {

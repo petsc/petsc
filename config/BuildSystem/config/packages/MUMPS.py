@@ -3,13 +3,13 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.version          = '5.4.1'
+    self.version          = '5.5.0'
     self.minversion       = '5.2.1'
     self.versionname      = 'MUMPS_VERSION'
     self.requiresversion  = 1
-    self.gitcommit        = 'v'+self.version+'-p1'
-    self.download         = ['git://https://bitbucket.org/petsc/pkg-mumps.git',
-                             'https://bitbucket.org/petsc/pkg-mumps/get/'+self.gitcommit+'.tar.gz']
+    self.gitcommit        = 'v'+self.version
+    self.download         = ['http://mumps.enseeiht.fr/MUMPS_'+self.version+'.tar.gz',
+                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/MUMPS_'+self.version+'.tar.gz']
     self.downloaddirnames = ['petsc-pkg-mumps','MUMPS']
     self.liblist          = [['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libmumps_common.a','libpord.a'],
                             ['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libmumps_common.a','libpord.a','libpthread.a'],
@@ -41,13 +41,13 @@ class Configure(config.package.Package):
     self.ptscotch         = framework.require('config.packages.PTScotch',self)
     self.scalapack        = framework.require('config.packages.scalapack',self)
     self.hwloc            = framework.require('config.packages.hwloc',self)
+    self.openmp           = framework.require('config.packages.openmp',self)
     if self.argDB['with-mumps-serial']:
       self.deps           = [self.blasLapack,self.flibs]
-      self.odeps          = [self.metis]
+      self.odeps          = [self.metis,self.openmp]
     else:
       self.deps           = [self.scalapack,self.mpi,self.blasLapack,self.flibs]
-      self.odeps          = [self.metis,self.parmetis,self.ptscotch,self.hwloc]
-    self.openmp           = framework.require('config.packages.openmp',self)
+      self.odeps          = [self.metis,self.parmetis,self.ptscotch,self.hwloc,self.openmp]
     return
 
   def configureLibrary(self):
@@ -167,12 +167,12 @@ class Configure(config.package.Package):
       except RuntimeError as e:
         pass
       try:
-        self.logPrintBox('Compiling Mumps; this may take several minutes')
+        self.logPrintBox('Compiling MUMPS; this may take several minutes')
         output2,err2,ret2 = config.package.Package.executeShellCommand(self.make.make_jnp+' prerequisites', cwd=self.packageDir, timeout=2500, log = self.log)
         output3,err3,ret3 = config.package.Package.executeShellCommand(self.make.make_jnp+' all', cwd=os.path.join(self.packageDir,'src'), timeout=2500, log = self.log)
         libDir     = os.path.join(self.installDir, self.libdir)
         includeDir = os.path.join(self.installDir, self.includedir)
-        self.logPrintBox('Installing Mumps; this may take several minutes')
+        self.logPrintBox('Installing MUMPS; this may take several minutes')
         output,err,ret = config.package.Package.executeShellCommandSeq(
           ['mkdir -p '+libDir+' '+includeDir,
            'cp -f lib/*.* '+libDir+'/.',

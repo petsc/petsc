@@ -1,10 +1,7 @@
 -include ../../../../../petscdir.mk
 #requirespackage  'PETSC_HAVE_PARMS'
 
-ALL: lib
-
 CFLAGS    = ${PARMS_INCLUDE}
-FFLAGS    =
 SOURCEC   = parms.c
 SOURCEF   =
 SOURCEH   =

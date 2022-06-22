@@ -137,6 +137,33 @@ cdef class SF(Object):
         CHKERR( PetscSFCreateEmbeddedLeafSF(self.sf, nleaves, cselected, &sf.sf) )
         return sf
 
+    def createSectionSF(self, Section rootSection, remoteOffsets, Section leafSection):
+        cdef SF sectionSF = SF()
+        cdef PetscInt noffsets = 0
+        cdef PetscInt *cremoteOffsets = NULL
+        if remoteOffsets is not None:
+            remoteOffsets = iarray_i(remoteOffsets, &noffsets, &cremoteOffsets)
+        CHKERR( PetscSFCreateSectionSF(self.sf, rootSection.sec, cremoteOffsets,
+                                       leafSection.sec, &sectionSF.sf) )
+        return sectionSF
+
+    def distributeSection(self, Section rootSection, Section leafSection=None):
+        cdef PetscInt lpStart
+        cdef PetscInt lpEnd
+        cdef PetscInt *cremoteOffsets = NULL
+        cdef ndarray remoteOffsets
+        cdef MPI_Comm ccomm = def_Comm(self.comm, PETSC_COMM_DEFAULT)
+        if leafSection is None:
+            leafSection = Section()
+        if leafSection.sec == NULL:
+            CHKERR( PetscSectionCreate(ccomm, &leafSection.sec) )
+        CHKERR( PetscSFDistributeSection(self.sf, rootSection.sec,
+                                         &cremoteOffsets, leafSection.sec) )
+        CHKERR( PetscSectionGetChart(leafSection.sec, &lpStart, &lpEnd) )
+        remoteOffsets = array_i(lpEnd-lpStart, cremoteOffsets)
+        CHKERR( PetscFree(cremoteOffsets) )
+        return (remoteOffsets, leafSection)
+
     def compose(self, SF sf):
         cdef SF csf = SF()
         CHKERR( PetscSFCompose(self.sf, sf.sf, &csf.sf))

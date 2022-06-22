@@ -3,14 +3,13 @@ of plain strain linear elasticity.  E=1.0, nu=0.25.\n\
 Unit square domain with Dirichelet boundary condition on the y=0 side only.\n\
 Load of 1.0 in x direction on all nodes (not a true uniform load).\n\
   -ne <size>      : number of (square) quadrilateral elements in each dimension\n\
-  -alpha <v>      : scaling of material coeficient in embedded circle\n\n";
+  -alpha <v>      : scaling of material coefficient in embedded circle\n\n";
 
 #include <petscksp.h>
 
 int main(int argc,char **args)
 {
   Mat            Amat;
-  PetscErrorCode ierr;
   PetscInt       i,m,M,its,Istart,Iend,j,Ii,ix,ne=4;
   PetscReal      x,y,h;
   Vec            xx,bb;
@@ -32,37 +31,37 @@ int main(int argc,char **args)
                              {6.666666666666667E-02, 0.0000E-00, -2.666666666666667E-01,  2.0000E-01, -3.333333333333333E-01,  0.0000E-00, 5.333333333333333E-01, -2.0000E-01 },
                              {0.0000E-00, -3.333333333333333E-01,  2.0000E-01, -2.666666666666667E-01, 0.0000E-00,  6.666666666666667E-02, -2.0000E-01,  5.333333333333333E-01 } };
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   comm = PETSC_COMM_WORLD;
-  ierr = MPI_Comm_rank(comm, &mype);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(comm, &npe);CHKERRMPI(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-ne",&ne,NULL);CHKERRQ(ierr);
+  PetscCallMPI(MPI_Comm_rank(comm, &mype));
+  PetscCallMPI(MPI_Comm_size(comm, &npe));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-ne",&ne,NULL));
   h    = 1./ne;
   /* ne*ne; number of global elements */
-  ierr = PetscOptionsGetReal(NULL,NULL,"-alpha",&soft_alpha,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-use_coordinates",&use_coords,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-alpha",&soft_alpha,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-use_coordinates",&use_coords,NULL));
   M    = 2*(ne+1)*(ne+1); /* global number of equations */
   m    = (ne+1)*(ne+1)/npe;
   if (mype==npe-1) m = (ne+1)*(ne+1) - (npe-1)*m;
   m *= 2;
   /* create stiffness matrix */
-  ierr = MatCreate(comm,&Amat);CHKERRQ(ierr);
-  ierr = MatSetSizes(Amat,m,m,M,M);CHKERRQ(ierr);
-  ierr = MatSetType(Amat,MATAIJ);CHKERRQ(ierr);
-  ierr = MatSetOption(Amat,MAT_SPD,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(Amat);CHKERRQ(ierr);
-  ierr = MatSetBlockSize(Amat,2);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(Amat,18,NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(Amat,18,NULL,18,NULL);CHKERRQ(ierr);
+  PetscCall(MatCreate(comm,&Amat));
+  PetscCall(MatSetSizes(Amat,m,m,M,M));
+  PetscCall(MatSetType(Amat,MATAIJ));
+  PetscCall(MatSetOption(Amat,MAT_SPD,PETSC_TRUE));
+  PetscCall(MatSetFromOptions(Amat));
+  PetscCall(MatSetBlockSize(Amat,2));
+  PetscCall(MatSeqAIJSetPreallocation(Amat,18,NULL));
+  PetscCall(MatMPIAIJSetPreallocation(Amat,18,NULL,18,NULL));
 #if defined(PETSC_HAVE_HYPRE)
-  ierr = MatHYPRESetPreallocation(Amat,18,NULL,18,NULL);CHKERRQ(ierr);
+  PetscCall(MatHYPRESetPreallocation(Amat,18,NULL,18,NULL));
 #endif
 
-  ierr = MatGetOwnershipRange(Amat,&Istart,&Iend);CHKERRQ(ierr);
-  PetscCheckFalse(m != Iend - Istart,PETSC_COMM_SELF,PETSC_ERR_PLIB,"m %D does not equal Iend %D - Istart %D",m,Iend,Istart);
+  PetscCall(MatGetOwnershipRange(Amat,&Istart,&Iend));
+  PetscCheck(m == Iend - Istart,PETSC_COMM_SELF,PETSC_ERR_PLIB,"m %" PetscInt_FMT " does not equal Iend %" PetscInt_FMT " - Istart %" PetscInt_FMT,m,Iend,Istart);
   /* Generate vectors */
-  ierr = MatCreateVecs(Amat,&xx,&bb);CHKERRQ(ierr);
-  ierr = VecSet(bb,.0);CHKERRQ(ierr);
+  PetscCall(MatCreateVecs(Amat,&xx,&bb));
+  PetscCall(VecSet(bb,.0));
   /* generate element matrices -- see ex56.c on how to use different data set */
   {
       DD[0][0] =  0.53333333333333321;
@@ -142,7 +141,7 @@ int main(int argc,char **args)
   }
   {
     PetscReal *coords;
-    ierr = PetscMalloc1(m,&coords);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(m,&coords));
     /* forms the element stiffness and coordinates */
     for (Ii = Istart/2, ix = 0; Ii < Iend/2; Ii++, ix++) {
       j = Ii/(ne+1); i = Ii%(ne+1);
@@ -161,107 +160,108 @@ int main(int argc,char **args)
           for (jj=0;jj<8;jj++) DD[ii][jj] = alpha*DD1[ii][jj];
         }
         if (j>0) {
-          ierr = MatSetValuesBlocked(Amat,4,idx,4,idx,(const PetscScalar*)DD,ADD_VALUES);CHKERRQ(ierr);
+          PetscCall(MatSetValuesBlocked(Amat,4,idx,4,idx,(const PetscScalar*)DD,ADD_VALUES));
         } else {
           /* a BC */
           for (ii=0; ii<8; ii++) {
             for (jj=0;jj<8;jj++) DD[ii][jj] = alpha*DD2[ii][jj];
           }
-          ierr = MatSetValuesBlocked(Amat,4,idx,4,idx,(const PetscScalar*)DD,ADD_VALUES);CHKERRQ(ierr);
+          PetscCall(MatSetValuesBlocked(Amat,4,idx,4,idx,(const PetscScalar*)DD,ADD_VALUES));
         }
       }
       if (j>0) {
         PetscScalar v  = h*h;
         PetscInt    jj = 2*Ii; /* load in x direction */
-        ierr = VecSetValues(bb,1,&jj,&v,INSERT_VALUES);CHKERRQ(ierr);
+        PetscCall(VecSetValues(bb,1,&jj,&v,INSERT_VALUES));
       }
     }
-    ierr = MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = VecAssemblyBegin(bb);CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(bb);CHKERRQ(ierr);
+    PetscCall(MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY));
+    PetscCall(VecAssemblyBegin(bb));
+    PetscCall(VecAssemblyEnd(bb));
 
     /* Setup solver */
-    ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-    ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+    PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+    PetscCall(KSPSetFromOptions(ksp));
 
     /* finish KSP/PC setup */
-    ierr = KSPSetOperators(ksp, Amat, Amat);CHKERRQ(ierr);
+    PetscCall(KSPSetOperators(ksp, Amat, Amat));
     if (use_coords) {
       PC pc;
 
-      ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
-      ierr = PCSetCoordinates(pc, 2, m/2, coords);CHKERRQ(ierr);
+      PetscCall(KSPGetPC(ksp, &pc));
+      PetscCall(PCSetCoordinates(pc, 2, m/2, coords));
     }
-    ierr = PetscFree(coords);CHKERRQ(ierr);
+    PetscCall(PetscFree(coords));
   }
 
   if (!PETSC_TRUE) {
     PetscViewer viewer;
-    ierr = PetscViewerASCIIOpen(comm, "Amat.m", &viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
-    ierr = MatView(Amat,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIOpen(comm, "Amat.m", &viewer));
+    PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_MATLAB));
+    PetscCall(MatView(Amat,viewer));
+    PetscCall(PetscViewerPopFormat(viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
   }
 
   /* solve */
 #if defined(PETSC_USE_LOG)
-  ierr = PetscLogStageRegister("Setup", &stage[0]);CHKERRQ(ierr);
-  ierr = PetscLogStageRegister("Solve", &stage[1]);CHKERRQ(ierr);
-  ierr = PetscLogStagePush(stage[0]);CHKERRQ(ierr);
+  PetscCall(PetscLogStageRegister("Setup", &stage[0]));
+  PetscCall(PetscLogStageRegister("Solve", &stage[1]));
+  PetscCall(PetscLogStagePush(stage[0]));
 #endif
-  ierr = KSPSetUp(ksp);CHKERRQ(ierr);
+  PetscCall(KSPSetUp(ksp));
 #if defined(PETSC_USE_LOG)
-  ierr = PetscLogStagePop();CHKERRQ(ierr);
+  PetscCall(PetscLogStagePop());
 #endif
 
-  ierr = VecSet(xx,.0);CHKERRQ(ierr);
+  PetscCall(VecSet(xx,.0));
 
 #if defined(PETSC_USE_LOG)
-  ierr = PetscLogStagePush(stage[1]);CHKERRQ(ierr);
+  PetscCall(PetscLogStagePush(stage[1]));
 #endif
-  ierr = KSPSolve(ksp, bb, xx);CHKERRQ(ierr);
+  PetscCall(KSPSolve(ksp, bb, xx));
 #if defined(PETSC_USE_LOG)
-  ierr = PetscLogStagePop();CHKERRQ(ierr);
+  PetscCall(PetscLogStagePop());
 #endif
 
-  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
+  PetscCall(KSPGetIterationNumber(ksp,&its));
 
   if (0) {
     PetscReal   norm,norm2;
     PetscViewer viewer;
     Vec         res;
 
-    ierr = PetscObjectGetComm((PetscObject)bb,&comm);CHKERRQ(ierr);
-    ierr = VecNorm(bb, NORM_2, &norm2);CHKERRQ(ierr);
+    PetscCall(PetscObjectGetComm((PetscObject)bb,&comm));
+    PetscCall(VecNorm(bb, NORM_2, &norm2));
 
-    ierr = VecDuplicate(xx, &res);CHKERRQ(ierr);
-    ierr = MatMult(Amat, xx, res);CHKERRQ(ierr);
-    ierr = VecAXPY(bb, -1.0, res);CHKERRQ(ierr);
-    ierr = VecDestroy(&res);CHKERRQ(ierr);
-    ierr = VecNorm(bb, NORM_2, &norm);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"[%d]%s |b-Ax|/|b|=%e, |b|=%e\n",0,PETSC_FUNCTION_NAME,norm/norm2,norm2);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIOpen(comm, "residual.m", &viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
-    ierr = VecView(bb,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    PetscCall(VecDuplicate(xx, &res));
+    PetscCall(MatMult(Amat, xx, res));
+    PetscCall(VecAXPY(bb, -1.0, res));
+    PetscCall(VecDestroy(&res));
+    PetscCall(VecNorm(bb, NORM_2, &norm));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"[%d]%s |b-Ax|/|b|=%e, |b|=%e\n",0,PETSC_FUNCTION_NAME,(double)(norm/norm2),(double)norm2));
+    PetscCall(PetscViewerASCIIOpen(comm, "residual.m", &viewer));
+    PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_MATLAB));
+    PetscCall(VecView(bb,viewer));
+    PetscCall(PetscViewerPopFormat(viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
   }
 
   /* Free work space */
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = VecDestroy(&xx);CHKERRQ(ierr);
-  ierr = VecDestroy(&bb);CHKERRQ(ierr);
-  ierr = MatDestroy(&Amat);CHKERRQ(ierr);
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(VecDestroy(&xx));
+  PetscCall(VecDestroy(&bb));
+  PetscCall(MatDestroy(&Amat));
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST
 
    test:
+      suffix: 1
       nsize: 4
       args: -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -use_coordinates -ksp_converged_reason -pc_gamg_esteig_ksp_max_it 5 -ksp_rtol 1.e-3 -ksp_monitor_short -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.2
       output_file: output/ex55_sa.out

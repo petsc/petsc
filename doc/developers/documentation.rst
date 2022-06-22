@@ -42,7 +42,7 @@ We suggest using a `Python 3 virtual environment <https://docs.python.org/3/tuto
    $ cd $PETSC_DIR
    $ python3 -m venv petsc-doc-env
    $ . petsc-doc-env/bin/activate
-   $ pip install -r doc/requirements.txt
+   $ python3 -m pip install -r doc/requirements.txt
 
 Then,
 
@@ -204,7 +204,7 @@ is tracked in the primary PETSc Git repository. However, image files are
 too large to directly track this way (especially because they persist in the integration branches' histories).
 
 Therefore, we store image files in a separate git repository and clone it when
-needed. Any new images required must added the currently-used branch of this repository.
+needed. Any new images required must be added to the currently-used branch of this repository.
 
 Image Guidelines
 ----------------

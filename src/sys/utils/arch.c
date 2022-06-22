@@ -24,19 +24,15 @@ $       call PetscGetArchType(str,ierr)
    Notes:
     This name is arbitrary and need not correspond to the physical hardware or the software running on the system.
 
-.seealso: PetscGetUserName(),PetscGetHostName()
+.seealso: `PetscGetUserName()`, `PetscGetHostName()`
 @*/
-PetscErrorCode  PetscGetArchType(char str[],size_t slen)
+PetscErrorCode  PetscGetArchType(char str[], size_t slen)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
 #if defined(PETSC_ARCH)
-  ierr = PetscStrncpy(str,PETSC_ARCH,slen-1);CHKERRQ(ierr);
-  str[slen-1] = 0;
+  PetscCall(PetscStrncpy(str,PETSC_ARCH,slen-1));
 #else
 #error "$PETSC_ARCH/include/petscconf.h is missing PETSC_ARCH"
 #endif
   PetscFunctionReturn(0);
 }
-

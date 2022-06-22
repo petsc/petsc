@@ -3,7 +3,7 @@ Label 'Orthogonal_Quality':
 [0]: 1 (1)
 [0]: 2 (1)
 [0]: 3 (1)
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 1.
 1.

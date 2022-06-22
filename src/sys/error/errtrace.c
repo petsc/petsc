@@ -28,7 +28,7 @@
    the calling sequence
 $     SETERRQ(comm,number,p,mess)
 
-.seealso:  PetscReturnErrorHandler()
+.seealso: `PetscReturnErrorHandler()`
  @*/
 PetscErrorCode  PetscIgnoreErrorHandler(MPI_Comm comm,int line,const char *fun,const char *file,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
 {
@@ -48,20 +48,19 @@ static char      version[256];
 */
 PetscErrorCode  PetscErrorPrintfInitialize(void)
 {
-  PetscErrorCode ierr;
   PetscBool      use_stdout = PETSC_FALSE,use_none = PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = PetscGetArchType(arch,sizeof(arch));CHKERRQ(ierr);
-  ierr = PetscGetHostName(hostname,sizeof(hostname));CHKERRQ(ierr);
-  ierr = PetscGetUserName(username,sizeof(username));CHKERRQ(ierr);
-  ierr = PetscGetProgramName(pname,sizeof(pname));CHKERRQ(ierr);
-  ierr = PetscGetDate(date,sizeof(date));CHKERRQ(ierr);
-  ierr = PetscGetVersion(version,sizeof(version));CHKERRQ(ierr);
+  PetscCall(PetscGetArchType(arch,sizeof(arch)));
+  PetscCall(PetscGetHostName(hostname,sizeof(hostname)));
+  PetscCall(PetscGetUserName(username,sizeof(username)));
+  PetscCall(PetscGetProgramName(pname,sizeof(pname)));
+  PetscCall(PetscGetDate(date,sizeof(date)));
+  PetscCall(PetscGetVersion(version,sizeof(version)));
 
-  ierr = PetscOptionsGetBool(NULL,NULL,"-error_output_stdout",&use_stdout,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-error_output_stdout",&use_stdout,NULL));
   if (use_stdout) PETSC_STDERR = PETSC_STDOUT;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-error_output_none",&use_none,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-error_output_none",&use_none,NULL));
   if (use_none) PetscErrorPrintf = PetscErrorPrintfNone;
   PetscErrorPrintfInitializeCalled = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -166,8 +165,8 @@ $     SETERRQ(comm,number,n,mess)
 
    Level: developer
 
-.seealso: PetscError(), PetscPushErrorHandler(), PetscPopErrorHandler(), PetscAttachDebuggerErrorHandler(),
-          PetscAbortErrorHandler(), PetscMPIAbortErrorHandler(), PetscReturnErrorHandler(), PetscEmacsClientErrorHandler()
+.seealso: `PetscError()`, `PetscPushErrorHandler()`, `PetscPopErrorHandler()`, `PetscAttachDebuggerErrorHandler()`,
+          `PetscAbortErrorHandler()`, `PetscMPIAbortErrorHandler()`, `PetscReturnErrorHandler()`, `PetscEmacsClientErrorHandler()`
  @*/
 PetscErrorCode  PetscTraceBackErrorHandler(MPI_Comm comm,int line,const char *fun,const char *file,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
 {
@@ -212,16 +211,19 @@ PetscErrorCode  PetscTraceBackErrorHandler(MPI_Comm comm,int line,const char *fu
       (*PetscErrorPrintf)("Configure options %s\n",petscconfigureoptions);
     }
     /* print line of stack trace */
-    (*PetscErrorPrintf)("#%d %s() at %s:%d\n",cnt++,fun,file,line);
-    PetscStrncmp(fun,"main",4,&ismain);
-    if (ismain) {
-      if ((n <= PETSC_ERR_MIN_VALUE) || (n >= PETSC_ERR_MAX_VALUE)) {
-        (*PetscErrorPrintf)("Reached the main program with an out-of-range error code %d. This should never happen\n",n);
+    if (fun) (*PetscErrorPrintf)("#%d %s() at %s:%d\n",cnt++,fun,file,line);
+    else  (*PetscErrorPrintf)("#%d %s:%d\n",cnt++,file,line);
+    if (fun) {
+      PetscStrncmp(fun,"main",4,&ismain);
+      if (ismain) {
+        if ((n <= PETSC_ERR_MIN_VALUE) || (n >= PETSC_ERR_MAX_VALUE)) {
+          (*PetscErrorPrintf)("Reached the main program with an out-of-range error code %d. This should never happen\n",n);
+        }
+        PetscOptionsViewError();
+        PetscErrorPrintfHilight();
+        (*PetscErrorPrintf)("----------------End of Error Message -------send entire error message to petsc-maint@mcs.anl.gov----------\n");
+        PetscErrorPrintfNormal();
       }
-      PetscOptionsViewError();
-      PetscErrorPrintfHilight();
-      (*PetscErrorPrintf)("----------------End of Error Message -------send entire error message to petsc-maint@mcs.anl.gov----------\n");
-      PetscErrorPrintfNormal();
     }
   } else {
     /* do not print error messages since process 0 will print them, sleep before aborting so will not accidentally kill process 0*/

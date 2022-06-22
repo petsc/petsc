@@ -1,7 +1,10 @@
 
 #if !defined(PETSCBAG_H)
 #define PETSCBAG_H
+
 #include <petscsys.h>
+
+/* SUBMANSEC = Sys */
 
 /*S
      PetscBag - PETSc object that manages a collection of user data including parameters.
@@ -19,15 +22,15 @@ $
 $      PetscBag     bag;
 $      MyParameters *params;
 $
-$      ierr = PetscBagCreate(PETSC_COMM_WORLD,sizeof(MyParameters),&bag);CHKERRQ(ierr);
-$      ierr = PetscBagGetData(bag,(void **)&params);CHKERRQ(ierr);
-$      ierr = PetscBagSetName(bag,"MyParameters");CHKERRQ(ierr);
-$      ierr = PetscBagRegisterInt(bag,&params.height,22,"height","Height of the water tower");CHKERRQ(ierr);
+$      PetscCall(PetscBagCreate(PETSC_COMM_WORLD,sizeof(MyParameters),&bag));
+$      PetscCall(PetscBagGetData(bag,(void **)&params));
+$      PetscCall(PetscBagSetName(bag,"MyParameters"));
+$      PetscCall(PetscBagRegisterInt(bag,&params.height,22,"height","Height of the water tower"));
 $
 
-.seealso:  PetscBagSetName(), PetscBagGetName(), PetscBagView(), PetscBagLoad(), PetscBagGetData()
-           PetscBagRegisterReal(), PetscBagRegisterInt(), PetscBagRegisterBool(), PetscBagRegisterScalar()
-           PetscBagSetFromOptions(), PetscBagRegisterVec(), PetscBagCreate(), PetscBagDestroy(), PetscBagRegisterEnum()
+.seealso: `PetscBagSetName()`, `PetscBagGetName()`, `PetscBagView()`, `PetscBagLoad()`, `PetscBagGetData()`
+          `PetscBagRegisterReal()`, `PetscBagRegisterInt()`, `PetscBagRegisterBool()`, `PetscBagRegisterScalar()`
+          `PetscBagSetFromOptions()`, `PetscBagRegisterVec()`, `PetscBagCreate()`, `PetscBagDestroy()`, `PetscBagRegisterEnum()`
 S*/
 typedef struct _n_PetscBag*     PetscBag;
 typedef struct _n_PetscBagItem* PetscBagItem;

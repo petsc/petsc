@@ -26,11 +26,11 @@
  25 TAO,  Function value: 1.61783e-12,  Residual: 1.39233e-06 
  26 TAO,  Function value: 7.62118e-13,  Residual: 1.34544e-06 
  27 TAO,  Function value: 6.31521e-13,  Residual: 1.16261e-06 
- 28 TAO,  Function value: 3.92009e-13,  Residual: 8.49226e-07 
-Tao Object: 1 MPI processes
+ 28 TAO,  Function value: 3.92009e-13,  Residual: 8.49227e-07 
+Tao Object: 1 MPI process
   type: blmvm
   Gradient steps: 0
-  Mat Object: (tao_blmvm_) 1 MPI processes
+  Mat Object: (tao_blmvm_) 1 MPI process
     type: lmvmbfgs
     rows=8192, cols=8192
       Scale type: DIAGONAL
@@ -42,7 +42,7 @@ Tao Object: 1 MPI processes
       Number of updates: 27
       Number of rejects: 0
       Number of resets: 1
-      Mat Object: (J0_) 1 MPI processes
+      Mat Object: (J0_) 1 MPI process
         type: lmvmdiagbroyden
         rows=8192, cols=8192
           Scale history: 1
@@ -53,18 +53,16 @@ Tao Object: 1 MPI processes
           Number of updates: 27
           Number of rejects: 0
           Number of resets: 1
-  TaoLineSearch Object: 1 MPI processes
+  TaoLineSearch Object: 1 MPI process
     type: more-thuente
     maximum function evaluations=30
     tolerances: ftol=0.0001, rtol=1e-10, gtol=0.9
     total number of function evaluations=0
     total number of gradient evaluations=0
     total number of function/gradient evaluations=1
-    using variable bounds
     Termination reason: 1
-  Active Set subset type: subvec
   convergence tolerances: gatol=1e-06,   steptol=0.,   gttol=0.
-  Residual in Function/Gradient:=8.49226e-07
+  Residual in Function/Gradient:=8.49227e-07
   Objective value=3.92009e-13
   total number of iterations=28,                          (max: 2000)
   total number of function/gradient evaluations=30,      (max: 4000)

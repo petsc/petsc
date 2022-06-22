@@ -27,18 +27,17 @@
 
    Level: advanced
 
-.seealso: VecTaggerSetBlockSize(), VecTaggerSetFromOptions(), VecTaggerSetUp(), VecTaggerComputeIS(), VecTaggerComputeBoxes(), VecTaggerDestroy()
+.seealso: `VecTaggerSetBlockSize()`, `VecTaggerSetFromOptions()`, `VecTaggerSetUp()`, `VecTaggerComputeIS()`, `VecTaggerComputeBoxes()`, `VecTaggerDestroy()`
 @*/
 PetscErrorCode VecTaggerCreate(MPI_Comm comm,VecTagger *tagger)
 {
-  PetscErrorCode ierr;
   VecTagger      b;
 
   PetscFunctionBegin;
   PetscValidPointer(tagger,2);
-  ierr = VecTaggerInitializePackage();CHKERRQ(ierr);
+  PetscCall(VecTaggerInitializePackage());
 
-  ierr = PetscHeaderCreate(b,VEC_TAGGER_CLASSID,"VecTagger","Vec Tagger","Vec",comm,VecTaggerDestroy,VecTaggerView);CHKERRQ(ierr);
+  PetscCall(PetscHeaderCreate(b,VEC_TAGGER_CLASSID,"VecTagger","Vec Tagger","Vec",comm,VecTaggerDestroy,VecTaggerView));
 
   b->blocksize   = 1;
   b->invert      = PETSC_FALSE;
@@ -71,30 +70,28 @@ PetscErrorCode VecTaggerCreate(MPI_Comm comm,VecTagger *tagger)
 
   Level: advanced
 
-.seealso: VecTaggerType, VecTaggerCreate(), VecTagger
+.seealso: `VecTaggerType`, `VecTaggerCreate()`, `VecTagger`
 @*/
 PetscErrorCode VecTaggerSetType(VecTagger tagger,VecTaggerType type)
 {
-  PetscErrorCode ierr,(*r)(VecTagger);
   PetscBool      match;
+  PetscErrorCode (*r)(VecTagger);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tagger,VEC_TAGGER_CLASSID,1);
   PetscValidCharPointer(type,2);
 
-  ierr = PetscObjectTypeCompare((PetscObject)tagger,type,&match);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)tagger,type,&match));
   if (match) PetscFunctionReturn(0);
 
-  ierr = PetscFunctionListFind(VecTaggerList,type,&r);CHKERRQ(ierr);
-  PetscCheckFalse(!r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested VecTagger type %s",type);
+  PetscCall(PetscFunctionListFind(VecTaggerList,type,&r));
+  PetscCheck(r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested VecTagger type %s",type);
   /* Destroy the previous private VecTagger context */
-  if (tagger->ops->destroy) {
-    ierr = (*(tagger)->ops->destroy)(tagger);CHKERRQ(ierr);
-  }
-  ierr = PetscMemzero(tagger->ops,sizeof(*tagger->ops));CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)tagger,type);CHKERRQ(ierr);
+  if (tagger->ops->destroy) PetscCall((*(tagger)->ops->destroy)(tagger));
+  PetscCall(PetscMemzero(tagger->ops,sizeof(*tagger->ops)));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)tagger,type));
   tagger->ops->create = r;
-  ierr = (*r)(tagger);CHKERRQ(ierr);
+  PetscCall((*r)(tagger));
   PetscFunctionReturn(0);
 }
 
@@ -111,16 +108,14 @@ PetscErrorCode VecTaggerSetType(VecTagger tagger,VecTaggerType type)
 
   Level: advanced
 
-.seealso: VecTaggerSetType(), VecTaggerCreate(), VecTaggerSetFromOptions(), VecTagger, VecTaggerType
+.seealso: `VecTaggerSetType()`, `VecTaggerCreate()`, `VecTaggerSetFromOptions()`, `VecTagger`, `VecTaggerType`
 @*/
 PetscErrorCode  VecTaggerGetType(VecTagger tagger, VecTaggerType *type)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tagger, VEC_TAGGER_CLASSID,1);
   PetscValidPointer(type,2);
-  ierr = VecTaggerRegisterAll();CHKERRQ(ierr);
+  PetscCall(VecTaggerRegisterAll());
   *type = ((PetscObject)tagger)->type_name;
   PetscFunctionReturn(0);
 }
@@ -135,18 +130,16 @@ PetscErrorCode  VecTaggerGetType(VecTagger tagger, VecTaggerType *type)
 
    Level: advanced
 
-.seealso: VecTaggerCreate(), VecTaggerSetType(), VecTagger
+.seealso: `VecTaggerCreate()`, `VecTaggerSetType()`, `VecTagger`
 @*/
 PetscErrorCode VecTaggerDestroy(VecTagger *tagger)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (!*tagger) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*tagger),VEC_TAGGER_CLASSID,1);
   if (--((PetscObject)(*tagger))->refct > 0) {*tagger = NULL; PetscFunctionReturn(0);}
-  if ((*tagger)->ops->destroy) {ierr = (*(*tagger)->ops->destroy)(*tagger);CHKERRQ(ierr);}
-  ierr = PetscHeaderDestroy(tagger);CHKERRQ(ierr);
+  if ((*tagger)->ops->destroy) PetscCall((*(*tagger)->ops->destroy)(*tagger));
+  PetscCall(PetscHeaderDestroy(tagger));
   PetscFunctionReturn(0);
 }
 
@@ -160,16 +153,14 @@ PetscErrorCode VecTaggerDestroy(VecTagger *tagger)
 
    Level: advanced
 
-.seealso: VecTaggerSetFromOptions(), VecTaggerSetType(), VecTagger, VecTaggerCreate(), VecTaggerSetUp()
+.seealso: `VecTaggerSetFromOptions()`, `VecTaggerSetType()`, `VecTagger`, `VecTaggerCreate()`, `VecTaggerSetUp()`
 @*/
 PetscErrorCode VecTaggerSetUp(VecTagger tagger)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (tagger->setupcalled) PetscFunctionReturn(0);
-  if (!((PetscObject)tagger)->type_name) {ierr = VecTaggerSetType(tagger,VECTAGGERABSOLUTE);CHKERRQ(ierr);}
-  if (tagger->ops->setup) {ierr = (*tagger->ops->setup)(tagger);CHKERRQ(ierr);}
+  if (!((PetscObject)tagger)->type_name) PetscCall(VecTaggerSetType(tagger,VECTAGGERABSOLUTE));
+  if (tagger->ops->setup) PetscCall((*tagger->ops->setup)(tagger));
   tagger->setupcalled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -189,26 +180,25 @@ PetscErrorCode VecTaggerSetUp(VecTagger tagger)
 
    Level: advanced
 
-.seealso: VecTagger, VecTaggerCreate(), VecTaggerSetUp()
+.seealso: `VecTagger`, `VecTaggerCreate()`, `VecTaggerSetUp()`
 
 @*/
 PetscErrorCode VecTaggerSetFromOptions(VecTagger tagger)
 {
   VecTaggerType  deft;
   char           type[256];
-  PetscErrorCode ierr;
   PetscBool      flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tagger,VEC_TAGGER_CLASSID,1);
-  ierr = PetscObjectOptionsBegin((PetscObject)tagger);CHKERRQ(ierr);
+  PetscObjectOptionsBegin((PetscObject)tagger);
   deft = ((PetscObject)tagger)->type_name ? ((PetscObject)tagger)->type_name : VECTAGGERABSOLUTE;
-  ierr = PetscOptionsFList("-vec_tagger_type","VecTagger implementation type","VecTaggerSetType",VecTaggerList,deft,type,256,&flg);CHKERRQ(ierr);
-  ierr = VecTaggerSetType(tagger,flg ? type : deft);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-vec_tagger_block_size","block size of the vectors the tagger operates on","VecTaggerSetBlockSize",tagger->blocksize,&tagger->blocksize,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-vec_tagger_invert","invert the set of indices returned by VecTaggerComputeIS()","VecTaggerSetInvert",tagger->invert,&tagger->invert,NULL);CHKERRQ(ierr);
-  if (tagger->ops->setfromoptions) {ierr = (*tagger->ops->setfromoptions)(PetscOptionsObject,tagger);CHKERRQ(ierr);}
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscCall(PetscOptionsFList("-vec_tagger_type","VecTagger implementation type","VecTaggerSetType",VecTaggerList,deft,type,256,&flg));
+  PetscCall(VecTaggerSetType(tagger,flg ? type : deft));
+  PetscCall(PetscOptionsInt("-vec_tagger_block_size","block size of the vectors the tagger operates on","VecTaggerSetBlockSize",tagger->blocksize,&tagger->blocksize,NULL));
+  PetscCall(PetscOptionsBool("-vec_tagger_invert","invert the set of indices returned by VecTaggerComputeIS()","VecTaggerSetInvert",tagger->invert,&tagger->invert,NULL));
+  if (tagger->ops->setfromoptions) PetscCall((*tagger->ops->setfromoptions)(PetscOptionsObject,tagger));
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 
@@ -233,11 +223,10 @@ PetscErrorCode VecTaggerSetFromOptions(VecTagger tagger)
 
    Level: advanced
 
-.seealso: VecTaggerComputeIS(), VecTaggerGetBlockSize(), VecSetBlockSize(), VecGetBlockSize(), VecTagger, VecTaggerCreate()
+.seealso: `VecTaggerComputeIS()`, `VecTaggerGetBlockSize()`, `VecSetBlockSize()`, `VecGetBlockSize()`, `VecTagger`, `VecTaggerCreate()`
 @*/
 PetscErrorCode VecTaggerSetBlockSize(VecTagger tagger, PetscInt blocksize)
 {
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tagger,VEC_TAGGER_CLASSID,1);
   PetscValidLogicalCollectiveInt(tagger,blocksize,2);
@@ -258,14 +247,13 @@ PetscErrorCode VecTaggerSetBlockSize(VecTagger tagger, PetscInt blocksize)
 
    Level: advanced
 
-.seealso: VecTaggerComputeIS(), VecTaggerSetBlockSize(), VecTagger, VecTaggerCreate()
+.seealso: `VecTaggerComputeIS()`, `VecTaggerSetBlockSize()`, `VecTagger`, `VecTaggerCreate()`
 @*/
 PetscErrorCode VecTaggerGetBlockSize(VecTagger tagger, PetscInt *blocksize)
 {
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tagger,VEC_TAGGER_CLASSID,1);
-  PetscValidPointer(blocksize,2);
+  PetscValidIntPointer(blocksize,2);
   *blocksize = tagger->blocksize;
   PetscFunctionReturn(0);
 }
@@ -283,11 +271,10 @@ PetscErrorCode VecTaggerGetBlockSize(VecTagger tagger, PetscInt *blocksize)
 
    Level: advanced
 
-.seealso: VecTaggerComputeIS(), VecTaggerGetInvert(), VecTagger, VecTaggerCreate()
+.seealso: `VecTaggerComputeIS()`, `VecTaggerGetInvert()`, `VecTagger`, `VecTaggerCreate()`
 @*/
 PetscErrorCode VecTaggerSetInvert(VecTagger tagger, PetscBool invert)
 {
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tagger,VEC_TAGGER_CLASSID,1);
   PetscValidLogicalCollectiveBool(tagger,invert,2);
@@ -308,14 +295,13 @@ PetscErrorCode VecTaggerSetInvert(VecTagger tagger, PetscBool invert)
 
    Level: advanced
 
-.seealso: VecTaggerComputeIS(), VecTaggerSetInvert(), VecTagger, VecTaggerCreate()
+.seealso: `VecTaggerComputeIS()`, `VecTaggerSetInvert()`, `VecTagger`, `VecTaggerCreate()`
 @*/
 PetscErrorCode VecTaggerGetInvert(VecTagger tagger, PetscBool *invert)
 {
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tagger,VEC_TAGGER_CLASSID,1);
-  PetscValidPointer(invert,2);
+  PetscValidBoolPointer(invert,2);
   *invert = tagger->invert;
   PetscFunctionReturn(0);
 }
@@ -331,26 +317,25 @@ PetscErrorCode VecTaggerGetInvert(VecTagger tagger, PetscBool *invert)
 
    Level: advanced
 
-.seealso: VecTaggerCreate(), VecTagger, VecTaggerCreate()
+.seealso: `VecTaggerCreate()`, `VecTagger`, `VecTaggerCreate()`
 @*/
 PetscErrorCode VecTaggerView(VecTagger tagger,PetscViewer viewer)
 {
-  PetscErrorCode    ierr;
   PetscBool         iascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tagger,VEC_TAGGER_CLASSID,1);
-  if (!viewer) {ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)tagger),&viewer);CHKERRQ(ierr);}
+  if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)tagger),&viewer));
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(tagger,1,viewer,2);
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)tagger,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"Block size: %" PetscInt_FMT "\n",tagger->blocksize);CHKERRQ(ierr);
-    if (tagger->ops->view) {ierr = (*tagger->ops->view)(tagger,viewer);CHKERRQ(ierr);}
-    if (tagger->invert) {ierr = PetscViewerASCIIPrintf(viewer,"Inverting ISs.\n");CHKERRQ(ierr);}
-    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)tagger,viewer));
+    PetscCall(PetscViewerASCIIPushTab(viewer));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"Block size: %" PetscInt_FMT "\n",tagger->blocksize));
+    if (tagger->ops->view) PetscCall((*tagger->ops->view)(tagger,viewer));
+    if (tagger->invert) PetscCall(PetscViewerASCIIPrintf(viewer,"Inverting ISs.\n"));
+    PetscCall(PetscViewerASCIIPopTab(viewer));
   }
   PetscFunctionReturn(0);
 }
@@ -371,28 +356,27 @@ PetscErrorCode VecTaggerView(VecTagger tagger,PetscViewer viewer)
 -  listed - PETSC_TRUE if a list was created, pass in NULL if not needed
 
    Notes:
-.  A value is tagged if it is in any of the boxes, unless the tagger has been inverted (see VecTaggerSetInvert()/VecTaggerGetInvert()), in which case a value is tagged if it is in none of the boxes.
+     A value is tagged if it is in any of the boxes, unless the tagger has been inverted (see VecTaggerSetInvert()/VecTaggerGetInvert()), in which case a value is tagged if it is in none of the boxes.
 
    Level: advanced
 
-.seealso: VecTaggerComputeIS(), VecTagger, VecTaggerCreate()
+.seealso: `VecTaggerComputeIS()`, `VecTagger`, `VecTaggerCreate()`
 @*/
 PetscErrorCode VecTaggerComputeBoxes(VecTagger tagger,Vec vec,PetscInt *numBoxes,VecTaggerBox **boxes,PetscBool *listed)
 {
   PetscInt       vls, tbs;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tagger,VEC_TAGGER_CLASSID,1);
   PetscValidHeaderSpecific(vec,VEC_CLASSID,2);
   PetscValidIntPointer(numBoxes,3);
   PetscValidPointer(boxes,4);
-  ierr = VecGetLocalSize(vec,&vls);CHKERRQ(ierr);
-  ierr = VecTaggerGetBlockSize(tagger,&tbs);CHKERRQ(ierr);
-  PetscCheckFalse(vls % tbs,PetscObjectComm((PetscObject)tagger),PETSC_ERR_ARG_INCOMP,"vec local size %" PetscInt_FMT " is not a multiple of tagger block size %" PetscInt_FMT,vls,tbs);
+  PetscCall(VecGetLocalSize(vec,&vls));
+  PetscCall(VecTaggerGetBlockSize(tagger,&tbs));
+  PetscCheck(vls % tbs == 0,PetscObjectComm((PetscObject)tagger),PETSC_ERR_ARG_INCOMP,"vec local size %" PetscInt_FMT " is not a multiple of tagger block size %" PetscInt_FMT,vls,tbs);
   if (tagger->ops->computeboxes) {
     *listed = PETSC_TRUE;
-    ierr    = (*tagger->ops->computeboxes) (tagger,vec,numBoxes,boxes,listed);CHKERRQ(ierr);
+    PetscCall((*tagger->ops->computeboxes) (tagger,vec,numBoxes,boxes,listed));
   }  else *listed = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -412,22 +396,21 @@ PetscErrorCode VecTaggerComputeBoxes(VecTagger tagger,Vec vec,PetscInt *numBoxes
 
    Level: advanced
 
-.seealso: VecTaggerComputeBoxes(), VecTagger, VecTaggerCreate()
+.seealso: `VecTaggerComputeBoxes()`, `VecTagger`, `VecTaggerCreate()`
 @*/
 PetscErrorCode VecTaggerComputeIS(VecTagger tagger,Vec vec,IS *is,PetscBool *listed)
 {
   PetscInt       vls, tbs;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tagger,VEC_TAGGER_CLASSID,1);
   PetscValidHeaderSpecific(vec,VEC_CLASSID,2);
   PetscValidPointer(is,3);
-  ierr = VecGetLocalSize(vec,&vls);CHKERRQ(ierr);
-  ierr = VecTaggerGetBlockSize(tagger,&tbs);CHKERRQ(ierr);
-  PetscCheckFalse(vls % tbs,PetscObjectComm((PetscObject)tagger),PETSC_ERR_ARG_INCOMP,"vec local size %" PetscInt_FMT " is not a multiple of tagger block size %" PetscInt_FMT,vls,tbs);
+  PetscCall(VecGetLocalSize(vec,&vls));
+  PetscCall(VecTaggerGetBlockSize(tagger,&tbs));
+  PetscCheck(vls % tbs == 0,PetscObjectComm((PetscObject)tagger),PETSC_ERR_ARG_INCOMP,"vec local size %" PetscInt_FMT " is not a multiple of tagger block size %" PetscInt_FMT,vls,tbs);
   if (tagger->ops->computeis) {
-    ierr = (*tagger->ops->computeis) (tagger,vec,is,listed);CHKERRQ(ierr);
+    PetscCall((*tagger->ops->computeis) (tagger,vec,is,listed));
   } else if (listed) *listed = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -441,27 +424,26 @@ PetscErrorCode VecTaggerComputeIS_FromBoxes(VecTagger tagger, Vec vec, IS *is,Pe
   PetscInt          bs, b, i, j, k, n;
   PetscBool         invert;
   const PetscScalar *vecArray;
-  PetscErrorCode    ierr;
   PetscBool         boxlisted;
 
   PetscFunctionBegin;
-  ierr = VecTaggerGetBlockSize(tagger,&bs);CHKERRQ(ierr);
-  ierr = VecTaggerComputeBoxes(tagger,vec,&numBoxes,&boxes,&boxlisted);CHKERRQ(ierr);
+  PetscCall(VecTaggerGetBlockSize(tagger,&bs));
+  PetscCall(VecTaggerComputeBoxes(tagger,vec,&numBoxes,&boxes,&boxlisted));
   if (!boxlisted) {
     if (listed) *listed = PETSC_FALSE;
     PetscFunctionReturn(0);
   }
-  ierr = VecGetArrayRead(vec, &vecArray);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(vec, &n);CHKERRQ(ierr);
+  PetscCall(VecGetArrayRead(vec, &vecArray));
+  PetscCall(VecGetLocalSize(vec, &n));
   invert = tagger->invert;
   numTagged = 0;
   offset = 0;
   tagged = NULL;
-  PetscCheckFalse(n % bs,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"blocksize %" PetscInt_FMT " does not divide vector length %" PetscInt_FMT, bs, n);
+  PetscCheck(n % bs == 0,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"blocksize %" PetscInt_FMT " does not divide vector length %" PetscInt_FMT, bs, n);
   n /= bs;
   for (i = 0; i < 2; i++) {
     if (i) {
-      ierr = PetscMalloc1(numTagged,&tagged);CHKERRQ(ierr);
+      PetscCall(PetscMalloc1(numTagged,&tagged));
     }
     for (j = 0; j < n; j++) {
 
@@ -491,10 +473,10 @@ PetscErrorCode VecTaggerComputeIS_FromBoxes(VecTagger tagger, Vec vec, IS *is,Pe
       }
     }
   }
-  ierr = VecRestoreArrayRead(vec, &vecArray);CHKERRQ(ierr);
-  ierr = PetscFree(boxes);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)vec),numTagged,tagged,PETSC_OWN_POINTER,is);CHKERRQ(ierr);
-  ierr = ISSort(*is);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayRead(vec, &vecArray));
+  PetscCall(PetscFree(boxes));
+  PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)vec),numTagged,tagged,PETSC_OWN_POINTER,is));
+  PetscCall(ISSort(*is));
   if (listed) *listed = PETSC_TRUE;
   PetscFunctionReturn(0);
 }

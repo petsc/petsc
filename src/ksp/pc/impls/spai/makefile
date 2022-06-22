@@ -1,11 +1,6 @@
 -include ../../../../../petscdir.mk
 #requirespackage   'PETSC_HAVE_SPAI'
 
-ALL: lib
-#
-#
-CFLAGS    =
-FFLAGS    =
 CPPFLAGS  = ${SPAI_INCLUDE}
 SOURCEC   = ispai.c dspai.c
 SOURCEF   =

@@ -6,7 +6,6 @@ class Configure(config.package.Package):
     self.download               = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/f2cblaslapack-3.4.2.q4.tar.gz']
     self.downloadonWindows      = 1
     self.skippackagewithoptions = 1
-    self.installwithbatch       = 1
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
@@ -89,7 +88,7 @@ lapack_qlib:\n\
       self.logPrint('Error running make on '+self.packageDir+': '+str(e))
       raise RuntimeError('Error running make on '+self.packageDir)
     try:
-      self.logPrintBox('Installing F2CBLASLAPACK')
+      self.logPrintBox('Installing F2CBLASLAPACK; this may take several minutes')
       output2,err2,ret  = config.package.Package.executeShellCommandSeq([
         ['mkdir', '-p', libdir],
         ['cp', '-f', 'libf2clapack.' + self.setCompilers.AR_LIB_SUFFIX, 'libf2cblas.' + self.setCompilers.AR_LIB_SUFFIX, libdir],

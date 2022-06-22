@@ -1,16 +1,9 @@
 
 static char help[] = "Introductory example that illustrates printing.\n\n";
 
-/*T
-   Concepts: introduction to PETSc;
-   Concepts: printing^in parallel
-   Processors: n
-T*/
-
 #include <petscsys.h>
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscMPIInt    rank,size;
 
   /*
@@ -22,14 +15,14 @@ int main(int argc,char **argv)
                  runtime.  The user can use the "help" variable to place
                  additional help messages in this printout.
   */
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /*
      The following MPI calls return the number of processes
      being used and the rank of this process in the group.
    */
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   /*
      Here we would like to print only one message that represents
@@ -37,12 +30,12 @@ int main(int argc,char **argv)
      communicator PETSC_COMM_WORLD.  Thus, only one message is
      printed representng PETSC_COMM_WORLD, i.e., all the processors.
   */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of processors = %d, rank = %d\n",size,rank);CHKERRQ(ierr);
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of processors = %d, rank = %d\n",size,rank));
 
   /*
     Here a barrier is used to separate the two program states.
   */
-  ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Barrier(PETSC_COMM_WORLD));
 
   /*
     Here we simply use PetscPrintf() with the communicator PETSC_COMM_SELF,
@@ -51,7 +44,7 @@ int main(int argc,char **argv)
     appear in any particular order.
   */
 
-  ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Jumbled Hello World\n",rank);CHKERRQ(ierr);
+  PetscCall(PetscPrintf(PETSC_COMM_SELF,"[%d] Jumbled Hello World\n",rank));
 
   /*
      Always call PetscFinalize() before exiting a program.  This routine
@@ -60,8 +53,8 @@ int main(int argc,char **argv)
          options are chosen (e.g., -log_view).  See PetscFinalize()
      manpage for more information.
   */
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

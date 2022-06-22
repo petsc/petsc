@@ -1,16 +1,16 @@
 0 TS dt 1. time 0.
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.
 1 TS dt 10. time 1.
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.5
 2 TS dt 100. time 11.
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 5.5
 3 TS dt 1000. time 111.
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 55.5

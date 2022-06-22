@@ -6,48 +6,46 @@ static char help[] = "Tests DMCreateInterpolation() for nonuniform DMDA coordina
 
 PetscErrorCode SetCoordinates1d(DM da)
 {
-  PetscErrorCode ierr;
   PetscInt       i,start,m;
   Vec            local,global;
   PetscScalar    *coors,*coorslocal;
   DM             cda;
 
   PetscFunctionBeginUser;
-  ierr = DMDASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
-  ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
-  ierr = DMGetCoordinates(da,&global);CHKERRQ(ierr);
-  ierr = DMGetCoordinatesLocal(da,&local);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(cda,global,&coors);CHKERRQ(ierr);
-  ierr = DMDAVecGetArrayRead(cda,local,&coorslocal);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(cda,&start,0,0,&m,0,0);CHKERRQ(ierr);
+  PetscCall(DMDASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,1.0));
+  PetscCall(DMGetCoordinateDM(da,&cda));
+  PetscCall(DMGetCoordinates(da,&global));
+  PetscCall(DMGetCoordinatesLocal(da,&local));
+  PetscCall(DMDAVecGetArray(cda,global,&coors));
+  PetscCall(DMDAVecGetArrayRead(cda,local,&coorslocal));
+  PetscCall(DMDAGetCorners(cda,&start,0,0,&m,0,0));
   for (i=start; i<start+m; i++) {
     if (i % 2) {
       coors[i] = coorslocal[i-1] + .1*(coorslocal[i+1] - coorslocal[i-1]);
     }
   }
-  ierr = DMDAVecRestoreArray(cda,global,&coors);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArrayRead(cda,local,&coorslocal);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(cda,global,INSERT_VALUES,local);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(cda,global,INSERT_VALUES,local);CHKERRQ(ierr);
+  PetscCall(DMDAVecRestoreArray(cda,global,&coors));
+  PetscCall(DMDAVecRestoreArrayRead(cda,local,&coorslocal));
+  PetscCall(DMGlobalToLocalBegin(cda,global,INSERT_VALUES,local));
+  PetscCall(DMGlobalToLocalEnd(cda,global,INSERT_VALUES,local));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode SetCoordinates2d(DM da)
 {
-  PetscErrorCode ierr;
   PetscInt       i,j,mstart,m,nstart,n;
   Vec            local,global;
   DMDACoor2d     **coors,**coorslocal;
   DM             cda;
 
   PetscFunctionBeginUser;
-  ierr = DMDASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
-  ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
-  ierr = DMGetCoordinates(da,&global);CHKERRQ(ierr);
-  ierr = DMGetCoordinatesLocal(da,&local);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(cda,global,&coors);CHKERRQ(ierr);
-  ierr = DMDAVecGetArrayRead(cda,local,&coorslocal);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(cda,&mstart,&nstart,0,&m,&n,0);CHKERRQ(ierr);
+  PetscCall(DMDASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,1.0));
+  PetscCall(DMGetCoordinateDM(da,&cda));
+  PetscCall(DMGetCoordinates(da,&global));
+  PetscCall(DMGetCoordinatesLocal(da,&local));
+  PetscCall(DMDAVecGetArray(cda,global,&coors));
+  PetscCall(DMDAVecGetArrayRead(cda,local,&coorslocal));
+  PetscCall(DMDAGetCorners(cda,&mstart,&nstart,0,&m,&n,0));
   for (i=mstart; i<mstart+m; i++) {
     for (j=nstart; j<nstart+n; j++) {
       if (i % 2) {
@@ -58,30 +56,29 @@ PetscErrorCode SetCoordinates2d(DM da)
       }
     }
   }
-  ierr = DMDAVecRestoreArray(cda,global,&coors);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArrayRead(cda,local,&coorslocal);CHKERRQ(ierr);
+  PetscCall(DMDAVecRestoreArray(cda,global,&coors));
+  PetscCall(DMDAVecRestoreArrayRead(cda,local,&coorslocal));
 
-  ierr = DMGlobalToLocalBegin(cda,global,INSERT_VALUES,local);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(cda,global,INSERT_VALUES,local);CHKERRQ(ierr);
+  PetscCall(DMGlobalToLocalBegin(cda,global,INSERT_VALUES,local));
+  PetscCall(DMGlobalToLocalEnd(cda,global,INSERT_VALUES,local));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode SetCoordinates3d(DM da)
 {
-  PetscErrorCode ierr;
   PetscInt       i,j,mstart,m,nstart,n,pstart,p,k;
   Vec            local,global;
   DMDACoor3d     ***coors,***coorslocal;
   DM             cda;
 
   PetscFunctionBeginUser;
-  ierr = DMDASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
-  ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
-  ierr = DMGetCoordinates(da,&global);CHKERRQ(ierr);
-  ierr = DMGetCoordinatesLocal(da,&local);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(cda,global,&coors);CHKERRQ(ierr);
-  ierr = DMDAVecGetArrayRead(cda,local,&coorslocal);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(cda,&mstart,&nstart,&pstart,&m,&n,&p);CHKERRQ(ierr);
+  PetscCall(DMDASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,1.0));
+  PetscCall(DMGetCoordinateDM(da,&cda));
+  PetscCall(DMGetCoordinates(da,&global));
+  PetscCall(DMGetCoordinatesLocal(da,&local));
+  PetscCall(DMDAVecGetArray(cda,global,&coors));
+  PetscCall(DMDAVecGetArrayRead(cda,local,&coorslocal));
+  PetscCall(DMDAGetCorners(cda,&mstart,&nstart,&pstart,&m,&n,&p));
   for (i=mstart; i<mstart+m; i++) {
     for (j=nstart; j<nstart+n; j++) {
       for (k=pstart; k<pstart+p; k++) {
@@ -97,60 +94,59 @@ PetscErrorCode SetCoordinates3d(DM da)
       }
     }
   }
-  ierr = DMDAVecRestoreArray(cda,global,&coors);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArrayRead(cda,local,&coorslocal);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(cda,global,INSERT_VALUES,local);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(cda,global,INSERT_VALUES,local);CHKERRQ(ierr);
+  PetscCall(DMDAVecRestoreArray(cda,global,&coors));
+  PetscCall(DMDAVecRestoreArrayRead(cda,local,&coorslocal));
+  PetscCall(DMGlobalToLocalBegin(cda,global,INSERT_VALUES,local));
+  PetscCall(DMGlobalToLocalEnd(cda,global,INSERT_VALUES,local));
   PetscFunctionReturn(0);
 }
 
 int main(int argc,char **argv)
 {
   PetscInt         M = 5,N = 4,P = 3, m = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE,dim = 1;
-  PetscErrorCode   ierr;
   DM               dac,daf;
   DMBoundaryType   bx    = DM_BOUNDARY_NONE,by=DM_BOUNDARY_NONE,bz=DM_BOUNDARY_NONE;
   DMDAStencilType  stype = DMDA_STENCIL_BOX;
   Mat              A;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-P",&P,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-p",&p,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-P",&P,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-p",&p,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL));
 
   /* Create distributed array and get vectors */
   if (dim == 1) {
-    ierr = DMDACreate1d(PETSC_COMM_WORLD,bx,M,1,1,NULL,&dac);CHKERRQ(ierr);
+    PetscCall(DMDACreate1d(PETSC_COMM_WORLD,bx,M,1,1,NULL,&dac));
   } else if (dim == 2) {
-    ierr = DMDACreate2d(PETSC_COMM_WORLD,bx,by,stype,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&dac);CHKERRQ(ierr);
+    PetscCall(DMDACreate2d(PETSC_COMM_WORLD,bx,by,stype,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&dac));
   } else if (dim == 3) {
-    ierr = DMDACreate3d(PETSC_COMM_WORLD,bx,by,bz,stype,M,N,P,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,NULL,&dac);CHKERRQ(ierr);
+    PetscCall(DMDACreate3d(PETSC_COMM_WORLD,bx,by,bz,stype,M,N,P,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,NULL,&dac));
   } else SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"dim must be 1,2, or 3");
-  ierr = DMSetFromOptions(dac);CHKERRQ(ierr);
-  ierr = DMSetUp(dac);CHKERRQ(ierr);
+  PetscCall(DMSetFromOptions(dac));
+  PetscCall(DMSetUp(dac));
 
-  ierr = DMRefine(dac,PETSC_COMM_WORLD,&daf);CHKERRQ(ierr);
+  PetscCall(DMRefine(dac,PETSC_COMM_WORLD,&daf));
 
-  ierr = DMDASetUniformCoordinates(dac,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
+  PetscCall(DMDASetUniformCoordinates(dac,0.0,1.0,0.0,1.0,0.0,1.0));
   if (dim == 1) {
-    ierr = SetCoordinates1d(daf);CHKERRQ(ierr);
+    PetscCall(SetCoordinates1d(daf));
   } else if (dim == 2) {
-    ierr = SetCoordinates2d(daf);CHKERRQ(ierr);
+    PetscCall(SetCoordinates2d(daf));
   } else if (dim == 3) {
-    ierr = SetCoordinates3d(daf);CHKERRQ(ierr);
+    PetscCall(SetCoordinates3d(daf));
   }
-  ierr = DMCreateInterpolation(dac,daf,&A,0);CHKERRQ(ierr);
+  PetscCall(DMCreateInterpolation(dac,daf,&A,0));
 
   /* Free memory */
-  ierr = DMDestroy(&dac);CHKERRQ(ierr);
-  ierr = DMDestroy(&daf);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(DMDestroy(&dac));
+  PetscCall(DMDestroy(&daf));
+  PetscCall(MatDestroy(&A));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

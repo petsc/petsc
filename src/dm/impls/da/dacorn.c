@@ -8,9 +8,8 @@
 
 PetscErrorCode DMCreateCoordinateDM_DA(DM dm, DM *cdm)
 {
-  PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = DMDACreateCompatibleDMDA(dm,dm->dim,cdm);CHKERRQ(ierr);
+  PetscCall(DMDACreateCompatibleDMDA(dm,dm->dim,cdm));
   PetscFunctionReturn(0);
 }
 
@@ -21,20 +20,19 @@ PetscErrorCode DMCreateCoordinateField_DA(DM dm, DMField *field)
   PetscInt       dim;
   PetscInt       i, j;
   DM             cdm;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
+  PetscCall(DMGetDimension(dm,&dim));
   /* TODO: this is wrong if coordinates are not rectilinear */
-  ierr = DMGetBoundingBox(dm,gmin,gmax);CHKERRQ(ierr);
+  PetscCall(DMGetBoundingBox(dm,gmin,gmax));
   for (i = 0; i < (1 << dim); i++) {
     for (j = 0; j < dim; j++) {
       corners[i*dim + j] = (i & (1 << j)) ? gmax[j] : gmin[j];
     }
   }
-  ierr = DMClone(dm,&cdm);CHKERRQ(ierr);
-  ierr = DMFieldCreateDA(cdm,dim,corners,field);CHKERRQ(ierr);
-  ierr = DMDestroy(&cdm);CHKERRQ(ierr);
+  PetscCall(DMClone(dm,&cdm));
+  PetscCall(DMFieldCreateDA(cdm,dim,corners,field));
+  PetscCall(DMDestroy(&cdm));
   PetscFunctionReturn(0);
 }
 
@@ -55,19 +53,18 @@ PetscErrorCode DMCreateCoordinateField_DA(DM dm, DMField *field)
 
   Level: intermediate
 
-.seealso: DMDAGetFieldName(), DMDASetCoordinateName(), DMDAGetCoordinateName(), DMDASetFieldNames(), DMSetUp()
+.seealso: `DMDAGetFieldName()`, `DMDASetCoordinateName()`, `DMDAGetCoordinateName()`, `DMDASetFieldNames()`, `DMSetUp()`
 @*/
 PetscErrorCode  DMDASetFieldName(DM da,PetscInt nf,const char name[])
 {
-  PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
-  PetscCheckFalse(nf < 0 || nf >= dd->w,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid field number: %D",nf);
-  PetscCheckFalse(!dd->fieldname,PetscObjectComm((PetscObject)da),PETSC_ERR_ORDER,"You should call DMSetUp() first");
-  ierr = PetscFree(dd->fieldname[nf]);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(name,&dd->fieldname[nf]);CHKERRQ(ierr);
+  PetscCheck(nf >= 0 && nf < dd->w,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid field number: %" PetscInt_FMT,nf);
+  PetscCheck(dd->fieldname,PetscObjectComm((PetscObject)da),PETSC_ERR_ORDER,"You should call DMSetUp() first");
+  PetscCall(PetscFree(dd->fieldname[nf]));
+  PetscCall(PetscStrallocpy(name,&dd->fieldname[nf]));
   PetscFunctionReturn(0);
 }
 
@@ -86,7 +83,7 @@ PetscErrorCode  DMDASetFieldName(DM da,PetscInt nf,const char name[])
 
    Not supported from Fortran, use DMDAGetFieldName()
 
-.seealso: DMDAGetFieldName(), DMDASetCoordinateName(), DMDAGetCoordinateName(), DMDASetFieldName(), DMDASetFieldNames()
+.seealso: `DMDAGetFieldName()`, `DMDASetCoordinateName()`, `DMDAGetCoordinateName()`, `DMDASetFieldName()`, `DMDASetFieldNames()`
 @*/
 PetscErrorCode  DMDAGetFieldNames(DM da,const char * const **names)
 {
@@ -113,21 +110,20 @@ PetscErrorCode  DMDAGetFieldNames(DM da,const char * const **names)
 
    Not supported from Fortran, use DMDASetFieldName()
 
-.seealso: DMDAGetFieldName(), DMDASetCoordinateName(), DMDAGetCoordinateName(), DMDASetFieldName(), DMSetUp()
+.seealso: `DMDAGetFieldName()`, `DMDASetCoordinateName()`, `DMDAGetCoordinateName()`, `DMDASetFieldName()`, `DMSetUp()`
 @*/
 PetscErrorCode  DMDASetFieldNames(DM da,const char * const *names)
 {
-  PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
   char           **fieldname;
   PetscInt       nf = 0;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!dd->fieldname,PetscObjectComm((PetscObject)da),PETSC_ERR_ORDER,"You should call DMSetUp() first");
+  PetscCheck(dd->fieldname,PetscObjectComm((PetscObject)da),PETSC_ERR_ORDER,"You should call DMSetUp() first");
   while (names[nf++]) {};
-  PetscCheckFalse(nf != dd->w+1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid number of fields %D",nf-1);
-  ierr = PetscStrArrayallocpy(names,&fieldname);CHKERRQ(ierr);
-  ierr = PetscStrArrayDestroy(&dd->fieldname);CHKERRQ(ierr);
+  PetscCheck(nf == dd->w+1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid number of fields %" PetscInt_FMT,nf-1);
+  PetscCall(PetscStrArrayallocpy(names,&fieldname));
+  PetscCall(PetscStrArrayDestroy(&dd->fieldname));
   dd->fieldname = fieldname;
   PetscFunctionReturn(0);
 }
@@ -151,7 +147,7 @@ PetscErrorCode  DMDASetFieldNames(DM da,const char * const *names)
 
   Level: intermediate
 
-.seealso: DMDASetFieldName(), DMDASetCoordinateName(), DMDAGetCoordinateName(), DMSetUp()
+.seealso: `DMDASetFieldName()`, `DMDASetCoordinateName()`, `DMDAGetCoordinateName()`, `DMSetUp()`
 @*/
 PetscErrorCode  DMDAGetFieldName(DM da,PetscInt nf,const char **name)
 {
@@ -160,8 +156,8 @@ PetscErrorCode  DMDAGetFieldName(DM da,PetscInt nf,const char **name)
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidPointer(name,3);
-  PetscCheckFalse(nf < 0 || nf >= dd->w,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid field number: %D",nf);
-  PetscCheckFalse(!dd->fieldname,PetscObjectComm((PetscObject)da),PETSC_ERR_ORDER,"You should call DMSetUp() first");
+  PetscCheck(nf >= 0 && nf < dd->w,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid field number: %" PetscInt_FMT,nf);
+  PetscCheck(dd->fieldname,PetscObjectComm((PetscObject)da),PETSC_ERR_ORDER,"You should call DMSetUp() first");
   *name = dd->fieldname[nf];
   PetscFunctionReturn(0);
 }
@@ -183,19 +179,18 @@ PetscErrorCode  DMDAGetFieldName(DM da,PetscInt nf,const char **name)
 
   Not supported from Fortran
 
-.seealso: DMDAGetCoordinateName(), DMDASetFieldName(), DMDAGetFieldName(), DMSetUp()
+.seealso: `DMDAGetCoordinateName()`, `DMDASetFieldName()`, `DMDAGetFieldName()`, `DMSetUp()`
 @*/
 PetscErrorCode DMDASetCoordinateName(DM dm,PetscInt nf,const char name[])
 {
-  PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)dm->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMDA);
-  PetscCheckFalse(nf < 0 || nf >= dm->dim,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid coordinate number: %D",nf);
-  PetscCheckFalse(!dd->coordinatename,PetscObjectComm((PetscObject)dm),PETSC_ERR_ORDER,"You should call DMSetUp() first");
-  ierr = PetscFree(dd->coordinatename[nf]);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(name,&dd->coordinatename[nf]);CHKERRQ(ierr);
+  PetscCheck(nf >= 0 && nf < dm->dim,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid coordinate number: %" PetscInt_FMT,nf);
+  PetscCheck(dd->coordinatename,PetscObjectComm((PetscObject)dm),PETSC_ERR_ORDER,"You should call DMSetUp() first");
+  PetscCall(PetscFree(dd->coordinatename[nf]));
+  PetscCall(PetscStrallocpy(name,&dd->coordinatename[nf]));
   PetscFunctionReturn(0);
 }
 
@@ -218,7 +213,7 @@ PetscErrorCode DMDASetCoordinateName(DM dm,PetscInt nf,const char name[])
 
   Not supported from Fortran
 
-.seealso: DMDASetCoordinateName(), DMDASetFieldName(), DMDAGetFieldName(), DMSetUp()
+.seealso: `DMDASetCoordinateName()`, `DMDASetFieldName()`, `DMDAGetFieldName()`, `DMSetUp()`
 @*/
 PetscErrorCode DMDAGetCoordinateName(DM dm,PetscInt nf,const char **name)
 {
@@ -227,8 +222,8 @@ PetscErrorCode DMDAGetCoordinateName(DM dm,PetscInt nf,const char **name)
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMDA);
   PetscValidPointer(name,3);
-  PetscCheckFalse(nf < 0 || nf >= dm->dim,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid coordinate number: %D",nf);
-  PetscCheckFalse(!dd->coordinatename,PetscObjectComm((PetscObject)dm),PETSC_ERR_ORDER,"You should call DMSetUp() first");
+  PetscCheck(nf >= 0 && nf < dm->dim,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid coordinate number: %" PetscInt_FMT,nf);
+  PetscCheck(dd->coordinatename,PetscObjectComm((PetscObject)dm),PETSC_ERR_ORDER,"You should call DMSetUp() first");
   *name = dd->coordinatename[nf];
   PetscFunctionReturn(0);
 }
@@ -259,7 +254,7 @@ PetscErrorCode DMDAGetCoordinateName(DM dm,PetscInt nf,const char **name)
 
   Level: beginner
 
-.seealso: DMDAGetGhostCorners(), DMDAGetOwnershipRanges(), DMStagGetCorners()
+.seealso: `DMDAGetGhostCorners()`, `DMDAGetOwnershipRanges()`, `DMStagGetCorners()`
 @*/
 PetscErrorCode  DMDAGetCorners(DM da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p)
 {
@@ -284,10 +279,9 @@ PetscErrorCode  DMDAGetCorners(DM da,PetscInt *x,PetscInt *y,PetscInt *z,PetscIn
 PetscErrorCode DMGetLocalBoundingIndices_DMDA(DM dm, PetscReal lmin[], PetscReal lmax[])
 {
   DMDALocalInfo  info;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr   = DMDAGetLocalInfo(dm, &info);CHKERRQ(ierr);
+  PetscCall(DMDAGetLocalInfo(dm, &info));
   lmin[0] = info.xs;
   lmin[1] = info.ys;
   lmin[2] = info.zs;
@@ -304,10 +298,8 @@ PetscErrorCode DMGetLocalBoundingIndices_DMDA(DM dm, PetscReal lmin[], PetscReal
 @*/
 PetscErrorCode DMDAGetReducedDMDA(DM da,PetscInt nfields,DM *nda)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = DMDACreateCompatibleDMDA(da,nfields,nda);CHKERRQ(ierr);
+  PetscCall(DMDACreateCompatibleDMDA(da,nfields,nda));
   PetscFunctionReturn(0);
 }
 
@@ -325,11 +317,10 @@ PetscErrorCode DMDAGetReducedDMDA(DM da,PetscInt nfields,DM *nda)
 
   Level: intermediate
 
-.seealso: DMDAGetGhostCorners(), DMSetCoordinates(), DMDASetUniformCoordinates(), DMGetCoordinates(), DMDAGetGhostedCoordinates(), DMStagCreateCompatibleDMStag()
+.seealso: `DMDAGetGhostCorners()`, `DMSetCoordinates()`, `DMDASetUniformCoordinates()`, `DMGetCoordinates()`, `DMDAGetGhostedCoordinates()`, `DMStagCreateCompatibleDMStag()`
 @*/
 PetscErrorCode  DMDACreateCompatibleDMDA(DM da,PetscInt nfields,DM *nda)
 {
-  PetscErrorCode   ierr;
   DM_DA            *dd = (DM_DA*)da->data;
   PetscInt         s,m,n,p,M,N,P,dim,Mo,No,Po;
   const PetscInt   *lx,*ly,*lz;
@@ -353,27 +344,27 @@ PetscErrorCode  DMDACreateCompatibleDMDA(DM da,PetscInt nfields,DM *nda)
 
   stencil_type = dd->stencil_type;
 
-  ierr = DMDAGetOwnershipRanges(da,&lx,&ly,&lz);CHKERRQ(ierr);
+  PetscCall(DMDAGetOwnershipRanges(da,&lx,&ly,&lz));
   if (dim == 1) {
-    ierr = DMDACreate1d(PetscObjectComm((PetscObject)da),bx,M,nfields,s,dd->lx,nda);CHKERRQ(ierr);
+    PetscCall(DMDACreate1d(PetscObjectComm((PetscObject)da),bx,M,nfields,s,dd->lx,nda));
   } else if (dim == 2) {
-    ierr = DMDACreate2d(PetscObjectComm((PetscObject)da),bx,by,stencil_type,M,N,m,n,nfields,s,lx,ly,nda);CHKERRQ(ierr);
+    PetscCall(DMDACreate2d(PetscObjectComm((PetscObject)da),bx,by,stencil_type,M,N,m,n,nfields,s,lx,ly,nda));
   } else if (dim == 3) {
-    ierr = DMDACreate3d(PetscObjectComm((PetscObject)da),bx,by,bz,stencil_type,M,N,P,m,n,p,nfields,s,lx,ly,lz,nda);CHKERRQ(ierr);
+    PetscCall(DMDACreate3d(PetscObjectComm((PetscObject)da),bx,by,bz,stencil_type,M,N,P,m,n,p,nfields,s,lx,ly,lz,nda));
   }
-  ierr = DMSetUp(*nda);CHKERRQ(ierr);
+  PetscCall(DMSetUp(*nda));
   if (da->coordinates) {
-    ierr = PetscObjectReference((PetscObject)da->coordinates);CHKERRQ(ierr);
+    PetscCall(PetscObjectReference((PetscObject)da->coordinates));
     (*nda)->coordinates = da->coordinates;
   }
 
   /* allow for getting a reduced DA corresponding to a domain decomposition */
-  ierr = DMDAGetOffset(da,&ox,&oy,&oz,&Mo,&No,&Po);CHKERRQ(ierr);
-  ierr = DMDASetOffset(*nda,ox,oy,oz,Mo,No,Po);CHKERRQ(ierr);
+  PetscCall(DMDAGetOffset(da,&ox,&oy,&oz,&Mo,&No,&Po));
+  PetscCall(DMDASetOffset(*nda,ox,oy,oz,Mo,No,Po));
 
   /* allow for getting a reduced DA corresponding to a coarsened DA */
-  ierr = DMGetCoarsenLevel(da,&cl);CHKERRQ(ierr);
-  ierr = DMGetRefineLevel(da,&rl);CHKERRQ(ierr);
+  PetscCall(DMGetCoarsenLevel(da,&cl));
+  PetscCall(DMGetRefineLevel(da,&rl));
 
   (*nda)->levelup   = rl;
   (*nda)->leveldown = cl;
@@ -395,19 +386,18 @@ PetscErrorCode  DMDACreateCompatibleDMDA(DM da,PetscInt nfields,DM *nda)
 
   Not supported from Fortran
 
-.seealso: DMDASetCoordinateName(), DMDASetFieldName(), DMDAGetFieldName(), DMDARestoreCoordinateArray()
+.seealso: `DMDASetCoordinateName()`, `DMDASetFieldName()`, `DMDAGetFieldName()`, `DMDARestoreCoordinateArray()`
 @*/
 PetscErrorCode DMDAGetCoordinateArray(DM dm,void *xc)
 {
-  PetscErrorCode ierr;
   DM             cdm;
   Vec            x;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMGetCoordinates(dm,&x);CHKERRQ(ierr);
-  ierr = DMGetCoordinateDM(dm,&cdm);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(cdm,x,xc);CHKERRQ(ierr);
+  PetscCall(DMGetCoordinates(dm,&x));
+  PetscCall(DMGetCoordinateDM(dm,&cdm));
+  PetscCall(DMDAVecGetArray(cdm,x,xc));
   PetscFunctionReturn(0);
 }
 
@@ -424,18 +414,17 @@ PetscErrorCode DMDAGetCoordinateArray(DM dm,void *xc)
 
   Not supported from Fortran
 
-.seealso: DMDASetCoordinateName(), DMDASetFieldName(), DMDAGetFieldName(), DMDAGetCoordinateArray()
+.seealso: `DMDASetCoordinateName()`, `DMDASetFieldName()`, `DMDAGetFieldName()`, `DMDAGetCoordinateArray()`
 @*/
 PetscErrorCode DMDARestoreCoordinateArray(DM dm,void *xc)
 {
-  PetscErrorCode ierr;
   DM             cdm;
   Vec            x;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMGetCoordinates(dm,&x);CHKERRQ(ierr);
-  ierr = DMGetCoordinateDM(dm,&cdm);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(cdm,x,xc);CHKERRQ(ierr);
+  PetscCall(DMGetCoordinates(dm,&x));
+  PetscCall(DMGetCoordinateDM(dm,&cdm));
+  PetscCall(DMDAVecRestoreArray(cdm,x,xc));
   PetscFunctionReturn(0);
 }

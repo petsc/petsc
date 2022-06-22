@@ -1,111 +1,111 @@
 
 Matrix of type: shell
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqdense
 2.9678190300000000e+08 3.9288008100000000e+08 
 6.1374683500000000e+08 1.4173141580000000e+09 
 Testing MatMult + MatMultTranspose
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 3.92973e+19
 8.54197e+19
 Testing MatMultAdd
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 -6.89662e+08
 -2.03106e+09
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 -6.89662e+08
 -2.03106e+09
 Testing MatMultTransposeAdd
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 -9.10529e+08
 -1.81019e+09
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 -9.10529e+08
 -1.81019e+09
 Testing MatGetDiagonal
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 2.96782e+08
 1.41731e+09
 MatDiagonalSet not tested on MATSHELL
 
 Matrix of type: seqaij
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqdense
 2.9678190300000000e+08 3.9288008100000000e+08 
 6.1374683500000000e+08 1.4173141580000000e+09 
 Testing MatMult + MatMultTranspose
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 3.92973e+19
 8.54197e+19
 Testing MatMultAdd
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 -6.89662e+08
 -2.03106e+09
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 -6.89662e+08
 -2.03106e+09
 Testing MatMultTransposeAdd
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 -9.10529e+08
 -1.81019e+09
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 -9.10529e+08
 -1.81019e+09
 Testing MatGetDiagonal
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 2.96782e+08
 1.41731e+09
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 11.
 13.
 
 Matrix of type: nest
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqdense
 2.9678190300000000e+08 3.9288008100000000e+08 
 6.1374683500000000e+08 1.4173141580000000e+09 
 Testing MatMult + MatMultTranspose
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 3.92973e+19
 8.54197e+19
 Testing MatMultAdd
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 -6.89662e+08
 -2.03106e+09
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 -6.89662e+08
 -2.03106e+09
 Testing MatMultTransposeAdd
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 -9.10529e+08
 -1.81019e+09
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 -9.10529e+08
 -1.81019e+09
 Testing MatGetDiagonal
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 2.96782e+08
 1.41731e+09
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 11.
 13.

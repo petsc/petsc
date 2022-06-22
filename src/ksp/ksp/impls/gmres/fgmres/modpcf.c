@@ -34,16 +34,14 @@
     KSPFGMRESModifyPCNoChange()
     KSPFGMRESModifyPCKSP()
 
-.seealso: KSPFGMRESModifyPCNoChange(), KSPFGMRESModifyPCKSP()
+.seealso: `KSPFGMRESModifyPCNoChange()`, `KSPFGMRESModifyPCKSP()`
 
 @*/
 PetscErrorCode  KSPFGMRESSetModifyPC(KSP ksp,PetscErrorCode (*fcn)(KSP,PetscInt,PetscInt,PetscReal,void*),void *ctx,PetscErrorCode (*d)(void*))
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  ierr = PetscTryMethod(ksp,"KSPFGMRESSetModifyPC_C",(KSP,PetscErrorCode (*)(KSP,PetscInt,PetscInt,PetscReal,void*),void*,PetscErrorCode (*)(void*)),(ksp,fcn,ctx,d));CHKERRQ(ierr);
+  PetscTryMethod(ksp,"KSPFGMRESSetModifyPC_C",(KSP,PetscErrorCode (*)(KSP,PetscInt,PetscInt,PetscReal,void*),void*,PetscErrorCode (*)(void*)),(ksp,fcn,ctx,d));
   PetscFunctionReturn(0);
 }
 
@@ -67,7 +65,7 @@ PetscErrorCode  KSPFGMRESSetModifyPC(KSP ksp,PetscErrorCode (*fcn)(KSP,PetscInt,
 
 You can use this as a template!
 
-.seealso: KSPFGMRESSetModifyPC(), KSPFGMRESModifyPCKSP()
+.seealso: `KSPFGMRESSetModifyPC()`, `KSPFGMRESModifyPCKSP()`
 
 @*/
 PetscErrorCode  KSPFGMRESModifyPCNoChange(KSP ksp,PetscInt total_its,PetscInt loc_its,PetscReal res_norm,void *dummy)
@@ -95,35 +93,33 @@ PetscErrorCode  KSPFGMRESModifyPCNoChange(KSP ksp,PetscInt total_its,PetscInt lo
 
  This could be used as a template!
 
-.seealso: KSPFGMRESSetModifyPC(), KSPFGMRESModifyPCKSP()
+.seealso: `KSPFGMRESSetModifyPC()`, `KSPFGMRESModifyPCKSP()`
 
 @*/
 PetscErrorCode  KSPFGMRESModifyPCKSP(KSP ksp,PetscInt total_its,PetscInt loc_its,PetscReal res_norm,void *dummy)
 {
   PC             pc;
-  PetscErrorCode ierr;
   PetscInt       maxits;
   KSP            sub_ksp;
   PetscReal      rtol,abstol,dtol;
   PetscBool      isksp;
 
   PetscFunctionBegin;
-  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+  PetscCall(KSPGetPC(ksp,&pc));
 
-  ierr = PetscObjectTypeCompare((PetscObject)pc,PCKSP,&isksp);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)pc,PCKSP,&isksp));
   if (isksp) {
-    ierr = PCKSPGetKSP(pc,&sub_ksp);CHKERRQ(ierr);
+    PetscCall(PCKSPGetKSP(pc,&sub_ksp));
 
     /* note that at this point you could check the type of KSP with KSPGetType() */
 
     /* Now we can use functions such as KSPGMRESSetRestart() or
       KSPGMRESSetOrthogonalization() or KSPSetTolerances() */
 
-    ierr = KSPGetTolerances(sub_ksp,&rtol,&abstol,&dtol,&maxits);CHKERRQ(ierr);
+    PetscCall(KSPGetTolerances(sub_ksp,&rtol,&abstol,&dtol,&maxits));
     if (!loc_its) rtol = .1;
     else rtol *= .9;
-    ierr = KSPSetTolerances(sub_ksp,rtol,abstol,dtol,maxits);CHKERRQ(ierr);
+    PetscCall(KSPSetTolerances(sub_ksp,rtol,abstol,dtol,maxits));
   }
   PetscFunctionReturn(0);
 }
-

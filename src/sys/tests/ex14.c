@@ -5,39 +5,39 @@ static char help[] = "Tests PetscOptionsGetScalar(), PetscOptionsScalarArray() f
 
 int main(int argc,char **argv)
 {
-  PetscInt    ierr,n,i;
+  PetscInt    n,i;
   PetscScalar a,array[10];
   PetscReal   rarray[10];
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetScalar(NULL,NULL,"-a",&a,NULL);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"Scalar a = %g + %gi\n",(double)PetscRealPart(a),(double)PetscImaginaryPart(a));CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscOptionsGetScalar(NULL,NULL,"-a",&a,NULL));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF,"Scalar a = %g + %gi\n",(double)PetscRealPart(a),(double)PetscImaginaryPart(a)));
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"test options",NULL);CHKERRQ(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"test options",NULL);
   n = 10; /* max num of input values */
-  ierr = PetscOptionsRealArray("-rarray", "Input a real array", "ex14.c", rarray, &n, NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsRealArray("-rarray", "Input a real array", "ex14.c", rarray, &n, NULL));
   if (n) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Real rarray of length %" PetscInt_FMT "\n",n);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"Real rarray of length %" PetscInt_FMT "\n",n));
     for (i=0; i<n; i++) {
-      ierr = PetscPrintf(PETSC_COMM_SELF," %g,\n",(double)rarray[i]);CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_SELF," %g,\n",(double)rarray[i]));
     }
   }
 
   n = 10; /* max num of input values */
-  ierr = PetscOptionsScalarArray("-array", "Input a scalar array", "ex14.c", array, &n, NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsScalarArray("-array", "Input a scalar array", "ex14.c", array, &n, NULL));
   if (n) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Scalar rarray of length %" PetscInt_FMT "\n",n);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_SELF,"Scalar rarray of length %" PetscInt_FMT "\n",n));
     for (i=0; i<n; i++) {
       if (PetscImaginaryPart(array[i]) < 0.0) {
-        ierr = PetscPrintf(PETSC_COMM_SELF," %g - %gi\n",(double)PetscRealPart(array[i]),(double)PetscAbsReal(PetscImaginaryPart(array[i])));CHKERRQ(ierr);
+        PetscCall(PetscPrintf(PETSC_COMM_SELF," %g - %gi\n",(double)PetscRealPart(array[i]),(double)PetscAbsReal(PetscImaginaryPart(array[i]))));
       } else {
-        ierr = PetscPrintf(PETSC_COMM_SELF," %g + %gi\n",(double)PetscRealPart(array[i]),(double)PetscImaginaryPart(array[i]));CHKERRQ(ierr);
+        PetscCall(PetscPrintf(PETSC_COMM_SELF," %g + %gi\n",(double)PetscRealPart(array[i]),(double)PetscImaginaryPart(array[i])));
       }
     }
   }
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscOptionsEnd();
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

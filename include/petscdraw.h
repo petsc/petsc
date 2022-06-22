@@ -6,6 +6,8 @@
 #include <petscsys.h>
 #include <petscdrawtypes.h>
 
+/* SUBMANSEC = Sys */
+
 PETSC_EXTERN PetscClassId PETSC_DRAW_CLASSID;
 
 PETSC_EXTERN PetscFunctionList PetscDrawList;
@@ -89,7 +91,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawViewFromOptions(PetscDraw,PetscObject,const
 
    Level: intermediate
 
-.seealso: PetscDrawPointPixel(), PetscDrawPoint(), PetscDrawLine(), PetscDrawTriangle(), PetscDrawRectangle()
+.seealso: `PetscDrawPointPixel()`, `PetscDrawPoint()`, `PetscDrawLine()`, `PetscDrawTriangle()`, `PetscDrawRectangle()`
 
 M*/
 static inline int PetscDrawRealToColor(PetscReal value,PetscReal min,PetscReal max)
@@ -136,7 +138,7 @@ $  PETSC_MARKER_PLUS - a small pixel based + symbol or the character + if that i
 $  PETSC_MARKER_CIRCLE - a small pixel based circle symbol or the character o if that is not available
 $  PETSC_MARKER_POINT - the make obtained with PetscDrawPoint()
 
-.seealso: PetscDrawMarker(), PetscDrawSetMarkerType()
+.seealso: `PetscDrawMarker()`, `PetscDrawSetMarkerType()`
 E*/
 typedef enum {PETSC_DRAW_MARKER_CROSS, PETSC_DRAW_MARKER_POINT,PETSC_DRAW_MARKER_PLUS,PETSC_DRAW_MARKER_CIRCLE} PetscDrawMarkerType;
 PETSC_EXTERN const char *const PetscDrawMarkerTypes[];
@@ -199,7 +201,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawGetBoundingBox(PetscDraw,PetscReal*,PetscRe
 
    Level: intermediate
 
-.seealso: PetscDrawGetMouseButton()
+.seealso: `PetscDrawGetMouseButton()`
 E*/
 typedef enum { PETSC_BUTTON_NONE = 0,
                PETSC_BUTTON_LEFT,PETSC_BUTTON_CENTER,PETSC_BUTTON_RIGHT,
@@ -215,7 +217,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawZoom(PetscDraw,PetscErrorCode (*)(PetscDraw
 
    Level: intermediate
 
-.seealso:  PetscDrawViewPortsCreate(), PetscDrawViewPortsSet()
+.seealso: `PetscDrawViewPortsCreate()`, `PetscDrawViewPortsSet()`
 S*/
 typedef struct {
   PetscInt  nports;
@@ -273,11 +275,13 @@ PETSC_EXTERN PetscErrorCode PetscDrawSPAddPoints(PetscDrawSP,int,PetscReal**,Pet
 PETSC_EXTERN PetscErrorCode PetscDrawSPDraw(PetscDrawSP,PetscBool);
 PETSC_EXTERN PetscErrorCode PetscDrawSPSave(PetscDrawSP);
 PETSC_EXTERN PetscErrorCode PetscDrawSPReset(PetscDrawSP);
+PETSC_EXTERN PetscErrorCode PetscDrawSPGetDimension(PetscDrawSP,int*);
 PETSC_EXTERN PetscErrorCode PetscDrawSPSetDimension(PetscDrawSP,int);
 PETSC_EXTERN PetscErrorCode PetscDrawSPGetAxis(PetscDrawSP,PetscDrawAxis*);
 PETSC_EXTERN PetscErrorCode PetscDrawSPGetDraw(PetscDrawSP,PetscDraw*);
 PETSC_EXTERN PetscErrorCode PetscDrawSPSetLimits(PetscDrawSP,PetscReal,PetscReal,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode PetscDrawLGSPDraw(PetscDrawLG,PetscDrawSP);
+PETSC_EXTERN PetscErrorCode PetscDrawSPAddPointColorized(PetscDrawSP,PetscReal*,PetscReal*,PetscReal*);
 
 PETSC_EXTERN PetscClassId PETSC_DRAWHG_CLASSID;
 
@@ -314,10 +318,9 @@ PETSC_EXTERN PetscErrorCode PetscDrawUtilitySetCmap(const char[],int,unsigned ch
 PETSC_EXTERN PetscErrorCode PetscDrawUtilitySetGamma(PetscReal);
 
 /*
-    Handling of X11 I/O errors in parallel
+    Handling of X11 I/O window resizing, window closing and errors in parallel
 */
-#if defined(PETSC_HAVE_X) && defined(PETSC_HAVE_SETJMP_H)
-
+#if PetscDefined(HAVE_X) && PetscDefined(HAVE_SETJMP_H)
 #include <setjmp.h>
 
 PETSC_EXTERN jmp_buf PetscXIOErrorHandlerJumpBuf;
@@ -325,34 +328,93 @@ PETSC_EXTERN void    PetscXIOErrorHandlerJump(void *);
 PETSC_EXTERN_TYPEDEF typedef void (*PetscXIOErrorHandler)(void *);
 PETSC_EXTERN PetscXIOErrorHandler PetscSetXIOErrorHandler(PetscXIOErrorHandler);
 
-#define PetscDrawCollectiveBegin(draw) 0; do { \
-  PetscErrorCode                _Petsc_ierr; \
-  jmp_buf                       _Petsc_jmpbuf; \
-  volatile PetscXIOErrorHandler _Petsc_xioerrhdl = NULL; \
-  PetscBool                     _Petsc_isdrawx, _Petsc_xioerr, _Petsc_xioerr_local = PETSC_FALSE; \
-  _Petsc_ierr = PetscObjectTypeCompare((PetscObject)(draw),PETSC_DRAW_X,&_Petsc_isdrawx);CHKERRQ(_Petsc_ierr); \
-  if (_Petsc_isdrawx) { \
-    _Petsc_ierr = PetscMemcpy(&_Petsc_jmpbuf,&PetscXIOErrorHandlerJumpBuf,sizeof(_Petsc_jmpbuf));CHKERRQ(_Petsc_ierr); \
-    _Petsc_xioerrhdl = PetscSetXIOErrorHandler(PetscXIOErrorHandlerJump); \
-    if (setjmp(PetscXIOErrorHandlerJumpBuf)) {_Petsc_xioerr_local = PETSC_TRUE; do {_Petsc_ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(_Petsc_ierr);} \
-  } do {} while (0)
+/*MC
+    PetscDrawCollectiveBegin - Begins a set of draw operations
 
-#define PetscDrawCollectiveEnd(draw) 0; \
-  if (_Petsc_isdrawx) { \
-    (void)PetscSetXIOErrorHandler(_Petsc_xioerrhdl); \
-    _Petsc_ierr = PetscMemcpy(&PetscXIOErrorHandlerJumpBuf,&_Petsc_jmpbuf,sizeof(PetscXIOErrorHandlerJumpBuf));CHKERRQ(_Petsc_ierr); \
-    _Petsc_ierr = MPI_Allreduce(&_Petsc_xioerr_local,&_Petsc_xioerr,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)(draw)));CHKERRMPI(_Petsc_ierr); \
-    if (_Petsc_xioerr) { \
-      _Petsc_ierr = PetscDrawSetType((draw),PETSC_DRAW_NULL);CHKERRQ(_Petsc_ierr); \
-      PetscFunctionReturn(0); \
-    } \
-  } } while (0)
+   Collective
+
+   Synopsis:
+    #include <petscdraw.h>
+    PetscErrorCode PetscDrawCollectiveBegin(PetscDraw draw)
+
+    Collective
+
+  Input Parameters:
+.   draw - the draw object
+
+  Notes:
+    This is a macro that handles its own error checking, it does not return an error code.
+
+    The set of operations needs to be ended by a call to PetscDrawCollectiveEnd().
+
+    X windows draw operations that are enclosed by these routines handle correctly resizing or closing of
+    the window without crashing the program.
+
+  Developer Notes:
+    This only applies to X windows and so should have a more specific name such as PetscDrawXCollectiveBegin()
+
+  Level: advanced
+
+.seealso: `PetscDrawCollectiveEnd()`
+M*/
+#define PetscDrawCollectiveBegin(draw) do {                                                 \
+  jmp_buf                       _Petsc_jmpbuf;                                                 \
+  volatile PetscXIOErrorHandler _Petsc_xioerrhdl = PETSC_NULLPTR;                                       \
+  PetscBool                     _Petsc_isdrawx,_Petsc_xioerr,_Petsc_xioerr_local=PETSC_FALSE;  \
+  PetscCall(PetscObjectTypeCompare((PetscObject)(draw),PETSC_DRAW_X,&_Petsc_isdrawx));           \
+  if (_Petsc_isdrawx) {                                                                        \
+  PetscCall(PetscMemcpy(&_Petsc_jmpbuf,&PetscXIOErrorHandlerJumpBuf,sizeof(_Petsc_jmpbuf)));     \
+  _Petsc_xioerrhdl = PetscSetXIOErrorHandler(PetscXIOErrorHandlerJump);                        \
+  if (setjmp(PetscXIOErrorHandlerJumpBuf)) {                                                   \
+    _Petsc_xioerr_local = PETSC_TRUE;                                                          \
+    do {                                                                                       \
+      PetscDrawCollectiveEnd(draw);                                                            \
+    }                                                                                          \
+  }                                                                                            \
+  do {} while (0)
+
+/*MC
+    PetscDrawCollectiveEnd - Ends a set of draw operations begun with PetscDrawCollectiveBegin()
+
+   Collective
+
+   Synopsis:
+    #include <petscdraw.h>
+    PetscErrorCode PetscDrawCollectiveEnd(PetscDraw draw)
+
+    Collective
+
+  Input Parameters:
+.   draw - the draw object
+
+  Notes:
+    This is a macro that handles its own error checking, it does not return an error code.
+
+    X windows draw operations that are enclosed by these routines handle correctly resizing or closing of
+    the window without crashing the program.
+
+  Developer Notes:
+    This only applies to X windows and so should have a more specific name such as PetscDrawXCollectiveEnd()
+
+  Level: advanced
+
+.seealso: `PetscDrawCollectiveBegin()`
+M*/
+#define PetscDrawCollectiveEnd(draw)                                                           \
+  if (_Petsc_isdrawx) {                                                                        \
+    (void)PetscSetXIOErrorHandler(_Petsc_xioerrhdl);                                           \
+    PetscCall(PetscMemcpy(&PetscXIOErrorHandlerJumpBuf,&_Petsc_jmpbuf,sizeof(PetscXIOErrorHandlerJumpBuf))); \
+    PetscCallMPI(MPI_Allreduce(&_Petsc_xioerr_local,&_Petsc_xioerr,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)(draw)))); \
+    if (_Petsc_xioerr) {                                                                       \
+      PetscCall(PetscDrawSetType((draw),PETSC_DRAW_NULL));                                       \
+      PetscFunctionReturn(0);                                                                  \
+    }                                                                                          \
+  }                                                                                            \
+  } while (0)
 
 #else
+#define PetscDrawCollectiveBegin(draw)
+#define PetscDrawCollectiveEnd(draw)
+#endif /* PetscDefined(HAVE_X) && PetscDefined(HAVE_SETJMP_H) */
 
-#define PetscDrawCollectiveBegin(draw) 0; do {} while (0)
-#define PetscDrawCollectiveEnd(draw)   0; do {} while (0)
-
-#endif
-
-#endif
+#endif /* PETSCDRAW_H */

@@ -201,7 +201,6 @@ static PetscErrorCode ScatterAndOp(PetscSFLink link,PetscInt count,PetscInt srcS
 template<typename Type,PetscInt BS,PetscInt EQ>
 static PetscErrorCode ScatterAndInsert(PetscSFLink link,PetscInt count,PetscInt srcStart,PetscSFPackOpt srcOpt,const PetscInt *srcIdx,const void *src_,PetscInt dstStart,PetscSFPackOpt dstOpt,const PetscInt *dstIdx,void *dst_)
 {
-  PetscErrorCode          ierr;
   const Type              *src = static_cast<const Type*>(src_);
   Type                    *dst = static_cast<Type*>(dst_);
   DeviceExecutionSpace    exec;
@@ -215,7 +214,7 @@ static PetscErrorCode ScatterAndInsert(PetscSFLink link,PetscInt count,PetscInt 
     deviceConstBuffer_t sbuf(reinterpret_cast<const char*>(src+srcStart*link->bs),sz);
     Kokkos::deep_copy(exec,dbuf,sbuf);
   } else {
-    ierr = ScatterAndOp<Type,Insert<Type>,BS,EQ>(link,count,srcStart,srcOpt,srcIdx,src,dstStart,dstOpt,dstIdx,dst);CHKERRQ(ierr);
+    PetscCall(ScatterAndOp<Type,Insert<Type>,BS,EQ>(link,count,srcStart,srcOpt,srcIdx,src,dstStart,dstOpt,dstIdx,dst));
   }
   PetscFunctionReturn(0);
 }
@@ -422,18 +421,18 @@ static PetscErrorCode PetscSFLinkMemcpy_Kokkos(PetscSFLink PETSC_UNUSED link,Pet
   PetscFunctionBegin;
   if (!n) PetscFunctionReturn(0);
   if (PetscMemTypeHost(dstmtype) && PetscMemTypeHost(srcmtype)) {
-    PetscErrorCode ierr = PetscMemcpy(dst,src,n);CHKERRQ(ierr);
+    PetscCall(PetscMemcpy(dst,src,n));
   } else {
     if (PetscMemTypeDevice(dstmtype) && PetscMemTypeHost(srcmtype)) {
       deviceBuffer_t       dbuf(static_cast<char*>(dst),n);
       HostConstBuffer_t    sbuf(static_cast<const char*>(src),n);
       Kokkos::deep_copy(exec,dbuf,sbuf);
-      PetscErrorCode ierr = PetscLogCpuToGpu(n);CHKERRQ(ierr);
+      PetscCall(PetscLogCpuToGpu(n));
     } else if (PetscMemTypeHost(dstmtype) && PetscMemTypeDevice(srcmtype)) {
       HostBuffer_t         dbuf(static_cast<char*>(dst),n);
       deviceConstBuffer_t  sbuf(static_cast<const char*>(src),n);
       Kokkos::deep_copy(exec,dbuf,sbuf);
-      PetscErrorCode ierr = PetscLogGpuToCpu(n);CHKERRQ(ierr);
+      PetscCall(PetscLogGpuToCpu(n));
     } else if (PetscMemTypeDevice(dstmtype) && PetscMemTypeDevice(srcmtype)) {
       deviceBuffer_t       dbuf(static_cast<char*>(dst),n);
       deviceConstBuffer_t  sbuf(static_cast<const char*>(src),n);
@@ -446,9 +445,9 @@ static PetscErrorCode PetscSFLinkMemcpy_Kokkos(PetscSFLink PETSC_UNUSED link,Pet
 PetscErrorCode PetscSFMalloc_Kokkos(PetscMemType mtype,size_t size,void** ptr)
 {
   PetscFunctionBegin;
-  if (PetscMemTypeHost(mtype)) {PetscErrorCode ierr = PetscMalloc(size,ptr);CHKERRQ(ierr);}
+  if (PetscMemTypeHost(mtype)) PetscCall(PetscMalloc(size,ptr));
   else if (PetscMemTypeDevice(mtype)) {
-    if (!PetscKokkosInitialized) { PetscErrorCode ierr = PetscKokkosInitializeCheck();CHKERRQ(ierr); }
+    if (!PetscKokkosInitialized) PetscCall(PetscKokkosInitializeCheck());
     *ptr = Kokkos::kokkos_malloc<DeviceMemorySpace>(size);
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong PetscMemType %d", (int)mtype);
   PetscFunctionReturn(0);
@@ -457,7 +456,7 @@ PetscErrorCode PetscSFMalloc_Kokkos(PetscMemType mtype,size_t size,void** ptr)
 PetscErrorCode PetscSFFree_Kokkos(PetscMemType mtype,void* ptr)
 {
   PetscFunctionBegin;
-  if (PetscMemTypeHost(mtype)) {PetscErrorCode ierr = PetscFree(ptr);CHKERRQ(ierr);}
+  if (PetscMemTypeHost(mtype)) PetscCall(PetscFree(ptr));
   else if (PetscMemTypeDevice(mtype)) {Kokkos::kokkos_free<DeviceMemorySpace>(ptr);}
   else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong PetscMemType %d",(int)mtype);
   PetscFunctionReturn(0);
@@ -466,12 +465,10 @@ PetscErrorCode PetscSFFree_Kokkos(PetscMemType mtype,void* ptr)
 /* Destructor when the link uses MPI for communication */
 static PetscErrorCode PetscSFLinkDestroy_Kokkos(PetscSF sf,PetscSFLink link)
 {
-  PetscErrorCode     ierr;
-
   PetscFunctionBegin;
   for (int i=PETSCSF_LOCAL; i<=PETSCSF_REMOTE; i++) {
-    ierr = PetscSFFree(sf,PETSC_MEMTYPE_DEVICE,link->rootbuf_alloc[i][PETSC_MEMTYPE_DEVICE]);CHKERRQ(ierr);
-    ierr = PetscSFFree(sf,PETSC_MEMTYPE_DEVICE,link->leafbuf_alloc[i][PETSC_MEMTYPE_DEVICE]);CHKERRQ(ierr);
+    PetscCall(PetscSFFree(sf,PETSC_MEMTYPE_DEVICE,link->rootbuf_alloc[i][PETSC_MEMTYPE_DEVICE]));
+    PetscCall(PetscSFFree(sf,PETSC_MEMTYPE_DEVICE,link->leafbuf_alloc[i][PETSC_MEMTYPE_DEVICE]));
   }
   PetscFunctionReturn(0);
 }
@@ -479,7 +476,6 @@ static PetscErrorCode PetscSFLinkDestroy_Kokkos(PetscSF sf,PetscSFLink link)
 /* Some fields of link are initialized by PetscSFPackSetUp_Host. This routine only does what needed on device */
 PetscErrorCode PetscSFLinkSetUp_Kokkos(PetscSF PETSC_UNUSED sf,PetscSFLink link,MPI_Datatype unit)
 {
-  PetscErrorCode     ierr;
   PetscInt           nSignedChar=0,nUnsignedChar=0,nInt=0,nPetscInt=0,nPetscReal=0;
   PetscBool          is2Int,is2PetscInt;
 #if defined(PETSC_HAVE_COMPLEX)
@@ -488,18 +484,18 @@ PetscErrorCode PetscSFLinkSetUp_Kokkos(PetscSF PETSC_UNUSED sf,PetscSFLink link,
 
   PetscFunctionBegin;
   if (link->deviceinited) PetscFunctionReturn(0);
-  ierr = PetscKokkosInitializeCheck();CHKERRQ(ierr);
-  ierr = MPIPetsc_Type_compare_contig(unit,MPI_SIGNED_CHAR,  &nSignedChar);CHKERRQ(ierr);
-  ierr = MPIPetsc_Type_compare_contig(unit,MPI_UNSIGNED_CHAR,&nUnsignedChar);CHKERRQ(ierr);
+  PetscCall(PetscKokkosInitializeCheck());
+  PetscCall(MPIPetsc_Type_compare_contig(unit,MPI_SIGNED_CHAR,  &nSignedChar));
+  PetscCall(MPIPetsc_Type_compare_contig(unit,MPI_UNSIGNED_CHAR,&nUnsignedChar));
   /* MPI_CHAR is treated below as a dumb type that does not support reduction according to MPI standard */
-  ierr = MPIPetsc_Type_compare_contig(unit,MPI_INT,  &nInt);CHKERRQ(ierr);
-  ierr = MPIPetsc_Type_compare_contig(unit,MPIU_INT, &nPetscInt);CHKERRQ(ierr);
-  ierr = MPIPetsc_Type_compare_contig(unit,MPIU_REAL,&nPetscReal);CHKERRQ(ierr);
+  PetscCall(MPIPetsc_Type_compare_contig(unit,MPI_INT,  &nInt));
+  PetscCall(MPIPetsc_Type_compare_contig(unit,MPIU_INT, &nPetscInt));
+  PetscCall(MPIPetsc_Type_compare_contig(unit,MPIU_REAL,&nPetscReal));
 #if defined(PETSC_HAVE_COMPLEX)
-  ierr = MPIPetsc_Type_compare_contig(unit,MPIU_COMPLEX,&nPetscComplex);CHKERRQ(ierr);
+  PetscCall(MPIPetsc_Type_compare_contig(unit,MPIU_COMPLEX,&nPetscComplex));
 #endif
-  ierr = MPIPetsc_Type_compare(unit,MPI_2INT,&is2Int);CHKERRQ(ierr);
-  ierr = MPIPetsc_Type_compare(unit,MPIU_2INT,&is2PetscInt);CHKERRQ(ierr);
+  PetscCall(MPIPetsc_Type_compare(unit,MPI_2INT,&is2Int));
+  PetscCall(MPIPetsc_Type_compare(unit,MPIU_2INT,&is2PetscInt));
 
   if (is2Int) {
     PackInit_PairType<Kokkos::pair<int,int>>(link);
@@ -557,8 +553,8 @@ PetscErrorCode PetscSFLinkSetUp_Kokkos(PetscSF PETSC_UNUSED sf,PetscSFLink link,
 #endif
   } else {
     MPI_Aint lb,nbyte;
-    ierr = MPI_Type_get_extent(unit,&lb,&nbyte);CHKERRMPI(ierr);
-    PetscCheckFalse(lb != 0,PETSC_COMM_SELF,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld",(long)lb);
+    PetscCallMPI(MPI_Type_get_extent(unit,&lb,&nbyte));
+    PetscCheck(lb == 0,PETSC_COMM_SELF,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld",(long)lb);
     if (nbyte % sizeof(int)) { /* If the type size is not multiple of int */
      #if !defined(PETSC_HAVE_DEVICE)
       if      (nbyte == 4) PackInit_DumbType<char,4,1>(link); else if (nbyte%4 == 0) PackInit_DumbType<char,4,0>(link);

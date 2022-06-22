@@ -2,10 +2,7 @@
 #requirespackage   'PETSC_HAVE_SUITESPARSE'
 #requiresprecision double
 
-ALL: lib
-
 CFLAGS   = ${SUITESPARSE_INCLUDE}
-FFLAGS   =
 SOURCEC  = klu.c
 SOURCEF  =
 SOURCEH  =

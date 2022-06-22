@@ -7,37 +7,36 @@ static char help[] = "Demonstrates constructing an application ordering.\n\n";
 int main(int argc,char **argv)
 {
   PetscInt       n = 5;
-  PetscErrorCode ierr;
   PetscMPIInt    rank,size;
   IS             ispetsc,isapp;
   AO             ao;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   /* create the index sets */
-  ierr = ISCreateStride(PETSC_COMM_WORLD,n,rank,size,&ispetsc);CHKERRQ(ierr);
-  ierr = ISCreateStride(PETSC_COMM_WORLD,n,n*rank,1,&isapp);CHKERRQ(ierr);
+  PetscCall(ISCreateStride(PETSC_COMM_WORLD,n,rank,size,&ispetsc));
+  PetscCall(ISCreateStride(PETSC_COMM_WORLD,n,n*rank,1,&isapp));
 
   /* create the application ordering */
-  ierr = AOCreateBasicIS(isapp,ispetsc,&ao);CHKERRQ(ierr);
+  PetscCall(AOCreateBasicIS(isapp,ispetsc,&ao));
 
-  ierr = AOView(ao,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscCall(AOView(ao,PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = ISView(ispetsc,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = ISView(isapp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = AOPetscToApplicationIS(ao,ispetsc);CHKERRQ(ierr);
-  ierr = ISView(isapp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = ISView(ispetsc,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscCall(ISView(ispetsc,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(ISView(isapp,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(AOPetscToApplicationIS(ao,ispetsc));
+  PetscCall(ISView(isapp,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(ISView(ispetsc,PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = ISDestroy(&ispetsc);CHKERRQ(ierr);
-  ierr = ISDestroy(&isapp);CHKERRQ(ierr);
+  PetscCall(ISDestroy(&ispetsc));
+  PetscCall(ISDestroy(&isapp));
 
-  ierr = AODestroy(&ao);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(AODestroy(&ao));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

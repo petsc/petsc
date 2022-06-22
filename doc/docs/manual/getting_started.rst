@@ -7,16 +7,16 @@ PETSc consists of a collection of classes,
 which are discussed in detail in later parts of the manual (:doc:`programming` and :doc:`additional`).
 The important PETSc classes include
 
--  index sets (``IS``), including permutations, for indexing into
-   vectors, renumbering, etc;
+-  index sets (``IS``),  for indexing into
+   vectors, renumbering, permuting, etc;
 
 -  vectors (``Vec``);
 
 -  matrices (``Mat``) (generally sparse);
 
--  over thirty Krylov subspace methods (``KSP``);
+-  Krylov subspace methods (``KSP``);
 
--  dozens of preconditioners, including multigrid, block solvers, and
+-  preconditioners, including multigrid, block solvers, patch solvers, and
    sparse direct solvers (``PC``);
 
 -  nonlinear solvers (``SNES``);
@@ -25,7 +25,7 @@ The important PETSc classes include
    support for differential algebraic equations, and the computation of
    adjoints (sensitivities/gradients of the solutions) (``TS``);
 
--  managing interactions between mesh data structures and vectors,
+-  code for managing interactions between mesh data structures and vectors,
    matrices, and solvers (``DM``);
 
 -  scalable optimization algorithms (``Tao``).
@@ -33,9 +33,7 @@ The important PETSc classes include
 
 Each class consist of an abstract interface (simply a set of calling
 sequences; an abstract base class in C++) and an implementation for each algorithm and data structure.
-Thus, PETSc provides clean and effective codes for the
-various phases of solving PDEs, with a uniform approach for each type
-of problem. This design enables easy comparison and use of different
+This design enables easy comparison and use of different
 algorithms (for example, to experiment with different Krylov subspace
 methods, preconditioners, or truncated Newton methods). Hence, PETSc
 provides a rich environment for modeling scientific applications as well
@@ -71,7 +69,7 @@ The manual is divided into three parts:
 -  :doc:`additional`
 
 :doc:`introduction` describes the basic procedure for using the PETSc library and
-presents two simple examples of solving linear systems with PETSc. This
+presents simple examples of solving linear systems with PETSc. This
 section conveys the typical style used throughout the library and
 enables the application programmer to begin using the software
 immediately.
@@ -93,8 +91,8 @@ and routine name) to the tutorial examples and enable easy movement
 among related topics.
 
 `Visual Studio Code <https://code.visualstudio.com/>`__, Eclipse, Emacs, and Vim users may find their development environment's options for
-searching in the source code (for example, ``etags`` and ``ctags`` for Emacs and Vim) are
-extremely useful for exploring the PETSc source code. Details of these
+searching in the source code are
+useful for exploring the PETSc source code. Details of these
 feature are provided in :any:`sec-developer-environments`.
 
 The complete PETSc distribution, manual pages, and additional information are available via the
@@ -201,7 +199,7 @@ Most PETSc programs begin with a call to
 
 .. code-block::
 
-   ierr = PetscInitialize(int *argc,char ***argv,char *file,char *help);if (ierr) return ierr;
+   PetscInitialize(int *argc,char ***argv,char *file,char *help);
 
 which initializes PETSc and MPI. The arguments ``argc`` and ``argv`` are
 the command line arguments delivered in all C and C++ programs. The
@@ -217,7 +215,7 @@ character string that will be printed if the program is run with the
 
    call PetscInitialize(character(*) file,integer ierr)
 
-``PetscInitialize()`` automatically calls ``MPI_Init()`` if MPI has not
+Where the file argument is optional. ``PetscInitialize()`` automatically calls ``MPI_Init()`` if MPI has not
 been not previously initialized. In certain circumstances in which MPI
 needs to be initialized directly (or is initialized by some other
 library), the user can first call ``MPI_Init()`` (or have the other
@@ -242,31 +240,48 @@ need not program much message passing directly with MPI, but they must
 be familiar with the basic concepts of message passing and distributed
 memory computing.
 
-All PETSc routines return a ``PetscErrorCode``, which is an integer
-indicating whether an error has occurred during the call. The error code
-is set to be nonzero if an error has been detected; otherwise, it is
-zero. For the C/C++ interface, the error variable is the routine’s
-return value, while for the Fortran version, each PETSc routine has as
-its final argument an integer error variable. 
-
 All PETSc programs should call ``PetscFinalize()`` as their final (or
-nearly final) statement, as given below in the C/C++ and Fortran
-formats, respectively:
-
-.. code-block:: c
-
-   ierr = PetscFinalize();
-   return ierr;
-
-.. code-block:: fortran
-
-   call PetscFinalize(ierr)
-
-This routine handles options to be called at the conclusion of the
+nearly final) statement. This routine handles options to be called at the conclusion of the
 program, and calls ``MPI_Finalize()`` if ``PetscInitialize()`` began
 MPI. If MPI was initiated externally from PETSc (by either the user or
 another software package), the user is responsible for calling
 ``MPI_Finalize()``.
+
+Error Checking
+^^^^^^^^^^^^^^
+
+Most PETSc functions return a ``PetscErrorCode``, which is an integer
+indicating whether an error has occurred during the call. The error code
+is set to be nonzero if an error has been detected; otherwise, it is
+zero. For the C/C++ interface, the error variable is the routine’s
+return value, while for the Fortran version, each PETSc routine has as
+its final argument an integer error variable.
+
+One should always check these routine values as given below in the C/C++ and Fortran
+formats, respectively:
+
+.. code-block:: c
+
+   PetscCall(PetscFunction(Args));
+
+or
+
+.. code-block:: fortran
+
+   ! within the main program
+   PetscCallA(PetscFunction(Args,ierr))
+
+.. code-block:: fortran
+
+   ! within any subroutine
+   PetscCall(PetscFunction(Args,ierr))
+
+
+These macros check the returned error code and if it is nonzero they call the PETSc error
+handler and then return from the function with the error code. ``` PetscCallA()``` calls abort
+after calling the error handler because it is not possible to return from a Fortran main
+program. The above macros should be used in all subroutines to enable
+a complete error traceback. See :any:`sec_error2` for more details on PETSc error handling.
 
 .. _sec_simple:
 
@@ -447,18 +462,17 @@ Nonlinear Solvers
 Most PDE problems of interest are inherently nonlinear. PETSc provides
 an interface to tackle the nonlinear problems directly called ``SNES``.
 :any:`chapter_snes` describes the nonlinear
-solvers in detail. We recommend most PETSc users work directly with
-``SNES``, rather than using PETSc for the linear problem within a
+solvers in detail. We highly recommend most PETSc users work directly with
+``SNES``, rather than using PETSc for the linear problem and writing their own
 nonlinear solver.
+
+.. _sec_error2:
 
 Error Checking
 ^^^^^^^^^^^^^^
 
-All PETSc routines return an integer indicating whether an error has
-occurred during the call. The PETSc macro ``CHKERRQ(ierr)`` checks the
-value of ``ierr`` and calls the PETSc error handler upon error
-detection. ``CHKERRQ(ierr)`` should be used in all subroutines to enable
-a complete error traceback. Below, we indicate a traceback
+As noted above PETSc functions return a ``PetscErrorCode``, which is an integer
+indicating whether an error has occurred during the call. Below, we indicate a traceback
 generated by error detection within a sample PETSc program. The error
 occurred on line 3618 of the file
 ``$PETSC_DIR/src/mat/impls/aij/seq/aij.c`` and was caused by trying to
@@ -500,6 +514,31 @@ many) of these macros into your code you can usually easily track down
 in what small segment of your code the corruption has occurred. One can
 also use Valgrind to track down memory errors; see the `FAQ <https://petsc.org/release/faq/>`__.
 
+For complete error handling, calls to MPI functions should be made with ``PetscCallMPI(MPI_Function(Args))``.
+In the main Fortran program the calls should be ``PetscCallMPIA(MPI_Function(Args))``.
+
+PETSc has a small number of C/C++ only macros that do not explicitly return error codes. These are used in the style
+
+.. code-block:: c
+
+   XXXBegin(Args);
+   other code
+   XXXEnd();
+
+and include ``PetscOptionsBegin()``, ``PetscOptionsEnd()``, ``PetscObjectOptionsBegin()``, 
+``PetscOptionsHeadBegin()``, ``PetscOptionsHeadEnd()``, ``PetscDrawCollectiveBegin()``, ``PetscDrawCollectiveEnd()``,
+``MatPreallocateEnd()``, and ``MatPreallocateBegin()``. These should not be checked for error codes.
+Another class of functions with the ``Begin()`` and ``End()`` paradigm
+including ``PetscLogBegin()``, ``PetscLogEnd()``, ``MatAssemblyBegin()``, and ``MatAssemblyEnd()`` do return error codes that should be checked.
+
+PETSc also has a set of C/C++ only macros that return an object, or ``NULL`` if an error has been detected. These include
+``PETSC_VIEWER_STDOUT_WORLD``, ``PETSC_VIEWER_DRAW_WORLD``, ``PETSC_VIEWER_STDOUT_(MPI_Comm)``, and ``PETSC_VIEWER_DRAW_(MPI_Comm)``.
+
+Finally ``PetscObjectComm((PetscObject)x)`` returns the communicator associated with the object ``x`` or ``MPI_COMM_NULL`` if an
+error was detected.
+
+
+
 .. _sec_parallel:
 
 Parallel and GPU Programming
@@ -507,7 +546,7 @@ Parallel and GPU Programming
 
 Numerical computing today has multiple levels of parallelism (concurrency).
 
-- Low-level, single instruction multiple data (SIMD) parallelism
+- Low-level, single instruction multiple data (SIMD) parallelism or, somewhat similar, GPU parallelism,
 
 - Medium-level, multiple instruction shared memory parallelism, and
 
@@ -580,21 +619,72 @@ local part of the matrix and vectors in the parallel case.
 CPU SIMD parallelism
 ~~~~~~~~~~~~~~~~~~~~
 
+SIMD parallelism occurs most commonly in the Intel advanced vector extensions (AVX) `Wikipedia https://en.wikipedia.org/wiki/Advanced_Vector_Extensions`
+families of instructions. It may be automatically used by the optimizing compiler, or in low-level libraries that PETSc uses such as BLAS
+(see `BLIS https://github.com/flame/blis`, or rarely,
+directly in PETSc C/C++ code, as in `MatMult_SeqSELL https://petsc.org/main/src/mat/impls/sell/seq/sell.c.html#MatMult_SeqSELL`.
+
 .. _sec_cpu_openmp:
 
 CPU OpenMP parallelism
 ~~~~~~~~~~~~~~~~~~~~~~
 
+OpenMP parallelism is thread parallelism. Multiple threads (independent streams of instructions) process data and perform computations on different
+parts of memory that is
+shared (accessible) to all of the threads. The OpenMP model is most-often based on inserting pragmas into code indicating that a series of instructions
+(often within a loop) can be run in parallel. This is also called a fork-join model of parallelism, since much of the code remains sequential and only the
+computationally expensive parts in the 'parallel region' are parallel. OpenMP also makes it relatively easy to add some degree of
+parallelism to a conventional sequential code.
+
+If one adds
+OpenMP parallelism to an MPI code one must make sure not to over-subscribe the hardware resources. For example, if MPI already has one rank per hardware core then
+using four OpenMP threads per MPI rank will slow the code down since now one core will need to switch back and forth for four OpenMP ranks.
+The PETSc programming model frowns on using both MPI and OpenMP since there are limited practical advantages to it, but it is possible.
+
+For a user's sequential (non-MPI) code that uses certain external packages including BLAS/LAPACK, SuperLU_DIST, MUMPS, MKL, and SuiteSparse one can build PETSc and these
+packages to take advantage of OpenMP by using the configure option `--with-openmp'.  The number of OpenMP threads used in the application can be controlled with
+the PETSc command line option `-omp_num_threads <num>' or the environmental variable `OMP_NUM_THREADS`. Running a PETSc program with `-omp_view` will display the
+number of threads being used. The default number is often absurdly high for the given hardware so we recommend always setting it appropriately. Users can
+also put OpenMP pragmas into their own code. However since PETSc is not thread-safe, they should not call PETSc routines inside the parallel regions.
+
+
 .. _sec_gpu_kernels:
+
 
 GPU kernel parallelism
 ~~~~~~~~~~~~~~~~~~~~~~
+
+
+GPUs offer at least two levels of clearly defined parallelism. Kernel level parallelism is much like SIMD parallelism applied to loops;
+many different "iterations" of the loop index run on different hardware but in "lock-step"
+at the same time. PETSc utilizes this parallelism with three similar, but slightly different models:
+
+- CUDA, which is provided by NVIDIA and runs on NVIDIA GPUs
+
+- HIP, provided by AMD, which can, in theory, run on both AMD and NVIDIA GPUs
+
+- and Kokkos, an open-source package that provides a slightly higher level programming model to utilize GPU kernels.
+
+To utilize this one configures PETSc with either `--with-cuda` or `--with-hip` and, if they plan to use Kokkos, also `--with-kokkos --with-kokkos-kernels`.
+
+In the GPU programming model that PETSc uses the GPU memory is distinct from the CPU memory. This means that data that resides on the CPU
+memory must be copied to the GPU (often this copy is done automatically by the libraries and the user does not need to manage it)
+if one wishes to use the GPU computational power on it. This memory copy is slow compared to the GPU speed hence it is crucial to minimize these copies. This often
+translates to trying to do almost all the computation on the GPU and not constantly switching between computations on the CPU and the GPU on the same data.
+
+PETSc utilizes GPUs by providing vector and matrix classes (Vec and Mat) that are specifically written to run fast on the GPU. However, since it is difficult to
+write an entire PETSc code that runs only on the GPU one can also access and work with (for example, put entries into) the vectors and matrices
+on the CPU. The vector classes
+are `VECCUDA`, `MATAIJCUSPARSE`, `VECKOKKOS`, `MATAIJKOKKOS`, and `VECHIP` (matrices are not yet supported from PETSc with HIP).
+
+More details on using GPUs from PETSc will follow in this document.
 
 .. _sec_gpu_streams:
 
 GPU stream parallelism
 ~~~~~~~~~~~~~~~~~~~~~~
 
+Incomplete
 
 
 .. raw:: latex
@@ -605,7 +695,7 @@ Compiling and Running Programs
 ------------------------------
 
 The output below illustrates compiling and running a
-PETSc program using MPICH on an OS X laptop. Note that different
+PETSc program using MPICH on a macOS laptop. Note that different
 machines will have compilation commands as determined by the
 configuration process. See :any:`sec_writing_application_codes` for
 a discussion about how to compile your PETSc programs. Users who are
@@ -818,13 +908,13 @@ directories:
    on-screen viewering. Includes the subdirectory - ``manualpages``
    (on-line manual pages).
 
--  ``conf`` - Base PETSc configuration files that define the standard
+-  ``lib/petsc/conf`` - Base PETSc configuration files that define the standard
    make variables and rules used by PETSc
 
 -  ``include`` - All include files for PETSc that are visible to the
    user.
 
--  ``include/petsc/finclude`` - PETSc include files for Fortran.
+-  ``include/petsc/finclude`` - PETSc Fortran include files.
 
 -  ``include/petsc/private`` - Private PETSc include files that should
    *not* need to be used by application programmers.
@@ -879,9 +969,9 @@ subdirectories:
 -  ``tests`` - Programs designed for thorough testing of PETSc. As
     such, these codes are not intended for examination by users.
 
--  ``interface`` - The calling sequences for the abstract interface to
-   the component. In other words, provides the abstract base classes for the objects.
-   Code here does not know about particular implementations.
+-  ``interface`` - Provides the abstract base classes for the objects.
+   Code here does not know about particular implementations and does not actually perform
+   operations on the underlying numerical data.
 
 -  ``impls`` - Source code for one or more implementations of the class for particular
    data structures or algorithms.

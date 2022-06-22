@@ -14,21 +14,20 @@
 
   Level: intermediate
 
-.seealso: DMNetworkMonitorDestroy(), DMNetworkMonitorAdd()
+.seealso: `DMNetworkMonitorDestroy()`, `DMNetworkMonitorAdd()`
 @*/
 PetscErrorCode DMNetworkMonitorCreate(DM network,DMNetworkMonitor *monitorptr)
 {
-  PetscErrorCode   ierr;
   DMNetworkMonitor monitor;
   MPI_Comm         comm;
   PetscMPIInt      size;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)network,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
-  PetscCheckFalse(size > 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Parallel DMNetworkMonitor is not supported yet");
+  PetscCall(PetscObjectGetComm((PetscObject)network,&comm));
+  PetscCallMPI(MPI_Comm_size(comm, &size));
+  PetscCheck(size == 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Parallel DMNetworkMonitor is not supported yet");
 
-  ierr = PetscMalloc1(1,&monitor);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(1,&monitor));
   monitor->comm      = comm;
   monitor->network   = network;
   monitor->firstnode = NULL;
@@ -47,18 +46,16 @@ PetscErrorCode DMNetworkMonitorCreate(DM network,DMNetworkMonitor *monitorptr)
 
   Level: intermediate
 
-.seealso: DMNetworkMonitorCreate, DMNetworkMonitorAdd
+.seealso: `DMNetworkMonitorCreate`, `DMNetworkMonitorAdd`
 @*/
 PetscErrorCode DMNetworkMonitorDestroy(DMNetworkMonitor *monitor)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   while ((*monitor)->firstnode) {
-    ierr = DMNetworkMonitorPop(*monitor);CHKERRQ(ierr);
+    PetscCall(DMNetworkMonitorPop(*monitor));
   }
 
-  ierr = PetscFree(*monitor);CHKERRQ(ierr);
+  PetscCall(PetscFree(*monitor));
   PetscFunctionReturn(0);
 }
 
@@ -72,11 +69,10 @@ PetscErrorCode DMNetworkMonitorDestroy(DMNetworkMonitor *monitor)
 
   Level: intermediate
 
-.seealso: DMNetworkMonitorCreate(), DMNetworkMonitorDestroy()
+.seealso: `DMNetworkMonitorCreate()`, `DMNetworkMonitorDestroy()`
 @*/
 PetscErrorCode DMNetworkMonitorPop(DMNetworkMonitor monitor)
 {
-  PetscErrorCode       ierr;
   DMNetworkMonitorList node;
 
   PetscFunctionBegin;
@@ -86,9 +82,9 @@ PetscErrorCode DMNetworkMonitorPop(DMNetworkMonitor monitor)
     monitor->firstnode = node->next;
 
     /* Free list node */
-    ierr = PetscViewerDestroy(&(node->viewer));CHKERRQ(ierr);
-    ierr = VecDestroy(&(node->v));CHKERRQ(ierr);
-    ierr = PetscFree(node);CHKERRQ(ierr);
+    PetscCall(PetscViewerDestroy(&(node->viewer)));
+    PetscCall(VecDestroy(&(node->v)));
+    PetscCall(PetscFree(node));
   }
   PetscFunctionReturn(0);
 }
@@ -120,11 +116,10 @@ PetscErrorCode DMNetworkMonitorPop(DMNetworkMonitor monitor)
   Precisely, the parameters nodes, start and blocksize allow you to select a general
   strided subarray of the variables to monitor.
 
-.seealso: DMNetworkMonitorCreate(), DMNetworkMonitorDestroy()
+.seealso: `DMNetworkMonitorCreate()`, `DMNetworkMonitorDestroy()`
 @*/
 PetscErrorCode DMNetworkMonitorAdd(DMNetworkMonitor monitor,const char *name,PetscInt element,PetscInt nodes,PetscInt start,PetscInt blocksize,PetscReal xmin,PetscReal xmax,PetscReal ymin,PetscReal ymax,PetscBool hold)
 {
-  PetscErrorCode       ierr;
   PetscDrawLG          drawlg;
   PetscDrawAxis        axis;
   PetscMPIInt          rank, size;
@@ -133,38 +128,38 @@ PetscErrorCode DMNetworkMonitorAdd(DMNetworkMonitor monitor,const char *name,Pet
   PetscInt             vStart,vEnd,eStart,eEnd;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(monitor->comm, &rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(monitor->comm, &size);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_rank(monitor->comm, &rank));
+  PetscCallMPI(MPI_Comm_size(monitor->comm, &size));
 
-  ierr = DMNetworkGetVertexRange(monitor->network, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = DMNetworkGetEdgeRange(monitor->network, &eStart, &eEnd);CHKERRQ(ierr);
+  PetscCall(DMNetworkGetVertexRange(monitor->network, &vStart, &vEnd));
+  PetscCall(DMNetworkGetEdgeRange(monitor->network, &eStart, &eEnd));
 
   /* Make window title */
   if (vStart <= element && element < vEnd) {
-    ierr = PetscSNPrintf(titleBuffer, 64, "%s @ vertex %d [%d / %d]", name, element - vStart, rank, size-1);CHKERRQ(ierr);
+    PetscCall(PetscSNPrintf(titleBuffer, sizeof(titleBuffer), "%s @ vertex %" PetscInt_FMT " [%d / %d]", name, element - vStart, rank, size-1));
   } else if (eStart <= element && element < eEnd) {
-    ierr = PetscSNPrintf(titleBuffer, 64, "%s @ edge %d [%d / %d]", name, element - eStart, rank, size-1);CHKERRQ(ierr);
+    PetscCall(PetscSNPrintf(titleBuffer, sizeof(titleBuffer), "%s @ edge %" PetscInt_FMT " [%d / %d]", name, element - eStart, rank, size-1));
   } else {
     /* vertex / edge is not on local machine, so skip! */
     PetscFunctionReturn(0);
   }
 
-  ierr = PetscMalloc1(1, &node);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(1, &node));
 
   /* Setup viewer. */
-  ierr = PetscViewerDrawOpen(monitor->comm, NULL, titleBuffer, PETSC_DECIDE, PETSC_DECIDE, PETSC_DRAW_QUARTER_SIZE, PETSC_DRAW_QUARTER_SIZE, &(node->viewer));CHKERRQ(ierr);
-  ierr = PetscViewerPushFormat(node->viewer, PETSC_VIEWER_DRAW_LG_XRANGE);CHKERRQ(ierr);
-  ierr = PetscViewerDrawGetDrawLG(node->viewer, 0, &drawlg);CHKERRQ(ierr);
-  ierr = PetscDrawLGGetAxis(drawlg, &axis);CHKERRQ(ierr);
+  PetscCall(PetscViewerDrawOpen(monitor->comm, NULL, titleBuffer, PETSC_DECIDE, PETSC_DECIDE, PETSC_DRAW_QUARTER_SIZE, PETSC_DRAW_QUARTER_SIZE, &(node->viewer)));
+  PetscCall(PetscViewerPushFormat(node->viewer, PETSC_VIEWER_DRAW_LG_XRANGE));
+  PetscCall(PetscViewerDrawGetDrawLG(node->viewer, 0, &drawlg));
+  PetscCall(PetscDrawLGGetAxis(drawlg, &axis));
   if (xmin != PETSC_DECIDE && xmax != PETSC_DECIDE) {
-    ierr = PetscDrawAxisSetLimits(axis, xmin, xmax, ymin, ymax);CHKERRQ(ierr);
+    PetscCall(PetscDrawAxisSetLimits(axis, xmin, xmax, ymin, ymax));
   } else {
-    ierr = PetscDrawAxisSetLimits(axis, 0, nodes-1, ymin, ymax);CHKERRQ(ierr);
+    PetscCall(PetscDrawAxisSetLimits(axis, 0, nodes-1, ymin, ymax));
   }
-  ierr = PetscDrawAxisSetHoldLimits(axis, hold);CHKERRQ(ierr);
+  PetscCall(PetscDrawAxisSetHoldLimits(axis, hold));
 
   /* Setup vector storage for drawing. */
-  ierr = VecCreateSeq(PETSC_COMM_SELF, nodes, &(node->v));CHKERRQ(ierr);
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF, nodes, &(node->v)));
 
   node->element   = element;
   node->nodes     = nodes;
@@ -187,29 +182,28 @@ PetscErrorCode DMNetworkMonitorAdd(DMNetworkMonitor monitor,const char *name,Pet
 
   Level: intermediate
 
-.seealso: DMNetworkMonitorCreate(), DMNetworkMonitorDestroy(), DMNetworkMonitorAdd()
+.seealso: `DMNetworkMonitorCreate()`, `DMNetworkMonitorDestroy()`, `DMNetworkMonitorAdd()`
 @*/
 
 PetscErrorCode DMNetworkMonitorView(DMNetworkMonitor monitor,Vec x)
 {
-  PetscErrorCode      ierr;
   PetscInt            varoffset,i,start;
   const PetscScalar   *xx;
   PetscScalar         *vv;
   DMNetworkMonitorList node;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayRead(x, &xx);CHKERRQ(ierr);
+  PetscCall(VecGetArrayRead(x, &xx));
   for (node = monitor->firstnode; node; node = node->next) {
-    ierr = DMNetworkGetGlobalVecOffset(monitor->network, node->element, ALL_COMPONENTS, &varoffset);CHKERRQ(ierr);
-    ierr = VecGetArray(node->v, &vv);CHKERRQ(ierr);
+    PetscCall(DMNetworkGetGlobalVecOffset(monitor->network, node->element, ALL_COMPONENTS, &varoffset));
+    PetscCall(VecGetArray(node->v, &vv));
     start = varoffset + node->start;
     for (i = 0; i < node->nodes; i++) {
       vv[i] = xx[start+i*node->blocksize];
     }
-    ierr = VecRestoreArray(node->v, &vv);CHKERRQ(ierr);
-    ierr = VecView(node->v, node->viewer);CHKERRQ(ierr);
+    PetscCall(VecRestoreArray(node->v, &vv));
+    PetscCall(VecView(node->v, node->viewer));
   }
-  ierr = VecRestoreArrayRead(x, &xx);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayRead(x, &xx));
   PetscFunctionReturn(0);
 }

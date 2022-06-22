@@ -18,50 +18,47 @@
       zero = 0
       one  = 1
       sone = 1
-      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      if (ierr .ne. 0) then
-         print*, 'Unable to begin PETSc program'
-      endif
+      PetscCallA(PetscInitialize(ierr))
 
-      call MatCreate(PETSC_COMM_WORLD,A,ierr)
-      call MatCreate(PETSC_COMM_WORLD,B,ierr)
+      PetscCallA(MatCreate(PETSC_COMM_WORLD,A,ierr))
+      PetscCallA(MatCreate(PETSC_COMM_WORLD,B,ierr))
 
-      call MatGetNullSpace(A,sp,ierr)
+      PetscCallA(MatGetNullSpace(A,sp,ierr))
       if (sp .ne. PETSC_NULL_MATNULLSPACE) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Matrix null space should not exist"); endif
 
-      call MatSetNullSpace(A,PETSC_NULL_MATNULLSPACE,ierr)
-      call MatGetNullSpace(A,sp,ierr)
+      PetscCallA(MatSetNullSpace(A,PETSC_NULL_MATNULLSPACE,ierr))
+      PetscCallA(MatGetNullSpace(A,sp,ierr))
       if (sp .ne. PETSC_NULL_MATNULLSPACE) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Matrix null space should not exist"); endif
 
-      call MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,zero,PETSC_NULL_VEC,sp,ierr)
-      call MatSetNullSpace(A,sp,ierr)
-      call MatGetNullSpace(A,sp1,ierr)
+      PetscCallA(MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,zero,PETSC_NULL_VEC,sp,ierr))
+      PetscCallA(MatSetNullSpace(A,sp,ierr))
+      PetscCallA(MatGetNullSpace(A,sp1,ierr))
       if (sp1 .eq. PETSC_NULL_MATNULLSPACE) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Matrix null space should not be null"); endif
-      call MatNullSpaceDestroy(sp,ierr)
+      PetscCallA(MatNullSpaceDestroy(sp,ierr))
 
-      call MatCreateSeqDense(PETSC_COMM_WORLD,one,one,PETSC_NULL_SCALAR,C,ierr)
-      call MatSetValues(C,one,zero,one,zero,sone,INSERT_VALUES,ierr)
-      call MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY,ierr)
-      call MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY,ierr)
-      call MatCreateSchurComplement(C,C,C,C,PETSC_NULL_MAT,SC,ierr)
-      call MatGetOwnershipRange(SC,PETSC_NULL_INTEGER,rend,ierr)
-      call VecCreateSeq(PETSC_COMM_SELF,one,x,ierr)
-      call VecDuplicate(x,y,ierr)
-      call VecSetValues(x,one,zero,sone,INSERT_VALUES,ierr)
-      call VecAssemblyBegin(x,ierr)
-      call VecAssemblyEnd(x,ierr)
-      call MatMult(SC,x,y,ierr)
-      call VecView(y,PETSC_VIEWER_STDOUT_SELF,ierr)
-      call VecSetRandom(x,PETSC_NULL_RANDOM,ierr)
-      call VecView(x,PETSC_VIEWER_STDOUT_SELF,ierr)
+      PetscCallA(MatCreateSeqDense(PETSC_COMM_WORLD,one,one,PETSC_NULL_SCALAR,C,ierr))
+      PetscCallA(MatSetValues(C,one,zero,one,zero,sone,INSERT_VALUES,ierr))
+      PetscCallA(MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY,ierr))
+      PetscCallA(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY,ierr))
+      PetscCallA(MatCreateSchurComplement(C,C,C,C,PETSC_NULL_MAT,SC,ierr))
+      PetscCallA(MatGetOwnershipRange(SC,PETSC_NULL_INTEGER,rend,ierr))
+      PetscCallA(VecCreateSeq(PETSC_COMM_SELF,one,x,ierr))
+      PetscCallA(VecDuplicate(x,y,ierr))
+      PetscCallA(VecSetValues(x,one,zero,sone,INSERT_VALUES,ierr))
+      PetscCallA(VecAssemblyBegin(x,ierr))
+      PetscCallA(VecAssemblyEnd(x,ierr))
+      PetscCallA(MatMult(SC,x,y,ierr))
+      PetscCallA(VecView(y,PETSC_VIEWER_STDOUT_SELF,ierr))
+      PetscCallA(VecSetRandom(x,PETSC_NULL_RANDOM,ierr))
+      PetscCallA(VecView(x,PETSC_VIEWER_STDOUT_SELF,ierr))
 
-      call MatDestroy(SC,ierr)
-      call MatDestroy(C,ierr)
-      call VecDestroy(x,ierr)
-      call VecDestroy(y,ierr)
-      call MatDestroy(A,ierr)
-      call MatDestroy(B,ierr)
-      call PetscFinalize(ierr)
+      PetscCallA(MatDestroy(SC,ierr))
+      PetscCallA(MatDestroy(C,ierr))
+      PetscCallA(VecDestroy(x,ierr))
+      PetscCallA(VecDestroy(y,ierr))
+      PetscCallA(MatDestroy(A,ierr))
+      PetscCallA(MatDestroy(B,ierr))
+      PetscCallA(PetscFinalize(ierr))
       end
 
 !/*TEST

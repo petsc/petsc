@@ -5,38 +5,37 @@ static char help[] = "Tests I/O of vector and string attribute for HDF5 format\n
 
 int main(int argc,char **args)
 {
-  PetscErrorCode    ierr;
   Vec               u;
   PetscViewer       viewer;
   char             *attrReadVal, attrWriteVal[20]={"Hello World!!"};
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
 
   /* PART 1:  Generate vector, then write it in the given data format */
-  ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)u, "Test_Vec");CHKERRQ(ierr);
-  ierr = VecSetSizes(u,PETSC_DECIDE,10);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(u);CHKERRQ(ierr);
-  ierr = VecSet(u,0.);CHKERRQ(ierr);
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&u));
+  PetscCall(PetscObjectSetName((PetscObject)u, "Test_Vec"));
+  PetscCall(VecSetSizes(u,PETSC_DECIDE,10));
+  PetscCall(VecSetFromOptions(u));
+  PetscCall(VecSet(u,0.));
 
   /* write vector and attribute*/
-  ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
-  ierr = VecView(u,viewer);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Attribute value written: '%s'\n\n",attrWriteVal);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5WriteAttribute(viewer,"Test_Vec","Test_Attr",PETSC_STRING,attrWriteVal);CHKERRQ(ierr);
+  PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_WRITE,&viewer));
+  PetscCall(VecView(u,viewer));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Attribute value written: '%s'\n\n",attrWriteVal));
+  PetscCall(PetscViewerHDF5WriteAttribute(viewer,"Test_Vec","Test_Attr",PETSC_STRING,attrWriteVal));
 
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr);
+  PetscCall(PetscViewerDestroy(&viewer));
+  PetscCall(VecDestroy(&u));
 
   /* PART 2:  Read in attribute */
-  ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5ReadAttribute(viewer,"Test_Vec","Test_Attr",PETSC_STRING,NULL,&attrReadVal);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Attribute value read: '%s'\n\n",attrReadVal);CHKERRQ(ierr);
-  ierr = PetscFree(attrReadVal);CHKERRQ(ierr);
+  PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_READ,&viewer));
+  PetscCall(PetscViewerHDF5ReadAttribute(viewer,"Test_Vec","Test_Attr",PETSC_STRING,NULL,&attrReadVal));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Attribute value read: '%s'\n\n",attrReadVal));
+  PetscCall(PetscFree(attrReadVal));
 
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscViewerDestroy(&viewer));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

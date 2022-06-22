@@ -5,7 +5,7 @@
   they are broken.
 
 */
-#include <petscsys.h>        /*I  "petscsys.h"   I*/
+#include <petsc/private/petscimpl.h>        /*I  "petscsys.h"   I*/
 #include <petscbt.h>
 #include <../src/sys/utils/ftn-kernels/fcopy.h>
 
@@ -29,21 +29,22 @@
    PetscArraycmp() is preferred
    This routine is anologous to memcmp()
 
-.seealso: PetscMemcpy(), PetscMemcmp(), PetscArrayzero(), PetscMemzero(), PetscArraycmp(), PetscArraycpy(), PetscStrallocpy(),
-          PetscArraymove()
+.seealso: `PetscMemcpy()`, `PetscMemcmp()`, `PetscArrayzero()`, `PetscMemzero()`, `PetscArraycmp()`, `PetscArraycpy()`, `PetscStrallocpy()`,
+          `PetscArraymove()`
 @*/
-PetscErrorCode PetscMemcmp(const void *str1,const void *str2,size_t len,PetscBool  *e)
+PetscErrorCode PetscMemcmp(const void *str1, const void *str2, size_t len, PetscBool *e)
 {
-  int r;
-
-  if (!len) {*e = PETSC_TRUE; return 0;}
+  if (!len) {
+    // if e is a bad ptr I guess we just die here then?
+    *e = PETSC_TRUE;
+    return 0;
+  }
 
   PetscFunctionBegin;
-  PetscCheckFalse(!str1,PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to compare at a null pointer");
-  PetscCheckFalse(!str2,PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to compare at a null pointer");
-  r = memcmp((char*)str1,(char*)str2,len);
-  if (!r) *e = PETSC_TRUE;
-  else    *e = PETSC_FALSE;
+  PetscValidPointer(str1,1);
+  PetscValidPointer(str2,2);
+  PetscValidBoolPointer(e,4);
+  *e = memcmp((char*)str1,(char*)str2,len) ? PETSC_FALSE : PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -64,31 +65,27 @@ PetscErrorCode PetscMemcmp(const void *str1,const void *str2,size_t len,PetscBoo
 @*/
 PetscErrorCode PetscProcessPlacementView(PetscViewer viewer)
 {
-  PetscErrorCode   ierr;
   PetscBool        isascii;
   PetscMPIInt      rank;
   hwloc_bitmap_t   set;
   hwloc_topology_t topology;
-  int              err;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
-  PetscCheckFalse(!isascii,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Only ASCII viewer is supported");
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii));
+  PetscCheck(isascii,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Only ASCII viewer is supported");
 
-  ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_rank(MPI_COMM_WORLD,&rank));
   hwloc_topology_init ( &topology);
   hwloc_topology_load ( topology);
   set = hwloc_bitmap_alloc();
 
-  err = hwloc_get_proc_cpubind(topology, getpid(), set, HWLOC_CPUBIND_PROCESS);
-  PetscCheckFalse(err,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error %d from hwloc_get_proc_cpubind()",err);
-  ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"MPI rank %d Process id: %d coreid %d\n",rank,getpid(),hwloc_bitmap_first(set));CHKERRQ(ierr);
-  ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+  PetscStackCallStandard(hwloc_get_proc_cpubind,topology, getpid(), set, HWLOC_CPUBIND_PROCESS);
+  PetscCall(PetscViewerASCIIPushSynchronized(viewer));
+  PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"MPI rank %d Process id: %d coreid %d\n",rank,getpid(),hwloc_bitmap_first(set)));
+  PetscCall(PetscViewerFlush(viewer));
   hwloc_bitmap_free(set);
   hwloc_topology_destroy(topology);
   PetscFunctionReturn(0);
 }
 #endif
-

@@ -1,8 +1,5 @@
 -include ../../../../petscdir.mk
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = partitioner.c partitionerreg.c
 SOURCEF  =
 SOURCEH  =

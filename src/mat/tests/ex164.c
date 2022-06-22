@@ -6,17 +6,16 @@ static char help[] = "Tests MatConvert() from SeqDense to SeqAIJ \n\n";
 int main(int argc,char **args)
 {
   Mat            A,C;
-  PetscErrorCode ierr;
   PetscInt       n = 10;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MatCreateSeqDense(PETSC_COMM_WORLD,n,n,NULL,&A);CHKERRQ(ierr);
-  ierr = MatConvert(A,MATSEQDENSE,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
-  ierr = MatView(C,NULL);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(MatCreateSeqDense(PETSC_COMM_WORLD,n,n,NULL,&A));
+  PetscCall(MatConvert(A,MATSEQDENSE,MAT_INITIAL_MATRIX,&C));
+  PetscCall(MatView(C,NULL));
+  PetscCall(MatDestroy(&A));
+  PetscCall(MatDestroy(&C));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -17,24 +17,23 @@ using namespace std;
 
 int main(int argc, char** argv)
 {
-  PetscErrorCode ierr;
   AO             ao;
   IS             isapp;
   char           infile[PETSC_MAX_PATH_LEN],datafiles[PETSC_MAX_PATH_LEN];
   PetscBool      flg;
   PetscMPIInt    size,rank;
 
-  ierr = PetscInitialize(&argc, &argv, (char*)0, help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRMPI(ierr);
+  PetscCall(PetscInitialize(&argc, &argv, (char*)0, help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
-  ierr = PetscOptionsGetString(NULL,NULL,"-datafiles",datafiles,sizeof(datafiles),&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must specify -datafiles ${DATAFILESPATH}/ao");
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-datafiles",datafiles,sizeof(datafiles),&flg));
+  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must specify -datafiles ${DATAFILESPATH}/ao");
 
   // read in application indices
-  ierr = PetscSNPrintf(infile,sizeof(infile),"%s/AO%dCPUs/ao_p%d_appindices.txt",datafiles,size,rank);CHKERRQ(ierr);
+  PetscCall(PetscSNPrintf(infile,sizeof(infile),"%s/AO%dCPUs/ao_p%d_appindices.txt",datafiles,size,rank));
   ifstream fin(infile);
-  if (!fin) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"File not found: %s",infile);
+  PetscCheck(fin,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"File not found: %s",infile);
   vector<PetscInt>  myapp;
   int tmp=-1;
   while (!fin.eof()) {
@@ -46,25 +45,25 @@ int main(int argc, char** argv)
 #if __cplusplus >= 201103L // c++11
   static_assert(is_same<decltype(myapp.size()),size_t>::value,"");
 #endif
-  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] has %zu indices.\n",rank,myapp.size());CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
+  PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] has %zu indices.\n",rank,myapp.size()));
+  PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
 
-  ierr = ISCreateGeneral(PETSC_COMM_WORLD, myapp.size(), &(myapp[0]), PETSC_USE_POINTER, &isapp);CHKERRQ(ierr);
+  PetscCall(ISCreateGeneral(PETSC_COMM_WORLD, myapp.size(), &(myapp[0]), PETSC_USE_POINTER, &isapp));
 
-  ierr = AOCreate(PETSC_COMM_WORLD, &ao);CHKERRQ(ierr);
-  ierr = AOSetIS(ao, isapp, NULL);CHKERRQ(ierr);
-  ierr = AOSetType(ao, AOMEMORYSCALABLE);CHKERRQ(ierr);
-  ierr = AOSetFromOptions(ao);CHKERRQ(ierr);
+  PetscCall(AOCreate(PETSC_COMM_WORLD, &ao));
+  PetscCall(AOSetIS(ao, isapp, NULL));
+  PetscCall(AOSetType(ao, AOMEMORYSCALABLE));
+  PetscCall(AOSetFromOptions(ao));
 
   if (rank==0) cout << "AO has been set up." << endl;
 
-  ierr = AODestroy(&ao);CHKERRQ(ierr);
-  ierr = ISDestroy(&isapp);CHKERRQ(ierr);
+  PetscCall(AODestroy(&ao));
+  PetscCall(ISDestroy(&isapp));
 
   if (rank==0) cout << "AO is done." << endl;
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

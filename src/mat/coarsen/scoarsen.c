@@ -23,18 +23,15 @@ PETSC_EXTERN PetscErrorCode MatCoarsenCreate_HEM(MatCoarsen);
  do not wish to register.  Make sure that the replacement routine is
   linked before libpetscmat.a.
 
- .seealso: MatCoarsenRegister(), MatCoarsenRegisterDestroy()
+ .seealso: `MatCoarsenRegister()`, `MatCoarsenRegisterDestroy()`
  @*/
 PetscErrorCode  MatCoarsenRegisterAll(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (MatCoarsenRegisterAllCalled) PetscFunctionReturn(0);
   MatCoarsenRegisterAllCalled = PETSC_TRUE;
 
-  ierr = MatCoarsenRegister(MATCOARSENMIS,MatCoarsenCreate_MIS);CHKERRQ(ierr);
-  ierr = MatCoarsenRegister(MATCOARSENHEM,MatCoarsenCreate_HEM);CHKERRQ(ierr);
+  PetscCall(MatCoarsenRegister(MATCOARSENMIS,MatCoarsenCreate_MIS));
+  PetscCall(MatCoarsenRegister(MATCOARSENHEM,MatCoarsenCreate_HEM));
   PetscFunctionReturn(0);
 }
-

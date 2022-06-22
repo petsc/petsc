@@ -5,21 +5,20 @@ static char help[] = "Tests ISToGeneral().\n\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       step = 2;
   IS             is;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
-  ierr = PetscOptionsGetInt(NULL,NULL,"-step",&step,NULL);CHKERRQ(ierr);
-  ierr = ISCreateStride(PETSC_COMM_SELF,10,0,step,&is);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-step",&step,NULL));
+  PetscCall(ISCreateStride(PETSC_COMM_SELF,10,0,step,&is));
 
-  ierr = ISToGeneral(is);CHKERRQ(ierr);
+  PetscCall(ISToGeneral(is));
 
-  ierr = ISDestroy(&is);CHKERRQ(ierr);
+  PetscCall(ISDestroy(&is));
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -1,4 +1,4 @@
-Mat Object: 1 MPI processes
+Mat Object: 1 MPI process
   type: seqdense
 1.0000000000000000e+00 0.0000000000000000e+00 0.0000000000000000e+00 
 1.0000000000000000e+00 0.0000000000000000e+00 1.0000000000000000e+00 
@@ -19,7 +19,7 @@ Mat Object: 1 MPI processes
   4 KSP unpreconditioned resid norm 3.376386761665e-01 true resid norm 3.376392424107e-01 ||r(i)||/||b|| 2.349821850657e-02
   4 KSP resid norm 3.376386761665e-01 normal eq resid norm 8.335582890595e-08 matrix norm 8.674631118774e+00
 Linear solve converged due to CONVERGED_RTOL_NORMAL iterations 4
-KSP Object: 1 MPI processes
+KSP Object: 1 MPI process
   type: lsqr
     norm of standard error 0.158609, iterations 4
     using inexact matrix norm
@@ -27,10 +27,10 @@ KSP Object: 1 MPI processes
   tolerances:  relative=1e-05, absolute=1e-25, divergence=10000.
   left preconditioning
   using UNPRECONDITIONED norm type for convergence test
-PC Object: 1 MPI processes
+PC Object: 1 MPI process
   type: none
   linear system matrix = precond matrix:
-  Mat Object: 1 MPI processes
+  Mat Object: 1 MPI process
     type: seqdense
     rows=8, cols=3
     total: nonzeros=24, allocated nonzeros=24

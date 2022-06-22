@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 import os
 petsc_hash_pkgs=os.path.join(os.getenv('HOME'),'petsc-hash-pkgs')
@@ -13,6 +13,7 @@ if __name__ == '__main__':
     '--with-make-test-np=2',
     '--download-openmpi=1',
     '--download-hypre=1',
+    '--download-hwloc=1',
     'COPTFLAGS=-g -O',
     'FOPTFLAGS=-g -O',
     'CXXOPTFLAGS=-g -O',

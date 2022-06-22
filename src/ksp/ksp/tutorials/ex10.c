@@ -1,14 +1,8 @@
 
 static char help[] = "Solve a small system and a large system through preloading\n\
   Input arguments are:\n\
-   -f0 <small_sys_binary> -f1 <large_sys_binary> \n\n";
-
-/*T
-   Concepts: KSP^basic parallel example
-   Concepts: Mat^loading a binary matrix and vector;
-   Concepts: PetscLog^preloading executable
-   Processors: n
-T*/
+  -permute <natural,rcm,nd,...> : solve system in permuted indexing\n\
+  -f0 <small_sys_binary> -f1 <large_sys_binary> \n\n";
 
 /*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
@@ -27,42 +21,151 @@ typedef enum {
 } RHSType;
 const char *const RHSTypes[] = {"FILE", "ONE", "RANDOM", "RHSType", "RHS_", NULL};
 
+PetscErrorCode CheckResult(KSP *ksp, Mat *A, Vec *b, Vec *x, IS *rowperm)
+{
+  PetscReal         norm;        /* norm of solution error */
+  PetscInt          its;
+  PetscFunctionBegin;
+  PetscCall(KSPGetTotalIterations(*ksp,&its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %" PetscInt_FMT "\n",its));
+
+  PetscCall(KSPGetResidualNorm(*ksp,&norm));
+  if (norm < 1.e-12) {
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Residual norm < 1.e-12\n"));
+  } else {
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Residual norm %e\n",(double)norm));
+  }
+
+  PetscCall(KSPDestroy(ksp));
+  PetscCall(MatDestroy(A));
+  PetscCall(VecDestroy(x));
+  PetscCall(VecDestroy(b));
+  PetscCall(ISDestroy(rowperm));
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode CreateSystem(const char filename[PETSC_MAX_PATH_LEN], RHSType rhstype, MatOrderingType ordering, PetscBool permute, IS *rowperm_out, Mat *A_out, Vec *b_out, Vec *x_out)
+{
+
+  Vec               x,b,b2;
+  Mat               A;           /* linear system matrix */
+  PetscViewer       viewer;      /* viewer */
+  PetscBool         same;
+  PetscInt          j,len,start,idx,n1,n2;
+  const PetscScalar *val;
+  IS                rowperm=NULL,colperm=NULL;
+
+  PetscFunctionBegin;
+  /* open binary file. Note that we use FILE_MODE_READ to indicate reading from this file */
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer));
+
+  /* load the matrix and vector; then destroy the viewer */
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatLoad(A,viewer));
+  switch (rhstype) {
+  case RHS_FILE:
+    /* Vectors in the file might a different size than the matrix so we need a
+     * Vec whose size hasn't been set yet.  It'll get fixed below.  Otherwise we
+     * can create the correct size Vec. */
+    PetscCall(VecCreate(PETSC_COMM_WORLD,&b));
+    PetscCall(VecLoad(b,viewer));
+    break;
+  case RHS_ONE:
+    PetscCall(MatCreateVecs(A,&b,NULL));
+    PetscCall(VecSet(b,1.0));
+    break;
+  case RHS_RANDOM:
+    PetscCall(MatCreateVecs(A,&b,NULL));
+    PetscCall(VecSetRandom(b,NULL));
+    break;
+  }
+  PetscCall(PetscViewerDestroy(&viewer));
+
+  /* if the loaded matrix is larger than the vector (due to being padded
+     to match the block size of the system), then create a new padded vector
+   */
+  PetscCall(MatGetLocalSize(A,NULL,&n1));
+  PetscCall(VecGetLocalSize(b,&n2));
+  same = (n1 == n2)? PETSC_TRUE : PETSC_FALSE;
+  PetscCall(MPIU_Allreduce(MPI_IN_PLACE,&same,1,MPIU_BOOL,MPI_LAND,PETSC_COMM_WORLD));
+
+  if (!same) { /* create a new vector b by padding the old one */
+    PetscCall(VecCreate(PETSC_COMM_WORLD,&b2));
+    PetscCall(VecSetSizes(b2,n1,PETSC_DECIDE));
+    PetscCall(VecSetFromOptions(b2));
+    PetscCall(VecGetOwnershipRange(b,&start,NULL));
+    PetscCall(VecGetLocalSize(b,&len));
+    PetscCall(VecGetArrayRead(b,&val));
+    for (j=0; j<len; j++) {
+      idx = start+j;
+      PetscCall(VecSetValues(b2,1,&idx,val+j,INSERT_VALUES));
+    }
+    PetscCall(VecRestoreArrayRead(b,&val));
+    PetscCall(VecDestroy(&b));
+    PetscCall(VecAssemblyBegin(b2));
+    PetscCall(VecAssemblyEnd(b2));
+    b    = b2;
+  }
+  PetscCall(VecDuplicate(b,&x));
+
+  if (permute) {
+    Mat Aperm;
+    PetscCall(MatGetOrdering(A,ordering,&rowperm,&colperm));
+    PetscCall(MatPermute(A,rowperm,colperm,&Aperm));
+    PetscCall(VecPermute(b,colperm,PETSC_FALSE));
+    PetscCall(MatDestroy(&A));
+    A    = Aperm;               /* Replace original operator with permuted version */
+    PetscCall(ISDestroy(&colperm));
+  }
+
+  *b_out = b;
+  *x_out = x;
+  *A_out = A;
+  *rowperm_out = rowperm;
+
+  PetscFunctionReturn(0);
+}
+
 /* ATTENTION: this is the example used in the Profiling chaper of the PETSc manual,
    where we referenced its profiling stages, preloading and output etc.
    When you modify it, please make sure it is still consistent with the manual.
  */
 int main(int argc,char **args)
 {
-  PetscErrorCode    ierr;
-  Vec               x,b,b2;
+  Vec               x,b;
   Mat               A;           /* linear system matrix */
   KSP               ksp;         /* Krylov subspace method context */
-  PetscReal         norm;        /* norm of solution error */
-  char              file[2][PETSC_MAX_PATH_LEN];
-  PetscViewer       viewer;      /* viewer */
-  PetscBool         flg,preload=PETSC_FALSE,same,trans=PETSC_FALSE;
+  char              file[2][PETSC_MAX_PATH_LEN],ordering[256]=MATORDERINGRCM;
   RHSType           rhstype = RHS_FILE;
-  PetscInt          its,j,len,start,idx,n1,n2;
-  const PetscScalar *val;
+  PetscBool         flg,preload=PETSC_FALSE,trans=PETSC_FALSE,permute=PETSC_FALSE;
+  IS                rowperm=NULL;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
 
-  /*
-     Determine files from which we read the two linear systems
-     (matrix and right-hand-side vector).
-  */
-  ierr = PetscOptionsGetBool(NULL,NULL,"-trans",&trans,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL,NULL,"-f",file[0],sizeof(file[0]),&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr    = PetscStrcpy(file[1],file[0]);CHKERRQ(ierr);
-    preload = PETSC_FALSE;
-  } else {
-    ierr = PetscOptionsGetString(NULL,NULL,"-f0",file[0],sizeof(file[0]),&flg);CHKERRQ(ierr);
-    PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Must indicate binary file with the -f0 or -f option");
-    ierr = PetscOptionsGetString(NULL,NULL,"-f1",file[1],sizeof(file[1]),&flg);CHKERRQ(ierr);
-    if (!flg) preload = PETSC_FALSE;   /* don't bother with second system */
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Preloading example options","");
+  {
+    /*
+       Determine files from which we read the two linear systems
+       (matrix and right-hand-side vector).
+    */
+    PetscCall(PetscOptionsBool("-trans","Solve transpose system instead","",trans,&trans,&flg));
+    PetscCall(PetscOptionsString("-f","First file to load (small system)","",file[0],file[0],sizeof(file[0]),&flg));
+    PetscCall(PetscOptionsFList("-permute","Permute matrix and vector to solve in new ordering","",MatOrderingList,ordering,ordering,sizeof(ordering),&permute));
+
+    if (flg) {
+      PetscCall(PetscStrcpy(file[1],file[0]));
+      preload = PETSC_FALSE;
+    } else {
+      PetscCall(PetscOptionsString("-f0","First file to load (small system)","",file[0],file[0],sizeof(file[0]),&flg));
+      PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Must indicate binary file with the -f0 or -f option");
+      PetscCall(PetscOptionsString("-f1","Second file to load (larger system)","",file[1],file[1],sizeof(file[1]),&flg));
+      if (!flg) preload = PETSC_FALSE;   /* don't bother with second system */
+    }
+
+    PetscCall(PetscOptionsEnum("-rhs","Right hand side","",RHSTypes,(PetscEnum)rhstype,(PetscEnum*)&rhstype,NULL));
   }
-  ierr = PetscOptionsGetEnum(NULL,NULL,"-rhs",RHSTypes,(PetscEnum*)&rhstype,NULL);CHKERRQ(ierr);
+  PetscOptionsEnd();
 
   /*
     To use preloading, one usually has code like the following:
@@ -92,69 +195,18 @@ int main(int argc,char **args)
     code. We do that because we want to show profiling stages for both the small
     system and the large system.
   */
-  PetscPreLoadBegin(preload,"Load System 0");
 
   /*=========================
       solve a small system
     =========================*/
 
-  /* open binary file. Note that we use FILE_MODE_READ to indicate reading from this file */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[0],FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-
-  /* load the matrix and vector; then destroy the viewer */
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatLoad(A,viewer);CHKERRQ(ierr);
-  switch (rhstype) {
-  case RHS_FILE:
-    /* Vectors in the file might a different size than the matrix so we need a
-     * Vec whose size hasn't been set yet.  It'll get fixed below.  Otherwise we
-     * can create the correct size Vec. */
-    ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
-    ierr = VecLoad(b,viewer);CHKERRQ(ierr);
-    break;
-  case RHS_ONE:
-    ierr = MatCreateVecs(A,&b,NULL);CHKERRQ(ierr);
-    ierr = VecSet(b,1.0);CHKERRQ(ierr);
-    break;
-  case RHS_RANDOM:
-    ierr = MatCreateVecs(A,&b,NULL);CHKERRQ(ierr);
-    ierr = VecSetRandom(b,NULL);CHKERRQ(ierr);
-    break;
-  }
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-
-  /* if the loaded matrix is larger than the vector (due to being padded
-     to match the block size of the system), then create a new padded vector
-   */
-  ierr = MatGetLocalSize(A,NULL,&n1);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(b,&n2);CHKERRQ(ierr);
-  same = (n1 == n2)? PETSC_TRUE : PETSC_FALSE;
-  ierr = MPIU_Allreduce(MPI_IN_PLACE,&same,1,MPIU_BOOL,MPI_LAND,PETSC_COMM_WORLD);CHKERRMPI(ierr);
-
-  if (!same) { /* create a new vector b by padding the old one */
-    ierr = VecCreate(PETSC_COMM_WORLD,&b2);CHKERRQ(ierr);
-    ierr = VecSetSizes(b2,n1,PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(b2);CHKERRQ(ierr);
-    ierr = VecGetOwnershipRange(b,&start,NULL);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(b,&len);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(b,&val);CHKERRQ(ierr);
-    for (j=0; j<len; j++) {
-      idx = start+j;
-      ierr = VecSetValues(b2,1,&idx,val+j,INSERT_VALUES);CHKERRQ(ierr);
-    }
-    ierr = VecRestoreArrayRead(b,&val);CHKERRQ(ierr);
-    ierr = VecDestroy(&b);CHKERRQ(ierr);
-    ierr = VecAssemblyBegin(b2);CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(b2);CHKERRQ(ierr);
-    b    = b2;
-  }
-  ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
+  PetscPreLoadBegin(preload,"Load System 0");
+  PetscCall(CreateSystem(file[0],rhstype,ordering,permute,&rowperm,&A,&b,&x));
 
   PetscPreLoadStage("KSPSetUp 0");
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPSetOperators(ksp,A,A));
+  PetscCall(KSPSetFromOptions(ksp));
 
   /*
     Here we explicitly call KSPSetUp() and KSPSetUpOnBlocks() to
@@ -162,113 +214,47 @@ int main(int argc,char **args)
     These calls are optional, since both will be called within
     KSPSolve() if they haven't been called already.
   */
-  ierr = KSPSetUp(ksp);CHKERRQ(ierr);
-  ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
+  PetscCall(KSPSetUp(ksp));
+  PetscCall(KSPSetUpOnBlocks(ksp));
 
   PetscPreLoadStage("KSPSolve 0");
-  if (trans) {ierr = KSPSolveTranspose(ksp,b,x);CHKERRQ(ierr);}
-  else       {ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);}
+  if (trans) PetscCall(KSPSolveTranspose(ksp,b,x));
+  else       PetscCall(KSPSolve(ksp,b,x));
 
-  ierr = KSPGetTotalIterations(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %d\n",its);CHKERRQ(ierr);
+  if (permute) PetscCall(VecPermute(x,rowperm,PETSC_TRUE));
 
-  ierr = KSPGetResidualNorm(ksp,&norm);CHKERRQ(ierr);
-  if (norm < 1.e-12) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm < 1.e-12\n");CHKERRQ(ierr);
-  } else {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %e\n",(double)norm);CHKERRQ(ierr);
-  }
-
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
+  PetscCall(CheckResult(&ksp,&A,&b,&x,&rowperm));
 
   /*=========================
     solve a large system
     =========================*/
-  /* the code is duplicated. Bad practice. See comments above */
+
   PetscPreLoadStage("Load System 1");
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[1],FILE_MODE_READ,&viewer);CHKERRQ(ierr);
 
-  /* load the matrix and vector; then destroy the viewer */
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatLoad(A,viewer);CHKERRQ(ierr);
-  switch (rhstype) {
-  case RHS_FILE:
-    /* Vectors in the file might a different size than the matrix so we need a
-     * Vec whose size hasn't been set yet.  It'll get fixed below.  Otherwise we
-     * can create the correct size Vec. */
-    ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
-    ierr = VecLoad(b,viewer);CHKERRQ(ierr);
-    break;
-  case RHS_ONE:
-    ierr = MatCreateVecs(A,&b,NULL);CHKERRQ(ierr);
-    ierr = VecSet(b,1.0);CHKERRQ(ierr);
-    break;
-  case RHS_RANDOM:
-    ierr = MatCreateVecs(A,&b,NULL);CHKERRQ(ierr);
-    ierr = VecSetRandom(b,NULL);CHKERRQ(ierr);
-    break;
-  }
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-
-  ierr = MatGetLocalSize(A,NULL,&n1);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(b,&n2);CHKERRQ(ierr);
-  same = (n1 == n2)? PETSC_TRUE : PETSC_FALSE;
-  ierr = MPIU_Allreduce(MPI_IN_PLACE,&same,1,MPIU_BOOL,MPI_LAND,PETSC_COMM_WORLD);CHKERRMPI(ierr);
-
-  if (!same) { /* create a new vector b by padding the old one */
-    ierr = VecCreate(PETSC_COMM_WORLD,&b2);CHKERRQ(ierr);
-    ierr = VecSetSizes(b2,n1,PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(b2);CHKERRQ(ierr);
-    ierr = VecGetOwnershipRange(b,&start,NULL);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(b,&len);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(b,&val);CHKERRQ(ierr);
-    for (j=0; j<len; j++) {
-      idx = start+j;
-      ierr = VecSetValues(b2,1,&idx,val+j,INSERT_VALUES);CHKERRQ(ierr);
-    }
-    ierr = VecRestoreArrayRead(b,&val);CHKERRQ(ierr);
-    ierr = VecDestroy(&b);CHKERRQ(ierr);
-    ierr = VecAssemblyBegin(b2);CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(b2);CHKERRQ(ierr);
-    b    = b2;
-  }
-  ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
+  PetscCall(CreateSystem(file[1],rhstype,ordering,permute,&rowperm,&A,&b,&x));
 
   PetscPreLoadStage("KSPSetUp 1");
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPSetOperators(ksp,A,A));
+  PetscCall(KSPSetFromOptions(ksp));
+
   /*
     Here we explicitly call KSPSetUp() and KSPSetUpOnBlocks() to
     enable more precise profiling of setting up the preconditioner.
     These calls are optional, since both will be called within
     KSPSolve() if they haven't been called already.
   */
-  ierr = KSPSetUp(ksp);CHKERRQ(ierr);
-  ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
+  PetscCall(KSPSetUp(ksp));
+  PetscCall(KSPSetUpOnBlocks(ksp));
 
   PetscPreLoadStage("KSPSolve 1");
-  if (trans) {ierr = KSPSolveTranspose(ksp,b,x);CHKERRQ(ierr);}
-  else       {ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);}
+  if (trans) PetscCall(KSPSolveTranspose(ksp,b,x));
+  else       PetscCall(KSPSolve(ksp,b,x));
 
-  ierr = KSPGetTotalIterations(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %d\n",its);CHKERRQ(ierr);
+  if (permute) PetscCall(VecPermute(x,rowperm,PETSC_TRUE));
 
-  ierr = KSPGetResidualNorm(ksp,&norm);CHKERRQ(ierr);
-  if (norm < 1.e-12) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm < 1.e-12\n");CHKERRQ(ierr);
-  } else {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %e\n",(double)norm);CHKERRQ(ierr);
-  }
+  PetscCall(CheckResult(&ksp,&A,&b,&x,&rowperm));
 
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
   PetscPreLoadEnd();
   /*
      Always call PetscFinalize() before exiting a program.  This routine
@@ -276,8 +262,8 @@ int main(int argc,char **args)
        - provides summary and diagnostic information if certain runtime
          options are chosen (e.g., -log_view).
   */
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST
@@ -302,5 +288,10 @@ int main(int argc,char **args)
       suffix: 3
       requires: double complex !defined(PETSC_USE_64BIT_INDICES)
       args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/nh-complex-int32-float64 -ksp_type bicg
+
+   test:
+      suffix: 4
+      args: -f ${DATAFILESPATH}/matrices/medium -ksp_type bicg -permute rcm
+      requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
 
 TEST*/

@@ -16,7 +16,6 @@ typedef struct {
 static PetscErrorCode PCApply_VPBJacobi(PC pc,Vec x,Vec y)
 {
   PC_VPBJacobi      *jac = (PC_VPBJacobi*)pc->data;
-  PetscErrorCode    ierr;
   PetscInt          i,ncnt = 0;
   const MatScalar   *diag = jac->diag;
   PetscInt          ib,jb,bs;
@@ -26,9 +25,9 @@ static PetscErrorCode PCApply_VPBJacobi(PC pc,Vec x,Vec y)
   const PetscInt    *bsizes;
 
   PetscFunctionBegin;
-  ierr = MatGetVariableBlockSizes(pc->pmat,&nblocks,&bsizes);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
-  ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
+  PetscCall(MatGetVariableBlockSizes(pc->pmat,&nblocks,&bsizes));
+  PetscCall(VecGetArrayRead(x,&xx));
+  PetscCall(VecGetArray(y,&yy));
   for (i=0; i<nblocks; i++) {
     bs = bsizes[i];
     switch (bs) {
@@ -92,16 +91,14 @@ static PetscErrorCode PCApply_VPBJacobi(PC pc,Vec x,Vec y)
     ncnt += bsizes[i];
     diag += bsizes[i]*bsizes[i];
   }
-  ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
-  ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayRead(x,&xx));
+  PetscCall(VecRestoreArray(y,&yy));
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 static PetscErrorCode PCSetUp_VPBJacobi(PC pc)
 {
   PC_VPBJacobi    *jac = (PC_VPBJacobi*)pc->data;
-  PetscErrorCode ierr;
   Mat            A = pc->pmat;
   MatFactorError err;
   PetscInt       i,nsize = 0,nlocal;
@@ -109,35 +106,33 @@ static PetscErrorCode PCSetUp_VPBJacobi(PC pc)
   const PetscInt *bsizes;
 
   PetscFunctionBegin;
-  ierr = MatGetVariableBlockSizes(pc->pmat,&nblocks,&bsizes);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(pc->pmat,&nlocal,NULL);CHKERRQ(ierr);
-  PetscCheckFalse(nlocal && !nblocks,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call MatSetVariableBlockSizes() before using PCVPBJACOBI");
+  PetscCall(MatGetVariableBlockSizes(pc->pmat,&nblocks,&bsizes));
+  PetscCall(MatGetLocalSize(pc->pmat,&nlocal,NULL));
+  PetscCheck(!nlocal || nblocks,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call MatSetVariableBlockSizes() before using PCVPBJACOBI");
   if (!jac->diag) {
     for (i=0; i<nblocks; i++) nsize += bsizes[i]*bsizes[i];
-    ierr = PetscMalloc1(nsize,&jac->diag);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(nsize,&jac->diag));
   }
-  ierr = MatInvertVariableBlockDiagonal(A,nblocks,bsizes,jac->diag);CHKERRQ(ierr);
-  ierr = MatFactorGetError(A,&err);CHKERRQ(ierr);
+  PetscCall(MatInvertVariableBlockDiagonal(A,nblocks,bsizes,jac->diag));
+  PetscCall(MatFactorGetError(A,&err));
   if (err) pc->failedreason = (PCFailedReason)err;
   pc->ops->apply = PCApply_VPBJacobi;
   PetscFunctionReturn(0);
 }
-/* -------------------------------------------------------------------------- */
+
 static PetscErrorCode PCDestroy_VPBJacobi(PC pc)
 {
   PC_VPBJacobi    *jac = (PC_VPBJacobi*)pc->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /*
       Free the private data structure that was hanging off the PC
   */
-  ierr = PetscFree(jac->diag);CHKERRQ(ierr);
-  ierr = PetscFree(pc->data);CHKERRQ(ierr);
+  PetscCall(PetscFree(jac->diag));
+  PetscCall(PetscFree(pc->data));
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*MC
      PCVPBJACOBI - Variable size point block Jacobi preconditioner
 
@@ -162,21 +157,20 @@ static PetscErrorCode PCDestroy_VPBJacobi(PC pc)
 
    Level: beginner
 
-.seealso:  MatSetVariableBlockSizes(), PCCreate(), PCSetType(), PCType (for list of available types), PC, PCJACOBI, PCPBJACOBI, PCBJACOBI
+.seealso: `MatSetVariableBlockSizes()`, `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCJACOBI`, `PCPBJACOBI`, `PCBJACOBI`
 
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_VPBJacobi(PC pc)
 {
   PC_VPBJacobi   *jac;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /*
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
   */
-  ierr     = PetscNewLog(pc,&jac);CHKERRQ(ierr);
+  PetscCall(PetscNewLog(pc,&jac));
   pc->data = (void*)jac;
 
   /*
@@ -202,4 +196,3 @@ PETSC_EXTERN PetscErrorCode PCCreate_VPBJacobi(PC pc)
   pc->ops->applysymmetricright = NULL;
   PetscFunctionReturn(0);
 }
-

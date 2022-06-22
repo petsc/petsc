@@ -36,7 +36,7 @@ $    invj (x_cell - v0) = x_face
 
   Level: developer
 
-.seealso: DMPlexCellRefinerGetAffineTransforms(), Create()
+.seealso: `DMPlexCellRefinerGetAffineTransforms()`, `Create()`
 @*/
 PetscErrorCode DMPlexRefineRegularGetAffineFaceTransforms(DMPlexTransform tr, DMPolytopeType ct, PetscInt *Nf, PetscReal *v0[], PetscReal *J[], PetscReal *invJ[], PetscReal *detJ[])
 {
@@ -108,7 +108,7 @@ PetscErrorCode DMPlexRefineRegularGetAffineFaceTransforms(DMPlexTransform tr, DM
 
   Level: developer
 
-.seealso: DMPlexRefineRegularGetAffineFaceTransforms(), DMPLEXREFINEREGULAR
+.seealso: `DMPlexRefineRegularGetAffineFaceTransforms()`, `DMPLEXREFINEREGULAR`
 @*/
 PetscErrorCode DMPlexRefineRegularGetAffineTransforms(DMPlexTransform tr, DMPolytopeType ct, PetscInt *Nc, PetscReal *v0[], PetscReal *J[], PetscReal *invJ[])
 {
@@ -313,7 +313,7 @@ static PetscErrorCode DMPlexCellRefinerGetSubcellVertices_Regular(DMPlexCellRefi
                               9, 12, 13, 10, 18, 19, 22, 21,  10, 13, 14, 11, 19, 20, 23, 22,  13, 16, 17, 14, 22, 23, 26, 25,  12, 15, 16, 13, 21, 22, 25, 24};
 
   PetscFunctionBegin;
-  PetscCheckFalse(ct != rct,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Cell type %s does not produce %s", DMPolytopeTypes[ct], DMPolytopeTypes[rct]);
+  PetscCheck(ct == rct,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Cell type %s does not produce %s", DMPolytopeTypes[ct], DMPolytopeTypes[rct]);
   switch (ct) {
     case DM_POLYTOPE_SEGMENT:       *Nv = 2; *subcellV = &seg_v[r*(*Nv)];  break;
     case DM_POLYTOPE_TRIANGLE:      *Nv = 3; *subcellV = &tri_v[r*(*Nv)];  break;
@@ -329,17 +329,16 @@ static PetscErrorCode DMPlexCellRefinerGetSubcellVertices_Regular(DMPlexCellRefi
 static PetscErrorCode DMPlexTransformView_Regular(DMPlexTransform tr, PetscViewer viewer)
 {
   PetscBool      isascii;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
-  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isascii);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isascii));
   if (isascii) {
     const char *name;
 
-    ierr = PetscObjectGetName((PetscObject) tr, &name);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "Regular refinement %s\n", name ? name : "");CHKERRQ(ierr);
+    PetscCall(PetscObjectGetName((PetscObject) tr, &name));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "Regular refinement %s\n", name ? name : ""));
   } else {
     SETERRQ(PetscObjectComm((PetscObject) tr), PETSC_ERR_SUP, "Viewer type %s not yet supported for DMPlexTransform writing", ((PetscObject) viewer)->type_name);
   }
@@ -355,10 +354,9 @@ static PetscErrorCode DMPlexTransformSetUp_Regular(DMPlexTransform tr)
 static PetscErrorCode DMPlexTransformDestroy_Regular(DMPlexTransform tr)
 {
   DMPlexRefine_Regular *f = (DMPlexRefine_Regular *) tr->data;
-  PetscErrorCode          ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFree(f);CHKERRQ(ierr);
+  PetscCall(PetscFree(f));
   PetscFunctionReturn(0);
 }
 
@@ -1334,13 +1332,12 @@ static PetscErrorCode DMPlexTransformInitialize_Regular(DMPlexTransform tr)
 PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_Regular(DMPlexTransform tr)
 {
   DMPlexRefine_Regular *f;
-  PetscErrorCode        ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
-  ierr = PetscNewLog(tr, &f);CHKERRQ(ierr);
+  PetscCall(PetscNewLog(tr, &f));
   tr->data = f;
 
-  ierr = DMPlexTransformInitialize_Regular(tr);CHKERRQ(ierr);
+  PetscCall(DMPlexTransformInitialize_Regular(tr));
   PetscFunctionReturn(0);
 }

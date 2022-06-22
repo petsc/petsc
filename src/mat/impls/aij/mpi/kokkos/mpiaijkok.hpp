@@ -7,20 +7,18 @@
 
 struct Mat_MPIAIJKokkos {
   /* MatSetValuesCOO() related stuff on device */
-  PetscCountKokkosView Aimap1_d,Ajmap1_d,Aperm1_d; /* Local entries to diag */
-  PetscCountKokkosView Bimap1_d,Bjmap1_d,Bperm1_d; /* Local entries to offdiag */
+  PetscCountKokkosView Ajmap1_d,Aperm1_d; /* Local entries to diag */
+  PetscCountKokkosView Bjmap1_d,Bperm1_d; /* Local entries to offdiag */
   PetscCountKokkosView Aimap2_d,Ajmap2_d,Aperm2_d; /* Remote entries to diag */
   PetscCountKokkosView Bimap2_d,Bjmap2_d,Bperm2_d; /* Remote entries to offdiag */
   PetscCountKokkosView Cperm1_d; /* Permutation to fill send buffer. 'C' for communication */
   MatScalarKokkosView  sendbuf_d,recvbuf_d; /* Buffers for remote values in MatSetValuesCOO() */
 
   Mat_MPIAIJKokkos(const Mat_MPIAIJ *mpiaij) :
-    Aimap1_d(Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(),PetscCountKokkosViewHost(mpiaij->Aimap1,mpiaij->Annz1))),
-    Ajmap1_d(Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(),PetscCountKokkosViewHost(mpiaij->Ajmap1,mpiaij->Annz1+1))),
+    Ajmap1_d(Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(),PetscCountKokkosViewHost(mpiaij->Ajmap1,mpiaij->Annz+1))),
     Aperm1_d(Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(),PetscCountKokkosViewHost(mpiaij->Aperm1,mpiaij->Atot1))),
 
-    Bimap1_d(Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(),PetscCountKokkosViewHost(mpiaij->Bimap1,mpiaij->Bnnz1))),
-    Bjmap1_d(Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(),PetscCountKokkosViewHost(mpiaij->Bjmap1,mpiaij->Bnnz1+1))),
+    Bjmap1_d(Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(),PetscCountKokkosViewHost(mpiaij->Bjmap1,mpiaij->Bnnz+1))),
     Bperm1_d(Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(),PetscCountKokkosViewHost(mpiaij->Bperm1,mpiaij->Btot1))),
 
     Aimap2_d(Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(),PetscCountKokkosViewHost(mpiaij->Aimap2,mpiaij->Annz2))),

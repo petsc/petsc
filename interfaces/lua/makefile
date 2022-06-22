@@ -1,11 +1,6 @@
 -include ../../petscdir.mk
 #requirespackage 'PETSC_HAVE_LUA'
-ALL: lib
 
-CFLAGS    =
-FFLAGS    =
-CPPFLAGS  =
-SOURCEC	  =
 SOURCEF	  =
 SOURCEH	  =
 MANSEC	  = Sys

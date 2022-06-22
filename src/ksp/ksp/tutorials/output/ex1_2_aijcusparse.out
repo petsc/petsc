@@ -7,7 +7,7 @@
   6 KSP Residual norm 0.000294092 
   7 KSP Residual norm 1.40861e-05 
   8 KSP Residual norm 3.48863e-07 
-KSP Object: 1 MPI processes
+KSP Object: 1 MPI process
   type: gmres
     restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with one step of iterative refinement
     happy breakdown tolerance 1e-30
@@ -15,11 +15,11 @@ KSP Object: 1 MPI processes
   tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
   left preconditioning
   using PRECONDITIONED norm type for convergence test
-PC Object: 1 MPI processes
+PC Object: 1 MPI process
   type: sor
     type = symmetric, iterations = 1, local iterations = 1, omega = 1.
   linear system matrix = precond matrix:
-  Mat Object: 1 MPI processes
+  Mat Object: 1 MPI process
     type: seqaijcusparse
     rows=10, cols=10
     total: nonzeros=28, allocated nonzeros=50

@@ -122,8 +122,7 @@ PetscSF Object: Migration SF 8 MPI processes
   [7] 5 <- (0,31)
   [7] 6 <- (0,32)
   MultiSF sort=rank-order
-Point renumbering for DM migration:
-ISLocalToGlobalMapping Object: 8 MPI processes
+ISLocalToGlobalMapping Object: Point renumbering for DM migration 8 MPI processes
   type not yet set
 [0] 0 0
 [0] 1 8

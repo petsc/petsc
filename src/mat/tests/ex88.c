@@ -11,50 +11,45 @@ struct _n_User {
 static PetscErrorCode MatView_User(Mat A,PetscViewer viewer)
 {
   User           user;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(A,&user);CHKERRQ(ierr);
-  ierr = MatView(user->B,viewer);CHKERRQ(ierr);
+  PetscCall(MatShellGetContext(A,&user));
+  PetscCall(MatView(user->B,viewer));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode MatMult_User(Mat A,Vec X,Vec Y)
 {
   User           user;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(A,&user);CHKERRQ(ierr);
-  ierr = MatMult(user->B,X,Y);CHKERRQ(ierr);
+  PetscCall(MatShellGetContext(A,&user));
+  PetscCall(MatMult(user->B,X,Y));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode MatMultTranspose_User(Mat A,Vec X,Vec Y)
 {
   User           user;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(A,&user);CHKERRQ(ierr);
-  ierr = MatMultTranspose(user->B,X,Y);CHKERRQ(ierr);
+  PetscCall(MatShellGetContext(A,&user));
+  PetscCall(MatMultTranspose(user->B,X,Y));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode MatGetDiagonal_User(Mat A,Vec X)
 {
   User           user;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(A,&user);CHKERRQ(ierr);
-  ierr = MatGetDiagonal(user->B,X);CHKERRQ(ierr);
+  PetscCall(MatShellGetContext(A,&user));
+  PetscCall(MatGetDiagonal(user->B,X));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode TestMatrix(Mat A,Vec X,Vec Y,Vec Z)
 {
-  PetscErrorCode ierr;
   Vec            W1,W2,diff;
   Mat            E;
   const char     *mattypename;
@@ -65,87 +60,87 @@ static PetscErrorCode TestMatrix(Mat A,Vec X,Vec Y,Vec Z)
   PetscReal      nrm;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetType((PetscObject)A,&mattypename);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"\nMatrix of type: %s\n",mattypename);CHKERRQ(ierr);
-  ierr = VecDuplicate(X,&W1);CHKERRQ(ierr);
-  ierr = VecDuplicate(X,&W2);CHKERRQ(ierr);
-  ierr = MatScale(A,31);CHKERRQ(ierr);
-  ierr = MatShift(A,37);CHKERRQ(ierr);
-  ierr = MatDiagonalScale(A,X,Y);CHKERRQ(ierr);
-  ierr = MatScale(A,41);CHKERRQ(ierr);
-  ierr = MatDiagonalScale(A,Y,Z);CHKERRQ(ierr);
-  ierr = MatComputeOperator(A,MATDENSE,&E);CHKERRQ(ierr);
+  PetscCall(PetscObjectGetType((PetscObject)A,&mattypename));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"\nMatrix of type: %s\n",mattypename));
+  PetscCall(VecDuplicate(X,&W1));
+  PetscCall(VecDuplicate(X,&W2));
+  PetscCall(MatScale(A,31));
+  PetscCall(MatShift(A,37));
+  PetscCall(MatDiagonalScale(A,X,Y));
+  PetscCall(MatScale(A,41));
+  PetscCall(MatDiagonalScale(A,Y,Z));
+  PetscCall(MatComputeOperator(A,MATDENSE,&E));
 
-  ierr = MatView(E,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"Testing MatMult + MatMultTranspose\n");CHKERRQ(ierr);
-  ierr = MatMult(A,Z,W1);CHKERRQ(ierr);
-  ierr = MatMultTranspose(A,W1,W2);CHKERRQ(ierr);
-  ierr = VecView(W2,viewer);CHKERRQ(ierr);
+  PetscCall(MatView(E,viewer));
+  PetscCall(PetscViewerASCIIPrintf(viewer,"Testing MatMult + MatMultTranspose\n"));
+  PetscCall(MatMult(A,Z,W1));
+  PetscCall(MatMultTranspose(A,W1,W2));
+  PetscCall(VecView(W2,viewer));
 
-  ierr = PetscViewerASCIIPrintf(viewer,"Testing MatMultAdd\n");CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,2,multadd,&diff);CHKERRQ(ierr);
-  ierr = VecSet(W1,-1.0);CHKERRQ(ierr);
-  ierr = MatMultAdd(A,W1,W1,W2);CHKERRQ(ierr);
-  ierr = VecView(W2,viewer);CHKERRQ(ierr);
-  ierr = VecAXPY(W2,-1.0,diff);CHKERRQ(ierr);
-  ierr = VecNorm(W2,NORM_2,&nrm);CHKERRQ(ierr);
+  PetscCall(PetscViewerASCIIPrintf(viewer,"Testing MatMultAdd\n"));
+  PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,1,2,multadd,&diff));
+  PetscCall(VecSet(W1,-1.0));
+  PetscCall(MatMultAdd(A,W1,W1,W2));
+  PetscCall(VecView(W2,viewer));
+  PetscCall(VecAXPY(W2,-1.0,diff));
+  PetscCall(VecNorm(W2,NORM_2,&nrm));
 #if defined(PETSC_USE_REAL_DOUBLE) || defined(PETSC_USE_REAL___FLOAT128)
-  PetscCheckFalse(nrm > PETSC_SMALL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatMultAdd(A,x,x,y) produces incorrect result");
+  PetscCheck(nrm <= PETSC_SMALL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatMultAdd(A,x,x,y) produces incorrect result");
 #endif
 
-  ierr = VecSet(W2,-1.0);CHKERRQ(ierr);
-  ierr = MatMultAdd(A,W1,W2,W2);CHKERRQ(ierr);
-  ierr = VecView(W2,viewer);CHKERRQ(ierr);
-  ierr = VecAXPY(W2,-1.0,diff);CHKERRQ(ierr);
-  ierr = VecNorm(W2,NORM_2,&nrm);CHKERRQ(ierr);
+  PetscCall(VecSet(W2,-1.0));
+  PetscCall(MatMultAdd(A,W1,W2,W2));
+  PetscCall(VecView(W2,viewer));
+  PetscCall(VecAXPY(W2,-1.0,diff));
+  PetscCall(VecNorm(W2,NORM_2,&nrm));
 #if defined(PETSC_USE_REAL_DOUBLE) || defined(PETSC_USE_REAL___FLOAT128)
-  PetscCheckFalse(nrm > PETSC_SMALL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatMultAdd(A,x,y,y) produces incorrect result");
+  PetscCheck(nrm <= PETSC_SMALL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatMultAdd(A,x,y,y) produces incorrect result");
 #endif
-  ierr = VecDestroy(&diff);CHKERRQ(ierr);
+  PetscCall(VecDestroy(&diff));
 
-  ierr = PetscViewerASCIIPrintf(viewer,"Testing MatMultTransposeAdd\n");CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,2,multtadd,&diff);CHKERRQ(ierr);
+  PetscCall(PetscViewerASCIIPrintf(viewer,"Testing MatMultTransposeAdd\n"));
+  PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,1,2,multtadd,&diff));
 
-  ierr = VecSet(W1,-1.0);CHKERRQ(ierr);
-  ierr = MatMultTransposeAdd(A,W1,W1,W2);CHKERRQ(ierr);
-  ierr = VecView(W2,viewer);CHKERRQ(ierr);
-  ierr = VecAXPY(W2,-1.0,diff);CHKERRQ(ierr);
-  ierr = VecNorm(W2,NORM_2,&nrm);CHKERRQ(ierr);
+  PetscCall(VecSet(W1,-1.0));
+  PetscCall(MatMultTransposeAdd(A,W1,W1,W2));
+  PetscCall(VecView(W2,viewer));
+  PetscCall(VecAXPY(W2,-1.0,diff));
+  PetscCall(VecNorm(W2,NORM_2,&nrm));
 #if defined(PETSC_USE_REAL_DOUBLE) || defined(PETSC_USE_REAL___FLOAT128)
-  PetscCheckFalse(nrm > PETSC_SMALL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatMultTransposeAdd(A,x,x,y) produces incorrect result");
+  PetscCheck(nrm <= PETSC_SMALL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatMultTransposeAdd(A,x,x,y) produces incorrect result");
 #endif
 
-  ierr = VecSet(W2,-1.0);CHKERRQ(ierr);
-  ierr = MatMultTransposeAdd(A,W1,W2,W2);CHKERRQ(ierr);
-  ierr = VecView(W2,viewer);CHKERRQ(ierr);
-  ierr = VecAXPY(W2,-1.0,diff);CHKERRQ(ierr);
-  ierr = VecNorm(W2,NORM_2,&nrm);CHKERRQ(ierr);
+  PetscCall(VecSet(W2,-1.0));
+  PetscCall(MatMultTransposeAdd(A,W1,W2,W2));
+  PetscCall(VecView(W2,viewer));
+  PetscCall(VecAXPY(W2,-1.0,diff));
+  PetscCall(VecNorm(W2,NORM_2,&nrm));
 #if defined(PETSC_USE_REAL_DOUBLE) || defined(PETSC_USE_REAL___FLOAT128)
-  PetscCheckFalse(nrm > PETSC_SMALL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatMultTransposeAdd(A,x,y,y) produces incorrect result");
+  PetscCheck(nrm <= PETSC_SMALL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatMultTransposeAdd(A,x,y,y) produces incorrect result");
 #endif
-  ierr = VecDestroy(&diff);CHKERRQ(ierr);
+  PetscCall(VecDestroy(&diff));
 
-  ierr = PetscViewerASCIIPrintf(viewer,"Testing MatGetDiagonal\n");CHKERRQ(ierr);
-  ierr = MatGetDiagonal(A,W2);CHKERRQ(ierr);
-  ierr = VecView(W2,viewer);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,2,diag,&diff);CHKERRQ(ierr);
-  ierr = VecAXPY(diff,-1.0,W2);CHKERRQ(ierr);
-  ierr = VecNorm(diff,NORM_2,&nrm);CHKERRQ(ierr);
-  PetscCheckFalse(nrm > PETSC_SMALL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatGetDiagonal() produces incorrect result");
-  ierr = VecDestroy(&diff);CHKERRQ(ierr);
+  PetscCall(PetscViewerASCIIPrintf(viewer,"Testing MatGetDiagonal\n"));
+  PetscCall(MatGetDiagonal(A,W2));
+  PetscCall(VecView(W2,viewer));
+  PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,1,2,diag,&diff));
+  PetscCall(VecAXPY(diff,-1.0,W2));
+  PetscCall(VecNorm(diff,NORM_2,&nrm));
+  PetscCheck(nrm <= PETSC_SMALL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatGetDiagonal() produces incorrect result");
+  PetscCall(VecDestroy(&diff));
 
   /* MATSHELL does not support MatDiagonalSet after MatScale */
   if (strncmp(mattypename, "shell", 5)) {
-    ierr = MatDiagonalSet(A,X,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = MatGetDiagonal(A,W1);CHKERRQ(ierr);
-    ierr = VecView(W1,viewer);CHKERRQ(ierr);
+    PetscCall(MatDiagonalSet(A,X,INSERT_VALUES));
+    PetscCall(MatGetDiagonal(A,W1));
+    PetscCall(VecView(W1,viewer));
   } else {
-    ierr = PetscViewerASCIIPrintf(viewer,"MatDiagonalSet not tested on MATSHELL\n");CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer,"MatDiagonalSet not tested on MATSHELL\n"));
   }
 
-  ierr = MatDestroy(&E);CHKERRQ(ierr);
-  ierr = VecDestroy(&W1);CHKERRQ(ierr);
-  ierr = VecDestroy(&W2);CHKERRQ(ierr);
+  PetscCall(MatDestroy(&E));
+  PetscCall(VecDestroy(&W1));
+  PetscCall(VecDestroy(&W2));
   PetscFunctionReturn(0);
 }
 
@@ -158,57 +153,56 @@ int main(int argc,char **args)
   Vec               X,Y,Z;
   User              user;
   PetscInt          i;
-  PetscErrorCode    ierr;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,2,2,2,NULL,&A);CHKERRQ(ierr);
-  ierr = MatSetUp(A);CHKERRQ(ierr);
-  ierr = MatSetValues(A,2,inds,2,inds,avals,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_WORLD,2,&X);CHKERRQ(ierr);
-  ierr = VecDuplicate(X,&Y);CHKERRQ(ierr);
-  ierr = VecDuplicate(X,&Z);CHKERRQ(ierr);
-  ierr = VecSetValues(X,2,inds,xvals,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = VecSetValues(Y,2,inds,yvals,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = VecSetValues(Z,2,inds,zvals,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(X);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(Y);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(Z);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(X);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(Y);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(Z);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCall(MatCreateSeqAIJ(PETSC_COMM_WORLD,2,2,2,NULL,&A));
+  PetscCall(MatSetUp(A));
+  PetscCall(MatSetValues(A,2,inds,2,inds,avals,INSERT_VALUES));
+  PetscCall(VecCreateSeq(PETSC_COMM_WORLD,2,&X));
+  PetscCall(VecDuplicate(X,&Y));
+  PetscCall(VecDuplicate(X,&Z));
+  PetscCall(VecSetValues(X,2,inds,xvals,INSERT_VALUES));
+  PetscCall(VecSetValues(Y,2,inds,yvals,INSERT_VALUES));
+  PetscCall(VecSetValues(Z,2,inds,zvals,INSERT_VALUES));
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(VecAssemblyBegin(X));
+  PetscCall(VecAssemblyBegin(Y));
+  PetscCall(VecAssemblyBegin(Z));
+  PetscCall(VecAssemblyEnd(X));
+  PetscCall(VecAssemblyEnd(Y));
+  PetscCall(VecAssemblyEnd(Z));
 
-  ierr    = PetscNew(&user);CHKERRQ(ierr);
+  PetscCall(PetscNew(&user));
   user->B = A;
 
-  ierr = MatCreateShell(PETSC_COMM_WORLD,2,2,2,2,user,&S);CHKERRQ(ierr);
-  ierr = MatSetUp(S);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(S,MATOP_VIEW,(void (*)(void))MatView_User);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(S,MATOP_MULT,(void (*)(void))MatMult_User);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(S,MATOP_MULT_TRANSPOSE,(void (*)(void))MatMultTranspose_User);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(S,MATOP_GET_DIAGONAL,(void (*)(void))MatGetDiagonal_User);CHKERRQ(ierr);
+  PetscCall(MatCreateShell(PETSC_COMM_WORLD,2,2,2,2,user,&S));
+  PetscCall(MatSetUp(S));
+  PetscCall(MatShellSetOperation(S,MATOP_VIEW,(void (*)(void))MatView_User));
+  PetscCall(MatShellSetOperation(S,MATOP_MULT,(void (*)(void))MatMult_User));
+  PetscCall(MatShellSetOperation(S,MATOP_MULT_TRANSPOSE,(void (*)(void))MatMultTranspose_User));
+  PetscCall(MatShellSetOperation(S,MATOP_GET_DIAGONAL,(void (*)(void))MatGetDiagonal_User));
 
   for (i=0; i<4; i++) {
-    ierr = MatCreateSeqDense(PETSC_COMM_WORLD,1,1,&avals[i],&D[i]);CHKERRQ(ierr);
+    PetscCall(MatCreateSeqDense(PETSC_COMM_WORLD,1,1,&avals[i],&D[i]));
   }
-  ierr = MatCreateNest(PETSC_COMM_WORLD,2,NULL,2,NULL,D,&N);CHKERRQ(ierr);
-  ierr = MatSetUp(N);CHKERRQ(ierr);
+  PetscCall(MatCreateNest(PETSC_COMM_WORLD,2,NULL,2,NULL,D,&N));
+  PetscCall(MatSetUp(N));
 
-  ierr = TestMatrix(S,X,Y,Z);CHKERRQ(ierr);
-  ierr = TestMatrix(A,X,Y,Z);CHKERRQ(ierr);
-  ierr = TestMatrix(N,X,Y,Z);CHKERRQ(ierr);
+  PetscCall(TestMatrix(S,X,Y,Z));
+  PetscCall(TestMatrix(A,X,Y,Z));
+  PetscCall(TestMatrix(N,X,Y,Z));
 
-  for (i=0; i<4; i++) {ierr = MatDestroy(&D[i]);CHKERRQ(ierr);}
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = MatDestroy(&S);CHKERRQ(ierr);
-  ierr = MatDestroy(&N);CHKERRQ(ierr);
-  ierr = VecDestroy(&X);CHKERRQ(ierr);
-  ierr = VecDestroy(&Y);CHKERRQ(ierr);
-  ierr = VecDestroy(&Z);CHKERRQ(ierr);
-  ierr = PetscFree(user);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  for (i=0; i<4; i++) PetscCall(MatDestroy(&D[i]));
+  PetscCall(MatDestroy(&A));
+  PetscCall(MatDestroy(&S));
+  PetscCall(MatDestroy(&N));
+  PetscCall(VecDestroy(&X));
+  PetscCall(VecDestroy(&Y));
+  PetscCall(VecDestroy(&Z));
+  PetscCall(PetscFree(user));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -2,11 +2,6 @@
 !    Description:  Creates an index set based on blocks of integers. Views that index set
 !    and then destroys it.
 !
-!/*T
-!    Concepts: index sets^manipulating a block index set;
-!    Concepts: Fortran90^accessing indices in index set;
-!
-!T*/
 !
       program main
 #include <petsc/finclude/petscis.h>
@@ -27,41 +22,37 @@
       inputindices(3) = 3
       inputindices(4) = 4
 
-      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      if (ierr .ne. 0) then
-         print*,'Unable to initialize PETSc'
-         stop
-       endif
+      PetscCallA(PetscInitialize(ierr))
 !
 !    Create a block index set. The index set has 4 blocks each of size 3.
 !    The indices are {0,1,2,3,4,5,9,10,11,12,13,14}
 !    Note each processor is generating its own index set
 !    (in this case they are all identical)
 !
-      call ISCreateBlock(PETSC_COMM_SELF,bs,n,inputindices,PETSC_COPY_VALUES,set,ierr);CHKERRA(ierr)
-      call ISView(set,PETSC_VIEWER_STDOUT_SELF,ierr);CHKERRA(ierr)
+      PetscCallA(ISCreateBlock(PETSC_COMM_SELF,bs,n,inputindices,PETSC_COPY_VALUES,set,ierr))
+      PetscCallA(ISView(set,PETSC_VIEWER_STDOUT_SELF,ierr))
 
 !
 !    Extract indices from set.
 !
-      call ISGetLocalSize(set,issize,ierr);CHKERRA(ierr)
-      call ISGetIndicesF90(set,indices,ierr);CHKERRA(ierr)
+      PetscCallA(ISGetLocalSize(set,issize,ierr))
+      PetscCallA(ISGetIndicesF90(set,indices,ierr))
       write(6,100)indices
  100  format(12I3)
-      call ISRestoreIndicesF90(set,indices,ierr);CHKERRA(ierr)
+      PetscCallA(ISRestoreIndicesF90(set,indices,ierr))
 
 !
 !    Extract the block indices. This returns one index per block.
 !
-      call ISBlockGetIndicesF90(set,indices,ierr);CHKERRA(ierr)
+      PetscCallA(ISBlockGetIndicesF90(set,indices,ierr))
       write(6,200)indices
  200  format(4I3)
-      call ISBlockRestoreIndicesF90(set,indices,ierr);CHKERRA(ierr)
+      PetscCallA(ISBlockRestoreIndicesF90(set,indices,ierr))
 
 !
 !    Check if this is really a block index set
 !
-      call PetscObjectTypeCompare(set,ISBLOCK,isablock,ierr);CHKERRA(ierr)
+      PetscCallA(PetscObjectTypeCompare(set,ISBLOCK,isablock,ierr))
       if (.not. isablock) then
         write(6,*) 'Index set is not blocked!'
       endif
@@ -69,7 +60,7 @@
 !
 !    Determine the block size of the index set
 !
-      call ISGetBlockSize(set,bs,ierr);CHKERRA(ierr)
+      PetscCallA(ISGetBlockSize(set,bs,ierr))
       if (bs .ne. 3) then
         write(6,*) 'Blocksize != 3'
       endif
@@ -77,13 +68,13 @@
 !
 !    Get the number of blocks
 !
-      call ISBlockGetLocalSize(set,n,ierr);CHKERRA(ierr)
+      PetscCallA(ISBlockGetLocalSize(set,n,ierr))
       if (n .ne. 4) then
         write(6,*) 'Number of blocks != 4'
       endif
 
-      call ISDestroy(set,ierr);CHKERRA(ierr)
-      call PetscFinalize(ierr)
+      PetscCallA(ISDestroy(set,ierr))
+      PetscCallA(PetscFinalize(ierr))
       end
 
 !/*TEST

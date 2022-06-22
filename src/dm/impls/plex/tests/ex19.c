@@ -33,8 +33,6 @@ static PetscErrorCode sensor(PetscInt dim, PetscReal time, const PetscReal x[], 
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   options->Nr     = 1;
   options->metOpt = 1;
@@ -42,91 +40,91 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->hmax   = 0.5;
   options->doL2   = PETSC_FALSE;
 
-  ierr = PetscOptionsBegin(comm, "", "Meshing Adaptation Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsBoundedInt("-Nr", "Numberof refinement passes", "ex19.c", options->Nr, &options->Nr, NULL, 1);CHKERRQ(ierr);
-  ierr = PetscOptionsBoundedInt("-met", "Different choices of metric", "ex19.c", options->metOpt, &options->metOpt, NULL,0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-hmax", "Max size prescribed by the metric", "ex19.c", options->hmax, &options->hmax, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-hmin", "Min size prescribed by the metric", "ex19.c", options->hmin, &options->hmin, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-do_L2", "Test L2 projection", "ex19.c", options->doL2, &options->doL2, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscOptionsBegin(comm, "", "Meshing Adaptation Options", "DMPLEX");
+  PetscCall(PetscOptionsBoundedInt("-Nr", "Numberof refinement passes", "ex19.c", options->Nr, &options->Nr, NULL, 1));
+  PetscCall(PetscOptionsBoundedInt("-met", "Different choices of metric", "ex19.c", options->metOpt, &options->metOpt, NULL,0));
+  PetscCall(PetscOptionsReal("-hmax", "Max size prescribed by the metric", "ex19.c", options->hmax, &options->hmax, NULL));
+  PetscCall(PetscOptionsReal("-hmin", "Min size prescribed by the metric", "ex19.c", options->hmin, &options->hmin, NULL));
+  PetscCall(PetscOptionsBool("-do_L2", "Test L2 projection", "ex19.c", options->doL2, &options->doL2, NULL));
+  PetscOptionsEnd();
 
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
-  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) *dm, "DMinit");CHKERRQ(ierr);
-  ierr = DMViewFromOptions(*dm, NULL, "-init_dm_view");CHKERRQ(ierr);
+  PetscCall(DMCreate(comm, dm));
+  PetscCall(DMSetType(*dm, DMPLEX));
+  PetscCall(DMSetFromOptions(*dm));
+  PetscCall(PetscObjectSetName((PetscObject) *dm, "DMinit"));
+  PetscCall(DMViewFromOptions(*dm, NULL, "-init_dm_view"));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode ComputeMetricSensor(DM dm, AppCtx *user, Vec *metric)
 {
   PetscSimplePointFunc funcs[1] = {sensor};
-  DM             dmSensor, dmGrad, dmHess;
+  DM             dmSensor, dmGrad, dmHess, dmDet;
   PetscFE        fe;
-  Vec            f, g, H;
+  Vec            f, g, H, determinant;
   PetscBool      simplex;
   PetscInt       dim;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMPlexIsSimplex(dm, &simplex);CHKERRQ(ierr);
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMPlexIsSimplex(dm, &simplex));
 
-  ierr = DMClone(dm, &dmSensor);CHKERRQ(ierr);
-  ierr = PetscFECreateLagrange(PETSC_COMM_SELF, dim, 1, simplex, 1, -1, &fe);CHKERRQ(ierr);
-  ierr = DMSetField(dmSensor, 0, NULL, (PetscObject) fe);CHKERRQ(ierr);
-  ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
-  ierr = DMCreateDS(dmSensor);CHKERRQ(ierr);
-  ierr = DMCreateLocalVector(dmSensor, &f);CHKERRQ(ierr);
-  ierr = DMProjectFunctionLocal(dmSensor, 0., funcs, NULL, INSERT_VALUES, f);CHKERRQ(ierr);
-  ierr = VecViewFromOptions(f, NULL, "-sensor_view");CHKERRQ(ierr);
+  PetscCall(DMClone(dm, &dmSensor));
+  PetscCall(PetscFECreateLagrange(PETSC_COMM_SELF, dim, 1, simplex, 1, -1, &fe));
+  PetscCall(DMSetField(dmSensor, 0, NULL, (PetscObject) fe));
+  PetscCall(PetscFEDestroy(&fe));
+  PetscCall(DMCreateDS(dmSensor));
+  PetscCall(DMCreateLocalVector(dmSensor, &f));
+  PetscCall(DMProjectFunctionLocal(dmSensor, 0., funcs, NULL, INSERT_VALUES, f));
+  PetscCall(VecViewFromOptions(f, NULL, "-sensor_view"));
 
   // Recover the gradient of the sensor function
-  ierr = DMClone(dm, &dmGrad);CHKERRQ(ierr);
-  ierr = PetscFECreateLagrange(PETSC_COMM_SELF, dim, dim, simplex, 1, -1, &fe);CHKERRQ(ierr);
-  ierr = DMSetField(dmGrad, 0, NULL, (PetscObject) fe);CHKERRQ(ierr);
-  ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
-  ierr = DMCreateDS(dmGrad);CHKERRQ(ierr);
-  ierr = DMCreateLocalVector(dmGrad, &g);CHKERRQ(ierr);
-  ierr = DMPlexComputeGradientClementInterpolant(dmSensor, f, g);CHKERRQ(ierr);
-  ierr = VecDestroy(&f);CHKERRQ(ierr);
-  ierr = VecViewFromOptions(g, NULL, "-gradient_view");CHKERRQ(ierr);
+  PetscCall(DMClone(dm, &dmGrad));
+  PetscCall(PetscFECreateLagrange(PETSC_COMM_SELF, dim, dim, simplex, 1, -1, &fe));
+  PetscCall(DMSetField(dmGrad, 0, NULL, (PetscObject) fe));
+  PetscCall(PetscFEDestroy(&fe));
+  PetscCall(DMCreateDS(dmGrad));
+  PetscCall(DMCreateLocalVector(dmGrad, &g));
+  PetscCall(DMPlexComputeGradientClementInterpolant(dmSensor, f, g));
+  PetscCall(VecDestroy(&f));
+  PetscCall(VecViewFromOptions(g, NULL, "-gradient_view"));
 
   // Recover the Hessian of the sensor function
-  ierr = DMClone(dm, &dmHess);CHKERRQ(ierr);
-  ierr = DMPlexMetricCreate(dmHess, 0, &H);CHKERRQ(ierr);
-  ierr = DMPlexComputeGradientClementInterpolant(dmGrad, g, H);CHKERRQ(ierr);
-  ierr = VecDestroy(&g);CHKERRQ(ierr);
-  ierr = VecViewFromOptions(H, NULL, "-hessian_view");CHKERRQ(ierr);
+  PetscCall(DMClone(dm, &dmHess));
+  PetscCall(DMPlexMetricCreate(dmHess, 0, &H));
+  PetscCall(DMPlexComputeGradientClementInterpolant(dmGrad, g, H));
+  PetscCall(VecDestroy(&g));
+  PetscCall(VecViewFromOptions(H, NULL, "-hessian_view"));
 
   // Obtain a metric by Lp normalization
-  ierr = DMPlexMetricNormalize(dmHess, H, PETSC_TRUE, PETSC_TRUE, metric);CHKERRQ(ierr);
-  ierr = VecDestroy(&H);CHKERRQ(ierr);
-  ierr = DMDestroy(&dmHess);CHKERRQ(ierr);
-  ierr = DMDestroy(&dmGrad);CHKERRQ(ierr);
-  ierr = DMDestroy(&dmSensor);CHKERRQ(ierr);
+  PetscCall(DMPlexMetricCreate(dm, 0, metric));
+  PetscCall(DMPlexMetricDeterminantCreate(dm, 0, &determinant, &dmDet));
+  PetscCall(DMPlexMetricNormalize(dmHess, H, PETSC_TRUE, PETSC_TRUE, *metric, determinant));
+  PetscCall(VecDestroy(&determinant));
+  PetscCall(DMDestroy(&dmDet));
+  PetscCall(VecDestroy(&H));
+  PetscCall(DMDestroy(&dmHess));
+  PetscCall(DMDestroy(&dmGrad));
+  PetscCall(DMDestroy(&dmSensor));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode ComputeMetric(DM dm, AppCtx *user, Vec *metric)
 {
   PetscReal          lambda = 1/(user->hmax*user->hmax);
-  PetscErrorCode     ierr;
 
   PetscFunctionBeginUser;
   if (user->metOpt == 0) {
     /* Specify a uniform, isotropic metric */
-    ierr = DMPlexMetricCreateUniform(dm, 0, lambda, metric);CHKERRQ(ierr);
+    PetscCall(DMPlexMetricCreateUniform(dm, 0, lambda, metric));
   } else if (user->metOpt == 3) {
-    ierr = ComputeMetricSensor(dm, user, metric);CHKERRQ(ierr);
+    PetscCall(ComputeMetricSensor(dm, user, metric));
   } else {
     DM                 cdm;
     Vec                coordinates;
@@ -135,18 +133,18 @@ static PetscErrorCode ComputeMetric(DM dm, AppCtx *user, Vec *metric)
     PetscReal          h;
     PetscInt           dim, i, j, vStart, vEnd, v;
 
-    ierr = DMPlexMetricCreate(dm, 0, metric);CHKERRQ(ierr);
-    ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-    ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
-    ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(coordinates, &coords);CHKERRQ(ierr);
-    ierr = VecGetArray(*metric, &met);CHKERRQ(ierr);
-    ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+    PetscCall(DMPlexMetricCreate(dm, 0, metric));
+    PetscCall(DMGetDimension(dm, &dim));
+    PetscCall(DMGetCoordinateDM(dm, &cdm));
+    PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
+    PetscCall(VecGetArrayRead(coordinates, &coords));
+    PetscCall(VecGetArray(*metric, &met));
+    PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
     for (v = vStart; v < vEnd; ++v) {
       PetscScalar *vcoords;
       PetscScalar *pmet;
 
-      ierr = DMPlexPointLocalRead(cdm, v, coords, &vcoords);CHKERRQ(ierr);
+      PetscCall(DMPlexPointLocalRead(cdm, v, coords, &vcoords));
       switch (user->metOpt) {
       case 1:
         h = user->hmax - (user->hmax-user->hmin)*PetscRealPart(vcoords[0]);
@@ -157,7 +155,7 @@ static PetscErrorCode ComputeMetric(DM dm, AppCtx *user, Vec *metric)
       default:
         SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "metOpt = 0, 1, 2 or 3, cannot be %d", user->metOpt);
       }
-      ierr = DMPlexPointLocalRef(dm, v, met, &pmet);CHKERRQ(ierr);
+      PetscCall(DMPlexPointLocalRef(dm, v, met, &pmet));
       for (i = 0; i < dim; ++i) {
         for (j = 0; j < dim; ++j) {
           if (i == j) {
@@ -167,8 +165,8 @@ static PetscErrorCode ComputeMetric(DM dm, AppCtx *user, Vec *metric)
         }
       }
     }
-    ierr = VecRestoreArray(*metric, &met);CHKERRQ(ierr);
-    ierr = VecRestoreArrayRead(coordinates, &coords);CHKERRQ(ierr);
+    PetscCall(VecRestoreArray(*metric, &met));
+    PetscCall(VecRestoreArrayRead(coordinates, &coords));
   }
   PetscFunctionReturn(0);
 }
@@ -190,73 +188,72 @@ static PetscErrorCode TestL2Projection(DM dm, DM dma, AppCtx *user)
   PetscReal        error;
   PetscBool        simplex;
   PetscInt         dim;
-  PetscErrorCode   ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMPlexIsSimplex(dm, &simplex);CHKERRQ(ierr);
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMPlexIsSimplex(dm, &simplex));
 
-  ierr = DMClone(dm, &dmProj);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, simplex, NULL, -1, &fe);CHKERRQ(ierr);
-  ierr = DMSetField(dmProj, 0, NULL, (PetscObject) fe);CHKERRQ(ierr);
-  ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
-  ierr = DMCreateDS(dmProj);CHKERRQ(ierr);
+  PetscCall(DMClone(dm, &dmProj));
+  PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, simplex, NULL, -1, &fe));
+  PetscCall(DMSetField(dmProj, 0, NULL, (PetscObject) fe));
+  PetscCall(PetscFEDestroy(&fe));
+  PetscCall(DMCreateDS(dmProj));
 
-  ierr = DMClone(dma, &dmaProj);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, simplex, NULL, -1, &fe);CHKERRQ(ierr);
-  ierr = DMSetField(dmaProj, 0, NULL, (PetscObject) fe);CHKERRQ(ierr);
-  ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
-  ierr = DMCreateDS(dmaProj);CHKERRQ(ierr);
+  PetscCall(DMClone(dma, &dmaProj));
+  PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, simplex, NULL, -1, &fe));
+  PetscCall(DMSetField(dmaProj, 0, NULL, (PetscObject) fe));
+  PetscCall(PetscFEDestroy(&fe));
+  PetscCall(DMCreateDS(dmaProj));
 
-  ierr = DMGetGlobalVector(dmProj, &u);CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(dmaProj, &ua);CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(dmaProj, &rhs);CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(dmaProj, &uproj);CHKERRQ(ierr);
+  PetscCall(DMGetGlobalVector(dmProj, &u));
+  PetscCall(DMGetGlobalVector(dmaProj, &ua));
+  PetscCall(DMGetGlobalVector(dmaProj, &rhs));
+  PetscCall(DMGetGlobalVector(dmaProj, &uproj));
 
   // Interpolate onto original mesh using dual basis
-  ierr = DMProjectFunction(dmProj, 0.0, funcs, NULL, INSERT_VALUES, u);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) u, "Original");CHKERRQ(ierr);
-  ierr = VecViewFromOptions(u, NULL, "-orig_vec_view");CHKERRQ(ierr);
-  ierr = DMComputeL2Diff(dmProj, 0.0, funcs, NULL, u, &error);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "Original L2 Error: %g\n", (double) error);CHKERRQ(ierr);
+  PetscCall(DMProjectFunction(dmProj, 0.0, funcs, NULL, INSERT_VALUES, u));
+  PetscCall(PetscObjectSetName((PetscObject) u, "Original"));
+  PetscCall(VecViewFromOptions(u, NULL, "-orig_vec_view"));
+  PetscCall(DMComputeL2Diff(dmProj, 0.0, funcs, NULL, u, &error));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Original L2 Error: %g\n", (double) error));
   // Interpolate onto NEW mesh using dual basis
-  ierr = DMProjectFunction(dmaProj, 0.0, funcs, NULL, INSERT_VALUES, ua);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) ua, "Adapted");CHKERRQ(ierr);
-  ierr = VecViewFromOptions(ua, NULL, "-adapt_vec_view");CHKERRQ(ierr);
-  ierr = DMComputeL2Diff(dmaProj, 0.0, funcs, NULL, ua, &error);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "Adapted L2 Error: %g\n", (double) error);CHKERRQ(ierr);
+  PetscCall(DMProjectFunction(dmaProj, 0.0, funcs, NULL, INSERT_VALUES, ua));
+  PetscCall(PetscObjectSetName((PetscObject) ua, "Adapted"));
+  PetscCall(VecViewFromOptions(ua, NULL, "-adapt_vec_view"));
+  PetscCall(DMComputeL2Diff(dmaProj, 0.0, funcs, NULL, ua, &error));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Adapted L2 Error: %g\n", (double) error));
   // Interpolate between meshes using interpolation matrix
-  ierr = DMCreateInterpolation(dmProj, dmaProj, &Interp, &scaling);CHKERRQ(ierr);
-  ierr = MatInterpolate(Interp, u, ua);CHKERRQ(ierr);
-  ierr = MatDestroy(&Interp);CHKERRQ(ierr);
-  ierr = VecDestroy(&scaling);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) ua, "Interpolation");CHKERRQ(ierr);
-  ierr = VecViewFromOptions(ua, NULL, "-interp_vec_view");CHKERRQ(ierr);
-  ierr = DMComputeL2Diff(dmaProj, 0.0, funcs, NULL, ua, &error);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "Interpolated L2 Error: %g\n", (double) error);CHKERRQ(ierr);
+  PetscCall(DMCreateInterpolation(dmProj, dmaProj, &Interp, &scaling));
+  PetscCall(MatInterpolate(Interp, u, ua));
+  PetscCall(MatDestroy(&Interp));
+  PetscCall(VecDestroy(&scaling));
+  PetscCall(PetscObjectSetName((PetscObject) ua, "Interpolation"));
+  PetscCall(VecViewFromOptions(ua, NULL, "-interp_vec_view"));
+  PetscCall(DMComputeL2Diff(dmaProj, 0.0, funcs, NULL, ua, &error));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Interpolated L2 Error: %g\n", (double) error));
   // L2 projection
-  ierr = DMCreateMassMatrix(dmaProj, dmaProj, &mass);CHKERRQ(ierr);
-  ierr = MatViewFromOptions(mass, NULL, "-mass_mat_view");CHKERRQ(ierr);
-  ierr = KSPCreate(PETSC_COMM_WORLD, &ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp, mass, mass);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  PetscCall(DMCreateMassMatrix(dmaProj, dmaProj, &mass));
+  PetscCall(MatViewFromOptions(mass, NULL, "-mass_mat_view"));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
+  PetscCall(KSPSetOperators(ksp, mass, mass));
+  PetscCall(KSPSetFromOptions(ksp));
   //   Compute rhs as M f, could also direclty project the analytic function but we might not have it
-  ierr = DMCreateMassMatrix(dmProj, dmaProj, &mass2);CHKERRQ(ierr);
-  ierr = MatMult(mass2, u, rhs);CHKERRQ(ierr);
-  ierr = MatDestroy(&mass2);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp, rhs, uproj);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) uproj, "L_2 Projection");CHKERRQ(ierr);
-  ierr = VecViewFromOptions(uproj, NULL, "-proj_vec_view");CHKERRQ(ierr);
-  ierr = DMComputeL2Diff(dmaProj, 0.0, funcs, NULL, uproj, &error);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "Projected L2 Error: %g\n", (double) error);CHKERRQ(ierr);
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = MatDestroy(&mass);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(dmProj, &u);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(dmaProj, &ua);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(dmaProj, &rhs);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(dmaProj, &uproj);CHKERRQ(ierr);
-  ierr = DMDestroy(&dmProj);CHKERRQ(ierr);
-  ierr = DMDestroy(&dmaProj);CHKERRQ(ierr);
+  PetscCall(DMCreateMassMatrix(dmProj, dmaProj, &mass2));
+  PetscCall(MatMult(mass2, u, rhs));
+  PetscCall(MatDestroy(&mass2));
+  PetscCall(KSPSolve(ksp, rhs, uproj));
+  PetscCall(PetscObjectSetName((PetscObject) uproj, "L_2 Projection"));
+  PetscCall(VecViewFromOptions(uproj, NULL, "-proj_vec_view"));
+  PetscCall(DMComputeL2Diff(dmaProj, 0.0, funcs, NULL, uproj, &error));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Projected L2 Error: %g\n", (double) error));
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(MatDestroy(&mass));
+  PetscCall(DMRestoreGlobalVector(dmProj, &u));
+  PetscCall(DMRestoreGlobalVector(dmaProj, &ua));
+  PetscCall(DMRestoreGlobalVector(dmaProj, &rhs));
+  PetscCall(DMRestoreGlobalVector(dmaProj, &uproj));
+  PetscCall(DMDestroy(&dmProj));
+  PetscCall(DMDestroy(&dmaProj));
   PetscFunctionReturn(0);
 }
 
@@ -267,37 +264,36 @@ int main (int argc, char * argv[]) {
   DM             dma, odm;
   Vec            metric;
   PetscInt       r;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   comm = PETSC_COMM_WORLD;
-  ierr = ProcessOptions(comm, &user);CHKERRQ(ierr);
-  ierr = CreateMesh(comm, &dm);CHKERRQ(ierr);
+  PetscCall(ProcessOptions(comm, &user));
+  PetscCall(CreateMesh(comm, &dm));
 
   odm  = dm;
-  ierr = DMPlexDistributeOverlap(odm, 1, NULL, &dm);CHKERRQ(ierr);
+  PetscCall(DMPlexDistributeOverlap(odm, 1, NULL, &dm));
   if (!dm) {dm = odm;}
-  else     {ierr = DMDestroy(&odm);CHKERRQ(ierr);}
+  else     PetscCall(DMDestroy(&odm));
 
   for (r = 0; r < user.Nr; ++r) {
     DMLabel label;
 
-    ierr = ComputeMetric(dm, &user, &metric);CHKERRQ(ierr);
-    ierr = DMGetLabel(dm, "marker", &label);CHKERRQ(ierr);
-    ierr = DMAdaptMetric(dm, metric, label, NULL, &dma);CHKERRQ(ierr);
-    ierr = VecDestroy(&metric);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) dma, "DMadapt");CHKERRQ(ierr);
-    ierr = PetscObjectSetOptionsPrefix((PetscObject) dma, "adapt_");CHKERRQ(ierr);
-    ierr = DMViewFromOptions(dma, NULL, "-dm_view");CHKERRQ(ierr);
-    if (user.doL2) {ierr = TestL2Projection(dm, dma, &user);CHKERRQ(ierr);}
-    ierr = DMDestroy(&dm);CHKERRQ(ierr);
+    PetscCall(ComputeMetric(dm, &user, &metric));
+    PetscCall(DMGetLabel(dm, "marker", &label));
+    PetscCall(DMAdaptMetric(dm, metric, label, NULL, &dma));
+    PetscCall(VecDestroy(&metric));
+    PetscCall(PetscObjectSetName((PetscObject) dma, "DMadapt"));
+    PetscCall(PetscObjectSetOptionsPrefix((PetscObject) dma, "adapt_"));
+    PetscCall(DMViewFromOptions(dma, NULL, "-dm_view"));
+    if (user.doL2) PetscCall(TestL2Projection(dm, dma, &user));
+    PetscCall(DMDestroy(&dm));
     dm   = dma;
   }
-  ierr = PetscObjectSetOptionsPrefix((PetscObject) dm, "final_");CHKERRQ(ierr);
-  ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject) dm, "final_"));
+  PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
+  PetscCall(DMDestroy(&dm));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST
@@ -309,53 +305,50 @@ int main (int argc, char * argv[]) {
     args: -dm_plex_box_faces 4,4,4 -dm_adaptor pragmatic -met 2 -init_dm_view -adapt_dm_view -dm_adaptor pragmatic
 
     test:
-      suffix: 0
+      suffix: 2d
       args: -dm_plex_separate_marker 0
     test:
-      suffix: 1
+      suffix: 2d_sep
       args: -dm_plex_separate_marker 1
     test:
-      suffix: 2
-      args: -dm_plex_dim 3
-    test:
-      suffix: 3
+      suffix: 3d
       args: -dm_plex_dim 3
 
   # Pragmatic hangs for simple partitioner
   testset:
     requires: parmetis
-    args: -dm_plex_box_faces 2,2 -dm_adaptor pragmatic -petscpartitioner_type parmetis -met 2 -init_dm_view -adapt_dm_view -dm_adaptor pragmatic
+    args: -dm_plex_box_faces 2,2 -petscpartitioner_type parmetis -met 2 -init_dm_view -adapt_dm_view -dm_adaptor pragmatic
 
     test:
-      suffix: 4
+      suffix: 2d_parmetis_np2
       nsize: 2
     test:
-      suffix: 5
+      suffix: 2d_parmetis_np4
       nsize: 4
 
   test:
     requires: parmetis
-    suffix: 6
+    suffix: 3d_parmetis_met0
     nsize: 2
     args: -dm_plex_dim 3 -dm_plex_box_faces 9,9,9 -dm_adaptor pragmatic -petscpartitioner_type parmetis \
           -met 0 -hmin 0.01 -hmax 0.03 -init_dm_view -adapt_dm_view -dm_adaptor pragmatic
   test:
     requires: parmetis
-    suffix: 7
+    suffix: 3d_parmetis_met2
     nsize: 2
     args: -dm_plex_box_faces 19,19 -dm_adaptor pragmatic -petscpartitioner_type parmetis \
           -met 2 -hmax 0.5 -hmin 0.001 -init_dm_view -adapt_dm_view -dm_adaptor pragmatic
   test:
-    suffix: proj_0
+    suffix: proj2
     args: -dm_plex_box_faces 2,2 -dm_plex_hash_location -dm_adaptor pragmatic -init_dm_view -adapt_dm_view -do_L2 \
           -petscspace_degree 1 -petscfe_default_quadrature_order 1 -pc_type lu -dm_adaptor pragmatic
   test:
-    suffix: proj_1
+    suffix: proj4
     args: -dm_plex_box_faces 4,4 -dm_plex_hash_location -dm_adaptor pragmatic -init_dm_view -adapt_dm_view -do_L2 \
           -petscspace_degree 1 -petscfe_default_quadrature_order 1 -pc_type lu -dm_adaptor pragmatic
 
   test:
-    suffix: sensor
+    suffix: 2d_met3
     args: -dm_plex_box_faces 9,9 -met 3 -dm_adaptor pragmatic -init_dm_view -adapt_dm_view \
           -dm_plex_metric_h_min 1.e-10 -dm_plex_metric_h_max 1.0e-01 -dm_plex_metric_a_max 1.0e+05 -dm_plex_metric_p 1.0 \
             -dm_plex_metric_target_complexity 10000.0 -dm_adaptor pragmatic

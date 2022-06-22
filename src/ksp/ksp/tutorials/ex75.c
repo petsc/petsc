@@ -14,52 +14,51 @@ int main(int argc,char **args)
   PetscViewer    viewer;
   char           dir[PETSC_MAX_PATH_LEN],name[256];
   PetscBool      flg,reset = PETSC_FALSE;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&args,NULL,help);if (ierr) return ierr;
-  ierr = PetscStrcpy(dir,".");CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL,NULL,"-load_dir",dir,sizeof(dir),NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-nmat",&nmat,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-reset",&reset,NULL);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&args,NULL,help));
+  PetscCall(PetscStrcpy(dir,"."));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-load_dir",dir,sizeof(dir),NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-nmat",&nmat,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-reset",&reset,NULL));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPSetOperators(ksp,A,A));
   for (i=0; i<nmat; i++) {
     j = i+400;
-    ierr = PetscSNPrintf(name,sizeof(name),"%s/A_%d.dat",dir,j);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-    ierr = MatLoad(A,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    PetscCall(PetscSNPrintf(name,sizeof(name),"%s/A_%" PetscInt_FMT ".dat",dir,j));
+    PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,&viewer));
+    PetscCall(MatLoad(A,viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
     if (i == 0) {
-      ierr = MatCreateVecs(A,&x,&b);CHKERRQ(ierr);
+      PetscCall(MatCreateVecs(A,&x,&b));
     }
-    ierr = PetscSNPrintf(name,sizeof(name),"%s/rhs_%d.dat",dir,j);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-    ierr = VecLoad(b,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-    ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-    ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-    ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPHPDDM,&flg);CHKERRQ(ierr);
+    PetscCall(PetscSNPrintf(name,sizeof(name),"%s/rhs_%" PetscInt_FMT ".dat",dir,j));
+    PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,&viewer));
+    PetscCall(VecLoad(b,viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
+    PetscCall(KSPSetFromOptions(ksp));
+    PetscCall(KSPSolve(ksp,b,x));
+    PetscCall(PetscObjectTypeCompare((PetscObject)ksp,KSPHPDDM,&flg));
 #if defined(PETSC_HAVE_HPDDM)
     if (flg && reset) {
-      ierr = KSPHPDDMGetDeflationSpace(ksp,&U);CHKERRQ(ierr);
-      ierr = KSPReset(ksp);CHKERRQ(ierr);
-      ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
-      ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-      ierr = KSPSetUp(ksp);CHKERRQ(ierr);
+      PetscCall(KSPHPDDMGetDeflationMat(ksp,&U));
+      PetscCall(KSPReset(ksp));
+      PetscCall(KSPSetOperators(ksp,A,A));
+      PetscCall(KSPSetFromOptions(ksp));
+      PetscCall(KSPSetUp(ksp));
       if (U) {
-        ierr = KSPHPDDMSetDeflationSpace(ksp,U);CHKERRQ(ierr);
-        ierr = MatDestroy(&U);CHKERRQ(ierr);
+        PetscCall(KSPHPDDMSetDeflationMat(ksp,U));
+        PetscCall(MatDestroy(&U));
       }
     }
 #endif
   }
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&b));
+  PetscCall(MatDestroy(&A));
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

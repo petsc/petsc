@@ -19,7 +19,7 @@
 
   Level: developer
 
-.seealso: PetscSFCreate(), DMPlexCreateTwoSidedProcessSF()
+.seealso: `PetscSFCreate()`, `DMPlexCreateTwoSidedProcessSF()`
 @*/
 PetscErrorCode DMPlexCreateProcessSF(DM dm, PetscSF sfPoint, IS *processRanks, PetscSF *sfProcess)
 {
@@ -30,37 +30,36 @@ PetscErrorCode DMPlexCreateProcessSF(DM dm, PetscSF sfPoint, IS *processRanks, P
   PetscSFNode       *remotePointsNew;
   PetscInt          *ranks, *ranksNew;
   PetscMPIInt        size;
-  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(sfPoint, PETSCSF_CLASSID, 2);
   if (processRanks) {PetscValidPointer(processRanks, 3);}
   if (sfProcess)    {PetscValidPointer(sfProcess, 4);}
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size);CHKERRMPI(ierr);
-  ierr = PetscSFGetGraph(sfPoint, &numRoots, &numLeaves, &localPoints, &remotePoints);CHKERRQ(ierr);
-  ierr = PetscMalloc1(numLeaves, &ranks);CHKERRQ(ierr);
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size));
+  PetscCall(PetscSFGetGraph(sfPoint, &numRoots, &numLeaves, &localPoints, &remotePoints));
+  PetscCall(PetscMalloc1(numLeaves, &ranks));
   for (l = 0; l < numLeaves; ++l) {
     ranks[l] = remotePoints[l].rank;
   }
-  ierr = PetscSortRemoveDupsInt(&numLeaves, ranks);CHKERRQ(ierr);
-  ierr = PetscMalloc1(numLeaves, &ranksNew);CHKERRQ(ierr);
-  ierr = PetscMalloc1(numLeaves, &localPointsNew);CHKERRQ(ierr);
-  ierr = PetscMalloc1(numLeaves, &remotePointsNew);CHKERRQ(ierr);
+  PetscCall(PetscSortRemoveDupsInt(&numLeaves, ranks));
+  PetscCall(PetscMalloc1(numLeaves, &ranksNew));
+  PetscCall(PetscMalloc1(numLeaves, &localPointsNew));
+  PetscCall(PetscMalloc1(numLeaves, &remotePointsNew));
   for (l = 0; l < numLeaves; ++l) {
     ranksNew[l]              = ranks[l];
     localPointsNew[l]        = l;
     remotePointsNew[l].index = 0;
     remotePointsNew[l].rank  = ranksNew[l];
   }
-  ierr = PetscFree(ranks);CHKERRQ(ierr);
-  if (processRanks) {ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm), numLeaves, ranksNew, PETSC_OWN_POINTER, processRanks);CHKERRQ(ierr);}
-  else              {ierr = PetscFree(ranksNew);CHKERRQ(ierr);}
+  PetscCall(PetscFree(ranks));
+  if (processRanks) PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)dm), numLeaves, ranksNew, PETSC_OWN_POINTER, processRanks));
+  else              PetscCall(PetscFree(ranksNew));
   if (sfProcess) {
-    ierr = PetscSFCreate(PetscObjectComm((PetscObject)dm), sfProcess);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) *sfProcess, "Process SF");CHKERRQ(ierr);
-    ierr = PetscSFSetFromOptions(*sfProcess);CHKERRQ(ierr);
-    ierr = PetscSFSetGraph(*sfProcess, size, numLeaves, localPointsNew, PETSC_OWN_POINTER, remotePointsNew, PETSC_OWN_POINTER);CHKERRQ(ierr);
+    PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)dm), sfProcess));
+    PetscCall(PetscObjectSetName((PetscObject) *sfProcess, "Process SF"));
+    PetscCall(PetscSFSetFromOptions(*sfProcess));
+    PetscCall(PetscSFSetGraph(*sfProcess, size, numLeaves, localPointsNew, PETSC_OWN_POINTER, remotePointsNew, PETSC_OWN_POINTER));
   }
   PetscFunctionReturn(0);
 }
@@ -78,30 +77,29 @@ PetscErrorCode DMPlexCreateProcessSF(DM dm, PetscSF sfPoint, IS *processRanks, P
 
   Level: developer
 
-.seealso: DMRefine(), DMPlexSetRefinementUniform(), DMPlexGetSubpointIS()
+.seealso: `DMRefine()`, `DMPlexSetRefinementUniform()`, `DMPlexGetSubpointIS()`
 @*/
 PetscErrorCode DMPlexCreateCoarsePointIS(DM dm, IS *fpointIS)
 {
   DMPlexTransform tr;
   PetscInt       *fpoints;
   PetscInt        pStart, pEnd, p, vStart, vEnd, v;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = DMPlexTransformCreate(PetscObjectComm((PetscObject) dm), &tr);CHKERRQ(ierr);
-  ierr = DMPlexTransformSetUp(tr);CHKERRQ(ierr);
-  ierr = PetscMalloc1(pEnd-pStart, &fpoints);CHKERRQ(ierr);
+  PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
+  PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
+  PetscCall(DMPlexTransformCreate(PetscObjectComm((PetscObject) dm), &tr));
+  PetscCall(DMPlexTransformSetUp(tr));
+  PetscCall(PetscMalloc1(pEnd-pStart, &fpoints));
   for (p = 0; p < pEnd-pStart; ++p) fpoints[p] = -1;
   for (v = vStart; v < vEnd; ++v) {
     PetscInt vNew = -1; /* quiet overzealous may be used uninitialized check */
 
-    ierr = DMPlexTransformGetTargetPoint(tr, DM_POLYTOPE_POINT, DM_POLYTOPE_POINT, p, 0, &vNew);CHKERRQ(ierr);
+    PetscCall(DMPlexTransformGetTargetPoint(tr, DM_POLYTOPE_POINT, DM_POLYTOPE_POINT, p, 0, &vNew));
     fpoints[v-pStart] = vNew;
   }
-  ierr = DMPlexTransformDestroy(&tr);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF, pEnd-pStart, fpoints, PETSC_OWN_POINTER, fpointIS);CHKERRQ(ierr);
+  PetscCall(DMPlexTransformDestroy(&tr));
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF, pEnd-pStart, fpoints, PETSC_OWN_POINTER, fpointIS));
   PetscFunctionReturn(0);
 }
 
@@ -114,18 +112,17 @@ PetscErrorCode DMPlexCreateCoarsePointIS(DM dm, IS *fpointIS)
 
   Level: developer
 
-.seealso: DMPlexTransformType, DMRefine(), DMPlexGetTransformType(), DMPlexSetRefinementUniform()
+.seealso: `DMPlexTransformType`, `DMRefine()`, `DMPlexGetTransformType()`, `DMPlexSetRefinementUniform()`
 @*/
 PetscErrorCode DMPlexSetTransformType(DM dm, DMPlexTransformType type)
 {
   DM_Plex        *mesh = (DM_Plex*) dm->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMPLEX);
   if (type) PetscValidCharPointer(type, 2);
-  ierr = PetscFree(mesh->transformType);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(type, &mesh->transformType);CHKERRQ(ierr);
+  PetscCall(PetscFree(mesh->transformType));
+  PetscCall(PetscStrallocpy(type, &mesh->transformType));
   PetscFunctionReturn(0);
 }
 
@@ -140,7 +137,7 @@ PetscErrorCode DMPlexSetTransformType(DM dm, DMPlexTransformType type)
 
   Level: developer
 
-.seealso: DMPlexTransformType, DMRefine(), DMPlexSetTransformType(), DMPlexGetRefinementUniform()
+.seealso: `DMPlexTransformType`, `DMRefine()`, `DMPlexSetTransformType()`, `DMPlexGetRefinementUniform()`
 @*/
 PetscErrorCode DMPlexGetTransformType(DM dm, DMPlexTransformType *type)
 {
@@ -162,7 +159,7 @@ PetscErrorCode DMPlexGetTransformType(DM dm, DMPlexTransformType *type)
 
   Level: developer
 
-.seealso: DMRefine(), DMPlexGetRefinementUniform(), DMPlexGetRefinementLimit(), DMPlexSetRefinementLimit()
+.seealso: `DMRefine()`, `DMPlexGetRefinementUniform()`, `DMPlexGetRefinementLimit()`, `DMPlexSetRefinementLimit()`
 @*/
 PetscErrorCode DMPlexSetRefinementUniform(DM dm, PetscBool refinementUniform)
 {
@@ -185,7 +182,7 @@ PetscErrorCode DMPlexSetRefinementUniform(DM dm, PetscBool refinementUniform)
 
   Level: developer
 
-.seealso: DMRefine(), DMPlexSetRefinementUniform(), DMPlexGetRefinementLimit(), DMPlexSetRefinementLimit()
+.seealso: `DMRefine()`, `DMPlexSetRefinementUniform()`, `DMPlexGetRefinementLimit()`, `DMPlexSetRefinementLimit()`
 @*/
 PetscErrorCode DMPlexGetRefinementUniform(DM dm, PetscBool *refinementUniform)
 {
@@ -193,7 +190,7 @@ PetscErrorCode DMPlexGetRefinementUniform(DM dm, PetscBool *refinementUniform)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMPLEX);
-  PetscValidPointer(refinementUniform,  2);
+  PetscValidBoolPointer(refinementUniform,  2);
   *refinementUniform = mesh->refinementUniform;
   PetscFunctionReturn(0);
 }
@@ -207,7 +204,7 @@ PetscErrorCode DMPlexGetRefinementUniform(DM dm, PetscBool *refinementUniform)
 
   Level: developer
 
-.seealso: DMRefine(), DMPlexGetRefinementLimit(), DMPlexGetRefinementUniform(), DMPlexSetRefinementUniform()
+.seealso: `DMRefine()`, `DMPlexGetRefinementLimit()`, `DMPlexGetRefinementUniform()`, `DMPlexSetRefinementUniform()`
 @*/
 PetscErrorCode DMPlexSetRefinementLimit(DM dm, PetscReal refinementLimit)
 {
@@ -230,7 +227,7 @@ PetscErrorCode DMPlexSetRefinementLimit(DM dm, PetscReal refinementLimit)
 
   Level: developer
 
-.seealso: DMRefine(), DMPlexSetRefinementLimit(), DMPlexGetRefinementUniform(), DMPlexSetRefinementUniform()
+.seealso: `DMRefine()`, `DMPlexSetRefinementLimit()`, `DMPlexGetRefinementUniform()`, `DMPlexSetRefinementUniform()`
 @*/
 PetscErrorCode DMPlexGetRefinementLimit(DM dm, PetscReal *refinementLimit)
 {
@@ -238,7 +235,7 @@ PetscErrorCode DMPlexGetRefinementLimit(DM dm, PetscReal *refinementLimit)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(refinementLimit,  2);
+  PetscValidRealPointer(refinementLimit,  2);
   /* if (mesh->refinementLimit < 0) = getMaxVolume()/2.0; */
   *refinementLimit = mesh->refinementLimit;
   PetscFunctionReturn(0);
@@ -257,7 +254,7 @@ $ limit  - The maximum cell volume for a cell containing this point
 
   Level: developer
 
-.seealso: DMRefine(), DMPlexGetRefinementFunction(), DMPlexGetRefinementUniform(), DMPlexSetRefinementUniform(), DMPlexGetRefinementLimit(), DMPlexSetRefinementLimit()
+.seealso: `DMRefine()`, `DMPlexGetRefinementFunction()`, `DMPlexGetRefinementUniform()`, `DMPlexSetRefinementUniform()`, `DMPlexGetRefinementLimit()`, `DMPlexSetRefinementLimit()`
 @*/
 PetscErrorCode DMPlexSetRefinementFunction(DM dm, PetscErrorCode (*refinementFunc)(const PetscReal [], PetscReal *))
 {
@@ -284,7 +281,7 @@ $ limit  - The maximum cell volume for a cell containing this point
 
   Level: developer
 
-.seealso: DMRefine(), DMPlexSetRefinementFunction(), DMPlexGetRefinementUniform(), DMPlexSetRefinementUniform(), DMPlexGetRefinementLimit(), DMPlexSetRefinementLimit()
+.seealso: `DMRefine()`, `DMPlexSetRefinementFunction()`, `DMPlexGetRefinementUniform()`, `DMPlexSetRefinementUniform()`, `DMPlexGetRefinementLimit()`, `DMPlexSetRefinementLimit()`
 @*/
 PetscErrorCode DMPlexGetRefinementFunction(DM dm, PetscErrorCode (**refinementFunc)(const PetscReal [], PetscReal *))
 {
@@ -300,11 +297,10 @@ PetscErrorCode DMPlexGetRefinementFunction(DM dm, PetscErrorCode (**refinementFu
 PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *rdm)
 {
   PetscBool      isUniform;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexGetRefinementUniform(dm, &isUniform);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(dm, NULL, "-initref_dm_view");CHKERRQ(ierr);
+  PetscCall(DMPlexGetRefinementUniform(dm, &isUniform));
+  PetscCall(DMViewFromOptions(dm, NULL, "-initref_dm_view"));
   if (isUniform) {
     DMPlexTransform     tr;
     DM                  cdm, rcdm;
@@ -312,34 +308,34 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *rdm)
     const char         *prefix;
     PetscOptions       options;
 
-    ierr = DMPlexTransformCreate(PetscObjectComm((PetscObject) dm), &tr);CHKERRQ(ierr);
-    ierr = DMPlexTransformSetDM(tr, dm);CHKERRQ(ierr);
-    ierr = DMPlexGetTransformType(dm, &trType);CHKERRQ(ierr);
-    if (trType) {ierr = DMPlexTransformSetType(tr, trType);CHKERRQ(ierr);}
-    ierr = PetscObjectGetOptionsPrefix((PetscObject) dm, &prefix);CHKERRQ(ierr);
-    ierr = PetscObjectSetOptionsPrefix((PetscObject) tr,  prefix);CHKERRQ(ierr);
-    ierr = PetscObjectGetOptions((PetscObject) dm, &options);CHKERRQ(ierr);
-    ierr = PetscObjectSetOptions((PetscObject) tr, options);CHKERRQ(ierr);
-    ierr = DMPlexTransformSetFromOptions(tr);CHKERRQ(ierr);
-    ierr = PetscObjectSetOptions((PetscObject) tr, NULL);CHKERRQ(ierr);
-    ierr = DMPlexTransformSetUp(tr);CHKERRQ(ierr);
-    ierr = PetscObjectViewFromOptions((PetscObject) tr, NULL, "-dm_plex_transform_view");CHKERRQ(ierr);
-    ierr = DMPlexTransformApply(tr, dm, rdm);CHKERRQ(ierr);
-    ierr = DMPlexSetRegularRefinement(*rdm, PETSC_TRUE);CHKERRQ(ierr);
-    ierr = DMCopyDisc(dm, *rdm);CHKERRQ(ierr);
-    ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
-    ierr = DMGetCoordinateDM(*rdm, &rcdm);CHKERRQ(ierr);
-    ierr = DMCopyDisc(cdm, rcdm);CHKERRQ(ierr);
-    ierr = DMPlexTransformCreateDiscLabels(tr, *rdm);CHKERRQ(ierr);
-    ierr = DMPlexTransformDestroy(&tr);CHKERRQ(ierr);
+    PetscCall(DMPlexTransformCreate(PetscObjectComm((PetscObject) dm), &tr));
+    PetscCall(DMPlexTransformSetDM(tr, dm));
+    PetscCall(DMPlexGetTransformType(dm, &trType));
+    if (trType) PetscCall(DMPlexTransformSetType(tr, trType));
+    PetscCall(PetscObjectGetOptionsPrefix((PetscObject) dm, &prefix));
+    PetscCall(PetscObjectSetOptionsPrefix((PetscObject) tr,  prefix));
+    PetscCall(PetscObjectGetOptions((PetscObject) dm, &options));
+    PetscCall(PetscObjectSetOptions((PetscObject) tr, options));
+    PetscCall(DMPlexTransformSetFromOptions(tr));
+    PetscCall(PetscObjectSetOptions((PetscObject) tr, NULL));
+    PetscCall(DMPlexTransformSetUp(tr));
+    PetscCall(PetscObjectViewFromOptions((PetscObject) tr, NULL, "-dm_plex_transform_view"));
+    PetscCall(DMPlexTransformApply(tr, dm, rdm));
+    PetscCall(DMPlexSetRegularRefinement(*rdm, PETSC_TRUE));
+    PetscCall(DMCopyDisc(dm, *rdm));
+    PetscCall(DMGetCoordinateDM(dm, &cdm));
+    PetscCall(DMGetCoordinateDM(*rdm, &rcdm));
+    PetscCall(DMCopyDisc(cdm, rcdm));
+    PetscCall(DMPlexTransformCreateDiscLabels(tr, *rdm));
+    PetscCall(DMPlexTransformDestroy(&tr));
   } else {
-    ierr = DMPlexRefine_Internal(dm, NULL, NULL, NULL, rdm);CHKERRQ(ierr);
+    PetscCall(DMPlexRefine_Internal(dm, NULL, NULL, NULL, rdm));
   }
   if (*rdm) {
     ((DM_Plex *) (*rdm)->data)->printFEM = ((DM_Plex *) dm->data)->printFEM;
     ((DM_Plex *) (*rdm)->data)->printL2  = ((DM_Plex *) dm->data)->printL2;
   }
-  ierr = DMViewFromOptions(dm, NULL, "-postref_dm_view");CHKERRQ(ierr);
+  PetscCall(DMViewFromOptions(dm, NULL, "-postref_dm_view"));
   PetscFunctionReturn(0);
 }
 
@@ -348,46 +344,45 @@ PetscErrorCode DMRefineHierarchy_Plex(DM dm, PetscInt nlevels, DM rdm[])
   DM             cdm = dm;
   PetscInt       r;
   PetscBool      isUniform, localized;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexGetRefinementUniform(dm, &isUniform);CHKERRQ(ierr);
-  ierr = DMGetCoordinatesLocalized(dm, &localized);CHKERRQ(ierr);
+  PetscCall(DMPlexGetRefinementUniform(dm, &isUniform));
+  PetscCall(DMGetCoordinatesLocalized(dm, &localized));
   if (isUniform) {
     for (r = 0; r < nlevels; ++r) {
       DMPlexTransform tr;
       DM              codm, rcodm;
       const char     *prefix;
 
-      ierr = DMPlexTransformCreate(PetscObjectComm((PetscObject) cdm), &tr);CHKERRQ(ierr);
-      ierr = PetscObjectGetOptionsPrefix((PetscObject) cdm, &prefix);CHKERRQ(ierr);
-      ierr = PetscObjectSetOptionsPrefix((PetscObject) tr,   prefix);CHKERRQ(ierr);
-      ierr = DMPlexTransformSetDM(tr, cdm);CHKERRQ(ierr);
-      ierr = DMPlexTransformSetFromOptions(tr);CHKERRQ(ierr);
-      ierr = DMPlexTransformSetUp(tr);CHKERRQ(ierr);
-      ierr = DMPlexTransformApply(tr, cdm, &rdm[r]);CHKERRQ(ierr);
-      ierr = DMSetCoarsenLevel(rdm[r], cdm->leveldown);CHKERRQ(ierr);
-      ierr = DMSetRefineLevel(rdm[r], cdm->levelup+1);CHKERRQ(ierr);
-      ierr = DMCopyDisc(cdm, rdm[r]);CHKERRQ(ierr);
-      ierr = DMGetCoordinateDM(dm, &codm);CHKERRQ(ierr);
-      ierr = DMGetCoordinateDM(rdm[r], &rcodm);CHKERRQ(ierr);
-      ierr = DMCopyDisc(codm, rcodm);CHKERRQ(ierr);
-      ierr = DMPlexTransformCreateDiscLabels(tr, rdm[r]);CHKERRQ(ierr);
-      ierr = DMSetCoarseDM(rdm[r], cdm);CHKERRQ(ierr);
-      ierr = DMPlexSetRegularRefinement(rdm[r], PETSC_TRUE);CHKERRQ(ierr);
+      PetscCall(DMPlexTransformCreate(PetscObjectComm((PetscObject) cdm), &tr));
+      PetscCall(PetscObjectGetOptionsPrefix((PetscObject) cdm, &prefix));
+      PetscCall(PetscObjectSetOptionsPrefix((PetscObject) tr,   prefix));
+      PetscCall(DMPlexTransformSetDM(tr, cdm));
+      PetscCall(DMPlexTransformSetFromOptions(tr));
+      PetscCall(DMPlexTransformSetUp(tr));
+      PetscCall(DMPlexTransformApply(tr, cdm, &rdm[r]));
+      PetscCall(DMSetCoarsenLevel(rdm[r], cdm->leveldown));
+      PetscCall(DMSetRefineLevel(rdm[r], cdm->levelup+1));
+      PetscCall(DMCopyDisc(cdm, rdm[r]));
+      PetscCall(DMGetCoordinateDM(dm, &codm));
+      PetscCall(DMGetCoordinateDM(rdm[r], &rcodm));
+      PetscCall(DMCopyDisc(codm, rcodm));
+      PetscCall(DMPlexTransformCreateDiscLabels(tr, rdm[r]));
+      PetscCall(DMSetCoarseDM(rdm[r], cdm));
+      PetscCall(DMPlexSetRegularRefinement(rdm[r], PETSC_TRUE));
       if (rdm[r]) {
         ((DM_Plex *) (rdm[r])->data)->printFEM = ((DM_Plex *) dm->data)->printFEM;
         ((DM_Plex *) (rdm[r])->data)->printL2  = ((DM_Plex *) dm->data)->printL2;
       }
       cdm  = rdm[r];
-      ierr = DMPlexTransformDestroy(&tr);CHKERRQ(ierr);
+      PetscCall(DMPlexTransformDestroy(&tr));
     }
   } else {
     for (r = 0; r < nlevels; ++r) {
-      ierr = DMRefine(cdm, PetscObjectComm((PetscObject) dm), &rdm[r]);CHKERRQ(ierr);
-      ierr = DMCopyDisc(cdm, rdm[r]);CHKERRQ(ierr);
-      if (localized) {ierr = DMLocalizeCoordinates(rdm[r]);CHKERRQ(ierr);}
-      ierr = DMSetCoarseDM(rdm[r], cdm);CHKERRQ(ierr);
+      PetscCall(DMRefine(cdm, PetscObjectComm((PetscObject) dm), &rdm[r]));
+      PetscCall(DMCopyDisc(cdm, rdm[r]));
+      if (localized) PetscCall(DMLocalizeCoordinates(rdm[r]));
+      PetscCall(DMSetCoarseDM(rdm[r], cdm));
       if (rdm[r]) {
         ((DM_Plex *) (rdm[r])->data)->printFEM = ((DM_Plex *) dm->data)->printFEM;
         ((DM_Plex *) (rdm[r])->data)->printL2  = ((DM_Plex *) dm->data)->printL2;

@@ -36,11 +36,11 @@ simplex = True
 plex = PETSc.DMPlex().createBoxMesh([numEdges]*dim, simplex=simplex)
 plex.distribute()
 plex.view()
-viewer = PETSc.Viewer().createVTK('base_mesh.vtk', 'w')
+viewer = PETSc.Viewer().createVTK("anisotropic_mesh_0.vtk", "w")
 viewer(plex)
 
 # Do four mesh adaptation iterations
-for i in range(4):
+for i in range(1, 5):
     vStart, vEnd = plex.getDepthStratum(0)
 
     # Create a P1 sensor function
@@ -58,7 +58,8 @@ for i in range(4):
         x = pcoords[off]
         y = pcoords[off+1]
         pf[off//dim] = sensor(x, y)
-    viewer = PETSc.Viewer().createVTK('sensor.vtk', 'w')
+    f.setName("Sensor")
+    viewer = PETSc.Viewer().createVTK(f"sensor_{i}.vtk", "w")
     viewer(f)
 
     # Recover the gradient of the sensor function
@@ -68,14 +69,16 @@ for i in range(4):
     dmGrad.createDS()
     g = dmGrad.createLocalVector()
     plex.computeGradientClementInterpolant(f, g)
-    viewer = PETSc.Viewer().createVTK('gradient.vtk', 'w')
+    g.setName("Gradient")
+    viewer = PETSc.Viewer().createVTK(f"gradient_{i}.vtk", "w")
     viewer(g)
 
     # Recover the Hessian of the sensor function
     dmHess = plex.clone()
     H = dmHess.metricCreate()
     dmGrad.computeGradientClementInterpolant(g, H)
-    viewer = PETSc.Viewer().createVTK('hessian.vtk', 'w')
+    H.setName("Hessian")
+    viewer = PETSc.Viewer().createVTK(f"hessian_{i}.vtk", "w")
     viewer(H)
 
     # Obtain a metric by Lᵖ normalization
@@ -84,13 +87,18 @@ for i in range(4):
     dmHess.metricSetMaximumAnisotropy(a_max)
     dmHess.metricSetNormalizationOrder(p)
     dmHess.metricSetTargetComplexity(targetComplexity)
-    metric = dmHess.metricNormalize(H)
+    metric = dmHess.metricCreate()
+    det = dmHess.metricDeterminantCreate()
+    dmHess.metricNormalize(H, metric, det)
+    metric.setName("Metric")
+    viewer = PETSc.Viewer().createVTK(f"metric_{i}.vtk", "w")
+    viewer(metric)
 
     # Call adapt routine - boundary label None by default
     plex = plex.adaptMetric(metric)
     plex.distribute()
     plex.view()
 
-# Write to VTK file
-viewer = PETSc.Viewer().createVTK('anisotropic_mesh.vtk', 'w')
-viewer(plex)
+    # Write to VTK file
+    viewer = PETSc.Viewer().createVTK(f"anisotropic_mesh_{i}.vtk", "w")
+    viewer(plex)

@@ -51,16 +51,8 @@ import os
 import re
 import sys
 import platform
-# workaround for python2.2 which does not have pathsep
-if not hasattr(os.path,'pathsep'): os.path.pathsep=':'
-
 import pickle
-
-try:
-  from hashlib import md5 as new_md5
-except ImportError:
-  from md5 import new as new_md5 # novermin
-
+from hashlib import md5 as new_md5
 
 class Framework(config.base.Configure, script.LanguageProcessor):
   '''This needs to manage configure information in itself just as Builder manages it for configurations'''
@@ -214,7 +206,6 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     buf = 'Environmental variables'
     for key,val in os.environ.items():
       buf += '\n'+str(key)+'='+str(val)
-    buf = buf.encode('ascii', 'ignore').decode()
     self.logPrint(buf)
     def logPrintFilesInPath(path):
       for d in path:
@@ -227,7 +218,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       self.logWrite('    Files in path provided by default path\n')
       logPrintFilesInPath(os.environ['PATH'].split(os.path.pathsep))
     dirs = self.argDB['with-executables-search-path']
-    if not isinstance(dirs, list): dirs = [dirs]
+    if not isinstance(dirs, list): dirs = dirs.split(os.path.pathsep)
     if dirs:
       self.logWrite('    Files in path provided by --with-executables-search-path\n')
       logPrintFilesInPath(dirs)
@@ -451,6 +442,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     # Cray GPU system at Nersc
     lines = [s for s in lines if s.find('No supported cpu target is set, CRAY_CPU_TARGET=x86-64 will be used.') < 0]
     lines = [s for s in lines if s.find('Load a valid targeting module or set CRAY_CPU_TARGET') < 0]
+    lines = [s for s in lines if s.find('The -gpu option has no effect unless a language-specific option to enable GPU code generation is used') < 0]
     # pgi dumps filename on stderr - but returns 0 errorcode'
     lines = [s for s in lines if lines != 'conftest.c:']
     if lines: output = '\n'.join(lines)
@@ -458,7 +450,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     log.write("Preprocess output after filtering:\n"+output+":\n")
     return output
 
-  def filterCompileOutput(self, output):
+  def filterCompileOutput(self, output,flag = ''):
+    if flag and output.find("ignoring unknown option '"+flag+"'"): return output
     if output.find('warning:  attribute "deprecated" is unknown, ignored') >= 0: return output
     if output.find('PGC-W-0129-Floating point overflow') >= 0: return output
     if output.find('warning #264: floating-point value does not fit in required floating-point type') >= 0: return output
@@ -502,6 +495,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       # Cray GPU system at Nersc
       lines = [s for s in lines if s.find('No supported cpu target is set, CRAY_CPU_TARGET=x86-64 will be used.') < 0]
       lines = [s for s in lines if s.find('Load a valid targeting module or set CRAY_CPU_TARGET') < 0]
+      lines = [s for s in lines if s.find('The -gpu option has no effect unless a language-specific option to enable GPU code generation is used') < 0]
       # pgi dumps filename on stderr - but returns 0 errorcode'
       lines = [s for s in lines if lines != 'conftest.c:']
       if lines: output = '\n'.join(lines)
@@ -532,6 +526,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       # Cray GPU system at Nersc
       lines = [s for s in lines if s.find('No supported cpu target is set, CRAY_CPU_TARGET=x86-64 will be used.') < 0]
       lines = [s for s in lines if s.find('Load a valid targeting module or set CRAY_CPU_TARGET') < 0]
+      lines = [s for s in lines if s.find('The -gpu option has no effect unless a language-specific option to enable GPU code generation is used') < 0]
       # Cray link warnings
       rmidx = []
       for i in range(len(lines)-1):

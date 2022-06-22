@@ -1,0 +1,50 @@
+Rank 0
+Label 'subpoint_map':
+[0]: 0 (-102)
+[0]: 6 (-101)
+[0]: 8 (-101)
+[0]: 5 (301)
+[0]: 1 (300)
+[0]: 2 (300)
+Rank 1
+Label 'subpoint_map':
+[0]: 6 (1)
+[0]: 2 (0)
+[0]: 3 (0)
+[0]: 0 (102)
+[0]: 5 (101)
+[0]: 7 (101)
+Label 'cohesive':
+[1]: 1 (1)
+[1]: 13 (1)
+[1]: 14 (1)
+Discrete System with 1 fields
+    cell total dim 8 total comp 2
+  Field displacement FEM 2 components (implicit) (Nq 4 Nqc 1) 1-jet
+    PetscFE Object: displacement (displacement_) 1 MPI process
+      type: basic
+      Basic Finite Element in 2 dimensions with 2 components
+      PetscSpace Object: displacement (displacement_) 1 MPI process
+        type: sum
+        Space in 2 variables with 2 components, size 8
+        Sum space of 2 concatenated subspaces (all identical)
+          PetscSpace Object: sum component (displacement_sumcomp_) 1 MPI process
+            type: tensor
+            Space in 2 variables with 1 components, size 4
+            Tensor space of 2 subspaces (all identical)
+              PetscSpace Object: sum component tensor component (displacement_sumcomp_tensorcomp_) 1 MPI process
+                type: poly
+                Space in 1 variables with 1 components, size 2
+                Polynomial space of degree 1
+      PetscDualSpace Object: displacement (displacement_) 1 MPI process
+        type: lagrange
+        Dual space with 2 components, size 8
+        Continuous tensor Lagrange dual space
+        Quadrature of order 3 on 4 points (dim 2)
+  Weak Form System with 1 fields
+    boundary_residual_f0
+      (material, 1) (0, 0) 
+      (material, 2) (0, 0) 
+    boundary_jacobian_g0
+      (material, 1) (1, 0) 
+      (material, 2) (1, 0) 

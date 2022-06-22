@@ -40,31 +40,30 @@ int main(int argc,char **args)
   PetscInt       *idx,indx,count,*rows,i,j,k,start,end,its;
   PetscReal      *rowsx,*rowsy;
   PetscReal      *gllNode, *gllWgts;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Options for p-FEM","");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-m","Number of elements in each direction","None",m,&m,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-p","Order of each element (tensor product basis)","None",p,&p,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  PetscCheckFalse(p <=0,PETSC_COMM_SELF,PETSC_ERR_USER,"Option -p value should be greater than zero");
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Options for p-FEM","");
+  PetscCall(PetscOptionsInt("-m","Number of elements in each direction","None",m,&m,NULL));
+  PetscCall(PetscOptionsInt("-p","Order of each element (tensor product basis)","None",p,&p,NULL));
+  PetscOptionsEnd();
+  PetscCheck(p > 0,PETSC_COMM_SELF,PETSC_ERR_USER,"Option -p value should be greater than zero");
   N    = (p*m+1)*(p*m+1); /* dimension of matrix */
   M    = m*m; /* number of elements */
   h    = 1.0/m; /* mesh width */
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   /* Create stiffness matrix */
-  ierr  = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr  = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
-  ierr  = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr  = MatSetUp(A);CHKERRQ(ierr);
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,N,N));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(MatSetUp(A));
 
   /* Create matrix  */
-  ierr  = MatCreate(PETSC_COMM_WORLD,&Mass);CHKERRQ(ierr);
-  ierr  = MatSetSizes(Mass,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
-  ierr  = MatSetFromOptions(Mass);CHKERRQ(ierr);
-  ierr  = MatSetUp(Mass);CHKERRQ(ierr);
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&Mass));
+  PetscCall(MatSetSizes(Mass,PETSC_DECIDE,PETSC_DECIDE,N,N));
+  PetscCall(MatSetFromOptions(Mass));
+  PetscCall(MatSetUp(Mass));
   start = rank*(M/size) + ((M%size) < rank ? (M%size) : rank);
   end   = start + M/size + ((M%size) > rank);
 
@@ -72,22 +71,22 @@ int main(int argc,char **args)
   num1Dnodes = (p+1);
   num2Dnodes = num1Dnodes*num1Dnodes;
 
-  ierr = PetscMalloc1(num1Dnodes*num1Dnodes,&Me1D);CHKERRQ(ierr);
-  ierr = PetscMalloc1(num1Dnodes*num1Dnodes,&Ke1D);CHKERRQ(ierr);
-  ierr = PetscMalloc1(num2Dnodes*num2Dnodes,&Me2D);CHKERRQ(ierr);
-  ierr = PetscMalloc1(num2Dnodes*num2Dnodes,&Ke2D);CHKERRQ(ierr);
-  ierr = PetscMalloc1(num2Dnodes,&idx);CHKERRQ(ierr);
-  ierr = PetscMalloc1(num2Dnodes,&r);CHKERRQ(ierr);
-  ierr = PetscMalloc1(num2Dnodes,&ue);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(num1Dnodes*num1Dnodes,&Me1D));
+  PetscCall(PetscMalloc1(num1Dnodes*num1Dnodes,&Ke1D));
+  PetscCall(PetscMalloc1(num2Dnodes*num2Dnodes,&Me2D));
+  PetscCall(PetscMalloc1(num2Dnodes*num2Dnodes,&Ke2D));
+  PetscCall(PetscMalloc1(num2Dnodes,&idx));
+  PetscCall(PetscMalloc1(num2Dnodes,&r));
+  PetscCall(PetscMalloc1(num2Dnodes,&ue));
 
   /* Allocate quadrature and create stiffness matrices */
-  ierr = PetscMalloc1(p+1,&gllNode);CHKERRQ(ierr);
-  ierr = PetscMalloc1(p+1,&gllWgts);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(p+1,&gllNode));
+  PetscCall(PetscMalloc1(p+1,&gllWgts));
   leggaulob(0.0,1.0,gllNode,gllWgts,p); /* Get GLL nodes and weights */
-  ierr = Form1DElementMass(h,p,gllNode,gllWgts,Me1D);CHKERRQ(ierr);
-  ierr = Form1DElementStiffness(h,p,gllNode,gllWgts,Ke1D);CHKERRQ(ierr);
-  ierr = Form2DElementMass(p,Me1D,Me2D);CHKERRQ(ierr);
-  ierr = Form2DElementStiffness(p,Ke1D,Me1D,Ke2D);CHKERRQ(ierr);
+  PetscCall(Form1DElementMass(h,p,gllNode,gllWgts,Me1D));
+  PetscCall(Form1DElementStiffness(h,p,gllNode,gllWgts,Ke1D));
+  PetscCall(Form2DElementMass(p,Me1D,Me2D));
+  PetscCall(Form2DElementStiffness(p,Ke1D,Me1D,Ke2D));
 
   /* Assemble matrix */
   for (i=start; i<end; i++) {
@@ -97,32 +96,32 @@ int main(int argc,char **args)
          idx[indx++] = p*(p*m+1)*(i/m) + p*(i % m) + k*(p*m+1) + j;
        }
      }
-     ierr = MatSetValues(A,num2Dnodes,idx,num2Dnodes,idx,Ke2D,ADD_VALUES);CHKERRQ(ierr);
-     ierr = MatSetValues(Mass,num2Dnodes,idx,num2Dnodes,idx,Me2D,ADD_VALUES);CHKERRQ(ierr);
+     PetscCall(MatSetValues(A,num2Dnodes,idx,num2Dnodes,idx,Ke2D,ADD_VALUES));
+     PetscCall(MatSetValues(Mass,num2Dnodes,idx,num2Dnodes,idx,Me2D,ADD_VALUES));
   }
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(Mass,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(Mass,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(Mass,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(Mass,MAT_FINAL_ASSEMBLY));
 
-  ierr = PetscFree(Me1D);CHKERRQ(ierr);
-  ierr = PetscFree(Ke1D);CHKERRQ(ierr);
-  ierr = PetscFree(Me2D);CHKERRQ(ierr);
-  ierr = PetscFree(Ke2D);CHKERRQ(ierr);
+  PetscCall(PetscFree(Me1D));
+  PetscCall(PetscFree(Ke1D));
+  PetscCall(PetscFree(Me2D));
+  PetscCall(PetscFree(Ke2D));
 
   /* Create right-hand-side and solution vectors */
-  ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
-  ierr = VecSetSizes(u,PETSC_DECIDE,N);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(u);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)u,"Approx. Solution");CHKERRQ(ierr);
-  ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)b,"Right hand side");CHKERRQ(ierr);
-  ierr = VecDuplicate(u,&q);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)q,"Right hand side 2");CHKERRQ(ierr);
-  ierr = VecDuplicate(b,&ustar);CHKERRQ(ierr);
-  ierr = VecSet(u,0.0);CHKERRQ(ierr);
-  ierr = VecSet(b,0.0);CHKERRQ(ierr);
-  ierr = VecSet(q,0.0);CHKERRQ(ierr);
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&u));
+  PetscCall(VecSetSizes(u,PETSC_DECIDE,N));
+  PetscCall(VecSetFromOptions(u));
+  PetscCall(PetscObjectSetName((PetscObject)u,"Approx. Solution"));
+  PetscCall(VecDuplicate(u,&b));
+  PetscCall(PetscObjectSetName((PetscObject)b,"Right hand side"));
+  PetscCall(VecDuplicate(u,&q));
+  PetscCall(PetscObjectSetName((PetscObject)q,"Right hand side 2"));
+  PetscCall(VecDuplicate(b,&ustar));
+  PetscCall(VecSet(u,0.0));
+  PetscCall(VecSet(b,0.0));
+  PetscCall(VecSet(q,0.0));
 
   /* Assemble nodal right-hand-side and soln vector  */
   for (i=start; i<end; i++) {
@@ -134,27 +133,27 @@ int main(int argc,char **args)
         idx[indx++] = p*(p*m+1)*(i/m) + p*(i % m) + k*(p*m+1) + j;
       }
     }
-    ierr = FormNodalRhs(p,x,y,h,gllNode,r);CHKERRQ(ierr);
-    ierr = FormNodalSoln(p,x,y,h,gllNode,ue);CHKERRQ(ierr);
-    ierr = VecSetValues(q,num2Dnodes,idx,r,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = VecSetValues(ustar,num2Dnodes,idx,ue,INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(FormNodalRhs(p,x,y,h,gllNode,r));
+    PetscCall(FormNodalSoln(p,x,y,h,gllNode,ue));
+    PetscCall(VecSetValues(q,num2Dnodes,idx,r,INSERT_VALUES));
+    PetscCall(VecSetValues(ustar,num2Dnodes,idx,ue,INSERT_VALUES));
   }
-  ierr = VecAssemblyBegin(q);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(q);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(ustar);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(ustar);CHKERRQ(ierr);
+  PetscCall(VecAssemblyBegin(q));
+  PetscCall(VecAssemblyEnd(q));
+  PetscCall(VecAssemblyBegin(ustar));
+  PetscCall(VecAssemblyEnd(ustar));
 
-  ierr = PetscFree(idx);CHKERRQ(ierr);
-  ierr = PetscFree(r);CHKERRQ(ierr);
-  ierr = PetscFree(ue);CHKERRQ(ierr);
+  PetscCall(PetscFree(idx));
+  PetscCall(PetscFree(r));
+  PetscCall(PetscFree(ue));
 
   /* Get FE right-hand side vector */
-  ierr = MatMult(Mass,q,b);CHKERRQ(ierr);
+  PetscCall(MatMult(Mass,q,b));
 
   /* Modify matrix and right-hand-side for Dirichlet boundary conditions */
-  ierr = PetscMalloc1(4*p*m,&rows);CHKERRQ(ierr);
-  ierr = PetscMalloc1(4*p*m,&rowsx);CHKERRQ(ierr);
-  ierr = PetscMalloc1(4*p*m,&rowsy);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(4*p*m,&rows));
+  PetscCall(PetscMalloc1(4*p*m,&rowsx));
+  PetscCall(PetscMalloc1(4*p*m,&rowsy));
   for (i=0; i<p*m+1; i++) {
     rows[i]          = i; /* bottom */
     rowsx[i]         = (i/p)*h+gllNode[i%p]*h;
@@ -183,45 +182,45 @@ int main(int argc,char **args)
     x    = rowsx[i];
     y    = rowsy[i];
     val  = ubdy(x,y);
-    ierr = VecSetValues(b,1,&rows[i],&val,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = VecSetValues(u,1,&rows[i],&val,INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(VecSetValues(b,1,&rows[i],&val,INSERT_VALUES));
+    PetscCall(VecSetValues(u,1,&rows[i],&val,INSERT_VALUES));
   }
-  ierr = MatZeroRows(A,4*p*m,rows,1.0,0,0);CHKERRQ(ierr);
-  ierr = PetscFree(rows);CHKERRQ(ierr);
-  ierr = PetscFree(rowsx);CHKERRQ(ierr);
-  ierr = PetscFree(rowsy);CHKERRQ(ierr);
+  PetscCall(MatZeroRows(A,4*p*m,rows,1.0,0,0));
+  PetscCall(PetscFree(rows));
+  PetscCall(PetscFree(rowsx));
+  PetscCall(PetscFree(rowsy));
 
-  ierr = VecAssemblyBegin(u);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(u);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
+  PetscCall(VecAssemblyBegin(u));
+  PetscCall(VecAssemblyEnd(u));
+  PetscCall(VecAssemblyBegin(b));
+  PetscCall(VecAssemblyEnd(b));
 
   /* Solve linear system */
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
-  ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp,b,u);CHKERRQ(ierr);
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPSetOperators(ksp,A,A));
+  PetscCall(KSPSetInitialGuessNonzero(ksp,PETSC_TRUE));
+  PetscCall(KSPSetFromOptions(ksp));
+  PetscCall(KSPSolve(ksp,b,u));
 
   /* Check error */
-  ierr = VecAXPY(u,-1.0,ustar);CHKERRQ(ierr);
-  ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g Iterations %D\n",(double)(norm*h),its);CHKERRQ(ierr);
+  PetscCall(VecAXPY(u,-1.0,ustar));
+  PetscCall(VecNorm(u,NORM_2,&norm));
+  PetscCall(KSPGetIterationNumber(ksp,&its));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g Iterations %" PetscInt_FMT "\n",(double)(norm*h),its));
 
-  ierr = PetscFree(gllNode);CHKERRQ(ierr);
-  ierr = PetscFree(gllWgts);CHKERRQ(ierr);
+  PetscCall(PetscFree(gllNode));
+  PetscCall(PetscFree(gllWgts));
 
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = VecDestroy(&q);CHKERRQ(ierr);
-  ierr = VecDestroy(&ustar);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = MatDestroy(&Mass);CHKERRQ(ierr);
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(VecDestroy(&u));
+  PetscCall(VecDestroy(&b));
+  PetscCall(VecDestroy(&q));
+  PetscCall(VecDestroy(&ustar));
+  PetscCall(MatDestroy(&A));
+  PetscCall(MatDestroy(&Mass));
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /* --------------------------------------------------------------------- */

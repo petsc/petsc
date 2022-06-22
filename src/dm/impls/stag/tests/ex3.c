@@ -7,50 +7,49 @@ static char help[] = "Spot check DMStag Compatibility Checks";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   DM             dms[NDMS];
   PetscInt       i;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* Two 3d DMs, with all the same parameters */
-  ierr = DMStagCreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,4,3,2,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,2,3,4,5,DMSTAG_STENCIL_BOX,1,NULL,NULL,NULL,&dms[0]);CHKERRQ(ierr);
-    ierr = DMSetUp(dms[0]);CHKERRQ(ierr);
-  ierr = DMStagCreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,4,3,2,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,2,3,4,5,DMSTAG_STENCIL_BOX,1,NULL,NULL,NULL,&dms[1]);CHKERRQ(ierr);
-    ierr = DMSetUp(dms[1]);CHKERRQ(ierr);
+  PetscCall(DMStagCreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,4,3,2,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,2,3,4,5,DMSTAG_STENCIL_BOX,1,NULL,NULL,NULL,&dms[0]));
+    PetscCall(DMSetUp(dms[0]));
+  PetscCall(DMStagCreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,4,3,2,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,2,3,4,5,DMSTAG_STENCIL_BOX,1,NULL,NULL,NULL,&dms[1]));
+    PetscCall(DMSetUp(dms[1]));
 
   /* A derived 3d DM, with a different section */
-  ierr = DMStagCreateCompatibleDMStag(dms[0],0,1,0,1,&dms[2]);CHKERRQ(ierr);
+  PetscCall(DMStagCreateCompatibleDMStag(dms[0],0,1,0,1,&dms[2]));
 
   /* A DM expected to be incompatible (different stencil width) */
-  ierr = DMStagCreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,4,3,2,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,2,3,4,5,DMSTAG_STENCIL_BOX,2,NULL,NULL,NULL,&dms[3]);CHKERRQ(ierr);
+  PetscCall(DMStagCreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,4,3,2,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,2,3,4,5,DMSTAG_STENCIL_BOX,2,NULL,NULL,NULL,&dms[3]));
 
   /* Check expected self-compatibility */
   for (i=0; i<NDMS; ++i) {
     PetscBool compatible,set;
-    ierr = DMGetCompatibility(dms[i],dms[i],&compatible,&set);CHKERRQ(ierr);
-    PetscCheckFalse(!set || !compatible,PetscObjectComm((PetscObject)dms[i]),PETSC_ERR_PLIB,"DM %D not determined compatible with itself",i);
+    PetscCall(DMGetCompatibility(dms[i],dms[i],&compatible,&set));
+    PetscCheck(set && compatible,PetscObjectComm((PetscObject)dms[i]),PETSC_ERR_PLIB,"DM %" PetscInt_FMT " not determined compatible with itself",i);
   }
 
   /* Check expected compatibility */
   for (i=1; i<=2; ++i) {
     PetscBool compatible,set;
-    ierr = DMGetCompatibility(dms[0],dms[i],&compatible,&set);CHKERRQ(ierr);
-    PetscCheckFalse(!set || !compatible,PetscObjectComm((PetscObject)dms[i]),PETSC_ERR_PLIB,"DM %D not determined compatible with DM %d",i,0);
+    PetscCall(DMGetCompatibility(dms[0],dms[i],&compatible,&set));
+    PetscCheck(set && compatible,PetscObjectComm((PetscObject)dms[i]),PETSC_ERR_PLIB,"DM %" PetscInt_FMT " not determined compatible with DM %d",i,0);
   }
 
   /* Check expected incompatibility */
   {
     PetscBool compatible,set;
-    ierr = DMGetCompatibility(dms[0],dms[3],&compatible,&set);CHKERRQ(ierr);
-    PetscCheckFalse(!set || compatible,PetscObjectComm((PetscObject)dms[i]),PETSC_ERR_PLIB,"DM %D not determined incompatible with DM %d",i,0);
+    PetscCall(DMGetCompatibility(dms[0],dms[3],&compatible,&set));
+    PetscCheck(set && !compatible,PetscObjectComm((PetscObject)dms[i]),PETSC_ERR_PLIB,"DM %" PetscInt_FMT " not determined incompatible with DM %d",i,0);
   }
 
   for (i=0; i<NDMS; ++i) {
-    ierr = DMDestroy(&dms[i]);CHKERRQ(ierr);
+    PetscCall(DMDestroy(&dms[i]));
   }
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

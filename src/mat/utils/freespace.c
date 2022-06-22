@@ -4,11 +4,10 @@
 PetscErrorCode PetscFreeSpaceGet(PetscInt n,PetscFreeSpaceList *list)
 {
   PetscFreeSpaceList a;
-  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(&a);CHKERRQ(ierr);
-  ierr = PetscMalloc1(n,&(a->array_head));CHKERRQ(ierr);
+  PetscCall(PetscNew(&a));
+  PetscCall(PetscMalloc1(n,&(a->array_head)));
 
   a->array            = a->array_head;
   a->local_remaining  = n;
@@ -29,15 +28,14 @@ PetscErrorCode PetscFreeSpaceGet(PetscInt n,PetscFreeSpaceList *list)
 PetscErrorCode PetscFreeSpaceContiguous(PetscFreeSpaceList *head,PetscInt *space)
 {
   PetscFreeSpaceList a;
-  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   while ((*head)) {
     a      =  (*head)->more_space;
-    ierr   =  PetscArraycpy(space,(*head)->array_head,(*head)->local_used);CHKERRQ(ierr);
+    PetscCall(PetscArraycpy(space,(*head)->array_head,(*head)->local_used));
     space += (*head)->local_used;
-    ierr   =  PetscFree((*head)->array_head);CHKERRQ(ierr);
-    ierr   =  PetscFree(*head);CHKERRQ(ierr);
+    PetscCall(PetscFree((*head)->array_head));
+    PetscCall(PetscFree(*head));
     *head  =  a;
   }
   PetscFunctionReturn(0);
@@ -63,7 +61,6 @@ PetscErrorCode PetscFreeSpaceContiguous(PetscFreeSpaceList *head,PetscInt *space
 PetscErrorCode PetscFreeSpaceContiguous_LU(PetscFreeSpaceList *head,PetscInt *space,PetscInt n,PetscInt *bi,PetscInt *bdiag)
 {
   PetscFreeSpaceList a;
-  PetscErrorCode     ierr;
   PetscInt           row,nnz,*bj,*array,total,bi_temp;
   PetscInt           nnzL,nnzU;
 
@@ -90,7 +87,7 @@ PetscErrorCode PetscFreeSpaceContiguous_LU(PetscFreeSpaceList *head,PetscInt *sp
       /* L part */
       nnzL = bdiag[row];
       bj   = space+bi[row];
-      ierr = PetscArraycpy(bj,array,nnzL);CHKERRQ(ierr);
+      PetscCall(PetscArraycpy(bj,array,nnzL));
 
       /* diagonal entry */
       bdiag[row]        = bi_temp - 1;
@@ -101,14 +98,14 @@ PetscErrorCode PetscFreeSpaceContiguous_LU(PetscFreeSpaceList *head,PetscInt *sp
       bi_temp = bi_temp - nnzU;
       nnzU--;       /* exclude diagonal */
       bj     = space + bi_temp;
-      ierr   = PetscArraycpy(bj,array+nnzL+1,nnzU);CHKERRQ(ierr);
+      PetscCall(PetscArraycpy(bj,array+nnzL+1,nnzU));
       array += nnz;
       row++;
     }
 
     a     = (*head)->more_space;
-    ierr  = PetscFree((*head)->array_head);CHKERRQ(ierr);
-    ierr  = PetscFree(*head);CHKERRQ(ierr);
+    PetscCall(PetscFree((*head)->array_head));
+    PetscCall(PetscFree(*head));
     *head = a;
   }
   if (n) {
@@ -140,7 +137,6 @@ PetscErrorCode PetscFreeSpaceContiguous_LU(PetscFreeSpaceList *head,PetscInt *sp
 PetscErrorCode PetscFreeSpaceContiguous_Cholesky(PetscFreeSpaceList *head,PetscInt *space,PetscInt n,PetscInt *ui,PetscInt *udiag)
 {
   PetscFreeSpaceList a;
-  PetscErrorCode     ierr;
   PetscInt           row,nnz,*uj,*array,total;
 
   PetscFunctionBegin;
@@ -155,15 +151,15 @@ PetscErrorCode PetscFreeSpaceContiguous_Cholesky(PetscFreeSpaceList *head,PetscI
       udiag[row] = ui[row+1] - 1;     /* points to the last entry of U(row,:) */
       nnz        = ui[row+1] - ui[row] - 1; /* exclude diagonal */
       uj         = space + ui[row];
-      ierr       = PetscArraycpy(uj,array+1,nnz);CHKERRQ(ierr);
+      PetscCall(PetscArraycpy(uj,array+1,nnz));
       uj[nnz]    = array[0]; /* diagonal */
       array     += nnz + 1;
       row++;
     }
 
     a     = (*head)->more_space;
-    ierr  = PetscFree((*head)->array_head);CHKERRQ(ierr);
-    ierr  = PetscFree(*head);CHKERRQ(ierr);
+    PetscCall(PetscFree((*head)->array_head));
+    PetscCall(PetscFree(*head));
     *head = a;
   }
   PetscFunctionReturn(0);
@@ -172,13 +168,12 @@ PetscErrorCode PetscFreeSpaceContiguous_Cholesky(PetscFreeSpaceList *head,PetscI
 PetscErrorCode PetscFreeSpaceDestroy(PetscFreeSpaceList head)
 {
   PetscFreeSpaceList a;
-  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   while ((head)) {
     a    = (head)->more_space;
-    ierr = PetscFree((head)->array_head);CHKERRQ(ierr);
-    ierr = PetscFree(head);CHKERRQ(ierr);
+    PetscCall(PetscFree((head)->array_head));
+    PetscCall(PetscFree(head));
     head = a;
   }
   PetscFunctionReturn(0);

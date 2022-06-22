@@ -17,6 +17,7 @@ class Configure(config.package.CMakePackage):
     self.buildLanguages    = ['Cxx']
     self.minCxxVersion     = 'c++14'
     self.builtafterpetsc   = 1
+    self.minCmakeVersion   = (3,14,0)
     return
 
   def setupHelp(self, help):
@@ -37,7 +38,6 @@ class Configure(config.package.CMakePackage):
     return
 
   def formCMakeConfigureArgs(self):
-    if self.versionToTuple(self.cmake.foundversion) < (3,14,0): raise RuntimeError("Requires cmake version 3.14 or higher: use --download-cmake")
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
     args.append('-DENABLE_EB=yes')
     args.append('-DENABLE_LINEAR_SOLVERS=yes')

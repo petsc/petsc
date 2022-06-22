@@ -42,6 +42,10 @@
           dmequals = (A%v .eq. B%v)
         end function
 
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::dmnotequal
+!DEC$ ATTRIBUTES DLLEXPORT::dmequals
+#endif
         module petscdmpatchdef
         use petscdmdef
         end module

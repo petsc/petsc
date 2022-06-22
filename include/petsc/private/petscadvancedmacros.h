@@ -37,7 +37,7 @@
 
   Level: intermediate
 
-.seealso: PetscIfPetscDefined(), PetscConcat(), PetscExpandToNothing(), PetscCompl()
+.seealso: `PetscIfPetscDefined()`, `PetscConcat()`, `PetscExpandToNothing()`, `PetscCompl()`
 */
 #define PetscIf(cond,result_if_true,...) PetscConcat_(PETSC_IF_INTERNAL_,cond)(result_if_true,__VA_ARGS__)
 
@@ -67,7 +67,7 @@
 
   Level: intermediate
 
-.seealso: PetscIf(), PetscDefined(), PetscConcat(), PetscExpand(), PetscCompl()
+.seealso: `PetscIf()`, `PetscDefined()`, `PetscConcat()`, `PetscExpand()`, `PetscCompl()`
 */
 #define PetscIfPetscDefined(cond,result_if_true,...) PetscIf(PetscDefined(cond),result_if_true,__VA_ARGS__)
 

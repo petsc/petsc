@@ -1,8 +1,5 @@
+-include ../../../../../../petsckdir.mk
 
-ALL: lib
-
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = tagger.c taggerregi.c dlregistagger.c
 SOURCEF  =
 SOURCEH  =

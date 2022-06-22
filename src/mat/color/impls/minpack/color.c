@@ -14,15 +14,14 @@
 PETSC_INTERN PetscErrorCode MatFDColoringDegreeSequence_Minpack(PetscInt m,const PetscInt *cja,const PetscInt *cia,const PetscInt *rja,const PetscInt *ria,PetscInt **seq)
 {
   PetscInt       *work;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc1(m,&work);CHKERRQ(ierr);
-  ierr = PetscMalloc1(m,seq);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(m,&work));
+  PetscCall(PetscMalloc1(m,seq));
 
   MINPACKdegr(&m,cja,cia,rja,ria,*seq,work);
 
-  ierr = PetscFree(work);CHKERRQ(ierr);
+  PetscCall(PetscFree(work));
   PetscFunctionReturn(0);
 }
 
@@ -43,7 +42,6 @@ PetscErrorCode MatFDColoringMinimumNumberofColors_Private(PetscInt m,PetscInt *i
 
 static PetscErrorCode MatColoringApply_SL(MatColoring mc,ISColoring *iscoloring)
 {
-  PetscErrorCode  ierr;
   PetscInt        *list,*work,clique,*seq,*coloring,n;
   const PetscInt  *ria,*rja,*cia,*cja;
   PetscInt        ncolors,i;
@@ -58,51 +56,51 @@ static PetscErrorCode MatColoringApply_SL(MatColoring mc,ISColoring *iscoloring)
   PetscBool       flg1,flg2;
 
   PetscFunctionBegin;
-  PetscCheckFalse(mc->dist != 2,PETSC_COMM_SELF,PETSC_ERR_SUP,"SL may only do distance 2 coloring");
+  PetscCheck(mc->dist == 2,PETSC_COMM_SELF,PETSC_ERR_SUP,"SL may only do distance 2 coloring");
   /* this is ugly way to get blocksize but cannot call MatGetBlockSize() because AIJ can have bs > 1 */
-  ierr = PetscObjectBaseTypeCompare((PetscObject)mat,MATSEQBAIJ,&flg1);CHKERRQ(ierr);
-  ierr = PetscObjectBaseTypeCompare((PetscObject)mat,MATMPIBAIJ,&flg2);CHKERRQ(ierr);
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)mat,MATSEQBAIJ,&flg1));
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)mat,MATMPIBAIJ,&flg2));
   if (flg1 || flg2) {
-    ierr = MatGetBlockSize(mat,&bs);CHKERRQ(ierr);
+    PetscCall(MatGetBlockSize(mat,&bs));
   }
 
-  ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+  PetscCall(PetscObjectGetComm((PetscObject)mat,&comm));
+  PetscCallMPI(MPI_Comm_size(comm,&size));
   if (size > 1) {
     /* create a sequential iscoloring on all processors */
-    ierr = MatGetSeqNonzeroStructure(mat,&mat_seq);CHKERRQ(ierr);
+    PetscCall(MatGetSeqNonzeroStructure(mat,&mat_seq));
   }
 
-  ierr = MatGetRowIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&ria,&rja,&done);CHKERRQ(ierr);
-  ierr = MatGetColumnIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&cia,&cja,&done);CHKERRQ(ierr);
-  PetscCheckFalse(!done,PETSC_COMM_SELF,PETSC_ERR_SUP,"Ordering requires IJ");
+  PetscCall(MatGetRowIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&ria,&rja,&done));
+  PetscCall(MatGetColumnIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&cia,&cja,&done));
+  PetscCheck(done,PETSC_COMM_SELF,PETSC_ERR_SUP,"Ordering requires IJ");
 
-  ierr = MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq);CHKERRQ(ierr);
+  PetscCall(MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq));
 
-  ierr = PetscMalloc2(n,&list,4*n,&work);CHKERRQ(ierr);
+  PetscCall(PetscMalloc2(n,&list,4*n,&work));
 
   MINPACKslo(&n,cja,cia,rja,ria,seq,list,&clique,work,work+n,work+2*n,work+3*n);
 
-  ierr = PetscMalloc1(n,&coloring);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(n,&coloring));
   MINPACKseq(&n,cja,cia,rja,ria,list,coloring,&ncolors,work);
 
-  ierr = PetscFree2(list,work);CHKERRQ(ierr);
-  ierr = PetscFree(seq);CHKERRQ(ierr);
-  ierr = MatRestoreRowIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,NULL,&ria,&rja,&done);CHKERRQ(ierr);
-  ierr = MatRestoreColumnIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,NULL,&cia,&cja,&done);CHKERRQ(ierr);
+  PetscCall(PetscFree2(list,work));
+  PetscCall(PetscFree(seq));
+  PetscCall(MatRestoreRowIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,NULL,&ria,&rja,&done));
+  PetscCall(MatRestoreColumnIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,NULL,&cia,&cja,&done));
 
   /* shift coloring numbers to start at zero and shorten */
-  PetscCheckFalse(ncolors > IS_COLORING_MAX-1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Maximum color size exceeded");
+  PetscCheck(ncolors <= IS_COLORING_MAX-1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Maximum color size exceeded");
   {
     ISColoringValue *s = (ISColoringValue*) coloring;
     for (i=0; i<n; i++) {
       s[i] = (ISColoringValue) (coloring[i]-1);
     }
-    ierr = MatColoringPatch(mat_seq,ncolors,n,s,iscoloring);CHKERRQ(ierr);
+    PetscCall(MatColoringPatch(mat_seq,ncolors,n,s,iscoloring));
   }
 
   if (size > 1) {
-    ierr = MatDestroySeqNonzeroStructure(&mat_seq);CHKERRQ(ierr);
+    PetscCall(MatDestroySeqNonzeroStructure(&mat_seq));
 
     /* convert iscoloring_seq to a parallel iscoloring */
     iscoloring_seq = *iscoloring;
@@ -111,14 +109,14 @@ static PetscErrorCode MatColoringApply_SL(MatColoring mc,ISColoring *iscoloring)
     N_loc          = rend - rstart; /* number of local nodes */
 
     /* get local colors for each local node */
-    ierr = PetscMalloc1(N_loc+1,&colors_loc);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(N_loc+1,&colors_loc));
     for (i=rstart; i<rend; i++) {
       colors_loc[i-rstart] = iscoloring_seq->colors[i];
     }
     /* create a parallel iscoloring */
     nc   = iscoloring_seq->n;
-    ierr = ISColoringCreate(comm,nc,N_loc,colors_loc,PETSC_OWN_POINTER,iscoloring);CHKERRQ(ierr);
-    ierr = ISColoringDestroy(&iscoloring_seq);CHKERRQ(ierr);
+    PetscCall(ISColoringCreate(comm,nc,N_loc,colors_loc,PETSC_OWN_POINTER,iscoloring));
+    PetscCall(ISColoringDestroy(&iscoloring_seq));
   }
   PetscFunctionReturn(0);
 }
@@ -134,10 +132,10 @@ static PetscErrorCode MatColoringApply_SL(MatColoring mc,ISColoring *iscoloring)
           This is a sequential algorithm
 
    References:
-.  1. - TF Coleman and J More, "Estimation of sparse Jacobian matrices and graph coloring," SIAM Journal on Numerical Analysis, vol. 20, no. 1,
+.  * - TF Coleman and J More, "Estimation of sparse Jacobian matrices and graph coloring," SIAM Journal on Numerical Analysis, vol. 20, no. 1,
    pp. 187-209, 1983.
 
-.seealso: MatColoringCreate(), MatColoring, MatColoringSetType(), MATCOLORINGGREEDY, MatColoringType
+.seealso: `MatColoringCreate()`, `MatColoring`, `MatColoringSetType()`, `MATCOLORINGGREEDY`, `MatColoringType`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatColoringCreate_SL(MatColoring mc)
@@ -154,7 +152,6 @@ PETSC_EXTERN PetscErrorCode MatColoringCreate_SL(MatColoring mc)
 
 static PetscErrorCode MatColoringApply_LF(MatColoring mc,ISColoring *iscoloring)
 {
-  PetscErrorCode  ierr;
   PetscInt        *list,*work,*seq,*coloring,n;
   const PetscInt  *ria,*rja,*cia,*cja;
   PetscInt        n1, none,ncolors,i;
@@ -169,51 +166,51 @@ static PetscErrorCode MatColoringApply_LF(MatColoring mc,ISColoring *iscoloring)
   PetscBool       flg1,flg2;
 
   PetscFunctionBegin;
-  PetscCheckFalse(mc->dist != 2,PETSC_COMM_SELF,PETSC_ERR_SUP,"LF may only do distance 2 coloring");
+  PetscCheck(mc->dist == 2,PETSC_COMM_SELF,PETSC_ERR_SUP,"LF may only do distance 2 coloring");
   /* this is ugly way to get blocksize but cannot call MatGetBlockSize() because AIJ can have bs > 1 */
-  ierr = PetscObjectBaseTypeCompare((PetscObject)mat,MATSEQBAIJ,&flg1);CHKERRQ(ierr);
-  ierr = PetscObjectBaseTypeCompare((PetscObject)mat,MATMPIBAIJ,&flg2);CHKERRQ(ierr);
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)mat,MATSEQBAIJ,&flg1));
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)mat,MATMPIBAIJ,&flg2));
   if (flg1 || flg2) {
-    ierr = MatGetBlockSize(mat,&bs);CHKERRQ(ierr);
+    PetscCall(MatGetBlockSize(mat,&bs));
   }
 
-  ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+  PetscCall(PetscObjectGetComm((PetscObject)mat,&comm));
+  PetscCallMPI(MPI_Comm_size(comm,&size));
   if (size > 1) {
     /* create a sequential iscoloring on all processors */
-    ierr = MatGetSeqNonzeroStructure(mat,&mat_seq);CHKERRQ(ierr);
+    PetscCall(MatGetSeqNonzeroStructure(mat,&mat_seq));
   }
 
-  ierr = MatGetRowIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&ria,&rja,&done);CHKERRQ(ierr);
-  ierr = MatGetColumnIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&cia,&cja,&done);CHKERRQ(ierr);
-  PetscCheckFalse(!done,PETSC_COMM_SELF,PETSC_ERR_SUP,"Ordering requires IJ");
+  PetscCall(MatGetRowIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&ria,&rja,&done));
+  PetscCall(MatGetColumnIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&cia,&cja,&done));
+  PetscCheck(done,PETSC_COMM_SELF,PETSC_ERR_SUP,"Ordering requires IJ");
 
-  ierr = MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq);CHKERRQ(ierr);
+  PetscCall(MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq));
 
-  ierr = PetscMalloc2(n,&list,4*n,&work);CHKERRQ(ierr);
+  PetscCall(PetscMalloc2(n,&list,4*n,&work));
 
   n1   = n - 1;
   none = -1;
   MINPACKnumsrt(&n,&n1,seq,&none,list,work+2*n,work+n);
-  ierr = PetscMalloc1(n,&coloring);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(n,&coloring));
   MINPACKseq(&n,cja,cia,rja,ria,list,coloring,&ncolors,work);
 
-  ierr = PetscFree2(list,work);CHKERRQ(ierr);
-  ierr = PetscFree(seq);CHKERRQ(ierr);
+  PetscCall(PetscFree2(list,work));
+  PetscCall(PetscFree(seq));
 
-  ierr = MatRestoreRowIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,NULL,&ria,&rja,&done);CHKERRQ(ierr);
-  ierr = MatRestoreColumnIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,NULL,&cia,&cja,&done);CHKERRQ(ierr);
+  PetscCall(MatRestoreRowIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,NULL,&ria,&rja,&done));
+  PetscCall(MatRestoreColumnIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,NULL,&cia,&cja,&done));
 
   /* shift coloring numbers to start at zero and shorten */
-  PetscCheckFalse(ncolors > IS_COLORING_MAX-1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Maximum color size exceeded");
+  PetscCheck(ncolors <= IS_COLORING_MAX-1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Maximum color size exceeded");
   {
     ISColoringValue *s = (ISColoringValue*) coloring;
     for (i=0; i<n; i++) s[i] = (ISColoringValue) (coloring[i]-1);
-    ierr = MatColoringPatch(mat_seq,ncolors,n,s,iscoloring);CHKERRQ(ierr);
+    PetscCall(MatColoringPatch(mat_seq,ncolors,n,s,iscoloring));
   }
 
   if (size > 1) {
-    ierr = MatDestroySeqNonzeroStructure(&mat_seq);CHKERRQ(ierr);
+    PetscCall(MatDestroySeqNonzeroStructure(&mat_seq));
 
     /* convert iscoloring_seq to a parallel iscoloring */
     iscoloring_seq = *iscoloring;
@@ -222,13 +219,13 @@ static PetscErrorCode MatColoringApply_LF(MatColoring mc,ISColoring *iscoloring)
     N_loc          = rend - rstart; /* number of local nodes */
 
     /* get local colors for each local node */
-    ierr = PetscMalloc1(N_loc+1,&colors_loc);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(N_loc+1,&colors_loc));
     for (i=rstart; i<rend; i++) colors_loc[i-rstart] = iscoloring_seq->colors[i];
 
     /* create a parallel iscoloring */
     nc   = iscoloring_seq->n;
-    ierr = ISColoringCreate(comm,nc,N_loc,colors_loc,PETSC_OWN_POINTER,iscoloring);CHKERRQ(ierr);
-    ierr = ISColoringDestroy(&iscoloring_seq);CHKERRQ(ierr);
+    PetscCall(ISColoringCreate(comm,nc,N_loc,colors_loc,PETSC_OWN_POINTER,iscoloring));
+    PetscCall(ISColoringDestroy(&iscoloring_seq));
   }
   PetscFunctionReturn(0);
 }
@@ -244,10 +241,10 @@ static PetscErrorCode MatColoringApply_LF(MatColoring mc,ISColoring *iscoloring)
           This is a sequential algorithm
 
    References:
-.  1. - TF Coleman and J More, "Estimation of sparse Jacobian matrices and graph coloring," SIAM Journal on Numerical Analysis, vol. 20, no. 1,
+.  * - TF Coleman and J More, "Estimation of sparse Jacobian matrices and graph coloring," SIAM Journal on Numerical Analysis, vol. 20, no. 1,
    pp. 187-209, 1983.
 
-.seealso: MatColoringCreate(), MatColoring, MatColoringSetType(), MATCOLORINGGREEDY, MatColoringType
+.seealso: `MatColoringCreate()`, `MatColoring`, `MatColoringSetType()`, `MATCOLORINGGREEDY`, `MatColoringType`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatColoringCreate_LF(MatColoring mc)
@@ -264,7 +261,6 @@ PETSC_EXTERN PetscErrorCode MatColoringCreate_LF(MatColoring mc)
 
 static PetscErrorCode MatColoringApply_ID(MatColoring mc,ISColoring *iscoloring)
 {
-  PetscErrorCode  ierr;
   PetscInt        *list,*work,clique,*seq,*coloring,n;
   const PetscInt  *ria,*rja,*cia,*cja;
   PetscInt        ncolors,i;
@@ -279,52 +275,52 @@ static PetscErrorCode MatColoringApply_ID(MatColoring mc,ISColoring *iscoloring)
   PetscBool       flg1,flg2;
 
   PetscFunctionBegin;
-  PetscCheckFalse(mc->dist != 2,PETSC_COMM_SELF,PETSC_ERR_SUP,"IDO may only do distance 2 coloring");
+  PetscCheck(mc->dist == 2,PETSC_COMM_SELF,PETSC_ERR_SUP,"IDO may only do distance 2 coloring");
   /* this is ugly way to get blocksize but cannot call MatGetBlockSize() because AIJ can have bs > 1 */
-  ierr = PetscObjectBaseTypeCompare((PetscObject)mat,MATSEQBAIJ,&flg1);CHKERRQ(ierr);
-  ierr = PetscObjectBaseTypeCompare((PetscObject)mat,MATMPIBAIJ,&flg2);CHKERRQ(ierr);
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)mat,MATSEQBAIJ,&flg1));
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)mat,MATMPIBAIJ,&flg2));
   if (flg1 || flg2) {
-    ierr = MatGetBlockSize(mat,&bs);CHKERRQ(ierr);
+    PetscCall(MatGetBlockSize(mat,&bs));
   }
 
-  ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+  PetscCall(PetscObjectGetComm((PetscObject)mat,&comm));
+  PetscCallMPI(MPI_Comm_size(comm,&size));
   if (size > 1) {
     /* create a sequential iscoloring on all processors */
-    ierr = MatGetSeqNonzeroStructure(mat,&mat_seq);CHKERRQ(ierr);
+    PetscCall(MatGetSeqNonzeroStructure(mat,&mat_seq));
   }
 
-  ierr = MatGetRowIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&ria,&rja,&done);CHKERRQ(ierr);
-  ierr = MatGetColumnIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&cia,&cja,&done);CHKERRQ(ierr);
-  PetscCheckFalse(!done,PETSC_COMM_SELF,PETSC_ERR_SUP,"Ordering requires IJ");
+  PetscCall(MatGetRowIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&ria,&rja,&done));
+  PetscCall(MatGetColumnIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&cia,&cja,&done));
+  PetscCheck(done,PETSC_COMM_SELF,PETSC_ERR_SUP,"Ordering requires IJ");
 
-  ierr = MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq);CHKERRQ(ierr);
+  PetscCall(MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq));
 
-  ierr = PetscMalloc2(n,&list,4*n,&work);CHKERRQ(ierr);
+  PetscCall(PetscMalloc2(n,&list,4*n,&work));
 
   MINPACKido(&n,&n,cja,cia,rja,ria,seq,list,&clique,work,work+n,work+2*n,work+3*n);
 
-  ierr = PetscMalloc1(n,&coloring);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(n,&coloring));
   MINPACKseq(&n,cja,cia,rja,ria,list,coloring,&ncolors,work);
 
-  ierr = PetscFree2(list,work);CHKERRQ(ierr);
-  ierr = PetscFree(seq);CHKERRQ(ierr);
+  PetscCall(PetscFree2(list,work));
+  PetscCall(PetscFree(seq));
 
-  ierr = MatRestoreRowIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,NULL,&ria,&rja,&done);CHKERRQ(ierr);
-  ierr = MatRestoreColumnIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,NULL,&cia,&cja,&done);CHKERRQ(ierr);
+  PetscCall(MatRestoreRowIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,NULL,&ria,&rja,&done));
+  PetscCall(MatRestoreColumnIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,NULL,&cia,&cja,&done));
 
   /* shift coloring numbers to start at zero and shorten */
-  PetscCheckFalse(ncolors > IS_COLORING_MAX-1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Maximum color size exceeded");
+  PetscCheck(ncolors <= IS_COLORING_MAX-1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Maximum color size exceeded");
   {
     ISColoringValue *s = (ISColoringValue*) coloring;
     for (i=0; i<n; i++) {
       s[i] = (ISColoringValue) (coloring[i]-1);
     }
-    ierr = MatColoringPatch(mat_seq,ncolors,n,s,iscoloring);CHKERRQ(ierr);
+    PetscCall(MatColoringPatch(mat_seq,ncolors,n,s,iscoloring));
   }
 
   if (size > 1) {
-    ierr = MatDestroySeqNonzeroStructure(&mat_seq);CHKERRQ(ierr);
+    PetscCall(MatDestroySeqNonzeroStructure(&mat_seq));
 
     /* convert iscoloring_seq to a parallel iscoloring */
     iscoloring_seq = *iscoloring;
@@ -333,14 +329,14 @@ static PetscErrorCode MatColoringApply_ID(MatColoring mc,ISColoring *iscoloring)
     N_loc          = rend - rstart; /* number of local nodes */
 
     /* get local colors for each local node */
-    ierr = PetscMalloc1(N_loc+1,&colors_loc);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(N_loc+1,&colors_loc));
     for (i=rstart; i<rend; i++) {
       colors_loc[i-rstart] = iscoloring_seq->colors[i];
     }
     /* create a parallel iscoloring */
     nc   = iscoloring_seq->n;
-    ierr = ISColoringCreate(comm,nc,N_loc,colors_loc,PETSC_OWN_POINTER,iscoloring);CHKERRQ(ierr);
-    ierr = ISColoringDestroy(&iscoloring_seq);CHKERRQ(ierr);
+    PetscCall(ISColoringCreate(comm,nc,N_loc,colors_loc,PETSC_OWN_POINTER,iscoloring));
+    PetscCall(ISColoringDestroy(&iscoloring_seq));
   }
   PetscFunctionReturn(0);
 }
@@ -356,10 +352,10 @@ static PetscErrorCode MatColoringApply_ID(MatColoring mc,ISColoring *iscoloring)
           This is a sequential algorithm
 
    References:
-.  1. - TF Coleman and J More, "Estimation of sparse Jacobian matrices and graph coloring," SIAM Journal on Numerical Analysis, vol. 20, no. 1,
+.  * - TF Coleman and J More, "Estimation of sparse Jacobian matrices and graph coloring," SIAM Journal on Numerical Analysis, vol. 20, no. 1,
    pp. 187-209, 1983.
 
-.seealso: MatColoringCreate(), MatColoring, MatColoringSetType(), MATCOLORINGGREEDY, MatColoringType
+.seealso: `MatColoringCreate()`, `MatColoring`, `MatColoringSetType()`, `MATCOLORINGGREEDY`, `MatColoringType`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatColoringCreate_ID(MatColoring mc)

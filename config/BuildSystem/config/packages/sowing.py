@@ -9,10 +9,9 @@ class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
     self.minversion        = '1.1.26'
-    self.gitcommit         = 'v'+self.minversion+'-p3'
+    self.gitcommit         = 'v'+self.minversion+'-p5'
     self.download          = ['git://https://bitbucket.org/petsc/pkg-sowing.git','https://bitbucket.org/petsc/pkg-sowing/get/'+self.gitcommit+'.tar.gz']
     self.downloaddirnames  = ['petsc-pkg-sowing']
-    self.complex           = 1
     self.downloadonWindows = 1
     self.publicInstall     = 0  # always install in PETSC_DIR/PETSC_ARCH (not --prefix) since this is not used by users
     self.parallelMake      = 0  # sowing does not support make -j np
@@ -62,13 +61,13 @@ class Configure(config.package.GNUPackage):
       return
     version = tuple(map(int, self.minversion.split('.')))
     if foundversion < version:
-      raise RuntimeError(self.bfort+' version '+".".join(map(str,foundversion))+' is older than required '+self.minversion+'. Perhaps a stale install of sowing?')
+      raise RuntimeError(self.bfort+' version '+".".join(map(str,foundversion))+' is older than required '+self.minversion+'.\nRun ./configure with --download-sowing or install a new version of Sowing')
     return
 
   def configure(self):
     if ('with-sowing' in self.framework.clArgDB and not self.argDB['with-sowing']):
       if hasattr(self.compilers, 'FC') and self.framework.argDB['with-fortran-bindings'] and self.petscclone.isClone:
-        raise RuntimeError('Cannot use --with-sowing=0 if using Fortran (bindings) and git repository for PETSc')
+        raise RuntimeError('Cannot use --with-sowing=0 if using PETSc Fortran bindings and if PETSc was obtained with git')
       self.logPrint("Not checking sowing on user request of --with-sowing=0\n")
       return
 
@@ -91,7 +90,7 @@ class Configure(config.package.GNUPackage):
           self.logPrint('Found bfort in user provided directory, not installing sowing')
           self.found = 1
         else:
-          raise RuntimeError("You passed --with-sowing-dir='+installDir+' but it does not contain sowing's bfort")
+          raise RuntimeError("You passed --with-sowing-dir='+installDir+' but it does not contain Sowing's bfort program")
 
       else:
         if not self.argDB['download-sowing']:
@@ -108,7 +107,7 @@ class Configure(config.package.GNUPackage):
           if (not self.argDB['download-sowing']):  self.argDB['download-sowing'] = 1
           #check cygwin has g++
           if os.path.exists('/usr/bin/cygcheck.exe') and not os.path.exists('/usr/bin/g++.exe'):
-            raise RuntimeError('Error! sowing on windows requires cygwin/g++. Please install it with cygwin setup.exe')
+            raise RuntimeError("Error! Sowing on Microsoft Windows requires cygwin's g++ compiler. Please install it with cygwin setup.exe and rerun configure")
           config.package.GNUPackage.configure(self)
           installDir = os.path.join(self.installDir,'bin')
           self.getExecutable('bfort',    path=installDir, getFullPath = 1)
@@ -116,12 +115,15 @@ class Configure(config.package.GNUPackage):
           self.getExecutable('mapnames', path=installDir, getFullPath = 1)
           self.getExecutable('bib2html', path=installDir, getFullPath = 1)
           self.found = 1
-          if not hasattr(self,'bfort'): raise RuntimeError('Unable to locate bfort (part of sowing) in its expected location in '+installDir+'\n\
+          if not hasattr(self,'bfort'): raise RuntimeError('Unable to locate the bfort program (part of Sowing) in its expected location in '+installDir+'\n\
 Perhaps the installation has been corrupted or changed, remove the directory '+os.path.join(self.petscdir.dir,self.arch)+'\n\
 and run configure again\n')
 
       self.checkBfortVersion()
-      self.buildFortranStubs()
+      if (self.petscclone.isClone and hasattr(self.compilers, 'FC') and self.framework.argDB['with-fortran-bindings']):
+        self.buildFortranStubs()
+      else:
+        self.logPrintBox('Sowing: Skipping Fortran stub generation! Reason: Not a clone of PETSc or no Fortran compiler or fortran-bindings disabled')
     else:
       self.logPrint("Not a clone of PETSc or no Fortran compiler or fortran-bindings disabled, don't need Sowing\n")
     return
@@ -132,7 +134,7 @@ and run configure again\n')
         self.logPrintBox('Batch build that could not generate bfort, skipping generating Fortran stubs\n \
                           you will need to copy them from some other system (src/fortran/auto)')
       else:
-        self.logPrintBox('Running '+self.bfort+' to generate fortran stubs')
+        self.logPrintBox('Running '+self.bfort+' to generate Fortran stubs')
         try:
           import os,sys
           sys.path.insert(0, os.path.abspath(os.path.join('lib','petsc','bin','maint')))

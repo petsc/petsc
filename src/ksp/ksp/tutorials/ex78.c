@@ -11,26 +11,25 @@ int main(int argc,char **args)
 #endif
   PetscInt       i;
   const char     *common[] = {KSPGMRES,KSPCG,KSPPREONLY};
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&args,NULL,help);if (ierr) return ierr;
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&args,NULL,help));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
   for (i=0; i<3; i++) {
-    ierr = KSPSetType(ksp,common[i]);CHKERRQ(ierr);
-    ierr = KSPSetType(ksp,KSPHPDDM);CHKERRQ(ierr);
+    PetscCall(KSPSetType(ksp,common[i]));
+    PetscCall(KSPSetType(ksp,KSPHPDDM));
 #if defined(PETSC_HAVE_HPDDM)
-    ierr = KSPHPDDMGetType(ksp,&type);CHKERRQ(ierr);
-    ierr = PetscStrcmp(KSPHPDDMTypes[type],common[i],&flg);CHKERRQ(ierr);
-    PetscCheckFalse(!flg,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"KSPType and KSPHPDDMType do not match: %s != %s", common[i], type);
-    ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-    ierr = KSPHPDDMGetType(ksp,&type);CHKERRQ(ierr);
-    PetscCheckFalse(type != KSP_HPDDM_TYPE_GCRODR,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"-ksp_hpddm_type gcrodr and KSPHPDDMType do not match: gcrodr != %s", KSPHPDDMTypes[type]);
-    ierr = KSPHPDDMSetType(ksp,KSP_HPDDM_TYPE_BGMRES);CHKERRQ(ierr);
+    PetscCall(KSPHPDDMGetType(ksp,&type));
+    PetscCall(PetscStrcmp(KSPHPDDMTypes[type],common[i],&flg));
+    PetscCheck(flg,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"KSPType and KSPHPDDMType do not match: %s != %s", common[i], KSPHPDDMTypes[type]);
+    PetscCall(KSPSetFromOptions(ksp));
+    PetscCall(KSPHPDDMGetType(ksp,&type));
+    PetscCheck(type == KSP_HPDDM_TYPE_GCRODR,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"-ksp_hpddm_type gcrodr and KSPHPDDMType do not match: gcrodr != %s", KSPHPDDMTypes[type]);
+    PetscCall(KSPHPDDMSetType(ksp,KSP_HPDDM_TYPE_BGMRES));
 #endif
   }
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

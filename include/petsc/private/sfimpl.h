@@ -110,6 +110,7 @@ struct _p_PetscSF {
   PetscBool       use_gpu_aware_mpi;   /* If true, SF assumes it can pass GPU pointers to MPI */
   PetscBool       use_stream_aware_mpi;/* If true, SF assumes the underlying MPI is cuda-stream aware and we won't sync streams for send/recv buffers passed to MPI */
   PetscInt        maxResidentThreadsPerGPU;
+  PetscBool       allow_multi_leaves;
   PetscSFBackend  backend;         /* The device backend (if any) SF will use */
   void *data;                      /* Pointer to implementation */
 
@@ -178,19 +179,9 @@ PETSC_EXTERN PetscErrorCode PetscSFFree_CUDA(PetscMemType,void*);
 PETSC_EXTERN PetscErrorCode PetscSFMalloc_HIP(PetscMemType,size_t,void**);
 PETSC_EXTERN PetscErrorCode PetscSFFree_HIP(PetscMemType,void*);
 #endif
-
 #if defined(PETSC_HAVE_KOKKOS)
-  PETSC_EXTERN PetscErrorCode PetscSFMalloc_Kokkos(PetscMemType,size_t,void**);
-  PETSC_EXTERN PetscErrorCode PetscSFFree_Kokkos(PetscMemType,void*);
- #if defined(PETSC_HAVE_CUDA)
-  static const PetscMemType PETSC_MEMTYPE_KOKKOS = PETSC_MEMTYPE_CUDA;
- #elif defined(PETSC_HAVE_HIP)
-  static const PetscMemType PETSC_MEMTYPE_KOKKOS = PETSC_MEMTYPE_HIP;
- #elif defined(PETSC_HAVE_SYCL)
-  static const PetscMemType PETSC_MEMTYPE_KOKKOS = PETSC_MEMTYPE_SYCL;
- #else
-  static const PetscMemType PETSC_MEMTYPE_KOKKOS = PETSC_MEMTYPE_HOST;
- #endif
+PETSC_EXTERN PetscErrorCode PetscSFMalloc_Kokkos(PetscMemType,size_t,void**);
+PETSC_EXTERN PetscErrorCode PetscSFFree_Kokkos(PetscMemType,void*);
 #endif
 
 /* SF only supports CUDA and Kokkos devices. Even VIENNACL is a device, its device pointers are invisible to SF.

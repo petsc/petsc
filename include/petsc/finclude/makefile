@@ -1,7 +1,6 @@
+-include ../../../petsckdir.mk
 #requiresdefine   'PETSC_HAVE_FORTRAN'
 
-CFLAGS    =
-FFLAGS    =
 SOURCEC   =
 SOURCEF   =
 SOURCEH   = petsc.h  petscsys.h petsclog.h petscvec.h petscsnes.h petscdm.h petscdmda.h \
@@ -9,7 +8,6 @@ SOURCEH   = petsc.h  petscsys.h petsclog.h petscvec.h petscsnes.h petscdm.h pets
 	    petscts.h petsctao.h
 LIBBASE   = libpetscvec
 DIRS      =
-MANSEC    = Sys
 LOCDIR    = include/petsc/finclude/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

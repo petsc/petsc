@@ -10,20 +10,17 @@
 -  pyname - full dotted Python name [package].module[.{class|function}]
 
    Options Database Key:
-.  -ksp_python_type <pyname>
+.  -ksp_python_type <pyname> - python class
 
    Level: intermediate
 
-.seealso: KSPCreate(), KSPSetType(), KSPPYTHON, PetscPythonInitialize()
+.seealso: `KSPCreate()`, `KSPSetType()`, `KSPPYTHON`, `PetscPythonInitialize()`
 @*/
 PetscErrorCode  KSPPythonSetType(KSP ksp,const char pyname[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidCharPointer(pyname,2);
-  ierr = PetscTryMethod(ksp,"KSPPythonSetType_C",(KSP, const char[]),(ksp,pyname));CHKERRQ(ierr);
+  PetscTryMethod(ksp,"KSPPythonSetType_C",(KSP, const char[]),(ksp,pyname));
   PetscFunctionReturn(0);
 }
-

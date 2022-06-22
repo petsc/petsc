@@ -3176,14 +3176,13 @@ gradient method.
      PetscReal  gnormPrev,gdx,f,gnorm,steplength=0;
      TaoLineSearchConvergedReason lsflag=TAO_LINESEARCH_CONTINUE_ITERATING;
      TaoConvergedReason reason=TAO_CONTINUE_ITERATING;
-     PetscErrorCode ierr;
 
      PetscFunctionBegin;
 
-     ierr = TaoComputeObjectiveAndGradient(tao,x,&f,g);CHKERRQ(ierr);
-     ierr = VecNorm(g,NORM_2,&gnorm);  CHKERRQ(ierr);
+     PetscCall(TaoComputeObjectiveAndGradient(tao,x,&f,g));
+     PetscCall(VecNorm(g,NORM_2,&gnorm));
 
-     ierr = VecSet(s,0); CHKERRQ(ierr);
+     PetscCall(VecSet(s,0));
 
      cg->beta=0;
      gnormPrev = gnorm;
@@ -3192,26 +3191,26 @@ gradient method.
      while (1){
 
        /* Test for convergence */
-       ierr = TaoMonitor(tao,iter,f,gnorm,0.0,step,&reason);CHKERRQ(ierr);
+       PetscCall(TaoMonitor(tao,iter,f,gnorm,0.0,step,&reason));
        if (reason!=TAO_CONTINUE_ITERATING) break;
 
        cg->beta=(gnorm*gnorm)/(gnormPrev*gnormPrev);
-       ierr = VecScale(s,cg->beta); CHKERRQ(ierr);
-       ierr = VecAXPY(s,-1.0,g); CHKERRQ(ierr);
+       PetscCall(VecScale(s,cg->beta));
+       PetscCall(VecAXPY(s,-1.0,g));
 
-       ierr = VecDot(s,g,&gdx); CHKERRQ(ierr);
+       PetscCall(VecDot(s,g,&gdx));
        if (gdx>=0){     /* If not a descent direction, use gradient */
-         ierr = VecCopy(g,s); CHKERRQ(ierr);
-         ierr = VecScale(s,-1.0); CHKERRQ(ierr);
+         PetscCall(VecCopy(g,s));
+         PetscCall(VecScale(s,-1.0));
          gdx=-gnorm*gnorm;
        }
 
        /* Line Search */
        gnormPrev = gnorm;  step=1.0;
-       ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,1.0);
-       ierr = TaoLineSearchApply(tao->linesearch,x,&f,g,s,&steplength,&lsflag);
-       ierr = TaoAddLineSearchCounts(tao); CHKERRQ(ierr);
-       ierr = VecNorm(g,NORM_2,&gnorm);CHKERRQ(ierr);
+       PetscCall(TaoLineSearchSetInitialStepLength(tao->linesearch,1.0));
+       PetscCall(TaoLineSearchApply(tao->linesearch,x,&f,g,s,&steplength,&lsflag));
+       PetscCall(TaoAddLineSearchCounts(tao));
+       PetscCall(VecNorm(g,NORM_2,&gnorm));
        iter++;
      }
 
@@ -3300,11 +3299,10 @@ conjugate gradient algorithm shown above can be implemented as follows.
    {
      TAO_CG *cg = (TAO_CG*)tao->data;
      const char *morethuente_type = TAOLINESEARCH_MT;
-     PetscErrorCode ierr;
 
      PetscFunctionBegin;
 
-     ierr = PetscNewLog(tao,&cg); CHKERRQ(ierr);
+     PetscCall(PetscNewLog(tao,&cg));
      tao->data = (void*)cg;
      cg->eta = 0.1;
      cg->delta_min = 1e-7;
@@ -3320,10 +3318,9 @@ conjugate gradient algorithm shown above can be implemented as follows.
      tao->ops->setfromoptions = TaoSetFromOptions_CG;
      tao->ops->destroy = TaoDestroy_CG;
 
-     ierr = TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch);
-     CHKERRQ(ierr);
-     ierr = TaoLineSearchSetType(tao->linesearch, morethuente_type); CHKERRQ(ierr);
-     ierr = TaoLineSearchUseTaoRoutines(tao->linesearch, tao); CHKERRQ(ierr);
+     PetscCall(TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch));
+     PetscCall(TaoLineSearchSetType(tao->linesearch, morethuente_type));
+     PetscCall(TaoLineSearchUseTaoRoutines(tao->linesearch, tao));
 
      PetscFunctionReturn(0);
    }
@@ -3361,12 +3358,11 @@ and the ``TAO_CG`` structure.
    PetscErrorCode TaoDestroy_CG(TAO_SOLVER tao)
    {
      TAO_CG *cg = (TAO_CG *) tao->data;
-     PetscErrorCode    ierr;
 
      PetscFunctionBegin;
 
-     ierr = VecDestroy(&cg->X_old); CHKERRQ(ierr);
-     ierr = VecDestroy(&cg->G_old);CHKERRQ(ierr);
+     PetscCall(VecDestroy(&cg->X_old));
+     PetscCall(VecDestroy(&cg->G_old));
 
      PetscFree(tao->data);
      tao->data = NULL;
@@ -3393,14 +3389,13 @@ have the following form.
 
    PetscErrorCode TaoSetUp_CG(Tao tao)
    {
-     PetscErrorCode ierr;
      TAO_CG *cg = (TAO_CG*)tao->data;
      PetscFunctionBegin;
 
-     ierr = VecDuplicate(tao->solution,&tao->gradient); CHKERRQ(ierr);
-     ierr = VecDuplicate(tao->solution,&tao->stepdirection); CHKERRQ(ierr);
-     ierr = VecDuplicate(tao->solution,&cg->X_old); CHKERRQ(ierr);
-     ierr = VecDuplicate(tao->solution,&cg->G_old); CHKERRQ(ierr);
+     PetscCall(VecDuplicate(tao->solution,&tao->gradient));
+     PetscCall(VecDuplicate(tao->solution,&tao->stepdirection));
+     PetscCall(VecDuplicate(tao->solution,&cg->X_old));
+     PetscCall(VecDuplicate(tao->solution,&cg->G_old));
 
      PetscFunctionReturn(0);
    }
@@ -3417,15 +3412,11 @@ following form.
 
    PetscErrorCode TaoSetFromOptions_CG(Tao tao, void *solver);
    {
-     PetscErrorCode ierr;
      TAO_CG *cg = (TAO_CG*)solver;
      PetscFunctionBegin;
-     ierr = PetscOptionsReal("-tao_cg_eta","restart tolerance","",cg->eta,
-                             &cg->eta,0);  CHKERRQ(ierr);
-     ierr = PetscOptionsReal("-tao_cg_delta_min","minimum delta value","",
-                             cg->delta_min,&cg->delta_min,0); CHKERRQ(ierr);
-     ierr = PetscOptionsReal("-tao_cg_delta_max","maximum delta value","",
-                             cg->delta_max,&cg->delta_max,0); CHKERRQ(ierr);
+     PetscCall(PetscOptionsReal("-tao_cg_eta","restart tolerance","",cg->eta,&cg->eta,0));
+     PetscCall(PetscOptionsReal("-tao_cg_delta_min","minimum delta value","",cg->delta_min,&cg->delta_min,0));
+     PetscCall(PetscOptionsReal("-tao_cg_delta_max","maximum delta value","",cg->delta_max,&cg->delta_max,0));
      PetscFunctionReturn(0);
    }
 
@@ -3443,13 +3434,12 @@ form.
    PetscErrorCode TaoView_CG(Tao tao, PetscViewer viewer)
    {
      TAO_CG *cg = (TAO_CG*)tao->data;
-     PetscErrorCode ierr;
 
      PetscFunctionBegin;
-     ierr = PetscViewerASCIIPushTab(viewer);
-     ierr = PetscViewerASCIIPrintf(viewer,"Grad. steps: %d\n",cg->ngradsteps);
-     ierr = PetscViewerASCIIPrintf(viewer,"Reset steps: %d\n",cg->nresetsteps);
-     ierr = PetscViewerASCIIPopTab(viewer);
+     PetscCall(PetscViewerASCIIPushTab(viewer));
+     PetscCall(PetscViewerASCIIPrintf(viewer,"Grad. steps: %d\n",cg->ngradsteps));
+     PetscCall(PetscViewerASCIIPrintf(viewer,"Reset steps: %d\n",cg->nresetsteps));
+     PetscCall(PetscViewerASCIIPopTab(viewer));
      PetscFunctionReturn(0);
    }
 

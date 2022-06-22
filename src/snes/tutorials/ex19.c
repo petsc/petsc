@@ -13,13 +13,6 @@ The flow can be driven with the lid or with bouyancy or both:\n\
       See src/ksp/ksp/tutorials/ex45.c
 */
 
-/*T
-   Concepts: SNES^solving a system of nonlinear equations (parallel multicomponent example);
-   Concepts: DMDA^using distributed arrays;
-   Concepts: multicomponent
-   Processors: n
-T*/
-
 /*F-----------------------------------------------------------------------
 
     We thank David E. Keyes for contributing the driven cavity discretization within this example code.
@@ -96,29 +89,28 @@ int main(int argc,char **argv)
 {
   AppCtx         user;                /* user-defined work context */
   PetscInt       mx,my,its;
-  PetscErrorCode ierr;
   MPI_Comm       comm;
   SNES           snes;
   DM             da;
   Vec            x;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   PetscFunctionBeginUser;
   comm = PETSC_COMM_WORLD;
-  ierr = SNESCreate(comm,&snes);CHKERRQ(ierr);
+  PetscCall(SNESCreate(comm,&snes));
 
   /*
       Create distributed array object to manage parallel grid and vectors
       for principal unknowns (x) and governing residuals (f)
   */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,4,4,PETSC_DECIDE,PETSC_DECIDE,4,1,0,0,&da);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
-  ierr = SNESSetDM(snes,(DM)da);CHKERRQ(ierr);
-  ierr = SNESSetNGS(snes, NonlinearGS, (void*)&user);CHKERRQ(ierr);
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,4,4,PETSC_DECIDE,PETSC_DECIDE,4,1,0,0,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(SNESSetDM(snes,(DM)da));
+  PetscCall(SNESSetNGS(snes, NonlinearGS, (void*)&user));
 
-  ierr = DMDAGetInfo(da,0,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
+  PetscCall(DMDAGetInfo(da,0,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
   /*
      Problem parameters (velocity of lid, prandtl, and grashof numbers)
   */
@@ -126,15 +118,15 @@ int main(int argc,char **argv)
   user.prandtl     = 1.0;
   user.grashof     = 1.0;
 
-  ierr = PetscOptionsGetReal(NULL,NULL,"-lidvelocity",&user.lidvelocity,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,NULL,"-prandtl",&user.prandtl,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,NULL,"-grashof",&user.grashof,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,NULL,"-contours",&user.draw_contours);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-lidvelocity",&user.lidvelocity,NULL));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-prandtl",&user.prandtl,NULL));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-grashof",&user.grashof,NULL));
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-contours",&user.draw_contours));
 
-  ierr = DMDASetFieldName(da,0,"x_velocity");CHKERRQ(ierr);
-  ierr = DMDASetFieldName(da,1,"y_velocity");CHKERRQ(ierr);
-  ierr = DMDASetFieldName(da,2,"Omega");CHKERRQ(ierr);
-  ierr = DMDASetFieldName(da,3,"temperature");CHKERRQ(ierr);
+  PetscCall(DMDASetFieldName(da,0,"x_velocity"));
+  PetscCall(DMDASetFieldName(da,1,"y_velocity"));
+  PetscCall(DMDASetFieldName(da,2,"Omega"));
+  PetscCall(DMDASetFieldName(da,3,"temperature"));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create user context, set problem data, create vector data structures.
@@ -145,38 +137,38 @@ int main(int argc,char **argv)
      Create nonlinear solver context
 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMSetApplicationContext(da,&user);CHKERRQ(ierr);
-  ierr = DMDASNESSetFunctionLocal(da,INSERT_VALUES,(PetscErrorCode (*)(DMDALocalInfo*,void*,void*,void*))FormFunctionLocal,&user);CHKERRQ(ierr);
-  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"lid velocity = %g, prandtl # = %g, grashof # = %g\n",(double)user.lidvelocity,(double)user.prandtl,(double)user.grashof);CHKERRQ(ierr);
+  PetscCall(DMSetApplicationContext(da,&user));
+  PetscCall(DMDASNESSetFunctionLocal(da,INSERT_VALUES,(PetscErrorCode (*)(DMDALocalInfo*,void*,void*,void*))FormFunctionLocal,&user));
+  PetscCall(SNESSetFromOptions(snes));
+  PetscCall(PetscPrintf(comm,"lid velocity = %g, prandtl # = %g, grashof # = %g\n",(double)user.lidvelocity,(double)user.prandtl,(double)user.grashof));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve the nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
-  ierr = FormInitialGuess(&user,da,x);CHKERRQ(ierr);
+  PetscCall(DMCreateGlobalVector(da,&x));
+  PetscCall(FormInitialGuess(&user,da,x));
 
-  ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
+  PetscCall(SNESSolve(snes,NULL,x));
 
-  ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"Number of SNES iterations = %D\n", its);CHKERRQ(ierr);
+  PetscCall(SNESGetIterationNumber(snes,&its));
+  PetscCall(PetscPrintf(comm,"Number of SNES iterations = %" PetscInt_FMT "\n", its));
 
   /*
      Visualize solution
   */
   if (user.draw_contours) {
-    ierr = VecView(x,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
+    PetscCall(VecView(x,PETSC_VIEWER_DRAW_WORLD));
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
-  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(VecDestroy(&x));
+  PetscCall(DMDestroy(&da));
+  PetscCall(SNESDestroy(&snes));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /* ------------------------------------------------------------------- */
@@ -194,14 +186,13 @@ int main(int argc,char **argv)
 PetscErrorCode FormInitialGuess(AppCtx *user,DM da,Vec X)
 {
   PetscInt       i,j,mx,xs,ys,xm,ym;
-  PetscErrorCode ierr;
   PetscReal      grashof,dx;
   Field          **x;
 
   PetscFunctionBeginUser;
   grashof = user->grashof;
 
-  ierr = DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  PetscCall(DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0,0,0));
   dx   = 1.0/(mx-1);
 
   /*
@@ -209,7 +200,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,DM da,Vec X)
        xs, ys   - starting grid indices (no ghost points)
        xm, ym   - widths of local grid (no ghost points)
   */
-  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
+  PetscCall(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
 
   /*
      Get a pointer to vector data.
@@ -218,7 +209,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,DM da,Vec X)
        - You MUST call VecRestoreArray() when you no longer need access to
          the array.
   */
-  ierr = DMDAVecGetArrayWrite(da,X,&x);CHKERRQ(ierr);
+  PetscCall(DMDAVecGetArrayWrite(da,X,&x));
 
   /*
      Compute initial guess over the locally owned part of the grid
@@ -236,14 +227,13 @@ PetscErrorCode FormInitialGuess(AppCtx *user,DM da,Vec X)
   /*
      Restore vector
   */
-  ierr = DMDAVecRestoreArrayWrite(da,X,&x);CHKERRQ(ierr);
+  PetscCall(DMDAVecRestoreArrayWrite(da,X,&x));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *ptr)
 {
   AppCtx         *user = (AppCtx*)ptr;
-  PetscErrorCode ierr;
   PetscInt       xints,xinte,yints,yinte,i,j;
   PetscReal      hx,hy,dhx,dhy,hxdhy,hydhx;
   PetscReal      grashof,prandtl,lid;
@@ -363,7 +353,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *p
   /*
      Flop count (multiply-adds are counted as 2 operations)
   */
-  ierr = PetscLogFlops(84.0*info->ym*info->xm);CHKERRQ(ierr);
+  PetscCall(PetscLogFlops(84.0*info->ym*info->xm));
   PetscFunctionReturn(0);
 }
 
@@ -374,7 +364,6 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
 {
   DMDALocalInfo  info;
   Field          **x,**b;
-  PetscErrorCode ierr;
   Vec            localX, localB;
   DM             da;
   PetscInt       xints,xinte,yints,yinte,i,j,k,l;
@@ -400,27 +389,27 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
   prandtl = user->prandtl;
   lid     = user->lidvelocity;
   tot_its = 0;
-  ierr    = SNESNGSGetTolerances(snes,&rtol,&atol,&stol,&max_its);CHKERRQ(ierr);
-  ierr    = SNESNGSGetSweeps(snes,&sweeps);CHKERRQ(ierr);
-  ierr    = SNESGetDM(snes,(DM*)&da);CHKERRQ(ierr);
-  ierr    = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
+  PetscCall(SNESNGSGetTolerances(snes,&rtol,&atol,&stol,&max_its));
+  PetscCall(SNESNGSGetSweeps(snes,&sweeps));
+  PetscCall(SNESGetDM(snes,(DM*)&da));
+  PetscCall(DMGetLocalVector(da,&localX));
   if (B) {
-    ierr = DMGetLocalVector(da,&localB);CHKERRQ(ierr);
+    PetscCall(DMGetLocalVector(da,&localB));
   }
   /*
      Scatter ghost points to local vector, using the 2-step process
         DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
   */
-  ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  PetscCall(DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX));
+  PetscCall(DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX));
   if (B) {
-    ierr = DMGlobalToLocalBegin(da,B,INSERT_VALUES,localB);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalEnd(da,B,INSERT_VALUES,localB);CHKERRQ(ierr);
+    PetscCall(DMGlobalToLocalBegin(da,B,INSERT_VALUES,localB));
+    PetscCall(DMGlobalToLocalEnd(da,B,INSERT_VALUES,localB));
   }
-  ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
-  ierr = DMDAVecGetArrayWrite(da,localX,&x);CHKERRQ(ierr);
+  PetscCall(DMDAGetLocalInfo(da,&info));
+  PetscCall(DMDAVecGetArrayWrite(da,localX,&x));
   if (B) {
-    ierr = DMDAVecGetArrayRead(da,localB,&b);CHKERRQ(ierr);
+    PetscCall(DMDAVecGetArrayRead(da,localB,&b));
   }
   /* looks like a combination of the formfunction / formjacobian routines */
   dhx   = (PetscReal)(info.mx-1);dhy   = (PetscReal)(info.my-1);
@@ -631,16 +620,16 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
       }
     }
   }
-  ierr = DMDAVecRestoreArrayWrite(da,localX,&x);CHKERRQ(ierr);
+  PetscCall(DMDAVecRestoreArrayWrite(da,localX,&x));
   if (B) {
-    ierr = DMDAVecRestoreArrayRead(da,localB,&b);CHKERRQ(ierr);
+    PetscCall(DMDAVecRestoreArrayRead(da,localB,&b));
   }
-  ierr = DMLocalToGlobalBegin(da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
-  ierr = PetscLogFlops(tot_its*(84.0 + 41.0 + 26.0));CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
+  PetscCall(DMLocalToGlobalBegin(da,localX,INSERT_VALUES,X));
+  PetscCall(DMLocalToGlobalEnd(da,localX,INSERT_VALUES,X));
+  PetscCall(PetscLogFlops(tot_its*(84.0 + 41.0 + 26.0)));
+  PetscCall(DMRestoreLocalVector(da,&localX));
   if (B) {
-    ierr = DMRestoreLocalVector(da,&localB);CHKERRQ(ierr);
+    PetscCall(DMRestoreLocalVector(da,&localB));
   }
   PetscFunctionReturn(0);
 }
@@ -1113,27 +1102,27 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
       suffix: cuda_1
       nsize: 1
       requires: cuda
-      args: -snes_monitor -dm_mat_type seqaijcusparse -dm_vec_type seqcuda -pc_type gamg -ksp_monitor -mg_levels_ksp_max_it 3
+      args: -snes_monitor -dm_mat_type seqaijcusparse -dm_vec_type seqcuda -pc_type gamg -pc_gamg_esteig_ksp_max_it 10 -ksp_monitor -mg_levels_ksp_max_it 3
 
    test:
       suffix: cuda_2
       nsize: 3
       requires: cuda !single
-      args: -snes_monitor -dm_mat_type mpiaijcusparse -dm_vec_type mpicuda -pc_type gamg -ksp_monitor  -mg_levels_ksp_max_it 3
+      args: -snes_monitor -dm_mat_type mpiaijcusparse -dm_vec_type mpicuda -pc_type gamg -pc_gamg_esteig_ksp_max_it 10 -ksp_monitor  -mg_levels_ksp_max_it 3
 
    test:
       suffix: cuda_dm_bind_below
       nsize: 2
       requires: cuda
       args: -dm_mat_type aijcusparse -dm_vec_type cuda -da_refine 3 -pc_type mg -mg_levels_ksp_type chebyshev -mg_levels_pc_type jacobi -log_view -pc_mg_log -dm_bind_below 10000
-      filter: awk "/Level/ {print \$24}"
+      filter: awk "/Level/ {print \$NF}"
 
    test:
       suffix: viennacl_dm_bind_below
       nsize: 2
       requires: viennacl
       args: -dm_mat_type aijviennacl -dm_vec_type viennacl -da_refine 3 -pc_type mg -mg_levels_ksp_type chebyshev -mg_levels_pc_type jacobi -log_view -pc_mg_log -dm_bind_below 10000
-      filter: awk "/Level/ {print \$24}"
+      filter: awk "/Level/ {print \$NF}"
 
    test:
       suffix: seqbaijmkl

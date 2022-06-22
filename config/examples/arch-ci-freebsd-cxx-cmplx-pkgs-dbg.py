@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import os
 petsc_hash_pkgs=os.path.join(os.getenv('HOME'),'petsc-hash-pkgs')
@@ -36,6 +36,7 @@ configure_options = [
   '--with-mpi-f90module-visibility=0',
   '--download-kokkos=1',
   '--download-kokkos-kernels=1',
+  '--with-ssl=1',
   ]
 
 if __name__ == '__main__':

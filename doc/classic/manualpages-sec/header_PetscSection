@@ -1,9 +1,5 @@
-<HTML>
-<HEAD>
-<TITLE>PETSc Sections</TITLE>
-</HEAD>
-<BODY BGCOLOR="FFFFFF">
-
-<H2> Petsc Section: </H2>
+# PETSc Section Manual Pages
 
 PetscSection provides a simple interface to describe arbitrary data layouts.
+
+

@@ -19,7 +19,7 @@ static PetscBool amsmemstack = PETSC_FALSE;
 
    Developers Note: Cannot use PetscFunctionBegin/Return() or PetscStackCallSAWs() since it may be used within those routines
 
-.seealso: PetscObjectSetName(), PetscObjectSAWsViewOff(), PetscObjectSAWsTakeAccess()
+.seealso: `PetscObjectSetName()`, `PetscObjectSAWsViewOff()`, `PetscObjectSAWsTakeAccess()`
 
 @*/
 void  PetscStackSAWsGrantAccess(void)
@@ -39,7 +39,7 @@ void  PetscStackSAWsGrantAccess(void)
 
    Developers Note: Cannot use PetscFunctionBegin/Return() or PetscStackCallSAWs() since it may be used within those routines
 
-.seealso: PetscObjectSetName(), PetscObjectSAWsViewOff(), PetscObjectSAWsTakeAccess()
+.seealso: `PetscObjectSetName()`, `PetscObjectSAWsViewOff()`, `PetscObjectSAWsTakeAccess()`
 
 @*/
 void  PetscStackSAWsTakeAccess(void)
@@ -53,9 +53,8 @@ void  PetscStackSAWsTakeAccess(void)
 PetscErrorCode PetscStackViewSAWs(void)
 {
   PetscMPIInt    rank;
-  PetscErrorCode ierr;
 
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   if (rank) return 0;
 #if PetscDefined(USE_DEBUG)
   PetscStackCallSAWs(SAWs_Register,("/PETSc/Stack/functions",petscstack.function,20,SAWs_READ,SAWs_STRING));

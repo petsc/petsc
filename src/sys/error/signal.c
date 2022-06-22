@@ -156,7 +156,7 @@ PetscErrorCode  PetscSignalHandlerDefault(int sig,void *ptr)
   (*PetscErrorPrintf)("configure using --with-debugging=yes, recompile, link, and run \n");
   (*PetscErrorPrintf)("to get more information on the crash.\n");
 #endif
-  ierr =  PetscError(PETSC_COMM_SELF,0,"User provided function","unknown file",PETSC_ERR_SIG,PETSC_ERROR_INITIAL,NULL);
+  ierr =  PetscError(PETSC_COMM_SELF,0,NULL,NULL,PETSC_ERR_SIG,PETSC_ERROR_INITIAL,NULL);
 #if !defined(PETSC_MISSING_SIGBUS)
   if (sig == SIGSEGV || sig == SIGBUS) {
 #else
@@ -193,17 +193,16 @@ PetscErrorCode  PetscSignalHandlerDefault(int sig,void *ptr)
 
   Level: developer
 
-.seealso: PetscPopSignalHandler(), PetscSignalHandlerDefault(), PetscPushErrorHandler()
+.seealso: `PetscPopSignalHandler()`, `PetscSignalHandlerDefault()`, `PetscPushErrorHandler()`
 
 @*/
 PetscErrorCode  PetscPushSignalHandler(PetscErrorCode (*routine)(int,void*),void *ctx)
 {
   struct  SH     *newsh;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!SIGNAL_CLASSID) {
-    /* ierr = PetscClassIdRegister("Signal",&SIGNAL_CLASSID);CHKERRQ(ierr); */
+    /* PetscCall(PetscClassIdRegister("Signal",&SIGNAL_CLASSID)); */
     SIGNAL_CLASSID = 19;
   }
   if (!SignalSet && routine) {
@@ -225,7 +224,7 @@ PetscErrorCode  PetscPushSignalHandler(PetscErrorCode (*routine)(int,void*),void
       struct  sigaction action;
       sigaction(SIGHUP,NULL,&action);
       if (action.sa_handler == SIG_IGN) {
-        ierr = PetscInfo(NULL,"SIGHUP previously set to ignore, therefor not changing its signal handler\n");CHKERRQ(ierr);
+        PetscCall(PetscInfo(NULL,"SIGHUP previously set to ignore, therefor not changing its signal handler\n"));
       } else {
         signal(SIGHUP, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
       }
@@ -326,9 +325,9 @@ PetscErrorCode  PetscPushSignalHandler(PetscErrorCode (*routine)(int,void*),void
 #endif
     SignalSet = PETSC_FALSE;
   }
-  ierr = PetscNew(&newsh);CHKERRQ(ierr);
+  PetscCall(PetscNew(&newsh));
   if (sh) {
-    PetscCheckFalse(sh->classid != SIGNAL_CLASSID,PETSC_COMM_SELF,PETSC_ERR_COR,"Signal object has been corrupted");
+    PetscCheck(sh->classid == SIGNAL_CLASSID,PETSC_COMM_SELF,PETSC_ERR_COR,"Signal object has been corrupted");
     newsh->previous = sh;
   }  else newsh->previous = NULL;
   newsh->handler = routine;
@@ -347,21 +346,20 @@ PetscErrorCode  PetscPushSignalHandler(PetscErrorCode (*routine)(int,void*),void
 
   Level: developer
 
-.seealso: PetscPushSignalHandler()
+.seealso: `PetscPushSignalHandler()`
 
 @*/
 PetscErrorCode  PetscPopSignalHandler(void)
 {
   struct SH      *tmp;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!sh) PetscFunctionReturn(0);
-  PetscCheckFalse(sh->classid != SIGNAL_CLASSID,PETSC_COMM_SELF,PETSC_ERR_COR,"Signal object has been corrupted");
+  PetscCheck(sh->classid == SIGNAL_CLASSID,PETSC_COMM_SELF,PETSC_ERR_COR,"Signal object has been corrupted");
 
   tmp = sh;
   sh  = sh->previous;
-  ierr = PetscFree(tmp);CHKERRQ(ierr);
+  PetscCall(PetscFree(tmp));
   if (!sh || !sh->handler) {
 #if !defined(PETSC_MISSING_SIGALRM)
     /* signal(SIGALRM, SIG_DFL); */

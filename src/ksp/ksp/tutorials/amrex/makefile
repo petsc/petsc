@@ -1,15 +1,8 @@
 -include ../../../../../petscdir.mk
-CFLAGS           =
+
 CXXFLAGS         = ${AMREX_INCLUDE}
-FFLAGS		 =
-CPPFLAGS         =
-FPPFLAGS         =
 LOCDIR		 = src/ksp/ksp/tutorials/amrex/
 MANSEC           = KSP
-EXAMPLESC	 =
-EXAMPLESF	 =
-EXAMPLESCH	 = MyEB.H MyTest.H
-EXAMPLESFH       =
 OBJECTS          = main.o MyTest.o initEB.o
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
@@ -35,7 +28,7 @@ testamrex: amrex
 	   if (${DIFF} output/amrex_1.testout amrex_1.tmp > /dev/null 2>&1) then \
            echo "example src/ksp/ksp/tutorials/amrex/amrex run successfully with 1 MPI process"; \
 	   else echo "Possible error running  example src/ksp/ksp/tutorials/amrex/amrex with 1 MPI process"; \
-           echo "See http://www.mcs.anl.gov/petsc/documentation/faq.html";\
+           echo "See https://petsc.org/release/faq/";\
            cat amrex_1.tmp; fi;  \
          ${RM} -f amrex_1.tmp; fi
 

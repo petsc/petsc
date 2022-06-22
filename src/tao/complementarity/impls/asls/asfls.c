@@ -37,17 +37,17 @@
    algorithm framework.
 
    References:
-     Billups, "Algorithms for Complementarity Problems and Generalized
++  * - Billups, "Algorithms for Complementarity Problems and Generalized
        Equations," Ph.D thesis, University of Wisconsin  Madison, 1995.
-     De Luca, Facchinei, Kanzow, "A Semismooth Equation Approach to the
+.  * - De Luca, Facchinei, Kanzow, "A Semismooth Equation Approach to the
        Solution of Nonlinear Complementarity Problems," Mathematical
        Programming, 75, pages 407439, 1996.
-     Ferris, Kanzow, Munson, "Feasible Descent Algorithms for Mixed
+. * -  Ferris, Kanzow, Munson, "Feasible Descent Algorithms for Mixed
        Complementarity Problems," Mathematical Programming, 86,
        pages 475497, 1999.
-     Fischer, "A Special Newton type Optimization Method," Optimization,
+. * -  Fischer, "A Special Newton type Optimization Method," Optimization,
        24, 1992
-     Munson, Facchinei, Ferris, Fischer, Kanzow, "The Semismooth Algorithm
+- * -  Munson, Facchinei, Ferris, Fischer, Kanzow, "The Semismooth Algorithm
        for Large Scale Complementarity Problems," Technical Report,
        University of Wisconsin  Madison, 1999.
 */
@@ -55,18 +55,17 @@
 static PetscErrorCode TaoSetUp_ASFLS(Tao tao)
 {
   TAO_SSLS       *asls = (TAO_SSLS *)tao->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecDuplicate(tao->solution,&tao->gradient);CHKERRQ(ierr);
-  ierr = VecDuplicate(tao->solution,&tao->stepdirection);CHKERRQ(ierr);
-  ierr = VecDuplicate(tao->solution,&asls->ff);CHKERRQ(ierr);
-  ierr = VecDuplicate(tao->solution,&asls->dpsi);CHKERRQ(ierr);
-  ierr = VecDuplicate(tao->solution,&asls->da);CHKERRQ(ierr);
-  ierr = VecDuplicate(tao->solution,&asls->db);CHKERRQ(ierr);
-  ierr = VecDuplicate(tao->solution,&asls->t1);CHKERRQ(ierr);
-  ierr = VecDuplicate(tao->solution,&asls->t2);CHKERRQ(ierr);
-  ierr = VecDuplicate(tao->solution, &asls->w);CHKERRQ(ierr);
+  PetscCall(VecDuplicate(tao->solution,&tao->gradient));
+  PetscCall(VecDuplicate(tao->solution,&tao->stepdirection));
+  PetscCall(VecDuplicate(tao->solution,&asls->ff));
+  PetscCall(VecDuplicate(tao->solution,&asls->dpsi));
+  PetscCall(VecDuplicate(tao->solution,&asls->da));
+  PetscCall(VecDuplicate(tao->solution,&asls->db));
+  PetscCall(VecDuplicate(tao->solution,&asls->t1));
+  PetscCall(VecDuplicate(tao->solution,&asls->t2));
+  PetscCall(VecDuplicate(tao->solution, &asls->w));
   asls->fixed = NULL;
   asls->free = NULL;
   asls->J_sub = NULL;
@@ -82,46 +81,44 @@ static PetscErrorCode Tao_ASLS_FunctionGradient(TaoLineSearch ls, Vec X, PetscRe
 {
   Tao            tao = (Tao)ptr;
   TAO_SSLS       *asls = (TAO_SSLS *)tao->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = TaoComputeConstraints(tao, X, tao->constraints);CHKERRQ(ierr);
-  ierr = VecFischer(X,tao->constraints,tao->XL,tao->XU,asls->ff);CHKERRQ(ierr);
-  ierr = VecNorm(asls->ff,NORM_2,&asls->merit);CHKERRQ(ierr);
+  PetscCall(TaoComputeConstraints(tao, X, tao->constraints));
+  PetscCall(VecFischer(X,tao->constraints,tao->XL,tao->XU,asls->ff));
+  PetscCall(VecNorm(asls->ff,NORM_2,&asls->merit));
   *fcn = 0.5*asls->merit*asls->merit;
-  ierr = TaoComputeJacobian(tao,tao->solution,tao->jacobian,tao->jacobian_pre);CHKERRQ(ierr);
+  PetscCall(TaoComputeJacobian(tao,tao->solution,tao->jacobian,tao->jacobian_pre));
 
-  ierr = MatDFischer(tao->jacobian, tao->solution, tao->constraints,tao->XL, tao->XU, asls->t1, asls->t2,asls->da, asls->db);CHKERRQ(ierr);
-  ierr = VecPointwiseMult(asls->t1, asls->ff, asls->db);CHKERRQ(ierr);
-  ierr = MatMultTranspose(tao->jacobian,asls->t1,G);CHKERRQ(ierr);
-  ierr = VecPointwiseMult(asls->t1, asls->ff, asls->da);CHKERRQ(ierr);
-  ierr = VecAXPY(G,1.0,asls->t1);CHKERRQ(ierr);
+  PetscCall(MatDFischer(tao->jacobian, tao->solution, tao->constraints,tao->XL, tao->XU, asls->t1, asls->t2,asls->da, asls->db));
+  PetscCall(VecPointwiseMult(asls->t1, asls->ff, asls->db));
+  PetscCall(MatMultTranspose(tao->jacobian,asls->t1,G));
+  PetscCall(VecPointwiseMult(asls->t1, asls->ff, asls->da));
+  PetscCall(VecAXPY(G,1.0,asls->t1));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode TaoDestroy_ASFLS(Tao tao)
 {
   TAO_SSLS       *ssls = (TAO_SSLS *)tao->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecDestroy(&ssls->ff);CHKERRQ(ierr);
-  ierr = VecDestroy(&ssls->dpsi);CHKERRQ(ierr);
-  ierr = VecDestroy(&ssls->da);CHKERRQ(ierr);
-  ierr = VecDestroy(&ssls->db);CHKERRQ(ierr);
-  ierr = VecDestroy(&ssls->w);CHKERRQ(ierr);
-  ierr = VecDestroy(&ssls->t1);CHKERRQ(ierr);
-  ierr = VecDestroy(&ssls->t2);CHKERRQ(ierr);
-  ierr = VecDestroy(&ssls->r1);CHKERRQ(ierr);
-  ierr = VecDestroy(&ssls->r2);CHKERRQ(ierr);
-  ierr = VecDestroy(&ssls->r3);CHKERRQ(ierr);
-  ierr = VecDestroy(&ssls->dxfree);CHKERRQ(ierr);
-  ierr = MatDestroy(&ssls->J_sub);CHKERRQ(ierr);
-  ierr = MatDestroy(&ssls->Jpre_sub);CHKERRQ(ierr);
-  ierr = ISDestroy(&ssls->fixed);CHKERRQ(ierr);
-  ierr = ISDestroy(&ssls->free);CHKERRQ(ierr);
-  ierr = PetscFree(tao->data);CHKERRQ(ierr);
-  tao->data = NULL;
+  PetscCall(VecDestroy(&ssls->ff));
+  PetscCall(VecDestroy(&ssls->dpsi));
+  PetscCall(VecDestroy(&ssls->da));
+  PetscCall(VecDestroy(&ssls->db));
+  PetscCall(VecDestroy(&ssls->w));
+  PetscCall(VecDestroy(&ssls->t1));
+  PetscCall(VecDestroy(&ssls->t2));
+  PetscCall(VecDestroy(&ssls->r1));
+  PetscCall(VecDestroy(&ssls->r2));
+  PetscCall(VecDestroy(&ssls->r3));
+  PetscCall(VecDestroy(&ssls->dxfree));
+  PetscCall(MatDestroy(&ssls->J_sub));
+  PetscCall(MatDestroy(&ssls->Jpre_sub));
+  PetscCall(ISDestroy(&ssls->fixed));
+  PetscCall(ISDestroy(&ssls->free));
+  PetscCall(KSPDestroy(&tao->ksp));
+  PetscCall(PetscFree(tao->data));
   PetscFunctionReturn(0);
 }
 
@@ -130,37 +127,36 @@ static PetscErrorCode TaoSolve_ASFLS(Tao tao)
   TAO_SSLS                     *asls = (TAO_SSLS *)tao->data;
   PetscReal                    psi,ndpsi, normd, innerd, t=0;
   PetscInt                     nf;
-  PetscErrorCode               ierr;
   TaoLineSearchConvergedReason ls_reason;
 
   PetscFunctionBegin;
   /* Assume that Setup has been called!
      Set the structure for the Jacobian and create a linear solver. */
 
-  ierr = TaoComputeVariableBounds(tao);CHKERRQ(ierr);
-  ierr = TaoLineSearchSetObjectiveAndGradientRoutine(tao->linesearch,Tao_ASLS_FunctionGradient,tao);CHKERRQ(ierr);
-  ierr = TaoLineSearchSetObjectiveRoutine(tao->linesearch,Tao_SSLS_Function,tao);CHKERRQ(ierr);
-  ierr = TaoLineSearchSetVariableBounds(tao->linesearch,tao->XL,tao->XU);CHKERRQ(ierr);
+  PetscCall(TaoComputeVariableBounds(tao));
+  PetscCall(TaoLineSearchSetObjectiveAndGradientRoutine(tao->linesearch,Tao_ASLS_FunctionGradient,tao));
+  PetscCall(TaoLineSearchSetObjectiveRoutine(tao->linesearch,Tao_SSLS_Function,tao));
+  PetscCall(TaoLineSearchSetVariableBounds(tao->linesearch,tao->XL,tao->XU));
 
-  ierr = VecMedian(tao->XL, tao->solution, tao->XU, tao->solution);CHKERRQ(ierr);
+  PetscCall(VecMedian(tao->XL, tao->solution, tao->XU, tao->solution));
 
   /* Calculate the function value and fischer function value at the
      current iterate */
-  ierr = TaoLineSearchComputeObjectiveAndGradient(tao->linesearch,tao->solution,&psi,asls->dpsi);CHKERRQ(ierr);
-  ierr = VecNorm(asls->dpsi,NORM_2,&ndpsi);CHKERRQ(ierr);
+  PetscCall(TaoLineSearchComputeObjectiveAndGradient(tao->linesearch,tao->solution,&psi,asls->dpsi));
+  PetscCall(VecNorm(asls->dpsi,NORM_2,&ndpsi));
 
   tao->reason = TAO_CONTINUE_ITERATING;
   while (1) {
     /* Check the converged criteria */
-    ierr = PetscInfo(tao,"iter %D, merit: %g, ||dpsi||: %g\n",tao->niter,(double)asls->merit,(double)ndpsi);CHKERRQ(ierr);
-    ierr = TaoLogConvergenceHistory(tao,asls->merit,ndpsi,0.0,tao->ksp_its);CHKERRQ(ierr);
-    ierr = TaoMonitor(tao,tao->niter,asls->merit,ndpsi,0.0,t);CHKERRQ(ierr);
-    ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
+    PetscCall(PetscInfo(tao,"iter %" PetscInt_FMT ", merit: %g, ||dpsi||: %g\n",tao->niter,(double)asls->merit,(double)ndpsi));
+    PetscCall(TaoLogConvergenceHistory(tao,asls->merit,ndpsi,0.0,tao->ksp_its));
+    PetscCall(TaoMonitor(tao,tao->niter,asls->merit,ndpsi,0.0,t));
+    PetscCall((*tao->ops->convergencetest)(tao,tao->cnvP));
     if (TAO_CONTINUE_ITERATING != tao->reason) break;
 
     /* Call general purpose update function */
     if (tao->ops->update) {
-      ierr = (*tao->ops->update)(tao, tao->niter, tao->user_update);CHKERRQ(ierr);
+      PetscCall((*tao->ops->update)(tao, tao->niter, tao->user_update));
     }
     tao->niter++;
 
@@ -186,38 +182,38 @@ static PetscErrorCode TaoSolve_ASFLS(Tao tao)
        No one rule is guaranteed to work in all cases.  The following
        definition is based on the norm of the Jacobian matrix.  If the
        norm is large, the tolerance becomes smaller. */
-    ierr = MatNorm(tao->jacobian,NORM_1,&asls->identifier);CHKERRQ(ierr);
+    PetscCall(MatNorm(tao->jacobian,NORM_1,&asls->identifier));
     asls->identifier = PetscMin(asls->merit, 1e-2) / (1 + asls->identifier);
 
-    ierr = VecSet(asls->t1,-asls->identifier);CHKERRQ(ierr);
-    ierr = VecSet(asls->t2, asls->identifier);CHKERRQ(ierr);
+    PetscCall(VecSet(asls->t1,-asls->identifier));
+    PetscCall(VecSet(asls->t2, asls->identifier));
 
-    ierr = ISDestroy(&asls->fixed);CHKERRQ(ierr);
-    ierr = ISDestroy(&asls->free);CHKERRQ(ierr);
-    ierr = VecWhichBetweenOrEqual(asls->t1, asls->db, asls->t2, &asls->fixed);CHKERRQ(ierr);
-    ierr = ISComplementVec(asls->fixed,asls->t1, &asls->free);CHKERRQ(ierr);
+    PetscCall(ISDestroy(&asls->fixed));
+    PetscCall(ISDestroy(&asls->free));
+    PetscCall(VecWhichBetweenOrEqual(asls->t1, asls->db, asls->t2, &asls->fixed));
+    PetscCall(ISComplementVec(asls->fixed,asls->t1, &asls->free));
 
-    ierr = ISGetSize(asls->fixed,&nf);CHKERRQ(ierr);
-    ierr = PetscInfo(tao,"Number of fixed variables: %D\n", nf);CHKERRQ(ierr);
+    PetscCall(ISGetSize(asls->fixed,&nf));
+    PetscCall(PetscInfo(tao,"Number of fixed variables: %" PetscInt_FMT "\n", nf));
 
     /* We now have our partition.  Now calculate the direction in the
        fixed variable space. */
-    ierr = TaoVecGetSubVec(asls->ff, asls->fixed, tao->subset_type, 0.0, &asls->r1);CHKERRQ(ierr);
-    ierr = TaoVecGetSubVec(asls->da, asls->fixed, tao->subset_type, 1.0, &asls->r2);CHKERRQ(ierr);
-    ierr = VecPointwiseDivide(asls->r1,asls->r1,asls->r2);CHKERRQ(ierr);
-    ierr = VecSet(tao->stepdirection,0.0);CHKERRQ(ierr);
-    ierr = VecISAXPY(tao->stepdirection, asls->fixed, 1.0,asls->r1);CHKERRQ(ierr);
+    PetscCall(TaoVecGetSubVec(asls->ff, asls->fixed, tao->subset_type, 0.0, &asls->r1));
+    PetscCall(TaoVecGetSubVec(asls->da, asls->fixed, tao->subset_type, 1.0, &asls->r2));
+    PetscCall(VecPointwiseDivide(asls->r1,asls->r1,asls->r2));
+    PetscCall(VecSet(tao->stepdirection,0.0));
+    PetscCall(VecISAXPY(tao->stepdirection, asls->fixed, 1.0,asls->r1));
 
     /* Our direction in the Fixed Variable Set is fixed.  Calculate the
        information needed for the step in the Free Variable Set.  To
        do this, we need to know the diagonal perturbation and the
        right hand side. */
 
-    ierr = TaoVecGetSubVec(asls->da, asls->free, tao->subset_type, 0.0, &asls->r1);CHKERRQ(ierr);
-    ierr = TaoVecGetSubVec(asls->ff, asls->free, tao->subset_type, 0.0, &asls->r2);CHKERRQ(ierr);
-    ierr = TaoVecGetSubVec(asls->db, asls->free, tao->subset_type, 1.0, &asls->r3);CHKERRQ(ierr);
-    ierr = VecPointwiseDivide(asls->r1,asls->r1, asls->r3);CHKERRQ(ierr);
-    ierr = VecPointwiseDivide(asls->r2,asls->r2, asls->r3);CHKERRQ(ierr);
+    PetscCall(TaoVecGetSubVec(asls->da, asls->free, tao->subset_type, 0.0, &asls->r1));
+    PetscCall(TaoVecGetSubVec(asls->ff, asls->free, tao->subset_type, 0.0, &asls->r2));
+    PetscCall(TaoVecGetSubVec(asls->db, asls->free, tao->subset_type, 1.0, &asls->r3));
+    PetscCall(VecPointwiseDivide(asls->r1,asls->r1, asls->r3));
+    PetscCall(VecPointwiseDivide(asls->r2,asls->r2, asls->r3));
 
     /* r1 is the diagonal perturbation
        r2 is the right hand side
@@ -227,57 +223,57 @@ static PetscErrorCode TaoSolve_ASFLS(Tao tao)
        variable set:  calculate t1 = J*d, take the reduced vector
        of t1 and modify r2. */
 
-    ierr = MatMult(tao->jacobian, tao->stepdirection, asls->t1);CHKERRQ(ierr);
-    ierr = TaoVecGetSubVec(asls->t1,asls->free,tao->subset_type,0.0,&asls->r3);CHKERRQ(ierr);
-    ierr = VecAXPY(asls->r2, -1.0, asls->r3);CHKERRQ(ierr);
+    PetscCall(MatMult(tao->jacobian, tao->stepdirection, asls->t1));
+    PetscCall(TaoVecGetSubVec(asls->t1,asls->free,tao->subset_type,0.0,&asls->r3));
+    PetscCall(VecAXPY(asls->r2, -1.0, asls->r3));
 
     /* Calculate the reduced problem matrix and the direction */
-    ierr = TaoMatGetSubMat(tao->jacobian, asls->free, asls->w, tao->subset_type,&asls->J_sub);CHKERRQ(ierr);
+    PetscCall(TaoMatGetSubMat(tao->jacobian, asls->free, asls->w, tao->subset_type,&asls->J_sub));
     if (tao->jacobian != tao->jacobian_pre) {
-      ierr = TaoMatGetSubMat(tao->jacobian_pre, asls->free, asls->w, tao->subset_type, &asls->Jpre_sub);CHKERRQ(ierr);
+      PetscCall(TaoMatGetSubMat(tao->jacobian_pre, asls->free, asls->w, tao->subset_type, &asls->Jpre_sub));
     } else {
-      ierr = MatDestroy(&asls->Jpre_sub);CHKERRQ(ierr);
+      PetscCall(MatDestroy(&asls->Jpre_sub));
       asls->Jpre_sub = asls->J_sub;
-      ierr = PetscObjectReference((PetscObject)(asls->Jpre_sub));CHKERRQ(ierr);
+      PetscCall(PetscObjectReference((PetscObject)(asls->Jpre_sub)));
     }
-    ierr = MatDiagonalSet(asls->J_sub, asls->r1,ADD_VALUES);CHKERRQ(ierr);
-    ierr = TaoVecGetSubVec(tao->stepdirection, asls->free, tao->subset_type, 0.0, &asls->dxfree);CHKERRQ(ierr);
-    ierr = VecSet(asls->dxfree, 0.0);CHKERRQ(ierr);
+    PetscCall(MatDiagonalSet(asls->J_sub, asls->r1,ADD_VALUES));
+    PetscCall(TaoVecGetSubVec(tao->stepdirection, asls->free, tao->subset_type, 0.0, &asls->dxfree));
+    PetscCall(VecSet(asls->dxfree, 0.0));
 
     /* Calculate the reduced direction.  (Really negative of Newton
        direction.  Therefore, rest of the code uses -d.) */
-    ierr = KSPReset(tao->ksp);CHKERRQ(ierr);
-    ierr = KSPSetOperators(tao->ksp, asls->J_sub, asls->Jpre_sub);CHKERRQ(ierr);
-    ierr = KSPSolve(tao->ksp, asls->r2, asls->dxfree);CHKERRQ(ierr);
-    ierr = KSPGetIterationNumber(tao->ksp,&tao->ksp_its);CHKERRQ(ierr);
+    PetscCall(KSPReset(tao->ksp));
+    PetscCall(KSPSetOperators(tao->ksp, asls->J_sub, asls->Jpre_sub));
+    PetscCall(KSPSolve(tao->ksp, asls->r2, asls->dxfree));
+    PetscCall(KSPGetIterationNumber(tao->ksp,&tao->ksp_its));
     tao->ksp_tot_its+=tao->ksp_its;
 
     /* Add the direction in the free variables back into the real direction. */
-    ierr = VecISAXPY(tao->stepdirection, asls->free, 1.0,asls->dxfree);CHKERRQ(ierr);
+    PetscCall(VecISAXPY(tao->stepdirection, asls->free, 1.0,asls->dxfree));
 
     /* Check the projected real direction for descent and if not, use the negative
        gradient direction. */
-    ierr = VecCopy(tao->stepdirection, asls->w);CHKERRQ(ierr);
-    ierr = VecScale(asls->w, -1.0);CHKERRQ(ierr);
-    ierr = VecBoundGradientProjection(asls->w, tao->solution, tao->XL, tao->XU, asls->w);CHKERRQ(ierr);
-    ierr = VecNorm(asls->w, NORM_2, &normd);CHKERRQ(ierr);
-    ierr = VecDot(asls->w, asls->dpsi, &innerd);CHKERRQ(ierr);
+    PetscCall(VecCopy(tao->stepdirection, asls->w));
+    PetscCall(VecScale(asls->w, -1.0));
+    PetscCall(VecBoundGradientProjection(asls->w, tao->solution, tao->XL, tao->XU, asls->w));
+    PetscCall(VecNorm(asls->w, NORM_2, &normd));
+    PetscCall(VecDot(asls->w, asls->dpsi, &innerd));
 
     if (innerd >= -asls->delta*PetscPowReal(normd, asls->rho)) {
-      ierr = PetscInfo(tao,"Gradient direction: %5.4e.\n", (double)innerd);CHKERRQ(ierr);
-      ierr = PetscInfo(tao, "Iteration %D: newton direction not descent\n", tao->niter);CHKERRQ(ierr);
-      ierr = VecCopy(asls->dpsi, tao->stepdirection);CHKERRQ(ierr);
-      ierr = VecDot(asls->dpsi, tao->stepdirection, &innerd);CHKERRQ(ierr);
+      PetscCall(PetscInfo(tao,"Gradient direction: %5.4e.\n", (double)innerd));
+      PetscCall(PetscInfo(tao, "Iteration %" PetscInt_FMT ": newton direction not descent\n", tao->niter));
+      PetscCall(VecCopy(asls->dpsi, tao->stepdirection));
+      PetscCall(VecDot(asls->dpsi, tao->stepdirection, &innerd));
     }
 
-    ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
+    PetscCall(VecScale(tao->stepdirection, -1.0));
     innerd = -innerd;
 
     /* We now have a correct descent direction.  Apply a linesearch to
        find the new iterate. */
-    ierr = TaoLineSearchSetInitialStepLength(tao->linesearch, 1.0);CHKERRQ(ierr);
-    ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &psi,asls->dpsi, tao->stepdirection, &t, &ls_reason);CHKERRQ(ierr);
-    ierr = VecNorm(asls->dpsi, NORM_2, &ndpsi);CHKERRQ(ierr);
+    PetscCall(TaoLineSearchSetInitialStepLength(tao->linesearch, 1.0));
+    PetscCall(TaoLineSearchApply(tao->linesearch, tao->solution, &psi,asls->dpsi, tao->stepdirection, &t, &ls_reason));
+    PetscCall(VecNorm(asls->dpsi, NORM_2, &ndpsi));
   }
   PetscFunctionReturn(0);
 }
@@ -296,11 +292,10 @@ M*/
 PETSC_EXTERN PetscErrorCode TaoCreate_ASFLS(Tao tao)
 {
   TAO_SSLS       *asls;
-  PetscErrorCode ierr;
   const char     *armijo_type = TAOLINESEARCHARMIJO;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(tao,&asls);CHKERRQ(ierr);
+  PetscCall(PetscNewLog(tao,&asls));
   tao->data = (void*)asls;
   tao->ops->solve = TaoSolve_ASFLS;
   tao->ops->setup = TaoSetUp_ASFLS;
@@ -323,16 +318,16 @@ PETSC_EXTERN PetscErrorCode TaoCreate_ASFLS(Tao tao)
   asls->dxfree = NULL;
   asls->identifier = 1e-5;
 
-  ierr = TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch);CHKERRQ(ierr);
-  ierr = PetscObjectIncrementTabLevel((PetscObject)tao->linesearch, (PetscObject)tao, 1);CHKERRQ(ierr);
-  ierr = TaoLineSearchSetType(tao->linesearch, armijo_type);CHKERRQ(ierr);
-  ierr = TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix);CHKERRQ(ierr);
-  ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
+  PetscCall(TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch));
+  PetscCall(PetscObjectIncrementTabLevel((PetscObject)tao->linesearch, (PetscObject)tao, 1));
+  PetscCall(TaoLineSearchSetType(tao->linesearch, armijo_type));
+  PetscCall(TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix));
+  PetscCall(TaoLineSearchSetFromOptions(tao->linesearch));
 
-  ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp);CHKERRQ(ierr);
-  ierr = PetscObjectIncrementTabLevel((PetscObject)tao->ksp, (PetscObject)tao, 1);CHKERRQ(ierr);
-  ierr = KSPSetOptionsPrefix(tao->ksp,tao->hdr.prefix);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
+  PetscCall(KSPCreate(((PetscObject)tao)->comm, &tao->ksp));
+  PetscCall(PetscObjectIncrementTabLevel((PetscObject)tao->ksp, (PetscObject)tao, 1));
+  PetscCall(KSPSetOptionsPrefix(tao->ksp,tao->hdr.prefix));
+  PetscCall(KSPSetFromOptions(tao->ksp));
 
   /* Override default settings (unless already changed) */
   if (!tao->max_it_changed) tao->max_it = 2000;

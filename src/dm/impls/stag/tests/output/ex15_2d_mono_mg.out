@@ -1,0 +1,11 @@
+  0 KSP unpreconditioned resid norm 2.061517723444e-02 true resid norm 2.061517723444e-02 ||r(i)||/||b|| 1.000000000000e+00
+  1 KSP unpreconditioned resid norm 4.842198128839e-04 true resid norm 4.842198128839e-04 ||r(i)||/||b|| 2.348851078879e-02
+  2 KSP unpreconditioned resid norm 4.498503059099e-04 true resid norm 4.498503059099e-04 ||r(i)||/||b|| 2.182131644051e-02
+  3 KSP unpreconditioned resid norm 1.003081607278e-04 true resid norm 1.003081607278e-04 ||r(i)||/||b|| 4.865743310723e-03
+  4 KSP unpreconditioned resid norm 6.383068521531e-05 true resid norm 6.383068521532e-05 ||r(i)||/||b|| 3.096295728599e-03
+  5 KSP unpreconditioned resid norm 3.903051383969e-06 true resid norm 3.903051383969e-06 ||r(i)||/||b|| 1.893290239314e-04
+  6 KSP unpreconditioned resid norm 3.269581806809e-06 true resid norm 3.269581806808e-06 ||r(i)||/||b|| 1.586007129420e-04
+  7 KSP unpreconditioned resid norm 2.163148508498e-06 true resid norm 2.163148508498e-06 ||r(i)||/||b|| 1.049299011062e-04
+  8 KSP unpreconditioned resid norm 8.750186145508e-07 true resid norm 8.750186145412e-07 ||r(i)||/||b|| 4.244535977500e-05
+  9 KSP unpreconditioned resid norm 1.350534066855e-07 true resid norm 1.350534066847e-07 ||r(i)||/||b|| 6.551163987041e-06
+Linear solve converged due to CONVERGED_RTOL iterations 9

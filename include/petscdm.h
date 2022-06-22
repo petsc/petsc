@@ -9,6 +9,8 @@
 #include <petscdstypes.h>
 #include <petscdmlabel.h>
 
+/* SUBMANSEC = DM */
+
 PETSC_EXTERN PetscErrorCode DMInitializePackage(void);
 
 PETSC_EXTERN PetscClassId DM_CLASSID;
@@ -21,7 +23,7 @@ PETSC_EXTERN PetscClassId DMLABEL_CLASSID;
 
    Level: beginner
 
-.seealso: DMSetType(), DM
+.seealso: `DMSetType()`, `DM`
 J*/
 typedef const char* DMType;
 #define DMDA        "da"
@@ -73,6 +75,7 @@ PETSC_EXTERN PetscErrorCode DMCreateFieldIS(DM,PetscInt*,char***,IS**);
 PETSC_EXTERN PetscErrorCode DMGetBlockSize(DM,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMCreateColoring(DM,ISColoringType,ISColoring*);
 PETSC_EXTERN PetscErrorCode DMCreateMatrix(DM,Mat*);
+PETSC_EXTERN PetscErrorCode DMSetMatrixPreallocateSkip(DM,PetscBool);
 PETSC_EXTERN PetscErrorCode DMSetMatrixPreallocateOnly(DM,PetscBool);
 PETSC_EXTERN PetscErrorCode DMSetMatrixStructureOnly(DM,PetscBool);
 PETSC_EXTERN PetscErrorCode DMCreateInterpolation(DM,DM,Mat*,Vec*);
@@ -238,8 +241,8 @@ PETSC_EXTERN PetscErrorCode DMSetPointSF(DM, PetscSF);
 PETSC_EXTERN PetscErrorCode DMGetNaturalSF(DM, PetscSF *);
 PETSC_EXTERN PetscErrorCode DMSetNaturalSF(DM, PetscSF);
 
-PETSC_EXTERN PetscErrorCode DMGetDefaultConstraints(DM, PetscSection *, Mat *);
-PETSC_EXTERN PetscErrorCode DMSetDefaultConstraints(DM, PetscSection, Mat);
+PETSC_EXTERN PetscErrorCode DMGetDefaultConstraints(DM, PetscSection *, Mat *, Vec *);
+PETSC_EXTERN PetscErrorCode DMSetDefaultConstraints(DM, PetscSection, Mat, Vec);
 
 PETSC_EXTERN PetscErrorCode DMGetOutputDM(DM, DM *);
 PETSC_EXTERN PetscErrorCode DMGetOutputSequenceNumber(DM, PetscInt *, PetscReal *);
@@ -268,15 +271,16 @@ PETSC_EXTERN PetscErrorCode DMSetRegionDS(DM, DMLabel, IS, PetscDS);
 PETSC_EXTERN PetscErrorCode DMGetRegionNumDS(DM, PetscInt, DMLabel *, IS *, PetscDS *);
 PETSC_EXTERN PetscErrorCode DMSetRegionNumDS(DM, PetscInt, DMLabel, IS, PetscDS);
 PETSC_EXTERN PetscErrorCode DMFindRegionNum(DM, PetscDS, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMCreateFEDefault(DM, PetscInt, const char[], PetscInt, PetscFE *);
 PETSC_EXTERN PetscErrorCode DMCreateDS(DM);
 PETSC_EXTERN PetscErrorCode DMClearDS(DM);
 PETSC_EXTERN PetscErrorCode DMCopyDS(DM, DM);
 PETSC_EXTERN PetscErrorCode DMCopyDisc(DM, DM);
 PETSC_EXTERN PetscErrorCode DMComputeExactSolution(DM, PetscReal, Vec, Vec);
 PETSC_EXTERN PetscErrorCode DMGetNumAuxiliaryVec(DM, PetscInt *);
-PETSC_EXTERN PetscErrorCode DMGetAuxiliaryVec(DM, DMLabel, PetscInt, Vec *);
-PETSC_EXTERN PetscErrorCode DMSetAuxiliaryVec(DM, DMLabel, PetscInt, Vec);
-PETSC_EXTERN PetscErrorCode DMGetAuxiliaryLabels(DM, DMLabel[], PetscInt[]);
+PETSC_EXTERN PetscErrorCode DMGetAuxiliaryVec(DM, DMLabel, PetscInt, PetscInt, Vec *);
+PETSC_EXTERN PetscErrorCode DMSetAuxiliaryVec(DM, DMLabel, PetscInt, PetscInt, Vec);
+PETSC_EXTERN PetscErrorCode DMGetAuxiliaryLabels(DM, DMLabel[], PetscInt[], PetscInt[]);
 PETSC_EXTERN PetscErrorCode DMCopyAuxiliaryVec(DM, DM);
 
 /*MC
@@ -294,7 +298,7 @@ PETSC_EXTERN PetscErrorCode DMCopyAuxiliaryVec(DM, DM);
     coords - The point coordinates
     dof    - The number of components to interpolate
 
-.seealso: DMInterpolationCreate(), DMInterpolationEvaluate(), DMInterpolationAddPoints()
+.seealso: `DMInterpolationCreate()`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`
 M*/
 struct _DMInterpolationInfo {
   MPI_Comm   comm;

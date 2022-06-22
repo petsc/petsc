@@ -12,70 +12,69 @@ int main(int argc, char *argv[])
   PetscViewer    viewer;
   IS             is0,is1,is2;
   PetscBool      iscuda;
-  PetscErrorCode ierr;
 
-  ierr   = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,0,help));
   comm   = PETSC_COMM_WORLD;
   viewer = PETSC_VIEWER_STDOUT_WORLD;
-  ierr   = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
-  ierr   = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_size(comm,&size));
+  PetscCallMPI(MPI_Comm_rank(comm,&rank));
 
-  ierr = VecCreate(comm,&X);CHKERRQ(ierr);
-  ierr = VecSetSizes(X,10,PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(X);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(X,&rstart,&rend);CHKERRQ(ierr);
+  PetscCall(VecCreate(comm,&X));
+  PetscCall(VecSetSizes(X,10,PETSC_DETERMINE));
+  PetscCall(VecSetFromOptions(X));
+  PetscCall(VecGetOwnershipRange(X,&rstart,&rend));
 
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  PetscCall(VecGetArray(X,&x));
   for (i=0; i<rend-rstart; i++) x[i] = rstart+i;
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompareAny((PetscObject)X,&iscuda,VECSEQCUDA,VECMPICUDA,"");CHKERRQ(ierr);
+  PetscCall(VecRestoreArray(X,&x));
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)X,&iscuda,VECSEQCUDA,VECMPICUDA,""));
   if (iscuda) { /* trigger a copy of the data on the GPU */
     const PetscScalar *xx;
 
-    ierr = VecCUDAGetArrayRead(X,&xx);CHKERRQ(ierr);
-    ierr = VecCUDARestoreArrayRead(X,&xx);CHKERRQ(ierr);
+    PetscCall(VecCUDAGetArrayRead(X,&xx));
+    PetscCall(VecCUDARestoreArrayRead(X,&xx));
   }
 
-  ierr = VecView(X,viewer);CHKERRQ(ierr);
+  PetscCall(VecView(X,viewer));
 
   idxs[0] = (size - rank - 1)*10 + 5;
   idxs[1] = (size - rank - 1)*10 + 2;
   idxs[2] = (size - rank - 1)*10 + 3;
 
-  ierr = ISCreateStride(comm,(rend-rstart)/3+3*(rank>size/2),rstart,1,&is0);CHKERRQ(ierr);
-  ierr = ISComplement(is0,rstart,rend,&is1);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(comm,3,idxs,PETSC_USE_POINTER,&is2);CHKERRQ(ierr);
+  PetscCall(ISCreateStride(comm,(rend-rstart)/3+3*(rank>size/2),rstart,1,&is0));
+  PetscCall(ISComplement(is0,rstart,rend,&is1));
+  PetscCall(ISCreateGeneral(comm,3,idxs,PETSC_USE_POINTER,&is2));
 
-  ierr = ISView(is0,viewer);CHKERRQ(ierr);
-  ierr = ISView(is1,viewer);CHKERRQ(ierr);
-  ierr = ISView(is2,viewer);CHKERRQ(ierr);
+  PetscCall(ISView(is0,viewer));
+  PetscCall(ISView(is1,viewer));
+  PetscCall(ISView(is2,viewer));
 
-  ierr = VecGetSubVector(X,is0,&Y);CHKERRQ(ierr);
-  ierr = VecGetSubVector(X,is1,&Z);CHKERRQ(ierr);
-  ierr = VecGetSubVector(X,is2,&W);CHKERRQ(ierr);
-  ierr = VecView(Y,viewer);CHKERRQ(ierr);
-  ierr = VecView(Z,viewer);CHKERRQ(ierr);
-  ierr = VecView(W,viewer);CHKERRQ(ierr);
-  ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
+  PetscCall(VecGetSubVector(X,is0,&Y));
+  PetscCall(VecGetSubVector(X,is1,&Z));
+  PetscCall(VecGetSubVector(X,is2,&W));
+  PetscCall(VecView(Y,viewer));
+  PetscCall(VecView(Z,viewer));
+  PetscCall(VecView(W,viewer));
+  PetscCall(VecGetArray(Y,&y));
   y[0] = 1000*(rank+1);
-  ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
-  ierr = VecGetArray(Z,&z);CHKERRQ(ierr);
+  PetscCall(VecRestoreArray(Y,&y));
+  PetscCall(VecGetArray(Z,&z));
   z[0] = -1000*(rank+1);
-  ierr = VecRestoreArray(Z,&z);CHKERRQ(ierr);
-  ierr = VecGetArray(W,&w);CHKERRQ(ierr);
+  PetscCall(VecRestoreArray(Z,&z));
+  PetscCall(VecGetArray(W,&w));
   w[0] = -10*(rank+1);
-  ierr = VecRestoreArray(W,&w);CHKERRQ(ierr);
-  ierr = VecRestoreSubVector(X,is0,&Y);CHKERRQ(ierr);
-  ierr = VecRestoreSubVector(X,is1,&Z);CHKERRQ(ierr);
-  ierr = VecRestoreSubVector(X,is2,&W);CHKERRQ(ierr);
-  ierr = VecView(X,viewer);CHKERRQ(ierr);
+  PetscCall(VecRestoreArray(W,&w));
+  PetscCall(VecRestoreSubVector(X,is0,&Y));
+  PetscCall(VecRestoreSubVector(X,is1,&Z));
+  PetscCall(VecRestoreSubVector(X,is2,&W));
+  PetscCall(VecView(X,viewer));
 
-  ierr = ISDestroy(&is0);CHKERRQ(ierr);
-  ierr = ISDestroy(&is1);CHKERRQ(ierr);
-  ierr = ISDestroy(&is2);CHKERRQ(ierr);
-  ierr = VecDestroy(&X);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(ISDestroy(&is0));
+  PetscCall(ISDestroy(&is1));
+  PetscCall(ISDestroy(&is2));
+  PetscCall(VecDestroy(&X));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

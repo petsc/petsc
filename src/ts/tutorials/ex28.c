@@ -15,21 +15,20 @@ static char help[] ="Loads a previously saved TS.";
 int main(int argc,char **argv)
 {
   TS             ts;                 /* timestepping context */
-  PetscErrorCode ierr;
   PetscViewer    viewer;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
-  ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&PetscDLLibrariesLoaded,"advection-diffusion-reaction/ex1");CHKERRQ(ierr);
-  ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"advection-diffusion-reaction/binaryoutput",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-  ierr = TSLoad(ts,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  /* ierr = PetscFPTView(0);CHKERRQ(ierr); */
-  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
-  ierr = TSSetUp(ts);CHKERRQ(ierr);
-  ierr = TSView(ts,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = TSSolve(ts,NULL);CHKERRQ(ierr);
-  ierr = TSDestroy(&ts);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCall(PetscDLLibraryAppend(PETSC_COMM_WORLD,&PetscDLLibrariesLoaded,"advection-diffusion-reaction/ex1"));
+  PetscCall(TSCreate(PETSC_COMM_WORLD,&ts));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"advection-diffusion-reaction/binaryoutput",FILE_MODE_READ,&viewer));
+  PetscCall(TSLoad(ts,viewer));
+  PetscCall(PetscViewerDestroy(&viewer));
+  /* PetscCall(PetscFPTView(0)); */
+  PetscCall(TSSetFromOptions(ts));
+  PetscCall(TSSetUp(ts));
+  PetscCall(TSView(ts,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(TSSolve(ts,NULL));
+  PetscCall(TSDestroy(&ts));
+  PetscCall(PetscFinalize());
+  return 0;
 }

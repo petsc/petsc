@@ -21,21 +21,20 @@ int handleSignal(int signum, void *ctx)
 int main(int argc, char *args[])
 {
   HandlerCtx     user;
-  PetscErrorCode ierr;
 
   user.exitHandler = 0;
 
-  ierr = PetscInitialize(&argc, &args, (char*) 0, help);if (ierr) return ierr;
-  ierr = PetscPushSignalHandler(handleSignal, &user);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc, &args, (char*) 0, help));
+  PetscCall(PetscPushSignalHandler(handleSignal, &user));
   while (!user.exitHandler) {
     if (user.signum > 0) {
-      ierr        = PetscPrintf(PETSC_COMM_SELF, "Caught signal %d\n", user.signum);CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, "Caught signal %d\n", user.signum));
       user.signum = -1;
     }
   }
-  ierr = PetscPopSignalHandler();CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscPopSignalHandler());
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

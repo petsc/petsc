@@ -3,9 +3,12 @@
 */
 #if !defined(PETSCSF_H)
 #define PETSCSF_H
+
 #include <petscsys.h>
 #include <petscsftypes.h>
 #include <petscvec.h> /* for Vec, VecScatter etc */
+
+/* SUBMANSEC = PetscSF */
 
 PETSC_EXTERN PetscClassId PETSCSF_CLASSID;
 
@@ -30,7 +33,7 @@ $  PETSCSF_PATTERN_ALLTOALL  - A graph that every rank gathers different roots f
                                create a new MPI datatype for the multiple data items, e.g., by MPI_Type_contiguous.
    Level: beginner
 
-.seealso: PetscSFSetGraph(), PetscSFSetGraphWithPattern()
+.seealso: `PetscSFSetGraph()`, `PetscSFSetGraphWithPattern()`
 E*/
 typedef enum {PETSCSF_PATTERN_GENERAL=0,PETSCSF_PATTERN_ALLGATHER,PETSCSF_PATTERN_GATHER,PETSCSF_PATTERN_ALLTOALL} PetscSFPattern;
 
@@ -43,7 +46,7 @@ $  PETSCSF_WINDOW_SYNC_ACTIVE - active model, provides most information to MPI i
 
    Level: advanced
 
-.seealso: PetscSFWindowSetSyncType(), PetscSFWindowGetSyncType()
+.seealso: `PetscSFWindowSetSyncType()`, `PetscSFWindowGetSyncType()`
 E*/
 typedef enum {PETSCSF_WINDOW_SYNC_FENCE,PETSCSF_WINDOW_SYNC_LOCK,PETSCSF_WINDOW_SYNC_ACTIVE} PetscSFWindowSyncType;
 PETSC_EXTERN const char *const PetscSFWindowSyncTypes[];
@@ -58,7 +61,7 @@ $  PETSCSF_WINDOW_FLAVOR_SHARED - Use MPI_Win_allocate_shared
 
    Level: advanced
 
-.seealso: PetscSFWindowSetFlavorType(), PetscSFWindowGetFlavorType()
+.seealso: `PetscSFWindowSetFlavorType()`, `PetscSFWindowGetFlavorType()`
 E*/
 typedef enum {PETSCSF_WINDOW_FLAVOR_CREATE,PETSCSF_WINDOW_FLAVOR_DYNAMIC,PETSCSF_WINDOW_FLAVOR_ALLOCATE,PETSCSF_WINDOW_FLAVOR_SHARED} PetscSFWindowFlavorType;
 PETSC_EXTERN const char *const PetscSFWindowFlavorTypes[];
@@ -72,7 +75,7 @@ $  PETSCSF_DUPLICATE_GRAPH - entire graph duplicated
 
    Level: beginner
 
-.seealso: PetscSFDuplicate()
+.seealso: `PetscSFDuplicate()`
 E*/
 typedef enum {PETSCSF_DUPLICATE_CONFONLY,PETSCSF_DUPLICATE_RANKS,PETSCSF_DUPLICATE_GRAPH} PetscSFDuplicateOption;
 PETSC_EXTERN const char *const PetscSFDuplicateOptions[];
@@ -98,7 +101,7 @@ PETSC_EXTERN PetscErrorCode PetscSFWindowGetFlavorType(PetscSF,PetscSFWindowFlav
 PETSC_EXTERN PetscErrorCode PetscSFWindowSetInfo(PetscSF,MPI_Info);
 PETSC_EXTERN PetscErrorCode PetscSFWindowGetInfo(PetscSF,MPI_Info*);
 PETSC_EXTERN PetscErrorCode PetscSFSetRankOrder(PetscSF,PetscBool);
-PETSC_EXTERN PetscErrorCode PetscSFSetGraph(PetscSF,PetscInt,PetscInt,const PetscInt*,PetscCopyMode,const PetscSFNode*,PetscCopyMode);
+PETSC_EXTERN PetscErrorCode PetscSFSetGraph(PetscSF,PetscInt,PetscInt,PetscInt*,PetscCopyMode,PetscSFNode*,PetscCopyMode);
 PETSC_EXTERN PetscErrorCode PetscSFSetGraphWithPattern(PetscSF,PetscLayout,PetscSFPattern);
 PETSC_EXTERN PetscErrorCode PetscSFGetGraph(PetscSF,PetscInt*,PetscInt*,const PetscInt**,const PetscSFNode**);
 PETSC_EXTERN PetscErrorCode PetscSFGetLeafRange(PetscSF,PetscInt*,PetscInt*);
@@ -111,9 +114,10 @@ PETSC_EXTERN PetscErrorCode PetscSFGetLeafRanks(PetscSF,PetscInt*,const PetscMPI
 PETSC_EXTERN PetscErrorCode PetscSFGetGroups(PetscSF,MPI_Group*,MPI_Group*);
 PETSC_EXTERN PetscErrorCode PetscSFGetMultiSF(PetscSF,PetscSF*);
 PETSC_EXTERN PetscErrorCode PetscSFCreateInverseSF(PetscSF,PetscSF*);
+PETSC_EXTERN PetscErrorCode PetscSFConcatenate(MPI_Comm,PetscInt,PetscSF[],PetscBool,PetscInt[],PetscSF*);
 
 /* Build PetscSF from PetscLayout */
-PETSC_EXTERN PetscErrorCode PetscSFSetGraphLayout(PetscSF,PetscLayout,PetscInt,const PetscInt*,PetscCopyMode,const PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscSFSetGraphLayout(PetscSF,PetscLayout,PetscInt,PetscInt*,PetscCopyMode,const PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscSFCreateFromLayouts(PetscLayout,PetscLayout,PetscSF*);
 PETSC_DEPRECATED_FUNCTION("Use PetscSFCreateFromLayouts (since v3.15)")
 static inline PetscErrorCode PetscLayoutsCreateSF(PetscLayout rmap, PetscLayout lmap, PetscSF* sf) { return PetscSFCreateFromLayouts(rmap, lmap, sf); }

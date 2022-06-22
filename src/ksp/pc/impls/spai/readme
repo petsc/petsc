@@ -1,9 +1,9 @@
 
-   This directory src/contrib/spai contains code to interface
+   This directory code to interface
 PETSc to the Sparse Approximate Inverse Preconditioner (SPAI)
-implemented by Steven Bernard and available at 
+implemented by Steven Bernard and available at
 
      http://www.sam.math.ethz.ch/~grote/spai/
-  
-   This contribution has not been extensively tested or optimized for 
-performance yet.
+
+   This contribution has not been extensively tested or optimized for
+performance.

@@ -4,71 +4,70 @@ static char help[] = "Tests VecPlaceArray() and VecReciprocal().\n\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       n=5,bs;
   PetscBool      iscuda,iskokkos,iship;
   Vec            x,x1,x2,x3;
   PetscScalar    *px;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* create vector of length 2*n */
-  ierr = VecCreate(PETSC_COMM_SELF,&x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,3*n,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
+  PetscCall(VecCreate(PETSC_COMM_SELF,&x));
+  PetscCall(VecSetSizes(x,3*n,PETSC_DECIDE));
+  PetscCall(VecSetFromOptions(x));
 
   /* create two vectors of length n without array */
-  ierr = PetscObjectTypeCompare((PetscObject)x,VECSEQCUDA,&iscuda);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)x,VECSEQKOKKOS,&iskokkos);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)x,VECSEQHIP,&iship);CHKERRQ(ierr);
-  ierr = VecGetBlockSize(x,&bs);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)x,VECSEQCUDA,&iscuda));
+  PetscCall(PetscObjectTypeCompare((PetscObject)x,VECSEQKOKKOS,&iskokkos));
+  PetscCall(PetscObjectTypeCompare((PetscObject)x,VECSEQHIP,&iship));
+  PetscCall(VecGetBlockSize(x,&bs));
   if (iscuda) {
 #if defined(PETSC_HAVE_CUDA)
-    ierr = VecCreateSeqCUDAWithArray(PETSC_COMM_SELF,bs,n,NULL,&x1);CHKERRQ(ierr);
-    ierr = VecCreateSeqCUDAWithArray(PETSC_COMM_SELF,bs,n,NULL,&x2);CHKERRQ(ierr);
-    ierr = VecCreateSeqCUDAWithArray(PETSC_COMM_SELF,bs,n,NULL,&x3);CHKERRQ(ierr);
+    PetscCall(VecCreateSeqCUDAWithArray(PETSC_COMM_SELF,bs,n,NULL,&x1));
+    PetscCall(VecCreateSeqCUDAWithArray(PETSC_COMM_SELF,bs,n,NULL,&x2));
+    PetscCall(VecCreateSeqCUDAWithArray(PETSC_COMM_SELF,bs,n,NULL,&x3));
 #endif
   } else if (iskokkos) {
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
-    ierr = VecCreateSeqKokkosWithArray(PETSC_COMM_SELF,bs,n,NULL,&x1);CHKERRQ(ierr);
-    ierr = VecCreateSeqKokkosWithArray(PETSC_COMM_SELF,bs,n,NULL,&x2);CHKERRQ(ierr);
-    ierr = VecCreateSeqKokkosWithArray(PETSC_COMM_SELF,bs,n,NULL,&x3);CHKERRQ(ierr);
+    PetscCall(VecCreateSeqKokkosWithArray(PETSC_COMM_SELF,bs,n,NULL,&x1));
+    PetscCall(VecCreateSeqKokkosWithArray(PETSC_COMM_SELF,bs,n,NULL,&x2));
+    PetscCall(VecCreateSeqKokkosWithArray(PETSC_COMM_SELF,bs,n,NULL,&x3));
 #endif
   } else if (iship) {
 #if defined(PETSC_HAVE_HIP)
-    ierr = VecCreateSeqHIPWithArray(PETSC_COMM_SELF,bs,n,NULL,&x1);CHKERRQ(ierr);
-    ierr = VecCreateSeqHIPWithArray(PETSC_COMM_SELF,bs,n,NULL,&x2);CHKERRQ(ierr);
-    ierr = VecCreateSeqHIPWithArray(PETSC_COMM_SELF,bs,n,NULL,&x3);CHKERRQ(ierr);
+    PetscCall(VecCreateSeqHIPWithArray(PETSC_COMM_SELF,bs,n,NULL,&x1));
+    PetscCall(VecCreateSeqHIPWithArray(PETSC_COMM_SELF,bs,n,NULL,&x2));
+    PetscCall(VecCreateSeqHIPWithArray(PETSC_COMM_SELF,bs,n,NULL,&x3));
 #endif
   } else {
-    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,bs,n,NULL,&x1);CHKERRQ(ierr);
-    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,bs,n,NULL,&x2);CHKERRQ(ierr);
-    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,bs,n,NULL,&x3);CHKERRQ(ierr);
+    PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,bs,n,NULL,&x1));
+    PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,bs,n,NULL,&x2));
+    PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,bs,n,NULL,&x3));
   }
 
-  ierr = VecGetArrayWrite(x,&px);CHKERRQ(ierr);
-  ierr = VecPlaceArray(x1,px);CHKERRQ(ierr);
-  ierr = VecPlaceArray(x2,px+n);CHKERRQ(ierr);
-  ierr = VecPlaceArray(x3,px+2*n);CHKERRQ(ierr);
-  ierr = VecSet(x1,1.0);CHKERRQ(ierr);
-  ierr = VecSet(x2,0.0);CHKERRQ(ierr);
-  ierr = VecSet(x3,2.0);CHKERRQ(ierr);
-  ierr = VecResetArray(x1);CHKERRQ(ierr);
-  ierr = VecResetArray(x2);CHKERRQ(ierr);
-  ierr = VecResetArray(x3);CHKERRQ(ierr);
-  ierr = VecRestoreArrayWrite(x,&px);CHKERRQ(ierr);
-  ierr = VecDestroy(&x1);CHKERRQ(ierr);
-  ierr = VecDestroy(&x2);CHKERRQ(ierr);
-  ierr = VecDestroy(&x3);CHKERRQ(ierr);
+  PetscCall(VecGetArrayWrite(x,&px));
+  PetscCall(VecPlaceArray(x1,px));
+  PetscCall(VecPlaceArray(x2,px+n));
+  PetscCall(VecPlaceArray(x3,px+2*n));
+  PetscCall(VecSet(x1,1.0));
+  PetscCall(VecSet(x2,0.0));
+  PetscCall(VecSet(x3,2.0));
+  PetscCall(VecResetArray(x1));
+  PetscCall(VecResetArray(x2));
+  PetscCall(VecResetArray(x3));
+  PetscCall(VecRestoreArrayWrite(x,&px));
+  PetscCall(VecDestroy(&x1));
+  PetscCall(VecDestroy(&x2));
+  PetscCall(VecDestroy(&x3));
 
-  ierr = VecView(x,NULL);CHKERRQ(ierr);
-  ierr = VecReciprocal(x);CHKERRQ(ierr);
-  ierr = VecView(x,NULL);CHKERRQ(ierr);
+  PetscCall(VecView(x,NULL));
+  PetscCall(VecReciprocal(x));
+  PetscCall(VecView(x,NULL));
 
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  PetscCall(VecDestroy(&x));
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -19,125 +19,116 @@ int main(int argc,char **args)
   char               name[PETSC_MAX_PATH_LEN],type[256];
   PetscBool          breakdown = PETSC_FALSE,flg;
   KSPConvergedReason reason;
-  PetscErrorCode     ierr;
 
-  ierr = PetscInitialize(&argc,&args,NULL,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  ierr = PetscOptionsGetString(NULL,NULL,"-f",name,sizeof(name),&flg);CHKERRQ(ierr);
-  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Must provide a binary file for the matrix");
-  ierr = PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-breakdown",&breakdown,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,NULL,"-ksp_hpddm_deflation_tol",&deflation,NULL);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-  ierr = MatLoad(A,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","","");CHKERRQ(ierr);
-  ierr = PetscOptionsFList("-mat_type","Matrix type","MatSetType",MatList,deft,type,256,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&args,NULL,help));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-f",name,sizeof(name),&flg));
+  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Must provide a binary file for the matrix");
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-breakdown",&breakdown,NULL));
+  PetscCall(PetscOptionsGetReal(NULL,NULL,"-ksp_hpddm_deflation_tol",&deflation,NULL));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPSetOperators(ksp,A,A));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,&viewer));
+  PetscCall(MatLoad(A,viewer));
+  PetscCall(PetscViewerDestroy(&viewer));
+  PetscOptionsBegin(PETSC_COMM_WORLD,"","","");
+  PetscCall(PetscOptionsFList("-mat_type","Matrix type","MatSetType",MatList,deft,type,256,&flg));
+  PetscOptionsEnd();
   if (flg) {
-    ierr = PetscStrcmp(type,MATKAIJ,&flg);CHKERRQ(ierr);
+    PetscCall(PetscStrcmp(type,MATKAIJ,&flg));
     if (!flg) {
-      ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-      ierr = MatConvert(A,type,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
+      PetscCall(MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE));
+      PetscCall(MatConvert(A,type,MAT_INPLACE_MATRIX,&A));
     } else {
       if (size > 2) {
-        ierr = MatGetSize(A,&M,NULL);CHKERRQ(ierr);
-        ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
-        if (rank > 1) {
-          ierr = MatSetSizes(B,0,0,M,M);CHKERRQ(ierr);
-        } else {
-          ierr = MatSetSizes(B,rank?M-M/2:M/2,rank?M-M/2:M/2,M,M);CHKERRQ(ierr);
-        }
-        ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-        ierr = MatLoad(B,viewer);CHKERRQ(ierr);
-        ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-        ierr = MatHeaderReplace(A,&B);CHKERRQ(ierr);
+        PetscCall(MatGetSize(A,&M,NULL));
+        PetscCall(MatCreate(PETSC_COMM_WORLD,&B));
+        if (rank > 1) PetscCall(MatSetSizes(B,0,0,M,M));
+        else PetscCall(MatSetSizes(B,rank?M-M/2:M/2,rank?M-M/2:M/2,M,M));
+        PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,&viewer));
+        PetscCall(MatLoad(B,viewer));
+        PetscCall(PetscViewerDestroy(&viewer));
+        PetscCall(MatHeaderReplace(A,&B));
       }
-      ierr = PetscCalloc2(N*N,&S,N*N,&T);CHKERRQ(ierr);
+      PetscCall(PetscCalloc2(N*N,&S,N*N,&T));
       for (i=0; i<N; i++) { /* really easy problem used for testing */
         S[i*(N+1)] = 1e+6;
         T[i*(N+1)] = 1e-2;
       }
-      ierr = MatCreateKAIJ(A,N,N,S,T,&KA);CHKERRQ(ierr);
+      PetscCall(MatCreateKAIJ(A,N,N,S,T,&KA));
     }
   }
   if (!flg) {
     if (size > 4) {
       Mat B;
-      ierr = MatGetSize(A,&M,NULL);CHKERRQ(ierr);
-      ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
-      if (rank > 3) {
-        ierr = MatSetSizes(B,0,0,M,M);CHKERRQ(ierr);
-      } else {
-        ierr = MatSetSizes(B,rank == 0?M-3*(M/4):M/4,rank == 0?M-3*(M/4):M/4,M,M);CHKERRQ(ierr);
-      }
-      ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-      ierr = MatLoad(B,viewer);CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-      ierr = MatHeaderReplace(A,&B);CHKERRQ(ierr);
+      PetscCall(MatGetSize(A,&M,NULL));
+      PetscCall(MatCreate(PETSC_COMM_WORLD,&B));
+      if (rank > 3) PetscCall(MatSetSizes(B,0,0,M,M));
+      else PetscCall(MatSetSizes(B,rank == 0?M-3*(M/4):M/4,rank == 0?M-3*(M/4):M/4,M,M));
+      PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,&viewer));
+      PetscCall(MatLoad(B,viewer));
+      PetscCall(PetscViewerDestroy(&viewer));
+      PetscCall(MatHeaderReplace(A,&B));
     }
   }
-  ierr = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
-  ierr = MatCreateDense(PETSC_COMM_WORLD,m,PETSC_DECIDE,PETSC_DECIDE,N,NULL,&B);CHKERRQ(ierr);
-  ierr = MatCreateDense(PETSC_COMM_WORLD,m,PETSC_DECIDE,PETSC_DECIDE,N,NULL,&X);CHKERRQ(ierr);
-  if (!breakdown) {
-    ierr = MatSetRandom(B,NULL);CHKERRQ(ierr);
-  }
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  PetscCall(MatGetLocalSize(A,&m,NULL));
+  PetscCall(MatCreateDense(PETSC_COMM_WORLD,m,PETSC_DECIDE,PETSC_DECIDE,N,NULL,&B));
+  PetscCall(MatCreateDense(PETSC_COMM_WORLD,m,PETSC_DECIDE,PETSC_DECIDE,N,NULL,&X));
+  if (!breakdown) PetscCall(MatSetRandom(B,NULL));
+  PetscCall(KSPSetFromOptions(ksp));
   if (!flg) {
     if (!breakdown) {
-      ierr = KSPMatSolve(ksp,B,X);CHKERRQ(ierr);
-      ierr = KSPGetMatSolveBatchSize(ksp,&M);CHKERRQ(ierr);
+      PetscCall(KSPMatSolve(ksp,B,X));
+      PetscCall(KSPGetMatSolveBatchSize(ksp,&M));
       if (M != PETSC_DECIDE) {
-        ierr = KSPSetMatSolveBatchSize(ksp,PETSC_DECIDE);CHKERRQ(ierr);
-        ierr = MatZeroEntries(X);CHKERRQ(ierr);
-        ierr = KSPMatSolve(ksp,B,X);CHKERRQ(ierr);
+        PetscCall(KSPSetMatSolveBatchSize(ksp,PETSC_DECIDE));
+        PetscCall(MatZeroEntries(X));
+        PetscCall(KSPMatSolve(ksp,B,X));
       }
-      ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-      ierr = PetscObjectTypeCompare((PetscObject)pc,PCLU,&flg);CHKERRQ(ierr);
+      PetscCall(KSPGetPC(ksp,&pc));
+      PetscCall(PetscObjectTypeCompare((PetscObject)pc,PCLU,&flg));
       if (flg) {
-        ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
-        ierr = MatMatSolve(F,B,B);CHKERRQ(ierr);
-        ierr = MatAYPX(B,-1.0,X,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-        ierr = MatNorm(B,NORM_INFINITY,&norm);CHKERRQ(ierr);
-        PetscCheckFalse(norm > 100*PETSC_MACHINE_EPSILON,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"KSPMatSolve() and MatMatSolve() difference has nonzero norm %g",(double)norm);
+        PetscCall(PCFactorGetMatrix(pc,&F));
+        PetscCall(MatMatSolve(F,B,B));
+        PetscCall(MatAYPX(B,-1.0,X,SAME_NONZERO_PATTERN));
+        PetscCall(MatNorm(B,NORM_INFINITY,&norm));
+        PetscCheck(norm < 100*PETSC_MACHINE_EPSILON,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"KSPMatSolve() and MatMatSolve() difference has nonzero norm %g",(double)norm);
       }
     } else {
-      ierr = MatZeroEntries(B);CHKERRQ(ierr);
-      ierr = KSPMatSolve(ksp,B,X);CHKERRQ(ierr);
-      ierr = KSPGetConvergedReason(ksp,&reason);CHKERRQ(ierr);
-      PetscCheckFalse(reason != KSP_CONVERGED_HAPPY_BREAKDOWN,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"KSPConvergedReason() %s != KSP_CONVERGED_HAPPY_BREAKDOWN",KSPConvergedReasons[reason]);
-      ierr = MatDenseGetArrayWrite(B,&x);CHKERRQ(ierr);
+      PetscCall(MatZeroEntries(B));
+      PetscCall(KSPMatSolve(ksp,B,X));
+      PetscCall(KSPGetConvergedReason(ksp,&reason));
+      PetscCheck(reason == KSP_CONVERGED_HAPPY_BREAKDOWN,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"KSPConvergedReason() %s != KSP_CONVERGED_HAPPY_BREAKDOWN",KSPConvergedReasons[reason]);
+      PetscCall(MatDenseGetArrayWrite(B,&x));
       for (i=0; i<m*N; ++i) x[i] = 1.0;
-      ierr = MatDenseRestoreArrayWrite(B,&x);CHKERRQ(ierr);
-      ierr = KSPMatSolve(ksp,B,X);CHKERRQ(ierr);
-      ierr = KSPGetConvergedReason(ksp,&reason);CHKERRQ(ierr);
-      PetscCheckFalse(reason != KSP_DIVERGED_BREAKDOWN && deflation < 0.0,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"KSPConvergedReason() %s != KSP_DIVERGED_BREAKDOWN",KSPConvergedReasons[reason]);
+      PetscCall(MatDenseRestoreArrayWrite(B,&x));
+      PetscCall(KSPMatSolve(ksp,B,X));
+      PetscCall(KSPGetConvergedReason(ksp,&reason));
+      PetscCheck(reason == KSP_DIVERGED_BREAKDOWN || deflation >= 0.0,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"KSPConvergedReason() %s != KSP_DIVERGED_BREAKDOWN",KSPConvergedReasons[reason]);
     }
   } else {
-    ierr = KSPSetOperators(ksp,KA,KA);CHKERRQ(ierr);
-    ierr = MatGetSize(KA,&M,NULL);CHKERRQ(ierr);
-    ierr = VecCreateMPI(PETSC_COMM_WORLD,m*N,M,&cb);CHKERRQ(ierr);
-    ierr = VecCreateMPI(PETSC_COMM_WORLD,m*N,M,&cx);CHKERRQ(ierr);
-    ierr = VecSetRandom(cb,NULL);CHKERRQ(ierr);
+    PetscCall(KSPSetOperators(ksp,KA,KA));
+    PetscCall(MatGetSize(KA,&M,NULL));
+    PetscCall(VecCreateMPI(PETSC_COMM_WORLD,m*N,M,&cb));
+    PetscCall(VecCreateMPI(PETSC_COMM_WORLD,m*N,M,&cx));
+    PetscCall(VecSetRandom(cb,NULL));
     /* solving with MatKAIJ is equivalent to block solving with row-major RHS and solutions */
     /* only applies if MatKAIJGetScaledIdentity() returns true                              */
-    ierr = KSPSolve(ksp,cb,cx);CHKERRQ(ierr);
-    ierr = VecDestroy(&cx);CHKERRQ(ierr);
-    ierr = VecDestroy(&cb);CHKERRQ(ierr);
+    PetscCall(KSPSolve(ksp,cb,cx));
+    PetscCall(VecDestroy(&cx));
+    PetscCall(VecDestroy(&cb));
   }
-  ierr = MatDestroy(&X);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
-  ierr = PetscFree2(S,T);CHKERRQ(ierr);
-  ierr = MatDestroy(&KA);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(MatDestroy(&X));
+  PetscCall(MatDestroy(&B));
+  PetscCall(PetscFree2(S,T));
+  PetscCall(MatDestroy(&KA));
+  PetscCall(MatDestroy(&A));
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

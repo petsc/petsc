@@ -11,31 +11,31 @@
 10 TS dt 0.0134319 time 0.0890911
 11 TS dt 0.0134682 time 0.102523
 12 TS dt 0.0134977 time 0.115991
-13 TS dt 0.0135236 time 0.129489
-14 TS dt 0.00491532 time 0.133791
-15 TS dt 0.0100884 time 0.138707
-16 TS dt 0.013571 time 0.148795
-17 TS dt 0.0136063 time 0.162366
-18 TS dt 0.00442247 time 0.165985
-19 TS dt 0.00846809 time 0.170407
-20 TS dt 0.0135282 time 0.178875
-21 TS dt 0.0136938 time 0.192404
-22 TS dt 0.00540085 time 0.197146
-23 TS dt 0.0109811 time 0.202547
-24 TS dt 0.0137461 time 0.213528
-25 TS dt 0.0137561 time 0.227274
-26 TS dt 0.00356535 time 0.229735
-27 TS dt 0.00560121 time 0.233301
-28 TS dt 0.0108003 time 0.238902
-29 TS dt 0.0138261 time 0.249702
-30 TS dt 0.0138162 time 0.263528
-31 TS dt 0.00331016 time 0.265692
-32 TS dt 0.0049224 time 0.269002
-33 TS dt 0.00908228 time 0.273924
-34 TS dt 0.0138439 time 0.283007
-35 TS dt 0.013972 time 0.296851
-36 TS dt 0.00449515 time 0.300149
-TS Object: 1 MPI processes
+13 TS dt 0.0135238 time 0.129489
+14 TS dt 0.00492864 time 0.133807
+15 TS dt 0.0101278 time 0.138735
+16 TS dt 0.0135716 time 0.148863
+17 TS dt 0.0136056 time 0.162435
+18 TS dt 0.00439871 time 0.166038
+19 TS dt 0.00840205 time 0.170437
+20 TS dt 0.013518 time 0.178839
+21 TS dt 0.0136938 time 0.192357
+22 TS dt 0.00546476 time 0.19723
+23 TS dt 0.0109614 time 0.202694
+24 TS dt 0.0137452 time 0.213656
+25 TS dt 0.013756 time 0.227401
+26 TS dt 0.00349335 time 0.229813
+27 TS dt 0.00543395 time 0.233306
+28 TS dt 0.0103961 time 0.23874
+29 TS dt 0.0138226 time 0.249136
+30 TS dt 0.0138435 time 0.262959
+31 TS dt 0.00357575 time 0.265381
+32 TS dt 0.0055737 time 0.268957
+33 TS dt 0.010729 time 0.274531
+34 TS dt 0.0139273 time 0.28526
+35 TS dt 0.0138959 time 0.299187
+36 TS dt 0.00330856 time 0.30133
+TS Object: 1 MPI process
   type: arkimex
     ARK IMEX 3
     Stiff abscissa       ct =  0.000000  0.871733  0.600000  1.000000 
@@ -47,7 +47,7 @@ TS Object: 1 MPI processes
   maximum steps=1000
   maximum time=0.3
   using relative error tolerance of 0.0001,   using absolute error tolerance of 0.0001
-TSAdapt Object: 1 MPI processes
+TSAdapt Object: 1 MPI process
   type: basic
   safety factor 0.9
   extra safety factor after step rejection 0.5
@@ -56,19 +56,19 @@ TSAdapt Object: 1 MPI processes
   maximum allowed timestep 1e+20
   minimum allowed timestep 1e-20
   maximum solution absolute value to be ignored -1.
-SNES Object: 1 MPI processes
+SNES Object: 1 MPI process
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
   norm schedule ALWAYS
-  SNESLineSearch Object: 1 MPI processes
+  SNESLineSearch Object: 1 MPI process
     type: bt
       interpolation: cubic
       alpha=1.000000e-04
     maxstep=1.000000e+08, minlambda=1.000000e-12
     tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
     maximum iterations=40
-  KSP Object: 1 MPI processes
+  KSP Object: 1 MPI process
     type: gmres
       restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
       happy breakdown tolerance 1e-30
@@ -76,19 +76,19 @@ SNES Object: 1 MPI processes
     tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
     left preconditioning
     using PRECONDITIONED norm type for convergence test
-  PC Object: 1 MPI processes
+  PC Object: 1 MPI process
     type: mg
       type is MULTIPLICATIVE, levels=3 cycles=v
         Cycles per PCApply=1
         Not using Galerkin computed coarse grid matrices
-    Coarse grid solver -- level -------------------------------
-      KSP Object: (mg_coarse_) 1 MPI processes
+    Coarse grid solver -- level 0 -------------------------------
+      KSP Object: (mg_coarse_) 1 MPI process
         type: preonly
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
-      PC Object: (mg_coarse_) 1 MPI processes
+      PC Object: (mg_coarse_) 1 MPI process
         type: lu
           out-of-place factorization
           tolerance for zero pivot 2.22045e-14
@@ -96,25 +96,25 @@ SNES Object: 1 MPI processes
           matrix ordering: nd
           factor fill ratio given 5., needed 1.63333
             Factored matrix follows:
-              Mat Object: 1 MPI processes
+              Mat Object: (mg_coarse_) 1 MPI process
                 type: seqaij
                 rows=60, cols=60
                 package used to perform factorization: petsc
                 total: nonzeros=294, allocated nonzeros=294
                   not using I-node routines
         linear system matrix = precond matrix:
-        Mat Object: 1 MPI processes
+        Mat Object: 1 MPI process
           type: seqaij
           rows=60, cols=60
           total: nonzeros=180, allocated nonzeros=180
             not using I-node routines
     Down solver (pre-smoother) on level 1 -------------------------------
-      KSP Object: (mg_levels_1_) 1 MPI processes
+      KSP Object: (mg_levels_1_) 1 MPI process
         type: chebyshev
-          eigenvalue estimates used:  min = 0.1, max = 1.1
-          eigenvalues estimate via gmres min 1., max 1.
-          eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
-          KSP Object: (mg_levels_1_esteig_) 1 MPI processes
+          eigenvalue targets used: min 0.1, max 1.1
+          eigenvalues estimated via gmres: min 1., max 1.
+          eigenvalues estimated using gmres with transform: [0. 0.1; 0. 1.1]
+          KSP Object: (mg_levels_1_esteig_) 1 MPI process
             type: gmres
               restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
               happy breakdown tolerance 1e-30
@@ -127,23 +127,23 @@ SNES Object: 1 MPI processes
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
-      PC Object: (mg_levels_1_) 1 MPI processes
+      PC Object: (mg_levels_1_) 1 MPI process
         type: sor
           type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
         linear system matrix = precond matrix:
-        Mat Object: 1 MPI processes
+        Mat Object: 1 MPI process
           type: seqaij
           rows=120, cols=120
           total: nonzeros=360, allocated nonzeros=360
             not using I-node routines
     Up solver (post-smoother) same as down solver (pre-smoother)
     Down solver (pre-smoother) on level 2 -------------------------------
-      KSP Object: (mg_levels_2_) 1 MPI processes
+      KSP Object: (mg_levels_2_) 1 MPI process
         type: chebyshev
-          eigenvalue estimates used:  min = 0.1, max = 1.1
-          eigenvalues estimate via gmres min 1., max 1.
-          eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
-          KSP Object: (mg_levels_2_esteig_) 1 MPI processes
+          eigenvalue targets used: min 0.1, max 1.1
+          eigenvalues estimated via gmres: min 1., max 1.
+          eigenvalues estimated using gmres with transform: [0. 0.1; 0. 1.1]
+          KSP Object: (mg_levels_2_esteig_) 1 MPI process
             type: gmres
               restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
               happy breakdown tolerance 1e-30
@@ -156,18 +156,18 @@ SNES Object: 1 MPI processes
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
-      PC Object: (mg_levels_2_) 1 MPI processes
+      PC Object: (mg_levels_2_) 1 MPI process
         type: sor
           type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
         linear system matrix = precond matrix:
-        Mat Object: 1 MPI processes
+        Mat Object: 1 MPI process
           type: seqaij
           rows=240, cols=240
           total: nonzeros=720, allocated nonzeros=720
             not using I-node routines
     Up solver (post-smoother) same as down solver (pre-smoother)
     linear system matrix = precond matrix:
-    Mat Object: 1 MPI processes
+    Mat Object: 1 MPI process
       type: seqaij
       rows=240, cols=240
       total: nonzeros=720, allocated nonzeros=720

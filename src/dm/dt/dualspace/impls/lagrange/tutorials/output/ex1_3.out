@@ -1,4 +1,4 @@
-PetscDualSpace Object: Lagrange dual space 1 MPI processes
+PetscDualSpace Object: Lagrange dual space 1 MPI process
   type: lagrange
   Dual space for 2-forms (stored in dual form) with 3 components, size 12
   Continuous Lagrange dual space

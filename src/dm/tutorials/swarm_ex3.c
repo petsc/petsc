@@ -15,24 +15,23 @@ PetscErrorCode _DMLocatePoints_DMDARegular_IS(DM dm,Vec pos,IS *iscell)
   PetscInt       *cellidx;
   const PetscScalar *coor;
   PetscReal      dx,dy;
-  PetscErrorCode ierr;
   PetscMPIInt    rank;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = VecGetLocalSize(pos,&n);CHKERRQ(ierr);
-  ierr = VecGetBlockSize(pos,&bs);CHKERRQ(ierr);
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(VecGetLocalSize(pos,&n));
+  PetscCall(VecGetBlockSize(pos,&bs));
   npoints = n/bs;
 
-  ierr = PetscMalloc1(npoints,&cellidx);CHKERRQ(ierr);
-  ierr = DMGetApplicationContext(dm,&dmregular);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(dmregular,&si,&sj,NULL,&milocal,&mjlocal,NULL);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(dmregular,NULL,&mx,&my,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(npoints,&cellidx));
+  PetscCall(DMGetApplicationContext(dm,&dmregular));
+  PetscCall(DMDAGetCorners(dmregular,&si,&sj,NULL,&milocal,&mjlocal,NULL));
+  PetscCall(DMDAGetInfo(dmregular,NULL,&mx,&my,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL));
 
   dx = 2.0/((PetscReal)mx);
   dy = 2.0/((PetscReal)my);
 
-  ierr = VecGetArrayRead(pos,&coor);CHKERRQ(ierr);
+  PetscCall(VecGetArrayRead(pos,&coor));
   for (p=0; p<npoints; p++) {
     PetscReal coorx,coory;
     PetscInt  mi,mj;
@@ -55,8 +54,8 @@ PetscErrorCode _DMLocatePoints_DMDARegular_IS(DM dm,Vec pos,IS *iscell)
     if (coory < -1.0) cellidx[p] = DMLOCATEPOINT_POINT_NOT_FOUND;
     if (coory >  1.0) cellidx[p] = DMLOCATEPOINT_POINT_NOT_FOUND;
   }
-  ierr = VecRestoreArrayRead(pos,&coor);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,npoints,cellidx,PETSC_OWN_POINTER,iscell);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayRead(pos,&coor));
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF,npoints,cellidx,PETSC_OWN_POINTER,iscell));
   PetscFunctionReturn(0);
 }
 
@@ -66,38 +65,36 @@ PetscErrorCode DMLocatePoints_DMDARegular(DM dm,Vec pos,DMPointLocationType ltyp
   PetscSFNode    *cells;
   PetscInt       p,bs,npoints,nfound;
   const PetscInt *boxCells;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = _DMLocatePoints_DMDARegular_IS(dm,pos,&iscell);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(pos,&npoints);CHKERRQ(ierr);
-  ierr = VecGetBlockSize(pos,&bs);CHKERRQ(ierr);
+  PetscCall(_DMLocatePoints_DMDARegular_IS(dm,pos,&iscell));
+  PetscCall(VecGetLocalSize(pos,&npoints));
+  PetscCall(VecGetBlockSize(pos,&bs));
   npoints = npoints / bs;
 
-  ierr = PetscMalloc1(npoints, &cells);CHKERRQ(ierr);
-  ierr = ISGetIndices(iscell, &boxCells);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(npoints, &cells));
+  PetscCall(ISGetIndices(iscell, &boxCells));
 
   for (p=0; p<npoints; p++) {
     cells[p].rank  = 0;
     cells[p].index = DMLOCATEPOINT_POINT_NOT_FOUND;
     cells[p].index = boxCells[p];
   }
-  ierr = ISRestoreIndices(iscell, &boxCells);CHKERRQ(ierr);
-  ierr = ISDestroy(&iscell);CHKERRQ(ierr);
+  PetscCall(ISRestoreIndices(iscell, &boxCells));
+  PetscCall(ISDestroy(&iscell));
   nfound = npoints;
-  ierr = PetscSFSetGraph(cellSF, npoints, nfound, NULL, PETSC_OWN_POINTER, cells, PETSC_OWN_POINTER);CHKERRQ(ierr);
-  ierr = ISDestroy(&iscell);CHKERRQ(ierr);
+  PetscCall(PetscSFSetGraph(cellSF, npoints, nfound, NULL, PETSC_OWN_POINTER, cells, PETSC_OWN_POINTER));
+  PetscCall(ISDestroy(&iscell));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode DMGetNeighbors_DMDARegular(DM dm,PetscInt *nneighbors,const PetscMPIInt **neighbors)
 {
   DM             dmregular;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetApplicationContext(dm,&dmregular);CHKERRQ(ierr);
-  ierr = DMGetNeighbors(dmregular,nneighbors,neighbors);CHKERRQ(ierr);
+  PetscCall(DMGetApplicationContext(dm,&dmregular));
+  PetscCall(DMGetNeighbors(dmregular,nneighbors,neighbors));
   PetscFunctionReturn(0);
 }
 
@@ -109,21 +106,20 @@ PetscErrorCode SwarmViewGP(DM dms,const char prefix[])
   FILE           *fp;
   char           name[PETSC_MAX_PATH_LEN];
   PetscMPIInt    rank;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"%s-rank%d.gp",prefix,rank);CHKERRQ(ierr);
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"%s-rank%d.gp",prefix,rank));
   fp = fopen(name,"w");
-  PetscCheckFalse(!fp,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file %s",name);
-  ierr = DMSwarmGetLocalSize(dms,&npoints);CHKERRQ(ierr);
-  ierr = DMSwarmGetField(dms,DMSwarmPICField_coor,&bs,NULL,(void**)&array);CHKERRQ(ierr);
-  ierr = DMSwarmGetField(dms,"itag",NULL,NULL,(void**)&iarray);CHKERRQ(ierr);
+  PetscCheck(fp,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file %s",name);
+  PetscCall(DMSwarmGetLocalSize(dms,&npoints));
+  PetscCall(DMSwarmGetField(dms,DMSwarmPICField_coor,&bs,NULL,(void**)&array));
+  PetscCall(DMSwarmGetField(dms,"itag",NULL,NULL,(void**)&iarray));
   for (p=0; p<npoints; p++) {
     fprintf(fp,"%+1.4e %+1.4e %1.4e\n",array[2*p],array[2*p+1],(double)iarray[p]);
   }
-  ierr = DMSwarmRestoreField(dms,"itag",NULL,NULL,(void**)&iarray);CHKERRQ(ierr);
-  ierr = DMSwarmRestoreField(dms,DMSwarmPICField_coor,&bs,NULL,(void**)&array);CHKERRQ(ierr);
+  PetscCall(DMSwarmRestoreField(dms,"itag",NULL,NULL,(void**)&iarray));
+  PetscCall(DMSwarmRestoreField(dms,DMSwarmPICField_coor,&bs,NULL,(void**)&array));
   fclose(fp);
   PetscFunctionReturn(0);
 }
@@ -141,57 +137,57 @@ PetscErrorCode ex3_1(void)
   PetscReal      *array,dt;
   PetscInt       *iarray;
   PetscRandom    rand;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   /* Create a regularly spaced DMDA */
   mx = 40;
   overlap = 0;
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,mx,mx,PETSC_DECIDE,PETSC_DECIDE,1,overlap,NULL,NULL,&dmregular);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(dmregular);CHKERRQ(ierr);
-  ierr = DMSetUp(dmregular);CHKERRQ(ierr);
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,mx,mx,PETSC_DECIDE,PETSC_DECIDE,1,overlap,NULL,NULL,&dmregular));
+  PetscCall(DMSetFromOptions(dmregular));
+  PetscCall(DMSetUp(dmregular));
 
   dx = 2.0/((PetscReal)mx);
-  ierr = DMDASetUniformCoordinates(dmregular,-1.0+0.5*dx,1.0-0.5*dx,-1.0+0.5*dx,1.0-0.5*dx,-1.0,1.0);CHKERRQ(ierr);
+  PetscCall(DMDASetUniformCoordinates(dmregular,-1.0+0.5*dx,1.0-0.5*dx,-1.0+0.5*dx,1.0-0.5*dx,-1.0,1.0));
 
   /* Create a DMShell for point location purposes */
-  ierr = DMShellCreate(PETSC_COMM_WORLD,&dmcell);CHKERRQ(ierr);
-  ierr = DMSetApplicationContext(dmcell,dmregular);CHKERRQ(ierr);
+  PetscCall(DMShellCreate(PETSC_COMM_WORLD,&dmcell));
+  PetscCall(DMSetApplicationContext(dmcell,dmregular));
   dmcell->ops->locatepoints = DMLocatePoints_DMDARegular;
   dmcell->ops->getneighbors = DMGetNeighbors_DMDARegular;
 
   /* Create the swarm */
-  ierr = DMCreate(PETSC_COMM_WORLD,&dms);CHKERRQ(ierr);
-  ierr = DMSetType(dms,DMSWARM);CHKERRQ(ierr);
-  ierr = DMSetDimension(dms,2);CHKERRQ(ierr);
+  PetscCall(DMCreate(PETSC_COMM_WORLD,&dms));
+  PetscCall(DMSetType(dms,DMSWARM));
+  PetscCall(DMSetDimension(dms,2));
+  PetscCall(PetscObjectSetName((PetscObject) dms, "Particles"));
 
-  ierr = DMSwarmSetType(dms,DMSWARM_PIC);CHKERRQ(ierr);
-  ierr = DMSwarmSetCellDM(dms,dmcell);CHKERRQ(ierr);
+  PetscCall(DMSwarmSetType(dms,DMSWARM_PIC));
+  PetscCall(DMSwarmSetCellDM(dms,dmcell));
 
-  ierr = DMSwarmRegisterPetscDatatypeField(dms,"itag",1,PETSC_INT);CHKERRQ(ierr);
-  ierr = DMSwarmFinalizeFieldRegister(dms);CHKERRQ(ierr);
+  PetscCall(DMSwarmRegisterPetscDatatypeField(dms,"itag",1,PETSC_INT));
+  PetscCall(DMSwarmFinalizeFieldRegister(dms));
   {
     PetscInt  si,sj,milocal,mjlocal;
     const PetscScalar *LA_coors;
     Vec       coors;
     PetscInt  cnt;
 
-    ierr = DMDAGetCorners(dmregular,&si,&sj,NULL,&milocal,&mjlocal,NULL);CHKERRQ(ierr);
-    ierr = DMGetCoordinates(dmregular,&coors);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(coors,&LA_coors);CHKERRQ(ierr);
-    ierr = DMSwarmSetLocalSizes(dms,milocal*mjlocal,4);CHKERRQ(ierr);
-    ierr = DMSwarmGetLocalSize(dms,&nlocal);CHKERRQ(ierr);
-    ierr = DMSwarmGetField(dms,DMSwarmPICField_coor,&bs,NULL,(void**)&array);CHKERRQ(ierr);
+    PetscCall(DMDAGetCorners(dmregular,&si,&sj,NULL,&milocal,&mjlocal,NULL));
+    PetscCall(DMGetCoordinates(dmregular,&coors));
+    PetscCall(VecGetArrayRead(coors,&LA_coors));
+    PetscCall(DMSwarmSetLocalSizes(dms,milocal*mjlocal,4));
+    PetscCall(DMSwarmGetLocalSize(dms,&nlocal));
+    PetscCall(DMSwarmGetField(dms,DMSwarmPICField_coor,&bs,NULL,(void**)&array));
     cnt = 0;
-    ierr = PetscRandomCreate(PETSC_COMM_SELF,&rand);CHKERRQ(ierr);
-    ierr = PetscRandomSetInterval(rand,-1.0,1.0);CHKERRQ(ierr);
+    PetscCall(PetscRandomCreate(PETSC_COMM_SELF,&rand));
+    PetscCall(PetscRandomSetInterval(rand,-1.0,1.0));
     for (p=0; p<nlocal; p++) {
       PetscReal px,py,rx,ry,r2;
 
-      ierr = PetscRandomGetValueReal(rand,&rx);CHKERRQ(ierr);
-      ierr = PetscRandomGetValueReal(rand,&ry);CHKERRQ(ierr);
+      PetscCall(PetscRandomGetValueReal(rand,&rx));
+      PetscCall(PetscRandomGetValueReal(rand,&ry));
 
       px = PetscRealPart(LA_coors[2*p+0]) + 0.1*rx*dx;
       py = PetscRealPart(LA_coors[2*p+1]) + 0.1*ry*dx;
@@ -203,29 +199,29 @@ PetscErrorCode ex3_1(void)
         cnt++;
       }
     }
-    ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
-    ierr = DMSwarmRestoreField(dms,DMSwarmPICField_coor,&bs,NULL,(void**)&array);CHKERRQ(ierr);
-    ierr = VecRestoreArrayRead(coors,&LA_coors);CHKERRQ(ierr);
-    ierr = DMSwarmSetLocalSizes(dms,cnt,4);CHKERRQ(ierr);
+    PetscCall(PetscRandomDestroy(&rand));
+    PetscCall(DMSwarmRestoreField(dms,DMSwarmPICField_coor,&bs,NULL,(void**)&array));
+    PetscCall(VecRestoreArrayRead(coors,&LA_coors));
+    PetscCall(DMSwarmSetLocalSizes(dms,cnt,4));
 
-    ierr = DMSwarmGetLocalSize(dms,&nlocal);CHKERRQ(ierr);
-    ierr = DMSwarmGetField(dms,"itag",&bs,NULL,(void**)&iarray);CHKERRQ(ierr);
+    PetscCall(DMSwarmGetLocalSize(dms,&nlocal));
+    PetscCall(DMSwarmGetField(dms,"itag",&bs,NULL,(void**)&iarray));
     for (p=0; p<nlocal; p++) {
       iarray[p] = (PetscInt)rank;
     }
-    ierr = DMSwarmRestoreField(dms,"itag",&bs,NULL,(void**)&iarray);CHKERRQ(ierr);
+    PetscCall(DMSwarmRestoreField(dms,"itag",&bs,NULL,(void**)&iarray));
   }
 
-  ierr = DMView(dms,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = SwarmViewGP(dms,"step0");CHKERRQ(ierr);
+  PetscCall(DMView(dms,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(SwarmViewGP(dms,"step0"));
 
   dt = 0.1;
   for (tk=1; tk<20; tk++) {
     char prefix[PETSC_MAX_PATH_LEN];
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Step %D \n",tk);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Step %" PetscInt_FMT " \n",tk));
     /* push points */
-    ierr = DMSwarmGetLocalSize(dms,&nlocal);CHKERRQ(ierr);
-    ierr = DMSwarmGetField(dms,DMSwarmPICField_coor,&bs,NULL,(void**)&array);CHKERRQ(ierr);
+    PetscCall(DMSwarmGetLocalSize(dms,&nlocal));
+    PetscCall(DMSwarmGetField(dms,DMSwarmPICField_coor,&bs,NULL,(void**)&array));
     for (p=0; p<nlocal; p++) {
       PetscReal cx,cy,vx,vy;
 
@@ -237,29 +233,28 @@ PetscErrorCode ex3_1(void)
       array[2*p  ] += dt * vx;
       array[2*p+1] += dt * vy;
     }
-    ierr = DMSwarmRestoreField(dms,DMSwarmPICField_coor,&bs,NULL,(void**)&array);CHKERRQ(ierr);
+    PetscCall(DMSwarmRestoreField(dms,DMSwarmPICField_coor,&bs,NULL,(void**)&array));
 
     /* migrate points */
-    ierr = DMSwarmMigrate(dms,PETSC_TRUE);CHKERRQ(ierr);
+    PetscCall(DMSwarmMigrate(dms,PETSC_TRUE));
     /* view points */
-    ierr = PetscSNPrintf(prefix,PETSC_MAX_PATH_LEN-1,"step%d",tk);CHKERRQ(ierr);
+    PetscCall(PetscSNPrintf(prefix,PETSC_MAX_PATH_LEN-1,"step%" PetscInt_FMT,tk));
     /* should use the regular SwarmView() api, not one for a particular type */
-    ierr = SwarmViewGP(dms,prefix);CHKERRQ(ierr);
+    PetscCall(SwarmViewGP(dms,prefix));
   }
-  ierr = DMDestroy(&dmregular);CHKERRQ(ierr);
-  ierr = DMDestroy(&dmcell);CHKERRQ(ierr);
-  ierr = DMDestroy(&dms);CHKERRQ(ierr);
+  PetscCall(DMDestroy(&dmregular));
+  PetscCall(DMDestroy(&dmcell));
+  PetscCall(DMDestroy(&dms));
   PetscFunctionReturn(0);
 }
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = ex3_1();CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(ex3_1());
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

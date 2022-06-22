@@ -1,11 +1,8 @@
+-include ../../../../../petsckdir.mk
 
-ALL: lib
-
-CFLAGS    =
-FFLAGS    =
 SOURCEC   = unit.c
 SOURCEF   =
-SOURCEH   = unit.h
+SOURCEH   =
 LIBBASE   = libpetsctao
 MANSEC    = Tao
 SUBMANSEC = TaoLineSearch

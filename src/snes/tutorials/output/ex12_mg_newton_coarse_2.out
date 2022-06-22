@@ -1,4 +1,4 @@
-DM Object: Mesh 1 MPI processes
+DM Object: Mesh 1 MPI process
   type: plex
 Mesh in 2 dimensions:
   Number of 0-cells per rank: 4225
@@ -9547,26 +9547,26 @@ Labels:
       0 KSP none resid norm 2.543086940567e-13 true resid norm 6.780541361521e-13 ||r(i)||/||b|| 1.682682675922e+00
       1 KSP none resid norm 2.180730435923e-13 true resid norm 5.077488412583e-13 ||r(i)||/||b|| 1.260047145724e+00
   730 KSP preconditioned resid norm 9.984929210637e-12 true resid norm 4.029601931812e-13 ||r(i)||/||b|| 1.138930403962e-13
-KSP Object: 1 MPI processes
+KSP Object: 1 MPI process
   type: richardson
     damping factor=1.
   maximum iterations=10000, initial guess is zero
   tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
   left preconditioning
   using PRECONDITIONED norm type for convergence test
-PC Object: 1 MPI processes
+PC Object: 1 MPI process
   type: mg
     type is MULTIPLICATIVE, levels=3 cycles=v
       Cycles per PCApply=1
       Not using Galerkin computed coarse grid matrices
-  Coarse grid solver -- level -------------------------------
-    KSP Object: (mg_coarse_) 1 MPI processes
+  Coarse grid solver -- level 0 -------------------------------
+    KSP Object: (mg_coarse_) 1 MPI process
       type: preonly
       maximum iterations=10000, initial guess is zero
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
-    PC Object: (mg_coarse_) 1 MPI processes
+    PC Object: (mg_coarse_) 1 MPI process
       type: lu
         out-of-place factorization
         tolerance for zero pivot 2.22045e-14
@@ -9574,26 +9574,26 @@ PC Object: 1 MPI processes
         matrix ordering: nd
         factor fill ratio given 5., needed 3.98526
           Factored matrix follows:
-            Mat Object: 1 MPI processes
+            Mat Object: (mg_coarse_) 1 MPI process
               type: seqaij
               rows=341, cols=341
               package used to perform factorization: petsc
               total: nonzeros=8923, allocated nonzeros=8923
                 not using I-node routines
       linear system matrix = precond matrix:
-      Mat Object: 1 MPI processes
+      Mat Object: 1 MPI process
         type: seqaij
         rows=341, cols=341
         total: nonzeros=2239, allocated nonzeros=2239
         total number of mallocs used during MatSetValues calls=0
           not using I-node routines
   Down solver (pre-smoother) on level 1 -------------------------------
-    KSP Object: (mg_levels_1_) 1 MPI processes
+    KSP Object: (mg_levels_1_) 1 MPI process
       type: chebyshev
         eigenvalue estimates used:  min = 0.0998459, max = 1.09831
         eigenvalues estimate via gmres min 0.0124716, max 0.998459
         eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
-        KSP Object: (mg_levels_1_esteig_) 1 MPI processes
+        KSP Object: (mg_levels_1_esteig_) 1 MPI process
           type: gmres
             restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
             happy breakdown tolerance 1e-30
@@ -9606,11 +9606,11 @@ PC Object: 1 MPI processes
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
-    PC Object: (mg_levels_1_) 1 MPI processes
+    PC Object: (mg_levels_1_) 1 MPI process
       type: sor
         type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
       linear system matrix = precond matrix:
-      Mat Object: 1 MPI processes
+      Mat Object: 1 MPI process
         type: seqaij
         rows=1098, cols=1098
         total: nonzeros=7372, allocated nonzeros=7372
@@ -9618,12 +9618,12 @@ PC Object: 1 MPI processes
           not using I-node routines
   Up solver (post-smoother) same as down solver (pre-smoother)
   Down solver (pre-smoother) on level 2 -------------------------------
-    KSP Object: (mg_levels_2_) 1 MPI processes
+    KSP Object: (mg_levels_2_) 1 MPI process
       type: chebyshev
         eigenvalue estimates used:  min = 0.0998957, max = 1.09885
         eigenvalues estimate via gmres min 0.0139685, max 0.998957
         eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
-        KSP Object: (mg_levels_2_esteig_) 1 MPI processes
+        KSP Object: (mg_levels_2_esteig_) 1 MPI process
           type: gmres
             restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
             happy breakdown tolerance 1e-30
@@ -9636,11 +9636,11 @@ PC Object: 1 MPI processes
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
-    PC Object: (mg_levels_2_) 1 MPI processes
+    PC Object: (mg_levels_2_) 1 MPI process
       type: sor
         type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
       linear system matrix = precond matrix:
-      Mat Object: 1 MPI processes
+      Mat Object: 1 MPI process
         type: seqaij
         rows=4160, cols=4160
         total: nonzeros=28606, allocated nonzeros=28606
@@ -9648,7 +9648,7 @@ PC Object: 1 MPI processes
           not using I-node routines
   Up solver (post-smoother) same as down solver (pre-smoother)
   linear system matrix = precond matrix:
-  Mat Object: 1 MPI processes
+  Mat Object: 1 MPI process
     type: seqaij
     rows=4160, cols=4160
     total: nonzeros=28606, allocated nonzeros=28606

@@ -1,15 +1,5 @@
-<HTML>
-<HEAD>
-<TITLE>SNESMF Manual Pages</TITLE>
-</HEAD>
-<BODY BGCOLOR="FFFFFF">
-
-<H2> SNESMF Manual Pages
-</H2>
+# SNESMF Manual Pages
 
 The MatSNESMF routines provide a mechanism for solving nonlinear equations
 using <A HREF="PETSC_DIRdocs/manualpages/SNES/index.html">SNES</A> and "matrix-free" methods.
       
-<P>
-
-

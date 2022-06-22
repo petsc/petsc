@@ -15,25 +15,24 @@ PetscErrorCode apply(void *ctx,PetscInt n,const PetscScalar *x,PetscScalar *y)
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   DM             da;
   Vec            global;
   PF             pf;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,10,3,1,NULL,&da);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
-  ierr = PFCreate(PETSC_COMM_WORLD,1,3,&pf);CHKERRQ(ierr);
-  ierr = PFSet(pf,apply,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
-  ierr = PFApplyVec(pf,NULL,global);CHKERRQ(ierr);
-  ierr = PFDestroy(&pf);CHKERRQ(ierr);
-  ierr = VecView(global,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
-  ierr = VecDestroy(&global);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,10,3,1,NULL,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(DMCreateGlobalVector(da,&global));
+  PetscCall(PFCreate(PETSC_COMM_WORLD,1,3,&pf));
+  PetscCall(PFSet(pf,apply,NULL,NULL,NULL,NULL));
+  PetscCall(PFApplyVec(pf,NULL,global));
+  PetscCall(PFDestroy(&pf));
+  PetscCall(VecView(global,PETSC_VIEWER_DRAW_WORLD));
+  PetscCall(VecDestroy(&global));
+  PetscCall(DMDestroy(&da));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

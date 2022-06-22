@@ -19,7 +19,6 @@
 */
 PETSC_INTERN PetscErrorCode MatGetOrdering_AMD(Mat mat,MatOrderingType type,IS *row,IS *col)
 {
-  PetscErrorCode ierr;
   PetscInt       nrow,*perm;
   const PetscInt *ia,*ja;
   int            status;
@@ -32,25 +31,25 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_AMD(Mat mat,MatOrderingType type,IS *
      AMD does not require that the matrix be symmetric (it does so internally,
      at least in so far as computing orderings for A+A^T.
   */
-  ierr = MatGetRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,&nrow,&ia,&ja,&done);CHKERRQ(ierr);
-  PetscCheckFalse(!done,PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot get rows for matrix type %s",((PetscObject)mat)->type_name);
+  PetscCall(MatGetRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,&nrow,&ia,&ja,&done));
+  PetscCheck(done,PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot get rows for matrix type %s",((PetscObject)mat)->type_name);
 
   amd_AMD_defaults(Control);
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"AMD Options","Mat");CHKERRQ(ierr);
+  PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"AMD Options","Mat");
   /*
     We have to use temporary values here because AMD always uses double, even though PetscReal may be single
   */
   val  = (PetscReal)Control[AMD_DENSE];
-  ierr = PetscOptionsReal("-mat_ordering_amd_dense","threshold for \"dense\" rows/columns","None",val,&val,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsReal("-mat_ordering_amd_dense","threshold for \"dense\" rows/columns","None",val,&val,NULL));
   Control[AMD_DENSE] = (double)val;
 
   tval = (PetscBool)Control[AMD_AGGRESSIVE];
-  ierr = PetscOptionsBool("-mat_ordering_amd_aggressive","use aggressive absorption","None",tval,&tval,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsBool("-mat_ordering_amd_aggressive","use aggressive absorption","None",tval,&tval,NULL));
   Control[AMD_AGGRESSIVE] = (double)tval;
 
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscOptionsEnd();
 
-  ierr   = PetscMalloc1(nrow,&perm);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(nrow,&perm));
   status = amd_AMD_order(nrow,ia,ja,perm,Control,Info);
   switch (status) {
   case AMD_OK: break;
@@ -67,10 +66,9 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_AMD(Mat mat,MatOrderingType type,IS *
   default:
     SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_LIB,"Unexpected return value");
   }
-  ierr = MatRestoreRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,NULL,&ia,&ja,&done);CHKERRQ(ierr);
+  PetscCall(MatRestoreRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,NULL,&ia,&ja,&done));
 
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,PETSC_COPY_VALUES,row);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,PETSC_OWN_POINTER,col);CHKERRQ(ierr);
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,PETSC_COPY_VALUES,row));
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,PETSC_OWN_POINTER,col));
   PetscFunctionReturn(0);
 }
-

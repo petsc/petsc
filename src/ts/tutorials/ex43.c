@@ -40,13 +40,12 @@ PetscErrorCode Solution(TS ts,PetscReal t,Vec X,void *ctx)
   UserParams     *user = (UserParams*)ctx;
   PetscReal      u,v;
   PetscScalar    *x;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   Exact(t,user->Omega,user->Xi,user->u0,user->v0,&u,&v);
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  PetscCall(VecGetArray(X,&x));
   x[0] = (PetscScalar)u;
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  PetscCall(VecRestoreArray(X,&x));
   PetscFunctionReturn(0);
 }
 
@@ -56,20 +55,19 @@ PetscErrorCode Residual1(TS ts,PetscReal t,Vec U,Vec A,Vec R,void *ctx)
   PetscReal         Omega = user->Omega;
   const PetscScalar *u,*a;
   PetscScalar       *r;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(A,&a);CHKERRQ(ierr);
-  ierr = VecGetArrayWrite(R,&r);CHKERRQ(ierr);
+  PetscCall(VecGetArrayRead(U,&u));
+  PetscCall(VecGetArrayRead(A,&a));
+  PetscCall(VecGetArrayWrite(R,&r));
 
   r[0] = a[0] + (Omega*Omega)*u[0];
 
-  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(A,&a);CHKERRQ(ierr);
-  ierr = VecRestoreArrayWrite(R,&r);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(R);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(R);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayRead(U,&u));
+  PetscCall(VecRestoreArrayRead(A,&a));
+  PetscCall(VecRestoreArrayWrite(R,&r));
+  PetscCall(VecAssemblyBegin(R));
+  PetscCall(VecAssemblyEnd(R));
   PetscFunctionReturn(0);
 }
 
@@ -78,18 +76,17 @@ PetscErrorCode Tangent1(TS ts,PetscReal t,Vec U,Vec A,PetscReal shiftA,Mat J,Mat
   UserParams     *user = (UserParams*)ctx;
   PetscReal      Omega = user->Omega;
   PetscReal      T = 0;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
 
   T = shiftA + (Omega*Omega);
 
-  ierr = MatSetValue(P,0,0,T,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(P,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd  (P,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatSetValue(P,0,0,T,INSERT_VALUES));
+  PetscCall(MatAssemblyBegin(P,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd  (P,MAT_FINAL_ASSEMBLY));
   if (J != P) {
-    ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    PetscCall(MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY));
   }
   PetscFunctionReturn(0);
 }
@@ -100,22 +97,21 @@ PetscErrorCode Residual2(TS ts,PetscReal t,Vec U,Vec V,Vec A,Vec R,void *ctx)
   PetscReal          Omega = user->Omega, Xi = user->Xi;
   const PetscScalar *u,*v,*a;
   PetscScalar       *r;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(V,&v);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(A,&a);CHKERRQ(ierr);
-  ierr = VecGetArrayWrite(R,&r);CHKERRQ(ierr);
+  PetscCall(VecGetArrayRead(U,&u));
+  PetscCall(VecGetArrayRead(V,&v));
+  PetscCall(VecGetArrayRead(A,&a));
+  PetscCall(VecGetArrayWrite(R,&r));
 
   r[0] = a[0] + (2*Xi*Omega)*v[0] + (Omega*Omega)*u[0];
 
-  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(V,&v);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(A,&a);CHKERRQ(ierr);
-  ierr = VecRestoreArrayWrite(R,&r);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(R);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(R);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayRead(U,&u));
+  PetscCall(VecRestoreArrayRead(V,&v));
+  PetscCall(VecRestoreArrayRead(A,&a));
+  PetscCall(VecRestoreArrayWrite(R,&r));
+  PetscCall(VecAssemblyBegin(R));
+  PetscCall(VecAssemblyEnd(R));
   PetscFunctionReturn(0);
 }
 
@@ -124,18 +120,17 @@ PetscErrorCode Tangent2(TS ts,PetscReal t,Vec U,Vec V,Vec A,PetscReal shiftV,Pet
   UserParams     *user = (UserParams*)ctx;
   PetscReal      Omega = user->Omega, Xi = user->Xi;
   PetscReal      T = 0;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
 
   T = shiftA + shiftV * (2*Xi*Omega) + (Omega*Omega);
 
-  ierr = MatSetValue(P,0,0,T,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(P,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd  (P,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatSetValue(P,0,0,T,INSERT_VALUES));
+  PetscCall(MatAssemblyBegin(P,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd  (P,MAT_FINAL_ASSEMBLY));
   if (J != P) {
-    ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    PetscCall(MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY));
   }
   PetscFunctionReturn(0);
 }
@@ -149,58 +144,57 @@ int main(int argc, char *argv[])
   Vec            U,V;
   PetscScalar    *u,*v;
   UserParams     user = {/*Omega=*/ 1, /*Xi=*/ 0, /*u0=*/ 1, /*,v0=*/ 0};
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  PetscCheckFalse(size > 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for sequential runs");
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Only for sequential runs");
 
-  ierr = PetscOptionsBegin(PETSC_COMM_SELF,"","ex43 options","");CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-frequency","Natual frequency",__FILE__,user.Omega,&user.Omega,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-damping","Damping coefficient",__FILE__,user.Xi,&user.Xi,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-initial_u","Initial displacement",__FILE__,user.u0,&user.u0,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-initial_v","Initial velocity",__FILE__,user.v0,&user.v0,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscOptionsBegin(PETSC_COMM_SELF,"","ex43 options","");
+  PetscCall(PetscOptionsReal("-frequency","Natual frequency",__FILE__,user.Omega,&user.Omega,NULL));
+  PetscCall(PetscOptionsReal("-damping","Damping coefficient",__FILE__,user.Xi,&user.Xi,NULL));
+  PetscCall(PetscOptionsReal("-initial_u","Initial displacement",__FILE__,user.u0,&user.u0,NULL));
+  PetscCall(PetscOptionsReal("-initial_v","Initial velocity",__FILE__,user.v0,&user.v0,NULL));
+  PetscOptionsEnd();
 
-  ierr = TSCreate(PETSC_COMM_SELF,&ts);CHKERRQ(ierr);
-  ierr = TSSetType(ts,TSALPHA2);CHKERRQ(ierr);
-  ierr = TSSetMaxTime(ts,5*(2*PETSC_PI));CHKERRQ(ierr);
-  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
-  ierr = TSSetTimeStep(ts,0.01);CHKERRQ(ierr);
+  PetscCall(TSCreate(PETSC_COMM_SELF,&ts));
+  PetscCall(TSSetType(ts,TSALPHA2));
+  PetscCall(TSSetMaxTime(ts,5*(2*PETSC_PI)));
+  PetscCall(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
+  PetscCall(TSSetTimeStep(ts,0.01));
 
-  ierr = VecCreateSeq(PETSC_COMM_SELF,1,&R);CHKERRQ(ierr);
-  ierr = VecSetUp(R);CHKERRQ(ierr);
-  ierr = MatCreateSeqDense(PETSC_COMM_SELF,1,1,NULL,&J);CHKERRQ(ierr);
-  ierr = MatSetUp(J);CHKERRQ(ierr);
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF,1,&R));
+  PetscCall(VecSetUp(R));
+  PetscCall(MatCreateSeqDense(PETSC_COMM_SELF,1,1,NULL,&J));
+  PetscCall(MatSetUp(J));
   if (user.Xi) {
-    ierr = TSSetI2Function(ts,R,Residual2,&user);CHKERRQ(ierr);
-    ierr = TSSetI2Jacobian(ts,J,J,Tangent2,&user);CHKERRQ(ierr);
+    PetscCall(TSSetI2Function(ts,R,Residual2,&user));
+    PetscCall(TSSetI2Jacobian(ts,J,J,Tangent2,&user));
   } else {
-    ierr = TSSetIFunction(ts,R,Residual1,&user);CHKERRQ(ierr);
-    ierr = TSSetIJacobian(ts,J,J,Tangent1,&user);CHKERRQ(ierr);
+    PetscCall(TSSetIFunction(ts,R,Residual1,&user));
+    PetscCall(TSSetIJacobian(ts,J,J,Tangent1,&user));
   }
-  ierr = VecDestroy(&R);CHKERRQ(ierr);
-  ierr = MatDestroy(&J);CHKERRQ(ierr);
-  ierr = TSSetSolutionFunction(ts,Solution,&user);CHKERRQ(ierr);
+  PetscCall(VecDestroy(&R));
+  PetscCall(MatDestroy(&J));
+  PetscCall(TSSetSolutionFunction(ts,Solution,&user));
 
-  ierr = VecCreateSeq(PETSC_COMM_SELF,1,&U);CHKERRQ(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,1,&V);CHKERRQ(ierr);
-  ierr = VecGetArrayWrite(U,&u);CHKERRQ(ierr);
-  ierr = VecGetArrayWrite(V,&v);CHKERRQ(ierr);
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF,1,&U));
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF,1,&V));
+  PetscCall(VecGetArrayWrite(U,&u));
+  PetscCall(VecGetArrayWrite(V,&v));
   u[0] = user.u0;
   v[0] = user.v0;
-  ierr = VecRestoreArrayWrite(U,&u);CHKERRQ(ierr);
-  ierr = VecRestoreArrayWrite(V,&v);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayWrite(U,&u));
+  PetscCall(VecRestoreArrayWrite(V,&v));
 
-  ierr = TS2SetSolution(ts,U,V);CHKERRQ(ierr);
-  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
-  ierr = TSSolve(ts,NULL);CHKERRQ(ierr);
+  PetscCall(TS2SetSolution(ts,U,V));
+  PetscCall(TSSetFromOptions(ts));
+  PetscCall(TSSolve(ts,NULL));
 
-  ierr = VecDestroy(&U);CHKERRQ(ierr);
-  ierr = VecDestroy(&V);CHKERRQ(ierr);
-  ierr = TSDestroy(&ts);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(VecDestroy(&U));
+  PetscCall(VecDestroy(&V));
+  PetscCall(TSDestroy(&ts));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

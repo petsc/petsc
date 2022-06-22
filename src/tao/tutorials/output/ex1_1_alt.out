@@ -5,7 +5,7 @@ Initial L_2 Error: 0.614213
   3 SNES Function norm 1.173509983346e-03 
   4 SNES Function norm 5.219626473263e-06 
 Final L_2 Error: 1.48402e-05
-Vec Object: solution 1 MPI processes
+Vec Object: solution 1 MPI process
   type: seq
 0.500005
 1.00004

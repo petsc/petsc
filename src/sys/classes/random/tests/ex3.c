@@ -46,35 +46,33 @@ int main(int argc, char **argv)
   size_t         n, i;
   PetscReal      lambda, p;
   PetscRandom    random;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
-
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   t     = 8;
   log2d = 7;
   log2n = 20;
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Birthday spacing test parameters", "PetscRandom");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-t",     "t, the dimension of the sample space", "ex3.c", t, &t, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-log2d", "The log of d, the number of bins per direction", "ex3.c", log2d, &log2d, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-log2n", "The log of n, the number of samples per process", "ex3.c", log2n, &log2n, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Birthday spacing test parameters", "PetscRandom");
+  PetscCall(PetscOptionsInt("-t",     "t, the dimension of the sample space", "ex3.c", t, &t, NULL));
+  PetscCall(PetscOptionsInt("-log2d", "The log of d, the number of bins per direction", "ex3.c", log2d, &log2d, NULL));
+  PetscCall(PetscOptionsInt("-log2n", "The log of n, the number of samples per process", "ex3.c", log2n, &log2n, NULL));
+  PetscOptionsEnd();
 
-  PetscCheckFalse((size_t)log2d * t > sizeof(PetscInt64) * 8 - 2,PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE, "The number of bins (2^%" PetscInt_FMT ") is too big for PetscInt64.", log2d * t);
+  PetscCheck((size_t)log2d * t <= sizeof(PetscInt64) * 8 - 2,PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE, "The number of bins (2^%" PetscInt_FMT ") is too big for PetscInt64.", log2d * t);
   d = ((PetscInt64) 1) << log2d;
   k = ((PetscInt64) 1) << (log2d * t);
-  PetscCheckFalse((size_t)log2n > sizeof(size_t) * 8 - 1,PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE, "The number of samples per process (2^%" PetscInt_FMT ") is too big for size_t.", log2n);
+  PetscCheck((size_t)log2n <= sizeof(size_t) * 8 - 1,PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE, "The number of samples per process (2^%" PetscInt_FMT ") is too big for size_t.", log2n);
   n = ((size_t) 1) << log2n;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   N    = size;
   lambda = PetscPowRealInt(2.,(3 * log2n - (2 + log2d * t)));
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Generating %zu samples (%g GB) per process in a %" PetscInt_FMT " dimensional space with %" PetscInt64_FMT " bins per dimension.\n", n, (n*1.e-9)*sizeof(PetscInt64), t, d);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Expected spacing collisions per process %g (%g total).\n", (double) lambda, (double)(N * lambda));CHKERRQ(ierr);
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&random);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(random);CHKERRQ(ierr);
-  ierr = PetscRandomSetInterval(random,0.0,1.0);CHKERRQ(ierr);
-  ierr = PetscRandomView(random,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscMalloc1(n,&X);CHKERRQ(ierr);
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Generating %zu samples (%g GB) per process in a %" PetscInt_FMT " dimensional space with %" PetscInt64_FMT " bins per dimension.\n", n, (n*1.e-9)*sizeof(PetscInt64), t, d));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Expected spacing collisions per process %g (%g total).\n", (double) lambda, (double)(N * lambda)));
+  PetscCall(PetscRandomCreate(PETSC_COMM_WORLD,&random));
+  PetscCall(PetscRandomSetFromOptions(random));
+  PetscCall(PetscRandomSetInterval(random,0.0,1.0));
+  PetscCall(PetscRandomView(random,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscMalloc1(n,&X));
   for (i = 0; i < n; i++) {
     PetscInt   j;
     PetscInt64 bin  = 0;
@@ -84,12 +82,12 @@ int main(int argc, char **argv)
       PetscReal x;
       PetscInt64 slot;
 
-      ierr = PetscRandomGetValueReal(random,&x);CHKERRQ(ierr);
+      PetscCall(PetscRandomGetValueReal(random,&x));
       /* worried about precision here */
       slot = (PetscInt64) (x * d);
       bin += mult * slot;
     }
-    PetscCheckFalse(bin >= k,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Generated point in bin %" PetscInt64_FMT ", but only %" PetscInt64_FMT " bins",bin,k);
+    PetscCheck(bin < k,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Generated point in bin %" PetscInt64_FMT ", but only %" PetscInt64_FMT " bins",bin,k);
     X[i] = bin;
   }
 
@@ -102,14 +100,14 @@ int main(int argc, char **argv)
     Y += (X[i + 1] == X[i]);
   }
 
-  ierr = MPI_Allreduce(MPI_IN_PLACE, &Y, 1, MPIU_INT, MPI_SUM, MPI_COMM_WORLD);CHKERRMPI(ierr);
-  ierr = PoissonTailProbability(N*lambda,Y,&p);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"%" PetscInt_FMT " total collisions counted: that many or more should occur with probabilty %g.\n",Y,(double)p);CHKERRQ(ierr);
+  PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &Y, 1, MPIU_INT, MPI_SUM, MPI_COMM_WORLD));
+  PetscCall(PoissonTailProbability(N*lambda,Y,&p));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%" PetscInt_FMT " total collisions counted: that many or more should occur with probabilty %g.\n",Y,(double)p));
 
-  ierr = PetscFree(X);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(&random);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFree(X));
+  PetscCall(PetscRandomDestroy(&random));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

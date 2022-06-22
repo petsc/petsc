@@ -13,83 +13,81 @@ static char help[] = "This example is intended for showing how subvectors can\n\
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode    ierr;
   PetscInt          N = 10,i;
   Vec               X,Y,F,X1,Y1,X2,Y2,F1,F2;
   PetscScalar       value,zero=0.0;
   const PetscScalar *x,*y;
   PetscScalar       *f;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* create vectors X,Y and F and set values in it*/
-  ierr = VecCreate(PETSC_COMM_SELF,&X);CHKERRQ(ierr);
-  ierr = VecSetSizes(X,N,N);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(X);CHKERRQ(ierr);
-  ierr = VecDuplicate(X,&Y);CHKERRQ(ierr);
-  ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)F,"F");CHKERRQ(ierr);
+  PetscCall(VecCreate(PETSC_COMM_SELF,&X));
+  PetscCall(VecSetSizes(X,N,N));
+  PetscCall(VecSetFromOptions(X));
+  PetscCall(VecDuplicate(X,&Y));
+  PetscCall(VecDuplicate(X,&F));
+  PetscCall(PetscObjectSetName((PetscObject)F,"F"));
   for (i=0; i < N; i++) {
     value = i;
-    ierr  = VecSetValues(X,1,&i,&value,INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(VecSetValues(X,1,&i,&value,INSERT_VALUES));
     value = 100 + i;
-    ierr  = VecSetValues(Y,1,&i,&value,INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(VecSetValues(Y,1,&i,&value,INSERT_VALUES));
   }
-  ierr = VecSet(F,zero);CHKERRQ(ierr);
+  PetscCall(VecSet(F,zero));
 
   /* Create subvectors X1,X2,Y1,Y2,F1,F2 */
-  ierr = VecCreate(PETSC_COMM_SELF,&X1);CHKERRQ(ierr);
-  ierr = VecSetSizes(X1,N/2,N/2);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(X1);CHKERRQ(ierr);
-  ierr = VecDuplicate(X1,&X2);CHKERRQ(ierr);
-  ierr = VecDuplicate(X1,&Y1);CHKERRQ(ierr);
-  ierr = VecDuplicate(X1,&Y2);CHKERRQ(ierr);
-  ierr = VecDuplicate(X1,&F1);CHKERRQ(ierr);
-  ierr = VecDuplicate(X1,&F2);CHKERRQ(ierr);
+  PetscCall(VecCreate(PETSC_COMM_SELF,&X1));
+  PetscCall(VecSetSizes(X1,N/2,N/2));
+  PetscCall(VecSetFromOptions(X1));
+  PetscCall(VecDuplicate(X1,&X2));
+  PetscCall(VecDuplicate(X1,&Y1));
+  PetscCall(VecDuplicate(X1,&Y2));
+  PetscCall(VecDuplicate(X1,&F1));
+  PetscCall(VecDuplicate(X1,&F2));
 
   /* Get array pointers for X,Y,F */
-  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(Y,&y);CHKERRQ(ierr);
-  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
+  PetscCall(VecGetArrayRead(X,&x));
+  PetscCall(VecGetArrayRead(Y,&y));
+  PetscCall(VecGetArray(F,&f));
   /* Share X,Y,F array pointers with subvectors */
-  ierr = VecPlaceArray(X1,x);CHKERRQ(ierr);
-  ierr = VecPlaceArray(X2,x+N/2);CHKERRQ(ierr);
-  ierr = VecPlaceArray(Y1,y);CHKERRQ(ierr);
-  ierr = VecPlaceArray(Y2,y+N/2);CHKERRQ(ierr);
-  ierr = VecPlaceArray(F1,f);CHKERRQ(ierr);
-  ierr = VecPlaceArray(F2,f+N/2);CHKERRQ(ierr);
+  PetscCall(VecPlaceArray(X1,x));
+  PetscCall(VecPlaceArray(X2,x+N/2));
+  PetscCall(VecPlaceArray(Y1,y));
+  PetscCall(VecPlaceArray(Y2,y+N/2));
+  PetscCall(VecPlaceArray(F1,f));
+  PetscCall(VecPlaceArray(F2,f+N/2));
 
   /* Do subvector addition */
-  ierr = VecWAXPY(F1,1.0,X1,Y1);CHKERRQ(ierr);
-  ierr = VecWAXPY(F2,1.0,X2,Y2);CHKERRQ(ierr);
+  PetscCall(VecWAXPY(F1,1.0,X1,Y1));
+  PetscCall(VecWAXPY(F2,1.0,X2,Y2));
 
   /* Reset subvectors */
-  ierr = VecResetArray(X1);CHKERRQ(ierr);
-  ierr = VecResetArray(X2);CHKERRQ(ierr);
-  ierr = VecResetArray(Y1);CHKERRQ(ierr);
-  ierr = VecResetArray(Y2);CHKERRQ(ierr);
-  ierr = VecResetArray(F1);CHKERRQ(ierr);
-  ierr = VecResetArray(F2);CHKERRQ(ierr);
+  PetscCall(VecResetArray(X1));
+  PetscCall(VecResetArray(X2));
+  PetscCall(VecResetArray(Y1));
+  PetscCall(VecResetArray(Y2));
+  PetscCall(VecResetArray(F1));
+  PetscCall(VecResetArray(F2));
 
   /* Restore X,Y,and F */
-  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(Y,&y);CHKERRQ(ierr);
-  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayRead(X,&x));
+  PetscCall(VecRestoreArrayRead(Y,&y));
+  PetscCall(VecRestoreArray(F,&f));
 
-  ierr = PetscPrintf(PETSC_COMM_SELF,"F = X + Y\n");CHKERRQ(ierr);
-  ierr = VecView(F,0);CHKERRQ(ierr);
+  PetscCall(PetscPrintf(PETSC_COMM_SELF,"F = X + Y\n"));
+  PetscCall(VecView(F,0));
   /* Destroy vectors */
-  ierr = VecDestroy(&X);CHKERRQ(ierr);
-  ierr = VecDestroy(&Y);CHKERRQ(ierr);
-  ierr = VecDestroy(&F);CHKERRQ(ierr);
-  ierr = VecDestroy(&X1);CHKERRQ(ierr);
-  ierr = VecDestroy(&Y1);CHKERRQ(ierr);
-  ierr = VecDestroy(&F1);CHKERRQ(ierr);
-  ierr = VecDestroy(&X2);CHKERRQ(ierr);
-  ierr = VecDestroy(&Y2);CHKERRQ(ierr);
-  ierr = VecDestroy(&F2);CHKERRQ(ierr);
+  PetscCall(VecDestroy(&X));
+  PetscCall(VecDestroy(&Y));
+  PetscCall(VecDestroy(&F));
+  PetscCall(VecDestroy(&X1));
+  PetscCall(VecDestroy(&Y1));
+  PetscCall(VecDestroy(&F1));
+  PetscCall(VecDestroy(&X2));
+  PetscCall(VecDestroy(&Y2));
+  PetscCall(VecDestroy(&F2));
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
-

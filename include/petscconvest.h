@@ -3,14 +3,17 @@
 */
 #if !defined(PETSCCE_H)
 #define PETSCCE_H
+
 #include <petscsnes.h>
+
+/* SUBMANSEC = SNES */
 
 /*S
   PetscConvEst - Provides an estimated convergence rate for a discretized problem
 
   Level: developer
 
-.seealso:  PetscConvEstCreate(), PetscConvEstDestroy()
+.seealso: `PetscConvEstCreate()`, `PetscConvEstDestroy()`
 S*/
 typedef struct _p_PetscConvEst *PetscConvEst;
 

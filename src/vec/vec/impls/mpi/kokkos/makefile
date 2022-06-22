@@ -1,8 +1,6 @@
+-include ../../../../../../petsckdir.mk
 #requirespackage 'PETSC_HAVE_KOKKOS_KERNELS'
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCECU =
 SOURCEKOKKOS = mpikok.kokkos.cxx
 SOURCEF  =

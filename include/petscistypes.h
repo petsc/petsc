@@ -1,12 +1,14 @@
 #if !defined(PETSCISTYPES_H)
 #define PETSCISTYPES_H
 
+/* SUBMANSEC = IS */
+
 /*S
      IS - Abstract PETSc object that allows indexing.
 
    Level: beginner
 
-.seealso:  ISCreateGeneral(), ISCreateBlock(), ISCreateStride(), ISGetIndices(), ISDestroy()
+.seealso: `ISCreateGeneral()`, `ISCreateBlock()`, `ISCreateStride()`, `ISGetIndices()`, `ISDestroy()`
 S*/
 typedef struct _p_IS* IS;
 
@@ -25,7 +27,7 @@ typedef struct _p_IS* IS;
   here for the inline function ISLocalToGlobalMappingApply() to allow it to be inlined since
   it is used so often.
 
-.seealso:  ISLocalToGlobalMappingCreate(), ISLocalToGlobalMappingApply(), ISLocalToGlobalMappingDestroy()
+.seealso: `ISLocalToGlobalMappingCreate()`, `ISLocalToGlobalMappingApply()`, `ISLocalToGlobalMappingDestroy()`
 S*/
 typedef struct _p_ISLocalToGlobalMapping* ISLocalToGlobalMapping;
 
@@ -46,7 +48,7 @@ typedef struct _p_ISLocalToGlobalMapping* ISLocalToGlobalMapping;
 
     Developer Note: this is not a PetscObject
 
-.seealso:  ISColoringCreate(), ISColoringGetIS(), ISColoringView()
+.seealso: `ISColoringCreate()`, `ISColoringGetIS()`, `ISColoringView()`
 S*/
 typedef struct _n_ISColoring* ISColoring;
 
@@ -55,7 +57,7 @@ typedef struct _n_ISColoring* ISColoring;
 
    Level: developer
 
-.seealso:  PetscLayoutCreate(), PetscLayoutDestroy()
+.seealso: `PetscLayoutCreate()`, `PetscLayoutDestroy()`
 S*/
 typedef struct _n_PetscLayout* PetscLayout;
 

@@ -21,7 +21,6 @@ extern PetscErrorCode ComputeRHSMatrix(PetscInt,PetscInt,Mat*);
 
 int main(int argc,char **args)
 {
-  PetscErrorCode ierr;
   PetscMPIInt    size;
   Vec            x,b,y,b1;
   DM             da;
@@ -33,151 +32,149 @@ int main(int argc,char **args)
   PetscReal      norm,tol = 1000*PETSC_MACHINE_EPSILON;
   PetscBool      InplaceLU=PETSC_FALSE;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only");
-  ierr = PetscOptionsGetInt(NULL,NULL,"-dof",&dof,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only");
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-dof",&dof,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
 
-  ierr = DMDACreate(PETSC_COMM_WORLD,&da);CHKERRQ(ierr);
-  ierr = DMSetDimension(da,3);CHKERRQ(ierr);
-  ierr = DMDASetBoundaryType(da,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE);CHKERRQ(ierr);
-  ierr = DMDASetStencilType(da,DMDA_STENCIL_STAR);CHKERRQ(ierr);
-  ierr = DMDASetSizes(da,M,M,M);CHKERRQ(ierr);
-  ierr = DMDASetNumProcs(da,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = DMDASetDof(da,dof);CHKERRQ(ierr);
-  ierr = DMDASetStencilWidth(da,1);CHKERRQ(ierr);
-  ierr = DMDASetOwnershipRanges(da,NULL,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMSetMatType(da,MATBAIJ);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
+  PetscCall(DMDACreate(PETSC_COMM_WORLD,&da));
+  PetscCall(DMSetDimension(da,3));
+  PetscCall(DMDASetBoundaryType(da,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE));
+  PetscCall(DMDASetStencilType(da,DMDA_STENCIL_STAR));
+  PetscCall(DMDASetSizes(da,M,M,M));
+  PetscCall(DMDASetNumProcs(da,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE));
+  PetscCall(DMDASetDof(da,dof));
+  PetscCall(DMDASetStencilWidth(da,1));
+  PetscCall(DMDASetOwnershipRanges(da,NULL,NULL,NULL));
+  PetscCall(DMSetMatType(da,MATBAIJ));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
 
-  ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(da,&b);CHKERRQ(ierr);
-  ierr = VecDuplicate(b,&y);CHKERRQ(ierr);
-  ierr = ComputeRHS(da,b);CHKERRQ(ierr);
-  ierr = VecSet(y,one);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(da,&A);CHKERRQ(ierr);
-  ierr = ComputeMatrix(da,A);CHKERRQ(ierr);
-  ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
+  PetscCall(DMCreateGlobalVector(da,&x));
+  PetscCall(DMCreateGlobalVector(da,&b));
+  PetscCall(VecDuplicate(b,&y));
+  PetscCall(ComputeRHS(da,b));
+  PetscCall(VecSet(y,one));
+  PetscCall(DMCreateMatrix(da,&A));
+  PetscCall(ComputeMatrix(da,A));
+  PetscCall(MatGetSize(A,&m,&n));
   nrhs = 2;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-nrhs",&nrhs,NULL);CHKERRQ(ierr);
-  ierr = ComputeRHSMatrix(m,nrhs,&RHS);CHKERRQ(ierr);
-  ierr = MatDuplicate(RHS,MAT_DO_NOT_COPY_VALUES,&X);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-nrhs",&nrhs,NULL));
+  PetscCall(ComputeRHSMatrix(m,nrhs,&RHS));
+  PetscCall(MatDuplicate(RHS,MAT_DO_NOT_COPY_VALUES,&X));
 
-  ierr = MatGetOrdering(A,MATORDERINGND,&perm,&iperm);CHKERRQ(ierr);
+  PetscCall(MatGetOrdering(A,MATORDERINGND,&perm,&iperm));
 
-  ierr = PetscOptionsGetBool(NULL,NULL,"-inplacelu",&InplaceLU,NULL);CHKERRQ(ierr);
-  ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-inplacelu",&InplaceLU,NULL));
+  PetscCall(MatFactorInfoInitialize(&info));
   if (!InplaceLU) {
-    ierr      = MatGetFactor(A,MATSOLVERPETSC,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
+    PetscCall(MatGetFactor(A,MATSOLVERPETSC,MAT_FACTOR_LU,&F));
     info.fill = 5.0;
-    ierr      = MatLUFactorSymbolic(F,A,perm,iperm,&info);CHKERRQ(ierr);
-    ierr      = MatLUFactorNumeric(F,A,&info);CHKERRQ(ierr);
+    PetscCall(MatLUFactorSymbolic(F,A,perm,iperm,&info));
+    PetscCall(MatLUFactorNumeric(F,A,&info));
   } else { /* Test inplace factorization */
-    ierr = MatDuplicate(A,MAT_COPY_VALUES,&F);CHKERRQ(ierr);
-    ierr = MatLUFactor(F,perm,iperm,&info);CHKERRQ(ierr);
+    PetscCall(MatDuplicate(A,MAT_COPY_VALUES,&F));
+    PetscCall(MatLUFactor(F,perm,iperm,&info));
   }
 
-  ierr = VecDuplicate(y,&b1);CHKERRQ(ierr);
+  PetscCall(VecDuplicate(y,&b1));
 
   /* MatSolve */
-  ierr = MatSolve(F,b,x);CHKERRQ(ierr);
-  ierr = MatMult(A,x,b1);CHKERRQ(ierr);
-  ierr = VecAXPY(b1,-1.0,b);CHKERRQ(ierr);
-  ierr = VecNorm(b1,NORM_2,&norm);CHKERRQ(ierr);
+  PetscCall(MatSolve(F,b,x));
+  PetscCall(MatMult(A,x,b1));
+  PetscCall(VecAXPY(b1,-1.0,b));
+  PetscCall(VecNorm(b1,NORM_2,&norm));
   if (norm > tol) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"MatSolve              : Error of norm %g\n",(double)norm);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"MatSolve              : Error of norm %g\n",(double)norm));
   }
 
   /* MatSolveTranspose */
-  ierr = MatSolveTranspose(F,b,x);CHKERRQ(ierr);
-  ierr = MatMultTranspose(A,x,b1);CHKERRQ(ierr);
-  ierr = VecAXPY(b1,-1.0,b);CHKERRQ(ierr);
-  ierr = VecNorm(b1,NORM_2,&norm);CHKERRQ(ierr);
+  PetscCall(MatSolveTranspose(F,b,x));
+  PetscCall(MatMultTranspose(A,x,b1));
+  PetscCall(VecAXPY(b1,-1.0,b));
+  PetscCall(VecNorm(b1,NORM_2,&norm));
   if (norm > tol) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"MatSolveTranspose     : Error of norm %g\n",(double)norm);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"MatSolveTranspose     : Error of norm %g\n",(double)norm));
   }
 
   /* MatSolveAdd */
-  ierr = MatSolveAdd(F,b,y,x);CHKERRQ(ierr);
-  ierr = MatMult(A,y,b1);CHKERRQ(ierr);
-  ierr = VecScale(b1,-1.0);CHKERRQ(ierr);
-  ierr = MatMultAdd(A,x,b1,b1);CHKERRQ(ierr);
-  ierr = VecAXPY(b1,-1.0,b);CHKERRQ(ierr);
-  ierr = VecNorm(b1,NORM_2,&norm);CHKERRQ(ierr);
+  PetscCall(MatSolveAdd(F,b,y,x));
+  PetscCall(MatMult(A,y,b1));
+  PetscCall(VecScale(b1,-1.0));
+  PetscCall(MatMultAdd(A,x,b1,b1));
+  PetscCall(VecAXPY(b1,-1.0,b));
+  PetscCall(VecNorm(b1,NORM_2,&norm));
   if (norm > tol) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"MatSolveAdd           : Error of norm %g\n",(double)norm);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"MatSolveAdd           : Error of norm %g\n",(double)norm));
   }
 
   /* MatSolveTransposeAdd */
-  ierr = MatSolveTransposeAdd(F,b,y,x);CHKERRQ(ierr);
-  ierr = MatMultTranspose(A,y,b1);CHKERRQ(ierr);
-  ierr = VecScale(b1,-1.0);CHKERRQ(ierr);
-  ierr = MatMultTransposeAdd(A,x,b1,b1);CHKERRQ(ierr);
-  ierr = VecAXPY(b1,-1.0,b);CHKERRQ(ierr);
-  ierr = VecNorm(b1,NORM_2,&norm);CHKERRQ(ierr);
+  PetscCall(MatSolveTransposeAdd(F,b,y,x));
+  PetscCall(MatMultTranspose(A,y,b1));
+  PetscCall(VecScale(b1,-1.0));
+  PetscCall(MatMultTransposeAdd(A,x,b1,b1));
+  PetscCall(VecAXPY(b1,-1.0,b));
+  PetscCall(VecNorm(b1,NORM_2,&norm));
   if (norm > tol) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"MatSolveTransposeAdd  : Error of norm %g\n",(double)norm);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"MatSolveTransposeAdd  : Error of norm %g\n",(double)norm));
   }
 
   /* MatMatSolve */
-  ierr = MatMatSolve(F,RHS,X);CHKERRQ(ierr);
-  ierr = MatMatMult(A,X,MAT_INITIAL_MATRIX,2.0,&C1);CHKERRQ(ierr);
-  ierr = MatAXPY(C1,-1.0,RHS,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = MatNorm(C1,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
+  PetscCall(MatMatSolve(F,RHS,X));
+  PetscCall(MatMatMult(A,X,MAT_INITIAL_MATRIX,2.0,&C1));
+  PetscCall(MatAXPY(C1,-1.0,RHS,SAME_NONZERO_PATTERN));
+  PetscCall(MatNorm(C1,NORM_FROBENIUS,&norm));
   if (norm > tol) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"MatMatSolve           : Error of norm %g\n",(double)norm);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"MatMatSolve           : Error of norm %g\n",(double)norm));
   }
 
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = VecDestroy(&b1);CHKERRQ(ierr);
-  ierr = VecDestroy(&y);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = MatDestroy(&F);CHKERRQ(ierr);
-  ierr = MatDestroy(&RHS);CHKERRQ(ierr);
-  ierr = MatDestroy(&C1);CHKERRQ(ierr);
-  ierr = MatDestroy(&X);CHKERRQ(ierr);
-  ierr = ISDestroy(&perm);CHKERRQ(ierr);
-  ierr = ISDestroy(&iperm);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&b));
+  PetscCall(VecDestroy(&b1));
+  PetscCall(VecDestroy(&y));
+  PetscCall(MatDestroy(&A));
+  PetscCall(MatDestroy(&F));
+  PetscCall(MatDestroy(&RHS));
+  PetscCall(MatDestroy(&C1));
+  PetscCall(MatDestroy(&X));
+  PetscCall(ISDestroy(&perm));
+  PetscCall(ISDestroy(&iperm));
+  PetscCall(DMDestroy(&da));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 PetscErrorCode ComputeRHS(DM da,Vec b)
 {
-  PetscErrorCode ierr;
   PetscInt       mx,my,mz;
   PetscScalar    h;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  PetscCall(DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0,0,0));
   h    = 1.0/((mx-1)*(my-1)*(mz-1));
-  ierr = VecSet(b,h);CHKERRQ(ierr);
+  PetscCall(VecSet(b,h));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode ComputeRHSMatrix(PetscInt m,PetscInt nrhs,Mat *C)
 {
-  PetscErrorCode ierr;
   PetscRandom    rand;
   Mat            RHS;
   PetscScalar    *array,rval;
   PetscInt       i,k;
 
   PetscFunctionBegin;
-  ierr = MatCreate(PETSC_COMM_WORLD,&RHS);CHKERRQ(ierr);
-  ierr = MatSetSizes(RHS,m,PETSC_DECIDE,PETSC_DECIDE,nrhs);CHKERRQ(ierr);
-  ierr = MatSetType(RHS,MATSEQDENSE);CHKERRQ(ierr);
-  ierr = MatSetUp(RHS);CHKERRQ(ierr);
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&RHS));
+  PetscCall(MatSetSizes(RHS,m,PETSC_DECIDE,PETSC_DECIDE,nrhs));
+  PetscCall(MatSetType(RHS,MATSEQDENSE));
+  PetscCall(MatSetUp(RHS));
 
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
-  ierr = MatDenseGetArray(RHS,&array);CHKERRQ(ierr);
+  PetscCall(PetscRandomCreate(PETSC_COMM_WORLD,&rand));
+  PetscCall(PetscRandomSetFromOptions(rand));
+  PetscCall(MatDenseGetArray(RHS,&array));
   for (i=0; i<m; i++) {
-    ierr     = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
+    PetscCall(PetscRandomGetValue(rand,&rval));
     array[i] = rval;
   }
   if (nrhs > 1) {
@@ -187,38 +184,37 @@ PetscErrorCode ComputeRHSMatrix(PetscInt m,PetscInt nrhs,Mat *C)
       }
     }
   }
-  ierr = MatDenseRestoreArray(RHS,&array);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(RHS,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(RHS,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatDenseRestoreArray(RHS,&array));
+  PetscCall(MatAssemblyBegin(RHS,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(RHS,MAT_FINAL_ASSEMBLY));
   *C   = RHS;
-  ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
+  PetscCall(PetscRandomDestroy(&rand));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode ComputeMatrix(DM da,Mat B)
 {
-  PetscErrorCode ierr;
   PetscInt       i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs,dof,k1,k2,k3;
   PetscScalar    *v,*v_neighbor,Hx,Hy,Hz,HxHydHz,HyHzdHx,HxHzdHy,r1,r2;
   MatStencil     row,col;
   PetscRandom    rand;
 
   PetscFunctionBegin;
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
-  ierr = PetscRandomSetSeed(rand,1);CHKERRQ(ierr);
-  ierr = PetscRandomSetInterval(rand,-.001,.001);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
+  PetscCall(PetscRandomCreate(PETSC_COMM_WORLD,&rand));
+  PetscCall(PetscRandomSetSeed(rand,1));
+  PetscCall(PetscRandomSetInterval(rand,-.001,.001));
+  PetscCall(PetscRandomSetFromOptions(rand));
 
-  ierr = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
+  PetscCall(DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,&dof,0,0,0,0,0));
   /* For simplicity, this example only works on mx=my=mz */
-  PetscCheckFalse(mx != my || mx != mz,PETSC_COMM_SELF,PETSC_ERR_SUP,"This example only works with mx %" PetscInt_FMT " = my %" PetscInt_FMT " = mz %" PetscInt_FMT,mx,my,mz);
+  PetscCheck(mx == my && mx == mz,PETSC_COMM_SELF,PETSC_ERR_SUP,"This example only works with mx %" PetscInt_FMT " = my %" PetscInt_FMT " = mz %" PetscInt_FMT,mx,my,mz);
 
   Hx      = 1.0 / (PetscReal)(mx-1); Hy = 1.0 / (PetscReal)(my-1); Hz = 1.0 / (PetscReal)(mz-1);
   HxHydHz = Hx*Hy/Hz; HxHzdHy = Hx*Hz/Hy; HyHzdHx = Hy*Hz/Hx;
 
-  ierr       = PetscMalloc1(2*dof*dof+1,&v);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(2*dof*dof+1,&v));
   v_neighbor = v + dof*dof;
-  ierr       = PetscArrayzero(v,2*dof*dof+1);CHKERRQ(ierr);
+  PetscCall(PetscArrayzero(v,2*dof*dof+1));
   k3         = 0;
   for (k1=0; k1<dof; k1++) {
     for (k2=0; k2<dof; k2++) {
@@ -226,8 +222,8 @@ PetscErrorCode ComputeMatrix(DM da,Mat B)
         v[k3]          = 2.0*(HxHydHz + HxHzdHy + HyHzdHx);
         v_neighbor[k3] = -HxHydHz;
       } else {
-        ierr = PetscRandomGetValue(rand,&r1);CHKERRQ(ierr);
-        ierr = PetscRandomGetValue(rand,&r2);CHKERRQ(ierr);
+        PetscCall(PetscRandomGetValue(rand,&r1));
+        PetscCall(PetscRandomGetValue(rand,&r2));
 
         v[k3]          = r1;
         v_neighbor[k3] = r2;
@@ -235,44 +231,44 @@ PetscErrorCode ComputeMatrix(DM da,Mat B)
       k3++;
     }
   }
-  ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+  PetscCall(DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm));
 
   for (k=zs; k<zs+zm; k++) {
     for (j=ys; j<ys+ym; j++) {
       for (i=xs; i<xs+xm; i++) {
         row.i = i; row.j = j; row.k = k;
         if (i==0 || j==0 || k==0 || i==mx-1 || j==my-1 || k==mz-1) { /* boundary points */
-          ierr = MatSetValuesBlockedStencil(B,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
+          PetscCall(MatSetValuesBlockedStencil(B,1,&row,1,&row,v,INSERT_VALUES));
         } else { /* interior points */
           /* center */
           col.i = i; col.j = j; col.k = k;
-          ierr  = MatSetValuesBlockedStencil(B,1,&row,1,&col,v,INSERT_VALUES);CHKERRQ(ierr);
+          PetscCall(MatSetValuesBlockedStencil(B,1,&row,1,&col,v,INSERT_VALUES));
 
           /* x neighbors */
           col.i = i-1; col.j = j; col.k = k;
-          ierr  = MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES);CHKERRQ(ierr);
+          PetscCall(MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES));
           col.i = i+1; col.j = j; col.k = k;
-          ierr  = MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES);CHKERRQ(ierr);
+          PetscCall(MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES));
 
           /* y neighbors */
           col.i = i; col.j = j-1; col.k = k;
-          ierr  = MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES);CHKERRQ(ierr);
+          PetscCall(MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES));
           col.i = i; col.j = j+1; col.k = k;
-          ierr  = MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES);CHKERRQ(ierr);
+          PetscCall(MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES));
 
           /* z neighbors */
           col.i = i; col.j = j; col.k = k-1;
-          ierr  = MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES);CHKERRQ(ierr);
+          PetscCall(MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES));
           col.i = i; col.j = j; col.k = k+1;
-          ierr  = MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES);CHKERRQ(ierr);
+          PetscCall(MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES));
         }
       }
     }
   }
-  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PetscFree(v);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
+  PetscCall(PetscFree(v));
+  PetscCall(PetscRandomDestroy(&rand));
   PetscFunctionReturn(0);
 }
 

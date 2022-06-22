@@ -31,18 +31,17 @@ PetscErrorCode InitializeLambda(DM da,Vec lambda,Vec U,AppCtx *appctx)
   char           filename[PETSC_MAX_PATH_LEN]="";
   PetscViewer    viewer;
   Vec            Uob;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecDuplicate(U,&Uob);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(filename,sizeof filename,"ex5opt.ob");CHKERRQ(ierr);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-  ierr = VecLoad(Uob,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  ierr = VecAYPX(Uob,-1.,U);CHKERRQ(ierr);
-  ierr = VecScale(Uob,2.0);CHKERRQ(ierr);
-  ierr = VecAXPY(lambda,1.,Uob);CHKERRQ(ierr);
-  ierr = VecDestroy(&Uob);CHKERRQ(ierr);
+  PetscCall(VecDuplicate(U,&Uob));
+  PetscCall(PetscSNPrintf(filename,sizeof filename,"ex5opt.ob"));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer));
+  PetscCall(VecLoad(Uob,viewer));
+  PetscCall(PetscViewerDestroy(&viewer));
+  PetscCall(VecAYPX(Uob,-1.,U));
+  PetscCall(VecScale(Uob,2.0));
+  PetscCall(VecAXPY(lambda,1.,Uob));
+  PetscCall(VecDestroy(&Uob));
   PetscFunctionReturn(0);
 }
 
@@ -51,13 +50,11 @@ PetscErrorCode InitializeLambda(DM da,Vec lambda,Vec U,AppCtx *appctx)
  */
 PetscErrorCode OutputBIN(DM da, const char *filename, PetscViewer *viewer)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscViewerCreate(PetscObjectComm((PetscObject)da),viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(*viewer,PETSCVIEWERBINARY);CHKERRQ(ierr);
-  ierr = PetscViewerFileSetMode(*viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
-  ierr = PetscViewerFileSetName(*viewer,filename);CHKERRQ(ierr);
+  PetscCall(PetscViewerCreate(PetscObjectComm((PetscObject)da),viewer));
+  PetscCall(PetscViewerSetType(*viewer,PETSCVIEWERBINARY));
+  PetscCall(PetscViewerFileSetMode(*viewer,FILE_MODE_WRITE));
+  PetscCall(PetscViewerFileSetName(*viewer,filename));
   PetscFunctionReturn(0);
 }
 
@@ -69,34 +66,32 @@ PetscErrorCode GenerateOBs(TS ts,Vec U,AppCtx *appctx)
   char           filename[PETSC_MAX_PATH_LEN] = "";
   PetscViewer    viewer;
   DM             da;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
-  ierr = TSSolve(ts,U);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(filename,sizeof filename,"ex5opt.ob");CHKERRQ(ierr);
-  ierr = OutputBIN(da,filename,&viewer);CHKERRQ(ierr);
-  ierr = VecView(U,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  PetscCall(TSGetDM(ts,&da));
+  PetscCall(TSSolve(ts,U));
+  PetscCall(PetscSNPrintf(filename,sizeof filename,"ex5opt.ob"));
+  PetscCall(OutputBIN(da,filename,&viewer));
+  PetscCall(VecView(U,viewer));
+  PetscCall(PetscViewerDestroy(&viewer));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode InitialConditions(DM da,Vec U)
 {
-  PetscErrorCode ierr;
   PetscInt       i,j,xs,ys,xm,ym,Mx,My;
   Field          **u;
   PetscReal      hx,hy,x,y;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
+  PetscCall(DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
 
   hx = 2.5/(PetscReal)Mx;
   hy = 2.5/(PetscReal)My;
 
-  ierr = DMDAVecGetArray(da,U,&u);CHKERRQ(ierr);
+  PetscCall(DMDAVecGetArray(da,U,&u));
   /* Get local grid boundaries */
-  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
+  PetscCall(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
 
   /* Compute function over the locally owned part of the grid */
   for (j=ys; j<ys+ym; j++) {
@@ -110,26 +105,25 @@ PetscErrorCode InitialConditions(DM da,Vec U)
     }
   }
 
-  ierr = DMDAVecRestoreArray(da,U,&u);CHKERRQ(ierr);
+  PetscCall(DMDAVecRestoreArray(da,U,&u));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode PerturbedInitialConditions(DM da,Vec U)
 {
-  PetscErrorCode ierr;
   PetscInt       i,j,xs,ys,xm,ym,Mx,My;
   Field          **u;
   PetscReal      hx,hy,x,y;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
+  PetscCall(DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
 
   hx = 2.5/(PetscReal)Mx;
   hy = 2.5/(PetscReal)My;
 
-  ierr = DMDAVecGetArray(da,U,&u);CHKERRQ(ierr);
+  PetscCall(DMDAVecGetArray(da,U,&u));
   /* Get local grid boundaries */
-  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
+  PetscCall(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
 
   /* Compute function over the locally owned part of the grid */
   for (j=ys; j<ys+ym; j++) {
@@ -143,26 +137,25 @@ PetscErrorCode PerturbedInitialConditions(DM da,Vec U)
     }
   }
 
-  ierr = DMDAVecRestoreArray(da,U,&u);CHKERRQ(ierr);
+  PetscCall(DMDAVecRestoreArray(da,U,&u));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode PerturbedInitialConditions2(DM da,Vec U)
 {
-  PetscErrorCode ierr;
   PetscInt       i,j,xs,ys,xm,ym,Mx,My;
   Field          **u;
   PetscReal      hx,hy,x,y;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
+  PetscCall(DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
 
   hx = 2.5/(PetscReal)Mx;
   hy = 2.5/(PetscReal)My;
 
-  ierr = DMDAVecGetArray(da,U,&u);CHKERRQ(ierr);
+  PetscCall(DMDAVecGetArray(da,U,&u));
   /* Get local grid boundaries */
-  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
+  PetscCall(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
 
   /* Compute function over the locally owned part of the grid */
   for (j=ys; j<ys+ym; j++) {
@@ -176,26 +169,25 @@ PetscErrorCode PerturbedInitialConditions2(DM da,Vec U)
     }
   }
 
-  ierr = DMDAVecRestoreArray(da,U,&u);CHKERRQ(ierr);
+  PetscCall(DMDAVecRestoreArray(da,U,&u));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode PerturbedInitialConditions3(DM da,Vec U)
 {
-  PetscErrorCode ierr;
   PetscInt       i,j,xs,ys,xm,ym,Mx,My;
   Field          **u;
   PetscReal      hx,hy,x,y;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
+  PetscCall(DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
 
   hx = 2.5/(PetscReal)Mx;
   hy = 2.5/(PetscReal)My;
 
-  ierr = DMDAVecGetArray(da,U,&u);CHKERRQ(ierr);
+  PetscCall(DMDAVecGetArray(da,U,&u));
   /* Get local grid boundaries */
-  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
+  PetscCall(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
 
   /* Compute function over the locally owned part of the grid */
   for (j=ys; j<ys+ym; j++) {
@@ -209,22 +201,21 @@ PetscErrorCode PerturbedInitialConditions3(DM da,Vec U)
     }
   }
 
-  ierr = DMDAVecRestoreArray(da,U,&u);CHKERRQ(ierr);
+  PetscCall(DMDAVecRestoreArray(da,U,&u));
   PetscFunctionReturn(0);
 }
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   DM             da;
   AppCtx         appctx;
   PetscBool      forwardonly = PETSC_FALSE,implicitform = PETSC_FALSE;
   PetscInt       perturbic = 1;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-forwardonly",&forwardonly,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-implicitform",&implicitform,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-perturbic",&perturbic,NULL);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-forwardonly",&forwardonly,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-implicitform",&implicitform,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-perturbic",&perturbic,NULL));
 
   appctx.D1    = 8.0e-5;
   appctx.D2    = 4.0e-5;
@@ -233,41 +224,41 @@ int main(int argc,char **argv)
   appctx.aijpc = PETSC_FALSE;
 
   /* Create distributed array (DMDA) to manage parallel grid and vectors */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,DMDA_STENCIL_STAR,64,64,PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,NULL,&da);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
-  ierr = DMDASetFieldName(da,0,"u");CHKERRQ(ierr);
-  ierr = DMDASetFieldName(da,1,"v");CHKERRQ(ierr);
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,DMDA_STENCIL_STAR,64,64,PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,NULL,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(DMDASetFieldName(da,0,"u"));
+  PetscCall(DMDASetFieldName(da,1,"v"));
 
   /* Extract global vectors from DMDA; then duplicate for remaining
      vectors that are the same types */
-  ierr = DMCreateGlobalVector(da,&appctx.U);CHKERRQ(ierr);
+  PetscCall(DMCreateGlobalVector(da,&appctx.U));
 
   /* Create timestepping solver context */
-  ierr = TSCreate(PETSC_COMM_WORLD,&appctx.ts);CHKERRQ(ierr);
-  ierr = TSSetType(appctx.ts,TSCN);CHKERRQ(ierr);
-  ierr = TSSetDM(appctx.ts,da);CHKERRQ(ierr);
-  ierr = TSSetProblemType(appctx.ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetEquationType(appctx.ts,TS_EQ_ODE_EXPLICIT);CHKERRQ(ierr); /* less Jacobian evaluations when adjoint BEuler is used, otherwise no effect */
+  PetscCall(TSCreate(PETSC_COMM_WORLD,&appctx.ts));
+  PetscCall(TSSetType(appctx.ts,TSCN));
+  PetscCall(TSSetDM(appctx.ts,da));
+  PetscCall(TSSetProblemType(appctx.ts,TS_NONLINEAR));
+  PetscCall(TSSetEquationType(appctx.ts,TS_EQ_ODE_EXPLICIT)); /* less Jacobian evaluations when adjoint BEuler is used, otherwise no effect */
   if (!implicitform) {
-    ierr = TSSetRHSFunction(appctx.ts,NULL,RHSFunction,&appctx);CHKERRQ(ierr);
-    ierr = TSSetRHSJacobian(appctx.ts,NULL,NULL,RHSJacobian,&appctx);CHKERRQ(ierr);
+    PetscCall(TSSetRHSFunction(appctx.ts,NULL,RHSFunction,&appctx));
+    PetscCall(TSSetRHSJacobian(appctx.ts,NULL,NULL,RHSJacobian,&appctx));
   } else {
-    ierr = TSSetIFunction(appctx.ts,NULL,IFunction,&appctx);CHKERRQ(ierr);
-    ierr = TSSetIJacobian(appctx.ts,NULL,NULL,IJacobian,&appctx);CHKERRQ(ierr);
+    PetscCall(TSSetIFunction(appctx.ts,NULL,IFunction,&appctx));
+    PetscCall(TSSetIJacobian(appctx.ts,NULL,NULL,IJacobian,&appctx));
   }
 
   /* Set initial conditions */
-  ierr = InitialConditions(da,appctx.U);CHKERRQ(ierr);
-  ierr = TSSetSolution(appctx.ts,appctx.U);CHKERRQ(ierr);
+  PetscCall(InitialConditions(da,appctx.U));
+  PetscCall(TSSetSolution(appctx.ts,appctx.U));
 
   /* Set solver options */
-  ierr = TSSetMaxTime(appctx.ts,2000.0);CHKERRQ(ierr);
-  ierr = TSSetTimeStep(appctx.ts,0.5);CHKERRQ(ierr);
-  ierr = TSSetExactFinalTime(appctx.ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
-  ierr = TSSetFromOptions(appctx.ts);CHKERRQ(ierr);
+  PetscCall(TSSetMaxTime(appctx.ts,2000.0));
+  PetscCall(TSSetTimeStep(appctx.ts,0.5));
+  PetscCall(TSSetExactFinalTime(appctx.ts,TS_EXACTFINALTIME_MATCHSTEP));
+  PetscCall(TSSetFromOptions(appctx.ts));
 
-  ierr = GenerateOBs(appctx.ts,appctx.U,&appctx);CHKERRQ(ierr);
+  PetscCall(GenerateOBs(appctx.ts,appctx.U,&appctx));
 
   if (!forwardonly) {
     Tao           tao;
@@ -277,51 +268,51 @@ int main(int argc,char **argv)
     PetscLogStage opt_stage;
 #endif
 
-    ierr = PetscLogStageRegister("Optimization",&opt_stage);CHKERRQ(ierr);
-    ierr = PetscLogStagePush(opt_stage);CHKERRQ(ierr);
+    PetscCall(PetscLogStageRegister("Optimization",&opt_stage));
+    PetscCall(PetscLogStagePush(opt_stage));
     if (perturbic == 1) {
-      ierr = PerturbedInitialConditions(da,appctx.U);CHKERRQ(ierr);
+      PetscCall(PerturbedInitialConditions(da,appctx.U));
     } else if (perturbic == 2) {
-      ierr = PerturbedInitialConditions2(da,appctx.U);CHKERRQ(ierr);
+      PetscCall(PerturbedInitialConditions2(da,appctx.U));
     } else if (perturbic == 3) {
-      ierr = PerturbedInitialConditions3(da,appctx.U);CHKERRQ(ierr);
+      PetscCall(PerturbedInitialConditions3(da,appctx.U));
     }
 
-    ierr = VecDuplicate(appctx.U,&lambda[0]);CHKERRQ(ierr);
-    ierr = TSSetCostGradients(appctx.ts,1,lambda,NULL);CHKERRQ(ierr);
+    PetscCall(VecDuplicate(appctx.U,&lambda[0]));
+    PetscCall(TSSetCostGradients(appctx.ts,1,lambda,NULL));
 
     /* Have the TS save its trajectory needed by TSAdjointSolve() */
-    ierr = TSSetSaveTrajectory(appctx.ts);CHKERRQ(ierr);
+    PetscCall(TSSetSaveTrajectory(appctx.ts));
 
     /* Create TAO solver and set desired solution method */
-    ierr = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(ierr);
-    ierr = TaoSetType(tao,TAOBLMVM);CHKERRQ(ierr);
+    PetscCall(TaoCreate(PETSC_COMM_WORLD,&tao));
+    PetscCall(TaoSetType(tao,TAOBLMVM));
 
     /* Set initial guess for TAO */
-    ierr = VecDuplicate(appctx.U,&P);CHKERRQ(ierr);
-    ierr = VecCopy(appctx.U,P);CHKERRQ(ierr);
-    ierr = TaoSetSolution(tao,P);CHKERRQ(ierr);
+    PetscCall(VecDuplicate(appctx.U,&P));
+    PetscCall(VecCopy(appctx.U,P));
+    PetscCall(TaoSetSolution(tao,P));
 
     /* Set routine for function and gradient evaluation */
-    ierr = TaoSetObjectiveAndGradient(tao,NULL,FormFunctionAndGradient,&appctx);CHKERRQ(ierr);
+    PetscCall(TaoSetObjectiveAndGradient(tao,NULL,FormFunctionAndGradient,&appctx));
 
     /* Check for any TAO command line options */
-    ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
+    PetscCall(TaoSetFromOptions(tao));
 
-    ierr = TaoSolve(tao);CHKERRQ(ierr);
-    ierr = TaoDestroy(&tao);CHKERRQ(ierr);
-    ierr = VecDestroy(&lambda[0]);CHKERRQ(ierr);
-    ierr = VecDestroy(&P);CHKERRQ(ierr);
-    ierr = PetscLogStagePop();CHKERRQ(ierr);
+    PetscCall(TaoSolve(tao));
+    PetscCall(TaoDestroy(&tao));
+    PetscCall(VecDestroy(&lambda[0]));
+    PetscCall(VecDestroy(&P));
+    PetscCall(PetscLogStagePop());
   }
 
   /* Free work space.  All PETSc objects should be destroyed when they
      are no longer needed. */
-  ierr = VecDestroy(&appctx.U);CHKERRQ(ierr);
-  ierr = TSDestroy(&appctx.ts);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(VecDestroy(&appctx.U));
+  PetscCall(TSDestroy(&appctx.ts));
+  PetscCall(DMDestroy(&da));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /* ------------------------ TAO callbacks ---------------------------- */
@@ -347,39 +338,38 @@ PetscErrorCode FormFunctionAndGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ct
   DM             da;
   char           filename[PETSC_MAX_PATH_LEN]="";
   PetscViewer    viewer;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = TSSetTime(appctx->ts,0.0);CHKERRQ(ierr);
-  ierr = TSGetTimeStep(appctx->ts,&timestep);CHKERRQ(ierr);
+  PetscCall(TSSetTime(appctx->ts,0.0));
+  PetscCall(TSGetTimeStep(appctx->ts,&timestep));
   if (timestep<0) {
-    ierr = TSSetTimeStep(appctx->ts,-timestep);CHKERRQ(ierr);
+    PetscCall(TSSetTimeStep(appctx->ts,-timestep));
   }
-  ierr = TSSetStepNumber(appctx->ts,0);CHKERRQ(ierr);
-  ierr = TSSetFromOptions(appctx->ts);CHKERRQ(ierr);
+  PetscCall(TSSetStepNumber(appctx->ts,0));
+  PetscCall(TSSetFromOptions(appctx->ts));
 
-  ierr = VecDuplicate(P,&SDiff);CHKERRQ(ierr);
-  ierr = VecCopy(P,appctx->U);CHKERRQ(ierr);
-  ierr = TSGetDM(appctx->ts,&da);CHKERRQ(ierr);
+  PetscCall(VecDuplicate(P,&SDiff));
+  PetscCall(VecCopy(P,appctx->U));
+  PetscCall(TSGetDM(appctx->ts,&da));
   *f = 0;
 
-  ierr = TSSolve(appctx->ts,appctx->U);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(filename,sizeof filename,"ex5opt.ob");CHKERRQ(ierr);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-  ierr = VecLoad(SDiff,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  ierr = VecAYPX(SDiff,-1.,appctx->U);CHKERRQ(ierr);
-  ierr = VecDot(SDiff,SDiff,&soberr);CHKERRQ(ierr);
+  PetscCall(TSSolve(appctx->ts,appctx->U));
+  PetscCall(PetscSNPrintf(filename,sizeof filename,"ex5opt.ob"));
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer));
+  PetscCall(VecLoad(SDiff,viewer));
+  PetscCall(PetscViewerDestroy(&viewer));
+  PetscCall(VecAYPX(SDiff,-1.,appctx->U));
+  PetscCall(VecDot(SDiff,SDiff,&soberr));
   *f += soberr;
 
-  ierr = TSGetCostGradients(appctx->ts,NULL,&lambda,NULL);CHKERRQ(ierr);
-  ierr = VecSet(lambda[0],0.0);CHKERRQ(ierr);
-  ierr = InitializeLambda(da,lambda[0],appctx->U,appctx);CHKERRQ(ierr);
-  ierr = TSAdjointSolve(appctx->ts);CHKERRQ(ierr);
+  PetscCall(TSGetCostGradients(appctx->ts,NULL,&lambda,NULL));
+  PetscCall(VecSet(lambda[0],0.0));
+  PetscCall(InitializeLambda(da,lambda[0],appctx->U,appctx));
+  PetscCall(TSAdjointSolve(appctx->ts));
 
-  ierr = VecCopy(lambda[0],G);CHKERRQ(ierr);
+  PetscCall(VecCopy(lambda[0],G));
 
-  ierr = VecDestroy(&SDiff);CHKERRQ(ierr);
+  PetscCall(VecDestroy(&SDiff));
   PetscFunctionReturn(0);
 }
 

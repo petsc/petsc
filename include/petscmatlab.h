@@ -1,9 +1,10 @@
 /*
     Defines an interface to the MATLAB Engine from PETSc
 */
-
 #if !defined(PETSCMATLAB_H)
 #define PETSCMATLAB_H
+
+/* SUBMANSEC = Sys */
 
 PETSC_EXTERN PetscClassId MATLABENGINE_CLASSID;
 
@@ -15,10 +16,10 @@ PETSC_EXTERN PetscClassId MATLABENGINE_CLASSID;
    Note: Mats transfered between PETSc and MATLAB and vis versa are transposed in the other space
          (this is because MATLAB uses compressed column format and PETSc uses compressed row format)
 
-.seealso:  PetscMatlabEngineCreate(), PetscMatlabEngineDestroy(), PetscMatlabEngineEvaluate(),
-           PetscMatlabEngineGetOutput(), PetscMatlabEnginePut(), PetscMatlabEngineGet(),
-           PetscMatlabEnginePrintOutput(), PetscMatlabEnginePutArray(), PetscMatlabEngineGetArray(),
-           PETSC_MATLAB_ENGINE_(), PETSC_MATLAB_ENGINE_SELF, PETSC_MATLAB_ENGINE_WORLD
+.seealso: `PetscMatlabEngineCreate()`, `PetscMatlabEngineDestroy()`, `PetscMatlabEngineEvaluate()`,
+          `PetscMatlabEngineGetOutput()`, `PetscMatlabEnginePut()`, `PetscMatlabEngineGet()`,
+          `PetscMatlabEnginePrintOutput()`, `PetscMatlabEnginePutArray()`, `PetscMatlabEngineGetArray()`,
+          `PETSC_MATLAB_ENGINE_()`, `PETSC_MATLAB_ENGINE_SELF`, `PETSC_MATLAB_ENGINE_WORLD`
 S*/
 typedef struct _p_PetscMatlabEngine* PetscMatlabEngine;
 

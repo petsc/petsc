@@ -98,4 +98,3 @@ PetscErrorCode spbas_apply_reordering(spbas_matrix*, const PetscInt*, const Pets
 PetscErrorCode spbas_pattern_only(PetscInt, PetscInt, PetscInt*, PetscInt*, spbas_matrix*);
 PetscErrorCode spbas_power (spbas_matrix, PetscInt, spbas_matrix*);
 PetscErrorCode spbas_keep_upper(spbas_matrix*);
-

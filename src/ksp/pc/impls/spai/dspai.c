@@ -12,37 +12,33 @@
 PetscErrorCode  MatDumpSPAI(Mat A,FILE *file)
 {
   const PetscScalar *vals;
-  PetscErrorCode    ierr;
   int               i,j,n,size,nz;
   const int         *cols;
   MPI_Comm          comm;
 
+  PetscFunctionBegin;
   PetscObjectGetComm((PetscObject)A,&comm);
-
   MPI_Comm_size(comm,&size);
-  PetscCheckFalse(size > 1,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Only single processor dumps");
-
-  ierr = MatGetSize(A,&n,&n);CHKERRQ(ierr);
-
+  PetscCheck(size == 1,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Only single processor dumps");
+  PetscCall(MatGetSize(A,&n,&n));
   /* print the matrix */
   fprintf(file,"%d\n",n);
   for (i=0; i<n; i++) {
-    ierr = MatGetRow(A,i,&nz,&cols,&vals);CHKERRQ(ierr);
+    PetscCall(MatGetRow(A,i,&nz,&cols,&vals));
     for (j=0; j<nz; j++) fprintf(file,"%d %d %16.14e\n",i+1,cols[j]+1,vals[j]);
-    ierr = MatRestoreRow(A,i,&nz,&cols,&vals);CHKERRQ(ierr);
+    PetscCall(MatRestoreRow(A,i,&nz,&cols,&vals));
   }
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode  VecDumpSPAI(Vec b,FILE *file)
 {
-  PetscErrorCode ierr;
-  int            n,i;
-  PetscScalar    *array;
+  int          n,i;
+  PetscScalar *array;
 
-  ierr = VecGetSize(b,&n);CHKERRQ(ierr);
-  ierr = VecGetArray(b,&array);CHKERRQ(ierr);
-
+  PetscFunctionBegin;
+  PetscCall(VecGetSize(b,&n));
+  PetscCall(VecGetArray(b,&array));
   fprintf(file,"%d\n",n);
   for (i=0; i<n; i++) fprintf(file,"%d %16.14e\n",i+1,array[i]);
   PetscFunctionReturn(0);

@@ -48,40 +48,40 @@ PetscFunctionList PCList = NULL;
   Developer Note: PCRegister() is used to add preconditioner types to PCList from which they
   are accessed by PCSetType().
 
-.seealso: KSPSetType(), PCType, PCRegister(), PCCreate(), KSPGetPC()
+.seealso: `KSPSetType()`, `PCType`, `PCRegister()`, `PCCreate()`, `KSPGetPC()`
 
 @*/
 PetscErrorCode  PCSetType(PC pc,PCType type)
 {
-  PetscErrorCode ierr,(*r)(PC);
   PetscBool      match;
+  PetscErrorCode (*r)(PC);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidCharPointer(type,2);
 
-  ierr = PetscObjectTypeCompare((PetscObject)pc,type,&match);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)pc,type,&match));
   if (match) PetscFunctionReturn(0);
 
-  ierr =  PetscFunctionListFind(PCList,type,&r);CHKERRQ(ierr);
-  PetscCheckFalse(!r,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PC type %s",type);
+  PetscCall(PetscFunctionListFind(PCList,type,&r));
+  PetscCheck(r,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PC type %s",type);
   /* Destroy the previous private PC context */
   if (pc->ops->destroy) {
-    ierr             = (*pc->ops->destroy)(pc);CHKERRQ(ierr);
+    PetscCall((*pc->ops->destroy)(pc));
     pc->ops->destroy = NULL;
     pc->data         = NULL;
   }
-  ierr = PetscFunctionListDestroy(&((PetscObject)pc)->qlist);CHKERRQ(ierr);
+  PetscCall(PetscFunctionListDestroy(&((PetscObject)pc)->qlist));
   /* Reinitialize function pointers in PCOps structure */
-  ierr = PetscMemzero(pc->ops,sizeof(struct _PCOps));CHKERRQ(ierr);
+  PetscCall(PetscMemzero(pc->ops,sizeof(struct _PCOps)));
   /* XXX Is this OK?? */
   pc->modifysubmatrices  = NULL;
   pc->modifysubmatricesP = NULL;
   /* Call the PCCreate_XXX routine for this particular preconditioner */
   pc->setupcalled = 0;
 
-  ierr = PetscObjectChangeTypeName((PetscObject)pc,type);CHKERRQ(ierr);
-  ierr = (*r)(pc);CHKERRQ(ierr);
+  PetscCall(PetscObjectChangeTypeName((PetscObject)pc,type));
+  PetscCall((*r)(pc));
   PetscFunctionReturn(0);
 }
 
@@ -99,7 +99,7 @@ PetscErrorCode  PCSetType(PC pc,PCType type)
 
    Level: intermediate
 
-.seealso: PCSetType()
+.seealso: `PCSetType()`
 
 @*/
 PetscErrorCode  PCGetType(PC pc,PCType *type)
@@ -124,16 +124,15 @@ extern PetscErrorCode PCGetDefaultType_Private(PC,const char*[]);
 .  pc - the preconditioner context
 
    Options Database:
-.   -pc_use_amat true,false see PCSetUseAmat()
+.   -pc_use_amat true,false - see PCSetUseAmat()
 
    Level: developer
 
-.seealso: PCSetUseAmat()
+.seealso: `PCSetUseAmat()`
 
 @*/
 PetscErrorCode  PCSetFromOptions(PC pc)
 {
-  PetscErrorCode ierr;
   char           type[256];
   const char     *def;
   PetscBool      flg;
@@ -141,34 +140,34 @@ PetscErrorCode  PCSetFromOptions(PC pc)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
 
-  ierr = PCRegisterAll();CHKERRQ(ierr);
-  ierr = PetscObjectOptionsBegin((PetscObject)pc);CHKERRQ(ierr);
+  PetscCall(PCRegisterAll());
+  PetscObjectOptionsBegin((PetscObject)pc);
   if (!((PetscObject)pc)->type_name) {
-    ierr = PCGetDefaultType_Private(pc,&def);CHKERRQ(ierr);
+    PetscCall(PCGetDefaultType_Private(pc,&def));
   } else {
     def = ((PetscObject)pc)->type_name;
   }
 
-  ierr = PetscOptionsFList("-pc_type","Preconditioner","PCSetType",PCList,def,type,256,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsFList("-pc_type","Preconditioner","PCSetType",PCList,def,type,256,&flg));
   if (flg) {
-    ierr = PCSetType(pc,type);CHKERRQ(ierr);
+    PetscCall(PCSetType(pc,type));
   } else if (!((PetscObject)pc)->type_name) {
-    ierr = PCSetType(pc,def);CHKERRQ(ierr);
+    PetscCall(PCSetType(pc,def));
   }
 
-  ierr = PetscObjectTypeCompare((PetscObject)pc,PCNONE,&flg);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)pc,PCNONE,&flg));
   if (flg) goto skipoptions;
 
-  ierr = PetscOptionsBool("-pc_use_amat","use Amat (instead of Pmat) to define preconditioner in nested inner solves","PCSetUseAmat",pc->useAmat,&pc->useAmat,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsBool("-pc_use_amat","use Amat (instead of Pmat) to define preconditioner in nested inner solves","PCSetUseAmat",pc->useAmat,&pc->useAmat,NULL));
 
   if (pc->ops->setfromoptions) {
-    ierr = (*pc->ops->setfromoptions)(PetscOptionsObject,pc);CHKERRQ(ierr);
+    PetscCall((*pc->ops->setfromoptions)(PetscOptionsObject,pc));
   }
 
   skipoptions:
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
-  ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)pc);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)pc));
+  PetscOptionsEnd();
   pc->setfromoptionscalled++;
   PetscFunctionReturn(0);
 }
@@ -188,16 +187,14 @@ PetscErrorCode  PCSetFromOptions(PC pc)
     The routines KSP/SNES/TSSetDM() require the dm to be non-NULL, but this one can be NULL since all it does is
     replace the current DM
 
-.seealso: PCGetDM(), KSPSetDM(), KSPGetDM()
+.seealso: `PCGetDM()`, `KSPSetDM()`, `KSPGetDM()`
 @*/
 PetscErrorCode  PCSetDM(PC pc,DM dm)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  if (dm) {ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);}
-  ierr   = DMDestroy(&pc->dm);CHKERRQ(ierr);
+  if (dm) PetscCall(PetscObjectReference((PetscObject)dm));
+  PetscCall(DMDestroy(&pc->dm));
   pc->dm = dm;
   PetscFunctionReturn(0);
 }
@@ -215,7 +212,7 @@ PetscErrorCode  PCSetDM(PC pc,DM dm)
 
    Level: intermediate
 
-.seealso: PCSetDM(), KSPSetDM(), KSPGetDM()
+.seealso: `PCSetDM()`, `KSPSetDM()`, `KSPGetDM()`
 @*/
 PetscErrorCode  PCGetDM(PC pc,DM *dm)
 {
@@ -236,7 +233,7 @@ PetscErrorCode  PCGetDM(PC pc,DM *dm)
 
    Level: intermediate
 
-.seealso: PCGetApplicationContext()
+.seealso: `PCGetApplicationContext()`
 @*/
 PetscErrorCode  PCSetApplicationContext(PC pc,void *usrP)
 {
@@ -259,7 +256,7 @@ PetscErrorCode  PCSetApplicationContext(PC pc,void *usrP)
 
    Level: intermediate
 
-.seealso: PCSetApplicationContext()
+.seealso: `PCSetApplicationContext()`
 @*/
 PetscErrorCode  PCGetApplicationContext(PC pc,void *usrP)
 {

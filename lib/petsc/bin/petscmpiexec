@@ -5,7 +5,7 @@
 #    Use PETSCVALGRIND_OPTIONS and MPI_BINDING from environment
 #
 if [ $1 = '-h' ] || [ $1 = '--help' ]; then
-  echo "Usage: petscmpiexec <-valgrind> <-debugger> -n <numberprocessors> programname <programopions>"
+  echo "Usage: petscmpiexec <-valgrind> <-debugger> -n <numberprocessors> programname <programoptions>"
   exit
 fi
 
@@ -20,8 +20,8 @@ if [ x$1 = x"-valgrind" ]; then
   shift
 fi
 
-if [ $1 != "-n" ]; then
-  echo "Error in  mpiexec command: must start with -n <numberprocessors> or -valgrind -n <numberprocessors>"
+if [ $1 != "-n" ] && [ $1 != "-np" ]; then
+  echo "Error in  mpiexec command: must start with -n[p] <numberprocessors> or -valgrind -n[p] <numberprocessors>"
   exit 1
 fi
 shift
@@ -46,17 +46,46 @@ if [ ! -f "${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/files" ]; then
   exit 1
 fi
 
-MPI_BUILD_HOME=$(grep MPI_BUILD_HOME "${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables" | grep -v mpiexec | grep -v include | grep -v lib | grep -v "#MPI_HOME" | cut -f2 -d=)
-MPI_HOME=$(grep "MPI_HOME " "${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables" | grep -v build | grep -v include | grep -v "#MPI_HOME" | grep -v mpe  | cut -f2 -d=)
-run=$(grep MPIEXEC "${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables" | grep -v "#MPIEXEC" | cut -f2 -d=)
+if [ ! -f $1 ]; then
+  echo "Executable appears missing from your command line"
+  exit 1
+fi
 
-trun=$(echo ${run} | sed -e "s,\$MPI_BUILD_HOME,${MPI_BUILD_HOME},")
-nrun=$(echo ${trun} | sed -e "s,\$MPI_HOME,${MPI_HOME},")
-qrun=$(echo ${nrun} | sed -e "s,\$PETSC_DIR,${PETSC_DIR},")
-qrun=$(echo ${qrun} | sed -e "s,\${PETSC_DIR},${PETSC_DIR},")
+if [ -f makefile ]; then
+  file=`echo $1 |sed s'?^\./??g'`
+  if [ -f \#${file}.[cxF90]*\# ]; then
+    echo "Warning: ************** Emacs has a changes in the source file that have not been saved to the disk"
+  fi
+  if [ -f .${file}.[cxF90]*.swp ]; then
+    echo "Warning: ************** VIM has a changes in the source file that have not been saved to the disk"
+  fi
+
+  OMAKE=`grep "OMAKE " "${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables" | cut -f2 -d=`
+  if [ "X${PETSC_ARCH}" != "X" ]; then
+    cd ${PETSC_DIR}
+    ${OMAKE} -q -f gmakefile libs
+    if [ $? = 1 ]; then
+      echo "Warning: ************** The PETSc libraries are out of date"
+    fi
+    cd - > /dev/null
+  fi
+  ${OMAKE} -q $1
+  if [ $? = 1 ]; then
+    echo "Warning: ************** The executable $1 is out of date"
+  fi
+fi
+
+MPI_BUILD_HOME=`grep MPI_BUILD_HOME "${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables" | grep -v mpiexec | grep -v include | grep -v lib | grep -v "#MPI_HOME" | cut -f2 -d=`
+MPI_HOME=`grep "MPI_HOME " "${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables" | grep -v build | grep -v include | grep -v "#MPI_HOME" | grep -v mpe  | cut -f2 -d=`
+run=`grep MPIEXEC "${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables" | grep -v "#MPIEXEC" | cut -f2 -d=`
+
+trun=`echo ${run} | sed -e "s,\\$MPI_BUILD_HOME,${MPI_BUILD_HOME},"`
+nrun=`echo ${trun} | sed -e "s,\\$MPI_HOME,${MPI_HOME},"`
+qrun=`echo ${nrun} | sed -e "s,\\$PETSC_DIR,${PETSC_DIR},"`
+qrun=`echo ${qrun} | sed -e "s,\\${PETSC_DIR},${PETSC_DIR},"`
 
 if [ ${valgrind} = "1" ]; then
-  VALGRIND_CMD=$(which valgrind)
+  VALGRIND_CMD=`which valgrind`
   VALGRIND_OPTIONS="-q --tool=memcheck  --num-callers=20 --track-origins=yes --suppressions=${PETSC_DIR}/share/petsc/valgrind/petsc-val.supp --error-exitcode=10 ${PETSCVALGRIND_OPTIONS}"
   if [ ${debugger} = "1" ]; then
     VALGRIND_CMD="xterm -e ${VALGRIND_CMD}"

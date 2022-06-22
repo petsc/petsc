@@ -12,16 +12,12 @@
       PetscReal :: refinementLimit = 0.0
       PetscErrorCode :: ierr
 
-      call PetscInitialize(PETSC_NULL_CHARACTER, ierr)
-      if (ierr .ne. 0) then
-        print*,'Unable to initialize PETSc'
-        stop
-      endif
-      call DMPlexCreateDoublet(PETSC_COMM_WORLD, dim, simplex,interpolate, refinementUniform, refinementLimit, dm, ierr);CHKERRA(ierr)
-      call DMSetUp(dm,ierr);CHKERRA(ierr)
-      call PetscDSCreate(PETSC_COMM_WORLD,prob,ierr);CHKERRA(ierr)
-      call DMGetDS(dm,prob,ierr);CHKERRA(ierr)
+      PetscCallA(PetscInitialize(PETSC_NULL_CHARACTER, ierr))
+      PetscCallA(DMPlexCreateDoublet(PETSC_COMM_WORLD, dim, simplex,interpolate, refinementUniform, refinementLimit, dm, ierr))
+      PetscCallA(DMSetUp(dm,ierr))
+      PetscCallA(PetscDSCreate(PETSC_COMM_WORLD,prob,ierr))
+      PetscCallA(DMGetDS(dm,prob,ierr))
 
-      call DMDestroy(dm, ierr);CHKERRA(ierr)
-      call PetscFinalize(ierr)
+      PetscCallA(DMDestroy(dm, ierr))
+      PetscCallA(PetscFinalize(ierr))
       end program main

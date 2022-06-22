@@ -10,18 +10,16 @@ typedef struct {
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
   options->filename[0] = '\0';
   options->interpolate = PETSC_FALSE;
   options->meshNum     = 0;
 
-  ierr = PetscOptionsBegin(comm, "", "Hybrid Output Test Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsString("-filename", "The mesh file", "ex8.c", options->filename, options->filename, sizeof(options->filename), NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-interpolate", "Interpolate the mesh", "ex8.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBoundedInt("-mesh_num", "The mesh we should construct", "ex8.c", options->meshNum, &options->meshNum, NULL,0);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscOptionsBegin(comm, "", "Hybrid Output Test Options", "DMPLEX");
+  PetscCall(PetscOptionsString("-filename", "The mesh file", "ex8.c", options->filename, options->filename, sizeof(options->filename), NULL));
+  PetscCall(PetscOptionsBool("-interpolate", "Interpolate the mesh", "ex8.c", options->interpolate, &options->interpolate, NULL));
+  PetscCall(PetscOptionsBoundedInt("-mesh_num", "The mesh we should construct", "ex8.c", options->meshNum, &options->meshNum, NULL,0));
+  PetscOptionsEnd();
 
   PetscFunctionReturn(0);
 }
@@ -29,14 +27,13 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 static PetscErrorCode CreateHybridMesh(MPI_Comm comm, PetscBool interpolate, DM *dm)
 {
   PetscInt       dim;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   dim  = 3;
-  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) *dm, "Simple Hybrid Mesh");CHKERRQ(ierr);
-  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMSetDimension(*dm, dim);CHKERRQ(ierr);
+  PetscCall(DMCreate(comm, dm));
+  PetscCall(PetscObjectSetName((PetscObject) *dm, "Simple Hybrid Mesh"));
+  PetscCall(DMSetType(*dm, DMPLEX));
+  PetscCall(DMSetDimension(*dm, dim));
   {
     /* Simple mesh with 2 tets and 1 wedge */
     PetscInt    numPoints[2]         = {8, 3};
@@ -48,15 +45,15 @@ static PetscErrorCode CreateHybridMesh(MPI_Comm comm, PetscBool interpolate, DM 
                                          1.0, 0.0, 0.0,  1.0, 1.0, -1.0,  1.0, 1.0, 1.0,
                                          2.0, 1.0, 0.0};
 
-    ierr = DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
+    PetscCall(DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords));
     if (interpolate) {
       DM idm;
 
-      ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
-      ierr = DMDestroy(dm);CHKERRQ(ierr);
+      PetscCall(DMPlexInterpolate(*dm, &idm));
+      PetscCall(DMDestroy(dm));
       *dm  = idm;
     }
-    ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
+    PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
   }
   PetscFunctionReturn(0);
 }
@@ -82,14 +79,13 @@ static PetscErrorCode CreateHybridMesh(MPI_Comm comm, PetscBool interpolate, DM 
 static PetscErrorCode CreateReverseHybridMesh(MPI_Comm comm, PetscBool interpolate, DM *dm)
 {
   PetscInt       dim;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   dim  = 3;
-  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) *dm, "Reverse Hybrid Mesh");CHKERRQ(ierr);
-  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMSetDimension(*dm, dim);CHKERRQ(ierr);
+  PetscCall(DMCreate(comm, dm));
+  PetscCall(PetscObjectSetName((PetscObject) *dm, "Reverse Hybrid Mesh"));
+  PetscCall(DMSetType(*dm, DMPLEX));
+  PetscCall(DMSetDimension(*dm, dim));
   {
     /* Simple mesh with 2 hexes and 3 wedges */
     PetscInt    numPoints[2]         = {16, 5};
@@ -109,15 +105,15 @@ static PetscErrorCode CreateReverseHybridMesh(MPI_Comm comm, PetscBool interpola
                                          1.0, -1.0, 0.0,                     1.0, 1.0, 0.0,
                                          1.0, -1.0, 1.0,                     1.0, 1.0, 1.0};
 
-    ierr = DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
+    PetscCall(DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords));
     if (interpolate) {
       DM idm;
 
-      ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
-      ierr = DMDestroy(dm);CHKERRQ(ierr);
+      PetscCall(DMPlexInterpolate(*dm, &idm));
+      PetscCall(DMDestroy(dm));
       *dm  = idm;
     }
-    ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
+    PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
   }
   PetscFunctionReturn(0);
 }
@@ -128,19 +124,18 @@ static PetscErrorCode OrderHybridMesh(DM *dm)
   IS             perm;
   PetscInt      *ind;
   PetscInt       dim, pStart, pEnd, p, cStart, cEnd, c, Nhyb = 0, off[2];
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetDimension(*dm, &dim);CHKERRQ(ierr);
-  PetscCheckFalse(dim != 3,PetscObjectComm((PetscObject) *dm), PETSC_ERR_SUP, "No support for dimension %D", dim);
-  ierr = DMPlexGetChart(*dm, &pStart, &pEnd);CHKERRQ(ierr);
-  ierr = PetscMalloc1(pEnd-pStart, &ind);CHKERRQ(ierr);
+  PetscCall(DMGetDimension(*dm, &dim));
+  PetscCheck(dim == 3,PetscObjectComm((PetscObject) *dm), PETSC_ERR_SUP, "No support for dimension %" PetscInt_FMT, dim);
+  PetscCall(DMPlexGetChart(*dm, &pStart, &pEnd));
+  PetscCall(PetscMalloc1(pEnd-pStart, &ind));
   for (p = 0; p < pEnd-pStart; ++p) ind[p] = p;
-  ierr = DMPlexGetHeightStratum(*dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  PetscCall(DMPlexGetHeightStratum(*dm, 0, &cStart, &cEnd));
   for (c = cStart; c < cEnd; ++c) {
     PetscInt coneSize;
 
-    ierr = DMPlexGetConeSize(*dm, c, &coneSize);CHKERRQ(ierr);
+    PetscCall(DMPlexGetConeSize(*dm, c, &coneSize));
     if (coneSize == 6) ++Nhyb;
   }
   off[0] = 0;
@@ -148,16 +143,16 @@ static PetscErrorCode OrderHybridMesh(DM *dm)
   for (c = cStart; c < cEnd; ++c) {
     PetscInt coneSize;
 
-    ierr = DMPlexGetConeSize(*dm, c, &coneSize);CHKERRQ(ierr);
+    PetscCall(DMPlexGetConeSize(*dm, c, &coneSize));
     if (coneSize == 6) ind[c] = off[1]++;
     else               ind[c] = off[0]++;
   }
-  PetscCheckFalse(off[0] != cEnd - Nhyb,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of normal cells %D should be %D", off[0], cEnd - Nhyb);
-  PetscCheckFalse(off[1] != cEnd,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of hybrid cells %D should be %D", off[1] - off[0], Nhyb);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF, pEnd-pStart, ind, PETSC_OWN_POINTER, &perm);CHKERRQ(ierr);
-  ierr = DMPlexPermute(*dm, perm, &pdm);CHKERRQ(ierr);
-  ierr = ISDestroy(&perm);CHKERRQ(ierr);
-  ierr = DMDestroy(dm);CHKERRQ(ierr);
+  PetscCheck(off[0] == cEnd - Nhyb,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of normal cells %" PetscInt_FMT " should be %" PetscInt_FMT, off[0], cEnd - Nhyb);
+  PetscCheck(off[1] == cEnd,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of hybrid cells %" PetscInt_FMT " should be %" PetscInt_FMT, off[1] - off[0], Nhyb);
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF, pEnd-pStart, ind, PETSC_OWN_POINTER, &perm));
+  PetscCall(DMPlexPermute(*dm, perm, &pdm));
+  PetscCall(ISDestroy(&perm));
+  PetscCall(DMDestroy(dm));
   *dm  = pdm;
   PetscFunctionReturn(0);
 }
@@ -168,29 +163,28 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscBool      interpolate = user->interpolate;
   PetscInt       meshNum     = user->meshNum;
   size_t         len;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
+  PetscCall(PetscStrlen(filename, &len));
   if (len) {
-    ierr = DMPlexCreateFromFile(comm, filename, "ex34_plex", PETSC_FALSE, dm);CHKERRQ(ierr);
-    ierr = OrderHybridMesh(dm);CHKERRQ(ierr);
+    PetscCall(DMPlexCreateFromFile(comm, filename, "ex34_plex", PETSC_FALSE, dm));
+    PetscCall(OrderHybridMesh(dm));
     if (interpolate) {
       DM idm;
 
-      ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
-      ierr = DMDestroy(dm);CHKERRQ(ierr);
+      PetscCall(DMPlexInterpolate(*dm, &idm));
+      PetscCall(DMDestroy(dm));
       *dm  = idm;
     }
-    ierr = PetscObjectSetName((PetscObject) *dm, "Input Mesh");CHKERRQ(ierr);
-    ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
+    PetscCall(PetscObjectSetName((PetscObject) *dm, "Input Mesh"));
+    PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
   } else {
     switch (meshNum) {
     case 0:
-      ierr = CreateHybridMesh(comm, interpolate, dm);CHKERRQ(ierr);break;
+      PetscCall(CreateHybridMesh(comm, interpolate, dm));break;
     case 1:
-      ierr = CreateReverseHybridMesh(comm, interpolate, dm);CHKERRQ(ierr);break;
-    default: SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Unknown mesh number %D", user->meshNum);
+      PetscCall(CreateReverseHybridMesh(comm, interpolate, dm));break;
+    default: SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Unknown mesh number %" PetscInt_FMT, user->meshNum);
     }
   }
   PetscFunctionReturn(0);
@@ -200,14 +194,13 @@ int main(int argc, char **argv)
 {
   DM             dm;
   AppCtx         user;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
-  ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
-  ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscInitialize(&argc, &argv, NULL,help));
+  PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
+  PetscCall(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
+  PetscCall(DMDestroy(&dm));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

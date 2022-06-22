@@ -220,7 +220,7 @@
                  (x, y, z) = (0.000000, 0.025400, 0.000000) 
               NODE ID: 1 
                  (x, y, z) = (0.000000, 0.000000, 0.025400) 
-DM Object: CAD Surface (sur_) 1 MPI processes
+DM Object: CAD Surface (sur_) 1 MPI process
   type: plex
 CAD Surface in 2 dimensions:
   Number of 0-cells per rank: 18

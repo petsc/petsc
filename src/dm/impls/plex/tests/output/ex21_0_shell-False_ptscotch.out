@@ -1,0 +1,780 @@
+DM Object: Load: DM (with coordinates) 3 MPI processes
+  type: plex
+Load: DM (with coordinates) in 2 dimensions:
+Supports:
+[0] Max support size: 3
+[0]: 3 ----> 11
+[0]: 3 ----> 12
+[0]: 3 ----> 15
+[0]: 4 ----> 12
+[0]: 4 ----> 16
+[0]: 5 ----> 13
+[0]: 5 ----> 14
+[0]: 5 ----> 15
+[0]: 6 ----> 14
+[0]: 6 ----> 16
+[0]: 7 ----> 17
+[0]: 7 ----> 19
+[0]: 8 ----> 11
+[0]: 8 ----> 17
+[0]: 8 ----> 20
+[0]: 9 ----> 18
+[0]: 9 ----> 19
+[0]: 10 ----> 13
+[0]: 10 ----> 18
+[0]: 10 ----> 20
+[0]: 11 ----> 0
+[0]: 12 ----> 1
+[0]: 13 ----> 0
+[0]: 14 ----> 1
+[0]: 15 ----> 0
+[0]: 15 ----> 1
+[0]: 16 ----> 1
+[0]: 17 ----> 2
+[0]: 18 ----> 2
+[0]: 19 ----> 2
+[0]: 20 ----> 0
+[0]: 20 ----> 2
+[1] Max support size: 3
+[1]: 4 ----> 14
+[1]: 4 ----> 16
+[1]: 4 ----> 18
+[1]: 5 ----> 16
+[1]: 5 ----> 19
+[1]: 5 ----> 20
+[1]: 6 ----> 15
+[1]: 6 ----> 17
+[1]: 6 ----> 18
+[1]: 7 ----> 17
+[1]: 7 ----> 19
+[1]: 7 ----> 21
+[1]: 8 ----> 20
+[1]: 8 ----> 22
+[1]: 9 ----> 21
+[1]: 9 ----> 22
+[1]: 10 ----> 23
+[1]: 10 ----> 25
+[1]: 11 ----> 14
+[1]: 11 ----> 23
+[1]: 11 ----> 26
+[1]: 12 ----> 24
+[1]: 12 ----> 25
+[1]: 13 ----> 15
+[1]: 13 ----> 24
+[1]: 13 ----> 26
+[1]: 14 ----> 0
+[1]: 15 ----> 0
+[1]: 16 ----> 1
+[1]: 17 ----> 1
+[1]: 18 ----> 0
+[1]: 18 ----> 1
+[1]: 19 ----> 1
+[1]: 19 ----> 2
+[1]: 20 ----> 2
+[1]: 21 ----> 2
+[1]: 22 ----> 2
+[1]: 23 ----> 3
+[1]: 24 ----> 3
+[1]: 25 ----> 3
+[1]: 26 ----> 0
+[1]: 26 ----> 3
+[2] Max support size: 3
+[2]: 3 ----> 11
+[2]: 3 ----> 15
+[2]: 4 ----> 11
+[2]: 4 ----> 12
+[2]: 4 ----> 16
+[2]: 5 ----> 12
+[2]: 5 ----> 17
+[2]: 5 ----> 18
+[2]: 6 ----> 13
+[2]: 6 ----> 15
+[2]: 7 ----> 13
+[2]: 7 ----> 14
+[2]: 7 ----> 16
+[2]: 8 ----> 14
+[2]: 8 ----> 17
+[2]: 8 ----> 19
+[2]: 9 ----> 18
+[2]: 9 ----> 20
+[2]: 10 ----> 19
+[2]: 10 ----> 20
+[2]: 11 ----> 0
+[2]: 12 ----> 1
+[2]: 13 ----> 0
+[2]: 14 ----> 1
+[2]: 15 ----> 0
+[2]: 16 ----> 0
+[2]: 16 ----> 1
+[2]: 17 ----> 1
+[2]: 17 ----> 2
+[2]: 18 ----> 2
+[2]: 19 ----> 2
+[2]: 20 ----> 2
+Cones:
+[0] Max cone size: 4
+[0]: 0 <---- 11 (0)
+[0]: 0 <---- 15 (0)
+[0]: 0 <---- 13 (-1)
+[0]: 0 <---- 20 (-1)
+[0]: 1 <---- 12 (0)
+[0]: 1 <---- 16 (0)
+[0]: 1 <---- 14 (-1)
+[0]: 1 <---- 15 (-1)
+[0]: 2 <---- 17 (0)
+[0]: 2 <---- 20 (0)
+[0]: 2 <---- 18 (-1)
+[0]: 2 <---- 19 (-1)
+[0]: 11 <---- 8 (0)
+[0]: 11 <---- 3 (0)
+[0]: 12 <---- 3 (0)
+[0]: 12 <---- 4 (0)
+[0]: 13 <---- 10 (0)
+[0]: 13 <---- 5 (0)
+[0]: 14 <---- 5 (0)
+[0]: 14 <---- 6 (0)
+[0]: 15 <---- 3 (0)
+[0]: 15 <---- 5 (0)
+[0]: 16 <---- 4 (0)
+[0]: 16 <---- 6 (0)
+[0]: 17 <---- 7 (0)
+[0]: 17 <---- 8 (0)
+[0]: 18 <---- 9 (0)
+[0]: 18 <---- 10 (0)
+[0]: 19 <---- 7 (0)
+[0]: 19 <---- 9 (0)
+[0]: 20 <---- 8 (0)
+[0]: 20 <---- 10 (0)
+[1] Max cone size: 4
+[1]: 0 <---- 14 (0)
+[1]: 0 <---- 18 (0)
+[1]: 0 <---- 15 (-1)
+[1]: 0 <---- 26 (-1)
+[1]: 1 <---- 16 (0)
+[1]: 1 <---- 19 (0)
+[1]: 1 <---- 17 (-1)
+[1]: 1 <---- 18 (-1)
+[1]: 2 <---- 20 (0)
+[1]: 2 <---- 22 (0)
+[1]: 2 <---- 21 (-1)
+[1]: 2 <---- 19 (-1)
+[1]: 3 <---- 23 (0)
+[1]: 3 <---- 26 (0)
+[1]: 3 <---- 24 (-1)
+[1]: 3 <---- 25 (-1)
+[1]: 14 <---- 11 (0)
+[1]: 14 <---- 4 (0)
+[1]: 15 <---- 13 (0)
+[1]: 15 <---- 6 (0)
+[1]: 16 <---- 4 (0)
+[1]: 16 <---- 5 (0)
+[1]: 17 <---- 6 (0)
+[1]: 17 <---- 7 (0)
+[1]: 18 <---- 4 (0)
+[1]: 18 <---- 6 (0)
+[1]: 19 <---- 5 (0)
+[1]: 19 <---- 7 (0)
+[1]: 20 <---- 5 (0)
+[1]: 20 <---- 8 (0)
+[1]: 21 <---- 7 (0)
+[1]: 21 <---- 9 (0)
+[1]: 22 <---- 8 (0)
+[1]: 22 <---- 9 (0)
+[1]: 23 <---- 10 (0)
+[1]: 23 <---- 11 (0)
+[1]: 24 <---- 12 (0)
+[1]: 24 <---- 13 (0)
+[1]: 25 <---- 10 (0)
+[1]: 25 <---- 12 (0)
+[1]: 26 <---- 11 (0)
+[1]: 26 <---- 13 (0)
+[2] Max cone size: 4
+[2]: 0 <---- 11 (0)
+[2]: 0 <---- 16 (0)
+[2]: 0 <---- 13 (-1)
+[2]: 0 <---- 15 (-1)
+[2]: 1 <---- 12 (0)
+[2]: 1 <---- 17 (0)
+[2]: 1 <---- 14 (-1)
+[2]: 1 <---- 16 (-1)
+[2]: 2 <---- 18 (0)
+[2]: 2 <---- 20 (0)
+[2]: 2 <---- 19 (-1)
+[2]: 2 <---- 17 (-1)
+[2]: 11 <---- 3 (0)
+[2]: 11 <---- 4 (0)
+[2]: 12 <---- 4 (0)
+[2]: 12 <---- 5 (0)
+[2]: 13 <---- 6 (0)
+[2]: 13 <---- 7 (0)
+[2]: 14 <---- 7 (0)
+[2]: 14 <---- 8 (0)
+[2]: 15 <---- 3 (0)
+[2]: 15 <---- 6 (0)
+[2]: 16 <---- 4 (0)
+[2]: 16 <---- 7 (0)
+[2]: 17 <---- 5 (0)
+[2]: 17 <---- 8 (0)
+[2]: 18 <---- 5 (0)
+[2]: 18 <---- 9 (0)
+[2]: 19 <---- 8 (0)
+[2]: 19 <---- 10 (0)
+[2]: 20 <---- 9 (0)
+[2]: 20 <---- 10 (0)
+coordinates with 1 fields
+  field 0 with 2 components
+Process 0:
+  (   3) dim  2 offset   0 0.833333 0.
+  (   4) dim  2 offset   2 1. 0.
+  (   5) dim  2 offset   4 0.833333 1.
+  (   6) dim  2 offset   6 1. 1.
+  (   7) dim  2 offset   8 0.5 0.
+  (   8) dim  2 offset  10 0.666667 0.
+  (   9) dim  2 offset  12 0.5 1.
+  (  10) dim  2 offset  14 0.666667 1.
+Process 1:
+  (   4) dim  2 offset   0 0.5 0.
+  (   5) dim  2 offset   2 0.666667 0.
+  (   6) dim  2 offset   4 0.5 1.
+  (   7) dim  2 offset   6 0.666667 1.
+  (   8) dim  2 offset   8 0.833333 0.
+  (   9) dim  2 offset  10 0.833333 1.
+  (  10) dim  2 offset  12 0.166667 0.
+  (  11) dim  2 offset  14 0.333333 0.
+  (  12) dim  2 offset  16 0.166667 1.
+  (  13) dim  2 offset  18 0.333333 1.
+Process 2:
+  (   3) dim  2 offset   0 0. 0.
+  (   4) dim  2 offset   2 0.166667 0.
+  (   5) dim  2 offset   4 0.333333 0.
+  (   6) dim  2 offset   6 0. 1.
+  (   7) dim  2 offset   8 0.166667 1.
+  (   8) dim  2 offset  10 0.333333 1.
+  (   9) dim  2 offset  12 0.5 0.
+  (  10) dim  2 offset  14 0.5 1.
+Labels:
+Label 'Face Sets':
+[0]: 11 (1)
+[0]: 12 (1)
+[0]: 17 (1)
+[0]: 16 (2)
+[0]: 13 (3)
+[0]: 14 (3)
+[0]: 18 (3)
+[1]: 14 (1)
+[1]: 16 (1)
+[1]: 20 (1)
+[1]: 23 (1)
+[1]: 15 (3)
+[1]: 17 (3)
+[1]: 21 (3)
+[1]: 24 (3)
+[2]: 11 (1)
+[2]: 12 (1)
+[2]: 18 (1)
+[2]: 13 (3)
+[2]: 14 (3)
+[2]: 19 (3)
+[2]: 15 (4)
+Label 'celltype':
+[0]: 3 (0)
+[0]: 4 (0)
+[0]: 5 (0)
+[0]: 6 (0)
+[0]: 7 (0)
+[0]: 8 (0)
+[0]: 9 (0)
+[0]: 10 (0)
+[0]: 11 (1)
+[0]: 12 (1)
+[0]: 13 (1)
+[0]: 14 (1)
+[0]: 15 (1)
+[0]: 16 (1)
+[0]: 17 (1)
+[0]: 18 (1)
+[0]: 19 (1)
+[0]: 20 (1)
+[0]: 0 (4)
+[0]: 1 (4)
+[0]: 2 (4)
+[1]: 4 (0)
+[1]: 5 (0)
+[1]: 6 (0)
+[1]: 7 (0)
+[1]: 8 (0)
+[1]: 9 (0)
+[1]: 10 (0)
+[1]: 11 (0)
+[1]: 12 (0)
+[1]: 13 (0)
+[1]: 14 (1)
+[1]: 15 (1)
+[1]: 16 (1)
+[1]: 17 (1)
+[1]: 18 (1)
+[1]: 19 (1)
+[1]: 20 (1)
+[1]: 21 (1)
+[1]: 22 (1)
+[1]: 23 (1)
+[1]: 24 (1)
+[1]: 25 (1)
+[1]: 26 (1)
+[1]: 0 (4)
+[1]: 1 (4)
+[1]: 2 (4)
+[1]: 3 (4)
+[2]: 3 (0)
+[2]: 4 (0)
+[2]: 5 (0)
+[2]: 6 (0)
+[2]: 7 (0)
+[2]: 8 (0)
+[2]: 9 (0)
+[2]: 10 (0)
+[2]: 11 (1)
+[2]: 12 (1)
+[2]: 13 (1)
+[2]: 14 (1)
+[2]: 15 (1)
+[2]: 16 (1)
+[2]: 17 (1)
+[2]: 18 (1)
+[2]: 19 (1)
+[2]: 20 (1)
+[2]: 0 (4)
+[2]: 1 (4)
+[2]: 2 (4)
+Label 'marker':
+[0]: 3 (1)
+[0]: 4 (1)
+[0]: 5 (1)
+[0]: 6 (1)
+[0]: 7 (1)
+[0]: 8 (1)
+[0]: 9 (1)
+[0]: 10 (1)
+[0]: 11 (1)
+[0]: 12 (1)
+[0]: 13 (1)
+[0]: 14 (1)
+[0]: 16 (1)
+[0]: 17 (1)
+[0]: 18 (1)
+[1]: 4 (1)
+[1]: 5 (1)
+[1]: 6 (1)
+[1]: 7 (1)
+[1]: 8 (1)
+[1]: 9 (1)
+[1]: 10 (1)
+[1]: 11 (1)
+[1]: 12 (1)
+[1]: 13 (1)
+[1]: 14 (1)
+[1]: 15 (1)
+[1]: 16 (1)
+[1]: 17 (1)
+[1]: 20 (1)
+[1]: 21 (1)
+[1]: 23 (1)
+[1]: 24 (1)
+[2]: 3 (1)
+[2]: 4 (1)
+[2]: 5 (1)
+[2]: 6 (1)
+[2]: 7 (1)
+[2]: 8 (1)
+[2]: 9 (1)
+[2]: 10 (1)
+[2]: 11 (1)
+[2]: 12 (1)
+[2]: 13 (1)
+[2]: 14 (1)
+[2]: 15 (1)
+[2]: 18 (1)
+[2]: 19 (1)
+PetscSF Object: 3 MPI processes
+  type: basic
+  [0] Number of roots=21, leaves=9, remote ranks=1
+  [0] 2 <- (1,1)
+  [0] 7 <- (1,4)
+  [0] 8 <- (1,5)
+  [0] 9 <- (1,6)
+  [0] 10 <- (1,7)
+  [0] 17 <- (1,16)
+  [0] 18 <- (1,17)
+  [0] 19 <- (1,18)
+  [0] 20 <- (1,19)
+  [1] Number of roots=27, leaves=15, remote ranks=2
+  [1] 2 <- (0,0)
+  [1] 3 <- (2,1)
+  [1] 8 <- (0,3)
+  [1] 9 <- (0,5)
+  [1] 10 <- (2,4)
+  [1] 11 <- (2,5)
+  [1] 12 <- (2,7)
+  [1] 13 <- (2,8)
+  [1] 20 <- (0,11)
+  [1] 21 <- (0,13)
+  [1] 22 <- (0,15)
+  [1] 23 <- (2,12)
+  [1] 24 <- (2,14)
+  [1] 25 <- (2,16)
+  [1] 26 <- (2,17)
+  [2] Number of roots=21, leaves=6, remote ranks=1
+  [2] 2 <- (1,0)
+  [2] 9 <- (1,4)
+  [2] 10 <- (1,6)
+  [2] 18 <- (1,14)
+  [2] 19 <- (1,15)
+  [2] 20 <- (1,18)
+  [0] Roots referenced by my leaves, by rank
+  [0] 1: 9 edges
+  [0]    2 <- 1
+  [0]    7 <- 4
+  [0]    8 <- 5
+  [0]    9 <- 6
+  [0]    10 <- 7
+  [0]    17 <- 16
+  [0]    18 <- 17
+  [0]    19 <- 18
+  [0]    20 <- 19
+  [1] Roots referenced by my leaves, by rank
+  [1] 0: 6 edges
+  [1]    2 <- 0
+  [1]    8 <- 3
+  [1]    9 <- 5
+  [1]    20 <- 11
+  [1]    21 <- 13
+  [1]    22 <- 15
+  [1] 2: 9 edges
+  [1]    3 <- 1
+  [1]    10 <- 4
+  [1]    11 <- 5
+  [1]    12 <- 7
+  [1]    13 <- 8
+  [1]    23 <- 12
+  [1]    24 <- 14
+  [1]    25 <- 16
+  [1]    26 <- 17
+  [2] Roots referenced by my leaves, by rank
+  [2] 1: 6 edges
+  [2]    2 <- 0
+  [2]    9 <- 4
+  [2]    10 <- 6
+  [2]    18 <- 14
+  [2]    19 <- 15
+  [2]    20 <- 18
+  MultiSF sort=rank-order
+PetscSection Object: Load: local section 3 MPI processes
+  type not yet set
+2 fields
+  field 0 with 1 components
+Process 0:
+  (   0) dim  0 offset   0
+  (   1) dim  0 offset   1
+  (   2) dim  2 offset   1
+  (   3) dim  0 offset   3
+  (   4) dim  0 offset   3
+  (   5) dim  0 offset   3
+  (   6) dim  0 offset   3
+  (   7) dim  0 offset   3
+  (   8) dim  0 offset   3
+  (   9) dim  2 offset   3
+  (  10) dim  0 offset   6
+  (  11) dim  0 offset   6
+  (  12) dim  0 offset   6
+  (  13) dim  0 offset   6
+  (  14) dim  0 offset   6
+  (  15) dim  0 offset   6
+  (  16) dim  0 offset   6
+  (  17) dim  0 offset   6
+  (  18) dim  0 offset   6
+  (  19) dim  0 offset   6
+  (  20) dim  0 offset   8
+Process 1:
+  (   0) dim  0 offset   0
+  (   1) dim  2 offset   0
+  (   2) dim  0 offset   2
+  (   3) dim  0 offset   3
+  (   4) dim  0 offset   3
+  (   5) dim  0 offset   3
+  (   6) dim  2 offset   3
+  (   7) dim  0 offset   6
+  (   8) dim  0 offset   6
+  (   9) dim  0 offset   6
+  (  10) dim  0 offset   6
+  (  11) dim  0 offset   6
+  (  12) dim  0 offset   6
+  (  13) dim  0 offset   6
+  (  14) dim  0 offset   6
+  (  15) dim  0 offset   6
+  (  16) dim  0 offset   6
+  (  17) dim  0 offset   6
+  (  18) dim  0 offset   6
+  (  19) dim  0 offset   8
+  (  20) dim  0 offset   8
+  (  21) dim  0 offset   8
+  (  22) dim  0 offset   8
+  (  23) dim  0 offset   8
+  (  24) dim  0 offset   8
+  (  25) dim  0 offset   8
+  (  26) dim  0 offset   8
+Process 2:
+  (   0) dim  0 offset   0
+  (   1) dim  0 offset   0
+  (   2) dim  0 offset   0
+  (   3) dim  0 offset   0
+  (   4) dim  0 offset   0
+  (   5) dim  0 offset   0
+  (   6) dim  0 offset   0
+  (   7) dim  0 offset   0
+  (   8) dim  0 offset   0
+  (   9) dim  0 offset   0
+  (  10) dim  2 offset   2
+  (  11) dim  0 offset   2
+  (  12) dim  0 offset   2
+  (  13) dim  0 offset   2
+  (  14) dim  0 offset   2
+  (  15) dim  0 offset   2
+  (  16) dim  0 offset   2
+  (  17) dim  0 offset   2
+  (  18) dim  0 offset   2
+  (  19) dim  0 offset   2
+  (  20) dim  0 offset   0
+  field 1 with 1 components
+Process 0:
+  (   0) dim  1 offset   0
+  (   1) dim  0 offset   1
+  (   2) dim  0 offset   3
+  (   3) dim  0 offset   3
+  (   4) dim  0 offset   3
+  (   5) dim  0 offset   3
+  (   6) dim  0 offset   3
+  (   7) dim  0 offset   3
+  (   8) dim  0 offset   3
+  (   9) dim  1 offset   5 constrained 0
+  (  10) dim  0 offset   6
+  (  11) dim  0 offset   6
+  (  12) dim  0 offset   6
+  (  13) dim  0 offset   6
+  (  14) dim  0 offset   6
+  (  15) dim  0 offset   6
+  (  16) dim  0 offset   6
+  (  17) dim  0 offset   6
+  (  18) dim  0 offset   6
+  (  19) dim  2 offset   6
+  (  20) dim  0 offset   8
+Process 1:
+  (   0) dim  0 offset   0
+  (   1) dim  0 offset   2
+  (   2) dim  1 offset   2
+  (   3) dim  0 offset   3
+  (   4) dim  0 offset   3
+  (   5) dim  0 offset   3
+  (   6) dim  1 offset   5 constrained 0
+  (   7) dim  0 offset   6
+  (   8) dim  0 offset   6
+  (   9) dim  0 offset   6
+  (  10) dim  0 offset   6
+  (  11) dim  0 offset   6
+  (  12) dim  0 offset   6
+  (  13) dim  0 offset   6
+  (  14) dim  0 offset   6
+  (  15) dim  0 offset   6
+  (  16) dim  0 offset   6
+  (  17) dim  0 offset   6
+  (  18) dim  2 offset   6
+  (  19) dim  0 offset   8
+  (  20) dim  0 offset   8
+  (  21) dim  0 offset   8
+  (  22) dim  0 offset   8
+  (  23) dim  0 offset   8
+  (  24) dim  0 offset   8
+  (  25) dim  0 offset   8
+  (  26) dim  0 offset   8
+Process 2:
+  (   0) dim  0 offset   0
+  (   1) dim  0 offset   0
+  (   2) dim  0 offset   0
+  (   3) dim  0 offset   0
+  (   4) dim  0 offset   0
+  (   5) dim  0 offset   0
+  (   6) dim  0 offset   0
+  (   7) dim  0 offset   0
+  (   8) dim  0 offset   0
+  (   9) dim  0 offset   0
+  (  10) dim  1 offset   4 constrained 0
+  (  11) dim  0 offset   2
+  (  12) dim  0 offset   2
+  (  13) dim  0 offset   2
+  (  14) dim  0 offset   2
+  (  15) dim  0 offset   2
+  (  16) dim  0 offset   2
+  (  17) dim  0 offset   2
+  (  18) dim  0 offset   2
+  (  19) dim  0 offset   2
+  (  20) dim  2 offset   0
+PetscSection Object: Load: global section 3 MPI processes
+  type not yet set
+2 fields
+  field 0 with 1 components
+Process 0:
+  (   0) dim  0 offset   0
+  (   1) dim  0 offset   1
+  (   2) dim -3 offset  -2
+  (   3) dim  0 offset   1
+  (   4) dim  0 offset   1
+  (   5) dim  0 offset   1
+  (   6) dim  0 offset   1
+  (   7) dim -1 offset  -4
+  (   8) dim -1 offset  -4
+  (   9) dim -3 offset  -4
+  (  10) dim -1 offset  -6
+  (  11) dim  0 offset   1
+  (  12) dim  0 offset   1
+  (  13) dim  0 offset   1
+  (  14) dim  0 offset   1
+  (  15) dim  0 offset   1
+  (  16) dim  0 offset   1
+  (  17) dim -1 offset  -6
+  (  18) dim -1 offset  -6
+  (  19) dim -1 offset  -6
+  (  20) dim -1 offset  -8
+Process 1:
+  (   0) dim  0 offset   1
+  (   1) dim  2 offset   1
+  (   2) dim -1 offset  -1
+  (   3) dim -1 offset  -8
+  (   4) dim  0 offset   3
+  (   5) dim  0 offset   3
+  (   6) dim  2 offset   3
+  (   7) dim  0 offset   5
+  (   8) dim -1 offset  -2
+  (   9) dim -1 offset  -2
+  (  10) dim -1 offset  -8
+  (  11) dim -1 offset  -8
+  (  12) dim -1 offset  -8
+  (  13) dim -1 offset  -8
+  (  14) dim  0 offset   5
+  (  15) dim  0 offset   5
+  (  16) dim  0 offset   5
+  (  17) dim  0 offset   5
+  (  18) dim  0 offset   5
+  (  19) dim  0 offset   7
+  (  20) dim -1 offset  -2
+  (  21) dim -1 offset  -2
+  (  22) dim -1 offset  -2
+  (  23) dim -1 offset  -8
+  (  24) dim -1 offset  -8
+  (  25) dim -1 offset  -8
+  (  26) dim -1 offset  -8
+Process 2:
+  (   0) dim  0 offset   7
+  (   1) dim  0 offset   7
+  (   2) dim -1 offset  -2
+  (   3) dim  0 offset   7
+  (   4) dim  0 offset   7
+  (   5) dim  0 offset   7
+  (   6) dim  0 offset   7
+  (   7) dim  0 offset   7
+  (   8) dim  0 offset   7
+  (   9) dim -1 offset  -4
+  (  10) dim -3 offset  -4
+  (  11) dim  0 offset   7
+  (  12) dim  0 offset   7
+  (  13) dim  0 offset   7
+  (  14) dim  0 offset   7
+  (  15) dim  0 offset   7
+  (  16) dim  0 offset   7
+  (  17) dim  0 offset   7
+  (  18) dim -1 offset  -6
+  (  19) dim -1 offset  -6
+  (  20) dim -1 offset  -6
+  field 1 with 1 components
+Process 0:
+  (   0) dim  1 offset   0
+  (   1) dim  0 offset   1
+  (   2) dim -1 offset  -4
+  (   3) dim  0 offset   1
+  (   4) dim  0 offset   1
+  (   5) dim  0 offset   1
+  (   6) dim  0 offset   1
+  (   7) dim -1 offset  -4
+  (   8) dim -1 offset  -4
+  (   9) dim -2 offset  -6 constrained 0
+  (  10) dim -1 offset  -6
+  (  11) dim  0 offset   1
+  (  12) dim  0 offset   1
+  (  13) dim  0 offset   1
+  (  14) dim  0 offset   1
+  (  15) dim  0 offset   1
+  (  16) dim  0 offset   1
+  (  17) dim -1 offset  -6
+  (  18) dim -1 offset  -6
+  (  19) dim -3 offset  -6
+  (  20) dim -1 offset  -8
+Process 1:
+  (   0) dim  0 offset   1
+  (   1) dim  0 offset   3
+  (   2) dim -2 offset  -1
+  (   3) dim -1 offset  -8
+  (   4) dim  0 offset   3
+  (   5) dim  0 offset   3
+  (   6) dim  1 offset   5 constrained 0
+  (   7) dim  0 offset   5
+  (   8) dim -1 offset  -2
+  (   9) dim -1 offset  -2
+  (  10) dim -1 offset  -8
+  (  11) dim -1 offset  -8
+  (  12) dim -1 offset  -8
+  (  13) dim -1 offset  -8
+  (  14) dim  0 offset   5
+  (  15) dim  0 offset   5
+  (  16) dim  0 offset   5
+  (  17) dim  0 offset   5
+  (  18) dim  2 offset   5
+  (  19) dim  0 offset   7
+  (  20) dim -1 offset  -2
+  (  21) dim -1 offset  -2
+  (  22) dim -1 offset  -2
+  (  23) dim -1 offset  -8
+  (  24) dim -1 offset  -8
+  (  25) dim -1 offset  -8
+  (  26) dim -1 offset  -8
+Process 2:
+  (   0) dim  0 offset   7
+  (   1) dim  0 offset   7
+  (   2) dim -1 offset  -2
+  (   3) dim  0 offset   7
+  (   4) dim  0 offset   7
+  (   5) dim  0 offset   7
+  (   6) dim  0 offset   7
+  (   7) dim  0 offset   7
+  (   8) dim  0 offset   7
+  (   9) dim -1 offset  -4
+  (  10) dim -2 offset  -6 constrained 0
+  (  11) dim  0 offset   7
+  (  12) dim  0 offset   7
+  (  13) dim  0 offset   7
+  (  14) dim  0 offset   7
+  (  15) dim  0 offset   7
+  (  16) dim  0 offset   7
+  (  17) dim  0 offset   7
+  (  18) dim -1 offset  -6
+  (  19) dim -1 offset  -6
+  (  20) dim -3 offset  -6
+Vec Object: exampleVec 3 MPI processes
+  type: mpi
+Process [0]
+1.2
+Process [1]
+1.
+1.1
+1.3
+1.4
+1.6
+1.7
+Process [2]

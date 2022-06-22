@@ -60,7 +60,7 @@ reported by contacting the project team as a group
 or confidentially by contacting
 [Jed Brown](mailto:jed@jedbrown.org),
 [Karl Rupp](mailto:me@karlrupp.net),
-and/or [Oana Marin](mailto:oanam@mcs.anl.gov).
+and/or [Hong Zhang](mailto:hzhang@mcs.anl.gov).
 All complaints will be reviewed and investigated and will result in a
 response that is deemed necessary and appropriate to the
 circumstances. The project team is obligated to maintain

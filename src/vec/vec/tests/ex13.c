@@ -5,24 +5,23 @@ static char help[] = "Demonstrates scattering with the indices specified by a pr
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscMPIInt    rank,size;
   Vec            x,y;
   IS             is1,is2;
   PetscInt       n,N,ix[2],iy[2];
   VecScatter     ctx;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  PetscCheckFalse(size < 3,PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"This example needs at least 3 processes");
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  PetscCheck(size >= 3,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This example needs at least 3 processes");
 
   /* create two vectors */
   n = 2;
   N = 2*size;
 
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,n,N,&x);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
+  PetscCall(VecCreateMPI(PETSC_COMM_WORLD,n,N,&x));
+  PetscCall(VecDuplicate(x,&y));
 
   /* Specify indices to send from the next process in the ring */
   ix[0] = ((rank+1)*n+0) % N;
@@ -32,28 +31,28 @@ int main(int argc,char **argv)
   iy[1] = ((rank+2)*n+1) % N;
 
   /* create two index sets */
-  ierr = ISCreateGeneral(PETSC_COMM_WORLD,n,ix,PETSC_USE_POINTER,&is1);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_WORLD,n,iy,PETSC_USE_POINTER,&is2);CHKERRQ(ierr);
+  PetscCall(ISCreateGeneral(PETSC_COMM_WORLD,n,ix,PETSC_USE_POINTER,&is1));
+  PetscCall(ISCreateGeneral(PETSC_COMM_WORLD,n,iy,PETSC_USE_POINTER,&is2));
 
-  ierr = VecSetValue(x,rank*n,rank*n,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = VecSetValue(x,rank*n+1,rank*n+1,INSERT_VALUES);CHKERRQ(ierr);
+  PetscCall(VecSetValue(x,rank*n,rank*n,INSERT_VALUES));
+  PetscCall(VecSetValue(x,rank*n+1,rank*n+1,INSERT_VALUES));
 
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"----\n");CHKERRQ(ierr);
+  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"----\n"));
 
-  ierr = VecScatterCreate(x,is1,y,is2,&ctx);CHKERRQ(ierr);
-  ierr = VecScatterBegin(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&ctx);CHKERRQ(ierr);
+  PetscCall(VecScatterCreate(x,is1,y,is2,&ctx));
+  PetscCall(VecScatterBegin(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD));
+  PetscCall(VecScatterDestroy(&ctx));
 
-  ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscCall(VecView(y,PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = ISDestroy(&is1);CHKERRQ(ierr);
-  ierr = ISDestroy(&is2);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&y);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(ISDestroy(&is1));
+  PetscCall(ISDestroy(&is2));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&y));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

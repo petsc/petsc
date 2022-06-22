@@ -18,19 +18,15 @@ program main
   character(len=256) :: outstring
   PetscBool :: flg
 
-  call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-   if (ierr /= 0) then
-   print*,'PetscInitialize failed'
-   stop
-  endif
+  PetscCallA(PetscInitialize(ierr))
 
-  call MPI_Comm_size(PETSC_COMM_WORLD,mySize,ierr)
+  PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD,mySize,ierr))
 
   if (mySize /= 1) then
     SETERRA(PETSC_COMM_SELF,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!")
   endif
 
-  call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-m",m,flg,ierr);CHKERRA(ierr)
+  PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-m",m,flg,ierr))
 
   ! ----------------------------------------------------------------------
   !          PART 1: Write some data to a file in binary format
@@ -46,15 +42,15 @@ program main
   allocate(t(1))
   t(1) = m
   ! Open viewer for binary output
-  call PetscViewerBinaryOpen(PETSC_COMM_SELF,"input.dat",FILE_MODE_WRITE,view_out,ierr);CHKERRA(ierr)
-  call PetscViewerBinaryGetDescriptor(view_out,fd,ierr);CHKERRA(ierr)
+  PetscCallA(PetscViewerBinaryOpen(PETSC_COMM_SELF,"input.dat",FILE_MODE_WRITE,view_out,ierr))
+  PetscCallA(PetscViewerBinaryGetDescriptor(view_out,fd,ierr))
 
   ! Write binary output
-  call PetscBinaryWrite(fd,t,one,PETSC_INT,ierr);CHKERRA(ierr)
-  call PetscBinaryWrite(fd,array,m,PETSC_SCALAR,ierr);CHKERRA(ierr)
+  PetscCallA(PetscBinaryWrite(fd,t,one,PETSC_INT,ierr))
+  PetscCallA(PetscBinaryWrite(fd,array,m,PETSC_SCALAR,ierr))
 
   ! Destroy the output viewer and work array
-  call PetscViewerDestroy(view_out,ierr);CHKERRA(ierr)
+  PetscCallA(PetscViewerDestroy(view_out,ierr))
   deallocate(array)
 
   ! ----------------------------------------------------------------------
@@ -62,19 +58,19 @@ program main
   ! ----------------------------------------------------------------------
 
   ! Open input binary viewer
-  call PetscViewerBinaryOpen(PETSC_COMM_SELF,"input.dat",FILE_MODE_READ,view_in,ierr);CHKERRA(ierr)
-  call PetscViewerBinaryGetDescriptor(view_in,fd,ierr);CHKERRA(ierr)
+  PetscCallA(PetscViewerBinaryOpen(PETSC_COMM_SELF,"input.dat",FILE_MODE_READ,view_in,ierr))
+  PetscCallA(PetscViewerBinaryGetDescriptor(view_in,fd,ierr))
 
   ! Create vector and get pointer to data space
-  call VecCreate(PETSC_COMM_SELF,vec,ierr);CHKERRA(ierr)
-  call VecSetSizes(vec,PETSC_DECIDE,m,ierr);CHKERRA(ierr)
+  PetscCallA(VecCreate(PETSC_COMM_SELF,vec,ierr))
+  PetscCallA(VecSetSizes(vec,PETSC_DECIDE,m,ierr))
 
-  call VecSetFromOptions(vec,ierr);CHKERRA(ierr)
+  PetscCallA(VecSetFromOptions(vec,ierr))
 
-  call VecGetArrayF90(vec,avec,ierr);CHKERRA(ierr)
+  PetscCallA(VecGetArrayF90(vec,avec,ierr))
 
   ! Read data into vector
-  call PetscBinaryRead(fd,t,one,PETSC_NULL_INTEGER,PETSC_INT,ierr);CHKERRA(ierr)
+  PetscCallA(PetscBinaryRead(fd,t,one,PETSC_NULL_INTEGER,PETSC_INT,ierr))
   sz=t(1)
 
   if (sz <= 0) then
@@ -82,19 +78,19 @@ program main
   endif
 
   write(outstring,'(a,i2.2,a)') "reading data in binary from input.dat, sz =", sz, " ...\n"
-  call PetscPrintf(PETSC_COMM_SELF,trim(outstring),ierr);CHKERRA(ierr)
+  PetscCallA(PetscPrintf(PETSC_COMM_SELF,trim(outstring),ierr))
 
-  call PetscBinaryRead(fd,avec,sz,PETSC_NULL_INTEGER,PETSC_SCALAR,ierr);CHKERRA(ierr)
+  PetscCallA(PetscBinaryRead(fd,avec,sz,PETSC_NULL_INTEGER,PETSC_SCALAR,ierr))
 
   ! View vector
-  call VecRestoreArrayF90(vec,avec,ierr);CHKERRA(ierr)
-  call VecView(vec,PETSC_VIEWER_STDOUT_SELF,ierr);CHKERRA(ierr)
+  PetscCallA(VecRestoreArrayF90(vec,avec,ierr))
+  PetscCallA(VecView(vec,PETSC_VIEWER_STDOUT_SELF,ierr))
 
   ! Free data structures
   deallocate(t)
-  call VecDestroy(vec,ierr);CHKERRA(ierr)
-  call PetscViewerDestroy(view_in,ierr);CHKERRA(ierr)
-  call PetscFinalize(ierr);CHKERRA(ierr)
+  PetscCallA(VecDestroy(vec,ierr))
+  PetscCallA(PetscViewerDestroy(view_in,ierr))
+  PetscCallA(PetscFinalize(ierr))
 
   end program
 

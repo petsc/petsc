@@ -13,52 +13,51 @@ int main(int argc, char **argv)
   PetscLogDouble t_add = 0;
   PetscLogDouble t_has = 0;
   PetscLogDouble t_del = 0;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL);CHKERRQ(ierr);
-  ierr = PetscHSetIJCreate(&table);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,NULL,help));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
+  PetscCall(PetscHSetIJCreate(&table));
 
   /* The following line silences warnings from Clang Static Analyzer */
-  ierr = PetscHSetIJResize(table,0);CHKERRQ(ierr);
+  PetscCall(PetscHSetIJResize(table,0));
 
-  ierr = PetscTimeSubtract(&t_add);CHKERRQ(ierr);
+  PetscCall(PetscTimeSubtract(&t_add));
   for (i = 0; i < N; ++i) {
     for (j = 0; j < N; ++j) {
       key.i = PetscMin(i, j);
       key.j = PetscMax(i, j);
-      ierr  = PetscHSetIJQueryAdd(table, key, &flag);CHKERRQ(ierr);
+      PetscCall(PetscHSetIJQueryAdd(table, key, &flag));
     }
   }
-  ierr = PetscTimeAdd(&t_add);CHKERRQ(ierr);
+  PetscCall(PetscTimeAdd(&t_add));
 
-  ierr = PetscHSetIJGetSize(table,&n);CHKERRQ(ierr);
+  PetscCall(PetscHSetIJGetSize(table,&n));
 
-  ierr = PetscTimeSubtract(&t_has);CHKERRQ(ierr);
+  PetscCall(PetscTimeSubtract(&t_has));
   for (i = 0; i < N; ++i) {
     for (j = 0; j < N; ++j) {
       key.i = i;
       key.j = j;
-      ierr  = PetscHSetIJHas(table, key, &flag);CHKERRQ(ierr);
+      PetscCall(PetscHSetIJHas(table, key, &flag));
     }
   }
-  ierr = PetscTimeAdd(&t_has);CHKERRQ(ierr);
+  PetscCall(PetscTimeAdd(&t_has));
 
-  ierr = PetscTimeSubtract(&t_del);CHKERRQ(ierr);
+  PetscCall(PetscTimeSubtract(&t_del));
   for (i = 0; i < N; ++i) {
     for (j = 0; j < N; ++j) {
       key.i = i;
       key.j = j;
-      ierr  = PetscHSetIJQueryDel(table, key, &flag);CHKERRQ(ierr);
+      PetscCall(PetscHSetIJQueryDel(table, key, &flag));
     }
   }
-  ierr = PetscTimeAdd(&t_del);CHKERRQ(ierr);
+  PetscCall(PetscTimeAdd(&t_del));
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"N = %" PetscInt_FMT " - table size: %" PetscInt_FMT ", add: %g, has: %g, del: %g\n",N,n,t_add,t_has,t_del);CHKERRQ(ierr);
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"N = %" PetscInt_FMT " - table size: %" PetscInt_FMT ", add: %g, has: %g, del: %g\n",N,n,t_add,t_has,t_del));
 
-  ierr = PetscHSetIJDestroy(&table);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscHSetIJDestroy(&table));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

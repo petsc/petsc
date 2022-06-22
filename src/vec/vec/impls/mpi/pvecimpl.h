@@ -42,6 +42,22 @@ typedef struct {
  #if defined(PETSC_HAVE_NVSHMEM)
   PetscBool      use_nvshmem; /* Try to use NVSHMEM in communication of, for example, VecNorm */
  #endif
+
+  /* COO fields, assuming m is the vector's local size */
+  PetscCount  coo_n;
+  PetscCount  tot1; /* Total local entries in COO arrays */
+  PetscCount  *jmap1; /* [m+1]: i-th entry of the vector has jmap1[i+1]-jmap1[i] repeats in COO arrays */
+  PetscCount  *perm1; /* [tot1]: permutation array for local entries */
+
+  PetscCount  nnz2;   /* Unique entries in recvbuf */
+  PetscCount  *imap2; /* [nnz2]: i-th unique entry in recvbuf is imap2[i]-th entry in the vector */
+  PetscCount  *jmap2; /* [nnz2+1] */
+  PetscCount  *perm2; /* [recvlen] */
+
+  PetscSF     coo_sf;
+  PetscCount  sendlen,recvlen; /* Lengths (in unit of PetscScalar) of send/recvbuf */
+  PetscCount  *Cperm; /* [sendlen]: permutation array to fill sendbuf[]. 'C' for communication */
+  PetscScalar *sendbuf,*recvbuf;  /* Buffers for remote values in VecSetValuesCOO() */
 } Vec_MPI;
 
 PETSC_INTERN PetscErrorCode VecDot_MPI(Vec,Vec,PetscScalar*);
@@ -68,6 +84,7 @@ PETSC_INTERN PetscErrorCode VecAssemblyReset_MPI(Vec);
 PETSC_INTERN PetscErrorCode VecCreate_MPI_Private(Vec,PetscBool,PetscInt,const PetscScalar[]);
 PETSC_EXTERN PetscErrorCode VecCreate_MPI(Vec);
 PETSC_INTERN PetscErrorCode VecDuplicate_MPI(Vec,Vec*);
-
+PETSC_INTERN PetscErrorCode VecSetPreallocationCOO_MPI(Vec,PetscCount,const PetscInt[]);
+PETSC_INTERN PetscErrorCode VecSetValuesCOO_MPI(Vec,const PetscScalar[],InsertMode);
 #endif
 

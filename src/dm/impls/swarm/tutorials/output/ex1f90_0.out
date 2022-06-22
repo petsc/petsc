@@ -1,4 +1,4 @@
-DM Object: box 1 MPI processes
+DM Object: box 1 MPI process
   type: plex
 box in 2 dimensions:
   Number of 0-cells per rank: 861
@@ -9,22 +9,7 @@ Labels:
   Face Sets: 4 strata with value/size (4 (20), 2 (20), 1 (40), 3 (40))
   depth: 3 strata with value/size (0 (861), 1 (1660), 2 (800))
   celltype: 3 strata with value/size (4 (800), 0 (861), 1 (1660))
-DM Object: 1 MPI processes
+DM Object: 1 MPI process
   type: swarm
-DMSwarmDataBucketView: 
-  L                  = 100 
-  buffer             = 0 
-  allocated          = 100 
-  nfields registered = 5 
-    [  0]     DMSwarm_pid : Mem. usage       = 8.00e-04 (MB) [rank0]
-                            blocksize        = 1 
-    [  1]    DMSwarm_rank : Mem. usage       = 4.00e-04 (MB) [rank0]
-                            blocksize        = 1 
-    [  2] DMSwarmPIC_coor : Mem. usage       = 1.60e-03 (MB) [rank0]
-                            blocksize        = 2 
-    [  3]  DMSwarm_cellid : Mem. usage       = 4.00e-04 (MB) [rank0]
-                            blocksize        = 1 
-    [  4]             w_q : Mem. usage       = 8.00e-04 (MB) [rank0]
-                            blocksize        = 1 
-  Total mem. usage                           = 4.00e-03 (MB) (collective)
+  Number of particles per rank: 100
  Total number density =    99.999665696467190     

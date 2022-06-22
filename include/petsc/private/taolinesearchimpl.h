@@ -39,7 +39,7 @@ struct _p_TaoLineSearch {
     /* bounds used for some line searches */
     Vec lower;
     Vec upper;
-    PetscInt bounded;
+    PetscBool bounded;
 
     Vec start_x;
     Vec stepdirection;

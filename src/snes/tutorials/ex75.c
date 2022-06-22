@@ -11,14 +11,11 @@ typedef struct {
 
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
   options->fem = PETSC_FALSE;
-
-  ierr = PetscOptionsBegin(comm, "", "Stokes Problem Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-fem", "Run FEM tests", "ex75.c", options->fem, &options->fem, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscOptionsBegin(comm, "", "Stokes Problem Options", "DMPLEX");
+  PetscCall(PetscOptionsBool("-fem", "Run FEM tests", "ex75.c", options->fem, &options->fem, NULL));
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 
@@ -523,26 +520,23 @@ PetscErrorCode MapleTest(MPI_Comm comm, AppCtx *ctx)
   PetscReal      x[41], z[41];
   PetscReal      kn, km, B;
   PetscInt       i, j;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = SolKxData5(x, z, &kn, &km, &B, vxMaple, vzMaple, pMaple, sxxMaple, sxzMaple, szzMaple);CHKERRQ(ierr);
+  PetscCall(SolKxData5(x, z, &kn, &km, &B, vxMaple, vzMaple, pMaple, sxxMaple, sxzMaple, szzMaple));
   for (i = 0; i < n; ++i) {
     for (j = 0; j < n; ++j) {
       PetscScalar vx, vz, p, sxx, sxz, szz;
       PetscReal   norm;
 
-      ierr = SolKxSolution(x[i], z[j], kn, km, B, &vx, &vz, &p, &sxx, &sxz, &szz);CHKERRQ(ierr);
-      norm = sqrt(PetscSqr(PetscAbsScalar(vx - vxMaple[i][j])) + PetscSqr(PetscAbsScalar(vz - vzMaple[i][j])));
-      if (norm > 1.0e-10) {
-        ierr = PetscPrintf(PETSC_COMM_SELF, "%0.17e %0.17e %0.17e %0.17e %0.17e %0.17e %0.17e %0.17e %0.17e\n",
-                           (double)x[i], (double)z[j], (double)PetscAbsScalar(vx - vxMaple[i][j]), (double)PetscAbsScalar(vz - vzMaple[i][j]), (double)PetscAbsScalar(p - pMaple[i][j]),
-                           (double)PetscAbsScalar(sxx - sxxMaple[i][j]), (double)PetscAbsScalar(sxz - sxzMaple[i][j]), (double)PetscAbsScalar(szz - szzMaple[i][j]), (double)norm);
-        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid solution, error %g", (double)norm);
+      PetscCall(SolKxSolution(x[i], z[j], kn, km, B, &vx, &vz, &p, &sxx, &sxz, &szz));
+      norm = PetscSqrt(PetscSqr(PetscAbsScalar(vx - vxMaple[i][j])) + PetscSqr(PetscAbsScalar(vz - vzMaple[i][j])));
+      PetscCheck(norm >- 1.0e-10,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid solution, %0.17e %0.17e %0.17e %0.17e %0.17e %0.17e %0.17e %0.17e %0.17e\n",
+                 (double)x[i], (double)z[j], (double)PetscAbsScalar(vx - vxMaple[i][j]), (double)PetscAbsScalar(vz - vzMaple[i][j]), (double)PetscAbsScalar(p - pMaple[i][j]),
+                 (double)PetscAbsScalar(sxx - sxxMaple[i][j]), (double)PetscAbsScalar(sxz - sxzMaple[i][j]), (double)PetscAbsScalar(szz - szzMaple[i][j]), (double)norm);
       }
     }
   }
-  ierr = PetscPrintf(comm, "Verified Maple test 5\n");CHKERRQ(ierr);
+  PetscCall(PetscPrintf(comm, "Verified Maple test 5\n"));
   PetscFunctionReturn(0);
 }
 
@@ -552,33 +546,31 @@ PetscErrorCode FEMTest(MPI_Comm comm, AppCtx *ctx)
   Vec              u;
   PetscErrorCode (*funcs[2])(PetscInt, const PetscReal [], PetscInt, PetscScalar *, void *) = {SolKxWrapperV, SolKxWrapperP};
   PetscReal        discError;
-  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   if (!ctx->fem) PetscFunctionReturn(0);
   /* Create DM */
-  ierr = DMPlexCreateBoxMesh(comm, 2, PETSC_TRUE, NULL, NULL, NULL, NULL, PETSC_FALSE, &dm);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
+  PetscCall(DMPlexCreateBoxMesh(comm, 2, PETSC_TRUE, NULL, NULL, NULL, NULL, PETSC_FALSE, &dm));
+  PetscCall(DMSetFromOptions(dm));
   /* Project solution into FE space */
-  ierr = DMGetGlobalVector(dm, &u);CHKERRQ(ierr);
-  ierr = DMProjectFunction(dm, 0.0, funcs, NULL, INSERT_VALUES, u);CHKERRQ(ierr);
-  ierr = DMComputeL2Diff(dm, 0.0, funcs, NULL, u, &discError);CHKERRQ(ierr);
-  ierr = VecViewFromOptions(u, NULL, "-vec_view");CHKERRQ(ierr);
+  PetscCall(DMGetGlobalVector(dm, &u));
+  PetscCall(DMProjectFunction(dm, 0.0, funcs, NULL, INSERT_VALUES, u));
+  PetscCall(DMComputeL2Diff(dm, 0.0, funcs, NULL, u, &discError));
+  PetscCall(VecViewFromOptions(u, NULL, "-vec_view"));
   /* Cleanup */
-  ierr = DMRestoreGlobalVector(dm, &u);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
+  PetscCall(DMRestoreGlobalVector(dm, &u));
+  PetscCall(DMDestroy(&dm));
   PetscFunctionReturn(0);
 }
 
 int main(int argc, char **argv)
 {
   AppCtx         user;                 /* user-defined work context */
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
-  ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
-  ierr = MapleTest(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
-  ierr = FEMTest(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscInitialize(&argc, &argv, NULL,help));
+  PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
+  PetscCall(MapleTest(PETSC_COMM_WORLD, &user));
+  PetscCall(FEMTest(PETSC_COMM_WORLD, &user));
+  PetscCall(PetscFinalize());
+  return 0;
 }

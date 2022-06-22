@@ -1,21 +1,8 @@
 -include ../../../petscdir.mk
-CFLAGS           =
-FFLAGS		 =
-CPPFLAGS         =
-FPPFLAGS         =
+
 LOCDIR		 = src/snes/tutorials/
 MANSEC           = SNES
-EXAMPLESC	 = ex1.c ex2.c ex3.c  ex5.c ex6.c ex9.c \
-                   ex12.c ex14.c ex15.c ex17.c ex18.c ex19.c ex21.c ex22.c \
-                   ex25.c ex28.c ex30.c ex33.c \
-                   ex35.c ex42.c ex46.c ex48.c \
-                   ex56.c ex58.c ex59.c \
-                   ex62.c ex69.c ex70.c ex77.c ex78.c \
-                   ex47cu.cu
-EXAMPLESF	 = ex1f.F90 ex5f.F90 ex5f90.F90 ex5f90t.F90 ex40f90.F90 ex73f90t.F90
-EXAMPLESCH	 =
-EXAMPLESFH       = ex5f.h
-EXAMPLESMATLAB   = ex5m.m  ex61genm.m ex61m.m
+EXAMPLESMATLAB   = ex5m.m ex29view.m
 DIRS		 = ex10d network
 CLEANFILES       = ex5f90t
 
@@ -36,7 +23,7 @@ testex5f: ex5f.PETSc
 	   if (${DIFF} output/ex5f_1.testout ex5f_1.tmp > /dev/null 2>&1) then \
            echo "Fortran example src/snes/tutorials/ex5f run successfully with 1 MPI process"; \
 	   else echo "Possible error running Fortran example src/snes/tutorials/ex5f with 1 MPI process"; \
-           echo "See http://www.mcs.anl.gov/petsc/documentation/faq.html";\
+           echo "See https://petsc.org/release/faq/";\
            cat ex5f_1.tmp; fi;  \
          ${RM} -f ex5f_1.tmp ;\
          ${MAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ex5f.rm; fi
@@ -52,14 +39,14 @@ testex19: ex19.PETSc
 	   if (${DIFF} output/ex19_1.testout ex19_1.tmp > /dev/null 2>&1) then \
            echo "C/C++ example src/snes/tutorials/ex19 run successfully with 1 MPI process"; \
 	   else echo "Possible error running C/C++ src/snes/tutorials/ex19 with 1 MPI process"; \
-           echo "See http://www.mcs.anl.gov/petsc/documentation/faq.html";\
+           echo "See https://petsc.org/release/faq/";\
            cat ex19_1.tmp; fi; \
 	if [ ! "${MPI_IS_MPIUNI}" ]; then \
            ${MPIEXEC} -n 2 ./ex19 -da_refine 3 -pc_type mg -ksp_type fgmres  > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_1.testout ex19_1.tmp > /dev/null 2>&1) then \
            echo "C/C++ example src/snes/tutorials/ex19 run successfully with 2 MPI processes"; \
 	   else echo "Possible error running C/C++ src/snes/tutorials/ex19 with 2 MPI processes"; \
-           echo "See http://www.mcs.anl.gov/petsc/documentation/faq.html";\
+           echo "See https://petsc.org/release/faq/";\
            cat ex19_1.tmp; fi; fi; \
         ${RM} -f ex19_1.tmp; fi
 #use unpreconditioned norm because HYPRE device installations use different AMG parameters
@@ -82,7 +69,7 @@ runex19_hypre_hip:
            else  printf "${PWD}\nPossible problem with ex19 running with hypre, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex19_1.tmp
 runex19_cuda:
-	-@${MPIEXEC} -n 1 ./ex19 -snes_monitor -dm_mat_type seqaijcusparse -dm_vec_type seqcuda -pc_type gamg -ksp_monitor -mg_levels_ksp_max_it 3  > ex19_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex19 -snes_monitor -dm_mat_type seqaijcusparse -dm_vec_type seqcuda -pc_type gamg -pc_gamg_esteig_ksp_max_it 10 -ksp_monitor -mg_levels_ksp_max_it 3  > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_cuda_1.out ex19_1.tmp) then \
            echo "C/C++ example src/snes/tutorials/ex19 run successfully with cuda"; \
            else  printf "${PWD}\nPossible problem with ex19 running with cuda, diffs above\n=========================================\n"; fi; \

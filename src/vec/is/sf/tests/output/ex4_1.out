@@ -1,5 +1,5 @@
 Initial Vec A
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.
 1.
@@ -7,7 +7,7 @@ Vec Object: 1 MPI processes
 3.
 
 Broadcast A->B over sfA
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 3.
 2.
@@ -15,7 +15,7 @@ Vec Object: 1 MPI processes
 0.
 
 Broadcast B->BA over sfB
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 3.
 2.
@@ -23,21 +23,21 @@ Vec Object: 1 MPI processes
 0.
 
 Broadcast A->BA over sfBA (sfB o sfA)
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 3.
 2.
 1.
 0.
-PetscSF Object: sfA 1 MPI processes
+PetscSF Object: sfA 1 MPI process
   type: basic
   [0] Number of roots=4, leaves=4, remote ranks=1
-  [0] 3 <- (0,0)
-  [0] 2 <- (0,1)
-  [0] 1 <- (0,2)
   [0] 0 <- (0,3)
+  [0] 1 <- (0,2)
+  [0] 2 <- (0,1)
+  [0] 3 <- (0,0)
   MultiSF sort=rank-order
-PetscSF Object: sfB 1 MPI processes
+PetscSF Object: sfB 1 MPI process
   type: basic
   [0] Number of roots=4, leaves=4, remote ranks=1
   [0] 0 <- (0,0)
@@ -45,7 +45,7 @@ PetscSF Object: sfB 1 MPI processes
   [0] 2 <- (0,2)
   [0] 3 <- (0,3)
   MultiSF sort=rank-order
-PetscSF Object: (sfB o sfA) 1 MPI processes
+PetscSF Object: (sfB o sfA) 1 MPI process
   type: basic
   [0] Number of roots=4, leaves=4, remote ranks=1
   [0] 0 <- (0,3)

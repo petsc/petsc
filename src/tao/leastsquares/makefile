@@ -1,7 +1,7 @@
+-include ../../../petsckdir.mk
 #requiresscalar    real
-ALL: lib
 
-SOURCEH  = 
+SOURCEH  =
 DIRS     = impls tests tutorials
 LOCDIR   = src/tao/leastsquares/
 

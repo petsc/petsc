@@ -22,36 +22,30 @@
       PetscInt         ten,two,one
       external         FormFunctionLocal
 
-      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      if (ierr .ne. 0) then
-         print*,'PetscInitialize failed'
-         stop
-      endif
-
+      PetscCallA(PetscInitialize(ierr))
       ten = 10
       one = 1
       two = 2
 
-      call DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,ten,ten,PETSC_DECIDE,PETSC_DECIDE,two,one, &
-     &     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr);CHKERRA(ierr)
-      call DMSetFromOptions(da,ierr)
-      call DMSetUp(da,ierr)
+      PetscCallA(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,ten,ten,PETSC_DECIDE,PETSC_DECIDE,two,one,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr))
+      PetscCallA(DMSetFromOptions(da,ierr))
+      PetscCallA(DMSetUp(da,ierr))
 
 !       Create solver object and associate it with the unknowns (on the grid)
 
-      call SNESCreate(PETSC_COMM_WORLD,snes,ierr);CHKERRA(ierr)
-      call SNESSetDM(snes,da,ierr);CHKERRA(ierr)
+      PetscCallA(SNESCreate(PETSC_COMM_WORLD,snes,ierr))
+      PetscCallA(SNESSetDM(snes,da,ierr))
 
-      call DMDASNESSetFunctionLocal(da,INSERT_VALUES,FormFunctionLocal,0,ierr);CHKERRA(ierr)
-      call SNESSetFromOptions(snes,ierr);CHKERRA(ierr)
+      PetscCallA(DMDASNESSetFunctionLocal(da,INSERT_VALUES,FormFunctionLocal,0,ierr))
+      PetscCallA(SNESSetFromOptions(snes,ierr))
 
 !      Solve the nonlinear system
 !
-      call SNESSolve(snes,PETSC_NULL_VEC,PETSC_NULL_VEC,ierr);CHKERRA(ierr)
+      PetscCallA(SNESSolve(snes,PETSC_NULL_VEC,PETSC_NULL_VEC,ierr))
 
-      call SNESDestroy(snes,ierr);CHKERRA(ierr)
-      call DMDestroy(da,ierr);CHKERRA(ierr)
-      call PetscFinalize(ierr)
+      PetscCallA(SNESDestroy(snes,ierr))
+      PetscCallA(DMDestroy(da,ierr))
+      PetscCallA(PetscFinalize(ierr))
       end
 
       subroutine FormFunctionLocal(in,x,f,dummy,ierr)

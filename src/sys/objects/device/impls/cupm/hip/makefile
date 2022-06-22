@@ -1,9 +1,6 @@
+-include ../../../../../../../petsckdir.mk
 #requirespackage 'PETSC_HAVE_HIP'
-ALL: lib
 
-CFLAGS    =
-FFLAGS    =
-CPPFLAGS  =
 SOURCEC	  =
 SOURCEHIP = cupmcontext.hip.cpp
 SOURCEF	  =

@@ -1,10 +1,5 @@
 static char help[] = "Demonstrates HDF5 vector input/ouput\n\n";
 
-/*T
-   Concepts: viewers
-   Concepts: HDF5
-   Processors: n
-T*/
 #include <petscsys.h>
 #include <petscdm.h>
 #include <petscdmda.h>
@@ -12,7 +7,6 @@ T*/
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscViewer    viewer;
   DM             da;
   Vec            global,local,global2;
@@ -29,78 +23,78 @@ int main(int argc,char **argv)
                  runtime.  The user can use the "help" variable place
                  additional help messages in this printout.
   */
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   /* Get number of DOF's from command line */
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"DMDA VecView/VecLoad example","");CHKERRQ(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"DMDA VecView/VecLoad example","");
   {
     ndof = 1;
     PetscOptionsBoundedInt("-ndof","Number of DOF's in DMDA","",ndof,&ndof,NULL,1);
   }
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscOptionsEnd();
 
   /* Create a DMDA and an associated vector */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,100,90,PETSC_DECIDE,PETSC_DECIDE,ndof,1,NULL,NULL,&da);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
-  ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);
-  ierr = VecSet(global,-1.0);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = VecScale(local,rank+1);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalBegin(da,local,ADD_VALUES,global);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(da,local,ADD_VALUES,global);CHKERRQ(ierr);
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,100,90,PETSC_DECIDE,PETSC_DECIDE,ndof,1,NULL,NULL,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(DMCreateGlobalVector(da,&global));
+  PetscCall(DMCreateLocalVector(da,&local));
+  PetscCall(VecSet(global,-1.0));
+  PetscCall(DMGlobalToLocalBegin(da,global,INSERT_VALUES,local));
+  PetscCall(DMGlobalToLocalEnd(da,global,INSERT_VALUES,local));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCall(VecScale(local,rank+1));
+  PetscCall(DMLocalToGlobalBegin(da,local,ADD_VALUES,global));
+  PetscCall(DMLocalToGlobalEnd(da,local,ADD_VALUES,global));
 
   /* Create the HDF5 viewer for writing */
-  ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,"hdf5output.h5",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetFromOptions(viewer);CHKERRQ(ierr);
+  PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD,"hdf5output.h5",FILE_MODE_WRITE,&viewer));
+  PetscCall(PetscViewerSetFromOptions(viewer));
 
   /* Write the Vec without one extra dimension for BS */
-  ierr = PetscViewerHDF5SetBaseDimension2(viewer, PETSC_FALSE);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) global, "noBsDim");CHKERRQ(ierr);
-  ierr = VecView(global,viewer);CHKERRQ(ierr);
+  PetscCall(PetscViewerHDF5SetBaseDimension2(viewer, PETSC_FALSE));
+  PetscCall(PetscObjectSetName((PetscObject) global, "noBsDim"));
+  PetscCall(VecView(global,viewer));
 
   /* Write the Vec with one extra, 1-sized, dimension for BS */
-  ierr = PetscViewerHDF5SetBaseDimension2(viewer, PETSC_TRUE);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) global, "bsDim");CHKERRQ(ierr);
-  ierr = VecView(global,viewer);CHKERRQ(ierr);
+  PetscCall(PetscViewerHDF5SetBaseDimension2(viewer, PETSC_TRUE));
+  PetscCall(PetscObjectSetName((PetscObject) global, "bsDim"));
+  PetscCall(VecView(global,viewer));
 
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRMPI(ierr);
-  ierr = VecDuplicate(global,&global2);CHKERRQ(ierr);
+  PetscCall(PetscViewerDestroy(&viewer));
+  PetscCallMPI(MPI_Barrier(PETSC_COMM_WORLD));
+  PetscCall(VecDuplicate(global,&global2));
 
   /* Create the HDF5 viewer for reading */
-  ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,"hdf5output.h5",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetFromOptions(viewer);CHKERRQ(ierr);
+  PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD,"hdf5output.h5",FILE_MODE_READ,&viewer));
+  PetscCall(PetscViewerSetFromOptions(viewer));
 
   /* Load the Vec without the BS dim and compare */
-  ierr = PetscObjectSetName((PetscObject) global2, "noBsDim");CHKERRQ(ierr);
-  ierr = VecLoad(global2,viewer);CHKERRQ(ierr);
+  PetscCall(PetscObjectSetName((PetscObject) global2, "noBsDim"));
+  PetscCall(VecLoad(global2,viewer));
 
-  ierr = VecEqual(global,global2,&flg);CHKERRQ(ierr);
+  PetscCall(VecEqual(global,global2,&flg));
   if (!flg) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error: Vectors are not equal\n");CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error: Vectors are not equal\n"));
   }
 
   /* Load the Vec with one extra, 1-sized, BS dim and compare */
-  ierr = PetscObjectSetName((PetscObject) global2, "bsDim");CHKERRQ(ierr);
-  ierr = VecLoad(global2,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  PetscCall(PetscObjectSetName((PetscObject) global2, "bsDim"));
+  PetscCall(VecLoad(global2,viewer));
+  PetscCall(PetscViewerDestroy(&viewer));
 
-  ierr = VecEqual(global,global2,&flg);CHKERRQ(ierr);
+  PetscCall(VecEqual(global,global2,&flg));
   if (!flg) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error: Vectors are not equal\n");CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error: Vectors are not equal\n"));
   }
 
   /* clean up and exit */
-  ierr = VecDestroy(&local);CHKERRQ(ierr);
-  ierr = VecDestroy(&global);CHKERRQ(ierr);
-  ierr = VecDestroy(&global2);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
+  PetscCall(VecDestroy(&local));
+  PetscCall(VecDestroy(&global));
+  PetscCall(VecDestroy(&global2));
+  PetscCall(DMDestroy(&da));
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

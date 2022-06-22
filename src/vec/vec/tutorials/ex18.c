@@ -1,12 +1,9 @@
 
 static char help[] = "Computes the integral of 2*x/(1+x^2) from x=0..1 \nThis is equal to the ln(2).\n\n";
 
-/*T
-   Concepts: vectors^assembling vectors;
-   Processors: n
-
+/*
    Contributed by Mike McCourt <mccomic@iit.edu> and Nathan Johnston <johnnat@iit.edu>
-T*/
+*/
 
 /*
   Include "petscvec.h" so that we can use vectors.  Note that this file
@@ -23,15 +20,14 @@ PetscScalar func(PetscScalar a)
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscMPIInt    rank,size;
   PetscInt       rstart,rend,i,k,N,numPoints=1000000;
   PetscScalar    dummy,result=0,h=1.0/numPoints,*xarray;
   Vec            x,xend;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   /*
      Create a parallel vector.
@@ -39,20 +35,20 @@ int main(int argc,char **argv)
        The xend vector is a dummy vector to find the value of the
          elements at the endpoints for use in the trapezoid rule.
   */
-  ierr   = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-  ierr   = VecSetSizes(x,PETSC_DECIDE,numPoints);CHKERRQ(ierr);
-  ierr   = VecSetFromOptions(x);CHKERRQ(ierr);
-  ierr   = VecGetSize(x,&N);CHKERRQ(ierr);
-  ierr   = VecSet(x,result);CHKERRQ(ierr);
-  ierr   = VecDuplicate(x,&xend);CHKERRQ(ierr);
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&x));
+  PetscCall(VecSetSizes(x,PETSC_DECIDE,numPoints));
+  PetscCall(VecSetFromOptions(x));
+  PetscCall(VecGetSize(x,&N));
+  PetscCall(VecSet(x,result));
+  PetscCall(VecDuplicate(x,&xend));
   result = 0.5;
   if (rank == 0) {
     i    = 0;
-    ierr = VecSetValues(xend,1,&i,&result,INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(VecSetValues(xend,1,&i,&result,INSERT_VALUES));
   }
   if (rank == size-1) {
     i    = N-1;
-    ierr = VecSetValues(xend,1,&i,&result,INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(VecSetValues(xend,1,&i,&result,INSERT_VALUES));
   }
   /*
      Assemble vector, using the 2-step process:
@@ -60,8 +56,8 @@ int main(int argc,char **argv)
      Computations can be done while messages are in transition
      by placing code between these two statements.
   */
-  ierr = VecAssemblyBegin(xend);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(xend);CHKERRQ(ierr);
+  PetscCall(VecAssemblyBegin(xend));
+  PetscCall(VecAssemblyEnd(xend));
 
   /*
      Set the x vector elements.
@@ -69,15 +65,15 @@ int main(int argc,char **argv)
       The function evaluated (2x/(1+x^2)) is defined above.
       Each evaluation is put into the local array of the vector without message passing.
   */
-  ierr = VecGetOwnershipRange(x,&rstart,&rend);CHKERRQ(ierr);
-  ierr = VecGetArray(x,&xarray);CHKERRQ(ierr);
+  PetscCall(VecGetOwnershipRange(x,&rstart,&rend));
+  PetscCall(VecGetArray(x,&xarray));
   k    = 0;
   for (i=rstart; i<rend; i++) {
     xarray[k] = (PetscScalar)i*h;
     xarray[k] = func(xarray[k]);
     k++;
   }
-  ierr = VecRestoreArray(x,&xarray);CHKERRQ(ierr);
+  PetscCall(VecRestoreArray(x,&xarray));
 
   /*
      Evaluates the integral.  First the sum of all the points is taken.
@@ -85,20 +81,20 @@ int main(int argc,char **argv)
      Then half the value at each endpoint is subtracted,
      this is part of the composite trapezoid rule.
   */
-  ierr   = VecSum(x,&result);CHKERRQ(ierr);
+  PetscCall(VecSum(x,&result));
   result = result*h;
-  ierr   = VecDot(x,xend,&dummy);CHKERRQ(ierr);
+  PetscCall(VecDot(x,xend,&dummy));
   result = result-h*dummy;
 
   /*
       Return the value of the integral.
   */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"ln(2) is %g\n",(double)PetscRealPart(result));CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&xend);CHKERRQ(ierr);
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"ln(2) is %g\n",(double)PetscRealPart(result)));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&xend));
 
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

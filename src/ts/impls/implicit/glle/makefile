@@ -1,8 +1,5 @@
+-include ../../../../../petsckdir.mk
 
-ALL: lib
-
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = glle.c glleadapt.c
 SOURCEF  =
 SOURCEH  = glle.h

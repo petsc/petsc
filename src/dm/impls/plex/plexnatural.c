@@ -11,14 +11,13 @@
 
   Level: intermediate
 
-.seealso: DMPlexDistribute(), DMPlexDistributeField(), DMPlexCreateMigrationSF(), DMPlexGetMigrationSF()
+.seealso: `DMPlexDistribute()`, `DMPlexDistributeField()`, `DMPlexCreateMigrationSF()`, `DMPlexGetMigrationSF()`
 @*/
 PetscErrorCode DMPlexSetMigrationSF(DM dm, PetscSF migrationSF)
 {
-  PetscErrorCode ierr;
   PetscFunctionBegin;
   dm->sfMigration = migrationSF;
-  ierr = PetscObjectReference((PetscObject) migrationSF);CHKERRQ(ierr);
+  PetscCall(PetscObjectReference((PetscObject) migrationSF));
   PetscFunctionReturn(0);
 }
 
@@ -33,7 +32,7 @@ PetscErrorCode DMPlexSetMigrationSF(DM dm, PetscSF migrationSF)
 
   Level: intermediate
 
-.seealso: DMPlexDistribute(), DMPlexDistributeField(), DMPlexCreateMigrationSF(), DMPlexSetMigrationSF
+.seealso: `DMPlexDistribute()`, `DMPlexDistributeField()`, `DMPlexCreateMigrationSF()`, `DMPlexSetMigrationSF`
 @*/
 PetscErrorCode DMPlexGetMigrationSF(DM dm, PetscSF *migrationSF)
 {
@@ -51,14 +50,13 @@ PetscErrorCode DMPlexGetMigrationSF(DM dm, PetscSF *migrationSF)
 
   Level: intermediate
 
-.seealso: DMPlexDistribute(), DMPlexDistributeField(), DMPlexCreateGlobalToNaturalSF(), DMPlexGetGlobaltoNaturalSF()
+.seealso: `DMPlexDistribute()`, `DMPlexDistributeField()`, `DMPlexCreateGlobalToNaturalSF()`, `DMPlexGetGlobaltoNaturalSF()`
 @*/
 PetscErrorCode DMPlexSetGlobalToNaturalSF(DM dm, PetscSF naturalSF)
 {
-  PetscErrorCode ierr;
   PetscFunctionBegin;
   dm->sfNatural = naturalSF;
-  ierr = PetscObjectReference((PetscObject) naturalSF);CHKERRQ(ierr);
+  PetscCall(PetscObjectReference((PetscObject) naturalSF));
   dm->useNatural = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -74,7 +72,7 @@ PetscErrorCode DMPlexSetGlobalToNaturalSF(DM dm, PetscSF naturalSF)
 
   Level: intermediate
 
-.seealso: DMPlexDistribute(), DMPlexDistributeField(), DMPlexCreateGlobalToNaturalSF(), DMPlexSetGlobaltoNaturalSF
+.seealso: `DMPlexDistribute()`, `DMPlexDistributeField()`, `DMPlexCreateGlobalToNaturalSF()`, `DMPlexSetGlobaltoNaturalSF`
 @*/
 PetscErrorCode DMPlexGetGlobalToNaturalSF(DM dm, PetscSF *naturalSF)
 {
@@ -99,7 +97,7 @@ PetscErrorCode DMPlexGetGlobalToNaturalSF(DM dm, PetscSF *naturalSF)
 
   Level: intermediate
 
-.seealso: DMPlexDistribute(), DMPlexDistributeField()
+.seealso: `DMPlexDistribute()`, `DMPlexDistributeField()`
  @*/
 PetscErrorCode DMPlexCreateGlobalToNaturalSF(DM dm, PetscSection section, PetscSF sfMigration, PetscSF *sfNatural)
 {
@@ -111,10 +109,9 @@ PetscErrorCode DMPlexCreateGlobalToNaturalSF(DM dm, PetscSection section, PetscS
   PetscInt       ssize, pStart, pEnd, p, globalSize;
   PetscLayout    map;
   PetscBool      destroyFlag = PETSC_FALSE;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
+  PetscCall(PetscObjectGetComm((PetscObject) dm, &comm));
   if (!sfMigration) {
     /* If sfMigration is missing,
     sfNatural cannot be computed and is set to NULL */
@@ -126,83 +123,83 @@ PetscErrorCode DMPlexCreateGlobalToNaturalSF(DM dm, PetscSection section, PetscS
     PetscSF sfMigrationInv;
     PetscSection localSection;
 
-    ierr = DMGetLocalSection(dm, &localSection);CHKERRQ(ierr);
-    ierr = PetscSFCreateInverseSF(sfMigration, &sfMigrationInv);CHKERRQ(ierr);
-    ierr = PetscSectionCreate(PetscObjectComm((PetscObject) dm), &section);CHKERRQ(ierr);
-    ierr = PetscSFDistributeSection(sfMigrationInv, localSection, NULL, section);CHKERRQ(ierr);
-    ierr = PetscSFDestroy(&sfMigrationInv);CHKERRQ(ierr);
+    PetscCall(DMGetLocalSection(dm, &localSection));
+    PetscCall(PetscSFCreateInverseSF(sfMigration, &sfMigrationInv));
+    PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject) dm), &section));
+    PetscCall(PetscSFDistributeSection(sfMigrationInv, localSection, NULL, section));
+    PetscCall(PetscSFDestroy(&sfMigrationInv));
     destroyFlag = PETSC_TRUE;
   }
-  /* ierr = PetscPrintf(comm, "Point migration SF\n");CHKERRQ(ierr);
-   ierr = PetscSFView(sfMigration, 0);CHKERRQ(ierr); */
+  /* PetscCall(PetscPrintf(comm, "Point migration SF\n"));
+   PetscCall(PetscSFView(sfMigration, 0)); */
   /* Create a new section from distributing the original section */
-  ierr = PetscSectionCreate(comm, &sectionDist);CHKERRQ(ierr);
-  ierr = PetscSFDistributeSection(sfMigration, section, &remoteOffsets, sectionDist);CHKERRQ(ierr);
-  /* ierr = PetscPrintf(comm, "Distributed Section\n");CHKERRQ(ierr);
-   ierr = PetscSectionView(sectionDist, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
-  ierr = DMSetLocalSection(dm, sectionDist);CHKERRQ(ierr);
+  PetscCall(PetscSectionCreate(comm, &sectionDist));
+  PetscCall(PetscSFDistributeSection(sfMigration, section, &remoteOffsets, sectionDist));
+  /* PetscCall(PetscPrintf(comm, "Distributed Section\n"));
+   PetscCall(PetscSectionView(sectionDist, PETSC_VIEWER_STDOUT_WORLD)); */
+  PetscCall(DMSetLocalSection(dm, sectionDist));
   /* If a sequential section is provided but no dof is affected,
   sfNatural cannot be computed and is set to NULL */
-  ierr = DMCreateGlobalVector(dm, &tmpVec);CHKERRQ(ierr);
-  ierr = VecGetSize(tmpVec, &globalSize);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(dm, &tmpVec);CHKERRQ(ierr);
+  PetscCall(DMCreateGlobalVector(dm, &tmpVec));
+  PetscCall(VecGetSize(tmpVec, &globalSize));
+  PetscCall(DMRestoreGlobalVector(dm, &tmpVec));
   if (globalSize) {
   /* Get a pruned version of migration SF */
-    ierr = DMGetGlobalSection(dm, &gSection);CHKERRQ(ierr);
-    ierr = PetscSectionGetChart(gSection, &pStart, &pEnd);CHKERRQ(ierr);
+    PetscCall(DMGetGlobalSection(dm, &gSection));
+    PetscCall(PetscSectionGetChart(gSection, &pStart, &pEnd));
     for (p = pStart, ssize = 0; p < pEnd; ++p) {
       PetscInt dof, off;
 
-      ierr = PetscSectionGetDof(gSection, p, &dof);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(gSection, p, &off);CHKERRQ(ierr);
+      PetscCall(PetscSectionGetDof(gSection, p, &dof));
+      PetscCall(PetscSectionGetOffset(gSection, p, &off));
       if ((dof > 0) && (off >= 0)) ++ssize;
     }
-    ierr = PetscMalloc1(ssize, &spoints);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(ssize, &spoints));
     for (p = pStart, ssize = 0; p < pEnd; ++p) {
       PetscInt dof, off;
 
-      ierr = PetscSectionGetDof(gSection, p, &dof);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(gSection, p, &off);CHKERRQ(ierr);
+      PetscCall(PetscSectionGetDof(gSection, p, &dof));
+      PetscCall(PetscSectionGetOffset(gSection, p, &off));
       if ((dof > 0) && (off >= 0)) spoints[ssize++] = p;
     }
-    ierr = PetscSFCreateEmbeddedLeafSF(sfMigration, ssize, spoints, &sfEmbed);CHKERRQ(ierr);
-    ierr = PetscFree(spoints);CHKERRQ(ierr);
-    /* ierr = PetscPrintf(comm, "Embedded SF\n");CHKERRQ(ierr);
-    ierr = PetscSFView(sfEmbed, 0);CHKERRQ(ierr); */
+    PetscCall(PetscSFCreateEmbeddedLeafSF(sfMigration, ssize, spoints, &sfEmbed));
+    PetscCall(PetscFree(spoints));
+    /* PetscCall(PetscPrintf(comm, "Embedded SF\n"));
+    PetscCall(PetscSFView(sfEmbed, 0)); */
     /* Create the SF for seq to natural */
-    ierr = DMGetGlobalVector(dm, &gv);CHKERRQ(ierr);
-    ierr = VecGetLayout(gv,&map);CHKERRQ(ierr);
+    PetscCall(DMGetGlobalVector(dm, &gv));
+    PetscCall(VecGetLayout(gv,&map));
     /* Note that entries of gv are leaves in sfSeqToNatural, entries of the seq vec are roots */
-    ierr = PetscSFCreate(comm, &sfSeqToNatural);CHKERRQ(ierr);
-    ierr = PetscSFSetGraphWithPattern(sfSeqToNatural, map, PETSCSF_PATTERN_GATHER);CHKERRQ(ierr);
-    ierr = DMRestoreGlobalVector(dm, &gv);CHKERRQ(ierr);
-    /* ierr = PetscPrintf(comm, "Seq-to-Natural SF\n");CHKERRQ(ierr);
-    ierr = PetscSFView(sfSeqToNatural, 0);CHKERRQ(ierr); */
+    PetscCall(PetscSFCreate(comm, &sfSeqToNatural));
+    PetscCall(PetscSFSetGraphWithPattern(sfSeqToNatural, map, PETSCSF_PATTERN_GATHER));
+    PetscCall(DMRestoreGlobalVector(dm, &gv));
+    /* PetscCall(PetscPrintf(comm, "Seq-to-Natural SF\n"));
+    PetscCall(PetscSFView(sfSeqToNatural, 0)); */
     /* Create the SF associated with this section */
-    ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
-    ierr = PetscSectionCreateGlobalSection(sectionDist, sf, PETSC_FALSE, PETSC_TRUE, &gLocSection);CHKERRQ(ierr);
-    ierr = PetscSFCreateSectionSF(sfEmbed, section, remoteOffsets, gLocSection, &sfField);CHKERRQ(ierr);
-    ierr = PetscSFDestroy(&sfEmbed);CHKERRQ(ierr);
-    ierr = PetscSectionDestroy(&gLocSection);CHKERRQ(ierr);
-    /* ierr = PetscPrintf(comm, "Field SF\n");CHKERRQ(ierr);
-    ierr = PetscSFView(sfField, 0);CHKERRQ(ierr); */
+    PetscCall(DMGetPointSF(dm, &sf));
+    PetscCall(PetscSectionCreateGlobalSection(sectionDist, sf, PETSC_FALSE, PETSC_TRUE, &gLocSection));
+    PetscCall(PetscSFCreateSectionSF(sfEmbed, section, remoteOffsets, gLocSection, &sfField));
+    PetscCall(PetscSFDestroy(&sfEmbed));
+    PetscCall(PetscSectionDestroy(&gLocSection));
+    /* PetscCall(PetscPrintf(comm, "Field SF\n"));
+    PetscCall(PetscSFView(sfField, 0)); */
     /* Invert the field SF so it's now from distributed to sequential */
-    ierr = PetscSFCreateInverseSF(sfField, &sfFieldInv);CHKERRQ(ierr);
-    ierr = PetscSFDestroy(&sfField);CHKERRQ(ierr);
-    /* ierr = PetscPrintf(comm, "Inverse Field SF\n");CHKERRQ(ierr);
-    ierr = PetscSFView(sfFieldInv, 0);CHKERRQ(ierr); */
+    PetscCall(PetscSFCreateInverseSF(sfField, &sfFieldInv));
+    PetscCall(PetscSFDestroy(&sfField));
+    /* PetscCall(PetscPrintf(comm, "Inverse Field SF\n"));
+    PetscCall(PetscSFView(sfFieldInv, 0)); */
     /* Multiply the sfFieldInv with the */
-    ierr = PetscSFComposeInverse(sfFieldInv, sfSeqToNatural, sfNatural);CHKERRQ(ierr);
-    ierr = PetscObjectViewFromOptions((PetscObject) *sfNatural, NULL, "-globaltonatural_sf_view");CHKERRQ(ierr);
+    PetscCall(PetscSFComposeInverse(sfFieldInv, sfSeqToNatural, sfNatural));
+    PetscCall(PetscObjectViewFromOptions((PetscObject) *sfNatural, NULL, "-globaltonatural_sf_view"));
     /* Clean up */
-    ierr = PetscSFDestroy(&sfFieldInv);CHKERRQ(ierr);
-    ierr = PetscSFDestroy(&sfSeqToNatural);CHKERRQ(ierr);
+    PetscCall(PetscSFDestroy(&sfFieldInv));
+    PetscCall(PetscSFDestroy(&sfSeqToNatural));
   } else {
     *sfNatural = NULL;
   }
-  ierr = PetscSectionDestroy(&sectionDist);CHKERRQ(ierr);
-  ierr = PetscFree(remoteOffsets);CHKERRQ(ierr);
-  if (destroyFlag) {ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);}
+  PetscCall(PetscSectionDestroy(&sectionDist));
+  PetscCall(PetscFree(remoteOffsets));
+  if (destroyFlag) PetscCall(PetscSectionDestroy(&section));
   PetscFunctionReturn(0);
 }
 
@@ -222,29 +219,28 @@ PetscErrorCode DMPlexCreateGlobalToNaturalSF(DM dm, PetscSection section, PetscS
 
   Level: intermediate
 
-.seealso: DMPlexDistribute(), DMPlexDistributeField(), DMPlexNaturalToGlobalBegin(), DMPlexGlobalToNaturalEnd()
+.seealso: `DMPlexDistribute()`, `DMPlexDistributeField()`, `DMPlexNaturalToGlobalBegin()`, `DMPlexGlobalToNaturalEnd()`
 @*/
 PetscErrorCode DMPlexGlobalToNaturalBegin(DM dm, Vec gv, Vec nv)
 {
   const PetscScalar *inarray;
   PetscScalar       *outarray;
   PetscMPIInt        size;
-  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = PetscLogEventBegin(DMPLEX_GlobalToNaturalBegin,dm,0,0,0);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size);CHKERRMPI(ierr);
+  PetscCall(PetscLogEventBegin(DMPLEX_GlobalToNaturalBegin,dm,0,0,0));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size));
   if (dm->sfNatural) {
-    ierr = VecGetArray(nv, &outarray);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(gv, &inarray);CHKERRQ(ierr);
-    ierr = PetscSFBcastBegin(dm->sfNatural, MPIU_SCALAR, (PetscScalar *) inarray, outarray,MPI_REPLACE);CHKERRQ(ierr);
-    ierr = VecRestoreArrayRead(gv, &inarray);CHKERRQ(ierr);
-    ierr = VecRestoreArray(nv, &outarray);CHKERRQ(ierr);
+    PetscCall(VecGetArray(nv, &outarray));
+    PetscCall(VecGetArrayRead(gv, &inarray));
+    PetscCall(PetscSFBcastBegin(dm->sfNatural, MPIU_SCALAR, (PetscScalar *) inarray, outarray,MPI_REPLACE));
+    PetscCall(VecRestoreArrayRead(gv, &inarray));
+    PetscCall(VecRestoreArray(nv, &outarray));
   } else if (size == 1) {
-    ierr = VecCopy(gv, nv);CHKERRQ(ierr);
-  } else PetscCheckFalse(dm->useNatural,PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "DM global to natural SF not present.\nIf DMPlexDistribute() was called and a section was defined, report to petsc-maint@mcs.anl.gov.");
+    PetscCall(VecCopy(gv, nv));
+  } else PetscCheck(!dm->useNatural,PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "DM global to natural SF not present.\nIf DMPlexDistribute() was called and a section was defined, report to petsc-maint@mcs.anl.gov.");
   else SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONGSTATE, "DM global to natural SF was not created.\nYou must call DMSetUseNatural() before DMPlexDistribute().");
-  ierr = PetscLogEventEnd(DMPLEX_GlobalToNaturalBegin,dm,0,0,0);CHKERRQ(ierr);
+  PetscCall(PetscLogEventEnd(DMPLEX_GlobalToNaturalBegin,dm,0,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -264,28 +260,27 @@ PetscErrorCode DMPlexGlobalToNaturalBegin(DM dm, Vec gv, Vec nv)
 
   Level: intermediate
 
- .seealso: DMPlexDistribute(), DMPlexDistributeField(), DMPlexNaturalToGlobalBegin(), DMPlexGlobalToNaturalBegin()
+ .seealso: `DMPlexDistribute()`, `DMPlexDistributeField()`, `DMPlexNaturalToGlobalBegin()`, `DMPlexGlobalToNaturalBegin()`
  @*/
 PetscErrorCode DMPlexGlobalToNaturalEnd(DM dm, Vec gv, Vec nv)
 {
   const PetscScalar *inarray;
   PetscScalar       *outarray;
   PetscMPIInt        size;
-  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = PetscLogEventBegin(DMPLEX_GlobalToNaturalEnd,dm,0,0,0);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size);CHKERRMPI(ierr);
+  PetscCall(PetscLogEventBegin(DMPLEX_GlobalToNaturalEnd,dm,0,0,0));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size));
   if (dm->sfNatural) {
-    ierr = VecGetArrayRead(gv, &inarray);CHKERRQ(ierr);
-    ierr = VecGetArray(nv, &outarray);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(dm->sfNatural, MPIU_SCALAR, (PetscScalar *) inarray, outarray,MPI_REPLACE);CHKERRQ(ierr);
-    ierr = VecRestoreArrayRead(gv, &inarray);CHKERRQ(ierr);
-    ierr = VecRestoreArray(nv, &outarray);CHKERRQ(ierr);
+    PetscCall(VecGetArrayRead(gv, &inarray));
+    PetscCall(VecGetArray(nv, &outarray));
+    PetscCall(PetscSFBcastEnd(dm->sfNatural, MPIU_SCALAR, (PetscScalar *) inarray, outarray,MPI_REPLACE));
+    PetscCall(VecRestoreArrayRead(gv, &inarray));
+    PetscCall(VecRestoreArray(nv, &outarray));
   } else if (size == 1) {
-  } else PetscCheckFalse(dm->useNatural,PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "DM global to natural SF not present.\nIf DMPlexDistribute() was called and a section was defined, report to petsc-maint@mcs.anl.gov.");
+  } else PetscCheck(!dm->useNatural,PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "DM global to natural SF not present.\nIf DMPlexDistribute() was called and a section was defined, report to petsc-maint@mcs.anl.gov.");
   else SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONGSTATE, "DM global to natural SF was not created.\nYou must call DMSetUseNatural() before DMPlexDistribute().");
-  ierr = PetscLogEventEnd(DMPLEX_GlobalToNaturalEnd,dm,0,0,0);CHKERRQ(ierr);
+  PetscCall(PetscLogEventEnd(DMPLEX_GlobalToNaturalEnd,dm,0,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -305,33 +300,32 @@ PetscErrorCode DMPlexGlobalToNaturalEnd(DM dm, Vec gv, Vec nv)
 
   Level: intermediate
 
-.seealso: DMPlexDistribute(), DMPlexDistributeField(), DMPlexNaturalToGlobalBegin(),DMPlexGlobalToNaturalEnd()
+.seealso: `DMPlexDistribute()`, `DMPlexDistributeField()`, `DMPlexNaturalToGlobalBegin()`, `DMPlexGlobalToNaturalEnd()`
 @*/
 PetscErrorCode DMPlexNaturalToGlobalBegin(DM dm, Vec nv, Vec gv)
 {
   const PetscScalar *inarray;
   PetscScalar       *outarray;
   PetscMPIInt        size;
-  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = PetscLogEventBegin(DMPLEX_NaturalToGlobalBegin,dm,0,0,0);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size);CHKERRMPI(ierr);
+  PetscCall(PetscLogEventBegin(DMPLEX_NaturalToGlobalBegin,dm,0,0,0));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size));
   if (dm->sfNatural) {
     /* We only have access to the SF that goes from Global to Natural.
        Instead of inverting dm->sfNatural, we can call PetscSFReduceBegin/End with MPI_Op MPI_SUM.
        Here the SUM really does nothing since sfNatural is one to one, as long as gV is set to zero first. */
-    ierr = VecZeroEntries(gv);CHKERRQ(ierr);
-    ierr = VecGetArray(gv, &outarray);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(nv, &inarray);CHKERRQ(ierr);
-    ierr = PetscSFReduceBegin(dm->sfNatural, MPIU_SCALAR, (PetscScalar *) inarray, outarray, MPI_SUM);CHKERRQ(ierr);
-    ierr = VecRestoreArrayRead(nv, &inarray);CHKERRQ(ierr);
-    ierr = VecRestoreArray(gv, &outarray);CHKERRQ(ierr);
+    PetscCall(VecZeroEntries(gv));
+    PetscCall(VecGetArray(gv, &outarray));
+    PetscCall(VecGetArrayRead(nv, &inarray));
+    PetscCall(PetscSFReduceBegin(dm->sfNatural, MPIU_SCALAR, (PetscScalar *) inarray, outarray, MPI_SUM));
+    PetscCall(VecRestoreArrayRead(nv, &inarray));
+    PetscCall(VecRestoreArray(gv, &outarray));
   } else if (size == 1) {
-    ierr = VecCopy(nv, gv);CHKERRQ(ierr);
-  } else PetscCheckFalse(dm->useNatural,PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "DM global to natural SF not present.\nIf DMPlexDistribute() was called and a section was defined, report to petsc-maint@mcs.anl.gov.");
+    PetscCall(VecCopy(nv, gv));
+  } else PetscCheck(!dm->useNatural,PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "DM global to natural SF not present.\nIf DMPlexDistribute() was called and a section was defined, report to petsc-maint@mcs.anl.gov.");
   else SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONGSTATE, "DM global to natural SF was not created.\nYou must call DMSetUseNatural() before DMPlexDistribute().");
-  ierr = PetscLogEventEnd(DMPLEX_NaturalToGlobalBegin,dm,0,0,0);CHKERRQ(ierr);
+  PetscCall(PetscLogEventEnd(DMPLEX_NaturalToGlobalBegin,dm,0,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -351,27 +345,26 @@ PetscErrorCode DMPlexNaturalToGlobalBegin(DM dm, Vec nv, Vec gv)
 
   Level: intermediate
 
-.seealso: DMPlexDistribute(), DMPlexDistributeField(), DMPlexNaturalToGlobalBegin(), DMPlexGlobalToNaturalBegin()
+.seealso: `DMPlexDistribute()`, `DMPlexDistributeField()`, `DMPlexNaturalToGlobalBegin()`, `DMPlexGlobalToNaturalBegin()`
  @*/
 PetscErrorCode DMPlexNaturalToGlobalEnd(DM dm, Vec nv, Vec gv)
 {
   const PetscScalar *inarray;
   PetscScalar       *outarray;
   PetscMPIInt        size;
-  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = PetscLogEventBegin(DMPLEX_NaturalToGlobalEnd,dm,0,0,0);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size);CHKERRMPI(ierr);
+  PetscCall(PetscLogEventBegin(DMPLEX_NaturalToGlobalEnd,dm,0,0,0));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size));
   if (dm->sfNatural) {
-    ierr = VecGetArrayRead(nv, &inarray);CHKERRQ(ierr);
-    ierr = VecGetArray(gv, &outarray);CHKERRQ(ierr);
-    ierr = PetscSFReduceEnd(dm->sfNatural, MPIU_SCALAR, (PetscScalar *) inarray, outarray, MPI_SUM);CHKERRQ(ierr);
-    ierr = VecRestoreArrayRead(nv, &inarray);CHKERRQ(ierr);
-    ierr = VecRestoreArray(gv, &outarray);CHKERRQ(ierr);
+    PetscCall(VecGetArrayRead(nv, &inarray));
+    PetscCall(VecGetArray(gv, &outarray));
+    PetscCall(PetscSFReduceEnd(dm->sfNatural, MPIU_SCALAR, (PetscScalar *) inarray, outarray, MPI_SUM));
+    PetscCall(VecRestoreArrayRead(nv, &inarray));
+    PetscCall(VecRestoreArray(gv, &outarray));
   } else if (size == 1) {
-  } else PetscCheckFalse(dm->useNatural,PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "DM global to natural SF not present.\nIf DMPlexDistribute() was called and a section was defined, report to petsc-maint@mcs.anl.gov.");
+  } else PetscCheck(!dm->useNatural,PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "DM global to natural SF not present.\nIf DMPlexDistribute() was called and a section was defined, report to petsc-maint@mcs.anl.gov.");
   else SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONGSTATE, "DM global to natural SF was not created.\nYou must call DMSetUseNatural() before DMPlexDistribute().");
-  ierr = PetscLogEventEnd(DMPLEX_NaturalToGlobalEnd,dm,0,0,0);CHKERRQ(ierr);
+  PetscCall(PetscLogEventEnd(DMPLEX_NaturalToGlobalEnd,dm,0,0,0));
   PetscFunctionReturn(0);
 }

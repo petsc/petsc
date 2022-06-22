@@ -6,39 +6,38 @@ static char help[] = "Test VecCreate{Seq|MPI}ViennaCLWithArrays.\n\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   Vec            x,y;
   PetscMPIInt    size;
   PetscInt       n = 5;
   PetscScalar    xHost[5] = {0.,1.,2.,3.,4.};
 
-  ierr = PetscInitialize(&argc, &argv, (char*)0, help); if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  PetscCall(PetscInitialize(&argc, &argv, (char*)0, help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   if (size == 1) {
-    ierr = VecCreateSeqViennaCLWithArrays(PETSC_COMM_WORLD,1,n,xHost,NULL,&x);CHKERRQ(ierr);
+    PetscCall(VecCreateSeqViennaCLWithArrays(PETSC_COMM_WORLD,1,n,xHost,NULL,&x));
   } else {
-    ierr = VecCreateMPIViennaCLWithArrays(PETSC_COMM_WORLD,1,n,PETSC_DECIDE,xHost,NULL,&x);CHKERRQ(ierr);
+    PetscCall(VecCreateMPIViennaCLWithArrays(PETSC_COMM_WORLD,1,n,PETSC_DECIDE,xHost,NULL,&x));
   }
   /* print x should be equivalent too xHost */
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecSet(x,42.0);CHKERRQ(ierr);
+  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecSet(x,42.0));
   /* print x should be all 42 */
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscCall(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
 
   if (size == 1) {
-    ierr = VecCreateSeqWithArray(PETSC_COMM_WORLD,1,n,xHost,&y);CHKERRQ(ierr);
+    PetscCall(VecCreateSeqWithArray(PETSC_COMM_WORLD,1,n,xHost,&y));
   } else {
-    ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,PETSC_DECIDE,xHost,&y);CHKERRQ(ierr);
+    PetscCall(VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,PETSC_DECIDE,xHost,&y));
   }
 
   /* print y should be all 42 */
-  ierr = VecView(y, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscCall(VecView(y, PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = VecDestroy(&y);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(VecDestroy(&y));
+  PetscCall(VecDestroy(&x));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

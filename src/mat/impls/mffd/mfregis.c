@@ -11,19 +11,16 @@ PETSC_EXTERN PetscErrorCode MatCreateMFFD_WP(MatMFFD);
 
   Level: developer
 
-.seealso:  MatMFFDRegisterDestroy(), MatMFFDRegister(), MatCreateMFFD(),
-           MatMFFDSetType()
+.seealso: `MatMFFDRegisterDestroy()`, `MatMFFDRegister()`, `MatCreateMFFD()`,
+          `MatMFFDSetType()`
 @*/
 PetscErrorCode  MatMFFDRegisterAll(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (MatMFFDRegisterAllCalled) PetscFunctionReturn(0);
   MatMFFDRegisterAllCalled = PETSC_TRUE;
 
-  ierr = MatMFFDRegister(MATMFFD_DS,MatCreateMFFD_DS);CHKERRQ(ierr);
-  ierr = MatMFFDRegister(MATMFFD_WP,MatCreateMFFD_WP);CHKERRQ(ierr);
+  PetscCall(MatMFFDRegister(MATMFFD_DS,MatCreateMFFD_DS));
+  PetscCall(MatMFFDRegister(MATMFFD_WP,MatCreateMFFD_WP));
   PetscFunctionReturn(0);
 }
-

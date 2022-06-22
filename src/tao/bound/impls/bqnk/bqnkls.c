@@ -8,16 +8,15 @@
               prefix `-tao_bqnk_`. For options database, see TAOBNK
 
   Level: beginner
-.seealso TAOBNK, TAOBQNKTR, TAOBQNKTL
+.seealso `TAOBNK`, `TAOBQNKTR`, `TAOBQNKTL`
 M*/
 PETSC_EXTERN PetscErrorCode TaoCreate_BQNKLS(Tao tao)
 {
   TAO_BNK        *bnk;
   TAO_BQNK       *bqnk;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = TaoCreate_BQNK(tao);CHKERRQ(ierr);
+  PetscCall(TaoCreate_BQNK(tao));
   bnk = (TAO_BNK*)tao->data;
   bnk->update_type = BNK_UPDATE_STEP;
   bqnk = (TAO_BQNK*)bnk->ctx;

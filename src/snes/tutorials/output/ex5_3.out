@@ -30,7 +30,7 @@ SNES Object: 2 MPI processes
       type is MULTIPLICATIVE, levels=3 cycles=v
         Cycles per PCApply=1
         Not using Galerkin computed coarse grid matrices
-    Coarse grid solver -- level -------------------------------
+    Coarse grid solver -- level 0 -------------------------------
       KSP Object: (mg_coarse_) 2 MPI processes
         type: preonly
         maximum iterations=10000, initial guess is zero
@@ -40,13 +40,13 @@ SNES Object: 2 MPI processes
       PC Object: (mg_coarse_) 2 MPI processes
         type: redundant
           First (color=0) of 2 PCs follows
-          KSP Object: (mg_coarse_redundant_) 1 MPI processes
+          KSP Object: (mg_coarse_redundant_) 1 MPI process
             type: preonly
             maximum iterations=10000, initial guess is zero
             tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
             left preconditioning
             using NONE norm type for convergence test
-          PC Object: (mg_coarse_redundant_) 1 MPI processes
+          PC Object: (mg_coarse_redundant_) 1 MPI process
             type: lu
               out-of-place factorization
               tolerance for zero pivot 2.22045e-14
@@ -54,14 +54,14 @@ SNES Object: 2 MPI processes
               matrix ordering: nd
               factor fill ratio given 5., needed 1.875
                 Factored matrix follows:
-                  Mat Object: 1 MPI processes
+                  Mat Object: (mg_coarse_redundant_) 1 MPI process
                     type: seqaij
                     rows=16, cols=16
                     package used to perform factorization: petsc
                     total: nonzeros=120, allocated nonzeros=120
                       using I-node routines: found 12 nodes, limit used is 5
             linear system matrix = precond matrix:
-            Mat Object: 1 MPI processes
+            Mat Object: 1 MPI process
               type: seqaij
               rows=16, cols=16
               total: nonzeros=64, allocated nonzeros=64
@@ -76,9 +76,9 @@ SNES Object: 2 MPI processes
     Down solver (pre-smoother) on level 1 -------------------------------
       KSP Object: (mg_levels_1_) 2 MPI processes
         type: chebyshev
-          eigenvalue estimates used:  min = 0.12873, max = 1.41603
-          eigenvalues estimate via gmres min 0.220124, max 1.2873
-          eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
+          eigenvalue targets used: min 0.12873, max 1.41603
+          eigenvalues estimated via gmres: min 0.220124, max 1.2873
+          eigenvalues estimated using gmres with transform: [0. 0.1; 0. 1.1]
           KSP Object: (mg_levels_1_esteig_) 2 MPI processes
             type: gmres
               restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -105,9 +105,9 @@ SNES Object: 2 MPI processes
     Down solver (pre-smoother) on level 2 -------------------------------
       KSP Object: (mg_levels_2_) 2 MPI processes
         type: chebyshev
-          eigenvalue estimates used:  min = 0.126369, max = 1.39006
-          eigenvalues estimate via gmres min 0.0725743, max 1.26369
-          eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
+          eigenvalue targets used: min 0.126369, max 1.39006
+          eigenvalues estimated via gmres: min 0.0725743, max 1.26369
+          eigenvalues estimated using gmres with transform: [0. 0.1; 0. 1.1]
           KSP Object: (mg_levels_2_esteig_) 2 MPI processes
             type: gmres
               restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement

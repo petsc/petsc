@@ -34,15 +34,13 @@ PetscBool         PetscPartitionerRegisterAllCalled = PETSC_FALSE;
 
   Level: advanced
 
-.seealso: PetscPartitionerRegisterAll()
+.seealso: `PetscPartitionerRegisterAll()`
 
 @*/
 PetscErrorCode PetscPartitionerRegister(const char sname[], PetscErrorCode (*function)(PetscPartitioner))
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&PetscPartitionerList, sname, function);CHKERRQ(ierr);
+  PetscCall(PetscFunctionListAdd(&PetscPartitionerList, sname, function));
   PetscFunctionReturn(0);
 }
 
@@ -64,23 +62,21 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_MatPartitioning(PetscPartitio
 
   Level: advanced
 
-.seealso:  PetscPartitionerRegister(), PetscPartitionerRegisterDestroy()
+.seealso: `PetscPartitionerRegister()`, `PetscPartitionerRegisterDestroy()`
 @*/
 PetscErrorCode PetscPartitionerRegisterAll(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (PetscPartitionerRegisterAllCalled) PetscFunctionReturn(0);
   PetscPartitionerRegisterAllCalled = PETSC_TRUE;
 
-  ierr = PetscPartitionerRegister(PETSCPARTITIONERPARMETIS, PetscPartitionerCreate_ParMetis);CHKERRQ(ierr);
-  ierr = PetscPartitionerRegister(PETSCPARTITIONERPTSCOTCH, PetscPartitionerCreate_PTScotch);CHKERRQ(ierr);
-  ierr = PetscPartitionerRegister(PETSCPARTITIONERCHACO,    PetscPartitionerCreate_Chaco);CHKERRQ(ierr);
-  ierr = PetscPartitionerRegister(PETSCPARTITIONERSIMPLE,   PetscPartitionerCreate_Simple);CHKERRQ(ierr);
-  ierr = PetscPartitionerRegister(PETSCPARTITIONERSHELL,    PetscPartitionerCreate_Shell);CHKERRQ(ierr);
-  ierr = PetscPartitionerRegister(PETSCPARTITIONERGATHER,   PetscPartitionerCreate_Gather);CHKERRQ(ierr);
-  ierr = PetscPartitionerRegister(PETSCPARTITIONERMATPARTITIONING, PetscPartitionerCreate_MatPartitioning);CHKERRQ(ierr);
+  PetscCall(PetscPartitionerRegister(PETSCPARTITIONERPARMETIS, PetscPartitionerCreate_ParMetis));
+  PetscCall(PetscPartitionerRegister(PETSCPARTITIONERPTSCOTCH, PetscPartitionerCreate_PTScotch));
+  PetscCall(PetscPartitionerRegister(PETSCPARTITIONERCHACO,    PetscPartitionerCreate_Chaco));
+  PetscCall(PetscPartitionerRegister(PETSCPARTITIONERSIMPLE,   PetscPartitionerCreate_Simple));
+  PetscCall(PetscPartitionerRegister(PETSCPARTITIONERSHELL,    PetscPartitionerCreate_Shell));
+  PetscCall(PetscPartitionerRegister(PETSCPARTITIONERGATHER,   PetscPartitionerCreate_Gather));
+  PetscCall(PetscPartitionerRegister(PETSCPARTITIONERMATPARTITIONING, PetscPartitionerCreate_MatPartitioning));
   PetscFunctionReturn(0);
 }
 
@@ -92,14 +88,12 @@ static PetscBool PetscPartitionerPackageInitialized = PETSC_FALSE;
 
   Level: developer
 
-.seealso: PetscInitialize()
+.seealso: `PetscInitialize()`
 @*/
 PetscErrorCode  PetscPartitionerFinalizePackage(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscFunctionListDestroy(&PetscPartitionerList);CHKERRQ(ierr);
+  PetscCall(PetscFunctionListDestroy(&PetscPartitionerList));
   PetscPartitionerPackageInitialized = PETSC_FALSE;
   PetscPartitionerRegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -110,37 +104,36 @@ PetscErrorCode  PetscPartitionerFinalizePackage(void)
 
   Level: developer
 
-.seealso: PetscInitialize()
+.seealso: `PetscInitialize()`
 @*/
 PetscErrorCode  PetscPartitionerInitializePackage(void)
 {
   char           logList[256];
   PetscBool      opt,pkg;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (PetscPartitionerPackageInitialized) PetscFunctionReturn(0);
   PetscPartitionerPackageInitialized = PETSC_TRUE;
 
   /* Register Classes */
-  ierr = PetscClassIdRegister("GraphPartitioner",&PETSCPARTITIONER_CLASSID);CHKERRQ(ierr);
+  PetscCall(PetscClassIdRegister("GraphPartitioner",&PETSCPARTITIONER_CLASSID));
   /* Register Constructors */
-  ierr = PetscPartitionerRegisterAll();CHKERRQ(ierr);
+  PetscCall(PetscPartitionerRegisterAll());
   /* Register Events */
   /* Process Info */
   {
     PetscClassId  classids[1];
 
     classids[0] = PETSCPARTITIONER_CLASSID;
-    ierr = PetscInfoProcessClass("partitioner", 1, classids);CHKERRQ(ierr);
+    PetscCall(PetscInfoProcessClass("partitioner", 1, classids));
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt));
   if (opt) {
-    ierr = PetscStrInList("partitioner",logList,',',&pkg);CHKERRQ(ierr);
-    if (pkg) {ierr = PetscLogEventExcludeClass(PETSCPARTITIONER_CLASSID);CHKERRQ(ierr);}
+    PetscCall(PetscStrInList("partitioner",logList,',',&pkg));
+    if (pkg) PetscCall(PetscLogEventExcludeClass(PETSCPARTITIONER_CLASSID));
   }
   /* Register package finalizer */
-  ierr = PetscRegisterFinalize(PetscPartitionerFinalizePackage);CHKERRQ(ierr);
+  PetscCall(PetscRegisterFinalize(PetscPartitionerFinalizePackage));
   PetscFunctionReturn(0);
 }

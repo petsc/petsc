@@ -548,13 +548,13 @@ possibly user-defined routines as well) with
 
 .. code-block::
 
-   ierr = PetscRoutine(...);CHKERRQ(PetscErrorCode ierr);
+   PetscCall(PetscRoutine(...));
 
 Likewise, all memory allocations should be checked with
 
 .. code-block::
 
-   ierr = PetscMalloc1(n, &ptr);CHKERRQ(ierr);
+   PetscCall(PetscMalloc1(n,&ptr));
 
 If this procedure is followed throughout all of the user’s libraries and
 codes, any error will by default generate a clean traceback of the
@@ -564,7 +564,7 @@ Note that the macro ``PETSC_FUNCTION_NAME`` is used to keep track of
 routine names during error tracebacks. Users need not worry about this
 macro in their application codes; however, users can take advantage of
 this feature if desired by setting this macro before each user-defined
-routine that may call ``SETERRQ()``, ``CHKERRQ()``. A simple example of
+routine that may call ``SETERRQ()``, ``PetscCall()``. A simple example of
 usage is given below.
 
 .. code-block::

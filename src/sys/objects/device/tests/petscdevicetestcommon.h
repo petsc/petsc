@@ -11,7 +11,7 @@
 #undef  PetscValidDeviceType
 #define PetscValidDeviceType(_p_dev_type__,_p_arg__) do {                                      \
     PetscCheck(                                                                               \
-      ((_p_dev_type__) >= PETSC_DEVICE_INVALID) && ((_p_dev_type__) <= PETSC_DEVICE_MAX),      \
+      ((int)(_p_dev_type__) >= (int)PETSC_DEVICE_INVALID) && ((_p_dev_type__) <= PETSC_DEVICE_MAX), \
       PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown PetscDeviceType '%d': Argument #%d", \
       (_p_dev_type__),(_p_arg__)                                                               \
     );                                                                                         \
@@ -65,7 +65,7 @@
 #undef  PetscValidStreamType
 #define PetscValidStreamType(_p_strm_type__,_p_arg__)  do {                                    \
     PetscCheck(                                                                               \
-      ((_p_strm_type__) >= 0) && ((_p_strm_type__) <= PETSC_STREAM_MAX),                       \
+      ((int)(_p_strm_type__) >= 0) && ((_p_strm_type__) <= PETSC_STREAM_MAX), \
       PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown PetscStreamType '%d': Argument #%d", \
       (_p_strm_type__),(_p_arg__)                                                              \
     );                                                                                         \

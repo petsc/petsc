@@ -1,14 +1,11 @@
+-include ../../../petsckdir.mk
 
-ALL: lib
-
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = adamat.c submatfree.c
-SOURCEF  = 
+SOURCEF  =
 SOURCEH  = submatfree.h
 LIBBASE  = libpetsctao
 MANSEC   = Tao
-DIRS		 = 
+DIRS     =
 LOCDIR   = src/tao/matrix/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

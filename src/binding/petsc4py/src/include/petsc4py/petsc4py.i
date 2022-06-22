@@ -462,6 +462,8 @@ SWIG_From_dec(Type)(Type v) {
 
 %define SWIG_TYPECHECK_PETSC_FE               550 %enddef
 %define SWIG_TYPECHECK_PETSC_QUADRATURE       551 %enddef
+%define SWIG_TYPECHECK_PETSC_SPACE            552 %enddef
+%define SWIG_TYPECHECK_PETSC_DUALSPACE        553 %enddef
 
 %define SWIG_TYPECHECK_PETSC_DMLABEL          560 %enddef
 
@@ -582,6 +584,8 @@ SWIG_From_dec(Type)(Type v) {
 %petsc4py_objt( Petsc , DM             , DM                     , PETSC_DM               )
 %petsc4py_objt( Petsc , DS             , PetscDS                , PETSC_DS               )
 %petsc4py_objt( Petsc , Partitioner    , PetscPartitioner       , PETSC_PARTITIONER      )
+%petsc4py_objt( Petsc , Space          , PetscSpace             , PETSC_SPACE            )
+%petsc4py_objt( Petsc , DualSpace      , PetscDualSpace         , PETSC_DUALSPACE        )
 %petsc4py_objt( Petsc , FE             , PetscFE                , PETSC_FE               )
 %petsc4py_objt( Petsc , Quad           , PetscQuadrature        , PETSC_QUADRATURE       )
 %petsc4py_objt( Petsc , DMLabel        , PetscDMLabel           , PETSC_DMLABEL          )

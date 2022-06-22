@@ -304,13 +304,15 @@ class Configure(config.base.Configure):
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version', log = log)
       output = output + error
       import re
-      strmatch = re.match('gcc\s+\(.*\)\s+(\d+)\.(\d+)',output)
+      strmatch = re.match('gcc[-0-9]*\s+\(.*\)\s+(\d+)\.(\d+)',output)
       if strmatch:
         VMAJOR,VMINOR = strmatch.groups()
         if (int(VMAJOR),int(VMINOR)) >= (11,0):
           if log: log.write('Detected Gcc110plus compiler\n')
           return 1
+      if log: log.write('Did not detect Gcc110plus compiler\n')
     except RuntimeError:
+      if log: log.write('Did not detect Gcc110plus compiler due to exception\n')
       pass
 
   @staticmethod
@@ -592,6 +594,16 @@ class Configure(config.base.Configure):
       return found
 
   @staticmethod
+  def isARM(log):
+    '''Returns true if system is processor-type is ARM'''
+    (output, error, status) = config.base.Configure.executeShellCommand('uname -p', log = log)
+    if not status:
+      found = (output.lower().strip() == 'arm')
+      if found:
+        if log: log.write('Detected ARM processor\n\n')
+      return found
+
+  @staticmethod
   def isDarwinCatalina(log):
     '''Returns true if system is Darwin/MacOSX Version Catalina or higher'''
     import platform
@@ -682,10 +694,12 @@ class Configure(config.base.Configure):
       if setHostFlag in self.getCompilerFlags():
         # don't want to override this if it is already set
         return
-    compilerName = self.getCompiler(lang='Cxx' if hasattr(self,'CXX') else 'C')
+    if not hasattr(self,'CXX'):
+        return
+    compilerName = self.getCompiler(lang='Cxx')
     hostCCFlag   = '{shf} {cc}'.format(shf=setHostFlag,cc=compilerName)
     with self.Language(language):
-      self.logPrint(' '.join(('checkDeviceHostCompiler: checking',compilerName,'accepts host compiler',compilerName)))
+      self.logPrint(' '.join(('checkDeviceHostCompiler: checking',language,'accepts host compiler',compilerName)))
       try:
         self.addCompilerFlag(hostCCFlag)
       except RuntimeError:
@@ -918,12 +932,8 @@ class Configure(config.base.Configure):
           # user has set both flags
           errorMessage = 'Competing or duplicate C++ dialect flags, have specified {flagdialect} in compiler ({compiler}) flags and used configure option {opt}'.format(flagdialect=langDialectFromFlags,compiler=compiler,opt='--'+configureArg+'='+withLangDialect.lower())
           raise ConfigureSetupError(errorMessage)
-        self.logPrintBox('\n'.join((
-          ' ***** WARNING: Explicitly setting C++ dialect in compiler flags may not be optimal.',
-          'Use ./configure --{opt}={sanitized} if you really want to use that value,',
-          'otherwise remove {flag} from compiler flags and omit --{opt}=[...]',
-          'from configure to have PETSc automatically detect the most appropriate flag for you'
-        )).format(opt=configureArg,sanitized=sanitized,flag=langDialectFromFlags[-1]))
+        mess = 'Explicitly setting C++ dialect in compiler flags may not be optimal. Use ./configure --{opt}={sanitized} if you really want to use that value, otherwise remove {flag} from compiler flags and omit --{opt}=[...] from configure to have PETSc automatically detect the most appropriate flag for you'.format(opt=configureArg,sanitized=sanitized,flag=langDialectFromFlags[-1])
+        self.logPrintWarning(mess)
 
       # the user has already set the flag in their options, no need to set it a second time
       useFlag          = False
@@ -951,11 +961,8 @@ class Configure(config.base.Configure):
       # explicit value
       explicit      = previouslySetExplicitly if processedBefore else True
       if withLangDialect.endswith('20'):
-        self.logPrintBox('\n'.join((
-          ' ***** WARNING: C++20 is not yet fully supported, PETSc only tests up to C++{maxver}.',
-          'Remove -std=[...] from compiler flags and/or omit --{opt}=[...] from',
-          'configure to have PETSc automatically detect the most appropriate flag for you'
-        )).format(maxver=default_cxx_dialect_ranges()[1],opt=configureArg))
+        mess = 'C++20 is not yet fully supported, PETSc only tests up to C++{maxver}. Remove -std=[...] from compiler flags and/or omit --{opt}=[...] from configure to have PETSc automatically detect the most appropriate flag for you'.format(maxver=default_cxx_dialect_ranges()[1],opt=configureArg)
+        self.logPrintWarning(mess)
 
     minDialect,maxDialect = 0,-1
     for i,dialect in enumerate(dialects):
@@ -1222,7 +1229,7 @@ class Configure(config.base.Configure):
       if self.useMPICompilers() and 'with-mpi-dir' in self.argDB:
       # if it gets here these means that self.argDB['with-mpi-dir']/bin does not exist so we should not search for MPI compilers
       # that is we are turning off the self.useMPICompilers()
-        self.logPrintBox('***** WARNING: '+os.path.join(self.argDB['with-mpi-dir'], 'bin')+ ' dir does not exist!\n Skipping check for MPI compilers due to potentially incorrect --with-mpi-dir option.\n Suggest using --with-cc=/path/to/mpicc option instead ******')
+        self.logPrintWarning(os.path.join(self.argDB['with-mpi-dir'], 'bin')+ ' dir does not exist! Skipping check for MPI compilers due to potentially incorrect --with-mpi-dir option. Suggest using --with-cc=/path/to/mpicc option instead')
 
         self.argDB['with-mpi-compilers'] = 0
       if self.useMPICompilers():
@@ -1282,6 +1289,10 @@ class Configure(config.base.Configure):
       self.executeShellCommand(self.CC+' --version', log = self.log)
     except:
       pass
+    (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -v | head -n 20', log = self.log)
+    output = output + error
+    if '(gcc version 4.8.5 compatibility)' in output:
+       self.logPrintWarning('Intel compiler being used with gcc 4.8.5 compatibility, failures may occur. Recommend having a newer gcc version in your path.')
     if os.path.basename(self.CC).startswith('mpi'):
        self.logPrint('Since MPI c compiler starts with mpi, force searches for other compilers to only look for MPI compilers\n')
        self.argDB['with-mpi-compilers'] = 1
@@ -1829,7 +1840,7 @@ class Configure(config.base.Configure):
     oldFlags = getattr(self, flagsArg)
     setattr(self, flagsArg, oldFlags+' '+flag)
     (output, error, status) = self.outputCompile(includes, body)
-    output += error
+    output = self.filterCompileOutput(output+'\n'+error,flag=flag)
     self.logPrint('Output from compiling with '+oldFlags+' '+flag+'\n'+output)
     setattr(self, flagsArg, oldFlags)
     # Please comment each entry and provide an example line
@@ -2292,7 +2303,7 @@ class Configure(config.base.Configure):
 
   def checkLinkerMac(self):
     '''Tests some Apple Mac specific linker flags'''
-    self.addDefine('PETSC_USING_DARWIN', 1)
+    self.addDefine('USING_DARWIN', 1)
     langMap = {'C':'CC','FC':'FC','Cxx':'CXX','CUDA':'CUDAC','HIP':'HIPC','SYCL':'SYCLC'}
     languages = ['C']
     if hasattr(self, 'CXX'):
@@ -2390,7 +2401,7 @@ class Configure(config.base.Configure):
       return
     self.LIBS = oldLibs
     self.compilerDefines = tmpCompilerDefines
-    self.logPrint('*** WARNING *** Shared linking may not function on this architecture')
+    self.logPrintWarning('Shared linking may not function on this architecture')
     self.staticLibrary=1
     self.sharedLibrary=0
 
@@ -2569,14 +2580,14 @@ if (dlclose(handle)) {
     ignoreEnv = ['CFLAGS','CXXFLAGS','FCFLAGS','FFLAGS','F90FLAGS','CPP','CPPFLAGS','CXXPP','CXXPPFLAGS','LDFLAGS','LIBS','MPI_DIR','RM','MAKEFLAGS','AR','RANLIB']
     for envVal in ignoreEnvCompilers + ignoreEnv:
       if envVal in os.environ:
-        msg = 'WARNING! Found environment variable: %s=%s\n' % (envVal, os.environ[envVal])
+        msg = 'Found environment variable: %s=%s. ' % (envVal, os.environ[envVal])
         if envVal in self.framework.clArgDB or (envVal in ignoreEnvCompilers and 'with-'+envVal.lower() in self.framework.clArgDB):
-          self.logPrintBox(msg+'Ignoring it, since its also set on command line')
+          self.logPrintWarning(msg+'Ignoring it, since its also set on command line')
           del os.environ[envVal]
         elif self.argDB['with-environment-variables']:
-          self.logPrintBox(msg+'Using it! Use "./configure --disable-environment-variables" to NOT use the environmental variables')
+          self.logPrintWarning(msg+'Using it! Use "./configure --disable-environment-variables" to NOT use the environmental variables')
         else:
-          self.logPrintBox (msg+'Ignoring it! Use "./configure %s=$%s" if you really want to use this value' % (envVal,envVal))
+          self.logPrintWarning(msg+'Ignoring it! Use "./configure %s=$%s" if you really want to use this value' % (envVal,envVal))
           del os.environ[envVal]
     return
 
@@ -2604,6 +2615,17 @@ if (dlclose(handle)) {
     self.LIBS = oldLibs
     return ret
 
+  def checkAtFileOption(self):
+    '''Check if linker supports @file option'''
+    optfile = os.path.join(self.tmpDir,'optfile')
+    with open(optfile,'w') as fd:
+      fd.write(str(self.getCompilerFlags()))
+    if self.checkLinkerFlag('@'+optfile):
+      self.framework.addMakeMacro('PCC_AT_FILE',1)
+    else:
+      self.logPrint('@file option test failed!')
+    return
+
   def configure(self):
     self.mainLanguage = self.languages.clanguage
     self.executeTest(self.resetEnvCompilers)
@@ -2626,7 +2648,7 @@ if (dlclose(handle)) {
           del self.argDB[COMPILER]
       return disabled
 
-    for LANG in ['CUDA','HIP','SYCL','Cxx']:
+    for LANG in ['Cxx','CUDA','HIP','SYCL']:
       compilerName = LANG.upper() if LANG == 'Cxx' else LANG+'C'
       if not compilerIsDisabledFromOptions(compilerName):
         self.executeTest(getattr(self,LANG.join(('check','Compiler'))))
@@ -2663,6 +2685,7 @@ if (dlclose(handle)) {
     self.executeTest(self.checkLibC)
     self.executeTest(self.checkDynamicLinker)
     self.executeTest(self.checkPragma)
+    self.executeTest(self.checkAtFileOption)
     self.executeTest(self.output)
     return
 

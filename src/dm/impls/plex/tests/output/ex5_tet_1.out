@@ -46,26 +46,26 @@ Label 'cohesive':
 Discrete System with 1 fields
     cell total dim 12 total comp 3
   Field displacement FEM 3 components (implicit) (Nq 8 Nqc 1) 1-jet
-    PetscFE Object: displacement (displacement_) 1 MPI processes
+    PetscFE Object: displacement (displacement_) 1 MPI process
       type: basic
       Basic Finite Element in 3 dimensions with 3 components
-      PetscSpace Object: displacement (displacement_) 1 MPI processes
+      PetscSpace Object: displacement (displacement_) 1 MPI process
         type: sum
         Space in 3 variables with 3 components, size 12
         Sum space of 3 concatenated subspaces (all identical)
-          PetscSpace Object: sum component (displacement_sumcomp_) 1 MPI processes
+          PetscSpace Object: sum component (displacement_sumcomp_) 1 MPI process
             type: poly
             Space in 3 variables with 1 components, size 4
             Polynomial space of degree 1
-      PetscDualSpace Object: displacement (displacement_) 1 MPI processes
+      PetscDualSpace Object: displacement (displacement_) 1 MPI process
         type: lagrange
         Dual space with 3 components, size 12
         Continuous Lagrange dual space
         Quadrature of order 3 on 8 points (dim 3)
   Weak Form System with 1 fields
     boundary_residual_f0
-      (material, 1) (0, 0) f0_bd_u
-      (material, 2) (0, 0) f0_bd_u
+      (material, 1) (0, 0)
+      (material, 2) (0, 0)
     boundary_jacobian_g0
-      (material, 1) (1, 0) g0_bd_ul
-      (material, 2) (1, 0) g0_bd_ul
+      (material, 1) (1, 0)
+      (material, 2) (1, 0)

@@ -6,12 +6,14 @@
 #include <petscfix.h>
 #include <stddef.h>
 
+/* SUBMANSEC = Sys */
+
 /*MC
     PetscErrorCode - datatype used for return error code from almost all PETSc functions
 
     Level: beginner
 
-.seealso: CHKERRQ, SETERRQ
+.seealso: `PetscCall()`, `SETERRQ()`
 M*/
 typedef int PetscErrorCode;
 
@@ -29,7 +31,7 @@ typedef int PetscErrorCode;
 
     Level: developer
 
-.seealso: PetscClassIdRegister(), PetscLogEventRegister(), PetscHeaderCreate()
+.seealso: `PetscClassIdRegister()`, `PetscLogEventRegister()`, `PetscHeaderCreate()`
 M*/
 typedef int PetscClassId;
 
@@ -45,7 +47,7 @@ typedef int PetscClassId;
     PetscMPIIntCast(a,&b) checks if the given PetscInt a will fit in a PetscMPIInt, if not it
       generates a PETSC_ERR_ARG_OUTOFRANGE error.
 
-.seealso: PetscBLASInt, PetscInt, PetscMPIIntCast()
+.seealso: `PetscBLASInt`, `PetscInt`, `PetscMPIIntCast()`
 
 M*/
 typedef int PetscMPIInt;
@@ -58,7 +60,7 @@ typedef int PetscMPIInt;
     Notes:
     This is equivalent to size_t, but defined for consistency with Fortran, which lacks a native equivalent of size_t.
 
-.seealso: PetscInt, PetscInt64, PetscCount
+.seealso: `PetscInt`, `PetscInt64`, `PetscCount`
 
 M*/
 typedef size_t PetscSizeT;
@@ -73,17 +75,18 @@ typedef size_t PetscSizeT;
 
     Use PetscCount_FMT to format with PetscPrintf(), printf(), and related functions.
 
-.seealso: PetscInt, PetscInt64, PetscSizeT
+.seealso: `PetscInt`, `PetscInt64`, `PetscSizeT`
 
 M*/
 typedef ptrdiff_t PetscCount;
+#define PetscCount_FMT "td"
 
 /*MC
     PetscEnum - datatype used to pass enum types within PETSc functions.
 
     Level: intermediate
 
-.seealso: PetscOptionsGetEnum(), PetscOptionsEnum(), PetscBagRegisterEnum()
+.seealso: `PetscOptionsGetEnum()`, `PetscOptionsEnum()`, `PetscBagRegisterEnum()`
 M*/
 typedef enum { ENUM_DUMMY } PetscEnum;
 
@@ -100,7 +103,7 @@ typedef float PetscFloat;
 
   Level: beginner
 
-.seealso: PetscBLASInt, PetscMPIInt, PetscReal, PetscScalar, PetscComplex, PetscInt, MPIU_REAL, MPIU_SCALAR, MPIU_COMPLEX, MPIU_INT
+.seealso: `PetscBLASInt`, `PetscMPIInt`, `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscInt`, `MPIU_REAL`, `MPIU_SCALAR`, `MPIU_COMPLEX`, `MPIU_INT`
 M*/
 
 #if defined(PETSC_HAVE_STDINT_H)
@@ -145,12 +148,6 @@ M*/
 #  error "cannot determine PetscInt64 type"
 #endif
 
-#if PETSC_SIZEOF_SIZE_T == 8
-#  define PetscCount_FMT PetscInt64_FMT
-#else
-#  define PetscCount_FMT "d"
-#endif
-
 /*MC
    PetscBLASInt - datatype used to represent 'int' parameters to BLAS/LAPACK functions.
 
@@ -180,7 +177,7 @@ M*/
 
    Level: intermediate
 
-.seealso: PetscMPIInt, PetscInt, PetscBLASIntCast()
+.seealso: `PetscMPIInt`, `PetscInt`, `PetscBLASIntCast()`
 
 M*/
 #if defined(PETSC_HAVE_64BIT_BLAS_INDICES)
@@ -202,7 +199,7 @@ M*/
 
    Level: intermediate
 
-.seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscCuBLASIntCast()
+.seealso: `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscCuBLASIntCast()`
 
 M*/
 typedef int PetscCuBLASInt;
@@ -216,7 +213,7 @@ typedef int PetscCuBLASInt;
    Why have PetscBool , why not use bool in C? The problem is that K and R C, C99 and C++ all have different mechanisms for
       boolean values. It is not easy to have a simple macro that that will work properly in all circumstances with all three mechanisms.
 
-.seealso: PETSC_TRUE, PETSC_FALSE, PetscNot()
+.seealso: `PETSC_TRUE`, `PETSC_FALSE`, `PetscNot()`
 E*/
 typedef enum { PETSC_FALSE,PETSC_TRUE } PetscBool;
 
@@ -231,7 +228,7 @@ typedef enum { PETSC_FALSE,PETSC_TRUE } PetscBool;
 
    Level: beginner
 
-.seealso: PetscScalar, PetscComplex, PetscInt, MPIU_REAL, MPIU_SCALAR, MPIU_COMPLEX, MPIU_INT
+.seealso: `PetscScalar`, `PetscComplex`, `PetscInt`, `MPIU_REAL`, `MPIU_SCALAR`, `MPIU_COMPLEX`, `MPIU_INT`
 M*/
 
 #if defined(PETSC_USE_REAL_SINGLE)
@@ -275,7 +272,7 @@ M*/
 
    Level: beginner
 
-.seealso: PetscReal, PetscScalar, PetscComplex, PetscInt, MPIU_REAL, MPIU_SCALAR, MPIU_COMPLEX, MPIU_INT, PETSC_i
+.seealso: `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscInt`, `MPIU_REAL`, `MPIU_SCALAR`, `MPIU_COMPLEX`, `MPIU_INT`, `PETSC_i`
 M*/
 #if !defined(PETSC_SKIP_COMPLEX)
 #  if defined(PETSC_CLANGUAGE_CXX)
@@ -350,7 +347,7 @@ M*/
 
    Level: beginner
 
-.seealso: PetscReal, PetscComplex, PetscInt, MPIU_REAL, MPIU_SCALAR, MPIU_COMPLEX, MPIU_INT, PetscRealPart(), PetscImaginaryPart()
+.seealso: `PetscReal`, `PetscComplex`, `PetscInt`, `MPIU_REAL`, `MPIU_SCALAR`, `MPIU_COMPLEX`, `MPIU_INT`, `PetscRealPart()`, `PetscImaginaryPart()`
 M*/
 
 #if defined(PETSC_USE_COMPLEX) && defined(PETSC_HAVE_COMPLEX)
@@ -388,7 +385,7 @@ typedef enum {PETSC_COPY_VALUES, PETSC_OWN_POINTER, PETSC_USE_POINTER} PetscCopy
     Note:
     Zero integer
 
-.seealso: PetscBool, PETSC_TRUE
+.seealso: `PetscBool`, `PETSC_TRUE`
 M*/
 
 /*MC
@@ -399,7 +396,7 @@ M*/
     Note:
     Nonzero integer
 
-.seealso: PetscBool, PETSC_FALSE
+.seealso: `PetscBool`, `PETSC_FALSE`
 M*/
 
 /*MC
@@ -432,8 +429,8 @@ typedef double PetscLogDouble;
 
    TODO: Add PETSC_INT32 and remove use of improper PETSC_ENUM
 
-.seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscDataTypeToMPIDataType(),
-          PetscDataTypeGetSize()
+.seealso: `PetscBinaryRead()`, `PetscBinaryWrite()`, `PetscDataTypeToMPIDataType()`,
+          `PetscDataTypeGetSize()`
 
 E*/
 typedef enum {PETSC_DATATYPE_UNKNOWN = 0,
@@ -467,7 +464,7 @@ typedef enum {PETSC_DATATYPE_UNKNOWN = 0,
 
   Level: intermediate
 
-.seealso: PetscTokenCreate(), PetscTokenFind(), PetscTokenDestroy()
+.seealso: `PetscTokenCreate()`, `PetscTokenFind()`, `PetscTokenDestroy()`
 S*/
 typedef struct _p_PetscToken* PetscToken;
 
@@ -479,7 +476,7 @@ typedef struct _p_PetscToken* PetscToken;
    Note:
    This is the base class from which all PETSc objects are derived from.
 
-.seealso:  PetscObjectDestroy(), PetscObjectView(), PetscObjectGetName(), PetscObjectSetName(), PetscObjectReference(), PetscObjectDereference()
+.seealso: `PetscObjectDestroy()`, `PetscObjectView()`, `PetscObjectGetName()`, `PetscObjectSetName()`, `PetscObjectReference()`, `PetscObjectDereference()`
 S*/
 typedef struct _p_PetscObject* PetscObject;
 
@@ -491,7 +488,7 @@ typedef struct _p_PetscObject* PetscObject;
     Notes:
     Unlike pointer values, object ids are never reused.
 
-.seealso: PetscObjectState, PetscObjectGetId()
+.seealso: `PetscObjectState`, `PetscObjectGetId()`
 M*/
 typedef PetscInt64 PetscObjectId;
 
@@ -504,7 +501,7 @@ typedef PetscInt64 PetscObjectId;
     Object state is always-increasing and (for objects that track state) can be used to determine if an object has
     changed since the last time you interacted with it.  It is 64-bit so that it will not overflow for a very long time.
 
-.seealso: PetscObjectId, PetscObjectStateGet(), PetscObjectStateIncrease(), PetscObjectStateSet()
+.seealso: `PetscObjectId`, `PetscObjectStateGet()`, `PetscObjectStateIncrease()`, `PetscObjectStateSet()`
 M*/
 typedef PetscInt64 PetscObjectState;
 
@@ -514,7 +511,7 @@ typedef PetscInt64 PetscObjectState;
 
    Level: advanced
 
-.seealso:  PetscFunctionListAdd(), PetscFunctionListDestroy()
+.seealso: `PetscFunctionListAdd()`, `PetscFunctionListDestroy()`
 S*/
 typedef struct _n_PetscFunctionList *PetscFunctionList;
 
@@ -530,7 +527,7 @@ $  FILE_MODE_APPEND - open a file at end for writing
 $  FILE_MODE_UPDATE - open a file for updating, meaning for reading and writing
 $  FILE_MODE_APPEND_UPDATE - open a file for updating, meaning for reading and writing, at the end
 
-.seealso: PetscViewerFileSetMode()
+.seealso: `PetscViewerFileSetMode()`
 E*/
 typedef enum {FILE_MODE_UNDEFINED=-1, FILE_MODE_READ=0, FILE_MODE_WRITE, FILE_MODE_APPEND, FILE_MODE_UPDATE, FILE_MODE_APPEND_UPDATE} PetscFileMode;
 
@@ -545,7 +542,7 @@ typedef enum {PETSC_DL_DECIDE=0,PETSC_DL_NOW=1,PETSC_DL_LOCAL=2} PetscDLMode;
    Notes:
    Used by PetscObjectCompose() and PetscObjectQuery()
 
-.seealso:  PetscObjectListAdd(), PetscObjectListDestroy(), PetscObjectListFind(), PetscObjectCompose(), PetscObjectQuery(), PetscFunctionList
+.seealso: `PetscObjectListAdd()`, `PetscObjectListDestroy()`, `PetscObjectListFind()`, `PetscObjectCompose()`, `PetscObjectQuery()`, `PetscFunctionList`
 S*/
 typedef struct _n_PetscObjectList *PetscObjectList;
 
@@ -554,7 +551,7 @@ typedef struct _n_PetscObjectList *PetscObjectList;
 
    Level: advanced
 
-.seealso:  PetscDLLibraryOpen()
+.seealso: `PetscDLLibraryOpen()`
 S*/
 typedef struct _n_PetscDLLibrary *PetscDLLibrary;
 
@@ -563,7 +560,7 @@ typedef struct _n_PetscDLLibrary *PetscDLLibrary;
 
    Level: advanced
 
-.seealso:  PetscObject, PetscContainerCreate()
+.seealso: `PetscObject`, `PetscContainerCreate()`
 S*/
 typedef struct _p_PetscContainer*  PetscContainer;
 
@@ -572,7 +569,7 @@ typedef struct _p_PetscContainer*  PetscContainer;
 
    Level: intermediate
 
-.seealso:  PetscRandomCreate(), PetscRandomGetValue(), PetscRandomType
+.seealso: `PetscRandomCreate()`, `PetscRandomGetValue()`, `PetscRandomType`
 S*/
 typedef struct _p_PetscRandom*   PetscRandom;
 
@@ -594,7 +591,7 @@ typedef struct _p_PetscRandom*   PetscRandom;
 
   Level: advanced
 
-.seealso: PetscBinarySeek(), PetscBinarySynchronizedSeek()
+.seealso: `PetscBinarySeek()`, `PetscBinarySynchronizedSeek()`
 E*/
 typedef enum {PETSC_BINARY_SEEK_SET = 0,PETSC_BINARY_SEEK_CUR = 1,PETSC_BINARY_SEEK_END = 2} PetscBinarySeekType;
 
@@ -611,7 +608,7 @@ $      that only communicates the part of the reduction that is necessary.  Requ
 
    Level: developer
 
-.seealso: PetscCommBuildTwoSided(), PetscCommBuildTwoSidedSetType(), PetscCommBuildTwoSidedGetType()
+.seealso: `PetscCommBuildTwoSided()`, `PetscCommBuildTwoSidedSetType()`, `PetscCommBuildTwoSidedGetType()`
 E*/
 typedef enum {
   PETSC_BUILDTWOSIDED_NOTSET = -1,
@@ -627,9 +624,9 @@ typedef enum {
 
   Level: beginner
 
-.seealso: VecSetValues(), MatSetValues(), VecSetValue(), VecSetValuesBlocked(),
-          VecSetValuesLocal(), VecSetValuesBlockedLocal(), MatSetValuesBlocked(),
-          MatSetValuesBlockedLocal(), MatSetValuesLocal(), VecScatterBegin(), VecScatterEnd()
+.seealso: `VecSetValues()`, `MatSetValues()`, `VecSetValue()`, `VecSetValuesBlocked()`,
+          `VecSetValuesLocal()`, `VecSetValuesBlockedLocal()`, `MatSetValuesBlocked()`,
+          `MatSetValuesBlockedLocal()`, `MatSetValuesLocal()`, `VecScatterBegin()`, `VecScatterEnd()`
 E*/
  typedef enum {NOT_SET_VALUES, INSERT_VALUES, ADD_VALUES, MAX_VALUES, MIN_VALUES, INSERT_ALL_VALUES, ADD_ALL_VALUES, INSERT_BC_VALUES, ADD_BC_VALUES} InsertMode;
 
@@ -638,9 +635,9 @@ E*/
 
     Level: beginner
 
-.seealso: InsertMode, VecSetValues(), MatSetValues(), VecSetValue(), VecSetValuesBlocked(),
-          VecSetValuesLocal(), VecSetValuesBlockedLocal(), MatSetValuesBlocked(), ADD_VALUES,
-          MatSetValuesBlockedLocal(), MatSetValuesLocal(), VecScatterBegin(), VecScatterEnd(), MAX_VALUES
+.seealso: `InsertMode`, `VecSetValues()`, `MatSetValues()`, `VecSetValue()`, `VecSetValuesBlocked()`,
+          `VecSetValuesLocal()`, `VecSetValuesBlockedLocal()`, `MatSetValuesBlocked()`, `ADD_VALUES`,
+          `MatSetValuesBlockedLocal()`, `MatSetValuesLocal()`, `VecScatterBegin()`, `VecScatterEnd()`, `MAX_VALUES`
 
 M*/
 
@@ -650,9 +647,9 @@ M*/
 
     Level: beginner
 
-.seealso: InsertMode, VecSetValues(), MatSetValues(), VecSetValue(), VecSetValuesBlocked(),
-          VecSetValuesLocal(), VecSetValuesBlockedLocal(), MatSetValuesBlocked(), INSERT_VALUES,
-          MatSetValuesBlockedLocal(), MatSetValuesLocal(), VecScatterBegin(), VecScatterEnd(), MAX_VALUES
+.seealso: `InsertMode`, `VecSetValues()`, `MatSetValues()`, `VecSetValue()`, `VecSetValuesBlocked()`,
+          `VecSetValuesLocal()`, `VecSetValuesBlockedLocal()`, `MatSetValuesBlocked()`, `INSERT_VALUES`,
+          `MatSetValuesBlockedLocal()`, `MatSetValuesLocal()`, `VecScatterBegin()`, `VecScatterEnd()`, `MAX_VALUES`
 
 M*/
 
@@ -661,7 +658,7 @@ M*/
 
     Level: beginner
 
-.seealso: InsertMode, VecScatterBegin(), VecScatterEnd(), ADD_VALUES, INSERT_VALUES
+.seealso: `InsertMode`, `VecScatterBegin()`, `VecScatterEnd()`, `ADD_VALUES`, `INSERT_VALUES`
 
 M*/
 
@@ -670,7 +667,7 @@ M*/
 
     Level: beginner
 
-.seealso: InsertMode, VecScatterBegin(), VecScatterEnd(), ADD_VALUES, INSERT_VALUES
+.seealso: `InsertMode`, `VecScatterBegin()`, `VecScatterEnd()`, `ADD_VALUES`, `INSERT_VALUES`
 
 M*/
 
@@ -704,7 +701,7 @@ $     PETSC_SUBCOMM_INTERLACED - the first communicator contains rank 0,3, the s
    This is used in objects such as PCREDUNDANT to manage the subcommunicators on which the redundant computations
       are performed.
 
-.seealso: PetscSubcommCreate(), PetscSubcommSetNumber(), PetscSubcommSetType(), PetscSubcommView(), PetscSubcommSetFromOptions()
+.seealso: `PetscSubcommCreate()`, `PetscSubcommSetNumber()`, `PetscSubcommSetType()`, `PetscSubcommView()`, `PetscSubcommSetFromOptions()`
 
 S*/
 typedef struct _n_PetscSubcomm* PetscSubcomm;
@@ -715,7 +712,7 @@ typedef enum {PETSC_SUBCOMM_GENERAL=0,PETSC_SUBCOMM_CONTIGUOUS=1,PETSC_SUBCOMM_I
 
    Level: intermediate
 
-.seealso:  PetscHeapCreate(), PetscHeapAdd(), PetscHeapPop(), PetscHeapPeek(), PetscHeapStash(), PetscHeapUnstash(), PetscHeapView(), PetscHeapDestroy()
+.seealso: `PetscHeapCreate()`, `PetscHeapAdd()`, `PetscHeapPop()`, `PetscHeapPeek()`, `PetscHeapStash()`, `PetscHeapUnstash()`, `PetscHeapView()`, `PetscHeapDestroy()`
 S*/
 typedef struct _PetscHeap *PetscHeap;
 
@@ -727,7 +724,7 @@ typedef struct _n_PetscOmpCtrl* PetscOmpCtrl;
 
    Level: developer
 
-.seealso: PetscSegBufferCreate(), PetscSegBufferGet(), PetscSegBufferExtract(), PetscSegBufferDestroy()
+.seealso: `PetscSegBufferCreate()`, `PetscSegBufferGet()`, `PetscSegBufferExtract()`, `PetscSegBufferDestroy()`
 S*/
 typedef struct _n_PetscSegBuffer *PetscSegBuffer;
 

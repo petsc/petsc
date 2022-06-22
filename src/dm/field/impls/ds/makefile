@@ -1,12 +1,9 @@
 -include ../../../../../petscdir.mk
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = dmfieldds.c
 SOURCEF  =
 LIBBASE  = libpetscdm
-DIRS     = 
+DIRS     =
 LOCDIR   = src/dm/field/impls/ds/
 MANSEC   = DM
 

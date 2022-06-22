@@ -1,5 +1,4 @@
 -include ../../../petscdir.mk
-ALL: lib
 
 DIRS     = da sliced composite redundant plex shell patch moab network forest swarm product stag
 LOCDIR   = src/dm/impls/

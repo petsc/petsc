@@ -6,36 +6,35 @@ int main(int argc,char **args)
 {
   Mat               A,B;
   Vec               diag;
-  PetscErrorCode    ierr;
   PetscMPIInt       size,rank;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRMPI(ierr);
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
-  ierr = MatCreate(PETSC_COMM_WORLD, &A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A, 2, 2, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSetBlockSize(A, 2);CHKERRQ(ierr);
-  ierr = MatSetType(A, MATBAIJ);CHKERRQ(ierr);
-  ierr = MatSetUp(A);CHKERRQ(ierr);
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
+  PetscCall(MatSetSizes(A, 2, 2, PETSC_DETERMINE, PETSC_DETERMINE));
+  PetscCall(MatSetBlockSize(A, 2));
+  PetscCall(MatSetType(A, MATBAIJ));
+  PetscCall(MatSetUp(A));
 
-  ierr = MatCreateVecs(A, &diag, NULL);CHKERRQ(ierr);
-  ierr = VecSet(diag, 1.0);CHKERRQ(ierr);
-  ierr = MatDiagonalSet(A, diag, INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscCall(MatCreateVecs(A, &diag, NULL));
+  PetscCall(VecSet(diag, 1.0));
+  PetscCall(MatDiagonalSet(A, diag, INSERT_VALUES));
+  PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = MatCreateRedundantMatrix(A, size, MPI_COMM_NULL, MAT_INITIAL_MATRIX, &B);CHKERRQ(ierr);
+  PetscCall(MatCreateRedundantMatrix(A, size, MPI_COMM_NULL, MAT_INITIAL_MATRIX, &B));
   if (rank == 0) {
-    ierr = MatView(B,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    PetscCall(MatView(B,PETSC_VIEWER_STDOUT_SELF));
   }
 
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
-  ierr = VecDestroy(&diag);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(MatDestroy(&A));
+  PetscCall(MatDestroy(&B));
+  PetscCall(VecDestroy(&diag));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -24,7 +24,7 @@ const char *const PetscDataTypes[] = {"UNKNOWN",
 
     Level: advanced
 
-.seealso: PetscDataType, PetscMPIDataTypeToPetscDataType()
+.seealso: `PetscDataType`, `PetscMPIDataTypeToPetscDataType()`
 @*/
 PetscErrorCode  PetscDataTypeToMPIDataType(PetscDataType ptype,MPI_Datatype *mtype)
 {
@@ -70,7 +70,7 @@ PetscErrorCode  PetscDataTypeToMPIDataType(PetscDataType ptype,MPI_Datatype *mty
 
     Level: advanced
 
-.seealso: PetscDataType, PetscMPIDataTypeToPetscDataType()
+.seealso: `PetscDataType`, `PetscMPIDataTypeToPetscDataType()`
 @*/
 PetscErrorCode  PetscMPIDataTypeToPetscDataType(MPI_Datatype mtype,PetscDataType *ptype)
 {
@@ -138,7 +138,7 @@ typedef enum {PETSC_INT_SIZE         = sizeof(PetscInt),
 
     Level: advanced
 
-.seealso: PetscDataType, PetscDataTypeToMPIDataType()
+.seealso: `PetscDataType`, `PetscDataTypeToMPIDataType()`
 @*/
 PetscErrorCode  PetscDataTypeGetSize(PetscDataType ptype,size_t *size)
 {
@@ -178,24 +178,22 @@ PetscErrorCode  PetscDataTypeGetSize(PetscDataType ptype,size_t *size)
 
     Level: advanced
 
-.seealso: PetscDataType, PetscDataTypeToMPIDataType(), PetscDataTypeGetSize()
+.seealso: `PetscDataType`, `PetscDataTypeToMPIDataType()`, `PetscDataTypeGetSize()`
 @*/
 PetscErrorCode  PetscDataTypeFromString(const char*name, PetscDataType *ptype,PetscBool *found)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscEnumFind(PetscDataTypes,name,(PetscEnum*)ptype,found);CHKERRQ(ierr);
+  PetscCall(PetscEnumFind(PetscDataTypes,name,(PetscEnum*)ptype,found));
   if (!*found) {
     char formatted[16];
 
-    ierr = PetscStrncpy(formatted,name,16);CHKERRQ(ierr);
-    ierr = PetscStrtolower(formatted);CHKERRQ(ierr);
-    ierr = PetscStrcmp(formatted,"scalar",found);CHKERRQ(ierr);
+    PetscCall(PetscStrncpy(formatted,name,16));
+    PetscCall(PetscStrtolower(formatted));
+    PetscCall(PetscStrcmp(formatted,"scalar",found));
     if (*found) {
       *ptype = PETSC_SCALAR;
     } else {
-      ierr = PetscStrcmp(formatted,"real",found);CHKERRQ(ierr);
+      PetscCall(PetscStrcmp(formatted,"real",found));
       if (*found) {
         *ptype = PETSC_REAL;
       }

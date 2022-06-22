@@ -11,36 +11,35 @@ int main(int argc,char **argv)
   PetscViewer            viewer;
   PetscViewerFormat      format;
   PetscMPIInt            rank,size;
-  PetscErrorCode         ierr;
   PetscInt               i,nLocal = 3,nGlobal;
   PetscInt              *indices;
   PetscBool              flg, auto_offset = PETSC_FALSE;
   ISLocalToGlobalMapping l2g0, l2g1;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   comm = PETSC_COMM_WORLD;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&nLocal,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-auto_offset",&auto_offset,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetViewer(comm, NULL, NULL, "-viewer", &viewer, &format, NULL);CHKERRQ(ierr);
-  ierr = PetscMalloc1(nLocal,&indices);CHKERRQ(ierr);
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
+  PetscCallMPI(MPI_Comm_size(comm, &size));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&nLocal,NULL));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-auto_offset",&auto_offset,NULL));
+  PetscCall(PetscOptionsGetViewer(comm, NULL, NULL, "-viewer", &viewer, &format, NULL));
+  PetscCall(PetscMalloc1(nLocal,&indices));
   for (i=0; i<nLocal; i++) {
     indices[i] = i + rank;
   }
   nGlobal = size-1+nLocal;
   if (viewer) {
-    ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "nGlobal: %" PetscInt_FMT "\n", nGlobal);CHKERRQ(ierr);
+    PetscCall(PetscViewerPushFormat(viewer, format));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "nGlobal: %" PetscInt_FMT "\n", nGlobal));
   }
 
   /* Create a local-to-global mapping using ISLocalToGlobalMappingCreate() */
   {
-    ierr = ISLocalToGlobalMappingCreate(comm,1,nLocal,indices,PETSC_USE_POINTER,&l2g0);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingSetFromOptions(l2g0);CHKERRQ(ierr);
+    PetscCall(ISLocalToGlobalMappingCreate(comm,1,nLocal,indices,PETSC_USE_POINTER,&l2g0));
+    PetscCall(ISLocalToGlobalMappingSetFromOptions(l2g0));
     if (viewer) {
-      ierr = PetscObjectSetName((PetscObject)l2g0, "l2g0");CHKERRQ(ierr);
-      ierr = ISLocalToGlobalMappingView(l2g0,viewer);CHKERRQ(ierr);
+      PetscCall(PetscObjectSetName((PetscObject)l2g0, "l2g0"));
+      PetscCall(ISLocalToGlobalMappingView(l2g0,viewer));
     }
   }
 
@@ -49,52 +48,52 @@ int main(int argc,char **argv)
     PetscSF     sf;
     PetscLayout rootLayout;
 
-    ierr = PetscSFCreate(comm, &sf);CHKERRQ(ierr);
-    ierr = PetscLayoutCreateFromSizes(comm,PETSC_DECIDE,nGlobal,1,&rootLayout);CHKERRQ(ierr);
-    ierr = PetscSFSetGraphLayout(sf,rootLayout,nLocal,NULL,PETSC_USE_POINTER,indices);CHKERRQ(ierr);
-    ierr = PetscSFSetFromOptions(sf);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingCreateSF(sf,auto_offset ? PETSC_DECIDE : rootLayout->rstart,&l2g1);CHKERRQ(ierr);
+    PetscCall(PetscSFCreate(comm, &sf));
+    PetscCall(PetscLayoutCreateFromSizes(comm,PETSC_DECIDE,nGlobal,1,&rootLayout));
+    PetscCall(PetscSFSetGraphLayout(sf,rootLayout,nLocal,NULL,PETSC_USE_POINTER,indices));
+    PetscCall(PetscSFSetFromOptions(sf));
+    PetscCall(ISLocalToGlobalMappingCreateSF(sf,auto_offset ? PETSC_DECIDE : rootLayout->rstart,&l2g1));
     if (viewer) {
-      ierr = PetscObjectSetName((PetscObject)sf, "sf1");CHKERRQ(ierr);
-      ierr = PetscObjectSetName((PetscObject)l2g1, "l2g1");CHKERRQ(ierr);
-      ierr = PetscSFView(sf,viewer);CHKERRQ(ierr);
-      ierr = ISLocalToGlobalMappingView(l2g1,viewer);CHKERRQ(ierr);
+      PetscCall(PetscObjectSetName((PetscObject)sf, "sf1"));
+      PetscCall(PetscObjectSetName((PetscObject)l2g1, "l2g1"));
+      PetscCall(PetscSFView(sf,viewer));
+      PetscCall(ISLocalToGlobalMappingView(l2g1,viewer));
     }
-    ierr = PetscLayoutDestroy(&rootLayout);CHKERRQ(ierr);
-    ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
+    PetscCall(PetscLayoutDestroy(&rootLayout));
+    PetscCall(PetscSFDestroy(&sf));
   }
 
   /* Compare the two local-to-global mappings by comparing results of apply for the same input */
   {
     IS input, output0, output1;
 
-    ierr = ISCreateStride(comm,nLocal,0,1,&input);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingApplyIS(l2g0, input, &output0);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingApplyIS(l2g1, input, &output1);CHKERRQ(ierr);
+    PetscCall(ISCreateStride(comm,nLocal,0,1,&input));
+    PetscCall(ISLocalToGlobalMappingApplyIS(l2g0, input, &output0));
+    PetscCall(ISLocalToGlobalMappingApplyIS(l2g1, input, &output1));
     if (viewer) {
-      ierr = PetscObjectSetName((PetscObject)input,   "input");CHKERRQ(ierr);
-      ierr = PetscObjectSetName((PetscObject)output0, "output0");CHKERRQ(ierr);
-      ierr = PetscObjectSetName((PetscObject)output1, "output1");CHKERRQ(ierr);
-      ierr = ISView(input,   viewer);CHKERRQ(ierr);
-      ierr = ISView(output0, viewer);CHKERRQ(ierr);
-      ierr = ISView(output1, viewer);CHKERRQ(ierr);
+      PetscCall(PetscObjectSetName((PetscObject)input,   "input"));
+      PetscCall(PetscObjectSetName((PetscObject)output0, "output0"));
+      PetscCall(PetscObjectSetName((PetscObject)output1, "output1"));
+      PetscCall(ISView(input,   viewer));
+      PetscCall(ISView(output0, viewer));
+      PetscCall(ISView(output1, viewer));
     }
-    ierr = ISEqual(output0, output1, &flg);CHKERRQ(ierr);
-    PetscCheckFalse(!flg,comm, PETSC_ERR_PLIB, "output0 != output1");
-    ierr = ISDestroy(&input);CHKERRQ(ierr);
-    ierr = ISDestroy(&output0);CHKERRQ(ierr);
-    ierr = ISDestroy(&output1);CHKERRQ(ierr);
+    PetscCall(ISEqual(output0, output1, &flg));
+    PetscCheck(flg,comm, PETSC_ERR_PLIB, "output0 != output1");
+    PetscCall(ISDestroy(&input));
+    PetscCall(ISDestroy(&output0));
+    PetscCall(ISDestroy(&output1));
   }
 
   if (viewer) {
-     ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+     PetscCall(PetscViewerPopFormat(viewer));
+     PetscCall(PetscViewerDestroy(&viewer));
   }
-  ierr = ISLocalToGlobalMappingDestroy(&l2g0);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&l2g1);CHKERRQ(ierr);
-  ierr = PetscFree(indices);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(ISLocalToGlobalMappingDestroy(&l2g0));
+  PetscCall(ISLocalToGlobalMappingDestroy(&l2g1));
+  PetscCall(PetscFree(indices));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

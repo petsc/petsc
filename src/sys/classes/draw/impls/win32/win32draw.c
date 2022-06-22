@@ -683,15 +683,14 @@ static struct _PetscDrawOps DvOps = { PetscDrawSetDoubleBuffer_Win32,
 
 static PetscErrorCode PetscDrawGetPopup_Win32(PetscDraw draw,PetscDraw *popup)
 {
-  PetscErrorCode  ierr;
   PetscDraw_Win32 *win = (PetscDraw_Win32*)draw->data;
   PetscBool       flg  = PETSC_TRUE;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetBool(((PetscObject)draw)->options,((PetscObject)draw)->prefix,"-draw_popup",&flg,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetBool(((PetscObject)draw)->options,((PetscObject)draw)->prefix,"-draw_popup",&flg,NULL));
   if (flg) {
-    ierr = PetscDrawCreate(PetscObjectComm((PetscObject)draw),NULL,NULL,win->x,win->y+win->h+36,220,220,popup);CHKERRQ(ierr);
-    ierr = PetscDrawSetType(*popup,PETSC_DRAW_WIN32);CHKERRQ(ierr);
+    PetscCall(PetscDrawCreate(PetscObjectComm((PetscObject)draw),NULL,NULL,win->x,win->y+win->h+36,220,220,popup));
+    PetscCall(PetscDrawSetType(*popup,PETSC_DRAW_WIN32));
     draw->popup = *popup;
   } else {
     *popup = NULL;
@@ -702,16 +701,15 @@ PETSC_EXTERN PetscErrorCode  PetscDrawCreate_Win32(PetscDraw draw)
 {
   PetscDraw_Win32 *windraw;
   HANDLE          hThread = NULL;
-  PetscErrorCode  ierr;
   WindowNode      newnode;
 
   PetscFunctionBegin;
-  ierr       = PetscNew(&windraw);CHKERRQ(ierr);
+  PetscCall(PetscNew(&windraw));
   draw->data = windraw;
 
   /* the following is temporary fix for initializing a global datastructure */
   if (!g_hWindowListMutex) g_hWindowListMutex = CreateMutex(NULL,FALSE,NULL);
-  ierr = PetscMemcpy(draw->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
+  PetscCall(PetscMemcpy(draw->ops,&DvOps,sizeof(DvOps)));
 
   windraw->hReadyEvent = CreateEvent(NULL,TRUE,FALSE,NULL);
   /* makes call to MessageLoopThread to creat window and attach a thread */
@@ -721,7 +719,7 @@ PETSC_EXTERN PetscErrorCode  PetscDrawCreate_Win32(PetscDraw draw)
   CloseHandle(windraw->hReadyEvent);
   WaitForSingleObject(g_hWindowListMutex,INFINITE);
 
-  ierr                   = PetscNew(&newnode);CHKERRQ(ierr);
+  PetscCall(PetscNew(&newnode));
   newnode->MouseListHead = NULL;
   newnode->MouseListTail = NULL;
   newnode->wnext         = WindowListHead;
@@ -830,7 +828,6 @@ static PetscErrorCode MouseRecord_Win32(HWND hWnd,PetscDrawButton button)
   WindowNode     current = NULL;
   MouseNode      newnode;
   POINT          mousepos;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   WaitForSingleObject(g_hWindowListMutex, INFINITE);
@@ -841,7 +838,7 @@ static PetscErrorCode MouseRecord_Win32(HWND hWnd,PetscDrawButton button)
     while (current) {
       if (current->hWnd == hWnd) {
 
-        ierr            = PetscNew(&newnode);CHKERRQ(ierr);
+        PetscCall(PetscNew(&newnode));
         newnode->Button = button;
         GetCursorPos(&mousepos);
         newnode->user.x = mousepos.x;

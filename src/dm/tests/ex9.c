@@ -9,7 +9,6 @@ static char help[] = "Tests DMCreateMatrix for DMComposite.\n\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode         ierr;
   ISLocalToGlobalMapping *ltog,ltogs;
   PetscMPIInt            size;
   DM                     packer;
@@ -17,45 +16,45 @@ int main(int argc,char **argv)
   Mat                    M;
   PetscInt               i;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
-  ierr = DMCompositeCreate(PETSC_COMM_WORLD,&packer);CHKERRQ(ierr);
+  PetscCall(DMCompositeCreate(PETSC_COMM_WORLD,&packer));
 
-  ierr = DMRedundantCreate(PETSC_COMM_WORLD,0,5,&dmred);CHKERRQ(ierr);
-  ierr = DMCompositeAddDM(packer,dmred);CHKERRQ(ierr);
-  ierr = DMGetLocalToGlobalMapping(dmred,&ltogs);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"Local to global mapping of dmred\n");CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingView(ltogs,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = DMDestroy(&dmred);CHKERRQ(ierr);
+  PetscCall(DMRedundantCreate(PETSC_COMM_WORLD,0,5,&dmred));
+  PetscCall(DMCompositeAddDM(packer,dmred));
+  PetscCall(DMGetLocalToGlobalMapping(dmred,&ltogs));
+  PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"Local to global mapping of dmred\n"));
+  PetscCall(ISLocalToGlobalMappingView(ltogs,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(DMDestroy(&dmred));
 
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_MIRROR,DM_BOUNDARY_MIRROR,DMDA_STENCIL_STAR,3,3,PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,NULL,&da);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
-  ierr = DMCompositeAddDM(packer,da);CHKERRQ(ierr);
-  ierr = DMGetLocalToGlobalMapping(da,&ltogs);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"Local to global mapping of da\n");CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingView(ltogs,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_MIRROR,DM_BOUNDARY_MIRROR,DMDA_STENCIL_STAR,3,3,PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,NULL,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  PetscCall(DMCompositeAddDM(packer,da));
+  PetscCall(DMGetLocalToGlobalMapping(da,&ltogs));
+  PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"Local to global mapping of da\n"));
+  PetscCall(ISLocalToGlobalMappingView(ltogs,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(DMDestroy(&da));
 
-  ierr = DMSetMatType(packer,MATNEST);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(packer);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(packer,&M);CHKERRQ(ierr);
-  ierr = MatView(M,NULL);CHKERRQ(ierr);
-  ierr = MatDestroy(&M);CHKERRQ(ierr);
+  PetscCall(DMSetMatType(packer,MATNEST));
+  PetscCall(DMSetFromOptions(packer));
+  PetscCall(DMCreateMatrix(packer,&M));
+  PetscCall(MatView(M,NULL));
+  PetscCall(MatDestroy(&M));
 
   /* get the global numbering for each subvector element */
-  ierr = DMCompositeGetISLocalToGlobalMappings(packer,&ltog);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"Local to global mapping of dmred vector\n");CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingView(ltog[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"Local to global mapping of da vector\n");CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingView(ltog[1],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  for (i=0; i<2; i++) {ierr = ISLocalToGlobalMappingDestroy(&ltog[i]);CHKERRQ(ierr);}
+  PetscCall(DMCompositeGetISLocalToGlobalMappings(packer,&ltog));
+  PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"Local to global mapping of dmred vector\n"));
+  PetscCall(ISLocalToGlobalMappingView(ltog[0],PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"Local to global mapping of da vector\n"));
+  PetscCall(ISLocalToGlobalMappingView(ltog[1],PETSC_VIEWER_STDOUT_WORLD));
+  for (i=0; i<2; i++) PetscCall(ISLocalToGlobalMappingDestroy(&ltog[i]));
 
-  ierr = PetscFree(ltog);CHKERRQ(ierr);
-  ierr = DMDestroy(&packer);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscFree(ltog));
+  PetscCall(DMDestroy(&packer));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -10,15 +10,13 @@ static PetscBool SNESPackageInitialized = PETSC_FALSE;
 
   Level: developer
 
-.seealso: PetscFinalize()
+.seealso: `PetscFinalize()`
 @*/
 PetscErrorCode  SNESFinalizePackage(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscFunctionListDestroy(&SNESList);CHKERRQ(ierr);
-  ierr = PetscFunctionListDestroy(&SNESLineSearchList);CHKERRQ(ierr);
+  PetscCall(PetscFunctionListDestroy(&SNESList));
+  PetscCall(PetscFunctionListDestroy(&SNESLineSearchList));
   SNESPackageInitialized = PETSC_FALSE;
   SNESRegisterAllCalled  = PETSC_FALSE;
   SNESLineSearchRegisterAllCalled = PETSC_FALSE;
@@ -32,36 +30,35 @@ PetscErrorCode  SNESFinalizePackage(void)
 
   Level: developer
 
-.seealso: PetscInitialize()
+.seealso: `PetscInitialize()`
 @*/
 PetscErrorCode  SNESInitializePackage(void)
 {
   char           logList[256];
   PetscBool      opt,pkg,cls;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (SNESPackageInitialized) PetscFunctionReturn(0);
   SNESPackageInitialized = PETSC_TRUE;
   /* Initialize subpackages */
-  ierr = SNESMSInitializePackage();CHKERRQ(ierr);
+  PetscCall(SNESMSInitializePackage());
   /* Register Classes */
-  ierr = PetscClassIdRegister("SNES",&SNES_CLASSID);CHKERRQ(ierr);
-  ierr = PetscClassIdRegister("DMSNES",&DMSNES_CLASSID);CHKERRQ(ierr);
-  ierr = PetscClassIdRegister("SNESLineSearch",&SNESLINESEARCH_CLASSID);CHKERRQ(ierr);
+  PetscCall(PetscClassIdRegister("SNES",&SNES_CLASSID));
+  PetscCall(PetscClassIdRegister("DMSNES",&DMSNES_CLASSID));
+  PetscCall(PetscClassIdRegister("SNESLineSearch",&SNESLINESEARCH_CLASSID));
   /* Register Constructors */
-  ierr = SNESRegisterAll();CHKERRQ(ierr);
-  ierr = SNESLineSearchRegisterAll();CHKERRQ(ierr);
+  PetscCall(SNESRegisterAll());
+  PetscCall(SNESLineSearchRegisterAll());
   /* Register Events */
-  ierr = PetscLogEventRegister("SNESSolve",            SNES_CLASSID,&SNES_Solve);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("SNESSetUp",            SNES_CLASSID,&SNES_Setup);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("SNESFunctionEval",     SNES_CLASSID,&SNES_FunctionEval);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("SNESObjectiveEval",    SNES_CLASSID,&SNES_ObjectiveEval);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("SNESNGSEval",          SNES_CLASSID,&SNES_NGSEval);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("SNESNGSFuncEval",      SNES_CLASSID,&SNES_NGSFuncEval);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("SNESJacobianEval",     SNES_CLASSID,&SNES_JacobianEval);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("SNESNPCSolve",         SNES_CLASSID,&SNES_NPCSolve);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("SNESLineSearch",       SNESLINESEARCH_CLASSID,&SNESLINESEARCH_Apply);CHKERRQ(ierr);
+  PetscCall(PetscLogEventRegister("SNESSolve",            SNES_CLASSID,&SNES_Solve));
+  PetscCall(PetscLogEventRegister("SNESSetUp",            SNES_CLASSID,&SNES_Setup));
+  PetscCall(PetscLogEventRegister("SNESFunctionEval",     SNES_CLASSID,&SNES_FunctionEval));
+  PetscCall(PetscLogEventRegister("SNESObjectiveEval",    SNES_CLASSID,&SNES_ObjectiveEval));
+  PetscCall(PetscLogEventRegister("SNESNGSEval",          SNES_CLASSID,&SNES_NGSEval));
+  PetscCall(PetscLogEventRegister("SNESNGSFuncEval",      SNES_CLASSID,&SNES_NGSFuncEval));
+  PetscCall(PetscLogEventRegister("SNESJacobianEval",     SNES_CLASSID,&SNES_JacobianEval));
+  PetscCall(PetscLogEventRegister("SNESNPCSolve",         SNES_CLASSID,&SNES_NPCSolve));
+  PetscCall(PetscLogEventRegister("SNESLineSearch",       SNESLINESEARCH_CLASSID,&SNESLINESEARCH_Apply));
   /* Process Info */
   {
     PetscClassId  classids[3];
@@ -69,22 +66,22 @@ PetscErrorCode  SNESInitializePackage(void)
     classids[0] = SNES_CLASSID;
     classids[1] = DMSNES_CLASSID;
     classids[2] = SNESLINESEARCH_CLASSID;
-    ierr = PetscInfoProcessClass("snes", 1, classids);CHKERRQ(ierr);
-    ierr = PetscInfoProcessClass("dm", 1, &classids[1]);CHKERRQ(ierr);
-    ierr = PetscInfoProcessClass("sneslinesearch", 1, &classids[2]);CHKERRQ(ierr);
+    PetscCall(PetscInfoProcessClass("snes", 1, classids));
+    PetscCall(PetscInfoProcessClass("dm", 1, &classids[1]));
+    PetscCall(PetscInfoProcessClass("sneslinesearch", 1, &classids[2]));
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt));
   if (opt) {
-    ierr = PetscStrInList("snes",logList,',',&pkg);CHKERRQ(ierr);
-    if (pkg) {ierr = PetscLogEventExcludeClass(SNES_CLASSID);CHKERRQ(ierr);}
-    ierr = PetscStrInList("dm",logList,',',&cls);CHKERRQ(ierr);
-    if (pkg || cls) {ierr = PetscLogEventExcludeClass(DMSNES_CLASSID);CHKERRQ(ierr);}
-    ierr = PetscStrInList("sneslinesearch",logList,',',&cls);CHKERRQ(ierr);
-    if (pkg || cls) {ierr = PetscLogEventExcludeClass(SNESLINESEARCH_CLASSID);CHKERRQ(ierr);}
+    PetscCall(PetscStrInList("snes",logList,',',&pkg));
+    if (pkg) PetscCall(PetscLogEventExcludeClass(SNES_CLASSID));
+    PetscCall(PetscStrInList("dm",logList,',',&cls));
+    if (pkg || cls) PetscCall(PetscLogEventExcludeClass(DMSNES_CLASSID));
+    PetscCall(PetscStrInList("sneslinesearch",logList,',',&cls));
+    if (pkg || cls) PetscCall(PetscLogEventExcludeClass(SNESLINESEARCH_CLASSID));
   }
   /* Register package finalizer */
-  ierr = PetscRegisterFinalize(SNESFinalizePackage);CHKERRQ(ierr);
+  PetscCall(PetscRegisterFinalize(SNESFinalizePackage));
   PetscFunctionReturn(0);
 }
 
@@ -97,10 +94,8 @@ PetscErrorCode  SNESInitializePackage(void)
  */
 PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscsnes(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = SNESInitializePackage();CHKERRQ(ierr);
+  PetscCall(SNESInitializePackage());
   PetscFunctionReturn(0);
 }
 

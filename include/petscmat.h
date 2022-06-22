@@ -3,7 +3,10 @@
 */
 #ifndef PETSCMAT_H
 #define PETSCMAT_H
+
 #include <petscvec.h>
+
+/* SUBMANSEC = Mat */
 
 /*S
      Mat - Abstract PETSc matrix object used to manage all linear operators in PETSc, even those without
@@ -11,7 +14,7 @@
 
    Level: beginner
 
-.seealso:  MatCreate(), MatType, MatSetType(), MatDestroy()
+.seealso: `MatCreate()`, `MatType`, `MatSetType()`, `MatDestroy()`
 S*/
 typedef struct _p_Mat*           Mat;
 
@@ -20,7 +23,7 @@ typedef struct _p_Mat*           Mat;
 
    Level: beginner
 
-.seealso: MatSetType(), Mat, MatSolverType, MatRegister()
+.seealso: `MatSetType()`, `Mat`, `MatSolverType`, `MatRegister()`
 J*/
 typedef const char* MatType;
 #define MATSAME            "same"
@@ -121,7 +124,7 @@ typedef const char* MatType;
 
    Notes:  MATSOLVERUMFPACK, MATSOLVERCHOLMOD, MATSOLVERKLU, MATSOLVERSPQR form the SuiteSparse package for which you can use --download-suitesparse
 
-.seealso: MatGetFactor(), PCFactorSetMatSolverType(), PCFactorGetMatSolverType()
+.seealso: `MatGetFactor()`, `PCFactorSetMatSolverType()`, `PCFactorGetMatSolverType()`
 J*/
 typedef const char* MatSolverType;
 #define MATSOLVERSUPERLU          "superlu"
@@ -156,7 +159,7 @@ typedef const char* MatSolverType;
 
    Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
 
-.seealso: MatSolverType, MatGetFactor(), MatGetFactorAvailable(), MatSolverTypeRegister()
+.seealso: `MatSolverType`, `MatGetFactor()`, `MatGetFactorAvailable()`, `MatSolverTypeRegister()`
 E*/
 typedef enum {MAT_FACTOR_NONE, MAT_FACTOR_LU, MAT_FACTOR_CHOLESKY, MAT_FACTOR_ILU, MAT_FACTOR_ICC, MAT_FACTOR_ILUDT, MAT_FACTOR_QR, MAT_FACTOR_NUM_TYPES} MatFactorType;
 PETSC_EXTERN const char *const MatFactorTypes[];
@@ -182,7 +185,7 @@ PETSC_DEPRECATED_FUNCTION("Use MatSolverTypeGet() (since version 3.9)") static i
 
     Level: beginner
 
-.seealso: MatProductSetType()
+.seealso: `MatProductSetType()`
 E*/
 typedef enum {MATPRODUCT_UNSPECIFIED=0,MATPRODUCT_AB,MATPRODUCT_AtB,MATPRODUCT_ABt,MATPRODUCT_PtAP,MATPRODUCT_RARt,MATPRODUCT_ABC} MatProductType;
 PETSC_EXTERN const char *const MatProductTypes[];
@@ -192,7 +195,7 @@ PETSC_EXTERN const char *const MatProductTypes[];
 
    Level: beginner
 
-.seealso: MatSetType(), Mat, MatProductSetAlgorithm(), MatProductType
+.seealso: `MatSetType()`, `Mat`, `MatProductSetAlgorithm()`, `MatProductType`
 J*/
 typedef const char* MatProductAlgorithm;
 #define MATPRODUCTALGORITHMDEFAULT "default"
@@ -257,7 +260,7 @@ $  MAT_IGNORE_MATRIX - do not create a new matrix or reuse a give matrix, just i
 
    Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
 
-.seealso: MatCreateSubMatrices(), MatCreateSubMatrix(), MatDestroyMatrices(), MatConvert()
+.seealso: `MatCreateSubMatrices()`, `MatCreateSubMatrix()`, `MatDestroyMatrices()`, `MatConvert()`
 E*/
 typedef enum {MAT_INITIAL_MATRIX,MAT_REUSE_MATRIX,MAT_IGNORE_MATRIX,MAT_INPLACE_MATRIX} MatReuse;
 
@@ -267,7 +270,7 @@ typedef enum {MAT_INITIAL_MATRIX,MAT_REUSE_MATRIX,MAT_IGNORE_MATRIX,MAT_INPLACE_
 
     Level: beginner
 
-.seealso: MatGetSeqNonzeroStructure()
+.seealso: `MatGetSeqNonzeroStructure()`
 E*/
 typedef enum {MAT_DO_NOT_GET_VALUES,MAT_GET_VALUES} MatCreateSubMatrixOption;
 
@@ -283,6 +286,8 @@ PETSC_EXTERN PetscErrorCode MatViewFromOptions(Mat,PetscObject,const char[]);
 PETSC_EXTERN PetscErrorCode MatRegister(const char[],PetscErrorCode(*)(Mat));
 PETSC_EXTERN PetscErrorCode MatRegisterRootName(const char[],const char[],const char[]);
 PETSC_EXTERN PetscErrorCode MatSetOptionsPrefix(Mat,const char[]);
+PETSC_EXTERN PetscErrorCode MatSetOptionsPrefixFactor(Mat,const char[]);
+PETSC_EXTERN PetscErrorCode MatAppendOptionsPrefixFactor(Mat,const char[]);
 PETSC_EXTERN PetscErrorCode MatAppendOptionsPrefix(Mat,const char[]);
 PETSC_EXTERN PetscErrorCode MatGetOptionsPrefix(Mat,const char*[]);
 PETSC_EXTERN PetscErrorCode MatSetErrorIfFailure(Mat,PetscBool);
@@ -304,7 +309,7 @@ $  UNKNOWN_NONZERO_PATTERN - there is no known relationship between the nonzero 
    Developer Notes:
      Any additions/changes here MUST also be made in src/mat/f90-mod/petscmat.h
 
-.seealso: MatCopy(), MatAXPY(), MatAYPX()
+.seealso: `MatCopy()`, `MatAXPY()`, `MatAYPX()`
 E*/
 typedef enum {DIFFERENT_NONZERO_PATTERN,SUBSET_NONZERO_PATTERN,SAME_NONZERO_PATTERN,UNKNOWN_NONZERO_PATTERN} MatStructure;
 PETSC_EXTERN const char *const MatStructures[];
@@ -408,9 +413,11 @@ PETSC_EXTERN PetscErrorCode MatGetTrace(Mat,PetscScalar*);
 PETSC_EXTERN PetscErrorCode MatInvertBlockDiagonal(Mat,const PetscScalar **);
 PETSC_EXTERN PetscErrorCode MatInvertVariableBlockDiagonal(Mat,PetscInt,const PetscInt*,PetscScalar*);
 PETSC_EXTERN PetscErrorCode MatInvertBlockDiagonalMat(Mat,Mat);
+PETSC_EXTERN PetscErrorCode MatInvertVariableBlockEnvelope(Mat,MatReuse,Mat*);
 
 /* ------------------------------------------------------------*/
 PETSC_EXTERN PetscErrorCode MatSetValues(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
+PETSC_EXTERN PetscErrorCode MatSetValuesIS(Mat,IS,IS,const PetscScalar[],InsertMode);
 PETSC_EXTERN PetscErrorCode MatSetValuesBlocked(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
 PETSC_EXTERN PetscErrorCode MatSetValuesRow(Mat,PetscInt,const PetscScalar[]);
 PETSC_EXTERN PetscErrorCode MatSetValuesRowLocal(Mat,PetscInt,const PetscScalar[]);
@@ -430,7 +437,7 @@ PETSC_EXTERN PetscErrorCode MatSetRandom(Mat,PetscRandom);
 
    Level: beginner
 
-.seealso:  MatSetValuesStencil(), MatSetStencil(), MatSetValuesBlockedStencil(), DMDAVecGetArray(), DMDAVecGetArrayF90()
+.seealso: `MatSetValuesStencil()`, `MatSetStencil()`, `MatSetValuesBlockedStencil()`, `DMDAVecGetArray()`, `DMDAVecGetArrayF90()`
 S*/
 typedef struct {
   PetscInt k,j,i,c;
@@ -446,7 +453,7 @@ PETSC_EXTERN PetscErrorCode MatSetStencil(Mat,PetscInt,const PetscInt[],const Pe
 
     Level: beginner
 
-.seealso: MatAssemblyBegin(), MatAssemblyEnd()
+.seealso: `MatAssemblyBegin()`, `MatAssemblyEnd()`
 E*/
 typedef enum {MAT_FLUSH_ASSEMBLY=1,MAT_FINAL_ASSEMBLY=0} MatAssemblyType;
 PETSC_EXTERN PetscErrorCode MatAssemblyBegin(Mat,MatAssemblyType);
@@ -464,7 +471,7 @@ PETSC_EXTERN PetscErrorCode MatAssembled(Mat,PetscBool *);
    Developer Notes:
     Entries that are negative need not be called collectively by all processes.
 
-.seealso: MatSetOption()
+.seealso: `MatSetOption()`
 E*/
 typedef enum {MAT_OPTION_MIN = -3,
               MAT_UNUSED_NONZERO_LOCATION_ERR = -2,
@@ -548,7 +555,7 @@ PETSC_EXTERN PetscErrorCode MatDenseGetColumnVecRead(Mat,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode MatDenseRestoreColumnVecRead(Mat,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode MatDenseGetColumnVecWrite(Mat,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode MatDenseRestoreColumnVecWrite(Mat,PetscInt,Vec*);
-PETSC_EXTERN PetscErrorCode MatDenseGetSubMatrix(Mat,PetscInt,PetscInt,Mat*);
+PETSC_EXTERN PetscErrorCode MatDenseGetSubMatrix(Mat,PetscInt,PetscInt,PetscInt,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode MatDenseRestoreSubMatrix(Mat,Mat*);
 
 PETSC_EXTERN PetscErrorCode MatMult(Mat,Vec,Vec);
@@ -560,8 +567,6 @@ PETSC_EXTERN PetscErrorCode MatIsTranspose(Mat,Mat,PetscReal,PetscBool *);
 PETSC_EXTERN PetscErrorCode MatIsHermitianTranspose(Mat,Mat,PetscReal,PetscBool *);
 PETSC_EXTERN PetscErrorCode MatMultTransposeAdd(Mat,Vec,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatMultHermitianTransposeAdd(Mat,Vec,Vec,Vec);
-PETSC_EXTERN PetscErrorCode MatMultConstrained(Mat,Vec,Vec);
-PETSC_EXTERN PetscErrorCode MatMultTransposeConstrained(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatMatSolve(Mat,Mat,Mat);
 PETSC_EXTERN PetscErrorCode MatMatSolveTranspose(Mat,Mat,Mat);
 PETSC_EXTERN PetscErrorCode MatMatTransposeSolve(Mat,Mat,Mat);
@@ -588,7 +593,7 @@ Notes:
     Many matrix types (including SeqAIJ) do not support the MAT_SHARE_NONZERO_PATTERN optimization; in
 this case the behavior is as if MAT_DO_NOT_COPY_VALUES has been specified.
 
-.seealso: MatDuplicate()
+.seealso: `MatDuplicate()`
 E*/
 typedef enum {MAT_DO_NOT_COPY_VALUES,MAT_COPY_VALUES,MAT_SHARE_NONZERO_PATTERN} MatDuplicateOption;
 
@@ -617,7 +622,7 @@ PETSC_EXTERN PetscErrorCode MatRestoreColumnIJ(Mat,PetscInt,PetscBool ,PetscBool
 
    Level: intermediate
 
-.seealso:  MatGetInfo(), MatInfoType
+.seealso: `MatGetInfo()`, `MatInfoType`
 S*/
 typedef struct {
   PetscLogDouble block_size;                         /* block size */
@@ -637,7 +642,7 @@ typedef struct {
 
    Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
 
-.seealso: MatGetInfo(), MatInfo
+.seealso: `MatGetInfo()`, `MatInfo`
 E*/
 typedef enum {MAT_LOCAL=1,MAT_GLOBAL_MAX=2,MAT_GLOBAL_SUM=3} MatInfoType;
 PETSC_EXTERN PetscErrorCode MatGetInfo(Mat,MatInfoType,MatInfo*);
@@ -710,6 +715,7 @@ PETSC_EXTERN PetscErrorCode MatCreateMPIAIJSumSeqAIJ(MPI_Comm,Mat,PetscInt,Petsc
 PETSC_EXTERN PetscErrorCode MatCreateMPIAIJSumSeqAIJSymbolic(MPI_Comm,Mat,PetscInt,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateMPIAIJSumSeqAIJNumeric(Mat,Mat);
 PETSC_EXTERN PetscErrorCode MatMPIAIJGetLocalMat(Mat,MatReuse,Mat*);
+PETSC_EXTERN PetscErrorCode MatAIJGetLocalMat(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatMPIAIJGetLocalMatCondensed(Mat,MatReuse,IS*,IS*,Mat*);
 PETSC_EXTERN PetscErrorCode MatMPIAIJGetLocalMatMerge(Mat,MatReuse,IS*,Mat*);
 PETSC_EXTERN PetscErrorCode MatGetBrowsOfAcols(Mat,Mat,MatReuse,IS*,IS*,Mat*);
@@ -786,7 +792,7 @@ PETSC_EXTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat(MPI_Comm,Mat,PetscI
 
    Level: beginner
 
-.seealso: MatGetValue(), MatSetValues(), MatSetValueLocal(), MatSetValuesLocal()
+.seealso: `MatGetValue()`, `MatSetValues()`, `MatSetValueLocal()`, `MatSetValuesLocal()`
 M*/
 static inline PetscErrorCode MatSetValue(Mat v,PetscInt i,PetscInt j,PetscScalar va,InsertMode mode) {return MatSetValues(v,1,&i,1,&j,&va,mode);}
 
@@ -810,7 +816,7 @@ static inline PetscErrorCode MatSetValue(Mat v,PetscInt i,PetscInt j,PetscScalar
 
    Level: advanced
 
-.seealso: MatSetValue(), MatGetValueLocal(), MatGetValues()
+.seealso: `MatSetValue()`, `MatGetValueLocal()`, `MatGetValues()`
 @*/
 static inline PetscErrorCode MatGetValue(Mat mat,PetscInt row,PetscInt col,PetscScalar *va) {return MatGetValues(mat,1,&row,1,&col,va);}
 
@@ -834,17 +840,17 @@ static inline PetscErrorCode MatGetValue(Mat mat,PetscInt row,PetscInt col,Petsc
 
    Level: intermediate
 
-.seealso: MatSetValue(), MatSetValuesLocal()
+.seealso: `MatSetValue()`, `MatSetValuesLocal()`
 M*/
 static inline PetscErrorCode MatSetValueLocal(Mat v,PetscInt i,PetscInt j,PetscScalar va,InsertMode mode) {return MatSetValuesLocal(v,1,&i,1,&j,&va,mode);}
 
 /*MC
-   MatPreallocateInitialize - Begins the block of code that will count the number of nonzeros per
+   MatPreallocateBegin - Begins the block of code that will count the number of nonzeros per
        row in a matrix providing the data that one can use to correctly preallocate the matrix.
 
    Synopsis:
    #include <petscmat.h>
-   PetscErrorCode MatPreallocateInitialize(MPI_Comm comm, PetscInt nrows, PetscInt ncols, PetscInt *dnz, PetscInt *onz)
+   PetscErrorCode MatPreallocateBegin(MPI_Comm comm, PetscInt nrows, PetscInt ncols, PetscInt *dnz, PetscInt *onz)
 
    Collective
 
@@ -860,23 +866,27 @@ static inline PetscErrorCode MatSetValueLocal(Mat v,PetscInt i,PetscInt j,PetscS
    Level: intermediate
 
    Notes:
+    This is a macro that handles its own error checking, it does not return an error code.
+
     See Users-Manual: ch_performance for more details.
 
-   Do not malloc or free dnz and onz, that is handled internally by these routines
+    Do not malloc or free dnz and onz, that is handled internally by these routines
 
-   This is a MACRO not a function because it has a leading { that is closed by PetscPreallocateFinalize().
+   Developer Notes:
+    This is a MACRO not a function because it has a leading { that is closed by PetscPreallocateFinalize().
 
-.seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock(), MatPreallocateSetLocal(),
-          MatPreallocateSymmetricSetLocalBlock()
+.seealso: `MatPreallocateEnd()`, `MatPreallocateSet()`, `MatPreallocateSymmetricSetBlock()`, `MatPreallocateSetLocal()`,
+          `MatPreallocateSymmetricSetLocalBlock()`
 M*/
-#define MatPreallocateInitialize(comm,nrows,ncols,dnz,onz) 0; \
-do { \
-  PetscErrorCode _4_ierr; PetscInt __nrows = (nrows),__ncols = (ncols),__rstart,__start,__end; \
-  _4_ierr = PetscCalloc2((size_t)__nrows,&dnz,(size_t)__nrows,&onz);CHKERRQ(_4_ierr); \
-  __start = 0; __end = __start;                                         \
-  _4_ierr = MPI_Scan(&__ncols,&__end,1,MPIU_INT,MPI_SUM,comm);CHKERRMPI(_4_ierr); __start = __end - __ncols;\
-  _4_ierr = MPI_Scan(&__nrows,&__rstart,1,MPIU_INT,MPI_SUM,comm);CHKERRMPI(_4_ierr); __rstart = __rstart - __nrows; \
-  do { } while (0)
+#define MatPreallocateBegin(comm,nrows,ncols,dnz,onz)  do {                             \
+  PetscInt __nrows = (nrows),__ncols = (ncols),__rstart,__start,__end = 0;                     \
+  PetscCall(PetscCalloc2(__nrows,&(dnz),__nrows,&(onz)));                                        \
+  PetscCallMPI(MPI_Scan(&__ncols,&__end,1,MPIU_INT,MPI_SUM,comm));                                \
+  __start = __end - __ncols; (void)__start;                                                    \
+  PetscCallMPI(MPI_Scan(&__nrows,&__rstart,1,MPIU_INT,MPI_SUM,comm));                             \
+  __rstart -= __nrows
+
+#define MatPreallocateInitialize(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use MatPreallocateBegin() (since version 3.18)\"") MatPreallocateBegin(__VA_ARGS__)
 
 /*MC
    MatPreallocateSetLocal - Indicates the locations (rows and columns) in the matrix where nonzeros will be
@@ -905,18 +915,15 @@ do { \
 
    Do not malloc or free dnz and onz, that is handled internally by these routines
 
-.seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock()
-          MatPreallocateInitialize(), MatPreallocateSymmetricSetLocalBlock(), MatPreallocateSetLocalRemoveDups()
+.seealso: `MatPreallocateEnd()`, `MatPreallocateSet()`, `MatPreallocateSymmetricSetBlock()`
+          `MatPreallocateBegin()`, `MatPreallocateSymmetricSetLocalBlock()`, `MatPreallocateSetLocalRemoveDups()`
 M*/
-#define MatPreallocateSetLocal(rmap,nrows,rows,cmap,ncols,cols,dnz,onz) 0; \
-do {\
-  PetscInt __l;\
-  _4_ierr = ISLocalToGlobalMappingApply(rmap,nrows,rows,rows);CHKERRQ(_4_ierr);\
-  _4_ierr = ISLocalToGlobalMappingApply(cmap,ncols,cols,cols);CHKERRQ(_4_ierr);\
-  for (__l=0;__l<nrows;__l++) {\
-    _4_ierr = MatPreallocateSet((rows)[__l],ncols,cols,dnz,onz);CHKERRQ(_4_ierr);\
-  }\
- } while (0)
+#define MatPreallocateSetLocal(rmap,nrows,rows,cmap,ncols,cols,dnz,onz)                        \
+  PetscMacroReturnStandard(                                                                    \
+    PetscCall(ISLocalToGlobalMappingApply(rmap,nrows,rows,rows));                                \
+    PetscCall(ISLocalToGlobalMappingApply(cmap,ncols,cols,cols));                                \
+    for (PetscInt __l=0;__l<nrows;__l++) PetscCall(MatPreallocateSet((rows)[__l],ncols,cols,dnz,onz)); \
+  )
 
 /*MC
    MatPreallocateSetLocalRemoveDups - Indicates the locations (rows and columns) in the matrix where nonzeros will be
@@ -945,19 +952,16 @@ do {\
 
    Do not malloc or free dnz and onz, that is handled internally by these routines
 
-.seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock()
-          MatPreallocateInitialize(), MatPreallocateSymmetricSetLocalBlock(), MatPreallocateSetLocal()
+.seealso: `MatPreallocateEnd()`, `MatPreallocateSet()`, `MatPreallocateSymmetricSetBlock()`
+          `MatPreallocateBegin()`, `MatPreallocateSymmetricSetLocalBlock()`, `MatPreallocateSetLocal()`
 M*/
-#define MatPreallocateSetLocalRemoveDups(rmap,nrows,rows,cmap,ncols,cols,dnz,onz) 0; \
-do {\
-  PetscInt __l;\
-  _4_ierr = ISLocalToGlobalMappingApply(rmap,nrows,rows,rows);CHKERRQ(_4_ierr);\
-  _4_ierr = ISLocalToGlobalMappingApply(cmap,ncols,cols,cols);CHKERRQ(_4_ierr);\
-  _4_ierr = PetscSortRemoveDupsInt(&ncols,cols);CHKERRQ(_4_ierr);\
-  for (__l=0;__l<nrows;__l++) {\
-    _4_ierr = MatPreallocateSet((rows)[__l],ncols,cols,dnz,onz);CHKERRQ(_4_ierr);\
-  }\
- } while (0)
+#define MatPreallocateSetLocalRemoveDups(rmap,nrows,rows,cmap,ncols,cols,dnz,onz)              \
+  PetscMacroReturnStandard(                                                                    \
+    PetscCall(ISLocalToGlobalMappingApply(rmap,nrows,rows,rows));                                \
+    PetscCall(ISLocalToGlobalMappingApply(cmap,ncols,cols,cols));                                \
+    PetscCall(PetscSortRemoveDupsInt(&ncols,cols));                                              \
+    for (PetscInt __l=0;__l<nrows;__l++) PetscCall(MatPreallocateSet((rows)[__l],ncols,cols,dnz,onz)); \
+  )
 
 /*MC
    MatPreallocateSetLocalBlock - Indicates the locations (rows and columns) in the matrix where nonzeros will be
@@ -986,18 +990,15 @@ do {\
 
    Do not malloc or free dnz and onz, that is handled internally by these routines
 
-.seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock()
-          MatPreallocateInitialize(), MatPreallocateSymmetricSetLocalBlock()
+.seealso: `MatPreallocateEnd()`, `MatPreallocateSet()`, `MatPreallocateSymmetricSetBlock()`
+          `MatPreallocateBegin()`, `MatPreallocateSymmetricSetLocalBlock()`
 M*/
-#define MatPreallocateSetLocalBlock(rmap,nrows,rows,cmap,ncols,cols,dnz,onz) 0; \
-do {\
-  PetscInt __l;\
-  _4_ierr = ISLocalToGlobalMappingApplyBlock(rmap,nrows,rows,rows);CHKERRQ(_4_ierr);\
-  _4_ierr = ISLocalToGlobalMappingApplyBlock(cmap,ncols,cols,cols);CHKERRQ(_4_ierr);\
-  for (__l=0;__l<nrows;__l++) {\
-    _4_ierr = MatPreallocateSet((rows)[__l],ncols,cols,dnz,onz);CHKERRQ(_4_ierr);\
-  }\
-} while (0)
+#define MatPreallocateSetLocalBlock(rmap,nrows,rows,cmap,ncols,cols,dnz,onz)                   \
+  PetscMacroReturnStandard(                                                                    \
+    PetscCall(ISLocalToGlobalMappingApplyBlock(rmap,nrows,rows,rows));                           \
+    PetscCall(ISLocalToGlobalMappingApplyBlock(cmap,ncols,cols,cols));                           \
+    for (PetscInt __l=0;__l<nrows;__l++) PetscCall(MatPreallocateSet((rows)[__l],ncols,cols,dnz,onz)); \
+  )
 
 /*MC
    MatPreallocateSymmetricSetLocalBlock - Indicates the locations (rows and columns) in the matrix where nonzeros will be
@@ -1025,18 +1026,15 @@ do {\
 
    Do not malloc or free dnz and onz that is handled internally by these routines
 
-.seealso: MatPreallocateFinalize(), MatPreallocateSet()
-          MatPreallocateInitialize(),  MatPreallocateSetLocal()
+.seealso: `MatPreallocateEnd()`, `MatPreallocateSet()`
+          `MatPreallocateBegin()`, `MatPreallocateSetLocal()`
 M*/
-#define MatPreallocateSymmetricSetLocalBlock(map,nrows,rows,ncols,cols,dnz,onz) 0;\
-do {\
-  PetscInt __l;\
-  _4_ierr = ISLocalToGlobalMappingApplyBlock(map,nrows,rows,rows);CHKERRQ(_4_ierr);\
-  _4_ierr = ISLocalToGlobalMappingApplyBlock(map,ncols,cols,cols);CHKERRQ(_4_ierr);\
-  for (__l=0;__l<nrows;__l++) {\
-    _4_ierr = MatPreallocateSymmetricSetBlock((rows)[__l],ncols,cols,dnz,onz);CHKERRQ(_4_ierr);\
-  }\
-} while (0)
+#define MatPreallocateSymmetricSetLocalBlock(map,nrows,rows,ncols,cols,dnz,onz)                \
+  PetscMacroReturnStandard(                                                                    \
+    PetscCall(ISLocalToGlobalMappingApplyBlock(map,nrows,rows,rows));                            \
+    PetscCall(ISLocalToGlobalMappingApplyBlock(map,ncols,cols,cols));                            \
+    for (PetscInt __l=0;__l<nrows;__l++) PetscCall(MatPreallocateSymmetricSetBlock((rows)[__l],ncols,cols,dnz,onz)); \
+  )
 
 /*MC
    MatPreallocateSet - Indicates the locations (rows and columns) in the matrix where nonzeros will be
@@ -1064,20 +1062,19 @@ do {\
 
    Do not malloc or free dnz and onz that is handled internally by these routines
 
-   This is a MACRO not a function because it uses variables declared in MatPreallocateInitialize().
+   This is a MACRO not a function because it uses variables declared in MatPreallocateBegin().
 
-.seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock()
-          MatPreallocateInitialize(), MatPreallocateSetLocal()
+.seealso: `MatPreallocateEnd()`, `MatPreallocateSet()`, `MatPreallocateSymmetricSetBlock()`
+          `MatPreallocateBegin()`, `MatPreallocateSetLocal()`
 M*/
-#define MatPreallocateSet(row,nc,cols,dnz,onz) 0;\
-do { PetscInt __i; \
-  PetscCheck(row >= __rstart,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to set preallocation for row %" PetscInt_FMT " less than first local row %" PetscInt_FMT,row,__rstart); \
-  PetscCheck(row < __rstart+__nrows,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to set preallocation for row %" PetscInt_FMT " greater than last local row %" PetscInt_FMT,row,__rstart+__nrows-1); \
-  for (__i=0; __i<nc; __i++) {\
-    if ((cols)[__i] < __start || (cols)[__i] >= __end) onz[row - __rstart]++; \
-    else if (dnz[row - __rstart] < __ncols) dnz[row - __rstart]++;\
-  }\
-} while (0)
+#define MatPreallocateSet(row,nc,cols,dnz,onz) PetscMacroReturnStandard(                       \
+    PetscCheck(row >= __rstart,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to set preallocation for row %" PetscInt_FMT " less than first local row %" PetscInt_FMT,row,__rstart); \
+    PetscCheck(row < __rstart+__nrows,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to set preallocation for row %" PetscInt_FMT " greater than last local row %" PetscInt_FMT,row,__rstart+__nrows-1); \
+    for (PetscInt __i = 0; __i < nc; ++__i) {                                                  \
+      if ((cols)[__i] < __start || (cols)[__i] >= __end) onz[row - __rstart]++;                \
+      else if (dnz[row - __rstart] < __ncols) dnz[row - __rstart]++;                           \
+    }                                                                                          \
+  )
 
 /*MC
    MatPreallocateSymmetricSetBlock - Indicates the locations (rows and columns) in the matrix where nonzeros will be
@@ -1104,18 +1101,18 @@ do { PetscInt __i; \
 
    Do not malloc or free dnz and onz that is handled internally by these routines
 
-   This is a MACRO not a function because it uses variables declared in MatPreallocateInitialize().
+   This is a MACRO not a function because it uses variables declared in MatPreallocateBegin().
 
-.seealso: MatPreallocateFinalize(), MatPreallocateSet(),  MatPreallocateInitialize(),
-          MatPreallocateSymmetricSetLocalBlock(), MatPreallocateSetLocal()
+.seealso: `MatPreallocateEnd()`, `MatPreallocateSet()`, `MatPreallocateBegin()`,
+          `MatPreallocateSymmetricSetLocalBlock()`, `MatPreallocateSetLocal()`
 M*/
-#define MatPreallocateSymmetricSetBlock(row,nc,cols,dnz,onz) 0;\
-do { PetscInt __i; \
-  for (__i=0; __i<nc; __i++) {\
-    if (cols[__i] >= __end) onz[row - __rstart]++; \
-    else if (cols[__i] >= row && dnz[row - __rstart] < __ncols) dnz[row - __rstart]++;\
-  }\
-} while (0)
+#define MatPreallocateSymmetricSetBlock(row,nc,cols,dnz,onz)                                   \
+  PetscMacroReturnStandard(                                                                    \
+    for (PetscInt __i=0; __i<nc; __i++) {                                                      \
+      if (cols[__i] >= __end) onz[row - __rstart]++;                                           \
+      else if (cols[__i] >= row && dnz[row - __rstart] < __ncols) dnz[row - __rstart]++;       \
+    }                                                                                          \
+  )
 
 /*MC
    MatPreallocateLocation -  An alternative to MatPreallocateSet() that puts the nonzero locations into the matrix if it exists
@@ -1143,18 +1140,18 @@ do { PetscInt __i; \
 
    This is a MACRO not a function because it uses a bunch of variables private to the MatPreallocation.... routines.
 
-.seealso: MatPreallocateInitialize(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock(), MatPreallocateSetLocal(),
-          MatPreallocateSymmetricSetLocalBlock()
+.seealso: `MatPreallocateBegin()`, `MatPreallocateSet()`, `MatPreallocateSymmetricSetBlock()`, `MatPreallocateSetLocal()`,
+          `MatPreallocateSymmetricSetLocalBlock()`
 M*/
-#define MatPreallocateLocation(A,row,ncols,cols,dnz,onz) 0; do {if (A) {ierr = MatSetValues(A,1,&row,ncols,cols,NULL,INSERT_VALUES);CHKERRQ(ierr);} else {ierr =  MatPreallocateSet(row,ncols,cols,dnz,onz);CHKERRQ(ierr);}} while (0)
+#define MatPreallocateLocation(A,row,ncols,cols,dnz,onz)  (A ? MatSetValues(A,1,&row,ncols,cols,NULL,INSERT_VALUES) : MatPreallocateSet(row,ncols,cols,dnz,onz))
 
 /*MC
-   MatPreallocateFinalize - Ends the block of code that will count the number of nonzeros per
+   MatPreallocateEnd - Ends the block of code that will count the number of nonzeros per
        row in a matrix providing the data that one can use to correctly preallocate the matrix.
 
    Synopsis:
    #include <petscmat.h>
-   PetscErrorCode MatPreallocateFinalize(PetscInt *dnz, PetscInt *onz)
+   PetscErrorCode MatPreallocateEnd(PetscInt *dnz, PetscInt *onz)
 
    Collective
 
@@ -1165,16 +1162,21 @@ M*/
    Level: intermediate
 
    Notes:
+    This is a macro that handles its own error checking, it does not return an error code.
+
     See Users-Manual: ch_performance for more details.
 
-   Do not malloc or free dnz and onz that is handled internally by these routines
+    Do not malloc or free dnz and onz, that is handled internally by these routines
 
-   This is a MACRO not a function because it closes the { started in MatPreallocateInitialize().
+   Developer Notes:
+    This is a MACRO not a function because it closes the { started in MatPreallocateBegin().
 
-.seealso: MatPreallocateInitialize(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock(), MatPreallocateSetLocal(),
-          MatPreallocateSymmetricSetLocalBlock()
+.seealso: `MatPreallocateBegin()`, `MatPreallocateSet()`, `MatPreallocateSymmetricSetBlock()`, `MatPreallocateSetLocal()`,
+          `MatPreallocateSymmetricSetLocalBlock()`
 M*/
-#define MatPreallocateFinalize(dnz,onz) 0;_4_ierr = PetscFree2(dnz,onz);CHKERRQ(_4_ierr);} while (0)
+#define MatPreallocateEnd(dnz,onz) PetscCall(PetscFree2(dnz,onz));} while (0)
+
+#define MatPreallocateFinalize(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use MatPreallocateEnd() (since version 3.18)\"") MatPreallocateEnd(__VA_ARGS__)
 
 /* Routines unique to particular data structures */
 PETSC_EXTERN PetscErrorCode MatShellGetContext(Mat,void *);
@@ -1236,7 +1238,7 @@ PETSC_EXTERN PetscErrorCode MatFindZeroRows(Mat,IS*);
    Notes:
       If MATORDERINGEXTERNAL is used then PETSc does not compute an ordering and utilizes one built into the factorization package
 
-.seealso: MatGetOrdering()
+.seealso: `MatGetOrdering()`
 J*/
 typedef const char* MatOrderingType;
 #define MATORDERINGNATURAL        "natural"
@@ -1267,7 +1269,7 @@ PETSC_EXTERN PetscErrorCode MatFactorGetPreferredOrdering(Mat,MatFactorType,MatO
 
    Level: beginner
 
-.seealso: MatGetFactor()
+.seealso: `MatGetFactor()`
 S*/
 typedef enum {MAT_SHIFT_NONE,MAT_SHIFT_NONZERO,MAT_SHIFT_POSITIVE_DEFINITE,MAT_SHIFT_INBLOCKS} MatFactorShiftType;
 PETSC_EXTERN const char *const MatFactorShiftTypes[];
@@ -1281,7 +1283,7 @@ PETSC_EXTERN const char *const MatFactorShiftTypesDetail[];
     Developer Notes:
     Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
 
-.seealso: MatGetFactor()
+.seealso: `MatGetFactor()`
 S*/
 typedef enum {MAT_FACTOR_NOERROR,MAT_FACTOR_STRUCT_ZEROPIVOT,MAT_FACTOR_NUMERIC_ZEROPIVOT,MAT_FACTOR_OUTMEMORY,MAT_FACTOR_OTHER} MatFactorError;
 
@@ -1302,8 +1304,8 @@ $     MatFactorInfo  info(MAT_FACTORINFO_SIZE)
 
    Level: developer
 
-.seealso: MatLUFactorSymbolic(), MatILUFactorSymbolic(), MatCholeskyFactorSymbolic(), MatICCFactorSymbolic(), MatICCFactor(),
-          MatFactorInfoInitialize()
+.seealso: `MatLUFactorSymbolic()`, `MatILUFactorSymbolic()`, `MatCholeskyFactorSymbolic()`, `MatICCFactorSymbolic()`, `MatICCFactor()`,
+          `MatFactorInfoInitialize()`
 
 S*/
 typedef struct {
@@ -1355,6 +1357,7 @@ PETSC_EXTERN PetscErrorCode MatFactorSolveSchurComplement(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatFactorSolveSchurComplementTranspose(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatFactorFactorizeSchurComplement(Mat);
 
+PETSC_EXTERN PetscErrorCode MatSeqDenseInvert(Mat);
 /*E
     MatSORType - What type of (S)SOR to perform
 
@@ -1366,7 +1369,7 @@ PETSC_EXTERN PetscErrorCode MatFactorFactorizeSchurComplement(Mat);
 
    MatSORType may be bitwise ORd together, so do not change the numbers
 
-.seealso: MatSOR()
+.seealso: `MatSOR()`
 E*/
 typedef enum {SOR_FORWARD_SWEEP=1,SOR_BACKWARD_SWEEP=2,SOR_SYMMETRIC_SWEEP=3,
               SOR_LOCAL_FORWARD_SWEEP=4,SOR_LOCAL_BACKWARD_SWEEP=8,
@@ -1390,7 +1393,7 @@ PETSC_EXTERN PetscErrorCode MatSOR(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscI
        Once a coloring is available MatFDColoringCreate() creates an object that can be used to efficiently compute Jacobians using that coloring. This
        same object can also be used to efficiently convert data created by Automatic Differentation tools to PETSc sparse matrices.
 
-.seealso:  MatFDColoringCreate(), MatColoringWeightType, ISColoring, MatFDColoring, DMCreateColoring(), MatColoringCreate(), MatOrdering, MatPartitioning, MatColoringType
+.seealso: `MatFDColoringCreate()`, `MatColoringWeightType`, `ISColoring`, `MatFDColoring`, `DMCreateColoring()`, `MatColoringCreate()`, `MatOrdering`, `MatPartitioning`, `MatColoringType`
 S*/
 typedef struct _p_MatColoring* MatColoring;
 
@@ -1399,7 +1402,7 @@ typedef struct _p_MatColoring* MatColoring;
 
    Level: beginner
 
-.seealso: MatColoringSetType(), MatColoring
+.seealso: `MatColoringSetType()`, `MatColoring`
 J*/
 typedef const  char*           MatColoringType;
 #define MATCOLORINGJP      "jp"
@@ -1423,7 +1426,7 @@ typedef const  char*           MatColoringType;
 
    Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
 
-.seealso: MatColoring, MatColoringCreate()
+.seealso: `MatColoring`, `MatColoringCreate()`
 E*/
 typedef enum {MAT_COLORING_WEIGHT_RANDOM,MAT_COLORING_WEIGHT_LEXICAL,MAT_COLORING_WEIGHT_LF,MAT_COLORING_WEIGHT_SL} MatColoringWeightType;
 
@@ -1456,7 +1459,7 @@ PETSC_EXTERN PetscErrorCode MatISColoringTest(Mat,ISColoring);
    Notes:
       This object is creating utilizing a coloring provided by the MatColoring object or DMCreateColoring()
 
-.seealso:  MatFDColoringCreate(), MatColoring, DMCreateColoring()
+.seealso: `MatFDColoringCreate()`, `MatColoring`, `DMCreateColoring()`
 S*/
 typedef struct _p_MatFDColoring* MatFDColoring;
 
@@ -1479,7 +1482,7 @@ PETSC_EXTERN PetscErrorCode MatFDColoringSetValues(Mat,MatFDColoring,const Petsc
 
    Level: beginner
 
-.seealso:  MatTransposeColoringCreate()
+.seealso: `MatTransposeColoringCreate()`
 S*/
 typedef struct _p_MatTransposeColoring* MatTransposeColoring;
 
@@ -1505,7 +1508,7 @@ PETSC_EXTERN PetscErrorCode MatTransposeColoringDestroy(MatTransposeColoring*);
    Developers Note:
      It is an extra maintainance and documentation cost to have two objects with the same functionality.
 
-.seealso:  MatPartitioningCreate(), MatPartitioningType, MatColoring, MatGetOrdering()
+.seealso: `MatPartitioningCreate()`, `MatPartitioningType`, `MatColoring`, `MatGetOrdering()`
 S*/
 typedef struct _p_MatPartitioning* MatPartitioning;
 
@@ -1514,7 +1517,7 @@ typedef struct _p_MatPartitioning* MatPartitioning;
 
    Level: beginner
 dm
-.seealso: MatPartitioningCreate(), MatPartitioning
+.seealso: `MatPartitioningCreate()`, `MatPartitioning`
 J*/
 typedef const char* MatPartitioningType;
 #define MATPARTITIONINGCURRENT  "current"
@@ -1637,11 +1640,11 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_LUFACTOR_NUMERIC=26,
                MATOP_CHOLESKY_FACTOR_SYMBOLIC=27,
                MATOP_CHOLESKY_FACTOR_NUMERIC=28,
-               MATOP_SETUP_PREALLOCATION=29,
+               MATOP_SETUP=29,
                MATOP_ILUFACTOR_SYMBOLIC=30,
                MATOP_ICCFACTOR_SYMBOLIC=31,
                MATOP_GET_DIAGONAL_BLOCK=32,
-               MATOP_FREE_INTER_STRUCT=33,
+               MATOP_SET_INF=33,
                MATOP_DUPLICATE=34,
                MATOP_FORWARD_SOLVE=35,
                MATOP_BACKWARD_SOLVE=36,
@@ -1671,7 +1674,7 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_DESTROY=60,
                MATOP_VIEW=61,
                MATOP_CONVERT_FROM=62,
-               MATOP_MATMAT_MULT=63,
+               /* MATOP_PLACEHOLDER_63=63 */
                MATOP_MATMAT_MULT_SYMBOLIC=64,
                MATOP_MATMAT_MULT_NUMERIC=65,
                MATOP_SET_LOCAL_TO_GLOBAL_MAP=66,
@@ -1680,13 +1683,13 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_GET_ROW_MAX_ABS=69,
                MATOP_GET_ROW_MIN_ABS=70,
                MATOP_CONVERT=71,
-               MATOP_SET_COLORING=72,
+               MATOP_HAS_OPERATION=72,
                /* MATOP_PLACEHOLDER_73=73, */
                MATOP_SET_VALUES_ADIFOR=74,
                MATOP_FD_COLORING_APPLY=75,
                MATOP_SET_FROM_OPTIONS=76,
-               MATOP_MULT_CONSTRAINED=77,
-               MATOP_MULT_TRANSPOSE_CONSTRAIN=78,
+               /* MATOP_PLACEHOLDER_77=77, */
+               /* MATOP_PLACEHOLDER_78=78, */
                MATOP_FIND_ZERO_DIAGONALS=79,
                MATOP_MULT_MULTIPLE=80,
                MATOP_SOLVE_MULTIPLE=81,
@@ -1697,21 +1700,21 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_IS_STRUCTURALLY_SYMMETRIC=86,
                MATOP_SET_VALUES_BLOCKEDLOCAL=87,
                MATOP_CREATE_VECS=88,
-               MATOP_MAT_MULT=89,
+               /* MATOP_PLACEHOLDER_89=89, */
                MATOP_MAT_MULT_SYMBOLIC=90,
                MATOP_MAT_MULT_NUMERIC=91,
-               MATOP_PTAP=92,
+               /* MATOP_PLACEHOLDER_92=92, */
                MATOP_PTAP_SYMBOLIC=93,
                MATOP_PTAP_NUMERIC=94,
-               MATOP_MAT_TRANSPOSE_MULT=95,
+               /* MATOP_PLACEHOLDER_95=95, */
                MATOP_MAT_TRANSPOSE_MULT_SYMBO=96,
                MATOP_MAT_TRANSPOSE_MULT_NUMER=97,
-               /* MATOP_PLACEHOLDER_98=98, */
+               MATOP_BIND_TO_CPU=98,
                MATOP_PRODUCTSETFROMOPTIONS=99,
                MATOP_PRODUCTSYMBOLIC=100,
                MATOP_PRODUCTNUMERIC=101,
                MATOP_CONJUGATE=102,
-               /* MATOP_PLACEHOLDER_103=103, */
+               MATOP_VIEW_NATIVE=103,
                MATOP_SET_VALUES_ROW=104,
                MATOP_REAL_PART=105,
                MATOP_IMAGINARY_PART=106,
@@ -1735,22 +1738,23 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_FIND_NONZERO_ROWS=124,
                MATOP_GET_COLUMN_NORMS=125,
                MATOP_INVERT_BLOCK_DIAGONAL=126,
-               /* MATOP_PLACEHOLDER_127=127, */
+               MATOP_INVERT_VBLOCK_DIAGONAL=127,
                MATOP_CREATE_SUB_MATRICES_MPI=128,
                MATOP_SET_VALUES_BATCH=129,
-               MATOP_TRANSPOSE_MAT_MULT=130,
+               /* MATOP_PLACEHOLDER_130=130, */
                MATOP_TRANSPOSE_MAT_MULT_SYMBO=131,
                MATOP_TRANSPOSE_MAT_MULT_NUMER=132,
                MATOP_TRANSPOSE_COLORING_CREAT=133,
                MATOP_TRANS_COLORING_APPLY_SPT=134,
                MATOP_TRANS_COLORING_APPLY_DEN=135,
-               MATOP_RART=136,
+               /* MATOP_PLACEHOLDER_136=136, */
                MATOP_RART_SYMBOLIC=137,
                MATOP_RART_NUMERIC=138,
                MATOP_SET_BLOCK_SIZES=139,
                MATOP_AYPX=140,
                MATOP_RESIDUAL=141,
                MATOP_FDCOLORING_SETUP=142,
+               MATOP_FIND_OFFBLOCK_ENTRIES=143,
                MATOP_MPICONCATENATESEQ=144,
                MATOP_DESTROYSUBMATRICES=145,
                MATOP_TRANSPOSE_SOLVE=146,
@@ -1790,6 +1794,7 @@ PETSC_EXTERN PetscErrorCode MatISFixLocalEmpty(Mat,PetscBool);
 PETSC_EXTERN PetscErrorCode MatISGetLocalMat(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatISRestoreLocalMat(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatISSetLocalMat(Mat,Mat);
+PETSC_EXTERN PetscErrorCode MatISGetLocalToGlobalMapping(Mat,ISLocalToGlobalMapping*,ISLocalToGlobalMapping*);
 PETSC_EXTERN PETSC_DEPRECATED_FUNCTION("Use the MatConvert() interface (since version 3.10)") PetscErrorCode MatISGetMPIXAIJ(Mat,MatReuse,Mat*);
 
 /*S
@@ -1798,10 +1803,7 @@ PETSC_EXTERN PETSC_DEPRECATED_FUNCTION("Use the MatConvert() interface (since ve
 
    Level: advanced
 
-  Users manual sections:
-.   sec_singular
-
-.seealso:  MatNullSpaceCreate()
+.seealso: `MatNullSpaceCreate()`
 S*/
 typedef struct _p_MatNullSpace* MatNullSpace;
 
@@ -1876,7 +1878,7 @@ PETSC_EXTERN PetscErrorCode MatMFFDSetCheckh(Mat,PetscErrorCode (*)(void*,Vec,Ve
 
     Level: developer
 
-.seealso: MATMFFD, MatCreateMFFD(), MatMFFDSetFuction(), MatMFFDSetType(), MatMFFDRegister()
+.seealso: `MATMFFD`, `MatCreateMFFD()`, `MatMFFDSetFuction()`, `MatMFFDSetType()`, `MatMFFDRegister()`
 S*/
 typedef struct _p_MatMFFD* MatMFFD;
 
@@ -1885,7 +1887,7 @@ typedef struct _p_MatMFFD* MatMFFD;
 
    Level: beginner
 
-.seealso: MatMFFDSetType(), MatMFFDRegister()
+.seealso: `MatMFFDSetType()`, `MatMFFDRegister()`
 J*/
 typedef const char* MatMFFDType;
 #define MATMFFD_DS  "ds"
@@ -1933,7 +1935,7 @@ PETSC_EXTERN PetscErrorCode MatHtoolUsePermutation(Mat,PetscBool);
 .   MAT_HTOOL_COMPRESSOR_FULL_ACA - full adaptive cross approximation
 -   MAT_HTOOL_COMPRESSOR_SVD - singular value decomposition
 
-.seealso: MatCreateHtoolFromKernel(), MATHTOOL, MatHtoolClusteringType
+.seealso: `MatCreateHtoolFromKernel()`, `MATHTOOL`, `MatHtoolClusteringType`
 E*/
 typedef enum { MAT_HTOOL_COMPRESSOR_SYMPARTIAL_ACA, MAT_HTOOL_COMPRESSOR_FULL_ACA, MAT_HTOOL_COMPRESSOR_SVD } MatHtoolCompressorType;
 /*E
@@ -1949,7 +1951,7 @@ typedef enum { MAT_HTOOL_COMPRESSOR_SYMPARTIAL_ACA, MAT_HTOOL_COMPRESSOR_FULL_AC
 
     Notes: higher-dimensional clustering is not yet supported in Htool, but once it is, one should add BOUNDING_BOX_{2,3} types
 
-.seealso: MatCreateHtoolFromKernel(), MATHTOOL, MatHtoolCompressorType
+.seealso: `MatCreateHtoolFromKernel()`, `MATHTOOL`, `MatHtoolCompressorType`
 E*/
 typedef enum { MAT_HTOOL_CLUSTERING_PCA_REGULAR, MAT_HTOOL_CLUSTERING_PCA_GEOMETRIC, MAT_HTOOL_CLUSTERING_BOUNDING_BOX_1_REGULAR, MAT_HTOOL_CLUSTERING_BOUNDING_BOX_1_GEOMETRIC } MatHtoolClusteringType;
 #endif
@@ -2055,7 +2057,7 @@ PETSC_EXTERN PetscErrorCode MatSeqAIJKokkosGetDeviceMat(Mat,PetscSplitCSRDataStr
 
    Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
 
-.seealso: MatCUSPARSESetFormat(), MatCUSPARSEFormatOperation
+.seealso: `MatCUSPARSESetFormat()`, `MatCUSPARSEFormatOperation`
 E*/
 
 typedef enum {MAT_CUSPARSE_CSR, MAT_CUSPARSE_ELL, MAT_CUSPARSE_HYB} MatCUSPARSEStorageFormat;
@@ -2076,7 +2078,7 @@ PETSC_EXTERN const char *const MatCUSPARSEStorageFormats[];
 
     Level: intermediate
 
-.seealso: MatCUSPARSESetFormat(), MatCUSPARSEStorageFormat
+.seealso: `MatCUSPARSESetFormat()`, `MatCUSPARSEStorageFormat`
 E*/
 typedef enum {MAT_CUSPARSE_MULT_DIAG, MAT_CUSPARSE_MULT_OFFDIAG, MAT_CUSPARSE_MULT, MAT_CUSPARSE_ALL} MatCUSPARSEFormatOperation;
 
@@ -2150,4 +2152,5 @@ PETSC_EXTERN PetscErrorCode MatPreallocatorPreallocate(Mat,PetscBool,Mat);
 PETSC_INTERN PetscErrorCode MatHeaderMerge(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat,Mat*);
 
+PETSC_EXTERN PetscErrorCode MatSeqAIJGetCSRAndMemType(Mat,const PetscInt**,const PetscInt**,PetscScalar**,PetscMemType*);
 #endif

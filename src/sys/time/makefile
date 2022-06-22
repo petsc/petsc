@@ -1,8 +1,5 @@
+-include ../../../petsckdir.mk
 
-ALL: lib
-
-CFLAGS    =
-FFLAGS    =
 SOURCEC	  = cputime.c fdate.c
 SOURCEF	  =
 SOURCEH	  = ../../../include/petsctime.h

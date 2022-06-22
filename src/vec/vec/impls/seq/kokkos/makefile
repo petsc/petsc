@@ -1,13 +1,11 @@
+-include ../../../../../../petsckdir.mk
 #requirespackage 'PETSC_HAVE_KOKKOS_KERNELS'
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  =
 SOURCECU =
 SOURCEKOKKOS = veckok.kokkos.cxx
 SOURCEF  =
-SOURCEH  = ../../../../../../include/petsc/private/cudavecimpl.h
+SOURCEH  =
 LIBBASE  = libpetscvec
 MANSEC   = Vec
 LOCDIR   = src/vec/vec/impls/seq/kokkos/

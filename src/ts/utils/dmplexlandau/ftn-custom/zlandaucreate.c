@@ -3,17 +3,17 @@
 #include <petsclandau.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define landaucreatevelocityspace_ LANDAUCREATEVELOCITYSPACE
+#define dmplexlandaucreatevelocityspace_ DMPLEXLANDAUCREATEVELOCITYSPACE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define landaucreatevelocityspace_ landaucreatevelocityspace
+#define dmplexlandaucreatevelocityspace_ dmplexlandaucreatevelocityspace
 #endif
 
 /* Definitions of Fortran Wrapper routines */
 
-PETSC_EXTERN void landaucreatevelocityspace_(MPI_Fint * comm,PetscInt *dim,char* name,Vec *X,Mat *J, DM *dm, int *ierr,PETSC_FORTRAN_CHARLEN_T len)
+PETSC_EXTERN void dmplexlandaucreatevelocityspace_(MPI_Fint * comm,PetscInt *dim,char* name,Vec *X,Mat *J, DM *dm, int *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *prefix;
   FIXCHAR(name, len, prefix);
-  *ierr = LandauCreateVelocitySpace(MPI_Comm_f2c(*(comm)),*dim,prefix,X,J,dm);
+  *ierr = DMPlexLandauCreateVelocitySpace(MPI_Comm_f2c(*(comm)),*dim,prefix,X,J,dm);
   FREECHAR(name, prefix);
 }

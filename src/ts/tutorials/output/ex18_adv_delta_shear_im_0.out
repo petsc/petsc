@@ -31,7 +31,7 @@
  15  time        5  |x| (  0.4115,   0.2497) |x|_1 (   29.29,        1)  
   Nonlinear solve converged due to CONVERGED_SNORM_RELATIVE iterations 0
  16  time    5.333  |x| (  0.4115,   0.2477) |x|_1 (   29.29,        1)  
-TS Object: 1 MPI processes
+TS Object: 1 MPI process
   type: mimex
   maximum steps=20
   maximum time=5

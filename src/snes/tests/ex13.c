@@ -65,28 +65,25 @@ static void f0_strong_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   options->nit    = 10;
   options->strong = PETSC_FALSE;
-  ierr = PetscOptionsBegin(comm, "", "Poisson Problem Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-benchmark_it", "Solve the benchmark problem this many times", "ex13.c", options->nit, &options->nit, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-strong", "Do not integrate the Laplacian by parts", "ex13.c", options->strong, &options->strong, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscOptionsBegin(comm, "", "Poisson Problem Options", "DMPLEX");
+  PetscCall(PetscOptionsInt("-benchmark_it", "Solve the benchmark problem this many times", "ex13.c", options->nit, &options->nit, NULL));
+  PetscCall(PetscOptionsBool("-strong", "Do not integrate the Laplacian by parts", "ex13.c", options->strong, &options->strong, NULL));
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
-  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
-  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  ierr = DMSetApplicationContext(*dm, user);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
+  PetscCall(DMCreate(comm, dm));
+  PetscCall(DMSetType(*dm, DMPLEX));
+  PetscCall(DMSetFromOptions(*dm));
+  PetscCall(DMSetApplicationContext(*dm, user));
+  PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
   PetscFunctionReturn(0);
 }
 
@@ -95,20 +92,19 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
   PetscDS        ds;
   DMLabel        label;
   const PetscInt id = 1;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
-  ierr = DMGetLabel(dm, "marker", &label);CHKERRQ(ierr);
+  PetscCall(DMGetDS(dm, &ds));
+  PetscCall(DMGetLabel(dm, "marker", &label));
   if (user->strong) {
-    ierr = PetscDSSetResidual(ds, 0, f0_strong_u, NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetExactSolution(ds, 0, quadratic_u, user);CHKERRQ(ierr);
-    ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) quadratic_u, NULL, user, NULL);CHKERRQ(ierr);
+    PetscCall(PetscDSSetResidual(ds, 0, f0_strong_u, NULL));
+    PetscCall(PetscDSSetExactSolution(ds, 0, quadratic_u, user));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) quadratic_u, NULL, user, NULL));
   } else {
-    ierr = PetscDSSetResidual(ds, 0, f0_trig_u, f1_u);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_uu);CHKERRQ(ierr);
-    ierr = PetscDSSetExactSolution(ds, 0, trig_u, user);CHKERRQ(ierr);
-    ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) trig_u, NULL, user, NULL);CHKERRQ(ierr);
+    PetscCall(PetscDSSetResidual(ds, 0, f0_trig_u, f1_u));
+    PetscCall(PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_uu));
+    PetscCall(PetscDSSetExactSolution(ds, 0, trig_u, user));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) trig_u, NULL, user, NULL));
   }
   PetscFunctionReturn(0);
 }
@@ -121,27 +117,26 @@ static PetscErrorCode SetupDiscretization(DM dm, const char name[], PetscErrorCo
   PetscBool      simplex;
   PetscInt       dim, cStart;
   char           prefix[PETSC_MAX_PATH_LEN];
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, NULL);CHKERRQ(ierr);
-  ierr = DMPlexGetCellType(dm, cStart, &ct);CHKERRQ(ierr);
-  simplex = DMPolytopeTypeGetNumVertices(ct) == DMPolytopeTypeGetDim(ct)+1 ? PETSC_TRUE : PETSC_FALSE;
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, NULL));
+  PetscCall(DMPlexGetCellType(dm, cStart, &ct));
+  simplex = DMPolytopeTypeGetNumVertices(ct) == DMPolytopeTypeGetDim(ct)+1 ? PETSC_TRUE : PETSC_FALSE; // false
   /* Create finite element */
-  ierr = PetscSNPrintf(prefix, PETSC_MAX_PATH_LEN, "%s_", name);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, simplex, name ? prefix : NULL, -1, &fe);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) fe, name);CHKERRQ(ierr);
+  PetscCall(PetscSNPrintf(prefix, PETSC_MAX_PATH_LEN, "%s_", name));
+  PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, simplex, name ? prefix : NULL, -1, &fe));
+  PetscCall(PetscObjectSetName((PetscObject) fe, name));
   /* Set discretization and boundary conditions for each mesh */
-  ierr = DMSetField(dm, 0, NULL, (PetscObject) fe);CHKERRQ(ierr);
-  ierr = DMCreateDS(dm);CHKERRQ(ierr);
-  ierr = (*setup)(dm, user);CHKERRQ(ierr);
+  PetscCall(DMSetField(dm, 0, NULL, (PetscObject) fe));
+  PetscCall(DMCreateDS(dm));
+  PetscCall((*setup)(dm, user));
   while (cdm) {
-    ierr = DMCopyDisc(dm,cdm);CHKERRQ(ierr);
+    PetscCall(DMCopyDisc(dm,cdm));
     /* TODO: Check whether the boundary of coarse meshes is marked */
-    ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
+    PetscCall(DMGetCoarseDM(cdm, &cdm));
   }
-  ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
+  PetscCall(PetscFEDestroy(&fe));
   PetscFunctionReturn(0);
 }
 
@@ -151,63 +146,53 @@ int main(int argc, char **argv)
   SNES           snes; /* Nonlinear solver */
   Vec            u;    /* Solutions */
   AppCtx         user; /* User-defined work context */
-  PetscErrorCode ierr;
+  PetscLogDouble time;
+  Mat            Amat;
 
-  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
-  ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
-  /* Primal system */
-  ierr = SNESCreate(PETSC_COMM_WORLD, &snes);CHKERRQ(ierr);
-  ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
-  ierr = SNESSetDM(snes, dm);CHKERRQ(ierr);
-  ierr = SetupDiscretization(dm, "potential", SetupPrimalProblem, &user);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(dm, &u);CHKERRQ(ierr);
-  ierr = VecSet(u, 0.0);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) u, "potential");CHKERRQ(ierr);
-  ierr = DMPlexSetSNESLocalFEM(dm, &user, &user, &user);CHKERRQ(ierr);
-  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
-  ierr = DMSNESCheckFromOptions(snes, u);CHKERRQ(ierr);
-  ierr = SNESSolve(snes, NULL, u);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc, &argv, NULL,help));
+  PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
+  /* system */
+  PetscCall(SNESCreate(PETSC_COMM_WORLD, &snes));
+  PetscCall(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
+  PetscCall(SNESSetDM(snes, dm));
+  PetscCall(SetupDiscretization(dm, "potential", SetupPrimalProblem, &user));
+  PetscCall(DMCreateGlobalVector(dm, &u));
+  PetscCall(SNESSetFromOptions(snes));
+  PetscCall(PetscObjectSetName((PetscObject) u, "potential"));
+  PetscCall(DMPlexSetSNESLocalFEM(dm, &user, &user, &user));
+  PetscCall(DMSNESCheckFromOptions(snes, u));
+  PetscCall(PetscTime(&time));
+  PetscCall(SNESSetUp(snes));
+  PetscCall(SNESGetJacobian(snes, &Amat, NULL, NULL, NULL));
+  PetscCall(MatSetOption(Amat,MAT_SPD,PETSC_TRUE));
+  PetscCall(SNESSolve(snes, NULL, u));
+  PetscCall(PetscTimeSubtract(&time));
+  // PetscCall(PetscPrintf(PETSC_COMM_WORLD,"First Solve time: %g\n",-time));
   /* Benchmark system */
   if (user.nit) {
+    Vec            b;
+    PetscInt       i;
 #if defined(PETSC_USE_LOG)
-    PetscLogStage kspstage,pcstage;
+    PetscLogStage  kspstage;
 #endif
-    KSP       ksp;
-    PC        pc;
-    Vec       b;
-    PetscInt  i;
-    PetscLogDouble time;
-    ierr = PetscOptionsClearValue(NULL,"-ksp_monitor");CHKERRQ(ierr);
-    ierr = PetscOptionsClearValue(NULL,"-ksp_view");CHKERRQ(ierr);
-    ierr = SNESGetKSP(snes, &ksp);CHKERRQ(ierr);
-    ierr = SNESGetSolution(snes, &u);CHKERRQ(ierr);
-    ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-    ierr = VecSet(u, 0.0);CHKERRQ(ierr);
-    ierr = SNESGetFunction(snes, &b, NULL, NULL);CHKERRQ(ierr);
-    ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
-    ierr = PetscLogStageRegister("PCSetUp", &pcstage);CHKERRQ(ierr);
-    ierr = PetscLogStagePush(pcstage);CHKERRQ(ierr);
-    ierr = PCSetUp(pc);CHKERRQ(ierr);
-    ierr = PetscLogStagePop();CHKERRQ(ierr);
-    ierr = PetscLogStageRegister("KSP Solve only", &kspstage);CHKERRQ(ierr);
-    ierr = PetscTime(&time);CHKERRQ(ierr);
-    ierr = PetscLogStagePush(kspstage);CHKERRQ(ierr);
+    PetscCall(PetscLogStageRegister("Solve only", &kspstage));
+    PetscCall(PetscLogStagePush(kspstage));
+    PetscCall(SNESGetSolution(snes, &u));
+    PetscCall(SNESGetFunction(snes, &b, NULL, NULL));
     for (i=0;i<user.nit;i++) {
-      ierr = VecZeroEntries(u);CHKERRQ(ierr);
-      ierr = KSPSolve(ksp, b, u);CHKERRQ(ierr);
+      PetscCall(VecZeroEntries(u));
+      PetscCall(SNESSolve(snes, NULL, u));
     }
-    ierr = PetscLogStagePop();CHKERRQ(ierr);
-    ierr = PetscTimeSubtract(&time);CHKERRQ(ierr);
-    // ierr = PetscPrintf(PETSC_COMM_WORLD,"Solve time: %g\n",-time); // breaks CI
+    PetscCall(PetscLogStagePop());
   }
-  ierr = SNESGetSolution(snes, &u);CHKERRQ(ierr);
-  ierr = VecViewFromOptions(u, NULL, "-potential_view");CHKERRQ(ierr);
+  PetscCall(SNESGetSolution(snes, &u));
+  PetscCall(VecViewFromOptions(u, NULL, "-potential_view"));
   /* Cleanup */
-  ierr = VecDestroy(&u);CHKERRQ(ierr);
-  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(VecDestroy(&u));
+  PetscCall(SNESDestroy(&snes));
+  PetscCall(DMDestroy(&dm));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST
@@ -221,17 +206,46 @@ int main(int argc, char **argv)
   test:
     suffix: bench
     nsize: 4
-    args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_plex_box_faces 2,2,8 -dm_refine 1 \
-          -petscpartitioner_type simple -petscpartitioner_simple_process_grid 1,1,2 -petscpartitioner_simple_node_grid 1,1,2 \
-          -potential_petscspace_degree 2 -ksp_type cg -pc_type gamg -benchmark_it 1 -dm_view -snes_rtol 1.e-4
+    args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_plex_box_faces 2,2,1 -dm_refine 2 -dm_view -ksp_monitor \
+       -benchmark_it 1 \
+       -dm_plex_box_upper 2,2,1 \
+       -dm_plex_box_lower 0,0,0 \
+       -dm_plex_dim 3 \
+       -ksp_converged_reason \
+       -ksp_norm_type unpreconditioned \
+       -ksp_rtol 1.e-6 \
+       -ksp_type cg \
+       -mg_levels_ksp_chebyshev_esteig 0,0.2,0,1.1 \
+       -mg_levels_ksp_max_it 1 \
+       -mg_levels_ksp_type chebyshev \
+       -mg_levels_pc_type jacobi \
+       -pc_gamg_coarse_eq_limit 200 \
+       -pc_gamg_coarse_grid_layout_type compact \
+       -pc_gamg_esteig_ksp_max_it 5 \
+       -pc_gamg_process_eq_limit 200 \
+       -pc_gamg_repartition false \
+       -pc_gamg_reuse_interpolation true \
+       -pc_gamg_square_graph 0 \
+       -pc_gamg_threshold 0.001 -pc_gamg_threshold_scale .5\
+       -pc_gamg_type agg \
+       -pc_type gamg \
+       -petscpartitioner_simple_node_grid 1,2,1 \
+       -petscpartitioner_simple_process_grid 2,1,1 \
+       -petscpartitioner_type simple \
+       -potential_petscspace_degree 2 \
+       -snes_lag_jacobian -2 \
+       -snes_max_it 1 \
+       -snes_rtol 1.e-8 \
+       -snes_type ksponly \
+       -use_gpu_aware_mpi true
 
   test:
     suffix: comparison
     nsize: 4
     args: -dm_plex_dim 2 -dm_plex_box_faces 4,4 -dm_refine 3 -petscpartitioner_simple_process_grid 2,2 \
       -petscpartitioner_simple_node_grid 1,1 -potential_petscspace_degree 2 -petscpartitioner_type simple \
-      -dm_plex_simplex 0 -snes_monitor_short -snes_type ksponly -dm_view -pc_type gamg -pc_gamg_process_eq_limit 400 -ksp_norm_type unpreconditioned \
-      -pc_gamg_coarse_eq_limit 10 -snes_converged_reason -ksp_converged_reason -snes_rtol 1.e-4
+      -dm_plex_simplex 0 -snes_type ksponly -dm_view -ksp_type cg -ksp_norm_type unpreconditioned -pc_type gamg  -pc_gamg_process_eq_limit 400 -ksp_norm_type unpreconditioned \
+      -pc_gamg_coarse_eq_limit 10 -ksp_converged_reason -snes_rtol 1.e-4
 
   test:
     suffix: cuda
@@ -240,8 +254,8 @@ int main(int argc, char **argv)
     output_file: output/ex13_comparison.out
     args: -dm_plex_dim 2 -dm_plex_box_faces 4,4 -dm_refine 3 -petscpartitioner_simple_process_grid 2,2 \
       -petscpartitioner_simple_node_grid 1,1 -potential_petscspace_degree 2 -petscpartitioner_type simple \
-      -dm_plex_simplex 0 -snes_monitor_short -snes_type ksponly -dm_view -pc_type gamg -pc_gamg_process_eq_limit 400 -ksp_norm_type unpreconditioned \
-      -pc_gamg_coarse_eq_limit 10 -snes_converged_reason -ksp_converged_reason -snes_rtol 1.e-4 -dm_mat_type aijcusparse -dm_vec_type cuda
+      -dm_plex_simplex 0 -snes_type ksponly -dm_view -pc_type gamg  -pc_gamg_process_eq_limit 400 -ksp_norm_type unpreconditioned \
+      -pc_gamg_coarse_eq_limit 10 -ksp_converged_reason -snes_rtol 1.e-4 -dm_mat_type aijcusparse -dm_vec_type cuda
 
   test:
     suffix: kokkos_comp
@@ -250,16 +264,16 @@ int main(int argc, char **argv)
     output_file: output/ex13_comparison.out
     args: -dm_plex_dim 2 -dm_plex_box_faces 4,4 -dm_refine 3 -petscpartitioner_simple_process_grid 2,2 \
       -petscpartitioner_simple_node_grid 1,1 -potential_petscspace_degree 2 -petscpartitioner_type simple \
-      -dm_plex_simplex 0 -snes_monitor_short -snes_type ksponly -dm_view -pc_type gamg -pc_gamg_process_eq_limit 400 -ksp_norm_type unpreconditioned \
-      -pc_gamg_coarse_eq_limit 10 -snes_converged_reason -ksp_converged_reason -snes_rtol 1.e-4 -dm_mat_type aijkokkos -dm_vec_type kokkos
+      -dm_plex_simplex 0 -snes_type ksponly -dm_view -pc_type gamg  -pc_gamg_process_eq_limit 400 -ksp_norm_type unpreconditioned \
+      -pc_gamg_coarse_eq_limit 10 -ksp_converged_reason -snes_rtol 1.e-4 -dm_mat_type aijkokkos -dm_vec_type kokkos
 
   test:
     nsize: 4
     requires: !sycl kokkos_kernels
     suffix: kokkos
     args: -dm_plex_dim 2 -dm_plex_box_faces 2,8 -petscpartitioner_type simple -petscpartitioner_simple_process_grid 2,1 \
-          -petscpartitioner_simple_node_grid 2,1 -dm_plex_simplex 0 -potential_petscspace_degree 1 -dm_refine 1 -ksp_type cg -pc_type gamg -ksp_norm_type unpreconditioned \
-          -mg_levels_esteig_ksp_type cg -mg_levels_pc_type jacobi -ksp_converged_reason -snes_monitor_short -snes_rtol 1.e-4 -dm_view -dm_mat_type aijkokkos -dm_vec_type kokkos
+          -petscpartitioner_simple_node_grid 2,1 -dm_plex_simplex 0 -potential_petscspace_degree 1 -dm_refine 1 -ksp_type cg -pc_type gamg  -ksp_norm_type unpreconditioned \
+          -pc_gamg_esteig_ksp_type cg -ksp_converged_reason -snes_rtol 1.e-4 -dm_view -dm_mat_type aijkokkos -dm_vec_type kokkos
 
   test:
     suffix: aijmkl_comp
@@ -268,14 +282,17 @@ int main(int argc, char **argv)
     output_file: output/ex13_comparison.out
     args: -dm_plex_dim 2 -dm_plex_box_faces 4,4 -dm_refine 3 -petscpartitioner_simple_process_grid 2,2 \
       -petscpartitioner_simple_node_grid 1,1 -potential_petscspace_degree 2 -petscpartitioner_type simple \
-      -dm_plex_simplex 0 -snes_monitor_short -snes_type ksponly -dm_view -pc_type gamg -pc_gamg_process_eq_limit 400 -ksp_norm_type unpreconditioned \
-      -pc_gamg_coarse_eq_limit 10 -snes_converged_reason -ksp_converged_reason -snes_rtol 1.e-4 -dm_mat_type aijmkl
+      -dm_plex_simplex 0 -snes_type ksponly -dm_view -pc_type gamg  -pc_gamg_process_eq_limit 400 -ksp_norm_type unpreconditioned \
+      -pc_gamg_coarse_eq_limit 10 -ksp_converged_reason -snes_rtol 1.e-4 -dm_mat_type aijmkl
 
   test:
     suffix: aijmkl_seq
     nsize: 1
     requires: mkl_sparse
     TODO: broken (INDEFINITE PC)
-    args: -dm_plex_dim 3 -dm_plex_box_faces 4,4,4 -dm_refine 1 -petscpartitioner_type simple -potential_petscspace_degree 1 -dm_plex_simplex 0 -snes_monitor_short -snes_type ksponly -dm_view -pc_type gamg -pc_gamg_sym_graph 0 -pc_gamg_threshold -1 -pc_gamg_square_graph 10 -pc_gamg_process_eq_limit 400 -pc_gamg_reuse_interpolation -pc_gamg_coarse_eq_limit 10 -mg_levels_esteig_ksp_type cg -mg_levels_pc_type jacobi -ksp_type cg -ksp_norm_type unpreconditioned -snes_converged_reason -ksp_converged_reason -snes_rtol 1.e-4 -dm_mat_type aijmkl -dm_vec_type standard
+    args: -dm_plex_dim 3 -dm_plex_box_faces 4,4,4 -dm_refine 1 -petscpartitioner_type simple -potential_petscspace_degree 1 -dm_plex_simplex 0 \
+          -snes_type ksponly -dm_view -pc_type gamg -pc_gamg_sym_graph 0 -pc_gamg_threshold -1 -pc_gamg_square_graph 10 -pc_gamg_process_eq_limit 400 \
+          -pc_gamg_reuse_interpolation -pc_gamg_coarse_eq_limit 10 -pc_gamg_esteig_ksp_type cg -ksp_type cg -ksp_norm_type unpreconditioned \
+          -ksp_converged_reason -snes_rtol 1.e-4 -dm_mat_type aijmkl -dm_vec_type standard
 
 TEST*/

@@ -9,7 +9,7 @@
 8 TS dt 0.0567325 time 0.443267
 9 TS dt 0.086591 time 0.5
 mu 1., steps 9, ftime 0.5
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 2.00704
 -0.377153
@@ -23,17 +23,17 @@ Vec Object: 1 MPI processes
 2 TS dt -0.01 time 0.011
 1 TS dt -0.001 time 0.001
 0 TS dt -0.001 time 0.
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.880902
 0.241101
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 -0.138016
 0.193436
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 -0.0319515
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.0871734

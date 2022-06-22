@@ -19,7 +19,7 @@ Label 'cohesive':
 [0]: 2 (1)
 [0]: 15 (1)
 [0]: 16 (1)
-PetscSection Object: 1 MPI processes
+PetscSection Object: 1 MPI process
   type not yet set
 2 fields
   field 0 with 2 components
@@ -60,7 +60,7 @@ Process 0:
   (  14) dim  0 offset  12
   (  15) dim  2 offset  12
   (  16) dim  2 offset  14
-Vec Object: Local Solution 1 MPI processes
+Vec Object: Local Solution 1 MPI process
   type: seq
 -0.5
 0.5
@@ -82,49 +82,49 @@ Discrete System with 2 fields
     cell total dim 12 total comp 4
     cohesive cell
   Field displacement FEM 2 components (implicit) (Nq 2 Nqc 1) 1-jet
-    PetscFE Object: displacement 1 MPI processes
+    PetscFE Object: displacement 1 MPI process
       type: basic
       Basic Finite Element in 1 dimensions with 2 components
-      PetscSpace Object: displacement 1 MPI processes
+      PetscSpace Object: displacement 1 MPI process
         type: sum
         Space in 1 variables with 2 components, size 4
         Sum space of 2 concatenated subspaces (all identical)
-          PetscSpace Object: sum component 1 MPI processes
+          PetscSpace Object: sum component 1 MPI process
             type: poly
             Space in 1 variables with 1 components, size 2
             Polynomial space of degree 1
-      PetscDualSpace Object: displacement 1 MPI processes
+      PetscDualSpace Object: displacement 1 MPI process
         type: lagrange
         Dual space with 2 components, size 4
         Continuous Lagrange dual space
         Quadrature of order 3 on 2 points (dim 1)
   Field fault traction FEM 2 components (implicit) (Nq 2 Nqc 1) 1-jet
-    PetscFE Object: fault traction (faulttraction_) 1 MPI processes
+    PetscFE Object: fault traction (faulttraction_) 1 MPI process
       type: basic
       Basic Finite Element in 1 dimensions with 2 components
-      PetscSpace Object: fault traction (faulttraction_) 1 MPI processes
+      PetscSpace Object: fault traction (faulttraction_) 1 MPI process
         type: sum
         Space in 1 variables with 2 components, size 4
         Sum space of 2 concatenated subspaces (all identical)
-          PetscSpace Object: sum component (faulttraction_sumcomp_) 1 MPI processes
+          PetscSpace Object: sum component (faulttraction_sumcomp_) 1 MPI process
             type: poly
             Space in 1 variables with 1 components, size 2
             Polynomial space of degree 1
-      PetscDualSpace Object: fault traction (faulttraction_) 1 MPI processes
+      PetscDualSpace Object: fault traction (faulttraction_) 1 MPI process
         type: lagrange
         Dual space with 2 components, size 4
         Continuous Lagrange dual space
         Quadrature of order 3 on 2 points (dim 1)
   Weak Form System with 2 fields
     boundary_residual_f0
-      (cohesive, 1) (0, 1) f0_bd_l
-      (material, 1) (0, 0) f0_bd_u
-      (material, 2) (0, 0) f0_bd_u
+      (cohesive, 1) (0, 1)
+      (material, 1) (0, 0)
+      (material, 2) (0, 0)
     boundary_jacobian_g0
-      (cohesive, 1) (1, 0) g0_bd_lu
-      (material, 1) (0, 1) g0_bd_ul
-      (material, 2) (0, 1) g0_bd_ul
-Vec Object: Local Residual 1 MPI processes
+      (cohesive, 1) (1, 0)
+      (material, 1) (0, 1)
+      (material, 2) (0, 1)
+Vec Object: Local Residual 1 MPI process
   type: seq
 0.
 0.
@@ -142,21 +142,21 @@ Vec Object: Local Residual 1 MPI processes
 0.
 -2.77556e-17
 0.
-Mat Object: Jacobian 1 MPI processes
+Mat Object: Jacobian 1 MPI process
   type: seqaij
-row 0: (0, 0.)  (1, 0.)  (2, 0.)  (3, 0.)  (4, 0.)  (5, 0.) 
-row 1: (0, 0.)  (1, 0.)  (2, 0.)  (3, 0.)  (4, 0.)  (5, 0.) 
-row 2: (0, 0.)  (1, 0.)  (2, 0.)  (3, 0.)  (4, 0.)  (5, 0.)  (8, 0.)  (9, 0.)  (10, 0.)  (11, 0.)  (12, 0.)  (13, 0.)  (14, 0.)  (15, 0.) 
-row 3: (0, 0.)  (1, 0.)  (2, 0.)  (3, 0.)  (4, 0.)  (5, 0.)  (8, 0.)  (9, 0.)  (10, 0.)  (11, 0.)  (12, 0.)  (13, 0.)  (14, 0.)  (15, 0.) 
-row 4: (0, 0.)  (1, 0.)  (2, 0.)  (3, 0.)  (4, 0.)  (5, 0.)  (8, 0.)  (9, 0.)  (10, 0.)  (11, 0.)  (12, 0.)  (13, 0.)  (14, 0.)  (15, 0.) 
-row 5: (0, 0.)  (1, 0.)  (2, 0.)  (3, 0.)  (4, 0.)  (5, 0.)  (8, 0.)  (9, 0.)  (10, 0.)  (11, 0.)  (12, 0.)  (13, 0.)  (14, 0.)  (15, 0.) 
-row 6: (6, 0.)  (7, 0.)  (8, 0.)  (9, 0.)  (10, 0.)  (11, 0.) 
-row 7: (6, 0.)  (7, 0.)  (8, 0.)  (9, 0.)  (10, 0.)  (11, 0.) 
-row 8: (2, 0.)  (3, 0.)  (4, 0.)  (5, 0.)  (6, 0.)  (7, 0.)  (8, 0.)  (9, 0.)  (10, 0.)  (11, 0.)  (12, 0.333333)  (13, 0.)  (14, 0.166667)  (15, 0.) 
-row 9: (2, 0.)  (3, 0.)  (4, 0.)  (5, 0.)  (6, 0.)  (7, 0.)  (8, 0.)  (9, 0.)  (10, 0.)  (11, 0.)  (12, 0.)  (13, 0.333333)  (14, 0.)  (15, 0.166667) 
-row 10: (2, 0.)  (3, 0.)  (4, 0.)  (5, 0.)  (6, 0.)  (7, 0.)  (8, 0.)  (9, 0.)  (10, 0.)  (11, 0.)  (12, 0.166667)  (13, 0.)  (14, 0.333333)  (15, 0.) 
-row 11: (2, 0.)  (3, 0.)  (4, 0.)  (5, 0.)  (6, 0.)  (7, 0.)  (8, 0.)  (9, 0.)  (10, 0.)  (11, 0.)  (12, 0.)  (13, 0.166667)  (14, 0.)  (15, 0.333333) 
-row 12: (2, 0.333333)  (3, 0.)  (4, 0.166667)  (5, 0.)  (8, 0.)  (9, 0.333333)  (10, 0.)  (11, 0.166667)  (12, 0.)  (13, 0.)  (14, 0.)  (15, 0.) 
-row 13: (2, -0.333333)  (3, 0.)  (4, -0.166667)  (5, 0.)  (8, 0.)  (9, -0.333333)  (10, 0.)  (11, -0.166667)  (12, 0.)  (13, 0.)  (14, 0.)  (15, 0.) 
-row 14: (2, 0.166667)  (3, 0.)  (4, 0.333333)  (5, 0.)  (8, 0.)  (9, 0.166667)  (10, 0.)  (11, 0.333333)  (12, 0.)  (13, 0.)  (14, 0.)  (15, 0.) 
-row 15: (2, -0.166667)  (3, 0.)  (4, -0.333333)  (5, 0.)  (8, 0.)  (9, -0.166667)  (10, 0.)  (11, -0.333333)  (12, 0.)  (13, 0.)  (14, 0.)  (15, 0.) 
+row 0: (0, 0.)  (1, 0.)  (2, 0.)  (3, 0.)  (4, 0.)  (5, 0.)
+row 1: (0, 0.)  (1, 0.)  (2, 0.)  (3, 0.)  (4, 0.)  (5, 0.)
+row 2: (0, 0.)  (1, 0.)  (2, 0.)  (3, 0.)  (4, 0.)  (5, 0.)  (8, 0.)  (9, 0.)  (10, 0.)  (11, 0.)  (12, 0.)  (13, 0.)  (14, 0.)  (15, 0.)
+row 3: (0, 0.)  (1, 0.)  (2, 0.)  (3, 0.)  (4, 0.)  (5, 0.)  (8, 0.)  (9, 0.)  (10, 0.)  (11, 0.)  (12, 0.)  (13, 0.)  (14, 0.)  (15, 0.)
+row 4: (0, 0.)  (1, 0.)  (2, 0.)  (3, 0.)  (4, 0.)  (5, 0.)  (8, 0.)  (9, 0.)  (10, 0.)  (11, 0.)  (12, 0.)  (13, 0.)  (14, 0.)  (15, 0.)
+row 5: (0, 0.)  (1, 0.)  (2, 0.)  (3, 0.)  (4, 0.)  (5, 0.)  (8, 0.)  (9, 0.)  (10, 0.)  (11, 0.)  (12, 0.)  (13, 0.)  (14, 0.)  (15, 0.)
+row 6: (6, 0.)  (7, 0.)  (8, 0.)  (9, 0.)  (10, 0.)  (11, 0.)
+row 7: (6, 0.)  (7, 0.)  (8, 0.)  (9, 0.)  (10, 0.)  (11, 0.)
+row 8: (2, 0.)  (3, 0.)  (4, 0.)  (5, 0.)  (6, 0.)  (7, 0.)  (8, 0.)  (9, 0.)  (10, 0.)  (11, 0.)  (12, 0.333333)  (13, 0.)  (14, 0.166667)  (15, 0.)
+row 9: (2, 0.)  (3, 0.)  (4, 0.)  (5, 0.)  (6, 0.)  (7, 0.)  (8, 0.)  (9, 0.)  (10, 0.)  (11, 0.)  (12, 0.)  (13, 0.333333)  (14, 0.)  (15, 0.166667)
+row 10: (2, 0.)  (3, 0.)  (4, 0.)  (5, 0.)  (6, 0.)  (7, 0.)  (8, 0.)  (9, 0.)  (10, 0.)  (11, 0.)  (12, 0.166667)  (13, 0.)  (14, 0.333333)  (15, 0.)
+row 11: (2, 0.)  (3, 0.)  (4, 0.)  (5, 0.)  (6, 0.)  (7, 0.)  (8, 0.)  (9, 0.)  (10, 0.)  (11, 0.)  (12, 0.)  (13, 0.166667)  (14, 0.)  (15, 0.333333)
+row 12: (2, 0.333333)  (3, 0.)  (4, 0.166667)  (5, 0.)  (8, 0.)  (9, 0.333333)  (10, 0.)  (11, 0.166667)  (12, 0.)  (13, 0.)  (14, 0.)  (15, 0.)
+row 13: (2, -0.333333)  (3, 0.)  (4, -0.166667)  (5, 0.)  (8, 0.)  (9, -0.333333)  (10, 0.)  (11, -0.166667)  (12, 0.)  (13, 0.)  (14, 0.)  (15, 0.)
+row 14: (2, 0.166667)  (3, 0.)  (4, 0.333333)  (5, 0.)  (8, 0.)  (9, 0.166667)  (10, 0.)  (11, 0.333333)  (12, 0.)  (13, 0.)  (14, 0.)  (15, 0.)
+row 15: (2, -0.166667)  (3, 0.)  (4, -0.333333)  (5, 0.)  (8, 0.)  (9, -0.166667)  (10, 0.)  (11, -0.333333)  (12, 0.)  (13, 0.)  (14, 0.)  (15, 0.)

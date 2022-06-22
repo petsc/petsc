@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import os
 petsc_hash_pkgs=os.path.join(os.getenv('HOME'),'petsc-hash-pkgs')
@@ -17,6 +17,7 @@ configure_options = [
   '--download-parmetis=1',
   '--download-elemental=1',
   '--download-ptscotch',
+  '--download-bison',
   '--download-scalapack',
   '--download-strumpack',
   #'--download-fblaslapack', #vecLib has incomplete lapack - so unuseable by strumpack

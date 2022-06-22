@@ -1,6 +1,17 @@
 # --------------------------------------------------------------------
 
+class DMPlexReorderDefaultFlag(object):
+    NOTSET = DMPLEX_REORDER_DEFAULT_NOTSET
+    FALSE  = DMPLEX_REORDER_DEFAULT_FALSE
+    TRUE   = DMPLEX_REORDER_DEFAULT_TRUE
+
+# --------------------------------------------------------------------
+
 cdef class DMPlex(DM):
+
+    ReorderDefaultFlag = DMPlexReorderDefaultFlag
+
+    #
 
     def create(self, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
@@ -439,9 +450,10 @@ cdef class DMPlex(DM):
     def labelComplete(self, DMLabel label):
         CHKERR( DMPlexLabelComplete(self.dm, label.dmlabel) )
 
-    def labelCohesiveComplete(self, DMLabel label, DMLabel bdlabel, flip, DMPlex subdm):
+    def labelCohesiveComplete(self, DMLabel label, DMLabel bdlabel, bdvalue, flip, DMPlex subdm):
         cdef PetscBool flg = flip
-        CHKERR( DMPlexLabelCohesiveComplete(self.dm, label.dmlabel, bdlabel.dmlabel, flg, subdm.dm) )
+        cdef PetscInt  val = asInt(bdvalue)
+        CHKERR( DMPlexLabelCohesiveComplete(self.dm, label.dmlabel, bdlabel.dmlabel, val, flg, subdm.dm) )
 
     def setAdjacencyUseAnchors(self, useAnchors=True):
         cdef PetscBool flag = useAnchors
@@ -548,6 +560,11 @@ cdef class DMPlex(DM):
                                       sec.sec, vec.vec,
                                       newsec.sec, newvec.vec))
         return (newsec, newvec)
+
+    def getMinRadius(self):
+        cdef PetscReal cminradius = 0.
+        CHKERR( DMPlexGetMinRadius(self.dm, &cminradius))
+        return asReal(cminradius)
 
     def createCoarsePointIS(self):
         cdef IS fpoint = IS()
@@ -663,6 +680,16 @@ cdef class DMPlex(DM):
         CHKERR( DMPlexPermute(self.dm, perm.iset, &dm.dm) )
         return dm
 
+    def reorderGetDefault(self):
+        cdef PetscDMPlexReorderDefaultFlag reorder = DMPLEX_REORDER_DEFAULT_NOTSET
+        CHKERR( DMPlexReorderGetDefault(self.dm, &reorder) )
+        return reorder
+
+    def reorderSetDefault(self, flag):
+        cdef PetscDMPlexReorderDefaultFlag reorder = flag
+        CHKERR( DMPlexReorderSetDefault(self.dm, reorder) )
+        return
+
     #
 
     def computeCellGeometryFVM(self, cell):
@@ -686,6 +713,14 @@ cdef class DMPlex(DM):
 
     def metricSetFromOptions(self):
         CHKERR( DMPlexMetricSetFromOptions(self.dm) )
+
+    def metricSetUniform(self, PetscBool uniform):
+        CHKERR( DMPlexMetricSetUniform(self.dm, uniform) )
+
+    def metricIsUniform(self):
+        cdef PetscBool uniform = PETSC_FALSE
+        CHKERR( DMPlexMetricIsUniform(self.dm, &uniform) )
+        return toBool(uniform)
 
     def metricSetIsotropic(self, PetscBool isotropic):
         CHKERR( DMPlexMetricSetIsotropic(self.dm, isotropic) )
@@ -726,6 +761,14 @@ cdef class DMPlex(DM):
         cdef PetscBool noMove = PETSC_FALSE
         CHKERR( DMPlexMetricNoMovement(self.dm, &noMove) )
         return toBool(noMove)
+
+    def metricSetNoSurf(self, PetscBool noSurf):
+        CHKERR( DMPlexMetricSetNoSurf(self.dm, noSurf) )
+
+    def metricNoSurf(self):
+        cdef PetscBool noSurf = PETSC_FALSE
+        CHKERR( DMPlexMetricNoSurf(self.dm, &noSurf) )
+        return toBool(noSurf)
 
     def metricSetVerbosity(self, PetscInt verbosity):
         CHKERR( DMPlexMetricSetVerbosity(self.dm, verbosity) )
@@ -791,6 +834,14 @@ cdef class DMPlex(DM):
         CHKERR( DMPlexMetricGetGradationFactor(self.dm, &beta) )
         return beta
 
+    def metricSetHausdorffNumber(self, PetscReal hausd):
+        CHKERR( DMPlexMetricSetHausdorffNumber(self.dm, hausd) )
+
+    def metricGetHausdorffNumber(self):
+        cdef PetscReal hausd
+        CHKERR( DMPlexMetricGetHausdorffNumber(self.dm, &hausd) )
+        return hausd
+
     def metricCreate(self, field=0):
         cdef Vec metric = Vec()
         CHKERR( DMPlexMetricCreate(self.dm, field, &metric.vec) )
@@ -806,39 +857,36 @@ cdef class DMPlex(DM):
         CHKERR( DMPlexMetricCreateIsotropic(self.dm, field, indicator.vec, &metric.vec) )
         return metric
 
-    def metricEnforceSPD(self, Vec metric, restrictSizes=False, restrictAnisotropy=False):
-        cdef Vec ometric = Vec()
+    def metricDeterminantCreate(self, field=0):
         cdef Vec determinant = Vec()
         cdef DM dmDet = DM()
-        CHKERR( DMPlexMetricEnforceSPD(self.dm, metric.vec, restrictSizes, restrictAnisotropy, &ometric.vec, &determinant.vec) )
-        CHKERR( VecGetDM(determinant.vec, &dmDet.dm) )
-        CHKERR( DMDestroy(&dmDet.dm) )
-        return ometric
+        CHKERR( DMPlexMetricDeterminantCreate(self.dm, field, &determinant.vec, &dmDet.dm) )
+        return determinant
 
-    def metricNormalize(self, Vec metric, restrictSizes=True, restrictAnisotropy=True):
-        cdef Vec ometric = Vec()
-        CHKERR( DMPlexMetricNormalize(self.dm, metric.vec, restrictSizes, restrictAnisotropy, &ometric.vec) )
-        return ometric
+    def metricEnforceSPD(self, Vec metric, Vec ometric, Vec determinant, restrictSizes=False, restrictAnisotropy=False):
+        cdef DM dmDet = DM()
+        CHKERR( DMPlexMetricEnforceSPD(self.dm, metric.vec, restrictSizes, restrictAnisotropy, ometric.vec, determinant.vec) )
+        return (ometric, determinant)
 
-    def metricAverage2(self, Vec metric1, Vec metric2):
-        cdef Vec metric = Vec()
-        CHKERR( DMPlexMetricAverage2(self.dm, metric1.vec, metric2.vec, &metric.vec) )
-        return metric
+    def metricNormalize(self, Vec metric, Vec ometric, Vec determinant, restrictSizes=True, restrictAnisotropy=True):
+        CHKERR( DMPlexMetricNormalize(self.dm, metric.vec, restrictSizes, restrictAnisotropy, ometric.vec, determinant.vec) )
+        return (ometric, determinant)
 
-    def metricAverage3(self, Vec metric1, Vec metric2, Vec metric3):
-        cdef Vec metric = Vec()
-        CHKERR( DMPlexMetricAverage3(self.dm, metric1.vec, metric2.vec, metric3.vec, &metric.vec) )
-        return metric
+    def metricAverage2(self, Vec metric1, Vec metric2, Vec metricAvg):
+        CHKERR( DMPlexMetricAverage2(self.dm, metric1.vec, metric2.vec, metricAvg.vec) )
+        return metricAvg
 
-    def metricIntersection2(self, Vec metric1, Vec metric2):
-        cdef Vec metric = Vec()
-        CHKERR( DMPlexMetricIntersection2(self.dm, metric1.vec, metric2.vec, &metric.vec) )
-        return metric
+    def metricAverage3(self, Vec metric1, Vec metric2, Vec metric3, Vec metricAvg):
+        CHKERR( DMPlexMetricAverage3(self.dm, metric1.vec, metric2.vec, metric3.vec, metricAvg.vec) )
+        return metricAvg
 
-    def metricIntersection3(self, Vec metric1, Vec metric2, Vec metric3):
-        cdef Vec metric = Vec()
-        CHKERR( DMPlexMetricIntersection3(self.dm, metric1.vec, metric2.vec, metric3.vec, &metric.vec) )
-        return metric
+    def metricIntersection2(self, Vec metric1, Vec metric2, Vec metricInt):
+        CHKERR( DMPlexMetricIntersection2(self.dm, metric1.vec, metric2.vec, metricInt.vec) )
+        return metricInt
+
+    def metricIntersection3(self, Vec metric1, Vec metric2, Vec metric3, Vec metricInt):
+        CHKERR( DMPlexMetricIntersection3(self.dm, metric1.vec, metric2.vec, metric3.vec, metricInt.vec) )
+        return metricInt
 
     def computeGradientClementInterpolant(self, Vec locX, Vec locC):
         CHKERR( DMPlexComputeGradientClementInterpolant(self.dm, locX.vec, locC.vec) )
@@ -888,3 +936,9 @@ cdef class DMPlex(DM):
 
     def localVectorLoad(self, Viewer viewer, DM sectiondm, SF sf, Vec vec):
         CHKERR( DMPlexLocalVectorLoad(self.dm, viewer.vwr, sectiondm.dm, sf.sf, vec.vec))
+
+# --------------------------------------------------------------------
+
+del DMPlexReorderDefaultFlag
+
+# --------------------------------------------------------------------

@@ -33,7 +33,6 @@ PetscErrorCode NullJacobian(Tao tao,Vec X,Mat J,Mat Jpre,void *ptr)
 
 static PetscErrorCode TaoShellSolve_SoftThreshold(Tao tao)
 {
-  PetscErrorCode ierr;
   PetscReal      lambda, mu;
   AppCtx         *user;
   Vec            out,work,y,x;
@@ -42,23 +41,23 @@ static PetscErrorCode TaoShellSolve_SoftThreshold(Tao tao)
   PetscFunctionBegin;
   user = NULL;
   mu   = 0;
-  ierr = TaoGetADMMParentTao(tao,&admm_tao);CHKERRQ(ierr);
-  ierr = TaoADMMGetMisfitSubsolver(admm_tao, &misfit);CHKERRQ(ierr);
-  ierr = TaoADMMGetSpectralPenalty(admm_tao,&mu);CHKERRQ(ierr);
-  ierr = TaoShellGetContext(tao,&user);CHKERRQ(ierr);
+  PetscCall(TaoGetADMMParentTao(tao,&admm_tao));
+  PetscCall(TaoADMMGetMisfitSubsolver(admm_tao, &misfit));
+  PetscCall(TaoADMMGetSpectralPenalty(admm_tao,&mu));
+  PetscCall(TaoShellGetContext(tao,&user));
 
   lambda = user->lambda;
   work   = user->workN;
-  ierr   = TaoGetSolution(tao, &out);CHKERRQ(ierr);
-  ierr   = TaoGetSolution(misfit, &x);CHKERRQ(ierr);
-  ierr   = TaoADMMGetDualVector(admm_tao, &y);CHKERRQ(ierr);
+  PetscCall(TaoGetSolution(tao, &out));
+  PetscCall(TaoGetSolution(misfit, &x));
+  PetscCall(TaoADMMGetDualVector(admm_tao, &y));
 
   /* Dx + y/mu */
-  ierr = MatMult(user->D,x,work);CHKERRQ(ierr);
-  ierr = VecAXPY(work,1/mu,y);CHKERRQ(ierr);
+  PetscCall(MatMult(user->D,x,work));
+  PetscCall(VecAXPY(work,1/mu,y));
 
   /* soft thresholding */
-  ierr = TaoSoftThreshold(work, -lambda/mu, lambda/mu, out);CHKERRQ(ierr);
+  PetscCall(TaoSoftThreshold(work, -lambda/mu, lambda/mu, out));
   PetscFunctionReturn(0);
 }
 
@@ -67,18 +66,17 @@ static PetscErrorCode TaoShellSolve_SoftThreshold(Tao tao)
 PetscErrorCode MisfitObjectiveAndGradient(Tao tao,Vec X,PetscReal *f,Vec g,void *ptr)
 {
   AppCtx         *user = (AppCtx*)ptr;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* Objective  0.5*||Ax-b||_2^2 */
-  ierr = MatMult(user->A,X,user->workM);CHKERRQ(ierr);
-  ierr = VecAXPY(user->workM,-1,user->b);CHKERRQ(ierr);
-  ierr = VecDot(user->workM,user->workM,f);CHKERRQ(ierr);
+  PetscCall(MatMult(user->A,X,user->workM));
+  PetscCall(VecAXPY(user->workM,-1,user->b));
+  PetscCall(VecDot(user->workM,user->workM,f));
   *f  *= 0.5;
   /* Gradient. ATAx-ATb */
-  ierr = MatMult(user->ATA,X,user->workN);CHKERRQ(ierr);
-  ierr = MatMultTranspose(user->A,user->b,user->workN2);CHKERRQ(ierr);
-  ierr = VecWAXPY(g,-1.,user->workN2,user->workN);CHKERRQ(ierr);
+  PetscCall(MatMult(user->ATA,X,user->workN));
+  PetscCall(MatMultTranspose(user->A,user->b,user->workN2));
+  PetscCall(VecWAXPY(g,-1.,user->workN2,user->workN));
   PetscFunctionReturn(0);
 }
 
@@ -87,22 +85,21 @@ PetscErrorCode MisfitObjectiveAndGradient(Tao tao,Vec X,PetscReal *f,Vec g,void 
 PetscErrorCode RegularizerObjectiveAndGradient1(Tao tao,Vec X,PetscReal *f_reg,Vec G_reg,void *ptr)
 {
   AppCtx         *user = (AppCtx*)ptr;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* compute regularizer objective
    * f = f + lambda*sum(sqrt(y.^2+epsilon^2) - epsilon), where y = D*x */
-  ierr    = VecCopy(X,user->workN2);CHKERRQ(ierr);
-  ierr    = VecPow(user->workN2,2.);CHKERRQ(ierr);
-  ierr    = VecShift(user->workN2,user->eps*user->eps);CHKERRQ(ierr);
-  ierr    = VecSqrtAbs(user->workN2);CHKERRQ(ierr);
-  ierr    = VecCopy(user->workN2, user->workN3);CHKERRQ(ierr);
-  ierr    = VecShift(user->workN2,-user->eps);CHKERRQ(ierr);
-  ierr    = VecSum(user->workN2,f_reg);CHKERRQ(ierr);
+  PetscCall(VecCopy(X,user->workN2));
+  PetscCall(VecPow(user->workN2,2.));
+  PetscCall(VecShift(user->workN2,user->eps*user->eps));
+  PetscCall(VecSqrtAbs(user->workN2));
+  PetscCall(VecCopy(user->workN2, user->workN3));
+  PetscCall(VecShift(user->workN2,-user->eps));
+  PetscCall(VecSum(user->workN2,f_reg));
   *f_reg *= user->lambda;
   /* compute regularizer gradient = lambda*x */
-  ierr = VecPointwiseDivide(G_reg,X,user->workN3);CHKERRQ(ierr);
-  ierr = VecScale(G_reg,user->lambda);CHKERRQ(ierr);
+  PetscCall(VecPointwiseDivide(G_reg,X,user->workN3));
+  PetscCall(VecScale(G_reg,user->lambda));
   PetscFunctionReturn(0);
 }
 
@@ -111,16 +108,15 @@ PetscErrorCode RegularizerObjectiveAndGradient1(Tao tao,Vec X,PetscReal *f_reg,V
 PetscErrorCode RegularizerObjectiveAndGradient2(Tao tao,Vec X,PetscReal *f_reg,Vec G_reg,void *ptr)
 {
   AppCtx         *user = (AppCtx*)ptr;
-  PetscErrorCode ierr;
   PetscReal      temp;
 
   PetscFunctionBegin;
   /* compute regularizer objective = lambda*|z|_2^2 */
-  ierr   = VecDot(X,X,&temp);CHKERRQ(ierr);
+  PetscCall(VecDot(X,X,&temp));
   *f_reg = 0.5*user->lambda*temp;
   /* compute regularizer gradient = lambda*z */
-  ierr = VecCopy(X,G_reg);CHKERRQ(ierr);
-  ierr = VecScale(G_reg,user->lambda);CHKERRQ(ierr);
+  PetscCall(VecCopy(X,G_reg));
+  PetscCall(VecScale(G_reg,user->lambda));
   PetscFunctionReturn(0);
 }
 
@@ -137,17 +133,16 @@ static PetscErrorCode HessianMisfit(Tao tao, Vec x, Mat H, Mat Hpre, void *ptr)
 static PetscErrorCode HessianReg(Tao tao, Vec x, Mat H, Mat Hpre, void *ptr)
 {
   AppCtx         *user = (AppCtx*)ptr;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatMult(user->D,x,user->workN);CHKERRQ(ierr);
-  ierr = VecPow(user->workN2,2.);CHKERRQ(ierr);
-  ierr = VecShift(user->workN2,user->eps*user->eps);CHKERRQ(ierr);
-  ierr = VecSqrtAbs(user->workN2);CHKERRQ(ierr);
-  ierr = VecShift(user->workN2,-user->eps);CHKERRQ(ierr);
-  ierr = VecReciprocal(user->workN2);CHKERRQ(ierr);
-  ierr = VecScale(user->workN2,user->eps*user->eps);CHKERRQ(ierr);
-  ierr = MatDiagonalSet(H,user->workN2,INSERT_VALUES);CHKERRQ(ierr);
+  PetscCall(MatMult(user->D,x,user->workN));
+  PetscCall(VecPow(user->workN2,2.));
+  PetscCall(VecShift(user->workN2,user->eps*user->eps));
+  PetscCall(VecSqrtAbs(user->workN2));
+  PetscCall(VecShift(user->workN2,-user->eps));
+  PetscCall(VecReciprocal(user->workN2));
+  PetscCall(VecScale(user->workN2,user->eps*user->eps));
+  PetscCall(MatDiagonalSet(H,user->workN2,INSERT_VALUES));
   PetscFunctionReturn(0);
 }
 
@@ -156,22 +151,21 @@ static PetscErrorCode HessianReg(Tao tao, Vec x, Mat H, Mat Hpre, void *ptr)
 PetscErrorCode FullObjGrad(Tao tao,Vec X,PetscReal *f,Vec g,void *ptr)
 {
   AppCtx         *user = (AppCtx*)ptr;
-  PetscErrorCode ierr;
   PetscReal      f_reg;
 
   PetscFunctionBegin;
   /* Objective  0.5*||Ax-b||_2^2 + lambda*||x||_2^2*/
-  ierr = MatMult(user->A,X,user->workM);CHKERRQ(ierr);
-  ierr = VecAXPY(user->workM,-1,user->b);CHKERRQ(ierr);
-  ierr = VecDot(user->workM,user->workM,f);CHKERRQ(ierr);
-  ierr = VecNorm(X,NORM_2,&f_reg);CHKERRQ(ierr);
+  PetscCall(MatMult(user->A,X,user->workM));
+  PetscCall(VecAXPY(user->workM,-1,user->b));
+  PetscCall(VecDot(user->workM,user->workM,f));
+  PetscCall(VecNorm(X,NORM_2,&f_reg));
   *f  *= 0.5;
   *f  += user->lambda*f_reg*f_reg;
   /* Gradient. ATAx-ATb + 2*lambda*x */
-  ierr = MatMult(user->ATA,X,user->workN);CHKERRQ(ierr);
-  ierr = MatMultTranspose(user->A,user->b,user->workN2);CHKERRQ(ierr);
-  ierr = VecWAXPY(g,-1.,user->workN2,user->workN);CHKERRQ(ierr);
-  ierr = VecAXPY(g,2*user->lambda,X);CHKERRQ(ierr);
+  PetscCall(MatMult(user->ATA,X,user->workN));
+  PetscCall(MatMultTranspose(user->A,user->b,user->workN2));
+  PetscCall(VecWAXPY(g,-1.,user->workN2,user->workN));
+  PetscCall(VecAXPY(g,2*user->lambda,X));
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
@@ -187,92 +181,91 @@ PetscErrorCode InitializeUserData(AppCtx *user)
 {
   char           dataFile[] = "tomographyData_A_b_xGT";   /* Matrix A and vectors b, xGT(ground truth) binary files generated by Matlab. Debug: change from "tomographyData_A_b_xGT" to "cs1Data_A_b_xGT". */
   PetscViewer    fd;   /* used to load data from file */
-  PetscErrorCode ierr;
   PetscInt       k,n;
   PetscScalar    v;
+
   PetscFunctionBegin;
-
   /* Load the A matrix, b vector, and xGT vector from a binary file. */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,dataFile,FILE_MODE_READ,&fd);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,&user->A);CHKERRQ(ierr);
-  ierr = MatSetType(user->A,MATAIJ);CHKERRQ(ierr);
-  ierr = MatLoad(user->A,fd);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,&user->b);CHKERRQ(ierr);
-  ierr = VecLoad(user->b,fd);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,&user->xGT);CHKERRQ(ierr);
-  ierr = VecLoad(user->xGT,fd);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,dataFile,FILE_MODE_READ,&fd));
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&user->A));
+  PetscCall(MatSetType(user->A,MATAIJ));
+  PetscCall(MatLoad(user->A,fd));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&user->b));
+  PetscCall(VecLoad(user->b,fd));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&user->xGT));
+  PetscCall(VecLoad(user->xGT,fd));
+  PetscCall(PetscViewerDestroy(&fd));
 
-  ierr = MatGetSize(user->A,&user->M,&user->N);CHKERRQ(ierr);
+  PetscCall(MatGetSize(user->A,&user->M,&user->N));
 
-  ierr = MatCreate(PETSC_COMM_WORLD,&user->D);CHKERRQ(ierr);
-  ierr = MatSetSizes(user->D,PETSC_DECIDE,PETSC_DECIDE,user->N,user->N);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(user->D);CHKERRQ(ierr);
-  ierr = MatSetUp(user->D);CHKERRQ(ierr);
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&user->D));
+  PetscCall(MatSetSizes(user->D,PETSC_DECIDE,PETSC_DECIDE,user->N,user->N));
+  PetscCall(MatSetFromOptions(user->D));
+  PetscCall(MatSetUp(user->D));
   for (k=0; k<user->N; k++) {
     v = 1.0;
     n = k+1;
     if (k< user->N -1) {
-      ierr = MatSetValues(user->D,1,&k,1,&n,&v,INSERT_VALUES);CHKERRQ(ierr);
+      PetscCall(MatSetValues(user->D,1,&k,1,&n,&v,INSERT_VALUES));
     }
     v    = -1.0;
-    ierr = MatSetValues(user->D,1,&k,1,&k,&v,INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(MatSetValues(user->D,1,&k,1,&k,&v,INSERT_VALUES));
   }
-  ierr = MatAssemblyBegin(user->D,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(user->D,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(user->D,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(user->D,MAT_FINAL_ASSEMBLY));
 
-  ierr = MatTransposeMatMult(user->D,user->D,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&user->DTD);CHKERRQ(ierr);
+  PetscCall(MatTransposeMatMult(user->D,user->D,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&user->DTD));
 
-  ierr = MatCreate(PETSC_COMM_WORLD,&user->Hz);CHKERRQ(ierr);
-  ierr = MatSetSizes(user->Hz,PETSC_DECIDE,PETSC_DECIDE,user->N,user->N);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(user->Hz);CHKERRQ(ierr);
-  ierr = MatSetUp(user->Hz);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(user->Hz,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(user->Hz,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&user->Hz));
+  PetscCall(MatSetSizes(user->Hz,PETSC_DECIDE,PETSC_DECIDE,user->N,user->N));
+  PetscCall(MatSetFromOptions(user->Hz));
+  PetscCall(MatSetUp(user->Hz));
+  PetscCall(MatAssemblyBegin(user->Hz,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(user->Hz,MAT_FINAL_ASSEMBLY));
 
-  ierr = VecCreate(PETSC_COMM_WORLD,&(user->x));CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,&(user->workM));CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,&(user->workN));CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,&(user->workN2));CHKERRQ(ierr);
-  ierr = VecSetSizes(user->x,PETSC_DECIDE,user->N);CHKERRQ(ierr);
-  ierr = VecSetSizes(user->workM,PETSC_DECIDE,user->M);CHKERRQ(ierr);
-  ierr = VecSetSizes(user->workN,PETSC_DECIDE,user->N);CHKERRQ(ierr);
-  ierr = VecSetSizes(user->workN2,PETSC_DECIDE,user->N);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(user->x);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(user->workM);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(user->workN);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(user->workN2);CHKERRQ(ierr);
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&(user->x)));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&(user->workM)));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&(user->workN)));
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&(user->workN2)));
+  PetscCall(VecSetSizes(user->x,PETSC_DECIDE,user->N));
+  PetscCall(VecSetSizes(user->workM,PETSC_DECIDE,user->M));
+  PetscCall(VecSetSizes(user->workN,PETSC_DECIDE,user->N));
+  PetscCall(VecSetSizes(user->workN2,PETSC_DECIDE,user->N));
+  PetscCall(VecSetFromOptions(user->x));
+  PetscCall(VecSetFromOptions(user->workM));
+  PetscCall(VecSetFromOptions(user->workN));
+  PetscCall(VecSetFromOptions(user->workN2));
 
-  ierr = VecDuplicate(user->workN,&(user->workN3));CHKERRQ(ierr);
-  ierr = VecDuplicate(user->x,&(user->xlb));CHKERRQ(ierr);
-  ierr = VecDuplicate(user->x,&(user->xub));CHKERRQ(ierr);
-  ierr = VecDuplicate(user->x,&(user->c));CHKERRQ(ierr);
-  ierr = VecSet(user->xlb,0.0);CHKERRQ(ierr);
-  ierr = VecSet(user->c,0.0);CHKERRQ(ierr);
-  ierr = VecSet(user->xub,PETSC_INFINITY);CHKERRQ(ierr);
+  PetscCall(VecDuplicate(user->workN,&(user->workN3)));
+  PetscCall(VecDuplicate(user->x,&(user->xlb)));
+  PetscCall(VecDuplicate(user->x,&(user->xub)));
+  PetscCall(VecDuplicate(user->x,&(user->c)));
+  PetscCall(VecSet(user->xlb,0.0));
+  PetscCall(VecSet(user->c,0.0));
+  PetscCall(VecSet(user->xub,PETSC_INFINITY));
 
-  ierr = MatTransposeMatMult(user->A,user->A, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &(user->ATA));CHKERRQ(ierr);
-  ierr = MatTransposeMatMult(user->A,user->A, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &(user->Hx));CHKERRQ(ierr);
-  ierr = MatTransposeMatMult(user->A,user->A, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &(user->HF));CHKERRQ(ierr);
+  PetscCall(MatTransposeMatMult(user->A,user->A, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &(user->ATA)));
+  PetscCall(MatTransposeMatMult(user->A,user->A, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &(user->Hx)));
+  PetscCall(MatTransposeMatMult(user->A,user->A, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &(user->HF)));
 
-  ierr = MatAssemblyBegin(user->ATA,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(user->ATA,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(user->Hx,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(user->Hx,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(user->HF,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(user->HF,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(user->ATA,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(user->ATA,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(user->Hx,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(user->Hx,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(user->HF,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(user->HF,MAT_FINAL_ASSEMBLY));
 
   user->lambda = 1.e-8;
   user->eps    = 1.e-3;
   user->reg    = 2;
   user->mumin  = 5.e-6;
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Configure separable objection example", "tomographyADMM.c");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-reg","Regularization scheme for z solver (1,2)", "tomographyADMM.c", user->reg, &(user->reg), NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-lambda", "The regularization multiplier. 1 default", "tomographyADMM.c", user->lambda, &(user->lambda), NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-eps", "L1 norm epsilon padding", "tomographyADMM.c", user->eps, &(user->eps), NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-mumin", "Minimum value for ADMM spectral penalty", "tomographyADMM.c", user->mumin, &(user->mumin), NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Configure separable objection example", "tomographyADMM.c");
+  PetscCall(PetscOptionsInt("-reg","Regularization scheme for z solver (1,2)", "tomographyADMM.c", user->reg, &(user->reg), NULL));
+  PetscCall(PetscOptionsReal("-lambda", "The regularization multiplier. 1 default", "tomographyADMM.c", user->lambda, &(user->lambda), NULL));
+  PetscCall(PetscOptionsReal("-eps", "L1 norm epsilon padding", "tomographyADMM.c", user->eps, &(user->eps), NULL));
+  PetscCall(PetscOptionsReal("-mumin", "Minimum value for ADMM spectral penalty", "tomographyADMM.c", user->mumin, &(user->mumin), NULL));
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 
@@ -280,26 +273,24 @@ PetscErrorCode InitializeUserData(AppCtx *user)
 
 PetscErrorCode DestroyContext(AppCtx *user)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = MatDestroy(&user->A);CHKERRQ(ierr);
-  ierr = MatDestroy(&user->ATA);CHKERRQ(ierr);
-  ierr = MatDestroy(&user->Hx);CHKERRQ(ierr);
-  ierr = MatDestroy(&user->Hz);CHKERRQ(ierr);
-  ierr = MatDestroy(&user->HF);CHKERRQ(ierr);
-  ierr = MatDestroy(&user->D);CHKERRQ(ierr);
-  ierr = MatDestroy(&user->DTD);CHKERRQ(ierr);
-  ierr = VecDestroy(&user->xGT);CHKERRQ(ierr);
-  ierr = VecDestroy(&user->xlb);CHKERRQ(ierr);
-  ierr = VecDestroy(&user->xub);CHKERRQ(ierr);
-  ierr = VecDestroy(&user->b);CHKERRQ(ierr);
-  ierr = VecDestroy(&user->x);CHKERRQ(ierr);
-  ierr = VecDestroy(&user->c);CHKERRQ(ierr);
-  ierr = VecDestroy(&user->workN3);CHKERRQ(ierr);
-  ierr = VecDestroy(&user->workN2);CHKERRQ(ierr);
-  ierr = VecDestroy(&user->workN);CHKERRQ(ierr);
-  ierr = VecDestroy(&user->workM);CHKERRQ(ierr);
+  PetscCall(MatDestroy(&user->A));
+  PetscCall(MatDestroy(&user->ATA));
+  PetscCall(MatDestroy(&user->Hx));
+  PetscCall(MatDestroy(&user->Hz));
+  PetscCall(MatDestroy(&user->HF));
+  PetscCall(MatDestroy(&user->D));
+  PetscCall(MatDestroy(&user->DTD));
+  PetscCall(VecDestroy(&user->xGT));
+  PetscCall(VecDestroy(&user->xlb));
+  PetscCall(VecDestroy(&user->xub));
+  PetscCall(VecDestroy(&user->b));
+  PetscCall(VecDestroy(&user->x));
+  PetscCall(VecDestroy(&user->c));
+  PetscCall(VecDestroy(&user->workN3));
+  PetscCall(VecDestroy(&user->workN2));
+  PetscCall(VecDestroy(&user->workN));
+  PetscCall(VecDestroy(&user->workM));
   PetscFunctionReturn(0);
 }
 
@@ -307,84 +298,83 @@ PetscErrorCode DestroyContext(AppCtx *user)
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   Tao            tao,misfit,reg;
   PetscReal      v1,v2;
   AppCtx*        user;
   PetscViewer    fd;
   char           resultFile[] = "tomographyResult_x";
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscNew(&user);CHKERRQ(ierr);
-  ierr = InitializeUserData(user);CHKERRQ(ierr);
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+  PetscCall(PetscNew(&user));
+  PetscCall(InitializeUserData(user));
 
-  ierr = TaoCreate(PETSC_COMM_WORLD, &tao);CHKERRQ(ierr);
-  ierr = TaoSetType(tao, TAOADMM);CHKERRQ(ierr);
-  ierr = TaoSetSolution(tao, user->x);CHKERRQ(ierr);
+  PetscCall(TaoCreate(PETSC_COMM_WORLD, &tao));
+  PetscCall(TaoSetType(tao, TAOADMM));
+  PetscCall(TaoSetSolution(tao, user->x));
   /* f(x) + g(x) for parent tao */
-  ierr = TaoADMMSetSpectralPenalty(tao,1.);CHKERRQ(ierr);
-  ierr = TaoSetObjectiveAndGradient(tao,NULL, FullObjGrad, (void*)user);CHKERRQ(ierr);
-  ierr = MatShift(user->HF,user->lambda);CHKERRQ(ierr);
-  ierr = TaoSetHessian(tao, user->HF, user->HF, HessianFull, (void*)user);CHKERRQ(ierr);
+  PetscCall(TaoADMMSetSpectralPenalty(tao,1.));
+  PetscCall(TaoSetObjectiveAndGradient(tao,NULL, FullObjGrad, (void*)user));
+  PetscCall(MatShift(user->HF,user->lambda));
+  PetscCall(TaoSetHessian(tao, user->HF, user->HF, HessianFull, (void*)user));
 
   /* f(x) for misfit tao */
-  ierr = TaoADMMSetMisfitObjectiveAndGradientRoutine(tao, MisfitObjectiveAndGradient, (void*)user);CHKERRQ(ierr);
-  ierr = TaoADMMSetMisfitHessianRoutine(tao, user->Hx, user->Hx, HessianMisfit, (void*)user);CHKERRQ(ierr);
-  ierr = TaoADMMSetMisfitHessianChangeStatus(tao,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = TaoADMMSetMisfitConstraintJacobian(tao,user->D,user->D,NullJacobian,(void*)user);CHKERRQ(ierr);
+  PetscCall(TaoADMMSetMisfitObjectiveAndGradientRoutine(tao, MisfitObjectiveAndGradient, (void*)user));
+  PetscCall(TaoADMMSetMisfitHessianRoutine(tao, user->Hx, user->Hx, HessianMisfit, (void*)user));
+  PetscCall(TaoADMMSetMisfitHessianChangeStatus(tao,PETSC_FALSE));
+  PetscCall(TaoADMMSetMisfitConstraintJacobian(tao,user->D,user->D,NullJacobian,(void*)user));
 
   /* g(x) for regularizer tao */
   if (user->reg == 1) {
-    ierr = TaoADMMSetRegularizerObjectiveAndGradientRoutine(tao, RegularizerObjectiveAndGradient1, (void*)user);CHKERRQ(ierr);
-    ierr = TaoADMMSetRegularizerHessianRoutine(tao, user->Hz, user->Hz, HessianReg, (void*)user);CHKERRQ(ierr);
-    ierr = TaoADMMSetRegHessianChangeStatus(tao,PETSC_TRUE);CHKERRQ(ierr);
+    PetscCall(TaoADMMSetRegularizerObjectiveAndGradientRoutine(tao, RegularizerObjectiveAndGradient1, (void*)user));
+    PetscCall(TaoADMMSetRegularizerHessianRoutine(tao, user->Hz, user->Hz, HessianReg, (void*)user));
+    PetscCall(TaoADMMSetRegHessianChangeStatus(tao,PETSC_TRUE));
   } else if (user->reg == 2) {
-    ierr = TaoADMMSetRegularizerObjectiveAndGradientRoutine(tao, RegularizerObjectiveAndGradient2, (void*)user);CHKERRQ(ierr);
-    ierr = MatShift(user->Hz,1);CHKERRQ(ierr);
-    ierr = MatScale(user->Hz,user->lambda);CHKERRQ(ierr);
-    ierr = TaoADMMSetRegularizerHessianRoutine(tao, user->Hz, user->Hz, HessianMisfit, (void*)user);CHKERRQ(ierr);
-    ierr = TaoADMMSetRegHessianChangeStatus(tao,PETSC_TRUE);CHKERRQ(ierr);
-  } else PetscCheckFalse(user->reg != 3,PETSC_COMM_WORLD, PETSC_ERR_ARG_UNKNOWN_TYPE, "Incorrect Reg type"); /* TaoShell case */
+    PetscCall(TaoADMMSetRegularizerObjectiveAndGradientRoutine(tao, RegularizerObjectiveAndGradient2, (void*)user));
+    PetscCall(MatShift(user->Hz,1));
+    PetscCall(MatScale(user->Hz,user->lambda));
+    PetscCall(TaoADMMSetRegularizerHessianRoutine(tao, user->Hz, user->Hz, HessianMisfit, (void*)user));
+    PetscCall(TaoADMMSetRegHessianChangeStatus(tao,PETSC_TRUE));
+  } else PetscCheck(user->reg == 3,PETSC_COMM_WORLD, PETSC_ERR_ARG_UNKNOWN_TYPE, "Incorrect Reg type"); /* TaoShell case */
 
   /* Set type for the misfit solver */
-  ierr = TaoADMMGetMisfitSubsolver(tao, &misfit);CHKERRQ(ierr);
-  ierr = TaoADMMGetRegularizationSubsolver(tao, &reg);CHKERRQ(ierr);
-  ierr = TaoSetType(misfit,TAONLS);CHKERRQ(ierr);
+  PetscCall(TaoADMMGetMisfitSubsolver(tao, &misfit));
+  PetscCall(TaoADMMGetRegularizationSubsolver(tao, &reg));
+  PetscCall(TaoSetType(misfit,TAONLS));
   if (user->reg == 3) {
-    ierr = TaoSetType(reg,TAOSHELL);CHKERRQ(ierr);
-    ierr = TaoShellSetContext(reg, (void*) user);CHKERRQ(ierr);
-    ierr = TaoShellSetSolve(reg, TaoShellSolve_SoftThreshold);CHKERRQ(ierr);
+    PetscCall(TaoSetType(reg,TAOSHELL));
+    PetscCall(TaoShellSetContext(reg, (void*) user));
+    PetscCall(TaoShellSetSolve(reg, TaoShellSolve_SoftThreshold));
   } else {
-    ierr = TaoSetType(reg,TAONLS);CHKERRQ(ierr);
+    PetscCall(TaoSetType(reg,TAONLS));
   }
-  ierr = TaoSetVariableBounds(misfit,user->xlb,user->xub);CHKERRQ(ierr);
+  PetscCall(TaoSetVariableBounds(misfit,user->xlb,user->xub));
 
   /* Soft Thresholding solves the ADMM problem with the L1 regularizer lambda*||z||_1 and the x-z=0 constraint */
-  ierr = TaoADMMSetRegularizerCoefficient(tao, user->lambda);CHKERRQ(ierr);
-  ierr = TaoADMMSetRegularizerConstraintJacobian(tao,NULL,NULL,NullJacobian,(void*)user);CHKERRQ(ierr);
-  ierr = TaoADMMSetMinimumSpectralPenalty(tao,user->mumin);CHKERRQ(ierr);
+  PetscCall(TaoADMMSetRegularizerCoefficient(tao, user->lambda));
+  PetscCall(TaoADMMSetRegularizerConstraintJacobian(tao,NULL,NULL,NullJacobian,(void*)user));
+  PetscCall(TaoADMMSetMinimumSpectralPenalty(tao,user->mumin));
 
-  ierr = TaoADMMSetConstraintVectorRHS(tao,user->c);CHKERRQ(ierr);
-  ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
-  ierr = TaoSolve(tao);CHKERRQ(ierr);
+  PetscCall(TaoADMMSetConstraintVectorRHS(tao,user->c));
+  PetscCall(TaoSetFromOptions(tao));
+  PetscCall(TaoSolve(tao));
 
   /* Save x (reconstruction of object) vector to a binary file, which maybe read from Matlab and convert to a 2D image for comparison. */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,resultFile,FILE_MODE_WRITE,&fd);CHKERRQ(ierr);
-  ierr = VecView(user->x,fd);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
+  PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,resultFile,FILE_MODE_WRITE,&fd));
+  PetscCall(VecView(user->x,fd));
+  PetscCall(PetscViewerDestroy(&fd));
 
   /* compute the error */
-  ierr = VecAXPY(user->x,-1,user->xGT);CHKERRQ(ierr);
-  ierr = VecNorm(user->x,NORM_2,&v1);CHKERRQ(ierr);
-  ierr = VecNorm(user->xGT,NORM_2,&v2);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "relative reconstruction error: ||x-xGT||/||xGT|| = %6.4e.\n", (double)(v1/v2));CHKERRQ(ierr);
+  PetscCall(VecAXPY(user->x,-1,user->xGT));
+  PetscCall(VecNorm(user->x,NORM_2,&v1));
+  PetscCall(VecNorm(user->xGT,NORM_2,&v2));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "relative reconstruction error: ||x-xGT||/||xGT|| = %6.4e.\n", (double)(v1/v2)));
 
   /* Free TAO data structures */
-  ierr = TaoDestroy(&tao);CHKERRQ(ierr);
-  ierr = DestroyContext(user);CHKERRQ(ierr);
-  ierr = PetscFree(user);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(TaoDestroy(&tao));
+  PetscCall(DestroyContext(user));
+  PetscCall(PetscFree(user));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

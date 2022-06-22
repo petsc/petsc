@@ -12,18 +12,15 @@
 
    Level: intermediate
 
-.seealso: PetscViewerSocketOpen(), PetscViewerASCIIOpen(), PetscViewerDrawOpen(), PetscViewerCreate(), PetscViewerDestroy(),
-          PetscViewerSetType()
+.seealso: `PetscViewerSocketOpen()`, `PetscViewerASCIIOpen()`, `PetscViewerDrawOpen()`, `PetscViewerCreate()`, `PetscViewerDestroy()`,
+          `PetscViewerSetType()`
 @*/
 PetscErrorCode  PetscViewerFlush(PetscViewer viewer)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   if (viewer->ops->flush) {
-    ierr = (*viewer->ops->flush)(viewer);CHKERRQ(ierr);
+    PetscCall((*viewer->ops->flush)(viewer));
   }
   PetscFunctionReturn(0);
 }
-

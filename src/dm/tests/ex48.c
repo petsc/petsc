@@ -7,14 +7,13 @@ static char help[] = "Test VTK structured (.vts)  and rectilinear (.vtr) viewer 
 /* Helper function to name DMDA fields */
 PetscErrorCode NameFields(DM da,PetscInt dof)
 {
-  PetscErrorCode ierr;
   PetscInt       c;
 
   PetscFunctionBeginUser;
   for (c=0; c<dof; ++c) {
     char fieldname[256];
-    ierr = PetscSNPrintf(fieldname,sizeof(fieldname),"field_%D",c);CHKERRQ(ierr);
-    ierr = DMDASetFieldName(da,c,fieldname);CHKERRQ(ierr);
+    PetscCall(PetscSNPrintf(fieldname,sizeof(fieldname),"field_%" PetscInt_FMT,c));
+    PetscCall(DMDASetFieldName(da,c,fieldname));
   }
   PetscFunctionReturn(0);
 }
@@ -33,17 +32,16 @@ PetscErrorCode test_3d(const char filename[],PetscInt dof,PetscBool namefields)
   DMDALocalInfo     info;
   PetscScalar       ****va;
   PetscInt          i,j,k,c;
-  PetscErrorCode    ierr;
 
-  ierr = DMDACreate3d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR, M,N,P,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,sw,NULL,NULL,NULL,&da);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
-  if (namefields) {ierr = NameFields(da,dof);CHKERRQ(ierr);}
+  PetscCall(DMDACreate3d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR, M,N,P,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,sw,NULL,NULL,NULL,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  if (namefields) PetscCall(NameFields(da,dof));
 
-  ierr = DMDASetUniformCoordinates(da,0.0,Lx,0.0,Ly,0.0,Lz);CHKERRQ(ierr);
-  ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(da,&v);CHKERRQ(ierr);
-  ierr = DMDAVecGetArrayDOF(da,v,&va);CHKERRQ(ierr);
+  PetscCall(DMDASetUniformCoordinates(da,0.0,Lx,0.0,Ly,0.0,Lz));
+  PetscCall(DMDAGetLocalInfo(da,&info));
+  PetscCall(DMCreateGlobalVector(da,&v));
+  PetscCall(DMDAVecGetArrayDOF(da,v,&va));
   for (k=info.zs; k<info.zs+info.zm; k++) {
     for (j=info.ys; j<info.ys+info.ym; j++) {
       for (i=info.xs; i<info.xs+info.xm; i++) {
@@ -56,12 +54,12 @@ PetscErrorCode test_3d(const char filename[],PetscInt dof,PetscBool namefields)
       }
     }
   }
-  ierr = DMDAVecRestoreArrayDOF(da,v,&va);CHKERRQ(ierr);
-  ierr = PetscViewerVTKOpen(comm,filename,FILE_MODE_WRITE,&view);CHKERRQ(ierr);
-  ierr = VecView(v,view);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&view);CHKERRQ(ierr);
-  ierr = VecDestroy(&v);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
+  PetscCall(DMDAVecRestoreArrayDOF(da,v,&va));
+  PetscCall(PetscViewerVTKOpen(comm,filename,FILE_MODE_WRITE,&view));
+  PetscCall(VecView(v,view));
+  PetscCall(PetscViewerDestroy(&view));
+  PetscCall(VecDestroy(&v));
+  PetscCall(DMDestroy(&da));
   return 0;
 }
 
@@ -79,16 +77,15 @@ PetscErrorCode test_2d(const char filename[],PetscInt dof,PetscBool namefields)
   DMDALocalInfo     info;
   PetscScalar       ***va;
   PetscInt          i,j,c;
-  PetscErrorCode    ierr;
 
-  ierr = DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR, M,N,PETSC_DECIDE,PETSC_DECIDE,dof,sw,NULL,NULL,&da);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
-  if (namefields) {ierr = NameFields(da,dof);CHKERRQ(ierr);}
-  ierr = DMDASetUniformCoordinates(da,0.0,Lx,0.0,Ly,0.0,Lz);CHKERRQ(ierr);
-  ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(da,&v);CHKERRQ(ierr);
-  ierr = DMDAVecGetArrayDOF(da,v,&va);CHKERRQ(ierr);
+  PetscCall(DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR, M,N,PETSC_DECIDE,PETSC_DECIDE,dof,sw,NULL,NULL,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  if (namefields) PetscCall(NameFields(da,dof));
+  PetscCall(DMDASetUniformCoordinates(da,0.0,Lx,0.0,Ly,0.0,Lz));
+  PetscCall(DMDAGetLocalInfo(da,&info));
+  PetscCall(DMCreateGlobalVector(da,&v));
+  PetscCall(DMDAVecGetArrayDOF(da,v,&va));
   for (j=info.ys; j<info.ys+info.ym; j++) {
     for (i=info.xs; i<info.xs+info.xm; i++) {
       const PetscScalar x = (Lx*i)/M;
@@ -98,12 +95,12 @@ PetscErrorCode test_2d(const char filename[],PetscInt dof,PetscBool namefields)
       }
     }
   }
-  ierr = DMDAVecRestoreArrayDOF(da,v,&va);CHKERRQ(ierr);
-  ierr = PetscViewerVTKOpen(comm,filename,FILE_MODE_WRITE,&view);CHKERRQ(ierr);
-  ierr = VecView(v,view);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&view);CHKERRQ(ierr);
-  ierr = VecDestroy(&v);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
+  PetscCall(DMDAVecRestoreArrayDOF(da,v,&va));
+  PetscCall(PetscViewerVTKOpen(comm,filename,FILE_MODE_WRITE,&view));
+  PetscCall(VecView(v,view));
+  PetscCall(PetscViewerDestroy(&view));
+  PetscCall(VecDestroy(&v));
+  PetscCall(DMDestroy(&da));
   return 0;
 }
 
@@ -121,21 +118,20 @@ PetscErrorCode test_3d_compat(const char filename[],PetscInt dof,PetscBool namef
   DMDALocalInfo     info;
   PetscScalar       ***va,****vVectora;
   PetscInt          i,j,k,c;
-  PetscErrorCode    ierr;
 
-  ierr = DMDACreate3d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR, M,N,P,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,/* dof:*/1,sw,NULL,NULL,NULL,&da);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
-  if (namefields) {ierr = NameFields(da,1);CHKERRQ(ierr);}
+  PetscCall(DMDACreate3d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR, M,N,P,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,/* dof:*/1,sw,NULL,NULL,NULL,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  if (namefields) PetscCall(NameFields(da,1));
 
-  ierr = DMDASetUniformCoordinates(da,0.0,Lx,0.0,Ly,0.0,Lz);CHKERRQ(ierr);
-  ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
-  ierr = DMDACreateCompatibleDMDA(da,dof,&daVector);CHKERRQ(ierr);
-  if (namefields) {ierr = NameFields(daVector,dof);CHKERRQ(ierr);}
-  ierr = DMCreateGlobalVector(da,&v);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(daVector,&vVector);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,v,&va);CHKERRQ(ierr);
-  ierr = DMDAVecGetArrayDOF(daVector,vVector,&vVectora);CHKERRQ(ierr);
+  PetscCall(DMDASetUniformCoordinates(da,0.0,Lx,0.0,Ly,0.0,Lz));
+  PetscCall(DMDAGetLocalInfo(da,&info));
+  PetscCall(DMDACreateCompatibleDMDA(da,dof,&daVector));
+  if (namefields) PetscCall(NameFields(daVector,dof));
+  PetscCall(DMCreateGlobalVector(da,&v));
+  PetscCall(DMCreateGlobalVector(daVector,&vVector));
+  PetscCall(DMDAVecGetArray(da,v,&va));
+  PetscCall(DMDAVecGetArrayDOF(daVector,vVector,&vVectora));
   for (k=info.zs; k<info.zs+info.zm; k++) {
     for (j=info.ys; j<info.ys+info.ym; j++) {
       for (i=info.xs; i<info.xs+info.xm; i++) {
@@ -149,16 +145,16 @@ PetscErrorCode test_3d_compat(const char filename[],PetscInt dof,PetscBool namef
       }
     }
   }
-  ierr = DMDAVecRestoreArray(da,v,&va);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArrayDOF(da,v,&vVectora);CHKERRQ(ierr);
-  ierr = PetscViewerVTKOpen(comm,filename,FILE_MODE_WRITE,&view);CHKERRQ(ierr);
-  ierr = VecView(v,view);CHKERRQ(ierr);
-  ierr = VecView(vVector,view);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&view);CHKERRQ(ierr);
-  ierr = VecDestroy(&v);CHKERRQ(ierr);
-  ierr = VecDestroy(&vVector);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
-  ierr = DMDestroy(&daVector);CHKERRQ(ierr);
+  PetscCall(DMDAVecRestoreArray(da,v,&va));
+  PetscCall(DMDAVecRestoreArrayDOF(da,v,&vVectora));
+  PetscCall(PetscViewerVTKOpen(comm,filename,FILE_MODE_WRITE,&view));
+  PetscCall(VecView(v,view));
+  PetscCall(VecView(vVector,view));
+  PetscCall(PetscViewerDestroy(&view));
+  PetscCall(VecDestroy(&v));
+  PetscCall(VecDestroy(&vVector));
+  PetscCall(DMDestroy(&da));
+  PetscCall(DMDestroy(&daVector));
   return 0;
 }
 
@@ -176,20 +172,19 @@ PetscErrorCode test_2d_compat(const char filename[],PetscInt dof,PetscBool namef
   DMDALocalInfo     info;
   PetscScalar       **va,***vVectora;
   PetscInt          i,j,c;
-  PetscErrorCode    ierr;
 
-  ierr = DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR, M,N,PETSC_DECIDE,PETSC_DECIDE,/* dof:*/ 1,sw,NULL,NULL,&da);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
-  if (namefields) {ierr = NameFields(da,1);CHKERRQ(ierr);}
-  ierr = DMDASetUniformCoordinates(da,0.0,Lx,0.0,Ly,0.0,Lz);CHKERRQ(ierr);
-  ierr = DMDACreateCompatibleDMDA(da,dof,&daVector);CHKERRQ(ierr);
-  if (namefields) {ierr = NameFields(daVector,dof);CHKERRQ(ierr);}
-  ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(da,&v);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(daVector,&vVector);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,v,&va);CHKERRQ(ierr);
-  ierr = DMDAVecGetArrayDOF(daVector,vVector,&vVectora);CHKERRQ(ierr);
+  PetscCall(DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR, M,N,PETSC_DECIDE,PETSC_DECIDE,/* dof:*/ 1,sw,NULL,NULL,&da));
+  PetscCall(DMSetFromOptions(da));
+  PetscCall(DMSetUp(da));
+  if (namefields) PetscCall(NameFields(da,1));
+  PetscCall(DMDASetUniformCoordinates(da,0.0,Lx,0.0,Ly,0.0,Lz));
+  PetscCall(DMDACreateCompatibleDMDA(da,dof,&daVector));
+  if (namefields) PetscCall(NameFields(daVector,dof));
+  PetscCall(DMDAGetLocalInfo(da,&info));
+  PetscCall(DMCreateGlobalVector(da,&v));
+  PetscCall(DMCreateGlobalVector(daVector,&vVector));
+  PetscCall(DMDAVecGetArray(da,v,&va));
+  PetscCall(DMDAVecGetArrayDOF(daVector,vVector,&vVectora));
   for (j=info.ys; j<info.ys+info.ym; j++) {
     for (i=info.xs; i<info.xs+info.xm; i++) {
       const PetscScalar x = (Lx*i)/M;
@@ -200,40 +195,39 @@ PetscErrorCode test_2d_compat(const char filename[],PetscInt dof,PetscBool namef
       }
     }
   }
-  ierr = DMDAVecRestoreArray(da,v,&va);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArrayDOF(daVector,vVector,&vVectora);CHKERRQ(ierr);
-  ierr = PetscViewerVTKOpen(comm,filename,FILE_MODE_WRITE,&view);CHKERRQ(ierr);
-  ierr = VecView(v,view);CHKERRQ(ierr);
-  ierr = VecView(vVector,view);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&view);CHKERRQ(ierr);
-  ierr = VecDestroy(&v);CHKERRQ(ierr);
-  ierr = VecDestroy(&vVector);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
-  ierr = DMDestroy(&daVector);CHKERRQ(ierr);
+  PetscCall(DMDAVecRestoreArray(da,v,&va));
+  PetscCall(DMDAVecRestoreArrayDOF(daVector,vVector,&vVectora));
+  PetscCall(PetscViewerVTKOpen(comm,filename,FILE_MODE_WRITE,&view));
+  PetscCall(VecView(v,view));
+  PetscCall(VecView(vVector,view));
+  PetscCall(PetscViewerDestroy(&view));
+  PetscCall(VecDestroy(&v));
+  PetscCall(VecDestroy(&vVector));
+  PetscCall(DMDestroy(&da));
+  PetscCall(DMDestroy(&daVector));
   return 0;
 }
 
 int main(int argc, char *argv[])
 {
-  PetscErrorCode ierr;
   PetscInt       dof;
   PetscBool      namefields;
 
-  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,0,help));
   dof = 2;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-dof",&dof,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-dof",&dof,NULL));
   namefields = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-namefields",&namefields,NULL);CHKERRQ(ierr);
-  ierr = test_3d("3d.vtr",dof,namefields);CHKERRQ(ierr);
-  ierr = test_2d("2d.vtr",dof,namefields);CHKERRQ(ierr);
-  ierr = test_3d_compat("3d_compat.vtr",dof,namefields);CHKERRQ(ierr);
-  ierr = test_2d_compat("2d_compat.vtr",dof,namefields);CHKERRQ(ierr);
-  ierr = test_3d("3d.vts",dof,namefields);CHKERRQ(ierr);
-  ierr = test_2d("2d.vts",dof,namefields);CHKERRQ(ierr);
-  ierr = test_3d_compat("3d_compat.vts",dof,namefields);CHKERRQ(ierr);
-  ierr = test_2d_compat("2d_compat.vts",dof,namefields);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-namefields",&namefields,NULL));
+  PetscCall(test_3d("3d.vtr",dof,namefields));
+  PetscCall(test_2d("2d.vtr",dof,namefields));
+  PetscCall(test_3d_compat("3d_compat.vtr",dof,namefields));
+  PetscCall(test_2d_compat("2d_compat.vtr",dof,namefields));
+  PetscCall(test_3d("3d.vts",dof,namefields));
+  PetscCall(test_2d("2d.vts",dof,namefields));
+  PetscCall(test_3d_compat("3d_compat.vts",dof,namefields));
+  PetscCall(test_2d_compat("2d_compat.vts",dof,namefields));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

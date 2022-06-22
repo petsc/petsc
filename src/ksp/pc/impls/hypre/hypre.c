@@ -160,19 +160,18 @@ static PetscErrorCode PCGetCoarseOperators_BoomerAMG(PC pc,PetscInt *nlevels,Mat
 {
   PC_HYPRE             *jac  = (PC_HYPRE*)pc->data;
   PetscBool            same = PETSC_FALSE;
-  PetscErrorCode       ierr;
   PetscInt             num_levels,l;
   Mat                  *mattmp;
   hypre_ParCSRMatrix   **A_array;
 
   PetscFunctionBegin;
-  ierr = PetscStrcmp(jac->hypre_type,"boomeramg",&same);CHKERRQ(ierr);
-  PetscCheckFalse(!same,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_NOTSAMETYPE,"Hypre type is not BoomerAMG ");
+  PetscCall(PetscStrcmp(jac->hypre_type,"boomeramg",&same));
+  PetscCheck(same,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_NOTSAMETYPE,"Hypre type is not BoomerAMG ");
   num_levels = hypre_ParAMGDataNumLevels((hypre_ParAMGData*) (jac->hsolver));
-  ierr = PetscMalloc1(num_levels,&mattmp);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(num_levels,&mattmp));
   A_array    = hypre_ParAMGDataAArray((hypre_ParAMGData*) (jac->hsolver));
   for (l=1; l<num_levels; l++) {
-    ierr = MatCreateFromParCSR(A_array[l],MATAIJ,PETSC_OWN_POINTER, &(mattmp[num_levels-1-l]));CHKERRQ(ierr);
+    PetscCall(MatCreateFromParCSR(A_array[l],MATAIJ,PETSC_OWN_POINTER, &(mattmp[num_levels-1-l])));
     /* We want to own the data, and HYPRE can not touch this matrix any more */
     A_array[l] = NULL;
   }
@@ -190,19 +189,18 @@ static PetscErrorCode PCGetInterpolations_BoomerAMG(PC pc,PetscInt *nlevels,Mat 
 {
   PC_HYPRE             *jac  = (PC_HYPRE*)pc->data;
   PetscBool            same = PETSC_FALSE;
-  PetscErrorCode       ierr;
   PetscInt             num_levels,l;
   Mat                  *mattmp;
   hypre_ParCSRMatrix   **P_array;
 
   PetscFunctionBegin;
-  ierr = PetscStrcmp(jac->hypre_type,"boomeramg",&same);CHKERRQ(ierr);
-  PetscCheckFalse(!same,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_NOTSAMETYPE,"Hypre type is not BoomerAMG ");
+  PetscCall(PetscStrcmp(jac->hypre_type,"boomeramg",&same));
+  PetscCheck(same,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_NOTSAMETYPE,"Hypre type is not BoomerAMG ");
   num_levels = hypre_ParAMGDataNumLevels((hypre_ParAMGData*) (jac->hsolver));
-  ierr = PetscMalloc1(num_levels,&mattmp);CHKERRQ(ierr);
+  PetscCall(PetscMalloc1(num_levels,&mattmp));
   P_array  = hypre_ParAMGDataPArray((hypre_ParAMGData*) (jac->hsolver));
   for (l=1; l<num_levels; l++) {
-    ierr = MatCreateFromParCSR(P_array[num_levels-1-l],MATAIJ,PETSC_OWN_POINTER, &(mattmp[l-1]));CHKERRQ(ierr);
+    PetscCall(MatCreateFromParCSR(P_array[num_levels-1-l],MATAIJ,PETSC_OWN_POINTER, &(mattmp[l-1])));
     /* We want to own the data, and HYPRE can not touch this matrix any more */
     P_array[num_levels-1-l] = NULL;
   }
@@ -216,15 +214,14 @@ static PetscErrorCode PCHYPREResetNearNullSpace_Private(PC pc)
 {
   PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
   PetscInt       i;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   for (i=0; i<jac->n_hmnull; i++) {
-    ierr = VecHYPRE_IJVectorDestroy(&jac->hmnull[i]);CHKERRQ(ierr);
+    PetscCall(VecHYPRE_IJVectorDestroy(&jac->hmnull[i]));
   }
-  ierr = PetscFree(jac->hmnull);CHKERRQ(ierr);
-  ierr = PetscFree(jac->phmnull);CHKERRQ(ierr);
-  ierr = VecDestroy(&jac->hmnull_constant);CHKERRQ(ierr);
+  PetscCall(PetscFree(jac->hmnull));
+  PetscCall(PetscFree(jac->phmnull));
+  PetscCall(VecDestroy(&jac->hmnull_constant));
   jac->n_hmnull = 0;
   PetscFunctionReturn(0);
 }
@@ -236,25 +233,24 @@ static PetscErrorCode PCSetUp_HYPRE(PC pc)
   HYPRE_ParCSRMatrix hmat;
   HYPRE_ParVector    bv,xv;
   PetscBool          ishypre;
-  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   if (!jac->hypre_type) {
-    ierr = PCHYPRESetType(pc,"boomeramg");CHKERRQ(ierr);
+    PetscCall(PCHYPRESetType(pc,"boomeramg"));
   }
 
-  ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATHYPRE,&ishypre);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)pc->pmat,MATHYPRE,&ishypre));
   if (!ishypre) {
-    ierr = MatDestroy(&jac->hpmat);CHKERRQ(ierr);
-    ierr = MatConvert(pc->pmat,MATHYPRE,MAT_INITIAL_MATRIX,&jac->hpmat);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)jac->hpmat);CHKERRQ(ierr);
+    PetscCall(MatDestroy(&jac->hpmat));
+    PetscCall(MatConvert(pc->pmat,MATHYPRE,MAT_INITIAL_MATRIX,&jac->hpmat));
+    PetscCall(PetscLogObjectParent((PetscObject)pc,(PetscObject)jac->hpmat));
   } else {
-    ierr = PetscObjectReference((PetscObject)pc->pmat);CHKERRQ(ierr);
-    ierr = MatDestroy(&jac->hpmat);CHKERRQ(ierr);
+    PetscCall(PetscObjectReference((PetscObject)pc->pmat));
+    PetscCall(MatDestroy(&jac->hpmat));
     jac->hpmat = pc->pmat;
   }
   /* allow debug */
-  ierr = MatViewFromOptions(jac->hpmat,NULL,"-pc_hypre_mat_view");CHKERRQ(ierr);
+  PetscCall(MatViewFromOptions(jac->hpmat,NULL,"-pc_hypre_mat_view"));
   hjac = (Mat_HYPRE*)(jac->hpmat->data);
 
   /* special case for BoomerAMG */
@@ -264,26 +260,26 @@ static PetscErrorCode PCSetUp_HYPRE(PC pc)
     PetscInt     bs,nvec,i;
     const Vec    *vecs;
 
-    ierr = MatGetBlockSize(pc->pmat,&bs);CHKERRQ(ierr);
+    PetscCall(MatGetBlockSize(pc->pmat,&bs));
     if (bs > 1) PetscStackCallStandard(HYPRE_BoomerAMGSetNumFunctions,jac->hsolver,bs);
-    ierr = MatGetNearNullSpace(pc->mat, &mnull);CHKERRQ(ierr);
+    PetscCall(MatGetNearNullSpace(pc->mat, &mnull));
     if (mnull) {
-      ierr = PCHYPREResetNearNullSpace_Private(pc);CHKERRQ(ierr);
-      ierr = MatNullSpaceGetVecs(mnull, &has_const, &nvec, &vecs);CHKERRQ(ierr);
-      ierr = PetscMalloc1(nvec+1,&jac->hmnull);CHKERRQ(ierr);
-      ierr = PetscMalloc1(nvec+1,&jac->phmnull);CHKERRQ(ierr);
+      PetscCall(PCHYPREResetNearNullSpace_Private(pc));
+      PetscCall(MatNullSpaceGetVecs(mnull, &has_const, &nvec, &vecs));
+      PetscCall(PetscMalloc1(nvec+1,&jac->hmnull));
+      PetscCall(PetscMalloc1(nvec+1,&jac->phmnull));
       for (i=0; i<nvec; i++) {
-        ierr = VecHYPRE_IJVectorCreate(vecs[i]->map,&jac->hmnull[i]);CHKERRQ(ierr);
-        ierr = VecHYPRE_IJVectorCopy(vecs[i],jac->hmnull[i]);CHKERRQ(ierr);
+        PetscCall(VecHYPRE_IJVectorCreate(vecs[i]->map,&jac->hmnull[i]));
+        PetscCall(VecHYPRE_IJVectorCopy(vecs[i],jac->hmnull[i]));
         PetscStackCallStandard(HYPRE_IJVectorGetObject,jac->hmnull[i]->ij,(void**)&jac->phmnull[i]);
       }
       if (has_const) {
-        ierr = MatCreateVecs(pc->pmat,&jac->hmnull_constant,NULL);CHKERRQ(ierr);
-        ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)jac->hmnull_constant);CHKERRQ(ierr);
-        ierr = VecSet(jac->hmnull_constant,1);CHKERRQ(ierr);
-        ierr = VecNormalize(jac->hmnull_constant,NULL);CHKERRQ(ierr);
-        ierr = VecHYPRE_IJVectorCreate(jac->hmnull_constant->map,&jac->hmnull[nvec]);CHKERRQ(ierr);
-        ierr = VecHYPRE_IJVectorCopy(jac->hmnull_constant,jac->hmnull[nvec]);CHKERRQ(ierr);
+        PetscCall(MatCreateVecs(pc->pmat,&jac->hmnull_constant,NULL));
+        PetscCall(PetscLogObjectParent((PetscObject)pc,(PetscObject)jac->hmnull_constant));
+        PetscCall(VecSet(jac->hmnull_constant,1));
+        PetscCall(VecNormalize(jac->hmnull_constant,NULL));
+        PetscCall(VecHYPRE_IJVectorCreate(jac->hmnull_constant->map,&jac->hmnull[nvec]));
+        PetscCall(VecHYPRE_IJVectorCopy(jac->hmnull_constant,jac->hmnull[nvec]));
         PetscStackCallStandard(HYPRE_IJVectorGetObject,jac->hmnull[nvec]->ij,(void**)&jac->phmnull[nvec]);
         nvec++;
       }
@@ -321,7 +317,7 @@ static PetscErrorCode PCSetUp_HYPRE(PC pc)
       if (jac->coords[2]) PetscStackCallStandard(HYPRE_IJVectorGetObject,jac->coords[2]->ij,(void**)(&coords[2]));
       PetscStackCallStandard(HYPRE_AMSSetCoordinateVectors,jac->hsolver,coords[0],coords[1],coords[2]);
     }
-    PetscCheckFalse(!jac->G,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"HYPRE AMS preconditioner needs the discrete gradient operator via PCHYPRESetDiscreteGradient");
+    PetscCheck(jac->G,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"HYPRE AMS preconditioner needs the discrete gradient operator via PCHYPRESetDiscreteGradient");
     hm = (Mat_HYPRE*)(jac->G->data);
     PetscStackCallStandard(HYPRE_IJMatrixGetObject,hm->ij,(void**)(&parcsr));
     PetscStackCallStandard(HYPRE_AMSSetDiscreteGradient,jac->hsolver,parcsr);
@@ -364,9 +360,9 @@ static PetscErrorCode PCSetUp_HYPRE(PC pc)
     if (!jac->coords[0] && !((jac->RT_PiFull || (jac->RT_Pi[0] && jac->RT_Pi[1])) && (jac->ND_PiFull || (jac->ND_Pi[0] && jac->ND_Pi[1])))) {
       SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"HYPRE ADS preconditioner needs either the coordinate vectors via PCSetCoordinates() or the interpolation matrices via PCHYPRESetInterpolations");
     }
-    else PetscCheckFalse(!jac->coords[1] || !jac->coords[2],PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"HYPRE ADS preconditioner has been designed for three dimensional problems! For two dimensional problems, use HYPRE AMS instead");
-    PetscCheckFalse(!jac->G,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"HYPRE ADS preconditioner needs the discrete gradient operator via PCHYPRESetDiscreteGradient");
-    PetscCheckFalse(!jac->C,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"HYPRE ADS preconditioner needs the discrete curl operator via PCHYPRESetDiscreteGradient");
+    else PetscCheck(jac->coords[1] && jac->coords[2],PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"HYPRE ADS preconditioner has been designed for three dimensional problems! For two dimensional problems, use HYPRE AMS instead");
+    PetscCheck(jac->G,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"HYPRE ADS preconditioner needs the discrete gradient operator via PCHYPRESetDiscreteGradient");
+    PetscCheck(jac->C,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"HYPRE ADS preconditioner needs the discrete curl operator via PCHYPRESetDiscreteGradient");
     if (jac->coords[0]) {
       HYPRE_ParVector coords[3];
       coords[0] = NULL;
@@ -429,58 +425,59 @@ static PetscErrorCode PCApply_HYPRE(PC pc,Vec b,Vec x)
 {
   PC_HYPRE           *jac = (PC_HYPRE*)pc->data;
   Mat_HYPRE          *hjac = (Mat_HYPRE*)(jac->hpmat->data);
-  PetscErrorCode     ierr;
   HYPRE_ParCSRMatrix hmat;
   HYPRE_ParVector    jbv,jxv;
-  PetscInt           hierr;
 
   PetscFunctionBegin;
-  ierr = PetscCitationsRegister(hypreCitation,&cite);CHKERRQ(ierr);
-  if (!jac->applyrichardson) {ierr = VecSet(x,0.0);CHKERRQ(ierr);}
-  ierr = VecHYPRE_IJVectorPushVecRead(hjac->b,b);CHKERRQ(ierr);
-  if (jac->applyrichardson) { ierr = VecHYPRE_IJVectorPushVec(hjac->x,x);CHKERRQ(ierr); }
-  else { ierr = VecHYPRE_IJVectorPushVecWrite(hjac->x,x);CHKERRQ(ierr); }
+  PetscCall(PetscCitationsRegister(hypreCitation,&cite));
+  if (!jac->applyrichardson) PetscCall(VecSet(x,0.0));
+  PetscCall(VecHYPRE_IJVectorPushVecRead(hjac->b,b));
+  if (jac->applyrichardson) PetscCall(VecHYPRE_IJVectorPushVec(hjac->x,x));
+  else PetscCall(VecHYPRE_IJVectorPushVecWrite(hjac->x,x));
   PetscStackCallStandard(HYPRE_IJMatrixGetObject,hjac->ij,(void**)&hmat);
   PetscStackCallStandard(HYPRE_IJVectorGetObject,hjac->b->ij,(void**)&jbv);
   PetscStackCallStandard(HYPRE_IJVectorGetObject,hjac->x->ij,(void**)&jxv);
-  PetscStackCall("Hypre solve",hierr = (*jac->solve)(jac->hsolver,hmat,jbv,jxv);
-  PetscCheckFalse(hierr && hierr != HYPRE_ERROR_CONV,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in HYPRE solver, error code %d",hierr);
-  if (hierr) hypre__global_error = 0;);
+  PetscStackCall("Hypre solve",do {
+      HYPRE_Int hierr = (*jac->solve)(jac->hsolver,hmat,jbv,jxv);
+      if (hierr) {
+        PetscCheck(hierr == HYPRE_ERROR_CONV,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in HYPRE solver, error code %d",(int)hierr);
+        hypre__global_error = 0;
+      }
+    } while (0));
 
   if (jac->setup == HYPRE_AMSSetup && jac->ams_beta_is_zero_part) {
     PetscStackCallStandard(HYPRE_AMSProjectOutGradients,jac->hsolver,jxv);
   }
-  ierr = VecHYPRE_IJVectorPopVec(hjac->x);CHKERRQ(ierr);
-  ierr = VecHYPRE_IJVectorPopVec(hjac->b);CHKERRQ(ierr);
+  PetscCall(VecHYPRE_IJVectorPopVec(hjac->x));
+  PetscCall(VecHYPRE_IJVectorPopVec(hjac->b));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCReset_HYPRE(PC pc)
 {
   PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatDestroy(&jac->hpmat);CHKERRQ(ierr);
-  ierr = MatDestroy(&jac->G);CHKERRQ(ierr);
-  ierr = MatDestroy(&jac->C);CHKERRQ(ierr);
-  ierr = MatDestroy(&jac->alpha_Poisson);CHKERRQ(ierr);
-  ierr = MatDestroy(&jac->beta_Poisson);CHKERRQ(ierr);
-  ierr = MatDestroy(&jac->RT_PiFull);CHKERRQ(ierr);
-  ierr = MatDestroy(&jac->RT_Pi[0]);CHKERRQ(ierr);
-  ierr = MatDestroy(&jac->RT_Pi[1]);CHKERRQ(ierr);
-  ierr = MatDestroy(&jac->RT_Pi[2]);CHKERRQ(ierr);
-  ierr = MatDestroy(&jac->ND_PiFull);CHKERRQ(ierr);
-  ierr = MatDestroy(&jac->ND_Pi[0]);CHKERRQ(ierr);
-  ierr = MatDestroy(&jac->ND_Pi[1]);CHKERRQ(ierr);
-  ierr = MatDestroy(&jac->ND_Pi[2]);CHKERRQ(ierr);
-  ierr = VecHYPRE_IJVectorDestroy(&jac->coords[0]);CHKERRQ(ierr);
-  ierr = VecHYPRE_IJVectorDestroy(&jac->coords[1]);CHKERRQ(ierr);
-  ierr = VecHYPRE_IJVectorDestroy(&jac->coords[2]);CHKERRQ(ierr);
-  ierr = VecHYPRE_IJVectorDestroy(&jac->constants[0]);CHKERRQ(ierr);
-  ierr = VecHYPRE_IJVectorDestroy(&jac->constants[1]);CHKERRQ(ierr);
-  ierr = VecHYPRE_IJVectorDestroy(&jac->constants[2]);CHKERRQ(ierr);
-  ierr = PCHYPREResetNearNullSpace_Private(pc);CHKERRQ(ierr);
+  PetscCall(MatDestroy(&jac->hpmat));
+  PetscCall(MatDestroy(&jac->G));
+  PetscCall(MatDestroy(&jac->C));
+  PetscCall(MatDestroy(&jac->alpha_Poisson));
+  PetscCall(MatDestroy(&jac->beta_Poisson));
+  PetscCall(MatDestroy(&jac->RT_PiFull));
+  PetscCall(MatDestroy(&jac->RT_Pi[0]));
+  PetscCall(MatDestroy(&jac->RT_Pi[1]));
+  PetscCall(MatDestroy(&jac->RT_Pi[2]));
+  PetscCall(MatDestroy(&jac->ND_PiFull));
+  PetscCall(MatDestroy(&jac->ND_Pi[0]));
+  PetscCall(MatDestroy(&jac->ND_Pi[1]));
+  PetscCall(MatDestroy(&jac->ND_Pi[2]));
+  PetscCall(VecHYPRE_IJVectorDestroy(&jac->coords[0]));
+  PetscCall(VecHYPRE_IJVectorDestroy(&jac->coords[1]));
+  PetscCall(VecHYPRE_IJVectorDestroy(&jac->coords[2]));
+  PetscCall(VecHYPRE_IJVectorDestroy(&jac->constants[0]));
+  PetscCall(VecHYPRE_IJVectorDestroy(&jac->constants[1]));
+  PetscCall(VecHYPRE_IJVectorDestroy(&jac->constants[2]));
+  PetscCall(PCHYPREResetNearNullSpace_Private(pc));
   jac->ams_beta_is_zero = PETSC_FALSE;
   jac->dim = 0;
   PetscFunctionReturn(0);
@@ -489,32 +486,31 @@ static PetscErrorCode PCReset_HYPRE(PC pc)
 static PetscErrorCode PCDestroy_HYPRE(PC pc)
 {
   PC_HYPRE                 *jac = (PC_HYPRE*)pc->data;
-  PetscErrorCode           ierr;
 
   PetscFunctionBegin;
-  ierr = PCReset_HYPRE(pc);CHKERRQ(ierr);
+  PetscCall(PCReset_HYPRE(pc));
   if (jac->destroy) PetscStackCallStandard(jac->destroy,jac->hsolver);
-  ierr = PetscFree(jac->hypre_type);CHKERRQ(ierr);
+  PetscCall(PetscFree(jac->hypre_type));
 #if PETSC_PKG_HYPRE_VERSION_GE(2,23,0)
-  ierr = PetscFree(jac->spgemm_type);CHKERRQ(ierr);
+  PetscCall(PetscFree(jac->spgemm_type));
 #endif
-  if (jac->comm_hypre != MPI_COMM_NULL) {ierr = PetscCommRestoreComm(PetscObjectComm((PetscObject)pc),&jac->comm_hypre);CHKERRQ(ierr);}
-  ierr = PetscFree(pc->data);CHKERRQ(ierr);
+  if (jac->comm_hypre != MPI_COMM_NULL) PetscCall(PetscCommRestoreComm(PetscObjectComm((PetscObject)pc),&jac->comm_hypre));
+  PetscCall(PetscFree(pc->data));
 
-  ierr = PetscObjectChangeTypeName((PetscObject)pc,0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetType_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHYPREGetType_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetCoordinates_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetDiscreteGradient_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetDiscreteCurl_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetInterpolations_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetConstantEdgeVectors_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetPoissonMatrix_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGetInterpolations_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGetCoarseOperators_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCMGGalerkinSetMatProductAlgorithm_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCMGGalerkinGetMatProductAlgorithm_C",NULL);CHKERRQ(ierr);
-
+  PetscCall(PetscObjectChangeTypeName((PetscObject)pc,0));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCHYPREGetType_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetDiscreteGradient_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetDiscreteCurl_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetInterpolations_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetConstantEdgeVectors_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetPoissonMatrix_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetEdgeConstantVectors_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCGetInterpolations_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCGetCoarseOperators_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCMGGalerkinSetMatProductAlgorithm_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCMGGalerkinGetMatProductAlgorithm_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCSetCoordinates_C",NULL));
   PetscFunctionReturn(0);
 }
 
@@ -522,45 +518,43 @@ static PetscErrorCode PCDestroy_HYPRE(PC pc)
 static PetscErrorCode PCSetFromOptions_HYPRE_Pilut(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
-  PetscErrorCode ierr;
   PetscBool      flag;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead(PetscOptionsObject,"HYPRE Pilut Options");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-pc_hypre_pilut_maxiter","Number of iterations","None",jac->maxiter,&jac->maxiter,&flag);CHKERRQ(ierr);
+  PetscOptionsHeadBegin(PetscOptionsObject,"HYPRE Pilut Options");
+  PetscCall(PetscOptionsInt("-pc_hypre_pilut_maxiter","Number of iterations","None",jac->maxiter,&jac->maxiter,&flag));
   if (flag) PetscStackCallStandard(HYPRE_ParCSRPilutSetMaxIter,jac->hsolver,jac->maxiter);
-  ierr = PetscOptionsReal("-pc_hypre_pilut_tol","Drop tolerance","None",jac->tol,&jac->tol,&flag);CHKERRQ(ierr);
+  PetscCall(PetscOptionsReal("-pc_hypre_pilut_tol","Drop tolerance","None",jac->tol,&jac->tol,&flag));
   if (flag) PetscStackCallStandard(HYPRE_ParCSRPilutSetDropTolerance,jac->hsolver,jac->tol);
-  ierr = PetscOptionsInt("-pc_hypre_pilut_factorrowsize","FactorRowSize","None",jac->factorrowsize,&jac->factorrowsize,&flag);CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-pc_hypre_pilut_factorrowsize","FactorRowSize","None",jac->factorrowsize,&jac->factorrowsize,&flag));
   if (flag) PetscStackCallStandard(HYPRE_ParCSRPilutSetFactorRowSize,jac->hsolver,jac->factorrowsize);
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCView_HYPRE_Pilut(PC pc,PetscViewer viewer)
 {
   PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
-  PetscErrorCode ierr;
   PetscBool      iascii;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE Pilut preconditioning\n");CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  HYPRE Pilut preconditioning\n"));
     if (jac->maxiter != PETSC_DEFAULT) {
-      ierr = PetscViewerASCIIPrintf(viewer,"    maximum number of iterations %d\n",jac->maxiter);CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIIPrintf(viewer,"    maximum number of iterations %" PetscInt_FMT "\n",jac->maxiter));
     } else {
-      ierr = PetscViewerASCIIPrintf(viewer,"    default maximum number of iterations \n");CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIIPrintf(viewer,"    default maximum number of iterations \n"));
     }
     if (jac->tol != PETSC_DEFAULT) {
-      ierr = PetscViewerASCIIPrintf(viewer,"    drop tolerance %g\n",(double)jac->tol);CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIIPrintf(viewer,"    drop tolerance %g\n",(double)jac->tol));
     } else {
-      ierr = PetscViewerASCIIPrintf(viewer,"    default drop tolerance \n");CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIIPrintf(viewer,"    default drop tolerance \n"));
     }
     if (jac->factorrowsize != PETSC_DEFAULT) {
-      ierr = PetscViewerASCIIPrintf(viewer,"    factor row size %d\n",jac->factorrowsize);CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIIPrintf(viewer,"    factor row size %" PetscInt_FMT "\n",jac->factorrowsize));
     } else {
-      ierr = PetscViewerASCIIPrintf(viewer,"    default factor row size \n");CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIIPrintf(viewer,"    default factor row size \n"));
     }
   }
   PetscFunctionReturn(0);
@@ -570,49 +564,47 @@ static PetscErrorCode PCView_HYPRE_Pilut(PC pc,PetscViewer viewer)
 static PetscErrorCode PCSetFromOptions_HYPRE_Euclid(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
-  PetscErrorCode ierr;
   PetscBool      flag,eu_bj = jac->eu_bj ? PETSC_TRUE : PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead(PetscOptionsObject,"HYPRE Euclid Options");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-pc_hypre_euclid_level","Factorization levels","None",jac->eu_level,&jac->eu_level,&flag);CHKERRQ(ierr);
+  PetscOptionsHeadBegin(PetscOptionsObject,"HYPRE Euclid Options");
+  PetscCall(PetscOptionsInt("-pc_hypre_euclid_level","Factorization levels","None",jac->eu_level,&jac->eu_level,&flag));
   if (flag) PetscStackCallStandard(HYPRE_EuclidSetLevel,jac->hsolver,jac->eu_level);
 
-  ierr = PetscOptionsReal("-pc_hypre_euclid_droptolerance","Drop tolerance for ILU(k) in Euclid","None",jac->eu_droptolerance,&jac->eu_droptolerance,&flag);CHKERRQ(ierr);
+  PetscCall(PetscOptionsReal("-pc_hypre_euclid_droptolerance","Drop tolerance for ILU(k) in Euclid","None",jac->eu_droptolerance,&jac->eu_droptolerance,&flag));
   if (flag) {
     PetscMPIInt size;
 
-    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRMPI(ierr);
-    PetscCheckFalse(size > 1,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"hypre's Euclid does not support a parallel drop tolerance");
+    PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size));
+    PetscCheck(size == 1,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"hypre's Euclid does not support a parallel drop tolerance");
     PetscStackCallStandard(HYPRE_EuclidSetILUT,jac->hsolver,jac->eu_droptolerance);
   }
 
-  ierr = PetscOptionsBool("-pc_hypre_euclid_bj", "Use Block Jacobi for ILU in Euclid", "None", eu_bj,&eu_bj,&flag);CHKERRQ(ierr);
+  PetscCall(PetscOptionsBool("-pc_hypre_euclid_bj", "Use Block Jacobi for ILU in Euclid", "None", eu_bj,&eu_bj,&flag));
   if (flag) {
     jac->eu_bj = eu_bj ? 1 : 0;
     PetscStackCallStandard(HYPRE_EuclidSetBJ,jac->hsolver,jac->eu_bj);
   }
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCView_HYPRE_Euclid(PC pc,PetscViewer viewer)
 {
   PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
-  PetscErrorCode ierr;
   PetscBool      iascii;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE Euclid preconditioning\n");CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  HYPRE Euclid preconditioning\n"));
     if (jac->eu_level != PETSC_DEFAULT) {
-      ierr = PetscViewerASCIIPrintf(viewer,"    factorization levels %d\n",jac->eu_level);CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIIPrintf(viewer,"    factorization levels %" PetscInt_FMT "\n",jac->eu_level));
     } else {
-      ierr = PetscViewerASCIIPrintf(viewer,"    default factorization levels \n");CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIIPrintf(viewer,"    default factorization levels \n"));
     }
-    ierr = PetscViewerASCIIPrintf(viewer,"    drop tolerance %g\n",(double)jac->eu_droptolerance);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    use Block-Jacobi? %D\n",jac->eu_bj);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    drop tolerance %g\n",(double)jac->eu_droptolerance));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    use Block-Jacobi? %" PetscInt_FMT "\n",jac->eu_bj));
   }
   PetscFunctionReturn(0);
 }
@@ -623,55 +615,53 @@ static PetscErrorCode PCApplyTranspose_HYPRE_BoomerAMG(PC pc,Vec b,Vec x)
 {
   PC_HYPRE           *jac = (PC_HYPRE*)pc->data;
   Mat_HYPRE          *hjac = (Mat_HYPRE*)(jac->hpmat->data);
-  PetscErrorCode     ierr;
   HYPRE_ParCSRMatrix hmat;
   HYPRE_ParVector    jbv,jxv;
-  PetscInt           hierr;
 
   PetscFunctionBegin;
-  ierr = PetscCitationsRegister(hypreCitation,&cite);CHKERRQ(ierr);
-  ierr = VecSet(x,0.0);CHKERRQ(ierr);
-  ierr = VecHYPRE_IJVectorPushVecRead(hjac->x,b);CHKERRQ(ierr);
-  ierr = VecHYPRE_IJVectorPushVecWrite(hjac->b,x);CHKERRQ(ierr);
+  PetscCall(PetscCitationsRegister(hypreCitation,&cite));
+  PetscCall(VecSet(x,0.0));
+  PetscCall(VecHYPRE_IJVectorPushVecRead(hjac->x,b));
+  PetscCall(VecHYPRE_IJVectorPushVecWrite(hjac->b,x));
 
   PetscStackCallStandard(HYPRE_IJMatrixGetObject,hjac->ij,(void**)&hmat);
   PetscStackCallStandard(HYPRE_IJVectorGetObject,hjac->b->ij,(void**)&jbv);
   PetscStackCallStandard(HYPRE_IJVectorGetObject,hjac->x->ij,(void**)&jxv);
 
-  hierr = HYPRE_BoomerAMGSolveT(jac->hsolver,hmat,jxv,jbv);
-  /* error code of 1 in BoomerAMG merely means convergence not achieved */
-  PetscCheckFalse(hierr && (hierr != 1),PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in HYPRE solver, error code %d",hierr);
-  if (hierr) hypre__global_error = 0;
+  PetscStackCall("Hypre Transpose solve",do {
+      HYPRE_Int hierr = HYPRE_BoomerAMGSolveT(jac->hsolver,hmat,jbv,jxv);
+      if (hierr) {
+        /* error code of 1 in BoomerAMG merely means convergence not achieved */
+        PetscCheck(hierr == 1,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in HYPRE solver, error code %d",(int)hierr);
+        hypre__global_error = 0;
+      }
+    } while (0));
 
-  ierr = VecHYPRE_IJVectorPopVec(hjac->x);CHKERRQ(ierr);
-  ierr = VecHYPRE_IJVectorPopVec(hjac->b);CHKERRQ(ierr);
+  PetscCall(VecHYPRE_IJVectorPopVec(hjac->x));
+  PetscCall(VecHYPRE_IJVectorPopVec(hjac->b));
   PetscFunctionReturn(0);
 }
-
-/* static array length */
-#define ALEN(a) (sizeof(a)/sizeof((a)[0]))
 
 static PetscErrorCode PCMGGalerkinSetMatProductAlgorithm_HYPRE_BoomerAMG(PC pc,const char name[])
 {
   PC_HYPRE *jac  = (PC_HYPRE*)pc->data;
-  PetscErrorCode ierr;
   PetscBool      flag;
 
 #if PETSC_PKG_HYPRE_VERSION_GE(2,23,0)
   PetscFunctionBegin;
   if (jac->spgemm_type) {
-    ierr = PetscStrcmp(jac->spgemm_type,name,&flag);CHKERRQ(ierr);
-    PetscCheckFalse(!flag,PetscObjectComm((PetscObject)pc),PETSC_ERR_ORDER,"Cannot reset the HYPRE SpGEMM (really we can)");
+    PetscCall(PetscStrcmp(jac->spgemm_type,name,&flag));
+    PetscCheck(flag,PetscObjectComm((PetscObject)pc),PETSC_ERR_ORDER,"Cannot reset the HYPRE SpGEMM (really we can)");
     PetscFunctionReturn(0);
   } else {
-    ierr = PetscStrallocpy(name, &jac->spgemm_type);CHKERRQ(ierr);
+    PetscCall(PetscStrallocpy(name, &jac->spgemm_type));
   }
-  ierr = PetscStrcmp("cusparse",jac->spgemm_type,&flag);CHKERRQ(ierr);
+  PetscCall(PetscStrcmp("cusparse",jac->spgemm_type,&flag));
   if (flag) {
     PetscStackCallStandard(HYPRE_SetSpGemmUseCusparse,1);
     PetscFunctionReturn(0);
   }
-  ierr = PetscStrcmp("hypre",jac->spgemm_type,&flag);CHKERRQ(ierr);
+  PetscCall(PetscStrcmp("hypre",jac->spgemm_type,&flag));
   if (flag) {
     PetscStackCallStandard(HYPRE_SetSpGemmUseCusparse,0);
     PetscFunctionReturn(0);
@@ -709,7 +699,6 @@ static const char *HYPREBoomerAMGInterpType[]  = {"classical", "", "", "direct",
 static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
-  PetscErrorCode ierr;
   PetscInt       bs,n,indx,level;
   PetscBool      flg, tmp_truth;
   double         tmpdbl, twodbl[2];
@@ -717,71 +706,71 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PetscOptionItems *PetscOp
   const char     *PCHYPRESpgemmTypes[] = {"cusparse","hypre"};
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead(PetscOptionsObject,"HYPRE BoomerAMG Options");CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-pc_hypre_boomeramg_cycle_type","Cycle type","None",HYPREBoomerAMGCycleType+1,2,HYPREBoomerAMGCycleType[jac->cycletype],&indx,&flg);CHKERRQ(ierr);
+  PetscOptionsHeadBegin(PetscOptionsObject,"HYPRE BoomerAMG Options");
+  PetscCall(PetscOptionsEList("-pc_hypre_boomeramg_cycle_type","Cycle type","None",HYPREBoomerAMGCycleType+1,2,HYPREBoomerAMGCycleType[jac->cycletype],&indx,&flg));
   if (flg) {
     jac->cycletype = indx+1;
     PetscStackCallStandard(HYPRE_BoomerAMGSetCycleType,jac->hsolver,jac->cycletype);
   }
-  ierr = PetscOptionsInt("-pc_hypre_boomeramg_max_levels","Number of levels (of grids) allowed","None",jac->maxlevels,&jac->maxlevels,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_max_levels","Number of levels (of grids) allowed","None",jac->maxlevels,&jac->maxlevels,&flg));
   if (flg) {
-    PetscCheckFalse(jac->maxlevels < 2,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Number of levels %d must be at least two",jac->maxlevels);
+    PetscCheck(jac->maxlevels >= 2,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Number of levels %" PetscInt_FMT " must be at least two",jac->maxlevels);
     PetscStackCallStandard(HYPRE_BoomerAMGSetMaxLevels,jac->hsolver,jac->maxlevels);
   }
-  ierr = PetscOptionsInt("-pc_hypre_boomeramg_max_iter","Maximum iterations used PER hypre call","None",jac->maxiter,&jac->maxiter,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_max_iter","Maximum iterations used PER hypre call","None",jac->maxiter,&jac->maxiter,&flg));
   if (flg) {
-    PetscCheckFalse(jac->maxiter < 1,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Number of iterations %d must be at least one",jac->maxiter);
+    PetscCheck(jac->maxiter >= 1,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Number of iterations %" PetscInt_FMT " must be at least one",jac->maxiter);
     PetscStackCallStandard(HYPRE_BoomerAMGSetMaxIter,jac->hsolver,jac->maxiter);
   }
-  ierr = PetscOptionsReal("-pc_hypre_boomeramg_tol","Convergence tolerance PER hypre call (0.0 = use a fixed number of iterations)","None",jac->tol,&jac->tol,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsReal("-pc_hypre_boomeramg_tol","Convergence tolerance PER hypre call (0.0 = use a fixed number of iterations)","None",jac->tol,&jac->tol,&flg));
   if (flg) {
-    PetscCheckFalse(jac->tol < 0.0,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Tolerance %g must be greater than or equal to zero",(double)jac->tol);
+    PetscCheck(jac->tol >= 0.0,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Tolerance %g must be greater than or equal to zero",(double)jac->tol);
     PetscStackCallStandard(HYPRE_BoomerAMGSetTol,jac->hsolver,jac->tol);
   }
   bs = 1;
   if (pc->pmat) {
-    ierr = MatGetBlockSize(pc->pmat,&bs);CHKERRQ(ierr);
+    PetscCall(MatGetBlockSize(pc->pmat,&bs));
   }
-  ierr = PetscOptionsInt("-pc_hypre_boomeramg_numfunctions","Number of functions","HYPRE_BoomerAMGSetNumFunctions",bs,&bs,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_numfunctions","Number of functions","HYPRE_BoomerAMGSetNumFunctions",bs,&bs,&flg));
   if (flg) {
     PetscStackCallStandard(HYPRE_BoomerAMGSetNumFunctions,jac->hsolver,bs);
   }
 
-  ierr = PetscOptionsReal("-pc_hypre_boomeramg_truncfactor","Truncation factor for interpolation (0=no truncation)","None",jac->truncfactor,&jac->truncfactor,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsReal("-pc_hypre_boomeramg_truncfactor","Truncation factor for interpolation (0=no truncation)","None",jac->truncfactor,&jac->truncfactor,&flg));
   if (flg) {
-    PetscCheckFalse(jac->truncfactor < 0.0,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Truncation factor %g must be great than or equal zero",(double)jac->truncfactor);
+    PetscCheck(jac->truncfactor >= 0.0,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Truncation factor %g must be great than or equal zero",(double)jac->truncfactor);
     PetscStackCallStandard(HYPRE_BoomerAMGSetTruncFactor,jac->hsolver,jac->truncfactor);
   }
 
-  ierr = PetscOptionsInt("-pc_hypre_boomeramg_P_max","Max elements per row for interpolation operator (0=unlimited)","None",jac->pmax,&jac->pmax,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_P_max","Max elements per row for interpolation operator (0=unlimited)","None",jac->pmax,&jac->pmax,&flg));
   if (flg) {
-    PetscCheckFalse(jac->pmax < 0,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"P_max %D must be greater than or equal to zero",jac->pmax);
+    PetscCheck(jac->pmax >= 0,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"P_max %" PetscInt_FMT " must be greater than or equal to zero",jac->pmax);
     PetscStackCallStandard(HYPRE_BoomerAMGSetPMaxElmts,jac->hsolver,jac->pmax);
   }
 
-  ierr = PetscOptionsRangeInt("-pc_hypre_boomeramg_agg_nl","Number of levels of aggressive coarsening","None",jac->agg_nl,&jac->agg_nl,&flg,0,jac->maxlevels);CHKERRQ(ierr);
+  PetscCall(PetscOptionsRangeInt("-pc_hypre_boomeramg_agg_nl","Number of levels of aggressive coarsening","None",jac->agg_nl,&jac->agg_nl,&flg,0,jac->maxlevels));
   if (flg) PetscStackCallStandard(HYPRE_BoomerAMGSetAggNumLevels,jac->hsolver,jac->agg_nl);
 
-  ierr = PetscOptionsInt("-pc_hypre_boomeramg_agg_num_paths","Number of paths for aggressive coarsening","None",jac->agg_num_paths,&jac->agg_num_paths,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_agg_num_paths","Number of paths for aggressive coarsening","None",jac->agg_num_paths,&jac->agg_num_paths,&flg));
   if (flg) {
-    PetscCheckFalse(jac->agg_num_paths < 1,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Number of paths %D must be greater than or equal to 1",jac->agg_num_paths);
+    PetscCheck(jac->agg_num_paths >= 1,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Number of paths %" PetscInt_FMT " must be greater than or equal to 1",jac->agg_num_paths);
     PetscStackCallStandard(HYPRE_BoomerAMGSetNumPaths,jac->hsolver,jac->agg_num_paths);
   }
 
-  ierr = PetscOptionsReal("-pc_hypre_boomeramg_strong_threshold","Threshold for being strongly connected","None",jac->strongthreshold,&jac->strongthreshold,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsReal("-pc_hypre_boomeramg_strong_threshold","Threshold for being strongly connected","None",jac->strongthreshold,&jac->strongthreshold,&flg));
   if (flg) {
-    PetscCheckFalse(jac->strongthreshold < 0.0,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Strong threshold %g must be great than or equal zero",(double)jac->strongthreshold);
+    PetscCheck(jac->strongthreshold >= 0.0,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Strong threshold %g must be great than or equal zero",(double)jac->strongthreshold);
     PetscStackCallStandard(HYPRE_BoomerAMGSetStrongThreshold,jac->hsolver,jac->strongthreshold);
   }
-  ierr = PetscOptionsReal("-pc_hypre_boomeramg_max_row_sum","Maximum row sum","None",jac->maxrowsum,&jac->maxrowsum,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsReal("-pc_hypre_boomeramg_max_row_sum","Maximum row sum","None",jac->maxrowsum,&jac->maxrowsum,&flg));
   if (flg) {
-    PetscCheckFalse(jac->maxrowsum < 0.0,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Maximum row sum %g must be greater than zero",(double)jac->maxrowsum);
-    PetscCheckFalse(jac->maxrowsum > 1.0,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Maximum row sum %g must be less than or equal one",(double)jac->maxrowsum);
+    PetscCheck(jac->maxrowsum >= 0.0,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Maximum row sum %g must be greater than zero",(double)jac->maxrowsum);
+    PetscCheck(jac->maxrowsum <= 1.0,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Maximum row sum %g must be less than or equal one",(double)jac->maxrowsum);
     PetscStackCallStandard(HYPRE_BoomerAMGSetMaxRowSum,jac->hsolver,jac->maxrowsum);
   }
 
   /* Grid sweeps */
-  ierr = PetscOptionsInt("-pc_hypre_boomeramg_grid_sweeps_all","Number of sweeps for the up and down grid levels","None",jac->gridsweeps[0],&indx,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_grid_sweeps_all","Number of sweeps for the up and down grid levels","None",jac->gridsweeps[0],&indx,&flg));
   if (flg) {
     PetscStackCallStandard(HYPRE_BoomerAMGSetNumSweeps,jac->hsolver,indx);
     /* modify the jac structure so we can view the updated options with PC_View */
@@ -790,48 +779,48 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PetscOptionItems *PetscOp
     /*defaults coarse to 1 */
     jac->gridsweeps[2] = 1;
   }
-  ierr = PetscOptionsInt("-pc_hypre_boomeramg_nodal_coarsen","Use a nodal based coarsening 1-6","HYPRE_BoomerAMGSetNodal",jac->nodal_coarsening,&jac->nodal_coarsening,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_nodal_coarsen","Use a nodal based coarsening 1-6","HYPRE_BoomerAMGSetNodal",jac->nodal_coarsening,&jac->nodal_coarsening,&flg));
   if (flg) {
     PetscStackCallStandard(HYPRE_BoomerAMGSetNodal,jac->hsolver,jac->nodal_coarsening);
   }
-  ierr = PetscOptionsInt("-pc_hypre_boomeramg_nodal_coarsen_diag","Diagonal in strength matrix for nodal based coarsening 0-2","HYPRE_BoomerAMGSetNodalDiag",jac->nodal_coarsening_diag,&jac->nodal_coarsening_diag,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_nodal_coarsen_diag","Diagonal in strength matrix for nodal based coarsening 0-2","HYPRE_BoomerAMGSetNodalDiag",jac->nodal_coarsening_diag,&jac->nodal_coarsening_diag,&flg));
   if (flg) {
     PetscStackCallStandard(HYPRE_BoomerAMGSetNodalDiag,jac->hsolver,jac->nodal_coarsening_diag);
   }
-  ierr = PetscOptionsInt("-pc_hypre_boomeramg_vec_interp_variant","Variant of algorithm 1-3","HYPRE_BoomerAMGSetInterpVecVariant",jac->vec_interp_variant, &jac->vec_interp_variant,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_vec_interp_variant","Variant of algorithm 1-3","HYPRE_BoomerAMGSetInterpVecVariant",jac->vec_interp_variant, &jac->vec_interp_variant,&flg));
   if (flg) {
     PetscStackCallStandard(HYPRE_BoomerAMGSetInterpVecVariant,jac->hsolver,jac->vec_interp_variant);
   }
-  ierr = PetscOptionsInt("-pc_hypre_boomeramg_vec_interp_qmax","Max elements per row for each Q","HYPRE_BoomerAMGSetInterpVecQMax",jac->vec_interp_qmax, &jac->vec_interp_qmax,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_vec_interp_qmax","Max elements per row for each Q","HYPRE_BoomerAMGSetInterpVecQMax",jac->vec_interp_qmax, &jac->vec_interp_qmax,&flg));
   if (flg) {
     PetscStackCallStandard(HYPRE_BoomerAMGSetInterpVecQMax,jac->hsolver,jac->vec_interp_qmax);
   }
-  ierr = PetscOptionsBool("-pc_hypre_boomeramg_vec_interp_smooth","Whether to smooth the interpolation vectors","HYPRE_BoomerAMGSetSmoothInterpVectors",jac->vec_interp_smooth, &jac->vec_interp_smooth,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsBool("-pc_hypre_boomeramg_vec_interp_smooth","Whether to smooth the interpolation vectors","HYPRE_BoomerAMGSetSmoothInterpVectors",jac->vec_interp_smooth, &jac->vec_interp_smooth,&flg));
   if (flg) {
     PetscStackCallStandard(HYPRE_BoomerAMGSetSmoothInterpVectors,jac->hsolver,jac->vec_interp_smooth);
   }
-  ierr = PetscOptionsInt("-pc_hypre_boomeramg_interp_refine","Preprocess the interpolation matrix through iterative weight refinement","HYPRE_BoomerAMGSetInterpRefine",jac->interp_refine, &jac->interp_refine,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_interp_refine","Preprocess the interpolation matrix through iterative weight refinement","HYPRE_BoomerAMGSetInterpRefine",jac->interp_refine, &jac->interp_refine,&flg));
   if (flg) {
     PetscStackCallStandard(HYPRE_BoomerAMGSetInterpRefine,jac->hsolver,jac->interp_refine);
   }
-  ierr = PetscOptionsInt("-pc_hypre_boomeramg_grid_sweeps_down","Number of sweeps for the down cycles","None",jac->gridsweeps[0], &indx,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_grid_sweeps_down","Number of sweeps for the down cycles","None",jac->gridsweeps[0], &indx,&flg));
   if (flg) {
     PetscStackCallStandard(HYPRE_BoomerAMGSetCycleNumSweeps,jac->hsolver,indx, 1);
     jac->gridsweeps[0] = indx;
   }
-  ierr = PetscOptionsInt("-pc_hypre_boomeramg_grid_sweeps_up","Number of sweeps for the up cycles","None",jac->gridsweeps[1],&indx,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_grid_sweeps_up","Number of sweeps for the up cycles","None",jac->gridsweeps[1],&indx,&flg));
   if (flg) {
     PetscStackCallStandard(HYPRE_BoomerAMGSetCycleNumSweeps,jac->hsolver,indx, 2);
     jac->gridsweeps[1] = indx;
   }
-  ierr = PetscOptionsInt("-pc_hypre_boomeramg_grid_sweeps_coarse","Number of sweeps for the coarse level","None",jac->gridsweeps[2],&indx,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_grid_sweeps_coarse","Number of sweeps for the coarse level","None",jac->gridsweeps[2],&indx,&flg));
   if (flg) {
     PetscStackCallStandard(HYPRE_BoomerAMGSetCycleNumSweeps,jac->hsolver,indx, 3);
     jac->gridsweeps[2] = indx;
   }
 
   /* Smooth type */
-  ierr = PetscOptionsEList("-pc_hypre_boomeramg_smooth_type","Enable more complex smoothers","None",HYPREBoomerAMGSmoothType,ALEN(HYPREBoomerAMGSmoothType),HYPREBoomerAMGSmoothType[0],&indx,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsEList("-pc_hypre_boomeramg_smooth_type","Enable more complex smoothers","None",HYPREBoomerAMGSmoothType,PETSC_STATIC_ARRAY_LENGTH(HYPREBoomerAMGSmoothType),HYPREBoomerAMGSmoothType[0],&indx,&flg));
   if (flg) {
     jac->smoothtype = indx;
     PetscStackCallStandard(HYPRE_BoomerAMGSetSmoothType,jac->hsolver,indx+6);
@@ -840,14 +829,14 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PetscOptionItems *PetscOp
   }
 
   /* Number of smoothing levels */
-  ierr = PetscOptionsInt("-pc_hypre_boomeramg_smooth_num_levels","Number of levels on which more complex smoothers are used","None",25,&indx,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_smooth_num_levels","Number of levels on which more complex smoothers are used","None",25,&indx,&flg));
   if (flg && (jac->smoothtype != -1)) {
     jac->smoothnumlevels = indx;
     PetscStackCallStandard(HYPRE_BoomerAMGSetSmoothNumLevels,jac->hsolver,indx);
   }
 
   /* Number of levels for ILU(k) for Euclid */
-  ierr = PetscOptionsInt("-pc_hypre_boomeramg_eu_level","Number of levels for ILU(k) in Euclid smoother","None",0,&indx,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_eu_level","Number of levels for ILU(k) in Euclid smoother","None",0,&indx,&flg));
   if (flg && (jac->smoothtype == 3)) {
     jac->eu_level = indx;
     PetscStackCallStandard(HYPRE_BoomerAMGSetEuLevel,jac->hsolver,indx);
@@ -855,21 +844,21 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PetscOptionItems *PetscOp
 
   /* Filter for ILU(k) for Euclid */
   double droptolerance;
-  ierr = PetscOptionsReal("-pc_hypre_boomeramg_eu_droptolerance","Drop tolerance for ILU(k) in Euclid smoother","None",0,&droptolerance,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsReal("-pc_hypre_boomeramg_eu_droptolerance","Drop tolerance for ILU(k) in Euclid smoother","None",0,&droptolerance,&flg));
   if (flg && (jac->smoothtype == 3)) {
     jac->eu_droptolerance = droptolerance;
     PetscStackCallStandard(HYPRE_BoomerAMGSetEuLevel,jac->hsolver,droptolerance);
   }
 
   /* Use Block Jacobi ILUT for Euclid */
-  ierr = PetscOptionsBool("-pc_hypre_boomeramg_eu_bj", "Use Block Jacobi for ILU in Euclid smoother?", "None", PETSC_FALSE, &tmp_truth, &flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsBool("-pc_hypre_boomeramg_eu_bj", "Use Block Jacobi for ILU in Euclid smoother?", "None", PETSC_FALSE, &tmp_truth, &flg));
   if (flg && (jac->smoothtype == 3)) {
     jac->eu_bj = tmp_truth;
     PetscStackCallStandard(HYPRE_BoomerAMGSetEuBJ,jac->hsolver,jac->eu_bj);
   }
 
   /* Relax type */
-  ierr = PetscOptionsEList("-pc_hypre_boomeramg_relax_type_all","Relax type for the up and down cycles","None",HYPREBoomerAMGRelaxType,ALEN(HYPREBoomerAMGRelaxType),HYPREBoomerAMGRelaxType[6],&indx,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsEList("-pc_hypre_boomeramg_relax_type_all","Relax type for the up and down cycles","None",HYPREBoomerAMGRelaxType,PETSC_STATIC_ARRAY_LENGTH(HYPREBoomerAMGRelaxType),HYPREBoomerAMGRelaxType[6],&indx,&flg));
   if (flg) {
     jac->relaxtype[0] = jac->relaxtype[1]  = indx;
     PetscStackCallStandard(HYPRE_BoomerAMGSetRelaxType,jac->hsolver, indx);
@@ -877,24 +866,24 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PetscOptionItems *PetscOp
     jac->relaxtype[2] = 9;
     PetscStackCallStandard(HYPRE_BoomerAMGSetCycleRelaxType,jac->hsolver, 9, 3);
   }
-  ierr = PetscOptionsEList("-pc_hypre_boomeramg_relax_type_down","Relax type for the down cycles","None",HYPREBoomerAMGRelaxType,ALEN(HYPREBoomerAMGRelaxType),HYPREBoomerAMGRelaxType[6],&indx,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsEList("-pc_hypre_boomeramg_relax_type_down","Relax type for the down cycles","None",HYPREBoomerAMGRelaxType,PETSC_STATIC_ARRAY_LENGTH(HYPREBoomerAMGRelaxType),HYPREBoomerAMGRelaxType[6],&indx,&flg));
   if (flg) {
     jac->relaxtype[0] = indx;
     PetscStackCallStandard(HYPRE_BoomerAMGSetCycleRelaxType,jac->hsolver, indx, 1);
   }
-  ierr = PetscOptionsEList("-pc_hypre_boomeramg_relax_type_up","Relax type for the up cycles","None",HYPREBoomerAMGRelaxType,ALEN(HYPREBoomerAMGRelaxType),HYPREBoomerAMGRelaxType[6],&indx,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsEList("-pc_hypre_boomeramg_relax_type_up","Relax type for the up cycles","None",HYPREBoomerAMGRelaxType,PETSC_STATIC_ARRAY_LENGTH(HYPREBoomerAMGRelaxType),HYPREBoomerAMGRelaxType[6],&indx,&flg));
   if (flg) {
     jac->relaxtype[1] = indx;
     PetscStackCallStandard(HYPRE_BoomerAMGSetCycleRelaxType,jac->hsolver, indx, 2);
   }
-  ierr = PetscOptionsEList("-pc_hypre_boomeramg_relax_type_coarse","Relax type on coarse grid","None",HYPREBoomerAMGRelaxType,ALEN(HYPREBoomerAMGRelaxType),HYPREBoomerAMGRelaxType[9],&indx,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsEList("-pc_hypre_boomeramg_relax_type_coarse","Relax type on coarse grid","None",HYPREBoomerAMGRelaxType,PETSC_STATIC_ARRAY_LENGTH(HYPREBoomerAMGRelaxType),HYPREBoomerAMGRelaxType[9],&indx,&flg));
   if (flg) {
     jac->relaxtype[2] = indx;
     PetscStackCallStandard(HYPRE_BoomerAMGSetCycleRelaxType,jac->hsolver, indx, 3);
   }
 
   /* Relaxation Weight */
-  ierr = PetscOptionsReal("-pc_hypre_boomeramg_relax_weight_all","Relaxation weight for all levels (0 = hypre estimates, -k = determined with k CG steps)","None",jac->relaxweight, &tmpdbl,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsReal("-pc_hypre_boomeramg_relax_weight_all","Relaxation weight for all levels (0 = hypre estimates, -k = determined with k CG steps)","None",jac->relaxweight, &tmpdbl,&flg));
   if (flg) {
     PetscStackCallStandard(HYPRE_BoomerAMGSetRelaxWt,jac->hsolver,tmpdbl);
     jac->relaxweight = tmpdbl;
@@ -902,16 +891,16 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PetscOptionItems *PetscOp
 
   n         = 2;
   twodbl[0] = twodbl[1] = 1.0;
-  ierr      = PetscOptionsRealArray("-pc_hypre_boomeramg_relax_weight_level","Set the relaxation weight for a particular level (weight,level)","None",twodbl, &n, &flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsRealArray("-pc_hypre_boomeramg_relax_weight_level","Set the relaxation weight for a particular level (weight,level)","None",twodbl, &n, &flg));
   if (flg) {
     if (n == 2) {
       indx =  (int)PetscAbsReal(twodbl[1]);
       PetscStackCallStandard(HYPRE_BoomerAMGSetLevelRelaxWt,jac->hsolver,twodbl[0],indx);
-    } else SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Relax weight level: you must provide 2 values separated by a comma (and no space), you provided %d",n);
+    } else SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Relax weight level: you must provide 2 values separated by a comma (and no space), you provided %" PetscInt_FMT,n);
   }
 
   /* Outer relaxation Weight */
-  ierr = PetscOptionsReal("-pc_hypre_boomeramg_outer_relax_weight_all","Outer relaxation weight for all levels (-k = determined with k CG steps)","None",jac->outerrelaxweight, &tmpdbl,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsReal("-pc_hypre_boomeramg_outer_relax_weight_all","Outer relaxation weight for all levels (-k = determined with k CG steps)","None",jac->outerrelaxweight, &tmpdbl,&flg));
   if (flg) {
     PetscStackCallStandard(HYPRE_BoomerAMGSetOuterWt,jac->hsolver, tmpdbl);
     jac->outerrelaxweight = tmpdbl;
@@ -919,101 +908,101 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PetscOptionItems *PetscOp
 
   n         = 2;
   twodbl[0] = twodbl[1] = 1.0;
-  ierr      = PetscOptionsRealArray("-pc_hypre_boomeramg_outer_relax_weight_level","Set the outer relaxation weight for a particular level (weight,level)","None",twodbl, &n, &flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsRealArray("-pc_hypre_boomeramg_outer_relax_weight_level","Set the outer relaxation weight for a particular level (weight,level)","None",twodbl, &n, &flg));
   if (flg) {
     if (n == 2) {
       indx =  (int)PetscAbsReal(twodbl[1]);
       PetscStackCallStandard(HYPRE_BoomerAMGSetLevelOuterWt,jac->hsolver, twodbl[0], indx);
-    } else SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Relax weight outer level: You must provide 2 values separated by a comma (and no space), you provided %d",n);
+    } else SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Relax weight outer level: You must provide 2 values separated by a comma (and no space), you provided %" PetscInt_FMT,n);
   }
 
   /* the Relax Order */
-  ierr = PetscOptionsBool("-pc_hypre_boomeramg_no_CF", "Do not use CF-relaxation", "None", PETSC_FALSE, &tmp_truth, &flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsBool("-pc_hypre_boomeramg_no_CF", "Do not use CF-relaxation", "None", PETSC_FALSE, &tmp_truth, &flg));
 
   if (flg && tmp_truth) {
     jac->relaxorder = 0;
     PetscStackCallStandard(HYPRE_BoomerAMGSetRelaxOrder,jac->hsolver, jac->relaxorder);
   }
-  ierr = PetscOptionsEList("-pc_hypre_boomeramg_measure_type","Measure type","None",HYPREBoomerAMGMeasureType,ALEN(HYPREBoomerAMGMeasureType),HYPREBoomerAMGMeasureType[0],&indx,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsEList("-pc_hypre_boomeramg_measure_type","Measure type","None",HYPREBoomerAMGMeasureType,PETSC_STATIC_ARRAY_LENGTH(HYPREBoomerAMGMeasureType),HYPREBoomerAMGMeasureType[0],&indx,&flg));
   if (flg) {
     jac->measuretype = indx;
     PetscStackCallStandard(HYPRE_BoomerAMGSetMeasureType,jac->hsolver,jac->measuretype);
   }
   /* update list length 3/07 */
-  ierr = PetscOptionsEList("-pc_hypre_boomeramg_coarsen_type","Coarsen type","None",HYPREBoomerAMGCoarsenType,ALEN(HYPREBoomerAMGCoarsenType),HYPREBoomerAMGCoarsenType[6],&indx,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsEList("-pc_hypre_boomeramg_coarsen_type","Coarsen type","None",HYPREBoomerAMGCoarsenType,PETSC_STATIC_ARRAY_LENGTH(HYPREBoomerAMGCoarsenType),HYPREBoomerAMGCoarsenType[6],&indx,&flg));
   if (flg) {
     jac->coarsentype = indx;
     PetscStackCallStandard(HYPRE_BoomerAMGSetCoarsenType,jac->hsolver,jac->coarsentype);
   }
 
-  ierr = PetscOptionsInt("-pc_hypre_boomeramg_max_coarse_size", "Maximum size of coarsest grid", "None", jac->maxc, &jac->maxc, &flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_max_coarse_size", "Maximum size of coarsest grid", "None", jac->maxc, &jac->maxc, &flg));
   if (flg) {
     PetscStackCallStandard(HYPRE_BoomerAMGSetMaxCoarseSize,jac->hsolver, jac->maxc);
   }
-  ierr = PetscOptionsInt("-pc_hypre_boomeramg_min_coarse_size", "Minimum size of coarsest grid", "None", jac->minc, &jac->minc, &flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_min_coarse_size", "Minimum size of coarsest grid", "None", jac->minc, &jac->minc, &flg));
   if (flg) {
     PetscStackCallStandard(HYPRE_BoomerAMGSetMinCoarseSize,jac->hsolver, jac->minc);
   }
 #if PETSC_PKG_HYPRE_VERSION_GE(2,23,0)
   // global parameter but is closely associated with BoomerAMG
-  ierr = PetscOptionsEList("-pc_mg_galerkin_mat_product_algorithm","Type of SpGEMM to use in hypre (only for now)","PCMGGalerkinSetMatProductAlgorithm",PCHYPRESpgemmTypes,ALEN(PCHYPRESpgemmTypes),PCHYPRESpgemmTypes[0],&indx,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsEList("-pc_mg_galerkin_mat_product_algorithm","Type of SpGEMM to use in hypre (only for now)","PCMGGalerkinSetMatProductAlgorithm",PCHYPRESpgemmTypes,PETSC_STATIC_ARRAY_LENGTH(PCHYPRESpgemmTypes),PCHYPRESpgemmTypes[0],&indx,&flg));
   if (!flg) indx = 0;
-  ierr = PCMGGalerkinSetMatProductAlgorithm_HYPRE_BoomerAMG(pc,PCHYPRESpgemmTypes[indx]);CHKERRQ(ierr);
+  PetscCall(PCMGGalerkinSetMatProductAlgorithm_HYPRE_BoomerAMG(pc,PCHYPRESpgemmTypes[indx]));
 #endif
   /* AIR */
 #if PETSC_PKG_HYPRE_VERSION_GE(2,18,0)
-  ierr = PetscOptionsInt("-pc_hypre_boomeramg_restriction_type", "Type of AIR method (distance 1 or 2, 0 means no AIR)", "None", jac->Rtype, &jac->Rtype, NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_restriction_type", "Type of AIR method (distance 1 or 2, 0 means no AIR)", "None", jac->Rtype, &jac->Rtype, NULL));
   PetscStackCallStandard(HYPRE_BoomerAMGSetRestriction,jac->hsolver,jac->Rtype);
   if (jac->Rtype) {
     jac->interptype = 100; /* no way we can pass this with strings... Set it as default as in MFEM, then users can still customize it back to a different one */
 
-    ierr = PetscOptionsReal("-pc_hypre_boomeramg_strongthresholdR","Threshold for R","None",jac->Rstrongthreshold,&jac->Rstrongthreshold,NULL);CHKERRQ(ierr);
+    PetscCall(PetscOptionsReal("-pc_hypre_boomeramg_strongthresholdR","Threshold for R","None",jac->Rstrongthreshold,&jac->Rstrongthreshold,NULL));
     PetscStackCallStandard(HYPRE_BoomerAMGSetStrongThresholdR,jac->hsolver,jac->Rstrongthreshold);
 
-    ierr = PetscOptionsReal("-pc_hypre_boomeramg_filterthresholdR","Filter threshold for R","None",jac->Rfilterthreshold,&jac->Rfilterthreshold,NULL);CHKERRQ(ierr);
+    PetscCall(PetscOptionsReal("-pc_hypre_boomeramg_filterthresholdR","Filter threshold for R","None",jac->Rfilterthreshold,&jac->Rfilterthreshold,NULL));
     PetscStackCallStandard(HYPRE_BoomerAMGSetFilterThresholdR,jac->hsolver,jac->Rfilterthreshold);
 
-    ierr = PetscOptionsReal("-pc_hypre_boomeramg_Adroptol","Defines the drop tolerance for the A-matrices from the 2nd level of AMG","None",jac->Adroptol,&jac->Adroptol,NULL);CHKERRQ(ierr);
+    PetscCall(PetscOptionsReal("-pc_hypre_boomeramg_Adroptol","Defines the drop tolerance for the A-matrices from the 2nd level of AMG","None",jac->Adroptol,&jac->Adroptol,NULL));
     PetscStackCallStandard(HYPRE_BoomerAMGSetADropTol,jac->hsolver,jac->Adroptol);
 
-    ierr = PetscOptionsInt("-pc_hypre_boomeramg_Adroptype","Drops the entries that are not on the diagonal and smaller than its row norm: type 1: 1-norm, 2: 2-norm, -1: infinity norm","None",jac->Adroptype,&jac->Adroptype,NULL);CHKERRQ(ierr);
+    PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_Adroptype","Drops the entries that are not on the diagonal and smaller than its row norm: type 1: 1-norm, 2: 2-norm, -1: infinity norm","None",jac->Adroptype,&jac->Adroptype,NULL));
     PetscStackCallStandard(HYPRE_BoomerAMGSetADropType,jac->hsolver,jac->Adroptype);
   }
 #endif
 
 #if PETSC_PKG_HYPRE_VERSION_LE(9,9,9)
-  PetscCheckFalse(jac->Rtype && jac->agg_nl,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_INCOMP,"-pc_hypre_boomeramg_restriction_type (%D) and -pc_hypre_boomeramg_agg_nl (%D)",jac->Rtype,jac->agg_nl);
+  PetscCheck(!jac->Rtype || !jac->agg_nl,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_INCOMP,"-pc_hypre_boomeramg_restriction_type (%" PetscInt_FMT ") and -pc_hypre_boomeramg_agg_nl (%" PetscInt_FMT ")",jac->Rtype,jac->agg_nl);
 #endif
 
   /* new 3/07 */
-  ierr = PetscOptionsEList("-pc_hypre_boomeramg_interp_type","Interpolation type","None",HYPREBoomerAMGInterpType,ALEN(HYPREBoomerAMGInterpType),HYPREBoomerAMGInterpType[0],&indx,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsEList("-pc_hypre_boomeramg_interp_type","Interpolation type","None",HYPREBoomerAMGInterpType,PETSC_STATIC_ARRAY_LENGTH(HYPREBoomerAMGInterpType),HYPREBoomerAMGInterpType[0],&indx,&flg));
   if (flg || jac->Rtype) {
     if (flg) jac->interptype = indx;
     PetscStackCallStandard(HYPRE_BoomerAMGSetInterpType,jac->hsolver,jac->interptype);
   }
 
-  ierr = PetscOptionsName("-pc_hypre_boomeramg_print_statistics","Print statistics","None",&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsName("-pc_hypre_boomeramg_print_statistics","Print statistics","None",&flg));
   if (flg) {
     level = 3;
-    ierr = PetscOptionsInt("-pc_hypre_boomeramg_print_statistics","Print statistics","None",level,&level,NULL);CHKERRQ(ierr);
+    PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_print_statistics","Print statistics","None",level,&level,NULL));
 
     jac->printstatistics = PETSC_TRUE;
     PetscStackCallStandard(HYPRE_BoomerAMGSetPrintLevel,jac->hsolver,level);
   }
 
-  ierr = PetscOptionsName("-pc_hypre_boomeramg_print_debug","Print debug information","None",&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsName("-pc_hypre_boomeramg_print_debug","Print debug information","None",&flg));
   if (flg) {
     level = 3;
-    ierr = PetscOptionsInt("-pc_hypre_boomeramg_print_debug","Print debug information","None",level,&level,NULL);CHKERRQ(ierr);
+    PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_print_debug","Print debug information","None",level,&level,NULL));
 
     jac->printstatistics = PETSC_TRUE;
     PetscStackCallStandard(HYPRE_BoomerAMGSetDebugFlag,jac->hsolver,level);
   }
 
-  ierr = PetscOptionsBool("-pc_hypre_boomeramg_nodal_relaxation", "Nodal relaxation via Schwarz", "None", PETSC_FALSE, &tmp_truth, &flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsBool("-pc_hypre_boomeramg_nodal_relaxation", "Nodal relaxation via Schwarz", "None", PETSC_FALSE, &tmp_truth, &flg));
   if (flg && tmp_truth) {
     PetscInt tmp_int;
-    ierr = PetscOptionsInt("-pc_hypre_boomeramg_nodal_relaxation", "Nodal relaxation via Schwarz", "None",jac->nodal_relax_levels,&tmp_int,&flg);CHKERRQ(ierr);
+    PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_nodal_relaxation", "Nodal relaxation via Schwarz", "None",jac->nodal_relax_levels,&tmp_int,&flg));
     if (flg) jac->nodal_relax_levels = tmp_int;
     PetscStackCallStandard(HYPRE_BoomerAMGSetSmoothType,jac->hsolver,6);
     PetscStackCallStandard(HYPRE_BoomerAMGSetDomainType,jac->hsolver,1);
@@ -1021,32 +1010,31 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PetscOptionItems *PetscOp
     PetscStackCallStandard(HYPRE_BoomerAMGSetSmoothNumLevels,jac->hsolver,jac->nodal_relax_levels);
   }
 
-  ierr = PetscOptionsBool("-pc_hypre_boomeramg_keeptranspose", "Avoid transpose matvecs in preconditioner application", "None", jac->keeptranspose, &jac->keeptranspose, NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsBool("-pc_hypre_boomeramg_keeptranspose", "Avoid transpose matvecs in preconditioner application", "None", jac->keeptranspose, &jac->keeptranspose, NULL));
   PetscStackCallStandard(HYPRE_BoomerAMGSetKeepTranspose,jac->hsolver,jac->keeptranspose ? 1 : 0);
 
   /* options for ParaSails solvers */
-  ierr = PetscOptionsEList("-pc_hypre_boomeramg_parasails_sym","Symmetry of matrix and preconditioner","None",symtlist,ALEN(symtlist),symtlist[0],&indx,&flg);CHKERRQ(ierr);
+  PetscCall(PetscOptionsEList("-pc_hypre_boomeramg_parasails_sym","Symmetry of matrix and preconditioner","None",symtlist,PETSC_STATIC_ARRAY_LENGTH(symtlist),symtlist[0],&indx,&flg));
   if (flg) {
     jac->symt = indx;
     PetscStackCallStandard(HYPRE_BoomerAMGSetSym,jac->hsolver,jac->symt);
   }
 
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCApplyRichardson_HYPRE_BoomerAMG(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its,PetscBool guesszero,PetscInt *outits,PCRichardsonConvergedReason *reason)
 {
   PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
-  PetscErrorCode ierr;
   HYPRE_Int      oits;
 
   PetscFunctionBegin;
-  ierr = PetscCitationsRegister(hypreCitation,&cite);CHKERRQ(ierr);
+  PetscCall(PetscCitationsRegister(hypreCitation,&cite));
   PetscStackCallStandard(HYPRE_BoomerAMGSetMaxIter,jac->hsolver,its*jac->maxiter);
   PetscStackCallStandard(HYPRE_BoomerAMGSetTol,jac->hsolver,rtol);
   jac->applyrichardson = PETSC_TRUE;
-  ierr                 = PCApply_HYPRE(pc,b,y);CHKERRQ(ierr);
+  PetscCall(PCApply_HYPRE(pc,b,y));
   jac->applyrichardson = PETSC_FALSE;
   PetscStackCallStandard(HYPRE_BoomerAMGGetNumIterations,jac->hsolver,&oits);
   *outits = oits;
@@ -1060,79 +1048,78 @@ static PetscErrorCode PCApplyRichardson_HYPRE_BoomerAMG(PC pc,Vec b,Vec y,Vec w,
 static PetscErrorCode PCView_HYPRE_BoomerAMG(PC pc,PetscViewer viewer)
 {
   PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
-  PetscErrorCode ierr;
   PetscBool      iascii;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG preconditioning\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    Cycle type %s\n",HYPREBoomerAMGCycleType[jac->cycletype]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    Maximum number of levels %D\n",jac->maxlevels);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    Maximum number of iterations PER hypre call %D\n",jac->maxiter);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    Convergence tolerance PER hypre call %g\n",(double)jac->tol);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    Threshold for strong coupling %g\n",(double)jac->strongthreshold);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    Interpolation truncation factor %g\n",(double)jac->truncfactor);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    Interpolation: max elements per row %D\n",jac->pmax);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG preconditioning\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    Cycle type %s\n",HYPREBoomerAMGCycleType[jac->cycletype]));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    Maximum number of levels %" PetscInt_FMT "\n",jac->maxlevels));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    Maximum number of iterations PER hypre call %" PetscInt_FMT "\n",jac->maxiter));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    Convergence tolerance PER hypre call %g\n",(double)jac->tol));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    Threshold for strong coupling %g\n",(double)jac->strongthreshold));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    Interpolation truncation factor %g\n",(double)jac->truncfactor));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    Interpolation: max elements per row %" PetscInt_FMT "\n",jac->pmax));
     if (jac->interp_refine) {
-      ierr = PetscViewerASCIIPrintf(viewer,"    Interpolation: number of steps of weighted refinement %D\n",jac->interp_refine);CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIIPrintf(viewer,"    Interpolation: number of steps of weighted refinement %" PetscInt_FMT "\n",jac->interp_refine));
     }
-    ierr = PetscViewerASCIIPrintf(viewer,"    Number of levels of aggressive coarsening %D\n",jac->agg_nl);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    Number of paths for aggressive coarsening %D\n",jac->agg_num_paths);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    Number of levels of aggressive coarsening %" PetscInt_FMT "\n",jac->agg_nl));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    Number of paths for aggressive coarsening %" PetscInt_FMT "\n",jac->agg_num_paths));
 
-    ierr = PetscViewerASCIIPrintf(viewer,"    Maximum row sums %g\n",(double)jac->maxrowsum);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    Maximum row sums %g\n",(double)jac->maxrowsum));
 
-    ierr = PetscViewerASCIIPrintf(viewer,"    Sweeps down         %D\n",jac->gridsweeps[0]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    Sweeps up           %D\n",jac->gridsweeps[1]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    Sweeps on coarse    %D\n",jac->gridsweeps[2]);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    Sweeps down         %" PetscInt_FMT "\n",jac->gridsweeps[0]));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    Sweeps up           %" PetscInt_FMT "\n",jac->gridsweeps[1]));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    Sweeps on coarse    %" PetscInt_FMT "\n",jac->gridsweeps[2]));
 
-    ierr = PetscViewerASCIIPrintf(viewer,"    Relax down          %s\n",HYPREBoomerAMGRelaxType[jac->relaxtype[0]]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    Relax up            %s\n",HYPREBoomerAMGRelaxType[jac->relaxtype[1]]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    Relax on coarse     %s\n",HYPREBoomerAMGRelaxType[jac->relaxtype[2]]);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    Relax down          %s\n",HYPREBoomerAMGRelaxType[jac->relaxtype[0]]));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    Relax up            %s\n",HYPREBoomerAMGRelaxType[jac->relaxtype[1]]));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    Relax on coarse     %s\n",HYPREBoomerAMGRelaxType[jac->relaxtype[2]]));
 
-    ierr = PetscViewerASCIIPrintf(viewer,"    Relax weight  (all)      %g\n",(double)jac->relaxweight);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    Outer relax weight (all) %g\n",(double)jac->outerrelaxweight);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    Relax weight  (all)      %g\n",(double)jac->relaxweight));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    Outer relax weight (all) %g\n",(double)jac->outerrelaxweight));
 
     if (jac->relaxorder) {
-      ierr = PetscViewerASCIIPrintf(viewer,"    Using CF-relaxation\n");CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIIPrintf(viewer,"    Using CF-relaxation\n"));
     } else {
-      ierr = PetscViewerASCIIPrintf(viewer,"    Not using CF-relaxation\n");CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIIPrintf(viewer,"    Not using CF-relaxation\n"));
     }
     if (jac->smoothtype!=-1) {
-      ierr = PetscViewerASCIIPrintf(viewer,"    Smooth type          %s\n",HYPREBoomerAMGSmoothType[jac->smoothtype]);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"    Smooth num levels    %D\n",jac->smoothnumlevels);CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIIPrintf(viewer,"    Smooth type          %s\n",HYPREBoomerAMGSmoothType[jac->smoothtype]));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"    Smooth num levels    %" PetscInt_FMT "\n",jac->smoothnumlevels));
     } else {
-      ierr = PetscViewerASCIIPrintf(viewer,"    Not using more complex smoothers.\n");CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIIPrintf(viewer,"    Not using more complex smoothers.\n"));
     }
     if (jac->smoothtype==3) {
-      ierr = PetscViewerASCIIPrintf(viewer,"    Euclid ILU(k) levels %D\n",jac->eu_level);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"    Euclid ILU(k) drop tolerance %g\n",(double)jac->eu_droptolerance);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"    Euclid ILU use Block-Jacobi? %D\n",jac->eu_bj);CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIIPrintf(viewer,"    Euclid ILU(k) levels %" PetscInt_FMT "\n",jac->eu_level));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"    Euclid ILU(k) drop tolerance %g\n",(double)jac->eu_droptolerance));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"    Euclid ILU use Block-Jacobi? %" PetscInt_FMT "\n",jac->eu_bj));
     }
-    ierr = PetscViewerASCIIPrintf(viewer,"    Measure type        %s\n",HYPREBoomerAMGMeasureType[jac->measuretype]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    Coarsen type        %s\n",HYPREBoomerAMGCoarsenType[jac->coarsentype]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    Interpolation type  %s\n",jac->interptype != 100 ? HYPREBoomerAMGInterpType[jac->interptype] : "1pt");CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    Measure type        %s\n",HYPREBoomerAMGMeasureType[jac->measuretype]));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    Coarsen type        %s\n",HYPREBoomerAMGCoarsenType[jac->coarsentype]));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    Interpolation type  %s\n",jac->interptype != 100 ? HYPREBoomerAMGInterpType[jac->interptype] : "1pt"));
     if (jac->nodal_coarsening) {
-      ierr = PetscViewerASCIIPrintf(viewer,"    Using nodal coarsening with HYPRE_BOOMERAMGSetNodal() %D\n",jac->nodal_coarsening);CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIIPrintf(viewer,"    Using nodal coarsening with HYPRE_BOOMERAMGSetNodal() %" PetscInt_FMT "\n",jac->nodal_coarsening));
     }
     if (jac->vec_interp_variant) {
-      ierr = PetscViewerASCIIPrintf(viewer,"    HYPRE_BoomerAMGSetInterpVecVariant() %D\n",jac->vec_interp_variant);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"    HYPRE_BoomerAMGSetInterpVecQMax() %D\n",jac->vec_interp_qmax);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"    HYPRE_BoomerAMGSetSmoothInterpVectors() %d\n",jac->vec_interp_smooth);CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIIPrintf(viewer,"    HYPRE_BoomerAMGSetInterpVecVariant() %" PetscInt_FMT "\n",jac->vec_interp_variant));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"    HYPRE_BoomerAMGSetInterpVecQMax() %" PetscInt_FMT "\n",jac->vec_interp_qmax));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"    HYPRE_BoomerAMGSetSmoothInterpVectors() %d\n",jac->vec_interp_smooth));
     }
     if (jac->nodal_relax) {
-      ierr = PetscViewerASCIIPrintf(viewer,"    Using nodal relaxation via Schwarz smoothing on levels %D\n",jac->nodal_relax_levels);CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIIPrintf(viewer,"    Using nodal relaxation via Schwarz smoothing on levels %" PetscInt_FMT "\n",jac->nodal_relax_levels));
     }
 #if PETSC_PKG_HYPRE_VERSION_GE(2,23,0)
-    ierr = PetscViewerASCIIPrintf(viewer,"    SpGEMM type         %s\n",jac->spgemm_type);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    SpGEMM type         %s\n",jac->spgemm_type));
 #endif
     /* AIR */
     if (jac->Rtype) {
-      ierr = PetscViewerASCIIPrintf(viewer,"    Using approximate ideal restriction type %D\n",jac->Rtype);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"      Threshold for R %g\n",(double)jac->Rstrongthreshold);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"      Filter for R %g\n",(double)jac->Rfilterthreshold);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"      A drop tolerance %g\n",(double)jac->Adroptol);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"      A drop type %D\n",jac->Adroptype);CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIIPrintf(viewer,"    Using approximate ideal restriction type %" PetscInt_FMT "\n",jac->Rtype));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"      Threshold for R %g\n",(double)jac->Rstrongthreshold));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"      Filter for R %g\n",(double)jac->Rfilterthreshold));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"      A drop tolerance %g\n",(double)jac->Adroptol));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"      A drop type %" PetscInt_FMT "\n",jac->Adroptype));
     }
   }
   PetscFunctionReturn(0);
@@ -1142,61 +1129,59 @@ static PetscErrorCode PCView_HYPRE_BoomerAMG(PC pc,PetscViewer viewer)
 static PetscErrorCode PCSetFromOptions_HYPRE_ParaSails(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
-  PetscErrorCode ierr;
   PetscInt       indx;
   PetscBool      flag;
   const char     *symtlist[] = {"nonsymmetric","SPD","nonsymmetric,SPD"};
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead(PetscOptionsObject,"HYPRE ParaSails Options");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-pc_hypre_parasails_nlevels","Number of number of levels","None",jac->nlevels,&jac->nlevels,0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-pc_hypre_parasails_thresh","Threshold","None",jac->threshold,&jac->threshold,&flag);CHKERRQ(ierr);
+  PetscOptionsHeadBegin(PetscOptionsObject,"HYPRE ParaSails Options");
+  PetscCall(PetscOptionsInt("-pc_hypre_parasails_nlevels","Number of number of levels","None",jac->nlevels,&jac->nlevels,0));
+  PetscCall(PetscOptionsReal("-pc_hypre_parasails_thresh","Threshold","None",jac->threshold,&jac->threshold,&flag));
   if (flag) PetscStackCallStandard(HYPRE_ParaSailsSetParams,jac->hsolver,jac->threshold,jac->nlevels);
 
-  ierr = PetscOptionsReal("-pc_hypre_parasails_filter","filter","None",jac->filter,&jac->filter,&flag);CHKERRQ(ierr);
+  PetscCall(PetscOptionsReal("-pc_hypre_parasails_filter","filter","None",jac->filter,&jac->filter,&flag));
   if (flag) PetscStackCallStandard(HYPRE_ParaSailsSetFilter,jac->hsolver,jac->filter);
 
-  ierr = PetscOptionsReal("-pc_hypre_parasails_loadbal","Load balance","None",jac->loadbal,&jac->loadbal,&flag);CHKERRQ(ierr);
+  PetscCall(PetscOptionsReal("-pc_hypre_parasails_loadbal","Load balance","None",jac->loadbal,&jac->loadbal,&flag));
   if (flag) PetscStackCallStandard(HYPRE_ParaSailsSetLoadbal,jac->hsolver,jac->loadbal);
 
-  ierr = PetscOptionsBool("-pc_hypre_parasails_logging","Print info to screen","None",(PetscBool)jac->logging,(PetscBool*)&jac->logging,&flag);CHKERRQ(ierr);
+  PetscCall(PetscOptionsBool("-pc_hypre_parasails_logging","Print info to screen","None",(PetscBool)jac->logging,(PetscBool*)&jac->logging,&flag));
   if (flag) PetscStackCallStandard(HYPRE_ParaSailsSetLogging,jac->hsolver,jac->logging);
 
-  ierr = PetscOptionsBool("-pc_hypre_parasails_reuse","Reuse nonzero pattern in preconditioner","None",(PetscBool)jac->ruse,(PetscBool*)&jac->ruse,&flag);CHKERRQ(ierr);
+  PetscCall(PetscOptionsBool("-pc_hypre_parasails_reuse","Reuse nonzero pattern in preconditioner","None",(PetscBool)jac->ruse,(PetscBool*)&jac->ruse,&flag));
   if (flag) PetscStackCallStandard(HYPRE_ParaSailsSetReuse,jac->hsolver,jac->ruse);
 
-  ierr = PetscOptionsEList("-pc_hypre_parasails_sym","Symmetry of matrix and preconditioner","None",symtlist,ALEN(symtlist),symtlist[0],&indx,&flag);CHKERRQ(ierr);
+  PetscCall(PetscOptionsEList("-pc_hypre_parasails_sym","Symmetry of matrix and preconditioner","None",symtlist,PETSC_STATIC_ARRAY_LENGTH(symtlist),symtlist[0],&indx,&flag));
   if (flag) {
     jac->symt = indx;
     PetscStackCallStandard(HYPRE_ParaSailsSetSym,jac->hsolver,jac->symt);
   }
 
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCView_HYPRE_ParaSails(PC pc,PetscViewer viewer)
 {
   PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
-  PetscErrorCode ierr;
   PetscBool      iascii;
   const char     *symt = 0;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE ParaSails preconditioning\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    nlevels %d\n",jac->nlevels);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    threshold %g\n",(double)jac->threshold);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    filter %g\n",(double)jac->filter);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    load balance %g\n",(double)jac->loadbal);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    reuse nonzero structure %s\n",PetscBools[jac->ruse]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    print info to screen %s\n",PetscBools[jac->logging]);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  HYPRE ParaSails preconditioning\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    nlevels %" PetscInt_FMT "\n",jac->nlevels));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    threshold %g\n",(double)jac->threshold));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    filter %g\n",(double)jac->filter));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    load balance %g\n",(double)jac->loadbal));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    reuse nonzero structure %s\n",PetscBools[jac->ruse]));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    print info to screen %s\n",PetscBools[jac->logging]));
     if (!jac->symt) symt = "nonsymmetric matrix and preconditioner";
     else if (jac->symt == 1) symt = "SPD matrix and preconditioner";
     else if (jac->symt == 2) symt = "nonsymmetric matrix but SPD preconditioner";
-    else SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Unknown HYPRE ParaSails symmetric option %d",jac->symt);
-    ierr = PetscViewerASCIIPrintf(viewer,"    %s\n",symt);CHKERRQ(ierr);
+    else SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Unknown HYPRE ParaSails symmetric option %" PetscInt_FMT,jac->symt);
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    %s\n",symt));
   }
   PetscFunctionReturn(0);
 }
@@ -1204,33 +1189,32 @@ static PetscErrorCode PCView_HYPRE_ParaSails(PC pc,PetscViewer viewer)
 static PetscErrorCode PCSetFromOptions_HYPRE_AMS(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
-  PetscErrorCode ierr;
   PetscInt       n;
   PetscBool      flag,flag2,flag3,flag4;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead(PetscOptionsObject,"HYPRE AMS Options");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-pc_hypre_ams_print_level","Debugging output level for AMS","None",jac->as_print,&jac->as_print,&flag);CHKERRQ(ierr);
+  PetscOptionsHeadBegin(PetscOptionsObject,"HYPRE AMS Options");
+  PetscCall(PetscOptionsInt("-pc_hypre_ams_print_level","Debugging output level for AMS","None",jac->as_print,&jac->as_print,&flag));
   if (flag) PetscStackCallStandard(HYPRE_AMSSetPrintLevel,jac->hsolver,jac->as_print);
-  ierr = PetscOptionsInt("-pc_hypre_ams_max_iter","Maximum number of AMS multigrid iterations within PCApply","None",jac->as_max_iter,&jac->as_max_iter,&flag);CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-pc_hypre_ams_max_iter","Maximum number of AMS multigrid iterations within PCApply","None",jac->as_max_iter,&jac->as_max_iter,&flag));
   if (flag) PetscStackCallStandard(HYPRE_AMSSetMaxIter,jac->hsolver,jac->as_max_iter);
-  ierr = PetscOptionsInt("-pc_hypre_ams_cycle_type","Cycle type for AMS multigrid","None",jac->ams_cycle_type,&jac->ams_cycle_type,&flag);CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-pc_hypre_ams_cycle_type","Cycle type for AMS multigrid","None",jac->ams_cycle_type,&jac->ams_cycle_type,&flag));
   if (flag) PetscStackCallStandard(HYPRE_AMSSetCycleType,jac->hsolver,jac->ams_cycle_type);
-  ierr = PetscOptionsReal("-pc_hypre_ams_tol","Error tolerance for AMS multigrid","None",jac->as_tol,&jac->as_tol,&flag);CHKERRQ(ierr);
+  PetscCall(PetscOptionsReal("-pc_hypre_ams_tol","Error tolerance for AMS multigrid","None",jac->as_tol,&jac->as_tol,&flag));
   if (flag) PetscStackCallStandard(HYPRE_AMSSetTol,jac->hsolver,jac->as_tol);
-  ierr = PetscOptionsInt("-pc_hypre_ams_relax_type","Relaxation type for AMS smoother","None",jac->as_relax_type,&jac->as_relax_type,&flag);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-pc_hypre_ams_relax_times","Number of relaxation steps for AMS smoother","None",jac->as_relax_times,&jac->as_relax_times,&flag2);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-pc_hypre_ams_relax_weight","Relaxation weight for AMS smoother","None",jac->as_relax_weight,&jac->as_relax_weight,&flag3);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-pc_hypre_ams_omega","SSOR coefficient for AMS smoother","None",jac->as_omega,&jac->as_omega,&flag4);CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-pc_hypre_ams_relax_type","Relaxation type for AMS smoother","None",jac->as_relax_type,&jac->as_relax_type,&flag));
+  PetscCall(PetscOptionsInt("-pc_hypre_ams_relax_times","Number of relaxation steps for AMS smoother","None",jac->as_relax_times,&jac->as_relax_times,&flag2));
+  PetscCall(PetscOptionsReal("-pc_hypre_ams_relax_weight","Relaxation weight for AMS smoother","None",jac->as_relax_weight,&jac->as_relax_weight,&flag3));
+  PetscCall(PetscOptionsReal("-pc_hypre_ams_omega","SSOR coefficient for AMS smoother","None",jac->as_omega,&jac->as_omega,&flag4));
   if (flag || flag2 || flag3 || flag4) {
     PetscStackCallStandard(HYPRE_AMSSetSmoothingOptions,jac->hsolver,jac->as_relax_type,
                                                                       jac->as_relax_times,
                                                                       jac->as_relax_weight,
                                                                       jac->as_omega);
   }
-  ierr = PetscOptionsReal("-pc_hypre_ams_amg_alpha_theta","Threshold for strong coupling of vector Poisson AMG solver","None",jac->as_amg_alpha_theta,&jac->as_amg_alpha_theta,&flag);CHKERRQ(ierr);
+  PetscCall(PetscOptionsReal("-pc_hypre_ams_amg_alpha_theta","Threshold for strong coupling of vector Poisson AMG solver","None",jac->as_amg_alpha_theta,&jac->as_amg_alpha_theta,&flag));
   n = 5;
-  ierr = PetscOptionsIntArray("-pc_hypre_ams_amg_alpha_options","AMG options for vector Poisson","None",jac->as_amg_alpha_opts,&n,&flag2);CHKERRQ(ierr);
+  PetscCall(PetscOptionsIntArray("-pc_hypre_ams_amg_alpha_options","AMG options for vector Poisson","None",jac->as_amg_alpha_opts,&n,&flag2));
   if (flag || flag2) {
     PetscStackCallStandard(HYPRE_AMSSetAlphaAMGOptions,jac->hsolver,jac->as_amg_alpha_opts[0],       /* AMG coarsen type */
                                                                      jac->as_amg_alpha_opts[1],       /* AMG agg_levels */
@@ -1239,9 +1223,9 @@ static PetscErrorCode PCSetFromOptions_HYPRE_AMS(PetscOptionItems *PetscOptionsO
                                                                      jac->as_amg_alpha_opts[3],       /* AMG interp_type */
                                                                      jac->as_amg_alpha_opts[4]);     /* AMG Pmax */
   }
-  ierr = PetscOptionsReal("-pc_hypre_ams_amg_beta_theta","Threshold for strong coupling of scalar Poisson AMG solver","None",jac->as_amg_beta_theta,&jac->as_amg_beta_theta,&flag);CHKERRQ(ierr);
+  PetscCall(PetscOptionsReal("-pc_hypre_ams_amg_beta_theta","Threshold for strong coupling of scalar Poisson AMG solver","None",jac->as_amg_beta_theta,&jac->as_amg_beta_theta,&flag));
   n = 5;
-  ierr = PetscOptionsIntArray("-pc_hypre_ams_amg_beta_options","AMG options for scalar Poisson solver","None",jac->as_amg_beta_opts,&n,&flag2);CHKERRQ(ierr);
+  PetscCall(PetscOptionsIntArray("-pc_hypre_ams_amg_beta_options","AMG options for scalar Poisson solver","None",jac->as_amg_beta_opts,&n,&flag2));
   if (flag || flag2) {
     PetscStackCallStandard(HYPRE_AMSSetBetaAMGOptions,jac->hsolver,jac->as_amg_beta_opts[0],       /* AMG coarsen type */
                                                                     jac->as_amg_beta_opts[1],       /* AMG agg_levels */
@@ -1250,59 +1234,58 @@ static PetscErrorCode PCSetFromOptions_HYPRE_AMS(PetscOptionItems *PetscOptionsO
                                                                     jac->as_amg_beta_opts[3],       /* AMG interp_type */
                                                                     jac->as_amg_beta_opts[4]);     /* AMG Pmax */
   }
-  ierr = PetscOptionsInt("-pc_hypre_ams_projection_frequency","Frequency at which a projection onto the compatible subspace for problems with zero conductivity regions is performed","None",jac->ams_proj_freq,&jac->ams_proj_freq,&flag);CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-pc_hypre_ams_projection_frequency","Frequency at which a projection onto the compatible subspace for problems with zero conductivity regions is performed","None",jac->ams_proj_freq,&jac->ams_proj_freq,&flag));
   if (flag) { /* override HYPRE's default only if the options is used */
     PetscStackCallStandard(HYPRE_AMSSetProjectionFrequency,jac->hsolver,jac->ams_proj_freq);
   }
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCView_HYPRE_AMS(PC pc,PetscViewer viewer)
 {
   PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
-  PetscErrorCode ierr;
   PetscBool      iascii;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE AMS preconditioning\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    subspace iterations per application %d\n",jac->as_max_iter);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    subspace cycle type %d\n",jac->ams_cycle_type);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    subspace iteration tolerance %g\n",jac->as_tol);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    smoother type %d\n",jac->as_relax_type);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    number of smoothing steps %d\n",jac->as_relax_times);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    smoother weight %g\n",jac->as_relax_weight);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    smoother omega %g\n",jac->as_omega);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  HYPRE AMS preconditioning\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    subspace iterations per application %" PetscInt_FMT "\n",jac->as_max_iter));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    subspace cycle type %" PetscInt_FMT "\n",jac->ams_cycle_type));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    subspace iteration tolerance %g\n",(double)jac->as_tol));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    smoother type %" PetscInt_FMT "\n",jac->as_relax_type));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    number of smoothing steps %" PetscInt_FMT "\n",jac->as_relax_times));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    smoother weight %g\n",(double)jac->as_relax_weight));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    smoother omega %g\n",(double)jac->as_omega));
     if (jac->alpha_Poisson) {
-      ierr = PetscViewerASCIIPrintf(viewer,"    vector Poisson solver (passed in by user)\n");CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIIPrintf(viewer,"    vector Poisson solver (passed in by user)\n"));
     } else {
-      ierr = PetscViewerASCIIPrintf(viewer,"    vector Poisson solver (computed) \n");CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIIPrintf(viewer,"    vector Poisson solver (computed) \n"));
     }
-    ierr = PetscViewerASCIIPrintf(viewer,"        boomerAMG coarsening type %d\n",jac->as_amg_alpha_opts[0]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"        boomerAMG levels of aggressive coarsening %d\n",jac->as_amg_alpha_opts[1]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"        boomerAMG relaxation type %d\n",jac->as_amg_alpha_opts[2]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"        boomerAMG interpolation type %d\n",jac->as_amg_alpha_opts[3]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"        boomerAMG max nonzero elements in interpolation rows %d\n",jac->as_amg_alpha_opts[4]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"        boomerAMG strength threshold %g\n",jac->as_amg_alpha_theta);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer,"        boomerAMG coarsening type %" PetscInt_FMT "\n",jac->as_amg_alpha_opts[0]));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"        boomerAMG levels of aggressive coarsening %" PetscInt_FMT "\n",jac->as_amg_alpha_opts[1]));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"        boomerAMG relaxation type %" PetscInt_FMT "\n",jac->as_amg_alpha_opts[2]));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"        boomerAMG interpolation type %" PetscInt_FMT "\n",jac->as_amg_alpha_opts[3]));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"        boomerAMG max nonzero elements in interpolation rows %" PetscInt_FMT "\n",jac->as_amg_alpha_opts[4]));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"        boomerAMG strength threshold %g\n",(double)jac->as_amg_alpha_theta));
     if (!jac->ams_beta_is_zero) {
       if (jac->beta_Poisson) {
-        ierr = PetscViewerASCIIPrintf(viewer,"    scalar Poisson solver (passed in by user)\n");CHKERRQ(ierr);
+        PetscCall(PetscViewerASCIIPrintf(viewer,"    scalar Poisson solver (passed in by user)\n"));
       } else {
-        ierr = PetscViewerASCIIPrintf(viewer,"    scalar Poisson solver (computed) \n");CHKERRQ(ierr);
+        PetscCall(PetscViewerASCIIPrintf(viewer,"    scalar Poisson solver (computed) \n"));
       }
-      ierr = PetscViewerASCIIPrintf(viewer,"        boomerAMG coarsening type %d\n",jac->as_amg_beta_opts[0]);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"        boomerAMG levels of aggressive coarsening %d\n",jac->as_amg_beta_opts[1]);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"        boomerAMG relaxation type %d\n",jac->as_amg_beta_opts[2]);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"        boomerAMG interpolation type %d\n",jac->as_amg_beta_opts[3]);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"        boomerAMG max nonzero elements in interpolation rows %d\n",jac->as_amg_beta_opts[4]);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"        boomerAMG strength threshold %g\n",jac->as_amg_beta_theta);CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIIPrintf(viewer,"        boomerAMG coarsening type %" PetscInt_FMT "\n",jac->as_amg_beta_opts[0]));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"        boomerAMG levels of aggressive coarsening %" PetscInt_FMT "\n",jac->as_amg_beta_opts[1]));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"        boomerAMG relaxation type %" PetscInt_FMT "\n",jac->as_amg_beta_opts[2]));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"        boomerAMG interpolation type %" PetscInt_FMT "\n",jac->as_amg_beta_opts[3]));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"        boomerAMG max nonzero elements in interpolation rows %" PetscInt_FMT "\n",jac->as_amg_beta_opts[4]));
+      PetscCall(PetscViewerASCIIPrintf(viewer,"        boomerAMG strength threshold %g\n",(double)jac->as_amg_beta_theta));
       if (jac->ams_beta_is_zero_part) {
-        ierr = PetscViewerASCIIPrintf(viewer,"        compatible subspace projection frequency %d (-1 HYPRE uses default)\n",jac->ams_proj_freq);CHKERRQ(ierr);
+        PetscCall(PetscViewerASCIIPrintf(viewer,"        compatible subspace projection frequency %" PetscInt_FMT " (-1 HYPRE uses default)\n",jac->ams_proj_freq));
       }
     } else {
-      ierr = PetscViewerASCIIPrintf(viewer,"    scalar Poisson solver not used (zero-conductivity everywhere) \n");CHKERRQ(ierr);
+      PetscCall(PetscViewerASCIIPrintf(viewer,"    scalar Poisson solver not used (zero-conductivity everywhere) \n"));
     }
   }
   PetscFunctionReturn(0);
@@ -1311,34 +1294,33 @@ static PetscErrorCode PCView_HYPRE_AMS(PC pc,PetscViewer viewer)
 static PetscErrorCode PCSetFromOptions_HYPRE_ADS(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
-  PetscErrorCode ierr;
   PetscInt       n;
   PetscBool      flag,flag2,flag3,flag4;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead(PetscOptionsObject,"HYPRE ADS Options");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-pc_hypre_ads_print_level","Debugging output level for ADS","None",jac->as_print,&jac->as_print,&flag);CHKERRQ(ierr);
+  PetscOptionsHeadBegin(PetscOptionsObject,"HYPRE ADS Options");
+  PetscCall(PetscOptionsInt("-pc_hypre_ads_print_level","Debugging output level for ADS","None",jac->as_print,&jac->as_print,&flag));
   if (flag) PetscStackCallStandard(HYPRE_ADSSetPrintLevel,jac->hsolver,jac->as_print);
-  ierr = PetscOptionsInt("-pc_hypre_ads_max_iter","Maximum number of ADS multigrid iterations within PCApply","None",jac->as_max_iter,&jac->as_max_iter,&flag);CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-pc_hypre_ads_max_iter","Maximum number of ADS multigrid iterations within PCApply","None",jac->as_max_iter,&jac->as_max_iter,&flag));
   if (flag) PetscStackCallStandard(HYPRE_ADSSetMaxIter,jac->hsolver,jac->as_max_iter);
-  ierr = PetscOptionsInt("-pc_hypre_ads_cycle_type","Cycle type for ADS multigrid","None",jac->ads_cycle_type,&jac->ads_cycle_type,&flag);CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-pc_hypre_ads_cycle_type","Cycle type for ADS multigrid","None",jac->ads_cycle_type,&jac->ads_cycle_type,&flag));
   if (flag) PetscStackCallStandard(HYPRE_ADSSetCycleType,jac->hsolver,jac->ads_cycle_type);
-  ierr = PetscOptionsReal("-pc_hypre_ads_tol","Error tolerance for ADS multigrid","None",jac->as_tol,&jac->as_tol,&flag);CHKERRQ(ierr);
+  PetscCall(PetscOptionsReal("-pc_hypre_ads_tol","Error tolerance for ADS multigrid","None",jac->as_tol,&jac->as_tol,&flag));
   if (flag) PetscStackCallStandard(HYPRE_ADSSetTol,jac->hsolver,jac->as_tol);
-  ierr = PetscOptionsInt("-pc_hypre_ads_relax_type","Relaxation type for ADS smoother","None",jac->as_relax_type,&jac->as_relax_type,&flag);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-pc_hypre_ads_relax_times","Number of relaxation steps for ADS smoother","None",jac->as_relax_times,&jac->as_relax_times,&flag2);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-pc_hypre_ads_relax_weight","Relaxation weight for ADS smoother","None",jac->as_relax_weight,&jac->as_relax_weight,&flag3);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-pc_hypre_ads_omega","SSOR coefficient for ADS smoother","None",jac->as_omega,&jac->as_omega,&flag4);CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-pc_hypre_ads_relax_type","Relaxation type for ADS smoother","None",jac->as_relax_type,&jac->as_relax_type,&flag));
+  PetscCall(PetscOptionsInt("-pc_hypre_ads_relax_times","Number of relaxation steps for ADS smoother","None",jac->as_relax_times,&jac->as_relax_times,&flag2));
+  PetscCall(PetscOptionsReal("-pc_hypre_ads_relax_weight","Relaxation weight for ADS smoother","None",jac->as_relax_weight,&jac->as_relax_weight,&flag3));
+  PetscCall(PetscOptionsReal("-pc_hypre_ads_omega","SSOR coefficient for ADS smoother","None",jac->as_omega,&jac->as_omega,&flag4));
   if (flag || flag2 || flag3 || flag4) {
     PetscStackCallStandard(HYPRE_ADSSetSmoothingOptions,jac->hsolver,jac->as_relax_type,
                                                                       jac->as_relax_times,
                                                                       jac->as_relax_weight,
                                                                       jac->as_omega);
   }
-  ierr = PetscOptionsReal("-pc_hypre_ads_ams_theta","Threshold for strong coupling of AMS solver inside ADS","None",jac->as_amg_alpha_theta,&jac->as_amg_alpha_theta,&flag);CHKERRQ(ierr);
+  PetscCall(PetscOptionsReal("-pc_hypre_ads_ams_theta","Threshold for strong coupling of AMS solver inside ADS","None",jac->as_amg_alpha_theta,&jac->as_amg_alpha_theta,&flag));
   n = 5;
-  ierr = PetscOptionsIntArray("-pc_hypre_ads_ams_options","AMG options for AMS solver inside ADS","None",jac->as_amg_alpha_opts,&n,&flag2);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-pc_hypre_ads_ams_cycle_type","Cycle type for AMS solver inside ADS","None",jac->ams_cycle_type,&jac->ams_cycle_type,&flag3);CHKERRQ(ierr);
+  PetscCall(PetscOptionsIntArray("-pc_hypre_ads_ams_options","AMG options for AMS solver inside ADS","None",jac->as_amg_alpha_opts,&n,&flag2));
+  PetscCall(PetscOptionsInt("-pc_hypre_ads_ams_cycle_type","Cycle type for AMS solver inside ADS","None",jac->ams_cycle_type,&jac->ams_cycle_type,&flag3));
   if (flag || flag2 || flag3) {
     PetscStackCallStandard(HYPRE_ADSSetAMSOptions,jac->hsolver,jac->ams_cycle_type,             /* AMS cycle type */
                                                                 jac->as_amg_alpha_opts[0],       /* AMG coarsen type */
@@ -1348,9 +1330,9 @@ static PetscErrorCode PCSetFromOptions_HYPRE_ADS(PetscOptionItems *PetscOptionsO
                                                                 jac->as_amg_alpha_opts[3],       /* AMG interp_type */
                                                                 jac->as_amg_alpha_opts[4]);     /* AMG Pmax */
   }
-  ierr = PetscOptionsReal("-pc_hypre_ads_amg_theta","Threshold for strong coupling of vector AMG solver inside ADS","None",jac->as_amg_beta_theta,&jac->as_amg_beta_theta,&flag);CHKERRQ(ierr);
+  PetscCall(PetscOptionsReal("-pc_hypre_ads_amg_theta","Threshold for strong coupling of vector AMG solver inside ADS","None",jac->as_amg_beta_theta,&jac->as_amg_beta_theta,&flag));
   n = 5;
-  ierr = PetscOptionsIntArray("-pc_hypre_ads_amg_options","AMG options for vector AMG solver inside ADS","None",jac->as_amg_beta_opts,&n,&flag2);CHKERRQ(ierr);
+  PetscCall(PetscOptionsIntArray("-pc_hypre_ads_amg_options","AMG options for vector AMG solver inside ADS","None",jac->as_amg_beta_opts,&n,&flag2));
   if (flag || flag2) {
     PetscStackCallStandard(HYPRE_ADSSetAMGOptions,jac->hsolver,jac->as_amg_beta_opts[0],       /* AMG coarsen type */
                                                                 jac->as_amg_beta_opts[1],       /* AMG agg_levels */
@@ -1359,42 +1341,41 @@ static PetscErrorCode PCSetFromOptions_HYPRE_ADS(PetscOptionItems *PetscOptionsO
                                                                 jac->as_amg_beta_opts[3],       /* AMG interp_type */
                                                                 jac->as_amg_beta_opts[4]);     /* AMG Pmax */
   }
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCView_HYPRE_ADS(PC pc,PetscViewer viewer)
 {
   PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
-  PetscErrorCode ierr;
   PetscBool      iascii;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE ADS preconditioning\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    subspace iterations per application %d\n",jac->as_max_iter);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    subspace cycle type %d\n",jac->ads_cycle_type);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    subspace iteration tolerance %g\n",jac->as_tol);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    smoother type %d\n",jac->as_relax_type);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    number of smoothing steps %d\n",jac->as_relax_times);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    smoother weight %g\n",jac->as_relax_weight);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    smoother omega %g\n",jac->as_omega);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    AMS solver using boomerAMG\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"        subspace cycle type %d\n",jac->ams_cycle_type);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"        coarsening type %d\n",jac->as_amg_alpha_opts[0]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"        levels of aggressive coarsening %d\n",jac->as_amg_alpha_opts[1]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"        relaxation type %d\n",jac->as_amg_alpha_opts[2]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"        interpolation type %d\n",jac->as_amg_alpha_opts[3]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"        max nonzero elements in interpolation rows %d\n",jac->as_amg_alpha_opts[4]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"        strength threshold %g\n",jac->as_amg_alpha_theta);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    vector Poisson solver using boomerAMG\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"        coarsening type %d\n",jac->as_amg_beta_opts[0]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"        levels of aggressive coarsening %d\n",jac->as_amg_beta_opts[1]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"        relaxation type %d\n",jac->as_amg_beta_opts[2]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"        interpolation type %d\n",jac->as_amg_beta_opts[3]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"        max nonzero elements in interpolation rows %d\n",jac->as_amg_beta_opts[4]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"        strength threshold %g\n",jac->as_amg_beta_theta);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  HYPRE ADS preconditioning\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    subspace iterations per application %" PetscInt_FMT "\n",jac->as_max_iter));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    subspace cycle type %" PetscInt_FMT "\n",jac->ads_cycle_type));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    subspace iteration tolerance %g\n",(double)jac->as_tol));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    smoother type %" PetscInt_FMT "\n",jac->as_relax_type));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    number of smoothing steps %" PetscInt_FMT "\n",jac->as_relax_times));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    smoother weight %g\n",(double)jac->as_relax_weight));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    smoother omega %g\n",(double)jac->as_omega));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    AMS solver using boomerAMG\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"        subspace cycle type %" PetscInt_FMT "\n",jac->ams_cycle_type));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"        coarsening type %" PetscInt_FMT "\n",jac->as_amg_alpha_opts[0]));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"        levels of aggressive coarsening %" PetscInt_FMT "\n",jac->as_amg_alpha_opts[1]));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"        relaxation type %" PetscInt_FMT "\n",jac->as_amg_alpha_opts[2]));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"        interpolation type %" PetscInt_FMT "\n",jac->as_amg_alpha_opts[3]));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"        max nonzero elements in interpolation rows %" PetscInt_FMT "\n",jac->as_amg_alpha_opts[4]));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"        strength threshold %g\n",(double)jac->as_amg_alpha_theta));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    vector Poisson solver using boomerAMG\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"        coarsening type %" PetscInt_FMT "\n",jac->as_amg_beta_opts[0]));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"        levels of aggressive coarsening %" PetscInt_FMT "\n",jac->as_amg_beta_opts[1]));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"        relaxation type %" PetscInt_FMT "\n",jac->as_amg_beta_opts[2]));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"        interpolation type %" PetscInt_FMT "\n",jac->as_amg_beta_opts[3]));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"        max nonzero elements in interpolation rows %" PetscInt_FMT "\n",jac->as_amg_beta_opts[4]));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"        strength threshold %g\n",(double)jac->as_amg_beta_theta));
   }
   PetscFunctionReturn(0);
 }
@@ -1403,17 +1384,16 @@ static PetscErrorCode PCHYPRESetDiscreteGradient_HYPRE(PC pc, Mat G)
 {
   PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
   PetscBool      ishypre;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)G,MATHYPRE,&ishypre);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)G,MATHYPRE,&ishypre));
   if (ishypre) {
-    ierr = PetscObjectReference((PetscObject)G);CHKERRQ(ierr);
-    ierr = MatDestroy(&jac->G);CHKERRQ(ierr);
+    PetscCall(PetscObjectReference((PetscObject)G));
+    PetscCall(MatDestroy(&jac->G));
     jac->G = G;
   } else {
-    ierr = MatDestroy(&jac->G);CHKERRQ(ierr);
-    ierr = MatConvert(G,MATHYPRE,MAT_INITIAL_MATRIX,&jac->G);CHKERRQ(ierr);
+    PetscCall(MatDestroy(&jac->G));
+    PetscCall(MatConvert(G,MATHYPRE,MAT_INITIAL_MATRIX,&jac->G));
   }
   PetscFunctionReturn(0);
 }
@@ -1431,19 +1411,18 @@ static PetscErrorCode PCHYPRESetDiscreteGradient_HYPRE(PC pc, Mat G)
 
    Notes:
     G should have as many rows as the number of edges and as many columns as the number of vertices in the mesh
-          Each row of G has 2 nonzeros, with column indexes being the global indexes of edge's endpoints: matrix entries are +1 and -1 depending on edge orientation
 
-.seealso:
+    Each row of G has 2 nonzeros, with column indexes being the global indexes of edge's endpoints: matrix entries are +1 and -1 depending on edge orientation
+
+.seealso: `PCHYPRESetDiscreteCurl()`
 @*/
 PetscErrorCode PCHYPRESetDiscreteGradient(PC pc, Mat G)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(G,MAT_CLASSID,2);
   PetscCheckSameComm(pc,1,G,2);
-  ierr = PetscTryMethod(pc,"PCHYPRESetDiscreteGradient_C",(PC,Mat),(pc,G));CHKERRQ(ierr);
+  PetscTryMethod(pc,"PCHYPRESetDiscreteGradient_C",(PC,Mat),(pc,G));
   PetscFunctionReturn(0);
 }
 
@@ -1451,17 +1430,16 @@ static PetscErrorCode PCHYPRESetDiscreteCurl_HYPRE(PC pc, Mat C)
 {
   PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
   PetscBool      ishypre;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)C,MATHYPRE,&ishypre);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)C,MATHYPRE,&ishypre));
   if (ishypre) {
-    ierr = PetscObjectReference((PetscObject)C);CHKERRQ(ierr);
-    ierr = MatDestroy(&jac->C);CHKERRQ(ierr);
+    PetscCall(PetscObjectReference((PetscObject)C));
+    PetscCall(MatDestroy(&jac->C));
     jac->C = C;
   } else {
-    ierr = MatDestroy(&jac->C);CHKERRQ(ierr);
-    ierr = MatConvert(C,MATHYPRE,MAT_INITIAL_MATRIX,&jac->C);CHKERRQ(ierr);
+    PetscCall(MatDestroy(&jac->C));
+    PetscCall(MatConvert(C,MATHYPRE,MAT_INITIAL_MATRIX,&jac->C));
   }
   PetscFunctionReturn(0);
 }
@@ -1479,19 +1457,18 @@ static PetscErrorCode PCHYPRESetDiscreteCurl_HYPRE(PC pc, Mat C)
 
    Notes:
     C should have as many rows as the number of faces and as many columns as the number of edges in the mesh
-          Each row of G has as many nonzeros as the number of edges of a face, with column indexes being the global indexes of the corresponding edge: matrix entries are +1 and -1 depending on edge orientation with respect to the face orientation
 
-.seealso:
+    Each row of G has as many nonzeros as the number of edges of a face, with column indexes being the global indexes of the corresponding edge: matrix entries are +1 and -1 depending on edge orientation with respect to the face orientation
+
+.seealso: `PCHYPRESetDiscreteGradient()`
 @*/
 PetscErrorCode PCHYPRESetDiscreteCurl(PC pc, Mat C)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(C,MAT_CLASSID,2);
   PetscCheckSameComm(pc,1,C,2);
-  ierr = PetscTryMethod(pc,"PCHYPRESetDiscreteCurl_C",(PC,Mat),(pc,C));CHKERRQ(ierr);
+  PetscTryMethod(pc,"PCHYPRESetDiscreteCurl_C",(PC,Mat),(pc,C));
   PetscFunctionReturn(0);
 }
 
@@ -1499,58 +1476,57 @@ static PetscErrorCode PCHYPRESetInterpolations_HYPRE(PC pc, PetscInt dim, Mat RT
 {
   PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
   PetscBool      ishypre;
-  PetscErrorCode ierr;
   PetscInt       i;
   PetscFunctionBegin;
 
-  ierr = MatDestroy(&jac->RT_PiFull);CHKERRQ(ierr);
-  ierr = MatDestroy(&jac->ND_PiFull);CHKERRQ(ierr);
+  PetscCall(MatDestroy(&jac->RT_PiFull));
+  PetscCall(MatDestroy(&jac->ND_PiFull));
   for (i=0;i<3;++i) {
-    ierr = MatDestroy(&jac->RT_Pi[i]);CHKERRQ(ierr);
-    ierr = MatDestroy(&jac->ND_Pi[i]);CHKERRQ(ierr);
+    PetscCall(MatDestroy(&jac->RT_Pi[i]));
+    PetscCall(MatDestroy(&jac->ND_Pi[i]));
   }
 
   jac->dim = dim;
   if (RT_PiFull) {
-    ierr = PetscObjectTypeCompare((PetscObject)RT_PiFull,MATHYPRE,&ishypre);CHKERRQ(ierr);
+    PetscCall(PetscObjectTypeCompare((PetscObject)RT_PiFull,MATHYPRE,&ishypre));
     if (ishypre) {
-      ierr = PetscObjectReference((PetscObject)RT_PiFull);CHKERRQ(ierr);
+      PetscCall(PetscObjectReference((PetscObject)RT_PiFull));
       jac->RT_PiFull = RT_PiFull;
     } else {
-      ierr = MatConvert(RT_PiFull,MATHYPRE,MAT_INITIAL_MATRIX,&jac->RT_PiFull);CHKERRQ(ierr);
+      PetscCall(MatConvert(RT_PiFull,MATHYPRE,MAT_INITIAL_MATRIX,&jac->RT_PiFull));
     }
   }
   if (RT_Pi) {
     for (i=0;i<dim;++i) {
       if (RT_Pi[i]) {
-        ierr = PetscObjectTypeCompare((PetscObject)RT_Pi[i],MATHYPRE,&ishypre);CHKERRQ(ierr);
+        PetscCall(PetscObjectTypeCompare((PetscObject)RT_Pi[i],MATHYPRE,&ishypre));
         if (ishypre) {
-          ierr = PetscObjectReference((PetscObject)RT_Pi[i]);CHKERRQ(ierr);
+          PetscCall(PetscObjectReference((PetscObject)RT_Pi[i]));
           jac->RT_Pi[i] = RT_Pi[i];
         } else {
-          ierr = MatConvert(RT_Pi[i],MATHYPRE,MAT_INITIAL_MATRIX,&jac->RT_Pi[i]);CHKERRQ(ierr);
+          PetscCall(MatConvert(RT_Pi[i],MATHYPRE,MAT_INITIAL_MATRIX,&jac->RT_Pi[i]));
         }
       }
     }
   }
   if (ND_PiFull) {
-    ierr = PetscObjectTypeCompare((PetscObject)ND_PiFull,MATHYPRE,&ishypre);CHKERRQ(ierr);
+    PetscCall(PetscObjectTypeCompare((PetscObject)ND_PiFull,MATHYPRE,&ishypre));
     if (ishypre) {
-      ierr = PetscObjectReference((PetscObject)ND_PiFull);CHKERRQ(ierr);
+      PetscCall(PetscObjectReference((PetscObject)ND_PiFull));
       jac->ND_PiFull = ND_PiFull;
     } else {
-      ierr = MatConvert(ND_PiFull,MATHYPRE,MAT_INITIAL_MATRIX,&jac->ND_PiFull);CHKERRQ(ierr);
+      PetscCall(MatConvert(ND_PiFull,MATHYPRE,MAT_INITIAL_MATRIX,&jac->ND_PiFull));
     }
   }
   if (ND_Pi) {
     for (i=0;i<dim;++i) {
       if (ND_Pi[i]) {
-        ierr = PetscObjectTypeCompare((PetscObject)ND_Pi[i],MATHYPRE,&ishypre);CHKERRQ(ierr);
+        PetscCall(PetscObjectTypeCompare((PetscObject)ND_Pi[i],MATHYPRE,&ishypre));
         if (ishypre) {
-          ierr = PetscObjectReference((PetscObject)ND_Pi[i]);CHKERRQ(ierr);
+          PetscCall(PetscObjectReference((PetscObject)ND_Pi[i]));
           jac->ND_Pi[i] = ND_Pi[i];
         } else {
-          ierr = MatConvert(ND_Pi[i],MATHYPRE,MAT_INITIAL_MATRIX,&jac->ND_Pi[i]);CHKERRQ(ierr);
+          PetscCall(MatConvert(ND_Pi[i],MATHYPRE,MAT_INITIAL_MATRIX,&jac->ND_Pi[i]));
         }
       }
     }
@@ -1574,14 +1550,14 @@ static PetscErrorCode PCHYPRESetInterpolations_HYPRE(PC pc, PetscInt dim, Mat RT
 
    Notes:
     For AMS, only Nedelec interpolation matrices are needed, the Raviart-Thomas interpolation matrices can be set to NULL.
-          For ADS, both type of interpolation matrices are needed.
+
+    For ADS, both type of interpolation matrices are needed.
+
    Level: intermediate
 
-.seealso:
 @*/
 PetscErrorCode PCHYPRESetInterpolations(PC pc, PetscInt dim, Mat RT_PiFull, Mat RT_Pi[], Mat ND_PiFull, Mat ND_Pi[])
 {
-  PetscErrorCode ierr;
   PetscInt       i;
 
   PetscFunctionBegin;
@@ -1612,7 +1588,7 @@ PetscErrorCode PCHYPRESetInterpolations(PC pc, PetscInt dim, Mat RT_PiFull, Mat 
       }
     }
   }
-  ierr = PetscTryMethod(pc,"PCHYPRESetInterpolations_C",(PC,PetscInt,Mat,Mat[],Mat,Mat[]),(pc,dim,RT_PiFull,RT_Pi,ND_PiFull,ND_Pi));CHKERRQ(ierr);
+  PetscTryMethod(pc,"PCHYPRESetInterpolations_C",(PC,PetscInt,Mat,Mat[],Mat,Mat[]),(pc,dim,RT_PiFull,RT_Pi,ND_PiFull,ND_Pi));
   PetscFunctionReturn(0);
 }
 
@@ -1620,34 +1596,33 @@ static PetscErrorCode PCHYPRESetPoissonMatrix_HYPRE(PC pc, Mat A, PetscBool isal
 {
   PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
   PetscBool      ishypre;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)A,MATHYPRE,&ishypre);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)A,MATHYPRE,&ishypre));
   if (ishypre) {
     if (isalpha) {
-      ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
-      ierr = MatDestroy(&jac->alpha_Poisson);CHKERRQ(ierr);
+      PetscCall(PetscObjectReference((PetscObject)A));
+      PetscCall(MatDestroy(&jac->alpha_Poisson));
       jac->alpha_Poisson = A;
     } else {
       if (A) {
-        ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
+        PetscCall(PetscObjectReference((PetscObject)A));
       } else {
         jac->ams_beta_is_zero = PETSC_TRUE;
       }
-      ierr = MatDestroy(&jac->beta_Poisson);CHKERRQ(ierr);
+      PetscCall(MatDestroy(&jac->beta_Poisson));
       jac->beta_Poisson = A;
     }
   } else {
     if (isalpha) {
-      ierr = MatDestroy(&jac->alpha_Poisson);CHKERRQ(ierr);
-      ierr = MatConvert(A,MATHYPRE,MAT_INITIAL_MATRIX,&jac->alpha_Poisson);CHKERRQ(ierr);
+      PetscCall(MatDestroy(&jac->alpha_Poisson));
+      PetscCall(MatConvert(A,MATHYPRE,MAT_INITIAL_MATRIX,&jac->alpha_Poisson));
     } else {
       if (A) {
-        ierr = MatDestroy(&jac->beta_Poisson);CHKERRQ(ierr);
-        ierr = MatConvert(A,MATHYPRE,MAT_INITIAL_MATRIX,&jac->beta_Poisson);CHKERRQ(ierr);
+        PetscCall(MatDestroy(&jac->beta_Poisson));
+        PetscCall(MatConvert(A,MATHYPRE,MAT_INITIAL_MATRIX,&jac->beta_Poisson));
       } else {
-        ierr = MatDestroy(&jac->beta_Poisson);CHKERRQ(ierr);
+        PetscCall(MatDestroy(&jac->beta_Poisson));
         jac->ams_beta_is_zero = PETSC_TRUE;
       }
     }
@@ -1669,17 +1644,15 @@ static PetscErrorCode PCHYPRESetPoissonMatrix_HYPRE(PC pc, Mat A, PetscBool isal
    Notes:
     A should be obtained by discretizing the vector valued Poisson problem with linear finite elements
 
-.seealso:
+.seealso: `PCHYPRESetDiscreteGradient()`, `PCHYPRESetDiscreteCurl()`, `PCHYPRESetBetaPoissonMatrix()`
 @*/
 PetscErrorCode PCHYPRESetAlphaPoissonMatrix(PC pc, Mat A)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(A,MAT_CLASSID,2);
   PetscCheckSameComm(pc,1,A,2);
-  ierr = PetscTryMethod(pc,"PCHYPRESetPoissonMatrix_C",(PC,Mat,PetscBool),(pc,A,PETSC_TRUE));CHKERRQ(ierr);
+  PetscTryMethod(pc,"PCHYPRESetPoissonMatrix_C",(PC,Mat,PetscBool),(pc,A,PETSC_TRUE));
   PetscFunctionReturn(0);
 }
 
@@ -1698,47 +1671,44 @@ PetscErrorCode PCHYPRESetAlphaPoissonMatrix(PC pc, Mat A)
     A should be obtained by discretizing the Poisson problem with linear finite elements.
           Following HYPRE convention, the scalar Poisson solver of AMS can be turned off by passing NULL.
 
-.seealso:
+.seealso: `PCHYPRESetDiscreteGradient()`, `PCHYPRESetDiscreteCurl()`, `PCHYPRESetAlphaPoissonMatrix()`
 @*/
 PetscErrorCode PCHYPRESetBetaPoissonMatrix(PC pc, Mat A)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (A) {
     PetscValidHeaderSpecific(A,MAT_CLASSID,2);
     PetscCheckSameComm(pc,1,A,2);
   }
-  ierr = PetscTryMethod(pc,"PCHYPRESetPoissonMatrix_C",(PC,Mat,PetscBool),(pc,A,PETSC_FALSE));CHKERRQ(ierr);
+  PetscTryMethod(pc,"PCHYPRESetPoissonMatrix_C",(PC,Mat,PetscBool),(pc,A,PETSC_FALSE));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCHYPRESetEdgeConstantVectors_HYPRE(PC pc,Vec ozz, Vec zoz, Vec zzo)
 {
   PC_HYPRE           *jac = (PC_HYPRE*)pc->data;
-  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   /* throw away any vector if already set */
-  ierr = VecHYPRE_IJVectorDestroy(&jac->constants[0]);CHKERRQ(ierr);
-  ierr = VecHYPRE_IJVectorDestroy(&jac->constants[1]);CHKERRQ(ierr);
-  ierr = VecHYPRE_IJVectorDestroy(&jac->constants[2]);CHKERRQ(ierr);
-  ierr = VecHYPRE_IJVectorCreate(ozz->map,&jac->constants[0]);CHKERRQ(ierr);
-  ierr = VecHYPRE_IJVectorCopy(ozz,jac->constants[0]);CHKERRQ(ierr);
-  ierr = VecHYPRE_IJVectorCreate(zoz->map,&jac->constants[1]);CHKERRQ(ierr);
-  ierr = VecHYPRE_IJVectorCopy(zoz,jac->constants[1]);CHKERRQ(ierr);
+  PetscCall(VecHYPRE_IJVectorDestroy(&jac->constants[0]));
+  PetscCall(VecHYPRE_IJVectorDestroy(&jac->constants[1]));
+  PetscCall(VecHYPRE_IJVectorDestroy(&jac->constants[2]));
+  PetscCall(VecHYPRE_IJVectorCreate(ozz->map,&jac->constants[0]));
+  PetscCall(VecHYPRE_IJVectorCopy(ozz,jac->constants[0]));
+  PetscCall(VecHYPRE_IJVectorCreate(zoz->map,&jac->constants[1]));
+  PetscCall(VecHYPRE_IJVectorCopy(zoz,jac->constants[1]));
   jac->dim = 2;
   if (zzo) {
-    ierr = VecHYPRE_IJVectorCreate(zzo->map,&jac->constants[2]);CHKERRQ(ierr);
-    ierr = VecHYPRE_IJVectorCopy(zzo,jac->constants[2]);CHKERRQ(ierr);
+    PetscCall(VecHYPRE_IJVectorCreate(zzo->map,&jac->constants[2]));
+    PetscCall(VecHYPRE_IJVectorCopy(zzo,jac->constants[2]));
     jac->dim++;
   }
   PetscFunctionReturn(0);
 }
 
 /*@
- PCHYPRESetEdgeConstantVectors - Set the representation of the constant vector fields in edge element basis
+ PCHYPRESetEdgeConstantVectors - Set the representation of the constant vector fields in the edge element basis
 
    Collective on PC
 
@@ -1750,14 +1720,9 @@ static PetscErrorCode PCHYPRESetEdgeConstantVectors_HYPRE(PC pc,Vec ozz, Vec zoz
 
    Level: intermediate
 
-   Notes:
-
-.seealso:
 @*/
 PetscErrorCode PCHYPRESetEdgeConstantVectors(PC pc, Vec ozz, Vec zoz, Vec zzo)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(ozz,VEC_CLASSID,2);
@@ -1766,7 +1731,7 @@ PetscErrorCode PCHYPRESetEdgeConstantVectors(PC pc, Vec ozz, Vec zoz, Vec zzo)
   PetscCheckSameComm(pc,1,ozz,2);
   PetscCheckSameComm(pc,1,zoz,3);
   if (zzo) PetscCheckSameComm(pc,1,zzo,4);
-  ierr = PetscTryMethod(pc,"PCHYPRESetEdgeConstantVectors_C",(PC,Vec,Vec,Vec),(pc,ozz,zoz,zzo));CHKERRQ(ierr);
+  PetscTryMethod(pc,"PCHYPRESetEdgeConstantVectors_C",(PC,Vec,Vec,Vec),(pc,ozz,zoz,zzo));
   PetscFunctionReturn(0);
 }
 
@@ -1775,30 +1740,29 @@ static PetscErrorCode PCSetCoordinates_HYPRE(PC pc, PetscInt dim, PetscInt nloc,
   PC_HYPRE        *jac = (PC_HYPRE*)pc->data;
   Vec             tv;
   PetscInt        i;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   /* throw away any coordinate vector if already set */
-  ierr = VecHYPRE_IJVectorDestroy(&jac->coords[0]);CHKERRQ(ierr);
-  ierr = VecHYPRE_IJVectorDestroy(&jac->coords[1]);CHKERRQ(ierr);
-  ierr = VecHYPRE_IJVectorDestroy(&jac->coords[2]);CHKERRQ(ierr);
+  PetscCall(VecHYPRE_IJVectorDestroy(&jac->coords[0]));
+  PetscCall(VecHYPRE_IJVectorDestroy(&jac->coords[1]));
+  PetscCall(VecHYPRE_IJVectorDestroy(&jac->coords[2]));
   jac->dim = dim;
 
   /* compute IJ vector for coordinates */
-  ierr = VecCreate(PetscObjectComm((PetscObject)pc),&tv);CHKERRQ(ierr);
-  ierr = VecSetType(tv,VECSTANDARD);CHKERRQ(ierr);
-  ierr = VecSetSizes(tv,nloc,PETSC_DECIDE);CHKERRQ(ierr);
+  PetscCall(VecCreate(PetscObjectComm((PetscObject)pc),&tv));
+  PetscCall(VecSetType(tv,VECSTANDARD));
+  PetscCall(VecSetSizes(tv,nloc,PETSC_DECIDE));
   for (i=0;i<dim;i++) {
     PetscScalar *array;
     PetscInt    j;
 
-    ierr = VecHYPRE_IJVectorCreate(tv->map,&jac->coords[i]);CHKERRQ(ierr);
-    ierr = VecGetArrayWrite(tv,&array);CHKERRQ(ierr);
+    PetscCall(VecHYPRE_IJVectorCreate(tv->map,&jac->coords[i]));
+    PetscCall(VecGetArrayWrite(tv,&array));
     for (j=0;j<nloc;j++) array[j] = coords[j*dim+i];
-    ierr = VecRestoreArrayWrite(tv,&array);CHKERRQ(ierr);
-    ierr = VecHYPRE_IJVectorCopy(tv,jac->coords[i]);CHKERRQ(ierr);
+    PetscCall(VecRestoreArrayWrite(tv,&array));
+    PetscCall(VecHYPRE_IJVectorCopy(tv,jac->coords[i]));
   }
-  ierr = VecDestroy(&tv);CHKERRQ(ierr);
+  PetscCall(VecDestroy(&tv));
   PetscFunctionReturn(0);
 }
 
@@ -1816,25 +1780,24 @@ static PetscErrorCode  PCHYPREGetType_HYPRE(PC pc,const char *name[])
 static PetscErrorCode  PCHYPRESetType_HYPRE(PC pc,const char name[])
 {
   PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
-  PetscErrorCode ierr;
   PetscBool      flag;
 
   PetscFunctionBegin;
   if (jac->hypre_type) {
-    ierr = PetscStrcmp(jac->hypre_type,name,&flag);CHKERRQ(ierr);
-    PetscCheckFalse(!flag,PetscObjectComm((PetscObject)pc),PETSC_ERR_ORDER,"Cannot reset the HYPRE preconditioner type once it has been set");
+    PetscCall(PetscStrcmp(jac->hypre_type,name,&flag));
+    PetscCheck(flag,PetscObjectComm((PetscObject)pc),PETSC_ERR_ORDER,"Cannot reset the HYPRE preconditioner type once it has been set");
     PetscFunctionReturn(0);
   } else {
-    ierr = PetscStrallocpy(name, &jac->hypre_type);CHKERRQ(ierr);
+    PetscCall(PetscStrallocpy(name, &jac->hypre_type));
   }
 
   jac->maxiter         = PETSC_DEFAULT;
   jac->tol             = PETSC_DEFAULT;
   jac->printstatistics = PetscLogPrintInfo;
 
-  ierr = PetscStrcmp("pilut",jac->hypre_type,&flag);CHKERRQ(ierr);
+  PetscCall(PetscStrcmp("pilut",jac->hypre_type,&flag));
   if (flag) {
-    ierr = PetscCommGetComm(PetscObjectComm((PetscObject)pc),&jac->comm_hypre);CHKERRQ(ierr);
+    PetscCall(PetscCommGetComm(PetscObjectComm((PetscObject)pc),&jac->comm_hypre));
     PetscStackCallStandard(HYPRE_ParCSRPilutCreate,jac->comm_hypre,&jac->hsolver);
     pc->ops->setfromoptions = PCSetFromOptions_HYPRE_Pilut;
     pc->ops->view           = PCView_HYPRE_Pilut;
@@ -1844,12 +1807,12 @@ static PetscErrorCode  PCHYPRESetType_HYPRE(PC pc,const char name[])
     jac->factorrowsize      = PETSC_DEFAULT;
     PetscFunctionReturn(0);
   }
-  ierr = PetscStrcmp("euclid",jac->hypre_type,&flag);CHKERRQ(ierr);
+  PetscCall(PetscStrcmp("euclid",jac->hypre_type,&flag));
   if (flag) {
 #if defined(PETSC_HAVE_64BIT_INDICES)
     SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Hypre Euclid not support with 64 bit indices");
 #endif
-    ierr = PetscCommGetComm(PetscObjectComm((PetscObject)pc),&jac->comm_hypre);CHKERRQ(ierr);
+    PetscCall(PetscCommGetComm(PetscObjectComm((PetscObject)pc),&jac->comm_hypre));
     PetscStackCallStandard(HYPRE_EuclidCreate,jac->comm_hypre,&jac->hsolver);
     pc->ops->setfromoptions = PCSetFromOptions_HYPRE_Euclid;
     pc->ops->view           = PCView_HYPRE_Euclid;
@@ -1860,9 +1823,9 @@ static PetscErrorCode  PCHYPRESetType_HYPRE(PC pc,const char name[])
     jac->eu_level           = PETSC_DEFAULT; /* default */
     PetscFunctionReturn(0);
   }
-  ierr = PetscStrcmp("parasails",jac->hypre_type,&flag);CHKERRQ(ierr);
+  PetscCall(PetscStrcmp("parasails",jac->hypre_type,&flag));
   if (flag) {
-    ierr = PetscCommGetComm(PetscObjectComm((PetscObject)pc),&jac->comm_hypre);CHKERRQ(ierr);
+    PetscCall(PetscCommGetComm(PetscObjectComm((PetscObject)pc),&jac->comm_hypre));
     PetscStackCallStandard(HYPRE_ParaSailsCreate,jac->comm_hypre,&jac->hsolver);
     pc->ops->setfromoptions = PCSetFromOptions_HYPRE_ParaSails;
     pc->ops->view           = PCView_HYPRE_ParaSails;
@@ -1887,15 +1850,15 @@ static PetscErrorCode  PCHYPRESetType_HYPRE(PC pc,const char name[])
     PetscStackCallStandard(HYPRE_ParaSailsSetSym,jac->hsolver,jac->symt);
     PetscFunctionReturn(0);
   }
-  ierr = PetscStrcmp("boomeramg",jac->hypre_type,&flag);CHKERRQ(ierr);
+  PetscCall(PetscStrcmp("boomeramg",jac->hypre_type,&flag));
   if (flag) {
-    ierr                     = HYPRE_BoomerAMGCreate(&jac->hsolver);
+    PetscStackCallStandard(HYPRE_BoomerAMGCreate,&jac->hsolver);
     pc->ops->setfromoptions  = PCSetFromOptions_HYPRE_BoomerAMG;
     pc->ops->view            = PCView_HYPRE_BoomerAMG;
     pc->ops->applytranspose  = PCApplyTranspose_HYPRE_BoomerAMG;
     pc->ops->applyrichardson = PCApplyRichardson_HYPRE_BoomerAMG;
-    ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGetInterpolations_C",PCGetInterpolations_BoomerAMG);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGetCoarseOperators_C",PCGetCoarseOperators_BoomerAMG);CHKERRQ(ierr);
+    PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCGetInterpolations_C",PCGetInterpolations_BoomerAMG));
+    PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCGetCoarseOperators_C",PCGetCoarseOperators_BoomerAMG));
     jac->destroy             = HYPRE_BoomerAMGDestroy;
     jac->setup               = HYPRE_BoomerAMGSetup;
     jac->solve               = HYPRE_BoomerAMGSolve;
@@ -1996,9 +1959,9 @@ static PetscErrorCode  PCHYPRESetType_HYPRE(PC pc,const char name[])
 #endif
     PetscFunctionReturn(0);
   }
-  ierr = PetscStrcmp("ams",jac->hypre_type,&flag);CHKERRQ(ierr);
+  PetscCall(PetscStrcmp("ams",jac->hypre_type,&flag));
   if (flag) {
-    ierr                     = HYPRE_AMSCreate(&jac->hsolver);
+    PetscCall(HYPRE_AMSCreate(&jac->hsolver));
     pc->ops->setfromoptions  = PCSetFromOptions_HYPRE_AMS;
     pc->ops->view            = PCView_HYPRE_AMS;
     jac->destroy             = HYPRE_AMSDestroy;
@@ -2056,9 +2019,9 @@ static PetscErrorCode  PCHYPRESetType_HYPRE(PC pc,const char name[])
     jac->ams_beta_is_zero_part = PETSC_FALSE;
     PetscFunctionReturn(0);
   }
-  ierr = PetscStrcmp("ads",jac->hypre_type,&flag);CHKERRQ(ierr);
+  PetscCall(PetscStrcmp("ads",jac->hypre_type,&flag));
   if (flag) {
-    ierr                     = HYPRE_ADSCreate(&jac->hsolver);
+    PetscCall(HYPRE_ADSCreate(&jac->hsolver));
     pc->ops->setfromoptions  = PCSetFromOptions_HYPRE_ADS;
     pc->ops->view            = PCView_HYPRE_ADS;
     jac->destroy             = HYPRE_ADSDestroy;
@@ -2115,7 +2078,7 @@ static PetscErrorCode  PCHYPRESetType_HYPRE(PC pc,const char name[])
                                                                 jac->as_amg_beta_opts[4]);     /* AMG Pmax */
     PetscFunctionReturn(0);
   }
-  ierr = PetscFree(jac->hypre_type);CHKERRQ(ierr);
+  PetscCall(PetscFree(jac->hypre_type));
 
   jac->hypre_type = NULL;
   SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown HYPRE preconditioner %s; Choices are euclid, pilut, parasails, boomeramg, ams",name);
@@ -2127,23 +2090,22 @@ static PetscErrorCode  PCHYPRESetType_HYPRE(PC pc,const char name[])
 */
 PetscErrorCode PCSetFromOptions_HYPRE(PetscOptionItems *PetscOptionsObject,PC pc)
 {
-  PetscErrorCode ierr;
   PetscInt       indx;
   const char     *type[] = {"euclid","pilut","parasails","boomeramg","ams","ads"};
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead(PetscOptionsObject,"HYPRE preconditioner options");CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-pc_hypre_type","HYPRE preconditioner type","PCHYPRESetType",type,ALEN(type),"boomeramg",&indx,&flg);CHKERRQ(ierr);
+  PetscOptionsHeadBegin(PetscOptionsObject,"HYPRE preconditioner options");
+  PetscCall(PetscOptionsEList("-pc_hypre_type","HYPRE preconditioner type","PCHYPRESetType",type,PETSC_STATIC_ARRAY_LENGTH(type),"boomeramg",&indx,&flg));
   if (flg) {
-    ierr = PCHYPRESetType_HYPRE(pc,type[indx]);CHKERRQ(ierr);
+    PetscCall(PCHYPRESetType_HYPRE(pc,type[indx]));
   } else {
-    ierr = PCHYPRESetType_HYPRE(pc,"boomeramg");CHKERRQ(ierr);
+    PetscCall(PCHYPRESetType_HYPRE(pc,"boomeramg"));
   }
   if (pc->ops->setfromoptions) {
-    ierr = pc->ops->setfromoptions(PetscOptionsObject,pc);CHKERRQ(ierr);
+    PetscCall(pc->ops->setfromoptions(PetscOptionsObject,pc));
   }
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 
@@ -2159,18 +2121,16 @@ PetscErrorCode PCSetFromOptions_HYPRE(PetscOptionItems *PetscOptionsObject,PC pc
 
    Level: intermediate
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
-           PCHYPRE
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`,
+          `PCHYPRE`
 
 @*/
 PetscErrorCode  PCHYPRESetType(PC pc,const char name[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidCharPointer(name,2);
-  ierr = PetscTryMethod(pc,"PCHYPRESetType_C",(PC,const char[]),(pc,name));CHKERRQ(ierr);
+  PetscTryMethod(pc,"PCHYPRESetType_C",(PC,const char[]),(pc,name));
   PetscFunctionReturn(0);
 }
 
@@ -2185,18 +2145,16 @@ PetscErrorCode  PCHYPRESetType(PC pc,const char name[])
 
    Level: intermediate
 
-.seealso:  PCCreate(), PCHYPRESetType(), PCType (for list of available types), PC,
-           PCHYPRE
+.seealso: `PCCreate()`, `PCHYPRESetType()`, `PCType`, `PC`,
+          `PCHYPRE`
 
 @*/
 PetscErrorCode  PCHYPREGetType(PC pc,const char *name[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidPointer(name,2);
-  ierr = PetscTryMethod(pc,"PCHYPREGetType_C",(PC,const char*[]),(pc,name));CHKERRQ(ierr);
+  PetscTryMethod(pc,"PCHYPREGetType_C",(PC,const char*[]),(pc,name));
   PetscFunctionReturn(0);
 }
 
@@ -2210,20 +2168,18 @@ PetscErrorCode  PCHYPREGetType(PC pc,const char *name[])
 -  type - one of 'cusparse', 'hypre'
 
    Options Database Key:
-.  -pc_mg_galerkin_mat_product_algorithm <"cusparse","hypre">
+.  -pc_mg_galerkin_mat_product_algorithm <cusparse,hypre> - Type of SpGEMM to use in hypre
 
    Level: intermediate
 
-.seealso: PCMGGalerkinGetMatProductAlgorithm()
+.seealso: `PCMGGalerkinGetMatProductAlgorithm()`
 
 @*/
 PetscErrorCode PCMGGalerkinSetMatProductAlgorithm(PC pc,const char name[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscTryMethod(pc,"PCMGGalerkinSetMatProductAlgorithm_C",(PC,const char[]),(pc,name));CHKERRQ(ierr);
+  PetscTryMethod(pc,"PCMGGalerkinSetMatProductAlgorithm_C",(PC,const char[]),(pc,name));
   PetscFunctionReturn(0);
 }
 
@@ -2240,16 +2196,14 @@ PetscErrorCode PCMGGalerkinSetMatProductAlgorithm(PC pc,const char name[])
 
    Level: intermediate
 
-.seealso: PCMGGalerkinSetMatProductAlgorithm()
+.seealso: `PCMGGalerkinSetMatProductAlgorithm()`
 
 @*/
 PetscErrorCode PCMGGalerkinGetMatProductAlgorithm(PC pc,const char *name[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscTryMethod(pc,"PCMGGalerkinGetMatProductAlgorithm_C",(PC,const char*[]),(pc,name));CHKERRQ(ierr);
+  PetscTryMethod(pc,"PCMGGalerkinGetMatProductAlgorithm_C",(PC,const char*[]),(pc,name));
   PetscFunctionReturn(0);
 }
 
@@ -2258,8 +2212,9 @@ PetscErrorCode PCMGGalerkinGetMatProductAlgorithm(PC pc,const char *name[])
 
    Options Database Keys:
 +   -pc_hypre_type - One of euclid, pilut, parasails, boomeramg, ams, ads
--   Too many others to list, run with -pc_type hypre -pc_hypre_type XXX -help to see options for the XXX
-          preconditioner
+.   -pc_hypre_boomeramg_nodal_coarsen <n> - where n is from 1 to 6 (see HYPRE_BOOMERAMGSetNodal())
+.   -pc_hypre_boomeramg_vec_interp_variant <v> - where v is from 1 to 3 (see HYPRE_BoomerAMGSetInterpVecVariant())
+-   Many others, run with -pc_type hypre -pc_hypre_type XXX -help to see options for the XXX preconditioner
 
    Level: intermediate
 
@@ -2289,26 +2244,26 @@ PetscErrorCode PCMGGalerkinGetMatProductAlgorithm(PC pc,const char *name[])
           MatSetNearNullSpace() - if you provide a near null space to your matrix it is ignored by hypre UNLESS you also use
           the following two options:
 
-   Options Database Keys:
-+   -pc_hypre_boomeramg_nodal_coarsen <n> - where n is from 1 to 6 (see HYPRE_BOOMERAMGSetNodal())
--   -pc_hypre_boomeramg_vec_interp_variant <v> - where v is from 1 to 3 (see HYPRE_BoomerAMGSetInterpVecVariant())
-
-          Depending on the linear system you may see the same or different convergence depending on the values you use.
-
           See PCPFMG for access to the hypre Struct PFMG solver
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
-           PCHYPRESetType(), PCPFMG
+   GPU Notes:
+     To configure hypre BoomerAMG so that it can utilize NVIDIA GPUs run ./configure --download-hypre --with-cuda
+     Then pass VECCUDA vectors and MATAIJCUSPARSE matrices to the solvers and PETSc will automatically utilize hypre's GPU solvers.
+
+     To configure hypre BoomerAMG so that it can utilize AMD GPUs run ./configure --download-hypre --with-hip
+     Then pass VECHIP vectors to the solvers and PETSc will automatically utilize hypre's GPU solvers.
+
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`,
+          `PCHYPRESetType()`, `PCPFMG`
 
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_HYPRE(PC pc)
 {
   PC_HYPRE       *jac;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(pc,&jac);CHKERRQ(ierr);
+  PetscCall(PetscNewLog(pc,&jac));
 
   pc->data                = jac;
   pc->ops->reset          = PCReset_HYPRE;
@@ -2317,22 +2272,22 @@ PETSC_EXTERN PetscErrorCode PCCreate_HYPRE(PC pc)
   pc->ops->setup          = PCSetUp_HYPRE;
   pc->ops->apply          = PCApply_HYPRE;
   jac->comm_hypre         = MPI_COMM_NULL;
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetType_C",PCHYPRESetType_HYPRE);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHYPREGetType_C",PCHYPREGetType_HYPRE);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSetCoordinates_C",PCSetCoordinates_HYPRE);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetDiscreteGradient_C",PCHYPRESetDiscreteGradient_HYPRE);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetDiscreteCurl_C",PCHYPRESetDiscreteCurl_HYPRE);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetInterpolations_C",PCHYPRESetInterpolations_HYPRE);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetEdgeConstantVectors_C",PCHYPRESetEdgeConstantVectors_HYPRE);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetPoissonMatrix_C",PCHYPRESetPoissonMatrix_HYPRE);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCMGGalerkinSetMatProductAlgorithm_C",PCMGGalerkinSetMatProductAlgorithm_HYPRE_BoomerAMG);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCMGGalerkinGetMatProductAlgorithm_C",PCMGGalerkinGetMatProductAlgorithm_HYPRE_BoomerAMG);CHKERRQ(ierr);
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetType_C",PCHYPRESetType_HYPRE));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCHYPREGetType_C",PCHYPREGetType_HYPRE));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCSetCoordinates_C",PCSetCoordinates_HYPRE));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetDiscreteGradient_C",PCHYPRESetDiscreteGradient_HYPRE));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetDiscreteCurl_C",PCHYPRESetDiscreteCurl_HYPRE));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetInterpolations_C",PCHYPRESetInterpolations_HYPRE));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetEdgeConstantVectors_C",PCHYPRESetEdgeConstantVectors_HYPRE));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetPoissonMatrix_C",PCHYPRESetPoissonMatrix_HYPRE));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCMGGalerkinSetMatProductAlgorithm_C",PCMGGalerkinSetMatProductAlgorithm_HYPRE_BoomerAMG));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCMGGalerkinGetMatProductAlgorithm_C",PCMGGalerkinGetMatProductAlgorithm_HYPRE_BoomerAMG));
 #if defined(PETSC_HAVE_HYPRE_DEVICE)
 #if defined(HYPRE_USING_HIP)
-  ierr = PetscDeviceInitialize(PETSC_DEVICE_HIP);CHKERRQ(ierr);
+  PetscCall(PetscDeviceInitialize(PETSC_DEVICE_HIP));
 #endif
 #if defined(HYPRE_USING_CUDA)
-  ierr = PetscDeviceInitialize(PETSC_DEVICE_CUDA);CHKERRQ(ierr);
+  PetscCall(PetscDeviceInitialize(PETSC_DEVICE_CUDA));
 #endif
 #endif
   PetscFunctionReturn(0);
@@ -2355,13 +2310,12 @@ typedef struct {
 
 PetscErrorCode PCDestroy_PFMG(PC pc)
 {
-  PetscErrorCode ierr;
   PC_PFMG        *ex = (PC_PFMG*) pc->data;
 
   PetscFunctionBegin;
   if (ex->hsolver) PetscStackCallStandard(HYPRE_StructPFMGDestroy,ex->hsolver);
-  ierr = PetscCommRestoreComm(PetscObjectComm((PetscObject)pc),&ex->hcomm);CHKERRQ(ierr);
-  ierr = PetscFree(pc->data);CHKERRQ(ierr);
+  PetscCall(PetscCommRestoreComm(PetscObjectComm((PetscObject)pc),&ex->hcomm));
+  PetscCall(PetscFree(pc->data));
   PetscFunctionReturn(0);
 }
 
@@ -2370,59 +2324,56 @@ static const char *PFMGRAPType[] = {"Galerkin","non-Galerkin"};
 
 PetscErrorCode PCView_PFMG(PC pc,PetscViewer viewer)
 {
-  PetscErrorCode ierr;
   PetscBool      iascii;
   PC_PFMG        *ex = (PC_PFMG*) pc->data;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE PFMG preconditioning\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    max iterations %d\n",ex->its);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    tolerance %g\n",ex->tol);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    relax type %s\n",PFMGRelaxType[ex->relax_type]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    RAP type %s\n",PFMGRAPType[ex->rap_type]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    number pre-relax %d post-relax %d\n",ex->num_pre_relax,ex->num_post_relax);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    max levels %d\n",ex->max_levels);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  HYPRE PFMG preconditioning\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    max iterations %" PetscInt_FMT "\n",ex->its));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    tolerance %g\n",ex->tol));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    relax type %s\n",PFMGRelaxType[ex->relax_type]));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    RAP type %s\n",PFMGRAPType[ex->rap_type]));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    number pre-relax %" PetscInt_FMT " post-relax %" PetscInt_FMT "\n",ex->num_pre_relax,ex->num_post_relax));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    max levels %" PetscInt_FMT "\n",ex->max_levels));
   }
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode PCSetFromOptions_PFMG(PetscOptionItems *PetscOptionsObject,PC pc)
 {
-  PetscErrorCode ierr;
   PC_PFMG        *ex = (PC_PFMG*) pc->data;
   PetscBool      flg = PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead(PetscOptionsObject,"PFMG options");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-pc_pfmg_print_statistics","Print statistics","HYPRE_StructPFMGSetPrintLevel",flg,&flg,NULL);CHKERRQ(ierr);
+  PetscOptionsHeadBegin(PetscOptionsObject,"PFMG options");
+  PetscCall(PetscOptionsBool("-pc_pfmg_print_statistics","Print statistics","HYPRE_StructPFMGSetPrintLevel",flg,&flg,NULL));
   if (flg) {
     PetscStackCallStandard(HYPRE_StructPFMGSetPrintLevel,ex->hsolver,3);
   }
-  ierr = PetscOptionsInt("-pc_pfmg_its","Number of iterations of PFMG to use as preconditioner","HYPRE_StructPFMGSetMaxIter",ex->its,&ex->its,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-pc_pfmg_its","Number of iterations of PFMG to use as preconditioner","HYPRE_StructPFMGSetMaxIter",ex->its,&ex->its,NULL));
   PetscStackCallStandard(HYPRE_StructPFMGSetMaxIter,ex->hsolver,ex->its);
-  ierr = PetscOptionsInt("-pc_pfmg_num_pre_relax","Number of smoothing steps before coarse grid","HYPRE_StructPFMGSetNumPreRelax",ex->num_pre_relax,&ex->num_pre_relax,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-pc_pfmg_num_pre_relax","Number of smoothing steps before coarse grid","HYPRE_StructPFMGSetNumPreRelax",ex->num_pre_relax,&ex->num_pre_relax,NULL));
   PetscStackCallStandard(HYPRE_StructPFMGSetNumPreRelax,ex->hsolver,ex->num_pre_relax);
-  ierr = PetscOptionsInt("-pc_pfmg_num_post_relax","Number of smoothing steps after coarse grid","HYPRE_StructPFMGSetNumPostRelax",ex->num_post_relax,&ex->num_post_relax,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-pc_pfmg_num_post_relax","Number of smoothing steps after coarse grid","HYPRE_StructPFMGSetNumPostRelax",ex->num_post_relax,&ex->num_post_relax,NULL));
   PetscStackCallStandard(HYPRE_StructPFMGSetNumPostRelax,ex->hsolver,ex->num_post_relax);
 
-  ierr = PetscOptionsInt("-pc_pfmg_max_levels","Max Levels for MG hierarchy","HYPRE_StructPFMGSetMaxLevels",ex->max_levels,&ex->max_levels,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-pc_pfmg_max_levels","Max Levels for MG hierarchy","HYPRE_StructPFMGSetMaxLevels",ex->max_levels,&ex->max_levels,NULL));
   PetscStackCallStandard(HYPRE_StructPFMGSetMaxLevels,ex->hsolver,ex->max_levels);
 
-  ierr = PetscOptionsReal("-pc_pfmg_tol","Tolerance of PFMG","HYPRE_StructPFMGSetTol",ex->tol,&ex->tol,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsReal("-pc_pfmg_tol","Tolerance of PFMG","HYPRE_StructPFMGSetTol",ex->tol,&ex->tol,NULL));
   PetscStackCallStandard(HYPRE_StructPFMGSetTol,ex->hsolver,ex->tol);
-  ierr = PetscOptionsEList("-pc_pfmg_relax_type","Relax type for the up and down cycles","HYPRE_StructPFMGSetRelaxType",PFMGRelaxType,ALEN(PFMGRelaxType),PFMGRelaxType[ex->relax_type],&ex->relax_type,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsEList("-pc_pfmg_relax_type","Relax type for the up and down cycles","HYPRE_StructPFMGSetRelaxType",PFMGRelaxType,PETSC_STATIC_ARRAY_LENGTH(PFMGRelaxType),PFMGRelaxType[ex->relax_type],&ex->relax_type,NULL));
   PetscStackCallStandard(HYPRE_StructPFMGSetRelaxType,ex->hsolver, ex->relax_type);
-  ierr = PetscOptionsEList("-pc_pfmg_rap_type","RAP type","HYPRE_StructPFMGSetRAPType",PFMGRAPType,ALEN(PFMGRAPType),PFMGRAPType[ex->rap_type],&ex->rap_type,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsEList("-pc_pfmg_rap_type","RAP type","HYPRE_StructPFMGSetRAPType",PFMGRAPType,PETSC_STATIC_ARRAY_LENGTH(PFMGRAPType),PFMGRAPType[ex->rap_type],&ex->rap_type,NULL));
   PetscStackCallStandard(HYPRE_StructPFMGSetRAPType,ex->hsolver, ex->rap_type);
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode PCApply_PFMG(PC pc,Vec x,Vec y)
 {
-  PetscErrorCode    ierr;
   PC_PFMG           *ex = (PC_PFMG*) pc->data;
   PetscScalar       *yy;
   const PetscScalar *xx;
@@ -2431,8 +2382,8 @@ PetscErrorCode PCApply_PFMG(PC pc,Vec x,Vec y)
   Mat_HYPREStruct   *mx = (Mat_HYPREStruct*)(pc->pmat->data);
 
   PetscFunctionBegin;
-  ierr = PetscCitationsRegister(hypreCitation,&cite);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(mx->da,&ilower[0],&ilower[1],&ilower[2],&iupper[0],&iupper[1],&iupper[2]);CHKERRQ(ierr);
+  PetscCall(PetscCitationsRegister(hypreCitation,&cite));
+  PetscCall(DMDAGetCorners(mx->da,&ilower[0],&ilower[1],&ilower[2],&iupper[0],&iupper[1],&iupper[2]));
   /* when HYPRE_MIXEDINT is defined, sizeof(HYPRE_Int) == 32 */
   iupper[0] += ilower[0] - 1;
   iupper[1] += ilower[1] - 1;
@@ -2446,31 +2397,30 @@ PetscErrorCode PCApply_PFMG(PC pc,Vec x,Vec y)
 
   /* copy x values over to hypre */
   PetscStackCallStandard(HYPRE_StructVectorSetConstantValues,mx->hb,0.0);
-  ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
+  PetscCall(VecGetArrayRead(x,&xx));
   PetscStackCallStandard(HYPRE_StructVectorSetBoxValues,mx->hb,hlower,hupper,(HYPRE_Complex*)xx);
-  ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
+  PetscCall(VecRestoreArrayRead(x,&xx));
   PetscStackCallStandard(HYPRE_StructVectorAssemble,mx->hb);
   PetscStackCallStandard(HYPRE_StructPFMGSolve,ex->hsolver,mx->hmat,mx->hb,mx->hx);
 
   /* copy solution values back to PETSc */
-  ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
+  PetscCall(VecGetArray(y,&yy));
   PetscStackCallStandard(HYPRE_StructVectorGetBoxValues,mx->hx,hlower,hupper,(HYPRE_Complex*)yy);
-  ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
+  PetscCall(VecRestoreArray(y,&yy));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCApplyRichardson_PFMG(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its,PetscBool guesszero,PetscInt *outits,PCRichardsonConvergedReason *reason)
 {
   PC_PFMG        *jac = (PC_PFMG*)pc->data;
-  PetscErrorCode ierr;
   HYPRE_Int      oits;
 
   PetscFunctionBegin;
-  ierr = PetscCitationsRegister(hypreCitation,&cite);CHKERRQ(ierr);
+  PetscCall(PetscCitationsRegister(hypreCitation,&cite));
   PetscStackCallStandard(HYPRE_StructPFMGSetMaxIter,jac->hsolver,its*jac->its);
   PetscStackCallStandard(HYPRE_StructPFMGSetTol,jac->hsolver,rtol);
 
-  ierr = PCApply_PFMG(pc,b,y);CHKERRQ(ierr);
+  PetscCall(PCApply_PFMG(pc,b,y));
   PetscStackCallStandard(HYPRE_StructPFMGGetNumIterations,jac->hsolver,&oits);
   *outits = oits;
   if (oits == its) *reason = PCRICHARDSON_CONVERGED_ITS;
@@ -2482,14 +2432,13 @@ static PetscErrorCode PCApplyRichardson_PFMG(PC pc,Vec b,Vec y,Vec w,PetscReal r
 
 PetscErrorCode PCSetUp_PFMG(PC pc)
 {
-  PetscErrorCode  ierr;
   PC_PFMG         *ex = (PC_PFMG*) pc->data;
   Mat_HYPREStruct *mx = (Mat_HYPREStruct*)(pc->pmat->data);
   PetscBool       flg;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATHYPRESTRUCT,&flg);CHKERRQ(ierr);
-  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_INCOMP,"Must use MATHYPRESTRUCT with this preconditioner");
+  PetscCall(PetscObjectTypeCompare((PetscObject)pc->pmat,MATHYPRESTRUCT,&flg));
+  PetscCheck(flg,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_INCOMP,"Must use MATHYPRESTRUCT with this preconditioner");
 
   /* create the hypre solver object and set its information */
   if (ex->hsolver) PetscStackCallStandard(HYPRE_StructPFMGDestroy,ex->hsolver);
@@ -2505,11 +2454,11 @@ PetscErrorCode PCSetUp_PFMG(PC pc)
    Level: advanced
 
    Options Database:
-+ -pc_pfmg_its <its> number of iterations of PFMG to use as preconditioner
-. -pc_pfmg_num_pre_relax <steps> number of smoothing steps before coarse grid
-. -pc_pfmg_num_post_relax <steps> number of smoothing steps after coarse grid
-. -pc_pfmg_tol <tol> tolerance of PFMG
-. -pc_pfmg_relax_type -relaxation type for the up and down cycles, one of Jacobi,Weighted-Jacobi,symmetric-Red/Black-Gauss-Seidel,Red/Black-Gauss-Seidel
++ -pc_pfmg_its <its> - number of iterations of PFMG to use as preconditioner
+. -pc_pfmg_num_pre_relax <steps> - number of smoothing steps before coarse grid solve
+. -pc_pfmg_num_post_relax <steps> - number of smoothing steps after coarse grid solve
+. -pc_pfmg_tol <tol> - tolerance of PFMG
+. -pc_pfmg_relax_type - relaxation type for the up and down cycles, one of Jacobi,Weighted-Jacobi,symmetric-Red/Black-Gauss-Seidel,Red/Black-Gauss-Seidel
 - -pc_pfmg_rap_type - type of coarse matrix generation, one of Galerkin,non-Galerkin
 
    Notes:
@@ -2518,16 +2467,15 @@ PetscErrorCode PCSetUp_PFMG(PC pc)
            This must be used with the MATHYPRESTRUCT matrix type.
            This is less general than in hypre, it supports only one block per process defined by a PETSc DMDA.
 
-.seealso:  PCMG, MATHYPRESTRUCT
+.seealso: `PCMG`, `MATHYPRESTRUCT`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_PFMG(PC pc)
 {
-  PetscErrorCode ierr;
   PC_PFMG        *ex;
 
   PetscFunctionBegin;
-  ierr     = PetscNew(&ex);CHKERRQ(ierr); \
+  PetscCall(PetscNew(&ex)); \
   pc->data = ex;
 
   ex->its            = 1;
@@ -2545,7 +2493,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_PFMG(PC pc)
   pc->ops->applyrichardson = PCApplyRichardson_PFMG;
   pc->ops->setup           = PCSetUp_PFMG;
 
-  ierr = PetscCommGetComm(PetscObjectComm((PetscObject)pc),&ex->hcomm);CHKERRQ(ierr);
+  PetscCall(PetscCommGetComm(PetscObjectComm((PetscObject)pc),&ex->hcomm));
   PetscStackCallStandard(HYPRE_StructPFMGCreate,ex->hcomm,&ex->hsolver);
   PetscFunctionReturn(0);
 }
@@ -2566,13 +2514,12 @@ typedef struct {
 
 PetscErrorCode PCDestroy_SysPFMG(PC pc)
 {
-  PetscErrorCode ierr;
   PC_SysPFMG     *ex = (PC_SysPFMG*) pc->data;
 
   PetscFunctionBegin;
   if (ex->ss_solver) PetscStackCallStandard(HYPRE_SStructSysPFMGDestroy,ex->ss_solver);
-  ierr = PetscCommRestoreComm(PetscObjectComm((PetscObject)pc),&ex->hcomm);CHKERRQ(ierr);
-  ierr = PetscFree(pc->data);CHKERRQ(ierr);
+  PetscCall(PetscCommRestoreComm(PetscObjectComm((PetscObject)pc),&ex->hcomm));
+  PetscCall(PetscFree(pc->data));
   PetscFunctionReturn(0);
 }
 
@@ -2580,52 +2527,49 @@ static const char *SysPFMGRelaxType[] = {"Weighted-Jacobi","Red/Black-Gauss-Seid
 
 PetscErrorCode PCView_SysPFMG(PC pc,PetscViewer viewer)
 {
-  PetscErrorCode ierr;
   PetscBool      iascii;
   PC_SysPFMG     *ex = (PC_SysPFMG*) pc->data;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE SysPFMG preconditioning\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  max iterations %d\n",ex->its);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  tolerance %g\n",ex->tol);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  relax type %s\n",PFMGRelaxType[ex->relax_type]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  number pre-relax %d post-relax %d\n",ex->num_pre_relax,ex->num_post_relax);CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  HYPRE SysPFMG preconditioning\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  max iterations %" PetscInt_FMT "\n",ex->its));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  tolerance %g\n",ex->tol));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  relax type %s\n",PFMGRelaxType[ex->relax_type]));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  number pre-relax %" PetscInt_FMT " post-relax %" PetscInt_FMT "\n",ex->num_pre_relax,ex->num_post_relax));
   }
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode PCSetFromOptions_SysPFMG(PetscOptionItems *PetscOptionsObject,PC pc)
 {
-  PetscErrorCode ierr;
   PC_SysPFMG     *ex = (PC_SysPFMG*) pc->data;
   PetscBool      flg = PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead(PetscOptionsObject,"SysPFMG options");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-pc_syspfmg_print_statistics","Print statistics","HYPRE_SStructSysPFMGSetPrintLevel",flg,&flg,NULL);CHKERRQ(ierr);
+  PetscOptionsHeadBegin(PetscOptionsObject,"SysPFMG options");
+  PetscCall(PetscOptionsBool("-pc_syspfmg_print_statistics","Print statistics","HYPRE_SStructSysPFMGSetPrintLevel",flg,&flg,NULL));
   if (flg) {
     PetscStackCallStandard(HYPRE_SStructSysPFMGSetPrintLevel,ex->ss_solver,3);
   }
-  ierr = PetscOptionsInt("-pc_syspfmg_its","Number of iterations of SysPFMG to use as preconditioner","HYPRE_SStructSysPFMGSetMaxIter",ex->its,&ex->its,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-pc_syspfmg_its","Number of iterations of SysPFMG to use as preconditioner","HYPRE_SStructSysPFMGSetMaxIter",ex->its,&ex->its,NULL));
   PetscStackCallStandard(HYPRE_SStructSysPFMGSetMaxIter,ex->ss_solver,ex->its);
-  ierr = PetscOptionsInt("-pc_syspfmg_num_pre_relax","Number of smoothing steps before coarse grid","HYPRE_SStructSysPFMGSetNumPreRelax",ex->num_pre_relax,&ex->num_pre_relax,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-pc_syspfmg_num_pre_relax","Number of smoothing steps before coarse grid","HYPRE_SStructSysPFMGSetNumPreRelax",ex->num_pre_relax,&ex->num_pre_relax,NULL));
   PetscStackCallStandard(HYPRE_SStructSysPFMGSetNumPreRelax,ex->ss_solver,ex->num_pre_relax);
-  ierr = PetscOptionsInt("-pc_syspfmg_num_post_relax","Number of smoothing steps after coarse grid","HYPRE_SStructSysPFMGSetNumPostRelax",ex->num_post_relax,&ex->num_post_relax,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsInt("-pc_syspfmg_num_post_relax","Number of smoothing steps after coarse grid","HYPRE_SStructSysPFMGSetNumPostRelax",ex->num_post_relax,&ex->num_post_relax,NULL));
   PetscStackCallStandard(HYPRE_SStructSysPFMGSetNumPostRelax,ex->ss_solver,ex->num_post_relax);
 
-  ierr = PetscOptionsReal("-pc_syspfmg_tol","Tolerance of SysPFMG","HYPRE_SStructSysPFMGSetTol",ex->tol,&ex->tol,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsReal("-pc_syspfmg_tol","Tolerance of SysPFMG","HYPRE_SStructSysPFMGSetTol",ex->tol,&ex->tol,NULL));
   PetscStackCallStandard(HYPRE_SStructSysPFMGSetTol,ex->ss_solver,ex->tol);
-  ierr = PetscOptionsEList("-pc_syspfmg_relax_type","Relax type for the up and down cycles","HYPRE_SStructSysPFMGSetRelaxType",SysPFMGRelaxType,ALEN(SysPFMGRelaxType),SysPFMGRelaxType[ex->relax_type],&ex->relax_type,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsEList("-pc_syspfmg_relax_type","Relax type for the up and down cycles","HYPRE_SStructSysPFMGSetRelaxType",SysPFMGRelaxType,PETSC_STATIC_ARRAY_LENGTH(SysPFMGRelaxType),SysPFMGRelaxType[ex->relax_type],&ex->relax_type,NULL));
   PetscStackCallStandard(HYPRE_SStructSysPFMGSetRelaxType,ex->ss_solver, ex->relax_type);
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode PCApply_SysPFMG(PC pc,Vec x,Vec y)
 {
-  PetscErrorCode    ierr;
   PC_SysPFMG        *ex = (PC_SysPFMG*) pc->data;
   PetscScalar       *yy;
   const PetscScalar *xx;
@@ -2639,8 +2583,8 @@ PetscErrorCode PCApply_SysPFMG(PC pc,Vec x,Vec y)
   PetscInt          i;
 
   PetscFunctionBegin;
-  ierr       = PetscCitationsRegister(hypreCitation,&cite);CHKERRQ(ierr);
-  ierr       = DMDAGetCorners(mx->da,&ilower[0],&ilower[1],&ilower[2],&iupper[0],&iupper[1],&iupper[2]);CHKERRQ(ierr);
+  PetscCall(PetscCitationsRegister(hypreCitation,&cite));
+  PetscCall(DMDAGetCorners(mx->da,&ilower[0],&ilower[1],&ilower[2],&iupper[0],&iupper[1],&iupper[2]));
   /* when HYPRE_MIXEDINT is defined, sizeof(HYPRE_Int) == 32 */
   iupper[0] += ilower[0] - 1;
   iupper[1] += ilower[1] - 1;
@@ -2658,24 +2602,24 @@ PetscErrorCode PCApply_SysPFMG(PC pc,Vec x,Vec y)
   /* copy x values over to hypre for variable ordering */
   if (ordering) {
     PetscStackCallStandard(HYPRE_SStructVectorSetConstantValues,mx->ss_b,0.0);
-    ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
+    PetscCall(VecGetArrayRead(x,&xx));
     for (i= 0; i< nvars; i++) PetscStackCallStandard(HYPRE_SStructVectorSetBoxValues,mx->ss_b,part,hlower,hupper,i,(HYPRE_Complex*)(xx+(size*i)));
-    ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
+    PetscCall(VecRestoreArrayRead(x,&xx));
     PetscStackCallStandard(HYPRE_SStructVectorAssemble,mx->ss_b);
     PetscStackCallStandard(HYPRE_SStructMatrixMatvec,1.0,mx->ss_mat,mx->ss_b,0.0,mx->ss_x);
     PetscStackCallStandard(HYPRE_SStructSysPFMGSolve,ex->ss_solver,mx->ss_mat,mx->ss_b,mx->ss_x);
 
     /* copy solution values back to PETSc */
-    ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
+    PetscCall(VecGetArray(y,&yy));
     for (i= 0; i< nvars; i++) PetscStackCallStandard(HYPRE_SStructVectorGetBoxValues,mx->ss_x,part,hlower,hupper,i,(HYPRE_Complex*)(yy+(size*i)));
-    ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
+    PetscCall(VecRestoreArray(y,&yy));
   } else {      /* nodal ordering must be mapped to variable ordering for sys_pfmg */
     PetscScalar *z;
     PetscInt    j, k;
 
-    ierr = PetscMalloc1(nvars*size,&z);CHKERRQ(ierr);
+    PetscCall(PetscMalloc1(nvars*size,&z));
     PetscStackCallStandard(HYPRE_SStructVectorSetConstantValues,mx->ss_b,0.0);
-    ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
+    PetscCall(VecGetArrayRead(x,&xx));
 
     /* transform nodal to hypre's variable ordering for sys_pfmg */
     for (i= 0; i< size; i++) {
@@ -2683,20 +2627,20 @@ PetscErrorCode PCApply_SysPFMG(PC pc,Vec x,Vec y)
       for (j= 0; j< nvars; j++) z[j*size+i]= xx[k+j];
     }
     for (i= 0; i< nvars; i++) PetscStackCallStandard(HYPRE_SStructVectorSetBoxValues,mx->ss_b,part,hlower,hupper,i,(HYPRE_Complex*)(z+(size*i)));
-    ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
+    PetscCall(VecRestoreArrayRead(x,&xx));
     PetscStackCallStandard(HYPRE_SStructVectorAssemble,mx->ss_b);
     PetscStackCallStandard(HYPRE_SStructSysPFMGSolve,ex->ss_solver,mx->ss_mat,mx->ss_b,mx->ss_x);
 
     /* copy solution values back to PETSc */
-    ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
+    PetscCall(VecGetArray(y,&yy));
     for (i= 0; i< nvars; i++) PetscStackCallStandard(HYPRE_SStructVectorGetBoxValues,mx->ss_x,part,hlower,hupper,i,(HYPRE_Complex*)(z+(size*i)));
     /* transform hypre's variable ordering for sys_pfmg to nodal ordering */
     for (i= 0; i< size; i++) {
       k= i*nvars;
       for (j= 0; j< nvars; j++) yy[k+j]= z[j*size+i];
     }
-    ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
-    ierr = PetscFree(z);CHKERRQ(ierr);
+    PetscCall(VecRestoreArray(y,&yy));
+    PetscCall(PetscFree(z));
   }
   PetscFunctionReturn(0);
 }
@@ -2704,14 +2648,13 @@ PetscErrorCode PCApply_SysPFMG(PC pc,Vec x,Vec y)
 static PetscErrorCode PCApplyRichardson_SysPFMG(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its,PetscBool guesszero,PetscInt *outits,PCRichardsonConvergedReason *reason)
 {
   PC_SysPFMG     *jac = (PC_SysPFMG*)pc->data;
-  PetscErrorCode ierr;
   HYPRE_Int      oits;
 
   PetscFunctionBegin;
-  ierr = PetscCitationsRegister(hypreCitation,&cite);CHKERRQ(ierr);
+  PetscCall(PetscCitationsRegister(hypreCitation,&cite));
   PetscStackCallStandard(HYPRE_SStructSysPFMGSetMaxIter,jac->ss_solver,its*jac->its);
   PetscStackCallStandard(HYPRE_SStructSysPFMGSetTol,jac->ss_solver,rtol);
-  ierr = PCApply_SysPFMG(pc,b,y);CHKERRQ(ierr);
+  PetscCall(PCApply_SysPFMG(pc,b,y));
   PetscStackCallStandard(HYPRE_SStructSysPFMGGetNumIterations,jac->ss_solver,&oits);
   *outits = oits;
   if (oits == its) *reason = PCRICHARDSON_CONVERGED_ITS;
@@ -2723,14 +2666,13 @@ static PetscErrorCode PCApplyRichardson_SysPFMG(PC pc,Vec b,Vec y,Vec w,PetscRea
 
 PetscErrorCode PCSetUp_SysPFMG(PC pc)
 {
-  PetscErrorCode   ierr;
   PC_SysPFMG       *ex = (PC_SysPFMG*) pc->data;
   Mat_HYPRESStruct *mx = (Mat_HYPRESStruct*)(pc->pmat->data);
   PetscBool        flg;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATHYPRESSTRUCT,&flg);CHKERRQ(ierr);
-  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_INCOMP,"Must use MATHYPRESSTRUCT with this preconditioner");
+  PetscCall(PetscObjectTypeCompare((PetscObject)pc->pmat,MATHYPRESSTRUCT,&flg));
+  PetscCheck(flg,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_INCOMP,"Must use MATHYPRESSTRUCT with this preconditioner");
 
   /* create the hypre sstruct solver object and set its information */
   if (ex->ss_solver) PetscStackCallStandard(HYPRE_SStructSysPFMGDestroy,ex->ss_solver);
@@ -2746,11 +2688,11 @@ PetscErrorCode PCSetUp_SysPFMG(PC pc)
    Level: advanced
 
    Options Database:
-+ -pc_syspfmg_its <its> number of iterations of SysPFMG to use as preconditioner
-. -pc_syspfmg_num_pre_relax <steps> number of smoothing steps before coarse grid
-. -pc_syspfmg_num_post_relax <steps> number of smoothing steps after coarse grid
-. -pc_syspfmg_tol <tol> tolerance of SysPFMG
-- -pc_syspfmg_relax_type -relaxation type for the up and down cycles, one of Weighted-Jacobi,Red/Black-Gauss-Seidel
++ -pc_syspfmg_its <its> - number of iterations of SysPFMG to use as preconditioner
+. -pc_syspfmg_num_pre_relax <steps> - number of smoothing steps before coarse grid
+. -pc_syspfmg_num_post_relax <steps> - number of smoothing steps after coarse grid
+. -pc_syspfmg_tol <tol> - tolerance of SysPFMG
+- -pc_syspfmg_relax_type <Weighted-Jacobi,Red/Black-Gauss-Seidel> - relaxation type for the up and down cycles
 
    Notes:
     This is for CELL-centered descretizations
@@ -2759,16 +2701,15 @@ PetscErrorCode PCSetUp_SysPFMG(PC pc)
            This is less general than in hypre, it supports only one part, and one block per process defined by a PETSc DMDA.
            Also, only cell-centered variables.
 
-.seealso:  PCMG, MATHYPRESSTRUCT
+.seealso: `PCMG`, `MATHYPRESSTRUCT`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_SysPFMG(PC pc)
 {
-  PetscErrorCode ierr;
   PC_SysPFMG     *ex;
 
   PetscFunctionBegin;
-  ierr     = PetscNew(&ex);CHKERRQ(ierr); \
+  PetscCall(PetscNew(&ex)); \
   pc->data = ex;
 
   ex->its            = 1;
@@ -2784,7 +2725,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_SysPFMG(PC pc)
   pc->ops->applyrichardson = PCApplyRichardson_SysPFMG;
   pc->ops->setup           = PCSetUp_SysPFMG;
 
-  ierr = PetscCommGetComm(PetscObjectComm((PetscObject)pc),&ex->hcomm);CHKERRQ(ierr);
+  PetscCall(PetscCommGetComm(PetscObjectComm((PetscObject)pc),&ex->hcomm));
   PetscStackCallStandard(HYPRE_SStructSysPFMGCreate,ex->hcomm,&ex->ss_solver);
   PetscFunctionReturn(0);
 }

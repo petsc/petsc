@@ -12,7 +12,7 @@ static PetscBool PetscDevicePackageInitialized = PETSC_FALSE;
 
   Level: developer
 
-.seealso: PetscFinalize(), PetscDeviceInitializePackage()
+.seealso: `PetscFinalize()`, `PetscDeviceInitializePackage()`
 @*/
 PetscErrorCode PetscDeviceFinalizePackage(void)
 {
@@ -28,16 +28,14 @@ PetscErrorCode PetscDeviceFinalizePackage(void)
 
   Level: developer
 
-.seealso: PetscInitialize(), PetscDeviceFinalizePackage(), PetscDeviceContextCreate(), PetscDeviceCreate()
+.seealso: `PetscInitialize()`, `PetscDeviceFinalizePackage()`, `PetscDeviceContextCreate()`, `PetscDeviceCreate()`
 @*/
 PetscErrorCode PetscDeviceInitializePackage(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (PetscLikely(PetscDevicePackageInitialized)) PetscFunctionReturn(0);
   PetscCheck(PetscDeviceConfiguredFor_Internal(PETSC_DEVICE_DEFAULT),PETSC_COMM_SELF,PETSC_ERR_SUP,"PETSc is not configured with device support (PETSC_DEVICE_DEFAULT = '%s')",PetscDeviceTypes[PETSC_DEVICE_DEFAULT]);
   PetscDevicePackageInitialized = PETSC_TRUE;
-  ierr = PetscRegisterFinalize(PetscDeviceFinalizePackage);CHKERRQ(ierr);
+  PetscCall(PetscRegisterFinalize(PetscDeviceFinalizePackage));
   PetscFunctionReturn(0);
 }

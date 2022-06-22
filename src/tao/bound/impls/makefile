@@ -1,7 +1,6 @@
-ALL: lib
+-include ../../../../petsckdir.mk
 
 DIRS     = blmvm tron bncg bnk bqnk bqnls
-
 LOCDIR   = src/tao/bound/impls/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

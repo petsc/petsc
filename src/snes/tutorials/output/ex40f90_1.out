@@ -2,8 +2,8 @@
   1 SNES Function norm 21.1059 
   2 SNES Function norm 1.48791 
   3 SNES Function norm 0.0100216 
-  4 SNES Function norm 4.67469e-07 
-SNES Object: 1 MPI processes
+  4 SNES Function norm 4.67479e-07 
+SNES Object: 1 MPI process
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
@@ -11,14 +11,14 @@ SNES Object: 1 MPI processes
   total number of function evaluations=22
   norm schedule ALWAYS
   Jacobian is built using colored finite differences on a DMDA
-  SNESLineSearch Object: 1 MPI processes
+  SNESLineSearch Object: 1 MPI process
     type: bt
       interpolation: cubic
       alpha=1.000000e-04
     maxstep=1.000000e+08, minlambda=1.000000e-12
     tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
     maximum iterations=40
-  KSP Object: 1 MPI processes
+  KSP Object: 1 MPI process
     type: fgmres
       restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
       happy breakdown tolerance 1e-30
@@ -26,18 +26,18 @@ SNES Object: 1 MPI processes
     tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
     right preconditioning
     using UNPRECONDITIONED norm type for convergence test
-  PC Object: 1 MPI processes
+  PC Object: 1 MPI process
     type: mg
       type is FULL, levels=2 cycles=v
         Using Galerkin computed coarse grid matrices for pmat
-    Coarse grid solver -- level -------------------------------
-      KSP Object: (mg_coarse_) 1 MPI processes
+    Coarse grid solver -- level 0 -------------------------------
+      KSP Object: (mg_coarse_) 1 MPI process
         type: preonly
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
-      PC Object: (mg_coarse_) 1 MPI processes
+      PC Object: (mg_coarse_) 1 MPI process
         type: lu
           out-of-place factorization
           tolerance for zero pivot 2.22045e-14
@@ -45,26 +45,26 @@ SNES Object: 1 MPI processes
           matrix ordering: nd
           factor fill ratio given 5., needed 2.38265
             Factored matrix follows:
-              Mat Object: 1 MPI processes
+              Mat Object: (mg_coarse_) 1 MPI process
                 type: seqaij
                 rows=200, cols=200, bs=2
                 package used to perform factorization: petsc
                 total: nonzeros=7472, allocated nonzeros=7472
                   using I-node routines: found 82 nodes, limit used is 5
         linear system matrix = precond matrix:
-        Mat Object: 1 MPI processes
+        Mat Object:  1 MPI process
           type: seqaij
           rows=200, cols=200, bs=2
-          total: nonzeros=3136, allocated nonzeros=0
+          total: nonzeros=3136, allocated nonzeros=3136
           total number of mallocs used during MatSetValues calls=0
             using I-node routines: found 100 nodes, limit used is 5
     Down solver (pre-smoother) on level 1 -------------------------------
-      KSP Object: (mg_levels_1_) 1 MPI processes
+      KSP Object: (mg_levels_1_) 1 MPI process
         type: chebyshev
-          eigenvalue estimates used:  min = 0.1, max = 1.1
-          eigenvalues estimate via gmres min 1., max 1.
-          eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
-          KSP Object: (mg_levels_1_esteig_) 1 MPI processes
+          eigenvalue targets used: min 0.1, max 1.1
+          eigenvalues estimated via gmres: min 1., max 1.
+          eigenvalues estimated using gmres with transform: [0. 0.1; 0. 1.1]
+          KSP Object: (mg_levels_1_esteig_) 1 MPI process
             type: gmres
               restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
               happy breakdown tolerance 1e-30
@@ -77,11 +77,11 @@ SNES Object: 1 MPI processes
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
-      PC Object: (mg_levels_1_) 1 MPI processes
+      PC Object: (mg_levels_1_) 1 MPI process
         type: sor
           type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
         linear system matrix = precond matrix:
-        Mat Object: 1 MPI processes
+        Mat Object: 1 MPI process
           type: seqaij
           rows=722, cols=722, bs=2
           total: nonzeros=12100, allocated nonzeros=12100
@@ -89,7 +89,7 @@ SNES Object: 1 MPI processes
             using I-node routines: found 361 nodes, limit used is 5
     Up solver (post-smoother) same as down solver (pre-smoother)
     linear system matrix = precond matrix:
-    Mat Object: 1 MPI processes
+    Mat Object: 1 MPI process
       type: seqaij
       rows=722, cols=722, bs=2
       total: nonzeros=12100, allocated nonzeros=12100

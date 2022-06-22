@@ -1,7 +1,5 @@
-ALL: lib
+-include ../../../../../petsckdir.mk
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = ipm.c pdipm.c
 SOURCEF  =
 SOURCEH  = ipm.h

@@ -21,11 +21,6 @@
 !  -Ny <npy>, where <npy> = number of processors in the y-direction
 !  -mf use matrix free for matrix vector product
 !
-!!/*T
-!   Concepts: KSP^writing a user-defined nonlinear solver
-!   Concepts: DMDA^using distributed arrays
-!   Processors: n
-!T*/
 
 !  ------------------------------------------------------------------------
 !
@@ -87,11 +82,7 @@
       ifive          = 5
       ithree         = 3
 
-      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      if (ierr .ne. 0) then
-        print*,'Unable to initialize PETSc'
-        stop
-      endif
+      PetscCallA(PetscInitialize(ierr))
       comm = PETSC_COMM_WORLD
 
 !  Initialize problem parameters
@@ -99,18 +90,18 @@
 !
       mx = 4
       my = 4
-      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-mx',mx,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-my',my,flg,ierr)
+      PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-mx',mx,flg,ierr))
+      PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-my',my,flg,ierr))
       N = mx*my
 
       nooutput = .false.
-      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-no_output',nooutput,ierr)
+      PetscCallA(PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-no_output',nooutput,ierr))
 
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !     Create linear solver context
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      call KSPCreate(comm,ksp,ierr)
+      PetscCallA(KSPCreate(comm,ksp,ierr))
 
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !     Create vector data structures
@@ -121,20 +112,19 @@
 !
       Nx = PETSC_DECIDE
       Ny = PETSC_DECIDE
-      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-Nx',Nx,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-Ny',Ny,flg,ierr)
-      call DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,mx,my,Nx,Ny,one,one,          &
-     &                  PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr)
-      call DMSetFromOptions(da,ierr)
-      call DMSetUp(da,ierr)
+      PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-Nx',Nx,flg,ierr))
+      PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-Ny',Ny,flg,ierr))
+      PetscCallA(DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,mx,my,Nx,Ny,one,one,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr))
+      PetscCallA(DMSetFromOptions(da,ierr))
+      PetscCallA(DMSetUp(da,ierr))
 !
 !  Extract global and local vectors from DMDA then duplicate for remaining
 !  vectors that are the same types
 !
-       call DMCreateGlobalVector(da,X,ierr)
-       call DMCreateLocalVector(da,localX,ierr)
-       call VecDuplicate(X,F,ierr)
-       call VecDuplicate(X,Y,ierr)
+       PetscCallA(DMCreateGlobalVector(da,X,ierr))
+       PetscCallA(DMCreateLocalVector(da,localX,ierr))
+       PetscCallA(VecDuplicate(X,F,ierr))
+       PetscCallA(VecDuplicate(X,Y,ierr))
 
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !     Create matrix data structure for Jacobian
@@ -150,22 +140,22 @@
 !     Jacobian.  See the users manual for a discussion of better techniques
 !     for preallocating matrix memory.
 !
-      call VecGetLocalSize(X,m,ierr)
-      call MatCreateAIJ(comm,m,m,N,N,ifive,PETSC_NULL_INTEGER,ithree,PETSC_NULL_INTEGER,B,ierr)
+      PetscCallA(VecGetLocalSize(X,m,ierr))
+      PetscCallA(MatCreateAIJ(comm,m,m,N,N,ifive,PETSC_NULL_INTEGER,ithree,PETSC_NULL_INTEGER,B,ierr))
 
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !     if usemf is on then matrix vector product is done via matrix free
 !     approach. Note this is just an example, and not realistic because
 !     we still use the actual formed matrix, but in reality one would
 !     provide their own subroutine that would directly do the matrix
-!     vector product and not call MatMult()
+!     vector product and call MatMult()
 !     Note: we put B into a module so it will be visible to the
 !     mymult() routine
       usemf = .false.
-      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-mf',usemf,ierr)
+      PetscCallA(PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-mf',usemf,ierr))
       if (usemf) then
-         call MatCreateShell(comm,m,m,N,N,PETSC_NULL_INTEGER,J,ierr)
-         call MatShellSetOperation(J,MATOP_MULT,mymult,ierr)
+         PetscCallA(MatCreateShell(comm,m,m,N,N,PETSC_NULL_INTEGER,J,ierr))
+         PetscCallA(MatShellSetOperation(J,MATOP_MULT,mymult,ierr))
       else
 !        If not doing matrix free then matrix operator, J,  and matrix used
 !        to construct preconditioner, B, are the same
@@ -178,15 +168,15 @@
 !
 !     Set runtime options (e.g., -ksp_monitor -ksp_rtol <rtol> -ksp_type <type>)
 !
-       call KSPSetFromOptions(ksp,ierr)
+       PetscCallA(KSPSetFromOptions(ksp,ierr))
 
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !     Evaluate initial guess
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-       call FormInitialGuess(X,ierr)
-       call ComputeFunction(X,F,ierr)
-       call VecNorm(F,NORM_2,fnorm,ierr)
+       PetscCallA(FormInitialGuess(X,ierr))
+       PetscCallA(ComputeFunction(X,F,ierr))
+       PetscCallA(VecNorm(F,NORM_2,fnorm,ierr))
        ttol = fnorm*rtol
        if (.not. nooutput) then
          print*, 'Initial function norm ',fnorm
@@ -211,7 +201,7 @@
 !  Compute the Jacobian matrix.  See the comments in this routine for
 !  important information about setting the flag mat_flag.
 
-         call ComputeJacobian(X,B,ierr)
+         PetscCallA(ComputeJacobian(X,B,ierr))
 
 !  Solve J Y = F, where J is the Jacobian matrix.
 !    - First, set the KSP linear operators.  Here the matrix that
@@ -219,24 +209,24 @@
 !      matrix.
 !    - Then solve the Newton system.
 
-         call KSPSetOperators(ksp,J,B,ierr)
-         call KSPSolve(ksp,F,Y,ierr)
+         PetscCallA(KSPSetOperators(ksp,J,B,ierr))
+         PetscCallA(KSPSolve(ksp,F,Y,ierr))
 
 !  Compute updated iterate
 
-         call VecNorm(Y,NORM_2,ynorm,ierr)
-         call VecAYPX(Y,mone,X,ierr)
-         call VecCopy(Y,X,ierr)
-         call VecNorm(X,NORM_2,xnorm,ierr)
-         call KSPGetIterationNumber(ksp,lin_its,ierr)
+         PetscCallA(VecNorm(Y,NORM_2,ynorm,ierr))
+         PetscCallA(VecAYPX(Y,mone,X,ierr))
+         PetscCallA(VecCopy(Y,X,ierr))
+         PetscCallA(VecNorm(X,NORM_2,xnorm,ierr))
+         PetscCallA(KSPGetIterationNumber(ksp,lin_its,ierr))
          if (.not. nooutput) then
            print*,'linear solve iterations = ',lin_its,' xnorm = ',xnorm,' ynorm = ',ynorm
          endif
 
 !  Evaluate nonlinear function at new location
 
-         call ComputeFunction(X,F,ierr)
-         call VecNorm(F,NORM_2,fnorm,ierr)
+         PetscCallA(ComputeFunction(X,F,ierr))
+         PetscCallA(VecNorm(F,NORM_2,fnorm,ierr))
          if (.not. nooutput) then
            print*, 'Iteration ',i+1,' function norm',fnorm
          endif
@@ -258,7 +248,7 @@
 !     Check if mymult() produces a linear operator
       if (usemf) then
          N = 5
-         call MatIsLinear(J,N,flg,ierr)
+         PetscCallA(MatIsLinear(J,N,flg,ierr))
          if (.not. flg) then
             print *, 'IsLinear',flg
          endif
@@ -269,17 +259,17 @@
 !     are no longer needed.
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-       call MatDestroy(B,ierr)
+       PetscCallA(MatDestroy(B,ierr))
        if (usemf) then
-         call MatDestroy(J,ierr)
+         PetscCallA(MatDestroy(J,ierr))
        endif
-       call VecDestroy(localX,ierr)
-       call VecDestroy(X,ierr)
-       call VecDestroy(Y,ierr)
-       call VecDestroy(F,ierr)
-       call KSPDestroy(ksp,ierr)
-       call DMDestroy(da,ierr)
-       call PetscFinalize(ierr)
+       PetscCallA(VecDestroy(localX,ierr))
+       PetscCallA(VecDestroy(X,ierr))
+       PetscCallA(VecDestroy(Y,ierr))
+       PetscCallA(VecDestroy(F,ierr))
+       PetscCallA(KSPDestroy(ksp,ierr))
+       PetscCallA(DMDestroy(da,ierr))
+       PetscCallA(PetscFinalize(ierr))
        end
 
 ! -------------------------------------------------------------------
@@ -315,13 +305,13 @@
 !    - VecGetArray() returns a pointer to the data array.
 !    - You MUST call VecRestoreArray() when you no longer need access to
 !      the array.
-       call VecGetArray(X,xx,idx,ierr)
+       PetscCall(VecGetArray(X,xx,idx,ierr))
 
 !  Get local grid boundaries (for 2-dimensional DMDA):
 !    xs, ys   - starting grid indices (no ghost points)
 !    xm, ym   - widths of local grid (no ghost points)
 
-       call DMDAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,PETSC_NULL_INTEGER,ierr)
+       PetscCall(DMDAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,PETSC_NULL_INTEGER,ierr))
 
 !  Compute initial guess over the locally owned part of the grid
 
@@ -339,7 +329,7 @@
 
 !     Restore vector
 
-       call VecRestoreArray(X,xx,idx,ierr)
+       PetscCall(VecRestoreArray(X,xx,idx,ierr))
        return
        end
 
@@ -382,18 +372,18 @@
 !  By placing code between these two statements, computations can be
 !  done while messages are in transition.
 !
-      call DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX,ierr)
-      call DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX,ierr)
+      PetscCall(DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX,ierr))
+      PetscCall(DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX,ierr))
 
 !  Get pointers to vector data
 
-      call VecGetArray(localX,xx,idx,ierr)
-      call VecGetArray(F,ff,idf,ierr)
+      PetscCall(VecGetArray(localX,xx,idx,ierr))
+      PetscCall(VecGetArray(F,ff,idf,ierr))
 
 !  Get local grid boundaries
 
-      call DMDAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,PETSC_NULL_INTEGER,ierr)
-      call DMDAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,PETSC_NULL_INTEGER,ierr)
+      PetscCall(DMDAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,PETSC_NULL_INTEGER,ierr))
+      PetscCall(DMDAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,PETSC_NULL_INTEGER,ierr))
 
 !  Compute function over the locally owned part of the grid
       rowf = 0
@@ -417,8 +407,8 @@
 
 !  Restore vectors
 
-       call VecRestoreArray(localX,xx,idx,ierr)
-       call VecRestoreArray(F,ff,idf,ierr)
+       PetscCall(VecRestoreArray(localX,xx,idx,ierr))
+       PetscCall(VecRestoreArray(F,ff,idf,ierr))
        return
        end
 
@@ -475,22 +465,22 @@
 !  By placing code between these two statements, computations can be
 !  done while messages are in transition.
 
-      call DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX,ierr)
-      call DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX,ierr)
+      PetscCall(DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX,ierr))
+      PetscCall(DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX,ierr))
 
 !  Get pointer to vector data
 
-      call VecGetArray(localX,xx,idx,ierr)
+      PetscCall(VecGetArray(localX,xx,idx,ierr))
 
 !  Get local grid boundaries
 
-      call DMDAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,PETSC_NULL_INTEGER,ierr)
-      call DMDAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,PETSC_NULL_INTEGER,ierr)
+      PetscCall(DMDAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,PETSC_NULL_INTEGER,ierr))
+      PetscCall(DMDAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,PETSC_NULL_INTEGER,ierr))
 
 !  Get the global node numbers for all local nodes, including ghost points
 
-      call DMGetLocalToGlobalMapping(da,ltogm,ierr)
-      call ISLocalToGlobalMappingGetIndices(ltogm,ltog,idltog,ierr)
+      PetscCall(DMGetLocalToGlobalMapping(da,ltogm,ierr))
+      PetscCall(ISLocalToGlobalMappingGetIndices(ltogm,ltog,idltog,ierr))
 
 !  Compute entries for the locally owned part of the Jacobian.
 !   - Currently, all PETSc parallel matrix formats are partitioned by
@@ -509,7 +499,7 @@
           row = row + 1
           grow(1) = ltog(idltog+row)
           if (i .eq. 0 .or. j .eq. 0 .or. i .eq. (mx-1) .or. j .eq. (my-1)) then
-             call MatSetValues(jac,ione,grow,ione,grow,one,INSERT_VALUES,ierr)
+             PetscCall(MatSetValues(jac,ione,grow,ione,grow,one,INSERT_VALUES,ierr))
              go to 20
           endif
           v(1)   = -hxdhy
@@ -522,20 +512,20 @@
           col(4) = ltog(idltog+row + 1)
           v(5)   = -hxdhy
           col(5) = ltog(idltog+row + gxm)
-          call MatSetValues(jac,ione,grow,ifive,col,v,INSERT_VALUES,ierr)
+          PetscCall(MatSetValues(jac,ione,grow,ifive,col,v,INSERT_VALUES,ierr))
  20     continue
  10   continue
 
-      call ISLocalToGlobalMappingRestoreIndices(ltogm,ltog,idltog,ierr)
+      PetscCall(ISLocalToGlobalMappingRestoreIndices(ltogm,ltog,idltog,ierr))
 
 !  Assemble matrix, using the 2-step process:
 !    MatAssemblyBegin(), MatAssemblyEnd().
 !  By placing code between these two statements, computations can be
 !  done while messages are in transition.
 
-      call MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr)
-      call VecRestoreArray(localX,xx,idx,ierr)
-      call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr)
+      PetscCall(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr))
+      PetscCall(VecRestoreArray(localX,xx,idx,ierr))
+      PetscCall(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr))
       return
       end
 
@@ -560,7 +550,7 @@
 !       Here we use the actual formed matrix B; users would
 !     instead write their own matrix vector product routine
 !
-      call MatMult(B,X,F,ierr)
+      PetscCall(MatMult(B,X,F,ierr))
       return
       end
 

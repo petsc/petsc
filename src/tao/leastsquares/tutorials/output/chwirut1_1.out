@@ -39,7 +39,7 @@ iter =  37, Function value 2384.48, Residual: 0.000148592
 iter =  38, Function value 2384.48, Residual: 0.000692807 
 iter =  39, Function value 2384.48, Residual: 4.49096e-05 
 iter =  40, Function value 2384.48, Residual: 1.03756e-06 
-Vec Object: 1 MPI processes
+Vec Object: 1 MPI process
   type: seq
 0.190279
 0.00613141

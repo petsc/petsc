@@ -432,87 +432,69 @@ void Limit3_Koren3(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,co
 
 PetscErrorCode RiemannListAdd(PetscFunctionList *flist,const char *name,RiemannFunction rsolve)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
-  ierr = PetscFunctionListAdd(flist,name,rsolve);CHKERRQ(ierr);
+  PetscCall(PetscFunctionListAdd(flist,name,rsolve));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode RiemannListFind(PetscFunctionList flist,const char *name,RiemannFunction *rsolve)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
-  ierr = PetscFunctionListFind(flist,name,rsolve);CHKERRQ(ierr);
-  PetscCheckFalse(!*rsolve,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Riemann solver \"%s\" could not be found",name);
+  PetscCall(PetscFunctionListFind(flist,name,rsolve));
+  PetscCheck(*rsolve,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Riemann solver \"%s\" could not be found",name);
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode ReconstructListAdd(PetscFunctionList *flist,const char *name,ReconstructFunction r)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
-  ierr = PetscFunctionListAdd(flist,name,r);CHKERRQ(ierr);
+  PetscCall(PetscFunctionListAdd(flist,name,r));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode ReconstructListFind(PetscFunctionList flist,const char *name,ReconstructFunction *r)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
-  ierr = PetscFunctionListFind(flist,name,r);CHKERRQ(ierr);
-  PetscCheckFalse(!*r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Reconstruction \"%s\" could not be found",name);
+  PetscCall(PetscFunctionListFind(flist,name,r));
+  PetscCheck(*r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Reconstruction \"%s\" could not be found",name);
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode RiemannListAdd_2WaySplit(PetscFunctionList *flist,const char *name,RiemannFunction_2WaySplit rsolve)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
-  ierr = PetscFunctionListAdd(flist,name,rsolve);CHKERRQ(ierr);
+  PetscCall(PetscFunctionListAdd(flist,name,rsolve));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode RiemannListFind_2WaySplit(PetscFunctionList flist,const char *name,RiemannFunction_2WaySplit *rsolve)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
-  ierr = PetscFunctionListFind(flist,name,rsolve);CHKERRQ(ierr);
-  PetscCheckFalse(!*rsolve,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Riemann solver \"%s\" could not be found",name);
+  PetscCall(PetscFunctionListFind(flist,name,rsolve));
+  PetscCheck(*rsolve,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Riemann solver \"%s\" could not be found",name);
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode ReconstructListAdd_2WaySplit(PetscFunctionList *flist,const char *name,ReconstructFunction_2WaySplit r)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
-  ierr = PetscFunctionListAdd(flist,name,r);CHKERRQ(ierr);
+  PetscCall(PetscFunctionListAdd(flist,name,r));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode ReconstructListFind_2WaySplit(PetscFunctionList flist,const char *name,ReconstructFunction_2WaySplit *r)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
-  ierr = PetscFunctionListFind(flist,name,r);CHKERRQ(ierr);
-  PetscCheckFalse(!*r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Reconstruction \"%s\" could not be found",name);
+  PetscCall(PetscFunctionListFind(flist,name,r));
+  PetscCheck(*r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Reconstruction \"%s\" could not be found",name);
   PetscFunctionReturn(0);
 }
 
 /* --------------------------------- Physics ------- */
 PetscErrorCode PhysicsDestroy_SimpleFree(void *vctx)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
-  ierr = PetscFree(vctx);CHKERRQ(ierr);
+  PetscCall(PetscFree(vctx));
   PetscFunctionReturn(0);
 }
 
@@ -520,7 +502,6 @@ PetscErrorCode PhysicsDestroy_SimpleFree(void *vctx)
 PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
 {
   FVCtx          *ctx = (FVCtx*)vctx;
-  PetscErrorCode ierr;
   PetscInt       i,j,k,Mx,dof,xs,xm;
   PetscReal      hx,cfl_idt = 0;
   PetscScalar    *x,*f,*slope;
@@ -528,17 +509,17 @@ PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
   DM             da;
 
   PetscFunctionBeginUser;
-  ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(da,&Xloc);CHKERRQ(ierr);                          /* Xloc contains ghost points */
-  ierr = DMDAGetInfo(da,0, &Mx,0,0, 0,0,0, &dof,0,0,0,0,0);CHKERRQ(ierr);   /* Mx is the number of center points */
+  PetscCall(TSGetDM(ts,&da));
+  PetscCall(DMGetLocalVector(da,&Xloc));                          /* Xloc contains ghost points */
+  PetscCall(DMDAGetInfo(da,0, &Mx,0,0, 0,0,0, &dof,0,0,0,0,0));   /* Mx is the number of center points */
   hx   = (ctx->xmax-ctx->xmin)/Mx;
-  ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);       /* X is solution vector which does not contain ghost points */
-  ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
-  ierr = VecZeroEntries(F);CHKERRQ(ierr);                                   /* F is the right hand side function corresponds to center points */
-  ierr = DMDAVecGetArray(da,Xloc,&x);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,F,&f);CHKERRQ(ierr);
-  ierr = DMDAGetArray(da,PETSC_TRUE,&slope);CHKERRQ(ierr);                  /* contains ghost points */
-  ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
+  PetscCall(DMGlobalToLocalBegin(da,X,INSERT_VALUES,Xloc));       /* X is solution vector which does not contain ghost points */
+  PetscCall(DMGlobalToLocalEnd(da,X,INSERT_VALUES,Xloc));
+  PetscCall(VecZeroEntries(F));                                   /* F is the right hand side function corresponds to center points */
+  PetscCall(DMDAVecGetArray(da,Xloc,&x));
+  PetscCall(DMDAVecGetArray(da,F,&f));
+  PetscCall(DMDAGetArray(da,PETSC_TRUE,&slope));                  /* contains ghost points */
+  PetscCall(DMDAGetCorners(da,&xs,0,0,&xm,0,0));
 
   if (ctx->bctype == FVBC_OUTFLOW) {
     for (i=xs-2; i<0; i++) {
@@ -553,9 +534,9 @@ PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
     struct _LimitInfo info;
     PetscScalar       *cjmpL,*cjmpR;
     /* Determine the right eigenvectors R, where A = R \Lambda R^{-1} */
-    ierr = (*ctx->physics.characteristic)(ctx->physics.user,dof,&x[i*dof],ctx->R,ctx->Rinv,ctx->speeds,ctx->xmin+hx*i);CHKERRQ(ierr);
+    PetscCall((*ctx->physics.characteristic)(ctx->physics.user,dof,&x[i*dof],ctx->R,ctx->Rinv,ctx->speeds,ctx->xmin+hx*i));
     /* Evaluate jumps across interfaces (i-1, i) and (i, i+1), put in characteristic basis */
-    ierr  = PetscArrayzero(ctx->cjmpLR,2*dof);CHKERRQ(ierr);
+    PetscCall(PetscArrayzero(ctx->cjmpLR,2*dof));
     cjmpL = &ctx->cjmpLR[0];
     cjmpR = &ctx->cjmpLR[dof];
     for (j=0; j<dof; j++) {
@@ -588,7 +569,7 @@ PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
       uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hx/2;
       uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hx/2;
     }
-    ierr    = (*ctx->physics.riemann)(ctx->physics.user,dof,uL,uR,ctx->flux,&maxspeed,ctx->xmin+hx*i,ctx->xmin,ctx->xmax);CHKERRQ(ierr);
+    PetscCall((*ctx->physics.riemann)(ctx->physics.user,dof,uL,uR,ctx->flux,&maxspeed,ctx->xmin+hx*i,ctx->xmin,ctx->xmax));
     cfl_idt = PetscMax(cfl_idt,PetscAbsScalar(maxspeed/hx)); /* Max allowable value of 1/Delta t */
     if (i > xs) {
       for (j=0; j<dof; j++) f[(i-1)*dof+j] -= ctx->flux[j]/hx;
@@ -597,19 +578,19 @@ PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
       for (j=0; j<dof; j++) f[i*dof+j] += ctx->flux[j]/hx;
     }
   }
-  ierr = DMDAVecRestoreArray(da,Xloc,&x);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
-  ierr = DMDARestoreArray(da,PETSC_TRUE,&slope);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(da,&Xloc);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&cfl_idt,&ctx->cfl_idt,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)da));CHKERRMPI(ierr);
+  PetscCall(DMDAVecRestoreArray(da,Xloc,&x));
+  PetscCall(DMDAVecRestoreArray(da,F,&f));
+  PetscCall(DMDARestoreArray(da,PETSC_TRUE,&slope));
+  PetscCall(DMRestoreLocalVector(da,&Xloc));
+  PetscCallMPI(MPI_Allreduce(&cfl_idt,&ctx->cfl_idt,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)da)));
   if (0) {
     /* We need to a way to inform the TS of a CFL constraint, this is a debugging fragment */
     PetscReal dt,tnow;
-    ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
-    ierr = TSGetTime(ts,&tnow);CHKERRQ(ierr);
+    PetscCall(TSGetTimeStep(ts,&dt));
+    PetscCall(TSGetTime(ts,&tnow));
     if (dt > 0.5/ctx->cfl_idt) {
       if (1) {
-        ierr = PetscPrintf(ctx->comm,"Stability constraint exceeded at t=%g, dt %g > %g\n",(double)tnow,(double)dt,(double)(0.5/ctx->cfl_idt));CHKERRQ(ierr);
+        PetscCall(PetscPrintf(ctx->comm,"Stability constraint exceeded at t=%g, dt %g > %g\n",(double)tnow,(double)dt,(double)(0.5/ctx->cfl_idt)));
       } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Stability constraint exceeded, %g > %g",(double)dt,(double)(ctx->cfl/ctx->cfl_idt));
     }
   }
@@ -618,16 +599,15 @@ PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
 
 PetscErrorCode FVSample(FVCtx *ctx,DM da,PetscReal time,Vec U)
 {
-  PetscErrorCode ierr;
   PetscScalar    *u,*uj;
   PetscInt       i,j,k,dof,xs,xm,Mx;
 
   PetscFunctionBeginUser;
-  PetscCheckFalse(!ctx->physics.sample,PETSC_COMM_SELF,PETSC_ERR_SUP,"Physics has not provided a sampling function");
-  ierr = DMDAGetInfo(da,0, &Mx,0,0, 0,0,0, &dof,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,U,&u);CHKERRQ(ierr);
-  ierr = PetscMalloc1(dof,&uj);CHKERRQ(ierr);
+  PetscCheck(ctx->physics.sample,PETSC_COMM_SELF,PETSC_ERR_SUP,"Physics has not provided a sampling function");
+  PetscCall(DMDAGetInfo(da,0, &Mx,0,0, 0,0,0, &dof,0,0,0,0,0));
+  PetscCall(DMDAGetCorners(da,&xs,0,0,&xm,0,0));
+  PetscCall(DMDAVecGetArray(da,U,&u));
+  PetscCall(PetscMalloc1(dof,&uj));
   for (i=xs; i<xs+xm; i++) {
     const PetscReal h = (ctx->xmax-ctx->xmin)/Mx,xi = ctx->xmin+h/2+i*h;
     const PetscInt  N = 200;
@@ -635,18 +615,17 @@ PetscErrorCode FVSample(FVCtx *ctx,DM da,PetscReal time,Vec U)
     for (k=0; k<dof; k++) u[i*dof+k] = 0;
     for (j=0; j<N+1; j++) {
       PetscScalar xj = xi+h*(j-N/2)/(PetscReal)N;
-      ierr = (*ctx->physics.sample)(ctx->physics.user,ctx->initial,ctx->bctype,ctx->xmin,ctx->xmax,time,xj,uj);CHKERRQ(ierr);
+      PetscCall((*ctx->physics.sample)(ctx->physics.user,ctx->initial,ctx->bctype,ctx->xmin,ctx->xmax,time,xj,uj));
       for (k=0; k<dof; k++) u[i*dof+k] += ((j==0 || j==N) ? 0.5 : 1.0)*uj[k]/N;
     }
   }
-  ierr = DMDAVecRestoreArray(da,U,&u);CHKERRQ(ierr);
-  ierr = PetscFree(uj);CHKERRQ(ierr);
+  PetscCall(DMDAVecRestoreArray(da,U,&u));
+  PetscCall(PetscFree(uj));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode SolutionStatsView(DM da,Vec X,PetscViewer viewer)
 {
-  PetscErrorCode    ierr;
   PetscReal         xmin,xmax;
   PetscScalar       sum,tvsum,tvgsum;
   const PetscScalar *x;
@@ -655,26 +634,26 @@ PetscErrorCode SolutionStatsView(DM da,Vec X,PetscViewer viewer)
   PetscBool         iascii;
 
   PetscFunctionBeginUser;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
     /* PETSc lacks a function to compute total variation norm (difficult in multiple dimensions), we do it here */
-    ierr  = DMGetLocalVector(da,&Xloc);CHKERRQ(ierr);
-    ierr  = DMGlobalToLocalBegin(da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
-    ierr  = DMGlobalToLocalEnd(da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
-    ierr  = DMDAVecGetArrayRead(da,Xloc,(void*)&x);CHKERRQ(ierr);
-    ierr  = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
-    ierr  = DMDAGetInfo(da,0, &Mx,0,0, 0,0,0, &dof,0,0,0,0,0);CHKERRQ(ierr);
+    PetscCall(DMGetLocalVector(da,&Xloc));
+    PetscCall(DMGlobalToLocalBegin(da,X,INSERT_VALUES,Xloc));
+    PetscCall(DMGlobalToLocalEnd(da,X,INSERT_VALUES,Xloc));
+    PetscCall(DMDAVecGetArrayRead(da,Xloc,(void*)&x));
+    PetscCall(DMDAGetCorners(da,&xs,0,0,&xm,0,0));
+    PetscCall(DMDAGetInfo(da,0, &Mx,0,0, 0,0,0, &dof,0,0,0,0,0));
     tvsum = 0;
     for (i=xs; i<xs+xm; i++) {
       for (j=0; j<dof; j++) tvsum += PetscAbsScalar(x[i*dof+j]-x[(i-1)*dof+j]);
     }
-    ierr = MPI_Allreduce(&tvsum,&tvgsum,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)da));CHKERRMPI(ierr);
-    ierr = DMDAVecRestoreArrayRead(da,Xloc,(void*)&x);CHKERRQ(ierr);
-    ierr = DMRestoreLocalVector(da,&Xloc);CHKERRQ(ierr);
-    ierr = VecMin(X,&imin,&xmin);CHKERRQ(ierr);
-    ierr = VecMax(X,&imax,&xmax);CHKERRQ(ierr);
-    ierr = VecSum(X,&sum);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"Solution range [%8.5f,%8.5f] with minimum at %D, mean %8.5f, ||x||_TV %8.5f\n",(double)xmin,(double)xmax,imin,(double)(sum/Mx),(double)(tvgsum/Mx));CHKERRQ(ierr);
+    PetscCallMPI(MPI_Allreduce(&tvsum,&tvgsum,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)da)));
+    PetscCall(DMDAVecRestoreArrayRead(da,Xloc,(void*)&x));
+    PetscCall(DMRestoreLocalVector(da,&Xloc));
+    PetscCall(VecMin(X,&imin,&xmin));
+    PetscCall(VecMax(X,&imax,&xmax));
+    PetscCall(VecSum(X,&sum));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"Solution range [%8.5f,%8.5f] with minimum at %" PetscInt_FMT ", mean %8.5f, ||x||_TV %8.5f\n",(double)xmin,(double)xmax,imin,(double)(sum/Mx),(double)(tvgsum/Mx)));
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type not supported");
   PetscFunctionReturn(0);
 }

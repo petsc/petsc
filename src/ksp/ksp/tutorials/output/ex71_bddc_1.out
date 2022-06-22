@@ -56,54 +56,54 @@ PC Object: 8 MPI processes
     Local     dofs   :	60	60	60
     Local     subs   :	1	1
   --- Interior solver (rank 0)
-    KSP Object: (pc_bddc_dirichlet_) 1 MPI processes
+    KSP Object: (pc_bddc_dirichlet_) 1 MPI process
       type: preonly
       maximum iterations=10000, initial guess is zero
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
-    PC Object: (pc_bddc_dirichlet_) 1 MPI processes
+    PC Object: (pc_bddc_dirichlet_) 1 MPI process
       type: lu
         out-of-place factorization
         tolerance for zero pivot 2.22045e-14
         matrix ordering: nd
         factor fill ratio given 5., needed 1.17143
           Factored matrix follows:
-            Mat Object: 1 MPI processes
+            Mat Object: (pc_bddc_dirichlet_) 1 MPI process
               type: seqaij
               rows=24, cols=24
               package used to perform factorization: petsc
               total: nonzeros=328, allocated nonzeros=328
                 using I-node routines: found 13 nodes, limit used is 5
       linear system matrix = precond matrix:
-      Mat Object: (pc_bddc_dirichlet_) 1 MPI processes
+      Mat Object: (pc_bddc_dirichlet_) 1 MPI process
         type: seqaij
         rows=24, cols=24
         total: nonzeros=280, allocated nonzeros=280
         total number of mallocs used during MatSetValues calls=0
           not using I-node routines
   --- Correction solver (rank 0)
-    KSP Object: (pc_bddc_neumann_) 1 MPI processes
+    KSP Object: (pc_bddc_neumann_) 1 MPI process
       type: preonly
       maximum iterations=10000, initial guess is zero
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
-    PC Object: (pc_bddc_neumann_) 1 MPI processes
+    PC Object: (pc_bddc_neumann_) 1 MPI process
       type: lu
         out-of-place factorization
         tolerance for zero pivot 2.22045e-14
         matrix ordering: nd
         factor fill ratio given 5., needed 1.66158
           Factored matrix follows:
-            Mat Object: 1 MPI processes
+            Mat Object: (pc_bddc_neumann_) 1 MPI process
               type: seqaij
               rows=52, cols=52
               package used to perform factorization: petsc
               total: nonzeros=1306, allocated nonzeros=1306
                 using I-node routines: found 33 nodes, limit used is 5
       linear system matrix = precond matrix:
-      Mat Object: (pc_bddc_neumann_) 1 MPI processes
+      Mat Object: (pc_bddc_neumann_) 1 MPI process
         type: seqaij
         rows=52, cols=52
         total: nonzeros=786, allocated nonzeros=786
@@ -126,18 +126,18 @@ PC Object: 8 MPI processes
         total: nonzeros=421, allocated nonzeros=540
         total number of mallocs used during MatSetValues calls=0
           using I-node (on process 0) routines: found 1 nodes, limit used is 5
-          KSP Object:   (pc_bddc_coarse_redundant_)   1 MPI processes
+          KSP Object: (pc_bddc_coarse_redundant_) 1 MPI process
             type: preonly
             maximum iterations=10000, initial guess is zero
             tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
             left preconditioning
             using NONE norm type for convergence test
-          PC Object:   (pc_bddc_coarse_redundant_)   1 MPI processes
+          PC Object: (pc_bddc_coarse_redundant_) 1 MPI process
             type: svd
               All singular values smaller than 1e-12 treated as zero
               Provided essential rank of the matrix 0 (all other eigenvalues are zeroed)
             linear system matrix = precond matrix:
-            Mat Object:   1 MPI processes
+            Mat Object: 1 MPI process
               type: seqaij
               rows=25, cols=25
               total: nonzeros=421, allocated nonzeros=421
@@ -147,6 +147,6 @@ PC Object: 8 MPI processes
   Mat Object: 8 MPI processes
     type: is
     rows=315, cols=315
-    total: nonzeros=7280, allocated nonzeros=9856
+    total: nonzeros=7280, allocated nonzeros=7280
     total number of mallocs used during MatSetValues calls=0
       has attached null space

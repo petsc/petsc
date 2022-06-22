@@ -44,8 +44,9 @@ typedef struct {
 
 typedef struct {
   /* Inputs */
-  PetscInt   cdim;          /* The coordinate dimension of the surface */
-  PetscInt   cdimEx;        /* The coordinate dimension of the extruded volume */
+  PetscInt   dimEx;         /* The dimension of the extruded mesh */
+  PetscInt   cdim;          /* The coordinate dimension of the input mesh */
+  PetscInt   cdimEx;        /* The coordinate dimension of the extruded mesh */
   PetscInt   layers;        /* The number of extruded layers */
   PetscReal  thickness;     /* The total thickness of the extruded layers */
   PetscInt   Nth;           /* The number of specified thicknesses */
@@ -53,6 +54,7 @@ typedef struct {
   PetscBool  useTensor;     /* Flag to create tensor cells */
   PetscBool  useNormal;     /* Use input normal instead of calculating it */
   PetscReal  normal[3];     /* Surface normal from input */
+  PetscSimplePointFunc normalFunc; /* A function returning the normal at a given point */
   PetscBool  symmetric;     /* Extrude layers symmetrically about the surface */
   /* Calculated quantities */
   PetscReal      *layerPos; /* The position of each layer relative to the original surface, along the local normal direction */
@@ -79,7 +81,6 @@ typedef struct {
   DMLabel      splitPoints; /* List of edges to be bisected (1) and cells to be divided (2) */
   PetscSection secEdgeLen;  /* Section for edge length field */
   PetscReal   *edgeLen;     /* Storage for edge length field */
-  PetscInt    *splitArray;  /* Array for communication of split points label */
 } DMPlexRefine_SBR;
 
 typedef struct {

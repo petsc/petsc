@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/export/home/glci/soft/python-3.7.13/bin/python3
 
 import os
 petsc_hash_pkgs=os.path.join(os.getenv('HOME'),'petsc-hash-pkgs')
@@ -15,6 +15,7 @@ configure_options = [
   'FFLAGS=-ftrap=%none',
   '--with-c2html=0',
   '--download-mpich',
+  '--download-mpich-configure-arguments=--disable-f08 --disable-collalgo-tests',
   '--download-metis',
   '--download-parmetis',
   '--download-triangle',

@@ -8,7 +8,7 @@ class Configure(config.package.Package):
     #self.version                = '4.0.0'
     #self.versionname            = 'MFEM_VERSION_STRING'
     #self.versioninclude         = 'mfem/config.hpp'
-    self.gitcommit              = 'v4.0' # tags do not include subminor
+    self.gitcommit              = 'v4.4' # tags do not include subminor
     self.download               = ['git://https://github.com/mfem/mfem.git']
     self.linkedbypetsc          = 0
     self.downloadonWindows      = 1
@@ -180,23 +180,23 @@ class Configure(config.package.Package):
     self.addDefine('HAVE_MFEM',1)
     self.addMakeMacro('MFEM','yes')
     self.addMakeRule('mfembuild',makedepend, \
-                       ['@echo "*** Building mfem ***"',\
+                       ['@echo "*** Building MFEM ***"',\
                           '@${RM} -f ${PETSC_ARCH}/lib/petsc/conf/mfem.errorflg',\
                           '@(cd '+buildDir+' && \\\n\
            ${OMAKE} -f '+self.packageDir+'/makefile config MFEM_DIR='+self.packageDir+' && \\\n\
            ${OMAKE} clean && \\\n\
            '+self.make.make_jnp+') > ${PETSC_ARCH}/lib/petsc/conf/mfem.log 2>&1 || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
-             echo "Error building mfem. Check ${PETSC_ARCH}/lib/petsc/conf/mfem.log" && \\\n\
+             echo "Error building MFEM. Check ${PETSC_ARCH}/lib/petsc/conf/mfem.log" && \\\n\
              echo "********************************************************************" && \\\n\
              touch ${PETSC_ARCH}/lib/petsc/conf/mfem.errorflg && \\\n\
              exit 1)'])
     self.addMakeRule('mfeminstall','', \
-                       ['@echo "*** Installing mfem ***"',\
+                       ['@echo "*** Installing MFEM ***"',\
                           '@(cd '+buildDir+' && \\\n\
            '+'${OMAKE} install) >> ${PETSC_ARCH}/lib/petsc/conf/mfem.log 2>&1 || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
-             echo "Error building mfem. Check ${PETSC_ARCH}/lib/petsc/conf/mfem.log" && \\\n\
+             echo "Error building MFEM. Check ${PETSC_ARCH}/lib/petsc/conf/mfem.log" && \\\n\
              echo "********************************************************************" && \\\n\
              exit 1)'])
 

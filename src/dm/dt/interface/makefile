@@ -1,9 +1,6 @@
 -include ../../../../petscdir.mk
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
-SOURCEC  = dt.c dtds.c dtaltv.c dtweakform.c
+SOURCEC  = dt.c dtds.c dtaltv.c dtweakform.c dtprob.c
 SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscdm

@@ -3,6 +3,8 @@
 
 #include <petscviewer.h>
 
+/* SUBMANSEC = Sys */
+
 /*S
      PetscBT - PETSc bitarrays
 
@@ -79,37 +81,35 @@ static inline PetscErrorCode PetscBTNegate(PetscBT array, PetscInt index)
 static inline PetscErrorCode PetscBTClear(PetscBT array, PetscInt index)
 {
   PetscFunctionBegin;
-  array[PetscBTIndex_Internal(index)] &= ~PetscBTMask_Internal(index);
+  array[PetscBTIndex_Internal(index)] &= (char) ~PetscBTMask_Internal(index);
   PetscFunctionReturn(0);
 }
 
 static inline char PetscBTLookupSet(PetscBT array, PetscInt index)
 {
   const char ret = PetscBTLookup(array,index);
-  CHKERRCONTINUE(PetscBTSet(array,index));
+  PetscCallContinue(PetscBTSet(array,index));
   return ret;
 }
 
 static inline char PetscBTLookupClear(PetscBT array, PetscInt index)
 {
   const char ret = PetscBTLookup(array,index);
-  CHKERRCONTINUE(PetscBTClear(array,index));
+  PetscCallContinue(PetscBTClear(array,index));
   return ret;
 }
 
 static inline PetscErrorCode PetscBTView(PetscInt m, const PetscBT bt, PetscViewer viewer)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (m < 1) PetscFunctionReturn(0);
-  if (!viewer) {ierr = PetscViewerASCIIGetStdout(PETSC_COMM_SELF,&viewer);CHKERRQ(ierr);}
-  ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
+  if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PETSC_COMM_SELF,&viewer));
+  PetscCall(PetscViewerASCIIPushSynchronized(viewer));
   for (PetscInt i = 0; i < m; ++i) {
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%" PetscInt_FMT " %d\n",i,(int)PetscBTLookup(bt,i));CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"%" PetscInt_FMT " %d\n",i,(int)PetscBTLookup(bt,i)));
   }
-  ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
+  PetscCall(PetscViewerFlush(viewer));
+  PetscCall(PetscViewerASCIIPopSynchronized(viewer));
   PetscFunctionReturn(0);
 }
 #endif /* PETSCBT_H */

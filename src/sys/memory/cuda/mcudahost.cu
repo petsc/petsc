@@ -1,17 +1,15 @@
 #include <petscsys.h>             /*I   "petscsys.h"   I*/
-#include <petscdevice.h>          /* Needed to provide CHKERRCUDA() */
+#include <petscdevice.h>          /* Needed to provide PetscCallCUDA() */
 
 static PetscErrorCode PetscCUDAHostMalloc(size_t a,PetscBool clear,int lineno,const char function[],const char filename[],void **result)
 {
-  cudaError_t ierr;
-  ierr = cudaMallocHost(result,a);CHKERRCUDA(ierr);
+  PetscCallCUDA(cudaMallocHost(result,a));
   return 0;
 }
 
 static PetscErrorCode PetscCUDAHostFree(void *aa,int lineno,const char function[],const char filename[])
 {
-  cudaError_t ierr;
-  ierr = cudaFreeHost(aa);CHKERRCUDA(ierr);
+  PetscCallCUDA(cudaFreeHost(aa));
   return 0;
 }
 
@@ -36,7 +34,7 @@ static PetscErrorCode (*PetscFreeOld)(void*,int,const char[],const char[]);
      This provides a way to use the CUDA malloc and free routines temporarily. One
      can switch back to the previous choice by calling PetscMallocResetCUDAHost().
 
-.seealso: PetscMallocResetCUDAHost()
+.seealso: `PetscMallocResetCUDAHost()`
 @*/
 PetscErrorCode PetscMallocSetCUDAHost(void)
 {
@@ -58,7 +56,7 @@ PetscErrorCode PetscMallocSetCUDAHost(void)
 
    Level: developer
 
-.seealso: PetscMallocSetCUDAHost()
+.seealso: `PetscMallocSetCUDAHost()`
 @*/
 PetscErrorCode PetscMallocResetCUDAHost(void)
 {

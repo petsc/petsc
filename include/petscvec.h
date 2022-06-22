@@ -3,21 +3,23 @@
   degrees of freedom for finite element/finite difference functions
   on a grid. They have more mathematical structure then simple arrays.
 */
-
 #if !defined(PETSCVEC_H)
 #define PETSCVEC_H
+
 #include <petscsys.h>
 #include <petscsftypes.h> /* for VecScatter, VecScatterType */
 #include <petscis.h>
 #include <petscdevicetypes.h>
 #include <petscviewer.h>
 
+/* SUBMANSEC = Vec */
+
 /*S
      Vec - Abstract PETSc vector object
 
    Level: beginner
 
-.seealso:  VecCreate(), VecType, VecSetType()
+.seealso: `VecCreate()`, `VecType`, `VecSetType()`
 S*/
 typedef struct _p_Vec*         Vec;
 
@@ -26,7 +28,7 @@ typedef struct _p_Vec*         Vec;
 
   Level: beginner
 
-.seealso: VecScatter, VecScatterBegin(), VecScatterEnd()
+.seealso: `VecScatter`, `VecScatterBegin()`, `VecScatterEnd()`
 E*/
 typedef enum {SCATTER_FORWARD=0, SCATTER_REVERSE=1, SCATTER_FORWARD_LOCAL=2, SCATTER_REVERSE_LOCAL=3, SCATTER_LOCAL=2} ScatterMode;
 
@@ -35,8 +37,8 @@ typedef enum {SCATTER_FORWARD=0, SCATTER_REVERSE=1, SCATTER_FORWARD_LOCAL=2, SCA
 
     Level: beginner
 
-.seealso: VecScatter, ScatterMode, VecScatterCreate(), VecScatterBegin(), VecScatterEnd(), SCATTER_REVERSE, SCATTER_FORWARD_LOCAL,
-          SCATTER_REVERSE_LOCAL
+.seealso: `VecScatter`, `ScatterMode`, `VecScatterCreate()`, `VecScatterBegin()`, `VecScatterEnd()`, `SCATTER_REVERSE`, `SCATTER_FORWARD_LOCAL`,
+          `SCATTER_REVERSE_LOCAL`
 
 M*/
 
@@ -46,8 +48,8 @@ M*/
 
     Level: beginner
 
-.seealso: VecScatter, ScatterMode, VecScatterCreate(), VecScatterBegin(), VecScatterEnd(), SCATTER_FORWARD, SCATTER_FORWARD_LOCAL,
-          SCATTER_REVERSE_LOCAL
+.seealso: `VecScatter`, `ScatterMode`, `VecScatterCreate()`, `VecScatterBegin()`, `VecScatterEnd()`, `SCATTER_FORWARD`, `SCATTER_FORWARD_LOCAL`,
+          `SCATTER_REVERSE_LOCAL`
 
 M*/
 
@@ -57,8 +59,8 @@ M*/
 
     Level: developer
 
-.seealso: VecScatter, ScatterMode, VecScatterCreate(), VecScatterBegin(), VecScatterEnd(), SCATTER_REVERSE, SCATTER_FORWARD,
-          SCATTER_REVERSE_LOCAL
+.seealso: `VecScatter`, `ScatterMode`, `VecScatterCreate()`, `VecScatterBegin()`, `VecScatterEnd()`, `SCATTER_REVERSE`, `SCATTER_FORWARD`,
+          `SCATTER_REVERSE_LOCAL`
 
 M*/
 
@@ -69,8 +71,8 @@ M*/
 
     Level: developer
 
-.seealso: VecScatter, ScatterMode, VecScatterCreate(), VecScatterBegin(), VecScatterEnd(), SCATTER_FORWARD, SCATTER_FORWARD_LOCAL,
-          SCATTER_REVERSE
+.seealso: `VecScatter`, `ScatterMode`, `VecScatterCreate()`, `VecScatterBegin()`, `VecScatterEnd()`, `SCATTER_FORWARD`, `SCATTER_FORWARD_LOCAL`,
+          `SCATTER_REVERSE`
 
 M*/
 
@@ -79,7 +81,7 @@ M*/
 
    Level: beginner
 
-.seealso: VecSetType(), Vec, VecCreate(), VecDestroy()
+.seealso: `VecSetType()`, `Vec`, `VecCreate()`, `VecDestroy()`
 J*/
 typedef const char* VecType;
 #define VECSEQ         "seq"
@@ -151,7 +153,7 @@ PETSC_EXTERN PetscErrorCode VecConcatenate(PetscInt,const Vec[],Vec*,IS*[]);
 
     Level: beginner
 
-.seealso: VecNorm(), VecNormBegin(), VecNormEnd(), MatNorm()
+.seealso: `VecNorm()`, `VecNormBegin()`, `VecNormEnd()`, `MatNorm()`
 E*/
 typedef enum {NORM_1=0,
               NORM_2=1,
@@ -167,8 +169,8 @@ PETSC_EXTERN const char *const NormTypes[];
 
    Level: beginner
 
-.seealso:  NormType, MatNorm(), VecNorm(), VecNormBegin(), VecNormEnd(), NORM_2, NORM_FROBENIUS,
-           NORM_INFINITY, NORM_1_AND_2
+.seealso: `NormType`, `MatNorm()`, `VecNorm()`, `VecNormBegin()`, `VecNormEnd()`, `NORM_2`, `NORM_FROBENIUS`,
+          `NORM_INFINITY`, `NORM_1_AND_2`
 
 M*/
 
@@ -177,8 +179,8 @@ M*/
 
    Level: beginner
 
-.seealso:  NormType, MatNorm(), VecNorm(), VecNormBegin(), VecNormEnd(), NORM_1, NORM_FROBENIUS,
-           NORM_INFINITY, NORM_1_AND_2
+.seealso: `NormType`, `MatNorm()`, `VecNorm()`, `VecNormBegin()`, `VecNormEnd()`, `NORM_1`, `NORM_FROBENIUS`,
+          `NORM_INFINITY`, `NORM_1_AND_2`
 
 M*/
 
@@ -187,8 +189,8 @@ M*/
 
    Level: beginner
 
-.seealso:  NormType, MatNorm(), VecNorm(), VecNormBegin(), VecNormEnd(), NORM_1, NORM_2,
-           NORM_INFINITY, NORM_1_AND_2
+.seealso: `NormType`, `MatNorm()`, `VecNorm()`, `VecNormBegin()`, `VecNormEnd()`, `NORM_1`, `NORM_2`,
+          `NORM_INFINITY`, `NORM_1_AND_2`
 
 M*/
 
@@ -197,8 +199,8 @@ M*/
 
    Level: beginner
 
-.seealso:  NormType, MatNorm(), VecNorm(), VecNormBegin(), VecNormEnd(), NORM_1, NORM_2,
-           NORM_FROBENIUS, NORM_1_AND_2
+.seealso: `NormType`, `MatNorm()`, `VecNorm()`, `VecNormBegin()`, `VecNormEnd()`, `NORM_1`, `NORM_2`,
+          `NORM_FROBENIUS`, `NORM_1_AND_2`
 
 M*/
 
@@ -207,8 +209,8 @@ M*/
 
    Level: beginner
 
-.seealso:  NormType, MatNorm(), VecNorm(), VecNormBegin(), VecNormEnd(), NORM_1, NORM_2,
-           NORM_FROBENIUS, NORM_INFINITY
+.seealso: `NormType`, `MatNorm()`, `VecNorm()`, `VecNormBegin()`, `VecNormEnd()`, `NORM_1`, `NORM_2`,
+          `NORM_FROBENIUS`, `NORM_INFINITY`
 
 M*/
 
@@ -224,7 +226,7 @@ M*/
 
     Level: beginner
 
-.seealso: MatGetColumnReductions(), MatGetColumnNorms(), NormType
+.seealso: `MatGetColumnReductions()`, `MatGetColumnNorms()`, `NormType`
 E*/
 /* NOTE: The integer constants defined in ReductionType MUST BE DISTINCT from those defined in NormType.
  * This is because MatGetColumnReductions() is used to compute both norms and other types of reductions,
@@ -240,8 +242,8 @@ typedef enum {REDUCTION_SUM_REALPART=10,
 
    Level: beginner
 
-.seealso:  ReductionType, MatGetColumnReductions(), REDUCTION_SUM_IMAGINARYPART, REDUCTION_MEAN_REALPART, REDUCTION_NORM_1,
-           REDUCTION_NORM_2, REDUCTION_NORM_FROBENIUS, REDUCTION_NORM_INFINITY
+.seealso: `ReductionType`, `MatGetColumnReductions()`, `REDUCTION_SUM_IMAGINARYPART`, `REDUCTION_MEAN_REALPART`, `REDUCTION_NORM_1`,
+          `REDUCTION_NORM_2`, `REDUCTION_NORM_FROBENIUS`, `REDUCTION_NORM_INFINITY`
 
 M*/
 
@@ -250,8 +252,8 @@ M*/
 
    Level: beginner
 
-.seealso:  ReductionType, MatGetColumnReductions(), REDUCTION_SUM_REALPART, REDUCTION_MEAN_IMAGINARYPART, REDUCTION_NORM_1,
-           REDUCTION_NORM_2, REDUCTION_NORM_FROBENIUS, REDUCTION_NORM_INFINITY
+.seealso: `ReductionType`, `MatGetColumnReductions()`, `REDUCTION_SUM_REALPART`, `REDUCTION_MEAN_IMAGINARYPART`, `REDUCTION_NORM_1`,
+          `REDUCTION_NORM_2`, `REDUCTION_NORM_FROBENIUS`, `REDUCTION_NORM_INFINITY`
 
 M*/
 
@@ -260,8 +262,8 @@ M*/
 
    Level: beginner
 
-.seealso:  ReductionType, MatGetColumnReductions(), REDUCTION_MEAN_IMAGINARYPART, REDUCTION_SUM_REALPART, REDUCTION_NORM_1,
-           REDUCTION_NORM_2, REDUCTION_NORM_FROBENIUS, REDUCTION_NORM_INFINITY
+.seealso: `ReductionType`, `MatGetColumnReductions()`, `REDUCTION_MEAN_IMAGINARYPART`, `REDUCTION_SUM_REALPART`, `REDUCTION_NORM_1`,
+          `REDUCTION_NORM_2`, `REDUCTION_NORM_FROBENIUS`, `REDUCTION_NORM_INFINITY`
 
 M*/
 
@@ -270,8 +272,8 @@ M*/
 
    Level: beginner
 
-.seealso:  ReductionType, MatGetColumnReductions(), REDUCTION_MEAN_REALPART, REDUCTION_SUM_IMAGINARYPART, REDUCTION_NORM_1,
-           REDUCTION_NORM_2, REDUCTION_NORM_FROBENIUS, REDUCTION_NORM_INFINITY
+.seealso: `ReductionType`, `MatGetColumnReductions()`, `REDUCTION_MEAN_REALPART`, `REDUCTION_SUM_IMAGINARYPART`, `REDUCTION_NORM_1`,
+          `REDUCTION_NORM_2`, `REDUCTION_NORM_FROBENIUS`, `REDUCTION_NORM_INFINITY`
 
 M*/
 
@@ -339,6 +341,10 @@ PETSC_EXTERN PetscErrorCode VecStashView(Vec,PetscViewer);
 PETSC_EXTERN PetscErrorCode VecStashViewFromOptions(Vec,PetscObject,const char[]);
 PETSC_EXTERN PetscErrorCode VecStashGetInfo(Vec,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
 
+PETSC_EXTERN PetscErrorCode VecSetPreallocationCOO(Vec,PetscCount,const PetscInt[]);
+PETSC_EXTERN PetscErrorCode VecSetPreallocationCOOLocal(Vec,PetscCount,PetscInt[]);
+PETSC_EXTERN PetscErrorCode VecSetValuesCOO(Vec,const PetscScalar[],InsertMode);
+
 /*MC
    VecSetValue - Set a single entry into a vector.
 
@@ -365,7 +371,7 @@ PETSC_EXTERN PetscErrorCode VecStashGetInfo(Vec,PetscInt*,PetscInt*,PetscInt*,Pe
 
    Level: beginner
 
-.seealso: VecSetValues(), VecAssemblyBegin(), VecAssemblyEnd(), VecSetValuesBlockedLocal(), VecSetValueLocal()
+.seealso: `VecSetValues()`, `VecAssemblyBegin()`, `VecAssemblyEnd()`, `VecSetValuesBlockedLocal()`, `VecSetValueLocal()`
 M*/
 static inline PetscErrorCode VecSetValue(Vec v,PetscInt i,PetscScalar va,InsertMode mode) {return VecSetValues(v,1,&i,&va,mode);}
 
@@ -497,7 +503,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMem(Vec);
 
    Level: beginner
 
-.seealso: VecSetValues(), VecAssemblyBegin(), VecAssemblyEnd(), VecSetValuesBlockedLocal(), VecSetValue()
+.seealso: `VecSetValues()`, `VecAssemblyBegin()`, `VecAssemblyEnd()`, `VecSetValuesBlockedLocal()`, `VecSetValue()`
 M*/
 static inline PetscErrorCode VecSetValueLocal(Vec v,PetscInt i,PetscScalar va,InsertMode mode) {return VecSetValuesLocal(v,1,&i,&va,mode);}
 
@@ -564,20 +570,15 @@ PETSC_EXTERN PetscErrorCode VecRestoreArrayWriteAndMemType(Vec,PetscScalar**);
 
    Not available from Fortran
 
-.seealso: VecGetArray(), VecGetArrayRead(), VecRestoreArrayPair()
+.seealso: `VecGetArray()`, `VecGetArrayRead()`, `VecRestoreArrayPair()`
 
 @*/
 static inline PetscErrorCode VecGetArrayPair(Vec x,Vec y,PetscScalar **xv,PetscScalar **yv)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = VecGetArray(y,yv);CHKERRQ(ierr);
-  if (x != y) {
-    ierr = VecGetArrayRead(x,(const PetscScalar **)xv);CHKERRQ(ierr);
-  } else {
-    *xv = *yv;
-  }
+  PetscCall(VecGetArray(y,yv));
+  if (x == y) *xv = *yv;
+  else PetscCall(VecGetArrayRead(x,(const PetscScalar**)xv));
   PetscFunctionReturn(0);
 }
 
@@ -598,18 +599,14 @@ static inline PetscErrorCode VecGetArrayPair(Vec x,Vec y,PetscScalar **xv,PetscS
 
    Not available from Fortran
 
-.seealso: VecGetArray(), VecGetArrayRead(), VecGetArrayPair()
+.seealso: `VecGetArray()`, `VecGetArrayRead()`, `VecGetArrayPair()`
 
 @*/
 static inline PetscErrorCode VecRestoreArrayPair(Vec x,Vec y,PetscScalar **xv,PetscScalar **yv)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = VecRestoreArray(y,yv);CHKERRQ(ierr);
-  if (x != y) {
-    ierr = VecRestoreArrayRead(x,(const PetscScalar **)xv);CHKERRQ(ierr);
-  }
+  PetscCall(VecRestoreArray(y,yv));
+  if (x != y) PetscCall(VecRestoreArrayRead(x,(const PetscScalar**)xv));
   PetscFunctionReturn(0);
 }
 
@@ -618,14 +615,22 @@ PETSC_EXTERN PetscErrorCode VecLockReadPush(Vec);
 PETSC_EXTERN PetscErrorCode VecLockReadPop(Vec);
 /* We also have a non-public VecLockWriteSet_Private() in vecimpl.h */
 PETSC_EXTERN PetscErrorCode VecLockGet(Vec,PetscInt*);
+/* this API is not public, but is only in here because VecSetErrorIfLocked() is in here */
+PETSC_EXTERN PetscErrorCode VecLockGetLocation(Vec,const char*[],const char*[],int*);
 static inline PetscErrorCode VecSetErrorIfLocked(Vec x,PetscInt arg)
 {
-  PetscInt       state;
-  PetscErrorCode ierr;
+  PetscInt state;
 
   PetscFunctionBegin;
-  ierr = VecLockGet(x,&state);CHKERRQ(ierr);
-  PetscCheck(state == 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE," Vec is already locked for read-only or read/write access, argument # %" PetscInt_FMT,arg);
+  PetscCall(VecLockGet(x,&state));
+  if (PetscUnlikely(state != 0)) {
+    const char *file,*func,*name;
+    int         line;
+
+    PetscCall(VecLockGetLocation(x,&file,&func,&line));
+    PetscCall(PetscObjectGetName((PetscObject)x,&name));
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Vector '%s' (argument #%" PetscInt_FMT ") was locked for %s access in %s() at %s:%d (line numbers only accurate to function begin)",name,arg,state > 0 ? "read-only" : "write-only",func ? func : "unknown_function",file ? file : "unknown file",line ? line : 0);
+  }
   PetscFunctionReturn(0);
 }
 /* The three are deprecated */
@@ -817,7 +822,7 @@ PETSC_EXTERN PetscErrorCode VecTaggerDestroy(VecTagger *);
 
    Level: beginner
 
-.seealso: VecTaggerComputeIntervals()
+.seealso: `VecTaggerComputeIntervals()`
 S*/
 typedef struct {
   PetscScalar min;
@@ -838,7 +843,7 @@ PETSC_EXTERN PetscErrorCode VecTaggerCDFGetBox(VecTagger,const VecTaggerBox **);
   VecTaggerCDFMethod - Determines what method is used to compute absolute values from cumulative distribution values (e.g., what value is the preimage of .95 in the cdf).  Relevant only in parallel: in serial it is directly computed.
 
   Level: advanced
-.seealso: VecTaggerCDFSetMethod(), VecTaggerCDFMethods
+.seealso: `VecTaggerCDFSetMethod()`, `VecTaggerCDFMethods`
 E*/
 typedef enum {VECTAGGER_CDF_GATHER,VECTAGGER_CDF_ITERATIVE,VECTAGGER_CDF_NUM_METHODS} VecTaggerCDFMethod;
 PETSC_EXTERN const char *const VecTaggerCDFMethods[];

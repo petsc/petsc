@@ -15,16 +15,15 @@ static struct {
 
 static PetscErrorCode ourj(SNES snes, Vec X, Mat J, Mat P, void *ptr)
 {
-  PetscErrorCode ierr;
   void (*func)(SNES*,Vec*,Mat*,Mat*,void*,PetscErrorCode*),*ctx;
   DM dm;
   DMSNES sdm;
 
   PetscFunctionBegin;
-  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = DMGetDMSNES(dm, &sdm);CHKERRQ(ierr);
-  ierr = PetscObjectGetFortranCallback((PetscObject) sdm, PETSC_FORTRAN_CALLBACK_SUBTYPE, _cb.snesjacobian, (PetscVoidFunction *) &func, &ctx);CHKERRQ(ierr);
-  (*func)(&snes, &X, &J, &P, ctx, &ierr);CHKERRQ(ierr);
+  PetscCall(SNESGetDM(snes,&dm));
+  PetscCall(DMGetDMSNES(dm, &sdm));
+  PetscCall(PetscObjectGetFortranCallback((PetscObject) sdm, PETSC_FORTRAN_CALLBACK_SUBTYPE, _cb.snesjacobian, (PetscVoidFunction *) &func, &ctx));
+  PetscCallFortranVoidFunction((*func)(&snes, &X, &J, &P, ctx, &ierr));
   PetscFunctionReturn(0);
 }
 
@@ -39,16 +38,15 @@ PETSC_EXTERN void dmsnessetjacobian_(DM *dm, void (*jac)(DM*,Vec*,Mat*,Mat*,void
 
 static PetscErrorCode ourf(SNES snes, Vec X, Vec F, void *ptr)
 {
-  PetscErrorCode ierr;
   void (*func)(SNES*,Vec*,Vec*,void*,PetscErrorCode*), *ctx;
   DM dm;
   DMSNES sdm;
 
   PetscFunctionBegin;
-  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = DMGetDMSNES(dm, &sdm);CHKERRQ(ierr);
-  ierr = PetscObjectGetFortranCallback((PetscObject) sdm, PETSC_FORTRAN_CALLBACK_SUBTYPE, _cb.snesfunction, (PetscVoidFunction *) &func, &ctx);CHKERRQ(ierr);
-  (*func)(&snes, &X, &F, ctx, &ierr);CHKERRQ(ierr);
+  PetscCall(SNESGetDM(snes,&dm));
+  PetscCall(DMGetDMSNES(dm, &sdm));
+  PetscCall(PetscObjectGetFortranCallback((PetscObject) sdm, PETSC_FORTRAN_CALLBACK_SUBTYPE, _cb.snesfunction, (PetscVoidFunction *) &func, &ctx));
+  PetscCallFortranVoidFunction((*func)(&snes, &X, &F, ctx, &ierr));
   PetscFunctionReturn(0);
 }
 

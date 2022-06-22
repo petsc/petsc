@@ -1,9 +1,5 @@
-# $Id$ 
+-include ../../../../../petsckdir.mk
 
-ALL: lib
-
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = bmrm.c
 SOURCEF  =
 SOURCEH  = bmrm.h

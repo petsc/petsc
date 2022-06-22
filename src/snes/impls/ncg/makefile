@@ -1,7 +1,5 @@
-ALL: lib
+-include ../../../../petsckdir.mk
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = snesncg.c
 SOURCEF  =
 SOURCEH  = snesncgimpl.h

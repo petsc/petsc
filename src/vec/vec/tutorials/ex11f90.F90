@@ -1,6 +1,3 @@
-   !Concepts: vectors^norms of sub-vectors
-   !Processors: n
-
   program main
 #include <petsc/finclude/petscvec.h>
   use petscvec
@@ -16,15 +13,11 @@
   character(len=PETSC_MAX_PATH_LEN) :: outputString
   PetscInt,parameter :: zero = 0, one = 1, two = 2
 
-  call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-  if (ierr /= 0) then
-   print*,'PetscInitialize failed'
-   stop
-  endif
+  PetscCallA(PetscInitialize(ierr))
 
-  call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
+  PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr))
 
-  call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-n",n,flg,ierr);CHKERRA(ierr)
+  PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-n",n,flg,ierr))
 
      !Create a vector, specifying only its global dimension.
      !When using VecCreate(), VecSetSizes() and VecSetFromOptions(),
@@ -44,57 +37,57 @@
      !-vec_type mpi or -vec_type shared causes the
      !particular type of vector to be formed.
 
-  call VecCreate(PETSC_COMM_WORLD,x,ierr);CHKERRA(ierr)
+  PetscCallA(VecCreate(PETSC_COMM_WORLD,x,ierr))
 
-  call VecSetSizes(x,PETSC_DECIDE,n,ierr);CHKERRA(ierr)
+  PetscCallA(VecSetSizes(x,PETSC_DECIDE,n,ierr))
   !
-  call VecSetBlockSize(x,two,ierr);CHKERRA(ierr)
-  call VecSetFromOptions(x,ierr);CHKERRA(ierr)
+  PetscCallA(VecSetBlockSize(x,two,ierr))
+  PetscCallA(VecSetFromOptions(x,ierr))
 
      !Set the vectors to entries to a constant value.
 
-  call VecSet(x,sone,ierr);CHKERRA(ierr)
+  PetscCallA(VecSet(x,sone,ierr))
 
-  call VecNorm(x,NORM_2,norm,ierr);CHKERRA(ierr)
+  PetscCallA(VecNorm(x,NORM_2,norm,ierr))
   write(outputString,*) norm
-  call PetscPrintf(PETSC_COMM_WORLD,"L_2 Norm of entire vector: "//trim(outputString)//"\n",ierr);CHKERRA(ierr)
+  PetscCallA(PetscPrintf(PETSC_COMM_WORLD,"L_2 Norm of entire vector: "//trim(outputString)//"\n",ierr))
 
-  call VecNorm(x,NORM_1,norm,ierr);CHKERRA(ierr)
+  PetscCallA(VecNorm(x,NORM_1,norm,ierr))
   write(outputString,*) norm
-  call PetscPrintf(PETSC_COMM_WORLD,"L_1 Norm of entire vector: "//trim(outputString)//"\n",ierr);CHKERRA(ierr)
+  PetscCallA(PetscPrintf(PETSC_COMM_WORLD,"L_1 Norm of entire vector: "//trim(outputString)//"\n",ierr))
 
-  call VecNorm(x,NORM_INFINITY,norm,ierr);CHKERRA(ierr)
+  PetscCallA(VecNorm(x,NORM_INFINITY,norm,ierr))
   write(outputString,*) norm
-  call PetscPrintf(PETSC_COMM_WORLD,"L_inf Norm of entire vector: "//trim(outputString)//"\n",ierr);CHKERRA(ierr)
+  PetscCallA(PetscPrintf(PETSC_COMM_WORLD,"L_inf Norm of entire vector: "//trim(outputString)//"\n",ierr))
 
-  call VecStrideNorm(x,zero,NORM_2,norm,ierr);CHKERRA(ierr)
+  PetscCallA(VecStrideNorm(x,zero,NORM_2,norm,ierr))
   write(outputString,*) norm
-  call PetscPrintf(PETSC_COMM_WORLD,"L_2 Norm of sub-vector 0: "//trim(outputString)//"\n",ierr);CHKERRA(ierr)
+  PetscCallA(PetscPrintf(PETSC_COMM_WORLD,"L_2 Norm of sub-vector 0: "//trim(outputString)//"\n",ierr))
 
-  call VecStrideNorm(x,zero,NORM_1,norm,ierr);CHKERRA(ierr)
+  PetscCallA(VecStrideNorm(x,zero,NORM_1,norm,ierr))
   write(outputString,*) norm
-  call PetscPrintf(PETSC_COMM_WORLD,"L_1 Norm of sub-vector 0: "//trim(outputString)//"\n",ierr);CHKERRA(ierr)
+  PetscCallA(PetscPrintf(PETSC_COMM_WORLD,"L_1 Norm of sub-vector 0: "//trim(outputString)//"\n",ierr))
 
-  call VecStrideNorm(x,zero,NORM_INFINITY,norm,ierr);CHKERRA(ierr)
+  PetscCallA(VecStrideNorm(x,zero,NORM_INFINITY,norm,ierr))
   write(outputString,*) norm
-  call PetscPrintf(PETSC_COMM_WORLD,"L_inf Norm of sub-vector 0: "//trim(outputString)//"\n",ierr);CHKERRA(ierr)
+  PetscCallA(PetscPrintf(PETSC_COMM_WORLD,"L_inf Norm of sub-vector 0: "//trim(outputString)//"\n",ierr))
 
-  call VecStrideNorm(x,one,NORM_2,norm,ierr);CHKERRA(ierr)
+  PetscCallA(VecStrideNorm(x,one,NORM_2,norm,ierr))
   write(outputString,*) norm
-  call PetscPrintf(PETSC_COMM_WORLD,"L_2 Norm of sub-vector 1: "//trim(outputString)//"\n",ierr);CHKERRA(ierr)
+  PetscCallA(PetscPrintf(PETSC_COMM_WORLD,"L_2 Norm of sub-vector 1: "//trim(outputString)//"\n",ierr))
 
-  call VecStrideNorm(x,one,NORM_1,norm,ierr);CHKERRA(ierr)
+  PetscCallA(VecStrideNorm(x,one,NORM_1,norm,ierr))
   write(outputString,*) norm
-  call PetscPrintf(PETSC_COMM_WORLD,"L_1 Norm of sub-vector 1: "//trim(outputString)//"\n",ierr);CHKERRA(ierr)
+  PetscCallA(PetscPrintf(PETSC_COMM_WORLD,"L_1 Norm of sub-vector 1: "//trim(outputString)//"\n",ierr))
 
-  call VecStrideNorm(x,one,NORM_INFINITY,norm,ierr);CHKERRA(ierr)
+  PetscCallA(VecStrideNorm(x,one,NORM_INFINITY,norm,ierr))
   write(outputString,*) norm
-  call PetscPrintf(PETSC_COMM_WORLD,"L_inf Norm of sub-vector 1: "//trim(outputString)//"\n",ierr);CHKERRA(ierr)
+  PetscCallA(PetscPrintf(PETSC_COMM_WORLD,"L_inf Norm of sub-vector 1: "//trim(outputString)//"\n",ierr))
 
   !Free work space.  All PETSc objects should be destroyed when they
   !are no longer needed.
-  call VecDestroy(x,ierr);CHKERRA(ierr)
-  call PetscFinalize(ierr);CHKERRA(ierr)
+  PetscCallA(VecDestroy(x,ierr))
+  PetscCallA(PetscFinalize(ierr))
 
 end program
 

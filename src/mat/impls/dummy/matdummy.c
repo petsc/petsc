@@ -3,47 +3,42 @@
 
 PetscErrorCode MatDestroySubMatrix_Dummy(Mat C)
 {
-  PetscErrorCode ierr;
   Mat_SubSppt    *submatj = (Mat_SubSppt*)C->data;
 
   PetscFunctionBegin;
-  ierr = submatj->destroy(C);CHKERRQ(ierr);
-  ierr = MatDestroySubMatrix_Private(submatj);CHKERRQ(ierr);
+  PetscCall(submatj->destroy(C));
+  PetscCall(MatDestroySubMatrix_Private(submatj));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatDestroySubMatrices_Dummy(PetscInt n, Mat *mat[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   /* Destroy dummy submatrices (*mat)[n]...(*mat)[n+nstages-1] used for reuse struct Mat_SubSppt */
   if ((*mat)[n]) {
     PetscBool      isdummy;
-    ierr = PetscObjectTypeCompare((PetscObject)(*mat)[n],MATDUMMY,&isdummy);CHKERRQ(ierr);
+    PetscCall(PetscObjectTypeCompare((PetscObject)(*mat)[n],MATDUMMY,&isdummy));
     if (isdummy) {
       Mat_SubSppt* smat = (Mat_SubSppt*)((*mat)[n]->data); /* singleis and nstages are saved in (*mat)[n]->data */
 
       if (smat && !smat->singleis) {
         PetscInt i,nstages=smat->nstages;
         for (i=0; i<nstages; i++) {
-          ierr = MatDestroy(&(*mat)[n+i]);CHKERRQ(ierr);
+          PetscCall(MatDestroy(&(*mat)[n+i]));
         }
       }
     }
   }
 
   /* memory is allocated even if n = 0 */
-  ierr = PetscFree(*mat);CHKERRQ(ierr);
+  PetscCall(PetscFree(*mat));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatDestroy_Dummy(Mat A)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscObjectChangeTypeName((PetscObject)A,NULL);CHKERRQ(ierr);
+  PetscCall(PetscObjectChangeTypeName((PetscObject)A,NULL));
   PetscFunctionReturn(0);
 }
 
@@ -52,21 +47,19 @@ PetscErrorCode MatDestroy_Dummy(Mat A)
 
   Level: developer
 
-.seealso: Mat
+.seealso: `Mat`
 
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_Dummy(Mat A)
 {
-  PetscErrorCode    ierr;
-
   PetscFunctionBegin;
   /* matrix ops */
-  ierr = PetscMemzero(A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
+  PetscCall(PetscMemzero(A->ops,sizeof(struct _MatOps)));
   A->ops->destroy            = MatDestroy_Dummy;
   A->ops->destroysubmatrices = MatDestroySubMatrices_Dummy;
 
   /* special MATPREALLOCATOR functions */
-  ierr = PetscObjectChangeTypeName((PetscObject)A,MATDUMMY);CHKERRQ(ierr);
+  PetscCall(PetscObjectChangeTypeName((PetscObject)A,MATDUMMY));
   PetscFunctionReturn(0);
 }

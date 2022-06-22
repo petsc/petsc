@@ -6,45 +6,41 @@
 
 static PetscErrorCode PetscViewerSetFromOptions_ADIOS(PetscOptionItems *PetscOptionsObject,PetscViewer v)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscOptionsHead(PetscOptionsObject,"ADIOS PetscViewer Options");CHKERRQ(ierr);
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscOptionsHeadBegin(PetscOptionsObject,"ADIOS PetscViewer Options");
+  PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PetscViewerFileClose_ADIOS(PetscViewer viewer)
 {
   PetscViewer_ADIOS *adios = (PetscViewer_ADIOS*)viewer->data;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   switch (adios->btype) {
   case FILE_MODE_READ:
-    ierr = adios_read_close(adios->adios_fp);CHKERRQ(ierr);
+    PetscCall(adios_read_close(adios->adios_fp));
     break;
   case FILE_MODE_WRITE:
-     ierr = adios_close(adios->adios_handle);CHKERRQ(ierr);
+     PetscCall(adios_close(adios->adios_handle));
     break;
   default:
     break;
   }
-  ierr = PetscFree(adios->filename);CHKERRQ(ierr);
+  PetscCall(PetscFree(adios->filename));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode PetscViewerDestroy_ADIOS(PetscViewer viewer)
 {
   PetscViewer_ADIOS *adios = (PetscViewer_ADIOS*) viewer->data;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = PetscViewerFileClose_ADIOS(viewer);CHKERRQ(ierr);
-  ierr = PetscFree(adios);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetName_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileGetName_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetMode_C",NULL);CHKERRQ(ierr);
+  PetscCall(PetscViewerFileClose_ADIOS(viewer));
+  PetscCall(PetscFree(adios));
+  PetscCall(PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetName_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileGetName_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetMode_C",NULL));
   PetscFunctionReturn(0);
 }
 
@@ -60,11 +56,10 @@ PetscErrorCode  PetscViewerFileSetMode_ADIOS(PetscViewer viewer, PetscFileMode t
 PetscErrorCode  PetscViewerFileSetName_ADIOS(PetscViewer viewer, const char name[])
 {
   PetscViewer_ADIOS *adios = (PetscViewer_ADIOS*) viewer->data;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  if (adios->filename) {ierr = PetscFree(adios->filename);CHKERRQ(ierr);}
-  ierr = PetscStrallocpy(name, &adios->filename);CHKERRQ(ierr);
+  if (adios->filename) PetscCall(PetscFree(adios->filename));
+  PetscCall(PetscStrallocpy(name, &adios->filename));
   /* Create or open the file collectively */
   switch (adios->btype) {
   case FILE_MODE_READ:
@@ -93,10 +88,10 @@ static PetscErrorCode PetscViewerFileGetName_ADIOS(PetscViewer viewer,const char
 /*MC
    PETSCVIEWERADIOS - A viewer that writes to an ADIOS file
 
-.seealso:  PetscViewerADIOSOpen(), PetscViewerStringSPrintf(), PetscViewerSocketOpen(), PetscViewerDrawOpen(), PETSCVIEWERSOCKET,
-           PetscViewerCreate(), PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), PETSCVIEWERBINARY, PETSCVIEWERDRAW, PETSCVIEWERSTRING,
-           PetscViewerMatlabOpen(), VecView(), DMView(), PetscViewerMatlabPutArray(), PETSCVIEWERASCII, PETSCVIEWERMATLAB,
-           PetscViewerFileSetName(), PetscViewerFileSetMode(), PetscViewerFormat, PetscViewerType, PetscViewerSetType()
+.seealso: `PetscViewerADIOSOpen()`, `PetscViewerStringSPrintf()`, `PetscViewerSocketOpen()`, `PetscViewerDrawOpen()`, `PETSCVIEWERSOCKET`,
+          `PetscViewerCreate()`, `PetscViewerASCIIOpen()`, `PetscViewerBinaryOpen()`, `PETSCVIEWERBINARY`, `PETSCVIEWERDRAW`, `PETSCVIEWERSTRING`,
+          `PetscViewerMatlabOpen()`, `VecView()`, `DMView()`, `PetscViewerMatlabPutArray()`, `PETSCVIEWERASCII`, `PETSCVIEWERMATLAB`,
+          `PetscViewerFileSetName()`, `PetscViewerFileSetMode()`, `PetscViewerFormat`, `PetscViewerType`, `PetscViewerSetType()`
 
   Level: beginner
 M*/
@@ -104,10 +99,9 @@ M*/
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_ADIOS(PetscViewer v)
 {
   PetscViewer_ADIOS *adios;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(v,&adios);CHKERRQ(ierr);
+  PetscCall(PetscNewLog(v,&adios));
 
   v->data                = (void*) adios;
   v->ops->destroy        = PetscViewerDestroy_ADIOS;
@@ -117,9 +111,9 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_ADIOS(PetscViewer v)
   adios->filename        = NULL;
   adios->timestep        = -1;
 
-  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetName_C",PetscViewerFileSetName_ADIOS);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileGetName_C",PetscViewerFileGetName_ADIOS);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetMode_C",PetscViewerFileSetMode_ADIOS);CHKERRQ(ierr);
+  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetName_C",PetscViewerFileSetName_ADIOS));
+  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileGetName_C",PetscViewerFileGetName_ADIOS));
+  PetscCall(PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetMode_C",PetscViewerFileSetMode_ADIOS));
   PetscFunctionReturn(0);
 }
 
@@ -144,19 +138,17 @@ $    FILE_MODE_APPEND - open existing file for binary output
    Note:
    This PetscViewer should be destroyed with PetscViewerDestroy().
 
-.seealso: PetscViewerASCIIOpen(), PetscViewerPushFormat(), PetscViewerDestroy(), PetscViewerHDF5Open(),
-          VecView(), MatView(), VecLoad(), PetscViewerSetType(), PetscViewerFileSetMode(), PetscViewerFileSetName()
-          MatLoad(), PetscFileMode, PetscViewer
+.seealso: `PetscViewerASCIIOpen()`, `PetscViewerPushFormat()`, `PetscViewerDestroy()`, `PetscViewerHDF5Open()`,
+          `VecView()`, `MatView()`, `VecLoad()`, `PetscViewerSetType()`, `PetscViewerFileSetMode()`, `PetscViewerFileSetName()`
+          `MatLoad()`, `PetscFileMode`, `PetscViewer`
 @*/
 PetscErrorCode  PetscViewerADIOSOpen(MPI_Comm comm, const char name[], PetscFileMode type, PetscViewer *adiosv)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscViewerCreate(comm, adiosv);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(*adiosv, PETSCVIEWERADIOS);CHKERRQ(ierr);
-  ierr = PetscViewerFileSetMode(*adiosv, type);CHKERRQ(ierr);
-  ierr = PetscViewerFileSetName(*adiosv, name);CHKERRQ(ierr);
+  PetscCall(PetscViewerCreate(comm, adiosv));
+  PetscCall(PetscViewerSetType(*adiosv, PETSCVIEWERADIOS));
+  PetscCall(PetscViewerFileSetMode(*adiosv, type));
+  PetscCall(PetscViewerFileSetName(*adiosv, name));
   PetscFunctionReturn(0);
 }
 
@@ -175,7 +167,7 @@ PetscErrorCode  PetscViewerADIOSOpen(MPI_Comm comm, const char name[], PetscFile
 
   Developer Notes: These have not been verified
 
-.seealso: PetscDataType, PetscADIOSDataTypeToPetscDataType()
+.seealso: `PetscDataType`, `PetscADIOSDataTypeToPetscDataType()`
 @*/
 PetscErrorCode PetscDataTypeToADIOSDataType(PetscDataType ptype, enum ADIOS_DATATYPES *htype)
 {
@@ -212,7 +204,7 @@ PetscErrorCode PetscDataTypeToADIOSDataType(PetscDataType ptype, enum ADIOS_DATA
 
   Developer Notes: These have not been verified
 
-.seealso: PetscDataType, PetscADIOSDataTypeToPetscDataType()
+.seealso: `PetscDataType`, `PetscADIOSDataTypeToPetscDataType()`
 @*/
 PetscErrorCode PetscADIOSDataTypeToPetscDataType(enum ADIOS_DATATYPES htype, PetscDataType *ptype)
 {
@@ -232,4 +224,3 @@ PetscErrorCode PetscADIOSDataTypeToPetscDataType(enum ADIOS_DATATYPES htype, Pet
   else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Unsupported ADIOS datatype");
   PetscFunctionReturn(0);
 }
-

@@ -8,7 +8,6 @@ int main(int argc, char **argv)
 #if defined(PETSC_HAVE_ELEMENTAL)
   PetscBool      initialized;
 #endif
-  PetscErrorCode ierr;
 
 #if defined(PETSC_HAVE_MPIUNI)
   imax = 32;
@@ -16,35 +15,34 @@ int main(int argc, char **argv)
   imax = 1024;
 #endif
 
-  MPI_Init(&argc, &argv);
+  PetscCallMPI(MPI_Init(&argc, &argv));
 #if defined(PETSC_HAVE_ELEMENTAL)
-  ierr = PetscElementalInitializePackage(); if (ierr) return ierr;
-  ierr = PetscElementalInitialized(&initialized); if (ierr) return ierr;
+  PetscCall(PetscElementalInitializePackage());
+  PetscCall(PetscElementalInitialized(&initialized));
   if (!initialized) return 1;
 #endif
   for (i = 0; i < imax; ++i) {
-    ierr = PetscInitialize(&argc, &argv, (char*) 0, help); if (ierr) return ierr;
-    ierr = PetscFinalize(); if (ierr) return ierr;
+    PetscCall(PetscInitialize(&argc, &argv, (char*) 0, help));
+    PetscCall(PetscFinalize());
 #if defined(PETSC_HAVE_ELEMENTAL)
-    ierr = PetscElementalInitialized(&initialized); if (ierr) return ierr;
+    PetscCall(PetscElementalInitialized(&initialized));
     if (!initialized) return PETSC_ERR_LIB;
 #endif
   }
 #if defined(PETSC_HAVE_ELEMENTAL)
-  ierr = PetscElementalFinalizePackage(); if (ierr) return ierr;
-  ierr = PetscElementalInitialized(&initialized); if (ierr) return ierr;
+  PetscCall(PetscElementalFinalizePackage());
+  PetscCall(PetscElementalInitialized(&initialized));
   if (initialized) return 1;
   for (i = 0; i < 32; ++i) { /* increasing the upper bound will generate an error in Elemental */
-    ierr = PetscInitialize(&argc, &argv, (char*) 0, help); if (ierr) return ierr;
-    ierr = PetscElementalInitialized(&initialized);CHKERRQ(ierr);
-    PetscCheckFalse(!initialized,PETSC_COMM_WORLD, PETSC_ERR_LIB, "Uninitialized Elemental");
-    ierr = PetscFinalize(); if (ierr) return ierr;
-    ierr = PetscElementalInitialized(&initialized); if (ierr) return ierr;
+    PetscCall(PetscInitialize(&argc, &argv, (char*) 0, help));
+    PetscCall(PetscElementalInitialized(&initialized));
+    PetscCheck(initialized,PETSC_COMM_WORLD, PETSC_ERR_LIB, "Uninitialized Elemental");
+    PetscCall(PetscFinalize());
+    PetscCall(PetscElementalInitialized(&initialized));
     if (initialized) return PETSC_ERR_LIB;
   }
 #endif
-  MPI_Finalize();
-  return ierr;
+  return MPI_Finalize();
 }
 
 /*TEST

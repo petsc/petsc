@@ -16,13 +16,12 @@
 
 static PetscErrorCode PetscFixSlashN(const char *in, char **out)
 {
-  PetscErrorCode ierr;
   PetscInt       i;
   size_t         len;
 
   PetscFunctionBegin;
-  ierr = PetscStrallocpy(in,out);CHKERRQ(ierr);
-  ierr = PetscStrlen(*out,&len);CHKERRQ(ierr);
+  PetscCall(PetscStrallocpy(in,out));
+  PetscCall(PetscStrlen(*out,&len));
   for (i=0; i<(int)len-1; i++) {
     if ((*out)[i] == '\\' && (*out)[i+1] == 'n') {(*out)[i] = ' '; (*out)[i+1] = '\n';}
   }
@@ -55,4 +54,3 @@ PETSC_EXTERN void petscmemoryview_(PetscViewer *vin, char* message, PetscErrorCo
   *ierr = PetscMemoryView(v,tmp);if (*ierr) return;
   *ierr = PetscFree(tmp);
 }
-

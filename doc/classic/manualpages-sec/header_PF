@@ -1,11 +1,4 @@
-<HTML>
-<HEAD>
-<TITLE>PETSc Mathematical functions</TITLE>
-</HEAD>
-<BODY BGCOLOR="FFFFFF">
+# PETSc Mathematical Functions Manual Pages
 
-<H2> PF </H2>
+  PETSc functions (`PF` objects) are used to compute grid functions, element functions, etc.
 
-  PETSc functions (PF objects) are used to compute grid functions, element functions, etc.
-
-<P>

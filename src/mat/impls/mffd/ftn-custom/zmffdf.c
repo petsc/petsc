@@ -15,9 +15,8 @@
 
 static PetscErrorCode ourmatmffdfunction(void *ctx,Vec x,Vec f)
 {
-  PetscErrorCode ierr = 0;
-  Mat            mat  = (Mat) ctx;
-  (*(void (*)(void*,Vec*,Vec*,PetscErrorCode*))(((PetscObject)mat)->fortran_func_pointers[0]))((void*)(PETSC_UINTPTR_T)((PetscObject)mat)->fortran_func_pointers[1],&x,&f,&ierr);CHKERRQ(ierr);
+  Mat mat  = (Mat) ctx;
+  PetscCallFortranVoidFunction((*(void (*)(void*,Vec*,Vec*,PetscErrorCode*))(((PetscObject)mat)->fortran_func_pointers[0]))((void*)(PETSC_UINTPTR_T)((PetscObject)mat)->fortran_func_pointers[1],&x,&f,&ierr));
   return 0;
 }
 
@@ -45,4 +44,3 @@ PETSC_EXTERN void matmffdsetoptionsprefix_(Mat *mat,char* prefix,PetscErrorCode 
   *ierr = MatMFFDSetOptionsPrefix(*mat,t);if (*ierr) return;
   FREECHAR(prefix,t);
 }
-

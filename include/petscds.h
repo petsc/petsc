@@ -3,9 +3,12 @@
 */
 #if !defined(PETSCDS_H)
 #define PETSCDS_H
+
 #include <petscfe.h>
 #include <petscfv.h>
 #include <petscdstypes.h>
+
+/* SUBMANSEC = DT */
 
 PETSC_EXTERN PetscClassId PETSCWEAKFORM_CLASSID;
 
@@ -554,7 +557,7 @@ PETSC_EXTERN PetscClassId PETSCDS_CLASSID;
 
   Level: beginner
 
-.seealso: PetscDSSetType(), PetscDS
+.seealso: `PetscDSSetType()`, `PetscDS`
 J*/
 typedef const char *PetscDSType;
 #define PETSCDSBASIC "basic"

@@ -81,6 +81,7 @@ src/dm/mesh/tutorials/*.vtk
 *.dSYM
 *.mexmaci*
 valgrind*
+!share/petsc/valgrind/
 callgrind.out.*
 .DS_Store
 session_*

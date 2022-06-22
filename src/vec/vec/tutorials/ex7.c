@@ -8,10 +8,6 @@ and from Fortran to C\n\n";
   Ugly stuff to insure the function names match between Fortran
   and C. This is out of our PETSc hands to cleanup.
 */
-/*T
-   Concepts: vectors^fortran-c;
-   Processors: n
-T*/
 #include <petsc/private/fortranimpl.h>
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define ex7f_ EX7F
@@ -25,20 +21,19 @@ PETSC_INTERN void ex7f_(Vec*,int*);
 
 int main(int argc,char **args)
 {
-  PetscErrorCode ierr;
-  PetscInt       m = 10;
-  int            fcomm;
-  Vec            vec;
+  PetscInt m = 10;
+  int      fcomm;
+  Vec      vec;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   /* This function should be called to be able to use PETSc routines
      from the FORTRAN subroutines needed by this program */
 
   PetscInitializeFortran();
 
-  ierr = VecCreate(PETSC_COMM_WORLD,&vec);CHKERRQ(ierr);
-  ierr = VecSetSizes(vec,PETSC_DECIDE,m);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(vec);CHKERRQ(ierr);
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&vec));
+  PetscCall(VecSetSizes(vec,PETSC_DECIDE,m));
+  PetscCall(VecSetFromOptions(vec));
 
   /*
      Call Fortran routine - the use of MPI_Comm_c2f() allows
@@ -49,10 +44,10 @@ int main(int argc,char **args)
 
   ex7f_(&vec,&fcomm);
 
-  ierr = VecView(vec,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecDestroy(&vec);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(VecView(vec,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecDestroy(&vec));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 PETSC_INTERN void ex7c_(Vec *fvec,int *fcomm,PetscErrorCode *ierr)
@@ -80,7 +75,7 @@ PETSC_INTERN void ex7c_(Vec *fvec,int *fcomm,PetscErrorCode *ierr)
 
    test:
       nsize: 3
-      filter: sort -b |grep -v "MPI processes"
+      filter: sort -b |grep -v " MPI process"
       filter_output: sort -b
 
 TEST*/

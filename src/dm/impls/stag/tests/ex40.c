@@ -16,19 +16,18 @@ static char help[] = "Test coloring for finite difference Jacobians with DMStag\
 /* A "diagonal" objective function which only couples dof living at the same "point" */
 PetscErrorCode FormFunction1DNoCoupling(SNES snes, Vec x, Vec f, void *ctx)
 {
-  PetscErrorCode    ierr;
   PetscInt          start,n,n_extra,N,dof[2];
   Vec               x_local;
   DM                dm;
 
   PetscFunctionBegin;
   (void) ctx;
-  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(dm,&x_local);CHKERRQ(ierr);
-  ierr = DMGlobalToLocal(dm,x,INSERT_VALUES,x_local);CHKERRQ(ierr);
-  ierr = DMStagGetCorners(dm,&start,NULL,NULL,&n,NULL,NULL,&n_extra,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMStagGetGlobalSizes(dm,&N,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMStagGetDOF(dm,&dof[0],&dof[1],NULL,NULL);CHKERRQ(ierr);
+  PetscCall(SNESGetDM(snes,&dm));
+  PetscCall(DMGetLocalVector(dm,&x_local));
+  PetscCall(DMGlobalToLocal(dm,x,INSERT_VALUES,x_local));
+  PetscCall(DMStagGetCorners(dm,&start,NULL,NULL,&n,NULL,NULL,&n_extra,NULL,NULL));
+  PetscCall(DMStagGetGlobalSizes(dm,&N,NULL,NULL));
+  PetscCall(DMStagGetDOF(dm,&dof[0],&dof[1],NULL,NULL));
   for (PetscInt e=start; e<start+n+n_extra; ++e) {
     for (PetscInt c=0; c<dof[0]; ++c) {
       DMStagStencil row;
@@ -37,9 +36,9 @@ PetscErrorCode FormFunction1DNoCoupling(SNES snes, Vec x, Vec f, void *ctx)
       row.i = e;
       row.loc = DMSTAG_LEFT;
       row.c = c;
-      ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+      PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
       val = (10.0 + c) * x_val * x_val * x_val;  // f_i = (10 +c) * x_i^3
-      ierr = DMStagVecSetValuesStencil(dm,f,1,&row,&val,INSERT_VALUES);CHKERRQ(ierr);
+      PetscCall(DMStagVecSetValuesStencil(dm,f,1,&row,&val,INSERT_VALUES));
     }
     if (e < N) {
       for (PetscInt c=0; c<dof[1]; ++c) {
@@ -49,33 +48,32 @@ PetscErrorCode FormFunction1DNoCoupling(SNES snes, Vec x, Vec f, void *ctx)
         row.i = e;
         row.loc = DMSTAG_ELEMENT;
         row.c = c;
-        ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+        PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
         val = (20.0 + c) * x_val * x_val * x_val;  // f_i = (20 + c) * x_i^3
-        ierr = DMStagVecSetValuesStencil(dm,f,1,&row,&val,INSERT_VALUES);CHKERRQ(ierr);
+        PetscCall(DMStagVecSetValuesStencil(dm,f,1,&row,&val,INSERT_VALUES));
       }
     }
   }
-  ierr = DMRestoreLocalVector(dm,&x_local);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(f);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(f);CHKERRQ(ierr);
+  PetscCall(DMRestoreLocalVector(dm,&x_local));
+  PetscCall(VecAssemblyBegin(f));
+  PetscCall(VecAssemblyEnd(f));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode FormJacobian1DNoCoupling(SNES snes,Vec x,Mat Amat,Mat Pmat,void *ctx)
 {
-  PetscErrorCode ierr;
   PetscInt       start,n,n_extra,N,dof[2];
   Vec            x_local;
   DM             dm;
 
   PetscFunctionBegin;
   (void) ctx;
-  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(dm,&x_local);CHKERRQ(ierr);
-  ierr = DMGlobalToLocal(dm,x,INSERT_VALUES,x_local);CHKERRQ(ierr);
-  ierr = DMStagGetCorners(dm,&start,NULL,NULL,&n,NULL,NULL,&n_extra,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMStagGetGlobalSizes(dm,&N,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMStagGetDOF(dm,&dof[0],&dof[1],NULL,NULL);CHKERRQ(ierr);
+  PetscCall(SNESGetDM(snes,&dm));
+  PetscCall(DMGetLocalVector(dm,&x_local));
+  PetscCall(DMGlobalToLocal(dm,x,INSERT_VALUES,x_local));
+  PetscCall(DMStagGetCorners(dm,&start,NULL,NULL,&n,NULL,NULL,&n_extra,NULL,NULL));
+  PetscCall(DMStagGetGlobalSizes(dm,&N,NULL,NULL));
+  PetscCall(DMStagGetDOF(dm,&dof[0],&dof[1],NULL,NULL));
   for (PetscInt e=start; e<start+n+n_extra; ++e) {
     for (PetscInt c=0; c<dof[0]; ++c) {
       DMStagStencil row_vertex;
@@ -84,9 +82,9 @@ PetscErrorCode FormJacobian1DNoCoupling(SNES snes,Vec x,Mat Amat,Mat Pmat,void *
       row_vertex.i = e;
       row_vertex.loc = DMSTAG_LEFT;
       row_vertex.c = c;
-      ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row_vertex,&x_val);CHKERRQ(ierr);
+      PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row_vertex,&x_val));
       val = 3.0 * (10.0 + c) * x_val * x_val;
-      ierr = DMStagMatSetValuesStencil(dm,Amat,1,&row_vertex,1,&row_vertex,&val,INSERT_VALUES);CHKERRQ(ierr);
+      PetscCall(DMStagMatSetValuesStencil(dm,Amat,1,&row_vertex,1,&row_vertex,&val,INSERT_VALUES));
     }
     if (e < N) {
       for (PetscInt c=0; c<dof[1]; ++c) {
@@ -96,24 +94,23 @@ PetscErrorCode FormJacobian1DNoCoupling(SNES snes,Vec x,Mat Amat,Mat Pmat,void *
         row_element.i = e;
         row_element.loc = DMSTAG_ELEMENT;
         row_element.c = c;
-        ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row_element,&x_val);CHKERRQ(ierr);
+        PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row_element,&x_val));
         val = 3.0 * (20.0 + c) * x_val * x_val;
-        ierr = DMStagMatSetValuesStencil(dm,Amat,1,&row_element,1,&row_element,&val,INSERT_VALUES);CHKERRQ(ierr);
+        PetscCall(DMStagMatSetValuesStencil(dm,Amat,1,&row_element,1,&row_element,&val,INSERT_VALUES));
       }
     }
   }
-  ierr = DMRestoreLocalVector(dm,&x_local);CHKERRQ(ierr);
+  PetscCall(DMRestoreLocalVector(dm,&x_local));
 
-  ierr = MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  PetscCheckFalse(Amat != Pmat,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not implemented for distinct Amat and Pmat");
+  PetscCall(MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY));
+  PetscCheck(Amat == Pmat,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not implemented for distinct Amat and Pmat");
   PetscFunctionReturn(0);
 }
 
 /* Objective functions which use the DM's stencil width. */
 PetscErrorCode FormFunction1D(SNES snes,Vec x,Vec f,void *ctx)
 {
-  PetscErrorCode    ierr;
   Vec               x_local;
   PetscInt          dim,stencil_width,start,n,n_extra,N,dof[2];
   DMStagStencilType stencil_type;
@@ -121,20 +118,20 @@ PetscErrorCode FormFunction1D(SNES snes,Vec x,Vec f,void *ctx)
 
   PetscFunctionBegin;
   (void) ctx;
-  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
-  PetscCheckFalse(dim != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"DM dimension must be 1");
-  ierr = DMStagGetStencilType(dm,&stencil_type);CHKERRQ(ierr);
-  PetscCheckFalse(stencil_type != DMSTAG_STENCIL_STAR && stencil_type != DMSTAG_STENCIL_BOX,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only star and box stencils supported");
-  ierr = DMStagGetStencilWidth(dm,&stencil_width);CHKERRQ(ierr);
+  PetscCall(SNESGetDM(snes,&dm));
+  PetscCall(DMGetDimension(dm,&dim));
+  PetscCheck(dim == 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"DM dimension must be 1");
+  PetscCall(DMStagGetStencilType(dm,&stencil_type));
+  PetscCheck(stencil_type == DMSTAG_STENCIL_STAR || stencil_type == DMSTAG_STENCIL_BOX,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only star and box stencils supported");
+  PetscCall(DMStagGetStencilWidth(dm,&stencil_width));
 
-  ierr = DMGetLocalVector(dm,&x_local);CHKERRQ(ierr);
-  ierr = DMGlobalToLocal(dm,x,INSERT_VALUES,x_local);CHKERRQ(ierr);
-  ierr = DMStagGetCorners(dm,&start,NULL,NULL,&n,NULL,NULL,&n_extra,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMStagGetGlobalSizes(dm,&N,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMStagGetDOF(dm,&dof[0],&dof[1],NULL,NULL);CHKERRQ(ierr);
+  PetscCall(DMGetLocalVector(dm,&x_local));
+  PetscCall(DMGlobalToLocal(dm,x,INSERT_VALUES,x_local));
+  PetscCall(DMStagGetCorners(dm,&start,NULL,NULL,&n,NULL,NULL,&n_extra,NULL,NULL));
+  PetscCall(DMStagGetGlobalSizes(dm,&N,NULL,NULL));
+  PetscCall(DMStagGetDOF(dm,&dof[0],&dof[1],NULL,NULL));
 
-  ierr = VecZeroEntries(f);CHKERRQ(ierr);
+  PetscCall(VecZeroEntries(f));
 
   for (PetscInt e=start; e<start+n+n_extra; ++e) {
     DMStagStencil row_vertex,row_element;
@@ -159,9 +156,9 @@ PetscErrorCode FormFunction1D(SNES snes,Vec x,Vec f,void *ctx)
             col.c = c_col;
             col.i = e_offset;
             col.loc = DMSTAG_LEFT;
-            ierr = DMStagVecGetValuesStencil(dm,x_local,1,&col,&x_val);CHKERRQ(ierr);
+            PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&col,&x_val));
             val = (10.0 + offset) * x_val * x_val * x_val;
-            ierr = DMStagVecSetValuesStencil(dm,f,1,&row_vertex,&val,ADD_VALUES);CHKERRQ(ierr);
+            PetscCall(DMStagVecSetValuesStencil(dm,f,1,&row_vertex,&val,ADD_VALUES));
           }
         }
       }
@@ -177,9 +174,9 @@ PetscErrorCode FormFunction1D(SNES snes,Vec x,Vec f,void *ctx)
             col.c = c_col;
             col.i = e_offset;
             col.loc = DMSTAG_ELEMENT;
-            ierr = DMStagVecGetValuesStencil(dm,x_local,1,&col,&x_val);CHKERRQ(ierr);
+            PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&col,&x_val));
             val = (15.0 + offset) * x_val * x_val * x_val;
-            ierr = DMStagVecSetValuesStencil(dm,f,1,&row_vertex,&val,ADD_VALUES);CHKERRQ(ierr);
+            PetscCall(DMStagVecSetValuesStencil(dm,f,1,&row_vertex,&val,ADD_VALUES));
           }
         }
       }
@@ -196,9 +193,9 @@ PetscErrorCode FormFunction1D(SNES snes,Vec x,Vec f,void *ctx)
               col.c = c_col;
               col.i = e_offset;
               col.loc = DMSTAG_LEFT;
-              ierr = DMStagVecGetValuesStencil(dm,x_local,1,&col,&x_val);CHKERRQ(ierr);
+              PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&col,&x_val));
               val = (25.0 + offset) * x_val * x_val * x_val;
-              ierr = DMStagVecSetValuesStencil(dm,f,1,&row_element,&val,ADD_VALUES);CHKERRQ(ierr);
+              PetscCall(DMStagVecSetValuesStencil(dm,f,1,&row_element,&val,ADD_VALUES));
             }
           }
         }
@@ -214,9 +211,9 @@ PetscErrorCode FormFunction1D(SNES snes,Vec x,Vec f,void *ctx)
               col.c = c_col;
               col.i = e_offset;
               col.loc = DMSTAG_ELEMENT;
-              ierr = DMStagVecGetValuesStencil(dm,x_local,1,&col,&x_val);CHKERRQ(ierr);
+              PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&col,&x_val));
               val = (20.0 + offset) * x_val * x_val * x_val;
-              ierr = DMStagVecSetValuesStencil(dm,f,1,&row_element,&val,ADD_VALUES);CHKERRQ(ierr);
+              PetscCall(DMStagVecSetValuesStencil(dm,f,1,&row_element,&val,ADD_VALUES));
             }
           }
         }
@@ -224,33 +221,32 @@ PetscErrorCode FormFunction1D(SNES snes,Vec x,Vec f,void *ctx)
       }
     }
   }
-  ierr = DMRestoreLocalVector(dm,&x_local);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(f);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(f);CHKERRQ(ierr);
+  PetscCall(DMRestoreLocalVector(dm,&x_local));
+  PetscCall(VecAssemblyBegin(f));
+  PetscCall(VecAssemblyEnd(f));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode FormJacobian1D(SNES snes, Vec x, Mat Amat, Mat Pmat, void *ctx)
 {
-  PetscErrorCode ierr;
   Vec            x_local;
   PetscInt       dim,stencil_width,start,n,n_extra,N,dof[2];
   DM             dm;
 
   PetscFunctionBegin;
   (void) ctx;
-  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
-  PetscCheckFalse(dim != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"DM dimension must be 1");
-  ierr = DMStagGetStencilWidth(dm,&stencil_width);CHKERRQ(ierr);
+  PetscCall(SNESGetDM(snes,&dm));
+  PetscCall(DMGetDimension(dm,&dim));
+  PetscCheck(dim == 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"DM dimension must be 1");
+  PetscCall(DMStagGetStencilWidth(dm,&stencil_width));
 
-  ierr = DMGetLocalVector(dm,&x_local);CHKERRQ(ierr);
-  ierr = DMGlobalToLocal(dm,x,INSERT_VALUES,x_local);CHKERRQ(ierr);
-  ierr = DMStagGetCorners(dm,&start,NULL,NULL,&n,NULL,NULL,&n_extra,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMStagGetGlobalSizes(dm,&N,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMStagGetDOF(dm,&dof[0],&dof[1],NULL,NULL);CHKERRQ(ierr);
+  PetscCall(DMGetLocalVector(dm,&x_local));
+  PetscCall(DMGlobalToLocal(dm,x,INSERT_VALUES,x_local));
+  PetscCall(DMStagGetCorners(dm,&start,NULL,NULL,&n,NULL,NULL,&n_extra,NULL,NULL));
+  PetscCall(DMStagGetGlobalSizes(dm,&N,NULL,NULL));
+  PetscCall(DMStagGetDOF(dm,&dof[0],&dof[1],NULL,NULL));
 
-  ierr = MatZeroEntries(Amat);CHKERRQ(ierr);
+  PetscCall(MatZeroEntries(Amat));
 
   for (PetscInt e=start; e<start+n+n_extra; ++e) {
     DMStagStencil row_vertex,row_element;
@@ -275,9 +271,9 @@ PetscErrorCode FormJacobian1D(SNES snes, Vec x, Mat Amat, Mat Pmat, void *ctx)
             col.c = c_col;
             col.i = e_offset;
             col.loc = DMSTAG_LEFT;
-            ierr = DMStagVecGetValuesStencil(dm,x_local,1,&col,&x_val);CHKERRQ(ierr);
+            PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&col,&x_val));
             val = 3.0 * (10.0 + offset) * x_val * x_val;
-            ierr = DMStagMatSetValuesStencil(dm,Amat,1,&row_vertex,1,&col,&val,ADD_VALUES);CHKERRQ(ierr);
+            PetscCall(DMStagMatSetValuesStencil(dm,Amat,1,&row_vertex,1,&col,&val,ADD_VALUES));
           }
         }
       }
@@ -293,9 +289,9 @@ PetscErrorCode FormJacobian1D(SNES snes, Vec x, Mat Amat, Mat Pmat, void *ctx)
             col.c = c_col;
             col.i = e_offset;
             col.loc = DMSTAG_ELEMENT;
-            ierr = DMStagVecGetValuesStencil(dm,x_local,1,&col,&x_val);CHKERRQ(ierr);
+            PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&col,&x_val));
             val = 3.0 * (15.0 + offset) * x_val * x_val;
-            ierr = DMStagMatSetValuesStencil(dm,Amat,1,&row_vertex,1,&col,&val,ADD_VALUES);CHKERRQ(ierr);
+            PetscCall(DMStagMatSetValuesStencil(dm,Amat,1,&row_vertex,1,&col,&val,ADD_VALUES));
           }
         }
       }
@@ -312,9 +308,9 @@ PetscErrorCode FormJacobian1D(SNES snes, Vec x, Mat Amat, Mat Pmat, void *ctx)
               col.c = c_col;
               col.i = e_offset;
               col.loc = DMSTAG_LEFT;
-              ierr = DMStagVecGetValuesStencil(dm,x_local,1,&col,&x_val);CHKERRQ(ierr);
+              PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&col,&x_val));
               val = 3.0 * (25.0 + offset) * x_val * x_val;
-              ierr = DMStagMatSetValuesStencil(dm,Amat,1,&row_element,1,&col,&val,ADD_VALUES);CHKERRQ(ierr);
+              PetscCall(DMStagMatSetValuesStencil(dm,Amat,1,&row_element,1,&col,&val,ADD_VALUES));
             }
           }
         }
@@ -330,37 +326,36 @@ PetscErrorCode FormJacobian1D(SNES snes, Vec x, Mat Amat, Mat Pmat, void *ctx)
               col.c = c_col;
               col.i = e_offset;
               col.loc = DMSTAG_ELEMENT;
-              ierr = DMStagVecGetValuesStencil(dm,x_local,1,&col,&x_val);CHKERRQ(ierr);
+              PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&col,&x_val));
               val = 3.0 * (20.0 + offset) * x_val * x_val;
-              ierr = DMStagMatSetValuesStencil(dm,Amat,1,&row_element,1,&col,&val,ADD_VALUES);CHKERRQ(ierr);
+              PetscCall(DMStagMatSetValuesStencil(dm,Amat,1,&row_element,1,&col,&val,ADD_VALUES));
             }
           }
         }
       }
     }
   }
-  ierr = DMRestoreLocalVector(dm,&x_local);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  PetscCheckFalse(Amat != Pmat,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not implemented for distinct Amat and Pmat");
+  PetscCall(DMRestoreLocalVector(dm,&x_local));
+  PetscCall(MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY));
+  PetscCheck(Amat == Pmat,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not implemented for distinct Amat and Pmat");
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode FormFunction2DNoCoupling(SNES snes,Vec x,Vec f,void *ctx)
 {
-  PetscErrorCode ierr;
   PetscInt       start[2],n[2],n_extra[2],N[2],dof[3];
   Vec            x_local;
   DM             dm;
 
   PetscFunctionBegin;
   (void) ctx;
-  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(dm,&x_local);CHKERRQ(ierr);
-  ierr = DMGlobalToLocal(dm,x,INSERT_VALUES,x_local);CHKERRQ(ierr);
-  ierr = DMStagGetCorners(dm,&start[0],&start[1],NULL,&n[0],&n[1],NULL,&n_extra[0],&n_extra[1],NULL);CHKERRQ(ierr);
-  ierr = DMStagGetGlobalSizes(dm,&N[0],&N[1],NULL);CHKERRQ(ierr);
-  ierr = DMStagGetDOF(dm,&dof[0],&dof[1],&dof[2],NULL);CHKERRQ(ierr);
+  PetscCall(SNESGetDM(snes,&dm));
+  PetscCall(DMGetLocalVector(dm,&x_local));
+  PetscCall(DMGlobalToLocal(dm,x,INSERT_VALUES,x_local));
+  PetscCall(DMStagGetCorners(dm,&start[0],&start[1],NULL,&n[0],&n[1],NULL,&n_extra[0],&n_extra[1],NULL));
+  PetscCall(DMStagGetGlobalSizes(dm,&N[0],&N[1],NULL));
+  PetscCall(DMStagGetDOF(dm,&dof[0],&dof[1],&dof[2],NULL));
   for (PetscInt ey=start[1]; ey<start[1]+n[1]+n_extra[1]; ++ey) {
     for (PetscInt ex=start[0]; ex<start[0]+n[0]+n_extra[0]; ++ex) {
       for (PetscInt c=0; c<dof[0]; ++c) {
@@ -371,9 +366,9 @@ PetscErrorCode FormFunction2DNoCoupling(SNES snes,Vec x,Vec f,void *ctx)
         row.j = ey;
         row.loc = DMSTAG_DOWN_LEFT;
         row.c = c;
-        ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+        PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
         val = (5.0 + c) * x_val * x_val * x_val;
-        ierr = DMStagVecSetValuesStencil(dm,f,1,&row,&val,INSERT_VALUES);CHKERRQ(ierr);
+        PetscCall(DMStagVecSetValuesStencil(dm,f,1,&row,&val,INSERT_VALUES));
       }
       if (ex < N[0]) {
         for (PetscInt c=0; c<dof[1]; ++c) {
@@ -384,9 +379,9 @@ PetscErrorCode FormFunction2DNoCoupling(SNES snes,Vec x,Vec f,void *ctx)
           row.j = ey;
           row.loc = DMSTAG_DOWN;
           row.c = c;
-          ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+          PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
           val = (10.0 + c) * x_val * x_val * x_val;
-          ierr = DMStagVecSetValuesStencil(dm,f,1,&row,&val,INSERT_VALUES);CHKERRQ(ierr);
+          PetscCall(DMStagVecSetValuesStencil(dm,f,1,&row,&val,INSERT_VALUES));
         }
       }
       if (ey < N[1]) {
@@ -398,9 +393,9 @@ PetscErrorCode FormFunction2DNoCoupling(SNES snes,Vec x,Vec f,void *ctx)
           row.j = ey;
           row.loc = DMSTAG_LEFT;
           row.c = c;
-          ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+          PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
           val = (15.0 + c) * x_val * x_val * x_val;
-          ierr = DMStagVecSetValuesStencil(dm,f,1,&row,&val,INSERT_VALUES);CHKERRQ(ierr);
+          PetscCall(DMStagVecSetValuesStencil(dm,f,1,&row,&val,INSERT_VALUES));
         }
       }
       if (ex < N[0] && ey < N[1]) {
@@ -412,34 +407,33 @@ PetscErrorCode FormFunction2DNoCoupling(SNES snes,Vec x,Vec f,void *ctx)
           row.j = ey;
           row.loc = DMSTAG_ELEMENT;
           row.c = c;
-          ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+          PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
           val = (20.0 + c) * x_val * x_val * x_val;
-          ierr = DMStagVecSetValuesStencil(dm,f,1,&row,&val,INSERT_VALUES);CHKERRQ(ierr);
+          PetscCall(DMStagVecSetValuesStencil(dm,f,1,&row,&val,INSERT_VALUES));
         }
       }
     }
   }
-  ierr = DMRestoreLocalVector(dm,&x_local);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(f);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(f);CHKERRQ(ierr);
+  PetscCall(DMRestoreLocalVector(dm,&x_local));
+  PetscCall(VecAssemblyBegin(f));
+  PetscCall(VecAssemblyEnd(f));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode FormJacobian2DNoCoupling(SNES snes,Vec x,Mat Amat,Mat Pmat,void *ctx)
 {
-  PetscErrorCode ierr;
   PetscInt       start[2],n[2],n_extra[2],N[2],dof[3];
   Vec            x_local;
   DM             dm;
 
   PetscFunctionBegin;
   (void) ctx;
-  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(dm,&x_local);CHKERRQ(ierr);
-  ierr = DMGlobalToLocal(dm,x,INSERT_VALUES,x_local);CHKERRQ(ierr);
-  ierr = DMStagGetCorners(dm,&start[0],&start[1],NULL,&n[0],&n[1],NULL,&n_extra[0],&n_extra[1],NULL);CHKERRQ(ierr);
-  ierr = DMStagGetGlobalSizes(dm,&N[0],&N[1],NULL);CHKERRQ(ierr);
-  ierr = DMStagGetDOF(dm,&dof[0],&dof[1],&dof[2],NULL);CHKERRQ(ierr);
+  PetscCall(SNESGetDM(snes,&dm));
+  PetscCall(DMGetLocalVector(dm,&x_local));
+  PetscCall(DMGlobalToLocal(dm,x,INSERT_VALUES,x_local));
+  PetscCall(DMStagGetCorners(dm,&start[0],&start[1],NULL,&n[0],&n[1],NULL,&n_extra[0],&n_extra[1],NULL));
+  PetscCall(DMStagGetGlobalSizes(dm,&N[0],&N[1],NULL));
+  PetscCall(DMStagGetDOF(dm,&dof[0],&dof[1],&dof[2],NULL));
   for (PetscInt ey=start[1]; ey<start[1]+n[1]+n_extra[1]; ++ey) {
     for (PetscInt ex=start[0]; ex<start[0]+n[0]+n_extra[0]; ++ex) {
       for (PetscInt c=0; c<dof[0]; ++c) {
@@ -450,9 +444,9 @@ PetscErrorCode FormJacobian2DNoCoupling(SNES snes,Vec x,Mat Amat,Mat Pmat,void *
         row.j = ey;
         row.loc = DMSTAG_DOWN_LEFT;
         row.c = c;
-        ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+        PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
         val = 3.0 * (5.0 + c) * x_val * x_val;
-        ierr = DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,INSERT_VALUES);CHKERRQ(ierr);
+        PetscCall(DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,INSERT_VALUES));
       }
       if (ex < N[0]) {
         for (PetscInt c=0; c<dof[1]; ++c) {
@@ -463,9 +457,9 @@ PetscErrorCode FormJacobian2DNoCoupling(SNES snes,Vec x,Mat Amat,Mat Pmat,void *
           row.j = ey;
           row.loc = DMSTAG_DOWN;
           row.c = c;
-          ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+          PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
           val = 3.0 * (10.0 + c) * x_val * x_val;
-          ierr = DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,INSERT_VALUES);CHKERRQ(ierr);
+          PetscCall(DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,INSERT_VALUES));
         }
       }
       if (ey < N[1]) {
@@ -477,9 +471,9 @@ PetscErrorCode FormJacobian2DNoCoupling(SNES snes,Vec x,Mat Amat,Mat Pmat,void *
           row.j = ey;
           row.loc = DMSTAG_LEFT;
           row.c = c;
-          ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+          PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
           val = 3.0 * (15.0 + c) * x_val * x_val;
-          ierr = DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,INSERT_VALUES);CHKERRQ(ierr);
+          PetscCall(DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,INSERT_VALUES));
         }
       }
       if (ex < N[0] && ey < N[1]) {
@@ -491,38 +485,37 @@ PetscErrorCode FormJacobian2DNoCoupling(SNES snes,Vec x,Mat Amat,Mat Pmat,void *
           row.j = ey;
           row.loc = DMSTAG_ELEMENT;
           row.c = c;
-          ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+          PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
           val = 3.0 * (20.0 + c) * x_val * x_val;
-          ierr = DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,INSERT_VALUES);CHKERRQ(ierr);
+          PetscCall(DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,INSERT_VALUES));
         }
       }
     }
   }
-  ierr = DMRestoreLocalVector(dm,&x_local);CHKERRQ(ierr);
+  PetscCall(DMRestoreLocalVector(dm,&x_local));
 
-  ierr = MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  PetscCheckFalse(Amat != Pmat,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not implemented for distinct Amat and Pmat");
+  PetscCall(MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY));
+  PetscCheck(Amat == Pmat,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not implemented for distinct Amat and Pmat");
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode FormFunction2D(SNES snes,Vec x,Vec f,void *ctx)
 {
-  PetscErrorCode ierr;
   PetscInt       start[2],n[2],n_extra[2],N[2],dof[3];
   Vec            x_local;
   DM             dm;
 
   PetscFunctionBegin;
   (void) ctx;
-  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(dm,&x_local);CHKERRQ(ierr);
-  ierr = DMGlobalToLocal(dm,x,INSERT_VALUES,x_local);CHKERRQ(ierr);
-  ierr = DMStagGetCorners(dm,&start[0],&start[1],NULL,&n[0],&n[1],NULL,&n_extra[0],&n_extra[1],NULL);CHKERRQ(ierr);
-  ierr = DMStagGetGlobalSizes(dm,&N[0],&N[1],NULL);CHKERRQ(ierr);
-  ierr = DMStagGetDOF(dm,&dof[0],&dof[1],&dof[2],NULL);CHKERRQ(ierr);
+  PetscCall(SNESGetDM(snes,&dm));
+  PetscCall(DMGetLocalVector(dm,&x_local));
+  PetscCall(DMGlobalToLocal(dm,x,INSERT_VALUES,x_local));
+  PetscCall(DMStagGetCorners(dm,&start[0],&start[1],NULL,&n[0],&n[1],NULL,&n_extra[0],&n_extra[1],NULL));
+  PetscCall(DMStagGetGlobalSizes(dm,&N[0],&N[1],NULL));
+  PetscCall(DMStagGetDOF(dm,&dof[0],&dof[1],&dof[2],NULL));
 
-  ierr = VecZeroEntries(f);CHKERRQ(ierr);
+  PetscCall(VecZeroEntries(f));
 
   /* First, as in the simple case above */
   for (PetscInt ey=start[1]; ey<start[1]+n[1]+n_extra[1]; ++ey) {
@@ -535,9 +528,9 @@ PetscErrorCode FormFunction2D(SNES snes,Vec x,Vec f,void *ctx)
         row.j = ey;
         row.loc = DMSTAG_DOWN_LEFT;
         row.c = c;
-        ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+        PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
         val = (5.0 + c) * x_val * x_val * x_val;
-        ierr = DMStagVecSetValuesStencil(dm,f,1,&row,&val,ADD_VALUES);CHKERRQ(ierr);
+        PetscCall(DMStagVecSetValuesStencil(dm,f,1,&row,&val,ADD_VALUES));
       }
       if (ex < N[0]) {
         for (PetscInt c=0; c<dof[1]; ++c) {
@@ -548,9 +541,9 @@ PetscErrorCode FormFunction2D(SNES snes,Vec x,Vec f,void *ctx)
           row.j = ey;
           row.loc = DMSTAG_DOWN;
           row.c = c;
-          ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+          PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
           val = (10.0 + c) * x_val * x_val * x_val;
-          ierr = DMStagVecSetValuesStencil(dm,f,1,&row,&val,ADD_VALUES);CHKERRQ(ierr);
+          PetscCall(DMStagVecSetValuesStencil(dm,f,1,&row,&val,ADD_VALUES));
         }
       }
       if (ey < N[1]) {
@@ -562,9 +555,9 @@ PetscErrorCode FormFunction2D(SNES snes,Vec x,Vec f,void *ctx)
           row.j = ey;
           row.loc = DMSTAG_LEFT;
           row.c = c;
-          ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+          PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
           val = (15.0 + c) * x_val * x_val * x_val;
-          ierr = DMStagVecSetValuesStencil(dm,f,1,&row,&val,ADD_VALUES);CHKERRQ(ierr);
+          PetscCall(DMStagVecSetValuesStencil(dm,f,1,&row,&val,ADD_VALUES));
         }
       }
       if (ex < N[0] && ey < N[1]) {
@@ -576,9 +569,9 @@ PetscErrorCode FormFunction2D(SNES snes,Vec x,Vec f,void *ctx)
           row.j = ey;
           row.loc = DMSTAG_ELEMENT;
           row.c = c;
-          ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+          PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
           val = (20.0 + c) * x_val * x_val * x_val;
-          ierr = DMStagVecSetValuesStencil(dm,f,1,&row,&val,ADD_VALUES);CHKERRQ(ierr);
+          PetscCall(DMStagVecSetValuesStencil(dm,f,1,&row,&val,ADD_VALUES));
         }
       }
     }
@@ -588,14 +581,14 @@ PetscErrorCode FormFunction2D(SNES snes,Vec x,Vec f,void *ctx)
   {
     PetscMPIInt   rank;
 
-    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRMPI(ierr);
+    PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank));
     if (rank == 0) {
       PetscInt      epe;
       DMStagStencil *row,*col;
 
-      ierr = DMStagGetEntriesPerElement(dm,&epe);CHKERRQ(ierr);
-      ierr = PetscMalloc1(epe,&row);CHKERRQ(ierr);
-      ierr = PetscMalloc1(epe,&col);CHKERRQ(ierr);
+      PetscCall(DMStagGetEntriesPerElement(dm,&epe));
+      PetscCall(PetscMalloc1(epe,&row));
+      PetscCall(PetscMalloc1(epe,&col));
       for (PetscInt i=0; i<epe; ++i) {
         row[i].i = 0;
         row[i].j = 0;
@@ -656,37 +649,36 @@ PetscErrorCode FormFunction2D(SNES snes,Vec x,Vec f,void *ctx)
         for (PetscInt j=0; j<epe; ++j) {
           PetscScalar x_val,val;
 
-          ierr = DMStagVecGetValuesStencil(dm,x_local,1,&col[j],&x_val);CHKERRQ(ierr);
+          PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&col[j],&x_val));
           val = (10*i + j) * x_val * x_val * x_val;
-          ierr = DMStagVecSetValuesStencil(dm,f,1,&row[i],&val,ADD_VALUES);CHKERRQ(ierr);
+          PetscCall(DMStagVecSetValuesStencil(dm,f,1,&row[i],&val,ADD_VALUES));
         }
       }
-      ierr = PetscFree(row);CHKERRQ(ierr);
-      ierr = PetscFree(col);CHKERRQ(ierr);
+      PetscCall(PetscFree(row));
+      PetscCall(PetscFree(col));
     }
   }
-  ierr = DMRestoreLocalVector(dm,&x_local);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(f);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(f);CHKERRQ(ierr);
+  PetscCall(DMRestoreLocalVector(dm,&x_local));
+  PetscCall(VecAssemblyBegin(f));
+  PetscCall(VecAssemblyEnd(f));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode FormJacobian2D(SNES snes,Vec x,Mat Amat,Mat Pmat,void *ctx)
 {
-  PetscErrorCode ierr;
   PetscInt       start[2],n[2],n_extra[2],N[2],dof[3];
   Vec            x_local;
   DM             dm;
 
   PetscFunctionBegin;
   (void) ctx;
-  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(dm,&x_local);CHKERRQ(ierr);
-  ierr = DMGlobalToLocal(dm,x,INSERT_VALUES,x_local);CHKERRQ(ierr);
-  ierr = DMStagGetCorners(dm,&start[0],&start[1],NULL,&n[0],&n[1],NULL,&n_extra[0],&n_extra[1],NULL);CHKERRQ(ierr);
-  ierr = DMStagGetGlobalSizes(dm,&N[0],&N[1],NULL);CHKERRQ(ierr);
-  ierr = DMStagGetDOF(dm,&dof[0],&dof[1],&dof[2],NULL);CHKERRQ(ierr);
-  ierr = MatZeroEntries(Amat);CHKERRQ(ierr);
+  PetscCall(SNESGetDM(snes,&dm));
+  PetscCall(DMGetLocalVector(dm,&x_local));
+  PetscCall(DMGlobalToLocal(dm,x,INSERT_VALUES,x_local));
+  PetscCall(DMStagGetCorners(dm,&start[0],&start[1],NULL,&n[0],&n[1],NULL,&n_extra[0],&n_extra[1],NULL));
+  PetscCall(DMStagGetGlobalSizes(dm,&N[0],&N[1],NULL));
+  PetscCall(DMStagGetDOF(dm,&dof[0],&dof[1],&dof[2],NULL));
+  PetscCall(MatZeroEntries(Amat));
   for (PetscInt ey=start[1]; ey<start[1]+n[1]+n_extra[1]; ++ey) {
     for (PetscInt ex=start[0]; ex<start[0]+n[0]+n_extra[0]; ++ex) {
       for (PetscInt c=0; c<dof[0]; ++c) {
@@ -697,9 +689,9 @@ PetscErrorCode FormJacobian2D(SNES snes,Vec x,Mat Amat,Mat Pmat,void *ctx)
         row.j = ey;
         row.loc = DMSTAG_DOWN_LEFT;
         row.c = c;
-        ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+        PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
         val = 3.0 * (5.0 + c) * x_val * x_val;
-        ierr = DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,ADD_VALUES);CHKERRQ(ierr);
+        PetscCall(DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,ADD_VALUES));
       }
       if (ex < N[0]) {
         for (PetscInt c=0; c<dof[1]; ++c) {
@@ -710,9 +702,9 @@ PetscErrorCode FormJacobian2D(SNES snes,Vec x,Mat Amat,Mat Pmat,void *ctx)
           row.j = ey;
           row.loc = DMSTAG_DOWN;
           row.c = c;
-          ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+          PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
           val = 3.0 * (10.0 + c) * x_val * x_val;
-          ierr = DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,ADD_VALUES);CHKERRQ(ierr);
+          PetscCall(DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,ADD_VALUES));
         }
       }
       if (ey < N[1]) {
@@ -724,9 +716,9 @@ PetscErrorCode FormJacobian2D(SNES snes,Vec x,Mat Amat,Mat Pmat,void *ctx)
           row.j = ey;
           row.loc = DMSTAG_LEFT;
           row.c = c;
-          ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+          PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
           val = 3.0 * (15.0 + c) * x_val * x_val;
-          ierr = DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,ADD_VALUES);CHKERRQ(ierr);
+          PetscCall(DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,ADD_VALUES));
         }
       }
       if (ex < N[0] && ey < N[1]) {
@@ -738,9 +730,9 @@ PetscErrorCode FormJacobian2D(SNES snes,Vec x,Mat Amat,Mat Pmat,void *ctx)
           row.j = ey;
           row.loc = DMSTAG_ELEMENT;
           row.c = c;
-          ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+          PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
           val = 3.0 * (20.0 + c) * x_val * x_val;
-          ierr = DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,ADD_VALUES);CHKERRQ(ierr);
+          PetscCall(DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,ADD_VALUES));
         }
       }
     }
@@ -750,14 +742,14 @@ PetscErrorCode FormJacobian2D(SNES snes,Vec x,Mat Amat,Mat Pmat,void *ctx)
   {
     PetscMPIInt   rank;
 
-    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRMPI(ierr);
+    PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank));
     if (rank == 0) {
       PetscInt      epe;
       DMStagStencil *row,*col;
 
-      ierr = DMStagGetEntriesPerElement(dm,&epe);CHKERRQ(ierr);
-      ierr = PetscMalloc1(epe,&row);CHKERRQ(ierr);
-      ierr = PetscMalloc1(epe,&col);CHKERRQ(ierr);
+      PetscCall(DMStagGetEntriesPerElement(dm,&epe));
+      PetscCall(PetscMalloc1(epe,&row));
+      PetscCall(PetscMalloc1(epe,&col));
       for (PetscInt i=0; i<epe; ++i) {
         row[i].i = 0;
         row[i].j = 0;
@@ -818,37 +810,36 @@ PetscErrorCode FormJacobian2D(SNES snes,Vec x,Mat Amat,Mat Pmat,void *ctx)
         for (PetscInt j=0; j<epe; ++j) {
           PetscScalar x_val,val;
 
-          ierr = DMStagVecGetValuesStencil(dm,x_local,1,&col[j],&x_val);CHKERRQ(ierr);
+          PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&col[j],&x_val));
           val = 3.0 * (10*i + j) * x_val * x_val;
-          ierr = DMStagMatSetValuesStencil(dm,Amat,1,&row[i],1,&col[j],&val,ADD_VALUES);CHKERRQ(ierr);
+          PetscCall(DMStagMatSetValuesStencil(dm,Amat,1,&row[i],1,&col[j],&val,ADD_VALUES));
         }
       }
-      ierr = PetscFree(row);CHKERRQ(ierr);
-      ierr = PetscFree(col);CHKERRQ(ierr);
+      PetscCall(PetscFree(row));
+      PetscCall(PetscFree(col));
     }
   }
-  ierr = DMRestoreLocalVector(dm,&x_local);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  PetscCheckFalse(Amat != Pmat,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not implemented for distinct Amat and Pmat");
+  PetscCall(DMRestoreLocalVector(dm,&x_local));
+  PetscCall(MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY));
+  PetscCheck(Amat == Pmat,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not implemented for distinct Amat and Pmat");
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode FormFunction3DNoCoupling(SNES snes,Vec x,Vec f,void *ctx)
 {
-  PetscErrorCode ierr;
   PetscInt       start[3],n[3],n_extra[3],N[3],dof[4];
   Vec            x_local;
   DM             dm;
 
   PetscFunctionBegin;
   (void) ctx;
-  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(dm,&x_local);CHKERRQ(ierr);
-  ierr = DMGlobalToLocal(dm,x,INSERT_VALUES,x_local);CHKERRQ(ierr);
-  ierr = DMStagGetCorners(dm,&start[0],&start[1],&start[2],&n[0],&n[1],&n[2],&n_extra[0],&n_extra[1],&n_extra[2]);CHKERRQ(ierr);
-  ierr = DMStagGetGlobalSizes(dm,&N[0],&N[1],&N[2]);CHKERRQ(ierr);
-  ierr = DMStagGetDOF(dm,&dof[0],&dof[1],&dof[2],&dof[3]);CHKERRQ(ierr);
+  PetscCall(SNESGetDM(snes,&dm));
+  PetscCall(DMGetLocalVector(dm,&x_local));
+  PetscCall(DMGlobalToLocal(dm,x,INSERT_VALUES,x_local));
+  PetscCall(DMStagGetCorners(dm,&start[0],&start[1],&start[2],&n[0],&n[1],&n[2],&n_extra[0],&n_extra[1],&n_extra[2]));
+  PetscCall(DMStagGetGlobalSizes(dm,&N[0],&N[1],&N[2]));
+  PetscCall(DMStagGetDOF(dm,&dof[0],&dof[1],&dof[2],&dof[3]));
   for (PetscInt ez=start[2]; ez<start[2]+n[2]+n_extra[2]; ++ez) {
     for (PetscInt ey=start[1]; ey<start[1]+n[1]+n_extra[1]; ++ey) {
       for (PetscInt ex=start[0]; ex<start[0]+n[0]+n_extra[0]; ++ex) {
@@ -861,9 +852,9 @@ PetscErrorCode FormFunction3DNoCoupling(SNES snes,Vec x,Vec f,void *ctx)
           row.k = ez;
           row.loc = DMSTAG_BACK_DOWN_LEFT;
           row.c = c;
-          ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+          PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
           val = (5.0 + c) * x_val * x_val * x_val;
-          ierr = DMStagVecSetValuesStencil(dm,f,1,&row,&val,INSERT_VALUES);CHKERRQ(ierr);
+          PetscCall(DMStagVecSetValuesStencil(dm,f,1,&row,&val,INSERT_VALUES));
         }
         if (ez < N[2]) {
           for (PetscInt c=0; c<dof[1]; ++c) {
@@ -875,9 +866,9 @@ PetscErrorCode FormFunction3DNoCoupling(SNES snes,Vec x,Vec f,void *ctx)
             row.k = ez;
             row.loc = DMSTAG_DOWN_LEFT;
             row.c = c;
-            ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+            PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
             val = (50.0 + c) * x_val * x_val * x_val;
-            ierr = DMStagVecSetValuesStencil(dm,f,1,&row,&val,INSERT_VALUES);CHKERRQ(ierr);
+            PetscCall(DMStagVecSetValuesStencil(dm,f,1,&row,&val,INSERT_VALUES));
           }
         }
         if (ey < N[1]) {
@@ -890,9 +881,9 @@ PetscErrorCode FormFunction3DNoCoupling(SNES snes,Vec x,Vec f,void *ctx)
             row.k = ez;
             row.loc = DMSTAG_BACK_LEFT;
             row.c = c;
-            ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+            PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
             val = (55.0 + c) * x_val * x_val * x_val;
-            ierr = DMStagVecSetValuesStencil(dm,f,1,&row,&val,INSERT_VALUES);CHKERRQ(ierr);
+            PetscCall(DMStagVecSetValuesStencil(dm,f,1,&row,&val,INSERT_VALUES));
           }
         }
         if (ex < N[0]) {
@@ -905,9 +896,9 @@ PetscErrorCode FormFunction3DNoCoupling(SNES snes,Vec x,Vec f,void *ctx)
             row.k = ez;
             row.loc = DMSTAG_BACK_DOWN;
             row.c = c;
-            ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+            PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
             val = (60.0 + c) * x_val * x_val * x_val;
-            ierr = DMStagVecSetValuesStencil(dm,f,1,&row,&val,INSERT_VALUES);CHKERRQ(ierr);
+            PetscCall(DMStagVecSetValuesStencil(dm,f,1,&row,&val,INSERT_VALUES));
           }
         }
         if (ex < N[0] && ez < N[2]) {
@@ -920,9 +911,9 @@ PetscErrorCode FormFunction3DNoCoupling(SNES snes,Vec x,Vec f,void *ctx)
             row.k = ez;
             row.loc = DMSTAG_DOWN;
             row.c = c;
-            ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+            PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
             val = (10.0 + c) * x_val * x_val * x_val;
-            ierr = DMStagVecSetValuesStencil(dm,f,1,&row,&val,INSERT_VALUES);CHKERRQ(ierr);
+            PetscCall(DMStagVecSetValuesStencil(dm,f,1,&row,&val,INSERT_VALUES));
           }
         }
         if (ey < N[1] && ez < N[2]) {
@@ -935,9 +926,9 @@ PetscErrorCode FormFunction3DNoCoupling(SNES snes,Vec x,Vec f,void *ctx)
             row.k = ez;
             row.loc = DMSTAG_LEFT;
             row.c = c;
-            ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+            PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
             val = (15.0 + c) * x_val * x_val * x_val;
-            ierr = DMStagVecSetValuesStencil(dm,f,1,&row,&val,INSERT_VALUES);CHKERRQ(ierr);
+            PetscCall(DMStagVecSetValuesStencil(dm,f,1,&row,&val,INSERT_VALUES));
           }
         }
         if (ex < N[0] && ey < N[1]) {
@@ -950,9 +941,9 @@ PetscErrorCode FormFunction3DNoCoupling(SNES snes,Vec x,Vec f,void *ctx)
             row.k = ez;
             row.loc = DMSTAG_BACK;
             row.c = c;
-            ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+            PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
             val = (15.0 + c) * x_val * x_val * x_val;
-            ierr = DMStagVecSetValuesStencil(dm,f,1,&row,&val,INSERT_VALUES);CHKERRQ(ierr);
+            PetscCall(DMStagVecSetValuesStencil(dm,f,1,&row,&val,INSERT_VALUES));
           }
         }
         if (ex < N[0] && ey < N[1] && ez < N[2]) {
@@ -965,35 +956,34 @@ PetscErrorCode FormFunction3DNoCoupling(SNES snes,Vec x,Vec f,void *ctx)
             row.k = ez;
             row.loc = DMSTAG_ELEMENT;
             row.c = c;
-            ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+            PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
             val = (20.0 + c) * x_val * x_val * x_val;
-            ierr = DMStagVecSetValuesStencil(dm,f,1,&row,&val,INSERT_VALUES);CHKERRQ(ierr);
+            PetscCall(DMStagVecSetValuesStencil(dm,f,1,&row,&val,INSERT_VALUES));
           }
         }
       }
     }
   }
-  ierr = DMRestoreLocalVector(dm,&x_local);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(f);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(f);CHKERRQ(ierr);
+  PetscCall(DMRestoreLocalVector(dm,&x_local));
+  PetscCall(VecAssemblyBegin(f));
+  PetscCall(VecAssemblyEnd(f));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode FormJacobian3DNoCoupling(SNES snes,Vec x,Mat Amat,Mat Pmat,void *ctx)
 {
-  PetscErrorCode ierr;
   PetscInt       start[3],n[3],n_extra[3],N[3],dof[4];
   Vec            x_local;
   DM             dm;
 
   PetscFunctionBegin;
   (void) ctx;
-  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(dm,&x_local);CHKERRQ(ierr);
-  ierr = DMGlobalToLocal(dm,x,INSERT_VALUES,x_local);CHKERRQ(ierr);
-  ierr = DMStagGetCorners(dm,&start[0],&start[1],&start[2],&n[0],&n[1],&n[2],&n_extra[0],&n_extra[1],&n_extra[2]);CHKERRQ(ierr);
-  ierr = DMStagGetGlobalSizes(dm,&N[0],&N[1],&N[2]);CHKERRQ(ierr);
-  ierr = DMStagGetDOF(dm,&dof[0],&dof[1],&dof[2],&dof[3]);CHKERRQ(ierr);
+  PetscCall(SNESGetDM(snes,&dm));
+  PetscCall(DMGetLocalVector(dm,&x_local));
+  PetscCall(DMGlobalToLocal(dm,x,INSERT_VALUES,x_local));
+  PetscCall(DMStagGetCorners(dm,&start[0],&start[1],&start[2],&n[0],&n[1],&n[2],&n_extra[0],&n_extra[1],&n_extra[2]));
+  PetscCall(DMStagGetGlobalSizes(dm,&N[0],&N[1],&N[2]));
+  PetscCall(DMStagGetDOF(dm,&dof[0],&dof[1],&dof[2],&dof[3]));
   for (PetscInt ez=start[2]; ez<start[2]+n[2]+n_extra[2]; ++ez) {
     for (PetscInt ey=start[1]; ey<start[1]+n[1]+n_extra[1]; ++ey) {
       for (PetscInt ex=start[0]; ex<start[0]+n[0]+n_extra[0]; ++ex) {
@@ -1006,9 +996,9 @@ PetscErrorCode FormJacobian3DNoCoupling(SNES snes,Vec x,Mat Amat,Mat Pmat,void *
           row.k = ez;
           row.loc = DMSTAG_BACK_DOWN_LEFT;
           row.c = c;
-          ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+          PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
           val = 3.0 * (5.0 + c) * x_val * x_val;
-          ierr = DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,INSERT_VALUES);CHKERRQ(ierr);
+          PetscCall(DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,INSERT_VALUES));
         }
         if (ez < N[2]) {
           for (PetscInt c=0; c<dof[1]; ++c) {
@@ -1020,9 +1010,9 @@ PetscErrorCode FormJacobian3DNoCoupling(SNES snes,Vec x,Mat Amat,Mat Pmat,void *
             row.k = ez;
             row.loc = DMSTAG_DOWN_LEFT;
             row.c = c;
-            ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+            PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
             val = 3.0 * (50.0 + c) * x_val * x_val;
-            ierr = DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,INSERT_VALUES);CHKERRQ(ierr);
+            PetscCall(DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,INSERT_VALUES));
           }
         }
         if (ey < N[1]) {
@@ -1035,9 +1025,9 @@ PetscErrorCode FormJacobian3DNoCoupling(SNES snes,Vec x,Mat Amat,Mat Pmat,void *
             row.k = ez;
             row.loc = DMSTAG_BACK_LEFT;
             row.c = c;
-            ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+            PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
             val = 3.0 * (55.0 + c) * x_val * x_val;
-            ierr = DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,INSERT_VALUES);CHKERRQ(ierr);
+            PetscCall(DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,INSERT_VALUES));
           }
         }
         if (ex < N[0]) {
@@ -1050,9 +1040,9 @@ PetscErrorCode FormJacobian3DNoCoupling(SNES snes,Vec x,Mat Amat,Mat Pmat,void *
             row.k = ez;
             row.loc = DMSTAG_BACK_DOWN;
             row.c = c;
-            ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+            PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
             val = 3.0 * (60.0 + c) * x_val * x_val;
-            ierr = DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,INSERT_VALUES);CHKERRQ(ierr);
+            PetscCall(DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,INSERT_VALUES));
           }
         }
         if (ex < N[0] && ez < N[2]) {
@@ -1065,9 +1055,9 @@ PetscErrorCode FormJacobian3DNoCoupling(SNES snes,Vec x,Mat Amat,Mat Pmat,void *
             row.k = ez;
             row.loc = DMSTAG_DOWN;
             row.c = c;
-            ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+            PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
             val = 3.0 * (10.0 + c) * x_val * x_val;
-            ierr = DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,INSERT_VALUES);CHKERRQ(ierr);
+            PetscCall(DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,INSERT_VALUES));
           }
         }
         if (ey < N[1] && ez < N[2]) {
@@ -1080,9 +1070,9 @@ PetscErrorCode FormJacobian3DNoCoupling(SNES snes,Vec x,Mat Amat,Mat Pmat,void *
             row.k = ez;
             row.loc = DMSTAG_LEFT;
             row.c = c;
-            ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+            PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
             val = 3.0 * (15.0 + c) * x_val * x_val;
-            ierr = DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,INSERT_VALUES);CHKERRQ(ierr);
+            PetscCall(DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,INSERT_VALUES));
           }
         }
         if (ex < N[0] && ey < N[1]) {
@@ -1095,9 +1085,9 @@ PetscErrorCode FormJacobian3DNoCoupling(SNES snes,Vec x,Mat Amat,Mat Pmat,void *
             row.k = ez;
             row.loc = DMSTAG_BACK;
             row.c = c;
-            ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+            PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
             val = 3.0 * (15.0 + c) * x_val * x_val;
-            ierr = DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,INSERT_VALUES);CHKERRQ(ierr);
+            PetscCall(DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,INSERT_VALUES));
           }
         }
         if (ex < N[0] && ey < N[1] && ez < N[2]) {
@@ -1110,37 +1100,36 @@ PetscErrorCode FormJacobian3DNoCoupling(SNES snes,Vec x,Mat Amat,Mat Pmat,void *
             row.k = ez;
             row.loc = DMSTAG_ELEMENT;
             row.c = c;
-            ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+            PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
             val = 3.0 * (20.0 + c) * x_val * x_val;
-            ierr = DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,INSERT_VALUES);CHKERRQ(ierr);
+            PetscCall(DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,INSERT_VALUES));
           }
         }
       }
     }
   }
-  ierr = DMRestoreLocalVector(dm,&x_local);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  PetscCheckFalse(Amat != Pmat,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not implemented for distinct Amat and Pmat");
+  PetscCall(DMRestoreLocalVector(dm,&x_local));
+  PetscCall(MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY));
+  PetscCheck(Amat == Pmat,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not implemented for distinct Amat and Pmat");
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode FormFunction3D(SNES snes,Vec x,Vec f,void *ctx)
 {
-  PetscErrorCode ierr;
   PetscInt       start[3],n[3],n_extra[3],N[3],dof[4];
   Vec            x_local;
   DM             dm;
 
   PetscFunctionBegin;
   (void) ctx;
-  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(dm,&x_local);CHKERRQ(ierr);
-  ierr = DMGlobalToLocal(dm,x,INSERT_VALUES,x_local);CHKERRQ(ierr);
-  ierr = DMStagGetCorners(dm,&start[0],&start[1],&start[2],&n[0],&n[1],&n[2],&n_extra[0],&n_extra[1],&n_extra[2]);CHKERRQ(ierr);
-  ierr = DMStagGetGlobalSizes(dm,&N[0],&N[1],&N[2]);CHKERRQ(ierr);
-  ierr = DMStagGetDOF(dm,&dof[0],&dof[1],&dof[2],&dof[3]);CHKERRQ(ierr);
-  ierr = VecZeroEntries(f);CHKERRQ(ierr);
+  PetscCall(SNESGetDM(snes,&dm));
+  PetscCall(DMGetLocalVector(dm,&x_local));
+  PetscCall(DMGlobalToLocal(dm,x,INSERT_VALUES,x_local));
+  PetscCall(DMStagGetCorners(dm,&start[0],&start[1],&start[2],&n[0],&n[1],&n[2],&n_extra[0],&n_extra[1],&n_extra[2]));
+  PetscCall(DMStagGetGlobalSizes(dm,&N[0],&N[1],&N[2]));
+  PetscCall(DMStagGetDOF(dm,&dof[0],&dof[1],&dof[2],&dof[3]));
+  PetscCall(VecZeroEntries(f));
   for (PetscInt ez=start[2]; ez<start[2]+n[2]+n_extra[2]; ++ez) {
     for (PetscInt ey=start[1]; ey<start[1]+n[1]+n_extra[1]; ++ey) {
       for (PetscInt ex=start[0]; ex<start[0]+n[0]+n_extra[0]; ++ex) {
@@ -1153,9 +1142,9 @@ PetscErrorCode FormFunction3D(SNES snes,Vec x,Vec f,void *ctx)
           row.k = ez;
           row.loc = DMSTAG_BACK_DOWN_LEFT;
           row.c = c;
-          ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+          PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
           val = (5.0 + c) * x_val * x_val * x_val;
-          ierr = DMStagVecSetValuesStencil(dm,f,1,&row,&val,ADD_VALUES);CHKERRQ(ierr);
+          PetscCall(DMStagVecSetValuesStencil(dm,f,1,&row,&val,ADD_VALUES));
         }
         if (ez < N[2]) {
           for (PetscInt c=0; c<dof[1]; ++c) {
@@ -1167,9 +1156,9 @@ PetscErrorCode FormFunction3D(SNES snes,Vec x,Vec f,void *ctx)
             row.k = ez;
             row.loc = DMSTAG_DOWN_LEFT;
             row.c = c;
-            ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+            PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
             val = (50.0 + c) * x_val * x_val * x_val;
-            ierr = DMStagVecSetValuesStencil(dm,f,1,&row,&val,ADD_VALUES);CHKERRQ(ierr);
+            PetscCall(DMStagVecSetValuesStencil(dm,f,1,&row,&val,ADD_VALUES));
           }
         }
         if (ey < N[1]) {
@@ -1182,9 +1171,9 @@ PetscErrorCode FormFunction3D(SNES snes,Vec x,Vec f,void *ctx)
             row.k = ez;
             row.loc = DMSTAG_BACK_LEFT;
             row.c = c;
-            ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+            PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
             val = (55.0 + c) * x_val * x_val * x_val;
-            ierr = DMStagVecSetValuesStencil(dm,f,1,&row,&val,ADD_VALUES);CHKERRQ(ierr);
+            PetscCall(DMStagVecSetValuesStencil(dm,f,1,&row,&val,ADD_VALUES));
           }
         }
         if (ex < N[0]) {
@@ -1197,9 +1186,9 @@ PetscErrorCode FormFunction3D(SNES snes,Vec x,Vec f,void *ctx)
             row.k = ez;
             row.loc = DMSTAG_BACK_DOWN;
             row.c = c;
-            ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+            PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
             val = (60.0 + c) * x_val * x_val * x_val;
-            ierr = DMStagVecSetValuesStencil(dm,f,1,&row,&val,ADD_VALUES);CHKERRQ(ierr);
+            PetscCall(DMStagVecSetValuesStencil(dm,f,1,&row,&val,ADD_VALUES));
           }
         }
         if (ex < N[0] && ez < N[2]) {
@@ -1212,9 +1201,9 @@ PetscErrorCode FormFunction3D(SNES snes,Vec x,Vec f,void *ctx)
             row.k = ez;
             row.loc = DMSTAG_DOWN;
             row.c = c;
-            ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+            PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
             val = (10.0 + c) * x_val * x_val * x_val;
-            ierr = DMStagVecSetValuesStencil(dm,f,1,&row,&val,ADD_VALUES);CHKERRQ(ierr);
+            PetscCall(DMStagVecSetValuesStencil(dm,f,1,&row,&val,ADD_VALUES));
           }
         }
         if (ey < N[1] && ez < N[2]) {
@@ -1227,9 +1216,9 @@ PetscErrorCode FormFunction3D(SNES snes,Vec x,Vec f,void *ctx)
             row.k = ez;
             row.loc = DMSTAG_LEFT;
             row.c = c;
-            ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+            PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
             val = (15.0 + c) * x_val * x_val * x_val;
-            ierr = DMStagVecSetValuesStencil(dm,f,1,&row,&val,ADD_VALUES);CHKERRQ(ierr);
+            PetscCall(DMStagVecSetValuesStencil(dm,f,1,&row,&val,ADD_VALUES));
           }
         }
         if (ex < N[0] && ey < N[1]) {
@@ -1242,9 +1231,9 @@ PetscErrorCode FormFunction3D(SNES snes,Vec x,Vec f,void *ctx)
             row.k = ez;
             row.loc = DMSTAG_BACK;
             row.c = c;
-            ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+            PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
             val = (15.0 + c) * x_val * x_val * x_val;
-            ierr = DMStagVecSetValuesStencil(dm,f,1,&row,&val,ADD_VALUES);CHKERRQ(ierr);
+            PetscCall(DMStagVecSetValuesStencil(dm,f,1,&row,&val,ADD_VALUES));
           }
         }
         if (ex < N[0] && ey < N[1] && ez < N[2]) {
@@ -1257,9 +1246,9 @@ PetscErrorCode FormFunction3D(SNES snes,Vec x,Vec f,void *ctx)
             row.k = ez;
             row.loc = DMSTAG_ELEMENT;
             row.c = c;
-            ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+            PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
             val = (20.0 + c) * x_val * x_val * x_val;
-            ierr = DMStagVecSetValuesStencil(dm,f,1,&row,&val,ADD_VALUES);CHKERRQ(ierr);
+            PetscCall(DMStagVecSetValuesStencil(dm,f,1,&row,&val,ADD_VALUES));
           }
         }
       }
@@ -1270,14 +1259,14 @@ PetscErrorCode FormFunction3D(SNES snes,Vec x,Vec f,void *ctx)
   {
     PetscMPIInt rank;
 
-    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRMPI(ierr);
+    PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank));
     if (rank == 0) {
       PetscInt      epe;
       DMStagStencil *row,*col;
 
-      ierr = DMStagGetEntriesPerElement(dm,&epe);CHKERRQ(ierr);
-      ierr = PetscMalloc1(epe,&row);CHKERRQ(ierr);
-      ierr = PetscMalloc1(epe,&col);CHKERRQ(ierr);
+      PetscCall(DMStagGetEntriesPerElement(dm,&epe));
+      PetscCall(PetscMalloc1(epe,&row));
+      PetscCall(PetscMalloc1(epe,&col));
       for (PetscInt i=0; i<epe; ++i) {
         row[i].i = 0;
         row[i].j = 0;
@@ -1381,37 +1370,36 @@ PetscErrorCode FormFunction3D(SNES snes,Vec x,Vec f,void *ctx)
         for (PetscInt j=0; j<epe; ++j) {
           PetscScalar x_val,val;
 
-          ierr = DMStagVecGetValuesStencil(dm,x_local,1,&col[j],&x_val);CHKERRQ(ierr);
+          PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&col[j],&x_val));
           val = (10*i + j) * x_val * x_val * x_val;
-          ierr = DMStagVecSetValuesStencil(dm,f,1,&row[i],&val,ADD_VALUES);CHKERRQ(ierr);
+          PetscCall(DMStagVecSetValuesStencil(dm,f,1,&row[i],&val,ADD_VALUES));
         }
       }
-      ierr = PetscFree(row);CHKERRQ(ierr);
-      ierr = PetscFree(col);CHKERRQ(ierr);
+      PetscCall(PetscFree(row));
+      PetscCall(PetscFree(col));
     }
   }
-  ierr = DMRestoreLocalVector(dm,&x_local);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(f);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(f);CHKERRQ(ierr);
+  PetscCall(DMRestoreLocalVector(dm,&x_local));
+  PetscCall(VecAssemblyBegin(f));
+  PetscCall(VecAssemblyEnd(f));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode FormJacobian3D(SNES snes,Vec x,Mat Amat,Mat Pmat,void *ctx)
 {
-  PetscErrorCode ierr;
   PetscInt       start[3],n[3],n_extra[3],N[3],dof[4];
   Vec            x_local;
   DM             dm;
 
   PetscFunctionBegin;
   (void) ctx;
-  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(dm,&x_local);CHKERRQ(ierr);
-  ierr = DMGlobalToLocal(dm,x,INSERT_VALUES,x_local);CHKERRQ(ierr);
-  ierr = DMStagGetCorners(dm,&start[0],&start[1],&start[2],&n[0],&n[1],&n[2],&n_extra[0],&n_extra[1],&n_extra[2]);CHKERRQ(ierr);
-  ierr = DMStagGetGlobalSizes(dm,&N[0],&N[1],&N[2]);CHKERRQ(ierr);
-  ierr = DMStagGetDOF(dm,&dof[0],&dof[1],&dof[2],&dof[3]);CHKERRQ(ierr);
-  ierr = MatZeroEntries(Amat);CHKERRQ(ierr);
+  PetscCall(SNESGetDM(snes,&dm));
+  PetscCall(DMGetLocalVector(dm,&x_local));
+  PetscCall(DMGlobalToLocal(dm,x,INSERT_VALUES,x_local));
+  PetscCall(DMStagGetCorners(dm,&start[0],&start[1],&start[2],&n[0],&n[1],&n[2],&n_extra[0],&n_extra[1],&n_extra[2]));
+  PetscCall(DMStagGetGlobalSizes(dm,&N[0],&N[1],&N[2]));
+  PetscCall(DMStagGetDOF(dm,&dof[0],&dof[1],&dof[2],&dof[3]));
+  PetscCall(MatZeroEntries(Amat));
   for (PetscInt ez=start[2]; ez<start[2]+n[2]+n_extra[2]; ++ez) {
     for (PetscInt ey=start[1]; ey<start[1]+n[1]+n_extra[1]; ++ey) {
       for (PetscInt ex=start[0]; ex<start[0]+n[0]+n_extra[0]; ++ex) {
@@ -1424,9 +1412,9 @@ PetscErrorCode FormJacobian3D(SNES snes,Vec x,Mat Amat,Mat Pmat,void *ctx)
           row.k = ez;
           row.loc = DMSTAG_BACK_DOWN_LEFT;
           row.c = c;
-          ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+          PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
           val = 3.0 * (5.0 + c) * x_val * x_val;
-          ierr = DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,ADD_VALUES);CHKERRQ(ierr);
+          PetscCall(DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,ADD_VALUES));
         }
         if (ez < N[2]) {
           for (PetscInt c=0; c<dof[1]; ++c) {
@@ -1438,9 +1426,9 @@ PetscErrorCode FormJacobian3D(SNES snes,Vec x,Mat Amat,Mat Pmat,void *ctx)
             row.k = ez;
             row.loc = DMSTAG_DOWN_LEFT;
             row.c = c;
-            ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+            PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
             val = 3.0 * (50.0 + c) * x_val * x_val;
-            ierr = DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,ADD_VALUES);CHKERRQ(ierr);
+            PetscCall(DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,ADD_VALUES));
           }
         }
         if (ey < N[1]) {
@@ -1453,9 +1441,9 @@ PetscErrorCode FormJacobian3D(SNES snes,Vec x,Mat Amat,Mat Pmat,void *ctx)
             row.k = ez;
             row.loc = DMSTAG_BACK_LEFT;
             row.c = c;
-            ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+            PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
             val = 3.0 * (55.0 + c) * x_val * x_val;
-            ierr = DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,ADD_VALUES);CHKERRQ(ierr);
+            PetscCall(DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,ADD_VALUES));
           }
         }
         if (ex < N[0]) {
@@ -1468,9 +1456,9 @@ PetscErrorCode FormJacobian3D(SNES snes,Vec x,Mat Amat,Mat Pmat,void *ctx)
             row.k = ez;
             row.loc = DMSTAG_BACK_DOWN;
             row.c = c;
-            ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+            PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
             val = 3.0 * (60.0 + c) * x_val * x_val;
-            ierr = DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,ADD_VALUES);CHKERRQ(ierr);
+            PetscCall(DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,ADD_VALUES));
           }
         }
         if (ex < N[0] && ez < N[2]) {
@@ -1483,9 +1471,9 @@ PetscErrorCode FormJacobian3D(SNES snes,Vec x,Mat Amat,Mat Pmat,void *ctx)
             row.k = ez;
             row.loc = DMSTAG_DOWN;
             row.c = c;
-            ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+            PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
             val = 3.0 * (10.0 + c) * x_val * x_val;
-            ierr = DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,ADD_VALUES);CHKERRQ(ierr);
+            PetscCall(DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,ADD_VALUES));
           }
         }
         if (ey < N[1] && ez < N[2]) {
@@ -1498,9 +1486,9 @@ PetscErrorCode FormJacobian3D(SNES snes,Vec x,Mat Amat,Mat Pmat,void *ctx)
             row.k = ez;
             row.loc = DMSTAG_LEFT;
             row.c = c;
-            ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+            PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
             val = 3.0 * (15.0 + c) * x_val * x_val;
-            ierr = DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,ADD_VALUES);CHKERRQ(ierr);
+            PetscCall(DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,ADD_VALUES));
           }
         }
         if (ex < N[0] && ey < N[1]) {
@@ -1513,9 +1501,9 @@ PetscErrorCode FormJacobian3D(SNES snes,Vec x,Mat Amat,Mat Pmat,void *ctx)
             row.k = ez;
             row.loc = DMSTAG_BACK;
             row.c = c;
-            ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+            PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
             val = 3.0 * (15.0 + c) * x_val * x_val;
-            ierr = DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,ADD_VALUES);CHKERRQ(ierr);
+            PetscCall(DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,ADD_VALUES));
           }
         }
         if (ex < N[0] && ey < N[1] && ez < N[2]) {
@@ -1528,9 +1516,9 @@ PetscErrorCode FormJacobian3D(SNES snes,Vec x,Mat Amat,Mat Pmat,void *ctx)
             row.k = ez;
             row.loc = DMSTAG_ELEMENT;
             row.c = c;
-            ierr = DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val);CHKERRQ(ierr);
+            PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&row,&x_val));
             val = 3.0 * (20.0 + c) * x_val * x_val;
-            ierr = DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,ADD_VALUES);CHKERRQ(ierr);
+            PetscCall(DMStagMatSetValuesStencil(dm,Amat,1,&row,1,&row,&val,ADD_VALUES));
           }
         }
       }
@@ -1541,14 +1529,14 @@ PetscErrorCode FormJacobian3D(SNES snes,Vec x,Mat Amat,Mat Pmat,void *ctx)
   {
     PetscMPIInt   rank;
 
-    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRMPI(ierr);
+    PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank));
     if (rank == 0) {
       PetscInt      epe;
       DMStagStencil *row,*col;
 
-      ierr = DMStagGetEntriesPerElement(dm,&epe);CHKERRQ(ierr);
-      ierr = PetscMalloc1(epe,&row);CHKERRQ(ierr);
-      ierr = PetscMalloc1(epe,&col);CHKERRQ(ierr);
+      PetscCall(DMStagGetEntriesPerElement(dm,&epe));
+      PetscCall(PetscMalloc1(epe,&row));
+      PetscCall(PetscMalloc1(epe,&col));
       for (PetscInt i=0; i<epe; ++i) {
         row[i].i = 0;
         row[i].j = 0;
@@ -1652,127 +1640,101 @@ PetscErrorCode FormJacobian3D(SNES snes,Vec x,Mat Amat,Mat Pmat,void *ctx)
         for (PetscInt j=0; j<epe; ++j) {
           PetscScalar x_val,val;
 
-          ierr = DMStagVecGetValuesStencil(dm,x_local,1,&col[j],&x_val);CHKERRQ(ierr);
+          PetscCall(DMStagVecGetValuesStencil(dm,x_local,1,&col[j],&x_val));
           val = 3.0 * (10*i + j) * x_val * x_val;
-          ierr = DMStagMatSetValuesStencil(dm,Amat,1,&row[i],1,&col[j],&val,ADD_VALUES);CHKERRQ(ierr);
+          PetscCall(DMStagMatSetValuesStencil(dm,Amat,1,&row[i],1,&col[j],&val,ADD_VALUES));
         }
       }
-      ierr = PetscFree(row);CHKERRQ(ierr);
-      ierr = PetscFree(col);CHKERRQ(ierr);
+      PetscCall(PetscFree(row));
+      PetscCall(PetscFree(col));
     }
   }
-  ierr = DMRestoreLocalVector(dm,&x_local);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  PetscCheckFalse(Amat != Pmat,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not implemented for distinct Amat and Pmat");
+  PetscCall(DMRestoreLocalVector(dm,&x_local));
+  PetscCall(MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY));
+  PetscCheck(Amat == Pmat,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not implemented for distinct Amat and Pmat");
   PetscFunctionReturn(0);
 }
 
 int main(int argc, char **argv)
 {
-  PetscErrorCode ierr;
   DM             dm;
   PetscInt       dim;
   PetscBool      no_coupling;
   Vec            x,b;
   SNES           snes;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   dim = 3;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL));
   no_coupling = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-no_coupling",&no_coupling,NULL);CHKERRQ(ierr);
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-no_coupling",&no_coupling,NULL));
 
   switch (dim) {
     case 1:
-      ierr = DMStagCreate1d(
-          PETSC_COMM_WORLD,
-          DM_BOUNDARY_NONE,
-          4,
-          1, 1,
-          DMSTAG_STENCIL_BOX,
-          1,
-          NULL,
-          &dm);CHKERRQ(ierr);
+      PetscCall(DMStagCreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,4,1, 1,DMSTAG_STENCIL_BOX,1,NULL,&dm));
       break;
     case 2:
-      ierr = DMStagCreate2d(
-          PETSC_COMM_WORLD,
-          DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,
-          4, 3,
-          PETSC_DECIDE, PETSC_DECIDE,
-          1, 1, 1,
-          DMSTAG_STENCIL_BOX,
-          1,
-          NULL, NULL,
-          &dm);CHKERRQ(ierr);
+      PetscCall(DMStagCreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,4, 3,PETSC_DECIDE, PETSC_DECIDE,1, 1, 1,DMSTAG_STENCIL_BOX,1,NULL, NULL,&dm));
       break;
     case 3:
-      ierr = DMStagCreate3d(
-          PETSC_COMM_WORLD,
-          DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,
-          4, 3, 3,
-          PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE,
-          1, 1, 1, 1,
-          DMSTAG_STENCIL_BOX,
-          1,
-          NULL, NULL, NULL,
-          &dm);CHKERRQ(ierr);
+      PetscCall(DMStagCreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,4, 3, 3,PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE,1, 1, 1, 1,
+                               DMSTAG_STENCIL_BOX,1, NULL, NULL, NULL, &dm));
       break;
     default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unsupported dimension %" PetscInt_FMT,dim);
   }
-  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
-  ierr = DMSetUp(dm);CHKERRQ(ierr);
+  PetscCall(DMSetFromOptions(dm));
+  PetscCall(DMSetUp(dm));
 
-  ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
-  ierr = SNESSetDM(snes,dm);CHKERRQ(ierr);
+  PetscCall(SNESCreate(PETSC_COMM_WORLD,&snes));
+  PetscCall(SNESSetDM(snes,dm));
   if (no_coupling) {
     switch (dim) {
     case 1:
-      ierr = SNESSetFunction(snes,NULL,FormFunction1DNoCoupling,NULL);CHKERRQ(ierr);
-      ierr = SNESSetJacobian(snes,NULL,NULL,FormJacobian1DNoCoupling,NULL);CHKERRQ(ierr);
+      PetscCall(SNESSetFunction(snes,NULL,FormFunction1DNoCoupling,NULL));
+      PetscCall(SNESSetJacobian(snes,NULL,NULL,FormJacobian1DNoCoupling,NULL));
       break;
     case 2:
-      ierr = SNESSetFunction(snes,NULL,FormFunction2DNoCoupling,NULL);CHKERRQ(ierr);
-      ierr = SNESSetJacobian(snes,NULL,NULL,FormJacobian2DNoCoupling,NULL);CHKERRQ(ierr);
+      PetscCall(SNESSetFunction(snes,NULL,FormFunction2DNoCoupling,NULL));
+      PetscCall(SNESSetJacobian(snes,NULL,NULL,FormJacobian2DNoCoupling,NULL));
       break;
     case 3:
-      ierr = SNESSetFunction(snes,NULL,FormFunction3DNoCoupling,NULL);CHKERRQ(ierr);
-      ierr = SNESSetJacobian(snes,NULL,NULL,FormJacobian3DNoCoupling,NULL);CHKERRQ(ierr);
+      PetscCall(SNESSetFunction(snes,NULL,FormFunction3DNoCoupling,NULL));
+      PetscCall(SNESSetJacobian(snes,NULL,NULL,FormJacobian3DNoCoupling,NULL));
       break;
     default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unsupported dimension %" PetscInt_FMT,dim);
     }
   } else {
     switch (dim) {
       case 1:
-        ierr = SNESSetFunction(snes,NULL,FormFunction1D,NULL);CHKERRQ(ierr);
-        ierr = SNESSetJacobian(snes,NULL,NULL,FormJacobian1D,NULL);CHKERRQ(ierr);
+        PetscCall(SNESSetFunction(snes,NULL,FormFunction1D,NULL));
+        PetscCall(SNESSetJacobian(snes,NULL,NULL,FormJacobian1D,NULL));
         break;
       case 2:
-        ierr = SNESSetFunction(snes,NULL,FormFunction2D,NULL);CHKERRQ(ierr);
-        ierr = SNESSetJacobian(snes,NULL,NULL,FormJacobian2D,NULL);CHKERRQ(ierr);
+        PetscCall(SNESSetFunction(snes,NULL,FormFunction2D,NULL));
+        PetscCall(SNESSetJacobian(snes,NULL,NULL,FormJacobian2D,NULL));
         break;
       case 3:
-        ierr = SNESSetFunction(snes,NULL,FormFunction3D,NULL);CHKERRQ(ierr);
-        ierr = SNESSetJacobian(snes,NULL,NULL,FormJacobian3D,NULL);CHKERRQ(ierr);
+        PetscCall(SNESSetFunction(snes,NULL,FormFunction3D,NULL));
+        PetscCall(SNESSetJacobian(snes,NULL,NULL,FormJacobian3D,NULL));
         break;
       default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unsupported dimension %" PetscInt_FMT,dim);
     }
   }
-  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
+  PetscCall(SNESSetFromOptions(snes));
 
-  ierr = DMCreateGlobalVector(dm,&x);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&b);CHKERRQ(ierr);
-  ierr = VecSet(x,2.0);CHKERRQ(ierr); // Initial guess
-  ierr = VecSet(b,0.0);CHKERRQ(ierr); // RHS
-  ierr = SNESSolve(snes,b,x);CHKERRQ(ierr);
+  PetscCall(DMCreateGlobalVector(dm,&x));
+  PetscCall(VecDuplicate(x,&b));
+  PetscCall(VecSet(x,2.0)); // Initial guess
+  PetscCall(VecSet(b,0.0)); // RHS
+  PetscCall(SNESSolve(snes,b,x));
 
-  ierr = SNESDestroy(&snes);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  PetscCall(SNESDestroy(&snes));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&b));
+  PetscCall(DMDestroy(&dm));
+  PetscCall(PetscFinalize());
+  return 0;
 }
 
 /*TEST

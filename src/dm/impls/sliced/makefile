@@ -1,8 +1,5 @@
 -include ../../../../petscdir.mk
-ALL: lib
 
-CFLAGS   =
-FFLAGS   =
 SOURCEC  = sliced.c
 SOURCEF  =
 SOURCEH  = ../../../../include/petscdmsliced.h

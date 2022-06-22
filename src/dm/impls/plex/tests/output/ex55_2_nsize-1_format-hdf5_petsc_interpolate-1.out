@@ -1,4 +1,4 @@
-DM Object: cubit(blockcylinder-50.exo): 02/04/2013: 17:50:28 1 MPI processes
+DM Object: cubit(blockcylinder-50.exo): 02/04/2013: 17:50:28 1 MPI process
   type: plex
 cubit(blockcylinder-50.exo): 02/04/2013: 17:50:28 in 3 dimensions:
 Supports:
@@ -4791,7 +4791,7 @@ Label 'BottomBoundary':
 [0]: 398 (201)
 [0]: 401 (201)
 [0]: 404 (201)
-DM Object: Mesh_new (new_) 1 MPI processes
+DM Object: Mesh_new (new_) 1 MPI process
   type: plex
 Mesh_new in 3 dimensions:
 Supports:

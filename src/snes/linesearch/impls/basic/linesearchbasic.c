@@ -4,64 +4,63 @@
 static PetscErrorCode  SNESLineSearchApply_Basic(SNESLineSearch linesearch)
 {
   PetscBool      changed_y, changed_w;
-  PetscErrorCode ierr;
   Vec            X, F, Y, W;
   SNES           snes;
   PetscReal      gnorm, xnorm, ynorm, lambda;
   PetscBool      domainerror;
 
   PetscFunctionBegin;
-  ierr = SNESLineSearchGetVecs(linesearch, &X, &F, &Y, &W, NULL);CHKERRQ(ierr);
-  ierr = SNESLineSearchGetNorms(linesearch, &xnorm, &gnorm, &ynorm);CHKERRQ(ierr);
-  ierr = SNESLineSearchGetLambda(linesearch, &lambda);CHKERRQ(ierr);
-  ierr = SNESLineSearchGetSNES(linesearch, &snes);CHKERRQ(ierr);
-  ierr = SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_SUCCEEDED);CHKERRQ(ierr);
+  PetscCall(SNESLineSearchGetVecs(linesearch, &X, &F, &Y, &W, NULL));
+  PetscCall(SNESLineSearchGetNorms(linesearch, &xnorm, &gnorm, &ynorm));
+  PetscCall(SNESLineSearchGetLambda(linesearch, &lambda));
+  PetscCall(SNESLineSearchGetSNES(linesearch, &snes));
+  PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_SUCCEEDED));
 
   /* precheck */
-  ierr = SNESLineSearchPreCheck(linesearch,X,Y,&changed_y);CHKERRQ(ierr);
+  PetscCall(SNESLineSearchPreCheck(linesearch,X,Y,&changed_y));
 
   /* update */
-  ierr = VecWAXPY(W,-lambda,Y,X);CHKERRQ(ierr);
+  PetscCall(VecWAXPY(W,-lambda,Y,X));
   if (linesearch->ops->viproject) {
-    ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
+    PetscCall((*linesearch->ops->viproject)(snes, W));
   }
 
   /* postcheck */
-  ierr = SNESLineSearchPostCheck(linesearch,X,Y,W,&changed_y,&changed_w);CHKERRQ(ierr);
+  PetscCall(SNESLineSearchPostCheck(linesearch,X,Y,W,&changed_y,&changed_w));
   if (changed_y) {
-    ierr = VecWAXPY(W,-lambda,Y,X);CHKERRQ(ierr);
+    PetscCall(VecWAXPY(W,-lambda,Y,X));
     if (linesearch->ops->viproject) {
-      ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
+      PetscCall((*linesearch->ops->viproject)(snes, W));
     }
   }
   if (linesearch->norms || snes->iter < snes->max_its-1) {
-    ierr = (*linesearch->ops->snesfunc)(snes,W,F);CHKERRQ(ierr);
-    ierr = SNESGetFunctionDomainError(snes, &domainerror);CHKERRQ(ierr);
+    PetscCall((*linesearch->ops->snesfunc)(snes,W,F));
+    PetscCall(SNESGetFunctionDomainError(snes, &domainerror));
     if (domainerror) {
-      ierr = SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_DOMAIN);CHKERRQ(ierr);
+      PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_DOMAIN));
       PetscFunctionReturn(0);
     }
   }
 
   if (linesearch->norms) {
-    if (!linesearch->ops->vinorm) {ierr = VecNormBegin(F, NORM_2, &linesearch->fnorm);CHKERRQ(ierr);}
-    ierr = VecNormBegin(Y, NORM_2, &linesearch->ynorm);CHKERRQ(ierr);
-    ierr = VecNormBegin(W, NORM_2, &linesearch->xnorm);CHKERRQ(ierr);
-    if (!linesearch->ops->vinorm) {ierr = VecNormEnd(F, NORM_2, &linesearch->fnorm);CHKERRQ(ierr);}
-    ierr = VecNormEnd(Y, NORM_2, &linesearch->ynorm);CHKERRQ(ierr);
-    ierr = VecNormEnd(W, NORM_2, &linesearch->xnorm);CHKERRQ(ierr);
+    if (!linesearch->ops->vinorm) PetscCall(VecNormBegin(F, NORM_2, &linesearch->fnorm));
+    PetscCall(VecNormBegin(Y, NORM_2, &linesearch->ynorm));
+    PetscCall(VecNormBegin(W, NORM_2, &linesearch->xnorm));
+    if (!linesearch->ops->vinorm) PetscCall(VecNormEnd(F, NORM_2, &linesearch->fnorm));
+    PetscCall(VecNormEnd(Y, NORM_2, &linesearch->ynorm));
+    PetscCall(VecNormEnd(W, NORM_2, &linesearch->xnorm));
 
     if (linesearch->ops->vinorm) {
       linesearch->fnorm = gnorm;
 
-      ierr = (*linesearch->ops->vinorm)(snes, F, W, &linesearch->fnorm);CHKERRQ(ierr);
+      PetscCall((*linesearch->ops->vinorm)(snes, F, W, &linesearch->fnorm));
     } else {
-      ierr = VecNorm(F,NORM_2,&linesearch->fnorm);CHKERRQ(ierr);
+      PetscCall(VecNorm(F,NORM_2,&linesearch->fnorm));
     }
   }
 
   /* copy the solution over */
-  ierr = VecCopy(W, X);CHKERRQ(ierr);
+  PetscCall(VecCopy(W, X));
   PetscFunctionReturn(0);
 }
 
@@ -69,7 +68,7 @@ static PetscErrorCode  SNESLineSearchApply_Basic(SNESLineSearch linesearch)
    SNESLINESEARCHBASIC - This line search implementation is not a line
    search at all; it simply uses the full step.  Thus, this routine is intended
    for methods with well-scaled updates; i.e. Newton's method (SNESNEWTONLS), on
-   well-behaved problems.
+   well-behaved problems. Also named as SNESLINESEARCHNONE
 
    Options Database Keys:
 +   -snes_linesearch_damping <damping> - search vector is scaled by this amount, default is 1.0
@@ -82,7 +81,7 @@ static PetscErrorCode  SNESLineSearchApply_Basic(SNESLineSearch linesearch)
 
    Level: advanced
 
-.seealso: SNESLineSearchCreate(), SNESLineSearchSetType(), SNESLineSearchSetDamping(), SNESLineSearchSetComputeNorms()
+.seealso: `SNESLineSearchCreate()`, `SNESLineSearchSetType()`, `SNESLineSearchSetDamping()`, `SNESLineSearchSetComputeNorms()`
 M*/
 PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_Basic(SNESLineSearch linesearch)
 {

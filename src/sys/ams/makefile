@@ -1,7 +1,6 @@
-
+-include ../../../petsckdir.mk
 #requirespackage 'PETSC_HAVE_SAWS'
 
-ALL: lib
 SOURCEH   =
 SOURCEC   = pams.c
 DIRS      = 

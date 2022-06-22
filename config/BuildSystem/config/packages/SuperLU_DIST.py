@@ -5,9 +5,9 @@ class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
     self.minversion       = '6.3.0'
-    self.version          = '7.2.0'
+    self.version          = '8.0.0'
     self.versionname      = 'SUPERLU_DIST_MAJOR_VERSION.SUPERLU_DIST_MINOR_VERSION.SUPERLU_DIST_PATCH_VERSION'
-    self.gitcommit        = 'v'+self.version
+    self.gitcommit        = 'a841c9be1666056b2a6b720d27161aa244b562b1' # v8.0.0 + Fortran fixes, may-26-2022
     self.download         = ['git://https://github.com/xiaoyeli/superlu_dist','https://github.com/xiaoyeli/superlu_dist/archive/'+self.gitcommit+'.tar.gz']
     self.functions        = ['set_default_options_dist']
     self.includes         = ['superlu_ddefs.h']
@@ -17,8 +17,9 @@ class Configure(config.package.CMakePackage):
     self.downloadonWindows= 1
     self.hastests         = 1
     self.hastestsdatafiles= 1
-    self.precisions       = ['double']
+    self.precisions       = ['double','single']
     self.buildLanguages   = ['Cxx']
+    self.minCmakeVersion  = (3,18,1)
     return
 
   def setupDependencies(self, framework):
@@ -33,7 +34,6 @@ class Configure(config.package.CMakePackage):
     return
 
   def formCMakeConfigureArgs(self):
-    if self.versionToTuple(self.cmake.foundversion) < (3,18,1): raise RuntimeError("Requires cmake version 3.18.1 or higher: use --download-cmake")
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
     if self.openmp.found:
       self.usesopenmp = 'yes'

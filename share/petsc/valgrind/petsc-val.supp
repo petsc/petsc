@@ -91,8 +91,17 @@
 {
    <macOS ImageLoader in /usr/lib/dyld>
    Memcheck:Leak
-   fun:malloc
+   fun:malloc*
    ...
    fun:*ImageLoader*
    obj:/usr/lib/dyld
+}
+
+{
+   <U22.04 HWLOC>
+   Memcheck:Leak
+   ...
+   fun:MPII_hwtopo_init
+   fun:MPII_Init_thread
+   ...
 }

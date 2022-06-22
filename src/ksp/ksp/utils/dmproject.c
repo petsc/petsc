@@ -17,20 +17,19 @@ PetscErrorCode MatMult_GlobalToLocalNormal(Mat CtC, Vec x, Vec y)
   DM                    dm;
   Vec                   local, mask;
   projectConstraintsCtx *ctx;
-  PetscErrorCode        ierr;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(CtC,&ctx);CHKERRQ(ierr);
+  PetscCall(MatShellGetContext(CtC,&ctx));
   dm   = ctx->dm;
   mask = ctx->mask;
-  ierr = DMGetLocalVector(dm,&local);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(dm,x,INSERT_VALUES,local);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(dm,x,INSERT_VALUES,local);CHKERRQ(ierr);
-  if (mask) {ierr = VecPointwiseMult(local,mask,local);CHKERRQ(ierr);}
-  ierr = VecSet(y,0.);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalBegin(dm,local,ADD_VALUES,y);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(dm,local,ADD_VALUES,y);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(dm,&local);CHKERRQ(ierr);
+  PetscCall(DMGetLocalVector(dm,&local));
+  PetscCall(DMGlobalToLocalBegin(dm,x,INSERT_VALUES,local));
+  PetscCall(DMGlobalToLocalEnd(dm,x,INSERT_VALUES,local));
+  if (mask) PetscCall(VecPointwiseMult(local,mask,local));
+  PetscCall(VecSet(y,0.));
+  PetscCall(DMLocalToGlobalBegin(dm,local,ADD_VALUES,y));
+  PetscCall(DMLocalToGlobalEnd(dm,local,ADD_VALUES,y));
+  PetscCall(DMRestoreLocalVector(dm,&local));
   PetscFunctionReturn(0);
 }
 
@@ -67,7 +66,7 @@ static PetscErrorCode DMGlobalToLocalSolve_project1 (PetscInt dim, PetscReal tim
   the union of the closures of the local cells and 0 otherwise.  This difference is only relevant if there are anchor points that are not in the
   closure of any local cell (see DMPlexGetAnchors()/DMPlexSetAnchors()).
 
-.seealso: DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMLocalToGlobalBegin(), DMLocalToGlobalEnd(), DMPlexGetAnchors(), DMPlexSetAnchors()
+.seealso: `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`, `DMLocalToGlobalEnd()`, `DMPlexGetAnchors()`, `DMPlexSetAnchors()`
 @*/
 PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
 {
@@ -78,84 +77,83 @@ PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
   PC                    pc;
   Vec                   global, mask=NULL;
   projectConstraintsCtx ctx;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)dm,DMPLEX,&isPlex);CHKERRQ(ierr);
+  PetscCall(PetscObjectTypeCompare((PetscObject)dm,DMPLEX,&isPlex));
   if (isPlex) {
     /* mark points in the closure */
-    ierr = DMCreateLocalVector(dm,&mask);CHKERRQ(ierr);
-    ierr = VecSet(mask,0.0);CHKERRQ(ierr);
-    ierr = DMPlexGetSimplexOrBoxCells(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
+    PetscCall(DMCreateLocalVector(dm,&mask));
+    PetscCall(VecSet(mask,0.0));
+    PetscCall(DMPlexGetSimplexOrBoxCells(dm,0,&cStart,&cEnd));
     if (cEnd > cStart) {
       PetscScalar *ones;
       PetscInt numValues, i;
 
-      ierr = DMPlexVecGetClosure(dm,NULL,mask,cStart,&numValues,NULL);CHKERRQ(ierr);
-      ierr = PetscMalloc1(numValues,&ones);CHKERRQ(ierr);
+      PetscCall(DMPlexVecGetClosure(dm,NULL,mask,cStart,&numValues,NULL));
+      PetscCall(PetscMalloc1(numValues,&ones));
       for (i = 0; i < numValues; i++) {
         ones[i] = 1.;
       }
       for (c = cStart; c < cEnd; c++) {
-        ierr = DMPlexVecSetClosure(dm,NULL,mask,c,ones,INSERT_VALUES);CHKERRQ(ierr);
+        PetscCall(DMPlexVecSetClosure(dm,NULL,mask,c,ones,INSERT_VALUES));
       }
-      ierr = PetscFree(ones);CHKERRQ(ierr);
+      PetscCall(PetscFree(ones));
     }
   }
   else {
     PetscBool hasMask;
 
-    ierr = DMHasNamedLocalVector(dm, "_DMGlobalToLocalSolve_mask", &hasMask);CHKERRQ(ierr);
+    PetscCall(DMHasNamedLocalVector(dm, "_DMGlobalToLocalSolve_mask", &hasMask));
     if (!hasMask) {
       PetscErrorCode (**func) (PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
       void            **ctx;
       PetscInt          Nf, f;
 
-      ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
-      ierr = PetscMalloc2(Nf, &func, Nf, &ctx);CHKERRQ(ierr);
+      PetscCall(DMGetNumFields(dm, &Nf));
+      PetscCall(PetscMalloc2(Nf, &func, Nf, &ctx));
       for (f = 0; f < Nf; ++f) {
         func[f] = DMGlobalToLocalSolve_project1;
         ctx[f]  = NULL;
       }
-      ierr = DMGetNamedLocalVector(dm, "_DMGlobalToLocalSolve_mask", &mask);CHKERRQ(ierr);
-      ierr = DMProjectFunctionLocal(dm,0.0,func,ctx,INSERT_ALL_VALUES,mask);CHKERRQ(ierr);
-      ierr = DMRestoreNamedLocalVector(dm, "_DMGlobalToLocalSolve_mask", &mask);CHKERRQ(ierr);
-      ierr = PetscFree2(func, ctx);CHKERRQ(ierr);
+      PetscCall(DMGetNamedLocalVector(dm, "_DMGlobalToLocalSolve_mask", &mask));
+      PetscCall(DMProjectFunctionLocal(dm,0.0,func,ctx,INSERT_ALL_VALUES,mask));
+      PetscCall(DMRestoreNamedLocalVector(dm, "_DMGlobalToLocalSolve_mask", &mask));
+      PetscCall(PetscFree2(func, ctx));
     }
-    ierr = DMGetNamedLocalVector(dm, "_DMGlobalToLocalSolve_mask", &mask);CHKERRQ(ierr);
+    PetscCall(DMGetNamedLocalVector(dm, "_DMGlobalToLocalSolve_mask", &mask));
   }
   ctx.dm   = dm;
   ctx.mask = mask;
-  ierr = VecGetSize(y,&N);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(y,&n);CHKERRQ(ierr);
-  ierr = MatCreate(PetscObjectComm((PetscObject)dm),&CtC);CHKERRQ(ierr);
-  ierr = MatSetSizes(CtC,n,n,N,N);CHKERRQ(ierr);
-  ierr = MatSetType(CtC,MATSHELL);CHKERRQ(ierr);
-  ierr = MatSetUp(CtC);CHKERRQ(ierr);
-  ierr = MatShellSetContext(CtC,&ctx);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(CtC,MATOP_MULT,(void(*)(void))MatMult_GlobalToLocalNormal);CHKERRQ(ierr);
-  ierr = KSPCreate(PetscObjectComm((PetscObject)dm),&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,CtC,CtC);CHKERRQ(ierr);
-  ierr = KSPSetType(ksp,KSPCG);CHKERRQ(ierr);
-  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
-  ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = KSPSetUp(ksp);CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(dm,&global);CHKERRQ(ierr);
-  ierr = VecSet(global,0.);CHKERRQ(ierr);
-  if (mask) {ierr = VecPointwiseMult(x,mask,x);CHKERRQ(ierr);}
-  ierr = DMLocalToGlobalBegin(dm,x,ADD_VALUES,global);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(dm,x,ADD_VALUES,global);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp,global,y);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(dm,&global);CHKERRQ(ierr);
+  PetscCall(VecGetSize(y,&N));
+  PetscCall(VecGetLocalSize(y,&n));
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)dm),&CtC));
+  PetscCall(MatSetSizes(CtC,n,n,N,N));
+  PetscCall(MatSetType(CtC,MATSHELL));
+  PetscCall(MatSetUp(CtC));
+  PetscCall(MatShellSetContext(CtC,&ctx));
+  PetscCall(MatShellSetOperation(CtC,MATOP_MULT,(void(*)(void))MatMult_GlobalToLocalNormal));
+  PetscCall(KSPCreate(PetscObjectComm((PetscObject)dm),&ksp));
+  PetscCall(KSPSetOperators(ksp,CtC,CtC));
+  PetscCall(KSPSetType(ksp,KSPCG));
+  PetscCall(KSPGetPC(ksp,&pc));
+  PetscCall(PCSetType(pc,PCNONE));
+  PetscCall(KSPSetInitialGuessNonzero(ksp,PETSC_TRUE));
+  PetscCall(KSPSetUp(ksp));
+  PetscCall(DMGetGlobalVector(dm,&global));
+  PetscCall(VecSet(global,0.));
+  if (mask) PetscCall(VecPointwiseMult(x,mask,x));
+  PetscCall(DMLocalToGlobalBegin(dm,x,ADD_VALUES,global));
+  PetscCall(DMLocalToGlobalEnd(dm,x,ADD_VALUES,global));
+  PetscCall(KSPSolve(ksp,global,y));
+  PetscCall(DMRestoreGlobalVector(dm,&global));
   /* clean up */
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = MatDestroy(&CtC);CHKERRQ(ierr);
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(MatDestroy(&CtC));
   if (isPlex) {
-    ierr = VecDestroy(&mask);CHKERRQ(ierr);
+    PetscCall(VecDestroy(&mask));
   }
   else {
-    ierr = DMRestoreNamedLocalVector(dm, "_DMGlobalToLocalSolve_mask", &mask);CHKERRQ(ierr);
+    PetscCall(DMRestoreNamedLocalVector(dm, "_DMGlobalToLocalSolve_mask", &mask));
   }
 
   PetscFunctionReturn(0);
@@ -208,7 +206,7 @@ $         PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscSc
 
   Level: intermediate
 
-.seealso: DMProjectFieldLocal(), DMProjectFieldLabelLocal(), DMProjectFunction(), DMComputeL2Diff()
+.seealso: `DMProjectFieldLocal()`, `DMProjectFieldLabelLocal()`, `DMProjectFunction()`, `DMComputeL2Diff()`
 @*/
 PetscErrorCode DMProjectField(DM dm, PetscReal time, Vec U,
                               void (**funcs)(PetscInt, PetscInt, PetscInt,
@@ -219,160 +217,163 @@ PetscErrorCode DMProjectField(DM dm, PetscReal time, Vec U,
 {
   Vec            localX, localU;
   DM             dmIn;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = DMGetLocalVector(dm, &localX);CHKERRQ(ierr);
+  PetscCall(DMGetLocalVector(dm, &localX));
   /* We currently check whether locU == locX to see if we need to apply BC */
   if (U != X) {
-    ierr = VecGetDM(U, &dmIn);CHKERRQ(ierr);
-    ierr = DMGetLocalVector(dmIn, &localU);CHKERRQ(ierr);
+    PetscCall(VecGetDM(U, &dmIn));
+    PetscCall(DMGetLocalVector(dmIn, &localU));
   } else {
     dmIn   = dm;
     localU = localX;
   }
-  ierr = DMGlobalToLocalBegin(dmIn, U, INSERT_VALUES, localU);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(dmIn, U, INSERT_VALUES, localU);CHKERRQ(ierr);
-  ierr = DMProjectFieldLocal(dm, time, localU, funcs, mode, localX);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalBegin(dm, localX, mode, X);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(dm, localX, mode, X);CHKERRQ(ierr);
+  PetscCall(DMGlobalToLocalBegin(dmIn, U, INSERT_VALUES, localU));
+  PetscCall(DMGlobalToLocalEnd(dmIn, U, INSERT_VALUES, localU));
+  PetscCall(DMProjectFieldLocal(dm, time, localU, funcs, mode, localX));
+  PetscCall(DMLocalToGlobalBegin(dm, localX, mode, X));
+  PetscCall(DMLocalToGlobalEnd(dm, localX, mode, X));
   if (mode == INSERT_VALUES || mode == INSERT_ALL_VALUES || mode == INSERT_BC_VALUES) {
     Mat cMat;
 
-    ierr = DMGetDefaultConstraints(dm, NULL, &cMat);CHKERRQ(ierr);
+    PetscCall(DMGetDefaultConstraints(dm, NULL, &cMat, NULL));
     if (cMat) {
-      ierr = DMGlobalToLocalSolve(dm, localX, X);CHKERRQ(ierr);
+      PetscCall(DMGlobalToLocalSolve(dm, localX, X));
     }
   }
-  ierr = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
-  if (U != X) {ierr = DMRestoreLocalVector(dmIn, &localU);CHKERRQ(ierr);}
+  PetscCall(DMRestoreLocalVector(dm, &localX));
+  if (U != X) PetscCall(DMRestoreLocalVector(dmIn, &localU));
   PetscFunctionReturn(0);
 }
 
 /********************* Adaptive Interpolation **************************/
 
 /* See the discussion of Adaptive Interpolation in manual/high_level_mg.rst */
-PetscErrorCode DMAdaptInterpolator(DM dmc, DM dmf, Mat In, KSP smoother, PetscInt Nc, Vec vf[], Vec vc[], Mat *InAdapt, void *user)
+PetscErrorCode DMAdaptInterpolator(DM dmc, DM dmf, Mat In, KSP smoother, Mat MF, Mat MC, Mat *InAdapt, void *user)
 {
-  Mat            globalA;
-  Vec            tmp, tmp2;
-  PetscScalar   *A, *b, *x, *workscalar;
-  PetscReal     *w, *sing, *workreal, rcond = PETSC_SMALL;
-  PetscBLASInt   M, N, one = 1, irank, lwrk, info;
-  PetscInt       debug = 0, rStart, rEnd, r, maxcols = 0, k;
-  PetscBool      allocVc = PETSC_FALSE;
-  PetscErrorCode ierr;
+  Mat               globalA, AF;
+  Vec               tmp;
+  const PetscScalar *af, *ac;
+  PetscScalar       *A, *b, *x, *workscalar;
+  PetscReal         *w, *sing, *workreal, rcond = PETSC_SMALL;
+  PetscBLASInt       M, N, one = 1, irank, lwrk, info;
+  PetscInt           debug = 0, rStart, rEnd, r, maxcols = 0, k, Nc, ldac, ldaf;
+  PetscBool          allocVc = PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = PetscLogEventBegin(DM_AdaptInterpolator,dmc,dmf,0,0);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL, NULL, "-dm_interpolator_adapt_debug", &debug, NULL);CHKERRQ(ierr);
-  ierr = MatDuplicate(In, MAT_SHARE_NONZERO_PATTERN, InAdapt);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(In, &rStart, &rEnd);CHKERRQ(ierr);
+  PetscCall(PetscLogEventBegin(DM_AdaptInterpolator,dmc,dmf,0,0));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-dm_interpolator_adapt_debug", &debug, NULL));
+  PetscCall(MatGetSize(MF,NULL,&Nc));
+  PetscCall(MatDuplicate(In, MAT_SHARE_NONZERO_PATTERN, InAdapt));
+  PetscCall(MatGetOwnershipRange(In, &rStart, &rEnd));
   #if 0
-  ierr = MatGetMaxRowLen(In, &maxcols);CHKERRQ(ierr);
+  PetscCall(MatGetMaxRowLen(In, &maxcols));
   #else
   for (r = rStart; r < rEnd; ++r) {
-    PetscInt           ncols;
-    const PetscInt    *cols;
-    const PetscScalar *vals;
+    PetscInt ncols;
 
-    ierr = MatGetRow(In, r, &ncols, &cols, &vals);CHKERRQ(ierr);
+    PetscCall(MatGetRow(In, r, &ncols, NULL, NULL));
     maxcols = PetscMax(maxcols, ncols);
-    ierr = MatRestoreRow(In, r, &ncols, &cols, &vals);CHKERRQ(ierr);
+    PetscCall(MatRestoreRow(In, r, &ncols, NULL, NULL));
   }
   #endif
-  if (Nc < maxcols) PetscPrintf(PETSC_COMM_SELF, "The number of input vectors %D < %D the maximum number of column entries\n", Nc, maxcols);
-  for (k = 0; k < Nc; ++k) {
+  if (Nc < maxcols) PetscPrintf(PETSC_COMM_SELF, "The number of input vectors %" PetscInt_FMT " < %" PetscInt_FMT " the maximum number of column entries\n", Nc, maxcols);
+  for (k = 0; k < Nc && debug; ++k) {
     char        name[PETSC_MAX_PATH_LEN];
     const char *prefix;
+    Vec         vc, vf;
 
-    ierr = PetscObjectGetOptionsPrefix((PetscObject) smoother, &prefix);CHKERRQ(ierr);
-    ierr = PetscSNPrintf(name, PETSC_MAX_PATH_LEN, "%sCoarse Vector %D", prefix ? prefix : NULL, k);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) vc[k], name);CHKERRQ(ierr);
-    ierr = VecViewFromOptions(vc[k], NULL, "-dm_adapt_interp_view_coarse");CHKERRQ(ierr);
-    ierr = PetscSNPrintf(name, PETSC_MAX_PATH_LEN, "%sFine Vector %D", prefix ? prefix : NULL, k);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) vf[k], name);CHKERRQ(ierr);
-    ierr = VecViewFromOptions(vf[k], NULL, "-dm_adapt_interp_view_fine");CHKERRQ(ierr);
+    PetscCall(PetscObjectGetOptionsPrefix((PetscObject) smoother, &prefix));
+
+    if (MC) {
+      PetscCall(PetscSNPrintf(name, PETSC_MAX_PATH_LEN, "%sCoarse Vector %" PetscInt_FMT, prefix ? prefix : NULL, k));
+      PetscCall(MatDenseGetColumnVecRead(MC, k, &vc));
+      PetscCall(PetscObjectSetName((PetscObject) vc, name));
+      PetscCall(VecViewFromOptions(vc, NULL, "-dm_adapt_interp_view_coarse"));
+      PetscCall(MatDenseRestoreColumnVecRead(MC, k, &vc));
+    }
+    PetscCall(PetscSNPrintf(name, PETSC_MAX_PATH_LEN, "%sFine Vector %" PetscInt_FMT, prefix ? prefix : NULL, k));
+    PetscCall(MatDenseGetColumnVecRead(MF, k, &vf));
+    PetscCall(PetscObjectSetName((PetscObject) vf, name));
+    PetscCall(VecViewFromOptions(vf, NULL, "-dm_adapt_interp_view_fine"));
+    PetscCall(MatDenseRestoreColumnVecRead(MF, k, &vf));
   }
-  ierr = PetscBLASIntCast(3*PetscMin(Nc, maxcols) + PetscMax(2*PetscMin(Nc, maxcols), PetscMax(Nc, maxcols)), &lwrk);CHKERRQ(ierr);
-  ierr = PetscMalloc7(Nc*maxcols, &A, PetscMax(Nc, maxcols), &b, Nc, &w, maxcols, &x, maxcols, &sing, lwrk, &workscalar, 5*PetscMin(Nc, maxcols), &workreal);CHKERRQ(ierr);
+  PetscCall(PetscBLASIntCast(3*PetscMin(Nc, maxcols) + PetscMax(2*PetscMin(Nc, maxcols), PetscMax(Nc, maxcols)), &lwrk));
+  PetscCall(PetscMalloc7(Nc*maxcols, &A, PetscMax(Nc, maxcols), &b, Nc, &w, maxcols, &x, maxcols, &sing, lwrk, &workscalar, 5*PetscMin(Nc, maxcols), &workreal));
   /* w_k = \frac{\HC{v_k} B_l v_k}{\HC{v_k} A_l v_k} or the inverse Rayleigh quotient, which we calculate using \frac{\HC{v_k} v_k}{\HC{v_k} B^{-1}_l A_l v_k} */
-  ierr = KSPGetOperators(smoother, &globalA, NULL);CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(dmf, &tmp);CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(dmf, &tmp2);CHKERRQ(ierr);
+  PetscCall(KSPGetOperators(smoother, &globalA, NULL));
+
+  PetscCall(MatMatMult(globalA, MF, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &AF));
   for (k = 0; k < Nc; ++k) {
     PetscScalar vnorm, vAnorm;
-    PetscBool   canMult = PETSC_FALSE;
-    const char *type;
+    Vec         vf;
 
     w[k] = 1.0;
-    ierr = PetscObjectGetType((PetscObject) globalA, &type);CHKERRQ(ierr);
-    if (type) {ierr = MatAssembled(globalA, &canMult);CHKERRQ(ierr);}
-    if (type && canMult) {
-      ierr = VecDot(vf[k], vf[k], &vnorm);CHKERRQ(ierr);
-      ierr = MatMult(globalA, vf[k], tmp);CHKERRQ(ierr);
+    PetscCall(MatDenseGetColumnVecRead(MF, k, &vf));
+    PetscCall(MatDenseGetColumnVecRead(AF, k, &tmp));
+    PetscCall(VecDot(vf, vf, &vnorm));
 #if 0
-      ierr = KSPSolve(smoother, tmp, tmp2);CHKERRQ(ierr);
-      ierr = VecDot(vf[k], tmp2, &vAnorm);CHKERRQ(ierr);
+    PetscCall(DMGetGlobalVector(dmf, &tmp2));
+    PetscCall(KSPSolve(smoother, tmp, tmp2));
+    PetscCall(VecDot(vf, tmp2, &vAnorm));
+    PetscCall(DMRestoreGlobalVector(dmf, &tmp2));
 #else
-      ierr = VecDot(vf[k], tmp, &vAnorm);CHKERRQ(ierr);
+    PetscCall(VecDot(vf, tmp, &vAnorm));
 #endif
-      w[k] = PetscRealPart(vnorm) / PetscRealPart(vAnorm);
-    } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "System matrix is not assembled.");
+    w[k] = PetscRealPart(vnorm) / PetscRealPart(vAnorm);
+    PetscCall(MatDenseRestoreColumnVecRead(MF, k, &vf));
+    PetscCall(MatDenseRestoreColumnVecRead(AF, k, &tmp));
   }
-  ierr = DMRestoreGlobalVector(dmf, &tmp);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(dmf, &tmp2);CHKERRQ(ierr);
-  if (!vc) {
+  PetscCall(MatDestroy(&AF));
+  if (!MC) {
     allocVc = PETSC_TRUE;
-    ierr = PetscMalloc1(Nc, &vc);CHKERRQ(ierr);
-    for (k = 0; k < Nc; ++k) {
-      ierr = DMGetGlobalVector(dmc, &vc[k]);CHKERRQ(ierr);
-      ierr = MatMultTranspose(In, vf[k], vc[k]);CHKERRQ(ierr);
-    }
+    PetscCall(MatTransposeMatMult(In, MF, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &MC));
   }
-  /* Solve a LS system for each fine row */
+  /* Solve a LS system for each fine row
+     MATT: Can we generalize to the case where Nc for the fine space
+     is different for Nc for the coarse? */
+  PetscCall(MatDenseGetArrayRead(MF, &af));
+  PetscCall(MatDenseGetLDA(MF, &ldaf));
+  PetscCall(MatDenseGetArrayRead(MC, &ac));
+  PetscCall(MatDenseGetLDA(MC, &ldac));
   for (r = rStart; r < rEnd; ++r) {
     PetscInt           ncols, c;
     const PetscInt    *cols;
-    const PetscScalar *vals, *a;
+    const PetscScalar *vals;
 
-    ierr = MatGetRow(In, r, &ncols, &cols, &vals);CHKERRQ(ierr);
+    PetscCall(MatGetRow(In, r, &ncols, &cols, &vals));
     for (k = 0; k < Nc; ++k) {
       /* Need to fit lowest mode exactly */
       const PetscReal wk = ((ncols == 1) && (k > 0)) ? 0.0 : PetscSqrtReal(w[k]);
 
       /* b_k = \sqrt{w_k} f^{F,k}_r */
-      ierr = VecGetArrayRead(vf[k], &a);CHKERRQ(ierr);
-      b[k] = wk * a[r-rStart];
-      ierr = VecRestoreArrayRead(vf[k], &a);CHKERRQ(ierr);
+      b[k] = wk * af[r-rStart + k*ldaf];
       /* A_{kc} = \sqrt{w_k} f^{C,k}_c */
       /* TODO Must pull out VecScatter from In, scatter in vc[k] values up front, and access them indirectly just as in MatMult() */
-      ierr = VecGetArrayRead(vc[k], &a);CHKERRQ(ierr);
       for (c = 0; c < ncols; ++c) {
         /* This is element (k, c) of A */
-        A[c*Nc+k] = wk * a[cols[c]-rStart];
+        A[c*Nc+k] = wk * ac[cols[c]-rStart + k*ldac];
       }
-      ierr = VecRestoreArrayRead(vc[k], &a);CHKERRQ(ierr);
     }
-    ierr = PetscBLASIntCast(Nc,    &M);CHKERRQ(ierr);
-    ierr = PetscBLASIntCast(ncols, &N);CHKERRQ(ierr);
+    PetscCall(PetscBLASIntCast(Nc,    &M));
+    PetscCall(PetscBLASIntCast(ncols, &N));
     if (debug) {
 #if defined(PETSC_USE_COMPLEX)
       PetscScalar *tmp;
       PetscInt     j;
 
-      ierr = DMGetWorkArray(dmc, Nc, MPIU_SCALAR, (void *) &tmp);CHKERRQ(ierr);
+      PetscCall(DMGetWorkArray(dmc, Nc, MPIU_SCALAR, (void *) &tmp));
       for (j = 0; j < Nc; ++j) tmp[j] = w[j];
-      ierr = DMPrintCellMatrix(r, "Interpolator Row LS weights", Nc, 1, tmp);CHKERRQ(ierr);
-      ierr = DMPrintCellMatrix(r, "Interpolator Row LS matrix", Nc, ncols, A);CHKERRQ(ierr);
+      PetscCall(DMPrintCellMatrix(r, "Interpolator Row LS weights", Nc, 1, tmp));
+      PetscCall(DMPrintCellMatrix(r, "Interpolator Row LS matrix", Nc, ncols, A));
       for (j = 0; j < Nc; ++j) tmp[j] = b[j];
-      ierr = DMPrintCellMatrix(r, "Interpolator Row LS rhs", Nc, 1, tmp);CHKERRQ(ierr);
-      ierr = DMRestoreWorkArray(dmc, Nc, MPIU_SCALAR, (void *) &tmp);CHKERRQ(ierr);
+      PetscCall(DMPrintCellMatrix(r, "Interpolator Row LS rhs", Nc, 1, tmp));
+      PetscCall(DMRestoreWorkArray(dmc, Nc, MPIU_SCALAR, (void *) &tmp));
 #else
-      ierr = DMPrintCellMatrix(r, "Interpolator Row LS weights", Nc, 1, w);CHKERRQ(ierr);
-      ierr = DMPrintCellMatrix(r, "Interpolator Row LS matrix", Nc, ncols, A);CHKERRQ(ierr);
-      ierr = DMPrintCellMatrix(r, "Interpolator Row LS rhs", Nc, 1, b);CHKERRQ(ierr);
+      PetscCall(DMPrintCellMatrix(r, "Interpolator Row LS weights", Nc, 1, w));
+      PetscCall(DMPrintCellMatrix(r, "Interpolator Row LS matrix", Nc, ncols, A));
+      PetscCall(DMPrintCellMatrix(r, "Interpolator Row LS rhs", Nc, 1, b));
 #endif
     }
 #if defined(PETSC_USE_COMPLEX)
@@ -382,63 +383,68 @@ PetscErrorCode DMAdaptInterpolator(DM dmc, DM dmf, Mat In, KSP smoother, PetscIn
     /* DGELSS( M, N, NRHS, A, LDA, B, LDB, S, RCOND, RANK, WORK, LWORK, INFO) */
     PetscStackCallBLAS("LAPACKgelss",LAPACKgelss_(&M, &N, &one, A, &M, b, M > N ? &M : &N, sing, &rcond, &irank, workscalar, &lwrk, &info));
 #endif
-    PetscCheckFalse(info < 0,PETSC_COMM_SELF, PETSC_ERR_LIB, "Bad argument to GELSS");
-    PetscCheckFalse(info > 0,PETSC_COMM_SELF, PETSC_ERR_LIB, "SVD failed to converge");
+    PetscCheck(info >= 0,PETSC_COMM_SELF, PETSC_ERR_LIB, "Bad argument to GELSS");
+    PetscCheck(info <= 0,PETSC_COMM_SELF, PETSC_ERR_LIB, "SVD failed to converge");
     if (debug) {
-      ierr = PetscPrintf(PETSC_COMM_SELF, "rank %d rcond %g\n", irank, (double) rcond);CHKERRQ(ierr);
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, "rank %" PetscBLASInt_FMT " rcond %g\n", irank, (double) rcond));
 #if defined(PETSC_USE_COMPLEX)
       {
         PetscScalar *tmp;
         PetscInt     j;
 
-        ierr = DMGetWorkArray(dmc, Nc, MPIU_SCALAR, (void *) &tmp);CHKERRQ(ierr);
+        PetscCall(DMGetWorkArray(dmc, Nc, MPIU_SCALAR, (void *) &tmp));
         for (j = 0; j < PetscMin(Nc, ncols); ++j) tmp[j] = sing[j];
-        ierr = DMPrintCellMatrix(r, "Interpolator Row LS singular values", PetscMin(Nc, ncols), 1, tmp);CHKERRQ(ierr);
-        ierr = DMRestoreWorkArray(dmc, Nc, MPIU_SCALAR, (void *) &tmp);CHKERRQ(ierr);
+        PetscCall(DMPrintCellMatrix(r, "Interpolator Row LS singular values", PetscMin(Nc, ncols), 1, tmp));
+        PetscCall(DMRestoreWorkArray(dmc, Nc, MPIU_SCALAR, (void *) &tmp));
       }
 #else
-      ierr = DMPrintCellMatrix(r, "Interpolator Row LS singular values", PetscMin(Nc, ncols), 1, sing);CHKERRQ(ierr);
+      PetscCall(DMPrintCellMatrix(r, "Interpolator Row LS singular values", PetscMin(Nc, ncols), 1, sing));
 #endif
-      ierr = DMPrintCellMatrix(r, "Interpolator Row LS old P", ncols, 1, vals);CHKERRQ(ierr);
-      ierr = DMPrintCellMatrix(r, "Interpolator Row LS sol", ncols, 1, b);CHKERRQ(ierr);
+      PetscCall(DMPrintCellMatrix(r, "Interpolator Row LS old P", ncols, 1, vals));
+      PetscCall(DMPrintCellMatrix(r, "Interpolator Row LS sol", ncols, 1, b));
     }
-    ierr = MatSetValues(*InAdapt, 1, &r, ncols, cols, b, INSERT_VALUES);CHKERRQ(ierr);
-    ierr = MatRestoreRow(In, r, &ncols, &cols, &vals);CHKERRQ(ierr);
+    PetscCall(MatSetValues(*InAdapt, 1, &r, ncols, cols, b, INSERT_VALUES));
+    PetscCall(MatRestoreRow(In, r, &ncols, &cols, &vals));
   }
-  ierr = PetscFree7(A, b, w, x, sing, workscalar, workreal);CHKERRQ(ierr);
-  if (allocVc) {
-    for (k = 0; k < Nc; ++k) {ierr = DMRestoreGlobalVector(dmc, &vc[k]);CHKERRQ(ierr);}
-    ierr = PetscFree(vc);CHKERRQ(ierr);
-  }
-  ierr = MatAssemblyBegin(*InAdapt, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*InAdapt, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(DM_AdaptInterpolator,dmc,dmf,0,0);CHKERRQ(ierr);
+  PetscCall(MatDenseRestoreArrayRead(MF, &af));
+  PetscCall(MatDenseRestoreArrayRead(MC, &ac));
+  PetscCall(PetscFree7(A, b, w, x, sing, workscalar, workreal));
+  if (allocVc) PetscCall(MatDestroy(&MC));
+  PetscCall(MatAssemblyBegin(*InAdapt, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(*InAdapt, MAT_FINAL_ASSEMBLY));
+  PetscCall(PetscLogEventEnd(DM_AdaptInterpolator,dmc,dmf,0,0));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMCheckInterpolator(DM dmf, Mat In, PetscInt Nc, Vec vc[], Vec vf[], PetscReal tol)
+PetscErrorCode DMCheckInterpolator(DM dmf, Mat In, Mat MC, Mat MF, PetscReal tol)
 {
   Vec            tmp;
   PetscReal      norminf, norm2, maxnorminf = 0.0, maxnorm2 = 0.0;
-  PetscInt       k;
-  PetscErrorCode ierr;
+  PetscInt       k, Nc;
 
   PetscFunctionBegin;
-  ierr = DMGetGlobalVector(dmf, &tmp);CHKERRQ(ierr);
-  ierr = MatViewFromOptions(In, NULL, "-dm_interpolator_adapt_error");CHKERRQ(ierr);
+  PetscCall(DMGetGlobalVector(dmf, &tmp));
+  PetscCall(MatViewFromOptions(In, NULL, "-dm_interpolator_adapt_error"));
+  PetscCall(MatGetSize(MF, NULL, &Nc));
   for (k = 0; k < Nc; ++k) {
-    ierr = MatMult(In, vc[k], tmp);CHKERRQ(ierr);
-    ierr = VecAXPY(tmp, -1.0, vf[k]);CHKERRQ(ierr);
-    ierr = VecViewFromOptions(vc[k], NULL, "-dm_interpolator_adapt_error");CHKERRQ(ierr);
-    ierr = VecViewFromOptions(vf[k], NULL, "-dm_interpolator_adapt_error");CHKERRQ(ierr);
-    ierr = VecViewFromOptions(tmp, NULL, "-dm_interpolator_adapt_error");CHKERRQ(ierr);
-    ierr = VecNorm(tmp, NORM_INFINITY, &norminf);CHKERRQ(ierr);
-    ierr = VecNorm(tmp, NORM_2, &norm2);CHKERRQ(ierr);
+    Vec vc, vf;
+
+    PetscCall(MatDenseGetColumnVecRead(MC, k, &vc));
+    PetscCall(MatDenseGetColumnVecRead(MF, k, &vf));
+    PetscCall(MatMult(In, vc, tmp));
+    PetscCall(VecAXPY(tmp, -1.0, vf));
+    PetscCall(VecViewFromOptions(vc, NULL, "-dm_interpolator_adapt_error"));
+    PetscCall(VecViewFromOptions(vf, NULL, "-dm_interpolator_adapt_error"));
+    PetscCall(VecViewFromOptions(tmp, NULL, "-dm_interpolator_adapt_error"));
+    PetscCall(VecNorm(tmp, NORM_INFINITY, &norminf));
+    PetscCall(VecNorm(tmp, NORM_2, &norm2));
     maxnorminf = PetscMax(maxnorminf, norminf);
     maxnorm2   = PetscMax(maxnorm2,   norm2);
-    ierr = PetscPrintf(PetscObjectComm((PetscObject) dmf), "Coarse vec %D ||vf - P vc||_\\infty %g, ||vf - P vc||_2 %g\n", k, norminf, norm2);CHKERRQ(ierr);
+    PetscCall(PetscPrintf(PetscObjectComm((PetscObject) dmf), "Coarse vec %" PetscInt_FMT " ||vf - P vc||_\\infty %g, ||vf - P vc||_2 %g\n", k, (double)norminf, (double)norm2));
+    PetscCall(MatDenseRestoreColumnVecRead(MC, k, &vc));
+    PetscCall(MatDenseRestoreColumnVecRead(MF, k, &vf));
   }
-  ierr = DMRestoreGlobalVector(dmf, &tmp);CHKERRQ(ierr);
-  PetscCheckFalse(maxnorm2 > tol,PetscObjectComm((PetscObject) dmf), PETSC_ERR_ARG_WRONG, "max_k ||vf_k - P vc_k||_2 %g > tol %g", maxnorm2, tol);
+  PetscCall(DMRestoreGlobalVector(dmf, &tmp));
+  PetscCheck(maxnorm2 <= tol,PetscObjectComm((PetscObject) dmf), PETSC_ERR_ARG_WRONG, "max_k ||vf_k - P vc_k||_2 %g > tol %g", (double)maxnorm2, (double)tol);
   PetscFunctionReturn(0);
 }

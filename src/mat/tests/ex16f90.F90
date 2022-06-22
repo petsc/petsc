@@ -18,19 +18,14 @@
       integer :: ashape(2)
       character(len=80) :: string
 
-      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      if (ierr .ne. 0) then
-        print*,'Unable to initialize PETSc'
-        stop
-      endif
-
+      PetscCallA(PetscInitialize(ierr))
       m = 3
       n = 2
       one = 1
 !
 !      Create a parallel dense matrix shared by all processors
 !
-      call MatCreateDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m,n,PETSC_NULL_SCALAR,A,ierr);CHKERRA(ierr)
+      PetscCallA(MatCreateDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m,n,PETSC_NULL_SCALAR,A,ierr))
 
 !
 !     Set values into the matrix. All processors set all values.
@@ -40,33 +35,33 @@
         do 20, j=0,n-1
           jar(1) = j
           v(1)   = 9.0/real(i+j+1)
-          call MatSetValues(A,one,iar,one,jar,v,INSERT_VALUES,ierr);CHKERRA(ierr)
+          PetscCallA(MatSetValues(A,one,iar,one,jar,v,INSERT_VALUES,ierr))
  20     continue
  10   continue
 
-      call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr);CHKERRA(ierr)
-      call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr);CHKERRA(ierr)
+      PetscCallA(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr))
+      PetscCallA(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr))
 
 !
 !       Print the matrix to the screen
 !
-      call MatView(A,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)
+      PetscCallA(MatView(A,PETSC_VIEWER_STDOUT_WORLD,ierr))
 
 !
 !      Print the local matrix shape to the screen for each rank
 !
-      call MatDenseGetArrayF90(A,array,ierr);CHKERRA(ierr)
-      call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr);CHKERRA(ierr)
+      PetscCallA(MatDenseGetArrayF90(A,array,ierr))
+      PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr))
       ashape = shape(array)
       write(string, '("[", i0, "]", " shape (", i0, ",", i0, ")", a1)') rank, ashape(1), ashape(2), new_line('a')
-      call PetscSynchronizedPrintf(PETSC_COMM_WORLD, string, ierr);CHKERRA(ierr)
-      call PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT,ierr);CHKERRA(ierr)
-      call MatDenseRestoreArrayF90(A,array,ierr);CHKERRA(ierr)
+      PetscCallA(PetscSynchronizedPrintf(PETSC_COMM_WORLD, string, ierr))
+      PetscCallA(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT,ierr))
+      PetscCallA(MatDenseRestoreArrayF90(A,array,ierr))
 !
 !      Free the space used by the matrix
 !
-      call MatDestroy(A,ierr);CHKERRA(ierr)
-      call PetscFinalize(ierr)
+      PetscCallA(MatDestroy(A,ierr))
+      PetscCallA(PetscFinalize(ierr))
       end
 
 !/*TEST

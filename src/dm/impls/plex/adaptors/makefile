@@ -1,12 +1,8 @@
 -include ../../../../../petscdir.mk
-ALL: lib
 
-CPPFLAGS =
-CFLAGS   =
-FFLAGS   =
 SOURCEC  =
 SOURCEF  =
-SOURCEH  =
+SOURCEH  = mmgcommon.h
 DIRS     = pragmatic mmg parmmg
 LIBBASE  = libpetscdm
 MANSEC   = DM

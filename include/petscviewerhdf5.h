@@ -23,15 +23,12 @@ PETSC_EXTERN PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer, hid_t *, hid_t
 
 static inline PetscErrorCode PetscViewerHDF5PathIsRelative(const char path[], PetscBool emptyIsRelative, PetscBool *has)
 {
-  PetscErrorCode ierr;
-  size_t         len;
+  size_t len;
 
   PetscFunctionBegin;
   *has = emptyIsRelative;
-  ierr = PetscStrlen(path,&len);CHKERRQ(ierr);
-  if (len) {
-    *has = (PetscBool) (path[0] != '/');
-  }
+  PetscCall(PetscStrlen(path,&len));
+  if (len) *has = (PetscBool) (path[0] != '/');
   PetscFunctionReturn(0);
 }
 

@@ -3,7 +3,6 @@
 
 PetscErrorCode MatMultASPIN(Mat m,Vec X,Vec Y)
 {
-  PetscErrorCode ierr;
   void           *ctx;
   SNES           snes;
   PetscInt       n,i;
@@ -18,46 +17,44 @@ PetscErrorCode MatMultASPIN(Mat m,Vec X,Vec Y)
   Mat            subJ,subpJ;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(m,&ctx);CHKERRQ(ierr);
+  PetscCall(MatShellGetContext(m,&ctx));
   snes = (SNES)ctx;
-  ierr = SNESGetNPC(snes,&npc);CHKERRQ(ierr);
-  ierr = SNESGetFunction(npc,&W,NULL,NULL);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)npc,SNESNASM,&match);CHKERRQ(ierr);
+  PetscCall(SNESGetNPC(snes,&npc));
+  PetscCall(SNESGetFunction(npc,&W,NULL,NULL));
+  PetscCall(PetscObjectTypeCompare((PetscObject)npc,SNESNASM,&match));
   if (!match) {
-    ierr = PetscObjectGetComm((PetscObject)snes,&comm);CHKERRQ(ierr);
+    PetscCall(PetscObjectGetComm((PetscObject)snes,&comm));
     SETERRQ(comm,PETSC_ERR_ARG_WRONGSTATE,"MatMultASPIN requires that the nonlinear preconditioner be Nonlinear additive Schwarz");
   }
-  ierr = SNESNASMGetSubdomains(npc,&n,&subsnes,NULL,&oscatter,NULL);CHKERRQ(ierr);
-  ierr = SNESNASMGetSubdomainVecs(npc,&n,&x,&b,NULL,NULL);CHKERRQ(ierr);
+  PetscCall(SNESNASMGetSubdomains(npc,&n,&subsnes,NULL,&oscatter,NULL));
+  PetscCall(SNESNASMGetSubdomainVecs(npc,&n,&x,&b,NULL,NULL));
 
-  ierr = VecSet(Y,0);CHKERRQ(ierr);
-  ierr = MatMult(npc->jacobian_pre,X,W);CHKERRQ(ierr);
+  PetscCall(VecSet(Y,0));
+  PetscCall(MatMult(npc->jacobian_pre,X,W));
 
   for (i=0;i<n;i++) {
-    ierr = VecScatterBegin(oscatter[i],W,b[i],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    PetscCall(VecScatterBegin(oscatter[i],W,b[i],INSERT_VALUES,SCATTER_FORWARD));
   }
   for (i=0;i<n;i++) {
-    ierr = VecScatterEnd(oscatter[i],W,b[i],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecSet(x[i],0.);CHKERRQ(ierr);
-    ierr = SNESGetJacobian(subsnes[i],&subJ,&subpJ,NULL,NULL);CHKERRQ(ierr);
-    ierr = SNESGetKSP(subsnes[i],&ksp);CHKERRQ(ierr);
-    ierr = KSPSetOperators(ksp,subJ,subpJ);CHKERRQ(ierr);
-    ierr = KSPSolve(ksp,b[i],x[i]);CHKERRQ(ierr);
-    ierr = VecScatterBegin(oscatter[i],x[i],Y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterEnd(oscatter[i],x[i],Y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    PetscCall(VecScatterEnd(oscatter[i],W,b[i],INSERT_VALUES,SCATTER_FORWARD));
+    PetscCall(VecSet(x[i],0.));
+    PetscCall(SNESGetJacobian(subsnes[i],&subJ,&subpJ,NULL,NULL));
+    PetscCall(SNESGetKSP(subsnes[i],&ksp));
+    PetscCall(KSPSetOperators(ksp,subJ,subpJ));
+    PetscCall(KSPSolve(ksp,b[i],x[i]));
+    PetscCall(VecScatterBegin(oscatter[i],x[i],Y,ADD_VALUES,SCATTER_REVERSE));
+    PetscCall(VecScatterEnd(oscatter[i],x[i],Y,ADD_VALUES,SCATTER_REVERSE));
   }
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode SNESDestroy_ASPIN(SNES snes)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = SNESDestroy(&snes->npc);CHKERRQ(ierr);
+  PetscCall(SNESDestroy(&snes->npc));
   /* reset NEWTONLS and free the data */
-  ierr = SNESReset(snes);CHKERRQ(ierr);
-  ierr = PetscFree(snes->data);CHKERRQ(ierr);
+  PetscCall(SNESReset(snes));
+  PetscCall(PetscFree(snes->data));
   PetscFunctionReturn(0);
 }
 
@@ -94,16 +91,15 @@ static PetscErrorCode SNESDestroy_ASPIN(SNES snes)
    Level: intermediate
 
    References:
-+  1. - X. C. Cai and D. E. Keyes, "Nonlinearly preconditioned inexact Newton algorithms",  SIAM J. Sci. Comput., 24, 2002.
--  2. - Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers",
++  * - X. C. Cai and D. E. Keyes, "Nonlinearly preconditioned inexact Newton algorithms",  SIAM J. Sci. Comput., 24, 2002.
+-  * - Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers",
    SIAM Review, 57(4), 2015
 
-.seealso:  SNESCreate(), SNES, SNESSetType(), SNESNEWTONLS, SNESNASM, SNESGetNPC(), SNESGetNPCSide()
+.seealso: `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONLS`, `SNESNASM`, `SNESGetNPC()`, `SNESGetNPCSide()`
 
 M*/
 PETSC_EXTERN PetscErrorCode SNESCreate_ASPIN(SNES snes)
 {
-  PetscErrorCode ierr;
   SNES           npc;
   KSP            ksp;
   PC             pc;
@@ -114,29 +110,29 @@ PETSC_EXTERN PetscErrorCode SNESCreate_ASPIN(SNES snes)
 
   PetscFunctionBegin;
   /* set up the solver */
-  ierr = SNESSetType(snes,SNESNEWTONLS);CHKERRQ(ierr);
-  ierr = SNESSetNPCSide(snes,PC_LEFT);CHKERRQ(ierr);
-  ierr = SNESSetFunctionType(snes,SNES_FUNCTION_PRECONDITIONED);CHKERRQ(ierr);
-  ierr = SNESGetNPC(snes,&npc);CHKERRQ(ierr);
-  ierr = SNESSetType(npc,SNESNASM);CHKERRQ(ierr);
-  ierr = SNESNASMSetType(npc,PC_ASM_BASIC);CHKERRQ(ierr);
-  ierr = SNESNASMSetComputeFinalJacobian(npc,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
-  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
-  ierr = SNESGetLineSearch(snes,&linesearch);CHKERRQ(ierr);
+  PetscCall(SNESSetType(snes,SNESNEWTONLS));
+  PetscCall(SNESSetNPCSide(snes,PC_LEFT));
+  PetscCall(SNESSetFunctionType(snes,SNES_FUNCTION_PRECONDITIONED));
+  PetscCall(SNESGetNPC(snes,&npc));
+  PetscCall(SNESSetType(npc,SNESNASM));
+  PetscCall(SNESNASMSetType(npc,PC_ASM_BASIC));
+  PetscCall(SNESNASMSetComputeFinalJacobian(npc,PETSC_TRUE));
+  PetscCall(SNESGetKSP(snes,&ksp));
+  PetscCall(KSPGetPC(ksp,&pc));
+  PetscCall(PCSetType(pc,PCNONE));
+  PetscCall(SNESGetLineSearch(snes,&linesearch));
   if (!((PetscObject)linesearch)->type_name) {
-    ierr = SNESLineSearchSetType(linesearch,SNESLINESEARCHBT);CHKERRQ(ierr);
+    PetscCall(SNESLineSearchSetType(linesearch,SNESLINESEARCHBT));
   }
 
   /* set up the shell matrix */
-  ierr = SNESGetFunction(snes,&F,NULL,NULL);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(F,&n);CHKERRQ(ierr);
-  ierr = MatCreateShell(PetscObjectComm((PetscObject)snes),n,n,PETSC_DECIDE,PETSC_DECIDE,snes,&aspinmat);CHKERRQ(ierr);
-  ierr = MatSetType(aspinmat,MATSHELL);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(aspinmat,MATOP_MULT,(void(*)(void))MatMultASPIN);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(snes,aspinmat,NULL,NULL,NULL);CHKERRQ(ierr);
-  ierr = MatDestroy(&aspinmat);CHKERRQ(ierr);
+  PetscCall(SNESGetFunction(snes,&F,NULL,NULL));
+  PetscCall(VecGetLocalSize(F,&n));
+  PetscCall(MatCreateShell(PetscObjectComm((PetscObject)snes),n,n,PETSC_DECIDE,PETSC_DECIDE,snes,&aspinmat));
+  PetscCall(MatSetType(aspinmat,MATSHELL));
+  PetscCall(MatShellSetOperation(aspinmat,MATOP_MULT,(void(*)(void))MatMultASPIN));
+  PetscCall(SNESSetJacobian(snes,aspinmat,NULL,NULL,NULL));
+  PetscCall(MatDestroy(&aspinmat));
 
   snes->ops->destroy = SNESDestroy_ASPIN;
 

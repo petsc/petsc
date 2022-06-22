@@ -8,14 +8,11 @@
 
       PetscViewer viewer
       PetscErrorCode ierr
-      call PetscInitialize(PETSC_NULL_CHARACTER,"ex1f90 test"//c_new_line,ierr)
-      if (ierr .ne. 0) then
-         print*,'Unable to initialize PETSc'
-         stop
-      endif
-      call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'binaryoutput',FILE_MODE_READ,viewer,ierr);CHKERRA(ierr)
-      call PetscViewerDestroy(viewer,ierr);CHKERRA(ierr)
-      call PetscFinalize(ierr)
+      PetscCallA(PetscInitialize(PETSC_NULL_CHARACTER,"ex1f90 test"//c_new_line,ierr))
+
+      PetscCallA(PetscViewerBinaryOpen(PETSC_COMM_WORLD,'binaryoutput',FILE_MODE_READ,viewer,ierr))
+      PetscCallA(PetscViewerDestroy(viewer,ierr))
+      PetscCallA(PetscFinalize(ierr))
       end
 
 !/*TEST

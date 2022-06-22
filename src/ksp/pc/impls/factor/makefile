@@ -1,8 +1,5 @@
 -include ../../../../../petscdir.mk
-ALL: lib
 
-CFLAGS    =
-FFLAGS    =
 SOURCEC   = factor.c factimpl.c
 SOURCEH   = factor.h
 LIBBASE   = libpetscksp
