@@ -1999,21 +1999,29 @@ static PetscErrorCode LandauCreateMatrix(MPI_Comm comm, Vec X, IS grid_batch_is_
   // get a block matrix
   for (PetscInt grid=0 ; grid<ctx->num_grids ; grid++) {
     Mat               B = subM[grid];
-    PetscInt          nloc, nzl, colbuf[1024], row;
+    PetscInt          nloc, nzl, *colbuf, row, COL_BF_SIZE=1024;
+    PetscCall(PetscMalloc(sizeof(*colbuf)*COL_BF_SIZE, &colbuf));
     PetscCall(MatGetSize(B, &nloc, NULL));
     for (PetscInt b_id = 0 ; b_id < ctx->batch_sz ; b_id++) {
       const PetscInt    moffset = LAND_MOFFSET(b_id,grid,ctx->batch_sz,ctx->num_grids,ctx->mat_offset);
       const PetscInt    *cols;
       const PetscScalar *vals;
       for (int i=0 ; i<nloc ; i++) {
+        PetscCall(MatGetRow(B,i,&nzl,NULL,NULL));
+        if (nzl>COL_BF_SIZE) {
+          PetscCall(PetscFree(colbuf));
+          PetscCall(PetscInfo(ctx->plex[grid], "Realloc buffer %" PetscInt_FMT " to %" PetscInt_FMT " (row size %" PetscInt_FMT ") \n",COL_BF_SIZE,2*COL_BF_SIZE,nzl));
+          COL_BF_SIZE = 2*nzl;
+          PetscCall(PetscMalloc(sizeof(*colbuf)*COL_BF_SIZE, &colbuf));
+        }
         PetscCall(MatGetRow(B,i,&nzl,&cols,&vals));
-        PetscCheck(nzl<=1024,comm, PETSC_ERR_PLIB, "Row too big: %" PetscInt_FMT,nzl);
         for (int j=0; j<nzl; j++) colbuf[j] = cols[j] + moffset;
         row = i + moffset;
         PetscCall(MatSetValues(ctx->J,1,&row,nzl,colbuf,vals,INSERT_VALUES));
         PetscCall(MatRestoreRow(B,i,&nzl,&cols,&vals));
       }
     }
+    PetscCall(PetscFree(colbuf));
   }
   for (PetscInt grid=0 ; grid<ctx->num_grids ; grid++) {
     PetscCall(MatDestroy(&subM[grid]));
