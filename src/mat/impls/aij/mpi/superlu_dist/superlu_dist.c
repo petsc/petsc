@@ -477,10 +477,191 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFacto
 /* Note the Petsc r and c permutations are ignored */
 static PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
-  Mat_SuperLU_DIST *lu = (Mat_SuperLU_DIST*)F->data;
-  PetscInt         M   = A->rmap->N,N=A->cmap->N;
+  Mat_SuperLU_DIST  *lu = (Mat_SuperLU_DIST*)F->data;
+  PetscInt          M = A->rmap->N,N = A->cmap->N,indx;
+  PetscMPIInt       size,mpiflg;
+  PetscBool         flg,set;
+  const char        *colperm[]     = {"NATURAL","MMD_AT_PLUS_A","MMD_ATA","METIS_AT_PLUS_A","PARMETIS"};
+  const char        *rowperm[]     = {"NOROWPERM","LargeDiag_MC64","LargeDiag_AWPM","MY_PERMR"};
+  const char        *factPattern[] = {"SamePattern","SamePattern_SameRowPerm","DOFACT"};
+  MPI_Comm          comm;
+  PetscSuperLU_DIST *context = NULL;
 
   PetscFunctionBegin;
+  /* Set options to F */
+  PetscCall(PetscObjectGetComm((PetscObject)F,&comm));
+  PetscCallMPI(MPI_Comm_size(comm,&size));
+
+  PetscOptionsBegin(PetscObjectComm((PetscObject)F),((PetscObject)F)->prefix,"SuperLU_Dist Options","Mat");
+  PetscCall(PetscOptionsBool("-mat_superlu_dist_equil","Equilibrate matrix","None",lu->options.Equil ? PETSC_TRUE : PETSC_FALSE,&flg,&set));
+  if (set && !flg) lu->options.Equil = NO;
+
+  PetscCall(PetscOptionsEList("-mat_superlu_dist_rowperm","Row permutation","None",rowperm,4,rowperm[1],&indx,&flg));
+  if (flg) {
+    switch (indx) {
+    case 0:
+      lu->options.RowPerm = NOROWPERM;
+      break;
+    case 1:
+      lu->options.RowPerm = LargeDiag_MC64;
+      break;
+    case 2:
+      lu->options.RowPerm = LargeDiag_AWPM;
+      break;
+    case 3:
+      lu->options.RowPerm = MY_PERMR;
+      break;
+    default:
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown row permutation");
+    }
+  }
+
+  PetscCall(PetscOptionsEList("-mat_superlu_dist_colperm","Column permutation","None",colperm,5,colperm[3],&indx,&flg));
+  if (flg) {
+    switch (indx) {
+    case 0:
+      lu->options.ColPerm = NATURAL;
+      break;
+    case 1:
+      lu->options.ColPerm = MMD_AT_PLUS_A;
+      break;
+    case 2:
+      lu->options.ColPerm = MMD_ATA;
+      break;
+    case 3:
+      lu->options.ColPerm = METIS_AT_PLUS_A;
+      break;
+    case 4:
+      lu->options.ColPerm = PARMETIS;   /* only works for np>1 */
+      break;
+    default:
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown column permutation");
+    }
+  }
+
+  lu->options.ReplaceTinyPivot = NO;
+  PetscCall(PetscOptionsBool("-mat_superlu_dist_replacetinypivot","Replace tiny pivots","None",lu->options.ReplaceTinyPivot ? PETSC_TRUE : PETSC_FALSE,&flg,&set));
+  if (set && flg) lu->options.ReplaceTinyPivot = YES;
+
+  lu->options.ParSymbFact = NO;
+  PetscCall(PetscOptionsBool("-mat_superlu_dist_parsymbfact","Parallel symbolic factorization","None",PETSC_FALSE,&flg,&set));
+  if (set && flg && size>1) {
+#if defined(PETSC_HAVE_PARMETIS)
+    lu->options.ParSymbFact = YES;
+    lu->options.ColPerm     = PARMETIS;   /* in v2.2, PARMETIS is forced for ParSymbFact regardless of user ordering setting */
+#else
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"parsymbfact needs PARMETIS");
+#endif
+  }
+
+  lu->FactPattern = SamePattern;
+  PetscCall(PetscOptionsEList("-mat_superlu_dist_fact","Sparsity pattern for repeated matrix factorization","None",factPattern,3,factPattern[0],&indx,&flg));
+  if (flg) {
+    switch (indx) {
+    case 0:
+      lu->FactPattern = SamePattern;
+      break;
+    case 1:
+      lu->FactPattern = SamePattern_SameRowPerm;
+      break;
+    case 2:
+      lu->FactPattern = DOFACT;
+      break;
+    }
+  }
+
+  lu->options.IterRefine = NOREFINE;
+  PetscCall(PetscOptionsBool("-mat_superlu_dist_iterrefine","Use iterative refinement","None",lu->options.IterRefine == NOREFINE ? PETSC_FALSE : PETSC_TRUE ,&flg,&set));
+  if (set) {
+    if (flg) lu->options.IterRefine = SLU_DOUBLE;
+    else lu->options.IterRefine = NOREFINE;
+  }
+
+  if (PetscLogPrintInfo) lu->options.PrintStat = YES;
+  else lu->options.PrintStat = NO;
+  PetscCall(PetscOptionsBool("-mat_superlu_dist_statprint","Print factorization information","None",(PetscBool)lu->options.PrintStat,(PetscBool*)&lu->options.PrintStat,NULL));
+
+  /* Additional options for special cases */
+  if (Petsc_Superlu_dist_keyval == MPI_KEYVAL_INVALID) {
+    PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,Petsc_Superlu_dist_keyval_Delete_Fn,&Petsc_Superlu_dist_keyval,(void*)0));
+    PetscCall(PetscRegisterFinalize(Petsc_Superlu_dist_keyval_free));
+  }
+  PetscCallMPI(MPI_Comm_get_attr(comm,Petsc_Superlu_dist_keyval,&context,&mpiflg));
+  if (!mpiflg || context->busy) { /* additional options */
+    if (!mpiflg) {
+      PetscCall(PetscNew(&context));
+      context->busy = PETSC_TRUE;
+      PetscCallMPI(MPI_Comm_dup(comm,&context->comm));
+      PetscCallMPI(MPI_Comm_set_attr(comm,Petsc_Superlu_dist_keyval,context));
+    } else {
+      PetscCall(PetscCommGetComm(PetscObjectComm((PetscObject)A),&lu->comm_superlu));
+    }
+
+    /* Default number of process columns and rows */
+    lu->nprow = (int_t) (0.5 + PetscSqrtReal((PetscReal)size));
+    if (!lu->nprow) lu->nprow = 1;
+    while (lu->nprow > 0) {
+      lu->npcol = (int_t) (size/lu->nprow);
+      if (size == lu->nprow * lu->npcol) break;
+      lu->nprow--;
+    }
+#if PETSC_PKG_SUPERLU_DIST_VERSION_GE(7,2,0)
+    lu->use3d = PETSC_FALSE;
+    lu->npdep = 1;
+#endif
+
+#if PETSC_PKG_SUPERLU_DIST_VERSION_GE(7,2,0)
+    PetscCall(PetscOptionsBool("-mat_superlu_dist_3d","Use SuperLU_DIST 3D distribution","None",lu->use3d,&lu->use3d,NULL));
+    PetscCheck(!PetscDefined(MISSING_GETLINE) || !lu->use3d,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP_SYS,"-mat_superlu_dist_3d requires a system with a getline() implementation");
+    if (lu->use3d) {
+      PetscInt t;
+      PetscCall(PetscOptionsInt("-mat_superlu_dist_d","Number of z entries in processor partition","None",lu->npdep,(PetscInt*)&lu->npdep,NULL));
+      t = (PetscInt) PetscLog2Real((PetscReal)lu->npdep);
+      PetscCheck(PetscPowInt(2,t) == lu->npdep,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_OUTOFRANGE,"-mat_superlu_dist_d %lld must be a power of 2",(long long)lu->npdep);
+      if (lu->npdep > 1) {
+        lu->nprow = (int_t) (0.5 + PetscSqrtReal((PetscReal)(size/lu->npdep)));
+        if (!lu->nprow) lu->nprow = 1;
+        while (lu->nprow > 0) {
+          lu->npcol = (int_t) (size/(lu->npdep*lu->nprow));
+          if (size == lu->nprow * lu->npcol * lu->npdep) break;
+          lu->nprow--;
+        }
+      }
+    }
+#endif
+    PetscCall(PetscOptionsInt("-mat_superlu_dist_r","Number rows in processor partition","None",lu->nprow,(PetscInt*)&lu->nprow,NULL));
+    PetscCall(PetscOptionsInt("-mat_superlu_dist_c","Number columns in processor partition","None",lu->npcol,(PetscInt*)&lu->npcol,NULL));
+#if PETSC_PKG_SUPERLU_DIST_VERSION_GE(7,2,0)
+    PetscCheck(size == lu->nprow*lu->npcol*lu->npdep,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number of processes %d must equal to nprow %lld * npcol %lld * npdep %lld",size,(long long)lu->nprow,(long long)lu->npcol,(long long)lu->npdep);
+#else
+    PetscCheck(size == lu->nprow*lu->npcol,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number of processes %d must equal to nprow %lld * npcol %lld",size,(long long)lu->nprow,(long long)lu->npcol);
+#endif
+    /* end of adding additional options */
+
+#if PETSC_PKG_SUPERLU_DIST_VERSION_GE(7,2,0)
+    if (lu->use3d) {
+      PetscStackCall("SuperLU_DIST:superlu_gridinit3d",superlu_gridinit3d(context ? context->comm : lu->comm_superlu, lu->nprow, lu->npcol,lu->npdep, &lu->grid3d));
+      if (context) {context->grid3d = lu->grid3d; context->use3d = lu->use3d;}
+    } else {
+#endif
+      PetscStackCall("SuperLU_DIST:superlu_gridinit",superlu_gridinit(context ? context->comm : lu->comm_superlu, lu->nprow, lu->npcol, &lu->grid));
+      if (context) context->grid = lu->grid;
+#if PETSC_PKG_SUPERLU_DIST_VERSION_GE(7,2,0)
+    }
+#endif
+    PetscCall(PetscInfo(NULL,"Duplicating a communicator for SuperLU_DIST and calling superlu_gridinit()\n"));
+    if (mpiflg) {
+      PetscCall(PetscInfo(NULL,"Communicator attribute already in use so not saving communicator and SuperLU_DIST grid in communicator attribute \n"));
+    } else {
+      PetscCall(PetscInfo(NULL,"Storing communicator and SuperLU_DIST grid in communicator attribute\n"));
+    }
+  } else { /* (mpiflg && !context->busy) */
+    PetscCall(PetscInfo(NULL,"Reusing communicator and superlu_gridinit() for SuperLU_DIST from communicator attribute."));
+    context->busy = PETSC_TRUE;
+    lu->grid      = context->grid;
+  }
+  PetscOptionsEnd();
+
   /* Initialize ScalePermstruct and LUstruct. */
   PetscStackCall("SuperLU_DIST:ScalePermstructInit",ScalePermstructInit(M, N, &lu->ScalePermstruct));
   PetscStackCall("SuperLU_DIST:LUstructInit",LUstructInit(N, &lu->LUstruct));
@@ -606,14 +787,9 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
 {
   Mat                    B;
   Mat_SuperLU_DIST       *lu;
-  PetscInt               M=A->rmap->N,N=A->cmap->N,indx;
+  PetscInt               M=A->rmap->N,N=A->cmap->N;
   PetscMPIInt            size;
   superlu_dist_options_t options;
-  PetscBool              flg;
-  const char             *colperm[]     = {"NATURAL","MMD_AT_PLUS_A","MMD_ATA","METIS_AT_PLUS_A","PARMETIS"};
-  const char             *rowperm[]     = {"NOROWPERM","LargeDiag_MC64","LargeDiag_AWPM","MY_PERMR"};
-  const char             *factPattern[] = {"SamePattern","SamePattern_SameRowPerm","DOFACT"};
-  PetscBool              set;
 
   PetscFunctionBegin;
   /* Create the factorization matrix */
@@ -658,181 +834,6 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
   PetscCall(PetscNewLog(B,&lu));
   B->data = lu;
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)A),&size));
-
-  {
-    PetscMPIInt       flg;
-    MPI_Comm          comm;
-    PetscSuperLU_DIST *context = NULL;
-
-    PetscCall(PetscObjectGetComm((PetscObject)A,&comm));
-    if (Petsc_Superlu_dist_keyval == MPI_KEYVAL_INVALID) {
-      PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,Petsc_Superlu_dist_keyval_Delete_Fn,&Petsc_Superlu_dist_keyval,(void*)0));
-      PetscCall(PetscRegisterFinalize(Petsc_Superlu_dist_keyval_free));
-    }
-    PetscCallMPI(MPI_Comm_get_attr(comm,Petsc_Superlu_dist_keyval,&context,&flg));
-    if (!flg || context->busy) {
-      if (!flg) {
-        PetscCall(PetscNew(&context));
-        context->busy = PETSC_TRUE;
-        PetscCallMPI(MPI_Comm_dup(comm,&context->comm));
-        PetscCallMPI(MPI_Comm_set_attr(comm,Petsc_Superlu_dist_keyval,context));
-      } else {
-        PetscCall(PetscCommGetComm(PetscObjectComm((PetscObject)A),&lu->comm_superlu));
-      }
-
-      /* Default number of process columns and rows */
-      lu->nprow = (int_t) (0.5 + PetscSqrtReal((PetscReal)size));
-      if (!lu->nprow) lu->nprow = 1;
-      while (lu->nprow > 0) {
-        lu->npcol = (int_t) (size/lu->nprow);
-        if (size == lu->nprow * lu->npcol) break;
-        lu->nprow--;
-      }
-#if PETSC_PKG_SUPERLU_DIST_VERSION_GE(7,2,0)
-      lu->use3d = PETSC_FALSE;
-      lu->npdep = 1;
-#endif
-      PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"SuperLU_Dist Options","Mat");
-#if PETSC_PKG_SUPERLU_DIST_VERSION_GE(7,2,0)
-      PetscCall(PetscOptionsBool("-mat_superlu_dist_3d","Use SuperLU_DIST 3D distribution","None",lu->use3d,&lu->use3d,NULL));
-      PetscCheck(!PetscDefined(MISSING_GETLINE) || !lu->use3d,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP_SYS,"-mat_superlu_dist_3d requires a system with a getline() implementation");
-      if (lu->use3d) {
-        PetscInt t;
-        PetscCall(PetscOptionsInt("-mat_superlu_dist_d","Number of z entries in processor partition","None",lu->npdep,(PetscInt*)&lu->npdep,NULL));
-        t = (PetscInt) PetscLog2Real((PetscReal)lu->npdep);
-        PetscCheck(PetscPowInt(2,t) == lu->npdep,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_OUTOFRANGE,"-mat_superlu_dist_d %lld must be a power of 2",(long long)lu->npdep);
-        if (lu->npdep > 1) {
-          lu->nprow = (int_t) (0.5 + PetscSqrtReal((PetscReal)(size/lu->npdep)));
-          if (!lu->nprow) lu->nprow = 1;
-          while (lu->nprow > 0) {
-            lu->npcol = (int_t) (size/(lu->npdep*lu->nprow));
-            if (size == lu->nprow * lu->npcol * lu->npdep) break;
-            lu->nprow--;
-          }
-        }
-      }
-#endif
-      PetscCall(PetscOptionsInt("-mat_superlu_dist_r","Number rows in processor partition","None",lu->nprow,(PetscInt*)&lu->nprow,NULL));
-      PetscCall(PetscOptionsInt("-mat_superlu_dist_c","Number columns in processor partition","None",lu->npcol,(PetscInt*)&lu->npcol,NULL));
-#if PETSC_PKG_SUPERLU_DIST_VERSION_GE(7,2,0)
-      PetscCheck(size == lu->nprow*lu->npcol*lu->npdep,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number of processes %d must equal to nprow %lld * npcol %lld * npdep %lld",size,(long long)lu->nprow,(long long)lu->npcol,(long long)lu->npdep);
-#else
-      PetscCheck(size == lu->nprow*lu->npcol,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number of processes %d must equal to nprow %lld * npcol %lld",size,(long long)lu->nprow,(long long)lu->npcol);
-#endif
-      PetscOptionsEnd();
-#if PETSC_PKG_SUPERLU_DIST_VERSION_GE(7,2,0)
-      if (lu->use3d) {
-        PetscStackCall("SuperLU_DIST:superlu_gridinit3d",superlu_gridinit3d(context ? context->comm : lu->comm_superlu, lu->nprow, lu->npcol,lu->npdep, &lu->grid3d));
-        if (context) {context->grid3d = lu->grid3d; context->use3d = lu->use3d;}
-      } else {
-#endif
-        PetscStackCall("SuperLU_DIST:superlu_gridinit",superlu_gridinit(context ? context->comm : lu->comm_superlu, lu->nprow, lu->npcol, &lu->grid));
-        if (context) context->grid = lu->grid;
-#if PETSC_PKG_SUPERLU_DIST_VERSION_GE(7,2,0)
-      }
-#endif
-      PetscCall(PetscInfo(NULL,"Duplicating a communicator for SuperLU_DIST and calling superlu_gridinit()\n"));
-      if (flg) {
-        PetscCall(PetscInfo(NULL,"Communicator attribute already in use so not saving communicator and SuperLU_DIST grid in communicator attribute \n"));
-      } else {
-        PetscCall(PetscInfo(NULL,"Storing communicator and SuperLU_DIST grid in communicator attribute\n"));
-      }
-    } else {
-      PetscCall(PetscInfo(NULL,"Reusing communicator and superlu_gridinit() for SuperLU_DIST from communicator attribute."));
-      context->busy = PETSC_TRUE;
-      lu->grid      = context->grid;
-    }
-  }
-
-  PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"SuperLU_Dist Options","Mat");
-  PetscCall(PetscOptionsBool("-mat_superlu_dist_equil","Equilibrate matrix","None",options.Equil ? PETSC_TRUE : PETSC_FALSE,&flg,&set));
-  if (set && !flg) options.Equil = NO;
-
-  PetscCall(PetscOptionsEList("-mat_superlu_dist_rowperm","Row permutation","None",rowperm,4,rowperm[1],&indx,&flg));
-  if (flg) {
-    switch (indx) {
-    case 0:
-      options.RowPerm = NOROWPERM;
-      break;
-    case 1:
-      options.RowPerm = LargeDiag_MC64;
-      break;
-    case 2:
-      options.RowPerm = LargeDiag_AWPM;
-      break;
-    case 3:
-      options.RowPerm = MY_PERMR;
-      break;
-    default:
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown row permutation");
-    }
-  }
-
-  PetscCall(PetscOptionsEList("-mat_superlu_dist_colperm","Column permutation","None",colperm,5,colperm[3],&indx,&flg));
-  if (flg) {
-    switch (indx) {
-    case 0:
-      options.ColPerm = NATURAL;
-      break;
-    case 1:
-      options.ColPerm = MMD_AT_PLUS_A;
-      break;
-    case 2:
-      options.ColPerm = MMD_ATA;
-      break;
-    case 3:
-      options.ColPerm = METIS_AT_PLUS_A;
-      break;
-    case 4:
-      options.ColPerm = PARMETIS;   /* only works for np>1 */
-      break;
-    default:
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown column permutation");
-    }
-  }
-
-  options.ReplaceTinyPivot = NO;
-  PetscCall(PetscOptionsBool("-mat_superlu_dist_replacetinypivot","Replace tiny pivots","None",options.ReplaceTinyPivot ? PETSC_TRUE : PETSC_FALSE,&flg,&set));
-  if (set && flg) options.ReplaceTinyPivot = YES;
-
-  options.ParSymbFact = NO;
-  PetscCall(PetscOptionsBool("-mat_superlu_dist_parsymbfact","Parallel symbolic factorization","None",PETSC_FALSE,&flg,&set));
-  if (set && flg && size>1) {
-#if defined(PETSC_HAVE_PARMETIS)
-    options.ParSymbFact = YES;
-    options.ColPerm     = PARMETIS;   /* in v2.2, PARMETIS is forced for ParSymbFact regardless of user ordering setting */
-#else
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"parsymbfact needs PARMETIS");
-#endif
-  }
-
-  lu->FactPattern = SamePattern;
-  PetscCall(PetscOptionsEList("-mat_superlu_dist_fact","Sparsity pattern for repeated matrix factorization","None",factPattern,3,factPattern[0],&indx,&flg));
-  if (flg) {
-    switch (indx) {
-    case 0:
-      lu->FactPattern = SamePattern;
-      break;
-    case 1:
-      lu->FactPattern = SamePattern_SameRowPerm;
-      break;
-    case 2:
-      lu->FactPattern = DOFACT;
-      break;
-    }
-  }
-
-  options.IterRefine = NOREFINE;
-  PetscCall(PetscOptionsBool("-mat_superlu_dist_iterrefine","Use iterative refinement","None",options.IterRefine == NOREFINE ? PETSC_FALSE : PETSC_TRUE ,&flg,&set));
-  if (set) {
-    if (flg) options.IterRefine = SLU_DOUBLE;
-    else options.IterRefine = NOREFINE;
-  }
-
-  if (PetscLogPrintInfo) options.PrintStat = YES;
-  else options.PrintStat = NO;
-  PetscCall(PetscOptionsBool("-mat_superlu_dist_statprint","Print factorization information","None",(PetscBool)options.PrintStat,(PetscBool*)&options.PrintStat,NULL));
-  PetscOptionsEnd();
 
   lu->options              = options;
   lu->options.Fact         = DOFACT;

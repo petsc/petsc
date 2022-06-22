@@ -11,6 +11,7 @@
 */
 
 #include <petsc/private/pcasmimpl.h> /*I "petscpc.h" I*/
+#include "petsc/private/matimpl.h"
 
 static PetscErrorCode PCView_ASM(PC pc,PetscViewer viewer)
 {
@@ -647,9 +648,7 @@ static PetscErrorCode PCApplyTranspose_ASM(PC pc,Vec x,Vec y)
   /* Add the local solution to the global solution including the ghost nodes */
   PetscCall(VecScatterBegin(osm->restriction, osm->ly, y, ADD_VALUES, reverse));
   PetscCall(VecScatterEnd(osm->restriction, osm->ly, y, ADD_VALUES, reverse));
-
   PetscFunctionReturn(0);
-
 }
 
 static PetscErrorCode PCReset_ASM(PC pc)

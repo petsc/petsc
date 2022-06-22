@@ -40,7 +40,7 @@ int main(int argc,char **args)
    test:
       nsize: 2
       requires: mumps
-      args: -beta_pc_type lu -gamma_mat_mumps_icntl_14 30
+      args: -beta_pc_type lu -beta_pc_factor_mat_solver_type mumps -beta_mat_mumps_icntl_14 30
 
    test:
       nsize: 2

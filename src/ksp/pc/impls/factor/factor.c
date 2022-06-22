@@ -7,11 +7,13 @@
 */
 PetscErrorCode PCFactorSetDefaultOrdering_Factor(PC pc)
 {
-  Mat            B;
   PetscBool      foundmtype,flg;
+  const char     *prefix;
 
   PetscFunctionBegin;
   if (pc->pmat) {
+    PetscCall(PCGetOptionsPrefix(pc,&prefix));
+    PetscCall(MatSetOptionsPrefixFactor(pc->pmat,prefix));
     PC_Factor *fact = (PC_Factor*)pc->data;
     PetscCall(MatSolverTypeGet(fact->solvertype,((PetscObject)pc->pmat)->type_name,fact->factortype,NULL,&foundmtype,NULL));
     if (foundmtype) {
@@ -20,6 +22,7 @@ PetscErrorCode PCFactorSetDefaultOrdering_Factor(PC pc)
       } else if (!fact->fact->assembled) {
         PetscCall(PetscStrcmp(fact->solvertype,fact->fact->solvertype,&flg));
         if (!flg) {
+          Mat B;
           PetscCall(MatGetFactor(pc->pmat,fact->solvertype,fact->factortype,&B));
           PetscCall(MatHeaderReplace(fact->fact,&B));
         }

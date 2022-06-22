@@ -42,7 +42,7 @@ SNES Object: 1 MPI process
         matrix ordering: external
         factor fill ratio given 0., needed 0.
           Factored matrix follows:
-            Mat Object: 1 MPI process
+            Mat Object: (sub_) 1 MPI process
               type: seqdense
               rows=64, cols=64
               package used to perform factorization: petsc

@@ -5,7 +5,7 @@ PC Object: (beta_) 2 MPI processes
     matrix ordering: external
     factor fill ratio given 0., needed 0.
       Factored matrix follows:
-        Mat Object: 2 MPI processes
+        Mat Object: (beta_) 2 MPI processes
           type: mumps
           rows=4, cols=4
           package used to perform factorization: mumps
@@ -25,7 +25,7 @@ PC Object: (beta_) 2 MPI processes
               ICNTL(11) (error analysis):          0
               ICNTL(12) (efficiency control):                         1
               ICNTL(13) (sequential factorization of the root node):  0
-              ICNTL(14) (percentage of estimated workspace increase): 20
+              ICNTL(14) (percentage of estimated workspace increase): 30
               ICNTL(15) (compression of the input matrix):            0
               ICNTL(18) (input mat struct):                           3
               ICNTL(19) (Schur complement info):                      0
@@ -121,7 +121,7 @@ PC Object: (beta_) 2 MPI processes
     matrix ordering: external
     factor fill ratio given 0., needed 0.
       Factored matrix follows:
-        Mat Object: 2 MPI processes
+        Mat Object: (beta_) 2 MPI processes
           type: mumps
           rows=4, cols=4
           package used to perform factorization: mumps

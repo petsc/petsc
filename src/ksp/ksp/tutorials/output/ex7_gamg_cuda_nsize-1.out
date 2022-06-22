@@ -51,7 +51,7 @@ PC Object: 1 MPI process
           matrix ordering: nd
           factor fill ratio given 5., needed 1.06667
             Factored matrix follows:
-              Mat Object: 1 MPI process
+              Mat Object: (mg_coarse_sub_) 1 MPI process
                 type: seqaijcusparse
                 rows=6, cols=6
                 package used to perform factorization: cusparse

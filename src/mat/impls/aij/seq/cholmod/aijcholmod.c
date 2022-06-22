@@ -65,7 +65,6 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_cholmod(Mat A,MatFactorType ftyp
   Mat            B;
   Mat_CHOLMOD    *chol;
   PetscInt       m=A->rmap->n,n=A->cmap->n;
-  const char     *prefix;
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
@@ -75,8 +74,6 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_cholmod(Mat A,MatFactorType ftyp
   PetscCall(MatCreate(PetscObjectComm((PetscObject)A),&B));
   PetscCall(MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,m,n));
   PetscCall(PetscStrallocpy("cholmod",&((PetscObject)B)->type_name));
-  PetscCall(MatGetOptionsPrefix(A,&prefix));
-  PetscCall(MatSetOptionsPrefix(B,prefix));
   PetscCall(MatSetUp(B));
   PetscCall(PetscNewLog(B,&chol));
 

@@ -29,12 +29,11 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
   const char             *prefix;
 
   PetscFunctionBegin;
-  if (!((PetscObject)pc->pmat)->prefix) {
-    PetscCall(PCGetOptionsPrefix(pc,&prefix));
-    PetscCall(MatSetOptionsPrefix(pc->pmat,prefix));
-  }
   pc->failedreason = PC_NOERROR;
   if (dir->hdr.reusefill && pc->setupcalled) ((PC_Factor*)dir)->info.fill = dir->hdr.actualfill;
+
+  PetscCall(PCGetOptionsPrefix(pc,&prefix));
+  PetscCall(MatSetOptionsPrefixFactor(pc->pmat,prefix));
 
   PetscCall(MatSetErrorIfFailure(pc->pmat,pc->erroriffailure));
   if (dir->hdr.inplace) {

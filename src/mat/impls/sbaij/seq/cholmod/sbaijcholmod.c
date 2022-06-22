@@ -31,20 +31,6 @@ static void CholmodErrorHandler(int status,const char *file,int line,const char 
   PetscFunctionReturnVoid();
 }
 
-PetscErrorCode  CholmodStart(Mat F)
-{
-  Mat_CHOLMOD    *chol=(Mat_CHOLMOD*)F->data;
-  cholmod_common *c;
-  PetscBool      flg;
-
-  PetscFunctionBegin;
-  if (chol->common) PetscFunctionReturn(0);
-  PetscCall(PetscMalloc1(1,&chol->common));
-  PetscCall(!cholmod_X_start(chol->common));
-
-  c                = chol->common;
-  c->error_handler = CholmodErrorHandler;
-
 #define CHOLMOD_OPTION_DOUBLE(name,help) do {                            \
     PetscReal tmp = (PetscReal)c->name;                                  \
     PetscCall(PetscOptionsReal("-mat_cholmod_" #name,help,"None",tmp,&tmp,NULL)); \
@@ -70,6 +56,13 @@ PetscErrorCode  CholmodStart(Mat F)
     c->name = (int)tmp;                                                  \
 } while (0)
 
+static PetscErrorCode CholmodSetOptions(Mat F)
+{
+  Mat_CHOLMOD    *chol=(Mat_CHOLMOD*)F->data;
+  cholmod_common *c=chol->common;
+  PetscBool      flg;
+
+  PetscFunctionBegin;
   PetscOptionsBegin(PetscObjectComm((PetscObject)F),((PetscObject)F)->prefix,"CHOLMOD Options","Mat");
   CHOLMOD_OPTION_INT(nmethods,"Number of different ordering methods to try");
 
@@ -120,6 +113,21 @@ PetscErrorCode  CholmodStart(Mat F)
   CHOLMOD_OPTION_BOOL(default_nesdis,"Use NESDIS instead of METIS for nested dissection");
   CHOLMOD_OPTION_INT(print,"Verbosity level");
   PetscOptionsEnd();
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode CholmodStart(Mat F)
+{
+  Mat_CHOLMOD    *chol=(Mat_CHOLMOD*)F->data;
+  cholmod_common *c;
+
+  PetscFunctionBegin;
+  if (chol->common) PetscFunctionReturn(0);
+  PetscCall(PetscMalloc1(1,&chol->common));
+  PetscCall(!cholmod_X_start(chol->common));
+
+  c                = chol->common;
+  c->error_handler = CholmodErrorHandler;
   PetscFunctionReturn(0);
 }
 
@@ -437,6 +445,9 @@ PETSC_INTERN PetscErrorCode  MatCholeskyFactorSymbolic_CHOLMOD(Mat F,Mat A,IS pe
   size_t         fsize = 0;
 
   PetscFunctionBegin;
+  /* Set options to F */
+  PetscCall(CholmodSetOptions(F));
+
   PetscCall((*chol->Wrap)(A,PETSC_FALSE,&cholA,&aijalloc,&valloc));
   static_F = F;
   if (chol->factor) {
@@ -526,7 +537,6 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqsbaij_cholmod(Mat A,MatFactorType ft
   Mat            B;
   Mat_CHOLMOD    *chol;
   PetscInt       m=A->rmap->n,n=A->cmap->n,bs;
-  const char     *prefix;
 
   PetscFunctionBegin;
   PetscCall(MatGetBlockSize(A,&bs));
@@ -538,8 +548,6 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqsbaij_cholmod(Mat A,MatFactorType ft
   PetscCall(MatCreate(PetscObjectComm((PetscObject)A),&B));
   PetscCall(MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,m,n));
   PetscCall(PetscStrallocpy("cholmod",&((PetscObject)B)->type_name));
-  PetscCall(MatGetOptionsPrefix(A,&prefix));
-  PetscCall(MatSetOptionsPrefix(B,prefix));
   PetscCall(MatSetUp(B));
   PetscCall(PetscNewLog(B,&chol));
 

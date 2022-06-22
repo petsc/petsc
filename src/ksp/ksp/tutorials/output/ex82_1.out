@@ -61,7 +61,7 @@ PC Object: 4 MPI processes
         matrix ordering: external
         factor fill ratio given 0., needed 0.
           Factored matrix follows:
-            Mat Object: 1 MPI process
+            Mat Object: (pc_hpddm_levels_1_sub_) 1 MPI process
               type: seqdense
               rows=202, cols=202
               package used to perform factorization: petsc
@@ -105,7 +105,7 @@ PC Object: 4 MPI processes
         matrix ordering: external
         factor fill ratio given 0., needed 0.
           Factored matrix follows:
-            Mat Object: 1 MPI process
+            Mat Object: (pc_hpddm_coarse_) 1 MPI process
               type: seqdense
               rows=4, cols=4
               package used to perform factorization: petsc

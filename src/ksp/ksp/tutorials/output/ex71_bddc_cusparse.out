@@ -69,7 +69,7 @@ PC Object: 8 MPI processes
         matrix ordering: nd
         factor fill ratio given 5., needed 1.51604
           Factored matrix follows:
-            Mat Object: 1 MPI process
+            Mat Object: (pc_bddc_dirichlet_) 1 MPI process
               type: seqaijcusparse
               rows=48, cols=48
               package used to perform factorization: cusparse
@@ -96,7 +96,7 @@ PC Object: 8 MPI processes
         matrix ordering: nd
         factor fill ratio given 5., needed 2.1025
           Factored matrix follows:
-            Mat Object: 1 MPI process
+            Mat Object: (pc_bddc_neumann_) 1 MPI process
               type: seqaijcusparse
               rows=93, cols=93
               package used to perform factorization: cusparse

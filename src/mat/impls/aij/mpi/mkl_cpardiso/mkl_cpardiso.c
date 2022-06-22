@@ -495,14 +495,14 @@ PetscErrorCode MatFactorNumeric_MKL_CPARDISO(Mat F,Mat A,const MatFactorInfo *in
 }
 
 /* Sets mkl_cpardiso options from the options database */
-PetscErrorCode PetscSetMKL_CPARDISOFromOptions(Mat F, Mat A)
+PetscErrorCode MatSetFromOptions_MKL_CPARDISO(Mat F, Mat A)
 {
   Mat_MKL_CPARDISO    *mat_mkl_cpardiso = (Mat_MKL_CPARDISO*)F->data;
   PetscInt            icntl,threads;
   PetscBool           flg;
 
   PetscFunctionBegin;
-  PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"MKL_CPARDISO Options","Mat");
+  PetscOptionsBegin(PetscObjectComm((PetscObject)F),((PetscObject)F)->prefix,"MKL_CPARDISO Options","Mat");
   PetscCall(PetscOptionsInt("-mat_mkl_cpardiso_65","Suggested number of threads to use within MKL_CPARDISO","None",threads,&threads,&flg));
   if (flg) mkl_set_num_threads((int)threads);
 
@@ -658,7 +658,7 @@ PetscErrorCode MatLUFactorSymbolic_AIJMKL_CPARDISO(Mat F,Mat A,IS r,IS c,const M
   mat_mkl_cpardiso->matstruc = DIFFERENT_NONZERO_PATTERN;
 
   /* Set MKL_CPARDISO options from the options database */
-  PetscCall(PetscSetMKL_CPARDISOFromOptions(F,A));
+  PetscCall(MatSetFromOptions_MKL_CPARDISO(F,A));
   PetscCall((*mat_mkl_cpardiso->ConvertToTriples)(A,MAT_INITIAL_MATRIX,&mat_mkl_cpardiso->nz,&mat_mkl_cpardiso->ia,&mat_mkl_cpardiso->ja,&mat_mkl_cpardiso->a));
 
   mat_mkl_cpardiso->n = A->rmap->N;
@@ -705,7 +705,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_AIJMKL_CPARDISO(Mat F,Mat A,IS perm,con
   mat_mkl_cpardiso->matstruc = DIFFERENT_NONZERO_PATTERN;
 
   /* Set MKL_CPARDISO options from the options database */
-  PetscCall(PetscSetMKL_CPARDISOFromOptions(F,A));
+  PetscCall(MatSetFromOptions_MKL_CPARDISO(F,A));
   PetscCall((*mat_mkl_cpardiso->ConvertToTriples)(A,MAT_INITIAL_MATRIX,&mat_mkl_cpardiso->nz,&mat_mkl_cpardiso->ia,&mat_mkl_cpardiso->ja,&mat_mkl_cpardiso->a));
 
   mat_mkl_cpardiso->n = A->rmap->N;

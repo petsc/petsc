@@ -43,14 +43,14 @@ SNES Object: 1 MPI process
           matrix ordering: nd
           factor fill ratio given 5., needed 1.39024
             Factored matrix follows:
-              Mat Object: 1 MPI process
+              Mat Object: (fas_coarse_) 1 MPI process
                 type: seqaij
                 rows=9, cols=9
                 package used to perform factorization: petsc
                 total: nonzeros=57, allocated nonzeros=57
                   using I-node routines: found 7 nodes, limit used is 5
         linear system matrix = precond matrix:
-        Mat Object: (fas_coarse_) 1 MPI process
+        Mat Object: 1 MPI process
           type: seqaij
           rows=9, cols=9
           total: nonzeros=41, allocated nonzeros=41
@@ -85,14 +85,14 @@ SNES Object: 1 MPI process
           matrix ordering: natural
           factor fill ratio given 1., needed 1.
             Factored matrix follows:
-              Mat Object: 1 MPI process
+              Mat Object: (fas_levels_1_) 1 MPI process
                 type: seqaij
                 rows=49, cols=49
                 package used to perform factorization: petsc
                 total: nonzeros=289, allocated nonzeros=289
                   not using I-node routines
         linear system matrix = precond matrix:
-        Mat Object: (fas_levels_1_) 1 MPI process
+        Mat Object: 1 MPI process
           type: seqaij
           rows=49, cols=49
           total: nonzeros=289, allocated nonzeros=289
@@ -128,14 +128,14 @@ SNES Object: 1 MPI process
           matrix ordering: natural
           factor fill ratio given 1., needed 1.
             Factored matrix follows:
-              Mat Object: 1 MPI process
+              Mat Object: (fas_levels_2_) 1 MPI process
                 type: seqaij
                 rows=225, cols=225
                 package used to perform factorization: petsc
                 total: nonzeros=1457, allocated nonzeros=1457
                   not using I-node routines
         linear system matrix = precond matrix:
-        Mat Object: (fas_levels_2_) 1 MPI process
+        Mat Object: 1 MPI process
           type: seqaij
           rows=225, cols=225
           total: nonzeros=1457, allocated nonzeros=1457

@@ -671,14 +671,14 @@ PetscErrorCode MatFactorNumeric_MKL_PARDISO(Mat F,Mat A,const MatFactorInfo *inf
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSetMKL_PARDISOFromOptions(Mat F, Mat A)
+PetscErrorCode MatSetFromOptions_MKL_PARDISO(Mat F, Mat A)
 {
   Mat_MKL_PARDISO     *mat_mkl_pardiso = (Mat_MKL_PARDISO*)F->data;
   PetscInt            icntl,bs,threads=1;
   PetscBool           flg;
 
   PetscFunctionBegin;
-  PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"MKL_PARDISO Options","Mat");
+  PetscOptionsBegin(PetscObjectComm((PetscObject)F),((PetscObject)F)->prefix,"MKL_PARDISO Options","Mat");
 
   PetscCall(PetscOptionsInt("-mat_mkl_pardiso_65","Suggested number of threads to use within PARDISO","None",threads,&threads,&flg));
   if (flg) PetscSetMKL_PARDISOThreads((int)threads);
@@ -837,7 +837,7 @@ PetscErrorCode MatFactorSymbolic_AIJMKL_PARDISO_Private(Mat F,Mat A,const MatFac
 
   PetscFunctionBegin;
   mat_mkl_pardiso->matstruc = DIFFERENT_NONZERO_PATTERN;
-  PetscCall(PetscSetMKL_PARDISOFromOptions(F,A));
+  PetscCall(MatSetFromOptions_MKL_PARDISO(F,A));
   /* throw away any previously computed structure */
   if (mat_mkl_pardiso->freeaij) {
     PetscCall(PetscFree2(mat_mkl_pardiso->ia,mat_mkl_pardiso->ja));

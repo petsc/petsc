@@ -316,7 +316,7 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_klu(Mat A,MatFactorType ftype,Ma
 
   lu->Common.scale = 0; /* No row scaling */
 
-  PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"KLU Options","Mat");
+  PetscOptionsBegin(PetscObjectComm((PetscObject)B),((PetscObject)B)->prefix,"KLU Options","Mat");
   /* Partial pivoting tolerance */
   PetscCall(PetscOptionsReal("-mat_klu_pivot_tol","Partial pivoting tolerance","None",lu->Common.tol,&lu->Common.tol,NULL));
   /* BTF pre-ordering */

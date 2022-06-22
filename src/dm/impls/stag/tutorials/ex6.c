@@ -697,7 +697,7 @@ static PetscErrorCode UpdateStress_3d(const Ctx *ctx,Vec velocity,Vec stress, Ve
 
         /* Update tau_xy, tau_xz, tau_yz */
         {
-          PetscScalar dx,dy,dz;
+          PetscScalar dx = 1.0,dy = 1.0,dz = 1.0; /* initialization to prevent incorrect compiler warnings */
 
           if (ex > 0)  dx = arr_coord_x[ex][slot_coord_element] - arr_coord_x[ex-1][slot_coord_element];
           if (ey > 0)  dy = arr_coord_y[ey][slot_coord_element] - arr_coord_y[ey-1][slot_coord_element];

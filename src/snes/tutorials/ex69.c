@@ -3601,7 +3601,7 @@ int main(int argc, char **argv)
       -fetidp_fieldsplit_p_pc_type jacobi -fetidp_fieldsplit_p_ksp_type preonly \
       -fetidp_fieldsplit_lag_ksp_type preonly \
       -fetidp_bddc_pc_bddc_detect_disconnected -fetidp_bddc_pc_bddc_symmetric -fetidp_bddc_pc_bddc_vertex_size 3 -fetidp_bddc_pc_bddc_graph_maxcount 2 -fetidp_bddc_pc_bddc_coarse_redundant_pc_type cholesky -fetidp_bddc_pc_bddc_use_deluxe_scaling -fetidp_bddc_pc_bddc_deluxe_singlemat \
-      -fetidp_bddc_sub_schurs_mat_mumps_icntl_14 500 -fetidp_bddc_sub_schurs_posdef 0
+      -fetidp_bddc_sub_schurs_mat_solver_type mumps -fetidp_bddc_sub_schurs_mat_mumps_icntl_14 500 -fetidp_bddc_sub_schurs_posdef 0
 
   test:
     suffix: p2p1fetidp_deluxe_discharm
@@ -3615,7 +3615,7 @@ int main(int argc, char **argv)
       -fetidp_fieldsplit_p_pc_type jacobi -fetidp_fieldsplit_p_ksp_type preonly \
       -fetidp_fieldsplit_lag_ksp_type preonly \
       -fetidp_bddc_pc_bddc_detect_disconnected -fetidp_bddc_pc_bddc_symmetric -fetidp_bddc_pc_bddc_vertex_size 3 -fetidp_bddc_pc_bddc_graph_maxcount 2 -fetidp_bddc_pc_bddc_coarse_redundant_pc_type cholesky -fetidp_bddc_pc_bddc_use_deluxe_scaling -fetidp_bddc_pc_bddc_deluxe_singlemat \
-      -fetidp_bddc_sub_schurs_mat_mumps_icntl_14 500 -fetidp_bddc_sub_schurs_posdef 0  -fetidp_bddc_sub_schurs_discrete_harmonic
+       -fetidp_bddc_sub_schurs_mat_solver_type mumps -fetidp_bddc_sub_schurs_mat_mumps_icntl_14 500 -fetidp_bddc_sub_schurs_posdef 0  -fetidp_bddc_sub_schurs_discrete_harmonic
 
   testset:
     nsize: 4

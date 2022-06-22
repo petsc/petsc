@@ -105,7 +105,7 @@ TS Object: 2 MPI processes
                 matrix ordering: natural
                 factor fill ratio given 1., needed 1.
                   Factored matrix follows:
-                    Mat Object: 1 MPI process
+                    Mat Object: (npc_fas_coarse_sub_) 1 MPI process
                       type: seqaij
                       rows=15, cols=15
                       package used to perform factorization: petsc
@@ -154,7 +154,7 @@ TS Object: 2 MPI processes
                 matrix ordering: natural
                 factor fill ratio given 1., needed 1.
                   Factored matrix follows:
-                    Mat Object: 1 MPI process
+                    Mat Object: (npc_fas_levels_1_sub_) 1 MPI process
                       type: seqaij
                       rows=45, cols=45
                       package used to perform factorization: petsc
@@ -204,7 +204,7 @@ TS Object: 2 MPI processes
                 matrix ordering: natural
                 factor fill ratio given 1., needed 1.
                   Factored matrix follows:
-                    Mat Object: 1 MPI process
+                    Mat Object: (npc_fas_levels_2_sub_) 1 MPI process
                       type: seqaij
                       rows=153, cols=153
                       package used to perform factorization: petsc

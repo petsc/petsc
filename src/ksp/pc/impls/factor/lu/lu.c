@@ -46,12 +46,11 @@ static PetscErrorCode PCSetUp_LU(PC pc)
   const char             *prefix;
 
   PetscFunctionBegin;
-  if (!((PetscObject)pc->pmat)->prefix) {
-    PetscCall(PCGetOptionsPrefix(pc,&prefix));
-    PetscCall(MatSetOptionsPrefix(pc->pmat,prefix));
-  }
   pc->failedreason = PC_NOERROR;
   if (dir->hdr.reusefill && pc->setupcalled) ((PC_Factor*)dir)->info.fill = dir->hdr.actualfill;
+
+  PetscCall(PCGetOptionsPrefix(pc,&prefix));
+  PetscCall(MatSetOptionsPrefixFactor(pc->pmat,prefix));
 
   PetscCall(MatSetErrorIfFailure(pc->pmat,pc->erroriffailure));
   if (dir->hdr.inplace) {
@@ -229,8 +228,8 @@ static PetscErrorCode PCApplyTranspose_LU(PC pc,Vec x,Vec y)
                                          stability of factorization.
 .  -pc_factor_shift_type <shifttype> - Sets shift type or PETSC_DECIDE for the default; use '-help' for a list of available types
 .  -pc_factor_shift_amount <shiftamount> - Sets shift amount or PETSC_DECIDE for the default
--   -pc_factor_nonzeros_along_diagonal - permutes the rows and columns to try to put nonzero value along the
-        diagonal.
+.  -pc_factor_nonzeros_along_diagonal - permutes the rows and columns to try to put nonzero value along the diagonal.
+-  -mat_solvertype_optionname - options for a specific solver package, for example -mat_mumps_cntl_1
 
    Notes:
     Not all options work for all matrix formats

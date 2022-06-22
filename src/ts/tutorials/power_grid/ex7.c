@@ -253,7 +253,7 @@ PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
   PetscInt       i,j;
   PetscInt       xs,ys,xm,ym,M,N;
   Vec            localX,gc,localXdot;
-  PetscScalar    p_adv1,p_adv2,p_diff;
+  PetscScalar    p_adv1 = 0.0,p_adv2 = 0.0,p_diff; /* initialize to prevent incorrect compiler warnings */
 
   PetscFunctionBeginUser;
   PetscCall(DMDAGetInfo(user->da,NULL,&M,&N,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL));

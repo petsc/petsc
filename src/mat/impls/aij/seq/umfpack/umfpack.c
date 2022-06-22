@@ -203,16 +203,61 @@ static PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat F,Mat A,IS r,IS c,const Ma
 {
   Mat_SeqAIJ     *a  = (Mat_SeqAIJ*)A->data;
   Mat_UMFPACK    *lu = (Mat_UMFPACK*)(F->data);
-  PetscInt       i,*ai = a->i,*aj = a->j,m=A->rmap->n,n=A->cmap->n;
+  PetscInt       i,*ai = a->i,*aj = a->j,m=A->rmap->n,n=A->cmap->n,status,idx;
 #if !defined(PETSC_USE_COMPLEX)
   PetscScalar    *av = a->a;
 #endif
   const PetscInt *ra;
-  PetscInt       status;
+  const char     *strategy[]={"AUTO","UNSYMMETRIC","SYMMETRIC"};
+  const char     *scale[]   ={"NONE","SUM","MAX"};
+  PetscBool      flg;
 
   PetscFunctionBegin;
   (F)->ops->lufactornumeric = MatLUFactorNumeric_UMFPACK;
   if (!n) PetscFunctionReturn(0);
+
+  /* Set options to F */
+  PetscOptionsBegin(PetscObjectComm((PetscObject)F),((PetscObject)F)->prefix,"UMFPACK Options","Mat");
+  /* Control parameters used by reporting routiones */
+  PetscCall(PetscOptionsReal("-mat_umfpack_prl","Control[UMFPACK_PRL]","None",lu->Control[UMFPACK_PRL],&lu->Control[UMFPACK_PRL],NULL));
+
+  /* Control parameters for symbolic factorization */
+  PetscCall(PetscOptionsEList("-mat_umfpack_strategy","ordering and pivoting strategy","None",strategy,3,strategy[0],&idx,&flg));
+  if (flg) {
+    switch (idx) {
+    case 0: lu->Control[UMFPACK_STRATEGY] = UMFPACK_STRATEGY_AUTO; break;
+    case 1: lu->Control[UMFPACK_STRATEGY] = UMFPACK_STRATEGY_UNSYMMETRIC; break;
+    case 2: lu->Control[UMFPACK_STRATEGY] = UMFPACK_STRATEGY_SYMMETRIC; break;
+    }
+  }
+  PetscCall(PetscOptionsEList("-mat_umfpack_ordering","Internal ordering method","None",UmfpackOrderingTypes,PETSC_STATIC_ARRAY_LENGTH(UmfpackOrderingTypes),UmfpackOrderingTypes[(int)lu->Control[UMFPACK_ORDERING]],&idx,&flg));
+  if (flg) lu->Control[UMFPACK_ORDERING] = (int)idx;
+  PetscCall(PetscOptionsReal("-mat_umfpack_dense_col","Control[UMFPACK_DENSE_COL]","None",lu->Control[UMFPACK_DENSE_COL],&lu->Control[UMFPACK_DENSE_COL],NULL));
+  PetscCall(PetscOptionsReal("-mat_umfpack_dense_row","Control[UMFPACK_DENSE_ROW]","None",lu->Control[UMFPACK_DENSE_ROW],&lu->Control[UMFPACK_DENSE_ROW],NULL));
+  PetscCall(PetscOptionsReal("-mat_umfpack_amd_dense","Control[UMFPACK_AMD_DENSE]","None",lu->Control[UMFPACK_AMD_DENSE],&lu->Control[UMFPACK_AMD_DENSE],NULL));
+  PetscCall(PetscOptionsReal("-mat_umfpack_block_size","Control[UMFPACK_BLOCK_SIZE]","None",lu->Control[UMFPACK_BLOCK_SIZE],&lu->Control[UMFPACK_BLOCK_SIZE],NULL));
+  PetscCall(PetscOptionsReal("-mat_umfpack_fixq","Control[UMFPACK_FIXQ]","None",lu->Control[UMFPACK_FIXQ],&lu->Control[UMFPACK_FIXQ],NULL));
+  PetscCall(PetscOptionsReal("-mat_umfpack_aggressive","Control[UMFPACK_AGGRESSIVE]","None",lu->Control[UMFPACK_AGGRESSIVE],&lu->Control[UMFPACK_AGGRESSIVE],NULL));
+
+  /* Control parameters used by numeric factorization */
+  PetscCall(PetscOptionsReal("-mat_umfpack_pivot_tolerance","Control[UMFPACK_PIVOT_TOLERANCE]","None",lu->Control[UMFPACK_PIVOT_TOLERANCE],&lu->Control[UMFPACK_PIVOT_TOLERANCE],NULL));
+  PetscCall(PetscOptionsReal("-mat_umfpack_sym_pivot_tolerance","Control[UMFPACK_SYM_PIVOT_TOLERANCE]","None",lu->Control[UMFPACK_SYM_PIVOT_TOLERANCE],&lu->Control[UMFPACK_SYM_PIVOT_TOLERANCE],NULL));
+  PetscCall(PetscOptionsEList("-mat_umfpack_scale","Control[UMFPACK_SCALE]","None",scale,3,scale[0],&idx,&flg));
+  if (flg) {
+    switch (idx) {
+    case 0: lu->Control[UMFPACK_SCALE] = UMFPACK_SCALE_NONE; break;
+    case 1: lu->Control[UMFPACK_SCALE] = UMFPACK_SCALE_SUM; break;
+    case 2: lu->Control[UMFPACK_SCALE] = UMFPACK_SCALE_MAX; break;
+    }
+  }
+  PetscCall(PetscOptionsReal("-mat_umfpack_alloc_init","Control[UMFPACK_ALLOC_INIT]","None",lu->Control[UMFPACK_ALLOC_INIT],&lu->Control[UMFPACK_ALLOC_INIT],NULL));
+  PetscCall(PetscOptionsReal("-mat_umfpack_front_alloc_init","Control[UMFPACK_FRONT_ALLOC_INIT]","None",lu->Control[UMFPACK_FRONT_ALLOC_INIT],&lu->Control[UMFPACK_ALLOC_INIT],NULL));
+  PetscCall(PetscOptionsReal("-mat_umfpack_droptol","Control[UMFPACK_DROPTOL]","None",lu->Control[UMFPACK_DROPTOL],&lu->Control[UMFPACK_DROPTOL],NULL));
+
+  /* Control parameters used by solve */
+  PetscCall(PetscOptionsReal("-mat_umfpack_irstep","Control[UMFPACK_IRSTEP]","None",lu->Control[UMFPACK_IRSTEP],&lu->Control[UMFPACK_IRSTEP],NULL));
+  PetscOptionsEnd();
+
   if (r) {
     PetscCall(ISGetIndices(r,&ra));
     PetscCall(PetscMalloc1(m,&lu->perm_c));
@@ -353,10 +398,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftyp
 {
   Mat            B;
   Mat_UMFPACK    *lu;
-  PetscInt       m=A->rmap->n,n=A->cmap->n,idx;
-  const char     *strategy[]={"AUTO","UNSYMMETRIC","SYMMETRIC"};
-  const char     *scale[]   ={"NONE","SUM","MAX"};
-  PetscBool      flg;
+  PetscInt       m=A->rmap->n,n=A->cmap->n;
 
   PetscFunctionBegin;
   /* Create the factorization matrix F */
@@ -392,46 +434,6 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftyp
   lu->perm_c                  = NULL; /* use defaul UMFPACK col permutation */
   lu->Control[UMFPACK_IRSTEP] = 0;          /* max num of iterative refinement steps to attempt */
 
-  PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"UMFPACK Options","Mat");
-  /* Control parameters used by reporting routiones */
-  PetscCall(PetscOptionsReal("-mat_umfpack_prl","Control[UMFPACK_PRL]","None",lu->Control[UMFPACK_PRL],&lu->Control[UMFPACK_PRL],NULL));
-
-  /* Control parameters for symbolic factorization */
-  PetscCall(PetscOptionsEList("-mat_umfpack_strategy","ordering and pivoting strategy","None",strategy,3,strategy[0],&idx,&flg));
-  if (flg) {
-    switch (idx) {
-    case 0: lu->Control[UMFPACK_STRATEGY] = UMFPACK_STRATEGY_AUTO; break;
-    case 1: lu->Control[UMFPACK_STRATEGY] = UMFPACK_STRATEGY_UNSYMMETRIC; break;
-    case 2: lu->Control[UMFPACK_STRATEGY] = UMFPACK_STRATEGY_SYMMETRIC; break;
-    }
-  }
-  PetscCall(PetscOptionsEList("-mat_umfpack_ordering","Internal ordering method","None",UmfpackOrderingTypes,PETSC_STATIC_ARRAY_LENGTH(UmfpackOrderingTypes),UmfpackOrderingTypes[(int)lu->Control[UMFPACK_ORDERING]],&idx,&flg));
-  if (flg) lu->Control[UMFPACK_ORDERING] = (int)idx;
-  PetscCall(PetscOptionsReal("-mat_umfpack_dense_col","Control[UMFPACK_DENSE_COL]","None",lu->Control[UMFPACK_DENSE_COL],&lu->Control[UMFPACK_DENSE_COL],NULL));
-  PetscCall(PetscOptionsReal("-mat_umfpack_dense_row","Control[UMFPACK_DENSE_ROW]","None",lu->Control[UMFPACK_DENSE_ROW],&lu->Control[UMFPACK_DENSE_ROW],NULL));
-  PetscCall(PetscOptionsReal("-mat_umfpack_amd_dense","Control[UMFPACK_AMD_DENSE]","None",lu->Control[UMFPACK_AMD_DENSE],&lu->Control[UMFPACK_AMD_DENSE],NULL));
-  PetscCall(PetscOptionsReal("-mat_umfpack_block_size","Control[UMFPACK_BLOCK_SIZE]","None",lu->Control[UMFPACK_BLOCK_SIZE],&lu->Control[UMFPACK_BLOCK_SIZE],NULL));
-  PetscCall(PetscOptionsReal("-mat_umfpack_fixq","Control[UMFPACK_FIXQ]","None",lu->Control[UMFPACK_FIXQ],&lu->Control[UMFPACK_FIXQ],NULL));
-  PetscCall(PetscOptionsReal("-mat_umfpack_aggressive","Control[UMFPACK_AGGRESSIVE]","None",lu->Control[UMFPACK_AGGRESSIVE],&lu->Control[UMFPACK_AGGRESSIVE],NULL));
-
-  /* Control parameters used by numeric factorization */
-  PetscCall(PetscOptionsReal("-mat_umfpack_pivot_tolerance","Control[UMFPACK_PIVOT_TOLERANCE]","None",lu->Control[UMFPACK_PIVOT_TOLERANCE],&lu->Control[UMFPACK_PIVOT_TOLERANCE],NULL));
-  PetscCall(PetscOptionsReal("-mat_umfpack_sym_pivot_tolerance","Control[UMFPACK_SYM_PIVOT_TOLERANCE]","None",lu->Control[UMFPACK_SYM_PIVOT_TOLERANCE],&lu->Control[UMFPACK_SYM_PIVOT_TOLERANCE],NULL));
-  PetscCall(PetscOptionsEList("-mat_umfpack_scale","Control[UMFPACK_SCALE]","None",scale,3,scale[0],&idx,&flg));
-  if (flg) {
-    switch (idx) {
-    case 0: lu->Control[UMFPACK_SCALE] = UMFPACK_SCALE_NONE; break;
-    case 1: lu->Control[UMFPACK_SCALE] = UMFPACK_SCALE_SUM; break;
-    case 2: lu->Control[UMFPACK_SCALE] = UMFPACK_SCALE_MAX; break;
-    }
-  }
-  PetscCall(PetscOptionsReal("-mat_umfpack_alloc_init","Control[UMFPACK_ALLOC_INIT]","None",lu->Control[UMFPACK_ALLOC_INIT],&lu->Control[UMFPACK_ALLOC_INIT],NULL));
-  PetscCall(PetscOptionsReal("-mat_umfpack_front_alloc_init","Control[UMFPACK_FRONT_ALLOC_INIT]","None",lu->Control[UMFPACK_FRONT_ALLOC_INIT],&lu->Control[UMFPACK_ALLOC_INIT],NULL));
-  PetscCall(PetscOptionsReal("-mat_umfpack_droptol","Control[UMFPACK_DROPTOL]","None",lu->Control[UMFPACK_DROPTOL],&lu->Control[UMFPACK_DROPTOL],NULL));
-
-  /* Control parameters used by solve */
-  PetscCall(PetscOptionsReal("-mat_umfpack_irstep","Control[UMFPACK_IRSTEP]","None",lu->Control[UMFPACK_IRSTEP],&lu->Control[UMFPACK_IRSTEP],NULL));
-  PetscOptionsEnd();
   *F = B;
   PetscFunctionReturn(0);
 }

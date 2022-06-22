@@ -99,6 +99,9 @@ In addition to the changes above
 
 - Change ``MatPreallocateInitialize()`` and ``MatPreallocateFinalize()`` to ``MatPreallocateBegin()`` and ``MatPreallocateEnd()`` and to not return an error code
 - Change ``MatDenseGetSubMatrix()`` to be able to retrieve only selected contiguous rows instead of all rows
+- Add ``MatSetOptionsPrefixFactor()`` and ``MatAppendOptionsPrefixFactor()`` to allow controlling the options prefix used by factors created from this matrix
+- Change ``MatSetOptionsPrefix()`` to no longer affect the options prefix used by factors created from this matrix
+- Change matrix factor options called from within `KSP`/`PC` to always inherit the options prefix from the `KSP`/`PC`, not the options prefix in the originating matrix
 
 .. rubric:: PC:
 

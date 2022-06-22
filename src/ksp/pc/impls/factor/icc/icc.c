@@ -12,11 +12,10 @@ static PetscErrorCode PCSetUp_ICC(PC pc)
   const char             *prefix;
 
   PetscFunctionBegin;
-  if (!((PetscObject)pc->pmat)->prefix) {
-    PetscCall(PCGetOptionsPrefix(pc,&prefix));
-    PetscCall(MatSetOptionsPrefix(pc->pmat,prefix));
-  }
   pc->failedreason = PC_NOERROR;
+
+  PetscCall(PCGetOptionsPrefix(pc,&prefix));
+  PetscCall(MatSetOptionsPrefixFactor(pc->pmat,prefix));
 
   PetscCall(MatSetErrorIfFailure(pc->pmat,pc->erroriffailure));
   if (!pc->setupcalled) {

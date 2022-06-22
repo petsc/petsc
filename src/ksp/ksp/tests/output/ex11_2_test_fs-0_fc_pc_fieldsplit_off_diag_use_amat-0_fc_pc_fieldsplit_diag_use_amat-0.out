@@ -91,7 +91,7 @@ PC Object: (fc_) 4 MPI processes
             matrix ordering: nd
             factor fill ratio given 5., needed 2.84512
               Factored matrix follows:
-                Mat Object: 1 MPI process
+                Mat Object: (fc_fieldsplit_velocity_sub_) 1 MPI process
                   type: seqsbaij
                   rows=512, cols=512
                   package used to perform factorization: petsc
@@ -148,7 +148,7 @@ PC Object: (fc_) 4 MPI processes
                 matrix ordering: natural
                 factor fill ratio given 1., needed 1.
                   Factored matrix follows:
-                    Mat Object: 1 MPI process
+                    Mat Object: (fc_fieldsplit_pressure_lsc_sub_) 1 MPI process
                       type: seqsbaij
                       rows=256, cols=256
                       package used to perform factorization: petsc
@@ -214,7 +214,7 @@ PC Object: (fc_) 4 MPI processes
                     matrix ordering: nd
                     factor fill ratio given 5., needed 2.84512
                       Factored matrix follows:
-                        Mat Object: 1 MPI process
+                        Mat Object: (fc_fieldsplit_velocity_sub_) 1 MPI process
                           type: seqsbaij
                           rows=512, cols=512
                           package used to perform factorization: petsc
@@ -346,7 +346,7 @@ PC Object: (fc_) 4 MPI processes
             matrix ordering: nd
             factor fill ratio given 5., needed 2.84512
               Factored matrix follows:
-                Mat Object: 1 MPI process
+                Mat Object: (fc_fieldsplit_velocity_sub_) 1 MPI process
                   type: seqsbaij
                   rows=512, cols=512
                   package used to perform factorization: petsc
@@ -403,7 +403,7 @@ PC Object: (fc_) 4 MPI processes
                 matrix ordering: natural
                 factor fill ratio given 1., needed 1.
                   Factored matrix follows:
-                    Mat Object: 1 MPI process
+                    Mat Object: (fc_fieldsplit_pressure_lsc_sub_) 1 MPI process
                       type: seqsbaij
                       rows=256, cols=256
                       package used to perform factorization: petsc
@@ -469,7 +469,7 @@ PC Object: (fc_) 4 MPI processes
                     matrix ordering: nd
                     factor fill ratio given 5., needed 2.84512
                       Factored matrix follows:
-                        Mat Object: 1 MPI process
+                        Mat Object: (fc_fieldsplit_velocity_sub_) 1 MPI process
                           type: seqsbaij
                           rows=512, cols=512
                           package used to perform factorization: petsc

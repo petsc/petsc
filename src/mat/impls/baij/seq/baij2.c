@@ -223,6 +223,7 @@ PetscErrorCode MatDestroySubMatrix_SeqBAIJ(Mat C)
   PetscFunctionReturn(0);
 }
 
+/* Note this has code duplication with MatDestroySubMatrices_SeqAIJ() */
 PetscErrorCode MatDestroySubMatrices_SeqBAIJ(PetscInt n,Mat *mat[])
 {
   PetscInt       i;
@@ -237,6 +238,7 @@ PetscErrorCode MatDestroySubMatrices_SeqBAIJ(PetscInt n,Mat *mat[])
     submatj = c->submatis1;
     if (submatj) {
       if (--((PetscObject)C)->refct <= 0) {
+        PetscCall(PetscFree(C->factorprefix));
         PetscCall((*submatj->destroy)(C));
         PetscCall(MatDestroySubMatrix_Private(submatj));
         PetscCall(PetscFree(C->defaultvectype));

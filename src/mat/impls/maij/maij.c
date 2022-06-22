@@ -3343,9 +3343,9 @@ PetscErrorCode MatCreateSubMatrices_MAIJ(Mat mat,PetscInt n,const IS irow[],cons
 @*/
 PetscErrorCode  MatCreateMAIJ(Mat A,PetscInt dof,Mat *maij)
 {
-  PetscMPIInt    size;
   PetscInt       n;
   Mat            B;
+  PetscBool      flg;
 #if defined(PETSC_HAVE_CUDA)
   /* hack to prevent conversion to AIJ format for CUDA when used inside a parallel MAIJ */
   PetscBool      convert = dof < 0 ? PETSC_FALSE : PETSC_TRUE;
@@ -3368,8 +3368,8 @@ PetscErrorCode  MatCreateMAIJ(Mat A,PetscInt dof,Mat *maij)
 
     B->assembled = PETSC_TRUE;
 
-    PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)A),&size));
-    if (size == 1) {
+    PetscCall(PetscObjectBaseTypeCompare((PetscObject)A,MATSEQAIJ,&flg));
+    if (flg) {
       Mat_SeqMAIJ *b;
 
       PetscCall(MatSetType(B,MATSEQMAIJ));

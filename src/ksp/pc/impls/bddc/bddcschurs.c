@@ -943,8 +943,8 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
     PetscCall(MatBindToCPU(sub_schurs->A,oldpin));
 #endif
-    PetscCall(MatSetOptionsPrefix(A,sub_schurs->prefix));
-    PetscCall(MatAppendOptionsPrefix(A,"sub_schurs_"));
+    PetscCall(MatSetOptionsPrefixFactor(A,sub_schurs->prefix));
+    PetscCall(MatAppendOptionsPrefixFactor(A,"sub_schurs_"));
 
     /* if we actually change the basis for the pressures, LDL^T factors will use a lot of memory
        this is a workaround */

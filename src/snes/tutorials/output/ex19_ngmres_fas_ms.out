@@ -67,7 +67,7 @@ lid velocity = 200., prandtl # = 1., grashof # = 10000.
                 matrix ordering: natural
                 factor fill ratio given 1., needed 1.
                   Factored matrix follows:
-                    Mat Object: 1 MPI process
+                    Mat Object: (npc_fas_coarse_sub_) 1 MPI process
                       type: seqaij
                       rows=32, cols=32, bs=4
                       package used to perform factorization: petsc
