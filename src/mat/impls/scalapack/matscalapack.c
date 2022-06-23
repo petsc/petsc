@@ -1654,16 +1654,20 @@ PETSC_INTERN PetscErrorCode MatStashScatterEnd_Ref(MatStash*);
 
    Use ./configure --download-scalapack to install PETSc to use ScaLAPACK
 
-   Use -pc_type lu -pc_factor_mat_solver_type scalapack to use this direct solver
-
    Options Database Keys:
 +  -mat_type scalapack - sets the matrix type to "scalapack" during a call to MatSetFromOptions()
+.  -pc_factor_mat_solver_type scalapack - to use this direct solver with the option -pc_type lu
 .  -mat_scalapack_grid_height - sets Grid Height for 2D cyclic ordering of internal matrix
 -  -mat_scalapack_block_sizes - size of the blocks to use (one or two integers separated by comma)
 
+  Note:
+   Note unlike most matrix formats, this format does not store all the matrix entries for a contiguous
+   range of rows on an MPI rank. Use `MatGetOwnershipIS()` to determine what values are stored on
+   the given rank.
+
    Level: beginner
 
-.seealso: `MATDENSE`, `MATELEMENTAL`
+.seealso: `MATDENSE`, `MATELEMENTAL`, `MatGetOwnershipIS()`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_ScaLAPACK(Mat A)
