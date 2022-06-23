@@ -279,9 +279,7 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
   PetscCall(TaoComputeObjectiveAndGradient(tao,qp->Work,&qp->d,qp->C));
   PetscCall(TaoComputeHessian(tao,qp->Work,tao->hessian,tao->hessian_pre));
   PetscCall(MatHasOperation(tao->hessian,MATOP_GET_DIAGONAL,&getdiagop));
-  if (getdiagop) {
-    PetscCall(MatGetDiagonal(tao->hessian,qp->HDiag));
-  }
+  if (getdiagop) PetscCall(MatGetDiagonal(tao->hessian,qp->HDiag));
 
   /* Initialize starting point and residuals */
   PetscCall(QPIPSetInitialPoint(qp,tao));
@@ -298,9 +296,7 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
     PetscCall((*tao->ops->convergencetest)(tao,tao->cnvP));
     if (tao->reason != TAO_CONTINUE_ITERATING) break;
     /* Call general purpose update function */
-    if (tao->ops->update) {
-      PetscCall((*tao->ops->update)(tao, tao->niter, tao->user_update));
-    }
+    if (tao->ops->update) PetscCall((*tao->ops->update)(tao, tao->niter, tao->user_update));
     tao->niter++;
     tao->ksp_its = 0;
 

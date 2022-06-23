@@ -134,9 +134,7 @@ static PetscErrorCode TaoSetup_BLMVM(Tao tao)
   PetscCall(MatLMVMAllocate(blmP->M,tao->solution,blmP->unprojected_gradient));
 
   /* If the user has set a matrix to solve as the initial H0, set the options prefix here, and set up the KSP */
-  if (blmP->H0) {
-    PetscCall(MatLMVMSetJ0(blmP->M, blmP->H0));
-  }
+  if (blmP->H0) PetscCall(MatLMVMSetJ0(blmP->M, blmP->H0));
   PetscFunctionReturn(0);
 }
 

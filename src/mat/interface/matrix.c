@@ -4177,9 +4177,7 @@ PetscErrorCode MatCopy_Basic(Mat A,Mat B,MatStructure str)
   const PetscScalar *vwork;
 
   PetscFunctionBegin;
-  if (B->assembled) {
-    PetscCall(MatZeroEntries(B));
-  }
+  if (B->assembled) PetscCall(MatZeroEntries(B));
   if (str == SAME_NONZERO_PATTERN) {
     PetscCall(MatGetOwnershipRange(A,&rstart,&rend));
     for (i=rstart; i<rend; i++) {
@@ -4425,12 +4423,8 @@ foundconv:
   PetscCall(PetscObjectStateIncrease((PetscObject)*M));
 
   /* Copy Mat options */
-  if (issymmetric) {
-    PetscCall(MatSetOption(*M,MAT_SYMMETRIC,PETSC_TRUE));
-  }
-  if (ishermitian) {
-    PetscCall(MatSetOption(*M,MAT_HERMITIAN,PETSC_TRUE));
-  }
+  if (issymmetric) PetscCall(MatSetOption(*M,MAT_SYMMETRIC,PETSC_TRUE));
+  if (ishermitian) PetscCall(MatSetOption(*M,MAT_HERMITIAN,PETSC_TRUE));
   PetscFunctionReturn(0);
 }
 
@@ -4844,9 +4838,7 @@ PetscErrorCode MatDuplicate(Mat mat,MatDuplicateOption op,Mat *M)
   B    = *M;
 
   PetscCall(MatGetOperation(mat,MATOP_VIEW,&viewf));
-  if (viewf) {
-    PetscCall(MatSetOperation(B,MATOP_VIEW,viewf));
-  }
+  if (viewf) PetscCall(MatSetOperation(B,MATOP_VIEW,viewf));
   PetscCall(MatGetVecType(mat,&vtype));
   PetscCall(MatSetVecType(B,vtype));
 
@@ -5524,9 +5516,7 @@ PetscErrorCode MatAssemblyBegin(Mat mat,MatAssemblyType type)
     PetscCall(PetscLogEventBegin(MAT_AssemblyBegin,mat,0,0,0));
     if (mat->ops->assemblybegin) PetscCall((*mat->ops->assemblybegin)(mat,type));
     PetscCall(PetscLogEventEnd(MAT_AssemblyBegin,mat,0,0,0));
-  } else if (mat->ops->assemblybegin) {
-    PetscCall((*mat->ops->assemblybegin)(mat,type));
-  }
+  } else if (mat->ops->assemblybegin) PetscCall((*mat->ops->assemblybegin)(mat,type));
   PetscFunctionReturn(0);
 }
 
@@ -5606,13 +5596,9 @@ PetscErrorCode MatAssemblyEnd(Mat mat,MatAssemblyType type)
   MatAssemblyEnd_InUse++;
   if (MatAssemblyEnd_InUse == 1) { /* Do the logging only the first time through */
     PetscCall(PetscLogEventBegin(MAT_AssemblyEnd,mat,0,0,0));
-    if (mat->ops->assemblyend) {
-      PetscCall((*mat->ops->assemblyend)(mat,type));
-    }
+    if (mat->ops->assemblyend) PetscCall((*mat->ops->assemblyend)(mat,type));
     PetscCall(PetscLogEventEnd(MAT_AssemblyEnd,mat,0,0,0));
-  } else if (mat->ops->assemblyend) {
-    PetscCall((*mat->ops->assemblyend)(mat,type));
-  }
+  } else if (mat->ops->assemblyend) PetscCall((*mat->ops->assemblyend)(mat,type));
 
   /* Flush assembly is not a true assembly */
   if (type != MAT_FLUSH_ASSEMBLY) {
@@ -5838,9 +5824,7 @@ PetscErrorCode MatSetOption(Mat mat,MatOption op,PetscBool flg)
   default:
     break;
   }
-  if (mat->ops->setoption) {
-    PetscCall((*mat->ops->setoption)(mat,op,flg));
-  }
+  if (mat->ops->setoption) PetscCall((*mat->ops->setoption)(mat,op,flg));
   PetscFunctionReturn(0);
 }
 
@@ -7705,9 +7689,7 @@ PetscErrorCode MatSetBlockSizes(Mat mat,PetscInt rbs,PetscInt cbs)
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidLogicalCollectiveInt(mat,rbs,2);
   PetscValidLogicalCollectiveInt(mat,cbs,3);
-  if (mat->ops->setblocksizes) {
-    PetscCall((*mat->ops->setblocksizes)(mat,rbs,cbs));
-  }
+  if (mat->ops->setblocksizes) PetscCall((*mat->ops->setblocksizes)(mat,rbs,cbs));
   if (mat->rmap->refcnt) {
     ISLocalToGlobalMapping l2g = NULL;
     PetscLayout            nmap = NULL;
@@ -8363,9 +8345,7 @@ PetscErrorCode MatCreateSubMatrix(Mat mat,IS isrow,IS iscol,MatReuse cll,Mat *ne
 
 setproperties:
   PetscCall(ISEqualUnsorted(isrow,iscoltmp,&flg));
-  if (flg) {
-    PetscCall(MatPropagateSymmetryOptions(mat,*newmat));
-  }
+  if (flg) PetscCall(MatPropagateSymmetryOptions(mat,*newmat));
   if (!iscol) PetscCall(ISDestroy(&iscoltmp));
   if (*newmat && cll == MAT_INITIAL_MATRIX) PetscCall(PetscObjectStateIncrease((PetscObject)*newmat));
   PetscFunctionReturn(0);
@@ -8394,18 +8374,10 @@ PetscErrorCode MatPropagateSymmetryOptions(Mat A, Mat B)
   if (A->symmetric_eternal) { /* symmetric_eternal does not have a corresponding *set flag */
     PetscCall(MatSetOption(B,MAT_SYMMETRY_ETERNAL,A->symmetric_eternal));
   }
-  if (A->structurally_symmetric_set) {
-    PetscCall(MatSetOption(B,MAT_STRUCTURALLY_SYMMETRIC,A->structurally_symmetric));
-  }
-  if (A->hermitian_set) {
-    PetscCall(MatSetOption(B,MAT_HERMITIAN,A->hermitian));
-  }
-  if (A->spd_set) {
-    PetscCall(MatSetOption(B,MAT_SPD,A->spd));
-  }
-  if (A->symmetric_set) {
-    PetscCall(MatSetOption(B,MAT_SYMMETRIC,A->symmetric));
-  }
+  if (A->structurally_symmetric_set) PetscCall(MatSetOption(B,MAT_STRUCTURALLY_SYMMETRIC,A->structurally_symmetric));
+  if (A->hermitian_set) PetscCall(MatSetOption(B,MAT_HERMITIAN,A->hermitian));
+  if (A->spd_set) PetscCall(MatSetOption(B,MAT_SPD,A->spd));
+  if (A->symmetric_set) PetscCall(MatSetOption(B,MAT_SYMMETRIC,A->symmetric));
   PetscFunctionReturn(0);
 }
 
@@ -8638,9 +8610,7 @@ PetscErrorCode MatMatInterpolateAdd(Mat A,Mat x,Mat w,Mat *y)
   } else {
     PetscCall(MatTransposeMatMult(A,x,reuse,PETSC_DEFAULT,y));
   }
-  if (w) {
-    PetscCall(MatAXPY(*y,1.0,w,UNKNOWN_NONZERO_PATTERN));
-  }
+  if (w) PetscCall(MatAXPY(*y,1.0,w,UNKNOWN_NONZERO_PATTERN));
   PetscFunctionReturn(0);
 }
 
@@ -10474,9 +10444,7 @@ PetscErrorCode MatTransposeColoringDestroy(MatTransposeColoring *c)
   PetscCall(PetscFree(matcolor->den2sp));
   PetscCall(PetscFree(matcolor->colorforcol));
   PetscCall(PetscFree(matcolor->columns));
-  if (matcolor->brows>0) {
-    PetscCall(PetscFree(matcolor->lstart));
-  }
+  if (matcolor->brows>0) PetscCall(PetscFree(matcolor->lstart));
   PetscCall(PetscHeaderDestroy(c));
   PetscFunctionReturn(0);
 }

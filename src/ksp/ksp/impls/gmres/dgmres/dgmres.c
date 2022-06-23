@@ -561,13 +561,9 @@ PetscErrorCode KSPSetFromOptions_DGMRES(PetscOptionItems *PetscOptionsObject,KSP
   PetscCall(KSPSetFromOptions_GMRES(PetscOptionsObject,ksp));
   PetscOptionsHeadBegin(PetscOptionsObject,"KSP DGMRES Options");
   PetscCall(PetscOptionsInt("-ksp_dgmres_eigen","Number of smallest eigenvalues to extract at each restart","KSPDGMRESSetEigen",dgmres->neig, &neig, &flg));
-  if (flg) {
-    PetscCall(KSPDGMRESSetEigen(ksp, neig));
-  }
+  if (flg) PetscCall(KSPDGMRESSetEigen(ksp, neig));
   PetscCall(PetscOptionsInt("-ksp_dgmres_max_eigen","Maximum Number of smallest eigenvalues to extract ","KSPDGMRESSetMaxEigen",dgmres->max_neig, &max_neig, &flg));
-  if (flg) {
-    PetscCall(KSPDGMRESSetMaxEigen(ksp, max_neig));
-  }
+  if (flg) PetscCall(KSPDGMRESSetMaxEigen(ksp, max_neig));
   PetscCall(PetscOptionsReal("-ksp_dgmres_ratio","Relaxation parameter for the smaller number of matrix-vectors product allowed","KSPDGMRESSetRatio",dgmres->smv,&dgmres->smv,NULL));
   PetscCall(PetscOptionsBool("-ksp_dgmres_improve","Improve the computation of eigenvalues by solving a new generalized eigenvalue problem (experimental - not stable at this time)",NULL,dgmres->improve,&dgmres->improve,NULL));
   PetscCall(PetscOptionsBool("-ksp_dgmres_force","Sets DGMRES always at restart active, i.e do not use the adaptive strategy","KSPDGMRESForce",dgmres->force,&dgmres->force,NULL));

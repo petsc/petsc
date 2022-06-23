@@ -309,9 +309,7 @@ PetscErrorCode  PetscViewerSetUp(PetscViewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   if (viewer->setupcalled) PetscFunctionReturn(0);
-  if (viewer->ops->setup) {
-    PetscCall((*viewer->ops->setup)(viewer));
-  }
+  if (viewer->ops->setup) PetscCall((*viewer->ops->setup)(viewer));
   viewer->setupcalled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -389,18 +387,14 @@ PetscErrorCode  PetscViewerView(PetscViewer v,PetscViewer viewer)
         PetscCall(PetscViewerASCIIPrintf(viewer,"  Viewer format = %s\n",PetscViewerFormats[v->format]));
       }
       PetscCall(PetscViewerASCIIPushTab(viewer));
-      if (v->ops->view) {
-        PetscCall((*v->ops->view)(v,viewer));
-      }
+      if (v->ops->view) PetscCall((*v->ops->view)(v,viewer));
       PetscCall(PetscViewerASCIIPopTab(viewer));
     }
 #if defined(PETSC_HAVE_SAWS)
   } else if (issaws) {
     if (!((PetscObject)v)->amsmem) {
       PetscCall(PetscObjectViewSAWs((PetscObject)v,viewer));
-      if (v->ops->view) {
-        PetscCall((*v->ops->view)(v,viewer));
-      }
+      if (v->ops->view) PetscCall((*v->ops->view)(v,viewer));
     }
 #endif
   }

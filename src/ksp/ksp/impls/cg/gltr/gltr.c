@@ -1223,9 +1223,7 @@ static PetscErrorCode KSPCGDestroy_GLTR(KSP ksp)
   /***************************************************************************/
 
   PetscCall(PetscFree5(cg->diag,cg->offd,cg->alpha,cg->beta,cg->norm_r));
-  if (cg->alloced) {
-    PetscCall(PetscFree2(cg->rwork,cg->iwork));
-  }
+  if (cg->alloced) PetscCall(PetscFree2(cg->rwork,cg->iwork));
 
   /***************************************************************************/
   /* Clear composed functions                                                */

@@ -235,9 +235,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
     PetscCall(PetscObjectCompose((PetscObject)da,"GraphicsCoordinateGhosted",(PetscObject)xcoorl));
     PetscCall(PetscObjectDereference((PetscObject)dag));
     PetscCall(PetscObjectDereference((PetscObject)xcoorl));
-  } else {
-    PetscCall(VecGetDM(xcoorl,&dag));
-  }
+  } else PetscCall(VecGetDM(xcoorl,&dag));
   PetscCall(DMGlobalToLocalBegin(dag,xcoor,INSERT_VALUES,xcoorl));
   PetscCall(DMGlobalToLocalEnd(dag,xcoor,INSERT_VALUES,xcoorl));
   PetscCall(VecGetArrayRead(xcoorl,&zctx.xy));
@@ -631,11 +629,8 @@ static PetscErrorCode DMDAArrayMPIIO(DM da,PetscViewer viewer,Vec xin,PetscBool 
   PetscCallMPI(MPI_File_set_view(mfdes,off,MPIU_SCALAR,view,(char*)"native",MPI_INFO_NULL));
   PetscCall(VecGetArrayRead(xin,&array));
   asiz = lsizes[1]*(lsizes[2] > 0 ? lsizes[2] : 1)*(lsizes[3] > 0 ? lsizes[3] : 1)*dof;
-  if (write) {
-    PetscCall(MPIU_File_write_all(mfdes,(PetscScalar*)array,asiz,MPIU_SCALAR,MPI_STATUS_IGNORE));
-  } else {
-    PetscCall(MPIU_File_read_all(mfdes,(PetscScalar*)array,asiz,MPIU_SCALAR,MPI_STATUS_IGNORE));
-  }
+  if (write) PetscCall(MPIU_File_write_all(mfdes,(PetscScalar*)array,asiz,MPIU_SCALAR,MPI_STATUS_IGNORE));
+  else PetscCall(MPIU_File_read_all(mfdes,(PetscScalar*)array,asiz,MPIU_SCALAR,MPI_STATUS_IGNORE));
   PetscCallMPI(MPI_Type_get_extent(view,&ul,&ub));
   PetscCall(PetscViewerBinaryAddMPIIOOffset(viewer,ub));
   PetscCall(VecRestoreArrayRead(xin,&array));

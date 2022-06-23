@@ -727,9 +727,7 @@ PetscErrorCode DMMoabFEMCreateQuadratureDefault(const PetscInt dim, const PetscI
       PetscCall(PetscQuadratureSetOrder(*quadrature, order));
       PetscCall(PetscQuadratureSetData(*quadrature, dim, nc, npoints, x, w));
       /* PetscCall(PetscDTStroudConicalQuadrature(dim, nc, nverts, 0.0, 1.0, quadrature)); */
-    } else {
-      PetscCall(PetscDTGaussTensorQuadrature(dim, nc, nverts, 0.0, 1.0, quadrature));
-    }
+    } else PetscCall(PetscDTGaussTensorQuadrature(dim, nc, nverts, 0.0, 1.0, quadrature));
     break;
   case 3:
     /* Create Gauss quadrature rules with <order = nverts> in the span [-1, 1] */
@@ -769,9 +767,7 @@ PetscErrorCode DMMoabFEMCreateQuadratureDefault(const PetscInt dim, const PetscI
       PetscCall(PetscQuadratureSetOrder(*quadrature, order));
       PetscCall(PetscQuadratureSetData(*quadrature, dim, nc, npoints, x, w));
       /* PetscCall(PetscDTStroudConicalQuadrature(dim, nc, nverts, 0.0, 1.0, quadrature)); */
-    } else {
-      PetscCall(PetscDTGaussTensorQuadrature(dim, nc, nverts, 0.0, 1.0, quadrature));
-    }
+    } else PetscCall(PetscDTGaussTensorQuadrature(dim, nc, nverts, 0.0, 1.0, quadrature));
     break;
   default:
     SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension; should be in [1,3] : %" PetscInt_FMT, dim);
@@ -814,9 +810,7 @@ PetscErrorCode ComputeJacobian_Internal (const PetscInt dim, const PetscInt nver
         const PetscReal* vertices = coordinates + i * 3;
         jacobian[0] += dNi_dxi[i] * vertices[0];
       }
-    } else {
-      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "The number of 1-D entity vertices are invalid. Currently only support EDGE2 and EDGE3 basis evaluations in 1-D : %" PetscInt_FMT, nverts);
-    }
+    } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "The number of 1-D entity vertices are invalid. Currently only support EDGE2 and EDGE3 basis evaluations in 1-D : %" PetscInt_FMT, nverts);
 
     if (ijacobian) {
       /* invert the jacobian */

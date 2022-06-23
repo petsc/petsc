@@ -954,9 +954,7 @@ int main(int argc, char **argv)
       if (user.checkksp) {
         KSP ksp;
 
-        if (nullSpace) {
-          PetscCall(MatNullSpaceRemove(nullSpace, u));
-        }
+        if (nullSpace) PetscCall(MatNullSpaceRemove(nullSpace, u));
         PetscCall(SNESComputeJacobian(snes, u, A, J));
         PetscCall(MatMult(A, u, b));
         PetscCall(SNESGetKSP(snes, &ksp));

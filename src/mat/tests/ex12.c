@@ -88,9 +88,7 @@ PetscErrorCode TestMatZeroRows_Basic(Mat A,IS is,PetscScalar diag)
   PetscCall(MatDuplicate(A,MAT_COPY_VALUES,&B));
 
   PetscCall(PetscOptionsHasName(NULL,NULL,"-keep_nonzero_pattern",&keepnonzeropattern));
-  if (keepnonzeropattern) {
-    PetscCall(MatSetOption(B,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE));
-  }
+  if (keepnonzeropattern) PetscCall(MatSetOption(B,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE));
 
   PetscCall(MatZeroRowsIS(B,is,diag,0,0));
   PetscCall(MatView(B,PETSC_VIEWER_STDOUT_WORLD));

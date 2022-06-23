@@ -125,9 +125,7 @@ static PetscErrorCode PCSetFromOptions_Eisenstat(PetscOptionItems *PetscOptionsO
   PetscOptionsHeadBegin(PetscOptionsObject,"Eisenstat SSOR options");
   PetscCall(PetscOptionsReal("-pc_eisenstat_omega","Relaxation factor 0 < omega < 2","PCEisenstatSetOmega",eis->omega,&eis->omega,NULL));
   PetscCall(PetscOptionsBool("-pc_eisenstat_no_diagonal_scaling","Do not use standard diagonal scaling","PCEisenstatSetNoDiagonalScaling",eis->usediag ? PETSC_FALSE : PETSC_TRUE,&flg,&set));
-  if (set) {
-    PetscCall(PCEisenstatSetNoDiagonalScaling(pc,flg));
-  }
+  if (set) PetscCall(PCEisenstatSetNoDiagonalScaling(pc,flg));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }

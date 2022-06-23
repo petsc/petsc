@@ -52,11 +52,8 @@ static PetscErrorCode DMView_DA_2d(DM da,PetscViewer viewer)
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer,"X range of indices: %" PetscInt_FMT " %" PetscInt_FMT ", Y range of indices: %" PetscInt_FMT " %" PetscInt_FMT "\n",info.xs,info.xs+info.xm,info.ys,info.ys+info.ym));
       PetscCall(PetscViewerFlush(viewer));
       PetscCall(PetscViewerASCIIPopSynchronized(viewer));
-    } else if (format == PETSC_VIEWER_ASCII_GLVIS) {
-      PetscCall(DMView_DA_GLVis(da,viewer));
-    } else {
-      PetscCall(DMView_DA_VTK(da,viewer));
-    }
+    } else if (format == PETSC_VIEWER_ASCII_GLVIS) PetscCall(DMView_DA_GLVis(da,viewer));
+    else PetscCall(DMView_DA_VTK(da,viewer));
   } else if (isdraw) {
     PetscDraw      draw;
     double         ymin = -1*dd->s-1,ymax = dd->N+dd->s;

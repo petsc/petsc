@@ -598,9 +598,7 @@ PETSC_EXTERN PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
   } else if (ismatlab) {
     PetscCall(VecView_Seq_Matlab(xin,viewer));
 #endif
-  } else if (isglvis) {
-    PetscCall(VecView_GLVis(xin,viewer));
-  }
+  } else if (isglvis) PetscCall(VecView_GLVis(xin,viewer));
   PetscFunctionReturn(0);
 }
 

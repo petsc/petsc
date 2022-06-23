@@ -90,9 +90,7 @@ int main(int argc, char **argv)
 
   /* Limit the number of iterations in the KSP linear solver */
   PetscCall(TaoGetKSP(tao,&ksp));
-  if (ksp) {
-    PetscCall(KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,user.mx*user.my));
-  }
+  if (ksp) PetscCall(KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,user.mx*user.my));
 
   /* SOLVE THE APPLICATION */
   PetscCall(TaoSolve(tao));

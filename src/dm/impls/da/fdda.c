@@ -129,7 +129,6 @@ PetscErrorCode  DMDASetBlockFills(DM da,const PetscInt *dfill,const PetscInt *of
 
   /* count nonzeros in ofill columns */
   PetscCall(DMDASetBlockFills_Private2(dd));
-
   PetscFunctionReturn(0);
 }
 
@@ -183,7 +182,6 @@ PetscErrorCode  DMDASetBlockFillsSparse(DM da,const PetscInt *dfillsparse,const 
 
   /* count nonzeros in ofill columns */
   PetscCall(DMDASetBlockFills_Private2(dd));
-
   PetscFunctionReturn(0);
 }
 
@@ -251,13 +249,10 @@ PetscErrorCode  DMCreateColoring_DA(DM da,ISColoringType ctype,ISColoring *color
    the basic DMDA does not know about matrices. We think of DMDA as being
    more low-level then matrices.
   */
-  if (dim == 1) {
-    PetscCall(DMCreateColoring_DA_1d_MPIAIJ(da,ctype,coloring));
-  } else if (dim == 2) {
-    PetscCall(DMCreateColoring_DA_2d_MPIAIJ(da,ctype,coloring));
-  } else if (dim == 3) {
-    PetscCall(DMCreateColoring_DA_3d_MPIAIJ(da,ctype,coloring));
-  } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Not done for %" PetscInt_FMT " dimension, send us mail petsc-maint@mcs.anl.gov for code",dim);
+  if (dim == 1) PetscCall(DMCreateColoring_DA_1d_MPIAIJ(da,ctype,coloring));
+  else if (dim == 2) PetscCall(DMCreateColoring_DA_2d_MPIAIJ(da,ctype,coloring));
+  else if (dim == 3) PetscCall(DMCreateColoring_DA_3d_MPIAIJ(da,ctype,coloring));
+  else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Not done for %" PetscInt_FMT " dimension, send us mail petsc-maint@mcs.anl.gov for code",dim);
   if (isBAIJ) {
     dd->w  = nc;
     dd->xs = dd->xs*nc;
@@ -699,9 +694,7 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
     PetscCall(MatBindToCPU(A,PETSC_TRUE));
   }
   PetscCall(MatSetDM(A,da));
-  if (da->structure_only) {
-    PetscCall(MatSetOption(A,MAT_STRUCTURE_ONLY,PETSC_TRUE));
-  }
+  if (da->structure_only) PetscCall(MatSetOption(A,MAT_STRUCTURE_ONLY,PETSC_TRUE));
   PetscCall(MatGetType(A,&Atype));
   /*
      We do not provide a getmatrix function in the DMDA operations because
@@ -1107,9 +1100,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM da,Mat J)
 
   */
   PetscCall(DMDAGetInfo(da,&dim,&m,&n,NULL,&M,&N,NULL,&nc,&s,&bx,&by,NULL,&st));
-  if (bx == DM_BOUNDARY_NONE && by == DM_BOUNDARY_NONE) {
-    PetscCall(MatSetOption(J,MAT_SORTED_FULL,PETSC_TRUE));
-  }
+  if (bx == DM_BOUNDARY_NONE && by == DM_BOUNDARY_NONE) PetscCall(MatSetOption(J,MAT_SORTED_FULL,PETSC_TRUE));
   col  = 2*s + 1;
   /*
        With one processor in periodic domains in a skinny dimension the code will label nonzero columns multiple times
@@ -1148,11 +1139,8 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM da,Mat J)
         }
         rows[k] = k + nc*(slot);
       }
-      if (removedups) {
-        PetscCall(MatPreallocateSetLocalRemoveDups(ltog,nc,rows,ltog,cnt,cols,dnz,onz));
-      } else {
-        PetscCall(MatPreallocateSetLocal(ltog,nc,rows,ltog,cnt,cols,dnz,onz));
-      }
+      if (removedups) PetscCall(MatPreallocateSetLocalRemoveDups(ltog,nc,rows,ltog,cnt,cols,dnz,onz));
+      else PetscCall(MatPreallocateSetLocal(ltog,nc,rows,ltog,cnt,cols,dnz,onz));
     }
   }
   PetscCall(MatSetBlockSize(J,nc));
@@ -1160,9 +1148,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM da,Mat J)
   PetscCall(MatMPIAIJSetPreallocation(J,0,dnz,0,onz));
   MatPreallocateEnd(dnz,onz);
   PetscCall(MatGetLocalToGlobalMapping(J,&mltog,NULL));
-  if (!mltog) {
-    PetscCall(MatSetLocalToGlobalMapping(J,ltog,ltog));
-  }
+  if (!mltog) PetscCall(MatSetLocalToGlobalMapping(J,ltog,ltog));
 
   /*
     For each node in the grid: we get the neighbors in the local (on processor ordering
@@ -1203,9 +1189,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM da,Mat J)
     PetscCall(MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY));
     if (!alreadyboundtocpu) PetscCall(MatBindToCPU(J,PETSC_FALSE));
     PetscCall(MatSetOption(J,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE));
-    if (bx == DM_BOUNDARY_NONE && by == DM_BOUNDARY_NONE) {
-      PetscCall(MatSetOption(J,MAT_SORTED_FULL,PETSC_FALSE));
-    }
+    if (bx == DM_BOUNDARY_NONE && by == DM_BOUNDARY_NONE) PetscCall(MatSetOption(J,MAT_SORTED_FULL,PETSC_FALSE));
   }
   PetscCall(PetscFree2(rows,cols));
   PetscFunctionReturn(0);
@@ -1278,11 +1262,8 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ_Fill(DM da,Mat J)
         }
         row    = k + nc*(slot);
         maxcnt = PetscMax(maxcnt,cnt);
-        if (removedups) {
-          PetscCall(MatPreallocateSetLocalRemoveDups(ltog,1,&row,ltog,cnt,cols,dnz,onz));
-        } else {
-          PetscCall(MatPreallocateSetLocal(ltog,1,&row,ltog,cnt,cols,dnz,onz));
-        }
+        if (removedups) PetscCall(MatPreallocateSetLocalRemoveDups(ltog,1,&row,ltog,cnt,cols,dnz,onz));
+        else PetscCall(MatPreallocateSetLocal(ltog,1,&row,ltog,cnt,cols,dnz,onz));
       }
     }
   }
@@ -1409,11 +1390,8 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ(DM da,Mat J)
           }
           rows[l] = l + nc*(slot);
         }
-        if (removedups) {
-          PetscCall(MatPreallocateSetLocalRemoveDups(ltog,nc,rows,ltog,cnt,cols,dnz,onz));
-        } else {
-          PetscCall(MatPreallocateSetLocal(ltog,nc,rows,ltog,cnt,cols,dnz,onz));
-        }
+        if (removedups) PetscCall(MatPreallocateSetLocalRemoveDups(ltog,nc,rows,ltog,cnt,cols,dnz,onz));
+        else PetscCall(MatPreallocateSetLocal(ltog,nc,rows,ltog,cnt,cols,dnz,onz));
       }
     }
   }
@@ -2296,11 +2274,8 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ_Fill(DM da,Mat J)
           }
           row  = l + nc*(slot);
           maxcnt = PetscMax(maxcnt,cnt);
-          if (removedups) {
-            PetscCall(MatPreallocateSetLocalRemoveDups(ltog,1,&row,ltog,cnt,cols,dnz,onz));
-          } else {
-            PetscCall(MatPreallocateSetLocal(ltog,1,&row,ltog,cnt,cols,dnz,onz));
-          }
+          if (removedups) PetscCall(MatPreallocateSetLocalRemoveDups(ltog,1,&row,ltog,cnt,cols,dnz,onz));
+          else PetscCall(MatPreallocateSetLocal(ltog,1,&row,ltog,cnt,cols,dnz,onz));
         }
       }
     }

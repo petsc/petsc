@@ -36,12 +36,8 @@ static PetscErrorCode MatRestoreRow_ConstantDiagonal(Mat A, PetscInt row, PetscI
 {
   PetscFunctionBegin;
   if (ncols) *ncols = 0;
-  if (cols) {
-    PetscCall(PetscFree(*cols));
-  }
-  if (vals) {
-    PetscCall(PetscFree(*vals));
-  }
+  if (cols) PetscCall(PetscFree(*cols));
+  if (vals) PetscCall(PetscFree(*vals));
   PetscFunctionReturn(0);
 }
 

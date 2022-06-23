@@ -100,9 +100,7 @@ PetscErrorCode MatDestroy_MPIAIJ_RARt(void *data)
 
   PetscFunctionBegin;
   PetscCall(MatDestroy(&rart->Rt));
-  if (rart->destroy) {
-    PetscCall((*rart->destroy)(rart->data));
-  }
+  if (rart->destroy) PetscCall((*rart->destroy)(rart->data));
   PetscCall(PetscFree(rart));
   PetscFunctionReturn(0);
 }

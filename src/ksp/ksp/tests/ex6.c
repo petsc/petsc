@@ -93,9 +93,7 @@ int main(int argc,char **args)
   PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
   PetscCall(KSPSetOperators(ksp,A,A));
   PetscCall(KSPSetFromOptions(ksp));
-  if (test_residual) {
-    PetscCall(KSPMonitorSet(ksp,KSPTestResidualMonitor,NULL,NULL));
-  }
+  if (test_residual) PetscCall(KSPMonitorSet(ksp,KSPTestResidualMonitor,NULL,NULL));
   PetscCall(KSPSetUp(ksp));
   PetscCall(KSPSetUpOnBlocks(ksp));
   PetscCall(PetscLogStagePop());

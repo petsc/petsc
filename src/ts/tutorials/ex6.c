@@ -280,9 +280,7 @@ PetscErrorCode InitialConditions(Vec u,AppCtx *appctx)
   /*
      Print debugging information if desired
   */
-  if (appctx->debug) {
-     PetscCall(VecView(u,PETSC_VIEWER_STDOUT_SELF));
-  }
+  if (appctx->debug) PetscCall(VecView(u,PETSC_VIEWER_STDOUT_SELF));
 
   return 0;
 }

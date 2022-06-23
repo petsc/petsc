@@ -396,9 +396,7 @@ static PetscErrorCode TSSetFromOptions_SSP(PetscOptionItems *PetscOptionsObject,
   PetscOptionsHeadBegin(PetscOptionsObject,"SSP ODE solver options");
   {
     PetscCall(PetscOptionsFList("-ts_ssp_type","Type of SSP method","TSSSPSetType",TSSSPList,tname,tname,sizeof(tname),&flg));
-    if (flg) {
-      PetscCall(TSSSPSetType(ts,tname));
-    }
+    if (flg) PetscCall(TSSSPSetType(ts,tname));
     PetscCall(PetscOptionsInt("-ts_ssp_nstages","Number of stages","TSSSPSetNumStages",ssp->nstages,&ssp->nstages,NULL));
   }
   PetscOptionsHeadEnd();

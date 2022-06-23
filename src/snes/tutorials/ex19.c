@@ -156,9 +156,7 @@ int main(int argc,char **argv)
   /*
      Visualize solution
   */
-  if (user.draw_contours) {
-    PetscCall(VecView(x,PETSC_VIEWER_DRAW_WORLD));
-  }
+  if (user.draw_contours) PetscCall(VecView(x,PETSC_VIEWER_DRAW_WORLD));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they

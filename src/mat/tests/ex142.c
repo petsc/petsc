@@ -112,9 +112,7 @@ int main(int argc,char **args)
       }
       PetscCall(VecRestoreArray(x, &x_array));
     }
-    if (view) {
-      PetscCall(VecView(x, PETSC_VIEWER_STDOUT_WORLD));
-    }
+    if (view) PetscCall(VecView(x, PETSC_VIEWER_STDOUT_WORLD));
 
     /* FFT - also test repeated transformation   */
     /*-------------------------------------------*/

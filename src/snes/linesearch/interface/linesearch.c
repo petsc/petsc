@@ -240,9 +240,7 @@ PetscErrorCode SNESLineSearchSetUp(SNESLineSearch linesearch)
     if (!linesearch->vec_func_new) {
       PetscCall(VecDuplicate(linesearch->vec_sol, &linesearch->vec_func_new));
     }
-    if (linesearch->ops->setup) {
-      PetscCall((*linesearch->ops->setup)(linesearch));
-    }
+    if (linesearch->ops->setup) PetscCall((*linesearch->ops->setup)(linesearch));
     if (!linesearch->ops->snesfunc) PetscCall(SNESLineSearchSetFunction(linesearch,SNESComputeFunction));
     linesearch->lambda      = linesearch->damping;
     linesearch->setupcalled = PETSC_TRUE;
@@ -725,9 +723,7 @@ PetscErrorCode  SNESLineSearchMonitorSetFromOptions(SNESLineSearch ls,const char
     PetscViewerAndFormat *vf;
     PetscCall(PetscViewerAndFormatCreate(viewer,format,&vf));
     PetscCall(PetscObjectDereference((PetscObject)viewer));
-    if (monitorsetup) {
-      PetscCall((*monitorsetup)(ls,vf));
-    }
+    if (monitorsetup) PetscCall((*monitorsetup)(ls,vf));
     PetscCall(SNESLineSearchMonitorSet(ls,(PetscErrorCode (*)(SNESLineSearch,void*))monitor,vf,(PetscErrorCode (*)(void**))PetscViewerAndFormatDestroy));
   }
   PetscFunctionReturn(0);
@@ -817,9 +813,7 @@ PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch linesearch)
   PetscCall(PetscOptionsInt("-snes_linesearch_order","Order of approximation used in the line search","SNESLineSearchSetOrder",linesearch->order,&linesearch->order,NULL));
   PetscCall(PetscOptionsBool("-snes_linesearch_norms","Compute final norms in line search","SNESLineSearchSetComputeNorms",linesearch->norms,&linesearch->norms,NULL));
 
-  if (linesearch->ops->setfromoptions) {
-    PetscCall((*linesearch->ops->setfromoptions)(PetscOptionsObject,linesearch));
-  }
+  if (linesearch->ops->setfromoptions) PetscCall((*linesearch->ops->setfromoptions)(PetscOptionsObject,linesearch));
 
   PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)linesearch));
   PetscOptionsEnd();

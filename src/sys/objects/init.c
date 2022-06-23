@@ -304,9 +304,7 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(const char help[])
     PetscCall(PetscOptionsGetBool(NULL,NULL,"-malloc",&mdebug,NULL));
     PetscCall(PetscOptionsGetBool(NULL,NULL,"-malloc_dump",&mdebug,NULL));
     PetscCall(PetscOptionsGetBool(NULL,NULL,"-log_view_memory",&mdebug,NULL));
-    if (mdebug) {
-      PetscCall(PetscMallocSetDebug(eachcall,initializenan));
-    }
+    if (mdebug) PetscCall(PetscMallocSetDebug(eachcall,initializenan));
     if (mlog) {
       PetscReal logthreshold = 0;
       PetscCall(PetscOptionsGetReal(NULL,NULL,"-malloc_view_threshold",&logthreshold,NULL));
@@ -330,9 +328,7 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(const char help[])
     flg1 = PETSC_FALSE;
     PetscCall(PetscOptionsGetBool(NULL,NULL,"-memory_view",&flg1,NULL));
   }
-  if (flg1) {
-    PetscCall(PetscMemorySetGetMaximumUsage());
-  }
+  if (flg1) PetscCall(PetscMemorySetGetMaximumUsage());
 #endif
 
 #if defined(PETSC_USE_LOG)
@@ -361,9 +357,7 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(const char help[])
     /*
        Print "higher-level" package version message
     */
-    if (PetscExternalVersionFunction) {
-      PetscCall((*PetscExternalVersionFunction)(comm));
-    }
+    if (PetscExternalVersionFunction) PetscCall((*PetscExternalVersionFunction)(comm));
 
     PetscCall(PetscGetVersion(version,256));
     PetscCall((*PetscHelpPrintf)(comm,"%s\n",version));
@@ -381,9 +375,7 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(const char help[])
   if (hasHelp) {
     PetscBool hasHelpIntro;
 
-    if (PetscExternalHelpFunction) {
-      PetscCall((*PetscExternalHelpFunction)(comm));
-    }
+    if (PetscExternalHelpFunction) PetscCall((*PetscExternalHelpFunction)(comm));
     PetscCall(PetscOptionsHasHelpIntro_Internal(NULL,&hasHelpIntro));
     if (hasHelpIntro) {
       PetscCall(PetscOptionsDestroyDefault());
@@ -643,15 +635,11 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(const char help[])
   {
   char machine[128];
   PetscCall(PetscOptionsGetString(NULL,NULL,"-popen_machine",machine,sizeof(machine),&flg1));
-  if (flg1) {
-    PetscCall(PetscPOpenSetMachine(machine));
-  }
+  if (flg1) PetscCall(PetscPOpenSetMachine(machine));
   }
 #endif
 
   PetscCall(PetscOptionsGetReal(NULL,NULL,"-petsc_sleep",&si,&flg1));
-  if (flg1) {
-    PetscCall(PetscSleep(si));
-  }
+  if (flg1) PetscCall(PetscSleep(si));
   PetscFunctionReturn(0);
 }

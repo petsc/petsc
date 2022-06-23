@@ -418,12 +418,8 @@ PetscErrorCode  PFSetFromOptions(PF pf)
 
   PetscObjectOptionsBegin((PetscObject)pf);
   PetscCall(PetscOptionsFList("-pf_type","Type of function","PFSetType",PFList,NULL,type,256,&flg));
-  if (flg) {
-    PetscCall(PFSetType(pf,type,NULL));
-  }
-  if (pf->ops->setfromoptions) {
-    PetscCall((*pf->ops->setfromoptions)(PetscOptionsObject,pf));
-  }
+  if (flg) PetscCall(PFSetType(pf,type,NULL));
+  if (pf->ops->setfromoptions) PetscCall((*pf->ops->setfromoptions)(PetscOptionsObject,pf));
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)pf));

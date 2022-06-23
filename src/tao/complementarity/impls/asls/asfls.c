@@ -155,9 +155,7 @@ static PetscErrorCode TaoSolve_ASFLS(Tao tao)
     if (TAO_CONTINUE_ITERATING != tao->reason) break;
 
     /* Call general purpose update function */
-    if (tao->ops->update) {
-      PetscCall((*tao->ops->update)(tao, tao->niter, tao->user_update));
-    }
+    if (tao->ops->update) PetscCall((*tao->ops->update)(tao, tao->niter, tao->user_update));
     tao->niter++;
 
     /* We are going to solve a linear system of equations.  We need to

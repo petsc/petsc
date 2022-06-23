@@ -131,9 +131,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJCRL(Mat A,MatType type,MatRe
   B->ops->mult        = MatMult_AIJCRL;
 
   /* If A has already been assembled, compute the permutation. */
-  if (A->assembled) {
-    PetscCall(MatMPIAIJCRL_create_aijcrl(B));
-  }
+  if (A->assembled) PetscCall(MatMPIAIJCRL_create_aijcrl(B));
   PetscCall(PetscObjectChangeTypeName((PetscObject)B,MATMPIAIJCRL));
   *newmat = B;
   PetscFunctionReturn(0);

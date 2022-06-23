@@ -82,26 +82,22 @@ PetscInt DMMoab_SetSimplexElementConnectivity_Private(DMMoabMeshGeneratorCtx& ge
         connectivity[offset + subent_conn[0]] = B;
         connectivity[offset + subent_conn[1]] = C;
         connectivity[offset + subent_conn[2]] = A;
-      }
-      else {        /* 2 3 0 of a QUAD */
+      } else {        /* 2 3 0 of a QUAD */
         connectivity[offset + subent_conn[0]] = D;
         connectivity[offset + subent_conn[1]] = A;
         connectivity[offset + subent_conn[2]] = C;
       }
-    }
-    else if (trigen_opts == 2) {
+    } else if (trigen_opts == 2) {
       if (subelem) { /* 0 1 2 of a QUAD */
         connectivity[offset + subent_conn[0]] = A;
         connectivity[offset + subent_conn[1]] = B;
         connectivity[offset + subent_conn[2]] = D;
-      }
-      else {        /* 2 3 0 of a QUAD */
+      } else {        /* 2 3 0 of a QUAD */
         connectivity[offset + subent_conn[0]] = C;
         connectivity[offset + subent_conn[1]] = D;
         connectivity[offset + subent_conn[2]] = B;
       }
-    }
-    else {
+    } else {
       switch (subelem) { /* 0 1 2 of a QUAD */
       case 0:
         connectivity[offset + subent_conn[0]] = A;
@@ -192,8 +188,7 @@ std::pair<PetscInt, PetscInt> DMMoab_SetElementConnectivity_Private(DMMoabMeshGe
       vcount = DMMoab_SetSimplexElementConnectivity_Private(genCtx, m, offset, corner, subent_conn, connectivity);
       offset += vcount;
     }
-  }
-  else {
+  } else {
     subelem = 1;
     vcount = DMMoab_SetTensorElementConnectivity_Private(genCtx, offset, corner, subent_conn, connectivity);
   }
@@ -277,8 +272,7 @@ PetscErrorCode DMMoab_GenerateElements_Private(moab::Interface* mbImpl, moab::Re
       nvperelem = 3;
       nelems = ntensorelems * simplices_per_tensor[genCtx.dim];
       merr = iface->get_element_connect(nelems, 3, moab::MBTRI, 0, starte, conn);MBERR("Can't get TRI3 element connectivity.", merr);
-    }
-    else {
+    } else {
       nvperelem = 4;
       merr = iface->get_element_connect(nelems, 4, moab::MBQUAD, 0, starte, conn);MBERR("Can't get QUAD4 element connectivity.", merr);
     }
@@ -289,8 +283,7 @@ PetscErrorCode DMMoab_GenerateElements_Private(moab::Interface* mbImpl, moab::Re
       nvperelem = 4;
       nelems = ntensorelems * simplices_per_tensor[genCtx.dim];
       merr = iface->get_element_connect(nelems, 4, moab::MBTET, 0, starte, conn);MBERR("Can't get TET4 element connectivity.", merr);
-    }
-    else {
+    } else {
       nvperelem = 8;
       merr = iface->get_element_connect(nelems, 8, moab::MBHEX, 0, starte, conn);MBERR("Can't get HEX8 element connectivity.", merr);
     }
@@ -384,8 +377,7 @@ PetscErrorCode DMMBUtil_InitializeOptions(DMMoabMeshGeneratorCtx& genCtx, PetscI
   /* Total number of local elements := genCtx.blockSizeElementXYZ[0]*(genCtx.dim>1? genCtx.blockSizeElementXYZ[1]*(genCtx.dim>2 ? genCtx.blockSizeElementXYZ[2]:1) :1); */
   if (bounds) {
     for (PetscInt i = 0; i < 6; i++) genCtx.xyzbounds[i] = bounds[i];
-  }
-  else {
+  } else {
     genCtx.xyzbounds[0] = genCtx.xyzbounds[2] = genCtx.xyzbounds[4] = 0.0;
     genCtx.xyzbounds[1] = genCtx.xyzbounds[3] = genCtx.xyzbounds[5] = 1.0;
   }

@@ -135,9 +135,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     PetscBool set;
     flg  = PETSC_FALSE;
     PetscCall(PetscOptionsBool("-ts_saws_block","Block for SAWs memory snooper at end of TSSolve","PetscObjectSAWsBlock",((PetscObject)ts)->amspublishblock,&flg,&set));
-    if (set) {
-      PetscCall(PetscObjectSAWsSetBlock((PetscObject)ts,flg));
-    }
+    if (set) PetscCall(PetscObjectSAWsSetBlock((PetscObject)ts,flg));
   }
 #endif
 
@@ -384,9 +382,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   }
 
   /* Handle specific TS options */
-  if (ts->ops->setfromoptions) {
-    PetscCall((*ts->ops->setfromoptions)(PetscOptionsObject,ts));
-  }
+  if (ts->ops->setfromoptions) PetscCall((*ts->ops->setfromoptions)(PetscOptionsObject,ts));
 
   /* Handle TSAdapt options */
   PetscCall(TSGetAdapt(ts,&ts->adapt));
@@ -396,9 +392,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   /* TS trajectory must be set after TS, since it may use some TS options above */
   tflg = ts->trajectory ? PETSC_TRUE : PETSC_FALSE;
   PetscCall(PetscOptionsBool("-ts_save_trajectory","Save the solution at each timestep","TSSetSaveTrajectory",tflg,&tflg,NULL));
-  if (tflg) {
-    PetscCall(TSSetSaveTrajectory(ts));
-  }
+  if (tflg) PetscCall(TSSetSaveTrajectory(ts));
 
   PetscCall(TSAdjointSetFromOptions(PetscOptionsObject,ts));
 
@@ -406,9 +400,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)ts));
   PetscOptionsEnd();
 
-  if (ts->trajectory) {
-    PetscCall(TSTrajectorySetFromOptions(ts->trajectory,ts));
-  }
+  if (ts->trajectory) PetscCall(TSTrajectorySetFromOptions(ts->trajectory,ts));
 
   /* why do we have to do this here and not during TSSetUp? */
   PetscCall(TSGetSNES(ts,&ts->snes));
@@ -869,16 +861,12 @@ static PetscErrorCode TSRecoverRHSJacobian(TS ts,Mat A,Mat B)
   PetscCheck(A == ts->Arhs,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Invalid Amat");
   PetscCheck(B == ts->Brhs,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Invalid Bmat");
 
-  if (ts->rhsjacobian.shift) {
-    PetscCall(MatShift(A,-ts->rhsjacobian.shift));
-  }
+  if (ts->rhsjacobian.shift) PetscCall(MatShift(A,-ts->rhsjacobian.shift));
   if (ts->rhsjacobian.scale == -1.) {
     PetscCall(MatScale(A,-1));
   }
   if (B && B == ts->Brhs && A != B) {
-    if (ts->rhsjacobian.shift) {
-      PetscCall(MatShift(B,-ts->rhsjacobian.shift));
-    }
+    if (ts->rhsjacobian.shift) PetscCall(MatShift(B,-ts->rhsjacobian.shift));
     if (ts->rhsjacobian.scale == -1.) {
       PetscCall(MatScale(B,-1));
     }
@@ -1947,9 +1935,7 @@ PetscErrorCode  TSLoad(TS ts, PetscViewer viewer)
   PetscCheck(classid == TS_FILE_CLASSID,PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONG,"Not TS next in file");
   PetscCall(PetscViewerBinaryRead(viewer,type,256,NULL,PETSC_CHAR));
   PetscCall(TSSetType(ts, type));
-  if (ts->ops->load) {
-    PetscCall((*ts->ops->load)(ts,viewer));
-  }
+  if (ts->ops->load) PetscCall((*ts->ops->load)(ts,viewer));
   PetscCall(DMCreate(PetscObjectComm((PetscObject)ts),&dm));
   PetscCall(DMLoad(dm,viewer));
   PetscCall(TSSetDM(ts,dm));
@@ -2104,9 +2090,7 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
       PetscCall(PetscStrncpy(type,((PetscObject)ts)->type_name,256));
       PetscCall(PetscViewerBinaryWrite(viewer,type,256,PETSC_CHAR));
     }
-    if (ts->ops->view) {
-      PetscCall((*ts->ops->view)(ts,viewer));
-    }
+    if (ts->ops->view) PetscCall((*ts->ops->view)(ts,viewer));
     if (ts->adapt) PetscCall(TSAdaptView(ts->adapt,viewer));
     PetscCall(DMView(ts->dm,viewer));
     PetscCall(VecView(ts->vec_sol,viewer));
@@ -2124,9 +2108,7 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
     PetscCall(PetscDrawStringBoxed(draw,x,y,PETSC_DRAW_BLACK,PETSC_DRAW_BLACK,str,NULL,&h));
     bottom = y - h;
     PetscCall(PetscDrawPushCurrentPoint(draw,x,bottom));
-    if (ts->ops->view) {
-      PetscCall((*ts->ops->view)(ts,viewer));
-    }
+    if (ts->ops->view) PetscCall((*ts->ops->view)(ts,viewer));
     if (ts->adapt) PetscCall(TSAdaptView(ts->adapt,viewer));
     if (ts->snes)  PetscCall(SNESView(ts->snes,viewer));
     PetscCall(PetscDrawPopCurrentPoint(draw));
@@ -2146,9 +2128,7 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
       PetscCall(PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/time",name));
       PetscStackCallSAWs(SAWs_Register,(dir,&ts->ptime,1,SAWs_READ,SAWs_DOUBLE));
     }
-    if (ts->ops->view) {
-      PetscCall((*ts->ops->view)(ts,viewer));
-    }
+    if (ts->ops->view) PetscCall((*ts->ops->view)(ts,viewer));
 #endif
   }
   if (ts->snes && ts->usessnes)  {
@@ -2525,9 +2505,7 @@ PetscErrorCode  TSSetTimeError(TS ts,Vec v)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscCheck(ts->setupcalled,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetUp() first");
-  if (ts->ops->settimeerror) {
-    PetscCall((*ts->ops->settimeerror)(ts,v));
-  }
+  if (ts->ops->settimeerror) PetscCall((*ts->ops->settimeerror)(ts,v));
   PetscFunctionReturn(0);
 }
 
@@ -2696,9 +2674,7 @@ PetscErrorCode  TSSetUp(TS ts)
   PetscCall(TSGetAdapt(ts,&ts->adapt));
   PetscCall(TSAdaptSetDefaultType(ts->adapt,ts->default_adapt_type));
 
-  if (ts->ops->setup) {
-    PetscCall((*ts->ops->setup)(ts));
-  }
+  if (ts->ops->setup) PetscCall((*ts->ops->setup)(ts));
 
   PetscCall(TSSetExactFinalTimeDefault(ts));
 
@@ -2722,9 +2698,7 @@ PetscErrorCode  TSSetUp(TS ts)
   }
 
   /* if time integration scheme has a starting method, call it */
-  if (ts->ops->startingmethod) {
-    PetscCall((*ts->ops->startingmethod)(ts));
-  }
+  if (ts->ops->startingmethod) PetscCall((*ts->ops->startingmethod)(ts));
 
   ts->setupcalled = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -2749,9 +2723,7 @@ PetscErrorCode  TSReset(TS ts)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
 
-  if (ts->ops->reset) {
-    PetscCall((*ts->ops->reset)(ts));
-  }
+  if (ts->ops->reset) PetscCall((*ts->ops->reset)(ts));
   if (ts->snes) PetscCall(SNESReset(ts->snes));
   if (ts->adapt) PetscCall(TSAdaptReset(ts->adapt));
 
@@ -2766,9 +2738,7 @@ PetscErrorCode  TSReset(TS ts)
 
   PetscCall(MatDestroy(&ts->Jacprhs));
   PetscCall(MatDestroy(&ts->Jacp));
-  if (ts->forward_solve) {
-    PetscCall(TSForwardReset(ts));
-  }
+  if (ts->forward_solve) PetscCall(TSForwardReset(ts));
   if (ts->quadraturets) {
     PetscCall(TSReset(ts->quadraturets));
     PetscCall(VecDestroy(&ts->vec_costintegrand));
@@ -3849,9 +3819,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
     }
     PetscCall(VecCopy(u,ts->vec_sol));
     PetscCheck(!ts->forward_solve,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Sensitivity analysis does not support the mode TS_EXACTFINALTIME_INTERPOLATE");
-  } else if (u) {
-    PetscCall(TSSetSolution(ts,u));
-  }
+  } else if (u) PetscCall(TSSetSolution(ts,u));
   PetscCall(TSSetUp(ts));
   PetscCall(TSTrajectorySetUp(ts->trajectory,ts));
 
@@ -3865,9 +3833,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
     ts->tspan->spanctr = 1;
   }
 
-  if (ts->forward_solve) {
-    PetscCall(TSForwardSetUp(ts));
-  }
+  if (ts->forward_solve) PetscCall(TSForwardSetUp(ts));
 
   /* reset number of steps only when the step is not restarted. ARKIMEX
      restarts the step after an event. Resetting these counters in such case causes
@@ -3955,12 +3921,8 @@ PetscErrorCode TSSolve(TS ts,Vec u)
         PetscCall(TSPreStep(ts));
       }
       PetscCall(TSStep(ts));
-      if (ts->testjacobian) {
-        PetscCall(TSRHSJacobianTest(ts,NULL));
-      }
-      if (ts->testjacobiantranspose) {
-        PetscCall(TSRHSJacobianTestTranspose(ts,NULL));
-      }
+      if (ts->testjacobian) PetscCall(TSRHSJacobianTest(ts,NULL));
+      if (ts->testjacobiantranspose) PetscCall(TSRHSJacobianTestTranspose(ts,NULL));
       if (ts->quadraturets && ts->costintegralfwd) { /* Must evaluate the cost integral before event is handled. The cost integral value can also be rolled back. */
         if (ts->reason >= 0) ts->steps--; /* Revert the step number changed by TSStep() */
         PetscCall(TSForwardCostIntegral(ts));
@@ -3973,9 +3935,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
       }
       PetscCall(TSPostEvaluate(ts));
       PetscCall(TSEventHandler(ts)); /* The right-hand side may be changed due to event. Be careful with Any computation using the RHS information after this point. */
-      if (ts->steprollback) {
-        PetscCall(TSPostEvaluate(ts));
-      }
+      if (ts->steprollback) PetscCall(TSPostEvaluate(ts));
       if (!ts->steprollback) {
         PetscCall(TSTrajectorySet(ts->trajectory,ts,ts->steps,ts->ptime,ts->vec_sol));
         PetscCall(TSPostStep(ts));
@@ -3998,9 +3958,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   PetscCall(TSViewFromOptions(ts,NULL,"-ts_view"));
   PetscCall(VecViewFromOptions(solution,(PetscObject)ts,"-ts_view_solution"));
   PetscCall(PetscObjectSAWsBlock((PetscObject)ts));
-  if (ts->adjoint_solve) {
-    PetscCall(TSAdjointSolve(ts));
-  }
+  if (ts->adjoint_solve) PetscCall(TSAdjointSolve(ts));
   PetscFunctionReturn(0);
 }
 

@@ -308,9 +308,7 @@ int main(int argc,char **argv)
   }
 
   /* Dump solution by converting to DMDAs and dumping */
-  if (dump_solution) {
-    PetscCall(DumpSolution(ctx,ctx->n_levels-1,x));
-  }
+  if (dump_solution) PetscCall(DumpSolution(ctx,ctx->n_levels-1,x));
 
   /* Destroy PETSc objects and finalize */
   PetscCall(MatDestroy(&A));
@@ -851,13 +849,9 @@ static PetscErrorCode CreateSystem2d(SystemParameters parameters, Mat *pA,Vec *p
   }
 
   PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  if (build_rhs) {
-    PetscCall(VecAssemblyBegin(rhs));
-  }
+  if (build_rhs) PetscCall(VecAssemblyBegin(rhs));
   PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
-  if (build_rhs) {
-    PetscCall(VecAssemblyEnd(rhs));
-  }
+  if (build_rhs) PetscCall(VecAssemblyEnd(rhs));
   PetscFunctionReturn(0);
 }
 
@@ -1328,13 +1322,9 @@ static PetscErrorCode CreateSystem3d(SystemParameters parameters,Mat *pA,Vec *pR
   }
 
   PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
-  if (build_rhs) {
-    PetscCall(VecAssemblyBegin(rhs));
-  }
+  if (build_rhs) PetscCall(VecAssemblyBegin(rhs));
   PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
-  if (build_rhs) {
-    PetscCall(VecAssemblyEnd(rhs));
-  }
+  if (build_rhs) PetscCall(VecAssemblyEnd(rhs));
   PetscFunctionReturn(0);
 }
 

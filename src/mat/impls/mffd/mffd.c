@@ -258,9 +258,7 @@ static PetscErrorCode MatView_MFFD(Mat J,PetscViewer viewer)
       PetscCall(PetscViewerASCIIPrintf(viewer,"Using Lyness complex number trick to compute the matrix-vector product\n"));
     }
 #endif
-    if (ctx->ops->view) {
-      PetscCall((*ctx->ops->view)(ctx,viewer));
-    }
+    if (ctx->ops->view) PetscCall((*ctx->ops->view)(ctx,viewer));
     PetscCall(PetscObjectGetOptionsPrefix((PetscObject)J, &prefix));
 
     PetscCall(PetscOptionsHasName(((PetscObject)J)->options,prefix, "-mat_mffd_view_base", &viewbase));
@@ -409,9 +407,7 @@ PetscErrorCode MatGetDiagonal_MFFD(Mat mat,Vec a)
   w    = ctx->w;
   U    = ctx->current_u;
   PetscCall((*ctx->func)(ctx->funcctx,U,a));
-  if (ctx->funcisetbase) {
-    PetscCall((*ctx->funcisetbase)(ctx->funcctx,U));
-  }
+  if (ctx->funcisetbase) PetscCall((*ctx->funcisetbase)(ctx->funcctx,U));
   PetscCall(VecCopy(U,w));
 
   PetscCall(VecGetOwnershipRange(a,&rstart,&rend));
@@ -521,24 +517,18 @@ static PetscErrorCode  MatSetFromOptions_MFFD(PetscOptionItems *PetscOptionsObje
   PetscValidHeaderSpecific(mfctx,MATMFFD_CLASSID,2);
   PetscObjectOptionsBegin((PetscObject)mfctx);
   PetscCall(PetscOptionsFList("-mat_mffd_type","Matrix free type","MatMFFDSetType",MatMFFDList,((PetscObject)mfctx)->type_name,ftype,256,&flg));
-  if (flg) {
-    PetscCall(MatMFFDSetType(mat,ftype));
-  }
+  if (flg) PetscCall(MatMFFDSetType(mat,ftype));
 
   PetscCall(PetscOptionsReal("-mat_mffd_err","set sqrt relative error in function","MatMFFDSetFunctionError",mfctx->error_rel,&mfctx->error_rel,NULL));
   PetscCall(PetscOptionsInt("-mat_mffd_period","how often h is recomputed","MatMFFDSetPeriod",mfctx->recomputeperiod,&mfctx->recomputeperiod,NULL));
 
   flg  = PETSC_FALSE;
   PetscCall(PetscOptionsBool("-mat_mffd_check_positivity","Insure that U + h*a is nonnegative","MatMFFDSetCheckh",flg,&flg,NULL));
-  if (flg) {
-    PetscCall(MatMFFDSetCheckh(mat,MatMFFDCheckPositivity,NULL));
-  }
+  if (flg) PetscCall(MatMFFDSetCheckh(mat,MatMFFDCheckPositivity,NULL));
 #if defined(PETSC_USE_COMPLEX)
   PetscCall(PetscOptionsBool("-mat_mffd_complex","Use Lyness complex number trick to compute the matrix-vector product","None",mfctx->usecomplex,&mfctx->usecomplex,NULL));
 #endif
-  if (mfctx->ops->setfromoptions) {
-    PetscCall((*mfctx->ops->setfromoptions)(PetscOptionsObject,mfctx));
-  }
+  if (mfctx->ops->setfromoptions) PetscCall((*mfctx->ops->setfromoptions)(PetscOptionsObject,mfctx));
   PetscOptionsEnd();
   PetscFunctionReturn(0);
 }

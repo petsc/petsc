@@ -70,9 +70,7 @@ PetscErrorCode DMView_DA_Binary(DM da,PetscViewer viewer)
   }
 
   /* save the coordinates if they exist to disk (in the natural ordering) */
-  if (da->coordinates) {
-    PetscCall(VecView(da->coordinates,viewer));
-  }
+  if (da->coordinates) PetscCall(VecView(da->coordinates,viewer));
   PetscFunctionReturn(0);
 }
 

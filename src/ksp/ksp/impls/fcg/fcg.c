@@ -283,9 +283,7 @@ static PetscErrorCode KSPDestroy_FCG(KSP ksp)
   }
   PetscCall(PetscFree5(fcg->Pvecs,fcg->Cvecs,fcg->pPvecs,fcg->pCvecs,fcg->chunksizes));
   /* free space used for singular value calculations */
-  if (ksp->calc_sings) {
-    PetscCall(PetscFree4(fcg->e,fcg->d,fcg->ee,fcg->dd));
-  }
+  if (ksp->calc_sings) PetscCall(PetscFree4(fcg->e,fcg->d,fcg->ee,fcg->dd));
   PetscCall(KSPDestroyDefault(ksp));
   PetscFunctionReturn(0);
 }
@@ -487,13 +485,9 @@ static PetscErrorCode KSPSetFromOptions_FCG(PetscOptionItems *PetscOptionsObject
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject,"KSP FCG Options");
   PetscCall(PetscOptionsInt("-ksp_fcg_mmax","Maximum number of search directions to store","KSPFCGSetMmax",fcg->mmax,&mmax,&flg));
-  if (flg) {
-    PetscCall(KSPFCGSetMmax(ksp,mmax));
-  }
+  if (flg) PetscCall(KSPFCGSetMmax(ksp,mmax));
   PetscCall(PetscOptionsInt("-ksp_fcg_nprealloc","Number of directions to preallocate","KSPFCGSetNprealloc",fcg->nprealloc,&nprealloc,&flg));
-  if (flg) {
-    PetscCall(KSPFCGSetNprealloc(ksp,nprealloc));
-  }
+  if (flg) PetscCall(KSPFCGSetNprealloc(ksp,nprealloc));
   PetscCall(PetscOptionsEnum("-ksp_fcg_truncation_type","Truncation approach for directions","KSPFCGSetTruncationType",KSPFCDTruncationTypes,(PetscEnum)fcg->truncstrat,(PetscEnum*)&fcg->truncstrat,NULL));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);

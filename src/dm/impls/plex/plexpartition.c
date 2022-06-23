@@ -345,9 +345,7 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_ViaMat(DM dm, PetscInt height
   PetscCall(DMPlexGetHeightStratum(dm, height+1, &fStart, &fEnd));
   PetscCall(DMPlexCreateNumbering_Plex(dm, cStart, cEnd, 0, &N, sfPoint, &cis));
   PetscCall(DMPlexCreateNumbering_Plex(dm, fStart, fEnd, 0, &M, sfPoint, &fis));
-  if (globalNumbering) {
-    PetscCall(ISDuplicate(cis, globalNumbering));
-  }
+  if (globalNumbering) PetscCall(ISDuplicate(cis, globalNumbering));
 
   /* get positive global ids and local sizes for facets and cells */
   PetscCall(ISGetLocalSize(fis, &m));
@@ -1676,9 +1674,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
   PetscCall(PetscLogEventBegin(DMPLEX_RebalanceSharedPoints, dm, 0, 0, 0));
 
   PetscCall(PetscOptionsGetViewer(comm,((PetscObject)dm)->options, prefix,"-dm_rebalance_partition_view",&viewer,&format,NULL));
-  if (viewer) {
-    PetscCall(PetscViewerPushFormat(viewer,format));
-  }
+  if (viewer) PetscCall(PetscViewerPushFormat(viewer,format));
 
   /* Figure out all points in the plex that we are interested in balancing. */
   PetscCall(DMPlexGetDepthStratum(dm, entityDepth, &eBegin, &eEnd));

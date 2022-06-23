@@ -1194,13 +1194,9 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_All(Mat A,MatCreateSubMatrixOption flag
   }  /* endof (flag == MAT_GET_VALUES) */
   PetscCall(PetscFree2(recvcounts,displs));
 
-  if (A->symmetric) {
-    PetscCall(MatSetOption(B,MAT_SYMMETRIC,PETSC_TRUE));
-  } else if (A->hermitian) {
-    PetscCall(MatSetOption(B,MAT_HERMITIAN,PETSC_TRUE));
-  } else if (A->structurally_symmetric) {
-    PetscCall(MatSetOption(B,MAT_STRUCTURALLY_SYMMETRIC,PETSC_TRUE));
-  }
+  if (A->symmetric) PetscCall(MatSetOption(B,MAT_SYMMETRIC,PETSC_TRUE));
+  else if (A->hermitian) PetscCall(MatSetOption(B,MAT_HERMITIAN,PETSC_TRUE));
+  else if (A->structurally_symmetric) PetscCall(MatSetOption(B,MAT_STRUCTURALLY_SYMMETRIC,PETSC_TRUE));
   PetscFunctionReturn(0);
 }
 
@@ -2940,9 +2936,7 @@ PetscErrorCode MatSetSeqMats_MPIAIJ(Mat C,IS rowemb,IS dcolemb,IS ocolemb,MatStr
 #else
       PetscCall(PetscFree(aij->colmap));
       /* A bit of a HACK: ideally we should deal with case aij->B all in one code block below. */
-      if (aij->B) {
-        PetscCall(PetscLogObjectMemory((PetscObject)C,-aij->B->cmap->n*sizeof(PetscInt)));
-      }
+      if (aij->B) PetscCall(PetscLogObjectMemory((PetscObject)C,-aij->B->cmap->n*sizeof(PetscInt)));
 #endif
       ngcol = 0;
       if (aij->lvec) {

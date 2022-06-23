@@ -1071,9 +1071,7 @@ static PetscErrorCode BCApply_EAST(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A
     PetscCall(VecAssemblyBegin(b));
     PetscCall(VecAssemblyEnd(b));
   }
-  if (A) {
-    PetscCall(MatZeroRows(A,nbcs,bc_global_ids,1.0,0,0));
-  }
+  if (A) PetscCall(MatZeroRows(A,nbcs,bc_global_ids,1.0,0,0));
 
   PetscCall(PetscFree(bc_vals));
   PetscCall(PetscFree(bc_global_ids));
@@ -1138,9 +1136,7 @@ static PetscErrorCode BCApply_WEST(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A
     PetscCall(VecAssemblyBegin(b));
     PetscCall(VecAssemblyEnd(b));
   }
-  if (A) {
-    PetscCall(MatZeroRows(A,nbcs,bc_global_ids,1.0,0,0));
-  }
+  if (A) PetscCall(MatZeroRows(A,nbcs,bc_global_ids,1.0,0,0));
 
   PetscCall(PetscFree(bc_vals));
   PetscCall(PetscFree(bc_global_ids));

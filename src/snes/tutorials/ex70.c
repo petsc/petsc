@@ -104,9 +104,7 @@ PetscErrorCode StokesSetupPC(Stokes *s, KSP ksp)
   PetscCall(KSPGetPC(ksp, &pc));
   PetscCall(PCFieldSplitSetIS(pc, "0", s->isg[0]));
   PetscCall(PCFieldSplitSetIS(pc, "1", s->isg[1]));
-  if (s->userPC) {
-    PetscCall(PCFieldSplitSetSchurPre(pc, PC_FIELDSPLIT_SCHUR_PRE_USER, s->myS));
-  }
+  if (s->userPC) PetscCall(PCFieldSplitSetSchurPre(pc, PC_FIELDSPLIT_SCHUR_PRE_USER, s->myS));
   if (s->userKSP) {
     PetscCall(PCSetUp(pc));
     PetscCall(PCFieldSplitGetSubKSP(pc, &n, &subksp));

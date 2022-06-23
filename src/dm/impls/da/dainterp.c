@@ -1096,9 +1096,7 @@ PetscErrorCode  DMCreateInterpolation_DA(DM dac,DM daf,Mat *A,Vec *scale)
       PetscCall(DMCreateInterpolation_DA_3D_Q0(dac,daf,A));
     } else SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_SUP,"No support for this DMDA dimension %" PetscInt_FMT " for interpolation type %d",dimc,(int)ddc->interptype);
   }
-  if (scale) {
-    PetscCall(DMCreateInterpolationScale((DM)dac,(DM)daf,*A,scale));
-  }
+  if (scale) PetscCall(DMCreateInterpolationScale((DM)dac,(DM)daf,*A,scale));
   PetscFunctionReturn(0);
 }
 

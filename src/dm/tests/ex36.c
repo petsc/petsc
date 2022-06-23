@@ -71,9 +71,7 @@ PetscErrorCode DAApplyConformalMapping(DM da,PetscInt idx)
     PetscCall(DMDASetUniformCoordinates(da, -1.0,1.0, 0.0,1.0, -1.0,1.0));
   } else if (idx==3) { /* nautilis */
     PetscCall(DMDASetUniformCoordinates(da, -1.0,1.0, -1.0,1.0, -1.0,1.0));
-  } else if (idx==4) {
-    PetscCall(DMDASetUniformCoordinates(da, -1.0,1.0, -1.0,1.0, -1.0,1.0));
-  }
+  } else if (idx==4) PetscCall(DMDASetUniformCoordinates(da, -1.0,1.0, -1.0,1.0, -1.0,1.0));
 
   PetscCall(DMGetCoordinateDM(da,&cda));
   PetscCall(DMGetCoordinates(da,&Gcoords));
@@ -591,13 +589,9 @@ int main(int argc,char **argv)
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-dim", &dim, 0));
 
   for (l=0; l<nl; l++) {
-    if (dim==1) {
-      PetscCall(da_test_RefineCoords1D(mx));
-    } else if (dim==2) {
-      PetscCall(da_test_RefineCoords2D(mx,my));
-    } else if (dim==3) {
-      PetscCall(da_test_RefineCoords3D(mx,my,mz));
-    }
+    if (dim==1) PetscCall(da_test_RefineCoords1D(mx));
+    else if (dim==2) PetscCall(da_test_RefineCoords2D(mx,my));
+    else if (dim==3) PetscCall(da_test_RefineCoords3D(mx,my,mz));
     mx = mx * 2;
     my = my * 2;
     mz = mz * 2;

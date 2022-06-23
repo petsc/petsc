@@ -312,9 +312,7 @@ PetscErrorCode DMView_Patch(DM dm, PetscViewer viewer)
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii));
   PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERBINARY, &isbinary));
-  if (iascii) {
-    PetscCall(DMPatchView_ASCII(dm, viewer));
-  }
+  if (iascii) PetscCall(DMPatchView_ASCII(dm, viewer));
   PetscFunctionReturn(0);
 }
 

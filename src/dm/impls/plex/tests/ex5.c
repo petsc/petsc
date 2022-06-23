@@ -865,9 +865,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscCall(DMPlexDistributeSetDefault(*dm, PETSC_FALSE));
   PetscCall(DMSetFromOptions(*dm));
   PetscCall(DMGetLabel(*dm, "material", &matLabel));
-  if (matLabel) {
-    PetscCall(DMPlexLabelComplete(*dm, matLabel));
-  }
+  if (matLabel) PetscCall(DMPlexLabelComplete(*dm, matLabel));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
   PetscCall(DMHasLabel(*dm, "fault", &hasFault));
   if (hasFault) {

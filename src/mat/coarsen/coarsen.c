@@ -403,9 +403,7 @@ PetscErrorCode MatCoarsenSetFromOptions(MatCoarsen coarser)
   }
 
   PetscCall(PetscOptionsFList("-mat_coarsen_type","Type of aggregator","MatCoarsenSetType",MatCoarsenList,def,type,256,&flag));
-  if (flag) {
-    PetscCall(MatCoarsenSetType(coarser,type));
-  }
+  if (flag) PetscCall(MatCoarsenSetType(coarser,type));
   /*
    Set the type if it was never set.
    */
@@ -413,9 +411,7 @@ PetscErrorCode MatCoarsenSetFromOptions(MatCoarsen coarser)
     PetscCall(MatCoarsenSetType(coarser,def));
   }
 
-  if (coarser->ops->setfromoptions) {
-    PetscCall((*coarser->ops->setfromoptions)(PetscOptionsObject,coarser));
-  }
+  if (coarser->ops->setfromoptions) PetscCall((*coarser->ops->setfromoptions)(PetscOptionsObject,coarser));
   PetscOptionsEnd();
   PetscCall(MatCoarsenViewFromOptions(coarser,NULL,"-mat_coarsen_view"));
   PetscFunctionReturn(0);

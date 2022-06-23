@@ -390,9 +390,7 @@ PetscErrorCode  DMCompositeRestoreAccess(DM dm,Vec gvec,...)
     vec = va_arg(Argp, Vec*);
     if (vec) {
       PetscCall(VecResetArray(*vec));
-      if (readonly) {
-        PetscCall(VecLockReadPop(*vec));
-      }
+      if (readonly) PetscCall(VecLockReadPop(*vec));
       PetscCall(DMRestoreGlobalVector(next->dm,vec));
     }
     next = next->next;
@@ -1357,11 +1355,8 @@ static PetscErrorCode  DMCompositeSampleGLVisFields_Private(PetscObject oX, Pets
 
     PetscCall(PetscViewerGLVisGetFields_Private(ctx->subv[i],&nfi,NULL,NULL,&g2l,NULL,&fctx));
     if (!nfi) continue;
-    if (g2l) {
-      PetscCall((*g2l)((PetscObject)ctx->vecs[i],nfi,oXfield+cumf,fctx));
-    } else {
-      PetscCall(VecCopy(ctx->vecs[i],(Vec)(oXfield[cumf])));
-    }
+    if (g2l) PetscCall((*g2l)((PetscObject)ctx->vecs[i],nfi,oXfield+cumf,fctx));
+    else PetscCall(VecCopy(ctx->vecs[i],(Vec)(oXfield[cumf])));
     cumf += nfi;
   }
   PetscCall(DMCompositeRestoreAccessArray(ctx->dm,X,n,NULL,ctx->vecs));
@@ -1500,16 +1495,11 @@ PetscErrorCode  DMCreateInterpolation_Composite(DM coarse,DM fine,Mat *A,Vec *v)
 
   /* loop over packed objects, handling one at at time */
   for (nextc=comcoarse->next,nextf=comfine->next,i=0; nextc; nextc=nextc->next,nextf=nextf->next,i++) {
-    if (!v) {
-      PetscCall(DMCreateInterpolation(nextc->dm,nextf->dm,&mats[i*nDM+i],NULL));
-    } else {
-      PetscCall(DMCreateInterpolation(nextc->dm,nextf->dm,&mats[i*nDM+i],&vecs[i]));
-    }
+    if (!v) PetscCall(DMCreateInterpolation(nextc->dm,nextf->dm,&mats[i*nDM+i],NULL));
+    else PetscCall(DMCreateInterpolation(nextc->dm,nextf->dm,&mats[i*nDM+i],&vecs[i]));
   }
   PetscCall(MatCreateNest(PetscObjectComm((PetscObject)fine),nDM,NULL,nDM,NULL,mats,A));
-  if (v) {
-    PetscCall(VecCreateNest(PetscObjectComm((PetscObject)fine),nDM,NULL,vecs,v));
-  }
+  if (v) PetscCall(VecCreateNest(PetscObjectComm((PetscObject)fine),nDM,NULL,vecs,v));
   for (i=0; i<nDM*nDM; i++) PetscCall(MatDestroy(&mats[i]));
   PetscCall(PetscFree(mats));
   if (v) {

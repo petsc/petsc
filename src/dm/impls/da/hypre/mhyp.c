@@ -57,11 +57,8 @@ PetscErrorCode  MatSetValuesLocal_HYPREStruct_3d(Mat mat,PetscInt nrow,const Pet
     index[0] = (HYPRE_Int)(ex->xs + (row % ex->nx));
     index[1] = (HYPRE_Int)(ex->ys + ((row/ex->nx) % ex->ny));
     index[2] = (HYPRE_Int)(ex->zs + (row/(ex->nxny)));
-    if (addv == ADD_VALUES) {
-      PetscStackCallStandard(HYPRE_StructMatrixAddToValues,ex->hmat,index,ncol,entries,values);
-    } else {
-      PetscStackCallStandard(HYPRE_StructMatrixSetValues,ex->hmat,index,ncol,entries,values);
-    }
+    if (addv == ADD_VALUES) PetscStackCallStandard(HYPRE_StructMatrixAddToValues,ex->hmat,index,ncol,entries,values);
+    else PetscStackCallStandard(HYPRE_StructMatrixSetValues,ex->hmat,index,ncol,entries,values);
     values += ncol;
   }
   PetscFunctionReturn(0);
@@ -384,11 +381,8 @@ PetscErrorCode  MatSetValuesLocal_HYPRESStruct_3d(Mat mat,PetscInt nrow,const Pe
       index[1] = (HYPRE_Int)(ex->ys + ((row/ex->nx) % ex->ny));
       index[2] = (HYPRE_Int)(ex->zs + (row/(ex->nxny)));
 
-      if (addv == ADD_VALUES) {
-        PetscStackCallStandard(HYPRE_SStructMatrixAddToValues,ex->ss_mat,part,index,var_type,ncol,entries,values);
-      } else {
-        PetscStackCallStandard(HYPRE_SStructMatrixSetValues,ex->ss_mat,part,index,var_type,ncol,entries,values);
-      }
+      if (addv == ADD_VALUES) PetscStackCallStandard(HYPRE_SStructMatrixAddToValues,ex->ss_mat,part,index,var_type,ncol,entries,values);
+      else PetscStackCallStandard(HYPRE_SStructMatrixSetValues,ex->ss_mat,part,index,var_type,ncol,entries,values);
       values += ncol;
     }
   } else {
@@ -426,11 +420,8 @@ PetscErrorCode  MatSetValuesLocal_HYPRESStruct_3d(Mat mat,PetscInt nrow,const Pe
       index[1] = (HYPRE_Int)(ex->ys + ((row/ex->nx) % ex->ny));
       index[2] = (HYPRE_Int)(ex->zs + (row/(ex->nxny)));
 
-      if (addv == ADD_VALUES) {
-        PetscStackCallStandard(HYPRE_SStructMatrixAddToValues,ex->ss_mat,part,index,var_type,ncol,entries,values);
-      } else {
-        PetscStackCallStandard(HYPRE_SStructMatrixSetValues,ex->ss_mat,part,index,var_type,ncol,entries,values);
-      }
+      if (addv == ADD_VALUES) PetscStackCallStandard(HYPRE_SStructMatrixAddToValues,ex->ss_mat,part,index,var_type,ncol,entries,values);
+      else PetscStackCallStandard(HYPRE_SStructMatrixSetValues,ex->ss_mat,part,index,var_type,ncol,entries,values);
       values += ncol;
     }
   }

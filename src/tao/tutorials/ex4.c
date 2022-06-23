@@ -633,9 +633,8 @@ int main(int argc, char ** argv)
   PetscCall(VecSet(x, 0.));
   PetscCall(TaoSetSolution(tao, x));
   PetscCall(TaoSetFromOptions(tao));
-  if (ctx->use_admm) {
-    PetscCall(TaoSolveADMM(ctx,x));
-  } else PetscCall(TaoSolve(tao));
+  if (ctx->use_admm) PetscCall(TaoSolveADMM(ctx,x));
+  else PetscCall(TaoSolve(tao));
   /* examine solution */
   PetscCall(VecViewFromOptions(x, NULL, "-view_sol"));
   if (ctx->taylor) {

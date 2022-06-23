@@ -297,9 +297,7 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
   }
   frob_err = PetscSqrtReal(frob_err);
 
-  if (frob_err > PETSC_SMALL) {
-    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dimension %" PetscInt_FMT ", degree %" PetscInt_FMT ", form %" PetscInt_FMT ": jet error %g", dim, deg, form, (double) frob_err);
-  }
+  PetscCheck(frob_err < 10*PETSC_SMALL,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dimension %" PetscInt_FMT ", degree %" PetscInt_FMT ", form %" PetscInt_FMT ": jet error %g", dim, deg, form, (double) frob_err);
 
   PetscCall(PetscFree(M_moment_real));
   PetscCall(PetscFree(p_trimmed_copy));

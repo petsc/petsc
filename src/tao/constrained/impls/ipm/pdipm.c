@@ -244,9 +244,7 @@ static PetscErrorCode TaoPDIPMInitializeSolution(Tao tao)
   PetscCall(VecRestoreArrayRead(tao->solution,&xarr));
 
   /* Initialize X.lambdae = 0.0 */
-  if (pdipm->lambdae) {
-    PetscCall(VecSet(pdipm->lambdae,0.0));
-  }
+  if (pdipm->lambdae) PetscCall(VecSet(pdipm->lambdae,0.0));
 
   /* Initialize X.lambdai = push_init_lambdai, X.z = push_init_slack */
   if (pdipm->Nci) {
@@ -800,9 +798,7 @@ static PetscErrorCode SNESLineSearch_PDIPM(SNESLineSearch linesearch,void *ctx)
   PetscCall(TaoMonitor(tao,tao->niter,pdipm->obj,tao->residual,tao->cnorm,pdipm->mu));
 
   PetscCall((*tao->ops->convergencetest)(tao,tao->cnvP));
-  if (tao->reason) {
-    PetscCall(SNESSetConvergedReason(snes,SNES_CONVERGED_FNORM_ABS));
-  }
+  if (tao->reason) PetscCall(SNESSetConvergedReason(snes,SNES_CONVERGED_FNORM_ABS));
   PetscFunctionReturn(0);
 }
 

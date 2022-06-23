@@ -842,9 +842,7 @@ PETSC_EXTERN PetscErrorCode VecView_MPI(Vec xin,PetscViewer viewer)
   } else if (ismatlab) {
     PetscCall(VecView_MPI_Matlab(xin,viewer));
 #endif
-  } else if (isglvis) {
-    PetscCall(VecView_GLVis(xin,viewer));
-  }
+  } else if (isglvis) PetscCall(VecView_GLVis(xin,viewer));
   PetscFunctionReturn(0);
 }
 

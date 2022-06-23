@@ -618,9 +618,7 @@ PetscErrorCode VecLoad_Plex_Local(Vec v, PetscViewer viewer)
     PetscCall(DMGlobalToLocalBegin(dmBC, gv, INSERT_VALUES, v));
     PetscCall(DMGlobalToLocalEnd(dmBC, gv, INSERT_VALUES, v));
     PetscCall(DMRestoreGlobalVector(dmBC, &gv));
-  } else {
-    PetscCall(VecLoad_Default(v, viewer));
-  }
+  } else PetscCall(VecLoad_Default(v, viewer));
   PetscFunctionReturn(0);
 }
 
@@ -646,9 +644,7 @@ PetscErrorCode VecLoad_Plex(Vec v, PetscViewer viewer)
 #else
     SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "ExodusII not supported in this build.\nPlease reconfigure using --download-exodusii");
 #endif
-  } else {
-    PetscCall(VecLoad_Default(v, viewer));
-  }
+  } else PetscCall(VecLoad_Default(v, viewer));
   PetscFunctionReturn(0);
 }
 
@@ -683,9 +679,7 @@ PetscErrorCode VecLoad_Plex_Native(Vec originalv, PetscViewer viewer)
 #endif
         } else SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Reading in natural order is not supported for anything but HDF5.");
       }
-    } else {
-      PetscCall(VecLoad_Default(originalv, viewer));
-    }
+    } else PetscCall(VecLoad_Default(originalv, viewer));
   }
   PetscFunctionReturn(0);
 }
@@ -1045,9 +1039,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
         PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, ") node(%" PetscInt_FMT "_%d) [draw,shape=circle,color=%s] {%" PetscInt_FMT "};\n", v, rank, color, v));
       } else if (drawColors[0]) {
         PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, ") node(%" PetscInt_FMT "_%d) [fill,inner sep=%dpt,shape=circle,color=%s] {};\n", v, rank, !isLabeled ? 1 : 2, color));
-      } else {
-        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, ") node(%" PetscInt_FMT "_%d) [] {};\n", v, rank));
-      }
+      } else PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, ") node(%" PetscInt_FMT "_%d) [] {};\n", v, rank));
     }
     PetscCall(VecRestoreArray(coordinates, &coords));
     PetscCall(PetscViewerFlush(viewer));
@@ -1150,9 +1142,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
                 PetscCheck(ne == 1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not find edge for vertices %" PetscInt_FMT ", %" PetscInt_FMT, endpoints[0], endpoints[1]);
                 PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " -- (%" PetscInt_FMT "_%d) -- ", edge[0], rank));
                 PetscCall(DMPlexRestoreJoin(dm, 2, endpoints, &ne, &edge));
-              } else {
-                PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " -- "));
-              }
+              } else PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " -- "));
             }
             PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "(%" PetscInt_FMT "_%d)", vertex, rank));
           }
@@ -1204,9 +1194,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
         PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, ") node(%" PetscInt_FMT "_%d) [draw,shape=circle,color=%s] {%" PetscInt_FMT "};\n", c, rank, color, c));
       } else if (drawColors[dim]) {
         PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, ") node(%" PetscInt_FMT "_%d) [fill,inner sep=%dpt,shape=circle,color=%s] {};\n", c, rank, !isLabeled ? 1 : 2, color));
-      } else {
-        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, ") node(%" PetscInt_FMT "_%d) [] {};\n", c, rank));
-      }
+      } else PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, ") node(%" PetscInt_FMT "_%d) [] {};\n", c, rank));
     }
     PetscCall(VecRestoreArray(coordinates, &coords));
     if (drawHasse) {
@@ -1668,11 +1656,8 @@ static PetscErrorCode DMPlexView_Draw(DM dm, PetscViewer viewer)
     PetscInt     numCoords;
 
     PetscCall(DMPlexVecGetClosureAtDepth_Internal(dm, coordSection, coordinates, c, 0, &numCoords, &coords));
-    if (drawAffine) {
-      PetscCall(DMPlexDrawCell(dm, draw, c, coords));
-    } else {
-      PetscCall(DMPlexDrawCellHighOrder(dm, draw, c, coords, edgeDiv, refCoords, edgeCoords));
-    }
+    if (drawAffine) PetscCall(DMPlexDrawCell(dm, draw, c, coords));
+    else PetscCall(DMPlexDrawCellHighOrder(dm, draw, c, coords, edgeDiv, refCoords, edgeCoords));
     PetscCall(DMPlexVecRestoreClosure(dm, coordSection, coordinates, c, &numCoords, &coords));
   }
   if (!drawAffine) PetscCall(PetscFree2(refCoords, edgeCoords));
@@ -1704,11 +1689,8 @@ PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer)
   if (iascii) {
     PetscViewerFormat format;
     PetscCall(PetscViewerGetFormat(viewer, &format));
-    if (format == PETSC_VIEWER_ASCII_GLVIS) {
-      PetscCall(DMPlexView_GLVis(dm, viewer));
-    } else {
-      PetscCall(DMPlexView_Ascii(dm, viewer));
-    }
+    if (format == PETSC_VIEWER_ASCII_GLVIS) PetscCall(DMPlexView_GLVis(dm, viewer));
+    else PetscCall(DMPlexView_Ascii(dm, viewer));
   } else if (ishdf5) {
 #if defined(PETSC_HAVE_HDF5)
     PetscCall(DMPlexView_HDF5_Internal(dm, viewer));
@@ -1740,9 +1722,8 @@ PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer)
     }
     PetscCall(DMView_PlexExodusII(dm, viewer));
 #endif
-  } else {
-    SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Viewer type %s not yet supported for DMPlex writing", ((PetscObject)viewer)->type_name);
-  }
+  } else SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Viewer type %s not yet supported for DMPlex writing", ((PetscObject)viewer)->type_name);
+
   /* Optionally view the partition */
   PetscCall(PetscOptionsHasName(((PetscObject) dm)->options, ((PetscObject) dm)->prefix, "-dm_partition_view", &flg));
   if (flg) {
@@ -3723,12 +3704,8 @@ PetscErrorCode DMPlexGetMaxSizes(DM dm, PetscInt *maxConeSize, PetscInt *maxSupp
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (maxConeSize) {
-    PetscCall(PetscSectionGetMaxDof(mesh->coneSection, maxConeSize));
-  }
-  if (maxSupportSize) {
-    PetscCall(PetscSectionGetMaxDof(mesh->supportSection, maxSupportSize));
-  }
+  if (maxConeSize) PetscCall(PetscSectionGetMaxDof(mesh->coneSection, maxConeSize));
+  if (maxSupportSize) PetscCall(PetscSectionGetMaxDof(mesh->supportSection, maxSupportSize));
   PetscFunctionReturn(0);
 }
 
@@ -8925,9 +8902,7 @@ PetscErrorCode DMPlexCheckCellShape(DM dm, PetscBool output, PetscReal condLimit
     PetscBool isplex;
 
     PetscCall(PetscObjectTypeCompare((PetscObject)dmCoarse,DMPLEX,&isplex));
-    if (isplex) {
-      PetscCall(DMPlexCheckCellShape(dmCoarse,output,condLimit));
-    }
+    if (isplex) PetscCall(DMPlexCheckCellShape(dmCoarse,output,condLimit));
   }
   PetscFunctionReturn(0);
 }

@@ -491,38 +491,22 @@ static PetscErrorCode PCSetFromOptions_SPAI(PetscOptionItems *PetscOptionsObject
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject,"SPAI options");
   PetscCall(PetscOptionsReal("-pc_spai_epsilon","","PCSPAISetEpsilon",ispai->epsilon,&epsilon1,&flg));
-  if (flg) {
-    PetscCall(PCSPAISetEpsilon(pc,epsilon1));
-  }
+  if (flg) PetscCall(PCSPAISetEpsilon(pc,epsilon1));
   PetscCall(PetscOptionsInt("-pc_spai_nbsteps","","PCSPAISetNBSteps",ispai->nbsteps,&nbsteps1,&flg));
-  if (flg) {
-    PetscCall(PCSPAISetNBSteps(pc,nbsteps1));
-  }
+  if (flg) PetscCall(PCSPAISetNBSteps(pc,nbsteps1));
   /* added 1/7/99 g.h. */
   PetscCall(PetscOptionsInt("-pc_spai_max","","PCSPAISetMax",ispai->max,&max1,&flg));
-  if (flg) {
-    PetscCall(PCSPAISetMax(pc,max1));
-  }
+  if (flg) PetscCall(PCSPAISetMax(pc,max1));
   PetscCall(PetscOptionsInt("-pc_spai_maxnew","","PCSPAISetMaxNew",ispai->maxnew,&maxnew1,&flg));
-  if (flg) {
-    PetscCall(PCSPAISetMaxNew(pc,maxnew1));
-  }
+  if (flg) PetscCall(PCSPAISetMaxNew(pc,maxnew1));
   PetscCall(PetscOptionsInt("-pc_spai_block_size","","PCSPAISetBlockSize",ispai->block_size,&block_size1,&flg));
-  if (flg) {
-    PetscCall(PCSPAISetBlockSize(pc,block_size1));
-  }
+  if (flg) PetscCall(PCSPAISetBlockSize(pc,block_size1));
   PetscCall(PetscOptionsInt("-pc_spai_cache_size","","PCSPAISetCacheSize",ispai->cache_size,&cache_size,&flg));
-  if (flg) {
-    PetscCall(PCSPAISetCacheSize(pc,cache_size));
-  }
+  if (flg) PetscCall(PCSPAISetCacheSize(pc,cache_size));
   PetscCall(PetscOptionsInt("-pc_spai_verbose","","PCSPAISetVerbose",ispai->verbose,&verbose,&flg));
-  if (flg) {
-    PetscCall(PCSPAISetVerbose(pc,verbose));
-  }
+  if (flg) PetscCall(PCSPAISetVerbose(pc,verbose));
   PetscCall(PetscOptionsInt("-pc_spai_sp","","PCSPAISetSp",ispai->sp,&sp,&flg));
-  if (flg) {
-    PetscCall(PCSPAISetSp(pc,sp));
-  }
+  if (flg) PetscCall(PCSPAISetSp(pc,sp));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }

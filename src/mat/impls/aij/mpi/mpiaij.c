@@ -74,22 +74,14 @@ static PetscErrorCode MatBindToCPU_MPIAIJ(Mat A,PetscBool flg)
 #if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_VIENNACL)
   A->boundtocpu = flg;
 #endif
-  if (a->A) {
-    PetscCall(MatBindToCPU(a->A,flg));
-  }
-  if (a->B) {
-    PetscCall(MatBindToCPU(a->B,flg));
-  }
+  if (a->A) PetscCall(MatBindToCPU(a->A,flg));
+  if (a->B) PetscCall(MatBindToCPU(a->B,flg));
 
   /* In addition to binding the diagonal and off-diagonal matrices, bind the local vectors used for matrix-vector products.
    * This maybe seems a little odd for a MatBindToCPU() call to do, but it makes no sense for the binding of these vectors
    * to differ from the parent matrix. */
-  if (a->lvec) {
-    PetscCall(VecBindToCPU(a->lvec,flg));
-  }
-  if (a->diag) {
-    PetscCall(VecBindToCPU(a->diag,flg));
-  }
+  if (a->lvec) PetscCall(VecBindToCPU(a->lvec,flg));
+  if (a->diag) PetscCall(VecBindToCPU(a->diag,flg));
 
   PetscFunctionReturn(0);
 }
@@ -2615,9 +2607,7 @@ PetscErrorCode MatSetFromOptions_MPIAIJ(PetscOptionItems *PetscOptionsObject,Mat
   PetscOptionsHeadBegin(PetscOptionsObject,"MPIAIJ options");
   if (A->ops->increaseoverlap == MatIncreaseOverlap_MPIAIJ_Scalable) sc = PETSC_TRUE;
   PetscCall(PetscOptionsBool("-mat_increase_overlap_scalable","Use a scalable algorithm to compute the overlap","MatIncreaseOverlap",sc,&sc,&flg));
-  if (flg) {
-    PetscCall(MatMPIAIJSetUseScalableIncreaseOverlap(A,sc));
-  }
+  if (flg) PetscCall(MatMPIAIJSetUseScalableIncreaseOverlap(A,sc));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }

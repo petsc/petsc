@@ -101,12 +101,8 @@ PetscErrorCode DMSwarmSortDestroy(DMSwarmSort *_ctx)
   if (!_ctx) PetscFunctionReturn(0);
   if (!*_ctx) PetscFunctionReturn(0);
   ctx = *_ctx;
-  if (ctx->list)      {
-    PetscCall(PetscFree(ctx->list));
-  }
-  if (ctx->pcell_offsets) {
-    PetscCall(PetscFree(ctx->pcell_offsets));
-  }
+  if (ctx->list) PetscCall(PetscFree(ctx->list));
+  if (ctx->pcell_offsets) PetscCall(PetscFree(ctx->pcell_offsets));
   PetscCall(PetscFree(ctx));
   *_ctx = NULL;
   PetscFunctionReturn(0);

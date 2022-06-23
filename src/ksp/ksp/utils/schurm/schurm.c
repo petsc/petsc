@@ -11,12 +11,8 @@ PetscErrorCode MatCreateVecs_SchurComplement(Mat N,Vec *right,Vec *left)
     PetscCall(MatCreateVecs(Na->D,right,left));
     PetscFunctionReturn(0);
   }
-  if (right) {
-    PetscCall(MatCreateVecs(Na->B,right,NULL));
-  }
-  if (left) {
-    PetscCall(MatCreateVecs(Na->C,NULL,left));
-  }
+  if (right) PetscCall(MatCreateVecs(Na->B,right,NULL));
+  if (left) PetscCall(MatCreateVecs(Na->C,NULL,left));
   PetscFunctionReturn(0);
 }
 
@@ -63,9 +59,7 @@ PetscErrorCode MatMultTranspose_SchurComplement(Mat N,Vec x,Vec y)
   PetscCall(KSPSolveTranspose(Na->ksp,Na->work1,Na->work2));
   PetscCall(MatMultTranspose(Na->B,Na->work2,y));
   PetscCall(VecScale(y,-1.0));
-  if (Na->D) {
-    PetscCall(MatMultTransposeAdd(Na->D,x,y,y));
-  }
+  if (Na->D) PetscCall(MatMultTransposeAdd(Na->D,x,y,y));
   PetscFunctionReturn(0);
 }
 
@@ -83,9 +77,7 @@ PetscErrorCode MatMult_SchurComplement(Mat N,Vec x,Vec y)
   PetscCall(KSPSolve(Na->ksp,Na->work1,Na->work2));
   PetscCall(MatMult(Na->C,Na->work2,y));
   PetscCall(VecScale(y,-1.0));
-  if (Na->D) {
-    PetscCall(MatMultAdd(Na->D,x,y,y));
-  }
+  if (Na->D) PetscCall(MatMultAdd(Na->D,x,y,y));
   PetscFunctionReturn(0);
 }
 
@@ -108,9 +100,7 @@ PetscErrorCode MatMultAdd_SchurComplement(Mat N,Vec x,Vec y,Vec z)
     PetscCall(MatMult(Na->C,Na->work2,z));
     PetscCall(VecAYPX(z,-1.0,y));
   }
-  if (Na->D) {
-    PetscCall(MatMultAdd(Na->D,x,z,z));
-  }
+  if (Na->D) PetscCall(MatMultAdd(Na->D,x,z,z));
   PetscFunctionReturn(0);
 }
 
@@ -255,9 +245,7 @@ PetscErrorCode  MatSchurComplementSetSubMatrices(Mat S,Mat A00,Mat Ap00,Mat A01,
   Na->B  = A01;
   Na->C  = A10;
   Na->D  = A11;
-  if (A11) {
-    PetscCall(PetscObjectReference((PetscObject)A11));
-  }
+  if (A11) PetscCall(PetscObjectReference((PetscObject)A11));
   PetscCall(MatSetUp(S));
   PetscCall(KSPSetOperators(Na->ksp,A00,Ap00));
   S->assembled = PETSC_TRUE;
@@ -392,9 +380,7 @@ PetscErrorCode  MatSchurComplementUpdateSubMatrices(Mat S,Mat A00,Mat Ap00,Mat A
   PetscCall(PetscObjectReference((PetscObject)Ap00));
   PetscCall(PetscObjectReference((PetscObject)A01));
   PetscCall(PetscObjectReference((PetscObject)A10));
-  if (A11) {
-    PetscCall(PetscObjectReference((PetscObject)A11));
-  }
+  if (A11) PetscCall(PetscObjectReference((PetscObject)A11));
 
   PetscCall(MatDestroy(&Na->A));
   PetscCall(MatDestroy(&Na->Ap));
@@ -494,9 +480,7 @@ PetscErrorCode MatSchurComplementComputeExplicitOperator(Mat A, Mat *S)
   }
   PetscCall(MatMatMult(C, AinvBd, D ? MAT_REUSE_MATRIX : MAT_INITIAL_MATRIX, PETSC_DEFAULT, S));
   PetscCall(MatDestroy(&AinvBd));
-  if (D) {
-    PetscCall(MatAXPY(*S, -1.0, D, DIFFERENT_NONZERO_PATTERN));
-  }
+  if (D) PetscCall(MatAXPY(*S, -1.0, D, DIFFERENT_NONZERO_PATTERN));
   PetscCall(MatConvert(*S, MATAIJ, MAT_INPLACE_MATRIX, S));
   PetscCall(MatScale(*S, -1.0));
   PetscFunctionReturn(0);

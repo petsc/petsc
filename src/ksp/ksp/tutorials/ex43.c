@@ -1652,9 +1652,7 @@ static PetscErrorCode BCApplyZero_EAST(DM da,PetscInt d_idx,Mat A,Vec b)
     PetscCall(VecAssemblyBegin(b));
     PetscCall(VecAssemblyEnd(b));
   }
-  if (A) {
-    PetscCall(MatZeroRowsColumns(A,nbcs,bc_global_ids,1.0,0,0));
-  }
+  if (A) PetscCall(MatZeroRowsColumns(A,nbcs,bc_global_ids,1.0,0,0));
 
   PetscCall(PetscFree(bc_vals));
   PetscCall(PetscFree(bc_global_ids));
@@ -1713,9 +1711,7 @@ static PetscErrorCode BCApplyZero_WEST(DM da,PetscInt d_idx,Mat A,Vec b)
     PetscCall(VecAssemblyEnd(b));
   }
 
-  if (A) {
-    PetscCall(MatZeroRowsColumns(A,nbcs,bc_global_ids,1.0,0,0));
-  }
+  if (A) PetscCall(MatZeroRowsColumns(A,nbcs,bc_global_ids,1.0,0,0));
 
   PetscCall(PetscFree(bc_vals));
   PetscCall(PetscFree(bc_global_ids));
@@ -1773,9 +1769,7 @@ static PetscErrorCode BCApplyZero_NORTH(DM da,PetscInt d_idx,Mat A,Vec b)
     PetscCall(VecAssemblyBegin(b));
     PetscCall(VecAssemblyEnd(b));
   }
-  if (A) {
-    PetscCall(MatZeroRowsColumns(A,nbcs,bc_global_ids,1.0,0,0));
-  }
+  if (A) PetscCall(MatZeroRowsColumns(A,nbcs,bc_global_ids,1.0,0,0));
 
   PetscCall(PetscFree(bc_vals));
   PetscCall(PetscFree(bc_global_ids));
@@ -1833,9 +1827,7 @@ static PetscErrorCode BCApplyZero_SOUTH(DM da,PetscInt d_idx,Mat A,Vec b)
     PetscCall(VecAssemblyBegin(b));
     PetscCall(VecAssemblyEnd(b));
   }
-  if (A) {
-    PetscCall(MatZeroRowsColumns(A,nbcs,bc_global_ids,1.0,0,0));
-  }
+  if (A) PetscCall(MatZeroRowsColumns(A,nbcs,bc_global_ids,1.0,0,0));
 
   PetscCall(PetscFree(bc_vals));
   PetscCall(PetscFree(bc_global_ids));

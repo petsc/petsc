@@ -266,9 +266,7 @@ PetscErrorCode  KSPGetReusePreconditioner(KSP ksp,PetscBool *flag)
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidBoolPointer(flag,2);
   *flag = PETSC_FALSE;
-  if (ksp->pc) {
-    PetscCall(PCGetReusePreconditioner(ksp->pc,flag));
-  }
+  if (ksp->pc) PetscCall(PCGetReusePreconditioner(ksp->pc,flag));
   PetscFunctionReturn(0);
 }
 
@@ -343,9 +341,7 @@ PetscErrorCode KSPSetUp(KSP ksp)
       PetscCall((*kdm->ops->computeinitialguess)(ksp,ksp->vec_sol,kdm->initialguessctx));
       PetscCall(KSPSetInitialGuessNonzero(ksp,PETSC_TRUE));
     }
-    if (kdm->ops->computerhs) {
-      PetscCall((*kdm->ops->computerhs)(ksp,ksp->vec_rhs,kdm->rhsctx));
-    }
+    if (kdm->ops->computerhs) PetscCall((*kdm->ops->computerhs)(ksp,ksp->vec_rhs,kdm->rhsctx));
 
     if (ksp->setupstage != KSP_SETUP_NEWRHS) {
       if (kdm->ops->computeoperators) {
@@ -366,9 +362,7 @@ PetscErrorCode KSPSetUp(KSP ksp)
     PetscCall((*ksp->ops->setup)(ksp));
     break;
   case KSP_SETUP_NEWMATRIX: {   /* This should be replaced with a more general mechanism */
-    if (ksp->setupnewmatrix) {
-      PetscCall((*ksp->ops->setup)(ksp));
-    }
+    if (ksp->setupnewmatrix) PetscCall((*ksp->ops->setup)(ksp));
   } break;
   default: break;
   }
@@ -415,9 +409,7 @@ PetscErrorCode KSPSetUp(KSP ksp)
   if (nullsp) {
     PetscBool test = PETSC_FALSE;
     PetscCall(PetscOptionsGetBool(((PetscObject)ksp)->options,((PetscObject)ksp)->prefix,"-ksp_test_null_space",&test,NULL));
-    if (test) {
-      PetscCall(MatNullSpaceTest(nullsp,mat,NULL));
-    }
+    if (test) PetscCall(MatNullSpaceTest(nullsp,mat,NULL));
   }
   ksp->setupstage = KSP_SETUP_NEWRHS;
   level--;
@@ -939,12 +931,8 @@ static PetscErrorCode KSPSolve_Private(KSP ksp,Vec b,Vec x)
     }
   }
   PetscCall(PetscLogEventEnd(KSP_Solve,ksp,ksp->vec_rhs,ksp->vec_sol,0));
-  if (ksp->guess) {
-    PetscCall(KSPGuessUpdate(ksp->guess,ksp->vec_rhs,ksp->vec_sol));
-  }
-  if (ksp->postsolve) {
-    PetscCall((*ksp->postsolve)(ksp,ksp->vec_rhs,ksp->vec_sol,ksp->postctx));
-  }
+  if (ksp->guess) PetscCall(KSPGuessUpdate(ksp->guess,ksp->vec_rhs,ksp->vec_sol));
+  if (ksp->postsolve) PetscCall((*ksp->postsolve)(ksp,ksp->vec_rhs,ksp->vec_sol,ksp->postctx));
 
   PetscCall(PCGetOperators(ksp->pc,&mat,&pmat));
   if (ksp->viewEV)       PetscCall(KSPViewEigenvalues_Internal(ksp, PETSC_FALSE, ksp->viewerEV,    ksp->formatEV));
@@ -1209,9 +1197,7 @@ PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
   PetscCall(KSPSetUp(ksp));
   PetscCall(KSPSetUpOnBlocks(ksp));
   if (ksp->ops->matsolve) {
-    if (ksp->guess_zero) {
-      PetscCall(MatZeroEntries(X));
-    }
+    if (ksp->guess_zero) PetscCall(MatZeroEntries(X));
     PetscCall(PetscLogEventBegin(KSP_MatSolve, ksp, B, X, 0));
     PetscCall(KSPGetMatSolveBatchSize(ksp, &Bbn));
     /* by default, do a single solve with all columns */
@@ -1221,9 +1207,7 @@ PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
     /* if -ksp_matsolve_batch_size is greater than the actual number of columns, do a single solve with all columns */
     if (Bbn >= N2) {
       PetscCall((*ksp->ops->matsolve)(ksp, B, X));
-      if (ksp->viewFinalRes) {
-        PetscCall(KSPViewFinalMatResidual_Internal(ksp, B, X, ksp->viewerFinalRes, ksp->formatFinalRes, 0));
-      }
+      if (ksp->viewFinalRes) PetscCall(KSPViewFinalMatResidual_Internal(ksp, B, X, ksp->viewerFinalRes, ksp->formatFinalRes, 0));
 
       PetscCall(KSPConvergedReasonViewFromOptions(ksp));
 
@@ -1237,9 +1221,7 @@ PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
         PetscCall(MatDenseGetSubMatrix(B, PETSC_DECIDE, PETSC_DECIDE, n2, PetscMin(n2+Bbn, N2), &vB));
         PetscCall(MatDenseGetSubMatrix(X, PETSC_DECIDE, PETSC_DECIDE, n2, PetscMin(n2+Bbn, N2), &vX));
         PetscCall((*ksp->ops->matsolve)(ksp, vB, vX));
-        if (ksp->viewFinalRes) {
-          PetscCall(KSPViewFinalMatResidual_Internal(ksp, vB, vX, ksp->viewerFinalRes, ksp->formatFinalRes, n2));
-        }
+        if (ksp->viewFinalRes) PetscCall(KSPViewFinalMatResidual_Internal(ksp, vB, vX, ksp->viewerFinalRes, ksp->formatFinalRes, n2));
 
         PetscCall(KSPConvergedReasonViewFromOptions(ksp));
 
@@ -1256,9 +1238,7 @@ PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
     if (ksp->viewPMat) PetscCall(ObjectView((PetscObject) P, ksp->viewerPMat,ksp->formatPMat));
     if (ksp->viewRhs)  PetscCall(ObjectView((PetscObject) B, ksp->viewerRhs, ksp->formatRhs));
     if (ksp->viewSol)  PetscCall(ObjectView((PetscObject) X, ksp->viewerSol, ksp->formatSol));
-    if (ksp->view) {
-      PetscCall(KSPView(ksp, ksp->viewer));
-    }
+    if (ksp->view) PetscCall(KSPView(ksp, ksp->viewer));
     PetscCall(PetscLogEventEnd(KSP_MatSolve, ksp, B, X, 0));
   } else {
     PetscCall(PetscInfo(ksp, "KSP type %s solving column by column\n", ((PetscObject)ksp)->type_name));
@@ -1381,9 +1361,7 @@ PetscErrorCode  KSPReset(KSP ksp)
   PetscFunctionBegin;
   if (ksp) PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   if (!ksp) PetscFunctionReturn(0);
-  if (ksp->ops->reset) {
-    PetscCall((*ksp->ops->reset)(ksp));
-  }
+  if (ksp->ops->reset) PetscCall((*ksp->ops->reset)(ksp));
   if (ksp->pc) PetscCall(PCReset(ksp->pc));
   if (ksp->guess) {
     KSPGuess guess = ksp->guess;
@@ -2486,9 +2464,7 @@ PetscErrorCode  KSPSetConvergenceTest(KSP ksp,PetscErrorCode (*converge)(KSP,Pet
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  if (ksp->convergeddestroy) {
-    PetscCall((*ksp->convergeddestroy)(ksp->cnvP));
-  }
+  if (ksp->convergeddestroy) PetscCall((*ksp->convergeddestroy)(ksp->cnvP));
   ksp->converged        = converge;
   ksp->convergeddestroy = destroy;
   ksp->cnvP             = (void*)cctx;

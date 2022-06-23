@@ -491,9 +491,7 @@ PETSC_INTERN PetscErrorCode MatKAIJ_build_AIJ_OAIJ(Mat A)
     } else T = a->T;
     PetscCall(MatCreateKAIJ(mpiaij->A,a->p,a->q,a->S,T,&a->AIJ));
     PetscCall(MatCreateKAIJ(mpiaij->B,a->p,a->q,NULL,T,&a->OAIJ));
-    if (a->isTI) {
-      PetscCall(PetscFree(T));
-    }
+    if (a->isTI) PetscCall(PetscFree(T));
     a->state = state;
   }
 

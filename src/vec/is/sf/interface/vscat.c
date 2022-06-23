@@ -1291,9 +1291,7 @@ PetscErrorCode  VecScatterBegin(VecScatter sf,Vec x,Vec y,InsertMode addv,Scatte
   sf->vscat.logging = PETSC_TRUE;
   PetscCall(PetscLogEventBegin(VEC_ScatterBegin,sf,x,y,0));
   PetscCall(VecScatterBegin_Internal(sf,x,y,addv,mode));
-  if (sf->vscat.beginandendtogether) {
-    PetscCall(VecScatterEnd_Internal(sf,x,y,addv,mode));
-  }
+  if (sf->vscat.beginandendtogether) PetscCall(VecScatterEnd_Internal(sf,x,y,addv,mode));
   PetscCall(PetscLogEventEnd(VEC_ScatterBegin,sf,x,y,0));
   sf->vscat.logging = PETSC_FALSE;
   PetscFunctionReturn(0);

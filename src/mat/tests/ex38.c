@@ -65,9 +65,7 @@ int main(int argc,char **args)
   PetscCall(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY));
 
   /* Test MatView() */
-  if (mats_view) {
-    PetscCall(MatView(C,PETSC_VIEWER_STDOUT_WORLD));
-  }
+  if (mats_view) PetscCall(MatView(C,PETSC_VIEWER_STDOUT_WORLD));
 
   /* Test MatMissingDiagonal() */
   PetscCall(MatMissingDiagonal(C,&flg,NULL));

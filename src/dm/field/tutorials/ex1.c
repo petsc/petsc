@@ -271,11 +271,8 @@ int main(int argc, char **argv)
     }
     PetscCall(DMGetDimension(dm, &dim));
     PetscCall(DMPlexIsSimplex(dm, &simplex));
-    if (simplex) {
-      PetscCall(PetscDTStroudConicalQuadrature(dim, 1, pointsPerEdge, -1.0, 1.0, &quad));
-    } else {
-      PetscCall(PetscDTGaussTensorQuadrature(dim, 1, pointsPerEdge, -1.0, 1.0, &quad));
-    }
+    if (simplex) PetscCall(PetscDTStroudConicalQuadrature(dim, 1, pointsPerEdge, -1.0, 1.0, &quad));
+    else PetscCall(PetscDTGaussTensorQuadrature(dim, 1, pointsPerEdge, -1.0, 1.0, &quad));
     PetscCall(DMPlexGetHeightStratum(dm,0,&cStart,&cEnd));
     if (testShell) {
       Vec ctxVec;

@@ -24,9 +24,7 @@ int main(int argc,char **argv)
   PetscCall(MatCreate(PETSC_COMM_WORLD,&mat));
   PetscCall(MatSetSizes(mat,PETSC_DECIDE,PETSC_DECIDE,m,n));
   PetscCall(MatSetFromOptions(mat));
-  if (struct_only) {
-    PetscCall(MatSetOption(mat,MAT_STRUCTURE_ONLY,PETSC_TRUE));
-  }
+  if (struct_only) PetscCall(MatSetOption(mat,MAT_STRUCTURE_ONLY,PETSC_TRUE));
   PetscCall(MatSetUp(mat));
   PetscCall(MatGetOwnershipRange(mat,&rstart,&rend));
   for (i=rstart; i<rend; i++) {

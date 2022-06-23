@@ -33,9 +33,7 @@ static PetscErrorCode DMSNESDuplicate_DMDA(DMSNES oldsdm,DMSNES sdm)
 {
   PetscFunctionBegin;
   PetscCall(PetscNewLog(sdm,(DMSNES_DA**)&sdm->data));
-  if (oldsdm->data) {
-    PetscCall(PetscMemcpy(sdm->data,oldsdm->data,sizeof(DMSNES_DA)));
-  }
+  if (oldsdm->data) PetscCall(PetscMemcpy(sdm->data,oldsdm->data,sizeof(DMSNES_DA)));
   PetscFunctionReturn(0);
 }
 
@@ -111,9 +109,7 @@ static PetscErrorCode SNESComputeFunction_DMDA(SNES snes,Vec X,Vec F,void *ctx)
   default: SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_INCOMP,"Cannot use imode=%d",(int)dmdasnes->residuallocalimode);
   }
   PetscCall(DMRestoreLocalVector(dm,&Xloc));
-  if (snes->domainerror) {
-    PetscCall(VecSetInf(F));
-  }
+  if (snes->domainerror) PetscCall(VecSetInf(F));
   PetscFunctionReturn(0);
 }
 

@@ -85,9 +85,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
     PetscCall((*ksp->converged)(ksp, k, ksp->rnorm, &ksp->reason, ksp->cnvP));
     if (ksp->reason < 0) PetscFunctionReturn(0);
     if (ksp->reason) {
-      if (bcgsl->delta>0.0) {
-        PetscCall(VecAXPY(VX,1.0,VXR));
-      }
+      if (bcgsl->delta>0.0) PetscCall(VecAXPY(VX,1.0,VXR));
       PetscFunctionReturn(0);
     }
 
@@ -295,9 +293,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
       }
     }
   }
-  if (bcgsl->delta>0.0) {
-    PetscCall(VecAXPY(VX,1.0,VXR));
-  }
+  if (bcgsl->delta>0.0) PetscCall(VecAXPY(VX,1.0,VXR));
 
   ksp->its = k;
   if (ksp->normtype != KSP_NORM_NONE) ksp->rnorm = zeta;
@@ -485,9 +481,7 @@ PetscErrorCode KSPSetFromOptions_BCGSL(PetscOptionItems *PetscOptionsObject,KSP 
 
   /* Set number of search directions */
   PetscCall(PetscOptionsInt("-ksp_bcgsl_ell","Number of Krylov search directions","KSPBCGSLSetEll",bcgsl->ell,&this_ell,&flg));
-  if (flg) {
-    PetscCall(KSPBCGSLSetEll(ksp, this_ell));
-  }
+  if (flg) PetscCall(KSPBCGSLSetEll(ksp, this_ell));
 
   /* Set polynomial type */
   PetscCall(PetscOptionsBool("-ksp_bcgsl_cxpoly", "Polynomial part of BiCGStabL is MinRes + OR", "KSPBCGSLSetPol", flga,&flga,NULL));
@@ -501,9 +495,7 @@ PetscErrorCode KSPSetFromOptions_BCGSL(PetscOptionItems *PetscOptionsObject,KSP 
 
   /* Will computed residual be refreshed? */
   PetscCall(PetscOptionsReal("-ksp_bcgsl_xres", "Threshold used to decide when to refresh computed residuals", "KSPBCGSLSetXRes", bcgsl->delta, &delta, &flg));
-  if (flg) {
-    PetscCall(KSPBCGSLSetXRes(ksp, delta));
-  }
+  if (flg) PetscCall(KSPBCGSLSetXRes(ksp, delta));
 
   /* Use pseudoinverse? */
   flg  = bcgsl->pinv;

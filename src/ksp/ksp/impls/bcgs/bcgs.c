@@ -59,9 +59,7 @@ PetscErrorCode KSPSolve_BCGS(KSP ksp)
   PetscCall(KSPMonitor(ksp,0,dp));
   PetscCall((*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP));
   if (ksp->reason) {
-    if (bcgs->guess) {
-      PetscCall(VecAXPY(X,1.0,bcgs->guess));
-    }
+    if (bcgs->guess) PetscCall(VecAXPY(X,1.0,bcgs->guess));
     PetscFunctionReturn(0);
   }
 
@@ -143,9 +141,7 @@ PetscErrorCode KSPSolve_BCGS(KSP ksp)
   if (i >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
 
   PetscCall(KSPUnwindPreconditioner(ksp,X,T));
-  if (bcgs->guess) {
-    PetscCall(VecAXPY(X,1.0,bcgs->guess));
-  }
+  if (bcgs->guess) PetscCall(VecAXPY(X,1.0,bcgs->guess));
   PetscFunctionReturn(0);
 }
 
@@ -157,9 +153,7 @@ PetscErrorCode KSPBuildSolution_BCGS(KSP ksp,Vec v,Vec *V)
   if (ksp->pc_side == PC_RIGHT) {
     if (v) {
       PetscCall(KSP_PCApply(ksp,ksp->vec_sol,v));
-      if (bcgs->guess) {
-        PetscCall(VecAXPY(v,1.0,bcgs->guess));
-      }
+      if (bcgs->guess) PetscCall(VecAXPY(v,1.0,bcgs->guess));
       *V = v;
     } else SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Not working with right preconditioner");
   } else {

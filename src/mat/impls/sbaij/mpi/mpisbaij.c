@@ -982,9 +982,7 @@ PetscErrorCode MatView_MPISBAIJ(Mat mat,PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary));
   if (iascii || isdraw || issocket) {
     PetscCall(MatView_MPISBAIJ_ASCIIorDraworSocket(mat,viewer));
-  } else if (isbinary) {
-    PetscCall(MatView_MPISBAIJ_Binary(mat,viewer));
-  }
+  } else if (isbinary) PetscCall(MatView_MPISBAIJ_Binary(mat,viewer));
   PetscFunctionReturn(0);
 }
 

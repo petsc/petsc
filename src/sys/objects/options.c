@@ -572,9 +572,7 @@ destroy:
     PetscCall(PetscTokenDestroy(&token));
   }
 
-  if (cnt) {
-    PetscCall(PetscOptionsInsertString(options,vstring));
-  }
+  if (cnt) PetscCall(PetscOptionsInsertString(options,vstring));
   PetscCall(PetscFree(packed));
   PetscFunctionReturn(0);
 }
@@ -3013,13 +3011,9 @@ PetscErrorCode PetscOptionsDeprecated_Private(PetscOptionItems *PetscOptionsObje
   PetscCall(PetscOptionsFindPair(options,prefix,oldname,&value,&found));
   if (found) {
     if (newname) {
-      if (prefix) {
-        PetscCall(PetscOptionsPrefixPush(options,prefix));
-      }
+      if (prefix) PetscCall(PetscOptionsPrefixPush(options,prefix));
       PetscCall(PetscOptionsSetValue(options,newname,value));
-      if (prefix) {
-        PetscCall(PetscOptionsPrefixPop(options));
-      }
+      if (prefix) PetscCall(PetscOptionsPrefixPop(options));
       PetscCall(PetscOptionsClearValue(options,oldname));
     }
     quiet = PETSC_FALSE;

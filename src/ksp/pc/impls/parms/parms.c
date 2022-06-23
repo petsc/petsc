@@ -246,12 +246,8 @@ static PetscErrorCode PCDestroy_PARMS(PC pc)
   if (parms->map) parms_MapFree(&parms->map);
   if (parms->A) parms_MatFree(&parms->A);
   if (parms->pc) parms_PCFree(&parms->pc);
-  if (parms->lvec0) {
-    PetscCall(PetscFree(parms->lvec0));
-  }
-  if (parms->lvec1) {
-    PetscCall(PetscFree(parms->lvec1));
-  }
+  if (parms->lvec0) PetscCall(PetscFree(parms->lvec0));
+  if (parms->lvec1) PetscCall(PetscFree(parms->lvec1));
   PetscCall(PetscFree(pc->data));
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)pc,0));

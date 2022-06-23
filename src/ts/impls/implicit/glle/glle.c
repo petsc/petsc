@@ -1159,9 +1159,7 @@ static PetscErrorCode TSView_GLLE(TS ts,PetscViewer viewer)
     for (i=0; i<gl->nschemes; i++) {
       PetscCall(TSGLLESchemeView(gl->schemes[i],details,viewer));
     }
-    if (gl->View) {
-      PetscCall((*gl->View)(gl,viewer));
-    }
+    if (gl->View) PetscCall((*gl->View)(gl,viewer));
     PetscCall(PetscViewerASCIIPopTab(viewer));
   }
   PetscFunctionReturn(0);

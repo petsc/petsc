@@ -226,9 +226,7 @@ int main(int argc,char **args)
        call KSPSetInitialGuessNonzero() in indicate use of an initial
        guess vector; otherwise, an initial guess of zero is used.
     */
-    if (t>0) {
-      PetscCall(KSPSetInitialGuessNonzero(ksp1,PETSC_TRUE));
-    }
+    if (t>0) PetscCall(KSPSetInitialGuessNonzero(ksp1,PETSC_TRUE));
 
     /*
        Solve the first linear system.  Here we explicitly call

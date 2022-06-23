@@ -203,9 +203,7 @@ PetscErrorCode PCBDDCGraphRestoreCandidatesIS(PCBDDCGraph graph, PetscInt *n_fac
     }
     *n_edges = 0;
   }
-  if (VerticesIS) {
-    PetscCall(ISDestroy(VerticesIS));
-  }
+  if (VerticesIS) PetscCall(ISDestroy(VerticesIS));
   PetscFunctionReturn(0);
 }
 
@@ -1276,9 +1274,7 @@ PetscErrorCode PCBDDCGraphReset(PCBDDCGraph graph)
   PetscCall(PetscFree2(graph->subset_size,graph->subset_idxs));
   PetscCall(ISDestroy(&graph->dirdofs));
   PetscCall(ISDestroy(&graph->dirdofsB));
-  if (graph->n_local_subs) {
-    PetscCall(PetscFree(graph->local_subs));
-  }
+  if (graph->n_local_subs) PetscCall(PetscFree(graph->local_subs));
   graph->has_dirichlet       = PETSC_FALSE;
   graph->twodimset           = PETSC_FALSE;
   graph->twodim              = PETSC_FALSE;

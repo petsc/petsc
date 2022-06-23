@@ -72,9 +72,7 @@ PetscErrorCode  PCReset(PC pc)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  if (pc->ops->reset) {
-    PetscCall((*pc->ops->reset)(pc));
-  }
+  if (pc->ops->reset) PetscCall((*pc->ops->reset)(pc));
   PetscCall(VecDestroy(&pc->diagonalscaleright));
   PetscCall(VecDestroy(&pc->diagonalscaleleft));
   PetscCall(MatDestroy(&pc->pmat));
@@ -1512,11 +1510,8 @@ PetscErrorCode PCPreSolve(PC pc,KSP ksp)
   PetscCall(KSPGetSolution(ksp,&x));
   PetscCall(KSPGetRhs(ksp,&rhs));
 
-  if (pc->ops->presolve) {
-    PetscCall((*pc->ops->presolve)(pc,ksp,rhs,x));
-  } else if (pc->presolve) {
-    PetscCall((pc->presolve)(pc,ksp));
-  }
+  if (pc->ops->presolve) PetscCall((*pc->ops->presolve)(pc,ksp,rhs,x));
+  else if (pc->presolve) PetscCall((pc->presolve)(pc,ksp));
   PetscFunctionReturn(0);
 }
 
@@ -1584,9 +1579,7 @@ PetscErrorCode  PCPostSolve(PC pc,KSP ksp)
   pc->presolvedone--;
   PetscCall(KSPGetSolution(ksp,&x));
   PetscCall(KSPGetRhs(ksp,&rhs));
-  if (pc->ops->postsolve) {
-    PetscCall((*pc->ops->postsolve)(pc,ksp,rhs,x));
-  }
+  if (pc->ops->postsolve) PetscCall((*pc->ops->postsolve)(pc,ksp,rhs,x));
   PetscFunctionReturn(0);
 }
 
@@ -1632,9 +1625,7 @@ PetscErrorCode  PCLoad(PC newdm, PetscViewer viewer)
   PetscCheck(classid == PC_FILE_CLASSID,PetscObjectComm((PetscObject)newdm),PETSC_ERR_ARG_WRONG,"Not PC next in file");
   PetscCall(PetscViewerBinaryRead(viewer,type,256,NULL,PETSC_CHAR));
   PetscCall(PCSetType(newdm, type));
-  if (newdm->ops->load) {
-    PetscCall((*newdm->ops->load)(newdm,viewer));
-  }
+  if (newdm->ops->load) PetscCall((*newdm->ops->load)(newdm,viewer));
   PetscFunctionReturn(0);
 }
 
@@ -1761,9 +1752,7 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
       PetscCall(PetscStrncpy(type,((PetscObject)pc)->type_name,256));
       PetscCall(PetscViewerBinaryWrite(viewer,type,256,PETSC_CHAR));
     }
-    if (pc->ops->view) {
-      PetscCall((*pc->ops->view)(pc,viewer));
-    }
+    if (pc->ops->view) PetscCall((*pc->ops->view)(pc,viewer));
   } else if (isdraw) {
     PetscDraw draw;
     char      str[25];
@@ -1781,9 +1770,7 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
     PetscCall(PetscDrawStringBoxed(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,NULL,&h));
     bottom = y - h;
     PetscCall(PetscDrawPushCurrentPoint(draw,x,bottom));
-    if (pc->ops->view) {
-      PetscCall((*pc->ops->view)(pc,viewer));
-    }
+    if (pc->ops->view) PetscCall((*pc->ops->view)(pc,viewer));
     PetscCall(PetscDrawPopCurrentPoint(draw));
 #if defined(PETSC_HAVE_SAWS)
   } else if (issaws) {

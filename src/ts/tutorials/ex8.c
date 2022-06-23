@@ -417,9 +417,7 @@ int main(int argc,char **argv)
   PetscCall(VecDestroy(&r));
   PetscCall(VecDestroy(&mon.x));
   PetscCall(TSDestroy(&ts));
-  if (problem->destroy) {
-    PetscCall((*problem->destroy)(problem));
-  }
+  if (problem->destroy) PetscCall((*problem->destroy)(problem));
   PetscCall(PetscFree(problem));
   PetscCall(PetscFunctionListDestroy(&plist));
 

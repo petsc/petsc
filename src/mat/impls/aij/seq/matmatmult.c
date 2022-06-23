@@ -1360,9 +1360,7 @@ PetscErrorCode MatDestroy_SeqAIJ_MatTransMatMult(void *data)
 
   PetscFunctionBegin;
   PetscCall(MatDestroy(&atb->At));
-  if (atb->destroy) {
-    PetscCall((*atb->destroy)(atb->data));
-  }
+  if (atb->destroy) PetscCall((*atb->destroy)(atb->data));
   PetscCall(PetscFree(atb));
   PetscFunctionReturn(0);
 }
@@ -1871,9 +1869,7 @@ PetscErrorCode MatTransposeColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,M
     PetscCall(ISGetIndices(isa[i],&is));
 
     c->ncolumns[i] = n;
-    if (n) {
-      PetscCall(PetscArraycpy(columns_i,is,n));
-    }
+    if (n) PetscCall(PetscArraycpy(columns_i,is,n));
     colorforcol[i+1] = colorforcol[i] + n;
     columns_i       += n;
 

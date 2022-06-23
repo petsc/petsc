@@ -243,9 +243,7 @@ static PetscErrorCode DMClone_Stag(DM dm,DM *newdm)
 {
   PetscFunctionBegin;
   /* Destroy the DM created by generic logic in DMClone() */
-  if (*newdm) {
-    PetscCall(DMDestroy(newdm));
-  }
+  if (*newdm) PetscCall(DMDestroy(newdm));
   PetscCall(DMStagDuplicateWithoutSetup(dm,PetscObjectComm((PetscObject)dm),newdm));
   PetscCall(DMSetUp(*newdm));
   PetscFunctionReturn(0);

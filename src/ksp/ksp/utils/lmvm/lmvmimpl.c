@@ -196,9 +196,7 @@ static PetscErrorCode MatCopy_LMVM(Mat B, Mat M, MatStructure str)
     PetscCall(VecCopy(bctx->Xprev, mctx->Xprev));
     PetscCall(VecCopy(bctx->Fprev, mctx->Fprev));
   }
-  if (bctx->ops->copy) {
-    PetscCall((*bctx->ops->copy)(B, M, str));
-  }
+  if (bctx->ops->copy) PetscCall((*bctx->ops->copy)(B, M, str));
   PetscFunctionReturn(0);
 }
 

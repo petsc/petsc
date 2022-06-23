@@ -693,9 +693,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
   PetscCall(MatAssemblyBegin(JacP, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(JacP, MAT_FINAL_ASSEMBLY));
   /* clean up */
-  if (cellClosure) {
-    PetscCall(PetscFree(cellClosure));
-  }
+  if (cellClosure) PetscCall(PetscFree(cellClosure));
   if (xdata) {
     PetscCall(VecRestoreArrayReadAndMemType(a_X,&xdata));
   }
@@ -1959,9 +1957,7 @@ static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], 
 #endif
       /* free */
       PetscCall(PetscFree4(ww,xx,yy,invJ_a));
-      if (dim==3) {
-        PetscCall(PetscFree(zz));
-      }
+      if (dim==3) PetscCall(PetscFree(zz));
     } else { /* CPU version, just copy in, only use part */
       ctx->SData_d.w = (void*)ww;
       ctx->SData_d.x = (void*)xx;
@@ -2337,9 +2333,7 @@ PetscErrorCode DMPlexLandauDestroyVelocitySpace(DM *dm)
       PetscReal *invJ = (PetscReal*)ctx->SData_d.invJ, *xx = (PetscReal*)ctx->SData_d.x, *yy = (PetscReal*)ctx->SData_d.y, *zz = (PetscReal*)ctx->SData_d.z, *ww = (PetscReal*)ctx->SData_d.w;
       LandauIdx *coo_elem_offsets = (LandauIdx*)ctx->SData_d.coo_elem_offsets, *coo_elem_fullNb = (LandauIdx*)ctx->SData_d.coo_elem_fullNb, (*coo_elem_point_offsets)[LANDAU_MAX_NQ+1] = (LandauIdx (*)[LANDAU_MAX_NQ+1])ctx->SData_d.coo_elem_point_offsets;
       PetscCall(PetscFree4(ww,xx,yy,invJ));
-      if (zz) {
-        PetscCall(PetscFree(zz));
-      }
+      if (zz) PetscCall(PetscFree(zz));
       if (coo_elem_offsets) {
         PetscCall(PetscFree3(coo_elem_offsets,coo_elem_fullNb,coo_elem_point_offsets)); // could be NULL
       }
@@ -2754,9 +2748,7 @@ PetscErrorCode DMPlexLandauIFunction(TS ts, PetscReal time_dummy, Vec X, Vec X_t
   PetscCall(TSGetDM(ts,&pack));
   PetscCall(DMGetApplicationContext(pack, &ctx));
   PetscCheck(ctx,PETSC_COMM_SELF, PETSC_ERR_PLIB, "no context");
-  if (ctx->stage) {
-    PetscCall(PetscLogStagePush(ctx->stage));
-  }
+  if (ctx->stage) PetscCall(PetscLogStagePush(ctx->stage));
   PetscCall(PetscLogEventBegin(ctx->events[11],0,0,0,0));
   PetscCall(PetscLogEventBegin(ctx->events[0],0,0,0,0));
 #if defined(PETSC_HAVE_THREADSAFETY)
@@ -2777,9 +2769,7 @@ PetscErrorCode DMPlexLandauIFunction(TS ts, PetscReal time_dummy, Vec X, Vec X_t
   /* mat vec for op */
   PetscCall(MatMult(ctx->J,X,F)); /* C*f */
   /* add time term */
-  if (X_t) {
-    PetscCall(MatMultAdd(ctx->M,X_t,F,F));
-  }
+  if (X_t) PetscCall(MatMultAdd(ctx->M,X_t,F,F));
 #if defined(PETSC_HAVE_THREADSAFETY)
   if (ctx->stage) {
     endtime = MPI_Wtime();
@@ -2838,9 +2828,7 @@ PetscErrorCode DMPlexLandauIJacobian(TS ts, PetscReal time_dummy, Vec X, Vec U_t
   PetscCheck(Amat == Pmat && Amat == ctx->J,ctx->comm, PETSC_ERR_PLIB, "Amat!=Pmat || Amat!=ctx->J");
   PetscCall(DMGetDimension(pack, &dim));
   /* get collision Jacobian into A */
-  if (ctx->stage) {
-    PetscCall(PetscLogStagePush(ctx->stage));
-  }
+  if (ctx->stage) PetscCall(PetscLogStagePush(ctx->stage));
   PetscCall(PetscLogEventBegin(ctx->events[11],0,0,0,0));
   PetscCall(PetscLogEventBegin(ctx->events[9],0,0,0,0));
 #if defined(PETSC_HAVE_THREADSAFETY)

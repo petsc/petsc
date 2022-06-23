@@ -3478,9 +3478,7 @@ PETSC_INTERN PetscErrorCode DMStagPopulateLocalToGlobalInjective_3d(DM dm)
   }
   PetscCall(ISDestroy(&isLocal));
   PetscCall(ISDestroy(&isGlobal));
-  if (globalOffsetsRecomputed) {
-    PetscCall(PetscFree(globalOffsetsRecomputed));
-  }
+  if (globalOffsetsRecomputed) PetscCall(PetscFree(globalOffsetsRecomputed));
   PetscFunctionReturn(0);
 }
 

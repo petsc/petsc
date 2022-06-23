@@ -17,9 +17,7 @@ PetscErrorCode MatDestroy_SeqAIJCRL(Mat A)
 
   PetscFunctionBegin;
   /* Free everything in the Mat_AIJCRL data structure. */
-  if (aijcrl) {
-    PetscCall(PetscFree2(aijcrl->acols,aijcrl->icols));
-  }
+  if (aijcrl) PetscCall(PetscFree2(aijcrl->acols,aijcrl->icols));
   PetscCall(PetscFree(A->spptr));
   PetscCall(PetscObjectChangeTypeName((PetscObject)A, MATSEQAIJ));
   PetscCall(MatDestroy_SeqAIJ(A));
@@ -170,9 +168,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCRL(Mat A,MatType type,MatRe
   B->ops->mult        = MatMult_AIJCRL;
 
   /* If A has already been assembled, compute the permutation. */
-  if (A->assembled) {
-    PetscCall(MatSeqAIJCRL_create_aijcrl(B));
-  }
+  if (A->assembled) PetscCall(MatSeqAIJCRL_create_aijcrl(B));
   PetscCall(PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJCRL));
   *newmat = B;
   PetscFunctionReturn(0);

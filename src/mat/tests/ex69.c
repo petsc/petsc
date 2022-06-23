@@ -144,9 +144,7 @@ int main(int argc,char **argv)
   PetscCall(MatDenseCUDAGetArray(B,&aa));
   PetscCheck(vv == aa-l*nloc,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong array");
   PetscCall(MatDenseCUDARestoreArray(B,&aa));
-  if (reset) {
-    PetscCall(MatDenseCUDAResetArray(B));
-  }
+  if (reset) PetscCall(MatDenseCUDAResetArray(B));
   PetscCall(VecCUDARestoreArray(v,&vv));
 
   if (test == 1) {

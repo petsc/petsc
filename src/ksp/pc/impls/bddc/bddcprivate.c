@@ -689,9 +689,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
   for (i=0;i<ne;i++) {
     if (PetscUnlikely(PetscBTLookup(bte,i))) marks[cum++] = i;
   }
-  if (fl2g) {
-    PetscCall(ISLocalToGlobalMappingApply(fl2g,cum,marks,marks));
-  }
+  if (fl2g) PetscCall(ISLocalToGlobalMappingApply(fl2g,cum,marks,marks));
   PetscCall(ISCreateGeneral(comm,cum,marks,PETSC_COPY_VALUES,&primals));
   if (print) {
     PetscCall(PetscObjectSetName((PetscObject)primals,"prescribed_primal_dofs"));
@@ -774,9 +772,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
     if (rest) {
       PetscCall(MatRestoreRowIJ(matis->A,0,PETSC_TRUE,PETSC_FALSE,&i,(const PetscInt**)&iiu,(const PetscInt**)&jju,&done));
     }
-    if (free) {
-      PetscCall(PetscFree2(iiu,jju));
-    }
+    if (free) PetscCall(PetscFree2(iiu,jju));
     PetscCall(PetscBTDestroy(&btf));
   } else {
     PetscCall(PCBDDCSetLocalAdjacencyGraph(pc,n,ii,jj,PETSC_USE_POINTER));
@@ -1319,9 +1315,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
 
   /* Start assembling */
   PetscCall(MatAssemblyBegin(T,MAT_FINAL_ASSEMBLY));
-  if (pcbddc->nedcG) {
-    PetscCall(MatAssemblyBegin(pcbddc->nedcG,MAT_FINAL_ASSEMBLY));
-  }
+  if (pcbddc->nedcG) PetscCall(MatAssemblyBegin(pcbddc->nedcG,MAT_FINAL_ASSEMBLY));
 
   /* Free */
   if (fl2g) {
@@ -1343,9 +1337,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
     if (pcbddc->nedclocal) {
       PetscCall(ISGetIndices(pcbddc->nedclocal,(const PetscInt**)&idxs));
     } else {
-      if (fl2g) {
-        PetscCall(ISLocalToGlobalMappingApply(fl2g,nee,cedges,cedges));
-      }
+      if (fl2g) PetscCall(ISLocalToGlobalMappingApply(fl2g,nee,cedges,cedges));
       idxs = cedges;
     }
     cum = 0;
@@ -1992,9 +1984,7 @@ PetscErrorCode PCBDDCBenignMatMult_Private_Private(Mat A, Vec x, Vec y, PetscBoo
   } else {
     PetscCall(MatMult(ctx->A,x,y));
   }
-  if (reset_x) {
-    PetscCall(VecResetArray(x));
-  }
+  if (reset_x) PetscCall(VecResetArray(x));
   if (apply_left) {
     PetscScalar *ay;
     PetscInt    i;
@@ -2418,9 +2408,7 @@ PetscErrorCode PCBDDCDetectDisconnectedComponents(PC pc, PetscBool filter, Petsc
         }
         *cc = cc_n;
       }
-      if (primalv) {
-        PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)pc),cump,pids,PETSC_COPY_VALUES,primalv));
-      }
+      if (primalv) PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)pc),cump,pids,PETSC_COPY_VALUES,primalv));
       PetscCall(PetscFree3(ids,cids,pids));
       PetscCall(PetscBTDestroy(&btv));
       PetscCall(PetscBTDestroy(&btvt));
@@ -3694,9 +3682,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
     /* shift for next computation */
     cumarray += subset_size*subset_size;
   }
-  if (pcbddc->dbg_flag) {
-    PetscCall(PetscViewerFlush(pcbddc->dbg_viewer));
-  }
+  if (pcbddc->dbg_flag) PetscCall(PetscViewerFlush(pcbddc->dbg_viewer));
 
   if (mss) {
     if (sub_schurs->gdsw) {
@@ -3710,9 +3696,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
       PetscCall(MatDestroy(&sub_schurs->sum_S_Ej_tilda_all));
     }
   }
-  if (allocated_S_St) {
-    PetscCall(PetscFree2(S,St));
-  }
+  if (allocated_S_St) PetscCall(PetscFree2(S,St));
   PetscCall(PetscFree5(eigv,eigs,work,B_iwork,B_ifail));
 #if defined(PETSC_USE_COMPLEX)
   PetscCall(PetscFree(rwork));
@@ -4096,9 +4080,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
       }
       PetscCall(MatDenseRestoreArray(local_auxmat2_R,&marr));
     }
-    if (sparserhs) {
-      PetscCall(MatScale(C_CR,-1.0));
-    }
+    if (sparserhs) PetscCall(MatScale(C_CR,-1.0));
     PetscCall(MatDestroy(&Brhs));
     if (!pcbddc->switch_static) {
       PetscCall(MatCreateSeqDense(PETSC_COMM_SELF,n_B,n_constraints,NULL,&pcbddc->local_auxmat2));
@@ -4375,9 +4357,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
           PetscCall(MatDenseRestoreArray(Brhs,&marr));
         }
         PetscCall(MatMatSolve(F,Brhs,A_RRmA_RV));
-        if (restoreavr) {
-          PetscCall(MatScale(A_VR,-1.0));
-        }
+        if (restoreavr) PetscCall(MatScale(A_VR,-1.0));
         /* need to correct the solution */
         if (need_benign_correction) {
           PCBDDCReuseSolvers reuse_solver = sub_schurs->reuse_solver;
@@ -5495,9 +5475,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
         pcis->A_II = A_IIn;
       }
     }
-    if (pcbddc->local_mat->symmetric_set) {
-      PetscCall(MatSetOption(pcis->A_II,MAT_SYMMETRIC,pcbddc->local_mat->symmetric));
-    }
+    if (pcbddc->local_mat->symmetric_set) PetscCall(MatSetOption(pcis->A_II,MAT_SYMMETRIC,pcbddc->local_mat->symmetric));
     /* Matrix for Dirichlet problem is pcis->A_II */
     n_D  = pcis->n - pcis->n_B;
     opts = PETSC_FALSE;
@@ -5520,9 +5498,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
     PetscCall(MatSetOptionsPrefix(pcis->pA_II,((PetscObject)pcbddc->ksp_D)->prefix));
     PetscCall(KSPSetOperators(pcbddc->ksp_D,pcis->A_II,pcis->pA_II));
     /* Allow user's customization */
-    if (opts) {
-      PetscCall(KSPSetFromOptions(pcbddc->ksp_D));
-    }
+    if (opts) PetscCall(KSPSetFromOptions(pcbddc->ksp_D));
     PetscCall(MatGetNearNullSpace(pcis->pA_II,&nnsp));
     if (pcbddc->NullSpace_corr[0] && !nnsp) { /* approximate solver, propagate NearNullSpace */
       PetscCall(MatNullSpacePropagateAny_Private(pcbddc->local_mat,pcis->is_I_local,pcis->pA_II));
@@ -5647,9 +5623,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
     } else { /* we have to build the neumann solver, so we need to extract the relevant matrix */
       PetscCall(MatCreateSubMatrix(pcbddc->local_mat,pcbddc->is_R_local,pcbddc->is_R_local,reuse,&A_RR));
     }
-    if (pcbddc->local_mat->symmetric_set) {
-      PetscCall(MatSetOption(A_RR,MAT_SYMMETRIC,pcbddc->local_mat->symmetric));
-    }
+    if (pcbddc->local_mat->symmetric_set) PetscCall(MatSetOption(A_RR,MAT_SYMMETRIC,pcbddc->local_mat->symmetric));
     opts = PETSC_FALSE;
     if (!pcbddc->ksp_R) { /* create object if not present */
       opts = PETSC_TRUE;
@@ -5907,17 +5881,13 @@ PetscErrorCode  PCBDDCApplyInterfacePreconditioner(PC pc, PetscBool applytranspo
       PetscCall(PetscLogEventEnd(PC_BDDC_Solves[pcbddc->current_level][2],pc,0,0,0));
       PetscCall(KSPCheckSolve(pcbddc->coarse_ksp,pc,sol));
       PetscCall(MatGetTransposeNullSpace(coarse_mat,&nullsp));
-      if (nullsp) {
-        PetscCall(MatNullSpaceRemove(nullsp,sol));
-      }
+      if (nullsp) PetscCall(MatNullSpaceRemove(nullsp,sol));
     } else {
       PetscCall(MatGetNullSpace(coarse_mat,&nullsp));
       if (pcbddc->benign_apply_coarse_only && isbddc) { /* need just to apply the coarse preconditioner during presolve */
         PC        coarse_pc;
 
-        if (nullsp) {
-          PetscCall(MatNullSpaceRemove(nullsp,rhs));
-        }
+        if (nullsp) PetscCall(MatNullSpaceRemove(nullsp,rhs));
         PetscCall(KSPGetPC(pcbddc->coarse_ksp,&coarse_pc));
         PetscCall(PCPreSolve(coarse_pc,pcbddc->coarse_ksp));
         PetscCall(PCBDDCBenignRemoveInterior(coarse_pc,rhs,sol));
@@ -5927,9 +5897,7 @@ PetscErrorCode  PCBDDCApplyInterfacePreconditioner(PC pc, PetscBool applytranspo
         PetscCall(KSPSolve(pcbddc->coarse_ksp,rhs,sol));
         PetscCall(PetscLogEventEnd(PC_BDDC_Solves[pcbddc->current_level][2],pc,0,0,0));
         PetscCall(KSPCheckSolve(pcbddc->coarse_ksp,pc,sol));
-        if (nullsp) {
-          PetscCall(MatNullSpaceRemove(nullsp,sol));
-        }
+        if (nullsp) PetscCall(MatNullSpaceRemove(nullsp,sol));
       }
     }
     /* we don't need the benign correction at coarser levels anymore */
@@ -6892,9 +6860,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
 
     /* free workspace */
     if (qr_needed) {
-      if (pcbddc->dbg_flag) {
-        PetscCall(PetscFree(dbg_work));
-      }
+      if (pcbddc->dbg_flag) PetscCall(PetscFree(dbg_work));
       PetscCall(PetscFree(trs_rhs));
       PetscCall(PetscFree(qr_tau));
       PetscCall(PetscFree(qr_work));
@@ -7008,9 +6974,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
             PetscCall(MatPtAP(sub_schurs->sum_S_Ej_all,tmat,MAT_INITIAL_MATRIX,1.0,&S_new));
             PetscCall(MatDestroy(&sub_schurs->sum_S_Ej_all));
             PetscCall(PetscObjectReference((PetscObject)S_new));
-            if (pcbddc->deluxe_zerorows) {
-              PetscCall(MatZeroRowsColumnsIS(S_new,is_V_Sall,1.,NULL,NULL));
-            }
+            if (pcbddc->deluxe_zerorows) PetscCall(MatZeroRowsColumnsIS(S_new,is_V_Sall,1.,NULL,NULL));
             sub_schurs->sum_S_Ej_all = S_new;
             PetscCall(MatDestroy(&S_new));
           }
@@ -7112,9 +7076,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   PetscCall(PetscFree2(olocal_primal_ref_node,olocal_primal_ref_mult));
 
   /* flush dbg viewer */
-  if (pcbddc->dbg_flag) {
-    PetscCall(PetscViewerFlush(pcbddc->dbg_viewer));
-  }
+  if (pcbddc->dbg_flag) PetscCall(PetscViewerFlush(pcbddc->dbg_viewer));
 
   /* free workspace */
   PetscCall(PetscBTDestroy(&qr_needed_idx));
@@ -7168,9 +7130,7 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
       PetscCall(MatRestoreRowIJ(matis->A,0,PETSC_TRUE,PETSC_FALSE,&nvtxs,(const PetscInt**)&xadj,(const PetscInt**)&adjncy,&flg_row));
       rcsr = PETSC_TRUE;
     }
-    if (pcbddc->dbg_flag) {
-      PetscCall(PetscViewerFlush(pcbddc->dbg_viewer));
-    }
+    if (pcbddc->dbg_flag) PetscCall(PetscViewerFlush(pcbddc->dbg_viewer));
 
     if (pcbddc->mat_graph->cdim && !pcbddc->mat_graph->cloc) {
       PetscReal    *lcoords;
@@ -7485,9 +7445,7 @@ PetscErrorCode PCBDDCMatISGetSubassemblingPattern(Mat mat, PetscInt *n_subdomain
     PetscCall(MatPartitioningSetType(partitioner,MATPARTITIONINGAVERAGE));
 #endif
     PetscCall(MatPartitioningSetAdjacency(partitioner,subdomain_adj));
-    if (v_wgt) {
-      PetscCall(MatPartitioningSetVertexWeights(partitioner,v_wgt));
-    }
+    if (v_wgt) PetscCall(MatPartitioningSetVertexWeights(partitioner,v_wgt));
     *n_subdomains = PetscMin((PetscInt)size,*n_subdomains);
     PetscCall(MatPartitioningSetNParts(partitioner,*n_subdomains));
     PetscCall(MatPartitioningSetFromOptions(partitioner));
@@ -8518,9 +8476,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
       PetscCall(PCBDDCSetPrimalVerticesIS(pc_temp,isarray[nis-1]));
       PetscCall(ISDestroy(&isarray[nis-1]));
     }
-    if (coarseG) {
-      PetscCall(PCBDDCSetDiscreteGradient(pc_temp,coarseG,1,nedcfield,PETSC_FALSE,PETSC_TRUE));
-    }
+    if (coarseG) PetscCall(PCBDDCSetDiscreteGradient(pc_temp,coarseG,1,nedcfield,PETSC_FALSE,PETSC_TRUE));
 
     /* get some info after set from options */
     PetscCall(PetscObjectTypeCompare((PetscObject)pc_temp,PCBDDC,&isbddc));
@@ -8593,15 +8549,9 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
 
     /* propagate symmetry info of coarse matrix */
     PetscCall(MatSetOption(coarse_mat,MAT_STRUCTURALLY_SYMMETRIC,PETSC_TRUE));
-    if (pc->pmat->symmetric_set) {
-      PetscCall(MatSetOption(coarse_mat,MAT_SYMMETRIC,pc->pmat->symmetric));
-    }
-    if (pc->pmat->hermitian_set) {
-      PetscCall(MatSetOption(coarse_mat,MAT_HERMITIAN,pc->pmat->hermitian));
-    }
-    if (pc->pmat->spd_set) {
-      PetscCall(MatSetOption(coarse_mat,MAT_SPD,pc->pmat->spd));
-    }
+    if (pc->pmat->symmetric_set) PetscCall(MatSetOption(coarse_mat,MAT_SYMMETRIC,pc->pmat->symmetric));
+    if (pc->pmat->hermitian_set) PetscCall(MatSetOption(coarse_mat,MAT_HERMITIAN,pc->pmat->hermitian));
+    if (pc->pmat->spd_set) PetscCall(MatSetOption(coarse_mat,MAT_SPD,pc->pmat->spd));
     if (pcbddc->benign_saddle_point && !pcbddc->benign_have_null) {
       PetscCall(MatSetOption(coarse_mat,MAT_SPD,PETSC_TRUE));
     }
@@ -8609,9 +8559,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     PetscCall(MatViewFromOptions(coarse_mat,(PetscObject)pc,"-pc_bddc_coarse_mat_view"));
     PetscCall(MatSetOptionsPrefix(coarse_mat,((PetscObject)pcbddc->coarse_ksp)->prefix));
     PetscCall(KSPSetOperators(pcbddc->coarse_ksp,coarse_mat,coarse_mat));
-    if (pcbddc->dbg_flag) {
-      PetscCall(PetscViewerASCIISubtractTab(dbg_viewer,2*pcbddc->current_level));
-    }
+    if (pcbddc->dbg_flag) PetscCall(PetscViewerASCIISubtractTab(dbg_viewer,2*pcbddc->current_level));
   }
   PetscCall(MatDestroy(&coarseG));
   PetscCall(PetscFree(isarray));
@@ -8744,9 +8692,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
       PetscBool isnull;
 
       PetscCall(MatNullSpaceTest(CoarseNullSpace,coarse_mat,&isnull));
-      if (isnull) {
-        PetscCall(MatSetNullSpace(coarse_mat,CoarseNullSpace));
-      }
+      if (isnull) PetscCall(MatSetNullSpace(coarse_mat,CoarseNullSpace));
       /* TODO: add local nullspaces (if any) */
     }
     /* setup coarse ksp */
@@ -9183,9 +9129,7 @@ PetscErrorCode PCBDDCSetUpSubSchurs(PC pc)
   PetscCall(MatDestroy(&S_j));
 
   /* free adjacency */
-  if (free_used_adj) {
-    PetscCall(PetscFree2(used_xadj,used_adjncy));
-  }
+  if (free_used_adj) PetscCall(PetscFree2(used_xadj,used_adjncy));
   PetscCall(PetscLogEventEnd(PC_BDDC_Schurs[pcbddc->current_level],pc,0,0,0));
   PetscFunctionReturn(0);
 }

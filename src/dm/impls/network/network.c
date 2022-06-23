@@ -635,11 +635,8 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
   PetscCall(DMSetType(network->plex,DMPLEX));
   PetscCall(DMSetDimension(network->plex,1));
 
-  if (size == 1) {
-    PetscCall(DMPlexBuildFromCellList(network->plex,network->nEdges,PETSC_DECIDE,2,edges));
-  } else {
-    PetscCall(DMPlexBuildFromCellListParallel(network->plex,network->nEdges,PETSC_DECIDE,PETSC_DECIDE,2,edges,NULL, NULL));
-  }
+  if (size == 1) PetscCall(DMPlexBuildFromCellList(network->plex,network->nEdges,PETSC_DECIDE,2,edges));
+  else PetscCall(DMPlexBuildFromCellListParallel(network->plex,network->nEdges,PETSC_DECIDE,PETSC_DECIDE,2,edges,NULL, NULL));
 
   PetscCall(DMPlexGetChart(network->plex,&network->pStart,&network->pEnd));
   PetscCall(DMPlexGetHeightStratum(network->plex,0,&network->eStart,&network->eEnd));
@@ -2405,9 +2402,7 @@ PetscErrorCode DMCreateMatrix_Network(DM dm,Mat *J)
       } else Juser = NULL;
       PetscCall(MatSetPreallocationblock_private(Juser,nrows,rows_v,nrows,PETSC_FALSE,vd_nz,vo_nz));
     }
-    if (ghost) {
-      PetscCall(PetscFree(rows_v));
-    }
+    if (ghost) PetscCall(PetscFree(rows_v));
   }
 
   PetscCall(VecAssemblyBegin(vd_nz));
@@ -2515,9 +2510,7 @@ PetscErrorCode DMCreateMatrix_Network(DM dm,Mat *J)
       } else Juser = NULL;
       PetscCall(MatSetblock_private(Juser,nrows,rows_v,nrows,cstart,J));
     }
-    if (ghost) {
-      PetscCall(PetscFree(rows_v));
-    }
+    if (ghost) PetscCall(PetscFree(rows_v));
   }
   PetscCall(PetscFree(rows));
 
@@ -2743,9 +2736,7 @@ PetscErrorCode DMNetworkSetVertexLocalToGlobalOrdering(DM dm)
   }
 
   PetscCheck(network->distributecalled,comm, PETSC_ERR_ARG_WRONGSTATE,"Must call DMNetworkDistribute() first");
-  if (network->vltog) {
-    PetscCall(PetscFree(network->vltog));
-  }
+  if (network->vltog) PetscCall(PetscFree(network->vltog));
 
   PetscCall(DMNetworkSetSubMap_private(network->vStart,network->vEnd,&network->vertex.mapping));
   PetscCall(PetscSFGetSubSF(network->plex->sf, network->vertex.mapping, &network->vertex.sf));

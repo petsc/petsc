@@ -54,10 +54,8 @@ PETSC_EXTERN const char* PetscCUFFTGetErrorName(cufftResult);
                 "Reports not initialized or alloc failed; "             \
                 "this indicates the GPU may have run out resources",    \
                 (PetscErrorCode)_p_cublas_stat__,name);                 \
-      } else {                                                          \
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_GPU,"cuBLAS error %d (%s)",   \
+      } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_GPU,"cuBLAS error %d (%s)",   \
                 (PetscErrorCode)_p_cublas_stat__,name);                 \
-      }                                                                 \
     }                                                                   \
   } while (0)
 #define CHKERRCUBLAS(...) PetscCallCUBLAS(__VA_ARGS__)
@@ -93,10 +91,8 @@ do {\
                 "cuSolver error %d (%s). "                              \
                 "This indicates the GPU may have run out resources",    \
                 (PetscErrorCode)_p_cusolver_stat__,name);               \
-      } else {                                                          \
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_GPU,"cuSolver error %d (%s)", \
+      } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_GPU,"cuSolver error %d (%s)", \
                 (PetscErrorCode)_p_cusolver_stat__,name);               \
-      }                                                                 \
     }                                                                   \
   } while (0)
 #define CHKERRCUSOLVER(...) PetscCallCUSOLVER(__VA_ARGS__)
@@ -113,10 +109,8 @@ do {\
                 "Reports not initialized or alloc failed; "             \
                 "this indicates the GPU has run out resources",         \
                 (PetscErrorCode)_p_cufft_stat__,name);                  \
-      } else {                                                          \
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_GPU,"cuFFT error %d (%s)",    \
+      } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_GPU,"cuFFT error %d (%s)",    \
                 (PetscErrorCode)_p_cufft_stat__,name);                  \
-      }                                                                 \
     }                                                                   \
   } while (0)
 #define CHKERRCUFFT(...) PetscCallCUFFT(__VA_ARGS__)
@@ -132,10 +126,8 @@ do {\
                 "Reports not initialized or alloc failed; "             \
                 "this indicates the GPU has run out resources",         \
                 (PetscErrorCode)_p_curand_stat__);                      \
-      } else {                                                          \
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_GPU,                          \
+      } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_GPU,                          \
                 "cuRand error %d",(PetscErrorCode)_p_curand_stat__);    \
-      }                                                                 \
     }                                                                   \
   } while (0)
 #define CHKERRCURAND(...) PetscCallCURAND(__VA_ARGS__)

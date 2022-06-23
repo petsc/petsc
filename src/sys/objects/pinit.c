@@ -1380,9 +1380,7 @@ PetscErrorCode  PetscFinalize(void)
 #if defined(PETSC_HAVE_SAWS)
   flg = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-saw_options",&flg,NULL));
-  if (flg) {
-    PetscCall(PetscOptionsSAWsDestroy());
-  }
+  if (flg) PetscCall(PetscOptionsSAWsDestroy());
 #endif
 
 #if defined(PETSC_HAVE_X)
@@ -1469,9 +1467,7 @@ PetscErrorCode  PetscFinalize(void)
   if (!flg1) PetscCall(PetscPopSignalHandler());
   flg1 = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-mpidump",&flg1,NULL));
-  if (flg1) {
-    PetscCall(PetscMPIDump(stdout));
-  }
+  if (flg1) PetscCall(PetscMPIDump(stdout));
   flg1 = PETSC_FALSE;
   flg2 = PETSC_FALSE;
   /* preemptive call to avoid listing this option in options table as unused */

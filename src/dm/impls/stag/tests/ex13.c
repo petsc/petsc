@@ -69,9 +69,7 @@ int main(int argc,char **argv)
   PetscCall(DMSetUp(dm));
 
   /* Populate Additional Injective Local-to-Global Map */
-  if (useInjective) {
-    PetscCall(DMStagPopulateLocalToGlobalInjective(dm));
-  }
+  if (useInjective) PetscCall(DMStagPopulateLocalToGlobalInjective(dm));
 
   /* Test: Make sure L2G inverts G2L */
   PetscCall(Test1(dm));

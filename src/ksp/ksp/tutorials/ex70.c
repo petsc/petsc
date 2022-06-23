@@ -1092,9 +1092,7 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
      If the particle coordinates where randomly shifted, they may have crossed into another
      element, or into another sub-domain. To account for this we call the Migrate function.
   */
-  if (randomize_coords) {
-    PetscCall(DMSwarmMigrate(dms_mpoint,PETSC_TRUE));
-  }
+  if (randomize_coords) PetscCall(DMSwarmMigrate(dms_mpoint,PETSC_TRUE));
 
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-no_view",&no_view,NULL));
   if (!no_view) {
@@ -1142,9 +1140,7 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
   PetscCall(KSPSetFromOptions(ksp));
   PetscCall(KSPGetPC(ksp,&pc));
   PetscCall(PetscObjectTypeCompare((PetscObject)pc,PCBDDC,&isbddc));
-  if (isbddc) {
-    PetscCall(KSPSetOperators(ksp,A,A));
-  }
+  if (isbddc) PetscCall(KSPSetOperators(ksp,A,A));
 
   /* Define u-v-p indices for fieldsplit */
   {
@@ -1353,9 +1349,7 @@ static PetscErrorCode BCApplyZero_EAST(DM da,PetscInt d_idx,Mat A,Vec b)
     PetscCall(VecAssemblyBegin(b));
     PetscCall(VecAssemblyEnd(b));
   }
-  if (A) {
-    PetscCall(MatZeroRowsColumns(A,nbcs,bc_global_ids,1.0,0,0));
-  }
+  if (A) PetscCall(MatZeroRowsColumns(A,nbcs,bc_global_ids,1.0,0,0));
 
   PetscCall(PetscFree(bc_vals));
   PetscCall(PetscFree(bc_global_ids));
@@ -1414,9 +1408,7 @@ static PetscErrorCode BCApplyZero_WEST(DM da,PetscInt d_idx,Mat A,Vec b)
     PetscCall(VecAssemblyEnd(b));
   }
 
-  if (A) {
-    PetscCall(MatZeroRowsColumns(A,nbcs,bc_global_ids,1.0,0,0));
-  }
+  if (A) PetscCall(MatZeroRowsColumns(A,nbcs,bc_global_ids,1.0,0,0));
 
   PetscCall(PetscFree(bc_vals));
   PetscCall(PetscFree(bc_global_ids));
@@ -1474,9 +1466,7 @@ static PetscErrorCode BCApplyZero_NORTH(DM da,PetscInt d_idx,Mat A,Vec b)
     PetscCall(VecAssemblyBegin(b));
     PetscCall(VecAssemblyEnd(b));
   }
-  if (A) {
-    PetscCall(MatZeroRowsColumns(A,nbcs,bc_global_ids,1.0,NULL,NULL));
-  }
+  if (A) PetscCall(MatZeroRowsColumns(A,nbcs,bc_global_ids,1.0,NULL,NULL));
 
   PetscCall(PetscFree(bc_vals));
   PetscCall(PetscFree(bc_global_ids));
@@ -1534,9 +1524,7 @@ static PetscErrorCode BCApplyZero_SOUTH(DM da,PetscInt d_idx,Mat A,Vec b)
     PetscCall(VecAssemblyBegin(b));
     PetscCall(VecAssemblyEnd(b));
   }
-  if (A) {
-    PetscCall(MatZeroRowsColumns(A,nbcs,bc_global_ids,1.0,0,0));
-  }
+  if (A) PetscCall(MatZeroRowsColumns(A,nbcs,bc_global_ids,1.0,0,0));
 
   PetscCall(PetscFree(bc_vals));
   PetscCall(PetscFree(bc_global_ids));

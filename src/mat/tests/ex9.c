@@ -73,9 +73,7 @@ int main(int argc,char **args)
   }
 
   PetscCall(PetscOptionsHasName(NULL,NULL,"-view_mat",&flg_mat));
-  if (flg_mat) {
-    PetscCall(MatView(C,PETSC_VIEWER_STDOUT_WORLD));
-  }
+  if (flg_mat) PetscCall(MatView(C,PETSC_VIEWER_STDOUT_WORLD));
 
   /* Test MatCreateRedundantMatrix() */
   nsubcomms = size;

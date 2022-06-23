@@ -261,9 +261,7 @@ PetscErrorCode  TSAdaptView(TSAdapt adapt,PetscViewer viewer)
     /* need to save FILE_CLASS_ID for adapt class */
     PetscCall(PetscStrncpy(type,((PetscObject)adapt)->type_name,256));
     PetscCall(PetscViewerBinaryWrite(viewer,type,256,PETSC_CHAR));
-  } else if (adapt->ops->view) {
-    PetscCall((*adapt->ops->view)(adapt,viewer));
-  }
+  } else if (adapt->ops->view) PetscCall((*adapt->ops->view)(adapt,viewer));
   PetscFunctionReturn(0);
 }
 

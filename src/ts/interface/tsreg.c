@@ -52,9 +52,7 @@ PetscErrorCode  TSSetType(TS ts,TSType type)
 
   PetscCall(PetscFunctionListFind(TSList,type,&r));
   PetscCheck(r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown TS type: %s", type);
-  if (ts->ops->destroy) {
-    PetscCall((*(ts)->ops->destroy)(ts));
-  }
+  if (ts->ops->destroy) PetscCall((*(ts)->ops->destroy)(ts));
   PetscCall(PetscMemzero(ts->ops,sizeof(*ts->ops)));
   ts->usessnes           = PETSC_FALSE;
   ts->default_adapt_type = TSADAPTNONE;

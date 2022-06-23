@@ -142,9 +142,7 @@ static PetscErrorCode KSPSolve_PIPEGCR_cycle(KSP ksp)
     /* Computations of current iteration done */
     i++;
 
-    if (pipegcr->modifypc) {
-      PetscCall((*pipegcr->modifypc)(ksp,ksp->its,ksp->rnorm,pipegcr->modifypc_ctx));
-    }
+    if (pipegcr->modifypc) PetscCall((*pipegcr->modifypc)(ksp,ksp->its,ksp->rnorm,pipegcr->modifypc_ctx));
 
     /* If needbe, allocate a new chunk of vectors */
     PetscCall(KSPAllocateVectors_PIPEGCR(ksp,i+1,pipegcr->vecb));
@@ -422,9 +420,7 @@ static PetscErrorCode KSPReset_PIPEGCR(KSP ksp)
   KSP_PIPEGCR    *pipegcr = (KSP_PIPEGCR*)ksp->data;
 
   PetscFunctionBegin;
-  if (pipegcr->modifypc_destroy) {
-    PetscCall((*pipegcr->modifypc_destroy)(pipegcr->modifypc_ctx));
-  }
+  if (pipegcr->modifypc_destroy) PetscCall((*pipegcr->modifypc_destroy)(pipegcr->modifypc_ctx));
   PetscFunctionReturn(0);
 }
 
@@ -451,9 +447,7 @@ static PetscErrorCode KSPDestroy_PIPEGCR(KSP ksp)
   PetscCall(PetscFree6(pipegcr->pvecs,pipegcr->ppvecs,pipegcr->svecs,pipegcr->psvecs,pipegcr->qvecs,pipegcr->pqvecs));
   PetscCall(PetscFree4(pipegcr->pold,pipegcr->sold,pipegcr->qold,pipegcr->chunksizes));
   PetscCall(PetscFree3(pipegcr->dots,pipegcr->etas,pipegcr->redux));
-  if (pipegcr->unroll_w) {
-    PetscCall(PetscFree3(pipegcr->tvecs,pipegcr->ptvecs,pipegcr->told));
-  }
+  if (pipegcr->unroll_w) PetscCall(PetscFree3(pipegcr->tvecs,pipegcr->ptvecs,pipegcr->told));
 
   PetscCall(KSPReset_PIPEGCR(ksp));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPPIPEGCRSetModifyPC_C",NULL));

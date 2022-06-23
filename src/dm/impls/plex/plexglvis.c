@@ -892,9 +892,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
           isbf = (PetscBool)(isbf && v != d);
         }
       }
-      if (isbf) {
-        PetscCall(PetscBTSet(bfaces,p-fStart));
-      }
+      if (isbf) PetscCall(PetscBTSet(bfaces,p-fStart));
     }
     /* count boundary faces */
     for (p=fStart,bf=0;p<fEnd;p++) {

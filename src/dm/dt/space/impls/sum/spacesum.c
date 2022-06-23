@@ -244,9 +244,7 @@ static PetscErrorCode PetscSpaceSetFromOptions_Sum(PetscOptionItems *PetscOption
       PetscCall(PetscObjectSetOptionsPrefix((PetscObject)subspace,prefix));
       PetscCall(PetscSNPrintf(subspacePrefix,256,"sumcomp_%" PetscInt_FMT "_",i));
       PetscCall(PetscObjectAppendOptionsPrefix((PetscObject)subspace,subspacePrefix));
-    } else {
-      PetscCall(PetscObjectReference((PetscObject)subspace));
-    }
+    } else PetscCall(PetscObjectReference((PetscObject)subspace));
     PetscCall(PetscSpaceSetFromOptions(subspace));
     PetscCall(PetscSpaceGetNumVariables(subspace,&sNv));
     PetscCheck(sNv,PetscObjectComm((PetscObject)sp),PETSC_ERR_ARG_WRONGSTATE,"Subspace %" PetscInt_FMT " has not been set properly, number of variables is 0.",i);
@@ -316,9 +314,7 @@ static PetscErrorCode PetscSpaceSetUp_Sum(PetscSpace sp)
     if (sum_Nc != Nc) {
       SETERRQ(PetscObjectComm((PetscObject)sp),PETSC_ERR_ARG_OUTOFRANGE,"Total number of subspace components (%" PetscInt_FMT ") does not match number of target space components (%" PetscInt_FMT ").",sum_Nc,Nc);
     }
-  } else {
-    PetscCheck(minNc == Nc && maxNc == Nc,PetscObjectComm((PetscObject)sp),PETSC_ERR_ARG_OUTOFRANGE,"Subspaces must have same number of components as the target space.");
-  }
+  } else PetscCheck(minNc == Nc && maxNc == Nc,PetscObjectComm((PetscObject)sp),PETSC_ERR_ARG_OUTOFRANGE,"Subspaces must have same number of components as the target space.");
 
   sp->degree       = deg;
   sp->maxDegree    = maxDeg;
@@ -335,11 +331,8 @@ static PetscErrorCode PetscSpaceSumView_Ascii(PetscSpace sp,PetscViewer v)
   PetscInt       i,Ns         = sum->numSumSpaces;
 
   PetscFunctionBegin;
-  if (concatenate) {
-    PetscCall(PetscViewerASCIIPrintf(v,"Sum space of %" PetscInt_FMT " concatenated subspaces%s\n",Ns, sum->uniform ? " (all identical)": ""));
-  } else {
-    PetscCall(PetscViewerASCIIPrintf(v,"Sum space of %" PetscInt_FMT " subspaces%s\n",Ns, sum->uniform ? " (all identical)" : ""));
-  }
+  if (concatenate) PetscCall(PetscViewerASCIIPrintf(v,"Sum space of %" PetscInt_FMT " concatenated subspaces%s\n",Ns, sum->uniform ? " (all identical)": ""));
+  else PetscCall(PetscViewerASCIIPrintf(v,"Sum space of %" PetscInt_FMT " subspaces%s\n",Ns, sum->uniform ? " (all identical)" : ""));
   for (i=0; i < (sum->uniform ? (Ns > 0 ? 1 : 0) : Ns); ++i) {
     PetscCall(PetscViewerASCIIPushTab(v));
     PetscCall(PetscSpaceView(sum->sumspaces[i],v));
@@ -354,9 +347,7 @@ static PetscErrorCode PetscSpaceView_Sum(PetscSpace sp,PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
-  if (iascii) {
-    PetscCall(PetscSpaceSumView_Ascii(sp,viewer));
-  }
+  if (iascii) PetscCall(PetscSpaceSumView_Ascii(sp,viewer));
   PetscFunctionReturn(0);
 }
 
@@ -604,9 +595,7 @@ PETSC_EXTERN PetscErrorCode PetscSpaceCreateSum(PetscInt numSubspaces,const Pets
   PetscInt       i,Nv,Nc = 0;
 
   PetscFunctionBegin;
-  if (sumSpace) {
-    PetscCall(PetscSpaceDestroy(sumSpace));
-  }
+  if (sumSpace) PetscCall(PetscSpaceDestroy(sumSpace));
   PetscCall(PetscSpaceCreate(PetscObjectComm((PetscObject)subspaces[0]),sumSpace));
   PetscCall(PetscSpaceSetType(*sumSpace,PETSCSPACESUM));
   PetscCall(PetscSpaceSumSetNumSubspaces(*sumSpace,numSubspaces));

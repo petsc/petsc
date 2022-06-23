@@ -96,9 +96,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   if (!nopreconditioner) Z = lsqr->vwork_n[4];
 
   /* standard error vector */
-  if (lsqr->se) {
-    PetscCall(VecSet(lsqr->se,0.0));
-  }
+  if (lsqr->se) PetscCall(VecSet(lsqr->se,0.0));
 
   /* Compute initial residual, temporarily use work vector u */
   if (!ksp->guess_zero) {

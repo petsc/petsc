@@ -1172,9 +1172,7 @@ PetscErrorCode MatSolve_MUMPS(Mat A,Vec b,Vec x)
   PetscCheck(mumps->id.INFOG(1) >= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in solve phase: INFOG(1)=%d",mumps->id.INFOG(1));
 
   /* handle expansion step of Schur complement (if any) */
-  if (second_solve) {
-    PetscCall(MatMumpsHandleSchur_Private(A,PETSC_TRUE));
-  }
+  if (second_solve) PetscCall(MatMumpsHandleSchur_Private(A,PETSC_TRUE));
 
   if (mumps->petsc_size > 1) { /* convert mumps distributed solution to petsc mpi x */
     if (mumps->scat_sol && mumps->ICNTL9_pre != mumps->id.ICNTL(9)) {
@@ -1297,9 +1295,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
     PetscCheck(mumps->id.INFOG(1) >= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in solve phase: INFOG(1)=%d",mumps->id.INFOG(1));
 
     /* handle expansion step of Schur complement (if any) */
-    if (second_solve) {
-      PetscCall(MatMumpsHandleSchur_Private(A,PETSC_TRUE));
-    }
+    if (second_solve) PetscCall(MatMumpsHandleSchur_Private(A,PETSC_TRUE));
     if (!denseB) { /* sparse B */
       PetscCall(MatSeqAIJRestoreArray(Bt,&aa));
       PetscCall(MatRestoreRowIJ(Bt,1,PETSC_FALSE,PETSC_FALSE,&spnr,(const PetscInt**)&ia,(const PetscInt**)&ja,&flg));

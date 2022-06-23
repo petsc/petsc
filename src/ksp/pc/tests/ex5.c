@@ -108,9 +108,7 @@ int main(int Argc,char **Args)
     */
     PetscCall(PCShellSetApply(pc,apply_pc));
     PetscCall(PCShellSetApplyRichardson(pc,gauss_seidel));
-    if (use_jacobi) {
-      PetscCall(PCShellSetApplyRichardson(pc,jacobi_smoother));
-    }
+    if (use_jacobi) PetscCall(PCShellSetApplyRichardson(pc,jacobi_smoother));
     PetscCall(KSPSetType(ksp[i],KSPRICHARDSON));
     PetscCall(KSPSetInitialGuessNonzero(ksp[i],PETSC_TRUE));
     PetscCall(KSPSetTolerances(ksp[i],PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,smooths));

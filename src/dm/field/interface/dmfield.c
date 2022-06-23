@@ -85,9 +85,7 @@ PetscErrorCode DMFieldView(DMField field,PetscViewer viewer)
     PetscCall(PetscViewerPopFormat(viewer));
   }
   if (field->ops->view) PetscCall((*field->ops->view)(field,viewer));
-  if (iascii) {
-    PetscCall(PetscViewerASCIIPopTab(viewer));
-  }
+  if (iascii) PetscCall(PetscViewerASCIIPopTab(viewer));
   PetscFunctionReturn(0);
 }
 
@@ -365,9 +363,7 @@ PetscErrorCode DMFieldGetDegree(DMField field, IS cellIS, PetscInt *minDegree, P
   if (minDegree) *minDegree = -1;
   if (maxDegree) *maxDegree = PETSC_MAX_INT;
 
-  if (field->ops->getDegree) {
-    PetscCall((*field->ops->getDegree) (field,cellIS,minDegree,maxDegree));
-  }
+  if (field->ops->getDegree) PetscCall((*field->ops->getDegree) (field,cellIS,minDegree,maxDegree));
   PetscFunctionReturn(0);
 }
 
@@ -396,9 +392,7 @@ PetscErrorCode DMFieldCreateDefaultQuadrature(DMField field, IS pointIS, PetscQu
   PetscValidPointer(quad,3);
 
   *quad = NULL;
-  if (field->ops->createDefaultQuadrature) {
-    PetscCall((*field->ops->createDefaultQuadrature)(field, pointIS, quad));
-  }
+  if (field->ops->createDefaultQuadrature) PetscCall((*field->ops->createDefaultQuadrature)(field, pointIS, quad));
   PetscFunctionReturn(0);
 }
 

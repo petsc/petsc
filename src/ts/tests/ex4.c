@@ -150,9 +150,7 @@ int main(int argc,char **argv)
 
   /* Test TSSetPostStep() */
   PetscCall(PetscOptionsHasName(NULL,NULL,"-test_PostStep",&flg));
-  if (flg) {
-    PetscCall(TSSetPostStep(ts,PostStep));
-  }
+  if (flg) PetscCall(TSSetPostStep(ts,PostStep));
 
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-NOUT",&NOUT,NULL));
   for (iout=1; iout<=NOUT; iout++) {

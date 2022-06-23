@@ -13,9 +13,7 @@ static PetscErrorCode PetscViewerDestroy_String(PetscViewer viewer)
   PetscViewer_String *vstr = (PetscViewer_String*)viewer->data;
 
   PetscFunctionBegin;
-  if (vstr->ownstring) {
-    PetscCall(PetscFree(vstr->string));
-  }
+  if (vstr->ownstring) PetscCall(PetscFree(vstr->string));
   PetscCall(PetscFree(vstr));
   PetscFunctionReturn(0);
 }

@@ -185,9 +185,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
                               A future improvement of this code might allow one to use
                               DM-defined subdomains and also increase the overlap,
                               but that is not currently supported */
-        if (num_domains) {
-          PetscCall(PCASMSetLocalSubdomains(pc, num_domains, outer_domain_is, inner_domain_is));
-        }
+        if (num_domains) PetscCall(PCASMSetLocalSubdomains(pc, num_domains, outer_domain_is, inner_domain_is));
         for (d = 0; d < num_domains; ++d) {
           if (domain_names)    PetscCall(PetscFree(domain_names[d]));
           if (inner_domain_is) PetscCall(ISDestroy(&inner_domain_is[d]));
@@ -272,9 +270,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
         }
         osm->ksp[i] = ksp;
       }
-      if (domain_dm) {
-        PetscCall(PetscFree(domain_dm));
-      }
+      if (domain_dm) PetscCall(PetscFree(domain_dm));
     }
 
     PetscCall(ISConcatenate(PETSC_COMM_SELF, osm->n_local_true, osm->is, &osm->lis));
@@ -759,9 +755,7 @@ static PetscErrorCode PCSetFromOptions_ASM(PetscOptionItems *PetscOptionsObject,
   PetscCall(PetscOptionsEnum("-pc_asm_local_type","Type of local solver composition","PCASMSetLocalType",PCCompositeTypes,(PetscEnum)osm->loctype,(PetscEnum*)&loctype,&flg));
   if (flg) PetscCall(PCASMSetLocalType(pc,loctype));
   PetscCall(PetscOptionsFList("-pc_asm_sub_mat_type","Subsolve Matrix Type","PCASMSetSubMatType",MatList,NULL,sub_mat_type,256,&flg));
-  if (flg) {
-    PetscCall(PCASMSetSubMatType(pc,sub_mat_type));
-  }
+  if (flg) PetscCall(PCASMSetSubMatType(pc,sub_mat_type));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }

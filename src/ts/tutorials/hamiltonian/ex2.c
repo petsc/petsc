@@ -445,9 +445,7 @@ int main(int argc,char **argv)
       PetscCall(TSPreStep(ts));
     }
     PetscCall(TSStep(ts));
-    if (ts->steprollback) {
-      PetscCall(TSPostEvaluate(ts));
-    }
+    if (ts->steprollback) PetscCall(TSPostEvaluate(ts));
     if (!ts->steprollback) {
 
       TSPostStep(ts);

@@ -905,9 +905,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
 
       /* Note: this is not true in general */
       PetscCall(MatGetNullSpace(jac->mat[1], &sp));
-      if (sp) {
-        PetscCall(MatSetNullSpace(jac->schur, sp));
-      }
+      if (sp) PetscCall(MatSetNullSpace(jac->schur, sp));
 
       PetscCall(PetscSNPrintf(schurtestoption, sizeof(schurtestoption), "-fieldsplit_%s_inner_", ilink->splitname));
       PetscCall(PetscOptionsFindPairPrefix_Private(((PetscObject)pc)->options,((PetscObject)pc)->prefix, schurtestoption, NULL, &flg));
@@ -1633,9 +1631,7 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PetscOptionItems *PetscOptions
   PetscOptionsHeadBegin(PetscOptionsObject,"FieldSplit options");
   PetscCall(PetscOptionsBool("-pc_fieldsplit_dm_splits","Whether to use DMCreateFieldDecomposition() for splits","PCFieldSplitSetDMSplits",jac->dm_splits,&jac->dm_splits,NULL));
   PetscCall(PetscOptionsInt("-pc_fieldsplit_block_size","Blocksize that defines number of fields","PCFieldSplitSetBlockSize",jac->bs,&bs,&flg));
-  if (flg) {
-    PetscCall(PCFieldSplitSetBlockSize(pc,bs));
-  }
+  if (flg) PetscCall(PCFieldSplitSetBlockSize(pc,bs));
   jac->diag_use_amat = pc->useAmat;
   PetscCall(PetscOptionsBool("-pc_fieldsplit_diag_use_amat","Use Amat (not Pmat) to extract diagonal fieldsplit blocks", "PCFieldSplitSetDiagUseAmat",jac->diag_use_amat,&jac->diag_use_amat,NULL));
   jac->offdiag_use_amat = pc->useAmat;
@@ -1643,9 +1639,7 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PetscOptionItems *PetscOptions
   PetscCall(PetscOptionsBool("-pc_fieldsplit_detect_saddle_point","Form 2-way split by detecting zero diagonal entries", "PCFieldSplitSetDetectSaddlePoint",jac->detect,&jac->detect,NULL));
   PetscCall(PCFieldSplitSetDetectSaddlePoint(pc,jac->detect)); /* Sets split type and Schur PC type */
   PetscCall(PetscOptionsEnum("-pc_fieldsplit_type","Type of composition","PCFieldSplitSetType",PCCompositeTypes,(PetscEnum)jac->type,(PetscEnum*)&ctype,&flg));
-  if (flg) {
-    PetscCall(PCFieldSplitSetType(pc,ctype));
-  }
+  if (flg) PetscCall(PCFieldSplitSetType(pc,ctype));
   /* Only setup fields once */
   if ((jac->bs > 0) && (jac->nsplits == 0)) {
     /* only allow user to set fields from command line if bs is already known.

@@ -164,9 +164,7 @@ PetscErrorCode  KSPGetGuess(KSP ksp,KSPGuess *guess)
 
     PetscCall(KSPGuessCreate(PetscObjectComm((PetscObject)ksp),&ksp->guess));
     PetscCall(PetscObjectGetOptionsPrefix((PetscObject)ksp,&prefix));
-    if (prefix) {
-      PetscCall(PetscObjectSetOptionsPrefix((PetscObject)ksp->guess,prefix));
-    }
+    if (prefix) PetscCall(PetscObjectSetOptionsPrefix((PetscObject)ksp->guess,prefix));
     ksp->guess->ksp = ksp;
   }
   *guess = ksp->guess;
@@ -344,9 +342,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   PetscCall(KSPRegisterAll());
   PetscObjectOptionsBegin((PetscObject)ksp);
   PetscCall(PetscOptionsFList("-ksp_type","Krylov method","KSPSetType",KSPList,(char*)(((PetscObject)ksp)->type_name ? ((PetscObject)ksp)->type_name : KSPGMRES),type,256,&flg));
-  if (flg) {
-    PetscCall(KSPSetType(ksp,type));
-  }
+  if (flg) PetscCall(KSPSetType(ksp,type));
   /*
     Set the type if it was never set.
   */
@@ -370,9 +366,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   PetscCall(KSPMonitorSetFromOptions(ksp, "-ksp_monitor_error", "error", ksp));
   PetscCall(PetscOptionsBool("-ksp_monitor_pause_final", "Pauses all draw monitors at the final iterate", "KSPMonitorPauseFinal_Internal", PETSC_FALSE, &ksp->pauseFinal, NULL));
   PetscCall(PetscOptionsBool("-ksp_initial_guess_nonzero","Use the contents of the solution vector for initial guess","KSPSetInitialNonzero",ksp->guess_zero ? PETSC_FALSE : PETSC_TRUE,&flag,&flg));
-  if (flg) {
-    PetscCall(KSPSetInitialGuessNonzero(ksp,flag));
-  }
+  if (flg) PetscCall(KSPSetInitialGuessNonzero(ksp,flag));
 
   PetscCall(PetscObjectTypeCompare((PetscObject)ksp,KSPPREONLY,&flg));
   if (flg) {
@@ -397,20 +391,14 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
 
     PetscCall(KSPGetDiagonalScale(ksp,&flag));
     PetscCall(PetscOptionsBool("-ksp_diagonal_scale","Diagonal scale matrix before building preconditioner","KSPSetDiagonalScale",flag,&flag,&flg));
-    if (flg) {
-      PetscCall(KSPSetDiagonalScale(ksp,flag));
-    }
+    if (flg) PetscCall(KSPSetDiagonalScale(ksp,flag));
     PetscCall(KSPGetDiagonalScaleFix(ksp,&flag));
     PetscCall(PetscOptionsBool("-ksp_diagonal_scale_fix","Fix diagonally scaled matrix after solve","KSPSetDiagonalScaleFix",flag,&flag,&flg));
-    if (flg) {
-      PetscCall(KSPSetDiagonalScaleFix(ksp,flag));
-    }
+    if (flg) PetscCall(KSPSetDiagonalScaleFix(ksp,flag));
     nmax = ksp->nmax;
     PetscCall(PetscOptionsDeprecated("-ksp_matsolve_block_size","-ksp_matsolve_batch_size","3.15",NULL));
     PetscCall(PetscOptionsInt("-ksp_matsolve_batch_size", "Maximum number of columns treated simultaneously", "KSPSetMatSolveBatchSize", nmax, &nmax, &flg));
-    if (flg) {
-      PetscCall(KSPSetMatSolveBatchSize(ksp, nmax));
-    }
+    if (flg) PetscCall(KSPSetMatSolveBatchSize(ksp, nmax));
     goto skipoptions;
   }
 
@@ -469,20 +457,14 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   PetscCall(PetscOptionsInt("-ksp_check_norm_iteration","First iteration to compute residual norm","KSPSetCheckNormIteration",ksp->chknorm,&ksp->chknorm,NULL));
 
   PetscCall(PetscOptionsBool("-ksp_lag_norm","Lag the calculation of the residual norm","KSPSetLagNorm",ksp->lagnorm,&flag,&flg));
-  if (flg) {
-    PetscCall(KSPSetLagNorm(ksp,flag));
-  }
+  if (flg) PetscCall(KSPSetLagNorm(ksp,flag));
 
   PetscCall(KSPGetDiagonalScale(ksp,&flag));
   PetscCall(PetscOptionsBool("-ksp_diagonal_scale","Diagonal scale matrix before building preconditioner","KSPSetDiagonalScale",flag,&flag,&flg));
-  if (flg) {
-    PetscCall(KSPSetDiagonalScale(ksp,flag));
-  }
+  if (flg) PetscCall(KSPSetDiagonalScale(ksp,flag));
   PetscCall(KSPGetDiagonalScaleFix(ksp,&flag));
   PetscCall(PetscOptionsBool("-ksp_diagonal_scale_fix","Fix diagonally scaled matrix after solve","KSPSetDiagonalScaleFix",flag,&flag,&flg));
-  if (flg) {
-    PetscCall(KSPSetDiagonalScaleFix(ksp,flag));
-  }
+  if (flg) PetscCall(KSPSetDiagonalScaleFix(ksp,flag));
 
   PetscCall(PetscOptionsBool("-ksp_constant_null_space","Add constant null space to Krylov solver matrix","MatSetNullSpace",PETSC_FALSE,&flg,&set));
   if (set && flg) {
@@ -635,28 +617,20 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
     PetscBool set;
     flg  = PETSC_FALSE;
     PetscCall(PetscOptionsBool("-ksp_saws_block","Block for SAWs at end of KSPSolve","PetscObjectSAWsBlock",((PetscObject)ksp)->amspublishblock,&flg,&set));
-    if (set) {
-      PetscCall(PetscObjectSAWsSetBlock((PetscObject)ksp,flg));
-    }
+    if (set) PetscCall(PetscObjectSAWsSetBlock((PetscObject)ksp,flg));
   }
 #endif
 
   nmax = ksp->nmax;
   PetscCall(PetscOptionsDeprecated("-ksp_matsolve_block_size","-ksp_matsolve_batch_size","3.15",NULL));
   PetscCall(PetscOptionsInt("-ksp_matsolve_batch_size", "Maximum number of columns treated simultaneously", "KSPSetMatSolveBatchSize", nmax, &nmax, &flg));
-  if (flg) {
-    PetscCall(KSPSetMatSolveBatchSize(ksp, nmax));
-  }
+  if (flg) PetscCall(KSPSetMatSolveBatchSize(ksp, nmax));
 
   flg  = PETSC_FALSE;
   PetscCall(PetscOptionsBool("-ksp_use_explicittranspose","Explicitly transpose the system in KSPSolveTranspose","KSPSetUseExplicitTranspose",ksp->transpose.use_explicittranspose,&flg,&set));
-  if (set) {
-    PetscCall(KSPSetUseExplicitTranspose(ksp,flg));
-  }
+  if (set) PetscCall(KSPSetUseExplicitTranspose(ksp,flg));
 
-  if (ksp->ops->setfromoptions) {
-    PetscCall((*ksp->ops->setfromoptions)(PetscOptionsObject,ksp));
-  }
+  if (ksp->ops->setfromoptions) PetscCall((*ksp->ops->setfromoptions)(PetscOptionsObject,ksp));
   skipoptions:
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)ksp));

@@ -13,9 +13,7 @@ static PetscErrorCode PetscSpacePointView_Ascii(PetscSpace sp, PetscViewer viewe
     PetscCall(PetscViewerASCIIPushTab(viewer));
     PetscCall(PetscQuadratureView(pt->quad, viewer));
     PetscCall(PetscViewerASCIIPopTab(viewer));
-  } else {
-    PetscCall(PetscViewerASCIIPrintf(viewer, "Point space in dimension %" PetscInt_FMT " on %" PetscInt_FMT " points\n", sp->Nv, pt->quad->numPoints));
-  }
+  } else PetscCall(PetscViewerASCIIPrintf(viewer, "Point space in dimension %" PetscInt_FMT " on %" PetscInt_FMT " points\n", sp->Nv, pt->quad->numPoints));
   PetscFunctionReturn(0);
 }
 

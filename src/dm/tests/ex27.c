@@ -107,9 +107,7 @@ int main(int argc,char **args)
     }
     PetscCall(VecRestoreArray(x, &a));
   }
-  if (view_x) {
-    PetscCall(VecView(x, PETSC_VIEWER_STDOUT_WORLD));
-  }
+  if (view_x) PetscCall(VecView(x, PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(VecCopy(x,xx));
 
   PetscCall(VecNorm(x,NORM_2,&norm));

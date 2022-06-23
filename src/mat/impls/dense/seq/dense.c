@@ -1657,13 +1657,9 @@ PetscErrorCode MatView_SeqDense(Mat A,PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw));
-  if (iascii) {
-    PetscCall(MatView_SeqDense_ASCII(A,viewer));
-  } else if (isbinary) {
-    PetscCall(MatView_Dense_Binary(A,viewer));
-  } else if (isdraw) {
-    PetscCall(MatView_SeqDense_Draw(A,viewer));
-  }
+  if (iascii) PetscCall(MatView_SeqDense_ASCII(A,viewer));
+  else if (isbinary) PetscCall(MatView_Dense_Binary(A,viewer));
+  else if (isdraw) PetscCall(MatView_SeqDense_Draw(A,viewer));
   PetscFunctionReturn(0);
 }
 

@@ -21,9 +21,7 @@ static PetscErrorCode PetscSpaceTensorCreateSubspace(PetscSpace space, PetscInt 
     PetscCall(PetscObjectGetName((PetscObject)space, &name));
     PetscCall(PetscSNPrintf(subname, PETSC_MAX_PATH_LEN-1, "%s tensor component", name));
     PetscCall(PetscObjectSetName((PetscObject)*subspace, subname));
-  } else {
-    PetscCall(PetscObjectSetName((PetscObject)*subspace, "tensor component"));
-  }
+  } else PetscCall(PetscObjectSetName((PetscObject)*subspace, "tensor component"));
   PetscFunctionReturn(0);
 }
 
@@ -83,9 +81,7 @@ static PetscErrorCode PetscSpaceSetFromOptions_Tensor(PetscOptionItems *PetscOpt
         PetscCall(PetscSpaceTensorCreateSubspace(sp, 1, 1, &subspace));
         PetscCall(PetscSNPrintf(tprefix, 128, "%d_",(int)i));
         PetscCall(PetscObjectAppendOptionsPrefix((PetscObject)subspace, tprefix));
-      } else {
-        PetscCall(PetscObjectReference((PetscObject)subspace));
-      }
+      } else PetscCall(PetscObjectReference((PetscObject)subspace));
       PetscCall(PetscSpaceSetFromOptions(subspace));
       PetscCall(PetscSpaceTensorSetSubspace(sp, i, subspace));
       PetscCall(PetscSpaceDestroy(&subspace));
@@ -208,9 +204,7 @@ static PetscErrorCode PetscSpaceSetUp_Tensor(PetscSpace sp)
         PetscCall(PetscObjectGetName((PetscObject)sp, &name));
         PetscCall(PetscSNPrintf(subname, PETSC_MAX_PATH_LEN-1, "%s sum component", name));
         PetscCall(PetscObjectSetName((PetscObject)subsp, subname));
-      } else {
-        PetscCall(PetscObjectSetName((PetscObject)subsp, "sum component"));
-      }
+      } else PetscCall(PetscObjectSetName((PetscObject)subsp, "sum component"));
       PetscCall(PetscSpaceSetType(subsp, PETSCSPACETENSOR));
       PetscCall(PetscSpaceSetNumVariables(subsp, Nv));
       PetscCall(PetscSpaceSetNumComponents(subsp, Ncprod));

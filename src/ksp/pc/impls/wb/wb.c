@@ -718,9 +718,7 @@ PetscErrorCode PCSetFromOptions_Exotic(PetscOptionItems *PetscOptionsObject,PC p
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject,"Exotic coarse space options");
   PetscCall(PetscOptionsEnum("-pc_exotic_type","face or wirebasket","PCExoticSetType",PCExoticTypes,(PetscEnum)ctx->type,(PetscEnum*)&mgctype,&flg));
-  if (flg) {
-    PetscCall(PCExoticSetType(pc,mgctype));
-  }
+  if (flg) PetscCall(PCExoticSetType(pc,mgctype));
   PetscCall(PetscOptionsBool("-pc_exotic_direct_solver","use direct solver to construct interpolation","None",ctx->directSolve,&ctx->directSolve,NULL));
   if (!ctx->directSolve) {
     if (!ctx->ksp) {

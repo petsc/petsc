@@ -40,14 +40,10 @@ int main(int argc,char **argv)
   PetscCall(PetscOptionsGetRealArray(NULL,NULL,"-interptimes",times,&Nt,NULL));
   sort = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-sorttimes",&sort,NULL));
-  if (sort) {
-    PetscCall(PetscSortReal(10,TT));
-  }
+  if (sort) PetscCall(PetscSortReal(10,TT));
   sort = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-sortkeys",&sort,NULL));
-  if (sort) {
-    PetscCall(PetscSortInt(10,II));
-  }
+  if (sort) PetscCall(PetscSortInt(10,II));
   p = PetscMax(p,-p);
 
   /* populate trajectory */

@@ -130,9 +130,7 @@ static PetscErrorCode MatProductDestroy_CF(void *data)
   MatMatCF       *mmcfdata = (MatMatCF*)data;
 
   PetscFunctionBegin;
-  if (mmcfdata->userdestroy) {
-    PetscCall((*mmcfdata->userdestroy)(mmcfdata->userdata));
-  }
+  if (mmcfdata->userdestroy) PetscCall((*mmcfdata->userdestroy)(mmcfdata->userdata));
   PetscCall(MatDestroy(&mmcfdata->Dwork));
   PetscCall(PetscFree(mmcfdata));
   PetscFunctionReturn(0);

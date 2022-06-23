@@ -1645,11 +1645,8 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature_Internal(PetscInt npoints,Pet
   PetscCheck(alpha > -1.,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"alpha must be > -1.");
   PetscCheck(beta > -1.,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"beta must be > -1.");
 
-  if (newton) {
-    PetscCall(PetscDTGaussJacobiQuadrature_Newton_Internal(npoints, alpha, beta, x, w));
-  } else {
-    PetscCall(PetscDTGaussJacobiQuadrature_GolubWelsch_Internal(npoints, alpha, beta, x, w));
-  }
+  if (newton) PetscCall(PetscDTGaussJacobiQuadrature_Newton_Internal(npoints, alpha, beta, x, w));
+  else PetscCall(PetscDTGaussJacobiQuadrature_GolubWelsch_Internal(npoints, alpha, beta, x, w));
   if (alpha == beta) { /* symmetrize */
     PetscInt i;
     for (i = 0; i < (npoints + 1) / 2; i++) {

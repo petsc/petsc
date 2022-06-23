@@ -37,9 +37,7 @@ PetscErrorCode MatLMVMUpdate(Mat B, Vec X, Vec F)
   if (lmvm->J0) {
     /* If the user provided an LMVM-type matrix as J0, then trigger its update as well */
     PetscCall(PetscObjectBaseTypeCompare((PetscObject)lmvm->J0, MATLMVM, &same));
-    if (same) {
-      PetscCall(MatLMVMUpdate(lmvm->J0, X, F));
-    }
+    if (same) PetscCall(MatLMVMUpdate(lmvm->J0, X, F));
   }
   PetscCall((*lmvm->ops->update)(B, X, F));
   PetscFunctionReturn(0);
@@ -550,9 +548,7 @@ PetscErrorCode MatLMVMAllocate(Mat B, Vec X, Vec F)
   PetscCall((*lmvm->ops->allocate)(B, X, F));
   if (lmvm->J0) {
     PetscCall(PetscObjectBaseTypeCompare((PetscObject)lmvm->J0, MATLMVM, &same));
-    if (same) {
-      PetscCall(MatLMVMAllocate(lmvm->J0, X, F));
-    }
+    if (same) PetscCall(MatLMVMAllocate(lmvm->J0, X, F));
   }
   PetscFunctionReturn(0);
 }
@@ -615,9 +611,7 @@ PetscErrorCode MatLMVMReset(Mat B, PetscBool destructive)
   PetscCall((*lmvm->ops->reset)(B, destructive));
   if (lmvm->J0) {
     PetscCall(PetscObjectBaseTypeCompare((PetscObject)lmvm->J0, MATLMVM, &same));
-    if (same) {
-      PetscCall(MatLMVMReset(lmvm->J0, destructive));
-    }
+    if (same) PetscCall(MatLMVMReset(lmvm->J0, destructive));
   }
   PetscFunctionReturn(0);
 }

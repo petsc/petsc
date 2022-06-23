@@ -264,9 +264,7 @@ PetscErrorCode MatProductReplaceMats(Mat A,Mat B,Mat C,Mat D)
   }
   /* Any of the replaced mats is of a different type, reset */
   if (!flgA || !flgB || !flgC) {
-    if (D->product->destroy) {
-      PetscCall((*D->product->destroy)(D->product->data));
-    }
+    if (D->product->destroy) PetscCall((*D->product->destroy)(D->product->data));
     D->product->destroy = NULL;
     D->product->data = NULL;
     if (D->ops->productnumeric || D->ops->productsymbolic) {
@@ -549,9 +547,7 @@ PetscErrorCode MatProductView(Mat mat, PetscViewer viewer)
   if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)mat),&viewer));
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(mat,1,viewer,2);
-  if (mat->product->view) {
-    PetscCall((*mat->product->view)(mat,viewer));
-  }
+  if (mat->product->view) PetscCall((*mat->product->view)(mat,viewer));
   PetscFunctionReturn(0);
 }
 
@@ -688,9 +684,7 @@ PetscErrorCode MatProductNumeric(Mat mat)
     PetscCheck(mat->product,PetscObjectComm((PetscObject)mat),PETSC_ERR_PLIB,"Missing struct after symbolic phase for product %s",errstr);
   }
 
-  if (mat->product->clear) {
-    PetscCall(MatProductClear(mat));
-  }
+  if (mat->product->clear) PetscCall(MatProductClear(mat));
   PetscCall(PetscObjectStateIncrease((PetscObject)mat));
   PetscFunctionReturn(0);
 }
@@ -884,9 +878,7 @@ PetscErrorCode MatProductSetType(Mat mat,MatProductType productype)
   MatCheckProduct(mat,1);
   PetscValidLogicalCollectiveEnum(mat,productype,2);
   if (productype != mat->product->type) {
-    if (mat->product->destroy) {
-      PetscCall((*mat->product->destroy)(mat->product->data));
-    }
+    if (mat->product->destroy) PetscCall((*mat->product->destroy)(mat->product->data));
     mat->product->destroy = NULL;
     mat->product->data = NULL;
     mat->ops->productsymbolic = NULL;
@@ -921,9 +913,7 @@ PetscErrorCode MatProductClear(Mat mat)
     PetscCall(MatDestroy(&product->C));
     PetscCall(PetscFree(product->alg));
     PetscCall(MatDestroy(&product->Dwork));
-    if (product->destroy) {
-      PetscCall((*product->destroy)(product->data));
-    }
+    if (product->destroy) PetscCall((*product->destroy)(product->data));
   }
   PetscCall(PetscFree(mat->product));
   mat->ops->productsymbolic = NULL;

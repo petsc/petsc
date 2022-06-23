@@ -423,18 +423,14 @@ int main(int argc,char **args)
     PetscCall(VecZeroEntries(b));
     PetscCall(VecSetRandom(x,NULL));
     if (user.random_real) PetscCall(VecRealPart(x));
-    if (nullsp) {
-      PetscCall(MatNullSpaceRemove(nullsp,x));
-    }
+    if (nullsp) PetscCall(MatNullSpaceRemove(nullsp,x));
     PetscCall(KSPSetInitialGuessNonzero(ksp,PETSC_TRUE));
     PetscCall(KSPSetComputeEigenvalues(ksp,PETSC_TRUE));
     PetscCall(KSPGMRESSetRestart(ksp,100));
   } else {
     PetscCall(VecSetRandom(b,NULL));
     if (user.random_real) PetscCall(VecRealPart(x));
-    if (nullsp) {
-      PetscCall(MatNullSpaceRemove(nullsp,b));
-    }
+    if (nullsp) PetscCall(MatNullSpaceRemove(nullsp,b));
   }
   PetscCall(PetscLogStagePush(stages[1]));
   PetscCall(KSPSolve(ksp,b,x));

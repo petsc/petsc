@@ -812,15 +812,10 @@ static inline PetscErrorCode MatPivotCheck_none(Mat fact,Mat mat,const MatFactor
 static inline PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFactorInfo *info,FactorShiftCtx *sctx,PetscInt row)
 {
   PetscFunctionBegin;
-  if (info->shifttype == (PetscReal) MAT_SHIFT_NONZERO) {
-    PetscCall(MatPivotCheck_nz(mat,info,sctx,row));
-  } else if (info->shifttype == (PetscReal) MAT_SHIFT_POSITIVE_DEFINITE) {
-    PetscCall(MatPivotCheck_pd(mat,info,sctx,row));
-  } else if (info->shifttype == (PetscReal) MAT_SHIFT_INBLOCKS) {
-    PetscCall(MatPivotCheck_inblocks(mat,info,sctx,row));
-  } else {
-    PetscCall(MatPivotCheck_none(fact,mat,info,sctx,row));
-  }
+  if (info->shifttype == (PetscReal) MAT_SHIFT_NONZERO) PetscCall(MatPivotCheck_nz(mat,info,sctx,row));
+  else if (info->shifttype == (PetscReal) MAT_SHIFT_POSITIVE_DEFINITE) PetscCall(MatPivotCheck_pd(mat,info,sctx,row));
+  else if (info->shifttype == (PetscReal) MAT_SHIFT_INBLOCKS) PetscCall(MatPivotCheck_inblocks(mat,info,sctx,row));
+  else PetscCall(MatPivotCheck_none(fact,mat,info,sctx,row));
   PetscFunctionReturn(0);
 }
 

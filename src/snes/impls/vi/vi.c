@@ -482,14 +482,10 @@ PetscErrorCode SNESSetFromOptions_VI(PetscOptionItems *PetscOptionsObject,SNES s
   PetscOptionsHeadBegin(PetscOptionsObject,"SNES VI options");
   PetscCall(PetscOptionsReal("-snes_vi_zero_tolerance","Tolerance for considering x[] value to be on a bound","None",snes->vizerotolerance,&snes->vizerotolerance,NULL));
   PetscCall(PetscOptionsBool("-snes_vi_monitor","Monitor all non-active variables","SNESMonitorResidual",flg,&flg,NULL));
-  if (flg) {
-    PetscCall(SNESMonitorSet(snes,SNESMonitorVI,PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)snes)),NULL));
-  }
+  if (flg) PetscCall(SNESMonitorSet(snes,SNESMonitorVI,PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)snes)),NULL));
   flg = PETSC_FALSE;
   PetscCall(PetscOptionsBool("-snes_vi_monitor_residual","Monitor residual all non-active variables; using zero for active constraints","SNESMonitorVIResidual",flg,&flg,NULL));
-  if (flg) {
-    PetscCall(SNESMonitorSet(snes,SNESVIMonitorResidual,PETSC_VIEWER_DRAW_(PetscObjectComm((PetscObject)snes)),NULL));
-  }
+  if (flg) PetscCall(SNESMonitorSet(snes,SNESVIMonitorResidual,PETSC_VIEWER_DRAW_(PetscObjectComm((PetscObject)snes)),NULL));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }

@@ -170,9 +170,7 @@ static PetscErrorCode KSPAGMRESSchurForm(KSP ksp, PetscBLASInt KspSize, PetscSca
    * FIXME should investigate how to get unique Schur vectors (unique QR factorization, probably the sign of rotations) */
   PetscCallMPI(MPI_Bcast(Sr, (N+1)*r, MPIU_SCALAR, agmres->First, PetscObjectComm((PetscObject)ksp)));
   /* Update the Shift values for the Newton basis. This is surely necessary when applying the DeflationPrecond */
-  if (agmres->DeflPrecond) {
-    PetscCall(KSPAGMRESLejaOrdering(wr, wi, agmres->Rshift, agmres->Ishift, max_k));
-  }
+  if (agmres->DeflPrecond) PetscCall(KSPAGMRESLejaOrdering(wr, wi, agmres->Rshift, agmres->Ishift, max_k));
   *CurNeig = r; /* Number of extracted eigenvalues */
   PetscFunctionReturn(0);
 

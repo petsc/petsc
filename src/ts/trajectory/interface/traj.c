@@ -65,9 +65,7 @@ PetscErrorCode TSTrajectorySet(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal 
   PetscCall(PetscLogEventBegin(TSTrajectory_Set,tj,ts,0,0));
   PetscCall((*tj->ops->set)(tj,ts,stepnum,time,X));
   PetscCall(PetscLogEventEnd(TSTrajectory_Set,tj,ts,0,0));
-  if (tj->usehistory) {
-    PetscCall(TSHistoryUpdate(tj->tsh,stepnum,time));
-  }
+  if (tj->usehistory) PetscCall(TSHistoryUpdate(tj->tsh,stepnum,time));
   if (tj->lag.caching) tj->lag.Udotcached.time = PETSC_MIN_REAL;
   PetscFunctionReturn(0);
 }
@@ -222,9 +220,7 @@ PetscErrorCode TSTrajectoryGetVecs(TSTrajectory tj,TS ts,PetscInt stepnum,PetscR
   }
 
   if (stepnum == PETSC_DECIDE || Udot) { /* reverse search for requested time in TSHistory */
-    if (tj->monitor) {
-      PetscCall(PetscViewerASCIIPushTab(tj->monitor));
-    }
+    if (tj->monitor) PetscCall(PetscViewerASCIIPushTab(tj->monitor));
     /* cached states will be updated in the function */
     PetscCall(TSTrajectoryReconstruct_Private(tj,ts,*time,U,Udot));
     if (tj->monitor) {
@@ -551,9 +547,7 @@ PetscErrorCode TSTrajectoryReset(TSTrajectory tj)
   PetscFunctionBegin;
   if (!tj) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(tj,TSTRAJECTORY_CLASSID,1);
-  if (tj->ops->reset) {
-    PetscCall((*tj->ops->reset)(tj));
-  }
+  if (tj->ops->reset) PetscCall((*tj->ops->reset)(tj));
   PetscCall(PetscFree(tj->dirfiletemplate));
   PetscCall(TSHistoryDestroy(&tj->tsh));
   PetscCall(TSHistoryCreate(PetscObjectComm((PetscObject)tj),&tj->tsh));
@@ -842,19 +836,13 @@ PetscErrorCode  TSTrajectorySetFromOptions(TSTrajectory tj,TS ts)
   if (set) PetscCall(TSTrajectorySetKeepFiles(tj,flg));
 
   PetscCall(PetscOptionsString("-ts_trajectory_dirname","Directory name for TSTrajectory file","TSTrajectorySetDirname",NULL,dirname,sizeof(dirname)-14,&set));
-  if (set) {
-    PetscCall(TSTrajectorySetDirname(tj,dirname));
-  }
+  if (set) PetscCall(TSTrajectorySetDirname(tj,dirname));
 
   PetscCall(PetscOptionsString("-ts_trajectory_file_template","Template for TSTrajectory file name, use filename-%06" PetscInt_FMT ".bin","TSTrajectorySetFiletemplate",NULL,filetemplate,sizeof(filetemplate),&set));
-  if (set) {
-    PetscCall(TSTrajectorySetFiletemplate(tj,filetemplate));
-  }
+  if (set) PetscCall(TSTrajectorySetFiletemplate(tj,filetemplate));
 
   /* Handle specific TSTrajectory options */
-  if (tj->ops->setfromoptions) {
-    PetscCall((*tj->ops->setfromoptions)(PetscOptionsObject,tj));
-  }
+  if (tj->ops->setfromoptions) PetscCall((*tj->ops->setfromoptions)(PetscOptionsObject,tj));
   PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -887,9 +875,7 @@ PetscErrorCode  TSTrajectorySetUp(TSTrajectory tj,TS ts)
   if (!((PetscObject)tj)->type_name) {
     PetscCall(TSTrajectorySetType(tj,ts,TSTRAJECTORYBASIC));
   }
-  if (tj->ops->setup) {
-    PetscCall((*tj->ops->setup)(tj,ts));
-  }
+  if (tj->ops->setup) PetscCall((*tj->ops->setup)(tj,ts));
 
   tj->setupcalled = PETSC_TRUE;
 

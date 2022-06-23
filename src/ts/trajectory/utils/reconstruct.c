@@ -75,9 +75,7 @@ PetscErrorCode TSTrajectoryReconstruct_Private(TSTrajectory tj,TS ts,PetscReal t
     PetscInt up = PetscMin(nid + tj->lag.order/2+1,tshn);
     PetscInt low = PetscMax(up-tj->lag.order-1,0);
     up = PetscMin(PetscMax(low + tj->lag.order + 1,up),tshn);
-    if (tj->monitor) {
-      PetscCall(PetscViewerASCIIPushTab(tj->monitor));
-    }
+    if (tj->monitor) PetscCall(PetscViewerASCIIPushTab(tj->monitor));
 
     /* first see if we can reuse any */
     for (s = up-1; s >= low; s--) {
@@ -113,18 +111,14 @@ PetscErrorCode TSTrajectoryReconstruct_Private(TSTrajectory tj,TS ts,PetscReal t
       }
       PetscCall(TSTrajectoryGetVecs(tj,ts,tshhist_id[s],&t,tj->lag.W[tid],NULL));
       tj->lag.T[tid] = t;
-      if (tj->monitor) {
-        PetscCall(PetscViewerASCIIPopTab(tj->monitor));
-      }
+      if (tj->monitor) PetscCall(PetscViewerASCIIPopTab(tj->monitor));
       tj->lag.TT[tid] = PETSC_TRUE;
       tj->lag.WW[cnt] = tj->lag.W[tid];
       tj->lag.TW[cnt] = t;
       tj->lag.TT[tj->lag.order+1 + s-low] = PETSC_TRUE;
       cnt++;
     }
-    if (tj->monitor) {
-      PetscCall(PetscViewerASCIIPopTab(tj->monitor));
-    }
+    if (tj->monitor) PetscCall(PetscViewerASCIIPopTab(tj->monitor));
   }
   PetscCall(PetscArrayzero(tj->lag.TT,tj->lag.order+1));
   if (id >=0 && U) { /* requested time match */
@@ -144,9 +138,7 @@ PetscErrorCode TSTrajectoryReconstruct_Private(TSTrajectory tj,TS ts,PetscReal t
         PetscCall(PetscViewerASCIIPushTab(tj->monitor));
       }
       PetscCall(TSTrajectoryGetVecs(tj,ts,tshhist_id[id],&t,tj->lag.W[tid],NULL));
-      if (tj->monitor) {
-        PetscCall(PetscViewerASCIIPopTab(tj->monitor));
-      }
+      if (tj->monitor) PetscCall(PetscViewerASCIIPopTab(tj->monitor));
       tj->lag.T[tid] = t;
     } else if (tj->monitor) {
       PetscCall(PetscViewerASCIIPrintf(tj->monitor,"Reusing snapshot %" PetscInt_FMT " step %" PetscInt_FMT ", time %g\n",tid,tshhist_id[id],(double)t));
@@ -156,9 +148,7 @@ PetscErrorCode TSTrajectoryReconstruct_Private(TSTrajectory tj,TS ts,PetscReal t
     PetscCall(PetscObjectGetId((PetscObject)U,&tj->lag.Ucached.id));
     tj->lag.Ucached.time = t;
     tj->lag.Ucached.step = tshhist_id[id];
-    if (tj->monitor) {
-      PetscCall(PetscViewerASCIIPopTab(tj->monitor));
-    }
+    if (tj->monitor) PetscCall(PetscViewerASCIIPopTab(tj->monitor));
   }
   if (id < 0 && U) {
     if (tj->monitor) {

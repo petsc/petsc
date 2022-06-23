@@ -244,9 +244,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interp
             PetscCall(DMPlexVecGetClosure(*dm, coordSection, coordinates, c, &coordSize, &coords));
             for (s = 0; s < coordSize; ++s) for (d = 0; d < dim; ++d) centroid[d] += coords[s*dim+d];
             PetscCall(DMPlexVecRestoreClosure(*dm, coordSection, coordinates, c, &coordSize, &coords));
-          } else {
-            PetscCall(DMPlexComputeCellGeometryFVM(*dm, c, NULL, centroid, NULL));
-          }
+          } else PetscCall(DMPlexComputeCellGeometryFVM(*dm, c, NULL, centroid, NULL));
           for (b = 0; b < Nb; ++b) {
             if (EG_inTopology(bodies[b], centroid) == EGADS_SUCCESS) break;
           }
@@ -521,9 +519,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_CTetgen(DM dm, PetscReal *maxVolumes, D
             PetscCall(DMPlexVecGetClosure(*dmRefined, coordSection, coordinates, c, &coordSize, &coords));
             for (s = 0; s < coordSize; ++s) for (d = 0; d < dim; ++d) centroid[d] += coords[s*dim+d];
             PetscCall(DMPlexVecRestoreClosure(*dmRefined, coordSection, coordinates, c, &coordSize, &coords));
-          } else {
-            PetscCall(DMPlexComputeCellGeometryFVM(*dmRefined, c, NULL, centroid, NULL));
-          }
+          } else PetscCall(DMPlexComputeCellGeometryFVM(*dmRefined, c, NULL, centroid, NULL));
           for (b = 0; b < Nb; ++b) {
             if (EG_inTopology(bodies[b], centroid) == EGADS_SUCCESS) break;
           }

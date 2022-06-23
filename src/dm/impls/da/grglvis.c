@@ -232,9 +232,7 @@ PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer
         }
         PetscCall(PetscSNPrintf(fecmesh,sizeof(fecmesh),"FiniteElementCollection: L2_T1_%" PetscInt_FMT "D_P%" PetscInt_FMT,dim,deg));
         PetscCall(PetscObjectSetName((PetscObject)xcoorl,fecmesh));
-      } else {
-        PetscCall(PetscObjectSetName((PetscObject)xcoorl,name));
-      }
+      } else PetscCall(PetscObjectSetName((PetscObject)xcoorl,name));
     }
 
     /* xcoorl is composed with the ghosted DMDA, the ghosted coordinate DMDA (if present) is only available through this vector */

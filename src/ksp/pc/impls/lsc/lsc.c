@@ -73,13 +73,9 @@ static PetscErrorCode PCApply_LSC(PC pc,Vec x,Vec y)
   PetscCall(KSPSolve(lsc->kspL,x,lsc->x1));
   PetscCall(KSPCheckSolve(lsc->kspL,pc,lsc->x1));
   PetscCall(MatMult(B,lsc->x1,lsc->x0));
-  if (lsc->scale) {
-    PetscCall(VecPointwiseMult(lsc->x0,lsc->x0,lsc->scale));
-  }
+  if (lsc->scale) PetscCall(VecPointwiseMult(lsc->x0,lsc->x0,lsc->scale));
   PetscCall(MatMult(A,lsc->x0,lsc->y0));
-  if (lsc->scale) {
-    PetscCall(VecPointwiseMult(lsc->y0,lsc->y0,lsc->scale));
-  }
+  if (lsc->scale) PetscCall(VecPointwiseMult(lsc->y0,lsc->y0,lsc->scale));
   PetscCall(MatMult(C,lsc->y0,lsc->x1));
   PetscCall(KSPSolve(lsc->kspL,lsc->x1,y));
   PetscCall(KSPCheckSolve(lsc->kspL,pc,y));

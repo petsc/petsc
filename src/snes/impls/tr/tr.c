@@ -308,9 +308,7 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
   for (i=0; i<maxits; i++) {
 
     /* Call general purpose update function */
-    if (snes->ops->update) {
-      PetscCall((*snes->ops->update)(snes, snes->iter));
-    }
+    if (snes->ops->update) PetscCall((*snes->ops->update)(snes, snes->iter));
 
     /* Solve J Y = F, where J is Jacobian matrix */
     PetscCall(SNESComputeJacobian(snes,X,snes->jacobian,snes->jacobian_pre));

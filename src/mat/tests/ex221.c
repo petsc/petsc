@@ -154,9 +154,7 @@ int main(int argc,char **args)
   PetscCall(MatCreateShell(PETSC_COMM_WORLD,m,n,M,N,user,&S));
   PetscCall(MatShellSetOperation(S,MATOP_MULT,(void (*)(void))MatMult_User));
   PetscCall(MatShellSetOperation(S,MATOP_MULT_TRANSPOSE,(void (*)(void))MatMultTranspose_User));
-  if (cong) {
-    PetscCall(MatShellSetOperation(S,MATOP_GET_DIAGONAL,(void (*)(void))MatGetDiagonal_User));
-  }
+  if (cong) PetscCall(MatShellSetOperation(S,MATOP_GET_DIAGONAL,(void (*)(void))MatGetDiagonal_User));
   PetscCall(MatShellSetOperation(S,MATOP_COPY,(void (*)(void))MatCopy_User));
   PetscCall(MatShellSetOperation(S,MATOP_DESTROY,(void (*)(void))MatDestroy_User));
   PetscCall(MatDuplicate(A,MAT_COPY_VALUES,&user->B));

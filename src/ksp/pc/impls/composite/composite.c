@@ -234,9 +234,7 @@ static PetscErrorCode PCSetFromOptions_Composite(PetscOptionItems *PetscOptionsO
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject,"Composite preconditioner options");
   PetscCall(PetscOptionsEnum("-pc_composite_type","Type of composition","PCCompositeSetType",PCCompositeTypes,(PetscEnum)jac->type,(PetscEnum*)&jac->type,&flg));
-  if (flg) {
-    PetscCall(PCCompositeSetType(pc,jac->type));
-  }
+  if (flg) PetscCall(PCCompositeSetType(pc,jac->type));
   PetscCall(PetscOptionsStringArray("-pc_composite_pcs","List of composite solvers","PCCompositeAddPCType",pcs,&nmax,&flg));
   if (flg) {
     for (i=0; i<nmax; i++) {
@@ -267,9 +265,7 @@ static PetscErrorCode PCView_Composite(PC pc,PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer,"PCs on composite preconditioner follow\n"));
     PetscCall(PetscViewerASCIIPrintf(viewer,"---------------------------------\n"));
   }
-  if (iascii) {
-    PetscCall(PetscViewerASCIIPushTab(viewer));
-  }
+  if (iascii) PetscCall(PetscViewerASCIIPushTab(viewer));
   while (next) {
     PetscCall(PCView(next->pc,viewer));
     next = next->next;

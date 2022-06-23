@@ -198,9 +198,7 @@ int main(int argc,char **args)
       PetscCall(MatLUFactorSymbolic(F,A,NULL,NULL,&info));
       flg = PETSC_FALSE;
       PetscCall(PetscOptionsGetBool(NULL,NULL,"-print_mumps_memory",&flg,NULL));
-      if (flg) {
-        PetscCall(printMumpsMemoryInfo(F));
-      }
+      if (flg) PetscCall(printMumpsMemoryInfo(F));
     }
 
     /* sequential ordering */
@@ -231,11 +229,8 @@ int main(int argc,char **args)
   if (flg_superlu || flg_ilu) {
     PetscCall(KSPSetType(ksp,KSPPREONLY));
     PetscCall(KSPGetPC(ksp,&pc));
-    if (flg_superlu) {
-      PetscCall(PCSetType(pc,PCLU));
-    } else if (flg_ilu) {
-      PetscCall(PCSetType(pc,PCILU));
-    }
+    if (flg_superlu) PetscCall(PCSetType(pc,PCLU));
+    else if (flg_ilu) PetscCall(PCSetType(pc,PCILU));
     if (size == 1) {
 #if !defined(PETSC_HAVE_SUPERLU)
       SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This test requires SUPERLU");
@@ -283,11 +278,8 @@ int main(int argc,char **args)
   if (flg_strumpack || flg_ilu) {
     PetscCall(KSPSetType(ksp,KSPPREONLY));
     PetscCall(KSPGetPC(ksp,&pc));
-    if (flg_strumpack) {
-      PetscCall(PCSetType(pc,PCLU));
-    } else if (flg_ilu) {
-      PetscCall(PCSetType(pc,PCILU));
-    }
+    if (flg_strumpack) PetscCall(PCSetType(pc,PCLU));
+    else if (flg_ilu) PetscCall(PCSetType(pc,PCILU));
 #if !defined(PETSC_HAVE_STRUMPACK)
     SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This test requires STRUMPACK");
 #endif
@@ -333,13 +325,9 @@ int main(int argc,char **args)
 
     PetscCall(KSPSetType(ksp,KSPPREONLY));
     PetscCall(KSPGetPC(ksp,&pc));
-    if (flg) {
-      PetscCall(PCSetType(pc,PCLU));
-    } else if (flg_ilu) {
-      PetscCall(PCSetType(pc,PCILU));
-    } else if (flg_ch) {
-      PetscCall(PCSetType(pc,PCCHOLESKY));
-    }
+    if (flg) PetscCall(PCSetType(pc,PCLU));
+    else if (flg_ilu) PetscCall(PCSetType(pc,PCILU));
+    else if (flg_ch) PetscCall(PCSetType(pc,PCCHOLESKY));
     PetscCall(PCFactorSetMatSolverType(pc,MATSOLVERPETSC));
     PetscCall(PCFactorSetUpMatSolverType(pc)); /* call MatGetFactor() to create F */
     PetscCall(PCFactorGetMatrix(pc,&F));

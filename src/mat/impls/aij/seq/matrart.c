@@ -18,9 +18,7 @@ PetscErrorCode MatDestroy_SeqAIJ_RARt(void *data)
   PetscCall(MatDestroy(&rart->RARt));
   PetscCall(MatDestroy(&rart->ARt));
   PetscCall(PetscFree(rart->work));
-  if (rart->destroy) {
-    PetscCall((*rart->destroy)(rart->data));
-  }
+  if (rart->destroy) PetscCall((*rart->destroy)(rart->data));
   PetscCall(PetscFree(rart));
   PetscFunctionReturn(0);
 }

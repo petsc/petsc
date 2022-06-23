@@ -73,13 +73,9 @@ int main(int argc,char **argv)
   PetscCall(MatView(B,0));
   PetscCall(MatFDColoringCreate(A,iscoloring,&fdcoloring));
   PetscCall(PetscOptionsHasName(NULL,NULL,"-single_block",&single));
-  if (single) {
-    PetscCall(MatFDColoringSetBlockSize(fdcoloring,PETSC_DEFAULT,nc));
-  }
+  if (single) PetscCall(MatFDColoringSetBlockSize(fdcoloring,PETSC_DEFAULT,nc));
   PetscCall(PetscOptionsHasName(NULL,NULL,"-two_block",&two));
-  if (two) {
-    PetscCall(MatFDColoringSetBlockSize(fdcoloring,PETSC_DEFAULT,2));
-  }
+  if (two) PetscCall(MatFDColoringSetBlockSize(fdcoloring,PETSC_DEFAULT,2));
   PetscCall(MatFDColoringSetFromOptions(fdcoloring));
   PetscCall(MatFDColoringSetUp(A,iscoloring,fdcoloring));
 

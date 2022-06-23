@@ -76,18 +76,14 @@ PetscErrorCode DMTSView(DMTS kdm,PetscViewer viewer)
     PetscCall(PetscViewerBinaryWrite(viewer,&funcstruct,1,PETSC_FUNCTION));
     PetscCall(PetscViewerBinaryWrite(viewer,&funcviewstruct,1,PETSC_FUNCTION));
     PetscCall(PetscViewerBinaryWrite(viewer,&funcloadstruct,1,PETSC_FUNCTION));
-    if (kdm->ops->ifunctionview) {
-      PetscCall((*kdm->ops->ifunctionview)(kdm->ifunctionctx,viewer));
-    }
+    if (kdm->ops->ifunctionview) PetscCall((*kdm->ops->ifunctionview)(kdm->ifunctionctx,viewer));
     jacstruct.ijacobian = kdm->ops->ijacobian;
     jacviewstruct.ijacobianview = kdm->ops->ijacobianview;
     jacloadstruct.ijacobianload = kdm->ops->ijacobianload;
     PetscCall(PetscViewerBinaryWrite(viewer,&jacstruct,1,PETSC_FUNCTION));
     PetscCall(PetscViewerBinaryWrite(viewer,&jacviewstruct,1,PETSC_FUNCTION));
     PetscCall(PetscViewerBinaryWrite(viewer,&jacloadstruct,1,PETSC_FUNCTION));
-    if (kdm->ops->ijacobianview) {
-      PetscCall((*kdm->ops->ijacobianview)(kdm->ijacobianctx,viewer));
-    }
+    if (kdm->ops->ijacobianview) PetscCall((*kdm->ops->ijacobianview)(kdm->ijacobianctx,viewer));
   }
   PetscFunctionReturn(0);
 }

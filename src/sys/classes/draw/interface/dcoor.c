@@ -26,9 +26,7 @@ PetscErrorCode  PetscDrawSetCoordinates(PetscDraw draw,PetscReal xl,PetscReal yl
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   draw->coor_xl = xl; draw->coor_yl = yl;
   draw->coor_xr = xr; draw->coor_yr = yr;
-  if (draw->ops->setcoordinates) {
-    PetscCall((*draw->ops->setcoordinates)(draw,xl,yl,xr,yr));
-  }
+  if (draw->ops->setcoordinates) PetscCall((*draw->ops->setcoordinates)(draw,xl,yl,xr,yr));
   PetscFunctionReturn(0);
 }
 

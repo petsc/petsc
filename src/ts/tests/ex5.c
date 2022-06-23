@@ -720,9 +720,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec T,void *ctx)
     PetscCall(VecRestoreArrayRead(T,&array));
   }
 
-  if (user->drawcontours) {
-    PetscCall(VecView(T,viewer));
-  }
+  if (user->drawcontours) PetscCall(VecView(T,viewer));
   PetscFunctionReturn(0);
 }
 

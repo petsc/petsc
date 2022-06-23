@@ -689,9 +689,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_N(Mat C,Mat A,const MatFactorIn
   PetscCall(PetscFree2(il,jl));
   PetscCall(PetscFree3(dk,uik,work));
   PetscCall(PetscFree(pivots));
-  if (a->permute) {
-    PetscCall(PetscFree(aa));
-  }
+  if (a->permute) PetscCall(PetscFree(aa));
 
   PetscCall(ISRestoreIndices(perm,&perm_ptr));
 
@@ -989,9 +987,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_2(Mat C,Mat A,const MatFactorIn
 
   PetscCall(PetscFree(rtmp));
   PetscCall(PetscFree2(il,jl));
-  if (a->permute) {
-    PetscCall(PetscFree(aa));
-  }
+  if (a->permute) PetscCall(PetscFree(aa));
   PetscCall(ISRestoreIndices(perm,&perm_ptr));
 
   C->ops->solve          = MatSolve_SeqSBAIJ_2_inplace;
