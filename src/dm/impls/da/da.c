@@ -823,8 +823,10 @@ PetscErrorCode  DMDASetGetMatrix(DM da,PetscErrorCode (*f)(DM, Mat*))
 .  m - number of MatStencils
 -  idxm - grid points (and component number when dof > 1)
 
-   Output Parameters:
-+  gidxm - global row indices
+   Output Parameter:
+.  gidxm - global row indices
+
+   Level: intermediate
 
 .seealso: `MatStencil`
 @*/

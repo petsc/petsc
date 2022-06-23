@@ -199,6 +199,8 @@ PETSC_EXTERN void vecview_(Vec *x,PetscViewer *vin,PetscErrorCode *ierr)
 
      Not Collective
 
+     Level: advanced
+
      Notes:
     Allows code such as
 

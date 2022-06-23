@@ -107,7 +107,7 @@ static struct _PetscRandomOps PetscRandomOps_Values = {
         exact same random numbers on any system.
 
    Options Database Keys:
-. -random_type <rand,rand48,rander48,sprng>
+. -random_type <rand,rand48,rander48,sprng> - select the random number generator at runtime
 
   Notes:
     This is the default random number generate provided by PetscRandomCreate() if you do not set a particular implementation.
@@ -119,7 +119,8 @@ static struct _PetscRandomOps PetscRandomOps_Values = {
 
   Level: beginner
 
-.seealso: `PetscRandomCreate()`, `PetscRandomSetType()`, `PETSCRAND`, `PETSCRAND48`, `PETSCRANDER48`, `PETSCSPRNG`, `PetscRandomSetSeed()`, `PetscRandomSeed()`
+.seealso: `PetscRandomCreate()`, `PetscRandomSetType()`, `PETSCRAND`, `PETSCRAND48`, `PETSCRANDER48`, `PETSCSPRNG`, `PetscRandomSetSeed()`, 
+          `PetscRandomSeed()`, `PetscRandomSetFromOptions()`
 M*/
 
 PETSC_EXTERN PetscErrorCode PetscRandomCreate_Rander48(PetscRandom r)
