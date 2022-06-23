@@ -1507,7 +1507,7 @@ static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], 
     PetscScalar             *elemMatrix, *elMat;
     pointInterpolationP4est (*pointMaps)[LANDAU_MAX_Q_FACE];
     P4estVertexMaps         *maps;
-    const PetscInt          *plex_batch=NULL,Nb=Nq,elMatSz=LANDAU_MAX_NQ*LANDAU_MAX_NQ*LANDAU_MAX_SPECIES*LANDAU_MAX_SPECIES; // tensor elements;
+    const PetscInt          *plex_batch=NULL,Nb=Nq,elMatSz=Nq*Nq*ctx->num_species*ctx->num_species; // tensor elements;
     LandauIdx               *coo_elem_offsets=NULL, *coo_elem_fullNb=NULL, (*coo_elem_point_offsets)[LANDAU_MAX_NQ+1] = NULL;
     /* create GPU asssembly data */
     PetscCall(PetscInfo(ctx->plex[0], "Make GPU maps %d\n",1));
@@ -2013,7 +2013,7 @@ static PetscErrorCode LandauCreateMatrix(MPI_Comm comm, Vec X, IS grid_batch_is_
         if (nzl>COL_BF_SIZE) {
           PetscCall(PetscFree(colbuf));
           PetscCall(PetscInfo(ctx->plex[grid], "Realloc buffer %" PetscInt_FMT " to %" PetscInt_FMT " (row size %" PetscInt_FMT ") \n",COL_BF_SIZE,2*COL_BF_SIZE,nzl));
-          COL_BF_SIZE = 2*nzl;
+          COL_BF_SIZE = nzl;
           PetscCall(PetscMalloc(sizeof(*colbuf)*COL_BF_SIZE, &colbuf));
         }
         PetscCall(MatGetRow(B,i,&nzl,&cols,&vals));
@@ -2626,7 +2626,7 @@ PetscErrorCode DMPlexLandauCreateMassMatrix(DM pack, Mat *Amat)
         if (nzl>COL_BF_SIZE) {
           PetscCall(PetscFree(colbuf));
           PetscCall(PetscInfo(pack, "Realloc buffer %" PetscInt_FMT " to %" PetscInt_FMT " (row size %" PetscInt_FMT ") \n",COL_BF_SIZE,2*COL_BF_SIZE,nzl));
-          COL_BF_SIZE = 2*nzl;
+          COL_BF_SIZE = nzl;
           PetscCall(PetscMalloc(sizeof(*colbuf)*COL_BF_SIZE, &colbuf));
         }
         PetscCall(MatGetRow(B,i,&nzl,&cols,&vals));
