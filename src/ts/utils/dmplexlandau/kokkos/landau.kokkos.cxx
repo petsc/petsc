@@ -505,8 +505,8 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
     if (a_numCells[grid] > num_cells_max) num_cells_max = a_numCells[grid];
     num_cells_batch += a_numCells[grid]; // we don't have a host element offset here (but in ctx)
   }
-  const PetscInt totDim_max = Nf_max*Nq, elem_mat_size_max = totDim_max*totDim_max;
-  const PetscInt elem_mat_num_cells_max_grid = container ? 0 : num_cells_max;
+  const int totDim_max = Nf_max*Nq, elem_mat_size_max = totDim_max*totDim_max;
+  const int elem_mat_num_cells_max_grid = container ? 0 : num_cells_max;
   Kokkos::View<PetscScalar****, Kokkos::LayoutRight> d_elem_mats("element matrices", batch_sz, num_grids, elem_mat_num_cells_max_grid, elem_mat_size_max); // not used (cpu assembly)
   const Kokkos::View<PetscReal*, Kokkos::LayoutLeft, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged> >  h_Eq_m_k (a_Eq_m, Nftot);
   if (a_elem_closure || a_xarray) {
@@ -603,6 +603,23 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
     PetscCall(PetscLogGpuTimeEnd()); // is this a fence?
     PetscCall(PetscLogEventEnd(events[8],0,0,0,0));
     // Jacobian
+#if defined(PETSC_HAVE_CUDA)
+    int device;
+    cudaDeviceProp prop;
+    cudaError_t ier = cudaGetDevice(&device);
+    ier = cudaGetDeviceProperties(&prop,device);
+    int maximum_shared_mem_size = prop.sharedMemPerBlock;
+#elif defined(PETSC_HAVE_HIP)
+    hipDeviceProp_t devProp;
+    hipGetDeviceProperties(&devProp, 0);
+    int maximum_shared_mem_size = devProp.sharedMemPerBlock;
+#elif defined(PETSC_HAVE_SYCL)
+    int maximum_shared_mem_size = 64000;
+#else
+    int maximum_shared_mem_size = 72000;
+#endif
+    const int jac_scr_bytes = 2*(g2_scr_t::shmem_size(dim,Nf_max,Nq) + g3_scr_t::shmem_size(dim,dim,Nf_max,Nq));
+    const int jac_shared_level = (jac_scr_bytes > maximum_shared_mem_size) ? 1 : KOKKOS_SHARED_LEVEL;
     auto jac_lambda = KOKKOS_LAMBDA (const team_member team) {
       const PetscInt b_Nelem = d_elem_offset[num_grids], b_elem_idx = team.league_rank()%b_Nelem, b_id = team.league_rank()/b_Nelem;
       // find my grid
@@ -612,10 +629,10 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
         const PetscInt  loc_Nf = d_species_offset[grid+1]-d_species_offset[grid], loc_elem = b_elem_idx - d_elem_offset[grid];
         const PetscInt  moffset = LAND_MOFFSET(b_id,grid,batch_sz,num_grids,d_mat_offset);
         const PetscInt  f_off = d_species_offset[grid], totDim = loc_Nf*Nq;
-        g2_scr_t        g2(team.team_scratch(KOKKOS_SHARED_LEVEL),dim,loc_Nf,Nq);
-        g3_scr_t        g3(team.team_scratch(KOKKOS_SHARED_LEVEL),dim,dim,loc_Nf,Nq);
-        g2_scr_t        gg2(team.team_scratch(KOKKOS_SHARED_LEVEL),dim,loc_Nf,Nq);
-        g3_scr_t        gg3(team.team_scratch(KOKKOS_SHARED_LEVEL),dim,dim,loc_Nf,Nq);
+        g2_scr_t        g2(team.team_scratch(jac_shared_level),dim,loc_Nf,Nq);
+        g3_scr_t        g3(team.team_scratch(jac_shared_level),dim,dim,loc_Nf,Nq);
+        g2_scr_t        gg2(team.team_scratch(jac_shared_level),dim,loc_Nf,Nq);
+        g3_scr_t        gg3(team.team_scratch(jac_shared_level),dim,dim,loc_Nf,Nq);
         // get g2[] & g3[]
         Kokkos::parallel_for(Kokkos::TeamThreadRange(team,0,Nq), [=] (int myQi) {
             using Kokkos::parallel_reduce;
@@ -738,9 +755,9 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
     };
     PetscCall(PetscLogEventBegin(events[4],0,0,0,0));
     PetscCall(PetscLogGpuTimeBegin());
-    const int scr_bytes = 2*(g2_scr_t::shmem_size(dim,Nf_max,Nq) + g3_scr_t::shmem_size(dim,dim,Nf_max,Nq));
-    PetscCall(PetscInfo(plex[0], "Jacobian shared memory size: %d bytes in level %d num cells total=%d team size=%d vector size=%d #face=%d Nf_max=%d\n",scr_bytes,KOKKOS_SHARED_LEVEL,num_cells_batch*batch_sz,team_size,vector_size,nfaces,Nf_max));
-    Kokkos::parallel_for("Jacobian", Kokkos::TeamPolicy<>(num_cells_batch*batch_sz, team_size, vector_size).set_scratch_size(KOKKOS_SHARED_LEVEL, Kokkos::PerTeam(scr_bytes)), jac_lambda);
+    PetscCall(PetscInfo(plex[0], "Jacobian shared memory size: %d bytes in level %s (max shared=%d), num cells total=%d, team size=%d, vector size=%d, #face=%d, Nf_max=%d\n",jac_scr_bytes,jac_shared_level==0 ? "local" : "global",maximum_shared_mem_size,num_cells_batch*batch_sz,team_size,vector_size,nfaces,Nf_max));
+    Kokkos::parallel_for("Jacobian", Kokkos::TeamPolicy< >(num_cells_batch*batch_sz, team_size, vector_size).set_scratch_size(jac_shared_level, Kokkos::PerTeam(jac_scr_bytes)), jac_lambda); // Kokkos::LaunchBounds<512,2>
+    Kokkos::fence();
     PetscCall(PetscLogGpuTimeEnd());
     PetscCall(PetscLogEventEnd(events[4],0,0,0,0));
     if (d_vertex_f_k) delete d_vertex_f_k;
@@ -748,7 +765,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
     PetscCall(PetscLogEventBegin(events[16],0,0,0,0));
     PetscCall(PetscLogGpuTimeBegin());
     PetscCall(PetscInfo(plex[0], "Mass team size=%d vector size=%d #face=%d Nb=%" PetscInt_FMT ", %s assembly\n",team_size,vector_size,nfaces,Nb, d_coo_vals ? "COO" : "CSR"));
-    Kokkos::parallel_for("Mass", Kokkos::TeamPolicy<>(num_cells_batch*batch_sz, team_size, vector_size), KOKKOS_LAMBDA (const team_member team) {
+    Kokkos::parallel_for("Mass", Kokkos::TeamPolicy< >(num_cells_batch*batch_sz, team_size, vector_size), KOKKOS_LAMBDA (const team_member team) { // Kokkos::LaunchBounds<512,4>
         const PetscInt  b_Nelem = d_elem_offset[num_grids], b_elem_idx = team.league_rank()%b_Nelem, b_id = team.league_rank()/b_Nelem;
         // find my grid
         PetscInt grid = 0;
@@ -781,10 +798,10 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
           } // field
         } // grid
       });
+    Kokkos::fence();
     PetscCall(PetscLogGpuTimeEnd());
     PetscCall(PetscLogEventEnd(events[16],0,0,0,0));
   }
-  Kokkos::fence();
   if (d_coo_vals) {
     PetscCall(MatSetValuesCOO(JacP,d_coo_vals,ADD_VALUES));
   } else if (elem_mat_num_cells_max_grid) { // CPU assembly
