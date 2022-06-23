@@ -1504,16 +1504,17 @@ static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], 
   /* create GPU assembly data */
   if (ctx->gpu_assembly) { /* we need GPU object with GPU assembly */
     PetscContainer          container;
-    PetscScalar             elemMatrix[LANDAU_MAX_NQ*LANDAU_MAX_NQ*LANDAU_MAX_SPECIES*LANDAU_MAX_SPECIES], *elMat;
+    PetscScalar             *elemMatrix, *elMat;
     pointInterpolationP4est (*pointMaps)[LANDAU_MAX_Q_FACE];
     P4estVertexMaps         *maps;
-    const PetscInt          *plex_batch=NULL,Nb=Nq; // tensor elements;
+    const PetscInt          *plex_batch=NULL,Nb=Nq,elMatSz=LANDAU_MAX_NQ*LANDAU_MAX_NQ*LANDAU_MAX_SPECIES*LANDAU_MAX_SPECIES; // tensor elements;
     LandauIdx               *coo_elem_offsets=NULL, *coo_elem_fullNb=NULL, (*coo_elem_point_offsets)[LANDAU_MAX_NQ+1] = NULL;
     /* create GPU asssembly data */
     PetscCall(PetscInfo(ctx->plex[0], "Make GPU maps %d\n",1));
     PetscCall(PetscLogEventBegin(ctx->events[2],0,0,0,0));
     PetscCall(PetscMalloc(sizeof(*maps)*ctx->num_grids, &maps));
     PetscCall(PetscMalloc(sizeof(*pointMaps)*MAP_BF_SIZE, &pointMaps));
+    PetscCall(PetscMalloc(sizeof(*elemMatrix)*elMatSz, &elemMatrix));
 
     if (ctx->coo_assembly) { // setup COO assembly -- put COO metadata directly in ctx->SData_d
       PetscCall(PetscMalloc3(ncellsTot+1,&coo_elem_offsets,ncellsTot,&coo_elem_fullNb,ncellsTot, &coo_elem_point_offsets)); // array of integer pointers
@@ -1726,6 +1727,7 @@ static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], 
       PetscCall(PetscFree2(oor,ooc));
     }
     PetscCall(PetscFree(pointMaps));
+    PetscCall(PetscFree(elemMatrix));
     PetscCall(PetscContainerCreate(PETSC_COMM_SELF, &container));
     PetscCall(PetscContainerSetPointer(container, (void *)maps));
     PetscCall(PetscContainerSetUserDestroy(container, LandauGPUMapsDestroy));
