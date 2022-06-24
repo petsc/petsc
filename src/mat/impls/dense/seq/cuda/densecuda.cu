@@ -1436,15 +1436,23 @@ static PetscErrorCode MatDenseGetSubMatrix_SeqDenseCUDA(Mat A,PetscInt rbegin,Pe
 static PetscErrorCode MatDenseRestoreSubMatrix_SeqDenseCUDA(Mat A,Mat *v)
 {
   Mat_SeqDense *a = (Mat_SeqDense*)A->data;
+  PetscBool    copy = PETSC_FALSE, reset;
 
   PetscFunctionBegin;
   PetscCheck(a->matinuse,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Need to call MatDenseGetSubMatrix() first");
   PetscCheck(a->cmat,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing internal column matrix");
   PetscCheck(*v == a->cmat,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not the matrix obtained from MatDenseGetSubMatrix()");
   a->matinuse = 0;
-  A->offloadmask = (a->cmat->offloadmask == PETSC_OFFLOAD_CPU) ? PETSC_OFFLOAD_CPU : PETSC_OFFLOAD_GPU;
+  reset = a->v ? PETSC_TRUE : PETSC_FALSE;
+  if (a->cmat->offloadmask == PETSC_OFFLOAD_CPU && !a->v) {
+    copy = PETSC_TRUE;
+    PetscCall(MatSeqDenseSetPreallocation(A,NULL));
+  }
   PetscCall(MatDenseCUDAResetArray(a->cmat));
-  if (a->unplacedarray) PetscCall(MatDenseResetArray(a->cmat));
+  if (reset) PetscCall(MatDenseResetArray(a->cmat));
+  if (copy) {
+    PetscCall(MatSeqDenseCUDACopyFromGPU(A));
+  } else A->offloadmask = (a->cmat->offloadmask == PETSC_OFFLOAD_CPU) ? PETSC_OFFLOAD_CPU : PETSC_OFFLOAD_GPU;
   a->cmat->offloadmask = PETSC_OFFLOAD_UNALLOCATED;
   *v = NULL;
   PetscFunctionReturn(0);
