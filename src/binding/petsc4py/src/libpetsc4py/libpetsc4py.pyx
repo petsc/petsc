@@ -2377,8 +2377,8 @@ cdef PetscErrorCode SNESStep_Python_default(
 
 cdef extern from * nogil:
     ctypedef enum TSProblemType:
-        TS_LINEAR
-        TS_NONLINEAR
+      TS_LINEAR
+      TS_NONLINEAR
     ctypedef enum TSConvergedReason:
       TS_CONVERGED_ITERATING
       TS_CONVERGED_TIME
@@ -2827,6 +2827,10 @@ cdef extern from * nogil:
     ctypedef enum TaoConvergedReason:
       TAO_CONTINUE_ITERATING
       TAO_DIVERGED_MAXITS
+      TAO_DIVERGED_LS_FAILURE
+    ctypedef enum TaoLineSearchConvergedReason:
+      TAOLINESEARCH_CONTINUE_ITERATING
+      TAOLINESEARCH_SUCCESS
     struct _p_TAO:
         void *data
         TaoOps ops
@@ -2857,7 +2861,7 @@ cdef extern from * nogil:
     PetscErrorCode TaoComputeUpdate(PetscTAO)
     PetscErrorCode TaoCreateDefaultLineSearch(PetscTAO)
     PetscErrorCode TaoCreateDefaultKSP(PetscTAO)
-    PetscErrorCode TaoApplyLineSearch(PetscTAO,PetscReal*,PetscReal*)
+    PetscErrorCode TaoApplyLineSearch(PetscTAO,PetscReal*,PetscReal*,TaoLineSearchConvergedReason*)
 
 @cython.internal
 cdef class _PyTao(_PyObj): pass
@@ -3039,6 +3043,7 @@ cdef PetscErrorCode TaoSolve_Python_default(
         return FunctionEnd()
 
     cdef PetscInt its = 0
+    cdef TaoLineSearchConvergedReason lsr = TAOLINESEARCH_SUCCESS
     for its from 0 <= its < tao.max_it:
         if tao.reason: break
         CHKERR( TaoComputeUpdate(tao) )
@@ -3051,8 +3056,12 @@ cdef PetscErrorCode TaoSolve_Python_default(
         tao.ksp_tot_its += tao.ksp_its
         #
         if G != NULL:
-          CHKERR( TaoApplyLineSearch(tao, &f, &step) )
-          CHKERR( VecNorm(G, NORM_2, &gnorm) )
+          CHKERR( TaoApplyLineSearch(tao, &f, &step, &lsr) )
+          if lsr == TAOLINESEARCH_SUCCESS:
+            CHKERR( VecNorm(G, NORM_2, &gnorm) )
+          else:
+            tao.reason = TAO_DIVERGED_LS_FAILURE
+            break
         else:
           CHKERR( TaoComputeObjective(tao, X, &f) )
         CHKERR( TaoCheckReals(tao, f, gnorm) )
