@@ -318,11 +318,12 @@ M*/
 void PetscCall(PetscErrorCode);
 void PetscCallVoid(PetscErrorCode);
 #else
-#define PetscCall(...) do {                                                                    \
+#define PetscCall(...) do { \
+    PetscStackUpdateLine;                                               \
     PetscErrorCode ierr_q_ = __VA_ARGS__;                                                      \
     if (PetscUnlikely(ierr_q_)) return PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr_q_,PETSC_ERROR_REPEAT," "); \
   } while (0)
-#define PetscCallVoid(...) do {                                                                \
+#define PetscCallVoid(...) do { PetscStackUpdateLine;                                                               \
     PetscErrorCode ierr_void_ = __VA_ARGS__;                                                   \
     if (PetscUnlikely(ierr_void_)) {                                                           \
       (void)PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr_void_,PETSC_ERROR_REPEAT," "); \
@@ -723,6 +724,7 @@ M*/
           `PetscTraceBackErrorHandler()`, `PetscPushErrorHandler()`, `PetscError()`, `CHKMEMQ`
 M*/
 #define PetscCallCXX(...) do {                                  \
+    PetscStackUpdateLine;                                       \
     try {                                                       \
       __VA_ARGS__;                                              \
     } catch (const std::exception& e) {                         \
@@ -918,6 +920,7 @@ typedef struct {
 
 #if defined(PETSC_CLANG_STATIC_ANALYZER)
 #define PetscStackPushNoCheck(funct,petsc_routine,hot)
+#define PetscStackUpdateLine
 #define PetscStackPopNoCheck
 #define PetscStackClearTop
 #define PetscFunctionBegin
@@ -1004,6 +1007,34 @@ M*/
     PetscStackPush_Private(petscstack,__FILE__,funct,__LINE__,petsc_routine,hot);       \
     PetscStackSAWsGrantAccess();                                                        \
   } while (0)
+
+/*MC
+   PetscStackUpdateLine - in a function that has a PetscFunctionBegin or PetscFunctionBeginUser updates the stack line number to the
+   current line number.
+
+   Not Collective
+
+   Synopsis:
+   #include <petscsys.h>
+   void PetscStackUpdateLine
+
+   Level: developer
+
+   Notes:
+   In debug mode PETSc maintains a stack of the current function calls that can be used to help to quickly see where a problem has
+   occurred, for example, when a signal is received. It is recommended to use the debugger if extensive information is needed to
+   help debug the problem.
+
+   The default stack is a global variable called petscstack.
+
+   This is used by `PetscCall()` and is otherwise not like to be needed
+
+.seealso: `PetscAttachDebugger()`, `PetscStackCopy()`, `PetscStackView()`, `PetscStackPushNoCheck()`, `PetscStackPop`, `PetscCall()`
+M*/
+#define PetscStackUpdateLine                                         \
+  if (petscstack.currentsize > 0 && petscstack.function[petscstack.currentsize-1] == PETSC_FUNCTION_NAME){ \
+    petscstack.line[petscstack.currentsize-1] = __LINE__;              \
+  }
 
 /*MC
    PetscStackPopNoCheck - Pops a function name from the PETSc default stack that tracks where the running program is
@@ -1243,6 +1274,7 @@ M*/
   } while (0)
 #else /* PETSC_USE_DEBUG */
 #define PetscStackPushNoCheck(funct,petsc_routine,hot)
+#define PetscStackUpdateLine
 #define PetscStackPopNoCheck
 #define PetscStackClearTop
 #define PetscFunctionBegin

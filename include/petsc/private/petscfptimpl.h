@@ -6,8 +6,10 @@
 /*
     Function pointer table that maps from function pointers to their string representation
 
-    Does not use the PetscFunctionBegin/Return() because these routines are called within those macros
+    Does not use the PetscFunctionBegin/Return() or PetscCall() because these routines are called within those macros
 */
+#define PetscCallQ(A) do {PetscErrorCode ierr = A; if (ierr) return(ierr);} while (0);
+
 typedef struct _n_PetscFPT* PetscFPT;
 struct _n_PetscFPT {
   void     **functionpointer;
@@ -35,9 +37,9 @@ static inline PetscErrorCode PetscFPTDestroy(void)
 
   PetscFPTData = NULL;
   if (!data) return 0;
-  PetscCall(PetscFree(data->functionpointer));
-  PetscCall(PetscFree(data->functionname));
-  PetscCall(PetscFree(data));
+  PetscCallQ(PetscFree(data->functionpointer));
+  PetscCallQ(PetscFree(data->functionname));
+  PetscCallQ(PetscFree(data));
   return 0;
 }
 
@@ -54,11 +56,11 @@ static inline PetscErrorCode  PetscFPTCreate(PetscInt n)
 
   PetscCheck(n >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"n < 0");
   /* Cannot use PetscNew() here because it is not yet defined in the include file chain */
-  PetscCall(PetscMalloc(sizeof(struct _n_PetscFPT),&_PetscFPTData));
+  PetscCallQ(PetscMalloc(sizeof(struct _n_PetscFPT),&_PetscFPTData));
   _PetscFPTData->tablesize = (3*n)/2 + 17;
   if (_PetscFPTData->tablesize < n) _PetscFPTData->tablesize = PETSC_MAX_INT/4; /* overflow */
-  PetscCall(PetscCalloc(sizeof(void*)*_PetscFPTData->tablesize,&_PetscFPTData->functionpointer));
-  PetscCall(PetscMalloc(sizeof(char**)*_PetscFPTData->tablesize,&_PetscFPTData->functionname));
+  PetscCallQ(PetscCalloc(sizeof(void*)*_PetscFPTData->tablesize,&_PetscFPTData->functionpointer));
+  PetscCallQ(PetscMalloc(sizeof(char**)*_PetscFPTData->tablesize,&_PetscFPTData->functionname));
   _PetscFPTData->count = 0;
   PetscFPTData = _PetscFPTData;
   return(0);
