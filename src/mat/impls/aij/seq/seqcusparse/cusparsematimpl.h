@@ -18,7 +18,7 @@
 #include <thrust/sequence.h>
 #include <thrust/system/system_error.h>
 
-#define PetscStackCallThrust(body) do {                                     \
+#define PetscCallThrust(body) do {                                     \
     try {                                                                   \
       body;                                                                 \
     } catch(thrust::system_error& e) {                                      \

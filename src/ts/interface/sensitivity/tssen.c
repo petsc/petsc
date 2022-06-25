@@ -103,7 +103,7 @@ PetscErrorCode TSComputeRHSJacobianP(TS ts,PetscReal t,Vec U,Mat Amat)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(U,VEC_CLASSID,3);
 
-  PetscCallUser("TS callback JacobianP for sensitivity analysis",(*ts->rhsjacobianp)(ts,t,U,Amat,ts->rhsjacobianpctx));
+  PetscCallBack("TS callback JacobianP for sensitivity analysis",(*ts->rhsjacobianp)(ts,t,U,Amat,ts->rhsjacobianpctx));
   PetscFunctionReturn(0);
 }
 
@@ -180,7 +180,7 @@ PetscErrorCode TSComputeIJacobianP(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal sh
 
   PetscCall(PetscLogEventBegin(TS_JacobianPEval,ts,U,Amat,0));
   if (ts->ijacobianp) {
-    PetscCallUser("TS callback JacobianP for sensitivity analysis",(*ts->ijacobianp)(ts,t,U,Udot,shift,Amat,ts->ijacobianpctx));
+    PetscCallBack("TS callback JacobianP for sensitivity analysis",(*ts->ijacobianp)(ts,t,U,Udot,shift,Amat,ts->ijacobianpctx));
   }
   if (imex) {
     if (!ts->ijacobianp) {  /* system was written as Udot = G(t,U) */
@@ -330,7 +330,7 @@ PetscErrorCode TSComputeCostIntegrand(TS ts,PetscReal t,Vec U,Vec Q)
   PetscValidHeaderSpecific(Q,VEC_CLASSID,4);
 
   PetscCall(PetscLogEventBegin(TS_FunctionEval,ts,U,Q,0));
-  if (ts->costintegrand) PetscCallUser("TS callback integrand in the cost function",(*ts->costintegrand)(ts,t,U,Q,ts->costintegrandctx));
+  if (ts->costintegrand) PetscCallBack("TS callback integrand in the cost function",(*ts->costintegrand)(ts,t,U,Q,ts->costintegrandctx));
   else PetscCall(VecZeroEntries(Q));
   PetscCall(PetscLogEventEnd(TS_FunctionEval,ts,U,Q,0));
   PetscFunctionReturn(0);
@@ -349,7 +349,7 @@ PetscErrorCode TSComputeDRDUFunction(TS ts,PetscReal t,Vec U,Vec *DRDU)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(U,VEC_CLASSID,3);
 
-  PetscCallUser("TS callback DRDU for sensitivity analysis",(*ts->drdufunction)(ts,t,U,DRDU,ts->costintegrandctx));
+  PetscCallBack("TS callback DRDU for sensitivity analysis",(*ts->drdufunction)(ts,t,U,DRDU,ts->costintegrandctx));
   PetscFunctionReturn(0);
 }
 
@@ -366,7 +366,7 @@ PetscErrorCode TSComputeDRDPFunction(TS ts,PetscReal t,Vec U,Vec *DRDP)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(U,VEC_CLASSID,3);
 
-  PetscCallUser("TS callback DRDP for sensitivity analysis",(*ts->drdpfunction)(ts,t,U,DRDP,ts->costintegrandctx));
+  PetscCallBack("TS callback DRDP for sensitivity analysis",(*ts->drdpfunction)(ts,t,U,DRDP,ts->costintegrandctx));
   PetscFunctionReturn(0);
 }
 
@@ -455,7 +455,7 @@ PetscErrorCode TSComputeIHessianProductFunctionUU(TS ts,PetscReal t,Vec U,Vec *V
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(U,VEC_CLASSID,3);
 
-  if (ts->ihessianproduct_fuu) PetscCallUser("TS callback IHessianProduct 1 for sensitivity analysis",(*ts->ihessianproduct_fuu)(ts,t,U,Vl,Vr,VHV,ts->ihessianproductctx));
+  if (ts->ihessianproduct_fuu) PetscCallBack("TS callback IHessianProduct 1 for sensitivity analysis",(*ts->ihessianproduct_fuu)(ts,t,U,Vl,Vr,VHV,ts->ihessianproductctx));
 
   /* does not consider IMEX for now, so either IHessian or RHSHessian will be calculated, using the same output VHV */
   if (ts->rhshessianproduct_guu) {
@@ -491,7 +491,7 @@ PetscErrorCode TSComputeIHessianProductFunctionUP(TS ts,PetscReal t,Vec U,Vec *V
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(U,VEC_CLASSID,3);
 
-  if (ts->ihessianproduct_fup) PetscCallUser("TS callback IHessianProduct 2 for sensitivity analysis",(*ts->ihessianproduct_fup)(ts,t,U,Vl,Vr,VHV,ts->ihessianproductctx));
+  if (ts->ihessianproduct_fup) PetscCallBack("TS callback IHessianProduct 2 for sensitivity analysis",(*ts->ihessianproduct_fup)(ts,t,U,Vl,Vr,VHV,ts->ihessianproductctx));
 
   /* does not consider IMEX for now, so either IHessian or RHSHessian will be calculated, using the same output VHV */
   if (ts->rhshessianproduct_gup) {
@@ -527,7 +527,7 @@ PetscErrorCode TSComputeIHessianProductFunctionPU(TS ts,PetscReal t,Vec U,Vec *V
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(U,VEC_CLASSID,3);
 
-  if (ts->ihessianproduct_fpu) PetscCallUser("TS callback IHessianProduct 3 for sensitivity analysis",(*ts->ihessianproduct_fpu)(ts,t,U,Vl,Vr,VHV,ts->ihessianproductctx));
+  if (ts->ihessianproduct_fpu) PetscCallBack("TS callback IHessianProduct 3 for sensitivity analysis",(*ts->ihessianproduct_fpu)(ts,t,U,Vl,Vr,VHV,ts->ihessianproductctx));
 
   /* does not consider IMEX for now, so either IHessian or RHSHessian will be calculated, using the same output VHV */
   if (ts->rhshessianproduct_gpu) {
@@ -563,7 +563,7 @@ PetscErrorCode TSComputeIHessianProductFunctionPP(TS ts,PetscReal t,Vec U,Vec *V
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(U,VEC_CLASSID,3);
 
-  if (ts->ihessianproduct_fpp) PetscCallUser("TS callback IHessianProduct 3 for sensitivity analysis",(*ts->ihessianproduct_fpp)(ts,t,U,Vl,Vr,VHV,ts->ihessianproductctx));
+  if (ts->ihessianproduct_fpp) PetscCallBack("TS callback IHessianProduct 3 for sensitivity analysis",(*ts->ihessianproduct_fpp)(ts,t,U,Vl,Vr,VHV,ts->ihessianproductctx));
 
   /* does not consider IMEX for now, so either IHessian or RHSHessian will be calculated, using the same output VHV */
   if (ts->rhshessianproduct_gpp) {
@@ -661,7 +661,7 @@ PetscErrorCode TSComputeRHSHessianProductFunctionUU(TS ts,PetscReal t,Vec U,Vec 
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(U,VEC_CLASSID,3);
 
-  PetscCallUser("TS callback RHSHessianProduct 1 for sensitivity analysis",(*ts->rhshessianproduct_guu)(ts,t,U,Vl,Vr,VHV,ts->rhshessianproductctx));
+  PetscCallBack("TS callback RHSHessianProduct 1 for sensitivity analysis",(*ts->rhshessianproduct_guu)(ts,t,U,Vl,Vr,VHV,ts->rhshessianproductctx));
   PetscFunctionReturn(0);
 }
 
@@ -688,7 +688,7 @@ PetscErrorCode TSComputeRHSHessianProductFunctionUP(TS ts,PetscReal t,Vec U,Vec 
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(U,VEC_CLASSID,3);
 
-  PetscCallUser("TS callback RHSHessianProduct 2 for sensitivity analysis",(*ts->rhshessianproduct_gup)(ts,t,U,Vl,Vr,VHV,ts->rhshessianproductctx));
+  PetscCallBack("TS callback RHSHessianProduct 2 for sensitivity analysis",(*ts->rhshessianproduct_gup)(ts,t,U,Vl,Vr,VHV,ts->rhshessianproductctx));
   PetscFunctionReturn(0);
 }
 
@@ -715,7 +715,7 @@ PetscErrorCode TSComputeRHSHessianProductFunctionPU(TS ts,PetscReal t,Vec U,Vec 
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(U,VEC_CLASSID,3);
 
-  PetscCallUser("TS callback RHSHessianProduct 3 for sensitivity analysis",(*ts->rhshessianproduct_gpu)(ts,t,U,Vl,Vr,VHV,ts->rhshessianproductctx));
+  PetscCallBack("TS callback RHSHessianProduct 3 for sensitivity analysis",(*ts->rhshessianproduct_gpu)(ts,t,U,Vl,Vr,VHV,ts->rhshessianproductctx));
   PetscFunctionReturn(0);
 }
 
@@ -742,7 +742,7 @@ PetscErrorCode TSComputeRHSHessianProductFunctionPP(TS ts,PetscReal t,Vec U,Vec 
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(U,VEC_CLASSID,3);
 
-  PetscCallUser("TS callback RHSHessianProduct 3 for sensitivity analysis",(*ts->rhshessianproduct_gpp)(ts,t,U,Vl,Vr,VHV,ts->rhshessianproductctx));
+  PetscCallBack("TS callback RHSHessianProduct 3 for sensitivity analysis",(*ts->rhshessianproduct_gpp)(ts,t,U,Vl,Vr,VHV,ts->rhshessianproductctx));
   PetscFunctionReturn(0);
 }
 
@@ -1085,7 +1085,7 @@ PetscErrorCode TSAdjointComputeRHSJacobian(TS ts,PetscReal t,Vec U,Mat Amat)
   PetscValidHeaderSpecific(U,VEC_CLASSID,3);
   PetscValidPointer(Amat,4);
 
-  PetscCallUser("TS callback JacobianP for sensitivity analysis",(*ts->rhsjacobianp)(ts,t,U,Amat,ts->rhsjacobianpctx));
+  PetscCallBack("TS callback JacobianP for sensitivity analysis",(*ts->rhsjacobianp)(ts,t,U,Amat,ts->rhsjacobianpctx));
   PetscFunctionReturn(0);
 }
 
@@ -1101,7 +1101,7 @@ PetscErrorCode TSAdjointComputeDRDYFunction(TS ts,PetscReal t,Vec U,Vec *DRDU)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(U,VEC_CLASSID,3);
 
-  PetscCallUser("TS callback DRDY for sensitivity analysis",(*ts->drdufunction)(ts,t,U,DRDU,ts->costintegrandctx));
+  PetscCallBack("TS callback DRDY for sensitivity analysis",(*ts->drdufunction)(ts,t,U,DRDU,ts->costintegrandctx));
   PetscFunctionReturn(0);
 }
 
@@ -1117,7 +1117,7 @@ PetscErrorCode TSAdjointComputeDRDPFunction(TS ts,PetscReal t,Vec U,Vec *DRDP)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(U,VEC_CLASSID,3);
 
-  PetscCallUser("TS callback DRDP for sensitivity analysis",(*ts->drdpfunction)(ts,t,U,DRDP,ts->costintegrandctx));
+  PetscCallBack("TS callback DRDP for sensitivity analysis",(*ts->drdpfunction)(ts,t,U,DRDP,ts->costintegrandctx));
   PetscFunctionReturn(0);
 }
 

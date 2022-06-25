@@ -71,11 +71,11 @@ static PetscErrorCode SNESComputeFunction_DMDA(SNES snes,Vec X,Vec F,void *ctx)
   switch (dmdasnes->residuallocalimode) {
   case INSERT_VALUES: {
     PetscCall(PetscLogEventBegin(SNES_FunctionEval,snes,X,F,0));
-    if (dmdasnes->residuallocalvec) PetscCallUser("SNES DMDA local callback function",(*dmdasnes->residuallocalvec)(&info,Xloc,F,dmdasnes->residuallocalctx));
+    if (dmdasnes->residuallocalvec) PetscCallBack("SNES DMDA local callback function",(*dmdasnes->residuallocalvec)(&info,Xloc,F,dmdasnes->residuallocalctx));
     else {
       PetscCall(DMDAVecGetArray(dm,Xloc,&x));
       PetscCall(DMDAVecGetArray(dm,F,&f));
-      PetscCallUser("SNES DMDA local callback function",(*dmdasnes->residuallocal)(&info,x,f,dmdasnes->residuallocalctx));
+      PetscCallBack("SNES DMDA local callback function",(*dmdasnes->residuallocal)(&info,x,f,dmdasnes->residuallocalctx));
       PetscCall(DMDAVecRestoreArray(dm,Xloc,&x));
       PetscCall(DMDAVecRestoreArray(dm,F,&f));
     }
@@ -86,11 +86,11 @@ static PetscErrorCode SNESComputeFunction_DMDA(SNES snes,Vec X,Vec F,void *ctx)
     PetscCall(DMGetLocalVector(dm,&Floc));
     PetscCall(VecZeroEntries(Floc));
     PetscCall(PetscLogEventBegin(SNES_FunctionEval,snes,X,F,0));
-    if (dmdasnes->residuallocalvec) PetscCallUser("SNES DMDA local callback function",(*dmdasnes->residuallocalvec)(&info,Xloc,Floc,dmdasnes->residuallocalctx));
+    if (dmdasnes->residuallocalvec) PetscCallBack("SNES DMDA local callback function",(*dmdasnes->residuallocalvec)(&info,Xloc,Floc,dmdasnes->residuallocalctx));
     else {
       PetscCall(DMDAVecGetArray(dm,Xloc,&x));
       PetscCall(DMDAVecGetArray(dm,Floc,&f));
-      PetscCallUser("SNES DMDA local callback function",(*dmdasnes->residuallocal)(&info,x,f,dmdasnes->residuallocalctx));
+      PetscCallBack("SNES DMDA local callback function",(*dmdasnes->residuallocal)(&info,x,f,dmdasnes->residuallocalctx));
       PetscCall(DMDAVecRestoreArray(dm,Xloc,&x));
       PetscCall(DMDAVecRestoreArray(dm,Floc,&f));
     }
@@ -125,10 +125,10 @@ static PetscErrorCode SNESComputeObjective_DMDA(SNES snes,Vec X,PetscReal *ob,vo
   PetscCall(DMGlobalToLocalBegin(dm,X,INSERT_VALUES,Xloc));
   PetscCall(DMGlobalToLocalEnd(dm,X,INSERT_VALUES,Xloc));
   PetscCall(DMDAGetLocalInfo(dm,&info));
-  if (dmdasnes->objectivelocalvec) PetscCallUser("SNES DMDA local callback objective",(*dmdasnes->objectivelocalvec)(&info,Xloc,ob,dmdasnes->objectivelocalctx));
+  if (dmdasnes->objectivelocalvec) PetscCallBack("SNES DMDA local callback objective",(*dmdasnes->objectivelocalvec)(&info,Xloc,ob,dmdasnes->objectivelocalctx));
   else {
     PetscCall(DMDAVecGetArray(dm,Xloc,&x));
-    PetscCallUser("SNES DMDA local callback objective",(*dmdasnes->objectivelocal)(&info,x,ob,dmdasnes->objectivelocalctx));
+    PetscCallBack("SNES DMDA local callback objective",(*dmdasnes->objectivelocal)(&info,x,ob,dmdasnes->objectivelocalctx));
     PetscCall(DMDAVecRestoreArray(dm,Xloc,&x));
   }
   PetscCall(DMRestoreLocalVector(dm,&Xloc));
@@ -153,10 +153,10 @@ PETSC_EXTERN PetscErrorCode SNESComputeJacobian_DMDA(SNES snes,Vec X,Mat A,Mat B
     PetscCall(DMGlobalToLocalBegin(dm,X,INSERT_VALUES,Xloc));
     PetscCall(DMGlobalToLocalEnd(dm,X,INSERT_VALUES,Xloc));
     PetscCall(DMDAGetLocalInfo(dm,&info));
-    if (dmdasnes->jacobianlocalvec) PetscCallUser("SNES DMDA local callback Jacobian",(*dmdasnes->jacobianlocalvec)(&info,Xloc,A,B,dmdasnes->jacobianlocalctx));
+    if (dmdasnes->jacobianlocalvec) PetscCallBack("SNES DMDA local callback Jacobian",(*dmdasnes->jacobianlocalvec)(&info,Xloc,A,B,dmdasnes->jacobianlocalctx));
     else {
       PetscCall(DMDAVecGetArray(dm,Xloc,&x));
-      PetscCallUser("SNES DMDA local callback Jacobian",(*dmdasnes->jacobianlocal)(&info,x,A,B,dmdasnes->jacobianlocalctx));
+      PetscCallBack("SNES DMDA local callback Jacobian",(*dmdasnes->jacobianlocal)(&info,x,A,B,dmdasnes->jacobianlocalctx));
       PetscCall(DMDAVecRestoreArray(dm,Xloc,&x));
     }
     PetscCall(DMRestoreLocalVector(dm,&Xloc));
@@ -460,7 +460,7 @@ static PetscErrorCode SNESComputePicard_DMDA(SNES snes,Vec X,Vec F,void *ctx)
   switch (dmdasnes->residuallocalimode) {
   case INSERT_VALUES: {
     PetscCall(DMDAVecGetArray(dm,F,&f));
-    PetscCallUser("SNES Picard DMDA local callback function",(*dmdasnes->rhsplocal)(&info,x,f,dmdasnes->picardlocalctx));
+    PetscCallBack("SNES Picard DMDA local callback function",(*dmdasnes->rhsplocal)(&info,x,f,dmdasnes->picardlocalctx));
     PetscCall(DMDAVecRestoreArray(dm,F,&f));
   } break;
   case ADD_VALUES: {
@@ -468,7 +468,7 @@ static PetscErrorCode SNESComputePicard_DMDA(SNES snes,Vec X,Vec F,void *ctx)
     PetscCall(DMGetLocalVector(dm,&Floc));
     PetscCall(VecZeroEntries(Floc));
     PetscCall(DMDAVecGetArray(dm,Floc,&f));
-    PetscCallUser("SNES Picard DMDA local callback function",(*dmdasnes->rhsplocal)(&info,x,f,dmdasnes->picardlocalctx));
+    PetscCallBack("SNES Picard DMDA local callback function",(*dmdasnes->rhsplocal)(&info,x,f,dmdasnes->picardlocalctx));
     PetscCall(DMDAVecRestoreArray(dm,Floc,&f));
     PetscCall(VecZeroEntries(F));
     PetscCall(DMLocalToGlobalBegin(dm,Floc,ADD_VALUES,F));
@@ -499,7 +499,7 @@ static PetscErrorCode SNESComputePicardJacobian_DMDA(SNES snes,Vec X,Mat A,Mat B
   PetscCall(DMGlobalToLocalEnd(dm,X,INSERT_VALUES,Xloc));
   PetscCall(DMDAGetLocalInfo(dm,&info));
   PetscCall(DMDAVecGetArray(dm,Xloc,&x));
-  PetscCallUser("SNES Picard DMDA local callback Jacobian",(*dmdasnes->jacobianplocal)(&info,x,A,B,dmdasnes->picardlocalctx));
+  PetscCallBack("SNES Picard DMDA local callback Jacobian",(*dmdasnes->jacobianplocal)(&info,x,A,B,dmdasnes->picardlocalctx));
   PetscCall(DMDAVecRestoreArray(dm,Xloc,&x));
   PetscCall(DMRestoreLocalVector(dm,&Xloc));
   if (A != B) {

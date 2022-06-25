@@ -137,21 +137,21 @@ PetscErrorCode MatSolve_SuperLU_Private(Mat A,Vec b,Vec x)
   if (A->factortype == MAT_FACTOR_LU) {
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
-    PetscStackCall("SuperLU:cgssvx",cgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
+    PetscCallExternalNoErrorCode("SuperLU:cgssvx",cgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr,
                                      &lu->Glu, &lu->mem_usage, &lu->stat, &info));
 #else
-    PetscStackCall("SuperLU:zgssvx",zgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
+    PetscCallExternalNoErrorCode("SuperLU:zgssvx",zgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr,
                                      &lu->Glu, &lu->mem_usage, &lu->stat, &info));
 #endif
 #else
 #if defined(PETSC_USE_REAL_SINGLE)
-    PetscStackCall("SuperLU:sgssvx",sgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
+    PetscCallExternalNoErrorCode("SuperLU:sgssvx",sgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr,
                                      &lu->Glu, &lu->mem_usage, &lu->stat, &info));
 #else
-    PetscStackCall("SuperLU:dgssvx",dgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
+    PetscCallExternalNoErrorCode("SuperLU:dgssvx",dgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr,
                                      &lu->Glu,&lu->mem_usage, &lu->stat, &info));
 #endif
@@ -159,21 +159,21 @@ PetscErrorCode MatSolve_SuperLU_Private(Mat A,Vec b,Vec x)
   } else if (A->factortype == MAT_FACTOR_ILU) {
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
-    PetscStackCall("SuperLU:cgsisx",cgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
+    PetscCallExternalNoErrorCode("SuperLU:cgsisx",cgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond,
                                      &lu->Glu, &lu->mem_usage, &lu->stat, &info));
 #else
-    PetscStackCall("SuperLU:zgsisx",zgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
+    PetscCallExternalNoErrorCode("SuperLU:zgsisx",zgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond,
                                      &lu->Glu, &lu->mem_usage, &lu->stat, &info));
 #endif
 #else
 #if defined(PETSC_USE_REAL_SINGLE)
-    PetscStackCall("SuperLU:sgsisx",sgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
+    PetscCallExternalNoErrorCode("SuperLU:sgsisx",sgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond,
                                      &lu->Glu, &lu->mem_usage, &lu->stat, &info));
 #else
-    PetscStackCall("SuperLU:dgsisx",dgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
+    PetscCallExternalNoErrorCode("SuperLU:dgsisx",dgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond,
                                      &lu->Glu, &lu->mem_usage, &lu->stat, &info));
 #endif
@@ -200,7 +200,7 @@ PetscErrorCode MatSolve_SuperLU_Private(Mat A,Vec b,Vec x)
 
   if (lu->options.PrintStat) {
     PetscCall(PetscPrintf(PETSC_COMM_SELF,"MatSolve__SuperLU():\n"));
-    PetscStackCall("SuperLU:StatPrint",StatPrint(&lu->stat));
+    PetscCallExternalNoErrorCode("SuperLU:StatPrint",StatPrint(&lu->stat));
   }
   PetscFunctionReturn(0);
 }
@@ -254,8 +254,8 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo
     if (lu->A_dup) PetscCall(MatCopy_SeqAIJ(A,lu->A_dup,SAME_NONZERO_PATTERN));
 
     if (lu->lwork >= 0) {
-      PetscStackCall("SuperLU:Destroy_SuperNode_Matrix",Destroy_SuperNode_Matrix(&lu->L));
-      PetscStackCall("SuperLU:Destroy_CompCol_Matrix",Destroy_CompCol_Matrix(&lu->U));
+      PetscCallExternalNoErrorCode("SuperLU:Destroy_SuperNode_Matrix",Destroy_SuperNode_Matrix(&lu->L));
+      PetscCallExternalNoErrorCode("SuperLU:Destroy_CompCol_Matrix",Destroy_CompCol_Matrix(&lu->U));
       lu->options.Fact = SamePattern;
     }
   }
@@ -270,15 +270,15 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo
   }
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
-  PetscStackCall("SuperLU:cCreate_CompCol_Matrix",cCreate_CompCol_Matrix(&lu->A,A->cmap->n,A->rmap->n,aa->nz,(singlecomplex*)aa->a,aa->j,aa->i,SLU_NC,SLU_C,SLU_GE));
+  PetscCallExternalNoErrorCode("SuperLU:cCreate_CompCol_Matrix",cCreate_CompCol_Matrix(&lu->A,A->cmap->n,A->rmap->n,aa->nz,(singlecomplex*)aa->a,aa->j,aa->i,SLU_NC,SLU_C,SLU_GE));
 #else
-  PetscStackCall("SuperLU:zCreate_CompCol_Matrix",zCreate_CompCol_Matrix(&lu->A,A->cmap->n,A->rmap->n,aa->nz,(doublecomplex*)aa->a,aa->j,aa->i,SLU_NC,SLU_Z,SLU_GE));
+  PetscCallExternalNoErrorCode("SuperLU:zCreate_CompCol_Matrix",zCreate_CompCol_Matrix(&lu->A,A->cmap->n,A->rmap->n,aa->nz,(doublecomplex*)aa->a,aa->j,aa->i,SLU_NC,SLU_Z,SLU_GE));
 #endif
 #else
 #if defined(PETSC_USE_REAL_SINGLE)
-  PetscStackCall("SuperLU:sCreate_CompCol_Matrix",sCreate_CompCol_Matrix(&lu->A,A->cmap->n,A->rmap->n,aa->nz,aa->a,aa->j,aa->i,SLU_NC,SLU_S,SLU_GE));
+  PetscCallExternalNoErrorCode("SuperLU:sCreate_CompCol_Matrix",sCreate_CompCol_Matrix(&lu->A,A->cmap->n,A->rmap->n,aa->nz,aa->a,aa->j,aa->i,SLU_NC,SLU_S,SLU_GE));
 #else
-  PetscStackCall("SuperLU:dCreate_CompCol_Matrix",dCreate_CompCol_Matrix(&lu->A,A->cmap->n,A->rmap->n,aa->nz,aa->a,aa->j,aa->i,SLU_NC,SLU_D,SLU_GE));
+  PetscCallExternalNoErrorCode("SuperLU:dCreate_CompCol_Matrix",dCreate_CompCol_Matrix(&lu->A,A->cmap->n,A->rmap->n,aa->nz,aa->a,aa->j,aa->i,SLU_NC,SLU_D,SLU_GE));
 #endif
 #endif
 
@@ -287,21 +287,21 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo
   if (F->factortype == MAT_FACTOR_LU) {
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
-    PetscStackCall("SuperLU:cgssvx",cgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
+    PetscCallExternalNoErrorCode("SuperLU:cgssvx",cgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr,
                                      &lu->Glu, &lu->mem_usage, &lu->stat, &sinfo));
 #else
-    PetscStackCall("SuperLU:zgssvx",zgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
+    PetscCallExternalNoErrorCode("SuperLU:zgssvx",zgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr,
                                      &lu->Glu, &lu->mem_usage, &lu->stat, &sinfo));
 #endif
 #else
 #if defined(PETSC_USE_REAL_SINGLE)
-    PetscStackCall("SuperLU:sgssvx",sgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
+    PetscCallExternalNoErrorCode("SuperLU:sgssvx",sgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr,
                                      &lu->Glu, &lu->mem_usage, &lu->stat, &sinfo));
 #else
-    PetscStackCall("SuperLU:dgssvx",dgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
+    PetscCallExternalNoErrorCode("SuperLU:dgssvx",dgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr,
                                      &lu->Glu,&lu->mem_usage, &lu->stat, &sinfo));
 #endif
@@ -310,21 +310,21 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo
     /* Compute the incomplete factorization, condition number and pivot growth */
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
-    PetscStackCall("SuperLU:cgsisx",cgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r,lu->etree, lu->equed, lu->R, lu->C,
+    PetscCallExternalNoErrorCode("SuperLU:cgsisx",cgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r,lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond,
                                      &lu->Glu, &lu->mem_usage, &lu->stat, &sinfo));
 #else
-    PetscStackCall("SuperLU:zgsisx",zgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r,lu->etree, lu->equed, lu->R, lu->C,
+    PetscCallExternalNoErrorCode("SuperLU:zgsisx",zgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r,lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond,
                                      &lu->Glu, &lu->mem_usage, &lu->stat, &sinfo));
 #endif
 #else
 #if defined(PETSC_USE_REAL_SINGLE)
-    PetscStackCall("SuperLU:sgsisx",sgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
+    PetscCallExternalNoErrorCode("SuperLU:sgsisx",sgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond,
                                      &lu->Glu, &lu->mem_usage, &lu->stat, &sinfo));
 #else
-    PetscStackCall("SuperLU:dgsisx",dgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
+    PetscCallExternalNoErrorCode("SuperLU:dgsisx",dgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond,
                                      &lu->Glu, &lu->mem_usage, &lu->stat, &sinfo));
 #endif
@@ -365,7 +365,7 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo
 
   if (lu->options.PrintStat) {
     PetscCall(PetscPrintf(PETSC_COMM_SELF,"MatLUFactorNumeric_SuperLU():\n"));
-    PetscStackCall("SuperLU:StatPrint",StatPrint(&lu->stat));
+    PetscCallExternalNoErrorCode("SuperLU:StatPrint",StatPrint(&lu->stat));
     Lstore = (SCformat*) lu->L.Store;
     Ustore = (NCformat*) lu->U.Store;
     PetscCall(PetscPrintf(PETSC_COMM_SELF,"  No of nonzeros in factor L = %" PetscInt_FMT "\n", Lstore->nnz));
@@ -387,13 +387,13 @@ static PetscErrorCode MatDestroy_SuperLU(Mat A)
 
   PetscFunctionBegin;
   if (lu->CleanUpSuperLU) { /* Free the SuperLU datastructures */
-    PetscStackCall("SuperLU:Destroy_SuperMatrix_Store",Destroy_SuperMatrix_Store(&lu->A));
-    PetscStackCall("SuperLU:Destroy_SuperMatrix_Store",Destroy_SuperMatrix_Store(&lu->B));
-    PetscStackCall("SuperLU:Destroy_SuperMatrix_Store",Destroy_SuperMatrix_Store(&lu->X));
-    PetscStackCall("SuperLU:StatFree",StatFree(&lu->stat));
+    PetscCallExternalNoErrorCode("SuperLU:Destroy_SuperMatrix_Store",Destroy_SuperMatrix_Store(&lu->A));
+    PetscCallExternalNoErrorCode("SuperLU:Destroy_SuperMatrix_Store",Destroy_SuperMatrix_Store(&lu->B));
+    PetscCallExternalNoErrorCode("SuperLU:Destroy_SuperMatrix_Store",Destroy_SuperMatrix_Store(&lu->X));
+    PetscCallExternalNoErrorCode("SuperLU:StatFree",StatFree(&lu->stat));
     if (lu->lwork >= 0) {
-      PetscStackCall("SuperLU:Destroy_SuperNode_Matrix",Destroy_SuperNode_Matrix(&lu->L));
-      PetscStackCall("SuperLU:Destroy_CompCol_Matrix",Destroy_CompCol_Matrix(&lu->U));
+      PetscCallExternalNoErrorCode("SuperLU:Destroy_SuperNode_Matrix",Destroy_SuperNode_Matrix(&lu->L));
+      PetscCallExternalNoErrorCode("SuperLU:Destroy_CompCol_Matrix",Destroy_CompCol_Matrix(&lu->U));
     }
   }
   PetscCall(PetscFree(lu->etree));
@@ -633,12 +633,12 @@ static PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat 
     lu->options.Equil = NO;
   } else if (ftype == MAT_FACTOR_ILU) {
     /* Set the default input options of ilu: */
-    PetscStackCall("SuperLU:ilu_set_default_options",ilu_set_default_options(&lu->options));
+    PetscCallExternalNoErrorCode("SuperLU:ilu_set_default_options",ilu_set_default_options(&lu->options));
   }
   lu->options.PrintStat = NO;
 
   /* Initialize the statistics variables. */
-  PetscStackCall("SuperLU:StatInit",StatInit(&lu->stat));
+  PetscCallExternalNoErrorCode("SuperLU:StatInit",StatInit(&lu->stat));
   lu->lwork = 0;   /* allocate space internally by system malloc */
 
   /* Allocate spaces (notice sizes are for the transpose) */
@@ -651,19 +651,19 @@ static PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat 
   /* create rhs and solution x without allocate space for .Store */
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
-  PetscStackCall("SuperLU:cCreate_Dense_Matrix(",cCreate_Dense_Matrix(&lu->B, m, 1, NULL, m, SLU_DN, SLU_C, SLU_GE));
-  PetscStackCall("SuperLU:cCreate_Dense_Matrix(",cCreate_Dense_Matrix(&lu->X, m, 1, NULL, m, SLU_DN, SLU_C, SLU_GE));
+  PetscCallExternalNoErrorCode("SuperLU:cCreate_Dense_Matrix(",cCreate_Dense_Matrix(&lu->B, m, 1, NULL, m, SLU_DN, SLU_C, SLU_GE));
+  PetscCallExternalNoErrorCode("SuperLU:cCreate_Dense_Matrix(",cCreate_Dense_Matrix(&lu->X, m, 1, NULL, m, SLU_DN, SLU_C, SLU_GE));
 #else
-  PetscStackCall("SuperLU:zCreate_Dense_Matrix",zCreate_Dense_Matrix(&lu->B, m, 1, NULL, m, SLU_DN, SLU_Z, SLU_GE));
-  PetscStackCall("SuperLU:zCreate_Dense_Matrix",zCreate_Dense_Matrix(&lu->X, m, 1, NULL, m, SLU_DN, SLU_Z, SLU_GE));
+  PetscCallExternalNoErrorCode("SuperLU:zCreate_Dense_Matrix",zCreate_Dense_Matrix(&lu->B, m, 1, NULL, m, SLU_DN, SLU_Z, SLU_GE));
+  PetscCallExternalNoErrorCode("SuperLU:zCreate_Dense_Matrix",zCreate_Dense_Matrix(&lu->X, m, 1, NULL, m, SLU_DN, SLU_Z, SLU_GE));
 #endif
 #else
 #if defined(PETSC_USE_REAL_SINGLE)
-  PetscStackCall("SuperLU:sCreate_Dense_Matrix",sCreate_Dense_Matrix(&lu->B, m, 1, NULL, m, SLU_DN, SLU_S, SLU_GE));
-  PetscStackCall("SuperLU:sCreate_Dense_Matrix",sCreate_Dense_Matrix(&lu->X, m, 1, NULL, m, SLU_DN, SLU_S, SLU_GE));
+  PetscCallExternalNoErrorCode("SuperLU:sCreate_Dense_Matrix",sCreate_Dense_Matrix(&lu->B, m, 1, NULL, m, SLU_DN, SLU_S, SLU_GE));
+  PetscCallExternalNoErrorCode("SuperLU:sCreate_Dense_Matrix",sCreate_Dense_Matrix(&lu->X, m, 1, NULL, m, SLU_DN, SLU_S, SLU_GE));
 #else
-  PetscStackCall("SuperLU:dCreate_Dense_Matrix",dCreate_Dense_Matrix(&lu->B, m, 1, NULL, m, SLU_DN, SLU_D, SLU_GE));
-  PetscStackCall("SuperLU:dCreate_Dense_Matrix",dCreate_Dense_Matrix(&lu->X, m, 1, NULL, m, SLU_DN, SLU_D, SLU_GE));
+  PetscCallExternalNoErrorCode("SuperLU:dCreate_Dense_Matrix",dCreate_Dense_Matrix(&lu->B, m, 1, NULL, m, SLU_DN, SLU_D, SLU_GE));
+  PetscCallExternalNoErrorCode("SuperLU:dCreate_Dense_Matrix",dCreate_Dense_Matrix(&lu->X, m, 1, NULL, m, SLU_DN, SLU_D, SLU_GE));
 #endif
 #endif
 

@@ -143,25 +143,25 @@ PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec)
   /* Copy the vectors of the basis */
   for (j = 0; j < nvec; j++) {
     PetscCall(VecGetArray(VEC_V(j), &col));
-    PetscStackCallBLAS("BLAScopy",BLAScopy_(&bnloc, col, &pas, &Qloc[j*nloc], &pas));
+    PetscCallBLAS("BLAScopy",BLAScopy_(&bnloc, col, &pas, &Qloc[j*nloc], &pas));
     PetscCall(VecRestoreArray(VEC_V(j), &col));
   }
   /* Each process performs a local QR on its own block */
   for (j = 0; j < nvec; j++) {
     len = nloc - j;
     Ajj = Qloc[j*nloc+j];
-    PetscStackCallBLAS("BLASnrm2",rho = -PetscSign(Ajj) * BLASnrm2_(&len, &(Qloc[j*nloc+j]), &pas));
+    PetscCallBLAS("BLASnrm2",rho = -PetscSign(Ajj) * BLASnrm2_(&len, &(Qloc[j*nloc+j]), &pas));
     if (rho == 0.0) tloc[j] = 0.0;
     else {
       tloc[j] = (Ajj - rho) / rho;
       len     = len - 1;
       val     = 1.0 / (Ajj - rho);
-      PetscStackCallBLAS("BLASscal",BLASscal_(&len, &val, &(Qloc[j*nloc+j+1]), &pas));
+      PetscCallBLAS("BLASscal",BLASscal_(&len, &val, &(Qloc[j*nloc+j+1]), &pas));
       Qloc[j*nloc+j] = 1.0;
       len            = len + 1;
       for (k = j + 1; k < nvec; k++) {
-        PetscStackCallBLAS("BLASdot",tt = tloc[j] * BLASdot_(&len, &(Qloc[j*nloc+j]), &pas, &(Qloc[k*nloc+j]), &pas));
-        PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&len, &tt, &(Qloc[j*nloc+j]), &pas, &(Qloc[k*nloc+j]), &pas));
+        PetscCallBLAS("BLASdot",tt = tloc[j] * BLASdot_(&len, &(Qloc[j*nloc+j]), &pas, &(Qloc[k*nloc+j]), &pas));
+        PetscCallBLAS("BLASaxpy",BLASaxpy_(&len, &tt, &(Qloc[j*nloc+j]), &pas, &(Qloc[k*nloc+j]), &pas));
       }
       Qloc[j*nloc+j] = rho;
     }
@@ -170,7 +170,7 @@ PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec)
   for (d = 0; d < nvec; d++) {
     len = nvec - d;
     if (rank == First) {
-      PetscStackCallBLAS("BLAScopy",BLAScopy_(&len, &(Qloc[d*nloc+d]), &bnloc, &(wbufptr[d]), &pas));
+      PetscCallBLAS("BLAScopy",BLAScopy_(&len, &(Qloc[d*nloc+d]), &bnloc, &(wbufptr[d]), &pas));
       PetscCallMPI(MPI_Send(&(wbufptr[d]), len, MPIU_SCALAR, rank + 1, agmres->tag, comm));
     } else {
       PetscCallMPI(MPI_Recv(&(wbufptr[d]), len, MPIU_SCALAR, rank - 1, agmres->tag, comm, &status));
@@ -203,7 +203,7 @@ PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec)
         Qloc[j*nloc+i] = rho;
       }
       if (rank == Last) {
-        PetscStackCallBLAS("BLAScopy",BLAScopy_(&len, &(wbufptr[d]), &pas, RLOC(d,d), &N));
+        PetscCallBLAS("BLAScopy",BLAScopy_(&len, &(wbufptr[d]), &pas, RLOC(d,d), &N));
         for (k = d + 1; k < nvec; k++) *RLOC(k,d) = 0.0;
       }
     }
@@ -214,7 +214,7 @@ PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec)
       pos    = nvec - d;
       PetscCall(PetscBLASIntCast(pos,&bpos));
       sgn[d] = PetscSign(*RLOC(d,d));
-      PetscStackCallBLAS("BLASscal",BLASscal_(&bpos, &(sgn[d]), RLOC(d,d), &N));
+      PetscCallBLAS("BLASscal",BLASscal_(&bpos, &(sgn[d]), RLOC(d,d), &N));
     }
   }
   /* BroadCast Rloc to all other processes
@@ -263,7 +263,7 @@ PetscErrorCode KSPAGMRESRodvec(KSP ksp, PetscInt nvec, PetscScalar *In, Vec Out)
     for (i = 0; i < nvec; i++) y[i] = sgn[i] * y[i];
   }
   for (i = 0; i < nloc; i++) zloc[i] = 0.0;
-  if (agmres->size == 1) PetscStackCallBLAS("BLAScopy",BLAScopy_(&bnvec, y, &pas, &(zloc[0]), &pas));
+  if (agmres->size == 1) PetscCallBLAS("BLAScopy",BLAScopy_(&bnvec, y, &pas, &(zloc[0]), &pas));
   else {
     for (d = nvec - 1; d >= 0; d--) {
       if (rank == First) {
@@ -303,7 +303,7 @@ PetscErrorCode KSPAGMRESRodvec(KSP ksp, PetscInt nvec, PetscScalar *In, Vec Out)
       rho       = Qloc[dpt];
       Qloc[dpt] = 1.0;
       tt        = tloc[j] * (BLASdot_(&blen, &(Qloc[dpt]), &pas, &(zloc[j]), &pas));
-      PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&blen, &tt, &(Qloc[dpt]), &pas, &(zloc[j]), &pas));
+      PetscCallBLAS("BLASaxpy",BLASaxpy_(&blen, &tt, &(Qloc[dpt]), &pas, &(zloc[j]), &pas));
       Qloc[dpt] = rho;
     }
   }

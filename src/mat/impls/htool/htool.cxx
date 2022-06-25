@@ -349,7 +349,7 @@ static PetscErrorCode MatGetRow_Htool(Mat A,PetscInt row,PetscInt *nz,PetscInt *
     if (a->wrapper) a->wrapper->copy_submatrix(1,A->cmap->N,&row,idxc,*v);
     else reinterpret_cast<htool::VirtualGenerator<PetscScalar>*>(a->kernelctx)->copy_submatrix(1,A->cmap->N,&row,idxc,*v);
     PetscCall(PetscBLASIntCast(A->cmap->N,&bn));
-    PetscStackCallBLAS("BLASscal",BLASscal_(&bn,&a->s,*v,&one));
+    PetscCallBLAS("BLASscal",BLASscal_(&bn,&a->s,*v,&one));
   }
   if (!idx) {
     PetscCall(PetscFree(idxc));

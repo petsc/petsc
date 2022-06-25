@@ -1183,7 +1183,7 @@ PetscErrorCode MatScale_SeqSBAIJ(Mat inA,PetscScalar alpha)
 
   PetscFunctionBegin;
   PetscCall(PetscBLASIntCast(a->bs2*a->nz,&totalnz));
-  PetscStackCallBLAS("BLASscal",BLASscal_(&totalnz,&oalpha,a->a,&one));
+  PetscCallBLAS("BLASscal",BLASscal_(&totalnz,&oalpha,a->a,&one));
   PetscCall(PetscLogFlops(totalnz));
   PetscFunctionReturn(0);
 }
@@ -1719,8 +1719,8 @@ PetscErrorCode MatMatMultNumeric_SeqSBAIJ_SeqDense(Mat A,Mat B,Mat C)
     for (i=0; i<mbs; i++) {
       n = ii[1] - ii[0]; ii++;
       for (j=0; j<n; j++) {
-        if (*idx != i) PetscStackCallBLAS("BLASgemm",BLASgemm_("T","N",&bbs,&bcn,&bbs,&_DOne,v,&bbs,b+bs*i,&bbm,&_DOne,c+bs*(*idx),&bcm));
-        PetscStackCallBLAS("BLASgemm",BLASgemm_("N","N",&bbs,&bcn,&bbs,&_DOne,v,&bbs,b+bs*(*idx++),&bbm,&_DOne,z,&bcm));
+        if (*idx != i) PetscCallBLAS("BLASgemm",BLASgemm_("T","N",&bbs,&bcn,&bbs,&_DOne,v,&bbs,b+bs*i,&bbm,&_DOne,c+bs*(*idx),&bcm));
+        PetscCallBLAS("BLASgemm",BLASgemm_("N","N",&bbs,&bcn,&bbs,&_DOne,v,&bbs,b+bs*(*idx++),&bbm,&_DOne,z,&bcm));
         v += bs2;
       }
       z += bs;

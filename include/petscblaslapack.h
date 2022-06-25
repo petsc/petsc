@@ -31,13 +31,13 @@
 /* SUBMANSEC = Sys */
 
 /*MC
-    PetscStackCallBLAS - Calls a BLAS or LAPACK routine with error check handling
+    PetscCallBLAS - Calls a BLAS or LAPACK routine with error check handling
 
     Not collective
 
     Synopsis:
    #include <petscsys.h>
-   void PetscStackCallBLAS(char *name,routine)
+   void PetscCallBLAS(char *name,routine)
 
   Input Parameters:
 +   name - string that gives the name of the function being called
@@ -48,10 +48,10 @@
    Developer Note:
    This is so that when a user or external library routine results in a crash or corrupts memory, they get blamed instead of PETSc.
 
-.seealso: `PetscCall()`, `PetscStackPushNoCheck()`, `PetscStackPush()`, `PetscStackCallStandard()`, `PetscStackCall()`
+.seealso: `PetscCall()`, `PetscStackPushNoCheck()`, `PetscStackPush()`, `PetscCallExternal()`, `PetscCallExternalNoErrorCode()`
 M*/
-#define PetscStackCallBLAS(name,routine) do {                   \
-    PetscStackPushForeign(name);                                \
+#define PetscCallBLAS(name,routine) do {                   \
+    PetscStackPushExternal(name);                                \
     routine;                                                    \
     PetscStackPop;                                              \
   } while (0)

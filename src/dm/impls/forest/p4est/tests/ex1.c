@@ -7,7 +7,7 @@ int main(int argc, char **argv)
 
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   PetscCall(PetscP4estInitialize());
-  PetscStackCallP4est(sc_abort_verbose,(__FILE__,__LINE__,"Abort in main()\n"));
+  PetscCallP4est(sc_abort_verbose,(__FILE__,__LINE__,"Abort in main()\n"));
   PetscCall(PetscFinalize());
   return 0;
 }

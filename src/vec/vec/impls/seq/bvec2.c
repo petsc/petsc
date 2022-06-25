@@ -191,7 +191,7 @@ PetscErrorCode VecSwap_Seq(Vec xin,Vec yin)
     PetscCall(PetscBLASIntCast(xin->map->n,&bn));
     PetscCall(VecGetArray(xin,&xa));
     PetscCall(VecGetArray(yin,&ya));
-    PetscStackCallBLAS("BLASswap",BLASswap_(&bn,xa,&one,ya,&one));
+    PetscCallBLAS("BLASswap",BLASswap_(&bn,xa,&one,ya,&one));
     PetscCall(VecRestoreArray(xin,&xa));
     PetscCall(VecRestoreArray(yin,&ya));
   }
@@ -211,9 +211,9 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal *z)
   if (type == NORM_2 || type == NORM_FROBENIUS) {
     PetscCall(VecGetArrayRead(xin,&xx));
 #if defined(PETSC_USE_REAL___FP16)
-    PetscStackCallBLAS("BLASnrm2",*z = BLASnrm2_(&bn,xx,&one));
+    PetscCallBLAS("BLASnrm2",*z = BLASnrm2_(&bn,xx,&one));
 #else
-    PetscStackCallBLAS("BLASdot",*z   = PetscRealPart(BLASdot_(&bn,xx,&one,xx,&one)));
+    PetscCallBLAS("BLASdot",*z   = PetscRealPart(BLASdot_(&bn,xx,&one,xx,&one)));
     *z   = PetscSqrtReal(*z);
 #endif
     PetscCall(VecRestoreArrayRead(xin,&xx));
@@ -244,7 +244,7 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal *z)
     }
     *z = tmp;
 #else
-    PetscStackCallBLAS("BLASasum",*z   = BLASasum_(&bn,xx,&one));
+    PetscCallBLAS("BLASasum",*z   = BLASasum_(&bn,xx,&one));
 #endif
     PetscCall(VecRestoreArrayRead(xin,&xx));
     PetscCall(PetscLogFlops(PetscMax(n-1.0,0.0)));

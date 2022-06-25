@@ -2989,7 +2989,7 @@ static PetscErrorCode DMPlexCoordinatesToReference_NewtonUpdate(PetscInt dimC, P
 
     for (l = 0; l < dimC; l++) {invJ[l] = resNeg[l];}
 
-    PetscStackCallBLAS("LAPACKgels",LAPACKgels_(&transpose,&m,&n,&one,J,&m,invJ,&n,work,&worksize, &info));
+    PetscCallBLAS("LAPACKgels",LAPACKgels_(&transpose,&m,&n,&one,J,&m,invJ,&n,work,&worksize, &info));
     PetscCheck(info == 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Bad argument to GELS");
 
     for (l = 0; l < dimR; l++) {guess[l] += PetscRealPart(invJ[l]);}

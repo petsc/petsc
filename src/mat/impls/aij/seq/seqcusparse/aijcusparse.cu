@@ -1252,7 +1252,7 @@ static PetscErrorCode MatSeqAIJCUSPARSEFormExplicitTranspose(Mat A)
     }
     if (!cusparsestruct->csr2csc_i) {
       THRUSTARRAY csr2csc_a(matrix->num_entries);
-      PetscStackCallThrust(thrust::sequence(thrust::device, csr2csc_a.begin(), csr2csc_a.end(), 0.0));
+      PetscCallThrust(thrust::sequence(thrust::device, csr2csc_a.begin(), csr2csc_a.end(), 0.0));
 
       indexBase = cusparseGetMatIndexBase(matstruct->descr);
      #if PETSC_PKG_CUDA_VERSION_GE(11,0,0)
@@ -1297,12 +1297,12 @@ static PetscErrorCode MatSeqAIJCUSPARSEFormExplicitTranspose(Mat A)
       }
 
       cusparsestruct->csr2csc_i = new THRUSTINTARRAY(matrix->num_entries);
-      PetscStackCallThrust(thrust::transform(thrust::device,matrixT->values->begin(),matrixT->values->end(),cusparsestruct->csr2csc_i->begin(),PetscScalarToPetscInt()));
+      PetscCallThrust(thrust::transform(thrust::device,matrixT->values->begin(),matrixT->values->end(),cusparsestruct->csr2csc_i->begin(),PetscScalarToPetscInt()));
      #if PETSC_PKG_CUDA_VERSION_GE(11,0,0)
       PetscCallCUDA(cudaFree(csr2cscBuffer));
      #endif
     }
-    PetscStackCallThrust(thrust::copy(thrust::device,thrust::make_permutation_iterator(matrix->values->begin(), cusparsestruct->csr2csc_i->begin()),
+    PetscCallThrust(thrust::copy(thrust::device,thrust::make_permutation_iterator(matrix->values->begin(), cusparsestruct->csr2csc_i->begin()),
                                                      thrust::make_permutation_iterator(matrix->values->begin(), cusparsestruct->csr2csc_i->end()),
                                                      matrixT->values->begin()));
   }
@@ -5308,18 +5308,18 @@ PetscErrorCode MatSeqAIJCUSPARSEMergeMats(Mat A,Mat B,MatReuse reuse,Mat* C)
       auto p1 = Ccusp->cooPerm->begin();
       auto p2 = Ccusp->cooPerm->begin();
       thrust::advance(p2,Annz);
-      PetscStackCallThrust(thrust::merge(thrust::device,Azb,Aze,Bzb,Bze,Czb,IJCompare4()));
+      PetscCallThrust(thrust::merge(thrust::device,Azb,Aze,Bzb,Bze,Czb,IJCompare4()));
 #if PETSC_PKG_CUDA_VERSION_LT(10,0,0)
       thrust::transform(Bcib,Bcie,Bcib,Shift(-A->cmap->n));
 #endif
       auto cci = thrust::make_counting_iterator(zero);
       auto cce = thrust::make_counting_iterator(c->nz);
 #if 0 //Errors on SUMMIT cuda 11.1.0
-      PetscStackCallThrust(thrust::partition_copy(thrust::device,cci,cce,wPerm->begin(),p1,p2,thrust::identity<int>()));
+      PetscCallThrust(thrust::partition_copy(thrust::device,cci,cce,wPerm->begin(),p1,p2,thrust::identity<int>()));
 #else
       auto pred = thrust::identity<int>();
-      PetscStackCallThrust(thrust::copy_if(thrust::device,cci,cce,wPerm->begin(),p1,pred));
-      PetscStackCallThrust(thrust::remove_copy_if(thrust::device,cci,cce,wPerm->begin(),p2,pred));
+      PetscCallThrust(thrust::copy_if(thrust::device,cci,cce,wPerm->begin(),p1,pred));
+      PetscCallThrust(thrust::remove_copy_if(thrust::device,cci,cce,wPerm->begin(),p2,pred));
 #endif
       stat = cusparseXcoo2csr(Ccusp->handle,
                               Ccoo->data().get(),

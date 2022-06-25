@@ -1940,7 +1940,7 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverse_Static(PetscInt m,PetscIn
   PetscCall(PetscBLASIntCast(mstride,&lda));
   PetscCall(PetscBLASIntCast(worksize,&ldwork));
   PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-  PetscStackCallBLAS("LAPACKgeqrf",LAPACKgeqrf_(&M,&N,A,&lda,tau,work,&ldwork,&info));
+  PetscCallBLAS("LAPACKgeqrf",LAPACKgeqrf_(&M,&N,A,&lda,tau,work,&ldwork,&info));
   PetscCall(PetscFPTrapPop());
   PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_LIB,"xGEQRF error");
   R = A; /* Upper triangular part of A now contains R, the rest contains the elementary reflectors */
@@ -1949,7 +1949,7 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverse_Static(PetscInt m,PetscIn
   Q    = Ainv;
   PetscCall(PetscArraycpy(Q,A,mstride*n));
   K    = N;                     /* full rank */
-  PetscStackCallBLAS("LAPACKorgqr",LAPACKorgqr_(&M,&N,&K,Q,&lda,tau,work,&ldwork,&info));
+  PetscCallBLAS("LAPACKorgqr",LAPACKorgqr_(&M,&N,&K,Q,&lda,tau,work,&ldwork,&info));
   PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_LIB,"xORGQR/xUNGQR error");
 
   /* Compute A^{-T} = (R^{-1} Q^T)^T = Q R^{-T} */
@@ -2010,12 +2010,12 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverseSVD_Static(PetscInt m,Pets
 #if defined(PETSC_USE_COMPLEX)
   rworkSize = 5 * PetscMin(M,N);
   PetscCall(PetscMalloc1(rworkSize,&rwork));
-  PetscStackCallBLAS("LAPACKgelss",LAPACKgelss_(&M,&N,&nrhs,A,&lda,Brhs,&ldb, (PetscReal *) tau,&rcond,&irank,tmpwork,&ldwork,rwork,&info));
+  PetscCallBLAS("LAPACKgelss",LAPACKgelss_(&M,&N,&nrhs,A,&lda,Brhs,&ldb, (PetscReal *) tau,&rcond,&irank,tmpwork,&ldwork,rwork,&info));
   PetscCall(PetscFPTrapPop());
   PetscCall(PetscFree(rwork));
 #else
   nrhs  = M;
-  PetscStackCallBLAS("LAPACKgelss",LAPACKgelss_(&M,&N,&nrhs,A,&lda,Brhs,&ldb, (PetscReal *) tau,&rcond,&irank,tmpwork,&ldwork,&info));
+  PetscCallBLAS("LAPACKgelss",LAPACKgelss_(&M,&N,&nrhs,A,&lda,Brhs,&ldb, (PetscReal *) tau,&rcond,&irank,tmpwork,&ldwork,&info));
   PetscCall(PetscFPTrapPop());
 #endif
   PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_LIB,"xGELSS error");

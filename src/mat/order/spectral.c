@@ -139,7 +139,7 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_Spectral(Mat A, MatOrderingType type,
     PetscCall(PetscBLASIntCast(1,&idummy));
     PetscCall(PetscMalloc4(n,&realpart,n,&imagpart,n*n,&eigvec,lwork,&work));
     PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-    PetscStackCallBLAS("LAPACKgeev", LAPACKgeev_("N","V",&bn,a,&bN,realpart,imagpart,&sdummy,&idummy,eigvec,&bN,work,&lwork,&lierr));
+    PetscCallBLAS("LAPACKgeev", LAPACKgeev_("N","V",&bn,a,&bN,realpart,imagpart,&sdummy,&idummy,eigvec,&bN,work,&lwork,&lierr));
     PetscCheck(!lierr,PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in LAPACK routine %d", (int) lierr);
     PetscCall(PetscFPTrapPop());
     PetscCall(MatDenseRestoreArray(LD,&a));

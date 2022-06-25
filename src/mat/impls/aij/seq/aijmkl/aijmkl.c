@@ -59,7 +59,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJMKL_SeqAIJ(Mat A,MatType type,MatRe
    * the spptr pointer. */
   if (reuse == MAT_INITIAL_MATRIX) aijmkl = (Mat_SeqAIJMKL*)B->spptr;
 
-  if (aijmkl->sparse_optimized) PetscStackCallStandard(mkl_sparse_destroy,aijmkl->csrA);
+  if (aijmkl->sparse_optimized) PetscCallExternal(mkl_sparse_destroy,aijmkl->csrA);
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
   PetscCall(PetscFree(B->spptr));
 
@@ -80,7 +80,7 @@ PetscErrorCode MatDestroy_SeqAIJMKL(Mat A)
   if (aijmkl) {
     /* Clean up everything in the Mat_SeqAIJMKL data structure, then free A->spptr. */
 #if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
-    if (aijmkl->sparse_optimized) PetscStackCallStandard(mkl_sparse_destroy,aijmkl->csrA);
+    if (aijmkl->sparse_optimized) PetscCallExternal(mkl_sparse_destroy,aijmkl->csrA);
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
     PetscCall(PetscFree(A->spptr));
   }
@@ -130,7 +130,7 @@ PETSC_INTERN PetscErrorCode MatSeqAIJMKL_create_mkl_handle(Mat A)
   if (aijmkl->sparse_optimized) {
     /* Matrix has been previously assembled and optimized. Must destroy old
      * matrix handle before running the optimization step again. */
-    PetscStackCallStandard(mkl_sparse_destroy,aijmkl->csrA);
+    PetscCallExternal(mkl_sparse_destroy,aijmkl->csrA);
   }
   aijmkl->sparse_optimized = PETSC_FALSE;
 
@@ -146,11 +146,11 @@ PETSC_INTERN PetscErrorCode MatSeqAIJMKL_create_mkl_handle(Mat A)
   if (a->nz && aa && !A->structure_only) {
     /* Create a new, optimized sparse matrix handle only if the matrix has nonzero entries.
      * The MKL sparse-inspector executor routines don't like being passed an empty matrix. */
-    PetscStackCallStandard(mkl_sparse_x_create_csr,&aijmkl->csrA,SPARSE_INDEX_BASE_ZERO,m,n,ai,ai+1,aj,aa);
-    PetscStackCallStandard(mkl_sparse_set_mv_hint,aijmkl->csrA,SPARSE_OPERATION_NON_TRANSPOSE,aijmkl->descr,1000);
-    PetscStackCallStandard(mkl_sparse_set_memory_hint,aijmkl->csrA,SPARSE_MEMORY_AGGRESSIVE);
+    PetscCallExternal(mkl_sparse_x_create_csr,&aijmkl->csrA,SPARSE_INDEX_BASE_ZERO,m,n,ai,ai+1,aj,aa);
+    PetscCallExternal(mkl_sparse_set_mv_hint,aijmkl->csrA,SPARSE_OPERATION_NON_TRANSPOSE,aijmkl->descr,1000);
+    PetscCallExternal(mkl_sparse_set_memory_hint,aijmkl->csrA,SPARSE_MEMORY_AGGRESSIVE);
     if (!aijmkl->no_SpMV2) {
-      PetscStackCallStandard(mkl_sparse_optimize,aijmkl->csrA);
+      PetscCallExternal(mkl_sparse_optimize,aijmkl->csrA);
     }
     aijmkl->sparse_optimized = PETSC_TRUE;
     PetscCall(PetscObjectStateGet((PetscObject)A,&(aijmkl->state)));
@@ -175,7 +175,7 @@ static PetscErrorCode MatSeqAIJMKL_setup_structure_from_mkl_handle(MPI_Comm comm
   PetscFunctionBegin;
   if (csrA) {
     /* Note: Must pass in &dummy below since MKL can't accept NULL for this output array we don't actually want. */
-    PetscStackCallStandard(mkl_sparse_x_export_csr,csrA,&indexing,&m,&n,&ai,&dummy,&aj,&aa);
+    PetscCallExternal(mkl_sparse_x_export_csr,csrA,&indexing,&m,&n,&ai,&dummy,&aj,&aa);
     PetscCheck((m == nrows) && (n == ncols),PETSC_COMM_SELF,PETSC_ERR_LIB,"Number of rows/columns does not match those from mkl_sparse_x_export_csr()");
   } else {
     aj = ai = PETSC_NULL;
@@ -211,8 +211,8 @@ static PetscErrorCode MatSeqAIJMKL_setup_structure_from_mkl_handle(MPI_Comm comm
   aijmkl->descr.mode = SPARSE_FILL_MODE_LOWER;
   aijmkl->descr.diag = SPARSE_DIAG_NON_UNIT;
   if (csrA) {
-    PetscStackCallStandard(mkl_sparse_set_mv_hint,aijmkl->csrA,SPARSE_OPERATION_NON_TRANSPOSE,aijmkl->descr,1000);
-    PetscStackCallStandard(mkl_sparse_set_memory_hint,aijmkl->csrA,SPARSE_MEMORY_AGGRESSIVE);
+    PetscCallExternal(mkl_sparse_set_mv_hint,aijmkl->csrA,SPARSE_OPERATION_NON_TRANSPOSE,aijmkl->descr,1000);
+    PetscCallExternal(mkl_sparse_set_memory_hint,aijmkl->csrA,SPARSE_MEMORY_AGGRESSIVE);
   }
   PetscCall(PetscObjectStateGet((PetscObject)A,&(aijmkl->state)));
   PetscFunctionReturn(0);
@@ -238,7 +238,7 @@ static PetscErrorCode MatSeqAIJMKL_update_from_mkl_handle(Mat A)
   if (!aijmkl->csrA) PetscFunctionReturn(0);
 
   /* Note: Must pass in &dummy below since MKL can't accept NULL for this output array we don't actually want. */
-  PetscStackCallStandard(mkl_sparse_x_export_csr,aijmkl->csrA,&indexing,&nrows,&ncols,&ai,&dummy,&aj,&aa);
+  PetscCallExternal(mkl_sparse_x_export_csr,aijmkl->csrA,&indexing,&nrows,&ncols,&ai,&dummy,&aj,&aa);
 
   /* We can't just do a copy from the arrays exported by MKL to those used for the PETSc AIJ storage, because the MKL and PETSc
    * representations differ in small ways (e.g., more explicit nonzeros per row due to preallocation). */
@@ -280,7 +280,7 @@ PETSC_INTERN PetscErrorCode MatSeqAIJMKL_view_mkl_handle(Mat A,PetscViewer viewe
   }
 
   /* Note: Must pass in &dummy below since MKL can't accept NULL for this output array we don't actually want. */
-  PetscStackCallStandard(mkl_sparse_x_export_csr,aijmkl->csrA,&indexing,&nrows,&ncols,&ai,&dummy,&aj,&aa);
+  PetscCallExternal(mkl_sparse_x_export_csr,aijmkl->csrA,&indexing,&nrows,&ncols,&ai,&dummy,&aj,&aa);
 
   k = 0;
   for (i=0; i<nrows; i++) {
@@ -403,7 +403,7 @@ PetscErrorCode MatMult_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy)
   if (!aijmkl->sparse_optimized || aijmkl->state != state) PetscCall(MatSeqAIJMKL_create_mkl_handle(A));
 
   /* Call MKL SpMV2 executor routine to do the MatMult. */
-  PetscStackCallStandard(mkl_sparse_x_mv,SPARSE_OPERATION_NON_TRANSPOSE,1.0,aijmkl->csrA,aijmkl->descr,x,0.0,y);
+  PetscCallExternal(mkl_sparse_x_mv,SPARSE_OPERATION_NON_TRANSPOSE,1.0,aijmkl->csrA,aijmkl->descr,x,0.0,y);
 
   PetscCall(PetscLogFlops(2.0*a->nz - a->nonzerorowcnt));
   PetscCall(VecRestoreArrayRead(xx,&x));
@@ -477,7 +477,7 @@ PetscErrorCode MatMultTranspose_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy)
   if (!aijmkl->sparse_optimized || aijmkl->state != state) PetscCall(MatSeqAIJMKL_create_mkl_handle(A));
 
   /* Call MKL SpMV2 executor routine to do the MatMultTranspose. */
-  PetscStackCallStandard(mkl_sparse_x_mv,SPARSE_OPERATION_TRANSPOSE,1.0,aijmkl->csrA,aijmkl->descr,x,0.0,y);
+  PetscCallExternal(mkl_sparse_x_mv,SPARSE_OPERATION_TRANSPOSE,1.0,aijmkl->csrA,aijmkl->descr,x,0.0,y);
 
   PetscCall(PetscLogFlops(2.0*a->nz - a->nonzerorowcnt));
   PetscCall(VecRestoreArrayRead(xx,&x));
@@ -572,11 +572,11 @@ PetscErrorCode MatMultAdd_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,Vec zz)
   if (zz == yy) {
     /* If zz and yy are the same vector, we can use mkl_sparse_x_mv, which calculates y = alpha*A*x + beta*y,
      * with alpha and beta both set to 1.0. */
-    PetscStackCallStandard(mkl_sparse_x_mv,SPARSE_OPERATION_NON_TRANSPOSE,1.0,aijmkl->csrA,aijmkl->descr,x,1.0,z);
+    PetscCallExternal(mkl_sparse_x_mv,SPARSE_OPERATION_NON_TRANSPOSE,1.0,aijmkl->csrA,aijmkl->descr,x,1.0,z);
   } else {
     /* zz and yy are different vectors, so we call mkl_sparse_x_mv with alpha=1.0 and beta=0.0, and then
      * we add the contents of vector yy to the result; MKL sparse BLAS does not have a MatMultAdd equivalent. */
-    PetscStackCallStandard(mkl_sparse_x_mv,SPARSE_OPERATION_NON_TRANSPOSE,1.0,aijmkl->csrA,aijmkl->descr,x,0.0,z);
+    PetscCallExternal(mkl_sparse_x_mv,SPARSE_OPERATION_NON_TRANSPOSE,1.0,aijmkl->csrA,aijmkl->descr,x,0.0,z);
     for (i=0; i<m; i++) z[i] += y[i];
   }
 
@@ -673,11 +673,11 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,Vec zz)
   if (zz == yy) {
     /* If zz and yy are the same vector, we can use mkl_sparse_x_mv, which calculates y = alpha*A*x + beta*y,
      * with alpha and beta both set to 1.0. */
-    PetscStackCallStandard(mkl_sparse_x_mv,SPARSE_OPERATION_TRANSPOSE,1.0,aijmkl->csrA,aijmkl->descr,x,1.0,z);
+    PetscCallExternal(mkl_sparse_x_mv,SPARSE_OPERATION_TRANSPOSE,1.0,aijmkl->csrA,aijmkl->descr,x,1.0,z);
   } else {
     /* zz and yy are different vectors, so we call mkl_sparse_x_mv with alpha=1.0 and beta=0.0, and then
      * we add the contents of vector yy to the result; MKL sparse BLAS does not have a MatMultAdd equivalent. */
-    PetscStackCallStandard(mkl_sparse_x_mv,SPARSE_OPERATION_TRANSPOSE,1.0,aijmkl->csrA,aijmkl->descr,x,0.0,z);
+    PetscCallExternal(mkl_sparse_x_mv,SPARSE_OPERATION_TRANSPOSE,1.0,aijmkl->csrA,aijmkl->descr,x,0.0,z);
     for (i=0; i<n; i++) z[i] += y[i];
   }
 
@@ -715,7 +715,7 @@ static PetscErrorCode MatMatMultSymbolic_SeqAIJMKL_SeqAIJMKL_Private(Mat A,const
   descr_type_gen.type = SPARSE_MATRIX_TYPE_GENERAL;
 
   if (csrA && csrB) {
-    PetscStackCallStandard(mkl_sparse_sp2m,transA,descr_type_gen,csrA,transB,descr_type_gen,csrB,SPARSE_STAGE_FULL_MULT_NO_VAL,&csrC);
+    PetscCallExternal(mkl_sparse_sp2m,transA,descr_type_gen,csrA,transB,descr_type_gen,csrB,SPARSE_STAGE_FULL_MULT_NO_VAL,&csrC);
   } else {
     csrC = PETSC_NULL;
   }
@@ -743,7 +743,7 @@ PetscErrorCode MatMatMultNumeric_SeqAIJMKL_SeqAIJMKL_Private(Mat A,const sparse_
   descr_type_gen.type = SPARSE_MATRIX_TYPE_GENERAL;
 
   if (csrA && csrB) {
-    PetscStackCallStandard(mkl_sparse_sp2m,transA,descr_type_gen,csrA,transB,descr_type_gen,csrB,SPARSE_STAGE_FINALIZE_MULT,&csrC);
+    PetscCallExternal(mkl_sparse_sp2m,transA,descr_type_gen,csrA,transB,descr_type_gen,csrB,SPARSE_STAGE_FINALIZE_MULT,&csrC);
   } else {
     csrC = PETSC_NULL;
   }
@@ -844,7 +844,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJMKL_SeqAIJMKL_SymmetricReal(Mat A,Mat P,Mat 
   descr_type_sym.diag = SPARSE_DIAG_NON_UNIT;
 
   /* Note that the call below won't work for complex matrices. (We protect this when pointers are assigned in MatConvert.) */
-  PetscStackCallStandard(mkl_sparse_sypr,SPARSE_OPERATION_TRANSPOSE,csrP,csrA,descr_type_sym,&csrC,SPARSE_STAGE_FINALIZE_MULT);
+  PetscCallExternal(mkl_sparse_sypr,SPARSE_OPERATION_TRANSPOSE,csrP,csrA,descr_type_sym,&csrC,SPARSE_STAGE_FINALIZE_MULT);
 
   /* Update the PETSc AIJ representation for matrix C from contents of MKL handle.
    * This is more complicated than it should be: it turns out that, though mkl_sparse_sypr() will accept a full AIJ/CSR matrix,
@@ -891,7 +891,7 @@ PetscErrorCode MatProductSymbolic_PtAP_SeqAIJMKL_SeqAIJMKL_SymmetricReal(Mat C)
 
   /* Note that the call below won't work for complex matrices. (We protect this when pointers are assigned in MatConvert.) */
   if (csrP && csrA) {
-    PetscStackCallStandard(mkl_sparse_sypr,SPARSE_OPERATION_TRANSPOSE,csrP,csrA,descr_type_sym,&csrC,SPARSE_STAGE_FULL_MULT_NO_VAL);
+    PetscCallExternal(mkl_sparse_sypr,SPARSE_OPERATION_TRANSPOSE,csrP,csrA,descr_type_sym,&csrC,SPARSE_STAGE_FULL_MULT_NO_VAL);
   } else {
     csrC = PETSC_NULL;
   }

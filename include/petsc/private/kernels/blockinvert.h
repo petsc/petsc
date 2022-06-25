@@ -135,7 +135,7 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A,2)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(B,3)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(W,4)); \
-    PetscStackCallBLAS("BLASgemm",BLASgemm_("N","N",&(_bbs),&(_bbs),&(_bbs),&_one,(W),&(_bbs),(B),&(_bbs),&_zero,(A),&(_bbs))); \
+    PetscCallBLAS("BLASgemm",BLASgemm_("N","N",&(_bbs),&(_bbs),&(_bbs),&_one,(W),&(_bbs),(B),&(_bbs),&_zero,(A),&(_bbs))); \
   } while (0)
 
 /*
@@ -151,7 +151,7 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A,2)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(B,3)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(C,4)); \
-    PetscStackCallBLAS("BLASgemm",BLASgemm_("N","N",&(_bbs),&(_bbs),&(_bbs),&_mone,(B),&(_bbs),(C),&(_bbs),&_one,(A),&(_bbs))); \
+    PetscCallBLAS("BLASgemm",BLASgemm_("N","N",&(_bbs),&(_bbs),&(_bbs),&_mone,(B),&(_bbs),(C),&(_bbs),&_one,(A),&(_bbs))); \
   } while (0)
 
 /*
@@ -167,7 +167,7 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A,2)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(B,3)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(C,4)); \
-    PetscStackCallBLAS("BLASgemm",BLASgemm_("T","N",&(_bbs),&(_bbs),&(_bbs),&_one,(B),&(_bbs),(C),&(_bbs),&_one,(A),&(_bbs))); \
+    PetscCallBLAS("BLASgemm",BLASgemm_("T","N",&(_bbs),&(_bbs),&(_bbs),&_one,(B),&(_bbs),(C),&(_bbs),&_one,(A),&(_bbs))); \
   } while (0)
 
 /*
@@ -184,7 +184,7 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v,2)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A,3)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w,4)); \
-    PetscStackCallBLAS("BLASgemv",BLASgemv_("T",&(_bbs),&(_bbs),&_one,A,&(_bbs),w,&_ione,&_one,v,&_ione)); \
+    PetscCallBLAS("BLASgemv",BLASgemv_("T",&(_bbs),&(_bbs),&_one,A,&(_bbs),w,&_ione,&_one,v,&_ione)); \
   } while (0)
 
 /*
@@ -201,7 +201,7 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v,2)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A,3)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w,4)); \
-    PetscStackCallBLAS("BLASgemv",BLASgemv_("N",&(_bbs),&(_bbs),&_mone,A,&(_bbs),w,&_ione,&_one,v,&_ione)); \
+    PetscCallBLAS("BLASgemv",BLASgemv_("N",&(_bbs),&(_bbs),&_mone,A,&(_bbs),w,&_ione,&_one,v,&_ione)); \
   } while (0)
 
 /*
@@ -218,7 +218,7 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v,2)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A,3)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w,4)); \
-    PetscStackCallBLAS("BLASgemv",BLASgemv_("T",&(_bbs),&(_bbs),&_mone,A,&(_bbs),w,&_ione,&_one,v,&_ione)); \
+    PetscCallBLAS("BLASgemv",BLASgemv_("T",&(_bbs),&(_bbs),&_mone,A,&(_bbs),w,&_ione,&_one,v,&_ione)); \
   } while (0)
 
 /*
@@ -235,7 +235,7 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v,2)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A,3)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w,4)); \
-    PetscStackCallBLAS("BLASgemv",BLASgemv_("N",&(_bbs),&(_bbs),&_one,A,&(_bbs),w,&_ione,&_one,v,&_ione)); \
+    PetscCallBLAS("BLASgemv",BLASgemv_("N",&(_bbs),&(_bbs),&_one,A,&(_bbs),w,&_ione,&_one,v,&_ione)); \
   } while (0)
 
 /*
@@ -253,7 +253,7 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v,3)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A,4)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w,5)); \
-    PetscStackCallBLAS("BLASgemv",BLASgemv_("N",&(_bbs),&(_bncols),&_one,A,&(_bbs),v,&_ione,&_one,w,&_ione)); \
+    PetscCallBLAS("BLASgemv",BLASgemv_("N",&(_bbs),&(_bncols),&_one,A,&(_bbs),v,&_ione,&_one,w,&_ione)); \
   } while (0)
 
 /*
@@ -271,7 +271,7 @@ PetscCall(PetscBLASIntCast(ncols,&_bncols));                                    
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w,3)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A,4)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v,5)); \
-    PetscStackCallBLAS("BLASgemv",BLASgemv_("N",&(_bbs),&(_bncols),&_mone,A,&(_bbs),v,&_ione,&_one,w,&_ione)); \
+    PetscCallBLAS("BLASgemv",BLASgemv_("N",&(_bbs),&(_bncols),&_mone,A,&(_bbs),v,&_ione,&_one,w,&_ione)); \
   } while (0)
 
 /*
@@ -288,7 +288,7 @@ PetscCall(PetscBLASIntCast(ncols,&_bncols));                                    
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v,2)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A,3)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w,4)); \
-    PetscStackCallBLAS("BLASgemv",BLASgemv_("N",&(_bbs),&(_bbs),&_one,A,&(_bbs),v,&_ione,&_zero,w,&_ione)); \
+    PetscCallBLAS("BLASgemv",BLASgemv_("N",&(_bbs),&(_bbs),&_one,A,&(_bbs),v,&_ione,&_zero,w,&_ione)); \
   } while (0)
 
 /*
@@ -305,7 +305,7 @@ PetscCall(PetscBLASIntCast(ncols,&_bncols));                                    
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v,2)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A,3)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w,4)); \
-    PetscStackCallBLAS("BLASgemv",BLASgemv_("T",&(_bbs),&(_bbs),&_one,A,&(_bbs),v,&_ione,&_zero,w,&_ione)); \
+    PetscCallBLAS("BLASgemv",BLASgemv_("T",&(_bbs),&(_bbs),&_one,A,&(_bbs),v,&_ione,&_zero,w,&_ione)); \
   } while (0)
 
 /*
@@ -319,7 +319,7 @@ PetscCall(PetscBLASIntCast(ncols,&_bncols));                                    
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(x,3)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A,4)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(z,5)); \
-    PetscStackCallBLAS("BLASgemv",BLASgemv_("N",&(_bbs),&_bncols,&_one,A,&(_bbs),x,&_ione,&_zero,z,&_ione)); \
+    PetscCallBLAS("BLASgemv",BLASgemv_("N",&(_bbs),&_bncols,&_one,A,&(_bbs),x,&_ione,&_zero,z,&_ione)); \
   } while (0)
 
 /*
@@ -333,7 +333,7 @@ PetscCall(PetscBLASIntCast(ncols,&_bncols));                                    
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(x,3)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A,4)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(z,5)); \
-    PetscStackCallBLAS("BLASgemv",BLASgemv_("T",&_bbs,&_bncols,&_one,A,&_bbs,x,&_ione,&_one,z,&_ione)); \
+    PetscCallBLAS("BLASgemv",BLASgemv_("T",&_bbs,&_bncols,&_one,A,&_bbs,x,&_ione,&_one,z,&_ione)); \
   } while (0)
 
 #else /* !defined(PETSC_USE_REAL_MAT_SINGLE) */

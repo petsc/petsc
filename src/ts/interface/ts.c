@@ -564,7 +564,7 @@ PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat B)
   PetscCheck(ts->rhsjacobian.shift == 0.0 || !ts->rhsjacobian.reuse,PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Should not call TSComputeRHSJacobian() on a shifted matrix (shift=%lf) when RHSJacobian is reusable.",(double)ts->rhsjacobian.shift);
   if (rhsjacobianfunc) {
     PetscCall(PetscLogEventBegin(TS_JacobianEval,ts,U,A,B));
-    PetscCallUser("TS callback Jacobian",(*rhsjacobianfunc)(ts,t,U,A,B,ctx));
+    PetscCallBack("TS callback Jacobian",(*rhsjacobianfunc)(ts,t,U,A,B,ctx));
     ts->rhsjacs++;
     PetscCall(PetscLogEventEnd(TS_JacobianEval,ts,U,A,B));
   } else {
@@ -620,7 +620,7 @@ PetscErrorCode TSComputeRHSFunction(TS ts,PetscReal t,Vec U,Vec y)
   if (rhsfunction) {
     PetscCall(PetscLogEventBegin(TS_FunctionEval,ts,U,y,0));
     PetscCall(VecLockReadPush(U));
-    PetscCallUser("TS callback right-hand-side",(*rhsfunction)(ts,t,U,y,ctx));
+    PetscCallBack("TS callback right-hand-side",(*rhsfunction)(ts,t,U,y,ctx));
     PetscCall(VecLockReadPop(U));
     ts->rhsfuncs++;
     PetscCall(PetscLogEventEnd(TS_FunctionEval,ts,U,y,0));
@@ -662,7 +662,7 @@ PetscErrorCode TSComputeSolutionFunction(TS ts,PetscReal t,Vec U)
   PetscCall(TSGetDM(ts,&dm));
   PetscCall(DMTSGetSolutionFunction(dm,&solutionfunction,&ctx));
 
-  if (solutionfunction) PetscCallUser("TS callback solution",(*solutionfunction)(ts,t,U,ctx));
+  if (solutionfunction) PetscCallBack("TS callback solution",(*solutionfunction)(ts,t,U,ctx));
   PetscFunctionReturn(0);
 }
 /*@
@@ -697,7 +697,7 @@ PetscErrorCode TSComputeForcingFunction(TS ts,PetscReal t,Vec U)
   PetscCall(TSGetDM(ts,&dm));
   PetscCall(DMTSGetForcingFunction(dm,&forcing,&ctx));
 
-  if (forcing) PetscCallUser("TS callback forcing function",(*forcing)(ts,t,U,ctx));
+  if (forcing) PetscCallBack("TS callback forcing function",(*forcing)(ts,t,U,ctx));
   PetscFunctionReturn(0);
 }
 
@@ -811,7 +811,7 @@ PetscErrorCode TSComputeIFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec Y,PetscBo
 
   PetscCall(PetscLogEventBegin(TS_FunctionEval,ts,U,Udot,Y));
   if (ifunction) {
-    PetscCallUser("TS callback implicit function",(*ifunction)(ts,t,U,Udot,Y,ctx));
+    PetscCallBack("TS callback implicit function",(*ifunction)(ts,t,U,Udot,Y,ctx));
     ts->ifuncs++;
   }
   if (imex) {
@@ -916,7 +916,7 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shi
 
   PetscCall(PetscLogEventBegin(TS_JacobianEval,ts,U,A,B));
   if (ijacobian) {
-    PetscCallUser("TS callback implicit Jacobian",(*ijacobian)(ts,t,U,Udot,shift,A,B,ctx));
+    PetscCallBack("TS callback implicit Jacobian",(*ijacobian)(ts,t,U,Udot,shift,A,B,ctx));
     ts->ijacs++;
   }
   if (imex) {
@@ -1622,7 +1622,7 @@ PetscErrorCode TSComputeI2Function(TS ts,PetscReal t,Vec U,Vec V,Vec A,Vec F)
 
   PetscCall(PetscLogEventBegin(TS_FunctionEval,ts,U,V,F));
 
-  PetscCallUser("TS callback implicit function",I2Function(ts,t,U,V,A,F,ctx));
+  PetscCallBack("TS callback implicit function",I2Function(ts,t,U,V,A,F,ctx));
 
   if (rhsfunction) {
     Vec Frhs;
@@ -1690,7 +1690,7 @@ PetscErrorCode TSComputeI2Jacobian(TS ts,PetscReal t,Vec U,Vec V,Vec A,PetscReal
   }
 
   PetscCall(PetscLogEventBegin(TS_JacobianEval,ts,U,J,P));
-  PetscCallUser("TS callback implicit Jacobian",I2Jacobian(ts,t,U,V,A,shiftV,shiftA,J,P,ctx));
+  PetscCallBack("TS callback implicit Jacobian",I2Jacobian(ts,t,U,V,A,shiftV,shiftA,J,P,ctx));
   if (rhsjacobian) {
     Mat Jrhs,Prhs;
     PetscCall(TSGetRHSMats_Private(ts,&Jrhs,&Prhs));
@@ -2102,9 +2102,9 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
 
       PetscCall(PetscObjectViewSAWs((PetscObject)ts,viewer));
       PetscCall(PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/time_step",name));
-      PetscStackCallSAWs(SAWs_Register,(dir,&ts->steps,1,SAWs_READ,SAWs_INT));
+      PetscCallSAWs(SAWs_Register,(dir,&ts->steps,1,SAWs_READ,SAWs_INT));
       PetscCall(PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/time",name));
-      PetscStackCallSAWs(SAWs_Register,(dir,&ts->ptime,1,SAWs_READ,SAWs_DOUBLE));
+      PetscCallSAWs(SAWs_Register,(dir,&ts->ptime,1,SAWs_READ,SAWs_DOUBLE));
     }
     if (ts->ops->view) PetscCall((*ts->ops->view)(ts,viewer));
 #endif
@@ -3161,7 +3161,7 @@ PetscErrorCode  TSPreStep(TS ts)
     PetscCall(TSGetSolution(ts,&U));
     PetscCall(PetscObjectGetId((PetscObject)U,&idprev));
     PetscCall(PetscObjectStateGet((PetscObject)U,&sprev));
-    PetscStackCallStandard((*ts->prestep),ts);
+    PetscCallExternal((*ts->prestep),ts);
     PetscCall(TSGetSolution(ts,&U));
     PetscCall(PetscObjectCompareId((PetscObject)U,idprev,&sameObject));
     PetscCall(PetscObjectStateGet((PetscObject)U,&spost));
@@ -3290,7 +3290,7 @@ PetscErrorCode  TSPreStage(TS ts, PetscReal stagetime)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (ts->prestage) {
-    PetscStackCallStandard((*ts->prestage),ts,stagetime);
+    PetscCallExternal((*ts->prestage),ts,stagetime);
   }
   PetscFunctionReturn(0);
 }
@@ -3320,7 +3320,7 @@ PetscErrorCode  TSPostStage(TS ts, PetscReal stagetime, PetscInt stageindex, Vec
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (ts->poststage) {
-    PetscStackCallStandard((*ts->poststage),ts,stagetime,stageindex,Y);
+    PetscCallExternal((*ts->poststage),ts,stagetime,stageindex,Y);
   }
   PetscFunctionReturn(0);
 }
@@ -3351,7 +3351,7 @@ PetscErrorCode  TSPostEvaluate(TS ts)
 
     PetscCall(TSGetSolution(ts,&U));
     PetscCall(PetscObjectStateGet((PetscObject)U,&sprev));
-    PetscStackCallStandard((*ts->postevaluate),ts);
+    PetscCallExternal((*ts->postevaluate),ts);
     PetscCall(PetscObjectStateGet((PetscObject)U,&spost));
     if (sprev != spost) PetscCall(TSRestartStep(ts));
   }
@@ -3416,7 +3416,7 @@ PetscErrorCode  TSPostStep(TS ts)
     PetscCall(TSGetSolution(ts,&U));
     PetscCall(PetscObjectGetId((PetscObject)U,&idprev));
     PetscCall(PetscObjectStateGet((PetscObject)U,&sprev));
-    PetscStackCallStandard((*ts->poststep),ts);
+    PetscCallExternal((*ts->poststep),ts);
     PetscCall(TSGetSolution(ts,&U));
     PetscCall(PetscObjectCompareId((PetscObject)U,idprev,&sameObject));
     PetscCall(PetscObjectStateGet((PetscObject)U,&spost));
@@ -5948,7 +5948,7 @@ PetscErrorCode TSFunctionDomainError(TS ts,PetscReal stagetime,Vec Y,PetscBool* 
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   *accept = PETSC_TRUE;
   if (ts->functiondomainerror) {
-    PetscStackCallStandard((*ts->functiondomainerror),ts,stagetime,Y,accept);
+    PetscCallExternal((*ts->functiondomainerror),ts,stagetime,Y,accept);
   }
   PetscFunctionReturn(0);
 }

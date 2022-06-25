@@ -138,12 +138,12 @@ PetscErrorCode TaoComputeGradient(Tao tao, Vec X, Vec G)
   PetscCall(VecLockReadPush(X));
   if (tao->ops->computegradient) {
     PetscCall(PetscLogEventBegin(TAO_GradientEval,tao,X,G,NULL));
-    PetscCallUser("Tao callback gradient",(*tao->ops->computegradient)(tao,X,G,tao->user_gradP));
+    PetscCallBack("Tao callback gradient",(*tao->ops->computegradient)(tao,X,G,tao->user_gradP));
     PetscCall(PetscLogEventEnd(TAO_GradientEval,tao,X,G,NULL));
     tao->ngrads++;
   } else if (tao->ops->computeobjectiveandgradient) {
     PetscCall(PetscLogEventBegin(TAO_ObjGradEval,tao,X,G,NULL));
-    PetscCallUser("Tao callback objective/gradient",(*tao->ops->computeobjectiveandgradient)(tao,X,&dummy,G,tao->user_objgradP));
+    PetscCallBack("Tao callback objective/gradient",(*tao->ops->computeobjectiveandgradient)(tao,X,&dummy,G,tao->user_objgradP));
     PetscCall(PetscLogEventEnd(TAO_ObjGradEval,tao,X,G,NULL));
     tao->nfuncgrads++;
   } else SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_WRONGSTATE,"TaoSetGradient() has not been called");
@@ -184,14 +184,14 @@ PetscErrorCode TaoComputeObjective(Tao tao, Vec X, PetscReal *f)
   PetscCall(VecLockReadPush(X));
   if (tao->ops->computeobjective) {
     PetscCall(PetscLogEventBegin(TAO_ObjectiveEval,tao,X,NULL,NULL));
-    PetscCallUser("Tao callback objective",(*tao->ops->computeobjective)(tao,X,f,tao->user_objP));
+    PetscCallBack("Tao callback objective",(*tao->ops->computeobjective)(tao,X,f,tao->user_objP));
     PetscCall(PetscLogEventEnd(TAO_ObjectiveEval,tao,X,NULL,NULL));
     tao->nfuncs++;
   } else if (tao->ops->computeobjectiveandgradient) {
     PetscCall(PetscInfo(tao,"Duplicating variable vector in order to call func/grad routine\n"));
     PetscCall(VecDuplicate(X,&temp));
     PetscCall(PetscLogEventBegin(TAO_ObjGradEval,tao,X,NULL,NULL));
-    PetscCallUser("Tao callback objective/gradient",(*tao->ops->computeobjectiveandgradient)(tao,X,f,temp,tao->user_objgradP));
+    PetscCallBack("Tao callback objective/gradient",(*tao->ops->computeobjectiveandgradient)(tao,X,f,temp,tao->user_objgradP));
     PetscCall(PetscLogEventEnd(TAO_ObjGradEval,tao,X,NULL,NULL));
     PetscCall(VecDestroy(&temp));
     tao->nfuncgrads++;
@@ -237,17 +237,17 @@ PetscErrorCode TaoComputeObjectiveAndGradient(Tao tao, Vec X, PetscReal *f, Vec 
       PetscCall(TaoComputeObjective(tao,X,f));
       PetscCall(TaoDefaultComputeGradient(tao,X,G,NULL));
     } else {
-      PetscCallUser("Tao callback objective/gradient",(*tao->ops->computeobjectiveandgradient)(tao,X,f,G,tao->user_objgradP));
+      PetscCallBack("Tao callback objective/gradient",(*tao->ops->computeobjectiveandgradient)(tao,X,f,G,tao->user_objgradP));
     }
     PetscCall(PetscLogEventEnd(TAO_ObjGradEval,tao,X,G,NULL));
     tao->nfuncgrads++;
   } else if (tao->ops->computeobjective && tao->ops->computegradient) {
     PetscCall(PetscLogEventBegin(TAO_ObjectiveEval,tao,X,NULL,NULL));
-    PetscCallUser("Tao callback objective",(*tao->ops->computeobjective)(tao,X,f,tao->user_objP));
+    PetscCallBack("Tao callback objective",(*tao->ops->computeobjective)(tao,X,f,tao->user_objP));
     PetscCall(PetscLogEventEnd(TAO_ObjectiveEval,tao,X,NULL,NULL));
     tao->nfuncs++;
     PetscCall(PetscLogEventBegin(TAO_GradientEval,tao,X,G,NULL));
-    PetscCallUser("Tao callback gradient",(*tao->ops->computegradient)(tao,X,G,tao->user_gradP));
+    PetscCallBack("Tao callback gradient",(*tao->ops->computegradient)(tao,X,G,tao->user_gradP));
     PetscCall(PetscLogEventEnd(TAO_GradientEval,tao,X,G,NULL));
     tao->ngrads++;
   } else SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_WRONGSTATE,"TaoSetObjective() or TaoSetGradient() not set");
@@ -440,7 +440,7 @@ PetscErrorCode TaoComputeResidual(Tao tao, Vec X, Vec F)
   PetscCheckSameComm(tao,1,F,3);
   if (tao->ops->computeresidual) {
     PetscCall(PetscLogEventBegin(TAO_ObjectiveEval,tao,X,NULL,NULL));
-    PetscCallUser("Tao callback least-squares residual",(*tao->ops->computeresidual)(tao,X,F,tao->user_lsresP));
+    PetscCallBack("Tao callback least-squares residual",(*tao->ops->computeresidual)(tao,X,F,tao->user_lsresP));
     PetscCall(PetscLogEventEnd(TAO_ObjectiveEval,tao,X,NULL,NULL));
     tao->nfuncs++;
   } else SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_WRONGSTATE,"TaoSetResidualRoutine() has not been called");

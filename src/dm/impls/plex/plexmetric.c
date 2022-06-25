@@ -1108,11 +1108,11 @@ static PetscErrorCode DMPlexMetricModify_Private(PetscInt dim, PetscReal h_min, 
       {
         PetscReal *rwork;
         PetscCall(PetscMalloc1(3*dim, &rwork));
-        PetscStackCallBLAS("LAPACKsyev",LAPACKsyev_("V","U",&nb,Mpos,&nb,eigs,work,&lwork,rwork,&lierr));
+        PetscCallBLAS("LAPACKsyev",LAPACKsyev_("V","U",&nb,Mpos,&nb,eigs,work,&lwork,rwork,&lierr));
         PetscCall(PetscFree(rwork));
       }
 #else
-      PetscStackCallBLAS("LAPACKsyev",LAPACKsyev_("V","U",&nb,Mpos,&nb,eigs,work,&lwork,&lierr));
+      PetscCallBLAS("LAPACKsyev",LAPACKsyev_("V","U",&nb,Mpos,&nb,eigs,work,&lwork,&lierr));
 #endif
       if (lierr) {
         for (i = 0; i < dim; ++i) {
@@ -1533,11 +1533,11 @@ static PetscErrorCode DMPlexMetricIntersection_Private(PetscInt dim, PetscScalar
       {
         PetscReal *rwork;
         PetscCall(PetscMalloc1(3*dim, &rwork));
-        PetscStackCallBLAS("LAPACKsyev", LAPACKsyev_("V", "U", &nb, evecs, &nb, evals, work, &lwork, rwork, &lierr));
+        PetscCallBLAS("LAPACKsyev", LAPACKsyev_("V", "U", &nb, evecs, &nb, evals, work, &lwork, rwork, &lierr));
         PetscCall(PetscFree(rwork));
       }
 #else
-      PetscStackCallBLAS("LAPACKsyev", LAPACKsyev_("V", "U", &nb, evecs, &nb, evals, work, &lwork, &lierr));
+      PetscCallBLAS("LAPACKsyev", LAPACKsyev_("V", "U", &nb, evecs, &nb, evals, work, &lwork, &lierr));
 #endif
       if (lierr) {
         LAPACKsyevFail(dim, M1);
@@ -1576,11 +1576,11 @@ static PetscErrorCode DMPlexMetricIntersection_Private(PetscInt dim, PetscScalar
       {
         PetscReal *rwork;
         PetscCall(PetscMalloc1(3*dim, &rwork));
-        PetscStackCallBLAS("LAPACKsyev", LAPACKsyev_("V", "U", &nb, evecs, &nb, evals, work, &lwork, rwork, &lierr));
+        PetscCallBLAS("LAPACKsyev", LAPACKsyev_("V", "U", &nb, evecs, &nb, evals, work, &lwork, rwork, &lierr));
         PetscCall(PetscFree(rwork));
       }
 #else
-      PetscStackCallBLAS("LAPACKsyev", LAPACKsyev_("V", "U", &nb, evecs, &nb, evals, work, &lwork, &lierr));
+      PetscCallBLAS("LAPACKsyev", LAPACKsyev_("V", "U", &nb, evecs, &nb, evals, work, &lwork, &lierr));
 #endif
       if (lierr) {
         for (i = 0; i < dim; ++i) {

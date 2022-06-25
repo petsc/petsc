@@ -5815,7 +5815,7 @@ PetscErrorCode DMPlexComputeJacobian_Action_Internal(DM dm, PetscFormKey key, IS
     const PetscBLASInt M = totDim, one = 1;
     const PetscScalar  a = 1.0, b = 0.0;
 
-    PetscStackCallBLAS("BLASgemv", BLASgemv_("N", &M, &M, &a, &elemMat[cind*totDim*totDim], &M, &y[cind*totDim], &one, &b, z, &one));
+    PetscCallBLAS("BLASgemv", BLASgemv_("N", &M, &M, &a, &elemMat[cind*totDim*totDim], &M, &y[cind*totDim], &one, &b, z, &one));
     if (mesh->printFEM > 1) {
       PetscCall(DMPrintCellMatrix(c, name, totDim, totDim, &elemMat[cind*totDim*totDim]));
       PetscCall(DMPrintCellVector(c, "Y",  totDim, &y[cind*totDim]));

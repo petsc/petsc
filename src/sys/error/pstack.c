@@ -17,7 +17,7 @@ static PetscBool amsmemstack = PETSC_FALSE;
 
    Level: developer
 
-   Developers Note: Cannot use PetscFunctionBegin/Return() or PetscStackCallSAWs() since it may be used within those routines
+   Developers Note: Cannot use PetscFunctionBegin/Return() or PetscCallSAWs() since it may be used within those routines
 
 .seealso: `PetscObjectSetName()`, `PetscObjectSAWsViewOff()`, `PetscObjectSAWsTakeAccess()`
 
@@ -37,7 +37,7 @@ void  PetscStackSAWsGrantAccess(void)
 
    Level: developer
 
-   Developers Note: Cannot use PetscFunctionBegin/Return() or PetscStackCallSAWs() since it may be used within those routines
+   Developers Note: Cannot use PetscFunctionBegin/Return() or PetscCallSAWs() since it may be used within those routines
 
 .seealso: `PetscObjectSetName()`, `PetscObjectSAWsViewOff()`, `PetscObjectSAWsTakeAccess()`
 
@@ -57,8 +57,8 @@ PetscErrorCode PetscStackViewSAWs(void)
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   if (rank) return 0;
 #if PetscDefined(USE_DEBUG)
-  PetscStackCallSAWs(SAWs_Register,("/PETSc/Stack/functions",petscstack.function,20,SAWs_READ,SAWs_STRING));
-  PetscStackCallSAWs(SAWs_Register,("/PETSc/Stack/__current_size",&petscstack.currentsize,1,SAWs_READ,SAWs_INT));
+  PetscCallSAWs(SAWs_Register,("/PETSc/Stack/functions",petscstack.function,20,SAWs_READ,SAWs_STRING));
+  PetscCallSAWs(SAWs_Register,("/PETSc/Stack/__current_size",&petscstack.currentsize,1,SAWs_READ,SAWs_INT));
 #endif
   amsmemstack = PETSC_TRUE;
   return 0;
@@ -68,7 +68,7 @@ PetscErrorCode PetscStackSAWsViewOff(void)
 {
   PetscFunctionBegin;
   if (!amsmemstack) PetscFunctionReturn(0);
-  PetscStackCallSAWs(SAWs_Delete,("/PETSc/Stack"));
+  PetscCallSAWs(SAWs_Delete,("/PETSc/Stack"));
   amsmemstack = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

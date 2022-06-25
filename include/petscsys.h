@@ -1617,7 +1617,7 @@ static inline PetscErrorCode PetscMemcpy(void *a,const void *b,size_t n)
 #if defined(PETSC_PREFER_DCOPY_FOR_MEMCPY)
       PetscBLASInt one = 1,blen;
       PetscCall(PetscBLASIntCast(len,&blen));
-      PetscStackCallBLAS("BLAScopy",BLAScopy_(&blen,(PetscScalar *)b,&one,(PetscScalar *)a,&one));
+      PetscCallBLAS("BLAScopy",BLAScopy_(&blen,(PetscScalar *)b,&one,(PetscScalar *)a,&one));
 #elif defined(PETSC_PREFER_FORTRAN_FORMEMCPY)
       fortrancopy_(&len,(PetscScalar*)b,(PetscScalar*)a);
 #else

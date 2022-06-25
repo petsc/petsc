@@ -17,7 +17,7 @@ PetscErrorCode VecDot_Seq(Vec xin,Vec yin,PetscScalar *z)
   PetscCall(VecGetArrayRead(xin,&xa));
   PetscCall(VecGetArrayRead(yin,&ya));
   /* arguments ya, xa are reversed because BLAS complex conjugates the first argument, PETSc the second */
-  PetscStackCallBLAS("BLASdot",*z   = BLASdot_(&bn,ya,&one,xa,&one));
+  PetscCallBLAS("BLASdot",*z   = BLASdot_(&bn,ya,&one,xa,&one));
   PetscCall(VecRestoreArrayRead(xin,&xa));
   PetscCall(VecRestoreArrayRead(yin,&ya));
   if (xin->map->n > 0) {
@@ -35,7 +35,7 @@ PetscErrorCode VecTDot_Seq(Vec xin,Vec yin,PetscScalar *z)
   PetscCall(PetscBLASIntCast(xin->map->n,&bn));
   PetscCall(VecGetArrayRead(xin,&xa));
   PetscCall(VecGetArrayRead(yin,&ya));
-  PetscStackCallBLAS("BLASdot",*z   = BLASdotu_(&bn,xa,&one,ya,&one));
+  PetscCallBLAS("BLASdot",*z   = BLASdotu_(&bn,xa,&one,ya,&one));
   PetscCall(VecRestoreArrayRead(xin,&xa));
   PetscCall(VecRestoreArrayRead(yin,&ya));
   if (xin->map->n > 0) {
@@ -55,7 +55,7 @@ PetscErrorCode VecScale_Seq(Vec xin, PetscScalar alpha)
   } else if (alpha != (PetscScalar)1.0) {
     PetscScalar a = alpha,*xarray;
     PetscCall(VecGetArray(xin,&xarray));
-    PetscStackCallBLAS("BLASscal",BLASscal_(&bn,&a,xarray,&one));
+    PetscCallBLAS("BLASscal",BLASscal_(&bn,&a,xarray,&one));
     PetscCall(VecRestoreArray(xin,&xarray));
   }
   PetscCall(PetscLogFlops(xin->map->n));
@@ -74,7 +74,7 @@ PetscErrorCode VecAXPY_Seq(Vec yin,PetscScalar alpha,Vec xin)
   if (alpha != (PetscScalar)0.0) {
     PetscCall(VecGetArrayRead(xin,&xarray));
     PetscCall(VecGetArray(yin,&yarray));
-    PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&bn,&alpha,xarray,&one,yarray,&one));
+    PetscCallBLAS("BLASaxpy",BLASaxpy_(&bn,&alpha,xarray,&one,yarray,&one));
     PetscCall(VecRestoreArrayRead(xin,&xarray));
     PetscCall(VecRestoreArray(yin,&yarray));
     PetscCall(PetscLogFlops(2.0*yin->map->n));

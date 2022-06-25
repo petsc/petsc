@@ -95,7 +95,7 @@ static PetscErrorCode PCSetUp_Shell(PC pc)
 
   PetscFunctionBegin;
   PetscCheck(shell->setup,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"No setup() routine provided to Shell PC");
-  PetscStackCall("PCSHELL user function setup()",PetscCall((*shell->setup)(pc)));
+  PetscCallExternalNoErrorCode("PCSHELL user function setup()",PetscCall((*shell->setup)(pc)));
   PetscFunctionReturn(0);
 }
 
@@ -107,7 +107,7 @@ static PetscErrorCode PCApply_Shell(PC pc,Vec x,Vec y)
   PetscFunctionBegin;
   PetscCheck(shell->apply,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"No apply() routine provided to Shell PC");
   PetscCall(PetscObjectStateGet((PetscObject)y, &instate));
-  PetscStackCall("PCSHELL user function apply()",PetscCall((*shell->apply)(pc,x,y)));
+  PetscCallExternalNoErrorCode("PCSHELL user function apply()",PetscCall((*shell->apply)(pc,x,y)));
   PetscCall(PetscObjectStateGet((PetscObject)y, &outstate));
   if (instate == outstate) {
     /* increase the state of the output vector since the user did not update its state themself as should have been done */
@@ -124,7 +124,7 @@ static PetscErrorCode PCMatApply_Shell(PC pc,Mat X,Mat Y)
   PetscFunctionBegin;
   PetscCheck(shell->matapply,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"No apply() routine provided to Shell PC");
   PetscCall(PetscObjectStateGet((PetscObject)Y, &instate));
-  PetscStackCall("PCSHELL user function apply()",PetscCall((*shell->matapply)(pc,X,Y)));
+  PetscCallExternalNoErrorCode("PCSHELL user function apply()",PetscCall((*shell->matapply)(pc,X,Y)));
   PetscCall(PetscObjectStateGet((PetscObject)Y, &outstate));
   if (instate == outstate) {
     /* increase the state of the output vector since the user did not update its state themself as should have been done */
@@ -139,7 +139,7 @@ static PetscErrorCode PCApplySymmetricLeft_Shell(PC pc,Vec x,Vec y)
 
   PetscFunctionBegin;
   PetscCheck(shell->applysymmetricleft,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"No apply() routine provided to Shell PC");
-  PetscStackCall("PCSHELL user function apply()",PetscCall((*shell->applysymmetricleft)(pc,x,y)));
+  PetscCallExternalNoErrorCode("PCSHELL user function apply()",PetscCall((*shell->applysymmetricleft)(pc,x,y)));
   PetscFunctionReturn(0);
 }
 
@@ -149,7 +149,7 @@ static PetscErrorCode PCApplySymmetricRight_Shell(PC pc,Vec x,Vec y)
 
   PetscFunctionBegin;
   PetscCheck(shell->applysymmetricright,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"No apply() routine provided to Shell PC");
-  PetscStackCall("PCSHELL user function apply()",PetscCall((*shell->applysymmetricright)(pc,x,y)));
+  PetscCallExternalNoErrorCode("PCSHELL user function apply()",PetscCall((*shell->applysymmetricright)(pc,x,y)));
   PetscFunctionReturn(0);
 }
 
@@ -161,7 +161,7 @@ static PetscErrorCode PCApplyBA_Shell(PC pc,PCSide side,Vec x,Vec y,Vec w)
   PetscFunctionBegin;
   PetscCheck(shell->applyBA,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"No applyBA() routine provided to Shell PC");
   PetscCall(PetscObjectStateGet((PetscObject)w, &instate));
-  PetscStackCall("PCSHELL user function applyBA()",PetscCall((*shell->applyBA)(pc,side,x,y,w)));
+  PetscCallExternalNoErrorCode("PCSHELL user function applyBA()",PetscCall((*shell->applyBA)(pc,side,x,y,w)));
   PetscCall(PetscObjectStateGet((PetscObject)w, &outstate));
   if (instate == outstate) {
     /* increase the state of the output vector since the user did not update its state themself as should have been done */
@@ -183,7 +183,7 @@ static PetscErrorCode PCPreSolve_Shell(PC pc,KSP ksp,Vec b,Vec x)
 
   PetscFunctionBegin;
   PetscCheck(shell->presolve,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"No presolve() routine provided to Shell PC");
-  PetscStackCall("PCSHELL user function presolve()",PetscCall((*shell->presolve)(pc,ksp,b,x)));
+  PetscCallExternalNoErrorCode("PCSHELL user function presolve()",PetscCall((*shell->presolve)(pc,ksp,b,x)));
   PetscFunctionReturn(0);
 }
 
@@ -193,7 +193,7 @@ static PetscErrorCode PCPostSolve_Shell(PC pc,KSP ksp,Vec b,Vec x)
 
   PetscFunctionBegin;
   PetscCheck(shell->postsolve,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"No postsolve() routine provided to Shell PC");
-  PetscStackCall("PCSHELL user function postsolve()",PetscCall((*shell->postsolve)(pc,ksp,b,x)));
+  PetscCallExternalNoErrorCode("PCSHELL user function postsolve()",PetscCall((*shell->postsolve)(pc,ksp,b,x)));
   PetscFunctionReturn(0);
 }
 
@@ -205,7 +205,7 @@ static PetscErrorCode PCApplyTranspose_Shell(PC pc,Vec x,Vec y)
   PetscFunctionBegin;
   PetscCheck(shell->applytranspose,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"No applytranspose() routine provided to Shell PC");
   PetscCall(PetscObjectStateGet((PetscObject)y, &instate));
-  PetscStackCall("PCSHELL user function applytranspose()",PetscCall((*shell->applytranspose)(pc,x,y)));
+  PetscCallExternalNoErrorCode("PCSHELL user function applytranspose()",PetscCall((*shell->applytranspose)(pc,x,y)));
   PetscCall(PetscObjectStateGet((PetscObject)y, &outstate));
   if (instate == outstate) {
     /* increase the state of the output vector since the user did not update its state themself as should have been done */
@@ -222,7 +222,7 @@ static PetscErrorCode PCApplyRichardson_Shell(PC pc,Vec x,Vec y,Vec w,PetscReal 
   PetscFunctionBegin;
   PetscCheck(shell->applyrich,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"No applyrichardson() routine provided to Shell PC");
   PetscCall(PetscObjectStateGet((PetscObject)y, &instate));
-  PetscStackCall("PCSHELL user function applyrichardson()",PetscCall((*shell->applyrich)(pc,x,y,w,rtol,abstol,dtol,it,guesszero,outits,reason)));
+  PetscCallExternalNoErrorCode("PCSHELL user function applyrichardson()",PetscCall((*shell->applyrich)(pc,x,y,w,rtol,abstol,dtol,it,guesszero,outits,reason)));
   PetscCall(PetscObjectStateGet((PetscObject)y, &outstate));
   if (instate == outstate) {
     /* increase the state of the output vector since the user did not update its state themself as should have been done */
@@ -237,7 +237,7 @@ static PetscErrorCode PCDestroy_Shell(PC pc)
 
   PetscFunctionBegin;
   PetscCall(PetscFree(shell->name));
-  if (shell->destroy) PetscStackCall("PCSHELL user function destroy()",PetscCall((*shell->destroy)(pc)));
+  if (shell->destroy) PetscCallExternalNoErrorCode("PCSHELL user function destroy()",PetscCall((*shell->destroy)(pc)));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCShellSetDestroy_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCShellSetSetUp_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCShellSetApply_C",NULL));

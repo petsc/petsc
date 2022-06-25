@@ -508,12 +508,12 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
 
       PetscCall(PetscObjectViewSAWs((PetscObject)snes,viewer));
       PetscCall(PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/its",name));
-      PetscStackCallSAWs(SAWs_Register,(dir,&snes->iter,1,SAWs_READ,SAWs_INT));
+      PetscCallSAWs(SAWs_Register,(dir,&snes->iter,1,SAWs_READ,SAWs_INT));
       if (!snes->conv_hist) {
         PetscCall(SNESSetConvergenceHistory(snes,NULL,NULL,PETSC_DECIDE,PETSC_TRUE));
       }
       PetscCall(PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/conv_hist",name));
-      PetscStackCallSAWs(SAWs_Register,(dir,snes->conv_hist,10,SAWs_READ,SAWs_DOUBLE));
+      PetscCallSAWs(SAWs_Register,(dir,snes->conv_hist,10,SAWs_READ,SAWs_DOUBLE));
     }
 #endif
   }
@@ -2211,14 +2211,14 @@ PetscErrorCode SNESPicardComputeMFFunction(SNES snes,Vec x,Vec f,void *ctx)
   PetscCheck(sdm->ops->computepjacobian,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetPicard() to provide Picard Jacobian.");
   /*  A(x)*x - b(x) */
   if (sdm->ops->computepfunction) {
-    PetscCallUser("SNES Picard callback function",(*sdm->ops->computepfunction)(snes,x,f,sdm->pctx));
+    PetscCallBack("SNES Picard callback function",(*sdm->ops->computepfunction)(snes,x,f,sdm->pctx));
     PetscCall(VecScale(f,-1.0));
     /* Cannot share nonzero pattern because of the possible use of SNESComputeJacobianDefault() */
     if (!snes->picard) PetscCall(MatDuplicate(snes->jacobian_pre,MAT_DO_NOT_COPY_VALUES,&snes->picard));
-    PetscCallUser("SNES Picard callback Jacobian",(*sdm->ops->computepjacobian)(snes,x,snes->picard,snes->picard,sdm->pctx));
+    PetscCallBack("SNES Picard callback Jacobian",(*sdm->ops->computepjacobian)(snes,x,snes->picard,snes->picard,sdm->pctx));
     PetscCall(MatMultAdd(snes->picard,x,f,f));
   } else {
-    PetscCallUser("SNES Picard callback Jacobian",(*sdm->ops->computepjacobian)(snes,x,snes->picard,snes->picard,sdm->pctx));
+    PetscCallBack("SNES Picard callback Jacobian",(*sdm->ops->computepjacobian)(snes,x,snes->picard,snes->picard,sdm->pctx));
     PetscCall(MatMult(snes->picard,x,f));
   }
   PetscFunctionReturn(0);
@@ -2235,12 +2235,12 @@ PetscErrorCode SNESPicardComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
   PetscCheck(sdm->ops->computepjacobian,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetPicard() to provide Picard Jacobian.");
   /*  A(x)*x - b(x) */
   if (sdm->ops->computepfunction) {
-    PetscCallUser("SNES Picard callback function",(*sdm->ops->computepfunction)(snes,x,f,sdm->pctx));
+    PetscCallBack("SNES Picard callback function",(*sdm->ops->computepfunction)(snes,x,f,sdm->pctx));
     PetscCall(VecScale(f,-1.0));
-    PetscCallUser("SNES Picard callback Jacobian",(*sdm->ops->computepjacobian)(snes,x,snes->jacobian,snes->jacobian_pre,sdm->pctx));
+    PetscCallBack("SNES Picard callback Jacobian",(*sdm->ops->computepjacobian)(snes,x,snes->jacobian,snes->jacobian_pre,sdm->pctx));
     PetscCall(MatMultAdd(snes->jacobian_pre,x,f,f));
   } else {
-    PetscCallUser("SNES Picard callback Jacobian",(*sdm->ops->computepjacobian)(snes,x,snes->jacobian,snes->jacobian_pre,sdm->pctx));
+    PetscCallBack("SNES Picard callback Jacobian",(*sdm->ops->computepjacobian)(snes,x,snes->jacobian,snes->jacobian_pre,sdm->pctx));
     PetscCall(MatMult(snes->jacobian_pre,x,f));
   }
   PetscFunctionReturn(0);
@@ -2446,7 +2446,7 @@ PetscErrorCode  SNESComputeFunction(SNES snes,Vec x,Vec y)
     PetscCall(VecLockReadPush(x));
     /* ensure domainerror is false prior to computefunction evaluation (may not have been reset) */
     snes->domainerror = PETSC_FALSE;
-    PetscCallUser("SNES callback function",(*sdm->ops->computefunction)(snes,x,y,sdm->functionctx));
+    PetscCallBack("SNES callback function",(*sdm->ops->computefunction)(snes,x,y,sdm->functionctx));
     PetscCall(VecLockReadPop(x));
     if (sdm->ops->computefunction != SNESObjectiveComputeFunctionDefaultFD) {
       PetscCall(PetscLogEventEnd(SNES_FunctionEval,snes,x,y,0));
@@ -2507,7 +2507,7 @@ PetscErrorCode  SNESComputeMFFunction(SNES snes,Vec x,Vec y)
   PetscCall(VecLockReadPush(x));
   /* ensure domainerror is false prior to computefunction evaluation (may not have been reset) */
   snes->domainerror = PETSC_FALSE;
-  PetscCallUser("SNES callback function",(*sdm->ops->computemffunction)(snes,x,y,sdm->mffunctionctx));
+  PetscCallBack("SNES callback function",(*sdm->ops->computemffunction)(snes,x,y,sdm->mffunctionctx));
   PetscCall(VecLockReadPop(x));
   PetscCall(PetscLogEventEnd(SNES_FunctionEval,snes,x,y,0));
   snes->nfuncs++;
@@ -2558,7 +2558,7 @@ PetscErrorCode  SNESComputeNGS(SNES snes,Vec b,Vec x)
   PetscCall(DMGetDMSNES(dm,&sdm));
   if (sdm->ops->computegs) {
     if (b) PetscCall(VecLockReadPush(b));
-    PetscCallUser("SNES callback NGS",(*sdm->ops->computegs)(snes,x,b,sdm->gsctx));
+    PetscCallBack("SNES callback NGS",(*sdm->ops->computegs)(snes,x,b,sdm->gsctx));
     if (b) PetscCall(VecLockReadPop(b));
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetNGS() before SNESComputeNGS(), likely called from SNESSolve().");
   PetscCall(PetscLogEventEnd(SNES_NGSEval,snes,x,b,0));
@@ -2819,7 +2819,7 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat A,Mat B)
 
   PetscCall(PetscLogEventBegin(SNES_JacobianEval,snes,X,A,B));
   PetscCall(VecLockReadPush(X));
-  PetscCallUser("SNES callback Jacobian",(*sdm->ops->computejacobian)(snes,X,A,B,sdm->jacobianctx));
+  PetscCallBack("SNES callback Jacobian",(*sdm->ops->computejacobian)(snes,X,A,B,sdm->jacobianctx));
   PetscCall(VecLockReadPop(X));
   PetscCall(PetscLogEventEnd(SNES_JacobianEval,snes,X,A,B));
 

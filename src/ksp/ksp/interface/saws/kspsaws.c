@@ -92,11 +92,11 @@ PetscErrorCode KSPMonitorSAWs(KSP ksp,PetscInt n,PetscReal rnorm,void *ctx)
       SAWs_Delete("/PETSc/ksp_monitor_saws/eigr");
       SAWs_Delete("/PETSc/ksp_monitor_saws/eigi");
 
-      PetscStackCallSAWs(SAWs_Register,("/PETSc/ksp_monitor_saws/rnorm",&ksp->rnorm,1,SAWs_READ,SAWs_DOUBLE));
-      PetscStackCallSAWs(SAWs_Register,("/PETSc/ksp_monitor_saws/neigs",&mon->neigs,1,SAWs_READ,SAWs_INT));
+      PetscCallSAWs(SAWs_Register,("/PETSc/ksp_monitor_saws/rnorm",&ksp->rnorm,1,SAWs_READ,SAWs_DOUBLE));
+      PetscCallSAWs(SAWs_Register,("/PETSc/ksp_monitor_saws/neigs",&mon->neigs,1,SAWs_READ,SAWs_INT));
       if (mon->neigs > 0) {
-        PetscStackCallSAWs(SAWs_Register,("/PETSc/ksp_monitor_saws/eigr",mon->eigr,mon->neigs,SAWs_READ,SAWs_DOUBLE));
-        PetscStackCallSAWs(SAWs_Register,("/PETSc/ksp_monitor_saws/eigi",mon->eigi,mon->neigs,SAWs_READ,SAWs_DOUBLE));
+        PetscCallSAWs(SAWs_Register,("/PETSc/ksp_monitor_saws/eigr",mon->eigr,mon->neigs,SAWs_READ,SAWs_DOUBLE));
+        PetscCallSAWs(SAWs_Register,("/PETSc/ksp_monitor_saws/eigi",mon->eigi,mon->neigs,SAWs_READ,SAWs_DOUBLE));
       }
       PetscCall(PetscInfo(ksp,"KSP extreme singular values min=%g max=%g\n",(double)emin,(double)emax));
       PetscCall(PetscSAWsBlock());

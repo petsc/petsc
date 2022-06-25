@@ -751,7 +751,7 @@ static PetscErrorCode PCHPDDMSetUpNeumannOverlap_Private(PC pc)
 
     PetscCall(PCGetOperators(pc, NULL, &P));
     PetscCall(PetscObjectQuery((PetscObject)P, "__SNES_latest_X", (PetscObject*)&x));
-    PetscCallUser("PCHPDDM Neumann callback",(*data->setup)(data->aux, t, x, xt, s, data->is, data->setup_ctx));
+    PetscCallBack("PCHPDDM Neumann callback",(*data->setup)(data->aux, t, x, xt, s, data->is, data->setup_ctx));
   }
   PetscFunctionReturn(0);
 }

@@ -263,7 +263,7 @@ PetscErrorCode TaoComputeHessian(Tao tao, Vec X, Mat H, Mat Hpre)
   ++tao->nhess;
   PetscCall(VecLockReadPush(X));
   PetscCall(PetscLogEventBegin(TAO_HessianEval,tao,X,H,Hpre));
-  PetscCallUser("Tao callback Hessian",(*tao->ops->computehessian)(tao,X,H,Hpre,tao->user_hessP));
+  PetscCallBack("Tao callback Hessian",(*tao->ops->computehessian)(tao,X,H,Hpre,tao->user_hessP));
   PetscCall(PetscLogEventEnd(TAO_HessianEval,tao,X,H,Hpre));
   PetscCall(VecLockReadPop(X));
 
@@ -307,7 +307,7 @@ PetscErrorCode TaoComputeJacobian(Tao tao, Vec X, Mat J, Mat Jpre)
   ++tao->njac;
   PetscCall(VecLockReadPush(X));
   PetscCall(PetscLogEventBegin(TAO_JacobianEval,tao,X,J,Jpre));
-  PetscCallUser("Tao callback Jacobian",(*tao->ops->computejacobian)(tao,X,J,Jpre,tao->user_jacP));
+  PetscCallBack("Tao callback Jacobian",(*tao->ops->computejacobian)(tao,X,J,Jpre,tao->user_jacP));
   PetscCall(PetscLogEventEnd(TAO_JacobianEval,tao,X,J,Jpre));
   PetscCall(VecLockReadPop(X));
   PetscFunctionReturn(0);
@@ -349,7 +349,7 @@ PetscErrorCode TaoComputeResidualJacobian(Tao tao, Vec X, Mat J, Mat Jpre)
   ++tao->njac;
   PetscCall(VecLockReadPush(X));
   PetscCall(PetscLogEventBegin(TAO_JacobianEval,tao,X,J,Jpre));
-  PetscCallUser("Tao callback least-squares residual Jacobian",(*tao->ops->computeresidualjacobian)(tao,X,J,Jpre,tao->user_lsjacP));
+  PetscCallBack("Tao callback least-squares residual Jacobian",(*tao->ops->computeresidualjacobian)(tao,X,J,Jpre,tao->user_lsjacP));
   PetscCall(PetscLogEventEnd(TAO_JacobianEval,tao,X,J,Jpre));
   PetscCall(VecLockReadPop(X));
   PetscFunctionReturn(0);
@@ -388,7 +388,7 @@ PetscErrorCode TaoComputeJacobianState(Tao tao, Vec X, Mat J, Mat Jpre, Mat Jinv
   ++tao->njac_state;
   PetscCall(VecLockReadPush(X));
   PetscCall(PetscLogEventBegin(TAO_JacobianEval,tao,X,J,Jpre));
-  PetscCallUser("Tao callback Jacobian(state)",(*tao->ops->computejacobianstate)(tao,X,J,Jpre,Jinv,tao->user_jac_stateP));
+  PetscCallBack("Tao callback Jacobian(state)",(*tao->ops->computejacobianstate)(tao,X,J,Jpre,Jinv,tao->user_jac_stateP));
   PetscCall(PetscLogEventEnd(TAO_JacobianEval,tao,X,J,Jpre));
   PetscCall(VecLockReadPop(X));
   PetscFunctionReturn(0);
@@ -425,7 +425,7 @@ PetscErrorCode TaoComputeJacobianDesign(Tao tao, Vec X, Mat J)
   ++tao->njac_design;
   PetscCall(VecLockReadPush(X));
   PetscCall(PetscLogEventBegin(TAO_JacobianEval,tao,X,J,NULL));
-  PetscCallUser("Tao callback Jacobian(design)",(*tao->ops->computejacobiandesign)(tao,X,J,tao->user_jac_designP));
+  PetscCallBack("Tao callback Jacobian(design)",(*tao->ops->computejacobiandesign)(tao,X,J,tao->user_jac_designP));
   PetscCall(PetscLogEventEnd(TAO_JacobianEval,tao,X,J,NULL));
   PetscCall(VecLockReadPop(X));
   PetscFunctionReturn(0);
@@ -724,7 +724,7 @@ PetscErrorCode TaoComputeJacobianEquality(Tao tao, Vec X, Mat J, Mat Jpre)
   ++tao->njac_equality;
   PetscCall(VecLockReadPush(X));
   PetscCall(PetscLogEventBegin(TAO_JacobianEval,tao,X,J,Jpre));
-  PetscCallUser("Tao callback Jacobian(equality)",(*tao->ops->computejacobianequality)(tao,X,J,Jpre,tao->user_jac_equalityP));
+  PetscCallBack("Tao callback Jacobian(equality)",(*tao->ops->computejacobianequality)(tao,X,J,Jpre,tao->user_jac_equalityP));
   PetscCall(PetscLogEventEnd(TAO_JacobianEval,tao,X,J,Jpre));
   PetscCall(VecLockReadPop(X));
   PetscFunctionReturn(0);
@@ -762,7 +762,7 @@ PetscErrorCode TaoComputeJacobianInequality(Tao tao, Vec X, Mat J, Mat Jpre)
   ++tao->njac_inequality;
   PetscCall(VecLockReadPush(X));
   PetscCall(PetscLogEventBegin(TAO_JacobianEval,tao,X,J,Jpre));
-  PetscCallUser("Tao callback Jacobian (inequality)",(*tao->ops->computejacobianinequality)(tao,X,J,Jpre,tao->user_jac_inequalityP));
+  PetscCallBack("Tao callback Jacobian (inequality)",(*tao->ops->computejacobianinequality)(tao,X,J,Jpre,tao->user_jac_inequalityP));
   PetscCall(PetscLogEventEnd(TAO_JacobianEval,tao,X,J,Jpre));
   PetscCall(VecLockReadPop(X));
   PetscFunctionReturn(0);

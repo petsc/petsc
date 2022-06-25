@@ -208,12 +208,12 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
 
       PetscCall(PetscObjectViewSAWs((PetscObject)ksp,viewer));
       PetscCall(PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/its",name));
-      PetscStackCallSAWs(SAWs_Register,(dir,&ksp->its,1,SAWs_READ,SAWs_INT));
+      PetscCallSAWs(SAWs_Register,(dir,&ksp->its,1,SAWs_READ,SAWs_INT));
       if (!ksp->res_hist) {
         PetscCall(KSPSetResidualHistory(ksp,NULL,PETSC_DECIDE,PETSC_TRUE));
       }
       PetscCall(PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/res_hist",name));
-      PetscStackCallSAWs(SAWs_Register,(dir,ksp->res_hist,10,SAWs_READ,SAWs_DOUBLE));
+      PetscCallSAWs(SAWs_Register,(dir,ksp->res_hist,10,SAWs_READ,SAWs_DOUBLE));
     }
 #endif
   } else if (ksp->ops->view) PetscCall((*ksp->ops->view)(ksp,viewer));

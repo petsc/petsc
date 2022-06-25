@@ -160,7 +160,7 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
       options[METIS_OPTION_SEED]   = pm->randomSeed;
       PetscCheck(err == METIS_OK,PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in METIS_SetDefaultOptions()");
       if (metis_ptype == 1) {
-        PetscStackPushForeign("METIS_PartGraphRecursive");
+        PetscStackPushExternal("METIS_PartGraphRecursive");
         err = METIS_PartGraphRecursive(&nvtxs, &ncon, xadj, adjncy, vwgt, NULL, adjwgt, &nparts, tpwgts, ubvec, options, &part->edgeCut, assignment);
         PetscStackPop;
         PetscCheck(err == METIS_OK,PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in METIS_PartGraphRecursive()");
@@ -172,7 +172,7 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
         */
         /* options[METIS_OPTION_CONTIG]  = 1; */ /* try to produce partitions that are contiguous */
         /* options[METIS_OPTION_MINCONN] = 1; */ /* minimize the maximum degree of the subdomain graph */
-        PetscStackPushForeign("METIS_PartGraphKway");
+        PetscStackPushExternal("METIS_PartGraphKway");
         err = METIS_PartGraphKway(&nvtxs, &ncon, xadj, adjncy, vwgt, NULL, adjwgt, &nparts, tpwgts, ubvec, options, &part->edgeCut, assignment);
         PetscStackPop;
         PetscCheck(err == METIS_OK,PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in METIS_PartGraphKway()");
@@ -198,7 +198,7 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
     }
     if (nvtxs) {
       int err;
-      PetscStackPushForeign("ParMETIS_V3_PartKway");
+      PetscStackPushExternal("ParMETIS_V3_PartKway");
       err = ParMETIS_V3_PartKway(vtxdist, xadj, adjncy, vwgt, adjwgt, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &part->edgeCut, assignment, &pcomm);
       PetscStackPop;
       PetscCheck(err == METIS_OK,PETSC_COMM_SELF, PETSC_ERR_LIB, "Error %d in ParMETIS_V3_PartKway()", err);
