@@ -3161,7 +3161,7 @@ PetscErrorCode  TSPreStep(TS ts)
     PetscCall(TSGetSolution(ts,&U));
     PetscCall(PetscObjectGetId((PetscObject)U,&idprev));
     PetscCall(PetscObjectStateGet((PetscObject)U,&sprev));
-    PetscCallExternal((*ts->prestep),ts);
+    PetscCallBack("TS callback preset",(*ts->prestep)(ts));
     PetscCall(TSGetSolution(ts,&U));
     PetscCall(PetscObjectCompareId((PetscObject)U,idprev,&sameObject));
     PetscCall(PetscObjectStateGet((PetscObject)U,&spost));
@@ -3290,7 +3290,7 @@ PetscErrorCode  TSPreStage(TS ts, PetscReal stagetime)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (ts->prestage) {
-    PetscCallExternal((*ts->prestage),ts,stagetime);
+    PetscCallBack("TS callback prestage",(*ts->prestage)(ts,stagetime));
   }
   PetscFunctionReturn(0);
 }
@@ -3320,7 +3320,7 @@ PetscErrorCode  TSPostStage(TS ts, PetscReal stagetime, PetscInt stageindex, Vec
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (ts->poststage) {
-    PetscCallExternal((*ts->poststage),ts,stagetime,stageindex,Y);
+    PetscCallBack("TS callback poststage",(*ts->poststage)(ts,stagetime,stageindex,Y));
   }
   PetscFunctionReturn(0);
 }
@@ -3351,7 +3351,7 @@ PetscErrorCode  TSPostEvaluate(TS ts)
 
     PetscCall(TSGetSolution(ts,&U));
     PetscCall(PetscObjectStateGet((PetscObject)U,&sprev));
-    PetscCallExternal((*ts->postevaluate),ts);
+    PetscCallBack("TS callback postevaluate",(*ts->postevaluate)(ts));
     PetscCall(PetscObjectStateGet((PetscObject)U,&spost));
     if (sprev != spost) PetscCall(TSRestartStep(ts));
   }
@@ -3416,7 +3416,7 @@ PetscErrorCode  TSPostStep(TS ts)
     PetscCall(TSGetSolution(ts,&U));
     PetscCall(PetscObjectGetId((PetscObject)U,&idprev));
     PetscCall(PetscObjectStateGet((PetscObject)U,&sprev));
-    PetscCallExternal((*ts->poststep),ts);
+    PetscCallBack("TS callback poststep",(*ts->poststep)(ts));
     PetscCall(TSGetSolution(ts,&U));
     PetscCall(PetscObjectCompareId((PetscObject)U,idprev,&sameObject));
     PetscCall(PetscObjectStateGet((PetscObject)U,&spost));
@@ -5948,7 +5948,7 @@ PetscErrorCode TSFunctionDomainError(TS ts,PetscReal stagetime,Vec Y,PetscBool* 
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   *accept = PETSC_TRUE;
   if (ts->functiondomainerror) {
-    PetscCallExternal((*ts->functiondomainerror),ts,stagetime,Y,accept);
+    PetscCall((*ts->functiondomainerror)(ts,stagetime,Y,accept));
   }
   PetscFunctionReturn(0);
 }

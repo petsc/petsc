@@ -4719,7 +4719,7 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
     PetscCall(SNESSetUp(snes));
 
     if (!grid) {
-      if (snes->ops->computeinitialguess) PetscCall((*snes->ops->computeinitialguess)(snes,snes->vec_sol,snes->initialguessP));
+      if (snes->ops->computeinitialguess) PetscCallBack("SNES callback initial guess",(*snes->ops->computeinitialguess)(snes,snes->vec_sol,snes->initialguessP));
     }
 
     if (snes->conv_hist_reset) snes->conv_hist_len = 0;
