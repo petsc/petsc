@@ -3179,14 +3179,14 @@ PetscErrorCode MatCreateIS(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,Petsc
 
 static PetscErrorCode MatHasOperation_IS(Mat A, MatOperation op, PetscBool *has)
 {
-  Mat_IS              *a = (Mat_IS*)A->data;
-  static MatOperation tobefiltered[] = { MATOP_MULT_ADD, MATOP_MULT_TRANSPOSE_ADD, MATOP_GET_DIAGONAL_BLOCK, MATOP_INCREASE_OVERLAP };
+  Mat_IS       *a = (Mat_IS*)A->data;
+  MatOperation tobefiltered[] = { MATOP_MULT_ADD, MATOP_MULT_TRANSPOSE_ADD, MATOP_GET_DIAGONAL_BLOCK, MATOP_INCREASE_OVERLAP};
 
   PetscFunctionBegin;
   *has = PETSC_FALSE;
-  if (!((void**)A->ops)[op]) PetscFunctionReturn(0);
+  if (!((void**)A->ops)[op] || !a->A) PetscFunctionReturn(0);
   *has = PETSC_TRUE;
-  for (PetscInt i = 0; PETSC_STATIC_ARRAY_LENGTH(tobefiltered); i++) if (op == tobefiltered[i]) PetscFunctionReturn(0);
+  for (PetscInt i = 0; i < (PetscInt)PETSC_STATIC_ARRAY_LENGTH(tobefiltered); i++) if (op == tobefiltered[i]) PetscFunctionReturn(0);
   PetscCall(MatHasOperation(a->A,op,has));
   PetscFunctionReturn(0);
 }
