@@ -4,7 +4,7 @@
 #include <petsc/private/dmpleximpl.h>
 
 #define PetscCallMMG_Private(ret,...) do {                                                        \
-    PetscStackPush(PetscStringize(__VA_ARGS__));                                               \
+    PetscStackPushForeign(PetscStringize(__VA_ARGS__));                                        \
     PetscErrorCode PETSC_UNUSED mmg_ierr_ = __VA_ARGS__;                                       \
     PetscStackPop;                                                                             \
     /* PetscCheck(mmg_ierr_ == (ret),PETSC_COMM_SELF,PETSC_ERR_LIB,"Error calling %s: error code %d",PetscStringize(__VA_ARGS__),mmg_ierr_); */ \

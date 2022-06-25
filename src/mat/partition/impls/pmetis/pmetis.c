@@ -26,7 +26,7 @@ typedef struct {
   } while (0)
 
 #define PetscStackCallParmetis_(name,func,args) do {    \
-    PetscStackPush(name);                               \
+    PetscStackPushForeign(name);                               \
     int status = func args;                             \
     PetscStackPop;                                      \
     PetscCallPARMETIS(status,name);                       \

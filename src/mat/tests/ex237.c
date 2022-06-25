@@ -13,7 +13,7 @@ static char help[] = "Mini-app to benchmark matrix--matrix multiplication\n\n";
 #include <mkl.h>
 #define PetscStackCallMKLSparse(func, args) do {               \
     sparse_status_t __ierr;                                    \
-    PetscStackPush(#func);                                     \
+    PetscStackPushForeign(#func);                                     \
     __ierr = func args;                                        \
     PetscStackPop;                                             \
     PetscCheck(__ierr == SPARSE_STATUS_SUCCESS,PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in %s(): error code %d", #func, (int)__ierr); \

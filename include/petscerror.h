@@ -287,10 +287,12 @@ M*/
   PetscCall(bar()) // ERROR input not convertible to PetscErrorCode
 .ve
 
-  It is also possible to call this directory on a PetscErrorCode variable
+  It is also possible to call this directly on a PetscErrorCode variable
 .vb
   PetscCall(ierr);  // check if ierr is nonzero
 .ve
+
+  Should not be used to call callback functions provided by users, `PetscCallUser()` should be used in that situation.
 
   Fortran Notes:
     The Fortran function from which this is used must declare a variable PetscErrorCode ierr and ierr must be
@@ -312,15 +314,54 @@ M*/
   Level: beginner
 
 .seealso: `SETERRQ()`, `PetscCheck()`, `PetscAssert()`, `PetscTraceBackErrorHandler()`, `PetscCallMPI()`
-          `PetscPushErrorHandler()`, `PetscError()`, `CHKMEMQ`, `CHKERRA()`, `CHKERRMPI()`
+          `PetscPushErrorHandler()`, `PetscError()`, `CHKMEMQ`, `CHKERRA()`, `CHKERRMPI()`, `PetscCallUser()`
 M*/
+
+/*MC
+  PetscCallUser - Calls a user provided PETSc callback function and then checks the resulting error code, if it is non-zero it calls the error
+  handler and returns from the current function with the error code.
+
+  Synopsis:
+  #include <petscerror.h>
+  void PetscCallUser(const char *functionname,PetscFunction(args))
+
+  Not Collective
+
+  Input Parameters:
++ functionname - the name of the function being called, this can be a string with spaces that describes the meaning of the callback
+- PetscFunction - any PETSc function that returns an error code
+
+  Notes:
+  Once the error handler is called the calling function is then returned from with the given
+  error code. Experienced users can set the error handler with PetscPushErrorHandler().
+
+  PetscCallUser() should only be called in PETSc when a call is being made to a user provided call-back routine.
+
+  Example Usage:
+.vb
+  PetscCallUser("XXX callback to do something",a->callback(...));
+.ve
+
+  Level: developer
+
+.seealso: `SETERRQ()`, `PetscCheck()`, `PetscAssert()`, `PetscTraceBackErrorHandler()`, `PetscCallMPI()`
+          `PetscPushErrorHandler()`, `PetscError()`, `CHKMEMQ`, `CHKERRA()`, `CHKERRMPI()`, `PetscCall()`
+M*/
+
 #if defined(PETSC_CLANG_STATIC_ANALYZER)
 void PetscCall(PetscErrorCode);
+void PetscCallUser(const char *,PetscErrorCode);
 void PetscCallVoid(PetscErrorCode);
 #else
 #define PetscCall(...) do { \
     PetscStackUpdateLine;                                               \
     PetscErrorCode ierr_q_ = __VA_ARGS__;                                                      \
+    if (PetscUnlikely(ierr_q_)) return PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr_q_,PETSC_ERROR_REPEAT," "); \
+  } while (0)
+#define PetscCallUser(function,...) do { \
+    PetscStackUpdateLine; PetscStackPushForeign(function);      \
+    PetscErrorCode ierr_q_ = __VA_ARGS__;          \
+    PetscStackPop;                                                 \
     if (PetscUnlikely(ierr_q_)) return PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr_q_,PETSC_ERROR_REPEAT," "); \
   } while (0)
 #define PetscCallVoid(...) do { PetscStackUpdateLine;                                                               \
@@ -409,7 +450,10 @@ M*/
 void PetscCallMPI(PetscMPIInt);
 #else
 #define PetscCallMPI(...) do {                                                                 \
+    PetscStackUpdateLine;                                                                      \
+    PetscStackPushForeign("MPI function");                                                    \
     PetscMPIInt _7_errorcode = __VA_ARGS__;                                                    \
+    PetscStackPop;                                                                             \
     if (PetscUnlikely(_7_errorcode)) {                                                         \
       char        _7_errorstring[2*MPI_MAX_ERROR_STRING];                                      \
       PetscMPIErrorString(_7_errorcode,(char*)_7_errorstring); \
@@ -921,6 +965,7 @@ typedef struct {
 #if defined(PETSC_CLANG_STATIC_ANALYZER)
 #define PetscStackPushNoCheck(funct,petsc_routine,hot)
 #define PetscStackUpdateLine
+#define PetscStackPushForeign(funct)
 #define PetscStackPopNoCheck
 #define PetscStackClearTop
 #define PetscFunctionBegin
@@ -933,9 +978,14 @@ typedef struct {
 #elif defined(PETSC_USE_DEBUG)
 #define PetscStackPush_Private(stack__,file__,func__,line__,petsc_routine__,hot__) do { \
     if (stack__.currentsize < PETSCSTACKSIZE) {                                         \
-      stack__.file[stack__.currentsize]         = file__;                               \
       stack__.function[stack__.currentsize]     = func__;                               \
-      stack__.line[stack__.currentsize]         = line__;                               \
+      if (petsc_routine__) {                                                            \
+        stack__.file[stack__.currentsize]         = file__;                             \
+        stack__.line[stack__.currentsize]         = line__;                             \
+      } else {                                                                          \
+        stack__.file[stack__.currentsize]         = NULL;                               \
+        stack__.line[stack__.currentsize]         = 0;                                  \
+      }                                                                                 \
       stack__.petscroutine[stack__.currentsize] = petsc_routine__;                      \
     }                                                                                   \
     ++stack__.currentsize;                                                              \
@@ -995,12 +1045,17 @@ typedef struct {
    occurred, for example, when a signal is received. It is recommended to use the debugger if extensive information is needed to
    help debug the problem.
 
+   This version does not check the memory corruption (an expensive operation), use `PetscStackPush()` to check the memory.
+
+   Use `PetscStackPushForeign()` for a function call that is about to be made to a non-PETSc or user function (such as BLAS etc).
+
    The default stack is a global variable called `petscstack`.
 
    In general the line number is at the beginning of the function (where `PetscFunctionBegin` is called) so it is not accurate
 
 .seealso: `PetscAttachDebugger()`, `PetscStackCopy()`, `PetscStackView()`, `PetscStackPopNoCheck()`, `PetscCall()`, `PetscFunctionBegin()`,
-          `PetscFunctionReturn()`, `PetscFunctionBeginHot()`, `PetscFunctionBeginUser()`, `PetscStackPush()`, `PetscStackPop`
+          `PetscFunctionReturn()`, `PetscFunctionBeginHot()`, `PetscFunctionBeginUser()`, `PetscStackPush()`, `PetscStackPop`,
+          `PetscStackPushForeign()`
 M*/
 #define PetscStackPushNoCheck(funct,petsc_routine,hot) do {                             \
     PetscStackSAWsTakeAccess();                                                         \
@@ -1035,6 +1090,38 @@ M*/
   if (petscstack.currentsize > 0 && petscstack.function[petscstack.currentsize-1] == PETSC_FUNCTION_NAME){ \
     petscstack.line[petscstack.currentsize-1] = __LINE__;              \
   }
+
+/*MC
+   PetscStackPushForeign - Pushes a new function name onto the PETSc default stack that tracks where the running program is
+   currently in the source code. Does not include the filename or line number since this is called by the calling routine
+   for non-PETSc or user functions.
+
+   Not Collective
+
+   Synopsis:
+   #include <petscsys.h>
+   void PetscStackPushForeign(char *funct);
+
+   Input Parameters:
+.  funct - the function name
+
+   Level: developer
+
+   Notes:
+   In debug mode PETSc maintains a stack of the current function calls that can be used to help to quickly see where a problem has
+   occurred, for example, when a signal is received. It is recommended to use the debugger if extensive information is needed to
+   help debug the problem.
+
+   The default stack is a global variable called `petscstack`.
+
+   This is to be used when calling an external package function such as a BLAS function.
+
+   This also updates the stack line number for the current stack function.
+
+.seealso: `PetscAttachDebugger()`, `PetscStackCopy()`, `PetscStackView()`, `PetscStackPopNoCheck()`, `PetscCall()`, `PetscFunctionBegin()`,
+          `PetscFunctionReturn()`, `PetscFunctionBeginHot()`, `PetscFunctionBeginUser()`, `PetscStackPushNoCheck()`, `PetscStackPop`
+M*/
+#define PetscStackPushForeign(funct) do {PetscStackUpdateLine; PetscStackPushNoCheck(funct,0,PETSC_TRUE);} while (0);
 
 /*MC
    PetscStackPopNoCheck - Pops a function name from the PETSc default stack that tracks where the running program is
@@ -1275,6 +1362,7 @@ M*/
 #else /* PETSC_USE_DEBUG */
 #define PetscStackPushNoCheck(funct,petsc_routine,hot)
 #define PetscStackUpdateLine
+#define PetscStackPushForeign(funct)
 #define PetscStackPopNoCheck
 #define PetscStackClearTop
 #define PetscFunctionBegin

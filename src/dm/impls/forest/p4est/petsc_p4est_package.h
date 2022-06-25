@@ -18,7 +18,7 @@ PETSC_INTERN jmp_buf PetscScJumpBuf;
     return PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,PETSC_ERR_LIB,PETSC_ERROR_REPEAT,"Error in p4est/libsc call %s()",#func); \
   }                                                                                                                                                   \
   else {                                                                                                                                              \
-    PetscStackPush(#func);                                                                                                                            \
+    PetscStackPushForeign(#func);                                                                                                                     \
     func args;                                                                                                                                        \
     PetscStackPop;                                                                                                                                    \
   }                                                                                                                                                   \
@@ -28,19 +28,19 @@ PETSC_INTERN jmp_buf PetscScJumpBuf;
     return PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,PETSC_ERR_LIB,PETSC_ERROR_REPEAT,"Error in p4est/libsc call %s()",#func); \
   }                                                                                                                                                   \
   else {                                                                                                                                              \
-    PetscStackPush(#func);                                                                                                                            \
+    PetscStackPushForeign(#func);                                                                                                                     \
     ret = func args;                                                                                                                                  \
     PetscStackPop;                                                                                                                                    \
   }                                                                                                                                                   \
 } while (0)
 #else
 #define PetscStackCallP4est(func,args) do { \
-  PetscStackPush(#func);                    \
+  PetscStackPushForeign(#func);             \
   func args;                                \
   PetscStackPop;                            \
 } while (0)
 #define PetscStackCallP4estReturn(ret,func,args) do { \
-  PetscStackPush(#func);                              \
+  PetscStackPushForeign(#func);                       \
   ret = func args;                                    \
   PetscStackPop;                                      \
 } while (0)

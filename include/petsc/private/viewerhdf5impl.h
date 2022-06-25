@@ -18,11 +18,11 @@
 */
 #define PetscStackCallHDF5(func,args) do {                        \
     herr_t _status;                                               \
-    PetscStackPush(#func);_status = func args;PetscStackPop; PetscCheck(_status >= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in HDF5 call %s() Status %d",#func,(int)_status); \
+    PetscStackPushForeign(#func);_status = func args;PetscStackPop; PetscCheck(_status >= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in HDF5 call %s() Status %d",#func,(int)_status); \
   } while (0)
 
 #define PetscStackCallHDF5ReturnNoCheck(ret,func,args) do {       \
-    PetscStackPush(#func);ret = func args;PetscStackPop;          \
+    PetscStackPushForeign(#func);ret = func args;PetscStackPop;          \
   } while (0)
 
 #define PetscStackCallHDF5Return(ret,func,args) do {              \

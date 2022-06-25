@@ -564,9 +564,7 @@ PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat B)
   PetscCheck(ts->rhsjacobian.shift == 0.0 || !ts->rhsjacobian.reuse,PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Should not call TSComputeRHSJacobian() on a shifted matrix (shift=%lf) when RHSJacobian is reusable.",(double)ts->rhsjacobian.shift);
   if (rhsjacobianfunc) {
     PetscCall(PetscLogEventBegin(TS_JacobianEval,ts,U,A,B));
-    PetscStackPush("TS user Jacobian function");
-    PetscCall((*rhsjacobianfunc)(ts,t,U,A,B,ctx));
-    PetscStackPop;
+    PetscCallUser("TS callback Jacobian",(*rhsjacobianfunc)(ts,t,U,A,B,ctx));
     ts->rhsjacs++;
     PetscCall(PetscLogEventEnd(TS_JacobianEval,ts,U,A,B));
   } else {
@@ -622,9 +620,7 @@ PetscErrorCode TSComputeRHSFunction(TS ts,PetscReal t,Vec U,Vec y)
   if (rhsfunction) {
     PetscCall(PetscLogEventBegin(TS_FunctionEval,ts,U,y,0));
     PetscCall(VecLockReadPush(U));
-    PetscStackPush("TS user right-hand-side function");
-    PetscCall((*rhsfunction)(ts,t,U,y,ctx));
-    PetscStackPop;
+    PetscCallUser("TS callback right-hand-side",(*rhsfunction)(ts,t,U,y,ctx));
     PetscCall(VecLockReadPop(U));
     ts->rhsfuncs++;
     PetscCall(PetscLogEventEnd(TS_FunctionEval,ts,U,y,0));
@@ -666,11 +662,7 @@ PetscErrorCode TSComputeSolutionFunction(TS ts,PetscReal t,Vec U)
   PetscCall(TSGetDM(ts,&dm));
   PetscCall(DMTSGetSolutionFunction(dm,&solutionfunction,&ctx));
 
-  if (solutionfunction) {
-    PetscStackPush("TS user solution function");
-    PetscCall((*solutionfunction)(ts,t,U,ctx));
-    PetscStackPop;
-  }
+  if (solutionfunction) PetscCallUser("TS callback solution",(*solutionfunction)(ts,t,U,ctx));
   PetscFunctionReturn(0);
 }
 /*@
@@ -705,11 +697,7 @@ PetscErrorCode TSComputeForcingFunction(TS ts,PetscReal t,Vec U)
   PetscCall(TSGetDM(ts,&dm));
   PetscCall(DMTSGetForcingFunction(dm,&forcing,&ctx));
 
-  if (forcing) {
-    PetscStackPush("TS user forcing function");
-    PetscCall((*forcing)(ts,t,U,ctx));
-    PetscStackPop;
-  }
+  if (forcing) PetscCallUser("TS callback forcing function",(*forcing)(ts,t,U,ctx));
   PetscFunctionReturn(0);
 }
 
@@ -823,9 +811,7 @@ PetscErrorCode TSComputeIFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec Y,PetscBo
 
   PetscCall(PetscLogEventBegin(TS_FunctionEval,ts,U,Udot,Y));
   if (ifunction) {
-    PetscStackPush("TS user implicit function");
-    PetscCall((*ifunction)(ts,t,U,Udot,Y,ctx));
-    PetscStackPop;
+    PetscCallUser("TS callback implicit function",(*ifunction)(ts,t,U,Udot,Y,ctx));
     ts->ifuncs++;
   }
   if (imex) {
@@ -930,10 +916,8 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shi
 
   PetscCall(PetscLogEventBegin(TS_JacobianEval,ts,U,A,B));
   if (ijacobian) {
-    PetscStackPush("TS user implicit Jacobian");
-    PetscCall((*ijacobian)(ts,t,U,Udot,shift,A,B,ctx));
+    PetscCallUser("TS callback implicit Jacobian",(*ijacobian)(ts,t,U,Udot,shift,A,B,ctx));
     ts->ijacs++;
-    PetscStackPop;
   }
   if (imex) {
     if (!ijacobian) {  /* system was written as Udot = G(t,U) */
@@ -1638,9 +1622,7 @@ PetscErrorCode TSComputeI2Function(TS ts,PetscReal t,Vec U,Vec V,Vec A,Vec F)
 
   PetscCall(PetscLogEventBegin(TS_FunctionEval,ts,U,V,F));
 
-  PetscStackPush("TS user implicit function");
-  PetscCall(I2Function(ts,t,U,V,A,F,ctx));
-  PetscStackPop;
+  PetscCallUser("TS callback implicit function",I2Function(ts,t,U,V,A,F,ctx));
 
   if (rhsfunction) {
     Vec Frhs;
@@ -1708,11 +1690,7 @@ PetscErrorCode TSComputeI2Jacobian(TS ts,PetscReal t,Vec U,Vec V,Vec A,PetscReal
   }
 
   PetscCall(PetscLogEventBegin(TS_JacobianEval,ts,U,J,P));
-
-  PetscStackPush("TS user implicit Jacobian");
-  PetscCall(I2Jacobian(ts,t,U,V,A,shiftV,shiftA,J,P,ctx));
-  PetscStackPop;
-
+  PetscCallUser("TS callback implicit Jacobian",I2Jacobian(ts,t,U,V,A,shiftV,shiftA,J,P,ctx));
   if (rhsjacobian) {
     Mat Jrhs,Prhs;
     PetscCall(TSGetRHSMats_Private(ts,&Jrhs,&Prhs));

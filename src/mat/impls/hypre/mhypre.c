@@ -845,7 +845,7 @@ static PetscErrorCode MatHYPRE_ParCSR_RAP(hypre_ParCSRMatrix *hR, hypre_ParCSRMa
 #endif
   /* can be replaced by version test later */
 #if defined(PETSC_HAVE_HYPRE_DEVICE)
-  PetscStackPush("hypre_ParCSRMatrixRAP");
+  PetscStackPushForeign("hypre_ParCSRMatrixRAP");
   *hRAP = hypre_ParCSRMatrixRAP(hR,hA,hP);
   PetscStackPop;
 #else
@@ -954,10 +954,10 @@ static PetscErrorCode MatHYPRE_ParCSR_MatMatMult(hypre_ParCSRMatrix *hA, hypre_P
   PetscFunctionBegin;
   /* can be replaced by version test later */
 #if defined(PETSC_HAVE_HYPRE_DEVICE)
-  PetscStackPush("hypre_ParCSRMatMat");
+  PetscStackPushForeign("hypre_ParCSRMatMat");
   *hAB = hypre_ParCSRMatMat(hA,hB);
 #else
-  PetscStackPush("hypre_ParMatmul");
+  PetscStackPushForeign("hypre_ParMatmul");
   *hAB = hypre_ParMatmul(hA,hB);
 #endif
   PetscStackPop;

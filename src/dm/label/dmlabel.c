@@ -2005,7 +2005,7 @@ PetscErrorCode DMLabelPropagateEnd(DMLabel label, PetscSF pointSF)
   Input Parameters:
 + label     - The DMLabel to propagate across processes
 . sf        - The SF describing parallel layout of the label points
-. markPoint - An optional user callback that is called when a point is marked, or NULL
+. markPoint - An optional callback that is called when a point is marked, or NULL
 - ctx       - An optional user context for the callback, or NULL
 
   Calling sequence of markPoint:

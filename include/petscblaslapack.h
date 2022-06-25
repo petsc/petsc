@@ -28,6 +28,8 @@
 #define BLAS_EXTERN extern
 #endif
 
+/* SUBMANSEC = Sys */
+
 /*MC
     PetscStackCallBLAS - Calls a BLAS or LAPACK routine with error check handling
 
@@ -49,7 +51,7 @@
 .seealso: `PetscCall()`, `PetscStackPushNoCheck()`, `PetscStackPush()`, `PetscStackCallStandard()`, `PetscStackCall()`
 M*/
 #define PetscStackCallBLAS(name,routine) do {                   \
-    PetscStackPushNoCheck(name,PETSC_FALSE,PETSC_TRUE);         \
+    PetscStackPushForeign(name);                                \
     routine;                                                    \
     PetscStackPop;                                              \
   } while (0)
