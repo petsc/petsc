@@ -1266,6 +1266,15 @@ class Configure(config.base.Configure):
       yield 'win32fe bcc32'
     return
 
+  def showMPIWrapper(self,compiler):
+    if os.path.basename(compiler).startswith('mpi'):
+      self.logPrint(' MPI compiler wrapper '+compiler+' failed to compile')
+      try:
+        output = self.executeShellCommand(compiler + ' -show', log = self.log)[0]
+      except RuntimeError:
+        self.logPrint('-show option failed for MPI compiler wrapper '+compiler)
+    self.logPrint(' MPI compiler wrapper '+compiler+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.')
+
   def checkCCompiler(self):
     '''Locate a functional C compiler'''
     if 'with-cc' in self.argDB and self.argDB['with-cc'] == '0':
@@ -1279,8 +1288,7 @@ class Configure(config.base.Configure):
       except RuntimeError as e:
         self.mesg = str(e)
         self.logPrint('Error testing C compiler: '+str(e))
-        if os.path.basename(self.CC) == 'mpicc':
-          self.logPrint(' MPI installation '+str(self.CC)+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.')
+        self.showMPIWrapper(compiler)
         self.delMakeMacro('CC')
         del self.CC
     if not hasattr(self, 'CC'):
@@ -1629,8 +1637,7 @@ class Configure(config.base.Configure):
         except RuntimeError as e:
           self.mesg = str(e)
           self.logPrint('Error testing C++ compiler: '+str(e))
-          if os.path.basename(self.CXX) in ['mpicxx', 'mpiCC']:
-            self.logPrint('  MPI installation '+str(self.CXX)+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.')
+          self.showMPIWrapper(compiler)
           self.delMakeMacro('CXX')
           del self.CXX
       if hasattr(self, 'CXX'):
@@ -1769,8 +1776,7 @@ class Configure(config.base.Configure):
       except RuntimeError as e:
         self.mesg = str(e)
         self.logPrint('Error testing Fortran compiler: '+str(e))
-        if os.path.basename(self.FC) in ['mpif90']:
-          self.logPrint(' MPI installation '+str(self.FC)+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.')
+        self.showMPIWrapper(compiler)
         self.delMakeMacro('FC')
         del self.FC
     if hasattr(self, 'FC'):
