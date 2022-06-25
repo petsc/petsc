@@ -109,10 +109,8 @@ static PetscErrorCode PCApply_Shell(PC pc,Vec x,Vec y)
   PetscCall(PetscObjectStateGet((PetscObject)y, &instate));
   PetscCallBack("PCSHELL callback apply",(*shell->apply)(pc,x,y));
   PetscCall(PetscObjectStateGet((PetscObject)y, &outstate));
-  if (instate == outstate) {
-    /* increase the state of the output vector since the user did not update its state themself as should have been done */
-    PetscCall(PetscObjectStateIncrease((PetscObject)y));
-  }
+  /* increase the state of the output vector if the user did not update its state themself as should have been done */
+  if (instate == outstate) PetscCall(PetscObjectStateIncrease((PetscObject)y));
   PetscFunctionReturn(0);
 }
 
@@ -126,10 +124,8 @@ static PetscErrorCode PCMatApply_Shell(PC pc,Mat X,Mat Y)
   PetscCall(PetscObjectStateGet((PetscObject)Y, &instate));
   PetscCallBack("PCSHELL callback apply",(*shell->matapply)(pc,X,Y));
   PetscCall(PetscObjectStateGet((PetscObject)Y, &outstate));
-  if (instate == outstate) {
-    /* increase the state of the output vector since the user did not update its state themself as should have been done */
-    PetscCall(PetscObjectStateIncrease((PetscObject)Y));
-  }
+  /* increase the state of the output vector if the user did not update its state themself as should have been done */
+  if (instate == outstate) PetscCall(PetscObjectStateIncrease((PetscObject)Y));
   PetscFunctionReturn(0);
 }
 
@@ -163,10 +159,8 @@ static PetscErrorCode PCApplyBA_Shell(PC pc,PCSide side,Vec x,Vec y,Vec w)
   PetscCall(PetscObjectStateGet((PetscObject)w, &instate));
   PetscCallBack("PCSHELL callback applyBA",(*shell->applyBA)(pc,side,x,y,w));
   PetscCall(PetscObjectStateGet((PetscObject)w, &outstate));
-  if (instate == outstate) {
-    /* increase the state of the output vector since the user did not update its state themself as should have been done */
-    PetscCall(PetscObjectStateIncrease((PetscObject)w));
-  }
+  /* increase the state of the output vector if the user did not update its state themself as should have been done */
+  if (instate == outstate) PetscCall(PetscObjectStateIncrease((PetscObject)w));
   PetscFunctionReturn(0);
 }
 
@@ -207,10 +201,8 @@ static PetscErrorCode PCApplyTranspose_Shell(PC pc,Vec x,Vec y)
   PetscCall(PetscObjectStateGet((PetscObject)y, &instate));
   PetscCallBack("PCSHELL callback applytranspose",(*shell->applytranspose)(pc,x,y));
   PetscCall(PetscObjectStateGet((PetscObject)y, &outstate));
-  if (instate == outstate) {
-    /* increase the state of the output vector since the user did not update its state themself as should have been done */
-    PetscCall(PetscObjectStateIncrease((PetscObject)y));
-  }
+  /* increase the state of the output vector if the user did not update its state themself as should have been done */
+  if (instate == outstate) PetscCall(PetscObjectStateIncrease((PetscObject)y));
   PetscFunctionReturn(0);
 }
 
@@ -224,10 +216,8 @@ static PetscErrorCode PCApplyRichardson_Shell(PC pc,Vec x,Vec y,Vec w,PetscReal 
   PetscCall(PetscObjectStateGet((PetscObject)y, &instate));
   PetscCallBack("PCSHELL callback applyrichardson",(*shell->applyrich)(pc,x,y,w,rtol,abstol,dtol,it,guesszero,outits,reason));
   PetscCall(PetscObjectStateGet((PetscObject)y, &outstate));
-  if (instate == outstate) {
-    /* increase the state of the output vector since the user did not update its state themself as should have been done */
-    PetscCall(PetscObjectStateIncrease((PetscObject)y));
-  }
+  /* increase the state of the output vector since the user did not update its state themself as should have been done */
+  if (instate == outstate) PetscCall(PetscObjectStateIncrease((PetscObject)y));
   PetscFunctionReturn(0);
 }
 
@@ -265,11 +255,8 @@ static PetscErrorCode PCView_Shell(PC pc,PetscViewer viewer)
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    if (shell->name) {
-      PetscCall(PetscViewerASCIIPrintf(viewer,"  %s\n",shell->name));
-    } else {
-      PetscCall(PetscViewerASCIIPrintf(viewer,"  no name\n"));
-    }
+    if (shell->name) PetscCall(PetscViewerASCIIPrintf(viewer,"  %s\n",shell->name));
+    else             PetscCall(PetscViewerASCIIPrintf(viewer,"  no name\n"));
   }
   if (shell->view) {
     PetscCall(PetscViewerASCIIPushTab(viewer));
