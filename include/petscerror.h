@@ -217,9 +217,36 @@ M*/
 
   Level: beginner
 
-.seealso: `PetscAssert()`, `SETERRQ()`, `PetscError()`, `PetscCall()`
+.seealso: `PetscAssert()`, `SETERRQ()`, `PetscError()`, `PetscCall()`, `PetscCheckAbort()`
 M*/
 #define PetscCheck(cond,comm,ierr,...) do { if (PetscUnlikely(!(cond))) SETERRQ(comm,ierr,__VA_ARGS__); } while (0)
+
+/*MC
+  PetscCheckAbort - Check that a particular condition is true, otherwise prints error and aborts
+
+  Synopsis:
+  #include <petscerror.h>
+  void PetscCheckAbort(bool cond, MPI_Comm comm, PetscErrorCode ierr, const char *message, ...)
+
+  Collective
+
+  Input Parameters:
++ cond    - The boolean condition
+. comm    - The communicator on which the check can be collective on
+. ierr    - A nonzero error code, see include/petscerror.h for the complete list
+- message - Error message in printf format
+
+  Notes:
+  Enabled in both optimized and debug builds.
+
+  Calls SETERRABORT() if the assertion fails, can be called from a function that does not return an
+  error code. usually `PetscCheck()` should be used.
+
+  Level: developer
+
+.seealso: `PetscAssert()`, `SETERRQ()`, `PetscError()`, `PetscCall()`, `PetscCheck()`, `SETTERRABORT()`
+M*/
+#define PetscCheckAbort(cond,comm,ierr,...) if (PetscUnlikely(!(cond))) SETERRABORT(comm,ierr,__VA_ARGS__)
 
 /*MC
   PetscAssert - Assert that a particular condition is true
@@ -936,7 +963,7 @@ typedef struct  {
         int  petscroutine[PETSCSTACKSIZE]; /* 0 external called from petsc, 1 petsc functions, 2 petsc user functions */
         int  currentsize;
         int  hotdepth;
-  PetscBool  check; /* runtime option to check for correct Push/Pop semantics at runtime */
+        PetscBool  check; /* option to check for correct Push/Pop semantics, true for default petscstack but not other stacks */
 } PetscStack;
 PETSC_EXTERN PetscStack petscstack;
 #else
@@ -992,36 +1019,18 @@ typedef struct {
     stack__.hotdepth += (hot__ || stack__.hotdepth);                                    \
   } while (0)
 
+/* uses PetscCheckAbort() because may be used in a function that does not return an error code */
 #define PetscStackPop_Private(stack__,func__) do {                                             \
-    if (PetscUnlikely(stack__.currentsize <= 0)) {                                             \
-      if (PetscUnlikely(stack__.check)) {                                                      \
-        printf("Invalid stack size %d, pop %s\n",stack__.currentsize,func__);                  \
-      }                                                                                        \
-    } else {                                                                                   \
-      if (--stack__.currentsize < PETSCSTACKSIZE) {                                            \
-        if (PetscUnlikely(                                                                     \
-              stack__.check                           &&                                       \
-              stack__.petscroutine[stack__.currentsize] &&                                     \
-              (stack__.function[stack__.currentsize]    != (const char*)(func__)))) {          \
-          /* We need this string comparison because "unknown" can be defined in different static strings: */ \
-          PetscBool _cmpflg;                                                                   \
-          const char *_funct = stack__.function[stack__.currentsize];                          \
-          PetscStrcmp(_funct,func__,&_cmpflg);                                                 \
-          if (!_cmpflg) printf("Invalid stack: push from %s, pop from %s\n",_funct,func__);    \
-        }                                                                                      \
-        stack__.function[stack__.currentsize]     = PETSC_NULLPTR;                             \
-        stack__.file[stack__.currentsize]         = PETSC_NULLPTR;                             \
-        stack__.line[stack__.currentsize]         = 0;                                         \
-        stack__.petscroutine[stack__.currentsize] = 0;                                         \
-      }                                                                                        \
-      stack__.hotdepth = PetscMax(stack__.hotdepth-1,0);                                       \
-    }                                                                                          \
+    PetscCheckAbort(!stack__.check || stack__.currentsize > 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Invalid stack size %d, pop %s %s:%d.\n",stack__.currentsize,func__,__FILE__,__LINE__);\
+    if (--stack__.currentsize < PETSCSTACKSIZE) {                                            \
+      PetscCheckAbort(!stack__.check || stack__.petscroutine[stack__.currentsize] != 1 || stack__.function[stack__.currentsize] == (const char*)(func__),PETSC_COMM_SELF,PETSC_ERR_PLIB,"Invalid stack: push from %s %s:%d. Pop from %s %s:%d.\n",stack__.function[stack__.currentsize],stack__.file[stack__.currentsize],stack__.line[stack__.currentsize],func__,__FILE__,__LINE__); \
+      stack__.function[stack__.currentsize]     = PETSC_NULLPTR;                             \
+      stack__.file[stack__.currentsize]         = PETSC_NULLPTR;                             \
+      stack__.line[stack__.currentsize]         = 0;                                         \
+      stack__.petscroutine[stack__.currentsize] = 0;                                         \
+    }                                                                                        \
+    stack__.hotdepth = PetscMax(stack__.hotdepth-1,0);                                       \
   } while (0)
-
-/* Stack handling is based on the following two "NoCheck" macros.  These should only be called directly by other error
- * handling macros.  We record the line of the call, which may or may not be the location of the definition.  But is at
- * least more useful than "unknown" because it can distinguish multiple calls from the same function.
- */
 
 /*MC
    PetscStackPushNoCheck - Pushes a new function name and line number onto the PETSc default stack that tracks where the running program is

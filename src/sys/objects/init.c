@@ -257,13 +257,7 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(const char help[])
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(comm,&rank));
 
-  /*
-     Setup building of stack frames for all function calls
-  */
-  if (PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)) {
-    PetscCall(PetscOptionsGetBool(NULL,NULL,"-checkstack",&flg1,NULL));
-    PetscCall(PetscStackSetCheck(flg1));
-  }
+  if (PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)) PetscCall(PetscStackSetCheck(PETSC_TRUE));
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-checkfunctionlist",&PetscPrintFunctionList,NULL));
 
 #if !defined(PETSC_HAVE_THREADSAFETY)

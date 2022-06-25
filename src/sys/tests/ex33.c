@@ -57,5 +57,6 @@ int main(int argc,char **argv)
 /*TEST
 
   test:
+    TODO: Since this now errors out the test harness can chock on the output
 
 TEST*/
