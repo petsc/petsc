@@ -4390,7 +4390,7 @@ PetscErrorCode VecLockReadPop(Vec x)
 
    Input Parameters:
 +  x   - the vector
--  flg - PETSC_TRUE to lock the vector for writing; PETSC_FALSE to unlock it.
+-  flg - PETSC_TRUE to lock the vector for exclusive read/write access; PETSC_FALSE to unlock it.
 
    Notes:
     The function is usefull in split-phase computations, which usually have a begin phase and an end phase.
