@@ -172,7 +172,7 @@ PetscErrorCode  PetscPythonFinalize(void)
 /*@C
   PetscPythonInitialize - Initialize Python and import petsc4py.
 
-   Input Parameter:
+   Input Parameters:
 +  pyexe - path to the Python interpreter executable, or NULL.
 -  pylib - full path to the Python dynamic library, or NULL.
 

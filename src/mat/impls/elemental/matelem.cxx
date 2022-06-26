@@ -1325,15 +1325,21 @@ static struct _MatOps MatOps_Values = {
 
   Use ./configure --download-elemental to install PETSc to use Elemental
 
-  Use -pc_type lu -pc_factor_mat_solver_type elemental to use this direct solver
+  Option Database Keys:
 
    Options Database Keys:
 + -mat_type elemental - sets the matrix type to "elemental" during a call to MatSetFromOptions()
+. -pc_factor_mat_solver_type elemental - to use this direct solver with the option -pc_type lu
 - -mat_elemental_grid_height - sets Grid Height for 2D cyclic ordering of internal matrix
 
   Level: beginner
 
-.seealso: `MATDENSE`
+  Note:
+   Note unlike most matrix formats, this format does not store all the matrix entries for a contiguous
+   range of rows on an MPI rank. Use `MatGetOwnershipIS()` to determine what values are stored on
+   the given rank.
+
+.seealso: `MATDENSE`, `MATSCALAPACK`, `MatGetOwnershipIS()`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)

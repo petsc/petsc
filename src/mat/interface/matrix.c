@@ -6592,8 +6592,8 @@ PetscErrorCode MatGetSize(Mat mat,PetscInt *m,PetscInt *n)
 }
 
 /*@C
-   MatGetLocalSize - Returns the number of local rows and local columns
-   of a matrix, that is the local size of the left and right vectors as returned by MatCreateVecs().
+   MatGetLocalSize - For most matrix formats, excluding `MATELEMENTAL` and `MATSCALAPACK`, Returns the number of local rows and local columns
+   of a matrix. For all matrices this is the local size of the left and right vectors as returned by MatCreateVecs().
 
    Not Collective
 
@@ -6601,10 +6601,8 @@ PetscErrorCode MatGetSize(Mat mat,PetscInt *m,PetscInt *n)
 .  mat - the matrix
 
    Output Parameters:
-+  m - the number of local rows
--  n - the number of local columns
-
-   Note: both output parameters can be NULL on input.
++  m - the number of local rows, use `NULL` to not obtain this value
+-  n - the number of local columns, use `NULL` to not obtain this value
 
    Level: beginner
 
@@ -6622,8 +6620,8 @@ PetscErrorCode MatGetLocalSize(Mat mat,PetscInt *m,PetscInt *n)
 }
 
 /*@C
-   MatGetOwnershipRangeColumn - Returns the range of matrix columns associated with rows of a vector one multiplies by that owned by
-   this processor. (The columns of the "diagonal block")
+   MatGetOwnershipRangeColumn - Returns the range of matrix columns associated with rows of a vector one multiplies this matrix by that are owned by
+   this processor. (The columns of the "diagonal block" for most sparse matrix formats). See :any:`<sec_matlayout>` for details on matrix layouts.
 
    Not Collective, unless matrix has not been allocated, then collective on Mat
 
@@ -6631,15 +6629,12 @@ PetscErrorCode MatGetLocalSize(Mat mat,PetscInt *m,PetscInt *n)
 .  mat - the matrix
 
    Output Parameters:
-+  m - the global index of the first local column
--  n - one more than the global index of the last local column
-
-   Notes:
-    both output parameters can be NULL on input.
++  m - the global index of the first local column, use `NULL` to not obtain this value
+-  n - one more than the global index of the last local column, use `NULL` to not obtain this value
 
    Level: developer
 
-.seealso: `MatGetOwnershipRange()`, `MatGetOwnershipRanges()`, `MatGetOwnershipRangesColumn()`
+.seealso: `MatGetOwnershipRange()`, `MatGetOwnershipRanges()`, `MatGetOwnershipRangesColumn()`, `PetscLayout`
 
 @*/
 PetscErrorCode MatGetOwnershipRangeColumn(Mat mat,PetscInt *m,PetscInt *n)
@@ -6656,10 +6651,9 @@ PetscErrorCode MatGetOwnershipRangeColumn(Mat mat,PetscInt *m,PetscInt *n)
 }
 
 /*@C
-   MatGetOwnershipRange - Returns the range of matrix rows owned by
-   this processor, assuming that the matrix is laid out with the first
-   n1 rows on the first processor, the next n2 rows on the second, etc.
-   For certain parallel layouts this range may not be well defined.
+   MatGetOwnershipRange - For matrices that own values by row, excludes `MATELEMENTAL` and `MATSCALAPACK`, returns the range of matrix rows owned by
+   this MPI rank. For all matrices  it returns the range of matrix rows associated with rows of a vector that would contain the result of a matrix
+   vector product with this matrix. See :any:`<sec_matlayout>` for details on matrix layouts
 
    Not Collective
 
@@ -6667,17 +6661,18 @@ PetscErrorCode MatGetOwnershipRangeColumn(Mat mat,PetscInt *m,PetscInt *n)
 .  mat - the matrix
 
    Output Parameters:
-+  m - the global index of the first local row
--  n - one more than the global index of the last local row
++  m - the global index of the first local row, use `NULL` to not obtain this value
+-  n - one more than the global index of the last local row, use `NULL` to not obtain this value
 
-   Note: Both output parameters can be NULL on input.
-$  This function requires that the matrix be preallocated. If you have not preallocated, consider using
-$    PetscSplitOwnership(MPI_Comm comm, PetscInt *n, PetscInt *N)
-$  and then MPI_Scan() to calculate prefix sums of the local sizes.
+   Note:
+  This function requires that the matrix be preallocated. If you have not preallocated, consider using
+  `PetscSplitOwnership`(`MPI_Comm` comm, `PetscInt` *n, `PetscInt` *N)
+  and then `MPI_Scan()` to calculate prefix sums of the local sizes.
 
    Level: beginner
 
-.seealso: `MatGetOwnershipRanges()`, `MatGetOwnershipRangeColumn()`, `MatGetOwnershipRangesColumn()`, `PetscSplitOwnership()`, `PetscSplitOwnershipBlock()`
+.seealso: `MatGetOwnershipRanges()`, `MatGetOwnershipRangeColumn()`, `MatGetOwnershipRangesColumn()`, `PetscSplitOwnership()`, `PetscSplitOwnershipBlock()`,
+          `PetscLayout`
 
 @*/
 PetscErrorCode MatGetOwnershipRange(Mat mat,PetscInt *m,PetscInt *n)
@@ -6694,8 +6689,9 @@ PetscErrorCode MatGetOwnershipRange(Mat mat,PetscInt *m,PetscInt *n)
 }
 
 /*@C
-   MatGetOwnershipRanges - Returns the range of matrix rows owned by
-   each process
+   MatGetOwnershipRanges - For matrices that own values by row, excludes `MATELEMENTAL` and `MATSCALAPACK`, returns the range of matrix rows owned by
+   each process. For all matrices  it returns the ranges of matrix rows associated with rows of a vector that would contain the result of a matrix
+   vector product with this matrix. See :any:`<sec_matlayout>` for details on matrix layouts
 
    Not Collective, unless matrix has not been allocated, then collective on Mat
 
@@ -6707,7 +6703,7 @@ PetscErrorCode MatGetOwnershipRange(Mat mat,PetscInt *m,PetscInt *n)
 
    Level: beginner
 
-.seealso: `MatGetOwnershipRange()`, `MatGetOwnershipRangeColumn()`, `MatGetOwnershipRangesColumn()`
+.seealso: `MatGetOwnershipRange()`, `MatGetOwnershipRangeColumn()`, `MatGetOwnershipRangesColumn()`, `PetscLayout`
 
 @*/
 PetscErrorCode MatGetOwnershipRanges(Mat mat,const PetscInt **ranges)
@@ -6721,8 +6717,8 @@ PetscErrorCode MatGetOwnershipRanges(Mat mat,const PetscInt **ranges)
 }
 
 /*@C
-   MatGetOwnershipRangesColumn - Returns the range of matrix columns associated with rows of a vector one multiplies by that owned by
-   this processor. (The columns of the "diagonal blocks" for each process)
+   MatGetOwnershipRangesColumn - Returns the ranges of matrix columns associated with rows of a vector one multiplies this vector by that are owned by
+   each processor. (The columns of the "diagonal blocks", for most sparse matrix formats). See :any:`<sec_matlayout>` for details on matrix layouts.
 
    Not Collective, unless matrix has not been allocated, then collective on Mat
 
@@ -6748,7 +6744,9 @@ PetscErrorCode MatGetOwnershipRangesColumn(Mat mat,const PetscInt **ranges)
 }
 
 /*@C
-   MatGetOwnershipIS - Get row and column ownership as index sets
+   MatGetOwnershipIS - Get row and column ownership of a matrices' values as index sets. For most matrices, excluding `MATELEMENTAL` and `MATSCALAPACK`, this
+   corresponds to values returned by `MatGetOwnershipRange()`, `MatGetOwnershipRangeColumn()`. For `MATELEMENTAL` and `MATSCALAPACK` the ownership
+   is more complicated. See :any:`<sec_matlayout>` for details on matrix layouts.
 
    Not Collective
 
@@ -6756,12 +6754,12 @@ PetscErrorCode MatGetOwnershipRangesColumn(Mat mat,const PetscInt **ranges)
 .  A - matrix
 
    Output Parameters:
-+  rows - rows in which this process owns elements
--  cols - columns in which this process owns elements
++  rows - rows in which this process owns elements, , use `NULL` to not obtain this value
+-  cols - columns in which this process owns elements, use `NULL` to not obtain this value
 
    Level: intermediate
 
-.seealso: `MatGetOwnershipRange()`, `MatGetOwnershipRangeColumn()`, `MatSetValues()`, `MATELEMENTAL`, `MATSCALAPACK`
+.seealso: `MatGetOwnershipRange()`, `MatGetOwnershipRangeColumn()`, `MatSetValues()`, ``MATELEMENTAL``, ``MATSCALAPACK``
 @*/
 PetscErrorCode MatGetOwnershipIS(Mat A,IS *rows,IS *cols)
 {

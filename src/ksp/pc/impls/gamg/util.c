@@ -304,16 +304,17 @@ old_bs:
 
    Input Parameters:
 +   a_Gmat - the graph
-.   vfilter - threshold parameter [0,1)
+-   vfilter - threshold parameter [0,1)
 
  Output Parameter:
  . a_Gmat - output filtered scalar graph
 
    Level: developer
 
-   Notes:
+   Developer Notes:
     This is called before graph coarsers are called.
-    This could go into Mat, move 'symm' to GAMG
+
+    This could go into `Mat`, move 'symm' to GAMG
 
 .seealso: `PCGAMGSetThreshold()`
 @*/
