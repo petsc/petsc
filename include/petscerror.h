@@ -1114,7 +1114,7 @@ M*/
   } while (0)
 
 /*MC
-   PetscFunctionBeginUser - First executable line of user provided PETSc routine
+   PetscFunctionBeginUser - First executable line of user provided routines
 
    Synopsis:
    #include <petscsys.h>
@@ -1130,11 +1130,13 @@ M*/
 .ve
 
    Notes:
-      Final line of PETSc functions should be PetscFunctionReturn(0) except for main().
+      Functions that incorporate this must call `PetscFunctionReturn()` instead of return except for main().
+
+      May be used before `PetscInitialize()`
 
       Not available in Fortran
 
-      This is identical to PetscFunctionBegin except it labels the routine as a user
+      This is identical to `PetscFunctionBegin` except it labels the routine as a user
       routine instead of as a PETSc library routine.
 
    Level: intermediate
