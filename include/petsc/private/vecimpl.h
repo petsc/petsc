@@ -233,13 +233,6 @@ PETSC_EXTERN PetscErrorCode VecHIPCopyFromGPU(Vec v);
   PetscScalar *array_allocated;                        /* if the array was allocated by PETSc this is its pointer */  \
   PetscScalar *unplacedarray;                           /* if one called VecPlaceArray(), this is where it stashed the original */
 
-/* Lock a vector for exclusive read&write access */
-#if defined(PETSC_USE_DEBUG)
-PETSC_INTERN PetscErrorCode VecLockWriteSet_Private(Vec,PetscBool);
-#else
-#define VecLockWriteSet_Private(x,flg) 0
-#endif
-
 /* Get Root type of vector. e.g. VECSEQ -> VECSTANDARD, VECMPICUDA -> VECCUDA */
 PETSC_EXTERN PetscErrorCode VecGetRootType_Private(Vec,VecType*);
 
