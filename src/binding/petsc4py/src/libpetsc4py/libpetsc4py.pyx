@@ -3057,11 +3057,9 @@ cdef PetscErrorCode TaoSolve_Python_default(
         #
         if G != NULL:
           CHKERR( TaoApplyLineSearch(tao, &f, &step, &lsr) )
-          if lsr == TAOLINESEARCH_SUCCESS:
-            CHKERR( VecNorm(G, NORM_2, &gnorm) )
-          else:
+          CHKERR( VecNorm(G, NORM_2, &gnorm) )
+          if lsr < TAOLINESEARCH_CONTINUE_ITERATING:
             tao.reason = TAO_DIVERGED_LS_FAILURE
-            break
         else:
           CHKERR( TaoComputeObjective(tao, X, &f) )
         CHKERR( TaoCheckReals(tao, f, gnorm) )
