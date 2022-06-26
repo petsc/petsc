@@ -553,6 +553,11 @@ PetscErrorCode MatSetFromOptions_LMVMSymBrdn_Private(PetscOptionItems *PetscOpti
   PetscCall(PetscOptionsEnum("-mat_lmvm_scale_type", "(developer) scaling type applied to J0","MatLMVMSymBrdnScaleType",MatLMVMSymBroydenScaleTypes,(PetscEnum)stype,(PetscEnum*)&stype,&flg));
   if (flg) PetscCall(MatLMVMSymBroydenSetScaleType(B, stype));
   if (lsb->scale_type == MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL) {
+    const char *prefix;
+
+    PetscCall(MatGetOptionsPrefix(B, &prefix));
+    PetscCall(MatSetOptionsPrefix(lsb->D, prefix));
+    PetscCall(MatAppendOptionsPrefix(lsb->D, "J0_"));
     PetscCall(MatSetFromOptions(lsb->D));
     dbase = (Mat_LMVM*)lsb->D->data;
     dctx = (Mat_DiagBrdn*)dbase->ctx;
@@ -612,7 +617,6 @@ PetscErrorCode MatCreate_LMVMSymBrdn(Mat B)
 
   PetscCall(MatCreate(PetscObjectComm((PetscObject)B), &lsb->D));
   PetscCall(MatSetType(lsb->D, MATLMVMDIAGBROYDEN));
-  PetscCall(MatSetOptionsPrefix(lsb->D, "J0_"));
   PetscFunctionReturn(0);
 }
 
