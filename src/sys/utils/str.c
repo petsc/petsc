@@ -455,6 +455,30 @@ void PetscStrcmpNoError(const char a[], const char b[], PetscBool *flg)
 }
 
 /*@C
+   PetscBasename - returns a pointer to the last entry of a / seperated directory path
+
+   Not Collective
+
+   Input Parameter:
+.  a - pointer to string
+
+   Level: intermediate
+
+   Notes:
+    Not for use in Fortran
+
+.seealso: `PetscStrgrt()`, `PetscStrncmp()`, `PetscStrcasecmp()`, `PetscStrrchr()`,`PetscStrcmp()`,`PetscStrstr()`,
+          `PetscTokenCreate()`, `PetscStrToArray()`, `PetscStrInList()`
+@*/
+const char *PetscBasename(const char a[])
+{
+  const          char *ptr;
+
+  if (PetscStrrchr(a,'/',(char **)&ptr)) ptr = NULL;
+  return ptr;
+}
+
+/*@C
    PetscStrcmp - Compares two strings,
 
    Not Collective
