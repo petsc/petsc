@@ -79,19 +79,22 @@ PetscErrorCode  DMSetFromOptions_DA(PetscOptionItems *PetscOptionsObject,DM da)
 
   while (refine--) {
     if (dd->bx == DM_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0) {
-      dd->M = dd->refine_x*dd->M;
+      PetscCall(PetscIntMultError(dd->refine_x,dd->M,&dd->M));
     } else {
-      dd->M = 1 + dd->refine_x*(dd->M - 1);
+      PetscCall(PetscIntMultError(dd->refine_x,dd->M-1,&dd->M));
+      dd->M += 1;
     }
     if (dd->by == DM_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0) {
-      dd->N = dd->refine_y*dd->N;
+      PetscCall(PetscIntMultError(dd->refine_y,dd->N,&dd->N));
     } else {
-      dd->N = 1 + dd->refine_y*(dd->N - 1);
+      PetscCall(PetscIntMultError(dd->refine_y,dd->N-1,&dd->N));
+      dd->N += 1;
     }
     if (dd->bz == DM_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0) {
-      dd->P = dd->refine_z*dd->P;
+      PetscCall(PetscIntMultError(dd->refine_z,dd->P,&dd->P));
     } else {
-      dd->P = 1 + dd->refine_z*(dd->P - 1);
+      PetscCall(PetscIntMultError(dd->refine_z,dd->P-1,&dd->P));
+      dd->P += 1;
     }
     da->levelup++;
     if (da->levelup - da->leveldown >= 0) {
