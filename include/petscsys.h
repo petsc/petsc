@@ -1202,6 +1202,11 @@ PETSC_EXTERN const char *const PetscFileModes[];
 */
 #include <petscerror.h>
 
+PETSC_EXTERN PetscBool PetscCIEnabled;                    /* code is running in the PETSc test harness CI */
+PETSC_EXTERN PetscBool PetscCIEnabledPortableErrorOutput; /* error output is stripped to ensure portability of error messages across systems */
+PETSC_EXTERN const char *PetscCIFilename(const char *);
+PETSC_EXTERN int PetscCILinenumber(int);
+
 #define PETSC_SMALLEST_CLASSID  1211211
 PETSC_EXTERN PetscClassId PETSC_LARGEST_CLASSID;
 PETSC_EXTERN PetscClassId PETSC_OBJECT_CLASSID;

@@ -33,12 +33,10 @@ int main(int argc,char **argv)
       suffix: debug
       requires: defined(PETSC_USE_DEBUG)
       args: -unused_petsc_option_1 -unused_petsc_option_2 -get_an_integer 10 -options_left no
-      filter: egrep -v \(malloc_dump\|options_left\|nox\|vecscatter_mpi1\|saws_port_auto_select\|saws_port_auto_select_silent\)
 
    test:
       suffix: opt
       requires: !defined(PETSC_USE_DEBUG)
-      args: -checkstack -unused_petsc_option_1 -unused_petsc_option_2 -get_an_integer 10 -options_left no
-      filter: egrep -v \(malloc_dump\|options_left\|nox\|vecscatter_mpi1\|saws_port_auto_select\|saws_port_auto_select_silent\)
+      args: -unused_petsc_option_1 -unused_petsc_option_2 -get_an_integer 10 -options_left no
 
  TEST*/

@@ -21,7 +21,8 @@ filter='@FILTER@'
 filter_output='@FILTER_OUTPUT@'
 petsc_bindir='@PETSC_BINDIR@'
 @DATAFILESPATH_LINE@
-args='@ARGS@'
+# -petsc_ci has be a command line argument because if it is from the evironment it will be listed by PetscOptionsMonitor()
+args='-petsc_ci @ARGS@'
 diff_args='@DIFF_ARGS@'
 timeoutfactor=@TIMEOUTFACTOR@
 export PETSC_OPTIONS="${PETSC_OPTIONS} -check_pointer_intensity 0 -error_output_stdout -malloc_dump @PETSC_TEST_OPTIONS@"

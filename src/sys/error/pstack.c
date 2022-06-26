@@ -124,10 +124,9 @@ PetscErrorCode  PetscStackView(FILE *file)
     char *ptr;
 
     if (file == PETSC_STDOUT) {
-      (*PetscErrorPrintf)("The EXACT line numbers in the error traceback are not available.\n");
-      (*PetscErrorPrintf)("instead the line number of the start of the function is given.\n");
+      (*PetscErrorPrintf)("The line numbers in the error traceback are not always exact.\n");
       for (int i = petscstack.currentsize-1, j = 1; i >= 0; --i, ++j) {
-        if (petscstack.file[i]) (*PetscErrorPrintf)("#%d %s() at %s:%d\n",j,petscstack.function[i],petscstack.file[i],petscstack.line[i]);
+        if (petscstack.file[i]) (*PetscErrorPrintf)("#%d %s() at %s:%d\n",j,petscstack.function[i],PetscCIFilename(petscstack.file[i]),PetscCILinenumber(petscstack.line[i]));
         else {
           PetscStrstr(petscstack.function[i]," ",&ptr);
           if (!ptr) (*PetscErrorPrintf)("#%d %s()\n",j,petscstack.function[i]);
@@ -135,10 +134,9 @@ PetscErrorCode  PetscStackView(FILE *file)
         }
       }
     } else {
-      fprintf(file,"The EXACT line numbers in the error traceback are not available.\n");
-      fprintf(file,"Instead the line number of the start of the function is given.\n");
+      fprintf(file,"The line numbers in the error traceback are not always exact.\n");
       for (int i = petscstack.currentsize-1, j = 1; i >= 0; --i, ++j) {
-        if (petscstack.file[i]) fprintf(file,"[%d] #%d %s() at %s:%d\n",PetscGlobalRank,j,petscstack.function[i],petscstack.file[i],petscstack.line[i]);
+        if (petscstack.file[i]) fprintf(file,"[%d] #%d %s() at %s:%d\n",PetscGlobalRank,j,petscstack.function[i],PetscCIFilename(petscstack.file[i]),PetscCILinenumber(petscstack.line[i]));
         else {
           PetscStrstr(petscstack.function[i]," ",&ptr);
           if (!ptr) fprintf(file,"[%d] #%d %s()\n",PetscGlobalRank,j,petscstack.function[i]);
@@ -213,7 +211,7 @@ PetscErrorCode  PetscStackPrint(PetscStack *sint,FILE *fp)
 {
   if (sint) {
     for (int i = sint->currentsize-2; i >= 0; --i) {
-      if (sint->file[i]) fprintf(fp,"      [%d]  %s() at %s:%d\n",PetscGlobalRank,sint->function[i],sint->file[i],sint->line[i]);
+      if (sint->file[i]) fprintf(fp,"      [%d]  %s() at %s:%d\n",PetscGlobalRank,sint->function[i],PetscCIFilename(sint->file[i]),PetscCILinenumber(sint->line[i]));
       else fprintf(fp,"      [%d]  %s()\n",PetscGlobalRank,sint->function[i]);
     }
   }

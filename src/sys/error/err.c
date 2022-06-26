@@ -5,44 +5,6 @@
 #include <petsc/private/petscimpl.h>           /*I "petscsys.h" I*/
 #include <petscviewer.h>
 
-/* A table of Petsc source files containing calls to PETSCABORT. We assume this table will
-   stay stable for a while. When things changed, we just need to add new files to the table.
- */
-static const char* PetscAbortSourceFiles[] = {
-  "Souce code of main",          /* 0 */
-  "Not Found",                  /* 1, not found in petsc, but may be in users' code if they called PETSCABORT. */
-  "sys/error/adebug.c",
-  "src/sys/error/errstop.c",
-  "sys/error/fp.c",
-  "sys/error/signal.c",           /* 5 */
-  "sys/ftn-custom/zutils.c",
-  "sys/logging/utils/stagelog.c",
-  "sys/mpiuni/mpitime.c",
-  "sys/objects/init.c",
-  "sys/objects/pinit.c",            /* 10 */
-  "vec/vec/interface/dlregisvec.c",
-  "vec/vec/utils/comb.c"
-};
-
-/* Find index of the soure file where a PETSCABORT was called. */
-PetscErrorCode PetscAbortFindSourceFile_Private(const char* filepath, PetscInt *idx)
-{
-  PetscErrorCode  ierr;
-  PetscInt        i,n = PETSC_STATIC_ARRAY_LENGTH(PetscAbortSourceFiles);
-  PetscBool       match;
-  char            subpath[PETSC_MAX_PATH_LEN];
-
-  /* Not sure why the next line is here since the stack would already have been viewed with the initial error message */
-  /* ierr = PetscStackView(stderr);if (ierr) return ierr; */
-  *idx = 1;
-  for (i=2; i<n; i++) {
-    ierr = PetscFixFilename(PetscAbortSourceFiles[i],subpath);if (ierr) return ierr;
-    ierr = PetscStrendswith(filepath,subpath,&match);if (ierr) return ierr;
-    if (match) {*idx = i; break;}
-  }
-  return 0;
-}
-
 typedef struct _EH *EH;
 struct _EH {
   PetscErrorCode (*handler)(MPI_Comm,int,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
@@ -382,7 +344,6 @@ PetscErrorCode PetscError(MPI_Comm comm,int line,const char *func,const char *fi
   PetscErrorCode ierr;
 
   if (!PetscErrorHandlingInitialized) return n;
-  if (!file) file = "User file";
   if (comm == MPI_COMM_NULL) comm = PETSC_COMM_SELF;
 
   /* Compose the message evaluating the print format */
@@ -410,7 +371,7 @@ PetscErrorCode PetscError(MPI_Comm comm,int line,const char *func,const char *fi
     PetscStrncmp(func,"main",4,&ismain);
     if (ismain) {
       if (petscwaitonerrorflg) PetscSleep(1000);
-      MPI_Abort(MPI_COMM_WORLD,(PetscMPIInt)(0 + 0*line*1000 + ierr));
+      PETSCABORT(comm,ierr);
     }
   }
 #if defined(PETSC_CLANGUAGE_CXX)

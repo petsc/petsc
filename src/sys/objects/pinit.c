@@ -692,6 +692,8 @@ PETSC_EXTERN PetscErrorCode PetscViennaCLInit();
 PetscBool PetscViennaCLSynchronize = PETSC_FALSE;
 #endif
 
+PetscBool PetscCIEnabled = PETSC_FALSE, PetscCIEnabledPortableErrorOutput = PETSC_FALSE;
+
 /*
   PetscInitialize_Common  - shared code between C and Fortran initialization
 

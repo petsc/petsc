@@ -634,7 +634,6 @@ M*/
 .seealso: `PetscCall()`, `PetscCallAbort()`, `SETERRA()`, `SETERRQ()`, `SETERRABORT()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PetscAbortFindSourceFile_Private(const char*,PetscInt*);
 PETSC_EXTERN PetscBool petscwaitonerrorflg;
 PETSC_EXTERN PetscBool petscindebugger;
 
@@ -654,15 +653,9 @@ PETSC_EXTERN PetscBool petscindebugger;
    Level: advanced
 
    Notes:
-   We pass MPI_Abort() an error code of format XX_YYYY_ZZZ, where XX, YYYY are an index and line number of the file
-   where PETSCABORT is called, respectively. ZZZ is the PETSc error code.
-
-   If XX is zero, this means that the call was made in the routine main().
-   If XX is one, that means 1) the file is not in PETSc (it may be in users code); OR 2) the file is in PETSc but PetscAbortSourceFiles[]
-     is out of date. PETSc developers have to update it.
-   Otherwise, look up the value of XX in the table PetscAbortSourceFiles[] in src/sys/error/err.c to map XX back to the source file where the PETSCABORT() was called.
-
    If the option -start_in_debugger was used then this calls abort() to stop the program in the debugger.
+
+   if PetscCIEnabledPortableErrorOutput it strives to exit cleanly without call `MPI_Abort()`
 
  M*/
 #define PETSCABORT(comm,...) do {                                                              \
@@ -670,9 +663,15 @@ PETSC_EXTERN PetscBool petscindebugger;
     if (petscindebugger) abort();                                                              \
     else {                                                                                     \
       PetscErrorCode ierr_petsc_abort_ = __VA_ARGS__;                                          \
-      PetscInt       idx = 0;                                                                  \
-      PetscAbortFindSourceFile_Private(__FILE__,&idx);                                         \
-      MPI_Abort(comm,(PetscMPIInt)(0*idx*10000000 + 0*__LINE__*1000 + ierr_petsc_abort_));     \
+      PetscMPIInt    size;                                                                     \
+      MPI_Comm_size(comm,&size);                                                               \
+      if (PetscCIEnabledPortableErrorOutput && size == PetscGlobalSize && ierr_petsc_abort_ != PETSC_ERR_SIG) { \
+        MPI_Finalize(); exit(0);                                                               \
+      } else if (PetscCIEnabledPortableErrorOutput && PetscGlobalSize == 1) {                  \
+        exit(0);                                                        \
+      } else {                                                                                 \
+        MPI_Abort(comm,(PetscMPIInt)ierr_petsc_abort_);                 \
+      }                                                                                        \
     }                                                                                          \
   } while (0)
 
@@ -1003,6 +1002,7 @@ typedef struct {
 #define PetscStackPop
 #define PetscStackPush(f)
 #elif defined(PETSC_USE_DEBUG)
+
 #define PetscStackPush_Private(stack__,file__,func__,line__,petsc_routine__,hot__) do { \
     if (stack__.currentsize < PETSCSTACKSIZE) {                                         \
       stack__.function[stack__.currentsize]     = func__;                               \
@@ -1022,7 +1022,7 @@ typedef struct {
 /* uses PetscCheckAbort() because may be used in a function that does not return an error code */
 #define PetscStackPop_Private(stack__,func__) do {                                             \
     PetscCheckAbort(!stack__.check || stack__.currentsize > 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Invalid stack size %d, pop %s %s:%d.\n",stack__.currentsize,func__,__FILE__,__LINE__);\
-    if (--stack__.currentsize < PETSCSTACKSIZE) {                                            \
+    if (--stack__.currentsize < PETSCSTACKSIZE) {\
       PetscCheckAbort(!stack__.check || stack__.petscroutine[stack__.currentsize] != 1 || stack__.function[stack__.currentsize] == (const char*)(func__),PETSC_COMM_SELF,PETSC_ERR_PLIB,"Invalid stack: push from %s %s:%d. Pop from %s %s:%d.\n",stack__.function[stack__.currentsize],stack__.file[stack__.currentsize],stack__.line[stack__.currentsize],func__,__FILE__,__LINE__); \
       stack__.function[stack__.currentsize]     = PETSC_NULLPTR;                             \
       stack__.file[stack__.currentsize]         = PETSC_NULLPTR;                             \

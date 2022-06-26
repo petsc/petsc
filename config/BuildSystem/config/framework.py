@@ -855,8 +855,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.outputMakeMacros(f, self)
     for child in self.childGraph.vertices:
       self.outputMakeMacros(f, child)
-    # The testoptions are provided in packages/
+    # This options are used in all runs of the test harness
     testoptions = ''
+    # Additional testoptions are provided in packages/
     for child in self.childGraph.vertices:
         if hasattr(child,'found') and child.found and hasattr(child,'testoptions') and child.testoptions:
           testoptions += ' '+child.testoptions
