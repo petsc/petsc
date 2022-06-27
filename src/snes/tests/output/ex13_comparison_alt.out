@@ -1,0 +1,22 @@
+DM Object: box 4 MPI processes
+  type: plex
+box in 2 dimensions:
+  Number of 0-cells per rank: 289 289 289 289
+  Number of 1-cells per rank: 544 544 544 544
+  Number of 2-cells per rank: 256 256 256 256
+Labels:
+  celltype: 3 strata with value/size (0 (289), 1 (544), 4 (256))
+  depth: 3 strata with value/size (0 (289), 1 (544), 2 (256))
+  marker: 1 strata with value/size (1 (65))
+  Face Sets: 2 strata with value/size (1 (30), 4 (30))
+  Linear solve converged due to CONVERGED_RTOL iterations 10
+  Linear solve converged due to CONVERGED_RTOL iterations 10
+  Linear solve converged due to CONVERGED_RTOL iterations 10
+  Linear solve converged due to CONVERGED_RTOL iterations 10
+  Linear solve converged due to CONVERGED_RTOL iterations 10
+  Linear solve converged due to CONVERGED_RTOL iterations 10
+  Linear solve converged due to CONVERGED_RTOL iterations 10
+  Linear solve converged due to CONVERGED_RTOL iterations 10
+  Linear solve converged due to CONVERGED_RTOL iterations 10
+  Linear solve converged due to CONVERGED_RTOL iterations 10
+  Linear solve converged due to CONVERGED_RTOL iterations 10

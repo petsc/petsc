@@ -41,6 +41,9 @@ PetscErrorCode PetscCDDestroy(PetscCoarsenData *ail)
   }
   if (ail->pool_list.array) PetscCall(PetscFree(ail->pool_list.array));
   PetscCall(PetscFree(ail->array));
+  if (ail->mat) {
+    PetscCall(MatDestroy(&ail->mat));
+  }
   /* delete this (+agg+pool array) */
   PetscCall(PetscFree(ail));
   PetscFunctionReturn(0);
@@ -284,7 +287,7 @@ PetscErrorCode PetscCDEmptyAt(const PetscCoarsenData *ail, PetscInt a_idx, Petsc
   PetscFunctionReturn(0);
 }
 
-/* PetscCDGetMIS
+/* PetscCDGetMIS - used for C-F methods
  */
 PetscErrorCode PetscCDGetMIS(PetscCoarsenData *ail, IS *a_mis)
 {
@@ -308,10 +311,11 @@ PetscErrorCode PetscCDGetMIS(PetscCoarsenData *ail, IS *a_mis)
 
 /* PetscCDGetMat
  */
-PetscErrorCode PetscCDGetMat(const PetscCoarsenData *ail, Mat *a_mat)
+PetscErrorCode PetscCDGetMat(PetscCoarsenData *ail, Mat *a_mat)
 {
   PetscFunctionBegin;
   *a_mat = ail->mat;
+  ail->mat = NULL; // give it up
   PetscFunctionReturn(0);
 }
 
@@ -320,11 +324,14 @@ PetscErrorCode PetscCDGetMat(const PetscCoarsenData *ail, Mat *a_mat)
 PetscErrorCode PetscCDSetMat(PetscCoarsenData *ail, Mat a_mat)
 {
   PetscFunctionBegin;
+  if (ail->mat) {
+    PetscCall(MatDestroy(&ail->mat)); //should not happen
+  }
   ail->mat = a_mat;
   PetscFunctionReturn(0);
 }
 
-/* PetscCDGetASMBlocks
+/* PetscCDGetASMBlocks - get IS of aggregates for ASM smoothers
  */
 PetscErrorCode PetscCDGetASMBlocks(const PetscCoarsenData *ail, const PetscInt a_bs, Mat mat, PetscInt *a_sz, IS **a_local_is)
 {
@@ -395,22 +402,22 @@ static int gamg_hem_compare(const void *a, const void *b)
 
 /* -------------------------------------------------------------------------- */
 /*
-   heavyEdgeMatchAgg - parallel heavy edge matching (HEM). MatAIJ specific!!!
+  MatCoarsenApply_HEM_private - parallel heavy edge matching
 
-   Input Parameter:
+  Input Parameter:
    . perm - permutation
    . a_Gmat - global matrix of graph (data not defined)
 
-   Output Parameter:
+  Output Parameter:
    . a_locals_llist - array of list of local nodes rooted at local node
 */
-static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_locals_llist)
+static PetscErrorCode MatCoarsenApply_HEM_private(IS perm,Mat a_Gmat,PetscCoarsenData **a_locals_llist)
 {
   PetscBool        isMPI;
   MPI_Comm         comm;
   PetscInt         sub_it,kk,n,ix,*idx,*ii,iter,Iend,my0;
   PetscMPIInt      rank,size;
-  const PetscInt   nloc = a_Gmat->rmap->n,n_iter=6; /* need to figure out how to stop this */
+  const PetscInt   nloc = a_Gmat->rmap->n,n_iter=4; /* need to figure out how to stop this */
   PetscInt         *lid_cprowID,*lid_gid;
   PetscBool        *lid_matched;
   Mat_SeqAIJ       *matA, *matB=NULL;
@@ -1055,10 +1062,10 @@ static PetscErrorCode MatCoarsenApply_HEM(MatCoarsen coarse)
 
     PetscCall(MatGetLocalSize(mat, &m, &n));
     PetscCall(ISCreateStride(PetscObjectComm((PetscObject)mat), m, 0, 1, &perm));
-    PetscCall(heavyEdgeMatchAgg(perm, mat, &coarse->agg_lists));
+    PetscCall(MatCoarsenApply_HEM_private(perm, mat, &coarse->agg_lists));
     PetscCall(ISDestroy(&perm));
-  } else {
-    PetscCall(heavyEdgeMatchAgg(coarse->perm, mat, &coarse->agg_lists));
+} else {
+    PetscCall(MatCoarsenApply_HEM_private(coarse->perm, mat, &coarse->agg_lists));
   }
   PetscFunctionReturn(0);
 }

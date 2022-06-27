@@ -464,6 +464,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
   PetscFunctionReturn(0);
 }
 
+// used in GEO
 PetscErrorCode PCGAMGSquareGraph_GAMG(PC a_pc, Mat Gmat1, Mat* Gmat2)
 {
   const char     *prefix;
@@ -606,7 +607,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
   PetscCall(MatGetInfo(Pmat,MAT_GLOBAL_SUM,&info)); /* global reduction */
   nnz0   = info.nz_used;
   nnztot = info.nz_used;
-  PetscCall(PetscInfo(pc,"%s: level %" PetscInt_FMT ") N=0, n data rows=%" PetscInt_FMT ", n data cols=%" PetscInt_FMT ", nnz/row (ave)=%" PetscInt_FMT ", np=%d\n",((PetscObject)pc)->prefix,M,pc_gamg->data_cell_rows,pc_gamg->data_cell_cols,(PetscInt)(nnz0/(PetscReal)M+0.5),size));
+  PetscCall(PetscInfo(pc,"%s: level %d) N=%" PetscInt_FMT ", n data rows=%" PetscInt_FMT ", n data cols=%" PetscInt_FMT ", nnz/row (ave)=%" PetscInt_FMT ", np=%d\n",((PetscObject)pc)->prefix,0,M,pc_gamg->data_cell_rows,pc_gamg->data_cell_cols,(PetscInt)(nnz0/(PetscReal)M+0.5),size));
 
   /* Get A_i and R_i */
   for (level=0, Aarr[0]=Pmat, nactivepe = size; level < (pc_gamg->Nlevels-1) && (!level || M>pc_gamg->coarse_eq_limit); level++) {
@@ -682,7 +683,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
     PetscCall(MatGetSize(Aarr[level1], &M, &N)); /* M is loop test variables */
     PetscCall(MatGetInfo(Aarr[level1], MAT_GLOBAL_SUM, &info));
     nnztot += info.nz_used;
-    PetscCall(PetscInfo(pc,"%s: %" PetscInt_FMT ") N=%" PetscInt_FMT ", n data cols=%" PetscInt_FMT ", nnz/row (ave)=%" PetscInt_FMT ", %d active pes\n",((PetscObject)pc)->prefix,level1,M,pc_gamg->data_cell_cols,(PetscInt)(info.nz_used/(PetscReal)M),nactivepe));
+    PetscCall(PetscInfo(pc,"%s: %d) N=%" PetscInt_FMT ", n data cols=%" PetscInt_FMT ", nnz/row (ave)=%" PetscInt_FMT ", %d active pes\n",((PetscObject)pc)->prefix,(int)level1,M,pc_gamg->data_cell_cols,(PetscInt)(info.nz_used/(PetscReal)M),nactivepe));
 
 #if defined(GAMG_STAGES)
     PetscCall(PetscLogStagePop());
@@ -1282,7 +1283,7 @@ static PetscErrorCode PCGAMGSetNlevels_GAMG(PC pc, PetscInt n)
 
    Level: intermediate
 
-.seealso: `PCGAMGFilterGraph()`, `PCGAMGSetSquareGraph()`
+.seealso: `PCGAMGFilterGraph()`, `PCGAMGSetAggressiveLevels()`
 @*/
 PetscErrorCode PCGAMGSetThreshold(PC pc, PetscReal v[], PetscInt n)
 {
@@ -1560,18 +1561,19 @@ PetscErrorCode PCSetFromOptions_GAMG(PetscOptionItems *PetscOptionsObject,PC pc)
    Options Database Keys:
 +   -pc_gamg_type <type> - one of agg, geo, or classical
 .   -pc_gamg_repartition  <true,default=false> - repartition the degrees of freedom accross the coarse grids as they are determined
-.   -pc_gamg_reuse_interpolation <true,default=false> - when rebuilding the algebraic multigrid preconditioner reuse the previously computed interpolations
-.   -pc_gamg_asm_use_agg <true,default=false> - use the aggregates from the coasening process to defined the subdomains on each level for the PCASM smoother
+-   -pc_gamg_reuse_interpolation <true,default=false> - when rebuilding the algebraic multigrid preconditioner reuse the previously computed interpolations
++   -pc_gamg_asm_use_agg <true,default=false> - use the aggregates from the coasening process to defined the subdomains on each level for the PCASM smoother
 .   -pc_gamg_process_eq_limit <limit, default=50> - GAMG will reduce the number of MPI processes used directly on the coarse grids so that there are around <limit>
                                         equations on each process that has degrees of freedom
-.   -pc_gamg_coarse_eq_limit <limit, default=50> - Set maximum number of equations on coarsest grid to aim for.
-.   -pc_gamg_threshold[] <thresh,default=0> - Before aggregating the graph GAMG will remove small values from the graph on each level
--   -pc_gamg_threshold_scale <scale,default=1> - Scaling of threshold on each coarser grid if not specified
+-   -pc_gamg_coarse_eq_limit <limit, default=50> - Set maximum number of equations on coarsest grid to aim for.
++   -pc_gamg_threshold[] <thresh,default=0> - Before aggregating the graph GAMG will remove small values from the graph on each level
+.   -pc_gamg_threshold_scale <scale,default=1> - Scaling of threshold on each coarser grid if not specified
 
    Options Database Keys for default Aggregation:
 +  -pc_gamg_agg_nsmooths <nsmooth, default=1> - number of smoothing steps to use with smooth aggregation
-.  -pc_gamg_sym_graph <true,default=false> - symmetrize the graph before computing the aggregation
--  -pc_gamg_square_graph <n,default=1> - number of levels to square the graph before aggregating it
+.  -pc_gamg_symmetrize_graph <true,default=false> - symmetrize the graph before computing the aggregation
+-  -pc_gamg_square_graph <n,default=1> - alias for pc_gamg_aggressive_coarsening (deprecated)
+-  -pc_gamg_aggressive_coarsening <n,default=1> - number of aggressive coarsening (MIS-2) levels from finest.
 
    Multigrid options:
 +  -pc_mg_cycles <v> - v or w, see PCMGSetCycleType()
@@ -1687,7 +1689,6 @@ PetscErrorCode PCGAMGInitializePackage(void)
   PetscCall(PetscLogEventRegister(" PCGAMGCreateG", PC_CLASSID, &petsc_gamg_setup_events[GAMG_GRAPH]));
   PetscCall(PetscLogEventRegister(" PCGAMGFilter", PC_CLASSID, &petsc_gamg_setup_events[GAMG_FILTER]));
   PetscCall(PetscLogEventRegister(" GAMG Coarsen", PC_CLASSID, &petsc_gamg_setup_events[GAMG_COARSEN]));
-  PetscCall(PetscLogEventRegister("  GAMG Square G", PC_CLASSID, &petsc_gamg_setup_events[GAMG_SQUARE]));
   PetscCall(PetscLogEventRegister("  GAMG MIS/Agg", PC_CLASSID, &petsc_gamg_setup_events[GAMG_MIS]));
   PetscCall(PetscLogEventRegister(" PCGAMGProl", PC_CLASSID, &petsc_gamg_setup_events[GAMG_PROL]));
   PetscCall(PetscLogEventRegister("  GAMG Prol-col", PC_CLASSID, &petsc_gamg_setup_events[GAMG_PROLA]));

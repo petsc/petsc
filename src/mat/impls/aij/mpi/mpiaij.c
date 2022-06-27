@@ -2802,7 +2802,9 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                        MatCreateMPIMatConcatenateSeqMat_MPIAIJ,
                                 /*145*/NULL,
                                        NULL,
-                                       NULL
+                                       NULL,
+                                       MatCreateGraph_Simple_AIJ,
+                                       MatFilter_AIJ
 };
 
 /* ----------------------------------------------------------------------------------------*/
@@ -7482,6 +7484,411 @@ PetscErrorCode MatProductSetFromOptions_MPIAIJBACKEND(Mat mat)
 }
 
 /*
+   Produces a set of block column indices of the matrix row, one for each block represented in the original row
+
+   n - the number of block indices in cc[]
+   cc - the block indices (must be large enough to contain the indices)
+*/
+static inline PetscErrorCode MatCollapseRow(Mat Amat,PetscInt row,PetscInt bs,PetscInt *n,PetscInt *cc)
+{
+  PetscInt       cnt = -1,nidx,j;
+  const PetscInt *idx;
+
+  PetscFunctionBegin;
+  PetscCall(MatGetRow(Amat,row,&nidx,&idx,NULL));
+  if (nidx) {
+    cnt = 0;
+    cc[cnt] = idx[0]/bs;
+    for (j=1; j<nidx; j++) {
+      if (cc[cnt] < idx[j]/bs) cc[++cnt] = idx[j]/bs;
+    }
+  }
+  PetscCall(MatRestoreRow(Amat,row,&nidx,&idx,NULL));
+  *n = cnt+1;
+  PetscFunctionReturn(0);
+}
+
+/*
+    Produces a set of block column indices of the matrix block row, one for each block represented in the original set of rows
+
+    ncollapsed - the number of block indices
+    collapsed - the block indices (must be large enough to contain the indices)
+*/
+static inline PetscErrorCode MatCollapseRows(Mat Amat,PetscInt start,PetscInt bs,PetscInt *w0,PetscInt *w1,PetscInt *w2,PetscInt *ncollapsed,PetscInt **collapsed)
+{
+  PetscInt       i,nprev,*cprev = w0,ncur = 0,*ccur = w1,*merged = w2,*cprevtmp;
+
+  PetscFunctionBegin;
+  PetscCall(MatCollapseRow(Amat,start,bs,&nprev,cprev));
+  for (i=start+1; i<start+bs; i++) {
+    PetscCall(MatCollapseRow(Amat,i,bs,&ncur,ccur));
+    PetscCall(PetscMergeIntArray(nprev,cprev,ncur,ccur,&nprev,&merged));
+    cprevtmp = cprev; cprev = merged; merged = cprevtmp;
+  }
+  *ncollapsed = nprev;
+  if (collapsed) *collapsed  = cprev;
+  PetscFunctionReturn(0);
+}
+
+/* -------------------------------------------------------------------------- */
+/*
+ MatCreateGraph_Simple_AIJ - create simple scalar matrix (graph) from potentially blocked matrix
+
+ Input Parameter:
+ . Amat - matrix
+ - symmetrize - make the result symmetric
+ + scale - scale with diagonal
+
+ Output Parameter:
+ . a_Gmat - output scalar graph >= 0
+
+ */
+PETSC_INTERN PetscErrorCode MatCreateGraph_Simple_AIJ(Mat Amat, PetscBool symmetrize, PetscBool scale, Mat *a_Gmat)
+{
+  PetscInt       Istart,Iend,Ii,jj,kk,ncols,nloc,NN,MM,bs;
+  MPI_Comm       comm;
+  Mat            Gmat;
+  PetscBool      ismpiaij,isseqaij;
+  Mat            a, b, c;
+  MatType        jtype;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectGetComm((PetscObject)Amat,&comm));
+  PetscCall(MatGetOwnershipRange(Amat, &Istart, &Iend));
+  PetscCall(MatGetSize(Amat, &MM, &NN));
+  PetscCall(MatGetBlockSize(Amat, &bs));
+  nloc = (Iend-Istart)/bs;
+
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)Amat,MATSEQAIJ,&isseqaij));
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)Amat,MATMPIAIJ,&ismpiaij));
+  PetscCheck(isseqaij || ismpiaij,comm,PETSC_ERR_USER,"Require (MPI)AIJ matrix type");
+
+  /* TODO GPU: these calls are potentially expensive if matrices are large and we want to use the GPU */
+  /* A solution consists in providing a new API, MatAIJGetCollapsedAIJ, and each class can provide a fast
+     implementation */
+  if (bs > 1) {
+    PetscCall(MatGetType(Amat,&jtype));
+    PetscCall(MatCreate(comm, &Gmat));
+    PetscCall(MatSetType(Gmat, jtype));
+    PetscCall(MatSetSizes(Gmat,nloc,nloc,PETSC_DETERMINE,PETSC_DETERMINE));
+    PetscCall(MatSetBlockSizes(Gmat, 1, 1));
+    if (isseqaij || ((Mat_MPIAIJ*)Amat->data)->garray) {
+      PetscInt  *d_nnz, *o_nnz;
+      MatScalar *aa,val,AA[4096];
+      PetscInt  *aj,*ai,AJ[4096],nc;
+      if (isseqaij) { a = Amat; b = NULL; }
+      else {
+        Mat_MPIAIJ *d = (Mat_MPIAIJ*)Amat->data;
+        a = d->A; b = d->B;
+      }
+      PetscCall(PetscInfo(Amat,"New bs>1 Graph. nloc=%" PetscInt_FMT "\n",nloc));
+      PetscCall(PetscMalloc2(nloc, &d_nnz,isseqaij ? 0 : nloc, &o_nnz));
+      for (c=a, kk=0 ; c && kk<2 ; c=b, kk++){
+        PetscInt       *nnz = (c==a) ? d_nnz : o_nnz, nmax=0;
+        const PetscInt *cols;
+        for (PetscInt brow=0,jj,ok=1,j0; brow < nloc*bs; brow += bs) { // block rows
+          PetscCall(MatGetRow(c,brow,&jj,&cols,NULL));
+          nnz[brow/bs] = jj/bs;
+          if (jj%bs) ok = 0;
+          if (cols) j0 = cols[0];
+          else j0 = -1;
+          PetscCall(MatRestoreRow(c,brow,&jj,&cols,NULL));
+          if (nnz[brow/bs]>nmax) nmax = nnz[brow/bs];
+          for (PetscInt ii=1; ii < bs && nnz[brow/bs] ; ii++) { // check for non-dense blocks
+            PetscCall(MatGetRow(c,brow+ii,&jj,&cols,NULL));
+            if (jj%bs) ok = 0;
+            if ((cols && j0 != cols[0]) || (!cols && j0 != -1)) ok = 0;
+            if (nnz[brow/bs] != jj/bs) ok = 0;
+            PetscCall(MatRestoreRow(c,brow+ii,&jj,&cols,NULL));
+          }
+          if (!ok) {
+            PetscCall(PetscFree2(d_nnz,o_nnz));
+            goto old_bs;
+          }
+        }
+        PetscCheck(nmax<4096,PETSC_COMM_SELF,PETSC_ERR_USER,"Buffer %" PetscInt_FMT " too small 4096.",nmax);
+      }
+      PetscCall(MatSeqAIJSetPreallocation(Gmat,0,d_nnz));
+      PetscCall(MatMPIAIJSetPreallocation(Gmat,0,d_nnz,0,o_nnz));
+      PetscCall(PetscFree2(d_nnz,o_nnz));
+      // diag
+      for (PetscInt brow=0,n,grow; brow < nloc*bs; brow += bs) { // block rows
+        Mat_SeqAIJ *aseq  = (Mat_SeqAIJ*)a->data;
+        ai = aseq->i;
+        n  = ai[brow+1] - ai[brow];
+        aj = aseq->j + ai[brow];
+        for (int k=0; k<n; k += bs) { // block columns
+          AJ[k/bs] = aj[k]/bs + Istart/bs; // diag starts at (Istart,Istart)
+          val = 0;
+          for (int ii=0; ii<bs; ii++) { // rows in block
+            aa = aseq->a + ai[brow+ii] + k;
+            for (int jj=0; jj<bs; jj++) { // columns in block
+              val += PetscAbs(PetscRealPart(aa[jj])); // a sort of norm
+            }
+          }
+          AA[k/bs] = val;
+        }
+        grow = Istart/bs + brow/bs;
+        PetscCall(MatSetValues(Gmat,1,&grow,n/bs,AJ,AA,INSERT_VALUES));
+      }
+      // off-diag
+      if (ismpiaij) {
+        Mat_MPIAIJ        *aij = (Mat_MPIAIJ*)Amat->data;
+        const PetscScalar *vals;
+        const PetscInt    *cols, *garray = aij->garray;
+        PetscCheck(garray,PETSC_COMM_SELF,PETSC_ERR_USER,"No garray ?");
+        for (PetscInt brow=0,grow; brow < nloc*bs; brow += bs) { // block rows
+          PetscCall(MatGetRow(b,brow,&ncols,&cols,NULL));
+          for (int k=0,cidx=0 ; k < ncols ; k += bs, cidx++) {
+            AA[k/bs] = 0;
+            AJ[cidx] = garray[cols[k]]/bs;
+          }
+          nc = ncols/bs;
+          PetscCall(MatRestoreRow(b,brow,&ncols,&cols,NULL));
+          for (int ii=0; ii<bs; ii++) { // rows in block
+            PetscCall(MatGetRow(b,brow+ii,&ncols,&cols,&vals));
+            for (int k=0; k<ncols; k += bs) {
+              for (int jj=0; jj<bs; jj++) { // cols in block
+                AA[k/bs] += PetscAbs(PetscRealPart(vals[k+jj]));
+              }
+            }
+            PetscCall(MatRestoreRow(b,brow+ii,&ncols,&cols,&vals));
+          }
+          grow = Istart/bs + brow/bs;
+          PetscCall(MatSetValues(Gmat,1,&grow,nc,AJ,AA,INSERT_VALUES));
+        }
+      }
+      PetscCall(MatAssemblyBegin(Gmat,MAT_FINAL_ASSEMBLY));
+      PetscCall(MatAssemblyEnd(Gmat,MAT_FINAL_ASSEMBLY));
+    } else {
+      const PetscScalar *vals;
+      const PetscInt    *idx;
+      PetscInt          *d_nnz, *o_nnz,*w0,*w1,*w2;
+      old_bs:
+      /*
+       Determine the preallocation needed for the scalar matrix derived from the vector matrix.
+       */
+      PetscCall(PetscInfo(Amat,"OLD bs>1 CreateGraph\n"));
+      PetscCall(PetscMalloc2(nloc, &d_nnz,isseqaij ? 0 : nloc, &o_nnz));
+      if (isseqaij) {
+        PetscInt max_d_nnz;
+        /*
+         Determine exact preallocation count for (sequential) scalar matrix
+         */
+        PetscCall(MatSeqAIJGetMaxRowNonzeros(Amat,&max_d_nnz));
+        max_d_nnz = PetscMin(nloc,bs*max_d_nnz);
+        PetscCall(PetscMalloc3(max_d_nnz, &w0,max_d_nnz, &w1,max_d_nnz, &w2));
+        for (Ii = 0, jj = 0; Ii < Iend; Ii += bs, jj++) {
+          PetscCall(MatCollapseRows(Amat,Ii,bs,w0,w1,w2,&d_nnz[jj],NULL));
+        }
+        PetscCall(PetscFree3(w0,w1,w2));
+      } else if (ismpiaij) {
+        Mat            Daij,Oaij;
+        const PetscInt *garray;
+        PetscInt       max_d_nnz;
+        PetscCall(MatMPIAIJGetSeqAIJ(Amat,&Daij,&Oaij,&garray));
+        /*
+         Determine exact preallocation count for diagonal block portion of scalar matrix
+         */
+        PetscCall(MatSeqAIJGetMaxRowNonzeros(Daij,&max_d_nnz));
+        max_d_nnz = PetscMin(nloc,bs*max_d_nnz);
+        PetscCall(PetscMalloc3(max_d_nnz, &w0,max_d_nnz, &w1,max_d_nnz, &w2));
+        for (Ii = 0, jj = 0; Ii < Iend - Istart; Ii += bs, jj++) {
+          PetscCall(MatCollapseRows(Daij,Ii,bs,w0,w1,w2,&d_nnz[jj],NULL));
+        }
+        PetscCall(PetscFree3(w0,w1,w2));
+        /*
+         Over estimate (usually grossly over), preallocation count for off-diagonal portion of scalar matrix
+         */
+        for (Ii = 0, jj = 0; Ii < Iend - Istart; Ii += bs, jj++) {
+          o_nnz[jj] = 0;
+          for (kk=0; kk<bs; kk++) { /* rows that get collapsed to a single row */
+            PetscCall(MatGetRow(Oaij,Ii+kk,&ncols,NULL,NULL));
+            o_nnz[jj] += ncols;
+            PetscCall(MatRestoreRow(Oaij,Ii+kk,&ncols,NULL,NULL));
+          }
+          if (o_nnz[jj] > (NN/bs-nloc)) o_nnz[jj] = NN/bs-nloc;
+        }
+      } else SETERRQ(comm,PETSC_ERR_USER,"Require AIJ matrix type");
+      /* get scalar copy (norms) of matrix */
+      PetscCall(MatSeqAIJSetPreallocation(Gmat,0,d_nnz));
+      PetscCall(MatMPIAIJSetPreallocation(Gmat,0,d_nnz,0,o_nnz));
+      PetscCall(PetscFree2(d_nnz,o_nnz));
+      for (Ii = Istart; Ii < Iend; Ii++) {
+        PetscInt dest_row = Ii/bs;
+        PetscCall(MatGetRow(Amat,Ii,&ncols,&idx,&vals));
+        for (jj=0; jj<ncols; jj++) {
+          PetscInt    dest_col = idx[jj]/bs;
+          PetscScalar sv       = PetscAbs(PetscRealPart(vals[jj]));
+          PetscCall(MatSetValues(Gmat,1,&dest_row,1,&dest_col,&sv,ADD_VALUES));
+        }
+        PetscCall(MatRestoreRow(Amat,Ii,&ncols,&idx,&vals));
+      }
+      PetscCall(MatAssemblyBegin(Gmat,MAT_FINAL_ASSEMBLY));
+      PetscCall(MatAssemblyEnd(Gmat,MAT_FINAL_ASSEMBLY));
+    }
+  } else {
+    /* TODO GPU: optimization proposal, each class provides fast implementation of this
+     procedure via MatAbs API */
+    /* just copy scalar matrix & abs() */
+    PetscCall(MatDuplicate(Amat, MAT_COPY_VALUES, &Gmat));
+    if (isseqaij) { a = Gmat; b = NULL; }
+    else {
+      Mat_MPIAIJ *d = (Mat_MPIAIJ*)Gmat->data;
+      a = d->A; b = d->B;
+    }
+    /* abs */
+    for (c=a, kk=0 ; c && kk<2 ; c=b, kk++){
+      MatInfo     info;
+      PetscScalar *avals;
+      PetscCall(MatGetInfo(c,MAT_LOCAL,&info));
+      PetscCall(MatSeqAIJGetArray(c,&avals));
+      for (int jj = 0; jj<info.nz_used; jj++) avals[jj] = PetscAbsScalar(avals[jj]);
+      PetscCall(MatSeqAIJRestoreArray(c,&avals));
+    }
+  }
+  if (symmetrize) {
+    PetscBool issym;
+    PetscCall(MatGetOption(Amat,MAT_SYMMETRIC,&issym));
+    if (!issym) {
+      Mat matTrans;
+      PetscCall(MatTranspose(Gmat, MAT_INITIAL_MATRIX, &matTrans));
+      PetscCall(MatAXPY(Gmat, 1.0, matTrans, Gmat->structurally_symmetric ? SAME_NONZERO_PATTERN : DIFFERENT_NONZERO_PATTERN));
+      PetscCall(MatDestroy(&matTrans));
+    }
+    PetscCall(MatSetOption(Gmat,MAT_SYMMETRIC,PETSC_TRUE));
+  } else {
+    PetscCall(MatPropagateSymmetryOptions(Amat, Gmat));
+  }
+  if (scale) {
+    /* scale c for all diagonal values = 1 or -1 */
+    Vec               diag;
+    PetscCall(MatCreateVecs(Gmat, &diag, NULL));
+    PetscCall(MatGetDiagonal(Gmat, diag));
+    PetscCall(VecReciprocal(diag));
+    PetscCall(VecSqrtAbs(diag));
+    PetscCall(MatDiagonalScale(Gmat, diag, diag));
+    PetscCall(VecDestroy(&diag));
+  }
+  PetscCall(MatViewFromOptions(Gmat, NULL, "-mat_graph_view"));
+  *a_Gmat = Gmat;
+  PetscFunctionReturn(0);
+}
+
+/* -------------------------------------------------------------------------- */
+/*@C
+   MatFilter_AIJ - filter values with small absolute values
+     With vfilter < 0 does nothing so should not be called.
+
+   Collective on Mat
+
+   Input Parameters:
++   Gmat - the graph
+.   vfilter - threshold parameter [0,1)
+
+ Output Parameter:
+ .  filteredG - output filtered scalar graph
+
+   Level: developer
+
+   Notes:
+    This is called before graph coarsers are called.
+    This could go into Mat, move 'symm' to GAMG
+
+.seealso: `PCGAMGSetThreshold()`
+@*/
+PETSC_INTERN PetscErrorCode MatFilter_AIJ(Mat Gmat,PetscReal vfilter, Mat *filteredG)
+{
+  PetscInt          Istart,Iend,ncols,nnz0,nnz1, NN, MM, nloc;
+  Mat               tGmat;
+  MPI_Comm          comm;
+  const PetscScalar *vals;
+  const PetscInt    *idx;
+  PetscInt          *d_nnz, *o_nnz, kk, *garray = NULL, *AJ, maxcols=0;
+  MatScalar         *AA; // this is checked in graph
+  PetscBool         isseqaij;
+  Mat               a, b, c;
+  MatType           jtype;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectGetComm((PetscObject)Gmat,&comm));
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)Gmat,MATSEQAIJ,&isseqaij));
+  PetscCall(MatGetType(Gmat,&jtype));
+  PetscCall(MatCreate(comm, &tGmat));
+  PetscCall(MatSetType(tGmat, jtype));
+
+  /* TODO GPU: this can be called when filter = 0 -> Probably provide MatAIJThresholdCompress that compresses the entries below a threshold?
+               Also, if the matrix is symmetric, can we skip this
+               operation? It can be very expensive on large matrices. */
+
+  // global sizes
+  PetscCall(MatGetSize(Gmat, &MM, &NN));
+  PetscCall(MatGetOwnershipRange(Gmat, &Istart, &Iend));
+  nloc = Iend - Istart;
+  PetscCall(PetscMalloc2(nloc, &d_nnz,nloc, &o_nnz));
+  if (isseqaij) { a = Gmat; b = NULL; }
+  else {
+    Mat_MPIAIJ *d = (Mat_MPIAIJ*)Gmat->data;
+    a = d->A; b = d->B;
+    garray = d->garray;
+  }
+  /* Determine upper bound on non-zeros needed in new filtered matrix */
+  for (PetscInt row=0; row < nloc; row++) {
+    PetscCall(MatGetRow(a,row,&ncols,NULL,NULL));
+    d_nnz[row] = ncols;
+    if (ncols>maxcols) maxcols=ncols;
+    PetscCall(MatRestoreRow(a,row,&ncols,NULL,NULL));
+  }
+  if (b) {
+    for (PetscInt row=0; row < nloc; row++) {
+      PetscCall(MatGetRow(b,row,&ncols,NULL,NULL));
+      o_nnz[row] = ncols;
+      if (ncols>maxcols) maxcols=ncols;
+      PetscCall(MatRestoreRow(b,row,&ncols,NULL,NULL));
+    }
+  }
+  PetscCall(MatSetSizes(tGmat,nloc,nloc,MM,MM));
+  PetscCall(MatSetBlockSizes(tGmat, 1, 1));
+  PetscCall(MatSeqAIJSetPreallocation(tGmat,0,d_nnz));
+  PetscCall(MatMPIAIJSetPreallocation(tGmat,0,d_nnz,0,o_nnz));
+  PetscCall(MatSetOption(tGmat,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE));
+  PetscCall(PetscFree2(d_nnz,o_nnz));
+  //
+  PetscCall(PetscMalloc2(maxcols, &AA,maxcols, &AJ));
+  nnz0 = nnz1 = 0;
+  for (c=a, kk=0 ; c && kk<2 ; c=b, kk++){
+    for (PetscInt row=0, grow=Istart, ncol_row, jj ; row < nloc; row++,grow++) {
+      PetscCall(MatGetRow(c,row,&ncols,&idx,&vals));
+      for (ncol_row=jj=0; jj<ncols; jj++,nnz0++) {
+        PetscScalar sv = PetscAbs(PetscRealPart(vals[jj]));
+        if (PetscRealPart(sv) > vfilter) {
+          nnz1++;
+          PetscInt cid = idx[jj] + Istart; //diag
+          if (c!=a) cid = garray[idx[jj]];
+          AA[ncol_row] = vals[jj];
+          AJ[ncol_row] = cid;
+          ncol_row++;
+        }
+      }
+      PetscCall(MatRestoreRow(c,row,&ncols,&idx,&vals));
+      PetscCall(MatSetValues(tGmat,1,&grow,ncol_row,AJ,AA,INSERT_VALUES));
+    }
+  }
+  PetscCall(PetscFree2(AA,AJ));
+  PetscCall(MatAssemblyBegin(tGmat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(tGmat,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatPropagateSymmetryOptions(Gmat,tGmat)); /* Normal Mat options are not relevant ? */
+
+  PetscCall(PetscInfo(tGmat,"\t %g%% nnz after filtering, with threshold %g, %g nnz ave. (N=%" PetscInt_FMT ", max row size %d)\n",
+                      (!nnz0) ? 1. : 100.*(double)nnz1/(double)nnz0, (double)vfilter,
+                      (!nloc) ? 1. : (double)nnz0/(double)nloc,MM,(int)maxcols));
+
+  *filteredG = tGmat;
+  PetscCall(MatViewFromOptions(tGmat, NULL, "-mat_filter_graph_view"));
+  PetscFunctionReturn(0);
+}
+
+/*
     Special version for direct calls from Fortran
 */
 #include <petsc/private/fortranimpl.h>
@@ -7622,6 +8029,7 @@ PETSC_EXTERN void matsetvaluesmpiaij_(Mat *mmat,PetscInt *mm,const PetscInt im[]
   }
   PetscFunctionReturnVoid();
 }
+
 /* Undefining these here since they were redefined from their original definition above! No
  * other PETSc functions should be defined past this point, as it is impossible to recover the
  * original definitions */

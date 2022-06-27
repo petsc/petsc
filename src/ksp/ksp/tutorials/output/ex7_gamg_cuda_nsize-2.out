@@ -1,9 +1,9 @@
-  0 KSP Residual norm 3.57974 
-  1 KSP Residual norm 0.498886 
-  2 KSP Residual norm 0.0205212 
-  3 KSP Residual norm 0.000949791 
-  4 KSP Residual norm 0.000103597 
-  5 KSP Residual norm 5.6789e-06 
+  0 KSP Residual norm 4.49058 
+  1 KSP Residual norm 0.198002 
+  2 KSP Residual norm 0.0177532 
+  3 KSP Residual norm 0.00119249 
+  4 KSP Residual norm 0.000116755 
+  5 KSP Residual norm 5.13466e-06 
 KSP Object: 2 MPI processes
   type: gmres
     restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -24,7 +24,7 @@ PC Object: 2 MPI processes
           Symmetric graph false
           Number of levels to square graph 1
           Number smoothing steps 1
-        Complexity:    grid = 1.20833    operator = 1.21
+        Complexity:    grid = 1.125    operator = 1.09
   Coarse grid solver -- level 0 -------------------------------
     KSP Object: (mg_coarse_) 2 MPI processes
       type: preonly
@@ -53,29 +53,29 @@ PC Object: 2 MPI processes
             Factored matrix follows:
               Mat Object: (mg_coarse_sub_) 1 MPI process
                 type: seqaijcusparse
-                rows=5, cols=5
+                rows=3, cols=3
                 package used to perform factorization: cusparse
-                total: nonzeros=21, allocated nonzeros=21
-                  using I-node routines: found 3 nodes, limit used is 5
+                total: nonzeros=9, allocated nonzeros=9
+                  using I-node routines: found 1 nodes, limit used is 5
         linear system matrix = precond matrix:
         Mat Object: (mg_coarse_sub_) 1 MPI process
           type: seqaijcusparse
-          rows=5, cols=5
-          total: nonzeros=21, allocated nonzeros=21
+          rows=3, cols=3
+          total: nonzeros=9, allocated nonzeros=9
           total number of mallocs used during MatSetValues calls=0
             not using I-node routines
       linear system matrix = precond matrix:
       Mat Object: 2 MPI processes
         type: mpiaijcusparse
-        rows=5, cols=5
-        total: nonzeros=21, allocated nonzeros=21
+        rows=3, cols=3
+        total: nonzeros=9, allocated nonzeros=9
         total number of mallocs used during MatSetValues calls=0
           not using I-node (on process 0) routines
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object: (mg_levels_1_) 2 MPI processes
       type: chebyshev
-        eigenvalue targets used: min 0.185438, max 2.03981
-        eigenvalues provided (min 0.145008, max 1.85438) with transform: [0. 0.1; 0. 1.1]
+        eigenvalue targets used: min 0.185488, max 2.04037
+        eigenvalues provided (min 0.145059, max 1.85488) with transform: [0. 0.1; 0. 1.1]
       maximum iterations=2, nonzero initial guess
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
@@ -98,4 +98,4 @@ PC Object: 2 MPI processes
     total: nonzeros=100, allocated nonzeros=240
     total number of mallocs used during MatSetValues calls=0
       not using I-node (on process 0) routines
-Norm of error 7.2428e-06 iterations 5
+Norm of error 5.81486e-06 iterations 5

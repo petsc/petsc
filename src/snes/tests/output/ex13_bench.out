@@ -11,22 +11,20 @@ Labels:
   marker: 1 strata with value/size (1 (273))
   Face Sets: 4 strata with value/size (1 (49), 2 (49), 3 (49), 6 (49))
     0 KSP Residual norm 9.464430422668e+00 
-    1 KSP Residual norm 2.082753512702e+00 
-    2 KSP Residual norm 2.961060137984e-01 
-    3 KSP Residual norm 4.548321548896e-02 
-    4 KSP Residual norm 9.586210718539e-03 
-    5 KSP Residual norm 1.792181321779e-03 
-    6 KSP Residual norm 3.141292375143e-04 
-    7 KSP Residual norm 5.190342873484e-05 
-    8 KSP Residual norm 6.876918095151e-06 
-  Linear solve converged due to CONVERGED_RTOL iterations 8
+    1 KSP Residual norm 1.648903690233e+00 
+    2 KSP Residual norm 1.976446161065e-01 
+    3 KSP Residual norm 2.818749234372e-02 
+    4 KSP Residual norm 3.316106550102e-03 
+    5 KSP Residual norm 3.940639845036e-04 
+    6 KSP Residual norm 5.247443192884e-05 
+    7 KSP Residual norm 6.634764421308e-06 
+  Linear solve converged due to CONVERGED_RTOL iterations 7
     0 KSP Residual norm 9.464430422668e+00 
-    1 KSP Residual norm 2.082753512702e+00 
-    2 KSP Residual norm 2.961060137984e-01 
-    3 KSP Residual norm 4.548321548896e-02 
-    4 KSP Residual norm 9.586210718539e-03 
-    5 KSP Residual norm 1.792181321779e-03 
-    6 KSP Residual norm 3.141292375143e-04 
-    7 KSP Residual norm 5.190342873484e-05 
-    8 KSP Residual norm 6.876918095151e-06 
-  Linear solve converged due to CONVERGED_RTOL iterations 8
+    1 KSP Residual norm 1.648903690233e+00 
+    2 KSP Residual norm 1.976446161065e-01 
+    3 KSP Residual norm 2.818749234372e-02 
+    4 KSP Residual norm 3.316106550102e-03 
+    5 KSP Residual norm 3.940639845036e-04 
+    6 KSP Residual norm 5.247443192884e-05 
+    7 KSP Residual norm 6.634764421308e-06 
+  Linear solve converged due to CONVERGED_RTOL iterations 7

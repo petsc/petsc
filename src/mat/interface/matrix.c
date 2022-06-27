@@ -10892,3 +10892,63 @@ PetscErrorCode MatSetInf(Mat A)
   PetscCall((*A->ops->setinf)(A));
   PetscFunctionReturn(0);
 }
+
+/*C
+   MatCreateGraph - create a scalar matrix, for use in graph algorithms
+
+   Collective on mat
+
+   Input Parameters:
++  A - the matrix
+-  sym - PETSC_TRUE indicates that the graph will be symmetrized
+.  scale - PETSC_TRUE indicates that the graph will be scaled with the diagonal
+
+   Output Parameter:
+.  graph - the resulting graph
+
+   Level: advanced
+
+   Notes:
+
+.seealso: `MatCreate()`, `MatFilter()`
+*/
+PETSC_EXTERN PetscErrorCode MatCreateGraph(Mat A, PetscBool sym, PetscBool scale, Mat *graph)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidType(A,1);
+  PetscValidPointer(graph,3);
+  PetscCheck(A->ops->creategraph,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support for this operation for this matrix type");
+  PetscCall((*A->ops->creategraph)(A,sym,scale,graph));
+  PetscFunctionReturn(0);
+}
+
+/*C
+   MatFilter - filters a Mat values with an absolut value equal to or below a give threshold
+
+   Collective on mat
+
+   Input Parameter:
+.  value - filter value - < 0: does nothing; == 0: removes only 0.0 entries; otherwise: removes entries <= value
+
+   Input/Output Parameter:
+.  A - the Mat to filter in place
+
+   Level: advanced
+
+   Notes:
+
+.seealso: `MatCreate()`, `MatCreateGraph()`
+*/
+PETSC_EXTERN PetscErrorCode MatFilter(Mat G,PetscReal value,Mat *F)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(G,MAT_CLASSID,1);
+  PetscValidType(G,1);
+  PetscValidPointer(F,3);
+  if (value >= 0.0) {
+    PetscCheck(G->ops->filter,PetscObjectComm((PetscObject)G),PETSC_ERR_SUP,"No support for this operation for this matrix type");
+    PetscCall((G->ops->filter)(G,value,F));
+  }
+  PetscFunctionReturn(0);
+}

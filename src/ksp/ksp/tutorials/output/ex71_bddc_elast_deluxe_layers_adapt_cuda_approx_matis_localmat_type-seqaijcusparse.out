@@ -74,7 +74,7 @@ PC Object: 8 MPI processes
               Symmetric graph false
               Number of levels to square graph 1
               Number smoothing steps 1
-            Complexity:    grid = 1.125    operator = 1.05143
+            Complexity:    grid = 1.04167    operator = 1.00571
       Coarse grid solver -- level 0 -------------------------------
         KSP Object: (pc_bddc_dirichlet_mg_coarse_) 1 MPI process
           type: preonly
@@ -103,26 +103,26 @@ PC Object: 8 MPI processes
                   Factored matrix follows:
                     Mat Object: (pc_bddc_dirichlet_mg_coarse_sub_) 1 MPI process
                       type: seqaij
-                      rows=18, cols=18
+                      rows=6, cols=6
                       package used to perform factorization: cusparse
-                      total: nonzeros=324, allocated nonzeros=324
+                      total: nonzeros=36, allocated nonzeros=36
               linear system matrix = precond matrix:
               Mat Object: (pc_bddc_dirichlet_mg_coarse_sub_) 1 MPI process
                 type: seqaij
-                rows=18, cols=18
-                total: nonzeros=324, allocated nonzeros=324
+                rows=6, cols=6
+                total: nonzeros=36, allocated nonzeros=36
                 total number of mallocs used during MatSetValues calls=0
           linear system matrix = precond matrix:
           Mat Object: (pc_bddc_dirichlet_mg_coarse_sub_) 1 MPI process
             type: seqaij
-            rows=18, cols=18
-            total: nonzeros=324, allocated nonzeros=324
+            rows=6, cols=6
+            total: nonzeros=36, allocated nonzeros=36
             total number of mallocs used during MatSetValues calls=0
       Down solver (pre-smoother) on level 1 -------------------------------
         KSP Object: (pc_bddc_dirichlet_mg_levels_1_) 1 MPI process
           type: chebyshev
-            eigenvalue targets used: min 0.0999942, max 1.09994
-            eigenvalues provided (min 0.505801, max 0.999942) with transform: [0. 0.1; 0. 1.1]
+            eigenvalue targets used: min 0.234693, max 2.58162
+            eigenvalues provided (min 0.273728, max 2.34693) with transform: [0. 0.1; 0. 1.1]
           maximum iterations=2, nonzero initial guess
           tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning
@@ -164,7 +164,7 @@ PC Object: 8 MPI processes
               Symmetric graph false
               Number of levels to square graph 1
               Number smoothing steps 1
-            Complexity:    grid = 1.06452    operator = 1.02271
+            Complexity:    grid = 1.08602    operator = 1.04038
       Coarse grid solver -- level 0 -------------------------------
         KSP Object: (pc_bddc_neumann_mg_coarse_) 1 MPI process
           type: preonly
@@ -193,26 +193,26 @@ PC Object: 8 MPI processes
                   Factored matrix follows:
                     Mat Object: (pc_bddc_neumann_mg_coarse_sub_) 1 MPI process
                       type: seqaij
-                      rows=18, cols=18
+                      rows=24, cols=24
                       package used to perform factorization: cusparse
-                      total: nonzeros=324, allocated nonzeros=324
+                      total: nonzeros=576, allocated nonzeros=576
               linear system matrix = precond matrix:
               Mat Object: (pc_bddc_neumann_mg_coarse_sub_) 1 MPI process
                 type: seqaij
-                rows=18, cols=18
-                total: nonzeros=324, allocated nonzeros=324
+                rows=24, cols=24
+                total: nonzeros=576, allocated nonzeros=576
                 total number of mallocs used during MatSetValues calls=0
           linear system matrix = precond matrix:
           Mat Object: (pc_bddc_neumann_mg_coarse_sub_) 1 MPI process
             type: seqaij
-            rows=18, cols=18
-            total: nonzeros=324, allocated nonzeros=324
+            rows=24, cols=24
+            total: nonzeros=576, allocated nonzeros=576
             total number of mallocs used during MatSetValues calls=0
       Down solver (pre-smoother) on level 1 -------------------------------
         KSP Object: (pc_bddc_neumann_mg_levels_1_) 1 MPI process
           type: chebyshev
-            eigenvalue targets used: min 0.099938, max 1.09932
-            eigenvalues provided (min 0.130861, max 0.99938) with transform: [0. 0.1; 0. 1.1]
+            eigenvalue targets used: min 0.262061, max 2.88267
+            eigenvalues provided (min 0.100732, max 2.62061) with transform: [0. 0.1; 0. 1.1]
           maximum iterations=2, nonzero initial guess
           tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning

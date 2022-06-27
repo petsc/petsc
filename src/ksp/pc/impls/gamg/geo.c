@@ -535,7 +535,7 @@ PetscErrorCode PCGAMGGraph_GEO(PC pc,Mat Amat,Mat *a_Gmat)
   PC_GAMG         *pc_gamg = (PC_GAMG*)mg->innerctx;
   const PetscReal vfilter  = pc_gamg->threshold[0];
   MPI_Comm        comm;
-  Mat             Gmat;
+  Mat             Gmat,F=NULL;
   PetscBool       set,flg,symm;
 
   PetscFunctionBegin;
@@ -544,9 +544,12 @@ PetscErrorCode PCGAMGGraph_GEO(PC pc,Mat Amat,Mat *a_Gmat)
   PetscCall(MatIsSymmetricKnown(Amat, &set, &flg));
   symm = (PetscBool)!(set && flg);
 
-  PetscCall(PCGAMGCreateGraph(Amat, &Gmat, symm));
-  PetscCall(PCGAMGFilterGraph(&Gmat, vfilter));
-
+  PetscCall(MatCreateGraph(Amat, symm, PETSC_TRUE, &Gmat));
+  PetscCall(MatFilter(Gmat, vfilter, &F));
+  if (F) {
+    PetscCall(MatDestroy(&Gmat));
+    Gmat = F;
+  }
   *a_Gmat = Gmat;
 
   PetscFunctionReturn(0);

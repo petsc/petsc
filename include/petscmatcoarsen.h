@@ -29,6 +29,7 @@ J*/
 typedef const char* MatCoarsenType;
 #define MATCOARSENMIS  "mis"
 #define MATCOARSENHEM  "hem"
+#define MATCOARSENMISK "misk"
 
 /* linked list for aggregates */
 typedef struct _PetscCDIntNd{
@@ -42,14 +43,15 @@ typedef struct _PetscCDArrNd{
   struct _PetscCDIntNd *array;
 }PetscCDArrNd;
 
+/* linked list data structure that encodes aggragates and C-F points with array[idx] == NULL for F point and array of indices in an aggrate or C point (first index is always global index my0 + idx */
 typedef struct _PetscCoarsenData{
   PetscCDArrNd pool_list;  /* node pool */
   PetscCDIntNd *new_node;
   PetscInt     new_left;
-  PetscInt     chk_sz;
+  PetscInt     chk_sz; /* chunck size */
   PetscCDIntNd *extra_nodes;
   PetscCDIntNd **array;  /* Array of lists */
-  PetscInt     size;
+  PetscInt     size; /* size of 'array' */
   Mat          mat;  /* cache a Mat for communication data */
 }PetscCoarsenData;
 
@@ -80,8 +82,9 @@ PETSC_EXTERN PetscErrorCode PetscCDEmptyAt(const PetscCoarsenData*,PetscInt,Pets
 PETSC_EXTERN PetscErrorCode PetscCDSetChuckSize(PetscCoarsenData*,PetscInt);
 PETSC_EXTERN PetscErrorCode PetscCDPrint(const PetscCoarsenData*,MPI_Comm);
 PETSC_EXTERN PetscErrorCode PetscCDGetMIS(PetscCoarsenData*,IS*);
-PETSC_EXTERN PetscErrorCode PetscCDGetMat(const PetscCoarsenData*,Mat*);
+PETSC_EXTERN PetscErrorCode PetscCDGetMat(PetscCoarsenData*,Mat*);
 PETSC_EXTERN PetscErrorCode PetscCDSetMat(PetscCoarsenData*,Mat);
+PETSC_EXTERN PetscErrorCode PetscCDRemoveAll(PetscCoarsenData*, PetscInt);
 
 PETSC_EXTERN PetscErrorCode PetscCDGetHeadPos(const PetscCoarsenData*,PetscInt,PetscCDIntNd**);
 PETSC_EXTERN PetscErrorCode PetscCDGetNextPos(const PetscCoarsenData*,PetscInt,PetscCDIntNd**);
