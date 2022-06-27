@@ -218,7 +218,7 @@ class Configure(script.Script):
     # also strip any \ before spaces, braces, so that we can specify paths the way we want them in makefiles.
     prog  = prog.replace('\ ',' ').replace('\(','(').replace('\)',')')
     found = 0
-    self.logWrite('Checking for program '+prog+'...')
+    self.logWrite('    Checking for program '+prog+'...')
     if os.path.isfile(prog) and os.access(prog, os.X_OK):
       found = 1
       self.logWrite('found\n')
@@ -546,7 +546,6 @@ class Configure(script.Script):
 
   def checkCompile(self, includes = '', body = '', cleanup = 1, codeBegin = None, codeEnd = None, flag = ''):
     '''Returns True if the compile was successful'''
-    self.logWrite('===== Checking compiler\n')
     (output, error, returnCode) = self.outputCompile(includes, body, cleanup, codeBegin, codeEnd)
     output = self.filterCompileOutput(output+'\n'+error,flag=flag)
     return not (returnCode or len(output))
@@ -621,7 +620,6 @@ class Configure(script.Script):
     return (out+'\n'+err, ret)
 
   def checkLink(self, includes = '', body = '', cleanup = 1, codeBegin = None, codeEnd = None, shared = 0, linkLanguage=None, examineOutput=lambda ret,out,err:None):
-    self.logWrite('===== Checking linker\n')
     (output, returnCode) = self.outputLink(includes, body, cleanup, codeBegin, codeEnd, shared, linkLanguage, examineOutput)
     output = self.filterLinkOutput(output)
     return not (returnCode or len(output))

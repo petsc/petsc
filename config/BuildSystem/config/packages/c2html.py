@@ -27,6 +27,7 @@ class Configure(config.package.GNUPackage):
     return args
 
   def locateC2html(self):
+    '''Determine location of c2html executable'''
     if 'with-c2html-exec' in self.argDB:
       self.log.write('Looking for specified C2html executable '+self.argDB['with-c2html-exec']+'\n')
       self.getExecutable(self.argDB['with-c2html-exec'], getFullPath=1, resultName='c2html')

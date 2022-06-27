@@ -36,6 +36,7 @@ class Configure(config.base.Configure):
       return 0
 
   def configureIndexSize(self):
+    '''Determine the size of PETSc indices (32 or 64 bit), from -with-64-bit-indices'''
     if self.framework.argDB['with-64-bit-indices']:
       self.integerSize = 64
       self.addDefine('USE_64BIT_INDICES', 1)

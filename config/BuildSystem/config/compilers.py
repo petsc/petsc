@@ -1450,6 +1450,7 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
     return
 
   def setupFrameworkCompilers(self):
+    '''Sets the selected compilers into the framework'''
     if self.framework.compilers is None:
       self.logPrint('Setting framework compilers to this module', 2, 'compilers')
       self.framework.compilers = self

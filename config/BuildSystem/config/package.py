@@ -894,6 +894,7 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
     return [sortnode for sortnode in graph.DirectedGraph.topologicalSort(depGraph,start=startnode)]
 
   def checkDependencies(self):
+    '''Loop over declared dependencies of package and error if any are missing'''
     for package in self.deps:
       if not hasattr(package, 'found'):
         raise RuntimeError('Package '+package.name+' does not have found attribute!')

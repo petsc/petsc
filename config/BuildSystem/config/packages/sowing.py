@@ -47,9 +47,11 @@ class Configure(config.package.GNUPackage):
     return args
 
   def alternateConfigureLibrary(self):
+    '''Check if Sowing download option was selected'''
     self.checkDownload()
 
   def checkBfortVersion(self):
+    '''Check if the bfort version is recent enough'''
     try:
       import re
       (output, error, status) = config.base.Configure.executeShellCommand(self.bfort+' -version', checkCommand=noCheck, log = self.log)

@@ -29,7 +29,7 @@ class Configure(config.base.Configure):
     return
 
   def setInstallDir(self):
-    ''' setup installDir to either prefix or if that is not set to PETSC_DIR/PETSC_ARCH'''
+    '''Set installDir to either prefix or if that is not set to PETSC_DIR/PETSC_ARCH'''
     self.installSudo        = ''
     if self.framework.argDB['prefix']:
       self.isprefix = True
@@ -66,6 +66,7 @@ class Configure(config.base.Configure):
     return
 
   def cleanConfDir(self):
+    '''Remove all the files from configuration directory for this PETSC_ARCH, from --with-clean option'''
     import shutil
     if self.framework.argDB['with-clean'] and os.path.isdir(self.confDir):
       self.logPrintWarning('"with-clean" is specified. Removing all build files from '+ self.confDir)
@@ -73,6 +74,7 @@ class Configure(config.base.Configure):
     return
 
   def saveReconfigure(self):
+    '''Save the configure options in a script in PETSC_ARCH/lib/petsc/conf so the same configure may be easily re-run'''
     self.reconfigure_file = os.path.join(self.dir,'lib','petsc','conf','reconfigure-'+self.arch.arch+'.py')
     self.save_reconfigure_file = None
     if self.framework.argDB['with-clean'] and os.path.exists(self.reconfigure_file):
@@ -86,6 +88,7 @@ class Configure(config.base.Configure):
     return
 
   def restoreReconfigure(self):
+    '''If --with-clean was requested but restoring the reconfigure file was requested then restore it'''
     if self.framework.argDB['with-clean'] and self.save_reconfigure_file:
       try:
         os.rename(self.save_reconfigure_file,self.reconfigure_file)

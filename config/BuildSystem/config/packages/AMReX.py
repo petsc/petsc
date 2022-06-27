@@ -149,5 +149,6 @@ class Configure(config.package.CMakePackage):
     return self.installDir
 
   def alternateConfigureLibrary(self):
+    '''Adds rules for building AMReX to PETSc makefiles'''
     self.addMakeRule('amrex-build','')
     self.addMakeRule('amrex-install','')
