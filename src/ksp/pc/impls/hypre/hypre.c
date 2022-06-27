@@ -1812,8 +1812,8 @@ static PetscErrorCode  PCHYPRESetType_HYPRE(PC pc,const char name[])
   }
   PetscCall(PetscStrcmp("euclid",jac->hypre_type,&flag));
   if (flag) {
-#if defined(PETSC_HAVE_64BIT_INDICES)
-    SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Hypre Euclid not support with 64 bit indices");
+#if defined(PETSC_USE_64BIT_INDICES)
+    SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Hypre Euclid does not support 64 bit indices");
 #endif
     PetscCall(PetscCommGetComm(PetscObjectComm((PetscObject)pc),&jac->comm_hypre));
     PetscStackCallStandard(HYPRE_EuclidCreate,jac->comm_hypre,&jac->hsolver);
