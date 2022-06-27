@@ -169,6 +169,8 @@ In addition to the changes above
 
 .. rubric:: FE/FV:
 
+- Add ``PetscFECreateFromSpaces()`` to build similar space from pieces
+
 .. rubric:: DMNetwork:
 
 .. rubric:: DMStag:

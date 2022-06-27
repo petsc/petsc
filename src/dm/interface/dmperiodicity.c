@@ -370,6 +370,7 @@ PetscErrorCode DMLocalizeCoordinates(DM dm)
       PetscCall(DMPlexVecGetClosure(cplex, cs, coordinates, c, &dof, &cellCoords));
       PetscCall(PetscSectionGetOffset(csDG, c, &offDG));
       // We need the cell to fit into [0, L]
+      //   TODO The coordinates are set in closure order, which might not be the tensor order
       for (q = 0; q < dof/Nc; ++q) {
         // Select a trial anchor
         for (d = 0; d < Nc; ++d) anchor[d] = cellCoords[q*Nc+d];
@@ -391,6 +392,33 @@ PetscErrorCode DMLocalizeCoordinates(DM dm)
   PetscCall(DMSetCellCoordinateSection(dm, PETSC_DETERMINE, csDG));
   PetscCall(DMSetCellCoordinatesLocal(dm, cVec));
   PetscCall(VecDestroy(&cVec));
+  // Convert the discretization
+  {
+    PetscFE         fe, dgfe;
+    PetscSpace      P;
+    PetscDualSpace  Q, dgQ;
+    PetscQuadrature q, fq;
+    PetscClassId    id;
+
+    PetscCall(DMGetField(cdm, 0, NULL, (PetscObject *) &fe));
+    PetscCall(PetscObjectGetClassId((PetscObject) fe, &id));
+    if (id == PETSCFE_CLASSID) {
+      PetscCall(PetscFEGetBasisSpace(fe, &P));
+      PetscCall(PetscObjectReference((PetscObject) P));
+      PetscCall(PetscFEGetDualSpace(fe, &Q));
+      PetscCall(PetscDualSpaceDuplicate(Q, &dgQ));
+      PetscCall(PetscDualSpaceLagrangeSetContinuity(dgQ, PETSC_FALSE));
+      PetscCall(PetscDualSpaceSetUp(dgQ));
+      PetscCall(PetscFEGetQuadrature(fe, &q));
+      PetscCall(PetscObjectReference((PetscObject) q));
+      PetscCall(PetscFEGetFaceQuadrature(fe, &fq));
+      PetscCall(PetscObjectReference((PetscObject) fq));
+      PetscCall(PetscFECreateFromSpaces(P, dgQ, q, fq, &dgfe));
+      PetscCall(DMSetField(cdgdm, 0, NULL, (PetscObject) dgfe));
+      PetscCall(PetscFEDestroy(&dgfe));
+      PetscCall(DMCreateDS(cdgdm));
+    }
+  }
   PetscCall(DMDestroy(&cdgdm));
 
 end:
