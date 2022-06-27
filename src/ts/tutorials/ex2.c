@@ -640,6 +640,6 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat AA,Mat BB,void *c
     test:
       suffix: tut_3
       nsize: 4
-      args: ./ex2 -ts_max_steps 10 -ts_monitor -M 128
+      args: -ts_max_steps 10 -ts_monitor -M 128
 
 TEST*/
