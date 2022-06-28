@@ -24,12 +24,30 @@ class DMBoundaryType(object):
     PERIODIC = DM_BOUNDARY_PERIODIC
     TWIST    = DM_BOUNDARY_TWIST
 
+class DMPolytopeType(object):
+    POINT              = DM_POLYTOPE_POINT
+    SEGMENT            = DM_POLYTOPE_SEGMENT
+    POINT_PRISM_TENSOR = DM_POLYTOPE_POINT_PRISM_TENSOR
+    TRIANGLE           = DM_POLYTOPE_TRIANGLE
+    QUADRILATERAL      = DM_POLYTOPE_QUADRILATERAL
+    SEG_PRISM_TENSOR   = DM_POLYTOPE_SEG_PRISM_TENSOR
+    TETRAHEDRON        = DM_POLYTOPE_TETRAHEDRON
+    HEXAHEDRON         = DM_POLYTOPE_HEXAHEDRON
+    TRI_PRISM          = DM_POLYTOPE_TRI_PRISM
+    TRI_PRISM_TENSOR   = DM_POLYTOPE_TRI_PRISM_TENSOR
+    QUAD_PRISM_TENSOR  = DM_POLYTOPE_QUAD_PRISM_TENSOR
+    PYRAMID            = DM_POLYTOPE_PYRAMID
+    FV_GHOST           = DM_POLYTOPE_FV_GHOST
+    INTERIOR_GHOST     = DM_POLYTOPE_INTERIOR_GHOST
+    UNKNOWN            = DM_POLYTOPE_UNKNOWN
+
 # --------------------------------------------------------------------
 
 cdef class DM(Object):
 
     Type         = DMType
     BoundaryType = DMBoundaryType
+    PolytopeType = DMPolytopeType
 
     #
 
@@ -761,5 +779,6 @@ cdef class DM(Object):
 
 del DMType
 del DMBoundaryType
+del DMPolytopeType
 
 # --------------------------------------------------------------------
