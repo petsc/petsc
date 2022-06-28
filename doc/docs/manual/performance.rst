@@ -588,8 +588,8 @@ briefly describe these below.
    error checking), is employed by default for codes compiled in a
    debug-mode (configured with ``--with-debugging=1``). PETSc memory
    allocation can be activated for optimized-mode (configured with
-   ``--with-debugging=0``) using the option ``-malloc``. The option
-   ``-malloc=0`` forces the use of conventional memory allocation when
+   ``--with-debugging=0``) using the option ``-malloc_debug``. The option
+   ``-malloc_debug 0`` forces the use of conventional memory allocation when
    debugging is enabled. When running timing tests, one should build
    libraries in optimized mode.
 
@@ -598,7 +598,7 @@ briefly describe these below.
    conclusion of a program. If all memory has been freed, only a message
    stating the maximum allocated space will be printed. However, if some
    memory remains unfreed, this information will be printed. Note that
-   the option ``-malloc_dump`` merely activates a call to
+   the option ``-malloc_dump`` activates a call to
    ``PetscMallocDump()`` during ``PetscFinalize()`` the user can also
    call ``PetscMallocDump()`` elsewhere in a program.
 
@@ -718,11 +718,9 @@ them.
    program, one should always leave at least a ten percent margin
    between the total memory a process is using and the physical size of
    the machine’s memory. One way to estimate the amount of memory used
-   by given process is with the Unix ``getrusage`` system routine. Also,
-   the PETSc option ``-log_view`` prints the amount of memory used by
-   the basic PETSc objects, thus providing a lower bound on the memory
-   used. Another useful option is ``-malloc_view`` which reports all
-   memory, including any Fortran arrays in an application code.
+   by given process is with the Unix ``getrusage`` system routine.
+   The PETSc option ``-malloc_view`` reports all
+   memory usage, including any Fortran arrays in an application code.
 
 -  **Effects of other users**: If other users are running jobs on the
    same physical processor nodes on which a program is being profiled,
