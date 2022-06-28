@@ -30,6 +30,9 @@ images:
 website-deploy: images
 	$(SPHINXBUILD) -b dirhtml "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) -T -E -j auto
 
+sphinxhtml:
+	cd .. ; python3 -m venv petsc-doc-env ; source petsc-doc-env/bin/activate ; python3 -m pip install -r doc/requirements.txt ; cd doc ; make html; deactivate
+
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.
 %: makefile images

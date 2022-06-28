@@ -7,3 +7,4 @@ pydata-sphinx-theme
 sphinx-panels
 myst-parser
 sphinx-remove-toctrees
+Jinja2==3.0.1
