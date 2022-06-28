@@ -1229,9 +1229,9 @@ static PetscErrorCode MatDestroy_HYPRE(Mat A)
 
   if (hA->cooMat) {
     PetscCall(MatDestroy(&hA->cooMat));
-    PetscCallExternalNoErrorCode("hypre_TFree",hypre_TFree(hA->diagJ,hA->memType));
-    PetscCallExternalNoErrorCode("hypre_TFree",hypre_TFree(hA->offdJ,hA->memType));
-    PetscCallExternalNoErrorCode("hypre_TFree",hypre_TFree(hA->diag,hA->memType));
+    PetscStackCallExternalVoid("hypre_TFree",hypre_TFree(hA->diagJ,hA->memType));
+    PetscStackCallExternalVoid("hypre_TFree",hypre_TFree(hA->offdJ,hA->memType));
+    PetscStackCallExternalVoid("hypre_TFree",hypre_TFree(hA->diag,hA->memType));
   }
 
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatConvert_hypre_aij_C",NULL));
@@ -2252,22 +2252,22 @@ static PetscErrorCode MatSetPreallocationCOO_HYPRE(Mat mat, PetscCount coo_n, Pe
               comm,PETSC_ERR_PLIB,"PETSc and hypre's memory types mismatch");
 
   hmat->diagJ = hypre_CSRMatrixJ(diag);
-  PetscCallExternalNoErrorCode("hypre_TFree",hypre_TFree(hypre_CSRMatrixData(diag),hypreMemtype));
+  PetscStackCallExternalVoid("hypre_TFree",hypre_TFree(hypre_CSRMatrixData(diag),hypreMemtype));
   hypre_CSRMatrixData(diag)     = (HYPRE_Complex*)Aa;
   hypre_CSRMatrixOwnsData(diag) = 0; /* Take ownership of (j,a) away from hypre. As a result, we need to free them on our own */
 
   /* Copy diagonal pointers of A to device to facilitate MatSeqAIJMoveDiagonalValuesFront_SeqAIJKokkos */
   if (hypreMemtype == HYPRE_MEMORY_DEVICE) {
-    PetscCallExternalNoErrorCode("hypre_TAlloc",hmat->diag = hypre_TAlloc(PetscInt,rmap->n,hypreMemtype));
+    PetscStackCallExternalVoid("hypre_TAlloc",hmat->diag = hypre_TAlloc(PetscInt,rmap->n,hypreMemtype));
     PetscCall(MatMarkDiagonal_SeqAIJ(A)); /* We need updated diagonal positions */
-    PetscCallExternalNoErrorCode("hypre_TMemcpy",hypre_TMemcpy(hmat->diag,((Mat_SeqAIJ*)A->data)->diag,PetscInt,rmap->n,hypreMemtype,HYPRE_MEMORY_HOST));
+    PetscStackCallExternalVoid("hypre_TMemcpy",hypre_TMemcpy(hmat->diag,((Mat_SeqAIJ*)A->data)->diag,PetscInt,rmap->n,hypreMemtype,HYPRE_MEMORY_HOST));
   }
 
   if (size > 1) {
     B    = ((Mat_MPIAIJ*)cooMat->data)->B;
     PetscCall(MatSeqAIJGetCSRAndMemType(B,NULL,NULL,&Ba,&petscMemtype));
     hmat->offdJ = hypre_CSRMatrixJ(offd);
-    PetscCallExternalNoErrorCode("hypre_TFree",hypre_TFree(hypre_CSRMatrixData(offd),hypreMemtype));
+    PetscStackCallExternalVoid("hypre_TFree",hypre_TFree(hypre_CSRMatrixData(offd),hypreMemtype));
     hypre_CSRMatrixData(offd)     = (HYPRE_Complex*)Ba;
     hypre_CSRMatrixOwnsData(offd) = 0;
   }

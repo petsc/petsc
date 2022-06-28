@@ -437,7 +437,7 @@ static PetscErrorCode PCApply_HYPRE(PC pc,Vec b,Vec x)
   PetscCallExternal(HYPRE_IJMatrixGetObject,hjac->ij,(void**)&hmat);
   PetscCallExternal(HYPRE_IJVectorGetObject,hjac->b->ij,(void**)&jbv);
   PetscCallExternal(HYPRE_IJVectorGetObject,hjac->x->ij,(void**)&jxv);
-  PetscCallExternalNoErrorCode("Hypre solve",do {
+  PetscStackCallExternalVoid("Hypre solve",do {
       HYPRE_Int hierr = (*jac->solve)(jac->hsolver,hmat,jbv,jxv);
       if (hierr) {
         PetscCheck(hierr == HYPRE_ERROR_CONV,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in HYPRE solver, error code %d",(int)hierr);
@@ -628,7 +628,7 @@ static PetscErrorCode PCApplyTranspose_HYPRE_BoomerAMG(PC pc,Vec b,Vec x)
   PetscCallExternal(HYPRE_IJVectorGetObject,hjac->b->ij,(void**)&jbv);
   PetscCallExternal(HYPRE_IJVectorGetObject,hjac->x->ij,(void**)&jxv);
 
-  PetscCallExternalNoErrorCode("Hypre Transpose solve",do {
+  PetscStackCallExternalVoid("Hypre Transpose solve",do {
       HYPRE_Int hierr = HYPRE_BoomerAMGSolveT(jac->hsolver,hmat,jbv,jxv);
       if (hierr) {
         /* error code of 1 in BoomerAMG merely means convergence not achieved */

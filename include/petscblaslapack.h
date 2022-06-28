@@ -48,7 +48,7 @@
    Developer Note:
    This is so that when a user or external library routine results in a crash or corrupts memory, they get blamed instead of PETSc.
 
-.seealso: `PetscCall()`, `PetscStackPushNoCheck()`, `PetscStackPush()`, `PetscCallExternal()`, `PetscCallExternalNoErrorCode()`
+.seealso: `PetscCall()`, `PetscStackPushNoCheck()`, `PetscStackPush()`, `PetscCallExternal()`, `PetscStackCallExternalVoid()`
 M*/
 #define PetscCallBLAS(name,routine) do {                   \
     PetscStackPushExternal(name);                                \

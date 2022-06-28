@@ -1384,11 +1384,11 @@ M*/
 #endif /* PETSC_USE_DEBUG */
 
 #if defined(PETSC_CLANG_STATIC_ANALYZER)
-#define PetscCallExternalNoErrorCode(name,routine)
+#define PetscStackCallExternalVoid(name,routine)
 #define PetscCallExternal(func,...)
 #else
 /*MC
-    PetscCallExternalNoErroCode - Calls an external library routine or user function after pushing the name of the routine on the stack.
+    PetscStackCallExternalVoid - Calls an external library routine or user function after pushing the name of the routine on the stack.
 
    Input Parameters:
 +   name - string that gives the name of the function being called
@@ -1408,7 +1408,7 @@ M*/
 
 .seealso: `PetscCall()`, `PetscStackPushNoCheck()`, `PetscStackPush()`, `PetscCallExternal()`, `PetscCallBLAS()`
 @*/
-#define PetscCallExternalNoErrorCode(name,routine) do { PetscStackPush(name);routine;PetscStackPop; } while (0)
+#define PetscStackCallExternalVoid(name,routine) do { PetscStackPush(name);routine;PetscStackPop; } while (0)
 
 /*MC
     PetscCallExternal - Calls an external library routine that returns an error code after pushing the name of the routine on the stack.
@@ -1420,14 +1420,14 @@ M*/
    Level: developer
 
    Notes:
-   This is intended for external package routines that return error codes. Use `PetscCallExternalNoErrorCode()` for those that do not.
+   This is intended for external package routines that return error codes. Use `PetscStackCallExternalVoid()` for those that do not.
 
    In debug mode this also checks the memory for corruption at the end of the function call.
 
    Developer Note:
    This is so that when an external packge routine results in a crash or corrupts memory, they get blamed instead of PETSc.
 
-.seealso: `PetscCall()`, `PetscStackPushNoCheck()`, `PetscStackPush()`, `PetscCallExternalNoErrorCode()`
+.seealso: `PetscCall()`, `PetscStackPushNoCheck()`, `PetscStackPush()`, `PetscStackCallExternalVoid()`
 M*/
 #define PetscCallExternal(func,...) do {                                                  \
     PetscStackPush(PetscStringize(func));                                                      \

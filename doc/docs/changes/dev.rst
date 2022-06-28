@@ -73,7 +73,7 @@ In addition to the changes above
 -  Add ``PetscCallMPI()`` and ``PetscCallMPIA()`` that may be used to call MPI functions from Fortran
 -  Change the ``PetscCheck()`` and ``PetscAssert()`` macros to behave like function calls by wrapping in ``do { } while (0)``. Previously these macros expanded to ``if (...) SETERRQ(...)``, which meant they could be chained with subsequent conditionals.
 -  Change ``PetscStackCallStandard()`` to ``PetscCallExternal()``
--  Change ``PetscStackCall()`` to ``PetscCallExternalNoErrorCode()``
+-  Change ``PetscStackCall()`` to ``PetscStackCallExternalVoid()``
 -  Change ``PetscStackCallXXX()`` to ``PetscCallXXX()``
 -  Add ``PetscCallBack()' for calling all PETSc callbacks (usually to user code) to replace the use of ``PetscStackPush()`` and ``PetscStackPop``
 
