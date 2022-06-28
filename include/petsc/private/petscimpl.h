@@ -507,6 +507,88 @@ M*/
     PetscCall((*_7_f)C);                                                                         \
   } while (0)
 
+/*
+  Use Microsoft traditional preprocessor.
+
+  The Microsoft compiler option -Zc:preprocessor available in recent versions of the compiler
+  sets  _MSVC_TRADITIONAL to zero so this code path is not used.
+
+  It appears the Intel Windows compiler icl does not have an equaivalent of  -Zc:preprocessor
+
+  These macros use the trick that Windows compilers remove the , before the __VA_ARGS__ if __VA_ARGS__ does not exist
+
+  PetscCall() cannot be used in the macros because the remove the , trick does not work in a macro in a macro
+*/
+#if (defined(_MSC_VER)  && (!defined(_MSVC_TRADITIONAL) || _MSVC_TRADITIONAL)) || defined(__ICL)
+
+#define PetscUseTypeMethod(obj,OP,...) do {                             \
+   PetscErrorCode ierr_p_;                                             \
+   PetscStackUpdateLine; \
+   PetscCheck((obj)->ops->OP,PetscObjectComm((PetscObject)obj),PETSC_ERR_SUP,"No method %s for %s of type %s",PetscStringize(OP),((PetscObject)obj)->class_name,((PetscObject)obj)->type_name); \
+   ierr_p_ = (*(obj)->ops->OP)(obj,  __VA_ARGS__);                              \
+   PetscCall(ierr_p_);\
+ } while (0)
+
+ #define PetscTryTypeMethod(obj,OP,...) do {                             \
+   if ((obj)->ops-> OP) { \
+     PetscErrorCode ierr_p_;                                             \
+     PetscStackUpdateLine; \
+     ierr_p_ = (*(obj)->ops->OP)(obj,  __VA_ARGS__);                              \
+     PetscCall(ierr_p_);\
+   } \
+ } while (0)
+
+#else
+
+/*MC
+   PetscUseTypeMethod - Call a method on a PETSc object, that is a function in the objects function table obj->ops, error if the method does not exist
+
+  Synopsis:
+   #include "petsc/private/petscimpl.h"
+   PetscUseTypeMethod(obj,method,other_args)
+
+   Input Parameters:
++   obj - the object the method is called on
+.   method - the name of the method, for example, mult for the PETSc routine MatMult()
+-   other_args - the other arguments for the method, obj is the first argument
+
+   Level: developer
+
+   Note:
+   This does not return an error code, it is a macro that returns with an erorr code on error.
+
+.seealso: `PetscTryMethod()`, `PetscUseMethod()`, `PetscCall()`, `PetscCheck()`, `PetscTryTypeMethod()`
+M*/
+#define PetscUseTypeMethod(obj,...) do {    \
+    PetscCheck((obj)->ops-> PETSC_FIRST_ARG((__VA_ARGS__,unused)),PetscObjectComm((PetscObject)obj),PETSC_ERR_SUP,"No method %s for %s of type %s",PetscStringize(PETSC_FIRST_ARG((__VA_ARGS__,unused))),((PetscObject)obj)->class_name,((PetscObject)obj)->type_name); \
+    PetscCall((*(obj)->ops-> PETSC_FIRST_ARG((__VA_ARGS__,unused)))(obj PETSC_REST_ARG(__VA_ARGS__))); \
+ } while (0)
+
+/*MC
+   PetscTryTypeMethod - Call a method on a PETSc object, that is a function in the objects function table obj->ops, skip if the method does not exist
+
+  Synopsis:
+   #include "petsc/private/petscimpl.h"
+   PetscTryTtype(obj,method,other_args)
+
+   Input Parameters:
++   obj - the object the method is called on
+.   method - the name of the method, for example, mult for the PETSc routine MatMult()
+-   other_args - the other arguments for the method, obj is the first argument
+
+   Level: developer
+
+   Note:
+   This does not return an error code, it is a macro that returns with an erorr code on error.
+
+.seealso: `PetscTryMethod()`, `PetscUseMethod()`, `PetscCall()`, `PetscCheck()`, `PetscUseTypeMethod()`
+M*/
+#define PetscTryTypeMethod(obj,...) do {    \
+    if ((obj)->ops-> PETSC_FIRST_ARG((__VA_ARGS__,unused))) PetscCall((*(obj)->ops-> PETSC_FIRST_ARG((__VA_ARGS__,unused)))(obj PETSC_REST_ARG(__VA_ARGS__))); \
+ } while (0)
+
+#endif
+
 /*MC
    PetscObjectStateIncrease - Increases the state of any PetscObject
 

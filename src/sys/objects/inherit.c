@@ -754,12 +754,18 @@ PetscErrorCode  PetscObjectQuery(PetscObject obj,const char name[],PetscObject *
    Level: advanced
 
    Notes:
+   When the first argument of the function is the object within which it has been composed then `PetscTryMethod()` and `PetscUseMethod()`
+   can be used to call the function directly with error checking.
+
    To remove a registered routine, pass in NULL for fptr().
 
    PetscObjectComposeFunction() can be used with any PETSc object (such as
    `Mat`, `Vec`, `KSP`, `SNES`, etc.) or any user-provided object.
 
-.seealso: `PetscObjectQueryFunction()`, `PetscContainerCreate()` `PetscObjectCompose()`, `PetscObjectQuery()`
+   `PetscCallMethod()` is used to call a function that is stored in the objects obj->ops table.
+
+.seealso: `PetscObjectQueryFunction()`, `PetscContainerCreate()` `PetscObjectCompose()`, `PetscObjectQuery()`, `PetscTryMethod()`, `PetscUseMethod()`,
+          `PetscCallMethod()`
 M*/
 
 PetscErrorCode  PetscObjectComposeFunction_Private(PetscObject obj,const char name[],void (*fptr)(void))

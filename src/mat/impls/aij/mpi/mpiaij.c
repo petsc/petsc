@@ -974,9 +974,9 @@ PetscErrorCode MatMult_MPIAIJ(Mat A,Vec xx,Vec yy)
   PetscCall(VecGetLocalSize(xx,&nt));
   PetscCheck(nt == A->cmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Incompatible partition of A (%" PetscInt_FMT ") and xx (%" PetscInt_FMT ")",A->cmap->n,nt);
   PetscCall(VecScatterBegin(Mvctx,xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD));
-  PetscCall((*a->A->ops->mult)(a->A,xx,yy));
+  PetscUseTypeMethod(a->A,mult,xx,yy);
   PetscCall(VecScatterEnd(Mvctx,xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD));
-  PetscCall((*a->B->ops->multadd)(a->B,a->lvec,yy,yy));
+  PetscUseTypeMethod(a->B,multadd,a->lvec,yy,yy);
   PetscFunctionReturn(0);
 }
 

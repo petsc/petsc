@@ -2541,9 +2541,8 @@ PetscErrorCode MatMult(Mat mat,Vec x,Vec y)
   MatCheckPreallocated(mat,1);
 
   PetscCall(VecLockReadPush(x));
-  PetscCheck(mat->ops->mult,PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Matrix type %s does not have a multiply defined",((PetscObject)mat)->type_name);
   PetscCall(PetscLogEventBegin(MAT_Mult,mat,x,y,0));
-  PetscCall((*mat->ops->mult)(mat,x,y));
+  PetscUseTypeMethod(mat,mult,x,y);
   PetscCall(PetscLogEventEnd(MAT_Mult,mat,x,y,0));
   if (mat->erroriffailure) PetscCall(VecValidValues(y,3,PETSC_FALSE));
   PetscCall(VecLockReadPop(x));
