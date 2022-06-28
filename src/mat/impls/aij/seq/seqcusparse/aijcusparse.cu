@@ -1999,25 +1999,27 @@ static PetscErrorCode MatILUFactorSymbolic_SeqAIJCUSPARSE_ILU0(Mat fact,Mat A,IS
   }
 
   /* Estimate FLOPs of the numeric factorization */
-  Mat_SeqAIJ     *Aseq = (Mat_SeqAIJ*)A->data;
-  PetscInt       *Adiag,nzRow,nzLeft;
-  PetscLogDouble flops = 0.0;
+ {
+    Mat_SeqAIJ     *Aseq = (Mat_SeqAIJ*)A->data;
+    PetscInt       *Ai,*Adiag,nzRow,nzLeft;
+    PetscLogDouble flops = 0.0;
 
-  PetscCall(MatMarkDiagonal_SeqAIJ(A));
-  Ai    = Aseq->i;
-  Adiag = Aseq->diag;
-  for (PetscInt i=0; i<m; i++) {
-    if (Ai[i] < Adiag[i] && Adiag[i] < Ai[i+1]) { /* There are nonzeros left to the diagonal of row i */
-      nzRow  = Ai[i+1] - Ai[i];
-      nzLeft = Adiag[i] - Ai[i];
-      /* We want to eliminate nonzeros left to the diagonal one by one. Assume each time, nonzeros right
-         and include the eliminated one will be updated, which incurs a multiplication and an addition.
-      */
-      nzLeft = (nzRow-1)/2;
-      flops += nzLeft*(2.0*nzRow-nzLeft+1);
+    PetscCall(MatMarkDiagonal_SeqAIJ(A));
+    Ai    = Aseq->i;
+    Adiag = Aseq->diag;
+    for (PetscInt i=0; i<m; i++) {
+      if (Ai[i] < Adiag[i] && Adiag[i] < Ai[i+1]) { /* There are nonzeros left to the diagonal of row i */
+        nzRow  = Ai[i+1] - Ai[i];
+        nzLeft = Adiag[i] - Ai[i];
+        /* We want to eliminate nonzeros left to the diagonal one by one. Assume each time, nonzeros right
+          and include the eliminated one will be updated, which incurs a multiplication and an addition.
+        */
+        nzLeft = (nzRow-1)/2;
+        flops += nzLeft*(2.0*nzRow-nzLeft+1);
+      }
     }
+    fs->numericFactFlops = flops;
   }
-  fs->numericFactFlops = flops;
   fact->ops->lufactornumeric = MatILUFactorNumeric_SeqAIJCUSPARSE_ILU0;
   PetscFunctionReturn(0);
 }
@@ -2300,22 +2302,24 @@ static PetscErrorCode MatICCFactorSymbolic_SeqAIJCUSPARSE_ICC0(Mat fact,Mat A,IS
   }
 
   /* Estimate FLOPs of the numeric factorization */
-  Mat_SeqAIJ     *Aseq = (Mat_SeqAIJ*)A->data;
-  PetscInt       nzRow,nzLeft;
-  PetscLogDouble flops = 0.0;
+  {
+    Mat_SeqAIJ     *Aseq = (Mat_SeqAIJ*)A->data;
+    PetscInt       *Ai,nzRow,nzLeft;
+    PetscLogDouble flops = 0.0;
 
-  Ai = Aseq->i;
-  for (PetscInt i=0; i<m; i++) {
-    nzRow = Ai[i+1] - Ai[i];
-    if (nzRow > 1) {
-      /* We want to eliminate nonzeros left to the diagonal one by one. Assume each time, nonzeros right
-         and include the eliminated one will be updated, which incurs a multiplication and an addition.
-      */
-      nzLeft = (nzRow-1)/2;
-      flops += nzLeft*(2.0*nzRow-nzLeft+1);
+    Ai = Aseq->i;
+    for (PetscInt i=0; i<m; i++) {
+      nzRow = Ai[i+1] - Ai[i];
+      if (nzRow > 1) {
+        /* We want to eliminate nonzeros left to the diagonal one by one. Assume each time, nonzeros right
+          and include the eliminated one will be updated, which incurs a multiplication and an addition.
+        */
+        nzLeft = (nzRow-1)/2;
+        flops += nzLeft*(2.0*nzRow-nzLeft+1);
+      }
     }
+    fs->numericFactFlops = flops;
   }
-  fs->numericFactFlops = flops;
   fact->ops->choleskyfactornumeric = MatICCFactorNumeric_SeqAIJCUSPARSE_ICC0;
   PetscFunctionReturn(0);
 }
@@ -2449,7 +2453,9 @@ static PetscErrorCode MatSeqAIJCUSPARSECopyFromGPU(Mat A)
 {
   Mat_SeqAIJ                   *a = (Mat_SeqAIJ*)A->data;
   Mat_SeqAIJCUSPARSE           *cusp = (Mat_SeqAIJCUSPARSE*)A->spptr;
+ #if CUSPARSE_VERSION >= 13500
   Mat_SeqAIJCUSPARSETriFactors *fs = (Mat_SeqAIJCUSPARSETriFactors*)A->spptr;
+ #endif
 
   PetscFunctionBegin;
   if (A->offloadmask == PETSC_OFFLOAD_GPU) {
