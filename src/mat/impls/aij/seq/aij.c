@@ -4880,7 +4880,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJ(Mat B)
 }
 
 /*
-    Given a matrix generated with MatGetFactor() duplicates all the information in A into B
+    Given a matrix generated with MatGetFactor() duplicates all the information in A into C
 */
 PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat C,Mat A,MatDuplicateOption cpvalues,PetscBool mallocmatspace)
 {
