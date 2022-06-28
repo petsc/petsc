@@ -3962,9 +3962,9 @@ static PetscErrorCode PforestCheckLocalizeCell(DM plex, PetscInt cDim, Vec cVecO
         quad_coords[d] += (corner & (1 << d)) ? h : 0;
       }
 #ifndef P4_TO_P8
-      PetscStackCallP4est(p4est_qcoord_to_vertex,(pforest->forest->connectivity, coarsePoint, quad_coords[0], quad_coords[1], corner_coords));
+      PetscCallP4est(p4est_qcoord_to_vertex,(pforest->forest->connectivity, coarsePoint, quad_coords[0], quad_coords[1], corner_coords));
 #else
-      PetscStackCallP4est(p4est_qcoord_to_vertex,(pforest->forest->connectivity, coarsePoint, quad_coords[0], quad_coords[1], quad_coords[2], corner_coords));
+      PetscCallP4est(p4est_qcoord_to_vertex,(pforest->forest->connectivity, coarsePoint, quad_coords[0], quad_coords[1], quad_coords[2], corner_coords));
 #endif
       for (PetscInt d = 0; d < PetscMin(cDim, 3); d++) {
         if (fabs (vert_coords[d] - corner_coords[d]) > PETSC_SMALL) {
@@ -4009,9 +4009,9 @@ static PetscErrorCode PforestLocalizeCell(DM plex, PetscInt cDim, DM_Forest_pfor
       quad_coords[d] += (corner & (1 << d)) ? h : 0;
     }
 #ifndef P4_TO_P8
-    PetscStackCallP4est(p4est_qcoord_to_vertex,(pforest->forest->connectivity, coarsePoint, quad_coords[0], quad_coords[1], corner_coords));
+    PetscCallP4est(p4est_qcoord_to_vertex,(pforest->forest->connectivity, coarsePoint, quad_coords[0], quad_coords[1], corner_coords));
 #else
-    PetscStackCallP4est(p4est_qcoord_to_vertex,(pforest->forest->connectivity, coarsePoint, quad_coords[0], quad_coords[1], quad_coords[2], corner_coords));
+    PetscCallP4est(p4est_qcoord_to_vertex,(pforest->forest->connectivity, coarsePoint, quad_coords[0], quad_coords[1], quad_coords[2], corner_coords));
 #endif
     for (PetscInt d = 0; d < PetscMin(cDim, 3); d++) {
       coords[pos++] = corner_coords[d];

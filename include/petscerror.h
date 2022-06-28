@@ -1010,7 +1010,7 @@ typedef struct {
         stack__.file[stack__.currentsize]         = file__;                             \
         stack__.line[stack__.currentsize]         = line__;                             \
       } else {                                                                          \
-        stack__.file[stack__.currentsize]         = NULL;                               \
+        stack__.file[stack__.currentsize]         = PETSC_NULLPTR;                      \
         stack__.line[stack__.currentsize]         = 0;                                  \
       }                                                                                 \
       stack__.petscroutine[stack__.currentsize] = petsc_routine__;                      \

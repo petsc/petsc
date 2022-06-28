@@ -147,8 +147,6 @@ PetscErrorCode  PetscSignalHandlerDefault(int sig,void *ptr)
   (*PetscErrorPrintf)("or try https://docs.nvidia.com/cuda/cuda-memcheck/index.html on NVIDIA CUDA systems to find memory corruption errors\n");
 #endif
 #if PetscDefined(USE_DEBUG)
-  PetscStackPop;  /* remove stack frames for error handlers */
-  PetscStackPop;
   (*PetscErrorPrintf)("---------------------  Stack Frames ------------------------------------\n");
   PetscStackView(PETSC_STDOUT);
 #else
