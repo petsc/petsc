@@ -1462,7 +1462,7 @@ PetscErrorCode DMPlexInflateToGeomModel(DM dm)
   }
   PetscCall(VecRestoreArrayWrite(coordinates, &coords));
   /* Clear out global coordinates */
-  PetscCall(VecDestroy(&dm->coordinates));
+  PetscCall(VecDestroy(&dm->coordinates[0].x));
 #endif
   PetscFunctionReturn(0);
 }

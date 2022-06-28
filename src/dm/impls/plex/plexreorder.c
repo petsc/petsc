@@ -193,6 +193,36 @@ PetscErrorCode DMPlexGetOrdering1D(DM dm, IS *perm)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode DMPlexRemapCoordinates_Private(IS perm, PetscSection cs, Vec coordinates, PetscSection *csNew, Vec *coordinatesNew)
+{
+  PetscScalar    *coords, *coordsNew;
+  const PetscInt *pperm;
+  PetscInt        pStart, pEnd, p;
+  const char     *name;
+
+  PetscFunctionBegin;
+  PetscCall(PetscSectionPermute(cs, perm, csNew));
+  PetscCall(VecDuplicate(coordinates, coordinatesNew));
+  PetscCall(PetscObjectGetName((PetscObject) coordinates, &name));
+  PetscCall(PetscObjectSetName((PetscObject) *coordinatesNew, name));
+  PetscCall(VecGetArray(coordinates, &coords));
+  PetscCall(VecGetArray(*coordinatesNew, &coordsNew));
+  PetscCall(PetscSectionGetChart(*csNew, &pStart, &pEnd));
+  PetscCall(ISGetIndices(perm, &pperm));
+  for (p = pStart; p < pEnd; ++p) {
+    PetscInt dof, off, offNew, d;
+
+    PetscCall(PetscSectionGetDof(*csNew, p, &dof));
+    PetscCall(PetscSectionGetOffset(cs, p, &off));
+    PetscCall(PetscSectionGetOffset(*csNew, pperm[p], &offNew));
+    for (d = 0; d < dof; ++d) coordsNew[offNew+d] = coords[off+d];
+  }
+  PetscCall(ISRestoreIndices(perm, &pperm));
+  PetscCall(VecRestoreArray(coordinates, &coords));
+  PetscCall(VecRestoreArray(*coordinatesNew, &coordsNew));
+  PetscFunctionReturn(0);
+}
+
 /*@
   DMPlexPermute - Reorder the mesh according to the input permutation
 
@@ -297,41 +327,32 @@ PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)
   }
   /* Remap coordinates */
   {
-    DM              cdm, cdmNew;
-    PetscSection    csection, csectionNew;
-    Vec             coordinates, coordinatesNew;
-    PetscScalar    *coords, *coordsNew;
-    const PetscInt *pperm;
-    PetscInt        pStart, pEnd, p;
-    const char     *name;
+    DM           cdm, cdmNew;
+    PetscSection cs, csNew;
+    Vec          coordinates, coordinatesNew;
 
-    PetscCall(DMGetCoordinateDM(dm, &cdm));
-    PetscCall(DMGetLocalSection(cdm, &csection));
-    PetscCall(PetscSectionPermute(csection, perm, &csectionNew));
+    PetscCall(DMGetCoordinateSection(dm, &cs));
     PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
-    PetscCall(VecDuplicate(coordinates, &coordinatesNew));
-    PetscCall(PetscObjectGetName((PetscObject)coordinates,&name));
-    PetscCall(PetscObjectSetName((PetscObject)coordinatesNew,name));
-    PetscCall(VecGetArray(coordinates, &coords));
-    PetscCall(VecGetArray(coordinatesNew, &coordsNew));
-    PetscCall(PetscSectionGetChart(csectionNew, &pStart, &pEnd));
-    PetscCall(ISGetIndices(perm, &pperm));
-    for (p = pStart; p < pEnd; ++p) {
-      PetscInt dof, off, offNew, d;
-
-      PetscCall(PetscSectionGetDof(csectionNew, p, &dof));
-      PetscCall(PetscSectionGetOffset(csection, p, &off));
-      PetscCall(PetscSectionGetOffset(csectionNew, pperm[p], &offNew));
-      for (d = 0; d < dof; ++d) coordsNew[offNew+d] = coords[off+d];
-    }
-    PetscCall(ISRestoreIndices(perm, &pperm));
-    PetscCall(VecRestoreArray(coordinates, &coords));
-    PetscCall(VecRestoreArray(coordinatesNew, &coordsNew));
-    PetscCall(DMGetCoordinateDM(*pdm, &cdmNew));
-    PetscCall(DMSetLocalSection(cdmNew, csectionNew));
+    PetscCall(DMPlexRemapCoordinates_Private(perm, cs, coordinates, &csNew, &coordinatesNew));
+    PetscCall(DMSetCoordinateSection(*pdm, PETSC_DETERMINE, csNew));
     PetscCall(DMSetCoordinatesLocal(*pdm, coordinatesNew));
-    PetscCall(PetscSectionDestroy(&csectionNew));
+    PetscCall(PetscSectionDestroy(&csNew));
     PetscCall(VecDestroy(&coordinatesNew));
+
+    PetscCall(DMGetCellCoordinateDM(dm, &cdm));
+    if (cdm) {
+      PetscCall(DMGetCoordinateDM(*pdm, &cdm));
+      PetscCall(DMClone(cdm, &cdmNew));
+      PetscCall(DMSetCellCoordinateDM(*pdm, cdmNew));
+      PetscCall(DMDestroy(&cdmNew));
+      PetscCall(DMGetCellCoordinateSection(dm, &cs));
+      PetscCall(DMGetCellCoordinatesLocal(dm, &coordinates));
+      PetscCall(DMPlexRemapCoordinates_Private(perm, cs, coordinates, &csNew, &coordinatesNew));
+      PetscCall(DMSetCellCoordinateSection(*pdm, PETSC_DETERMINE, csNew));
+      PetscCall(DMSetCellCoordinatesLocal(*pdm, coordinatesNew));
+      PetscCall(PetscSectionDestroy(&csNew));
+      PetscCall(VecDestroy(&coordinatesNew));
+    }
   }
   PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, PETSC_TRUE, *pdm));
   (*pdm)->setupcalled = PETSC_TRUE;

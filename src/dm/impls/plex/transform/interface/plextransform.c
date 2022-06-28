@@ -1712,49 +1712,41 @@ static PetscErrorCode DMPlexTransformMapLocalizedCoordinates(DMPlexTransform tr,
 
 static PetscErrorCode DMPlexTransformSetCoordinates(DMPlexTransform tr, DM rdm)
 {
-  DM                    dm, cdm;
-  PetscSection          coordSection, coordSectionNew;
-  Vec                   coordsLocal, coordsLocalNew;
-  const PetscScalar    *coords;
-  PetscScalar          *coordsNew;
-  const DMBoundaryType *bd;
-  const PetscReal      *maxCell, *L;
-  PetscBool             isperiodic, localizeVertices = PETSC_FALSE, localizeCells = PETSC_FALSE;
-  PetscInt              dE, dEo, d, cStart, cEnd, c, vStartNew, vEndNew, v, pStart, pEnd, p, ocStart, ocEnd;
+  DM                 dm, cdm, cdmCell, cdmNew, cdmCellNew;
+  PetscSection       coordSection, coordSectionNew, coordSectionCell, coordSectionCellNew;
+  Vec                coordsLocal, coordsLocalNew, coordsLocalCell = NULL, coordsLocalCellNew;
+  const PetscScalar *coords;
+  PetscScalar       *coordsNew;
+  const PetscReal   *maxCell, *L;
+  PetscBool          localized, localizeVertices = PETSC_FALSE, localizeCells = PETSC_FALSE;
+  PetscInt           dE, dEo, d, cStart, cEnd, c, cStartNew, cEndNew, vStartNew, vEndNew, v, pStart, pEnd, p;
 
   PetscFunctionBegin;
   PetscCall(DMPlexTransformGetDM(tr, &dm));
   PetscCall(DMGetCoordinateDM(dm, &cdm));
-  PetscCall(DMGetPeriodicity(dm, &isperiodic, &maxCell, &L, &bd));
-  /* Determine if we need to localize coordinates when generating them */
-  if (isperiodic) {
+  PetscCall(DMGetCellCoordinateDM(dm, &cdmCell));
+  PetscCall(DMGetCoordinatesLocalized(dm, &localized));
+  PetscCall(DMGetPeriodicity(dm, &maxCell, &L));
+  if (localized) {
+    /* Localize coordinates of new vertices */
     localizeVertices = PETSC_TRUE;
-    if (!maxCell) {
-      PetscBool localized;
-      PetscCall(DMGetCoordinatesLocalized(dm, &localized));
-      PetscCheck(localized,PetscObjectComm((PetscObject) dm), PETSC_ERR_USER, "Cannot refine a periodic mesh if coordinates have not been localized");
-      localizeCells = PETSC_TRUE;
-    }
+    /* If we do not have a mechanism for automatically localizing cell coordinates, we need to compute them explicitly for every divided cell */
+    if (!maxCell) localizeCells = PETSC_TRUE;
   }
-
   PetscCall(DMGetCoordinateSection(dm, &coordSection));
   PetscCall(PetscSectionGetFieldComponents(coordSection, 0, &dEo));
   if (maxCell) {
     PetscReal maxCellNew[3];
 
     for (d = 0; d < dEo; ++d) maxCellNew[d] = maxCell[d]/2.0;
-    PetscCall(DMSetPeriodicity(rdm, isperiodic, maxCellNew, L, bd));
-  } else {
-    PetscCall(DMSetPeriodicity(rdm, isperiodic, maxCell, L, bd));
+    PetscCall(DMSetPeriodicity(rdm, maxCellNew, L));
   }
   PetscCall(DMGetCoordinateDim(rdm, &dE));
   PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject) rdm), &coordSectionNew));
   PetscCall(PetscSectionSetNumFields(coordSectionNew, 1));
   PetscCall(PetscSectionSetFieldComponents(coordSectionNew, 0, dE));
   PetscCall(DMPlexGetDepthStratum(rdm, 0, &vStartNew, &vEndNew));
-  if (localizeCells) PetscCall(PetscSectionSetChart(coordSectionNew, 0,         vEndNew));
-  else               PetscCall(PetscSectionSetChart(coordSectionNew, vStartNew, vEndNew));
-
+  PetscCall(PetscSectionSetChart(coordSectionNew, vStartNew, vEndNew));
   /* Localization should be inherited */
   /*   Stefano calculates parent cells for each new cell for localization */
   /*   Localized cells need coordinates of closure */
@@ -1762,12 +1754,27 @@ static PetscErrorCode DMPlexTransformSetCoordinates(DMPlexTransform tr, DM rdm)
     PetscCall(PetscSectionSetDof(coordSectionNew, v, dE));
     PetscCall(PetscSectionSetFieldDof(coordSectionNew, v, 0, dE));
   }
+  PetscCall(PetscSectionSetUp(coordSectionNew));
+  PetscCall(DMSetCoordinateSection(rdm, PETSC_DETERMINE, coordSectionNew));
+
   if (localizeCells) {
+    PetscCall(DMGetCoordinateDM(rdm, &cdmNew));
+    PetscCall(DMClone(cdmNew, &cdmCellNew));
+    PetscCall(DMSetCellCoordinateDM(rdm, cdmCellNew));
+    PetscCall(DMDestroy(&cdmCellNew));
+
+    PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject) rdm), &coordSectionCellNew));
+    PetscCall(PetscSectionSetNumFields(coordSectionCellNew, 1));
+    PetscCall(PetscSectionSetFieldComponents(coordSectionCellNew, 0, dE));
+    PetscCall(DMPlexGetHeightStratum(rdm, 0, &cStartNew, &cEndNew));
+    PetscCall(PetscSectionSetChart(coordSectionCellNew, cStartNew, cEndNew));
+
+    PetscCall(DMGetCellCoordinateSection(dm, &coordSectionCell));
     PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
     for (c = cStart; c < cEnd; ++c) {
       PetscInt dof;
 
-      PetscCall(PetscSectionGetDof(coordSection, c, &dof));
+      PetscCall(PetscSectionGetDof(coordSectionCell, c, &dof));
       if (dof) {
         DMPolytopeType  ct;
         DMPolytopeType *rct;
@@ -1788,16 +1795,16 @@ static PetscErrorCode DMPlexTransformSetCoordinates(DMPlexTransform tr, DM rdm)
             PetscCall(DMPlexGetTransitiveClosure(rdm, cNew, PETSC_TRUE, &clSize, &closure));
             for (cl = 0; cl < clSize*2; cl += 2) {if ((closure[cl] >= vStartNew) && (closure[cl] < vEndNew)) ++Nv;}
             PetscCall(DMPlexRestoreTransitiveClosure(rdm, cNew, PETSC_TRUE, &clSize, &closure));
-            PetscCall(PetscSectionSetDof(coordSectionNew, cNew, Nv * dE));
-            PetscCall(PetscSectionSetFieldDof(coordSectionNew, cNew, 0, Nv * dE));
+            PetscCall(PetscSectionSetDof(coordSectionCellNew, cNew, Nv * dE));
+            PetscCall(PetscSectionSetFieldDof(coordSectionCellNew, cNew, 0, Nv * dE));
           }
         }
       }
     }
+    PetscCall(PetscSectionSetUp(coordSectionCellNew));
+    PetscCall(DMSetCellCoordinateSection(rdm, PETSC_DETERMINE, coordSectionCellNew));
   }
-  PetscCall(PetscSectionSetUp(coordSectionNew));
   PetscCall(DMViewFromOptions(dm, NULL, "-coarse_dm_view"));
-  PetscCall(DMSetCoordinateSection(rdm, PETSC_DETERMINE, coordSectionNew));
   {
     VecType     vtype;
     PetscInt    coordSizeNew, bs;
@@ -1816,46 +1823,37 @@ static PetscErrorCode DMPlexTransformSetCoordinates(DMPlexTransform tr, DM rdm)
   }
   PetscCall(VecGetArrayRead(coordsLocal, &coords));
   PetscCall(VecGetArray(coordsLocalNew, &coordsNew));
-  PetscCall(PetscSectionGetChart(coordSection, &ocStart, &ocEnd));
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
-  /* First set coordinates for vertices*/
+  /* First set coordinates for vertices */
   for (p = pStart; p < pEnd; ++p) {
     DMPolytopeType  ct;
     DMPolytopeType *rct;
     PetscInt       *rsize, *rcone, *rornt;
     PetscInt        Nct, n, r;
-    PetscBool       hasVertex = PETSC_FALSE, isLocalized = PETSC_FALSE;
+    PetscBool       hasVertex = PETSC_FALSE;
 
     PetscCall(DMPlexGetCellType(dm, p, &ct));
     PetscCall(DMPlexTransformCellTransform(tr, ct, p, NULL, &Nct, &rct, &rsize, &rcone, &rornt));
     for (n = 0; n < Nct; ++n) {
       if (rct[n] == DM_POLYTOPE_POINT) {hasVertex = PETSC_TRUE; break;}
     }
-    if (localizeVertices && ct != DM_POLYTOPE_POINT && (p >= ocStart) && (p < ocEnd)) {
-      PetscInt dof;
-      PetscCall(PetscSectionGetDof(coordSection, p, &dof));
-      if (dof) isLocalized = PETSC_TRUE;
-    }
     if (hasVertex) {
       const PetscScalar *icoords = NULL;
+      const PetscScalar *array   = NULL;
       PetscScalar       *pcoords = NULL;
-      PetscInt          Nc, Nv, v, d;
+      PetscBool          isDG;
+      PetscInt           Nc, Nv, v, d;
 
-      PetscCall(DMPlexVecGetClosure(dm, coordSection, coordsLocal, p, &Nc, &pcoords));
+      PetscCall(DMPlexGetCellCoordinates(dm, p, &isDG, &Nc, &array, &pcoords));
 
       icoords = pcoords;
       Nv      = Nc/dEo;
       if (ct != DM_POLYTOPE_POINT) {
-        if (localizeVertices) {
+        if (localizeVertices && maxCell) {
           PetscScalar anchor[3];
 
           for (d = 0; d < dEo; ++d) anchor[d] = pcoords[d];
-          if (!isLocalized) {
-            for (v = 0; v < Nv; ++v) PetscCall(DMLocalizeCoordinate_Internal(dm, dEo, anchor, &pcoords[v*dEo], &pcoords[v*dEo]));
-          } else {
-            Nv = Nc/(2*dEo);
-            for (v = Nv; v < Nv*2; ++v) PetscCall(DMLocalizeCoordinate_Internal(dm, dEo, anchor, &pcoords[v*dEo], &pcoords[v*dEo]));
-          }
+          for (v = 0; v < Nv; ++v) PetscCall(DMLocalizeCoordinate_Internal(dm, dEo, anchor, &pcoords[v*dEo], &pcoords[v*dEo]));
         }
       }
       for (n = 0; n < Nct; ++n) {
@@ -1870,52 +1868,70 @@ static PetscErrorCode DMPlexTransformSetCoordinates(DMPlexTransform tr, DM rdm)
           PetscCall(DMPlexSnapToGeomModel(dm, p, dE, vcoords, &coordsNew[off]));
         }
       }
-      PetscCall(DMPlexVecRestoreClosure(dm, coordSection, coordsLocal, p, &Nc, &pcoords));
-    }
-  }
-  /* Then set coordinates for cells by localizing */
-  for (p = pStart; p < pEnd; ++p) {
-    DMPolytopeType  ct;
-    DMPolytopeType *rct;
-    PetscInt       *rsize, *rcone, *rornt;
-    PetscInt        Nct, n, r;
-    PetscBool       isLocalized = PETSC_FALSE;
-
-    PetscCall(DMPlexGetCellType(dm, p, &ct));
-    PetscCall(DMPlexTransformCellTransform(tr, ct, p, NULL, &Nct, &rct, &rsize, &rcone, &rornt));
-    if (localizeCells && ct != DM_POLYTOPE_POINT && (p >= ocStart) && (p < ocEnd)) {
-      PetscInt dof;
-      PetscCall(PetscSectionGetDof(coordSection, p, &dof));
-      if (dof) isLocalized = PETSC_TRUE;
-    }
-    if (isLocalized) {
-      const PetscScalar *pcoords;
-
-      PetscCall(DMPlexPointLocalRead(cdm, p, coords, &pcoords));
-      for (n = 0; n < Nct; ++n) {
-        const PetscInt Nr = rsize[n];
-
-        if (DMPolytopeTypeGetDim(ct) != DMPolytopeTypeGetDim(rct[n])) continue;
-        for (r = 0; r < Nr; ++r) {
-          PetscInt pNew, offNew;
-
-          /* It looks like Stefano and Lisandro are allowing localized coordinates without defining the periodic boundary, which means that
-             DMLocalizeCoordinate_Internal() will not work. Localized coordinates will have to have obtained by the affine map of the larger
-             cell to the ones it produces. */
-          PetscCall(DMPlexTransformGetTargetPoint(tr, ct, rct[n], p, r, &pNew));
-          PetscCall(PetscSectionGetOffset(coordSectionNew, pNew, &offNew));
-          PetscCall(DMPlexTransformMapLocalizedCoordinates(tr, ct, rct[n], r, pcoords, &coordsNew[offNew]));
-        }
-      }
+      PetscCall(DMPlexRestoreCellCoordinates(dm, p, &isDG, &Nc, &array, &pcoords));
     }
   }
   PetscCall(VecRestoreArrayRead(coordsLocal, &coords));
   PetscCall(VecRestoreArray(coordsLocalNew, &coordsNew));
   PetscCall(DMSetCoordinatesLocal(rdm, coordsLocalNew));
-  /* TODO Stefano has a final reduction if some hybrid coordinates cannot be found. (needcoords) Should not be needed. */
   PetscCall(VecDestroy(&coordsLocalNew));
   PetscCall(PetscSectionDestroy(&coordSectionNew));
+  /* Then set coordinates for cells by localizing */
   if (!localizeCells) PetscCall(DMLocalizeCoordinates(rdm));
+  else {
+    VecType     vtype;
+    PetscInt    coordSizeNew, bs;
+    const char *name;
+
+    PetscCall(DMGetCellCoordinatesLocal(dm, &coordsLocalCell));
+    PetscCall(VecCreate(PETSC_COMM_SELF, &coordsLocalCellNew));
+    PetscCall(PetscSectionGetStorageSize(coordSectionCellNew, &coordSizeNew));
+    PetscCall(VecSetSizes(coordsLocalCellNew, coordSizeNew, PETSC_DETERMINE));
+    PetscCall(PetscObjectGetName((PetscObject) coordsLocalCell, &name));
+    PetscCall(PetscObjectSetName((PetscObject) coordsLocalCellNew, name));
+    PetscCall(VecGetBlockSize(coordsLocalCell, &bs));
+    PetscCall(VecSetBlockSize(coordsLocalCellNew, dEo == dE ? bs : dE));
+    PetscCall(VecGetType(coordsLocalCell, &vtype));
+    PetscCall(VecSetType(coordsLocalCellNew, vtype));
+    PetscCall(VecGetArrayRead(coordsLocalCell, &coords));
+    PetscCall(VecGetArray(coordsLocalCellNew, &coordsNew));
+
+    for (p = pStart; p < pEnd; ++p) {
+      DMPolytopeType  ct;
+      DMPolytopeType *rct;
+      PetscInt       *rsize, *rcone, *rornt;
+      PetscInt        dof = 0, Nct, n, r;
+
+      PetscCall(DMPlexGetCellType(dm, p, &ct));
+      PetscCall(DMPlexTransformCellTransform(tr, ct, p, NULL, &Nct, &rct, &rsize, &rcone, &rornt));
+      if (p >= cStart && p < cEnd) PetscCall(PetscSectionGetDof(coordSectionCell, p, &dof));
+      if (dof) {
+        const PetscScalar *pcoords;
+
+        PetscCall(DMPlexPointLocalRead(cdmCell, p, coords, &pcoords));
+        for (n = 0; n < Nct; ++n) {
+          const PetscInt Nr = rsize[n];
+
+          if (DMPolytopeTypeGetDim(ct) != DMPolytopeTypeGetDim(rct[n])) continue;
+          for (r = 0; r < Nr; ++r) {
+            PetscInt pNew, offNew;
+
+            /* It looks like Stefano and Lisandro are allowing localized coordinates without defining the periodic boundary, which means that
+               DMLocalizeCoordinate_Internal() will not work. Localized coordinates will have to have obtained by the affine map of the larger
+               cell to the ones it produces. */
+            PetscCall(DMPlexTransformGetTargetPoint(tr, ct, rct[n], p, r, &pNew));
+            PetscCall(PetscSectionGetOffset(coordSectionCellNew, pNew, &offNew));
+            PetscCall(DMPlexTransformMapLocalizedCoordinates(tr, ct, rct[n], r, pcoords, &coordsNew[offNew]));
+          }
+        }
+      }
+    }
+    PetscCall(VecRestoreArrayRead(coordsLocalCell, &coords));
+    PetscCall(VecRestoreArray(coordsLocalCellNew, &coordsNew));
+    PetscCall(DMSetCellCoordinatesLocal(rdm, coordsLocalCellNew));
+    PetscCall(VecDestroy(&coordsLocalCellNew));
+    PetscCall(PetscSectionDestroy(&coordSectionCellNew));
+  }
   PetscFunctionReturn(0);
 }
 

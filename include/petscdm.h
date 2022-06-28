@@ -132,34 +132,46 @@ PETSC_EXTERN PetscErrorCode DMSetDimension(DM,PetscInt);
 PETSC_EXTERN PetscErrorCode DMGetDimPoints(DM,PetscInt,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMGetUseNatural(DM,PetscBool*);
 PETSC_EXTERN PetscErrorCode DMSetUseNatural(DM,PetscBool);
+PETSC_EXTERN PetscErrorCode DMGetNeighbors(DM,PetscInt*,const PetscMPIInt**);
 
 /* Coordinate support */
 PETSC_EXTERN PetscErrorCode DMGetCoordinateDM(DM,DM*);
 PETSC_EXTERN PetscErrorCode DMSetCoordinateDM(DM,DM);
+PETSC_EXTERN PetscErrorCode DMGetCellCoordinateDM(DM,DM*);
+PETSC_EXTERN PetscErrorCode DMSetCellCoordinateDM(DM,DM);
 PETSC_EXTERN PetscErrorCode DMGetCoordinateDim(DM,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMSetCoordinateDim(DM,PetscInt);
 PETSC_EXTERN PetscErrorCode DMGetCoordinateSection(DM,PetscSection*);
 PETSC_EXTERN PetscErrorCode DMSetCoordinateSection(DM,PetscInt,PetscSection);
+PETSC_EXTERN PetscErrorCode DMGetCellCoordinateSection(DM,PetscSection*);
+PETSC_EXTERN PetscErrorCode DMSetCellCoordinateSection(DM,PetscInt,PetscSection);
 PETSC_EXTERN PetscErrorCode DMGetCoordinates(DM,Vec*);
 PETSC_EXTERN PetscErrorCode DMSetCoordinates(DM,Vec);
-PETSC_EXTERN PetscErrorCode DMGetCoordinatesLocal(DM,Vec*);
+PETSC_EXTERN PetscErrorCode DMGetCellCoordinates(DM,Vec*);
+PETSC_EXTERN PetscErrorCode DMSetCellCoordinates(DM,Vec);
 PETSC_EXTERN PetscErrorCode DMGetCoordinatesLocalSetUp(DM);
+PETSC_EXTERN PetscErrorCode DMGetCoordinatesLocal(DM,Vec*);
 PETSC_EXTERN PetscErrorCode DMGetCoordinatesLocalNoncollective(DM,Vec*);
 PETSC_EXTERN PetscErrorCode DMGetCoordinatesLocalTuple(DM,IS,PetscSection*,Vec*);
 PETSC_EXTERN PetscErrorCode DMSetCoordinatesLocal(DM,Vec);
+PETSC_EXTERN PetscErrorCode DMGetCellCoordinatesLocalSetUp(DM);
+PETSC_EXTERN PetscErrorCode DMGetCellCoordinatesLocal(DM,Vec*);
+PETSC_EXTERN PetscErrorCode DMGetCellCoordinatesLocalNoncollective(DM,Vec*);
+PETSC_EXTERN PetscErrorCode DMSetCellCoordinatesLocal(DM,Vec);
+PETSC_EXTERN PetscErrorCode DMGetCoordinateField(DM,DMField*);
+PETSC_EXTERN PetscErrorCode DMSetCoordinateField(DM,DMField);
+PETSC_EXTERN PetscErrorCode DMGetLocalBoundingBox(DM,PetscReal[],PetscReal[]);
+PETSC_EXTERN PetscErrorCode DMGetBoundingBox(DM,PetscReal[],PetscReal[]);
+PETSC_EXTERN PetscErrorCode DMProjectCoordinates(DM,PetscFE);
 PETSC_EXTERN PetscErrorCode DMLocatePoints(DM,Vec,DMPointLocationType,PetscSF*);
-PETSC_EXTERN PetscErrorCode DMGetPeriodicity(DM,PetscBool*,const PetscReal**,const PetscReal**,const DMBoundaryType**);
-PETSC_EXTERN PetscErrorCode DMSetPeriodicity(DM,PetscBool,const PetscReal[],const PetscReal[],const DMBoundaryType[]);
+
+/* Periodicity support */
+PETSC_EXTERN PetscErrorCode DMGetPeriodicity(DM,const PetscReal*[],const PetscReal*[]);
+PETSC_EXTERN PetscErrorCode DMSetPeriodicity(DM,const PetscReal[],const PetscReal[]);
 PETSC_EXTERN PetscErrorCode DMLocalizeCoordinate(DM, const PetscScalar[], PetscBool, PetscScalar[]);
 PETSC_EXTERN PetscErrorCode DMLocalizeCoordinates(DM);
 PETSC_EXTERN PetscErrorCode DMGetCoordinatesLocalized(DM,PetscBool*);
 PETSC_EXTERN PetscErrorCode DMGetCoordinatesLocalizedLocal(DM,PetscBool*);
-PETSC_EXTERN PetscErrorCode DMGetNeighbors(DM,PetscInt*,const PetscMPIInt**);
-PETSC_EXTERN PetscErrorCode DMGetCoordinateField(DM,DMField*);
-PETSC_EXTERN PetscErrorCode DMSetCoordinateField(DM,DMField);
-PETSC_EXTERN PetscErrorCode DMGetBoundingBox(DM,PetscReal[],PetscReal[]);
-PETSC_EXTERN PetscErrorCode DMGetLocalBoundingBox(DM,PetscReal[],PetscReal[]);
-PETSC_EXTERN PetscErrorCode DMProjectCoordinates(DM,PetscFE);
 
 /* block hook interface */
 PETSC_EXTERN PetscErrorCode DMSubDomainHookAdd(DM,PetscErrorCode (*)(DM,DM,void*),PetscErrorCode (*)(DM,VecScatter,VecScatter,DM,void*),void*);

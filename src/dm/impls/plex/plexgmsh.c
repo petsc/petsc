@@ -1453,9 +1453,9 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   PetscViewer    parentviewer = NULL;
   PetscBT        periodicVerts = NULL;
   PetscBT        periodicCells = NULL;
-  DM             cdm;
-  PetscSection   coordSection;
-  Vec            coordinates;
+  DM             cdm, cdmCell = NULL;
+  PetscSection   cs, csCell = NULL;
+  Vec            coordinates, coordinatesCell;
   DMLabel        cellSets = NULL, faceSets = NULL, vertSets = NULL, marker = NULL, *regionSets;
   PetscInt       dim = 0, coordDim = -1, order = 0;
   PetscInt       numNodes = 0, numElems = 0, numVerts = 0, numCells = 0;
@@ -1802,18 +1802,21 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     PetscCall(PetscFEDestroy(&fe));
     PetscCall(DMCreateDS(cdm));
   }
+  if (periodic) {
+    PetscCall(DMClone(cdm, &cdmCell));
+    PetscCall(DMSetCellCoordinateDM(*dm, cdmCell));
+  }
 
   /* Create coordinates */
   if (highOrder) {
-
     PetscInt     maxDof = GmshNumNodes_HEX(order)*coordDim;
     double       *coords = mesh ? mesh->nodelist->xyz : NULL;
     PetscSection section;
     PetscScalar  *cellCoords;
 
     PetscCall(DMSetLocalSection(cdm, NULL));
-    PetscCall(DMGetLocalSection(cdm, &coordSection));
-    PetscCall(PetscSectionClone(coordSection, &section));
+    PetscCall(DMGetLocalSection(cdm, &cs));
+    PetscCall(PetscSectionClone(cs, &section));
     PetscCall(DMPlexSetClosurePermutationTensor(cdm, 0, section)); /* XXX Implement DMPlexSetClosurePermutationLexicographic() */
 
     PetscCall(DMCreateLocalVector(cdm, &coordinates));
@@ -1874,74 +1877,82 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     }
     PetscCall(PetscSectionDestroy(&section));
     PetscCall(PetscFree(cellCoords));
-
   } else {
-
     PetscInt    *nodeMap;
     double      *coords = mesh ? mesh->nodelist->xyz : NULL;
     PetscScalar *pointCoords;
 
-    PetscCall(DMGetLocalSection(cdm, &coordSection));
-    PetscCall(PetscSectionSetNumFields(coordSection, 1));
-    PetscCall(PetscSectionSetFieldComponents(coordSection, 0, coordDim));
-    if (periodic) { /* we need to localize coordinates on cells */
-      PetscCall(PetscSectionSetChart(coordSection, 0, numCells+numVerts));
-    } else {
-      PetscCall(PetscSectionSetChart(coordSection, numCells, numCells+numVerts));
+    PetscCall(DMGetCoordinateSection(*dm, &cs));
+    PetscCall(PetscSectionSetNumFields(cs, 1));
+    PetscCall(PetscSectionSetFieldComponents(cs, 0, coordDim));
+    PetscCall(PetscSectionSetChart(cs, numCells, numCells+numVerts));
+    for (v = numCells; v < numCells+numVerts; ++v) {
+      PetscCall(PetscSectionSetDof(cs, v, coordDim));
+      PetscCall(PetscSectionSetFieldDof(cs, v, 0, coordDim));
     }
+    PetscCall(PetscSectionSetUp(cs));
+
+    /* We need to localize coordinates on cells */
     if (periodic) {
+      PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject) cdmCell), &csCell));
+      PetscCall(PetscSectionSetNumFields(csCell, 1));
+      PetscCall(PetscSectionSetFieldComponents(csCell, 0, coordDim));
+      PetscCall(PetscSectionSetChart(csCell, 0, numCells));
       for (cell = 0; cell < numCells; ++cell) {
         if (PetscUnlikely(PetscBTLookup(periodicCells, cell))) {
           GmshElement *elem = mesh->elements + cell;
-          PetscInt dof = elem->numVerts * coordDim;
-          PetscCall(PetscSectionSetDof(coordSection, cell, dof));
-          PetscCall(PetscSectionSetFieldDof(coordSection, cell, 0, dof));
+          PetscInt     dof  = elem->numVerts * coordDim;
+
+          PetscCall(PetscSectionSetDof(csCell, cell, dof));
+          PetscCall(PetscSectionSetFieldDof(csCell, cell, 0, dof));
         }
       }
+      PetscCall(PetscSectionSetUp(csCell));
+      PetscCall(DMSetCellCoordinateSection(*dm, PETSC_DETERMINE, csCell));
     }
-    for (v = numCells; v < numCells+numVerts; ++v) {
-      PetscCall(PetscSectionSetDof(coordSection, v, coordDim));
-      PetscCall(PetscSectionSetFieldDof(coordSection, v, 0, coordDim));
-    }
-    PetscCall(PetscSectionSetUp(coordSection));
 
     PetscCall(DMCreateLocalVector(cdm, &coordinates));
     PetscCall(VecGetArray(coordinates, &pointCoords));
+    PetscCall(PetscMalloc1(numVerts, &nodeMap));
+    for (n = 0; n < numNodes; n++)
+      if (mesh->vertexMap[n] >= 0) nodeMap[mesh->vertexMap[n]] = n;
+    for (v = 0; v < numVerts; ++v) {
+      PetscInt off, node = nodeMap[v];
+
+      PetscCall(PetscSectionGetOffset(cs, numCells + v, &off));
+      for (d = 0; d < coordDim; ++d) pointCoords[off+d] = (PetscReal) coords[node*3+d];
+    }
+    PetscCall(VecRestoreArray(coordinates, &pointCoords));
+    PetscCall(PetscFree(nodeMap));
+
     if (periodic) {
+      PetscCall(DMCreateLocalVector(cdmCell, &coordinatesCell));
+      PetscCall(VecGetArray(coordinatesCell, &pointCoords));
       for (cell = 0; cell < numCells; ++cell) {
         if (PetscUnlikely(PetscBTLookup(periodicCells, cell))) {
           GmshElement *elem = mesh->elements + cell;
-          PetscInt off, node;
-          for (v = 0; v < elem->numVerts; ++v)
-            cone[v] = elem->nodes[v];
-          PetscCall(DMPlexReorderCell(cdm, cell, cone));
-          PetscCall(PetscSectionGetOffset(coordSection, cell, &off));
+          PetscInt     off, node;
+          for (v = 0; v < elem->numVerts; ++v) cone[v] = elem->nodes[v];
+          PetscCall(DMPlexReorderCell(cdmCell, cell, cone));
+          PetscCall(PetscSectionGetOffset(csCell, cell, &off));
           for (v = 0; v < elem->numVerts; ++v)
             for (node = cone[v], d = 0; d < coordDim; ++d)
               pointCoords[off++] = (PetscReal) coords[node*3+d];
         }
       }
+      PetscCall(VecSetBlockSize(coordinatesCell, coordDim));
+      PetscCall(VecRestoreArray(coordinatesCell, &pointCoords));
+      PetscCall(DMSetCellCoordinatesLocal(*dm, coordinatesCell));
+      PetscCall(VecDestroy(&coordinatesCell));
     }
-    PetscCall(PetscMalloc1(numVerts, &nodeMap));
-    for (n = 0; n < numNodes; n++)
-      if (mesh->vertexMap[n] >= 0)
-        nodeMap[mesh->vertexMap[n]] = n;
-    for (v = 0; v < numVerts; ++v) {
-      PetscInt off, node = nodeMap[v];
-      PetscCall(PetscSectionGetOffset(coordSection, numCells + v, &off));
-      for (d = 0; d < coordDim; ++d)
-        pointCoords[off+d] = (PetscReal) coords[node*3+d];
-    }
-    PetscCall(PetscFree(nodeMap));
-    PetscCall(VecRestoreArray(coordinates, &pointCoords));
-
+    PetscCall(PetscSectionDestroy(&csCell));
+    PetscCall(DMDestroy(&cdmCell));
   }
 
   PetscCall(PetscObjectSetName((PetscObject) coordinates, "coordinates"));
   PetscCall(VecSetBlockSize(coordinates, coordDim));
   PetscCall(DMSetCoordinatesLocal(*dm, coordinates));
   PetscCall(VecDestroy(&coordinates));
-  PetscCall(DMSetPeriodicity(*dm, periodic, NULL, NULL, NULL));
 
   PetscCall(GmshMeshDestroy(&mesh));
   PetscCall(PetscBTDestroy(&periodicVerts));

@@ -202,7 +202,7 @@ PetscErrorCode DMPlexCheckInterfaceCones(DM dm)
   if (!sf) PetscFunctionReturn(0);
   PetscCall(PetscSFGetGraph(sf, &nroots, &nleaves, &mine, &remote));
   if (nroots < 0) PetscFunctionReturn(0);
-  PetscCheck(dm->coordinates || dm->coordinatesLocal,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DM coordinates must be set");
+  PetscCheck(dm->coordinates[0].x || dm->coordinates[0].xl, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DM coordinates must be set");
   PetscCall(PetscSFSetUp(sf));
   PetscCall(PetscSFGetRootRanks(sf, &nranks, &ranks, &roffset, &rmine, &rremote));
 

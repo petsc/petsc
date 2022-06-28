@@ -424,8 +424,7 @@ static PetscErrorCode DMFieldInitialize_DA(DMField field)
   field->ops->view                    = DMFieldView_DA;
   dm = field->dm;
   PetscCall(DMGetDimension(dm,&dim));
-  if (dm->coordinates) coords = dm->coordinates;
-  else if (dm->coordinatesLocal) coords = dm->coordinatesLocal;
+  PetscCall(DMGetCoordinates(dm, &coords));
   if (coords) {
     PetscInt          n;
     const PetscScalar *array;

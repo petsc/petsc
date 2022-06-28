@@ -6,68 +6,64 @@
 
 typedef struct _n_DMField_DS
 {
-  PetscInt    fieldNum;
-  Vec         vec;
-  PetscInt    height;
-  PetscObject *disc;
-  PetscBool   multifieldVec;
-}
-DMField_DS;
+  PetscBool    multifieldVec;
+  PetscInt     height;   /* Point height at which we want values and number of discretizations */
+  PetscInt     fieldNum; /* Number in DS of field which we evaluate */
+  PetscObject *disc;     /* Discretizations of this field at each height */
+  Vec          vec;      /* Field values */
+  DM           dmDG;     /* DM for the DG values */
+  PetscObject *discDG;   /* DG Discretizations of this field at each height */
+  Vec          vecDG;    /* DG Field values */
+} DMField_DS;
 
 static PetscErrorCode DMFieldDestroy_DS(DMField field)
 {
-  DMField_DS     *dsfield;
-  PetscInt       i;
+  DMField_DS *dsfield = (DMField_DS *) field->data;
+  PetscInt    i;
 
   PetscFunctionBegin;
-  dsfield = (DMField_DS *) field->data;
   PetscCall(VecDestroy(&dsfield->vec));
-  for (i = 0; i < dsfield->height; i++) {
-    PetscCall(PetscObjectDereference(dsfield->disc[i]));
-  }
+  for (i = 0; i < dsfield->height; i++) PetscCall(PetscObjectDereference(dsfield->disc[i]));
   PetscCall(PetscFree(dsfield->disc));
+  PetscCall(VecDestroy(&dsfield->vecDG));
+  if (dsfield->discDG) for (i = 0; i < dsfield->height; i++) PetscCall(PetscObjectDereference(dsfield->discDG[i]));
+  PetscCall(PetscFree(dsfield->discDG));
   PetscCall(PetscFree(dsfield));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode DMFieldView_DS(DMField field,PetscViewer viewer)
 {
-  DMField_DS     *dsfield = (DMField_DS *) field->data;
-  PetscBool      iascii;
-  PetscObject    disc;
+  DMField_DS *dsfield = (DMField_DS *) field->data;
+  PetscObject disc;
+  PetscBool   iascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii));
   disc = dsfield->disc[0];
   if (iascii) {
-    PetscCall(PetscViewerASCIIPrintf(viewer, "PetscDS field %" PetscInt_FMT "\n",dsfield->fieldNum));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "PetscDS field %" PetscInt_FMT "\n", dsfield->fieldNum));
     PetscCall(PetscViewerASCIIPushTab(viewer));
-    PetscCall(PetscObjectView(disc,viewer));
+    PetscCall(PetscObjectView(disc, viewer));
     PetscCall(PetscViewerASCIIPopTab(viewer));
   }
   PetscCall(PetscViewerASCIIPushTab(viewer));
-  PetscCheck(!dsfield->multifieldVec,PetscObjectComm((PetscObject)field),PETSC_ERR_SUP,"View of subfield not implemented yet");
-  PetscCall(VecView(dsfield->vec,viewer));
+  PetscCheck(!dsfield->multifieldVec, PetscObjectComm((PetscObject) field), PETSC_ERR_SUP, "View of subfield not implemented yet");
+  PetscCall(VecView(dsfield->vec, viewer));
   PetscCall(PetscViewerASCIIPopTab(viewer));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMFieldDSGetHeightDisc(DMField field, PetscInt height, PetscObject *disc)
+static PetscErrorCode DMFieldDSGetHeightDisc(DMField field, PetscInt height, PetscObject discList[], PetscObject *disc)
 {
-  DMField_DS     *dsfield = (DMField_DS *) field->data;
-
   PetscFunctionBegin;
-  if (!dsfield->disc[height]) {
-    PetscClassId   id;
+  if (!discList[height]) {
+    PetscClassId id;
 
-    PetscCall(PetscObjectGetClassId(dsfield->disc[0],&id));
-    if (id == PETSCFE_CLASSID) {
-      PetscFE fe = (PetscFE) dsfield->disc[0];
-
-      PetscCall(PetscFECreateHeightTrace(fe,height,(PetscFE *)&dsfield->disc[height]));
-    }
+    PetscCall(PetscObjectGetClassId(discList[0], &id));
+    if (id == PETSCFE_CLASSID) PetscCall(PetscFECreateHeightTrace((PetscFE) discList[0], height, (PetscFE *) &discList[height]));
   }
-  *disc = dsfield->disc[height];
+  *disc = discList[height];
   PetscFunctionReturn(0);
 }
 
@@ -87,6 +83,66 @@ static PetscErrorCode DMFieldDSGetHeightDisc(DMField field, PetscInt height, Pet
     }                                                                            \
   } while (0)
 
+/*
+  Since this is used for coordinates, we need to allow for the possibility that values come from multiple sections/Vecs, so that we can have DG version of the coordinates for periodicity. This reproduces DMPlexGetCellCoordinates_Internal().
+*/
+PetscErrorCode DMFieldGetClosure_Internal(DMField field, PetscInt cell, PetscBool *isDG, PetscInt *Nc, const PetscScalar *array[], PetscScalar *values[])
+{
+  DMField_DS        *dsfield = (DMField_DS *) field->data;
+  DM                 fdm     = dsfield->dmDG;
+  PetscSection       s       = NULL;
+  const PetscScalar *cvalues;
+  PetscInt           pStart, pEnd;
+
+  PetscFunctionBeginHot;
+  *isDG   = PETSC_FALSE;
+  *Nc     = 0;
+  *array  = NULL;
+  *values = NULL;
+  /* Check for cellwise section */
+  if (fdm) PetscCall(DMGetLocalSection(fdm, &s));
+  if (!s) goto cg;
+  /* Check that the cell exists in the cellwise section */
+  PetscCall(PetscSectionGetChart(s, &pStart, &pEnd));
+  if (cell < pStart || cell >= pEnd) goto cg;
+  /* Check for cellwise coordinates for this cell */
+  PetscCall(PetscSectionGetDof(s, cell, Nc));
+  if (!*Nc) goto cg;
+  /* Check for cellwise coordinates */
+  if (!dsfield->vecDG) goto cg;
+  /* Get cellwise coordinates */
+  PetscCall(VecGetArrayRead(dsfield->vecDG, array));
+  PetscCall(DMPlexPointLocalRead(fdm, cell, *array, &cvalues));
+  PetscCall(DMGetWorkArray(fdm, *Nc, MPIU_SCALAR, values));
+  PetscCall(PetscArraycpy(*values, cvalues, *Nc));
+  PetscCall(VecRestoreArrayRead(dsfield->vecDG, array));
+  *isDG = PETSC_TRUE;
+  PetscFunctionReturn(0);
+cg:
+  /* Use continuous values */
+  PetscCall(DMFieldGetDM(field, &fdm));
+  PetscCall(DMGetLocalSection(fdm, &s));
+  PetscCall(DMPlexVecGetClosure(fdm, s, dsfield->vec, cell, Nc, values));
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMFieldRestoreClosure_Internal(DMField field, PetscInt cell, PetscBool *isDG, PetscInt *Nc, const PetscScalar *array[], PetscScalar *values[])
+{
+  DMField_DS  *dsfield = (DMField_DS *) field->data;
+  DM           fdm;
+  PetscSection s;
+
+  PetscFunctionBeginHot;
+  if (*isDG) {
+    PetscCall(DMRestoreWorkArray(dsfield->dmDG, *Nc, MPIU_SCALAR, values));
+  } else {
+    PetscCall(DMFieldGetDM(field, &fdm));
+    PetscCall(DMGetLocalSection(fdm, &s));
+    PetscCall(DMPlexVecRestoreClosure(fdm, s, dsfield->vec, cell, Nc, (PetscScalar **) values));
+  }
+  PetscFunctionReturn(0);
+}
+
 /* TODO: Reorganize interface so that I can reuse a tabulation rather than mallocing each time */
 static PetscErrorCode DMFieldEvaluateFE_DS(DMField field, IS pointIS, PetscQuadrature quad, PetscDataType type, void *B, void *D, void *H)
 {
@@ -105,7 +161,7 @@ static PetscErrorCode DMFieldEvaluateFE_DS(DMField field, IS pointIS, PetscQuadr
   dm   = field->dm;
   nc   = field->numComponents;
   PetscCall(PetscQuadratureGetData(quad,&dim,NULL,&nq,&qpoints,NULL));
-  PetscCall(DMFieldDSGetHeightDisc(field,dsfield->height - 1 - dim,&disc));
+  PetscCall(DMFieldDSGetHeightDisc(field, dsfield->height - 1 - dim, dsfield->disc, &disc));
   PetscCall(DMGetDimension(dm,&meshDim));
   PetscCall(DMGetLocalSection(dm,&section));
   PetscCall(PetscSectionGetField(section,dsfield->fieldNum,&section));
@@ -124,11 +180,13 @@ static PetscErrorCode DMFieldEvaluateFE_DS(DMField field, IS pointIS, PetscQuadr
     PetscCall(PetscFEGetDimension(fe,&feDim));
     PetscCall(PetscFECreateTabulation(fe,1,nq,qpoints,K,&T));
     for (i = 0; i < numCells; i++) {
-      PetscInt     c = isStride ? (sfirst + i * stride) : points[i];
-      PetscInt     closureSize;
-      PetscScalar *elem = NULL;
+      PetscInt           c = isStride ? (sfirst + i * stride) : points[i];
+      PetscInt           closureSize;
+      const PetscScalar *array;
+      PetscScalar       *elem = NULL;
+      PetscBool          isDG;
 
-      PetscCall(DMPlexVecGetClosure(dm,section,dsfield->vec,c,&closureSize,&elem));
+      PetscCall(DMFieldGetClosure_Internal(field, c, &isDG, &closureSize, &array, &elem));
       if (B) {
         /* field[c] = T[q,b,c] . coef[b], so v[c] = T[q,b,c] . coords[b] */
         if (type == PETSC_SCALAR) {
@@ -163,7 +221,7 @@ static PetscErrorCode DMFieldEvaluateFE_DS(DMField field, IS pointIS, PetscQuadr
           DMFieldDSdot(cH,T->T[2],elem,nq,feDim,(nc * dim * dim),PetscRealPart);
         }
       }
-      PetscCall(DMPlexVecRestoreClosure(dm,section,dsfield->vec,c,&closureSize,&elem));
+      PetscCall(DMFieldRestoreClosure_Internal(field, c, &isDG, &closureSize, &array, &elem));
     }
     PetscCall(PetscTabulationDestroy(&T));
   } else SETERRQ(PetscObjectComm((PetscObject)field),PETSC_ERR_SUP,"Not implemented");
@@ -197,7 +255,7 @@ static PetscErrorCode DMFieldEvaluate_DS(DMField field, Vec points, PetscDataTyp
   PetscFunctionBegin;
   nc   = field->numComponents;
   PetscCall(DMGetLocalSection(field->dm,&section));
-  PetscCall(DMFieldDSGetHeightDisc(field,0,&cellDisc));
+  PetscCall(DMFieldDSGetHeightDisc(field, 0, dsfield->disc, &cellDisc));
   PetscCall(PetscObjectGetClassId(cellDisc, &discID));
   PetscCheck(discID == PETSCFE_CLASSID,PETSC_COMM_SELF,PETSC_ERR_PLIB, "Discretization type not supported");
   cellFE = (PetscFE) cellDisc;
@@ -230,13 +288,14 @@ static PetscErrorCode DMFieldEvaluate_DS(DMField field, Vec points, PetscDataTyp
     PetscInt nq = cellDegrees[c], p;
 
     if (nq) {
-      PetscInt          K = H ? 2 : (D ? 1 : (B ? 0 : -1));
-      PetscTabulation   T;
-      PetscInt     closureSize;
-      PetscScalar *elem = NULL;
-      PetscReal   *quadPoints;
-      PetscQuadrature quad;
-      PetscInt d, e, f, g;
+      PetscInt           K = H ? 2 : (D ? 1 : (B ? 0 : -1));
+      PetscTabulation    T;
+      PetscQuadrature    quad;
+      const PetscScalar *array;
+      PetscScalar       *elem = NULL;
+      PetscReal         *quadPoints;
+      PetscBool          isDG;
+      PetscInt           closureSize, d, e, f, g;
 
       for (p = 0; p < dim * nq; p++) coordsReal[p] = PetscRealPart(cellPoints[dim * offset + p]);
       PetscCall(DMPlexCoordinatesToReference(field->dm, c, nq, coordsReal, coordsRef));
@@ -247,7 +306,7 @@ static PetscErrorCode DMFieldEvaluate_DS(DMField field, Vec points, PetscDataTyp
       PetscCall(PetscQuadratureSetData(quad, dimR, 0, nq, quadPoints, NULL));
       PetscCall(DMPlexComputeCellGeometryFEM(field->dm, c, quad, v, J, invJ, detJ));
       PetscCall(PetscQuadratureDestroy(&quad));
-      PetscCall(DMPlexVecGetClosure(field->dm,section,dsfield->vec,c,&closureSize,&elem));
+      PetscCall(DMFieldGetClosure_Internal(field, c, &isDG, &closureSize, &array, &elem));
       if (B) {
         if (datatype == PETSC_SCALAR) {
           PetscScalar *cB = &cellBs[nc * offset];
@@ -365,7 +424,7 @@ static PetscErrorCode DMFieldEvaluate_DS(DMField field, Vec points, PetscDataTyp
           }
         }
       }
-      PetscCall(DMPlexVecRestoreClosure(field->dm,section,dsfield->vec,c,&closureSize,&elem));
+      PetscCall(DMFieldRestoreClosure_Internal(field, c, &isDG, &closureSize, &array, &elem));
       PetscCall(PetscTabulationDestroy(&T));
     }
     offset += nq;
@@ -445,7 +504,7 @@ static PetscErrorCode DMFieldEvaluateFV_DS(DMField field, IS pointIS, PetscDataT
     if (imin < hEnd) break;
   }
   dim -= h;
-  PetscCall(DMFieldDSGetHeightDisc(field,h,&disc));
+  PetscCall(DMFieldDSGetHeightDisc(field, h, dsfield->disc, &disc));
   PetscCall(PetscObjectGetClassId(disc,&id));
   PetscCheck(id == PETSCFE_CLASSID,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Discretization not supported");
   PetscCall(DMGetCoordinateField(field->dm, &coordField));
@@ -656,7 +715,7 @@ static PetscErrorCode DMFieldGetDegree_DS(DMField field, IS pointIS, PetscInt *m
       if (imin < hEnd) break;
     }
   }
-  PetscCall(DMFieldDSGetHeightDisc(field,h,&disc));
+  PetscCall(DMFieldDSGetHeightDisc(field, h, dsfield->disc, &disc));
   PetscCall(PetscObjectGetClassId(disc,&id));
   if (id == PETSCFE_CLASSID) {
     PetscFE    fe = (PetscFE) disc;
@@ -718,7 +777,7 @@ static PetscErrorCode DMFieldCreateDefaultQuadrature_DS(DMField field, IS pointI
   h -= cellHeight;
   *quad = NULL;
   if (h < dsfield->height) {
-    PetscCall(DMFieldDSGetHeightDisc(field,h,&disc));
+    PetscCall(DMFieldDSGetHeightDisc(field, h, dsfield->disc, &disc));
     PetscCall(PetscObjectGetClassId(disc,&id));
     if (id != PETSCFE_CLASSID) PetscFunctionReturn(0);
     fe = (PetscFE) disc;
@@ -820,6 +879,7 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
     PetscCall(ISDestroy(&suppIS));
     PetscCall(PetscFree(cells));
   } else {
+    DMField_DS          *dsfield = (DMField_DS *) field->data;
     PetscObject          faceDisc, cellDisc;
     PetscClassId         faceId, cellId;
     PetscDualSpace       dsp;
@@ -837,8 +897,8 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
     PetscReal           *dummyWeights;
     PetscQuadrature      cellQuad = NULL;
 
-    PetscCall(DMFieldDSGetHeightDisc(field, 1, &faceDisc));
-    PetscCall(DMFieldDSGetHeightDisc(field, 0, &cellDisc));
+    PetscCall(DMFieldDSGetHeightDisc(field, 1, dsfield->disc, &faceDisc));
+    PetscCall(DMFieldDSGetHeightDisc(field, 0, dsfield->disc, &cellDisc));
     PetscCall(PetscObjectGetClassId(faceDisc,&faceId));
     PetscCall(PetscObjectGetClassId(cellDisc,&cellId));
     PetscCheck(faceId == PETSCFE_CLASSID && cellId == PETSCFE_CLASSID,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not supported");
@@ -1072,23 +1132,27 @@ PETSC_INTERN PetscErrorCode DMFieldCreate_DS(DMField field)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMFieldCreateDS(DM dm, PetscInt fieldNum, Vec vec,DMField *field)
+PetscErrorCode DMFieldCreateDSWithDG(DM dm, DM dmDG, PetscInt fieldNum, Vec vec, Vec vecDG, DMField *field)
 {
-  DMField        b;
-  DMField_DS     *dsfield;
-  PetscObject    disc = NULL;
-  PetscBool      isContainer = PETSC_FALSE;
-  PetscClassId   id = -1;
-  PetscInt       numComponents = -1, dsNumFields;
-  PetscSection   section;
+  DMField      b;
+  DMField_DS  *dsfield;
+  PetscObject  disc = NULL, discDG = NULL;
+  PetscSection section;
+  PetscBool    isContainer = PETSC_FALSE;
+  PetscClassId id = -1;
+  PetscInt     numComponents = -1, dsNumFields;
 
   PetscFunctionBegin;
-  PetscCall(DMGetLocalSection(dm,&section));
-  PetscCall(PetscSectionGetFieldComponents(section,fieldNum,&numComponents));
-  PetscCall(DMGetNumFields(dm,&dsNumFields));
-  if (dsNumFields) PetscCall(DMGetField(dm,fieldNum,NULL,&disc));
+  PetscCall(DMGetLocalSection(dm, &section));
+  PetscCall(PetscSectionGetFieldComponents(section, fieldNum, &numComponents));
+  PetscCall(DMGetNumFields(dm, &dsNumFields));
+  if (dsNumFields) PetscCall(DMGetField(dm, fieldNum, NULL, &disc));
+  if (dsNumFields && dmDG) {
+    PetscCall(DMGetField(dmDG, fieldNum, NULL, &discDG));
+    PetscCall(PetscObjectReference(discDG));
+  }
   if (disc) {
-    PetscCall(PetscObjectGetClassId(disc,&id));
+    PetscCall(PetscObjectGetClassId(disc, &id));
     isContainer = (id == PETSC_CONTAINER_CLASSID) ? PETSC_TRUE : PETSC_FALSE;
   }
   if (!disc || isContainer) {
@@ -1106,23 +1170,33 @@ PetscErrorCode DMFieldCreateDS(DM dm, PetscInt fieldNum, Vec vec,DMField *field)
     PetscCall(PetscFEViewFromOptions(fe, NULL, "-field_fe_view"));
     disc = (PetscObject) fe;
   } else PetscCall(PetscObjectReference(disc));
-  PetscCall(PetscObjectGetClassId(disc,&id));
-  if (id == PETSCFE_CLASSID) {
-    PetscFE fe = (PetscFE) disc;
-
-    PetscCall(PetscFEGetNumComponents(fe,&numComponents));
-  } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Not implemented");
-  PetscCall(DMFieldCreate(dm,numComponents,DMFIELD_VERTEX,&b));
-  PetscCall(DMFieldSetType(b,DMFIELDDS));
+  PetscCall(PetscObjectGetClassId(disc, &id));
+  if (id == PETSCFE_CLASSID) PetscCall(PetscFEGetNumComponents((PetscFE) disc, &numComponents));
+  else                       SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Cannot determine number of discretization components");
+  PetscCall(DMFieldCreate(dm, numComponents, DMFIELD_VERTEX, &b));
+  PetscCall(DMFieldSetType(b, DMFIELDDS));
   dsfield = (DMField_DS *) b->data;
   dsfield->fieldNum = fieldNum;
-  PetscCall(DMGetDimension(dm,&dsfield->height));
+  PetscCall(DMGetDimension(dm, &dsfield->height));
   dsfield->height++;
-  PetscCall(PetscCalloc1(dsfield->height,&dsfield->disc));
+  PetscCall(PetscCalloc1(dsfield->height, &dsfield->disc));
   dsfield->disc[0] = disc;
-  PetscCall(PetscObjectReference((PetscObject)vec));
+  PetscCall(PetscObjectReference((PetscObject) vec));
   dsfield->vec = vec;
+  if (dmDG) {
+    dsfield->dmDG = dmDG;
+    PetscCall(PetscCalloc1(dsfield->height, &dsfield->discDG));
+    dsfield->discDG[0] = discDG;
+    PetscCall(PetscObjectReference((PetscObject) vecDG));
+    dsfield->vecDG = vecDG;
+  }
   *field = b;
+  PetscFunctionReturn(0);
+}
 
+PetscErrorCode DMFieldCreateDS(DM dm, PetscInt fieldNum, Vec vec, DMField *field)
+{
+  PetscFunctionBegin;
+  PetscCall(DMFieldCreateDSWithDG(dm, NULL, fieldNum, vec, NULL, field));
   PetscFunctionReturn(0);
 }

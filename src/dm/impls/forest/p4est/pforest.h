@@ -290,7 +290,7 @@ static PetscErrorCode DMFTopologyCreate_pforest(DM dm, DMForestTopology topology
   if (isBrick) {
     PetscBool flgN, flgP, flgM, flgB, useMorton = PETSC_TRUE, periodic = PETSC_FALSE;
     PetscInt  N[3] = {2,2,2}, P[3] = {0,0,0}, nretN = P4EST_DIM, nretP = P4EST_DIM, nretB = 2 * P4EST_DIM, i;
-    PetscReal B[6] = {0.0,1.0,0.0,1.0,0.0,1.0};
+    PetscReal B[6] = {0.0,1.0,0.0,1.0,0.0,1.0}, L[3] = {-1.0, -1.0, -1.0}, maxCell[3] = {-1.0, -1.0, -1.0};
 
     if (dm->setfromoptionscalled) {
       PetscCall(PetscOptionsGetIntArray(((PetscObject)dm)->options,prefix,"-dm_p4est_brick_size",N,&nretN,&flgN));
@@ -305,10 +305,13 @@ static PetscErrorCode DMFTopologyCreate_pforest(DM dm, DMForestTopology topology
       P[i]  = (P[i] ? DM_BOUNDARY_PERIODIC : DM_BOUNDARY_NONE);
       periodic = (PetscBool)(P[i] || periodic);
       if (!flgB) B[2 * i + 1] = N[i];
+      if (P[i]) {
+        L[i] = B[2 * i + 1];
+        maxCell[i] = 1.1 * (L[i] / N[i]);
+      }
     }
     PetscCall(DMFTopologyCreateBrick_pforest(dm,N,P,B,topo,useMorton));
-    /* the maxCell trick is not robust enough, localize on all cells if periodic */
-    PetscCall(DMSetPeriodicity(dm,periodic,NULL,NULL,NULL));
+    if (periodic) PetscCall(DMSetPeriodicity(dm, maxCell, L));
   } else {
     PetscCall(PetscNewLog(dm,topo));
 
@@ -1001,10 +1004,15 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
     }
   } else { /* initial */
     PetscInt initLevel, minLevel;
+#if defined(PETSC_HAVE_MPIUNI)
+    sc_MPI_Comm comm = sc_MPI_COMM_WORLD;
+#else
+    MPI_Comm comm = PetscObjectComm((PetscObject)dm);
+#endif
 
     PetscCall(DMForestGetInitialRefinement(dm,&initLevel));
     PetscCall(DMForestGetMinimumRefinement(dm,&minLevel));
-    PetscStackCallP4estReturn(pforest->forest,p4est_new_ext,(PetscObjectComm((PetscObject)dm),pforest->topo->conn,
+    PetscStackCallP4estReturn(pforest->forest,p4est_new_ext,(comm,pforest->topo->conn,
                                                              0,           /* minimum number of quadrants per processor */
                                                              initLevel,   /* level of refinement */
                                                              1,           /* uniform refinement */
@@ -1770,21 +1778,18 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
 
   /* 5: Compute the coordinates */
   {
-    PetscInt     coordDim;
-    Vec          coordVec;
-    PetscSection coordSec;
-    PetscBool    localized;
+    PetscInt coordDim;
 
     PetscCall(DMGetCoordinateDim(dm, &coordDim));
-    PetscCall(DMGetCoordinatesLocal(dm, &coordVec));
-    PetscCall(DMGetCoordinatesLocalizedLocal(dm, &localized));
-    PetscCall(DMGetCoordinateSection(dm, &coordSec));
+    PetscCall(DMGetCoordinatesLocalSetUp(dm));
     for (c = cStart; c < cEnd; c++) {
-      PetscInt    dof;
-      PetscScalar *cellCoords = NULL;
+      PetscInt           dof;
+      PetscBool          isDG;
+      PetscScalar       *cellCoords = NULL;
+      const PetscScalar *array;
 
-      PetscCall(DMPlexVecGetClosure(dm, coordSec, coordVec, c, &dof, &cellCoords));
-      PetscCheck(localized || dof == P4EST_CHILDREN * coordDim,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Need coordinates at the corners: (dof) %" PetscInt_FMT " != %d * %" PetscInt_FMT " (sdim)", dof, P4EST_CHILDREN, coordDim);
+      PetscCall(DMPlexGetCellCoordinates(dm, c, &isDG, &dof, &array, &cellCoords));
+      PetscCheck(dof == P4EST_CHILDREN * coordDim, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Need coordinates at the corners: (dof) %" PetscInt_FMT " != %d * %" PetscInt_FMT " (sdim)", dof, P4EST_CHILDREN, coordDim);
       for (v = 0; v < P4EST_CHILDREN; v++) {
         PetscInt i, lim = PetscMin(3, coordDim);
         PetscInt p4estVert = PetscVertToP4estVert[v];
@@ -1794,7 +1799,7 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
         for (i = 0; i < 3; i++)   conn->vertices[3 * (P4EST_CHILDREN * (c - cStart) + p4estVert) + i] = 0.;
         for (i = 0; i < lim; i++) conn->vertices[3 * (P4EST_CHILDREN * (c - cStart) + p4estVert) + i] = PetscRealPart(cellCoords[v * coordDim + i]);
       }
-      PetscCall(DMPlexVecRestoreClosure(dm, coordSec, coordVec, c, &dof, &cellCoords));
+      PetscCall(DMPlexRestoreCellCoordinates(dm, c, &isDG, &dof, &array, &cellCoords));
     }
   }
 
@@ -2064,6 +2069,11 @@ static PetscErrorCode DMCreateReferenceTree_pforest(MPI_Comm comm, DM *dm)
   DM                   dmRoot, dmRefined;
   DM_Plex              *mesh;
   PetscMPIInt          rank;
+#if defined(PETSC_HAVE_MPIUNI)
+  sc_MPI_Comm          comm_self = sc_MPI_COMM_SELF;
+#else
+  MPI_Comm             comm_self = PETSC_COMM_SELF;
+#endif
 
   PetscFunctionBegin;
   PetscStackCallP4estReturn(refcube,p4est_connectivity_new_byname,("unit"));
@@ -2077,8 +2087,8 @@ static PetscErrorCode DMCreateReferenceTree_pforest(MPI_Comm comm, DM *dm)
       }
     }
   }
-  PetscStackCallP4estReturn(root,p4est_new,(PETSC_COMM_SELF,refcube,0,NULL,NULL));
-  PetscStackCallP4estReturn(refined,p4est_new_ext,(PETSC_COMM_SELF,refcube,0,1,1,0,NULL,NULL));
+  PetscStackCallP4estReturn(root,p4est_new,(comm_self,refcube,0,NULL,NULL));
+  PetscStackCallP4estReturn(refined,p4est_new_ext,(comm_self,refcube,0,1,1,0,NULL,NULL));
   PetscCall(P4estToPlex_Local(root,&dmRoot));
   PetscCall(P4estToPlex_Local(refined,&dmRefined));
   {
@@ -3897,38 +3907,146 @@ static PetscErrorCode DMPforestMapCoordinates(DM dm, DM plex)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PforestQuadrantIsInterior (p4est_quadrant_t *quad, PetscBool *is_interior)
+{
+  PetscFunctionBegin;
+  p4est_qcoord_t h = P4EST_QUADRANT_LEN (quad->level);
+  if ((quad->x > 0) && (quad->x + h < P4EST_ROOT_LEN)
+#ifdef P4_TO_P8
+      && (quad->z > 0) && (quad->z + h < P4EST_ROOT_LEN)
+#endif
+      && (quad->y > 0) && (quad->y + h < P4EST_ROOT_LEN)) {
+    *is_interior = PETSC_TRUE;
+  } else {
+    *is_interior = PETSC_FALSE;
+  }
+  PetscFunctionReturn(0);
+}
+
+/* We always use DG coordinates with p4est: if they do not match the vertex
+   coordinates, add space for them in the section */
+static PetscErrorCode PforestCheckLocalizeCell(DM plex, PetscInt cDim, Vec cVecOld, DM_Forest_pforest *pforest, PetscSection oldSection, PetscSection newSection, PetscInt cell, PetscInt coarsePoint, p4est_quadrant_t *quad)
+{
+  PetscBool is_interior;
+
+  PetscFunctionBegin;
+  PetscCall(PforestQuadrantIsInterior(quad, &is_interior));
+  if (is_interior) { // quads in the interior of a coarse cell can't touch periodic interfaces
+    PetscCall(PetscSectionSetDof(newSection, cell, 0));
+    PetscCall(PetscSectionSetFieldDof(newSection, cell, 0, 0));
+  } else {
+    PetscInt     cSize;
+    PetscScalar *values = NULL;
+    PetscBool    same_coords = PETSC_TRUE;
+
+    PetscCall(DMPlexVecGetClosure(plex, oldSection, cVecOld, cell, &cSize, &values));
+    PetscAssert(cSize == cDim * P4EST_CHILDREN, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unexpected closure size");
+    for (int c = 0; c < P4EST_CHILDREN; c++) {
+      p4est_qcoord_t quad_coords[3];
+      p4est_qcoord_t h = P4EST_QUADRANT_LEN (quad->level);
+      double         corner_coords[3];
+      double         vert_coords[3];
+      PetscInt corner = PetscVertToP4estVert[c];
+
+      for (PetscInt d = 0; d < PetscMin(cDim, 3); d++) {
+        vert_coords[d] = PetscRealPart(values[c * cDim + d]);
+      }
+
+      quad_coords[0] = quad->x;
+      quad_coords[1] = quad->y;
+#ifdef P4_TO_P8
+      quad_coords[2] = quad->z;
+#endif
+      for (int d = 0; d < 3; d++) {
+        quad_coords[d] += (corner & (1 << d)) ? h : 0;
+      }
+#ifndef P4_TO_P8
+      PetscStackCallP4est(p4est_qcoord_to_vertex,(pforest->forest->connectivity, coarsePoint, quad_coords[0], quad_coords[1], corner_coords));
+#else
+      PetscStackCallP4est(p4est_qcoord_to_vertex,(pforest->forest->connectivity, coarsePoint, quad_coords[0], quad_coords[1], quad_coords[2], corner_coords));
+#endif
+      for (PetscInt d = 0; d < PetscMin(cDim, 3); d++) {
+        if (fabs (vert_coords[d] - corner_coords[d]) > PETSC_SMALL) {
+          same_coords = PETSC_FALSE;
+          break;
+        }
+      }
+    }
+    if (same_coords) {
+      PetscCall(PetscSectionSetDof(newSection, cell, 0));
+      PetscCall(PetscSectionSetFieldDof(newSection, cell, 0, 0));
+    } else {
+      PetscCall(PetscSectionSetDof(newSection, cell, cSize));
+      PetscCall(PetscSectionSetFieldDof(newSection, cell, 0, cSize));
+    }
+    PetscCall(DMPlexVecRestoreClosure(plex, oldSection, cVecOld, cell, &cSize, &values));
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PforestLocalizeCell(DM plex, PetscInt cDim, DM_Forest_pforest *pforest, PetscSection newSection, PetscInt cell, PetscInt coarsePoint, p4est_quadrant_t *quad, PetscScalar coords[])
+{
+  PetscInt  cdof, off;
+
+  PetscFunctionBegin;
+  PetscCall(PetscSectionGetDof(newSection, cell, &cdof));
+  if (!cdof) PetscFunctionReturn(0);
+
+  PetscCall(PetscSectionGetOffset(newSection, cell, &off));
+  for (PetscInt c = 0, pos = off; c < P4EST_CHILDREN; c++) {
+    p4est_qcoord_t quad_coords[3];
+    p4est_qcoord_t h = P4EST_QUADRANT_LEN (quad->level);
+    double         corner_coords[3];
+    PetscInt corner = PetscVertToP4estVert[c];
+
+    quad_coords[0] = quad->x;
+    quad_coords[1] = quad->y;
+#ifdef P4_TO_P8
+    quad_coords[2] = quad->z;
+#endif
+    for (int d = 0; d < 3; d++) {
+      quad_coords[d] += (corner & (1 << d)) ? h : 0;
+    }
+#ifndef P4_TO_P8
+    PetscStackCallP4est(p4est_qcoord_to_vertex,(pforest->forest->connectivity, coarsePoint, quad_coords[0], quad_coords[1], corner_coords));
+#else
+    PetscStackCallP4est(p4est_qcoord_to_vertex,(pforest->forest->connectivity, coarsePoint, quad_coords[0], quad_coords[1], quad_coords[2], corner_coords));
+#endif
+    for (PetscInt d = 0; d < PetscMin(cDim, 3); d++) {
+      coords[pos++] = corner_coords[d];
+    }
+    for (PetscInt d = PetscMin(cDim, 3); d < cDim; d++) {
+      coords[pos++] = 0.;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode DMPforestLocalizeCoordinates(DM dm, DM plex)
 {
   DM_Forest         *forest;
   DM_Forest_pforest *pforest;
-  DM                base;
-  Vec               coordinates, cVec;
-  PetscSection      oldSection, baseSection = NULL, newSection;
-  const PetscScalar *coords;
+  DM                base, cdm, cdmCell;
+  Vec               cVec, cVecOld;
+  PetscSection      oldSection, newSection;
   PetscScalar       *coords2;
+  const PetscReal   *L;
   PetscInt          cLocalStart, cLocalEnd, coarsePoint;
-  PetscInt          cDim, newStart, newEnd, dof, cdof = -1;
-  PetscInt          v, vStart, vEnd, cp, cStart, cEnd, cEndInterior, *coarsePoints;
-  PetscInt          *localize, overlap;
+  PetscInt          cDim, newStart, newEnd;
+  PetscInt          v, vStart, vEnd, cp, cStart, cEnd, cEndInterior;
   p4est_topidx_t    flt, llt, t;
   p4est_tree_t      *trees;
-  PetscBool         isper, baseLocalized = PETSC_FALSE;
+  PetscBool         baseLocalized = PETSC_FALSE;
 
   PetscFunctionBegin;
-  PetscCall(DMGetPeriodicity(dm,&isper,NULL,NULL,NULL));
-  if (!isper) PetscFunctionReturn(0);
+  PetscCall(DMGetPeriodicity(dm,NULL,&L));
   /* we localize on all cells if we don't have a base DM or the base DM coordinates have not been localized */
   PetscCall(DMGetCoordinateDim(dm, &cDim));
-  cdof = P4EST_CHILDREN*cDim;
   PetscCall(DMForestGetBaseDM(dm,&base));
-  if (base) {
-    PetscCall(DMGetCoordinatesLocalized(base,&baseLocalized));
-  }
+  if (base) PetscCall(DMGetCoordinatesLocalized(base,&baseLocalized));
   if (!baseLocalized) base = NULL;
+  if (!baseLocalized && !L) PetscFunctionReturn(0);
   PetscCall(DMPlexGetChart(plex, &newStart, &newEnd));
-
-  PetscCall(DMForestGetPartitionOverlap(dm,&overlap));
-  PetscCall(PetscCalloc1(overlap ? newEnd - newStart : 0,&localize));
 
   PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject) dm), &newSection));
   PetscCall(PetscSectionSetNumFields(newSection, 1));
@@ -3936,14 +4054,8 @@ static PetscErrorCode DMPforestLocalizeCoordinates(DM dm, DM plex)
   PetscCall(PetscSectionSetChart(newSection, newStart, newEnd));
 
   PetscCall(DMGetCoordinateSection(plex, &oldSection));
-  if (base) PetscCall(DMGetCoordinateSection(base, &baseSection));
-  PetscCall(DMPlexGetDepthStratum(plex,0,&vStart,&vEnd));
-  for (v = vStart; v < vEnd; ++v) {
-    PetscCall(PetscSectionGetDof(oldSection, v, &dof));
-    PetscCall(PetscSectionSetDof(newSection, v, dof));
-    PetscCall(PetscSectionSetFieldDof(newSection, v, 0, dof));
-    if (overlap) localize[v] = dof;
-  }
+  PetscCall(DMPlexGetDepthStratum(plex, 0, &vStart, &vEnd));
+  PetscCall(DMGetCoordinatesLocal(plex, &cVecOld));
 
   forest      = (DM_Forest*) dm->data;
   pforest     = (DM_Forest_pforest*) forest->data;
@@ -3953,42 +4065,35 @@ static PetscErrorCode DMPforestLocalizeCoordinates(DM dm, DM plex)
   llt         = pforest->forest->last_local_tree;
   trees       = (p4est_tree_t*) pforest->forest->trees->array;
 
-  cp = 0;
-  PetscCall(DMPlexGetHeightStratum(plex,0,&cStart,&cEnd));
-  PetscCall(DMPlexGetGhostCellStratum(plex,&cEndInterior,NULL));
+  PetscCall(DMPlexGetHeightStratum(plex, 0, &cStart, &cEnd));
+  PetscCall(DMPlexGetGhostCellStratum(plex, &cEndInterior, NULL));
   cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
-  PetscCall(PetscMalloc1(cEnd-cStart,&coarsePoints));
+  cp = 0;
   if (cLocalStart > 0) {
     p4est_quadrant_t *ghosts = (p4est_quadrant_t*) pforest->ghost->ghosts.array;
-    PetscInt         count;
+    PetscInt         cell;
 
-    for (count = 0; count < cLocalStart; count++) {
-      p4est_quadrant_t *quad = &ghosts[count];
+    for (cell = 0; cell < cLocalStart; ++cell, cp++) {
+      p4est_quadrant_t *quad = &ghosts[cell];
+
       coarsePoint = quad->p.which_tree;
-
-      if (baseSection) PetscCall(PetscSectionGetFieldDof(baseSection, coarsePoint, 0, &cdof));
-      PetscCall(PetscSectionSetDof(newSection, count, cdof));
-      PetscCall(PetscSectionSetFieldDof(newSection, count, 0, cdof));
-      coarsePoints[cp++] = cdof ? coarsePoint : -1;
-      if (overlap) localize[count] = cdof;
+      PetscCall(PforestCheckLocalizeCell(plex, cDim, cVecOld, pforest, oldSection, newSection, cell, coarsePoint, quad));
     }
   }
   for (t = flt; t <= llt; t++) {
     p4est_tree_t *tree    = &(trees[t]);
     PetscInt     offset   = cLocalStart + tree->quadrants_offset;
     PetscInt     numQuads = (PetscInt) tree->quadrants.elem_count;
+    p4est_quadrant_t *quads = (p4est_quadrant_t *) tree->quadrants.array;
     PetscInt     i;
 
     if (!numQuads) continue;
     coarsePoint = t;
-    if (baseSection) PetscCall(PetscSectionGetFieldDof(baseSection, coarsePoint, 0, &cdof));
-    for (i = 0; i < numQuads; i++) {
-      PetscInt newCell = i + offset;
+    for (i = 0; i < numQuads; i++, cp++) {
+      PetscInt cell = i + offset;
+      p4est_quadrant_t * quad = &quads[i];
 
-      PetscCall(PetscSectionSetDof(newSection, newCell, cdof));
-      PetscCall(PetscSectionSetFieldDof(newSection, newCell, 0, cdof));
-      coarsePoints[cp++] = cdof ? coarsePoint : -1;
-      if (overlap) localize[newCell] = cdof;
+      PetscCall(PforestCheckLocalizeCell(plex, cDim, cVecOld, pforest, oldSection, newSection, cell, coarsePoint, quad));
     }
   }
   if (cLocalEnd - cLocalStart < cEnd - cStart) {
@@ -3996,175 +4101,77 @@ static PetscErrorCode DMPforestLocalizeCoordinates(DM dm, DM plex)
     PetscInt         numGhosts = (PetscInt) pforest->ghost->ghosts.elem_count;
     PetscInt         count;
 
-    for (count = 0; count < numGhosts - cLocalStart; count++) {
+    for (count = 0; count < numGhosts - cLocalStart; count++, cp++) {
       p4est_quadrant_t *quad = &ghosts[count + cLocalStart];
       coarsePoint = quad->p.which_tree;
-      PetscInt newCell = count + cLocalEnd;
+      PetscInt cell = count + cLocalEnd;
 
-      if (baseSection) PetscCall(PetscSectionGetFieldDof(baseSection, coarsePoint, 0, &cdof));
-      PetscCall(PetscSectionSetDof(newSection, newCell, cdof));
-      PetscCall(PetscSectionSetFieldDof(newSection, newCell, 0, cdof));
-      coarsePoints[cp++] = cdof ? coarsePoint : -1;
-      if (overlap) localize[newCell] = cdof;
+      PetscCall(PforestCheckLocalizeCell(plex, cDim, cVecOld, pforest, oldSection, newSection, cell, coarsePoint, quad));
     }
   }
-  PetscCheck(cp == cEnd - cStart,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected number of fine cells %" PetscInt_FMT " != %" PetscInt_FMT,cp,cEnd-cStart);
+  PetscAssert(cp == cEnd - cStart,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected number of fine cells %" PetscInt_FMT " != %" PetscInt_FMT,cp,cEnd-cStart);
 
-  if (base) { /* we need to localize on all the cells in the star of the coarse cell vertices */
-    PetscInt *closure = NULL, closureSize;
-    PetscInt p, i, c, vStartBase, vEndBase, cStartBase, cEndBase;
-
-    PetscCall(DMPlexGetHeightStratum(base,0,&cStartBase,&cEndBase));
-    PetscCall(DMPlexGetDepthStratum(base,0,&vStartBase,&vEndBase));
-    for (p = cStart; p < cEnd; p++) {
-      coarsePoint = coarsePoints[p-cStart];
-      if (coarsePoint < 0) continue;
-      if (baseSection) PetscCall(PetscSectionGetFieldDof(baseSection, coarsePoint, 0, &cdof));
-      PetscCall(DMPlexGetTransitiveClosure(base,coarsePoint,PETSC_TRUE,&closureSize,&closure));
-      for (c = 0; c < closureSize; c++) {
-        PetscInt *star = NULL, starSize;
-        PetscInt j, v = closure[2 * c];
-
-        if (v < vStartBase || v > vEndBase) continue;
-        PetscCall(DMPlexGetTransitiveClosure(base,v,PETSC_FALSE,&starSize,&star));
-        for (j = 0; j < starSize; j++) {
-          PetscInt cell = star[2 * j];
-
-          if (cStartBase <= cell && cell < cEndBase) {
-            p4est_tree_t *tree;
-            PetscInt     offset,numQuads;
-
-            if (cell < flt || cell > llt) continue;
-            tree     = &(trees[cell]);
-            offset   = cLocalStart + tree->quadrants_offset;
-            numQuads = (PetscInt) tree->quadrants.elem_count;
-            for (i = 0; i < numQuads; i++) {
-              PetscInt newCell = i + offset;
-
-              PetscCall(PetscSectionSetDof(newSection, newCell, cdof));
-              PetscCall(PetscSectionSetFieldDof(newSection, newCell, 0, cdof));
-              if (overlap) localize[newCell] = cdof;
-            }
-          }
-        }
-        PetscCall(DMPlexRestoreTransitiveClosure(base,v,PETSC_FALSE,&starSize,&star));
-      }
-      PetscCall(DMPlexRestoreTransitiveClosure(base,coarsePoint,PETSC_TRUE,&closureSize,&closure));
-    }
-  }
-  PetscCall(PetscFree(coarsePoints));
-
-  /* final consensus with overlap */
-  if (overlap) {
-    PetscSF  sf;
-    PetscInt *localizeGlobal;
-
-    PetscCall(DMGetPointSF(plex,&sf));
-    PetscCall(PetscMalloc1(newEnd-newStart,&localizeGlobal));
-    for (v = newStart; v < newEnd; v++) localizeGlobal[v - newStart] = localize[v - newStart];
-    PetscCall(PetscSFBcastBegin(sf,MPIU_INT,localize,localizeGlobal,MPI_REPLACE));
-    PetscCall(PetscSFBcastEnd(sf,MPIU_INT,localize,localizeGlobal,MPI_REPLACE));
-    for (v = newStart; v < newEnd; v++) {
-      PetscCall(PetscSectionSetDof(newSection, v, localizeGlobal[v-newStart]));
-      PetscCall(PetscSectionSetFieldDof(newSection, v, 0, localizeGlobal[v-newStart]));
-    }
-    PetscCall(PetscFree(localizeGlobal));
-  }
-  PetscCall(PetscFree(localize));
   PetscCall(PetscSectionSetUp(newSection));
-  PetscCall(PetscObjectReference((PetscObject)oldSection));
-  PetscCall(DMSetCoordinateSection(plex, cDim, newSection));
+  PetscCall(DMGetCoordinateDM(plex, &cdm));
+  PetscCall(DMClone(cdm, &cdmCell));
+  PetscCall(DMSetCellCoordinateDM(plex, cdmCell));
+  PetscCall(DMDestroy(&cdmCell));
+  PetscCall(DMSetCellCoordinateSection(plex, cDim, newSection));
   PetscCall(PetscSectionGetStorageSize(newSection, &v));
   PetscCall(VecCreate(PETSC_COMM_SELF, &cVec));
-  PetscCall(PetscObjectSetName((PetscObject)cVec,"coordinates"));
+  PetscCall(PetscObjectSetName((PetscObject) cVec, "coordinates"));
   PetscCall(VecSetBlockSize(cVec, cDim));
   PetscCall(VecSetSizes(cVec, v, PETSC_DETERMINE));
   PetscCall(VecSetType(cVec, VECSTANDARD));
   PetscCall(VecSet(cVec, PETSC_MIN_REAL));
 
-  /* Copy over vertex coordinates */
-  PetscCall(DMGetCoordinatesLocal(plex, &coordinates));
-  PetscCheck(coordinates,PetscObjectComm((PetscObject)plex),PETSC_ERR_SUP,"Missing local coordinates vector");
-  PetscCall(VecGetArray(cVec, &coords2));
-  PetscCall(VecGetArrayRead(coordinates, &coords));
-  for (v = vStart; v < vEnd; ++v) {
-    PetscInt d, off,off2;
-
-    PetscCall(PetscSectionGetDof(oldSection, v, &dof));
-    PetscCall(PetscSectionGetOffset(oldSection, v, &off));
-    PetscCall(PetscSectionGetOffset(newSection, v, &off2));
-    for (d = 0; d < dof; ++d) coords2[off2+d] = coords[off+d];
-  }
-  PetscCall(VecRestoreArrayRead(coordinates, &coords));
-
   /* Localize coordinates on cells if needed */
+  PetscCall(VecGetArray(cVec, &coords2));
+  cp = 0;
+  if (cLocalStart > 0) {
+    p4est_quadrant_t *ghosts = (p4est_quadrant_t*) pforest->ghost->ghosts.array;
+    PetscInt         cell;
+
+    for (cell = 0; cell < cLocalStart; ++cell, cp++) {
+      p4est_quadrant_t *quad = &ghosts[cell];
+
+      coarsePoint = quad->p.which_tree;
+      PetscCall(PforestLocalizeCell(plex, cDim, pforest, newSection, cell, coarsePoint, quad, coords2));
+    }
+  }
   for (t = flt; t <= llt; t++) {
-    p4est_tree_t     *tree    = &(trees[t]);
-    const double     *v       = pforest->topo->conn->vertices;
-    p4est_quadrant_t *quads   = (p4est_quadrant_t*) tree->quadrants.array;
-    PetscInt         offset   = cLocalStart + tree->quadrants_offset;
-    PetscInt         numQuads = (PetscInt) tree->quadrants.elem_count;
-    p4est_topidx_t   vt[8]    = {0,0,0,0,0,0,0,0};
-    PetscInt         i,k;
+    p4est_tree_t *tree    = &(trees[t]);
+    PetscInt     offset   = cLocalStart + tree->quadrants_offset;
+    PetscInt     numQuads = (PetscInt) tree->quadrants.elem_count;
+    p4est_quadrant_t *quads = (p4est_quadrant_t *) tree->quadrants.array;
+    PetscInt     i;
 
     if (!numQuads) continue;
-    for (k = 0; k < P4EST_CHILDREN; ++k) {
-      vt[k] = pforest->topo->conn->tree_to_vertex[t * P4EST_CHILDREN + k];
+    coarsePoint = t;
+    for (i = 0; i < numQuads; i++, cp++) {
+      PetscInt cell = i + offset;
+      p4est_quadrant_t * quad = &quads[i];
+
+      PetscCall(PforestLocalizeCell(plex, cDim, pforest, newSection, cell, coarsePoint, quad, coords2));
     }
+  }
+  if (cLocalEnd - cLocalStart < cEnd - cStart) {
+    p4est_quadrant_t *ghosts   = (p4est_quadrant_t*) pforest->ghost->ghosts.array;
+    PetscInt         numGhosts = (PetscInt) pforest->ghost->ghosts.elem_count;
+    PetscInt         count;
 
-    for (i = 0; i < numQuads; i++) {
-      p4est_quadrant_t  *quad = &quads[i];
-      const PetscReal   intsize = 1.0 / P4EST_ROOT_LEN;
-      PetscReal         h2;
-      PetscScalar       xyz[3];
-#ifdef P4_TO_P8
-      PetscInt          zi;
-#endif
-      PetscInt          yi,xi;
-      PetscInt          off2;
-      PetscInt          newCell = i + offset;
+    for (count = 0; count < numGhosts - cLocalStart; count++, cp++) {
+      p4est_quadrant_t *quad = &ghosts[count + cLocalStart];
+      coarsePoint = quad->p.which_tree;
+      PetscInt cell = count + cLocalEnd;
 
-      PetscCall(PetscSectionGetFieldDof(newSection, newCell, 0, &cdof));
-      if (!cdof) continue;
-
-      h2   = .5 * intsize * P4EST_QUADRANT_LEN (quad->level);
-      k    = 0;
-      PetscCall(PetscSectionGetOffset(newSection, newCell, &off2));
-#ifdef P4_TO_P8
-      for (zi = 0; zi < 2; ++zi) {
-        const PetscReal eta_z = intsize * quad->z + h2 * (1. + (zi * 2 - 1));
-#else
-      {
-        const PetscReal eta_z = 0.0;
-#endif
-        for (yi = 0; yi < 2; ++yi) {
-          const PetscReal eta_y = intsize * quad->y + h2 * (1. + (yi * 2 - 1));
-          for (xi = 0; xi < 2; ++xi) {
-            const PetscReal eta_x = intsize * quad->x + h2 * (1. + (xi * 2 - 1));
-            PetscInt    j;
-
-            for (j = 0; j < 3; ++j) {
-              xyz[j] = ((1. - eta_z) * ((1. - eta_y) * ((1. - eta_x) * v[3 * vt[0] + j] +
-                                                              eta_x  * v[3 * vt[1] + j]) +
-                                              eta_y  * ((1. - eta_x) * v[3 * vt[2] + j] +
-                                                              eta_x  * v[3 * vt[3] + j]))
-                        +     eta_z  * ((1. - eta_y) * ((1. - eta_x) * v[3 * vt[4] + j] +
-                                                              eta_x  * v[3 * vt[5] + j]) +
-                                              eta_y  * ((1. - eta_x) * v[3 * vt[6] + j] +
-                                                              eta_x  * v[3 * vt[7] + j])));
-            }
-            for (j = 0; j < cDim; ++j) coords2[off2 + cDim*P4estVertToPetscVert[k] + j] = xyz[j];
-            ++k;
-          }
-        }
-      }
+      PetscCall(PforestLocalizeCell(plex, cDim, pforest, newSection, cell, coarsePoint, quad, coords2));
     }
   }
   PetscCall(VecRestoreArray(cVec, &coords2));
-  PetscCall(DMSetCoordinatesLocal(plex, cVec));
+  PetscCall(DMSetCellCoordinatesLocal(plex, cVec));
   PetscCall(VecDestroy(&cVec));
   PetscCall(PetscSectionDestroy(&newSection));
-  PetscCall(PetscSectionDestroy(&oldSection));
   PetscFunctionReturn(0);
 }
 
@@ -4316,12 +4323,10 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
     sc_array_destroy (remotes);
 
     {
-      PetscBool             isper;
-      const PetscReal      *maxCell, *L;
-      const DMBoundaryType *bd;
+      const PetscReal *maxCell, *L;
 
-      PetscCall(DMGetPeriodicity(dm,&isper,&maxCell,&L,&bd));
-      PetscCall(DMSetPeriodicity(newPlex,isper,maxCell,L,bd));
+      PetscCall(DMGetPeriodicity(dm,&maxCell,&L));
+      PetscCall(DMSetPeriodicity(newPlex,maxCell,L));
       PetscCall(DMPforestLocalizeCoordinates(dm,newPlex));
     }
 
@@ -4382,24 +4387,33 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
     }
     PetscCall(DMViewFromOptions(newPlex,NULL,"-dm_p4est_plex_view"));
     {
+      DM           cdm;
       PetscSection coordsSec;
       Vec          coords;
       PetscInt     cDim;
 
-      PetscCall(DMGetCoordinateDim(newPlex,&cDim));
-      PetscCall(DMGetCoordinateSection(newPlex,&coordsSec));
-      PetscCall(DMSetCoordinateSection(dm,cDim,coordsSec));
-      PetscCall(DMGetCoordinatesLocal(newPlex,&coords));
-      PetscCall(DMSetCoordinatesLocal(dm,coords));
+      PetscCall(DMGetCoordinateDim(newPlex, &cDim));
+      PetscCall(DMGetCoordinateSection(newPlex, &coordsSec));
+      PetscCall(DMSetCoordinateSection(dm,cDim, coordsSec));
+      PetscCall(DMGetCoordinatesLocal(newPlex, &coords));
+      PetscCall(DMSetCoordinatesLocal(dm, coords));
+      PetscCall(DMGetCellCoordinateDM(newPlex, &cdm));
+      if (cdm) PetscCall(DMSetCellCoordinateDM(dm, cdm));
+      PetscCall(DMGetCellCoordinateSection(newPlex, &coordsSec));
+      if (coordsSec) PetscCall(DMSetCellCoordinateSection(dm, cDim, coordsSec));
+      PetscCall(DMGetCellCoordinatesLocal(newPlex, &coords));
+      if (coords) PetscCall(DMSetCellCoordinatesLocal(dm, coords));
     }
   }
   newPlex = pforest->plex;
   if (plex) {
-    DM coordDM;
-
     PetscCall(DMClone(newPlex,plex));
+#if 0
     PetscCall(DMGetCoordinateDM(newPlex,&coordDM));
     PetscCall(DMSetCoordinateDM(*plex,coordDM));
+    PetscCall(DMGetCellCoordinateDM(newPlex,&coordDM));
+    PetscCall(DMSetCellCoordinateDM(*plex,coordDM));
+#endif
     PetscCall(DMShareDiscretization(dm,*plex));
   }
   PetscFunctionReturn(0);

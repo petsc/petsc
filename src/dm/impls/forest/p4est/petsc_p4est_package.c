@@ -77,13 +77,18 @@ PetscErrorCode PetscP4estInitialize(void)
   if (sc_package_id == -1) {
     int       log_threshold_shifted = psc_log_threshold + 1;
     PetscBool set;
+#if defined(PETSC_HAVE_MPIUNI)
+    sc_MPI_Comm comm_world = sc_MPI_COMM_WORLD;
+#else
+    MPI_Comm comm_world = PETSC_COMM_WORLD;
+#endif
 
     PetscBeganSc = PETSC_TRUE;
     PetscCall(PetscOptionsGetBool(NULL,NULL,"-petsc_sc_catch_signals",&psc_catch_signals,NULL));
     PetscCall(PetscOptionsGetBool(NULL,NULL,"-petsc_sc_print_backtrace",&psc_print_backtrace,NULL));
     PetscCall(PetscOptionsGetEnum(NULL,NULL,"-petsc_sc_log_threshold",SCLogTypes,(PetscEnum*)&log_threshold_shifted,&set));
     if (set) psc_log_threshold = log_threshold_shifted - 1;
-    sc_init(PETSC_COMM_WORLD,(int)psc_catch_signals,(int)psc_print_backtrace,PetscScLogHandler,psc_log_threshold);
+    sc_init(comm_world,(int)psc_catch_signals,(int)psc_print_backtrace,PetscScLogHandler,psc_log_threshold);
     PetscCheck(sc_package_id != -1,PETSC_COMM_WORLD,PETSC_ERR_LIB,"Could not initialize libsc package used by p4est");
     sc_set_abort_handler(PetscScAbort);
   }

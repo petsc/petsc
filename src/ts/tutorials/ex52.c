@@ -88,6 +88,7 @@ PetscErrorCode FormInitialSolution(DM da, Vec U)
     /* Get local grid boundaries */
     PetscCall(DMPlexGetHeightStratum(da, 0, &cStart, &cEnd));
     /* Assigning the values at the cell centers based on x and y directions */
+    PetscCall(DMGetCoordinatesLocalSetUp(da));
     for (cell = cStart; cell < cEnd; cell++) {
         PetscCall(DMPlexComputeCellGeometryFVM(da, cell, &cellvol, centroid, normal));
         if (centroid[0] > 0.9 && centroid[0] < 0.95) {

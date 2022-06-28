@@ -571,21 +571,21 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
 static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
 {
-  PetscDS         ds;
-  DMLabel         label;
-  PetscWeakForm   wf;
-  const DMBoundaryType *periodicity;
-  const PetscInt  id = 1;
-  PetscInt        bd, dim;
+  PetscDS          ds;
+  DMLabel          label;
+  PetscWeakForm    wf;
+  const PetscReal *L;
+  const PetscInt   id = 1;
+  PetscInt         bd, dim;
 
   PetscFunctionBeginUser;
   PetscCall(DMGetDS(dm, &ds));
   PetscCall(DMGetDimension(dm, &dim));
-  PetscCall(DMGetPeriodicity(dm, NULL, NULL, NULL, &periodicity));
+  PetscCall(DMGetPeriodicity(dm, NULL, &L));
   switch (user->variableCoefficient) {
   case COEFF_NONE:
-    if (periodicity && periodicity[0]) {
-      if (periodicity && periodicity[1]) {
+    if (L && L[0]) {
+      if (L && L[1]) {
         PetscCall(PetscDSSetResidual(ds, 0, f0_xytrig_u, f1_u));
         PetscCall(PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_uu));
       } else {
@@ -642,8 +642,8 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
     case COEFF_CHECKERBOARD_0:
       user->exactFuncs[0]  = zero;break;
     default:
-      if (periodicity && periodicity[0]) {
-        if (periodicity && periodicity[1]) {
+      if (L && L[0]) {
+        if (L && L[1]) {
           user->exactFuncs[0] = xytrig_u_2d;
         } else {
           user->exactFuncs[0] = xtrig_u_2d;

@@ -1190,16 +1190,17 @@ static PetscErrorCode DMPlexDistributeCoordinates(DM dm, PetscSF migrationSF, DM
   PetscSection     originalCoordSection, newCoordSection;
   Vec              originalCoordinates, newCoordinates;
   PetscInt         bs;
-  PetscBool        isper;
   const char      *name;
   const PetscReal *maxCell, *L;
-  const DMBoundaryType *bd;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(dmParallel, DM_CLASSID, 3);
 
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
+  PetscCall(DMGetCoordinateDM(dm, &cdm));
+  PetscCall(DMGetCoordinateDM(dmParallel, &cdmParallel));
+  PetscCall(DMCopyDisc(cdm, cdmParallel));
   PetscCall(DMGetCoordinateSection(dm, &originalCoordSection));
   PetscCall(DMGetCoordinateSection(dmParallel, &newCoordSection));
   PetscCall(DMGetCoordinatesLocal(dm, &originalCoordinates));
@@ -1214,11 +1215,33 @@ static PetscErrorCode DMPlexDistributeCoordinates(DM dm, PetscSF migrationSF, DM
     PetscCall(VecSetBlockSize(newCoordinates, bs));
     PetscCall(VecDestroy(&newCoordinates));
   }
-  PetscCall(DMGetPeriodicity(dm, &isper, &maxCell, &L, &bd));
-  PetscCall(DMSetPeriodicity(dmParallel, isper, maxCell, L, bd));
-  PetscCall(DMGetCoordinateDM(dm, &cdm));
-  PetscCall(DMGetCoordinateDM(dmParallel, &cdmParallel));
-  PetscCall(DMCopyDisc(cdm, cdmParallel));
+
+  PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
+  PetscCall(DMGetPeriodicity(dm, &maxCell, &L));
+  PetscCall(DMSetPeriodicity(dmParallel, maxCell, L));
+  PetscCall(DMGetCellCoordinateDM(dm, &cdm));
+  if (cdm) {
+    PetscCall(DMClone(dmParallel, &cdmParallel));
+    PetscCall(DMSetCellCoordinateDM(dmParallel, cdmParallel));
+    PetscCall(DMCopyDisc(cdm, cdmParallel));
+    PetscCall(DMDestroy(&cdmParallel));
+    PetscCall(DMGetCellCoordinateSection(dm, &originalCoordSection));
+    PetscCall(DMGetCellCoordinatesLocal(dm, &originalCoordinates));
+    PetscCall(PetscSectionCreate(comm, &newCoordSection));
+    if (originalCoordinates) {
+      PetscCall(VecCreate(PETSC_COMM_SELF, &newCoordinates));
+      PetscCall(PetscObjectGetName((PetscObject) originalCoordinates, &name));
+      PetscCall(PetscObjectSetName((PetscObject) newCoordinates, name));
+
+      PetscCall(DMPlexDistributeField(dm, migrationSF, originalCoordSection, originalCoordinates, newCoordSection, newCoordinates));
+      PetscCall(VecGetBlockSize(originalCoordinates, &bs));
+      PetscCall(VecSetBlockSize(newCoordinates, bs));
+      PetscCall(DMSetCellCoordinateSection(dmParallel, bs, newCoordSection));
+      PetscCall(DMSetCellCoordinatesLocal(dmParallel, newCoordinates));
+      PetscCall(VecDestroy(&newCoordinates));
+    }
+    PetscCall(PetscSectionDestroy(&newCoordSection));
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1998,6 +2021,8 @@ PetscErrorCode DMPlexDistributeOverlap(DM dm, PetscInt overlap, PetscSF *sf, DM 
   PetscCall(DMPlexCreatePointSF(*dmOverlap, sfOverlap, PETSC_FALSE, &sfPoint));
   PetscCall(DMSetPointSF(*dmOverlap, sfPoint));
   PetscCall(DMGetCoordinateDM(*dmOverlap, &dmCoord));
+  if (dmCoord) PetscCall(DMSetPointSF(dmCoord, sfPoint));
+  PetscCall(DMGetCellCoordinateDM(*dmOverlap, &dmCoord));
   if (dmCoord) PetscCall(DMSetPointSF(dmCoord, sfPoint));
   PetscCall(PetscSFDestroy(&sfPoint));
   /* Cleanup overlap partition */

@@ -14,15 +14,14 @@ static PetscErrorCode DMInitialize_Plex(DM dm);
 /* This copies internal things in the Plex structure that we generally want when making a new, related Plex */
 PetscErrorCode DMPlexCopy_Internal(DM dmin, PetscBool copyPeriodicity, PetscBool copyOverlap, DM dmout)
 {
-  const DMBoundaryType     *bd;
-  const PetscReal          *maxCell, *L;
-  PetscBool                 isper, dist;
-  DMPlexReorderDefaultFlag  reorder;
+  const PetscReal         *maxCell, *L;
+  PetscBool                dist;
+  DMPlexReorderDefaultFlag reorder;
 
   PetscFunctionBegin;
   if (copyPeriodicity) {
-    PetscCall(DMGetPeriodicity(dmin, &isper, &maxCell, &L, &bd));
-    PetscCall(DMSetPeriodicity(dmout, isper,  maxCell,  L,  bd));
+    PetscCall(DMGetPeriodicity(dmin, &maxCell, &L));
+    PetscCall(DMSetPeriodicity(dmout, maxCell,  L));
   }
   PetscCall(DMPlexDistributeGetDefault(dmin, &dist));
   PetscCall(DMPlexDistributeSetDefault(dmout, dist));
@@ -40,13 +39,11 @@ PetscErrorCode DMPlexCopy_Internal(DM dmin, PetscBool copyPeriodicity, PetscBool
 */
 static PetscErrorCode DMPlexReplace_Static(DM dm, DM *ndm)
 {
-  PetscSF               sf;
-  DM                    dmNew = *ndm, coordDM, coarseDM;
-  Vec                   coords;
-  PetscBool             isper;
-  const PetscReal      *maxCell, *L;
-  const DMBoundaryType *bd;
-  PetscInt              dim, cdim;
+  PetscSF          sf;
+  DM               dmNew = *ndm, coordDM, coarseDM;
+  Vec              coords;
+  const PetscReal *maxCell, *L;
+  PetscInt         dim, cdim;
 
   PetscFunctionBegin;
   if (dm == dmNew) {
@@ -64,12 +61,16 @@ static PetscErrorCode DMPlexReplace_Static(DM dm, DM *ndm)
   PetscCall(DMGetCoordinatesLocal(dmNew, &coords));
   PetscCall(DMSetCoordinateDM(dm, coordDM));
   PetscCall(DMSetCoordinatesLocal(dm, coords));
+  PetscCall(DMGetCellCoordinateDM(dmNew, &coordDM));
+  PetscCall(DMGetCellCoordinatesLocal(dmNew, &coords));
+  PetscCall(DMSetCellCoordinateDM(dm, coordDM));
+  PetscCall(DMSetCellCoordinatesLocal(dm, coords));
   /* Do not want to create the coordinate field if it does not already exist, so do not call DMGetCoordinateField() */
-  PetscCall(DMFieldDestroy(&dm->coordinateField));
-  dm->coordinateField = dmNew->coordinateField;
+  PetscCall(DMFieldDestroy(&dm->coordinates[0].field));
+  dm->coordinates[0].field = dmNew->coordinates[0].field;
   ((DM_Plex *) dmNew->data)->coordFunc = ((DM_Plex *) dm->data)->coordFunc;
-  PetscCall(DMGetPeriodicity(dmNew, &isper, &maxCell, &L, &bd));
-  PetscCall(DMSetPeriodicity(dm, isper, maxCell, L, bd));
+  PetscCall(DMGetPeriodicity(dmNew, &maxCell, &L));
+  PetscCall(DMSetPeriodicity(dm,     maxCell,  L));
   PetscCall(DMDestroy_Plex(dm));
   PetscCall(DMInitialize_Plex(dm));
   dm->data = dmNew->data;
@@ -121,9 +122,26 @@ static PetscErrorCode DMPlexSwap_Static(DM dmA, DM dmB)
   PetscCall(DMSetCoordinatesLocal(dmB, coordsA));
   PetscCall(PetscObjectDereference((PetscObject) coordsA));
 
-  fieldTmp             = dmA->coordinateField;
-  dmA->coordinateField = dmB->coordinateField;
-  dmB->coordinateField = fieldTmp;
+  PetscCall(DMGetCellCoordinateDM(dmA, &coordDMA));
+  PetscCall(DMGetCellCoordinateDM(dmB, &coordDMB));
+  PetscCall(PetscObjectReference((PetscObject) coordDMA));
+  PetscCall(DMSetCellCoordinateDM(dmA, coordDMB));
+  PetscCall(DMSetCellCoordinateDM(dmB, coordDMA));
+  PetscCall(PetscObjectDereference((PetscObject) coordDMA));
+
+  PetscCall(DMGetCellCoordinatesLocal(dmA, &coordsA));
+  PetscCall(DMGetCellCoordinatesLocal(dmB, &coordsB));
+  PetscCall(PetscObjectReference((PetscObject) coordsA));
+  PetscCall(DMSetCellCoordinatesLocal(dmA, coordsB));
+  PetscCall(DMSetCellCoordinatesLocal(dmB, coordsA));
+  PetscCall(PetscObjectDereference((PetscObject) coordsA));
+
+  fieldTmp                  = dmA->coordinates[0].field;
+  dmA->coordinates[0].field = dmB->coordinates[0].field;
+  dmB->coordinates[0].field = fieldTmp;
+  fieldTmp                  = dmA->coordinates[1].field;
+  dmA->coordinates[1].field = dmB->coordinates[1].field;
+  dmB->coordinates[1].field = fieldTmp;
   tmp       = dmA->data;
   dmA->data = dmB->data;
   dmB->data = tmp;
@@ -733,7 +751,7 @@ static PetscErrorCode DMPlexCreateLineMesh_Internal(DM dm,PetscInt segments,Pets
   if (wrap) {
     L       = upper - lower;
     maxCell = (PetscReal)1.1*(L/(PetscReal)PetscMax(1,segments));
-    PetscCall(DMSetPeriodicity(dm,PETSC_TRUE,&maxCell,&L,&bd));
+    PetscCall(DMSetPeriodicity(dm, &maxCell, &L));
   }
   PetscCall(DMPlexSetRefinementUniform(dm, PETSC_TRUE));
   PetscFunctionReturn(0);
@@ -1176,14 +1194,16 @@ static PetscErrorCode DMPlexCreateBoxMesh_Tensor_Internal(DM dm, PetscInt dim, c
   if (periodicity[0] == DM_BOUNDARY_PERIODIC || periodicity[0] == DM_BOUNDARY_TWIST ||
       periodicity[1] == DM_BOUNDARY_PERIODIC || periodicity[1] == DM_BOUNDARY_TWIST ||
       (dim > 2 && (periodicity[2] == DM_BOUNDARY_PERIODIC || periodicity[2] == DM_BOUNDARY_TWIST))) {
-    PetscReal L[3];
-    PetscReal maxCell[3];
+    PetscReal L[3]       = {-1., -1., 0.};
+    PetscReal maxCell[3] = {-1., -1., 0.};
 
     for (d = 0; d < dim; ++d) {
-      L[d]       = upper[d] - lower[d];
-      maxCell[d] = 1.1 * (L[d] / PetscMax(1, faces[d]));
+      if (periodicity[d] != DM_BOUNDARY_NONE) {
+        L[d]       = upper[d] - lower[d];
+        maxCell[d] = 1.1 * (L[d] / PetscMax(1, faces[d]));
+      }
     }
-    PetscCall(DMSetPeriodicity(dm, PETSC_TRUE, maxCell, L, periodicity));
+    PetscCall(DMSetPeriodicity(dm, maxCell, L));
   }
   PetscCall(DMPlexSetRefinementUniform(dm, PETSC_TRUE));
   PetscFunctionReturn(0);
@@ -1584,21 +1604,15 @@ static PetscErrorCode DMPlexCreateHexCylinderMesh_Internal(DM dm, DMBoundaryType
   }
   /* Create periodicity */
   if (periodicZ == DM_BOUNDARY_PERIODIC || periodicZ == DM_BOUNDARY_TWIST) {
-    PetscReal      L[3];
-    PetscReal      maxCell[3];
-    DMBoundaryType bdType[3];
-    PetscReal      lower[3] = {0.0, 0.0, 0.0};
-    PetscReal      upper[3] = {1.0, 1.0, 1.5};
-    PetscInt       i, numZCells = 3;
+    PetscReal      L[3]       = {-1., -1., 0.};
+    PetscReal      maxCell[3] = {-1., -1., 0.};
+    PetscReal      lower[3]   = {0.0, 0.0, 0.0};
+    PetscReal      upper[3]   = {1.0, 1.0, 1.5};
+    PetscInt       numZCells  = 3;
 
-    bdType[0] = DM_BOUNDARY_NONE;
-    bdType[1] = DM_BOUNDARY_NONE;
-    bdType[2] = periodicZ;
-    for (i = 0; i < dim; i++) {
-      L[i]       = upper[i] - lower[i];
-      maxCell[i] = 1.1 * (L[i] / numZCells);
-    }
-    PetscCall(DMSetPeriodicity(dm, PETSC_TRUE, maxCell, L, bdType));
+    L[2]       = upper[2] - lower[2];
+    maxCell[2] = 1.1 * (L[2] / numZCells);
+    PetscCall(DMSetPeriodicity(dm, maxCell, L));
   }
   {
     DM          cdm;
@@ -3572,7 +3586,7 @@ static PetscErrorCode DMSetFromOptions_Plex(PetscOptionItems *PetscOptionsObject
   if (created) {
     DM_Plex  *mesh = (DM_Plex *) dm->data;
     PetscInt  degree = 1;
-    PetscBool periodic, flg;
+    PetscBool flg;
 
     PetscCall(PetscOptionsBool("-dm_coord_space", "Use an FEM space for coordinates", "", coordSpace, &coordSpace, &flg));
     PetscCall(PetscOptionsInt("-dm_coord_petscspace_degree", "FEM degree for coordinate space", "", degree, &degree, NULL));
@@ -3598,9 +3612,8 @@ static PetscErrorCode DMSetFromOptions_Plex(PetscOptionItems *PetscOptionsObject
       }
       mesh->coordFunc = NULL;
     }
+    PetscCall(PetscOptionsBool("-dm_sparse_localize", "Localize only necessary cells", "", dm->sparseLocalize, &dm->sparseLocalize, &flg));
     PetscCall(DMLocalizeCoordinates(dm));
-    PetscCall(DMGetPeriodicity(dm, &periodic, NULL, NULL, NULL));
-    if (periodic) PetscCall(DMSetPeriodicity(dm, PETSC_TRUE, NULL, NULL, NULL));
   }
   /* Handle DMPlex refinement */
   remap = PETSC_TRUE;
