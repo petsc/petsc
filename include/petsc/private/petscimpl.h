@@ -450,28 +450,56 @@ void PetscValidLogicalCollectiveEnum(Ta,Tb,int);
 #define PetscCheckSorted(n,idx)
 #endif /* PETSC_CLANG_STATIC_ANALYZER */
 
-/*
-   PetscTryMethod - Queries an object for a method, if it exists then calls it.
-              These are intended to be used only inside PETSc functions.
+/*MC
+   PetscTryMethod - Queries an object for a method added with `PetscObjectComposeFunction()`, if it exists then calls it.
+
+  Synopsis:
+   #include "petsc/private/petscimpl.h"
+   PetscTryMethod(PetscObject obj,const char *name,(arg_types),(arg_value))
+
+   Input Parameters:
++   obj - the object
+.   name - the name of the method, for example, "KSPGMRESSetRestart_C" for the function `KSPGMRESSetRestart()`
+.   arg_types - the argument types for the method, for example, (KSP,PetscInt)
+-   args - the arguements for the method, for example, (ksp,restart))
 
    Level: developer
 
-.seealso: `PetscUseMethod()`
-*/
+   Notes:
+   The object is always the implicit first argument of the method and is not listed in arg_types or args
+
+   This does not return an error code, it is a macro that returns with an erorr code on error.
+
+.seealso: `PetscUseMethod()`, `PetscCall()`, `PetscCallMethod()`, `PetscCheck()`
+M*/
 #define PetscTryMethod(obj,A,B,C) do {                             \
     PetscErrorCode (*_7_f)B;                                       \
     PetscCall(PetscObjectQueryFunction((PetscObject)(obj),A,&_7_f)); \
     if (_7_f) PetscCall((*_7_f)C);                                   \
   } while (0)
 
-/*
-   PetscUseMethod - Queries an object for a method, if it exists then calls it, otherwise generates an error.
-              These are intended to be used only inside PETSc functions.
+/*MC
+   PetscUseMethod - Queries an object for a method added with `PetscObjectComposeFunction()`, if it exists then calls it, otherwise generates an error.
+
+  Synopsis:
+   #include "petsc/private/petscimpl.h"
+   PetscUseMethod(PetscObject obj,const char *name,(arg_types),(arg_value))
+
+   Input Parameters:
++   obj - the object
+.   name - the name of the method, for example, "KSPGMRESSetRestart_C" for the function `KSPGMRESSetRestart()`
+.   arg_types - the argument types for the method, for example, (KSP,PetscInt)
+-   args - the arguements for the method, for example, (ksp,restart))
 
    Level: developer
 
-.seealso: `PetscTryMethod()`
-*/
+   Notes:
+   The object is always the implicit first argument of the method and is not listed in arg_types or args
+
+   This does not return an error code, it is a macro that returns with an erorr code on error.
+
+.seealso: `PetscTryMethod()`, `PetscCall()`, `PetscCallMethod()`, `PetscCheck()`
+M*/
 #define PetscUseMethod(obj,A,B,C) do {                                                         \
     PetscErrorCode (*_7_f)B;                                                                   \
     PetscCall(PetscObjectQueryFunction((PetscObject)(obj),A,&_7_f));                             \
