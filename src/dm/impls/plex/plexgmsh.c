@@ -1068,13 +1068,13 @@ static PetscErrorCode GmshReadMeshFormat(GmshFile *gmsh)
   PetscFunctionBegin;
   PetscCall(GmshReadString(gmsh, line, 3));
   snum = sscanf(line, "%f %d %d", &version, &fileType, &dataSize);
+  fileFormat = (int)roundf(version*10);
   PetscCheck(snum == 3,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Unable to parse Gmsh file header: %s", line);
-  PetscCheck(version >= 2.2,PETSC_COMM_SELF, PETSC_ERR_SUP, "Gmsh file version %3.1f must be at least 2.2", (double)version);
+  PetscCheck(fileFormat >= 22,PETSC_COMM_SELF, PETSC_ERR_SUP, "Gmsh file version %3.1f must be at least 2.2", (double)version);
   PetscCheck((int)version != 3,PETSC_COMM_SELF, PETSC_ERR_SUP, "Gmsh file version %3.1f not supported", (double)version);
-  PetscCheck(version <= 4.1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Gmsh file version %3.1f must be at most 4.1", (double)version);
+  PetscCheck(fileFormat <= 41,PETSC_COMM_SELF, PETSC_ERR_SUP, "Gmsh file version %3.1f must be at most 4.1", (double)version);
   PetscCheck(!gmsh->binary || fileType,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Viewer is binary but Gmsh file is ASCII");
   PetscCheck(gmsh->binary || !fileType,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Viewer is ASCII but Gmsh file is binary");
-  fileFormat = (int)roundf(version*10);
   PetscCheck(fileFormat > 40 || dataSize == sizeof(double),PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Data size %d is not valid for a Gmsh file", dataSize);
   PetscCheck(fileFormat < 41 || dataSize == sizeof(int) || dataSize == sizeof(PetscInt64),PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Data size %d is not valid for a Gmsh file", dataSize);
   gmsh->fileFormat = fileFormat;
@@ -1398,6 +1398,7 @@ PetscErrorCode DMPlexCreateGmshFromFile(MPI_Comm comm, const char filename[], Pe
     char        line[PETSC_MAX_PATH_LEN];
     int         snum;
     float       version;
+    int         fileFormat;
 
     PetscCall(PetscArrayzero(gmsh,1));
     PetscCall(PetscViewerCreate(PETSC_COMM_SELF, &gmsh->viewer));
@@ -1409,10 +1410,11 @@ PetscErrorCode DMPlexCreateGmshFromFile(MPI_Comm comm, const char filename[], Pe
     PetscCall(GmshExpect(gmsh, "$MeshFormat", line));
     PetscCall(GmshReadString(gmsh, line, 2));
     snum = sscanf(line, "%f %d", &version, &fileType);
+    fileFormat = (int)roundf(version*10);
     PetscCheck(snum == 2,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Unable to parse Gmsh file header: %s", line);
-    PetscCheck(version >= 2.2,PETSC_COMM_SELF, PETSC_ERR_SUP, "Gmsh file version %3.1f must be at least 2.2", (double)version);
+    PetscCheck(fileFormat >= 22,PETSC_COMM_SELF, PETSC_ERR_SUP, "Gmsh file version %3.1f must be at least 2.2", (double)version);
     PetscCheck((int)version != 3,PETSC_COMM_SELF, PETSC_ERR_SUP, "Gmsh file version %3.1f not supported", (double)version);
-    PetscCheck(version <= 4.1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Gmsh file version %3.1f must be at most 4.1", (double)version);
+    PetscCheck(fileFormat <= 41,PETSC_COMM_SELF, PETSC_ERR_SUP, "Gmsh file version %3.1f must be at most 4.1", (double)version);
     PetscCall(PetscViewerDestroy(&gmsh->viewer));
   }
   PetscCallMPI(MPI_Bcast(&fileType, 1, MPI_INT, 0, comm));
