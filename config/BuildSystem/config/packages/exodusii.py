@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit         = 'v2021-09-30'
+    self.gitcommit         = 'v2022-05-16'
     self.download          = ['git://https://github.com/gsjaardema/seacas.git','https://github.com/gsjaardema/seacas/archive/'+self.gitcommit+'.tar.gz']
     self.downloaddirnames  = ['seacas']
     self.functions         = ['ex_close']
@@ -45,7 +45,7 @@ class Configure(config.package.CMakePackage):
       args.append('-DSEACASProj_ENABLE_SEACASExoIIv2for32:BOOL=OFF')
     args.append('-DSEACASProj_ENABLE_SEACASExodus:BOOL=ON')
     # exodiff and exotxt are convenient tools to debug exodusII functionalities
-    args.append('-DSEACASProj_ENABLE_SEACASExodiff:BOOL=ON')
+    args.append('-DSEACASProj_ENABLE_SEACASExodiff:BOOL=OFF')
     if hasattr(self.setCompilers, 'FC'):
       args.append('-DSEACASProj_ENABLE_SEACASExotxt:BOOL=ON')
     else:
@@ -59,6 +59,7 @@ class Configure(config.package.CMakePackage):
     args.append('-DTPL_ENABLE_MPI:BOOL=ON')
     args.append('-DTPL_ENABLE_Pamgen:BOOL=OFF')
     args.append('-DTPL_ENABLE_CGNS:BOOL=OFF')
+    args.append('-DTPL_ENABLE_fmt=OFF')
     if not self.netcdf.directory:
       raise RuntimeError('NetCDF dir is not known! ExodusII requires explicit path to NetCDF. Suggest using --with-netcdf-dir or --download-netcdf')
     else:
