@@ -2,7 +2,8 @@
 #include <petscdm.h>
 
 /*@C
-   SNESVISetComputeVariableBounds - Sets a function that is called to compute the variable bounds
+   SNESVISetComputeVariableBounds - Sets a function that is called to compute the variable bounds. This allows solving
+   (differential) variable inequalities. For example, restricting pressure to be non-negative.
 
    Input parameter:
 +  snes - the SNES context
@@ -10,7 +11,11 @@
 
    Level: advanced
 
-.seealso: `SNESVISetVariableBounds()`
+   Note:
+   Problems with bound constraints can be solved with the reduced space, `SNESVINEWTONRSLS`, and semi-smooth `SNESVINEWTONSSLS` solvers.
+
+.seealso: `SNESVISetVariableBounds()`, `SNESSetFunctionDomainError()`, `SNESSetJacobianDomainError()`, `SNESVINEWTONRSLS`, `SNESVINEWTONSSLS`,
+          'SNESSetType()`
 
 @*/
 PetscErrorCode SNESVISetComputeVariableBounds(SNES snes, PetscErrorCode (*compute)(SNES,Vec,Vec))
@@ -412,7 +417,8 @@ PetscErrorCode SNESDestroy_VI(SNES snes)
 }
 
 /*@
-   SNESVISetVariableBounds - Sets the lower and upper bounds for the solution vector. xl <= x <= xu.
+   SNESVISetVariableBounds - Sets the lower and upper bounds for the solution vector. xl <= x <= xu. This allows solving
+   (differential) variable inequalities. For example, restricting pressure to be non-negative.
 
    Input Parameters:
 +  snes - the SNES context.
@@ -423,8 +429,11 @@ PetscErrorCode SNESDestroy_VI(SNES snes)
    If this routine is not called then the lower and upper bounds are set to
    PETSC_NINFINITY and PETSC_INFINITY respectively during SNESSetUp().
 
+   Problems with bound constraints can be solved with the reduced space, `SNESVINEWTONRSLS`, and semi-smooth `SNESVINEWTONSSLS` solvers.
+
    Level: advanced
 
+.seealso: `SNESVISetComputeVariableBounds()`, `SNESSetFunctionDomainError()`, `SNESSetJacobianDomainError()`, SNESVINEWTONRSLS, SNESVINEWTONSSLS, 'SNESSetType()`
 @*/
 PetscErrorCode SNESVISetVariableBounds(SNES snes, Vec xl, Vec xu)
 {

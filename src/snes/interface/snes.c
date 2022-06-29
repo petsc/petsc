@@ -111,7 +111,7 @@ PetscErrorCode  SNESGetAlwaysComputesFinalResidual(SNES snes, PetscBool *flg)
 
 /*@
    SNESSetFunctionDomainError - tells SNES that the input vector to your SNESFunction is not
-     in the functions domain. For example, negative pressure.
+     in the functions domain. For example, a step with negative pressure.
 
    Logically Collective on SNES
 
@@ -120,7 +120,12 @@ PetscErrorCode  SNESGetAlwaysComputesFinalResidual(SNES snes, PetscBool *flg)
 
    Level: advanced
 
-.seealso: `SNESCreate()`, `SNESSetFunction()`, `SNESFunction`
+   Note:
+   You can direct `SNES` to avoid certain steps by using `SNESVISetVariableBounds()`, `SNESVISetComputeVariableBounds()` or
+   `SNESLineSearchSetPreCheck()`, `SNESLineSearchSetPostCheck()`
+
+.seealso: `SNESCreate()`, `SNESSetFunction()`, `SNESFunction`, `SNESSetJacobianDomainError()`, `SNESVISetVariableBounds()`,
+          `SNESVISetComputeVariableBounds()`, `SNESLineSearchSetPreCheck()`, `SNESLineSearchSetPostCheck()`
 @*/
 PetscErrorCode  SNESSetFunctionDomainError(SNES snes)
 {
@@ -132,7 +137,7 @@ PetscErrorCode  SNESSetFunctionDomainError(SNES snes)
 }
 
 /*@
-   SNESSetJacobianDomainError - tells SNES that computeJacobian does not make sense any more. For example there is a negative element transformation.
+   SNESSetJacobianDomainError - tells SNES that computeJacobian does not make sense at the proposed step. For example there is a negative element transformation.
 
    Logically Collective on SNES
 
@@ -141,7 +146,12 @@ PetscErrorCode  SNESSetFunctionDomainError(SNES snes)
 
    Level: advanced
 
-.seealso: `SNESCreate()`, `SNESSetFunction()`, `SNESFunction()`, `SNESSetFunctionDomainError()`
+   Note:
+   You can direct `SNES` to avoid certain steps by using `SNESVISetVariableBounds()`, `SNESVISetComputeVariableBounds()` or
+   `SNESLineSearchSetPreCheck()`, `SNESLineSearchSetPostCheck()`
+
+.seealso: `SNESCreate()`, `SNESSetFunction()`, `SNESFunction()`, `SNESSetFunctionDomainError()`, `SNESVISetVariableBounds()`,
+          `SNESVISetComputeVariableBounds()`, `SNESLineSearchSetPreCheck()`, `SNESLineSearchSetPostCheck()`
 @*/
 PetscErrorCode SNESSetJacobianDomainError(SNES snes)
 {
