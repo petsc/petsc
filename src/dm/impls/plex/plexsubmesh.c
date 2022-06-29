@@ -3001,7 +3001,7 @@ static PetscErrorCode DMPlexInsertFace_Internal(DM dm, DM subdm, PetscInt numFac
   }
 #endif
   PetscCheck(numFaces <= 1,comm, PETSC_ERR_ARG_WRONG, "Vertex set had %" PetscInt_FMT " faces, not one", numFaces);
-  else if (numFaces == 1) {
+  if (numFaces == 1) {
     /* Add the other cell neighbor for this face */
     PetscCall(DMPlexSetCone(subdm, subcell, faces));
   } else {

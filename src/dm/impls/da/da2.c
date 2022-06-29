@@ -219,11 +219,11 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   dd->p = 1;
   if (m != PETSC_DECIDE) {
     PetscCheck(m >= 1,comm,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in X direction: %" PetscInt_FMT,m);
-    else PetscCheck(m <= size,comm,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in X direction: %" PetscInt_FMT " %d",m,size);
+    PetscCheck(m <= size,comm,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in X direction: %" PetscInt_FMT " %d",m,size);
   }
   if (n != PETSC_DECIDE) {
     PetscCheck(n >= 1,comm,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in Y direction: %" PetscInt_FMT,n);
-    else PetscCheck(n <= size,comm,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in Y direction: %" PetscInt_FMT " %d",n,size);
+    PetscCheck(n <= size,comm,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in Y direction: %" PetscInt_FMT " %d",n,size);
   }
 
   if (m == PETSC_DECIDE || n == PETSC_DECIDE) {

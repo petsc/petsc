@@ -189,9 +189,12 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
         } else if (outputState == 1) {
           outputState = 4;
           doOutput    = 1;
-        } else if (outputState == 2) doOutput = 0;
-        else PetscCheck(outputState != 3,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Tried to output CELL_DATA again after intervening POINT_DATA");
-        else if (outputState == 4) doOutput = 0;
+        } else if (outputState == 2) {
+          doOutput = 0;
+        } else {
+          PetscCheck(outputState != 3,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Tried to output CELL_DATA again after intervening POINT_DATA");
+          if (outputState == 4) doOutput = 0;
+        }
 
         if (doOutput) {
           PetscCall(PetscViewerASCIIPrintf(viewer, "CELL_DATA %" PetscInt_FMT "\n", xin->map->N/bs));
@@ -880,7 +883,7 @@ PetscErrorCode VecSetValues_MPI(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
   PetscFunctionBegin;
   if (PetscDefined(USE_DEBUG)) {
     PetscCheck(xin->stash.insertmode != INSERT_VALUES || addv != ADD_VALUES,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"You have already inserted values; you cannot now add");
-    else PetscCheck(xin->stash.insertmode != ADD_VALUES || addv != INSERT_VALUES,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"You have already added values; you cannot now insert");
+    PetscCheck(xin->stash.insertmode != ADD_VALUES || addv != INSERT_VALUES,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"You have already added values; you cannot now insert");
   }
   PetscCall(VecGetArray(xin,&xx));
   xin->stash.insertmode = addv;
@@ -923,7 +926,7 @@ PetscErrorCode VecSetValuesBlocked_MPI(Vec xin,PetscInt ni,const PetscInt ix[],c
   PetscCall(VecGetArray(xin,&xx));
   if (PetscDefined(USE_DEBUG)) {
     PetscCheck(xin->stash.insertmode != INSERT_VALUES || addv != ADD_VALUES,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"You have already inserted values; you cannot now add");
-    else PetscCheck(xin->stash.insertmode != ADD_VALUES || addv != INSERT_VALUES,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"You have already added values; you cannot now insert");
+    PetscCheck(xin->stash.insertmode != ADD_VALUES || addv != INSERT_VALUES,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"You have already added values; you cannot now insert");
   }
   xin->stash.insertmode = addv;
 

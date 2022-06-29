@@ -333,9 +333,12 @@ PetscErrorCode VecView_Seq_ASCII(Vec xin,PetscViewer viewer)
       } else if (outputState == 1) {
         outputState = 4;
         doOutput = 1;
-      } else if (outputState == 2) doOutput = 0;
-      else PetscCheck(outputState != 3,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Tried to output CELL_DATA again after intervening POINT_DATA");
-      else if (outputState == 4) doOutput = 0;
+      } else if (outputState == 2) {
+        doOutput = 0;
+      } else {
+        PetscCheck(outputState != 3,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Tried to output CELL_DATA again after intervening POINT_DATA");
+        if (outputState == 4) doOutput = 0;
+      }
 
       if (doOutput) {
         PetscCall(PetscViewerASCIIPrintf(viewer, "CELL_DATA %" PetscInt_FMT "\n", n));

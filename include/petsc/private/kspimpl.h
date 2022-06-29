@@ -464,7 +464,7 @@ M*/
 #define KSPCheckDot(ksp,beta) do { \
   if (PetscIsInfOrNanScalar(beta)) { \
     PetscCheck(!ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to Nan or Inf inner product");\
-    else {\
+    {\
       PCFailedReason pcreason;\
       PetscInt       sendbuf,recvbuf; \
       PetscCall(PCGetFailedReasonRank(ksp->pc,&pcreason));\
@@ -503,7 +503,7 @@ M*/
 #define KSPCheckNorm(ksp,beta) do { \
   if (PetscIsInfOrNanReal(beta)) { \
     PetscCheck(!ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to Nan or Inf norm");\
-    else {\
+    {\
       PCFailedReason pcreason;\
       PetscInt       sendbuf,recvbuf; \
       PetscCall(PCGetFailedReasonRank(ksp->pc,&pcreason));\

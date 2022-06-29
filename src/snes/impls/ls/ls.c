@@ -249,7 +249,7 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
           PetscViewer monitor;
           PetscCall(SNESLineSearchGetDefaultMonitor(linesearch,&monitor));
           PetscCheck(monitor,PetscObjectComm((PetscObject)snes),PETSC_ERR_NOT_CONVERGED,"SNESSolve has not converged due to %s. Suggest running with -snes_linesearch_monitor",SNESConvergedReasons[snes->reason]);
-          else SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_NOT_CONVERGED,"SNESSolve has not converged due %s.",SNESConvergedReasons[snes->reason]);
+          SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_NOT_CONVERGED,"SNESSolve has not converged due %s.",SNESConvergedReasons[snes->reason]);
         }
         break;
       }

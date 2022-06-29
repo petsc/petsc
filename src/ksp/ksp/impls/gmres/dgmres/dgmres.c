@@ -203,10 +203,8 @@ PetscErrorCode KSPDGMRESCycle(PetscInt *itcount,KSP ksp)
     if (hapend) {
       if (!ksp->reason) {
         PetscCheck(!ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"You reached the happy break down, but convergence was not indicated. Residual norm = %g",(double)res);
-        else {
-          ksp->reason = KSP_DIVERGED_BREAKDOWN;
-          break;
-        }
+        ksp->reason = KSP_DIVERGED_BREAKDOWN;
+        break;
       }
     }
   }

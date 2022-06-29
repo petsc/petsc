@@ -1545,9 +1545,7 @@ PetscErrorCode MatKokkosGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure *B)
     h_mat.diag.ignorezeroentries = jaca->ignorezeroentries;
     PetscCallMPI(MPI_Comm_rank(comm,&h_mat.rank));
     PetscCheck(!jaca->compressedrow.use,PETSC_COMM_SELF,PETSC_ERR_PLIB,"A does not suppport compressed row (todo)");
-    else {
-      h_mat.diag.i = aijkokA->i_device_data();
-    }
+    h_mat.diag.i = aijkokA->i_device_data();
     h_mat.diag.j = aijkokA->j_device_data();
     h_mat.diag.a = aijkokA->a_device_data();
     // copy pointers and metdata to device

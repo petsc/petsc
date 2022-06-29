@@ -387,7 +387,7 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
   for (p = 0; p < N; ++p) {
     if (globalProcs[p] == size) {
       PetscCheck(ignoreOutsideDomain,comm, PETSC_ERR_PLIB, "Point %" PetscInt_FMT ": %g %g %g not located in mesh", p, (double)globalPoints[p*ctx->dim+0], (double)(ctx->dim > 1 ? globalPoints[p*ctx->dim+1] : 0.0), (double)(ctx->dim > 2 ? globalPoints[p*ctx->dim+2] : 0.0));
-      else if (rank == 0) ++ctx->n;
+      if (rank == 0) ++ctx->n;
     } else if (globalProcs[p] == rank) ++ctx->n;
   }
   /* Create coordinates vector and array of owned cells */

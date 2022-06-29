@@ -1559,7 +1559,7 @@ PetscErrorCode PetscOptionsReject(PetscOptions options,const char pre[],const ch
   PetscCall(PetscOptionsHasName(options,pre,name,&flag));
   if (flag) {
     PetscCheck(!mess || !mess[0],PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Program has disabled option: -%s%s with %s",pre?pre:"",name+1,mess);
-    else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Program has disabled option: -%s%s",pre?pre:"",name+1);
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Program has disabled option: -%s%s",pre?pre:"",name+1);
   }
   PetscFunctionReturn(0);
 }
