@@ -525,7 +525,7 @@ PetscErrorCode  DMCompositeScatter(DM dm,Vec gvec,...)
 {
   va_list                Argp;
   struct DMCompositeLink *next;
-  PetscInt               cnt;
+  PETSC_UNUSED PetscInt  cnt;
   DM_Composite           *com = (DM_Composite*)dm->data;
   PetscBool              flg;
 
@@ -641,7 +641,7 @@ PetscErrorCode  DMCompositeGather(DM dm,InsertMode imode,Vec gvec,...)
   va_list                Argp;
   struct DMCompositeLink *next;
   DM_Composite           *com = (DM_Composite*)dm->data;
-  PetscInt               cnt;
+  PETSC_UNUSED PetscInt  cnt;
   PetscBool              flg;
 
   PetscFunctionBegin;

@@ -20,7 +20,7 @@ static PetscErrorCode KSPSetUp_PIPECGRR(KSP ksp)
 */
 static PetscErrorCode  KSPSolve_PIPECGRR(KSP ksp)
 {
-  PetscInt       i = 0,replace = 0,totreplaces = 0,nsize;
+  PetscInt       i = 0,replace = 0,nsize;
   PetscScalar    alpha = 0.0,beta = 0.0,gamma = 0.0,gammaold = 0.0,delta = 0.0,alphap = 0.0,betap = 0.0;
   PetscReal      dp = 0.0,nsi = 0.0,sqn = 0.0,Anorm = 0.0,rnp = 0.0,pnp = 0.0,snp = 0.0,unp = 0.0,wnp = 0.0,xnp = 0.0,qnp = 0.0,znp = 0.0,mnz = 5.0,tol = PETSC_SQRT_MACHINE_EPSILON,eps = PETSC_MACHINE_EPSILON;
   PetscReal      ds = 0.0,dz = 0.0,dx = 0.0,dpp = 0.0,dq = 0.0,dm = 0.0,du = 0.0,dw = 0.0,db = 0.0,errr = 0.0,errrprev = 0.0,errs = 0.0,errw = 0.0,errz = 0.0,errncr = 0.0,errncs = 0.0,errncw = 0.0,errncz = 0.0;
@@ -231,7 +231,6 @@ static PetscErrorCode  KSPSolve_PIPECGRR(KSP ksp)
         PetscCall(KSP_PCApply(ksp,S,Q));             /*  q <- Bs  */
         PetscCall(KSP_MatMult(ksp,Amat,Q,Z));        /*  z <- Aq  */
         replace = 1;
-        totreplaces++;
       }
     }
 

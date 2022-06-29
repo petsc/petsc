@@ -235,8 +235,6 @@ static PetscErrorCode xxt_generate(xxt_ADT xxt_handle)
   PetscInt       *col_sz, *col_indices, *stages;
   PetscScalar    **col_vals, *x;
   PetscInt       n_global;
-  PetscInt       xxt_zero_nnz  =0;
-  PetscInt       xxt_zero_nnz_0=0;
   PetscBLASInt   i1            = 1,dlen;
   PetscScalar    dm1           = -1.0;
 
@@ -412,16 +410,6 @@ static PetscErrorCode xxt_generate(xxt_ADT xxt_handle)
       xxt_nnz += len;
       PCTFS_rvec_copy(x_ptr,v+off,len);
 
-      /* keep track of number of zeros */
-      if (dim) {
-        for (k=0; k<len; k++) {
-          if (x_ptr[k]==0.0) xxt_zero_nnz++;
-        }
-      } else {
-        for (k=0; k<len; k++) {
-          if (x_ptr[k]==0.0) xxt_zero_nnz_0++;
-        }
-      }
       col_indices[2*i] = off;
       col_sz[i] = col_indices[2*i+1] = len;
       col_vals[i] = x_ptr;

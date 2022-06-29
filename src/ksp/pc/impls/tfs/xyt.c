@@ -244,10 +244,6 @@ static PetscErrorCode xyt_generate(xyt_ADT xyt_handle)
   PetscInt       n_global;
   PetscInt       xt_nnz       =0, xt_max_nnz=0;
   PetscInt       yt_nnz       =0, yt_max_nnz=0;
-  PetscInt       xt_zero_nnz  =0;
-  PetscInt       xt_zero_nnz_0=0;
-  PetscInt       yt_zero_nnz  =0;
-  PetscInt       yt_zero_nnz_0=0;
   PetscBLASInt   i1           = 1,dlen;
   PetscScalar    dm1          = -1.0;
 
@@ -438,16 +434,6 @@ static PetscErrorCode xyt_generate(xyt_ADT xyt_handle)
       xt_nnz += len;
       PCTFS_rvec_copy(x_ptr,v+off,len);
 
-      /* keep track of number of zeros */
-      if (dim) {
-        for (k=0; k<len; k++) {
-          if (x_ptr[k]==0.0) xt_zero_nnz++;
-        }
-      } else {
-        for (k=0; k<len; k++) {
-          if (x_ptr[k]==0.0) xt_zero_nnz_0++;
-        }
-      }
       xcol_indices[2*i] = off;
       xcol_sz[i]        = xcol_indices[2*i+1] = len;
       xcol_vals[i]      = x_ptr;
@@ -482,16 +468,6 @@ static PetscErrorCode xyt_generate(xyt_ADT xyt_handle)
       yt_nnz += len;
       PCTFS_rvec_copy(y_ptr,u+off,len);
 
-      /* keep track of number of zeros */
-      if (dim) {
-        for (k=0; k<len; k++) {
-          if (y_ptr[k]==0.0) yt_zero_nnz++;
-        }
-      } else {
-        for (k=0; k<len; k++) {
-          if (y_ptr[k]==0.0) yt_zero_nnz_0++;
-        }
-      }
       ycol_indices[2*i] = off;
       ycol_sz[i]        = ycol_indices[2*i+1] = len;
       ycol_vals[i]      = y_ptr;
