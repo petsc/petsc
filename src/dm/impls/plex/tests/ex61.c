@@ -48,7 +48,6 @@ int main(int argc, char **argv)
 /*TEST
 
   test:
-    TODO: broken
     suffix: 0
 
 TEST*/

@@ -6436,15 +6436,11 @@ static inline PetscErrorCode CheckPoint_Private(DMLabel label, PetscInt labelId,
 {
   PetscFunctionBegin;
   if (label) {
-    PetscInt       val, fdof;
+    PetscBool contains;
+    PetscInt  fdof;
 
-    /* There is a problem with this:
-         Suppose we have two label values, defining surfaces, interecting along a line in 3D. When we add cells to the label, the cells that
-       touch both surfaces must pick a label value. Thus we miss setting values for the surface with that other value intersecting that cell.
-       Thus I am only going to check val != -1, not val != labelId
-    */
-    PetscCall(DMLabelGetValue(label, point, &val));
-    if (val < 0) {
+    PetscCall(DMLabelStratumHasPoint(label, labelId, point, &contains));
+    if (!contains) {
       PetscCall(PetscSectionGetFieldDof(section, point, f, &fdof));
       *offset += fdof;
       PetscFunctionReturn(1);
