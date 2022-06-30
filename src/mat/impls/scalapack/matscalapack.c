@@ -1420,6 +1420,8 @@ static struct _MatOps MatOps_Values = {
        0,
 /*145*/0,
        0,
+       0,
+       0,
        0
 };
 
