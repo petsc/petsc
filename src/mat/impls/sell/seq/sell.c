@@ -1865,6 +1865,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSELL,
                                /*144*/ NULL,
                                        NULL,
                                        NULL,
+                                       NULL,
+                                       NULL,
                                        NULL
 };
 

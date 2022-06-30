@@ -1905,6 +1905,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPISBAIJ,
                                 /*144*/MatCreateMPIMatConcatenateSeqMat_MPISBAIJ,
                                        NULL,
                                        NULL,
+                                       NULL,
+                                       NULL,
                                        NULL
 };
 
