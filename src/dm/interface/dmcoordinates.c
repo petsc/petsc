@@ -468,7 +468,7 @@ PetscErrorCode DMGetCellCoordinates(DM dm, Vec *c)
   if (!dm->coordinates[1].x && dm->coordinates[1].xl) {
     DM cdm = NULL;
 
-    PetscCall(DMGetCoordinateDM(dm, &cdm));
+    PetscCall(DMGetCellCoordinateDM(dm, &cdm));
     PetscCall(DMCreateGlobalVector(cdm, &dm->coordinates[1].x));
     PetscCall(PetscObjectSetName((PetscObject) dm->coordinates[1].x, "DG coordinates"));
     PetscCall(DMLocalToGlobalBegin(cdm, dm->coordinates[1].xl, INSERT_VALUES, dm->coordinates[1].x));
@@ -707,7 +707,7 @@ PetscErrorCode DMGetCellCoordinatesLocalSetUp(DM dm)
   if (!dm->coordinates[1].xl && dm->coordinates[1].x) {
     DM cdm = NULL;
 
-    PetscCall(DMGetCoordinateDM(dm, &cdm));
+    PetscCall(DMGetCellCoordinateDM(dm, &cdm));
     PetscCall(DMCreateLocalVector(cdm, &dm->coordinates[1].xl));
     PetscCall(PetscObjectSetName((PetscObject) dm->coordinates[1].xl, "DG coordinates"));
     PetscCall(DMGlobalToLocalBegin(cdm, dm->coordinates[1].x, INSERT_VALUES, dm->coordinates[1].xl));
