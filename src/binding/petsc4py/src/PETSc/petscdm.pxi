@@ -26,6 +26,24 @@ cdef extern from * nogil:
         DM_BOUNDARY_PERIODIC
         DM_BOUNDARY_TWIST
 
+    ctypedef enum PetscDMPolytopeType "DMPolytopeType":
+        DM_POLYTOPE_POINT
+        DM_POLYTOPE_SEGMENT
+        DM_POLYTOPE_POINT_PRISM_TENSOR
+        DM_POLYTOPE_TRIANGLE
+        DM_POLYTOPE_QUADRILATERAL
+        DM_POLYTOPE_SEG_PRISM_TENSOR
+        DM_POLYTOPE_TETRAHEDRON
+        DM_POLYTOPE_HEXAHEDRON
+        DM_POLYTOPE_TRI_PRISM
+        DM_POLYTOPE_TRI_PRISM_TENSOR
+        DM_POLYTOPE_QUAD_PRISM_TENSOR
+        DM_POLYTOPE_PYRAMID
+        DM_POLYTOPE_FV_GHOST
+        DM_POLYTOPE_INTERIOR_GHOST
+        DM_POLYTOPE_UNKNOWN
+        DM_NUM_POLYTOPES
+
     ctypedef int (*PetscDMCoarsenHook)(PetscDM,
                                        PetscDM,
                                        void*) except PETSC_ERR_PYTHON

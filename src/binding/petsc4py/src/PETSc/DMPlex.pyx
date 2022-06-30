@@ -252,6 +252,23 @@ cdef class DMPlex(DM):
         assert norie == ncone
         CHKERR( DMPlexSetConeOrientation(self.dm, cp, iorie) )
 
+    def setCellType(self, p, ctype):
+        cdef PetscInt cp = asInt(p)
+        cdef PetscDMPolytopeType val = ctype
+        CHKERR( DMPlexSetCellType(self.dm, cp, val) )
+
+    def getCellType(self, p):
+        cdef PetscInt cp = asInt(p)
+        cdef PetscDMPolytopeType ctype = DM_POLYTOPE_UNKNOWN
+        CHKERR( DMPlexGetCellType(self.dm, cp, &ctype) )
+        return toInt(ctype)
+
+    def getCellTypeLabel(self):
+        cdef DMLabel label = DMLabel()
+        CHKERR( DMPlexGetCellTypeLabel(self.dm, &label.dmlabel) )
+        PetscINCREF(label.obj)
+        return label
+
     def getSupportSize(self, p):
         cdef PetscInt cp = asInt(p)
         cdef PetscInt pStart = 0, pEnd = 0
