@@ -312,6 +312,10 @@ could benefit from various kinds of tuning.
 :any:`ch_performance` gives suggestions about achieving good
 performance with PETSc codes.
 
+The additional option `-log_view_memory` causes the display of additional columns of information about how much
+memory was allocated and freed during each logged event. This is useful
+to understand what phases of a computation require the most memory.
+
 .. _sec_mpelogs:
 
 Using ``-log_mpe`` with Jumpshot

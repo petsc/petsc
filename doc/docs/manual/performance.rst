@@ -619,6 +619,11 @@ briefly describe these below.
    ``PetscMemoryGetMaximumUsage()`` (typically at the beginning of the
    program).
 
+-  When running with `-log_view` the additional option `-log_view_memory`
+   causes the display of additional columns of information about how much
+   memory was allocated and freed during each logged event. This is useful
+   to understand what phases of a computation require the most memory.
+
 .. _sec_dsreuse:
 
 Data Structure Reuse
