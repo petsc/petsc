@@ -242,18 +242,21 @@ struct Mat_SeqAIJCUSPARSETriFactors {
   PetscScalar           *X,*Y; /* data array of dnVec X and Y */
 
   /* Mixed size types? yes, CUDA-11.7.0 declared cusparseDcsrilu02_bufferSizeExt() that returns size_t but did not implement it! */
-  int                   factBufferSize_M; /* M ~= LU or M ~= LLt */
-  void                  *factBuffer_M;
+  int                   factBufferSize_M; /* M ~= LU or LLt */
   size_t                spsvBufferSize_L,spsvBufferSize_Lt,spsvBufferSize_U,spsvBufferSize_Ut;
-  void                  *spsvBuffer_L,*spsvBuffer_Lt,*spsvBuffer_U,*spsvBuffer_Ut;
+  /* cusparse needs various buffers for factorization and solve of L, U, Lt, or Ut.
+     So save memory, we share the factorization buffer with one of spsvBuffer_L/U.
+  */
+  void                  *factBuffer_M,*spsvBuffer_L,*spsvBuffer_U,*spsvBuffer_Lt,*spsvBuffer_Ut;
 
   csrilu02Info_t        ilu0Info_M;
   csric02Info_t         ic0Info_M;
   int                   structural_zero,numerical_zero;
   cusparseSolvePolicy_t policy_M;
 
-  /* Have we ever called MatSolveTranspose() for ILU? Need this flag since we build transpose data structures on fly */
-  PetscBool             builtSolveTranspose;
+  /* In MatSolveTranspose() for ILU0, we use the two flags to do on-demand solve */
+  PetscBool             createdTransposeSpSVDescr; /* Have we created SpSV descriptors for Lt, Ut? */
+  PetscBool             updatedTransposeSpSVAnalysis; /* Have we updated SpSV analysis with the latest L, U values? */
 
   PetscLogDouble        numericFactFlops; /* Estimated FLOPs in ILU0/ICC0 numeric factorization */
  #endif
