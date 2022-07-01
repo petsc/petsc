@@ -14,14 +14,14 @@ static PetscErrorCode DMInitialize_Plex(DM dm);
 /* This copies internal things in the Plex structure that we generally want when making a new, related Plex */
 PetscErrorCode DMPlexCopy_Internal(DM dmin, PetscBool copyPeriodicity, PetscBool copyOverlap, DM dmout)
 {
-  const PetscReal         *maxCell, *L;
+  const PetscReal         *maxCell, *Lstart, *L;
   PetscBool                dist;
   DMPlexReorderDefaultFlag reorder;
 
   PetscFunctionBegin;
   if (copyPeriodicity) {
-    PetscCall(DMGetPeriodicity(dmin, &maxCell, &L));
-    PetscCall(DMSetPeriodicity(dmout, maxCell,  L));
+    PetscCall(DMGetPeriodicity(dmin, &maxCell, &Lstart, &L));
+    PetscCall(DMSetPeriodicity(dmout, maxCell,  Lstart,  L));
   }
   PetscCall(DMPlexDistributeGetDefault(dmin, &dist));
   PetscCall(DMPlexDistributeSetDefault(dmout, dist));
@@ -42,7 +42,7 @@ static PetscErrorCode DMPlexReplace_Static(DM dm, DM *ndm)
   PetscSF          sf;
   DM               dmNew = *ndm, coordDM, coarseDM;
   Vec              coords;
-  const PetscReal *maxCell, *L;
+  const PetscReal *maxCell, *Lstart, *L;
   PetscInt         dim, cdim;
 
   PetscFunctionBegin;
@@ -69,8 +69,8 @@ static PetscErrorCode DMPlexReplace_Static(DM dm, DM *ndm)
   PetscCall(DMFieldDestroy(&dm->coordinates[0].field));
   dm->coordinates[0].field = dmNew->coordinates[0].field;
   ((DM_Plex *) dmNew->data)->coordFunc = ((DM_Plex *) dm->data)->coordFunc;
-  PetscCall(DMGetPeriodicity(dmNew, &maxCell, &L));
-  PetscCall(DMSetPeriodicity(dm,     maxCell,  L));
+  PetscCall(DMGetPeriodicity(dmNew, &maxCell, &Lstart, &L));
+  PetscCall(DMSetPeriodicity(dm,     maxCell,  Lstart,  L));
   PetscCall(DMDestroy_Plex(dm));
   PetscCall(DMInitialize_Plex(dm));
   dm->data = dmNew->data;
@@ -751,7 +751,7 @@ static PetscErrorCode DMPlexCreateLineMesh_Internal(DM dm,PetscInt segments,Pets
   if (wrap) {
     L       = upper - lower;
     maxCell = (PetscReal)1.1*(L/(PetscReal)PetscMax(1,segments));
-    PetscCall(DMSetPeriodicity(dm, &maxCell, &L));
+    PetscCall(DMSetPeriodicity(dm, &maxCell, &lower, &L));
   }
   PetscCall(DMPlexSetRefinementUniform(dm, PETSC_TRUE));
   PetscFunctionReturn(0);
@@ -1203,7 +1203,7 @@ static PetscErrorCode DMPlexCreateBoxMesh_Tensor_Internal(DM dm, PetscInt dim, c
         maxCell[d] = 1.1 * (L[d] / PetscMax(1, faces[d]));
       }
     }
-    PetscCall(DMSetPeriodicity(dm, maxCell, L));
+    PetscCall(DMSetPeriodicity(dm, maxCell, lower, L));
   }
   PetscCall(DMPlexSetRefinementUniform(dm, PETSC_TRUE));
   PetscFunctionReturn(0);
@@ -1612,7 +1612,7 @@ static PetscErrorCode DMPlexCreateHexCylinderMesh_Internal(DM dm, DMBoundaryType
 
     L[2]       = upper[2] - lower[2];
     maxCell[2] = 1.1 * (L[2] / numZCells);
-    PetscCall(DMSetPeriodicity(dm, maxCell, L));
+    PetscCall(DMSetPeriodicity(dm, maxCell, lower, L));
   }
   {
     DM          cdm;

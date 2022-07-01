@@ -1437,7 +1437,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
       const PetscReal *L;
       PetscBool        localized;
 
-      PetscCall(DMGetPeriodicity(dm, &maxCell, &L));
+      PetscCall(DMGetPeriodicity(dm, &maxCell, NULL, &L));
       PetscCall(DMGetCoordinatesLocalized(dm, &localized));
       if (L || localized) {
         PetscCall(PetscViewerASCIIPrintf(viewer, "Periodic mesh"));

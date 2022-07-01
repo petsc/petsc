@@ -165,7 +165,7 @@ In addition to the changes above
 - Add ``DMPlexCreateOverlapLabelFromLabels()`` for more customized overlap
 - Add ``DMPlexSetOverlap()`` to promote an internal interface
 - Add ``DMGetCellCoordinateDM()``, ``DMSetCellCoordinateDM()``, ``DMGetCellCoordinateSection()``, ``DMSetCellCoordinateSection()``, ``DMGetCellCoordinates()``, ``DMSetCellCoordinates()``, ``DMGetCellCoordinatesLocalSetUp()``, ``DMGetCellCoordinatesLocal()``, ``DMGetCellCoordinatesLocalNoncollective()``, and ``DMSetCellCoordinatesLocal()`` to provide an independent discontinuous representation of coordinates
-- Change ``DMGetPeriodicity()`` and ``DMSetPeriodicity()`` to get rid of the flag and boundary type. Since we have an independent representation, we can tell if periodicity was imposed, and boundary types were never used, so they can be inferred from the given L.
+- Change ``DMGetPeriodicity()`` and ``DMSetPeriodicity()`` to get rid of the flag and boundary type. Since we have an independent representation, we can tell if periodicity was imposed, and boundary types were never used, so they can be inferred from the given L. We also add Lstart to allow tori that do not start at 0.
 - Add ``DMPlexGetCellCoordinates()`` and ``DMPlexRestoreCellCoordinates()`` for clean interface for periodicity
 
 .. rubric:: FE/FV:

@@ -1191,7 +1191,7 @@ static PetscErrorCode DMPlexDistributeCoordinates(DM dm, PetscSF migrationSF, DM
   Vec              originalCoordinates, newCoordinates;
   PetscInt         bs;
   const char      *name;
-  const PetscReal *maxCell, *L;
+  const PetscReal *maxCell, *Lstart, *L;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -1217,8 +1217,8 @@ static PetscErrorCode DMPlexDistributeCoordinates(DM dm, PetscSF migrationSF, DM
   }
 
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
-  PetscCall(DMGetPeriodicity(dm, &maxCell, &L));
-  PetscCall(DMSetPeriodicity(dmParallel, maxCell, L));
+  PetscCall(DMGetPeriodicity(dm, &maxCell, &Lstart, &L));
+  PetscCall(DMSetPeriodicity(dmParallel, maxCell, Lstart, L));
   PetscCall(DMGetCellCoordinateDM(dm, &cdm));
   if (cdm) {
     PetscCall(DMClone(dmParallel, &cdmParallel));

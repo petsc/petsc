@@ -290,7 +290,7 @@ static PetscErrorCode DMFTopologyCreate_pforest(DM dm, DMForestTopology topology
   if (isBrick) {
     PetscBool flgN, flgP, flgM, flgB, useMorton = PETSC_TRUE, periodic = PETSC_FALSE;
     PetscInt  N[3] = {2,2,2}, P[3] = {0,0,0}, nretN = P4EST_DIM, nretP = P4EST_DIM, nretB = 2 * P4EST_DIM, i;
-    PetscReal B[6] = {0.0,1.0,0.0,1.0,0.0,1.0}, L[3] = {-1.0, -1.0, -1.0}, maxCell[3] = {-1.0, -1.0, -1.0};
+    PetscReal B[6] = {0.0,1.0,0.0,1.0,0.0,1.0}, Lstart[3] = {0., 0., 0.}, L[3] = {-1.0, -1.0, -1.0}, maxCell[3] = {-1.0, -1.0, -1.0};
 
     if (dm->setfromoptionscalled) {
       PetscCall(PetscOptionsGetIntArray(((PetscObject)dm)->options,prefix,"-dm_p4est_brick_size",N,&nretN,&flgN));
@@ -306,12 +306,13 @@ static PetscErrorCode DMFTopologyCreate_pforest(DM dm, DMForestTopology topology
       periodic = (PetscBool)(P[i] || periodic);
       if (!flgB) B[2 * i + 1] = N[i];
       if (P[i]) {
-        L[i] = B[2 * i + 1];
+        Lstart[i] = B[2 * i + 0];
+        L[i] = B[2 * i + 1] - B[2 * i + 0];
         maxCell[i] = 1.1 * (L[i] / N[i]);
       }
     }
     PetscCall(DMFTopologyCreateBrick_pforest(dm,N,P,B,topo,useMorton));
-    if (periodic) PetscCall(DMSetPeriodicity(dm, maxCell, L));
+    if (periodic) PetscCall(DMSetPeriodicity(dm, maxCell, Lstart, L));
   } else {
     PetscCall(PetscNewLog(dm,topo));
 
@@ -4039,7 +4040,7 @@ static PetscErrorCode DMPforestLocalizeCoordinates(DM dm, DM plex)
   PetscBool         baseLocalized = PETSC_FALSE;
 
   PetscFunctionBegin;
-  PetscCall(DMGetPeriodicity(dm,NULL,&L));
+  PetscCall(DMGetPeriodicity(dm,NULL,NULL,&L));
   /* we localize on all cells if we don't have a base DM or the base DM coordinates have not been localized */
   PetscCall(DMGetCoordinateDim(dm, &cDim));
   PetscCall(DMForestGetBaseDM(dm,&base));
@@ -4323,10 +4324,10 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
     sc_array_destroy (remotes);
 
     {
-      const PetscReal *maxCell, *L;
+      const PetscReal *maxCell, *Lstart, *L;
 
-      PetscCall(DMGetPeriodicity(dm,&maxCell,&L));
-      PetscCall(DMSetPeriodicity(newPlex,maxCell,L));
+      PetscCall(DMGetPeriodicity(dm,&maxCell,&Lstart,&L));
+      PetscCall(DMSetPeriodicity(newPlex,maxCell,Lstart,L));
       PetscCall(DMPforestLocalizeCoordinates(dm,newPlex));
     }
 

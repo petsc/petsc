@@ -770,7 +770,7 @@ static PetscErrorCode DMPlexCoordinatesView_HDF5_XDMF_Private(DM dm, PetscViewer
   PetscCall(VecGetBlockSize(coordinatesLocal, &bs));
   PetscCall(DMGetCoordinatesLocalized(dm, &localized));
   if (localized == PETSC_FALSE) PetscFunctionReturn(0);
-  PetscCall(DMGetPeriodicity(dm, NULL, &L));
+  PetscCall(DMGetPeriodicity(dm, NULL, NULL, &L));
   PetscCall(DMGetCoordinateDM(dm, &cdm));
   PetscCall(DMGetLocalSection(cdm, &cSection));
   PetscCall(DMGetGlobalSection(cdm, &cGlobalSection));
