@@ -23,6 +23,7 @@ EXTERN_C_BEGIN
 #endif
 EXTERN_C_END
 #define JOB_INIT -1
+#define JOB_NULL 0
 #define JOB_FACTSYMBOLIC 1
 #define JOB_FACTNUMERIC 2
 #define JOB_SOLVE 3
@@ -158,6 +159,8 @@ struct Mat_MUMPS {
   PetscInt64     nnz;                   /* number of nonzeros. The type is called selective 64-bit in mumps */
   PetscMUMPSInt  sym;
   MPI_Comm       mumps_comm;
+  PetscMUMPSInt  *ICNTL_pre;
+  PetscReal      *CNTL_pre;
   PetscMUMPSInt  ICNTL9_pre;            /* check if ICNTL(9) is changed from previous MatSolve */
   VecScatter     scat_rhs, scat_sol;    /* used by MatSolve() */
   PetscMUMPSInt  ICNTL20;               /* use centralized (0) or distributed (10) dense RHS */
@@ -977,10 +980,18 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
   PetscCall(PetscFree2(mumps->irn,mumps->jcn));
   PetscCall(PetscFree(mumps->val_alloc));
   PetscCall(PetscFree(mumps->info));
+  PetscCall(PetscFree(mumps->ICNTL_pre));
+  PetscCall(PetscFree(mumps->CNTL_pre));
   PetscCall(MatMumpsResetSchur_Private(mumps));
-  mumps->id.job = JOB_END;
-  PetscMUMPS_c(mumps);
-  PetscCheck(mumps->id.INFOG(1) >= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in MatDestroy_MUMPS: INFOG(1)=%d",mumps->id.INFOG(1));
+  if (mumps->id.job != JOB_NULL) { /* cannot call PetscMUMPS_c() if JOB_INIT has never been called for this instance */
+    mumps->id.job = JOB_END;
+    PetscMUMPS_c(mumps);
+    PetscCheck(mumps->id.INFOG(1) >= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in MatDestroy_MUMPS: INFOG(1)=%d",mumps->id.INFOG(1));
+    if (mumps->mumps_comm != MPI_COMM_NULL) {
+      if (PetscDefined(HAVE_OPENMP_SUPPORT) && mumps->use_petsc_omp_support) PetscCallMPI(MPI_Comm_free(&mumps->mumps_comm));
+      else PetscCall(PetscCommRestoreComm(PetscObjectComm((PetscObject)A),&mumps->mumps_comm));
+    }
+  }
 #if defined(PETSC_HAVE_OPENMP_SUPPORT)
   if (mumps->use_petsc_omp_support) {
     PetscCall(PetscOmpCtrlDestroy(&mumps->omp_ctrl));
@@ -993,7 +1004,6 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
   PetscCall(PetscFree(mumps->recvcount));
   PetscCall(PetscFree(mumps->reqs));
   PetscCall(PetscFree(mumps->irhs_loc));
-  if (mumps->mumps_comm != MPI_COMM_NULL) PetscCall(PetscCommRestoreComm(PetscObjectComm((PetscObject)A),&mumps->mumps_comm));
   PetscCall(PetscFree(A->data));
 
   /* clear composed functions */
@@ -1719,12 +1729,109 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
 PetscErrorCode MatSetFromOptions_MUMPS(Mat F, Mat A)
 {
   Mat_MUMPS      *mumps = (Mat_MUMPS*)F->data;
-  PetscMUMPSInt  icntl=0;
+  PetscMUMPSInt  icntl=0,size,*listvar_schur;
   PetscInt       info[80],i,ninfo=80,rbs,cbs;
-  PetscBool      flg=PETSC_FALSE;
+  PetscBool      flg=PETSC_FALSE,schur=(PetscBool)(mumps->id.ICNTL(26) == -1);
+  MumpsScalar    *arr;
 
   PetscFunctionBegin;
   PetscOptionsBegin(PetscObjectComm((PetscObject)F),((PetscObject)F)->prefix,"MUMPS Options","Mat");
+  if (mumps->id.job == JOB_NULL) { /* MatSetFromOptions_MUMPS() has never been called before */
+    PetscInt nthreads = 0;
+    PetscInt nCNTL_pre = mumps->CNTL_pre ? mumps->CNTL_pre[0] : 0;
+    PetscInt nICNTL_pre = mumps->ICNTL_pre ? mumps->ICNTL_pre[0] : 0;
+
+    mumps->petsc_comm = PetscObjectComm((PetscObject)A);
+    PetscCallMPI(MPI_Comm_size(mumps->petsc_comm,&mumps->petsc_size));
+    PetscCallMPI(MPI_Comm_rank(mumps->petsc_comm,&mumps->myid));/* "if (!myid)" still works even if mumps_comm is different */
+
+    PetscCall(PetscOptionsName("-mat_mumps_use_omp_threads","Convert MPI processes into OpenMP threads","None",&mumps->use_petsc_omp_support));
+    if (mumps->use_petsc_omp_support) nthreads = -1; /* -1 will let PetscOmpCtrlCreate() guess a proper value when user did not supply one */
+    /* do not use PetscOptionsInt() so that the option -mat_mumps_use_omp_threads is not displayed twice in the help */
+    PetscCall(PetscOptionsGetInt(NULL,((PetscObject)F)->prefix,"-mat_mumps_use_omp_threads",&nthreads,NULL));
+    if (mumps->use_petsc_omp_support) {
+      PetscCheck(PetscDefined(HAVE_OPENMP_SUPPORT),PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"The system does not have PETSc OpenMP support but you added the -%smat_mumps_use_omp_threads option. Configure PETSc with --with-openmp --download-hwloc (or --with-hwloc) to enable it, see more in MATSOLVERMUMPS manual",((PetscObject)F)->prefix?((PetscObject)F)->prefix:"");
+      PetscCheck(!schur,PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot use -%smat_mumps_use_omp_threads with the Schur complement feature",((PetscObject)F)->prefix?((PetscObject)F)->prefix:"");
+#if defined(PETSC_HAVE_OPENMP_SUPPORT)
+      PetscCall(PetscOmpCtrlCreate(mumps->petsc_comm,nthreads,&mumps->omp_ctrl));
+      PetscCall(PetscOmpCtrlGetOmpComms(mumps->omp_ctrl,&mumps->omp_comm,&mumps->mumps_comm,&mumps->is_omp_master));
+#endif
+    } else {
+      mumps->omp_comm      = PETSC_COMM_SELF;
+      mumps->mumps_comm    = mumps->petsc_comm;
+      mumps->is_omp_master = PETSC_TRUE;
+    }
+    PetscCallMPI(MPI_Comm_size(mumps->omp_comm,&mumps->omp_comm_size));
+    mumps->reqs = NULL;
+    mumps->tag  = 0;
+
+    if (mumps->mumps_comm != MPI_COMM_NULL) {
+      if (PetscDefined(HAVE_OPENMP_SUPPORT) && mumps->use_petsc_omp_support) {
+        /* It looks like MUMPS does not dup the input comm. Dup a new comm for MUMPS to avoid any tag mismatches. */
+        MPI_Comm comm;
+        PetscCallMPI(MPI_Comm_dup(mumps->mumps_comm,&comm));
+        mumps->mumps_comm = comm;
+      } else PetscCall(PetscCommGetComm(mumps->petsc_comm,&mumps->mumps_comm));
+    }
+
+    mumps->id.comm_fortran = MPI_Comm_c2f(mumps->mumps_comm);
+    mumps->id.job = JOB_INIT;
+    mumps->id.par = 1;  /* host participates factorizaton and solve */
+    mumps->id.sym = mumps->sym;
+
+    size = mumps->id.size_schur;
+    arr = mumps->id.schur;
+    listvar_schur = mumps->id.listvar_schur;
+    PetscMUMPS_c(mumps);
+    PetscCheck(mumps->id.INFOG(1) >= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS: INFOG(1)=%d",mumps->id.INFOG(1));
+    /* restore cached ICNTL and CNTL values */
+    for (icntl = 0; icntl < nICNTL_pre; ++icntl) mumps->id.ICNTL(mumps->ICNTL_pre[1+2*icntl]) = mumps->ICNTL_pre[2+2*icntl];
+    for (icntl = 0; icntl < nCNTL_pre; ++icntl)  mumps->id.CNTL((PetscInt)mumps->CNTL_pre[1+2*icntl]) = mumps->CNTL_pre[2+2*icntl];
+    PetscCall(PetscFree(mumps->ICNTL_pre));
+    PetscCall(PetscFree(mumps->CNTL_pre));
+
+    if (schur) {
+      mumps->id.size_schur = size;
+      mumps->id.schur_lld  = size;
+      mumps->id.schur = arr;
+      mumps->id.listvar_schur = listvar_schur;
+      if (mumps->petsc_size > 1) {
+        PetscBool gs; /* gs is false if any rank other than root has non-empty IS */
+
+        mumps->id.ICNTL(19) = 1; /* MUMPS returns Schur centralized on the host */
+        gs = mumps->myid ? (mumps->id.size_schur ? PETSC_FALSE : PETSC_TRUE) : PETSC_TRUE; /* always true on root; false on others if their size != 0 */
+        PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE,&gs,1,MPIU_BOOL,MPI_LAND,mumps->petsc_comm));
+        PetscCheck(gs,PETSC_COMM_SELF,PETSC_ERR_SUP,"MUMPS distributed parallel Schur complements not yet supported from PETSc");
+      } else {
+        if (F->factortype == MAT_FACTOR_LU) {
+          mumps->id.ICNTL(19) = 3; /* MUMPS returns full matrix */
+        } else {
+          mumps->id.ICNTL(19) = 2; /* MUMPS returns lower triangular part */
+        }
+      }
+      mumps->id.ICNTL(26) = -1;
+    }
+
+    /* copy MUMPS default control values from master to slaves. Although slaves do not call MUMPS, they may access these values in code.
+       For example, ICNTL(9) is initialized to 1 by MUMPS and slaves check ICNTL(9) in MatSolve_MUMPS.
+     */
+    PetscCallMPI(MPI_Bcast(mumps->id.icntl,40,MPI_INT,  0,mumps->omp_comm));
+    PetscCallMPI(MPI_Bcast(mumps->id.cntl, 15,MPIU_REAL,0,mumps->omp_comm));
+
+    mumps->scat_rhs = NULL;
+    mumps->scat_sol = NULL;
+
+    /* set PETSc-MUMPS default options - override MUMPS default */
+    mumps->id.ICNTL(3) = 0;
+    mumps->id.ICNTL(4) = 0;
+    if (mumps->petsc_size == 1) {
+      mumps->id.ICNTL(18) = 0;   /* centralized assembled matrix input */
+      mumps->id.ICNTL(7)  = 7;   /* automatic choice of ordering done by the package */
+    } else {
+      mumps->id.ICNTL(18) = 3;   /* distributed assembled matrix input */
+      mumps->id.ICNTL(21) = 1;   /* distributed solution */
+    }
+  }
   PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_1","ICNTL(1): output stream for error messages","None",mumps->id.ICNTL(1),&icntl,&flg));
   if (flg) mumps->id.ICNTL(1) = icntl;
   PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_2","ICNTL(2): output stream for diagnostic printing, statistics, and warning","None",mumps->id.ICNTL(2),&icntl,&flg));
@@ -1823,80 +1930,7 @@ PetscErrorCode MatSetFromOptions_MUMPS(Mat F, Mat A)
       mumps->info[i] = info[i];
     }
   }
-
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode MatSetFromOptions_MUMPS_OpenMP(Mat F,Mat A)
-{
-  Mat_MUMPS      *mumps = (Mat_MUMPS*)F->data;
-  PetscInt       nthreads=0;
-
-  PetscFunctionBegin;
-  mumps->petsc_comm = PetscObjectComm((PetscObject)A);
-  PetscCallMPI(MPI_Comm_size(mumps->petsc_comm,&mumps->petsc_size));
-  PetscCallMPI(MPI_Comm_rank(mumps->petsc_comm,&mumps->myid));/* "if (!myid)" still works even if mumps_comm is different */
-
-  PetscCall(PetscOptionsHasName(NULL,((PetscObject)F)->prefix,"-mat_mumps_use_omp_threads",&mumps->use_petsc_omp_support));
-  if (mumps->use_petsc_omp_support) nthreads = -1; /* -1 will let PetscOmpCtrlCreate() guess a proper value when user did not supply one */
-  PetscCall(PetscOptionsGetInt(NULL,((PetscObject)F)->prefix,"-mat_mumps_use_omp_threads",&nthreads,NULL));
-  if (mumps->use_petsc_omp_support) {
-#if defined(PETSC_HAVE_OPENMP_SUPPORT)
-    PetscCall(PetscOmpCtrlCreate(mumps->petsc_comm,nthreads,&mumps->omp_ctrl));
-    PetscCall(PetscOmpCtrlGetOmpComms(mumps->omp_ctrl,&mumps->omp_comm,&mumps->mumps_comm,&mumps->is_omp_master));
-#else
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"the system does not have PETSc OpenMP support but you added the -%smat_mumps_use_omp_threads option. Configure PETSc with --with-openmp --download-hwloc (or --with-hwloc) to enable it, see more in MATSOLVERMUMPS manual",((PetscObject)A)->prefix?((PetscObject)A)->prefix:"");
-#endif
-  } else {
-    mumps->omp_comm      = PETSC_COMM_SELF;
-    mumps->mumps_comm    = mumps->petsc_comm;
-    mumps->is_omp_master = PETSC_TRUE;
-  }
-  PetscCallMPI(MPI_Comm_size(mumps->omp_comm,&mumps->omp_comm_size));
-  mumps->reqs = NULL;
-  mumps->tag  = 0;
-
-  /* It looks like MUMPS does not dup the input comm. Dup a new comm for MUMPS to avoid any tag mismatches. */
-  if (mumps->mumps_comm != MPI_COMM_NULL) {
-    PetscCall(PetscCommGetComm(PetscObjectComm((PetscObject)A),&mumps->mumps_comm));
-  }
-
-  mumps->id.comm_fortran = MPI_Comm_c2f(mumps->mumps_comm);
-  mumps->id.job = JOB_INIT;
-  mumps->id.par = 1;  /* host participates factorizaton and solve */
-  mumps->id.sym = mumps->sym;
-
-  PetscMUMPS_c(mumps);
-  PetscCheck(mumps->id.INFOG(1) >= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS: INFOG(1)=%d",mumps->id.INFOG(1));
-
-  /* copy MUMPS default control values from master to slaves. Although slaves do not call MUMPS, they may access these values in code.
-     For example, ICNTL(9) is initialized to 1 by MUMPS and slaves check ICNTL(9) in MatSolve_MUMPS.
-   */
-  PetscCallMPI(MPI_Bcast(mumps->id.icntl,40,MPI_INT,  0,mumps->omp_comm));
-  PetscCallMPI(MPI_Bcast(mumps->id.cntl, 15,MPIU_REAL,0,mumps->omp_comm));
-
-  mumps->scat_rhs = NULL;
-  mumps->scat_sol = NULL;
-
-  /* set PETSc-MUMPS default options - override MUMPS default */
-  mumps->id.ICNTL(3) = 0;
-  mumps->id.ICNTL(4) = 0;
-  if (mumps->petsc_size == 1) {
-    mumps->id.ICNTL(18) = 0;   /* centralized assembled matrix input */
-    mumps->id.ICNTL(7)  = 7;   /* automatic choice of ordering done by the package */
-  } else {
-    mumps->id.ICNTL(18) = 3;   /* distributed assembled matrix input */
-    mumps->id.ICNTL(21) = 1;   /* distributed solution */
-  }
-
-  /* schur */
-  mumps->id.size_schur    = 0;
-  mumps->id.listvar_schur = NULL;
-  mumps->id.schur         = NULL;
-  mumps->sizeredrhs       = 0;
-  mumps->schur_sol        = NULL;
-  mumps->schur_sizesol    = 0;
   PetscFunctionReturn(0);
 }
 
@@ -2293,14 +2327,6 @@ PetscErrorCode MatFactorSetSchurIS_MUMPS(Mat F, IS is)
 
   PetscFunctionBegin;
   PetscCall(ISGetLocalSize(is,&size));
-  if (mumps->petsc_size > 1) {
-    PetscBool ls,gs; /* gs is false if any rank other than root has non-empty IS */
-
-    ls   = mumps->myid ? (size ? PETSC_FALSE : PETSC_TRUE) : PETSC_TRUE; /* always true on root; false on others if their size != 0 */
-    PetscCallMPI(MPI_Allreduce(&ls,&gs,1,MPIU_BOOL,MPI_LAND,mumps->petsc_comm));
-    PetscCheck(gs,PETSC_COMM_SELF,PETSC_ERR_SUP,"MUMPS distributed parallel Schur complements not yet supported from PETSc");
-  }
-
   /* Schur complement matrix */
   PetscCall(MatDestroy(&F->schur));
   PetscCall(MatCreateSeqDense(PETSC_COMM_SELF,size,size,NULL,&F->schur));
@@ -2319,15 +2345,6 @@ PetscErrorCode MatFactorSetSchurIS_MUMPS(Mat F, IS is)
   PetscCall(ISGetIndices(is,&idxs));
   for (i=0; i<size; i++) PetscCall(PetscMUMPSIntCast(idxs[i]+1,&(mumps->id.listvar_schur[i])));
   PetscCall(ISRestoreIndices(is,&idxs));
-  if (mumps->petsc_size > 1) {
-    mumps->id.ICNTL(19) = 1; /* MUMPS returns Schur centralized on the host */
-  } else {
-    if (F->factortype == MAT_FACTOR_LU) {
-      mumps->id.ICNTL(19) = 3; /* MUMPS returns full matrix */
-    } else {
-      mumps->id.ICNTL(19) = 2; /* MUMPS returns lower triangular part */
-    }
-  }
   /* set a special value of ICNTL (not handled my MUMPS) to be used in the solve phase by PETSc */
   mumps->id.ICNTL(26) = -1;
   PetscFunctionReturn(0);
@@ -2408,7 +2425,17 @@ PetscErrorCode MatMumpsSetIcntl_MUMPS(Mat F,PetscInt icntl,PetscInt ival)
   Mat_MUMPS *mumps =(Mat_MUMPS*)F->data;
 
   PetscFunctionBegin;
-  PetscCall(PetscMUMPSIntCast(ival,&mumps->id.ICNTL(icntl)));
+  if (mumps->id.job == JOB_NULL) { /* need to cache icntl and ival since PetscMUMPS_c() has never been called */
+    PetscInt i,nICNTL_pre = mumps->ICNTL_pre ? mumps->ICNTL_pre[0] : 0; /* number of already cached ICNTL */
+    for (i = 0; i < nICNTL_pre; ++i) if (mumps->ICNTL_pre[1+2*i] == icntl) break; /* is this ICNTL already cached? */
+    if (i == nICNTL_pre) { /* not already cached */
+      if (i > 0) PetscCall(PetscRealloc(sizeof(PetscMUMPSInt)*(2*nICNTL_pre + 3),&mumps->ICNTL_pre));
+      else PetscCall(PetscCalloc(sizeof(PetscMUMPSInt)*3,&mumps->ICNTL_pre));
+      mumps->ICNTL_pre[0]++;
+    }
+    mumps->ICNTL_pre[1+2*i] = icntl;
+    PetscCall(PetscMUMPSIntCast(ival,mumps->ICNTL_pre+2+2*i));
+  } else PetscCall(PetscMUMPSIntCast(ival,&mumps->id.ICNTL(icntl)));
   PetscFunctionReturn(0);
 }
 
@@ -2448,6 +2475,7 @@ PetscErrorCode MatMumpsSetIcntl(Mat F,PetscInt icntl,PetscInt ival)
   PetscCheck(F->factortype,PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_WRONGSTATE,"Only for factored matrix");
   PetscValidLogicalCollectiveInt(F,icntl,2);
   PetscValidLogicalCollectiveInt(F,ival,3);
+  PetscCheck(icntl >= 1 && icntl <= 38,PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_WRONG,"Unsupported ICNTL value %" PetscInt_FMT,icntl);
   PetscTryMethod(F,"MatMumpsSetIcntl_C",(Mat,PetscInt,PetscInt),(F,icntl,ival));
   PetscFunctionReturn(0);
 }
@@ -2478,6 +2506,7 @@ PetscErrorCode MatMumpsGetIcntl(Mat F,PetscInt icntl,PetscInt *ival)
   PetscCheck(F->factortype,PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_WRONGSTATE,"Only for factored matrix");
   PetscValidLogicalCollectiveInt(F,icntl,2);
   PetscValidIntPointer(ival,3);
+  PetscCheck(icntl >= 1 && icntl <= 38,PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_WRONG,"Unsupported ICNTL value %" PetscInt_FMT,icntl);
   PetscUseMethod(F,"MatMumpsGetIcntl_C",(Mat,PetscInt,PetscInt*),(F,icntl,ival));
   PetscFunctionReturn(0);
 }
@@ -2488,7 +2517,17 @@ PetscErrorCode MatMumpsSetCntl_MUMPS(Mat F,PetscInt icntl,PetscReal val)
   Mat_MUMPS *mumps =(Mat_MUMPS*)F->data;
 
   PetscFunctionBegin;
-  mumps->id.CNTL(icntl) = val;
+  if (mumps->id.job == JOB_NULL) {
+    PetscInt i,nCNTL_pre = mumps->CNTL_pre ? mumps->CNTL_pre[0] : 0;
+    for (i = 0; i < nCNTL_pre; ++i) if (mumps->CNTL_pre[1+2*i] == icntl) break;
+    if (i == nCNTL_pre) {
+      if (i > 0) PetscCall(PetscRealloc(sizeof(PetscReal)*(2*nCNTL_pre + 3),&mumps->CNTL_pre));
+      else PetscCall(PetscCalloc(sizeof(PetscReal)*3,&mumps->CNTL_pre));
+      mumps->CNTL_pre[0]++;
+    }
+    mumps->CNTL_pre[1+2*i] = icntl;
+    mumps->CNTL_pre[2+2*i] = val;
+  } else mumps->id.CNTL(icntl) = val;
   PetscFunctionReturn(0);
 }
 
@@ -2528,6 +2567,7 @@ PetscErrorCode MatMumpsSetCntl(Mat F,PetscInt icntl,PetscReal val)
   PetscCheck(F->factortype,PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_WRONGSTATE,"Only for factored matrix");
   PetscValidLogicalCollectiveInt(F,icntl,2);
   PetscValidLogicalCollectiveReal(F,val,3);
+  PetscCheck(icntl >= 1 && icntl <= 7,PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_WRONG,"Unsupported CNTL value %" PetscInt_FMT,icntl);
   PetscTryMethod(F,"MatMumpsSetCntl_C",(Mat,PetscInt,PetscReal),(F,icntl,val));
   PetscFunctionReturn(0);
 }
@@ -2558,6 +2598,7 @@ PetscErrorCode MatMumpsGetCntl(Mat F,PetscInt icntl,PetscReal *val)
   PetscCheck(F->factortype,PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_WRONGSTATE,"Only for factored matrix");
   PetscValidLogicalCollectiveInt(F,icntl,2);
   PetscValidRealPointer(val,3);
+  PetscCheck(icntl >= 1 && icntl <= 7,PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_WRONG,"Unsupported CNTL value %" PetscInt_FMT,icntl);
   PetscUseMethod(F,"MatMumpsGetCntl_C",(Mat,PetscInt,PetscReal*),(F,icntl,val));
   PetscFunctionReturn(0);
 }
@@ -3038,9 +3079,10 @@ static PetscErrorCode MatGetFactor_aij_mumps(Mat A,MatFactorType ftype,Mat *F)
   B->ops->destroy = MatDestroy_MUMPS;
   B->data         = (void*)mumps;
 
-  PetscCall(MatSetFromOptions_MUMPS_OpenMP(B,A));
-
   *F = B;
+  mumps->id.job = JOB_NULL;
+  mumps->ICNTL_pre = NULL;
+  mumps->CNTL_pre = NULL;
   mumps->matstruc = DIFFERENT_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
@@ -3108,9 +3150,10 @@ static PetscErrorCode MatGetFactor_sbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
   B->ops->destroy = MatDestroy_MUMPS;
   B->data         = (void*)mumps;
 
-  PetscCall(MatSetFromOptions_MUMPS_OpenMP(B,A));
-
   *F = B;
+  mumps->id.job = JOB_NULL;
+  mumps->ICNTL_pre = NULL;
+  mumps->CNTL_pre = NULL;
   mumps->matstruc = DIFFERENT_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
@@ -3168,9 +3211,10 @@ static PetscErrorCode MatGetFactor_baij_mumps(Mat A,MatFactorType ftype,Mat *F)
   B->ops->destroy = MatDestroy_MUMPS;
   B->data         = (void*)mumps;
 
-  PetscCall(MatSetFromOptions_MUMPS_OpenMP(B,A));
-
   *F = B;
+  mumps->id.job = JOB_NULL;
+  mumps->ICNTL_pre = NULL;
+  mumps->CNTL_pre = NULL;
   mumps->matstruc = DIFFERENT_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
@@ -3228,9 +3272,10 @@ static PetscErrorCode MatGetFactor_sell_mumps(Mat A,MatFactorType ftype,Mat *F)
   B->ops->destroy = MatDestroy_MUMPS;
   B->data         = (void*)mumps;
 
-  PetscCall(MatSetFromOptions_MUMPS_OpenMP(B,A));
-
   *F = B;
+  mumps->id.job = JOB_NULL;
+  mumps->ICNTL_pre = NULL;
+  mumps->CNTL_pre = NULL;
   mumps->matstruc = DIFFERENT_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
