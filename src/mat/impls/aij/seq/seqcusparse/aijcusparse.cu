@@ -2355,9 +2355,11 @@ static PetscErrorCode MatILUFactorSymbolic_SeqAIJCUSPARSE(Mat B,Mat A,IS isrow,I
 
   PetscFunctionBegin;
  #if CUSPARSE_VERSION >= 11500
-  PetscBool row_identity,col_identity;
-  PetscCall(ISIdentity(isrow,&row_identity));
-  PetscCall(ISIdentity(iscol,&col_identity));
+  PetscBool row_identity = PETSC_FALSE,col_identity = PETSC_FALSE;
+  if (cusparseTriFactors->factorizeOnDevice) {
+    PetscCall(ISIdentity(isrow,&row_identity));
+    PetscCall(ISIdentity(iscol,&col_identity));
+  }
   if (!info->levels && row_identity && col_identity) {
     PetscCall(MatILUFactorSymbolic_SeqAIJCUSPARSE_ILU0(B,A,isrow,iscol,info));
   } else
@@ -2387,8 +2389,8 @@ static PetscErrorCode MatICCFactorSymbolic_SeqAIJCUSPARSE(Mat B,Mat A,IS perm,co
 
   PetscFunctionBegin;
  #if CUSPARSE_VERSION >= 11500
-  PetscBool perm_identity;
-  PetscCall(ISIdentity(perm,&perm_identity));
+  PetscBool perm_identity = PETSC_FALSE;
+  if (cusparseTriFactors->factorizeOnDevice) PetscCall(ISIdentity(perm,&perm_identity));
   if (!info->levels && perm_identity) {
     PetscCall(MatICCFactorSymbolic_SeqAIJCUSPARSE_ICC0(B,A,perm,info));
   } else
@@ -2435,12 +2437,24 @@ M*/
 PETSC_EXTERN PetscErrorCode MatGetFactor_seqaijcusparse_cusparse(Mat A,MatFactorType ftype,Mat *B)
 {
   PetscInt       n = A->rmap->n;
+  PetscBool      factOnDevice,factOnHost;
+  char           *prefix;
+  char           factPlace[32] = "device"; /* the default */
 
   PetscFunctionBegin;
   PetscCall(MatCreate(PetscObjectComm((PetscObject)A),B));
   PetscCall(MatSetSizes(*B,n,n,n,n));
   (*B)->factortype = ftype;
   PetscCall(MatSetType(*B,MATSEQAIJCUSPARSE));
+
+  prefix = (*B)->factorprefix ? (*B)->factorprefix : ((PetscObject)A)->prefix;
+  PetscOptionsBegin(PetscObjectComm((PetscObject)(*B)),prefix,"MatGetFactor","Mat");
+  PetscCall(PetscOptionsString("-mat_factor_bind_factorization","Do matrix factorization on host or device when possible","MatGetFactor",NULL,factPlace,sizeof(factPlace),NULL));
+  PetscOptionsEnd();
+  PetscCall(PetscStrcasecmp("device",factPlace,&factOnDevice));
+  PetscCall(PetscStrcasecmp("host",factPlace,&factOnHost));
+  PetscCheck(factOnDevice || factOnHost,PetscObjectComm((PetscObject)(*B)),PETSC_ERR_ARG_OUTOFRANGE,"Wrong option %s to -mat_factor_bind_factorization <string>. Only host and device are allowed",factPlace);
+  ((Mat_SeqAIJCUSPARSETriFactors*)(*B)->spptr)->factorizeOnDevice = factOnDevice;
 
   if (A->boundtocpu && A->bindingpropagates) PetscCall(MatBindToCPU(*B,PETSC_TRUE));
   if (ftype == MAT_FACTOR_LU || ftype == MAT_FACTOR_ILU || ftype == MAT_FACTOR_ILUDT) {
