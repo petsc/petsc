@@ -4,18 +4,28 @@
 !
 
       Interface
-        Subroutine PetscLayoutFindOwner(a,b,z)
+        Subroutine PetscLayoutFindOwner(a,b,c,z)
           PetscLayout a
           PetscMPIInt b
+          PetscMPIInt c
           PetscErrorCode  z
         End Subroutine
       End Interface
 
       Interface
-        Subroutine PetscLayoutFindOwnerIndex(a,b,c,z)
+        Subroutine PetscLayoutFindOwnerIndex(a,b,c,d,z)
           PetscLayout a
           PetscMPIInt b
           PetscInt c
+          PetscInt d
+          PetscErrorCode  z
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine PetscLayoutGetRangesF90(a,b,z)
+          PetscLayout a
+          PetscInt, pointer :: b(:)
           PetscErrorCode  z
         End Subroutine
       End Interface
