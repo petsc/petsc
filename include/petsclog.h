@@ -114,8 +114,8 @@ typedef struct {
   PetscClassId   id;           /* The integer identifying this class */
   int            creations;    /* The number of objects of this class created */
   int            destructions; /* The number of objects of this class destroyed */
-  PetscLogDouble mem;          /* The total memory allocated by objects of this class */
-  PetscLogDouble descMem;      /* The total memory allocated by descendents of these objects */
+  PetscLogDouble mem;          /* The total memory allocated by objects of this class; this is completely wrong and should possibly be removed */
+  PetscLogDouble descMem;      /* The total memory allocated by descendents of these objects; this is completely wrong and should possibly be removed */
 } PetscClassPerfInfo;
 
 typedef struct _n_PetscClassRegLog *PetscClassRegLog;
@@ -661,6 +661,9 @@ static inline PetscErrorCode PetscLogGpuToCpuScalar(PetscLogDouble size)
    Notes:
      To limit the chance of integer overflow when multiplying by a constant, represent the constant as a double,
      not an integer. Use PetscLogFlops(4.0*n) not PetscLogFlops(4*n)
+
+     The values are also added to the total flop count for the MPI rank that is set with `PetscLogFlops()`; hence the number of flops
+     just on the CPU would be the value from set from `PetscLogFlops()` minus the value set from `PetscLogGpuFlops()`
 
    Level: intermediate
 

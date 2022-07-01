@@ -97,8 +97,8 @@ typedef struct _p_PetscObject {
   PetscOps             bops[1];
   MPI_Comm             comm;
   PetscInt             type;
-  PetscLogDouble       flops,time,mem,memchildren;
-  PetscObjectId        id;
+  PetscLogDouble       flops,time,mem,memchildren; /* these are not set properly and should possibly be removed */
+  PetscObjectId        id;                         /* this is used to compare object for identity that may no longer exist since memory addresses get recycled for new objects */
   PetscInt             refct;
   PetscMPIInt          tag;
   PetscFunctionList    qlist;
@@ -107,8 +107,8 @@ typedef struct _p_PetscObject {
   char                 *description;
   char                 *mansec;
   char                 *type_name;     /*  this is the subclass, for example VECSEQ which equals "seq" */
-  PetscObject          parent;
-  PetscObjectId        parentid;
+  PetscObject          parent;         /* this is not set properly and should possibly be removed */
+  PetscObjectId        parentid;       /* this is not set properly and should possibly be removed */
   char*                name;
   char                 *prefix;
   PetscInt             tablevel;
