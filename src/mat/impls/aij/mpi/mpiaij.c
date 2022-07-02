@@ -3417,6 +3417,7 @@ PetscErrorCode MatCreateMPIAIJWithSeqAIJ(MPI_Comm comm,Mat A,Mat B,const PetscIn
   const PetscScalar *oa;
   Mat               Bnew;
   PetscInt          m,n,N;
+  MatType           mpi_mat_type;
 
   PetscFunctionBegin;
   PetscCall(MatCreate(comm,mat));
@@ -3430,7 +3431,10 @@ PetscErrorCode MatCreateMPIAIJWithSeqAIJ(MPI_Comm comm,Mat A,Mat B,const PetscIn
   PetscCall(MPIU_Allreduce(&n,&N,1,MPIU_INT,MPI_SUM,comm));
 
   PetscCall(MatSetSizes(*mat,m,n,PETSC_DECIDE,N));
-  PetscCall(MatSetType(*mat,MATMPIAIJ));
+  /* Determine the type of MPI matrix that should be created from the type of matrix A, which holds the "diagonal" portion. */
+  PetscCall(MatGetMPIMatType_Private(A,&mpi_mat_type));
+  PetscCall(MatSetType(*mat,mpi_mat_type));
+
   PetscCall(MatSetBlockSizes(*mat,A->rmap->bs,A->cmap->bs));
   maij = (Mat_MPIAIJ*)(*mat)->data;
 
