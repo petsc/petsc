@@ -983,7 +983,7 @@ analyze-pipeline:
 # Base job for a documentation build
 #
 .docs:
-  stage: stage-2
+  stage: stage-3
   tags:
     - gce-stage2
   before_script:
