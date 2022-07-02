@@ -122,6 +122,7 @@ cg:
   /* Use continuous values */
   PetscCall(DMFieldGetDM(field, &fdm));
   PetscCall(DMGetLocalSection(fdm, &s));
+  PetscCall(PetscSectionGetField(s, dsfield->fieldNum, &s));
   PetscCall(DMPlexVecGetClosure(fdm, s, dsfield->vec, cell, Nc, values));
   PetscFunctionReturn(0);
 }
