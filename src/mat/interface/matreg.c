@@ -48,6 +48,44 @@ PetscErrorCode MatGetRootType_Private(Mat mat, MatType *rootType)
   PetscFunctionReturn(0);
 }
 
+/* MatGetMPIMatType_Private - Gets the MPI type corresponding to the input matrix's type (e.g., MATMPIAIJ for MATSEQAIJ)
+
+   Not Collective
+
+   Input Parameters:
+.  mat      - the input matrix, could be sequential or MPI
+
+   Output Parameters:
+.  MPIType  - the parallel (MPI) matrix type
+
+   Level: developer
+
+.seealso: `MatGetType()`, `MatSetType()`, `MatType`, `Mat`
+*/
+PetscErrorCode MatGetMPIMatType_Private(Mat mat, MatType *MPIType)
+{
+  PetscBool      found = PETSC_FALSE;
+  MatRootName    names = MatRootNameList;
+  MatType        inType;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscCall(MatGetType(mat,&inType));
+  while (names) {
+    PetscCall(PetscStrcmp(inType,names->sname,&found));
+    if (!found) PetscCall(PetscStrcmp(inType,names->mname,&found));
+    if (!found) PetscCall(PetscStrcmp(inType,names->rname,&found));
+    if (found) {
+      found     = PETSC_TRUE;
+      *MPIType = names->mname;
+      break;
+    }
+    names = names->next;
+  }
+  PetscCheck(found,PETSC_COMM_SELF,PETSC_ERR_SUP,"No corresponding parallel (MPI) type for this matrix");
+  PetscFunctionReturn(0);
+}
+
 /*@C
    MatSetType - Builds matrix object for a particular matrix type
 
