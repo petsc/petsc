@@ -2308,3 +2308,26 @@ or message.
 
 .. bibliography:: /petsc.bib
    :filter: docname in docnames
+
+Using a MPI parallel linear solver from a non-MPI program
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Using PETSc's MPI linear solver server it is possible to use multiple MPI processes to solve a
+a linear system when the application code, including the matrix generation, is run on a single
+MPI rank (with or without OpenMP). The application code must be built with MPI and must call
+``PetscIntialize()`` at the very beginning of the program and end with ``PetscFinalize()``. The
+application code may utilize OpenMP.
+The code may create multiple matrices and `KSP` objects and call `KSPSolve()`, similarly the
+code may utilize the `SNES` nonlinear solvers, the `TS` ODE integrators, and the `TAO` optimization algorithms
+which use `KSP`.
+
+Amdahl's law makes clear that parallelizing only a portion of a numerical code can only provide a limited improvement
+in the computation time; thus it is crucial to understand what phases of a computation must be parallelized (via MPI, OpenMP, or some other model)
+to ensure a useful increase in performance. One of the crucial phases is likely the generation of the matrix entries; the
+use of `MatSetPreallocationCOO()` and `MatSetValuesCOO()` in an OpenMP code allows parallelizing the generation of the matrix.
+
+The program must then be launched using the standard approaches for launching MPI programs with the
+option `-mpi_linear_solver_server` and options to utilize the `PCMPI` preconditioners; for example,
+`-ksp_type preonly` and `pc_type mpi`. Any standard solver options may be passed to the parallel solvers using the
+options prefix `-mpi_`; for example, `-mpi_ksp_type cg`. The option `-mpi_linear_solver_server_view` will print
+a summary of all the systems solved by the MPI linear solver server.

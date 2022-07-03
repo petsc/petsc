@@ -31,7 +31,7 @@ static struct PetscFPTrapLink *_trapstack;                   /* Any pushed state
    Not Collective
 
    Input Parameter:
-.    trap - PETSC_FP_TRAP_ON or PETSC_FP_TRAP_OFF
+.    trap - PETSC_FP_TRAP_ON or PETSC_FP_TRAP_OFF or any of the values passable to `PetscSetFPTrap()`
 
    Level: advanced
 
@@ -100,6 +100,7 @@ static struct { int code_no; char *name; } error_codes[] = {
 };
 #define SIGPC(scp) (scp->sc_pc)
 
+/* this function gets called if a trap has occurred and been caught */
 sigfpe_handler_type PetscDefaultFPTrap(int sig,int code,struct sigcontext *scp,char *addr)
 {
   int err_ind = -1;
@@ -118,25 +119,38 @@ sigfpe_handler_type PetscDefaultFPTrap(int sig,int code,struct sigcontext *scp,c
 }
 
 /*@
-   PetscSetFPTrap - Enables traps/exceptions on common floating point errors.
-                    This option may not work on certain systems.
+   PetscSetFPTrap - Enables traps/exceptions on common floating point errors. This option may not work on certain systems or only a
+   subset of exceptions may be trapable.
 
    Not Collective
 
    Input Parameters:
-.  flag - PETSC_FP_TRAP_ON, PETSC_FP_TRAP_OFF.
+.  flag - values are
+.vb
+    PETSC_FP_TRAP_OFF   - do not trap any exceptions
+    PETSC_FP_TRAP_ON - all exceptions that are possible on the system except underflow
+    PETSC_FP_TRAP_INDIV - integer divide by zero
+    PETSC_FP_TRAP_FLTOPERR - improper argument to function, for example with real numbers, the square root of a negative number
+    PETSC_FP_TRAP_FLTOVF - overflow
+    PETSC_FP_TRAP_FLTUND - underflow - not trapped by default on most systems
+    PETSC_FP_TRAP_FLTDIV - floating point divide by zero
+    PETSC_FP_TRAP_FLTINEX - inexact floating point result
+.ve
 
    Options Database Keys:
-.  -fp_trap - Activates floating point trapping
+.  -fp_trap <off,on> - turn on or off trapping of floating point exceptions
 
    Level: advanced
 
-   Description:
-   On systems that support it, when called with PETSC_FP_TRAP_ON this routine causes floating point
-   underflow, overflow, divide-by-zero, and invalid-operand (e.g., a NaN) to
+   Notes:
+   Currently only PETSC_FP_TRAP_OFF and PETSC_FP_TRAP_ON are handled. All others are treated as PETSC_FP_TRAP_ON.
+
+   The values are bit values and may be |ed together in the function call
+
+   On systems that support it this routine causes floating point
+   overflow, divide-by-zero, and invalid-operand (e.g., a NaN), but not underflow, to
    cause a message to be printed and the program to exit.
 
-   Note:
    On many common systems, the floating
    point exception state is not preserved from the location where the trap
    occurred through to the signal handler.  In this case, the signal handler
@@ -160,7 +174,7 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
   PetscFunctionBegin;
   /* Clear accumulated exceptions.  Used to suppress meaningless messages from f77 programs */
   (void) ieee_flags("clear","exception","all",&out);
-  if (flag == PETSC_FP_TRAP_ON) {
+  if (flag) {
     /*
       To trap more fp exceptions, including underflow, change the line below to
       if (ieee_handler("set","all",PetscDefaultFPTrap)) {
@@ -232,7 +246,7 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
   /* Clear accumulated exceptions.  Used to suppress meaningless messages from f77 programs */
   (void) ieee_flags("clear","exception","all",&out);
   if (flag == PETSC_FP_TRAP_ON) {
-    if (ieee_handler("set","common",(sigfpe_handler_type)PetscDefaultFPTrap))        (*PetscErrorPrintf)("Can't set floating point handler\n");
+    if (ieee_handler("set","common",(sigfpe_handler_type)PetscDefaultFPTrap))   (*PetscErrorPrintf)("Can't set floating point handler\n");
   } else {
     if (ieee_handler("clear","common",(sigfpe_handler_type)PetscDefaultFPTrap)) (*PetscErrorPrintf)("Can't clear floatingpoint handler\n");
   }
@@ -275,8 +289,8 @@ void PetscDefaultFPTrap(unsigned exception[],int val[])
 PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
 {
   PetscFunctionBegin;
-  if (flag == PETSC_FP_TRAP_ON) handle_sigfpes(_ON,,_EN_UNDERFL|_EN_OVERFL|_EN_DIVZERO|_EN_INVALID,PetscDefaultFPTrap,_ABORT_ON_ERROR,0);
-  else                          handle_sigfpes(_OFF,_EN_UNDERFL|_EN_OVERFL|_EN_DIVZERO|_EN_INVALID,0,_ABORT_ON_ERROR,0);
+  if (flag) handle_sigfpes(_ON,,_EN_UNDERFL|_EN_OVERFL|_EN_DIVZERO|_EN_INVALID,PetscDefaultFPTrap,_ABORT_ON_ERROR,0);
+  else      handle_sigfpes(_OFF,_EN_UNDERFL|_EN_OVERFL|_EN_DIVZERO|_EN_INVALID,0,_ABORT_ON_ERROR,0);
   _trapmode = flag;
   PetscFunctionReturn(0);
 }
@@ -329,7 +343,7 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
   PetscFunctionBegin;
   /* Clear accumulated exceptions.  Used to suppress meaningless messages from f77 programs */
   (void) ieee_flags("clear","exception","all",&out);
-  if (flag == PETSC_FP_TRAP_ON) {
+  if (flag) {
     if (ieee_handler("set","common",(sigfpe_handler_type)PetscDefaultFPTrap))        (*PetscErrorPrintf)("Can't set floating point handler\n");
   } else {
     if (ieee_handler("clear","common",(sigfpe_handler_type)PetscDefaultFPTrap)) (*PetscErrorPrintf)("Can't clear floatingpoint handler\n");
@@ -393,10 +407,10 @@ void PetscDefaultFPTrap(int sig,int code,struct sigcontext *scp)
   PETSCABORT(MPI_COMM_WORLD,PETSC_ERR_FP);
 }
 
-PetscErrorCode PetscSetFPTrap(PetscFPTrap on)
+PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
 {
   PetscFunctionBegin;
-  if (on == PETSC_FP_TRAP_ON) {
+  if (flag) {
     signal(SIGFPE,(void (*)(int))PetscDefaultFPTrap);
     fp_trap(FP_TRAP_SYNC);
     fp_enable(TRP_INVALID | TRP_DIV_BY_ZERO | TRP_OVERFLOW | TRP_UNDERFLOW);
@@ -414,7 +428,7 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap on)
     fp_disable(TRP_INVALID | TRP_DIV_BY_ZERO | TRP_OVERFLOW | TRP_UNDERFLOW);
     fp_trap(FP_TRAP_OFF);
   }
-  _trapmode = on;
+  _trapmode = flag;
   PetscFunctionReturn(0);
 }
 
@@ -436,12 +450,12 @@ void PetscDefaultFPTrap(int sig)
   PETSCABORT(MPI_COMM_WORLD,PETSC_ERR_FP);
 }
 
-PetscErrorCode  PetscSetFPTrap(PetscFPTrap on)
+PetscErrorCode  PetscSetFPTrap(PetscFPTrap flag)
 {
   unsigned int cw;
 
   PetscFunctionBegin;
-  if (on == PETSC_FP_TRAP_ON) {
+  if (flag) {
     cw = _EM_INVALID | _EM_ZERODIVIDE | _EM_OVERFLOW | _EM_UNDERFLOW;
     PetscCheck(SIG_ERR != signal(SIGFPE,PetscDefaultFPTrap),PETSC_COMM_SELF,PETSC_ERR_LIB,"Can't set floating point handler");
   } else {
@@ -449,7 +463,7 @@ PetscErrorCode  PetscSetFPTrap(PetscFPTrap on)
     PetscCheck(SIG_ERR != signal(SIGFPE,SIG_DFL),PETSC_COMM_SELF,PETSC_ERR_LIB,"Can't clear floating point handler");
   }
   (void)_controlfp(0, cw);
-  _trapmode = on;
+  _trapmode = flag;
   PetscFunctionReturn(0);
 }
 
@@ -523,15 +537,16 @@ void PetscDefaultFPTrap(int sig)
   PETSCABORT(MPI_COMM_WORLD,PETSC_ERR_FP);
 }
 
-PetscErrorCode  PetscSetFPTrap(PetscFPTrap on)
+PetscErrorCode  PetscSetFPTrap(PetscFPTrap flag)
 {
   PetscFunctionBegin;
-  if (on == PETSC_FP_TRAP_ON) {
+  if (flag) {
     /* Clear any flags that are currently set so that activating trapping will not immediately call the signal handler. */
     PetscCheck(!feclearexcept(FE_ALL_EXCEPT),PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot clear floating point exception flags");
 #if defined(FE_NOMASK_ENV)
     /* Could use fesetenv(FE_NOMASK_ENV), but that causes spurious exceptions (like gettimeofday() -> PetscLogDouble). */
-    PetscCheck(feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW | FE_UNDERFLOW) != -1,PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot activate floating point exceptions");
+    /* PetscCheck(feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW | FE_UNDERFLOW) != -1,PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot activate floating point exceptions"); */
+    PetscCheck(feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW) != -1,PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot activate floating point exceptions");
 #elif defined PETSC_HAVE_XMMINTRIN_H
    _MM_SET_EXCEPTION_MASK(_MM_GET_EXCEPTION_MASK() & ~_MM_MASK_DIV_ZERO);
    _MM_SET_EXCEPTION_MASK(_MM_GET_EXCEPTION_MASK() & ~_MM_MASK_UNDERFLOW);
@@ -546,7 +561,7 @@ PetscErrorCode  PetscSetFPTrap(PetscFPTrap on)
     /* can use _MM_SET_EXCEPTION_MASK(_MM_GET_EXCEPTION_MASK() | _MM_MASK_UNDERFLOW); if PETSC_HAVE_XMMINTRIN_H exists */
     PetscCheck(SIG_ERR != signal(SIGFPE,SIG_DFL),PETSC_COMM_SELF,PETSC_ERR_LIB,"Can't clear floating point handler");
   }
-  _trapmode = on;
+  _trapmode = flag;
   PetscFunctionReturn(0);
 }
 
@@ -589,10 +604,10 @@ void PetscDefaultFPTrap(int sig)
   PETSCABORT(MPI_COMM_WORLD,PETSC_ERR_FP);
 }
 
-PetscErrorCode  PetscSetFPTrap(PetscFPTrap on)
+PetscErrorCode  PetscSetFPTrap(PetscFPTrap flag)
 {
   PetscFunctionBegin;
-  if (on == PETSC_FP_TRAP_ON) {
+  if (flag == PETSC_FP_TRAP_ON) {
 #if defined(PETSC_HAVE_FPPRESETSTICKY)
     fpresetsticky(fpgetsticky());
 #elif defined(PETSC_HAVE_FPSETSTICKY)
@@ -609,7 +624,7 @@ PetscErrorCode  PetscSetFPTrap(PetscFPTrap on)
     fpsetmask(0);
     PetscCheck(SIG_ERR != signal(SIGFPE,SIG_DFL),PETSC_COMM_SELF,PETSC_ERR_LIB,"Can't clear floating point handler");
   }
-  _trapmode = on;
+  _trapmode = flag;
   PetscFunctionReturn(0);
 }
 
@@ -631,14 +646,14 @@ void PetscDefaultFPTrap(int sig)
   PETSCABORT(MPI_COMM_WORLD,PETSC_ERR_FP);
 }
 
-PetscErrorCode  PetscSetFPTrap(PetscFPTrap on)
+PetscErrorCode  PetscSetFPTrap(PetscFPTrap flag)
 {
   PetscFunctionBegin;
-  if (on == PETSC_FP_TRAP_ON) {
+  if (flag) {
     if (SIG_ERR == signal(SIGFPE,PetscDefaultFPTrap)) (*PetscErrorPrintf)("Can't set floatingpoint handler\n");
   } else if (SIG_ERR == signal(SIGFPE,SIG_DFL))       (*PetscErrorPrintf)("Can't clear floatingpoint handler\n");
 
-  _trapmode = on;
+  _trapmode = flag;
   PetscFunctionReturn(0);
 }
 

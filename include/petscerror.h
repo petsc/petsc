@@ -861,7 +861,17 @@ $     PetscErrorPrintf = PetscErrorPrintfDefault; to turn it back on or you can 
 M*/
 PETSC_EXTERN PetscErrorCode (*PetscErrorPrintf)(const char[],...) PETSC_ATTRIBUTE_FORMAT(1,2);
 
-typedef enum {PETSC_FP_TRAP_OFF=0,PETSC_FP_TRAP_ON=1} PetscFPTrap;
+/*E
+     PetscFPTrap - types of floating point exceptions that may be trapped
+
+     Currently only PETSC_FP_TRAP_OFF and PETSC_FP_TRAP_ON are handled. All others are treated as PETSC_FP_TRAP_ON.
+
+     Level: intermediate
+
+.seealso: `PetscSetFPTrap()`, `PetscPushFPTrap()`
+ E*/
+typedef enum {PETSC_FP_TRAP_OFF=0, PETSC_FP_TRAP_INDIV=1, PETSC_FP_TRAP_FLTOPERR=2, PETSC_FP_TRAP_FLTOVF=4, PETSC_FP_TRAP_FLTUND=8, PETSC_FP_TRAP_FLTDIV=16, PETSC_FP_TRAP_FLTINEX=32} PetscFPTrap;
+#define  PETSC_FP_TRAP_ON  (PETSC_FP_TRAP_INDIV | PETSC_FP_TRAP_FLTOPERR | PETSC_FP_TRAP_FLTOVF | PETSC_FP_TRAP_FLTDIV | PETSC_FP_TRAP_FLTINEX)
 PETSC_EXTERN PetscErrorCode PetscSetFPTrap(PetscFPTrap);
 PETSC_EXTERN PetscErrorCode PetscFPTrapPush(PetscFPTrap);
 PETSC_EXTERN PetscErrorCode PetscFPTrapPop(void);

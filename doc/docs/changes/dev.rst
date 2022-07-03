@@ -7,6 +7,7 @@ Changes you should make for main and version 3.18 so that it is portable to prev
 - Remove the error handling from uses of  ``PetscOptionsBegin()``, ``PetscOptionsEnd()``, ``PetscObjectOptionsBegin()``, ``PetscOptionsHead()``,  and ``PetscOptionsTail()``
 - Remove the error handling from uses of ``PetscDrawCollectiveBegin()`` and ``PetscDrawCollectiveEnd()``
 - Remove the error handling from uses of ``MatPreallocateInitialize()`` and ``MatPreallocateFinalize()``
+- Replace ``MatUpdateMPIAIJWithArrays()`` with ``MatUpdateMPIAIJWithArray()``
 
 Changes you can make for main and version 3.18 so that is not portable to previous versions of PETSc. This will remove all deprecation warnings when you build.
 In addition to the changes above
@@ -108,11 +109,13 @@ In addition to the changes above
 - Add ``MatFilter()`` to remove values with an absolute value equal to or below a give threshold
 
 .. rubric:: MatCoarsen:
- - Add ``MISK`` coarsening type. Distance-k maximal independent set
-   (MIS) C-F coarsening with a greedy, MIS based aggregation
-   algorithm.
+
+- Add ``MISK`` coarsening type. Distance-k maximal independent set (MIS) C-F coarsening with a greedy, MIS based aggregation algorithm
+- Add ``MatUpdateMPIAIJWithArray()`` and deprecate ``MatUpdateMPIAIJWithArrays()``
 
 .. rubric:: PC:
+
+- Add PC type of mpi which can be used in conjunction with -mpi_linear_solver_server to use MPI parallelism to solve a system created on a single MPI rank
 
 .. rubric:: KSP:
 

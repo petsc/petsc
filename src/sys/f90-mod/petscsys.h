@@ -34,7 +34,13 @@
       PetscReal, parameter :: PETSC_DEFAULT_REAL = -2.0d0
 
       PetscEnum, parameter :: PETSC_FP_TRAP_OFF = 0
-      PetscEnum, parameter :: PETSC_FP_TRAP_ON = 1
+      PetscEnum, parameter :: PETSC_FP_TRAP_ON = 55
+      PetscEnum, parameter :: PETSC_FP_TRAP_INDIV = 1
+      PetscEnum, parameter :: PETSC_FP_TRAP_FLTOPERR = 2
+      PetscEnum, parameter :: PETSC_FP_TRAP_FLTOVF = 4
+      PetscEnum, parameter :: PETSC_FP_TRAP_FLTUND = 8
+      PetscEnum, parameter :: PETSC_FP_TRAP_FLTDIV = 16
+      PetscEnum, parameter :: PETSC_FP_TRAP_FLTINEX =32
 
       PetscFortranAddr, parameter :: PETSC_STDOUT = 0
 !

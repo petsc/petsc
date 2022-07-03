@@ -76,6 +76,7 @@ typedef const char* PCType;
 #define PCDEFLATION       "deflation"
 #define PCHPDDM           "hpddm"
 #define PCH2OPUS          "h2opus"
+#define PCMPI             "mpi"
 
 /*E
     PCSide - If the preconditioner is to be applied to the left, right

@@ -66,6 +66,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_HPDDM(PC);
 #if defined(PETSC_HAVE_H2OPUS)
 PETSC_EXTERN PetscErrorCode PCCreate_H2OPUS(PC);
 #endif
+PETSC_EXTERN PetscErrorCode PCCreate_MPI(PC);
 
 /*@C
    PCRegisterAll - Registers all of the preconditioners in the PC package.
@@ -152,5 +153,6 @@ PetscErrorCode  PCRegisterAll(void)
 #if defined(PETSC_HAVE_H2OPUS)
   PetscCall(PCRegister(PCH2OPUS       ,PCCreate_H2OPUS));
 #endif
+  PetscCall(PCRegister(PCMPI         ,PCCreate_MPI));
   PetscFunctionReturn(0);
 }

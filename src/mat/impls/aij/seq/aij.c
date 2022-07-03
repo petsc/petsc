@@ -211,7 +211,7 @@ PetscErrorCode MatGetRowIJ_SeqAIJ(Mat A,PetscInt oshift,PetscBool symmetric,Pets
   PetscInt       i,ishift;
 
   PetscFunctionBegin;
-  *m = A->rmap->n;
+  if (m) *m = A->rmap->n;
   if (!ia) PetscFunctionReturn(0);
   ishift = 0;
   if (symmetric && !A->structurally_symmetric) {

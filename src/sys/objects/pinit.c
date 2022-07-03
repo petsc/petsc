@@ -1063,6 +1063,10 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char* prog,const char* 
 
   PetscCall(PetscOptionsHasName(NULL,NULL,"-python",&flg));
   if (flg) PetscCall(PetscPythonInitialize(NULL,NULL));
+
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-mpi_linear_solver_server",&flg));
+  if (PetscDefined(USE_SINGLE_LIBRARY) && flg) PetscCall(PCMPIServerBegin());
+  else PetscCheck(!flg,PETSC_COMM_WORLD,PETSC_ERR_SUP,"PETSc configured using -with-single-library=0; -mpi_linear_solver_server not supported in that case");
   PetscFunctionReturn(0);
 }
 
@@ -1306,6 +1310,9 @@ PetscErrorCode  PetscFinalize(void)
   PetscFunctionBegin;
   PetscCheck(PetscInitializeCalled,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"PetscInitialize() must be called before PetscFinalize()");
   PetscCall(PetscInfo(NULL,"PetscFinalize() called\n"));
+
+  PetscCall(PetscOptionsHasName(NULL,NULL,"-mpi_linear_solver_server",&flg));
+  if (PetscDefined(USE_SINGLE_LIBRARY) && flg) PetscCall(PCMPIServerEnd());
 
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 #if defined(PETSC_HAVE_ADIOS)

@@ -14,36 +14,40 @@
 
   MPIUNI was developed with the aim of getting PETSc compiled, and
   usable in the absence of a full MPI implementation. With this, we
-  were able to provide PETSc on Windows, Windows64 even before any MPI
+  were able to provide PETSc on Windows and Windows64 even before any MPI
   implementation was available on these platforms. [Or with certain
-  compilers - like borland, that do not have a usable MPI
+  compilers - like Borland, that do not have a usable MPI
   implementation]
 
   However - providing a sequential, standards compliant MPI
   implementation is *not* the goal of MPIUNI. The development strategy
-  was - to make enough changes to it so that PETSc sources, examples
-  compile without errors, and runs in the uni-processor mode. This is
+  was - to make enough changes to it so that PETSc sources and examples
+  compile without errors, and run in the uni-processor mode. This is
   the reason each function is not documented.
 
-  PETSc usage of MPIUNI is primarily from C. However a minimal fortran
-  interface is also provided - to get PETSc fortran examples with a
+  Because collective MPI routines, such as MPI_Allreduce(), MPI_Scatter(),
+  are used in PETSc code that runs on only a single MPI rank, the
+  wrappers provided in MPIUNI do work for those routines.
+
+  PETSc usage of MPIUNI is primarily from C. However a minimal Fortran
+  interface is also provided - to get PETSc Fortran examples with a
   few MPI calls working.
 
   One of the optimzation with MPIUNI, is to avoid the function call
   overhead, when possible. Hence most of the C functions are
   implemented as macros. However the function calls cannot be avoided
-  with fortran usage.
+  with Fortran usage.
 
   Most PETSc objects have both sequential and parallel
-  implementations, which are separate. For eg: We have two types of
+  implementations, which are separate. For example, we have two types of
   sparse matrix storage formats - SeqAIJ, and MPIAIJ. Some MPI
-  routines are used in the Seq part, but most of them are used in the
+  routines are used in the sequential format, but most of them are used in the
   MPI part. The send/receive calls can be found mostly in the MPI
   part.
 
-  When MPIUNI is used, only the Seq version of the PETSc objects are
+  When MPIUNI is used, only the sequential version of the PETSc objects are
   used, even though the MPI variant of the objects are compiled. Since
-  there are no send/receive calls in the Seq variant, PETSc works fine
+  there are no send/receive calls in the sequential variant, PETSc works fine
   with MPIUNI in seq mode.
 
   The reason some send/receive functions are defined to abort(), is to
@@ -52,9 +56,9 @@
   PETSc).
 
   Proper implementation of send/receive would involve writing a
-  function for each of them. Inside each of these functions, we have
+  function for each of them. Inside each of these functions, we would have
   to check if the send is to self or receive is from self, and then
-  doing the buffering accordingly (until the receive is called) - or
+  do the buffering accordingly (until the receive is called) - or
   what if a nonblocking receive is called, do a copy etc.. Handling
   the buffering aspects might be complicated enough, that in this
   case, a proper implementation of MPI might as well be used. This is
@@ -70,25 +74,24 @@
     Hence it might not work with external packages or user code that
     might have MPI calls in it.
 
-    - MPIUNI is not a standards compliant implementation for np=1.
-    For eg: if the user code has send/recv to self, then it will
-    abort. [Similar issues with a number of other MPI functionality]
+    - MPIUNI is not a standards compliant implementation even for one MPI rank.
+    For example, if the user code has send/recv to self, then it will
+    abort. [Similar issues exist with a number of other MPI functionality]
     However MPICH & OpenMPI are the correct implementations of MPI
-    standard for np=1.
+    standard for one MPI rank.
 
     - When user code uses multiple MPI based packages that have their
     own *internal* stubs equivalent to MPIUNI - in sequential mode,
-    invariably these multiple implementations of MPI for np=1 conflict
+    invariably these multiple implementations of MPI for one rank conflict
     with each other. The correct thing to do is: make all such
-    packages use the *same* MPI implementation for np=1. MPICH/OpenMPI
-    satisfy this requirement correctly [and hence the correct choice].
+    packages use the *same* MPI implementation for one rank. MPICH/OpenMPI
+    satisfy this requirement correctly [and hence is the correct choice].
 
     - Using MPICH/OpenMPI sequentially should have minimal
-    disadvantages. [for eg: these binaries can be run without
+    disadvantages. [for examples, the binaries can be run without
     mpirun/mpiexec as ./executable, without requiring any extra
     configurations for ssh/rsh/daemons etc..]. This should not be a
     reason to avoid these packages for sequential use.
-
 */
 
 #if !defined(MPIUNI_H)
@@ -98,7 +101,10 @@
 #include <petscconf.h>
 #include <stddef.h>
 
-/*  This is reproduced from petscsys.h so that mpi.h can be used standalone without first including petscsys.h */
+/*
+    This is reproduced from petscsys.h so that mpi.h can be used standalone without first including petscsys.h
+    Note that it does require <petscconf.h> to be included to obtain some properties of the system being built for
+*/
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
 #  define MPIUni_PETSC_DLLEXPORT __declspec(dllexport)
 #  define MPIUni_PETSC_DLLIMPORT __declspec(dllimport)
@@ -132,7 +138,7 @@ extern "C" {
 /* MPI_Aint has to be a signed integral type large enough to hold a pointer */
 typedef ptrdiff_t MPI_Aint;
 
-/* old 32bit MS compiler does not support long long */
+/* old 32bit Microsoft compiler does not support long long */
 #if defined(PETSC_SIZEOF_LONG_LONG)
 typedef long long MPIUNI_INT64;
 typedef unsigned long long MPIUNI_UINT64;
@@ -140,12 +146,11 @@ typedef unsigned long long MPIUNI_UINT64;
 typedef _int64 MPIUNI_INT64;
 typedef unsigned _int64 MPIUNI_UINT64;
 #else
-#error "cannot determine MPIUNI_INT64, MPIUNI_UINT64 types"
+#error "Cannot determine MPIUNI_INT64, MPIUNI_UINT64 types"
 #endif
 
 /*
-
- MPIUNI_ARG is used in the macros below only to stop various C/C++ compilers
+ MPIUNI_ARG is used in the macros below only to stop C/C++ compilers
  from generating warning messages about unused variables while compiling PETSc.
 */
 MPIUni_PETSC_EXTERN void *MPIUNI_TMP;
@@ -217,6 +222,7 @@ typedef int MPI_Datatype;
 #define MPI_LONG               (4 << 20 | 1 << 8 | (int)sizeof(long))
 #define MPI_LONG_LONG          (4 << 20 | 1 << 8 | (int)sizeof(MPIUNI_INT64))
 #define MPI_LONG_LONG_INT      MPI_LONG_LONG
+#define MPI_AINT               (4 << 20 | 1 << 8 | (int)sizeof(void*))
 #define MPI_INTEGER8           MPI_LONG_LONG
 #define MPI_INT8_T             (5 << 20 | 1 << 8 | (int)sizeof(int8_t))
 #define MPI_INT16_T            (5 << 20 | 1 << 8 | (int)sizeof(int16_t))
@@ -302,15 +308,15 @@ typedef int (MPI_Delete_function)(MPI_Comm,int,void *,void *);
 #define MPI_THREAD_MULTIPLE 3
 
 /*
-  To enable linking PETSc+MPIUNI with any other package that might have its
-  own MPIUNI (equivalent implementation) we need to avoid using 'MPI'
-  namespace for MPIUNI functions that go into the petsc library.
+  To enable linking PETSc and MPIUNI with any other package that might have their
+  own equivalent to MPIUNI we need to avoid using 'MPI'
+  namespace for MPIUNI functions that go into the PETSc library.
 
-  For C functions below (that get compiled into petsc library) - we map
-  the 'MPI' functions to use 'Petsc_MPI' namespace.
+  For C functions below (that get compiled into PETSc library) - we map
+  the 'MPI' functions to the 'Petsc_MPI' namespace.
 
-  With fortran we use similar mapping - thus requiring the use of
-  c-preprocessor with mpif.h
+  With Fortran we use a similar mapping - thus requiring the use of the
+  Fortran preprocessor with mpif.h
 */
 #define MPI_Abort         Petsc_MPI_Abort
 #define MPIUni_Abort      Petsc_MPIUni_Abort
@@ -377,7 +383,7 @@ MPIUni_PETSC_EXTERN int MPI_Comm_get_name(MPI_Comm,char*,int*);
 MPIUni_PETSC_EXTERN int MPI_Comm_set_name(MPI_Comm,const char*);
 /*
     Routines we have replace with macros that do nothing
-    Some return error codes others return success
+    Some return error codes, others return success
 */
 
 typedef int MPI_Fint;
@@ -524,8 +530,7 @@ typedef int MPI_Fint;
       MPIUNI_ARG(flag),\
       MPIUNI_ARG(array_of_statuses),\
       MPI_SUCCESS)
-#define MPI_Waitsome(incount,array_of_requests,outcount,\
-                     array_of_indices,array_of_statuses)        \
+#define MPI_Waitsome(incount,array_of_requests,outcount,array_of_indices,array_of_statuses)        \
      (MPIUNI_ARG(incount),\
       MPIUNI_ARG(array_of_requests),\
       MPIUNI_ARG(outcount),\
@@ -548,8 +553,7 @@ typedef int MPI_Fint;
       MPIUNI_ARG(ranks),\
       MPIUNI_ARG(newgroup),\
       MPI_SUCCESS)
-#define MPI_Testsome(incount,array_of_requests,outcount,\
-                     array_of_indices,array_of_statuses) \
+#define MPI_Testsome(incount,array_of_requests,outcount,array_of_indices,array_of_statuses) \
      (MPIUNI_ARG(incount),\
       MPIUNI_ARG(array_of_requests),\
       MPIUNI_ARG(outcount),\
@@ -637,10 +641,7 @@ typedef int MPI_Fint;
      (MPIUNI_ARG(count),\
       MPIUNI_ARG(array_of_requests),\
       MPI_SUCCESS)
-#define MPI_Sendrecv(sendbuf,sendcount,sendtype,\
-                     dest,sendtag,recvbuf,recvcount,\
-                     recvtype,source,recvtag,\
-                     comm,status) \
+#define MPI_Sendrecv(sendbuf,sendcount,sendtype,dest,sendtag,recvbuf,recvcount,recvtype,source,recvtag,comm,status) \
      (MPIUNI_ARG(dest),\
       MPIUNI_ARG(sendtag),\
       MPIUNI_ARG(recvcount),\
@@ -650,8 +651,7 @@ typedef int MPI_Fint;
       MPIUNI_ARG(comm),\
       MPIUNI_ARG(status),\
       MPIUNI_Memcpy(recvbuf,sendbuf,(sendcount)*MPI_sizeof(sendtype)))
-#define MPI_Sendrecv_replace(buf,count,datatype,dest,sendtag,\
-                             source,recvtag,comm,status) \
+#define MPI_Sendrecv_replace(buf,count,datatype,dest,sendtag,source,recvtag,comm,status) \
      (MPIUNI_ARG(buf),\
       MPIUNI_ARG(count),\
       MPIUNI_ARG(datatype),\
@@ -756,26 +756,20 @@ typedef int MPI_Fint;
       MPIUNI_ARG(root),\
       MPIUNI_ARG(comm),\
       MPI_SUCCESS)
-#define MPI_Gather(sendbuf,sendcount,sendtype,\
-                   recvbuf,recvcount, recvtype,\
-                   root,comm) \
+#define MPI_Gather(sendbuf,sendcount,sendtype,recvbuf,recvcount, recvtype,root,comm) \
      (MPIUNI_ARG(recvcount),\
       MPIUNI_ARG(root),\
       MPIUNI_ARG(recvtype),\
       MPIUNI_ARG(comm),\
       MPIUNI_Memcpy(recvbuf,sendbuf,(sendcount)*MPI_sizeof(sendtype)))
-#define MPI_Gatherv(sendbuf,sendcount,sendtype,\
-                    recvbuf,recvcounts,displs,\
-                    recvtype,root,comm) \
+#define MPI_Gatherv(sendbuf,sendcount,sendtype,recvbuf,recvcounts,displs,recvtype,root,comm) \
      (MPIUNI_ARG(recvcounts),\
       MPIUNI_ARG(displs),\
       MPIUNI_ARG(recvtype),\
       MPIUNI_ARG(root),\
       MPIUNI_ARG(comm),\
       MPIUNI_Memcpy(recvbuf,sendbuf,(sendcount)*MPI_sizeof(sendtype)))
-#define MPI_Scatter(sendbuf,sendcount,sendtype,\
-                    recvbuf,recvcount,recvtype,\
-                    root,comm) \
+#define MPI_Scatter(sendbuf,sendcount,sendtype,recvbuf,recvcount,recvtype,root,comm) \
      (MPIUNI_ARG(sendcount),\
       MPIUNI_ARG(sendtype),\
       MPIUNI_ARG(recvbuf),\
@@ -783,36 +777,30 @@ typedef int MPI_Fint;
       MPIUNI_ARG(root),\
       MPIUNI_ARG(comm),\
       MPIUNI_Memcpy(recvbuf,sendbuf,(recvcount)*MPI_sizeof(recvtype)))
-#define MPI_Scatterv(sendbuf,sendcounts,displs,\
-                     sendtype,recvbuf,recvcount,\
-                     recvtype,root,comm) \
+#define MPI_Scatterv(sendbuf,sendcounts,displs,sendtype,recvbuf,recvcount,recvtype,root,comm) \
      (MPIUNI_ARG(displs),\
       MPIUNI_ARG(sendtype),\
       MPIUNI_ARG(sendcounts),\
       MPIUNI_ARG(root),\
       MPIUNI_ARG(comm),\
       MPIUNI_Memcpy(recvbuf,sendbuf,(recvcount)*MPI_sizeof(recvtype)))
-#define MPI_Allgather(sendbuf,sendcount,sendtype,\
-                     recvbuf,recvcount,recvtype,comm) \
+#define MPI_Allgather(sendbuf,sendcount,sendtype,recvbuf,recvcount,recvtype,comm) \
      (MPIUNI_ARG(recvcount),\
       MPIUNI_ARG(recvtype),\
       MPIUNI_ARG(comm),\
       MPIUNI_Memcpy(recvbuf,sendbuf,(sendcount)*MPI_sizeof(sendtype)))
-#define MPI_Allgatherv(sendbuf,sendcount,sendtype,\
-     recvbuf,recvcounts,displs,recvtype,comm) \
+#define MPI_Allgatherv(sendbuf,sendcount,sendtype,recvbuf,recvcounts,displs,recvtype,comm) \
      (MPIUNI_ARG(recvcounts),\
       MPIUNI_ARG(displs),\
       MPIUNI_ARG(recvtype),\
       MPIUNI_ARG(comm),\
       MPIUNI_Memcpy(recvbuf,sendbuf,(sendcount)*MPI_sizeof(sendtype)))
-#define MPI_Alltoall(sendbuf,sendcount,sendtype,\
-                     recvbuf,recvcount,recvtype,comm) \
+#define MPI_Alltoall(sendbuf,sendcount,sendtype,recvbuf,recvcount,recvtype,comm) \
      (MPIUNI_ARG(recvcount),\
       MPIUNI_ARG(recvtype),\
       MPIUNI_ARG(comm),\
       MPIUNI_Memcpy(recvbuf,sendbuf,(sendcount)*MPI_sizeof(sendtype)))
-#define MPI_Alltoallv(sendbuf,sendcounts,sdispls,sendtype,\
-                      recvbuf,recvcounts,rdispls,recvtype,comm) \
+#define MPI_Alltoallv(sendbuf,sendcounts,sdispls,sendtype,recvbuf,recvcounts,rdispls,recvtype,comm) \
      (MPIUNI_ARG(sendbuf),\
       MPIUNI_ARG(sendcounts),\
       MPIUNI_ARG(sdispls),\
@@ -823,8 +811,7 @@ typedef int MPI_Fint;
       MPIUNI_ARG(recvtype),\
       MPIUNI_ARG(comm),\
       MPIUni_Abort(MPI_COMM_WORLD,0))
-#define MPI_Alltoallw(sendbuf,sendcounts,sdispls,sendtypes,\
-                      recvbuf,recvcounts,rdispls,recvtypes,comm) \
+#define MPI_Alltoallw(sendbuf,sendcounts,sdispls,sendtypes,recvbuf,recvcounts,rdispls,recvtypes,comm) \
      (MPIUNI_ARG(sendbuf),\
       MPIUNI_ARG(sendcounts),\
       MPIUNI_ARG(sdispls),\
@@ -990,7 +977,7 @@ typedef int MPI_Fint;
 #define MPI_Wtick() 1.0
 #define MPI_Pcontrol(level) MPI_SUCCESS
 
-/* MPI-IO additions */
+/* Support for MPI-IO */
 
 typedef int MPI_File;
 #define MPI_FILE_NULL 0

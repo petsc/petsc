@@ -7827,14 +7827,14 @@ PetscErrorCode MatGetRowIJ(Mat mat,PetscInt shift,PetscBool symmetric,PetscBool 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
-  PetscValidIntPointer(n,5);
+  if (n) PetscValidIntPointer(n,5);
   if (ia) PetscValidPointer(ia,6);
   if (ja) PetscValidPointer(ja,7);
-  PetscValidBoolPointer(done,8);
+  if (done) PetscValidBoolPointer(done,8);
   MatCheckPreallocated(mat,1);
-  if (!mat->ops->getrowij) *done = PETSC_FALSE;
+  if (!mat->ops->getrowij && done) *done = PETSC_FALSE;
   else {
-    *done = PETSC_TRUE;
+    if (done) *done = PETSC_TRUE;
     PetscCall(PetscLogEventBegin(MAT_GetRowIJ,mat,0,0,0));
     PetscCall((*mat->ops->getrowij)(mat,shift,symmetric,inodecompressed,n,ia,ja,done));
     PetscCall(PetscLogEventEnd(MAT_GetRowIJ,mat,0,0,0));
@@ -7921,12 +7921,12 @@ PetscErrorCode MatRestoreRowIJ(Mat mat,PetscInt shift,PetscBool symmetric,PetscB
   PetscValidType(mat,1);
   if (ia) PetscValidPointer(ia,6);
   if (ja) PetscValidPointer(ja,7);
-  PetscValidBoolPointer(done,8);
+  if (done) PetscValidBoolPointer(done,8);
   MatCheckPreallocated(mat,1);
 
-  if (!mat->ops->restorerowij) *done = PETSC_FALSE;
+  if (!mat->ops->restorerowij && done) *done = PETSC_FALSE;
   else {
-    *done = PETSC_TRUE;
+    if (done) *done = PETSC_TRUE;
     PetscCall((*mat->ops->restorerowij)(mat,shift,symmetric,inodecompressed,n,ia,ja,done));
     if (n)  *n = 0;
     if (ia) *ia = NULL;
@@ -10575,6 +10575,7 @@ PetscErrorCode MatTransposeColoringCreate(Mat mat,ISColoring iscoloring,MatTrans
 
   Level: intermediate
 
+.seealso: `PetscObjectStateGet()`
 @*/
 PetscErrorCode MatGetNonzeroState(Mat mat,PetscObjectState *state)
 {
