@@ -1973,8 +1973,7 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverse_Static(PetscInt m,PetscIn
 /* Overwrites A. Can handle degenerate problems and m<n. */
 static PetscErrorCode PetscFVLeastSquaresPseudoInverseSVD_Static(PetscInt m,PetscInt mstride,PetscInt n,PetscScalar *A,PetscScalar *Ainv,PetscScalar *tau,PetscInt worksize,PetscScalar *work)
 {
-  PetscBool      debug = PETSC_FALSE;
-  PetscScalar   *Brhs, *Aback;
+  PetscScalar   *Brhs;
   PetscScalar   *tmpwork;
   PetscReal      rcond;
 #if defined (PETSC_USE_COMPLEX)
@@ -1986,11 +1985,6 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverseSVD_Static(PetscInt m,Pets
   PetscBLASInt   nrhs, irank, info;
 
   PetscFunctionBegin;
-  if (debug) {
-    PetscCall(PetscMalloc1(m*n,&Aback));
-    PetscCall(PetscArraycpy(Aback,A,m*n));
-  }
-
   /* initialize to identity */
   tmpwork = work;
   Brhs = Ainv;
@@ -2005,16 +1999,17 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverseSVD_Static(PetscInt m,Pets
   PetscCall(PetscBLASIntCast(maxmn,&ldb));
   PetscCall(PetscBLASIntCast(worksize,&ldwork));
   rcond = -1;
-  PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
   nrhs  = M;
 #if defined(PETSC_USE_COMPLEX)
   rworkSize = 5 * PetscMin(M,N);
   PetscCall(PetscMalloc1(rworkSize,&rwork));
+  PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
   PetscCallBLAS("LAPACKgelss",LAPACKgelss_(&M,&N,&nrhs,A,&lda,Brhs,&ldb, (PetscReal *) tau,&rcond,&irank,tmpwork,&ldwork,rwork,&info));
   PetscCall(PetscFPTrapPop());
   PetscCall(PetscFree(rwork));
 #else
   nrhs  = M;
+  PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
   PetscCallBLAS("LAPACKgelss",LAPACKgelss_(&M,&N,&nrhs,A,&lda,Brhs,&ldb, (PetscReal *) tau,&rcond,&irank,tmpwork,&ldwork,&info));
   PetscCall(PetscFPTrapPop());
 #endif
