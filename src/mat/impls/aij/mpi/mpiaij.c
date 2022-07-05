@@ -14,6 +14,7 @@ PetscErrorCode MatGetRowIJ_MPIAIJ(Mat A,PetscInt oshift,PetscBool symmetric,Pets
   PetscCall(MatMPIAIJGetLocalMat(A,MAT_INITIAL_MATRIX,&B));
   PetscCall(PetscObjectCompose((PetscObject)A,"MatGetRowIJ_MPIAIJ",(PetscObject)B));
   PetscCall(MatGetRowIJ(B,oshift,symmetric,inodecompressed,m,ia,ja,done));
+  PetscCall(MatDestroy(&B));
   PetscFunctionReturn(0);
 }
 
@@ -24,7 +25,7 @@ PetscErrorCode MatRestoreRowIJ_MPIAIJ(Mat A,PetscInt oshift,PetscBool symmetric,
   PetscFunctionBegin;
   PetscCall(PetscObjectQuery((PetscObject)A,"MatGetRowIJ_MPIAIJ",(PetscObject*)&B));
   PetscCall(MatRestoreRowIJ(B,oshift,symmetric,inodecompressed,m,ia,ja,done));
-  PetscCall(MatDestroy(&B));
+  PetscCall(PetscObjectCompose((PetscObject)A,"MatGetRowIJ_MPIAIJ",NULL));
   PetscFunctionReturn(0);
 }
 
