@@ -75,6 +75,8 @@ class CompilerOptions(config.base.Configure):
       elif compiler.find('win32fe cl') >= 0:
         if bopt == '':
           dir(self)
+          # cause compiler to generate only a single copy of static strings; needed usage of __func__ in PETSc
+          flags.extend(['-GF'])
           if self.argDB['with-shared-libraries']:
             flags.extend(['-MD','-wd4996'])
           else:
@@ -199,6 +201,8 @@ class CompilerOptions(config.base.Configure):
       # Windows Microsoft
       elif compiler.find('win32fe cl') >= 0:
         if bopt == '':
+          # cause compiler to generate only a single copy of static strings; needed usage of __func__ in PETSc
+          flags.extend(['-GF'])
           if self.argDB['with-shared-libraries']:
             flags.extend(['-MD','-GR','-EHsc'])
           else:
