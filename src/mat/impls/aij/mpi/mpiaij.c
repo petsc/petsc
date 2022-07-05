@@ -4779,7 +4779,7 @@ PetscErrorCode  MatCreateMPIAIJSumSeqAIJSymbolic(MPI_Comm comm,Mat seqmat,PetscI
   PetscInt            **buf_rj,**buf_ri,**buf_ri_k;
   PetscInt            M=seqmat->rmap->n,N=seqmat->cmap->n,i,*owners,*ai=a->i,*aj=a->j;
   PetscInt            len,proc,*dnz,*onz,bs,cbs;
-  PetscInt            k,anzi,*bi,*bj,*lnk,nlnk,arow,bnzi,nspacedouble=0;
+  PetscInt            k,anzi,*bi,*bj,*lnk,nlnk,arow,bnzi;
   PetscInt            nrows,*buf_s,*buf_si,*buf_si_i,**nextrow,**nextai;
   MPI_Request         *si_waits,*sj_waits,*ri_waits,*rj_waits;
   MPI_Status          *status;
@@ -4963,7 +4963,6 @@ PetscErrorCode  MatCreateMPIAIJSumSeqAIJSymbolic(MPI_Comm comm,Mat seqmat,PetscI
     /* if free space is not available, make more free space */
     if (current_space->local_remaining<bnzi) {
       PetscCall(PetscFreeSpaceGet(PetscIntSumTruncate(bnzi,current_space->total_array_size),&current_space));
-      nspacedouble++;
     }
     /* copy data into free space, then initialize lnk */
     PetscCall(PetscLLClean(N,N,bnzi,lnk,current_space->array,lnkbt));

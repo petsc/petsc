@@ -72,7 +72,7 @@ static PetscErrorCode MatCoarsenApply_MISK_private(IS perm, const PetscInt misk,
     const PetscInt   nloc = cMat->rmap->n;
     PetscCoarsenData *agg_lists;
     PetscInt         *cpcol_gid=NULL,*cpcol_state,*lid_cprowID,*lid_state,*lid_parent_gid=NULL;
-    PetscInt         num_fine_ghosts,kk,n,ix,j,*idx,*ai,iter,Iend,my0,nremoved,gid,lid,cpid,lidj,sgid,t1,t2,slid,nDone,nselected=0,state;
+    PetscInt         num_fine_ghosts,kk,n,ix,j,*idx,*ai,Iend,my0,nremoved,gid,lid,cpid,lidj,sgid,t1,t2,slid,nDone,nselected=0,state;
     PetscBool        *lid_removed,isOK;
     PetscLayout      layout;
     PetscSF          sf;
@@ -127,11 +127,10 @@ static PetscErrorCode MatCoarsenApply_MISK_private(IS perm, const PetscInt misk,
       }
     }
     /* MIS */
-    iter = nremoved = nDone = 0;
+    nremoved = nDone = 0;
     if (!iterIdx) PetscCall(ISGetIndices(perm, &perm_ix)); // use permutation on first MIS
     else perm_ix = NULL;
     while (nDone < nloc || PETSC_TRUE) { /* asynchronous not implemented */
-      iter++;
       /* check all vertices */
       for (kk=0; kk<nloc; kk++) {
         lid   = perm_ix ? perm_ix[kk] : kk;

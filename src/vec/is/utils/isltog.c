@@ -1022,7 +1022,7 @@ static PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGloba
   PetscMPIInt    size,rank,tag1,tag2,tag3,*len,*source,imdex;
   PetscInt       i,n = mapping->n,Ng,ng,max = 0,*lindices = mapping->indices;
   PetscInt       *nprocs,*owner,nsends,*sends,j,*starts,nmax,nrecvs,*recvs,proc;
-  PetscInt       cnt,scale,*ownedsenders,*nownedsenders,rstart,nowned;
+  PetscInt       cnt,scale,*ownedsenders,*nownedsenders,rstart;
   PetscInt       node,nownedm,nt,*sends2,nsends2,*starts2,*lens2,*dest,nrecvs2,*starts3,*recvs2,k,*bprocs,*tmp;
   PetscInt       first_procs,first_numprocs,*first_indices;
   MPI_Request    *recv_waits,*send_waits;
@@ -1151,10 +1151,9 @@ static PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGloba
   PetscCall(PetscFree(recv_waits));
 
   /* count how many globally owned indices are on an edge multiplied by how many processors own them. */
-  nowned  = 0;
   nownedm = 0;
   for (i=0; i<ng; i++) {
-    if (nownedsenders[i] > 1) {nownedm += nownedsenders[i]; nowned++;}
+    if (nownedsenders[i] > 1) nownedm += nownedsenders[i];
   }
 
   /* create single array to contain rank of all local owners of each globally owned index */

@@ -139,7 +139,7 @@ PetscErrorCode MatColoringCreateLargestFirstWeights(MatColoring mc,PetscReal *we
 PetscErrorCode MatColoringCreateSmallestLastWeights(MatColoring mc,PetscReal *weights)
 {
   PetscInt       *degrees,*degb,*llprev,*llnext;
-  PetscInt       j,i,s,e,n,nin,ln,lm,degree,maxdegree=0,bidx,idx,dist,distance=mc->dist;
+  PetscInt       j,i,s,e,n,ln,lm,degree,maxdegree=0,bidx,idx,dist,distance=mc->dist;
   Mat            lG,*lGs;
   IS             ris;
   PetscInt       *seen;
@@ -240,12 +240,10 @@ PetscErrorCode MatColoringCreateSmallestLastWeights(MatColoring mc,PetscReal *we
   PetscCall(PetscFree(rperm));
   /* remove the lowest degree one */
   i=0;
-  nin=0;
   while (i != maxdegree+1) {
     for (i=1;i<maxdegree+1; i++) {
       if (degb[i] > 0) {
         cur = degb[i];
-        nin++;
         degrees[cur] = 0;
         degb[i] = llnext[cur];
         bidx=-1;

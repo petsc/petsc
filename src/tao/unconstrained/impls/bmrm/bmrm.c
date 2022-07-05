@@ -588,7 +588,7 @@ PetscInt project(PetscInt n,PetscReal *a,PetscReal b,PetscReal *c,PetscReal *l,P
 
 PetscErrorCode solve(TAO_DF *df)
 {
-  PetscInt       i, j, innerIter, it, it2, luv, info, lscount = 0;
+  PetscInt       i, j, innerIter, it, it2, luv, info;
   PetscReal      gd, max, ak, bk, akold, bkold, lamnew, alpha, kktlam=0.0, lam_ext;
   PetscReal      DELTAsv, ProdDELTAsv;
   PetscReal      c, *tempQ;
@@ -730,7 +730,6 @@ PetscErrorCode solve(TAO_DF *df)
 
     /* fr is fref */
     if ((innerIter == 1 && fv >= fv0) || (innerIter > 1 && fv >= fr)) {
-      lscount++;
       fv = 0.0;
       for (i = 0; i < dim; i++) {
         xplus[i] = x[i] + lamnew*d[i];

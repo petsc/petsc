@@ -46,7 +46,6 @@ PetscErrorCode spbas_cholesky_garbage_collect(spbas_matrix *result,         /* I
   PetscInt        n_alloc_ok    =0;
   PetscInt        n_alloc_ok_max=0;
   PetscInt        need_already  = 0;
-  PetscInt        n_rows_ahead  =0;
   PetscInt        max_need_extra= 0;
   PetscInt        n_alloc_max, n_alloc_est, n_alloc;
   PetscInt        n_alloc_now     = result->n_alloc_icol;
@@ -55,7 +54,6 @@ PetscErrorCode spbas_cholesky_garbage_collect(spbas_matrix *result,         /* I
   PetscInt        *icol_rescue;
   PetscScalar     *val_rescue;
   PetscInt        n_rescue;
-  PetscInt        n_row_rescue;
   PetscInt        i_here, i_last, n_copy;
   const PetscReal xtra_perc = 20;
 
@@ -75,7 +73,6 @@ PetscErrorCode spbas_cholesky_garbage_collect(spbas_matrix *result,         /* I
       max_need_extra += max_row_nnz[i];
     } else {
       need_already += max_row_nnz[i];
-      n_rows_ahead++;
     }
   }
 
@@ -111,7 +108,7 @@ PetscErrorCode spbas_cholesky_garbage_collect(spbas_matrix *result,         /* I
   2. Rescue arrays which would be lost
   Count how many rows and nonzeros will have to be rescued
   when moving all arrays in place */
-  n_row_rescue = 0; n_rescue = 0;
+  n_rescue = 0;
   if (*n_row_alloc_ok==0) *n_alloc_used = 0;
   else {
     i = *n_row_alloc_ok - 1;
@@ -125,7 +122,6 @@ PetscErrorCode spbas_cholesky_garbage_collect(spbas_matrix *result,         /* I
     if (result->row_nnz[i]>0) {
       if (*n_alloc_used > i_here || i_last > n_alloc) {
         n_rescue += result->row_nnz[i];
-        n_row_rescue++;
       }
 
       if (i<i_row) *n_alloc_used += result->row_nnz[i];
@@ -138,7 +134,7 @@ PetscErrorCode spbas_cholesky_garbage_collect(spbas_matrix *result,         /* I
   PetscCall(PetscMalloc1(n_rescue, &val_rescue));
 
   /* Rescue the arrays which need rescuing */
-  n_row_rescue = 0; n_rescue = 0;
+  n_rescue = 0;
   if (*n_row_alloc_ok==0) *n_alloc_used = 0;
   else {
     i             = *n_row_alloc_ok - 1;
@@ -153,7 +149,6 @@ PetscErrorCode spbas_cholesky_garbage_collect(spbas_matrix *result,         /* I
         PetscCall(PetscArraycpy(&icol_rescue[n_rescue], result->icols[i], result->row_nnz[i]));
         PetscCall(PetscArraycpy(&val_rescue[n_rescue], result->values[i], result->row_nnz[i]));
         n_rescue += result->row_nnz[i];
-        n_row_rescue++;
       }
 
       if (i<i_row) *n_alloc_used += result->row_nnz[i];
@@ -199,7 +194,7 @@ PetscErrorCode spbas_cholesky_garbage_collect(spbas_matrix *result,         /* I
 
   /*********************************************************
   4. Copy all the arrays to their proper places */
-  n_row_rescue = 0; n_rescue = 0;
+  n_rescue = 0;
   if (*n_row_alloc_ok==0) *n_alloc_used = 0;
   else {
     i = *n_row_alloc_ok - 1;
@@ -220,7 +215,6 @@ PetscErrorCode spbas_cholesky_garbage_collect(spbas_matrix *result,         /* I
         PetscCall(PetscArraycpy(result->values[i],&val_rescue[n_rescue],result->row_nnz[i]));
 
         n_rescue += result->row_nnz[i];
-        n_row_rescue++;
       } else {
         for (j=0; j<result->row_nnz[i]; j++) {
           result->icols[i][j]  = result->alloc_icol[i_here+j];

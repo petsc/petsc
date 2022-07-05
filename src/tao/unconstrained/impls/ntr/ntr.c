@@ -52,7 +52,6 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
   PetscReal          f, gnorm;
 
   PetscReal          norm_d;
-  PetscInt           bfgsUpdates = 0;
   PetscInt           needH;
 
   PetscInt           i_max = 5;
@@ -254,7 +253,6 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
     if (tr->bfgs_pre) {
       /* Update the limited memory preconditioner */
       PetscCall(MatLMVMUpdate(tr->M, tao->solution, tao->gradient));
-      ++bfgsUpdates;
     }
 
     while (tao->reason == TAO_CONTINUE_ITERATING) {
@@ -303,7 +301,6 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
            approximate if using BFGS preconditioning. */
         PetscCall(MatLMVMReset(tr->M, PETSC_FALSE));
         PetscCall(MatLMVMUpdate(tr->M, tao->solution, tao->gradient));
-        bfgsUpdates = 1;
       }
 
       if (NTR_UPDATE_REDUCTION == tr->update_type) {

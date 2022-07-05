@@ -2796,14 +2796,12 @@ static PetscErrorCode PCSetCoordinates_FieldSplit(PC pc, PetscInt dim, PetscInt 
 {
   PC_FieldSplit *   jac = (PC_FieldSplit*)pc->data;
   PC_FieldSplitLink ilink_current = jac->head;
-  PetscInt          ii;
   IS                is_owned;
 
   PetscFunctionBegin;
   jac->coordinates_set = PETSC_TRUE; // Internal flag
   PetscCall(MatGetOwnershipIS(pc->mat,&is_owned,PETSC_NULL));
 
-  ii=0;
   while (ilink_current) {
     // For each IS, embed it to get local coords indces
     IS        is_coords;
@@ -2827,7 +2825,6 @@ static PetscErrorCode PCSetCoordinates_FieldSplit(PC pc, PetscInt dim, PetscInt 
     PetscCall(ISRestoreIndices(is_coords, &block_dofs_enumeration));
     PetscCall(ISDestroy(&is_coords));
     ilink_current = ilink_current->next;
-    ++ii;
   }
   PetscCall(ISDestroy(&is_owned));
   PetscFunctionReturn(0);

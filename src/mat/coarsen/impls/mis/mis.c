@@ -26,7 +26,7 @@ PetscErrorCode MatCoarsenApply_MIS_private(IS perm,Mat Gmat,PetscBool strict_agg
   Mat_SeqAIJ       *matA,*matB=NULL;
   Mat_MPIAIJ       *mpimat=NULL;
   MPI_Comm         comm;
-  PetscInt         num_fine_ghosts,kk,n,ix,j,*idx,*ii,iter,Iend,my0,nremoved,gid,lid,cpid,lidj,sgid,t1,t2,slid,nDone,nselected=0,state,statej;
+  PetscInt         num_fine_ghosts,kk,n,ix,j,*idx,*ii,Iend,my0,nremoved,gid,lid,cpid,lidj,sgid,t1,t2,slid,nDone,nselected=0,state,statej;
   PetscInt         *cpcol_gid,*cpcol_state,*lid_cprowID,*lid_gid,*cpcol_sel_gid,*icpcol_gid,*lid_state,*lid_parent_gid=NULL;
   PetscBool        *lid_removed;
   PetscBool        isMPI,isAIJ,isOK;
@@ -98,10 +98,9 @@ PetscErrorCode MatCoarsenApply_MIS_private(IS perm,Mat Gmat,PetscBool strict_agg
     }
   }
   /* MIS */
-  iter = nremoved = nDone = 0;
+  nremoved = nDone = 0;
   PetscCall(ISGetIndices(perm, &perm_ix));
   while (nDone < nloc || PETSC_TRUE) { /* asyncronous not implemented */
-    iter++;
     /* check all vertices */
     for (kk=0; kk<nloc; kk++) {
       lid   = perm_ix[kk];
