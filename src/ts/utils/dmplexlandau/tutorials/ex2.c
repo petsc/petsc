@@ -7,6 +7,10 @@ static char help[] = "Runaway electron model with Landau collision operator\n\n"
 #include <petscdmcomposite.h>
 #include "petsc/private/petscimpl.h"
 
+#if defined(PETSC_HAVE_CUDA_NVTX)
+#include <nvToolsExt.h>
+#endif
+
 /* data for runaway electron model */
 typedef struct REctx_struct {
   PetscErrorCode (*test)(TS, Vec, PetscInt, PetscReal, PetscBool,  LandauCtx *, struct REctx_struct *);
@@ -413,7 +417,6 @@ static PetscErrorCode FormSource(TS ts, PetscReal ftime, Vec X_dummmy, Vec F, vo
       for (PetscInt grid=0 ; grid<ctx->num_grids ; grid++) {
         /* add it */
         PetscCall(DMPlexLandauAddMaxwellians(ctx->plex[grid],globFarray[ LAND_PACK_IDX(0,grid) ],ftime,temps,tilda_ns,grid,0,1,ctx));
-        PetscCall(VecViewFromOptions(globFarray[ LAND_PACK_IDX(0,grid) ],NULL,"-vec_view_sources"));
       }
       // Does DMCompositeRestoreAccessArray copy the data back? (no)
       PetscCall(DMCompositeRestoreAccessArray(pack, F, ctx->num_grids*ctx->batch_sz, NULL, globFarray));
@@ -424,22 +427,26 @@ static PetscErrorCode FormSource(TS ts, PetscReal ftime, Vec X_dummmy, Vec F, vo
   }
   PetscFunctionReturn(0);
 }
+
 PetscErrorCode Monitor(TS ts, PetscInt stepi, PetscReal time, Vec X, void *actx)
 {
   LandauCtx         *ctx = (LandauCtx*) actx;   /* user-defined application context */
   REctx             *rectx = (REctx*)ctx->data;
-  DM                pack;
+  DM                pack=NULL;
   Vec               globXArray[LANDAU_MAX_GRIDS*LANDAU_MAX_BATCH_SZ];
   TSConvergedReason reason;
+
   PetscFunctionBeginUser;
-  PetscCall(VecGetDM(X, &pack));
-  PetscCall(DMCompositeGetAccessArray(pack, X, ctx->num_grids*ctx->batch_sz, NULL, globXArray));
+  PetscCall(TSGetConvergedReason(ts,&reason));
+  if (rectx->grid_view_idx != -1 || (reason && ctx->verbose > 3)) {
+    PetscCall(VecGetDM(X, &pack));
+    PetscCall(DMCompositeGetAccessArray(pack, X, ctx->num_grids*ctx->batch_sz, NULL, globXArray));
+  }
   if (stepi > rectx->plotStep && rectx->plotting) {
     rectx->plotting = PETSC_FALSE; /* was doing diagnostics, now done */
     rectx->plotIdx++;
   }
   /* view */
-  PetscCall(TSGetConvergedReason(ts,&reason));
   if (time/rectx->plotDt >= (PetscReal)rectx->plotIdx || reason) {
     if ((reason || stepi==0 || rectx->plotIdx%rectx->print_period==0) && ctx->verbose > 1) {
       /* print norms */
@@ -453,11 +460,12 @@ PetscErrorCode Monitor(TS ts, PetscInt stepi, PetscReal time, Vec X, void *actx)
       PetscPrintf(PETSC_COMM_WORLD, "\t\t ERROR SKIP test spit ------\n");
       rectx->plotting = PETSC_TRUE;
     }
-    PetscCall(PetscObjectSetName((PetscObject) globXArray[ LAND_PACK_IDX(ctx->batch_view_idx,rectx->grid_view_idx) ], rectx->grid_view_idx==0 ? "ue" : "ui"));
-    /* view, overwrite step when back tracked */
-    PetscCall(DMSetOutputSequenceNumber(pack, rectx->plotIdx, time*ctx->t_0));
-    PetscCall(VecViewFromOptions(globXArray[ LAND_PACK_IDX(ctx->batch_view_idx, rectx->grid_view_idx) ],NULL,"-vec_view"));
-
+    if (rectx->grid_view_idx != -1) {
+      PetscCall(PetscObjectSetName((PetscObject) globXArray[ LAND_PACK_IDX(ctx->batch_view_idx,rectx->grid_view_idx) ], rectx->grid_view_idx==0 ? "ue" : "ui"));
+      /* view, overwrite step when back tracked */
+      PetscCall(DMSetOutputSequenceNumber(pack, rectx->plotIdx, time*ctx->t_0));
+      PetscCall(VecViewFromOptions(globXArray[ LAND_PACK_IDX(ctx->batch_view_idx, rectx->grid_view_idx) ],NULL,"-ex2_vec_view"));
+    }
     rectx->plotStep = stepi;
   } else {
     if (rectx->plotting) PetscPrintf(PETSC_COMM_WORLD," ERROR rectx->plotting=%s step %" PetscInt_FMT "\n",PetscBools[rectx->plotting],stepi);
@@ -487,7 +495,9 @@ PetscErrorCode Monitor(TS ts, PetscInt stepi, PetscReal time, Vec X, void *actx)
     }
   }
   rectx->idx = 0;
-  PetscCall(DMCompositeRestoreAccessArray(pack, X, ctx->num_grids*ctx->batch_sz, NULL, globXArray));
+  if (rectx->grid_view_idx != -1 || (reason && ctx->verbose > 3)) {
+    PetscCall(DMCompositeRestoreAccessArray(pack, X, ctx->num_grids*ctx->batch_sz, NULL, globXArray));
+  }
   PetscFunctionReturn(0);
 }
 
@@ -536,14 +546,6 @@ static PetscErrorCode pulseSrc(PetscReal time, PetscReal *rho, LandauCtx *ctx)
   PetscFunctionBeginUser;
   PetscCheck(rectx->pulse_start != PETSC_MAX_REAL,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"'-ex2_pulse_start_time X' must be used with '-ex2_impurity_source_type pulse'");
   if (time < rectx->pulse_start || time > rectx->pulse_start + 3*rectx->pulse_width) *rho = 0;
-  /* else if (0) { */
-  /*   double t = time - rectx->pulse_start, start = rectx->pulse_width, stop = 2*rectx->pulse_width, cycle = 3*rectx->pulse_width, steep = 5, xi = 0.75 - (stop - start)/(2* cycle); */
-  /*   *rho = rectx->pulse_rate * (cycle / (stop - start)) / (1 + PetscExpReal(steep*(PetscSinReal(2*PETSC_PI*((t - start)/cycle + xi)) - PetscSinReal(2*PETSC_PI*xi)))); */
-  /* } else if (0) { */
-  /*   double x = 2*(time - rectx->pulse_start)/(3*rectx->pulse_width) - 1; */
-  /*   if (x==1 || x==-1) *rho = 0; */
-  /*   else *rho = rectx->pulse_rate * PetscExpReal(-1/(1-x*x)); */
-  /* } */
   else {
     double x = PetscSinReal((time-rectx->pulse_start)/(3*rectx->pulse_width)*2*PETSC_PI - PETSC_PI/2) + 1; /* 0:2, integrates to 1.0 */
     *rho = rectx->pulse_rate * x / (3*rectx->pulse_width);
@@ -581,7 +583,7 @@ static PetscErrorCode ProcessREOptions(REctx *rectx, const LandauCtx *ctx, DM dm
   rectx->use_spitzer_eta = PETSC_FALSE;
   rectx->idx = 0;
   rectx->print_period = 10;
-  rectx->grid_view_idx = 0;
+  rectx->grid_view_idx = -1; // do not get if not needed
   /* Register the available impurity sources */
   PetscCall(PetscFunctionListAdd(&plist,"step",&stepSrc));
   PetscCall(PetscFunctionListAdd(&plist,"none",&zeroSrc));
@@ -602,7 +604,7 @@ static PetscErrorCode ProcessREOptions(REctx *rectx, const LandauCtx *ctx, DM dm
   if (rectx->plotDt == 0) rectx->plotDt = 1e-30;
   PetscCall(PetscOptionsInt("-ex2_print_period", "Plotting interval", "ex2.c", rectx->print_period, &rectx->print_period, NULL));
   PetscCall(PetscOptionsInt("-ex2_grid_view_idx", "grid_view_idx", "ex2.c", rectx->grid_view_idx, &rectx->grid_view_idx, NULL));
-  PetscCheck(rectx->grid_view_idx < ctx->num_grids,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"rectx->grid_view_idx (%" PetscInt_FMT ") >= ctx->num_grids (%" PetscInt_FMT ")",rectx->imp_idx,ctx->num_grids);
+  PetscCheck(rectx->grid_view_idx < ctx->num_grids || rectx->grid_view_idx == -1,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"rectx->grid_view_idx (%" PetscInt_FMT ") >= ctx->num_grids (%" PetscInt_FMT ")",rectx->imp_idx,ctx->num_grids);
   PetscCall(PetscOptionsFList("-ex2_impurity_source_type","Name of impurity source to run","",plist,pname,pname,sizeof(pname),NULL));
   PetscCall(PetscOptionsFList("-ex2_test_type","Name of test to run","",testlist,testname,testname,sizeof(testname),NULL));
   PetscCall(PetscOptionsInt("-ex2_impurity_index", "index of sink for impurities", "none", rectx->imp_idx, &rectx->imp_idx, NULL));
@@ -643,7 +645,7 @@ static PetscErrorCode ProcessREOptions(REctx *rectx, const LandauCtx *ctx, DM dm
 int main(int argc, char **argv)
 {
   DM             pack;
-  Vec            X,*XsubArray;
+  Vec            X;
   PetscInt       dim = 2, nDMs;
   TS             ts;
   Mat            J;
@@ -660,21 +662,16 @@ int main(int argc, char **argv)
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   if (rank) { /* turn off output stuff for duplicate runs */
-    PetscCall(PetscOptionsClearValue(NULL,"-dm_view"));
-    PetscCall(PetscOptionsClearValue(NULL,"-vec_view"));
-    PetscCall(PetscOptionsClearValue(NULL,"-dm_view_diff"));
-    PetscCall(PetscOptionsClearValue(NULL,"-vec_view_diff"));
-    PetscCall(PetscOptionsClearValue(NULL,"-dm_view_sources"));
-    PetscCall(PetscOptionsClearValue(NULL,"-vec_view_0"));
-    PetscCall(PetscOptionsClearValue(NULL,"-dm_view_0"));
-    PetscCall(PetscOptionsClearValue(NULL,"-vec_view_sources"));
+    PetscCall(PetscOptionsClearValue(NULL,"-ex2_dm_view"));
+    PetscCall(PetscOptionsClearValue(NULL,"-ex2_vec_view"));
+    PetscCall(PetscOptionsClearValue(NULL,"-ex2_vec_view_init"));
+    PetscCall(PetscOptionsClearValue(NULL,"-ex2_dm_view_init"));
     PetscCall(PetscOptionsClearValue(NULL,"-info")); /* this does not work */
   }
   PetscCall(PetscOptionsGetInt(NULL,NULL, "-dim", &dim, NULL));
   /* Create a mesh */
   PetscCall(DMPlexLandauCreateVelocitySpace(PETSC_COMM_WORLD, dim, "", &X, &J, &pack));
   PetscCall(DMCompositeGetNumberDM(pack,&nDMs));
-  PetscCall(PetscMalloc(sizeof(*XsubArray)*nDMs, &XsubArray));
   PetscCall(PetscObjectSetName((PetscObject)J, "Jacobian"));
   PetscCall(PetscObjectSetName((PetscObject)X, "f"));
   PetscCall(DMGetApplicationContext(pack, &ctx));
@@ -684,14 +681,17 @@ int main(int argc, char **argv)
   ctx->data = rectx;
   PetscCall(ProcessREOptions(rectx,ctx,pack,""));
   PetscCall(DMGetDS(pack, &prob));
-  PetscCall(DMCompositeGetAccessArray(pack, X, nDMs, NULL, XsubArray)); // read only
-  PetscCall(PetscObjectSetName((PetscObject) XsubArray[ LAND_PACK_IDX(ctx->batch_view_idx, rectx->grid_view_idx) ], rectx->grid_view_idx==0 ? "ue" : "ui"));
-  PetscCall(DMViewFromOptions(ctx->plex[rectx->grid_view_idx],NULL,"-dm_view"));
-  PetscCall(DMViewFromOptions(ctx->plex[rectx->grid_view_idx], NULL,"-dm_view_0"));
-  PetscCall(VecViewFromOptions(XsubArray[ LAND_PACK_IDX(ctx->batch_view_idx,rectx->grid_view_idx) ], NULL,"-vec_view_0")); // initial condition (monitor plots after step)
-  PetscCall(DMCompositeRestoreAccessArray(pack, X, nDMs, NULL, XsubArray)); // read only
-  PetscCall(PetscFree(XsubArray));
-  PetscCall(VecViewFromOptions(X, NULL,"-vec_view_global")); // initial condition (monitor plots after step)
+  if (rectx->grid_view_idx != -1) {
+    Vec *XsubArray=NULL;
+    PetscCall(PetscMalloc(sizeof(*XsubArray)*nDMs, &XsubArray));
+    PetscCall(DMCompositeGetAccessArray(pack, X, nDMs, NULL, XsubArray)); // read only
+    PetscCall(PetscObjectSetName((PetscObject) XsubArray[ LAND_PACK_IDX(ctx->batch_view_idx, rectx->grid_view_idx) ], rectx->grid_view_idx==0 ? "ue" : "ui"));
+    PetscCall(DMViewFromOptions(ctx->plex[rectx->grid_view_idx],NULL,"-ex2_dm_view"));
+    PetscCall(DMViewFromOptions(ctx->plex[rectx->grid_view_idx], NULL,"-ex2_dm_view_init"));
+    PetscCall(VecViewFromOptions(XsubArray[ LAND_PACK_IDX(ctx->batch_view_idx,rectx->grid_view_idx) ], NULL,"-ex2_vec_view_init")); // initial condition (monitor plots after step)
+    PetscCall(DMCompositeRestoreAccessArray(pack, X, nDMs, NULL, XsubArray)); // read only
+    PetscCall(PetscFree(XsubArray));
+  }
   PetscCall(DMSetOutputSequenceNumber(pack, 0, 0.0));
   /* Create timestepping solver context */
   PetscCall(TSCreate(PETSC_COMM_SELF,&ts));
@@ -739,13 +739,18 @@ int main(int argc, char **argv)
 #if defined(PETSC_HAVE_THREADSAFETY)
   starttime = MPI_Wtime();
 #endif
+#if defined(PETSC_HAVE_CUDA_NVTX)
+  nvtxRangePushA("ex2-TSSolve-warm");
+#endif
   PetscCall(TSSolve(ts,X));
+#if defined(PETSC_HAVE_CUDA_NVTX)
+  nvtxRangePop();
+#endif
   PetscCall(PetscLogStagePop());
 #if defined(PETSC_HAVE_THREADSAFETY)
   endtime = MPI_Wtime();
   ctx->times[LANDAU_EX2_TSSOLVE] += (endtime - starttime);
 #endif
-  PetscCall(VecViewFromOptions(X, NULL,"-vec_view_global"));
   /* clean up */
   PetscCall(DMPlexLandauDestroyVelocitySpace(&pack));
   PetscCall(TSDestroy(&ts));
