@@ -166,8 +166,8 @@ PETSC_EXTERN PetscErrorCode DMProjectCoordinates(DM,PetscFE);
 PETSC_EXTERN PetscErrorCode DMLocatePoints(DM,Vec,DMPointLocationType,PetscSF*);
 
 /* Periodicity support */
-PETSC_EXTERN PetscErrorCode DMGetPeriodicity(DM,const PetscReal*[],const PetscReal*[]);
-PETSC_EXTERN PetscErrorCode DMSetPeriodicity(DM,const PetscReal[],const PetscReal[]);
+PETSC_EXTERN PetscErrorCode DMGetPeriodicity(DM,const PetscReal*[], const PetscReal*[], const PetscReal*[]);
+PETSC_EXTERN PetscErrorCode DMSetPeriodicity(DM,const PetscReal[], const PetscReal[], const PetscReal[]);
 PETSC_EXTERN PetscErrorCode DMLocalizeCoordinate(DM, const PetscScalar[], PetscBool, PetscScalar[]);
 PETSC_EXTERN PetscErrorCode DMLocalizeCoordinates(DM);
 PETSC_EXTERN PetscErrorCode DMGetCoordinatesLocalized(DM,PetscBool*);

@@ -184,10 +184,10 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
     if (coords) PetscCall(DMSetCellCoordinates(*newdm, coords));
   }
   {
-    const PetscReal *maxCell, *L;
+    const PetscReal *maxCell, *Lstart, *L;
 
-    PetscCall(DMGetPeriodicity(dm,    &maxCell, &L));
-    PetscCall(DMSetPeriodicity(*newdm, maxCell,  L));
+    PetscCall(DMGetPeriodicity(dm,    &maxCell, &Lstart, &L));
+    PetscCall(DMSetPeriodicity(*newdm, maxCell,  Lstart,  L));
   }
   {
     PetscBool useCone, useClosure;
@@ -752,6 +752,7 @@ PetscErrorCode DMDestroy(DM *dm)
     PetscCall(DMSetCoarseDM((*dm)->fineMesh,NULL));
   }
   PetscCall(DMDestroy(&(*dm)->fineMesh));
+  PetscCall(PetscFree((*dm)->Lstart));
   PetscCall(PetscFree((*dm)->L));
   PetscCall(PetscFree((*dm)->maxCell));
   PetscCall(DMDestroyCoordinates_Private(&(*dm)->coordinates[0]));
@@ -3905,10 +3906,10 @@ foundconv:
     PetscCall((*conv)(dm,newtype,M));
     /* Things that are independent of DM type: We should consult DMClone() here */
     {
-      const PetscReal *maxCell, *L;
+      const PetscReal *maxCell, *Lstart, *L;
 
-      PetscCall(DMGetPeriodicity(dm, &maxCell, &L));
-      PetscCall(DMSetPeriodicity(*M,  maxCell,  L));
+      PetscCall(DMGetPeriodicity(dm, &maxCell, &Lstart, &L));
+      PetscCall(DMSetPeriodicity(*M,  maxCell,  Lstart,  L));
       (*M)->prealloc_only = dm->prealloc_only;
       PetscCall(PetscFree((*M)->vectype));
       PetscCall(PetscStrallocpy(dm->vectype,(char**)&(*M)->vectype));

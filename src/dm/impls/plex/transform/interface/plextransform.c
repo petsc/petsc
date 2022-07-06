@@ -1717,7 +1717,7 @@ static PetscErrorCode DMPlexTransformSetCoordinates(DMPlexTransform tr, DM rdm)
   Vec                coordsLocal, coordsLocalNew, coordsLocalCell = NULL, coordsLocalCellNew;
   const PetscScalar *coords;
   PetscScalar       *coordsNew;
-  const PetscReal   *maxCell, *L;
+  const PetscReal   *maxCell, *Lstart, *L;
   PetscBool          localized, localizeVertices = PETSC_FALSE, localizeCells = PETSC_FALSE;
   PetscInt           dE, dEo, d, cStart, cEnd, c, cStartNew, cEndNew, vStartNew, vEndNew, v, pStart, pEnd, p;
 
@@ -1726,7 +1726,7 @@ static PetscErrorCode DMPlexTransformSetCoordinates(DMPlexTransform tr, DM rdm)
   PetscCall(DMGetCoordinateDM(dm, &cdm));
   PetscCall(DMGetCellCoordinateDM(dm, &cdmCell));
   PetscCall(DMGetCoordinatesLocalized(dm, &localized));
-  PetscCall(DMGetPeriodicity(dm, &maxCell, &L));
+  PetscCall(DMGetPeriodicity(dm, &maxCell, &Lstart, &L));
   if (localized) {
     /* Localize coordinates of new vertices */
     localizeVertices = PETSC_TRUE;
@@ -1739,7 +1739,7 @@ static PetscErrorCode DMPlexTransformSetCoordinates(DMPlexTransform tr, DM rdm)
     PetscReal maxCellNew[3];
 
     for (d = 0; d < dEo; ++d) maxCellNew[d] = maxCell[d]/2.0;
-    PetscCall(DMSetPeriodicity(rdm, maxCellNew, L));
+    PetscCall(DMSetPeriodicity(rdm, maxCellNew, Lstart, L));
   }
   PetscCall(DMGetCoordinateDim(rdm, &dE));
   PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject) rdm), &coordSectionNew));

@@ -581,7 +581,7 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
   PetscFunctionBeginUser;
   PetscCall(DMGetDS(dm, &ds));
   PetscCall(DMGetDimension(dm, &dim));
-  PetscCall(DMGetPeriodicity(dm, NULL, &L));
+  PetscCall(DMGetPeriodicity(dm, NULL, NULL, &L));
   switch (user->variableCoefficient) {
   case COEFF_NONE:
     if (L && L[0]) {

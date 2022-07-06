@@ -89,7 +89,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
        automatic computation of localized vertices.
        This way, refinement operations and conversions to p4est
        will preserve the shape of the domain in physical space */
-    PetscCall(DMSetPeriodicity(*dm, NULL, NULL));
+    PetscCall(DMSetPeriodicity(*dm, NULL, NULL, NULL));
 
     PetscCall(DMConvert(*dm,dim == 2 ? DMP4EST : DMP8EST,&dmConv));
     if (dmConv) {
@@ -707,6 +707,9 @@ int main(int argc, char **argv)
     test:
       suffix: glvis_2d_quad_per
       args: -dm_plex_simplex 0 -dm_plex_box_faces 3,3 -dm_plex_box_bd periodic,periodic -dm_view glvis: -viewer_glvis_dm_plex_enable_boundary
+    test:
+      suffix: glvis_2d_quad_per_shift
+      args: -dm_plex_simplex 0 -dm_plex_box_faces 3,3 -dm_plex_box_bd periodic,periodic -dm_plex_box_lower -1,-1 -dm_plex_box_upper 1,1 -dm_view glvis: -viewer_glvis_dm_plex_enable_boundary
     test:
       suffix: glvis_2d_quad_per_mfem
       args: -dm_plex_simplex 0 -dm_plex_box_faces 3,3 -dm_plex_box_bd periodic,periodic -dm_view glvis: -viewer_glvis_dm_plex_enable_boundary -viewer_glvis_dm_plex_enable_mfem

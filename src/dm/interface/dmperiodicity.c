@@ -10,18 +10,20 @@
 
   Output Parameters:
 + maxCell - Over distances greater than this, we can assume a point has crossed over to another sheet, when trying to localize cell coordinates
+. Lstart  - If we assume the mesh is a torus, this is the start of each coordinate, or NULL for 0.0
 - L       - If we assume the mesh is a torus, this is the length of each coordinate, otherwise it is < 0.0
 
   Level: developer
 
 .seealso: `DMGetPeriodicity()`
 @*/
-PetscErrorCode DMGetPeriodicity(DM dm, const PetscReal **maxCell, const PetscReal **L)
+PetscErrorCode DMGetPeriodicity(DM dm, const PetscReal **maxCell, const PetscReal **Lstart, const PetscReal **L)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (L)       *L       = dm->L;
   if (maxCell) *maxCell = dm->maxCell;
+  if (Lstart)  *Lstart  = dm->Lstart;
+  if (L)       *L       = dm->L;
   PetscFunctionReturn(0);
 }
 
@@ -31,20 +33,22 @@ PetscErrorCode DMGetPeriodicity(DM dm, const PetscReal **maxCell, const PetscRea
   Input Parameters:
 + dm      - The DM object
 . maxCell - Over distances greater than this, we can assume a point has crossed over to another sheet, when trying to localize cell coordinates. Pass NULL to remove such information.
+. Lstart  - If we assume the mesh is a torus, this is the start of each coordinate, or NULL for 0.0
 - L       - If we assume the mesh is a torus, this is the length of each coordinate, otherwise it is < 0.0
 
   Level: developer
 
 .seealso: `DMGetPeriodicity()`
 @*/
-PetscErrorCode DMSetPeriodicity(DM dm, const PetscReal maxCell[], const PetscReal L[])
+PetscErrorCode DMSetPeriodicity(DM dm, const PetscReal maxCell[], const PetscReal Lstart[], const PetscReal L[])
 {
   PetscInt dim, d;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   if (maxCell) {PetscValidRealPointer(maxCell,2);}
-  if (L)       {PetscValidRealPointer(L,3);}
+  if (Lstart)  {PetscValidRealPointer(Lstart,3);}
+  if (L)       {PetscValidRealPointer(L,4);}
   PetscCall(DMGetDimension(dm, &dim));
   if (maxCell) {
     if (!dm->maxCell) PetscCall(PetscMalloc1(dim, &dm->maxCell));
@@ -52,6 +56,13 @@ PetscErrorCode DMSetPeriodicity(DM dm, const PetscReal maxCell[], const PetscRea
   } else { /* remove maxCell information to disable automatic computation of localized vertices */
     PetscCall(PetscFree(dm->maxCell));
     dm->maxCell = NULL;
+  }
+  if (Lstart) {
+    if (!dm->Lstart) PetscCall(PetscMalloc1(dim, &dm->Lstart));
+    for (d = 0; d < dim; ++d) dm->Lstart[d] = Lstart[d];
+  } else { /* remove L information to disable automatic computation of localized vertices */
+    PetscCall(PetscFree(dm->Lstart));
+    dm->Lstart = NULL;
   }
   if (L) {
     if (!dm->L) PetscCall(PetscMalloc1(dim, &dm->L));
@@ -274,7 +285,7 @@ PetscErrorCode DMLocalizeCoordinates(DM dm)
   PetscSection     cs, csDG;
   Vec              coordinates, cVec;
   PetscScalar     *coordsDG, *anchor, *localized;
-  const PetscReal *L;
+  const PetscReal *Lstart, *L;
   PetscInt         Nc, vStart, vEnd, sStart, sEnd, newStart = PETSC_MAX_INT, newEnd = PETSC_MIN_INT, bs, coordSize;
   PetscBool        isLocalized, sparseLocalize = dm->sparseLocalize, useDG = PETSC_FALSE, useDGGlobal;
   PetscInt         maxHeight = 0, h;
@@ -283,7 +294,7 @@ PetscErrorCode DMLocalizeCoordinates(DM dm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscCall(DMGetPeriodicity(dm, NULL, &L));
+  PetscCall(DMGetPeriodicity(dm, NULL, &Lstart, &L));
   /* Cannot automatically localize without L and maxCell right now */
   if (!L) PetscFunctionReturn(0);
   PetscCall(PetscObjectGetComm((PetscObject) dm, &comm));
@@ -369,20 +380,20 @@ PetscErrorCode DMLocalizeCoordinates(DM dm)
       if (!cdof) continue;
       PetscCall(DMPlexVecGetClosure(cplex, cs, coordinates, c, &dof, &cellCoords));
       PetscCall(PetscSectionGetOffset(csDG, c, &offDG));
-      // We need the cell to fit into [0, L]
-      //   TODO The coordinates are set in closure order, which might not be the tensor order
+      // TODO The coordinates are set in closure order, which might not be the tensor order
       for (q = 0; q < dof/Nc; ++q) {
         // Select a trial anchor
         for (d = 0; d < Nc; ++d) anchor[d] = cellCoords[q*Nc+d];
         for (p = 0; p < dof/Nc; ++p) {
           PetscCall(DMLocalizeCoordinate_Internal(dm, Nc, anchor, &cellCoords[p*Nc], &coordsDG[offDG + p*Nc]));
+          // We need the cell to fit into the torus [lower, lower+L)
           for (d = 0; d < Nc; ++d)
-            if (L[d] > 0. && ((PetscRealPart(coordsDG[offDG + p*Nc + d]) < 0.) || (PetscRealPart(coordsDG[offDG + p*Nc + d]) > L[d]))) break;
+            if (L[d] > 0. && ((PetscRealPart(coordsDG[offDG + p*Nc + d]) < (Lstart ? Lstart[d] : 0.)) || (PetscRealPart(coordsDG[offDG + p*Nc + d]) > (Lstart ? Lstart[d] : 0.)+L[d]))) break;
           if (d < Nc) break;
         }
         if (p == dof/Nc) break;
       }
-      PetscCheck(p == dof/Nc, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell %" PetscInt_FMT " does not fit into the torus [0, L]", c);
+      PetscCheck(p == dof/Nc, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell %" PetscInt_FMT " does not fit into the torus %s[0, L]", c, Lstart ? "Lstart + " : "");
       PetscCall(DMPlexVecRestoreClosure(cplex, cs, coordinates, c, &dof, &cellCoords));
     }
   }

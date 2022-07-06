@@ -282,7 +282,7 @@ struct _p_DM {
   /* Coordinates */
   DMCoordinates           coordinates[2];       /* Coordinates, 0 is default, 1 is possible DG coordinate field for periodicity */
   /* Periodicity */
-  PetscReal              *L, *maxCell;          /* Size of periodic box and max cell size for determining periodicity */
+  PetscReal              *Lstart, *L, *maxCell; /* Size of periodic box and max cell size for determining periodicity */
   PetscBool               sparseLocalize;       /* Localize coordinates only for cells near periodic boundary */
   /* Null spaces -- of course I should make this have a variable number of fields */
   NullSpaceFunc           nullspaceConstructors[10];

@@ -159,10 +159,10 @@ PetscErrorCode DMForestTemplate(DM dm, MPI_Comm comm, DM *tdm)
   PetscCall(DMGetApplicationContext(dm,&ctx));
   PetscCall(DMSetApplicationContext(*tdm,&ctx));
   {
-    const PetscReal *maxCell, *L;
+    const PetscReal *maxCell, *L, *Lstart;
 
-    PetscCall(DMGetPeriodicity(dm,  &maxCell, &L));
-    PetscCall(DMSetPeriodicity(*tdm, maxCell,  L));
+    PetscCall(DMGetPeriodicity(dm,  &maxCell, &Lstart, &L));
+    PetscCall(DMSetPeriodicity(*tdm, maxCell,  Lstart,  L));
   }
   PetscCall(DMGetMatType(dm,&mtype));
   PetscCall(DMSetMatType(*tdm,mtype));
@@ -287,16 +287,16 @@ PetscErrorCode DMForestSetBaseDM(DM dm, DM base)
   PetscCall(DMDestroy(&forest->base));
   forest->base = base;
   if (base) {
-    const PetscReal *maxCell, *L;
+    const PetscReal *maxCell, *Lstart, *L;
 
     PetscValidHeaderSpecific(base, DM_CLASSID, 2);
     PetscCall(DMGetDimension(base,&dim));
     PetscCall(DMSetDimension(dm,dim));
     PetscCall(DMGetCoordinateDim(base,&dimEmbed));
     PetscCall(DMSetCoordinateDim(dm,dimEmbed));
-    PetscCall(DMGetPeriodicity(base,&maxCell,&L));
-    PetscCall(DMSetPeriodicity(dm,maxCell,L));
-  } else PetscCall(DMSetPeriodicity(dm,NULL,NULL));
+    PetscCall(DMGetPeriodicity(base,&maxCell,&Lstart,&L));
+    PetscCall(DMSetPeriodicity(dm,maxCell,Lstart,L));
+  } else PetscCall(DMSetPeriodicity(dm,NULL,NULL,NULL));
   PetscFunctionReturn(0);
 }
 
