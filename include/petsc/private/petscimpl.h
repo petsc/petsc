@@ -935,7 +935,7 @@ static inline PetscErrorCode PetscSpinlockDestroy(PetscSpinlock *omp_lock)
   return 0;
 }
 #else
-Thread safety requires either --with-openmp or --download-concurrencykit
+#error "Thread safety requires either --with-openmp or --download-concurrencykit"
 #endif
 
 #else
