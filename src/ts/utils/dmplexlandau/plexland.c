@@ -858,7 +858,6 @@ static PetscErrorCode LandauDMCreateVMeshes(MPI_Comm comm_self, const PetscInt d
       PetscCall(DMSetFromOptions(ctx->plex[grid]));
     } // grid loop
     PetscCall(PetscObjectSetOptionsPrefix((PetscObject)pack,prefix));
-    PetscCall(DMSetFromOptions(pack));
 
     { /* convert to p4est (or whatever), wait for discretization to create pack */
       char           convType[256];
@@ -975,6 +974,8 @@ static PetscErrorCode maxwellian(PetscInt dim, PetscReal time, const PetscReal x
  -   temps - Temperatures of each species (global)
  .   ns - Number density of each species (global)
  -   grid - index into current grid - just used for offset into temp and ns
+ .   b_id - batch index
+ -   n_batch - number of batches
  +   actx - Landau context
 
  Output Parameter:
@@ -1017,6 +1018,8 @@ PetscErrorCode DMPlexLandauAddMaxwellians(DM dm, Vec X, PetscReal time, PetscRea
  Input Parameters:
  .   dm - The mesh
  -   grid - index into current grid - just used for offset into temp and ns
+ .   b_id - batch index
+ -   n_batch - number of batches
  +   actx - Landau context with T and n
 
  Output Parameter:
@@ -1915,7 +1918,7 @@ static void g0_fake(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                  const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                  PetscReal t, PetscReal u_tShift, const PetscReal x[],  PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
 {
-  static double ttt = 1;
+  static double ttt = 1e-12;
   g0[0] = ttt++;
 }
 
@@ -1936,7 +1939,12 @@ static PetscErrorCode MatrixNfDestroy(void *ptr)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode LandauCreateMatrix(MPI_Comm comm, Vec X, IS grid_batch_is_inv[LANDAU_MAX_GRIDS], LandauCtx *ctx)
+/*
+ LandauCreateJacobianMatrix - creates ctx->J with without real data. Hard to keep sparse.
+  - Like DMPlexLandauCreateMassMatrix. Should remove one and combine
+  - has old support for field major ordering
+ */
+static PetscErrorCode LandauCreateJacobianMatrix(MPI_Comm comm, Vec X, IS grid_batch_is_inv[LANDAU_MAX_GRIDS], LandauCtx *ctx)
 {
   PetscInt       *idxs=NULL;
   Mat            subM[LANDAU_MAX_GRIDS];
@@ -1963,8 +1971,7 @@ static PetscErrorCode LandauCreateMatrix(MPI_Comm comm, Vec X, IS grid_batch_is_
     for (int ix=0, ii=ctx->species_offset[grid];ii<ctx->species_offset[grid+1];ii++,ix++) {
       PetscCall(PetscDSSetJacobian(prob, ix, ix, g0_fake, NULL, NULL, NULL));
     }
-    PetscCall(PetscOptionsInsertString(NULL,"-dm_preallocate_only"));
-    PetscCall(DMSetFromOptions(massDM));
+    PetscCall(PetscOptionsInsertString(NULL,"-dm_preallocate_only")); // this trick is need to both sparsify the matrix and avoid runtime error
     PetscCall(DMCreateMatrix(massDM, &gMat));
     PetscCall(PetscOptionsInsertString(NULL,"-dm_preallocate_only false"));
     PetscCall(MatSetOption(gMat,MAT_STRUCTURALLY_SYMMETRIC, PETSC_TRUE));
@@ -2032,10 +2039,10 @@ static PetscErrorCode LandauCreateMatrix(MPI_Comm comm, Vec X, IS grid_batch_is_
   PetscCall(MatAssemblyEnd(ctx->J,MAT_FINAL_ASSEMBLY));
 
   // debug
+  PetscCall(MatViewFromOptions(ctx->J, NULL, "-dm_landau_mat_view"));
   if (ctx->gpu_assembly && ctx->jacobian_field_major_order) {
     Mat mat_block_order;
     PetscCall(MatCreateSubMatrix(ctx->J,ctx->batch_is,ctx->batch_is,MAT_INITIAL_MATRIX,&mat_block_order)); // use MatPermute
-    PetscCall(MatViewFromOptions(ctx->J, NULL, "-dm_landau_mat_view"));
     PetscCall(MatViewFromOptions(mat_block_order, NULL, "-dm_landau_mat_view"));
     PetscCall(MatDestroy(&mat_block_order));
     PetscCall(VecScatterCreate(X, ctx->batch_is, X, NULL, &ctx->plex_batch));
@@ -2131,7 +2138,6 @@ PetscErrorCode DMPlexLandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, cons
   // creat DM & Jac
   PetscCall(DMSetApplicationContext(*pack, ctx));
   PetscCall(PetscOptionsInsertString(NULL,"-dm_preallocate_only"));
-  PetscCall(DMSetFromOptions(*pack));
   PetscCall(DMCreateMatrix(*pack, &ctx->J));
   PetscCall(PetscOptionsInsertString(NULL,"-dm_preallocate_only false"));
   PetscCall(MatSetOption(ctx->J,MAT_STRUCTURALLY_SYMMETRIC, PETSC_TRUE));
@@ -2180,7 +2186,7 @@ PetscErrorCode DMPlexLandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, cons
   ctx->batch_is   = NULL;
   for (int i=0;i<LANDAU_MAX_GRIDS;i++) grid_batch_is_inv[i] = NULL;
   PetscCall(PetscLogEventBegin(ctx->events[12],0,0,0,0));
-  PetscCall(LandauCreateMatrix(comm, *X, grid_batch_is_inv, ctx));
+  PetscCall(LandauCreateJacobianMatrix(comm, *X, grid_batch_is_inv, ctx));
   PetscCall(PetscLogEventEnd(ctx->events[12],0,0,0,0));
 
   // create AMR GPU assembly maps and static GPU data
@@ -2219,6 +2225,64 @@ PetscErrorCode DMPlexLandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, cons
     PetscCall(PetscContainerDestroy(&container));
   }
 
+  PetscFunctionReturn(0);
+}
+
+/*@
+ DMPlexLandauAddToFunction - Add to the distribution function with user callback
+
+ Collective on dm
+
+ Input Parameters:
+ .   pack - the DMComposite
+ +   func - call back function
+ .   user_ctx - user context
+
+ Input/Output Parameters:
+ +   X - Vector to data to
+
+ Level: advanced
+
+ .keywords: mesh
+ .seealso: `DMPlexLandauCreateVelocitySpace()`
+ @*/
+PetscErrorCode DMPlexLandauAddToFunction(DM pack, Vec X, PetscErrorCode (*func)(DM, Vec, PetscInt, PetscInt, PetscInt, void*), void* user_ctx)
+{
+  LandauCtx      *ctx;
+  PetscFunctionBegin;
+  PetscCall(DMGetApplicationContext(pack, &ctx)); // uses ctx->num_grids; ctx->plex[grid]; ctx->batch_sz; ctx->mat_offset
+  for (PetscInt grid=0 ; grid < ctx->num_grids ; grid++) {
+    PetscInt dim,n, Nf = ctx->species_offset[grid+1] - ctx->species_offset[grid];
+    Vec      vec;
+    DM       dm;
+    PetscFE  fe;
+    PetscCall(DMGetDimension(pack, &dim));
+    PetscCall(DMClone(ctx->plex[grid], &dm));
+    PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, PETSC_FALSE, NULL, PETSC_DECIDE, &fe));
+    PetscCall(PetscObjectSetName((PetscObject) fe, "species"));
+    PetscCall(DMSetField(dm, 0, NULL, (PetscObject)fe));
+    PetscCall(PetscFEDestroy(&fe));
+    PetscCall(DMSetApplicationContext(dm, ctx)); // does the user want this?
+    PetscCall(DMCreateGlobalVector(dm,&vec));
+    PetscCall(VecGetSize(vec,&n));
+    for (PetscInt b_id = 0 ; b_id < ctx->batch_sz ; b_id++) {
+      const PetscInt    moffset = LAND_MOFFSET(b_id,grid,ctx->batch_sz,ctx->num_grids,ctx->mat_offset);
+      for (PetscInt sp=ctx->species_offset[grid],i0=0;sp<ctx->species_offset[grid+1];sp++,i0++) {
+        PetscCall(VecZeroEntries(vec));
+        /* Add your data with 'dm' for species 'sp' to 'vec' */
+        PetscCall(func(dm,vec,i0,grid,b_id,user_ctx));
+        /* add to global */
+        PetscScalar const *values;
+        PetscCall(VecGetArrayRead(vec,&values));
+        for (int i=0, idx = moffset + i0; i<n; i++, idx += Nf) { // works for Q1 & Q2 only -- TODO
+          PetscCall(VecSetValue(X,idx,values[i],ADD_VALUES));
+        }
+        PetscCall(VecRestoreArrayRead(vec,&values));
+      }
+    } // batch
+    PetscCall(VecDestroy(&vec));
+    PetscCall(DMDestroy(&dm));
+  } // grid
   PetscFunctionReturn(0);
 }
 
@@ -2487,7 +2551,7 @@ PetscErrorCode DMPlexLandauPrintNorms(Vec X, PetscInt stepi)
               PetscCheck(bs == Nf,PETSC_COMM_SELF, PETSC_ERR_PLIB, "bs %" PetscInt_FMT " != num_species %" PetscInt_FMT,bs,Nf);
               for (int i=0, ix=ctx->species_offset[grid] ; i<Nf ; i++, ix++) {
                 PetscScalar val;
-                PetscCall(VecStrideGather(Gsub,i,v1,INSERT_VALUES));
+                PetscCall(VecStrideGather(Gsub,i,v1,INSERT_VALUES));  // this is not right -- TODO
                 PetscCall(VecStrideGather(Mfsub,i,v2,INSERT_VALUES));
                 PetscCall(VecDot(v1,v2,&val));
                 energy[ix] = PetscRealPart(val)*ctx->n_0*ctx->v_0*ctx->v_0*ctx->masses[ix];
@@ -2534,11 +2598,12 @@ PetscErrorCode DMPlexLandauPrintNorms(Vec X, PetscInt stepi)
 
 /*@
  DMPlexLandauCreateMassMatrix - Create mass matrix for Landau in Plex space (not field major order of Jacobian)
+  - puts mass matrix into ctx->M
 
  Collective on pack
 
- Input Parameters:
-. pack     - the DM object
+ Input/Output Parameters:
+. pack     - the DM object. Puts matrix in Landau context M field
 
  Output Parameters:
 . Amat - The mass matrix (optional), mass matrix is added to the DM context
@@ -2592,7 +2657,6 @@ PetscErrorCode DMPlexLandauCreateMassMatrix(DM pack, Mat *Amat)
   }
 #endif
   PetscCall(PetscOptionsInsertString(NULL,"-dm_preallocate_only"));
-  PetscCall(DMSetFromOptions(mass_pack));
   PetscCall(DMCreateMatrix(mass_pack, &packM));
   PetscCall(PetscOptionsInsertString(NULL,"-dm_preallocate_only false"));
   PetscCall(MatSetOption(packM,MAT_STRUCTURALLY_SYMMETRIC, PETSC_TRUE));
@@ -2778,7 +2842,6 @@ PetscErrorCode DMPlexLandauIJacobian(TS ts, PetscReal time_dummy, Vec X, Vec U_t
   PetscCheck(state == ctx->norm_state,ctx->comm, PETSC_ERR_PLIB, "wrong state, %" PetscInt64_FMT " %" PetscInt64_FMT "",ctx->norm_state,state);
   if (!ctx->use_matrix_mass) {
     PetscCall(LandauFormJacobian_Internal(X,ctx->J,dim,shift,(void*)ctx));
-    PetscCall(MatViewFromOptions(ctx->J, NULL, "-dm_landau_mat_view"));
   } else { /* add mass */
     PetscCall(MatAXPY(Pmat,shift,ctx->M,SAME_NONZERO_PATTERN));
   }

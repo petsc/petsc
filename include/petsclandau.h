@@ -7,6 +7,7 @@
 PETSC_EXTERN PetscErrorCode DMPlexLandauPrintNorms(Vec, PetscInt);
 PETSC_EXTERN PetscErrorCode DMPlexLandauCreateVelocitySpace(MPI_Comm,PetscInt,const char[],Vec*,Mat*,DM*);
 PETSC_EXTERN PetscErrorCode DMPlexLandauDestroyVelocitySpace(DM*);
+PETSC_EXTERN PetscErrorCode DMPlexLandauAddToFunction(DM,Vec,PetscErrorCode (*)(DM, Vec, PetscInt, PetscInt, PetscInt, void*), void*);
 PETSC_EXTERN PetscErrorCode DMPlexLandauAddMaxwellians(DM, Vec, PetscReal, PetscReal[], PetscReal[], PetscInt, PetscInt, PetscInt, void *);
 PETSC_EXTERN PetscErrorCode DMPlexLandauCreateMassMatrix(DM dm, Mat *Amat);
 PETSC_EXTERN PetscErrorCode DMPlexLandauIFunction(TS, PetscReal,Vec,Vec,Vec,void *);

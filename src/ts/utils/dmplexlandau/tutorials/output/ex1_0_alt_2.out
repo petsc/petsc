@@ -56,7 +56,7 @@ Labels:
 Field species:
   adjacency FEM
 Vec Object: u 1 MPI process
-  type: seqaijcusparse
+  type: seqkokkos
 Process [0]
 1.
 1.
