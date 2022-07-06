@@ -6040,6 +6040,9 @@ PetscErrorCode MatZeroRowsColumnsIS(Mat mat,IS is,PetscScalar diag,Vec x,Vec b)
    If the resulting linear system is to be solved with KSP then one can (but does not have to) call `KSPSetInitialGuessNonzero()` to allow the
    Krylov method to take advantage of the known solution on the zeroed rows.
 
+   May be followed by using a `PC` of type `PCREDISTRIBUTE` to solve the reducing problem (after completely eliminating the zeroed rows and their corresponding columns)
+   from the matrix.
+
    Unlike `MatZeroRowsColumns()` for the AIJ and BAIJ matrix formats this removes the old nonzero structure, from the eliminated rows of the matrix
    but does not release memory.  Because of this removal matrix-vector products with the adjusted matrix will be a bit faster. For the dense and block diagonal
    formats this does not alter the nonzero structure.
@@ -6066,7 +6069,7 @@ PetscErrorCode MatZeroRowsColumnsIS(Mat mat,IS is,PetscScalar diag,Vec x,Vec b)
    Level: intermediate
 
 .seealso: `MatZeroRowsIS()`, `MatZeroRowsColumns()`, `MatZeroRowsLocalIS()`, `MatZeroRowsStencil()`, `MatZeroEntries()`, `MatZeroRowsLocal()`, `MatSetOption()`,
-          `MatZeroRowsColumnsLocal()`, `MatZeroRowsColumnsLocalIS()`, `MatZeroRowsColumnsIS()`, `MatZeroRowsColumnsStencil()`
+          `MatZeroRowsColumnsLocal()`, `MatZeroRowsColumnsLocalIS()`, `MatZeroRowsColumnsIS()`, `MatZeroRowsColumnsStencil()`, `PCREDISTRIBUTE`
 @*/
 PetscErrorCode MatZeroRows(Mat mat,PetscInt numRows,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
 {
