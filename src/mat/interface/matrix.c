@@ -5933,21 +5933,25 @@ PetscErrorCode MatZeroEntries(Mat mat)
 +  mat - the matrix
 .  numRows - the number of rows to remove
 .  rows - the global row indices
-.  diag - value put in all diagonals of eliminated rows (0.0 will even eliminate diagonal entry)
-.  x - optional vector of solutions for zeroed rows (other entries in vector are not used)
+.  diag - value put in the diagonal of the eliminated rows
+.  x - optional vector of solutions for zeroed rows (other entries in vector are not used), these must be set before this call
 -  b - optional vector of right hand side, that will be adjusted by provided solution
 
    Notes:
-   This does not change the nonzero structure of the matrix, it merely zeros those entries in the matrix.
+   This routine, along with `MatZeroRows()`, is typically used to eliminate known Dirichlet boundary conditions from a linear system.
 
-   The user can set a value in the diagonal entry (or for the AIJ and
-   row formats can optionally remove the main diagonal entry from the
-   nonzero structure as well, by passing 0.0 as the final argument).
+   For each zeroed row, the value of the corresponding b is set to diag times the value of the corresponding x.
+   The other entries of b will be adjusted by the known values of x times the corresponding matrix entries in the columns that are being eliminated
+
+   If the resulting linear system is to be solved with KSP then one can (but does not have to) call `KSPSetInitialGuessNonzero()` to allow the
+   Krylov method to take advantage of the known solution on the zeroed rows.
 
    For the parallel case, all processes that share the matrix (i.e.,
    those in the communicator used for matrix creation) MUST call this
    routine, regardless of whether any rows being zeroed are owned by
    them.
+
+   Unlike `MatZeroRows()` this does not change the nonzero structure of the matrix, it merely zeros those entries in the matrix.
 
    Each processor can indicate any rows in the entire matrix to be zeroed (i.e. each process does NOT have to
    list only rows local to itself).
@@ -5989,22 +5993,8 @@ PetscErrorCode MatZeroRowsColumns(Mat mat,PetscInt numRows,const PetscInt rows[]
 .  x - optional vector of solutions for zeroed rows (other entries in vector are not used)
 -  b - optional vector of right hand side, that will be adjusted by provided solution
 
-   Notes:
-   This does not change the nonzero structure of the matrix, it merely zeros those entries in the matrix.
-
-   The user can set a value in the diagonal entry (or for the AIJ and
-   row formats can optionally remove the main diagonal entry from the
-   nonzero structure as well, by passing 0.0 as the final argument).
-
-   For the parallel case, all processes that share the matrix (i.e.,
-   those in the communicator used for matrix creation) MUST call this
-   routine, regardless of whether any rows being zeroed are owned by
-   them.
-
-   Each processor can indicate any rows in the entire matrix to be zeroed (i.e. each process does NOT have to
-   list only rows local to itself).
-
-   The option MAT_NO_OFF_PROC_ZERO_ROWS does not apply to this routine.
+   Note:
+   See `MatZeroRowsColumns()` for details on how this routine operates.
 
    Level: intermediate
 
@@ -6038,13 +6028,20 @@ PetscErrorCode MatZeroRowsColumnsIS(Mat mat,IS is,PetscScalar diag,Vec x,Vec b)
 +  mat - the matrix
 .  numRows - the number of rows to remove
 .  rows - the global row indices
-.  diag - value put in all diagonals of eliminated rows (0.0 will even eliminate diagonal entry)
-.  x - optional vector of solutions for zeroed rows (other entries in vector are not used)
+.  diag - value put in the diagonal of the eliminated rows
+.  x - optional vector of solutions for zeroed rows (other entries in vector are not used), these must be set before this call
 -  b - optional vector of right hand side, that will be adjusted by provided solution
 
    Notes:
-   For the AIJ and BAIJ matrix formats this removes the old nonzero structure,
-   but does not release memory.  For the dense and block diagonal
+   This routine, along with `MatZeroRowsColumns()`, is typically used to eliminate known Dirichlet boundary conditions from a linear system.
+
+   For each zeroed row, the value of the corresponding b is set to diag times the value of the corresponding x.
+
+   If the resulting linear system is to be solved with KSP then one can (but does not have to) call `KSPSetInitialGuessNonzero()` to allow the
+   Krylov method to take advantage of the known solution on the zeroed rows.
+
+   Unlike `MatZeroRowsColumns()` for the AIJ and BAIJ matrix formats this removes the old nonzero structure, from the eliminated rows of the matrix
+   but does not release memory.  Because of this removal matrix-vector products with the adjusted matrix will be a bit faster. For the dense and block diagonal
    formats this does not alter the nonzero structure.
 
    If the option MatSetOption(mat,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE) the nonzero structure
@@ -6101,29 +6098,8 @@ PetscErrorCode MatZeroRows(Mat mat,PetscInt numRows,const PetscInt rows[],PetscS
 .  x - optional vector of solutions for zeroed rows (other entries in vector are not used)
 -  b - optional vector of right hand side, that will be adjusted by provided solution
 
-   Notes:
-   For the AIJ and BAIJ matrix formats this removes the old nonzero structure,
-   but does not release memory.  For the dense and block diagonal
-   formats this does not alter the nonzero structure.
-
-   If the option MatSetOption(mat,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE) the nonzero structure
-   of the matrix is not changed (even for AIJ and BAIJ matrices) the values are
-   merely zeroed.
-
-   The user can set a value in the diagonal entry (or for the AIJ and
-   row formats can optionally remove the main diagonal entry from the
-   nonzero structure as well, by passing 0.0 as the final argument).
-
-   For the parallel case, all processes that share the matrix (i.e.,
-   those in the communicator used for matrix creation) MUST call this
-   routine, regardless of whether any rows being zeroed are owned by
-   them.
-
-   Each processor can indicate any rows in the entire matrix to be zeroed (i.e. each process does NOT have to
-   list only rows local to itself).
-
-   You can call MatSetOption(mat,MAT_NO_OFF_PROC_ZERO_ROWS,PETSC_TRUE) if each process indicates only rows it
-   owns that are to be zeroed. This saves a global synchronization in the implementation.
+   Note:
+   See `MatZeroRows()` for details on how this routine operates.
 
    Level: intermediate
 
@@ -6165,25 +6141,7 @@ PetscErrorCode MatZeroRowsIS(Mat mat,IS is,PetscScalar diag,Vec x,Vec b)
 -  b - optional vector of right hand side, that will be adjusted by provided solution
 
    Notes:
-   For the AIJ and BAIJ matrix formats this removes the old nonzero structure,
-   but does not release memory.  For the dense and block diagonal
-   formats this does not alter the nonzero structure.
-
-   If the option MatSetOption(mat,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE) the nonzero structure
-   of the matrix is not changed (even for AIJ and BAIJ matrices) the values are
-   merely zeroed.
-
-   The user can set a value in the diagonal entry (or for the AIJ and
-   row formats can optionally remove the main diagonal entry from the
-   nonzero structure as well, by passing 0.0 as the final argument).
-
-   For the parallel case, all processes that share the matrix (i.e.,
-   those in the communicator used for matrix creation) MUST call this
-   routine, regardless of whether any rows being zeroed are owned by
-   them.
-
-   Each processor can indicate any rows in the entire matrix to be zeroed (i.e. each process does NOT have to
-   list only rows local to itself).
+   See `MatZeroRows()` for details on how this routine operates.
 
    The grid coordinates are across the entire grid, not just the local portion
 
@@ -6263,25 +6221,7 @@ PetscErrorCode MatZeroRowsStencil(Mat mat,PetscInt numRows,const MatStencil rows
 -  b - optional vector of right hand side, that will be adjusted by provided solution
 
    Notes:
-   For the AIJ and BAIJ matrix formats this removes the old nonzero structure,
-   but does not release memory.  For the dense and block diagonal
-   formats this does not alter the nonzero structure.
-
-   If the option MatSetOption(mat,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE) the nonzero structure
-   of the matrix is not changed (even for AIJ and BAIJ matrices) the values are
-   merely zeroed.
-
-   The user can set a value in the diagonal entry (or for the AIJ and
-   row formats can optionally remove the main diagonal entry from the
-   nonzero structure as well, by passing 0.0 as the final argument).
-
-   For the parallel case, all processes that share the matrix (i.e.,
-   those in the communicator used for matrix creation) MUST call this
-   routine, regardless of whether any rows being zeroed are owned by
-   them.
-
-   Each processor can indicate any rows in the entire matrix to be zeroed (i.e. each process does NOT have to
-   list only rows local to itself, but the row/column numbers are given in local numbering).
+   See `MatZeroRowsColumns()` for details on how this routine operates.
 
    The grid coordinates are across the entire grid, not just the local portion
 
@@ -6361,23 +6301,10 @@ PetscErrorCode MatZeroRowsColumnsStencil(Mat mat,PetscInt numRows,const MatStenc
 -  b - optional vector of right hand side, that will be adjusted by provided solution
 
    Notes:
-   Before calling MatZeroRowsLocal(), the user must first set the
+   Before calling `MatZeroRowsLocal()`, the user must first set the
    local-to-global mapping by calling MatSetLocalToGlobalMapping().
 
-   For the AIJ matrix formats this removes the old nonzero structure,
-   but does not release memory.  For the dense and block diagonal
-   formats this does not alter the nonzero structure.
-
-   If the option MatSetOption(mat,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE) the nonzero structure
-   of the matrix is not changed (even for AIJ and BAIJ matrices) the values are
-   merely zeroed.
-
-   The user can set a value in the diagonal entry (or for the AIJ and
-   row formats can optionally remove the main diagonal entry from the
-   nonzero structure as well, by passing 0.0 as the final argument).
-
-   You can call MatSetOption(mat,MAT_NO_OFF_PROC_ZERO_ROWS,PETSC_TRUE) if each process indicates only rows it
-   owns that are to be zeroed. This saves a global synchronization in the implementation.
+   See `MatZeroRows()` for details on how this routine operates.
 
    Level: intermediate
 
@@ -6427,23 +6354,10 @@ PetscErrorCode MatZeroRowsLocal(Mat mat,PetscInt numRows,const PetscInt rows[],P
 -  b - optional vector of right hand side, that will be adjusted by provided solution
 
    Notes:
-   Before calling MatZeroRowsLocalIS(), the user must first set the
-   local-to-global mapping by calling MatSetLocalToGlobalMapping().
+   Before calling `MatZeroRowsLocalIS()`, the user must first set the
+   local-to-global mapping by calling `MatSetLocalToGlobalMapping()`.
 
-   For the AIJ matrix formats this removes the old nonzero structure,
-   but does not release memory.  For the dense and block diagonal
-   formats this does not alter the nonzero structure.
-
-   If the option MatSetOption(mat,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE) the nonzero structure
-   of the matrix is not changed (even for AIJ and BAIJ matrices) the values are
-   merely zeroed.
-
-   The user can set a value in the diagonal entry (or for the AIJ and
-   row formats can optionally remove the main diagonal entry from the
-   nonzero structure as well, by passing 0.0 as the final argument).
-
-   You can call MatSetOption(mat,MAT_NO_OFF_PROC_ZERO_ROWS,PETSC_TRUE) if each process indicates only rows it
-   owns that are to be zeroed. This saves a global synchronization in the implementation.
+   See `MatZeroRows()` for details on how this routine operates.
 
    Level: intermediate
 
@@ -6488,9 +6402,7 @@ PetscErrorCode MatZeroRowsLocalIS(Mat mat,IS is,PetscScalar diag,Vec x,Vec b)
    Before calling MatZeroRowsColumnsLocal(), the user must first set the
    local-to-global mapping by calling MatSetLocalToGlobalMapping().
 
-   The user can set a value in the diagonal entry (or for the AIJ and
-   row formats can optionally remove the main diagonal entry from the
-   nonzero structure as well, by passing 0.0 as the final argument).
+   See `MatZeroRowsColumns()` for details on how this routine operates.
 
    Level: intermediate
 
@@ -6536,12 +6448,10 @@ PetscErrorCode MatZeroRowsColumnsLocal(Mat mat,PetscInt numRows,const PetscInt r
 -  b - optional vector of right hand side, that will be adjusted by provided solution
 
    Notes:
-   Before calling MatZeroRowsColumnsLocalIS(), the user must first set the
-   local-to-global mapping by calling MatSetLocalToGlobalMapping().
+   Before calling `MatZeroRowsColumnsLocalIS()`, the user must first set the
+   local-to-global mapping by calling `MatSetLocalToGlobalMapping()`.
 
-   The user can set a value in the diagonal entry (or for the AIJ and
-   row formats can optionally remove the main diagonal entry from the
-   nonzero structure as well, by passing 0.0 as the final argument).
+   See `MatZeroRowsColumns()` for details on how this routine operates.
 
    Level: intermediate
 
