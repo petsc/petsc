@@ -107,6 +107,7 @@ In addition to the changes above
 - Change matrix factor options called from within `KSP`/`PC` to always inherit the options prefix from the `KSP`/`PC`, not the options prefix in the originating matrix
 - Add ``MatCreateGraph()`` to create a scalar matrix for use in graph algorithms
 - Add ``MatFilter()`` to remove values with an absolute value equal to or below a give threshold
+- Add an option -mat_factor_bind_factorization <host, device> to control where to do matrix factorization. Currently only supported with SEQAIJCUSPARSE matrices.
 
 .. rubric:: MatCoarsen:
 

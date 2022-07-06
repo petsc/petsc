@@ -1634,7 +1634,7 @@ static PetscErrorCode MatSolve_SeqAIJCUSPARSE_ILU0(Mat fact,Vec b,Vec x)
                     fs->dnVecDescr_Y,
                     cusparse_scalartype,
                     CUSPARSE_SPSV_ALG_DEFAULT,
-                    fs->spsvDescr_L));
+                    fs->spsvDescr_L)); // cusparseSpSV_solve() scretely uses the external buffer used in cusparseSpSV_analysis()!
 
   /* Solve U*x = y */
   PetscCallCUSPARSE(cusparseDnVecSetValues(fs->dnVecDescr_X,xarray));
@@ -1664,7 +1664,7 @@ static PetscErrorCode MatSolveTranspose_SeqAIJCUSPARSE_ILU0(Mat fact,Vec b,Vec x
   PetscScalar                   *xarray;
 
   PetscFunctionBegin;
-  if (!fs->builtSolveTranspose) { /* Call MatSolveTranspose() for the first time */
+  if (!fs->createdTransposeSpSVDescr) { /* Call MatSolveTranspose() for the first time */
     PetscCallCUSPARSE(cusparseSpSV_createDescr(&fs->spsvDescr_Lt));
     PetscCallCUSPARSE(cusparseSpSV_bufferSize(fs->handle,
                       CUSPARSE_OPERATION_TRANSPOSE,
@@ -1688,10 +1688,12 @@ static PetscErrorCode MatSolveTranspose_SeqAIJCUSPARSE_ILU0(Mat fact,Vec b,Vec x
                       CUSPARSE_SPSV_ALG_DEFAULT,
                       fs->spsvDescr_Ut,
                       &fs->spsvBufferSize_Ut));
-
-    PetscCallCUDA(cudaMalloc((void**)&fs->spsvBuffer_Ut,fs->spsvBufferSize_Ut));
     PetscCallCUDA(cudaMalloc((void**)&fs->spsvBuffer_Lt,fs->spsvBufferSize_Lt));
+    PetscCallCUDA(cudaMalloc((void**)&fs->spsvBuffer_Ut,fs->spsvBufferSize_Ut));
+    fs->createdTransposeSpSVDescr = PETSC_TRUE;
+  }
 
+  if (!fs->updatedTransposeSpSVAnalysis) {
     PetscCallCUSPARSE(cusparseSpSV_analysis(fs->handle,
                     CUSPARSE_OPERATION_TRANSPOSE,
                     &PETSC_CUSPARSE_ONE,
@@ -1713,7 +1715,7 @@ static PetscErrorCode MatSolveTranspose_SeqAIJCUSPARSE_ILU0(Mat fact,Vec b,Vec x
                     CUSPARSE_SPSV_ALG_DEFAULT,
                     fs->spsvDescr_Ut,
                     fs->spsvBuffer_Ut));
-    fs->builtSolveTranspose = PETSC_TRUE;
+    fs->updatedTransposeSpSVAnalysis = PETSC_TRUE;
   }
 
   PetscCall(VecCUDAGetArrayWrite(x,&xarray));
@@ -1790,7 +1792,9 @@ static PetscErrorCode MatILUFactorNumeric_SeqAIJCUSPARSE_ILU0(Mat fact,Mat A,con
     PetscAssert(CUSPARSE_STATUS_ZERO_PIVOT != status,PETSC_COMM_SELF,PETSC_ERR_USER_INPUT,"Numerical zero pivot detected in csrilu02: A(%d,%d) is zero",numerical_zero,numerical_zero);
   }
 
-  /* From my experiment, cusparseSpSV_analysis() is numeric, i.e., it requires valid matrix values, therefore, we do it after cusparseXcsrilu02() */
+  /* cusparseSpSV_analysis() is numeric, i.e., it requires valid matrix values, therefore, we do it after cusparseXcsrilu02()
+     See discussion at https://github.com/NVIDIA/CUDALibrarySamples/issues/78
+  */
   PetscCallCUSPARSE(cusparseSpSV_analysis(fs->handle,
                     CUSPARSE_OPERATION_NON_TRANSPOSE,
                     &PETSC_CUSPARSE_ONE,
@@ -1812,6 +1816,9 @@ static PetscErrorCode MatILUFactorNumeric_SeqAIJCUSPARSE_ILU0(Mat fact,Mat A,con
                     CUSPARSE_SPSV_ALG_DEFAULT,
                     fs->spsvDescr_U,
                     fs->spsvBuffer_U));
+
+  /* L, U values have changed, reset the flag to indicate we need to redo cusparseSpSV_analysis() for transpose solve */
+  fs->updatedTransposeSpSVAnalysis = PETSC_FALSE;
 
   fact->offloadmask            = PETSC_OFFLOAD_GPU;
   fact->ops->solve             = MatSolve_SeqAIJCUSPARSE_ILU0;
@@ -1970,11 +1977,19 @@ static PetscErrorCode MatILUFactorSymbolic_SeqAIJCUSPARSE_ILU0(Mat fact,Mat A,IS
                     &fs->spsvBufferSize_U));
 
   /* From my experiment with the example at https://github.com/NVIDIA/CUDALibrarySamples/tree/master/cuSPARSE/bicgstab,
-     spsvBuffer_L and spsvBuffer_U can not be shared.
+     and discussion at https://github.com/NVIDIA/CUDALibrarySamples/issues/77,
+     spsvBuffer_L/U can not be shared (i.e., the same) for our case, but factBuffer_M can share with either of spsvBuffer_L/U.
+     To save memory, we make factBuffer_M share with the bigger of spsvBuffer_L/U.
    */
-  PetscCallCUDA(cudaMalloc((void**)&fs->spsvBuffer_U,fs->spsvBufferSize_U));
-  PetscCallCUDA(cudaMalloc((void**)&fs->spsvBuffer_L,fs->spsvBufferSize_L));
-  PetscCallCUDA(cudaMalloc((void**)&fs->factBuffer_M,fs->factBufferSize_M));
+  if (fs->spsvBufferSize_L > fs->spsvBufferSize_U) {
+    PetscCallCUDA(cudaMalloc((void**)&fs->factBuffer_M,PetscMax(fs->spsvBufferSize_L,(size_t)fs->factBufferSize_M)));
+    fs->spsvBuffer_L = fs->factBuffer_M;
+    PetscCallCUDA(cudaMalloc((void**)&fs->spsvBuffer_U,fs->spsvBufferSize_U));
+  } else {
+    PetscCallCUDA(cudaMalloc((void**)&fs->factBuffer_M,PetscMax(fs->spsvBufferSize_U,(size_t)fs->factBufferSize_M)));
+    fs->spsvBuffer_U = fs->factBuffer_M;
+    PetscCallCUDA(cudaMalloc((void**)&fs->spsvBuffer_L,fs->spsvBufferSize_L));
+  }
 
   /* ========================================================================== */
   /* Perform analysis of ilu0 on M, SpSv on L and U                             */
@@ -2275,9 +2290,18 @@ static PetscErrorCode MatICCFactorSymbolic_SeqAIJCUSPARSE_ICC0(Mat fact,Mat A,IS
                     fs->spsvDescr_Lt,
                     &fs->spsvBufferSize_Lt));
 
-  PetscCallCUDA(cudaMalloc((void**)&fs->factBuffer_M,fs->factBufferSize_M));
-  PetscCallCUDA(cudaMalloc((void**)&fs->spsvBuffer_L,fs->spsvBufferSize_L));
-  PetscCallCUDA(cudaMalloc((void**)&fs->spsvBuffer_Lt,fs->spsvBufferSize_Lt));
+  /* To save device memory, we make the factorization buffer share with one of the solver buffer.
+     See also comments in MatILUFactorSymbolic_SeqAIJCUSPARSE_ILU0().
+   */
+  if (fs->spsvBufferSize_L > fs->spsvBufferSize_Lt) {
+    PetscCallCUDA(cudaMalloc((void**)&fs->factBuffer_M,PetscMax(fs->spsvBufferSize_L,(size_t)fs->factBufferSize_M)));
+    fs->spsvBuffer_L = fs->factBuffer_M;
+    PetscCallCUDA(cudaMalloc((void**)&fs->spsvBuffer_Lt,fs->spsvBufferSize_Lt));
+  } else {
+    PetscCallCUDA(cudaMalloc((void**)&fs->factBuffer_M,PetscMax(fs->spsvBufferSize_Lt,(size_t)fs->factBufferSize_M)));
+    fs->spsvBuffer_Lt = fs->factBuffer_M;
+    PetscCallCUDA(cudaMalloc((void**)&fs->spsvBuffer_L,fs->spsvBufferSize_L));
+  }
 
   /* ========================================================================== */
   /* Perform analysis of ic0 on M                                               */
@@ -2331,9 +2355,11 @@ static PetscErrorCode MatILUFactorSymbolic_SeqAIJCUSPARSE(Mat B,Mat A,IS isrow,I
 
   PetscFunctionBegin;
  #if CUSPARSE_VERSION >= 11500
-  PetscBool row_identity,col_identity;
-  PetscCall(ISIdentity(isrow,&row_identity));
-  PetscCall(ISIdentity(iscol,&col_identity));
+  PetscBool row_identity = PETSC_FALSE,col_identity = PETSC_FALSE;
+  if (cusparseTriFactors->factorizeOnDevice) {
+    PetscCall(ISIdentity(isrow,&row_identity));
+    PetscCall(ISIdentity(iscol,&col_identity));
+  }
   if (!info->levels && row_identity && col_identity) {
     PetscCall(MatILUFactorSymbolic_SeqAIJCUSPARSE_ILU0(B,A,isrow,iscol,info));
   } else
@@ -2363,8 +2389,8 @@ static PetscErrorCode MatICCFactorSymbolic_SeqAIJCUSPARSE(Mat B,Mat A,IS perm,co
 
   PetscFunctionBegin;
  #if CUSPARSE_VERSION >= 11500
-  PetscBool perm_identity;
-  PetscCall(ISIdentity(perm,&perm_identity));
+  PetscBool perm_identity = PETSC_FALSE;
+  if (cusparseTriFactors->factorizeOnDevice) PetscCall(ISIdentity(perm,&perm_identity));
   if (!info->levels && perm_identity) {
     PetscCall(MatICCFactorSymbolic_SeqAIJCUSPARSE_ICC0(B,A,perm,info));
   } else
@@ -2411,12 +2437,24 @@ M*/
 PETSC_EXTERN PetscErrorCode MatGetFactor_seqaijcusparse_cusparse(Mat A,MatFactorType ftype,Mat *B)
 {
   PetscInt       n = A->rmap->n;
+  PetscBool      factOnDevice,factOnHost;
+  char           *prefix;
+  char           factPlace[32] = "device"; /* the default */
 
   PetscFunctionBegin;
   PetscCall(MatCreate(PetscObjectComm((PetscObject)A),B));
   PetscCall(MatSetSizes(*B,n,n,n,n));
   (*B)->factortype = ftype;
   PetscCall(MatSetType(*B,MATSEQAIJCUSPARSE));
+
+  prefix = (*B)->factorprefix ? (*B)->factorprefix : ((PetscObject)A)->prefix;
+  PetscOptionsBegin(PetscObjectComm((PetscObject)(*B)),prefix,"MatGetFactor","Mat");
+  PetscCall(PetscOptionsString("-mat_factor_bind_factorization","Do matrix factorization on host or device when possible","MatGetFactor",NULL,factPlace,sizeof(factPlace),NULL));
+  PetscOptionsEnd();
+  PetscCall(PetscStrcasecmp("device",factPlace,&factOnDevice));
+  PetscCall(PetscStrcasecmp("host",factPlace,&factOnHost));
+  PetscCheck(factOnDevice || factOnHost,PetscObjectComm((PetscObject)(*B)),PETSC_ERR_ARG_OUTOFRANGE,"Wrong option %s to -mat_factor_bind_factorization <string>. Only host and device are allowed",factPlace);
+  ((Mat_SeqAIJCUSPARSETriFactors*)(*B)->spptr)->factorizeOnDevice = factOnDevice;
 
   if (A->boundtocpu && A->bindingpropagates) PetscCall(MatBindToCPU(*B,PETSC_TRUE));
   if (ftype == MAT_FACTOR_LU || ftype == MAT_FACTOR_ILU || ftype == MAT_FACTOR_ILUDT) {
@@ -4468,10 +4506,10 @@ PetscErrorCode MatSeqAIJCUSPARSETriFactors_Reset(Mat_SeqAIJCUSPARSETriFactors_p*
     PetscCallCUDA(cudaFree(fs->csrVal));
     PetscCallCUDA(cudaFree(fs->X));
     PetscCallCUDA(cudaFree(fs->Y));
-    PetscCallCUDA(cudaFree(fs->factBuffer_M));
+    // PetscCallCUDA(cudaFree(fs->factBuffer_M)); /* No needed since factBuffer_M shares with one of spsvBuffer_L/U */
     PetscCallCUDA(cudaFree(fs->spsvBuffer_L));
-    PetscCallCUDA(cudaFree(fs->spsvBuffer_Lt));
     PetscCallCUDA(cudaFree(fs->spsvBuffer_U));
+    PetscCallCUDA(cudaFree(fs->spsvBuffer_Lt));
     PetscCallCUDA(cudaFree(fs->spsvBuffer_Ut));
     PetscCallCUSPARSE(cusparseDestroyMatDescr(fs->matDescr_M));
     PetscCallCUSPARSE(cusparseDestroySpMat(fs->spMatDescr_L));
@@ -4484,7 +4522,9 @@ PetscErrorCode MatSeqAIJCUSPARSETriFactors_Reset(Mat_SeqAIJCUSPARSETriFactors_p*
     PetscCallCUSPARSE(cusparseDestroyDnVec(fs->dnVecDescr_Y));
     PetscCallCUSPARSE(cusparseDestroyCsrilu02Info(fs->ilu0Info_M));
     PetscCallCUSPARSE(cusparseDestroyCsric02Info(fs->ic0Info_M));
-    fs->builtSolveTranspose = PETSC_FALSE;
+
+    fs->createdTransposeSpSVDescr    = PETSC_FALSE;
+    fs->updatedTransposeSpSVAnalysis = PETSC_FALSE;
    #endif
   }
   PetscFunctionReturn(0);

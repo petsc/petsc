@@ -4704,6 +4704,10 @@ PetscErrorCode MatFactorGetPreferredOrdering(Mat mat, MatFactorType ftype, MatOr
    Output Parameters:
 .  f - the factor matrix used with MatXXFactorSymbolic() calls
 
+   Options Database Key:
+.  -mat_factor_bind_factorization <host, device> - Where to do matrix factorization? Default is device (might consume more device memory.
+                                  One can choose host to save device memory). Currently only supported with SEQAIJCUSPARSE matrices.
+
    Notes:
       Some PETSc matrix formats have alternative solvers available that are contained in alternative packages
      such as pastix, superlu, mumps etc.
