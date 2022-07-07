@@ -1,5 +1,14 @@
 # --------------------------------------------------------------------
 
+class DeviceType(object):
+    INVALID = PETSC_DEVICE_INVALID
+    CUDA    = PETSC_DEVICE_CUDA
+    HIP     = PETSC_DEVICE_HIP
+    SYCL    = PETSC_DEVICE_SYCL
+    MAX     = PETSC_DEVICE_MAX
+
+# --------------------------------------------------------------------
+
 cdef class Sys:
 
     @classmethod
@@ -184,6 +193,30 @@ cdef class Sys:
         cdef PetscBool has = PETSC_FALSE
         CHKERR( PetscHasExternalPackage(cpackage, &has) )
         return toBool(has)
+
+    DeviceType = DeviceType
+
+    @staticmethod
+    def initializeDevice(device_type):
+        """
+        Initializes the device *device_type*.
+
+        :arg device_type: A :class:`Sys.DeviceType` enum value.
+        """
+        CHKERR ( PetscDeviceInitialize(device_type) )
+
+    @staticmethod
+    def isDeviceInitialized(device_type):
+        """
+        Returns *True* if the device *device_type* is initialized,
+        otherwise returns *False*.
+
+        :arg device_type: A :class:`Sys.DeviceType` enum value.
+        """
+        return bool(PetscDeviceInitialized(device_type))
+
+
+del DeviceType
 
 cdef dict citations_registry = { }
 
