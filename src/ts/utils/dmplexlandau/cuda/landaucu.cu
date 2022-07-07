@@ -874,7 +874,7 @@ PetscErrorCode LandauCUDAJacobian(DM plex[], const PetscInt Nq, const PetscInt b
     dim3 dimBlock(nnn,Nq);
     PetscInt ii = LANDAU_MAX_NQ*LANDAU_MAX_NQ + 2*LANDAU_MAX_NQ*LANDAU_MAX_Q_FACE;
     if (ii*szf >= 49152) {
-      cerr = cudaFuncSetAttribute(landau_jacobian,
+      cerr = cudaFuncSetAttribute(landau_mass,
                                   cudaFuncAttributeMaxDynamicSharedMemorySize,
                                   98304);PetscCallCUDA(cerr);
     }
