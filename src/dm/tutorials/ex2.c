@@ -90,7 +90,7 @@ int main(int argc,char **argv)
 
       PetscCall(DMGlobalToLocal(da, Xglobal, INSERT_VALUES, Xlocal));
       PetscCall(DMDAGetLocalInfo(da,&info));
-      PetscCall(DMDAVecGetArrayRead(da, Xlocal, &x));
+      PetscCall(DMDAVecGetArrayRead(da, Xlocal, (void*)&x));
       PetscCall(DMDAVecGetArrayWrite(da, Xglobal, &y));
       for (j=info.ys; j<info.ys+info.ym; j++) {
         for (i=info.xs; i<info.xs+info.xm; i++) {
@@ -118,7 +118,7 @@ int main(int argc,char **argv)
           }
         }
       }
-      PetscCall(DMDAVecRestoreArrayRead(da, Xlocal, &x));
+      PetscCall(DMDAVecRestoreArrayRead(da, Xlocal, (void*)&x));
       PetscCall(DMDAVecRestoreArrayWrite(da, Xglobal, &y));
       if (step == check_step_alive || step == check_step_dead) {
         PetscScalar sum;

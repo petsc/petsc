@@ -330,7 +330,7 @@ static PetscErrorCode UpdateVelocity_2d(const Ctx *ctx,Vec velocity,Vec stress, 
   PetscCall(DMStagGetLocationSlot(ctx->dm_buoyancy,DMSTAG_DOWN,0,&slot_buoyancy_down));
   PetscCall(DMGetLocalVector(ctx->dm_buoyancy,&buoyancy_local));
   PetscCall(DMGlobalToLocal(ctx->dm_buoyancy,buoyancy,INSERT_VALUES,buoyancy_local));
-  PetscCall(DMStagVecGetArrayRead(ctx->dm_buoyancy,buoyancy_local,&arr_buoyancy));
+  PetscCall(DMStagVecGetArrayRead(ctx->dm_buoyancy,buoyancy_local,(void*)&arr_buoyancy));
 
   /* Prepare read-only access to stress data */
   PetscCall(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_ELEMENT,   0,&slot_txx));
@@ -340,7 +340,7 @@ static PetscErrorCode UpdateVelocity_2d(const Ctx *ctx,Vec velocity,Vec stress, 
   PetscCall(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_DOWN_RIGHT,0,&slot_txy_downright));
   PetscCall(DMGetLocalVector(ctx->dm_stress,&stress_local));
   PetscCall(DMGlobalToLocal(ctx->dm_stress,stress,INSERT_VALUES,stress_local));
-  PetscCall(DMStagVecGetArrayRead(ctx->dm_stress,stress_local,&arr_stress));
+  PetscCall(DMStagVecGetArrayRead(ctx->dm_stress,stress_local,(void*)&arr_stress));
 
   /* Prepare read-write access to velocity data */
   PetscCall(DMStagGetLocationSlot(ctx->dm_velocity,DMSTAG_LEFT,0,&slot_vx_left));
@@ -353,7 +353,7 @@ static PetscErrorCode UpdateVelocity_2d(const Ctx *ctx,Vec velocity,Vec stress, 
   PetscCall(DMStagGetProductCoordinateLocationSlot(ctx->dm_velocity,DMSTAG_LEFT,&slot_coord_prev));
   PetscCall(DMStagGetProductCoordinateLocationSlot(ctx->dm_velocity,DMSTAG_RIGHT,&slot_coord_next));
   PetscCall(DMStagGetProductCoordinateLocationSlot(ctx->dm_velocity,DMSTAG_ELEMENT,&slot_coord_element));
-  PetscCall(DMStagGetProductCoordinateArrays(ctx->dm_velocity,&arr_coord_x,&arr_coord_y,NULL));
+  PetscCall(DMStagGetProductCoordinateArrays(ctx->dm_velocity,(void*)&arr_coord_x,(void*)&arr_coord_y,NULL));
 
   /* Iterate over interior of the domain, updating the velocities */
   PetscCall(DMStagGetCorners(ctx->dm_velocity,&startx,&starty,NULL,&nx,&ny,NULL,NULL,NULL,NULL));
@@ -385,14 +385,14 @@ static PetscErrorCode UpdateVelocity_2d(const Ctx *ctx,Vec velocity,Vec stress, 
   }
 
   /* Restore all access */
-  PetscCall(DMStagVecRestoreArrayRead(ctx->dm_buoyancy,buoyancy_local,&arr_buoyancy));
+  PetscCall(DMStagVecRestoreArrayRead(ctx->dm_buoyancy,buoyancy_local,(void*)&arr_buoyancy));
   PetscCall(DMRestoreLocalVector(ctx->dm_buoyancy,&buoyancy_local));
-  PetscCall(DMStagVecRestoreArrayRead(ctx->dm_stress,stress_local,&arr_stress));
+  PetscCall(DMStagVecRestoreArrayRead(ctx->dm_stress,stress_local,(void*)&arr_stress));
   PetscCall(DMRestoreLocalVector(ctx->dm_stress,&stress_local));
   PetscCall(DMStagVecRestoreArray(ctx->dm_velocity,velocity_local,&arr_velocity));
   PetscCall(DMLocalToGlobal(ctx->dm_velocity,velocity_local,INSERT_VALUES,velocity));
   PetscCall(DMRestoreLocalVector(ctx->dm_velocity,&velocity_local));
-  PetscCall(DMStagRestoreProductCoordinateArrays(ctx->dm_velocity,&arr_coord_x,&arr_coord_y,NULL));
+  PetscCall(DMStagRestoreProductCoordinateArrays(ctx->dm_velocity,(void*)&arr_coord_x,(void*)&arr_coord_y,NULL));
   PetscFunctionReturn(0);
 }
 
@@ -418,7 +418,7 @@ static PetscErrorCode UpdateVelocity_3d(const Ctx *ctx,Vec velocity,Vec stress, 
   PetscCall(DMStagGetLocationSlot(ctx->dm_buoyancy,DMSTAG_BACK,0,&slot_buoyancy_back));
   PetscCall(DMGetLocalVector(ctx->dm_buoyancy,&buoyancy_local));
   PetscCall(DMGlobalToLocal(ctx->dm_buoyancy,buoyancy,INSERT_VALUES,buoyancy_local));
-  PetscCall(DMStagVecGetArrayRead(ctx->dm_buoyancy,buoyancy_local,&arr_buoyancy));
+  PetscCall(DMStagVecGetArrayRead(ctx->dm_buoyancy,buoyancy_local,(void*)&arr_buoyancy));
 
   /* Prepare read-only access to stress data */
   PetscCall(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_ELEMENT,   0,&slot_txx));
@@ -435,7 +435,7 @@ static PetscErrorCode UpdateVelocity_3d(const Ctx *ctx,Vec velocity,Vec stress, 
   PetscCall(DMStagGetLocationSlot(ctx->dm_stress,DMSTAG_FRONT_DOWN,0,&slot_tyz_frontdown));
   PetscCall(DMGetLocalVector(ctx->dm_stress,&stress_local));
   PetscCall(DMGlobalToLocal(ctx->dm_stress,stress,INSERT_VALUES,stress_local));
-  PetscCall(DMStagVecGetArrayRead(ctx->dm_stress,stress_local,&arr_stress));
+  PetscCall(DMStagVecGetArrayRead(ctx->dm_stress,stress_local,(void*)&arr_stress));
 
   /* Prepare read-write access to velocity data */
   PetscCall(DMStagGetLocationSlot(ctx->dm_velocity,DMSTAG_LEFT,0,&slot_vx_left));
@@ -449,7 +449,7 @@ static PetscErrorCode UpdateVelocity_3d(const Ctx *ctx,Vec velocity,Vec stress, 
   PetscCall(DMStagGetProductCoordinateLocationSlot(ctx->dm_velocity,DMSTAG_LEFT,&slot_coord_prev));
   PetscCall(DMStagGetProductCoordinateLocationSlot(ctx->dm_velocity,DMSTAG_RIGHT,&slot_coord_next));
   PetscCall(DMStagGetProductCoordinateLocationSlot(ctx->dm_velocity,DMSTAG_ELEMENT,&slot_coord_element));
-  PetscCall(DMStagGetProductCoordinateArrays(ctx->dm_velocity,&arr_coord_x,&arr_coord_y,&arr_coord_z));
+  PetscCall(DMStagGetProductCoordinateArrays(ctx->dm_velocity,(void*)&arr_coord_x,(void*)&arr_coord_y,(void*)&arr_coord_z));
 
   /* Iterate over interior of the domain, updating the velocities */
   PetscCall(DMStagGetCorners(ctx->dm_velocity,&startx,&starty,&startz,&nx,&ny,&nz,NULL,NULL,NULL));
@@ -500,14 +500,14 @@ static PetscErrorCode UpdateVelocity_3d(const Ctx *ctx,Vec velocity,Vec stress, 
   }
 
   /* Restore all access */
-  PetscCall(DMStagVecRestoreArrayRead(ctx->dm_buoyancy,buoyancy_local,&arr_buoyancy));
+  PetscCall(DMStagVecRestoreArrayRead(ctx->dm_buoyancy,buoyancy_local,(void*)&arr_buoyancy));
   PetscCall(DMRestoreLocalVector(ctx->dm_buoyancy,&buoyancy_local));
-  PetscCall(DMStagVecRestoreArrayRead(ctx->dm_stress,stress_local,&arr_stress));
+  PetscCall(DMStagVecRestoreArrayRead(ctx->dm_stress,stress_local,(void*)&arr_stress));
   PetscCall(DMRestoreLocalVector(ctx->dm_stress,&stress_local));
   PetscCall(DMStagVecRestoreArray(ctx->dm_velocity,velocity_local,&arr_velocity));
   PetscCall(DMLocalToGlobal(ctx->dm_velocity,velocity_local,INSERT_VALUES,velocity));
   PetscCall(DMRestoreLocalVector(ctx->dm_velocity,&velocity_local));
-  PetscCall(DMStagRestoreProductCoordinateArrays(ctx->dm_velocity,&arr_coord_x,&arr_coord_y,&arr_coord_z));
+  PetscCall(DMStagRestoreProductCoordinateArrays(ctx->dm_velocity,(void*)&arr_coord_x,(void*)&arr_coord_y,(void*)&arr_coord_z));
   PetscFunctionReturn(0);
 }
 
@@ -551,7 +551,7 @@ static PetscErrorCode UpdateStress_2d(const Ctx *ctx,Vec velocity,Vec stress, Ve
   PetscCall(DMStagGetLocationSlot(ctx->dm_velocity,DMSTAG_UP,0,&slot_vy_up));
   PetscCall(DMGetLocalVector(ctx->dm_velocity,&velocity_local));
   PetscCall(DMGlobalToLocal(ctx->dm_velocity,velocity,INSERT_VALUES,velocity_local));
-  PetscCall(DMStagVecGetArrayRead(ctx->dm_velocity,velocity_local,&arr_velocity));
+  PetscCall(DMStagVecGetArrayRead(ctx->dm_velocity,velocity_local,(void*)&arr_velocity));
 
   /* Prepare read-only access to Lame' data */
   PetscCall(DMStagGetLocationSlot(ctx->dm_lame,DMSTAG_ELEMENT,0,&slot_lambda_element));
@@ -559,13 +559,13 @@ static PetscErrorCode UpdateStress_2d(const Ctx *ctx,Vec velocity,Vec stress, Ve
   PetscCall(DMStagGetLocationSlot(ctx->dm_lame,DMSTAG_DOWN_LEFT,0,&slot_mu_downleft));
   PetscCall(DMGetLocalVector(ctx->dm_lame,&lame_local));
   PetscCall(DMGlobalToLocal(ctx->dm_lame,lame,INSERT_VALUES,lame_local));
-  PetscCall(DMStagVecGetArrayRead(ctx->dm_lame,lame_local,&arr_lame));
+  PetscCall(DMStagVecGetArrayRead(ctx->dm_lame,lame_local,(void*)&arr_lame));
 
   /* Prepare read-only access to coordinate data */
   PetscCall(DMStagGetProductCoordinateLocationSlot(ctx->dm_velocity,DMSTAG_LEFT,&slot_coord_prev));
   PetscCall(DMStagGetProductCoordinateLocationSlot(ctx->dm_velocity,DMSTAG_RIGHT,&slot_coord_next));
   PetscCall(DMStagGetProductCoordinateLocationSlot(ctx->dm_velocity,DMSTAG_ELEMENT,&slot_coord_element));
-  PetscCall(DMStagGetProductCoordinateArrays(ctx->dm_velocity,&arr_coord_x,&arr_coord_y,NULL));
+  PetscCall(DMStagGetProductCoordinateArrays(ctx->dm_velocity,(void*)&arr_coord_x,(void*)&arr_coord_y,NULL));
 
   /* Iterate over the interior of the domain, updating the stresses */
   PetscCall(DMStagGetCorners(ctx->dm_velocity,&startx,&starty,NULL,&nx,&ny,NULL,NULL,NULL,NULL));
@@ -605,11 +605,11 @@ static PetscErrorCode UpdateStress_2d(const Ctx *ctx,Vec velocity,Vec stress, Ve
   PetscCall(DMStagVecRestoreArray(ctx->dm_stress,stress_local,&arr_stress));
   PetscCall(DMLocalToGlobal(ctx->dm_stress,stress_local,INSERT_VALUES,stress));
   PetscCall(DMRestoreLocalVector(ctx->dm_stress,&stress_local));
-  PetscCall(DMStagVecRestoreArrayRead(ctx->dm_velocity,velocity_local,&arr_velocity));
+  PetscCall(DMStagVecRestoreArrayRead(ctx->dm_velocity,velocity_local,(void*)&arr_velocity));
   PetscCall(DMRestoreLocalVector(ctx->dm_velocity,&velocity_local));
-  PetscCall(DMStagVecRestoreArrayRead(ctx->dm_lame,lame_local,&arr_lame));
+  PetscCall(DMStagVecRestoreArrayRead(ctx->dm_lame,lame_local,(void*)&arr_lame));
   PetscCall(DMRestoreLocalVector(ctx->dm_lame,&lame_local));
-  PetscCall(DMStagRestoreProductCoordinateArrays(ctx->dm_velocity,&arr_coord_x,&arr_coord_y,NULL));
+  PetscCall(DMStagRestoreProductCoordinateArrays(ctx->dm_velocity,(void*)&arr_coord_x,(void*)&arr_coord_y,NULL));
   PetscFunctionReturn(0);
 }
 
@@ -647,7 +647,7 @@ static PetscErrorCode UpdateStress_3d(const Ctx *ctx,Vec velocity,Vec stress, Ve
   PetscCall(DMStagGetLocationSlot(ctx->dm_velocity,DMSTAG_FRONT,0,&slot_vz_front));
   PetscCall(DMGetLocalVector(ctx->dm_velocity,&velocity_local));
   PetscCall(DMGlobalToLocal(ctx->dm_velocity,velocity,INSERT_VALUES,velocity_local));
-  PetscCall(DMStagVecGetArrayRead(ctx->dm_velocity,velocity_local,&arr_velocity));
+  PetscCall(DMStagVecGetArrayRead(ctx->dm_velocity,velocity_local,(void*)&arr_velocity));
 
   /* Prepare read-only access to Lame' data */
   PetscCall(DMStagGetLocationSlot(ctx->dm_lame,DMSTAG_ELEMENT,  0,&slot_lambda_element));
@@ -657,13 +657,13 @@ static PetscErrorCode UpdateStress_3d(const Ctx *ctx,Vec velocity,Vec stress, Ve
   PetscCall(DMStagGetLocationSlot(ctx->dm_lame,DMSTAG_BACK_DOWN,0,&slot_mu_backdown));
   PetscCall(DMGetLocalVector(ctx->dm_lame,&lame_local));
   PetscCall(DMGlobalToLocal(ctx->dm_lame,lame,INSERT_VALUES,lame_local));
-  PetscCall(DMStagVecGetArrayRead(ctx->dm_lame,lame_local,&arr_lame));
+  PetscCall(DMStagVecGetArrayRead(ctx->dm_lame,lame_local,(void*)&arr_lame));
 
   /* Prepare read-only access to coordinate data */
   PetscCall(DMStagGetProductCoordinateLocationSlot(ctx->dm_velocity,DMSTAG_LEFT,&slot_coord_prev));
   PetscCall(DMStagGetProductCoordinateLocationSlot(ctx->dm_velocity,DMSTAG_RIGHT,&slot_coord_next));
   PetscCall(DMStagGetProductCoordinateLocationSlot(ctx->dm_velocity,DMSTAG_ELEMENT,&slot_coord_element));
-  PetscCall(DMStagGetProductCoordinateArrays(ctx->dm_velocity,&arr_coord_x,&arr_coord_y,&arr_coord_z));
+  PetscCall(DMStagGetProductCoordinateArrays(ctx->dm_velocity,(void*)&arr_coord_x,(void*)&arr_coord_y,(void*)&arr_coord_z));
 
   /* Iterate over the interior of the domain, updating the stresses */
   PetscCall(DMStagGetCorners(ctx->dm_velocity,&startx,&starty,&startz,&nx,&ny,&nz,NULL,NULL,NULL));
@@ -737,11 +737,11 @@ static PetscErrorCode UpdateStress_3d(const Ctx *ctx,Vec velocity,Vec stress, Ve
   PetscCall(DMStagVecRestoreArray(ctx->dm_stress,stress_local,&arr_stress));
   PetscCall(DMLocalToGlobal(ctx->dm_stress,stress_local,INSERT_VALUES,stress));
   PetscCall(DMRestoreLocalVector(ctx->dm_stress,&stress_local));
-  PetscCall(DMStagVecRestoreArrayRead(ctx->dm_velocity,velocity_local,&arr_velocity));
+  PetscCall(DMStagVecRestoreArrayRead(ctx->dm_velocity,velocity_local,(void*)&arr_velocity));
   PetscCall(DMRestoreLocalVector(ctx->dm_velocity,&velocity_local));
-  PetscCall(DMStagVecRestoreArrayRead(ctx->dm_lame,lame_local,&arr_lame));
+  PetscCall(DMStagVecRestoreArrayRead(ctx->dm_lame,lame_local,(void*)&arr_lame));
   PetscCall(DMRestoreLocalVector(ctx->dm_lame,&lame_local));
-  PetscCall(DMStagRestoreProductCoordinateArrays(ctx->dm_velocity,&arr_coord_x,&arr_coord_y,&arr_coord_z));
+  PetscCall(DMStagRestoreProductCoordinateArrays(ctx->dm_velocity,(void*)&arr_coord_x,(void*)&arr_coord_y,(void*)&arr_coord_z));
   PetscFunctionReturn(0);
 }
 
