@@ -38,7 +38,7 @@ Tao Object: 2 MPI processes
       Number of updates: 20
       Number of rejects: 0
       Number of resets: 1
-      Mat Object: (J0_) 2 MPI processes
+      Mat Object: (tao_blmvm_J0_) 2 MPI processes
         type: lmvmdiagbroyden
         rows=64, cols=64
           Scale history: 1

@@ -38,7 +38,7 @@ Tao Object: 1 MPI process
       Number of updates: 10
       Number of rejects: 0
       Number of resets: 0
-      Mat Object: (J0_) 1 MPI process
+      Mat Object: (tao_bqnls_J0_) 1 MPI process
         type: lmvmdiagbroyden
         rows=1, cols=1
           Scale history: 1
@@ -78,7 +78,7 @@ Tao Object: 1 MPI process
         Number of updates: 10
         Number of rejects: 0
         Number of resets: 0
-        Mat Object: (J0_) 1 MPI process
+        Mat Object: (tao_bqnls_J0_) 1 MPI process
           type: lmvmdiagbroyden
           rows=1, cols=1
             Scale history: 1

@@ -40,7 +40,7 @@ Tao Object: 1 MPI process
     using UNPRECONDITIONED norm type for convergence test
   PC Object: (tao_bnk_) 1 MPI process
     type: lmvm
-    Mat Object: (pc_lmvm_) 1 MPI process
+    Mat Object: (tao_bnk_pc_lmvm_) 1 MPI process
       type: lmvmbfgs
       rows=48, cols=48
         Scale type: DIAGONAL
@@ -52,7 +52,7 @@ Tao Object: 1 MPI process
         Number of updates: 4
         Number of rejects: 0
         Number of resets: 0
-        Mat Object: (J0_) 1 MPI process
+        Mat Object: (tao_bnk_pc_lmvm_J0_) 1 MPI process
           type: lmvmdiagbroyden
           rows=48, cols=48
             Scale history: 1
@@ -70,7 +70,7 @@ Tao Object: 1 MPI process
   total KSP iterations: 61
   Active Set subset type: subvec
   convergence tolerances: gatol=1e-05,   steptol=0.,   gttol=0.
-  Residual in Function/Gradient:=7.77429e-07
+  Residual in Function/Gradient:=7.7743e-07
   Objective value=1.50566
   total number of iterations=4,                          (max: 50)
   total number of function/gradient evaluations=90,      (max: 4000)

@@ -161,6 +161,7 @@ static PetscErrorCode PCSetUp_LMVM(PC pc)
   PC_LMVM        *ctx = (PC_LMVM*)pc->data;
   PetscInt       n, N;
   PetscBool      allocated;
+  const char     *prefix;
 
   PetscFunctionBegin;
   PetscCall(MatLMVMIsAllocated(ctx->B, &allocated));
@@ -173,6 +174,9 @@ static PetscErrorCode PCSetUp_LMVM(PC pc)
   } else {
     PetscCall(MatCreateVecs(ctx->B, &ctx->xwork, &ctx->ywork));
   }
+  PetscCall(PCGetOptionsPrefix(pc, &prefix));
+  PetscCall(MatSetOptionsPrefix(ctx->B, prefix));
+  PetscCall(MatAppendOptionsPrefix(ctx->B, "pc_lmvm_"));
   PetscFunctionReturn(0);
 }
 
@@ -194,8 +198,12 @@ static PetscErrorCode PCView_LMVM(PC pc,PetscViewer viewer)
 static PetscErrorCode PCSetFromOptions_LMVM(PetscOptionItems* PetscOptionsObject, PC pc)
 {
   PC_LMVM        *ctx = (PC_LMVM*)pc->data;
+  const char     *prefix;
 
   PetscFunctionBegin;
+  PetscCall(PCGetOptionsPrefix(pc, &prefix));
+  PetscCall(MatSetOptionsPrefix(ctx->B, prefix));
+  PetscCall(MatAppendOptionsPrefix(ctx->B, "pc_lmvm_"));
   PetscCall(MatSetFromOptions(ctx->B));
   PetscFunctionReturn(0);
 }
@@ -252,6 +260,5 @@ PETSC_EXTERN PetscErrorCode PCCreate_LMVM(PC pc)
   PetscCall(MatCreate(PetscObjectComm((PetscObject)pc), &ctx->B));
   PetscCall(MatSetType(ctx->B, MATLMVMBFGS));
   PetscCall(PetscObjectIncrementTabLevel((PetscObject)ctx->B, (PetscObject)pc, 1));
-  PetscCall(MatSetOptionsPrefix(ctx->B, "pc_lmvm_"));
   PetscFunctionReturn(0);
 }
