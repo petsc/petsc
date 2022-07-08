@@ -51,12 +51,13 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
 
 static PetscErrorCode CheckOffsets(DM dm, const char *domain_name, PetscInt label_value, PetscInt height)
 {
-  const char *height_name[] = {"cells", "faces"};
-  DMLabel     domain_label  = NULL;
-  DM          cdm;
-  IS          offIS;
-  PetscInt   *offsets, Ncell, Ncl, Nc, n;
-  PetscInt    Nf, f;
+  const char            *height_name[] = {"cells", "faces"};
+  DMLabel                domain_label  = NULL;
+  DM                     cdm;
+  IS                     offIS;
+  PetscInt              *offsets, Ncell, Ncl, Nc, n;
+  PetscInt               Nf, f;
+  ISLocalToGlobalMapping ltog;
 
   PetscFunctionBeginUser;
   if (domain_name) PetscCall(DMGetLabel(dm, domain_name, &domain_label));
@@ -74,6 +75,9 @@ static PetscErrorCode CheckOffsets(DM dm, const char *domain_name, PetscInt labe
     PetscCall(ISViewFromOptions(offIS, NULL, "-offsets_view"));
     PetscCall(ISDestroy(&offIS));
   }
+  PetscCall(DMGetLocalToGlobalMapping(dm, &ltog));
+  PetscCall(ISLocalToGlobalMappingViewFromOptions(ltog, NULL, "-ltog_view"));
+
   // Offsets for coordinates
   {
     Vec                X;
@@ -125,6 +129,8 @@ static PetscErrorCode CheckOffsets(DM dm, const char *domain_name, PetscInt labe
     PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD, stdout));
     PetscCall(VecRestoreArrayRead(X, &x));
     PetscCall(PetscFree(offsets));
+    PetscCall(DMGetLocalToGlobalMapping(cdm, &ltog));
+    PetscCall(ISLocalToGlobalMappingViewFromOptions(ltog, NULL, "-coord_ltog_view"));
   }
   PetscFunctionReturn(0);
 }
@@ -167,7 +173,7 @@ int main(int argc, char **argv)
 
   test:
     suffix: 1d_sfc
-    args: -dm_plex_simplex 0 -dm_plex_dim 1 -dm_plex_box_faces 3 -dm_plex_box_sfc 1 -dm_view
+    args: -dm_plex_simplex 0 -dm_plex_dim 1 -dm_plex_box_faces 3 -dm_plex_box_sfc 1 -dm_view -coord_ltog_view
 
   test:
     suffix: 2d_sfc
