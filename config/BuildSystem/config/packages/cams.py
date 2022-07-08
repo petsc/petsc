@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit = '631743a8d669f0259324622fd6aca29cfe58f659' #main july-02-2021
+    self.gitcommit = 'cbd530a38221043db9a0a4a127aca9cf477e50a5' #main july-04-2022
     self.download  = ['git://https://github.com/caidao22/cams.git']
     self.functions = ['offline_cams_create']
     self.includes  = ['offline_schedule.h']

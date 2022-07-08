@@ -2123,7 +2123,12 @@ class Configure(config.base.Configure):
     arcUnix    = os.path.join(self.tmpDir, 'libconf1.a')
     arcWindows = os.path.join(self.tmpDir, 'libconf1.lib')
     def checkArchive(command, status, output, error):
-      if error in ["xiar: executing 'ar'\n"]: error = None
+      if error:
+        error = error.splitlines()
+        error = [s for s in error if not (s.find('unsupported GNU_PROPERTY_TYPE') >= 0 and s.find('warning:') >= 0)]
+        error = [s for s in error if s.find("xiar: executing 'ar'") < 0]
+        if error: '\n'.join(error)
+        else: error = ''
       if error or status:
         self.logError('archiver', status, output, error)
         if os.path.isfile(objName):
