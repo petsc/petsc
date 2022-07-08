@@ -60,7 +60,8 @@ static PetscErrorCode CheckOffsets(DM dm, const char *domain_name, PetscInt labe
 
   PetscFunctionBeginUser;
   if (domain_name) PetscCall(DMGetLabel(dm, domain_name, &domain_label));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "## %s: '%s' {%" PetscInt_FMT "}\n", height_name[height], domain_name ? domain_name : "default", label_value));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "## %s: '%s' {%" PetscInt_FMT "}%s\n", height_name[height], domain_name ? domain_name : "default", label_value, domain_name && !domain_label ? " (null label)" : ""));
+  if (domain_name && !domain_label) PetscFunctionReturn(0);
   // Offsets for cell closures
   PetscCall(DMGetNumFields(dm, &Nf));
   for (f = 0; f < Nf; ++f) {
@@ -110,15 +111,18 @@ static PetscErrorCode CheckOffsets(DM dm, const char *domain_name, PetscInt labe
           PetscCheck(Ncl * Nc == dgdof, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Offset size %" PetscInt_FMT " should be %" PetscInt_FMT, Ncl * Nc, dgdof);
         }
         switch (cdim) {
+        case 1:
+          PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%" PetscInt_FMT "] %" PetscInt_FMT " <-- %2" PetscInt_FMT " (% 4.2f)\n", c, v, off, (double)PetscRealPart(vx[0])));
+          break;
         case 2:
-          PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[%" PetscInt_FMT "] %" PetscInt_FMT " <-- %2" PetscInt_FMT " (% 4.2f, % 4.2f)\n", c, v, off, (double)PetscRealPart(vx[0]), (double)PetscRealPart(vx[1])));
+          PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%" PetscInt_FMT "] %" PetscInt_FMT " <-- %2" PetscInt_FMT " (% 4.2f, % 4.2f)\n", c, v, off, (double)PetscRealPart(vx[0]), (double)PetscRealPart(vx[1])));
           break;
         case 3:
-          PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[%" PetscInt_FMT "] %" PetscInt_FMT " <-- %2" PetscInt_FMT " (% 4.2f, % 4.2f, % 4.2f)\n", c, v, off, (double)PetscRealPart(vx[0]), (double)PetscRealPart(vx[1]), (double)PetscRealPart(vx[2])));
-          break;
+          PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%" PetscInt_FMT "] %" PetscInt_FMT " <-- %2" PetscInt_FMT " (% 4.2f, % 4.2f, % 4.2f)\n", c, v, off, (double)PetscRealPart(vx[0]), (double)PetscRealPart(vx[1]), (double)PetscRealPart(vx[2])));
         }
       }
     }
+    PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD, stdout));
     PetscCall(VecRestoreArrayRead(X, &x));
     PetscCall(PetscFree(offsets));
   }
@@ -127,8 +131,9 @@ static PetscErrorCode CheckOffsets(DM dm, const char *domain_name, PetscInt labe
 
 int main(int argc, char **argv)
 {
-  DM     dm;
-  AppCtx user;
+  DM       dm;
+  AppCtx   user;
+  PetscInt depth;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
@@ -136,7 +141,8 @@ int main(int argc, char **argv)
   PetscCall(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
   PetscCall(SetupDiscretization(dm, &user));
   PetscCall(CheckOffsets(dm, NULL, 0, 0));
-  PetscCall(CheckOffsets(dm, "Face Sets", 1, 1));
+  PetscCall(DMPlexGetDepth(dm, &depth));
+  if (depth > 1) PetscCall(CheckOffsets(dm, "Face Sets", 1, 1));
   PetscCall(DMDestroy(&dm));
   PetscCall(PetscFinalize());
   return 0;
@@ -158,4 +164,14 @@ int main(int argc, char **argv)
     suffix: cg_2d
     args: -dm_plex_simplex 0 -dm_plex_box_bd none,none -dm_plex_box_faces 3,3 -petscspace_degree 1 \
           -dm_view -offsets_view
+
+  test:
+    suffix: 1d_sfc
+    args: -dm_plex_simplex 0 -dm_plex_dim 1 -dm_plex_box_faces 3 -dm_plex_box_sfc 1 -dm_view
+
+  test:
+    suffix: 2d_sfc
+    nsize: 2
+    args: -dm_plex_simplex 0 -dm_plex_dim 2 -dm_plex_box_faces 4,3 -dm_plex_box_sfc -dm_distribute 0 -dm_view
+
 TEST*/

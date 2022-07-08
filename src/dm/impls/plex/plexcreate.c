@@ -1288,7 +1288,13 @@ static PetscErrorCode DMPlexCreateBoxMesh_Tensor_Internal(DM dm, PetscInt dim, c
 
 static PetscErrorCode DMPlexCreateBoxMesh_Internal(DM dm, PetscInt dim, PetscBool simplex, const PetscInt faces[], const PetscReal lower[], const PetscReal upper[], const DMBoundaryType periodicity[], PetscBool interpolate)
 {
+  PetscBool box_sfc = PETSC_FALSE;
   PetscFunctionBegin;
+  PetscCall(PetscOptionsGetBool(((PetscObject)dm)->options, ((PetscObject)dm)->prefix, "-dm_plex_box_sfc", &box_sfc, NULL));
+  if (box_sfc) {
+    PetscCall(DMPlexCreateBoxMesh_Tensor_SFC_Internal(dm, dim, faces, lower, upper, periodicity, interpolate));
+    PetscFunctionReturn(0);
+  }
   if (dim == 1) PetscCall(DMPlexCreateLineMesh_Internal(dm, faces[0], lower[0], upper[0], periodicity[0]));
   else if (simplex) PetscCall(DMPlexCreateBoxMesh_Simplex_Internal(dm, dim, faces, lower, upper, periodicity, interpolate));
   else PetscCall(DMPlexCreateBoxMesh_Tensor_Internal(dm, dim, faces, lower, upper, periodicity));
