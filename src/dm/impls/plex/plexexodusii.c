@@ -1581,7 +1581,8 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
     /* Read from ex_get_side_set_node_list() */
     int *fs_vertex_count_list, *fs_vertex_list;
     /* Read side set labels */
-    char fs_name[MAX_STR_LENGTH+1];
+    char   fs_name[MAX_STR_LENGTH+1];
+    size_t fs_name_len;
 
     /* Get side set ids */
     PetscCall(PetscMalloc1(num_fs, &fs_id));
@@ -1592,6 +1593,10 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
       PetscStackCallStandard(ex_get_side_set_node_list,exoid, fs_id[fs], fs_vertex_count_list, fs_vertex_list);
       /* Get the specific name associated with this side set ID. */
       int fs_name_err = ex_get_name(exoid, EX_SIDE_SET, fs_id[fs], fs_name);
+      if (!fs_name_err) {
+        PetscCall(PetscStrlen(fs_name, &fs_name_len));
+        if (fs_name_len == 0) PetscCall(PetscStrncpy(fs_name, "Face Sets", MAX_STR_LENGTH));
+      }
       for (f = 0, voff = 0; f < num_side_in_set; ++f) {
         const PetscInt *faces   = NULL;
         PetscInt       faceSize = fs_vertex_count_list[f], numFaces;
@@ -1605,9 +1610,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
         PetscCheck(numFaces == 1,comm, PETSC_ERR_ARG_WRONG, "Invalid ExodusII side %d in set %d maps to %d faces", f, fs, numFaces);
         PetscCall(DMSetLabelValue_Fast(*dm, &faceSets, "Face Sets", faces[0], fs_id[fs]));
         /* Only add the label if one has been detected for this side set. */
-        if (!fs_name_err) {
-          PetscCall(DMSetLabelValue(*dm, fs_name, faces[0], fs_id[fs]));
-        }
+        if (!fs_name_err) PetscCall(DMSetLabelValue(*dm, fs_name, faces[0], fs_id[fs]));
         PetscCall(DMPlexRestoreJoin(*dm, faceSize, faceVertices, &numFaces, &faces));
       }
       PetscCall(PetscFree2(fs_vertex_count_list,fs_vertex_list));
