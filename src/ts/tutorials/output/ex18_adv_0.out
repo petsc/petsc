@@ -9,7 +9,6 @@ Labels:
   celltype: 4 strata with value/size (0 (14), 1 (20), 4 (7), 12 (12))
   Cell Sets: 1 strata with value/size (1 (7))
   Face Sets: 4 strata with value/size (100 (4), 101 (4), 200 (1), 300 (3))
-  : 4 strata with value/size (100 (4), 101 (4), 200 (1), 300 (3))
   vtk: 1 strata with value/size (1 (7))
   ghost: 0 strata with value/size ()
   0  time        0  |x| (       0,    7.801) |x|_1 (       0,    32.63)  
