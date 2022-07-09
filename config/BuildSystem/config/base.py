@@ -119,7 +119,7 @@ class Configure(script.Script):
     if status:
       exitstr = ' exit code ' + str(status)
     else:
-      exitstr = ''
+      exitstr = 'exit code 0'
     self.logWrite('Possible ERROR while running %s:%s\n' % (component, exitstr))
     if output:
       self.logWrite('stdout:\n' + output)
