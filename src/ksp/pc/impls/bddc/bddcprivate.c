@@ -5053,7 +5053,7 @@ PetscErrorCode PCBDDCComputeLocalMatrix(PC pc, Mat ChangeOfBasisMatrix)
   Mat            new_mat,lA;
   IS             is_local,is_global;
   PetscInt       local_size;
-  PetscBool      isseqaij;
+  PetscBool      isseqaij,issym,isset;
 
   PetscFunctionBegin;
   PetscCall(MatDestroy(&pcbddc->local_mat));
@@ -5141,12 +5141,8 @@ PetscErrorCode PCBDDCComputeLocalMatrix(PC pc, Mat ChangeOfBasisMatrix)
       PetscCall(MatDestroy(&work));
     }
   }
-  if (matis->A->symmetric_set) {
-    PetscCall(MatSetOption(pcbddc->local_mat,MAT_SYMMETRIC,matis->A->symmetric));
-#if !defined(PETSC_USE_COMPLEX)
-    PetscCall(MatSetOption(pcbddc->local_mat,MAT_HERMITIAN,matis->A->symmetric));
-#endif
-  }
+  PetscCall(MatIsSymmetricKnown(matis->A,&isset,&issym));
+  if (isset) PetscCall(MatSetOption(pcbddc->local_mat,MAT_SYMMETRIC,issym));
   PetscCall(MatDestroy(&new_mat));
   PetscFunctionReturn(0);
 }
@@ -5417,7 +5413,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
   PetscScalar    m_one = -1.0;
   PetscReal      value;
   PetscInt       n_D,n_R;
-  PetscBool      issbaij,opts;
+  PetscBool      issbaij,opts,isset,issym;
   void           (*f)(void) = NULL;
   char           dir_prefix[256],neu_prefix[256],str_level[16];
   size_t         len;
@@ -5475,7 +5471,9 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
         pcis->A_II = A_IIn;
       }
     }
-    if (pcbddc->local_mat->symmetric_set) PetscCall(MatSetOption(pcis->A_II,MAT_SYMMETRIC,pcbddc->local_mat->symmetric));
+    PetscCall(MatIsSymmetricKnown(pcbddc->local_mat,&isset,&issym));
+    if (isset) PetscCall(MatSetOption(pcis->A_II,MAT_SYMMETRIC,issym));
+
     /* Matrix for Dirichlet problem is pcis->A_II */
     n_D  = pcis->n - pcis->n_B;
     opts = PETSC_FALSE;
@@ -5546,7 +5544,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
   if (neumann) {
     PCBDDCSubSchurs sub_schurs = pcbddc->sub_schurs;
     PetscInt        ibs,mbs;
-    PetscBool       issbaij, reuse_neumann_solver;
+    PetscBool       issbaij, reuse_neumann_solver,isset,issym;
     Mat_IS*         matis = (Mat_IS*)pc->pmat->data;
 
     reuse_neumann_solver = PETSC_FALSE;
@@ -5623,7 +5621,8 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
     } else { /* we have to build the neumann solver, so we need to extract the relevant matrix */
       PetscCall(MatCreateSubMatrix(pcbddc->local_mat,pcbddc->is_R_local,pcbddc->is_R_local,reuse,&A_RR));
     }
-    if (pcbddc->local_mat->symmetric_set) PetscCall(MatSetOption(A_RR,MAT_SYMMETRIC,pcbddc->local_mat->symmetric));
+    PetscCall(MatIsSymmetricKnown(pcbddc->local_mat,&isset,&issym));
+    if (isset) PetscCall(MatSetOption(A_RR,MAT_SYMMETRIC,issym));
     opts = PETSC_FALSE;
     if (!pcbddc->ksp_R) { /* create object if not present */
       opts = PETSC_TRUE;
@@ -8397,14 +8396,15 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   if (coarse_mat) {
     PetscBool   isredundant,isbddc,force,valid;
     PetscViewer dbg_viewer = NULL;
+    PetscBool   isset,issym,isher,isspd;
 
     if (pcbddc->dbg_flag) {
       dbg_viewer = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)coarse_mat));
       PetscCall(PetscViewerASCIIAddTab(dbg_viewer,2*pcbddc->current_level));
     }
     if (!pcbddc->coarse_ksp) {
-      char   prefix[256],str_level[16];
-      size_t len;
+      char      prefix[256],str_level[16];
+      size_t    len;
 
       PetscCall(KSPCreate(PetscObjectComm((PetscObject)coarse_mat),&pcbddc->coarse_ksp));
       PetscCall(KSPSetErrorIfNotConverged(pcbddc->coarse_ksp,pc->erroriffailure));
@@ -8504,7 +8504,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     /* parameters which miss an API */
     PetscCall(PetscObjectTypeCompare((PetscObject)pc_temp,PCBDDC,&isbddc));
     if (isbddc) {
-      PC_BDDC* pcbddc_coarse = (PC_BDDC*)pc_temp->data;
+      PC_BDDC*  pcbddc_coarse = (PC_BDDC*)pc_temp->data;
 
       pcbddc_coarse->detect_disconnected = PETSC_TRUE;
       pcbddc_coarse->coarse_eqs_per_proc = pcbddc->coarse_eqs_per_proc;
@@ -8549,9 +8549,13 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
 
     /* propagate symmetry info of coarse matrix */
     PetscCall(MatSetOption(coarse_mat,MAT_STRUCTURALLY_SYMMETRIC,PETSC_TRUE));
-    if (pc->pmat->symmetric_set) PetscCall(MatSetOption(coarse_mat,MAT_SYMMETRIC,pc->pmat->symmetric));
-    if (pc->pmat->hermitian_set) PetscCall(MatSetOption(coarse_mat,MAT_HERMITIAN,pc->pmat->hermitian));
-    if (pc->pmat->spd_set) PetscCall(MatSetOption(coarse_mat,MAT_SPD,pc->pmat->spd));
+    PetscCall(MatIsSymmetricKnown(pc->pmat,&isset,&issym));
+    if (isset) PetscCall(MatSetOption(coarse_mat,MAT_SYMMETRIC,issym));
+    PetscCall(MatIsHermitianKnown(pc->pmat,&isset,&isher));
+    if (isset) PetscCall(MatSetOption(coarse_mat,MAT_HERMITIAN,isher));
+    PetscCall(MatIsSPDKnown(pc->pmat,&isset,&isspd));
+    if (isset) PetscCall(MatSetOption(coarse_mat,MAT_SPD,isspd));
+
     if (pcbddc->benign_saddle_point && !pcbddc->benign_have_null) {
       PetscCall(MatSetOption(coarse_mat,MAT_SPD,PETSC_TRUE));
     }

@@ -251,7 +251,7 @@ PetscErrorCode MatSetOption_SeqSBAIJ(Mat A,MatOption op,PetscBool flg)
       PetscCheck(bs <= 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for Hermitian with block size greater than 1");
       A->ops->multtranspose    = NULL;
       A->ops->multtransposeadd = NULL;
-      A->symmetric             = PETSC_FALSE;
+      A->symmetric             = PETSC_BOOL3_FALSE;
     }
 #endif
     break;
@@ -267,7 +267,9 @@ PetscErrorCode MatSetOption_SeqSBAIJ(Mat A,MatOption op,PetscBool flg)
     /* These options are handled directly by MatSetOption() */
   case MAT_STRUCTURALLY_SYMMETRIC:
   case MAT_SYMMETRY_ETERNAL:
+  case MAT_STRUCTURAL_SYMMETRY_ETERNAL:
   case MAT_STRUCTURE_ONLY:
+  case MAT_SPD_ETERNAL:
     /* These options are handled directly by MatSetOption() */
     break;
   case MAT_IGNORE_LOWER_TRIANGULAR:
@@ -1839,7 +1841,7 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqsbaij_petsc(Mat A,MatFactorType ftyp
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
-  PetscCheck(!A->hermitian || A->symmetric || (ftype != MAT_FACTOR_CHOLESKY && ftype != MAT_FACTOR_ICC),PETSC_COMM_SELF,PETSC_ERR_SUP,"Hermitian CHOLESKY or ICC Factor is not supported");
+  PetscCheck(A->hermitian != PETSC_BOOL3_TRUE || A->symmetric == PETSC_BOOL3_TRUE || (ftype != MAT_FACTOR_CHOLESKY && ftype != MAT_FACTOR_ICC),PETSC_COMM_SELF,PETSC_ERR_SUP,"Hermitian CHOLESKY or ICC Factor is not supported");
 #endif
 
   PetscCall(MatCreate(PetscObjectComm((PetscObject)A),B));
@@ -1987,17 +1989,14 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqSBAIJ(Mat B)
   PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqsbaij_scalapack_C",MatConvert_SBAIJ_ScaLAPACK));
 #endif
 
-  B->symmetric                  = PETSC_TRUE;
-  B->structurally_symmetric     = PETSC_TRUE;
-  B->symmetric_set              = PETSC_TRUE;
-  B->structurally_symmetric_set = PETSC_TRUE;
-  B->symmetric_eternal          = PETSC_TRUE;
+  B->symmetry_eternal            = PETSC_TRUE;
+  B->structural_symmetry_eternal = PETSC_TRUE;
+  B->symmetric                   = PETSC_BOOL3_TRUE;
+  B->structurally_symmetric      = PETSC_BOOL3_TRUE;
 #if defined(PETSC_USE_COMPLEX)
-  B->hermitian                  = PETSC_FALSE;
-  B->hermitian_set              = PETSC_FALSE;
+  B->hermitian                   = PETSC_BOOL3_FALSE;
 #else
-  B->hermitian                  = PETSC_TRUE;
-  B->hermitian_set              = PETSC_TRUE;
+  B->hermitian                   = PETSC_BOOL3_TRUE;
 #endif
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)B,MATSEQSBAIJ));

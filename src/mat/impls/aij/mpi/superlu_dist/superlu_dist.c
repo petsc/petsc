@@ -668,7 +668,7 @@ static PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat F,Mat A,IS r,IS c,con
   F->ops->matsolve        = MatMatSolve_SuperLU_DIST;
   F->ops->getinertia      = NULL;
 
-  if (A->symmetric || A->hermitian) F->ops->getinertia = MatGetInertia_SuperLU_DIST;
+  if (A->symmetric == PETSC_BOOL3_TRUE || A->hermitian == PETSC_BOOL3_TRUE) F->ops->getinertia = MatGetInertia_SuperLU_DIST;
   lu->CleanUpSuperLU_Dist = PETSC_TRUE;
   PetscFunctionReturn(0);
 }

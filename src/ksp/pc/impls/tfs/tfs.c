@@ -109,7 +109,7 @@ static PetscErrorCode PCSetUp_TFS(PC pc)
   /*  ierr =  MatIsSymmetric(A,tol,&issymmetric); */
   /*  if (issymmetric) { */
   PetscCall(PetscBarrier((PetscObject)pc));
-  if (A->symmetric) {
+  if (A->symmetric == PETSC_BOOL3_TRUE) {
     tfs->xxt       = XXT_new();
     PetscCall(XXT_factor(tfs->xxt,localtoglobal,A->rmap->n,ncol,(PetscErrorCode (*)(void*,PetscScalar*,PetscScalar*))PCTFSLocalMult_TFS,pc));
     pc->ops->apply = PCApply_TFS_XXT;

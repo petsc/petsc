@@ -1194,9 +1194,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_All(Mat A,MatCreateSubMatrixOption flag
   }  /* endof (flag == MAT_GET_VALUES) */
   PetscCall(PetscFree2(recvcounts,displs));
 
-  if (A->symmetric) PetscCall(MatSetOption(B,MAT_SYMMETRIC,PETSC_TRUE));
-  else if (A->hermitian) PetscCall(MatSetOption(B,MAT_HERMITIAN,PETSC_TRUE));
-  else if (A->structurally_symmetric) PetscCall(MatSetOption(B,MAT_STRUCTURALLY_SYMMETRIC,PETSC_TRUE));
+  PetscCall(MatPropagateSymmetryOptions(A,B));
   PetscFunctionReturn(0);
 }
 

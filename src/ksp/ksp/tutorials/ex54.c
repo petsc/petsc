@@ -40,6 +40,7 @@ int main(int argc,char **args)
   PetscCall(MatSetSizes(Amat,PETSC_DECIDE,PETSC_DECIDE,M,M));
   PetscCall(MatSetType(Amat,MATAIJ));
   PetscCall(MatSetOption(Amat,MAT_SPD,PETSC_TRUE));
+  PetscCall(MatSetOption(Amat,MAT_SPD_ETERNAL,PETSC_TRUE));
   PetscCall(MatSetFromOptions(Amat));
   PetscCall(MatSeqAIJSetPreallocation(Amat,81,NULL));
   PetscCall(MatMPIAIJSetPreallocation(Amat,81,NULL,57,NULL));

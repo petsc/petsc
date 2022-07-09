@@ -27,6 +27,10 @@
       PetscBool, parameter :: PETSC_TRUE = .true.
       PetscBool, parameter :: PETSC_FALSE = .false.
 
+      PetscBool3, parameter :: PETSC_BOOL3_TRUE = 1
+      PetscBool3, parameter :: PETSC_BOOL3_FALSE = 0
+      PetscBool3, parameter :: PETSC_BOOL3_UNKNOWN = -1
+
       PetscInt, parameter :: PETSC_DECIDE = -1
       PetscInt, parameter :: PETSC_DETERMINE = -1
       PetscInt, parameter :: PETSC_DEFAULT_INTEGER = -2

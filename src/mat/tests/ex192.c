@@ -139,7 +139,6 @@ int main(int argc,char **args)
     PetscCall(MatGetFactor(A,solver,MAT_FACTOR_LU,&F));
   } else {
     if (herm) {
-      PetscCall(MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE));
       PetscCall(MatSetOption(A,MAT_SPD,PETSC_TRUE));
     } else {
       PetscCall(MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE));

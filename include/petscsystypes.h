@@ -205,7 +205,7 @@ M*/
 typedef int PetscCuBLASInt;
 
 /*E
-    PetscBool  - Logical variable. Actually an int in C and a logical in Fortran.
+    PetscBool  - Logical variable. Actually an enum in C and a logical in Fortran.
 
    Level: beginner
 
@@ -213,9 +213,24 @@ typedef int PetscCuBLASInt;
    Why have PetscBool , why not use bool in C? The problem is that K and R C, C99 and C++ all have different mechanisms for
       boolean values. It is not easy to have a simple macro that that will work properly in all circumstances with all three mechanisms.
 
-.seealso: `PETSC_TRUE`, `PETSC_FALSE`, `PetscNot()`
+.seealso: `PETSC_TRUE`, `PETSC_FALSE`, `PetscNot()`, `PetscBool3`
 E*/
 typedef enum { PETSC_FALSE,PETSC_TRUE } PetscBool;
+
+/*E
+    PetscBool3  - Ternary logical variable. Actually an enum in C and a 4 byte integer in Fortran.
+
+   Level: beginner
+
+   Notes:
+   Should not be used with the if (flg) or if (!flg) syntax.
+
+.seealso: `PETSC_TRUE`, `PETSC_FALSE`, `PetscNot()`, `PETSC_BOOL3_TRUE`, `PETSC_BOOL3_FALSE`, `PETSC_BOOL3_UKNOWN`
+E*/
+typedef enum { PETSC_BOOL3_FALSE,PETSC_BOOL3_TRUE, PETSC_BOOL3_UNKNOWN = -1 } PetscBool3;
+
+#define PetscBool3ToBool(a) ((a) == PETSC_BOOL3_TRUE ? PETSC_TRUE : PETSC_FALSE)
+#define PetscBoolToBool3(a) ((a) == PETSC_TRUE ? PETSC_BOOL3_TRUE : PETSC_BOOL3_FALSE)
 
 /*MC
    PetscReal - PETSc type that represents a real number version of PetscScalar

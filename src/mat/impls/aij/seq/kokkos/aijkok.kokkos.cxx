@@ -1322,7 +1322,7 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJKOKKOSDEVICE(Mat B,Mat A,const Ma
 
   PetscFunctionBegin;
   PetscCheck(A->rmap->n == n,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"square matrices only supported %" PetscInt_FMT " %" PetscInt_FMT,A->rmap->n,n);
-  PetscCall(MatGetOption(A,MAT_STRUCTURALLY_SYMMETRIC,&row_identity));
+  PetscCall(MatIsStructurallySymmetric(A,&row_identity));
   PetscCheck(row_identity,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"structurally symmetric matrices only supported");
   PetscCall(ISGetIndices(isrow,&r_h));
   PetscCall(ISGetIndices(isicol,&ic_h));

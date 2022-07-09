@@ -8,4 +8,3 @@
 [1] 15:   6.1644e+00   6.1644e+00   6.0000e+00
 Mat Object: A (a_) 2 MPI processes
   type: mpiaij
-MAT_SYMMETRIC: 0

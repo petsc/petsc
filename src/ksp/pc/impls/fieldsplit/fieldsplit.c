@@ -813,7 +813,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
 
   if (jac->type == PC_COMPOSITE_SCHUR) {
     IS          ccis;
-    PetscBool   isspd;
+    PetscBool   isset,isspd;
     PetscInt    rstart,rend;
     char        lscname[256];
     PetscObject LSC_L;
@@ -822,8 +822,8 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
 
     /* If pc->mat is SPD, don't scale by -1 the Schur complement */
     if (jac->schurscale == (PetscScalar)-1.0) {
-      PetscCall(MatGetOption(pc->pmat,MAT_SPD,&isspd));
-      jac->schurscale = (isspd == PETSC_TRUE) ? 1.0 : -1.0;
+      PetscCall(MatIsSPDKnown(pc->pmat,&isset,&isspd));
+      jac->schurscale = (isset && isspd) ? 1.0 : -1.0;
     }
 
     /* When extracting off-diagonal submatrices, we take complements from this range */

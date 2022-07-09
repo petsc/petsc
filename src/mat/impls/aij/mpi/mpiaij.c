@@ -1722,6 +1722,9 @@ PetscErrorCode MatSetOption_MPIAIJ(Mat A,MatOption op,PetscBool flg)
   case MAT_STRUCTURALLY_SYMMETRIC:
   case MAT_HERMITIAN:
   case MAT_SYMMETRY_ETERNAL:
+  case MAT_STRUCTURAL_SYMMETRY_ETERNAL:
+  case MAT_SPD_ETERNAL:
+    /* if the diagonal matrix is square it inherits some of the properties above */
     break;
   case MAT_SUBMAT_SINGLEIS:
     A->submat_singleis = flg;
@@ -7020,7 +7023,7 @@ PetscErrorCode MatProductSymbolic_MPIAIJBACKEND(Mat C)
   MatCheckProduct(C,1);
   PetscCheck(!product->data,PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data not empty");
   ptype = product->type;
-  if (product->A->symmetric && ptype == MATPRODUCT_AtB) {
+  if (product->A->symmetric == PETSC_BOOL3_TRUE && ptype == MATPRODUCT_AtB) {
     ptype = MATPRODUCT_AB;
     product->symbolic_used_the_fact_A_is_symmetric = PETSC_TRUE;
   }
@@ -7838,9 +7841,9 @@ PETSC_INTERN PetscErrorCode MatCreateGraph_Simple_AIJ(Mat Amat, PetscBool symmet
     }
   }
   if (symmetrize) {
-    PetscBool issym;
-    PetscCall(MatGetOption(Amat,MAT_SYMMETRIC,&issym));
-    if (!issym) {
+    PetscBool isset,issym;
+    PetscCall(MatIsSymmetricKnown(Amat,&isset,&issym));
+    if (!isset || !issym) {
       Mat matTrans;
       PetscCall(MatTranspose(Gmat, MAT_INITIAL_MATRIX, &matTrans));
       PetscCall(MatAXPY(Gmat, 1.0, matTrans, Gmat->structurally_symmetric ? SAME_NONZERO_PATTERN : DIFFERENT_NONZERO_PATTERN));

@@ -5,7 +5,6 @@
 #include <../src/ksp/pc/impls/gamg/gamg.h>           /*I "petscpc.h" I*/
 #include <petsc/private/kspimpl.h>
 
-/* -------------------------------------------------------------------------- */
 /*
    PCGAMGGetDataWithGhosts - Get array of local + ghost data with local data
     hacks into Mat MPIAIJ so this must have size > 1

@@ -37,10 +37,11 @@ static PetscErrorCode KSPChebyshevComputeExtremeEigenvalues_Private(KSP kspest,P
 static PetscErrorCode KSPSetUp_Chebyshev(KSP ksp)
 {
   KSP_Chebyshev    *cheb = (KSP_Chebyshev*)ksp->data;
-  PetscBool        flg;
+  PetscBool        isset,flg;
   Mat              Pmat,Amat;
   PetscObjectId    amatid,    pmatid;
   PetscObjectState amatstate, pmatstate;
+
   PetscFunctionBegin;
   PetscCall(KSPSetWorkVecs(ksp,3));
   if (cheb->emin == 0. || cheb->emax == 0.) { // User did not specify eigenvalues
@@ -57,8 +58,8 @@ static PetscErrorCode KSPSetUp_Chebyshev(KSP ksp)
   }
   if (cheb->kspest) {
     PetscCall(KSPGetOperators(ksp,&Amat,&Pmat));
-    PetscCall(MatGetOption(Pmat, MAT_SPD, &flg));
-    if (flg) {
+    PetscCall(MatIsSPDKnown(Pmat, &isset, &flg));
+    if (isset && flg) {
       const char *prefix;
       PetscCall(KSPGetOptionsPrefix(cheb->kspest,&prefix));
       PetscCall(PetscOptionsHasName(NULL,prefix,"-ksp_type",&flg));

@@ -709,7 +709,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_1(Mat A,Vec xx,Vec yy,Vec zz)
   const PetscInt    *aj=a->j,*ai=a->i,*ib;
   PetscInt          nonzerorow=0;
 #if defined(PETSC_USE_COMPLEX)
-  const int         aconj = A->hermitian;
+  const int         aconj = A->hermitian == PETSC_BOOL3_TRUE;
 #else
   const int         aconj = 0;
 #endif
@@ -1484,7 +1484,7 @@ PetscErrorCode MatMatMult_SeqSBAIJ_1_Private(Mat A,PetscScalar* b,PetscInt bm,Pe
   const MatScalar   *v = a->a,*vv;
   PetscInt          mbs = a->mbs,i,*idx = a->j,*ii = a->i,j,*jj,n,k;
 #if defined(PETSC_USE_COMPLEX)
-  const int         aconj = A->hermitian;
+  const int         aconj = A->hermitian == PETSC_BOOL3_TRUE;
 #else
   const int         aconj = 0;
 #endif

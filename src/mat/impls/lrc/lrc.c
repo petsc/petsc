@@ -244,7 +244,7 @@ PetscErrorCode MatCreateLRC(Mat A,Mat U,Vec c,Mat V,Mat *N)
   PetscCall(MatSetVecType(*N,U->defaultvectype));
   PetscCall(PetscObjectChangeTypeName((PetscObject)*N,MATLRC));
   /* Flag matrix as symmetric if A is symmetric and U == V */
-  PetscCall(MatSetOption(*N,MAT_SYMMETRIC,(PetscBool)((A ? A->symmetric : PETSC_TRUE) && U == V)));
+  PetscCall(MatSetOption(*N,MAT_SYMMETRIC,(PetscBool)((A ? A->symmetric == PETSC_BOOL3_TRUE : PETSC_TRUE) && U == V)));
 
   PetscCall(PetscNewLog(*N,&Na));
   (*N)->data = (void*)Na;

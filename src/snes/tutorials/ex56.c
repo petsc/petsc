@@ -439,6 +439,7 @@ int main(int argc,char **args)
     PetscCall(MatSetOption(Amat,MAT_SYMMETRY_ETERNAL,PETSC_TRUE)); /* Inform PETSc that Amat is always symmetric, so info set above isn't lost. */
     PetscCall(MatSetBlockSize(Amat,3));
     PetscCall(MatSetOption(Amat,MAT_SPD,PETSC_TRUE));
+    PetscCall(MatSetOption(Amat,MAT_SPD_ETERNAL,PETSC_TRUE));
     PetscCall(VecGetSize(bb,&N));
     local_sizes[iter] = N;
     PetscCall(PetscInfo(snes,"%" PetscInt_FMT " global equations, %" PetscInt_FMT " vertices\n",N,N/dim));

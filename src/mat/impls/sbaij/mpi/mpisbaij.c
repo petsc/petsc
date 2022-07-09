@@ -97,7 +97,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPISBAIJ_Basic(Mat A, MatType newtype, Ma
     PetscCall(MatGetRow(A,r,&ncols,&row,&vals));
     PetscCall(MatSetValues(B,1,&r,ncols,row,vals,INSERT_VALUES));
 #if defined(PETSC_USE_COMPLEX)
-    if (A->hermitian) {
+    if (A->hermitian == PETSC_BOOL3_TRUE) {
       PetscInt i;
       for (i = 0; i < ncols; i++) {
         PetscCall(MatSetValue(B,row[i],r,PetscConj(vals[i]),INSERT_VALUES));
@@ -1508,7 +1508,7 @@ PetscErrorCode MatSetOption_MPISBAIJ(Mat A,MatOption op,PetscBool flg)
       A->ops->multadd          = MatMultAdd_MPISBAIJ_Hermitian;
       A->ops->multtranspose    = NULL;
       A->ops->multtransposeadd = NULL;
-      A->symmetric = PETSC_FALSE;
+      A->symmetric = PETSC_BOOL3_FALSE;
     }
 #endif
     break;
@@ -1530,8 +1530,11 @@ PetscErrorCode MatSetOption_MPISBAIJ(Mat A,MatOption op,PetscBool flg)
     PetscCall(MatSetOption(a->A,op,flg));
     break;
   case MAT_SYMMETRY_ETERNAL:
+  case MAT_STRUCTURAL_SYMMETRY_ETERNAL:
     PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_SUP,"Matrix must be symmetric");
     PetscCall(PetscInfo(A,"Option %s ignored\n",MatOptions[op]));
+    break;
+  case MAT_SPD_ETERNAL:
     break;
   case MAT_IGNORE_LOWER_TRIANGULAR:
     aA->ignore_ltriangular = flg;
@@ -2158,17 +2161,14 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPISBAIJ(Mat B)
   PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpisbaij_mpiaij_C",MatConvert_MPISBAIJ_Basic));
   PetscCall(PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpisbaij_mpibaij_C",MatConvert_MPISBAIJ_Basic));
 
-  B->symmetric                  = PETSC_TRUE;
-  B->structurally_symmetric     = PETSC_TRUE;
-  B->symmetric_set              = PETSC_TRUE;
-  B->structurally_symmetric_set = PETSC_TRUE;
-  B->symmetric_eternal          = PETSC_TRUE;
+  B->symmetric                   = PETSC_BOOL3_TRUE;
+  B->structurally_symmetric      = PETSC_BOOL3_TRUE;
+  B->symmetry_eternal            = PETSC_TRUE;
+  B->structural_symmetry_eternal = PETSC_TRUE ;
 #if defined(PETSC_USE_COMPLEX)
-  B->hermitian                  = PETSC_FALSE;
-  B->hermitian_set              = PETSC_FALSE;
+  B->hermitian                   = PETSC_BOOL3_FALSE;
 #else
-  B->hermitian                  = PETSC_TRUE;
-  B->hermitian_set              = PETSC_TRUE;
+  B->hermitian                   = PETSC_BOOL3_TRUE;
 #endif
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)B,MATMPISBAIJ));

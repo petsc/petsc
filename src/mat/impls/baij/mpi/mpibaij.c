@@ -1487,8 +1487,9 @@ PetscErrorCode MatSetOption_MPIBAIJ(Mat A,MatOption op,PetscBool flg)
   case MAT_HERMITIAN:
   case MAT_SUBMAT_SINGLEIS:
   case MAT_SYMMETRY_ETERNAL:
-    MatCheckPreallocated(A,1);
-    PetscCall(MatSetOption(a->A,op,flg));
+  case MAT_STRUCTURAL_SYMMETRY_ETERNAL:
+  case MAT_SPD_ETERNAL:
+    /* if the diagonal matrix is square it inherits some of the properties above */
     break;
   default:
     SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"unknown option %d",op);
@@ -2184,9 +2185,7 @@ PetscErrorCode MatGetSeqNonzeroStructure_MPIBAIJ(Mat A,Mat *newmat)
   PetscCall(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
   PetscCall(PetscFree(recvcounts));
 
-  if (A->symmetric) PetscCall(MatSetOption(B,MAT_SYMMETRIC,PETSC_TRUE));
-  else if (A->hermitian) PetscCall(MatSetOption(B,MAT_HERMITIAN,PETSC_TRUE));
-  else if (A->structurally_symmetric) PetscCall(MatSetOption(B,MAT_STRUCTURALLY_SYMMETRIC,PETSC_TRUE));
+  PetscCall(MatPropagateSymmetryOptions(A,B));
   *newmat = B;
   PetscFunctionReturn(0);
 }

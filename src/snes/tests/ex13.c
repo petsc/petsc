@@ -165,6 +165,7 @@ int main(int argc, char **argv)
   PetscCall(SNESSetUp(snes));
   PetscCall(SNESGetJacobian(snes, &Amat, NULL, NULL, NULL));
   PetscCall(MatSetOption(Amat,MAT_SPD,PETSC_TRUE));
+  PetscCall(MatSetOption(Amat,MAT_SPD_ETERNAL,PETSC_TRUE));
   PetscCall(SNESSolve(snes, NULL, u));
   PetscCall(PetscTimeSubtract(&time));
   // PetscCall(PetscPrintf(PETSC_COMM_WORLD,"First Solve time: %g\n",-time));
