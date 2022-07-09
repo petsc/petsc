@@ -62,6 +62,12 @@ PETSC_EXTERN PetscLogEvent DMPLEX_MetricNormalize;
 PETSC_EXTERN PetscLogEvent DMPLEX_MetricAverage;
 PETSC_EXTERN PetscLogEvent DMPLEX_MetricIntersection;
 
+PETSC_EXTERN PetscLogEvent DMPLEX_RebalBuildGraph;
+PETSC_EXTERN PetscLogEvent DMPLEX_RebalRewriteSF;
+PETSC_EXTERN PetscLogEvent DMPLEX_RebalGatherGraph;
+PETSC_EXTERN PetscLogEvent DMPLEX_RebalPartition;
+PETSC_EXTERN PetscLogEvent DMPLEX_RebalScatterPart;
+
 /* Utility struct to store the contents of a Fluent file in memory */
 typedef struct {
   int          index;    /* Type of section */

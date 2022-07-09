@@ -10,6 +10,7 @@
 
 /* Logging support */
 PetscLogEvent DMPLEX_Interpolate, DMPLEX_Partition, DMPLEX_Distribute, DMPLEX_DistributeCones, DMPLEX_DistributeLabels, DMPLEX_DistributeSF, DMPLEX_DistributeOverlap, DMPLEX_DistributeField, DMPLEX_DistributeData, DMPLEX_Migrate, DMPLEX_InterpolateSF, DMPLEX_GlobalToNaturalBegin, DMPLEX_GlobalToNaturalEnd, DMPLEX_NaturalToGlobalBegin, DMPLEX_NaturalToGlobalEnd, DMPLEX_Stratify, DMPLEX_Symmetrize, DMPLEX_Preallocate, DMPLEX_ResidualFEM, DMPLEX_JacobianFEM, DMPLEX_InterpolatorFEM, DMPLEX_InjectorFEM, DMPLEX_IntegralFEM, DMPLEX_CreateGmsh, DMPLEX_RebalanceSharedPoints, DMPLEX_PartSelf, DMPLEX_PartLabelInvert, DMPLEX_PartLabelCreateSF, DMPLEX_PartStratSF, DMPLEX_CreatePointSF,DMPLEX_LocatePoints,DMPLEX_TopologyView,DMPLEX_LabelsView,DMPLEX_CoordinatesView,DMPLEX_SectionView,DMPLEX_GlobalVectorView,DMPLEX_LocalVectorView,DMPLEX_TopologyLoad,DMPLEX_LabelsLoad,DMPLEX_CoordinatesLoad,DMPLEX_SectionLoad,DMPLEX_GlobalVectorLoad,DMPLEX_LocalVectorLoad;
+PetscLogEvent DMPLEX_RebalBuildGraph,DMPLEX_RebalRewriteSF,DMPLEX_RebalGatherGraph, DMPLEX_RebalPartition, DMPLEX_RebalScatterPart;
 
 PETSC_EXTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
 

@@ -65,7 +65,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis_Private(MatPartitioning part
     PetscInt   *xadj    = adj->i;
     PetscInt   *adjncy  = adj->j;
     PetscInt   *NDorder = NULL;
-    PetscInt   itmp     = 0,wgtflag=0, numflag=0, ncon=1, nparts=part->n, options[24], i, j;
+    PetscInt   itmp     = 0,wgtflag=0, numflag=0, ncon=part->ncon, nparts=part->n, options[24], i, j;
     real_t     *tpwgts,*ubvec,itr=0.1;
 
     PetscCall(PetscObjectGetComm((PetscObject)pmat,&pcomm));
@@ -110,8 +110,11 @@ static PetscErrorCode MatPartitioningApply_Parmetis_Private(MatPartitioning part
     PetscCall(PetscMalloc1(ncon,&ubvec));
     for (i=0; i<ncon; i++) ubvec[i] = 1.05;
     /* This sets the defaults */
-    options[0] = 0;
+    options[0] = 1;
     for (i=1; i<24; i++) options[i] = -1;
+    options[1] = 0; /* no verbosity */
+    options[2] = 0;
+    options[3] = PARMETIS_PSR_COUPLED; /* Seed */
     /* Duplicate the communicator to be sure that ParMETIS attribute caching does not interfere with PETSc. */
     PetscCallMPI(MPI_Comm_dup(pcomm,&comm));
     if (useND) {

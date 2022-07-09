@@ -1334,6 +1334,7 @@ PetscErrorCode MatDestroy(Mat *A)
   PetscCall(PetscFree((*A)->bsizes));
   PetscCall(PetscFree((*A)->solvertype));
   for (PetscInt i=0; i<MAT_FACTOR_NUM_TYPES; i++) PetscCall(PetscFree((*A)->preferredordering[i]));
+  if ((*A)->redundant && (*A)->redundant->matseq[0] == *A) (*A)->redundant->matseq[0] = NULL;
   PetscCall(MatDestroy_Redundant(&(*A)->redundant));
   PetscCall(MatProductClear(*A));
   PetscCall(MatNullSpaceDestroy(&(*A)->nullsp));
@@ -7784,7 +7785,7 @@ PetscErrorCode MatResidual(Mat mat,Vec b,Vec x,Vec r)
 }
 
 /*@C
-    MatGetRowIJ - Returns the compressed row storage i and j indices for sequential matrices.
+    MatGetRowIJ - Returns the compressed row storage i and j indices for the local rows of a sparse matrix
 
    Collective on Mat
 
@@ -7797,7 +7798,7 @@ PetscErrorCode MatResidual(Mat mat,Vec b,Vec x,Vec r)
                  always used.
 
     Output Parameters:
-+   n - number of rows in the (possibly compressed) matrix
++   n - number of local rows in the (possibly compressed) matrix
 .   ia - the row pointers; that is ia[0] = 0, ia[row] = ia[row-1] + number of elements in that row of the matrix
 .   ja - the column indices
 -   done - indicates if the routine actually worked and returned appropriate ia[] and ja[] arrays; callers
@@ -10612,7 +10613,19 @@ PetscErrorCode MatGetNonzeroState(Mat mat,PetscObjectState *state)
 @*/
 PetscErrorCode MatCreateMPIMatConcatenateSeqMat(MPI_Comm comm,Mat seqmat,PetscInt n,MatReuse reuse,Mat *mpimat)
 {
+  PetscMPIInt size;
+
   PetscFunctionBegin;
+  PetscCallMPI(MPI_Comm_size(comm,&size));
+  if (size == 1) {
+    if (reuse == MAT_INITIAL_MATRIX) {
+      PetscCall(MatDuplicate(seqmat,MAT_COPY_VALUES,mpimat));
+    } else {
+      PetscCall(MatCopy(seqmat,*mpimat,SAME_NONZERO_PATTERN));
+    }
+    PetscFunctionReturn(0);
+  }
+
   PetscCheck(seqmat->ops->creatempimatconcatenateseqmat,PetscObjectComm((PetscObject)seqmat),PETSC_ERR_SUP,"Mat type %s",((PetscObject)seqmat)->type_name);
   PetscCheck(reuse != MAT_REUSE_MATRIX || seqmat != *mpimat,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"MAT_REUSE_MATRIX means reuse the matrix passed in as the final argument, not the original matrix");
 

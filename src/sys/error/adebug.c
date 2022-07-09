@@ -466,21 +466,23 @@ $    PetscAttachDebuggerErrorHandler()
 $    PetscAbortErrorHandler()
    or you may write your own.
 
+   Developer Notes:
+     This routine calls abort instead of returning because if it returned then MPI_Abort() would get called which can generate an exception
+     causing the debugger to be attached again in a cycle.
+
 .seealso: `PetscSetDebuggerFromString()`, `PetscSetDebugger()`, `PetscSetDefaultDebugger()`, `PetscError()`, `PetscPushErrorHandler()`, `PetscPopErrorHandler()`, `PetscTraceBackErrorHandler()`,
           `PetscAbortErrorHandler()`, `PetscMPIAbortErrorHandler()`, `PetscEmacsClientErrorHandler()`, `PetscReturnErrorHandler()`, `PetscSetDebugTermainal()`
 @*/
 PetscErrorCode  PetscAttachDebuggerErrorHandler(MPI_Comm comm,int line,const char *fun,const char *file,PetscErrorCode num,PetscErrorType p,const char *mess,void *ctx)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (!mess) mess = " ";
 
   if (fun) (*PetscErrorPrintf)("%s() at %s:%d %s\n",fun,file,line,mess);
   else  (*PetscErrorPrintf)("%s:%d %s\n",file,line,mess);
 
-  ierr = PetscAttachDebugger();
-  if (ierr) abort(); /* call abort because don't want to kill other MPI processes that may successfully attach to debugger */
+  PetscAttachDebugger();
+  abort(); /* call abort because don't want to kill other MPI processes that may successfully attach to debugger */
   PetscFunctionReturn(0);
 }
 

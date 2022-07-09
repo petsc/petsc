@@ -482,7 +482,8 @@ PetscErrorCode  MatPartitioningDestroy(MatPartitioning *part)
 
    Input Parameters:
 +  part - the partitioning context
--  weights - the weights, on each process this array must have the same size as the number of local rows
+-  weights - the weights, on each process this array must have the same size as the number of local rows times the value passed with `MatPartitioningSetNumberVertexWeights()` or
+             1 if that is not provided
 
    Level: beginner
 
@@ -490,7 +491,7 @@ PetscErrorCode  MatPartitioningDestroy(MatPartitioning *part)
       The array weights is freed by PETSc so the user should not free the array. In C/C++
    the array must be obtained with a call to PetscMalloc(), not malloc().
 
-.seealso: `MatPartitioningCreate()`, `MatPartitioningSetType()`, `MatPartitioningSetPartitionWeights()`
+.seealso: `MatPartitioningCreate()`, `MatPartitioningSetType()`, `MatPartitioningSetPartitionWeights()`, `MatPartitioningSetNumberVertexWeights()`
 @*/
 PetscErrorCode  MatPartitioningSetVertexWeights(MatPartitioning part,const PetscInt weights[])
 {
@@ -614,7 +615,8 @@ PetscErrorCode  MatPartitioningCreate(MPI_Comm comm,MatPartitioning *newp)
   part->use_edge_weights = PETSC_FALSE; /* By default we don't use edge weights */
 
   PetscCallMPI(MPI_Comm_size(comm,&size));
-  part->n = (PetscInt)size;
+  part->n    = (PetscInt)size;
+  part->ncon = 1;
 
   *newp = part;
   PetscFunctionReturn(0);
@@ -802,5 +804,26 @@ PetscErrorCode  MatPartitioningSetFromOptions(MatPartitioning part)
 
   if (part->ops->setfromoptions) PetscCall((*part->ops->setfromoptions)(PetscOptionsObject,part));
   PetscOptionsEnd();
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   MatPartitioningSetNumberVertexWeights - Sets the number of weights per vertex
+
+   Not collective
+
+   Input Parameters:
++  partitioning - the partitioning context
+-  ncon - the number of weights
+
+   Level: intermediate
+
+.seealso: `MatPartitioningSetVertexWeights()`
+@*/
+PetscErrorCode  MatPartitioningSetNumberVertexWeights(MatPartitioning partitioning,PetscInt ncon)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(partitioning,MAT_PARTITIONING_CLASSID,1);
+  partitioning->ncon = ncon;
   PetscFunctionReturn(0);
 }

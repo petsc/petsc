@@ -1209,6 +1209,7 @@ PETSC_EXTERN PetscErrorCode MatMPIAIJSetPreallocationCSR(Mat,const PetscInt[],co
 PETSC_EXTERN PetscErrorCode MatMPIBAIJSetPreallocationCSR(Mat,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[]);
 PETSC_EXTERN PetscErrorCode MatMPIAdjSetPreallocation(Mat,PetscInt[],PetscInt[],PetscInt[]);
 PETSC_EXTERN PetscErrorCode MatMPIAdjToSeq(Mat,Mat*);
+PETSC_EXTERN PetscErrorCode MatMPIAdjToSeqRankZero(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatMPIDenseSetPreallocation(Mat,PetscScalar[]);
 PETSC_EXTERN PetscErrorCode MatSeqDenseSetPreallocation(Mat,PetscScalar[]);
 PETSC_EXTERN PetscErrorCode MatMPIAIJGetSeqAIJ(Mat,Mat*,Mat*,const PetscInt*[]);
@@ -1535,6 +1536,7 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate(MPI_Comm,MatPartitioning*);
 PETSC_EXTERN PetscErrorCode MatPartitioningSetType(MatPartitioning,MatPartitioningType);
 PETSC_EXTERN PetscErrorCode MatPartitioningSetNParts(MatPartitioning,PetscInt);
 PETSC_EXTERN PetscErrorCode MatPartitioningSetAdjacency(MatPartitioning,Mat);
+PETSC_EXTERN PetscErrorCode MatPartitioningSetNumberVertexWeights(MatPartitioning,PetscInt);
 PETSC_EXTERN PetscErrorCode MatPartitioningSetVertexWeights(MatPartitioning,const PetscInt[]);
 PETSC_EXTERN PetscErrorCode MatPartitioningSetPartitionWeights(MatPartitioning,const PetscReal []);
 PETSC_EXTERN PetscErrorCode MatPartitioningSetUseEdgeWeights(MatPartitioning,PetscBool);
