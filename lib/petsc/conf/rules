@@ -25,7 +25,7 @@ chk_upgrade:
 chk_loc:
 	@if [ ${LOC}foo = foo ] ; then \
 	  printf ${PETSC_TEXT_HILIGHT}"*********************** ERROR **********************************************\n" ; \
-	  echo " Please specify LOC variable for eg: make allmanualpages LOC=/sandbox/petsc "; \
+	  echo " Please specify LOC variable for eg: make allmanpages LOC=/sandbox/petsc "; \
 	  printf "****************************************************************************"${PETSC_TEXT_NORMAL}"\n" ;  false; fi
 	@${MKDIR} ${LOC}/docs/manualpages
 
@@ -452,7 +452,7 @@ deleteshared:
 
 # ---------------------------------------------------------------------------------------
 #   Rules for the automatic generation of documentation, tutorials etc
-# See rule for allmanualpages and allhtml in ${PETSC_DIR}/makefile
+# See rule for allmanpages in ${PETSC_DIR}/makefile
 #
 
 chk_mansec:
