@@ -1867,7 +1867,7 @@ class Configure(config.base.Configure):
                   'invalid option','invalid suboption','bad ',' option','petsc error',
                   'unbekannte option','linker input file unused because linking not done',
                   'warning: // comments are not allowed in this language',
-                  'no se reconoce la opci','non reconnue')
+                  'no se reconoce la opci','non reconnue','warning: unsupported linker arg:')
     outlo = output.lower()
     return any(sub.lower() in outlo for sub in substrings)
 
