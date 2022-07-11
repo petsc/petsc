@@ -3480,15 +3480,12 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
       }
       /* Must put in owned subpoints */
       for (p = pStart; p < pEnd; ++p) {
-        const PetscInt subpoint = DMPlexFilterPoint_Internal(p, 0, numSubpoints, subpoints);
-
-        if (subpoint < 0) {
-          newOwners[p-pStart].rank  = -3;
-          newOwners[p-pStart].index = -3;
-        } else {
-          newOwners[p-pStart].rank  = rank;
-          newOwners[p-pStart].index = subpoint;
-        }
+        newOwners[p-pStart].rank  = -3;
+        newOwners[p-pStart].index = -3;
+      }
+      for (p = 0; p < numSubpoints; ++p) {
+        newOwners[subpoints[p]-pStart].rank  = rank;
+        newOwners[subpoints[p]-pStart].index = p;
       }
       PetscCall(PetscSFReduceBegin(sfPoint, MPIU_2INT, newLocalPoints, newOwners, MPI_MAXLOC));
       PetscCall(PetscSFReduceEnd(sfPoint, MPIU_2INT, newLocalPoints, newOwners, MPI_MAXLOC));
