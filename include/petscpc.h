@@ -286,6 +286,7 @@ PETSC_EXTERN PetscErrorCode PCGalerkinSetInterpolation(PC,Mat);
 PETSC_EXTERN PetscErrorCode PCGalerkinSetComputeSubmatrix(PC,PetscErrorCode (*)(PC,Mat,Mat,Mat*,void*),void*);
 
 PETSC_EXTERN PetscErrorCode PCPythonSetType(PC,const char[]);
+PETSC_EXTERN PetscErrorCode PCPythonGetType(PC,const char*[]);
 
 PETSC_EXTERN PetscErrorCode PCPARMSSetGlobal(PC,PCPARMSGlobalType);
 PETSC_EXTERN PetscErrorCode PCPARMSSetLocal(PC,PCPARMSLocalType);

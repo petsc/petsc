@@ -916,6 +916,11 @@ cdef class TS(Object):
         py_type = str2bytes(py_type, &cval)
         CHKERR( TSPythonSetType(self.ts, cval) )
 
+    def getPythonType(self):
+        cdef const char *cval = NULL
+        CHKERR( TSPythonGetType(self.ts, &cval) )
+        return bytes2str(cval)
+
     # --- Theta ---
 
     def setTheta(self, theta):

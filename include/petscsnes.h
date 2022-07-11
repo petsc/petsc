@@ -187,6 +187,7 @@ PETSC_EXTERN PetscErrorCode SNESGetApplicationContext(SNES,void *);
 PETSC_EXTERN PetscErrorCode SNESSetComputeApplicationContext(SNES,PetscErrorCode (*)(SNES,void**),PetscErrorCode (*)(void**));
 
 PETSC_EXTERN PetscErrorCode SNESPythonSetType(SNES,const char[]);
+PETSC_EXTERN PetscErrorCode SNESPythonGetType(SNES,const char*[]);
 
 PETSC_EXTERN PetscErrorCode SNESSetFunctionDomainError(SNES);
 PETSC_EXTERN PetscErrorCode SNESGetFunctionDomainError(SNES, PetscBool *);

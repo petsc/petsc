@@ -525,6 +525,7 @@ PETSC_EXTERN PetscErrorCode TSPseudoSetTimeStepIncrement(TS,PetscReal);
 PETSC_EXTERN PetscErrorCode TSPseudoIncrementDtFromInitialDt(TS);
 
 PETSC_EXTERN PetscErrorCode TSPythonSetType(TS,const char[]);
+PETSC_EXTERN PetscErrorCode TSPythonGetType(TS,const char*[]);
 
 PETSC_EXTERN PetscErrorCode TSComputeRHSFunction(TS,PetscReal,Vec,Vec);
 PETSC_EXTERN PetscErrorCode TSComputeRHSJacobian(TS,PetscReal,Vec,Mat,Mat);

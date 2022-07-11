@@ -33,7 +33,7 @@ cdef extern from * nogil:
     PetscPCType PCCP
     PetscPCType PCBFBT
     PetscPCType PCLSC
-    #PetscPCType PCPYTHON
+    PetscPCType PCPYTHON
     PetscPCType PCPFMG
     PetscPCType PCSYSPFMG
     PetscPCType PCREDISTRIBUTE
@@ -316,13 +316,15 @@ cdef extern from * nogil:
     int PCSPAISetVerbose(PetscPC,PetscInt)
     int PCSPAISetSp(PetscPC,PetscInt)
 
+    # --- PYTHON ---
+    int PCPythonSetType(PetscPC,char[])
+    int PCPythonGetType(PetscPC,char*[])
+
 # --------------------------------------------------------------------
 
 cdef extern from "libpetsc4py.h":
-    PetscPCType PCPYTHON
     int PCPythonSetContext(PetscPC,void*)
     int PCPythonGetContext(PetscPC,void**)
-    int PCPythonSetType(PetscPC,char[])
 
 # --------------------------------------------------------------------
 

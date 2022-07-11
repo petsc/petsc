@@ -24,3 +24,27 @@ PetscErrorCode  PCPythonSetType(PC pc,const char pyname[])
   PetscTryMethod(pc,"PCPythonSetType_C",(PC, const char[]),(pc,pyname));
   PetscFunctionReturn(0);
 }
+
+/*@C
+   PCPythonGetType - Get the type of a PC object implemented in Python.
+
+   Not collective
+
+   Input Parameter:
+.  pc - the preconditioner (PC) context.
+
+   Output Parameter:
+.  pyname - full dotted Python name [package].module[.{class|function}]
+
+   Level: intermediate
+
+.seealso: `PCCreate()`, `PCSetType()`, `PCPYTHON`, `PetscPythonInitialize()`, `PCPythonSetType()`
+@*/
+PetscErrorCode  PCPythonGetType(PC pc,const char *pyname[])
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidPointer(pyname,2);
+  PetscUseMethod(pc,"PCPythonGetType_C",(PC, const char*[]),(pc,pyname));
+  PetscFunctionReturn(0);
+}
