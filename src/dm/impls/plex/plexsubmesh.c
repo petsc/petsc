@@ -3180,9 +3180,13 @@ static inline PetscInt DMPlexFilterPoint_Internal(PetscInt point, PetscInt first
 
 static PetscErrorCode DMPlexFilterLabels_Internal(DM dm, const PetscInt numSubPoints[], const PetscInt *subpoints[], const PetscInt firstSubPoint[], DM subdm)
 {
-  PetscInt       Nl, l, d;
+  DMLabel  depthLabel;
+  PetscInt Nl, l, d;
 
   PetscFunctionBegin;
+  // Reset depth label for fast lookup
+  PetscCall(DMPlexGetDepthLabel(dm, &depthLabel));
+  PetscCall(DMLabelMakeAllInvalid_Internal(depthLabel));
   PetscCall(DMGetNumLabels(dm, &Nl));
   for (l = 0; l < Nl; ++l) {
     DMLabel         label, newlabel;

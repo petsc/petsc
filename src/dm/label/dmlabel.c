@@ -158,6 +158,17 @@ static PetscErrorCode DMLabelMakeInvalid_Private(DMLabel label, PetscInt v)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode DMLabelMakeAllInvalid_Internal(DMLabel label)
+{
+  PetscInt v;
+
+  PetscFunctionBegin;
+  for (v = 0; v < label->numStrata; v++) {
+    PetscCall(DMLabelMakeInvalid_Private(label, v));
+  }
+  PetscFunctionReturn(0);
+}
+
 #if !defined(DMLABEL_LOOKUP_THRESHOLD)
 #define DMLABEL_LOOKUP_THRESHOLD 16
 #endif

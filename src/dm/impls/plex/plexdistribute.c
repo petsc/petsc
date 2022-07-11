@@ -1313,6 +1313,13 @@ static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmPa
     PetscCall(DMSetLabelOutput(dmParallel, name, isOutput));
     PetscCall(DMLabelDestroy(&labelNew));
   }
+  {
+    DMLabel ctLabel;
+
+    // Reset label for fast lookup
+    PetscCall(DMPlexGetCellTypeLabel(dmParallel, &ctLabel));
+    PetscCall(DMLabelMakeAllInvalid_Internal(ctLabel));
+  }
   PetscCall(PetscLogEventEnd(DMPLEX_DistributeLabels,dm,0,0,0));
   PetscFunctionReturn(0);
 }

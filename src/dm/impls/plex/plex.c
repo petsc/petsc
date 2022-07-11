@@ -1,4 +1,5 @@
 #include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
+#include <petsc/private/dmlabelimpl.h>
 #include <petsc/private/isimpl.h>
 #include <petsc/private/vecimpl.h>
 #include <petsc/private/glvisvecimpl.h>
@@ -90,6 +91,8 @@ PetscErrorCode DMPlexGetSimplexOrBoxCells(DM dm, PetscInt height, PetscInt *cSta
 
     PetscCall(DMPlexGetCellTypeLabel(dm, &ctLabel));
     PetscCall(DMLabelGetStratumBounds(ctLabel, ct, &cS, &cE));
+    // Reset label for fast lookup
+    PetscCall(DMLabelMakeAllInvalid_Internal(ctLabel));
   }
   if (cStart) *cStart = cS;
   if (cEnd)   *cEnd   = cE;
@@ -8017,6 +8020,8 @@ PetscErrorCode DMPlexGetGhostCellStratum(DM dm, PetscInt *gcStart, PetscInt *gcE
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(DMPlexGetCellTypeLabel(dm, &ctLabel));
   PetscCall(DMLabelGetStratumBounds(ctLabel, DM_POLYTOPE_FV_GHOST, gcStart, gcEnd));
+  // Reset label for fast lookup
+  PetscCall(DMLabelMakeAllInvalid_Internal(ctLabel));
   PetscFunctionReturn(0);
 }
 
