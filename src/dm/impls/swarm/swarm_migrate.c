@@ -16,6 +16,7 @@ PetscErrorCode DMSwarmMigrate_Push_Basic(DM dm,PetscBool remove_sent_points)
   PetscMPIInt    rank,nrank;
   void           *point_buffer,*recv_points;
   size_t         sizeof_dmswarm_point;
+  PetscBool      debug = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank));
@@ -89,7 +90,7 @@ PetscErrorCode DMSwarmMigrate_Push_Basic(DM dm,PetscBool remove_sent_points)
 
     PetscCall(DMSwarmDataBucketInsertPackedArray(swarm->db,npoints+p,data_p));
   }
-  PetscCall(DMSwarmDataExView(de));
+  if (debug) PetscCall(DMSwarmDataExView(de));
   PetscCall(DMSwarmDataBucketDestroyPackedArray(swarm->db,&point_buffer));
   PetscCall(DMSwarmDataExDestroy(de));
   PetscFunctionReturn(0);
