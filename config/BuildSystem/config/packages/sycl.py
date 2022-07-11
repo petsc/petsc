@@ -102,7 +102,7 @@ class Configure(config.package.Package):
     compiler  = self.setCompilers.getCompiler(self.languages.clanguage) # ex. 'mpicc'
     self.setCompilers.pushLanguage(clanguage)
     if not self.setCompilers.isSYCL(compiler,self.log):
-      raise RuntimeError(compiler + ' is not a SYCL compiler. When --with-sycl is enabled, you also need to privide a SYCL compiler to build PETSc, e.g., by --with-cc=<sycl compiler>')
+      raise RuntimeError(compiler + ' is not a SYCL compiler. When --with-sycl is enabled, you also need to provide a SYCL compiler to build PETSc, e.g., by --with-cc=<sycl compiler>')
     else:
       self.setCompilers.addLinkerFlag(flags)
     self.setCompilers.popLanguage()
