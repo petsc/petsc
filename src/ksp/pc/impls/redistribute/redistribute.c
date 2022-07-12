@@ -320,14 +320,15 @@ PetscErrorCode  PCRedistributeGetKSP(PC pc,KSP *innerksp)
 
 /* -------------------------------------------------------------------------------------*/
 /*MC
-     PCREDISTRIBUTE - Redistributes a matrix for load balancing, removing the rows that only have a diagonal entry and then applys a KSP to that new matrix
+     PCREDISTRIBUTE - Redistributes a matrix for load balancing, removing the rows (and the corresponding columns) that only have a diagonal entry and then
+     applys a KSP to that new smaller matrix
 
      Options for the redistribute preconditioners can be set with -redistribute_ksp_xxx <values> and -redistribute_pc_xxx <values>
 
      Notes:
     Usually run this with -ksp_type preonly
 
-     If you have used MatZeroRows() to eliminate (for example, Dirichlet) boundary conditions for a symmetric problem then you can use, for example, -ksp_type preonly
+     If you have used `MatZeroRows()` to eliminate (for example, Dirichlet) boundary conditions for a symmetric problem then you can use, for example, -ksp_type preonly
      -pc_type redistribute -redistribute_ksp_type cg -redistribute_pc_type bjacobi -redistribute_sub_pc_type icc to take advantage of the symmetry.
 
      This does NOT call a partitioner to reorder rows to lower communication; the ordering of the rows in the original matrix and redistributed matrix is the same.
@@ -337,7 +338,7 @@ PetscErrorCode  PCRedistributeGetKSP(PC pc,KSP *innerksp)
 
    Level: intermediate
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PCRedistributeGetKSP()`
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PCRedistributeGetKSP()`, `MatZeroRows()`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_Redistribute(PC pc)
