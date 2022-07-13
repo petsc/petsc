@@ -1,5 +1,9 @@
 #include <petsc/private/dmnetworkimpl.h>  /*I  "petscdmnetwork.h"  I*/
 
+PetscLogEvent DMNetwork_LayoutSetUp;
+PetscLogEvent DMNetwork_SetUpNetwork;
+PetscLogEvent DMNetwork_Distribute;
+
 /*
   Creates the component header and value objects for a network point
 */
@@ -602,6 +606,7 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
   PetscInt       nmerged=0;
 
   PetscFunctionBegin;
+  PetscCall(PetscLogEventBegin(DMNetwork_LayoutSetUp,dm,0,0,0));
   PetscCheck(network->nsubnet == Nsubnet,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Must call DMNetworkAddSubnetwork() %" PetscInt_FMT " times",Nsubnet);
 
   /* This implementation requires user input each subnet by a single processor when Nsubnet>1, thus subnet[net].nvtx=subnet[net].Nvtx when net>0 */
@@ -742,6 +747,7 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
   /* Create a global section to be used by DMNetworkIsGhostVertex() which is a non-collective routine */
   /* see snes_tutorials_network-ex1_4 */
   PetscCall(DMGetGlobalSection(network->plex,&sectiong));
+  PetscCall(PetscLogEventEnd(DMNetwork_LayoutSetUp,dm,0,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -1372,7 +1378,6 @@ PetscErrorCode DMNetworkComponentSetUp(DM dm)
   PetscCall(PetscSectionGetStorageSize(network->DataSection,&arr_size));
   /* arr_size+1 fixes pipeline test of opensolaris-misc for src/dm/tests/ex10.c -- Do not know why */
   PetscCall(PetscCalloc1(arr_size+1,&network->componentdataarray));
-
   componentdataarray = network->componentdataarray;
   for (p = network->pStart; p < network->pEnd; p++) {
     PetscCall(PetscSectionGetOffset(network->DataSection,p,&offsetp));
@@ -1571,6 +1576,7 @@ PetscErrorCode DMNetworkDistribute(DM *dm,PetscInt overlap)
   PetscCheck(!overlap,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"overlap %" PetscInt_FMT " != 0 is not supported yet",overlap);
 
   /* This routine moves the component data to the appropriate processors. It makes use of the DataSection and the componentdataarray to move the component data to appropriate processors and returns a new DataSection and new componentdataarray. */
+  PetscCall(PetscLogEventBegin(DMNetwork_Distribute,dm,0,0,0));
   PetscCall(DMNetworkCreate(PetscObjectComm((PetscObject)*dm),&newDM));
   newDMnetwork = (DM_Network*)newDM->data;
   newDMnetwork->max_comps_registered = oldDMnetwork->max_comps_registered;
@@ -1741,6 +1747,7 @@ PetscErrorCode DMNetworkDistribute(DM *dm,PetscInt overlap)
   PetscCall(DMViewFromOptions(newDM,NULL,"-dmnetwork_view_distributed"));
 
   *dm  = newDM;
+  PetscCall(PetscLogEventEnd(DMNetwork_Distribute,dm,0,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -1944,6 +1951,7 @@ PetscErrorCode DMSetUp_Network(DM dm)
   DM_Network     *network=(DM_Network*)dm->data;
 
   PetscFunctionBegin;
+  PetscCall(PetscLogEventBegin(DMNetwork_SetUpNetwork,dm,0,0,0));
   PetscCall(DMNetworkComponentSetUp(dm));
   PetscCall(DMNetworkVariablesSetUp(dm));
 
@@ -1954,6 +1962,7 @@ PetscErrorCode DMSetUp_Network(DM dm)
 
   /* View dmnetwork */
   PetscCall(DMViewFromOptions(dm,NULL,"-dmnetwork_view"));
+  PetscCall(PetscLogEventEnd(DMNetwork_SetUpNetwork,dm,0,0,0));
   PetscFunctionReturn(0);
 }
 

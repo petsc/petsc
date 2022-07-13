@@ -8,6 +8,7 @@
 #include <petsc/private/petscfeimpl.h>
 #include <petsc/private/petscfvimpl.h>
 #include <petsc/private/dmswarmimpl.h>
+#include <petsc/private/dmnetworkimpl.h>
 
 static PetscBool DMPackageInitialized = PETSC_FALSE;
 /*@C
@@ -140,6 +141,10 @@ PetscErrorCode DMInitializePackage(void)
   PetscCall(PetscLogEventRegister("DMSwarmRmvPnts",         DM_CLASSID,&DMSWARM_RemovePoints));
   PetscCall(PetscLogEventRegister("DMSwarmSort",            DM_CLASSID,&DMSWARM_Sort));
   PetscCall(PetscLogEventRegister("DMSwarmSetSizes",        DM_CLASSID,&DMSWARM_SetSizes));
+
+  PetscCall(PetscLogEventRegister("DMNtLayoutSetUp",        DM_CLASSID,&DMNetwork_LayoutSetUp));
+  PetscCall(PetscLogEventRegister("DMNtSetUp",              DM_CLASSID,&DMNetwork_SetUpNetwork));
+  PetscCall(PetscLogEventRegister("DMNtDistribute",         DM_CLASSID,&DMNetwork_Distribute));
   /* Process Info */
   {
     PetscClassId  classids[1];
