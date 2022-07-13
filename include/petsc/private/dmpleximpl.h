@@ -228,6 +228,7 @@ typedef struct {
 } DM_Plex;
 
 PETSC_INTERN PetscErrorCode DMPlexCopy_Internal(DM, PetscBool, PetscBool, DM);
+PETSC_INTERN PetscErrorCode DMPlexReplace_Internal(DM, DM *);
 
 PETSC_EXTERN PetscErrorCode DMPlexVTKWriteAll_VTU(DM, PetscViewer);
 PETSC_EXTERN PetscErrorCode VecView_Plex_Local(Vec, PetscViewer);
