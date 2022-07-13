@@ -1661,6 +1661,30 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PetscOptionItems *PetscOptions
     PetscCall(PetscOptionsInt("-pc_fieldsplit_gkb_maxit","Maximum allowed number of iterations","PCFieldSplitGKBMaxit",jac->gkbmaxit,&jac->gkbmaxit,NULL));
     PetscCall(PetscOptionsBool("-pc_fieldsplit_gkb_monitor","Prints number of GKB iterations and error","PCFieldSplitGKB",jac->gkbmonitor,&jac->gkbmonitor,NULL));
   }
+  /*
+    In the initial call to this routine the sub-solver data structures do not exist so we cannot call KSPSetFromOptions() on them yet.
+    But after the initial setup of ALL the layers of sub-solvers is completed we do want to call KSPSetFromOptions() on the sub-solvers every time it
+    is called on the outer solver in case changes were made in the options database
+
+    But even after PCSetUp_FieldSplit() is called all the options inside the inner levels of sub-solvers may still not have been set thus we only call the KSPSetFromOptions()
+    if we know that the entire stack of sub-solvers below this have been complete instantiated, we check this by seeing if any solver iterations are complete.
+    Without this extra check test p2p1fetidp_olof_full and others fail with incorrect matrix types.
+
+    There could be a negative side effect of calling the KSPSetFromOptions() below.
+
+    If one captured the PetscObjectState of the options database one could skip these calls if the database has not changed from the previous call
+  */
+  if (jac->issetup) {
+    PC_FieldSplitLink ilink = jac->head;
+    if (jac->type == PC_COMPOSITE_SCHUR) {
+      if (jac->kspupper && jac->kspupper->totalits > 0) PetscCall(KSPSetFromOptions(jac->kspupper));
+      if (jac->kspschur && jac->kspschur->totalits > 0) PetscCall(KSPSetFromOptions(jac->kspschur));
+    }
+    while (ilink) {
+      if  (ilink->ksp->totalits > 0) PetscCall(KSPSetFromOptions(ilink->ksp));
+      ilink = ilink->next;
+    }
+  }
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
