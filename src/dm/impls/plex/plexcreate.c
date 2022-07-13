@@ -1295,6 +1295,7 @@ PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool simple
   PetscCall(DMCreate(comm,dm));
   PetscCall(DMSetType(*dm,DMPLEX));
   PetscCall(DMPlexCreateBoxMesh_Internal(*dm, dim, simplex, faces ? faces : fac, lower ? lower : low, upper ? upper : upp, periodicity ? periodicity : bdt, interpolate));
+  if (periodicity) PetscCall(DMLocalizeCoordinates(*dm));
   PetscFunctionReturn(0);
 }
 
@@ -1367,6 +1368,7 @@ PetscErrorCode DMPlexCreateWedgeBoxMesh(MPI_Comm comm, const PetscInt faces[], c
     PetscCall(DMPlexUninterpolate(*dm, &udm));
     PetscCall(DMPlexReplace_Static(*dm, &udm));
   }
+  if (periodicity) PetscCall(DMLocalizeCoordinates(*dm));
   PetscFunctionReturn(0);
 }
 
