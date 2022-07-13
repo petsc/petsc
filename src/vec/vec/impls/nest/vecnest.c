@@ -766,6 +766,7 @@ static PetscErrorCode VecNestGetSubVecs_Private(Vec x,PetscInt m,const PetscInt 
 PetscErrorCode  VecNestGetSubVec_Nest(Vec X,PetscInt idxm,Vec *sx)
 {
   PetscFunctionBegin;
+  PetscCall(PetscObjectStateIncrease((PetscObject)X));
   PetscCall(VecNestGetSubVecs_Private(X,1,&idxm,sx));
   PetscFunctionReturn(0);
 }
@@ -800,6 +801,7 @@ PetscErrorCode  VecNestGetSubVecs_Nest(Vec X,PetscInt *N,Vec **sx)
   Vec_Nest *b = (Vec_Nest*)X->data;
 
   PetscFunctionBegin;
+  PetscCall(PetscObjectStateIncrease((PetscObject)X));
   if (N)  *N  = b->nb;
   if (sx) *sx = b->v;
   PetscFunctionReturn(0);
@@ -905,6 +907,7 @@ static PetscErrorCode  VecNestSetSubVec_Private(Vec X,PetscInt idxm,Vec x)
 PetscErrorCode  VecNestSetSubVec_Nest(Vec X,PetscInt idxm,Vec sx)
 {
   PetscFunctionBegin;
+  PetscCall(PetscObjectStateIncrease((PetscObject)X));
   PetscCall(VecNestSetSubVec_Private(X,idxm,sx));
   PetscFunctionReturn(0);
 }
@@ -938,6 +941,7 @@ PetscErrorCode  VecNestSetSubVecs_Nest(Vec X,PetscInt N,PetscInt *idxm,Vec *sx)
   PetscInt       i;
 
   PetscFunctionBegin;
+  PetscCall(PetscObjectStateIncrease((PetscObject)X));
   for (i=0; i<N; i++) {
     PetscCall(VecNestSetSubVec_Private(X,idxm[i],sx[i]));
   }
