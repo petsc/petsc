@@ -107,9 +107,11 @@ PetscErrorCode  KSPComputeExtremeSingularValues(KSP ksp,PetscReal *emax,PetscRea
    KSPMonitorSingularValue() (which can be set with option -ksp_monitor_singular_value)
    to print the singular values at each iteration of the linear solve.
 
+   `KSPComputeRitz()` provides estimates for both the eigenvalues and their corresponding eigenvectors.
+
    Level: advanced
 
-.seealso: `KSPSetComputeSingularValues()`, `KSPMonitorSingularValue()`, `KSPComputeExtremeSingularValues()`, `KSP`
+.seealso: `KSPSetComputeSingularValues()`, `KSPMonitorSingularValue()`, `KSPComputeExtremeSingularValues()`, `KSP`, `KSPComputeRitz()`
 @*/
 PetscErrorCode  KSPComputeEigenvalues(KSP ksp,PetscInt n,PetscReal r[],PetscReal c[],PetscInt *neig)
 {
@@ -130,9 +132,8 @@ PetscErrorCode  KSPComputeEigenvalues(KSP ksp,PetscInt n,PetscReal r[],PetscReal
 }
 
 /*@
-   KSPComputeRitz - Computes the Ritz or harmonic Ritz pairs associated to the
+   KSPComputeRitz - Computes the Ritz or harmonic Ritz pairs associated with the
    smallest or largest in modulus, for the preconditioned operator.
-   Called after KSPSolve().
 
    Not Collective
 
@@ -143,28 +144,38 @@ PetscErrorCode  KSPComputeEigenvalues(KSP ksp,PetscInt n,PetscReal r[],PetscReal
 
    Output Parameters:
 +  nrit  - On input number of (harmonic) Ritz pairs to compute; on output, actual number of computed (harmonic) Ritz pairs
-.  S     - an array of the Ritz vectors
-.  tetar - real part of the Ritz values
--  tetai - imaginary part of the Ritz values
+.  S     - an array of the Ritz vectors, pass in an array of vectors of size nrit
+.  tetar - real part of the Ritz values, pass in an array of size nrit
+-  tetai - imaginary part of the Ritz values, pass in an array of size nrit
 
    Notes:
-   -For GMRES, the (harmonic) Ritz pairs are computed from the Hessenberg matrix obtained during
-   the last complete cycle, or obtained at the end of the solution if the method is stopped before
-   a restart. Then, the number of actual (harmonic) Ritz pairs computed is less or equal to the restart
+   This only works with a `KSPType` of `KSPGMRES`.
+
+   One must call KSPSetComputeRitz() before calling KSPSetUp() in order for this routine to work correctly.
+
+   This routine must be called after KSPSolve().
+
+   In GMRES, the (harmonic) Ritz pairs are computed from the Hessenberg matrix obtained during
+   the last complete cycle of the GMRES solve, or during the partial cycle if the solve ended before
+   a restart (that is a complete GMRES cycle was never achieved).
+
+   The number of actual (harmonic) Ritz pairs computed is less than or equal to the restart
    parameter for GMRES if a complete cycle has been performed or less or equal to the number of GMRES
    iterations.
-   -Moreover, for real matrices, the (harmonic) Ritz pairs are possibly complex-valued. In such a case,
-   the routine selects the complex (harmonic) Ritz value and its conjugate, and two successive entries of S
-   are equal to the real and the imaginary parts of the associated vectors.
-   -the (harmonic) Ritz pairs are given in order of increasing (harmonic) Ritz values in modulus
-   -this is currently not implemented when PETSc is built with complex numbers
 
-   One must call KSPSetComputeRitz() before calling KSPSetUp()
-   in order for this routine to work correctly.
+   For real matrices, the (harmonic) Ritz pairs can be complex-valued. In such a case,
+   the routine selects the complex (harmonic) Ritz value and its conjugate, and two successive entries of the
+   vectors S are equal to the real and the imaginary parts of the associated vectors.
+
+   The (harmonic) Ritz pairs are given in order of increasing (harmonic) Ritz values in modulus.
+
+   This functionality is currently not implemented when PETSc is built with complex numbers, but could be easily contributed
+   by changing the call the LAPACK eigensolver. `KSPComputeEigenvalues()` provides estimates for only the eigenvalues and
+   works for both real and complex numbers.
 
    Level: advanced
 
-.seealso: `KSPSetComputeRitz()`, `KSP`
+.seealso: `KSPSetComputeRitz()`, `KSP`, `KSPGMRES`, `KSPComputeEigenvalues()`, `KSPSetComputeSingularValues()`, `KSPMonitorSingularValue()`
 @*/
 PetscErrorCode  KSPComputeRitz(KSP ksp,PetscBool ritz,PetscBool small,PetscInt *nrit,Vec S[],PetscReal tetar[],PetscReal tetai[])
 {
