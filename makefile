@@ -466,6 +466,6 @@ checkpackagetests:
 	-@cat config/examples/*.py > configexamples; pushd config/BuildSystem/config/packages/; packages=`grep -l "download " *.py  | sed "s/\\.py//g"`;popd; for i in $${packages}; do j=`echo $${i} | tr '[:upper:]' '[:lower:]'`; printf $${j} ; egrep "(download-$${j})" configexamples | grep -v "=0" | wc -l ; done
 
 .PHONY: info info_h all deletelibs allclean update \
-        alletags etags etags_complete etags_noexamples etags_makefiles etags_examples etags_fexamples alldoc allmanualpages \
-        allhtml allcleanhtml  countfortranfunctions \
+        alletags etags etags_complete etags_noexamples etags_makefiles etags_examples etags_fexamples alldoc allmanpages \
+        allcleanhtml  countfortranfunctions \
         start_configure configure_petsc configure_clean matlabbin install
