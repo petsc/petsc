@@ -506,7 +506,14 @@ static PetscErrorCode DMPlexCreateBoxSurfaceMesh_Tensor_2D_Internal(DM dm, const
 static PetscErrorCode DMPlexCreateBoxSurfaceMesh_Tensor_3D_Internal(DM dm, const PetscReal lower[], const PetscReal upper[], const PetscInt faces[])
 {
   PetscInt       vertices[3], numVertices;
-  PetscInt       numFaces    = 2*faces[0]*faces[1] + 2*faces[1]*faces[2] + 2*faces[0]*faces[2];
+  PetscInt       numFaces       = 2*faces[0]*faces[1] + 2*faces[1]*faces[2] + 2*faces[0]*faces[2];
+  PetscInt       markerTop      = 1;
+  PetscInt       markerBottom   = 1;
+  PetscInt       markerFront    = 1;
+  PetscInt       markerBack     = 1;
+  PetscInt       markerRight    = 1;
+  PetscInt       markerLeft     = 1;
+  PetscBool      markerSeparate = PETSC_FALSE;
   Vec            coordinates;
   PetscSection   coordSection;
   PetscScalar    *coords;
@@ -518,6 +525,15 @@ static PetscErrorCode DMPlexCreateBoxSurfaceMesh_Tensor_3D_Internal(DM dm, const
   PetscFunctionBegin;
   PetscCheck(faces[0] >= 1 && faces[1] >= 1 && faces[2] >= 1,PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Must have at least 1 face per side");
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank));
+  PetscCall(PetscOptionsGetBool(((PetscObject) dm)->options,((PetscObject) dm)->prefix, "-dm_plex_separate_marker", &markerSeparate, NULL));
+  if (markerSeparate) {
+    markerBottom = 1;
+    markerTop    = 2;
+    markerFront  = 3;
+    markerBack   = 4;
+    markerRight  = 5;
+    markerLeft   = 6;
+  }
   vertices[0] = faces[0]+1; vertices[1] = faces[1]+1; vertices[2] = faces[2]+1;
   numVertices = vertices[0]*vertices[1]*vertices[2];
   if (rank == 0) {
@@ -535,11 +551,11 @@ static PetscErrorCode DMPlexCreateBoxSurfaceMesh_Tensor_3D_Internal(DM dm, const
         voffset = numFaces + vertices[0]*vertices[1]*(vertices[2]-1) + vy*vertices[0] + vx;
         cone[0] = voffset; cone[1] = voffset+1; cone[2] = voffset+vertices[0]+1; cone[3] = voffset+vertices[0];
         PetscCall(DMPlexSetCone(dm, iface, cone));
-        PetscCall(DMSetLabelValue(dm, "marker", iface, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+0, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+1, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]+0, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]+1, 1));
+        PetscCall(DMSetLabelValue(dm, "marker", iface, markerTop));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+0, markerTop));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+1, markerTop));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]+0, markerTop));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]+1, markerTop));
         iface++;
       }
     }
@@ -550,11 +566,11 @@ static PetscErrorCode DMPlexCreateBoxSurfaceMesh_Tensor_3D_Internal(DM dm, const
         voffset = numFaces + vy*(faces[0]+1) + vx;
         cone[0] = voffset+1; cone[1] = voffset; cone[2] = voffset+vertices[0]; cone[3] = voffset+vertices[0]+1;
         PetscCall(DMPlexSetCone(dm, iface, cone));
-        PetscCall(DMSetLabelValue(dm, "marker", iface, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+0, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+1, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]+0, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]+1, 1));
+        PetscCall(DMSetLabelValue(dm, "marker", iface, markerBottom));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+0, markerBottom));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+1, markerBottom));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]+0, markerBottom));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]+1, markerBottom));
         iface++;
       }
     }
@@ -565,11 +581,11 @@ static PetscErrorCode DMPlexCreateBoxSurfaceMesh_Tensor_3D_Internal(DM dm, const
         voffset = numFaces + vz*vertices[0]*vertices[1] + vx;
         cone[0] = voffset; cone[1] = voffset+1; cone[2] = voffset+vertices[0]*vertices[1]+1; cone[3] = voffset+vertices[0]*vertices[1];
         PetscCall(DMPlexSetCone(dm, iface, cone));
-        PetscCall(DMSetLabelValue(dm, "marker", iface, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+0, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+1, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]*vertices[1]+0, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]*vertices[1]+1, 1));
+        PetscCall(DMSetLabelValue(dm, "marker", iface, markerFront));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+0, markerFront));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+1, markerFront));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]*vertices[1]+0, markerFront));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]*vertices[1]+1, markerFront));
         iface++;
       }
     }
@@ -581,11 +597,11 @@ static PetscErrorCode DMPlexCreateBoxSurfaceMesh_Tensor_3D_Internal(DM dm, const
         cone[0] = voffset+vertices[0]*vertices[1]; cone[1] = voffset+vertices[0]*vertices[1]+1;
         cone[2] = voffset+1; cone[3] = voffset;
         PetscCall(DMPlexSetCone(dm, iface, cone));
-        PetscCall(DMSetLabelValue(dm, "marker", iface, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+0, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+1, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]*vertices[1]+0, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]*vertices[1]+1, 1));
+        PetscCall(DMSetLabelValue(dm, "marker", iface, markerBack));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+0, markerBack));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+1, markerBack));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]*vertices[1]+0, markerBack));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]*vertices[1]+1, markerBack));
         iface++;
       }
     }
@@ -597,11 +613,11 @@ static PetscErrorCode DMPlexCreateBoxSurfaceMesh_Tensor_3D_Internal(DM dm, const
         cone[0] = voffset; cone[1] = voffset+vertices[0]*vertices[1];
         cone[2] = voffset+vertices[0]*vertices[1]+vertices[0]; cone[3] = voffset+vertices[0];
         PetscCall(DMPlexSetCone(dm, iface, cone));
-        PetscCall(DMSetLabelValue(dm, "marker", iface, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+0, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]+0, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[1]+0, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]*vertices[1]+vertices[0], 1));
+        PetscCall(DMSetLabelValue(dm, "marker", iface, markerLeft));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+0, markerLeft));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]+0, markerLeft));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[1]+0, markerLeft));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]*vertices[1]+vertices[0], markerLeft));
         iface++;
       }
     }
@@ -613,11 +629,11 @@ static PetscErrorCode DMPlexCreateBoxSurfaceMesh_Tensor_3D_Internal(DM dm, const
         cone[0] = voffset+vertices[0]*vertices[1]; cone[1] = voffset;
         cone[2] = voffset+vertices[0]; cone[3] = voffset+vertices[0]*vertices[1]+vertices[0];
         PetscCall(DMPlexSetCone(dm, iface, cone));
-        PetscCall(DMSetLabelValue(dm, "marker", iface, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+0, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]+0, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]*vertices[1]+0, 1));
-        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]*vertices[1]+vertices[0], 1));
+        PetscCall(DMSetLabelValue(dm, "marker", iface, markerRight));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+0, markerRight));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]+0, markerRight));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]*vertices[1]+0, markerRight));
+        PetscCall(DMSetLabelValue(dm, "marker", voffset+vertices[0]*vertices[1]+vertices[0], markerRight));
         iface++;
       }
     }
@@ -759,8 +775,8 @@ static PetscErrorCode DMPlexCreateLineMesh_Internal(DM dm,PetscInt segments,Pets
 
 static PetscErrorCode DMPlexCreateBoxMesh_Simplex_Internal(DM dm, PetscInt dim, const PetscInt faces[], const PetscReal lower[], const PetscReal upper[], const DMBoundaryType periodicity[], PetscBool interpolate)
 {
-  DM             boundary, vol;
-  PetscInt       i;
+  DM       boundary, vol;
+  PetscInt i;
 
   PetscFunctionBegin;
   PetscValidPointer(dm, 1);
@@ -1004,26 +1020,32 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
           const PetscInt vertexT = firstVertex + (((ez+1)%numZVertices)*numYVertices+vy)*numXVertices + vx;
           PetscInt       cone[2];
 
+          cone[0] = vertexB; cone[1] = vertexT;
+          PetscCall(DMPlexSetCone(dm, edge, cone));
           if (dim == 3) {
             if (bdX != DM_BOUNDARY_PERIODIC) {
               if (vx == numXVertices-1) {
                 PetscCall(DMSetLabelValue(dm, "marker", edge, markerRight));
-              }
-              else if (vx == 0) {
+                PetscCall(DMSetLabelValue(dm, "marker", cone[0], markerRight));
+                if (ez == numZEdges-1) PetscCall(DMSetLabelValue(dm, "marker", cone[1], markerRight));
+              } else if (vx == 0) {
                 PetscCall(DMSetLabelValue(dm, "marker", edge, markerLeft));
+                PetscCall(DMSetLabelValue(dm, "marker", cone[0], markerLeft));
+                if (ez == numZEdges-1) PetscCall(DMSetLabelValue(dm, "marker", cone[1], markerLeft));
               }
             }
             if (bdY != DM_BOUNDARY_PERIODIC) {
               if (vy == numYVertices-1) {
                 PetscCall(DMSetLabelValue(dm, "marker", edge, markerBack));
-              }
-              else if (vy == 0) {
+                PetscCall(DMSetLabelValue(dm, "marker", cone[0], markerBack));
+                if (ez == numZEdges-1) PetscCall(DMSetLabelValue(dm, "marker", cone[1], markerBack));
+              } else if (vy == 0) {
                 PetscCall(DMSetLabelValue(dm, "marker", edge, markerFront));
+                PetscCall(DMSetLabelValue(dm, "marker", cone[0], markerFront));
+                if (ez == numZEdges-1) PetscCall(DMSetLabelValue(dm, "marker", cone[1], markerFront));
               }
             }
           }
-          cone[0] = vertexB; cone[1] = vertexT;
-          PetscCall(DMPlexSetCone(dm, edge, cone));
         }
       }
     }
@@ -1045,39 +1067,41 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
                 PetscCall(DMSetLabelValue(dm, "Face Sets", edge, faceMarkerRight));
                 PetscCall(DMSetLabelValue(dm, "marker", edge,    markerRight));
                 PetscCall(DMSetLabelValue(dm, "marker", cone[0], markerRight));
-                if (ey == numYEdges-1) {
-                  PetscCall(DMSetLabelValue(dm, "marker", cone[1], markerRight));
-                }
+                if (ey == numYEdges-1) PetscCall(DMSetLabelValue(dm, "marker", cone[1], markerRight));
               } else if (vx == 0) {
                 PetscCall(DMSetLabelValue(dm, "Face Sets", edge, faceMarkerLeft));
                 PetscCall(DMSetLabelValue(dm, "marker", edge,    markerLeft));
                 PetscCall(DMSetLabelValue(dm, "marker", cone[0], markerLeft));
-                if (ey == numYEdges-1) {
-                  PetscCall(DMSetLabelValue(dm, "marker", cone[1], markerLeft));
-                }
+                if (ey == numYEdges-1) PetscCall(DMSetLabelValue(dm, "marker", cone[1], markerLeft));
               }
             } else {
               if (vx == 0 && cutLabel) {
                 PetscCall(DMLabelSetValue(cutLabel, edge,    1));
                 PetscCall(DMLabelSetValue(cutLabel, cone[0], 1));
-                if (ey == numYEdges-1) {
-                  PetscCall(DMLabelSetValue(cutLabel, cone[1], 1));
-                }
+                if (ey == numYEdges-1) PetscCall(DMLabelSetValue(cutLabel, cone[1], 1));
               }
             }
           } else {
             if (bdX != DM_BOUNDARY_PERIODIC) {
               if (vx == numXVertices-1) {
                 PetscCall(DMSetLabelValue(dm, "marker", edge, markerRight));
+                PetscCall(DMSetLabelValue(dm, "marker", cone[0], markerRight));
+                if (ey == numYEdges-1) PetscCall(DMSetLabelValue(dm, "marker", cone[1], markerRight));
               } else if (vx == 0) {
                 PetscCall(DMSetLabelValue(dm, "marker", edge, markerLeft));
+                PetscCall(DMSetLabelValue(dm, "marker", cone[0], markerLeft));
+                if (ey == numYEdges-1) PetscCall(DMSetLabelValue(dm, "marker", cone[1], markerLeft));
               }
             }
             if (bdZ != DM_BOUNDARY_PERIODIC) {
               if (vz == numZVertices-1) {
                 PetscCall(DMSetLabelValue(dm, "marker", edge, markerTop));
+                PetscCall(DMSetLabelValue(dm, "marker", cone[0], markerTop));
+                if (ey == numYEdges-1) PetscCall(DMSetLabelValue(dm, "marker", cone[1], markerTop));
               } else if (vz == 0) {
                 PetscCall(DMSetLabelValue(dm, "marker", edge, markerBottom));
+                PetscCall(DMSetLabelValue(dm, "marker", cone[0], markerBottom));
+                if (ey == numYEdges-1) PetscCall(DMSetLabelValue(dm, "marker", cone[1], markerBottom));
               }
             }
           }
@@ -1102,41 +1126,41 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
                 PetscCall(DMSetLabelValue(dm, "Face Sets", edge, faceMarkerTop));
                 PetscCall(DMSetLabelValue(dm, "marker", edge,    markerTop));
                 PetscCall(DMSetLabelValue(dm, "marker", cone[0], markerTop));
-                if (ex == numXEdges-1) {
-                  PetscCall(DMSetLabelValue(dm, "marker", cone[1], markerTop));
-                }
+                if (ex == numXEdges-1) PetscCall(DMSetLabelValue(dm, "marker", cone[1], markerTop));
               } else if (vy == 0) {
                 PetscCall(DMSetLabelValue(dm, "Face Sets", edge, faceMarkerBottom));
                 PetscCall(DMSetLabelValue(dm, "marker", edge,    markerBottom));
                 PetscCall(DMSetLabelValue(dm, "marker", cone[0], markerBottom));
-                if (ex == numXEdges-1) {
-                  PetscCall(DMSetLabelValue(dm, "marker", cone[1], markerBottom));
-                }
+                if (ex == numXEdges-1) PetscCall(DMSetLabelValue(dm, "marker", cone[1], markerBottom));
               }
             } else {
               if (vy == 0 && cutLabel) {
                 PetscCall(DMLabelSetValue(cutLabel, edge,    1));
                 PetscCall(DMLabelSetValue(cutLabel, cone[0], 1));
-                if (ex == numXEdges-1) {
-                  PetscCall(DMLabelSetValue(cutLabel, cone[1], 1));
-                }
+                if (ex == numXEdges-1) PetscCall(DMLabelSetValue(cutLabel, cone[1], 1));
               }
             }
           } else {
             if (bdY != DM_BOUNDARY_PERIODIC) {
               if (vy == numYVertices-1) {
                 PetscCall(DMSetLabelValue(dm, "marker", edge, markerBack));
-              }
-              else if (vy == 0) {
+                PetscCall(DMSetLabelValue(dm, "marker", cone[0], markerBack));
+                if (ex == numXEdges-1) PetscCall(DMSetLabelValue(dm, "marker", cone[1], markerBack));
+              } else if (vy == 0) {
                 PetscCall(DMSetLabelValue(dm, "marker", edge, markerFront));
+                PetscCall(DMSetLabelValue(dm, "marker", cone[0], markerFront));
+                if (ex == numXEdges-1) PetscCall(DMSetLabelValue(dm, "marker", cone[1], markerFront));
               }
             }
             if (bdZ != DM_BOUNDARY_PERIODIC) {
               if (vz == numZVertices-1) {
                 PetscCall(DMSetLabelValue(dm, "marker", edge, markerTop));
-              }
-              else if (vz == 0) {
+                PetscCall(DMSetLabelValue(dm, "marker", cone[0], markerTop));
+                if (ex == numXEdges-1) PetscCall(DMSetLabelValue(dm, "marker", cone[1], markerTop));
+              } else if (vz == 0) {
                 PetscCall(DMSetLabelValue(dm, "marker", edge, markerBottom));
+                PetscCall(DMSetLabelValue(dm, "marker", cone[0], markerBottom));
+                if (ex == numXEdges-1) PetscCall(DMSetLabelValue(dm, "marker", cone[1], markerBottom));
               }
             }
           }
