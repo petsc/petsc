@@ -9337,7 +9337,7 @@ PetscErrorCode DMCreateMassMatrix_Plex(DM dmCoarse, DM dmFine, Mat *mass)
     PetscCall(PetscWeakFormClear(wf));
     PetscCall(PetscDSSetJacobian(ds, 0, 0, g0_identity_private, NULL, NULL, NULL));
     PetscCall(DMCreateMatrix(dmc, mass));
-    PetscCall(DMGetGlobalVector(dmc, &u));
+    PetscCall(DMGetLocalVector(dmc, &u));
     PetscCall(DMPlexGetDepth(dmc, &depth));
     PetscCall(DMGetStratumIS(dmc, "depth", depth, &cellIS));
     PetscCall(MatZeroEntries(*mass));
@@ -9347,7 +9347,7 @@ PetscErrorCode DMCreateMassMatrix_Plex(DM dmCoarse, DM dmFine, Mat *mass)
     key.part  = 0;
     PetscCall(DMPlexComputeJacobian_Internal(dmc, key, cellIS, 0.0, 0.0, u, NULL, *mass, *mass, NULL));
     PetscCall(ISDestroy(&cellIS));
-    PetscCall(DMRestoreGlobalVector(dmc, &u));
+    PetscCall(DMRestoreLocalVector(dmc, &u));
     PetscCall(DMDestroy(&dmc));
   } else {
     PetscCall(DMGetGlobalSection(dmFine, &gsf));
