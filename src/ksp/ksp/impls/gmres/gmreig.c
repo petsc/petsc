@@ -116,13 +116,14 @@ PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp,PetscInt nmax,PetscReal *r,Pe
 PetscErrorCode KSPComputeRitz_GMRES(KSP ksp,PetscBool ritz,PetscBool small,PetscInt *nrit,Vec S[],PetscReal *tetar,PetscReal *tetai)
 {
   KSP_GMRES      *gmres = (KSP_GMRES*)ksp->data;
-  PetscInt       NbrRitz,nb = 0;
+  PetscInt       NbrRitz,nb = 0,n;
   PetscInt       i,j,*perm;
   PetscReal      *H,*Q,*Ht;            /* H Hessenberg matrix; Q matrix of eigenvectors of H */
   PetscReal      *wr,*wi,*modul;       /* Real and imaginary part and modul of the Ritz values */
   PetscReal      *SR,*work;
   PetscBLASInt   bn,bN,lwork,idummy;
   PetscScalar    *t,sdummy = 0;
+  Mat            A;
 
   PetscFunctionBegin;
   /* Express sizes in PetscBLASInt for LAPACK routines*/
@@ -133,6 +134,9 @@ PetscErrorCode KSPComputeRitz_GMRES(KSP ksp,PetscBool ritz,PetscBool small,Petsc
 
   /* NbrRitz: number of (Harmonic) Ritz pairs to extract */
   NbrRitz = PetscMin(*nrit,bn);
+  PetscCall(KSPGetOperators(ksp,&A,NULL));
+  PetscCall(MatGetSize(A,&n,NULL));
+  NbrRitz = PetscMin(NbrRitz,n);
 
   PetscCall(PetscMalloc4(bN*bN,&H,bn*bn,&Q,bn,&wr,bn,&wi));
 
@@ -193,7 +197,10 @@ PetscErrorCode KSPComputeRitz_GMRES(KSP ksp,PetscBool ritz,PetscBool small,Petsc
   if (small) {
     while (nb < NbrRitz) {
       if (!wi[perm[nb]]) nb += 1;
-      else nb += 2;
+      else {
+        if (nb < NbrRitz - 1) nb += 2;
+        else break;
+      }
     }
     PetscCall(PetscMalloc1(nb*bn,&SR));
     for (i=0; i<nb; i++) {
@@ -204,7 +211,10 @@ PetscErrorCode KSPComputeRitz_GMRES(KSP ksp,PetscBool ritz,PetscBool small,Petsc
   } else {
     while (nb < NbrRitz) {
       if (wi[perm[bn-nb-1]] == 0) nb += 1;
-      else nb += 2;
+      else {
+        if (nb < NbrRitz - 1) nb += 2;
+        else break;
+      }
     }
     PetscCall(PetscMalloc1(nb*bn,&SR)); /* bn rows, nb columns */
     for (i=0; i<nb; i++) {
