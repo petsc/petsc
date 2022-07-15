@@ -5520,7 +5520,8 @@ PetscErrorCode DMPlexGetPointDualSpaceFEM(DM dm, PetscInt point, PetscInt field,
 
 static inline PetscErrorCode DMPlexVecGetClosure_Depth1_Static(DM dm, PetscSection section, Vec v, PetscInt point, PetscInt *csize, PetscScalar *values[])
 {
-  PetscScalar    *array, *vArray;
+  PetscScalar    *array;
+  const PetscScalar *vArray;
   const PetscInt *cone, *coneO;
   PetscInt        pStart, pEnd, p, numPoints, size = 0, offset = 0;
 
@@ -5553,10 +5554,10 @@ static inline PetscErrorCode DMPlexVecGetClosure_Depth1_Static(DM dm, PetscSecti
     array = *values;
   }
   size = 0;
-  PetscCall(VecGetArray(v, &vArray));
+  PetscCall(VecGetArrayRead(v, &vArray));
   if ((point >= pStart) && (point < pEnd)) {
     PetscInt     dof, off, d;
-    PetscScalar *varr;
+    const PetscScalar *varr;
 
     PetscCall(PetscSectionGetDof(section, point, &dof));
     PetscCall(PetscSectionGetOffset(section, point, &off));
@@ -5570,7 +5571,7 @@ static inline PetscErrorCode DMPlexVecGetClosure_Depth1_Static(DM dm, PetscSecti
     const PetscInt cp = cone[p];
     PetscInt       o  = coneO[p];
     PetscInt       dof, off, d;
-    PetscScalar   *varr;
+    const PetscScalar *varr;
 
     if ((cp < pStart) || (cp >= pEnd)) continue;
     PetscCall(PetscSectionGetDof(section, cp, &dof));
@@ -5587,7 +5588,7 @@ static inline PetscErrorCode DMPlexVecGetClosure_Depth1_Static(DM dm, PetscSecti
     }
     size += dof;
   }
-  PetscCall(VecRestoreArray(v, &vArray));
+  PetscCall(VecRestoreArrayRead(v, &vArray));
   if (!*values) {
     if (csize) *csize = size;
     *values = array;

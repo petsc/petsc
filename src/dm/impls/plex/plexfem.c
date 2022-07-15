@@ -5246,7 +5246,7 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscFormKey key, IS cellIS
   PetscScalar    *elemMat, *elemMatP, *elemMatD, *u, *u_t, *a = NULL;
   const PetscInt *cells;
   PetscInt        Nf, fieldI, fieldJ;
-  PetscInt        totDim, totDimAux, cStart, cEnd, numCells, c;
+  PetscInt        totDim, totDimAux = 0, cStart, cEnd, numCells, c;
   PetscBool       hasJac = PETSC_FALSE, hasPrec = PETSC_FALSE, hasDyn, hasFV = PETSC_FALSE, transform;
 
   PetscFunctionBegin;
