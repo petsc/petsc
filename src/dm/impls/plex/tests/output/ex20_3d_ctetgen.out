@@ -6,7 +6,7 @@ Pre Adaptation Mesh in 3 dimensions:
   Number of 2-cells per rank: 378
   Number of 3-cells per rank: 162
 Labels:
-  marker: 1 strata with value/size (1 (172))
+  marker: 1 strata with value/size (1 (164))
   celltype: 4 strata with value/size (0 (64), 6 (162), 3 (378), 1 (279))
   depth: 4 strata with value/size (0 (64), 1 (279), 2 (378), 3 (162))
 DM Object: Post Adaptation Mesh 1 MPI process
@@ -19,4 +19,4 @@ Post Adaptation Mesh in 3 dimensions:
 Labels:
   celltype: 4 strata with value/size (1 (1854), 3 (2808), 6 (1296), 0 (343))
   depth: 4 strata with value/size (0 (343), 1 (1854), 2 (2808), 3 (1296))
-  marker: 1 strata with value/size (1 (820))
+  marker: 1 strata with value/size (1 (812))
