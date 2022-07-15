@@ -3,14 +3,26 @@
 #include <petsc/private/f90impl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define petsclayoutgetrangesf90_   PETSCLAYOUTGETRANGESF90
 #define isgetindicesf90_           ISGETINDICESF90
 #define isrestoreindicesf90_       ISRESTOREINDICESF90
 #define isdestroy_                 ISDESTROY
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define petsclayoutgetrangesf90_   petsclayoutgetrangesf90
 #define isgetindicesf90_           isgetindicesf90
 #define isrestoreindicesf90_       isrestoreindicesf90
 #define isdestroy_                 isdestroy
 #endif
+
+PETSC_EXTERN void petsclayoutgetrangesf90_(PetscLayout *map,F90Array1d *ptr,int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
+{
+  const PetscInt *fa;
+  PetscInt       len;
+
+  *__ierr = PetscLayoutGetRanges(*map,&fa); if (*__ierr) return;
+  *__ierr = PetscLayoutGetLocalSize(*map,&len);   if (*__ierr) return;
+  *__ierr = F90Array1dCreate((void*)fa,MPIU_INT,1,len,ptr PETSC_F90_2PTR_PARAM(ptrd));
+}
 
 PETSC_EXTERN void isgetindicesf90_(IS *x,F90Array1d *ptr,int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
 {

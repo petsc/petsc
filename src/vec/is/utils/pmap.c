@@ -393,7 +393,7 @@ PetscErrorCode PetscLayoutSetLocalSize(PetscLayout map,PetscInt n)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
      PetscLayoutGetLocalSize - Gets the local size for a PetscLayout object.
 
     Not Collective

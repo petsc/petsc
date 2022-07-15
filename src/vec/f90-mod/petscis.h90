@@ -4,18 +4,28 @@
 !
 
       Interface
-        Subroutine PetscLayoutFindOwner(a,b,z)
+        Subroutine PetscLayoutFindOwner(a,b,c,z)
           PetscLayout a
           PetscMPIInt b
+          PetscMPIInt c
           PetscErrorCode  z
         End Subroutine
       End Interface
 
       Interface
-        Subroutine PetscLayoutFindOwnerIndex(a,b,c,z)
+        Subroutine PetscLayoutFindOwnerIndex(a,b,c,d,z)
           PetscLayout a
           PetscMPIInt b
           PetscInt c
+          PetscInt d
+          PetscErrorCode  z
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine PetscLayoutGetRangesF90(a,b,z)
+          PetscLayout a
+          PetscInt, pointer :: b(:)
           PetscErrorCode  z
         End Subroutine
       End Interface
@@ -151,3 +161,36 @@
         end subroutine
       end Interface
 
+      Interface
+        Subroutine PetscSFDistributeSectionF90(sf,rootsection,array,leafsection,ierr)
+          import tPetscSection
+          import tPetscSF
+          PetscSF sf
+          PetscInt, pointer :: array(:)
+          PetscErrorCode  ierr
+          PetscSection rootsection,leafsection
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine PetscSFCreateSectionSFF90(pointsf,rootsection,array,leafsection,sf,ierr)
+          import tPetscSection
+          import tPetscSF
+          PetscSF pointsf
+          PetscSF sf
+          PetscInt, pointer :: array(:)
+          PetscErrorCode  ierr
+          PetscSection rootsection,leafsection
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine PetscSFCreateRemoteOffsetsF90(sf,rootsection,leafsection,array,ierr)
+          import tPetscSection
+          import tPetscSF
+          PetscSF sf
+          PetscInt, pointer :: array(:)
+          PetscErrorCode  ierr
+          PetscSection rootsection,leafsection
+        End Subroutine
+      End Interface
