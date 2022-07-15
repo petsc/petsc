@@ -324,7 +324,7 @@ struct Mat_SeqAIJCUSPARSE {
 };
 
 PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat);
-PETSC_INTERN PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE_Basic(Mat,PetscCount,const PetscInt[],const PetscInt[]);
+PETSC_INTERN PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE_Basic(Mat,PetscCount,PetscInt[],PetscInt[]);
 PETSC_INTERN PetscErrorCode MatSetValuesCOO_SeqAIJCUSPARSE_Basic(Mat,const PetscScalar[],InsertMode);
 PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSEMergeMats(Mat,Mat,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSETriFactors_Reset(Mat_SeqAIJCUSPARSETriFactors_p*);

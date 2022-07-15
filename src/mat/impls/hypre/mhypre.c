@@ -2184,7 +2184,7 @@ static PetscErrorCode MatAXPY_HYPRE(Mat Y,PetscScalar a,Mat X,MatStructure str)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatSetPreallocationCOO_HYPRE(Mat mat, PetscCount coo_n, const PetscInt coo_i[], const PetscInt coo_j[])
+static PetscErrorCode MatSetPreallocationCOO_HYPRE(Mat mat, PetscCount coo_n, PetscInt coo_i[], PetscInt coo_j[])
 {
   MPI_Comm               comm;
   PetscMPIInt            size;

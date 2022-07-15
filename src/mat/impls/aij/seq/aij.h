@@ -226,7 +226,7 @@ static inline PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA,MatScalar **a,PetscInt **j
   } \
 
 PETSC_INTERN PetscErrorCode MatSeqAIJSetPreallocation_SeqAIJ(Mat,PetscInt,const PetscInt*);
-PETSC_INTERN PetscErrorCode MatSetPreallocationCOO_SeqAIJ(Mat,PetscCount,const PetscInt[],const PetscInt[]);
+PETSC_INTERN PetscErrorCode MatSetPreallocationCOO_SeqAIJ(Mat,PetscCount,PetscInt[],PetscInt[]);
 PETSC_INTERN PetscErrorCode MatResetPreallocationCOO_SeqAIJ(Mat);
 
 PETSC_INTERN PetscErrorCode MatILUFactorSymbolic_SeqAIJ_inplace(Mat,Mat,IS,IS,const MatFactorInfo*);

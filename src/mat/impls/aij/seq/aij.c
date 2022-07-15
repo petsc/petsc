@@ -4655,7 +4655,7 @@ PetscErrorCode  MatSeqAIJGetMaxRowNonzeros(Mat A,PetscInt *nz)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatSetPreallocationCOO_SeqAIJ(Mat mat, PetscCount coo_n, const PetscInt coo_i[], const PetscInt coo_j[])
+PetscErrorCode MatSetPreallocationCOO_SeqAIJ(Mat mat, PetscCount coo_n, PetscInt coo_i[], PetscInt coo_j[])
 {
   MPI_Comm                  comm;
   PetscInt                  *i,*j;
@@ -4672,9 +4672,8 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJ(Mat mat, PetscCount coo_n, const Pe
   PetscCall(MatResetPreallocationCOO_SeqAIJ(mat));
   PetscCall(PetscObjectGetComm((PetscObject)mat,&comm));
   PetscCall(MatGetSize(mat,&M,&N));
-  PetscCall(PetscMalloc2(coo_n,&i,coo_n,&j));
-  PetscCall(PetscArraycpy(i,coo_i,coo_n)); /* Make a copy since we'll modify it */
-  PetscCall(PetscArraycpy(j,coo_j,coo_n));
+  i = coo_i;
+  j = coo_j;
   PetscCall(PetscMalloc1(coo_n,&perm));
   for (k=0; k<coo_n; k++) { /* Ignore entries with negative row or col indices */
     if (j[k] < 0) i[k] = -1;
@@ -4720,7 +4719,6 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJ(Mat mat, PetscCount coo_n, const Pe
     }
     q++; /* Move to next row and thus next unique nonzero */
   }
-  PetscCall(PetscFree2(i,j));
 
   Ai--; /* Back to the beginning of Ai[] */
   for (k=0; k<M; k++) Ai[k+1] += Ai[k];

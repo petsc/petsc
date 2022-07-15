@@ -573,16 +573,18 @@ PetscErrorCode MatSetPreallocationCOO_Basic(Mat A,PetscCount ncoo,const PetscInt
    Level: beginner
 
    Notes:
+   The indices coo_i and coo_j may be modified within this function. The caller should not rely on them
+   having any specific value after this function returns. The arrays can be freed or reused immediately
+   after this function returns.
+
    Entries can be repeated, see MatSetValuesCOO(). Entries with negative row or column indices are allowed
    but will be ignored. The corresponding entries in MatSetValuesCOO() will be ignored too. Remote entries
    are allowed and will be properly added or inserted to the matrix, unless the matrix option MAT_IGNORE_OFF_PROC_ENTRIES
    is set, in which case remote entries are ignored, or MAT_NO_OFF_PROC_ENTRIES is set, in which case an error will be generated.
 
-   The arrays coo_i and coo_j may be freed immediately after calling this function.
-
 .seealso: `MatSetValuesCOO()`, `MatSeqAIJSetPreallocation()`, `MatMPIAIJSetPreallocation()`, `MatSeqBAIJSetPreallocation()`, `MatMPIBAIJSetPreallocation()`, `MatSeqSBAIJSetPreallocation()`, `MatMPISBAIJSetPreallocation()`, `MatSetPreallocationCOOLocal()`, `DMSetMatrixPreallocateSkip()`
 @*/
-PetscErrorCode MatSetPreallocationCOO(Mat A,PetscCount ncoo,const PetscInt coo_i[],const PetscInt coo_j[])
+PetscErrorCode MatSetPreallocationCOO(Mat A,PetscCount ncoo,PetscInt coo_i[],PetscInt coo_j[])
 {
   PetscErrorCode (*f)(Mat,PetscCount,const PetscInt[],const PetscInt[]) = NULL;
 

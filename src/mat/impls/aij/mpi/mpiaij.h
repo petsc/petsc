@@ -180,7 +180,7 @@ extern PetscErrorCode MatDiagonalScaleLocal_MPIAIJ(Mat,Vec);
 PETSC_INTERN PetscErrorCode MatGetSeqMats_MPIAIJ(Mat,Mat*,Mat*);
 PETSC_INTERN PetscErrorCode MatSetSeqMats_MPIAIJ(Mat,IS,IS,IS,MatStructure,Mat,Mat);
 
-PETSC_INTERN PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat,PetscCount,const PetscInt[],const PetscInt[]);
+PETSC_INTERN PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat,PetscCount,PetscInt[],PetscInt[]);
 PETSC_INTERN PetscErrorCode MatResetPreallocationCOO_MPIAIJ(Mat);
 
 /* compute apa = A[i,:]*P = Ad[i,:]*P_loc + Ao*[i,:]*P_oth using sparse axpy */

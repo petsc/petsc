@@ -3218,19 +3218,16 @@ static PetscErrorCode MatSetPreallocationCOOLocal_IS(Mat A,PetscCount ncoo,Petsc
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatSetPreallocationCOO_IS(Mat A,PetscCount ncoo,const PetscInt coo_i[],const PetscInt coo_j[])
+static PetscErrorCode MatSetPreallocationCOO_IS(Mat A,PetscCount ncoo,PetscInt coo_i[],PetscInt coo_j[])
 {
   Mat_IS         *a = (Mat_IS*)A->data;
-  PetscInt       *coo_il, *coo_jl, incoo;
 
   PetscFunctionBegin;
   PetscCheck(a->A,PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Need to provide l2g map first via MatSetLocalToGlobalMapping");
   PetscCheck(ncoo <= PETSC_MAX_INT,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"ncoo %" PetscCount_FMT " overflowed PetscInt; configure --with-64-bit-indices or request support",ncoo);
-  PetscCall(PetscMalloc2(ncoo,&coo_il,ncoo,&coo_jl));
-  PetscCall(ISGlobalToLocalMappingApply(a->rmapping,IS_GTOLM_MASK,ncoo,coo_i,&incoo,coo_il));
-  PetscCall(ISGlobalToLocalMappingApply(a->cmapping,IS_GTOLM_MASK,ncoo,coo_j,&incoo,coo_jl));
-  PetscCall(MatSetPreallocationCOO(a->A,ncoo,coo_il,coo_jl));
-  PetscCall(PetscFree2(coo_il,coo_jl));
+  PetscCall(ISGlobalToLocalMappingApply(a->rmapping,IS_GTOLM_MASK,ncoo,coo_i,NULL,coo_i));
+  PetscCall(ISGlobalToLocalMappingApply(a->cmapping,IS_GTOLM_MASK,ncoo,coo_j,NULL,coo_j));
+  PetscCall(MatSetPreallocationCOO(a->A,ncoo,coo_i,coo_j));
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatSetValuesCOO_C",MatSetValuesCOO_IS));
   A->preallocated = PETSC_TRUE;
   PetscFunctionReturn(0);
