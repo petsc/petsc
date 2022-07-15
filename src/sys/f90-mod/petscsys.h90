@@ -273,3 +273,10 @@
       end function PetscAReduce
       end Interface
 #endif
+
+      Interface
+        Subroutine PetscIntArray1dDestroyF90(a,ierr)
+          PetscInt, Pointer :: a(:)
+          PetscErrorCode    :: ierr
+        End Subroutine
+      End Interface
