@@ -116,7 +116,7 @@ PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp,PetscInt nmax,PetscReal *r,Pe
 PetscErrorCode KSPComputeRitz_GMRES(KSP ksp,PetscBool ritz,PetscBool small,PetscInt *nrit,Vec S[],PetscReal *tetar,PetscReal *tetai)
 {
   KSP_GMRES      *gmres = (KSP_GMRES*)ksp->data;
-  PetscInt       NbrRitz,nb=0;
+  PetscInt       NbrRitz,nb = 0;
   PetscInt       i,j,*perm;
   PetscReal      *H,*Q,*Ht;            /* H Hessenberg matrix; Q matrix of eigenvectors of H */
   PetscReal      *wr,*wi,*modul;       /* Real and imaginary part and modul of the Ritz values */
@@ -125,7 +125,6 @@ PetscErrorCode KSPComputeRitz_GMRES(KSP ksp,PetscBool ritz,PetscBool small,Petsc
   PetscScalar    *t,sdummy = 0;
 
   PetscFunctionBegin;
-
   /* Express sizes in PetscBLASInt for LAPACK routines*/
   PetscCall(PetscBLASIntCast(gmres->fullcycle ? gmres->max_k : gmres->it + 1,&bn)); /* size of the Hessenberg matrix */
   PetscCall(PetscBLASIntCast(gmres->max_k + 1,&bN));                                /* LDA of the Hessenberg matrix */
@@ -135,18 +134,10 @@ PetscErrorCode KSPComputeRitz_GMRES(KSP ksp,PetscBool ritz,PetscBool small,Petsc
   /* NbrRitz: number of (Harmonic) Ritz pairs to extract */
   NbrRitz = PetscMin(*nrit,bn);
 
-  PetscCall(PetscMalloc1(bN*bN,&H));
-  PetscCall(PetscMalloc1(bn*bn,&Q));
-  PetscCall(PetscMalloc1(lwork,&work));
-  PetscCall(PetscMalloc1(bn,&wr));
-  PetscCall(PetscMalloc1(bn,&wi));
+  PetscCall(PetscMalloc4(bN*bN,&H,bn*bn,&Q,bn,&wr,bn,&wi));
 
   /* copy H matrix to work space */
-  if (gmres->fullcycle) {
-    PetscCall(PetscArraycpy(H,gmres->hes_ritz,bN*bN));
-  } else {
-    PetscCall(PetscArraycpy(H,gmres->hes_origin,bN*bN));
-  }
+  PetscCall(PetscArraycpy(H,gmres->fullcycle ? gmres->hes_ritz : gmres->hes_origin,bN*bN));
 
   /* Modify H to compute Harmonic Ritz pairs H = H + H^{-T}*h^2_{m+1,m}e_m*e_m^T */
   if (!ritz) {
@@ -160,11 +151,9 @@ PetscErrorCode KSPComputeRitz_GMRES(KSP ksp,PetscBool ritz,PetscBool small,Petsc
     /* Solve the system H^T*t = h^2_{m+1,m}e_m */
     PetscCall(PetscCalloc1(bn,&t));
     /* t = h^2_{m+1,m}e_m */
-    if (gmres->fullcycle) {
-      t[bn-1] = PetscSqr(gmres->hes_ritz[(bn-1)*bN+bn]);
-    } else {
-      t[bn-1] = PetscSqr(gmres->hes_origin[(bn-1)*bN+bn]);
-    }
+    if (gmres->fullcycle) t[bn-1] = PetscSqr(gmres->hes_ritz[(bn-1)*bN+bn]);
+    else t[bn-1] = PetscSqr(gmres->hes_origin[(bn-1)*bN+bn]);
+
     /* Call the LAPACK routine dgesv to compute t = H^{-T}*t */
     {
       PetscBLASInt info;
@@ -176,7 +165,7 @@ PetscErrorCode KSPComputeRitz_GMRES(KSP ksp,PetscBool ritz,PetscBool small,Petsc
       PetscCall(PetscFree(ipiv));
       PetscCall(PetscFree(Ht));
     }
-    /* Now form H + H^{-T}*h^2_{m+1,m}e_m*e_m^T */
+    /* Form H + H^{-T}*h^2_{m+1,m}e_m*e_m^T */
     for (i=0; i<bn; i++) H[(bn-1)*bn+i] += t[i];
     PetscCall(PetscFree(t));
   }
@@ -188,13 +177,14 @@ PetscErrorCode KSPComputeRitz_GMRES(KSP ksp,PetscBool ritz,PetscBool small,Petsc
   */
   {
     PetscBLASInt info;
+    PetscCall(PetscMalloc1(lwork,&work));
     PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
     PetscCallBLAS("LAPACKgeev",LAPACKgeev_("N","V",&bn,H,&bN,wr,wi,&sdummy,&idummy,Q,&bn,work,&lwork,&info));
     PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in LAPACK routine");
+    PetscCall(PetscFree(work));
   }
   /* sort the (Harmonic) Ritz values */
-  PetscCall(PetscMalloc1(bn,&modul));
-  PetscCall(PetscMalloc1(bn,&perm));
+  PetscCall(PetscMalloc2(bn,&modul,bn,&perm));
   for (i=0; i<bn; i++) modul[i] = PetscSqrtReal(wr[i]*wr[i]+wi[i]*wi[i]);
   for (i=0; i<bn; i++) perm[i] = i;
   PetscCall(PetscSortRealWithPermutation(bn,modul,perm));
@@ -223,18 +213,17 @@ PetscErrorCode KSPComputeRitz_GMRES(KSP ksp,PetscBool ritz,PetscBool small,Petsc
       PetscCall(PetscArraycpy(&SR[i*bn], &(Q[perm[bn-nb+i]*bn]), bn)); /* permute columns of Q */
     }
   }
-  PetscCall(PetscFree(modul));
-  PetscCall(PetscFree(perm));
+  PetscCall(PetscFree2(modul,perm));
+  PetscCall(PetscFree4(H,Q,wr,wi));
 
-  /* Form the Ritz or Harmonic Ritz vectors S = SR*V, columns of VV correspond to the basis of the Krylov subspace */
-  for (j=0; j<nb; j++) PetscCall(VecMAXPY(S[j],bn,&SR[j*bn],gmres->fullcycle ? gmres->vecb : &VEC_VV(0)));
+  /* Form the (Harmonic) Ritz vectors S = SR*V, columns of VV correspond to the basis of the Krylov subspace */
+  for (j=0; j<nb; j++) {
+    PetscCall(VecZeroEntries(S[j]));
+    PetscCall(VecMAXPY(S[j],bn,&SR[j*bn],gmres->fullcycle ? gmres->vecb : &VEC_VV(0)));
+  }
 
-  *nrit = nb;
-  PetscCall(PetscFree(H));
-  PetscCall(PetscFree(Q));
   PetscCall(PetscFree(SR));
-  PetscCall(PetscFree(wr));
-  PetscCall(PetscFree(wi));
+  *nrit = nb;
   PetscFunctionReturn(0);
 }
 #endif
