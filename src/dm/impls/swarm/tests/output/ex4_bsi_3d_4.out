@@ -6,7 +6,7 @@ box in 3 dimensions:
   Number of 2-cells per rank: 6
   Number of 3-cells per rank: 1
 Labels:
-  marker: 1 strata with value/size (1 (18))
+  marker: 1 strata with value/size (1 (26))
   Face Sets: 6 strata with value/size (6 (1), 5 (1), 3 (1), 4 (1), 1 (1), 2 (1))
   depth: 4 strata with value/size (0 (8), 1 (12), 2 (6), 3 (1))
   celltype: 4 strata with value/size (7 (1), 0 (8), 4 (6), 1 (12))

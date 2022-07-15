@@ -7,7 +7,7 @@ Generated Mesh in 3 dimensions:
   Number of 3-cells per rank: 6941
 Periodic mesh coordinates localized
 Labels:
-  marker: 1 strata with value/size (1 (3130))
+  marker: 1 strata with value/size (1 (3160))
   Face Sets: 2 strata with value/size (1 (1353), 2 (1168))
   depth: 4 strata with value/size (0 (10825), 1 (31957), 2 (26165), 3 (6941))
   celltype: 4 strata with value/size (7 (6941), 4 (26165), 1 (31957), 0 (10825))
