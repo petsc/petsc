@@ -43,7 +43,7 @@ static inline PetscErrorCode ObjectView(PetscObject obj, PetscViewer viewer, Pet
 
    Estimates of the smallest singular value may be very inaccurate, especially if the Krylov method has not converged.
    The largest singular value is usually accurate to within a few percent if the method has converged, but is still not
-   intended for eigenanalysis.
+   intended for eigenanalysis. Consider the excellent package `SLEPc` if accurate values are required.
 
    Disable restarts if using KSPGMRES, otherwise this estimate will only be using those iterations after the last
    restart. See KSPGMRESSetRestart() for more details.
@@ -172,6 +172,9 @@ PetscErrorCode  KSPComputeEigenvalues(KSP ksp,PetscInt n,PetscReal r[],PetscReal
    This functionality is currently not implemented when PETSc is built with complex numbers, but could be easily contributed
    by changing the call the LAPACK eigensolver. `KSPComputeEigenvalues()` provides estimates for only the eigenvalues and
    works for both real and complex numbers.
+
+   The Ritz pairs do not neccessarily accurately reflect the eigenvalues and eigenvectors of the operator, consider the
+   excellant package `SLEPc` if accurate values are required.
 
    Level: advanced
 
