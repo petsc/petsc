@@ -161,3 +161,36 @@
         end subroutine
       end Interface
 
+      Interface
+        Subroutine PetscSFDistributeSectionF90(sf,rootsection,array,leafsection,ierr)
+          import tPetscSection
+          import tPetscSF
+          PetscSF sf
+          PetscInt, pointer :: array(:)
+          PetscErrorCode  ierr
+          PetscSection rootsection,leafsection
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine PetscSFCreateSectionSFF90(pointsf,rootsection,array,leafsection,sf,ierr)
+          import tPetscSection
+          import tPetscSF
+          PetscSF pointsf
+          PetscSF sf
+          PetscInt, pointer :: array(:)
+          PetscErrorCode  ierr
+          PetscSection rootsection,leafsection
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine PetscSFCreateRemoteOffsetsF90(sf,rootsection,leafsection,array,ierr)
+          import tPetscSection
+          import tPetscSF
+          PetscSF sf
+          PetscInt, pointer :: array(:)
+          PetscErrorCode  ierr
+          PetscSection rootsection,leafsection
+        End Subroutine
+      End Interface
