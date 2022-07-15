@@ -116,7 +116,7 @@ PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp,PetscInt nmax,PetscReal *r,Pe
 PetscErrorCode KSPComputeRitz_GMRES(KSP ksp,PetscBool ritz,PetscBool small,PetscInt *nrit,Vec S[],PetscReal *tetar,PetscReal *tetai)
 {
   KSP_GMRES      *gmres = (KSP_GMRES*)ksp->data;
-  PetscInt       n = gmres->it + 1,N = gmres->max_k + 1,NbrRitz,nb=0;
+  PetscInt       NbrRitz,nb=0;
   PetscInt       i,j,*perm;
   PetscReal      *H,*Q,*Ht;              /* H Hessenberg Matrix and Q matrix of eigenvectors of H*/
   PetscReal      *wr,*wi,*modul;       /* Real and imaginary part and modul of the Ritz values*/
@@ -125,22 +125,21 @@ PetscErrorCode KSPComputeRitz_GMRES(KSP ksp,PetscBool ritz,PetscBool small,Petsc
   PetscScalar    *t,sdummy = 0;
 
   PetscFunctionBegin;
-  /* n: size of the Hessenberg matrix */
-  if (gmres->fullcycle) n = N-1;
-  /* NbrRitz: number of (harmonic) Ritz pairs to extract */
-  NbrRitz = PetscMin(*nrit,n);
 
-  /* Definition of PetscBLASInt for lapack routines*/
-  PetscCall(PetscBLASIntCast(n,&bn));
-  PetscCall(PetscBLASIntCast(N,&bN));
-  PetscCall(PetscBLASIntCast(N,&idummy));
-  PetscCall(PetscBLASIntCast(5*N,&lwork));
-  /* Memory allocation */
+  /* Express sizes in PetscBLASInt for LAPACK routines*/
+  PetscCall(PetscBLASIntCast(gmres->fullcycle ? gmres->max_k : gmres->it + 1,&bn)); /* size of the Hessenberg matrix */
+  PetscCall(PetscBLASIntCast(gmres->max_k + 1,&bN)); /* LDA of the Hessenberg matrix */
+  PetscCall(PetscBLASIntCast(gmres->max_k + 1,&idummy));
+  PetscCall(PetscBLASIntCast(5*(gmres->max_k + 1)*(gmres->max_k + 1),&lwork));
+
+  /* NbrRitz: number of (harmonic) Ritz pairs to extract */
+  NbrRitz = PetscMin(*nrit,bn);
+
   PetscCall(PetscMalloc1(bN*bN,&H));
   PetscCall(PetscMalloc1(bn*bn,&Q));
   PetscCall(PetscMalloc1(lwork,&work));
-  PetscCall(PetscMalloc1(n,&wr));
-  PetscCall(PetscMalloc1(n,&wi));
+  PetscCall(PetscMalloc1(bn,&wr));
+  PetscCall(PetscMalloc1(bn,&wi));
 
   /* copy H matrix to work space */
   if (gmres->fullcycle) {
@@ -190,33 +189,33 @@ PetscErrorCode KSPComputeRitz_GMRES(KSP ksp,PetscBool ritz,PetscBool small,Petsc
     PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in LAPACK routine");
   }
   /* sort the (harmonic) Ritz values */
-  PetscCall(PetscMalloc1(n,&modul));
-  PetscCall(PetscMalloc1(n,&perm));
-  for (i=0; i<n; i++) modul[i] = PetscSqrtReal(wr[i]*wr[i]+wi[i]*wi[i]);
-  for (i=0; i<n; i++) perm[i] = i;
-  PetscCall(PetscSortRealWithPermutation(n,modul,perm));
+  PetscCall(PetscMalloc1(bn,&modul));
+  PetscCall(PetscMalloc1(bn,&perm));
+  for (i=0; i<bn; i++) modul[i] = PetscSqrtReal(wr[i]*wr[i]+wi[i]*wi[i]);
+  for (i=0; i<bn; i++) perm[i] = i;
+  PetscCall(PetscSortRealWithPermutation(bn,modul,perm));
   /* count the number of extracted Ritz or Harmonic Ritz pairs (with complex conjugates) */
   if (small) {
     while (nb < NbrRitz) {
       if (!wi[perm[nb]]) nb += 1;
       else nb += 2;
     }
-    PetscCall(PetscMalloc1(nb*n,&SR));
+    PetscCall(PetscMalloc1(nb*bn,&SR));
     for (i=0; i<nb; i++) {
       tetar[i] = wr[perm[i]];
       tetai[i] = wi[perm[i]];
-      PetscCall(PetscArraycpy(&SR[i*n],&(Q[perm[i]*bn]),n));
+      PetscCall(PetscArraycpy(&SR[i*bn],&(Q[perm[i]*bn]),bn));
     }
   } else {
     while (nb < NbrRitz) {
-      if (wi[perm[n-nb-1]] == 0) nb += 1;
+      if (wi[perm[bn-nb-1]] == 0) nb += 1;
       else nb += 2;
     }
-    PetscCall(PetscMalloc1(nb*n,&SR));
+    PetscCall(PetscMalloc1(nb*bn,&SR));
     for (i=0; i<nb; i++) {
-      tetar[i] = wr[perm[n-nb+i]];
-      tetai[i] = wi[perm[n-nb+i]];
-      PetscCall(PetscArraycpy(&SR[i*n], &(Q[perm[n-nb+i]*bn]), n));
+      tetar[i] = wr[perm[bn-nb+i]];
+      tetai[i] = wi[perm[bn-nb+i]];
+      PetscCall(PetscArraycpy(&SR[i*bn], &(Q[perm[bn-nb+i]*bn]), bn));
     }
   }
   PetscCall(PetscFree(modul));
@@ -227,12 +226,12 @@ PetscErrorCode KSPComputeRitz_GMRES(KSP ksp,PetscBool ritz,PetscBool small,Petsc
   if (gmres->fullcycle) {
     for (j=0; j<nb; j++) {
       PetscCall(VecZeroEntries(S[j]));
-      PetscCall(VecMAXPY(S[j],n,&SR[j*n],gmres->vecb));
+      PetscCall(VecMAXPY(S[j],bn,&SR[j*bn],gmres->vecb));
     }
   } else {
     for (j=0; j<nb; j++) {
       PetscCall(VecZeroEntries(S[j]));
-      PetscCall(VecMAXPY(S[j],n,&SR[j*n],&VEC_VV(0)));
+      PetscCall(VecMAXPY(S[j],bn,&SR[j*bn],&VEC_VV(0)));
     }
   }
   *nrit = nb;
