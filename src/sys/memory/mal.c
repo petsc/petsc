@@ -1,6 +1,7 @@
 /*
     Code that allows a user to dictate what malloc() PETSc uses.
 */
+#define PETSC_DESIRE_FEATURE_TEST_MACROS /* for posix_memalign() */
 #include <petscsys.h>             /*I   "petscsys.h"   I*/
 #include <stdarg.h>
 #if defined(PETSC_HAVE_MALLOC_H)
@@ -43,12 +44,11 @@ PETSC_EXTERN PetscErrorCode PetscMallocAlign(size_t mem,PetscBool clear,int line
 
   PetscCheck(*result,PETSC_COMM_SELF,line,func,file,PETSC_ERR_MEM,PETSC_ERROR_INITIAL,"Memory requested %.0f",(PetscLogDouble)mem);
   if (PetscLogMemory) PetscCall(PetscMemzero(*result,mem));
-
-#  elif PetscDefined(HAVE_MEMALIGN)
-  *result = memalign(PETSC_MEMALIGN,mem);
-  PetscCheck(*result,PETSC_COMM_SELF,line,func,file,PETSC_ERR_MEM,PETSC_ERROR_INITIAL,"Memory requested %.0f",(PetscLogDouble)mem);
+#  elif PetscDefined(HAVE_POSIX_MEMALIGN)
+  int ret = posix_memalign(result, PETSC_MEMALIGN, mem);
+  PetscCheck(ret == 0,PETSC_COMM_SELF,line,func,file,PETSC_ERR_MEM,PETSC_ERROR_INITIAL,"Memory requested %.0f",(PetscLogDouble)mem);
   if (clear || PetscLogMemory) PetscCall(PetscMemzero(*result,mem));
-#  else /* PetscDefined(HAVE_DOUBLE_ALIGN_MALLOC) || PetscDefined(HAVE_MEMALIGN) */
+#  else /* PetscDefined(HAVE_DOUBLE_ALIGN_MALLOC) || PetscDefined(HAVE_POSIX_MEMALIGN) */
   {
     int *ptr,shift;
     /*
@@ -67,7 +67,7 @@ PETSC_EXTERN PetscErrorCode PetscMallocAlign(size_t mem,PetscBool clear,int line
     *result      = (void*)ptr;
     if (PetscLogMemory) PetscCall(PetscMemzero(*result,mem));
   }
-#  endif /* PetscDefined(HAVE_DOUBLE_ALIGN_MALLOC) || PetscDefined(HAVE_MEMALIGN) */
+#  endif /* PetscDefined(HAVE_DOUBLE_ALIGN_MALLOC) || PetscDefined(HAVE_POSIX_MEMALIGN) */
 #endif /* PetscDefined(HAVE_MEMKIND) */
   return 0;
 }
@@ -78,7 +78,7 @@ PETSC_EXTERN PetscErrorCode PetscFreeAlign(void *ptr,int line,const char func[],
 #if PetscDefined(HAVE_MEMKIND)
   memkind_free(0,ptr); /* specify the kind to 0 so that memkind will look up for the right type */
 #else /* PetscDefined(HAVE_MEMKIND) */
-#  if (!(PetscDefined(HAVE_DOUBLE_ALIGN_MALLOC) && (PETSC_MEMALIGN == 8)) && !PetscDefined(HAVE_MEMALIGN))
+#  if (!(PetscDefined(HAVE_DOUBLE_ALIGN_MALLOC) && (PETSC_MEMALIGN == 8)) && !PetscDefined(HAVE_POSIX_MEMALIGN))
   {
     /*
       Previous int tells us how many ints the pointer has been shifted from
@@ -112,7 +112,7 @@ PETSC_EXTERN PetscErrorCode PetscReallocAlign(size_t mem, int line, const char f
 #if PetscDefined(HAVE_MEMKIND)
   *result = memkind_realloc(currentmktype ? MEMKIND_HBW_PREFERRED : MEMKIND_DEFAULT,*result,mem);
 #else
-#  if (!(PetscDefined(HAVE_DOUBLE_ALIGN_MALLOC) && (PETSC_MEMALIGN == 8)) && !PetscDefined(HAVE_MEMALIGN))
+#  if (!(PetscDefined(HAVE_DOUBLE_ALIGN_MALLOC) && (PETSC_MEMALIGN == 8)) && !PetscDefined(HAVE_POSIX_MEMALIGN))
   {
     /*
       Previous int tells us how many ints the pointer has been shifted from
@@ -125,7 +125,7 @@ PETSC_EXTERN PetscErrorCode PetscReallocAlign(size_t mem, int line, const char f
   }
 #  endif
 
-#  if (PetscDefined(HAVE_DOUBLE_ALIGN_MALLOC) && (PETSC_MEMALIGN == 8)) || PetscDefined(HAVE_MEMALIGN)
+#  if (PetscDefined(HAVE_DOUBLE_ALIGN_MALLOC) && (PETSC_MEMALIGN == 8)) || PetscDefined(HAVE_POSIX_MEMALIGN)
   *result = realloc(*result, mem);
 #  else
   {
@@ -146,7 +146,7 @@ PETSC_EXTERN PetscErrorCode PetscReallocAlign(size_t mem, int line, const char f
 #  endif
 #endif
   PetscCheck(*result,PETSC_COMM_SELF,line,func,file,PETSC_ERR_MEM,PETSC_ERROR_INITIAL,"Memory requested %.0f",(PetscLogDouble)mem);
-#if PetscDefined(HAVE_MEMALIGN)
+#if PetscDefined(HAVE_POSIX_MEMALIGN)
   /* There are no standard guarantees that realloc() maintains the alignment of memalign(), so I think we have to
    * realloc and, if the alignment is wrong, malloc/copy/free. */
   if (((size_t) (*result)) % PETSC_MEMALIGN) {
@@ -158,10 +158,10 @@ PETSC_EXTERN PetscErrorCode PetscReallocAlign(size_t mem, int line, const char f
       PetscCheck(err != EINVAL,PETSC_COMM_SELF,PETSC_ERR_MEM,"Memkind: invalid 3rd or 4th argument of memkind_posix_memalign()");
       if (err == ENOMEM) PetscInfo(NULL,"Memkind: fail to request HBW memory %.0f, falling back to normal memory\n",(PetscLogDouble)mem);
     }
-#  else
-    newResult = memalign(PETSC_MEMALIGN,mem);
-#  endif
     PetscCheck(newResult,PETSC_COMM_SELF,line,func,file,PETSC_ERR_MEM,PETSC_ERROR_INITIAL,"Memory requested %.0f",(PetscLogDouble)mem);
+#  else
+    PetscCheck(posix_memalign(&newResult, PETSC_MEMALIGN, mem) == 0,PETSC_COMM_SELF,line,func,file,PETSC_ERR_MEM,PETSC_ERROR_INITIAL,"Memory requested %.0f",(PetscLogDouble)mem);
+#  endif
     PetscCall(PetscMemcpy(newResult,*result,mem));
 #  if PetscDefined(HAVE_FREE_RETURN_INT)
     {
