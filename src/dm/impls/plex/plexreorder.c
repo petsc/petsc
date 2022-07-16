@@ -1,5 +1,6 @@
 #include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 #include <petsc/private/matorderimpl.h> /*I      "petscmat.h"      I*/
+#include <petsc/private/dmlabelimpl.h>
 
 static PetscErrorCode DMPlexCreateOrderingClosure_Static(DM dm, PetscInt numPoints, const PetscInt pperm[], PetscInt **clperm, PetscInt **invclperm)
 {
@@ -284,6 +285,13 @@ PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)
     }
     PetscCall(DMGetLabel(*pdm, "depth", &(*pdm)->depthLabel));
     if (plex->subpointMap) PetscCall(DMLabelPermute(plex->subpointMap, perm, &plexNew->subpointMap));
+  }
+  if ((*pdm)->celltypeLabel) {
+    DMLabel ctLabel;
+
+    // Reset label for fast lookup
+    PetscCall(DMPlexGetCellTypeLabel(*pdm, &ctLabel));
+    PetscCall(DMLabelMakeAllInvalid_Internal(ctLabel));
   }
   /* Reorder topology */
   {

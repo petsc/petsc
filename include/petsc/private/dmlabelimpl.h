@@ -33,4 +33,5 @@ struct _p_DMLabel {
 };
 
 PETSC_INTERN PetscErrorCode PetscSectionSymCreate_Label(PetscSectionSym);
+PETSC_INTERN PetscErrorCode DMLabelMakeAllInvalid_Internal(DMLabel);
 #endif

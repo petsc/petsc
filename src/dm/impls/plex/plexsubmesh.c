@@ -3180,9 +3180,13 @@ static inline PetscInt DMPlexFilterPoint_Internal(PetscInt point, PetscInt first
 
 static PetscErrorCode DMPlexFilterLabels_Internal(DM dm, const PetscInt numSubPoints[], const PetscInt *subpoints[], const PetscInt firstSubPoint[], DM subdm)
 {
-  PetscInt       Nl, l, d;
+  DMLabel  depthLabel;
+  PetscInt Nl, l, d;
 
   PetscFunctionBegin;
+  // Reset depth label for fast lookup
+  PetscCall(DMPlexGetDepthLabel(dm, &depthLabel));
+  PetscCall(DMLabelMakeAllInvalid_Internal(depthLabel));
   PetscCall(DMGetNumLabels(dm, &Nl));
   for (l = 0; l < Nl; ++l) {
     DMLabel         label, newlabel;
@@ -3476,15 +3480,12 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
       }
       /* Must put in owned subpoints */
       for (p = pStart; p < pEnd; ++p) {
-        const PetscInt subpoint = DMPlexFilterPoint_Internal(p, 0, numSubpoints, subpoints);
-
-        if (subpoint < 0) {
-          newOwners[p-pStart].rank  = -3;
-          newOwners[p-pStart].index = -3;
-        } else {
-          newOwners[p-pStart].rank  = rank;
-          newOwners[p-pStart].index = subpoint;
-        }
+        newOwners[p-pStart].rank  = -3;
+        newOwners[p-pStart].index = -3;
+      }
+      for (p = 0; p < numSubpoints; ++p) {
+        newOwners[subpoints[p]-pStart].rank  = rank;
+        newOwners[subpoints[p]-pStart].index = p;
       }
       PetscCall(PetscSFReduceBegin(sfPoint, MPIU_2INT, newLocalPoints, newOwners, MPI_MAXLOC));
       PetscCall(PetscSFReduceEnd(sfPoint, MPIU_2INT, newLocalPoints, newOwners, MPI_MAXLOC));
