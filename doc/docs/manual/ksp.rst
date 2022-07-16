@@ -1129,8 +1129,8 @@ code that uses GAMG with ``-help`` to get full listing of GAMG
 parameters with short parameter descriptions. The rate of coarsening is
 critical in AMG performance – too slow coarsening will result in an
 overly expensive solver per iteration and too fast coarsening will
-result in decrease in the convergence rate. ``-pc_gamg_threshold <0>``
-and ``-pc_gamg_square_graph <1>,`` are the primary parameters that
+result in decrease in the convergence rate. ``-pc_gamg_threshold <-1>``
+and ``-pc_gamg_aggressive_coarsening <N>`` are the primary parameters that
 control coarsening rates, which is very important for AMG performance. A
 greedy maximal independent set (MIS) algorithm is used in coarsening.
 Squaring the graph implements so called MIS-2, the root vertex in an
@@ -1192,7 +1192,7 @@ entries on the fine level). Grid complexity should be well under 2.0 and
 preferably around :math:`1.3` or lower. If convergence is poor and the
 Galerkin coarse grid construction is much smaller than the time for each
 solve then one can safely decrease the coarsening rate.
-``-pc_gamg_threshold`` :math:`0.0` is the simplest and most robust
+``-pc_gamg_threshold`` :math:`-1.0` is the simplest and most robust
 option, and is recommended if poor convergence rates are observed, at
 least until the source of the problem is discovered. In conclusion, if
 convergence is slow then decreasing the coarsening rate (increasing the
@@ -1223,8 +1223,8 @@ determined by running with ``-log_view`` and check that the time for the
 Galerkin coarse grid construction (``MatPtAP``) is not (much) more than
 the time spent in each solve (``KSPSolve``). If the ``MatPtAP`` time is
 too large then one can increase the coarsening rate by decreasing the
-threshold and squaring the coarsening graph
-(``-pc_gamg_square_graph <N>``, squares the graph on the finest N
+threshold and using aggressive coarsening 
+(``-pc_gamg_aggressive_coarsening <N>``, squares the graph on the finest N
 levels). Likewise if your ``MatPtAP`` time is small and your convergence
 rate is not ideal then you could decrease the coarsening rate.
 

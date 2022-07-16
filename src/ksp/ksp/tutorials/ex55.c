@@ -270,18 +270,18 @@ int main(int argc,char **args)
    test:
       suffix: Classical
       nsize: 4
-      args: -ne 29 -alpha 1.e-3 -ksp_type gmres -pc_type gamg -pc_gamg_type classical -mg_levels_ksp_max_it 5 -ksp_converged_reason -ksp_rtol 1e-3 -mat_coarsen_misk_distance 2
+      args: -ne 29 -alpha 1.e-3 -ksp_type gmres -pc_type gamg -pc_gamg_type classical -mg_levels_ksp_max_it 5 -ksp_converged_reason -ksp_rtol 1e-3 -mat_coarsen_misk_distance 2 -pc_gamg_threshold 0
       output_file: output/ex55_classical.out
 
    test:
       suffix: NC
       nsize: 4
-      args: -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -ksp_converged_reason -pc_gamg_esteig_ksp_max_it 10 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.2 -pc_gamg_aggressive_coarsening 0
+      args: -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -ksp_converged_reason -pc_gamg_esteig_ksp_max_it 10 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.2 -pc_gamg_aggressive_coarsening 0 -pc_gamg_threshold 0
 
    test:
       suffix: geo
       nsize: 4
-      args: -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type geo -use_coordinates -ksp_monitor_short -ksp_type cg -ksp_norm_type unpreconditioned  -mg_levels_ksp_max_it 3
+      args: -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type geo -use_coordinates -ksp_monitor_short -ksp_type cg -ksp_norm_type unpreconditioned  -mg_levels_ksp_max_it 3 -pc_gamg_threshold 0
       output_file: output/ex55_0.out
       requires: triangle
 
