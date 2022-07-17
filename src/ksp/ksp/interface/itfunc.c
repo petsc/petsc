@@ -163,15 +163,16 @@ PetscErrorCode  KSPComputeEigenvalues(KSP ksp,PetscInt n,PetscReal r[],PetscReal
    parameter for GMRES if a complete cycle has been performed or less or equal to the number of GMRES
    iterations.
 
+   `KSPComputeEigenvalues()` provides estimates for only the eigenvalues (Ritz values).
+
    For real matrices, the (harmonic) Ritz pairs can be complex-valued. In such a case,
    the routine selects the complex (harmonic) Ritz value and its conjugate, and two successive entries of the
    vectors S are equal to the real and the imaginary parts of the associated vectors.
+   When PETSc has been built with complex scalars, the real and imaginary parts of the Ritz
+   values are still returned in tetar and tetai, as is done in `KSPComputeEigenvalues()`, but
+   the Ritz vectors S are complex.
 
    The (harmonic) Ritz pairs are given in order of increasing (harmonic) Ritz values in modulus.
-
-   This functionality is currently not implemented when PETSc is built with complex numbers, but could be easily contributed
-   by changing the call the LAPACK eigensolver. `KSPComputeEigenvalues()` provides estimates for only the eigenvalues and
-   works for both real and complex numbers.
 
    The Ritz pairs do not neccessarily accurately reflect the eigenvalues and eigenvectors of the operator, consider the
    excellant package `SLEPc` if accurate values are required.

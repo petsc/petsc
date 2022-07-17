@@ -112,15 +112,15 @@ PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp,PetscInt nmax,PetscReal *r,Pe
   PetscFunctionReturn(0);
 }
 
-#if !defined(PETSC_USE_COMPLEX)
 PetscErrorCode KSPComputeRitz_GMRES(KSP ksp,PetscBool ritz,PetscBool small,PetscInt *nrit,Vec S[],PetscReal *tetar,PetscReal *tetai)
 {
   KSP_GMRES      *gmres = (KSP_GMRES*)ksp->data;
   PetscInt       NbrRitz,nb = 0,n;
   PetscInt       i,j,*perm;
-  PetscReal      *H,*Q,*Ht;            /* H Hessenberg matrix; Q matrix of eigenvectors of H */
-  PetscReal      *wr,*wi,*modul;       /* Real and imaginary part and modul of the Ritz values */
-  PetscReal      *SR,*work;
+  PetscScalar    *H,*Q,*Ht;            /* H Hessenberg matrix; Q matrix of eigenvectors of H */
+  PetscScalar    *wr,*wi;              /* Real and imaginary part of the Ritz values */
+  PetscScalar    *SR,*work;
+  PetscReal      *modul;
   PetscBLASInt   bn,bN,lwork,idummy;
   PetscScalar    *t,sdummy = 0;
   Mat            A;
@@ -149,7 +149,7 @@ PetscErrorCode KSPComputeRitz_GMRES(KSP ksp,PetscBool ritz,PetscBool small,Petsc
     PetscCall(PetscMalloc1(bn*bn,&Ht));
     for (i=0; i<bn; i++) {
       for (j=0; j<bn; j++) {
-        Ht[i*bn+j] = H[j*bN+i];
+        Ht[i*bn+j] = PetscConj(H[j*bN+i]);
       }
     }
     /* Solve the system H^T*t = h^2_{m+1,m}e_m */
@@ -181,18 +181,48 @@ PetscErrorCode KSPComputeRitz_GMRES(KSP ksp,PetscBool ritz,PetscBool small,Petsc
   */
   {
     PetscBLASInt info;
+#if defined(PETSC_USE_COMPLEX)
+    PetscReal    *rwork=NULL;
+#endif
     PetscCall(PetscMalloc1(lwork,&work));
     PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
+#if !defined(PETSC_USE_COMPLEX)
     PetscCallBLAS("LAPACKgeev",LAPACKgeev_("N","V",&bn,H,&bN,wr,wi,&sdummy,&idummy,Q,&bn,work,&lwork,&info));
+#else
+    PetscCall(PetscMalloc1(2*n,&rwork));
+    PetscCallBLAS("LAPACKgeev",LAPACKgeev_("N","V",&bn,H,&bN,wr,&sdummy,&idummy,Q,&bn,work,&lwork,rwork,&info));
+    PetscCall(PetscFree(rwork));
+#endif
     PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in LAPACK routine");
+    PetscCall(PetscFPTrapPop());
     PetscCall(PetscFree(work));
   }
   /* sort the (Harmonic) Ritz values */
   PetscCall(PetscMalloc2(bn,&modul,bn,&perm));
+#if defined(PETSC_USE_COMPLEX)
+  for (i=0; i<bn; i++) modul[i] = PetscAbsScalar(wr[i]);
+#else
   for (i=0; i<bn; i++) modul[i] = PetscSqrtReal(wr[i]*wr[i]+wi[i]*wi[i]);
+#endif
   for (i=0; i<bn; i++) perm[i] = i;
   PetscCall(PetscSortRealWithPermutation(bn,modul,perm));
 
+#if defined(PETSC_USE_COMPLEX)
+  /* sort extracted (Harmonic) Ritz pairs */
+  nb = NbrRitz;
+  PetscCall(PetscMalloc1(nb*bn,&SR));
+  for (i=0; i<nb; i++) {
+    if (small) {
+      tetar[i] = PetscRealPart(wr[perm[i]]);
+      tetai[i] = PetscImaginaryPart(wr[perm[i]]);
+      PetscCall(PetscArraycpy(&SR[i*bn],&(Q[perm[i]*bn]),bn));
+    } else {
+      tetar[i] = PetscRealPart(wr[perm[bn-nb+i]]);
+      tetai[i] = PetscImaginaryPart(wr[perm[bn-nb+i]]);
+      PetscCall(PetscArraycpy(&SR[i*bn],&(Q[perm[bn-nb+i]*bn]),bn)); /* permute columns of Q */
+    }
+  }
+#else
   /* count the number of extracted (Harmonic) Ritz pairs (with complex conjugates) */
   if (small) {
     while (nb < NbrRitz) {
@@ -223,6 +253,7 @@ PetscErrorCode KSPComputeRitz_GMRES(KSP ksp,PetscBool ritz,PetscBool small,Petsc
       PetscCall(PetscArraycpy(&SR[i*bn], &(Q[perm[bn-nb+i]*bn]), bn)); /* permute columns of Q */
     }
   }
+#endif
   PetscCall(PetscFree2(modul,perm));
   PetscCall(PetscFree4(H,Q,wr,wi));
 
@@ -236,4 +267,3 @@ PetscErrorCode KSPComputeRitz_GMRES(KSP ksp,PetscBool ritz,PetscBool small,Petsc
   *nrit = nb;
   PetscFunctionReturn(0);
 }
-#endif

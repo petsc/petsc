@@ -9,7 +9,7 @@ int main(int argc,char **argv)
   char        file[PETSC_MAX_PATH_LEN];
   PetscReal   *tetar,*tetai;
   Vec         b,x,*S;
-  PetscInt    i,N = 10;
+  PetscInt    i,N = 10,Na = N;
   PetscViewer fd;
   PC          pc;
   PetscBool   harmonic = PETSC_FALSE;
@@ -38,28 +38,34 @@ int main(int argc,char **argv)
   PetscCall(KSPSetFromOptions(ksp));
   PetscCall(KSPSolve(ksp,b,x));
   PetscCall(PetscOptionsHasName(NULL,NULL,"-harmonic",&harmonic));
-  PetscCall(KSPComputeRitz(ksp,harmonic ? PETSC_FALSE : PETSC_TRUE,PETSC_TRUE,&N,S,tetar,tetai));
+  PetscCall(KSPComputeRitz(ksp,harmonic ? PETSC_FALSE : PETSC_TRUE,PETSC_TRUE,&Na,S,tetar,tetai));
 
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%% Number of Ritz pairs %" PetscInt_FMT "\n",N));
-  for (i=0; i<N; i++) {
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%% Number of Ritz pairs %" PetscInt_FMT "\n",Na));
+  for (i=0; i<Na; i++) {
     PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%% Eigenvalue(s)  %g ",(double)tetar[i]));
     if (tetai[i]) {
       PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%+gi",(double)tetai[i]));
+#if !defined(PETSC_USE_COMPLEX)
       PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  %g ",(double)tetar[i]));
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%s %gi",tetai[i] > 0 ? "-" : "+",(double)PetscAbsReal(tetai[i])));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%+gi",(double)-tetai[i]));
+#endif
     }
     PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\n"));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%% Eigenvector\n"));
     PetscCall(VecView(S[i],PETSC_VIEWER_STDOUT_WORLD));
+#if !defined(PETSC_USE_COMPLEX)
     if (tetai[i]) {
       PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%% Imaginary part of Eigenvector\n"));
       PetscCall(VecView(S[i+1],PETSC_VIEWER_STDOUT_WORLD));
       i++;
     }
+#endif
   }
 
   PetscCall(PetscFree2(tetar,tetai));
-  PetscCall(VecDestroyVecs(2*N,&S));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&b));
+  PetscCall(VecDestroyVecs(N,&S));
   PetscCall(KSPDestroy(&ksp));
   PetscCall(MatDestroy(&A));
   PetscCall(PetscFinalize());

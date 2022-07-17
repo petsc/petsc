@@ -901,9 +901,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GMRES(KSP ksp)
   ksp->ops->setfromoptions               = KSPSetFromOptions_GMRES;
   ksp->ops->computeextremesingularvalues = KSPComputeExtremeSingularValues_GMRES;
   ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_GMRES;
-#if !defined(PETSC_USE_COMPLEX)
   ksp->ops->computeritz                  = KSPComputeRitz_GMRES;
-#endif
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C",KSPGMRESSetPreAllocateVectors_GMRES));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetOrthogonalization_C",KSPGMRESSetOrthogonalization_GMRES));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESGetOrthogonalization_C",KSPGMRESGetOrthogonalization_GMRES));
