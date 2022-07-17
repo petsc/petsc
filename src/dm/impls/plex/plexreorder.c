@@ -93,15 +93,20 @@ PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, DMLabel label, IS
   /* Segregate */
   if (label) {
     IS              valueIS;
-    const PetscInt *values;
+    const PetscInt *valuesTmp;
+    PetscInt       *values;
     PetscInt        numValues, numPoints = 0;
     PetscInt       *sperm, *vsize, *voff, v;
 
+    // Can't directly sort the valueIS, since it is a view into the DMLabel
     PetscCall(DMLabelGetValueIS(label, &valueIS));
-    PetscCall(ISSort(valueIS));
     PetscCall(ISGetLocalSize(valueIS, &numValues));
-    PetscCall(ISGetIndices(valueIS, &values));
-    PetscCall(PetscCalloc3(numCells,&sperm,numValues,&vsize,numValues+1,&voff));
+    PetscCall(ISGetIndices(valueIS, &valuesTmp));
+    PetscCall(PetscCalloc4(numCells, &sperm, numValues, &values, numValues, &vsize, numValues+1,&voff));
+    PetscCall(PetscArraycpy(values, valuesTmp, numValues));
+    PetscCall(PetscSortInt(numValues, values));
+    PetscCall(ISRestoreIndices(valueIS, &valuesTmp));
+    PetscCall(ISDestroy(&valueIS));
     for (v = 0; v < numValues; ++v) {
       PetscCall(DMLabelGetStratumSize(label, values[v], &vsize[v]));
       if (v < numValues-1) voff[v+2] += vsize[v] + voff[v+1];
@@ -121,10 +126,8 @@ PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, DMLabel label, IS
     for (v = 0; v < numValues; ++v) {
       PetscCheck(voff[v+1] - voff[v] == vsize[v],PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of %" PetscInt_FMT " values found is %" PetscInt_FMT " != %" PetscInt_FMT, values[v], voff[v+1] - voff[v], vsize[v]);
     }
-    PetscCall(ISRestoreIndices(valueIS, &values));
-    PetscCall(ISDestroy(&valueIS));
     PetscCall(PetscArraycpy(cperm, sperm, numCells));
-    PetscCall(PetscFree3(sperm, vsize, voff));
+    PetscCall(PetscFree4(sperm, values, vsize, voff));
   }
   /* Construct closure */
   PetscCall(DMPlexCreateOrderingClosure_Static(dm, numCells, cperm, &clperm, &invclperm));

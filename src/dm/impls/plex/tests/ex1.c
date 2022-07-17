@@ -507,6 +507,8 @@ int main(int argc, char **argv)
       args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-ascii.msh4
     test:
       suffix: gmsh_3d_binary_v22
+      # Could not remake binary to remove extra face labeling
+      output_file: output/ex1_gmsh_3d_legacy_v22_bin.out
       args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-binary.msh2
     test:
       suffix: gmsh_3d_binary_v40

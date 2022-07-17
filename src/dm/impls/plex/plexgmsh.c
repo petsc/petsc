@@ -1695,8 +1695,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
       if (interpolate && elem->dim == dim-1) {
         PetscInt        joinSize;
         const PetscInt *join = NULL;
-        const PetscInt  tag = elem->tags[0];
-        PetscInt        r;
+        PetscInt        Nt = elem->numTags, t, r;
 
         /* Find the relevant facet with vertex joins */
         for (v = 0; v < elem->numVerts; ++v) {
@@ -1706,9 +1705,13 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
         }
         PetscCall(DMPlexGetFullJoin(*dm, elem->numVerts, cone, &joinSize, &join));
         PetscCheck(joinSize == 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Could not determine Plex facet for Gmsh element %" PetscInt_FMT " (Plex cell %" PetscInt_FMT ")", elem->id, e);
-        if (!Nr) PetscCall(DMSetLabelValue_Fast(*dm, &faceSets, "Face Sets", join[0], tag));
-        for (r = 0; r < Nr; ++r) {
-          if (mesh->regionTags[r] == tag) PetscCall(DMSetLabelValue_Fast(*dm, &regionSets[r], mesh->regionNames[r], join[0], tag));
+        for (t = 0; t < Nt; ++t) {
+          const PetscInt tag = elem->tags[t];
+
+          if (!Nr) PetscCall(DMSetLabelValue_Fast(*dm, &faceSets, "Face Sets", join[0], tag));
+          for (r = 0; r < Nr; ++r) {
+            if (mesh->regionTags[r] == tag) PetscCall(DMSetLabelValue_Fast(*dm, &regionSets[r], mesh->regionNames[r], join[0], tag));
+          }
         }
         PetscCall(DMPlexRestoreJoin(*dm, elem->numVerts, cone, &joinSize, &join));
       }

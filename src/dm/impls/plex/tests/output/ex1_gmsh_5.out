@@ -8,5 +8,5 @@ Labels:
   celltype: 3 strata with value/size (0 (250), 4 (196), 1 (445))
   depth: 3 strata with value/size (0 (250), 1 (445), 2 (196))
   Cell Sets: 1 strata with value/size (6 (196))
-  Face Sets: 4 strata with value/size (2 (49), 3 (4), 4 (49), 5 (4))
+  Face Sets: 5 strata with value/size (2 (53), 1 (49), 3 (53), 4 (53), 5 (4))
   Vertex Sets: 1 strata with value/size (1 (1))
