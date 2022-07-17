@@ -52,7 +52,7 @@ const char *const MatFactorTypes[] = {"NONE","LU","CHOLESKY","ILU","ICC","ILUDT"
 
    Input Parameters:
 +  x  - the matrix
--  rctx - the random number context, formed by PetscRandomCreate(), or NULL and
+-  rctx - the random number context, formed by `PetscRandomCreate()`, or NULL and
           it will create one internally.
 
    Output Parameter:
@@ -116,7 +116,7 @@ PetscErrorCode MatSetRandom(Mat x,PetscRandom rctx)
    Notes:
     This routine does not work for factorizations done with external packages.
 
-    This routine should only be called if MatGetFactorError() returns a value of MAT_FACTOR_NUMERIC_ZEROPIVOT
+    This routine should only be called if `MatGetFactorError()` returns a value of `MAT_FACTOR_NUMERIC_ZEROPIVOT`
 
     This can be called on non-factored matrices that come from, for example, matrices used in SOR.
 
@@ -149,7 +149,8 @@ PetscErrorCode MatFactorGetErrorZeroPivot(Mat mat,PetscReal *pivot,PetscInt *row
    Notes:
     This can be called on non-factored matrices that come from, for example, matrices used in SOR.
 
-.seealso: `MatZeroEntries()`, `MatFactor()`, `MatGetFactor()`, `MatLUFactorSymbolic()`, `MatCholeskyFactorSymbolic()`, `MatFactorClearError()`, `MatFactorGetErrorZeroPivot()`
+.seealso: `MatZeroEntries()`, `MatFactor()`, `MatGetFactor()`, `MatLUFactorSymbolic()`, `MatCholeskyFactorSymbolic()`, `MatFactorClearError()`, `MatFactorGetErrorZeroPivot()`,
+          `MatErrorCode`
 @*/
 PetscErrorCode MatFactorGetError(Mat mat,MatFactorError *err)
 {
@@ -173,7 +174,8 @@ PetscErrorCode MatFactorGetError(Mat mat,MatFactorError *err)
    Notes:
     This can be called on non-factored matrices that come from, for example, matrices used in SOR.
 
-.seealso: `MatZeroEntries()`, `MatFactor()`, `MatGetFactor()`, `MatLUFactorSymbolic()`, `MatCholeskyFactorSymbolic()`, `MatFactorGetError()`, `MatFactorGetErrorZeroPivot()`
+.seealso: `MatZeroEntries()`, `MatFactor()`, `MatGetFactor()`, `MatLUFactorSymbolic()`, `MatCholeskyFactorSymbolic()`, `MatFactorGetError()`, `MatFactorGetErrorZeroPivot()`,
+          `MatGetErrorCode()`, `MatErrorCode`
 @*/
 PetscErrorCode MatFactorClearError(Mat mat)
 {
@@ -311,12 +313,13 @@ PetscErrorCode MatFindZeroRows(Mat mat,IS *zerorows)
 .   a - the diagonal part (which is a SEQUENTIAL matrix)
 
    Notes:
-    see the manual page for MatCreateAIJ() for more information on the "diagonal part" of the matrix.
-          Use caution, as the reference count on the returned matrix is not incremented and it is used as
-          part of the containing MPI Mat's normal operation.
+   See the manual page for `MatCreateAIJ()` for more information on the "diagonal part" of the matrix.
+
+   Use caution, as the reference count on the returned matrix is not incremented and it is used as part of the containing MPI Mat's normal operation.
 
    Level: advanced
 
+.seelaso: `MatCreateAIJ()`
 @*/
 PetscErrorCode MatGetDiagonalBlock(Mat A,Mat *a)
 {
@@ -391,7 +394,7 @@ PetscErrorCode MatRealPart(Mat mat)
 }
 
 /*@C
-   MatGetGhosts - Get the global index of all ghost nodes defined by the sparse matrix
+   MatGetGhosts - Get the global indices of all ghost nodes defined by the sparse matrix
 
    Collective on Mat
 
@@ -403,7 +406,7 @@ PetscErrorCode MatRealPart(Mat mat)
 -   ghosts - the global indices of the ghost points
 
    Notes:
-    the nghosts and ghosts are suitable to pass into VecCreateGhost()
+    the nghosts and ghosts are suitable to pass into `VecCreateGhost()`
 
    Level: advanced
 
@@ -479,7 +482,7 @@ PetscErrorCode MatMissingDiagonal(Mat mat,PetscBool *missing,PetscInt *dd)
 }
 
 /*@C
-   MatGetRow - Gets a row of a matrix.  You MUST call MatRestoreRow()
+   MatGetRow - Gets a row of a matrix.  You MUST call `MatRestoreRow()`
    for each row that you get to ensure that your application does
    not bleed memory.
 
@@ -499,22 +502,26 @@ PetscErrorCode MatMissingDiagonal(Mat mat,PetscBool *missing,PetscInt *dd)
    to the structure of a matrix.  We hope that we provide enough
    high-level matrix routines that few users will need it.
 
-   MatGetRow() always returns 0-based column indices, regardless of
+   `MatGetRow()` always returns 0-based column indices, regardless of
    whether the internal representation is 0-based (default) or 1-based.
 
    For better efficiency, set cols and/or vals to NULL if you do
    not wish to extract these quantities.
 
-   The user can only examine the values extracted with MatGetRow();
+   The user can only examine the values extracted with `MatGetRow()`;
    the values cannot be altered.  To change the matrix entries, one
-   must use MatSetValues().
+   must use `MatSetValues()`.
 
-   You can only have one call to MatGetRow() outstanding for a particular
-   matrix at a time, per processor. MatGetRow() can only obtain rows
+   You can only have one call to `MatGetRow()` outstanding for a particular
+   matrix at a time, per processor. `MatGetRow()` can only obtain rows
    associated with the given processor, it cannot get rows from the
-   other processors; for that we suggest using MatCreateSubMatrices(), then
-   MatGetRow() on the submatrix. The row index passed to MatGetRow()
+   other processors; for that we suggest using `MatCreateSubMatrices()`, then
+   MatGetRow() on the submatrix. The row index passed to `MatGetRow()`
    is in the global number of rows.
+
+   Use `MatGetRowIJ()` and `MatRestoreRowIJ()` to access all the local indices of the sparse matrix.
+
+   Use `MatSeqAIJGetArray()` and similar functions to access the numerical values for certain matrix types directly.
 
    Fortran Notes:
    The calling sequence from Fortran is
@@ -534,7 +541,7 @@ PetscErrorCode MatMissingDiagonal(Mat mat,PetscBool *missing,PetscInt *dd)
 
    Level: advanced
 
-.seealso: `MatRestoreRow()`, `MatSetValues()`, `MatGetValues()`, `MatCreateSubMatrices()`, `MatGetDiagonal()`
+.seealso: `MatRestoreRow()`, `MatSetValues()`, `MatGetValues()`, `MatCreateSubMatrices()`, `MatGetDiagonal()`, `MatGetRowIJ()`, `MatRestoreRowIJ()`
 @*/
 PetscErrorCode MatGetRow(Mat mat,PetscInt row,PetscInt *ncols,const PetscInt *cols[],const PetscScalar *vals[])
 {
@@ -565,7 +572,7 @@ PetscErrorCode MatGetRow(Mat mat,PetscInt row,PetscInt *ncols,const PetscInt *co
 
    Level: advanced
 
-.seealso: `VecConjugate()`
+.seealso: `VecConjugate()`, `MatTranspose()`
 @*/
 PetscErrorCode MatConjugate(Mat mat)
 {
@@ -580,7 +587,7 @@ PetscErrorCode MatConjugate(Mat mat)
 }
 
 /*@C
-   MatRestoreRow - Frees any temporary space allocated by MatGetRow().
+   MatRestoreRow - Frees any temporary space allocated by `MatGetRow()`.
 
    Not Collective
 
@@ -595,7 +602,7 @@ PetscErrorCode MatConjugate(Mat mat)
 
    This routine zeros out ncols, cols, and vals. This is to prevent accidental
    us of the array after it has been restored. If you pass NULL, it will
-   not zero the pointers.  Use of cols or vals after MatRestoreRow is invalid.
+   not zero the pointers.  Use of cols or vals after `MatRestoreRow()` is invalid.
 
    Fortran Notes:
    The calling sequence from Fortran is
@@ -609,8 +616,8 @@ PetscErrorCode MatConjugate(Mat mat)
 .ve
    Where maxcols >= maximum nonzeros in any row of the matrix.
 
-   In Fortran MatRestoreRow() MUST be called after MatGetRow()
-   before another call to MatGetRow() can be made.
+   In Fortran `MatRestoreRow()` MUST be called after `MatGetRow()`
+   before another call to `MatGetRow()` can be made.
 
    Level: advanced
 
@@ -631,8 +638,8 @@ PetscErrorCode MatRestoreRow(Mat mat,PetscInt row,PetscInt *ncols,const PetscInt
 }
 
 /*@
-   MatGetRowUpperTriangular - Sets a flag to enable calls to MatGetRow() for matrix in MATSBAIJ format.
-   You should call MatRestoreRowUpperTriangular() after calling MatGetRow/MatRestoreRow() to disable the flag.
+   MatGetRowUpperTriangular - Sets a flag to enable calls to `MatGetRow()` for matrix in `MATSBAIJ` format.
+   You should call `MatRestoreRowUpperTriangular()` after calling` MatGetRow()` and `MatRestoreRow()` to disable the flag.
 
    Not Collective
 
@@ -640,7 +647,7 @@ PetscErrorCode MatRestoreRow(Mat mat,PetscInt row,PetscInt *ncols,const PetscInt
 .  mat - the matrix
 
    Notes:
-   The flag is to ensure that users are aware of MatGetRow() only provides the upper triangular part of the row for the matrices in MATSBAIJ format.
+   The flag is to ensure that users are aware of `MatGetRow()` only provides the upper triangular part of the row for the matrices in `MATSBAIJ` format.
 
    Level: advanced
 
@@ -660,7 +667,7 @@ PetscErrorCode MatGetRowUpperTriangular(Mat mat)
 }
 
 /*@
-   MatRestoreRowUpperTriangular - Disable calls to MatGetRow() for matrix in MATSBAIJ format.
+   MatRestoreRowUpperTriangular - Disable calls to `MatGetRow()` for matrix in `MATSBAIJ` format.
 
    Not Collective
 
@@ -668,7 +675,7 @@ PetscErrorCode MatGetRowUpperTriangular(Mat mat)
 .  mat - the matrix
 
    Notes:
-   This routine should be called after you have finished MatGetRow/MatRestoreRow().
+   This routine should be called after you have finished calls to `MatGetRow()` and `MatRestoreRow()`.
 
    Level: advanced
 
@@ -862,8 +869,11 @@ PetscErrorCode MatGetOptionsPrefix(Mat A,const char *prefix[])
 .  A - the Mat context
 
    Notes:
-   The allocated memory will be shrunk after calling MatAssembly with MAT_FINAL_ASSEMBLY. Users can reset the preallocation to access the original memory.
-   Currently support MPIAIJ and SEQAIJ.
+   The allocated memory will be shrunk after calling `MatAssemblyBegin()` and `MatAssemblyEnd()` with `MAT_FINAL_ASSEMBLY`.
+
+   Users can reset the preallocation to access the original memory.
+
+   Currently only supported for  `MATMPIAIJ` and `MATSEQAIJ` matrices.
 
    Level: beginner
 
@@ -953,42 +963,42 @@ PetscErrorCode  MatViewFromOptions(Mat A,PetscObject obj,const char name[])
 
   Notes:
   The available visualization contexts include
-+    PETSC_VIEWER_STDOUT_SELF - for sequential matrices
-.    PETSC_VIEWER_STDOUT_WORLD - for parallel matrices created on PETSC_COMM_WORLD
-.    PETSC_VIEWER_STDOUT_(comm) - for matrices created on MPI communicator comm
--     PETSC_VIEWER_DRAW_WORLD - graphical display of nonzero structure
++    `PETSC_VIEWER_STDOUT_SELF` - for sequential matrices
+.    `PETSC_VIEWER_STDOUT_WORLD` - for parallel matrices created on `PETSC_COMM_WORLD`
+.    `PETSC_VIEWER_STDOUT_`(comm) - for matrices created on MPI communicator comm
+-     `PETSC_VIEWER_DRAW_WORLD` - graphical display of nonzero structure
 
    The user can open alternative visualization contexts with
-+    PetscViewerASCIIOpen() - Outputs matrix to a specified file
-.    PetscViewerBinaryOpen() - Outputs matrix in binary to a
++    `PetscViewerASCIIOpen()` - Outputs matrix to a specified file
+.    `PetscViewerBinaryOpen()` - Outputs matrix in binary to a
          specified file; corresponding input uses MatLoad()
-.    PetscViewerDrawOpen() - Outputs nonzero matrix structure to
+.    `PetscViewerDrawOpen()` - Outputs nonzero matrix structure to
          an X window display
--    PetscViewerSocketOpen() - Outputs matrix to Socket viewer.
+-    `PetscViewerSocketOpen()` - Outputs matrix to Socket viewer.
          Currently only the sequential dense and AIJ
          matrix types support the Socket viewer.
 
-   The user can call PetscViewerPushFormat() to specify the output
-   format of ASCII printed objects (when using PETSC_VIEWER_STDOUT_SELF,
-   PETSC_VIEWER_STDOUT_WORLD and PetscViewerASCIIOpen).  Available formats include
-+    PETSC_VIEWER_DEFAULT - default, prints matrix contents
-.    PETSC_VIEWER_ASCII_MATLAB - prints matrix contents in Matlab format
-.    PETSC_VIEWER_ASCII_DENSE - prints entire matrix including zeros
-.    PETSC_VIEWER_ASCII_COMMON - prints matrix contents, using a sparse
+   The user can call `PetscViewerPushFormat()` to specify the output
+   format of ASCII printed objects (when using `PETSC_VIEWER_STDOUT_SELF`,
+   `PETSC_VIEWER_STDOUT_WORLD` and `PetscViewerASCIIOpen()`).  Available formats include
++    `PETSC_VIEWER_DEFAULT` - default, prints matrix contents
+.    `PETSC_VIEWER_ASCII_MATLAB` - prints matrix contents in Matlab format
+.    `PETSC_VIEWER_ASCII_DENSE` - prints entire matrix including zeros
+.    `PETSC_VIEWER_ASCII_COMMON` - prints matrix contents, using a sparse
          format common among all matrix types
-.    PETSC_VIEWER_ASCII_IMPL - prints matrix contents, using an implementation-specific
+.    `PETSC_VIEWER_ASCII_IMPL` - prints matrix contents, using an implementation-specific
          format (which is in many cases the same as the default)
-.    PETSC_VIEWER_ASCII_INFO - prints basic information about the matrix
+.    `PETSC_VIEWER_ASCII_INFO` - prints basic information about the matrix
          size and structure (not the matrix entries)
--    PETSC_VIEWER_ASCII_INFO_DETAIL - prints more detailed information about
+-    `PETSC_VIEWER_ASCII_INFO_DETAIL` - prints more detailed information about
          the matrix structure
 
    Options Database Keys:
-+  -mat_view ::ascii_info - Prints info on matrix at conclusion of MatAssemblyEnd()
++  -mat_view ::ascii_info - Prints info on matrix at conclusion of `MatAssemblyEnd()`
 .  -mat_view ::ascii_info_detail - Prints more detailed info
 .  -mat_view - Prints matrix in ASCII format
 .  -mat_view ::ascii_matlab - Prints matrix in Matlab format
-.  -mat_view draw - PetscDraws nonzero structure of matrix, using MatView() and PetscDrawOpenX().
+.  -mat_view draw - PetscDraws nonzero structure of matrix, using `MatView()` and `PetscDrawOpenX()`.
 .  -display <name> - Sets display name (default is host)
 .  -draw_pause <sec> - Sets number of seconds to pause after display
 .  -mat_view socket - Sends matrix to socket, can be accessed from Matlab (see Users-Manual: ch_matlab for details)
@@ -1005,7 +1015,7 @@ PetscErrorCode  MatViewFromOptions(Mat A,PetscObject obj,const char name[])
 
     In the debugger you can do "call MatView(mat,0)" to display the matrix. (The same holds for any PETSc object viewer).
 
-    See the manual page for MatLoad() for the exact format of the binary file when the binary
+    See the manual page for `MatLoad()` for the exact format of the binary file when the binary
       viewer is used.
 
       See share/petsc/matlab/PetscBinaryRead.m for a Matlab code that can read in the binary file when the binary
@@ -1133,34 +1143,34 @@ PETSC_UNUSED static int TV_display_type(const struct _p_Mat *mat)
 
 /*@C
    MatLoad - Loads a matrix that has been stored in binary/HDF5 format
-   with MatView().  The matrix format is determined from the options database.
+   with `MatView()`.  The matrix format is determined from the options database.
    Generates a parallel MPI matrix if the communicator has more than one
    processor.  The default matrix type is AIJ.
 
    Collective on PetscViewer
 
    Input Parameters:
-+  mat - the newly loaded matrix, this needs to have been created with MatCreate()
-            or some related function before a call to MatLoad()
++  mat - the newly loaded matrix, this needs to have been created with `MatCreate()`
+            or some related function before a call to `MatLoad()`
 -  viewer - binary/HDF5 file viewer
 
    Options Database Keys:
-   Used with block matrix formats (MATSEQBAIJ,  ...) to specify
+   Used with block matrix formats (`MATSEQBAIJ`,  ...) to specify
    block size
 .    -matload_block_size <bs> - set block size
 
    Level: beginner
 
    Notes:
-   If the Mat type has not yet been given then MATAIJ is used, call MatSetFromOptions() on the
+   If the Mat type has not yet been given then `MATAIJ` is used, call `MatSetFromOptions()` on the
    Mat before calling this routine if you wish to set it from the options database.
 
-   MatLoad() automatically loads into the options database any options
+   `MatLoad()` automatically loads into the options database any options
    given in the file filename.info where filename is the name of the file
-   that was passed to the PetscViewerBinaryOpen(). The options in the info
+   that was passed to the `PetscViewerBinaryOpen()`. The options in the info
    file will be ignored if you use the -viewer_binary_skip_info option.
 
-   If the type or size of mat is not set before a call to MatLoad, PETSc
+   If the type or size of mat is not set before a call to `MatLoad()`, PETSc
    sets the default matrix type AIJ and sets the local and global sizes.
    If type and/or size is already set, then the same are used.
 
@@ -1172,29 +1182,31 @@ PETSC_UNUSED static int TV_display_type(const struct _p_Mat *mat)
    relatively small blocks of data rather than reading the entire
    matrix and then subsetting it.
 
-   Viewer's PetscViewerType must be either PETSCVIEWERBINARY or PETSCVIEWERHDF5.
-   Such viewer can be created using PetscViewerBinaryOpen()/PetscViewerHDF5Open(),
+   Viewer's `PetscViewerType` must be either `PETSCVIEWERBINARY` or `PETSCVIEWERHDF5`.
+   Such viewer can be created using `PetscViewerBinaryOpen()` or `PetscViewerHDF5Open()`,
    or the sequence like
-$    PetscViewer v;
-$    PetscViewerCreate(PETSC_COMM_WORLD,&v);
-$    PetscViewerSetType(v,PETSCVIEWERBINARY);
-$    PetscViewerSetFromOptions(v);
-$    PetscViewerFileSetMode(v,FILE_MODE_READ);
-$    PetscViewerFileSetName(v,"datafile");
-   The optional PetscViewerSetFromOptions() call allows to override PetscViewerSetType() using option
+.vb
+    `PetscViewer` v;
+    `PetscViewerCreate`(`PETSC_COMM_WORLD`,&v);
+    `PetscViewerSetType`(v,`PETSCVIEWERBINARY`);
+    `PetscViewerSetFromOptions`(v);
+    `PetscViewerFileSetMode`(v,`FILE_MODE_READ`);
+    `PetscViewerFileSetName`(v,"datafile");
+.ve
+   The optional `PetscViewerSetFromOptions()` call allows overriding `PetscViewerSetType()` using the option
 $ -viewer_type {binary,hdf5}
 
    See the example src/ksp/ksp/tutorials/ex27.c with the first approach,
    and src/mat/tutorials/ex10.c with the second approach.
 
    Notes about the PETSc binary format:
-   In case of PETSCVIEWERBINARY, a native PETSc binary format is used. Each of the blocks
+   In case of `PETSCVIEWERBINARY`, a native PETSc binary format is used. Each of the blocks
    is read onto rank 0 and then shipped to its destination rank, one after another.
    Multiple objects, both matrices and vectors, can be stored within the same file.
    Their PetscObject name is ignored; they are loaded in the order of their storage.
 
    Most users should not need to know the details of the binary storage
-   format, since MatLoad() and MatView() completely hide these details.
+   format, since `MatLoad()` and `MatView()` completely hide these details.
    But for anyone who's interested, the standard binary matrix storage
    format is
 
@@ -1209,11 +1221,11 @@ $    PetscScalar *values of all nonzeros
    PETSc automatically does the byte swapping for
 machines that store the bytes reversed, e.g.  DEC alpha, freebsd,
 Linux, Microsoft Windows and the Intel Paragon; thus if you write your own binary
-read/write routines you have to swap the bytes; see PetscBinaryRead()
-and PetscBinaryWrite() to see how this may be done.
+read/write routines you have to swap the bytes; see `PetscBinaryRead()`
+and `PetscBinaryWrite()` to see how this may be done.
 
    Notes about the HDF5 (MATLAB MAT-File Version 7.3) format:
-   In case of PETSCVIEWERHDF5, a parallel HDF5 reader is used.
+   In case of `PETSCVIEWERHDF5`, a parallel HDF5 reader is used.
    Each processor's chunk is loaded independently by its owning rank.
    Multiple objects, both matrices and vectors, can be stored within the same file.
    They are looked up by their PetscObject name.
@@ -1232,15 +1244,15 @@ $    save example.mat A b -v7.3
    See also examples src/mat/tutorials/ex10.c and src/ksp/ksp/tutorials/ex27.c
 
    Current HDF5 (MAT-File) limitations:
-   This reader currently supports only real MATSEQAIJ, MATMPIAIJ, MATSEQDENSE and MATMPIDENSE matrices.
+   This reader currently supports only real `MATSEQAIJ`, `MATMPIAIJ`, `MATSEQDENSE` and `MATMPIDENSE` matrices.
 
-   Corresponding MatView() is not yet implemented.
+   Corresponding `MatView()` is not yet implemented.
 
    The loaded matrix is actually a transpose of the original one in MATLAB,
-   unless you push PETSC_VIEWER_HDF5_MAT format (see examples above).
+   unless you push `PETSC_VIEWER_HDF5_MAT` format (see examples above).
    With this format, matrix is automatically transposed by PETSc,
    unless the matrix is marked as SPD or symmetric
-   (see MatSetOption(), MAT_SPD, MAT_SYMMETRIC).
+   (see `MatSetOption()`, `MAT_SPD`, `MAT_SYMMETRIC`).
 
    References:
 .  * - MATLAB(R) Documentation, manual page of save(), https://www.mathworks.com/help/matlab/ref/save.html#btox10b-1-version
@@ -1314,8 +1326,8 @@ static PetscErrorCode MatDestroy_Redundant(Mat_Redundant **redundant)
 
    Developer Notes:
    Some special arrays of matrices are not destroyed in this routine but instead by the routines called by
-   MatDestroySubMatrices(). Thus one must be sure that any changes here must also be made in those routines.
-   MatHeaderMerge() and MatHeaderReplace() also manipulate the data in the Mat object and likely need changes
+   `MatDestroySubMatrices()`. Thus one must be sure that any changes here must also be made in those routines.
+   MatHeaderMerge() and MatHeaderReplace() also manipulate the data in the `Mat` object and likely need changes
    if changes are needed here.
 @*/
 PetscErrorCode MatDestroy(Mat *A)
@@ -1349,8 +1361,8 @@ PetscErrorCode MatDestroy(Mat *A)
 
 /*@C
    MatSetValues - Inserts or adds a block of values into a matrix.
-   These values may be cached, so MatAssemblyBegin() and MatAssemblyEnd()
-   MUST be called after all calls to MatSetValues() have been completed.
+   These values may be cached, so `MatAssemblyBegin()` and `MatAssemblyEnd()`
+   MUST be called after all calls to `MatSetValues()` have been completed.
 
    Not Collective
 
@@ -1359,21 +1371,21 @@ PetscErrorCode MatDestroy(Mat *A)
 .  v - a logically two-dimensional array of values
 .  m, idxm - the number of rows and their global indices
 .  n, idxn - the number of columns and their global indices
--  addv - either ADD_VALUES or INSERT_VALUES, where
-   ADD_VALUES adds values to any existing entries, and
-   INSERT_VALUES replaces existing entries with new values
+-  addv - either `ADD_VALUES` or `INSERT_VALUES`, where
+   `ADD_VALUES` adds values to any existing entries, and
+   `INSERT_VALUES` replaces existing entries with new values
 
    Notes:
-   If you create the matrix yourself (that is not with a call to DMCreateMatrix()) then you MUST call MatXXXXSetPreallocation() or
-      MatSetUp() before using this routine
+   If you create the matrix yourself (that is not with a call to `DMCreateMatrix()`) then you MUST call MatXXXXSetPreallocation() or
+      `MatSetUp()` before using this routine
 
-   By default the values, v, are row-oriented. See MatSetOption() for other options.
+   By default the values, v, are row-oriented. See `MatSetOption()` for other options.
 
-   Calls to MatSetValues() with the INSERT_VALUES and ADD_VALUES
+   Calls to `MatSetValues()` with the `INSERT_VALUES` and `ADD_VALUES`
    options cannot be mixed without intervening calls to the assembly
    routines.
 
-   MatSetValues() uses 0-based row and column numbers in Fortran
+   `MatSetValues()` uses 0-based row and column numbers in Fortran
    as well as in C.
 
    Negative indices may be passed in idxm and idxn, these rows and columns are
@@ -1382,14 +1394,14 @@ PetscErrorCode MatDestroy(Mat *A)
    in the matrix.
 
    Efficiency Alert:
-   The routine MatSetValuesBlocked() may offer much better efficiency
-   for users of block sparse formats (MATSEQBAIJ and MATMPIBAIJ).
+   The routine `MatSetValuesBlocked()` may offer much better efficiency
+   for users of block sparse formats (`MATSEQBAIJ` and `MATMPIBAIJ`).
 
    Level: beginner
 
    Developer Notes:
-    This is labeled with C so does not automatically generate Fortran stubs and interfaces
-                    because it requires multiple Fortran interfaces depending on which arguments are scalar or arrays.
+   This is labeled with C so does not automatically generate Fortran stubs and interfaces
+   because it requires multiple Fortran interfaces depending on which arguments are scalar or arrays.
 
 .seealso: `MatSetOption()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `MatSetValuesBlocked()`, `MatSetValuesLocal()`,
           `InsertMode`, `INSERT_VALUES`, `ADD_VALUES`
@@ -1439,8 +1451,8 @@ PetscErrorCode MatSetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n,
 
 /*@C
    MatSetValuesIS - Inserts or adds a block of values into a matrix using IS to indicate the rows and columns
-   These values may be cached, so MatAssemblyBegin() and MatAssemblyEnd()
-   MUST be called after all calls to MatSetValues() have been completed.
+   These values may be cached, so `MatAssemblyBegin()` and `MatAssemblyEnd()`
+   MUST be called after all calls to `MatSetValues()` have been completed.
 
    Not Collective
 
@@ -1449,17 +1461,17 @@ PetscErrorCode MatSetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n,
 .  v - a logically two-dimensional array of values
 .  ism - the rows to provide
 .  isn - the columns to provide
--  addv - either ADD_VALUES or INSERT_VALUES, where
-   ADD_VALUES adds values to any existing entries, and
-   INSERT_VALUES replaces existing entries with new values
+-  addv - either `ADD_VALUES` or `INSERT_VALUES`, where
+   `ADD_VALUES` adds values to any existing entries, and
+   `INSERT_VALUES` replaces existing entries with new values
 
    Notes:
-   If you create the matrix yourself (that is not with a call to DMCreateMatrix()) then you MUST call MatXXXXSetPreallocation() or
-      MatSetUp() before using this routine
+   If you create the matrix yourself (that is not with a call to `DMCreateMatrix()`) then you MUST call MatXXXXSetPreallocation() or
+      `MatSetUp()` before using this routine
 
-   By default the values, v, are row-oriented. See MatSetOption() for other options.
+   By default the values, v, are row-oriented. See `MatSetOption()` for other options.
 
-   Calls to MatSetValues() with the INSERT_VALUES and ADD_VALUES
+   Calls to `MatSetValues()` with the `INSERT_VALUES` and `ADD_VALUES`
    options cannot be mixed without intervening calls to the assembly
    routines.
 
@@ -1472,8 +1484,8 @@ PetscErrorCode MatSetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n,
    in the matrix.
 
    Efficiency Alert:
-   The routine MatSetValuesBlocked() may offer much better efficiency
-   for users of block sparse formats (MATSEQBAIJ and MATMPIBAIJ).
+   The routine `MatSetValuesBlocked()` may offer much better efficiency
+   for users of block sparse formats (`MATSEQBAIJ` and `MATMPIBAIJ`).
 
    Level: beginner
 
@@ -1483,8 +1495,8 @@ PetscErrorCode MatSetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n,
 
     This is currently not optimized for any particular IS type
 
-.seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked(), MatSetValuesLocal(),
-          InsertMode, INSERT_VALUES, ADD_VALUES, MatSetValues()
+.seealso: `MatSetOption()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `MatSetValuesBlocked()`, `MatSetValuesLocal()`,
+          `InsertMode`, `INSERT_VALUES`, `ADD_VALUES`, `MatSetValues()`
 @*/
 PetscErrorCode MatSetValuesIS(Mat mat,IS ism,IS isn,const PetscScalar v[],InsertMode addv)
 {
@@ -1557,7 +1569,7 @@ PetscErrorCode MatSetValuesRowLocal(Mat mat,PetscInt row,const PetscScalar v[])
 
    All the nonzeros in the row must be provided
 
-   THE MATRIX MUST HAVE PREVIOUSLY HAD ITS COLUMN INDICES SET. IT IS RARE THAT THIS ROUTINE IS USED, usually MatSetValues() is used.
+   THE MATRIX MUST HAVE PREVIOUSLY HAD ITS COLUMN INDICES SET. IT IS RARE THAT THIS ROUTINE IS USED, usually `MatSetValues()` is used.
 
    The row must belong to this process
 
@@ -1606,27 +1618,27 @@ PetscErrorCode MatSetValuesRow(Mat mat,PetscInt row,const PetscScalar v[])
    INSERT_VALUES replaces existing entries with new values
 
    Notes:
-   By default the values, v, are row-oriented.  See MatSetOption() for other options.
+   By default the values, v, are row-oriented.  See `MatSetOption()` for other options.
 
-   Calls to MatSetValuesStencil() with the INSERT_VALUES and ADD_VALUES
+   Calls to `MatSetValuesStencil()` with the `INSERT_VALUES` and `ADD_VALUES`
    options cannot be mixed without intervening calls to the assembly
    routines.
 
    The grid coordinates are across the entire grid, not just the local portion
 
-   MatSetValuesStencil() uses 0-based row and column numbers in Fortran
+   `MatSetValuesStencil()` uses 0-based row and column numbers in Fortran
    as well as in C.
 
-   For setting/accessing vector values via array coordinates you can use the DMDAVecGetArray() routine
+   For setting/accessing vector values via array coordinates you can use the `DMDAVecGetArray()` routine
 
-   In order to use this routine you must either obtain the matrix with DMCreateMatrix()
-   or call MatSetLocalToGlobalMapping() and MatSetStencil() first.
+   In order to use this routine you must either obtain the matrix with `DMCreateMatrix()`
+   or call `MatSetLocalToGlobalMapping()` and `MatSetStencil()` first.
 
    The columns and rows in the stencil passed in MUST be contained within the
-   ghost region of the given process as set with DMDACreateXXX() or MatSetStencil(). For example,
-   if you create a DMDA with an overlap of one grid level and on a particular process its first
+   ghost region of the given process as set with DMDACreateXXX() or `MatSetStencil()`. For example,
+   if you create a `DMDA` with an overlap of one grid level and on a particular process its first
    local nonghost x logical coordinate is 6 (so its first ghost x logical coordinate is 5) the
-   first i index you can use in your column and row indices in MatSetStencil() is 5.
+   first i index you can use in your column and row indices in `MatSetStencil()` is 5.
 
    In Fortran idxm and idxn should be declared as
 $     MatStencil idxm(4,m),idxn(4,n)
@@ -1640,7 +1652,7 @@ $    idxm(MatStencil_c,1) = c
    For periodic boundary conditions use negative indices for values to the left (below 0; that are to be
    obtained by wrapping values from right edge). For values to the right of the last entry using that index plus one
    etc to obtain values that obtained by wrapping the values from the left edge. This does not work for anything but the
-   DM_BOUNDARY_PERIODIC boundary type.
+   `DM_BOUNDARY_PERIODIC` boundary type.
 
    For indices that don't mean anything for your case (like the k index when working in 2d) or the c index when you have
    a single value per point) you can skip filling those indices.
@@ -1649,8 +1661,8 @@ $    idxm(MatStencil_c,1) = c
    (https://computation.llnl.gov/projects/hypre-scalable-linear-solvers-multigrid-methods)
 
    Efficiency Alert:
-   The routine MatSetValuesBlockedStencil() may offer much better efficiency
-   for users of block sparse formats (MATSEQBAIJ and MATMPIBAIJ).
+   The routine `MatSetValuesBlockedStencil()` may offer much better efficiency
+   for users of block sparse formats (`MATSEQBAIJ` and `MATMPIBAIJ`).
 
    Level: beginner
 
