@@ -619,6 +619,7 @@ static PetscErrorCode MatTranspose_ScaLAPACK(Mat A,MatReuse reuse,Mat *B)
 #endif
 
   PetscFunctionBegin;
+  if (reuse == MAT_REUSE_MATRIX) PetscCall(MatTransposeCheckNonzeroState_Private(A,*B));
   if (reuse == MAT_INITIAL_MATRIX) {
     PetscCall(MatCreateScaLAPACK(PetscObjectComm((PetscObject)A),a->nb,a->mb,a->N,a->M,a->csrc,a->rsrc,&Bs));
     *B = Bs;
@@ -1456,7 +1457,8 @@ static struct _MatOps MatOps_Values = {
        0,
        0,
        0,
-       0
+       0,
+/*150*/0
 };
 
 static PetscErrorCode MatStashScatterBegin_ScaLAPACK(Mat mat,MatStash *stash,PetscInt *owners)

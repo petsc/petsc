@@ -2343,51 +2343,6 @@ PetscErrorCode MatNorm_SeqAIJ(Mat A,NormType type,PetscReal *nrm)
   PetscFunctionReturn(0);
 }
 
-/* Merged from MatGetSymbolicTranspose_SeqAIJ() - replace MatGetSymbolicTranspose_SeqAIJ()? */
-PetscErrorCode MatTransposeSymbolic_SeqAIJ(Mat A,Mat *B)
-{
-  PetscInt       i,j,anzj;
-  Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*b;
-  PetscInt       an=A->cmap->N,am=A->rmap->N;
-  PetscInt       *ati,*atj,*atfill,*ai=a->i,*aj=a->j;
-
-  PetscFunctionBegin;
-  /* Allocate space for symbolic transpose info and work array */
-  PetscCall(PetscCalloc1(an+1,&ati));
-  PetscCall(PetscMalloc1(ai[am],&atj));
-  PetscCall(PetscMalloc1(an,&atfill));
-
-  /* Walk through aj and count ## of non-zeros in each row of A^T. */
-  /* Note: offset by 1 for fast conversion into csr format. */
-  for (i=0;i<ai[am];i++) ati[aj[i]+1] += 1;
-  /* Form ati for csr format of A^T. */
-  for (i=0;i<an;i++) ati[i+1] += ati[i];
-
-  /* Copy ati into atfill so we have locations of the next free space in atj */
-  PetscCall(PetscArraycpy(atfill,ati,an));
-
-  /* Walk through A row-wise and mark nonzero entries of A^T. */
-  for (i=0;i<am;i++) {
-    anzj = ai[i+1] - ai[i];
-    for (j=0;j<anzj;j++) {
-      atj[atfill[*aj]] = i;
-      atfill[*aj++]   += 1;
-    }
-  }
-
-  /* Clean up temporary space and complete requests. */
-  PetscCall(PetscFree(atfill));
-  PetscCall(MatCreateSeqAIJWithArrays(PetscObjectComm((PetscObject)A),an,am,ati,atj,NULL,B));
-  PetscCall(MatSetBlockSizes(*B,PetscAbs(A->cmap->bs),PetscAbs(A->rmap->bs)));
-  PetscCall(MatSetType(*B,((PetscObject)A)->type_name));
-
-  b          = (Mat_SeqAIJ*)((*B)->data);
-  b->free_a  = PETSC_FALSE;
-  b->free_ij = PETSC_TRUE;
-  b->nonew   = 0;
-  PetscFunctionReturn(0);
-}
-
 PetscErrorCode  MatIsTranspose_SeqAIJ(Mat A,Mat B,PetscReal tol,PetscBool  *f)
 {
   Mat_SeqAIJ      *aij = (Mat_SeqAIJ*) A->data,*bij = (Mat_SeqAIJ*) B->data;
@@ -3632,7 +3587,8 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqAIJ,
                                         NULL,
                                         NULL,
                                         MatCreateGraph_Simple_AIJ,
-                                        MatFilter_AIJ
+                                        MatFilter_AIJ,
+                                 /*150*/MatTransposeSymbolic_SeqAIJ
 };
 
 PetscErrorCode  MatSeqAIJSetColumnIndices_SeqAIJ(Mat mat,PetscInt *indices)

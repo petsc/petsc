@@ -541,6 +541,7 @@ static PetscErrorCode MatTranspose_Elemental(Mat A,MatReuse reuse,Mat *B)
   Mat_Elemental  *a = (Mat_Elemental*)A->data, *b;
 
   PetscFunctionBegin;
+  if (reuse == MAT_REUSE_MATRIX) PetscCall(MatTransposeCheckNonzeroState_Private(A,*B));
   PetscCall(PetscObjectGetComm((PetscObject)A,&comm));
   /* Only out-of-place supported */
   PetscCheck(reuse != MAT_INPLACE_MATRIX,comm,PETSC_ERR_SUP,"Only out-of-place supported");
@@ -1319,7 +1320,8 @@ static struct _MatOps MatOps_Values = {
        0,
        0,
        0,
-       0
+       0,
+/*150*/0
 };
 
 /*MC

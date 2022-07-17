@@ -119,6 +119,8 @@ In addition to the changes above
 - Add an option -mat_factor_bind_factorization <host, device> to control where to do matrix factorization. Currently only supported with SEQAIJCUSPARSE matrices.
 - Add ``MatUpdateMPIAIJWithArray()`` and deprecate ``MatUpdateMPIAIJWithArrays()``
 - Change the coordinate array parameters in ``MatSetPreallocationCOO`` from const to non-const
+- Add enforcement of the previously unenforced rule that ``MAT_REUSE_MATRIX`` with ``MatTranspose()`` can only be used after a call to ``MatTranspose()`` with ``MAT_INITIAL_MATRIX``. Add ``MatTransposeSetPrecursor()`` to allow using ``MAT_REUSE_MATRIX`` with ``MatTranspose()`` without the initial call to ``MatTranspose()``.
+- Add ``MatTransposeSymbolic()``
 
 .. rubric:: MatCoarsen:
 

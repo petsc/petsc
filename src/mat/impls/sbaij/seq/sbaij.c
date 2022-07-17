@@ -331,6 +331,7 @@ PetscErrorCode MatRestoreRowUpperTriangular_SeqSBAIJ(Mat A)
 PetscErrorCode MatTranspose_SeqSBAIJ(Mat A,MatReuse reuse,Mat *B)
 {
   PetscFunctionBegin;
+  if (reuse == MAT_REUSE_MATRIX) PetscCall(MatTransposeCheckNonzeroState_Private(A,*B));
   if (reuse == MAT_INITIAL_MATRIX) {
     PetscCall(MatDuplicate(A,MAT_COPY_VALUES,B));
   } else if (reuse == MAT_REUSE_MATRIX) {
@@ -1508,12 +1509,13 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
                                        NULL,
                                        NULL,
                                        NULL,
-                                /*144*/MatCreateMPIMatConcatenateSeqMat_SeqSBAIJ,
+                               /*144*/ MatCreateMPIMatConcatenateSeqMat_SeqSBAIJ,
                                        NULL,
                                        NULL,
                                        NULL,
                                        NULL,
-                                       NULL
+                                       NULL,
+                               /*150*/ NULL
 };
 
 PetscErrorCode  MatStoreValues_SeqSBAIJ(Mat mat)

@@ -519,6 +519,7 @@ static PetscErrorCode MatTranspose_SeqAIJKokkos(Mat A,MatReuse reuse,Mat *B)
   Mat_SeqAIJKokkos  *atkok,*bkok;
 
   PetscFunctionBegin;
+  if (reuse == MAT_REUSE_MATRIX) PetscCall(MatTransposeCheckNonzeroState_Private(A,*B));
   PetscCall(MatSeqAIJKokkosGenerateTranspose_Private(A,&internT)); /* Generate a transpose internally */
   if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_INPLACE_MATRIX) {
     /* Deep copy internT, as we want to isolate the internal transpose */

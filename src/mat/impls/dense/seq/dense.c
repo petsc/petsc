@@ -1788,6 +1788,7 @@ static PetscErrorCode MatTranspose_SeqDense(Mat A,MatReuse reuse,Mat *matout)
   PetscScalar    *v,tmp;
 
   PetscFunctionBegin;
+  if (reuse == MAT_REUSE_MATRIX) PetscCall(MatTransposeCheckNonzeroState_Private(A,*matout));
   if (reuse == MAT_INPLACE_MATRIX) {
     if (m == n) { /* in place transpose */
       PetscCall(MatDenseGetArray(A,&v));
@@ -2991,7 +2992,8 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqDense,
                                         NULL,
                                         NULL,
                                         NULL,
-                                        NULL
+                                        NULL,
+                                /*150*/ NULL
 };
 
 /*@C
