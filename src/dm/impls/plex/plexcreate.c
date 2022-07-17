@@ -775,16 +775,18 @@ static PetscErrorCode DMPlexCreateLineMesh_Internal(DM dm,PetscInt segments,Pets
 
 static PetscErrorCode DMPlexCreateBoxMesh_Simplex_Internal(DM dm, PetscInt dim, const PetscInt faces[], const PetscReal lower[], const PetscReal upper[], const DMBoundaryType periodicity[], PetscBool interpolate)
 {
-  DM       boundary, vol;
-  PetscInt i;
+  DM      boundary, vol;
+  DMLabel bdlabel;
 
   PetscFunctionBegin;
   PetscValidPointer(dm, 1);
-  for (i = 0; i < dim; ++i) PetscCheck(periodicity[i] == DM_BOUNDARY_NONE,PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Periodicity is not supported for simplex meshes");
+  for (PetscInt i = 0; i < dim; ++i) PetscCheck(periodicity[i] == DM_BOUNDARY_NONE, PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Periodicity is not supported for simplex meshes");
   PetscCall(DMCreate(PetscObjectComm((PetscObject) dm), &boundary));
   PetscCall(DMSetType(boundary, DMPLEX));
   PetscCall(DMPlexCreateBoxSurfaceMesh_Internal(boundary, dim, faces, lower, upper, PETSC_FALSE));
   PetscCall(DMPlexGenerate(boundary, NULL, interpolate, &vol));
+  PetscCall(DMGetLabel(vol, "marker", &bdlabel));
+  if (bdlabel) PetscCall(DMPlexLabelComplete(vol, bdlabel));
   PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, PETSC_FALSE, vol));
   PetscCall(DMPlexReplace_Static(dm, &vol));
   PetscCall(DMDestroy(&boundary));
@@ -3196,7 +3198,7 @@ static PetscErrorCode DMPlexCreateBoundaryLabel_Private(DM dm, const char name[]
   DMLabel        label;
   PetscBool      hasLabel;
 
-  PetscFunctionBeginUser;
+  PetscFunctionBegin;
   PetscCall(DMHasLabel(dm, name, &hasLabel));
   if (hasLabel) PetscFunctionReturn(0);
   PetscCall(DMCreateLabel(dm, name));
