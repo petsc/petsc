@@ -8130,13 +8130,44 @@ PetscErrorCode DMPlexGetVertexNumbering(DM dm, IS *globalVertexNumbers)
 }
 
 /*@
-  DMPlexCreatePointNumbering - Create a global numbering for all points on this process
+  DMPlexCreatePointNumbering - Create a global numbering for all points.
+
+  Collective on dm
 
   Input Parameter:
 . dm   - The DMPlex object
 
   Output Parameter:
 . globalPointNumbers - Global numbers for all points on this process
+
+  Notes:
+
+  The point numbering IS is parallel, with local portion indexed by local points (see `DMGetLocalSection()`). The global
+  points are taken as stratified, with each MPI rank owning a contiguous subset of each stratum. In the IS, owned points
+  will have their non-negative value while points owned by different ranks will be involuted -(idx+1). As an example,
+  consider a parallel mesh in which the first two elements and first two vertices are owned by rank 0.
+
+  The partitioned mesh is
+```
+ (2)--0--(3)--1--(4)    (1)--0--(2)
+```
+  and its global numbering is
+```
+  (3)--0--(4)--1--(5)--2--(6)
+```
+  Then the global numbering is provided as
+```
+[0] Number of indices in set 5
+[0] 0 0
+[0] 1 1
+[0] 2 3
+[0] 3 4
+[0] 4 -6
+[1] Number of indices in set 3
+[1] 0 2
+[1] 1 5
+[1] 2 6
+```
 
   Level: developer
 
