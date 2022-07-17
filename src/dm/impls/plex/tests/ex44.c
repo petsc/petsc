@@ -132,7 +132,7 @@ int main(int argc, char **argv)
 
     test:
       suffix: tet_adapt_0
-      requires: ctetgen BROKEN
+      requires: ctetgen
       args: -dm_plex_dim 3 -dm_plex_box_faces 2,2,2 -dm_plex_separate_marker -bd 1,3 \
             -dm_plex_transform_extrude_thickness 0.5
 
