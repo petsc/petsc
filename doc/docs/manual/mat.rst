@@ -1116,6 +1116,34 @@ Once the user has finished using a row, he or she *must* call
 
 to free any space that was allocated during the call to ``MatGetRow()``.
 
+.. _sec_symbolic_numeric:
+
+Symbolic and Numeric Stages in Sparse Matrix Operations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Many sparse matrix operations can be optimized by dividing the computation into two stages: a symbolic stage that
+creates any required data structures and does all the computations that do not require the matrices' numerical values followed by one or more uses of a
+numerical stage that use the symbolically computed information. Examples of such operations include ``MatTranspose()``, ``MatCreateSubMatrices()``,
+``MatCholeskyFactorSymbolic()``, and ``MatCholeskyFactorNumeric()``.
+PETSc uses two different API's to take advantage of these optimizations.
+
+The first approach explicitly divides the computation in the API. This approach is used, for example, with ``MatCholeskyFactorSymbolic()``, ``MatCholeskyFactorNumeric()``.
+The caller can take advantage of their knowledge of changes in the nonzero structure of the sparse matrices to call the appropriate routines as needed. In fact, they can
+use ``MatGetNonzeroState()`` to determine if a new symbolic computation is needed. The drawback of this approach is that the caller of these routines has to
+manage the creation of new matrices when the nonzero structure changes.
+
+The second approach, as exemplified by ``MatTranspose()``, does not expose the two stages explicit in the API, instead a flag, ``MatReuse`` is passed through the
+API to indicate if a symbolic data structure is already available or needs to be computed. Thus ``MatTranspose(A,MAT_INITIAL_MATRIX,&B)`` is called first, then
+``MatTranspose(A,MAT_REUSE_MATRIX,&B)`` can be called repeatedly with new numerical values in the A matrix. In theory, if the nonzero structure of A changes, the
+symbolic computations for B could be redone automatically inside the same B matrix when there is a change in the nonzero state of the A matrix. In practice, in PETSc, the
+``MAT_REUSE_MATRIX`` for most PETSc routines only works if the nonzero structure does not change and the code may crash otherwise. The advantage of this approach
+(when the nonzero structure changes are handled correctly) is that the calling code does not need to keep track of the nonzero state of the matrices; everything
+"just works". However, the caller must still know when it is the first call to the routine so the flag ``MAT_INITIAL_MATRIX`` is being used. If the underlying implementation language supported detecting a yet to be initialized variable at run time, the ``MatReuse`` flag would not be need.
+
+PETSc uses two approaches because the same programming problem was solved with two different ways during PETSc's early development.
+A better model would combine both approaches; an explicit
+separation of the stages and a unified operation that internally utilized the two stages appropriately and also handled changes to the nonzero structure. Code could be simplified in many places with this approach, in most places the use of the unified API would replace the use of the separate stages.
+
 .. _sec_partitioning:
 
 Partitioning
