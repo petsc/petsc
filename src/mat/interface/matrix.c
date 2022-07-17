@@ -5132,21 +5132,24 @@ PetscErrorCode MatGetRowSum(Mat mat, Vec v)
 
    Input Parameters:
 +  mat - the matrix to transpose
--  reuse - either MAT_INITIAL_MATRIX, MAT_REUSE_MATRIX, or MAT_INPLACE_MATRIX
+-  reuse - either `MAT_INITIAL_MATRIX`, `MAT_REUSE_MATRIX`, or `MAT_INPLACE_MATRIX`
 
    Output Parameter:
 .  B - the transpose
 
    Notes:
-     If you use MAT_INPLACE_MATRIX then you must pass in &mat for B
+     If you use `MAT_INPLACE_MATRIX` then you must pass in &mat for B
 
-     MAT_REUSE_MATRIX causes the B matrix from a previous call to this function with MAT_INITIAL_MATRIX to be used
+     `MAT_REUSE_MATRIX` uses the B matrix from a previous call to this function with `MAT_INITIAL_MATRIX`. If the nonzero structure of mat
+     changed from the previous call to this function with the same matrices an error will be generated for some matrix types.
 
-     Consider using MatCreateTranspose() instead if you only need a matrix that behaves like the transpose, but don't need the storage to be changed.
+     Consider using `MatCreateTranspose()` instead if you only need a matrix that behaves like the transpose, but don't need the storage to be changed.
+
+     If mat is unchanged from the last call this function returns immediately without recomputing the result
 
    Level: intermediate
 
-.seealso: `MatMultTranspose()`, `MatMultTransposeAdd()`, `MatIsTranspose()`, `MatReuse`
+.seealso: `MatMultTranspose()`, `MatMultTransposeAdd()`, `MatIsTranspose()`, `MatReuse`, `MAT_INITIAL_MATRIX`, `MAT_REUSE_MATRIX`, `MAT_INPLACE_MATRIX`
 @*/
 PetscErrorCode MatTranspose(Mat mat,MatReuse reuse,Mat *B)
 {
