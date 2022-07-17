@@ -1409,7 +1409,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
     PetscCheck(!product->data,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Extra product struct not empty");
     PetscCall(PetscNew(&atb));
     if (!square) {
-      PetscCall(MatTranspose_SeqAIJ(A,MAT_INITIAL_MATRIX,&At));
+      PetscCall(MatTranspose(A,MAT_INITIAL_MATRIX,&At));
     }
     PetscCall(MatProductSetAlgorithm(C,"sorted"));
     PetscCall(MatMatMultSymbolic_SeqAIJ_SeqAIJ(square ? A : At,B,fill,C));
@@ -1937,7 +1937,7 @@ static PetscErrorCode MatProductNumeric_AtB_SeqAIJ_SeqAIJ(Mat C)
     PetscCheck(atb,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing product struct");
     At = atb->At;
     if (atb->updateAt && At) { /* At is computed in MatTransposeMatMultSymbolic_SeqAIJ_SeqAIJ() */
-      PetscCall(MatTranspose_SeqAIJ(A,MAT_REUSE_MATRIX,&At));
+      PetscCall(MatTranspose(A,MAT_REUSE_MATRIX,&At));
     }
     PetscCall(MatMatMultNumeric_SeqAIJ_SeqAIJ(At ? At : A,B,C));
     atb->updateAt = PETSC_TRUE;

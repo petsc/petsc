@@ -1457,7 +1457,7 @@ PetscErrorCode MatIsTranspose_SeqBAIJ(Mat A,Mat B,PetscReal tol,PetscBool  *f)
 
   PetscFunctionBegin;
   *f   = PETSC_FALSE;
-  PetscCall(MatTranspose_SeqBAIJ(A,MAT_INITIAL_MATRIX,&Btrans));
+  PetscCall(MatTranspose(A,MAT_INITIAL_MATRIX,&Btrans));
   PetscCall(MatEqual_SeqBAIJ(B,Btrans,f));
   PetscCall(MatDestroy(&Btrans));
   PetscFunctionReturn(0);

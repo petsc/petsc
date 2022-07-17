@@ -300,7 +300,7 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat R,PetscReal fill,Mat C)
   PetscFunctionBegin;
   MatCheckProduct(C,4);
   PetscCheck(!C->product->data,PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data not empty");
-  PetscCall(MatTranspose_SeqAIJ(R,MAT_INITIAL_MATRIX,&Rt));
+  PetscCall(MatTranspose(R,MAT_INITIAL_MATRIX,&Rt));
   PetscCall(MatMatMatMultSymbolic_SeqAIJ_SeqAIJ_SeqAIJ(R,A,Rt,fill,C));
 
   PetscCall(PetscNew(&rart));
@@ -322,7 +322,7 @@ PetscErrorCode MatRARtNumeric_SeqAIJ_SeqAIJ(Mat A,Mat R,Mat C)
   MatCheckProduct(C,3);
   PetscCheck(C->product->data,PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data empty");
   rart = (Mat_RARt*)C->product->data;
-  PetscCall(MatTranspose_SeqAIJ(R,MAT_REUSE_MATRIX,&rart->Rt));
+  PetscCall(MatTranspose(R,MAT_REUSE_MATRIX,&rart->Rt));
   /* MatMatMatMultSymbolic used a different data */
   C->product->data = rart->data;
   PetscCall(MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqAIJ(R,A,rart->Rt,C));
