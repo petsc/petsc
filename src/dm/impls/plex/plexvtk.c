@@ -51,6 +51,9 @@ PetscErrorCode DMPlexVTKGetCellType_Internal(DM dm, PetscInt dim, PetscInt corne
     case 4:
       *cellType = 10; /* VTK_TETRA */
       break;
+    case 5:
+      *cellType = 14; /* VTK_PYRAMID */
+      break;
     case 6:
       *cellType = 13; /* VTK_WEDGE */
       break;

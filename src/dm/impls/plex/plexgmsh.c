@@ -1275,7 +1275,6 @@ static PetscErrorCode GmshReadPeriodic(GmshFile *gmsh, GmshMesh *mesh)
 }
 
 #define DM_POLYTOPE_VERTEX  DM_POLYTOPE_POINT
-#define DM_POLYTOPE_PYRAMID DM_POLYTOPE_UNKNOWN
 static const DMPolytopeType DMPolytopeMap[] = {
   /* GMSH_VTX */ DM_POLYTOPE_VERTEX,
   /* GMSH_SEG */ DM_POLYTOPE_SEGMENT,
