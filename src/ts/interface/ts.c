@@ -3533,7 +3533,7 @@ PetscErrorCode  TSStep(TS ts)
     ts->steps++;
     ts->steprollback = PETSC_FALSE;
     ts->steprestart  = PETSC_FALSE;
-    if (ts->tspan && PetscIsCloseAtTol(ts->ptime,ts->tspan->span_times[ts->tspan->spanctr],10*PETSC_MACHINE_EPSILON,0) && ts->tspan->spanctr < ts->tspan->num_span_times) PetscCall(VecCopy(ts->vec_sol,ts->tspan->vecs_sol[ts->tspan->spanctr++]));
+    if (ts->tspan && PetscIsCloseAtTol(ts->ptime,ts->tspan->span_times[ts->tspan->spanctr],ts->tspan->reltol*ts->time_step+ts->tspan->abstol,0) && ts->tspan->spanctr < ts->tspan->num_span_times) PetscCall(VecCopy(ts->vec_sol,ts->tspan->vecs_sol[ts->tspan->spanctr++]));
   }
 
   if (!ts->reason) {
@@ -3828,7 +3828,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   PetscCheck(ts->exact_final_time != TS_EXACTFINALTIME_MATCHSTEP || ts->adapt,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Since TS is not adaptive you cannot use TS_EXACTFINALTIME_MATCHSTEP, suggest TS_EXACTFINALTIME_INTERPOLATE");
   PetscCheck(!(ts->tspan && ts->exact_final_time != TS_EXACTFINALTIME_MATCHSTEP),PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"You must use TS_EXACTFINALTIME_MATCHSTEP when using time span");
 
-  if (ts->tspan && PetscIsCloseAtTol(ts->ptime,ts->tspan->span_times[0],10*PETSC_MACHINE_EPSILON,0)) { /* starting point in time span */
+  if (ts->tspan && PetscIsCloseAtTol(ts->ptime,ts->tspan->span_times[0],ts->tspan->reltol*ts->time_step+ts->tspan->abstol,0)) { /* starting point in time span */
     PetscCall(VecCopy(ts->vec_sol,ts->tspan->vecs_sol[0]));
     ts->tspan->spanctr = 1;
   }
@@ -6258,6 +6258,8 @@ PetscErrorCode TSSetTimeSpan(TS ts,PetscInt n,PetscReal *span_times)
     TSTimeSpan tspan;
     PetscCall(PetscNew(&tspan));
     PetscCall(PetscMalloc1(n,&tspan->span_times));
+    tspan->reltol = 1e-6;
+    tspan->abstol = 10*PETSC_MACHINE_EPSILON;
     ts->tspan = tspan;
   }
   ts->tspan->num_span_times = n;
