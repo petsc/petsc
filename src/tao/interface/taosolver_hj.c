@@ -3,7 +3,7 @@
 /*@C
    TaoSetHessian - Sets the function to compute the Hessian as well as the location to store the matrix.
 
-   Logically collective on Tao
+   Logically collective on tao
 
    Input Parameters:
 +  tao  - the Tao context
@@ -24,7 +24,7 @@ $    func(Tao tao,Vec x,Mat H,Mat Hpre,void *ctx);
 
    Level: beginner
 
-.seealso: `TaoSetObjective()`, `TaoSetGradient()`, `TaoSetObjectiveAndGradient()`, `TaoGetHessian()`
+.seealso: `Tao`, `TaoTypes`, `TaoSetObjective()`, `TaoSetGradient()`, `TaoSetObjectiveAndGradient()`, `TaoGetHessian()`
 @*/
 PetscErrorCode TaoSetHessian(Tao tao, Mat H, Mat Hpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, void*), void *ctx)
 {
@@ -78,7 +78,7 @@ $    func(Tao tao,Vec x,Mat H,Mat Hpre,void *ctx);
 
    Level: beginner
 
-.seealso: `TaoGetObjective()`, `TaoGetGradient()`, `TaoGetObjectiveAndGradient()`, `TaoSetHessian()`
+.seealso: `Tao`, TaoType`, `TaoGetObjective()`, `TaoGetGradient()`, `TaoGetObjectiveAndGradient()`, `TaoSetHessian()`
 @*/
 PetscErrorCode TaoGetHessian(Tao tao, Mat *H, Mat *Hpre, PetscErrorCode (**func)(Tao, Vec, Mat, Mat, void*), void **ctx)
 {
@@ -221,9 +221,9 @@ PetscErrorCode TaoTestHessian(Tao tao)
 
 /*@C
    TaoComputeHessian - Computes the Hessian matrix that has been
-   set with TaoSetHessian().
+   set with `TaoSetHessian()`.
 
-   Collective on Tao
+   Collective on tao
 
    Input Parameters:
 +  tao - the Tao solver context
@@ -242,16 +242,16 @@ PetscErrorCode TaoTestHessian(Tao tao)
    Most users should not need to explicitly call this routine, as it
    is used internally within the minimization solvers.
 
-   TaoComputeHessian() is typically used within minimization
-   implementations, so most users would not generally call this routine
+   `TaoComputeHessian()` is typically used within optimization algorithms,
+   so most users would not generally call this routine
    themselves.
 
-   Developer Notes:
-   The Hessian test mechanism follows SNESTestJacobian().
+   Developer Note:
+   The Hessian test mechanism follows `SNESTestJacobian()`.
 
    Level: developer
 
-.seealso: `TaoComputeObjective()`, `TaoComputeObjectiveAndGradient()`, `TaoSetHessian()`
+.seealso: `Tao`, `TaoComputeObjective()`, `TaoComputeObjectiveAndGradient()`, `TaoSetHessian()`
 @*/
 PetscErrorCode TaoComputeHessian(Tao tao, Vec X, Mat H, Mat Hpre)
 {
@@ -277,7 +277,7 @@ PetscErrorCode TaoComputeHessian(Tao tao, Vec X, Mat H, Mat Hpre)
    TaoComputeJacobian - Computes the Jacobian matrix that has been
    set with TaoSetJacobianRoutine().
 
-   Collective on Tao
+   Collective on tao
 
    Input Parameters:
 +  tao - the Tao solver context
@@ -291,7 +291,7 @@ PetscErrorCode TaoComputeHessian(Tao tao, Vec X, Mat H, Mat Hpre)
    Most users should not need to explicitly call this routine, as it
    is used internally within the minimization solvers.
 
-   TaoComputeJacobian() is typically used within minimization
+   `TaoComputeJacobian()` is typically used within minimization
    implementations, so most users would not generally call this routine
    themselves.
 
@@ -319,9 +319,9 @@ PetscErrorCode TaoComputeJacobian(Tao tao, Vec X, Mat J, Mat Jpre)
 
 /*@C
    TaoComputeResidualJacobian - Computes the least-squares residual Jacobian matrix that has been
-   set with TaoSetJacobianResidual().
+   set with `TaoSetJacobianResidual()`.
 
-   Collective on Tao
+   Collective on tao
 
    Input Parameters:
 +  tao - the Tao solver context
@@ -335,13 +335,13 @@ PetscErrorCode TaoComputeJacobian(Tao tao, Vec X, Mat J, Mat Jpre)
    Most users should not need to explicitly call this routine, as it
    is used internally within the minimization solvers.
 
-   TaoComputeResidualJacobian() is typically used within least-squares
+   `TaoComputeResidualJacobian()` is typically used within least-squares
    implementations, so most users would not generally call this routine
    themselves.
 
    Level: developer
 
-.seealso: `TaoComputeResidual()`, `TaoSetJacobianResidual()`
+.seealso: `Tao`, `TaoComputeResidual()`, `TaoSetJacobianResidual()`
 @*/
 PetscErrorCode TaoComputeResidualJacobian(Tao tao, Vec X, Mat J, Mat Jpre)
 {
@@ -363,9 +363,9 @@ PetscErrorCode TaoComputeResidualJacobian(Tao tao, Vec X, Mat J, Mat Jpre)
 
 /*@C
    TaoComputeJacobianState - Computes the Jacobian matrix that has been
-   set with TaoSetJacobianStateRoutine().
+   set with `TaoSetJacobianStateRoutine()`.
 
-   Collective on Tao
+   Collective on tao
 
    Input Parameters:
 +  tao - the Tao solver context
@@ -374,19 +374,15 @@ PetscErrorCode TaoComputeResidualJacobian(Tao tao, Vec X, Mat J, Mat Jpre)
    Output Parameters:
 +  J    - Jacobian matrix
 .  Jpre - Preconditioning matrix
--  Jinv -
+-  Jinv - unknown
 
    Notes:
    Most users should not need to explicitly call this routine, as it
-   is used internally within the minimization solvers.
-
-   TaoComputeJacobianState() is typically used within minimization
-   implementations, so most users would not generally call this routine
-   themselves.
+   is used internally within the optimization algorithms.
 
    Level: developer
 
-.seealso: `TaoComputeObjective()`, `TaoComputeObjectiveAndGradient()`, `TaoSetJacobianStateRoutine()`, `TaoComputeJacobianDesign()`, `TaoSetStateDesignIS()`
+.seealso: `Tao`, `TaoComputeObjective()`, `TaoComputeObjectiveAndGradient()`, `TaoSetJacobianStateRoutine()`, `TaoComputeJacobianDesign()`, `TaoSetStateDesignIS()`
 @*/
 PetscErrorCode TaoComputeJacobianState(Tao tao, Vec X, Mat J, Mat Jpre, Mat Jinv)
 {
@@ -408,9 +404,9 @@ PetscErrorCode TaoComputeJacobianState(Tao tao, Vec X, Mat J, Mat Jpre, Mat Jinv
 
 /*@C
    TaoComputeJacobianDesign - Computes the Jacobian matrix that has been
-   set with TaoSetJacobianDesignRoutine().
+   set with `TaoSetJacobianDesignRoutine()`.
 
-   Collective on Tao
+   Collective on tao
 
    Input Parameters:
 +  tao - the Tao solver context
@@ -421,15 +417,11 @@ PetscErrorCode TaoComputeJacobianState(Tao tao, Vec X, Mat J, Mat Jpre, Mat Jinv
 
    Notes:
    Most users should not need to explicitly call this routine, as it
-   is used internally within the minimization solvers.
-
-   TaoComputeJacobianDesign() is typically used within minimization
-   implementations, so most users would not generally call this routine
-   themselves.
+   is used internally within the optimization algorithms.
 
    Level: developer
 
-.seealso: `TaoComputeObjective()`, `TaoComputeObjectiveAndGradient()`, `TaoSetJacobianDesignRoutine()`, `TaoComputeJacobianDesign()`, `TaoSetStateDesignIS()`
+.seealso: `Tao`, `TaoComputeObjective()`, `TaoComputeObjectiveAndGradient()`, `TaoSetJacobianDesignRoutine()`, `TaoComputeJacobianDesign()`, `TaoSetStateDesignIS()`
 @*/
 PetscErrorCode TaoComputeJacobianDesign(Tao tao, Vec X, Mat J)
 {
@@ -452,7 +444,7 @@ PetscErrorCode TaoComputeJacobianDesign(Tao tao, Vec X, Mat J)
 /*@C
    TaoSetJacobianRoutine - Sets the function to compute the Jacobian as well as the location to store the matrix.
 
-   Logically collective on Tao
+   Logically collective on tao
 
    Input Parameters:
 +  tao  - the Tao context
@@ -472,6 +464,8 @@ $    func(Tao tao,Vec x,Mat J,Mat Jpre,void *ctx);
 -  ctx  - [optional] user-defined Jacobian context
 
    Level: intermediate
+
+.seealso: `Tao`, `TaoSetGradient()`, `TaoSetObjective()`
 @*/
 PetscErrorCode TaoSetJacobianRoutine(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, void*), void *ctx)
 {
@@ -508,7 +502,7 @@ PetscErrorCode TaoSetJacobianRoutine(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*
    TaoSetJacobianResidualRoutine - Sets the function to compute the least-squares residual Jacobian as well as the
    location to store the matrix.
 
-   Logically collective on Tao
+   Logically collective on tao
 
    Input Parameters:
 +  tao  - the Tao context
@@ -528,6 +522,8 @@ $    func(Tao tao,Vec x,Mat J,Mat Jpre,void *ctx);
 -  ctx  - [optional] user-defined Jacobian context
 
    Level: intermediate
+
+.seealso: `Tao`, `TaoSetGradient()`, `TaoSetObjective()`
 @*/
 PetscErrorCode TaoSetJacobianResidualRoutine(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, void*), void *ctx)
 {
@@ -563,9 +559,9 @@ PetscErrorCode TaoSetJacobianResidualRoutine(Tao tao, Mat J, Mat Jpre, PetscErro
 /*@C
    TaoSetJacobianStateRoutine - Sets the function to compute the Jacobian
    (and its inverse) of the constraint function with respect to the state variables.
-   Used only for pde-constrained optimization.
+   Used only for PDE-constrained optimization.
 
-   Logically collective on Tao
+   Logically collective on tao
 
    Input Parameters:
 +  tao  - the Tao context
@@ -587,7 +583,8 @@ $    func(Tao tao,Vec x,Mat J,Mat Jpre,Mat Jinv,void *ctx);
 -  ctx  - [optional] user-defined Jacobian context
 
    Level: intermediate
-.seealso: `TaoComputeJacobianState()`, `TaoSetJacobianDesignRoutine()`, `TaoSetStateDesignIS()`
+
+.seealso: `Tao`, `TaoComputeJacobianState()`, `TaoSetJacobianDesignRoutine()`, `TaoSetStateDesignIS()`
 @*/
 PetscErrorCode TaoSetJacobianStateRoutine(Tao tao, Mat J, Mat Jpre, Mat Jinv, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, Mat, void*), void *ctx)
 {
@@ -632,9 +629,9 @@ PetscErrorCode TaoSetJacobianStateRoutine(Tao tao, Mat J, Mat Jpre, Mat Jinv, Pe
 /*@C
    TaoSetJacobianDesignRoutine - Sets the function to compute the Jacobian of
    the constraint function with respect to the design variables.  Used only for
-   pde-constrained optimization.
+   PDE-constrained optimization.
 
-   Logically collective on Tao
+   Logically collective on tao
 
    Input Parameters:
 +  tao  - the Tao context
@@ -653,7 +650,7 @@ $    func(Tao tao,Vec x,Mat J,void *ctx);
 
    Level: intermediate
 
-.seealso: `TaoComputeJacobianDesign()`, `TaoSetJacobianStateRoutine()`, `TaoSetStateDesignIS()`
+.seealso: `Tao`, `TaoComputeJacobianDesign()`, `TaoSetJacobianStateRoutine()`, `TaoSetStateDesignIS()`
 @*/
 PetscErrorCode TaoSetJacobianDesignRoutine(Tao tao, Mat J, PetscErrorCode (*func)(Tao, Vec, Mat, void*), void *ctx)
 {
@@ -680,7 +677,7 @@ PetscErrorCode TaoSetJacobianDesignRoutine(Tao tao, Mat J, PetscErrorCode (*func
 /*@
    TaoSetStateDesignIS - Indicate to the Tao which variables in the
    solution vector are state variables and which are design.  Only applies to
-   pde-constrained optimization.
+   PDE-constrained optimization.
 
    Logically Collective on Tao
 
@@ -691,7 +688,7 @@ PetscErrorCode TaoSetJacobianDesignRoutine(Tao tao, Mat J, PetscErrorCode (*func
 
    Level: intermediate
 
-.seealso: `TaoSetJacobianStateRoutine()`, `TaoSetJacobianDesignRoutine()`
+.seealso: `Tao`, `TaoSetJacobianStateRoutine()`, `TaoSetJacobianDesignRoutine()`
 @*/
 PetscErrorCode TaoSetStateDesignIS(Tao tao, IS s_is, IS d_is)
 {
@@ -707,9 +704,9 @@ PetscErrorCode TaoSetStateDesignIS(Tao tao, IS s_is, IS d_is)
 
 /*@C
    TaoComputeJacobianEquality - Computes the Jacobian matrix that has been
-   set with TaoSetJacobianEqualityRoutine().
+   set with `TaoSetJacobianEqualityRoutine()`.
 
-   Collective on Tao
+   Collective on tao
 
    Input Parameters:
 +  tao - the Tao solver context
@@ -721,7 +718,7 @@ PetscErrorCode TaoSetStateDesignIS(Tao tao, IS s_is, IS d_is)
 
    Notes:
    Most users should not need to explicitly call this routine, as it
-   is used internally within the minimization solvers.
+   is used internally within the optimization algorithms.
 
    Level: developer
 
@@ -747,9 +744,9 @@ PetscErrorCode TaoComputeJacobianEquality(Tao tao, Vec X, Mat J, Mat Jpre)
 
 /*@C
    TaoComputeJacobianInequality - Computes the Jacobian matrix that has been
-   set with TaoSetJacobianInequalityRoutine().
+   set with `TaoSetJacobianInequalityRoutine()`.
 
-   Collective on Tao
+   Collective on tao
 
    Input Parameters:
 +  tao - the Tao solver context
@@ -765,7 +762,7 @@ PetscErrorCode TaoComputeJacobianEquality(Tao tao, Vec X, Mat J, Mat Jpre)
 
    Level: developer
 
-.seealso: `TaoComputeObjective()`, `TaoComputeObjectiveAndGradient()`, `TaoSetJacobianStateRoutine()`, `TaoComputeJacobianDesign()`, `TaoSetStateDesignIS()`
+.seealso: `Tao`, `TaoComputeObjective()`, `TaoComputeObjectiveAndGradient()`, `TaoSetJacobianStateRoutine()`, `TaoComputeJacobianDesign()`, `TaoSetStateDesignIS()`
 @*/
 PetscErrorCode TaoComputeJacobianInequality(Tao tao, Vec X, Mat J, Mat Jpre)
 {
@@ -788,9 +785,9 @@ PetscErrorCode TaoComputeJacobianInequality(Tao tao, Vec X, Mat J, Mat Jpre)
 /*@C
    TaoSetJacobianEqualityRoutine - Sets the function to compute the Jacobian
    (and its inverse) of the constraint function with respect to the equality variables.
-   Used only for pde-constrained optimization.
+   Used only for PDE-constrained optimization.
 
-   Logically collective on Tao
+   Logically collective on tao
 
    Input Parameters:
 +  tao  - the Tao context
@@ -811,7 +808,7 @@ $    func(Tao tao,Vec x,Mat J,Mat Jpre,void *ctx);
 
    Level: intermediate
 
-.seealso: `TaoComputeJacobianEquality()`, `TaoSetJacobianDesignRoutine()`, `TaoSetEqualityDesignIS()`
+.seealso: `Tao`, `TaoComputeJacobianEquality()`, `TaoSetJacobianDesignRoutine()`, `TaoSetEqualityDesignIS()`
 @*/
 PetscErrorCode TaoSetJacobianEqualityRoutine(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, void*), void *ctx)
 {
@@ -847,9 +844,9 @@ PetscErrorCode TaoSetJacobianEqualityRoutine(Tao tao, Mat J, Mat Jpre, PetscErro
 /*@C
    TaoSetJacobianInequalityRoutine - Sets the function to compute the Jacobian
    (and its inverse) of the constraint function with respect to the inequality variables.
-   Used only for pde-constrained optimization.
+   Used only for PDE-constrained optimization.
 
-   Logically collective on Tao
+   Logically collective on tao
 
    Input Parameters:
 +  tao  - the Tao context
@@ -870,7 +867,7 @@ $    func(Tao tao,Vec x,Mat J,Mat Jpre,void *ctx);
 
    Level: intermediate
 
-.seealso: `TaoComputeJacobianInequality()`, `TaoSetJacobianDesignRoutine()`, `TaoSetInequalityDesignIS()`
+.seealso: `Tao`, `TaoComputeJacobianInequality()`, `TaoSetJacobianDesignRoutine()`, `TaoSetInequalityDesignIS()`
 @*/
 PetscErrorCode TaoSetJacobianInequalityRoutine(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat,void*), void *ctx)
 {

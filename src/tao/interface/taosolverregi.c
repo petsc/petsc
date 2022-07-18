@@ -60,7 +60,7 @@ const char *TaoConvergedReasons_Shifted[] = {
 const char **TaoConvergedReasons = TaoConvergedReasons_Shifted - TAO_DIVERGED_USER;
 
 /*@C
-  TaoRegisterAll - Registers all of the minimization methods in the TAO
+  TaoRegisterAll - Registers all of the optimization methods in the Tao
   package.
 
   Not Collective
