@@ -293,7 +293,6 @@ static PetscErrorCode TaoSNESJacobian_PDIPM(SNES snes,Vec X, Mat J, Mat Jpre, vo
   PetscInt          proc,nx_all,*nce_all=pdipm->nce_all;
   MPI_Comm          comm;
   PetscMPIInt       rank,size;
-  Mat               jac_equality_trans=pdipm->jac_equality_trans,jac_inequality_trans=pdipm->jac_inequality_trans;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)snes,&comm));
@@ -371,10 +370,10 @@ static PetscErrorCode TaoSNESJacobian_PDIPM(SNES snes,Vec X, Mat J, Mat Jpre, vo
 
   /* (4) insert 1st row block of Jpre: [Wxx, grad g', -grad h', 0] */
   if (pdipm->Ng) { /* grad g' */
-    PetscCall(MatTranspose(tao->jacobian_equality,MAT_REUSE_MATRIX,&jac_equality_trans));
+    PetscCall(MatTranspose(tao->jacobian_equality,MAT_REUSE_MATRIX,&pdipm->jac_equality_trans));
   }
   if (pdipm->Nh) { /* grad h' */
-    PetscCall(MatTranspose(tao->jacobian_inequality,MAT_REUSE_MATRIX,&jac_inequality_trans));
+    PetscCall(MatTranspose(tao->jacobian_inequality,MAT_REUSE_MATRIX,&pdipm->jac_inequality_trans));
   }
 
   PetscCall(VecPlaceArray(pdipm->x,Xarr));
@@ -402,7 +401,7 @@ static PetscErrorCode TaoSNESJacobian_PDIPM(SNES snes,Vec X, Mat J, Mat Jpre, vo
 
     /* insert grad g' */
     if (pdipm->ng) {
-      PetscCall(MatGetRow(jac_equality_trans,i+rjstart,&nc,&aj,&aa));
+      PetscCall(MatGetRow(pdipm->jac_equality_trans,i+rjstart,&nc,&aj,&aa));
       PetscCall(MatGetOwnershipRanges(tao->jacobian_equality,&ranges));
       proc = 0;
       for (j=0; j < nc; j++) {
@@ -412,12 +411,12 @@ static PetscErrorCode TaoSNESJacobian_PDIPM(SNES snes,Vec X, Mat J, Mat Jpre, vo
         cols[0] = aj[j] - ranges[proc] + Jranges[proc] + nx_all;
         PetscCall(MatSetValue(Jpre,row,cols[0],aa[j],INSERT_VALUES));
       }
-      PetscCall(MatRestoreRow(jac_equality_trans,i+rjstart,&nc,&aj,&aa));
+      PetscCall(MatRestoreRow(pdipm->jac_equality_trans,i+rjstart,&nc,&aj,&aa));
     }
 
     /* insert -grad h' */
     if (pdipm->nh) {
-      PetscCall(MatGetRow(jac_inequality_trans,i+rjstart,&nc,&aj,&aa));
+      PetscCall(MatGetRow(pdipm->jac_inequality_trans,i+rjstart,&nc,&aj,&aa));
       PetscCall(MatGetOwnershipRanges(tao->jacobian_inequality,&ranges));
       proc = 0;
       for (j=0; j < nc; j++) {
@@ -427,7 +426,7 @@ static PetscErrorCode TaoSNESJacobian_PDIPM(SNES snes,Vec X, Mat J, Mat Jpre, vo
         cols[0] = aj[j] - ranges[proc] + Jranges[proc] + nx_all + nce_all[proc];
         PetscCall(MatSetValue(Jpre,row,cols[0],-aa[j],INSERT_VALUES));
       }
-      PetscCall(MatRestoreRow(jac_inequality_trans,i+rjstart,&nc,&aj,&aa));
+      PetscCall(MatRestoreRow(pdipm->jac_inequality_trans,i+rjstart,&nc,&aj,&aa));
     }
   }
   PetscCall(VecRestoreArrayRead(X,&Xarr));
@@ -899,7 +898,7 @@ PetscErrorCode TaoSetup_PDIPM(Tao tao)
   PetscScalar       one=1.0,neg_one=-1.0;
   const PetscInt    *cols,*rranges,*cranges,*aj,*ranges;
   const PetscScalar *aa,*Xarr;
-  Mat               J,jac_equality_trans,jac_inequality_trans;
+  Mat               J;
   Mat               Jce_xfixed_trans,Jci_xb_trans;
   PetscInt          *dnz,*onz,rjstart,nx_all,*nce_all,*Jranges,cols1[2];
 
@@ -1114,8 +1113,6 @@ PetscErrorCode TaoSetup_PDIPM(Tao tao)
   }
 
   /* Count dnz,onz for preallocation of KKT matrix */
-  jac_equality_trans   = pdipm->jac_equality_trans;
-  jac_inequality_trans = pdipm->jac_inequality_trans;
   nce_all = pdipm->nce_all;
 
   if (pdipm->Nxfixed) {
@@ -1145,7 +1142,7 @@ PetscErrorCode TaoSetup_PDIPM(Tao tao)
 
     if (pdipm->ng) {
       /* Insert grad g' */
-      PetscCall(MatGetRow(jac_equality_trans,i+rjstart,&nc,&aj,NULL));
+      PetscCall(MatGetRow(pdipm->jac_equality_trans,i+rjstart,&nc,&aj,NULL));
       PetscCall(MatGetOwnershipRanges(tao->jacobian_equality,&ranges));
       proc = 0;
       for (j=0; j < nc; j++) {
@@ -1155,7 +1152,7 @@ PetscErrorCode TaoSetup_PDIPM(Tao tao)
         col = aj[j] - ranges[proc] + Jranges[proc] + nx_all;
         PetscCall(MatPreallocateSet(row,1,&col,dnz,onz));
       }
-      PetscCall(MatRestoreRow(jac_equality_trans,i+rjstart,&nc,&aj,NULL));
+      PetscCall(MatRestoreRow(pdipm->jac_equality_trans,i+rjstart,&nc,&aj,NULL));
     }
 
     /* Insert Jce_xfixed^T' */
@@ -1175,7 +1172,7 @@ PetscErrorCode TaoSetup_PDIPM(Tao tao)
 
     if (pdipm->nh) {
       /* Insert -grad h' */
-      PetscCall(MatGetRow(jac_inequality_trans,i+rjstart,&nc,&aj,NULL));
+      PetscCall(MatGetRow(pdipm->jac_inequality_trans,i+rjstart,&nc,&aj,NULL));
       PetscCall(MatGetOwnershipRanges(tao->jacobian_inequality,&ranges));
       proc = 0;
       for (j=0; j < nc; j++) {
@@ -1185,7 +1182,7 @@ PetscErrorCode TaoSetup_PDIPM(Tao tao)
         col = aj[j] - ranges[proc] + Jranges[proc] + nx_all + nce_all[proc];
         PetscCall(MatPreallocateSet(row,1,&col,dnz,onz));
       }
-      PetscCall(MatRestoreRow(jac_inequality_trans,i+rjstart,&nc,&aj,NULL));
+      PetscCall(MatRestoreRow(pdipm->jac_inequality_trans,i+rjstart,&nc,&aj,NULL));
     }
 
     /* Insert Jci_xb^T' */
