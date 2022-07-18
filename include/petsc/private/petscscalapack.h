@@ -22,6 +22,7 @@ typedef struct {
   PetscScalar        *loc;            /* pointer to local array */
   PetscBLASInt       lld;             /* local leading dimension */
   PetscBLASInt       *pivots;         /* pivots in LU factorization */
+  PetscBool          roworiented;     /* if true, row oriented input (default) */
 } Mat_ScaLAPACK;
 
 PETSC_INTERN PetscErrorCode MatMatMultSymbolic_ScaLAPACK(Mat,Mat,PetscReal,Mat);

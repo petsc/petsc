@@ -889,7 +889,7 @@ PetscErrorCode  PetscLogEventDeactivatePush(PetscLogEvent event)
 }
 
 /*@
-  PetscLogEventDeactivatePop - Indicates that a particular event shouldbe logged.
+  PetscLogEventDeactivatePop - Indicates that a particular event should be logged.
 
   Not Collective
 
