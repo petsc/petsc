@@ -570,7 +570,7 @@ PetscErrorCode PetscLayoutGetRange(PetscLayout map,PetscInt *rstart,PetscInt *re
 .    map - pointer to the map
 
    Output Parameters:
-.    range - start of each processors range of indices (the final entry is one more then the
+.    range - start of each processors range of indices (the final entry is one more than the
              last index on the last process)
 
    Level: developer
