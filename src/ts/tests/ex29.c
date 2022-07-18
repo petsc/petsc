@@ -6,7 +6,7 @@ static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ctx)
 {
   PetscInt          i,n;
   const PetscScalar *xx;
-  /* */ PetscScalar *ff;
+  PetscScalar       *ff;
 
   PetscFunctionBegin;
   PetscCall(VecGetLocalSize(X,&n));
@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
   TS              ts;
   Vec             X,*Xs;
   PetscInt        i,n,N = 9;
-  PetscReal       tspan[3] = {0, 0.5, 1.0};
+  PetscReal       tspan[8] = {16.0, 16.1, 16.2, 16.3, 16.4, 16.5, 16.6, 16.7};
   const PetscReal *tspan2;
 
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
@@ -33,7 +33,8 @@ int main(int argc, char *argv[])
   PetscCall(TSSetRHSFunction(ts,NULL,RHSFunction,NULL));
   PetscCall(VecCreateSeq(PETSC_COMM_SELF,N,&X));
   PetscCall(VecZeroEntries(X));
-  PetscCall(TSSetTimeSpan(ts,3,tspan));
+  PetscCall(TSSetTimeStep(ts,0.001));
+  PetscCall(TSSetTimeSpan(ts,8,tspan));
   PetscCall(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP));
   PetscCall(TSSetFromOptions(ts));
   PetscCall(TSSolve(ts,X));
@@ -56,5 +57,6 @@ testset:
     args: -ts_monitor
   test:
     suffix: 2
-    args: -ts_monitor -ts_time_span 0,0.3,0.6,1.0
+    requires: !single
+    args: -ts_monitor -ts_adapt_type none
 TEST*/

@@ -146,6 +146,8 @@ typedef struct _TS_TimeSpan *TSTimeSpan;
 struct _TS_TimeSpan {
     PetscInt  num_span_times; /* number of time points */
     PetscReal *span_times;    /* array of the time span */
+    PetscReal reltol;         /* relative tolerance for span point detection */
+    PetscReal abstol;         /* absolute tolerance for span point detection */
     PetscInt  spanctr;        /* counter of the time points that have been reached */
     Vec       *vecs_sol;      /* array of the solutions at the specified time points */
 };
@@ -355,6 +357,7 @@ struct _p_TSAdapt {
   PetscViewer monitor;
   PetscInt    timestepjustdecreased_delay; /* number of timesteps after a decrease in the timestep before the timestep can be increased */
   PetscInt    timestepjustdecreased;
+  PetscReal   dt_span_cached;    /* time step before hitting a TS span time point */
 };
 
 typedef struct _p_DMTS *DMTS;

@@ -901,7 +901,7 @@ PetscErrorCode TSAdaptChoose(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,P
     PetscReal b = adapt->matchstepfac[1];
 
     if (ts->tspan) {
-      if (PetscIsCloseAtTol(t,ts->tspan->span_times[ts->tspan->spanctr],10*PETSC_MACHINE_EPSILON,0)) /* hit a span time point */
+      if (PetscIsCloseAtTol(t,ts->tspan->span_times[ts->tspan->spanctr],ts->tspan->reltol*h+ts->tspan->abstol,0)) /* hit a span time point */
         if (ts->tspan->spanctr+1 < ts->tspan->num_span_times) tmax = ts->tspan->span_times[ts->tspan->spanctr+1];
         else tmax = ts->max_time; /* hit the last span time point */
       else tmax = ts->tspan->span_times[ts->tspan->spanctr];
@@ -910,8 +910,14 @@ PetscErrorCode TSAdaptChoose(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,P
     if (t < tmax && tend > tmax) *next_h = hmax;
     if (t < tmax && tend < tmax && h*b > hmax) *next_h = hmax/2;
     if (t < tmax && tend < tmax && h*a > hmax) *next_h = hmax;
+    /* if step size is changed to match a span time point */
+    if (ts->tspan && h != *next_h && !adapt->dt_span_cached) adapt->dt_span_cached = h;
+    /* reset time step after a span time point */
+    if (ts->tspan && h == *next_h && adapt->dt_span_cached && PetscIsCloseAtTol(t,ts->tspan->span_times[ts->tspan->spanctr],ts->tspan->reltol*h+ts->tspan->abstol,0)) {
+      *next_h = adapt->dt_span_cached;
+      adapt->dt_span_cached = 0;
+    }
   }
-
   if (adapt->monitor) {
     const char *sc_name = (scheme < ncandidates) ? adapt->candidates.name[scheme] : "";
     PetscCall(PetscViewerASCIIAddTab(adapt->monitor,((PetscObject)adapt)->tablevel));
