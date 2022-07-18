@@ -340,7 +340,7 @@ PETSC_EXTERN PetscErrorCode MatCreateSeqBAIJ(MPI_Comm,PetscInt,PetscInt,PetscInt
 PETSC_EXTERN PetscErrorCode MatCreateBAIJ(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateMPIBAIJWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[],Mat*);
 
-PETSC_EXTERN PetscErrorCode MatSetPreallocationCOO(Mat,PetscCount,const PetscInt[],const PetscInt[]);
+PETSC_EXTERN PetscErrorCode MatSetPreallocationCOO(Mat,PetscCount,PetscInt[],PetscInt[]);
 PETSC_EXTERN PetscErrorCode MatSetPreallocationCOOLocal(Mat,PetscCount,PetscInt[],PetscInt[]);
 PETSC_EXTERN PetscErrorCode MatSetValuesCOO(Mat,const PetscScalar[],InsertMode);
 

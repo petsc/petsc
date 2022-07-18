@@ -6321,7 +6321,7 @@ static PetscErrorCode ExpandJmap_Internal(PetscCount nnz1,PetscCount nnz,const P
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, const PetscInt coo_i[], const PetscInt coo_j[])
+PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, PetscInt coo_i[], PetscInt coo_j[])
 {
   MPI_Comm                  comm;
   PetscMPIInt               rank,size;
@@ -6357,10 +6357,9 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, const Pe
   /* entries come first, then local rows, then remote rows.                     */
   /* ---------------------------------------------------------------------------*/
   PetscCount n1 = coo_n,*perm1;
-  PetscInt   *i1,*j1; /* Copies of input COOs along with a permutation array */
-  PetscCall(PetscMalloc3(n1,&i1,n1,&j1,n1,&perm1));
-  PetscCall(PetscArraycpy(i1,coo_i,n1)); /* Make a copy since we'll modify it */
-  PetscCall(PetscArraycpy(j1,coo_j,n1));
+  PetscInt   *i1 = coo_i,*j1 = coo_j;
+
+  PetscCall(PetscMalloc1(n1,&perm1));
   for (k=0; k<n1; k++) perm1[k] = k;
 
   /* Manipulate indices so that entries with negative row or col indices will have smallest
@@ -6548,7 +6547,7 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, const Pe
   PetscCall(PetscFree(Bjmap1));
   PetscCall(PetscFree3(rowBegin1,rowMid1,rowEnd1));
   PetscCall(PetscFree3(rowBegin2,rowMid2,rowEnd2));
-  PetscCall(PetscFree3(i1,j1,perm1));
+  PetscCall(PetscFree(perm1));
   PetscCall(PetscFree3(i2,j2,perm2));
 
   Ajmap1 = Ajmap1_new;

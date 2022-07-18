@@ -114,6 +114,7 @@ In addition to the changes above
 - Add ``MatFilter()`` to remove values with an absolute value equal to or below a give threshold
 - Add an option -mat_factor_bind_factorization <host, device> to control where to do matrix factorization. Currently only supported with SEQAIJCUSPARSE matrices.
 - Add ``MatUpdateMPIAIJWithArray()`` and deprecate ``MatUpdateMPIAIJWithArrays()``
+- Change the coordinate array parameters in ``MatSetPreallocationCOO`` from const to non-const
 
 .. rubric:: MatCoarsen:
 

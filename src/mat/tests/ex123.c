@@ -114,11 +114,11 @@ int main(int argc,char **args)
   PetscCall(MyMatView(A,NULL));
 
   /* test with unique entries */
+  PetscCall(PetscArraycpy(it,i2,n2));
+  PetscCall(PetscArraycpy(jt,j2,n2));
   if (!localapi) {
-    PetscCall(MatSetPreallocationCOO(A,n2,i2,j2));
+    PetscCall(MatSetPreallocationCOO(A,n2,it,jt));
   } else {
-    PetscCall(PetscArraycpy(it,i2,n2));
-    PetscCall(PetscArraycpy(jt,j2,n2));
     PetscCall(MatSetPreallocationCOOLocal(A,n2,it,jt));
   }
   PetscCall(MatSetValuesCOO(A,v1,ADD_VALUES));
@@ -129,11 +129,11 @@ int main(int argc,char **args)
   PetscCall(MatMultAdd(A,x,y,z));
   PetscCall(MyMatView(A,NULL));
   PetscCall(MyVecView(z,NULL));
+  PetscCall(PetscArraycpy(it,i2,n2));
+  PetscCall(PetscArraycpy(jt,j2,n2));
   if (!localapi) {
-    PetscCall(MatSetPreallocationCOO(A,n2,i2,j2));
+    PetscCall(MatSetPreallocationCOO(A,n2,it,jt));
   } else {
-    PetscCall(PetscArraycpy(it,i2,n2));
-    PetscCall(PetscArraycpy(jt,j2,n2));
     PetscCall(MatSetPreallocationCOOLocal(A,n2,it,jt));
   }
   PetscCall(MatSetValuesCOO(A,v1,INSERT_VALUES));

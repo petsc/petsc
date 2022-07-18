@@ -89,7 +89,7 @@ static PetscErrorCode MatSeqAIJCUSPARSECopyFromGPU(Mat);
 static PetscErrorCode MatSeqAIJCUSPARSEInvalidateTranspose(Mat,PetscBool);
 
 static PetscErrorCode MatSeqAIJCopySubArray_SeqAIJCUSPARSE(Mat,PetscInt,const PetscInt[],PetscScalar[]);
-static PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE(Mat,PetscCount,const PetscInt[],const PetscInt[]);
+static PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE(Mat,PetscCount,PetscInt[],PetscInt[]);
 static PetscErrorCode MatSetValuesCOO_SeqAIJCUSPARSE(Mat,const PetscScalar[],InsertMode);
 
 PETSC_INTERN PetscErrorCode MatCUSPARSESetFormat_SeqAIJCUSPARSE(Mat A,MatCUSPARSEFormatOperation op,MatCUSPARSEStorageFormat format)
@@ -4685,7 +4685,7 @@ PetscErrorCode MatSeqAIJCUSPARSEInvalidateTranspose(Mat A, PetscBool destroy)
 
 #include <thrust/binary_search.h>
 /* 'Basic' means it only works when coo_i[] and coo_j[] do not contain negative indices */
-PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE_Basic(Mat A, PetscCount n, const PetscInt coo_i[], const PetscInt coo_j[])
+PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE_Basic(Mat A, PetscCount n, PetscInt coo_i[], PetscInt coo_j[])
 {
   Mat_SeqAIJCUSPARSE *cusp = (Mat_SeqAIJCUSPARSE*)A->spptr;
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
@@ -4702,30 +4702,51 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE_Basic(Mat A, PetscCount n, 
     cusp->cooPerm_a = NULL;
   }
   if (n) {
-    THRUSTINTARRAY d_i(n);
-    THRUSTINTARRAY d_j(n);
+    thrust::device_ptr<PetscInt> d_i,d_j;
+    PetscInt                     *d_raw_i,*d_raw_j;
+    PetscBool                    free_raw_i = PETSC_FALSE,free_raw_j = PETSC_FALSE;
+    PetscMemType                 imtype,jmtype;
+
+    PetscCall(PetscGetMemType(coo_i,&imtype));
+    if (PetscMemTypeHost(imtype)) {
+      PetscCallCUDA(cudaMalloc(&d_raw_i,sizeof(PetscInt)*n));
+      PetscCallCUDA(cudaMemcpy(d_raw_i,coo_i,sizeof(PetscInt)*n,cudaMemcpyHostToDevice));
+      d_i = thrust::device_pointer_cast(d_raw_i);
+      free_raw_i = PETSC_TRUE;
+      PetscCall(PetscLogCpuToGpu(1.*n*sizeof(PetscInt)));
+    } else {
+      d_i = thrust::device_pointer_cast(coo_i);
+    }
+
+    PetscCall(PetscGetMemType(coo_j,&jmtype));
+    if (PetscMemTypeHost(jmtype)) { // MatSetPreallocationCOO_MPIAIJCUSPARSE_Basic() passes device coo_i[] and host coo_j[]!
+      PetscCallCUDA(cudaMalloc(&d_raw_j,sizeof(PetscInt)*n));
+      PetscCallCUDA(cudaMemcpy(d_raw_j,coo_j,sizeof(PetscInt)*n,cudaMemcpyHostToDevice));
+      d_j = thrust::device_pointer_cast(d_raw_j);
+      free_raw_j = PETSC_TRUE;
+      PetscCall(PetscLogCpuToGpu(1.*n*sizeof(PetscInt)));
+    } else {
+      d_j = thrust::device_pointer_cast(coo_j);
+    }
+
     THRUSTINTARRAY ii(A->rmap->n);
 
     if (!cusp->cooPerm)   { cusp->cooPerm   = new THRUSTINTARRAY(n); }
     if (!cusp->cooPerm_a) { cusp->cooPerm_a = new THRUSTINTARRAY(n); }
-
-    PetscCall(PetscLogCpuToGpu(2.*n*sizeof(PetscInt)));
-    d_i.assign(coo_i,coo_i+n);
-    d_j.assign(coo_j,coo_j+n);
 
     /* Ex.
       n = 6
       coo_i = [3,3,1,4,1,4]
       coo_j = [3,2,2,5,2,6]
     */
-    auto fkey = thrust::make_zip_iterator(thrust::make_tuple(d_i.begin(),d_j.begin()));
-    auto ekey = thrust::make_zip_iterator(thrust::make_tuple(d_i.end(),d_j.end()));
+    auto fkey = thrust::make_zip_iterator(thrust::make_tuple(d_i,d_j));
+    auto ekey = thrust::make_zip_iterator(thrust::make_tuple(d_i+n,d_j+n));
 
     PetscCall(PetscLogGpuTimeBegin());
     thrust::sequence(thrust::device, cusp->cooPerm->begin(), cusp->cooPerm->end(), 0);
     thrust::sort_by_key(fkey, ekey, cusp->cooPerm->begin(), IJCompare()); /* sort by row, then by col */
-    *cusp->cooPerm_a = d_i; /* copy the sorted array */
-    THRUSTINTARRAY w = d_j;
+    (*cusp->cooPerm_a).assign(d_i,d_i+n); /* copy the sorted array */
+    THRUSTINTARRAY w(d_j,d_j+n);
 
     /*
       d_i     = [1,1,3,3,4,4]
@@ -4753,7 +4774,7 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE_Basic(Mat A, PetscCount n, 
       thrust::inclusive_scan(cusp->cooPerm_a->begin(),cusp->cooPerm_a->end(),cusp->cooPerm_a->begin(),thrust::plus<PetscInt>()); /*cooPerm_a=[0,0,1,2,3,4]*/
     }
     thrust::counting_iterator<PetscInt> search_begin(0);
-    thrust::upper_bound(d_i.begin(), nekey.get_iterator_tuple().get<0>(), /* binary search entries of [0,1,2,3,4,5,6) in ordered array d_i = [1,3,3,4,4], supposing A->rmap->n = 6. */
+    thrust::upper_bound(d_i, nekey.get_iterator_tuple().get<0>(), /* binary search entries of [0,1,2,3,4,5,6) in ordered array d_i = [1,3,3,4,4], supposing A->rmap->n = 6. */
                         search_begin, search_begin + A->rmap->n,  /* return in ii[] the index of last position in d_i[] where value could be inserted without violating the ordering */
                         ii.begin()); /* ii = [0,1,1,3,5,5]. A leading 0 will be added later */
     PetscCall(PetscLogGpuTimeEnd());
@@ -4769,7 +4790,7 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE_Basic(Mat A, PetscCount n, 
     a->rmax = 0;
     PetscCall(PetscMalloc1(a->nz,&a->a));
     PetscCall(PetscMalloc1(a->nz,&a->j));
-    PetscCallCUDA(cudaMemcpy(a->j,d_j.data().get(),a->nz*sizeof(PetscInt),cudaMemcpyDeviceToHost));
+    PetscCallCUDA(cudaMemcpy(a->j,thrust::raw_pointer_cast(d_j),a->nz*sizeof(PetscInt),cudaMemcpyDeviceToHost));
     if (!a->ilen) PetscCall(PetscMalloc1(A->rmap->n,&a->ilen));
     if (!a->imax) PetscCall(PetscMalloc1(A->rmap->n,&a->imax));
     for (PetscInt i = 0; i < A->rmap->n; i++) {
@@ -4782,6 +4803,8 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE_Basic(Mat A, PetscCount n, 
     A->preallocated = PETSC_TRUE;
     PetscCall(PetscLogGpuToCpu((A->rmap->n+a->nz)*sizeof(PetscInt)));
     PetscCall(MatMarkDiagonal_SeqAIJ(A));
+    if (free_raw_i) PetscCallCUDA(cudaFree(d_raw_i));
+    if (free_raw_j) PetscCallCUDA(cudaFree(d_raw_j));
   } else {
     PetscCall(MatSeqAIJSetPreallocation(A,0,NULL));
   }
@@ -4797,7 +4820,7 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE_Basic(Mat A, PetscCount n, 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE(Mat mat, PetscCount coo_n, const PetscInt coo_i[], const PetscInt coo_j[])
+PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE(Mat mat, PetscCount coo_n, PetscInt coo_i[], PetscInt coo_j[])
 {
   Mat_SeqAIJ         *seq;
   Mat_SeqAIJCUSPARSE *dev;
