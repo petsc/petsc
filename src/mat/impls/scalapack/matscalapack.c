@@ -90,6 +90,8 @@ static PetscErrorCode MatGetInfo_ScaLAPACK(Mat A,MatInfoType flag,MatInfo *info)
 
 PetscErrorCode MatSetOption_ScaLAPACK(Mat A,MatOption op,PetscBool flg)
 {
+  Mat_ScaLAPACK *a = (Mat_ScaLAPACK*)A->data;
+
   PetscFunctionBegin;
   switch (op) {
     case MAT_NEW_NONZERO_LOCATIONS:
@@ -98,6 +100,9 @@ PetscErrorCode MatSetOption_ScaLAPACK(Mat A,MatOption op,PetscBool flg)
     case MAT_SYMMETRIC:
     case MAT_SORTED_FULL:
     case MAT_HERMITIAN:
+      break;
+    case MAT_ROW_ORIENTED:
+      a->roworiented = flg;
       break;
     default:
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported option %s",MatOptions[op]);
@@ -110,8 +115,10 @@ static PetscErrorCode MatSetValues_ScaLAPACK(Mat A,PetscInt nr,const PetscInt *r
   Mat_ScaLAPACK  *a = (Mat_ScaLAPACK*)A->data;
   PetscInt       i,j;
   PetscBLASInt   gridx,gcidx,lridx,lcidx,rsrc,csrc;
+  PetscBool      roworiented = a->roworiented;
 
   PetscFunctionBegin;
+  PetscCheck(imode == INSERT_VALUES || imode == ADD_VALUES,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support for InsertMode %d",(int)imode);
   for (i=0;i<nr;i++) {
     if (rows[i] < 0) continue;
     PetscCall(PetscBLASIntCast(rows[i]+1,&gridx));
@@ -120,15 +127,21 @@ static PetscErrorCode MatSetValues_ScaLAPACK(Mat A,PetscInt nr,const PetscInt *r
       PetscCall(PetscBLASIntCast(cols[j]+1,&gcidx));
       PetscStackCallBLAS("SCALAPACKinfog2l",SCALAPACKinfog2l_(&gridx,&gcidx,a->desc,&a->grid->nprow,&a->grid->npcol,&a->grid->myrow,&a->grid->mycol,&lridx,&lcidx,&rsrc,&csrc));
       if (rsrc==a->grid->myrow && csrc==a->grid->mycol) {
-        switch (imode) {
-          case INSERT_VALUES: a->loc[lridx-1+(lcidx-1)*a->lld] = vals[i*nc+j]; break;
-          case ADD_VALUES: a->loc[lridx-1+(lcidx-1)*a->lld] += vals[i*nc+j]; break;
-          default: SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support for InsertMode %d",(int)imode);
+        if (roworiented) {
+          switch (imode) {
+            case INSERT_VALUES: a->loc[lridx-1+(lcidx-1)*a->lld] = vals[i*nc+j]; break;
+            default: a->loc[lridx-1+(lcidx-1)*a->lld] += vals[i*nc+j]; break;
+          }
+        } else {
+          switch (imode) {
+            case INSERT_VALUES: a->loc[lridx-1+(lcidx-1)*a->lld] = vals[i+j*nr]; break;
+            default: a->loc[lridx-1+(lcidx-1)*a->lld] += vals[i+j*nr]; break;
+          }
         }
       } else {
         PetscCheck(!A->nooffprocentries,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Setting off process entry even though MatSetOption(,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE) was set");
         A->assembled = PETSC_FALSE;
-        PetscCall(MatStashValuesRow_Private(&A->stash,rows[i],1,cols+j,vals+i*nc+j,(PetscBool)(imode==ADD_VALUES)));
+        PetscCall(MatStashValuesRow_Private(&A->stash,rows[i],1,cols+j,roworiented ? vals+i*nc+j : vals+i+j*nr,(PetscBool)(imode==ADD_VALUES)));
       }
     }
   }
@@ -996,16 +1009,36 @@ static PetscErrorCode MatConvert_ScaLAPACK_Dense(Mat A,MatType newtype,MatReuse 
   PetscFunctionReturn(0);
 }
 
+static inline PetscErrorCode MatScaLAPACKCheckLayout(PetscLayout map,PetscBool *correct)
+{
+  const PetscInt *ranges;
+  PetscMPIInt    size;
+  PetscInt       i,n;
+
+  PetscFunctionBegin;
+  *correct = PETSC_TRUE;
+  PetscCallMPI(MPI_Comm_size(map->comm,&size));
+  if (size>1) {
+    PetscCall(PetscLayoutGetRanges(map,&ranges));
+    n = ranges[1]-ranges[0];
+    for (i=1;i<size;i++) if (ranges[i+1]-ranges[i]!=n) break;
+    *correct = (PetscBool)(i == size || (i == size - 1 && ranges[i+1]-ranges[i] <= n));
+  }
+  PetscFunctionReturn(0);
+}
+
 PETSC_INTERN PetscErrorCode MatConvert_Dense_ScaLAPACK(Mat A,MatType newtype,MatReuse reuse,Mat *B)
 {
   Mat_ScaLAPACK  *b;
   Mat            Bmpi;
   MPI_Comm       comm;
   PetscInt       M=A->rmap->N,N=A->cmap->N,m,n;
-  const PetscInt *ranges;
+  const PetscInt *ranges,*rows,*cols;
   PetscBLASInt   adesc[9],amb,zero=0,one=1,lld,info;
   PetscScalar    *aarray;
+  IS             ir,ic;
   PetscInt       lda;
+  PetscBool      flg;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)A,&comm));
@@ -1023,19 +1056,34 @@ PETSC_INTERN PetscErrorCode MatConvert_Dense_ScaLAPACK(Mat A,MatType newtype,Mat
   }
   b = (Mat_ScaLAPACK*)Bmpi->data;
 
-  /* create ScaLAPACK descriptor for A (1d block distribution) */
-  PetscCall(PetscLayoutGetRanges(A->rmap,&ranges));
-  PetscCall(PetscBLASIntCast(ranges[1],&amb));  /* row block size */
   PetscCall(MatDenseGetLDA(A,&lda));
-  lld = PetscMax(lda,1);  /* local leading dimension */
-  PetscStackCallBLAS("SCALAPACKdescinit",SCALAPACKdescinit_(adesc,&b->M,&b->N,&amb,&b->N,&zero,&zero,&b->grid->ictxcol,&lld,&info));
-  PetscCheckScaLapackInfo("descinit",info);
-
-  /* redistribute matrix */
   PetscCall(MatDenseGetArray(A,&aarray));
-  PetscStackCallBLAS("SCALAPACKgemr2d",SCALAPACKgemr2d_(&b->M,&b->N,aarray,&one,&one,adesc,b->loc,&one,&one,b->desc,&b->grid->ictxcol));
-  PetscCall(MatDenseRestoreArray(A,&aarray));
+  PetscCall(MatScaLAPACKCheckLayout(A->rmap,&flg));
+  if (flg) PetscCall(MatScaLAPACKCheckLayout(A->cmap,&flg));
+  if (flg) { /* if the input Mat has a ScaLAPACK-compatible layout, use ScaLAPACK for the redistribution */
+    /* create ScaLAPACK descriptor for A (1d block distribution) */
+    PetscCall(PetscLayoutGetRanges(A->rmap,&ranges));
+    PetscCall(PetscBLASIntCast(ranges[1],&amb));  /* row block size */
+    lld = PetscMax(lda,1);  /* local leading dimension */
+    PetscStackCallBLAS("SCALAPACKdescinit",SCALAPACKdescinit_(adesc,&b->M,&b->N,&amb,&b->N,&zero,&zero,&b->grid->ictxcol,&lld,&info));
+    PetscCheckScaLapackInfo("descinit",info);
 
+    /* redistribute matrix */
+    PetscStackCallBLAS("SCALAPACKgemr2d",SCALAPACKgemr2d_(&b->M,&b->N,aarray,&one,&one,adesc,b->loc,&one,&one,b->desc,&b->grid->ictxcol));
+    Bmpi->nooffprocentries = PETSC_TRUE;
+  } else { /* if the input Mat has a ScaLAPACK-incompatible layout, redistribute via MatSetValues() */
+    PetscCheck(lda == A->rmap->n,PETSC_COMM_SELF,PETSC_ERR_SUP,"Leading dimension (%" PetscInt_FMT ") different than local number of rows (%" PetscInt_FMT ")",lda,A->rmap->n);
+    b->roworiented = PETSC_FALSE;
+    PetscCall(MatGetOwnershipIS(A,&ir,&ic));
+    PetscCall(ISGetIndices(ir,&rows));
+    PetscCall(ISGetIndices(ic,&cols));
+    PetscCall(MatSetValues(Bmpi,A->rmap->n,rows,A->cmap->N,cols,aarray,INSERT_VALUES));
+    PetscCall(ISRestoreIndices(ir,&rows));
+    PetscCall(ISRestoreIndices(ic,&cols));
+    PetscCall(ISDestroy(&ic));
+    PetscCall(ISDestroy(&ir));
+  }
+  PetscCall(MatDenseRestoreArray(A,&aarray));
   PetscCall(MatAssemblyBegin(Bmpi,MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(Bmpi,MAT_FINAL_ASSEMBLY));
   if (reuse == MAT_INPLACE_MATRIX) {
@@ -1168,35 +1216,21 @@ static PetscErrorCode MatDestroy_ScaLAPACK(Mat A)
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode MatScaLAPACKCheckLayout(PetscLayout map)
-{
-  const PetscInt *ranges;
-  PetscMPIInt    size;
-  PetscInt       i,n;
-
-  PetscFunctionBegin;
-  PetscCallMPI(MPI_Comm_size(map->comm,&size));
-  if (size>2) {
-    PetscCall(PetscLayoutGetRanges(map,&ranges));
-    n = ranges[1]-ranges[0];
-    for (i=1;i<size-1;i++) if (ranges[i+1]-ranges[i]!=n) break;
-    PetscCheck(i >= size-1 || ranges[i+1]-ranges[i] == 0 || ranges[i+2]-ranges[i+1] == 0,map->comm,PETSC_ERR_SUP,"MATSCALAPACK must have equal local sizes in all processes (except possibly the last one), consider using MatCreateScaLAPACK");
-  }
-  PetscFunctionReturn(0);
-}
-
 PetscErrorCode MatSetUp_ScaLAPACK(Mat A)
 {
   Mat_ScaLAPACK  *a = (Mat_ScaLAPACK*)A->data;
   PetscBLASInt   info=0;
+  PetscBool      flg;
 
   PetscFunctionBegin;
   PetscCall(PetscLayoutSetUp(A->rmap));
   PetscCall(PetscLayoutSetUp(A->cmap));
 
-  /* check that the layout is as enforced by MatCreateScaLAPACK */
-  PetscCall(MatScaLAPACKCheckLayout(A->rmap));
-  PetscCall(MatScaLAPACKCheckLayout(A->cmap));
+  /* check that the layout is as enforced by MatCreateScaLAPACK() */
+  PetscCall(MatScaLAPACKCheckLayout(A->rmap,&flg));
+  PetscCheck(flg,A->rmap->comm,PETSC_ERR_SUP,"MATSCALAPACK must have equal local row sizes in all processes (except possibly the last one), consider using MatCreateScaLAPACK");
+  PetscCall(MatScaLAPACKCheckLayout(A->cmap,&flg));
+  PetscCheck(flg,A->cmap->comm,PETSC_ERR_SUP,"MATSCALAPACK must have equal local column sizes in all processes (except possibly the last one), consider using MatCreateScaLAPACK");
 
   /* compute local sizes */
   PetscCall(PetscBLASIntCast(A->rmap->N,&a->M));
@@ -1750,6 +1784,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_ScaLAPACK(Mat A)
   }
   PetscOptionsEnd();
 
+  a->roworiented = PETSC_TRUE;
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatGetOwnershipIS_C",MatGetOwnershipIS_ScaLAPACK));
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatScaLAPACKSetBlockSizes_C",MatScaLAPACKSetBlockSizes_ScaLAPACK));
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatScaLAPACKGetBlockSizes_C",MatScaLAPACKGetBlockSizes_ScaLAPACK));
