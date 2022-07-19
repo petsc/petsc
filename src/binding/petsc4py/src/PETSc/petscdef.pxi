@@ -54,6 +54,14 @@ cdef extern from * nogil:
         PETSC_MEMTYPE_HIP
         PETSC_MEMTYPE_SYCL
 
+    ctypedef enum PetscDeviceType:
+        PETSC_DEVICE_INVALID
+        PETSC_DEVICE_CUDA
+        PETSC_DEVICE_HIP
+        PETSC_DEVICE_SYCL
+        PETSC_DEVICE_MAX
+
+
 cdef extern from * nogil:
 
     enum: PETSC_ERR_MEM
