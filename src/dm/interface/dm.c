@@ -2053,8 +2053,9 @@ PetscErrorCode DMCreateFieldDecomposition(DM dm, PetscInt *len, char ***namelist
   PetscFunctionReturn(0);
 }
 
-/*@
-  DMCreateSubDM - Returns an `IS` and `DM` encapsulating a subproblem defined by a selected number of fields, that were defined by `DMAddField()`
+/*@C
+  DMCreateSubDM - Returns an IS and DM encapsulating a subproblem defined by the fields passed in.
+                  The fields are defined by DMCreateFieldIS().
 
   Not collective
 
