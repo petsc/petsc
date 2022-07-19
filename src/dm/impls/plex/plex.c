@@ -3773,20 +3773,12 @@ PetscErrorCode DMCreateSubDM_Plex(DM dm, PetscInt numFields, const PetscInt fiel
   PetscCall(DMCreateSectionSubDM(dm, numFields, fields, is, subdm));
   if (subdm) {(*subdm)->useNatural = dm->useNatural;}
   if (dm->useNatural && dm->sfMigration) {
-    PetscSF        sfMigrationInv,sfNatural;
-    PetscSection   section, sectionSeq;
+    PetscSF        sfNatural;
 
     (*subdm)->sfMigration = dm->sfMigration;
     PetscCall(PetscObjectReference((PetscObject) dm->sfMigration));
-    PetscCall(DMGetLocalSection((*subdm), &section));
-    PetscCall(PetscSFCreateInverseSF((*subdm)->sfMigration, &sfMigrationInv));
-    PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject) (*subdm)), &sectionSeq));
-    PetscCall(PetscSFDistributeSection(sfMigrationInv, section, NULL, sectionSeq));
-
-    PetscCall(DMPlexCreateGlobalToNaturalSF(*subdm, sectionSeq, (*subdm)->sfMigration, &sfNatural));
+    PetscCall(DMPlexCreateGlobalToNaturalSF(*subdm, NULL, (*subdm)->sfMigration, &sfNatural));
     (*subdm)->sfNatural = sfNatural;
-    PetscCall(PetscSectionDestroy(&sectionSeq));
-    PetscCall(PetscSFDestroy(&sfMigrationInv));
   }
   PetscFunctionReturn(0);
 }
@@ -3801,21 +3793,13 @@ PetscErrorCode DMCreateSuperDM_Plex(DM dms[], PetscInt len, IS **is, DM *superdm
   (*superdm)->useNatural = PETSC_FALSE;
   for (i = 0; i < len; i++) {
     if (dms[i]->useNatural && dms[i]->sfMigration) {
-      PetscSF        sfMigrationInv,sfNatural;
-      PetscSection   section, sectionSeq;
+      PetscSF        sfNatural;
 
       (*superdm)->sfMigration = dms[i]->sfMigration;
       PetscCall(PetscObjectReference((PetscObject) dms[i]->sfMigration));
       (*superdm)->useNatural = PETSC_TRUE;
-      PetscCall(DMGetLocalSection((*superdm), &section));
-      PetscCall(PetscSFCreateInverseSF((*superdm)->sfMigration, &sfMigrationInv));
-      PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject) (*superdm)), &sectionSeq));
-      PetscCall(PetscSFDistributeSection(sfMigrationInv, section, NULL, sectionSeq));
-
-      PetscCall(DMPlexCreateGlobalToNaturalSF(*superdm, sectionSeq, (*superdm)->sfMigration, &sfNatural));
+      PetscCall(DMPlexCreateGlobalToNaturalSF(*superdm, NULL, (*superdm)->sfMigration, &sfNatural));
       (*superdm)->sfNatural = sfNatural;
-      PetscCall(PetscSectionDestroy(&sectionSeq));
-      PetscCall(PetscSFDestroy(&sfMigrationInv));
       break;
     }
   }
