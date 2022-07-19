@@ -7,7 +7,7 @@ DMinit in 3 dimensions:
   Number of 3-cells per rank: 2229 2145
 Labels:
   depth: 4 strata with value/size (0 (565), 1 (3131), 2 (4796), 3 (2229))
-  marker: 1 strata with value/size (1 (1070))
+  marker: 1 strata with value/size (1 (1553))
   celltype: 4 strata with value/size (0 (565), 1 (3131), 3 (4796), 6 (2229))
 DM Object: DMadapt (adapt_) 2 MPI processes
   type: plex

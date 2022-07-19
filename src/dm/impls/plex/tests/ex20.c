@@ -37,13 +37,19 @@ int main(int argc, char **argv)
     suffix: 2d
     requires: triangle !single
     args: -dm_plex_box_faces 3,3 -dm_coord_space 0 -pre_adapt_dm_view ascii::ascii_info -post_adapt_dm_view ascii::ascii_info
-  test:
-    suffix: 3d_tetgen
-    requires: tetgen
-    args: -dm_plex_dim 3 -dm_plex_box_faces 3,3,3 -dm_coord_space 0 -pre_adapt_dm_view ascii::ascii_info -post_adapt_dm_view ascii::ascii_info
-  test:
-    suffix: 3d_ctetgen
-    requires: ctetgen !complex !single
-    args: -dm_plex_dim 3 -dm_plex_box_faces 3,3,3 -dm_coord_space 0 -pre_adapt_dm_view ascii::ascii_info -post_adapt_dm_view ascii::ascii_info
+
+  # We eliminate the lines with "marker" because different compiler flags make the meshes produce different surface meshes
+  testset:
+    args: -dm_plex_dim 3 -dm_plex_box_faces 3,3,3 -dm_coord_space 0 \
+          -pre_adapt_dm_view ascii::ascii_info -post_adapt_dm_view ascii::ascii_info
+    filter: grep -v "marker"
+
+    test:
+      suffix: 3d_tetgen
+      requires: tetgen
+
+    test:
+      suffix: 3d_ctetgen
+      requires: ctetgen !complex !single
 
 TEST*/

@@ -7,7 +7,7 @@ DMinit in 2 dimensions:
 Labels:
   celltype: 3 strata with value/size (0 (25), 3 (32), 1 (56))
   depth: 3 strata with value/size (0 (25), 1 (56), 2 (32))
-  marker: 4 strata with value/size (4 (9), 1 (7), 2 (9), 3 (7))
+  marker: 4 strata with value/size (4 (9), 1 (9), 2 (9), 3 (9))
   Face Sets: 4 strata with value/size (1 (4), 4 (4), 3 (4), 2 (4))
 DM Object: DMadapt (adapt_) 1 MPI process
   type: plex
