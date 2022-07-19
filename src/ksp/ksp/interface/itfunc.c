@@ -816,6 +816,10 @@ static PetscErrorCode KSPSolve_Private(KSP ksp,Vec b,Vec x)
   if (ksp->res_hist_reset) ksp->res_hist_len = 0;
   if (ksp->err_hist_reset) ksp->err_hist_len = 0;
 
+  /* KSPSetUp() scales the matrix if needed */
+  PetscCall(KSPSetUp(ksp));
+  PetscCall(KSPSetUpOnBlocks(ksp));
+
   if (ksp->guess) {
     PetscObjectState ostate,state;
 
@@ -830,10 +834,6 @@ static PetscErrorCode KSPSolve_Private(KSP ksp,Vec b,Vec x)
       ksp->guess_zero = PETSC_TRUE;
     }
   }
-
-  /* KSPSetUp() scales the matrix if needed */
-  PetscCall(KSPSetUp(ksp));
-  PetscCall(KSPSetUpOnBlocks(ksp));
 
   PetscCall(VecSetErrorIfLocked(ksp->vec_sol,3));
 
