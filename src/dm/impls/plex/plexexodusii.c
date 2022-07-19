@@ -882,7 +882,7 @@ PetscErrorCode VecViewPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step, i
   PetscCall(DMGetUseNatural(dm, &useNatural));
   useNatural = useNatural && size > 1 ? PETSC_TRUE : PETSC_FALSE;
   if (useNatural) {
-    PetscCall(DMGetGlobalVector(dm, &vNatural));
+    PetscCall(DMPlexCreateNaturalVector(dm, &vNatural));
     PetscCall(DMPlexGlobalToNaturalBegin(dm, v, vNatural));
     PetscCall(DMPlexGlobalToNaturalEnd(dm, v, vNatural));
   } else {
@@ -913,7 +913,7 @@ PetscErrorCode VecViewPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step, i
     }
     PetscCall(ISDestroy(&compIS));
   }
-  if (useNatural) PetscCall(DMRestoreGlobalVector(dm, &vNatural));
+  if (useNatural) PetscCall(VecDestroy(&vNatural));
   PetscFunctionReturn(0);
 }
 
@@ -954,7 +954,7 @@ PetscErrorCode VecLoadPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step, i
   PetscCall(VecGetDM(v,&dm));
   PetscCall(DMGetUseNatural(dm, &useNatural));
   useNatural = useNatural && size > 1 ? PETSC_TRUE : PETSC_FALSE;
-  if (useNatural) PetscCall(DMGetGlobalVector(dm,&vNatural));
+  if (useNatural) PetscCall(DMPlexCreateNaturalVector(dm,&vNatural));
   else            {vNatural = v;}
 
   /* Read local chunk from the file */
@@ -982,7 +982,7 @@ PetscErrorCode VecLoadPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step, i
   if (useNatural) {
     PetscCall(DMPlexNaturalToGlobalBegin(dm, vNatural, v));
     PetscCall(DMPlexNaturalToGlobalEnd(dm, vNatural, v));
-    PetscCall(DMRestoreGlobalVector(dm, &vNatural));
+    PetscCall(VecDestroy(&vNatural));
   }
   PetscFunctionReturn(0);
 }
@@ -1028,7 +1028,7 @@ PetscErrorCode VecViewPlex_ExodusII_Zonal_Internal(Vec v, int exoid, int step, i
   PetscCall(DMGetUseNatural(dm, &useNatural));
   useNatural = useNatural && size > 1 ? PETSC_TRUE : PETSC_FALSE;
   if (useNatural) {
-    PetscCall(DMGetGlobalVector(dm, &vNatural));
+    PetscCall(DMPlexCreateNaturalVector(dm, &vNatural));
     PetscCall(DMPlexGlobalToNaturalBegin(dm, v, vNatural));
     PetscCall(DMPlexGlobalToNaturalEnd(dm, v, vNatural));
   } else {
@@ -1080,7 +1080,7 @@ PetscErrorCode VecViewPlex_ExodusII_Zonal_Internal(Vec v, int exoid, int step, i
   }
   PetscCall(PetscFree2(csID, csSize));
   if (bs > 1) PetscCall(ISDestroy(&compIS));
-  if (useNatural) PetscCall(DMRestoreGlobalVector(dm,&vNatural));
+  if (useNatural) PetscCall(VecDestroy(&vNatural));
   PetscFunctionReturn(0);
 }
 
@@ -1124,7 +1124,7 @@ PetscErrorCode VecLoadPlex_ExodusII_Zonal_Internal(Vec v, int exoid, int step, i
   PetscCall(VecGetDM(v, &dm));
   PetscCall(DMGetUseNatural(dm, &useNatural));
   useNatural = useNatural && size > 1 ? PETSC_TRUE : PETSC_FALSE;
-  if (useNatural) PetscCall(DMGetGlobalVector(dm,&vNatural));
+  if (useNatural) PetscCall(DMPlexCreateNaturalVector(dm,&vNatural));
   else            {vNatural = v;}
 
   /* Read local chunk of the result in the exodus file
@@ -1175,7 +1175,7 @@ PetscErrorCode VecLoadPlex_ExodusII_Zonal_Internal(Vec v, int exoid, int step, i
   if (useNatural) {
     PetscCall(DMPlexNaturalToGlobalBegin(dm, vNatural, v));
     PetscCall(DMPlexNaturalToGlobalEnd(dm, vNatural, v));
-    PetscCall(DMRestoreGlobalVector(dm, &vNatural));
+    PetscCall(VecDestroy(&vNatural));
   }
   PetscFunctionReturn(0);
 }
