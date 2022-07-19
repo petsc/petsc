@@ -19,7 +19,7 @@ static PetscErrorCode Fsnes(SNES snes,Vec X,Vec G,void* ctx)
 /*@C
   TaoDefaultComputeGradient - computes the gradient using finite differences.
 
-  Collective on Tao
+  Collective on tao
 
   Input Parameters:
 + tao   - the Tao context
@@ -36,15 +36,15 @@ static PetscErrorCode Fsnes(SNES snes,Vec X,Vec G,void* ctx)
   Level: advanced
 
   Notes:
-  This routine is slow and expensive, and is not currently optimized
+  This routine is slow and expensive, and is not optimized
   to take advantage of sparsity in the problem.  Although
-  TaoDefaultComputeGradient is not recommended for general use
-  in large-scale applications, It can be useful in checking the
+  not recommended for general use
+  in large-scale applications, it can be useful in checking the
   correctness of a user-provided gradient.  Use the tao method TAOTEST
   to get an indication of whether your gradient is correct.
-  This finite difference gradient evaluation can be set using the routine TaoSetGradient() or by using the command line option -tao_fd_gradient
+  This finite difference gradient evaluation can be set using the routine `TaoSetGradient()` or by using the command line option -tao_fd_gradient
 
-.seealso: `TaoSetGradient()`
+.seealso: `Tao`, `TaoSetGradient()`
 @*/
 PetscErrorCode TaoDefaultComputeGradient(Tao tao,Vec Xin,Vec G,void *dummy)
 {
@@ -87,7 +87,7 @@ PetscErrorCode TaoDefaultComputeGradient(Tao tao,Vec Xin,Vec G,void *dummy)
 /*@C
    TaoDefaultComputeHessian - Computes the Hessian using finite differences.
 
-   Collective on Tao
+   Collective on tao
 
    Input Parameters:
 +  tao   - the Tao context
@@ -104,13 +104,13 @@ PetscErrorCode TaoDefaultComputeGradient(Tao tao,Vec Xin,Vec G,void *dummy)
    Level: advanced
 
    Notes:
-   This routine is slow and expensive, and is not currently optimized
+   This routine is slow and expensive, and is not optimized
    to take advantage of sparsity in the problem.  Although
-   TaoDefaultComputeHessian() is not recommended for general use
+   it is not recommended for general use
    in large-scale applications, It can be useful in checking the
    correctness of a user-provided Hessian.
 
-.seealso: `TaoSetHessian()`, `TaoDefaultComputeHessianColor()`, `SNESComputeJacobianDefault()`, `TaoSetGradient()`, `TaoDefaultComputeGradient()`
+.seealso: `Tao`, `TaoSetHessian()`, `TaoDefaultComputeHessianColor()`, `SNESComputeJacobianDefault()`, `TaoSetGradient()`, `TaoDefaultComputeGradient()`
 @*/
 PetscErrorCode TaoDefaultComputeHessian(Tao tao,Vec V,Mat H,Mat B,void *dummy)
 {
@@ -153,7 +153,7 @@ PetscErrorCode TaoDefaultComputeHessian(Tao tao,Vec V,Mat H,Mat B,void *dummy)
    Input Parameters:
 +  tao - the Tao context
 .  V   - compute Hessian at this point
--  ctx - the PetscColoring object (must be of type MatFDColoring)
+-  ctx - the color object of type `MatFDColoring`
 
    Output Parameters:
 +  H - Hessian matrix (not altered in this routine)
@@ -161,7 +161,7 @@ PetscErrorCode TaoDefaultComputeHessian(Tao tao,Vec V,Mat H,Mat B,void *dummy)
 
    Level: advanced
 
-.seealso: `TaoSetHessian()`, `TaoDefaultComputeHessian()`, `SNESComputeJacobianDefaultColor()`, `TaoSetGradient()`
+.seealso: `Tao`, `MatColoring`, `TaoSetHessian()`, `TaoDefaultComputeHessian()`, `SNESComputeJacobianDefaultColor()`, `TaoSetGradient()`
 @*/
 PetscErrorCode TaoDefaultComputeHessianColor(Tao tao,Vec V,Mat H,Mat B,void *ctx)
 {
