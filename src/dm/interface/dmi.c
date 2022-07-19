@@ -180,13 +180,14 @@ PetscErrorCode DMCreateSectionSubDM(DM dm, PetscInt numFields, const PetscInt fi
     PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)dm), subSize, subIndices, PETSC_OWN_POINTER, is));
     if (bs > 1) {
       /* We need to check that the block size does not come from non-contiguous fields */
-      PetscInt i, j, set = 1;
+      PetscInt i, j, set = 1, rset = 1;
       for (i = 0; i < subSize; i += bs) {
         for (j = 0; j < bs; ++j) {
           if (subIndices[i+j] != subIndices[i]+j) {set = 0; break;}
         }
       }
-      if (set) PetscCall(ISSetBlockSize(*is, bs));
+      PetscCallMPI(MPI_Allreduce(&set, &rset, 1, MPIU_INT, MPI_PROD, PetscObjectComm((PetscObject)dm)));
+      if (rset) PetscCall(ISSetBlockSize(*is, bs));
     }
   }
   if (subdm) {
