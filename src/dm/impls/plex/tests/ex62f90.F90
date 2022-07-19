@@ -1,4 +1,4 @@
-program ex62f90
+program ex26f90
 #include "petsc/finclude/petsc.h"
     use petsc
     implicit none
@@ -14,7 +14,7 @@ program ex62f90
     type(tDM),dimension(:),pointer     :: dmList
     type(tVec)                         :: X,U,A,S,UA,UA2
     type(tIS)                          :: isU,isA,isS,isUA
-    type(tPetscSection)                :: section
+    type(tPetscSection)                :: section, rootSection, leafSection
     PetscInt,dimension(1)              :: fieldU = [0]
     PetscInt,dimension(1)              :: fieldA = [2]
     PetscInt,dimension(1)              :: fieldS = [1]
@@ -70,17 +70,21 @@ program ex62f90
     PetscInt,dimension(4),target        :: dofAP2Hex  = [1, 1, 1, 1]
     PetscInt,dimension(:),pointer       :: dofU,dofA,dofS
 
-    type(tPetscSF)                      :: migrationSF
+    type(tPetscSF)                      :: migrationSF, natSF, natPointSF, natPointSFInv
     PetscPartitioner                    :: part
 
     type(tVec)                          :: tmpVec
     PetscReal                           :: norm
     PetscReal                           :: time = 1.234_kPR
 
-    PetscCallA(PetscInitialize(ierr))
+    PetscCallA(PetscInitialize(PETSC_NULL_CHARACTER,ierr))
+    if (ierr /= 0) then
+      print*,'Unable to initialize PETSc'
+      stop
+    endif
 
-    PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr))
-    PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD,numProc,ierr))
+    PetscCallA(MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr))
+    PetscCallA(MPI_Comm_size(PETSC_COMM_WORLD,numProc,ierr))
     PetscCallA(PetscOptionsGetString(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-i",ifilename,flg,ierr))
     if (.not. flg) then
         SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"missing input file name -i <input file name>")
@@ -120,7 +124,7 @@ program ex62f90
     PetscCallA(PetscViewerView(viewer,PETSC_VIEWER_STDOUT_WORLD,ierr))
     !
     !    Notice how the exodus file is actually NOT open at this point (exoid is -1)
-    !    Since we are overwriting the file (mode is FILE_MODE_WRITE), we are going to have to
+    !    Since we are overwritting the file (mode is FILE_MODE_WRITE), we are going to have to
     !    write the geometry (the DM), which can only be done on a brand new file.
     !
 
@@ -164,7 +168,7 @@ program ex62f90
         PetscCallA(exptim(exoid,step,Real(step,kind=kPR),ierr))
     end do
 
-    PetscCallA(DMSetUseNatural(dm,PETSC_TRUE,ierr))
+    PetscCallA(DMSetUseNatural(dm, PETSC_TRUE, ierr))
     PetscCallA(DMPlexGetPartitioner(dm,part,ierr))
     PetscCallA(PetscPartitionerSetFromOptions(part,ierr))
     PetscCallA(DMPlexDistribute(dm,0_kPI,migrationSF,pdm,ierr))
@@ -172,38 +176,38 @@ program ex62f90
     if (numProc > 1) then
         PetscCallA(DMPlexSetMigrationSF(pdm,migrationSF,ierr))
         PetscCallA(PetscSFDestroy(migrationSF,ierr))
-        PetscCallA(DMDestroy(dm,ierr))
-        dm = pdm
+    else
+        pdm = dm
     end if
-    PetscCallA(DMViewFromOptions(dm,PETSC_NULL_OPTIONS,"-dm_view",ierr))
+    PetscCallA(DMViewFromOptions(pdm,PETSC_NULL_OPTIONS,"-dm_view",ierr))
 
-    PetscCallA(PetscObjectGetComm(dm,comm,ierr))
+    PetscCallA(PetscObjectGetComm(pdm,comm,ierr))
     PetscCallA(PetscSectionCreate(comm, section,ierr))
     PetscCallA(PetscSectionSetNumFields(section, 3_kPI,ierr))
     PetscCallA(PetscSectionSetFieldName(section, fieldU, "U",ierr))
     PetscCallA(PetscSectionSetFieldName(section, fieldA, "Alpha",ierr))
     PetscCallA(PetscSectionSetFieldName(section, fieldS, "Sigma",ierr))
-    PetscCallA(DMPlexGetChart(dm, pStart, pEnd,ierr))
+    PetscCallA(DMPlexGetChart(pdm, pStart, pEnd,ierr))
     PetscCallA(PetscSectionSetChart(section, pStart, pEnd,ierr))
 
     allocate(pStartDepth(sdim+1))
     allocate(pEndDepth(sdim+1))
     do d = 1, sdim+1
-        PetscCallA(DMPlexGetDepthStratum(dm, d-1, pStartDepth(d), pEndDepth(d),ierr))
+        PetscCallA(DMPlexGetDepthStratum(pdm, d-1, pStartDepth(d), pEndDepth(d),ierr))
     end do
 
     ! Vector field U, Scalar field Alpha, Tensor field Sigma
-    PetscCallA(PetscSectionSetFieldComponents(section, fieldU, sdim,ierr))
-    PetscCallA(PetscSectionSetFieldComponents(section, fieldA, 1_kPI,ierr))
-    PetscCallA(PetscSectionSetFieldComponents(section, fieldS, sdim*(sdim+1)/2,ierr))
+    PetscCallA(PetscSectionSetFieldComponents(section, fieldU, sdim,ierr));
+    PetscCallA(PetscSectionSetFieldComponents(section, fieldA, 1_kPI,ierr));
+    PetscCallA(PetscSectionSetFieldComponents(section, fieldS, sdim*(sdim+1)/2,ierr));
 
     ! Going through cell sets then cells, and setting up storage for the sections
-    PetscCallA(DMGetLabelSize(dm, "Cell Sets", numCS, ierr))
-    PetscCallA(DMGetLabelIdIS(dm, "Cell Sets", csIS, ierr))
+    PetscCallA(DMGetLabelSize(pdm, "Cell Sets", numCS, ierr))
+    PetscCallA(DMGetLabelIdIS(pdm, "Cell Sets", csIS, ierr))
     PetscCallA(ISGetIndicesF90(csIS, csID, ierr))
     do set = 1,numCS
-        PetscCallA(DMGetStratumSize(dm, "Cell Sets", csID(set), numCells,ierr))
-        PetscCallA(DMGetStratumIS(dm, "Cell Sets", csID(set), cellIS,ierr))
+        PetscCallA(DMGetStratumSize(pdm, "Cell Sets", csID(set), numCells,ierr))
+        PetscCallA(DMGetStratumIS(pdm, "Cell Sets", csID(set), cellIS,ierr))
         if (numCells > 0) then
             select case(sdim)
             case(2)
@@ -219,7 +223,7 @@ program ex62f90
             ! It will not be enough to identify more exotic elements like pyramid or prisms...  */
             PetscCallA(ISGetIndicesF90(cellIS, cellID,ierr))
             nullify(closureA)
-            PetscCallA(DMPlexGetTransitiveClosure(dm,cellID(1), PETSC_TRUE, closureA,ierr))
+            PetscCallA(DMPlexGetTransitiveClosure(pdm,cellID(1), PETSC_TRUE, closureA,ierr))
             select case(size(closureA)/2)
             case(7) ! Tri
                 if (order == 1) then
@@ -257,10 +261,10 @@ program ex62f90
                 write(IOBuffer,'("Unknown element with closure size ",I2)') size(closureA)/2
                 SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP,IOBuffer)
             end select
-            PetscCallA(DMPlexRestoreTransitiveClosure(dm, cellID(1), PETSC_TRUE,closureA,ierr))
+            PetscCallA(DMPlexRestoreTransitiveClosure(pdm, cellID(1), PETSC_TRUE,closureA,ierr))
             do cell = 1,numCells!
                 nullify(closure)
-                PetscCallA(DMPlexGetTransitiveClosure(dm, cellID(cell), PETSC_TRUE, closure,ierr))
+                PetscCallA(DMPlexGetTransitiveClosure(pdm, cellID(cell), PETSC_TRUE, closure,ierr))
                 do p = 1,size(closure),2
                     ! find the depth of p
                     do d = 1,sdim+1
@@ -272,7 +276,7 @@ program ex62f90
                         end if ! closure(p)
                     end do ! d
                 end do ! p
-                PetscCallA(DMPlexRestoreTransitiveClosure(dm, cellID(cell), PETSC_TRUE, closure,ierr))
+                PetscCallA(DMPlexRestoreTransitiveClosure(pdm, cellID(cell), PETSC_TRUE, closure,ierr))
             end do ! cell
             PetscCallA(ISRestoreIndicesF90(cellIS, cellID,ierr))
             PetscCallA(ISDestroy(cellIS,ierr))
@@ -281,15 +285,30 @@ program ex62f90
     PetscCallA(ISRestoreIndicesF90(csIS, csID,ierr))
     PetscCallA(ISDestroy(csIS,ierr))
     PetscCallA(PetscSectionSetUp(section,ierr))
-    PetscCallA(DMSetLocalSection(dm, section,ierr))
+    PetscCallA(DMSetLocalSection(pdm, section,ierr))
     PetscCallA(PetscObjectViewFromOptions(section, PETSC_NULL_SECTION, "-dm_section_view",ierr))
     PetscCallA(PetscSectionDestroy(section,ierr))
 
+    ! Creating section on the sequential DM + creating the GlobalToNatural SF
+    if (numProc > 1) then
+        PetscCallA(DMPlexGetMigrationSF(pdm, natPointSF, ierr))
+        PetscCallA(DMGetLocalSection(pdm, rootSection, ierr))
+        PetscCallA(PetscSFCreateInverseSF(natPointSF, natPointSFInv, ierr))
+        PetscCallA(PetscSectionCreate(PETSC_COMM_WORLD, leafSection, ierr))
+        PetscCallA(PetscSFDistributeSection(natPointSFInv, rootSection, PETSC_NULL_INTEGER, leafSection, ierr))
+        PetscCallA(DMSetLocalSection(dm, leafSection, ierr))
+        PetscCallA(DMPlexCreateGlobalToNaturalSF(pdm, leafSection, natPointSF, natSF, ierr))
+        PetscCallA(PetscSFDestroy(natPointSFInv, ierr))
+        PetscCallA(PetscSectionDestroy(leafSection,ierr))
+        PetscCallA(DMSetNaturalSF(pdm, natSF, ierr))
+        PetscCallA(PetscObjectDereference(natSF, ierr))
+    end if
+
     ! Get DM and IS for each field of dm
-    PetscCallA(DMCreateSubDM(dm, 1_kPI, fieldU,  isU,  dmU,ierr))
-    PetscCallA(DMCreateSubDM(dm, 1_kPI, fieldA,  isA,  dmA,ierr))
-    PetscCallA(DMCreateSubDM(dm, 1_kPI, fieldS,  isS,  dmS,ierr))
-    PetscCallA(DMCreateSubDM(dm, 2_kPI, fieldUA, isUA, dmUA,ierr))
+    PetscCallA(DMCreateSubDM(pdm, 1_kPI, fieldU,  isU,  dmU,ierr))
+    PetscCallA(DMCreateSubDM(pdm, 1_kPI, fieldA,  isA,  dmA,ierr))
+    PetscCallA(DMCreateSubDM(pdm, 1_kPI, fieldS,  isS,  dmS,ierr))
+    PetscCallA(DMCreateSubDM(pdm, 2_kPI, fieldUA, isUA, dmUA,ierr))
 
     !Create the exodus result file
     allocate(dmList(2))
@@ -298,7 +317,7 @@ program ex62f90
     PetscCallA(DMCreateSuperDM(dmList,2_kPI,PETSC_NULL_IS,dmUA2,ierr))
     deallocate(dmList)
 
-    PetscCallA(DMGetGlobalVector(dm,   X,ierr))
+    PetscCallA(DMGetGlobalVector(pdm,   X,ierr))
     PetscCallA(DMGetGlobalVector(dmU,  U,ierr))
     PetscCallA(DMGetGlobalVector(dmA,  A,ierr))
     PetscCallA(DMGetGlobalVector(dmS,  S,ierr))
@@ -354,9 +373,9 @@ program ex62f90
     PetscCallA(VecISCopy(X, isUA, SCATTER_REVERSE, UA2,ierr))
     PetscCallA(VecViewFromOptions(UA2, PETSC_NULL_OPTIONS, "-ua2_vec_view",ierr))
 
-    ! Writing nodal variables to ExodusII file
-    PetscCallA(DMSetOutputSequenceNumber(dmU,0_kPI,time,ierr))
-    PetscCallA(DMSetOutputSequenceNumber(dmA,0_kPI,time,ierr))
+    ! Getting Natural Vec
+    PetscCallA(DMSetOutputSequenceNumber(dmU, 0_kPI, time, ierr))
+    PetscCallA(DMSetOutputSequenceNumber(dmA, 0_kPI, time, ierr))
 
     PetscCallA(VecView(U, viewer,ierr))
     PetscCallA(VecView(A, viewer,ierr))
@@ -365,12 +384,12 @@ program ex62f90
     ! For this, we need to cheat and change the Vec's name
     ! Note that in the end we write variables one component at a time,
     ! so that there is no real value in doing this
-
     PetscCallA(DMSetOutputSequenceNumber(dmUA,1_kPI,time,ierr))
     PetscCallA(DMGetGlobalVector(dmUA, tmpVec,ierr))
     PetscCallA(VecCopy(UA, tmpVec,ierr))
     PetscCallA(PetscObjectSetName(tmpVec, "U",ierr))
     PetscCallA(VecView(tmpVec, viewer,ierr))
+
     ! Reading nodal variables in Exodus file
     PetscCallA(VecSet(tmpVec, -1000.0_kPR,ierr))
     PetscCallA(VecLoad(tmpVec, viewer,ierr))
@@ -381,12 +400,13 @@ program ex62f90
     end if
     PetscCallA(DMRestoreGlobalVector(dmUA, tmpVec,ierr))
 
-    ! ! same thing with the UA2 Vec obtained from the superDM
+    ! same thing with the UA2 Vec obtained from the superDM
     PetscCallA(DMGetGlobalVector(dmUA2, tmpVec,ierr))
     PetscCallA(VecCopy(UA2, tmpVec,ierr))
     PetscCallA(PetscObjectSetName(tmpVec, "U",ierr))
     PetscCallA(DMSetOutputSequenceNumber(dmUA2,2_kPI,time,ierr))
     PetscCallA(VecView(tmpVec, viewer,ierr))
+
     ! Reading nodal variables in Exodus file
     PetscCallA(VecSet(tmpVec, -1000.0_kPR,ierr))
     PetscCallA(VecLoad(tmpVec,viewer,ierr))
@@ -453,7 +473,7 @@ program ex62f90
     PetscCallA(DMRestoreGlobalVector(dmS,  S,ierr))
     PetscCallA(DMRestoreGlobalVector(dmA,  A,ierr))
     PetscCallA(DMRestoreGlobalVector(dmU,  U,ierr))
-    PetscCallA(DMRestoreGlobalVector(dm,   X,ierr))
+    PetscCallA(DMRestoreGlobalVector(pdm,   X,ierr))
     PetscCallA(DMDestroy(dmU,ierr))
     PetscCallA(ISDestroy(isU,ierr))
     PetscCallA(DMDestroy(dmA,ierr))
@@ -463,103 +483,107 @@ program ex62f90
     PetscCallA(DMDestroy(dmUA,ierr))
     PetscCallA(ISDestroy(isUA,ierr))
     PetscCallA(DMDestroy(dmUA2,ierr))
-    PetscCallA(DMDestroy(dm,ierr))
+    PetscCallA(DMDestroy(pdm,ierr))
+    if (numProc > 1) then
+        PetscCallA(DMDestroy(dm,ierr))
+    end if
 
     deallocate(pStartDepth)
     deallocate(pEndDepth)
 
     PetscCallA(PetscViewerDestroy(viewer,ierr))
     PetscCallA(PetscFinalize(ierr))
-end program ex62f90
+end program ex26f90
 
 ! /*TEST
 !
 ! build:
 !   requires: exodusii pnetcdf !complex
 !   # 2D seq
-! # test:
-! #   suffix: 0
-! #   args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourSquareT-large.exo -o FourSquareT-large_out.exo -dm_view -dm_section_view -petscpartitioner_type simple -order 1
-! #   #TODO: bug in call to NetCDF failed to complete invalid type definition in file id 65536 NetCDF: One or more variable sizes violate format constraints
-! # test:
-! #   suffix: 1
-! #   args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourSquareQ-large.exo -o FourSquareQ-large_out.exo -dm_view -dm_section_view -petscpartitioner_type simple -order 1
-! #
-! # test:
-! #   suffix: 2
-! #   args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourSquareH-large.exo -o FourSquareH-large_out.exo -dm_view -dm_section_view -petscpartitioner_type simple -order 1
-! #   #TODO: bug in call to NetCDF failed to complete invalid type definition in file id 65536 NetCDF: One or more variable sizes violate format constraints
-! # test:
-! #   suffix: 3
-! #   args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourSquareT-large.exo -o FourSquareT-large_out.exo -dm_view -dm_section_view -petscpartitioner_type simple -order 2
-! # test:
-! #   suffix: 4
-! #   args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourSquareQ-large.exo -o FourSquareQ-large_out.exo -dm_view -dm_section_view -petscpartitioner_type simple -order 2
-! # test:
-! #   suffix: 5
-! #   args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourSquareH-large.exo -o FourSquareH-large_out.exo -dm_view -dm_section_view -petscpartitioner_type simple -order 2
-! #   # 2D par
-! # test:
-! #   suffix: 6
-! #   nsize: 2
-! #   args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourSquareT-large.exo -o FourSquareT-large_out.exo -dm_view -dm_section_view -petscpartitioner_type simple -order 1
-! #   #TODO: bug in call to NetCDF failed to complete invalid type definition in file id 65536 NetCDF: One or more variable sizes violate format constraints
-! # test:
-! #   suffix: 7
-! #   nsize: 2
-! #   args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourSquareQ-large.exo -o FourSquareQ-large_out.exo -dm_view -dm_section_view -petscpartitioner_type simple -order 1
-! # test:
-! #   suffix: 8
-! #   nsize: 2
-! #   args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourSquareH-large.exo -o FourSquareH-large_out.exo -dm_view -dm_section_view -petscpartitioner_type simple -order 1
-! #   #TODO: bug in call to NetCDF failed to complete invalid type definition in file id 65536 NetCDF: invalid dimension ID or name
-! # test:
-! #   suffix: 9
-! #   nsize: 2
-! #   args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourSquareT-large.exo -o FourSquareT-large_out.exo -dm_view -dm_section_view -petscpartitioner_type simple -order 2
-! # test:
-! #   suffix: 10
-! #   nsize: 2
-! #   args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourSquareQ-large.exo -o FourSquareQ-large_out.exo -dm_view -dm_section_view -petscpartitioner_type simple -order 2
-! # test:
-! #   # Something is now broken with parallel read/write for wahtever shape H is
-! #   TODO: broken
-! #   suffix: 11
-! #   nsize: 2
-! #   args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourSquareH-large.exo -o FourSquareH-large_out.exo -dm_view -dm_section_view -petscpartitioner_type simple -order 2
-! #
-! #   #3d seq
-! # test:
-! #   suffix: 12
-! #   args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourBrickHex-large.exo -o FourBrickHex-large_out.exo -dm_view -dm_section_view -petscpartitioner_type simple -order 1
-! # test:
-! #   suffix: 13
-! #   args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourBrickTet-large.exo -o FourBrickTet-large_out.exo -dm_view -dm_section_view -petscpartitioner_type simple -order 1
-! #   #TODO: bug in call to NetCDF failed to complete invalid type definition in file id 65536 NetCDF: One or more variable sizes violate format constraints
-! # test:
-! #   suffix: 14
-! #   args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourBrickHex-large.exo -o FourBrickHex-large_out.exo -dm_view -dm_section_view -petscpartitioner_type simple -order 2
-! # test:
-! #   suffix: 15
-! #   args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourBrickTet-large.exo -o FourBrickTet-large_out.exo -dm_view -dm_section_view -petscpartitioner_type simple -order 2
-! #   #TODO: bug in call to NetCDF failed to complete invalid type definition in file id 65536 NetCDF: One or more variable sizes violate format constraints
-! #   #3d par
-! # test:
-! #   suffix: 16
-! #   nsize: 2
-! #   args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourBrickHex-large.exo -o FourBrickHex-large_out.exo -dm_view -dm_section_view -petscpartitioner_type simple -order 1
-! # test:
-! #   suffix: 17
-! #   nsize: 2
-! #   args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourBrickTet-large.exo -o FourBrickTet-large_out.exo -dm_view -dm_section_view -petscpartitioner_type simple -order 1
-! #   #TODO: bug in call to NetCDF failed to complete invalid type definition in file id 65536 NetCDF: One or more variable sizes violate format constraints
-! # test:
-! #   suffix: 18
-! #   nsize: 2
-! #   args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourBrickHex-large.exo -o FourBrickHex-large_out.exo -dm_view -dm_section_view -petscpartitioner_type simple -order 2
-! # test:
-! #   suffix: 19
-! #   nsize: 2
-! #   args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourBrickTet-large.exo -o FourBrickTet-large_out.exo -dm_view -dm_section_view -petscpartitioner_type simple -order 2
-! #   #TODO: bug in call to NetCDF failed to complete invalid type definition in file id 65536 NetCDF: One or more variable sizes violate format constraints
+! test:
+!   suffix: 0
+!   args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourSquareT-large.exo -o FourSquareT-large_out.exo -dm_view -dm_section_view -petscpartitioner_type simple -order 1
+!   #TODO: bug in PetscCallA(to NetCDF failed to complete invalid type definition in file id 65536 NetCDF: One or more variable sizes violate format constraints
+! test:
+!   suffix: 1
+!   args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourSquareQ-large.exo -o FourSquareQ-large_out.exo -dm_view -dm_section_view -petscpartitioner_type simple -order 1
+!
+! test:
+!   suffix: 2
+!   args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourSquareH-large.exo -o FourSquareH-large_out.exo -dm_view -dm_section_view -petscpartitioner_type simple -order 1
+!   #TODO: bug in PetscCallA(to NetCDF failed to complete invalid type definition in file id 65536 NetCDF: One or more variable sizes violate format constraints
+! test:
+!   suffix: 3
+!   args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourSquareT-large.exo -o FourSquareT-large_out.exo -dm_view -dm_section_view -petscpartitioner_type simple -order 2
+! test:
+!   suffix: 4
+!   args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourSquareQ-large.exo -o FourSquareQ-large_out.exo -dm_view -dm_section_view -petscpartitioner_type simple -order 2
+! test:
+!   suffix: 5
+!   args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourSquareH-large.exo -o FourSquareH-large_out.exo -dm_view -dm_section_view -petscpartitioner_type simple -order 2
+!   # 2D par
+! test:
+!   suffix: 6
+!   nsize: 2
+!   args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourSquareT-large.exo -o FourSquareT-large_out.exo -dm_view -dm_section_view -petscpartitioner_type simple -order 1
+!   #TODO: bug in PetscCallA(to NetCDF failed to complete invalid type definition in file id 65536 NetCDF: One or more variable sizes violate format constraints
+! test:
+!   suffix: 7
+!   nsize: 2
+!   args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourSquareQ-large.exo -o FourSquareQ-large_out.exo -dm_view -dm_section_view -petscpartitioner_type simple -order 1
+! test:
+!   suffix: 8
+!   nsize: 2
+!   args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourSquareH-large.exo -o FourSquareH-large_out.exo -dm_view -dm_section_view -petscpartitioner_type simple -order 1
+!   #TODO: bug in PetscCallA(to NetCDF failed to complete invalid type definition in file id 65536 NetCDF: invalid dimension ID or name
+! test:
+!   suffix: 9
+!   nsize: 2
+!   args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourSquareT-large.exo -o FourSquareT-large_out.exo -dm_view -dm_section_view -petscpartitioner_type simple -order 2
+! test:
+!   suffix: 10
+!   nsize: 2
+!   args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourSquareQ-large.exo -o FourSquareQ-large_out.exo -dm_view -dm_section_view -petscpartitioner_type simple -order 2
+! test:
+!   # Something is now broken with parallel read/write for wahtever shape H is
+!   TODO: broken
+!   suffix: 11
+!   nsize: 2
+!   args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourSquareH-large.exo -o FourSquareH-large_out.exo -dm_view -dm_section_view -petscpartitioner_type simple -order 2
+
+!   #3d seq
+! test:
+!   suffix: 12
+!   args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourBrickHex-large.exo -o FourBrickHex-large_out.exo -dm_view -dm_section_view -petscpartitioner_type simple -order 1
+! test:
+!   suffix: 13
+!   args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourBrickTet-large.exo -o FourBrickTet-large_out.exo -dm_view -dm_section_view -petscpartitioner_type simple -order 1
+!   #TODO: bug in PetscCallA(to NetCDF failed to complete invalid type definition in file id 65536 NetCDF: One or more variable sizes violate format constraints
+! test:
+!   suffix: 14
+!   args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourBrickHex-large.exo -o FourBrickHex-large_out.exo -dm_view -dm_section_view -petscpartitioner_type simple -order 2
+! test:
+!   suffix: 15
+!   args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourBrickTet-large.exo -o FourBrickTet-large_out.exo -dm_view -dm_section_view -petscpartitioner_type simple -order 2
+!   #TODO: bug in PetscCallA(to NetCDF failed to complete invalid type definition in file id 65536 NetCDF: One or more variable sizes violate format constraints
+!   #3d par
+! test:
+!   suffix: 16
+!   nsize: 2
+!   args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourBrickHex-large.exo -o FourBrickHex-large_out.exo -dm_view -dm_section_view -petscpartitioner_type simple -order 1
+! test:
+!   suffix: 17
+!   nsize: 2
+!   args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourBrickTet-large.exo -o FourBrickTet-large_out.exo -dm_view -dm_section_view -petscpartitioner_type simple -order 1
+!   #TODO: bug in PetscCallA(to NetCDF failed to complete invalid type definition in file id 65536 NetCDF: One or more variable sizes violate format constraints
+! test:
+!   suffix: 18
+!   nsize: 2
+!   args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourBrickHex-large.exo -o FourBrickHex-large_out.exo -dm_view -dm_section_view -petscpartitioner_type simple -order 2
+! test:
+!   suffix: 19
+!   nsize: 2
+!   args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourBrickTet-large.exo -o FourBrickTet-large_out.exo -dm_view -dm_section_view -petscpartitioner_type simple -order 2
+!   #TODO: bug in PetscCallA(to NetCDF failed to complete invalid type definition in file id 65536 NetCDF: One or more variable sizes violate format constraints
+
 ! TEST*/

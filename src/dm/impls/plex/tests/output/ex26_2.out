@@ -734,3 +734,19 @@ Process 0:
   ( 232) dim  0 offset 354
   ( 233) dim  0 offset 354
   ( 234) dim  0 offset 354
+DM Object: cubit(FourSquareH-large.exo): 12/02/2017: 09:20:37 1 MPI process
+  type: plex
+cubit(FourSquareH-large.exo): 12/02/2017: 09:20:37 in 2 dimensions:
+  Number of 0-cells per rank: 54
+  Number of 1-cells per rank: 117
+  Number of 2-cells per rank: 64 (46)
+Labels:
+  celltype: 4 strata with value/size (0 (54), 4 (18), 1 (117), 3 (46))
+  depth: 3 strata with value/size (0 (54), 1 (117), 2 (64))
+  Cell Sets: 4 strata with value/size (1 (9), 2 (18), 3 (28), 5 (9))
+Field U:
+  adjacency FEM
+Field Sigma:
+  adjacency FEM
+Field Alpha:
+  adjacency FEM
