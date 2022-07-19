@@ -1383,14 +1383,19 @@ PetscErrorCode DMNetworkComponentSetUp(DM dm)
     PetscCall(PetscMemcpy(headerinfo,header,sizeof(struct _p_DMNetworkComponentHeader)));
     headerarr = (PetscInt*)(headerinfo+1);
     PetscCall(PetscMemcpy(headerarr,header->size,header->maxcomps*sizeof(PetscInt)));
+    headerinfo->size = headerarr;
     headerarr += header->maxcomps;
     PetscCall(PetscMemcpy(headerarr,header->key,header->maxcomps*sizeof(PetscInt)));
+    headerinfo->key = headerarr;
     headerarr += header->maxcomps;
     PetscCall(PetscMemcpy(headerarr,header->offset,header->maxcomps*sizeof(PetscInt)));
+    headerinfo->offset = headerarr;
     headerarr += header->maxcomps;
     PetscCall(PetscMemcpy(headerarr,header->nvar,header->maxcomps*sizeof(PetscInt)));
+    headerinfo->nvar = headerarr;
     headerarr += header->maxcomps;
     PetscCall(PetscMemcpy(headerarr,header->offsetvarrel,header->maxcomps*sizeof(PetscInt)));
+    headerinfo->offsetvarrel = headerarr;
 
     /* Copy data */
     cvalue = &network->cvalue[p];
@@ -1401,6 +1406,12 @@ PetscErrorCode DMNetworkComponentSetUp(DM dm)
       PetscCall(PetscMemcpy(componentdataarray+offset,cvalue->data[i],header->size[i]*sizeof(DMNetworkComponentGenericDataType)));
     }
   }
+
+  for (i=network->pStart; i < network->pEnd; i++) {
+    PetscCall(PetscFree5(network->header[i].size,network->header[i].key,network->header[i].offset,network->header[i].nvar,network->header[i].offsetvarrel));
+    PetscCall(PetscFree(network->cvalue[i].data));
+  }
+  PetscCall(PetscFree2(network->header,network->cvalue));
   PetscFunctionReturn(0);
 }
 
@@ -2533,7 +2544,7 @@ PetscErrorCode DMCreateMatrix_Network(DM dm,Mat *J)
 PetscErrorCode DMDestroy_Network(DM dm)
 {
   DM_Network     *network = (DM_Network*)dm->data;
-  PetscInt       j,np;
+  PetscInt       j;
 
   PetscFunctionBegin;
   if (--network->refct > 0) PetscFunctionReturn(0);
@@ -2566,14 +2577,6 @@ PetscErrorCode DMDestroy_Network(DM dm)
   PetscCall(PetscFree(network->component));
   PetscCall(PetscFree(network->componentdataarray));
 
-  if (network->header) {
-    np = network->pEnd - network->pStart;
-    for (j=0; j < np; j++) {
-      PetscCall(PetscFree5(network->header[j].size,network->header[j].key,network->header[j].offset,network->header[j].nvar,network->header[j].offsetvarrel));
-      PetscCall(PetscFree(network->cvalue[j].data));
-    }
-    PetscCall(PetscFree2(network->header,network->cvalue));
-  }
   PetscCall(PetscFree(network));
   PetscFunctionReturn(0);
 }
