@@ -54,9 +54,14 @@ PetscErrorCode PetscFPTrapPush(PetscFPTrap trap)
 
   PetscFunctionBegin;
   PetscCall(PetscNew(&link));
-  link->trapmode = _trapmode;
-  link->next     = _trapstack;
-  _trapstack     = link;
+#if defined(PETSC_HAVE_THREADSAFETY) && defined(PETSC_HAVE_OPENMP)
+#pragma omp critical
+#endif
+  {
+    link->trapmode = _trapmode;
+    link->next     = _trapstack;
+    _trapstack     = link;
+  }
   if (trap != _trapmode) PetscCall(PetscSetFPTrap(trap));
   PetscFunctionReturn(0);
 }
@@ -76,8 +81,13 @@ PetscErrorCode PetscFPTrapPop(void)
 
   PetscFunctionBegin;
   if (_trapstack->trapmode != _trapmode) PetscCall(PetscSetFPTrap(_trapstack->trapmode));
-  link       = _trapstack;
-  _trapstack = _trapstack->next;
+#if defined(PETSC_HAVE_THREADSAFETY) && defined(PETSC_HAVE_OPENMP)
+#pragma omp critical
+#endif
+  {
+    link       = _trapstack;
+    _trapstack = _trapstack->next;
+  }
   PetscCall(PetscFree(link));
   PetscFunctionReturn(0);
 }
