@@ -76,7 +76,7 @@ clean-legacy:
                ex[0-9]sycl.exe ex[0-9][0-9]sycl.exe ex[0-9][0-9][0-9]sycl.exe \
               PI* *.ln l.outa* mputil.mp_* core core.* *.tmp *.map gmon.out *.gcov.html \
               trashz \#*\# *.mex* *.stolen *.trace Log.* *.stolen \
-              output/*~ .mpirtmp mon.out *.aus *.mon.* __* p4pg ins10*.c \
+              output/*~ .mpirtmp mon.out *.aus *.mon.* p4pg ins10*.c \
                *.cp_ *.cp__ *.c*.c \
                *.dep *.proj ctoatmp PETScArena* *.L *.anl *.mod .mpi* *.d \
               *.class *.ouit *.ad.* g_* silly.cmp *.tmp.* *.ilk *.pdb *.inst.c *.rej *.gcda *.gcno
