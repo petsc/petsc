@@ -431,7 +431,7 @@ static PetscErrorCode VecView_Plex_Local_VTK(Vec v, PetscViewer viewer)
 PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
 {
   DM             dm;
-  PetscBool      isvtk, ishdf5, isdraw, isglvis;
+  PetscBool      isvtk, ishdf5, isdraw, isglvis, iscgns;
 
   PetscFunctionBegin;
   PetscCall(VecGetDM(v, &dm));
@@ -440,7 +440,8 @@ PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5,  &ishdf5));
   PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERDRAW,  &isdraw));
   PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERGLVIS, &isglvis));
-  if (isvtk || ishdf5 || isdraw || isglvis) {
+  PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERCGNS,  &iscgns));
+  if (isvtk || ishdf5 || isdraw || isglvis || iscgns) {
     PetscInt    i,numFields;
     PetscObject fe;
     PetscBool   fem = PETSC_FALSE;
@@ -480,6 +481,12 @@ PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
       PetscCall(DMGetOutputSequenceNumber(dm, &step, NULL));
       PetscCall(PetscViewerGLVisSetSnapId(viewer, step));
       PetscCall(VecView_GLVis(locv, viewer));
+    } else if (iscgns) {
+#if defined(PETSC_HAVE_CGNS)
+      PetscCall(VecView_Plex_Local_CGNS(locv, viewer));
+#else
+      SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "CGNS not supported in this build.\nPlease reconfigure using --download-cgns");
+#endif
     }
     if (fem) {
       PetscCall(PetscObjectCompose((PetscObject) locv, "__Vec_bc_zero__", NULL));
@@ -498,7 +505,7 @@ PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
 PetscErrorCode VecView_Plex(Vec v, PetscViewer viewer)
 {
   DM        dm;
-  PetscBool isvtk, ishdf5, isdraw, isglvis, isexodusii;
+  PetscBool isvtk, ishdf5, isdraw, isglvis, isexodusii, iscgns;
 
   PetscFunctionBegin;
   PetscCall(VecGetDM(v, &dm));
@@ -507,8 +514,9 @@ PetscErrorCode VecView_Plex(Vec v, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5,     &ishdf5));
   PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERDRAW,     &isdraw));
   PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERGLVIS,    &isglvis));
+  PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERCGNS,     &iscgns));
   PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWEREXODUSII, &isexodusii));
-  if (isvtk || isdraw || isglvis) {
+  if (isvtk || isdraw || isglvis || iscgns) {
     Vec         locv;
     PetscObject isZero;
     const char *name;
@@ -1702,7 +1710,7 @@ static PetscErrorCode DMPlexView_Draw(DM dm, PetscViewer viewer)
 
 PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer)
 {
-  PetscBool      iascii, ishdf5, isvtk, isdraw, flg, isglvis, isexodus;
+  PetscBool      iascii, ishdf5, isvtk, isdraw, flg, isglvis, isexodus, iscgns;
   char           name[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
@@ -1714,6 +1722,7 @@ PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERDRAW,     &isdraw));
   PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERGLVIS,    &isglvis));
   PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWEREXODUSII, &isexodus));
+  PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERCGNS,     &iscgns));
   if (iascii) {
     PetscViewerFormat format;
     PetscCall(PetscViewerGetFormat(viewer, &format));
@@ -1750,8 +1759,11 @@ PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer)
     }
     PetscCall(DMView_PlexExodusII(dm, viewer));
 #endif
+#if defined(PETSC_HAVE_CGNS)
+  } else if (iscgns) {
+    PetscCall(DMView_PlexCGNS(dm, viewer));
+#endif
   } else SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Viewer type %s not yet supported for DMPlex writing", ((PetscObject)viewer)->type_name);
-
   /* Optionally view the partition */
   PetscCall(PetscOptionsHasName(((PetscObject) dm)->options, ((PetscObject) dm)->prefix, "-dm_partition_view", &flg));
   if (flg) {
