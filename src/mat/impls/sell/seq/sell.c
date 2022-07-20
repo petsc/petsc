@@ -1599,7 +1599,7 @@ PetscErrorCode MatScale_SeqSELL(Mat inA,PetscScalar alpha)
 
   PetscFunctionBegin;
   PetscCall(PetscBLASIntCast(a->sliidx[a->totalslices],&size));
-  PetscStackCallBLAS("BLASscal",BLASscal_(&size,&oalpha,aval,&one));
+  PetscCallBLAS("BLASscal",BLASscal_(&size,&oalpha,aval,&one));
   PetscCall(PetscLogFlops(a->nz));
   PetscCall(MatSeqSELLInvalidateDiagonal(inA));
   PetscFunctionReturn(0);

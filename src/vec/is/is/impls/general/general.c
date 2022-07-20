@@ -251,7 +251,7 @@ static PetscErrorCode ISView_General_HDF5(IS is, PetscViewer viewer)
       chunkDims[dim-1] = PETSC_HDF5_MAX_CHUNKSIZE/64;
     }
   }
-  PetscStackCallHDF5Return(filespace,H5Screate_simple,(dim, dims, maxDims));
+  PetscCallHDF5Return(filespace,H5Screate_simple,(dim, dims, maxDims));
 
 #if defined(PETSC_USE_64BIT_INDICES)
   inttype = H5T_NATIVE_LLONG;
@@ -263,16 +263,16 @@ static PetscErrorCode ISView_General_HDF5(IS is, PetscViewer viewer)
   PetscCall(PetscObjectGetName((PetscObject) is, &isname));
   if (!H5Lexists(group, isname, H5P_DEFAULT)) {
     /* Create chunk */
-    PetscStackCallHDF5Return(chunkspace,H5Pcreate,(H5P_DATASET_CREATE));
-    PetscStackCallHDF5(H5Pset_chunk,(chunkspace, dim, chunkDims));
+    PetscCallHDF5Return(chunkspace,H5Pcreate,(H5P_DATASET_CREATE));
+    PetscCallHDF5(H5Pset_chunk,(chunkspace, dim, chunkDims));
 
-    PetscStackCallHDF5Return(dset_id,H5Dcreate2,(group, isname, inttype, filespace, H5P_DEFAULT, chunkspace, H5P_DEFAULT));
-    PetscStackCallHDF5(H5Pclose,(chunkspace));
+    PetscCallHDF5Return(dset_id,H5Dcreate2,(group, isname, inttype, filespace, H5P_DEFAULT, chunkspace, H5P_DEFAULT));
+    PetscCallHDF5(H5Pclose,(chunkspace));
   } else {
-    PetscStackCallHDF5Return(dset_id,H5Dopen2,(group, isname, H5P_DEFAULT));
-    PetscStackCallHDF5(H5Dset_extent,(dset_id, dims));
+    PetscCallHDF5Return(dset_id,H5Dopen2,(group, isname, H5P_DEFAULT));
+    PetscCallHDF5(H5Dset_extent,(dset_id, dims));
   }
-  PetscStackCallHDF5(H5Sclose,(filespace));
+  PetscCallHDF5(H5Sclose,(filespace));
 
   /* Each process defines a dataset and writes it to the hyperslab in the file */
   dim = 0;
@@ -287,10 +287,10 @@ static PetscErrorCode ISView_General_HDF5(IS is, PetscViewer viewer)
     ++dim;
   }
   if (n > 0 || H5_VERSION_GE(1,10,0)) {
-    PetscStackCallHDF5Return(memspace,H5Screate_simple,(dim, count, NULL));
+    PetscCallHDF5Return(memspace,H5Screate_simple,(dim, count, NULL));
   } else {
     /* Can't create dataspace with zero for any dimension, so create null dataspace. */
-    PetscStackCallHDF5Return(memspace,H5Screate,(H5S_NULL));
+    PetscCallHDF5Return(memspace,H5Screate,(H5S_NULL));
   }
 
   /* Select hyperslab in the file */
@@ -307,23 +307,23 @@ static PetscErrorCode ISView_General_HDF5(IS is, PetscViewer viewer)
     ++dim;
   }
   if (n > 0 || H5_VERSION_GE(1,10,0)) {
-    PetscStackCallHDF5Return(filespace,H5Dget_space,(dset_id));
-    PetscStackCallHDF5(H5Sselect_hyperslab,(filespace, H5S_SELECT_SET, offset, NULL, count, NULL));
+    PetscCallHDF5Return(filespace,H5Dget_space,(dset_id));
+    PetscCallHDF5(H5Sselect_hyperslab,(filespace, H5S_SELECT_SET, offset, NULL, count, NULL));
   } else {
     /* Create null filespace to match null memspace. */
-    PetscStackCallHDF5Return(filespace,H5Screate,(H5S_NULL));
+    PetscCallHDF5Return(filespace,H5Screate,(H5S_NULL));
   }
 
   PetscCall(ISGetIndices(is, &ind));
-  PetscStackCallHDF5(H5Dwrite,(dset_id, inttype, memspace, filespace, hdf5->dxpl_id, ind));
-  PetscStackCallHDF5(H5Fflush,(file_id, H5F_SCOPE_GLOBAL));
+  PetscCallHDF5(H5Dwrite,(dset_id, inttype, memspace, filespace, hdf5->dxpl_id, ind));
+  PetscCallHDF5(H5Fflush,(file_id, H5F_SCOPE_GLOBAL));
   PetscCall(ISRestoreIndices(is, &ind));
 
   /* Close/release resources */
-  PetscStackCallHDF5(H5Gclose,(group));
-  PetscStackCallHDF5(H5Sclose,(filespace));
-  PetscStackCallHDF5(H5Sclose,(memspace));
-  PetscStackCallHDF5(H5Dclose,(dset_id));
+  PetscCallHDF5(H5Gclose,(group));
+  PetscCallHDF5(H5Sclose,(filespace));
+  PetscCallHDF5(H5Sclose,(memspace));
+  PetscCallHDF5(H5Dclose,(dset_id));
 
   if (timestepping) {
     PetscCall(PetscViewerHDF5WriteObjectAttribute(viewer,(PetscObject)is,"timestepping",PETSC_BOOL,&timestepping));

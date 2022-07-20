@@ -430,17 +430,17 @@ static PetscErrorCode KSPAGMRESBuildSoln(KSP ksp,PetscInt it)
     }
   }
   /* QR factorize the Hessenberg matrix */
-  PetscStackCallBLAS("LAPACKgeqrf",LAPACKgeqrf_(&lC, &KspSize, agmres->hh_origin, &ldH, agmres->tau, agmres->work, &lwork, &info));
+  PetscCallBLAS("LAPACKgeqrf",LAPACKgeqrf_(&lC, &KspSize, agmres->hh_origin, &ldH, agmres->tau, agmres->work, &lwork, &info));
   PetscCheck(!info,PetscObjectComm((PetscObject)ksp), PETSC_ERR_LIB,"Error in LAPACK routine XGEQRF INFO=%" PetscBLASInt_FMT, info);
   /* Update the right hand side of the least square problem */
   PetscCall(PetscArrayzero(agmres->nrs, N));
 
   agmres->nrs[0] = ksp->rnorm;
-  PetscStackCallBLAS("LAPACKormqr",LAPACKormqr_("L", "T", &lC, &nrhs, &KspSize, agmres->hh_origin, &ldH, agmres->tau, agmres->nrs, &N, agmres->work, &lwork, &info));
+  PetscCallBLAS("LAPACKormqr",LAPACKormqr_("L", "T", &lC, &nrhs, &KspSize, agmres->hh_origin, &ldH, agmres->tau, agmres->nrs, &N, agmres->work, &lwork, &info));
   PetscCheck(!info,PetscObjectComm((PetscObject)ksp), PETSC_ERR_LIB,"Error in LAPACK routine XORMQR INFO=%" PetscBLASInt_FMT,info);
   ksp->rnorm = PetscAbsScalar(agmres->nrs[KspSize]);
   /* solve the least-square problem */
-  PetscStackCallBLAS("LAPACKtrtrs",LAPACKtrtrs_("U", "N", "N", &KspSize, &nrhs, agmres->hh_origin, &ldH, agmres->nrs, &N, &info));
+  PetscCallBLAS("LAPACKtrtrs",LAPACKtrtrs_("U", "N", "N", &KspSize, &nrhs, agmres->hh_origin, &ldH, agmres->nrs, &N, &info));
   PetscCheck(!info,PetscObjectComm((PetscObject)ksp), PETSC_ERR_LIB,"Error in LAPACK routine XTRTRS INFO=%" PetscBLASInt_FMT,info);
   /* Accumulate the correction to the solution of the preconditioned problem in VEC_TMP */
   PetscCall(VecZeroEntries(VEC_TMP));

@@ -2456,7 +2456,7 @@ PetscErrorCode MatAXPY_SeqBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     PetscScalar  alpha = a;
     PetscBLASInt bnz;
     PetscCall(PetscBLASIntCast(x->nz*bs2,&bnz));
-    PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one));
+    PetscCallBLAS("BLASaxpy",BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one));
     PetscCall(PetscObjectStateIncrease((PetscObject)Y));
   } else if (str == SUBSET_NONZERO_PATTERN) { /* nonzeros of X is a subset of Y's */
     PetscCall(MatAXPY_Basic(Y,a,X,str));

@@ -92,10 +92,10 @@ static PetscErrorCode KSPGuessSetUp_POD(KSPGuess guess)
     pod->lwork = -1;
     PetscCall(PetscBLASIntCast(pod->maxn,&bN));
 #if !defined(PETSC_USE_COMPLEX)
-    PetscStackCallBLAS("LAPACKsyevx",LAPACKsyevx_("V","A","L",&bN,pod->corr,&bN,&rdummy,&rdummy,&idummy,&idummy,
+    PetscCallBLAS("LAPACKsyevx",LAPACKsyevx_("V","A","L",&bN,pod->corr,&bN,&rdummy,&rdummy,&idummy,&idummy,
                                                   &rdummy,&idummy,pod->eigs,pod->eigv,&bN,&sdummy,&pod->lwork,pod->iwork,pod->iwork+5*bN,&lierr));
 #else
-    PetscStackCallBLAS("LAPACKsyevx",LAPACKsyevx_("V","A","L",&bN,pod->corr,&bN,&rdummy,&rdummy,&idummy,&idummy,
+    PetscCallBLAS("LAPACKsyevx",LAPACKsyevx_("V","A","L",&bN,pod->corr,&bN,&rdummy,&rdummy,&idummy,&idummy,
                                                   &rdummy,&idummy,pod->eigs,pod->eigv,&bN,&sdummy,&pod->lwork,pod->rwork,pod->iwork,pod->iwork+5*bN,&lierr));
 #endif
     PetscCheck(!lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to SYEV Lapack routine %d",(int)lierr);
@@ -175,7 +175,7 @@ static PetscErrorCode KSPGuessFormGuess_POD(KSPGuess guess,Vec b,Vec x)
   PetscCall(MPIU_Allreduce(pod->swork,pod->swork + pod->n,pod->n,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)guess)));
   PetscCall(PetscBLASIntCast(pod->n,&bN));
   PetscCall(PetscBLASIntCast(pod->nen,&bNen));
-  PetscStackCallBLAS("BLASgemv",BLASgemv_("T",&bN,&bNen,&one,pod->eigv+pod->st*pod->n,&bN,pod->swork+pod->n,&ione,&zero,pod->swork,&ione));
+  PetscCallBLAS("BLASgemv",BLASgemv_("T",&bN,&bNen,&one,pod->eigv+pod->st*pod->n,&bN,pod->swork+pod->n,&ione,&zero,pod->swork,&ione));
   if (pod->monitor) {
     PetscCall(PetscPrintf(PetscObjectComm((PetscObject)guess),"  KSPGuessPOD alphas = "));
     for (i=0; i<pod->nen; i++) {
@@ -203,13 +203,13 @@ static PetscErrorCode KSPGuessFormGuess_POD(KSPGuess guess,Vec b,Vec x)
     }
     PetscCall(MatIsSymmetricKnown(guess->A,&set,&symm));
     tsolve = (set && symm) ? PETSC_FALSE : pksp->transpose_solve;
-    PetscStackCallBLAS("LAPACKgetrf",LAPACKgetrf_(&bNen,&bNen,pod->low,&bNen,pod->iwork,&lierr));
+    PetscCallBLAS("LAPACKgetrf",LAPACKgetrf_(&bNen,&bNen,pod->low,&bNen,pod->iwork,&lierr));
     PetscCheck(!lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRF Lapack routine %d",(int)lierr);
-    PetscStackCallBLAS("LAPACKgetrs",LAPACKgetrs_(tsolve ? "T" : "N",&bNen,&ione,pod->low,&bNen,pod->iwork,pod->swork,&bNen,&lierr));
+    PetscCallBLAS("LAPACKgetrs",LAPACKgetrs_(tsolve ? "T" : "N",&bNen,&ione,pod->low,&bNen,pod->iwork,pod->swork,&bNen,&lierr));
     PetscCheck(!lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRS Lapack routine %d",(int)lierr);
   }
   /* x = X * V * S * x_low */
-  PetscStackCallBLAS("BLASgemv",BLASgemv_("N",&bN,&bNen,&one,pod->eigv+pod->st*pod->n,&bN,pod->swork,&ione,&zero,pod->swork+pod->n,&ione));
+  PetscCallBLAS("BLASgemv",BLASgemv_("N",&bN,&bNen,&one,pod->eigv+pod->st*pod->n,&bN,pod->swork,&ione,&zero,pod->swork+pod->n,&ione));
   if (pod->monitor) {
     PetscCall(PetscPrintf(PetscObjectComm((PetscObject)guess),"  KSPGuessPOD sol = "));
     for (i=0; i<pod->nen; i++) {
@@ -329,12 +329,12 @@ complete_request:
   }
   PetscCall(PetscBLASIntCast(pod->n,&bN));
 #if !defined(PETSC_USE_COMPLEX)
-  PetscStackCallBLAS("LAPACKsyevx",LAPACKsyevx_("V","A","L",&bN,pod->swork,&bN,
+  PetscCallBLAS("LAPACKsyevx",LAPACKsyevx_("V","A","L",&bN,pod->swork,&bN,
                                                 &reps,&reps,&idummy,&idummy,
                                                 &reps,&idummy,pod->eigs,pod->eigv,&bN,
                                                 pod->swork+bN*bN,&pod->lwork,pod->iwork,pod->iwork+5*bN,&lierr));
 #else
-  PetscStackCallBLAS("LAPACKsyevx",LAPACKsyevx_("V","A","L",&bN,pod->swork,&bN,
+  PetscCallBLAS("LAPACKsyevx",LAPACKsyevx_("V","A","L",&bN,pod->swork,&bN,
                                                 &reps,&reps,&idummy,&idummy,
                                                 &reps,&idummy,pod->eigs,pod->eigv,&bN,
                                                 pod->swork+bN*bN,&pod->lwork,pod->rwork,pod->iwork,pod->iwork+5*bN,&lierr));
@@ -372,8 +372,8 @@ complete_request:
     PetscInt     st = pod->st*pod->n;
     PetscCall(PetscBLASIntCast(pod->nen,&bNen));
     PetscCall(PetscBLASIntCast(pod->maxn,&bMaxN));
-    PetscStackCallBLAS("BLASgemm",BLASgemm_("T","N",&bNen,&bN,&bN,&one,pod->eigv+st,&bN,pod->yhay,&bMaxN,&zero,pod->swork,&bNen));
-    PetscStackCallBLAS("BLASgemm",BLASgemm_("N","N",&bNen,&bNen,&bN,&one,pod->swork,&bNen,pod->eigv+st,&bN,&zero,pod->low,&bNen));
+    PetscCallBLAS("BLASgemm",BLASgemm_("T","N",&bNen,&bN,&bN,&one,pod->eigv+st,&bN,pod->yhay,&bMaxN,&zero,pod->swork,&bNen));
+    PetscCallBLAS("BLASgemm",BLASgemm_("N","N",&bNen,&bNen,&bN,&one,pod->swork,&bNen,pod->eigv+st,&bN,&zero,pod->low,&bNen));
   }
 
   if (pod->monitor) {
@@ -391,8 +391,8 @@ complete_request:
         PetscCall(VecDuplicate(pod->xsnap[i],&v));
         PetscCall(VecCopy(pod->xsnap[i],v));
         PetscCall(PetscBLASIntCast(pod->nen,&bNen));
-        PetscStackCallBLAS("BLASgemv",BLASgemv_("T",&bN,&bNen,&one,pod->eigv+pod->st*pod->n,&bN,pod->corr+pod->maxn*i,&ione,&zero,pod->swork,&ione));
-        PetscStackCallBLAS("BLASgemv",BLASgemv_("N",&bN,&bNen,&one,pod->eigv+pod->st*pod->n,&bN,pod->swork,&ione,&zero,pod->swork+pod->n,&ione));
+        PetscCallBLAS("BLASgemv",BLASgemv_("T",&bN,&bNen,&one,pod->eigv+pod->st*pod->n,&bN,pod->corr+pod->maxn*i,&ione,&zero,pod->swork,&ione));
+        PetscCallBLAS("BLASgemv",BLASgemv_("N",&bN,&bNen,&one,pod->eigv+pod->st*pod->n,&bN,pod->swork,&ione,&zero,pod->swork+pod->n,&ione));
         for (j=0;j<pod->n;j++) pod->swork[j] = -pod->swork[pod->n+j];
         PetscCall(VecMAXPY(v,pod->n,pod->swork,pod->xsnap));
         PetscCall(VecDot(v,v,pod->swork));

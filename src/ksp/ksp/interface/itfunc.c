@@ -338,15 +338,15 @@ PetscErrorCode KSPSetUp(KSP ksp)
 
     if (kdm->ops->computeinitialguess && ksp->setupstage != KSP_SETUP_NEWRHS) {
       /* only computes initial guess the first time through */
-      PetscCall((*kdm->ops->computeinitialguess)(ksp,ksp->vec_sol,kdm->initialguessctx));
+      PetscCallBack("KSP callback initial guess",(*kdm->ops->computeinitialguess)(ksp,ksp->vec_sol,kdm->initialguessctx));
       PetscCall(KSPSetInitialGuessNonzero(ksp,PETSC_TRUE));
     }
-    if (kdm->ops->computerhs) PetscCall((*kdm->ops->computerhs)(ksp,ksp->vec_rhs,kdm->rhsctx));
+    if (kdm->ops->computerhs) PetscCallBack("KSP callback rhs",(*kdm->ops->computerhs)(ksp,ksp->vec_rhs,kdm->rhsctx));
 
     if (ksp->setupstage != KSP_SETUP_NEWRHS) {
       if (kdm->ops->computeoperators) {
         PetscCall(KSPGetOperators(ksp,&A,&B));
-        PetscCall((*kdm->ops->computeoperators)(ksp,A,B,kdm->operatorsctx));
+        PetscCallBack("KSP callback operators",(*kdm->ops->computeoperators)(ksp,A,B,kdm->operatorsctx));
       } else SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"You called KSPSetDM() but did not use DMKSPSetComputeOperators() or KSPSetDMActive(ksp,PETSC_FALSE);");
     }
   }

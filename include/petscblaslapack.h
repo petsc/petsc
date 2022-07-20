@@ -28,8 +28,30 @@
 #define BLAS_EXTERN extern
 #endif
 
-#define PetscStackCallBLAS(name,routine) do {                   \
-    PetscStackPushNoCheck(name,PETSC_FALSE,PETSC_TRUE);         \
+/* SUBMANSEC = Sys */
+
+/*MC
+    PetscCallBLAS - Calls a BLAS or LAPACK routine with error check handling
+
+    Not collective
+
+    Synopsis:
+   #include <petscsys.h>
+   void PetscCallBLAS(char *name,routine)
+
+  Input Parameters:
++   name - string that gives the name of the function being called
+-   routine - actual call to the routine including its arguments
+
+   Level: developer
+
+   Developer Note:
+   This is so that when a user or external library routine results in a crash or corrupts memory, they get blamed instead of PETSc.
+
+.seealso: `PetscCall()`, `PetscStackPushNoCheck()`, `PetscStackPush()`, `PetscCallExternal()`, `PetscStackCallExternalVoid()`
+M*/
+#define PetscCallBLAS(name,routine) do {                   \
+    PetscStackPushExternal(name);                                \
     routine;                                                    \
     PetscStackPop;                                              \
   } while (0)

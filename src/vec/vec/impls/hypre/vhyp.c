@@ -31,7 +31,7 @@ PetscErrorCode VecHYPRE_IJVectorDestroy(VecHYPRE_IJVector *ij)
   PetscFunctionBegin;
   if (!*ij) PetscFunctionReturn(0);
   PetscCheck(!(*ij)->pvec,PetscObjectComm((PetscObject)((*ij)->pvec)),PETSC_ERR_ORDER,"Forgot to call VecHYPRE_IJVectorPopVec()");
-  PetscStackCallStandard(HYPRE_IJVectorDestroy,(*ij)->ij);
+  PetscCallExternal(HYPRE_IJVectorDestroy,(*ij)->ij);
   PetscCall(PetscFree(*ij));
   PetscFunctionReturn(0);
 }
@@ -203,8 +203,8 @@ PetscErrorCode VecHYPRE_IJBindToCPU(VecHYPRE_IJVector ij,PetscBool bind)
 #endif
 #if PETSC_PKG_HYPRE_VERSION_GT(2,19,0)
   if (hmem != VecHYPRE_IJVectorMemoryLocation(ij->ij)) {
-    PetscStackCallStandard(HYPRE_IJVectorGetObject,ij->ij,(void**)&hij);
-    PetscStackCallStandard(hypre_ParVectorMigrate,hij,hmem);
+    PetscCallExternal(HYPRE_IJVectorGetObject,ij->ij,(void**)&hij);
+    PetscCallExternal(hypre_ParVectorMigrate,hij,hmem);
   }
 #endif
   PetscFunctionReturn(0);

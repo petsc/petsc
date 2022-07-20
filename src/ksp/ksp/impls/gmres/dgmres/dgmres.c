@@ -690,7 +690,7 @@ PetscErrorCode  KSPDGMRESComputeDeflationData_DGMRES(KSP ksp, PetscInt *ExtrNeig
   }
   {
     PetscBLASInt info;
-    PetscStackCallBLAS("LAPACKgetrf",LAPACKgetrf_(&nr, &nr, TTF, &bmax, INVP, &info));
+    PetscCallBLAS("LAPACKgetrf",LAPACKgetrf_(&nr, &nr, TTF, &bmax, INVP, &info));
     PetscCheck(!info,PetscObjectComm((PetscObject)ksp), PETSC_ERR_LIB,"Error in LAPACK routine XGETRF INFO=%d",(int) info);
   }
 
@@ -773,7 +773,7 @@ PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES(KSP ksp, PetscInt *neig)
     {
       PetscBLASInt info;
       PetscBLASInt nrhs = 1;
-      PetscStackCallBLAS("LAPACKgesv",LAPACKgesv_(&bn, &nrhs, Ht, &bn, ipiv, t, &bn, &info));
+      PetscCallBLAS("LAPACKgesv",LAPACKgesv_(&bn, &nrhs, Ht, &bn, ipiv, t, &bn, &info));
       PetscCheck(!info,PetscObjectComm((PetscObject)ksp),PETSC_ERR_LIB, "Error while calling the Lapack routine DGESV");
     }
     /* Now form H + H^{-T}*h^2_{m+1,m}e_m*e_m^T */
@@ -785,7 +785,7 @@ PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES(KSP ksp, PetscInt *neig)
   {
     PetscBLASInt info=0;
     PetscBLASInt ilo = 1;
-    PetscStackCallBLAS("LAPACKhseqr",LAPACKhseqr_("S", "I", &bn, &ilo, &ihi, A, &ldA, wr, wi, Q, &ldQ, work, &lwork, &info));
+    PetscCallBLAS("LAPACKhseqr",LAPACKhseqr_("S", "I", &bn, &ilo, &ihi, A, &ldA, wr, wi, Q, &ldQ, work, &lwork, &info));
     PetscCheck(!info,PetscObjectComm((PetscObject)ksp), PETSC_ERR_LIB,"Error in LAPACK routine XHSEQR %d",(int) info);
   }
   PetscCall(PetscFree(work));
@@ -821,7 +821,7 @@ PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES(KSP ksp, PetscInt *neig)
     PetscBLASInt info=0;
     PetscReal    CondEig;         /* lower bound on the reciprocal condition number for the selected cluster of eigenvalues */
     PetscReal    CondSub;         /* estimated reciprocal condition number of the specified invariant subspace. */
-    PetscStackCallBLAS("LAPACKtrsen",LAPACKtrsen_("B", "V", select, &bn, A, &ldA, Q, &ldQ, wr, wi, &NbrEig, &CondEig, &CondSub, work, &lwork, iwork, &liwork, &info));
+    PetscCallBLAS("LAPACKtrsen",LAPACKtrsen_("B", "V", select, &bn, A, &ldA, Q, &ldQ, wr, wi, &NbrEig, &CondEig, &CondSub, work, &lwork, iwork, &liwork, &info));
     PetscCheck(info != 1,PetscObjectComm((PetscObject)ksp), PETSC_ERR_LIB, "UNABLE TO REORDER THE EIGENVALUES WITH THE LAPACK ROUTINE : ILL-CONDITIONED PROBLEM");
   }
   PetscCall(PetscFree(select));
@@ -870,7 +870,7 @@ PetscErrorCode  KSPDGMRESApplyDeflation_DGMRES(KSP ksp, Vec x, Vec y)
   {
     PetscBLASInt info;
     PetscBLASInt nrhs = 1;
-    PetscStackCallBLAS("LAPACKgetrs",LAPACKgetrs_("N", &br, &nrhs, TTF, &bmax, INVP, X1, &bmax, &info));
+    PetscCallBLAS("LAPACKgetrs",LAPACKgetrs_("N", &br, &nrhs, TTF, &bmax, INVP, X1, &bmax, &info));
     PetscCheck(!info,PetscObjectComm((PetscObject)ksp), PETSC_ERR_LIB,"Error in LAPACK routine XGETRS %d", (int) info);
   }
   /* Iterative refinement -- is it really necessary ?? */
@@ -882,7 +882,7 @@ PetscErrorCode  KSPDGMRESApplyDeflation_DGMRES(KSP ksp, Vec x, Vec y)
     PetscBLASInt info;
     PetscReal    berr, ferr;
     PetscBLASInt nrhs = 1;
-    PetscStackCallBLAS("LAPACKgerfs",LAPACKgerfs_("N", &br, &nrhs, TT, &bmax, TTF, &bmax, INVP, X2, &bmax,X1, &bmax, &ferr, &berr, WORK, IWORK, &info));
+    PetscCallBLAS("LAPACKgerfs",LAPACKgerfs_("N", &br, &nrhs, TT, &bmax, TTF, &bmax, INVP, X2, &bmax,X1, &bmax, &ferr, &berr, WORK, IWORK, &info));
     PetscCheck(!info,PetscObjectComm((PetscObject)ksp), PETSC_ERR_LIB,"Error in LAPACK routine XGERFS %d", (int) info);
   }
 
@@ -975,7 +975,7 @@ static PetscErrorCode  KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
   PetscCall(PetscMalloc1(lwork, &work));
   {
     PetscBLASInt info=0;
-    PetscStackCallBLAS("LAPACKgges",LAPACKgges_("V", "V", "N", NULL, &N, AUAU, &ldA, AUU, &ldA, &i, wr, wi, beta, Q, &N, Z, &N, work, &lwork, NULL, &info));
+    PetscCallBLAS("LAPACKgges",LAPACKgges_("V", "V", "N", NULL, &N, AUAU, &ldA, AUU, &ldA, &i, wr, wi, beta, Q, &N, Z, &N, work, &lwork, NULL, &info));
     PetscCheck(!info,PetscObjectComm((PetscObject)ksp), PETSC_ERR_LIB,"Error in LAPACK routine XGGES %d", (int) info);
   }
   for (i=0; i<N; i++) {
@@ -1021,7 +1021,7 @@ static PetscErrorCode  KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
     PetscReal    Dif[2];
     PetscBLASInt ijob  = 2;
     PetscBLASInt wantQ = 1, wantZ = 1;
-    PetscStackCallBLAS("LAPACKtgsen",LAPACKtgsen_(&ijob, &wantQ, &wantZ, select, &N, AUAU, &ldA, AUU, &ldA, wr, wi, beta, Q, &N, Z, &N, &NbrEig, NULL, NULL, &(Dif[0]), work, &lwork, iwork, &liwork, &info));
+    PetscCallBLAS("LAPACKtgsen",LAPACKtgsen_(&ijob, &wantQ, &wantZ, select, &N, AUAU, &ldA, AUU, &ldA, wr, wi, beta, Q, &N, Z, &N, &NbrEig, NULL, NULL, &(Dif[0]), work, &lwork, iwork, &liwork, &info));
     PetscCheck(info != 1,PetscObjectComm((PetscObject)ksp),PETSC_ERR_LIB, "Unable to reorder the eigenvalues with the LAPACK routine: ill-conditioned problem.");
   }
   PetscCall(PetscFree(select));
@@ -1052,7 +1052,7 @@ static PetscErrorCode  KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
   PetscCall(PetscBLASIntCast(bmax,&bm));
   {
     PetscBLASInt info;
-    PetscStackCallBLAS("LAPACKgetrf",LAPACKgetrf_(&nr, &nr, TTF, &bm, INVP, &info));
+    PetscCallBLAS("LAPACKgetrf",LAPACKgetrf_(&nr, &nr, TTF, &bm, INVP, &info));
     PetscCheck(!info,PetscObjectComm((PetscObject)ksp), PETSC_ERR_LIB,"Error in LAPACK routine XGETRF INFO=%d",(int) info);
   }
   /* Free Memory */

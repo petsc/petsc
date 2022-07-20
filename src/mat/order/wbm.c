@@ -57,12 +57,12 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_WBM(Mat mat, MatOrderingType type, IS
 
   PetscCall(PetscMalloc3(liw,&iw,ldw,&dw,nrow,&perm));
 #if defined(PETSC_HAVE_SUPERLU_DIST)
-  PetscStackCallStandard(mc64id_dist,icntl);
+  PetscCallExternal(mc64id_dist,icntl);
   icntl[0] = 0;              /* allow printing error messages (f2c'd code uses if non-negative, ignores value otherwise) */
   icntl[1] = -1;             /* suppress warnings */
   icntl[2] = -1;             /* ignore diagnostic output [default] */
   icntl[3] = 0;              /* perform consistency checks [default] */
-  PetscStackCallStandard(mc64ad_dist, &job, &nrow, &nnz, ia, ja, a, &num, perm, &liw, iw, &ldw, dw, icntl, info);
+  PetscCallExternal(mc64ad_dist, &job, &nrow, &nnz, ia, ja, a, &num, perm, &liw, iw, &ldw, dw, icntl, info);
   PetscCall(MatRestoreRowIJ(mat, 1, PETSC_TRUE, PETSC_TRUE, NULL, &ia, &ja, &done));
   for (i = 0; i < nrow; ++i) perm[i]--;
   /* If job == 5, dw[0..ncols] contains the column scaling and dw[ncols..ncols+nrows] contains the row scaling */

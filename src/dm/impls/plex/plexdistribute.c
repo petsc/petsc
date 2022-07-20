@@ -36,7 +36,7 @@ PetscErrorCode DMPlexSetAdjacencyUser(DM dm,PetscErrorCode (*user)(DM,PetscInt,P
 . dm      - The DM object
 
   Output Parameters:
-+ user    - The user callback
++ user    - The callback
 - ctx     - context for callback evaluation
 
   Level: advanced

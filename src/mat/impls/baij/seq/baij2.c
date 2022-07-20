@@ -2678,7 +2678,7 @@ PetscErrorCode MatScale_SeqBAIJ(Mat inA,PetscScalar alpha)
 
   PetscFunctionBegin;
   PetscCall(PetscBLASIntCast(totalnz,&tnz));
-  PetscStackCallBLAS("BLASscal",BLASscal_(&tnz,&oalpha,a->a,&one));
+  PetscCallBLAS("BLASscal",BLASscal_(&tnz,&oalpha,a->a,&one));
   PetscCall(PetscLogFlops(totalnz));
   PetscFunctionReturn(0);
 }
@@ -2694,7 +2694,7 @@ PetscErrorCode MatNorm_SeqBAIJ(Mat A,NormType type,PetscReal *norm)
   if (type == NORM_FROBENIUS) {
 #if defined(PETSC_USE_REAL___FP16)
     PetscBLASInt one = 1,cnt = bs2*nz;
-    PetscStackCallBLAS("BLASnrm2",*norm = BLASnrm2_(&cnt,v,&one));
+    PetscCallBLAS("BLASnrm2",*norm = BLASnrm2_(&cnt,v,&one));
 #else
     for (i=0; i<bs2*nz; i++) {
       sum += PetscRealPart(PetscConj(*v)*(*v)); v++;
@@ -3201,11 +3201,11 @@ PetscErrorCode MatMatMultNumeric_SeqBAIJ_SeqDense(Mat A,Mat B,Mat C)
       n = ii[1] - ii[0]; ii++;
       if (usecprow) z = c + bs*ridx[i];
       if (n) {
-        PetscStackCallBLAS("BLASgemm",BLASgemm_("N","N",&bbs,&bcn,&bbs,&_DOne,v,&bbs,b+bs*(*idx++),&bbm,&_DZero,z,&bcm));
+        PetscCallBLAS("BLASgemm",BLASgemm_("N","N",&bbs,&bcn,&bbs,&_DOne,v,&bbs,b+bs*(*idx++),&bbm,&_DZero,z,&bcm));
         v += bs2;
       }
       for (j=1; j<n; j++) {
-        PetscStackCallBLAS("BLASgemm",BLASgemm_("N","N",&bbs,&bcn,&bbs,&_DOne,v,&bbs,b+bs*(*idx++),&bbm,&_DOne,z,&bcm));
+        PetscCallBLAS("BLASgemm",BLASgemm_("N","N",&bbs,&bcn,&bbs,&_DOne,v,&bbs,b+bs*(*idx++),&bbm,&_DOne,z,&bcm));
         v += bs2;
       }
       if (!usecprow) z += bs;

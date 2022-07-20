@@ -154,7 +154,7 @@ static PetscErrorCode TSGLLESchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscI
     }
     PetscCall(PetscBLASIntCast(r-1,&m));
     PetscCall(PetscBLASIntCast(r,&n));
-    PetscStackCallBLAS("LAPACKgesv",LAPACKgesv_(&m,&one,ImV,&n,ipiv,scheme->alpha+1,&n,&info));
+    PetscCallBLAS("LAPACKgesv",LAPACKgesv_(&m,&one,ImV,&n,ipiv,scheme->alpha+1,&n,&info));
     PetscCheck(info >= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Bad argument to GESV");
     PetscCheck(info <= 0,PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Bad LU factorization");
 
@@ -163,7 +163,7 @@ static PetscErrorCode TSGLLESchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscI
       scheme->beta[i] = 1./Factorial(p+2-i) - scheme->alpha[i];
       for (j=0; j<s; j++) scheme->beta[i] -= b[i*s+j]*CPowF(c[j],p+1);
     }
-    PetscStackCallBLAS("LAPACKgetrs",LAPACKgetrs_("No transpose",&m,&one,ImV,&n,ipiv,scheme->beta+1,&n,&info));
+    PetscCallBLAS("LAPACKgetrs",LAPACKgetrs_("No transpose",&m,&one,ImV,&n,ipiv,scheme->beta+1,&n,&info));
     PetscCheck(info >= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Bad argument to GETRS");
     PetscCheck(info <= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Should not happen");
 
@@ -188,7 +188,7 @@ static PetscErrorCode TSGLLESchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscI
       scheme->gamma[i] = (i==1 ? -1. : 0)*scheme->alpha[0];
       for (j=0; j<s; j++) scheme->gamma[i] += b[i*s+j]*scheme->stage_error[j];
     }
-    PetscStackCallBLAS("LAPACKgetrs",LAPACKgetrs_("No transpose",&m,&one,ImV,&n,ipiv,scheme->gamma+1,&n,&info));
+    PetscCallBLAS("LAPACKgetrs",LAPACKgetrs_("No transpose",&m,&one,ImV,&n,ipiv,scheme->gamma+1,&n,&info));
     PetscCheck(info >= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Bad argument to GETRS");
     PetscCheck(info <= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Should not happen");
 
@@ -238,10 +238,10 @@ static PetscErrorCode TSGLLESchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscI
     rcond = 1e-12;
 #if defined(PETSC_USE_COMPLEX)
     /* ZGELSS( M, N, NRHS, A, LDA, B, LDB, S, RCOND, RANK, WORK, LWORK, RWORK, INFO) */
-    PetscStackCallBLAS("LAPACKgelss",LAPACKgelss_(&m,&n,&m,H,&m,bmat,&ldb,sing,&rcond,&rank,workscalar,&lwork,workreal,&info));
+    PetscCallBLAS("LAPACKgelss",LAPACKgelss_(&m,&n,&m,H,&m,bmat,&ldb,sing,&rcond,&rank,workscalar,&lwork,workreal,&info));
 #else
     /* DGELSS( M, N, NRHS, A, LDA, B, LDB, S, RCOND, RANK, WORK, LWORK, INFO) */
-    PetscStackCallBLAS("LAPACKgelss",LAPACKgelss_(&m,&n,&m,H,&m,bmat,&ldb,sing,&rcond,&rank,workscalar,&lwork,&info));
+    PetscCallBLAS("LAPACKgelss",LAPACKgelss_(&m,&n,&m,H,&m,bmat,&ldb,sing,&rcond,&rank,workscalar,&lwork,&info));
 #endif
     PetscCheck(info >= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Bad argument to GELSS");
     PetscCheck(info <= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"SVD failed to converge");

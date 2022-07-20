@@ -78,12 +78,12 @@ PetscErrorCode  PetscObjectViewSAWs(PetscObject obj,PetscViewer viewer)
 
   obj->amsmem = PETSC_TRUE;
   PetscCall(PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/Class",obj->name));
-  PetscStackCallSAWs(SAWs_Register,(dir,&obj->class_name,1,SAWs_READ,SAWs_STRING));
+  PetscCallSAWs(SAWs_Register,(dir,&obj->class_name,1,SAWs_READ,SAWs_STRING));
   PetscCall(PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/Type",obj->name));
-  PetscStackCallSAWs(SAWs_Register,(dir,&obj->type_name,1,SAWs_READ,SAWs_STRING));
+  PetscCallSAWs(SAWs_Register,(dir,&obj->type_name,1,SAWs_READ,SAWs_STRING));
   PetscCall(PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/__Id",obj->name));
-  PetscStackCallSAWs(SAWs_Register,(dir,&obj->id,1,SAWs_READ,SAWs_INT));
+  PetscCallSAWs(SAWs_Register,(dir,&obj->id,1,SAWs_READ,SAWs_INT));
   PetscCall(PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/__ParentID",obj->name));
-  PetscStackCallSAWs(SAWs_Register,(dir,&obj->parentid,1,SAWs_READ,SAWs_INT));
+  PetscCallSAWs(SAWs_Register,(dir,&obj->parentid,1,SAWs_READ,SAWs_INT));
   PetscFunctionReturn(0);
 }

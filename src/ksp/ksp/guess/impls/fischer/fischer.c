@@ -258,9 +258,9 @@ static PetscErrorCode KSPGuessFormGuess_Fischer_3(KSPGuess guess, Vec b, Vec x)
     PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
     PetscReal max_s_value = 0.0;
 #if defined(PETSC_USE_COMPLEX)
-    PetscStackCallBLAS("LAPACKheev", LAPACKheev_("V", "L", &blas_m, corr, &blas_m, s_values, work, &blas_lwork, rwork, &blas_info));
+    PetscCallBLAS("LAPACKheev", LAPACKheev_("V", "L", &blas_m, corr, &blas_m, s_values, work, &blas_lwork, rwork, &blas_info));
 #else
-    PetscStackCallBLAS(
+    PetscCallBLAS(
       "LAPACKsyev", LAPACKsyev_("V", "L", &blas_m, corr, &blas_m, s_values, work, &blas_lwork, &blas_info));
 #endif
 
@@ -277,7 +277,7 @@ static PetscErrorCode KSPGuessFormGuess_Fischer_3(KSPGuess guess, Vec b, Vec x)
       }
 
       /* manually apply the action of the pseudoinverse */
-      PetscStackCallBLAS("BLASgemv", BLASgemv_("T", &blas_m, &blas_m, &one, corr, &blas_m, itg->last_b_coefs, &blas_one, &zero, scratch_vec, &blas_one));
+      PetscCallBLAS("BLASgemv", BLASgemv_("T", &blas_m, &blas_m, &one, corr, &blas_m, itg->last_b_coefs, &blas_one, &zero, scratch_vec, &blas_one));
       for (j=0; j<m; ++j) {
         if (s_values[j] > itg->tol*max_s_value) {
           scratch_vec[j] /= s_values[j];
@@ -286,7 +286,7 @@ static PetscErrorCode KSPGuessFormGuess_Fischer_3(KSPGuess guess, Vec b, Vec x)
           scratch_vec[j] = 0.0;
         }
       }
-      PetscStackCallBLAS("BLASgemv", BLASgemv_("N", &blas_m, &blas_m, &one, corr, &blas_m, scratch_vec, &blas_one, &zero, itg->alpha, &blas_one));
+      PetscCallBLAS("BLASgemv", BLASgemv_("N", &blas_m, &blas_m, &one, corr, &blas_m, scratch_vec, &blas_one, &zero, itg->alpha, &blas_one));
 
     } else {
       PetscCall(PetscInfo(guess, "Warning eigenvalue solver failed with error code %d - setting initial guess to zero\n", (int)blas_info));

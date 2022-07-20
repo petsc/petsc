@@ -238,7 +238,7 @@ static PetscErrorCode TestIntegration(DM dm, PetscInt cbs, PetscInt its)
         PetscFEGeom     *geom = affineGeom ? affineGeom : geoms[f];
         /* PetscQuadrature quad = affineQuad ? affineQuad : quads[f]; */
 
-        key.label = NULL; key.value = 0; key.field = f;
+        key.label = NULL; key.value = 0; key.field = f; key.part = 0;
         PetscCall(PetscFEGeomGetChunk(geom, cS, cE, &chunkGeom));
         PetscCall(PetscLogEventBegin(event,0,0,0,0));
         PetscCall(PetscFEIntegrateResidual(ds, key, Ne, chunkGeom, u, NULL, NULL, NULL, 0.0, elemVec));

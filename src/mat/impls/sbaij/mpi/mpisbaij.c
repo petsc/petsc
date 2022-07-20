@@ -1668,11 +1668,11 @@ PetscErrorCode MatAXPY_MPISBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     xa   = (Mat_SeqSBAIJ*)xx->A->data;
     ya   = (Mat_SeqSBAIJ*)yy->A->data;
     PetscCall(PetscBLASIntCast(xa->nz,&bnz));
-    PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&bnz,&alpha,xa->a,&one,ya->a,&one));
+    PetscCallBLAS("BLASaxpy",BLASaxpy_(&bnz,&alpha,xa->a,&one,ya->a,&one));
     xb   = (Mat_SeqBAIJ*)xx->B->data;
     yb   = (Mat_SeqBAIJ*)yy->B->data;
     PetscCall(PetscBLASIntCast(xb->nz,&bnz));
-    PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&bnz,&alpha,xb->a,&one,yb->a,&one));
+    PetscCallBLAS("BLASaxpy",BLASaxpy_(&bnz,&alpha,xb->a,&one,yb->a,&one));
     PetscCall(PetscObjectStateIncrease((PetscObject)Y));
   } else if (str == SUBSET_NONZERO_PATTERN) { /* nonzeros of X is a subset of Y's */
     PetscCall(MatSetOption(X,MAT_GETROW_UPPERTRIANGULAR,PETSC_TRUE));

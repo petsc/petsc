@@ -35,7 +35,7 @@ static PetscErrorCode VecScatterBegin_Internal(VecScatter sf,Vec x,Vec y,InsertM
   if (x != y) PetscCall(VecLockReadPush(x));
   PetscCall(VecGetArrayReadAndMemType(x,&sf->vscat.xdata,&xmtype));
   PetscCall(VecGetArrayAndMemType(y,&sf->vscat.ydata,&ymtype));
-  PetscCall(VecLockWriteSet_Private(y,PETSC_TRUE));
+  PetscCall(VecLockWriteSet(y,PETSC_TRUE));
 
   /* SCATTER_LOCAL indicates ignoring inter-process communication */
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)sf),&size));
@@ -87,7 +87,7 @@ static PetscErrorCode VecScatterEnd_Internal(VecScatter sf,Vec x,Vec y,InsertMod
   PetscCall(VecRestoreArrayReadAndMemType(x,&sf->vscat.xdata));
   if (x != y) PetscCall(VecLockReadPop(x));
   PetscCall(VecRestoreArrayAndMemType(y,&sf->vscat.ydata));
-  PetscCall(VecLockWriteSet_Private(y,PETSC_FALSE));
+  PetscCall(VecLockWriteSet(y,PETSC_FALSE));
   PetscFunctionReturn(0);
 }
 

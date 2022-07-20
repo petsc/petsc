@@ -111,10 +111,10 @@ int main(int argc, char **argv) {
     default: SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "No layout for dimension %" PetscInt_FMT, sdim);
     }
     PetscCall(PetscViewerExodusIIGetId(viewer,&exoid));
-    PetscStackCallStandard(ex_put_variable_param,exoid, EX_ELEM_BLOCK, numZonalVar);
-    PetscStackCallStandard(ex_put_variable_names,exoid, EX_ELEM_BLOCK, numZonalVar, zonalVarName);
-    PetscStackCallStandard(ex_put_variable_param,exoid, EX_NODAL, numNodalVar);
-    PetscStackCallStandard(ex_put_variable_names,exoid, EX_NODAL, numNodalVar, nodalVarName);
+    PetscCallExternal(ex_put_variable_param,exoid, EX_ELEM_BLOCK, numZonalVar);
+    PetscCallExternal(ex_put_variable_names,exoid, EX_ELEM_BLOCK, numZonalVar, zonalVarName);
+    PetscCallExternal(ex_put_variable_param,exoid, EX_NODAL, numNodalVar);
+    PetscCallExternal(ex_put_variable_names,exoid, EX_NODAL, numNodalVar, nodalVarName);
     numCS = ex_inquire_int(exoid, EX_INQ_ELEM_BLK);
 
     /*
@@ -123,13 +123,13 @@ int main(int argc, char **argv) {
     */
     PetscCall(PetscMalloc1(numZonalVar * numCS, &truthtable));
     for (i = 0; i < numZonalVar * numCS; ++i) truthtable[i] = 1;
-    PetscStackCallStandard(ex_put_truth_table,exoid, EX_ELEM_BLOCK, numCS, numZonalVar, truthtable);
+    PetscCallExternal(ex_put_truth_table,exoid, EX_ELEM_BLOCK, numCS, numZonalVar, truthtable);
     PetscCall(PetscFree(truthtable));
 
     /* Writing time step information in the file. Note that this is currently broken in the exodus library for netcdf4 (HDF5-based) files */
     for (step = 0; step < numstep; ++step) {
       PetscReal time = step;
-      PetscStackCallStandard(ex_put_time,exoid, step+1, &time);
+      PetscCallExternal(ex_put_time,exoid, step+1, &time);
     }
   }
 

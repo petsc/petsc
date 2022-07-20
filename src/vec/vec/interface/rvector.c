@@ -4384,36 +4384,36 @@ PetscErrorCode VecLockReadPop(Vec x)
 }
 
 /*@C
-   VecLockWriteSet_Private  - Lock or unlock a vector for exclusive read/write access
+   VecLockWriteSet  - Lock or unlock a vector for exclusive read/write access
 
    Logically Collective on Vec
 
    Input Parameters:
 +  x   - the vector
--  flg - PETSC_TRUE to lock the vector for writing; PETSC_FALSE to unlock it.
+-  flg - PETSC_TRUE to lock the vector for exclusive read/write access; PETSC_FALSE to unlock it.
 
    Notes:
     The function is usefull in split-phase computations, which usually have a begin phase and an end phase.
-    One can call VecLockWriteSet_Private(x,PETSC_TRUE) in the begin phase to lock a vector for exclusive
-    access, and call VecLockWriteSet_Private(x,PETSC_FALSE) in the end phase to unlock the vector from exclusive
+    One can call VecLockWriteSet(x,PETSC_TRUE) in the begin phase to lock a vector for exclusive
+    access, and call VecLockWriteSet(x,PETSC_FALSE) in the end phase to unlock the vector from exclusive
     access. In this way, one is ensured no other operations can access the vector in between. The code may like
 
        VecGetArray(x,&xdata); // begin phase
-       VecLockWriteSet_Private(v,PETSC_TRUE);
+       VecLockWriteSet(v,PETSC_TRUE);
 
        Other operations, which can not acceess x anymore (they can access xdata, of course)
 
        VecRestoreArray(x,&vdata); // end phase
-       VecLockWriteSet_Private(v,PETSC_FALSE);
+       VecLockWriteSet(v,PETSC_FALSE);
 
-    The call can not be nested on the same vector, in other words, one can not call VecLockWriteSet_Private(x,PETSC_TRUE)
-    again before calling VecLockWriteSet_Private(v,PETSC_FALSE).
+    The call can not be nested on the same vector, in other words, one can not call VecLockWriteSet(x,PETSC_TRUE)
+    again before calling VecLockWriteSet(v,PETSC_FALSE).
 
    Level: beginner
 
 .seealso: `VecRestoreArray()`, `VecGetArrayRead()`, `VecLockReadPush()`, `VecLockReadPop()`, `VecLockGet()`
 @*/
-PetscErrorCode VecLockWriteSet_Private(Vec x,PetscBool flg)
+PetscErrorCode VecLockWriteSet(Vec x,PetscBool flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);

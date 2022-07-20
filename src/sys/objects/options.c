@@ -103,8 +103,9 @@ struct  _n_PetscOptions {
 static PetscOptions defaultoptions = NULL;  /* the options database routines query this object for options */
 
 /* list of options which preceed others, i.e., are processed in PetscOptionsProcessPrecedentFlags() */
-static const char *precedentOptions[] = {"-options_monitor","-options_monitor_cancel","-help","-skip_petscrc"};
-enum PetscPrecedentOption {PO_OPTIONS_MONITOR,PO_OPTIONS_MONITOR_CANCEL,PO_HELP,PO_SKIP_PETSCRC,PO_NUM};
+/* these options can only take boolean values, the code will crash if given a non-boolean value */
+static const char *precedentOptions[] = {"-petsc_ci","-options_monitor","-options_monitor_cancel","-help","-skip_petscrc"};
+enum PetscPrecedentOption {PO_CI_ENABLE,PO_OPTIONS_MONITOR,PO_OPTIONS_MONITOR_CANCEL,PO_HELP,PO_SKIP_PETSCRC,PO_NUM};
 
 static PetscErrorCode PetscOptionsSetValue_Private(PetscOptions,const char[],const char[],int*);
 
@@ -700,7 +701,7 @@ static inline PetscErrorCode PetscOptionsStringToBoolIfSet_Private(enum PetscPre
   PetscFunctionReturn(0);
 }
 
-/* Process options with absolute precedence */
+/* Process options with absolute precedence, these are only processed from the command line, not the environment or files */
 static PetscErrorCode PetscOptionsProcessPrecedentFlags(PetscOptions options,int argc,char *args[],PetscBool *skip_petscrc,PetscBool *skip_petscrc_set)
 {
   const char* const *opt = precedentOptions;
@@ -709,7 +710,7 @@ static PetscErrorCode PetscOptionsProcessPrecedentFlags(PetscOptions options,int
   int               a;
   const char        **val;
   char              **cval;
-  PetscBool         *set;
+  PetscBool         *set,unneeded;
 
   PetscFunctionBegin;
   PetscCall(PetscCalloc2(n,&cval,n,&set));
@@ -740,14 +741,17 @@ static PetscErrorCode PetscOptionsProcessPrecedentFlags(PetscOptions options,int
   /* Process flags */
   PetscCall(PetscStrcasecmp(val[PO_HELP], "intro", &options->help_intro));
   if (options->help_intro) options->help = PETSC_TRUE;
-  else PetscCall(PetscOptionsStringToBoolIfSet_Private(PO_HELP,            val,set,&options->help));
+  else PetscCall(PetscOptionsStringToBoolIfSet_Private(PO_HELP,             val,set,&options->help));
+  PetscCall(PetscOptionsStringToBoolIfSet_Private(PO_CI_ENABLE,             val,set,&unneeded));
+  /* need to manage PO_CI_ENABLE option before the PetscOptionsMonitor is turned on, so its setting is not monitored */
+  if (set[PO_CI_ENABLE]) PetscCall(PetscOptionsSetValue_Private(options,opt[PO_CI_ENABLE],val[PO_CI_ENABLE],&a));
   PetscCall(PetscOptionsStringToBoolIfSet_Private(PO_OPTIONS_MONITOR_CANCEL,val,set,&options->monitorCancel));
   PetscCall(PetscOptionsStringToBoolIfSet_Private(PO_OPTIONS_MONITOR,       val,set,&options->monitorFromOptions));
   PetscCall(PetscOptionsStringToBoolIfSet_Private(PO_SKIP_PETSCRC,          val,set,skip_petscrc));
   *skip_petscrc_set = set[PO_SKIP_PETSCRC];
 
   /* Store precedent options in database and mark them as used */
-  for (o=0; o<n; o++) {
+  for (o=1; o<n; o++) {
     if (set[o]) {
       PetscCall(PetscOptionsSetValue_Private(options,opt[o],val[o],&a));
       options->used[a] = PETSC_TRUE;
@@ -824,6 +828,7 @@ PetscErrorCode PetscOptionsInsert(PetscOptions options,int *argc,char ***args,co
   if (hasArgs) {
     /* process options with absolute precedence */
     PetscCall(PetscOptionsProcessPrecedentFlags(options,*argc,*args,&skipPetscrc,&skipPetscrcSet));
+    PetscCall(PetscOptionsGetBool(NULL,NULL,"-petsc_ci",&PetscCIEnabled,NULL));
   }
   if (file && file[0]) {
     PetscCall(PetscOptionsInsertFile(comm,options,file,PETSC_TRUE));
@@ -878,7 +883,38 @@ PetscErrorCode PetscOptionsInsert(PetscOptions options,int *argc,char ***args,co
 
   /* insert command line options here because they take precedence over arguments in petscrc/environment */
   if (hasArgs) PetscCall(PetscOptionsInsertArgs(options,*argc-1,*args+1));
+  PetscCall(PetscOptionsGetBool(NULL,NULL,"-petsc_ci_portable_error_output",&PetscCIEnabledPortableErrorOutput,NULL));
   PetscFunctionReturn(0);
+}
+
+/* These options are not printed with PetscOptionsView() or PetscOptionsMonitor() when PetscCIEnabled is on */
+/* TODO: get the list from the test harness, do not have it hardwired here. Maybe from gmakegentest.py */
+static const char *PetscCIOptions[] = {"malloc_debug",
+                                       "malloc_dump",
+                                       "malloc_test",
+                                       "nox",
+                                       "nox_warning",
+                                       "display",
+                                       "saws_port_auto_select",
+                                       "saws_port_auto_select_silent",
+                                       "vecscatter_mpi1",
+                                       "check_pointer_intensity",
+                                       "cuda_initialize",
+                                       "error_output_stdout",
+                                       "use_gpu_aware_mpi",
+                                       "checkfunctionlist",
+                                       "petsc_ci",
+                                       "petsc_ci_portable_error_output",
+                                      };
+
+static PetscBool PetscCIOption(const char *name)
+{
+  PetscInt  idx;
+  PetscBool found;
+
+  if (!PetscCIEnabled) return PETSC_FALSE;
+  PetscEListFind(PETSC_STATIC_ARRAY_LENGTH(PetscCIOptions),PetscCIOptions,name,&idx,&found);
+  return found;
 }
 
 /*@C
@@ -904,7 +940,7 @@ PetscErrorCode PetscOptionsInsert(PetscOptions options,int *argc,char ***args,co
 @*/
 PetscErrorCode PetscOptionsView(PetscOptions options,PetscViewer viewer)
 {
-  PetscInt       i;
+  PetscInt       i, N = 0;
   PetscBool      isascii;
 
   PetscFunctionBegin;
@@ -914,13 +950,19 @@ PetscErrorCode PetscOptionsView(PetscOptions options,PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii));
   PetscCheck(isascii,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Only supports ASCII viewer");
 
-  if (!options->N) {
+  for (i=0; i<options->N; i++) {
+    if (PetscCIOption(options->names[i])) continue;
+    N++;
+  }
+
+  if (!N) {
     PetscCall(PetscViewerASCIIPrintf(viewer,"#No PETSc Option Table entries\n"));
     PetscFunctionReturn(0);
   }
 
   PetscCall(PetscViewerASCIIPrintf(viewer,"#PETSc Option Table entries:\n"));
   for (i=0; i<options->N; i++) {
+    if (PetscCIOption(options->names[i])) continue;
     if (options->values[i]) {
       PetscCall(PetscViewerASCIIPrintf(viewer,"-%s %s\n",options->names[i],options->values[i]));
     } else {
@@ -936,16 +978,22 @@ PetscErrorCode PetscOptionsView(PetscOptions options,PetscViewer viewer)
 */
 PETSC_EXTERN PetscErrorCode PetscOptionsViewError(void)
 {
-  PetscInt     i;
+  PetscInt     i, N = 0;
   PetscOptions options = defaultoptions;
 
   PetscFunctionBegin;
-  if (options->N) {
+  for (i=0; i<options->N; i++) {
+    if (PetscCIOption(options->names[i])) continue;
+    N++;
+  }
+
+  if (N) {
     (*PetscErrorPrintf)("PETSc Option Table entries:\n");
   } else {
     (*PetscErrorPrintf)("No PETSc Option Table entries\n");
   }
   for (i=0; i<options->N; i++) {
+    if (PetscCIOption(options->names[i])) continue;
     if (options->values[i]) {
       (*PetscErrorPrintf)("-%s %s\n",options->names[i],options->values[i]);
     } else {
@@ -1790,6 +1838,7 @@ PetscErrorCode PetscOptionsLeft(PetscOptions options)
   toptions = options ? options : defaultoptions;
   for (i=0; i<toptions->N; i++) {
     if (!toptions->used[i]) {
+      if (PetscCIOption(toptions->names[i])) continue;
       if (toptions->values[i]) {
         PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Option left: name:-%s value: %s\n",toptions->names[i],toptions->values[i]));
       } else {
@@ -1845,6 +1894,7 @@ PetscErrorCode PetscOptionsLeftGet(PetscOptions options,PetscInt *N,char **names
   /* The number of unused PETSc options */
   n = 0;
   for (i=0; i<options->N; i++) {
+    if (PetscCIOption(options->names[i])) continue;
     if (!options->used[i]) n++;
   }
   if (N) { *N = n; }
@@ -1855,6 +1905,7 @@ PetscErrorCode PetscOptionsLeftGet(PetscOptions options,PetscInt *N,char **names
   if (names || values) {
     for (i=0; i<options->N; i++) {
       if (!options->used[i]) {
+        if (PetscCIOption(options->names[i])) continue;
         if (names)  (*names)[n]  = options->names[i];
         if (values) (*values)[n] = options->values[i];
         n++;
@@ -1907,11 +1958,15 @@ PetscErrorCode PetscOptionsLeftRestore(PetscOptions options,PetscInt *N,char **n
      The first MPI rank in the PetscViewer viewer actually prints the values, other
      processes may have different values set
 
+     If PetscCIEnabled then do not print the test harness options
+
 .seealso: `PetscOptionsMonitorSet()`
 @*/
 PetscErrorCode PetscOptionsMonitorDefault(const char name[],const char value[],void *ctx)
 {
   PetscFunctionBegin;
+  if (PetscCIOption(name)) PetscFunctionReturn(0);
+
   if (ctx) {
     PetscViewer viewer = (PetscViewer)ctx;
     if (!value) {

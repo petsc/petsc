@@ -327,7 +327,7 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2,PetscInt data_stride,
               for (tt=0; tt<3; tt++) alpha[tt] = (PetscScalar)fcoord[tt];
 
               /* SUBROUTINE DGESV(N, NRHS, A, LDA, IPIV, B, LDB, INFO) */
-              PetscStackCallBLAS("LAPACKgesv",LAPACKgesv_(&N, &NRHS, (PetscScalar*)AA, &LDA, IPIV, alpha, &LDB, &INFO));
+              PetscCallBLAS("LAPACKgesv",LAPACKgesv_(&N, &NRHS, (PetscScalar*)AA, &LDA, IPIV, alpha, &LDB, &INFO));
               {
                 PetscBool have=PETSC_TRUE;  PetscReal lowest=1.e10;
                 for (tt = 0, idx = 0; tt < 3; tt++) {
@@ -353,7 +353,7 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2,PetscInt data_stride,
                 }
                 for (tt=0; tt<3; tt++) alpha[tt] = fcoord[tt];
                 /* SUBROUTINE DGESV(N, NRHS, A, LDA, IPIV, B, LDB, INFO) */
-                PetscStackCallBLAS("LAPACKgesv",LAPACKgesv_(&N, &NRHS, (PetscScalar*)AA, &LDA, IPIV, alpha, &LDB, &INFO));
+                PetscCallBLAS("LAPACKgesv",LAPACKgesv_(&N, &NRHS, (PetscScalar*)AA, &LDA, IPIV, alpha, &LDB, &INFO));
                 {
                   PetscBool have=PETSC_TRUE;  PetscReal worst=0.0, v;
                   for (tt=0; tt<3 && have; tt++) {
@@ -378,7 +378,7 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2,PetscInt data_stride,
               }
               for (tt=0; tt<3; tt++) alpha[tt] = fcoord[tt];
               /* SUBROUTINE DGESV(N, NRHS, A, LDA, IPIV, B, LDB, INFO) */
-              PetscStackCallBLAS("LAPACKgesv",LAPACKgesv_(&N, &NRHS, (PetscScalar*)AA, &LDA, IPIV, alpha, &LDB, &INFO));
+              PetscCallBLAS("LAPACKgesv",LAPACKgesv_(&N, &NRHS, (PetscScalar*)AA, &LDA, IPIV, alpha, &LDB, &INFO));
             }
 
             /* put in row of P */

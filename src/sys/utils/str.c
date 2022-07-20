@@ -455,6 +455,35 @@ void PetscStrcmpNoError(const char a[], const char b[], PetscBool *flg)
 }
 
 /*@C
+   PetscBasename - returns a pointer to the last entry of a / or \ seperated directory path
+
+   Not Collective
+
+   Input Parameter:
+.  a - pointer to string
+
+   Level: intermediate
+
+   Notes:
+    Not for use in Fortran
+
+    Works for both Unix and Windows path separators
+
+.seealso: `PetscStrgrt()`, `PetscStrncmp()`, `PetscStrcasecmp()`, `PetscStrrchr()`,`PetscStrcmp()`,`PetscStrstr()`,
+          `PetscTokenCreate()`, `PetscStrToArray()`, `PetscStrInList()`
+@*/
+const char *PetscBasename(const char a[])
+{
+  const char *ptr;
+
+  if (PetscStrrchr(a,'/',(char **)&ptr)) ptr = NULL;
+  if (ptr == a) {
+    if (PetscStrrchr(a,'\\',(char **)&ptr)) ptr = NULL;
+  }
+  return ptr;
+}
+
+/*@C
    PetscStrcmp - Compares two strings,
 
    Not Collective
@@ -1248,4 +1277,63 @@ PetscErrorCode PetscEnumFind(const char *const *enumlist, const char *str, Petsc
     *found = efound;
   }
   PetscFunctionReturn(0);
+}
+
+/*@C
+  PetscCIFilename - returns the basename of a file name when the PETSc CI portable error output mode is enabled.
+
+  Not collective
+
+  Input Parameter:
+. file - the file name
+
+  Note:
+  PETSc CI mode is a mode of running PETSc where output (both error and non-error) is made portable across all systems
+  so that comparisons of output between runs are easy to make.
+
+  This mode is used for all tests in the test harness, it applies to both debug and optimized builds.
+
+  Use the option -petsc_ci to turn on PETSc CI mode. It changes certain output in non-error situations to be portable for
+  all systems, mainly the output of options. It is passed to all PETSc programs automatically by the test harness.
+
+  Always uses the Unix / as the file separate even on Microsoft Windows systems
+
+  The option -petsc_ci_portable_error_output attempts to output the same error messages on all systems for the test harness.
+  In particular the output of filenames and line numbers in PETSc stacks. This is to allow (limited) checking of PETSc
+  error handling by the test harness. This options also causes PETSc to attempt to return an error code of 0 so that the test
+  harness can process the output for differences in the usual manner as for successful runs. It should be provided to the test
+  harness in the args: argument for specific examples. It will not neccessarily produce portable output if different errors
+  (or no errors) occur on a subset of the MPI ranks.
+
+  Level: developer
+
+.seealso: `PetscCILinenumber()`
+
+@*/
+const char *PetscCIFilename(const char *file)
+{
+  if (!PetscCIEnabledPortableErrorOutput) return file;
+  return PetscBasename(file);
+}
+
+/*@C
+  PetscCILinenumber - returns a line number except if PetscCIEnablePortableErrorOutput) is set when it returns 0
+
+  Not collective
+
+  Input Parameter:
+. linenumber - the initial line number
+
+  Note:
+  See `PetscCIFilename()` for details on usage
+
+  Level: developer
+
+.seealso: `PetscCIFilename()`
+
+@*/
+int PetscCILinenumber(int linenumber)
+{
+  if (!PetscCIEnabledPortableErrorOutput) return linenumber;
+  return 0;
 }

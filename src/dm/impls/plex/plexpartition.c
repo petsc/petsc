@@ -1863,14 +1863,14 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
       PetscCall(PetscViewerASCIIPrintf(viewer, "THIS DOES NOT WORK! I don't know why. Using current distribution of points as initial guess.\n"));
       for (i=0; i<numRows; i++) part[i] = rank;
       if (viewer) PetscCall(PetscViewerASCIIPrintf(viewer, "Using current distribution of points as initial guess.\n"));
-      PetscStackPush("ParMETIS_V3_RefineKway");
+      PetscStackPushExternal("ParMETIS_V3_RefineKway");
       PetscCall(PetscLogEventBegin(DMPLEX_RebalPartition,0,0,0,0));
       ierr = ParMETIS_V3_RefineKway((PetscInt*)cumSumVertices, (idx_t *)xadj, (idx_t *)adjncy, vtxwgt, NULL, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &edgecut, part, &comm);
       PetscCall(PetscLogEventEnd(DMPLEX_RebalPartition,0,0,0,0));
       PetscStackPop;
       PetscCheck(ierr == METIS_OK,PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in ParMETIS_V3_RefineKway()");
     } else {
-      PetscStackPush("ParMETIS_V3_PartKway");
+      PetscStackPushExternal("ParMETIS_V3_PartKway");
       PetscCall(PetscLogEventBegin(DMPLEX_RebalPartition,0,0,0,0));
       ierr = ParMETIS_V3_PartKway((PetscInt*)cumSumVertices, (idx_t *)xadj, (idx_t *)adjncy, vtxwgt, NULL, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &edgecut, part, &comm);
       PetscCall(PetscLogEventEnd(DMPLEX_RebalPartition,0,0,0,0));
@@ -1915,7 +1915,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
       ierr = METIS_SetDefaultOptions(options); /* initialize all defaults */
       PetscCheck(ierr == METIS_OK,PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in METIS_SetDefaultOptions()");
       options[METIS_OPTION_CONTIG] = 1;
-      PetscStackPush("METIS_PartGraphKway");
+      PetscStackPushExternal("METIS_PartGraphKway");
       ierr = METIS_PartGraphKway(&numRows_g, &ncon, (idx_t *)xadj, (idx_t *)adjncy, vtxwgt_g, NULL, NULL, &nparts, tpwgts, ubvec, options, &edgecut, partGlobal);
       PetscStackPop;
       PetscCheck(ierr == METIS_OK,PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in METIS_PartGraphKway()");

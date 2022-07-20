@@ -75,8 +75,8 @@ PetscErrorCode SNESMonitorSAWs(SNES snes,PetscInt n,PetscReal rnorm,void *ctx)
 
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   if (rank == 0) {
-    PetscStackCallSAWs(SAWs_Register,("/PETSc/snes_monitor_saws/its",&snes->iter,1,SAWs_READ,SAWs_INT));
-    PetscStackCallSAWs(SAWs_Register,("/PETSc/snes_monitor_saws/rnorm",&snes->norm,1,SAWs_READ,SAWs_DOUBLE));
+    PetscCallSAWs(SAWs_Register,("/PETSc/snes_monitor_saws/its",&snes->iter,1,SAWs_READ,SAWs_INT));
+    PetscCallSAWs(SAWs_Register,("/PETSc/snes_monitor_saws/rnorm",&snes->norm,1,SAWs_READ,SAWs_DOUBLE));
     PetscCall(PetscSAWsBlock());
   }
   PetscFunctionReturn(0);

@@ -96,7 +96,7 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
     PetscCall(PetscMalloc1(5*Nbpt, &work));
     PetscCall(PetscArraycpy(Mcopy, M_trimmed, Nbpt * Nbpt));
 
-    PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("N","N",&n,&n,Mcopy,&n,S,NULL,&n,NULL,&n,work,&lwork,&lierr));
+    PetscCallBLAS("LAPACKgesvd",LAPACKgesvd_("N","N",&n,&n,Mcopy,&n,S,NULL,&n,NULL,&n,work,&lwork,&lierr));
     PetscReal cond = S[0] / S[Nbpt - 1];
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "dimension %" PetscInt_FMT ", degree %" PetscInt_FMT ", form %" PetscInt_FMT ": condition number %g\n", dim, deg, form, (double) cond));
     PetscCall(PetscFree(work));
@@ -131,7 +131,7 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
     PetscScalar mone = -1.;
     PetscScalar one = 1.;
 
-    PetscStackCallBLAS("BLASgemm",BLASgemm_("N","T",&m,&n,&k,&mone,M_moments,&m,M_moments,&m,&one,Mcopy,&m));
+    PetscCallBLAS("BLASgemm",BLASgemm_("N","T",&m,&n,&k,&mone,M_moments,&m,M_moments,&m,&one,Mcopy,&m));
   }
 
   frob_err = 0.;
@@ -289,7 +289,7 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
     PetscReal    alpha = 1.0;
     PetscReal    beta = 1.0;
 
-    PetscStackCallBLAS("BLASREALgemm",BLASREALgemm_("N","T",&m,&n,&k,&alpha,p_scalar,&lda,&M_moment_real[f * Nbpt],&ldb,&beta,&p_trimmed_copy[f * Nk * npoints],&ldc));
+    PetscCallBLAS("BLASREALgemm",BLASREALgemm_("N","T",&m,&n,&k,&alpha,p_scalar,&lda,&M_moment_real[f * Nbpt],&ldb,&beta,&p_trimmed_copy[f * Nk * npoints],&ldc));
   }
   frob_err = 0.;
   for (PetscInt i = 0; i < Nbpt * Nf * Nk * npoints; i++) {

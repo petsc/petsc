@@ -628,7 +628,7 @@ static PetscErrorCode DMPlexTopologyView_HDF5_XDMF_Private(DM dm, IS globalCellN
   PetscFunctionBegin;
   PetscCall(PetscViewerHDF5PushGroup(viewer, "/viz"));
   PetscCall(PetscViewerHDF5OpenGroup(viewer, &fileId, &groupId));
-  PetscStackCallHDF5(H5Gclose,(groupId));
+  PetscCallHDF5(H5Gclose,(groupId));
 
   PetscCall(PetscViewerHDF5PopGroup(viewer));
   PetscCall(DMGetDimension(dm, &dim));
@@ -874,7 +874,7 @@ static PetscErrorCode DMPlexCoordinatesView_HDF5_XDMF_Private(DM dm, PetscViewer
   PetscCall(VecScale(newcoords, lengthScale));
   PetscCall(PetscViewerHDF5PushGroup(viewer, "/viz"));
   PetscCall(PetscViewerHDF5OpenGroup(viewer, &fileId, &groupId));
-  PetscStackCallHDF5(H5Gclose,(groupId));
+  PetscCallHDF5(H5Gclose,(groupId));
   PetscCall(PetscViewerHDF5PopGroup(viewer));
   PetscCall(PetscViewerHDF5PushGroup(viewer, "/viz/geometry"));
   PetscCall(VecView(newcoords, viewer));
@@ -1307,7 +1307,7 @@ static herr_t ReadLabelHDF5_Static(hid_t g_id, const char *lname, const H5L_info
   ierr = DMGetLabel(dm, lname, &ctx->label); if (ierr) return (herr_t) ierr;
   ierr = PetscViewerHDF5PushGroup(ctx->viewer, lname); if (ierr) return (herr_t) ierr;
   /* Iterate over the label's strata */
-  PetscStackCallHDF5Return(err, H5Literate_by_name, (g_id, lname, H5_INDEX_NAME, H5_ITER_NATIVE, &idx, ReadLabelStratumHDF5_Static, op_data, 0));
+  PetscCallHDF5Return(err, H5Literate_by_name, (g_id, lname, H5_INDEX_NAME, H5_ITER_NATIVE, &idx, ReadLabelStratumHDF5_Static, op_data, 0));
   ierr = PetscViewerHDF5PopGroup(ctx->viewer); if (ierr) return (herr_t) ierr;
   return err;
 }
@@ -1341,8 +1341,8 @@ PetscErrorCode DMPlexLabelsLoad_HDF5_Internal(DM dm, PetscViewer viewer, PetscSF
 
     PetscCall(PetscViewerHDF5OpenGroup(viewer, &fileId, &groupId));
     /* Iterate over labels */
-    PetscStackCallHDF5(H5Literate,(groupId, H5_INDEX_NAME, H5_ITER_NATIVE, &idx, ReadLabelHDF5_Static, ctx));
-    PetscStackCallHDF5(H5Gclose,(groupId));
+    PetscCallHDF5(H5Literate,(groupId, H5_INDEX_NAME, H5_ITER_NATIVE, &idx, ReadLabelHDF5_Static, ctx));
+    PetscCallHDF5(H5Gclose,(groupId));
   }
   PetscCall(PetscViewerHDF5PopGroup(viewer));
   PetscCall(LoadLabelsCtxDestroy(&ctx));

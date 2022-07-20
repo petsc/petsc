@@ -1,3 +1,4 @@
+#PETSc Option Table entries:
 -alias2 value2
 -num_option_1 1
 -num_option_2 2.2
@@ -8,3 +9,4 @@
 -option1
 -options_left 0
 -options_view
+#End of PETSc Option Table entries

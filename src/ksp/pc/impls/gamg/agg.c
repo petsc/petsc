@@ -414,7 +414,7 @@ static PetscErrorCode formProl0(PetscCoarsenData *agg_llists,PetscInt bs,PetscIn
 
       /* QR */
       PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-      PetscStackCallBLAS("LAPACKgeqrf",LAPACKgeqrf_(&Mdata, &N, qqc, &LDA, TAU, WORK, &LWORK, &INFO));
+      PetscCallBLAS("LAPACKgeqrf",LAPACKgeqrf_(&Mdata, &N, qqc, &LDA, TAU, WORK, &LWORK, &INFO));
       PetscCall(PetscFPTrapPop());
       PetscCheck(INFO == 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"xGEQRF error");
       /* get R - column oriented - output B_{i+1} */
@@ -430,7 +430,7 @@ static PetscErrorCode formProl0(PetscCoarsenData *agg_llists,PetscInt bs,PetscIn
       }
 
       /* get Q - row oriented */
-      PetscStackCallBLAS("LAPACKorgqr",LAPACKorgqr_(&Mdata, &N, &N, qqc, &LDA, TAU, WORK, &LWORK, &INFO));
+      PetscCallBLAS("LAPACKorgqr",LAPACKorgqr_(&Mdata, &N, &N, qqc, &LDA, TAU, WORK, &LWORK, &INFO));
       PetscCheck(INFO == 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"xORGQR error arg %" PetscBLASInt_FMT,-INFO);
 
       for (ii = 0; ii < M; ii++) {

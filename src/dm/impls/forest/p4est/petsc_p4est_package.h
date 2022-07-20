@@ -13,34 +13,34 @@
 #include <setjmp.h>
 PETSC_INTERN jmp_buf PetscScJumpBuf;
 
-#define PetscStackCallP4est(func,args) do {                                                                                                           \
+#define PetscCallP4est(func,args) do {                                                                                                           \
   if (setjmp(PetscScJumpBuf)) {                                                                                                                       \
     return PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,PETSC_ERR_LIB,PETSC_ERROR_REPEAT,"Error in p4est/libsc call %s()",#func); \
   }                                                                                                                                                   \
   else {                                                                                                                                              \
-    PetscStackPush(#func);                                                                                                                            \
+    PetscStackPushExternal(#func);                                                                                                                     \
     func args;                                                                                                                                        \
     PetscStackPop;                                                                                                                                    \
   }                                                                                                                                                   \
 } while (0)
-#define PetscStackCallP4estReturn(ret,func,args) do {                                                                                                 \
+#define PetscCallP4estReturn(ret,func,args) do {                                                                                                 \
   if (setjmp(PetscScJumpBuf)) {                                                                                                                       \
     return PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,PETSC_ERR_LIB,PETSC_ERROR_REPEAT,"Error in p4est/libsc call %s()",#func); \
   }                                                                                                                                                   \
   else {                                                                                                                                              \
-    PetscStackPush(#func);                                                                                                                            \
+    PetscStackPushExternal(#func);                                                                                                                     \
     ret = func args;                                                                                                                                  \
     PetscStackPop;                                                                                                                                    \
   }                                                                                                                                                   \
 } while (0)
 #else
-#define PetscStackCallP4est(func,args) do { \
-  PetscStackPush(#func);                    \
+#define PetscCallP4est(func,args) do { \
+  PetscStackPushExternal(#func);             \
   func args;                                \
   PetscStackPop;                            \
 } while (0)
-#define PetscStackCallP4estReturn(ret,func,args) do { \
-  PetscStackPush(#func);                              \
+#define PetscCallP4estReturn(ret,func,args) do { \
+  PetscStackPushExternal(#func);                       \
   ret = func args;                                    \
   PetscStackPop;                                      \
 } while (0)

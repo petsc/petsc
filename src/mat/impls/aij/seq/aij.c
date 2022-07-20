@@ -2306,7 +2306,7 @@ PetscErrorCode MatNorm_SeqAIJ(Mat A,NormType type,PetscReal *nrm)
   if (type == NORM_FROBENIUS) {
 #if defined(PETSC_USE_REAL___FP16)
     PetscBLASInt one = 1,nz = a->nz;
-    PetscStackCallBLAS("BLASnrm2",*nrm = BLASnrm2_(&nz,v,&one));
+    PetscCallBLAS("BLASnrm2",*nrm = BLASnrm2_(&nz,v,&one));
 #else
     for (i=0; i<a->nz; i++) {
       sum += PetscRealPart(PetscConj(*v)*(*v)); v++;
@@ -2782,7 +2782,7 @@ PetscErrorCode MatScale_SeqAIJ(Mat inA,PetscScalar alpha)
   PetscFunctionBegin;
   PetscCall(MatSeqAIJGetArray(inA,&v));
   PetscCall(PetscBLASIntCast(a->nz,&bnz));
-  PetscStackCallBLAS("BLASscal",BLASscal_(&bnz,&alpha,v,&one));
+  PetscCallBLAS("BLASscal",BLASscal_(&bnz,&alpha,v,&one));
   PetscCall(PetscLogFlops(a->nz));
   PetscCall(MatSeqAIJRestoreArray(inA,&v));
   PetscCall(MatSeqAIJInvalidateDiagonal(inA));
@@ -3107,7 +3107,7 @@ PetscErrorCode MatAXPY_SeqAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     PetscCall(PetscBLASIntCast(x->nz,&bnz));
     PetscCall(MatSeqAIJGetArray(Y,&ya));
     PetscCall(MatSeqAIJGetArrayRead(X,&xa));
-    PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&bnz,&alpha,xa,&one,ya,&one));
+    PetscCallBLAS("BLASaxpy",BLASaxpy_(&bnz,&alpha,xa,&one,ya,&one));
     PetscCall(MatSeqAIJRestoreArrayRead(X,&xa));
     PetscCall(MatSeqAIJRestoreArray(Y,&ya));
     PetscCall(PetscLogFlops(2.0*bnz));

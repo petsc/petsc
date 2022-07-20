@@ -1962,7 +1962,7 @@ PetscErrorCode PCPatchComputeFunction_Internal(PC pc, Vec x, Vec F, PetscInt poi
 
   PetscFunctionBegin;
   PetscCall(PetscLogEventBegin(PC_Patch_ComputeOp, pc, 0, 0, 0));
-  PetscCheck(patch->usercomputeop,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call PCPatchSetComputeOperator() to set user callback");
+  PetscCheck(patch->usercomputeop,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call PCPatchSetComputeOperator() to set callback");
   PetscCall(ISGetIndices(patch->dofs, &dofsArray));
   PetscCall(ISGetIndices(patch->dofsWithAll, &dofsArrayWithAll));
   PetscCall(ISGetIndices(patch->cells, &cellsArray));
@@ -1978,11 +1978,9 @@ PetscErrorCode PCPatchComputeFunction_Internal(PC pc, Vec x, Vec F, PetscInt poi
     PetscFunctionReturn(0);
   }
   PetscCall(VecSet(F, 0.0));
-  PetscStackPush("PCPatch user callback");
   /* Cannot reuse the same IS because the geometry info is being cached in it */
   PetscCall(ISCreateGeneral(PETSC_COMM_SELF, ncell, cellsArray + offset, PETSC_USE_POINTER, &patch->cellIS));
-  PetscCall(patch->usercomputef(pc, point, x, F, patch->cellIS, ncell*patch->totalDofsPerCell, dofsArray + offset*patch->totalDofsPerCell,dofsArrayWithAll + offset*patch->totalDofsPerCell,patch->usercomputefctx));
-  PetscStackPop;
+  PetscCallBack("PCPatch callback",patch->usercomputef(pc, point, x, F, patch->cellIS, ncell*patch->totalDofsPerCell, dofsArray + offset*patch->totalDofsPerCell,dofsArrayWithAll + offset*patch->totalDofsPerCell,patch->usercomputefctx));
   PetscCall(ISDestroy(&patch->cellIS));
   PetscCall(ISRestoreIndices(patch->dofs, &dofsArray));
   PetscCall(ISRestoreIndices(patch->dofsWithAll, &dofsArrayWithAll));
@@ -2049,7 +2047,7 @@ PetscErrorCode PCPatchComputeOperator_Internal(PC pc, Vec x, Mat mat, PetscInt p
   PetscFunctionBegin;
   PetscCall(PetscLogEventBegin(PC_Patch_ComputeOp, pc, 0, 0, 0));
   isNonlinear = patch->isNonlinear;
-  PetscCheck(patch->usercomputeop,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call PCPatchSetComputeOperator() to set user callback");
+  PetscCheck(patch->usercomputeop,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call PCPatchSetComputeOperator() to set callback");
   if (withArtificial) {
     PetscCall(ISGetIndices(patch->dofsWithArtificial, &dofsArray));
   } else {
@@ -2087,10 +2085,9 @@ PetscErrorCode PCPatchComputeOperator_Internal(PC pc, Vec x, Mat mat, PetscInt p
     PetscCall(MatAssemblyBegin(mat, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(mat, MAT_FINAL_ASSEMBLY));
   } else {
-    PetscStackPush("PCPatch user callback");
     /* Cannot reuse the same IS because the geometry info is being cached in it */
     PetscCall(ISCreateGeneral(PETSC_COMM_SELF, ncell, cellsArray + offset, PETSC_USE_POINTER, &patch->cellIS));
-    PetscCall(patch->usercomputeop(pc, point, x, mat, patch->cellIS, ncell*patch->totalDofsPerCell, dofsArray + offset*patch->totalDofsPerCell, dofsArrayWithAll ? dofsArrayWithAll + offset*patch->totalDofsPerCell : NULL, patch->usercomputeopctx));
+    PetscCallBack("PCPatch callback",patch->usercomputeop(pc, point, x, mat, patch->cellIS, ncell*patch->totalDofsPerCell, dofsArray + offset*patch->totalDofsPerCell, dofsArrayWithAll ? dofsArrayWithAll + offset*patch->totalDofsPerCell : NULL, patch->usercomputeopctx));
   }
   if (patch->usercomputeopintfacet) {
     PetscCall(PetscSectionGetDof(patch->intFacetCounts, point, &numIntFacets));
@@ -2188,7 +2185,6 @@ PetscErrorCode PCPatchComputeOperator_Internal(PC pc, Vec x, Mat mat, PetscInt p
     PetscCall(MatLUFactor(mat, NULL, NULL, &info));
     PetscCall(MatSeqDenseInvertFactors_Private(mat));
   }
-  PetscStackPop;
   PetscCall(ISDestroy(&patch->cellIS));
   if (withArtificial) {
     PetscCall(ISRestoreIndices(patch->dofsWithArtificial, &dofsArray));
@@ -2309,10 +2305,8 @@ static PetscErrorCode PCPatchPrecomputePatchTensors_Private(PC pc)
   PetscCall(ISGetIndices(dofMap, &dofMapArray));
   PetscCall(ISGetIndices(patch->allCells, &cellsArray));
   PetscCall(ISCreateGeneral(PETSC_COMM_SELF, ncell, cellsArray, PETSC_USE_POINTER, &cellIS));
-  PetscStackPush("PCPatch user callback");
   /* TODO: Fix for DMPlex compute op, this bypasses a lot of the machinery and just assembles every element tensor. */
-  PetscCall(patch->usercomputeop(pc, -1, NULL, vecMat, cellIS, ndof*ncell, dofMapArray, NULL, patch->usercomputeopctx));
-  PetscStackPop;
+  PetscCallBack("PCPatch callback",patch->usercomputeop(pc, -1, NULL, vecMat, cellIS, ndof*ncell, dofMapArray, NULL, patch->usercomputeopctx));
   PetscCall(ISDestroy(&cellIS));
   PetscCall(MatDestroy(&vecMat));
   PetscCall(ISRestoreIndices(patch->allCells, &cellsArray));
@@ -2368,10 +2362,8 @@ static PetscErrorCode PCPatchPrecomputePatchTensors_Private(PC pc)
     PetscCall(ISGetIndices(dofMap, &dofMapArray));
     PetscCall(ISGetIndices(patch->allIntFacets, &intFacetsArray));
     PetscCall(ISCreateGeneral(PETSC_COMM_SELF, nIntFacets, intFacetsArray, PETSC_USE_POINTER, &intFacetsIS));
-    PetscStackPush("PCPatch user callback (interior facets)");
     /* TODO: Fix for DMPlex compute op, this bypasses a lot of the machinery and just assembles every element tensor. */
-    PetscCall(patch->usercomputeopintfacet(pc, -1, NULL, vecMat, intFacetsIS, 2*ndof*nIntFacets, dofMapArray, NULL, patch->usercomputeopintfacetctx));
-    PetscStackPop;
+    PetscCallBack("PCPatch callback (interior facets)",patch->usercomputeopintfacet(pc, -1, NULL, vecMat, intFacetsIS, 2*ndof*nIntFacets, dofMapArray, NULL, patch->usercomputeopintfacetctx));
     PetscCall(ISDestroy(&intFacetsIS));
     PetscCall(MatDestroy(&vecMat));
     PetscCall(ISRestoreIndices(patch->allIntFacets, &intFacetsArray));

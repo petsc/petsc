@@ -1627,9 +1627,7 @@ static PetscErrorCode MatComputeNeumannOverlap_Plex(Mat J, PetscReal t, Vec X, V
   }
   PetscCall(DMGetDMSNES(ovldm,&sdm));
   PetscCall(VecLockReadPush(X));
-  PetscStackPush("SNES user Jacobian function");
-  PetscCall((*sdm->ops->computejacobian)(snes,X,pJ,pJ,sdm->jacobianctx));
-  PetscStackPop;
+  PetscCallBack("SNES callback Jacobian",(*sdm->ops->computejacobian)(snes,X,pJ,pJ,sdm->jacobianctx));
   PetscCall(VecLockReadPop(X));
   /* this is a no-hop, just in case we decide to change the placeholder for the local Neumann matrix */
   {

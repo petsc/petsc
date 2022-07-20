@@ -50,13 +50,13 @@ PETSC_EXTERN PetscErrorCode MatSeqDenseInvertFactors_Private(Mat A)
       PetscCall(PetscLogObjectMemory((PetscObject)A,mat->lfwork*sizeof(PetscBLASInt)));
     }
     PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-    PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&n,mat->v,&mat->lda,mat->pivots,mat->fwork,&mat->lfwork,&info));
+    PetscCallBLAS("LAPACKgetri",LAPACKgetri_(&n,mat->v,&mat->lda,mat->pivots,mat->fwork,&mat->lfwork,&info));
     PetscCall(PetscFPTrapPop());
     PetscCall(PetscLogFlops((1.0*A->cmap->n*A->cmap->n*A->cmap->n)/3.0));
   } else if (A->factortype == MAT_FACTOR_CHOLESKY) {
     if (A->spd == PETSC_BOOL3_TRUE) {
       PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-      PetscStackCallBLAS("LAPACKpotri",LAPACKpotri_("L",&n,mat->v,&mat->lda,&info));
+      PetscCallBLAS("LAPACKpotri",LAPACKpotri_("L",&n,mat->v,&mat->lda,&info));
       PetscCall(PetscFPTrapPop());
       PetscCall(MatSeqDenseSymmetrize_Private(A,PETSC_TRUE));
 #if defined(PETSC_USE_COMPLEX)
@@ -64,7 +64,7 @@ PETSC_EXTERN PetscErrorCode MatSeqDenseInvertFactors_Private(Mat A)
       PetscCheck(mat->pivots,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Pivots not present");
       PetscCheck(mat->fwork,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Fwork not present");
       PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-      PetscStackCallBLAS("LAPACKhetri",LAPACKhetri_("L",&n,mat->v,&mat->lda,mat->pivots,mat->fwork,&info));
+      PetscCallBLAS("LAPACKhetri",LAPACKhetri_("L",&n,mat->v,&mat->lda,mat->pivots,mat->fwork,&info));
       PetscCall(PetscFPTrapPop());
       PetscCall(MatSeqDenseSymmetrize_Private(A,PETSC_TRUE));
 #endif
@@ -72,7 +72,7 @@ PETSC_EXTERN PetscErrorCode MatSeqDenseInvertFactors_Private(Mat A)
       PetscCheck(mat->pivots,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Pivots not present");
       PetscCheck(mat->fwork,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Fwork not present");
       PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-      PetscStackCallBLAS("LAPACKsytri",LAPACKsytri_("L",&n,mat->v,&mat->lda,mat->pivots,mat->fwork,&info));
+      PetscCallBLAS("LAPACKsytri",LAPACKsytri_("L",&n,mat->v,&mat->lda,mat->pivots,mat->fwork,&info));
       PetscCall(PetscFPTrapPop());
       PetscCall(MatSeqDenseSymmetrize_Private(A,PETSC_FALSE));
     }
@@ -283,10 +283,10 @@ PetscErrorCode MatAXPY_SeqDense(Mat Y,PetscScalar alpha,Mat X,MatStructure str)
     PetscInt j;
 
     for (j=0; j<X->cmap->n; j++) {
-      PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&m,&alpha,xv+j*ldax,&one,yv+j*lday,&one));
+      PetscCallBLAS("BLASaxpy",BLASaxpy_(&m,&alpha,xv+j*ldax,&one,yv+j*lday,&one));
     }
   } else {
-    PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&N,&alpha,xv,&one,yv,&one));
+    PetscCallBLAS("BLASaxpy",BLASaxpy_(&N,&alpha,xv,&one,yv,&one));
   }
   PetscCall(MatDenseRestoreArrayRead(X,&xv));
   PetscCall(MatDenseRestoreArray(Y,&yv));
@@ -324,11 +324,11 @@ PetscErrorCode MatScale_SeqDense(Mat A,PetscScalar alpha)
   if (lda>A->rmap->n) {
     PetscCall(PetscBLASIntCast(A->rmap->n,&nz));
     for (j=0; j<A->cmap->n; j++) {
-      PetscStackCallBLAS("BLASscal",BLASscal_(&nz,&alpha,v+j*lda,&one));
+      PetscCallBLAS("BLASscal",BLASscal_(&nz,&alpha,v+j*lda,&one));
     }
   } else {
     PetscCall(PetscBLASIntCast(A->rmap->n*A->cmap->n,&nz));
-    PetscStackCallBLAS("BLASscal",BLASscal_(&nz,&alpha,v,&one));
+    PetscCallBLAS("BLASscal",BLASscal_(&nz,&alpha,v,&one));
   }
   PetscCall(PetscLogFlops(A->rmap->n*A->cmap->n));
   PetscCall(MatDenseRestoreArray(A,&v));
@@ -448,7 +448,7 @@ static PetscErrorCode MatSolve_SeqDense_Internal_LU(Mat A, PetscScalar *x, Petsc
 
   PetscFunctionBegin;
   PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-  PetscStackCallBLAS("LAPACKgetrs",LAPACKgetrs_(T ? "T" : "N",&m,&nrhs,mat->v,&mat->lda,mat->pivots,x,&m,&info));
+  PetscCallBLAS("LAPACKgetrs",LAPACKgetrs_(T ? "T" : "N",&m,&nrhs,mat->v,&mat->lda,mat->pivots,x,&m,&info));
   PetscCall(PetscFPTrapPop());
   PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_LIB,"GETRS - Bad solve %d",(int)info);
   PetscCall(PetscLogFlops(nrhs*(2.0*m*m - m)));
@@ -466,7 +466,7 @@ static PetscErrorCode MatSolve_SeqDense_Internal_Cholesky(Mat A, PetscScalar *x,
   if (A->spd == PETSC_BOOL3_TRUE) {
     if (PetscDefined(USE_COMPLEX) && T) PetscCall(MatConjugate_SeqDense(A));
     PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-    PetscStackCallBLAS("LAPACKpotrs",LAPACKpotrs_("L",&m,&nrhs,mat->v,&mat->lda,x,&m,&info));
+    PetscCallBLAS("LAPACKpotrs",LAPACKpotrs_("L",&m,&nrhs,mat->v,&mat->lda,x,&m,&info));
     PetscCall(PetscFPTrapPop());
     PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_LIB,"POTRS Bad solve %d",(int)info);
     if (PetscDefined(USE_COMPLEX) && T) PetscCall(MatConjugate_SeqDense(A));
@@ -474,14 +474,14 @@ static PetscErrorCode MatSolve_SeqDense_Internal_Cholesky(Mat A, PetscScalar *x,
   } else if (A->hermitian == PETSC_BOOL3_TRUE) {
     if (T) PetscCall(MatConjugate_SeqDense(A));
     PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-    PetscStackCallBLAS("LAPACKhetrs",LAPACKhetrs_("L",&m,&nrhs,mat->v,&mat->lda,mat->pivots,x,&m,&info));
+    PetscCallBLAS("LAPACKhetrs",LAPACKhetrs_("L",&m,&nrhs,mat->v,&mat->lda,mat->pivots,x,&m,&info));
     PetscCall(PetscFPTrapPop());
     PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_LIB,"HETRS Bad solve %d",(int)info);
     if (T) PetscCall(MatConjugate_SeqDense(A));
 #endif
   } else { /* symmetric case */
     PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-    PetscStackCallBLAS("LAPACKsytrs",LAPACKsytrs_("L",&m,&nrhs,mat->v,&mat->lda,mat->pivots,x,&m,&info));
+    PetscCallBLAS("LAPACKsytrs",LAPACKsytrs_("L",&m,&nrhs,mat->v,&mat->lda,mat->pivots,x,&m,&info));
     PetscCall(PetscFPTrapPop());
     PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_LIB,"SYTRS Bad solve %d",(int)info);
   }
@@ -506,7 +506,7 @@ static PetscErrorCode MatSolve_SeqDense_Internal_QR(Mat A, PetscScalar *x, Petsc
     PetscBLASInt nlfwork, lfwork = -1;
     PetscScalar  fwork;
 
-    PetscStackCallBLAS("LAPACKormqr",LAPACKormqr_("L", &trans, &m,&nrhs,&mat->rank,mat->v,&mat->lda,mat->tau,x,&ldx,&fwork,&lfwork,&info));
+    PetscCallBLAS("LAPACKormqr",LAPACKormqr_("L", &trans, &m,&nrhs,&mat->rank,mat->v,&mat->lda,mat->tau,x,&ldx,&fwork,&lfwork,&info));
     nlfwork = (PetscBLASInt)PetscRealPart(fwork);
     if (nlfwork > mat->lfwork) {
       mat->lfwork = nlfwork;
@@ -514,11 +514,11 @@ static PetscErrorCode MatSolve_SeqDense_Internal_QR(Mat A, PetscScalar *x, Petsc
       PetscCall(PetscMalloc1(mat->lfwork,&mat->fwork));
     }
   }
-  PetscStackCallBLAS("LAPACKormqr",LAPACKormqr_("L", &trans, &m,&nrhs,&mat->rank,mat->v,&mat->lda,mat->tau,x,&ldx,mat->fwork,&mat->lfwork,&info));
+  PetscCallBLAS("LAPACKormqr",LAPACKormqr_("L", &trans, &m,&nrhs,&mat->rank,mat->v,&mat->lda,mat->tau,x,&ldx,mat->fwork,&mat->lfwork,&info));
   PetscCall(PetscFPTrapPop());
   PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_LIB,"ORMQR - Bad orthogonal transform %d",(int)info);
   PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-  PetscStackCallBLAS("LAPACKtrtrs",LAPACKtrtrs_("U", "N", "N", &mat->rank,&nrhs,mat->v,&mat->lda,x,&ldx,&info));
+  PetscCallBLAS("LAPACKtrtrs",LAPACKtrtrs_("U", "N", "N", &mat->rank,&nrhs,mat->v,&mat->lda,x,&ldx,&info));
   PetscCall(PetscFPTrapPop());
   PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_LIB,"TRTRS - Bad triangular solve %d",(int)info);
   for (PetscInt j = 0; j < nrhs; j++) {
@@ -538,7 +538,7 @@ static PetscErrorCode MatSolveTranspose_SeqDense_Internal_QR(Mat A, PetscScalar 
   PetscFunctionBegin;
   if (A->rmap->n == A->cmap->n && mat->rank == A->rmap->n) {
     PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-    PetscStackCallBLAS("LAPACKtrtrs",LAPACKtrtrs_("U", "T", "N", &m,&nrhs,mat->v,&mat->lda,x,&ldx,&info));
+    PetscCallBLAS("LAPACKtrtrs",LAPACKtrtrs_("U", "T", "N", &m,&nrhs,mat->v,&mat->lda,x,&ldx,&info));
     PetscCall(PetscFPTrapPop());
     PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_LIB,"TRTRS - Bad triangular solve %d",(int)info);
     if (PetscDefined(USE_COMPLEX)) PetscCall(MatConjugate_SeqDense(A));
@@ -546,7 +546,7 @@ static PetscErrorCode MatSolveTranspose_SeqDense_Internal_QR(Mat A, PetscScalar 
       PetscBLASInt nlfwork, lfwork = -1;
       PetscScalar  fwork;
 
-      PetscStackCallBLAS("LAPACKormqr",LAPACKormqr_("L", "N", &m,&nrhs,&mat->rank,mat->v,&mat->lda,mat->tau,x,&ldx,&fwork,&lfwork,&info));
+      PetscCallBLAS("LAPACKormqr",LAPACKormqr_("L", "N", &m,&nrhs,&mat->rank,mat->v,&mat->lda,mat->tau,x,&ldx,&fwork,&lfwork,&info));
       nlfwork = (PetscBLASInt)PetscRealPart(fwork);
       if (nlfwork > mat->lfwork) {
         mat->lfwork = nlfwork;
@@ -555,7 +555,7 @@ static PetscErrorCode MatSolveTranspose_SeqDense_Internal_QR(Mat A, PetscScalar 
       }
     }
     PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-    PetscStackCallBLAS("LAPACKormqr",LAPACKormqr_("L", "N", &m,&nrhs,&mat->rank,mat->v,&mat->lda,mat->tau,x,&ldx,mat->fwork,&mat->lfwork,&info));
+    PetscCallBLAS("LAPACKormqr",LAPACKormqr_("L", "N", &m,&nrhs,&mat->rank,mat->v,&mat->lda,mat->tau,x,&ldx,mat->fwork,&mat->lfwork,&info));
     PetscCall(PetscFPTrapPop());
     PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_LIB,"ORMQR - Bad orthogonal transform %d",(int)info);
     if (PetscDefined(USE_COMPLEX)) PetscCall(MatConjugate_SeqDense(A));
@@ -849,7 +849,7 @@ PetscErrorCode MatLUFactor_SeqDense(Mat A,IS row,IS col,const MatFactorInfo *min
   }
   if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(0);
   PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-  PetscStackCallBLAS("LAPACKgetrf",LAPACKgetrf_(&m,&n,mat->v,&mat->lda,mat->pivots,&info));
+  PetscCallBLAS("LAPACKgetrf",LAPACKgetrf_(&m,&n,mat->v,&mat->lda,mat->pivots,&info));
   PetscCall(PetscFPTrapPop());
 
   PetscCheck(info>=0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Bad argument to LU factorization %d",(int)info);
@@ -898,7 +898,7 @@ PetscErrorCode MatCholeskyFactor_SeqDense(Mat A,IS perm,const MatFactorInfo *fac
   if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(0);
   if (A->spd == PETSC_BOOL3_TRUE) {
     PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-    PetscStackCallBLAS("LAPACKpotrf",LAPACKpotrf_("L",&n,mat->v,&mat->lda,&info));
+    PetscCallBLAS("LAPACKpotrf",LAPACKpotrf_("L",&n,mat->v,&mat->lda,&info));
     PetscCall(PetscFPTrapPop());
 #if defined(PETSC_USE_COMPLEX)
   } else if (A->hermitian == PETSC_BOOL3_TRUE) {
@@ -911,14 +911,14 @@ PetscErrorCode MatCholeskyFactor_SeqDense(Mat A,IS perm,const MatFactorInfo *fac
 
       mat->lfwork = -1;
       PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-      PetscStackCallBLAS("LAPACKhetrf",LAPACKhetrf_("L",&n,mat->v,&mat->lda,mat->pivots,&dummy,&mat->lfwork,&info));
+      PetscCallBLAS("LAPACKhetrf",LAPACKhetrf_("L",&n,mat->v,&mat->lda,mat->pivots,&dummy,&mat->lfwork,&info));
       PetscCall(PetscFPTrapPop());
       mat->lfwork = (PetscInt)PetscRealPart(dummy);
       PetscCall(PetscMalloc1(mat->lfwork,&mat->fwork));
       PetscCall(PetscLogObjectMemory((PetscObject)A,mat->lfwork*sizeof(PetscBLASInt)));
     }
     PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-    PetscStackCallBLAS("LAPACKhetrf",LAPACKhetrf_("L",&n,mat->v,&mat->lda,mat->pivots,mat->fwork,&mat->lfwork,&info));
+    PetscCallBLAS("LAPACKhetrf",LAPACKhetrf_("L",&n,mat->v,&mat->lda,mat->pivots,mat->fwork,&mat->lfwork,&info));
     PetscCall(PetscFPTrapPop());
 #endif
   } else { /* symmetric case */
@@ -931,14 +931,14 @@ PetscErrorCode MatCholeskyFactor_SeqDense(Mat A,IS perm,const MatFactorInfo *fac
 
       mat->lfwork = -1;
       PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-      PetscStackCallBLAS("LAPACKsytrf",LAPACKsytrf_("L",&n,mat->v,&mat->lda,mat->pivots,&dummy,&mat->lfwork,&info));
+      PetscCallBLAS("LAPACKsytrf",LAPACKsytrf_("L",&n,mat->v,&mat->lda,mat->pivots,&dummy,&mat->lfwork,&info));
       PetscCall(PetscFPTrapPop());
       mat->lfwork = (PetscInt)PetscRealPart(dummy);
       PetscCall(PetscMalloc1(mat->lfwork,&mat->fwork));
       PetscCall(PetscLogObjectMemory((PetscObject)A,mat->lfwork*sizeof(PetscBLASInt)));
     }
     PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-    PetscStackCallBLAS("LAPACKsytrf",LAPACKsytrf_("L",&n,mat->v,&mat->lda,mat->pivots,mat->fwork,&mat->lfwork,&info));
+    PetscCallBLAS("LAPACKsytrf",LAPACKsytrf_("L",&n,mat->v,&mat->lda,mat->pivots,mat->fwork,&mat->lfwork,&info));
     PetscCall(PetscFPTrapPop());
   }
   PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_MAT_CH_ZRPVT,"Bad factorization: zero pivot in row %" PetscInt_FMT,(PetscInt)info-1);
@@ -1004,14 +1004,14 @@ PetscErrorCode MatQRFactor_SeqDense(Mat A,IS col,const MatFactorInfo *minfo)
 
     mat->lfwork = -1;
     PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-    PetscStackCallBLAS("LAPACKgeqrf",LAPACKgeqrf_(&m,&n,mat->v,&mat->lda,mat->tau,&dummy,&mat->lfwork,&info));
+    PetscCallBLAS("LAPACKgeqrf",LAPACKgeqrf_(&m,&n,mat->v,&mat->lda,mat->tau,&dummy,&mat->lfwork,&info));
     PetscCall(PetscFPTrapPop());
     mat->lfwork = (PetscInt)PetscRealPart(dummy);
     PetscCall(PetscMalloc1(mat->lfwork,&mat->fwork));
     PetscCall(PetscLogObjectMemory((PetscObject)A,mat->lfwork*sizeof(PetscBLASInt)));
   }
   PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-  PetscStackCallBLAS("LAPACKgeqrf",LAPACKgeqrf_(&m,&n,mat->v,&mat->lda,mat->tau,mat->fwork,&mat->lfwork,&info));
+  PetscCallBLAS("LAPACKgeqrf",LAPACKgeqrf_(&m,&n,mat->v,&mat->lda,mat->tau,mat->fwork,&mat->lfwork,&info));
   PetscCall(PetscFPTrapPop());
   PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_LIB,"Bad argument to QR factorization %d",(int)info);
   // TODO: try to estimate rank or test for and use geqp3 for rank revealing QR.  For now just say rank is min of m and n
@@ -1106,13 +1106,13 @@ static PetscErrorCode MatSOR_SeqDense(Mat A,Vec bb,PetscReal omega,MatSORType fl
   while (its--) {
     if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) {
       for (i=0; i<m; i++) {
-        PetscStackCallBLAS("BLASdotu",xt   = b[i] - BLASdotu_(&bm,v+i,&bm,x,&o));
+        PetscCallBLAS("BLASdotu",xt   = b[i] - BLASdotu_(&bm,v+i,&bm,x,&o));
         x[i] = (1. - omega)*x[i] + omega*(xt+v[i + i*m]*x[i])/(v[i + i*m]+shift);
       }
     }
     if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
       for (i=m-1; i>=0; i--) {
-        PetscStackCallBLAS("BLASdotu",xt   = b[i] - BLASdotu_(&bm,v+i,&bm,x,&o));
+        PetscCallBLAS("BLASdotu",xt   = b[i] - BLASdotu_(&bm,v+i,&bm,x,&o));
         x[i] = (1. - omega)*x[i] + omega*(xt+v[i + i*m]*x[i])/(v[i + i*m]+shift);
       }
     }
@@ -1140,7 +1140,7 @@ PetscErrorCode MatMultTranspose_SeqDense(Mat A,Vec xx,Vec yy)
     PetscBLASInt i;
     for (i=0; i<n; i++) y[i] = 0.0;
   } else {
-    PetscStackCallBLAS("BLASgemv",BLASgemv_("T",&m,&n,&_DOne,v,&mat->lda,x,&_One,&_DZero,y,&_One));
+    PetscCallBLAS("BLASgemv",BLASgemv_("T",&m,&n,&_DOne,v,&mat->lda,x,&_One,&_DZero,y,&_One));
     PetscCall(PetscLogFlops(2.0*A->rmap->n*A->cmap->n - A->cmap->n));
   }
   PetscCall(VecRestoreArrayRead(xx,&x));
@@ -1164,7 +1164,7 @@ PetscErrorCode MatMult_SeqDense(Mat A,Vec xx,Vec yy)
     PetscBLASInt i;
     for (i=0; i<m; i++) y[i] = 0.0;
   } else {
-    PetscStackCallBLAS("BLASgemv",BLASgemv_("N",&m,&n,&_DOne,v,&(mat->lda),x,&_One,&_DZero,y,&_One));
+    PetscCallBLAS("BLASgemv",BLASgemv_("N",&m,&n,&_DOne,v,&(mat->lda),x,&_One,&_DZero,y,&_One));
     PetscCall(PetscLogFlops(2.0*A->rmap->n*A->cmap->n - A->rmap->n));
   }
   PetscCall(VecRestoreArrayRead(xx,&x));
@@ -1186,7 +1186,7 @@ PetscErrorCode MatMultAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(0);
   PetscCall(VecGetArrayRead(xx,&x));
   PetscCall(VecGetArray(yy,&y));
-  PetscStackCallBLAS("BLASgemv",BLASgemv_("N",&m,&n,&_DOne,v,&(mat->lda),x,&_One,&_DOne,y,&_One));
+  PetscCallBLAS("BLASgemv",BLASgemv_("N",&m,&n,&_DOne,v,&(mat->lda),x,&_One,&_DOne,y,&_One));
   PetscCall(VecRestoreArrayRead(xx,&x));
   PetscCall(VecRestoreArray(yy,&y));
   PetscCall(PetscLogFlops(2.0*A->rmap->n*A->cmap->n));
@@ -1208,7 +1208,7 @@ PetscErrorCode MatMultTransposeAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(0);
   PetscCall(VecGetArrayRead(xx,&x));
   PetscCall(VecGetArray(yy,&y));
-  PetscStackCallBLAS("BLASgemv",BLASgemv_("T",&m,&n,&_DOne,v,&(mat->lda),x,&_One,&_DOne,y,&_One));
+  PetscCallBLAS("BLASgemv",BLASgemv_("T",&m,&n,&_DOne,v,&(mat->lda),x,&_One,&_DOne,y,&_One));
   PetscCall(VecRestoreArrayRead(xx,&x));
   PetscCall(VecRestoreArray(yy,&y));
   PetscCall(PetscLogFlops(2.0*A->rmap->n*A->cmap->n));
@@ -1956,7 +1956,7 @@ PetscErrorCode MatNorm_SeqDense(Mat A,NormType type,PetscReal *nrm)
     } else {
 #if defined(PETSC_USE_REAL___FP16)
       PetscBLASInt one = 1,cnt = A->cmap->n*A->rmap->n;
-      PetscStackCallBLAS("BLASnrm2",*nrm = BLASnrm2_(&cnt,v,&one));
+      PetscCallBLAS("BLASnrm2",*nrm = BLASnrm2_(&cnt,v,&one));
     }
 #else
       for (i=0; i<A->cmap->n*A->rmap->n; i++) {
@@ -2508,7 +2508,7 @@ PetscErrorCode MatMatMultNumeric_SeqDense_SeqDense(Mat A,Mat B,Mat C)
   PetscCall(MatDenseGetArrayRead(A,&av));
   PetscCall(MatDenseGetArrayRead(B,&bv));
   PetscCall(MatDenseGetArrayWrite(C,&cv));
-  PetscStackCallBLAS("BLASgemm",BLASgemm_("N","N",&m,&n,&k,&_DOne,av,&a->lda,bv,&b->lda,&_DZero,cv,&c->lda));
+  PetscCallBLAS("BLASgemm",BLASgemm_("N","N",&m,&n,&k,&_DOne,av,&a->lda,bv,&b->lda,&_DZero,cv,&c->lda));
   PetscCall(PetscLogFlops(1.0*m*n*k + 1.0*m*n*(k-1)));
   PetscCall(MatDenseRestoreArrayRead(A,&av));
   PetscCall(MatDenseRestoreArrayRead(B,&bv));
@@ -2552,7 +2552,7 @@ PetscErrorCode MatMatTransposeMultNumeric_SeqDense_SeqDense(Mat A,Mat B,Mat C)
   PetscCall(MatDenseGetArrayRead(A,&av));
   PetscCall(MatDenseGetArrayRead(B,&bv));
   PetscCall(MatDenseGetArrayWrite(C,&cv));
-  PetscStackCallBLAS("BLASgemm",BLASgemm_("N","T",&m,&n,&k,&_DOne,av,&a->lda,bv,&b->lda,&_DZero,cv,&c->lda));
+  PetscCallBLAS("BLASgemm",BLASgemm_("N","T",&m,&n,&k,&_DOne,av,&a->lda,bv,&b->lda,&_DZero,cv,&c->lda));
   PetscCall(MatDenseRestoreArrayRead(A,&av));
   PetscCall(MatDenseRestoreArrayRead(B,&bv));
   PetscCall(MatDenseRestoreArrayWrite(C,&cv));
@@ -2596,7 +2596,7 @@ PetscErrorCode MatTransposeMatMultNumeric_SeqDense_SeqDense(Mat A,Mat B,Mat C)
   PetscCall(MatDenseGetArrayRead(A,&av));
   PetscCall(MatDenseGetArrayRead(B,&bv));
   PetscCall(MatDenseGetArrayWrite(C,&cv));
-  PetscStackCallBLAS("BLASgemm",BLASgemm_("T","N",&m,&n,&k,&_DOne,av,&a->lda,bv,&b->lda,&_DZero,cv,&c->lda));
+  PetscCallBLAS("BLASgemm",BLASgemm_("T","N",&m,&n,&k,&_DOne,av,&a->lda,bv,&b->lda,&_DZero,cv,&c->lda));
   PetscCall(MatDenseRestoreArrayRead(A,&av));
   PetscCall(MatDenseRestoreArrayRead(B,&bv));
   PetscCall(MatDenseRestoreArrayWrite(C,&cv));

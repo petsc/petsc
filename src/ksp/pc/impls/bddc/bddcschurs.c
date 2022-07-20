@@ -636,10 +636,10 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     PetscCall(PetscBLASIntCast(local_size,&B_N));
     PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
     if (use_sytr) {
-      PetscStackCallBLAS("LAPACKsytrf",LAPACKsytrf_("L",&B_N,&dummyscalar,&B_N,&dummyint,&lwork,&B_lwork,&B_ierr));
+      PetscCallBLAS("LAPACKsytrf",LAPACKsytrf_("L",&B_N,&dummyscalar,&B_N,&dummyint,&lwork,&B_lwork,&B_ierr));
       PetscCheck(!B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to SYTRF Lapack routine %d",(int)B_ierr);
     } else {
-      PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,&dummyscalar,&B_N,&dummyint,&lwork,&B_lwork,&B_ierr));
+      PetscCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,&dummyscalar,&B_N,&dummyint,&lwork,&B_lwork,&B_ierr));
       PetscCheck(!B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to GETRI Lapack routine %d",(int)B_ierr);
     }
     PetscCall(PetscFPTrapPop());
@@ -1179,22 +1179,22 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
 
             if (PetscAbsScalar(sum) == 0.0) continue;
             if (k == i) {
-              PetscStackCallBLAS("BLASsyrk",BLASsyrk_("L","N",&B_n,&B_k,&sum,cs_AIB+i*size_schur,&B_n,&one,S_data,&B_n));
+              PetscCallBLAS("BLASsyrk",BLASsyrk_("L","N",&B_n,&B_k,&sum,cs_AIB+i*size_schur,&B_n,&one,S_data,&B_n));
               if (matl_dbg_viewer) {
-                PetscStackCallBLAS("BLASsyrk",BLASsyrk_("L","N",&B_n,&B_k,&sum,cs_AIB+i*size_schur,&B_n,&one,S3_data,&B_n));
+                PetscCallBLAS("BLASsyrk",BLASsyrk_("L","N",&B_n,&B_k,&sum,cs_AIB+i*size_schur,&B_n,&one,S3_data,&B_n));
               }
             } else { /* XXX Is it correct to use symmetric rank-2 update with half of the sum? */
               sum /= 2.0;
-              PetscStackCallBLAS("BLASsyr2k",BLASsyr2k_("L","N",&B_n,&B_k,&sum,cs_AIB+k*size_schur,&B_n,cs_AIB+i*size_schur,&B_n,&one,S_data,&B_n));
+              PetscCallBLAS("BLASsyr2k",BLASsyr2k_("L","N",&B_n,&B_k,&sum,cs_AIB+k*size_schur,&B_n,cs_AIB+i*size_schur,&B_n,&one,S_data,&B_n));
               if (matl_dbg_viewer) {
-                PetscStackCallBLAS("BLASsyr2k",BLASsyr2k_("L","N",&B_n,&B_k,&sum,cs_AIB+k*size_schur,&B_n,cs_AIB+i*size_schur,&B_n,&one,S3_data,&B_n));
+                PetscCallBLAS("BLASsyr2k",BLASsyr2k_("L","N",&B_n,&B_k,&sum,cs_AIB+k*size_schur,&B_n,cs_AIB+i*size_schur,&B_n,&one,S3_data,&B_n));
               }
             }
           }
           sum  = 1.;
-          PetscStackCallBLAS("BLASsyr2k",BLASsyr2k_("L","N",&B_n,&B_k,&sum,array+n_I,&B_n,cs_AIB+i*size_schur,&B_n,&one,S_data,&B_n));
+          PetscCallBLAS("BLASsyr2k",BLASsyr2k_("L","N",&B_n,&B_k,&sum,array+n_I,&B_n,cs_AIB+i*size_schur,&B_n,&one,S_data,&B_n));
           if (matl_dbg_viewer) {
-            PetscStackCallBLAS("BLASsyr2k",BLASsyr2k_("L","N",&B_n,&B_k,&sum,array+n_I,&B_n,cs_AIB+i*size_schur,&B_n,&one,S2_data,&B_n));
+            PetscCallBLAS("BLASsyr2k",BLASsyr2k_("L","N",&B_n,&B_k,&sum,array+n_I,&B_n,cs_AIB+i*size_schur,&B_n,&one,S2_data,&B_n));
           }
           PetscCall(VecRestoreArrayRead(v,(const PetscScalar**)&array));
           /* set p0 entry of AIIm1_ones to zero */
@@ -1606,19 +1606,19 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
           PetscCall(PetscBLASIntCast(size_schur,&B_N));
           PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
           if (use_potr) {
-            PetscStackCallBLAS("LAPACKpotrf",LAPACKpotrf_("L",&B_N,S_data,&B_N,&B_ierr));
+            PetscCallBLAS("LAPACKpotrf",LAPACKpotrf_("L",&B_N,S_data,&B_N,&B_ierr));
             PetscCheck(!B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRF Lapack routine %d",(int)B_ierr);
-            PetscStackCallBLAS("LAPACKpotri",LAPACKpotri_("L",&B_N,S_data,&B_N,&B_ierr));
+            PetscCallBLAS("LAPACKpotri",LAPACKpotri_("L",&B_N,S_data,&B_N,&B_ierr));
             PetscCheck(!B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRI Lapack routine %d",(int)B_ierr);
           } else if (use_sytr) {
-            PetscStackCallBLAS("LAPACKsytrf",LAPACKsytrf_("L",&B_N,S_data,&B_N,pivots,Bwork,&B_lwork,&B_ierr));
+            PetscCallBLAS("LAPACKsytrf",LAPACKsytrf_("L",&B_N,S_data,&B_N,pivots,Bwork,&B_lwork,&B_ierr));
             PetscCheck(!B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYTRF Lapack routine %d",(int)B_ierr);
-            PetscStackCallBLAS("LAPACKsytri",LAPACKsytri_("L",&B_N,S_data,&B_N,pivots,Bwork,&B_ierr));
+            PetscCallBLAS("LAPACKsytri",LAPACKsytri_("L",&B_N,S_data,&B_N,pivots,Bwork,&B_ierr));
             PetscCheck(!B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYTRI Lapack routine %d",(int)B_ierr);
           } else {
-            PetscStackCallBLAS("LAPACKgetrf",LAPACKgetrf_(&B_N,&B_N,S_data,&B_N,pivots,&B_ierr));
+            PetscCallBLAS("LAPACKgetrf",LAPACKgetrf_(&B_N,&B_N,S_data,&B_N,pivots,&B_ierr));
             PetscCheck(!B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRF Lapack routine %d",(int)B_ierr);
-            PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,S_data,&B_N,pivots,Bwork,&B_lwork,&B_ierr));
+            PetscCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,S_data,&B_N,pivots,Bwork,&B_lwork,&B_ierr));
             PetscCheck(!B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRI Lapack routine %d",(int)B_ierr);
           }
           PetscCall(PetscLogFlops(1.0*size_schur*size_schur*size_schur));
@@ -1888,19 +1888,19 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
         PetscCall(PetscBLASIntCast(subset_size,&B_N));
         PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
         if (use_potr) {
-          PetscStackCallBLAS("LAPACKpotrf",LAPACKpotrf_("L",&B_N,array+cum,&B_N,&B_ierr));
+          PetscCallBLAS("LAPACKpotrf",LAPACKpotrf_("L",&B_N,array+cum,&B_N,&B_ierr));
           PetscCheck(!B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRF Lapack routine %d",(int)B_ierr);
-          PetscStackCallBLAS("LAPACKpotri",LAPACKpotri_("L",&B_N,array+cum,&B_N,&B_ierr));
+          PetscCallBLAS("LAPACKpotri",LAPACKpotri_("L",&B_N,array+cum,&B_N,&B_ierr));
           PetscCheck(!B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRI Lapack routine %d",(int)B_ierr);
         } else if (use_sytr) {
-          PetscStackCallBLAS("LAPACKsytrf",LAPACKsytrf_("L",&B_N,array+cum,&B_N,pivots,Bwork,&B_lwork,&B_ierr));
+          PetscCallBLAS("LAPACKsytrf",LAPACKsytrf_("L",&B_N,array+cum,&B_N,pivots,Bwork,&B_lwork,&B_ierr));
           PetscCheck(!B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYTRF Lapack routine %d",(int)B_ierr);
-          PetscStackCallBLAS("LAPACKsytri",LAPACKsytri_("L",&B_N,array+cum,&B_N,pivots,Bwork,&B_ierr));
+          PetscCallBLAS("LAPACKsytri",LAPACKsytri_("L",&B_N,array+cum,&B_N,pivots,Bwork,&B_ierr));
           PetscCheck(!B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYTRI Lapack routine %d",(int)B_ierr);
         } else {
-          PetscStackCallBLAS("LAPACKgetrf",LAPACKgetrf_(&B_N,&B_N,array+cum,&B_N,pivots,&B_ierr));
+          PetscCallBLAS("LAPACKgetrf",LAPACKgetrf_(&B_N,&B_N,array+cum,&B_N,pivots,&B_ierr));
           PetscCheck(!B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRF Lapack routine %d",(int)B_ierr);
-          PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,array+cum,&B_N,pivots,Bwork,&B_lwork,&B_ierr));
+          PetscCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,array+cum,&B_N,pivots,Bwork,&B_lwork,&B_ierr));
           PetscCheck(!B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRI Lapack routine %d",(int)B_ierr);
         }
         PetscCall(PetscLogFlops(1.0*subset_size*subset_size*subset_size));

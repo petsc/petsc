@@ -212,6 +212,6 @@ int main(int argc,char **argv) {
    test:
       suffix: 2
       nsize: 3
-      args: distribute -m 1 -n 1 -p 3 -NZ 20
+      args: -distribute -m 1 -n 1 -p 3 -NZ 20
 
  TEST*/

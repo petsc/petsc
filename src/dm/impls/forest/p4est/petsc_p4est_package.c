@@ -36,10 +36,10 @@ static PetscErrorCode PetscP4estFinalize(void)
   PetscFunctionBegin;
   if (PetscBeganSc) {
     /* We do not want libsc to abort on a mismatched allocation and prevent further Petsc unwinding */
-    PetscStackCallP4est(sc_package_set_abort_alloc_mismatch,(sc_package_id,0));
-    PetscStackCallP4est(sc_package_set_abort_alloc_mismatch,(p4est_package_id,0));
-    PetscStackCallP4est(sc_package_set_abort_alloc_mismatch,(-1,0));
-    PetscStackCallP4est(sc_finalize,());
+    PetscCallP4est(sc_package_set_abort_alloc_mismatch,(sc_package_id,0));
+    PetscCallP4est(sc_package_set_abort_alloc_mismatch,(p4est_package_id,0));
+    PetscCallP4est(sc_package_set_abort_alloc_mismatch,(-1,0));
+    PetscCallP4est(sc_finalize,());
   }
   PetscCall(PetscHeaderDestroy(&P4estLoggingObject));
   PetscFunctionReturn(0);
@@ -98,7 +98,7 @@ PetscErrorCode PetscP4estInitialize(void)
 
     PetscCall(PetscOptionsGetEnum(NULL,NULL,"-petsc_p4est_log_threshold",SCLogTypes,(PetscEnum*)&log_threshold_shifted,&set));
     if (set) pp4est_log_threshold = log_threshold_shifted - 1;
-    PetscStackCallP4est(p4est_init,(PetscScLogHandler,pp4est_log_threshold));
+    PetscCallP4est(p4est_init,(PetscScLogHandler,pp4est_log_threshold));
     PetscCheck(p4est_package_id != -1,PETSC_COMM_WORLD,PETSC_ERR_LIB,"Could not initialize p4est");
   }
   PetscCall(DMForestRegisterType(DMP4EST));

@@ -2765,7 +2765,7 @@ static PetscErrorCode MatMatTransposeMultNumeric_MPIDense_MPIDense_Cyclic(Mat A,
 
     /* local aseq * sendbuf^T */
     PetscCall(PetscBLASIntCast(ranges[recvisfrom + 1] - ranges[recvisfrom], &cn));
-    if (cm && cn && ck) PetscStackCallBLAS("BLASgemm",BLASgemm_("N","T",&cm,&cn,&ck,&_DOne,av,&alda,sendbuf,&cn,&_DZero,cv + clda * ranges[recvisfrom],&clda));
+    if (cm && cn && ck) PetscCallBLAS("BLASgemm",BLASgemm_("N","T",&cm,&cn,&ck,&_DOne,av,&alda,sendbuf,&cn,&_DZero,cv + clda * ranges[recvisfrom],&clda));
 
     if (nextrecvisfrom != rank) {
       /* wait for the sends and receives to complete, swap sendbuf and recvbuf */
@@ -2823,7 +2823,7 @@ static PetscErrorCode MatMatTransposeMultNumeric_MPIDense_MPIDense_Allgatherv(Ma
   PetscCall(PetscBLASIntCast(cK,&ck));
   PetscCall(PetscBLASIntCast(c->A->rmap->n,&cm));
   PetscCall(PetscBLASIntCast(c->A->cmap->n,&cn));
-  if (cm && cn && ck) PetscStackCallBLAS("BLASgemm",BLASgemm_("N","N",&cm,&cn,&ck,&_DOne,av,&alda,recvbuf,&ck,&_DZero,cv,&clda));
+  if (cm && cn && ck) PetscCallBLAS("BLASgemm",BLASgemm_("N","N",&cm,&cn,&ck,&_DOne,av,&alda,recvbuf,&ck,&_DZero,cv,&clda));
   PetscCall(MatDenseRestoreArrayRead(a->A,&av));
   PetscCall(MatDenseRestoreArrayRead(b->A,&bv));
   PetscCall(MatDenseRestoreArrayWrite(c->A,&cv));
