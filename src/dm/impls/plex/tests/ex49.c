@@ -108,7 +108,14 @@ static PetscErrorCode CheckOffsets(DM dm, const char *domain_name, PetscInt labe
           PetscCall(PetscSectionGetDof(s, c, &dgdof));
           PetscCheck(Ncl*Nc == dgdof, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Offset size %" PetscInt_FMT " should be %" PetscInt_FMT, Ncl*Nc, dgdof);
         }
-        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[%" PetscInt_FMT "] %" PetscInt_FMT " <-- %2" PetscInt_FMT " (% 4.2f, % 4.2f)\n", c, v, off, (double) PetscRealPart(vx[0]), (double) PetscRealPart(vx[1])));
+        switch (cdim) {
+        case 2:
+          PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[%" PetscInt_FMT "] %" PetscInt_FMT " <-- %2" PetscInt_FMT " (% 4.2f, % 4.2f)\n", c, v, off, (double) PetscRealPart(vx[0]), (double) PetscRealPart(vx[1])));
+          break;
+        case 3:
+          PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[%" PetscInt_FMT "] %" PetscInt_FMT " <-- %2" PetscInt_FMT " (% 4.2f, % 4.2f, % 4.2f)\n", c, v, off, (double) PetscRealPart(vx[0]), (double) PetscRealPart(vx[1]), (double) PetscRealPart(vx[2])));
+          break;
+        }
       }
     }
     PetscCall(VecRestoreArrayRead(X, &x));
