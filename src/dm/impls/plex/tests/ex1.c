@@ -285,6 +285,11 @@ int main(int argc, char **argv)
     suffix: 8
     nsize: 2
     args: -dm_plex_simplex 0 -ref_dm_refine 1 -dist_dm_distribute -petscpartitioner_type simple -dm_view ascii::ascii_latex
+  test:
+    suffix: box_2d_latex_xper
+    nsize: 1
+    args: -dm_plex_simplex 0 -dm_plex_box_faces 5,5 -dm_plex_box_bd periodic,none \
+          -dist_dm_distribute -petscpartitioner_type simple -dm_view ascii::ascii_latex -dm_plex_view_edges 0
 
   # 1D ASCII output
   testset:
