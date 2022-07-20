@@ -675,12 +675,26 @@ checkbadPetscFunctionBegin:
 	${OMAKE} PETSC_ARCH=${PETSC_ARCH} \
 	checkbadPetscFunctionBegin_private ; fi
 
-GITSRC = '*.[chF]' '*.F90' '*.cpp' '*.cxx' '*.cu' ${GITSRCEXCL}
+GITSRC = '*.[chF]' '*.F90' '*.hpp' '*.cpp' '*.cxx' '*.cu' ${GITSRCEXCL}
 GITSRCEXCL = \
-':!include/*/khash.h' \
-':!include/*/valgrind.h' \
-':!include/*/memcheck.h' \
-':!src/sys/yaml/*'
+':!*khash/*' \
+':!*valgrind/*' \
+':!*yaml/*'
+GITCFSRC = '*.[ch]' '*.hpp' '*.cpp' '*.cxx' '*.cu' ${GITSRCEXCL} ${GITCFSRCEXCL}
+GITCFSRCEXCL = \
+':!*mpif.h' \
+':!*mpiunifdef.h' \
+':!*finclude/*' \
+':!systems/*' \
+':!*benchmarks/*' \
+':!*binding/*' \
+':!*-custom/*' \
+':!*f90-mod/*'
+
+# Format all the source code in the given directory and down according to .clang_format
+clangformat:
+	-@git --no-pager ls-files -z ${GITCFSRC} | xargs -0 clang-format -i
+
 checkbadSource:
 	-@git --no-pager grep -n -P 'self\.gitcommit' -- config/BuildSystem/config/packages | grep 'origin/' ; if [[ "$$?" == "0" ]]; then echo "Error: Do not use a branch name in a configure package file"; false; fi
 	-@${RM} -f checkbadSource.out
