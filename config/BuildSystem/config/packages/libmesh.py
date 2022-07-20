@@ -53,7 +53,7 @@ class Configure(config.package.Package):
                           '@(cd '+self.packageDir+' && \\\n\
            '+newdir+' make install ) >> ${PETSC_ARCH}/lib/petsc/conf/libmesh.log 2>&1 || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
-             echo "Error building libmesh. Check ${PETSC_ARCH}/lib/petsc/conf/libmesh.log" && \\\n\
+             echo "Error installing libmesh. Check ${PETSC_ARCH}/lib/petsc/conf/libmesh.log" && \\\n\
              echo "********************************************************************" && \\\n\
              exit 1)'])
     if self.argDB['prefix']:

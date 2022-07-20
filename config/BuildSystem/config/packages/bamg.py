@@ -66,7 +66,7 @@ class Configure(config.package.Package):
                             '@(cd '+self.packageDir+' && \\\n\
              '+barg+'${OMAKE} install '+barg+') >> ${PETSC_ARCH}/lib/petsc/conf/bamg.log 2>&1 || \\\n\
                (echo "**************************ERROR*************************************" && \\\n\
-               echo "Error building bamg. Check ${PETSC_ARCH}/lib/petsc/conf/bamg.log" && \\\n\
+               echo "Error installing bamg. Check ${PETSC_ARCH}/lib/petsc/conf/bamg.log" && \\\n\
                echo "********************************************************************" && \\\n\
                exit 1)'])
       if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:

@@ -85,7 +85,7 @@ class Configure(config.package.Package):
            '+newdir+archflags+self.python.pyexe+' setup.py install --install-lib='+installLibPath+' \\\n\
                $(if $(DESTDIR),--root=\'$(DESTDIR)\') ) || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
-             echo "Error building petsc4py." && \\\n\
+             echo "Error installing petsc4py." && \\\n\
              echo "********************************************************************" && \\\n\
              exit 1)',\
                           '@echo "====================================="',\

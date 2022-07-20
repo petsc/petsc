@@ -76,7 +76,7 @@ class Configure(config.package.Package):
                           '@(cd '+self.packageDir+' && \\\n\
            '+barg+'${OMAKE} install '+barg+')  || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
-             echo "Error building SLEPc." && \\\n\
+             echo "Error installing SLEPc." && \\\n\
              echo "********************************************************************" && \\\n\
              exit 1)'])
     if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
