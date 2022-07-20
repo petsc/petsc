@@ -54,6 +54,14 @@ PETSC_EXTERN const char* PetscCUFFTGetErrorName(cufftResult);
 } while (0)
 #endif /* PETSC_PKG_CUDA_VERSION_GE(8,0,0) */
 
+#define PetscCUDACheckLaunch                                            \
+do {                                                                    \
+ /* Check synchronous errors, i.e. pre-launch */                        \
+  PetscCallCUDA(cudaGetLastError());                                    \
+ /* Check asynchronous errors, i.e. kernel failed (ULF) */              \
+ PetscCallCUDA(cudaDeviceSynchronize());                                \
+ } while (0)
+
 #define PetscCallCUBLAS(...) do {                                       \
     const cublasStatus_t _p_cublas_stat__ = __VA_ARGS__;                \
     if (PetscUnlikely(_p_cublas_stat__ != CUBLAS_STATUS_SUCCESS)) {     \

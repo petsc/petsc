@@ -1527,9 +1527,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
             PetscScalar *data;
             PetscInt     nd = 0;
 
-            if (!use_potr) {
-              SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor update not yet implemented for non SPD matrices");
-            }
+            PetscCheck(use_potr,PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor update not yet implemented for non SPD matrices");
             PetscCall(MatFactorGetSchurComplement(F,&S_all_inv,NULL));
             PetscCall(MatDenseGetArray(S_all_inv,&data));
             if (sub_schurs->is_dir) { /* dirichlet dofs could have different scalings */

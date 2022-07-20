@@ -1836,8 +1836,7 @@ static PetscErrorCode MatZeroRowsColumns_HYPRE(Mat A, PetscInt numRows, const Pe
   PetscCall(PetscMalloc1(numRows,&lrows));
   PetscCall(MatGetOwnershipRange(A,&rst,&ren));
   for (i=0;i<numRows;i++) {
-    if (rows[i] < rst || rows[i] >= ren)
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Non-local rows not yet supported");
+    PetscCheck(rows[i] >= rst && rows[i] < ren,PETSC_COMM_SELF,PETSC_ERR_SUP,"Non-local rows not yet supported");
     lrows[i] = rows[i] - rst;
   }
   PetscCallExternal(hypre_ParCSRMatrixEliminateRowsCols,parcsr,numRows,lrows);

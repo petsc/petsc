@@ -33,9 +33,7 @@ static PetscErrorCode MatSOR_BlockMat_Symmetric(Mat A,Vec bb,PetscReal omega,Mat
   PetscCheck(!(flag & SOR_EISENSTAT),PETSC_COMM_SELF,PETSC_ERR_SUP,"No support yet for Eisenstat");
   PetscCheck(omega == 1.0,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support yet for omega not equal to 1.0");
   PetscCheck(!fshift,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support yet for fshift");
-  if ((flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) && !(flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP)) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot do backward sweep without forward sweep");
-  }
+  PetscCheck(!((flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) && !(flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP)),PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot do backward sweep without forward sweep");
 
   if (!a->diags) {
     PetscCall(PetscMalloc1(mbs,&a->diags));

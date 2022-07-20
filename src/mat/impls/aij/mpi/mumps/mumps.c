@@ -1666,22 +1666,19 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
   }
   PetscMUMPS_c(mumps);
   if (mumps->id.INFOG(1) < 0) {
-    if (A->erroriffailure) {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in numerical factorization phase: INFOG(1)=%d, INFO(2)=%d",mumps->id.INFOG(1),mumps->id.INFO(2));
+    PetscCheck(!A->erroriffailure,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in numerical factorization phase: INFOG(1)=%d, INFO(2)=%d",mumps->id.INFOG(1),mumps->id.INFO(2));
+    if (mumps->id.INFOG(1) == -10) { /* numerically singular matrix */
+      PetscCall(PetscInfo(F,"matrix is numerically singular, INFOG(1)=%d, INFO(2)=%d\n",mumps->id.INFOG(1),mumps->id.INFO(2)));
+      F->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+    } else if (mumps->id.INFOG(1) == -13) {
+      PetscCall(PetscInfo(F,"MUMPS in numerical factorization phase: INFOG(1)=%d, cannot allocate required memory %d megabytes\n",mumps->id.INFOG(1),mumps->id.INFO(2)));
+      F->factorerrortype = MAT_FACTOR_OUTMEMORY;
+    } else if (mumps->id.INFOG(1) == -8 || mumps->id.INFOG(1) == -9 || (-16 < mumps->id.INFOG(1) && mumps->id.INFOG(1) < -10)) {
+      PetscCall(PetscInfo(F,"MUMPS in numerical factorization phase: INFOG(1)=%d, INFO(2)=%d, problem with workarray \n",mumps->id.INFOG(1),mumps->id.INFO(2)));
+      F->factorerrortype = MAT_FACTOR_OUTMEMORY;
     } else {
-      if (mumps->id.INFOG(1) == -10) { /* numerically singular matrix */
-        PetscCall(PetscInfo(F,"matrix is numerically singular, INFOG(1)=%d, INFO(2)=%d\n",mumps->id.INFOG(1),mumps->id.INFO(2)));
-        F->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
-      } else if (mumps->id.INFOG(1) == -13) {
-        PetscCall(PetscInfo(F,"MUMPS in numerical factorization phase: INFOG(1)=%d, cannot allocate required memory %d megabytes\n",mumps->id.INFOG(1),mumps->id.INFO(2)));
-        F->factorerrortype = MAT_FACTOR_OUTMEMORY;
-      } else if (mumps->id.INFOG(1) == -8 || mumps->id.INFOG(1) == -9 || (-16 < mumps->id.INFOG(1) && mumps->id.INFOG(1) < -10)) {
-        PetscCall(PetscInfo(F,"MUMPS in numerical factorization phase: INFOG(1)=%d, INFO(2)=%d, problem with workarray \n",mumps->id.INFOG(1),mumps->id.INFO(2)));
-        F->factorerrortype = MAT_FACTOR_OUTMEMORY;
-      } else {
-        PetscCall(PetscInfo(F,"MUMPS in numerical factorization phase: INFOG(1)=%d, INFO(2)=%d\n",mumps->id.INFOG(1),mumps->id.INFO(2)));
-        F->factorerrortype = MAT_FACTOR_OTHER;
-      }
+      PetscCall(PetscInfo(F,"MUMPS in numerical factorization phase: INFOG(1)=%d, INFO(2)=%d\n",mumps->id.INFOG(1),mumps->id.INFO(2)));
+      F->factorerrortype = MAT_FACTOR_OTHER;
     }
   }
   PetscCheck(mumps->myid || mumps->id.ICNTL(16) <= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"  mumps->id.ICNTL(16):=%d",mumps->id.INFOG(16));
@@ -1938,21 +1935,18 @@ PetscErrorCode MatFactorSymbolic_MUMPS_ReportIfError(Mat F,Mat A,const MatFactor
 {
   PetscFunctionBegin;
   if (mumps->id.INFOG(1) < 0) {
-    if (A->erroriffailure) {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in analysis phase: INFOG(1)=%d",mumps->id.INFOG(1));
+    PetscCheck(!A->erroriffailure,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in analysis phase: INFOG(1)=%d",mumps->id.INFOG(1));
+    if (mumps->id.INFOG(1) == -6) {
+      PetscCall(PetscInfo(F,"matrix is singular in structure, INFOG(1)=%d, INFO(2)=%d\n",mumps->id.INFOG(1),mumps->id.INFO(2)));
+      F->factorerrortype = MAT_FACTOR_STRUCT_ZEROPIVOT;
+    } else if (mumps->id.INFOG(1) == -5 || mumps->id.INFOG(1) == -7) {
+      PetscCall(PetscInfo(F,"problem of workspace, INFOG(1)=%d, INFO(2)=%d\n",mumps->id.INFOG(1),mumps->id.INFO(2)));
+      F->factorerrortype = MAT_FACTOR_OUTMEMORY;
+    } else if (mumps->id.INFOG(1) == -16 && mumps->id.INFOG(1) == 0) {
+      PetscCall(PetscInfo(F,"Empty matrix\n"));
     } else {
-      if (mumps->id.INFOG(1) == -6) {
-        PetscCall(PetscInfo(F,"matrix is singular in structure, INFOG(1)=%d, INFO(2)=%d\n",mumps->id.INFOG(1),mumps->id.INFO(2)));
-        F->factorerrortype = MAT_FACTOR_STRUCT_ZEROPIVOT;
-      } else if (mumps->id.INFOG(1) == -5 || mumps->id.INFOG(1) == -7) {
-        PetscCall(PetscInfo(F,"problem of workspace, INFOG(1)=%d, INFO(2)=%d\n",mumps->id.INFOG(1),mumps->id.INFO(2)));
-        F->factorerrortype = MAT_FACTOR_OUTMEMORY;
-      } else if (mumps->id.INFOG(1) == -16 && mumps->id.INFOG(1) == 0) {
-        PetscCall(PetscInfo(F,"Empty matrix\n"));
-      } else {
-        PetscCall(PetscInfo(F,"Error reported by MUMPS in analysis phase: INFOG(1)=%d, INFO(2)=%d\n",mumps->id.INFOG(1),mumps->id.INFO(2)));
-        F->factorerrortype = MAT_FACTOR_OTHER;
-      }
+      PetscCall(PetscInfo(F,"Error reported by MUMPS in analysis phase: INFOG(1)=%d, INFO(2)=%d\n",mumps->id.INFOG(1),mumps->id.INFO(2)));
+      F->factorerrortype = MAT_FACTOR_OTHER;
     }
   }
   PetscFunctionReturn(0);

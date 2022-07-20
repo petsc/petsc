@@ -310,11 +310,8 @@ static PetscErrorCode PetscSpaceSetUp_Sum(PetscSpace sp)
     maxDeg  = PetscMax(maxDeg,iMaxDeg);
   }
 
-  if (concatenate) {
-    if (sum_Nc != Nc) {
-      SETERRQ(PetscObjectComm((PetscObject)sp),PETSC_ERR_ARG_OUTOFRANGE,"Total number of subspace components (%" PetscInt_FMT ") does not match number of target space components (%" PetscInt_FMT ").",sum_Nc,Nc);
-    }
-  } else PetscCheck(minNc == Nc && maxNc == Nc,PetscObjectComm((PetscObject)sp),PETSC_ERR_ARG_OUTOFRANGE,"Subspaces must have same number of components as the target space.");
+  if (concatenate) PetscCheck(sum_Nc == Nc,PetscObjectComm((PetscObject)sp),PETSC_ERR_ARG_OUTOFRANGE,"Total number of subspace components (%" PetscInt_FMT ") does not match number of target space components (%" PetscInt_FMT ").",sum_Nc,Nc);
+  else PetscCheck(minNc == Nc && maxNc == Nc,PetscObjectComm((PetscObject)sp),PETSC_ERR_ARG_OUTOFRANGE,"Subspaces must have same number of components as the target space.");
 
   sp->degree       = deg;
   sp->maxDegree    = maxDeg;
