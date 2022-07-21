@@ -89,10 +89,6 @@ int main(int argc,char **argv)
   PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error norm %g\n",(double)(norm/((PetscReal)(mx)*(PetscReal)(my)*(PetscReal)(mz)))));
   PetscCall(VecNorm(x,NORM_2,&norm));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Error norm %g\n",(double)(norm/((PetscReal)(mx)*(PetscReal)(my)*(PetscReal)(mz)))));
-  PetscCall(VecSum(x,&norm));
-  if (norm > 10000*PETSC_MACHINE_EPSILON) {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Vector sum %g\n",(double)norm));
-  }
 
   PetscCall(VecDestroy(&r));
   PetscCall(KSPDestroy(&ksp));

@@ -60,6 +60,7 @@ typedef const char* PCType;
 #define PCLSC             "lsc"
 #define PCPYTHON          "python"
 #define PCPFMG            "pfmg"
+#define PCSMG             "smg"
 #define PCSYSPFMG         "syspfmg"
 #define PCREDISTRIBUTE    "redistribute"
 #define PCSVD             "svd"

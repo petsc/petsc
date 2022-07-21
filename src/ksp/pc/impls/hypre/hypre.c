@@ -2304,6 +2304,8 @@ typedef struct {
   PetscInt rap_type;
   PetscInt num_pre_relax,num_post_relax;
   PetscInt max_levels;
+  PetscInt skip_relax;
+  PetscBool print_statistics;
 } PC_PFMG;
 
 PetscErrorCode PCDestroy_PFMG(PC pc)
@@ -2335,6 +2337,7 @@ PetscErrorCode PCView_PFMG(PC pc,PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer,"    RAP type %s\n",PFMGRAPType[ex->rap_type]));
     PetscCall(PetscViewerASCIIPrintf(viewer,"    number pre-relax %" PetscInt_FMT " post-relax %" PetscInt_FMT "\n",ex->num_pre_relax,ex->num_post_relax));
     PetscCall(PetscViewerASCIIPrintf(viewer,"    max levels %" PetscInt_FMT "\n",ex->max_levels));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    skip relax %" PetscInt_FMT "\n",ex->skip_relax));
   }
   PetscFunctionReturn(0);
 }
@@ -2342,14 +2345,10 @@ PetscErrorCode PCView_PFMG(PC pc,PetscViewer viewer)
 PetscErrorCode PCSetFromOptions_PFMG(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_PFMG        *ex = (PC_PFMG*) pc->data;
-  PetscBool      flg = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject,"PFMG options");
-  PetscCall(PetscOptionsBool("-pc_pfmg_print_statistics","Print statistics","HYPRE_StructPFMGSetPrintLevel",flg,&flg,NULL));
-  if (flg) {
-    PetscCallExternal(HYPRE_StructPFMGSetPrintLevel,ex->hsolver,3);
-  }
+  PetscCall(PetscOptionsBool("-pc_pfmg_print_statistics","Print statistics","HYPRE_StructPFMGSetPrintLevel",ex->print_statistics,&ex->print_statistics,NULL));
   PetscCall(PetscOptionsInt("-pc_pfmg_its","Number of iterations of PFMG to use as preconditioner","HYPRE_StructPFMGSetMaxIter",ex->its,&ex->its,NULL));
   PetscCallExternal(HYPRE_StructPFMGSetMaxIter,ex->hsolver,ex->its);
   PetscCall(PetscOptionsInt("-pc_pfmg_num_pre_relax","Number of smoothing steps before coarse grid","HYPRE_StructPFMGSetNumPreRelax",ex->num_pre_relax,&ex->num_pre_relax,NULL));
@@ -2366,6 +2365,8 @@ PetscErrorCode PCSetFromOptions_PFMG(PetscOptionItems *PetscOptionsObject,PC pc)
   PetscCallExternal(HYPRE_StructPFMGSetRelaxType,ex->hsolver, ex->relax_type);
   PetscCall(PetscOptionsEList("-pc_pfmg_rap_type","RAP type","HYPRE_StructPFMGSetRAPType",PFMGRAPType,PETSC_STATIC_ARRAY_LENGTH(PFMGRAPType),PFMGRAPType[ex->rap_type],&ex->rap_type,NULL));
   PetscCallExternal(HYPRE_StructPFMGSetRAPType,ex->hsolver, ex->rap_type);
+  PetscCall(PetscOptionsInt("-pc_pfmg_skip_relax","Skip relaxation on certain grids for isotropic problems. This can greatly improve efficiency by eliminating unnecessary relaxations when the underlying problem is isotropic","HYPRE_StructPFMGSetSkipRelax",ex->skip_relax,&ex->skip_relax,NULL));
+  PetscCallExternal(HYPRE_StructPFMGSetSkipRelax,ex->hsolver, ex->skip_relax);
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
@@ -2441,6 +2442,19 @@ PetscErrorCode PCSetUp_PFMG(PC pc)
   /* create the hypre solver object and set its information */
   if (ex->hsolver) PetscCallExternal(HYPRE_StructPFMGDestroy,ex->hsolver);
   PetscCallExternal(HYPRE_StructPFMGCreate,ex->hcomm,&ex->hsolver);
+
+  // Print Hypre statistics about the solve process
+  if (ex->print_statistics) PetscCallExternal(HYPRE_StructPFMGSetPrintLevel,ex->hsolver,3);
+
+  // The hypre options must be repeated here because the StructPFMG was destroyed and recreated
+  PetscCallExternal(HYPRE_StructPFMGSetMaxIter     ,ex->hsolver, ex->its);
+  PetscCallExternal(HYPRE_StructPFMGSetNumPreRelax ,ex->hsolver, ex->num_pre_relax);
+  PetscCallExternal(HYPRE_StructPFMGSetNumPostRelax,ex->hsolver, ex->num_post_relax);
+  PetscCallExternal(HYPRE_StructPFMGSetMaxLevels   ,ex->hsolver, ex->max_levels);
+  PetscCallExternal(HYPRE_StructPFMGSetTol         ,ex->hsolver, ex->tol);
+  PetscCallExternal(HYPRE_StructPFMGSetRelaxType   ,ex->hsolver, ex->relax_type);
+  PetscCallExternal(HYPRE_StructPFMGSetRAPType     ,ex->hsolver, ex->rap_type);
+
   PetscCallExternal(HYPRE_StructPFMGSetup,ex->hsolver,mx->hmat,mx->hb,mx->hx);
   PetscCallExternal(HYPRE_StructPFMGSetZeroGuess,ex->hsolver);
   PetscFunctionReturn(0);
@@ -2457,7 +2471,8 @@ PetscErrorCode PCSetUp_PFMG(PC pc)
 . -pc_pfmg_num_post_relax <steps> - number of smoothing steps after coarse grid solve
 . -pc_pfmg_tol <tol> - tolerance of PFMG
 . -pc_pfmg_relax_type - relaxation type for the up and down cycles, one of Jacobi,Weighted-Jacobi,symmetric-Red/Black-Gauss-Seidel,Red/Black-Gauss-Seidel
-- -pc_pfmg_rap_type - type of coarse matrix generation, one of Galerkin,non-Galerkin
+. -pc_pfmg_rap_type - type of coarse matrix generation, one of Galerkin,non-Galerkin
+- -pc_pfmg_skip_relax - skip relaxation on certain grids for isotropic problems. This can greatly improve efficiency by eliminating unnecessary relaxations when the underlying problem is isotropic, one of 0,1
 
    Notes:
     This is for CELL-centered descretizations
@@ -2483,6 +2498,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_PFMG(PC pc)
   ex->num_pre_relax  = 1;
   ex->num_post_relax = 1;
   ex->max_levels     = 0;
+  ex->skip_relax     = 0;
+  ex->print_statistics = PETSC_FALSE;
 
   pc->ops->setfromoptions  = PCSetFromOptions_PFMG;
   pc->ops->view            = PCView_PFMG;
@@ -2725,5 +2742,198 @@ PETSC_EXTERN PetscErrorCode PCCreate_SysPFMG(PC pc)
 
   PetscCall(PetscCommGetComm(PetscObjectComm((PetscObject)pc),&ex->hcomm));
   PetscCallExternal(HYPRE_SStructSysPFMGCreate,ex->hcomm,&ex->ss_solver);
+  PetscFunctionReturn(0);
+}
+
+/* ---------------------------------------------------------------------------------------------------------------------------------*/
+
+// PC SMG
+typedef struct {
+  MPI_Comm           hcomm;        /* does not share comm with HYPRE_StructMatrix because need to create solver before getting matrix */
+  HYPRE_StructSolver hsolver;
+  PetscInt           its;          /* keep copy of SMG options used so may view them */
+  double             tol;
+  PetscBool          print_statistics;
+  PetscInt           num_pre_relax,num_post_relax;
+} PC_SMG;
+
+PetscErrorCode PCDestroy_SMG(PC pc)
+{
+  PC_SMG        *ex = (PC_SMG*) pc->data;
+
+  PetscFunctionBegin;
+  if (ex->hsolver) PetscCallExternal(HYPRE_StructSMGDestroy,ex->hsolver);
+  PetscCall(PetscCommRestoreComm(PetscObjectComm((PetscObject)pc),&ex->hcomm));
+  PetscCall(PetscFree(pc->data));
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PCView_SMG(PC pc,PetscViewer viewer)
+{
+  PetscBool      iascii;
+  PC_SMG         *ex = (PC_SMG*) pc->data;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  if (iascii) {
+    PetscCall(PetscViewerASCIIPrintf(viewer,"  HYPRE SMG preconditioning\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    max iterations %" PetscInt_FMT "\n",ex->its));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    tolerance %g\n",ex->tol));
+    PetscCall(PetscViewerASCIIPrintf(viewer,"    number pre-relax %" PetscInt_FMT " post-relax %" PetscInt_FMT "\n",ex->num_pre_relax,ex->num_post_relax));
+  }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PCSetFromOptions_SMG(PetscOptionItems *PetscOptionsObject,PC pc)
+{
+  PC_SMG        *ex = (PC_SMG*) pc->data;
+
+  PetscFunctionBegin;
+  PetscOptionsHeadBegin(PetscOptionsObject,"SMG options");
+
+  PetscCall(PetscOptionsInt("-pc_smg_its","Number of iterations of SMG to use as preconditioner","HYPRE_StructSMGSetMaxIter",ex->its,&ex->its,NULL));
+  PetscCall(PetscOptionsInt("-pc_smg_num_pre_relax","Number of smoothing steps before coarse grid","HYPRE_StructSMGSetNumPreRelax",ex->num_pre_relax,&ex->num_pre_relax,NULL));
+  PetscCall(PetscOptionsInt("-pc_smg_num_post_relax","Number of smoothing steps after coarse grid","HYPRE_StructSMGSetNumPostRelax",ex->num_post_relax,&ex->num_post_relax,NULL));
+  PetscCall(PetscOptionsReal("-pc_smg_tol","Tolerance of SMG","HYPRE_StructSMGSetTol",ex->tol,&ex->tol,NULL));
+
+  PetscOptionsHeadEnd();
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PCApply_SMG(PC pc,Vec x,Vec y)
+{
+  PC_SMG           *ex = (PC_SMG*) pc->data;
+  PetscScalar       *yy;
+  const PetscScalar *xx;
+  PetscInt          ilower[3],iupper[3];
+  HYPRE_Int         hlower[3],hupper[3];
+  Mat_HYPREStruct   *mx = (Mat_HYPREStruct*)(pc->pmat->data);
+
+  PetscFunctionBegin;
+  PetscCall(PetscCitationsRegister(hypreCitation,&cite));
+  PetscCall(DMDAGetCorners(mx->da,&ilower[0],&ilower[1],&ilower[2],&iupper[0],&iupper[1],&iupper[2]));
+  /* when HYPRE_MIXEDINT is defined, sizeof(HYPRE_Int) == 32 */
+  iupper[0] += ilower[0] - 1;
+  iupper[1] += ilower[1] - 1;
+  iupper[2] += ilower[2] - 1;
+  hlower[0]  = (HYPRE_Int)ilower[0];
+  hlower[1]  = (HYPRE_Int)ilower[1];
+  hlower[2]  = (HYPRE_Int)ilower[2];
+  hupper[0]  = (HYPRE_Int)iupper[0];
+  hupper[1]  = (HYPRE_Int)iupper[1];
+  hupper[2]  = (HYPRE_Int)iupper[2];
+
+  /* copy x values over to hypre */
+  PetscCallExternal(HYPRE_StructVectorSetConstantValues,mx->hb,0.0);
+  PetscCall(VecGetArrayRead(x,&xx));
+  PetscCallExternal(HYPRE_StructVectorSetBoxValues,mx->hb,hlower,hupper,(HYPRE_Complex*)xx);
+  PetscCall(VecRestoreArrayRead(x,&xx));
+  PetscCallExternal(HYPRE_StructVectorAssemble,mx->hb);
+  PetscCallExternal(HYPRE_StructSMGSolve,ex->hsolver,mx->hmat,mx->hb,mx->hx);
+
+  /* copy solution values back to PETSc */
+  PetscCall(VecGetArray(y,&yy));
+  PetscCallExternal(HYPRE_StructVectorGetBoxValues,mx->hx,hlower,hupper,(HYPRE_Complex*)yy);
+  PetscCall(VecRestoreArray(y,&yy));
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCApplyRichardson_SMG(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its,PetscBool guesszero,PetscInt *outits,PCRichardsonConvergedReason *reason)
+{
+  PC_SMG        *jac = (PC_SMG*)pc->data;
+  HYPRE_Int      oits;
+
+  PetscFunctionBegin;
+  PetscCall(PetscCitationsRegister(hypreCitation,&cite));
+  PetscCallExternal(HYPRE_StructSMGSetMaxIter,jac->hsolver,its*jac->its);
+  PetscCallExternal(HYPRE_StructSMGSetTol,jac->hsolver,rtol);
+
+  PetscCall(PCApply_SMG(pc,b,y));
+  PetscCallExternal(HYPRE_StructSMGGetNumIterations,jac->hsolver,&oits);
+  *outits = oits;
+  if (oits == its) *reason = PCRICHARDSON_CONVERGED_ITS;
+  else             *reason = PCRICHARDSON_CONVERGED_RTOL;
+  PetscCallExternal(HYPRE_StructSMGSetTol,jac->hsolver,jac->tol);
+  PetscCallExternal(HYPRE_StructSMGSetMaxIter,jac->hsolver,jac->its);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PCSetUp_SMG(PC pc)
+{
+  PetscInt        i, dim;
+  PC_SMG         *ex = (PC_SMG*) pc->data;
+  Mat_HYPREStruct *mx = (Mat_HYPREStruct*)(pc->pmat->data);
+  PetscBool       flg;
+  DMBoundaryType  p[3];
+  PetscInt        M[3];
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectTypeCompare((PetscObject)pc->pmat,MATHYPRESTRUCT,&flg));
+  PetscCheck(flg,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_INCOMP,"Must use MATHYPRESTRUCT with this preconditioner");
+
+  PetscCall(DMDAGetInfo(mx->da,&dim,&M[0], &M[1], &M[2],0,0,0,0,0,&p[0],&p[1],&p[2],0));
+  // Check if power of 2 in periodic directions
+  for (i=0;i<dim;i++){
+    if (((M[i] & (M[i] - 1)) != 0) && (p[i]==DM_BOUNDARY_PERIODIC)) {
+      SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_INCOMP,"With SMG, the number of points in a periodic direction must be a power of 2, but is here %" PetscInt_FMT ".",M[i]);
+    }
+  }
+
+  /* create the hypre solver object and set its information */
+  if (ex->hsolver) PetscCallExternal(HYPRE_StructSMGDestroy,(ex->hsolver));
+  PetscCallExternal(HYPRE_StructSMGCreate,ex->hcomm,&ex->hsolver);
+  // The hypre options must be set here and not in SetFromOptions because it is created here!
+  PetscCallExternal(HYPRE_StructSMGSetMaxIter,ex->hsolver,ex->its);
+  PetscCallExternal(HYPRE_StructSMGSetNumPreRelax,ex->hsolver,ex->num_pre_relax);
+  PetscCallExternal(HYPRE_StructSMGSetNumPostRelax,ex->hsolver,ex->num_post_relax);
+  PetscCallExternal(HYPRE_StructSMGSetTol,ex->hsolver,ex->tol);
+
+  PetscCallExternal(HYPRE_StructSMGSetup,ex->hsolver,mx->hmat,mx->hb,mx->hx);
+  PetscCallExternal(HYPRE_StructSMGSetZeroGuess,ex->hsolver);
+  PetscFunctionReturn(0);
+}
+
+/*MC
+     PCSMG - the hypre SMG multigrid solver
+
+   Level: advanced
+
+   Options Database:
++ -pc_smg_its <its> number of iterations of SMG to use as preconditioner
+. -pc_smg_num_pre_relax <steps> number of smoothing steps before coarse grid
+. -pc_smg_num_post_relax <steps> number of smoothing steps after coarse grid
+. -pc_smg_tol <tol> tolerance of SMG
+
+   Notes:
+    This is for CELL-centered descretizations
+
+           This must be used with the MATHYPRESTRUCT matrix type.
+           This is less general than in hypre, it supports only one block per process defined by a PETSc DMDA.
+
+.seealso:  PCMG, MATHYPRESTRUCT, PCPFMG
+M*/
+
+PETSC_EXTERN PetscErrorCode PCCreate_SMG(PC pc)
+{
+  PC_SMG        *ex;
+
+  PetscFunctionBegin;
+  PetscCall(PetscNew(&ex)); \
+  pc->data = ex;
+
+  ex->its            = 1;
+  ex->tol            = 1.e-8;
+  ex->num_pre_relax  = 1;
+  ex->num_post_relax = 1;
+
+  pc->ops->setfromoptions  = PCSetFromOptions_SMG;
+  pc->ops->view            = PCView_SMG;
+  pc->ops->destroy         = PCDestroy_SMG;
+  pc->ops->apply           = PCApply_SMG;
+  pc->ops->applyrichardson = PCApplyRichardson_SMG;
+  pc->ops->setup           = PCSetUp_SMG;
+
+  PetscCall(PetscCommGetComm(PetscObjectComm((PetscObject)pc),&ex->hcomm));
+  PetscCallExternal(HYPRE_StructSMGCreate,ex->hcomm,&ex->hsolver);
   PetscFunctionReturn(0);
 }

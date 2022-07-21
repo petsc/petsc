@@ -27,13 +27,13 @@ M*/
 
 PetscErrorCode  MatSetValuesLocal_HYPREStruct_3d(Mat mat,PetscInt nrow,const PetscInt irow[],PetscInt ncol,const PetscInt icol[],const PetscScalar y[],InsertMode addv)
 {
-  HYPRE_Int       index[3],entries[7];
+  HYPRE_Int       index[3],entries[9];
   PetscInt        i,j,stencil,row;
   HYPRE_Complex   *values = (HYPRE_Complex*)y;
   Mat_HYPREStruct *ex     = (Mat_HYPREStruct*) mat->data;
 
   PetscFunctionBegin;
-  PetscCheck(ncol <= 7,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"ncol %" PetscInt_FMT " > 7 too large",ncol);
+  PetscCheck(ncol <= 9,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"ncol %" PetscInt_FMT " > 9 too large",ncol);
   for (i=0; i<nrow; i++) {
     for (j=0; j<ncol; j++) {
       stencil = icol[j] - irow[i];
@@ -102,8 +102,8 @@ static PetscErrorCode  MatSetUp_HYPREStruct(Mat mat)
 {
   Mat_HYPREStruct        *ex = (Mat_HYPREStruct*) mat->data;
   HYPRE_Int              sw[6];
-  HYPRE_Int              hlower[3],hupper[3];
-  PetscInt               dim,dof,psw,nx,ny,nz,ilower[3],iupper[3],ssize,i;
+  HYPRE_Int              hlower[3],hupper[3],period[3]={0,0,0};
+  PetscInt               dim,dof,psw,Nx,Ny,Nz,nx,ny,nz,ilower[3],iupper[3],ssize,i;
   DMBoundaryType         px,py,pz;
   DMDAStencilType        st;
   ISLocalToGlobalMapping ltog;
@@ -114,7 +114,7 @@ static PetscErrorCode  MatSetUp_HYPREStruct(Mat mat)
   ex->da = da;
   PetscCall(PetscObjectReference((PetscObject)da));
 
-  PetscCall(DMDAGetInfo(ex->da,&dim,0,0,0,0,0,0,&dof,&psw,&px,&py,&pz,&st));
+  PetscCall(DMDAGetInfo(ex->da,&dim,&Nx,&Ny,&Nz,0,0,0,&dof,&psw,&px,&py,&pz,&st));
   PetscCall(DMDAGetCorners(ex->da,&ilower[0],&ilower[1],&ilower[2],&iupper[0],&iupper[1],&iupper[2]));
 
   /* when HYPRE_MIXEDINT is defined, sizeof(HYPRE_Int) == 32 */
@@ -138,9 +138,14 @@ static PetscErrorCode  MatSetUp_HYPREStruct(Mat mat)
 
   /* create the hypre grid object and set its information */
   PetscCheck(dof <= 1,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Currently only support for scalar problems");
-  PetscCheck(!px && !py && !pz,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Ask us to add periodic support by calling HYPRE_StructGridSetPeriodic()");
+  if (px || py || pz) {
+    if (px==DM_BOUNDARY_PERIODIC) period[0] = (HYPRE_Int) Nx;
+    if (py==DM_BOUNDARY_PERIODIC) period[1] = (HYPRE_Int) Ny;
+    if (pz==DM_BOUNDARY_PERIODIC) period[2] = (HYPRE_Int) Nz;
+  }
   PetscCallExternal(HYPRE_StructGridCreate,ex->hcomm,dim,&ex->hgrid);
   PetscCallExternal(HYPRE_StructGridSetExtents,ex->hgrid,hlower,hupper);
+  PetscCallExternal(HYPRE_StructGridSetPeriodic,ex->hgrid,period);
   PetscCallExternal(HYPRE_StructGridAssemble,ex->hgrid);
 
   sw[5] = sw[4] = sw[3] = sw[2] = sw[1] = sw[0] = psw;
