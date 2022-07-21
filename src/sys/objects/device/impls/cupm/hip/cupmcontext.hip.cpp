@@ -8,6 +8,7 @@ PetscErrorCode PetscDeviceContextCreate_HIP(PetscDeviceContext dctx)
   PetscDeviceContext_(HIP) *dci;
 
   PetscFunctionBegin;
+  PetscCall(contextHip.initialize());
   PetscCall(PetscNew(&dci));
   dctx->data = static_cast<decltype(dctx->data)>(dci);
   PetscCall(PetscMemcpy(dctx->ops,&contextHip.ops,sizeof(contextHip.ops)));

@@ -344,12 +344,12 @@ static PetscErrorCode PetscDeviceInitializeTypeFromOptions_Private(MPI_Comm comm
     initialize as
   */
   if (*defaultInitType == PETSC_DEVICE_INIT_EAGER) {
+    PetscCall(PetscLogInitialize());
     PetscCall(PetscInfo(PETSC_NULLPTR,"Eagerly initializing %s PetscDevice\n",PetscDeviceTypes[type]));
     PetscCall(PetscDeviceInitializeDefaultDevice_Internal(type,defaultDeviceId));
     if (defaultView) {
       PetscViewer vwr;
 
-      PetscCall(PetscLogInitialize());
       PetscCall(PetscViewerASCIIGetStdout(comm,&vwr));
       PetscCall(PetscDeviceView(defaultDevices[type],vwr));
     }
@@ -411,9 +411,10 @@ static PetscErrorCode PetscDeviceFinalize_Private(void)
 */
 PetscErrorCode PetscDeviceInitializeFromOptions_Internal(MPI_Comm comm)
 {
-  PetscBool           flg,defaultView = PETSC_FALSE,initializeDeviceContextEagerly = PETSC_FALSE;
-  PetscInt            defaultDevice   = PETSC_DECIDE;
-  PetscDeviceType     deviceContextInitDevice = PETSC_DEVICE_DEFAULT;
+  auto                defaultView                    = PETSC_FALSE;
+  auto                initializeDeviceContextEagerly = PETSC_FALSE;
+  auto                defaultDevice                  = PetscInt{PETSC_DECIDE};
+  auto                deviceContextInitDevice        = PETSC_DEVICE_DEFAULT;
   PetscDeviceInitType defaultInitType;
 
   PetscFunctionBegin;
@@ -433,21 +434,23 @@ PetscErrorCode PetscDeviceInitializeFromOptions_Internal(MPI_Comm comm)
   }
   comm = PETSC_COMM_WORLD; /* from this point on we assume we're on PETSC_COMM_WORLD */
   PetscCall(PetscRegisterFinalize(PetscDeviceFinalize_Private));
-  PetscCall(PetscOptionsHasName(PETSC_NULLPTR,PETSC_NULLPTR,"-log_view",&flg));
-  if (!flg) PetscCall(PetscOptionsHasName(PETSC_NULLPTR,PETSC_NULLPTR,"-log_summary",&flg));
-#if defined(PETSC_HAVE_DEVICE)
-  PetscBool gtime;
-  PetscCall(PetscOptionsHasName(NULL,NULL,"-log_view_gpu_time",&gtime));
-  if (gtime) PetscCall(PetscLogGpuTime());
-#endif
-  {
-    PetscInt initIdx = flg ? PETSC_DEVICE_INIT_EAGER : PETSC_DEVICE_INIT_LAZY;
 
+  {
+    PetscInt  initIdx = PETSC_DEVICE_INIT_LAZY;
+    PetscBool flg;
+
+    PetscCall(PetscOptionsHasName(PETSC_NULLPTR,PETSC_NULLPTR,"-log_view_gpu_time",&flg));
+    if (flg) PetscCall(PetscLogGpuTime());
+
+    /* ----------------------------------------------------------------------------------- */
+    /*                              Global PetscDevice Options                             */
+    /* ----------------------------------------------------------------------------------- */
     PetscOptionsBegin(comm,PETSC_NULLPTR,"PetscDevice Options","Sys");
     PetscCall(PetscOptionsEList("-device_enable","How (or whether) to initialize PetscDevices","PetscDeviceInitializeFromOptions_Internal()",PetscDeviceInitTypes,3,PetscDeviceInitTypes[initIdx],&initIdx,PETSC_NULLPTR));
     PetscCall(PetscOptionsRangeInt("-device_select","Which device to use. Pass " PetscStringize(PETSC_DECIDE) " to have PETSc decide or (given they exist) [0-NUM_DEVICE) for a specific device","PetscDeviceCreate()",defaultDevice,&defaultDevice,PETSC_NULLPTR,PETSC_DECIDE,std::numeric_limits<int>::max()));
     PetscCall(PetscOptionsBool("-device_view","Display device information and assignments (forces eager initialization)",PETSC_NULLPTR,defaultView,&defaultView,&flg));
     PetscOptionsEnd();
+
     if (initIdx == PETSC_DEVICE_INIT_NONE) {
       /* disabled all device initialization if devices are globally disabled */
       PetscCheck(defaultDevice == PETSC_DECIDE,comm,PETSC_ERR_USER_INPUT,"You have disabled devices but also specified a particular device to use, these options are mutually exlusive");
@@ -467,6 +470,7 @@ PetscErrorCode PetscDeviceInitializeFromOptions_Internal(MPI_Comm comm)
     if (PetscDeviceConfiguredFor_Internal(deviceType) && (initType == PETSC_DEVICE_INIT_EAGER)) {
       initializeDeviceContextEagerly = PETSC_TRUE;
       deviceContextInitDevice        = deviceType;
+      PetscCall(PetscInfo(PETSC_NULLPTR,"PetscDevice %s set as default device type due to eager initialization\n",PetscDeviceTypes[deviceType]));
     }
   }
   if (initializeDeviceContextEagerly) {

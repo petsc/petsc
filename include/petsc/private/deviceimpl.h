@@ -4,6 +4,15 @@
 #include <petsc/private/petscimpl.h>
 #include <petscdevice.h>
 
+/* logging support */
+PETSC_INTERN PetscClassId PETSC_DEVICE_CLASSID;
+PETSC_INTERN PetscClassId PETSC_DEVICE_CONTEXT_CLASSID;
+
+PETSC_INTERN PetscLogEvent CUBLAS_HANDLE_CREATE;
+PETSC_INTERN PetscLogEvent CUSOLVER_HANDLE_CREATE;
+PETSC_INTERN PetscLogEvent HIPSOLVER_HANDLE_CREATE;
+PETSC_INTERN PetscLogEvent HIPBLAS_HANDLE_CREATE;
+
 #if defined(PETSC_CLANG_STATIC_ANALYZER)
 template <typename T> void PetscValidDeviceType(T,int);
 template <typename T> void PetscValidDevice(T,int);
