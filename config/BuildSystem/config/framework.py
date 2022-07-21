@@ -550,6 +550,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       lines = [s for s in lines if s.find(' was built for newer macOS version') < 0]
       lines = [s for s in lines if s.find(' was built for newer OSX version') < 0]
       lines = [s for s in lines if s.find(' stack subq instruction is too different from dwarf stack size') < 0]
+      lines = [s for s in lines if s.find('could not create compact unwind') < 0]
       # Nvidia linker
       lines = [s for s in lines if s.find('nvhpc.ld contains output sections') < 0]
       # Intel dpcpp linker
