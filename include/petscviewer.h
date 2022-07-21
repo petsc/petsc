@@ -34,6 +34,7 @@ typedef const char* PetscViewerType;
 #define PETSCVIEWERGLVIS        "glvis"
 #define PETSCVIEWERADIOS        "adios"
 #define PETSCVIEWEREXODUSII     "exodusii"
+#define PETSCVIEWERCGNS         "cgns"
 
 PETSC_EXTERN PetscFunctionList PetscViewerList;
 PETSC_EXTERN PetscErrorCode PetscViewerInitializePackage(void);

@@ -282,4 +282,8 @@ test:
     -ksp_type cg -ksp_rtol 1e-10 -pc_type mg \
     -mg_levels_ksp_max_it 1 \
     -mg_levels_pc_type jacobi -snes_monitor -ksp_monitor
+test:
+  suffix: 2d_q3_cgns
+  requires: cgns
+  args: -dm_plex_simplex 0 -dm_plex_dim 2 -dm_plex_box_faces 3,3 -snes_view_solution cgns:sol.cgns -potential_petscspace_degree 3 -dm_coord_petscspace_degree 3
 TEST*/
