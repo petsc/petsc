@@ -967,6 +967,38 @@ See also :any:`sec_nlmatrixfree` for details on one set of
 helpful utilities for using the matrix-free approach for nonlinear
 solvers.
 
+.. _sec_mattranspose:
+
+Transposes of Matrices
+~~~~~~~~~~~~~~~~~~~~~~
+
+PETSc provides several ways to work with transposes of matrix.
+
+.. code-block::
+
+   MatTranspose(Mat A,MatReuse MAT_INITIAL_MATRIX or MAT_INPLACE_MATRIX or MAT_REUSE_MATRIX,Mat *B)
+
+will either do an in-place or out-of-place matrix explicit formation of the matrix transpose. After it has been called
+with ``MAT_INPLACE_MATRIX`` it may be called again with ``MAT_REUSE_MATRIX`` and it will recompute the transpose if the A
+matrix has changed. Internally it keeps track of whether the nonzero pattern of A has not changed so
+will reuse the symbolic transpose when possible for efficiency.
+
+.. code-block::
+
+   MatTransposeSymbolic(Mat A,Mat *B)
+
+only does the symbolic transpose on the matrix. After it is called ``MatTranspose()`` may be called with
+``MAT_REUSE_MATRIX`` to compute the numerical transpose.
+
+Occasionally one may already have a B matrix with the needed sparsity pattern to store the transpose and wants to reuse that
+space instead of creating a new matrix by calling ``MatTranspose``\(A,``MAT_INITIAL_MATRIX``\,&B) but they cannot just call
+``MatTranspose``\(A,``MAT_REUSE_MATRIX``\,&B) so instead they can call ``MatTransposeSetPrecusor``\(A,B) and then call
+``MatTranspose``\(A,``MAT_REUSE_MATRIX``\,&B). This routine just provides to B the meta-data it needs to compute the numerical
+factorization efficiently.
+
+The routine ``MatCreateTranspose``\(A,&B) provides a surrogate matrix B that behaviors like the transpose of A without forming
+the transpose explicitly. For example, ``MatMult``\(B,x,y) will compute the matrix-vector product of A transpose times x.
+
 .. _sec_othermat:
 
 Other Matrix Operations
