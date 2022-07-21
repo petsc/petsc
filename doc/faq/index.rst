@@ -1826,6 +1826,20 @@ the program after ``PetscFinalize()``. Use the following code-snippet:
 Debugging
 =========
 
+What does the message hwloc/linux: Ignoring PCI device with non-16bit domain mean?
+----------------------------------------------------------------------------------
+
+This is printed by the hwloc library that is used by some MPI implementations. It can be ignored.
+To prevent the message from always being printed set the environmental variable ``HWLOC_HIDE_ERRORS`` to 2.
+For example
+
+.. code-block::
+
+   export HWLOC_HIDE_ERRORS=2
+
+which can be added to your login profile file such as ``~/.bashrc``.
+
+
 How do I turn off PETSc signal handling so I can use the ``-C`` Option On ``xlf``?
 ----------------------------------------------------------------------------------
 
