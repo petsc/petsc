@@ -225,6 +225,7 @@ typedef struct {
   PetscBool            printSetValues;
   PetscInt             printFEM;
   PetscInt             printL2;
+  PetscInt             printLocate;
   PetscReal            printTol;
 } DM_Plex;
 

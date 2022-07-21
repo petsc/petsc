@@ -439,6 +439,9 @@ PetscErrorCode PetscGridHashSetGrid(PetscGridHash box, const PetscInt n[], const
 
   Level: developer
 
+  Note:
+  This only guarantees that a box contains a point, not that a cell does.
+
 .seealso: `PetscGridHashCreate()`
 */
 PetscErrorCode PetscGridHashGetEnclosingBox(PetscGridHash box, PetscInt numPoints, const PetscScalar points[], PetscInt dboxes[], PetscInt boxes[])
@@ -472,41 +475,47 @@ PetscErrorCode PetscGridHashGetEnclosingBox(PetscGridHash box, PetscInt numPoint
  Not collective
 
   Input Parameters:
-+ box       - The grid hash object
-. numPoints - The number of input points
-- points    - The input point coordinates
++ box         - The grid hash object
+. cellSection - The PetscSection mapping cells to boxes
+. numPoints   - The number of input points
+- points      - The input point coordinates
 
   Output Parameters:
-+ dboxes    - An array of numPoints*dim integers expressing the enclosing box as (i_0, i_1, ..., i_dim)
-. boxes     - An array of numPoints integers expressing the enclosing box as single number, or NULL
-- found     - Flag indicating if point was located within a box
++ dboxes - An array of numPoints*dim integers expressing the enclosing box as (i_0, i_1, ..., i_dim)
+. boxes  - An array of numPoints integers expressing the enclosing box as single number, or NULL
+- found  - Flag indicating if point was located within a box
 
   Level: developer
 
+  Note:
+  This does an additional check that a cell actually contains the point, and found is PETSC_FALSE if no cell does. Thus, this function requires that the cellSection is already constructed.
+
 .seealso: `PetscGridHashGetEnclosingBox()`
 */
-PetscErrorCode PetscGridHashGetEnclosingBoxQuery(PetscGridHash box, PetscInt numPoints, const PetscScalar points[], PetscInt dboxes[], PetscInt boxes[],PetscBool *found)
+PetscErrorCode PetscGridHashGetEnclosingBoxQuery(PetscGridHash box, PetscSection cellSection, PetscInt numPoints, const PetscScalar points[], PetscInt dboxes[], PetscInt boxes[],PetscBool *found)
 {
   const PetscReal *lower = box->lower;
   const PetscReal *upper = box->upper;
   const PetscReal *h     = box->h;
   const PetscInt  *n     = box->n;
   const PetscInt   dim   = box->dim;
-  PetscInt         d, p;
+  PetscInt         bStart, bEnd, d, p;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(cellSection,PETSC_SECTION_CLASSID,2);
   *found = PETSC_FALSE;
+  PetscCall(PetscSectionGetChart(box->cellSection, &bStart, &bEnd));
   for (p = 0; p < numPoints; ++p) {
     for (d = 0; d < dim; ++d) {
       PetscInt dbox = PetscFloorReal((PetscRealPart(points[p*dim+d]) - lower[d])/h[d]);
 
       if (dbox == n[d] && PetscAbsReal(PetscRealPart(points[p*dim+d]) - upper[d]) < 1.0e-9) dbox = n[d]-1;
-      if (dbox < 0 || dbox >= n[d]) {
-        PetscFunctionReturn(0);
-      }
+      if (dbox < 0 || dbox >= n[d]) PetscFunctionReturn(0);
       dboxes[p*dim+d] = dbox;
     }
     if (boxes) for (d = dim-2, boxes[p] = dboxes[p*dim+dim-1]; d >= 0; --d) boxes[p] = boxes[p]*n[d] + dboxes[p*dim+d];
+    // It is possible for a box to overlap no grid cells
+    if (boxes[p] < bStart || boxes[p] >= bEnd) PetscFunctionReturn(0);
   }
   *found = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -588,7 +597,7 @@ PetscErrorCode DMPlexClosestPoint_Internal(DM dm, PetscInt dim, const PetscScala
 */
 PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
 {
-  const PetscInt     debug = 0;
+  PetscInt           debug = ((DM_Plex *) dm->data)->printLocate;
   MPI_Comm           comm;
   PetscGridHash      lbox;
   Vec                coordinates;
@@ -617,6 +626,7 @@ PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
   if (flg) {for (i = c; i < dim; ++i) n[i] = n[c-1];}
   else     {for (i = 0; i < dim; ++i) n[i] = PetscMax(2, PetscFloorReal(PetscPowReal((PetscReal) (cEnd - cStart), 1.0/dim) * 0.8));}
   PetscCall(PetscGridHashSetGrid(lbox, n, NULL));
+  if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "GridHash:\n  (%g, %g, %g) -- (%g, %g, %g)\n  n %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\n  h %g %g %g\n", (double) lbox->lower[0], (double) lbox->lower[1], (double) lbox->lower[2], (double) lbox->upper[0], (double) lbox->upper[1], (double) lbox->upper[2], n[0], n[1], n[2], (double) lbox->h[0], (double) lbox->h[1], (double) lbox->h[2]));
 #if 0
   /* Could define a custom reduction to merge these */
   PetscCall(MPIU_Allreduce(lbox->lower, gbox->lower, 3, MPIU_REAL, MPI_MIN, comm));
@@ -767,7 +777,7 @@ PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
 
 PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, PetscSF cellSF)
 {
-  const PetscInt  debug = 0;
+  PetscInt        debug = ((DM_Plex *) dm->data)->printLocate;
   DM_Plex        *mesh = (DM_Plex *) dm->data;
   PetscBool       hash = mesh->useHashLocation, reuse = PETSC_FALSE;
   PetscInt        bs, numPoints, p, numFound, *found = NULL;
@@ -866,7 +876,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
 
       if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Checking point %" PetscInt_FMT " (%.2g, %.2g, %.2g)\n", p, (double)PetscRealPart(point[0]), (double)PetscRealPart(point[1]), (double)PetscRealPart(point[2])));
       /* allow for case that point is outside box - abort early */
-      PetscCall(PetscGridHashGetEnclosingBoxQuery(mesh->lbox, 1, point, dbin, &bin,&found_box));
+      PetscCall(PetscGridHashGetEnclosingBoxQuery(mesh->lbox, mesh->lbox->cellSection, 1, point, dbin, &bin,&found_box));
       if (found_box) {
         if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Found point in box %" PetscInt_FMT " (%" PetscInt_FMT ", %" PetscInt_FMT ", %" PetscInt_FMT ")\n", bin, dbin[0], dbin[1], dbin[2]));
         /* TODO Lay an interface over this so we can switch between Section (dense) and Label (sparse) */
