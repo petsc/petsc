@@ -8,7 +8,7 @@ AlignConsecutiveMacros: Consecutive
 AlignConsecutiveAssignments: AcrossComments
 AlignConsecutiveBitFields: AcrossComments
 AlignConsecutiveDeclarations: AcrossComments
-AlignEscapedNewlines: Right
+AlignEscapedNewlines: DontAlign
 AlignOperands: DontAlign
 AlignTrailingComments: true
 AllowAllArgumentsOnNextLine: true
@@ -148,11 +148,9 @@ StatementAttributeLikeMacros:
 StatementMacros:
   - PETSC_UNUSED
   - QT_REQUIRE_VERSION
-TabWidth: 4
+TabWidth: 2
 UseCRLF: false
 UseTab: Never
 WhitespaceSensitiveMacros:
   - PetscStringize
   - PetscStringize_
-...
-
