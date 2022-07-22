@@ -1,0 +1,74 @@
+ dm: 
+DM Object: 2 MPI processes
+  type: network
+  NSubnets: 1; NEdges: 2; NVertices: 3; NSharedVertices: 0.
+  [0] nEdges: 1; nVertices: 2; nSharedVertices: 0
+     Subnet 0: nEdges 1, nVertices(include shared vertices) 2
+       edge 0: 1 ----> 0
+  [1] nEdges: 1; nVertices: 2; nSharedVertices: 0
+     Subnet 0: nEdges 1, nVertices(include shared vertices) 2
+       edge 1: 2 ----> 0
+PetscSection Object: 2 MPI processes
+  type not yet set
+Process 0:
+  (   0) dim  2 offset   0
+  (   1) dim  2 offset   2
+  (   2) dim  2 offset   4
+Process 1:
+  (   0) dim  2 offset   0
+  (   1) dim  2 offset   2
+  (   2) dim  2 offset   4
+
+ dmclone: 
+DM Object: 2 MPI processes
+  type: network
+  NSubnets: 1; NEdges: 2; NVertices: 3; NSharedVertices: 0.
+  [0] nEdges: 1; nVertices: 2; nSharedVertices: 0
+     Subnet 0: nEdges 1, nVertices(include shared vertices) 2
+       edge 0: 1 ----> 0
+  [1] nEdges: 1; nVertices: 2; nSharedVertices: 0
+     Subnet 0: nEdges 1, nVertices(include shared vertices) 2
+       edge 1: 2 ----> 0
+PetscSection Object: 2 MPI processes
+  type not yet set
+Process 0:
+  (   0) dim  2 offset   0
+  (   1) dim  0 offset   2
+  (   2) dim  0 offset   2
+Process 1:
+  (   0) dim  2 offset   0
+  (   1) dim  0 offset   2
+  (   2) dim  0 offset   2
+
+ dm vec:
+Vec Object: 2 MPI processes
+  type: mpi
+Process [0]
+  Edge 0:
+    1.
+    1.
+  Vertex 1:
+    1.
+    1.
+Process [1]
+  Edge 1:
+    1.
+    1.
+  Vertex 0:
+    1.
+    1.
+  Vertex 2:
+    1.
+    1.
+
+ dmclone vec:
+Vec Object: 2 MPI processes
+  type: mpi
+Process [0]
+  Edge 0:
+    2.
+    2.
+Process [1]
+  Edge 1:
+    2.
+    2.

@@ -242,6 +242,80 @@ static PetscErrorCode DMCreateLocalVector_Network(DM dm,Vec *vec)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode DMNetworkInitializeToDefault_NonShared(DM dm)
+{
+  DM_Network     *network = (DM_Network*) dm->data;
+
+  PetscFunctionBegin;
+  network->Je                 = NULL;
+  network->Jv                 = NULL;
+  network->Jvptr              = NULL;
+  network->userEdgeJacobian   = PETSC_FALSE;
+  network->userVertexJacobian = PETSC_FALSE;
+
+  network->vertex.DofSection       = NULL;
+  network->vertex.GlobalDofSection = NULL;
+  network->vertex.mapping          = NULL;
+  network->vertex.sf               = NULL;
+
+  network->edge.DofSection       = NULL;
+  network->edge.GlobalDofSection = NULL;
+  network->edge.mapping          = NULL;
+  network->edge.sf               = NULL;
+
+  network->DataSection        = NULL;
+  network->DofSection         = NULL;
+  network->GlobalDofSection   = NULL;
+  network->componentsetup     = PETSC_FALSE;
+
+  network->plex               = NULL;
+
+  network->component          = NULL;
+  network->ncomponent         = 0;
+
+  network->header             = NULL;
+  network->cvalue             = NULL;
+  network->componentdataarray = NULL;
+
+  network->max_comps_registered = DMNETWORK_MAX_COMP_REGISTERED_DEFAULT; /* return to default */
+  PetscFunctionReturn(0);
+}
+/* Default values for the parameters in DMNetwork */
+PetscErrorCode DMNetworkInitializeToDefault(DM dm)
+{
+  DM_Network           *network = (DM_Network*) dm->data;
+  DMNetworkCloneShared cloneshared = network->cloneshared;
+
+  PetscFunctionBegin;
+  PetscCall(DMNetworkInitializeToDefault_NonShared(dm));
+  /* Default values for shared data */
+  cloneshared->refct     = 1;
+  cloneshared->NVertices = 0;
+  cloneshared->NEdges    = 0;
+  cloneshared->nVertices = 0;
+  cloneshared->nEdges    = 0;
+  cloneshared->nsubnet   = 0;
+  cloneshared->pStart    = -1;
+  cloneshared->pEnd      = -1;
+  cloneshared->vStart    = -1;
+  cloneshared->vEnd      = -1;
+  cloneshared->eStart    = -1;
+  cloneshared->eEnd      = -1;
+  cloneshared->vltog     = NULL;
+  cloneshared->distributecalled  = PETSC_FALSE;
+
+  cloneshared->subnet     = NULL;
+  cloneshared->subnetvtx  = NULL;
+  cloneshared->subnetedge = NULL;
+  cloneshared->svtx       = NULL;
+  cloneshared->nsvtx      = 0;
+  cloneshared->Nsvtx      = 0;
+  cloneshared->svertices  = NULL;
+  cloneshared->sedgelist  = NULL;
+  cloneshared->svtable    = NULL;
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode DMInitialize_Network(DM dm)
 {
   PetscFunctionBegin;
@@ -272,14 +346,48 @@ PetscErrorCode DMInitialize_Network(DM dm)
   dm->ops->locatepoints                    = NULL;
   PetscFunctionReturn(0);
 }
+/*
+  copies over the subnetid and index portions of the DMNetworkComponentHeader from orignal dm to the newdm
+*/
+static PetscErrorCode DMNetworkCopyHeaderTopological(DM dm, DM newdm)
+{
+  DM_Network     *network = (DM_Network *) dm->data, *newnetwork = (DM_Network *) newdm->data;
+  PetscInt       p,i,np,index,subnetid;
+
+  PetscFunctionBegin;
+  np = network->cloneshared->pEnd - network->cloneshared->pStart;
+  PetscCall(PetscCalloc2(np,&newnetwork->header,np,&newnetwork->cvalue));
+  for (i = 0; i < np; i++ ) {
+    p = i + network->cloneshared->pStart;
+    PetscCall(DMNetworkGetSubnetID(dm,p,&subnetid));
+    PetscCall(DMNetworkGetIndex(dm,p,&index));
+    newnetwork->header[i].index        = index;
+    newnetwork->header[i].subnetid     = subnetid;
+    newnetwork->header[i].size         = NULL;
+    newnetwork->header[i].key          = NULL;
+    newnetwork->header[i].offset       = NULL;
+    newnetwork->header[i].nvar         = NULL;
+    newnetwork->header[i].offsetvarrel = NULL;
+    newnetwork->header[i].ndata        = 0;
+    newnetwork->header[i].maxcomps     = DMNETWORK_MAX_COMP_AT_POINT_DEFAULT;
+    newnetwork->header[i].hsize        = sizeof(struct _p_DMNetworkComponentHeader)/sizeof(sizeof(DMNetworkComponentGenericDataType));
+  }
+  PetscFunctionReturn(0);
+}
 
 PetscErrorCode DMClone_Network(DM dm, DM *newdm)
 {
-  DM_Network     *network = (DM_Network *) dm->data;
+  DM_Network     *network = (DM_Network *) dm->data, *newnetwork = NULL;
 
   PetscFunctionBegin;
-  network->refct++;
-  (*newdm)->data = network;
+  network->cloneshared->refct++;
+  PetscCall(PetscNewLog(*newdm,&newnetwork));
+  (*newdm)->data = newnetwork;
+  PetscCall(DMNetworkInitializeToDefault_NonShared(*newdm));
+  newnetwork->cloneshared = network->cloneshared; /* Share all data that can be cloneshared */
+  PetscCall(DMClone(network->plex,&newnetwork->plex));
+  PetscCall(DMNetworkCopyHeaderTopological(dm, *newdm));
+  PetscCall(DMNetworkInitializeNonTopological(*newdm)); /* initialize all non-topological data to the state after DMNetworkLayoutSetUp as been called */
   PetscCall(PetscObjectChangeTypeName((PetscObject) *newdm, DMNETWORK));
   PetscCall(DMInitialize_Network(*newdm));
   PetscFunctionReturn(0);
@@ -299,25 +407,15 @@ M*/
 
 PETSC_EXTERN PetscErrorCode DMCreate_Network(DM dm)
 {
-  DM_Network     *network;
+  DM_Network      *network;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(PetscNewLog(dm,&network));
+  PetscCall(PetscNewLog(dm,&network->cloneshared));
   dm->data = network;
 
-  network->refct     = 1;
-  network->NVertices = 0;
-  network->NEdges    = 0;
-  network->nVertices = 0;
-  network->nEdges    = 0;
-  network->nsubnet   = 0;
-
-  network->max_comps_registered = 20;
-  network->component            = NULL;
-  network->header               = NULL;
-  network->cvalue               = NULL;
-
+  PetscCall(DMNetworkInitializeToDefault(dm));
   PetscCall(DMInitialize_Network(dm));
   PetscFunctionReturn(0);
 }
