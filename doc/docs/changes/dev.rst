@@ -79,6 +79,8 @@ In addition to the changes above
 
 .. rubric:: PetscViewer:
 
+- Add ``PetscViewerHDF5PushGroupRelative()``
+
 .. rubric:: PetscDraw:
 
 - Add ``PetscDrawSPGetDimension()``

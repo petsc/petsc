@@ -709,6 +709,60 @@ PetscErrorCode  PetscViewerHDF5PushGroup(PetscViewer viewer, const char name[])
   PetscFunctionReturn(0);
 }
 
+/*@C
+  PetscViewerHDF5PushGroupRelative - Set the current HDF5 group for output, appending the path in the argument
+
+  Not collective
+
+  Input Parameters:
++ viewer - the PetscViewer
+- name - The group name to append
+
+  Level: intermediate
+
+  Notes:
+  This is designed to mnemonically resemble the Unix cd command.
+  + If name begins with '/', it is interpreted as an absolute path fully replacing current group, otherwise it is taken as relative to the current group.
+  . NULL, empty string, or any sequence of all slashes (e.g. "///") is interpreted as the root group "/".
+  - "." means the current group is pushed again.
+
+  Example:
+  Suppose the current group is "/a".
+  + If name is NULL, empty string, or a sequence of all slashes (e.g. "///"), then the new group will be "/".
+  . If name is ".", then the new group will be "/a".
+  . If name is "b", then the new group will be "/a/b".
+  - If name is "/b", then the new group will be "/b".
+
+  Developer Notes:
+  The root group "/" is internally stored as NULL.
+
+.seealso: `PetscViewerHDF5PushGroup()`, `PetscViewerHDF5PopGroup()`, `PetscViewerHDF5GetGroup()`, `PetscViewerHDF5OpenGroup()`, `PetscViewerHDF5Open()`
+@*/
+PetscErrorCode PetscViewerHDF5PushGroupRelative(PetscViewer viewer, const char name[])
+{
+  PetscViewer_HDF5         *hdf5 = (PetscViewer_HDF5*) viewer->data;
+  PetscViewerHDF5GroupList *groupNode;
+  char                      groupname[PETSC_MAX_PATH_LEN];
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  if (name) PetscValidCharPointer(name,2);
+  if (name && name[0]) {
+     size_t i,len;
+     PetscCall(PetscStrlen(name, &len));
+     for (i=0; i<len; i++) if (name[i] != '/') break;
+     if (i == len) name = NULL;
+  } else name = NULL;
+  PetscCall(PetscNew(&groupNode));
+  PetscCall(PetscStrncpy(groupname, hdf5->groups->name, sizeof(groupname)));
+  if (name[0] != '/') PetscCall(PetscStrlcat(groupname, "/", sizeof(groupname)));
+  PetscCall(PetscStrlcat(groupname, name, sizeof(groupname)));
+  PetscCall(PetscStrallocpy(groupname, (char**) &groupNode->name));
+  groupNode->next = hdf5->groups;
+  hdf5->groups    = groupNode;
+  PetscFunctionReturn(0);
+}
+
 /*@
   PetscViewerHDF5PopGroup - Return the current HDF5 group for output to the previous value
 
