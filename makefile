@@ -140,100 +140,113 @@ matlabbin:
 #
 # Builds PETSc check examples for a given architecture
 #
+RUN_TEST = ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} DIFF=${PETSC_DIR}/lib/petsc/bin/petscdiff
+
 check_install: check
 check:
-	-+@${OMAKE_SELF} PETSC_OPTIONS="${PETSC_OPTIONS} ${PETSC_TEST_OPTIONS}" PATH="${PETSC_DIR}/${PETSC_ARCH}/lib:${PATH}" PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} check_build 2>&1 | tee ./${PETSC_ARCH}/lib/petsc/conf/check.log
-checkx:
-	-@${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} checkx_build 2>&1 | tee ./${PETSC_ARCH}/lib/petsc/conf/checkx.log
-check_build:
 	-@echo "Running check examples to verify correct installation"
 	-@echo "Using PETSC_DIR=${PETSC_DIR} and PETSC_ARCH=${PETSC_ARCH}"
-	+@cd src/snes/tutorials >/dev/null; ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean-legacy
-	+@cd src/snes/tutorials >/dev/null; ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testex19
-	+@if [ "${HYPRE_LIB}" != "" ] && [ "${PETSC_WITH_BATCH}" = "" ] &&  [ "${PETSC_SCALAR}" = "real" ]; then \
+	@if [ "${PETSC_WITH_BATCH}" != "" ]; then \
+           echo "Running with batch filesystem, cannot run make check"; \
+        elif [ "${MPIEXEC}" = "/bin/false" ]; then \
+           echo "*mpiexec not found*. cannot run make check"; \
+        else \
+          ${RM} -f check_error;\
+          ${RUN_TEST} PETSC_OPTIONS="${PETSC_OPTIONS} ${PETSC_TEST_OPTIONS}" PATH="${PETSC_DIR}/${PETSC_ARCH}/lib:${PATH}" check_build 2>&1 | tee ./${PETSC_ARCH}/lib/petsc/conf/check.log; \
+          if [ -f check_error ]; then \
+            echo "Error while running make check"; \
+            ${RM} -f check_error;\
+            exit 1; \
+          fi; \
+          ${RM} -f check_error;\
+        fi;
+
+check_build:
+	+@cd src/snes/tutorials >/dev/null; ${RUN_TEST} clean-legacy
+	+@cd src/snes/tutorials >/dev/null; ${RUN_TEST} testex19
+	+@if [ ! "${MPI_IS_MPIUNI}" ]; then cd src/snes/tutorials >/dev/null; ${RUN_TEST} testex19_mpi; fi
+	+@if [ "${HYPRE_LIB}" != "" ] && [ "${PETSC_SCALAR}" = "real" ]; then \
           if [ "${CUDA_LIB}" != "" ]; then HYPRE_TEST=runex19_hypre_cuda; \
           elif [ "${HIP_LIB}" != "" ]; then HYPRE_TEST=runex19_hypre_hip; \
-          else HYPRE_TEST=runex19_hypre; \
+          else HYPRE_TEST=runex19_hypre; fi; \
+          cd src/snes/tutorials >/dev/null; ${RUN_TEST} $${HYPRE_TEST}; \
+        fi;
+	+@if [ "${CUDA_LIB}" != "" ]; then \
+          cd src/snes/tutorials >/dev/null; ${RUN_TEST} runex19_cuda; \
+        fi;
+	+@if [ "${MPI_IS_MPIUNI}" = "" ]; then \
+          cd src/snes/tutorials >/dev/null; \
+          if [ "${KOKKOS_KERNELS_LIB}" != "" ]  &&  [ "${PETSC_SCALAR}" = "real" ] && [ "${PETSC_PRECISION}" = "double" ]; then \
+            ${RUN_TEST} runex3k_kokkos; \
+          fi;\
+          if [ "${MUMPS_LIB}" != "" ]; then \
+             ${RUN_TEST} runex19_fieldsplit_mumps; \
+          fi;\
+          if [ "${SUITESPARSE_LIB}" != "" ]; then \
+             ${RUN_TEST} runex19_suitesparse; \
+          fi;\
+          if [ "${SUPERLU_DIST_LIB}" != "" ]; then \
+            ${RUN_TEST} runex19_superlu_dist; \
+          fi;\
+          if ( [ "${ML_LIB}" != "" ] ||  [ "${TRILINOS_LIB}" != "" ] ); then \
+            ${RUN_TEST} runex19_ml; \
           fi; \
-          cd src/snes/tutorials >/dev/null; ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} DIFF=${PETSC_DIR}/lib/petsc/bin/petscdiff $${HYPRE_TEST}; \
-	 fi;
-	+@if [ "${CUDA_LIB}" != "" ] && [ "${PETSC_WITH_BATCH}" = "" ]; then \
-          cd src/snes/tutorials >/dev/null; ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} DIFF=${PETSC_DIR}/lib/petsc/bin/petscdiff runex19_cuda; \
-         fi;
-	+@if [ "${KOKKOS_KERNELS_LIB}" != "" ] && [ "${PETSC_WITH_BATCH}" = "" ] &&  [ "${PETSC_SCALAR}" = "real" ] && [ "${PETSC_PRECISION}" = "double" ] && [ "${MPI_IS_MPIUNI}" = "" ]; then \
-          cd src/snes/tutorials >/dev/null; ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} DIFF=${PETSC_DIR}/lib/petsc/bin/petscdiff runex3k_kokkos; \
-         fi;
-	+@if [ "${MUMPS_LIB}" != "" ] && [ "${PETSC_WITH_BATCH}" = "" ] && [ "${MPI_IS_MPIUNI}" = "" ]; then \
-          cd src/snes/tutorials >/dev/null; ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} DIFF=${PETSC_DIR}/lib/petsc/bin/petscdiff runex19_fieldsplit_mumps; \
-         fi;
-	+@if [ "${SUPERLU_DIST_LIB}" != "" ] && [ "${PETSC_WITH_BATCH}" = "" ]; then \
-          cd src/snes/tutorials >/dev/null; ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} DIFF=${PETSC_DIR}/lib/petsc/bin/petscdiff runex19_superlu_dist; \
-         fi;
-	+@if ( [ "${ML_LIB}" != "" ] ||  [ "${TRILINOS_LIB}" != "" ] ) && [ "${PETSC_WITH_BATCH}" = "" ]; then \
-          cd src/snes/tutorials >/dev/null; ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} DIFF=${PETSC_DIR}/lib/petsc/bin/petscdiff runex19_ml; \
-         fi;
-	+@if [ "${SUITESPARSE_LIB}" != "" ] && [ "${PETSC_WITH_BATCH}" = "" ]; then \
-          cd src/snes/tutorials >/dev/null; ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} DIFF=${PETSC_DIR}/lib/petsc/bin/petscdiff runex19_suitesparse; \
-         fi;
-	+@cd src/snes/tutorials >/dev/null; ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean-legacy
-	+@if [ "${HDF5_LIB}" != "" ] && [ "${PETSC_WITH_BATCH}" = "" ]; then \
+	  ${RUN_TEST} clean-legacy; \
+          cd - > /dev/null; \
+          if [ "${AMREX_LIB}" != "" ]; then \
+            echo "Running amrex test example to verify correct installation";\
+            echo "Using PETSC_DIR=${PETSC_DIR} and PETSC_ARCH=${PETSC_ARCH}";\
+            cd src/ksp/ksp/tutorials/amrex >/dev/null;\
+            ${RUN_TEST} clean-legacy; \
+            ${RUN_TEST} testamrex; \
+            ${RUN_TEST} clean-legacy; \
+            cd - > /dev/null; \
+          fi;\
+        fi;
+	+@if [ "${HDF5_LIB}" != "" ]; then \
           cd src/vec/vec/tests >/dev/null;\
-          ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean-legacy; \
-          ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} DIFF=${PETSC_DIR}/lib/petsc/bin/petscdiff runex47; \
-          ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean-legacy; \
-         fi;
-	+@if [ "${AMREX_LIB}" != "" ] && [ "${PETSC_WITH_BATCH}" = "" ]; then \
-           echo "Running amrex test example to verify correct installation";\
-           echo "Using PETSC_DIR=${PETSC_DIR} and PETSC_ARCH=${PETSC_ARCH}";\
-           cd src/ksp/ksp/tutorials/amrex >/dev/null;\
-           ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean-legacy; \
-           ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testamrex; \
-           ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean-legacy; \
+          ${RUN_TEST} clean-legacy; \
+          ${RUN_TEST} runex47; \
+          ${RUN_TEST} clean-legacy; \
          fi;
 	+@if [ "${MPI4PY}" = "yes" ]; then \
-          cd src/sys/tests >/dev/null; \
-          ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean-legacy; \
-          ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testex55; \
-          ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean-legacy; \
+           cd src/sys/tests >/dev/null; \
+           ${RUN_TEST} clean-legacy; \
+           ${RUN_TEST} testex55; \
+           ${RUN_TEST} clean-legacy; \
          fi;
 	+@if [ "${PETSC4PY}" = "yes" ]; then \
-          cd src/ksp/ksp/tutorials >/dev/null; \
-          ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean-legacy; \
-          ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testex100; \
-          ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean-legacy; \
+           cd src/ksp/ksp/tutorials >/dev/null; \
+           ${RUN_TEST} clean-legacy; \
+           ${RUN_TEST} testex100; \
+           ${RUN_TEST} clean-legacy; \
          fi;
 	+@egrep "^#define PETSC_HAVE_FORTRAN 1" ${PETSCCONF_H} | tee .ftn.log > /dev/null; \
          if test -s .ftn.log; then \
-          cd src/snes/tutorials >/dev/null; \
-          ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean-legacy; \
-          ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testex5f; \
-          ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean-legacy; \
+           cd src/snes/tutorials >/dev/null; \
+           ${RUN_TEST} clean-legacy; \
+           ${RUN_TEST} testex5f; \
+           ${RUN_TEST} clean-legacy; \
          fi; ${RM} .ftn.log;
 	+@egrep "^#define PETSC_HAVE_MATLAB_ENGINE 1" ${PETSCCONF_H} | tee .ftn.log > /dev/null; \
          if test -s .ftn.log; then \
-          cd src/vec/vec/tutorials >/dev/null; \
-          ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean-legacy; \
-          ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testex31; \
-          ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean-legacy; \
-         fi; ${RM} .ftn.log;
+           cd src/vec/vec/tutorials >/dev/null; \
+           ${RUN_TEST} clean-legacy; \
+           ${RUN_TEST} testex31; \
+           ${RUN_TEST} clean-legacy; \
+          fi; ${RM} .ftn.log;
 	-@echo "Completed test examples"
-checkx_build:
-	-@echo "Running graphics check example to verify correct X11 installation"
-	-@echo "Using PETSC_DIR=${PETSC_DIR} and PETSC_ARCH=${PETSC_ARCH}"
-	@cd src/snes/tutorials; ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean-legacy
-	@cd src/snes/tutorials; ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testxex19
-	@cd src/snes/tutorials; ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean-legacy
-	-@echo "Completed graphics check example"
+
 check_usermakefile:
 	-@echo "Testing compile with user makefile"
 	-@echo "Using PETSC_DIR=${PETSC_DIR} and PETSC_ARCH=${PETSC_ARCH}"
-	@cd src/snes/tutorials; ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean-legacy
+	@cd src/snes/tutorials; ${RUN_TEST} clean-legacy
 	@cd src/snes/tutorials; ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} -f ${PETSC_DIR}/share/petsc/Makefile.user ex19
 	@egrep "^#define PETSC_HAVE_FORTRAN 1" ${PETSCCONF_H} | tee .ftn.log > /dev/null; \
          if test -s .ftn.log; then \
           cd src/snes/tutorials; ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} -f ${PETSC_DIR}/share/petsc/Makefile.user ex5f; \
          fi; ${RM} .ftn.log;
-	@cd src/snes/tutorials; ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean-legacy
+	@cd src/snes/tutorials; ${RUN_TEST} clean-legacy
 	-@echo "Completed compile with user makefile"
 
 # Compare ABI/API of two versions of PETSc library with the old one defined by PETSC_{DIR,ARCH}_ABI_OLD
