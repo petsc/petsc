@@ -10,6 +10,9 @@ PETSC_EXTERN PetscLogEvent DMNetwork_LayoutSetUp;
 PETSC_EXTERN PetscLogEvent DMNetwork_SetUpNetwork;
 PETSC_EXTERN PetscLogEvent DMNetwork_Distribute;
 
+#define DMNETWORK_MAX_COMP_REGISTERED_DEFAULT 20
+#define DMNETWORK_MAX_COMP_AT_POINT_DEFAULT    1
+
 typedef struct _p_DMNetworkComponentHeader *DMNetworkComponentHeader;
 struct _p_DMNetworkComponentHeader {
   PetscInt index;    /* index for user input global edge and vertex */
@@ -83,28 +86,23 @@ typedef struct {
   char      name[32-sizeof(PetscInt)];
 } DMSubnetwork;
 
-typedef struct {
-  PetscInt                          refct;               /* reference count */
+/* The data structure for DMNetwork is split into two parts:
+   1. DMNetworkCloneShared : The part of the Network that holds information that is shared between
+      clones. Mostly topological data/refereence counting information
+
+   2. Everything else in the structure:  The part of the network not shared between clones. This is the data on
+      the network, so dof and component type information.
+*/
+typedef struct _p_DMNetworkCloneShared *DMNetworkCloneShared;
+struct  _p_DMNetworkCloneShared {
+  PetscInt                          refct;               /* reference count for the shared data */
   PetscInt                          NEdges,nEdges;       /* Number of global/local edges */
   PetscInt                          NVertices,nVertices; /* Number of global/local vertices */
   PetscInt                          pStart,pEnd;         /* Start and end indices for topological points */
   PetscInt                          vStart,vEnd;         /* Start and end indices for vertices */
   PetscInt                          eStart,eEnd;         /* Start and end indices for edges */
-  DM                                plex;                /* DM created from Plex */
-  PetscSection                      DataSection;         /* Section for managing parameter distribution */
-  PetscSection                      DofSection;          /* Section for managing data distribution */
-  PetscSection                      GlobalDofSection;    /* Global Dof section */
   PetscBool                         distributecalled;    /* Flag if DMNetworkDistribute() is called */
   PetscInt                          *vltog;              /* Maps vertex local ordering to global ordering, include ghost vertices */
-
-  DMNetworkVertexInfo               vertex;
-  DMNetworkEdgeInfo                 edge;
-
-  PetscInt                          ncomponent;  /* Number of components that have been registered */
-  DMNetworkComponent                *component; /* List of components that have been registered */
-  DMNetworkComponentHeader          header;
-  DMNetworkComponentValue           cvalue;
-  DMNetworkComponentGenericDataType *componentdataarray; /* Array to hold the data */
 
   PetscInt                          nsubnet,Nsubnet; /* Local and global number of subnetworks */
   DMSubnetwork                      *subnet;         /* Subnetworks */
@@ -114,6 +112,26 @@ typedef struct {
   PetscInt                          *svertices;      /* Array of local subnetwork vertices that are merged/shared */
   PetscInt                          *sedgelist;      /* Edge list of shared vertices */
   PetscTable                        svtable;         /* hash table for finding shared vertex info */
+} PETSC_ATTRIBUTEALIGNED(PetscMax(sizeof(double),sizeof(PetscScalar)));
+
+typedef struct {
+  DMNetworkCloneShared              cloneshared;
+  DM                                plex;                /* DM created from Plex. Note that it is not shared as when cloning the network
+                                                            we also clone the underlying plex. */
+  PetscSection                      DataSection;         /* Section for managing parameter distribution */
+  PetscSection                      DofSection;          /* Section for managing data distribution */
+  PetscSection                      GlobalDofSection;    /* Global Dof section */
+
+  DMNetworkVertexInfo               vertex;
+  DMNetworkEdgeInfo                 edge;
+
+  PetscInt                          ncomponent;  /* Number of components that have been registered */
+  DMNetworkComponent                *component; /* List of components that have been registered */
+  DMNetworkComponentHeader          header;
+  DMNetworkComponentValue           cvalue;
+  DMNetworkComponentGenericDataType *componentdataarray; /* Array to hold the data */
+  PetscBool                         componentsetup;      /* Flag for the setup of the component. Migth differ from dmsetup information */
+  PetscInt                          max_comps_registered; /* Max. number of components that can be registered */
 
   PetscBool                         userEdgeJacobian,userVertexJacobian;  /* Global flag for using user's sub Jacobians */
   Mat                               *Je;  /* Pointer array to hold local sub Jacobians for edges, 3 elements for an edge */
@@ -123,7 +141,19 @@ typedef struct {
                                               Jvpt[v-vStart]+2i+1: Jacobian(v,e[i]),   e[i]: i-th supporting edge
                                               Jvpt[v-vStart]+2i+2: Jacobian(v,vc[i]), vc[i]: i-th connected vertex
                                               */
-  PetscInt                          max_comps_registered; /* Max. number of components that can be registered */
 } DM_Network;
+
+PETSC_INTERN PetscErrorCode DMNetworkGetIndex(DM,PetscInt,PetscInt*);
+PETSC_INTERN PetscErrorCode DMNetworkGetSubnetID(DM,PetscInt,PetscInt*);
+
+PETSC_INTERN PetscErrorCode DMNetworkInitializeHeaderComponentData(DM);
+/*
+  Setup the default non-topological data structures for the network. Only called in DMClone_Network,
+  as this assumes that the topological data structures have already been setup in DMNetworkLayoutSetUp.
+  which would normally set these defaults themselves.
+*/
+PETSC_INTERN PetscErrorCode DMNetworkInitializeNonTopological(DM);
+PETSC_INTERN PetscErrorCode DMNetworkInitializeToDefault(DM);
+PETSC_INTERN PetscErrorCode DMNetworkInitializeToDefault_NonShared(DM);
 
 #endif /* _NETWORKIMPL_H */

@@ -190,6 +190,8 @@ In addition to the changes above
 
 .. rubric:: DMNetwork:
 
+- Add ``DMNetworkFinalizeComponents()`` to setup the internal data structures for components on a network. Previously this could only be done by calling DMSetUp. 
+
 .. rubric:: DMStag:
 
 .. rubric:: DT:
