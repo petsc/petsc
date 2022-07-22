@@ -9,9 +9,13 @@ class WrapperHtool : public htool::VirtualGenerator<PetscScalar> {
   public:
   WrapperHtool(PetscInt M,PetscInt N,PetscInt sdim,MatHtoolKernel& g,void* kernelctx) : VirtualGenerator(M,N), dim(sdim), kernel(g), ctx(kernelctx) { }
   void copy_submatrix(PetscInt M, PetscInt N, const PetscInt *rows, const PetscInt *cols, PetscScalar *ptr) const {
+#if !PetscDefined(HAVE_OPENMP)
     PetscFunctionBegin;
+#endif
     PetscCallAbort(PETSC_COMM_SELF,kernel(dim,M,N,rows,cols,ptr,ctx));
+#if !PetscDefined(HAVE_OPENMP)
     PetscFunctionReturnVoid();
+#endif
   }
 };
 
