@@ -603,6 +603,10 @@ class Configure(config.package.Package):
       self.versionname    = 'INTEL_MKL_VERSION'
       self.versioninclude = 'mkl_version.h'
       self.versiontitle   = 'Intel MKL Version'
+      if hasattr(self,'dinclude'):
+        [self.dinclude.append(inc) for inc in self.include if inc not in self.dinclude]
+      else:
+        self.dinclude = self.include
       self.checkVersion()
       if self.foundversion:
         self.addDefine('HAVE_MKL_INCLUDES',1)
