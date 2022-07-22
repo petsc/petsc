@@ -10,6 +10,15 @@
 key                %n`%1`
 synopsis           %n%1
 definition         %n**%1**%n
+
+# I want to use
+#section            %n%n#### %1%n
+# but it gives the warning message: WARNING: Non-consecutive header level increase; H1 to H4
+# and uses H2 anyways. So we end up with huge headings that take up too much space on the page.
+# Changing the first # at the top of the page to ## also doesn't help, it ALWAYS starts with H1.
+# Question posted on stackoverflow but likely impossible since # is used to structure the
+# document, not just as size indicator
+
 section            %n%n## %1%n
 s_synopsis         %n%n## Synopsis%n```%n
 e_synopsis         %n```%n
@@ -20,16 +29,17 @@ bop
 eop
 
 s_arg_list         %n%n
-s_arg_inlist       %n
-e_arg_inlist       %n
-s_defn_inlist      : 
-e_defn_inlist      %n%n
+s_arg_inlist       - ***
+e_arg_inlist       -***
+s_defn_inlist      \ 
+e_defn_inlist      %n
 e_arg_list         %n%n
 
-s_arg              %n
-s_defn             : 
-e_defn             %n%n
-e_arg              %n
+s_arg              - ***
+e_arg              -***
+s_defn             \ 
+e_defn             %n
+
 s_doctext_verbatim %n```none%n
 e_doctext_verbatim %n```%n
 s_caption          <CENTER><B>
