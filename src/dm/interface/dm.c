@@ -8028,8 +8028,8 @@ PetscErrorCode DMProjectFieldLabel(DM dm, PetscReal time, DMLabel label, PetscIn
   PetscCall(VecGetDM(U, &dmIn));
   PetscCall(DMGetLocalVector(dmIn, &localU));
   PetscCall(DMGetLocalVector(dm, &localX));
-  PetscCall(DMGlobalToLocalBegin(dm, U, mode, localU));
-  PetscCall(DMGlobalToLocalEnd(dm, U, mode, localU));
+  PetscCall(DMGlobalToLocalBegin(dmIn, U, mode, localU));
+  PetscCall(DMGlobalToLocalEnd(dmIn, U, mode, localU));
   PetscCall(DMProjectFieldLabelLocal(dm, time, label, numIds, ids, Nc, comps, localU, funcs, mode, localX));
   PetscCall(DMLocalToGlobalBegin(dm, localX, mode, X));
   PetscCall(DMLocalToGlobalEnd(dm, localX, mode, X));
