@@ -85,7 +85,7 @@ PetscErrorCode  PetscObjectView(PetscObject obj,PetscViewer viewer)
   Input Parameters:
 + obj   - the object
 . bobj  - optional other object that provides prefix (if NULL then the prefix in obj is used)
-- optionname - option to activate viewing
+- optionname - option string that is used to activate viewing
 
   Level: intermediate
 
