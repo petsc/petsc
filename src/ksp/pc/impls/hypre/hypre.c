@@ -135,6 +135,7 @@ typedef struct {
   PetscInt          dim; /* geometrical dimension */
   VecHYPRE_IJVector coords[3];
   VecHYPRE_IJVector constants[3];
+  VecHYPRE_IJVector interior;
   Mat               RT_PiFull, RT_Pi[3];
   Mat               ND_PiFull, ND_Pi[3];
   PetscBool         ams_beta_is_zero;
@@ -332,6 +333,14 @@ static PetscErrorCode PCSetUp_HYPRE(PC pc)
       hm = (Mat_HYPRE*)(jac->beta_Poisson->data);
       PetscCallExternal(HYPRE_IJMatrixGetObject,hm->ij,(void**)(&parcsr));
       PetscCallExternal(HYPRE_AMSSetBetaPoissonMatrix,jac->hsolver,parcsr);
+    } else if (jac->ams_beta_is_zero_part)  {
+      if (jac->interior) {
+        HYPRE_ParVector interior = NULL;
+        PetscCallExternal(HYPRE_IJVectorGetObject,jac->interior->ij,(void**)(&interior));
+        PetscCallExternal(HYPRE_AMSSetInteriorNodes,jac->hsolver,interior);
+      } else {
+        jac->ams_beta_is_zero_part = PETSC_FALSE;
+      }
     }
     if (jac->ND_PiFull || (jac->ND_Pi[0] && jac->ND_Pi[1])) {
       PetscInt           i;
@@ -477,8 +486,10 @@ static PetscErrorCode PCReset_HYPRE(PC pc)
   PetscCall(VecHYPRE_IJVectorDestroy(&jac->constants[0]));
   PetscCall(VecHYPRE_IJVectorDestroy(&jac->constants[1]));
   PetscCall(VecHYPRE_IJVectorDestroy(&jac->constants[2]));
+  PetscCall(VecHYPRE_IJVectorDestroy(&jac->interior));
   PetscCall(PCHYPREResetNearNullSpace_Private(pc));
   jac->ams_beta_is_zero = PETSC_FALSE;
+  jac->ams_beta_is_zero_part = PETSC_FALSE;
   jac->dim = 0;
   PetscFunctionReturn(0);
 }
@@ -506,6 +517,7 @@ static PetscErrorCode PCDestroy_HYPRE(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetConstantEdgeVectors_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetPoissonMatrix_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetEdgeConstantVectors_C",NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCHYPREAMSSetInteriorNodes_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCGetInterpolations_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCGetCoarseOperators_C",NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCMGGalerkinSetMatProductAlgorithm_C",NULL));
@@ -1735,6 +1747,43 @@ PetscErrorCode PCHYPRESetEdgeConstantVectors(PC pc, Vec ozz, Vec zoz, Vec zzo)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PCHYPREAMSSetInteriorNodes_HYPRE(PC pc,Vec interior)
+{
+  PC_HYPRE           *jac = (PC_HYPRE*)pc->data;
+
+  PetscFunctionBegin;
+  PetscCall(VecHYPRE_IJVectorDestroy(&jac->interior));
+  PetscCall(VecHYPRE_IJVectorCreate(interior->map,&jac->interior));
+  PetscCall(VecHYPRE_IJVectorCopy(interior,jac->interior));
+  jac->ams_beta_is_zero_part = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+/*@
+ PCHYPREAMSSetInteriorNodes - Set the list of interior nodes to a zero-conductivity region.
+
+   Collective on PC
+
+   Input Parameters:
++  pc - the preconditioning context
+-  interior - vector. node is interior if its entry in the array is 1.0.
+
+   Level: intermediate
+
+   Note:
+   This calls HYPRE_AMSSetInteriorNodes()
+.seealso:
+@*/
+PetscErrorCode PCHYPREAMSSetInteriorNodes(PC pc, Vec interior)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidHeaderSpecific(interior,VEC_CLASSID,2);
+  PetscCheckSameComm(pc,1,interior,2);
+  PetscTryMethod(pc,"PCHYPREAMSSetInteriorNodes_C",(PC,Vec),(pc,interior));
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PCSetCoordinates_HYPRE(PC pc, PetscInt dim, PetscInt nloc, PetscReal *coords)
 {
   PC_HYPRE        *jac = (PC_HYPRE*)pc->data;
@@ -1970,6 +2019,7 @@ static PetscErrorCode  PCHYPRESetType_HYPRE(PC pc,const char name[])
     jac->coords[0]           = NULL;
     jac->coords[1]           = NULL;
     jac->coords[2]           = NULL;
+    jac->interior            = NULL;
     /* solver parameters: these are borrowed from mfem package, and they are not the default values from HYPRE AMS */
     jac->as_print           = 0;
     jac->as_max_iter        = 1; /* used as a preconditioner */
@@ -2277,6 +2327,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_HYPRE(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetDiscreteCurl_C",PCHYPRESetDiscreteCurl_HYPRE));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetInterpolations_C",PCHYPRESetInterpolations_HYPRE));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetEdgeConstantVectors_C",PCHYPRESetEdgeConstantVectors_HYPRE));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCHYPREAMSSetInteriorNodes_C",PCHYPREAMSSetInteriorNodes_HYPRE));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetPoissonMatrix_C",PCHYPRESetPoissonMatrix_HYPRE));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCMGGalerkinSetMatProductAlgorithm_C",PCMGGalerkinSetMatProductAlgorithm_HYPRE_BoomerAMG));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc,"PCMGGalerkinGetMatProductAlgorithm_C",PCMGGalerkinGetMatProductAlgorithm_HYPRE_BoomerAMG));
