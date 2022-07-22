@@ -34,17 +34,26 @@ int main(int argc, char **argv)
   PetscSection   section;
   PetscFE        fe;
   PetscInt       dim,c,cStart,cEnd;
-  PetscBool      view_coord = PETSC_FALSE, tensor = PETSC_TRUE;
+  PetscBool      view_coord = PETSC_FALSE, tensor = PETSC_TRUE, project = PETSC_FALSE;
 
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Tensor closure restrictions", "DMPLEX");
   PetscCall(PetscOptionsBool("-closure_tensor", "Apply DMPlexSetClosurePermutationTensor", "ex8.c", tensor, &tensor, NULL));
+  PetscCall(PetscOptionsBool("-project_coordinates", "Call DMProjectCoordinates explicitly", "ex8.c", project, &project, NULL));
   PetscCall(PetscOptionsBool("-view_coord", "View coordinates of element closures", "ex8.c", view_coord, &view_coord, NULL));
   PetscOptionsEnd();
 
   PetscCall(DMCreate(PETSC_COMM_WORLD, &dm));
   PetscCall(DMSetType(dm, DMPLEX));
   PetscCall(DMSetFromOptions(dm));
+  if (project) {
+    PetscFE fe_coords;
+    PetscInt cdim;
+    PetscCall(DMGetCoordinateDim(dm, &cdim));
+    PetscCall(PetscFECreateLagrange(PETSC_COMM_SELF, cdim, cdim, PETSC_FALSE, 1, 1, &fe_coords));
+    PetscCall(DMProjectCoordinates(dm, fe_coords));
+    PetscCall(PetscFEDestroy(&fe_coords));
+  }
   PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
   PetscCall(DMGetDimension(dm, &dim));
 
@@ -121,6 +130,11 @@ int main(int argc, char **argv)
     suffix: 3d_q1_periodic
     requires: !complex
     args: -dm_plex_dim 3 -petscspace_degree 1 -dm_plex_simplex 0 -dm_plex_box_faces 3,2,1 -dm_plex_box_bd periodic,none,none -dm_view -view_coord
+  test:
+    suffix: 3d_q1_periodic_project
+    requires: !complex
+    args: -dm_plex_dim 3 -petscspace_degree 1 -dm_plex_simplex 0 -dm_plex_box_faces 1,1,3 -dm_plex_box_bd none,none,periodic -dm_view -view_coord -project_coordinates
+
   test:
     suffix: 3d_q2_periodic  # not actually periodic because only 2 cells
     args: -dm_plex_dim 3 -petscspace_degree 2 -dm_plex_simplex 0 -dm_plex_box_faces 2,2,2 -dm_plex_box_bd periodic,none,periodic -dm_view
