@@ -22,7 +22,7 @@ static PetscErrorCode DMPlexTransformView_Extrude(DMPlexTransform tr, PetscViewe
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformSetFromOptions_Extrude(PetscOptionItems *PetscOptionsObject, DMPlexTransform tr)
+static PetscErrorCode DMPlexTransformSetFromOptions_Extrude(DMPlexTransform tr,PetscOptionItems *PetscOptionsObject)
 {
   DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *) tr->data;
   PetscReal                th, normal[3], *thicknesses;
@@ -31,7 +31,6 @@ static PetscErrorCode DMPlexTransformSetFromOptions_Extrude(PetscOptionItems *Pe
   char                     funcname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 2);
   PetscOptionsHeadBegin(PetscOptionsObject, "DMPlexTransform Extrusion Options");
   PetscCall(PetscOptionsBoundedInt("-dm_plex_transform_extrude_layers", "Number of layers to extrude", "", ex->layers, &nl, &flg, 1));
   if (flg) PetscCall(DMPlexTransformExtrudeSetLayers(tr, nl));

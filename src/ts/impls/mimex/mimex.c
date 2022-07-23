@@ -273,7 +273,7 @@ static PetscErrorCode TSDestroy_Mimex(TS ts)
 }
 /*------------------------------------------------------------*/
 
-static PetscErrorCode TSSetFromOptions_Mimex(PetscOptionItems *PetscOptionsObject, TS ts)
+static PetscErrorCode TSSetFromOptions_Mimex(TS ts,PetscOptionItems *PetscOptionsObject)
 {
   TS_Mimex      *mimex = (TS_Mimex *) ts->data;
 

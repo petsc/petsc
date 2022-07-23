@@ -630,10 +630,10 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   PetscCall(PetscOptionsBool("-ksp_use_explicittranspose","Explicitly transpose the system in KSPSolveTranspose","KSPSetUseExplicitTranspose",ksp->transpose.use_explicittranspose,&flg,&set));
   if (set) PetscCall(KSPSetUseExplicitTranspose(ksp,flg));
 
-  if (ksp->ops->setfromoptions) PetscCall((*ksp->ops->setfromoptions)(PetscOptionsObject,ksp));
+  PetscTryTypeMethod(ksp,setfromoptions,PetscOptionsObject);
   skipoptions:
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
-  PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)ksp));
+  PetscCall(PetscObjectProcessOptionsHandlers((PetscObject)ksp,PetscOptionsObject));
   PetscOptionsEnd();
   ksp->setfromoptionscalled++;
   PetscFunctionReturn(0);

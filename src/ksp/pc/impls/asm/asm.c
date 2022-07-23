@@ -721,7 +721,7 @@ static PetscErrorCode PCDestroy_ASM(PC pc)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetFromOptions_ASM(PetscOptionItems *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_ASM(PC pc,PetscOptionItems *PetscOptionsObject)
 {
   PC_ASM         *osm = (PC_ASM*)pc->data;
   PetscInt       blocks,ovl;

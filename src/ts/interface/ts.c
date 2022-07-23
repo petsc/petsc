@@ -372,22 +372,22 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   }
 
   /* Handle specific TS options */
-  if (ts->ops->setfromoptions) PetscCall((*ts->ops->setfromoptions)(PetscOptionsObject,ts));
+  PetscTryTypeMethod(ts,setfromoptions,PetscOptionsObject);
 
   /* Handle TSAdapt options */
   PetscCall(TSGetAdapt(ts,&ts->adapt));
   PetscCall(TSAdaptSetDefaultType(ts->adapt,ts->default_adapt_type));
-  PetscCall(TSAdaptSetFromOptions(PetscOptionsObject,ts->adapt));
+  PetscCall(TSAdaptSetFromOptions(ts->adapt,PetscOptionsObject));
 
   /* TS trajectory must be set after TS, since it may use some TS options above */
   tflg = ts->trajectory ? PETSC_TRUE : PETSC_FALSE;
   PetscCall(PetscOptionsBool("-ts_save_trajectory","Save the solution at each timestep","TSSetSaveTrajectory",tflg,&tflg,NULL));
   if (tflg) PetscCall(TSSetSaveTrajectory(ts));
 
-  PetscCall(TSAdjointSetFromOptions(PetscOptionsObject,ts));
+  PetscCall(TSAdjointSetFromOptions(ts,PetscOptionsObject));
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
-  PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)ts));
+  PetscCall(PetscObjectProcessOptionsHandlers((PetscObject)ts,PetscOptionsObject));
   PetscOptionsEnd();
 
   if (ts->trajectory) PetscCall(TSTrajectorySetFromOptions(ts->trajectory,ts));
@@ -1887,7 +1887,7 @@ PetscErrorCode  TSLoad(TS ts, PetscViewer viewer)
   PetscCheck(classid == TS_FILE_CLASSID,PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONG,"Not TS next in file");
   PetscCall(PetscViewerBinaryRead(viewer,type,256,NULL,PETSC_CHAR));
   PetscCall(TSSetType(ts, type));
-  if (ts->ops->load) PetscCall((*ts->ops->load)(ts,viewer));
+  PetscTryTypeMethod(ts,load,viewer);
   PetscCall(DMCreate(PetscObjectComm((PetscObject)ts),&dm));
   PetscCall(DMLoad(dm,viewer));
   PetscCall(TSSetDM(ts,dm));
@@ -1979,7 +1979,7 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
     PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)ts,viewer));
     if (ts->ops->view) {
       PetscCall(PetscViewerASCIIPushTab(viewer));
-      PetscCall((*ts->ops->view)(ts,viewer));
+      PetscUseTypeMethod(ts,view ,viewer);
       PetscCall(PetscViewerASCIIPopTab(viewer));
     }
     if (ts->max_steps < PETSC_MAX_INT) PetscCall(PetscViewerASCIIPrintf(viewer,"  maximum steps=%" PetscInt_FMT "\n",ts->max_steps));
@@ -2006,7 +2006,7 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
   } else if (isstring) {
     PetscCall(TSGetType(ts,&type));
     PetscCall(PetscViewerStringSPrintf(viewer," TSType: %-7.7s",type));
-    if (ts->ops->view) PetscCall((*ts->ops->view)(ts,viewer));
+    PetscTryTypeMethod(ts,view,viewer);
   } else if (isbinary) {
     PetscInt    classid = TS_FILE_CLASSID;
     MPI_Comm    comm;
@@ -2020,7 +2020,7 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
       PetscCall(PetscStrncpy(type,((PetscObject)ts)->type_name,256));
       PetscCall(PetscViewerBinaryWrite(viewer,type,256,PETSC_CHAR));
     }
-    if (ts->ops->view) PetscCall((*ts->ops->view)(ts,viewer));
+    PetscTryTypeMethod(ts,view,viewer);
     if (ts->adapt) PetscCall(TSAdaptView(ts->adapt,viewer));
     PetscCall(DMView(ts->dm,viewer));
     PetscCall(VecView(ts->vec_sol,viewer));
@@ -2038,7 +2038,7 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
     PetscCall(PetscDrawStringBoxed(draw,x,y,PETSC_DRAW_BLACK,PETSC_DRAW_BLACK,str,NULL,&h));
     bottom = y - h;
     PetscCall(PetscDrawPushCurrentPoint(draw,x,bottom));
-    if (ts->ops->view) PetscCall((*ts->ops->view)(ts,viewer));
+    PetscTryTypeMethod(ts,view,viewer);
     if (ts->adapt) PetscCall(TSAdaptView(ts->adapt,viewer));
     if (ts->snes)  PetscCall(SNESView(ts->snes,viewer));
     PetscCall(PetscDrawPopCurrentPoint(draw));
@@ -2058,7 +2058,7 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
       PetscCall(PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/time",name));
       PetscCallSAWs(SAWs_Register,(dir,&ts->ptime,1,SAWs_READ,SAWs_DOUBLE));
     }
-    if (ts->ops->view) PetscCall((*ts->ops->view)(ts,viewer));
+    PetscTryTypeMethod(ts,view,viewer);
 #endif
   }
   if (ts->snes && ts->usessnes)  {
@@ -2351,7 +2351,7 @@ PetscErrorCode  TSGetSolutionComponents(TS ts,PetscInt *n,Vec *v)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (!ts->ops->getsolutioncomponents) *n = 0;
-  else PetscCall((*ts->ops->getsolutioncomponents)(ts,n,v));
+  else PetscUseTypeMethod(ts,getsolutioncomponents ,n,v);
   PetscFunctionReturn(0);
 }
 
@@ -2374,7 +2374,7 @@ PetscErrorCode  TSGetAuxSolution(TS ts,Vec *v)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if (ts->ops->getauxsolution) PetscCall((*ts->ops->getauxsolution)(ts,v));
+  if (ts->ops->getauxsolution) PetscUseTypeMethod(ts,getauxsolution,v);
   else PetscCall(VecZeroEntries(*v));
   PetscFunctionReturn(0);
 }
@@ -2401,7 +2401,7 @@ PetscErrorCode  TSGetTimeError(TS ts,PetscInt n,Vec *v)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if (ts->ops->gettimeerror) PetscCall((*ts->ops->gettimeerror)(ts,n,v));
+  if (ts->ops->gettimeerror) PetscUseTypeMethod(ts,gettimeerror,n,v);
   else PetscCall(VecZeroEntries(*v));
   PetscFunctionReturn(0);
 }
@@ -2427,7 +2427,7 @@ PetscErrorCode  TSSetTimeError(TS ts,Vec v)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscCheck(ts->setupcalled,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetUp() first");
-  if (ts->ops->settimeerror) PetscCall((*ts->ops->settimeerror)(ts,v));
+  PetscTryTypeMethod(ts,settimeerror,v);
   PetscFunctionReturn(0);
 }
 
@@ -2590,7 +2590,7 @@ PetscErrorCode  TSSetUp(TS ts)
   PetscCall(TSGetAdapt(ts,&ts->adapt));
   PetscCall(TSAdaptSetDefaultType(ts->adapt,ts->default_adapt_type));
 
-  if (ts->ops->setup) PetscCall((*ts->ops->setup)(ts));
+  PetscTryTypeMethod(ts,setup);
 
   PetscCall(TSSetExactFinalTimeDefault(ts));
 
@@ -2611,7 +2611,7 @@ PetscErrorCode  TSSetUp(TS ts)
   if (!jac && (ijac || i2jac || rhsjac)) PetscCall(DMSNESSetJacobian(dm,SNESTSFormJacobian,ts));
 
   /* if time integration scheme has a starting method, call it */
-  if (ts->ops->startingmethod) PetscCall((*ts->ops->startingmethod)(ts));
+  PetscTryTypeMethod(ts,startingmethod);
 
   ts->setupcalled = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -2636,7 +2636,7 @@ PetscErrorCode  TSReset(TS ts)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
 
-  if (ts->ops->reset) PetscCall((*ts->ops->reset)(ts));
+  PetscTryTypeMethod(ts,reset);
   if (ts->snes) PetscCall(SNESReset(ts->snes));
   if (ts->adapt) PetscCall(TSAdaptReset(ts->adapt));
 
@@ -2701,7 +2701,7 @@ PetscErrorCode  TSDestroy(TS *ts)
 
   /* if memory was published with SAWs then destroy it */
   PetscCall(PetscObjectSAWsViewOff((PetscObject)*ts));
-  if ((*ts)->ops->destroy) PetscCall((*(*ts)->ops->destroy)((*ts)));
+  PetscTryTypeMethod((*ts),destroy);
 
   PetscCall(TSTrajectoryDestroy(&(*ts)->trajectory));
 
@@ -3376,7 +3376,7 @@ PetscErrorCode TSInterpolate(TS ts,PetscReal t,Vec U)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(U,VEC_CLASSID,3);
   PetscCheck(t >= ts->ptime_prev && t <= ts->ptime,PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Requested time %g not in last time steps [%g,%g]",(double)t,(double)ts->ptime_prev,(double)ts->ptime);
-  PetscCall((*ts->ops->interpolate)(ts,t,U));
+  PetscUseTypeMethod(ts,interpolate ,t,U);
   PetscFunctionReturn(0);
 }
 
@@ -3427,7 +3427,7 @@ PetscErrorCode  TSStep(TS ts)
   ts->reason = TS_CONVERGED_ITERATING;
 
   PetscCall(PetscLogEventBegin(TS_Step,ts,0,0,0));
-  PetscCall((*ts->ops->step)(ts));
+  PetscUseTypeMethod(ts,step);
   PetscCall(PetscLogEventEnd(TS_Step,ts,0,0,0));
 
   if (ts->reason >= 0) {
@@ -3484,7 +3484,7 @@ PetscErrorCode TSEvaluateWLTE(TS ts,NormType wnormtype,PetscInt *order,PetscReal
   if (order) PetscValidLogicalCollectiveInt(ts,*order,3);
   PetscValidRealPointer(wlte,4);
   PetscCheck(wnormtype == NORM_2 || wnormtype == NORM_INFINITY,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"No support for norm type %s",NormTypes[wnormtype]);
-  PetscCall((*ts->ops->evaluatewlte)(ts,wnormtype,order,wlte));
+  PetscUseTypeMethod(ts,evaluatewlte ,wnormtype,order,wlte);
   PetscFunctionReturn(0);
 }
 
@@ -3515,7 +3515,7 @@ PetscErrorCode TSEvaluateStep(TS ts,PetscInt order,Vec U,PetscBool *done)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidType(ts,1);
   PetscValidHeaderSpecific(U,VEC_CLASSID,3);
-  PetscCall((*ts->ops->evaluatestep)(ts,order,U,done));
+  PetscUseTypeMethod(ts,evaluatestep ,order,U,done);
   PetscFunctionReturn(0);
 }
 
@@ -3595,7 +3595,7 @@ PetscErrorCode TSComputeInitialCondition(TS ts, Vec u)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(u, VEC_CLASSID, 2);
-  if (ts->ops->initcondition) PetscCall((*ts->ops->initcondition)(ts, u));
+  PetscTryTypeMethod(ts,initcondition, u);
   PetscFunctionReturn(0);
 }
 
@@ -3679,7 +3679,7 @@ PetscErrorCode TSComputeExactError(TS ts, Vec u, Vec e)
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(u, VEC_CLASSID, 2);
   PetscValidHeaderSpecific(e, VEC_CLASSID, 3);
-  if (ts->ops->exacterror) PetscCall((*ts->ops->exacterror)(ts, u, e));
+  PetscTryTypeMethod(ts,exacterror, u, e);
   PetscFunctionReturn(0);
 }
 
@@ -3802,7 +3802,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   PetscCall(TSViewFromOptions(ts,NULL,"-ts_view_pre"));
 
   if (ts->ops->solve) { /* This private interface is transitional and should be removed when all implementations are updated. */
-    PetscCall((*ts->ops->solve)(ts));
+    PetscUseTypeMethod(ts,solve);
     if (u) PetscCall(VecCopy(ts->vec_sol,u));
     ts->solvetime = ts->ptime;
     solution = ts->vec_sol;
@@ -5577,7 +5577,7 @@ PetscErrorCode TSComputeLinearStability(TS ts,PetscReal xr,PetscReal xi,PetscRea
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscCall((*ts->ops->linearstability)(ts,xr,xi,yr,yi));
+  PetscUseTypeMethod(ts,linearstability ,xr,xi,yr,yi);
   PetscFunctionReturn(0);
 }
 
@@ -5626,7 +5626,7 @@ PetscErrorCode  TSRollBack(TS ts)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
   PetscCheck(!ts->steprollback,PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"TSRollBack already called");
-  PetscCall((*ts->ops->rollback)(ts));
+  PetscUseTypeMethod(ts,rollback);
   ts->time_step = ts->ptime - ts->ptime_prev;
   ts->ptime = ts->ptime_prev;
   ts->ptime_prev = ts->ptime_prev_rollback;
@@ -5660,7 +5660,7 @@ PetscErrorCode  TSGetStages(TS ts,PetscInt *ns,Vec **Y)
   if (!ts->ops->getstages) {
     if (ns) *ns = 0;
     if (Y) *Y = NULL;
-  } else PetscCall((*ts->ops->getstages)(ts,ns,Y));
+  } else PetscUseTypeMethod(ts,getstages ,ns,Y);
   PetscFunctionReturn(0);
 }
 

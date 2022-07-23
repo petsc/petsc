@@ -658,14 +658,14 @@ PetscErrorCode KSPView_LGMRES(KSP ksp,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPSetFromOptions_LGMRES(PetscOptionItems *PetscOptionsObject,KSP ksp)
+PetscErrorCode KSPSetFromOptions_LGMRES(KSP ksp,PetscOptionItems *PetscOptionsObject)
 {
   PetscInt       aug;
   KSP_LGMRES     *lgmres = (KSP_LGMRES*) ksp->data;
   PetscBool      flg     = PETSC_FALSE;
 
   PetscFunctionBegin;
-  PetscCall(KSPSetFromOptions_GMRES(PetscOptionsObject,ksp));
+  PetscCall(KSPSetFromOptions_GMRES(ksp,PetscOptionsObject));
   PetscOptionsHeadBegin(PetscOptionsObject,"KSP LGMRES Options");
   PetscCall(PetscOptionsBool("-ksp_lgmres_constant","Use constant approx. space size","KSPGMRESSetConstant",lgmres->approx_constant,&lgmres->approx_constant,NULL));
   PetscCall(PetscOptionsInt("-ksp_lgmres_augment","Number of error approximations to augment the Krylov space with","KSPLGMRESSetAugDim",lgmres->aug_dim,&aug,&flg));

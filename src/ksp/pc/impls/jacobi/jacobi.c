@@ -354,7 +354,7 @@ static PetscErrorCode PCDestroy_Jacobi(PC pc)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetFromOptions_Jacobi(PetscOptionItems *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_Jacobi(PC pc,PetscOptionItems *PetscOptionsObject)
 {
   PC_Jacobi      *jac = (PC_Jacobi*)pc->data;
   PetscBool      flg;

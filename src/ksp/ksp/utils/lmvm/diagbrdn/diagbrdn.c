@@ -384,13 +384,13 @@ static PetscErrorCode MatView_DiagBrdn(Mat B, PetscViewer pv)
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatSetFromOptions_DiagBrdn(PetscOptionItems *PetscOptionsObject, Mat B)
+static PetscErrorCode MatSetFromOptions_DiagBrdn(Mat B,PetscOptionItems *PetscOptionsObject)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_DiagBrdn       *ldb = (Mat_DiagBrdn*)lmvm->ctx;
 
   PetscFunctionBegin;
-  PetscCall(MatSetFromOptions_LMVM(PetscOptionsObject, B));
+  PetscCall(MatSetFromOptions_LMVM(B,PetscOptionsObject));
   PetscOptionsHeadBegin(PetscOptionsObject,"Restricted Broyden method for approximating SPD Jacobian actions (MATLMVMDIAGBRDN)");
   PetscCall(PetscOptionsReal("-mat_lmvm_theta","(developer) convex ratio between BFGS and DFP components of the diagonal J0 scaling","",ldb->theta,&ldb->theta,NULL));
   PetscCall(PetscOptionsReal("-mat_lmvm_rho","(developer) update limiter in the J0 scaling","",ldb->rho,&ldb->rho,NULL));

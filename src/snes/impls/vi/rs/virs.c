@@ -351,7 +351,7 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
   PetscCall(SNESMonitor(snes,0,fnorm));
 
   /* test convergence */
-  PetscCall((*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP));
+  PetscUseTypeMethod(snes,converged ,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);
   if (snes->reason) PetscFunctionReturn(0);
 
   for (i=0; i<maxits; i++) {
@@ -365,7 +365,7 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
     PetscBool  isequal;
 
     /* Call general purpose update function */
-    if (snes->ops->update) PetscCall((*snes->ops->update)(snes, snes->iter));
+    PetscTryTypeMethod(snes,update, snes->iter);
     PetscCall(SNESComputeJacobian(snes,X,snes->jacobian,snes->jacobian_pre));
     SNESCheckJacobianDomainerror(snes);
 
@@ -537,7 +537,7 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
     /*
     if (snes->ops->precheck) {
       PetscBool changed_y = PETSC_FALSE;
-      PetscCall((*snes->ops->precheck)(snes,X,Y,snes->precheck,&changed_y));
+      PetscUseTypeMethod(snes,precheck ,X,Y,snes->precheck,&changed_y);
     }
 
     if (PetscLogPrintInfo) PetscCall(SNESVICheckResidual_Private(snes,snes->jacobian,F,Y,G,W));
@@ -581,7 +581,7 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
     PetscCall(SNESMonitor(snes,snes->iter,snes->norm));
     /* Test for convergence, xnorm = || X || */
     if (snes->ops->converged != SNESConvergedSkip) PetscCall(VecNorm(X,NORM_2,&xnorm));
-    PetscCall((*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP));
+    PetscUseTypeMethod(snes,converged ,snes->iter,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP);
     if (snes->reason) break;
   }
   /* make sure that the VI information attached to the DM is removed if the for loop above was broken early due to some exceptional conditional */

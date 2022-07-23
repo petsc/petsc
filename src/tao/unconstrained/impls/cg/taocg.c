@@ -30,7 +30,7 @@ static PetscErrorCode TaoSolve_CG(Tao tao)
   tao->reason = TAO_CONTINUE_ITERATING;
   PetscCall(TaoLogConvergenceHistory(tao,f,gnorm,0.0,tao->ksp_its));
   PetscCall(TaoMonitor(tao,tao->niter,f,gnorm,0.0,step));
-  PetscCall((*tao->ops->convergencetest)(tao,tao->cnvP));
+  PetscUseTypeMethod(tao,convergencetest ,tao->cnvP);
   if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
 
   /*  Set initial direction to -gradient */
@@ -54,7 +54,7 @@ static PetscErrorCode TaoSolve_CG(Tao tao)
 
   while (1) {
     /* Call general purpose update function */
-    if (tao->ops->update) PetscCall((*tao->ops->update)(tao, tao->niter, tao->user_update));
+    PetscTryTypeMethod(tao,update, tao->niter, tao->user_update);
 
     /*  Save the current gradient information */
     f_old = f;
@@ -142,7 +142,7 @@ static PetscErrorCode TaoSolve_CG(Tao tao)
     tao->niter++;
     PetscCall(TaoLogConvergenceHistory(tao,f,gnorm,0.0,tao->ksp_its));
     PetscCall(TaoMonitor(tao,tao->niter,f,gnorm,0.0,step));
-    PetscCall((*tao->ops->convergencetest)(tao,tao->cnvP));
+    PetscUseTypeMethod(tao,convergencetest ,tao->cnvP);
     if (tao->reason != TAO_CONTINUE_ITERATING) {
       break;
     }
@@ -222,7 +222,7 @@ static PetscErrorCode TaoDestroy_CG(Tao tao)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoSetFromOptions_CG(PetscOptionItems *PetscOptionsObject,Tao tao)
+static PetscErrorCode TaoSetFromOptions_CG(Tao tao,PetscOptionItems *PetscOptionsObject)
 {
   TAO_CG         *cgP = (TAO_CG*)tao->data;
 

@@ -425,7 +425,7 @@ PetscErrorCode MatPartitioningHierarchicalSetNfineparts(MatPartitioning part, Pe
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatPartitioningSetFromOptions_Hierarchical(PetscOptionItems *PetscOptionsObject,MatPartitioning part)
+PetscErrorCode MatPartitioningSetFromOptions_Hierarchical(MatPartitioning part,PetscOptionItems *PetscOptionsObject)
 {
   MatPartitioning_Hierarchical *hpart = (MatPartitioning_Hierarchical*)part->data;
   char           value[1024];

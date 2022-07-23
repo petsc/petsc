@@ -7,7 +7,7 @@ static PetscErrorCode TaoLineSearchDestroy_Unit(TaoLineSearch ls)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoLineSearchSetFromOptions_Unit(PetscOptionItems *PetscOptionsObject,TaoLineSearch ls)
+static PetscErrorCode TaoLineSearchSetFromOptions_Unit(TaoLineSearch ls,PetscOptionItems *PetscOptionsObject)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

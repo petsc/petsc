@@ -109,7 +109,7 @@ PetscErrorCode PetscSFReset(PetscSF sf)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
-  if (sf->ops->Reset) PetscCall((*sf->ops->Reset)(sf));
+  PetscTryTypeMethod(sf,Reset);
   sf->nroots   = -1;
   sf->nleaves  = -1;
   sf->minleaf  = PETSC_MAX_INT;
@@ -174,7 +174,7 @@ PetscErrorCode PetscSFSetType(PetscSF sf,PetscSFType type)
   PetscCall(PetscFunctionListFind(PetscSFList,type,&r));
   PetscCheck(r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PetscSF type %s",type);
   /* Destroy the previous PetscSF implementation context */
-  if (sf->ops->Destroy) PetscCall((*(sf)->ops->Destroy)(sf));
+  PetscTryTypeMethod(sf,Destroy);
   PetscCall(PetscMemzero(sf->ops,sizeof(*sf->ops)));
   PetscCall(PetscObjectChangeTypeName((PetscObject)sf,type));
   PetscCall((*r)(sf));
@@ -224,7 +224,7 @@ PetscErrorCode PetscSFDestroy(PetscSF *sf)
   PetscValidHeaderSpecific((*sf),PETSCSF_CLASSID,1);
   if (--((PetscObject)(*sf))->refct > 0) {*sf = NULL; PetscFunctionReturn(0);}
   PetscCall(PetscSFReset(*sf));
-  if ((*sf)->ops->Destroy) PetscCall((*(*sf)->ops->Destroy)(*sf));
+  PetscTryTypeMethod((*sf),Destroy);
   PetscCall(PetscSFDestroy(&(*sf)->vscat.lsf));
   if ((*sf)->vscat.bs > 1) PetscCallMPI(MPI_Type_free(&(*sf)->vscat.unit));
   PetscCall(PetscHeaderDestroy(sf));
@@ -274,7 +274,7 @@ PetscErrorCode PetscSFSetUp(PetscSF sf)
   PetscCall(PetscLogEventBegin(PETSCSF_SetUp,sf,0,0,0));
   PetscCall(PetscSFCheckGraphValid_Private(sf));
   if (!((PetscObject)sf)->type_name) PetscCall(PetscSFSetType(sf,PETSCSFBASIC)); /* Zero all sf->ops */
-  if (sf->ops->SetUp) PetscCall((*sf->ops->SetUp)(sf));
+  PetscTryTypeMethod(sf,SetUp);
 #if defined(PETSC_HAVE_CUDA)
   if (sf->backend == PETSCSF_BACKEND_CUDA) {
     sf->ops->Malloc = PetscSFMalloc_CUDA;
@@ -357,7 +357,7 @@ PetscErrorCode PetscSFSetFromOptions(PetscSF sf)
    #endif
   }
  #endif
-  if (sf->ops->SetFromOptions) PetscCall((*sf->ops->SetFromOptions)(PetscOptionsObject,sf));
+  PetscTryTypeMethod(sf,SetFromOptions,PetscOptionsObject);
   PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -724,7 +724,7 @@ PetscErrorCode PetscSFDuplicate(PetscSF sf,PetscSFDuplicateOption opt,PetscSF *n
   (*newsf)->use_gpu_aware_mpi    = sf->use_gpu_aware_mpi;
   (*newsf)->use_stream_aware_mpi = sf->use_stream_aware_mpi;
 #endif
-  if (sf->ops->Duplicate) PetscCall((*sf->ops->Duplicate)(sf,opt,*newsf));
+  PetscTryTypeMethod(sf,Duplicate,opt,*newsf);
   /* Don't do PetscSFSetUp() since the new sf's graph might have not been set. */
   PetscFunctionReturn(0);
 }
@@ -888,7 +888,7 @@ PetscErrorCode PetscSFView(PetscSF sf,PetscViewer viewer)
     }
     PetscCall(PetscViewerASCIIPopTab(viewer));
   }
-  if (sf->ops->View) PetscCall((*sf->ops->View)(sf,viewer));
+  PetscTryTypeMethod(sf,View,viewer);
   PetscFunctionReturn(0);
 }
 
@@ -1276,9 +1276,8 @@ PetscErrorCode PetscSFCreateEmbeddedRootSF(PetscSF sf,PetscInt nselected,const P
       PetscCheck(selected[i] >= 0 && selected[i] < nroots,comm,PETSC_ERR_ARG_OUTOFRANGE,"selected root indice %" PetscInt_FMT " is out of [0,%" PetscInt_FMT ")",selected[i],nroots);
   }
 
-  if (sf->ops->CreateEmbeddedRootSF) {
-    PetscCall((*sf->ops->CreateEmbeddedRootSF)(sf,nselected,selected,esf));
-  } else {
+  if (sf->ops->CreateEmbeddedRootSF) PetscUseTypeMethod(sf,CreateEmbeddedRootSF ,nselected,selected,esf);
+  else {
     /* A generic version of creating embedded sf */
     PetscCall(PetscSFGetLeafRange(sf,&minleaf,&maxleaf));
     maxlocal = maxleaf - minleaf + 1;
@@ -1357,9 +1356,8 @@ PetscErrorCode PetscSFCreateEmbeddedLeafSF(PetscSF sf,PetscInt nselected,const P
   PetscCheck(!nselected || !(leaves[0] < 0 || leaves[nselected-1] >= sf->nleaves),comm,PETSC_ERR_ARG_OUTOFRANGE,"Min/Max leaf indices %" PetscInt_FMT "/%" PetscInt_FMT " are not in [0,%" PetscInt_FMT ")",leaves[0],leaves[nselected-1],sf->nleaves);
 
   /* Optimize the routine only when sf is setup and hence we can reuse sf's communication pattern */
-  if (sf->setupcalled && sf->ops->CreateEmbeddedLeafSF) {
-    PetscCall((*sf->ops->CreateEmbeddedLeafSF)(sf,nselected,leaves,newsf));
-  } else {
+  if (sf->setupcalled && sf->ops->CreateEmbeddedLeafSF) PetscUseTypeMethod(sf,CreateEmbeddedLeafSF ,nselected,leaves,newsf);
+  else {
     PetscCall(PetscSFGetGraph(sf,&nroots,NULL,&ilocal,&iremote));
     PetscCall(PetscMalloc1(nselected,&new_ilocal));
     PetscCall(PetscMalloc1(nselected,&new_iremote));
@@ -1408,7 +1406,7 @@ PetscErrorCode PetscSFBcastBegin(PetscSF sf,MPI_Datatype unit,const void *rootda
   if (!sf->vscat.logging) PetscCall(PetscLogEventBegin(PETSCSF_BcastBegin,sf,0,0,0));
   PetscCall(PetscGetMemType(rootdata,&rootmtype));
   PetscCall(PetscGetMemType(leafdata,&leafmtype));
-  PetscCall((*sf->ops->BcastBegin)(sf,unit,rootmtype,rootdata,leafmtype,leafdata,op));
+  PetscUseTypeMethod(sf,BcastBegin ,unit,rootmtype,rootdata,leafmtype,leafdata,op);
   if (!sf->vscat.logging) PetscCall(PetscLogEventEnd(PETSCSF_BcastBegin,sf,0,0,0));
   PetscFunctionReturn(0);
 }
@@ -1439,7 +1437,7 @@ PetscErrorCode PetscSFBcastWithMemTypeBegin(PetscSF sf,MPI_Datatype unit,PetscMe
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   PetscCall(PetscSFSetUp(sf));
   if (!sf->vscat.logging) PetscCall(PetscLogEventBegin(PETSCSF_BcastBegin,sf,0,0,0));
-  PetscCall((*sf->ops->BcastBegin)(sf,unit,rootmtype,rootdata,leafmtype,leafdata,op));
+  PetscUseTypeMethod(sf,BcastBegin ,unit,rootmtype,rootdata,leafmtype,leafdata,op);
   if (!sf->vscat.logging) PetscCall(PetscLogEventEnd(PETSCSF_BcastBegin,sf,0,0,0));
   PetscFunctionReturn(0);
 }
@@ -1467,7 +1465,7 @@ PetscErrorCode PetscSFBcastEnd(PetscSF sf,MPI_Datatype unit,const void *rootdata
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   if (!sf->vscat.logging) PetscCall(PetscLogEventBegin(PETSCSF_BcastEnd,sf,0,0,0));
-  PetscCall((*sf->ops->BcastEnd)(sf,unit,rootdata,leafdata,op));
+  PetscUseTypeMethod(sf,BcastEnd ,unit,rootdata,leafdata,op);
   if (!sf->vscat.logging) PetscCall(PetscLogEventEnd(PETSCSF_BcastEnd,sf,0,0,0));
   PetscFunctionReturn(0);
 }
@@ -1564,7 +1562,7 @@ PetscErrorCode PetscSFReduceEnd(PetscSF sf,MPI_Datatype unit,const void *leafdat
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   if (!sf->vscat.logging) PetscCall(PetscLogEventBegin(PETSCSF_ReduceEnd,sf,0,0,0));
-  PetscCall((*sf->ops->ReduceEnd)(sf,unit,leafdata,rootdata,op));
+  PetscUseTypeMethod(sf,ReduceEnd ,unit,leafdata,rootdata,op);
   if (!sf->vscat.logging) PetscCall(PetscLogEventEnd(PETSCSF_ReduceEnd,sf,0,0,0));
   PetscFunctionReturn(0);
 }
@@ -1606,7 +1604,7 @@ PetscErrorCode PetscSFFetchAndOpBegin(PetscSF sf,MPI_Datatype unit,void *rootdat
   PetscCall(PetscGetMemType(leafdata,&leafmtype));
   PetscCall(PetscGetMemType(leafupdate,&leafupdatemtype));
   PetscCheck(leafmtype == leafupdatemtype,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for leafdata and leafupdate in different memory types");
-  PetscCall((*sf->ops->FetchAndOpBegin)(sf,unit,rootmtype,rootdata,leafmtype,leafdata,leafupdate,op));
+  PetscUseTypeMethod(sf,FetchAndOpBegin ,unit,rootmtype,rootdata,leafmtype,leafdata,leafupdate,op);
   PetscCall(PetscLogEventEnd(PETSCSF_FetchAndOpBegin,sf,0,0,0));
   PetscFunctionReturn(0);
 }
@@ -1642,7 +1640,7 @@ PetscErrorCode PetscSFFetchAndOpWithMemTypeBegin(PetscSF sf,MPI_Datatype unit,Pe
   PetscCall(PetscSFSetUp(sf));
   PetscCall(PetscLogEventBegin(PETSCSF_FetchAndOpBegin,sf,0,0,0));
   PetscCheck(leafmtype == leafupdatemtype,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for leafdata and leafupdate in different memory types");
-  PetscCall((*sf->ops->FetchAndOpBegin)(sf,unit,rootmtype,rootdata,leafmtype,leafdata,leafupdate,op));
+  PetscUseTypeMethod(sf,FetchAndOpBegin ,unit,rootmtype,rootdata,leafmtype,leafdata,leafupdate,op);
   PetscCall(PetscLogEventEnd(PETSCSF_FetchAndOpBegin,sf,0,0,0));
   PetscFunctionReturn(0);
 }
@@ -1671,7 +1669,7 @@ PetscErrorCode PetscSFFetchAndOpEnd(PetscSF sf,MPI_Datatype unit,void *rootdata,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   PetscCall(PetscLogEventBegin(PETSCSF_FetchAndOpEnd,sf,0,0,0));
-  PetscCall((*sf->ops->FetchAndOpEnd)(sf,unit,rootdata,leafdata,leafupdate,op));
+  PetscUseTypeMethod(sf,FetchAndOpEnd ,unit,rootdata,leafdata,leafupdate,op);
   PetscCall(PetscLogEventEnd(PETSCSF_FetchAndOpEnd,sf,0,0,0));
   PetscFunctionReturn(0);
 }
@@ -2142,9 +2140,8 @@ PetscErrorCode PetscSFCreateLocalSF_Private(PetscSF sf,PetscSF *out)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
-  if (sf->ops->CreateLocalSF) {
-    PetscCall((*sf->ops->CreateLocalSF)(sf,out));
-  } else {
+  if (sf->ops->CreateLocalSF) PetscUseTypeMethod(sf,CreateLocalSF ,out);
+  else {
     /* Could use PetscSFCreateEmbeddedLeafSF, but since we know the comm is PETSC_COMM_SELF, we can make it fast */
     PetscCall(PetscObjectGetComm((PetscObject)sf,&comm));
     PetscCallMPI(MPI_Comm_rank(comm,&myrank));
@@ -2183,9 +2180,7 @@ PetscErrorCode PetscSFBcastToZero_Private(PetscSF sf,MPI_Datatype unit,const voi
   PetscCall(PetscLogEventBegin(PETSCSF_BcastBegin,sf,0,0,0));
   PetscCall(PetscGetMemType(rootdata,&rootmtype));
   PetscCall(PetscGetMemType(leafdata,&leafmtype));
-  if (sf->ops->BcastToZero) {
-    PetscCall((*sf->ops->BcastToZero)(sf,unit,rootmtype,rootdata,leafmtype,leafdata));
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"PetscSFBcastToZero_Private is not supported on this SF type");
+  PetscUseTypeMethod(sf,BcastToZero ,unit,rootmtype,rootdata,leafmtype,leafdata);
   PetscCall(PetscLogEventEnd(PETSCSF_BcastBegin,sf,0,0,0));
   PetscFunctionReturn(0);
 }

@@ -118,7 +118,7 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_NCGLinear(SNESLineSearch linese
 
   Application Interface Routine: SNESSetFromOptions()
 */
-static PetscErrorCode SNESSetFromOptions_NCG(PetscOptionItems *PetscOptionsObject,SNES snes)
+static PetscErrorCode SNESSetFromOptions_NCG(SNES snes,PetscOptionItems *PetscOptionsObject)
 {
   SNES_NCG       *ncg = (SNES_NCG*)snes->data;
   PetscBool      debug = PETSC_FALSE;
@@ -322,11 +322,11 @@ static PetscErrorCode SNESSolve_NCG(SNES snes)
   PetscCall(SNESMonitor(snes,0,fnorm));
 
   /* test convergence */
-  PetscCall((*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP));
+  PetscUseTypeMethod(snes,converged ,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);
   if (snes->reason) PetscFunctionReturn(0);
 
   /* Call general purpose update function */
-  if (snes->ops->update) PetscCall((*snes->ops->update)(snes, snes->iter));
+  PetscTryTypeMethod(snes,update, snes->iter);
 
   /* first update -- just use the (preconditioned) residual direction for the initial conjugate direction */
 
@@ -359,11 +359,11 @@ static PetscErrorCode SNESSolve_NCG(SNES snes)
     PetscCall(SNESMonitor(snes,snes->iter,snes->norm));
 
     /* Test for convergence */
-    PetscCall((*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP));
+    PetscUseTypeMethod(snes,converged ,snes->iter,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP);
     if (snes->reason) PetscFunctionReturn(0);
 
     /* Call general purpose update function */
-    if (snes->ops->update) PetscCall((*snes->ops->update)(snes, snes->iter));
+    PetscTryTypeMethod(snes,update, snes->iter);
     if (snes->npc) {
       if (snes->functype == SNES_FUNCTION_PRECONDITIONED) {
         PetscCall(SNESApplyNPC(snes,X,NULL,dX));

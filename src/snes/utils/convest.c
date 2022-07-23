@@ -128,7 +128,7 @@ PetscErrorCode PetscConvEstSetSolver(PetscConvEst ce, PetscObject solver)
   PetscValidHeaderSpecific(ce, PETSC_OBJECT_CLASSID, 1);
   PetscValidHeader(solver, 2);
   ce->solver = solver;
-  PetscCall((*ce->ops->setsolver)(ce, solver));
+  PetscUseTypeMethod(ce,setsolver , solver);
   PetscFunctionReturn(0);
 }
 
@@ -183,7 +183,7 @@ PetscErrorCode PetscConvEstComputeInitialGuess(PetscConvEst ce, PetscInt r, DM d
   PetscValidHeaderSpecific(ce, PETSC_OBJECT_CLASSID, 1);
   if (dm) PetscValidHeaderSpecific(dm, DM_CLASSID, 3);
   PetscValidHeaderSpecific(u, VEC_CLASSID, 4);
-  PetscCall((*ce->ops->initguess)(ce, r, dm, u));
+  PetscUseTypeMethod(ce,initguess , r, dm, u);
   PetscFunctionReturn(0);
 }
 
@@ -194,7 +194,7 @@ PetscErrorCode PetscConvEstComputeError(PetscConvEst ce, PetscInt r, DM dm, Vec 
   if (dm) PetscValidHeaderSpecific(dm, DM_CLASSID, 3);
   PetscValidHeaderSpecific(u, VEC_CLASSID, 4);
   PetscValidRealPointer(errors, 5);
-  PetscCall((*ce->ops->computeerror)(ce, r, dm, u, errors));
+  PetscUseTypeMethod(ce,computeerror , r, dm, u, errors);
   PetscFunctionReturn(0);
 }
 
@@ -467,7 +467,7 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal alpha[])
   PetscFunctionBegin;
   if (ce->event < 0) PetscCall(PetscLogEventRegister("ConvEst Error", PETSC_OBJECT_CLASSID, &ce->event));
   for (f = 0; f < ce->Nf; ++f) alpha[f] = 0.0;
-  PetscCall((*ce->ops->getconvrate)(ce, alpha));
+  PetscUseTypeMethod(ce,getconvrate , alpha);
   PetscFunctionReturn(0);
 }
 

@@ -134,7 +134,7 @@ static PetscErrorCode MatMFFDView_DS(MatMFFD ctx,PetscViewer viewer)
 .  ctx - the matrix free context
 
 */
-static PetscErrorCode MatMFFDSetFromOptions_DS(PetscOptionItems *PetscOptionsObject,MatMFFD ctx)
+static PetscErrorCode MatMFFDSetFromOptions_DS(MatMFFD ctx,PetscOptionItems *PetscOptionsObject)
 {
   MatMFFD_DS     *hctx = (MatMFFD_DS*)ctx->hctx;
 

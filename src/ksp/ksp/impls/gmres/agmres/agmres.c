@@ -18,7 +18,7 @@ extern PetscErrorCode KSPDGMRESComputeDeflationData_DGMRES(KSP,PetscInt*);
 extern PetscErrorCode KSPDGMRESComputeSchurForm_DGMRES(KSP,PetscInt*);
 extern PetscErrorCode KSPDGMRESApplyDeflation_DGMRES(KSP,Vec,Vec);
 extern PetscErrorCode KSPDestroy_DGMRES(KSP);
-extern PetscErrorCode KSPSetFromOptions_DGMRES(PetscOptionItems *,KSP);
+extern PetscErrorCode KSPSetFromOptions_DGMRES(KSP,PetscOptionItems *);
 extern PetscErrorCode KSPDGMRESSetEigen_DGMRES(KSP,PetscInt);
 /*
    This function allocates  data for the Newton basis GMRES implementation.
@@ -631,14 +631,14 @@ static PetscErrorCode KSPView_AGMRES(KSP ksp,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSetFromOptions_AGMRES(PetscOptionItems *PetscOptionsObject,KSP ksp)
+static PetscErrorCode KSPSetFromOptions_AGMRES(KSP ksp,PetscOptionItems *PetscOptionsObject)
 {
   PetscInt       neig;
   KSP_AGMRES     *agmres = (KSP_AGMRES*)ksp->data;
   PetscBool      flg;
 
   PetscFunctionBegin;
-  PetscCall(KSPSetFromOptions_DGMRES(PetscOptionsObject,ksp));  /* Set common options from DGMRES and GMRES */
+  PetscCall(KSPSetFromOptions_DGMRES(ksp,PetscOptionsObject));  /* Set common options from DGMRES and GMRES */
   PetscOptionsHeadBegin(PetscOptionsObject,"KSP AGMRES Options");
   PetscCall(PetscOptionsInt("-ksp_agmres_eigen", "Number of eigenvalues to deflate", "KSPDGMRESSetEigen", agmres->neig, &neig, &flg));
   if (flg) {

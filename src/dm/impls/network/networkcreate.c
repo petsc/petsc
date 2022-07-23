@@ -2,10 +2,9 @@
 #include <petsc/private/dmnetworkimpl.h>    /*I   "petscdmnetwork.h"   I*/
 #include <petsc/private/vecimpl.h>
 
-PetscErrorCode  DMSetFromOptions_Network(PetscOptionItems *PetscOptionsObject,DM dm)
+PetscErrorCode  DMSetFromOptions_Network(DM dm,PetscOptionItems *PetscOptionsObject)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
   PetscOptionsHeadBegin(PetscOptionsObject,"DMNetwork Options");
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);

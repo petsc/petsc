@@ -205,7 +205,7 @@ PetscErrorCode MatPartitioningView_PTScotch(MatPartitioning part, PetscViewer vi
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatPartitioningSetFromOptions_PTScotch(PetscOptionItems *PetscOptionsObject,MatPartitioning part)
+PetscErrorCode MatPartitioningSetFromOptions_PTScotch(MatPartitioning part,PetscOptionItems *PetscOptionsObject)
 {
   PetscBool                flag;
   PetscReal                r;

@@ -393,12 +393,12 @@ static PetscErrorCode MatSetUp_LMVMDFP(Mat B)
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatSetFromOptions_LMVMDFP(PetscOptionItems *PetscOptionsObject, Mat B)
+static PetscErrorCode MatSetFromOptions_LMVMDFP(Mat B,PetscOptionItems *PetscOptionsObject)
 {
   PetscFunctionBegin;
-  PetscCall(MatSetFromOptions_LMVM(PetscOptionsObject, B));
+  PetscCall(MatSetFromOptions_LMVM(B,PetscOptionsObject));
   PetscOptionsHeadBegin(PetscOptionsObject,"DFP method for approximating SPD Jacobian actions (MATLMVMDFP)");
-  PetscCall(MatSetFromOptions_LMVMSymBrdn_Private(PetscOptionsObject, B));
+  PetscCall(MatSetFromOptions_LMVMSymBrdn_Private(B,PetscOptionsObject));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }

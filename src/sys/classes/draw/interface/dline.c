@@ -145,7 +145,7 @@ PetscErrorCode  PetscDrawLine(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  PetscCall((*draw->ops->line)(draw,xl,yl,xr,yr,cl));
+  PetscUseTypeMethod(draw,line ,xl,yl,xr,yr,cl);
   PetscFunctionReturn(0);
 }
 
@@ -169,7 +169,7 @@ PetscErrorCode  PetscDrawArrow(PetscDraw draw,PetscReal xl,PetscReal yl,PetscRea
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  PetscCall((*draw->ops->arrow)(draw,xl,yl,xr,yr,cl));
+  PetscUseTypeMethod(draw,arrow ,xl,yl,xr,yr,cl);
   PetscFunctionReturn(0);
 }
 
@@ -192,7 +192,7 @@ PetscErrorCode  PetscDrawLineSetWidth(PetscDraw draw,PetscReal width)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  if (draw->ops->linesetwidth) PetscCall((*draw->ops->linesetwidth)(draw,width));
+  PetscTryTypeMethod(draw,linesetwidth,width);
   PetscFunctionReturn(0);
 }
 
@@ -221,6 +221,6 @@ PetscErrorCode  PetscDrawLineGetWidth(PetscDraw draw,PetscReal *width)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   PetscValidRealPointer(width,2);
-  PetscCall((*draw->ops->linegetwidth)(draw,width));
+  PetscUseTypeMethod(draw,linegetwidth ,width);
   PetscFunctionReturn(0);
 }

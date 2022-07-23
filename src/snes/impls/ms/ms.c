@@ -319,7 +319,7 @@ static PetscErrorCode SNESMSStep_Norms(SNES snes,PetscInt iter,Vec F)
     PetscCall(SNESLogConvergenceHistory(snes,snes->norm,0));
     PetscCall(SNESMonitor(snes,snes->iter,snes->norm));
     /* Test for convergence */
-    PetscCall((*snes->ops->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP));
+    PetscUseTypeMethod(snes,converged ,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP);
   } else if (iter > 0) {
     PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
     snes->iter = iter;
@@ -354,7 +354,7 @@ static PetscErrorCode SNESSolve_MS(SNES snes)
   for (i = 0; i < snes->max_its; i++) {
 
     /* Call general purpose update function */
-    if (snes->ops->update) PetscCall((*snes->ops->update)(snes,snes->iter));
+    PetscTryTypeMethod(snes,update,snes->iter);
 
     if (i == 0 && snes->jacobian) {
       /* This method does not require a Jacobian, but it is usually preconditioned by PBJacobi */
@@ -420,7 +420,7 @@ static PetscErrorCode SNESView_MS(SNES snes,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESSetFromOptions_MS(PetscOptionItems *PetscOptionsObject,SNES snes)
+static PetscErrorCode SNESSetFromOptions_MS(SNES snes,PetscOptionItems *PetscOptionsObject)
 {
   SNES_MS        *ms = (SNES_MS*)snes->data;
 

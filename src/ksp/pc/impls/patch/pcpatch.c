@@ -3041,7 +3041,7 @@ static PetscErrorCode PCDestroy_PATCH(PC pc)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetFromOptions_PATCH(PetscOptionItems *PetscOptionsObject, PC pc)
+static PetscErrorCode PCSetFromOptions_PATCH(PC pc,PetscOptionItems *PetscOptionsObject)
 {
   PC_PATCH            *patch = (PC_PATCH *) pc->data;
   PCPatchConstructType patchConstructionType = PC_PATCH_STAR;

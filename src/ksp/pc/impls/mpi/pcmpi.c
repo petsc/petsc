@@ -574,7 +574,7 @@ PetscErrorCode PCView_MPI(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCSetFromOptions_MPI(PetscOptionItems *PetscOptionsObject,PC pc)
+PetscErrorCode PCSetFromOptions_MPI(PC pc,PetscOptionItems *PetscOptionsObject)
 {
   PC_MPI *km = (PC_MPI*)pc->data;
 

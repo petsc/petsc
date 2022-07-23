@@ -51,7 +51,7 @@ PETSC_INTERN PetscErrorCode MatSetValues_MPISELL(Mat,PetscInt,const PetscInt[],P
 PETSC_INTERN PetscErrorCode MatSetOption_MPISELL(Mat,MatOption,PetscBool);
 PETSC_INTERN PetscErrorCode MatGetSeqNonzeroStructure_MPISELL(Mat,Mat*);
 
-PETSC_INTERN PetscErrorCode MatSetFromOptions_MPISELL(PetscOptionItems*,Mat);
+PETSC_INTERN PetscErrorCode MatSetFromOptions_MPISELL(Mat,PetscOptionItems*);
 PETSC_INTERN PetscErrorCode MatMPISELLSetPreallocation_MPISELL(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
 
 PETSC_INTERN PetscErrorCode MatConvert_MPISELL_MPIAIJ(Mat,MatType,MatReuse,Mat*);

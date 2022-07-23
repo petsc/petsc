@@ -93,11 +93,11 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
   PetscCall(TaoComputeObjectiveAndGradient(tao, W, &f, G));
   PetscCall(TaoLogConvergenceHistory(tao,f,1.0,0.0,tao->ksp_its));
   PetscCall(TaoMonitor(tao,tao->niter,f,1.0,0.0,tao->step));
-  PetscCall((*tao->ops->convergencetest)(tao,tao->cnvP));
+  PetscUseTypeMethod(tao,convergencetest ,tao->cnvP);
 
   while (tao->reason == TAO_CONTINUE_ITERATING) {
     /* Call general purpose update function */
-    if (tao->ops->update) PetscCall((*tao->ops->update)(tao, tao->niter, tao->user_update));
+    PetscTryTypeMethod(tao,update, tao->niter, tao->user_update);
 
     /* compute bt = Remp(Wt-1) - <Wt-1, At> */
     PetscCall(VecDot(W, G, &bt));
@@ -178,7 +178,7 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
     tao->niter++;
     PetscCall(TaoLogConvergenceHistory(tao,min_jw,epsilon,0.0,tao->ksp_its));
     PetscCall(TaoMonitor(tao,tao->niter,min_jw,epsilon,0.0,tao->step));
-    PetscCall((*tao->ops->convergencetest)(tao,tao->cnvP));
+    PetscUseTypeMethod(tao,convergencetest ,tao->cnvP);
   }
 
   /* free all the memory */
@@ -210,7 +210,7 @@ static PetscErrorCode TaoDestroy_BMRM(Tao tao)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoSetFromOptions_BMRM(PetscOptionItems *PetscOptionsObject,Tao tao)
+static PetscErrorCode TaoSetFromOptions_BMRM(Tao tao,PetscOptionItems *PetscOptionsObject)
 {
   TAO_BMRM*      bmrm = (TAO_BMRM*)tao->data;
 

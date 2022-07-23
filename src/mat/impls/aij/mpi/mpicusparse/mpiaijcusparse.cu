@@ -540,7 +540,7 @@ PetscErrorCode MatCUSPARSESetFormat_MPIAIJCUSPARSE(Mat A,MatCUSPARSEFormatOperat
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatSetFromOptions_MPIAIJCUSPARSE(PetscOptionItems *PetscOptionsObject,Mat A)
+PetscErrorCode MatSetFromOptions_MPIAIJCUSPARSE(Mat A,PetscOptionItems *PetscOptionsObject)
 {
   MatCUSPARSEStorageFormat format;
   PetscBool                flg;

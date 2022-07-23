@@ -37,7 +37,7 @@ PetscErrorCode PetscPartitionerSetType(PetscPartitioner part, PetscPartitionerTy
   PetscCall(PetscFunctionListFind(PetscPartitionerList, name, &r));
   PetscCheck(r,PetscObjectComm((PetscObject) part), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscPartitioner type: %s", name);
 
-  if (part->ops->destroy) PetscCall((*part->ops->destroy)(part));
+  PetscTryTypeMethod(part,destroy);
   part->noGraph = PETSC_FALSE;
   PetscCall(PetscMemzero(part->ops, sizeof(*part->ops)));
   PetscCall(PetscObjectChangeTypeName((PetscObject) part, name));
@@ -120,7 +120,7 @@ PetscErrorCode PetscPartitionerView(PetscPartitioner part, PetscViewer v)
     PetscCall(PetscViewerASCIIPrintf(v, "  balance: %.2g\n", (double)part->balance));
     PetscCall(PetscViewerASCIIPrintf(v, "  use vertex weights: %d\n", part->usevwgt));
   }
-  if (part->ops->view) PetscCall((*part->ops->view)(part, v));
+  PetscTryTypeMethod(part,view, v);
   PetscFunctionReturn(0);
 }
 
@@ -176,13 +176,13 @@ PetscErrorCode PetscPartitionerSetFromOptions(PetscPartitioner part)
   PetscCall(PetscOptionsFList("-petscpartitioner_type", "Graph partitioner", "PetscPartitionerSetType", PetscPartitionerList, currentType, name, sizeof(name), &flg));
   if (flg) PetscCall(PetscPartitionerSetType(part, name));
   PetscCall(PetscOptionsBool("-petscpartitioner_use_vertex_weights","Use vertex weights","",part->usevwgt,&part->usevwgt,NULL));
-  if (part->ops->setfromoptions) PetscCall((*part->ops->setfromoptions)(PetscOptionsObject,part));
+  PetscTryTypeMethod(part,setfromoptions,PetscOptionsObject);
   PetscCall(PetscViewerDestroy(&part->viewer));
   PetscCall(PetscViewerDestroy(&part->viewerGraph));
   PetscCall(PetscOptionsGetViewer(((PetscObject) part)->comm, ((PetscObject) part)->options, ((PetscObject) part)->prefix, "-petscpartitioner_view", &part->viewer, NULL, NULL));
   PetscCall(PetscOptionsGetViewer(((PetscObject) part)->comm, ((PetscObject) part)->options, ((PetscObject) part)->prefix, "-petscpartitioner_view_graph", &part->viewerGraph, NULL, &part->viewGraph));
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
-  PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) part));
+  PetscCall(PetscObjectProcessOptionsHandlers((PetscObject) part,PetscOptionsObject));
   PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -203,7 +203,7 @@ PetscErrorCode PetscPartitionerSetUp(PetscPartitioner part)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
-  if (part->ops->setup) PetscCall((*part->ops->setup)(part));
+  PetscTryTypeMethod(part,setup);
   PetscFunctionReturn(0);
 }
 
@@ -223,7 +223,7 @@ PetscErrorCode PetscPartitionerReset(PetscPartitioner part)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
-  if (part->ops->reset) PetscCall((*part->ops->reset)(part));
+  PetscTryTypeMethod(part,reset);
   PetscFunctionReturn(0);
 }
 
@@ -252,7 +252,7 @@ PetscErrorCode PetscPartitionerDestroy(PetscPartitioner *part)
 
   PetscCall(PetscViewerDestroy(&(*part)->viewer));
   PetscCall(PetscViewerDestroy(&(*part)->viewerGraph));
-  if ((*part)->ops->destroy) PetscCall((*(*part)->ops->destroy)(*part));
+  PetscTryTypeMethod((*part),destroy);
   PetscCall(PetscHeaderDestroy(part));
   PetscFunctionReturn(0);
 }
@@ -321,9 +321,7 @@ PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, PetscInt nparts,
   if (nparts == 1) { /* quick */
     PetscCall(PetscSectionSetDof(partSection, 0, numVertices));
     PetscCall(ISCreateStride(PetscObjectComm((PetscObject)part),numVertices,0,1,partition));
-  } else {
-    PetscCall((*part->ops->partition)(part, nparts, numVertices, start, adjacency, vertexSection, targetSection, partSection, partition));
-  }
+  } else PetscUseTypeMethod(part,partition , nparts, numVertices, start, adjacency, vertexSection, targetSection, partSection, partition);
   PetscCall(PetscSectionSetUp(partSection));
   if (part->viewerGraph) {
     PetscViewer viewer = part->viewerGraph;

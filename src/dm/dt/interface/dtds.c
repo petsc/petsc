@@ -91,10 +91,9 @@ PetscErrorCode PetscDSSetType(PetscDS prob, PetscDSType name)
   PetscCall(PetscFunctionListFind(PetscDSList, name, &r));
   PetscCheck(r,PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscDS type: %s", name);
 
-  if (prob->ops->destroy) {
-    PetscCall((*prob->ops->destroy)(prob));
-    prob->ops->destroy = NULL;
-  }
+  PetscTryTypeMethod(prob,destroy);
+  prob->ops->destroy = NULL;
+
   PetscCall((*r)(prob));
   PetscCall(PetscObjectChangeTypeName((PetscObject) prob, name));
   PetscFunctionReturn(0);
@@ -278,7 +277,7 @@ PetscErrorCode PetscDSView(PetscDS prob, PetscViewer v)
   else    {PetscValidHeaderSpecific(v, PETSC_VIEWER_CLASSID, 2);}
   PetscCall(PetscObjectTypeCompare((PetscObject) v, PETSCVIEWERASCII, &iascii));
   if (iascii) PetscCall(PetscDSView_Ascii(prob, v));
-  if (prob->ops->view) PetscCall((*prob->ops->view)(prob, v));
+  PetscTryTypeMethod(prob,view, v);
   PetscFunctionReturn(0);
 }
 
@@ -351,9 +350,9 @@ PetscErrorCode PetscDSSetFromOptions(PetscDS prob)
     PetscCall(PetscDSSetType(prob, defaultType));
   }
   PetscCall(PetscOptionsBool("-petscds_jac_pre", "Discrete System", "PetscDSUseJacobianPreconditioner", prob->useJacPre, &prob->useJacPre, &flg));
-  if (prob->ops->setfromoptions) PetscCall((*prob->ops->setfromoptions)(prob));
+  PetscTryTypeMethod(prob,setfromoptions);
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
-  PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) prob));
+  PetscCall(PetscObjectProcessOptionsHandlers((PetscObject) prob,PetscOptionsObject));
   PetscOptionsEnd();
   if (prob->Nf) PetscCall(PetscDSViewFromOptions(prob, NULL, "-petscds_view"));
   PetscFunctionReturn(0);
@@ -448,7 +447,7 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
   PetscCall(PetscMalloc6(NsMax*NqMax*NcMax,&prob->f0,NsMax*NqMax*NcMax*dimEmbed,&prob->f1,
                          NsMax*NsMax*NqMax*NcMax*NcMax,&prob->g0,NsMax*NsMax*NqMax*NcMax*NcMax*dimEmbed,&prob->g1,
                          NsMax*NsMax*NqMax*NcMax*NcMax*dimEmbed,&prob->g2,NsMax*NsMax*NqMax*NcMax*NcMax*dimEmbed*dimEmbed,&prob->g3));
-  if (prob->ops->setup) PetscCall((*prob->ops->setup)(prob));
+  PetscTryTypeMethod(prob,setup);
   prob->setup = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -554,7 +553,7 @@ PetscErrorCode PetscDSDestroy(PetscDS *ds)
   PetscCall(PetscWeakFormDestroy(&(*ds)->wf));
   PetscCall(PetscFree2((*ds)->update,(*ds)->ctx));
   PetscCall(PetscFree4((*ds)->exactSol,(*ds)->exactCtx,(*ds)->exactSol_t,(*ds)->exactCtx_t));
-  if ((*ds)->ops->destroy) PetscCall((*(*ds)->ops->destroy)(*ds));
+  PetscTryTypeMethod((*ds),destroy);
   PetscCall(PetscDSDestroyBoundary(*ds));
   PetscCall(PetscFree((*ds)->constants));
   PetscCall(PetscHeaderDestroy(ds));

@@ -929,12 +929,11 @@ PETSC_EXTERN PetscErrorCode DMDestroy_Moab(DM dm)
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode DMSetFromOptions_Moab(PetscOptionItems *PetscOptionsObject, DM dm)
+PETSC_EXTERN PetscErrorCode DMSetFromOptions_Moab(DM dm,PetscOptionItems *PetscOptionsObject)
 {
   DM_Moab        *dmmoab = (DM_Moab*)dm->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscOptionsHeadBegin(PetscOptionsObject, "DMMoab Options");
   PetscCall(PetscOptionsBoundedInt("-dm_moab_rw_dbg", "The verbosity level for reading and writing MOAB meshes", "DMView", dmmoab->rw_dbglevel, &dmmoab->rw_dbglevel, NULL,0));
   PetscCall(PetscOptionsBool("-dm_moab_partiton_by_rank", "Use partition by rank when reading MOAB meshes from file", "DMView", dmmoab->partition_by_rank, &dmmoab->partition_by_rank, NULL));

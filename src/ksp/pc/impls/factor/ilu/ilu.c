@@ -41,7 +41,7 @@ PetscErrorCode  PCFactorSetDropTolerance_ILU(PC pc,PetscReal dt,PetscReal dtcol,
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetFromOptions_ILU(PetscOptionItems *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_ILU(PC pc,PetscOptionItems *PetscOptionsObject)
 {
   PetscInt       itmp;
   PetscBool      flg,set;
@@ -50,7 +50,7 @@ static PetscErrorCode PCSetFromOptions_ILU(PetscOptionItems *PetscOptionsObject,
 
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject,"ILU Options");
-  PetscCall(PCSetFromOptions_Factor(PetscOptionsObject,pc));
+  PetscCall(PCSetFromOptions_Factor(pc,PetscOptionsObject));
 
   PetscCall(PetscOptionsInt("-pc_factor_levels","levels of fill","PCFactorSetLevels",(PetscInt)((PC_Factor*)ilu)->info.levels,&itmp,&flg));
   if (flg) ((PC_Factor*)ilu)->info.levels = itmp;

@@ -5,7 +5,7 @@
 #include <cgnslib.h>
 #endif
 
-static PetscErrorCode PetscViewerSetFromOptions_CGNS(PetscOptionItems *PetscOptionsObject,PetscViewer v)
+static PetscErrorCode PetscViewerSetFromOptions_CGNS(PetscViewer v,PetscOptionItems *PetscOptionsObject)
 {
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject,"CGNS Viewer Options");

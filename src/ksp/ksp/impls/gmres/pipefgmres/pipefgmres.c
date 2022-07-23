@@ -577,14 +577,14 @@ PetscErrorCode KSPBuildSolution_PIPEFGMRES(KSP ksp,Vec ptr,Vec *result)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPSetFromOptions_PIPEFGMRES(PetscOptionItems *PetscOptionsObject,KSP ksp)
+PetscErrorCode KSPSetFromOptions_PIPEFGMRES(KSP ksp,PetscOptionItems *PetscOptionsObject)
 {
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES*)ksp->data;
   PetscBool      flg;
   PetscScalar    shift;
 
   PetscFunctionBegin;
-  PetscCall(KSPSetFromOptions_GMRES(PetscOptionsObject,ksp));
+  PetscCall(KSPSetFromOptions_GMRES(ksp,PetscOptionsObject));
   PetscOptionsHeadBegin(PetscOptionsObject,"KSP pipelined FGMRES Options");
   PetscCall(PetscOptionsScalar("-ksp_pipefgmres_shift","shift parameter","KSPPIPEFGMRESSetShift",pipefgmres->shift,&shift,&flg));
   if (flg) PetscCall(KSPPIPEFGMRESSetShift(ksp,shift));

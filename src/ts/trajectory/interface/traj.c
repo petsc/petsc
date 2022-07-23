@@ -62,7 +62,7 @@ PetscErrorCode TSTrajectorySet(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal 
     PetscCall(PetscViewerASCIIPrintf(tj->monitor,"TSTrajectorySet: stepnum %" PetscInt_FMT ", time %g (stages %" PetscInt_FMT ")\n",stepnum,(double)time,(PetscInt)!tj->solution_only));
   }
   PetscCall(PetscLogEventBegin(TSTrajectory_Set,tj,ts,0,0));
-  PetscCall((*tj->ops->set)(tj,ts,stepnum,time,X));
+  PetscUseTypeMethod(tj,set ,ts,stepnum,time,X);
   PetscCall(PetscLogEventEnd(TSTrajectory_Set,tj,ts,0,0));
   if (tj->usehistory) PetscCall(TSHistoryUpdate(tj->tsh,stepnum,time));
   if (tj->lag.caching) tj->lag.Udotcached.time = PETSC_MIN_REAL;
@@ -127,7 +127,7 @@ PetscErrorCode TSTrajectoryGet(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal 
     PetscCall(PetscViewerFlush(tj->monitor));
   }
   PetscCall(PetscLogEventBegin(TSTrajectory_Get,tj,ts,0,0));
-  PetscCall((*tj->ops->get)(tj,ts,stepnum,time));
+  PetscUseTypeMethod(tj,get ,ts,stepnum,time);
   PetscCall(PetscLogEventEnd(TSTrajectory_Get,tj,ts,0,0));
   PetscFunctionReturn(0);
 }
@@ -319,11 +319,9 @@ PetscErrorCode  TSTrajectoryView(TSTrajectory tj,PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer,"  total number of recomputations for adjoint calculation = %" PetscInt_FMT "\n",tj->recomps));
     PetscCall(PetscViewerASCIIPrintf(viewer,"  disk checkpoint reads = %" PetscInt_FMT "\n",tj->diskreads));
     PetscCall(PetscViewerASCIIPrintf(viewer,"  disk checkpoint writes = %" PetscInt_FMT "\n",tj->diskwrites));
-    if (tj->ops->view) {
-      PetscCall(PetscViewerASCIIPushTab(viewer));
-      PetscCall((*tj->ops->view)(tj,viewer));
-      PetscCall(PetscViewerASCIIPopTab(viewer));
-    }
+    PetscCall(PetscViewerASCIIPushTab(viewer));
+    PetscTryTypeMethod(tj,view ,viewer);
+    PetscCall(PetscViewerASCIIPopTab(viewer));
   }
   PetscFunctionReturn(0);
 }
@@ -545,7 +543,7 @@ PetscErrorCode TSTrajectoryReset(TSTrajectory tj)
   PetscFunctionBegin;
   if (!tj) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(tj,TSTRAJECTORY_CLASSID,1);
-  if (tj->ops->reset) PetscCall((*tj->ops->reset)(tj));
+  PetscTryTypeMethod(tj,reset);
   PetscCall(PetscFree(tj->dirfiletemplate));
   PetscCall(TSHistoryDestroy(&tj->tsh));
   PetscCall(TSHistoryCreate(PetscObjectComm((PetscObject)tj),&tj->tsh));
@@ -580,7 +578,7 @@ PetscErrorCode TSTrajectoryDestroy(TSTrajectory *tj)
   PetscCall(VecDestroy(&(*tj)->Udot));
 
   if ((*tj)->transformdestroy) PetscCall((*(*tj)->transformdestroy)((*tj)->transformctx));
-  if ((*tj)->ops->destroy) PetscCall((*(*tj)->ops->destroy)((*tj)));
+  PetscTryTypeMethod((*tj),destroy);
   if (!((*tj)->keepfiles)) {
     PetscMPIInt rank;
     MPI_Comm    comm;
@@ -838,7 +836,7 @@ PetscErrorCode  TSTrajectorySetFromOptions(TSTrajectory tj,TS ts)
   if (set) PetscCall(TSTrajectorySetFiletemplate(tj,filetemplate));
 
   /* Handle specific TSTrajectory options */
-  if (tj->ops->setfromoptions) PetscCall((*tj->ops->setfromoptions)(PetscOptionsObject,tj));
+  PetscTryTypeMethod(tj,setfromoptions,PetscOptionsObject);
   PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -871,7 +869,7 @@ PetscErrorCode  TSTrajectorySetUp(TSTrajectory tj,TS ts)
   if (!((PetscObject)tj)->type_name) {
     PetscCall(TSTrajectorySetType(tj,ts,TSTRAJECTORYBASIC));
   }
-  if (tj->ops->setup) PetscCall((*tj->ops->setup)(tj,ts));
+  PetscTryTypeMethod(tj,setup,ts);
 
   tj->setupcalled = PETSC_TRUE;
 

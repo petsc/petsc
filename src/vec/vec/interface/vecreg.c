@@ -78,10 +78,8 @@ PetscErrorCode VecSetType(Vec vec, VecType method)
 #endif
   PetscCall(PetscFunctionListFind(VecList,method,&r));
   PetscCheck(r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown vector type: %s", method);
-  if (vec->ops->destroy) {
-    PetscCall((*vec->ops->destroy)(vec));
-    vec->ops->destroy = NULL;
-  }
+  PetscTryTypeMethod(vec,destroy);
+  vec->ops->destroy = NULL;
   PetscCall(PetscMemzero(vec->ops,sizeof(struct _VecOps)));
   PetscCall(PetscFree(vec->defaultrandtype));
   PetscCall(PetscStrallocpy(PETSCRANDER48,&vec->defaultrandtype));

@@ -333,7 +333,7 @@ PetscErrorCode MatPartitioningPartySetBipart_Party(MatPartitioning part,PetscBoo
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatPartitioningSetFromOptions_Party(PetscOptionItems *PetscOptionsObject,MatPartitioning part)
+PetscErrorCode MatPartitioningSetFromOptions_Party(MatPartitioning part,PetscOptionItems *PetscOptionsObject)
 {
   PetscBool             flag;
   char                  value[256];

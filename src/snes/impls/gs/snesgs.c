@@ -155,7 +155,7 @@ PetscErrorCode SNESSetUp_NGS(SNES snes)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SNESSetFromOptions_NGS(PetscOptionItems *PetscOptionsObject,SNES snes)
+PetscErrorCode SNESSetFromOptions_NGS(SNES snes,PetscOptionItems *PetscOptionsObject)
 {
   SNES_NGS       *gs = (SNES_NGS*)snes->data;
   PetscInt       sweeps,max_its=PETSC_DEFAULT;
@@ -245,7 +245,7 @@ PetscErrorCode SNESSolve_NGS(SNES snes)
     PetscCall(SNESMonitor(snes,0,snes->norm));
 
     /* test convergence */
-    PetscCall((*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP));
+    PetscUseTypeMethod(snes,converged ,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);
     if (snes->reason) PetscFunctionReturn(0);
   } else {
     PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
@@ -253,7 +253,7 @@ PetscErrorCode SNESSolve_NGS(SNES snes)
   }
 
   /* Call general purpose update function */
-  if (snes->ops->update) PetscCall((*snes->ops->update)(snes, snes->iter));
+  PetscTryTypeMethod(snes,update, snes->iter);
 
   for (i = 0; i < snes->max_its; i++) {
     PetscCall(SNESComputeNGS(snes, B, X));
@@ -271,10 +271,10 @@ PetscErrorCode SNESSolve_NGS(SNES snes)
       PetscCall(SNESMonitor(snes,snes->iter,snes->norm));
     }
     /* Test for convergence */
-    if (normschedule == SNES_NORM_ALWAYS) PetscCall((*snes->ops->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP));
+    if (normschedule == SNES_NORM_ALWAYS) PetscUseTypeMethod(snes,converged ,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP);
     if (snes->reason) PetscFunctionReturn(0);
     /* Call general purpose update function */
-    if (snes->ops->update) PetscCall((*snes->ops->update)(snes, snes->iter));
+    PetscTryTypeMethod(snes,update, snes->iter);
   }
   if (normschedule == SNES_NORM_ALWAYS) {
     if (i == snes->max_its) {

@@ -804,7 +804,7 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
   tao->reason = TAO_CONTINUE_ITERATING;
   PetscCall(TaoLogConvergenceHistory(tao,minnorm,gnorm,0.0,tao->ksp_its));
   PetscCall(TaoMonitor(tao,tao->niter,minnorm,gnorm,0.0,step));
-  PetscCall((*tao->ops->convergencetest)(tao,tao->cnvP));
+  PetscUseTypeMethod(tao,convergencetest ,tao->cnvP);
 
   mfqP->nHist = mfqP->n+1;
   mfqP->nmodelpoints = mfqP->n+1;
@@ -813,7 +813,7 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
   while (tao->reason == TAO_CONTINUE_ITERATING) {
     PetscReal gnm = 1e-4;
     /* Call general purpose update function */
-    if (tao->ops->update) PetscCall((*tao->ops->update)(tao, tao->niter, tao->user_update));
+    PetscTryTypeMethod(tao,update, tao->niter, tao->user_update);
     tao->niter++;
     /* Solve the subproblem min{Q(s): ||s|| <= 1.0} */
     PetscCall(gqtwrap(tao,&gnm,&mdec));
@@ -965,7 +965,7 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
     /*  final criticality test */
     PetscCall(TaoLogConvergenceHistory(tao,minnorm,gnorm,0.0,tao->ksp_its));
     PetscCall(TaoMonitor(tao,tao->niter,minnorm,gnorm,0.0,step));
-    PetscCall((*tao->ops->convergencetest)(tao,tao->cnvP));
+    PetscUseTypeMethod(tao,convergencetest ,tao->cnvP);
     /* test for repeated model */
     if (mfqP->nmodelpoints==mfqP->last_nmodelpoints) {
       same = PETSC_TRUE;
@@ -1191,7 +1191,7 @@ static PetscErrorCode TaoDestroy_POUNDERS(Tao tao)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoSetFromOptions_POUNDERS(PetscOptionItems *PetscOptionsObject,Tao tao)
+static PetscErrorCode TaoSetFromOptions_POUNDERS(Tao tao,PetscOptionItems *PetscOptionsObject)
 {
   TAO_POUNDERS   *mfqP = (TAO_POUNDERS*)tao->data;
 

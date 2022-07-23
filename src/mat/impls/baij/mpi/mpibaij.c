@@ -1578,15 +1578,15 @@ PetscErrorCode MatDiagonalScale_MPIBAIJ(Mat mat,Vec ll,Vec rr)
   if (ll) {
     PetscCall(VecGetLocalSize(ll,&s1));
     PetscCheck(s1==s2,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"left vector non-conforming local size");
-    PetscCall((*b->ops->diagonalscale)(b,ll,NULL));
+    PetscUseTypeMethod(b,diagonalscale ,ll,NULL);
   }
   /* scale  the diagonal block */
-  PetscCall((*a->ops->diagonalscale)(a,ll,rr));
+  PetscUseTypeMethod(a,diagonalscale ,ll,rr);
 
   if (rr) {
     /* Do a scatter end and then right scale the off-diagonal block */
     PetscCall(VecScatterEnd(baij->Mvctx,rr,baij->lvec,INSERT_VALUES,SCATTER_FORWARD));
-    PetscCall((*b->ops->diagonalscale)(b,NULL,baij->lvec));
+    PetscUseTypeMethod(b,diagonalscale ,NULL,baij->lvec);
   }
   PetscFunctionReturn(0);
 }

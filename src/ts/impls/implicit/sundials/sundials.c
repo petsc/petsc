@@ -395,7 +395,7 @@ const char *const TSSundialsLmmTypes[] = {"","ADAMS","BDF","TSSundialsLmmType","
 /* type of G-S orthogonalization used by CVODE linear solver */
 const char *const TSSundialsGramSchmidtTypes[] = {"","MODIFIED","CLASSICAL","TSSundialsGramSchmidtType","SUNDIALS_",NULL};
 
-PetscErrorCode TSSetFromOptions_Sundials(PetscOptionItems *PetscOptionsObject,TS ts)
+PetscErrorCode TSSetFromOptions_Sundials(TS ts,PetscOptionItems *PetscOptionsObject)
 {
   TS_Sundials    *cvode = (TS_Sundials*)ts->data;
   int            indx;

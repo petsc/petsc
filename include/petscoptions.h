@@ -208,7 +208,7 @@ M*/
              PetscOptionItems *PetscOptionsObject = &PetscOptionsObjectBase; \
              PetscOptionsObject->options = ((PetscObject)obj)->options; \
              for (PetscOptionsObject->count=(PetscOptionsPublish?-1:1); PetscOptionsObject->count<2; PetscOptionsObject->count++) {\
-             PetscCall(PetscObjectOptionsBegin_Private(PetscOptionsObject,obj))
+             PetscCall(PetscObjectOptionsBegin_Private(obj,PetscOptionsObject))
 
 /*MC
     PetscOptionsEnd - Ends a set of queries on the options database that are related and should be
@@ -240,7 +240,7 @@ M*/
 #endif /* PETSC_CLANG_STATIC_ANALYZER */
 
 PETSC_EXTERN PetscErrorCode PetscOptionsBegin_Private(PetscOptionItems *,MPI_Comm,const char[],const char[],const char[]);
-PETSC_EXTERN PetscErrorCode PetscObjectOptionsBegin_Private(PetscOptionItems *,PetscObject);
+PETSC_EXTERN PetscErrorCode PetscObjectOptionsBegin_Private(PetscObject,PetscOptionItems *);
 PETSC_EXTERN PetscErrorCode PetscOptionsEnd_Private(PetscOptionItems *);
 PETSC_EXTERN PetscErrorCode PetscOptionsHeadBegin(PetscOptionItems *,const char[]);
 
@@ -383,8 +383,8 @@ PETSC_EXTERN PetscErrorCode PetscOptionsDeprecated_Private(PetscOptionItems*,con
 
 PETSC_EXTERN PetscErrorCode PetscOptionsSAWsDestroy(void);
 
-PETSC_EXTERN PetscErrorCode PetscObjectAddOptionsHandler(PetscObject,PetscErrorCode (*)(PetscOptionItems*,PetscObject,void*),PetscErrorCode (*)(PetscObject,void*),void*);
-PETSC_EXTERN PetscErrorCode PetscObjectProcessOptionsHandlers(PetscOptionItems*,PetscObject);
+PETSC_EXTERN PetscErrorCode PetscObjectAddOptionsHandler(PetscObject,PetscErrorCode (*)(PetscObject,PetscOptionItems*,void*),PetscErrorCode (*)(PetscObject,void*),void*);
+PETSC_EXTERN PetscErrorCode PetscObjectProcessOptionsHandlers(PetscObject,PetscOptionItems*);
 PETSC_EXTERN PetscErrorCode PetscObjectDestroyOptionsHandlers(PetscObject);
 
 PETSC_EXTERN PetscErrorCode PetscOptionsLeftError(void);

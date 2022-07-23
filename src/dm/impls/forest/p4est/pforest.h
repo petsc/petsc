@@ -4382,8 +4382,8 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
     if (dm->setfromoptionscalled) {
 
       PetscObjectOptionsBegin((PetscObject)newPlex);
-      PetscCall(DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject,newPlex));
-      PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)newPlex));
+      PetscCall(DMSetFromOptions_NonRefinement_Plex(newPlex,PetscOptionsObject));
+      PetscCall(PetscObjectProcessOptionsHandlers((PetscObject)newPlex,PetscOptionsObject));
       PetscOptionsEnd();
     }
     PetscCall(DMViewFromOptions(newPlex,NULL,"-dm_p4est_plex_view"));
@@ -4420,14 +4420,14 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMSetFromOptions_pforest(PetscOptionItems *PetscOptionsObject,DM dm)
+static PetscErrorCode DMSetFromOptions_pforest(DM dm,PetscOptionItems *PetscOptionsObject)
 {
   DM_Forest_pforest *pforest = (DM_Forest_pforest*) ((DM_Forest*) dm->data)->data;
   char              stringBuffer[256];
   PetscBool         flg;
 
   PetscFunctionBegin;
-  PetscCall(DMSetFromOptions_Forest(PetscOptionsObject,dm));
+  PetscCall(DMSetFromOptions_Forest(dm,PetscOptionsObject));
   PetscOptionsHeadBegin(PetscOptionsObject,"DM" P4EST_STRING " options");
   PetscCall(PetscOptionsBool("-dm_p4est_partition_for_coarsening","partition forest to allow for coarsening","DMP4estSetPartitionForCoarsening",pforest->partition_for_coarsening,&(pforest->partition_for_coarsening),NULL));
   PetscCall(PetscOptionsString("-dm_p4est_ghost_label_name","the name of the ghost label when converting from a DMPlex",NULL,NULL,stringBuffer,sizeof(stringBuffer),&flg));

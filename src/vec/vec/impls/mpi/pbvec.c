@@ -369,7 +369,7 @@ PetscErrorCode VecAssemblyReset_MPI(Vec X)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecSetFromOptions_MPI(PetscOptionItems *PetscOptionsObject,Vec X)
+static PetscErrorCode VecSetFromOptions_MPI(Vec X,PetscOptionItems *PetscOptionsObject)
 {
 #if !defined(PETSC_HAVE_MPIUNI)
   PetscBool      flg = PETSC_FALSE,set;
@@ -780,7 +780,7 @@ PetscErrorCode  VecMPISetGhost(Vec vv,PetscInt nghost,const PetscInt ghosts[])
     PetscCall(PetscObjectGetComm((PetscObject)vv,&comm));
     n    = vv->map->n;
     N    = vv->map->N;
-    PetscCall((*vv->ops->destroy)(vv));
+    PetscUseTypeMethod(vv,destroy);
     PetscCall(VecSetSizes(vv,n,N));
     PetscCall(VecCreate_MPI_Private(vv,PETSC_TRUE,nghost,NULL));
     w    = (Vec_MPI*)(vv)->data;

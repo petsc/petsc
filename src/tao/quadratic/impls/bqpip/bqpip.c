@@ -293,10 +293,10 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
     gnorm = PetscSqrtScalar(qp->gap + qp->dinfeas);
     PetscCall(TaoLogConvergenceHistory(tao,qp->pobj,gnorm,qp->pinfeas,tao->ksp_its));
     PetscCall(TaoMonitor(tao,tao->niter,qp->pobj,gnorm,qp->pinfeas,step));
-    PetscCall((*tao->ops->convergencetest)(tao,tao->cnvP));
+    PetscUseTypeMethod(tao,convergencetest ,tao->cnvP);
     if (tao->reason != TAO_CONTINUE_ITERATING) break;
     /* Call general purpose update function */
-    if (tao->ops->update) PetscCall((*tao->ops->update)(tao, tao->niter, tao->user_update));
+    PetscTryTypeMethod(tao,update, tao->niter, tao->user_update);
     tao->niter++;
     tao->ksp_its = 0;
 
@@ -457,7 +457,7 @@ static PetscErrorCode TaoView_BQPIP(Tao tao,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoSetFromOptions_BQPIP(PetscOptionItems *PetscOptionsObject,Tao tao)
+static PetscErrorCode TaoSetFromOptions_BQPIP(Tao tao,PetscOptionItems *PetscOptionsObject)
 {
   TAO_BQPIP      *qp = (TAO_BQPIP*)tao->data;
 

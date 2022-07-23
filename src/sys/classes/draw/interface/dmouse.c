@@ -35,7 +35,7 @@ PetscErrorCode  PetscDrawGetMouseButton(PetscDraw draw,PetscDrawButton *button,P
   *button = PETSC_BUTTON_NONE;
   if (!draw->ops->getmousebutton) PetscFunctionReturn(0);
 
-  PetscCall((*draw->ops->getmousebutton)(draw,button,x_user,y_user,x_phys,y_phys));
+  PetscUseTypeMethod(draw,getmousebutton ,button,x_user,y_user,x_phys,y_phys);
 
   PetscCallMPI(MPI_Bcast((PetscEnum*)button,1,MPIU_ENUM,0,PetscObjectComm((PetscObject)draw)));
   if (x_user) bcast[0] = *x_user;

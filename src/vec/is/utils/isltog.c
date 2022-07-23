@@ -156,7 +156,7 @@ static PetscErrorCode ISGlobalToLocalMappingSetUp(ISLocalToGlobalMapping mapping
       PetscCall(ISLocalToGlobalMappingSetType(mapping,ISLOCALTOGLOBALMAPPINGBASIC));
     }
   }
-  if (mapping->ops->globaltolocalmappingsetup) PetscCall((*mapping->ops->globaltolocalmappingsetup)(mapping));
+  PetscTryTypeMethod(mapping,globaltolocalmappingsetup);
   PetscFunctionReturn(0);
 }
 
@@ -527,7 +527,7 @@ PetscErrorCode  ISLocalToGlobalMappingSetBlockSize(ISLocalToGlobalMapping mappin
   }
   mapping->info_cached = PETSC_FALSE;
 
-  if (mapping->ops->destroy) PetscCall((*mapping->ops->destroy)(mapping));
+  PetscTryTypeMethod(mapping,destroy);
   PetscFunctionReturn(0);
 }
 
@@ -875,7 +875,7 @@ PetscErrorCode  ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping,ISGlo
   if (!mapping->data) {
     PetscCall(ISGlobalToLocalMappingSetUp(mapping));
   }
-  PetscCall((*mapping->ops->globaltolocalmappingapply)(mapping,type,n,idx,nout,idxout));
+  PetscUseTypeMethod(mapping,globaltolocalmappingapply ,type,n,idx,nout,idxout);
   PetscFunctionReturn(0);
 }
 
@@ -971,7 +971,7 @@ PetscErrorCode  ISGlobalToLocalMappingApplyBlock(ISLocalToGlobalMapping mapping,
   if (!mapping->data) {
     PetscCall(ISGlobalToLocalMappingSetUp(mapping));
   }
-  PetscCall((*mapping->ops->globaltolocalmappingapplyblock)(mapping,type,n,idx,nout,idxout));
+  PetscUseTypeMethod(mapping,globaltolocalmappingapplyblock ,type,n,idx,nout,idxout);
   PetscFunctionReturn(0);
 }
 
@@ -1925,10 +1925,9 @@ PetscErrorCode  ISLocalToGlobalMappingSetType(ISLocalToGlobalMapping ltog, ISLoc
     PetscCheck(r,PetscObjectComm((PetscObject)ltog),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested ISLocalToGlobalMapping type %s",type);
   }
   /* Destroy the previous private LTOG context */
-  if (ltog->ops->destroy) {
-    PetscCall((*ltog->ops->destroy)(ltog));
-    ltog->ops->destroy = NULL;
-  }
+  PetscTryTypeMethod(ltog,destroy);
+  ltog->ops->destroy = NULL;
+
   PetscCall(PetscObjectChangeTypeName((PetscObject)ltog,type));
   if (r) PetscCall((*r)(ltog));
   PetscFunctionReturn(0);

@@ -57,7 +57,7 @@ const char *const PCBDDCInterfaceExtTypes[] = {"DIRICHLET","LUMP","PCBDDCInterfa
 
 PetscErrorCode PCApply_BDDC(PC,Vec,Vec);
 
-PetscErrorCode PCSetFromOptions_BDDC(PetscOptionItems *PetscOptionsObject,PC pc)
+PetscErrorCode PCSetFromOptions_BDDC(PC pc,PetscOptionItems *PetscOptionsObject)
 {
   PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
   PetscInt       nt,i;

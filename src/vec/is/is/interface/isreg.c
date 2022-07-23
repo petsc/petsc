@@ -70,10 +70,9 @@ PetscErrorCode  ISSetType(IS is, ISType method)
   PetscCall(ISRegisterAll());
   PetscCall(PetscFunctionListFind(ISList,method,&r));
   PetscCheck(r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown IS type: %s", method);
-  if (is->ops->destroy) {
-    PetscCall((*is->ops->destroy)(is));
-    is->ops->destroy = NULL;
-  }
+  PetscTryTypeMethod(is,destroy);
+  is->ops->destroy = NULL;
+
   PetscCall((*r)(is));
   PetscCall(PetscObjectChangeTypeName((PetscObject)is,method));
   PetscFunctionReturn(0);

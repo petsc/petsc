@@ -260,7 +260,7 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
   PetscCall(SNESMonitor(snes,0,vi->phinorm));
 
   /* test convergence */
-  PetscCall((*snes->ops->converged)(snes,0,0.0,0.0,vi->phinorm,&snes->reason,snes->cnvP));
+  PetscUseTypeMethod(snes,converged ,0,0.0,0.0,vi->phinorm,&snes->reason,snes->cnvP);
   if (snes->reason) {
     sdm->ops->computefunction = vi->computeuserfunction;
     PetscFunctionReturn(0);
@@ -269,7 +269,7 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
   for (i=0; i<maxits; i++) {
 
     /* Call general purpose update function */
-    if (snes->ops->update) PetscCall((*snes->ops->update)(snes, snes->iter));
+    PetscTryTypeMethod(snes,update, snes->iter);
 
     /* Solve J Y = Phi, where J is the semismooth jacobian */
 
@@ -302,7 +302,7 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
     /*
     if (snes->ops->precheck) {
       PetscBool changed_y = PETSC_FALSE;
-      PetscCall((*snes->ops->precheck)(snes,X,Y,snes->precheck,&changed_y));
+      PetscUseTypeMethod(snes,precheck ,X,Y,snes->precheck,&changed_y);
     }
 
     if (PetscLogPrintInfo) PetscCall(SNESVICheckResidual_Private(snes,snes->jacobian,F,Y,G,W));
@@ -346,7 +346,7 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
     PetscCall(SNESMonitor(snes,snes->iter,snes->norm));
     /* Test for convergence, xnorm = || X || */
     if (snes->ops->converged != SNESConvergedSkip) PetscCall(VecNorm(X,NORM_2,&xnorm));
-    PetscCall((*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,vi->phinorm,&snes->reason,snes->cnvP));
+    PetscUseTypeMethod(snes,converged ,snes->iter,xnorm,ynorm,vi->phinorm,&snes->reason,snes->cnvP);
     if (snes->reason) break;
   }
   if (i == maxits) {
@@ -411,10 +411,10 @@ PetscErrorCode SNESReset_VINEWTONSSLS(SNES snes)
 
    Application Interface Routine: SNESSetFromOptions()
 */
-static PetscErrorCode SNESSetFromOptions_VINEWTONSSLS(PetscOptionItems *PetscOptionsObject,SNES snes)
+static PetscErrorCode SNESSetFromOptions_VINEWTONSSLS(SNES snes,PetscOptionItems *PetscOptionsObject)
 {
   PetscFunctionBegin;
-  PetscCall(SNESSetFromOptions_VI(PetscOptionsObject,snes));
+  PetscCall(SNESSetFromOptions_VI(snes,PetscOptionsObject));
   PetscOptionsHeadBegin(PetscOptionsObject,"SNES semismooth method options");
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);

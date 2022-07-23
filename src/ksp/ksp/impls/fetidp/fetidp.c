@@ -1253,7 +1253,7 @@ static PetscErrorCode KSPView_FETIDP(KSP ksp,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSetFromOptions_FETIDP(PetscOptionItems *PetscOptionsObject,KSP ksp)
+static PetscErrorCode KSPSetFromOptions_FETIDP(KSP ksp,PetscOptionItems *PetscOptionsObject)
 {
   KSP_FETIDP     *fetidp = (KSP_FETIDP*)ksp->data;
 

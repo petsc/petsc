@@ -48,11 +48,11 @@ static PetscErrorCode TaoSolve_IPM(Tao tao)
   tao->reason = TAO_CONTINUE_ITERATING;
   PetscCall(TaoLogConvergenceHistory(tao,ipmP->kkt_f,ipmP->phi,0.0,tao->ksp_its));
   PetscCall(TaoMonitor(tao,tao->niter,ipmP->kkt_f,ipmP->phi,0.0,1.0));
-  PetscCall((*tao->ops->convergencetest)(tao,tao->cnvP));
+  PetscUseTypeMethod(tao,convergencetest ,tao->cnvP);
 
   while (tao->reason == TAO_CONTINUE_ITERATING) {
     /* Call general purpose update function */
-    if (tao->ops->update) PetscCall((*tao->ops->update)(tao, tao->niter, tao->user_update));
+    PetscTryTypeMethod(tao,update, tao->niter, tao->user_update);
 
     tao->ksp_its=0;
     PetscCall(IPMUpdateK(tao));
@@ -194,7 +194,7 @@ static PetscErrorCode TaoSolve_IPM(Tao tao)
 
     PetscCall(TaoLogConvergenceHistory(tao,ipmP->kkt_f,ipmP->phi,0.0,tao->ksp_its));
     PetscCall(TaoMonitor(tao,tao->niter,ipmP->kkt_f,ipmP->phi,0.0,stepsize));
-    PetscCall((*tao->ops->convergencetest)(tao,tao->cnvP));
+    PetscUseTypeMethod(tao,convergencetest ,tao->cnvP);
     tao->niter++;
   }
   PetscFunctionReturn(0);
@@ -523,7 +523,7 @@ static PetscErrorCode TaoDestroy_IPM(Tao tao)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoSetFromOptions_IPM(PetscOptionItems *PetscOptionsObject,Tao tao)
+static PetscErrorCode TaoSetFromOptions_IPM(Tao tao,PetscOptionItems *PetscOptionsObject)
 {
   TAO_IPM        *ipmP = (TAO_IPM*)tao->data;
 

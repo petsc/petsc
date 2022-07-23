@@ -938,7 +938,7 @@ static PetscErrorCode PetscDualSpaceView_Lagrange(PetscDualSpace sp, PetscViewer
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDualSpaceSetFromOptions_Lagrange(PetscOptionItems *PetscOptionsObject,PetscDualSpace sp)
+static PetscErrorCode PetscDualSpaceSetFromOptions_Lagrange(PetscDualSpace sp,PetscOptionItems *PetscOptionsObject)
 {
   PetscBool      continuous, tensor, trimmed, flg, flg2, flg3;
   PetscDTNodeType nodeType;

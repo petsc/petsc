@@ -54,11 +54,8 @@ PetscErrorCode  PetscRandomGetValue(PetscRandom r,PetscScalar *val)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r,PETSC_RANDOM_CLASSID,1);
   PetscValidType(r,1);
-  if (!r->ops->getvalue) {
-    PetscCall((*r->ops->getvalues)(r,1,val));
-  } else {
-    PetscCall((*r->ops->getvalue)(r,val));
-  }
+  if (!r->ops->getvalue) PetscUseTypeMethod(r,getvalues ,1,val);
+  else PetscUseTypeMethod(r,getvalue ,val);
   PetscCall(PetscObjectStateIncrease((PetscObject)r));
   PetscFunctionReturn(0);
 }
@@ -96,11 +93,8 @@ PetscErrorCode  PetscRandomGetValueReal(PetscRandom r,PetscReal *val)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r,PETSC_RANDOM_CLASSID,1);
   PetscValidType(r,1);
-  if (!r->ops->getvaluereal) {
-    PetscCall((*r->ops->getvaluesreal)(r,1,val));
-  } else {
-    PetscCall((*r->ops->getvaluereal)(r,val));
-  }
+  if (!r->ops->getvaluereal) PetscUseTypeMethod(r,getvaluesreal ,1,val);
+  else PetscUseTypeMethod(r,getvaluereal ,val);
   PetscCall(PetscObjectStateIncrease((PetscObject)r));
   PetscFunctionReturn(0);
 }
@@ -138,9 +132,7 @@ PetscErrorCode  PetscRandomGetValues(PetscRandom r, PetscInt n, PetscScalar *val
     for (i = 0; i < n; i++) {
       PetscCall((*r->ops->getvalue)(r,val+i));
     }
-  } else {
-    PetscCall((*r->ops->getvalues)(r,n,val));
-  }
+  } else PetscUseTypeMethod(r,getvalues ,n,val);
   PetscCall(PetscObjectStateIncrease((PetscObject)r));
   PetscFunctionReturn(0);
 }
@@ -175,9 +167,7 @@ PetscErrorCode  PetscRandomGetValuesReal(PetscRandom r, PetscInt n, PetscReal *v
     for (i = 0; i < n; i++) {
       PetscCall((*r->ops->getvaluereal)(r,val+i));
     }
-  } else {
-    PetscCall((*r->ops->getvaluesreal)(r,n,val));
-  }
+  } else PetscUseTypeMethod(r,getvaluesreal ,n,val);
   PetscCall(PetscObjectStateIncrease((PetscObject)r));
   PetscFunctionReturn(0);
 }

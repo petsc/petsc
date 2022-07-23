@@ -393,7 +393,7 @@ static PetscErrorCode MatCoarsenView_MISK(MatCoarsen coarse, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatCoarsenSetFromOptions_MISK(PetscOptionItems *PetscOptionsObject,MatCoarsen coarse)
+static PetscErrorCode MatCoarsenSetFromOptions_MISK(MatCoarsen coarse,PetscOptionItems *PetscOptionsObject)
 {
   PetscInt  k = 1;
   PetscBool flg;

@@ -1586,14 +1586,14 @@ PetscErrorCode MatDiagonalScale_MPISBAIJ(Mat mat,Vec ll,Vec rr)
   PetscCall(VecScatterBegin(baij->Mvctx,rr,baij->lvec,INSERT_VALUES,SCATTER_FORWARD));
 
   /* left diagonalscale the off-diagonal part */
-  PetscCall((*b->ops->diagonalscale)(b,ll,NULL));
+  PetscUseTypeMethod(b,diagonalscale ,ll,NULL);
 
   /* scale the diagonal part */
-  PetscCall((*a->ops->diagonalscale)(a,ll,rr));
+  PetscUseTypeMethod(a,diagonalscale ,ll,rr);
 
   /* right diagonalscale the off-diagonal part */
   PetscCall(VecScatterEnd(baij->Mvctx,rr,baij->lvec,INSERT_VALUES,SCATTER_FORWARD));
-  PetscCall((*b->ops->diagonalscale)(b,NULL,baij->lvec));
+  PetscUseTypeMethod(b,diagonalscale ,NULL,baij->lvec);
   PetscFunctionReturn(0);
 }
 

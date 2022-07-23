@@ -435,7 +435,7 @@ static PetscErrorCode TSSetUp_BDF(TS ts)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSSetFromOptions_BDF(PetscOptionItems *PetscOptionsObject,TS ts)
+static PetscErrorCode TSSetFromOptions_BDF(TS ts,PetscOptionItems *PetscOptionsObject)
 {
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject,"BDF ODE solver options");

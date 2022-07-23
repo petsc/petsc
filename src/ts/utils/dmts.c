@@ -61,7 +61,7 @@ static PetscErrorCode DMTSDestroy(DMTS *kdm)
   PetscCall(DMTSUnsetIJacobianContext_DMTS(*kdm));
   PetscCall(DMTSUnsetI2FunctionContext_DMTS(*kdm));
   PetscCall(DMTSUnsetI2JacobianContext_DMTS(*kdm));
-  if ((*kdm)->ops->destroy) PetscCall(((*kdm)->ops->destroy)(*kdm));
+  PetscTryTypeMethod(*kdm,destroy);
   PetscCall(PetscHeaderDestroy(kdm));
   PetscFunctionReturn(0);
 }
@@ -250,7 +250,7 @@ PetscErrorCode DMTSCopy(DMTS kdm,DMTS nkdm)
   */
 
   /* implementation specific copy hooks */
-  if (kdm->ops->duplicate) PetscCall((*kdm->ops->duplicate)(kdm,nkdm));
+  PetscTryTypeMethod(kdm,duplicate,nkdm);
   PetscFunctionReturn(0);
 }
 

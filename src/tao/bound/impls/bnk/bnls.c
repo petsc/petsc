@@ -106,7 +106,7 @@ PetscErrorCode TaoSolve_BNLS(Tao tao)
   while (tao->reason == TAO_CONTINUE_ITERATING) {
     /* Call general purpose update function */
     if (tao->ops->update) {
-      PetscCall((*tao->ops->update)(tao, tao->niter, tao->user_update));
+      PetscUseTypeMethod(tao,update , tao->niter, tao->user_update);
       PetscCall(TaoComputeObjectiveAndGradient(tao, tao->solution, &bnk->f, bnk->unprojected_gradient));
     }
 
@@ -167,7 +167,7 @@ PetscErrorCode TaoSolve_BNLS(Tao tao)
     ++tao->niter;
     PetscCall(TaoLogConvergenceHistory(tao, bnk->f, resnorm, 0.0, tao->ksp_its));
     PetscCall(TaoMonitor(tao, tao->niter, bnk->f, resnorm, 0.0, steplen));
-    PetscCall((*tao->ops->convergencetest)(tao, tao->cnvP));
+    PetscUseTypeMethod(tao,convergencetest , tao->cnvP);
   }
   PetscFunctionReturn(0);
 }

@@ -124,10 +124,9 @@ PetscErrorCode PetscFESetType(PetscFE fem, PetscFEType name)
   PetscCall(PetscFunctionListFind(PetscFEList, name, &r));
   PetscCheck(r,PetscObjectComm((PetscObject) fem), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscFE type: %s", name);
 
-  if (fem->ops->destroy) {
-    PetscCall((*fem->ops->destroy)(fem));
-    fem->ops->destroy = NULL;
-  }
+  PetscTryTypeMethod(fem,destroy);
+  fem->ops->destroy = NULL;
+
   PetscCall((*r)(fem));
   PetscCall(PetscObjectChangeTypeName((PetscObject) fem, name));
   PetscFunctionReturn(0);
@@ -204,7 +203,7 @@ PetscErrorCode PetscFEView(PetscFE fem, PetscViewer viewer)
   if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject) fem), &viewer));
   PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)fem, viewer));
   PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii));
-  if (fem->ops->view) PetscCall((*fem->ops->view)(fem, viewer));
+  PetscTryTypeMethod(fem,view , viewer);
   PetscFunctionReturn(0);
 }
 
@@ -248,9 +247,9 @@ PetscErrorCode PetscFESetFromOptions(PetscFE fem)
   }
   PetscCall(PetscOptionsBoundedInt("-petscfe_num_blocks", "The number of cell blocks to integrate concurrently", "PetscSpaceSetTileSizes", fem->numBlocks, &fem->numBlocks, NULL,1));
   PetscCall(PetscOptionsBoundedInt("-petscfe_num_batches", "The number of cell batches to integrate serially", "PetscSpaceSetTileSizes", fem->numBatches, &fem->numBatches, NULL,1));
-  if (fem->ops->setfromoptions) PetscCall((*fem->ops->setfromoptions)(PetscOptionsObject,fem));
+  PetscTryTypeMethod(fem,setfromoptions,PetscOptionsObject);
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
-  PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) fem));
+  PetscCall(PetscObjectProcessOptionsHandlers((PetscObject) fem,PetscOptionsObject));
   PetscOptionsEnd();
   PetscCall(PetscFEViewFromOptions(fem, NULL, "-petscfe_view"));
   PetscFunctionReturn(0);
@@ -275,7 +274,7 @@ PetscErrorCode PetscFESetUp(PetscFE fem)
   if (fem->setupcalled) PetscFunctionReturn(0);
   PetscCall(PetscLogEventBegin(PETSCFE_SetUp, fem, 0, 0, 0));
   fem->setupcalled = PETSC_TRUE;
-  if (fem->ops->setup) PetscCall((*fem->ops->setup)(fem));
+  PetscTryTypeMethod(fem,setup);
   PetscCall(PetscLogEventEnd(PETSCFE_SetUp, fem, 0, 0, 0));
   PetscFunctionReturn(0);
 }
@@ -321,7 +320,7 @@ PetscErrorCode PetscFEDestroy(PetscFE *fem)
   PetscCallCEED(CeedDestroy(&(*fem)->ceed));
 #endif
 
-  if ((*fem)->ops->destroy) PetscCall((*(*fem)->ops->destroy)(*fem));
+  PetscTryTypeMethod((*fem),destroy);
   PetscCall(PetscHeaderDestroy(fem));
   PetscFunctionReturn(0);
 }
@@ -955,7 +954,7 @@ PetscErrorCode PetscFECreateTabulation(PetscFE fem, PetscInt nrepl, PetscInt npo
   for (k = 0; k <= (*T)->K; ++k) {
     PetscCall(PetscMalloc1(nrepl*npoints*Nb*Nc*PetscPowInt(cdim, k), &(*T)->T[k]));
   }
-  PetscCall((*fem->ops->createtabulation)(fem, nrepl*npoints, points, K, *T));
+  PetscUseTypeMethod(fem,createtabulation , nrepl*npoints, points, K, *T);
   PetscFunctionReturn(0);
 }
 
@@ -1009,7 +1008,7 @@ PetscErrorCode PetscFEComputeTabulation(PetscFE fem, PetscInt npoints, const Pet
   }
   T->Nr = 1;
   T->Np = npoints;
-  PetscCall((*fem->ops->createtabulation)(fem, npoints, points, K, T));
+  PetscUseTypeMethod(fem,createtabulation , npoints, points, K, T);
   PetscFunctionReturn(0);
 }
 
@@ -1136,7 +1135,7 @@ PetscErrorCode PetscFEGetDimension(PetscFE fem, PetscInt *dim)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
   PetscValidIntPointer(dim, 2);
-  if (fem->ops->getdimension) PetscCall((*fem->ops->getdimension)(fem, dim));
+  PetscTryTypeMethod(fem,getdimension , dim);
   PetscFunctionReturn(0);
 }
 

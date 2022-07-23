@@ -2002,15 +2002,15 @@ PetscErrorCode MatDiagonalScale_MPIAIJ(Mat mat,Vec ll,Vec rr)
   if (ll) {
     PetscCall(VecGetLocalSize(ll,&s1));
     PetscCheck(s1==s2,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"left vector non-conforming local size");
-    PetscCall((*b->ops->diagonalscale)(b,ll,NULL));
+    PetscUseTypeMethod(b,diagonalscale ,ll,NULL);
   }
   /* scale  the diagonal block */
-  PetscCall((*a->ops->diagonalscale)(a,ll,rr));
+  PetscUseTypeMethod(a,diagonalscale ,ll,rr);
 
   if (rr) {
     /* Do a scatter end and then right scale the off-diagonal block */
     PetscCall(VecScatterEnd(aij->Mvctx,rr,aij->lvec,INSERT_VALUES,SCATTER_FORWARD));
-    PetscCall((*b->ops->diagonalscale)(b,NULL,aij->lvec));
+    PetscUseTypeMethod(b,diagonalscale ,NULL,aij->lvec);
   }
   PetscFunctionReturn(0);
 }
@@ -2630,7 +2630,7 @@ PetscErrorCode MatMPIAIJSetUseScalableIncreaseOverlap(Mat A,PetscBool sc)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatSetFromOptions_MPIAIJ(PetscOptionItems *PetscOptionsObject,Mat A)
+PetscErrorCode MatSetFromOptions_MPIAIJ(Mat A,PetscOptionItems *PetscOptionsObject)
 {
   PetscBool            sc = PETSC_FALSE,flg;
 

@@ -488,7 +488,7 @@ PetscErrorCode  VecNormBegin(Vec x,NormType ntype,PetscReal *result)
 
   sr->invecs[sr->numopsbegin] = (void*)x;
   PetscCall(PetscLogEventBegin(VEC_ReduceArithmetic,0,0,0,0));
-  PetscCall((*x->ops->norm_local)(x,ntype,lresult));
+  PetscUseTypeMethod(x,norm_local ,ntype,lresult);
   PetscCall(PetscLogEventEnd(VEC_ReduceArithmetic,0,0,0,0));
   if (ntype == NORM_2)         lresult[0]                = lresult[0]*lresult[0];
   if (ntype == NORM_1_AND_2)   lresult[1]                = lresult[1]*lresult[1];

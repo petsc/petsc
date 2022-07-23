@@ -419,7 +419,7 @@ static PetscErrorCode TaoSolve_ADMM(Tao tao)
   tao->reason = TAO_CONTINUE_ITERATING;
 
   while (tao->reason == TAO_CONTINUE_ITERATING) {
-    if (tao->ops->update) PetscCall((*tao->ops->update)(tao, tao->niter, tao->user_update));
+    PetscTryTypeMethod(tao,update, tao->niter, tao->user_update);
     PetscCall(VecCopy(am->Bz, am->Bzold));
 
     /* x update */
@@ -502,7 +502,7 @@ static PetscErrorCode TaoSolve_ADMM(Tao tao)
     PetscCall(TaoLogConvergenceHistory(tao,am->last_misfit_val + reg_func,am->dualres,am->resnorm,tao->ksp_its));
 
     PetscCall(TaoMonitor(tao,tao->niter,am->last_misfit_val + reg_func,am->dualres,am->resnorm,1.0));
-    PetscCall((*tao->ops->convergencetest)(tao,tao->cnvP));
+    PetscUseTypeMethod(tao,convergencetest ,tao->cnvP);
   }
   /* Update vectors */
   PetscCall(VecCopy(am->subsolverX->solution,tao->solution));
@@ -516,7 +516,7 @@ static PetscErrorCode TaoSolve_ADMM(Tao tao)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoSetFromOptions_ADMM(PetscOptionItems *PetscOptionsObject,Tao tao)
+static PetscErrorCode TaoSetFromOptions_ADMM(Tao tao,PetscOptionItems *PetscOptionsObject)
 {
   TAO_ADMM       *am = (TAO_ADMM*)tao->data;
 

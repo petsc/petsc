@@ -1,12 +1,11 @@
 #include <petsc/private/dmpatchimpl.h>   /*I      "petscdmpatch.h"   I*/
 #include <petscdmda.h>
 
-PetscErrorCode DMSetFromOptions_Patch(PetscOptionItems *PetscOptionsObject,DM dm)
+PetscErrorCode DMSetFromOptions_Patch(DM dm,PetscOptionItems *PetscOptionsObject)
 {
   /* DM_Patch      *mesh = (DM_Patch*) dm->data; */
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
   PetscOptionsHeadBegin(PetscOptionsObject,"DMPatch Options");
   /* Handle associated vectors */
   /* Handle viewing */

@@ -2205,7 +2205,7 @@ PetscErrorCode MatZeroRows_SeqAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscSc
     A->nonzerostate++;
   }
   PetscCall(MatSeqAIJRestoreArray(A,&aa));
-  PetscCall((*A->ops->assemblyend)(A,MAT_FINAL_ASSEMBLY));
+  PetscUseTypeMethod(A,assemblyend ,MAT_FINAL_ASSEMBLY);
   PetscFunctionReturn(0);
 }
 
@@ -2262,7 +2262,7 @@ PetscErrorCode MatZeroRowsColumns_SeqAIJ(Mat A,PetscInt N,const PetscInt rows[],
     }
   }
   PetscCall(MatSeqAIJRestoreArray(A,&aa));
-  PetscCall((*A->ops->assemblyend)(A,MAT_FINAL_ASSEMBLY));
+  PetscUseTypeMethod(A,assemblyend ,MAT_FINAL_ASSEMBLY);
   PetscFunctionReturn(0);
 }
 

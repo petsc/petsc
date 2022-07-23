@@ -45,7 +45,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
   PetscCheck(!PetscIsInfOrNanReal(bnk->f) && !PetscIsInfOrNanReal(resnorm),PetscObjectComm((PetscObject)tao),PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
   PetscCall(TaoLogConvergenceHistory(tao,bnk->f,resnorm,0.0,tao->ksp_its));
   PetscCall(TaoMonitor(tao,tao->niter,bnk->f,resnorm,0.0,1.0));
-  PetscCall((*tao->ops->convergencetest)(tao,tao->cnvP));
+  PetscUseTypeMethod(tao,convergencetest ,tao->cnvP);
   if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
 
   /* Reset KSP stopping reason counters */
@@ -232,7 +232,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
           PetscCheck(!PetscIsInfOrNanReal(resnorm),PetscObjectComm((PetscObject)tao),PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
           PetscCall(TaoLogConvergenceHistory(tao,bnk->f,resnorm,0.0,tao->ksp_its));
           PetscCall(TaoMonitor(tao,tao->niter,bnk->f,resnorm,0.0,1.0));
-          PetscCall((*tao->ops->convergencetest)(tao,tao->cnvP));
+          PetscUseTypeMethod(tao,convergencetest ,tao->cnvP);
           if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
           /* active BNCG recycling early because we have a stepdirection computed */
           PetscCall(TaoSetRecycleHistory(bnk->bncg, PETSC_TRUE));
@@ -1131,7 +1131,7 @@ PetscErrorCode TaoDestroy_BNK(Tao tao)
 
 /*------------------------------------------------------------*/
 
-PetscErrorCode TaoSetFromOptions_BNK(PetscOptionItems *PetscOptionsObject,Tao tao)
+PetscErrorCode TaoSetFromOptions_BNK(Tao tao,PetscOptionItems *PetscOptionsObject)
 {
   TAO_BNK        *bnk = (TAO_BNK *)tao->data;
 

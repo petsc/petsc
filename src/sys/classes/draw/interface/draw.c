@@ -100,7 +100,7 @@ PetscErrorCode  PetscDrawResizeWindow(PetscDraw draw,int w,int h)
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   PetscValidLogicalCollectiveInt(draw,w,2);
   PetscValidLogicalCollectiveInt(draw,h,3);
-  if (draw->ops->resizewindow) PetscCall((*draw->ops->resizewindow)(draw,w,h));
+  PetscTryTypeMethod(draw,resizewindow,w,h);
   PetscFunctionReturn(0);
 }
 
@@ -147,7 +147,7 @@ PetscErrorCode  PetscDrawCheckResizedWindow(PetscDraw draw)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  if (draw->ops->checkresizedwindow) PetscCall((*draw->ops->checkresizedwindow)(draw));
+  PetscTryTypeMethod(draw,checkresizedwindow);
   PetscFunctionReturn(0);
 }
 
@@ -203,7 +203,7 @@ PetscErrorCode  PetscDrawSetTitle(PetscDraw draw,const char title[])
   PetscValidCharPointer(title,2);
   PetscCall(PetscFree(draw->title));
   PetscCall(PetscStrallocpy(title,&draw->title));
-  if (draw->ops->settitle) PetscCall((*draw->ops->settitle)(draw,draw->title));
+  PetscTryTypeMethod(draw,settitle,draw->title);
   PetscFunctionReturn(0);
 }
 
@@ -244,7 +244,7 @@ PetscErrorCode  PetscDrawAppendTitle(PetscDraw draw,const char title[])
   } else {
     PetscCall(PetscStrallocpy(title,&draw->title));
   }
-  if (draw->ops->settitle) PetscCall((*draw->ops->settitle)(draw,draw->title));
+  PetscTryTypeMethod(draw,settitle,draw->title);
   PetscFunctionReturn(0);
 }
 
@@ -330,7 +330,7 @@ PetscErrorCode  PetscDrawGetPopup(PetscDraw draw,PetscDraw *popup)
 
   if (draw->popup) *popup = draw->popup;
   else if (draw->ops->getpopup) {
-    PetscCall((*draw->ops->getpopup)(draw,popup));
+    PetscUseTypeMethod(draw,getpopup ,popup);
     if (*popup) {
       PetscCall(PetscObjectSetOptionsPrefix((PetscObject)*popup,"popup_"));
       (*popup)->pause = 0.0;
@@ -375,7 +375,7 @@ PetscErrorCode  PetscDrawSetDoubleBuffer(PetscDraw draw)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  if (draw->ops->setdoublebuffer) PetscCall((*draw->ops->setdoublebuffer)(draw));
+  PetscTryTypeMethod(draw,setdoublebuffer);
   PetscFunctionReturn(0);
 }
 
@@ -410,7 +410,7 @@ PetscErrorCode  PetscDrawGetSingleton(PetscDraw draw,PetscDraw *sdraw)
     *sdraw = draw;
   } else {
     if (draw->ops->getsingleton) {
-      PetscCall((*draw->ops->getsingleton)(draw,sdraw));
+      PetscUseTypeMethod(draw,getsingleton ,sdraw);
     } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot get singleton for this type %s of draw object",((PetscObject)draw)->type_name);
   }
   PetscFunctionReturn(0);
@@ -446,10 +446,6 @@ PetscErrorCode  PetscDrawRestoreSingleton(PetscDraw draw,PetscDraw *sdraw)
       PetscCall(PetscObjectDereference((PetscObject)draw));
       *sdraw = NULL;
     } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot restore singleton, it is not the parent draw");
-  } else {
-    if (draw->ops->restoresingleton) {
-      PetscCall((*draw->ops->restoresingleton)(draw,sdraw));
-    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot restore singleton for this type %s of draw object",((PetscObject)draw)->type_name);
-  }
+  } else PetscUseTypeMethod(draw,restoresingleton ,sdraw);
   PetscFunctionReturn(0);
 }

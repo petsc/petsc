@@ -1505,7 +1505,7 @@ PetscErrorCode PetscWeakFormView(PetscWeakForm wf, PetscViewer v)
   else    {PetscValidHeaderSpecific(v, PETSC_VIEWER_CLASSID, 2);}
   PetscCall(PetscObjectTypeCompare((PetscObject) v, PETSCVIEWERASCII, &iascii));
   if (iascii) PetscCall(PetscWeakFormView_Ascii(wf, v));
-  if (wf->ops->view) PetscCall((*wf->ops->view)(wf, v));
+  PetscTryTypeMethod(wf,view, v);
   PetscFunctionReturn(0);
 }
 

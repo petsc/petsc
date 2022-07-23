@@ -73,7 +73,7 @@ PetscErrorCode KSPGuessSetFromOptions(KSPGuess guess)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(guess,KSPGUESS_CLASSID,1);
-  if (guess->ops->setfromoptions) PetscCall((*guess->ops->setfromoptions)(guess));
+  PetscTryTypeMethod(guess,setfromoptions);
   PetscFunctionReturn(0);
 }
 
@@ -93,7 +93,7 @@ PetscErrorCode KSPGuessSetTolerance(KSPGuess guess, PetscReal tol)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(guess,KSPGUESS_CLASSID,1);
-  if (guess->ops->settolerance) PetscCall((*guess->ops->settolerance)(guess,tol));
+  PetscTryTypeMethod(guess,settolerance,tol);
   PetscFunctionReturn(0);
 }
 
@@ -115,7 +115,7 @@ PetscErrorCode  KSPGuessDestroy(KSPGuess *guess)
   if (!*guess) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*guess),KSPGUESS_CLASSID,1);
   if (--((PetscObject)(*guess))->refct > 0) {*guess = NULL; PetscFunctionReturn(0);}
-  if ((*guess)->ops->destroy) PetscCall((*(*guess)->ops->destroy)(*guess));
+  PetscTryTypeMethod((*guess),destroy);
   PetscCall(MatDestroy(&(*guess)->A));
   PetscCall(PetscHeaderDestroy(guess));
   PetscFunctionReturn(0);
@@ -150,11 +150,9 @@ PetscErrorCode  KSPGuessView(KSPGuess guess, PetscViewer view)
   PetscCall(PetscObjectTypeCompare((PetscObject)view,PETSCVIEWERASCII,&ascii));
   if (ascii) {
     PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)guess,view));
-    if (guess->ops->view) {
-      PetscCall(PetscViewerASCIIPushTab(view));
-      PetscCall((*guess->ops->view)(guess,view));
-      PetscCall(PetscViewerASCIIPopTab(view));
-    }
+    PetscCall(PetscViewerASCIIPushTab(view));
+    PetscTryTypeMethod(guess,view ,view);
+    PetscCall(PetscViewerASCIIPopTab(view));
   }
   PetscFunctionReturn(0);
 }
@@ -225,10 +223,9 @@ PetscErrorCode  KSPGuessSetType(KSPGuess guess, KSPGuessType type)
 
   PetscCall(PetscFunctionListFind(KSPGuessList,type,&r));
   PetscCheck(r,PetscObjectComm((PetscObject)guess),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested KSPGuess type %s",type);
-  if (guess->ops->destroy) {
-    PetscCall((*guess->ops->destroy)(guess));
-    guess->ops->destroy = NULL;
-  }
+  PetscTryTypeMethod(guess,destroy);
+  guess->ops->destroy = NULL;
+
   PetscCall(PetscMemzero(guess->ops,sizeof(struct _KSPGuessOps)));
   PetscCall(PetscObjectChangeTypeName((PetscObject)guess,type));
   PetscCall((*r)(guess));
@@ -279,7 +276,7 @@ PetscErrorCode  KSPGuessUpdate(KSPGuess guess, Vec rhs, Vec sol)
   PetscValidHeaderSpecific(guess,KSPGUESS_CLASSID,1);
   PetscValidHeaderSpecific(rhs,VEC_CLASSID,2);
   PetscValidHeaderSpecific(sol,VEC_CLASSID,3);
-  if (guess->ops->update) PetscCall((*guess->ops->update)(guess,rhs,sol));
+  PetscTryTypeMethod(guess,update,rhs,sol);
   PetscFunctionReturn(0);
 }
 
@@ -303,7 +300,7 @@ PetscErrorCode  KSPGuessFormGuess(KSPGuess guess, Vec rhs, Vec sol)
   PetscValidHeaderSpecific(guess,KSPGUESS_CLASSID,1);
   PetscValidHeaderSpecific(rhs,VEC_CLASSID,2);
   PetscValidHeaderSpecific(sol,VEC_CLASSID,3);
-  if (guess->ops->formguess) PetscCall((*guess->ops->formguess)(guess,rhs,sol));
+  PetscTryTypeMethod(guess,formguess,rhs,sol);
   PetscFunctionReturn(0);
 }
 
@@ -343,13 +340,13 @@ PetscErrorCode  KSPGuessSetUp(KSPGuess guess)
     PetscCall(PetscInfo(guess,"Resetting KSPGuess since matrix sizes have changed (%" PetscInt_FMT " != %" PetscInt_FMT ", %" PetscInt_FMT " != %" PetscInt_FMT ")\n",oM,M,oN,N));
   } else if (!reuse && (omat != guess->A || guess->omatstate != matstate)) {
     PetscCall(PetscInfo(guess,"Resetting KSPGuess since %s has changed\n",omat != guess->A ? "matrix" : "matrix state"));
-    if (guess->ops->reset) PetscCall((*guess->ops->reset)(guess));
+    PetscTryTypeMethod(guess,reset);
   } else if (reuse) {
     PetscCall(PetscInfo(guess,"Not resettting KSPGuess since reuse preconditioner has been specified\n"));
   } else {
     PetscCall(PetscInfo(guess,"KSPGuess status unchanged\n"));
   }
-  if (guess->ops->setup) PetscCall((*guess->ops->setup)(guess));
+  PetscTryTypeMethod(guess,setup);
   guess->omatstate = matstate;
   PetscCall(MatDestroy(&omat));
   PetscFunctionReturn(0);

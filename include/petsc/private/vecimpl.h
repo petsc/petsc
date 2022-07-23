@@ -67,7 +67,7 @@ struct _VecOps {
   PetscErrorCode (*setlocaltoglobalmapping)(Vec,ISLocalToGlobalMapping);
   PetscErrorCode (*setvalueslocal)(Vec,PetscInt,const PetscInt *,const PetscScalar *,InsertMode);
   PetscErrorCode (*resetarray)(Vec);      /* vector points to its original array, i.e. undoes any VecPlaceArray() */
-  PetscErrorCode (*setfromoptions)(PetscOptionItems*,Vec);
+  PetscErrorCode (*setfromoptions)(Vec,PetscOptionItems*);
   PetscErrorCode (*maxpointwisedivide)(Vec,Vec,PetscReal*);      /* m = max abs(x ./ y) */
   PetscErrorCode (*pointwisemax)(Vec,Vec,Vec);
   PetscErrorCode (*pointwisemaxabs)(Vec,Vec,Vec);
@@ -331,7 +331,7 @@ typedef struct _VecTaggerOps *VecTaggerOps;
 struct _VecTaggerOps {
   PetscErrorCode (*create) (VecTagger);
   PetscErrorCode (*destroy) (VecTagger);
-  PetscErrorCode (*setfromoptions) (PetscOptionItems*,VecTagger);
+  PetscErrorCode (*setfromoptions) (VecTagger,PetscOptionItems*);
   PetscErrorCode (*setup) (VecTagger);
   PetscErrorCode (*view) (VecTagger,PetscViewer);
   PetscErrorCode (*computeboxes) (VecTagger,Vec,PetscInt *,VecTaggerBox **,PetscBool *);

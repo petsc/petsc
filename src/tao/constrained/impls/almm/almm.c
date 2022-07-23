@@ -34,7 +34,7 @@ static PetscErrorCode TaoSolve_ALMM(Tao tao)
   PetscCall(PetscInfo(tao,"Solving with %s formulation\n",TaoALMMTypes[auglag->type]));
   PetscCall(TaoLogConvergenceHistory(tao, auglag->Lval, auglag->gnorm, auglag->cnorm, tao->ksp_its));
   PetscCall(TaoMonitor(tao, tao->niter, auglag->fval, auglag->gnorm, auglag->cnorm, 0.0));
-  PetscCall((*tao->ops->convergencetest)(tao, tao->cnvP));
+  PetscUseTypeMethod(tao,convergencetest , tao->cnvP);
   /* set initial penalty factor and inner solver tolerance */
   switch (auglag->type) {
     case TAO_ALMM_CLASSIC:
@@ -114,7 +114,7 @@ static PetscErrorCode TaoSolve_ALMM(Tao tao)
     }
     PetscCall(TaoLogConvergenceHistory(tao, auglag->fval, auglag->gnorm, auglag->cnorm, tao->ksp_its));
     PetscCall(TaoMonitor(tao, tao->niter, auglag->fval, auglag->gnorm, auglag->cnorm, updated));
-    PetscCall((*tao->ops->convergencetest)(tao, tao->cnvP));
+    PetscUseTypeMethod(tao,convergencetest , tao->cnvP);
   }
 
   PetscFunctionReturn(0);
@@ -358,7 +358,7 @@ static PetscErrorCode TaoDestroy_ALMM(Tao tao)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoSetFromOptions_ALMM(PetscOptionItems *PetscOptionsObject,Tao tao)
+static PetscErrorCode TaoSetFromOptions_ALMM(Tao tao,PetscOptionItems *PetscOptionsObject)
 {
   TAO_ALMM       *auglag = (TAO_ALMM*)tao->data;
   PetscInt       i;

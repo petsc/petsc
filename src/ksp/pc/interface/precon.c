@@ -72,7 +72,7 @@ PetscErrorCode  PCReset(PC pc)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  if (pc->ops->reset) PetscCall((*pc->ops->reset)(pc));
+  PetscTryTypeMethod(pc,reset);
   PetscCall(VecDestroy(&pc->diagonalscaleright));
   PetscCall(VecDestroy(&pc->diagonalscaleleft));
   PetscCall(MatDestroy(&pc->pmat));
@@ -105,7 +105,7 @@ PetscErrorCode  PCDestroy(PC *pc)
 
   /* if memory was published with SAWs then destroy it */
   PetscCall(PetscObjectSAWsViewOff((PetscObject)*pc));
-  if ((*pc)->ops->destroy) PetscCall((*(*pc)->ops->destroy)((*pc)));
+  PetscTryTypeMethod((*pc),destroy);
   PetscCall(DMDestroy(&(*pc)->dm));
   PetscCall(PetscHeaderDestroy(pc));
   PetscFunctionReturn(0);
@@ -429,7 +429,7 @@ PetscErrorCode  PCApply(PC pc,Vec x,Vec y)
   PetscCall(PCSetUp(pc));
   PetscCall(VecLockReadPush(x));
   PetscCall(PetscLogEventBegin(PC_Apply,pc,x,y,0));
-  PetscCall((*pc->ops->apply)(pc,x,y));
+  PetscUseTypeMethod(pc,apply ,x,y);
   PetscCall(PetscLogEventEnd(PC_Apply,pc,x,y,0));
   if (pc->erroriffailure) PetscCall(VecValidValues(y,3,PETSC_FALSE));
   PetscCall(VecLockReadPop(x));
@@ -483,7 +483,7 @@ PetscErrorCode  PCMatApply(PC pc,Mat X,Mat Y)
   PetscCall(PCSetUp(pc));
   if (pc->ops->matapply) {
     PetscCall(PetscLogEventBegin(PC_MatApply, pc, X, Y, 0));
-    PetscCall((*pc->ops->matapply)(pc, X, Y));
+    PetscUseTypeMethod(pc,matapply , X, Y);
     PetscCall(PetscLogEventEnd(PC_MatApply, pc, X, Y, 0));
   } else {
     PetscCall(PetscInfo(pc, "PC type %s applying column by column\n", ((PetscObject)pc)->type_name));
@@ -528,7 +528,7 @@ PetscErrorCode  PCApplySymmetricLeft(PC pc,Vec x,Vec y)
   PetscCall(PCSetUp(pc));
   PetscCall(VecLockReadPush(x));
   PetscCall(PetscLogEventBegin(PC_ApplySymmetricLeft,pc,x,y,0));
-  PetscCall((*pc->ops->applysymmetricleft)(pc,x,y));
+  PetscUseTypeMethod(pc,applysymmetricleft ,x,y);
   PetscCall(PetscLogEventEnd(PC_ApplySymmetricLeft,pc,x,y,0));
   PetscCall(VecLockReadPop(x));
   if (pc->erroriffailure) PetscCall(VecValidValues(y,3,PETSC_FALSE));
@@ -565,7 +565,7 @@ PetscErrorCode  PCApplySymmetricRight(PC pc,Vec x,Vec y)
   PetscCall(PCSetUp(pc));
   PetscCall(VecLockReadPush(x));
   PetscCall(PetscLogEventBegin(PC_ApplySymmetricRight,pc,x,y,0));
-  PetscCall((*pc->ops->applysymmetricright)(pc,x,y));
+  PetscUseTypeMethod(pc,applysymmetricright ,x,y);
   PetscCall(PetscLogEventEnd(PC_ApplySymmetricRight,pc,x,y,0));
   PetscCall(VecLockReadPop(x));
   if (pc->erroriffailure) PetscCall(VecValidValues(y,3,PETSC_FALSE));
@@ -605,7 +605,7 @@ PetscErrorCode  PCApplyTranspose(PC pc,Vec x,Vec y)
   PetscCall(PCSetUp(pc));
   PetscCall(VecLockReadPush(x));
   PetscCall(PetscLogEventBegin(PC_Apply,pc,x,y,0));
-  PetscCall((*pc->ops->applytranspose)(pc,x,y));
+  PetscUseTypeMethod(pc,applytranspose ,x,y);
   PetscCall(PetscLogEventEnd(PC_Apply,pc,x,y,0));
   PetscCall(VecLockReadPop(x));
   if (pc->erroriffailure) PetscCall(VecValidValues(y,3,PETSC_FALSE));
@@ -681,7 +681,7 @@ PetscErrorCode  PCApplyBAorAB(PC pc,PCSide side,Vec x,Vec y,Vec work)
       Vec work2; /* this is expensive, but to fix requires a second work vector argument to PCApplyBAorAB() */
       PetscCall(VecDuplicate(x,&work2));
       PetscCall(PCDiagonalScaleRight(pc,x,work2));
-      PetscCall((*pc->ops->applyBA)(pc,side,work2,y,work));
+      PetscUseTypeMethod(pc,applyBA ,side,work2,y,work);
       PetscCall(PCDiagonalScaleLeft(pc,y,y));
       PetscCall(VecDestroy(&work2));
     } else if (side == PC_RIGHT) {
@@ -697,7 +697,7 @@ PetscErrorCode  PCApplyBAorAB(PC pc,PCSide side,Vec x,Vec y,Vec work)
     } else PetscCheck(side != PC_SYMMETRIC,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cannot provide diagonal scaling with symmetric application of preconditioner");
   } else {
     if (pc->ops->applyBA) {
-      PetscCall((*pc->ops->applyBA)(pc,side,x,y,work));
+      PetscUseTypeMethod(pc,applyBA ,side,x,y,work);
     } else if (side == PC_RIGHT) {
       PetscCall(PCApply(pc,x,work));
       PetscCall(MatMult(pc->mat,work,y));
@@ -750,7 +750,7 @@ PetscErrorCode  PCApplyBAorABTranspose(PC pc,PCSide side,Vec x,Vec y,Vec work)
   PetscCheck(x != y,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
   if (pc->erroriffailure) PetscCall(VecValidValues(x,3,PETSC_TRUE));
   if (pc->ops->applyBAtranspose) {
-    PetscCall((*pc->ops->applyBAtranspose)(pc,side,x,y,work));
+    PetscUseTypeMethod(pc,applyBAtranspose ,side,x,y,work);
     if (pc->erroriffailure) PetscCall(VecValidValues(y,4,PETSC_FALSE));
     PetscFunctionReturn(0);
   }
@@ -839,7 +839,7 @@ PetscErrorCode  PCApplyRichardson(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscRe
   PetscValidHeaderSpecific(w,VEC_CLASSID,4);
   PetscCheck(b != y,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"b and y must be different vectors");
   PetscCall(PCSetUp(pc));
-  PetscCall((*pc->ops->applyrichardson)(pc,b,y,w,rtol,abstol,dtol,its,guesszero,outits,reason));
+  PetscUseTypeMethod(pc,applyrichardson ,b,y,w,rtol,abstol,dtol,its,guesszero,outits,reason);
   PetscFunctionReturn(0);
 }
 
@@ -983,7 +983,7 @@ PetscErrorCode  PCSetUp(PC pc)
     PetscCall(KSPInitializePackage());
     PetscCall(PetscLogEventDeactivatePush(KSP_Solve));
     PetscCall(PetscLogEventDeactivatePush(PC_Apply));
-    PetscCall((*pc->ops->setup)(pc));
+    PetscUseTypeMethod(pc,setup);
     PetscCall(PetscLogEventDeactivatePop(KSP_Solve));
     PetscCall(PetscLogEventDeactivatePop(PC_Apply));
   }
@@ -1012,7 +1012,7 @@ PetscErrorCode  PCSetUpOnBlocks(PC pc)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (!pc->ops->setuponblocks) PetscFunctionReturn(0);
   PetscCall(PetscLogEventBegin(PC_SetUpOnBlocks,pc,0,0,0));
-  PetscCall((*pc->ops->setuponblocks)(pc));
+  PetscUseTypeMethod(pc,setuponblocks);
   PetscCall(PetscLogEventEnd(PC_SetUpOnBlocks,pc,0,0,0));
   PetscFunctionReturn(0);
 }
@@ -1362,9 +1362,7 @@ PetscErrorCode  PCFactorGetMatrix(PC pc,Mat *mat)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidPointer(mat,2);
-  if (pc->ops->getfactoredmatrix) {
-    PetscCall((*pc->ops->getfactoredmatrix)(pc,mat));
-  } else SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PC type does not support getting factor matrix");
+  PetscUseTypeMethod(pc,getfactoredmatrix ,mat);
   PetscFunctionReturn(0);
 }
 
@@ -1505,7 +1503,7 @@ PetscErrorCode PCPreSolve(PC pc,KSP ksp)
   PetscCall(KSPGetSolution(ksp,&x));
   PetscCall(KSPGetRhs(ksp,&rhs));
 
-  if (pc->ops->presolve) PetscCall((*pc->ops->presolve)(pc,ksp,rhs,x));
+  if (pc->ops->presolve) PetscUseTypeMethod(pc,presolve,ksp,rhs,x);
   else if (pc->presolve) PetscCall((pc->presolve)(pc,ksp));
   PetscFunctionReturn(0);
 }
@@ -1574,7 +1572,7 @@ PetscErrorCode  PCPostSolve(PC pc,KSP ksp)
   pc->presolvedone--;
   PetscCall(KSPGetSolution(ksp,&x));
   PetscCall(KSPGetRhs(ksp,&rhs));
-  if (pc->ops->postsolve) PetscCall((*pc->ops->postsolve)(pc,ksp,rhs,x));
+  PetscTryTypeMethod(pc,postsolve,ksp,rhs,x);
   PetscFunctionReturn(0);
 }
 
@@ -1620,7 +1618,7 @@ PetscErrorCode  PCLoad(PC newdm, PetscViewer viewer)
   PetscCheck(classid == PC_FILE_CLASSID,PetscObjectComm((PetscObject)newdm),PETSC_ERR_ARG_WRONG,"Not PC next in file");
   PetscCall(PetscViewerBinaryRead(viewer,type,256,NULL,PETSC_CHAR));
   PetscCall(PCSetType(newdm, type));
-  if (newdm->ops->load) PetscCall((*newdm->ops->load)(newdm,viewer));
+  PetscTryTypeMethod(newdm,load,viewer);
   PetscFunctionReturn(0);
 }
 
@@ -1703,11 +1701,9 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
     if (!pc->setupcalled) {
       PetscCall(PetscViewerASCIIPrintf(viewer,"  PC has not been set up so information may be incomplete\n"));
     }
-    if (pc->ops->view) {
-      PetscCall(PetscViewerASCIIPushTab(viewer));
-      PetscCall((*pc->ops->view)(pc,viewer));
-      PetscCall(PetscViewerASCIIPopTab(viewer));
-    }
+    PetscCall(PetscViewerASCIIPushTab(viewer));
+    PetscTryTypeMethod(pc,view ,viewer);
+    PetscCall(PetscViewerASCIIPopTab(viewer));
     if (pc->mat) {
       PetscCall(PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_INFO));
       if (pc->pmat == pc->mat) {
@@ -1731,7 +1727,7 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
   } else if (isstring) {
     PetscCall(PCGetType(pc,&cstr));
     PetscCall(PetscViewerStringSPrintf(viewer," PCType: %-7.7s",cstr));
-    if (pc->ops->view) PetscCall((*pc->ops->view)(pc,viewer));
+    PetscTryTypeMethod(pc,view,viewer);
     if (pc->mat) PetscCall(MatView(pc->mat,viewer));
     if (pc->pmat && pc->pmat != pc->mat) PetscCall(MatView(pc->pmat,viewer));
   } else if (isbinary) {
@@ -1747,7 +1743,7 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
       PetscCall(PetscStrncpy(type,((PetscObject)pc)->type_name,256));
       PetscCall(PetscViewerBinaryWrite(viewer,type,256,PETSC_CHAR));
     }
-    if (pc->ops->view) PetscCall((*pc->ops->view)(pc,viewer));
+    PetscTryTypeMethod(pc,view,viewer);
   } else if (isdraw) {
     PetscDraw draw;
     char      str[25];
@@ -1765,7 +1761,7 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
     PetscCall(PetscDrawStringBoxed(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,NULL,&h));
     bottom = y - h;
     PetscCall(PetscDrawPushCurrentPoint(draw,x,bottom));
-    if (pc->ops->view) PetscCall((*pc->ops->view)(pc,viewer));
+    PetscTryTypeMethod(pc,view,viewer);
     PetscCall(PetscDrawPopCurrentPoint(draw));
 #if defined(PETSC_HAVE_SAWS)
   } else if (issaws) {

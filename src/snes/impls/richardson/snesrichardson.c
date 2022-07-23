@@ -48,7 +48,7 @@ PetscErrorCode SNESSetUp_NRichardson(SNES snes)
 
   Application Interface Routine: SNESSetFromOptions()
 */
-static PetscErrorCode SNESSetFromOptions_NRichardson(PetscOptionItems *PetscOptionsObject,SNES snes)
+static PetscErrorCode SNESSetFromOptions_NRichardson(SNES snes,PetscOptionItems *PetscOptionsObject)
 {
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject,"SNES Richardson options");
@@ -144,16 +144,16 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
   PetscCall(SNESMonitor(snes,0,fnorm));
 
   /* test convergence */
-  PetscCall((*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP));
+  PetscUseTypeMethod(snes,converged ,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);
   if (snes->reason) PetscFunctionReturn(0);
 
   /* Call general purpose update function */
-  if (snes->ops->update) PetscCall((*snes->ops->update)(snes, snes->iter));
+  PetscTryTypeMethod(snes,update, snes->iter);
 
   /* set parameter for default relative tolerance convergence test */
   snes->ttol = fnorm*snes->rtol;
   /* test convergence */
-  PetscCall((*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP));
+  PetscUseTypeMethod(snes,converged ,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);
   if (snes->reason) PetscFunctionReturn(0);
 
   for (i = 1; i < maxits+1; i++) {
@@ -181,11 +181,11 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
     PetscCall(SNESLogConvergenceHistory(snes,snes->norm,0));
     PetscCall(SNESMonitor(snes,snes->iter,snes->norm));
     /* Test for convergence */
-    PetscCall((*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP));
+    PetscUseTypeMethod(snes,converged ,snes->iter,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP);
     if (snes->reason) break;
 
     /* Call general purpose update function */
-    if (snes->ops->update) PetscCall((*snes->ops->update)(snes, snes->iter));
+    PetscTryTypeMethod(snes,update, snes->iter);
 
     if (snes->npc) {
       if (snes->functype == SNES_FUNCTION_PRECONDITIONED) {

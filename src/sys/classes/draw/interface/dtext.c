@@ -26,7 +26,7 @@ PetscErrorCode  PetscDrawString(PetscDraw draw,PetscReal xl,PetscReal yl,int cl,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   PetscValidCharPointer(text,5);
-  PetscCall((*draw->ops->string)(draw,xl,yl,cl,text));
+  PetscUseTypeMethod(draw,string ,xl,yl,cl,text);
   PetscFunctionReturn(0);
 }
 
@@ -57,13 +57,12 @@ PetscErrorCode  PetscDrawStringVertical(PetscDraw draw,PetscReal xl,PetscReal yl
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   PetscValidCharPointer(text,5);
 
-  if (draw->ops->stringvertical) {
-    PetscCall((*draw->ops->stringvertical)(draw,xl,yl,cl,text));
-    PetscFunctionReturn(0);
-  }
-  PetscCall(PetscDrawStringGetSize(draw,&tw,&th));
-  for (i = 0; (chr[0] = text[i]); i++) {
-    PetscCall(PetscDrawString(draw,xl,yl-th*(i+1),cl,chr));
+  if (draw->ops->stringvertical) PetscUseTypeMethod(draw,stringvertical ,xl,yl,cl,text);
+  else {
+    PetscCall(PetscDrawStringGetSize(draw,&tw,&th));
+    for (i = 0; (chr[0] = text[i]); i++) {
+      PetscCall(PetscDrawString(draw,xl,yl-th*(i+1),cl,chr));
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -136,7 +135,7 @@ PetscErrorCode  PetscDrawStringBoxed(PetscDraw draw,PetscReal sxl,PetscReal syl,
   PetscValidCharPointer(text,6);
 
   if (draw->ops->boxedstring) {
-    PetscCall((*draw->ops->boxedstring)(draw,sxl,syl,sc,bc,text,w,h));
+    PetscUseTypeMethod(draw,boxedstring ,sxl,syl,sc,bc,text,w,h);
     PetscFunctionReturn(0);
   }
 
@@ -197,7 +196,7 @@ PetscErrorCode  PetscDrawStringSetSize(PetscDraw draw,PetscReal width,PetscReal 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  if (draw->ops->stringsetsize) PetscCall((*draw->ops->stringsetsize)(draw,width,height));
+  PetscTryTypeMethod(draw,stringsetsize,width,height);
   PetscFunctionReturn(0);
 }
 
@@ -222,6 +221,6 @@ PetscErrorCode  PetscDrawStringGetSize(PetscDraw draw,PetscReal *width,PetscReal
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  PetscCall((*draw->ops->stringgetsize)(draw,width,height));
+  PetscUseTypeMethod(draw,stringgetsize ,width,height);
   PetscFunctionReturn(0);
 }

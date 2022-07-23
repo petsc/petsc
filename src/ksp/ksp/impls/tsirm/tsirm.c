@@ -131,7 +131,7 @@ PetscErrorCode KSPSolve_TSIRM(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPSetFromOptions_TSIRM(PetscOptionItems *PetscOptionsObject,KSP ksp)
+PetscErrorCode KSPSetFromOptions_TSIRM(KSP ksp,PetscOptionItems *PetscOptionsObject)
 {
   KSP_TSIRM      *tsirm = (KSP_TSIRM*)ksp->data;
 

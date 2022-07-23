@@ -1,15 +1,13 @@
 
 #include <petsc/private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 
-PetscErrorCode  DMSetFromOptions_DA(PetscOptionItems *PetscOptionsObject,DM da)
+PetscErrorCode  DMSetFromOptions_DA(DM da,PetscOptionItems *PetscOptionsObject)
 {
   DM_DA          *dd    = (DM_DA*)da->data;
   PetscInt       refine = 0,dim = da->dim,maxnlevels = 100,refx[100],refy[100],refz[100],n,i;
   PetscBool      flg;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,2);
-
   PetscCheck(dd->M >= 0,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"Dimension must be non-negative, call DMSetFromOptions() if you want to change the value at runtime");
   PetscCheck(dd->N >= 0,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"Dimension must be non-negative, call DMSetFromOptions() if you want to change the value at runtime");
   PetscCheck(dd->P >= 0,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"Dimension must be non-negative, call DMSetFromOptions() if you want to change the value at runtime");

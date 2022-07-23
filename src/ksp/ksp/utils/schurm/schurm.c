@@ -104,7 +104,7 @@ PetscErrorCode MatMultAdd_SchurComplement(Mat N,Vec x,Vec y,Vec z)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatSetFromOptions_SchurComplement(PetscOptionItems *PetscOptionsObject,Mat N)
+PetscErrorCode MatSetFromOptions_SchurComplement(Mat N,PetscOptionItems *PetscOptionsObject)
 {
   Mat_SchurComplement *Na = (Mat_SchurComplement*)N->data;
 

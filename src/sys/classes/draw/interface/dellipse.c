@@ -23,6 +23,6 @@ PetscErrorCode  PetscDrawEllipse(PetscDraw draw, PetscReal x, PetscReal y, Petsc
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID,1);
-  PetscCall((*draw->ops->ellipse)(draw, x, y, a, b, c));
+  PetscUseTypeMethod(draw,ellipse , x, y, a, b, c);
   PetscFunctionReturn(0);
 }

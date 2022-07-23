@@ -8450,8 +8450,8 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
         PetscCall(PCBDDCSetLevels(pc_temp,pcbddc->max_levels));
         if (pc_temp->ops->setfromoptions) { /* need to setfromoptions again, skipping the pc_type */
           PetscObjectOptionsBegin((PetscObject)pc_temp);
-          PetscCall((*pc_temp->ops->setfromoptions)(PetscOptionsObject,pc_temp));
-          PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)pc_temp));
+          PetscCall((*pc_temp->ops->setfromoptions)(pc_temp,PetscOptionsObject));
+          PetscCall(PetscObjectProcessOptionsHandlers((PetscObject)pc_temp,PetscOptionsObject));
           PetscOptionsEnd();
           pc_temp->setfromoptionscalled++;
         }

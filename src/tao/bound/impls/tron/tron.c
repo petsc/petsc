@@ -25,7 +25,7 @@ static PetscErrorCode TaoDestroy_TRON(Tao tao)
 }
 
 /*------------------------------------------------------------*/
-static PetscErrorCode TaoSetFromOptions_TRON(PetscOptionItems *PetscOptionsObject,Tao tao)
+static PetscErrorCode TaoSetFromOptions_TRON(Tao tao,PetscOptionItems *PetscOptionsObject)
 {
   TAO_TRON       *tron = (TAO_TRON *)tao->data;
   PetscBool      flg;
@@ -108,10 +108,10 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
   tao->reason = TAO_CONTINUE_ITERATING;
   PetscCall(TaoLogConvergenceHistory(tao,tron->f,tron->gnorm,0.0,tao->ksp_its));
   PetscCall(TaoMonitor(tao,tao->niter,tron->f,tron->gnorm,0.0,tron->stepsize));
-  PetscCall((*tao->ops->convergencetest)(tao,tao->cnvP));
+  PetscUseTypeMethod(tao,convergencetest ,tao->cnvP);
   while (tao->reason==TAO_CONTINUE_ITERATING) {
     /* Call general purpose update function */
-    if (tao->ops->update) PetscCall((*tao->ops->update)(tao, tao->niter, tao->user_update));
+    PetscTryTypeMethod(tao,update, tao->niter, tao->user_update);
 
     /* Perform projected gradient iterations */
     PetscCall(TronGradientProjections(tao,tron));
@@ -134,7 +134,7 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
       PetscCall(VecNorm(tao->gradient,NORM_2,&tron->gnorm));
       PetscCall(TaoLogConvergenceHistory(tao,tron->f,tron->gnorm,0.0,tao->ksp_its));
       PetscCall(TaoMonitor(tao,tao->niter,tron->f,tron->gnorm,0.0,delta));
-      PetscCall((*tao->ops->convergencetest)(tao,tao->cnvP));
+      PetscUseTypeMethod(tao,convergencetest ,tao->cnvP);
       if (!tao->reason) {
         tao->reason = TAO_CONVERGED_STEPTOL;
       }
@@ -229,7 +229,7 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
     tao->niter++;
     PetscCall(TaoLogConvergenceHistory(tao,tron->f,tron->gnorm,0.0,tao->ksp_its));
     PetscCall(TaoMonitor(tao,tao->niter,tron->f,tron->gnorm,0.0,stepsize));
-    PetscCall((*tao->ops->convergencetest)(tao,tao->cnvP));
+    PetscUseTypeMethod(tao,convergencetest ,tao->cnvP);
   }  /* END MAIN LOOP  */
   PetscFunctionReturn(0);
 }

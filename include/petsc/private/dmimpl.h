@@ -41,7 +41,7 @@ struct _DMOps {
   PetscErrorCode (*view)(DM,PetscViewer);
   PetscErrorCode (*load)(DM,PetscViewer);
   PetscErrorCode (*clone)(DM,DM*);
-  PetscErrorCode (*setfromoptions)(PetscOptionItems*,DM);
+  PetscErrorCode (*setfromoptions)(DM,PetscOptionItems*);
   PetscErrorCode (*setup)(DM);
   PetscErrorCode (*createlocalsection)(DM);
   PetscErrorCode (*createdefaultconstraints)(DM);

@@ -90,7 +90,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
   PetscCall(SNESMonitor(snes,0,fnorm));
 
   /* test convergence */
-  PetscCall((*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP));
+  PetscUseTypeMethod(snes,converged ,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);
   if (snes->reason) PetscFunctionReturn(0);
 
   if (snes->npc && snes->npcside== PC_RIGHT) {
@@ -107,7 +107,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
   }
 
   /* general purpose update */
-  if (snes->ops->update) PetscCall((*snes->ops->update)(snes, snes->iter));
+  PetscTryTypeMethod(snes,update, snes->iter);
 
   /* scale the initial update */
   if (qn->scale_type == SNES_QN_SCALE_JACOBIAN) {
@@ -163,7 +163,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
     PetscCall(SNESMonitor(snes,snes->iter,snes->norm));
 
     /* set parameter for default relative tolerance convergence test */
-    PetscCall((*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP));
+    PetscUseTypeMethod(snes,converged ,snes->iter,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP);
     if (snes->reason) PetscFunctionReturn(0);
     if (snes->npc && snes->npcside== PC_LEFT && snes->functype == SNES_FUNCTION_UNPRECONDITIONED) {
       PetscCall(SNESApplyNPC(snes,X,F,D));
@@ -177,7 +177,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
     }
 
     /* general purpose update */
-    if (snes->ops->update) PetscCall((*snes->ops->update)(snes, snes->iter));
+    PetscTryTypeMethod(snes,update, snes->iter);
 
     /* restart conditions */
     powell = PETSC_FALSE;
@@ -321,7 +321,7 @@ static PetscErrorCode SNESDestroy_QN(SNES snes)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESSetFromOptions_QN(PetscOptionItems *PetscOptionsObject,SNES snes)
+static PetscErrorCode SNESSetFromOptions_QN(SNES snes,PetscOptionItems *PetscOptionsObject)
 {
 
   SNES_QN           *qn    = (SNES_QN*)snes->data;

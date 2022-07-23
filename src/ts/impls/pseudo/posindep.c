@@ -300,7 +300,7 @@ static PetscErrorCode TSPseudoMonitorDefault(TS ts,PetscInt step,PetscReal ptime
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSSetFromOptions_Pseudo(PetscOptionItems *PetscOptionsObject,TS ts)
+static PetscErrorCode TSSetFromOptions_Pseudo(TS ts,PetscOptionItems *PetscOptionsObject)
 {
   TS_Pseudo      *pseudo = (TS_Pseudo*)ts->data;
   PetscBool      flg = PETSC_FALSE;

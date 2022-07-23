@@ -81,7 +81,7 @@ static PetscErrorCode KSPDestroy_PIPELCG(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSetFromOptions_PIPELCG(PetscOptionItems *PetscOptionsObject,KSP ksp)
+static PetscErrorCode KSPSetFromOptions_PIPELCG(KSP ksp,PetscOptionItems *PetscOptionsObject)
 {
   KSP_CG_PIPE_L  *plcg = (KSP_CG_PIPE_L*)ksp->data;
   PetscBool      flag=PETSC_FALSE;

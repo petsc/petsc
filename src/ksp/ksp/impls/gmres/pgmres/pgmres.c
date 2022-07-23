@@ -411,10 +411,10 @@ PetscErrorCode KSPBuildSolution_PGMRES(KSP ksp,Vec ptr,Vec *result)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPSetFromOptions_PGMRES(PetscOptionItems *PetscOptionsObject,KSP ksp)
+PetscErrorCode KSPSetFromOptions_PGMRES(KSP ksp,PetscOptionItems *PetscOptionsObject)
 {
   PetscFunctionBegin;
-  PetscCall(KSPSetFromOptions_GMRES(PetscOptionsObject,ksp));
+  PetscCall(KSPSetFromOptions_GMRES(ksp,PetscOptionsObject));
   PetscOptionsHeadBegin(PetscOptionsObject,"KSP pipelined GMRES Options");
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);

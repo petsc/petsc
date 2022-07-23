@@ -41,7 +41,7 @@ struct PetscDeviceContextAllocator : Petsc::AllocatorBase<PetscDeviceContext>
   {
     PetscFunctionBegin;
     PetscAssert(!dctx->numChildren,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Device context still has %" PetscInt_FMT " un-joined children, must call PetscDeviceContextJoin() with all children before destroying",dctx->numChildren);
-    if (dctx->ops->destroy) PetscCall((*dctx->ops->destroy)(dctx));
+    PetscTryTypeMethod(dctx,destroy);
     PetscCall(PetscDeviceDestroy(&dctx->device));
     PetscCall(PetscFree(dctx->childIDs));
     PetscCall(PetscFree(dctx));
@@ -151,7 +151,7 @@ PetscErrorCode PetscDeviceContextSetStreamType(PetscDeviceContext dctx, PetscStr
   PetscValidStreamType(type,2);
   /* only need to do complex swapping if the object has already been setup */
   if (dctx->setup && (dctx->streamType != type)) {
-    PetscCall((*dctx->ops->changestreamtype)(dctx,type));
+    PetscUseTypeMethod(dctx,changestreamtype ,type);
     dctx->setup = PETSC_FALSE;
   }
   dctx->streamType = type;
@@ -218,7 +218,7 @@ PetscErrorCode PetscDeviceContextSetDevice(PetscDeviceContext dctx, PetscDevice 
     if (dctx->device->ops->createcontext == device->ops->createcontext) PetscFunctionReturn(0);
   }
   PetscCall(PetscDeviceDestroy(&dctx->device));
-  if (dctx->ops->destroy) PetscCall((*dctx->ops->destroy)(dctx));
+  PetscTryTypeMethod(dctx,destroy);
   PetscCall(PetscMemzero(dctx->ops,sizeof(*dctx->ops)));
   PetscCall((*device->ops->createcontext)(dctx));
   PetscCall(PetscDeviceReference_Internal(device));
@@ -280,7 +280,7 @@ PetscErrorCode PetscDeviceContextSetUp(PetscDeviceContext dctx)
     PetscCall(PetscDeviceContextSetDefaultDevice_Internal(dctx));
   }
   if (dctx->setup) PetscFunctionReturn(0);
-  PetscCall((*dctx->ops->setup)(dctx));
+  PetscUseTypeMethod(dctx,setup);
   dctx->setup = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -346,7 +346,7 @@ PetscErrorCode PetscDeviceContextQueryIdle(PetscDeviceContext dctx, PetscBool *i
   PetscFunctionBegin;
   PetscValidDeviceContext(dctx,1);
   PetscValidBoolPointer(idle,2);
-  PetscCall((*dctx->ops->query)(dctx,idle));
+  PetscUseTypeMethod(dctx,query ,idle);
   PetscCall(PetscInfo(nullptr,"PetscDeviceContext id %" PetscInt_FMT " %s idle\n",dctx->id,*idle ? "was" : "was not"));
   PetscFunctionReturn(0);
 }
@@ -373,7 +373,7 @@ PetscErrorCode PetscDeviceContextWaitForContext(PetscDeviceContext dctxa, PetscD
   PetscFunctionBegin;
   PetscCheckCompatibleDeviceContexts(dctxa,1,dctxb,2);
   if (dctxa == dctxb) PetscFunctionReturn(0);
-  PetscCall((*dctxa->ops->waitforcontext)(dctxa,dctxb));
+  PetscUseTypeMethod(dctxa,waitforcontext ,dctxb);
   PetscFunctionReturn(0);
 }
 
@@ -616,7 +616,7 @@ PetscErrorCode PetscDeviceContextSynchronize(PetscDeviceContext dctx)
   PetscFunctionBegin;
   PetscValidDeviceContext(dctx,1);
   /* if it isn't setup there is nothing to sync on */
-  if (dctx->setup) PetscCall((*dctx->ops->synchronize)(dctx));
+  if (dctx->setup) PetscUseTypeMethod(dctx,synchronize);
   PetscFunctionReturn(0);
 }
 

@@ -2038,7 +2038,7 @@ PetscErrorCode TSTrajectorySetMaxUnitsDisk(TSTrajectory tj,PetscInt max_units_di
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSTrajectorySetFromOptions_Memory(PetscOptionItems *PetscOptionsObject,TSTrajectory tj)
+static PetscErrorCode TSTrajectorySetFromOptions_Memory(TSTrajectory tj,PetscOptionItems *PetscOptionsObject)
 {
   TJScheduler    *tjsch = (TJScheduler*)tj->data;
   PetscEnum      etmp;

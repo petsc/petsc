@@ -19,7 +19,7 @@
 PETSC_INTERN PetscErrorCode KSPDestroy_CG(KSP);
 PETSC_INTERN PetscErrorCode KSPReset_CG(KSP);
 PETSC_INTERN PetscErrorCode KSPView_CG(KSP,PetscViewer);
-PETSC_INTERN PetscErrorCode KSPSetFromOptions_CG(PetscOptionItems *PetscOptionsObject,KSP);
+PETSC_INTERN PetscErrorCode KSPSetFromOptions_CG(KSP,PetscOptionItems *PetscOptionsObject);
 PETSC_INTERN PetscErrorCode KSPCGSetType_CG(KSP,KSPCGType);
 
 /*

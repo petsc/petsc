@@ -708,7 +708,7 @@ PetscErrorCode PCView_Exotic(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCSetFromOptions_Exotic(PetscOptionItems *PetscOptionsObject,PC pc)
+PetscErrorCode PCSetFromOptions_Exotic(PC pc,PetscOptionItems *PetscOptionsObject)
 {
   PetscBool      flg;
   PC_MG          *mg = (PC_MG*)pc->data;
@@ -789,10 +789,9 @@ PETSC_EXTERN PetscErrorCode PCCreate_Exotic(PC pc)
 
   PetscFunctionBegin;
   /* if type was previously mg; must manually destroy it because call to PCSetType(pc,PCMG) will not destroy it */
-  if (pc->ops->destroy) {
-    PetscCall((*pc->ops->destroy)(pc));
-    pc->data = NULL;
-  }
+  PetscTryTypeMethod(pc,destroy);
+  pc->data = NULL;
+
   PetscCall(PetscFree(((PetscObject)pc)->type_name));
   ((PetscObject)pc)->type_name = NULL;
 

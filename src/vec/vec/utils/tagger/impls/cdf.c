@@ -411,14 +411,14 @@ static PetscErrorCode VecTaggerView_CDF(VecTagger tagger,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecTaggerSetFromOptions_CDF(PetscOptionItems *PetscOptionsObject,VecTagger tagger)
+static PetscErrorCode VecTaggerSetFromOptions_CDF(VecTagger tagger,PetscOptionItems *PetscOptionsObject)
 {
   VecTagger_CDF *cuml = (VecTagger_CDF *) tagger->data;
   PetscInt       method;
   PetscBool      set;
 
   PetscFunctionBegin;
-  PetscCall(VecTaggerSetFromOptions_Simple(PetscOptionsObject,tagger));
+  PetscCall(VecTaggerSetFromOptions_Simple(tagger,PetscOptionsObject));
   PetscOptionsHeadBegin(PetscOptionsObject,"VecTagger options for CDF boxes");
   PetscCall(PetscOptionsEList("-vec_tagger_cdf_method","Method for computing absolute boxes from CDF boxes","VecTaggerCDFSetMethod()",VecTaggerCDFMethods,VECTAGGER_CDF_NUM_METHODS,VecTaggerCDFMethods[cuml->method],&method,&set));
   if (set) cuml->method = (VecTaggerCDFMethod) method;

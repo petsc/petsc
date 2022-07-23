@@ -34,7 +34,7 @@ PetscErrorCode CharacteristicView(Characteristic c, PetscViewer viewer)
 
   PetscCall(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii));
   if (!iascii) {
-    if (c->ops->view) PetscCall((*c->ops->view)(c, viewer));
+    PetscTryTypeMethod(c,view, viewer);
   }
   PetscFunctionReturn(0);
 }
@@ -161,7 +161,7 @@ PetscErrorCode CharacteristicSetType(Characteristic c, CharacteristicType type)
 
   if (c->data) {
     /* destroy the old private Characteristic context */
-    PetscCall((*c->ops->destroy)(c));
+    PetscUseTypeMethod(c,destroy);
     c->ops->destroy = NULL;
     c->data         = NULL;
   }
@@ -200,7 +200,7 @@ PetscErrorCode CharacteristicSetUp(Characteristic c)
 
   PetscCall(PetscLogEventBegin(CHARACTERISTIC_SetUp,c,NULL,NULL,NULL));
   if (!c->setupcalled) {
-    PetscCall((*c->ops->setup)(c));
+    PetscUseTypeMethod(c,setup);
   }
   PetscCall(PetscLogEventEnd(CHARACTERISTIC_SetUp,c,NULL,NULL,NULL));
   c->setupcalled = 2;

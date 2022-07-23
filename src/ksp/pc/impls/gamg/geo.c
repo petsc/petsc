@@ -99,7 +99,7 @@ PetscErrorCode PCSetData_GEO(PC pc, Mat m)
   Input Parameter:
    . pc -
 */
-PetscErrorCode PCSetFromOptions_GEO(PetscOptionItems *PetscOptionsObject,PC pc)
+PetscErrorCode PCSetFromOptions_GEO(PC pc,PetscOptionItems *PetscOptionsObject)
 {
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject,"GAMG-GEO options");

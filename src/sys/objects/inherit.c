@@ -466,7 +466,7 @@ PetscErrorCode PetscObjectInheritPrintedOptions(PetscObject pobj,PetscObject obj
 .seealso: `KSPSetFromOptions()`, `PCSetFromOptions()`, `SNESSetFromOptions()`, `PetscObjectProcessOptionsHandlers()`, `PetscObjectDestroyOptionsHandlers()`
 
 @*/
-PetscErrorCode PetscObjectAddOptionsHandler(PetscObject obj,PetscErrorCode (*handle)(PetscOptionItems*,PetscObject,void*),PetscErrorCode (*destroy)(PetscObject,void*),void *ctx)
+PetscErrorCode PetscObjectAddOptionsHandler(PetscObject obj,PetscErrorCode (*handle)(PetscObject,PetscOptionItems*,void*),PetscErrorCode (*destroy)(PetscObject,void*),void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
@@ -483,19 +483,19 @@ PetscErrorCode PetscObjectAddOptionsHandler(PetscObject obj,PetscErrorCode (*han
     Not Collective
 
     Input Parameters:
-+   PetscOptionsObject - this is produced by the `PetscOptionsBegin()` macro
--   obj - the PETSc object
++   obj - the PETSc object
+-   PetscOptionsObject - the options context
 
     Level: developer
 
 .seealso: `KSPSetFromOptions()`, `PCSetFromOptions()`, `SNESSetFromOptions()`, `PetscObjectAddOptionsHandler()`, `PetscObjectDestroyOptionsHandlers()`
 
 @*/
-PetscErrorCode  PetscObjectProcessOptionsHandlers(PetscOptionItems *PetscOptionsObject,PetscObject obj)
+PetscErrorCode  PetscObjectProcessOptionsHandlers(PetscObject obj,PetscOptionItems *PetscOptionsObject)
 {
   PetscFunctionBegin;
-  PetscValidHeader(obj,2);
-  for (PetscInt i=0; i<obj->noptionhandler; i++) PetscCall((*obj->optionhandler[i])(PetscOptionsObject,obj,obj->optionctx[i]));
+  PetscValidHeader(obj,1);
+  for (PetscInt i=0; i<obj->noptionhandler; i++) PetscCall((*obj->optionhandler[i])(obj,PetscOptionsObject,obj->optionctx[i]));
   PetscFunctionReturn(0);
 }
 

@@ -536,12 +536,12 @@ PetscErrorCode KSPBuildSolution_FGMRES(KSP ksp,Vec ptr,Vec *result)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPSetFromOptions_FGMRES(PetscOptionItems *PetscOptionsObject,KSP ksp)
+PetscErrorCode KSPSetFromOptions_FGMRES(KSP ksp,PetscOptionItems *PetscOptionsObject)
 {
   PetscBool      flg;
 
   PetscFunctionBegin;
-  PetscCall(KSPSetFromOptions_GMRES(PetscOptionsObject,ksp));
+  PetscCall(KSPSetFromOptions_GMRES(ksp,PetscOptionsObject));
   PetscOptionsHeadBegin(PetscOptionsObject,"KSP flexible GMRES Options");
   PetscCall(PetscOptionsBoolGroupBegin("-ksp_fgmres_modifypcnochange","do not vary the preconditioner","KSPFGMRESSetModifyPC",&flg));
   if (flg) PetscCall(KSPFGMRESSetModifyPC(ksp,KSPFGMRESModifyPCNoChange,NULL,NULL));

@@ -80,7 +80,7 @@ PetscErrorCode DMGetCoordinateDM(DM dm, DM *cdm)
   if (!dm->coordinates[0].dm) {
     DM cdm;
 
-    PetscCall((*dm->ops->createcoordinatedm)(dm, &cdm));
+    PetscUseTypeMethod(dm,createcoordinatedm , &cdm);
     PetscCall(PetscObjectSetName((PetscObject)cdm, "coordinateDM"));
     /* Just in case the DM sets the coordinate DM when creating it (DMP4est can do this, because it may not setup
      * until the call to CreateCoordinateDM) */
@@ -1053,7 +1053,7 @@ PetscErrorCode DMLocatePoints(DM dm, Vec v, DMPointLocationType ltype, PetscSF *
     PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)v),cellSF));
   }
   PetscCall(PetscLogEventBegin(DM_LocatePoints,dm,0,0,0));
-  PetscCall((*dm->ops->locatepoints)(dm,v,ltype,*cellSF));
+  PetscUseTypeMethod(dm,locatepoints ,v,ltype,*cellSF);
   PetscCall(PetscLogEventEnd(DM_LocatePoints,dm,0,0,0));
   PetscFunctionReturn(0);
 }

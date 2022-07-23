@@ -153,9 +153,8 @@ PetscErrorCode  PFApplyVec(PF pf,Vec x,Vec y)
   PetscCheck((pf->dimout*(p/pf->dimout)) == p,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local output vector length %" PetscInt_FMT " not divisible by dimout %" PetscInt_FMT " of function",p,pf->dimout);
   PetscCheck((n/pf->dimin) == (p/pf->dimout),PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local vector lengths %" PetscInt_FMT " %" PetscInt_FMT " are wrong for dimin and dimout %" PetscInt_FMT " %" PetscInt_FMT " of function",n,p,pf->dimin,pf->dimout);
 
-  if (pf->ops->applyvec) {
-    PetscCall((*pf->ops->applyvec)(pf->data,x,y));
-  } else {
+  if (pf->ops->applyvec) PetscCall((*pf->ops->applyvec)(pf->data,x,y));
+  else {
     PetscScalar *xx,*yy;
 
     PetscCall(VecGetLocalSize(x,&n));
@@ -370,7 +369,7 @@ PetscErrorCode  PFSetType(PF pf,PFType type,void *ctx)
   PetscCall(PetscObjectTypeCompare((PetscObject)pf,type,&match));
   if (match) PetscFunctionReturn(0);
 
-  if (pf->ops->destroy) PetscCall((*pf->ops->destroy)(pf));
+  PetscTryTypeMethod(pf,destroy);
   pf->data = NULL;
 
   /* Determine the PFCreateXXX routine for a particular function */
@@ -417,10 +416,10 @@ PetscErrorCode  PFSetFromOptions(PF pf)
   PetscObjectOptionsBegin((PetscObject)pf);
   PetscCall(PetscOptionsFList("-pf_type","Type of function","PFSetType",PFList,NULL,type,256,&flg));
   if (flg) PetscCall(PFSetType(pf,type,NULL));
-  if (pf->ops->setfromoptions) PetscCall((*pf->ops->setfromoptions)(PetscOptionsObject,pf));
+  PetscTryTypeMethod(pf,setfromoptions,PetscOptionsObject);
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
-  PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)pf));
+  PetscCall(PetscObjectProcessOptionsHandlers((PetscObject)pf,PetscOptionsObject));
   PetscOptionsEnd();
   PetscFunctionReturn(0);
 }

@@ -234,7 +234,7 @@ PetscErrorCode  MatSetFromOptions(Mat B)
   PetscCall(PetscOptionsBool("-mat_null_space_test","Checks if provided null space is correct in MatAssemblyEnd()","MatSetNullSpaceTest",B->checknullspaceonassembly,&B->checknullspaceonassembly,NULL));
   PetscCall(PetscOptionsBool("-mat_error_if_failure","Generate an error if an error occurs when factoring the matrix","MatSetErrorIfFailure",B->erroriffailure,&B->erroriffailure,NULL));
 
-  if (B->ops->setfromoptions) PetscCall((*B->ops->setfromoptions)(PetscOptionsObject,B));
+  PetscTryTypeMethod(B,setfromoptions,PetscOptionsObject);
 
   flg  = PETSC_FALSE;
   PetscCall(PetscOptionsBool("-mat_new_nonzero_location_err","Generate an error if new nonzeros are created in the matrix structure (useful to test preallocation)","MatSetOption",flg,&flg,&set));
@@ -259,7 +259,7 @@ PetscErrorCode  MatSetFromOptions(Mat B)
   }
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
-  PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)B));
+  PetscCall(PetscObjectProcessOptionsHandlers((PetscObject)B,PetscOptionsObject));
   PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -376,8 +376,12 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat *C)
   ((PetscObject)A)->type_name = NULL;
   ((PetscObject)A)->name      = NULL;
 
-  /* free all the interior data structures from mat */
-  PetscCall((*A->ops->destroy)(A));
+  /*
+     free all the interior data structures from mat
+     cannot use PetscUseTypeMethod(A,destroy); because compiler
+     thinks it may print NULL type_name and name
+  */
+  PetscTryTypeMethod(A,destroy);
 
   PetscCall(PetscFree(A->defaultvectype));
   PetscCall(PetscLayoutDestroy(&A->rmap));
@@ -469,7 +473,7 @@ PetscErrorCode MatBindToCPU(Mat A,PetscBool flg)
 #if defined(PETSC_HAVE_DEVICE)
   if (A->boundtocpu == flg) PetscFunctionReturn(0);
   A->boundtocpu = flg;
-  if (A->ops->bindtocpu) PetscCall((*A->ops->bindtocpu)(A,flg));
+  PetscTryTypeMethod(A,bindtocpu,flg);
 #endif
   PetscFunctionReturn(0);
 }

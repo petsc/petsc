@@ -66,11 +66,10 @@ PetscErrorCode  PCSetType(PC pc,PCType type)
   PetscCall(PetscFunctionListFind(PCList,type,&r));
   PetscCheck(r,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PC type %s",type);
   /* Destroy the previous private PC context */
-  if (pc->ops->destroy) {
-    PetscCall((*pc->ops->destroy)(pc));
-    pc->ops->destroy = NULL;
-    pc->data         = NULL;
-  }
+  PetscTryTypeMethod(pc,destroy);
+  pc->ops->destroy = NULL;
+  pc->data         = NULL;
+
   PetscCall(PetscFunctionListDestroy(&((PetscObject)pc)->qlist));
   /* Reinitialize function pointers in PCOps structure */
   PetscCall(PetscMemzero(pc->ops,sizeof(struct _PCOps)));
@@ -160,11 +159,11 @@ PetscErrorCode  PCSetFromOptions(PC pc)
 
   PetscCall(PetscOptionsBool("-pc_use_amat","use Amat (instead of Pmat) to define preconditioner in nested inner solves","PCSetUseAmat",pc->useAmat,&pc->useAmat,NULL));
 
-  if (pc->ops->setfromoptions) PetscCall((*pc->ops->setfromoptions)(PetscOptionsObject,pc));
+  PetscTryTypeMethod(pc,setfromoptions,PetscOptionsObject);
 
   skipoptions:
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
-  PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)pc));
+  PetscCall(PetscObjectProcessOptionsHandlers((PetscObject)pc,PetscOptionsObject));
   PetscOptionsEnd();
   pc->setfromoptionscalled++;
   PetscFunctionReturn(0);

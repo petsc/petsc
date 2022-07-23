@@ -45,7 +45,7 @@ PetscErrorCode PFApply_Matlab(void *value,PetscInt n,const PetscScalar *in,Petsc
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PFSetFromOptions_Matlab(PetscOptionItems *PetscOptionsObject,PF pf)
+PetscErrorCode PFSetFromOptions_Matlab(PF pf,PetscOptionItems *PetscOptionsObject)
 {
   PetscBool  flag;
   char       value[256];

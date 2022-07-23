@@ -495,7 +495,7 @@ PetscErrorCode PCReset_ML(PC pc)
    The interface routine PCSetUp() is not usually called directly by
    the user, but instead is called by PCApply() if necessary.
 */
-extern PetscErrorCode PCSetFromOptions_MG(PetscOptionItems *PetscOptionsObject,PC);
+extern PetscErrorCode PCSetFromOptions_MG(PC,PetscOptionItems *PetscOptionsObject);
 extern PetscErrorCode PCReset_MG(PC);
 
 PetscErrorCode PCSetUp_ML(PC pc)
@@ -807,7 +807,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
     PetscCall(PCSetType(subpc,PCSOR));
   }
   PetscObjectOptionsBegin((PetscObject)pc);
-  PetscCall(PCSetFromOptions_MG(PetscOptionsObject,pc)); /* should be called in PCSetFromOptions_ML(), but cannot be called prior to PCMGSetLevels() */
+  PetscCall(PCSetFromOptions_MG(pc,PetscOptionsObject)); /* should be called in PCSetFromOptions_ML(), but cannot be called prior to PCMGSetLevels() */
   PetscOptionsEnd();
 
   PetscCall(PetscMalloc1(Nlevels,&gridctx));
@@ -944,7 +944,7 @@ PetscErrorCode PCDestroy_ML(PC pc)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCSetFromOptions_ML(PetscOptionItems *PetscOptionsObject,PC pc)
+PetscErrorCode PCSetFromOptions_ML(PC pc,PetscOptionItems *PetscOptionsObject)
 {
   PetscInt       indx,PrintLevel,partindx;
   const char     *scheme[] = {"Uncoupled","Coupled","MIS","METIS"};

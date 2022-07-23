@@ -123,7 +123,7 @@ static PetscErrorCode PCSetUp_TFS(PC pc)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetFromOptions_TFS(PetscOptionItems *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_TFS(PC pc,PetscOptionItems *PetscOptionsObject)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

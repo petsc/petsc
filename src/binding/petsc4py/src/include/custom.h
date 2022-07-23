@@ -366,7 +366,7 @@ SNESConvergenceTestCall(SNES snes, PetscInt its,
   PetscCheck(xnorm >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"solution norm must be nonnegative");
   PetscCheck(ynorm >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"step norm must be nonnegative");
   PetscCheck(fnorm >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"function norm must be nonnegative");
-  PetscCall((*snes->ops->converged)(snes,its,xnorm,ynorm,fnorm,reason,snes->cnvP));
+  PetscUseTypeMethod(snes,converged ,its,xnorm,ynorm,fnorm,reason,snes->cnvP);
   PetscFunctionReturn(0);
 }
 

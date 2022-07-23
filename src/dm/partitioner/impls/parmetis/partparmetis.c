@@ -62,7 +62,7 @@ static PetscErrorCode PetscPartitionerView_ParMetis(PetscPartitioner part, Petsc
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPartitionerSetFromOptions_ParMetis(PetscOptionItems *PetscOptionsObject, PetscPartitioner part)
+static PetscErrorCode PetscPartitionerSetFromOptions_ParMetis(PetscPartitioner part,PetscOptionItems *PetscOptionsObject)
 {
   PetscPartitioner_ParMetis *p = (PetscPartitioner_ParMetis *) part->data;
 

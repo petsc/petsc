@@ -104,7 +104,7 @@ static PetscErrorCode PCDestroy_LSC(PC pc)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetFromOptions_LSC(PetscOptionItems *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_LSC(PC pc,PetscOptionItems *PetscOptionsObject)
 {
   PC_LSC         *lsc = (PC_LSC*)pc->data;
 

@@ -309,7 +309,7 @@ PetscErrorCode  PetscViewerSetUp(PetscViewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   if (viewer->setupcalled) PetscFunctionReturn(0);
-  if (viewer->ops->setup) PetscCall((*viewer->ops->setup)(viewer));
+  PetscTryTypeMethod(viewer,setup);
   viewer->setupcalled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -387,14 +387,14 @@ PetscErrorCode  PetscViewerView(PetscViewer v,PetscViewer viewer)
         PetscCall(PetscViewerASCIIPrintf(viewer,"  Viewer format = %s\n",PetscViewerFormats[v->format]));
       }
       PetscCall(PetscViewerASCIIPushTab(viewer));
-      if (v->ops->view) PetscCall((*v->ops->view)(v,viewer));
+      PetscTryTypeMethod(v,view,viewer);
       PetscCall(PetscViewerASCIIPopTab(viewer));
     }
 #if defined(PETSC_HAVE_SAWS)
   } else if (issaws) {
     if (!((PetscObject)v)->amsmem) {
       PetscCall(PetscObjectViewSAWs((PetscObject)v,viewer));
-      if (v->ops->view) PetscCall((*v->ops->view)(v,viewer));
+      PetscTryTypeMethod(v,view,viewer);
     }
 #endif
   }
@@ -454,9 +454,7 @@ PetscErrorCode  PetscViewerRead(PetscViewer viewer, void *data, PetscInt num, Pe
     }
     if (count) *count = c;
     else PetscCheck(c >= num,PetscObjectComm((PetscObject) viewer), PETSC_ERR_FILE_READ, "Insufficient data, only read %" PetscInt_FMT " < %" PetscInt_FMT " strings", c, num);
-  } else {
-    PetscCall((*viewer->ops->read)(viewer, data, num, count, dtype));
-  }
+  } else PetscUseTypeMethod(viewer,read , data, num, count, dtype);
   PetscFunctionReturn(0);
 }
 

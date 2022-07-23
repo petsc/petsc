@@ -81,7 +81,7 @@ static PetscErrorCode TaoDestroy_NM(Tao tao)
 }
 
 /*------------------------------------------------------------*/
-static PetscErrorCode TaoSetFromOptions_NM(PetscOptionItems *PetscOptionsObject,Tao tao)
+static PetscErrorCode TaoSetFromOptions_NM(Tao tao,PetscOptionItems *PetscOptionsObject)
 {
   TAO_NelderMead *nm = (TAO_NelderMead*)tao->data;
 
@@ -164,13 +164,13 @@ static PetscErrorCode TaoSolve_NM(Tao tao)
   tao->reason = TAO_CONTINUE_ITERATING;
   while (1) {
     /* Call general purpose update function */
-    if (tao->ops->update) PetscCall((*tao->ops->update)(tao, tao->niter, tao->user_update));
+    PetscTryTypeMethod(tao,update, tao->niter, tao->user_update);
     ++tao->niter;
     shrink = 0;
     PetscCall(VecCopy(nm->simplex[nm->indices[0]],tao->solution));
     PetscCall(TaoLogConvergenceHistory(tao, nm->f_values[nm->indices[0]], nm->f_values[nm->indices[nm->N]]-nm->f_values[nm->indices[0]], 0.0, tao->ksp_its));
     PetscCall(TaoMonitor(tao,tao->niter, nm->f_values[nm->indices[0]], nm->f_values[nm->indices[nm->N]]-nm->f_values[nm->indices[0]], 0.0, 1.0));
-    PetscCall((*tao->ops->convergencetest)(tao,tao->cnvP));
+    PetscUseTypeMethod(tao,convergencetest ,tao->cnvP);
     if (tao->reason != TAO_CONTINUE_ITERATING) break;
 
     /* x(mu) = (1 + mu)Xbar - mu*X_N+1 */

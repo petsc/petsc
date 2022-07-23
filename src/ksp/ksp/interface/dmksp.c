@@ -76,7 +76,7 @@ PetscErrorCode DMKSPCopy(DMKSP kdm,DMKSP nkdm)
   nkdm->fortran_func_pointers[2] = kdm->fortran_func_pointers[2];
 
   /* implementation specific copy hooks */
-  if (kdm->ops->duplicate) PetscCall((*kdm->ops->duplicate)(kdm,nkdm));
+  PetscTryTypeMethod(kdm,duplicate,nkdm);
   PetscFunctionReturn(0);
 }
 

@@ -775,7 +775,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
 
     /* should be called in PCSetFromOptions_GAMG(), but cannot be called prior to PCMGSetLevels() */
     PetscObjectOptionsBegin((PetscObject)pc);
-    PetscCall(PCSetFromOptions_MG(PetscOptionsObject,pc));
+    PetscCall(PCSetFromOptions_MG(pc,PetscOptionsObject));
     PetscOptionsEnd();
     PetscCall(PCMGSetGalerkin(pc,PC_MG_GALERKIN_EXTERNAL));
 
@@ -1500,7 +1500,7 @@ static PetscErrorCode PCView_GAMG(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCSetFromOptions_GAMG(PetscOptionItems *PetscOptionsObject,PC pc)
+PetscErrorCode PCSetFromOptions_GAMG(PC pc,PetscOptionItems *PetscOptionsObject)
 {
   PC_MG          *mg      = (PC_MG*)pc->data;
   PC_GAMG        *pc_gamg = (PC_GAMG*)mg->innerctx;
@@ -1548,7 +1548,7 @@ PetscErrorCode PCSetFromOptions_GAMG(PetscOptionItems *PetscOptionsObject,PC pc)
     }
   }
   /* set options for subtype */
-  if (pc_gamg->ops->setfromoptions) PetscCall((*pc_gamg->ops->setfromoptions)(PetscOptionsObject,pc));
+  PetscCall((*pc_gamg->ops->setfromoptions)(pc,PetscOptionsObject));
 
   PetscCall(PCGetOptionsPrefix(pc, &pcpre));
   PetscCall(PetscSNPrintf(prefix,sizeof(prefix),"%spc_gamg_",pcpre ? pcpre : ""));

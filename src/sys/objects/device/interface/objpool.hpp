@@ -48,7 +48,7 @@ public:
   PETSC_NODISCARD PetscErrorCode destroy(value_type &obj) const noexcept
   {
     PetscFunctionBegin;
-    PetscCall((*obj->ops->destroy)(obj));
+    PetscUseTypeMethod(obj,destroy );
     PetscCall(PetscHeaderDestroy(&obj));
     PetscFunctionReturn(0);
   }

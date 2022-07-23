@@ -115,7 +115,7 @@ static PetscErrorCode PCDestroy_CP(PC pc)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetFromOptions_CP(PetscOptionItems *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_CP(PC pc,PetscOptionItems *PetscOptionsObject)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

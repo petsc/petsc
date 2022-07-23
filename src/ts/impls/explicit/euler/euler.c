@@ -64,7 +64,7 @@ static PetscErrorCode TSDestroy_Euler(TS ts)
 }
 /*------------------------------------------------------------*/
 
-static PetscErrorCode TSSetFromOptions_Euler(PetscOptionItems *PetscOptionsObject,TS ts)
+static PetscErrorCode TSSetFromOptions_Euler(TS ts,PetscOptionItems *PetscOptionsObject)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

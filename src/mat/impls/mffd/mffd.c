@@ -82,7 +82,7 @@ static PetscErrorCode  MatMFFDSetType_MFFD(Mat mat,MatMFFDType ftype)
   if (match) PetscFunctionReturn(0);
 
   /* destroy the old one if it exists */
-  if (ctx->ops->destroy) PetscCall((*ctx->ops->destroy)(ctx));
+  PetscTryTypeMethod(ctx,destroy);
 
   PetscCall(PetscFunctionListFind(MatMFFDList,ftype,&r));
   PetscCheck(r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown MatMFFD type %s given",ftype);
@@ -212,7 +212,7 @@ static PetscErrorCode MatDestroy_MFFD(Mat mat)
   if (ctx->current_f_allocated) {
     PetscCall(VecDestroy(&ctx->current_f));
   }
-  if (ctx->ops->destroy) PetscCall((*ctx->ops->destroy)(ctx));
+  PetscTryTypeMethod(ctx,destroy);
   PetscCall(PetscHeaderDestroy(&ctx));
 
   PetscCall(PetscObjectComposeFunction((PetscObject)mat,"MatMFFDSetBase_C",NULL));
@@ -258,7 +258,7 @@ static PetscErrorCode MatView_MFFD(Mat J,PetscViewer viewer)
       PetscCall(PetscViewerASCIIPrintf(viewer,"Using Lyness complex number trick to compute the matrix-vector product\n"));
     }
 #endif
-    if (ctx->ops->view) PetscCall((*ctx->ops->view)(ctx,viewer));
+    PetscTryTypeMethod(ctx,view,viewer);
     PetscCall(PetscObjectGetOptionsPrefix((PetscObject)J, &prefix));
 
     PetscCall(PetscOptionsHasName(((PetscObject)J)->options,prefix, "-mat_mffd_view_base", &viewbase));
@@ -330,7 +330,7 @@ static PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
     PetscCall(MatMFFDSetType(mat,MATMFFD_WP));
     PetscCall(MatSetFromOptions(mat));
   }
-  PetscCall((*ctx->ops->compute)(ctx,U,a,&h,&zeroa));
+  PetscUseTypeMethod(ctx,compute ,U,a,&h,&zeroa);
   if (zeroa) {
     PetscCall(VecSet(y,0.0));
     PetscCall(PetscLogEventEnd(MATMFFD_Mult,a,y,0,0));
@@ -505,16 +505,15 @@ PetscErrorCode  MatMFFDSetOptionsPrefix(Mat mat,const char prefix[])
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode  MatSetFromOptions_MFFD(PetscOptionItems *PetscOptionsObject,Mat mat)
+static PetscErrorCode  MatSetFromOptions_MFFD(Mat mat,PetscOptionItems *PetscOptionsObject)
 {
   MatMFFD        mfctx;
   PetscBool      flg;
   char           ftype[256];
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_CLASSID,2);
   PetscCall(MatShellGetContext(mat,&mfctx));
-  PetscValidHeaderSpecific(mfctx,MATMFFD_CLASSID,2);
+  PetscValidHeaderSpecific(mfctx,MATMFFD_CLASSID,1);
   PetscObjectOptionsBegin((PetscObject)mfctx);
   PetscCall(PetscOptionsFList("-mat_mffd_type","Matrix free type","MatMFFDSetType",MatMFFDList,((PetscObject)mfctx)->type_name,ftype,256,&flg));
   if (flg) PetscCall(MatMFFDSetType(mat,ftype));
@@ -528,7 +527,7 @@ static PetscErrorCode  MatSetFromOptions_MFFD(PetscOptionItems *PetscOptionsObje
 #if defined(PETSC_USE_COMPLEX)
   PetscCall(PetscOptionsBool("-mat_mffd_complex","Use Lyness complex number trick to compute the matrix-vector product","None",mfctx->usecomplex,&mfctx->usecomplex,NULL));
 #endif
-  if (mfctx->ops->setfromoptions) PetscCall((*mfctx->ops->setfromoptions)(PetscOptionsObject,mfctx));
+  PetscTryTypeMethod(mfctx,setfromoptions,PetscOptionsObject);
   PetscOptionsEnd();
   PetscFunctionReturn(0);
 }

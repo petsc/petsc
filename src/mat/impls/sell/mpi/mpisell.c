@@ -791,15 +791,15 @@ PetscErrorCode MatDiagonalScale_MPISELL(Mat mat,Vec ll,Vec rr)
   if (ll) {
     PetscCall(VecGetLocalSize(ll,&s1));
     PetscCheck(s1==s2,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"left vector non-conforming local size");
-    PetscCall((*b->ops->diagonalscale)(b,ll,NULL));
+    PetscUseTypeMethod(b,diagonalscale ,ll,NULL);
   }
   /* scale  the diagonal block */
-  PetscCall((*a->ops->diagonalscale)(a,ll,rr));
+  PetscUseTypeMethod(a,diagonalscale ,ll,rr);
 
   if (rr) {
     /* Do a scatter end and then right scale the off-diagonal block */
     PetscCall(VecScatterEnd(sell->Mvctx,rr,sell->lvec,INSERT_VALUES,SCATTER_FORWARD));
-    PetscCall((*b->ops->diagonalscale)(b,NULL,sell->lvec));
+    PetscUseTypeMethod(b,diagonalscale ,NULL,sell->lvec);
   }
   PetscFunctionReturn(0);
 }
@@ -915,7 +915,7 @@ static PetscErrorCode MatSetRandom_MPISELL(Mat x,PetscRandom rctx)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatSetFromOptions_MPISELL(PetscOptionItems *PetscOptionsObject,Mat A)
+PetscErrorCode MatSetFromOptions_MPISELL(Mat A,PetscOptionItems *PetscOptionsObject)
 {
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject,"MPISELL options");

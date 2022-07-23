@@ -260,7 +260,7 @@ static PetscErrorCode PCDestroy_PARMS(PC pc)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetFromOptions_PARMS(PetscOptionItems *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_PARMS(PC pc,PetscOptionItems *PetscOptionsObject)
 {
   PC_PARMS          *parms = (PC_PARMS*)pc->data;
   PetscBool          flag;

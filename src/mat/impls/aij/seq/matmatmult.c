@@ -13,11 +13,8 @@
 PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
 {
   PetscFunctionBegin;
-  if (C->ops->matmultnumeric) {
-    PetscCall((*C->ops->matmultnumeric)(A,B,C));
-  } else {
-    PetscCall(MatMatMultNumeric_SeqAIJ_SeqAIJ_Sorted(A,B,C));
-  }
+  if (C->ops->matmultnumeric) PetscCall((*C->ops->matmultnumeric)(A,B,C));
+  else PetscCall(MatMatMultNumeric_SeqAIJ_SeqAIJ_Sorted(A,B,C));
   PetscFunctionReturn(0);
 }
 

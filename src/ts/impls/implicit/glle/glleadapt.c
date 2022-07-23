@@ -10,7 +10,7 @@ struct _TSGLLEAdaptOps {
   PetscErrorCode (*choose)(TSGLLEAdapt,PetscInt,const PetscInt[],const PetscReal[],const PetscReal[],PetscInt,PetscReal,PetscReal,PetscInt*,PetscReal*,PetscBool*);
   PetscErrorCode (*destroy)(TSGLLEAdapt);
   PetscErrorCode (*view)(TSGLLEAdapt,PetscViewer);
-  PetscErrorCode (*setfromoptions)(PetscOptionItems*,TSGLLEAdapt);
+  PetscErrorCode (*setfromoptions)(TSGLLEAdapt,PetscOptionItems*);
 };
 
 struct _p_TSGLLEAdapt {
@@ -119,7 +119,7 @@ PetscErrorCode  TSGLLEAdaptSetType(TSGLLEAdapt adapt,TSGLLEAdaptType type)
   PetscFunctionBegin;
   PetscCall(PetscFunctionListFind(TSGLLEAdaptList,type,&r));
   PetscCheck(r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TSGLLEAdapt type \"%s\" given",type);
-  if (((PetscObject)adapt)->type_name) PetscCall((*adapt->ops->destroy)(adapt));
+  if (((PetscObject)adapt)->type_name) PetscUseTypeMethod(adapt,destroy);
   PetscCall((*r)(adapt));
   PetscCall(PetscObjectChangeTypeName((PetscObject)adapt,type));
   PetscFunctionReturn(0);
@@ -142,7 +142,7 @@ PetscErrorCode  TSGLLEAdaptView(TSGLLEAdapt adapt,PetscViewer viewer)
     PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)adapt,viewer));
     if (adapt->ops->view) {
       PetscCall(PetscViewerASCIIPushTab(viewer));
-      PetscCall((*adapt->ops->view)(adapt,viewer));
+      PetscUseTypeMethod(adapt,view ,viewer);
       PetscCall(PetscViewerASCIIPopTab(viewer));
     }
   }
@@ -155,12 +155,12 @@ PetscErrorCode  TSGLLEAdaptDestroy(TSGLLEAdapt *adapt)
   if (!*adapt) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*adapt,TSGLLEADAPT_CLASSID,1);
   if (--((PetscObject)(*adapt))->refct > 0) {*adapt = NULL; PetscFunctionReturn(0);}
-  if ((*adapt)->ops->destroy) PetscCall((*(*adapt)->ops->destroy)(*adapt));
+  PetscTryTypeMethod((*adapt),destroy);
   PetscCall(PetscHeaderDestroy(adapt));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  TSGLLEAdaptSetFromOptions(PetscOptionItems *PetscOptionsObject,TSGLLEAdapt adapt)
+PetscErrorCode  TSGLLEAdaptSetFromOptions(TSGLLEAdapt adapt,PetscOptionItems *PetscOptionsObject)
 {
   char      type[256] = TSGLLEADAPT_BOTH;
   PetscBool flg;
@@ -172,7 +172,7 @@ PetscErrorCode  TSGLLEAdaptSetFromOptions(PetscOptionItems *PetscOptionsObject,T
   PetscCall(PetscOptionsFList("-ts_adapt_type","Algorithm to use for adaptivity","TSGLLEAdaptSetType",TSGLLEAdaptList,
                             ((PetscObject)adapt)->type_name ? ((PetscObject)adapt)->type_name : type,type,sizeof(type),&flg));
   if (flg || !((PetscObject)adapt)->type_name) PetscCall(TSGLLEAdaptSetType(adapt,type));
-  if (adapt->ops->setfromoptions) PetscCall((*adapt->ops->setfromoptions)(PetscOptionsObject,adapt));
+  PetscTryTypeMethod(adapt,setfromoptions,PetscOptionsObject);
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
@@ -187,7 +187,7 @@ PetscErrorCode  TSGLLEAdaptChoose(TSGLLEAdapt adapt,PetscInt n,const PetscInt or
   PetscValidIntPointer(next_sc,9);
   PetscValidRealPointer(next_h,10);
   PetscValidBoolPointer(finish,11);
-  PetscCall((*adapt->ops->choose)(adapt,n,orders,errors,cost,cur,h,tleft,next_sc,next_h,finish));
+  PetscUseTypeMethod(adapt,choose ,n,orders,errors,cost,cur,h,tleft,next_sc,next_h,finish);
   PetscFunctionReturn(0);
 }
 

@@ -48,14 +48,14 @@ PetscErrorCode PetscOptionsBegin_Private(PetscOptionItems *PetscOptionsObject,MP
 /*
     Handles setting up the data structure in a call to PetscObjectOptionsBegin()
 */
-PetscErrorCode PetscObjectOptionsBegin_Private(PetscOptionItems *PetscOptionsObject,PetscObject obj)
+PetscErrorCode PetscObjectOptionsBegin_Private(PetscObject obj,PetscOptionItems *PetscOptionsObject)
 {
   char      title[256];
   PetscBool flg;
 
   PetscFunctionBegin;
-  PetscValidPointer(PetscOptionsObject,1);
-  PetscValidHeader(obj,2);
+  PetscValidPointer(PetscOptionsObject,2);
+  PetscValidHeader(obj,1);
   PetscOptionsObject->object         = obj;
   PetscOptionsObject->alreadyprinted = obj->optionsprinted;
 

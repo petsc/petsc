@@ -328,7 +328,7 @@ static PetscErrorCode SNESSetUp_Composite(SNES snes)
     /* SNESVI only ever calls computevariablebounds once, so calling it once here is justified */
     if (!snes->xl) PetscCall(VecDuplicate(snes->vec_sol,&snes->xl));
     if (!snes->xu) PetscCall(VecDuplicate(snes->vec_sol,&snes->xu));
-    PetscCall((*snes->ops->computevariablebounds)(snes,snes->xl,snes->xu));
+    PetscUseTypeMethod(snes,computevariablebounds ,snes->xl,snes->xu);
   }
 
   while (next) {
@@ -424,7 +424,7 @@ static PetscErrorCode SNESDestroy_Composite(SNES snes)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESSetFromOptions_Composite(PetscOptionItems *PetscOptionsObject,SNES snes)
+static PetscErrorCode SNESSetFromOptions_Composite(SNES snes,PetscOptionItems *PetscOptionsObject)
 {
   SNES_Composite     *jac = (SNES_Composite*)snes->data;
   PetscInt           nmax = 8,i;
@@ -740,7 +740,7 @@ static PetscErrorCode SNESSolve_Composite(SNES snes)
     PetscCall(SNESMonitor(snes,0,snes->norm));
 
     /* test convergence */
-    PetscCall((*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP));
+    PetscUseTypeMethod(snes,converged ,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);
     if (snes->reason) PetscFunctionReturn(0);
   } else {
     PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
@@ -750,7 +750,7 @@ static PetscErrorCode SNESSolve_Composite(SNES snes)
 
   for (i = 0; i < snes->max_its; i++) {
     /* Call general purpose update function */
-    if (snes->ops->update) PetscCall((*snes->ops->update)(snes, snes->iter));
+    PetscTryTypeMethod(snes,update, snes->iter);
 
     /* Copy the state before modification by application of the composite solver;
        we will subtract the new state after application */
@@ -803,7 +803,7 @@ static PetscErrorCode SNESSolve_Composite(SNES snes)
     PetscCall(SNESLogConvergenceHistory(snes,snes->norm,0));
     PetscCall(SNESMonitor(snes,snes->iter,snes->norm));
     /* Test for convergence */
-    if (normtype == SNES_NORM_ALWAYS) PetscCall((*snes->ops->converged)(snes,snes->iter,xnorm,snorm,fnorm,&snes->reason,snes->cnvP));
+    if (normtype == SNES_NORM_ALWAYS) PetscUseTypeMethod(snes,converged ,snes->iter,xnorm,snorm,fnorm,&snes->reason,snes->cnvP);
     if (snes->reason) break;
   }
   if (normtype == SNES_NORM_ALWAYS) {

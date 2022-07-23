@@ -1344,9 +1344,7 @@ PetscErrorCode MatZeroRowsColumns_SeqSBAIJ(Mat A,PetscInt is_n,const PetscInt is
       aa[0] =  zero;
       aa   += bs;
     }
-    if (diag != 0.0) {
-      PetscCall((*A->ops->setvalues)(A,1,&row,1,&row,&diag,INSERT_VALUES));
-    }
+    if (diag != 0.0) PetscUseTypeMethod(A,setvalues ,1,&row,1,&row,&diag,INSERT_VALUES);
   }
   PetscCall(MatAssemblyEnd_SeqSBAIJ(A,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);

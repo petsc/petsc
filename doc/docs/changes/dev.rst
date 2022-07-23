@@ -67,6 +67,7 @@ In addition to the changes above
 
 .. rubric:: Sys:
 
+-  Change calling sequence of ``PetscObjectProcessOptionsHandler()`` to flip the role of the first two arguments
 -  Change -log_view to no longer print out the amount of memory associated with different types of objects. That data was often incorrect
 -  Change ``PetscCall()`` from Fortran so that ``call PetscFunction(args,ierr);CHKERRQ(ierr);`` can be replaced with ``PetscCall(PetscFunction(args,ierr))``
 -  Add ``PetscCallA()`` from Fortran so that ``call PetscFunction(args,ierr);CHKERRA(ierr);`` can be replaced with ``PetscCallA(PetscFunction(args,ierr))``

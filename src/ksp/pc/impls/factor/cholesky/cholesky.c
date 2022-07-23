@@ -11,11 +11,11 @@ typedef struct {
   IS        row,col;                 /* index sets used for reordering */
 } PC_Cholesky;
 
-static PetscErrorCode PCSetFromOptions_Cholesky(PetscOptionItems *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_Cholesky(PC pc,PetscOptionItems *PetscOptionsObject)
 {
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject,"Cholesky options");
-  PetscCall(PCSetFromOptions_Factor(PetscOptionsObject,pc));
+  PetscCall(PCSetFromOptions_Factor(pc,PetscOptionsObject));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }

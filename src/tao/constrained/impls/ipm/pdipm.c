@@ -796,7 +796,7 @@ static PetscErrorCode SNESLineSearch_PDIPM(SNESLineSearch linesearch,void *ctx)
   PetscCall(TaoLogConvergenceHistory(tao,pdipm->obj,tao->residual,tao->cnorm,tao->niter));
   PetscCall(TaoMonitor(tao,tao->niter,pdipm->obj,tao->residual,tao->cnorm,pdipm->mu));
 
-  PetscCall((*tao->ops->convergencetest)(tao,tao->cnvP));
+  PetscUseTypeMethod(tao,convergencetest ,tao->cnvP);
   if (tao->reason) PetscCall(SNESSetConvergedReason(snes,SNES_CONVERGED_FNORM_ABS));
   PetscFunctionReturn(0);
 }
@@ -837,7 +837,7 @@ PetscErrorCode TaoSolve_PDIPM(Tao tao)
   PetscCall(TaoLogConvergenceHistory(tao,pdipm->obj,tao->residual,tao->cnorm,tao->niter));
   PetscCall(TaoMonitor(tao,tao->niter,pdipm->obj,tao->residual,tao->cnorm,pdipm->mu));
   PetscCall(VecDestroy(&dummy));
-  PetscCall((*tao->ops->convergencetest)(tao,tao->cnvP));
+  PetscUseTypeMethod(tao,convergencetest ,tao->cnvP);
   if (tao->reason) PetscCall(SNESSetConvergedReason(pdipm->snes,SNES_CONVERGED_FNORM_ABS));
 
   while (tao->reason == TAO_CONTINUE_ITERATING) {
@@ -1484,7 +1484,7 @@ PetscErrorCode TaoDestroy_PDIPM(Tao tao)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TaoSetFromOptions_PDIPM(PetscOptionItems *PetscOptionsObject,Tao tao)
+PetscErrorCode TaoSetFromOptions_PDIPM(Tao tao,PetscOptionItems *PetscOptionsObject)
 {
   TAO_PDIPM      *pdipm = (TAO_PDIPM*)tao->data;
 

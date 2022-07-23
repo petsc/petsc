@@ -893,7 +893,7 @@ static PetscErrorCode MatProductSymbolic_MPIAIJKokkos_AB(Mat_Product *product,Ma
   PetscCall(MatProductSetFill(C1,product->fill));
   C1->product->api_user = product->api_user;
   PetscCall(MatProductSetFromOptions(C1));
-  PetscCall((*C1->ops->productsymbolic)(C1));
+  PetscUseTypeMethod(C1,productsymbolic);
 
   PetscCall(ISGetIndices(glob,&garray));
   PetscCall(ISGetSize(glob,&sz));
@@ -911,7 +911,7 @@ static PetscErrorCode MatProductSymbolic_MPIAIJKokkos_AB(Mat_Product *product,Ma
   PetscCall(MatProductSetFill(C2,product->fill));
   C2->product->api_user = product->api_user;
   PetscCall(MatProductSetFromOptions(C2));
-  PetscCall((*C2->ops->productsymbolic)(C2));
+  PetscUseTypeMethod(C2,productsymbolic);
   PetscCall(MatSeqAIJKokkosGetCSRMatrixWithGlobalColumnIds(C2,N,l2g2,mm->C2_global));
 
   /* C = C1 + C2.  We actually use their global col ids versions in adding */
@@ -953,7 +953,7 @@ static PetscErrorCode MatProductSymbolic_MPIAIJKokkos_AtB(Mat_Product *product,M
   PetscCall(MatProductSetFill(C1,product->fill));
   C1->product->api_user = product->api_user;
   PetscCall(MatProductSetFromOptions(C1));
-  PetscCall((*C1->ops->productsymbolic)(C1));
+  PetscUseTypeMethod(C1,productsymbolic);
 
   if (localB) PetscCall(MatSeqAIJKokkosGetCSRMatrixWithGlobalColumnIds(C1,N,l2g,mm->C1_global));
   else mm->C1_global = static_cast<Mat_SeqAIJKokkos*>(C1->spptr)->csrmat; /* the csrmat already uses global col ids */
@@ -964,7 +964,7 @@ static PetscErrorCode MatProductSymbolic_MPIAIJKokkos_AtB(Mat_Product *product,M
   PetscCall(MatProductSetFill(C2,product->fill));
   C2->product->api_user = product->api_user;
   PetscCall(MatProductSetFromOptions(C2));
-  PetscCall((*C2->ops->productsymbolic)(C2));
+  PetscUseTypeMethod(C2,productsymbolic);
 
   PetscCall(MatSeqAIJKokkosReduce(C2,MAT_INITIAL_MATRIX,localB,N,l2g,a->Mvctx,mm->sf,mm->abuf,mm->srcrowoffset,mm->dstrowoffset,mm->C2_global));
 

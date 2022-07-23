@@ -36,7 +36,7 @@ static PetscErrorCode TaoBQNLSComputeStep(Tao tao, PetscBool shift, KSPConverged
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoSetFromOptions_BQNLS(PetscOptionItems *PetscOptionsObject,Tao tao)
+static PetscErrorCode TaoSetFromOptions_BQNLS(Tao tao,PetscOptionItems *PetscOptionsObject)
 {
   TAO_BNK        *bnk = (TAO_BNK *)tao->data;
   TAO_BQNK       *bqnk = (TAO_BQNK*)bnk->ctx;

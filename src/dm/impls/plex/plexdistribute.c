@@ -2002,7 +2002,7 @@ PetscErrorCode DMPlexDistributeOverlap(DM dm, PetscInt overlap, PetscSF *sf, DM 
     PetscCall(PetscObjectAppendOptionsPrefix((PetscObject) dm, "dist_"));
     PetscCall(DMPlexGetOverlap(dm, &overlap));
     PetscObjectOptionsBegin((PetscObject) dm);
-    PetscCall(DMSetFromOptions_Overlap_Plex(PetscOptionsObject, dm, &overlap));
+    PetscCall(DMSetFromOptions_Overlap_Plex(dm, PetscOptionsObject, &overlap));
     PetscOptionsEnd();
     PetscCall(PetscObjectSetOptionsPrefix((PetscObject) dm, oldPrefix[0] == '\0' ? NULL : oldPrefix));
   }

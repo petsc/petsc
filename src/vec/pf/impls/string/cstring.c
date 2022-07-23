@@ -89,7 +89,7 @@ PetscErrorCode  PFStringCreateFunction(PF pf,char *string,void **f)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PFSetFromOptions_String(PetscOptionItems *PetscOptionsObject,PF pf)
+static PetscErrorCode PFSetFromOptions_String(PF pf,PetscOptionItems *PetscOptionsObject)
 {
   PetscBool      flag;
   char           value[PETSC_MAX_PATH_LEN];

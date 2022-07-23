@@ -404,12 +404,12 @@ static PetscErrorCode MatSetUp_LMVMBFGS(Mat B)
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatSetFromOptions_LMVMBFGS(PetscOptionItems *PetscOptionsObject, Mat B)
+static PetscErrorCode MatSetFromOptions_LMVMBFGS(Mat B,PetscOptionItems *PetscOptionsObject)
 {
   PetscFunctionBegin;
-  PetscCall(MatSetFromOptions_LMVM(PetscOptionsObject, B));
+  PetscCall(MatSetFromOptions_LMVM(B,PetscOptionsObject));
   PetscOptionsHeadBegin(PetscOptionsObject,"L-BFGS method for approximating SPD Jacobian actions (MATLMVMBFGS)");
-  PetscCall(MatSetFromOptions_LMVMSymBrdn_Private(PetscOptionsObject, B));
+  PetscCall(MatSetFromOptions_LMVMSymBrdn_Private( B,PetscOptionsObject));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }

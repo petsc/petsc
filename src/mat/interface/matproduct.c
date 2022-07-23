@@ -662,7 +662,7 @@ PetscErrorCode MatProductNumeric(Mat mat)
 
   if (mat->ops->productnumeric) {
     PetscCall(PetscLogEventBegin(eventtype,mat,0,0,0));
-    PetscCall((*mat->ops->productnumeric)(mat));
+    PetscUseTypeMethod(mat,productnumeric);
     PetscCall(PetscLogEventEnd(eventtype,mat,0,0,0));
   } else missing = PETSC_TRUE;
 
@@ -780,7 +780,7 @@ PetscErrorCode MatProductSymbolic(Mat mat)
   mat->ops->productnumeric = NULL;
   if (mat->ops->productsymbolic) {
     PetscCall(PetscLogEventBegin(eventtype,mat,0,0,0));
-    PetscCall((*mat->ops->productsymbolic)(mat));
+    PetscUseTypeMethod(mat,productsymbolic);
     PetscCall(PetscLogEventEnd(eventtype,mat,0,0,0));
   } else missing = PETSC_TRUE;
 
@@ -1104,7 +1104,7 @@ static PetscErrorCode MatProductNumeric_ABC_Basic(Mat mat)
   mat->product = mmabc->ABC->product;
   mat->ops->productnumeric = mmabc->ABC->ops->productnumeric;
   /* use function pointer directly to prevent logging */
-  PetscCall((*mat->ops->productnumeric)(mat));
+  PetscUseTypeMethod(mat,productnumeric);
   mat->ops->productnumeric = MatProductNumeric_ABC_Basic;
   mat->product = product;
   PetscFunctionReturn(0);
@@ -1175,7 +1175,7 @@ PetscErrorCode MatProductSymbolic_ABC_Basic(Mat mat)
   mat->product = mmabc->ABC->product;
   mat->ops->productsymbolic = mmabc->ABC->ops->productsymbolic;
   /* use function pointer directly to prevent logging */
-  PetscCall((*mat->ops->productsymbolic)(mat));
+  PetscUseTypeMethod(mat,productsymbolic);
   mmabc->ABC->ops->productnumeric = mat->ops->productnumeric;
   mat->ops->productsymbolic       = MatProductSymbolic_ABC_Basic;
   mat->ops->productnumeric        = MatProductNumeric_ABC_Basic;

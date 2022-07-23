@@ -487,7 +487,7 @@ cdef extern from * nogil:
 cdef extern from * nogil:
     struct _MatOps:
         PetscErrorCode (*destroy)(PetscMat) except IERR
-        PetscErrorCode (*setfromoptions)(PetscOptionItems*,PetscMat) except IERR
+        PetscErrorCode (*setfromoptions)(PetscMat,PetscOptionItems*) except IERR
         PetscErrorCode (*view)(PetscMat,PetscViewer) except IERR
         PetscErrorCode (*duplicate)(PetscMat,MatDuplicateOption,PetscMat*) except IERR
         PetscErrorCode (*copy)(PetscMat,PetscMat,MatStructure) except IERR
@@ -716,8 +716,8 @@ cdef PetscErrorCode MatDestroy_Python(
     return FunctionEnd()
 
 cdef PetscErrorCode MatSetFromOptions_Python(
-    PetscOptionItems *PetscOptionsObject,
     PetscMat mat,
+    PetscOptionItems *PetscOptionsObject,
     ) \
     except IERR with gil:
     FunctionBegin(b"MatSetFromOptions_Python")
@@ -1440,7 +1440,7 @@ cdef extern from * nogil:
       PetscErrorCode (*destroy)(PetscPC) except IERR
       PetscErrorCode (*setup)(PetscPC) except IERR
       PetscErrorCode (*reset)(PetscPC) except IERR
-      PetscErrorCode (*setfromoptions)(PetscOptionItems*,PetscPC) except IERR
+      PetscErrorCode (*setfromoptions)(PetscPC,PetscOptionItems*) except IERR
       PetscErrorCode (*view)(PetscPC,PetscViewer) except IERR
       PetscErrorCode (*presolve)(PetscPC,PetscKSP,PetscVec,PetscVec) except IERR
       PetscErrorCode (*postsolve)(PetscPC,PetscKSP,PetscVec,PetscVec) except IERR
@@ -1594,8 +1594,8 @@ cdef PetscErrorCode PCReset_Python(
     return FunctionEnd()
 
 cdef PetscErrorCode PCSetFromOptions_Python(
-    PetscOptionItems *PetscOptionsObject,
     PetscPC pc,
+    PetscOptionItems *PetscOptionsObject,
     ) \
     except IERR with gil:
     FunctionBegin(b"PCSetFromOptions_Python")
@@ -1735,7 +1735,7 @@ cdef extern from * nogil:
       PetscErrorCode (*destroy)(PetscKSP) except IERR
       PetscErrorCode (*setup)(PetscKSP) except IERR
       PetscErrorCode (*reset)(PetscKSP) except IERR
-      PetscErrorCode (*setfromoptions)(PetscOptionItems*, PetscKSP) except IERR
+      PetscErrorCode (*setfromoptions)(PetscKSP,PetscOptionItems*) except IERR
       PetscErrorCode (*view)(PetscKSP,PetscViewer) except IERR
       PetscErrorCode (*solve)(PetscKSP) except IERR
       PetscErrorCode (*buildsolution)(PetscKSP,PetscVec,PetscVec*) except IERR
@@ -1903,8 +1903,8 @@ cdef PetscErrorCode KSPReset_Python(
     return FunctionEnd()
 
 cdef PetscErrorCode KSPSetFromOptions_Python(
-    PetscOptionItems *PetscOptionsObject,
     PetscKSP ksp,
+    PetscOptionItems *PetscOptionsObject
     ) \
     except IERR with gil:
     FunctionBegin(b"KSPSetFromOptions_Python")
@@ -2099,7 +2099,7 @@ cdef extern from * nogil:
       PetscErrorCode (*destroy)(PetscSNES) except IERR
       PetscErrorCode (*setup)(PetscSNES) except IERR
       PetscErrorCode (*reset)(PetscSNES) except IERR
-      PetscErrorCode (*setfromoptions)(PetscOptionItems*,PetscSNES) except IERR
+      PetscErrorCode (*setfromoptions)(PetscSNES,PetscOptionItems*) except IERR
       PetscErrorCode (*view)(PetscSNES,PetscViewer) except IERR
       PetscErrorCode (*solve)(PetscSNES) except IERR
     ctypedef _SNESOps *SNESOps
@@ -2267,8 +2267,8 @@ cdef PetscErrorCode SNESReset_Python(
     return FunctionEnd()
 
 cdef PetscErrorCode SNESSetFromOptions_Python(
-    PetscOptionItems *PetscOptionsObject,
     PetscSNES snes,
+    PetscOptionItems *PetscOptionsObject,
     ) \
     except IERR with gil:
     FunctionBegin(b"SNESSetFromOptions_Python")
@@ -2439,7 +2439,7 @@ cdef extern from * nogil:
       PetscErrorCode (*destroy)(PetscTS) except IERR
       PetscErrorCode (*setup)(PetscTS) except IERR
       PetscErrorCode (*reset)(PetscTS) except IERR
-      PetscErrorCode (*setfromoptions)(PetscOptionItems*,PetscTS) except IERR
+      PetscErrorCode (*setfromoptions)(PetscTS,PetscOptionItems*) except IERR
       PetscErrorCode (*view)(PetscTS,PetscViewer) except IERR
       PetscErrorCode (*step)(PetscTS) except IERR
       PetscErrorCode (*rollback)(PetscTS) except IERR
@@ -2642,8 +2642,8 @@ cdef PetscErrorCode TSReset_Python(
     return FunctionEnd()
 
 cdef PetscErrorCode TSSetFromOptions_Python(
-    PetscOptionItems *PetscOptionsObject,
     PetscTS ts,
+    PetscOptionItems *PetscOptionsObject,
     ) \
     except IERR with gil:
     FunctionBegin(b"TSSetFromOptions_Python")
@@ -2881,7 +2881,7 @@ cdef extern from * nogil:
       PetscErrorCode (*destroy)(PetscTAO) except IERR
       PetscErrorCode (*setup)(PetscTAO) except IERR
       PetscErrorCode (*solve)(PetscTAO) except IERR
-      PetscErrorCode (*setfromoptions)(PetscOptionItems*,PetscTAO) except IERR
+      PetscErrorCode (*setfromoptions)(PetscTAO,PetscOptionItems*) except IERR
       PetscErrorCode (*view)(PetscTAO,PetscViewer) except IERR
     ctypedef _TaoOps *TaoOps
     ctypedef enum TaoConvergedReason:
@@ -3036,8 +3036,8 @@ cdef PetscErrorCode TaoSetUp_Python(
     return FunctionEnd()
 
 cdef PetscErrorCode TaoSetFromOptions_Python(
-    PetscOptionItems *PetscOptionsObject,
     PetscTAO tao,
+    PetscOptionItems *PetscOptionsObject,
     ) \
     except IERR with gil:
     FunctionBegin(b"TaoSetFromOptions_Python")

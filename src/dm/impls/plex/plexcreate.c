@@ -3402,7 +3402,7 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMSetFromOptions_NonRefinement_Plex(PetscOptionItems *PetscOptionsObject, DM dm)
+PetscErrorCode DMSetFromOptions_NonRefinement_Plex(DM dm,PetscOptionItems *PetscOptionsObject)
 {
   DM_Plex       *mesh = (DM_Plex*) dm->data;
   PetscBool      flg, flg2;
@@ -3470,7 +3470,7 @@ PetscErrorCode DMSetFromOptions_NonRefinement_Plex(PetscOptionItems *PetscOption
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMSetFromOptions_Overlap_Plex(PetscOptionItems *PetscOptionsObject, DM dm, PetscInt *overlap)
+PetscErrorCode DMSetFromOptions_Overlap_Plex(DM dm, PetscOptionItems *PetscOptionsObject, PetscInt *overlap)
 {
   PetscInt  numOvLabels = 16, numOvExLabels = 16;
   char     *ovLabelNames[16], *ovExLabelNames[16];
@@ -3507,7 +3507,7 @@ PetscErrorCode DMSetFromOptions_Overlap_Plex(PetscOptionItems *PetscOptionsObjec
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMSetFromOptions_Plex(PetscOptionItems *PetscOptionsObject,DM dm)
+static PetscErrorCode DMSetFromOptions_Plex(DM dm,PetscOptionItems *PetscOptionsObject)
 {
   PetscFunctionList ordlist;
   char                      oname[256];
@@ -3517,7 +3517,6 @@ static PetscErrorCode DMSetFromOptions_Plex(PetscOptionItems *PetscOptionsObject
   DMPlexReorderDefaultFlag  reorder;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
   PetscOptionsHeadBegin(PetscOptionsObject,"DMPlex Options");
   /* Handle automatic creation */
   PetscCall(DMGetDimension(dm, &dim));
@@ -3562,10 +3561,10 @@ static PetscErrorCode DMSetFromOptions_Plex(PetscOptionItems *PetscOptionsObject
     DM             rdm;
     PetscPointFunc coordFunc = ((DM_Plex*) dm->data)->coordFunc;
 
-    PetscCall(DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject, dm));
+    PetscCall(DMSetFromOptions_NonRefinement_Plex(dm,PetscOptionsObject));
     PetscCall(DMRefine(dm, PetscObjectComm((PetscObject) dm), &rdm));
     PetscCall(DMPlexReplace_Static(dm, &rdm));
-    PetscCall(DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject, dm));
+    PetscCall(DMSetFromOptions_NonRefinement_Plex(dm,PetscOptionsObject));
     if (coordFunc && remap) {
       PetscCall(DMPlexRemapGeometry(dm, 0.0, coordFunc));
       ((DM_Plex*) dm->data)->coordFunc = coordFunc;
@@ -3580,7 +3579,7 @@ static PetscErrorCode DMSetFromOptions_Plex(PetscOptionItems *PetscOptionsObject
     PetscCall(DMExtrude(dm, extLayers, &edm));
     PetscCall(DMPlexReplace_Static(dm, &edm));
     ((DM_Plex *) dm->data)->coordFunc = NULL;
-    PetscCall(DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject, dm));
+    PetscCall(DMSetFromOptions_NonRefinement_Plex(dm,PetscOptionsObject));
     extLayers = 0;
   }
   /* Handle DMPlex reordering before distribution */
@@ -3596,12 +3595,12 @@ static PetscErrorCode DMSetFromOptions_Plex(PetscOptionItems *PetscOptionsObject
     PetscCall(DMPlexPermute(dm, perm, &pdm));
     PetscCall(ISDestroy(&perm));
     PetscCall(DMPlexReplace_Static(dm, &pdm));
-    PetscCall(DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject, dm));
+    PetscCall(DMSetFromOptions_NonRefinement_Plex(dm,PetscOptionsObject));
   }
   /* Handle DMPlex distribution */
   PetscCall(DMPlexDistributeGetDefault(dm, &distribute));
   PetscCall(PetscOptionsBool("-dm_distribute", "Flag to redistribute a mesh among processes", "DMPlexDistribute", distribute, &distribute, NULL));
-  PetscCall(DMSetFromOptions_Overlap_Plex(PetscOptionsObject, dm, &overlap));
+  PetscCall(DMSetFromOptions_Overlap_Plex(dm,PetscOptionsObject,  &overlap));
   if (distribute) {
     DM               pdm = NULL;
     PetscPartitioner part;
@@ -3674,7 +3673,7 @@ static PetscErrorCode DMSetFromOptions_Plex(PetscOptionItems *PetscOptionsObject
     PetscCall(PetscObjectDereference((PetscObject)coarseDM));
     /* Free DMs */
     for (r = 0; r < refine; ++r) {
-      PetscCall(DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject, dms[r]));
+      PetscCall(DMSetFromOptions_NonRefinement_Plex( dms[r],PetscOptionsObject));
       PetscCall(DMDestroy(&dms[r]));
     }
     PetscCall(PetscFree(dms));
@@ -3683,11 +3682,11 @@ static PetscErrorCode DMSetFromOptions_Plex(PetscOptionItems *PetscOptionsObject
       DM             rdm;
       PetscPointFunc coordFunc = ((DM_Plex*) dm->data)->coordFunc;
 
-      PetscCall(DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject, dm));
+      PetscCall(DMSetFromOptions_NonRefinement_Plex( dm,PetscOptionsObject));
       PetscCall(DMRefine(dm, PetscObjectComm((PetscObject) dm), &rdm));
       /* Total hack since we do not pass in a pointer */
       PetscCall(DMPlexReplace_Static(dm, &rdm));
-      PetscCall(DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject, dm));
+      PetscCall(DMSetFromOptions_NonRefinement_Plex(dm,PetscOptionsObject));
       if (coordFunc && remap) {
         PetscCall(DMPlexRemapGeometry(dm, 0.0, coordFunc));
         ((DM_Plex*) dm->data)->coordFunc = coordFunc;
@@ -3704,7 +3703,7 @@ static PetscErrorCode DMSetFromOptions_Plex(PetscOptionItems *PetscOptionsObject
     PetscCall(DMCoarsenHierarchy(dm, coarsen, dms));
     /* Free DMs */
     for (r = 0; r < coarsen; ++r) {
-      PetscCall(DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject, dms[r]));
+      PetscCall(DMSetFromOptions_NonRefinement_Plex(dms[r],PetscOptionsObject));
       PetscCall(DMDestroy(&dms[r]));
     }
     PetscCall(PetscFree(dms));
@@ -3713,11 +3712,11 @@ static PetscErrorCode DMSetFromOptions_Plex(PetscOptionItems *PetscOptionsObject
       DM             cdm;
       PetscPointFunc coordFunc = ((DM_Plex*) dm->data)->coordFunc;
 
-      PetscCall(DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject, dm));
+      PetscCall(DMSetFromOptions_NonRefinement_Plex(dm,PetscOptionsObject));
       PetscCall(DMCoarsen(dm, PetscObjectComm((PetscObject) dm), &cdm));
       /* Total hack since we do not pass in a pointer */
       PetscCall(DMPlexReplace_Static(dm, &cdm));
-      PetscCall(DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject, dm));
+      PetscCall(DMSetFromOptions_NonRefinement_Plex(dm,PetscOptionsObject));
       if (coordFunc) {
         PetscCall(DMPlexRemapGeometry(dm, 0.0, coordFunc));
         ((DM_Plex*) dm->data)->coordFunc = coordFunc;
@@ -3761,7 +3760,7 @@ static PetscErrorCode DMSetFromOptions_Plex(PetscOptionItems *PetscOptionsObject
     }
   }
   /* Handle */
-  PetscCall(DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject, dm));
+  PetscCall(DMSetFromOptions_NonRefinement_Plex(dm,PetscOptionsObject));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }

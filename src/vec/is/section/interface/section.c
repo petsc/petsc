@@ -199,7 +199,7 @@ PetscErrorCode PetscSectionSetFromOptions(PetscSection s)
   PetscObjectOptionsBegin((PetscObject) s);
   PetscCall(PetscOptionsBool("-petscsection_point_major", "The for ordering, either point major or field major", "PetscSectionSetPointMajor", s->pointMajor, &s->pointMajor, NULL));
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
-  PetscCall(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) s));
+  PetscCall(PetscObjectProcessOptionsHandlers((PetscObject) s,PetscOptionsObject));
   PetscOptionsEnd();
   PetscCall(PetscObjectViewFromOptions((PetscObject) s, NULL, "-petscsection_view"));
   PetscFunctionReturn(0);
@@ -2929,10 +2929,9 @@ PetscErrorCode  PetscSectionSymSetType(PetscSectionSym sym, PetscSectionSymType 
 
   PetscCall(PetscFunctionListFind(PetscSectionSymList,method,&r));
   PetscCheck(r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscSectionSym type: %s", method);
-  if (sym->ops->destroy) {
-    PetscCall((*sym->ops->destroy)(sym));
-    sym->ops->destroy = NULL;
-  }
+  PetscTryTypeMethod(sym,destroy);
+  sym->ops->destroy = NULL;
+
   PetscCall((*r)(sym));
   PetscCall(PetscObjectChangeTypeName((PetscObject)sym,method));
   PetscFunctionReturn(0);
@@ -3045,7 +3044,7 @@ PetscErrorCode PetscSectionSymView(PetscSectionSym sym,PetscViewer viewer)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(sym,1,viewer,2);
   PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)sym,viewer));
-  if (sym->ops->view) PetscCall((*sym->ops->view)(sym,viewer));
+  PetscTryTypeMethod(sym,view,viewer);
   PetscFunctionReturn(0);
 }
 
@@ -3376,7 +3375,7 @@ PetscErrorCode PetscSectionSymCopy(PetscSectionSym sym, PetscSectionSym nsym)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sym, PETSC_SECTION_SYM_CLASSID, 1);
   PetscValidHeaderSpecific(nsym, PETSC_SECTION_SYM_CLASSID, 2);
-  if (sym->ops->copy) PetscCall((*sym->ops->copy)(sym, nsym));
+  PetscTryTypeMethod(sym,copy, nsym);
   PetscFunctionReturn(0);
 }
 
@@ -3402,7 +3401,7 @@ PetscErrorCode PetscSectionSymDistribute(PetscSectionSym sym, PetscSF migrationS
   PetscValidHeaderSpecific(sym, PETSC_SECTION_SYM_CLASSID, 1);
   PetscValidHeaderSpecific(migrationSF, PETSCSF_CLASSID, 2);
   PetscValidPointer(dsym, 3);
-  if (sym->ops->distribute) PetscCall((*sym->ops->distribute)(sym, migrationSF, dsym));
+  PetscTryTypeMethod(sym,distribute, migrationSF, dsym);
   PetscFunctionReturn(0);
 }
 

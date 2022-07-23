@@ -514,7 +514,7 @@ PetscErrorCode KSPLSQRMonitorResidualDrawLGCreate(PetscViewer viewer, PetscViewe
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPSetFromOptions_LSQR(PetscOptionItems *PetscOptionsObject,KSP ksp)
+PetscErrorCode KSPSetFromOptions_LSQR(KSP ksp,PetscOptionItems *PetscOptionsObject)
 {
   KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
 
