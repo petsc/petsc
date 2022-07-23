@@ -95,8 +95,6 @@ int main(int argc,char **argv)
   Vec            x;
 
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
-
-  PetscFunctionBeginUser;
   comm = PETSC_COMM_WORLD;
   PetscCall(SNESCreate(comm,&snes));
 
