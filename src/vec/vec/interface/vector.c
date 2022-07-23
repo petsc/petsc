@@ -1102,7 +1102,6 @@ PetscErrorCode  VecReciprocal(Vec vec)
   PetscValidHeaderSpecific(vec,VEC_CLASSID,1);
   PetscValidType(vec,1);
   PetscCheck(vec->stash.insertmode == NOT_SET_VALUES,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
-  PetscCheck(vec->ops->reciprocal,PETSC_COMM_SELF,PETSC_ERR_SUP,"Vector does not support reciprocal operation");
   PetscCall(VecSetErrorIfLocked(vec,1));
   PetscCall((*vec->ops->reciprocal)(vec));
   PetscCall(PetscObjectStateIncrease((PetscObject)vec));

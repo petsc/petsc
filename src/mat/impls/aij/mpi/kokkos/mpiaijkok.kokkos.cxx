@@ -893,7 +893,6 @@ static PetscErrorCode MatProductSymbolic_MPIAIJKokkos_AB(Mat_Product *product,Ma
   PetscCall(MatProductSetFill(C1,product->fill));
   C1->product->api_user = product->api_user;
   PetscCall(MatProductSetFromOptions(C1));
-  PetscCheck(C1->ops->productsymbolic,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing symbolic op for %s",MatProductTypes[C1->product->type]);
   PetscCall((*C1->ops->productsymbolic)(C1));
 
   PetscCall(ISGetIndices(glob,&garray));
@@ -912,7 +911,6 @@ static PetscErrorCode MatProductSymbolic_MPIAIJKokkos_AB(Mat_Product *product,Ma
   PetscCall(MatProductSetFill(C2,product->fill));
   C2->product->api_user = product->api_user;
   PetscCall(MatProductSetFromOptions(C2));
-  PetscCheck(C2->ops->productsymbolic,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing symbolic op for %s",MatProductTypes[C2->product->type]);
   PetscCall((*C2->ops->productsymbolic)(C2));
   PetscCall(MatSeqAIJKokkosGetCSRMatrixWithGlobalColumnIds(C2,N,l2g2,mm->C2_global));
 
@@ -955,7 +953,6 @@ static PetscErrorCode MatProductSymbolic_MPIAIJKokkos_AtB(Mat_Product *product,M
   PetscCall(MatProductSetFill(C1,product->fill));
   C1->product->api_user = product->api_user;
   PetscCall(MatProductSetFromOptions(C1));
-  PetscCheck(C1->ops->productsymbolic,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing symbolic op for %s",MatProductTypes[C1->product->type]);
   PetscCall((*C1->ops->productsymbolic)(C1));
 
   if (localB) PetscCall(MatSeqAIJKokkosGetCSRMatrixWithGlobalColumnIds(C1,N,l2g,mm->C1_global));
@@ -967,7 +964,6 @@ static PetscErrorCode MatProductSymbolic_MPIAIJKokkos_AtB(Mat_Product *product,M
   PetscCall(MatProductSetFill(C2,product->fill));
   C2->product->api_user = product->api_user;
   PetscCall(MatProductSetFromOptions(C2));
-  PetscCheck(C2->ops->productsymbolic,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing symbolic op for %s",MatProductTypes[C2->product->type]);
   PetscCall((*C2->ops->productsymbolic)(C2));
 
   PetscCall(MatSeqAIJKokkosReduce(C2,MAT_INITIAL_MATRIX,localB,N,l2g,a->Mvctx,mm->sf,mm->abuf,mm->srcrowoffset,mm->dstrowoffset,mm->C2_global));

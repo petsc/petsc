@@ -329,7 +329,6 @@ PetscErrorCode TaoLineSearchApply(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, 
   ls->stepdirection = s;
 
   PetscCall(TaoLineSearchSetUp(ls));
-  PetscCheck(ls->ops->apply,PetscObjectComm((PetscObject)ls),PETSC_ERR_ARG_WRONGSTATE,"Line Search Object does not have 'apply' routine");
   ls->nfeval = 0;
   ls->ngeval = 0;
   ls->nfgeval = 0;
@@ -903,9 +902,7 @@ PetscErrorCode TaoLineSearchComputeObjectiveAndGradient(TaoLineSearch ls, Vec x,
     PetscCall(PetscLogEventBegin(TAOLINESEARCH_Eval,ls,0,0,0));
     if (ls->ops->computeobjectiveandgradient) PetscCallBack("TaoLineSearch callback objective/gradient",(*ls->ops->computeobjectiveandgradient)(ls,x,f,g,ls->userctx_funcgrad));
     else {
-      PetscCheck(ls->ops->computeobjective,PetscObjectComm((PetscObject)ls),PETSC_ERR_ARG_WRONGSTATE,"Line Search does not have objective function set");
       PetscCallBack("TaoLineSearch callback objective",(*ls->ops->computeobjective)(ls,x,f,ls->userctx_func));
-      PetscCheck(ls->ops->computegradient,PetscObjectComm((PetscObject)ls),PETSC_ERR_ARG_WRONGSTATE,"Line Search does not have gradient function set");
       PetscCallBack("TaoLineSearch callback gradient",(*ls->ops->computegradient)(ls,x,g,ls->userctx_grad));
     }
     PetscCall(PetscLogEventEnd(TAOLINESEARCH_Eval,ls,0,0,0));
@@ -951,7 +948,6 @@ PetscErrorCode TaoLineSearchComputeGradient(TaoLineSearch ls, Vec x, Vec g)
     PetscCall(PetscLogEventBegin(TAOLINESEARCH_Eval,ls,0,0,0));
     if (ls->ops->computegradient) PetscCallBack("TaoLineSearch callback gradient",(*ls->ops->computegradient)(ls,x,g,ls->userctx_grad));
     else {
-      PetscCheck(ls->ops->computeobjectiveandgradient,PetscObjectComm((PetscObject)ls),PETSC_ERR_ARG_WRONGSTATE,"Line Search does not have gradient functions set");
       PetscCallBack("TaoLineSearch callback gradient",(*ls->ops->computeobjectiveandgradient)(ls,x,&fdummy,g,ls->userctx_funcgrad));
     }
     PetscCall(PetscLogEventEnd(TAOLINESEARCH_Eval,ls,0,0,0));
@@ -989,7 +985,6 @@ PetscErrorCode TaoLineSearchComputeObjectiveAndGTS(TaoLineSearch ls, Vec x, Pets
   PetscValidRealPointer(f,3);
   PetscValidRealPointer(gts,4);
   PetscCheckSameComm(ls,1,x,2);
-  PetscCheck(ls->ops->computeobjectiveandgts,PetscObjectComm((PetscObject)ls),PETSC_ERR_ARG_WRONGSTATE,"Line Search does not have objective and gts function set");
   PetscCall(PetscLogEventBegin(TAOLINESEARCH_Eval,ls,0,0,0));
   PetscCallBack("TaoLineSearch callback objective/gts",(*ls->ops->computeobjectiveandgts)(ls,x,ls->stepdirection,f,gts,ls->userctx_funcgts));
   PetscCall(PetscLogEventEnd(TAOLINESEARCH_Eval,ls,0,0,0));

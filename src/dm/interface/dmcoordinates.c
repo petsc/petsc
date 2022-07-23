@@ -80,7 +80,6 @@ PetscErrorCode DMGetCoordinateDM(DM dm, DM *cdm)
   if (!dm->coordinates[0].dm) {
     DM cdm;
 
-    PetscCheck(dm->ops->createcoordinatedm,PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unable to create coordinates for this DM");
     PetscCall((*dm->ops->createcoordinatedm)(dm, &cdm));
     PetscCall(PetscObjectSetName((PetscObject)cdm, "coordinateDM"));
     /* Just in case the DM sets the coordinate DM when creating it (DMP4est can do this, because it may not setup
@@ -1053,7 +1052,6 @@ PetscErrorCode DMLocatePoints(DM dm, Vec v, DMPointLocationType ltype, PetscSF *
   } else {
     PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)v),cellSF));
   }
-  PetscCheck(dm->ops->locatepoints,PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Point location not available for this DM");
   PetscCall(PetscLogEventBegin(DM_LocatePoints,dm,0,0,0));
   PetscCall((*dm->ops->locatepoints)(dm,v,ltype,*cellSF));
   PetscCall(PetscLogEventEnd(DM_LocatePoints,dm,0,0,0));

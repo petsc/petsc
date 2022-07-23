@@ -14,7 +14,6 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
 {
   PetscFunctionBegin;
   if (C->ops->matmultnumeric) {
-    PetscCheck(C->ops->matmultnumeric != MatMatMultNumeric_SeqAIJ_SeqAIJ,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Recursive call");
     PetscCall((*C->ops->matmultnumeric)(A,B,C));
   } else {
     PetscCall(MatMatMultNumeric_SeqAIJ_SeqAIJ_Sorted(A,B,C));

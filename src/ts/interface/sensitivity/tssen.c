@@ -1400,7 +1400,6 @@ PetscErrorCode TSAdjointStep(TS ts)
 
   ts->reason = TS_CONVERGED_ITERATING;
   ts->ptime_prev = ts->ptime;
-  PetscCheck(ts->ops->adjointstep,PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed because the adjoint of  %s has not been implemented, try other time stepping methods for adjoint sensitivity analysis",((PetscObject)ts)->type_name);
   PetscCall(PetscLogEventBegin(TS_AdjointStep,ts,0,0,0));
   PetscCall((*ts->ops->adjointstep)(ts));
   PetscCall(PetscLogEventEnd(TS_AdjointStep,ts,0,0,0));
@@ -1547,7 +1546,6 @@ PetscErrorCode TSAdjointCostIntegral(TS ts)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscCheck(ts->ops->adjointintegral,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"%s does not provide integral evaluation in the adjoint run",((PetscObject)ts)->type_name);
   PetscCall((*ts->ops->adjointintegral)(ts));
   PetscFunctionReturn(0);
 }
@@ -1672,7 +1670,6 @@ PetscErrorCode TSForwardStep(TS ts)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscCheck(ts->ops->forwardstep,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"%s does not provide forward sensitivity analysis",((PetscObject)ts)->type_name);
   PetscCall(PetscLogEventBegin(TS_ForwardStep,ts,0,0,0));
   PetscCall((*ts->ops->forwardstep)(ts));
   PetscCall(PetscLogEventEnd(TS_ForwardStep,ts,0,0,0));
@@ -1757,7 +1754,6 @@ PetscErrorCode TSForwardCostIntegral(TS ts)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscCheck(ts->ops->forwardintegral,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"%s does not provide integral evaluation in the forward run",((PetscObject)ts)->type_name);
   PetscCall((*ts->ops->forwardintegral)(ts));
   PetscFunctionReturn(0);
 }

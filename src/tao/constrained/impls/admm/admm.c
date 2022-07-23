@@ -380,7 +380,6 @@ static PetscErrorCode TaoSolve_ADMM(Tao tao)
   if (!is_reg_shell) {
     switch (am->regswitch) {
     case (TAO_ADMM_REGULARIZER_USER):
-      PetscCheck(am->ops->regobjgrad,PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_WRONGSTATE,"Must call TaoADMMSetRegularizerObjectiveAndGradientRoutine() first if one wishes to use TAO_ADMM_REGULARIZER_USER with non-TAOSHELL type");
       break;
     case (TAO_ADMM_REGULARIZER_SOFT_THRESH):
       /* Soft Threshold. */

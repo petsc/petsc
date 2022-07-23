@@ -57,7 +57,6 @@ PetscErrorCode TSTrajectorySet(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal 
   PetscValidLogicalCollectiveInt(tj,stepnum,3);
   PetscValidLogicalCollectiveReal(tj,time,4);
   PetscValidHeaderSpecific(X,VEC_CLASSID,5);
-  PetscCheck(tj->ops->set,PetscObjectComm((PetscObject)tj),PETSC_ERR_SUP,"TSTrajectory type %s",((PetscObject)tj)->type_name);
   PetscCheck(tj->setupcalled,PetscObjectComm((PetscObject)tj),PETSC_ERR_ORDER,"TSTrajectorySetUp should be called first");
   if (tj->monitor) {
     PetscCall(PetscViewerASCIIPrintf(tj->monitor,"TSTrajectorySet: stepnum %" PetscInt_FMT ", time %g (stages %" PetscInt_FMT ")\n",stepnum,(double)time,(PetscInt)!tj->solution_only));
@@ -121,7 +120,6 @@ PetscErrorCode TSTrajectoryGet(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal 
   PetscValidHeaderSpecific(ts,TS_CLASSID,2);
   PetscValidLogicalCollectiveInt(tj,stepnum,3);
   PetscValidRealPointer(time,4);
-  PetscCheck(tj->ops->get,PetscObjectComm((PetscObject)tj),PETSC_ERR_SUP,"TSTrajectory type %s",((PetscObject)tj)->type_name);
   PetscCheck(tj->setupcalled,PetscObjectComm((PetscObject)tj),PETSC_ERR_ORDER,"TSTrajectorySetUp should be called first");
   PetscCheck(stepnum >= 0,PetscObjectComm((PetscObject)tj),PETSC_ERR_PLIB,"Requesting negative step number");
   if (tj->monitor) {

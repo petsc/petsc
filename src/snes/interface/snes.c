@@ -2204,7 +2204,6 @@ PetscErrorCode SNESPicardComputeMFFunction(SNES snes,Vec x,Vec f,void *ctx)
   PetscFunctionBegin;
   PetscCall(SNESGetDM(snes,&dm));
   PetscCall(DMGetDMSNES(dm,&sdm));
-  PetscCheck(sdm->ops->computepjacobian,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetPicard() to provide Picard Jacobian.");
   /*  A(x)*x - b(x) */
   if (sdm->ops->computepfunction) {
     PetscCallBack("SNES Picard callback function",(*sdm->ops->computepfunction)(snes,x,f,sdm->pctx));
@@ -2228,7 +2227,6 @@ PetscErrorCode SNESPicardComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
   PetscFunctionBegin;
   PetscCall(SNESGetDM(snes,&dm));
   PetscCall(DMGetDMSNES(dm,&sdm));
-  PetscCheck(sdm->ops->computepjacobian,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetPicard() to provide Picard Jacobian.");
   /*  A(x)*x - b(x) */
   if (sdm->ops->computepfunction) {
     PetscCallBack("SNES Picard callback function",(*sdm->ops->computepfunction)(snes,x,f,sdm->pctx));
@@ -2787,10 +2785,7 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat A,Mat B)
   PetscCall(SNESGetDM(snes,&dm));
   PetscCall(DMGetDMSNES(dm,&sdm));
 
-  PetscCheck(sdm->ops->computejacobian,PetscObjectComm((PetscObject)snes),PETSC_ERR_USER,"Must call SNESSetJacobian(), DMSNESSetJacobian(), DMDASNESSetJacobianLocal(), etc");
-
   /* make sure that MatAssemblyBegin/End() is called on A matrix if it is matrix free */
-
   if (snes->lagjacobian == -2) {
     snes->lagjacobian = -1;
 
@@ -3203,7 +3198,6 @@ PetscErrorCode  SNESSetUp(SNES snes)
 
   PetscCall(SNESGetDM(snes,&dm));
   PetscCall(DMGetDMSNES(dm,&sdm));
-  PetscCheck(sdm->ops->computefunction,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Function never provided to SNES object");
   PetscCall(SNESSetDefaultComputeJacobian(snes));
 
   if (!snes->vec_func) {

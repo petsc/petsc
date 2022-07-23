@@ -427,7 +427,6 @@ PetscErrorCode  PCApply(PC pc,Vec x,Vec y)
   PetscCall(VecSetErrorIfLocked(y,3));
 
   PetscCall(PCSetUp(pc));
-  PetscCheck(pc->ops->apply,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PC does not have apply");
   PetscCall(VecLockReadPush(x));
   PetscCall(PetscLogEventBegin(PC_Apply,pc,x,y,0));
   PetscCall((*pc->ops->apply)(pc,x,y));
@@ -527,7 +526,6 @@ PetscErrorCode  PCApplySymmetricLeft(PC pc,Vec x,Vec y)
   PetscCheck(x != y,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
   if (pc->erroriffailure) PetscCall(VecValidValues(x,2,PETSC_TRUE));
   PetscCall(PCSetUp(pc));
-  PetscCheck(pc->ops->applysymmetricleft,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PC does not have left symmetric apply");
   PetscCall(VecLockReadPush(x));
   PetscCall(PetscLogEventBegin(PC_ApplySymmetricLeft,pc,x,y,0));
   PetscCall((*pc->ops->applysymmetricleft)(pc,x,y));
@@ -565,7 +563,6 @@ PetscErrorCode  PCApplySymmetricRight(PC pc,Vec x,Vec y)
   PetscCheck(x != y,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
   if (pc->erroriffailure) PetscCall(VecValidValues(x,2,PETSC_TRUE));
   PetscCall(PCSetUp(pc));
-  PetscCheck(pc->ops->applysymmetricright,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PC does not have left symmetric apply");
   PetscCall(VecLockReadPush(x));
   PetscCall(PetscLogEventBegin(PC_ApplySymmetricRight,pc,x,y,0));
   PetscCall((*pc->ops->applysymmetricright)(pc,x,y));
@@ -606,7 +603,6 @@ PetscErrorCode  PCApplyTranspose(PC pc,Vec x,Vec y)
   PetscCheck(x != y,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
   if (pc->erroriffailure) PetscCall(VecValidValues(x,2,PETSC_TRUE));
   PetscCall(PCSetUp(pc));
-  PetscCheck(pc->ops->applytranspose,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PC does not have apply transpose");
   PetscCall(VecLockReadPush(x));
   PetscCall(PetscLogEventBegin(PC_Apply,pc,x,y,0));
   PetscCall((*pc->ops->applytranspose)(pc,x,y));
@@ -843,7 +839,6 @@ PetscErrorCode  PCApplyRichardson(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscRe
   PetscValidHeaderSpecific(w,VEC_CLASSID,4);
   PetscCheck(b != y,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"b and y must be different vectors");
   PetscCall(PCSetUp(pc));
-  PetscCheck(pc->ops->applyrichardson,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PC does not have apply richardson");
   PetscCall((*pc->ops->applyrichardson)(pc,b,y,w,rtol,abstol,dtol,its,guesszero,outits,reason));
   PetscFunctionReturn(0);
 }

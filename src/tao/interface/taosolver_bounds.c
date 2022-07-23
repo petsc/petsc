@@ -200,7 +200,6 @@ PetscErrorCode TaoComputeConstraints(Tao tao, Vec X, Vec C)
   PetscValidHeaderSpecific(C,VEC_CLASSID,3);
   PetscCheckSameComm(tao,1,X,2);
   PetscCheckSameComm(tao,1,C,3);
-  PetscCheck(tao->ops->computeconstraints,PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_WRONGSTATE,"TaoSetConstraintsRoutine() has not been called");
   PetscCall(PetscLogEventBegin(TAO_ConstraintsEval,tao,X,C,NULL));
   PetscCallBack("Tao callback constraints",(*tao->ops->computeconstraints)(tao,X,C,tao->user_conP));
   PetscCall(PetscLogEventEnd(TAO_ConstraintsEval,tao,X,C,NULL));
@@ -414,7 +413,6 @@ PetscErrorCode TaoComputeEqualityConstraints(Tao tao, Vec X, Vec CE)
   PetscValidHeaderSpecific(CE,VEC_CLASSID,3);
   PetscCheckSameComm(tao,1,X,2);
   PetscCheckSameComm(tao,1,CE,3);
-  PetscCheck(tao->ops->computeequalityconstraints,PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_WRONGSTATE,"TaoSetEqualityConstraintsRoutine() has not been called");
   PetscCall(PetscLogEventBegin(TAO_ConstraintsEval,tao,X,CE,NULL));
   PetscCallBack("Tao callback equality constraints",(*tao->ops->computeequalityconstraints)(tao,X,CE,tao->user_con_equalityP));
   PetscCall(PetscLogEventEnd(TAO_ConstraintsEval,tao,X,CE,NULL));
@@ -448,7 +446,6 @@ PetscErrorCode TaoComputeInequalityConstraints(Tao tao, Vec X, Vec CI)
   PetscValidHeaderSpecific(CI,VEC_CLASSID,3);
   PetscCheckSameComm(tao,1,X,2);
   PetscCheckSameComm(tao,1,CI,3);
-  PetscCheck(tao->ops->computeinequalityconstraints,PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_WRONGSTATE,"TaoSetInequalityConstraintsRoutine() has not been called");
   PetscCall(PetscLogEventBegin(TAO_ConstraintsEval,tao,X,CI,NULL));
   PetscCallBack("Tao callback inequality constraints",(*tao->ops->computeinequalityconstraints)(tao,X,CI,tao->user_con_inequalityP));
   PetscCall(PetscLogEventEnd(TAO_ConstraintsEval,tao,X,CI,NULL));

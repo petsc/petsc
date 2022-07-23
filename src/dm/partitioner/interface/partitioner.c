@@ -322,7 +322,6 @@ PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, PetscInt nparts,
     PetscCall(PetscSectionSetDof(partSection, 0, numVertices));
     PetscCall(ISCreateStride(PetscObjectComm((PetscObject)part),numVertices,0,1,partition));
   } else {
-    PetscCheck(part->ops->partition,PetscObjectComm((PetscObject) part), PETSC_ERR_SUP, "PetscPartitioner %s has no partitioning method", ((PetscObject)part)->type_name);
     PetscCall((*part->ops->partition)(part, nparts, numVertices, start, adjacency, vertexSection, targetSection, partSection, partition));
   }
   PetscCall(PetscSectionSetUp(partSection));

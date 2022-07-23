@@ -270,7 +270,6 @@ PetscErrorCode  MatPartitioningApplyND(MatPartitioning matp,IS *partitioning)
   PetscValidPointer(partitioning,2);
   PetscCheck(matp->adj->assembled,PetscObjectComm((PetscObject)matp),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   PetscCheck(!matp->adj->factortype,PetscObjectComm((PetscObject)matp),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-  PetscCheck(matp->ops->applynd,PetscObjectComm((PetscObject)matp),PETSC_ERR_SUP,"Nested dissection not provided by MatPartitioningType %s",((PetscObject)matp)->type_name);
   PetscCall(PetscLogEventBegin(MAT_PartitioningND,matp,0,0,0));
   PetscCall((*matp->ops->applynd)(matp,partitioning));
   PetscCall(PetscLogEventEnd(MAT_PartitioningND,matp,0,0,0));
@@ -316,7 +315,6 @@ PetscErrorCode  MatPartitioningApply(MatPartitioning matp,IS *partitioning)
   PetscValidPointer(partitioning,2);
   PetscCheck(matp->adj->assembled,PetscObjectComm((PetscObject)matp),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   PetscCheck(!matp->adj->factortype,PetscObjectComm((PetscObject)matp),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-  PetscCheck(matp->ops->apply,PetscObjectComm((PetscObject)matp),PETSC_ERR_ARG_WRONGSTATE,"Must set type with MatPartitioningSetFromOptions() or MatPartitioningSetType()");
   PetscCall(PetscLogEventBegin(MAT_Partitioning,matp,0,0,0));
   PetscCall((*matp->ops->apply)(matp,partitioning));
   PetscCall(PetscLogEventEnd(MAT_Partitioning,matp,0,0,0));

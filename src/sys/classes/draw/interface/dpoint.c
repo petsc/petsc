@@ -24,7 +24,6 @@ PetscErrorCode  PetscDrawPoint(PetscDraw draw,PetscReal xl,PetscReal yl,int cl)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  PetscCheck(draw->ops->point,PETSC_COMM_SELF,PETSC_ERR_SUP,"This draw type %s does not support drawing points",((PetscObject)draw)->type_name);
   PetscCall((*draw->ops->point)(draw,xl,yl,cl));
   PetscFunctionReturn(0);
 }
@@ -48,7 +47,6 @@ PetscErrorCode  PetscDrawPointPixel(PetscDraw draw,int x,int y,int c)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  PetscCheck(draw->ops->pointpixel,PETSC_COMM_SELF,PETSC_ERR_SUP,"This draw type %s does not support drawing point pixels",((PetscObject)draw)->type_name);
   PetscCall((*draw->ops->pointpixel)(draw,x,y,c));
   PetscFunctionReturn(0);
 }

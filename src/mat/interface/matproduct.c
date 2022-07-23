@@ -53,7 +53,6 @@ static PetscErrorCode MatProductNumeric_PtAP_Unsafe(Mat C)
   /* AP = A*P */
   PetscCall(MatProductNumeric(AP));
   /* C = P^T*AP */
-  PetscCheck(C->ops->transposematmultnumeric,PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Missing numeric stage");
   PetscCall((*C->ops->transposematmultnumeric)(P,AP,C));
   PetscFunctionReturn(0);
 }
@@ -100,7 +99,6 @@ static PetscErrorCode MatProductNumeric_RARt_Unsafe(Mat C)
   /* RA = R*A */
   PetscCall(MatProductNumeric(RA));
   /* C = RA*R^T */
-  PetscCheck(C->ops->mattransposemultnumeric,PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Missing numeric stage");
   PetscCall((*C->ops->mattransposemultnumeric)(RA,R,C));
   PetscFunctionReturn(0);
 }
@@ -144,7 +142,6 @@ static PetscErrorCode MatProductNumeric_ABC_Unsafe(Mat mat)
   /* Numeric BC = B*C */
   PetscCall(MatProductNumeric(BC));
   /* Numeric mat = A*BC */
-  PetscCheck(mat->ops->transposematmultnumeric,PetscObjectComm((PetscObject)mat),PETSC_ERR_PLIB,"Missing numeric stage");
   PetscCall((*mat->ops->matmultnumeric)(A,BC,mat));
   PetscFunctionReturn(0);
 }
@@ -563,7 +560,6 @@ PetscErrorCode MatProductNumeric_AB(Mat mat)
   Mat            A=product->A,B=product->B;
 
   PetscFunctionBegin;
-  PetscCheck(mat->ops->matmultnumeric,PetscObjectComm((PetscObject)mat),PETSC_ERR_PLIB,"Missing numeric implementation of product %s for mat %s",MatProductTypes[product->type],((PetscObject)mat)->type_name);
   PetscCall((*mat->ops->matmultnumeric)(A,B,mat));
   PetscFunctionReturn(0);
 }
@@ -574,7 +570,6 @@ PetscErrorCode MatProductNumeric_AtB(Mat mat)
   Mat            A=product->A,B=product->B;
 
   PetscFunctionBegin;
-  PetscCheck(mat->ops->transposematmultnumeric,PetscObjectComm((PetscObject)mat),PETSC_ERR_PLIB,"Missing numeric implementation of product %s for mat %s",MatProductTypes[product->type],((PetscObject)mat)->type_name);
   PetscCall((*mat->ops->transposematmultnumeric)(A,B,mat));
   PetscFunctionReturn(0);
 }
@@ -585,7 +580,6 @@ PetscErrorCode MatProductNumeric_ABt(Mat mat)
   Mat            A=product->A,B=product->B;
 
   PetscFunctionBegin;
-  PetscCheck(mat->ops->mattransposemultnumeric,PetscObjectComm((PetscObject)mat),PETSC_ERR_PLIB,"Missing numeric implementation of product %s for mat %s",MatProductTypes[product->type],((PetscObject)mat)->type_name);
   PetscCall((*mat->ops->mattransposemultnumeric)(A,B,mat));
   PetscFunctionReturn(0);
 }
@@ -596,7 +590,6 @@ PetscErrorCode MatProductNumeric_PtAP(Mat mat)
   Mat            A=product->A,B=product->B;
 
   PetscFunctionBegin;
-  PetscCheck(mat->ops->ptapnumeric,PetscObjectComm((PetscObject)mat),PETSC_ERR_PLIB,"Missing numeric implementation of product %s for mat %s",MatProductTypes[product->type],((PetscObject)mat)->type_name);
   PetscCall((*mat->ops->ptapnumeric)(A,B,mat));
   PetscFunctionReturn(0);
 }
@@ -607,7 +600,6 @@ PetscErrorCode MatProductNumeric_RARt(Mat mat)
   Mat            A=product->A,B=product->B;
 
   PetscFunctionBegin;
-  PetscCheck(mat->ops->rartnumeric,PetscObjectComm((PetscObject)mat),PETSC_ERR_PLIB,"Missing numeric implementation of product %s for mat %s",MatProductTypes[product->type],((PetscObject)mat)->type_name);
   PetscCall((*mat->ops->rartnumeric)(A,B,mat));
   PetscFunctionReturn(0);
 }
@@ -618,7 +610,6 @@ PetscErrorCode MatProductNumeric_ABC(Mat mat)
   Mat            A=product->A,B=product->B,C=product->C;
 
   PetscFunctionBegin;
-  PetscCheck(mat->ops->matmatmultnumeric,PetscObjectComm((PetscObject)mat),PETSC_ERR_PLIB,"Missing numeric implementation of product %s for mat %s",MatProductTypes[product->type],((PetscObject)mat)->type_name);
   PetscCall((*mat->ops->matmatmultnumeric)(A,B,C,mat));
   PetscFunctionReturn(0);
 }
@@ -701,7 +692,6 @@ PetscErrorCode MatProductSymbolic_AB(Mat mat)
   Mat            A=product->A,B=product->B;
 
   PetscFunctionBegin;
-  PetscCheck(mat->ops->matmultsymbolic,PetscObjectComm((PetscObject)mat),PETSC_ERR_PLIB,"Missing symbolic implementation of product %s",MatProductTypes[product->type]);
   PetscCall((*mat->ops->matmultsymbolic)(A,B,product->fill,mat));
   mat->ops->productnumeric = MatProductNumeric_AB;
   PetscFunctionReturn(0);
@@ -713,7 +703,6 @@ PetscErrorCode MatProductSymbolic_AtB(Mat mat)
   Mat            A=product->A,B=product->B;
 
   PetscFunctionBegin;
-  PetscCheck(mat->ops->transposematmultsymbolic,PetscObjectComm((PetscObject)mat),PETSC_ERR_PLIB,"Missing symbolic implementation of product %s",MatProductTypes[product->type]);
   PetscCall((*mat->ops->transposematmultsymbolic)(A,B,product->fill,mat));
   mat->ops->productnumeric = MatProductNumeric_AtB;
   PetscFunctionReturn(0);
@@ -725,7 +714,6 @@ PetscErrorCode MatProductSymbolic_ABt(Mat mat)
   Mat            A=product->A,B=product->B;
 
   PetscFunctionBegin;
-  PetscCheck(mat->ops->mattransposemultsymbolic,PetscObjectComm((PetscObject)mat),PETSC_ERR_PLIB,"Missing symbolic implementation of product %s",MatProductTypes[product->type]);
   PetscCall((*mat->ops->mattransposemultsymbolic)(A,B,product->fill,mat));
   mat->ops->productnumeric = MatProductNumeric_ABt;
   PetscFunctionReturn(0);
@@ -737,7 +725,6 @@ PetscErrorCode MatProductSymbolic_ABC(Mat mat)
   Mat            A=product->A,B=product->B,C=product->C;
 
   PetscFunctionBegin;
-  PetscCheck(mat->ops->matmatmultsymbolic,PetscObjectComm((PetscObject)mat),PETSC_ERR_PLIB,"Missing symbolic implementation of product %s",MatProductTypes[product->type]);
   PetscCall((*mat->ops->matmatmultsymbolic)(A,B,C,product->fill,mat));
   mat->ops->productnumeric = MatProductNumeric_ABC;
   PetscFunctionReturn(0);
@@ -806,7 +793,6 @@ PetscErrorCode MatProductSymbolic(Mat mat)
       PetscCall(PetscSNPrintf(errstr,256,"%s with A %s, B %s",MatProductTypes[mat->product->type],((PetscObject)mat->product->A)->type_name,((PetscObject)mat->product->B)->type_name));
     }
     PetscCheck(!missing,PetscObjectComm((PetscObject)mat),PETSC_ERR_PLIB,"Unspecified symbolic phase for product %s. Call MatProductSetFromOptions() first",errstr);
-    PetscCheck(mat->ops->productnumeric,PetscObjectComm((PetscObject)mat),PETSC_ERR_PLIB,"Unspecified numeric phase for product %s",errstr);
     PetscCheck(mat->product,PetscObjectComm((PetscObject)mat),PETSC_ERR_PLIB,"Missing struct after symbolic phase for product %s",errstr);
   }
   PetscFunctionReturn(0);
@@ -1117,7 +1103,6 @@ static PetscErrorCode MatProductNumeric_ABC_Basic(Mat mat)
   /* swap ABC product stuff with that of ABC for the numeric phase on mat */
   mat->product = mmabc->ABC->product;
   mat->ops->productnumeric = mmabc->ABC->ops->productnumeric;
-  PetscCheck(mat->ops->productnumeric,PetscObjectComm((PetscObject)mat),PETSC_ERR_PLIB,"Missing numeric stage");
   /* use function pointer directly to prevent logging */
   PetscCall((*mat->ops->productnumeric)(mat));
   mat->ops->productnumeric = MatProductNumeric_ABC_Basic;

@@ -98,7 +98,6 @@ PetscErrorCode  MatCoarsenApply(MatCoarsen coarser)
   PetscValidPointer(coarser,1);
   PetscCheck(coarser->graph->assembled,PetscObjectComm((PetscObject)coarser),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   PetscCheck(!coarser->graph->factortype,PetscObjectComm((PetscObject)coarser),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-  PetscCheck(coarser->ops->apply,PetscObjectComm((PetscObject)coarser),PETSC_ERR_ARG_WRONGSTATE,"Must set type with MatCoarsenSetFromOptions() or MatCoarsenSetType()");
   PetscCall(PetscLogEventBegin(MAT_Coarsen,coarser,0,0,0));
   PetscCall((*coarser->ops->apply)(coarser));
   PetscCall(PetscLogEventEnd(MAT_Coarsen,coarser,0,0,0));
