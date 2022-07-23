@@ -83,6 +83,7 @@ int main(int argc,char **argv)
   unsigned int   **JP = NULL;
   ISColoring     iscoloring;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   PetscCall(PetscNew(&adctx));
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-forwardonly",&forwardonly,NULL));

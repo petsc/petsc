@@ -13,6 +13,7 @@ int main(int argc,char **args)
   PetscReal      norm, tol = PETSC_SQRT_MACHINE_EPSILON;
   PetscBool      flg;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));

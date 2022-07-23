@@ -19,6 +19,7 @@ int main(int argc,char **argv)
   Vec            global;
   PF             pf;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,10,3,1,NULL,&da));
   PetscCall(DMSetFromOptions(da));

@@ -8,6 +8,7 @@ int main(int argc,char **argv)
   PetscInt       step = 2;
   IS             is;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-step",&step,NULL));

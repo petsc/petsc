@@ -213,6 +213,7 @@ int main(int argc, char *argv[])
   PetscInt       dof;
   PetscBool      namefields;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,0,help));
   dof = 2;
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-dof",&dof,NULL));

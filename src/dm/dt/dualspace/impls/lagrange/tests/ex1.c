@@ -323,6 +323,7 @@ int main (int argc, char **argv)
   PetscBool       trimmed;
   DM              dm;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   dim = 3;
   tensorCell = 0;

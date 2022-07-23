@@ -19,6 +19,7 @@ int main(int argc,char **argv)
   KSP           ksp;
   PC            pc;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,PETSC_NULL));
 
   PetscCall(MatCreateAIJ(PETSC_COMM_WORLD,5,5,PETSC_DETERMINE,PETSC_DETERMINE,3,NULL,0,NULL,&subA[0]));

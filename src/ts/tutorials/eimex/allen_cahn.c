@@ -32,6 +32,7 @@ int main(int argc, char **argv)
   PetscReal         ftime;
   AppCtx            user;       /* user-defined work context */
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
 
   /* Initialize user application context */

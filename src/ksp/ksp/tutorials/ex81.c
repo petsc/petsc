@@ -16,6 +16,7 @@ int main(int argc,char **args)
   PetscBool          flg;
   PetscRandom        rctx;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,NULL,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCall(PetscMalloc1(found,&outer));

@@ -12,6 +12,7 @@ int main(int argc,char **argv)
   PetscScalar    ***vglobal;
   PetscViewer    sview;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,0,"-stencil_width",&stencil_width,0));
   PetscCall(PetscOptionsGetInt(NULL,0,"-dof",&dof,0));

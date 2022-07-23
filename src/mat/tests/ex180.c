@@ -9,6 +9,7 @@ int main(int argc,char **args)
   char           file[PETSC_MAX_PATH_LEN];
   PetscBool      flg;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   /* Determine files from which we read the matrix */
   PetscCall(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));

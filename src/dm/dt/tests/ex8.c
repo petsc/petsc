@@ -10,6 +10,7 @@ int main(int argc, char **argv)
   PetscInt       *btupprev, *btup;
   PetscInt       *gtup;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscMalloc3(maxdim + 1, &btup, maxdim + 1, &btupprev, maxdim, &gtup));
   for (d = 0; d <= maxdim; d++) {

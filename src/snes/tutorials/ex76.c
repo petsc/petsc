@@ -536,6 +536,7 @@ int main(int argc, char **argv)
   Vec             u, r;                 /* solution, residual vectors */
   AppCtx          user;                 /* user-defined work context */
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
   PetscCall(PetscBagCreate(PETSC_COMM_WORLD, sizeof(Parameter), &user.bag));

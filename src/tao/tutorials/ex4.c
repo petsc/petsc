@@ -613,6 +613,7 @@ int main(int argc, char ** argv)
   Vec     x;
   Mat     H;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   PetscCall(PetscNew(&ctx));
   PetscCall(ConfigureContext(ctx));

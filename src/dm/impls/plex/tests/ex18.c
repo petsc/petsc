@@ -1521,6 +1521,7 @@ int main(int argc, char **argv)
   DM             dm;
   AppCtx         user;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscLogStageRegister("create",&stage[0]));
   PetscCall(PetscLogStageRegister("distribute",&stage[1]));

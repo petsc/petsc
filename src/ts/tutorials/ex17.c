@@ -51,6 +51,7 @@ int main(int argc,char **argv)
   AppCtx         user;              /* user-defined work context */
   JacobianType   jacType;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -60,6 +60,7 @@ int main(int argc,char **argv)
   PetscBool      flg;
   AppCtx         user;               /* user-defined work context */
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char *)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-wtype",&wtype,&flg));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD,"wtype=%" PetscInt_FMT "\n",wtype));

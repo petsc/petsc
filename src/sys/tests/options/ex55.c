@@ -24,6 +24,7 @@ int main(int argc,char **argv)
   PetscViewer       viewer=NULL;
   PetscViewerFormat format;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,"ex55options",help));
   PetscCall(PetscOptionsInsertString(NULL,"-option1 1 -option2 -option3 value3"));
   PetscCall(PetscOptionsGetViewer(PETSC_COMM_WORLD,NULL,NULL,"-options_monitor_viewer",&viewer,&format,NULL));

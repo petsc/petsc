@@ -226,6 +226,7 @@ PetscErrorCode test_solve_matgetvecs(void)
 int main(int argc, char **args)
 {
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args,(char*)0, help));
   PetscCall(test_solve());
   PetscCall(test_solve_matgetvecs());

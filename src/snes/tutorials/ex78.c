@@ -33,6 +33,7 @@ int main(int argc,char **argv)
   PetscInt       N = 5;
   MatNullSpace   constants;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&N,NULL));
 

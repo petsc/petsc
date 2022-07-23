@@ -62,6 +62,7 @@ static PetscErrorCode test(PetscInt dim, PetscInt formDegree, PetscInt degree, P
 int main(int argc, char *argv[])
 {
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   for (PetscInt dim = 0; dim <= 3; dim++) {
     for (PetscInt formDegree = -dim; formDegree <= dim; formDegree++) {

@@ -22,6 +22,7 @@ int main(int argc,char **argv)
   PetscScalar    *varray,*vwork;
   PetscBool      has, flag;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
 
   PetscCall(PetscHMapICreate(&ht));

@@ -23,6 +23,7 @@ int main(int argc,char **argv)
 
   toplabel = "Top Label"; xlabel = "X-axis Label"; ylabel = "Y-axis Label"; legend = "Legend";
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-x",&x,NULL));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-y",&y,NULL));

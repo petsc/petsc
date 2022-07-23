@@ -18,6 +18,7 @@ int main(int argc,char **argv)
   int            i,imax=10000,icount;
   PetscLogEvent  USER_EVENT,check_USER_EVENT;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
 
   /*

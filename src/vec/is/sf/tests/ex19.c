@@ -165,6 +165,7 @@ int main(int argc, char **argv)
   PetscSF  sf0, sf1;
   MPI_Comm comm;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   comm = PETSC_COMM_WORLD;
   PetscCall(GetOptions(comm, &ctx));

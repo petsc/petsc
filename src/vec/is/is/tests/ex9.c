@@ -16,6 +16,7 @@ int main(int argc,char **argv)
   PetscBool              flg, auto_offset = PETSC_FALSE;
   ISLocalToGlobalMapping l2g0, l2g1;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   comm = PETSC_COMM_WORLD;
   PetscCallMPI(MPI_Comm_rank(comm, &rank));

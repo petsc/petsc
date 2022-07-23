@@ -15,6 +15,7 @@ int main(int argc,char **args)
   PetscReal      s1norm,s2norm,rnorm,tol = 100*PETSC_SMALL;
   PetscBool      flg,test_nd0=PETSC_FALSE, emptynd;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));

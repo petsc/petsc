@@ -79,6 +79,7 @@ int main(int argc,char **argv)
   DM             packer;
   PetscBool      use_monitor = PETSC_FALSE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
 
   /* Hardwire several options; can be changed at command line */

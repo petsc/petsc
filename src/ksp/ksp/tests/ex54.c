@@ -70,6 +70,7 @@ int main(int argc, char** argv)
   PetscInt       m, n;
   PetscBool      exact = PETSC_FALSE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, NULL));
 
   PetscCall(VecCreate(PETSC_COMM_WORLD, &v));

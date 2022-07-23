@@ -35,6 +35,7 @@ int main(int argc,char **argv)
   Vec            x,b,r;
   Mat            J;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   dof  = 1;
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-da_dof",&dof,NULL));

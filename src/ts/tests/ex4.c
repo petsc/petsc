@@ -54,6 +54,7 @@ int main(int argc,char **argv)
   KSP            ksp;
   PC             pc;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* set data */

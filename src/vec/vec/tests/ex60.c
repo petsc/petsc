@@ -9,6 +9,7 @@ int main(int argc,char **argv)
   Vec            x,x1,x2,x3;
   PetscScalar    *px;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* create vector of length 2*n */

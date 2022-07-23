@@ -40,6 +40,7 @@ int main(int argc, char *argv[])
   himaInfo       hinfo;
   PetscRandom    ran;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscRandomCreate(PETSC_COMM_WORLD,&ran));
   PetscCall(PetscRandomSetFromOptions(ran));

@@ -11,6 +11,7 @@ int main(int argc,char **argv)
   PetscInt       n, off, array[4],na,nb,i,*marray,size;
   PetscBool      has, flag;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
 
   PetscCall(PetscHSetICreate(&ht));

@@ -135,6 +135,7 @@ int main(int argc, char *argv[])
   Vec            X;
   PetscInt       N = 9;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
 
   PetscCall(TSCreate(PETSC_COMM_SELF,&ts));

@@ -11,6 +11,7 @@ int main(int argc,char **argv)
 
   PetscCall(PetscOptionsSetValue(NULL,"-skip_petscrc", NULL));
   PetscCall(PetscOptionsSetValue(NULL,"-use_gpu_aware_mpi", "0"));
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
 
   PetscCall(PetscOptionsHasName(NULL,NULL,"-use_gpu_aware_mpi",&has));

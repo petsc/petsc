@@ -228,6 +228,7 @@ int main(int argc,char **args)
                                     "-ex56_dm_refine 8",
                                     "-ex56_dm_refine 9"};
   PetscFunctionBeginUser;
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   comm = PETSC_COMM_WORLD;
   PetscCallMPI(MPI_Comm_rank(comm, &rank));

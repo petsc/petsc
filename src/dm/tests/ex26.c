@@ -12,6 +12,7 @@ int main(int argc,char **argv)
   MatFDColoring  matfdcoloring = 0;
   ISColoring     iscoloring;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors

@@ -14,6 +14,7 @@ int main(int argc,char **argv)
   PetscBool        pt;
   DMBoundaryType   bx = DM_BOUNDARY_NONE,by = DM_BOUNDARY_NONE,bz = DM_BOUNDARY_NONE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-M",&M1,NULL));

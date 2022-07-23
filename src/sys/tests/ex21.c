@@ -15,6 +15,7 @@ int main(int argc,char **argv)
   PetscInt       parentId[] = {-1,         2,         0,         -1,         2,         1,         0};
   PetscInt       Nlevels,*Level,*Levelcnt,*Idbylevel,*Column;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   PetscCall(PetscProcessTree(n,mask,parentId,&Nlevels,&Level,&Levelcnt,&Idbylevel,&Column));
   for (i=0; i<n; i++) {

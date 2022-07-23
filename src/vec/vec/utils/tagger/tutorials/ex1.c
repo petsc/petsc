@@ -37,6 +37,7 @@ int main(int argc, char **argv)
   IS             is, isBlockGlobal, isComp;
   PetscBool      listed;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   n    = 10.;
   bs   = 1;

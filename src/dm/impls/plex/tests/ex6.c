@@ -106,6 +106,7 @@ int main(int argc, char **argv)
   DMLabel        label;
   AppCtx         user;                 /* user-defined work context */
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
   PetscCall(DMLabelCreate(PETSC_COMM_SELF, "Test Label", &label));

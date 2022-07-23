@@ -325,6 +325,7 @@ int main(int argc, char *argv[])
   IS             *isg;
   PetscBool      pass_dm;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,0,help));
   PetscCall(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,10,1,1,NULL,&dau));
   PetscCall(DMSetOptionsPrefix(dau,"u_"));

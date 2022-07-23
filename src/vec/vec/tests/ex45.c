@@ -25,6 +25,7 @@ int main(int argc,char **argv)
   PetscInt       miidx[2];
   PetscReal      mvidx[2];
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 

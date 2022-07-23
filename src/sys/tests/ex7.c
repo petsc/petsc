@@ -9,6 +9,7 @@ int main(int argc,char **argv)
   PetscInt       x[]  = {39, 9, 39, 39, 29},index[5];
   PetscInt       x2[] = {39, 9, 19, 39, 29, 39, 29, 39},index2[8];
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscPrintf(PETSC_COMM_SELF,"1st test\n"));
   for (i=0; i<5; i++) index[i] = i;

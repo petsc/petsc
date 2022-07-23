@@ -44,6 +44,7 @@ int main(int argc, char **argv)
   AppCtx             user;              /* user-defined work context */
 
   /* Initialize TAO,PETSc */
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv,(char *)0,help));
 
   PetscCallMPI(MPI_Comm_size(MPI_COMM_WORLD,&size));

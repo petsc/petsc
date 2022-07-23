@@ -64,6 +64,7 @@ int main(int argc, char **argv)
   PetscBool      trace = PETSC_FALSE, checkMemory = PETSC_TRUE, auxMemory = PETSC_FALSE;
   PetscLogDouble before, after, est = 0, clean, max;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-trace", &trace, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-check_memory", &checkMemory, NULL));

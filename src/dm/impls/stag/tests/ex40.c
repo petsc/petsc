@@ -1664,6 +1664,7 @@ int main(int argc, char **argv)
   Vec            x,b;
   SNES           snes;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   dim = 3;
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL));

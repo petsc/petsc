@@ -12,6 +12,7 @@ int main(int argc,char **argv)
 {
   char           buff[4096];
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,NULL));
   PetscCall(PetscGlobusGetTransfers(PETSC_COMM_WORLD,NULL,buff,sizeof(buff)));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Transfers are %s\n",buff));

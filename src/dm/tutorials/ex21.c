@@ -241,6 +241,7 @@ int main(int argc,char **args)
   PetscInt ppcell = 1;
   PetscInt meshtype = 0;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-ppcell",&ppcell,NULL));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-meshtype",&meshtype,NULL));

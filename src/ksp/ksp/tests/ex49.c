@@ -14,6 +14,7 @@ int main(int argc,char **args)
   PetscBool      test_hermitian = PETSC_FALSE, convert = PETSC_FALSE;
   PetscScalar    v;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));

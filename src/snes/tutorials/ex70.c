@@ -637,6 +637,7 @@ int main(int argc, char **argv)
   Stokes         s;
   KSP            ksp;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   s.nx           = 4;
   s.ny           = 6;

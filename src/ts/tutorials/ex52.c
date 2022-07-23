@@ -276,7 +276,8 @@ int main(int argc, char **argv)
     IS                   bcPointIS[1];
 
     /* Initialize program */
-    PetscCall(PetscInitialize(&argc, &argv, (char *) 0, help));
+    PetscFunctionBeginUser;
+  PetscCall(PetscInitialize(&argc, &argv, (char *) 0, help));
     PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
     /* Create distributed array (DMPLEX) to manage parallel grid and vectors */
     PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));

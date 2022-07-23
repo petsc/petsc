@@ -14,6 +14,7 @@ int main(int argc,char **args)
   PetscReal      s1norm,s2norm,rnorm,tol = PETSC_SQRT_MACHINE_EPSILON;
   PetscBool      flg;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-mat_block_size",&bs,NULL));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-mat_size",&m,NULL));

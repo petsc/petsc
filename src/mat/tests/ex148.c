@@ -14,6 +14,7 @@ int main(int argc,char **args)
   PetscInt       DIM,dim[2];
   PetscReal      fac;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires real numbers");

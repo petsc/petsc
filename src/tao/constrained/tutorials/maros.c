@@ -60,6 +60,7 @@ PetscErrorCode main(int argc,char **argv)
   AppCtx             user;                /* application context */
 
   /* Initialize TAO,PETSc */
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char *)0,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   /* Specify default parameters for the problem, check for command-line overrides */

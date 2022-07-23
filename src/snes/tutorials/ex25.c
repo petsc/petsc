@@ -32,6 +32,7 @@ int main(int argc,char **argv)
   PetscReal      litspit;
   DM             da;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   /*
       Set the DMDA (grid structure) for the grids.

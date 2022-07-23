@@ -64,6 +64,7 @@ int main(int argc, char **argv)
   DMBoundaryType   bx    = DM_BOUNDARY_PERIODIC, by = DM_BOUNDARY_PERIODIC;
   DMDAStencilType  stype = DMDA_STENCIL_BOX;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char*)0, help));
   PetscCall(DMDACreate2d(PETSC_COMM_WORLD,bx,by,stype,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da));
   PetscCall(DMSetFromOptions(da));

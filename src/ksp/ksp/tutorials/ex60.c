@@ -122,6 +122,7 @@ int main(int argc, char **argv)
   PetscReal      eta=0.1,norm;
   PetscScalar(*diagfunc)(PetscInt,PetscInt);
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   /* Process command line options */
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));

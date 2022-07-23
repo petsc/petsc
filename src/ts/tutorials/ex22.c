@@ -49,6 +49,7 @@ int main(int argc,char **argv)
   struct _User      user;       /* user-defined work context */
   TSConvergedReason reason;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

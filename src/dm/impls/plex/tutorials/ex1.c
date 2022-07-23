@@ -14,6 +14,7 @@ int main(int argc, char **argv)
   PetscInt       bcField[1];
   IS             bcPointIS[1];
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   /* Create a mesh */
   PetscCall(DMCreate(PETSC_COMM_WORLD, &dm));

@@ -25,6 +25,7 @@ int main(int argc,char **argv)
   PetscInt        iu,ip;
   PetscScalar     **arrSol,**arrRHS;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(DMStagCreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_GHOSTED,3,1,1,DMSTAG_STENCIL_BOX,1,NULL,&dmSol));
   PetscCall(DMSetFromOptions(dmSol));

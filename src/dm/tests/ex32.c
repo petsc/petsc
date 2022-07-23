@@ -64,6 +64,7 @@ static PetscErrorCode TestQ2Q1DA(void)
 int main(int argc,char **argv)
 {
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,0,help));
   PetscCall(TestQ2Q1DA());
   PetscCall(PetscFinalize());

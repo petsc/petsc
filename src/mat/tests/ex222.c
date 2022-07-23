@@ -10,6 +10,7 @@ int main(int argc,char **argv)
   PetscInt       bs = 1;
   PetscBool      flg, check = PETSC_TRUE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*) 0,help));
 
   PetscCall(PetscOptionsGetString(NULL,NULL,"-expl_type",expltype,sizeof(expltype),&flg));

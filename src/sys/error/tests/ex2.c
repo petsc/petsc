@@ -7,6 +7,7 @@ int main(int argc, char *args[])
 {
   PetscInt *ptr;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, (char*) 0, help));
   if (!PETSC_RUNNING_ON_VALGRIND) {                         /* PetscCheckPointer always returns TRUE when running on Valgrind */
     PetscCall(PetscMalloc(1024 * 1024 * 8,&ptr)); /* Almost certainly larger than MMAP_THRESHOLD (128 KiB by default) */

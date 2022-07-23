@@ -9,6 +9,7 @@ int main(int argc,char **args)
   PetscInt    i,j,m = 10,n = 10;
   PetscScalar v;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   /* Create a complex non-hermitian matrix */
   PetscCall(MatCreate(PETSC_COMM_SELF,&C));

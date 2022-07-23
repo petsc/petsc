@@ -18,6 +18,7 @@ int main(int argc,char* argv[])
   VecScatter  scatter;
   VecScatter  scatter2;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This example requires 1 process");

@@ -51,6 +51,7 @@ int main(int argc,char **argv)
   MatHtoolKernel kernel = GenEntries;
   MyIMatrix      *imatrix;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)NULL,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-m_local",&m,NULL));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL));

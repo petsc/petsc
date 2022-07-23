@@ -32,6 +32,7 @@ int main(int argc,char **args)
   PetscLogStage stage;
 #endif
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Poisson example options","");
   {

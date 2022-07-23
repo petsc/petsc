@@ -10,6 +10,7 @@ int main(int argc,char **args)
   PetscInt       M = 5, N = 7;
   PetscBool      flg;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&M,NULL));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&N,NULL));

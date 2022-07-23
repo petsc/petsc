@@ -54,6 +54,7 @@ int main(int argc,char **argv)
   DM             da,shell;
   PetscInt       levels;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
   PetscCall(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,129,1,1,0,&da));

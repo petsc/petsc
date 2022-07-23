@@ -567,6 +567,7 @@ int main(int argc, char **argv)
 {
   AppCtx         user;                 /* user-defined work context */
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
   PetscCall(MapleTest(PETSC_COMM_WORLD, &user));

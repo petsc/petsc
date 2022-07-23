@@ -19,6 +19,7 @@ int main(int argc,char **args)
   PetscInt          d_nnz[3] = {0,0,0};
   PetscInt          o_nnz[3] = {0,0,0};
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));

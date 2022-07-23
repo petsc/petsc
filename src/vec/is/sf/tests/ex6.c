@@ -14,6 +14,7 @@ int main(int argc,char **argv)
   VecScatter         vscat1,vscat2;
 
   PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&nproc));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));

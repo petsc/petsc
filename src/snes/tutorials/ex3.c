@@ -87,6 +87,7 @@ int main(int argc,char **argv)
   PetscReal      abstol,rtol,stol,norm;
   PetscBool      flg,viewinitial = PETSC_FALSE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&ctx.rank));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&ctx.size));

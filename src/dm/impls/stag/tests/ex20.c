@@ -9,6 +9,7 @@ int main(int argc,char **argv)
   PetscInt       dim;
   PetscBool      flg,dump;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,&flg));
   PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Supply -dim option\n");

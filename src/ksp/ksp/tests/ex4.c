@@ -31,6 +31,7 @@ int main(int argc,char **args)
   PetscMPIInt    rank;
   PetscBool      usezerorows = PETSC_TRUE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));

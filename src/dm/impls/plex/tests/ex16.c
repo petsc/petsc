@@ -37,6 +37,7 @@ int main(int argc, char **argv)
 {
   DM             dm, subdm;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(CreateMesh(PETSC_COMM_WORLD, &dm));
   PetscCall(CreateSubmesh(dm, PETSC_TRUE, &subdm));

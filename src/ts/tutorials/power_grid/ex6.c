@@ -56,6 +56,7 @@ int main(int argc, char **argv)
   Mat            J;
   PetscViewer    viewer;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,"petscopt_ex6", help));
   /* Get physics and time parameters */
   PetscCall(Parameter_settings(&user));

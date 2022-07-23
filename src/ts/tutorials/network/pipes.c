@@ -635,6 +635,7 @@ int main(int argc,char ** argv)
   DMNetworkMonitor  monitor;
   MPI_Comm          comm;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,"pOption",help));
 
   /* Read runtime options */

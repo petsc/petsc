@@ -29,6 +29,7 @@ int main(int argc,char **args)
   PetscBool      flg = PETSC_FALSE;
   PetscScalar    v,one = 1.0,rhs;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));

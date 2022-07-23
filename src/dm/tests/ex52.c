@@ -9,6 +9,7 @@ int main(int argc,char **argv)
   Mat              A;
   const PetscInt   dfill[4] = {0,1,0,1},ofill[4] = {0,1,1,0};
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,7,2,1,NULL,&da));
   PetscCall(DMSetFromOptions(da));

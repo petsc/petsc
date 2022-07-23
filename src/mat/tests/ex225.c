@@ -12,6 +12,7 @@ int main(int argc,char **args)
   MPI_Comm       comm;
   PetscInt       *rows;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   comm = PETSC_COMM_WORLD;
   PetscCallMPI(MPI_Comm_size(comm,&NP));

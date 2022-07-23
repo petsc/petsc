@@ -95,6 +95,7 @@ int main(int argc,char **argv)
   struct _n_User user;
   PetscInt       rows,cols;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
 
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));

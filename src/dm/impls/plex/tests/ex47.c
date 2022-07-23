@@ -62,6 +62,7 @@ int main(int argc, char **argv)
   PetscMPIInt      size, rank;
   PetscBool        box = PETSC_FALSE, field = PETSC_FALSE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));

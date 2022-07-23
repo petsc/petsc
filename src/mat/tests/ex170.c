@@ -137,6 +137,7 @@ int main(int argc, char **argv)
   PetscInt       V, vStart, vEnd, v, n;
   PetscMPIInt    size;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   comm = PETSC_COMM_WORLD;
   PetscCallMPI(MPI_Comm_size(comm, &size));

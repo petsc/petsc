@@ -100,6 +100,7 @@ int main(int argc, char **argv)
   PetscSection   sec;
   Vec            vec;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   /* create a distributed k-Star graph DMNetwork */
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-dofv",&dofv,NULL));

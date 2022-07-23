@@ -121,6 +121,7 @@ PetscErrorCode test_vec_ops(void)
 int main(int argc, char **args)
 {
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args,(char*)0, help));
   PetscCall(test_vec_ops());
   PetscCall(PetscFinalize());

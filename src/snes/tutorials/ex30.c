@@ -132,6 +132,7 @@ int main(int argc,char **argv)
   MPI_Comm       comm;
   DM             da;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscOptionsSetValue(NULL,"-file","ex30_output");
   PetscOptionsSetValue(NULL,"-snes_monitor_short",NULL);

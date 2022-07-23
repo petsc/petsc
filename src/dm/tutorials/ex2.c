@@ -29,6 +29,7 @@ int main(int argc,char **argv)
   PetscInt         check_step_alive = -1, check_step_dead = -1;
   PetscBool        has_glider, has_blinker;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Conway's Game of Life","");
   {

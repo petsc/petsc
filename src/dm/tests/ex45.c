@@ -20,6 +20,7 @@ int main(int argc, char *argv[])
   DM             da;
   Mat            A;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,NULL));
   PetscCall(DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_GHOSTED,DMDA_STENCIL_BOX,nx,ny,nz,
                          PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,2,NULL,NULL,NULL,&da));

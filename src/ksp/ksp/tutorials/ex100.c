@@ -78,6 +78,7 @@ static char help[] = "Python-implemented Mat/KSP/PC.\n\n";
 int main(int argc, char *argv[])
 {
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,0,help));
   PetscCall(PetscPythonInitialize(PYTHON_EXE,PYTHON_LIB));
   PetscCall(RunTest());

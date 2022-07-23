@@ -83,6 +83,7 @@ PetscErrorCode main(int argc,char **argv)
   PetscReal          mult_solve_dist;
 
   /* Initialize TAO,PETSc */
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char *)0,help));
   PetscCallMPI(MPI_Comm_size(MPI_COMM_WORLD,&size));
   PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Incorrect number of processors");

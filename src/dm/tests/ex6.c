@@ -21,6 +21,7 @@ int main(int argc,char **argv)
   AO               ao;
   PetscBool        flg = PETSC_FALSE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,400,300,&viewer));
 

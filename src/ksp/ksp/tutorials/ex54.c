@@ -25,6 +25,7 @@ int main(int argc,char **args)
                             {-1.0, -2.0, 5.0+DIAG_S, -2.0},
                             {-2.0, -1.0, -2.0, 5.0+DIAG_S} };
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   comm = PETSC_COMM_WORLD;
   PetscCallMPI(MPI_Comm_rank(comm, &mype));

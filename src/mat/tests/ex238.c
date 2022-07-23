@@ -10,6 +10,7 @@ int main(int argc,char **args)
   PetscScalar    rval,*vals;
   PetscRandom    rdm;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-mat_block_size",&bs,NULL));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-its",&its,NULL));

@@ -209,6 +209,7 @@ int main(int argc, char **argv)
   TSConvergedReason reason;
   struct _User      user;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   PetscCall(DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, 11, 3, 1, NULL, &dm));
   PetscCall(DMSetFromOptions(dm));

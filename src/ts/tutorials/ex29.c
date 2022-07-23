@@ -108,6 +108,7 @@ int main(int argc,char **argv)
   Vec            x,c,clocal;
   DM             da,cda;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(TSCreate(PETSC_COMM_WORLD, &ts));
   PetscCall(TSSetType(ts,TSARKIMEX));

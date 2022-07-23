@@ -14,6 +14,7 @@ int main(int argc,char **argv)
   MPI_Comm        comm;
   PetscInt        n=5,m=5,*dnnz,*onnz,i,rstart,rend,M,N;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,0,help));
   comm = MPI_COMM_WORLD;
   PetscCall(PetscMalloc2(m,&dnnz,m,&onnz));

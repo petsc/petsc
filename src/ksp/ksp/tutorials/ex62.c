@@ -51,6 +51,7 @@ int main(int argc,char **args)
   PetscBool      user_set_subdomains=PETSC_FALSE;
   PetscReal      one,e;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex62","PCGASM");

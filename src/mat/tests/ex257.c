@@ -9,6 +9,7 @@ int main(int argc,char **argv)
   PetscInt       n=4,lda=5,i,k;
   PetscBool      cuda=PETSC_FALSE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-lda",&lda,NULL));

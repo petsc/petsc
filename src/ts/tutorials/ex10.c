@@ -1019,6 +1019,7 @@ int main(int argc, char *argv[])
   PetscInt       steps;
   PetscReal      ftime;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,0,help));
   PetscCall(RDCreate(PETSC_COMM_WORLD,&rd));
   PetscCall(DMCreateGlobalVector(rd->da,&X));

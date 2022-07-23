@@ -14,6 +14,7 @@ int main(int argc,char **argv)
   PC          pc;
   PetscBool   harmonic = PETSC_FALSE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,0,help));
 
   PetscCall(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),NULL));

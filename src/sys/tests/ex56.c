@@ -8,6 +8,7 @@ int main(int argc,char **argv)
   char              pkg[128] = "hdf5";
   PetscBool         has,flg;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   PetscCall(PetscOptionsGetString(NULL,NULL,"-pkg",pkg,sizeof(pkg),NULL));
   PetscCall(PetscHasExternalPackage(pkg, &has));

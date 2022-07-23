@@ -62,6 +62,7 @@ int main(int argc, char **argv)
   Mat            J;                 /* Jacobian matrix */
   DM             da;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char*)0, help));
 
   /* Create distributed array to manage the 2d grid */

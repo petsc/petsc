@@ -17,6 +17,7 @@ int main(int argc,char **args)
   char           file[PETSC_MAX_PATH_LEN];  /* input file name */
   PetscBool      flg;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetString(NULL,NULL,"-f0",file,sizeof(file),&flg));
   PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f0 option");

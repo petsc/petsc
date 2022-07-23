@@ -348,6 +348,7 @@ int main(int argc, char **argv)
   Vec            u, lb, ub;
   AppCtx         user;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   PetscCall(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
   PetscCall(CreateCtx(dm, &user));

@@ -47,6 +47,7 @@ int main(int argc, char **argv)
   PetscReal      lambda, p;
   PetscRandom    random;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   t     = 8;
   log2d = 7;

@@ -38,6 +38,7 @@ int main(int argc,char **argv)
   PetscInt           its, recycled_its=0, oneshot_its=0;
 
   /* Initialize TAO and PETSc */
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Incorrect number of processors");

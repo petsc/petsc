@@ -16,6 +16,7 @@ int main (int argc, char **argv)
   PetscInt       min_refine = 2, overlap = 0;
   PetscInt       vStart, vEnd, v;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   PetscCall(DMCreate(PETSC_COMM_WORLD, &base));

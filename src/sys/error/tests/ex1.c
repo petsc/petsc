@@ -24,6 +24,7 @@ int main(int argc, char *args[])
 
   user.exitHandler = 0;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, (char*) 0, help));
   PetscCall(PetscPushSignalHandler(handleSignal, &user));
   while (!user.exitHandler) {

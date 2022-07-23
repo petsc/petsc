@@ -55,6 +55,7 @@ int main(int argc, char **argv)
   SNESLineSearch linesearch;
   PetscReal      time;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL, "-dim", &dim, NULL));
   /* Create a mesh */

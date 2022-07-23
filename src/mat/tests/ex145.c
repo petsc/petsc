@@ -17,6 +17,7 @@ int main(int argc,char **argv)
   PetscBool      mats_view=PETSC_FALSE;
   MatFactorInfo  finfo;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*) 0,help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));

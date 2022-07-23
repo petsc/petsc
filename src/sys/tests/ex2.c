@@ -13,6 +13,7 @@ int CreateError(int n)
 
 int main(int argc,char **argv)
 {
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscFPrintf(PETSC_COMM_WORLD,stdout,"Demonstrates how PETSc can trap error interrupts\n"));
   PetscCall(PetscFPrintf(PETSC_COMM_WORLD,stdout,"The error below is contrived to test the code!\n"));

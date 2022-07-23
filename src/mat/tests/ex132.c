@@ -13,6 +13,7 @@ int main(int argc,char **args)
   PetscBool      mat_nonsymmetric = PETSC_FALSE,flg;
   MatInfo        info;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));

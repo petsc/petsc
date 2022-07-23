@@ -69,6 +69,7 @@ int main(int argc,char **argv)
   TS             ts;
   Vec            tsrhs,UV;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(TSCreate(PETSC_COMM_WORLD,&ts));
   PetscCall(TSSetProblemType(ts,TS_NONLINEAR));

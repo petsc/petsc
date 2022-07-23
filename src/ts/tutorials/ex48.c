@@ -485,6 +485,7 @@ int main(int argc, char **argv)
 
   ctxarr[0] = ctxarr[1] = ctxarr[2] = ctxarr[3] = ctxarr[4] = &ctx; /* each variable could have a different context */
   s_ctx = &ctx;
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &ctx));
   /* create mesh and problem */

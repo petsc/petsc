@@ -9,6 +9,7 @@ int main(int argc,char **argv)
   PetscInt  dim,size_coarse;
   PetscReal norm;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   dim = 2;
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL));

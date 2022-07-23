@@ -614,6 +614,7 @@ int main(int argc, char **argv)
   PetscInt       dim;
   PetscBool      simplex;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
   PetscCall(CreateMesh(PETSC_COMM_WORLD, &user, &dm));

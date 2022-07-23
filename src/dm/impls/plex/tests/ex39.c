@@ -437,6 +437,7 @@ int main(int argc,char **argv)
   char stdFormat[] = "L2 Norm of the Divergence Error is: %g\n H(div) elements working correctly: %s\n";
 
   /* Initialize PETSc */
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   PetscCall(ProcessOptions(PETSC_COMM_WORLD,&user));
 

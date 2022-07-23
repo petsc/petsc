@@ -579,6 +579,7 @@ int main(int argc,char **argv)
 {
   PetscInt       mx = 2,my = 2,mz = 2,l,nl,dim;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-mx", &mx, 0));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-my", &my, 0));

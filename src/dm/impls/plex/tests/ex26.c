@@ -30,6 +30,7 @@ int main(int argc, char **argv) {
   PetscMPIInt       rank, size;
   PetscViewer       viewer;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv,NULL, help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));

@@ -16,6 +16,7 @@ int main(int argc,char **args)
   KSPType        kspname;
   PetscReal      norm,tol=1000.*PETSC_MACHINE_EPSILON;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   /* Create and initialize vectors */
   PetscCall(VecCreateSeq(PETSC_COMM_SELF,n,&b));

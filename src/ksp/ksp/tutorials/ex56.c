@@ -26,6 +26,7 @@ int main(int argc,char **args)
   PetscLogStage  stage[6];
   PetscScalar    DD1[24][24];
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   comm = PETSC_COMM_WORLD;
   PetscCallMPI(MPI_Comm_rank(comm, &mype));

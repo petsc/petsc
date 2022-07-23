@@ -55,6 +55,7 @@ int main(int argc,char **argv)
                             1: slow finite difference;
                             2: fd with coloring; */
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   /* Initialize user application context */
   user.da           = NULL;

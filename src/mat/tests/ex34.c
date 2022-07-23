@@ -11,6 +11,7 @@ int main(int argc, char ** argv)
   PetscScalar    a[2] = { 1.0, 1.0 }, *data;
   PetscBool      flg;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char*)0,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheck(size == 2,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Must use 2 processors");

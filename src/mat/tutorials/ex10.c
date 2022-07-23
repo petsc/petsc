@@ -20,6 +20,7 @@ int main(int argc,char **args)
   PetscBool      flg;
   PetscViewerFormat format;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   /*
      Determine files from which we read the matrix

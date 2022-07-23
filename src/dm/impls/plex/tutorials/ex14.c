@@ -17,6 +17,7 @@ int main(int argc, char **argv)
   PetscSF        sectionSF;
   PetscScalar   *array;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   /* Create a mesh */
   PetscCall(DMCreate(PETSC_COMM_WORLD, &dm));

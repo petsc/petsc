@@ -12,6 +12,7 @@ int CreateError(int n)
 
 int main(int argc,char **argv)
 {
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscFPrintf(PETSC_COMM_WORLD,stdout,"Demonstrates PETSc Error Handlers\n"));
   PetscCall(PetscFPrintf(PETSC_COMM_WORLD,stdout,"The error is a contrived error to test error handling\n"));

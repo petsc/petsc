@@ -14,6 +14,7 @@ int main(int argc,char **argv)
   PetscBool      values_view=PETSC_FALSE;
   PetscMPIInt    rank;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));

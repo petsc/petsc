@@ -10,6 +10,7 @@ int main(int argc,char **argv)
   DM             dms[NDMS];
   PetscInt       i;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* Two 3d DMs, with all the same parameters */

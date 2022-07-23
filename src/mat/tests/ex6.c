@@ -10,6 +10,7 @@ int main(int argc,char **args)
   PetscScalar    v;
   IS             perm,iperm;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(MatCreate(PETSC_COMM_SELF,&C));
   PetscCall(MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n));

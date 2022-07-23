@@ -20,6 +20,7 @@ int main(int argc, char **argv) {
   PetscReal pos_inf  = pos_one/zero; /* +inf */
   PetscReal x_nan    = zero2/zero;   /*  NaN */ /* some compilers may optimize out zero/zero and set x_nan = 1! */
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
 
   CALL(PetscIsCloseAtTol(pos_zero,neg_zero,0,0));

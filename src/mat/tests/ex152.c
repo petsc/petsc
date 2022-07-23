@@ -37,6 +37,7 @@ int main(int argc, char *argv[])
   char           fname[PETSC_MAX_PATH_LEN],prefix[PETSC_MAX_PATH_LEN] = "";
   size_t         red;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
 #if defined(PETSC_USE_64BIT_INDICES)
   PetscCall(PetscPrintf(PETSC_COMM_WORLD,"This example only works with 32 bit indices\n"));

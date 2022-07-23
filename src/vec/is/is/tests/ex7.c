@@ -68,6 +68,7 @@ static PetscErrorCode TestStride(void)
 int main(int argc,char **argv)
 {
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   PetscCall(TestGeneral());
   PetscCall(TestBlock());

@@ -13,6 +13,7 @@ int main(int argc,char **args)
   char           filename[PETSC_MAX_PATH_LEN];
   PetscBool      flg;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetString(NULL,NULL,"-filename",filename,sizeof(filename),&flg));
   if (!flg) PetscCall(PetscStrcpy(filename,"x.h5"));

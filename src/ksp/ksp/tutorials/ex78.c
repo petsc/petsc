@@ -12,6 +12,7 @@ int main(int argc,char **args)
   PetscInt       i;
   const char     *common[] = {KSPGMRES,KSPCG,KSPPREONLY};
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,NULL,help));
   PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
   for (i=0; i<3; i++) {

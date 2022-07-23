@@ -8,6 +8,7 @@ int main(int argc, char **argv)
   PetscInt       dim, numFaces;
   PetscScalar    *dx, *grad;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, PETSC_NULL, help));
 
   /*

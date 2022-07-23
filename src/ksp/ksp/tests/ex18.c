@@ -19,6 +19,7 @@ int main(int argc,char **args)
   PetscLogStage  stage1;
 #endif
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
 
   /* Read matrix and RHS */

@@ -10,6 +10,7 @@ int main(int argc,char **argv)
   PetscBool       flg;
 
   /* Create a DMStag object */
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,&flg));
   if (!flg) {

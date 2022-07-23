@@ -973,6 +973,7 @@ int main(int argc,char ** argv)
   PC             pc;
   PetscInt       numEdges = 0;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,"ex9busnetworkops",help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-nc",&nc,NULL));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));

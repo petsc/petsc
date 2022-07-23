@@ -19,6 +19,7 @@ int main(int argc,char **args)
   Vec            fin,fout,fout1,x,y;
   PetscRandom    rnd;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires real numbers. Your current scalar type is complex");

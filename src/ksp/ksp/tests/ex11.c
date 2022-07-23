@@ -260,6 +260,7 @@ PetscErrorCode port_lsd_bfbt(void)
 int main(int argc,char **argv)
 {
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,0,help));
   PetscCall(port_lsd_bfbt());
   PetscCall(PetscFinalize());

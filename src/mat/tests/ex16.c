@@ -36,6 +36,7 @@ int main(int argc,char **args)
   char           mattype[256];
   PetscViewer    view;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,NULL,help));
   PetscCall(PetscStrcpy(mattype,MATMPIDENSE));
   PetscCall(PetscOptionsGetString(NULL,NULL,"-mat_type",mattype,sizeof(mattype),NULL));

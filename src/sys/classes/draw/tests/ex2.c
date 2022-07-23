@@ -10,6 +10,7 @@ int main(int argc,char **argv)
   PetscMPIInt size,rank;
   int         x = 0,y = 0,width = 256,height = 256,i;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   PetscCall(PetscDrawCreate(PETSC_COMM_WORLD,0,"Title",x,y,width,height,&draw));
   PetscCall(PetscDrawSetFromOptions(draw));

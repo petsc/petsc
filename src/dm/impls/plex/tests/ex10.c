@@ -140,6 +140,7 @@ int main(int argc, char **argv)
   AppCtx         user;
   PetscInt       dim;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(ProcessOptions(&user));
   if (user.numGroups < 1) {

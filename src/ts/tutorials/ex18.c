@@ -1045,6 +1045,7 @@ int main(int argc, char **argv)
 
   ctxs[0] = &t;
   ctxs[1] = &t;
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char*) 0, help));
   comm = PETSC_COMM_WORLD;
   user.functionalRegistry = NULL;

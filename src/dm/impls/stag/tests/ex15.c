@@ -15,6 +15,7 @@ int main(int argc,char **argv)
   Mat            A;
   Vec            x,b;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,&flg));
   if (!flg) {

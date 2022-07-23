@@ -103,6 +103,7 @@ int main(int argc, char *argv[])
   IS             isrow,iscol;
   PetscBool      random = PETSC_TRUE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   PetscCall(AssembleMatrix(PETSC_COMM_WORLD,&A));
   PetscCall(AssembleMatrix(PETSC_COMM_WORLD,&B));

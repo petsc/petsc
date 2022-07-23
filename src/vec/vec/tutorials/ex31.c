@@ -10,6 +10,7 @@ int main(int argc,char **argv)
   char           *output;
   Vec            x;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   PetscCall(VecCreate(PETSC_COMM_WORLD,&x));

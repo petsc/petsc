@@ -104,6 +104,7 @@ int main(int argc, char **argv)
   PetscLogStage      stages[1];
 #endif
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char*)0,help));
   user.mx = 32;
   PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"hyperbolic example",NULL);

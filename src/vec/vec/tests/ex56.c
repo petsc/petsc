@@ -28,6 +28,7 @@ int main(int argc,char **argv)
   PETSC_UINTPTR_T   clmemptr;
   const size_t      gsize=10, lsize=2;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   PetscCall(VecCreate(PETSC_COMM_WORLD,&x));

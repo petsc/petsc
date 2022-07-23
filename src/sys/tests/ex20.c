@@ -7,6 +7,7 @@ int main(int argc, char *argv[])
   PetscInt       opts[6] = {0};
   PetscBool      hascl   = PETSC_FALSE,hasstr = PETSC_FALSE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,0,help));
   PetscCall(PetscOptionsSetValue(NULL,"-zero","0"));
   PetscCall(PetscOptionsPrefixPush(NULL,"a_"));

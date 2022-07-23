@@ -9,6 +9,7 @@ int main(int argc,char **argv)
   PetscInt       ex,ey,ez,n[3],start[3],nExtra[3],iNext,iPrev,iCenter,d,round;
   PetscScalar    **cArrX,**cArrY,**cArrZ;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   PetscCall(DMStagCreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_GHOSTED,DM_BOUNDARY_PERIODIC,4,3,2,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,1,1,DMSTAG_STENCIL_BOX,2,NULL,NULL,NULL,&dm));

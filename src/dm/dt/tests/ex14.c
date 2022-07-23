@@ -79,6 +79,7 @@ static PetscErrorCode TestSampling()
 int main(int argc, char **argv)
 {
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(TestDistributions());
   PetscCall(TestSampling());

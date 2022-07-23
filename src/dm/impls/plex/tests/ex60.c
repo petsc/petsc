@@ -40,6 +40,7 @@ int main(int argc, char **argv) {
   Vec             metric;
 
   /* Set up */
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   comm = PETSC_COMM_WORLD;
   PetscOptionsBegin(comm, "", "Mesh adaptation options", "DMPLEX");

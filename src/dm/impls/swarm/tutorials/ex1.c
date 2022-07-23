@@ -22,6 +22,7 @@ int main(int argc, char **argv)
   PetscDataType   dtype;
   PetscBool       is_bjac;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   /* Create a mesh */
   PetscCall(DMCreate(PETSC_COMM_WORLD, &dm));

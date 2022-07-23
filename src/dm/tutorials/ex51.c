@@ -16,6 +16,7 @@ int main(int argc, char *argv[])
   PetscInt       dof   = 2*(p+1)*numGP;
   PetscMPIInt    rank, subsize, subrank;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,0,help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   /* Create 2D DMDA */

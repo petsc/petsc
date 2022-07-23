@@ -28,6 +28,7 @@ int main(int argc,char **args)
   PetscScalar    one = 1.0,Ke[16],*vals;
   PetscReal      h,norm;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
 

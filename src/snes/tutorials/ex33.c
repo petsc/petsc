@@ -118,6 +118,7 @@ int main(int argc, char **argv)
   PetscReal      t = 0.0;/* time */
   PetscInt       n;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   /* Create solver */
   PetscCall(SNESCreate(PETSC_COMM_WORLD, &snes));

@@ -20,6 +20,7 @@ int main(int argc,char **args)
     PetscCount n;
   } coo[3] = {{i0,sizeof(i0)/sizeof(PetscInt)}, {i1,sizeof(i1)/sizeof(PetscInt)}, {i2,sizeof(i2)/sizeof(PetscInt)}};
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-ignore_remote",&ignoreRemote,NULL));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));

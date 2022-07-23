@@ -38,6 +38,7 @@ int main(int argc,char **argv)
   PetscScalar       v2;
   PetscScalar       *xx;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-second_order",&second_order,NULL));

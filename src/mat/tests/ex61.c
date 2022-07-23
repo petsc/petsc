@@ -17,6 +17,7 @@ int main(int argc,char **args)
   PetscInt       i,j,rowlens[] = {2,3,1},cols[] = {0,2,0,1,2,2};
   PetscBool      flg;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsHasName(NULL,NULL,"-baij",&flg));
   if (flg) {
