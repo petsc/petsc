@@ -7,7 +7,9 @@ static PetscErrorCode GenEntries(PetscInt sdim,PetscInt M,PetscInt N,const Petsc
   PetscInt  d,j,k;
   PetscReal diff = 0.0,*coords = (PetscReal*)(ctx);
 
+#if !PetscDefined(HAVE_OPENMP)
   PetscFunctionBeginUser;
+#endif
   for (j = 0; j < M; j++) {
     for (k = 0; k < N; k++) {
       diff = 0.0;
@@ -15,7 +17,11 @@ static PetscErrorCode GenEntries(PetscInt sdim,PetscInt M,PetscInt N,const Petsc
       ptr[j+M*k] = 1.0/(1.0e-2 + PetscSqrtReal(diff));
     }
   }
+#if !PetscDefined(HAVE_OPENMP)
   PetscFunctionReturn(0);
+#else
+  return 0;
+#endif
 }
 
 int main(int argc,char **argv)
