@@ -380,23 +380,25 @@ void PetscCall(PetscErrorCode);
 void PetscCallBack(const char *,PetscErrorCode);
 void PetscCallVoid(PetscErrorCode);
 #else
-#define PetscCall(...) do { \
+#define PetscCall(...) do {                                             \
+    PetscErrorCode ierr_q_;                                             \
     PetscStackUpdateLine;                                               \
-    PetscErrorCode ierr_q_ = __VA_ARGS__;                                                      \
+    ierr_q_ = __VA_ARGS__;                                              \
     if (PetscUnlikely(ierr_q_)) return PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr_q_,PETSC_ERROR_REPEAT," "); \
   } while (0)
-#define PetscCallBack(function,...) do { \
-    PetscStackUpdateLine; PetscStackPushExternal(function);      \
-    PetscErrorCode ierr_q_ = __VA_ARGS__;          \
-    PetscStackPop;                                                 \
+#define PetscCallBack(function,...) do {                                \
+    PetscErrorCode ierr_q_;                                             \
+    PetscStackUpdateLine;                                               \
+    PetscStackPushExternal(function);                                   \
+    ierr_q_ = __VA_ARGS__;                                              \
+    PetscStackPop;                                                      \
     if (PetscUnlikely(ierr_q_)) return PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr_q_,PETSC_ERROR_REPEAT," "); \
   } while (0)
-#define PetscCallVoid(...) do { PetscStackUpdateLine;                                                               \
-    PetscErrorCode ierr_void_ = __VA_ARGS__;                                                   \
-    if (PetscUnlikely(ierr_void_)) {                                                           \
-      (void)PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr_void_,PETSC_ERROR_REPEAT," "); \
-      return;                                                                                  \
-    }                                                                                          \
+#define PetscCallVoid(...) do {                                         \
+    PetscErrorCode ierr_void_;                                          \
+    PetscStackUpdateLine;                                               \
+    ierr_void_ = __VA_ARGS__;                                           \
+    if (PetscUnlikely(ierr_void_)) {(void)PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr_void_,PETSC_ERROR_REPEAT," "); return;} \
   } while (0)
 #endif
 
@@ -476,16 +478,17 @@ M*/
 #if defined(PETSC_CLANG_STATIC_ANALYZER)
 void PetscCallMPI(PetscMPIInt);
 #else
-#define PetscCallMPI(...) do {                                                                 \
-    PetscStackUpdateLine;                                                                      \
-    PetscStackPushExternal("MPI function");                                                    \
-    PetscMPIInt _7_errorcode = __VA_ARGS__;                                                    \
-    PetscStackPop;                                                                             \
-    if (PetscUnlikely(_7_errorcode)) {                                                         \
-      char        _7_errorstring[2*MPI_MAX_ERROR_STRING];                                      \
-      PetscMPIErrorString(_7_errorcode,(char*)_7_errorstring); \
+#define PetscCallMPI(...) do {                                          \
+    PetscMPIInt _7_errorcode;                                           \
+    char _7_errorstring[2*MPI_MAX_ERROR_STRING];                        \
+    PetscStackUpdateLine;                                               \
+    PetscStackPushExternal("MPI function");                             \
+    {_7_errorcode = __VA_ARGS__;}                                       \
+    PetscStackPop;                                                      \
+    if (PetscUnlikely(_7_errorcode)) {                                  \
+      PetscMPIErrorString(_7_errorcode,(char*)_7_errorstring);          \
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MPI,"MPI error %d %s",(int)_7_errorcode,_7_errorstring); \
-    }                                                                                          \
+    }                                                                   \
   } while (0)
 #endif
 
