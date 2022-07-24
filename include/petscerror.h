@@ -857,7 +857,10 @@ M*/
 #define CHKMEMQ
 #define CHKMEMA
 #else
-#define CHKMEMQ PetscCall(PetscMallocValidate(__LINE__,PETSC_FUNCTION_NAME,__FILE__));
+#define CHKMEMQ do { \
+    PetscErrorCode ierr_memq_ = PetscMallocValidate(__LINE__,PETSC_FUNCTION_NAME,__FILE__); \
+    if (PetscUnlikely(ierr_memq_)) return PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr_memq_,PETSC_ERROR_REPEAT," "); \
+  } while (0)
 #define CHKMEMA PetscMallocValidate(__LINE__,PETSC_FUNCTION_NAME,__FILE__)
 #endif
 
