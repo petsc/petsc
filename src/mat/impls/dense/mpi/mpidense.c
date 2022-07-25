@@ -926,6 +926,7 @@ PetscErrorCode MatTranspose_MPIDense(Mat A,MatReuse reuse,Mat *matout)
   PetscScalar    *v;
 
   PetscFunctionBegin;
+  if (reuse == MAT_REUSE_MATRIX) PetscCall(MatTransposeCheckNonzeroState_Private(A,*matout));
   if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_INPLACE_MATRIX) {
     PetscCall(MatCreate(PetscObjectComm((PetscObject)A),&B));
     PetscCall(MatSetSizes(B,A->cmap->n,A->rmap->n,N,M));
@@ -1501,7 +1502,8 @@ static struct _MatOps MatOps_Values = { MatSetValues_MPIDense,
                                         NULL,
                                         NULL,
                                         NULL,
-                                        NULL
+                                        NULL,
+                                /*150*/ NULL
 };
 
 PetscErrorCode  MatMPIDenseSetPreallocation_MPIDense(Mat mat,PetscScalar *data)

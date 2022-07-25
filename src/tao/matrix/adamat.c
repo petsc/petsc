@@ -1,4 +1,4 @@
-#include <petscmat.h>              /*I  "mat.h"  I*/
+#include <petsc/private/matimpl.h>              /*I  "petscmat.h"  I*/
 
 PETSC_INTERN PetscErrorCode MatCreateADA(Mat,Vec, Vec, Mat*);
 
@@ -136,6 +136,7 @@ static PetscErrorCode MatTranspose_ADA(Mat mat,MatReuse reuse,Mat *B)
   TaoMatADACtx   ctx;
 
   PetscFunctionBegin;
+  if (reuse == MAT_REUSE_MATRIX) PetscCall(MatTransposeCheckNonzeroState_Private(mat,*B));
   PetscCall(MatShellGetContext(mat,&ctx));
   if (reuse == MAT_INITIAL_MATRIX) {
     PetscCall(MatDuplicate(mat,MAT_COPY_VALUES,B));

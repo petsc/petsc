@@ -217,6 +217,7 @@ struct _MatOps {
   PetscErrorCode (*creategraph)(Mat,PetscBool,PetscBool,Mat*);
   PetscErrorCode (*filter)(Mat,PetscReal,Mat*);
   /*150*/
+  PetscErrorCode (*transposesymbolic)(Mat,Mat*);
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum
@@ -746,6 +747,17 @@ typedef struct { /* used by MatCreateSubMatrices_MPIAIJ_SingleIS_Local() and Mat
 
   PetscErrorCode (*destroy)(Mat);
 } Mat_SubSppt;
+
+PETSC_EXTERN PetscErrorCode MatTransposeCheckNonzeroState_Private(Mat,Mat);
+
+/*
+ Used by MatTranspose() and potentially other functions to track the matrix used in the generation of another matrix
+*/
+typedef struct {
+  PetscObjectId    id;
+  PetscObjectState state;
+  PetscObjectState nonzerostate;
+} MatParentState;
 
 PETSC_EXTERN PetscErrorCode MatFactorDumpMatrix(Mat);
 PETSC_INTERN PetscErrorCode MatShift_Basic(Mat,PetscScalar);

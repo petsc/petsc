@@ -825,6 +825,10 @@ cdef class Mat(Object):
         CHKERR( MatTranspose(self.mat, reuse, &out.mat) )
         return out
 
+    def setTransposePrecursor(self, Mat out):
+        CHKERR( MatTransposeSetPrecursor(self.mat, out.mat) )
+        return out
+
     def hermitianTranspose(self, Mat out=None):
         cdef PetscMatReuse reuse = MAT_INITIAL_MATRIX
         if out is None: out = self

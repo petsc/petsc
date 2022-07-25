@@ -1251,6 +1251,7 @@ static PetscErrorCode MatTranspose_IS(Mat A,MatReuse reuse,Mat *B)
   Mat                    C,lC,lA;
 
   PetscFunctionBegin;
+  if (reuse == MAT_REUSE_MATRIX) PetscCall(MatTransposeCheckNonzeroState_Private(A,*B));
   if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_INPLACE_MATRIX) {
     ISLocalToGlobalMapping rl2g,cl2g;
     PetscCall(MatCreate(PetscObjectComm((PetscObject)A),&C));

@@ -1507,6 +1507,7 @@ PetscErrorCode MatTranspose_MPIBAIJ(Mat A,MatReuse reuse,Mat *matout)
   MatScalar      *a;
 
   PetscFunctionBegin;
+  if (reuse == MAT_REUSE_MATRIX) PetscCall(MatTransposeCheckNonzeroState_Private(A,*matout));
   if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_INPLACE_MATRIX) {
     PetscCall(MatCreate(PetscObjectComm((PetscObject)A),&B));
     PetscCall(MatSetSizes(B,A->cmap->n,A->rmap->n,N,M));
@@ -2558,17 +2559,17 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIBAIJ,
                                        MatInvertBlockDiagonal_MPIBAIJ,
                                        NULL,
                                        NULL,
-                               /*129*/ NULL,
+                                /*129*/NULL,
                                        NULL,
                                        NULL,
                                        NULL,
                                        NULL,
-                               /*134*/ NULL,
+                                /*134*/NULL,
                                        NULL,
                                        NULL,
                                        NULL,
                                        NULL,
-                               /*139*/ MatSetBlockSizes_Default,
+                                /*139*/MatSetBlockSizes_Default,
                                        NULL,
                                        NULL,
                                        MatFDColoringSetUp_MPIXAIJ,
@@ -2578,7 +2579,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIBAIJ,
                                        NULL,
                                        NULL,
                                        NULL,
-                                       NULL
+                                       NULL,
+                                /*150*/NULL
 };
 
 PETSC_INTERN PetscErrorCode MatConvert_MPIBAIJ_MPISBAIJ(Mat,MatType,MatReuse,Mat*);

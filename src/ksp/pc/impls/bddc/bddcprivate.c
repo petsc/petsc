@@ -4539,6 +4539,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
     PetscCall(MatScale(S_CC,m_one));
     if (n_vertices) {
       if (isCHOL || need_benign_correction) { /* if we can solve the interior problem with cholesky, we should also be fine with transposing here */
+        PetscCall(MatTransposeSetPrecursor(S_CV,S_VC));
         PetscCall(MatTranspose(S_CV,MAT_REUSE_MATRIX,&S_VC));
       } else {
         Mat S_VCt;

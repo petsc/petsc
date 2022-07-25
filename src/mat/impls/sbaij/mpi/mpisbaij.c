@@ -1554,6 +1554,7 @@ PetscErrorCode MatSetOption_MPISBAIJ(Mat A,MatOption op,PetscBool flg)
 PetscErrorCode MatTranspose_MPISBAIJ(Mat A,MatReuse reuse,Mat *B)
 {
   PetscFunctionBegin;
+  if (reuse == MAT_REUSE_MATRIX) PetscCall(MatTransposeCheckNonzeroState_Private(A,*B));
   if (reuse == MAT_INITIAL_MATRIX) {
     PetscCall(MatDuplicate(A,MAT_COPY_VALUES,B));
   }  else if (reuse == MAT_REUSE_MATRIX) {
@@ -1905,12 +1906,13 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPISBAIJ,
                                        NULL,
                                        NULL,
                                        NULL,
-                                /*144*/MatCreateMPIMatConcatenateSeqMat_MPISBAIJ,
+                               /*144*/ MatCreateMPIMatConcatenateSeqMat_MPISBAIJ,
                                        NULL,
                                        NULL,
                                        NULL,
                                        NULL,
-                                       NULL
+                                       NULL,
+                               /*150*/ NULL
 };
 
 PetscErrorCode  MatMPISBAIJSetPreallocation_MPISBAIJ(Mat B,PetscInt bs,PetscInt d_nz,const PetscInt *d_nnz,PetscInt o_nz,const PetscInt *o_nnz)

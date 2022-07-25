@@ -1905,6 +1905,7 @@ PetscErrorCode MatTranspose_MPIAIJ(Mat A,MatReuse reuse,Mat *matout)
   const MatScalar *pbv,*bv;
 
   PetscFunctionBegin;
+  if (reuse == MAT_REUSE_MATRIX) PetscCall(MatTransposeCheckNonzeroState_Private(A,*matout));
   ma = A->rmap->n; na = A->cmap->n; mb = a->B->rmap->n; nb = a->B->cmap->n;
   ai = Aloc->i; aj = Aloc->j;
   bi = Bloc->i; bj = Bloc->j;
@@ -1955,6 +1956,7 @@ PetscErrorCode MatTranspose_MPIAIJ(Mat A,MatReuse reuse,Mat *matout)
 
   /* Transpose the diagonal part of the matrix. In contrast to the offdiagonal part, this can be done
   very quickly (=without using MatSetValues), because all writes are local. */
+  PetscCall(MatTransposeSetPrecursor(A_diag,*B_diag));
   PetscCall(MatTranspose(A_diag,MAT_REUSE_MATRIX,B_diag));
 
   /* copy over the B part */
@@ -2833,7 +2835,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                        NULL,
                                        NULL,
                                        MatCreateGraph_Simple_AIJ,
-                                       MatFilter_AIJ
+                                       MatFilter_AIJ,
+                                /*150*/NULL
 };
 
 /* ----------------------------------------------------------------------------------------*/
@@ -6029,6 +6032,7 @@ static PetscErrorCode MatMatMultNumeric_MPIDense_MPIAIJ(Mat A,Mat B,Mat C)
   PetscCall(MatMatMult(Bt,At,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&Ct));
   PetscCall(MatDestroy(&At));
   PetscCall(MatDestroy(&Bt));
+  PetscCall(MatTransposeSetPrecursor(Ct,C));
   PetscCall(MatTranspose(Ct,MAT_REUSE_MATRIX,&C));
   PetscCall(MatDestroy(&Ct));
   PetscFunctionReturn(0);

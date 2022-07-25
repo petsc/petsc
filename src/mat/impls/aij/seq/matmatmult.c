@@ -1196,7 +1196,6 @@ PetscErrorCode MatDestroy_SeqAIJ_MatMatMultTrans(void *data)
 PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat C)
 {
   Mat                 Bt;
-  PetscInt            *bti,*btj;
   Mat_MatMatTransMult *abt;
   Mat_Product         *product = C->product;
   char                *alg;
@@ -1206,8 +1205,7 @@ PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
   PetscCheck(!product->data,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Extra product struct not empty");
 
   /* create symbolic Bt */
-  PetscCall(MatGetSymbolicTranspose_SeqAIJ(B,&bti,&btj));
-  PetscCall(MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,B->cmap->n,B->rmap->n,bti,btj,NULL,&Bt));
+  PetscCall(MatTransposeSymbolic(B,&Bt));
   PetscCall(MatSetBlockSizes(Bt,PetscAbs(A->cmap->bs),PetscAbs(B->cmap->bs)));
   PetscCall(MatSetType(Bt,((PetscObject)A)->type_name));
 
@@ -1276,7 +1274,6 @@ PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
   }
   /* clean up */
   PetscCall(MatDestroy(&Bt));
-  PetscCall(MatRestoreSymbolicTranspose_SeqAIJ(B,&bti,&btj));
   PetscFunctionReturn(0);
 }
 
@@ -1368,7 +1365,6 @@ PetscErrorCode MatDestroy_SeqAIJ_MatTransMatMult(void *data)
 PetscErrorCode MatTransposeMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat C)
 {
   Mat            At = NULL;
-  PetscInt       *ati,*atj;
   Mat_Product    *product = C->product;
   PetscBool      flg,def,square;
 
@@ -1380,8 +1376,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
   if (flg) {
     /* create symbolic At */
     if (!square) {
-      PetscCall(MatGetSymbolicTranspose_SeqAIJ(A,&ati,&atj));
-      PetscCall(MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,A->cmap->n,A->rmap->n,ati,atj,NULL,&At));
+      PetscCall(MatTransposeSymbolic(A,&At));
       PetscCall(MatSetBlockSizes(At,PetscAbs(A->cmap->bs),PetscAbs(B->cmap->bs)));
       PetscCall(MatSetType(At,((PetscObject)A)->type_name));
     }
@@ -1392,7 +1387,6 @@ PetscErrorCode MatTransposeMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
     /* clean up */
     if (!square) {
       PetscCall(MatDestroy(&At));
-      PetscCall(MatRestoreSymbolicTranspose_SeqAIJ(A,&ati,&atj));
     }
 
     C->ops->mattransposemultnumeric = MatTransposeMatMultNumeric_SeqAIJ_SeqAIJ; /* outerproduct */
@@ -1409,7 +1403,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
     PetscCheck(!product->data,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Extra product struct not empty");
     PetscCall(PetscNew(&atb));
     if (!square) {
-      PetscCall(MatTranspose_SeqAIJ(A,MAT_INITIAL_MATRIX,&At));
+      PetscCall(MatTranspose(A,MAT_INITIAL_MATRIX,&At));
     }
     PetscCall(MatProductSetAlgorithm(C,"sorted"));
     PetscCall(MatMatMultSymbolic_SeqAIJ_SeqAIJ(square ? A : At,B,fill,C));
@@ -1417,7 +1411,6 @@ PetscErrorCode MatTransposeMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
     product->data    = atb;
     product->destroy = MatDestroy_SeqAIJ_MatTransMatMult;
     atb->At          = At;
-    atb->updateAt    = PETSC_FALSE; /* because At is computed here */
 
     C->ops->mattransposemultnumeric = NULL; /* see MatProductNumeric_AtB_SeqAIJ_SeqAIJ */
     PetscFunctionReturn(0);
@@ -1932,15 +1925,12 @@ static PetscErrorCode MatProductNumeric_AtB_SeqAIJ_SeqAIJ(Mat C)
   } else {
     /* Alg: "matmatmult" -- C = At*B */
     Mat_MatTransMatMult *atb = (Mat_MatTransMatMult *)product->data;
-    Mat                 At;
 
     PetscCheck(atb,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing product struct");
-    At = atb->At;
-    if (atb->updateAt && At) { /* At is computed in MatTransposeMatMultSymbolic_SeqAIJ_SeqAIJ() */
-      PetscCall(MatTranspose_SeqAIJ(A,MAT_REUSE_MATRIX,&At));
+    if (atb->At) { /* At is computed in MatTransposeMatMultSymbolic_SeqAIJ_SeqAIJ() */
+      PetscCall(MatTranspose(A,MAT_REUSE_MATRIX,&atb->At));
     }
-    PetscCall(MatMatMultNumeric_SeqAIJ_SeqAIJ(At ? At : A,B,C));
-    atb->updateAt = PETSC_TRUE;
+    PetscCall(MatMatMultNumeric_SeqAIJ_SeqAIJ(atb->At ? atb->At : A,B,C));
   }
   PetscFunctionReturn(0);
 }

@@ -205,6 +205,7 @@ static PetscErrorCode MatCreateSubMatrices_Htool(Mat A,PetscInt n,const IS irow[
                     if (A->hermitian == PETSC_BOOL3_TRUE && PetscDefined(USE_COMPLEX)) {
                       PetscCall(MatHermitianTranspose(B,MAT_REUSE_MATRIX,&BT));
                     } else {
+                      PetscCall(MatTransposeSetPrecursor(B,BT));
                       PetscCall(MatTranspose(B,MAT_REUSE_MATRIX,&BT));
                     }
                     PetscCall(MatDestroy(&B));
@@ -226,6 +227,7 @@ static PetscErrorCode MatCreateSubMatrices_Htool(Mat A,PetscInt n,const IS irow[
                     if (A->hermitian == PETSC_BOOL3_TRUE && PetscDefined(USE_COMPLEX)) {
                       PetscCall(MatHermitianTranspose(B,MAT_REUSE_MATRIX,&BT));
                     } else {
+                      PetscCall(MatTransposeSetPrecursor(B,BT));
                       PetscCall(MatTranspose(B,MAT_REUSE_MATRIX,&BT));
                     }
                     PetscCall(MatDestroy(&B));
@@ -775,6 +777,7 @@ static PetscErrorCode MatTranspose_Htool(Mat A,MatReuse reuse,Mat *B)
   MatHtoolKernelTranspose *kernelt;
 
   PetscFunctionBegin;
+  if (reuse == MAT_REUSE_MATRIX) PetscCall(MatTransposeCheckNonzeroState_Private(A,*B));
   PetscCheck(reuse != MAT_INPLACE_MATRIX,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MatTranspose() with MAT_INPLACE_MATRIX not supported");
   if (reuse == MAT_INITIAL_MATRIX) {
     PetscCall(MatCreate(PetscObjectComm((PetscObject)A),&C));

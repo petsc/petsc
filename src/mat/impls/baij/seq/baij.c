@@ -1399,6 +1399,7 @@ PetscErrorCode MatTranspose_SeqBAIJ(Mat A,MatReuse reuse,Mat *B)
   MatScalar      *ata,*aa=a->a;
 
   PetscFunctionBegin;
+  if (reuse == MAT_REUSE_MATRIX) PetscCall(MatTransposeCheckNonzeroState_Private(A,*B));
   PetscCall(PetscCalloc1(1+nbs,&atfill));
   if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_INPLACE_MATRIX) {
     for (i=0; i<ai[mbs]; i++) atfill[aj[i]] += 1; /* count num of non-zeros in row aj[i] */
@@ -1457,7 +1458,7 @@ PetscErrorCode MatIsTranspose_SeqBAIJ(Mat A,Mat B,PetscReal tol,PetscBool  *f)
 
   PetscFunctionBegin;
   *f   = PETSC_FALSE;
-  PetscCall(MatTranspose_SeqBAIJ(A,MAT_INITIAL_MATRIX,&Btrans));
+  PetscCall(MatTranspose(A,MAT_INITIAL_MATRIX,&Btrans));
   PetscCall(MatEqual_SeqBAIJ(B,Btrans,f));
   PetscCall(MatDestroy(&Btrans));
   PetscFunctionReturn(0);
@@ -2774,12 +2775,13 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
                                        NULL,
                                        MatFDColoringSetUp_SeqXAIJ,
                                        NULL,
-                                /*144*/MatCreateMPIMatConcatenateSeqMat_SeqBAIJ,
+                               /*144*/ MatCreateMPIMatConcatenateSeqMat_SeqBAIJ,
                                        MatDestroySubMatrices_SeqBAIJ,
                                        NULL,
                                        NULL,
                                        NULL,
-                                       NULL
+                                       NULL,
+                               /*150*/ NULL,
 };
 
 PetscErrorCode  MatStoreValues_SeqBAIJ(Mat mat)

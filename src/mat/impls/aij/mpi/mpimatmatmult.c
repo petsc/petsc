@@ -1301,8 +1301,8 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
 
   /* (0) compute Rd = Pd^T, Ro = Po^T  */
   /* --------------------------------- */
-  PetscCall(MatTranspose_SeqAIJ(p->A,MAT_INITIAL_MATRIX,&ptap->Rd));
-  PetscCall(MatTranspose_SeqAIJ(p->B,MAT_INITIAL_MATRIX,&ptap->Ro));
+  PetscCall(MatTranspose(p->A,MAT_INITIAL_MATRIX,&ptap->Rd));
+  PetscCall(MatTranspose(p->B,MAT_INITIAL_MATRIX,&ptap->Ro));
 
   /* (1) compute symbolic A_loc */
   /* ---------------------------*/
@@ -1551,8 +1551,8 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A,
     /* These matrices are obtained in MatTransposeMatMultSymbolic() */
     /* 1) get R = Pd^T, Ro = Po^T */
     /*----------------------------*/
-    PetscCall(MatTranspose_SeqAIJ(p->A,MAT_REUSE_MATRIX,&ptap->Rd));
-    PetscCall(MatTranspose_SeqAIJ(p->B,MAT_REUSE_MATRIX,&ptap->Ro));
+    PetscCall(MatTranspose(p->A,MAT_REUSE_MATRIX,&ptap->Rd));
+    PetscCall(MatTranspose(p->B,MAT_REUSE_MATRIX,&ptap->Ro));
 
     /* 2) compute numeric A_loc */
     /*--------------------------*/
