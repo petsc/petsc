@@ -42,6 +42,18 @@ PETSC_EXTERN const char* PetscCUFFTGetErrorName(cufftResult);
 #endif /* PETSC_PKG_CUDA_VERSION_GE(8,0,0) */
 #define CHKERRCUDA(...) PetscCallCUDA(__VA_ARGS__)
 
+#if PETSC_PKG_CUDA_VERSION_GE(8,0,0)
+#define PetscCallCUDAVoid(...) do {                                     \
+  const cudaError_t _p_cuda_err__ = __VA_ARGS__;                        \
+  PetscCheckAbort(_p_cuda_err__ == cudaSuccess,PETSC_COMM_SELF,PETSC_ERR_GPU,"cuda error %d (%s) : %s",(PetscErrorCode)_p_cuda_err__,cudaGetErrorName(_p_cuda_err__),cudaGetErrorString(_p_cuda_err__));  \
+} while (0)
+#else /* PETSC_PKG_CUDA_VERSION_GE(8,0,0) */
+#define PetscCallCUDAVoid(...) do {                                     \
+  const cudaError_t _p_cuda_err__ = __VA_ARGS__;                        \
+  PetscCheckAbort(_p_cuda_err__ == cudaSuccess,PETSC_COMM_SELF,PETSC_ERR_GPU,"cuda error %d",(PetscErrorCode)_p_cuda_err__); \
+} while (0)
+#endif /* PETSC_PKG_CUDA_VERSION_GE(8,0,0) */
+
 #define PetscCallCUBLAS(...) do {                                       \
     const cublasStatus_t _p_cublas_stat__ = __VA_ARGS__;                \
     if (PetscUnlikely(_p_cublas_stat__ != CUBLAS_STATUS_SUCCESS)) {     \
