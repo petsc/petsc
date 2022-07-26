@@ -16,20 +16,6 @@
 #include <cooperative_groups.h>
 #endif
 
-#define CHECK_LAUNCH_ERROR()                                                             \
-do {                                                                                     \
-  /* Check synchronous errors, i.e. pre-launch */                                        \
-  cudaError_t err = cudaGetLastError();                                                  \
-  if (cudaSuccess != err) {                                                              \
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cuda error: %s",cudaGetErrorString(err)); \
-  }                                                                                      \
-  /* Check asynchronous errors, i.e. kernel failed (ULF) */                              \
-  err = cudaDeviceSynchronize();                                                         \
-  if (cudaSuccess != err) {                                                              \
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cuda error: %s",cudaGetErrorString(err)); \
-  }                                                                                      \
- } while (0)
-
 /*
   LU BAND factorization with optimization for block diagonal (Nf blocks) in natural order (-mat_no_inode -pc_factor_mat_ordering_type rcm with Nf>1 fields)
 
@@ -224,7 +210,7 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJCUSPARSEBAND(Mat B,Mat A,const Ma
       dim3 dimBlockTeam(nVec,team_size);
       dim3 dimBlockLeague(Nf,Ni);
       mat_lu_factor_band_copy_aij_aij<<<dimBlockLeague,dimBlockTeam>>>(n, bw, r, ic, ai_d, aj_d, aa_d, bi_t, ba_t);
-      CHECK_LAUNCH_ERROR(); // does a sync
+      PetscCUDACheckLaunch; // does a sync
 #if defined(AIJBANDUSEGROUPS)
       if (Ni > 1) {
         void *kernelArgs[] = { (void*)&n, (void*)&bw, (void*)&bi_t, (void*)&ba_t, (void*)&nsm };
@@ -235,7 +221,7 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJCUSPARSEBAND(Mat B,Mat A,const Ma
 #else
       mat_lu_factor_band<<<dimBlockLeague,dimBlockTeam>>>(n, bw, bi_t, ba_t, NULL);
 #endif
-      CHECK_LAUNCH_ERROR(); // does a sync
+      PetscCUDACheckLaunch; // does a sync
 #if defined(PETSC_USE_LOG)
       PetscCall(PetscLogGpuFlops((PetscLogDouble)Nf*(bm1*(bm1 + 1)*(PetscLogDouble)(2*bm1 + 1)/3 + (PetscLogDouble)2*(nl-bw)*bw*bw + (PetscLogDouble)nl*(nl+1)/2)));
 #endif
@@ -310,7 +296,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJCUSPARSEBAND(Mat B,Mat A,IS isrow,IS is
     dim3 dimBlockLeague(Nf,1);
     mat_lu_factor_band_init_set_i<<<dimBlockLeague,dimBlockTeam>>>(n, bwU, bi_t);
   }
-  CHECK_LAUNCH_ERROR(); // does a sync
+  PetscCUDACheckLaunch; // does a sync
 
   // setup data
   if (!cusparseTriFactors->rpermIndices) {
@@ -536,7 +522,7 @@ static PetscErrorCode MatSolve_SeqAIJCUSPARSEBAND(Mat A,Vec bb,Vec xx)
                tempGPU->begin());
   constexpr int block = 128;
   mat_solve_band<block><<<Nf,block>>>(n,bw,cusparseTriFactors->a_band_d,tempGPU->data().get());
-  CHECK_LAUNCH_ERROR(); // does a sync
+  PetscCUDACheckLaunch; // does a sync
 
   /* Last, reorder with the column permutation */
   thrust::copy(thrust::cuda::par.on(PetscDefaultCudaStream),thrust::make_permutation_iterator(tempGPU->begin(), cusparseTriFactors->cpermIndices->begin()),

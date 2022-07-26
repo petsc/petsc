@@ -993,8 +993,7 @@ PetscErrorCode DMMoabPToRMapping(const PetscInt dim, const PetscInt nverts, cons
 
   while (error > error_tol_sqr) {
 
-    if (++iters > max_iterations)
-      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Maximum Newton iterations (10) reached. Current point in reference space : (%g, %g, %g)", natparam[0], natparam[1], natparam[2]);
+    PetscCheck(++iters <= max_iterations,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Maximum Newton iterations (10) reached. Current point in reference space : (%g, %g, %g)", natparam[0], natparam[1], natparam[2]);
 
     /* Compute natparam -= J.inverse() * delta */
     switch(dim) {

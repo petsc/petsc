@@ -12,20 +12,6 @@
 #include "../land_tensors.h"
 #include <petscaijdevice.h>
 
-#define CHECK_LAUNCH_ERROR()                                                             \
-do {                                                                                     \
-  /* Check synchronous errors, i.e. pre-launch */                                        \
-  cudaError_t err = cudaGetLastError();                                                  \
-  if (cudaSuccess != err) {                                                              \
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cuda error: %s",cudaGetErrorString(err)); \
-  }                                                                                      \
-  /* Check asynchronous errors, i.e. kernel failed (ULF) */                              \
-  err = cudaDeviceSynchronize();                                                         \
-  if (cudaSuccess != err) {                                                              \
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cuda error: %s",cudaGetErrorString(err)); \
-  }                                                                                      \
- } while (0)
-
 PETSC_EXTERN PetscErrorCode LandauCUDACreateMatMaps(P4estVertexMaps maps[], pointInterpolationP4est (*pointMaps)[LANDAU_MAX_Q_FACE],
                                                     PetscInt Nf[], PetscInt Nq, PetscInt grid)
 {
@@ -841,7 +827,7 @@ PetscErrorCode LandauCUDAJacobian(DM plex[], const PetscInt Nq, const PetscInt b
                                              d_dfdz,
 #endif
                                              d_numCells, d_species_offset, d_mat_offset, d_ip_offset, d_ipf_offset, d_elem_offset);
-    CHECK_LAUNCH_ERROR();
+    PetscCUDACheckLaunch;
     PetscCall(PetscLogGpuFlops(batch_sz*nip_global*(PetscLogDouble)(2*Nb*(1+dim))));
     if (a_elem_closure) {
       PetscCallCUDA(cudaFree(d_vertex_f));
@@ -867,7 +853,7 @@ PetscErrorCode LandauCUDAJacobian(DM plex[], const PetscInt Nq, const PetscInt b
                                                  d_z, d_dfdz,
 #endif
                                                  d_numCells, d_species_offset, d_mat_offset, d_ip_offset, d_ipf_offset, d_elem_offset);
-    CHECK_LAUNCH_ERROR(); // has sync
+    PetscCUDACheckLaunch; // has sync
     PetscCall(PetscLogGpuTimeEnd());
     PetscCall(PetscLogEventEnd(events[4],0,0,0,0));
   } else { // mass
@@ -883,7 +869,7 @@ PetscErrorCode LandauCUDAJacobian(DM plex[], const PetscInt Nq, const PetscInt b
     PetscCall(PetscLogGpuTimeBegin());
     landau_mass<<<dimGrid,dimBlock,ii*szf>>>(dim, Nb, num_grids, d_w, d_BB, d_DD, d_elem_mats,
                                              d_maps, d_mat, shift, d_numCells, d_species_offset, d_mat_offset, d_ip_offset, d_elem_offset);
-    CHECK_LAUNCH_ERROR(); // has sync
+    PetscCUDACheckLaunch; // has sync
     PetscCall(PetscLogGpuTimeEnd());
     PetscCall(PetscLogEventEnd(events[16],0,0,0,0));
   }

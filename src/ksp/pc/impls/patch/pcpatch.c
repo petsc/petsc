@@ -165,9 +165,7 @@ static PetscErrorCode PCPatchConstruct_User(void *vpatch, DM dm, PetscInt point,
   for (i = 0; i < n; ++i) {
     const PetscInt ownedpoint = patchdata[i];
 
-    if (ownedpoint < pStart || ownedpoint >= pEnd) {
-      SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "Mesh point %" PetscInt_FMT " was not in [%" PetscInt_FMT ", %" PetscInt_FMT ")", ownedpoint, pStart, pEnd);
-    }
+    PetscCheck(ownedpoint >= pStart && ownedpoint < pEnd,PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "Mesh point %" PetscInt_FMT " was not in [%" PetscInt_FMT ", %" PetscInt_FMT ")", ownedpoint, pStart, pEnd);
     PetscCall(PetscHSetIAdd(ht, ownedpoint));
   }
   PetscCall(ISRestoreIndices(patchis, &patchdata));

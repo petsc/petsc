@@ -658,9 +658,7 @@ static PetscErrorCode TSTrajectoryMemorySet_N(TS ts,TJScheduler *tjsch,PetscInt 
     PetscCall(StackTop(stack,&e));
     e->timenext = ts->ptime;
   }
-  if (stepnum < stack->top) {
-    SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_MEMC,"Illegal modification of a non-top stack element");
-  }
+  PetscCheck(stepnum >= stack->top,PetscObjectComm((PetscObject)ts),PETSC_ERR_MEMC,"Illegal modification of a non-top stack element");
   cptype = stack->solution_only ? SOLUTIONONLY : STAGESONLY;
   PetscCall(ElementCreate(ts,cptype,stack,&e));
   PetscCall(ElementSet(ts,stack,&e,stepnum,time,X));

@@ -2871,9 +2871,7 @@ PetscErrorCode MatSetSeqMats_MPIAIJ(Mat C,IS rowemb,IS dcolemb,IS ocolemb,MatStr
       PetscCall(ISGetLocalSize(rowemb,&m));
       PetscCheck(m == A->rmap->n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Row IS of size %" PetscInt_FMT " is incompatible with diag matrix row size %" PetscInt_FMT,m,A->rmap->n);
     } else {
-      if (C->rmap->n != A->rmap->n) {
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Diag seq matrix is row-incompatible with the MPIAIJ matrix");
-      }
+      PetscCheck(C->rmap->n == A->rmap->n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Diag seq matrix is row-incompatible with the MPIAIJ matrix");
     }
     if (dcolemb) {
       PetscCall(ISGetLocalSize(dcolemb,&n));
@@ -2889,9 +2887,7 @@ PetscErrorCode MatSetSeqMats_MPIAIJ(Mat C,IS rowemb,IS dcolemb,IS ocolemb,MatStr
       PetscCall(ISGetLocalSize(rowemb,&m));
       PetscCheck(m == B->rmap->n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Row IS of size %" PetscInt_FMT " is incompatible with off-diag matrix row size %" PetscInt_FMT,m,A->rmap->n);
     } else {
-      if (C->rmap->n != B->rmap->n) {
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Off-diag seq matrix is row-incompatible with the MPIAIJ matrix");
-      }
+      PetscCheck(C->rmap->n == B->rmap->n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Off-diag seq matrix is row-incompatible with the MPIAIJ matrix");
     }
     if (ocolemb) {
       PetscCall(ISGetLocalSize(ocolemb,&n));

@@ -295,9 +295,7 @@ PetscErrorCode MatFactorSetSchurIS_MKL_PARDISO(Mat F, IS is)
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)F),&csize));
   PetscCheck(csize <= 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"MKL_PARDISO parallel Schur complements not yet supported from PETSc");
   PetscCall(ISSorted(is,&sorted));
-  if (!sorted) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"IS for MKL_PARDISO Schur complements needs to be sorted");
-  }
+  PetscCheck(sorted,PETSC_COMM_SELF,PETSC_ERR_SUP,"IS for MKL_PARDISO Schur complements needs to be sorted");
   PetscCall(ISGetLocalSize(is,&size));
   PetscCall(PetscFree(mpardiso->schur_work));
   PetscCall(PetscBLASIntCast(PetscMax(mpardiso->n,2*size),&mpardiso->schur_work_size));

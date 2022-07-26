@@ -1146,9 +1146,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
       if (!eemax) continue;
 
       for (j=ii[i];j<ii[i+1];j++) {
-        if (marks[jj[j]] && marks[jj[j]] != eemax) {
-          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Found 2 coarse edges (id %" PetscInt_FMT " and %" PetscInt_FMT ") connected through the %" PetscInt_FMT " nodal dof at edge dof %" PetscInt_FMT,marks[jj[j]]-1,eemax,i,jj[j]);
-        }
+        PetscCheck(!marks[jj[j]] || marks[jj[j]] == eemax,PETSC_COMM_SELF,PETSC_ERR_SUP,"Found 2 coarse edges (id %" PetscInt_FMT " and %" PetscInt_FMT ") connected through the %" PetscInt_FMT " nodal dof at edge dof %" PetscInt_FMT,marks[jj[j]]-1,eemax,i,jj[j]);
       }
     }
     PetscCall(PetscFree(emarks));

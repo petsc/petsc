@@ -15,10 +15,7 @@
 void PetscSFCheckGraphSet(PetscSF,int);
 #else
 #if defined(PETSC_USE_DEBUG)
-#  define PetscSFCheckGraphSet(sf,arg) do {                          \
-    if (PetscUnlikely(!(sf)->graphset))                              \
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call PetscSFSetGraph() or PetscSFSetGraphWithPattern() on argument %d \"%s\" before %s()",(arg),#sf,PETSC_FUNCTION_NAME); \
-  } while (0)
+#  define PetscSFCheckGraphSet(sf,arg) PetscCheck((sf)->graphset,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call PetscSFSetGraph() or PetscSFSetGraphWithPattern() on argument %d \"%s\" before %s()",(arg),#sf,PETSC_FUNCTION_NAME);
 #else
 #  define PetscSFCheckGraphSet(sf,arg) do {} while (0)
 #endif
