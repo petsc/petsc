@@ -53,6 +53,7 @@ int main(int argc, char **argv)
   MatFDColoring      matfdcoloring;
 
   /* Initialize TAO */
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv,(char *)0,help));
 
   /* Specify dimension of the problem */

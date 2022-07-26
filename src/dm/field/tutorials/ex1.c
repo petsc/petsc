@@ -232,6 +232,7 @@ int main(int argc, char **argv)
   PetscInt        numPoint = 0, numFE = 0, numFV = 0;
   PetscBool       testShell = PETSC_FALSE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   comm = PETSC_COMM_WORLD;
   PetscOptionsBegin(comm, "", "DMField Tutorial Options", "DM");

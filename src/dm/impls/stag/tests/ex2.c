@@ -10,6 +10,7 @@ int main(int argc,char **argv)
   DM             dmstag;
   PetscInt       dim,dof[4],i,elx,ely,elz;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   dim = 3;
   for (i=0; i<4; ++i) dof[i] = 1;

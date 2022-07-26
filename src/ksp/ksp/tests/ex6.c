@@ -36,6 +36,7 @@ int main(int argc,char **args)
   PetscBool      table = PETSC_FALSE,flg,test_residual = PETSC_FALSE,b_in_f = PETSC_TRUE;
   KSP            ksp;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-table",&table,NULL));
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-test_residual",&test_residual,NULL));

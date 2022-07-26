@@ -16,6 +16,7 @@ int main(int argc, char **argv)
   PetscBool        vwgts = PETSC_FALSE;
   PetscBool        pwgts = PETSC_FALSE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));

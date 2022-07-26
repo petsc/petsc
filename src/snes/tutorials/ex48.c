@@ -1442,6 +1442,7 @@ int main(int argc,char *argv[])
   DM             da;
   SNES           snes;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,0,help));
   comm = PETSC_COMM_WORLD;
 

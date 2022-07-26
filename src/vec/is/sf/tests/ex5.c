@@ -14,6 +14,7 @@ int main(int argc, char **argv)
   PetscInt    *rdA,*rdB,*ldA,*ldB;
   PetscBool    inverse    = PETSC_FALSE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-nl",&nl,NULL));
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-explicit_inverse",&inverse,NULL));

@@ -23,6 +23,7 @@ int main(int argc,char ** argv)
   SNES             snes;
   SNESConvergedReason reason;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,"wateroptions",help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&crank));
 

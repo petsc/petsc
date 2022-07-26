@@ -15,6 +15,7 @@ int main(int argc,char **argv)
   Mat               AA,AB;
   PetscMPIInt       size,rank;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheck(size > 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Must run with 2 or more processes");

@@ -78,6 +78,7 @@ int main(int argc, char **argv)
   PetscBool      flg;
   PetscMPIInt    size;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   comm = PETSC_COMM_WORLD;
   PetscCallMPI(MPI_Comm_size(comm,&size));

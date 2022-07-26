@@ -155,6 +155,7 @@ int main(int argc, char **argv)
   bc_func_ctx    bcCtx;
   DMLabel        adaptLabel;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   comm = PETSC_COMM_WORLD;
   PetscOptionsBegin(comm, "", "DMForestTransferVec() Test Options", "DMFOREST");

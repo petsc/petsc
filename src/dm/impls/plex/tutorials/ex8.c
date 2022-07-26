@@ -36,6 +36,7 @@ int main(int argc, char **argv)
   PetscInt       dim,c,cStart,cEnd;
   PetscBool      view_coord = PETSC_FALSE, tensor = PETSC_TRUE, project = PETSC_FALSE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Tensor closure restrictions", "DMPLEX");
   PetscCall(PetscOptionsBool("-closure_tensor", "Apply DMPlexSetClosurePermutationTensor", "ex8.c", tensor, &tensor, NULL));

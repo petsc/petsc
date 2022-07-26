@@ -15,6 +15,7 @@ int main(int argc,char **argv)
   MatStencil      idx[2],idy[2];
   PetscScalar     *values;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));

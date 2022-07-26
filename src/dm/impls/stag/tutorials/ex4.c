@@ -65,6 +65,7 @@ int main(int argc,char **argv)
   DM             dm_stokes,dm_coefficients;
   PetscBool      dump_solution, build_auxiliary_operator, rediscretize, custom_pc_mat;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* Accept options for program behavior */

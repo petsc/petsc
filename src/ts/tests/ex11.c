@@ -158,6 +158,7 @@ int main(int argc,char **argv)
 {
   PetscReal      A[1],Gamma[1] = {1.0},b[1],c[1],d[1];
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   /* TaoLineSearchRegister() also has the same memory leak */
   /* TaoRegister() also has the same memory leak */

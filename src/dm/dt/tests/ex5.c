@@ -14,6 +14,7 @@ int main(int argc, char **argv)
   PetscBool      simplex = PETSC_TRUE;
   MPI_Comm       comm;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   comm = PETSC_COMM_WORLD;
   PetscOptionsBegin(comm,"","Options for subspace test","none");

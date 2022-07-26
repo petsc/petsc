@@ -48,6 +48,7 @@ int main(int argc, char **argv)
   AppCtx         user;                    /* user-defined work context */
 
   /* Initialize PETSc, TAO */
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
 
   /* Specify default dimension of the problem */

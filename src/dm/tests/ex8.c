@@ -52,6 +52,7 @@ int main(int argc, char **argv)
   DM             dm;
   Vec            v;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   PetscCall(DMShellCreate(PETSC_COMM_WORLD,&dm));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm,"DMSetUpGLVisViewer_C",DMSetUpGLVisViewer_Shell));

@@ -8,6 +8,7 @@ int main(int argc,char **args)
   PetscHeap      h;
   PetscInt       id,val,cnt,*values;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscHeapCreate(9,&h));
   PetscCall(PetscHeapAdd(h,0,100));

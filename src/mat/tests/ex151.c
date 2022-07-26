@@ -22,6 +22,7 @@ int main(int argc,char **argv)
   PetscViewer    viewer;
   PetscBool      view_sparse;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   /* ------- Assemble matrix, --------- */
   PetscCall(MatCreate(PETSC_COMM_WORLD,&A));

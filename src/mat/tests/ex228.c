@@ -22,6 +22,7 @@ int main(int argc,char **args)
   PetscInt       n=10,N=1;  /* FFT dimension params */
   PetscInt       DIM,dim[5];/* FFT params */
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 

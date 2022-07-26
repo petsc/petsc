@@ -19,6 +19,7 @@ int main(int argc, char **argv)
   char            **testClassesStrArr;
   FILE            *infoFile;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv,(char *) 0, help));
 
   /*

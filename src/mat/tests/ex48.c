@@ -15,6 +15,7 @@ int main(int argc,char **args)
   PetscBool      flg;
   MatFactorInfo  info;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   /* Test MatSetValues() and MatGetValues() */
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-mat_block_size",&bs,NULL));

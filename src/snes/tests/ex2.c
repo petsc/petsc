@@ -202,6 +202,7 @@ int main(int argc, char **argv)
   PetscMPIInt         rank, size;
   PetscViewer         selfviewer;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &ctx));
   PetscCall(CreateMesh(PETSC_COMM_WORLD, &ctx, &dm));

@@ -10,6 +10,7 @@ int main(int argc,char **argv)
   PetscInt               output[2],inglobals[13],outlocals[13];
   ISLocalToGlobalMapping mapping;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /*

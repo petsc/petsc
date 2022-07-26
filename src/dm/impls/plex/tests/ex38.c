@@ -20,6 +20,7 @@ int main(int argc,char **argv)
   PetscBool tensorCoords = PETSC_TRUE;
 
   /* Initialize PETSc */
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-tensor_coords", &tensorCoords, NULL));
   PetscCall(DMCreate(PETSC_COMM_WORLD, &dm));

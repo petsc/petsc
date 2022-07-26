@@ -22,6 +22,7 @@ int main(int argc,char **argv)
   PetscBool      view_final;
   Ctx            ctx;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   ctx.n = 3;
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&ctx.n,NULL));

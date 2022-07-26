@@ -34,6 +34,7 @@ int main(int argc,char **argv)
   Vec            x,b,r;
   Mat            A;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));

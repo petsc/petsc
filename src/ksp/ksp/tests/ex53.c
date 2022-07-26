@@ -15,7 +15,8 @@ int main(int argc, char *argv[])
    PetscInt       method=2,mat_size=40,block_size=2,*A_indices=NULL,*B_indices=NULL,A_size=0,B_size=0;
    IS             A_IS, B_IS;
 
-   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
+   PetscFunctionBeginUser;
+  PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
    PetscCallMPI(MPI_Comm_rank(MPI_COMM_WORLD,&rank));
 
    PetscCall(PetscOptionsGetInt(PETSC_NULL,PETSC_NULL,"-mat_size",&mat_size,PETSC_NULL));

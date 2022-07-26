@@ -58,6 +58,7 @@ int main(int argc, char **argv)
 {
   DM             dm;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(CreateMesh(PETSC_COMM_WORLD, &dm));
   PetscCall(TestLocation(dm));

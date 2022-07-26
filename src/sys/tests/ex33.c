@@ -37,6 +37,7 @@ PetscErrorCode baru()
 
 int main(int argc,char **argv)
 {
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   for (PetscInt i = 0; i < PETSCSTACKSIZE+1; i++) PetscCall(correct());
   for (PetscInt i = 0; i < PETSCSTACKSIZE+1; i++) PetscCall(foo());

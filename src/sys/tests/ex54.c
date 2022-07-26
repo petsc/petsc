@@ -8,6 +8,7 @@ int main(int argc,char **argv)
 {
   /* this is listed first so that it gets into the database before the errors are created */
   PetscCall(PetscOptionsSetValue(NULL,"-error_output_stdout",NULL));
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,"ex54options",help));
   PetscCall(PetscFinalize());
   return 0;

@@ -659,6 +659,7 @@ int main(int argc, char **argv)
 #if defined(PETSC_HAVE_THREADSAFETY)
   double         starttime, endtime;
 #endif
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   if (rank) { /* turn off output stuff for duplicate runs */

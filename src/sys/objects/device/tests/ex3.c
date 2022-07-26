@@ -49,6 +49,7 @@ int main(int argc, char *argv[])
 {
   PetscDeviceContext dctx;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
 
   /* basic creation and destruction */

@@ -1373,6 +1373,7 @@ int main(int argc, char **argv)
   char              physname[256]  = "advect";
   VecTagger         refineTag = NULL, coarsenTag = NULL;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char*) 0, help));
   comm = PETSC_COMM_WORLD;
 

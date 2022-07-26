@@ -45,6 +45,7 @@ int main(int argc,char **args)
   User              user;
   Vec               base;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscNew(&user));
   PetscCall(MatCreateSeqAIJ(PETSC_COMM_WORLD,2,2,2,NULL,&user->B));

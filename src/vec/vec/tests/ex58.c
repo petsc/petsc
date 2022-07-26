@@ -10,6 +10,7 @@ int main(int argc,char **argv)
   PetscInt    n        = 5;
   PetscScalar xHost[5] = {0.,1.,2.,3.,4.};
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char*)0, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 

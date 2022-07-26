@@ -104,6 +104,7 @@ int main(int argc, char **argv)
   PetscBool      flg, testall = PETSC_FALSE;
   int            i, i0, imax;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-test_all",&testall,NULL));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-prob_id",&prob_id,&flg));

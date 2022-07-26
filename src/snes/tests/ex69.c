@@ -50,6 +50,7 @@ int main(int argc,char **argv)
   KSP            ksp;
   PetscBool      errorinmatmult = PETSC_FALSE,errorinpcapply = PETSC_FALSE,errorinpcsetup = PETSC_FALSE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-error_in_matmult",&errorinmatmult,NULL));
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-error_in_pcapply",&errorinpcapply,NULL));

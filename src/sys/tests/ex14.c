@@ -9,6 +9,7 @@ int main(int argc,char **argv)
   PetscScalar a,array[10];
   PetscReal   rarray[10];
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscOptionsGetScalar(NULL,NULL,"-a",&a,NULL));
   PetscCall(PetscPrintf(PETSC_COMM_SELF,"Scalar a = %g + %gi\n",(double)PetscRealPart(a),(double)PetscImaginaryPart(a)));

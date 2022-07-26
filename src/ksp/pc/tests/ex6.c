@@ -28,6 +28,7 @@ int main(int argc,char **args)
   IS             *is1,*is2,*islocal1,*islocal2;
   PetscBool      flg;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
   N    = (m+1)*(m+1); /* dimension of matrix */

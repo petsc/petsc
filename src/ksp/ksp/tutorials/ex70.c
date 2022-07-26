@@ -1286,6 +1286,7 @@ int main(int argc,char **args)
   PetscInt       mx,my;
   PetscBool      set = PETSC_FALSE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   mx = my = 10;
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-mx",&mx,NULL));

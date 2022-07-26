@@ -21,6 +21,7 @@ int main(int argc,char **args)
 #endif
   PetscEventPerfInfo info1,info2;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,NULL,help));
   PetscCall(PetscLogDefaultBegin());
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));

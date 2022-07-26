@@ -11,6 +11,7 @@ int main(int argc, char** argv)
   MPI_Comm  comm        = PETSC_COMM_SELF;
   PetscReal nrm         = 1;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   PetscCall(MatCreateDenseCUDA(comm,global_size,global_size,global_size,global_size,NULL,&cuda_matrix));
 

@@ -85,6 +85,7 @@ int main(int argc,char **argv)
   PetscScalar    v, alpha;
   PetscReal      normf,normi,norm1;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));

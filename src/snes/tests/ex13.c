@@ -149,6 +149,7 @@ int main(int argc, char **argv)
   PetscLogDouble time;
   Mat            Amat;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
   /* system */

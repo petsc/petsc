@@ -19,6 +19,7 @@ int main(int argc,char ** argv)
   PetscInt          Ne,Ni;
   PetscInt          nodeOffset,k = 2,nedge;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,NULL));
   PetscCall(PetscOptionsSetValue(NULL,"-petscpartitioner_use_vertex_weights","No"));
   comm = PETSC_COMM_WORLD;

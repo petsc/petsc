@@ -31,6 +31,7 @@ int main(int argc,char *argv[])
   IS                     is0,is1;
   PetscBool              diag,blocked;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,0,help));
   comm = PETSC_COMM_WORLD;
 

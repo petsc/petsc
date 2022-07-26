@@ -2220,6 +2220,7 @@ int main(int argc, char **argv)
   PetscReal      t;
   PetscInt       dim, Nc[3];
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &ctx));
   PetscCall(PetscBagCreate(PETSC_COMM_SELF, sizeof(Parameter), &ctx.bag));

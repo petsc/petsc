@@ -65,6 +65,7 @@ int main(int argc,char **argv)
   PetscBool      pinPressure;
 
   /* Initialize PETSc and process command line arguments */
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   pinPressure = PETSC_TRUE;
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-pinpressure",&pinPressure,NULL));

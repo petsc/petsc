@@ -12,6 +12,7 @@ int main(int argc,char **args)
   IS             isrow;
   PetscBool      detect_bug = PETSC_FALSE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsHasName(NULL,NULL,"-detect_bug",&detect_bug));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));

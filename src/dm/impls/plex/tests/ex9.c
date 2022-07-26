@@ -406,6 +406,7 @@ int main(int argc, char **argv)
   DM             dm;
   AppCtx         user;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   PetscCall(ProcessOptions(&user));
   PetscCall(PetscLogDefaultBegin());

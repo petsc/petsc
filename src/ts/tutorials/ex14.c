@@ -1561,6 +1561,7 @@ int main(int argc,char *argv[])
   PetscInt       i,steps;
   PetscReal      ftime;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,0,help));
   comm = PETSC_COMM_WORLD;
 

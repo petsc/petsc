@@ -8,6 +8,7 @@ int main(int argc,char **argv)
 {
   PetscDraw draw;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
 
   PetscCall(PetscDrawCreate(PETSC_COMM_SELF,0,"Title",0,0,256,256,&draw));

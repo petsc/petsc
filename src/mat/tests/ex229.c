@@ -34,6 +34,7 @@ int main(int argc,char **args)
   Vec            base;
   PetscInt       m = 3 ,n = 2;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));

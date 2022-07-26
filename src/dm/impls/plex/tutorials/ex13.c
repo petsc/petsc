@@ -11,6 +11,7 @@ int main(int argc, char **argv)
   DMBoundaryType periodic[3] = {DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE};
   DMPlexTPSType  tps_type = DMPLEX_TPS_SCHWARZ_P;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Schwarz P Example", NULL);
   PetscCall(PetscOptionsIntArray("-extent", "Number of replicas for each of three dimensions", NULL, extent, (three=3, &three), NULL));

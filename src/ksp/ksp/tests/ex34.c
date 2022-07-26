@@ -13,6 +13,7 @@ int main(int argc,char **args)
   Vec            x,y;
   char           mtype[256];
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));

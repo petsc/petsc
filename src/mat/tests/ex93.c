@@ -16,6 +16,7 @@ int main(int argc,char **argv)
   PetscBool      test_hypre=PETSC_FALSE;
 #endif
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 #if defined(PETSC_HAVE_HYPRE)
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-test_hypre",&test_hypre,NULL));

@@ -96,6 +96,7 @@ int main(int argc,char **argv)
 {
   PetscInt       mx,my,mz;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,0,help));
   mx   = 2;
   my   = 2;

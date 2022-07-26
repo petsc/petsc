@@ -63,6 +63,7 @@ int main(int argc,char *argv[])
   PetscInt       timestep;
 
   /* Initialize PETSc */
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,0,help));
 
   /* Populate application context */

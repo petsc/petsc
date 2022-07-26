@@ -11,6 +11,7 @@ int main(int argc, char **argv)
   DM             K;
   PetscDualSpace dsp;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   dim = 2;
   tensorCell = PETSC_FALSE;

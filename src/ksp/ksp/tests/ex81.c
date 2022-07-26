@@ -8,6 +8,7 @@ int main(int argc,char **args)
   PC  pc;
   Mat A,B,C;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(MatCreateConstantDiagonal(PETSC_COMM_WORLD,2,2,PETSC_DECIDE,PETSC_DECIDE,1.0,&A));
   PetscCall(MatConvert(A,MATAIJ,MAT_INPLACE_MATRIX,&A));

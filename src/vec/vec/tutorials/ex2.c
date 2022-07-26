@@ -17,6 +17,7 @@ int main(int argc,char **argv)
   PetscScalar    one = 1.0;
   Vec            x;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 

@@ -27,6 +27,7 @@ int main(int argc, char *argv[])
   PetscReal       tspan[8] = {16.0, 16.1, 16.2, 16.3, 16.4, 16.5, 16.6, 16.7};
   const PetscReal *tspan2;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   PetscCall(TSCreate(PETSC_COMM_SELF,&ts));
   PetscCall(TSSetType(ts,TSRK));

@@ -11,6 +11,7 @@ int main(int argc, char **argv)
   PetscViewer    viewer          = NULL;
   PetscBool      conv = PETSC_FALSE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   PetscCall(DMCreate(PETSC_COMM_WORLD, &dm));
   PetscCall(PetscStrncpy(typeString,DMFOREST,256));

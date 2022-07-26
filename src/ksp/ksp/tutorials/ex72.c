@@ -48,6 +48,7 @@ int main(int argc,char **args)
   char           initialguessfilename[PETSC_MAX_PATH_LEN];
   char           mtype[PETSC_MAX_PATH_LEN];
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-table",&table,NULL));

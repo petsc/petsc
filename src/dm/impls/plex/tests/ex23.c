@@ -304,6 +304,7 @@ int main(int argc, char **argv)
   PetscBool      simplex;
   AppCtx         user;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   PetscCall(ProcessOptions(&user));
   PetscCall(CreateMesh(PETSC_COMM_WORLD, &user, &dm));

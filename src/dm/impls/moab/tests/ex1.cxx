@@ -103,6 +103,7 @@ int main(int argc, char **argv)
   moab::Interface*  mbImpl=NULL;
   moab::Tag         datatag=NULL;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
 

@@ -1331,6 +1331,7 @@ int main(int argc,char *argv[])
   PetscBool         view_final = PETSC_FALSE;
   PetscReal         ptime;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,0,help));
   comm = PETSC_COMM_WORLD;
   PetscCall(PetscMemzero(&ctx,sizeof(ctx)));

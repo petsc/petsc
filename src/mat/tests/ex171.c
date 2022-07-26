@@ -12,6 +12,7 @@ int main(int argc,char **args)
   PetscReal      norm;
   PetscBool      flg;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   /* Determine file from which we read the matrix A */
   PetscCall(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));

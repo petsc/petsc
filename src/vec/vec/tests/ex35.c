@@ -9,6 +9,7 @@ int main(int argc,char **argv)
   Vec            x;
   PetscScalar    ****xx;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(VecCreateSeq(PETSC_COMM_WORLD,m*n*p*q,&x));
   PetscCall(VecGetArray4d(x,m,n,p,q,0,0,0,0,&xx));

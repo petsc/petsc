@@ -6,6 +6,7 @@ static char help[] = "Tests deletion of mixed case options";
 int main(int argc,char **argv)
 {
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   PetscCall(PetscOptionsSetValue(NULL,"-abc",NULL));
   PetscCall(PetscOptionsSetValue(NULL,"-FOO",NULL));

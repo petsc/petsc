@@ -29,6 +29,7 @@ int main(int argc,char **argv)
   PetscScalar    mean;                    /* used to test mean of parent vector elements */
   PetscBool      usehdf5 = PETSC_FALSE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char*) 0, help));
 
   /* parse input options to determine I/O format */

@@ -155,6 +155,7 @@ int main(int argc, char *argv[])
   PetscBool      plex = PETSC_FALSE;
   PetscInt       cells[3] = {2,2,2};
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,0,help));
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-ho",&ho,NULL));
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-plex",&plex,NULL));

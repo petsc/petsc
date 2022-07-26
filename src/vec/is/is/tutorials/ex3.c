@@ -11,6 +11,7 @@ int main(int argc,char **argv)
   IS             set;
   PetscBool      isblock;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /*

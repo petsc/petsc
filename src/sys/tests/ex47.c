@@ -8,6 +8,7 @@ int main(int argc,char **argv)
   char      filename[PETSC_MAX_PATH_LEN];
   PetscBool flg;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
 
   PetscCall(PetscOptionsGetString(NULL,NULL,"-f",filename,sizeof(filename),&flg));

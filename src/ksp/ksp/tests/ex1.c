@@ -27,6 +27,7 @@ int main(int argc,char **args)
   PetscReal      norm;
   PetscBool      flg=PETSC_FALSE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
 
   /* create stiffness matrix */

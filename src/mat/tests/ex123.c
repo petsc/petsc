@@ -26,6 +26,7 @@ int main(int argc,char **args)
   PetscBool              neg = PETSC_FALSE;
   PetscBool              ismatis, ismpiaij;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-neg",&neg,NULL));
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-loc",&loc,NULL));

@@ -171,6 +171,7 @@ int main(int argc,char **argv)
   MatFDColoring  matfdcoloring = 0;
   PetscBool      monitor_off = PETSC_FALSE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* Inputs */

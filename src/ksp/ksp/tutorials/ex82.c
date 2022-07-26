@@ -37,6 +37,7 @@ int main(int argc,char **argv)
   PetscBool      flg,sym = PETSC_FALSE;
   PetscRandom    rdm;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)NULL,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-m_local",&m,NULL));
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-symmetric",&sym,NULL));

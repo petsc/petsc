@@ -23,6 +23,7 @@ int main(int argc,char **argv)
   PetscBool          flg;
   PetscViewer        fd;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,0,help));
   /* Load the data from a file */
   PetscCall(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));

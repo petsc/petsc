@@ -7,6 +7,7 @@ int main(int argc,char **argv)
 {
   PetscBool      flg = PETSC_TRUE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   if (PetscLikely(flg)) {
     /* do something */

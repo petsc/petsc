@@ -46,6 +46,7 @@ int main(int argc,char **argv)
   PetscInt       M = 10;
   MatNullSpace   constants,nconstants;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-symmetric",&symmetric,NULL));

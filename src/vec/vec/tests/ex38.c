@@ -13,6 +13,7 @@ int main(int argc, char *argv[])
   IS             is0,is1,is2;
   PetscBool      iscuda;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,0,help));
   comm   = PETSC_COMM_WORLD;
   viewer = PETSC_VIEWER_STDOUT_WORLD;

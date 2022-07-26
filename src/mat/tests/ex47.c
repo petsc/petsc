@@ -19,6 +19,7 @@ int main(int argc,char **args)
   PetscReal         norm1,norm2,rnorm;
   PetscRandom       r;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),NULL));
 

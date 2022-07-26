@@ -962,6 +962,7 @@ int main(int argc,char **argv)
 {
   PetscInt       test_id = 0;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-tid",&test_id,NULL));
   switch (test_id) {

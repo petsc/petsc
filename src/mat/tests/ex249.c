@@ -14,6 +14,7 @@ int main(int argc,char **args)
   char            matfile[PETSC_MAX_PATH_LEN],rowfile[PETSC_MAX_PATH_LEN],colfile[PETSC_MAX_PATH_LEN];
   char            rankstr[16]={0};
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 

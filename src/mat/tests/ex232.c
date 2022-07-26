@@ -11,6 +11,7 @@ int main(int argc, char **args)
   Mat            ssbaij;
   Mat            msbaij;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,(char*)0));
 
   PetscCall(MatCreate(PETSC_COMM_SELF, &ssbaij));

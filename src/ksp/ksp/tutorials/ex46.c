@@ -30,6 +30,7 @@ int main(int argc,char **argv)
 #endif
   DMDALocalInfo  info;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   /*
      Create distributed array to handle parallel distribution.

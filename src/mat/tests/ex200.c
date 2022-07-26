@@ -6,7 +6,8 @@ int main(int argc,char **argv)
    Mat            A, B;
    const char     *pfx;
 
-   PetscCall(PetscInitialize(&argc, &argv, NULL, NULL));
+   PetscFunctionBeginUser;
+  PetscCall(PetscInitialize(&argc, &argv, NULL, NULL));
    PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
    PetscCall(MatSetSizes(A, 1, 1, PETSC_DECIDE, PETSC_DECIDE));
    PetscCall(MatSetUp(A));

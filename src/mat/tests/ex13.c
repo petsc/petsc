@@ -10,6 +10,7 @@ int main(int argc,char **args)
   PetscScalar    v;
   IS             perm,iperm;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF,m*n,m*n,5,NULL,&C));
   /* create the matrix for the five point stencil, YET AGAIN*/

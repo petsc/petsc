@@ -8,6 +8,7 @@ int main(int argc,char **argv)
   PetscInt       a = 2009,b = 5612,result,tresult;
   PetscInt64     r64;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscIntMultError(a,b,&result));
   a       = PETSC_MPI_INT_MAX-22,b = PETSC_MPI_INT_MAX/22;

@@ -41,6 +41,7 @@ int main(int argc,char **args)
   MatType        mattype;
   Mat            Cdensetest,Pdense,Cdense,Adense;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));

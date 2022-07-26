@@ -21,6 +21,7 @@ int main(int argc, char * argv[]) {
   ScatterMode    mode;
   InsertMode     addv;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,&flg));
   if (!flg) m = 100;

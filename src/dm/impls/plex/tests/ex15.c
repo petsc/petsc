@@ -20,6 +20,7 @@ int main(int argc, char **argv)
   PetscReal      norm;
   PetscInt       dim;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *) 0, help));
   comm = PETSC_COMM_WORLD;
 

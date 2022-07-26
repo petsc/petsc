@@ -12,6 +12,7 @@ int main(int argc,char **argv)
   PetscInt       foo_max_steps  = 0, bar_max_it = 0;
   PetscReal      foo_max_time = 0.;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   PetscCall(PetscOptionsGetBool(NULL,0,"-ts_view",&ts_view,NULL));
   PetscCall(PetscOptionsGetReal(NULL,0,"-ts_max_time",&ts_max_time,NULL));

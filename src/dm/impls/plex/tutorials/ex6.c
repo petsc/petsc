@@ -330,6 +330,7 @@ int main(int argc, char **argv)
   AppCtx         user;
   PetscInt       dim, size = 0, f;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
   PetscCall(DMCreate(PETSC_COMM_WORLD, &dm));

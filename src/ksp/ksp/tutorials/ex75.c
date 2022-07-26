@@ -15,6 +15,7 @@ int main(int argc,char **args)
   char           dir[PETSC_MAX_PATH_LEN],name[256];
   PetscBool      flg,reset = PETSC_FALSE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,NULL,help));
   PetscCall(PetscStrcpy(dir,"."));
   PetscCall(PetscOptionsGetString(NULL,NULL,"-load_dir",dir,sizeof(dir),NULL));

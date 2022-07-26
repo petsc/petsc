@@ -10,6 +10,7 @@ int main(int argc,char **argv)
   PetscInt               indices2[] = {0,1,2,3,4,5,-1,-1,-1,-1,-1,-1,6,7,8,9,10,11};
   ISLocalToGlobalMapping map;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(ISLocalToGlobalMappingCreate(PETSC_COMM_WORLD,1,12,indices,PETSC_COPY_VALUES,&map));
   PetscCall(ISLocalToGlobalMappingView(map,NULL));

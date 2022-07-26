@@ -119,6 +119,7 @@ int main(int argc,char **argv)
   PetscReal         ftime;
   TSConvergedReason reason;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(TSCreate(PETSC_COMM_WORLD,&ts));
   PetscCall(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,4,4,PETSC_DECIDE,PETSC_DECIDE,4,1,0,0,&da));

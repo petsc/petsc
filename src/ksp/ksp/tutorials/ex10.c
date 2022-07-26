@@ -141,6 +141,7 @@ int main(int argc,char **args)
   PetscBool         flg,preload=PETSC_FALSE,trans=PETSC_FALSE,permute=PETSC_FALSE;
   IS                rowperm=NULL;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
 
   PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Preloading example options","");

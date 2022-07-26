@@ -16,6 +16,7 @@ int main(int argc,char **args)
   PetscReal      norm,fill;
   MatFactorInfo  luinfo;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
 
   PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Mat test ex7 options","Mat");

@@ -11,6 +11,7 @@ int main(int argc, char **argv)
   DMStagStencil  row,col;
   PetscScalar    value;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   dim = 1;
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL));

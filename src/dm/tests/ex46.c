@@ -13,6 +13,7 @@ int main(int argc,char **argv) {
   DMDAStencilType  stencil_type = DMDA_STENCIL_BOX;
   PetscBool        flg = PETSC_FALSE,distribute = PETSC_FALSE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* Read options */

@@ -213,6 +213,7 @@ int main(int argc,char **args)
   PetscScalar    *aX,*aB,*aBt;
   PetscReal      err;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,NULL,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));

@@ -468,6 +468,7 @@ int main(int argc, char **argv)
   PetscLogStage    stage;
 #endif
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   // process args
   PetscOptionsBegin(PETSC_COMM_SELF, "", "Collision Options", "DMPLEX");

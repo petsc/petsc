@@ -802,6 +802,7 @@ int main(int argc, char **argv)
   DM             dm;
   AppCtx         user;                 /* user-defined work context */
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
   PetscCall(CreateMesh(PETSC_COMM_WORLD, &user, &dm));

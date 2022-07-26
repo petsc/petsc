@@ -9,6 +9,7 @@ int main(int argc, char **argv)
   IS point_numbering;
   PetscSF point_sf;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   PetscCall(DMCreate(PETSC_COMM_WORLD, &dm));
   PetscCall(DMSetType(dm, DMPLEX));

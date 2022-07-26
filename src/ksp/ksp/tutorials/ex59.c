@@ -1001,6 +1001,7 @@ int main(int argc,char **args)
   PetscBool          testfetidp = PETSC_TRUE;
 
   /* Init PETSc */
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   /* Initialize DomainData */
   PetscCall(InitializeDomainData(&dd));

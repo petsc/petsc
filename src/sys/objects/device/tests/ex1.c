@@ -9,6 +9,7 @@ int main(int argc, char *argv[])
   PetscDevice    device = NULL;
   PetscDevice    devices[n];
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
 
   /* normal create and destroy */

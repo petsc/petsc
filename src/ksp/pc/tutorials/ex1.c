@@ -28,6 +28,7 @@ int main(int argc,char **argv)
   KSPConvergedReason reason;
   PetscInt           i,j,its;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,0,help));
   comm = MPI_COMM_SELF;
 

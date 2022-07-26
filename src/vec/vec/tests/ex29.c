@@ -12,6 +12,7 @@ int main(int argc,char **argv)
   PetscBool      inv = PETSC_FALSE, subset = PETSC_FALSE,flg;
   Vec            x,y;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   bs   = size;

@@ -9,6 +9,7 @@ int main(int argc, char **argv)
   DMLabel        adaptLabel;
   PetscInt       cStart, cEnd;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(DMCreate(PETSC_COMM_WORLD, &dm));
   PetscCall(DMSetType(dm, DMPLEX));

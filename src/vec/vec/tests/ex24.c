@@ -14,6 +14,7 @@ int main(int argc,char **argv)
   VecScatter     ctx = 0;
   PetscViewer    sviewer;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));

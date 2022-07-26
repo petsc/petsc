@@ -22,6 +22,7 @@ int main(int argc,char **argv)
   PetscInt        dof0,dof1,dof2,dof3;
   PetscScalar     ****arrSol,****arrRHS;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   /* Note: these defaults are chosen to suit the problem. We allow adjusting
      them to check that things still work when you add unused extra dof */

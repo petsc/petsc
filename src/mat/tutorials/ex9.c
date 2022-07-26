@@ -22,6 +22,7 @@ int main(int argc,char **args)
   MatCompositeType type;
   PetscScalar      scalings[5]={2,3,4,5,6};
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-nmat",&nmat,NULL));

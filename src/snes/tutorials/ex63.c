@@ -357,6 +357,7 @@ int main(int argc, char **argv)
   const PetscInt particlesPerCell = 1;
   PetscInt       cStart, cEnd, c, d, bs;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
   PetscCall(SNESCreate(PETSC_COMM_WORLD, &snes));

@@ -14,6 +14,7 @@ int main(int argc, char **argv)
   PetscLogDouble t_has = 0;
   PetscLogDouble t_del = 0;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
   PetscCall(PetscHSetIJCreate(&table));

@@ -22,6 +22,7 @@ int main(int argc,char **argv)
     PetscCall() on the error code and just return it directly.
   */
   PetscCall(PetscOptionsSetValue(NULL,"-no_signal_handler","true"));
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));

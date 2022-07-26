@@ -45,6 +45,7 @@ int main(int argc,char **argv)
   VecScatter       scatter1,scatter2;
   PetscViewer      subviewer;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* Create distributed array and get vectors */

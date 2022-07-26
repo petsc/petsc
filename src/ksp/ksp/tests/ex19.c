@@ -59,6 +59,7 @@ int main(int argc,char **argv)
   PC             pc;
   PetscScalar    one = 1.0;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   user.ratio     = 2;
   user.coarse.mx = 5; user.coarse.my = 5;

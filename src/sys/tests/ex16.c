@@ -10,6 +10,7 @@ int main(int argc,char **argv)
   char           buffer[256],*output,user[256];
   PetscBool      userhappy = PETSC_FALSE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 

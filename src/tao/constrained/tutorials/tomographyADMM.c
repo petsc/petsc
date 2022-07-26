@@ -304,6 +304,7 @@ int main(int argc,char **argv)
   PetscViewer    fd;
   char           resultFile[] = "tomographyResult_x";
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscNew(&user));
   PetscCall(InitializeUserData(user));

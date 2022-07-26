@@ -360,6 +360,7 @@ int main(int argc, char **argv)
   TS             ts;
   Vec            u, r;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &ctx));
   PetscCall(CreateMesh(PETSC_COMM_WORLD, &dm, &ctx));

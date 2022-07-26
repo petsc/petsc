@@ -252,6 +252,7 @@ PetscErrorCode test_axpy_dot_max(void)
 int main(int argc, char **args)
 {
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args,(char*)0, help));
   PetscCall(test_view());
   PetscCall(test_axpy_dot_max());

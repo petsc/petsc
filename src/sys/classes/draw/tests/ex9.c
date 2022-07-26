@@ -18,6 +18,7 @@ int main(int argc,char **argv)
 
   xlabel = "X-axis Label"; toplabel = "Top Label"; ylabel = "Y-axis Label";
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-width",&w,NULL));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-height",&h,NULL));

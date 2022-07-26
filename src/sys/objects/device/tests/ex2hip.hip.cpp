@@ -16,6 +16,7 @@ int main(int argc,char **argv)
   PetscLogDouble               tstart,tend,time;
   hipPointerAttribute_t        attr;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   PetscCallHIP(hipStreamSynchronize(NULL)); /* Initialize HIP runtime to get more accurate timing below */

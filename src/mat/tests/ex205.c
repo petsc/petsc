@@ -53,6 +53,7 @@ int main(int argc,char **args)
   Vec               X,Y;
   User              user;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
 
   PetscCall(PetscNew(&user));

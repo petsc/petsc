@@ -12,6 +12,7 @@ int main(int argc,char **argv)
   PetscInt              n_loc[4];
   DMStagStencilLocation loc[4][3];
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   dim = 2;
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL));

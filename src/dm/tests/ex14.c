@@ -17,6 +17,7 @@ int main(int argc,char **argv)
   PetscScalar    value;
   PetscViewer    bviewer;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));

@@ -11,6 +11,7 @@ int main(int argc,char **argv)
   PetscReal      fill = 1.0;
   PetscInt       nza,am,an;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));

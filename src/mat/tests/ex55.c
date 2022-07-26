@@ -15,6 +15,7 @@ int main(int argc,char **args)
   PetscBool      equal,flg_loadmat,flg,issymmetric;
   PetscScalar    value[3];
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-verbose",&verbose,NULL));
   PetscCall(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg_loadmat));

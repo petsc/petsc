@@ -1988,6 +1988,7 @@ int main(int argc,char **args)
 {
   PetscInt       mx,my,mz;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   mx   = my = mz = 10;
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-mx",&mx,NULL));

@@ -20,6 +20,7 @@ int main(int argc,char **args)
   PetscViewer    viewer;
   PetscMPIInt    rank;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Compute the matrices that define the eigensystem, Ax=kBx

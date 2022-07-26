@@ -65,6 +65,7 @@ int main(int argc,char **args)
   PetscDrawLG    lg;
   PetscDrawAxis  axis;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,NULL,NULL));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
 

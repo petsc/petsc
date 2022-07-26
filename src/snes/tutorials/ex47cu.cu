@@ -26,6 +26,7 @@ int main(int argc,char **argv)
   char           *tmp,typeName[256];
   PetscBool      flg;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscOptionsGetString(NULL,NULL,"-dm_vec_type",typeName,sizeof(typeName),&flg));
   if (flg) {

@@ -23,6 +23,7 @@ int main(int argc,char **args)
   Vec            x,y,z;
   PetscBool      view=PETSC_FALSE,use_interface=PETSC_TRUE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "FFTW Options", "ex143");
   PetscCall(PetscOptionsBool("-vec_view draw", "View the vectors", "ex143", view, &view, NULL));

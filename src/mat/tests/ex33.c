@@ -87,6 +87,7 @@ int main(int argc, char **args)
   Mat               A,X,Y;
   PetscBool         flg = PETSC_FALSE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-test_mpiderivedtype",&flg,NULL));
   if (flg) {

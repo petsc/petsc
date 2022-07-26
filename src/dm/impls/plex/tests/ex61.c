@@ -26,6 +26,7 @@ int main(int argc, char **argv)
   PetscFE  fe;
   Vec      localVec;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(DMPlexCreateBoxMesh(PETSC_COMM_WORLD, 2, PETSC_FALSE, NULL, NULL, NULL, NULL, PETSC_TRUE, &dm));
   PetscCall(DMGetLabel(dm, "Face Sets", &label));

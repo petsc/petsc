@@ -10,6 +10,7 @@ int main(int argc,char **args)
   PetscScalar    v;
   IS             isrow;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,NULL,&A));
   for (i=0; i<m; i++) {

@@ -16,6 +16,7 @@ int main(int argc,char **argv)
   DM             da;
   Vec            x;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
   PetscCall(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,3,2,1,0,&da));

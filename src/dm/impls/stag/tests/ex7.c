@@ -11,6 +11,7 @@ int main(int argc,char **argv)
   DMBoundaryType  boundaryTypex,boundaryTypey,boundaryTypez;
   PetscMPIInt     rank;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   dof0 = 1;

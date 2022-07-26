@@ -38,6 +38,7 @@ int main(int argc,char *argv[])
   MPI_Comm       comm;
   PetscInt       n = 6;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   comm = PETSC_COMM_WORLD;
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));

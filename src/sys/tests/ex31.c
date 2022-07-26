@@ -20,6 +20,7 @@ int main(int argc,char **argv)
 {
   char           fpath[PETSC_MAX_PATH_LEN];
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscGetFullPath("~/somefile",fpath,sizeof(fpath)));
   PetscCall(path_to_unix(fpath));

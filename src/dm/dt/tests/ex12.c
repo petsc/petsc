@@ -288,6 +288,7 @@ int main(int argc,char **argv)
 {
   PetscWeakForm  wf;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscWeakFormCreate(PETSC_COMM_SELF, &wf));
   PetscCall(TestSetIndex(wf));

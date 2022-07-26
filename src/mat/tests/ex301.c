@@ -11,6 +11,7 @@ int main(int argc,char **args)
   PetscReal      norm;
   Vec            x,y;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
 

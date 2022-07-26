@@ -173,6 +173,7 @@ int main(int argc, char **argv)
   Vec            u;    /* Solutions */
   AppCtx         user; /* User-defined work context */
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL,help));
   /* Primal system */
   PetscCall(SNESCreate(PETSC_COMM_WORLD, &snes));

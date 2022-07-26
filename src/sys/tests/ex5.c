@@ -9,6 +9,7 @@ int main(int argc,char **argv)
   char           **names,**values;
   PetscBool      set;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-get_an_integer",&M,&set));

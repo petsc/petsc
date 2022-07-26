@@ -59,6 +59,7 @@ int main(int argc, char **argv)
   Mat               data_mat;
   char              mat_name[PETSC_MAX_PATH_LEN]="dmatrix";
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, NULL));
   PetscCall(PetscOptionsGetString(NULL,NULL,"-mat_name",mat_name,sizeof(mat_name),NULL));
 

@@ -244,6 +244,7 @@ int main(int argc,char **argv)
   PetscLogStage  stage;
 #endif
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-forwardonly",&forwardonly,NULL));
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-implicitform",&implicitform,NULL));

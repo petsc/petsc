@@ -125,6 +125,7 @@ int main(int argc,char **argv)
   PetscBool      terminate[2];
   TSAdapt        adapt;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 

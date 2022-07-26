@@ -8,6 +8,7 @@ int main(int argc,char **args)
   PetscViewer    viewer;
   PetscInt       i;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscViewerCreate(PETSC_COMM_WORLD, &viewer));
   PetscCall(PetscViewerSetType(viewer, PETSCVIEWERASCII));

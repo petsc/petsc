@@ -186,6 +186,7 @@ int main(int argc,char **args)
   PetscLogStage          stages[2];
 #endif
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(ProcessOptions(PETSC_COMM_WORLD,&user));
   for (i=0; i<3; i++) nodes[i] = user.cells[i] + !user.per[i];

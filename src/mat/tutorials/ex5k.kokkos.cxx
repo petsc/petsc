@@ -20,6 +20,7 @@ int main(int argc,char **argv)
   Vec                        x,y;
   PetscMPIInt                rank;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&N,NULL));

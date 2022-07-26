@@ -20,6 +20,7 @@ int main(int argc,char **args)
   MatPartitioning part;
   IS              is;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCallMPI(MPI_Comm_size(MPI_COMM_WORLD,&size));
   PetscCheck(size == 2,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This example is for exactly two processes");

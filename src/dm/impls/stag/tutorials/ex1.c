@@ -97,6 +97,7 @@ int main(int argc,char **argv)
   const PetscReal domainSize = 1.0;
 
   /* Initialize PETSc */
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* Create 1D DMStag for the solution, and set up. Note that you can supply many

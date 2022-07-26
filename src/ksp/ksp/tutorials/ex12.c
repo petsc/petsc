@@ -43,6 +43,7 @@ int main(int argc,char **args)
   PetscScalar    v,one = 1.0;
   PC             pc;      /* preconditioner context */
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));

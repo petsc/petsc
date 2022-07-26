@@ -11,6 +11,7 @@ int main(int argc,char **args)
   PetscInt       Ii,Istart,Iend,m = 11;
   PetscScalar    v;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
 

@@ -37,6 +37,7 @@ int main(int argc,char **args)
   PetscLogStage stages[3];
 #endif
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-t",&ntimes,NULL));

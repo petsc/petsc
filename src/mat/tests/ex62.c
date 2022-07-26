@@ -40,6 +40,7 @@ int main(int argc,char **args)
   char           A_mattype[256], B_mattype[256];
   PetscInt       mcheck = 10;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));

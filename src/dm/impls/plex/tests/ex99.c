@@ -97,6 +97,7 @@ int main(int argc, char **argv)
   PetscBool         set,flg;
   FILE              *fp;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   PetscCall(PetscStrncpy(geodir, "${PETSC_DIR}/share/petsc/datafiles/meshes", sizeof(geodir)));

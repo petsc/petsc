@@ -31,6 +31,7 @@ int main(int argc,char **argv)
   PetscInt       its,n = 5,i;
   PetscBool      puremf = PETSC_FALSE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   PetscCall(PetscOptionsHasName(NULL,NULL,"-variant",&user.variant));

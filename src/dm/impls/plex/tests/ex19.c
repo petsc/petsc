@@ -265,6 +265,7 @@ int main (int argc, char * argv[]) {
   Vec            metric;
   PetscInt       r;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   comm = PETSC_COMM_WORLD;
   PetscCall(ProcessOptions(comm, &user));

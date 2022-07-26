@@ -20,6 +20,7 @@ int main(int argc,char **argv)
   PetscInt       II[10] = { 1, 4, 9, 2, 3, 6, 5, 8, 0, 7 };
   PetscBool      sort,use1,use2,check = PETSC_FALSE;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCall(VecCreate(PETSC_COMM_WORLD,&W));
   PetscCall(VecSetSizes(W,1,PETSC_DECIDE));

@@ -22,6 +22,7 @@ int main(int argc,char **args)
   MatInfo           matinfo;
   PetscInt          Dnnz,Onnz;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 

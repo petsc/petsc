@@ -17,6 +17,7 @@ int main(int argc,char **args)
   KSPType        kspname;
   PCType         pcname;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
