@@ -19,10 +19,10 @@
 -   its - one less then the current GMRES restart iteration, i.e. the size of the Krylov space
 
    Options Database Keys:
-.  -ksp_gmres_modifiedgramschmidt - Activates KSPGMRESModifiedGramSchmidtOrthogonalization()
+.  -ksp_gmres_modifiedgramschmidt - Activates `KSPGMRESModifiedGramSchmidtOrthogonalization()`
 
    Notes:
-     In general this is much slower than KSPGMRESClassicalGramSchmidtOrthogonalization() but has better stability properties.
+     In general this is much slower than `KSPGMRESClassicalGramSchmidtOrthogonalization()` but has better stability properties.
 
    Level: intermediate
 
