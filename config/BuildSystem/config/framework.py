@@ -445,6 +445,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     lines = [s for s in lines if s.find('The -gpu option has no effect unless a language-specific option to enable GPU code generation is used') < 0]
     # pgi dumps filename on stderr - but returns 0 errorcode'
     lines = [s for s in lines if lines != 'conftest.c:']
+
+    lines = [s for s in lines if len(s)]
     if lines: output = '\n'.join(lines)
     else: output = ''
     log.write("Preprocess output after filtering:\n"+output+":\n")
@@ -498,6 +500,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       lines = [s for s in lines if s.find('The -gpu option has no effect unless a language-specific option to enable GPU code generation is used') < 0]
       # pgi dumps filename on stderr - but returns 0 errorcode'
       lines = [s for s in lines if lines != 'conftest.c:']
+
+      lines = [s for s in lines if len(s)]
       if lines: output = '\n'.join(lines)
       else: output = ''
       self.log.write("Compiler output after filtering:\n"+output+":\n")
@@ -558,6 +562,10 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       lines = [s for s in lines if s.find('clang-offload-bundler: error:') < 0]
       lines = [s for s in lines if s.find('Compilation from IR - skipping loading of FCL') < 0]
       lines = [s for s in lines if s.find('Build succeeded') < 0]
+
+      lines = [s for s in lines if len(s)]
+      # a line with a single : can be created on macOS when the linker jumbles the output from warning messages with was "built for newer" warnings
+      lines = [s for s in lines if s != ':']
 
       if lines: output = '\n'.join(lines)
       else: output = ''
