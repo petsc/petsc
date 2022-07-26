@@ -3179,6 +3179,7 @@ static PetscErrorCode DMPlexCreateBoundaryLabel_Private(DM dm, const char name[]
   PetscCall(DMGetLabel(dm, name, &label));
   PetscCall(DMConvert(dm, DMPLEX, &plex));
   PetscCall(DMPlexMarkBoundaryFaces(plex, 1, label));
+  PetscCall(DMPlexLabelComplete(plex, label));
   PetscCall(DMDestroy(&plex));
   PetscFunctionReturn(0);
 }
