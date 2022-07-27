@@ -490,6 +490,7 @@ typedef struct {
   PetscInt      *vertexMap;
   PetscSegBuffer segbuf;
   PetscInt       numRegions;
+  PetscInt      *regionDims;
   PetscInt      *regionTags;
   char         **regionNames;
 } GmshMesh;
@@ -515,7 +516,7 @@ static PetscErrorCode GmshMeshDestroy(GmshMesh **mesh)
   PetscCall(PetscFree((*mesh)->vertexMap));
   PetscCall(PetscSegBufferDestroy(&(*mesh)->segbuf));
   for (r = 0; r < (*mesh)->numRegions; ++r) PetscCall(PetscFree((*mesh)->regionNames[r]));
-  PetscCall(PetscFree2((*mesh)->regionTags, (*mesh)->regionNames));
+  PetscCall(PetscFree3((*mesh)->regionDims, (*mesh)->regionTags, (*mesh)->regionNames));
   PetscCall(PetscFree((*mesh)));
   PetscFunctionReturn(0);
 }
@@ -1108,7 +1109,7 @@ static PetscErrorCode GmshReadPhysicalNames(GmshFile *gmsh, GmshMesh *mesh)
   snum = sscanf(line, "%d", &region);
   mesh->numRegions = region;
   PetscCheck(snum == 1,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file");
-  PetscCall(PetscMalloc2(mesh->numRegions, &mesh->regionTags, mesh->numRegions, &mesh->regionNames));
+  PetscCall(PetscMalloc3(mesh->numRegions, &mesh->regionDims, mesh->numRegions, &mesh->regionTags, mesh->numRegions, &mesh->regionNames));
   for (region = 0; region < mesh->numRegions; ++region) {
     PetscCall(GmshReadString(gmsh, line, 2));
     snum = sscanf(line, "%d %d", &dim, &tag);
@@ -1121,6 +1122,7 @@ static PetscErrorCode GmshReadPhysicalNames(GmshFile *gmsh, GmshMesh *mesh)
     PetscCall(PetscStrrchr(line, ':', &r));
     if (p != r) q = r;
     PetscCall(PetscStrncpy(name, p+1, (size_t)(q-p-1)));
+    mesh->regionDims[region] = dim;
     mesh->regionTags[region] = tag;
     PetscCall(PetscStrallocpy(name, &mesh->regionNames[region]));
   }
