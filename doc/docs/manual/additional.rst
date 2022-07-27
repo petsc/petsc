@@ -1,3 +1,5 @@
+.. _part_additional:
+
 Additional Information
 ======================
 
