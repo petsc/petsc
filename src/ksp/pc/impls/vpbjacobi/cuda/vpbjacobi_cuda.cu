@@ -10,7 +10,7 @@ struct PC_VPBJacobi_CUDA {
 
   /* Helper arrays that are pre-computed on host and then copied to device.
     bs:     [nblocks+1], "csr" version of bsizes[], with bs[0] = 0, bs[nblocks] = n.
-    bs2:    [nblocks+1], "csr" version of squares of bsizes[]
+    bs2:    [nblocks+1], "csr" version of squares of bsizes[], with bs2[0] = 0, bs2[nblocks] = nsize.
     matIdx: [n], row i of the local matrix belongs to the matIdx_d[i] block
   */
   PetscInt   *bs_h,*bs2_h,*matIdx_h;
@@ -38,6 +38,7 @@ struct PC_VPBJacobi_CUDA {
     PetscCallCUDA(cudaMemcpy(bs2_d,bs2_h,sizeof(PetscInt)*(nblocks+1),cudaMemcpyHostToDevice));
     PetscCallCUDA(cudaMemcpy(matIdx_d,matIdx_h,sizeof(PetscInt)*n,cudaMemcpyHostToDevice));
     PetscCallCUDA(cudaMemcpy(diag_d,diag_h,sizeof(MatScalar)*nsize,cudaMemcpyHostToDevice));
+    PetscCall(PetscLogCpuToGpu(sizeof(PetscInt)*(2*nblocks+2+n) + sizeof(MatScalar)*nsize));
     PetscFunctionReturn(0);
   }
 
@@ -106,6 +107,7 @@ static PetscErrorCode PCApply_VPBJacobi_CUDA(PC pc,Vec x,Vec y)
   PetscInt          n;
 
   PetscFunctionBegin;
+  PetscCall(PetscLogGpuTimeBegin());
   if (PetscDefined(USE_DEBUG)) {
     PetscBool  isCuda;
     PetscCall(PetscObjectTypeCompareAny((PetscObject)x,&isCuda,VECSEQCUDA,VECMPICUDA,""));
@@ -123,6 +125,8 @@ static PetscErrorCode PCApply_VPBJacobi_CUDA(PC pc,Vec x,Vec y)
     PetscCall(VecCUDARestoreArrayRead(x,&xx));
     PetscCall(VecCUDARestoreArrayWrite(y,&yy));
   }
+  PetscCall(PetscLogGpuFlops(pcuda->nsize*2)); /* FMA on entries in all blocks */
+  PetscCall(PetscLogGpuTimeEnd());
   PetscFunctionReturn(0);
 }
 

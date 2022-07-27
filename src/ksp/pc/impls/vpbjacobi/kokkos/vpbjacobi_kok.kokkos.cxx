@@ -44,6 +44,7 @@ struct PC_VPBJacobi_Kokkos {
     PetscCallCXX(bs2_dual.sync_device());
     PetscCallCXX(matIdx_dual.sync_device());
     PetscCallCXX(diag_dual.sync_device());
+    PetscCall(PetscLogCpuToGpu(sizeof(PetscInt)*(2*nblocks+2+n) + sizeof(MatScalar)*nsize));
     PetscFunctionReturn(0);
   }
 
@@ -77,6 +78,7 @@ static PetscErrorCode PCApply_VPBJacobi_Kokkos(PC pc,Vec x,Vec y)
   PetscIntKokkosView         matIdx = pckok->matIdx_dual.view_device();
 
   PetscFunctionBegin;
+  PetscCall(PetscLogGpuTimeBegin());
   VecErrorIfNotKokkos(x);
   VecErrorIfNotKokkos(y);
   PetscCall(VecGetKokkosView(x,&xv));
@@ -98,6 +100,8 @@ static PetscErrorCode PCApply_VPBJacobi_Kokkos(PC pc,Vec x,Vec y)
   }));
   PetscCall(VecRestoreKokkosView(x,&xv));
   PetscCall(VecRestoreKokkosViewWrite(y,&yv));
+  PetscCall(PetscLogGpuFlops(pckok->nsize*2)); /* FMA on entries in all blocks */
+  PetscCall(PetscLogGpuTimeEnd());
   PetscFunctionReturn(0);
 }
 
