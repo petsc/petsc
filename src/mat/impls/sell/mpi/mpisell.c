@@ -311,7 +311,7 @@ PetscErrorCode MatAssemblyEnd_MPISELL(Mat mat,MatAssemblyType mode)
      no processor disassembled thus we can skip this stuff
   */
   if (!((Mat_SeqSELL*)sell->B->data)->nonew) {
-    PetscCall(MPIU_Allreduce(&mat->was_assembled,&other_disassembled,1,MPIU_BOOL,MPI_PROD,PetscObjectComm((PetscObject)mat)));
+    PetscCall(MPIU_Allreduce(&mat->was_assembled,&other_disassembled,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)mat)));
     PetscCheck(!mat->was_assembled || other_disassembled,PETSC_COMM_SELF,PETSC_ERR_SUP,"MatDisAssemble not implemented yet");
   }
   if (!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) {
