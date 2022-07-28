@@ -1,7 +1,7 @@
 .. _ch_advanced:
 
-Unimportant and Advanced Features of Matrices and Solvers
----------------------------------------------------------
+Advanced Features of Matrices and Solvers
+-----------------------------------------
 
 This chapter introduces additional features of the PETSc matrices and
 solvers. Since most PETSc users should not need to use these features,
@@ -184,72 +184,10 @@ general, the user should use the ``KSP`` solvers introduced in the next
 chapter rather than using these factorization and solve routines
 directly.
 
-Unimportant Details of KSP
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+Creating PC's Directly
+~~~~~~~~~~~~~~~~~~~~~~
 
-``PetscDrawAxisDraw()``, are usually not used directly by the
-application programmer Again, virtually all users should use ``KSP``
-through the ``KSP`` interface and, thus, will not need to know the
-details that follow.
-
-It is possible to generate a Krylov subspace context with the command
-
-.. code-block::
-
-   KSPCreate(MPI_Comm comm,KSP *kps);
-
-Before using the Krylov context, one must set the matrix-vector
-multiplication routine and the preconditioner with the commands
-
-.. code-block::
-
-   PCSetOperators(PC pc,Mat Amat,Mat Pmat);
-   KSPSetPC(KSP ksp,PC pc);
-
-In addition, the ``KSP`` solver must be initialized with
-
-.. code-block::
-
-   KSPSetUp(KSP ksp);
-
-Solving a linear system is done with the command
-
-.. code-block::
-
-   KSPSolve(KSP ksp,Vec b,Vec x);
-
-Finally, the ``KSP`` context should be destroyed with
-
-.. code-block::
-
-   KSPDestroy(KSP *ksp);
-
-It may seem strange to put the matrix in the preconditioner rather than
-directly in the ``KSP``; this decision was the result of much agonizing.
-The reason is that for SSOR with Eisenstat’s trick, and certain other
-preconditioners, the preconditioner has to change the matrix-vector
-multiply. This procedure could not be done cleanly if the matrix were
-stashed in the ``KSP`` context that ``PC`` cannot access.
-
-Any preconditioner can supply not only the preconditioner, but also a
-routine that essentially performs a complete Richardson step. The reason
-for this is mainly SOR. To use SOR in the Richardson framework, that is,
-
-.. math:: u^{n+1} = u^{n} + B(f - A u^{n}),
-
-is much more expensive than just updating the values. With this addition
-it is reasonable to state that *all* our iterative methods are obtained
-by combining a preconditioner from the ``PC`` package with a Krylov
-method from the ``KSP`` package. This strategy makes things much simpler
-conceptually, so (we hope) clean code will result. *Note*: We had this
-idea already implicitly in older versions of ``KSP``, but, for instance,
-just doing Gauss-Seidel with Richardson in old ``KSP`` was much more
-expensive than it had to be. With PETSc this should not be a problem.
-
-Unimportant Details of PC
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Most users will obtain their preconditioner contexts from the ``KSP``
+Users obtain their preconditioner contexts from the ``KSP``
 context with the command ``KSPGetPC()``. It is possible to create,
 manipulate, and destroy ``PC`` contexts directly, although this
 capability should rarely be needed. To create a ``PC`` context, one uses
