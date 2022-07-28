@@ -1,5 +1,3 @@
-static const char help[] = "1D nonequilibrium radiation diffusion with Saha ionization model.\n\n";
-
 /*
   This example implements the model described in
 
@@ -1020,7 +1018,7 @@ int main(int argc, char *argv[])
   PetscReal      ftime;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc,&argv,0,help));
+  PetscCall(PetscInitialize(&argc,&argv,0,NULL));
   PetscCall(RDCreate(PETSC_COMM_WORLD,&rd));
   PetscCall(DMCreateGlobalVector(rd->da,&X));
   PetscCall(DMSetMatType(rd->da,MATAIJ));
