@@ -9,7 +9,7 @@ Labels:
   marker: 1 strata with value/size (1 (20))
   celltype: 4 strata with value/size (0 (8), 6 (6), 3 (18), 1 (19))
   depth: 4 strata with value/size (0 (8), 1 (19), 2 (18), 3 (6))
-  boundary: 1 strata with value/size (1 (12))
+  boundary: 1 strata with value/size (1 (38))
 Local function:
 Vec Object: 1 MPI process
   type: seq
