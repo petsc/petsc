@@ -581,11 +581,8 @@ static PetscErrorCode MatGolubKahanComputeExplicitOperator(Mat A,Mat B,Mat C,Mat
   PetscCall(MatAXPY(T,-1.0,B,DIFFERENT_NONZERO_PATTERN));
   PetscCall(MatNorm(T,NORM_1,&nrmT));
   PetscCall(MatNorm(B,NORM_1,&nrmB));
-  if (nrmB > 0) {
-    if (nrmT/nrmB >= PETSC_SMALL) {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Matrix is not symmetric/hermitian, GKB is not applicable.");
-    }
-  }
+  PetscCheck(nrmB <= 0 || nrmT/nrmB < PETSC_SMALL,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Matrix is not symmetric/hermitian, GKB is not applicable.");
+
   /* Compute augmented Lagrangian matrix H = A00 + nu*A01*A01'. This corresponds to */
   /* setting N := 1/nu*I in [Ar13].                                                 */
   PetscCall(MatHermitianTranspose(B,MAT_INITIAL_MATRIX,&BT));

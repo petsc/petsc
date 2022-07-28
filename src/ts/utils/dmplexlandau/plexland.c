@@ -198,9 +198,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
       } else {
         PetscCall(VecGetArrayReadAndMemType(a_X,&xdata,&mtype));
       }
-      if (mtype!=PETSC_MEMTYPE_HOST && ctx->deviceType == LANDAU_CPU) {
-        SETERRQ(ctx->comm,PETSC_ERR_ARG_WRONG,"CPU run with device data: use -mat_type aij");
-      }
+      PetscCheck(mtype == PETSC_MEMTYPE_HOST || ctx->deviceType != LANDAU_CPU,ctx->comm,PETSC_ERR_ARG_WRONG,"CPU run with device data: use -mat_type aij");
       cellClosure = NULL;
     }
     PetscCall(PetscLogEventEnd(ctx->events[1],0,0,0,0));
@@ -1327,9 +1325,7 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
   for (ii=0;ii<ctx->num_species;ii++) ctx->thermal_temps[ii] *= 1.1604525e7; /* convert to Kelvin */
   nm = LANDAU_MAX_SPECIES-1;
   PetscCall(PetscOptionsRealArray("-dm_landau_ion_masses", "Mass of each species in units of proton mass [i_0=2,i_1=40...]", "plexland.c", &ctx->masses[1], &nm, &flg));
-  if (flg && nm != ctx->num_species-1) {
-    SETERRQ(ctx->comm,PETSC_ERR_ARG_WRONG,"num ion masses %" PetscInt_FMT " != num species %" PetscInt_FMT,nm,ctx->num_species-1);
-  }
+  PetscCheck(!flg || nm == ctx->num_species-1,ctx->comm,PETSC_ERR_ARG_WRONG,"num ion masses %" PetscInt_FMT " != num species %" PetscInt_FMT,nm,ctx->num_species-1);
   nm = LANDAU_MAX_SPECIES;
   PetscCall(PetscOptionsRealArray("-dm_landau_n", "Number density of each species = n_s * n_0", "plexland.c", ctx->n, &nm, &flg));
   PetscCheck(!flg || nm == ctx->num_species,ctx->comm,PETSC_ERR_ARG_WRONG,"wrong num n: %" PetscInt_FMT " != num species %" PetscInt_FMT,nm,ctx->num_species);
