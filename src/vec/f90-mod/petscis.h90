@@ -136,6 +136,39 @@
       End Interface
 
       Interface
+        Subroutine PetscSectionGetFieldConstraintIndicesF90(s,p,f,a,ierr)
+          import tPetscSection
+          PetscSection      :: s
+          PetscInt          :: p
+          PetscInt          :: f
+          PetscInt, pointer :: a(:)
+          PetscErrorCode    :: ierr
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine PetscSectionRestoreFieldConstraintIndicesF90(s,p,f,a,ierr)
+          import tPetscSection
+          PetscSection      :: s
+          PetscInt          :: p
+          PetscInt          :: f
+          PetscInt, pointer :: a(:)
+          PetscErrorCode    :: ierr
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine PetscSectionSetFieldConstraintIndicesF90(s,p,f,a,ierr)
+          import tPetscSection
+          PetscSection      :: s
+          PetscInt          :: p
+          PetscInt          :: f
+          PetscInt, pointer :: a(:)
+          PetscErrorCode    :: ierr
+        End Subroutine
+      End Interface
+
+      Interface
       subroutine ISSetType(a,b,z)
        import tIS
        IS a
