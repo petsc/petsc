@@ -96,6 +96,7 @@ using ConstPetscScalarKokkosOffsetView4DHost     = ConstPetscScalarKokkosOffsetV
 
 using PetscIntKokkosView                         = Kokkos::View<PetscInt*,DefaultMemorySpace>;
 using PetscIntKokkosViewHost                     = Kokkos::View<PetscInt*,Kokkos::HostSpace>;
+using PetscIntKokkosDualView                     = Kokkos::DualView<PetscInt*>;
 using PetscCountKokkosView                       = Kokkos::View<PetscCount*,DefaultMemorySpace>;
 using PetscCountKokkosViewHost                   = Kokkos::View<PetscCount*,Kokkos::HostSpace>;
 #endif

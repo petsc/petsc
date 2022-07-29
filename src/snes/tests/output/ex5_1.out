@@ -1,21 +1,21 @@
 atol=1e-50, rtol=1e-08, stol=1e-08, maxit=50, maxf=10000
-  0 SNES Function norm 5.41468 
-    0 KSP Residual norm 7.413738310772e-01 
-    1 KSP Residual norm 3.221324312131e-01 
-    2 KSP Residual norm 6.875152473186e-02 
-    3 KSP Residual norm 1.139074651077e-02 
-    4 KSP Residual norm 6.522901242547e-17 
-  1 SNES Function norm 0.295258 
-    0 KSP Residual norm 1.810979803550e-02 
-    1 KSP Residual norm 5.808317988091e-03 
-    2 KSP Residual norm 2.154720365766e-03 
-    3 KSP Residual norm 2.416616690871e-18 
-  2 SNES Function norm 0.000450229 
-    0 KSP Residual norm 2.788463317801e-05 
-    1 KSP Residual norm 1.053607995958e-05 
-    2 KSP Residual norm 3.077391811828e-06 
-    3 KSP Residual norm 1.458724957936e-20 
-  3 SNES Function norm 1.38967e-09 
+  0 SNES Function norm 5.41468
+    0 KSP Residual norm 7.413738310772e-01
+    1 KSP Residual norm 3.221324312131e-01
+    2 KSP Residual norm 6.875152473186e-02
+    3 KSP Residual norm 1.139074651077e-02
+    4 KSP Residual norm 6.522901242547e-17
+  1 SNES Function norm 0.295258
+    0 KSP Residual norm 1.810979803550e-02
+    1 KSP Residual norm 5.808317988091e-03
+    2 KSP Residual norm 2.154720365766e-03
+    3 KSP Residual norm 2.416616690871e-18
+  2 SNES Function norm 0.000450229
+    0 KSP Residual norm 2.788463317801e-05
+    1 KSP Residual norm 1.053607995958e-05
+    2 KSP Residual norm 3.077391811828e-06
+    3 KSP Residual norm 1.458724957936e-20
+  3 SNES Function norm 1.38967e-09
 SNES Object: 1 MPI process
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
@@ -42,7 +42,6 @@ SNES Object: 1 MPI process
     type: vpbjacobi
     linear system matrix = precond matrix:
     Mat Object: 1 MPI process
-      type: seqaij
       rows=5, cols=5
       total: nonzeros=11, allocated nonzeros=15
       total number of mallocs used during MatSetValues calls=0

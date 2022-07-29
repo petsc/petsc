@@ -302,8 +302,23 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
 
 /*TEST
 
-   test:
-      args: -snes_monitor_short -snes_view -ksp_monitor
+   testset:
+     args: -snes_monitor_short -snes_view -ksp_monitor
+     output_file: output/ex5_1.out
+     filter: grep -v "type: seqaij"
+
+     test:
+      suffix: 1
+
+     test:
+      suffix: cuda
+      requires: cuda
+      args: -mat_type aijcusparse -vec_type cuda
+
+     test:
+      suffix: kok
+      requires: kokkos_kernels
+      args: -mat_type aijkokkos -vec_type kokkos
 
    # this is just a test for SNESKSPTRASPOSEONLY and KSPSolveTranspose to behave properly
    # the solution is wrong on purpose
