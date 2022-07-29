@@ -12,7 +12,6 @@ int main(int argc,char **argv)
   Vec             x;
   Vec             f;
   Mat             A;
-  PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
@@ -56,8 +55,7 @@ int main(int argc,char **argv)
       When an ARKIMEX scheme with an explicit stage is used this will error with a message informing the user it is not possible to use
       a non-trivial mass matrix with ARKIMEX schemes with explicit stages.
   */
-  ierr = TSSolve(ts,NULL);
-  if (ierr != PETSC_ERR_ARG_INCOMP) PetscCall(ierr);
+  PetscCall(TSSolve(ts,NULL));
 
   PetscCall(TSDestroy(&ts));
   PetscCall(PetscFinalize());
@@ -89,9 +87,9 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec x,Vec xdot,PetscReal shift,Mat A,
 
     test:
       suffix: arkimex_explicit_stage
-      requires: defined(PETSC_USE_DEBUG)
-      args: -ts_type arkimex -error_output_stdout
-      filter:  egrep -v "(Petsc|on a| at |Configure)"
+      requires: !defined(PETSCTEST_VALGRIND) defined(PETSC_USE_DEBUG)
+      args: -ts_type arkimex -petsc_ci_portable_error_output -error_output_stdout
+      filter: egrep -v "(options_left|memory block|leaked context|is not freed before MPI_Finalize|Could be the program crashed)"
 
     test:
       suffix: arkimex_implicit_stage
