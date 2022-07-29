@@ -8,7 +8,7 @@ Parallel Mesh in 3 dimensions:
 Labels:
   celltype: 4 strata with value/size (0 (125), 1 (300), 4 (240), 7 (64))
   depth: 4 strata with value/size (0 (125), 1 (300), 2 (240), 3 (64))
-  marker: 1 strata with value/size (1 (378))
+  marker: 1 strata with value/size (1 (386))
   Face Sets: 6 strata with value/size (1 (49), 2 (49), 3 (49), 4 (49), 5 (49), 6 (49))
 DM Object: Parallel Mesh 2 MPI processes
   type: plex
@@ -20,5 +20,5 @@ Parallel Mesh in 3 dimensions:
 Labels:
   depth: 4 strata with value/size (0 (75), 1 (170), 2 (128), 3 (32))
   celltype: 4 strata with value/size (0 (75), 1 (170), 4 (128), 7 (32))
-  marker: 1 strata with value/size (1 (205))
+  marker: 1 strata with value/size (1 (209))
   Face Sets: 5 strata with value/size (1 (49), 3 (28), 4 (28), 5 (28), 6 (28))
