@@ -75,14 +75,14 @@ int main(int argc,char **argv)
 
 PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec x,Vec f,void *ctx)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecSet(f,(PetscReal)1));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec x,Mat A,Mat B,void *ctx)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(MatZeroEntries(B));
   if (B != A) PetscCall(MatZeroEntries(A));
   PetscFunctionReturn(0);
@@ -90,7 +90,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec x,Mat A,Mat B,void *ctx)
 
 PetscErrorCode Event(TS ts,PetscReal t,Vec x,PetscScalar *fvalue,void *ctx)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   fvalue[0] = t - 1.1;
   fvalue[1] = 1.2 - t;
   fvalue[2] = t - 1.3;
@@ -102,7 +102,7 @@ PetscErrorCode PostEvent(TS ts,PetscInt nevents,PetscInt event_list[],PetscReal 
   PetscInt          i;
   const PetscScalar *a;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(TSGetStepNumber(ts,&i));
   PetscCall(VecGetArrayRead(x,&a));
   PetscCall(PetscPrintf(PetscObjectComm((PetscObject)ts),"%-10s-> step %" PetscInt_FMT " time %g value %g\n",PETSC_FUNCTION_NAME,i,(double)t,(double)PetscRealPart(a[0])));

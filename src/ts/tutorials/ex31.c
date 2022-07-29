@@ -51,7 +51,7 @@ PetscErrorCode (*IJacobian)   (TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void*);
 /* Returns the size of the system of equations depending on problem specification */
 PetscInt GetSize(const char *p)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if      ((!strcmp(p,"hull1972a1"))
          ||(!strcmp(p,"hull1972a2"))
          ||(!strcmp(p,"hull1972a3"))
@@ -81,7 +81,7 @@ PetscErrorCode RHSFunction_Hull1972A1(TS ts, PetscReal t, Vec Y, Vec F, void *s)
   PetscScalar       *f;
   const PetscScalar *y;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(Y,&y));
   PetscCall(VecGetArray(F,&f));
   f[0] = -y[0];
@@ -96,7 +96,7 @@ PetscErrorCode RHSJacobian_Hull1972A1(TS ts, PetscReal t, Vec Y, Mat A, Mat B, v
   PetscInt          row = 0,col = 0;
   PetscScalar       value = -1.0;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(Y,&y));
   PetscCall(MatSetValues(A,1,&row,1,&col,&value,INSERT_VALUES));
   PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
@@ -110,7 +110,7 @@ PetscErrorCode IFunction_Hull1972A1(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
   const PetscScalar *y;
   PetscScalar       *f;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(Y,&y));
   PetscCall(VecGetArray(F,&f));
   f[0] = -y[0];
@@ -127,7 +127,7 @@ PetscErrorCode IJacobian_Hull1972A1(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscRe
   PetscInt          row = 0,col = 0;
   PetscScalar       value = a - 1.0;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(Y,&y));
   PetscCall(MatSetValues(A,1,&row,1,&col,&value,INSERT_VALUES));
   PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
@@ -143,7 +143,7 @@ PetscErrorCode RHSFunction_Hull1972A2(TS ts, PetscReal t, Vec Y, Vec F, void *s)
   const PetscScalar *y;
   PetscScalar       *f;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(Y,&y));
   PetscCall(VecGetArray(F,&f));
   f[0] = -0.5*y[0]*y[0]*y[0];
@@ -158,7 +158,7 @@ PetscErrorCode RHSJacobian_Hull1972A2(TS ts, PetscReal t, Vec Y, Mat A, Mat B, v
   PetscInt          row = 0,col = 0;
   PetscScalar       value;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(Y,&y));
   value = -0.5*3.0*y[0]*y[0];
   PetscCall(MatSetValues(A,1,&row,1,&col,&value,INSERT_VALUES));
@@ -173,7 +173,7 @@ PetscErrorCode IFunction_Hull1972A2(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
   PetscScalar       *f;
   const PetscScalar *y;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(Y,&y));
   PetscCall(VecGetArray(F,&f));
   f[0] = -0.5*y[0]*y[0]*y[0];
@@ -190,7 +190,7 @@ PetscErrorCode IJacobian_Hull1972A2(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscRe
   PetscInt          row = 0,col = 0;
   PetscScalar       value;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(Y,&y));
   value = a + 0.5*3.0*y[0]*y[0];
   PetscCall(MatSetValues(A,1,&row,1,&col,&value,INSERT_VALUES));
@@ -207,7 +207,7 @@ PetscErrorCode RHSFunction_Hull1972A3(TS ts, PetscReal t, Vec Y, Vec F, void *s)
   const PetscScalar *y;
   PetscScalar       *f;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(Y,&y));
   PetscCall(VecGetArray(F,&f));
   f[0] = y[0]*PetscCosReal(t);
@@ -222,7 +222,7 @@ PetscErrorCode RHSJacobian_Hull1972A3(TS ts, PetscReal t, Vec Y, Mat A, Mat B, v
   PetscInt          row = 0,col = 0;
   PetscScalar       value = PetscCosReal(t);
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(Y,&y));
   PetscCall(MatSetValues(A,1,&row,1,&col,&value,INSERT_VALUES));
   PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
@@ -236,7 +236,7 @@ PetscErrorCode IFunction_Hull1972A3(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
   PetscScalar       *f;
   const PetscScalar *y;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(Y,&y));
   PetscCall(VecGetArray(F,&f));
   f[0] = y[0]*PetscCosReal(t);
@@ -253,7 +253,7 @@ PetscErrorCode IJacobian_Hull1972A3(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscRe
   PetscInt          row = 0,col = 0;
   PetscScalar       value = a - PetscCosReal(t);
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(Y,&y));
   PetscCall(MatSetValues(A,1,&row,1,&col,&value,INSERT_VALUES));
   PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
@@ -269,7 +269,7 @@ PetscErrorCode RHSFunction_Hull1972A4(TS ts, PetscReal t, Vec Y, Vec F, void *s)
   PetscScalar       *f;
   const PetscScalar *y;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(Y,&y));
   PetscCall(VecGetArray(F,&f));
   f[0] = (0.25*y[0])*(1.0-0.05*y[0]);
@@ -284,7 +284,7 @@ PetscErrorCode RHSJacobian_Hull1972A4(TS ts, PetscReal t, Vec Y, Mat A, Mat B, v
   PetscInt          row = 0,col = 0;
   PetscScalar       value;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(Y,&y));
   value = 0.25*(1.0-0.05*y[0]) - (0.25*y[0])*0.05;
   PetscCall(MatSetValues(A,1,&row,1,&col,&value,INSERT_VALUES));
@@ -299,7 +299,7 @@ PetscErrorCode IFunction_Hull1972A4(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
   PetscScalar       *f;
   const PetscScalar *y;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(Y,&y));
   PetscCall(VecGetArray(F,&f));
   f[0] = (0.25*y[0])*(1.0-0.05*y[0]);
@@ -316,7 +316,7 @@ PetscErrorCode IJacobian_Hull1972A4(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscRe
   PetscInt          row = 0,col = 0;
   PetscScalar       value;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(Y,&y));
   value = a - 0.25*(1.0-0.05*y[0]) + (0.25*y[0])*0.05;
   PetscCall(MatSetValues(A,1,&row,1,&col,&value,INSERT_VALUES));
@@ -333,7 +333,7 @@ PetscErrorCode RHSFunction_Hull1972A5(TS ts, PetscReal t, Vec Y, Vec F, void *s)
   PetscScalar       *f;
   const PetscScalar *y;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(Y,&y));
   PetscCall(VecGetArray(F,&f));
   f[0] = (y[0]-t)/(y[0]+t);
@@ -348,7 +348,7 @@ PetscErrorCode RHSJacobian_Hull1972A5(TS ts, PetscReal t, Vec Y, Mat A, Mat B, v
   PetscInt          row = 0,col = 0;
   PetscScalar       value;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(Y,&y));
   value = 2*t/((t+y[0])*(t+y[0]));
   PetscCall(MatSetValues(A,1,&row,1,&col,&value,INSERT_VALUES));
@@ -363,7 +363,7 @@ PetscErrorCode IFunction_Hull1972A5(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
   PetscScalar       *f;
   const PetscScalar *y;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(Y,&y));
   PetscCall(VecGetArray(F,&f));
   f[0] = (y[0]-t)/(y[0]+t);
@@ -380,7 +380,7 @@ PetscErrorCode IJacobian_Hull1972A5(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscRe
   PetscInt          row = 0,col = 0;
   PetscScalar       value;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(Y,&y));
   value = a - 2*t/((t+y[0])*(t+y[0]));
   PetscCall(MatSetValues(A,1,&row,1,&col,&value,INSERT_VALUES));
@@ -397,7 +397,7 @@ PetscErrorCode RHSFunction_Hull1972B1(TS ts, PetscReal t, Vec Y, Vec F, void *s)
   PetscScalar       *f;
   const PetscScalar *y;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(Y,&y));
   PetscCall(VecGetArray(F,&f));
   f[0] = 2.0*(y[0] - y[0]*y[1]);
@@ -412,7 +412,7 @@ PetscErrorCode IFunction_Hull1972B1(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
   PetscScalar       *f;
   const PetscScalar *y;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(Y,&y));
   PetscCall(VecGetArray(F,&f));
   f[0] = 2.0*(y[0] - y[0]*y[1]);
@@ -430,7 +430,7 @@ PetscErrorCode IJacobian_Hull1972B1(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscRe
   PetscInt          row[2] = {0,1};
   PetscScalar       value[2][2];
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(Y,&y));
   value[0][0] = a - 2.0*(1.0-y[1]);    value[0][1] = 2.0*y[0];
   value[1][0] = -y[1];                 value[1][1] = a + 1.0 - y[0];
@@ -448,7 +448,7 @@ PetscErrorCode RHSFunction_Hull1972B2(TS ts, PetscReal t, Vec Y, Vec F, void *s)
   PetscScalar       *f;
   const PetscScalar *y;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(Y,&y));
   PetscCall(VecGetArray(F,&f));
   f[0] = -y[0] + y[1];
@@ -464,7 +464,7 @@ PetscErrorCode IFunction_Hull1972B2(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
   PetscScalar       *f;
   const PetscScalar *y;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(Y,&y));
   PetscCall(VecGetArray(F,&f));
   f[0] = -y[0] + y[1];
@@ -483,7 +483,7 @@ PetscErrorCode IJacobian_Hull1972B2(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscRe
   PetscInt          row[3] = {0,1,2};
   PetscScalar       value[3][3];
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(Y,&y));
   value[0][0] = a + 1.0;  value[0][1] = -1.0;     value[0][2] = 0;
   value[1][0] = -1.0;     value[1][1] = a + 2.0;  value[1][2] = -1.0;
@@ -502,7 +502,7 @@ PetscErrorCode RHSFunction_Hull1972B3(TS ts, PetscReal t, Vec Y, Vec F, void *s)
   PetscScalar       *f;
   const PetscScalar *y;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(Y,&y));
   PetscCall(VecGetArray(F,&f));
   f[0] = -y[0];
@@ -518,7 +518,7 @@ PetscErrorCode IFunction_Hull1972B3(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
   PetscScalar       *f;
   const PetscScalar *y;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(Y,&y));
   PetscCall(VecGetArray(F,&f));
   f[0] = -y[0];
@@ -537,7 +537,7 @@ PetscErrorCode IJacobian_Hull1972B3(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscRe
   PetscInt          row[3] = {0,1,2};
   PetscScalar       value[3][3];
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(Y,&y));
   value[0][0] = a + 1.0; value[0][1] = 0;             value[0][2] = 0;
   value[1][0] = -1.0;    value[1][1] = a + 2.0*y[1];  value[1][2] = 0;
@@ -556,7 +556,7 @@ PetscErrorCode RHSFunction_Hull1972B4(TS ts, PetscReal t, Vec Y, Vec F, void *s)
   PetscScalar       *f;
   const PetscScalar *y;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(Y,&y));
   PetscCall(VecGetArray(F,&f));
   f[0] = -y[1] - y[0]*y[2]/PetscSqrtScalar(y[0]*y[0]+y[1]*y[1]);
@@ -572,7 +572,7 @@ PetscErrorCode IFunction_Hull1972B4(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
   PetscScalar       *f;
   const PetscScalar *y;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(Y,&y));
   PetscCall(VecGetArray(F,&f));
   f[0] = -y[1] - y[0]*y[2]/PetscSqrtScalar(y[0]*y[0]+y[1]*y[1]);
@@ -591,7 +591,7 @@ PetscErrorCode IJacobian_Hull1972B4(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscRe
   PetscInt          row[3] = {0,1,2};
   PetscScalar       value[3][3],fac,fac2;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(Y,&y));
   fac  = PetscPowScalar(y[0]*y[0]+y[1]*y[1],-1.5);
   fac2 = PetscPowScalar(y[0]*y[0]+y[1]*y[1],-0.5);
@@ -618,7 +618,7 @@ PetscErrorCode RHSFunction_Hull1972B5(TS ts, PetscReal t, Vec Y, Vec F, void *s)
   PetscScalar       *f;
   const PetscScalar *y;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(Y,&y));
   PetscCall(VecGetArray(F,&f));
   f[0] = y[1]*y[2];
@@ -634,7 +634,7 @@ PetscErrorCode IFunction_Hull1972B5(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
   PetscScalar       *f;
   const PetscScalar *y;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(Y,&y));
   PetscCall(VecGetArray(F,&f));
   f[0] = y[1]*y[2];
@@ -653,7 +653,7 @@ PetscErrorCode IJacobian_Hull1972B5(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscRe
   PetscInt          row[3] = {0,1,2};
   PetscScalar       value[3][3];
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(Y,&y));
   value[0][0] = a;          value[0][1] = -y[2];      value[0][2] = -y[1];
   value[1][0] = y[2];       value[1][1] = a;          value[1][2] = y[0];
@@ -672,7 +672,7 @@ PetscErrorCode RHSFunction_Kulikov2013I(TS ts, PetscReal t, Vec Y, Vec F, void *
   PetscScalar       *f;
   const PetscScalar *y;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(Y,&y));
   PetscCall(VecGetArray(F,&f));
   f[0] = 2.*t*PetscPowScalar(y[1],1./5.)*y[3];
@@ -690,7 +690,7 @@ PetscErrorCode RHSJacobian_Kulikov2013I(TS ts, PetscReal t, Vec Y, Mat A, Mat B,
   PetscInt          row[4] = {0,1,2,3};
   PetscScalar       value[4][4];
   PetscScalar       m1,m2;
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(Y,&y));
   m1=(2.*t*y[3])/(5.*PetscPowScalar(y[1],4./5.));
   m2=2.*t*PetscPowScalar(y[1],1./5.);
@@ -712,7 +712,7 @@ PetscErrorCode IFunction_Kulikov2013I(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F
   PetscScalar       *f;
   const PetscScalar *y;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(Y,&y));
   PetscCall(VecGetArray(F,&f));
   f[0] = 2.*t*PetscPowScalar(y[1],1./5.)*y[3];
@@ -733,7 +733,7 @@ PetscErrorCode IJacobian_Kulikov2013I(TS ts, PetscReal t, Vec Y, Vec Ydot, Petsc
   PetscScalar       value[4][4];
   PetscScalar       m1,m2;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(Y,&y));
   m1=(2.*t*y[3])/(5.*PetscPowScalar(y[1],4./5.));
   m2=2.*t*PetscPowScalar(y[1],1./5.);
@@ -758,7 +758,7 @@ PetscErrorCode RHSFunction_Hull1972C1(TS ts, PetscReal t, Vec Y, Vec F, void *s)
   const PetscScalar *y;
   PetscInt          N,i;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetSize (Y,&N));
   PetscCall(VecGetArrayRead(Y,&y));
   PetscCall(VecGetArray(F,&f));
@@ -778,7 +778,7 @@ PetscErrorCode IFunction_Hull1972C1(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
   const PetscScalar *y;
   PetscInt          N,i;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetSize (Y,&N));
   PetscCall(VecGetArrayRead(Y,&y));
   PetscCall(VecGetArray(F,&f));
@@ -800,7 +800,7 @@ PetscErrorCode IJacobian_Hull1972C1(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscRe
   PetscInt          N,i,col[2];
   PetscScalar       value[2];
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetSize (Y,&N));
   PetscCall(VecGetArrayRead(Y,&y));
   i = 0;
@@ -830,7 +830,7 @@ PetscErrorCode RHSFunction_Hull1972C2(TS ts, PetscReal t, Vec Y, Vec F, void *s)
   PetscScalar       *f;
   PetscInt          N,i;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetSize (Y,&N));
   PetscCall(VecGetArrayRead(Y,&y));
   PetscCall(VecGetArray(F,&f));
@@ -850,7 +850,7 @@ PetscErrorCode IFunction_Hull1972C2(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
   const PetscScalar *y;
   PetscInt          N,i;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetSize (Y,&N));
   PetscCall(VecGetArrayRead(Y,&y));
   PetscCall(VecGetArray(F,&f));
@@ -872,7 +872,7 @@ PetscErrorCode IJacobian_Hull1972C2(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscRe
   PetscInt          N,i,col[2];
   PetscScalar       value[2];
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetSize (Y,&N));
   PetscCall(VecGetArrayRead(Y,&y));
   i = 0;
@@ -902,7 +902,7 @@ PetscErrorCode RHSFunction_Hull1972C34(TS ts, PetscReal t, Vec Y, Vec F, void *s
   const PetscScalar *y;
   PetscInt          N,i;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetSize (Y,&N));
   PetscCall(VecGetArrayRead(Y,&y));
   PetscCall(VecGetArray(F,&f));
@@ -922,7 +922,7 @@ PetscErrorCode IFunction_Hull1972C34(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F,
   const PetscScalar *y;
   PetscInt          N,i;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetSize (Y,&N));
   PetscCall(VecGetArrayRead(Y,&y));
   PetscCall(VecGetArray(F,&f));
@@ -944,7 +944,7 @@ PetscErrorCode IJacobian_Hull1972C34(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscR
   PetscScalar       value[3];
   PetscInt          N,i,col[3];
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetSize (Y,&N));
   PetscCall(VecGetArrayRead(Y,&y));
   for (i = 0; i < N; i++) {
@@ -980,7 +980,7 @@ PetscErrorCode Initialize(Vec Y, void* s)
   PetscInt      N = GetSize((const char *)s);
   PetscBool     flg;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   VecZeroEntries(Y);
   PetscCall(VecGetArray(Y,&y));
   if (!strcmp(p,"hull1972a1")) {
@@ -1086,7 +1086,7 @@ PetscErrorCode ExactSolution(Vec Y, void* s, PetscReal t, PetscBool *flag)
   char          *p = (char*) s;
   PetscScalar   *y;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (!strcmp(p,"hull1972a1")) {
     PetscCall(VecGetArray(Y,&y));
     y[0] = PetscExpReal(-t);
@@ -1135,7 +1135,7 @@ PetscErrorCode SolveODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt ma
   PetscReal       err_norm;         /* Estimated error norm                   */
   PetscReal       final_time;       /* Actual final time from the integrator  */
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   N = GetSize((const char *)&ptype[0]);
   PetscCheck(N >= 0,PETSC_COMM_WORLD,PETSC_ERR_ARG_SIZ,"Illegal problem specification.");
   PetscCall(VecCreate(PETSC_COMM_WORLD,&Y));

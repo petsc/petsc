@@ -41,7 +41,7 @@ PetscErrorCode InitialConditions(Vec U,DM da,AppCtx *app)
   PetscScalar    *x,*u;
   PetscInt       lsize,M,xs,xm,i;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(DMGetCoordinates(da,&xcoord));
   PetscCall(DMDAVecGetArrayRead(da,xcoord,&x));
 
@@ -71,7 +71,7 @@ PetscErrorCode EventFunction(TS ts,PetscReal t,Vec U,PetscScalar *fvalue,void *c
   const PetscScalar *u;
   PetscInt          i,lsize;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetLocalSize(U,&lsize));
   PetscCall(VecGetArrayRead(U,&u));
   for (i=0; i < lsize;i++) fvalue[i] = u[i] - app->uc;
@@ -84,7 +84,7 @@ PetscErrorCode PostEventFunction(TS ts,PetscInt nevents_zero,PetscInt events_zer
   AppCtx         *app=(AppCtx*)ctx;
   PetscInt       i,idx;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   for (i=0; i < nevents_zero; i ++) {
     idx = events_zero[i];
     app->sw[idx] = 0;
@@ -105,7 +105,7 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void *ctx
   PetscReal         h,h2;
   Vec               Ulocal;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(TSGetDM(ts,&da));
 
   PetscCall(DMDAGetInfo(da,0,&M,0,0,0,0,0,0,0,0,0,0,0));
@@ -150,7 +150,7 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat
   PetscInt       M,xs,xm,i;
   PetscReal      h,h2;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(TSGetDM(ts,&da));
 
   PetscCall(DMDAGetInfo(da,0,&M,0,0,0,0,0,0,0,0,0,0,0));

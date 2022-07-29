@@ -23,7 +23,7 @@ FILE *gfilepointer_data,*gfilepointer_info;
 /* Defines the source  */
 PetscErrorCode Ue(PetscScalar t,PetscScalar *U)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   U=0.4*sin(200*pi*t);
   PetscFunctionReturn(0);
   }*/
@@ -36,7 +36,7 @@ static PetscErrorCode IFunctionSemiExplicit(TS ts,PetscReal t,Vec Y,Vec Ydot,Vec
   const PetscScalar  *y,*ydot;
   PetscScalar        *f;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /*  The next three lines allow us to access the entries of the vectors directly */
   PetscCall(VecGetArrayRead(Y,&y));
   PetscCall(VecGetArrayRead(Ydot,&ydot));
@@ -63,7 +63,7 @@ static PetscErrorCode IJacobianSemiExplicit(TS ts,PetscReal t,Vec Y,Vec Ydot,Pet
   const PetscScalar  *y,*ydot;
   PetscScalar        J[5][5];
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(Y,&y));
   PetscCall(VecGetArrayRead(Ydot,&ydot));
 

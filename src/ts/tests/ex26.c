@@ -66,7 +66,7 @@ int main(int argc,char **argv)
 
 PetscErrorCode IFunction(TS ts,PetscReal t,Vec x,Vec xdot,Vec f,void *ctx)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecCopy(xdot,f));
   PetscCall(VecScale(f,2.0));
   PetscCall(VecShift(f,-1.0));
@@ -77,7 +77,7 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec x,Vec xdot,PetscReal shift,Mat A,
 {
   PetscScalar    j;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   j = shift*2.0;
   PetscCall(MatSetValue(B,0,0,j,INSERT_VALUES));
   PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));

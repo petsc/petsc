@@ -1734,7 +1734,7 @@ static PetscErrorCode RemoveDiscretePressureNullspace_Private(TS ts, Vec u)
   AppCtx        *user;
   MatNullSpace   nullsp;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(TSGetDM(ts, &dm));
   PetscCall(DMGetApplicationContext(dm, &user));
   if (!user->hasNullSpace) PetscFunctionReturn(0);
@@ -1749,7 +1749,7 @@ static PetscErrorCode RemoveDiscretePressureNullspace(TS ts)
 {
   Vec            u;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(TSGetSolution(ts, &u));
   PetscCall(RemoveDiscretePressureNullspace_Private(ts, u));
   PetscFunctionReturn(0);
@@ -1772,7 +1772,7 @@ static PetscErrorCode SetInitialConditions(TS ts, Vec u)
   DM             dm;
   PetscReal      t;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(TSGetDM(ts, &dm));
   PetscCall(TSGetTime(ts, &t));
   PetscCall(DMComputeExactSolution(dm, t, u, NULL));

@@ -424,7 +424,7 @@ static PetscErrorCode FormMoleFraction(UserLGCtx *ctx,Vec massf,Vec *molef)
   PetscScalar       *mof;
   const PetscScalar **maf;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecCreateSeq(PETSC_COMM_SELF,n,molef));
   PetscCall(PetscMalloc1(user->Nspec,&M));
   TC_getSmass(user->Nspec, M);
@@ -443,7 +443,7 @@ static PetscErrorCode FormMoleFraction(UserLGCtx *ctx,Vec massf,Vec *molef)
 
 static PetscErrorCode MonitorCellDestroy(UserLGCtx *uctx)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(PetscFree(uctx));
   PetscFunctionReturn(0);
 }
@@ -460,7 +460,7 @@ static PetscErrorCode MonitorCell(TS ts,User user,PetscInt cell)
   PetscReal      temp,*xc;
   PetscMPIInt    rank;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(DMDAGetCoordinateArray(user->dm,&xc));
   temp = 1.0 + .05*PetscSinScalar(2.*PETSC_PI*xc[cell]);  /* Non-dimensionalized by user->Tini */
   PetscCall(DMDARestoreCoordinateArray(user->dm,&xc));

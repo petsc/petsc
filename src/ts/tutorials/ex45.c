@@ -334,7 +334,7 @@ static PetscErrorCode SetInitialConditions(TS ts, Vec u)
   DM             dm;
   PetscReal      t;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(TSGetDM(ts, &dm));
   PetscCall(TSGetTime(ts, &t));
   PetscCall(DMComputeExactSolution(dm, t, u, NULL));

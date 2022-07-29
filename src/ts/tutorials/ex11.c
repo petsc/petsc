@@ -1088,7 +1088,7 @@ static PetscErrorCode FunctionalLinkDestroy(FunctionalLink *link)
 static PetscErrorCode SolutionFunctional(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *modctx)
 {
   Model          mod;
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   mod  = (Model) modctx;
   PetscCall((*mod->solution)(mod, time, x, u, mod->solutionctx));
   PetscFunctionReturn(0);
@@ -1237,7 +1237,7 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
 
 static PetscErrorCode initializeTS(DM dm, User user, TS *ts)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(TSCreate(PetscObjectComm((PetscObject)dm), ts));
   PetscCall(TSSetType(*ts, TSSSP));
   PetscCall(TSSetDM(*ts, dm));
@@ -1264,7 +1264,7 @@ static PetscErrorCode adaptToleranceFVM(PetscFV fvm, TS ts, Vec sol, VecTagger r
   DMLabel           adaptLabel = NULL;
   IS                refineIS, coarsenIS;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(TSGetTime(ts,&time));
   PetscCall(VecGetDM(sol, &dm));
   PetscCall(DMGetDimension(dm,&dim));

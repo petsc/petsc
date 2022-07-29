@@ -34,7 +34,7 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec X, Vec DXDT, void* ptr)
   PetscScalar       *dxdt;
   const PetscScalar *x;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   nb_cells = user->nb_cells;
   alpha    = user->alpha;
   beta     = user->beta;
@@ -84,7 +84,7 @@ PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec X, Mat J, Mat B, void *ptr)
   PetscScalar       va[4], vh[4];
   PetscInt          ca[4], ch[4], rowa, rowh;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   nb_cells = user->nb_cells;
   alpha    = user->alpha;
   beta     = user->beta;
@@ -144,7 +144,7 @@ PetscErrorCode DomainErrorFunction(TS ts, PetscReal t, Vec Y, PetscBool *accept)
   const PetscScalar *x;
   PetscInt          nb_cells, i;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(TSGetApplicationContext(ts, &user));
   nb_cells = user->nb_cells;
   PetscCall(VecGetArrayRead(Y, &x));
@@ -164,7 +164,7 @@ PetscErrorCode FormInitialState(Vec X, AppCtx* user)
 {
   PetscRandom    R;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(PetscRandomCreate(PETSC_COMM_WORLD, &R));
   PetscCall(PetscRandomSetFromOptions(R));
   PetscCall(PetscRandomSetInterval(R, 0., 10.));
@@ -183,7 +183,7 @@ PetscErrorCode PrintSolution(Vec X, AppCtx *user)
   PetscInt          i;
   PetscInt          nb_cells = user->nb_cells;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(X, &x));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Activator,Inhibitor\n"));
   for (i = 0 ; i < nb_cells ; i++) {

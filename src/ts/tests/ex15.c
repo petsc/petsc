@@ -41,7 +41,7 @@ static PetscErrorCode IFunction_Conservative(TS ts,PetscReal t,Vec U,Vec Udot,Ve
   const PetscScalar *u,*udot;
   PetscScalar       *f;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(U,&u));
   PetscCall(VecGetArrayRead(Udot,&udot));
   PetscCall(VecGetArray(F,&f));
@@ -60,7 +60,7 @@ static PetscErrorCode IFunction_Nonconservative(TS ts,PetscReal t,Vec U,Vec Udot
   const PetscScalar *u,*udot;
   PetscScalar       *f;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(U,&u));
   PetscCall(VecGetArrayRead(Udot,&udot));
   PetscCall(VecGetArray(F,&f));
@@ -79,7 +79,7 @@ static PetscErrorCode IFunction_TransientVar(TS ts,PetscReal t,Vec U,Vec Cdot,Ve
   const PetscScalar *u,*cdot;
   PetscScalar       *f;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(U,&u));
   PetscCall(VecGetArrayRead(Cdot,&cdot));
   PetscCall(VecGetArray(F,&f));
@@ -95,7 +95,7 @@ static PetscErrorCode IFunction_TransientVar(TS ts,PetscReal t,Vec U,Vec Cdot,Ve
 
 static PetscErrorCode TransientVar(TS ts,Vec U,Vec C,void *ctx)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecCopy(U,C));
   PetscCall(VecExp(C));
   PetscFunctionReturn(0);

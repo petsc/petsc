@@ -226,7 +226,7 @@ static PetscErrorCode PostStep(TS ts)
   PetscInt  stepi,num;
   Vec       X;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(TSGetApplicationContext(ts, &ctx));
   if (ctx->debug<1) PetscFunctionReturn(0);
   PetscCall(TSGetSolution(ts, &X));
@@ -360,7 +360,7 @@ static PetscErrorCode SetupEquilibriumFields(DM dm, DM dmAux, AppCtx *ctx)
   AppCtx *ctxarr[3];
 
   ctxarr[0] = ctxarr[1] = ctxarr[2] = ctx; /* each variable could have a different context */
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(DMCreateLocalVector(dmAux, &eq));
   PetscCall(DMProjectFunctionLocal(dmAux, 0.0, eqFuncs, (void **)ctxarr, INSERT_ALL_VALUES, eq));
   PetscCall(DMSetAuxiliaryVec(dm, NULL, 0, 0, eq));
@@ -409,7 +409,7 @@ static PetscErrorCode SetupAuxDM(DM dm, PetscInt NfAux, PetscFE feAux[], AppCtx 
   DM             dmAux, coordDM;
   PetscInt       f;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /* MUST call DMGetCoordinateDM() in order to get p4est setup if present */
   PetscCall(DMGetCoordinateDM(dm, &coordDM));
   if (!feAux) PetscFunctionReturn(0);

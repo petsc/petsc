@@ -94,7 +94,7 @@ int main(int argc,char **argv)
    /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program and set problem parameters
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
@@ -279,7 +279,7 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
 {
   AppCtx          *appctx = (AppCtx*)ctx;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(MatMult(appctx->SEMop.grad,globalin,globalout)); /* grad u */
   PetscCall(VecPointwiseMult(globalout,globalin,globalout)); /* u grad u */
   PetscCall(VecScale(globalout, -1.0));
@@ -300,7 +300,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec globalin,Mat A, Mat B,void *ctx
   AppCtx         *appctx = (AppCtx*)ctx;
   Vec            Gglobalin;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /*    A = diag(u) G */
 
   PetscCall(MatCopy(appctx->SEMop.grad,A,SAME_NONZERO_PATTERN));
