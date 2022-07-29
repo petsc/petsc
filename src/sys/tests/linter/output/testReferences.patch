@@ -1,13 +1,13 @@
 @@ -18,6 +18,6 @@
--  PetscValidPointer(foo,-1);
--  PetscValidPointer(bar,-2);
--  PetscValidPointer(baz,-3);
--  PetscValidPointer((void *)v->data,-4);
--  PetscValidPointer(*blip,-5);
--  PetscValidPointer(blop,-6);
-+  PetscValidPointer(foo,1);
-+  PetscValidPointer(bar,1);
-+  PetscValidPointer(baz,1);
-+  PetscValidPointer((void *)v->data,1);
-+  PetscValidPointer(*blip,1);
-+  PetscValidPointer(blop,1);
+-  PetscValidPointer(foo, -1);
+-  PetscValidPointer(bar, -2);
+-  PetscValidPointer(baz, -3);
+-  PetscValidPointer((void *)v->data, -4);
+-  PetscValidPointer(*blip, -5);
+-  PetscValidPointer(blop, -6);
++  PetscValidPointer(foo, 1);
++  PetscValidPointer(bar, 1);
++  PetscValidPointer(baz, 1);
++  PetscValidPointer((void *)v->data, 1);
++  PetscValidPointer(*blip, 1);
++  PetscValidPointer(blop, 1);
