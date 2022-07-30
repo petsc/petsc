@@ -207,8 +207,11 @@ PetscErrorCode  PetscPythonInitialize(const char pyexe[],const char pylib[])
     PyObject         *sys_path;
     char             path[PETSC_MAX_PATH_LEN] = { 0 };
 
-    /* initialize Python */
+    /* initialize Python. Py_InitializeEx() prints an error and EXITS the program if it is not successful! */
+    PetscCall(PetscInfo(NULL,"Calling Py_InitializeEx(0);\n"));
     Py_InitializeEx(0); /* 0: do not install signal handlers */
+    PetscCall(PetscInfo(NULL,"Py_InitializeEx(0) called successfully;\n"));
+
     /*  build 'sys.argv' list */
     py_version = Py_GetVersion();
     if (py_version[0] == '2') {
@@ -239,12 +242,12 @@ PetscErrorCode  PetscPythonInitialize(const char pyexe[],const char pylib[])
       registered = PETSC_TRUE;
     }
     PetscBeganPython = PETSC_TRUE;
+    PetscCall(PetscInfo(NULL,"Python initialize completed.\n"));
   }
   /* import 'petsc4py.PETSc' module */
   module = PyImport_ImportModule("petsc4py.PETSc");
   if (module) {
     PetscCall(PetscInfo(NULL,"Python: successfully imported  module 'petsc4py.PETSc'\n"));
-
     Py_DecRef(module); module = NULL;
   } else {
     PetscPythonPrintError();

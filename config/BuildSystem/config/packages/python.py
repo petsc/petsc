@@ -8,9 +8,6 @@ class Configure(config.package.Package):
     self.skippackagewithoptions = 1
     return
 
-  def __str__(self):
-    return ''
-
   def setupHelp(self,help):
     import nargs
     help.addArgument('PETSc', '-with-python-exec=<executable>', nargs.Arg(None, None, 'Alternate Python executable to use for mpi4py/petsc4py'))
@@ -26,11 +23,20 @@ class Configure(config.package.Package):
       self.pyexe = sys.executable
     self.addDefine('PYTHON_EXE','"'+self.pyexe+'"')
     self.addMakeMacro('PYTHON_EXE','"'+self.pyexe+'"')
+    self.executablename = 'pyexe'
+    self.found = 1
+
+    try:
+      output1,err1,ret1  = config.package.Package.executeShellCommand(self.pyexe + ' --version',timeout=60, log = self.log)
+      self.foundversion = output1.split(' ')[1]
+    except:
+      self.logPrint('Unable to determine version number of Python')
 
     try:
       output1,err1,ret1  = config.package.Package.executeShellCommand(self.pyexe + ' -c "import Cython"',timeout=60, log = self.log)
       self.cython = 1
-    except: pass
+    except:
+      self.logPrint('Python being used '+self.pyexe+' does not have the Cython package')
 
     have_numpy = self.argDB.get('have-numpy', None)
     if have_numpy is not None:
@@ -39,5 +45,6 @@ class Configure(config.package.Package):
       try:
         output1,err1,ret1  = config.package.Package.executeShellCommand(self.pyexe + ' -c "import numpy"',timeout=60, log = self.log)
         self.numpy = 1
-      except: pass
+      except:
+        self.logPrint('Python being used '+self.pyexe+' does not have the numpy package')
     return
