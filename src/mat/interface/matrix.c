@@ -5795,8 +5795,9 @@ PetscErrorCode MatAssemblyEnd(Mat mat,MatAssemblyType type)
 .    MAT_SYMMETRIC - symmetric in terms of both structure and value
 .    MAT_HERMITIAN - transpose is the complex conjugation
 .    MAT_STRUCTURALLY_SYMMETRIC - symmetric nonzero structure
--    MAT_SYMMETRY_ETERNAL - indicates the symmetry (or Hermitian structure) or its absence will persist through any changes to the matrix
--    MAT_STRUCTURAL_SYMMETRY_ETERNAL - indicates the structural symmetry or its absence will persist through any changes to the matrix
+.    MAT_SYMMETRY_ETERNAL - indicates the symmetry (or Hermitian structure) or its absence will persist through any changes to the matrix
+.    MAT_STRUCTURAL_SYMMETRY_ETERNAL - indicates the structural symmetry or its absence will persist through any changes to the matrix
+-    MAT_SPD_ETERNAL - indicates the value of MAT_SPD (true or false) will persist through any changes to the matrix
 
    These are not really options of the matrix, they are knowledge about the structure of the matrix that users may provide so that they
    do not need to be computed (usually at a high cost)
@@ -5882,6 +5883,12 @@ PetscErrorCode MatAssemblyEnd(Mat mat,MatAssemblyType type)
    MAT_SORTED_FULL - each process provides exactly its local rows; all column indices for a given row are passed in a
                      single call to MatSetValues(), preallocation is perfect, row oriented, INSERT_VALUES is used. Common
                      with finite difference schemes with non-periodic boundary conditions.
+
+   Developer Note:
+   MAT_SYMMETRY_ETERNAL, MAT_STRUCTURAL_SYMMETRY_ETERNAL, and MAT_SPD_ETERNAL are used by MatAssemblyEnd() and in other
+   places where otherwise the value of MAT_SYMMETRIC, MAT_STRUCTURAL_SYMMETRIC or MAT_SPD would need to be changed back
+   to PETSC_BOOL3_UNKNOWN because the matrix values had changed so the code cannot be certain that the related property had
+   not changed.
 
    Level: intermediate
 
