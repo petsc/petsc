@@ -227,8 +227,19 @@ class PetscConfig:
         ldshared = str.join(' ', ldshared)
         #
         def get_flags(cmd):
-            try: return ' '.join(split_quoted(cmd)[1:])
-            except: return ''
+            if not cmd: return ''
+            cmd = split_quoted(cmd)
+            if os.path.basename(cmd[0]) == 'xcrun':
+                del cmd[0]
+                while True:
+                    if cmd[0] == '-sdk':
+                        del cmd[0:2]
+                        continue
+                    if cmd[0] == '-log':
+                        del cmd[0]
+                        continue
+                    break
+            return ' '.join(cmd[1:])
         # PETSc C compiler
         PCC = self['PCC']
         PCC_FLAGS = get_flags(cc) + ' ' + self['PCC_FLAGS']
