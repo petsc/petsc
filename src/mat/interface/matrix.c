@@ -5952,13 +5952,16 @@ PetscErrorCode MatSetOption(Mat mat,MatOption op,PetscBool flg)
     mat->structurally_symmetric = flg ? PETSC_BOOL3_TRUE : PETSC_BOOL3_FALSE;
     break;
   case MAT_SYMMETRY_ETERNAL:
-    mat->symmetry_eternal = flg ? PETSC_TRUE : PETSC_FALSE;
+    PetscCheck(mat->symmetric != PETSC_BOOL3_UNKNOWN,PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Cannot set MAT_SYMMETRY_ETERNAL without first setting MAT_SYMMETRIC to true or false");
+               mat->symmetry_eternal = flg;
     if (flg) mat->structural_symmetry_eternal = PETSC_TRUE;
     break;
   case MAT_STRUCTURAL_SYMMETRY_ETERNAL:
+    PetscCheck(mat->structurally_symmetric != PETSC_BOOL3_UNKNOWN,PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Cannot set MAT_STRUCTURAL_SYMMETRY_ETERNAL without first setting MAT_STRUCTURAL_SYMMETRIC to true or false");
     mat->structural_symmetry_eternal = flg;
     break;
   case MAT_SPD_ETERNAL:
+    PetscCheck(mat->spd != PETSC_BOOL3_UNKNOWN,PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Cannot set MAT_SPD_ETERNAL without first setting MAT_SPD to true or false");
     mat->spd_eternal = flg;
     if (flg) {
       mat->structural_symmetry_eternal = PETSC_TRUE;

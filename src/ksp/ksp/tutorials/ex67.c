@@ -91,8 +91,8 @@ int main(int argc,char **argv)
   PetscCall(DMCreateMatrix(da,&J));
   PetscCall(MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,NULL,&constants));
   if (symmetric) {
-    PetscCall(MatSetOption(J,MAT_SYMMETRY_ETERNAL,PETSC_TRUE));
     PetscCall(MatSetOption(J,MAT_SYMMETRIC,PETSC_TRUE));
+    PetscCall(MatSetOption(J,MAT_SYMMETRY_ETERNAL,PETSC_TRUE));
   } else {
     Vec         n;
     PetscInt    zero = 0;

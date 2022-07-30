@@ -957,6 +957,7 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   PetscCall(MatShellSetOperation(user->JsBlockPrec,MATOP_MULT,(void(*)(void))StateMatBlockPrecMult));
   /* JsBlockPrec is symmetric */
   PetscCall(MatShellSetOperation(user->JsBlockPrec,MATOP_MULT_TRANSPOSE,(void(*)(void))StateMatBlockPrecMult));
+  PetscCall(MatSetOption(user->JsBlockPrec,MAT_SYMMETRIC,PETSC_TRUE));
   PetscCall(MatSetOption(user->JsBlockPrec,MAT_SYMMETRY_ETERNAL,PETSC_TRUE));
 
   /* Create a matrix-free shell user->Jd for computing B*x */

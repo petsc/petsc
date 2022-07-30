@@ -81,8 +81,8 @@ int main(int argc,char **args)
 
   /* Create and assemble the matrix */
   PetscCall(MatCreateH2OpusFromKernel(PETSC_COMM_WORLD,n,n,PETSC_DECIDE,PETSC_DECIDE,sdim,coords,PETSC_FALSE,RBF,&fctx,eta,leafsize,basisord,&A));
-  PetscCall(MatSetOption(A,MAT_SYMMETRY_ETERNAL,PETSC_TRUE));
   PetscCall(MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE));
+  PetscCall(MatSetOption(A,MAT_SYMMETRY_ETERNAL,PETSC_TRUE));
   PetscCall(PetscObjectSetName((PetscObject)A,"RBF"));
   PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
