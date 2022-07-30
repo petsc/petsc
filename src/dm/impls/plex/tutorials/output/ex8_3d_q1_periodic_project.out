@@ -7,7 +7,7 @@ box in 3 dimensions:
   Number of 3-cells per rank: 3
 Periodic mesh (NONE, NONE, PERIODIC) coordinates localized
 Labels:
-  marker: 1 strata with value/size (1 (36))
+  marker: 1 strata with value/size (1 (48))
   Face Sets: 4 strata with value/size (6 (3), 5 (3), 3 (3), 4 (3))
   depth: 4 strata with value/size (0 (12), 1 (24), 2 (15), 3 (3))
   celltype: 4 strata with value/size (7 (3), 0 (12), 4 (15), 1 (24))
