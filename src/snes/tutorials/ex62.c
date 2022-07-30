@@ -34,87 +34,73 @@ Lots of information about the FEM assembly can be printed using
 
 // TODO: Plot residual by fields after each smoother iterate
 
-typedef enum {SOL_QUADRATIC, SOL_TRIG, SOL_UNKNOWN} SolType;
+typedef enum {
+  SOL_QUADRATIC,
+  SOL_TRIG,
+  SOL_UNKNOWN
+} SolType;
 const char *SolTypes[] = {"quadratic", "trig", "unknown", "SolType", "SOL_", 0};
 
-typedef struct {
+typedef struct
+{
   PetscScalar mu; /* dynamic shear viscosity */
 } Parameter;
 
-typedef struct {
+typedef struct
+{
   PetscBag bag; /* Problem parameters */
   SolType  sol; /* MMS solution */
 } AppCtx;
 
-static void f1_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-                 const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-                 const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                 PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
+static void f1_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
 {
   const PetscReal mu = PetscRealPart(constants[0]);
-  const PetscInt  Nc = uOff[1]-uOff[0];
+  const PetscInt  Nc = uOff[1] - uOff[0];
+  PetscInt        c, d;
+
+  for (c = 0; c < Nc; ++c) {
+    for (d = 0; d < dim; ++d) { f1[c * dim + d] = mu * (u_x[c * dim + d] + u_x[d * dim + c]); }
+    f1[c * dim + c] -= u[uOff[1]];
+  }
+}
+
+static void f0_p(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
+  PetscInt d;
+  for (d = 0, f0[0] = 0.0; d < dim; ++d) f0[0] -= u_x[d * dim + d];
+}
+
+static void g1_pu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[])
+{
+  PetscInt d;
+  for (d = 0; d < dim; ++d) g1[d * dim + d] = -1.0; /* < q, -\nabla\cdot u > */
+}
+
+static void g2_up(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[])
+{
+  PetscInt d;
+  for (d = 0; d < dim; ++d) g2[d * dim + d] = -1.0; /* -< \nabla\cdot v, p > */
+}
+
+static void g3_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])
+{
+  const PetscReal mu = PetscRealPart(constants[0]);
+  const PetscInt  Nc = uOff[1] - uOff[0];
   PetscInt        c, d;
 
   for (c = 0; c < Nc; ++c) {
     for (d = 0; d < dim; ++d) {
-      f1[c*dim+d] = mu * (u_x[c*dim+d] + u_x[d*dim+c]);
-    }
-    f1[c*dim+c] -= u[uOff[1]];
-  }
-}
-
-static void f0_p(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-                 const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-                 const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                 PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
-{
-  PetscInt d;
-  for (d = 0, f0[0] = 0.0; d < dim; ++d) f0[0] -= u_x[d*dim+d];
-}
-
-static void g1_pu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-                  const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-                  const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                  PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[])
-{
-  PetscInt d;
-  for (d = 0; d < dim; ++d) g1[d*dim+d] = -1.0; /* < q, -\nabla\cdot u > */
-}
-
-static void g2_up(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-                  const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-                  const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                  PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[])
-{
-  PetscInt d;
-  for (d = 0; d < dim; ++d) g2[d*dim+d] = -1.0; /* -< \nabla\cdot v, p > */
-}
-
-static void g3_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-                  const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-                  const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                  PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])
-{
-  const PetscReal mu = PetscRealPart(constants[0]);
-  const PetscInt  Nc = uOff[1]-uOff[0];
-  PetscInt        c, d;
-
-  for (c = 0; c < Nc; ++c) {
-    for (d = 0; d < dim; ++d) {
-      g3[((c*Nc+c)*dim+d)*dim+d] += mu; /* < \nabla v, \nabla u > */
-      g3[((c*Nc+d)*dim+d)*dim+c] += mu; /* < \nabla v, {\nabla u}^T > */
+      g3[((c * Nc + c) * dim + d) * dim + d] += mu; /* < \nabla v, \nabla u > */
+      g3[((c * Nc + d) * dim + d) * dim + c] += mu; /* < \nabla v, {\nabla u}^T > */
     }
   }
 }
 
-static void g0_pp(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-                  const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-                  const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                  PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
+static void g0_pp(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
 {
   const PetscReal mu = PetscRealPart(constants[0]);
 
-  g0[0] = 1.0/mu;
+  g0[0] = 1.0 / mu;
 }
 
 /* Quadratic MMS Solution
@@ -152,10 +138,10 @@ static PetscErrorCode quadratic_u(PetscInt dim, PetscReal time, const PetscReal 
 {
   PetscInt c;
 
-  u[0] = (dim-1)*PetscSqr(x[0]);
+  u[0] = (dim - 1) * PetscSqr(x[0]);
   for (c = 1; c < Nc; ++c) {
     u[0] += PetscSqr(x[c]);
-    u[c]  = 2.0*PetscSqr(x[0]) - 2.0*x[0]*x[c];
+    u[c] = 2.0 * PetscSqr(x[0]) - 2.0 * x[0] * x[c];
   }
   return 0;
 }
@@ -164,21 +150,18 @@ static PetscErrorCode quadratic_p(PetscInt dim, PetscReal time, const PetscReal 
 {
   PetscInt d;
 
-  u[0] = -0.5*dim;
+  u[0] = -0.5 * dim;
   for (d = 0; d < dim; ++d) u[0] += x[d];
   return 0;
 }
 
-static void f0_quadratic_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-                           const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-                           const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                           PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+static void f0_quadratic_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 {
   const PetscReal mu = PetscRealPart(constants[0]);
   PetscInt        d;
 
-  f0[0] = (dim-1)*4.0*mu - 1.0;
-  for (d = 1; d < dim; ++d) f0[d] = 4.0*mu - 1.0;
+  f0[0] = (dim - 1) * 4.0 * mu - 1.0;
+  for (d = 1; d < dim; ++d) f0[d] = 4.0 * mu - 1.0;
 }
 
 /* Trigonometric MMS Solution
@@ -216,10 +199,10 @@ static PetscErrorCode trig_u(PetscInt dim, PetscReal time, const PetscReal x[], 
 {
   PetscInt c;
 
-  u[0] = (dim-1)*PetscSinReal(PETSC_PI*x[0]);
+  u[0] = (dim - 1) * PetscSinReal(PETSC_PI * x[0]);
   for (c = 1; c < Nc; ++c) {
-    u[0] += PetscSinReal(PETSC_PI*x[c]);
-    u[c]  = -PETSC_PI*PetscCosReal(PETSC_PI*x[0]) * x[c];
+    u[0] += PetscSinReal(PETSC_PI * x[c]);
+    u[c] = -PETSC_PI * PetscCosReal(PETSC_PI * x[0]) * x[c];
   }
   return 0;
 }
@@ -228,35 +211,32 @@ static PetscErrorCode trig_p(PetscInt dim, PetscReal time, const PetscReal x[], 
 {
   PetscInt d;
 
-  for (d = 0, u[0] = 0.0; d < dim; ++d) u[0] += PetscSinReal(2.0*PETSC_PI*x[d]);
+  for (d = 0, u[0] = 0.0; d < dim; ++d) u[0] += PetscSinReal(2.0 * PETSC_PI * x[d]);
   return 0;
 }
 
-static void f0_trig_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-                      const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-                      const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                      PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+static void f0_trig_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 {
   const PetscReal mu = PetscRealPart(constants[0]);
   PetscInt        d;
 
-  f0[0] = -2.0*PETSC_PI*PetscCosReal(2.0*PETSC_PI*x[0]) - (dim-1)*mu*PetscSqr(PETSC_PI)*PetscSinReal(PETSC_PI*x[0]);
+  f0[0] = -2.0 * PETSC_PI * PetscCosReal(2.0 * PETSC_PI * x[0]) - (dim - 1) * mu * PetscSqr(PETSC_PI) * PetscSinReal(PETSC_PI * x[0]);
   for (d = 1; d < dim; ++d) {
-    f0[0] -= mu*PetscSqr(PETSC_PI)*PetscSinReal(PETSC_PI*x[d]);
-    f0[d]  = -2.0*PETSC_PI*PetscCosReal(2.0*PETSC_PI*x[d]) + mu*PetscPowRealInt(PETSC_PI, 3)*PetscCosReal(PETSC_PI*x[0])*x[d];
+    f0[0] -= mu * PetscSqr(PETSC_PI) * PetscSinReal(PETSC_PI * x[d]);
+    f0[d] = -2.0 * PETSC_PI * PetscCosReal(2.0 * PETSC_PI * x[d]) + mu * PetscPowRealInt(PETSC_PI, 3) * PetscCosReal(PETSC_PI * x[0]) * x[d];
   }
 }
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  PetscInt       sol;
+  PetscInt sol;
 
   PetscFunctionBeginUser;
   options->sol = SOL_QUADRATIC;
   PetscOptionsBegin(comm, "", "Stokes Problem Options", "DMPLEX");
-  sol  = options->sol;
-  PetscCall(PetscOptionsEList("-sol", "The MMS solution", "ex62.c", SolTypes, PETSC_STATIC_ARRAY_LENGTH(SolTypes)-3, SolTypes[options->sol], &sol, NULL));
-  options->sol = (SolType) sol;
+  sol = options->sol;
+  PetscCall(PetscOptionsEList("-sol", "The MMS solution", "ex62.c", SolTypes, PETSC_STATIC_ARRAY_LENGTH(SolTypes) - 3, SolTypes[options->sol], &sol, NULL));
+  options->sol = (SolType)sol;
   PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -273,12 +253,12 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
 static PetscErrorCode SetupParameters(MPI_Comm comm, AppCtx *ctx)
 {
-  Parameter     *p;
+  Parameter *p;
 
   PetscFunctionBeginUser;
   /* setup PETSc parameter bag */
   PetscCall(PetscBagCreate(PETSC_COMM_SELF, sizeof(Parameter), &ctx->bag));
-  PetscCall(PetscBagGetData(ctx->bag, (void **) &p));
+  PetscCall(PetscBagGetData(ctx->bag, (void **)&p));
   PetscCall(PetscBagSetName(ctx->bag, "par", "Stokes Parameters"));
   PetscCall(PetscBagRegisterScalar(ctx->bag, &p->mu, 1.0, "mu", "Dynamic Shear Viscosity, Pa s"));
   PetscCall(PetscBagSetFromOptions(ctx->bag));
@@ -302,29 +282,29 @@ static PetscErrorCode SetupParameters(MPI_Comm comm, AppCtx *ctx)
 static PetscErrorCode SetupEqn(DM dm, AppCtx *user)
 {
   PetscErrorCode (*exactFuncs[2])(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *);
-  PetscDS          ds;
-  DMLabel          label;
-  const PetscInt   id = 1;
+  PetscDS        ds;
+  DMLabel        label;
+  const PetscInt id = 1;
 
   PetscFunctionBeginUser;
   PetscCall(DMGetDS(dm, &ds));
   switch (user->sol) {
-    case SOL_QUADRATIC:
-      PetscCall(PetscDSSetResidual(ds, 0, f0_quadratic_u, f1_u));
-      exactFuncs[0] = quadratic_u;
-      exactFuncs[1] = quadratic_p;
-      break;
-    case SOL_TRIG:
-      PetscCall(PetscDSSetResidual(ds, 0, f0_trig_u, f1_u));
-      exactFuncs[0] = trig_u;
-      exactFuncs[1] = trig_p;
-      break;
-    default: SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Unsupported solution type: %s (%d)", SolTypes[PetscMin(user->sol, SOL_UNKNOWN)], user->sol);
+  case SOL_QUADRATIC:
+    PetscCall(PetscDSSetResidual(ds, 0, f0_quadratic_u, f1_u));
+    exactFuncs[0] = quadratic_u;
+    exactFuncs[1] = quadratic_p;
+    break;
+  case SOL_TRIG:
+    PetscCall(PetscDSSetResidual(ds, 0, f0_trig_u, f1_u));
+    exactFuncs[0] = trig_u;
+    exactFuncs[1] = trig_p;
+    break;
+  default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unsupported solution type: %s (%d)", SolTypes[PetscMin(user->sol, SOL_UNKNOWN)], user->sol);
   }
   PetscCall(PetscDSSetResidual(ds, 1, f0_p, NULL));
-  PetscCall(PetscDSSetJacobian(ds, 0, 0, NULL, NULL,  NULL,  g3_uu));
-  PetscCall(PetscDSSetJacobian(ds, 0, 1, NULL, NULL,  g2_up, NULL));
-  PetscCall(PetscDSSetJacobian(ds, 1, 0, NULL, g1_pu, NULL,  NULL));
+  PetscCall(PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_uu));
+  PetscCall(PetscDSSetJacobian(ds, 0, 1, NULL, NULL, g2_up, NULL));
+  PetscCall(PetscDSSetJacobian(ds, 1, 0, NULL, g1_pu, NULL, NULL));
   PetscCall(PetscDSSetJacobianPreconditioner(ds, 0, 0, NULL, NULL, NULL, g3_uu));
   PetscCall(PetscDSSetJacobianPreconditioner(ds, 1, 1, g0_pp, NULL, NULL, NULL));
 
@@ -332,14 +312,14 @@ static PetscErrorCode SetupEqn(DM dm, AppCtx *user)
   PetscCall(PetscDSSetExactSolution(ds, 1, exactFuncs[1], user));
 
   PetscCall(DMGetLabel(dm, "marker", &label));
-  PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) exactFuncs[0], NULL, user, NULL));
+  PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void))exactFuncs[0], NULL, user, NULL));
 
   /* Make constant values available to pointwise functions */
   {
     Parameter  *param;
     PetscScalar constants[1];
 
-    PetscCall(PetscBagGetData(user->bag, (void **) &param));
+    PetscCall(PetscBagGetData(user->bag, (void **)&param));
     constants[0] = param->mu; /* dynamic shear viscosity, Pa s */
     PetscCall(PetscDSSetConstants(ds, 1, constants));
   }
@@ -361,16 +341,16 @@ static PetscErrorCode one(PetscInt dim, PetscReal time, const PetscReal x[], Pet
 
 static PetscErrorCode CreatePressureNullSpace(DM dm, PetscInt origField, PetscInt field, MatNullSpace *nullspace)
 {
-  Vec              vec;
-  PetscErrorCode (*funcs[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void* ctx) = {zero, one};
+  Vec vec;
+  PetscErrorCode (*funcs[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx) = {zero, one};
 
   PetscFunctionBeginUser;
-  PetscCheck(origField == 1,PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Field %" PetscInt_FMT " should be 1 for pressure", origField);
+  PetscCheck(origField == 1, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Field %" PetscInt_FMT " should be 1 for pressure", origField);
   funcs[field] = one;
   {
     PetscDS ds;
     PetscCall(DMGetDS(dm, &ds));
-    PetscCall(PetscObjectViewFromOptions((PetscObject) ds, NULL, "-ds_view"));
+    PetscCall(PetscObjectViewFromOptions((PetscObject)ds, NULL, "-ds_view"));
   }
   PetscCall(DMCreateGlobalVector(dm, &vec));
   PetscCall(DMProjectFunction(dm, 0.0, funcs, NULL, INSERT_ALL_VALUES, vec));
@@ -384,7 +364,7 @@ static PetscErrorCode CreatePressureNullSpace(DM dm, PetscInt origField, PetscIn
 
     PetscCall(DMGetField(dm, field, NULL, &pressure));
     PetscCall(MatNullSpaceCreate(PetscObjectComm(pressure), PETSC_TRUE, 0, NULL, &nullspacePres));
-    PetscCall(PetscObjectCompose(pressure, "nullspace", (PetscObject) nullspacePres));
+    PetscCall(PetscObjectCompose(pressure, "nullspace", (PetscObject)nullspacePres));
     PetscCall(MatNullSpaceDestroy(&nullspacePres));
   }
   PetscFunctionReturn(0);
@@ -397,7 +377,7 @@ static PetscErrorCode SetupProblem(DM dm, PetscErrorCode (*setupEqn)(DM, AppCtx 
   PetscBool       simplex;
   PetscInt        dim, Nf = 2, f, Nc[2];
   const char     *name[2]   = {"velocity", "pressure"};
-  const char     *prefix[2] = {"vel_",     "pres_"};
+  const char     *prefix[2] = {"vel_", "pres_"};
 
   PetscFunctionBegin;
   PetscCall(DMGetDimension(dm, &dim));
@@ -408,10 +388,10 @@ static PetscErrorCode SetupProblem(DM dm, PetscErrorCode (*setupEqn)(DM, AppCtx 
     PetscFE fe;
 
     PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, Nc[f], simplex, prefix[f], -1, &fe));
-    PetscCall(PetscObjectSetName((PetscObject) fe, name[f]));
+    PetscCall(PetscObjectSetName((PetscObject)fe, name[f]));
     if (!q) PetscCall(PetscFEGetQuadrature(fe, &q));
     PetscCall(PetscFESetQuadrature(fe, q));
-    PetscCall(DMSetField(dm, f, NULL, (PetscObject) fe));
+    PetscCall(DMSetField(dm, f, NULL, (PetscObject)fe));
     PetscCall(PetscFEDestroy(&fe));
   }
   PetscCall(DMCreateDS(dm));
@@ -426,16 +406,16 @@ static PetscErrorCode SetupProblem(DM dm, PetscErrorCode (*setupEqn)(DM, AppCtx 
 
 int main(int argc, char **argv)
 {
-  SNES           snes;
-  DM             dm;
-  Vec            u;
-  AppCtx         user;
+  SNES   snes;
+  DM     dm;
+  Vec    u;
+  AppCtx user;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
   PetscCall(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
-  PetscCall(SNESCreate(PetscObjectComm((PetscObject) dm), &snes));
+  PetscCall(SNESCreate(PetscObjectComm((PetscObject)dm), &snes));
   PetscCall(SNESSetDM(snes, dm));
   PetscCall(DMSetApplicationContext(dm, &user));
 
@@ -447,7 +427,7 @@ int main(int argc, char **argv)
   PetscCall(DMPlexSetSNESLocalFEM(dm, &user, &user, &user));
   PetscCall(SNESSetFromOptions(snes));
   PetscCall(DMSNESCheckFromOptions(snes, u));
-  PetscCall(PetscObjectSetName((PetscObject) u, "Solution"));
+  PetscCall(PetscObjectSetName((PetscObject)u, "Solution"));
   {
     Mat          J;
     MatNullSpace sp;
@@ -457,7 +437,7 @@ int main(int argc, char **argv)
     PetscCall(SNESGetJacobian(snes, &J, NULL, NULL, NULL));
     PetscCall(MatSetNullSpace(J, sp));
     PetscCall(MatNullSpaceDestroy(&sp));
-    PetscCall(PetscObjectSetName((PetscObject) J, "Jacobian"));
+    PetscCall(PetscObjectSetName((PetscObject)J, "Jacobian"));
     PetscCall(MatViewFromOptions(J, NULL, "-J_view"));
   }
   PetscCall(SNESSolve(snes, NULL, u));
