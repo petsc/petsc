@@ -37,7 +37,8 @@ int main(int argc,char **argv)
   PetscCall(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,8,1,1,NULL,&da));
   PetscCall(DMSetFromOptions(da));
   PetscCall(DMSetUp(da));
-  PetscCall(DMCreateGlobalVector(da,&x); VecDuplicate(x,&f));
+  PetscCall(DMCreateGlobalVector(da,&x));
+  PetscCall(VecDuplicate(x,&f));
   PetscCall(DMCreateMatrix(da,&J));
 
   PetscCall(SNESCreate(PETSC_COMM_WORLD,&snes));
