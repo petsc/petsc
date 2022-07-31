@@ -105,9 +105,14 @@
 
 !  Create distributed array (DMDA) to manage parallel grid and vectors
 
-! This really needs only the star-type stencil, but we use the box
-! stencil temporarily.
+!     This really needs only the star-type stencil, but we use the box stencil temporarily.
+
+#if defined(PETSC_HAVE_FORTRAN_FREE_LINE_LENGTH_NONE)
       PetscCallA(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,i4,i4,PETSC_DECIDE,PETSC_DECIDE,i1,i1,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr))
+#else
+      call DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,i4,i4,PETSC_DECIDE,PETSC_DECIDE,i1,i1, &
+                        PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr)
+#endif
       PetscCallA(DMSetFromOptions(da,ierr))
       PetscCallA(DMSetUp(da,ierr))
 
@@ -119,7 +124,13 @@
 
 !  Get local grid boundaries (for 2-dimensional DMDA)
 
+#if defined(PETSC_HAVE_FORTRAN_FREE_LINE_LENGTH_NONE)
       PetscCallA(DMDAGetInfo(da,PETSC_NULL_INTEGER,mx,my,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr))
+#else
+      call DMDAGetInfo(da,PETSC_NULL_INTEGER,mx,my,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER, &
+                       PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER, &
+                       PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
+#endif
       PetscCallA(DMDAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,PETSC_NULL_INTEGER,ierr))
       PetscCallA(DMDAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,PETSC_NULL_INTEGER,ierr))
 

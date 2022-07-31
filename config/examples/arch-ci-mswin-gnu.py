@@ -2,6 +2,8 @@
 
 configure_options = [
   # Autodetect cygwin blas/lapack, OpenMPI
+  # mpiexec prints  "unable to open debugger attach fifo messages" that breaks "make check"
+  '--with-batch=1',
   '--with-debugging=0',
   # not using -g so that the binaries are smaller
   'COPTFLAGS=-O',
