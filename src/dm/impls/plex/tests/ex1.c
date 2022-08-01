@@ -69,7 +69,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscCall(DMGetDimension(*dm, &dim));
 
   if (testp4est_seq) {
-#if defined(PETSC_HAVE_P4EST)
+    PetscCheck(PetscDefined(HAVE_P4EST),PETSC_COMM_WORLD,PETSC_ERR_SUP,"Reconfigure PETSc with --download-p4est");
     DM dmConv = NULL;
 
     PetscCall(DMPlexCheck(*dm));
@@ -112,9 +112,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     PetscCall(PetscObjectSetOptionsPrefix((PetscObject) *dm, "conv_seq_2_"));
     PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
     PetscCall(PetscObjectSetOptionsPrefix((PetscObject) *dm, NULL));
-#else
-    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Recompile with --download-p4est");
-#endif
   }
 
   PetscCall(PetscLogStagePop());
@@ -134,7 +131,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscCall(PetscLogStagePop());
 
   if (testp4est_par) {
-#if defined(PETSC_HAVE_P4EST)
+    PetscCheck(PetscDefined(HAVE_P4EST),PETSC_COMM_WORLD,PETSC_ERR_SUP,"Reconfigure PETSc with --download-p4est");
     DM dmConv = NULL;
 
     PetscCall(DMPlexCheck(*dm));
@@ -171,9 +168,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     PetscCall(PetscObjectSetOptionsPrefix((PetscObject) *dm, "conv_par_2_"));
     PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
     PetscCall(PetscObjectSetOptionsPrefix((PetscObject) *dm, NULL));
-#else
-    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Recompile with --download-p4est");
-#endif
   }
 
   /* test redistribution of an already distributed mesh */

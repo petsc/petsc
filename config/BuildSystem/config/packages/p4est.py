@@ -5,6 +5,8 @@ class Configure(config.package.GNUPackage):
     config.package.GNUPackage.__init__(self, framework)
     self.gitcommit         = '361499293eb2076f000d66e01f3253e31b00e030'
     self.download          = ['git://https://github.com/tisaac/p4est','https://github.com/tisaac/p4est/archive/'+self.gitcommit+'.tar.gz']
+    self.versionname       = 'P4EST_VERSION_MAJOR.P4EST_VERSION_MINOR.P4EST_VERSION_POINT'
+    self.versioninclude    = 'p4est_config.h'
     self.functions         = ['p4est_init']
     self.includes          = ['p4est_bits.h']
     self.liblist           = [['libp4est.a', 'libsc.a']]
