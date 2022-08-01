@@ -101,7 +101,6 @@ PetscErrorCode DMPlexGetGlobalToNaturalSF(DM dm, PetscSF *naturalSF)
 PetscErrorCode DMPlexCreateGlobalToNaturalSF(DM dm, PetscSection section, PetscSF sfMigration, PetscSF *sfNatural)
 {
   MPI_Comm     comm;
-  Vec          tmpVec;
   PetscSF      sf, sfEmbed, sfField;
   PetscSection gSection, sectionDist, gLocSection;
   PetscInt    *spoints, *remoteOffsets;
@@ -134,9 +133,7 @@ PetscErrorCode DMPlexCreateGlobalToNaturalSF(DM dm, PetscSection section, PetscS
   if (debug) PetscCall(PetscSectionView(sectionDist, NULL));
   PetscCall(DMSetLocalSection(dm, sectionDist));
   /* If a sequential section is provided but no dof is affected, sfNatural cannot be computed and is set to NULL */
-  PetscCall(DMCreateGlobalVector(dm, &tmpVec));
-  PetscCall(VecGetSize(tmpVec, &globalSize));
-  PetscCall(DMRestoreGlobalVector(dm, &tmpVec));
+  PetscCall(PetscSectionGetStorageSize(sectionDist, &globalSize));
   if (globalSize) {
     const PetscInt *leaves;
     PetscInt       *sortleaves, *indices;
@@ -175,7 +172,7 @@ PetscErrorCode DMPlexCreateGlobalToNaturalSF(DM dm, PetscSection section, PetscS
     /* Create the SF associated with this section
          Roots are natural dofs, leaves are global dofs */
     PetscCall(DMGetPointSF(dm, &sf));
-    PetscCall(PetscSectionCreateGlobalSection(sectionDist, sf, PETSC_FALSE, PETSC_TRUE, &gLocSection));
+    PetscCall(PetscSectionCreateGlobalSection(sectionDist, sf, PETSC_TRUE, PETSC_TRUE, &gLocSection));
     PetscCall(PetscSFCreateSectionSF(sfEmbed, section, remoteOffsets, gLocSection, &sfField));
     PetscCall(PetscSFDestroy(&sfEmbed));
     PetscCall(PetscSectionDestroy(&gLocSection));
