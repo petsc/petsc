@@ -2861,8 +2861,9 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
     PetscCall(DMPlexTransformCreateDiscLabels(tr, edm));
     PetscCall(DMPlexTransformDestroy(&tr));
     if (edm) {
-      ((DM_Plex *)edm->data)->printFEM = ((DM_Plex *)dm->data)->printFEM;
-      ((DM_Plex *)edm->data)->printL2  = ((DM_Plex *)dm->data)->printL2;
+      ((DM_Plex *)edm->data)->printFEM    = ((DM_Plex *)dm->data)->printFEM;
+      ((DM_Plex *)edm->data)->printL2     = ((DM_Plex *)dm->data)->printL2;
+      ((DM_Plex *)edm->data)->printLocate = ((DM_Plex *)dm->data)->printLocate;
     }
     PetscCall(DMPlexReplace_Static(dm, &edm));
   }
@@ -3411,6 +3412,7 @@ PetscErrorCode DMSetFromOptions_NonRefinement_Plex(PetscOptionItems *PetscOption
   PetscCall(PetscOptionsBoundedInt("-dm_plex_print_fem", "Debug output level all fem computations", "DMPlexSNESComputeResidualFEM", 0, &mesh->printFEM, NULL,0));
   PetscCall(PetscOptionsReal("-dm_plex_print_tol", "Tolerance for FEM output", "DMPlexSNESComputeResidualFEM", mesh->printTol, &mesh->printTol, NULL));
   PetscCall(PetscOptionsBoundedInt("-dm_plex_print_l2", "Debug output level all L2 diff computations", "DMComputeL2Diff", 0, &mesh->printL2, NULL,0));
+  PetscCall(PetscOptionsBoundedInt("-dm_plex_print_locate", "Debug output level all point location computations", "DMLocatePoints", 0, &mesh->printLocate, NULL,0));
   PetscCall(DMMonitorSetFromOptions(dm, "-dm_plex_monitor_throughput", "Monitor the simulation throughput", "DMPlexMonitorThroughput", DMPlexMonitorThroughput, NULL, &flg));
   if (flg) PetscCall(PetscLogDefaultBegin());
   /* Labeling */
