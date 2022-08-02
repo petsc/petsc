@@ -203,33 +203,6 @@ VecGetCurrentMemType(Vec v, PetscMemType *m)
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode
-VecStrideSum(Vec v, PetscInt start, PetscScalar *a)
-{
-  PetscInt           i,n,bs;
-  const PetscScalar *x;
-  PetscScalar        sum;
-  MPI_Comm           comm;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,VEC_CLASSID,1);
-  PetscValidType(v,1);
-  PetscValidScalarPointer(a,2);
-  PetscCall(VecGetBlockSize(v,&bs));
-  PetscCheck(start >=  0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %" PetscInt_FMT,start);
-  PetscCheck(start < bs,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,
-             "Start of stride subvector (%" PetscInt_FMT ") is too large "
-             "for block size (%" PetscInt_FMT ")",start,bs);
-  PetscCall(VecGetLocalSize(v,&n));
-  PetscCall(VecGetArrayRead(v,&x));
-  sum = (PetscScalar)0.0;
-  for (i=start; i<n; i+=bs) sum += x[i];
-  PetscCall(VecRestoreArrayRead(v,&x));
-  PetscCall(PetscObjectGetComm((PetscObject)v,&comm));
-  PetscCallMPI(MPI_Allreduce(&sum,a,1,MPIU_SCALAR,MPIU_SUM,comm));
-  PetscFunctionReturn(0);
-}
-
 /* ---------------------------------------------------------------- */
 
 static inline

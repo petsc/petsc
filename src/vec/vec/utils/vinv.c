@@ -283,6 +283,50 @@ PetscErrorCode  VecStrideMin(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
 }
 
 /*@
+   VecStrideSum - Computes the sum of subvector of a vector defined
+   by a starting point and a stride.
+
+   Collective on Vec
+
+   Input Parameters:
++  v - the vector
+.  start - starting point of the subvector (defined by a stride)
+
+   Output Parameter:
+.  sum - the sum
+
+   Notes:
+   One must call VecSetBlockSize() before this routine to set the stride
+   information, or use a vector created from a multicomponent DMDA.
+
+   If x is the array representing the vector x then this computes the sum
+   of the array (x[start],x[start+stride],x[start+2*stride], ....)
+
+   Level: advanced
+
+.seealso: `VecSum()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMin()`, `VecStrideMax()`
+@*/
+PetscErrorCode  VecStrideSum(Vec v,PetscInt start,PetscScalar *sum)
+{
+  PetscInt          i,n,bs;
+  const PetscScalar *x;
+  PetscScalar       local_sum = 0.0;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,VEC_CLASSID,1);
+  PetscValidScalarPointer(sum,3);
+  PetscCall(VecGetLocalSize(v,&n));
+  PetscCall(VecGetBlockSize(v,&bs));
+  PetscCheck(start >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %" PetscInt_FMT,start);
+  PetscCheck(start < bs,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%" PetscInt_FMT ") is too large for stride\n Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?",start,bs);
+  PetscCall(VecGetArrayRead(v,&x));
+  for (i=start; i<n; i+=bs) local_sum += x[i];
+  PetscCall(MPIU_Allreduce(&local_sum,sum,1,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)v)));
+  PetscCall(VecRestoreArrayRead(v,&x));
+  PetscFunctionReturn(0);
+}
+
+/*@
    VecStrideScaleAll - Scales the subvectors of a vector defined
    by a starting point and a stride.
 
@@ -515,6 +559,58 @@ PetscErrorCode  VecStrideMinAll(Vec v,PetscInt idex[],PetscReal nrm[])
     }
   }
   PetscCall(MPIU_Allreduce(min,nrm,bs,MPIU_REAL,MPIU_MIN,comm));
+
+  PetscCall(VecRestoreArrayRead(v,&x));
+  PetscFunctionReturn(0);
+}
+
+/*@
+   VecStrideSumAll - Computes the sums of subvectors of a vector defined
+   by a starting point and a stride.
+
+   Collective on Vec
+
+   Input Parameters:
++  v - the vector
+
+   Output Parameter:
+.  sums - the sums
+
+   Notes:
+   One must call VecSetBlockSize() before this routine to set the stride
+   information, or use a vector created from a multicomponent DMDA.
+
+   If x is the array representing the vector x then this computes the sum
+   of the array (x[start],x[start+stride],x[start+2*stride], ....) for each start < stride
+
+   Level: advanced
+
+.seealso: `VecSum()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMin()`, `VecStrideMax()`
+@*/
+PetscErrorCode  VecStrideSumAll(Vec v,PetscScalar sums[])
+{
+  PetscInt          i,j,n,bs;
+  const PetscScalar *x;
+  PetscScalar       local_sums[128];
+  MPI_Comm          comm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,VEC_CLASSID,1);
+  PetscValidScalarPointer(sums,2);
+  PetscCall(VecGetLocalSize(v,&n));
+  PetscCall(VecGetArrayRead(v,&x));
+  PetscCall(PetscObjectGetComm((PetscObject)v,&comm));
+
+  PetscCall(VecGetBlockSize(v,&bs));
+  PetscCheck(bs <= 128,comm,PETSC_ERR_SUP,"Currently supports only blocksize up to 128");
+
+  for (j=0; j<bs; j++) local_sums[j] = 0.0;
+  for (i=0; i<n; i+=bs) {
+    for (j=0; j<bs; j++) {
+      local_sums[j] += x[i+j];
+    }
+  }
+  PetscCall(MPIU_Allreduce(local_sums,sums,bs,MPIU_SCALAR,MPIU_SUM,comm));
 
   PetscCall(VecRestoreArrayRead(v,&x));
   PetscFunctionReturn(0);
