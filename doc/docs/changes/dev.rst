@@ -100,6 +100,7 @@ In addition to the changes above
 .. rubric:: Vec:
 
 - Add ``VecSetPreallocationCOO()``, ``VecSetValuesCOO()`` and ``VecSetPreallocationCOOLocal()`` to support vector assembly with coordinates
+- Add ``VecStrideSum()`` and ``VecStrideSumAll()`` for summing subvectors of strided vectors
 
 .. rubric:: PetscSection:
 
