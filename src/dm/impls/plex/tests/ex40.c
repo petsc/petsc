@@ -60,9 +60,9 @@ int main(int argc, char **argv)
 
   test:
     suffix: box_tri
-    requires: triangle
+    requires: triangle parmetis
     nsize: {{1 3 5}}
-    args: -dm_plex_box_faces 3,3 -dm_refine 2 -dm_plex_check_all
+    args: -dm_plex_box_faces 3,3 -dm_refine 2 -dm_plex_check_all -petscpartitioner_type parmetis
 
   test:
     suffix: ref_quad
@@ -71,7 +71,8 @@ int main(int argc, char **argv)
   test:
     suffix: box_quad
     nsize: {{1 3 5}}
-    args: -dm_plex_box_faces 3,3 -dm_plex_simplex 0 -dm_refine 2 -dm_plex_check_all
+    requires: parmetis
+    args: -dm_plex_box_faces 3,3 -dm_plex_simplex 0 -dm_refine 2 -dm_plex_check_all -petscpartitioner_type parmetis
 
   test:
     suffix: ref_tet
@@ -79,9 +80,9 @@ int main(int argc, char **argv)
 
   test:
     suffix: box_tet
-    requires: ctetgen
+    requires: ctetgen parmetis
     nsize: {{1 3 5}}
-    args: -dm_plex_dim 3 -dm_plex_box_faces 3,3,3 -dm_refine 2 -dm_plex_check_all
+    args: -dm_plex_dim 3 -dm_plex_box_faces 3,3,3 -dm_refine 2 -dm_plex_check_all -petscpartitioner_type parmetis
 
   test:
     suffix: ref_hex
@@ -89,8 +90,9 @@ int main(int argc, char **argv)
 
   test:
     suffix: box_hex
+    requires: parmetis
     nsize: {{1 3 5}}
-    args: -dm_plex_dim 3 -dm_plex_box_faces 3,3,3 -dm_plex_simplex 0 -dm_refine 2 -dm_plex_check_all
+    args: -dm_plex_dim 3 -dm_plex_box_faces 3,3,3 -dm_plex_simplex 0 -dm_refine 2 -dm_plex_check_all -petscpartitioner_type parmetis
 
   test:
     suffix: ref_trip
@@ -121,9 +123,9 @@ int main(int argc, char **argv)
 
     test:
       suffix: box_tri_tobox
-      requires: triangle
+      requires: triangle parmetis
       nsize: {{1 3 5}}
-      args: -dm_plex_box_faces 3,3 -dm_refine 2
+      args: -dm_plex_box_faces 3,3 -dm_refine 2 -petscpartitioner_type parmetis
 
     test:
       suffix: ref_tet_tobox
@@ -131,9 +133,9 @@ int main(int argc, char **argv)
 
     test:
       suffix: box_tet_tobox
-      requires: ctetgen
+      requires: ctetgen parmetis
       nsize: {{1 3 5}}
-      args: -dm_plex_dim 3 -dm_plex_box_faces 3,3,3 -dm_refine 2
+      args: -dm_plex_dim 3 -dm_plex_box_faces 3,3,3 -dm_refine 2 -petscpartitioner_type parmetis
 
     test:
       suffix: ref_trip_tobox
