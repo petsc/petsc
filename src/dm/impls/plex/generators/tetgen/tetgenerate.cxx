@@ -53,6 +53,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpo
     in.pointlist       = new double[in.numberofpoints*dim];
     in.pointmarkerlist = new int[in.numberofpoints];
 
+    PetscCall(PetscArrayzero(in.pointmarkerlist, (size_t) in.numberofpoints));
     PetscCall(DMGetCoordinatesLocal(boundary, &coordinates));
     PetscCall(DMGetCoordinateSection(boundary, &coordSection));
     PetscCall(VecGetArrayRead(coordinates, &array));
@@ -311,6 +312,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *d
     in.pointlist       = new double[in.numberofpoints*dim];
     in.pointmarkerlist = new int[in.numberofpoints];
 
+    PetscCall(PetscArrayzero(in.pointmarkerlist, (size_t) in.numberofpoints));
     PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
     PetscCall(DMGetCoordinateSection(dm, &coordSection));
     PetscCall(VecGetArray(coordinates, &array));

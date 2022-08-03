@@ -47,7 +47,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interp
     const PetscScalar *array;
 
     PetscCall(PetscMalloc1(in->numberofpoints*dim, &in->pointlist));
-    PetscCall(PetscMalloc1(in->numberofpoints,     &in->pointmarkerlist));
+    PetscCall(PetscCalloc1(in->numberofpoints,     &in->pointmarkerlist));
     PetscCall(DMGetCoordinatesLocal(boundary, &coordinates));
     PetscCall(DMGetCoordinateSection(boundary, &coordSection));
     PetscCall(VecGetArrayRead(coordinates, &array));
@@ -311,7 +311,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_CTetgen(DM dm, PetscReal *maxVolumes, D
     PetscScalar *array;
 
     PetscCall(PetscMalloc1(in->numberofpoints*dim, &in->pointlist));
-    PetscCall(PetscMalloc1(in->numberofpoints, &in->pointmarkerlist));
+    PetscCall(PetscCalloc1(in->numberofpoints, &in->pointmarkerlist));
     PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
     PetscCall(DMGetCoordinateSection(dm, &coordSection));
     PetscCall(VecGetArray(coordinates, &array));
