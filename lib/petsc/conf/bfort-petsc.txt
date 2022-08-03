@@ -1,218 +1,289 @@
 # these include enums
-native PetscSubcommType
-native PetscInfoCommFlag
-native DMDAStencilType
-native DMDADirection
-native DMDAInterpolationType
-native DMDAElementType
-native DMPlexShape
-native DMPlexTPSType
-native DMBoundaryType
-native DMAdaptationStrategy
-native DMCopyLabelsMode
-native PetscDrawMarkerType
-native ISGlobalToLocalMappingMode
-native ISColoringType
-native KSPFCDTruncationType
-native KSPGMRESCGSRefinementType
-native KSPNormType
-native KSPCGType
-native MatSchurComplementAinvType
-native MatFactorType
-native MatFactorError
-native MatCompositeType
-native MatAssemblyType
-native MatInfoType
-native MatFactorShiftType
-native MatColoringWeightType
-native MPChacoGlobalType
-native MPChacoLocalType
-native MPChacoEigenType
-native MPPTScotchStrategyType
-native PCJacobiType
-native PCASMType
-native PCGASMType
-native PCCompositeType
-native PCFieldSplitSchurPreType
-native PCPARMSGlobalType
-native PCPARMSLocalType
-native PCMGType
-native PCMGCycleType
-native PCMGGalerkinType
-native PCExoticType
-native PCDeflationType
-native PetscSFWindowSyncType
-native SNESCompositeType
-native SNESFASType
-native TaoSubsetType
-native TSProblemType
-native TSSundialsLmmType
-native TSSundialsGramSchmidtType
-native NormType
-native PetscViewerVTKFieldType
-native PetscScalar
-native PetscReal
-native PetscBool
-native PetscBool3
-native PetscCount
-native PetscSizeT
-native MatStructure
-native PCFailedReason
-native KSPConvergedReason
-native SNESConvergedReason
-native SNESLineSearchReason
-native TSConvergedReason
-native BCArrayPart
-native PetscLogDouble
-native PetscInt
-native PetscObjectId
-native PetscMPIInt
-native PetscErrorCode
-native PetscCookie
-native PetscEvent
-native PetscBLASInt
-native ISColoringValue
-native MatReal
-native PetscSysInt
-native MatSTRUMPACKReordering
-native PCGAMGLayoutType
-native PCHPDDMCoarseCorrectionType
-native PetscOffloadMask
-# Some structures are like arrays and can be treated as native types
-native MatInfo
-native MatStencil
-native DALocalInfo
-native MatFactorInfo
-# Old PETSc types
-native PetscTruth
-#
-nativeptr PetscOptions
+
+# petscao.h
 nativeptr AO
-nativeptr DM
-nativeptr DMLabel
-nativeptr IS
-nativeptr ISColoring
-nativeptr ISLocalToGlobalMapping
-nativeptr Characteristic
-nativeptr KSP
-nativeptr Mat
-nativeptr MatFDColoring
-nativeptr MatNullSpace
-nativeptr MatPartitioning
-nativeptr PC
+
+# petscbag.h
 nativeptr PetscBag
-nativeptr PetscBagItem
-nativeptr PetscDevice
-nativeptr PetscDeviceContext
-nativeptr PetscDraw
-nativeptr PetscDrawAxis
-nativeptr PetscDrawHG
-nativeptr PetscDrawLG
-nativeptr PetscDrawSP
-nativeptr PetscDualSpace
+
+# petscdm.h
+native    DMBoundaryType
+native    DMPointLocationType
+native    DMAdaptationType
+native    DMAdaptFlag
+native    PetscUnit
+native    DMAdaptationStrategy
+native    DMDirection
+native    DMEnclosureType
+native    DMPolytopeType
+native    DMCopyLabelsMode
+
+nativeptr DM
+
+nativeptr DMAdaptor
+nativeptr PetscQuadrature
+nativeptr PetscWeakForm
+nativeptr PetscDS
 nativeptr PetscFE
+nativeptr PetscSpace
+nativeptr PetscDualSpace
 nativeptr PetscFV
 nativeptr PetscLimiter
-nativeptr PetscMatlabEngine
-nativeptr PetscObject
-nativeptr PetscContainer
-nativeptr PetscProblem
-nativeptr PetscQuadrature
-nativeptr PetscRandom
-nativeptr PetscTable
-nativeptr PetscViewer
-nativeptr PetscViewers
-nativeptr PF
-nativeptr SNES
-nativeptr SNESLineSearch
-nativeptr TS
-nativeptr TSTrajectory
-nativeptr Vec
-nativeptr Vecs
-nativeptr VecScatter
-nativeptr PetscSection
-nativeptr MatMFFD
-nativeptr TSGLLEAdapt
-nativeptr TSAdapt
-nativeptr PetscSF
-nativeptr MatColoring
-nativeptr DMBoundary
-nativeptr DMInterpolationInfo
-nativeptr KSPFischerGuess
-nativeptr MatCoarsen
-nativeptr MatTransposeColoring
-nativeptr PetscClassPerfLog
-nativeptr PetscClassRegLog
-nativeptr PetscDLLLibrary
-nativeptr PetscEventPerfLog
-nativeptr PetscEventRegLog
-nativeptr PetscFunctionList
-nativeptr PetscIntStack
-nativeptr PetscLayout
-nativeptr PetscObjectList
-nativeptr PetscOptions
 nativeptr PetscPartitioner
-nativeptr PetscDS
-nativeptr PetscSegBuffer
-nativeptr PetscSpace
-nativeptr PetscStageLog
-nativeptr PetscSubcomm
-nativeptr PetscToken
-nativeptr PetscViennaCLIndices
-nativeptr Tao
-nativeptr TaoDM
-nativeptr TaoLineSearch
-nativeptr TSMonitorDrawCtx
-nativeptr TSMonitorLGCtx
-nativeptr TSMonitorSPEigCtx
-nativeptr PetscSFNode
+nativeptr DMField
 
-# the following are old PETSc types - they might be required for older versions
-# of PETSc
-nativeptr AOData
-nativeptr AOData2dGrid
-nativeptr PetscClassPerfLog
-nativeptr PetscClassRegLog
-nativeptr DA
-nativeptr DMMG
-nativeptr PetscEventPerfLog
-nativeptr PetscEventRegLog
-nativeptr IntStack
-nativeptr ISMapping
-nativeptr MatSNESMFCtx
-nativeptr PetscADICFunction
-nativeptr PetscDLLibraryList
-nativeptr PetscFList
-nativeptr PetscFwk
-nativeptr PetscMap
-nativeptr PetscOList
-nativeptr SDA
-nativeptr SectionReal
-nativeptr SectionInt
-nativeptr StageLog
-nativeptr VecPack
-nativeptr PetscObjectContainer
-nativeptr DF
-nativeptr Discretization
-nativeptr Draw
-nativeptr DrawAxis
-nativeptr DrawLG
-nativeptr ElementMat
-nativeptr ElementVec
-nativeptr FieldClassMap
-nativeptr GMat
-nativeptr Grid
-nativeptr GSNES
-nativeptr GTS
-nativeptr GVec
-nativeptr Mesh
-nativeptr Partition
+nativeptr DMPlexTransform
+
+# dmda.h
+native    DMDAStencilType
+
+native    DMDALocalInfo
+
+native    DMDAInterpolationType
+native    DMDAElementType
+
+nativeptr PetscGLL
+
+# dmlabel.h
+nativeptr DMLabel
+
+# dmnetwork.h
+nativeptr DMNetworkMonitor
+
+# dmplex.h
+native    DMPlexInterpolatedFlag
+native    DMPlexTPSType
+native    DMPlexReorderDefaultFlag
+
+# dmswarm.h
+native    DMSwarmType
+native    DMSwarmMigrateType
+native    DMSwarmCollectType
+native    DMSwarmPICLayoutType
+
+# petscdraw.h
+nativeptr PetscDraw
+nativeptr PetscDrawLG
+nativeptr PetscDrawAxis
+nativeptr PetscDrawSP
+nativeptr PetscDrawHG
 nativeptr PetscDrawMesh
-nativeptr SLES
-nativeptr Stencil
-nativeptr VarOrdering
-nativeptr Viewer
-nativeptr XBWindow
-#
-parm errparm z
-parm errparmlocal __z
+native    PetscDrawButton
+native    PetscDrawMarkerType
+nativeptr PetscDrawBar
+
+# petscis.h
+nativeptr IS
+nativeptr ISColoring
+nativeptr PetscSection
+nativeptr PetscSectionSym
+
+nativeptr PetscSF
+nativeptr PetscLayout
+native    ISInfo
+native    ISInfoType
+nativeptr ISLocalToGlobalMapping
+native    ISGlobalToLocalMappingMode
+native    ISColoringType
+
+# petscksp.h
+nativeptr KSP
+native    KSPGuess
+native    KSPCGType
+native    KSPFCDTruncationType
+native    KSPConvergedReason
+native    KSPNormType
+native    KSPGMRESCGSRefinementType
+native    MatSchurComplementAinvType
+native    MatLMVMSymBroydenScaleType
+native    KSPHPDDMType
+
+# petsclog.h
+
+# petscmat.h
+nativeptr Mat
+nativeptr MatNullSpace
+nativeptr MatFDColoring
+
+nativeptr MatColoring
+nativeptr MatPartitioning
+nativeptr MatCoarsen
+nativeptr MatAIJIndices
+native    MatOption
+native    MatCreateSubMatrixOption
+native    MPChacoGlobalType
+native    MPChacoLocalType
+native    MPChacoEigenType
+native    MPPTScotchStragegyType
+native    MatAssemblyType
+native    MatFactorType
+native    MatFactorError
+native    MatFactorShiftType
+native    MatProductType
+native    MatFactorSchurStatus
+native    MatSORType
+native    MatInfoType
+native    MatReuse
+native    MatOperation
+native    MatInfo
+native    MatFactorInfo
+native    MatDuplicateOption
+native    MatStructure
+native    MatCompositeType
+native    MatCompositeMergeType
+native    MatStencil
+
+native    MatCUSPARSEStorageFormat
+native    MatCUSPARSEFormatOperation
+
+native    MatSTRUMPACKReordering
+
+# petscpc.h
+nativeptr PC
+
+native    PCSide
+native    PCJacobiType
+native    PCASMType
+native    PCGASMType
+native    PCCompositeType
+native    PCRichardsonConvergedReason
+native    PCFieldSplitSchurPreType
+native    PCPARMSGlobalType
+native    PCPARMSLocalType
+native    PCFieldSplitSchurFactType
+native    CoarseProblemType
+native    PCGAMGLayoutType
+native    PCHPDDMCoarseCorrectionType
+
+native    PCMGType
+native    PCMGCycleType
+native    PCMGGalerkinType
+native    PCExoticType
+native    PCDeflationSpaceType
+native    PCBDDCInterfaceExtType
+native    PCFailedReason
+
+# petscsnes.c
+nativeptr SNES
+nativeptr PetscConvEst
+
+native    SNESConvergedReason
+native    SNESLineSearchReason
+nativeptr MatMFFD
+nativeptr MatMFFDType
+nativeptr SNESLineSearch
+native    SNESLineSearchOrder
+native    SNESNormSchedule
+native    SNESQNType
+native    SNESQNRestartType
+native    SNESQNCompositionType
+native    SNESQNScaleType
+native    SNESNCGType
+native    SNESNGMRESRestartType
+native    SNESNGMRESSelectType
+
+# petscsnesfas.h
+native    SNESFASType
+
+# petsctao.h
+nativeptr Tao
+nativeptr TaoLineSearch
+native    TaoConvergedReason
+native    TaoADMMUpdateType
+native    TaoADMMRegularizerType
+native    TaoALMMType
+
+# petscsys.h
+native    PetscBool
+native    PetscBool3
+native    PetscOffset
+native    PetscFortranAddr
+native    PetscCount
+
+native    PetscInt
+native    PetscInt64
+native    PetscObjectState
+native    PetscObjectId
+native    PetscFortranInt
+
+native    PetscSizeT
+
+native    PetscMPIInt
+
+native    PetscEnum
+native    PetscErrorCode
+native    PetscClassId
+native    PetscLogEvent
+native    PetscLogStage
+native    PetscVoid
+
+native    PetscCopyMode
+
+native    PetscDataType
+native    PetscFPTrap
+
+native    PetscFortranFloat
+native    PetscFortranDouble
+native    PetscFortranLongDouble
+native    PetscFortranComplex
+native    PetscComplex
+native    PetscScalar
+native    PetscReal
+
+
+native    MatScalar
+native    PetscObject
+native    PetscLogDouble
+
+nativeptr PetscMatlabEngine
+nativeptr PetscRandom
+native    PetscBinarySeekType
+
+native    PetscBuildTwoSidedType
+
+nativeptr PetscSubcomm
+native    PetscSubcommType
+
+nativeptr PetscOptions
+
+nativeptr PetscFunctionList
+
+native    PetscInfoCommFlag
+
+
+# petscts.h
+nativeptr TS
+nativeptr TSAdapt
+nativeptr TSTrajectory
+
+native    TSEquationType
+native    TSConvergedReason
+native    TSExactFinalTimeOption
+native    TSSundialsType
+native    TSProblemType
+native    TSSundialsGramSchmidtType
+native    TSSundialsLmmType
+
+# petscvec.h
+nativeptr Vec
+nativeptr VecScatter
+nativeptr VecTagger
+
+native    NormType
+native    ReductionType
+native    InsertMode
+native    ScatterMode
+native    VecOption
+native    VecOperation
+native    VecTaggerCDFMethod
+native    PetscOffloadMask
+
+# petscviewer.h
+nativeptr PetscViewer
+
+nativeptr PetscViewerAndFormat
+
+nativeptr PetscViewers
+native    PetscFileMode
+native    PetscViewerFormat
+
