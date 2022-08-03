@@ -1184,35 +1184,31 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
         }
       }
     }
-    PetscCall(VecGetArray(coordinates, &coords));
     for (c = cStart; c < cEnd; ++c) {
-      double    ccoords[3] = {0.0, 0.0, 0.0};
-      PetscBool isLabeled  = PETSC_FALSE;
-      PetscInt *closure    = NULL;
-      PetscInt  closureSize, dof, d, n = 0;
+      double             ccoords[3] = {0.0, 0.0, 0.0};
+      PetscBool          isLabeled  = PETSC_FALSE;
+      PetscScalar       *cellCoords = NULL;
+      const PetscScalar *array;
+      PetscInt           numCoords, cdim, d;
+      PetscBool          isDG;
 
       if (wp && !PetscBTLookup(wp,c - pStart)) continue;
-      PetscCall(DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure));
+      PetscCall(DMGetCoordinateDim(dm, &cdim));
+      PetscCall(DMPlexGetCellCoordinates(dm, c, &isDG, &numCoords, &array, &cellCoords));
+      PetscCheck(!(numCoords % cdim), PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "coordinate dim %" PetscInt_FMT " does not divide numCoords %" PetscInt_FMT, cdim, numCoords);
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "\\path ("));
-      for (p = 0; p < closureSize*2; p += 2) {
-        const PetscInt point = closure[p];
-        PetscInt       off;
-
-        if ((point < vStart) || (point >= vEnd)) continue;
-        PetscCall(PetscSectionGetDof(coordSection, point, &dof));
-        PetscCall(PetscSectionGetOffset(coordSection, point, &off));
-        for (d = 0; d < dof; ++d) {
-          tcoords[d] = (double) (scale*PetscRealPart(coords[off+d]));
+      for (p = 0; p < numCoords/cdim; ++p) {
+        for (d = 0; d < cdim; ++d) {
+          tcoords[d] = (double) (scale*PetscRealPart(cellCoords[p*cdim+d]));
           tcoords[d] = PetscAbs(tcoords[d]) < 1e-10 ? 0.0 : tcoords[d];
         }
         /* Rotate coordinates since PGF makes z point out of the page instead of up */
-        if (dof == 3) {PetscReal tmp = tcoords[1]; tcoords[1] = tcoords[2]; tcoords[2] = -tmp;}
-        for (d = 0; d < dof; ++d) {ccoords[d] += tcoords[d];}
-        ++n;
+        if (cdim == 3) {PetscReal tmp = tcoords[1]; tcoords[1] = tcoords[2]; tcoords[2] = -tmp;}
+        for (d = 0; d < dim; ++d) {ccoords[d] += tcoords[d];}
       }
-      for (d = 0; d < dof; ++d) {ccoords[d] /= n;}
-      PetscCall(DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure));
-      for (d = 0; d < dof; ++d) {
+      for (d = 0; d < cdim; ++d) {ccoords[d] /= (numCoords/cdim);}
+      PetscCall(DMPlexRestoreCellCoordinates(dm, c, &isDG, &numCoords, &array, &cellCoords));
+      for (d = 0; d < cdim; ++d) {
         if (d > 0) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, ","));
         PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%g", (double) ccoords[d]));
       }
@@ -1229,7 +1225,6 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
         PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, ") node(%" PetscInt_FMT "_%d) [fill,inner sep=%dpt,shape=circle,color=%s] {};\n", c, rank, !isLabeled ? 1 : 2, color));
       } else PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, ") node(%" PetscInt_FMT "_%d) [] {};\n", c, rank));
     }
-    PetscCall(VecRestoreArray(coordinates, &coords));
     if (drawHasse) {
       color = colors[depth%numColors];
       PetscCall(PetscViewerASCIIPrintf(viewer, "%% Cells\n"));
