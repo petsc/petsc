@@ -83,16 +83,16 @@ program ex26f90
     PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD,numProc,ierr))
     PetscCallA(PetscOptionsGetString(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-i",ifilename,flg,ierr))
     if (.not. flg) then
-        SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"missing input file name -i <input file name>")
+        SETERRA(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"missing input file name -i <input file name>")
     end if
     PetscCallA(PetscOptionsGetString(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-o",ofilename,flg,ierr))
     if (.not. flg) then
-        SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"missing output file name -o <output file name>")
+        SETERRA(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"missing output file name -o <output file name>")
     end if
     PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-order",order,flg,ierr))
     if ((order > 2) .or. (order < 1)) then
         write(IOBuffer,'("Unsupported polynomial order ", I2, " not in [1,2]")') order
-        SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,IOBuffer)
+        SETERRA(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,IOBuffer)
     end if
 
     ! Read the mesh in any supported format
@@ -199,7 +199,7 @@ program ex26f90
                 dofs => dofS3D
             case default
                 write(IOBuffer,'("No layout for dimension ",I2)') sdim
-                SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE,IOBuffer)
+                SETERRA(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE,IOBuffer)
             end select ! sdim
 
             ! Identify cell type based on closure size only. This works for Tri/Tet/Quad/Hex meshes
@@ -242,7 +242,7 @@ program ex26f90
                 end if
             case default
                 write(IOBuffer,'("Unknown element with closure size ",I2)') size(closureA)/2
-                SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP,IOBuffer)
+                SETERRA(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP,IOBuffer)
             end select
             PetscCallA(DMPlexRestoreTransitiveClosure(dm, cellID(1), PETSC_TRUE,closureA,ierr))
             do cell = 1,numCells!
