@@ -18,7 +18,7 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-threadsafety=<bool>',     nargs.ArgBool(None, 0, 'Allow individual threads in PETSc to call PETSc routines'))
     help.addArgument('PETSc', '-with-info=<bool>',             nargs.ArgBool(None, 1, 'Activate PetscInfo() (i.e. -info)  code in PETSc'))
     help.addArgument('PETSc', '-with-ctable=<bool>',           nargs.ArgBool(None, 1, 'Activate CTABLE hashing for certain search functions - to conserve memory'))
-    help.addArgument('PETSc', '-with-dmlandau-2d=<bool>',      nargs.ArgBool(None, 0, 'Enable 2.5D DM Landau, default use full 3D'))
+    help.addArgument('PETSc', '-with-dmlandau-3d=<bool>',      nargs.ArgBool(None, 0, 'Enable full 3D DM Landau, default is 2.5D'))
     help.addArgument('PETSc', '-with-fortran-kernels=<bool>',  nargs.ArgBool(None, 0, 'Use Fortran for linear algebra kernels'))
     help.addArgument('PETSc', '-with-avx512-kernels=<bool>',   nargs.ArgBool(None, 1, 'Use AVX-512 intrinsics for linear algebra kernels when available'))
     help.addArgument('PETSc', '-with-is-color-value-type=<char,short>',nargs.ArgString(None, 'short', 'char, short can store 256, 65536 colors'))
@@ -70,8 +70,8 @@ class Configure(config.base.Configure):
     if self.useCtable:
       self.addDefine('USE_CTABLE', '1')
 
-    self.useDmLandau2d = self.framework.argDB['with-dmlandau-2d']
-    if self.useDmLandau2d:
+    self.useDmLandau3d = self.framework.argDB['with-dmlandau-3d']
+    if not self.useDmLandau3d:
       self.addDefine('USE_DMLANDAU_2D',1)
 
     # used in src/mat/impls/sbaij/seq/relax.h
